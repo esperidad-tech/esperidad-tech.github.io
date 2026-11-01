@@ -15,7 +15,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Caveat:wght@500;700&family=Macondo&display=swap">
 <style>
 :root{
   /* Mise en page : appli plein écran. En-tête du héros collé en haut, scène au centre, onglets en bas.
@@ -298,6 +298,66 @@ main{padding-block:16px calc(104px + env(safe-area-inset-bottom,0px))}
 
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--or);color:var(--encre);font-weight:700;padding:8px 18px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.4);white-space:nowrap;animation:monte .2s ease-out}
 
+
+/* Enquête n°2 : RPG, marchand, obstacles, mini-jeux */
+.bourse{display:inline-block;font-family:var(--f-texte);font-size:.82rem;font-weight:700;color:var(--or);background:rgba(245,185,69,.14);border-radius:99px;padding:1px 9px;margin-left:6px;vertical-align:middle}
+.bourse-grande{align-self:flex-start;font-weight:700;font-size:1.2rem;color:var(--or);background:rgba(245,185,69,.12);border:1px solid rgba(245,185,69,.4);border-radius:99px;padding:6px 18px}
+.bouton-e2{width:100%;text-align:left;cursor:pointer;background:rgba(245,185,69,.14);border-style:solid;font-weight:700;font-size:1rem;min-height:52px}
+.nom-pouvoir{font-family:var(--f-texte);font-size:1rem;color:var(--lune)}
+.article{display:flex;gap:12px;align-items:center;background:var(--nuit-2);border:1px solid var(--trait);border-radius:16px;padding:14px}
+.article .oi{font-size:2.2rem;line-height:1;flex:none}
+.article.possede{border-color:var(--mousse);background:rgba(124,196,147,.08)}
+.prix{font-weight:700;color:var(--or)}
+.obstacle{background:var(--nuit-2);border:2px dashed var(--braise);border-radius:16px;padding:16px}
+.obstacle .sur-titre{color:var(--braise)}
+.obstacle .btn{width:100%}
+.badge.alerte{background:var(--braise);border-color:var(--braise);font-size:13px}
+.puce-ingr{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--trait);border-radius:999px;padding:4px 12px;font-size:.9rem;background:var(--nuit-3)}
+.puce-ingr.ok{border-color:var(--mousse)}
+.puce-ingr.manque{opacity:.55}
+.recette-potion{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--trait);border-radius:14px;background:var(--nuit-3)}
+.recette-potion .objet{background:var(--nuit)}
+.mensonge{color:var(--braise-sombre);font-weight:700}
+.silence{color:var(--encre-2);font-size:.9rem}
+.verite{background:rgba(124,196,147,.25);border-radius:10px;padding:8px 12px}
+.innocent{opacity:.4;text-decoration:line-through}
+.ecriture{font-family:"Caveat", "Segoe Script", "Comic Sans MS", cursive;font-size:1.6rem;line-height:1.3;font-weight:500}
+.i-sans{position:relative;display:inline-block;line-height:1}
+.pt{position:absolute;left:50%;transform:translateX(-50%);top:.04em}
+.pt-point{width:.15em;height:.15em;border-radius:50%;background:currentColor}
+.pt-rond{width:.24em;height:.24em;border-radius:50%;border:.045em solid currentColor;top:-.04em}
+.pt-trait{width:.3em;height:.055em;background:currentColor;top:.09em;transform:translateX(-50%) rotate(-25deg)}
+.pt-etoile::before{content:"✶";font-size:.42em;display:block;line-height:1;transform:translateY(-.25em)}
+.pt-coeur::before{content:"♡";font-size:.42em;display:block;line-height:1;transform:translateY(-.3em);font-weight:700}
+.signature-ligne{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 14px;text-align:left;width:100%;background:transparent;border:2px dashed rgba(53,40,27,.3);border-radius:12px;padding:6px 12px;color:var(--encre)}
+.signature-ligne[aria-pressed="true"]{border-style:solid;border-color:var(--laiton);background:rgba(245,185,69,.25)}
+.signature-ligne:disabled{cursor:default}
+.signature-ligne .signe{font-weight:700}
+.glyphe path{fill:none;stroke:var(--encre);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.glyphe circle{fill:var(--encre)}
+.message-chiffre{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;padding-block:6px}
+.mot{display:flex;gap:3px}
+.cle-alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:8px 4px}
+.cle-alpha div{display:flex;flex-direction:column;align-items:center;font-family:var(--f-titre);font-weight:700;font-size:1.05rem}
+.etiquette-sombre{font-weight:700;color:var(--encre-2)}
+.parchemin .champ{background:#fffaf0;color:var(--encre);border-color:var(--encre-2)}
+.rythme{position:relative;height:60px;border-radius:14px;background:var(--nuit);border:2px solid var(--encre-2);overflow:hidden}
+.rythme-zone{position:absolute;top:0;bottom:0;background:rgba(245,185,69,.55);border-left:2px solid var(--or);border-right:2px solid var(--or);transition:left .25s}
+.rythme-curseur{position:absolute;top:8px;bottom:8px;left:0;width:8%;border-radius:8px;background:var(--lune);box-shadow:0 0 10px rgba(238,240,255,.7)}
+.mg-etat{font-weight:700;text-align:center}
+.mg-msg{min-height:1.5em;text-align:center;font-weight:700;color:var(--encre-2)}
+.bulles-mg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:280px;margin:0 auto}
+.bulle-mg{aspect-ratio:1;max-width:100%;border-radius:50%;border:3px solid rgba(0,0,0,.25);background:var(--c);opacity:.4;transition:opacity .12s,transform .12s;padding:0}
+.bulle-mg.allume{opacity:1;transform:scale(1.07);box-shadow:0 0 26px var(--c)}
+.couleur-cible{width:90px;height:90px;border-radius:50%;margin:0 auto;background:var(--c);border:4px solid var(--encre-2)}
+.fioles-mg{grid-template-columns:repeat(3,1fr)}
+.fiole[aria-pressed="true"]{border:2px solid var(--or);background:rgba(245,185,69,.25)}
+.gain-or{font-family:var(--f-titre);font-size:1.5rem;color:var(--or-pale)}
+.sac{display:flex;flex-direction:column;gap:8px}
+.sac-ligne{display:flex;gap:10px;align-items:center}
+.sac-ligne .oi{font-size:1.6rem;flex:none}
+.sac-ligne.use{opacity:.5}
+
 @media (max-width:480px){
   .avatars{grid-template-columns:repeat(4,1fr)}
   .slot{width:70px;height:70px}
@@ -488,21 +548,290 @@ var FIN = [
 
 var SEUILS = [0,100,300,550,850,1200];
 
+/* ================= ENQUÊTE N°2 : données ================= */
+var LE_ROLE = {pisteur:'le Pisteur', alchimiste:"l'Alchimiste", barde:'le Barde', sage:'le Sage'};
+var SPES = {
+  pisteur:[
+    {id:'eclaireur', m:'Éclaireur', f:'Éclaireuse', ic:'🌙', pouvoir:'Vision de nuit', d:'Tu vois dans le noir comme un chat. Sert dans les endroits sombres.', d3:'Au niveau 3 : tu repères aussi les traces cachées.'},
+    {id:'traqueur', m:'Traqueur', f:'Traqueuse', ic:'🐺', pouvoir:'Course du loup', d:"Tu cours aussi vite qu'un loup. Sert pendant les courses-poursuites.", d3:'Au niveau 3 : tu ne perds plus jamais une piste.'}
+  ],
+  alchimiste:[
+    {id:'potionniste', m:'Potionniste', f:'Potionniste', ic:'🧪', pouvoir:'Ingrédient magique', d:"Fabrique une potion même s'il te manque son ingrédient.", d3:'Au niveau 3 : tes potions font deux doses.'},
+    {id:'savant', m:'Savant', f:'Savante', ic:'🔬', pouvoir:'Analyse profonde', d:"Ton analyse découvre un détail caché que personne n'aurait vu.", d3:"Au niveau 3 : tu analyses deux objets d'un coup."}
+  ],
+  barde:[
+    {id:'conteur', m:'Conteur', f:'Conteuse', ic:'🗣️', pouvoir:'Parole de vérité', d:'Oblige un villageois à dire la vérité sur une question.', d3:"Au niveau 3 : tu sens tout de suite quand quelqu'un ment."},
+    {id:'ombre', m:'Ombre', f:'Ombre', ic:'🌑', pouvoir:'Pas de velours', d:'Tu te faufiles sans bruit pour écouter les conversations en cachette.', d3:"Au niveau 3 : tu peux suivre quelqu'un sans être vu."}
+  ],
+  sage:[
+    {id:'archiviste', m:'Archiviste', f:'Archiviste', ic:'📚', pouvoir:'Mémoire des anciens', d:'Ouvre les pages scellées du Grand Livre.', d3:"Au niveau 3 : tu déchiffres les codes secrets d'un coup d'œil."},
+    {id:'stratege', m:'Stratège', f:'Stratège', ic:'♟️', pouvoir:"Coup d'œil", d:'Au moment du piège, élimine deux innocents de la liste.', d3:'Au niveau 3 : tu devines où le coupable va frapper.'}
+  ]
+};
+var MARCHAND = {
+  pisteur:[
+    {id:'lanterne', ic:'🔦', n:'Lanterne sourde', prix:20, d:"Éclaire les endroits sombres. Tu la gardes toute l'enquête."},
+    {id:'bottes', ic:'👢', n:'Bottes légères', prix:20, d:'Pour courir très, très vite. Une seule fois.', usage:1},
+    {id:'sifflet', ic:'🐕', n:'Sifflet de Pirate', prix:15, d:'Appelle Pirate, le chien de Tim. Son flair peut te mener loin.'}
+  ],
+  alchimiste:[
+    {id:'chaudron', ic:'🥘', n:'Chaudron de cuivre', prix:15, d:'Tous les mini-jeux de potions deviennent plus faciles.'},
+    {id:'loupe', ic:'🔍', n:'Loupe dorée', prix:20, d:'Chaque analyse découvre aussi un détail caché.'},
+    {id:'poussiere', ic:'💫', n:'Poussière de fée', prix:20, d:'Remplace un ingrédient qui te manque. Une seule fois.', usage:1}
+  ],
+  barde:[
+    {id:'clochette', ic:'🛎️', n:'Clochette de vérité', prix:25, d:"Elle tinte quand quelqu'un te ment."},
+    {id:'cornet', ic:'📯', n:'Cornet acoustique', prix:20, d:'Pour entendre une conversation de loin, sans être vu.'},
+    {id:'bonbons', ic:'🍯', n:'Bonbons au miel', prix:10, d:'Certains villageois adorent les bonbons…'}
+  ],
+  sage:[
+    {id:'clearchives', ic:'🗝️', n:'Clé des archives', prix:20, d:'Ouvre tout de suite les archives scellées du Grand Livre.'},
+    {id:'boule', ic:'🔮', n:'Boule de cristal', prix:25, d:'Au moment du piège, elle montre deux innocents. Une seule fois.', usage:1},
+    {id:'longuevue', ic:'🔭', n:'Longue-vue', prix:15, d:'Du haut de la mairie, tu observes le village la nuit.'}
+  ]
+};
+var EQUIV = {eclaireur:'lanterne', traqueur:'bottes', potionniste:'poussiere', savant:'loupe', conteur:'clochette', ombre:'cornet', archiviste:'clearchives', stratege:'boule'};
+var INGR = {
+  champignon:{n:'Champignons lumineux', ic:'🍄', code:['arbre','soleil','champi']},
+  trefle:{n:'Trèfle des lièvres', ic:'☘️', code:['cloche','arbre','soleil']},
+  brume:{n:'Brume du lavoir', ic:'🌫️', code:['soleil','poisson','cloche']},
+  pensee:{n:'Pensées sauvages', ic:'🌼', code:['champi','etoile','lune']}
+};
+var POTIONS = {
+  lumiere:{n:'Potion de lumière', ic:'💡', ingr:'champignon', jeu:'couleurs', pour:'pisteur', code:['soleil','etoile','arbre'], d:'Pour voir dans le noir.'},
+  rapidite:{n:'Potion de rapidité', ic:'💨', ingr:'trefle', jeu:'rythme', pour:'pisteur', code:['etoile','soleil','cloche'], d:'Pour courir comme le vent.'},
+  invisibilite:{n:"Potion d'invisibilité", ic:'👻', ingr:'brume', jeu:'memoire', pour:'barde', code:['lune','cloche','etoile'], d:'Pour devenir invisible quelques minutes.'},
+  verite:{n:'Potion de vérité', ic:'💬', ingr:'pensee', jeu:'rythme', pour:'barde', code:['champi','cloche','poisson'], d:'Un villageois qui la boit dit toute la vérité.'}
+};
+var NOM_JEU = {rythme:'Remuer en rythme', memoire:'Les bulles magiques', couleurs:'Le bon mélange'};
+var OBJETS2 = {
+  craie:{nom:'Morceau de craie bleue', ic:'🖍️', pour:'alchimiste', code:['etoile','cle','arbre']},
+  de:{nom:'Dé à coudre en argent', ic:'🔘', pour:'alchimiste', code:['lune','chapeau','poisson']},
+  plume2:{nom:'Plume cousue sur du tissu', ic:'🐦', pour:'alchimiste', code:['poisson','arbre','chapeau']},
+  lettre:{nom:'Lettre du Corbeau', ic:'✉️', pour:'alchimiste', code:['chapeau','etoile','soleil']},
+  clearch:{nom:'Vieille clé des archives', ic:'🗝️', pour:'sage', code:['cle','lune','champi']}
+};
+var FINAL2 = ['chapeau','lune','soleil'];
+var CODE2 = {};
+Object.keys(OBJETS2).forEach(function(id){ CODE2[OBJETS2[id].code.join('-')] = {type:id === 'clearch' ? 'cle' : 'objet', id:id, pour:OBJETS2[id].pour}; });
+Object.keys(INGR).forEach(function(id){ CODE2[INGR[id].code.join('-')] = {type:'ingr', id:id, pour:'alchimiste'}; });
+Object.keys(POTIONS).forEach(function(id){ CODE2[POTIONS[id].code.join('-')] = {type:'potion', id:id, pour:POTIONS[id].pour}; });
+
+var OBSTACLES = {
+  sombre:{titre:'Il fait noir comme dans un four', t:"Dans la ruelle des Brumes, on ne voit rien du tout. Impossible de suivre les traces !",
+    objet:'lanterne', spe:'eclaireur', potion:'lumiere',
+    aide:"Ce qui marcherait : une lanterne, le pouvoir Vision de nuit, ou une potion de lumière. Pour la potion, l'Alchimiste a besoin de champignons lumineux de la forêt.",
+    via:{objet:'Tu allumes ta lanterne sourde : la ruelle s\'éclaire !', spe:'Tes yeux s\'habituent au noir… Tu vois tout, comme un chat !', potion:'Tu bois la potion de lumière : tes yeux se mettent à briller. Tu vois tout !'}},
+  poursuite:{titre:"Une silhouette s'enfuit !", t:"En haut de l'escalier, une silhouette en cape noire couverte de plumes te voit… et dévale les marches à toute vitesse !",
+    objet:'bottes', spe:'traqueur', potion:'rapidite', echec:true,
+    aide:"Ce qui marcherait : des bottes légères, le pouvoir Course du loup, ou une potion de rapidité. Pour la potion, l'Alchimiste a besoin de trèfle des lièvres de la forêt. Tu peux aussi te cacher et attendre que l'équipe t'aide.",
+    via:{objet:'Tu enfiles les bottes légères et tu t\'élances !', spe:'Tu cours comme un loup !', potion:'Tu bois la potion de rapidité : tes jambes filent comme le vent !', echec:'Tu cours de toutes tes forces…'}},
+  ecoute:{titre:'Des voix au lavoir', t:"Au lavoir, deux personnes chuchotent dans la brume. Si tu t'approches, elles vont te voir et se taire !",
+    objet:'cornet', spe:'ombre', potion:'invisibilite',
+    aide:"Ce qui marcherait : un cornet acoustique, le pouvoir Pas de velours, ou une potion d'invisibilité. Pour la potion, l'Alchimiste a besoin de brume du lavoir.",
+    via:{objet:'Tu colles le cornet acoustique à ton oreille…', spe:'Tu te faufiles sans un bruit, comme une ombre…', potion:'Tu bois la potion d\'invisibilité : tu disparais !'}},
+  archives:{titre:'Les archives scellées', t:"La dernière partie du Grand Livre est fermée par un vieux sceau de cire. Dedans, il y a l'alphabet secret des fondateurs.",
+    objet:'clearchives', spe:'archiviste',
+    aide:"Ce qui marcherait : la clé des archives du marchand, ou le pouvoir Mémoire des anciens. Sinon, demande au Barde : Anselme, le sonneur de cloches, a peut-être une vieille clé.",
+    via:{objet:'La clé tourne dans le sceau…', spe:'Tu murmures la formule des anciens : le sceau se brise !', code:'La vieille clé d\'Anselme ouvre le sceau !'}}
+};
+
+var LIEUX2 = {
+  foret:{court:'Forêt',nom:'La forêt de Brumeval',ic:'🌲',x:18,y:15,
+    intro:"Tu connais bien le chemin maintenant. La forêt est pleine de plantes utiles pour l'Alchimiste.",
+    points:[
+      {id:'champignons',ic:'🍄',nom:'Les champignons lumineux',ingr:'champignon',
+        t:"Au pied des arbres, des champignons brillent dans l'ombre. Tu en ramasses quelques-uns.",
+        note:"Forêt : des champignons lumineux pour l'Alchimiste."},
+      {id:'trefle',ic:'☘️',nom:'La clairière aux lièvres',ingr:'trefle',
+        t:"Les lièvres adorent ce trèfle : c'est pour ça qu'ils courent si vite ! Tu en cueilles une poignée.",
+        note:"Forêt : du trèfle des lièvres pour l'Alchimiste."},
+      {id:'chene',ic:'🌳',nom:'Le Vieux Chêne',
+        t:"Le corbeau gravé est toujours là. Juste en dessous, quelqu'un a ajouté une flèche qui pointe… vers le clocher.",
+        note:'Vieux Chêne : une flèche gravée pointe vers le clocher.'}
+    ]},
+  clocher:{court:'Clocher',nom:'Le clocher',ic:'⛪',x:74,y:20,poursuite:true,
+    intro:"L'escalier en colimaçon monte jusqu'à la grande cloche du village.",
+    points:[
+      {id:'escalier',ic:'👣',nom:"L'escalier"},
+      {id:'cloche',ic:'🔔',nom:'La grande cloche',
+        t:"Des symboles bizarres sont gravés sur la cloche : les mêmes que dans la lettre secrète du Corbeau ! Sur le côté, il y a une petite trappe fermée.",
+        note:'Clocher : la cloche porte les mêmes symboles que la lettre secrète, et une petite trappe fermée.'},
+      {id:'pirate',ic:'🐕',nom:'Appeler Pirate',besoin:'sifflet',
+        t:"Tu siffles. Pirate arrive en courant, renifle les marches… et file jusqu'à la Grand-Rue ! Il s'arrête devant la porte de l'atelier de couture et aboie très fort. Derrière la vitre, une grande cape noire pend à un cintre.",
+        note:"Pirate a suivi l'odeur jusqu'à l'atelier de couture : une cape noire y est accrochée."}
+    ]},
+  mairie:{court:'Mairie',nom:'La mairie',ic:'🏛️',x:24,y:47,
+    intro:"C'est sous cette porte que le maire a trouvé la quatrième lettre du Corbeau, ce matin.",
+    points:[
+      {id:'porte',ic:'🚪',nom:'La porte',
+        t:"Dans la boue devant la porte, il y a des petites traces de pas toutes fraîches. Elles partent vers la ruelle des Brumes.",
+        note:'Mairie : des petites traces fraîches partent vers la ruelle des Brumes.'},
+      {id:'boite',ic:'📮',nom:'La boîte aux lettres',
+        t:"Elle est vide. Les lettres du Corbeau n'ont pas de timbre : personne ne les a postées. On les glisse sous les portes, la nuit.",
+        note:"Mairie : les lettres du Corbeau n'ont pas de timbre, on les glisse sous les portes la nuit."}
+    ]},
+  ruelle:{court:'Ruelle',nom:'La ruelle des Brumes',ic:'🌫️',x:52,y:53,obstacle:'sombre',
+    intro:"Grâce à la lumière, tu vois enfin le fond de la ruelle.",
+    points:[
+      {id:'traces',ic:'👣',nom:'Les traces',
+        t:"Les petites traces fraîches avancent à pas pressés. Tu les mesures : 3 carreaux. Elles s'arrêtent au bord du lavoir.",
+        note:"Ruelle : les traces fraîches mesurent 3 carreaux et mènent au lavoir."},
+      {id:'mur',ic:'🧱',nom:'Le vieux mur',obj:'craie',
+        t:"Coincé entre deux pierres, il y a un morceau de craie bleue. Quelqu'un l'a fait tomber en passant.",
+        note:'Ruelle : un morceau de craie bleue, tombé près du mur.'}
+    ]},
+  jardin:{court:'Jardin',nom:"Le jardin d'Iris",ic:'🌸',x:84,y:59,
+    intro:"Le jardin de l'herboriste sent bon les fleurs et les plantes.",
+    points:[
+      {id:'pensees',ic:'🌼',nom:'Les pensées sauvages',ingr:'pensee',
+        t:"Tu cueilles quelques pensées sauvages. On dit qu'elles aident à dire la vérité…",
+        note:"Jardin : des pensées sauvages pour l'Alchimiste."},
+      {id:'lavande',ic:'💜',nom:'La lavande',
+        t:"Des rangées de lavande. Iris en fait des petits sachets pour parfumer les armoires… et les tissus.",
+        note:'Jardin : Iris vend des sachets de lavande pour parfumer les tissus.'}
+    ]},
+  lavoir:{court:'Lavoir',nom:'Le lavoir',ic:'🧺',x:40,y:83,
+    intro:"L'eau est calme et une brume bleue flotte au-dessus. Il n'y a personne… pour l'instant.",
+    points:[
+      {id:'brume',ic:'🌫️',nom:"La brume sur l'eau",ingr:'brume',
+        t:"Tu remplis une petite fiole avec la brume bleue. L'Alchimiste saura s'en servir !",
+        note:"Lavoir : une fiole de brume bleue pour l'Alchimiste."},
+      {id:'banc',ic:'☕',nom:'Le banc',
+        t:"Sur le banc, deux tasses de tisane à la lavande, encore tièdes. Quelqu'un se donne rendez-vous ici… Le Barde pourrait venir écouter en cachette.",
+        note:"Lavoir : deux tasses de tisane. Quelqu'un se donne rendez-vous ici."}
+    ]}
+};
+var ESCALIER = {
+  reussi:{obj:'de', t:"Tu rattrapes la silhouette au pied du clocher ! Elle est petite et très rapide. Elle se débat, s'échappe… mais un dé à coudre en argent tombe de sa poche.",
+    note:"Clocher : la silhouette en cape est petite et rapide. Elle a perdu un dé à coudre en argent."},
+  rate:{obj:'plume2', t:"La silhouette est beaucoup trop rapide… Tu la perds de vue. Sur une marche, tu ramasses une plume noire, cousue sur un bout de tissu.",
+    note:"Clocher : la silhouette s'est enfuie. Elle a perdu une plume noire cousue sur du tissu."}
+};
+
+var ANALYSES2 = {
+  lettre:{t:"Le papier sent fort la lavande. Dans un coin, il y a une petite trace de poudre bleue : on dirait de la craie.",
+    p:"Tout autour du papier, il y a des dizaines de petits trous d'épingle, comme si on l'avait épinglé sur un tissu.",
+    note:'Lettre du Corbeau : elle sent la lavande, avec un peu de poudre de craie bleue.', np:"Détail caché de la lettre : des trous d'épingle tout autour, comme pour la couture."},
+  craie:{t:"C'est de la craie de tailleur ! Les couturières s'en servent pour dessiner sur le tissu avant de le couper.",
+    p:"Collées sur la craie, il y a de toutes petites fibres de laine rouge… comme celles des écharpes tricotées à Brumeval cet hiver.",
+    note:'La craie bleue est de la craie de tailleur, pour dessiner sur le tissu.', np:'Détail caché de la craie : des fibres de laine rouge.'},
+  de:{t:'Un dé à coudre en argent, tout usé. Son propriétaire coud beaucoup, beaucoup !',
+    p:"À l'intérieur du dé, deux petites lettres sont gravées : M. D.",
+    note:'Le dé à coudre appartient à quelqu\'un qui coud beaucoup.', np:'Détail caché du dé : les lettres M. D. sont gravées dedans.'},
+  plume2:{t:'Une plume de corbeau, cousue sur du tissu noir avec du fil de soie. Elle vient d\'une cape faite à la main… et elle sent la lavande.',
+    p:'Les points de couture sont minuscules et parfaits. Seule une vraie couturière sait coudre comme ça.',
+    note:'La plume vient d\'une cape cousue à la main, et elle sent la lavande.', np:'Détail caché de la plume : la couture a été faite par une vraie couturière.'}
+};
+
+var VILLAGEOIS2 = {
+  iris:{nom:'Iris',metier:"l'herboriste",ic:'👩‍🌾',q:[
+    {q:'Où étiez-vous la nuit dernière ?',a:'Dans ma cuisine, à préparer mes sachets de lavande. Toute la nuit !',note:'Iris préparait ses sachets de lavande toute la nuit.'},
+    {q:'Qui vous achète de la lavande ?',a:'Oh, beaucoup de monde ! Odette pour ses chats, Victor pour ses chaussettes… et Mélusine, chaque semaine, pour parfumer ses tissus.',note:'Iris : Mélusine achète de la lavande chaque semaine pour parfumer ses tissus.'},
+    {q:'Avez-vous vu quelque chose de bizarre ?',a:"Hier soir, deux personnes chuchotaient au lavoir, dans la brume. Je n'ai pas osé m'approcher… Ça faisait peur !",note:'Iris : hier soir, deux personnes chuchotaient au lavoir.'}
+  ]},
+  victor:{nom:'Victor',metier:'le facteur',ic:'🧔',q:[
+    {q:'Avez-vous distribué ces lettres ?',a:"Jamais de la vie ! Elles n'ont même pas de timbre. Quelqu'un les glisse sous les portes, la nuit.",note:"Victor : les lettres n'ont pas de timbre, ce n'est pas lui qui les distribue."},
+    {q:'Où étiez-vous la nuit dernière ?',a:'Au lit ! Je me lève à 5 heures du matin pour trier le courrier.',note:'Victor dormait : il se lève à 5 heures.'},
+    {q:'Connaissez-vous Fortuné, le marchand ?',a:'Il est arrivé avant-hier avec sa charrette. Mais les lettres, elles, ont commencé il y a trois nuits !',note:'Victor : Fortuné est arrivé avant-hier, mais les lettres ont commencé il y a trois nuits.'}
+  ]},
+  anselme:{nom:'Anselme',metier:'le sonneur de cloches',ic:'👴',q:[
+    {q:'Qui a la clé du clocher ?',a:"Moi seul ! … Enfin, j'en ai perdu une la semaine dernière. Impossible de la retrouver.",note:'Anselme a perdu une clé du clocher la semaine dernière.'},
+    {q:'Pouvez-vous monter vite au clocher ?',a:'Vite ? Avec mon genou ? Il me faut dix minutes pour monter, mon petit !',note:'Anselme ne peut pas monter vite : il a mal au genou.'},
+    {q:'Avez-vous une clé des archives ?',obj:'clearch',a:"Oui, la vieille clé des archives du Grand Livre ! Plus personne ne s'en sert. Tiens, donne-la au Sage.",note:'Anselme t\'a donné la vieille clé des archives pour le Sage.'}
+  ]},
+  fortune:{nom:'Fortuné',metier:'le marchand ambulant',ic:'👨‍🦱',q:[
+    {q:'Que vendez-vous ?',a:'Des merveilles ! Regardez cette bague : elle est en or véritable !',mensonge:true,vrai:'« Bon… elle est en cuivre peint. Mais elle brille bien, non ? »',note:'Fortuné vend des objets… et il exagère un peu.'},
+    {q:'Où étiez-vous il y a trois nuits ?',a:"Sur la route, à deux jours d'ici ! Je suis arrivé à Brumeval avant-hier.",note:'Fortuné était sur la route il y a trois nuits.'},
+    {q:'Avez-vous vendu des plumes noires ?',a:'Oui ! Un gros paquet, à une dame du village. Elle voulait faire un déguisement, je crois. Je ne connais pas son nom.',note:'Fortuné a vendu un paquet de plumes noires à une dame du village.'}
+  ]},
+  melusine:{nom:'Mélusine',metier:'la couturière',ic:'👩‍🦰',q:[
+    {q:'Où étiez-vous la nuit dernière ?',a:'Je dormais, comme toutes les nuits.',mensonge:true,vrai:"« Bon, d'accord… J'étais dehors. Mais je ne dirai pas pourquoi ! »",note:'Mélusine dit qu\'elle dormait la nuit dernière.'},
+    {q:'Achetez-vous de la lavande ?',a:'De la lavande ? Jamais ! Je déteste cette odeur.',mensonge:true,vrai:"« Si… J'en achète chaque semaine pour parfumer mes tissus. »",note:'Mélusine dit qu\'elle n\'achète jamais de lavande.'},
+    {q:'Avez-vous acheté des plumes noires ?',a:'Des plumes ? Pour quoi faire ? Je couds des robes, pas des oiseaux !',mensonge:true,vrai:"« Oui… pour coudre une cape. Une commande spéciale. Je n'ai pas le droit d'en parler ! »",note:'Mélusine dit qu\'elle n\'a jamais acheté de plumes.'},
+    {q:'Votre boutique marche bien ?',a:"Très bien, merci ! Je n'ai jamais eu autant de clients.",mensonge:true,vrai:'« Non… J\'ai beaucoup de dettes. Si je ne paie pas bientôt, je vais perdre ma boutique. »',note:'Mélusine dit que sa boutique marche très bien.'}
+  ]},
+  tim:{nom:'Tim',metier:'le petit ramoneur',ic:'🧒',q:[
+    {q:'Salut Tim !',a:'Salut les enquêteurs ! Pirate et moi, on vous doit une fière chandelle. Si vous avez besoin de lui, il a un flair incroyable !',note:'Tim : son chien Pirate a un flair incroyable.'},
+    {q:'Offrir des bonbons au miel',besoin:'bonbons',a:"Miam, merci ! Je vais te dire un secret : depuis les toits, j'ai vu de la lumière chez Mélusine toutes les nuits, très tard. Elle cousait quelque chose de tout noir, avec des plumes…",note:'Tim : chaque nuit, Mélusine coud quelque chose de noir avec des plumes.'}
+  ]}
+};
+var ECOUTE = [
+  "Dans la brume, deux silhouettes chuchotent.",
+  "Une voix grave, cachée sous une capuche : « Ce soir, à minuit, monte au clocher. La carte des fondateurs est cachée dans la grande cloche. Apporte-la-moi. »",
+  "Une petite voix inquiète : « Et mes dettes ? Vous avez promis de tout payer ! »",
+  "La voix grave : « Quand j'aurai la carte, tu seras riche. Et mets ta cape, que personne ne te reconnaisse. »",
+  "Soudain, un grand battement d'ailes… Une plume noire tombe à tes pieds. Les deux silhouettes ont disparu."
+];
+var NOTE_ECOUTE = "Au lavoir : quelqu'un qui a des dettes doit prendre la carte cachée dans la cloche du clocher, ce soir à minuit, avec une cape.";
+
+var SUSPECTS2 = [
+  {id:'iris',nom:'Iris Lavandin',court:'Iris',ic:'👩‍🌾',metier:'Herboriste',pied:4,note:'Cultive des plantes et de la lavande.'},
+  {id:'victor',nom:'Victor Lettrier',court:'Victor',ic:'🧔',metier:'Facteur',pied:5,note:'Distribue le courrier tous les matins à 8 heures.'},
+  {id:'anselme',nom:'Anselme Bourdon',court:'Anselme',ic:'👴',metier:'Sonneur de cloches',pied:5,note:'Garde les clés du clocher. A très mal au genou.'},
+  {id:'fortune',nom:'Fortuné Malin',court:'Fortuné',ic:'👨‍🦱',metier:'Marchand ambulant',pied:4,note:'Voyage de village en village avec sa charrette.'},
+  {id:'melusine',nom:'Mélusine Dufil',court:'Mélusine',ic:'👩‍🦰',metier:'Couturière',pied:3,note:'Tricote et coud plus vite que son ombre.'}
+];
+var NOTE_HABITANTS2 = 'Grand Livre : taille de pied de Mélusine 3 carreaux, Iris et Fortuné 4, Victor et Anselme 5.';
+var LIVRE_OR = [
+  {id:'iris',nom:'Iris',msg:'Merci pour cette fête si jolie !',pt:'point'},
+  {id:'victor',nom:'Victor',msg:'Vive Brumeval et vive la fête !',pt:'trait'},
+  {id:'anselme',nom:'Anselme',msg:'Belle fête, bravo à tous.',pt:'point'},
+  {id:'fortune',nom:'Fortuné',msg:'Ce village est formidable !',pt:'rond'},
+  {id:'melusine',nom:'Mélusine',msg:'Quelle nuit magique, merci !',pt:'rond'},
+  {id:'gaspard',nom:'Gaspard',msg:'Merci pour ce beau soir !',pt:'point'},
+  {id:'odette',nom:'Odette',msg:'Merci pour mes chats !',pt:'coeur'},
+  {id:'tim',nom:'Tim',msg:"Merci de m'avoir pardonné !",pt:'etoile'}
+];
+var LETTRES_CORBEAU = [
+  'Le Corbeau veille. Bientôt, le secret de Brumeval sera à moi.',
+  'Vous ne me verrez pas venir. Le Corbeau voit tout.',
+  'Quand minuit sonnera, il sera trop tard.'
+];
+var MESSAGE_SECRET = 'MINUIT AU CLOCHER';
+var OU2 = [
+  {id:'clocher',ic:'⛪',n:'Le clocher'},
+  {id:'lavoir',ic:'🧺',n:'Le lavoir'},
+  {id:'mairie',ic:'🏛️',n:'La mairie'},
+  {id:'jardin',ic:'🌸',n:"Le jardin d'Iris"}
+];
+var LETTRE2 = "Chers enquêteurs, grâce à vous, la Fête des Lanternes a été magnifique ! Pour vous remercier, je vous offre 40 pièces d'or chacun. Mais un nouveau malheur frappe Brumeval. Depuis trois nuits, des lettres signées d'une plume noire sont glissées sous les portes. Ce matin, j'en ai trouvé une sous la porte de la mairie, écrite avec de drôles de symboles. Trouvez QUI glisse ces lettres… et OÙ le Corbeau va frapper !";
+var MISSIONS2 = {
+  pisteur:"Va sur le terrain : suis les traces, monte au clocher et ramasse des ingrédients pour l'Alchimiste. Attention à la ruelle sombre… et sois prêt à courir !",
+  alchimiste:"Installe ton atelier ! Fabrique des potions avec les ingrédients du Pisteur grâce à des mini-jeux, puis analyse les objets que l'équipe te confie.",
+  barde:"Interroge les villageois. Attention : cette fois, certains vont te mentir ! Et deux personnes se donnent rendez-vous en secret au lavoir…",
+  sage:"Étudie les lettres du Corbeau, compare les écritures, déchiffre la lettre secrète… et prépare le piège final."
+};
+var FIN2 = [
+  "À minuit, toute l'équipe se cache dans le clocher. Les marches grincent… Une silhouette en cape noire, couverte de plumes, s'approche de la grande cloche et ouvre la petite trappe.",
+  "« Pas si vite ! » Vous sortez de votre cachette. La silhouette sursaute, sa capuche tombe : c'est Mélusine, la couturière !",
+  "Mélusine éclate en sanglots : « Pardon ! J'avais tant de dettes… Un homme masqué m'a promis de tout payer si je glissais ses lettres sous les portes et si je lui rapportais la carte cachée dans la cloche. J'ai cousu la cape avec les plumes du marchand. Je n'ai jamais vu son visage… Il porte une bague en argent en forme de tête de corbeau. »",
+  "Dans la trappe, vous trouvez un vieux parchemin : la carte des souterrains de Brumeval. Sous le village, il y a des tunnels partout… et une grande croix rouge, juste sous la place.",
+  "Le maire décide d'aider Mélusine à payer ses dettes, à condition qu'elle aide les enquêteurs. Elle promet de vous coudre de vraies capes d'enquêteurs !",
+  "Mais au moment de partir, un grand battement d'ailes résonne en haut du clocher. Une ombre file sur les toits et disparaît dans la nuit. Sur la cloche, quelqu'un a épinglé un mot :",
+  '<span class="corbeau">« Gardez votre carte, petits enquêteurs. Sous Brumeval, je serai plus rapide que vous. Le Corbeau »</span>',
+  "Qui se cache derrière le masque ? Et quel trésor dort sous Brumeval ? La suite dans l'enquête n°3 : Les souterrains…"
+];
+
 /* ---------- État ---------- */
 function enqueteNeuve(){ return {intro:false, codes:{}, vu:{}, carnet:[], indices:0, dernierIndice:null, rate:0, resolu:false, potion:false, mesure:false, chaudron:[], lieu:null, villageois:null, page:'habitants', qui:null, ou:null}; }
-function etatNeuf(){ return {heros:null, xp:0, gagne:{}, son:true, e1:enqueteNeuve()}; }
+function enquete2Neuve(){ return {etape:'lettre', codes:{}, vu:{}, carnet:[], indices:0, dernierIndice:null, rate:0, resolu:false, lieu:null, villageois:null, page:'habitants', qui:null, ou:null, obstacles:{}, ingr:{}, potionsFaites:{}, potions:{}, profond:{}, vrai:{}, consomme:{}, pouvoirs:0, signes:{}, livreOk:false, dechiffre:false, elimines:false, longuevue:false}; }
+function etatNeuf(){ return {heros:null, xp:0, or:0, spe:null, sac:[], enquete:1, gagne:{}, son:true, e1:enqueteNeuve(), e2:null}; }
 function fusion(o){
   var n = etatNeuf();
   if(!o || typeof o !== 'object') return n;
   n.heros = o.heros || null; n.xp = +o.xp || 0; n.gagne = o.gagne || {}; n.son = o.son !== false;
   n.e1 = Object.assign(enqueteNeuve(), o.e1 || {});
+  n.or = +o.or || 0; n.spe = o.spe || null; n.sac = Array.isArray(o.sac) ? o.sac : [];
+  n.e2 = o.e2 ? Object.assign(enquete2Neuve(), o.e2) : null;
+  n.enquete = o.enquete === 2 && n.e2 ? 2 : 1;
   return n;
 }
 function charger(){ try{ var t = localStorage.getItem(CLE); if(t) return fusion(JSON.parse(t)); }catch(err){} return etatNeuf(); }
 function sauver(){ try{ localStorage.setItem(CLE, JSON.stringify(S)); }catch(err){} }
 
 var S = charger();
-var UI = {onglet:'role', modal:null, saisie:[], crea:{nom:'',genre:'m',avatar:'🦊',role:null}, retourCode:null, retourAcc:null, confirmer:false, confirmR:null, fin:null, rate:null, mauvaiseMesure:false, lectures:[]};
+var UI = {onglet:'role', modal:null, saisie:[], crea:{nom:'',genre:'m',avatar:'🦊',role:null}, retourCode:null, retourAcc:null, confirmer:false, confirmR:null, fin:null, rate:null, mauvaiseMesure:false, lectures:[], speChoix:null, decode:'', retourLivre:null, retourDecode:null};
 
 /* ---------- Règles ---------- */
 function niveau(xp){
@@ -533,8 +862,12 @@ function gagner(id, n){
   S.gagne[id] = true; S.xp += n; toast('+' + n + ' XP'); return n;
 }
 function noter(id, t, obj){
-  if(S.e1.carnet.some(function(x){ return x.id === id; })) return;
-  S.e1.carnet.push({id:id, t:t, obj:obj || null});
+  var e = enqueteCourante();
+  if(e.carnet.some(function(x){ return x.id === id; })) return;
+  var n = {id:id, t:t};
+  if(typeof obj === 'string' && OBJETS[obj]) n.obj = obj;
+  else if(obj && obj.code){ n.code = obj.code; n.pour = obj.pour; }
+  e.carnet.push(n);
 }
 
 function indice(role, e){
@@ -625,11 +958,11 @@ function codeHTML(c){
     c.map(function(s){ return '<span class="cs"><span class="ce">' + SYM[s].e + '</span><span class="cn">' + SYM[s].n + '</span></span>'; }).join('') + '</div>';
 }
 function codeCourt(c){ return c.map(function(s){ return SYM[s].e; }).join(' '); }
-function carteObjet(id, titre){
-  var o = OBJETS[id];
+function carteCode(o, titre){
   return '<div class="objet"><span class="oi">' + o.ic + '</span><div class="pile-serree"><div class="objet-titre">' + (titre || 'Objet trouvé') + ' : ' + o.nom + '</div>' +
     '<div>Donne ce code <b>' + A_QUI[o.pour] + '</b> :</div>' + codeHTML(o.code) + '</div></div>';
 }
+function carteObjet(id, titre){ return carteCode(OBJETS[id], titre); }
 function couleurMelange(arr){
   if(!arr.length) return '#2b3a5e';
   var r=0,g=0,b=0;
@@ -763,22 +1096,28 @@ function vueIntro(){
   '</div></main>';
 }
 
+function bandeauMission(){
+  if(S.enquete === 2){
+    return S.e2.resolu ? '<div class="mission resolue">✓ Enquête n°2 résolue ! L\'enquête n°3 arrive bientôt.</div>'
+      : '<div class="mission">✉️ Mission : trouver QUI glisse les lettres du Corbeau, et OÙ il va frapper.</div>';
+  }
+  if(S.e1.resolu) return '<button class="mission bouton-e2" data-act="vers-e2">▶ Nouvelle enquête : Les lettres du Corbeau</button>';
+  return '<div class="mission">🏮 Mission : trouver QUI a pris la Lanterne d\'Or, et OÙ elle est.</div>';
+}
 function vueJeu(){
-  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp);
-  var contenu = {role:vueRole, coffre:vueCoffre, carnet:vueCarnet, pouvoir:vuePouvoir}[UI.onglet] || vueRole;
+  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp), sp = speInfo();
+  if(UI.onglet === 'pouvoir') UI.onglet = 'heros';
+  var contenu = {role:(S.enquete === 2 ? vueRole2 : vueRole), coffre:vueCoffre, carnet:vueCarnet, heros:vueHeros}[UI.onglet] || vueRole;
   return '<header class="entete"><div class="wrap">' +
       '<div class="avatar" aria-hidden="true">' + h.avatar + '</div>' +
-      '<div class="heros-info"><div class="heros-nom">' + esc(h.nom) + '</div>' +
-        '<div class="heros-classe">' + r.ic + ' ' + nomRole(h) + ' · Niveau ' + niv.n + ' · ' + S.xp + ' XP</div>' +
+      '<div class="heros-info"><div class="heros-nom">' + esc(h.nom) + (S.or || S.enquete === 2 ? '<span class="bourse">💰 ' + S.or + '</span>' : '') + '</div>' +
+        '<div class="heros-classe">' + r.ic + ' ' + nomRole(h) + (sp ? ' · ' + nomSpe(sp) : '') + ' · Niveau ' + niv.n + ' · ' + S.xp + ' XP</div>' +
         '<div class="xp" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + niv.pct + '"><span style="width:' + niv.pct + '%"></span></div></div>' +
       '<button class="icone-btn" data-act="reglages" aria-label="Réglages">⚙️</button>' +
     '</div></header>' +
-    '<main><div class="wrap pile">' +
-      (S.e1.resolu ? '<div class="mission resolue">✓ Enquête résolue ! L\'enquête n°2 arrive bientôt.</div>' : '<div class="mission">🏮 Mission : trouver QUI a pris la Lanterne d\'Or, et OÙ elle est.</div>') +
-      contenu() +
-    '</div></main>' +
+    '<main><div class="wrap pile">' + bandeauMission() + contenu() + '</div></main>' +
     '<nav class="onglets" aria-label="Onglets"><div class="wrap">' +
-      ongletBtn('role', r.ic, r.onglet) + ongletBtn('coffre','🔐','Codes') + ongletBtn('carnet','📒','Carnet') + ongletBtn('pouvoir','✨','Pouvoir') +
+      ongletBtn('role', r.ic, r.onglet) + ongletBtn('coffre','🔐','Codes') + ongletBtn('carnet','📒','Carnet') + ongletBtn('heros','🛡️','Héros') +
     '</div></nav>';
 }
 function ongletBtn(id, ic, nom){
@@ -915,25 +1254,46 @@ function vueCoffre(){
   '</section>';
 }
 function vueCarnet(){
-  var e = S.e1;
+  var e = enqueteCourante();
   return '<section class="pile"><h2>Mon carnet d\'enquête</h2>' +
     (e.carnet.length
-      ? '<ol class="notes">' + e.carnet.map(function(n){ return '<li>' + n.t + (n.obj ? '<div class="note-code">Code ' + A_QUI[OBJETS[n.obj].pour] + ' : <span>' + codeCourt(OBJETS[n.obj].code) + '</span></div>' : '') + '</li>'; }).join('') + '</ol>'
+      ? '<ol class="notes">' + e.carnet.map(function(n){
+          var code = n.obj && OBJETS[n.obj] ? OBJETS[n.obj] : (n.code ? {code:n.code, pour:n.pour} : null);
+          return '<li>' + n.t + (code ? '<div class="note-code">Code ' + A_QUI[code.pour] + ' : <span>' + codeCourt(code.code) + '</span></div>' : '') + '</li>';
+        }).join('') + '</ol>'
       : '<p class="doux">Ton carnet est vide pour l\'instant. Chaque indice que tu trouves s\'écrit ici tout seul.</p>') +
-    '<p class="astuce"><b>Sur papier :</b> écrivez les 5 habitants sur une feuille, et barrez ceux qui sont innocents au fur et à mesure.</p>' +
+    '<p class="astuce"><b>Sur papier :</b> écrivez les 5 suspects sur une feuille, et barrez ceux qui sont innocents au fur et à mesure.</p>' +
     (e.resolu ? '<button class="btn" data-act="revoir-fin">Revoir la fin de l\'enquête</button>' : '') +
   '</section>';
 }
-function vuePouvoir(){
-  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp), reste = Math.max(0, usagesMax() - S.e1.indices);
-  return '<section class="pile"><h2>Mon pouvoir</h2>' +
-    '<div class="pouvoir"><span class="p-ic">✨</span><div class="pile-serree"><h3>' + r.pouvoir.n + '</h3><p>' + r.pouvoir.d + '</p><p class="doux petit">' + reste + ' utilisation' + (reste > 1 ? 's' : '') + ' restante' + (reste > 1 ? 's' : '') + ' pour cette enquête</p></div></div>' +
-    '<button class="btn" data-act="pouvoir"' + (reste && !S.e1.resolu ? '' : ' disabled') + '>Utiliser : ' + r.pouvoir.n + '</button>' +
-    (S.e1.dernierIndice ? '<div class="parchemin pile"><h3>Ce que ton pouvoir te souffle</h3><p>' + S.e1.dernierIndice + '</p>' + btnLire(S.e1.dernierIndice) + '</div>' : '') +
-    '<div class="panneau pile"><h3>Progression</h3><p>Niveau ' + niv.n + ' · ' + S.xp + ' XP · prochain niveau à ' + niv.prochain + ' XP</p>' +
-      '<div class="niveau-suivant' + (niv.n >= 2 ? ' debloque' : '') + '"><b>' + (niv.n >= 2 ? 'Débloqué' : 'Au niveau 2') + ' : ' + r.pouvoir2.n + '</b><br>' + r.pouvoir2.d +
-      (niv.n >= 2 ? '<br><span class="doux petit">À utiliser dans la prochaine enquête.</span>' : '') + '</div></div>' +
-  '</section>';
+function vueHeros(){
+  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp), e = enqueteCourante(), sp = speInfo();
+  var reste = Math.max(0, usagesMax() - e.indices);
+  var bloc = '<div class="panneau pile"><div class="titre-lieu"><span class="avatar">' + h.avatar + '</span><div class="pile-serree"><h3>' + esc(h.nom) + '</h3>' +
+    '<span class="doux">' + r.ic + ' ' + nomRole(h) + (sp ? ' · ' + sp.ic + ' ' + nomSpe(sp) : '') + '</span></div></div>' +
+    '<p>Niveau ' + niv.n + ' · ' + S.xp + ' XP · prochain niveau à ' + niv.prochain + ' XP</p>' +
+    '<div class="xp"><span style="width:' + niv.pct + '%"></span></div><p class="prix">💰 ' + S.or + ' pièces d\'or</p></div>';
+  var pouvoirSpe = '';
+  if(sp){
+    pouvoirSpe = '<div class="pouvoir"><span class="p-ic">' + sp.ic + '</span><div class="pile-serree"><p class="sur-titre">Pouvoir de ' + nomSpe(sp) + '</p><h3>' + sp.pouvoir + '</h3><p>' + sp.d + '</p>' +
+      (S.enquete === 2 ? '<p class="doux petit">' + chargesSpe() + ' utilisation' + (chargesSpe() > 1 ? 's' : '') + ' restante' + (chargesSpe() > 1 ? 's' : '') + '. Un bouton apparaît dans le jeu quand ton pouvoir peut servir.</p>' : '') +
+      (niv.n < 3 ? '<p class="doux petit">' + sp.d3 + '</p>' : '') + '</div></div>';
+  } else if(niv.n >= 2){
+    pouvoirSpe = '<div class="niveau-suivant debloque">Tu choisiras ta spécialisation au début de l\'enquête n°2.</div>';
+  } else {
+    pouvoirSpe = '<div class="niveau-suivant"><b>Au niveau 2 :</b> tu choisiras une spécialisation, avec un nouveau pouvoir.</div>';
+  }
+  var sac = '';
+  if(S.enquete === 2 || S.sac.length){
+    var lignes = S.sac.map(function(id){ var a = trouverArticle(id); if(!a) return ''; var use = !aObjet(id); return '<div class="sac-ligne' + (use ? ' use' : '') + '"><span class="oi">' + a.ic + '</span><span><b>' + a.n + '</b>' + (use ? ' (utilisé)' : '') + '<br><span class="petit doux">' + a.d + '</span></span></div>'; });
+    if(S.e2) Object.keys(S.e2.potions).forEach(function(id){ var n = S.e2.potions[id]; if(n > 0){ var P = POTIONS[id]; lignes.push('<div class="sac-ligne"><span class="oi">' + P.ic + '</span><span><b>' + P.n + '</b> × ' + n + '<br><span class="petit doux">' + P.d + '</span></span></div>'); } });
+    sac = '<div class="panneau pile"><h3>Mon sac</h3>' + (lignes.join('') ? '<div class="sac">' + lignes.join('') + '</div>' : '<p class="doux">Ton sac est vide.</p>') + '</div>';
+  }
+  return '<section class="pile"><h2>Mon héros</h2>' + bloc + pouvoirSpe +
+    '<div class="pouvoir"><span class="p-ic">✨</span><div class="pile-serree"><p class="sur-titre">Intuition</p><h3>' + r.pouvoir.n + '</h3><p>' + r.pouvoir.d + '</p><p class="doux petit">' + reste + ' utilisation' + (reste > 1 ? 's' : '') + ' restante' + (reste > 1 ? 's' : '') + ' pour cette enquête</p></div></div>' +
+    '<button class="btn" data-act="pouvoir"' + (reste && !e.resolu ? '' : ' disabled') + '>Utiliser : ' + r.pouvoir.n + '</button>' +
+    (e.dernierIndice ? '<div class="parchemin pile"><h3>Ce que ton intuition te souffle</h3><p>' + e.dernierIndice + '</p>' + btnLire(e.dernierIndice) + '</div>' : '') +
+    sac + '</section>';
 }
 
 /* Fenêtres */
@@ -979,6 +1339,7 @@ function vueModal(){
       '<a class="btn second" href="' + ACCUEIL + '">🏠 Retour à mes projets</a>' +
       '<button class="btn" data-act="fermer">Fermer</button>';
   }
+  if(!c) c = vueModal2(m);
   return '<div class="voile" data-act="voile"><div class="feuille pile" role="dialog" aria-modal="true">' + c + '</div></div>';
 }
 
@@ -1066,8 +1427,9 @@ function accuser(){
   sauver(); render();
 }
 function utiliserPouvoir(){
-  if(S.e1.indices >= usagesMax()) return;
-  S.e1.indices++; S.e1.dernierIndice = indice(S.heros.role, S.e1); son('magie');
+  var e = enqueteCourante();
+  if(e.indices >= usagesMax() || e.resolu) return;
+  e.indices++; e.dernierIndice = (S.enquete === 2 ? indice2 : indice)(S.heros.role, e); son('magie');
   sauver(); render();
 }
 function fermer(){
@@ -1125,19 +1487,720 @@ function act(a, el){
     case 'accuser-oui': accuser(); break;
     case 'sym': if(UI.saisie.length < 3){ UI.saisie.push(d.v); UI.retourCode = null; render(); } break;
     case 'effacer': UI.saisie.pop(); UI.retourCode = null; render(); break;
-    case 'valider': valider(); break;
+    case 'valider': if(S.enquete === 2) valider2(); else valider(); break;
     case 'pouvoir': utiliserPouvoir(); break;
     case 'reglages': UI.modal = {type:'reglages'}; UI.confirmR = null; render(); break;
     case 'son': S.son = !S.son; sauver(); render(); break;
     case 'confirmR': UI.confirmR = d.v; render(); break;
     case 'confirmR-non': UI.confirmR = null; render(); break;
     case 'recommencer-oui':
-      S.e1 = enqueteNeuve(); UI.modal = null; UI.confirmR = null; UI.onglet = 'role'; UI.saisie = []; UI.retourAcc = null; UI.rate = null;
+      if(S.enquete === 2){ S.e2 = enquete2Neuve(); S.e2.etape = S.spe ? 'marchand' : 'spe'; }
+      else S.e1 = enqueteNeuve();
+      UI.modal = null; UI.confirmR = null; UI.onglet = 'role'; UI.saisie = []; UI.retourAcc = null; UI.rate = null;
       sauver(); haut(); render(); break;
     case 'heros-oui':
       S = etatNeuf(); UI.modal = null; UI.confirmR = null; UI.onglet = 'role'; UI.saisie = []; UI.crea = {nom:'',genre:'m',avatar:'🦊',role:null};
       sauver(); haut(); render(); break;
-    case 'revoir-fin': UI.fin = null; UI.modal = {type:'fin'}; render(); break;
+    case 'revoir-fin': UI.fin = null; UI.modal = {type:(S.enquete === 2 ? 'fin2' : 'fin')}; render(); break;
+    default: if(S.e2 || a === 'vers-e2') act2(a, el);
+  }
+}
+
+
+/* ================= ENQUÊTE N°2 : règles ================= */
+function enqueteCourante(){ return S.enquete === 2 && S.e2 ? S.e2 : S.e1; }
+function speInfo(){
+  if(!S.spe || !S.heros) return null;
+  var l = SPES[S.heros.role] || [];
+  for(var i=0;i<l.length;i++){ if(l[i].id === S.spe) return l[i]; }
+  return null;
+}
+function nomSpe(sp){ return S.heros.genre === 'f' ? sp.f : sp.m; }
+function trouverArticle(id){
+  var r = null;
+  Object.keys(MARCHAND).forEach(function(k){ MARCHAND[k].forEach(function(a){ if(a.id === id) r = a; }); });
+  return r;
+}
+function aObjet(id){
+  var a = trouverArticle(id);
+  return S.sac.indexOf(id) >= 0 && !(a && a.usage && S.e2 && S.e2.consomme[id]);
+}
+function chargesSpe(){
+  if(!S.spe || !S.e2) return 0;
+  return Math.max(0, (niveau(S.xp).n >= 3 ? 3 : 2) - S.e2.pouvoirs);
+}
+function lieuBloque2(id){
+  var l = LIEUX2[id], e = S.e2;
+  if(l.obstacle && !e.obstacles[l.obstacle]) return l.obstacle;
+  if(l.poursuite && !e.obstacles.poursuite) return 'poursuite';
+  return null;
+}
+function pointsVisibles2(id){
+  return LIEUX2[id].points.filter(function(p){
+    if(p.besoin && !aObjet(p.besoin)) return false;
+    if(p.id === 'pirate' && !S.e2.obstacles.poursuite) return false;
+    return true;
+  });
+}
+function resultatEscalier(){ return S.e2.obstacles.poursuite === 'echec' ? ESCALIER.rate : ESCALIER.reussi; }
+function questionsDispo2(id){
+  return VILLAGEOIS2[id].q.map(function(q,i){ return Object.assign({k:'b2.'+id+'.'+i}, q); })
+    .filter(function(q){ return !q.besoin || aObjet(q.besoin); });
+}
+function infoCode(o, titre){ return {nom:o.nom || o.n, ic:o.ic, code:o.code, pour:o.pour}; }
+
+function indice2(role, e){
+  var v = e.vu, o = e.obstacles;
+  if(role === 'pisteur'){
+    if(!v['p2.mairie.porte']) return 'Commence par la porte de la mairie : des traces partent de là.';
+    if(!o.sombre) return "La ruelle des Brumes est trop sombre. Il te faut de la lumière : une lanterne, la Vision de nuit… ou une potion de lumière de l'Alchimiste. Elle a besoin de champignons lumineux : ils sont dans la forêt !";
+    if(!v['p2.ruelle.mur']) return 'Fouille la ruelle des Brumes : quelque chose est coincé dans le vieux mur.';
+    if(!o.poursuite) return "Monte au clocher, et sois prêt à courir très vite ! Sans bottes ni pouvoir, demande d'abord une potion de rapidité à l'Alchimiste (avec le trèfle de la forêt).";
+    if(!(v['p2.lavoir.brume'] && v['p2.jardin.pensees'] && v['p2.foret.trefle'] && v['p2.foret.champignons'])) return "L'Alchimiste a besoin d'ingrédients : la brume du lavoir, les pensées du jardin d'Iris, les champignons et le trèfle de la forêt.";
+    return 'Raconte au Sage tout ce que tu as vu : la taille des traces, et ce qui s\'est passé au clocher.';
+  }
+  if(role === 'alchimiste'){
+    if(!Object.keys(e.ingr).length && !e.codes.lettre) return "Demande au Pisteur de te rapporter des ingrédients, et au Sage le code de la lettre du Corbeau pour l'analyser.";
+    if(!e.codes.lettre) return 'Le Sage a les lettres du Corbeau. Demande-lui le code pour en analyser une.';
+    if(!e.potionsFaites.invisibilite && !e.potionsFaites.lumiere && !e.potionsFaites.rapidite) return "Demande à l'équipe qui a besoin d'une potion : le Pisteur pour voir dans le noir ou courir vite, le Barde pour écouter en cachette.";
+    if(!e.codes.craie) return 'Le Pisteur va trouver un objet dans la ruelle des Brumes. Demande-lui le code !';
+    if(!e.codes.de && !e.codes.plume2) return 'Au clocher, le Pisteur va récupérer un objet de la silhouette. Il faudra l\'analyser !';
+    return 'Raconte tes analyses : la craie, la lavande… et ce que tu as découvert sur l\'objet du clocher.';
+  }
+  if(role === 'barde'){
+    if(!o.ecoute) return "Iris a vu deux personnes parler au lavoir. Pour les écouter sans être vu : un cornet acoustique, le pouvoir Pas de velours, ou une potion d'invisibilité de l'Alchimiste.";
+    if(!v['b2.anselme.2']) return 'Le Sage a besoin d\'une clé pour ouvrir ses archives. Demande à Anselme, le sonneur de cloches.';
+    if(!v['b2.iris.1'] || !v['b2.melusine.1']) return 'Demande à Iris et à Mélusine qui achète de la lavande. Compare bien leurs réponses !';
+    return 'Raconte tout au Sage : qui ment, qui a des dettes, et ce que tu as entendu au lavoir.';
+  }
+  if(!e.livreOk) return 'Compare les lettres du Corbeau avec le Livre d\'or. Regarde bien les points sur les i !';
+  if(!o.archives) return 'Pour lire la lettre secrète, il faut ouvrir les archives : la Mémoire des anciens, la clé des archives… ou demande au Barde d\'aller voir Anselme, le sonneur.';
+  if(!e.dechiffre) return "Avec l'alphabet secret, décode la lettre symbole par symbole. Écris les lettres une par une.";
+  if(e.rate >= 2) return 'Le coupable fait des ronds sur les i, a de petits pieds de 3 carreaux, coud très bien… et a menti au Barde.';
+  return 'Pour le piège : QUI fait des ronds sur les i, a de petits pieds et coud beaucoup ? Écoute aussi ce que le Barde a appris. OÙ : relis la lettre secrète.';
+}
+
+function finir2(){
+  var e = S.e2;
+  if(e.resolu) return null;
+  e.resolu = true;
+  var nAvant = niveau(S.xp).n, gain = 0, or = 0;
+  if(!S.gagne['fin-e2']){
+    S.gagne['fin-e2'] = true;
+    gain = S.heros.role === 'sage' ? Math.max(50, 100 - 10*(e.rate||0)) : 80;
+    or = S.heros.role === 'sage' ? Math.max(15, 30 - 5*(e.rate||0)) : 30;
+    S.xp += gain; S.or += or;
+    if(S.xp < SEUILS[2]){ gain += SEUILS[2] - S.xp; S.xp = SEUILS[2]; }
+  }
+  var nApres = niveau(S.xp).n;
+  return {gain:gain, or:or, monte:nApres > nAvant, n:nApres};
+}
+
+/* ================= ENQUÊTE N°2 : dessins ================= */
+function ecrire(txt, pt){
+  return esc(txt).replace(/i/g, '<span class="i-sans">ı<span class="pt pt-' + pt + '"></span></span>');
+}
+function glyphe(l, taille){
+  var i = l.charCodeAt(0) - 65, s = taille || 34, p = '', point = false, cx = 15, cy = 15;
+  if(i < 18){
+    if(i >= 9){ point = true; i -= 9; }
+    var r = Math.floor(i/3), c = i % 3;
+    if(r > 0) p += 'M4 4H26';
+    if(r < 2) p += 'M4 26H26';
+    if(c > 0) p += 'M4 4V26';
+    if(c < 2) p += 'M26 4V26';
+  } else {
+    i -= 18;
+    if(i >= 4){ point = true; i -= 4; }
+    p = ['M4 4L15 15L26 4','M4 4L15 15L4 26','M26 4L15 15L26 26','M4 26L15 15L26 26'][i];
+    cx = [15,8,22,15][i]; cy = [8,15,15,22][i];
+  }
+  return '<svg class="glyphe" viewBox="0 0 30 30" width="' + s + '" height="' + s + '" aria-hidden="true"><path d="' + p + '"/>' + (point ? '<circle cx="' + cx + '" cy="' + cy + '" r="2.8"/>' : '') + '</svg>';
+}
+function messageChiffre(){
+  return '<div class="message-chiffre" role="img" aria-label="Une lettre écrite avec des symboles secrets">' +
+    MESSAGE_SECRET.split(' ').map(function(mot){ return '<span class="mot">' + mot.split('').map(function(l){ return glyphe(l, 36); }).join('') + '</span>'; }).join('') + '</div>';
+}
+function cleAlphabet(){
+  var h = '';
+  for(var i=0;i<26;i++){ var l = String.fromCharCode(65+i); h += '<div>' + glyphe(l, 30) + '<span>' + l + '</span></div>'; }
+  return '<div class="cle-alpha">' + h + '</div>';
+}
+function svgVillage2(){
+  var arbres = '';
+  for(var i=0;i<12;i++){
+    var x = 8 + i*12.5, y = 24 + (i%2)*16 + (i*7)%6 - (i > 8 ? 0 : 0);
+    if(x > 150) continue;
+    arbres += '<polygon class="' + (i%3 ? 'sapin' : 'sapin-2') + '" points="' + x + ',' + (y-20) + ' ' + (x-10) + ',' + (y+6) + ' ' + (x+10) + ',' + (y+6) + '"/>';
+  }
+  var hub = [166,200], routes = '';
+  Object.keys(LIEUX2).forEach(function(id){
+    var l = LIEUX2[id], x = l.x*3.6, y = l.y*3.0, mx = (hub[0]+x)/2 + (y-hub[1])*0.15, my = (hub[1]+y)/2 - (x-hub[0])*0.15;
+    routes += '<path class="route" d="M' + hub[0] + ' ' + hub[1] + ' Q ' + mx.toFixed(0) + ' ' + my.toFixed(0) + ' ' + x.toFixed(0) + ' ' + y.toFixed(0) + '"/>';
+  });
+  return '<svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+    '<rect class="sol" width="360" height="300"/>' +
+    '<path class="lisiere" d="M0 0H168L142 66L70 98L0 100Z"/>' + arbres +
+    '<circle class="astre" cx="332" cy="22" r="10"/>' + routes +
+    '<path class="riviere" d="M-10 274 C 80 252, 120 302, 200 290 S 300 262, 370 282"/>' +
+    '<path class="riviere-reflet" d="M-10 274 C 80 252, 120 302, 200 290 S 300 262, 370 282"/>' +
+    maison(40,206,1) + maison(236,236,.9) + maison(326,236,.9) + maison(214,108,.8) + maison(330,118,.8) + maison(96,236,.85) +
+    '</svg>';
+}
+
+/* ================= ENQUÊTE N°2 : préparation ================= */
+function vuePrep2(){
+  var e = S.e2, h = S.heros, r = ROLES[h.role];
+  var titre = function(sur, t){ return '<div class="titre-jeu">' + svgLanterne() + '<div class="pile-serree"><p class="sur-titre">' + sur + '</p><h1>' + t + '</h1></div></div>'; };
+  if(e.etape === 'lettre'){
+    return '<main class="accueil"><div class="wrap pile">' + titre('Enquête n°2', 'Les lettres du Corbeau') +
+      '<div class="parchemin pile"><p class="lettre-entete">Brumeval, trois jours après la Fête des Lanternes</p><p>' + LETTRE2 + '</p><p class="signature">Monsieur Grosbec, maire de Brumeval</p>' + btnLire(LETTRE2) + '</div>' +
+      '<section class="panneau pile"><h3>' + r.ic + ' Ta mission : ' + nomRole(h) + '</h3><p>' + MISSIONS2[h.role] + '</p></section>' +
+      '<section class="panneau pile"><h3>Nouveau dans cette enquête</h3><ul class="regles">' +
+        '<li>Tu choisis une spécialisation, avec un vrai pouvoir.</li>' +
+        '<li>Le marchand Fortuné vend des objets utiles. Choisis bien : il repart quand l\'enquête commence.</li>' +
+        '<li>Des obstacles bloquent la route. Chacun a trois solutions : un objet, un pouvoir, ou une potion de l\'Alchimiste.</li>' +
+        '<li>Attention : certains villageois vont mentir !</li></ul></section>' +
+      '<button class="btn grand" data-act="lettre2-ok">Recevoir mes 40 pièces d\'or</button></div></main>';
+  }
+  if(e.etape === 'spe'){
+    var choix = UI.speChoix || S.spe;
+    return '<main class="accueil"><div class="wrap pile">' + titre('Niveau ' + niveau(S.xp).n, 'Choisis ta spécialisation') +
+      '<p class="doux">Ta spécialisation te donne un nouveau pouvoir, utilisable 2 fois par enquête, puis 3 fois au niveau 3. C\'est un choix pour toute l\'aventure !</p>' +
+      '<div class="roles">' + SPES[h.role].map(function(sp){
+        return '<button class="role" data-act="spe-choix" data-v="' + sp.id + '" aria-pressed="' + (choix === sp.id) + '"><span class="ri">' + sp.ic + '</span><span class="pile-serree"><b>' + nomSpe(sp) + '</b>' +
+          '<span><b class="nom-pouvoir">Pouvoir : ' + sp.pouvoir + '</b></span><span>' + sp.d + '</span><span class="tag">' + sp.d3 + '</span></span></button>';
+      }).join('') + '</div>' +
+      '<button class="btn grand" data-act="spe-ok"' + (choix ? '' : ' disabled') + '>' + (choix ? 'Je choisis : ' + nomSpe(SPES[h.role].filter(function(x){ return x.id === choix; })[0]) : 'Choisis une spécialisation') + '</button></div></main>';
+  }
+  var sp = speInfo(), eq = sp ? trouverArticle(EQUIV[sp.id]) : null;
+  var discours = '« Bienvenue, ' + esc(h.nom) + ' ! J\'ai des merveilles pour toi. Choisis bien : ma charrette repart dès que l\'enquête commence ! »';
+  return '<main class="accueil"><div class="wrap pile">' + titre('Enquête n°2 · Préparation', 'La charrette de Fortuné') +
+    '<div class="parchemin pile"><p>' + discours + '</p>' + btnLire(discours) + '</div>' +
+    '<div class="bourse-grande">💰 ' + S.or + ' pièces d\'or</div>' +
+    '<div class="pile">' + MARCHAND[h.role].map(function(a){
+      var possede = S.sac.indexOf(a.id) >= 0;
+      return '<div class="article' + (possede ? ' possede' : '') + '"><span class="oi">' + a.ic + '</span><div class="pile-serree" style="flex:1"><b>' + a.n + '</b><span class="petit">' + a.d + '</span><span class="prix">' + a.prix + ' pièces</span></div>' +
+        (possede ? '<button class="btn second petit" data-act="rendre" data-id="' + a.id + '">Rendre</button>'
+                 : '<button class="btn petit" data-act="acheter" data-id="' + a.id + '"' + (S.or < a.prix ? ' disabled' : '') + '>Acheter</button>') + '</div>';
+    }).join('') + '</div>' +
+    (eq ? '<p class="conseil">Ton pouvoir <b>' + sp.pouvoir + '</b> fait déjà le même travail que : ' + eq.n + '. Mieux vaut acheter ce que ton pouvoir ne sait pas faire !</p>' : '') +
+    (h.role !== 'alchimiste' ? '<p class="conseil">Ce qui te manque, l\'Alchimiste pourra peut-être le fabriquer en potion. Parlez-vous avant d\'acheter !</p>' : '<p class="conseil">Tu pourras fabriquer des potions pour toute l\'équipe. Demande aux autres ce qu\'ils achètent !</p>') +
+    '<div class="rangee"><button class="btn second" data-act="spe-changer">← Changer de spécialisation</button><button class="btn grand" data-act="commencer2">Commencer l\'enquête</button></div>' +
+  '</div></main>';
+}
+
+/* ================= ENQUÊTE N°2 : vues des rôles ================= */
+function vueRole2(){
+  return {pisteur:vuePisteur2, alchimiste:vueAlchimiste2, barde:vueBarde2, sage:vueSage2}[S.heros.role]();
+}
+function carteObstacle(id){
+  var o = OBSTACLES[id], e = S.e2, opts = [];
+  if(o.objet && aObjet(o.objet)){ var a = trouverArticle(o.objet); opts.push('<button class="btn" data-act="obstacle" data-id="' + id + '" data-via="objet">' + a.ic + ' Utiliser : ' + a.n + '</button>'); }
+  var sp = speInfo();
+  if(o.spe && sp && sp.id === o.spe && chargesSpe() > 0) opts.push('<button class="btn" data-act="obstacle" data-id="' + id + '" data-via="spe">' + sp.ic + ' Pouvoir : ' + sp.pouvoir + ' (' + chargesSpe() + ')</button>');
+  if(o.potion && (e.potions[o.potion] || 0) > 0){ var P = POTIONS[o.potion]; opts.push('<button class="btn" data-act="obstacle" data-id="' + id + '" data-via="potion">' + P.ic + ' Boire : ' + P.n + '</button>'); }
+  if(o.echec) opts.push('<button class="btn second" data-act="obstacle" data-id="' + id + '" data-via="echec">🏃 Courir quand même</button>');
+  return '<div class="obstacle pile"><p class="sur-titre">Obstacle</p><h3>' + o.titre + '</h3><p>' + o.t + '</p>' + btnLire(o.t) +
+    (opts.length ? '<div class="pile-serree">' + opts.join('') + '</div>' : '') +
+    '<p class="doux petit">' + o.aide + '</p></div>';
+}
+
+/* Pisteur */
+function vuePisteur2(){
+  var e = S.e2;
+  if(e.lieu) return vueLieu2(e.lieu);
+  return '<section class="pile"><div class="pile-serree"><h2>Brumeval, la nuit des lettres</h2><p class="doux">Touche un lieu pour l\'explorer. Le ❗ signale un obstacle.</p></div>' +
+    '<div class="carte">' + svgVillage2() + Object.keys(LIEUX2).map(function(id){
+      var l = LIEUX2[id], bloque = lieuBloque2(id);
+      var fini = !bloque && pointsVisibles2(id).every(function(p){ return e.vu['p2.'+id+'.'+p.id]; });
+      return '<button class="pin" style="left:' + l.x + '%;top:' + l.y + '%" data-act="lieu2" data-id="' + id + '" aria-label="' + l.nom + '">' +
+        '<span class="pin-rond">' + l.ic + (bloque ? '<span class="badge alerte">❗</span>' : (fini ? '<span class="badge ok">✓</span>' : '')) + '</span><span class="pin-nom">' + l.court + '</span></button>';
+    }).join('') + '</div></section>';
+}
+function vueLieu2(id){
+  var l = LIEUX2[id], bloque = lieuBloque2(id), e = S.e2;
+  var corps;
+  if(bloque === 'sombre') corps = carteObstacle('sombre');
+  else if(bloque === 'poursuite') corps = '<div class="parchemin pile"><p>' + l.intro + '</p></div>' + carteObstacle('poursuite');
+  else corps = '<div class="parchemin pile"><p>' + l.intro + '</p>' + btnLire(l.intro) + '</div>' +
+    '<h3>Fouiller</h3><div class="tuiles">' + pointsVisibles2(id).map(function(p){
+      return '<button class="tuile' + (e.vu['p2.'+id+'.'+p.id] ? ' vu' : '') + '" data-act="point2" data-l="' + id + '" data-p="' + p.id + '"><span class="ti">' + p.ic + '</span><span>' + p.nom + '</span></button>';
+    }).join('') + '</div>';
+  return '<section class="pile"><button class="retour" data-act="carte2">← Retour à la carte</button>' +
+    '<div class="titre-lieu"><span class="gros-ic">' + l.ic + '</span><h2>' + l.nom + '</h2></div>' + corps + '</section>';
+}
+function pointInfo2(lid, pid){
+  var p = LIEUX2[lid].points.filter(function(x){ return x.id === pid; })[0];
+  if(lid === 'clocher' && pid === 'escalier'){ var r = resultatEscalier(); return {ic:p.ic, nom:p.nom, t:r.t, note:r.note, obj:r.obj}; }
+  return p;
+}
+
+/* Alchimiste */
+function vueAlchimiste2(){
+  var e = S.e2;
+  var materiel = ['<span class="puce-ingr">' + (aObjet('chaudron') ? '🥘 Chaudron de cuivre' : '⚫ Vieux chaudron') + '</span>'];
+  if(S.sac.indexOf('loupe') >= 0) materiel.push('<span class="puce-ingr">🔍 Loupe dorée</span>');
+  if(S.sac.indexOf('poussiere') >= 0) materiel.push('<span class="puce-ingr">' + (e.consomme.poussiere ? '💫 Poussière de fée (utilisée)' : '💫 Poussière de fée') + '</span>');
+  var ingr = Object.keys(INGR).map(function(id){ var I = INGR[id]; return '<span class="puce-ingr' + (e.ingr[id] ? ' ok' : ' manque') + '">' + I.ic + ' ' + I.n + (e.ingr[id] ? ' ✓' : '') + '</span>'; }).join('');
+  var faites = ['lettre','craie','de','plume2'].filter(function(id){ return e.codes[id]; });
+  return '<section class="pile"><h2>L\'atelier de l\'Alchimiste</h2>' +
+    '<div class="panneau pile"><h3>Mon matériel</h3><div class="rangee">' + materiel.join('') + '</div></div>' +
+    '<div class="panneau pile"><h3>Mes ingrédients</h3><p class="doux petit">Le Pisteur les trouve sur le terrain et te donne leur code.</p><div class="rangee">' + ingr + '</div></div>' +
+    '<div class="panneau pile"><h3>Le grimoire des potions</h3>' + Object.keys(POTIONS).map(potionCarte).join('') + '</div>' +
+    '<div class="panneau pile"><h3>Les analyses</h3>' + (faites.length
+      ? '<div class="tuiles">' + faites.map(function(id){ return '<button class="tuile vu" data-act="voir-analyse2" data-id="' + id + '"><span class="ti">' + OBJETS2[id].ic + '</span><span>' + OBJETS2[id].nom + (e.profond[id] ? ' 🔍' : '') + '</span></button>'; }).join('') + '</div>'
+      : '<p class="doux">Pas encore d\'objet à analyser. Quand un équipier trouve un objet pour toi, il te donne un code de 3 symboles : tape-le dans l\'onglet Codes.</p>') + '</div>' +
+  '</section>';
+}
+function potionCarte(id){
+  var P = POTIONS[id], I = INGR[P.ingr], e = S.e2, bas;
+  if(e.potionsFaites[id]) bas = carteCode(infoCode({n:P.n, ic:P.ic, code:P.code, pour:P.pour}), 'Potion prête');
+  else {
+    var btns = [];
+    if(e.ingr[P.ingr]) btns.push('<button class="btn petit" data-act="brasser" data-id="' + id + '" data-via="ingr">Fabriquer</button>');
+    else {
+      var sp = speInfo();
+      if(sp && sp.id === 'potionniste' && chargesSpe() > 0) btns.push('<button class="btn petit" data-act="brasser" data-id="' + id + '" data-via="magie">🧪 Ingrédient magique (' + chargesSpe() + ')</button>');
+      if(aObjet('poussiere')) btns.push('<button class="btn petit" data-act="brasser" data-id="' + id + '" data-via="poussiere">💫 Poussière de fée</button>');
+      if(!btns.length) btns.push('<span class="doux petit">Il te manque : ' + I.n + '. Le Pisteur peut le trouver !</span>');
+    }
+    bas = '<div class="rangee">' + btns.join('') + '</div>';
+  }
+  return '<div class="recette-potion"><span class="gros-ic">' + P.ic + '</span><div class="pile-serree" style="flex:1"><b>' + P.n + '</b>' +
+    '<span class="petit">' + P.d + ' Pour ' + LE_ROLE[P.pour] + '.</span>' +
+    '<span class="petit doux">Ingrédient : ' + I.ic + ' ' + I.n + (e.ingr[P.ingr] ? ' ✓' : '') + ' · Mini-jeu : ' + NOM_JEU[P.jeu] + '</span>' + bas + '</div></div>';
+}
+
+/* Barde */
+function vueBarde2(){
+  var e = S.e2;
+  if(e.villageois) return vueDialogue2(e.villageois);
+  var ecoute = e.obstacles.ecoute
+    ? '<div class="parchemin pile"><h3>Au lavoir, en cachette</h3>' + ECOUTE.map(function(p){ return '<p>' + p + '</p>'; }).join('') + btnLire(ECOUTE.join(' ')) + '</div>'
+    : carteObstacle('ecoute');
+  return '<section class="pile"><div class="pile-serree"><h2>Les villageois</h2><p class="doux">Touche un habitant pour lui parler. Attention : certains mentent !</p></div>' +
+    (aObjet('clochette') ? '<p class="conseil">🛎️ Ta clochette de vérité est prête : elle tintera si quelqu\'un te ment.</p>' : '') +
+    '<div class="tuiles">' + Object.keys(VILLAGEOIS2).map(function(id){
+      var v = VILLAGEOIS2[id], fini = questionsDispo2(id).every(function(q){ return e.vu[q.k]; });
+      return '<button class="tuile portrait' + (fini ? ' vu' : '') + '" data-act="villageois2" data-id="' + id + '"><span class="ti">' + v.ic + '</span><span class="pile-serree"><b>' + v.nom + '</b><span class="doux petit">' + v.metier + '</span></span></button>';
+    }).join('') + '</div>' + ecoute + '</section>';
+}
+function vueDialogue2(id){
+  var v = VILLAGEOIS2[id], e = S.e2, sp = speInfo(), clochette = aObjet('clochette');
+  return '<section class="pile"><button class="retour" data-act="villageois2-retour">← Tous les villageois</button>' +
+    '<div class="titre-lieu"><span class="gros-ic">' + v.ic + '</span><div class="pile-serree"><h2>' + v.nom + '</h2><p class="doux">' + v.metier + '</p></div></div>' +
+    '<div class="pile">' + questionsDispo2(id).map(function(q){
+      if(!e.vu[q.k]) return '<button class="q-btn' + (q.besoin ? ' special' : '') + '" data-act="question2" data-k="' + q.k + '">' + q.q + '</button>';
+      var detecte = clochette ? (q.mensonge ? '<p class="mensonge">🛎️ Ta clochette tinte : c\'est un mensonge !</p>' : '<p class="silence">🛎️ La clochette reste silencieuse.</p>') : '';
+      var verite = e.vrai[q.k] ? (q.mensonge ? '<p class="verite">Tu insistes… ' + v.nom + ' finit par avouer : ' + q.vrai + '</p>' : '<p class="verite">' + v.nom + ' disait déjà la vérité.</p>') : '';
+      var forcer = [];
+      if(!e.vrai[q.k]){
+        if(sp && sp.id === 'conteur' && chargesSpe() > 0) forcer.push('<button class="btn second petit" data-act="verite" data-k="' + q.k + '" data-via="spe">🗣️ Parole de vérité (' + chargesSpe() + ')</button>');
+        if((e.potions.verite || 0) > 0) forcer.push('<button class="btn second petit" data-act="verite" data-k="' + q.k + '" data-via="potion">💬 Potion de vérité</button>');
+      }
+      return '<div><div class="question-posee">Toi : ' + q.q + '</div><div class="bulle pile-serree"><p>' + q.a + '</p>' + detecte + verite +
+        (forcer.length ? '<div class="rangee">' + forcer.join('') + '</div>' : '') + btnLire(q.a) +
+        (q.obj ? carteCode(infoCode(OBJETS2[q.obj]), 'Objet reçu') : '') + '</div></div>';
+    }).join('') + '</div></section>';
+}
+
+/* Sage */
+function vueSage2(){
+  var e = S.e2, pg = e.page || 'habitants';
+  var pages = [['habitants','Habitants'],['livre','Livre d\'or'],['lettres','Lettres'],['archives','Archives'],['piege','Le piège']];
+  var rendu = {habitants:page2Habitants, livre:page2Livre, lettres:page2Lettres, archives:page2Archives, piege:page2Piege}[pg]();
+  var lv = '';
+  if(aObjet('longuevue')){
+    var tlv = "Du haut de la mairie, tout le village est noir… sauf une fenêtre : celle de l'atelier de couture. Une silhouette y coud une grande cape noire couverte de plumes !";
+    lv = e.longuevue ? '<div class="parchemin pile"><h3>🔭 Avec la longue-vue</h3><p>' + tlv + '</p>' + btnLire(tlv) + '</div>'
+      : '<button class="btn second" data-act="longuevue">🔭 Observer le village avec la longue-vue</button>';
+  }
+  return '<section class="pile"><h2>Le Grand Livre de Brumeval</h2>' + lv +
+    '<div class="segments" role="tablist">' + pages.map(function(p){ return '<button role="tab" aria-selected="' + (pg === p[0]) + '" data-act="page2" data-id="' + p[0] + '">' + p[1] + '</button>'; }).join('') + '</div>' +
+    rendu + '</section>';
+}
+function page2Habitants(){
+  var texte = 'Les habitants. ' + SUSPECTS2.map(function(h){ return h.nom + ', ' + h.metier + '. Taille de pied : ' + h.pied + ' carreaux. ' + h.note; }).join(' ');
+  return '<div class="parchemin pile"><p>Les habitants dont on parle dans cette enquête. La taille de pied se mesure en carreaux.</p>' +
+    SUSPECTS2.map(function(h){
+      return '<div class="habitant"><span class="hic">' + h.ic + '</span><div class="pile-serree"><div><b>' + h.nom + '</b> · ' + h.metier + '</div>' +
+        '<div>Taille de pied :<span class="carreaux" aria-hidden="true">' + new Array(h.pied+1).join('<i></i>') + '</span><b>' + h.pied + ' carreaux</b></div>' +
+        '<div class="doux petit">' + h.note + '</div></div></div>';
+    }).join('') + '<p class="doux petit">Gaspard, Basile, Odette et Tim sont dans le Grand Livre depuis l\'enquête n°1.</p>' + btnLire(texte) + '</div>';
+}
+function page2Livre(){
+  var e = S.e2;
+  var lignes = LIVRE_OR.map(function(s){
+    return '<button class="signature-ligne" data-act="signe" data-id="' + s.id + '" aria-pressed="' + !!e.signes[s.id] + '"' + (e.livreOk ? ' disabled' : '') + '>' +
+      '<span class="ecriture">' + ecrire(s.msg, s.pt) + '</span><span class="ecriture signe">' + ecrire(s.nom, s.pt) + '</span></button>';
+  }).join('');
+  return '<div class="parchemin pile"><h3>Une lettre du Corbeau</h3><p class="ecriture">' + ecrire(LETTRES_CORBEAU[0], 'rond') + '</p>' +
+    '<p class="doux petit">Regarde bien comment le Corbeau dessine les points sur les i.</p></div>' +
+    '<div class="parchemin pile"><h3>Le Livre d\'or de la fête</h3><p>Pendant la Fête des Lanternes, chaque habitant a écrit un petit mot.</p>' + lignes + '</div>' +
+    (e.livreOk
+      ? '<div class="parchemin pile"><p class="verite">Bien vu ! Seuls Mélusine et Fortuné font des petits ronds sur les i, comme le Corbeau. Anselme n\'a écrit aucun i : impossible de savoir pour lui.</p></div>'
+      : '<p><b>Touche les habitants qui dessinent les points sur les i comme le Corbeau, puis vérifie.</b></p><button class="btn" data-act="verifier-i">Vérifier</button>' +
+        (UI.retourLivre ? '<p class="retour-code">' + UI.retourLivre + '</p>' : ''));
+}
+function page2Lettres(){
+  return '<div class="parchemin pile"><h3>Les trois premières lettres</h3>' + LETTRES_CORBEAU.map(function(t){ return '<p class="ecriture">' + ecrire(t, 'rond') + '</p>'; }).join('') +
+    '<p class="doux petit">Toutes sont signées d\'une plume noire.</p></div>' +
+    '<div class="parchemin pile"><h3>La quatrième lettre</h3><p>Trouvée ce matin sous la porte de la mairie, écrite avec des symboles :</p>' + messageChiffre() +
+    '<p class="doux petit">Pour la lire, il faut l\'alphabet secret des fondateurs, rangé dans les archives.</p></div>' +
+    carteCode(infoCode(OBJETS2.lettre), 'Pour analyser le papier');
+}
+function page2Archives(){
+  var e = S.e2;
+  if(!e.obstacles.archives) return carteObstacle('archives');
+  return '<div class="parchemin pile"><h3>L\'alphabet secret des fondateurs</h3><p>Chaque lettre a son symbole. Les symboles avec un point sont différents de ceux sans point !</p>' + cleAlphabet() + '</div>' +
+    '<div class="parchemin pile"><h3>Déchiffrer la quatrième lettre</h3>' + messageChiffre() +
+    (e.dechiffre
+      ? '<p class="verite">Le message dit : <b>MINUIT AU CLOCHER</b>.</p>'
+      : '<label class="etiquette-sombre" for="decode">Écris le message en lettres :</label><input id="decode" class="champ" autocomplete="off" value="' + esc(UI.decode || '') + '" placeholder="Le message secret…"><button class="btn" data-act="dechiffrer">Vérifier</button>' +
+        (UI.retourDecode ? '<p class="rate">' + UI.retourDecode + '</p>' : '')) + '</div>';
+}
+function page2Piege(){
+  var e = S.e2;
+  if(e.resolu){
+    return '<div class="parchemin pile"><h3>Enquête résolue !</h3><p>Le piège a marché : c\'était Mélusine, au clocher, à minuit.</p>' +
+      '<p>Si ce n\'est pas déjà fait, dites à toute l\'équipe d\'entrer ce code dans leur coffre :</p><div class="objet">' + codeHTML(FINAL2) + '</div><button class="btn" data-act="revoir-fin">Revoir la fin</button></div>';
+  }
+  var sp = speInfo(), elim = [];
+  if(!e.elimines){
+    if(sp && sp.id === 'stratege' && chargesSpe() > 0) elim.push('<button class="btn second" data-act="eliminer" data-via="spe">♟️ Coup d\'œil (' + chargesSpe() + ')</button>');
+    if(aObjet('boule')) elim.push('<button class="btn second" data-act="eliminer" data-via="objet">🔮 Boule de cristal</button>');
+  }
+  var innocents = e.elimines ? ['iris','victor'] : [];
+  return '<div class="pile"><p>Quand toute l\'équipe est d\'accord, choisis QUI glisse les lettres du Corbeau, et OÙ tendre le piège ce soir.</p>' +
+    (elim.length ? '<div class="rangee">' + elim.join('') + '</div>' : '') +
+    (e.elimines ? '<p class="conseil">Iris et Victor sont innocents.</p>' : '') +
+    '<h3>Qui ?</h3><div class="choix">' + SUSPECTS2.map(function(h){
+      var inn = innocents.indexOf(h.id) >= 0;
+      return '<button class="' + (inn ? 'innocent' : '') + '" aria-pressed="' + (e.qui === h.id) + '" data-act="qui2" data-id="' + h.id + '"' + (inn ? ' disabled' : '') + '><span class="ci">' + h.ic + '</span>' + h.court + '</button>';
+    }).join('') + '</div>' +
+    '<h3>Où ?</h3><div class="choix">' + OU2.map(function(o){ return '<button aria-pressed="' + (e.ou === o.id) + '" data-act="ou2" data-id="' + o.id + '"><span class="ci">' + o.ic + '</span>' + o.n + '</button>'; }).join('') + '</div>' +
+    (UI.confirmer
+      ? '<div class="panneau pile"><p><b>Toute l\'équipe est d\'accord ?</b></p><div class="rangee"><button class="btn" data-act="accuser2-oui">Oui, on tend le piège !</button><button class="btn second" data-act="accuser-non">Pas encore</button></div></div>'
+      : '<button class="btn" data-act="accuser"' + (e.qui && e.ou ? '' : ' disabled') + '>Tendre le piège !</button>') +
+    (UI.retourAcc ? '<div class="parchemin pile"><p>' + UI.retourAcc + '</p>' + btnLire(UI.retourAcc) + '</div>' : '') +
+  '</div>';
+}
+
+/* ================= ENQUÊTE N°2 : mini-jeux ================= */
+function melanger(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j = Math.floor(Math.random()*(i+1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function zoneAleatoire(w){ return Math.round(8 + Math.random()*(84 - w)); }
+var CIBLES = {vert:{n:'VERT', c:'#52c05e', mix:['bleu','jaune']}, orange:{n:'ORANGE', c:'#f08a2e', mix:['jaune','rouge']}, violet:{n:'VIOLET', c:'#9d6ee3', mix:['bleu','rouge']}};
+function nouveauJeu(id, via){
+  var P = POTIONS[id], facile = aObjet('chaudron');
+  var m = {type:'mg', potion:id, via:via, jeu:P.jeu, ok:false, facile:facile, msg:''};
+  if(P.jeu === 'rythme'){ m.hits = 0; m.besoin = 3; m.largeur = facile ? 28 : 18; m.zone = zoneAleatoire(m.largeur); m.periode = facile ? 2300 : 1600; m.t0 = Date.now(); }
+  if(P.jeu === 'memoire'){ m.seq = []; for(var i=0;i<(facile ? 3 : 4);i++) m.seq.push(Math.floor(Math.random()*4)); m.phase = 'attente'; m.pos = 0; m.msg = 'Touche « Montrer les bulles » quand tu es prêt.'; }
+  if(P.jeu === 'couleurs'){ m.cibles = melanger(['vert','orange','violet']).slice(0, facile ? 2 : 3); m.idx = 0; m.choix = []; }
+  return m;
+}
+function posRythme(m){ var t = ((Date.now() - m.t0) % m.periode) / m.periode; return (t < .5 ? t*2 : 2 - t*2) * 92; }
+var boucleActive = false;
+function boucleRythme(){
+  var m = UI.modal;
+  if(!m || m.type !== 'mg' || m.jeu !== 'rythme' || m.ok){ boucleActive = false; return; }
+  var el = document.getElementById('curseur-r');
+  if(el) el.style.left = posRythme(m) + '%';
+  requestAnimationFrame(boucleRythme);
+}
+function majTexte(id, t){ var el = document.getElementById(id); if(el) el.textContent = t; }
+function tapRythme(){
+  var m = UI.modal; if(!m || m.jeu !== 'rythme' || m.ok) return;
+  var c = posRythme(m) + 4;
+  if(c >= m.zone && c <= m.zone + m.largeur){
+    m.hits++; son('goutte');
+    if(m.hits >= m.besoin){ reussirPotion(); return; }
+    m.zone = zoneAleatoire(m.largeur); m.msg = 'Plouf ! Bien joué.';
+    var z = document.getElementById('zone-r'); if(z) z.style.left = m.zone + '%';
+  } else { m.msg = 'Raté ! Attends que la cuillère soit dans la zone dorée.'; son('non'); }
+  majTexte('etat-r', 'Réussis : ' + m.hits + ' / ' + m.besoin); majTexte('msg-mg', m.msg);
+}
+var NOTES_BULLES = [523, 659, 784, 988];
+function eclairer(v){
+  var el = document.querySelector('.bulle-mg[data-v="' + v + '"]');
+  if(el){ el.classList.add('allume'); setTimeout(function(){ el.classList.remove('allume'); }, 430); }
+  if(S.son){ try{ audio = audio || new (window.AudioContext || window.webkitAudioContext)(); var o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime; o.frequency.value = NOTES_BULLES[v]; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.14,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.4); o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t+0.42); }catch(err){} }
+}
+function montrerBulles(){
+  var m = UI.modal; if(!m || m.jeu !== 'memoire' || m.phase === 'montre' || m.ok) return;
+  m.phase = 'montre'; m.pos = 0; majTexte('msg-mg', 'Regarde bien…');
+  var i = 0;
+  (function pas(){
+    if(UI.modal !== m) return;
+    if(i >= m.seq.length){ m.phase = 'joue'; majTexte('msg-mg', 'À toi ! Touche les bulles dans le même ordre.'); return; }
+    eclairer(m.seq[i]); i++; setTimeout(pas, 760);
+  })();
+}
+function tapBulle(v){
+  var m = UI.modal; if(!m || m.jeu !== 'memoire' || m.phase !== 'joue' || m.ok) return;
+  eclairer(v);
+  if(v === m.seq[m.pos]){
+    m.pos++;
+    if(m.pos >= m.seq.length){ m.phase = 'fini'; setTimeout(reussirPotion, 450); }
+  } else {
+    m.phase = 'attente'; son('non'); majTexte('msg-mg', 'Oups ! Ce n\'était pas la bonne bulle. Regarde encore…');
+    setTimeout(montrerBulles, 1100);
+  }
+}
+function melangerCouleurs(){
+  var m = UI.modal; if(!m || m.jeu !== 'couleurs' || m.ok) return;
+  if(m.choix.length < 2){ m.msg = 'Choisis deux fioles.'; render(); return; }
+  var cible = CIBLES[m.cibles[m.idx]], ok = cible.mix.every(function(c){ return m.choix.indexOf(c) >= 0; });
+  if(ok){
+    m.idx++; m.choix = []; son('goutte');
+    if(m.idx >= m.cibles.length){ reussirPotion(); return; }
+    m.msg = 'Bravo ! Couleur suivante…';
+  } else { m.msg = 'Hmm, ces deux-là donnent une autre couleur. Essaie encore !'; son('non'); }
+  render();
+}
+function reussirPotion(){
+  var m = UI.modal, e = S.e2; if(!m || m.ok) return;
+  if(m.via === 'magie') e.pouvoirs++;
+  if(m.via === 'poussiere') e.consomme.poussiere = true;
+  e.potionsFaites[m.potion] = true; m.ok = true;
+  var P = POTIONS[m.potion];
+  gagner('a2.p.' + m.potion, 15); noter('a2.p.' + m.potion, 'Tu as fabriqué : ' + P.n + '.', {code:P.code, pour:P.pour});
+  son('oui'); sauver(); render();
+}
+function vueMiniJeu(m){
+  var P = POTIONS[m.potion], h = '<h2>' + P.ic + ' ' + P.n + '</h2>';
+  if(m.ok) return '<h2>✨ ' + P.n + ' réussie !</h2><p>' + P.d + '</p>' + carteCode(infoCode({n:P.n, ic:P.ic, code:P.code, pour:P.pour}), 'Potion prête') + '<button class="btn" data-act="fermer">Continuer</button>';
+  if(m.facile) h += '<p class="doux petit">🥘 Ton chaudron de cuivre rend ce mini-jeu plus facile.</p>';
+  if(m.jeu === 'rythme'){
+    return h + '<p><b>Remuer en rythme.</b> Touche « Remuer ! » quand la cuillère passe dans la zone dorée. Réussis ' + m.besoin + ' fois !</p>' +
+      '<div class="rythme"><div class="rythme-zone" id="zone-r" style="left:' + m.zone + '%;width:' + m.largeur + '%"></div><div class="rythme-curseur" id="curseur-r"></div></div>' +
+      '<p class="mg-etat" id="etat-r">Réussis : ' + m.hits + ' / ' + m.besoin + '</p><p class="mg-msg" id="msg-mg">' + m.msg + '</p>' +
+      '<button class="btn grand" data-act="mg-tap">🥄 Remuer !</button><button class="btn second" data-act="fermer">Arrêter</button>';
+  }
+  if(m.jeu === 'memoire'){
+    var couleurs = ['bleu','jaune','rouge','vert'];
+    return h + '<p><b>Les bulles magiques.</b> Les bulles vont s\'allumer une par une. Touche-les ensuite dans le même ordre.</p>' +
+      '<div class="bulles-mg">' + couleurs.map(function(c, i){ return '<button class="bulle-mg" data-act="mg-bulle" data-v="' + i + '" style="--c:var(--g-' + c + ')" aria-label="Bulle ' + NOMS_COUL[c].toLowerCase() + '"></button>'; }).join('') + '</div>' +
+      '<p class="mg-msg" id="msg-mg">' + m.msg + '</p>' +
+      '<button class="btn" data-act="mg-montrer">Montrer les bulles</button><button class="btn second" data-act="fermer">Arrêter</button>';
+  }
+  var cible = CIBLES[m.cibles[m.idx]];
+  return h + '<p><b>Le bon mélange.</b> Choisis les 2 fioles qui, mélangées, donnent la couleur demandée.</p>' +
+    '<p class="centre"><b>Couleur ' + (m.idx+1) + ' sur ' + m.cibles.length + ' : du ' + cible.n + '</b></p><div class="couleur-cible" style="--c:' + cible.c + '"></div>' +
+    '<div class="fioles fioles-mg">' + ['bleu','jaune','rouge'].map(function(c){ return '<button class="fiole" data-act="mg-fiole" data-v="' + c + '" aria-pressed="' + (m.choix.indexOf(c) >= 0) + '"><span class="verre" style="--c:var(--g-' + c + ')"></span>' + NOMS_COUL[c] + '</button>'; }).join('') + '</div>' +
+    '<p class="mg-msg" id="msg-mg">' + m.msg + '</p>' +
+    '<button class="btn" data-act="mg-melanger"' + (m.choix.length === 2 ? '' : ' disabled') + '>Mélanger</button><button class="btn second" data-act="fermer">Arrêter</button>';
+}
+
+/* ================= ENQUÊTE N°2 : fenêtres ================= */
+function vueModal2(m){
+  var e = S.e2;
+  if(m.type === 'point2'){
+    var p = pointInfo2(m.lid, m.pid), extra = '';
+    if(p.obj) extra = carteCode(infoCode(OBJETS2[p.obj]), 'Objet trouvé');
+    if(p.ingr) extra = carteCode(infoCode({n:INGR[p.ingr].n, ic:INGR[p.ingr].ic, code:INGR[p.ingr].code, pour:'alchimiste'}), 'Ingrédient trouvé');
+    return (m.intro ? '<p class="doux"><i>' + m.intro + '</i></p>' : '') + '<h2>' + p.ic + ' ' + p.nom + '</h2><p>' + p.t + '</p>' + btnLire(p.t) + extra + '<button class="btn" data-act="fermer">Continuer</button>';
+  }
+  if(m.type === 'analyse2'){
+    var o = OBJETS2[m.id], A = ANALYSES2[m.id], sp = speInfo();
+    if(!m.pret) return '<h2>' + o.ic + ' ' + o.nom + '</h2><div class="analyse-anim" aria-hidden="true">⚗️</div><p class="centre">Analyse en cours…</p>';
+    var prof = e.profond[m.id]
+      ? '<p class="verite">🔍 Détail caché : ' + A.p + '</p>'
+      : (sp && sp.id === 'savant' && chargesSpe() > 0 ? '<button class="btn second" data-act="profond" data-id="' + m.id + '">🔬 Analyse profonde (' + chargesSpe() + ')</button>' : '<p class="doux petit">Une loupe dorée ou le pouvoir Analyse profonde pourraient révéler un détail caché.</p>');
+    return '<h2>' + o.ic + ' ' + o.nom + '</h2><p class="doux">Résultat de l\'analyse</p><p>' + A.t + '</p>' + btnLire(A.t + (e.profond[m.id] ? ' ' + A.p : '')) + prof + '<button class="btn" data-act="fermer">Continuer</button>';
+  }
+  if(m.type === 'mg') return vueMiniJeu(m);
+  if(m.type === 'fin2'){
+    var r = ROLES[S.heros.role], f = UI.fin, s = speInfo();
+    return '<p class="doux">Enquête n°2 résolue</p><h2>Le piège du clocher</h2>' +
+      '<div class="histoire pile">' + FIN2.map(function(x){ return '<p>' + x + '</p>'; }).join('') + '</div>' + btnLire(FIN2.join(' ')) +
+      (S.heros.role === 'sage' ? '<div class="objet"><span class="oi">🔔</span><div class="pile-serree"><div class="objet-titre">Pour toute l\'équipe</div><div>Dites aux autres d\'entrer ce code dans leur coffre :</div>' + codeHTML(FINAL2) + '</div></div>' : '') +
+      (f && f.gain ? '<div class="recompense pile-serree"><div class="gain">+' + f.gain + ' XP</div><div class="gain-or">+' + f.or + ' pièces d\'or</div>' +
+        (f.monte ? '<div class="niveau-gagne">Tu passes au niveau ' + f.n + ' !</div>' : '') +
+        (s && f.n >= 3 ? '<p>Ton pouvoir <b>' + s.pouvoir + '</b> s\'améliore : 3 utilisations par enquête. ' + s.d3 + '</p>' : '') +
+        '<p class="petit">Le marchand reviendra avant l\'enquête n°3.</p></div>' : '') +
+      '<button class="btn" data-act="fermer">Retour au jeu</button>';
+  }
+  return '';
+}
+
+/* ================= ENQUÊTE N°2 : actions ================= */
+function ouvrirPoint2(lid, pid, intro){
+  var p = pointInfo2(lid, pid), cle = 'p2.' + lid + '.' + pid, e = S.e2;
+  if(!e.vu[cle]){
+    e.vu[cle] = true;
+    gagner(cle, p.obj || p.ingr ? 15 : 5);
+    noter(cle, p.note, p.obj ? OBJETS2[p.obj] : (p.ingr ? {code:INGR[p.ingr].code, pour:'alchimiste'} : null));
+    son('oui');
+  }
+  UI.modal = {type:'point2', lid:lid, pid:pid, intro:intro || null}; sauver(); render();
+}
+function resoudreObstacle(id, via){
+  var o = OBSTACLES[id], e = S.e2;
+  if(e.obstacles[id]) return;
+  if(via === 'objet'){ if(!aObjet(o.objet)) return; var a = trouverArticle(o.objet); if(a.usage) e.consomme[o.objet] = true; }
+  else if(via === 'spe'){ if(chargesSpe() <= 0) return; e.pouvoirs++; }
+  else if(via === 'potion'){ if(!(e.potions[o.potion] > 0)) return; e.potions[o.potion]--; }
+  else if(via === 'echec'){ if(!o.echec) return; }
+  e.obstacles[id] = via;
+  gagner('o2.' + id, via === 'echec' ? 5 : 15);
+  var msg = o.via[via] || '';
+  if(id === 'poursuite'){ ouvrirPoint2('clocher', 'escalier', msg); return; }
+  if(id === 'sombre'){
+    noter('o2.sombre', 'Ruelle des Brumes : la lumière est faite.');
+    UI.modal = {type:'info', titre:'💡 La ruelle s\'éclaire', t:msg + ' Tu vois enfin les traces… et le vieux mur.'};
+  } else if(id === 'ecoute'){
+    noter('o2.ecoute', NOTE_ECOUTE);
+    UI.modal = {type:'info', titre:'🌫️ Au lavoir, en cachette', t:msg + ' ' + ECOUTE.join(' ')};
+  } else if(id === 'archives'){
+    noter('o2.archives', 'Les archives sont ouvertes : on y trouve l\'alphabet secret des fondateurs.');
+    UI.modal = {type:'info', titre:'📜 Les archives sont ouvertes', t:msg + " Dedans, il y a l'alphabet secret des fondateurs. Tu vas pouvoir lire la quatrième lettre !"};
+  }
+  son('oui'); sauver(); render();
+}
+function valider2(){
+  var k = UI.saisie.join('-'), e = S.e2, role = S.heros.role;
+  UI.saisie = []; UI.retourCode = null;
+  if(k === FINAL2.join('-')){
+    if(role === 'sage' && !e.resolu){ UI.retourCode = "Le Sage doit d'abord tendre le piège dans le Grand Livre."; son('non'); render(); return; }
+    if(e.resolu){ UI.fin = null; UI.modal = {type:'fin2'}; render(); return; }
+    declencherFin2(); return;
+  }
+  var c = CODE2[k];
+  if(!c){ UI.retourCode = 'Rien ne se passe… Vérifiez le code ensemble, dans le bon ordre.'; son('non'); render(); return; }
+  if(c.pour !== role){ UI.retourCode = "Ce code n'ouvre pas ton coffre. Il est pour un autre membre de l'équipe : à qui faut-il le donner ?"; son('non'); render(); return; }
+  var cle = c.type + '.' + c.id;
+  if(e.codes[c.id] || e.codes[cle]){
+    if(c.type === 'objet'){ UI.modal = {type:'analyse2', id:c.id, pret:true}; }
+    else UI.retourCode = 'Ce code a déjà été utilisé. Regarde dans ton carnet !';
+    render(); return;
+  }
+  if(c.type === 'objet'){
+    e.codes[c.id] = true;
+    gagner('a2.' + c.id, 15); noter('a2.' + c.id, ANALYSES2[c.id].note);
+    if(aObjet('loupe')){ e.profond[c.id] = true; noter('a2.pr.' + c.id, ANALYSES2[c.id].np); }
+    UI.modal = {type:'analyse2', id:c.id, pret:false}; sauver(); render();
+    setTimeout(function(){ if(UI.modal && UI.modal.type === 'analyse2' && UI.modal.id === c.id){ UI.modal.pret = true; son('oui'); render(); } }, 1700);
+    return;
+  }
+  e.codes[cle] = true;
+  if(c.type === 'ingr'){
+    e.ingr[c.id] = true; var I = INGR[c.id], pot = Object.keys(POTIONS).filter(function(p){ return POTIONS[p].ingr === c.id; })[0];
+    gagner('a2.i.' + c.id, 10); noter('a2.i.' + c.id, 'Ingrédient reçu : ' + I.n + '.');
+    UI.modal = {type:'info', titre:I.ic + ' ' + I.n, t:'Le Pisteur t\'a rapporté : ' + I.n + '. Tu peux maintenant fabriquer la ' + POTIONS[pot].n.toLowerCase() + ' dans ton atelier !'};
+  } else if(c.type === 'potion'){
+    var P = POTIONS[c.id];
+    e.potions[c.id] = (e.potions[c.id] || 0) + 1;
+    gagner('r2.p.' + c.id, 10); noter('r2.p.' + c.id, 'Tu as reçu : ' + P.n + '. Elle est dans ton sac (onglet Héros).');
+    UI.modal = {type:'info', titre:P.ic + ' ' + P.n, t:"L'Alchimiste t'a donné : " + P.n + '. ' + P.d + ' Un bouton apparaîtra quand elle pourra servir.'};
+  } else if(c.type === 'cle'){
+    resoudreObstacle('archives', 'code'); e.page = 'archives'; UI.onglet = 'role'; sauver(); render(); return;
+  }
+  son('oui'); sauver(); render();
+}
+function declencherFin2(){
+  UI.fin = finir2(); UI.modal = {type:'fin2'}; UI.retourCode = null;
+  sauver(); render(); son('fin');
+}
+function act2(a, el){
+  var e = S.e2, d = el.dataset;
+  switch(a){
+    case 'vers-e2':
+      S.enquete = 2; if(!S.e2) S.e2 = enquete2Neuve(); UI.onglet = 'role'; UI.saisie = []; UI.retourCode = null;
+      sauver(); haut(); render(); break;
+    case 'lettre2-ok':
+      if(!S.gagne['or-e1']){ S.gagne['or-e1'] = true; S.or += 40; toast('+40 pièces d\'or'); }
+      e.etape = S.spe ? 'marchand' : 'spe'; sauver(); haut(); render(); break;
+    case 'spe-choix': UI.speChoix = d.v; render(); break;
+    case 'spe-ok': if(UI.speChoix || S.spe){ S.spe = UI.speChoix || S.spe; e.etape = 'marchand'; son('magie'); sauver(); haut(); render(); } break;
+    case 'spe-changer': UI.speChoix = S.spe; e.etape = 'spe'; sauver(); haut(); render(); break;
+    case 'acheter': { var art = trouverArticle(d.id); if(art && S.or >= art.prix && S.sac.indexOf(art.id) < 0){ S.or -= art.prix; S.sac.push(art.id); son('oui'); sauver(); render(); } break; }
+    case 'rendre': { var ar = trouverArticle(d.id), i = S.sac.indexOf(d.id); if(ar && i >= 0){ S.sac.splice(i,1); S.or += ar.prix; sauver(); render(); } break; }
+    case 'commencer2':
+      e.etape = 'jeu'; UI.onglet = 'role';
+      if(S.heros.role === 'sage'){ e.vu['s2.habitants'] = true; gagner('s2.habitants', 10); noter('s2.habitants', NOTE_HABITANTS2); }
+      sauver(); haut(); render(); break;
+    case 'lieu2': e.lieu = d.id; sauver(); haut(); render(); break;
+    case 'carte2': e.lieu = null; sauver(); haut(); render(); break;
+    case 'point2': ouvrirPoint2(d.l, d.p); break;
+    case 'obstacle': resoudreObstacle(d.id, d.via); break;
+    case 'brasser': UI.modal = nouveauJeu(d.id, d.via); render(); break;
+    case 'mg-tap': tapRythme(); break;
+    case 'mg-montrer': montrerBulles(); break;
+    case 'mg-bulle': tapBulle(+d.v); break;
+    case 'mg-fiole': {
+      var m = UI.modal; if(!m || m.jeu !== 'couleurs') break;
+      var j = m.choix.indexOf(d.v);
+      if(j >= 0) m.choix.splice(j,1); else { m.choix.push(d.v); if(m.choix.length > 2) m.choix.shift(); }
+      m.msg = ''; render(); break;
+    }
+    case 'mg-melanger': melangerCouleurs(); break;
+    case 'voir-analyse2': UI.modal = {type:'analyse2', id:d.id, pret:true}; render(); break;
+    case 'profond':
+      if(chargesSpe() > 0 && !e.profond[d.id]){ e.pouvoirs++; e.profond[d.id] = true; gagner('a2.pr.' + d.id, 10); noter('a2.pr.' + d.id, ANALYSES2[d.id].np); son('magie'); sauver(); render(); }
+      break;
+    case 'villageois2': e.villageois = d.id; sauver(); haut(); render(); break;
+    case 'villageois2-retour': e.villageois = null; sauver(); haut(); render(); break;
+    case 'question2': {
+      var parts = d.k.split('.'), v = VILLAGEOIS2[parts[1]], q = v.q[+parts[2]];
+      if(!e.vu[d.k]){
+        e.vu[d.k] = true; gagner(d.k, q.obj || q.besoin ? 15 : 10);
+        noter(d.k, q.note, q.obj ? OBJETS2[q.obj] : null);
+        if(q.mensonge && aObjet('clochette')) noter(d.k + '.m', 'Mensonge ! ' + v.nom + ' a menti en disant : « ' + q.a + ' »');
+        son(q.mensonge && aObjet('clochette') ? 'non' : 'oui');
+      }
+      sauver(); render(); break;
+    }
+    case 'verite': {
+      var pv = d.k.split('.'), vv = VILLAGEOIS2[pv[1]], qv = vv.q[+pv[2]];
+      if(e.vrai[d.k]) break;
+      if(d.via === 'spe'){ if(chargesSpe() <= 0) break; e.pouvoirs++; }
+      else { if(!(e.potions.verite > 0)) break; e.potions.verite--; }
+      e.vrai[d.k] = true;
+      if(qv.mensonge){ gagner('b2.v.' + d.k, 15); noter(d.k + '.v', vv.nom + ' a avoué : ' + qv.vrai.replace(/[«»]/g, '').trim()); son('magie'); }
+      else son('oui');
+      sauver(); render(); break;
+    }
+    case 'page2': e.page = d.id; UI.confirmer = false; UI.retourAcc = null; UI.retourLivre = null; UI.retourDecode = null; sauver(); render(); break;
+    case 'signe': e.signes[d.id] = !e.signes[d.id]; UI.retourLivre = null; sauver(); render(); break;
+    case 'verifier-i': {
+      var choisis = Object.keys(e.signes).filter(function(k){ return e.signes[k]; }).sort().join(',');
+      if(choisis === 'fortune,melusine'){
+        e.livreOk = true; gagner('s2.livre', 20);
+        noter('s2.livre', "Livre d'or : seuls Mélusine et Fortuné font des petits ronds sur les i, comme le Corbeau. Anselme n'a écrit aucun i.");
+        son('oui');
+      } else { UI.retourLivre = 'Pas tout à fait… Regarde les i un par un, dans chaque mot et chaque signature.'; son('non'); }
+      sauver(); render(); break;
+    }
+    case 'dechiffrer': {
+      var t = (UI.decode || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Z]/g, '');
+      if(t.indexOf('MINUIT') >= 0 && t.indexOf('CLOCHER') >= 0){
+        e.dechiffre = true; UI.retourDecode = null; gagner('s2.decode', 20); noter('s2.decode', 'Lettre secrète déchiffrée : MINUIT AU CLOCHER.'); son('oui');
+      } else { UI.retourDecode = 'Ce n\'est pas encore ça. Prends les symboles un par un, et cherche-les dans l\'alphabet.'; son('non'); }
+      sauver(); render(); break;
+    }
+    case 'longuevue':
+      e.longuevue = true; gagner('s2.longuevue', 10);
+      noter('s2.longuevue', "Longue-vue : la nuit, quelqu'un coud une cape noire à plumes dans l'atelier de couture."); son('oui');
+      sauver(); render(); break;
+    case 'eliminer':
+      if(e.elimines) break;
+      if(d.via === 'spe'){ if(chargesSpe() <= 0) break; e.pouvoirs++; }
+      else { if(!aObjet('boule')) break; e.consomme.boule = true; }
+      e.elimines = true; if(e.qui === 'iris' || e.qui === 'victor') e.qui = null;
+      noter('s2.elim', 'Iris et Victor sont innocents.'); son('magie'); sauver(); render(); break;
+    case 'qui2': e.qui = d.id; UI.confirmer = false; UI.retourAcc = null; sauver(); render(); break;
+    case 'ou2': e.ou = d.id; UI.confirmer = false; UI.retourAcc = null; sauver(); render(); break;
+    case 'accuser2-oui': {
+      var bonQui = e.qui === 'melusine', bonOu = e.ou === 'clocher';
+      UI.confirmer = false;
+      if(bonQui && bonOu){ UI.retourAcc = null; declencherFin2(); return; }
+      e.rate = (e.rate || 0) + 1; son('non');
+      UI.retourAcc = bonQui ? "Vous attendez toute la nuit… personne ne vient ! Vous aviez peut-être la bonne personne, mais pas le bon endroit."
+        : bonOu ? "Vous attendez au bon endroit… mais la personne que vous surveillez dort tranquillement chez elle !"
+        : "Vous attendez toute la nuit… et il ne se passe rien. Revérifiez vos indices !";
+      sauver(); render(); return;
+    }
   }
 }
 
@@ -1147,23 +2210,26 @@ function render(){
   UI.lectures = [];
   var h;
   if(!S.heros) h = vueCreation();
-  else if(!S.e1.intro) h = vueIntro();
+  else if(S.enquete === 2 && S.e2.etape !== 'jeu') h = vuePrep2();
+  else if(S.enquete !== 2 && !S.e1.intro) h = vueIntro();
   else h = vueJeu();
   if(UI.modal) h += vueModal();
   app.innerHTML = h;
   document.body.classList.toggle('bloque', !!UI.modal);
+  if(UI.modal && UI.modal.type === 'mg' && UI.modal.jeu === 'rythme' && !UI.modal.ok && !boucleActive){ boucleActive = true; requestAnimationFrame(boucleRythme); }
 }
 
 document.addEventListener('click', function(ev){
   var b = ev.target.closest('[data-act]');
   if(!b) return;
   if(b.dataset.act === 'voile'){
-    if(ev.target === b && !(UI.modal && UI.modal.type === 'analyse' && !UI.modal.pret)) fermer();
+    if(ev.target === b && !(UI.modal && (UI.modal.type === 'analyse' || UI.modal.type === 'analyse2') && !UI.modal.pret) && !(UI.modal && UI.modal.type === 'mg' && !UI.modal.ok)) fermer();
     return;
   }
   act(b.dataset.act, b);
 });
 app.addEventListener('input', function(ev){
+  if(ev.target.id === 'decode'){ UI.decode = ev.target.value; return; }
   if(ev.target.id !== 'nom-heros') return;
   UI.crea.nom = ev.target.value;
   var b = app.querySelector('[data-act="creer"]');
