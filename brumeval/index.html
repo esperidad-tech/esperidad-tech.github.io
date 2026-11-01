@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Les Enquêteurs de Brumeval : un jeu d'enquête coopératif à quatre écrans. Retrouvez la Lanterne d'Or volée !">
+<meta name="theme-color" content="#1c2447">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Brumeval">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Les Enquêteurs de Brumeval</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap">
+<style>
+:root{
+  /* Mise en page : appli plein écran. En-tête du héros collé en haut, scène au centre, onglets en bas.
+     L'histoire s'écrit sur des cartes en parchemin posées sur la nuit de Brumeval, éclairée par l'or des lanternes. */
+  --nuit:#131932;
+  --nuit-2:#1c2447;
+  --nuit-3:#28325e;
+  --trait:#3b4679;
+  --brume:#a6aed8;
+  --lune:#eef0ff;
+  --parchemin:#f3e7cb;
+  --encre:#35281b;
+  --encre-2:#6b5434;
+  --or:#f5b945;
+  --or-pale:#ffe3a3;
+  --laiton:#b8862e;
+  --braise:#e8693c;
+  --braise-sombre:#a8391a;
+  --mousse:#7cc493;
+  --violet:#9d6ee3;
+  --g-bleu:#4b84e6;
+  --g-jaune:#f3d03e;
+  --g-rouge:#e24c4c;
+  --g-vert:#52c05e;
+  --sol:#1b2c36;
+  --lisiere:#11231f;
+  --sapin:#1c4235;
+  --sapin-2:#14342a;
+  --riviere:#27507f;
+  --route:#4a4560;
+  --mur:#3c3453;
+  --toit:#5d3a4c;
+  --terre:#4a3826;
+  --trace-seche:#ab895d;
+  --fissure:#6e5434;
+  --trace-fraiche:#1f140b;
+  --f-titre:"Macondo", "Georgia", "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--nuit);color:var(--lune);font-family:var(--f-texte);font-size:18px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+body.bloque{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--nuit-2)}
+.ciel{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1.4px 1.4px at 22px 34px, var(--lune), transparent),
+    radial-gradient(1px 1px at 140px 86px, var(--lune), transparent),
+    radial-gradient(1.2px 1.2px at 200px 20px, var(--or-pale), transparent),
+    radial-gradient(1px 1px at 80px 160px, var(--lune), transparent),
+    radial-gradient(1.6px 1.6px at 180px 200px, var(--lune), transparent),
+    radial-gradient(1px 1px at 40px 220px, var(--brume), transparent);
+  background-size:240px 240px;opacity:.55}
+#app{position:relative;z-index:1;min-height:100%}
+.wrap{width:100%;max-width:760px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-titre);font-weight:400;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.9rem, 6.5vw, 2.8rem);color:var(--or-pale)}
+h2{font-size:1.6rem;color:var(--or-pale)}
+h3{font-size:1.25rem;color:var(--lune)}
+p{margin:0}
+ul,ol{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.pile{display:flex;flex-direction:column;gap:14px}
+.pile-serree{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rangee{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.doux{color:var(--brume)}
+.petit{font-size:.88rem}
+.centre{text-align:center}
+.sur-titre{text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;color:var(--or);font-weight:700}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 24px;border-radius:999px;border:0;background:var(--or);color:var(--encre);font-weight:700;font-size:1.05rem;text-align:center}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.second{background:transparent;color:var(--lune);border:2px solid var(--trait)}
+.btn.petit{min-height:42px;padding:6px 16px;font-size:.95rem}
+.btn.grand{font-size:1.2rem;min-height:60px}
+.lire{align-self:flex-start;border:0;background:rgba(238,240,255,.12);color:inherit;border-radius:999px;padding:6px 14px;font-size:.9rem;font-weight:700;min-height:38px}
+
+.parchemin{background:var(--parchemin);color:var(--encre);border-radius:6px 12px 8px 14px;padding:20px 18px;box-shadow:0 12px 34px rgba(0,0,0,.4), inset 0 0 44px rgba(140,100,40,.2)}
+.parchemin h2,.parchemin h3{color:var(--encre)}
+.parchemin .doux{color:var(--encre-2)}
+.parchemin .lire{background:rgba(53,40,27,.1)}
+.panneau{background:var(--nuit-2);border:1px solid var(--trait);border-radius:16px;padding:16px}
+
+/* Accueil */
+.titre-jeu{display:flex;align-items:center;gap:14px;padding-top:22px}
+.lanterne{width:84px;height:auto;flex:none;overflow:visible}
+.halo{fill:var(--or);opacity:.18;animation:vacille 3.2s ease-in-out infinite}
+.lt-anse{fill:none;stroke:var(--laiton);stroke-width:3}
+.lt-metal{fill:var(--laiton)}
+.lt-verre{fill:var(--or-pale)}
+.lt-barre{stroke:var(--laiton);stroke-width:2}
+.lt-flamme{fill:var(--braise);transform-origin:40px 62px;animation:flamme 1.3s ease-in-out infinite alternate}
+@keyframes vacille{0%,100%{opacity:.14}50%{opacity:.32}}
+@keyframes flamme{from{transform:scale(1,1)}to{transform:scale(.88,1.1)}}
+.etiquette{font-weight:700;font-size:.95rem;color:var(--brume)}
+.champ{width:100%;font:inherit;font-size:1.2rem;padding:12px 14px;border-radius:12px;border:2px solid var(--trait);background:var(--nuit);color:var(--lune)}
+.champ::placeholder{color:var(--brume);opacity:.7}
+.puces{display:flex;gap:8px;flex-wrap:wrap}
+.puce{border-radius:999px;border:2px solid var(--trait);background:transparent;padding:8px 18px;font-weight:700;min-height:46px}
+.puce[aria-pressed="true"],.avatars button[aria-pressed="true"]{border-color:var(--or);background:rgba(245,185,69,.16);color:var(--or-pale)}
+.avatars{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.avatars button{aspect-ratio:1;max-width:100%;font-size:1.9rem;border-radius:14px;border:2px solid var(--trait);background:var(--nuit-3);display:grid;place-items:center;padding:0}
+.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.role{text-align:left;display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;border:2px solid var(--trait);background:var(--nuit-3)}
+.role[aria-pressed="true"]{border-color:var(--or);background:rgba(245,185,69,.12)}
+.role .ri{font-size:2.3rem;line-height:1}
+.role b{font-family:var(--f-titre);font-weight:400;font-size:1.3rem;color:var(--or-pale)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--or);font-weight:700}
+.conseil{border:1px dashed var(--trait);border-radius:12px;padding:12px 14px;color:var(--brume);font-size:.95rem}
+
+/* Intro */
+.lettre-entete{font-style:italic;color:var(--encre-2);font-size:.95rem}
+.signature{font-family:var(--f-titre);font-size:1.2rem;text-align:right}
+.regles{padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.regles li::marker{color:var(--or)}
+
+/* En-tête de jeu */
+.entete{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--nuit-2);border-bottom:1px solid var(--trait)}
+.entete .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.avatar{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:var(--nuit-3);border:2px solid var(--or);flex:none}
+.heros-info{flex:1;min-width:0}
+.heros-nom{font-family:var(--f-titre);font-size:1.35rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--or-pale)}
+.heros-classe{font-size:.85rem;color:var(--brume);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xp{height:10px;border-radius:99px;background:var(--nuit);margin-top:6px;overflow:hidden;border:1px solid var(--trait)}
+.xp>span{display:block;height:100%;background:linear-gradient(90deg,var(--braise),var(--or));border-radius:99px;transition:width .6s}
+.icone-btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--trait);background:transparent;font-size:22px;flex:none;display:grid;place-items:center;padding:0}
+main{padding-block:16px calc(104px + env(safe-area-inset-bottom,0px))}
+.accueil{padding-bottom:40px}
+.mission{display:flex;gap:10px;align-items:center;border:1px dashed rgba(245,185,69,.45);border-radius:12px;padding:8px 14px;font-size:.92rem;color:var(--or-pale)}
+.mission.resolue{border-color:var(--mousse);color:var(--mousse)}
+
+/* Onglets */
+.onglets{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--nuit-2);border-top:1px solid var(--trait);padding-bottom:env(safe-area-inset-bottom,0px)}
+.onglets .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-block:6px}
+.onglet{border:0;background:transparent;border-radius:12px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;font-weight:700;color:var(--brume);min-height:58px;min-width:0}
+.onglet .oi{font-size:1.5rem;line-height:1}
+.onglet[aria-current="page"]{background:var(--nuit-3);color:var(--or-pale)}
+
+/* Carte du village */
+.carte{position:relative;width:100%;max-width:100%;aspect-ratio:6/5;border-radius:18px;overflow:hidden;border:1px solid var(--trait)}
+.carte svg{position:absolute;inset:0;width:100%;height:100%}
+.sol{fill:var(--sol)}.lisiere{fill:var(--lisiere)}.sapin{fill:var(--sapin)}.sapin-2{fill:var(--sapin-2)}
+.riviere{fill:none;stroke:var(--riviere);stroke-width:16;stroke-linecap:round}
+.riviere-reflet{fill:none;stroke:var(--brume);stroke-width:1.5;stroke-dasharray:6 10;opacity:.5}
+.route{fill:none;stroke:var(--route);stroke-width:8;stroke-linecap:round}
+.mur{fill:var(--mur)}.toit{fill:var(--toit)}.fen{fill:var(--or)}.astre{fill:var(--lune)}
+.pin{position:absolute;transform:translate(-50%,-50%);border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0}
+.pin-rond{position:relative;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:var(--parchemin);border:3px solid var(--or);box-shadow:0 0 0 6px rgba(245,185,69,.18),0 8px 16px rgba(0,0,0,.45)}
+.pin-nom{background:var(--nuit);color:var(--lune);border-radius:99px;padding:2px 10px;font-size:.85rem;font-weight:700;white-space:nowrap}
+.pin.ferme .pin-rond{filter:grayscale(1) brightness(.75);border-color:var(--brume);box-shadow:0 8px 16px rgba(0,0,0,.45)}
+.badge{position:absolute;top:-6px;right:-8px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--nuit);border:2px solid var(--brume);filter:none}
+.badge.ok{background:var(--mousse);border-color:var(--mousse);color:var(--nuit);font-weight:700}
+
+/* Lieux, tuiles */
+.retour{align-self:flex-start;border:0;background:transparent;color:var(--or-pale);font-weight:700;padding:6px 0;min-height:44px}
+.titre-lieu{display:flex;align-items:center;gap:12px}
+.gros-ic{font-size:2.8rem;line-height:1}
+.tuiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.tuile{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border-radius:14px;border:1px solid var(--trait);background:var(--nuit-2);min-height:66px;min-width:0}
+.tuile .ti{font-size:1.9rem;line-height:1;flex:none}
+.tuile.vu{border-color:rgba(124,196,147,.7)}
+.tuile.vu::after{content:"✓";margin-left:auto;color:var(--mousse);font-weight:700}
+
+/* Fenêtre de dialogue */
+.voile{position:fixed;inset:0;z-index:40;background:rgba(6,8,22,.78);display:flex;align-items:flex-end;justify-content:center;padding:max(12px, env(safe-area-inset-top,0px)) max(10px, env(safe-area-inset-right,0px)) 0 max(10px, env(safe-area-inset-left,0px))}
+.feuille{width:100%;max-width:620px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));background:var(--parchemin);color:var(--encre);box-shadow:0 -10px 40px rgba(0,0,0,.5);animation:monte .25s ease-out}
+.feuille h2,.feuille h3{color:var(--encre)}
+.feuille .doux{color:var(--encre-2)}
+.feuille .lire{background:rgba(53,40,27,.1)}
+.feuille .btn.second{color:var(--encre);border-color:var(--encre-2)}
+.feuille .rate{color:var(--braise-sombre)}
+@keyframes monte{from{transform:translateY(30px)}to{transform:none}}
+@media (min-width:640px){.voile{align-items:center;padding-bottom:20px}.feuille{border-radius:18px;padding-bottom:22px}}
+
+/* Objet trouvé */
+.objet{display:flex;gap:14px;align-items:center;background:var(--nuit);color:var(--lune);border-radius:14px;padding:14px;border:2px solid var(--or)}
+.objet .oi{font-size:2.6rem;line-height:1;flex:none}
+.objet-titre{font-family:var(--f-titre);font-size:1.15rem;color:var(--or-pale)}
+.code-affiche{display:flex;gap:12px;flex-wrap:wrap}
+.cs{display:inline-flex;flex-direction:column;align-items:center;min-width:56px}
+.ce{font-size:2.1rem;line-height:1.15}
+.cn{font-size:.75rem;color:var(--brume)}
+.rate{color:var(--braise);font-weight:700}
+.reussi{background:rgba(124,196,147,.22);border-radius:12px;padding:12px 14px}
+.reponses{display:flex;gap:10px;flex-wrap:wrap}
+.reponses .btn{min-width:64px;font-size:1.3rem}
+
+/* Traces */
+.traces-svg{width:100%;max-width:300px;height:auto;align-self:center;border-radius:12px}
+.terre{fill:var(--terre)}
+.grille{stroke:var(--or-pale);stroke-opacity:.28;stroke-width:1;fill:none}
+.trace-seche{fill:var(--trace-seche)}
+.fissure{fill:none;stroke:var(--fissure);stroke-width:1.6;stroke-linecap:round}
+.trace-fraiche{fill:var(--trace-fraiche)}
+.reflet{fill:var(--lune);opacity:.2}
+.traces-legende{fill:var(--parchemin);font-family:var(--f-texte);font-size:12px;font-weight:700;text-anchor:middle}
+
+/* Codes */
+.slots{display:flex;gap:12px;justify-content:center}
+.slot{width:80px;height:80px;border-radius:18px;border:2px dashed var(--trait);display:grid;place-items:center;font-size:2.5rem;background:var(--nuit-2)}
+.slot.plein{border-style:solid;border-color:var(--or)}
+.clavier{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:440px;margin:0 auto;width:100%}
+.touche{border:1px solid var(--trait);background:var(--nuit-2);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:86px}
+.touche .te{font-size:2.1rem;line-height:1.1}
+.touche .tn{font-size:.8rem;color:var(--brume)}
+.touche:active{background:var(--nuit-3)}
+.retour-code{border-radius:12px;padding:12px 14px;border:1px solid var(--braise);color:var(--lune)}
+
+/* Labo */
+.chaudron{width:200px;max-width:100%;margin:0 auto}
+.chaudron svg{width:100%;height:auto;display:block}
+.pot{fill:#0d0f1c}
+.rebord{fill:#262a40}
+.ombre{fill:#000;opacity:.35}
+.gouttes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:24px;align-items:center}
+.goutte{width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);display:inline-block;border:1.5px solid rgba(0,0,0,.3);flex:none}
+.fioles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fiole{border:1px solid var(--trait);background:var(--nuit-3);border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.88rem;font-weight:700;min-height:92px}
+.verre{width:30px;height:46px;border-radius:7px 7px 15px 15px;border:2px solid var(--lune);position:relative;overflow:hidden}
+.verre::after{content:"";position:absolute;left:0;right:0;bottom:0;height:62%;background:var(--c)}
+.analyse-anim{font-size:4rem;text-align:center;animation:secoue .5s ease-in-out infinite alternate}
+@keyframes secoue{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-8px)}}
+.potion-ok{display:flex;gap:14px;align-items:center}
+.potion-ok .gros-ic{filter:drop-shadow(0 0 12px var(--violet))}
+
+/* Villageois */
+.portrait{flex-direction:row}
+.portrait .ti{font-size:2.4rem}
+.bulle{background:var(--parchemin);color:var(--encre);border-radius:16px 16px 16px 4px;padding:14px 16px}
+.bulle .lire{background:rgba(53,40,27,.1)}
+.question-posee{font-size:.88rem;color:var(--brume);margin-bottom:6px;font-weight:700}
+.q-btn{text-align:left;border:2px dashed var(--or);background:transparent;color:var(--or-pale);border-radius:14px;padding:12px 16px;font-weight:700;min-height:52px}
+.q-btn.special{border-style:solid;background:rgba(245,185,69,.12)}
+
+/* Grand Livre */
+.segments{display:flex;gap:6px;flex-wrap:wrap}
+.segments button{border:1px solid var(--trait);background:var(--nuit-2);border-radius:999px;padding:8px 16px;font-weight:700;color:var(--brume);min-height:46px}
+.segments button[aria-selected="true"]{background:var(--or);color:var(--encre);border-color:var(--or)}
+.habitant{display:flex;gap:12px;align-items:flex-start;padding-top:12px;border-top:1px dashed rgba(53,40,27,.3)}
+.hic{font-size:2.1rem;line-height:1;flex:none}
+.carreaux{display:inline-flex;gap:3px;vertical-align:middle;margin-inline:4px}
+.carreaux i{width:13px;height:13px;border:1.5px solid var(--encre);display:inline-block;background:rgba(53,40,27,.14)}
+.recette{border-top:1px dashed rgba(53,40,27,.3);padding-top:12px}
+.recette:first-of-type{border-top:0;padding-top:0}
+.page-vide{min-height:220px;display:grid;place-items:center;text-align:center;background:linear-gradient(115deg,var(--parchemin) 30%,#fff7e3 50%,var(--parchemin) 70%);background-size:300% 100%;animation:reflet 4s linear infinite}
+@keyframes reflet{from{background-position:100% 0}to{background-position:-100% 0}}
+.carte-foret{width:100%;max-width:420px;height:auto;align-self:center;filter:drop-shadow(0 0 6px rgba(157,110,227,.45));animation:apparait 1.6s ease-out}
+@keyframes apparait{from{filter:blur(5px) drop-shadow(0 0 14px rgba(157,110,227,.9))}to{filter:blur(0) drop-shadow(0 0 6px rgba(157,110,227,.45))}}
+.chemin{fill:none;stroke:var(--violet);stroke-width:3;stroke-linecap:round;stroke-dasharray:7 6}
+.encre-ligne{fill:none;stroke:var(--encre);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.encre-plein{fill:var(--encre)}
+.etiq{font-family:var(--f-titre);font-size:15px;fill:var(--violet);text-anchor:middle}
+.choix{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.choix button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:14px;border:2px solid var(--trait);background:var(--nuit-2);font-weight:700;min-height:88px;font-size:.95rem}
+.choix .ci{font-size:1.9rem;line-height:1}
+.choix button[aria-pressed="true"]{border-color:var(--or);background:rgba(245,185,69,.16);color:var(--or-pale)}
+
+/* Carnet, pouvoir */
+.notes{padding-left:1.4em;display:flex;flex-direction:column;gap:10px}
+.notes li::marker{color:var(--or);font-weight:700}
+.note-code{margin-top:4px;font-size:.9rem;color:var(--or-pale)}
+.note-code span{font-size:1.4rem;letter-spacing:.15em}
+.astuce{border:1px dashed var(--trait);border-radius:12px;padding:12px 14px;color:var(--brume);font-size:.95rem}
+.pouvoir{display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,var(--nuit-3),var(--nuit-2));border:1px solid var(--or);border-radius:18px;padding:16px}
+.p-ic{font-size:2.6rem;line-height:1;flex:none}
+.niveau-suivant{border:1px dashed var(--trait);border-radius:12px;padding:12px 14px;color:var(--brume)}
+.niveau-suivant.debloque{border-style:solid;border-color:var(--mousse);color:var(--lune)}
+
+/* Fin */
+.histoire p{line-height:1.6}
+.corbeau{font-family:var(--f-titre);font-size:1.25rem;letter-spacing:.06em}
+.recompense{background:var(--nuit);color:var(--lune);border-radius:16px;padding:16px;border:2px solid var(--or);text-align:center}
+.gain{font-family:var(--f-titre);font-size:2.2rem;color:var(--or)}
+.niveau-gagne{font-family:var(--f-titre);font-size:1.5rem;color:var(--mousse)}
+.lien-accueil{align-self:flex-start;color:var(--or-pale);font-weight:700;text-decoration:none;padding:14px 0 0;min-height:44px}
+.feuille a.btn{text-decoration:none}
+.rangee-reglage{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--or);color:var(--encre);font-weight:700;padding:8px 18px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.4);white-space:nowrap;animation:monte .2s ease-out}
+
+@media (max-width:480px){
+  .avatars{grid-template-columns:repeat(4,1fr)}
+  .slot{width:70px;height:70px}
+  .pin-rond{width:54px;height:54px;font-size:26px}
+  .pin-nom{font-size:.78rem;padding:1px 8px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+</head>
+<body>
+<div class="ciel" aria-hidden="true"></div>
+<div id="app"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Données du jeu ---------- */
+var CLE = 'brumeval-v1';
+var ACCUEIL = 'https://esperidad-tech.github.io/';
+
+var SYM = {
+  lune:{e:'🌙',n:'Lune'}, etoile:{e:'⭐',n:'Étoile'}, soleil:{e:'☀️',n:'Soleil'},
+  cle:{e:'🔑',n:'Clé'}, champi:{e:'🍄',n:'Champignon'}, poisson:{e:'🐟',n:'Poisson'},
+  arbre:{e:'🌳',n:'Arbre'}, cloche:{e:'🔔',n:'Cloche'}, chapeau:{e:'🎩',n:'Chapeau'}
+};
+var ORDRE_SYM = ['lune','etoile','soleil','cle','champi','poisson','arbre','cloche','chapeau'];
+
+var ROLES = {
+  pisteur:{m:'Pisteur',f:'Pisteuse',ic:'🏹',onglet:'Village',tag:"Plein d'action",
+    desc:"Explore le village et la forêt. Trouve les traces et les objets cachés.",
+    mission:"Explore la mairie, la place et la boulangerie. Chaque objet que tu trouves a un code : donne-le à la bonne personne !",
+    pouvoir:{n:'Œil de lynx',d:'Te montre où chercher.'}, pouvoir2:{n:'Flair du renard',d:'Repère une trace cachée dans chaque lieu.'}},
+  alchimiste:{m:'Alchimiste',f:'Alchimiste',ic:'⚗️',onglet:'Labo',tag:"Plein d'action",
+    desc:"Prépare des potions et analyse les objets trouvés par l'équipe.",
+    mission:"Ton chaudron t'attend. Pour la première potion, il te faut la recette du Grand Livre. Ensuite, analyse les objets que l'équipe te confie.",
+    pouvoir:{n:'Boule de cristal',d:"Te souffle ce qu'il faut faire."}, pouvoir2:{n:'Double potion',d:'Chaque analyse révèle un détail en plus.'}},
+  barde:{m:'Barde',f:'Barde',ic:'🎻',onglet:'Villageois',tag:'Beaucoup de lecture',
+    desc:"Interroge les habitants. Ils te racontent ce qu'ils ont vu.",
+    mission:"Va parler aux villageois et pose-leur toutes les questions. Ensuite, raconte tout à l'équipe !",
+    pouvoir:{n:'Oreille fine',d:"T'aide à poser les bonnes questions."}, pouvoir2:{n:'Parole de vérité',d:'Un villageois ne peut plus te mentir.'}},
+  sage:{m:'Sage',f:'Sage',ic:'📜',onglet:'Grand Livre',tag:"Beaucoup de lecture · Chef d'enquête",
+    desc:"Garde le Grand Livre du village et fait l'accusation finale.",
+    mission:"Lis le Grand Livre à l'équipe : les habitants, les recettes… et une page mystérieuse. C'est toi qui feras l'accusation finale.",
+    pouvoir:{n:'Grande sagesse',d:'Rassemble les indices pour toi.'}, pouvoir2:{n:"Mémoire d'éléphant",d:"Un indice en plus pour l'accusation."}}
+};
+var A_QUI = {pisteur:'au Pisteur', alchimiste:"à l'Alchimiste", barde:'au Barde', sage:'au Sage'};
+var AVATARS = ['🦊','🦉','🐺','🐻','🐱','🐲','🐰','🦁'];
+
+var OBJETS = {
+  fil:{nom:'Fil de laine rouge',ic:'🧶',code:['champi','lune','cloche'],pour:'alchimiste'},
+  affiche:{nom:'Affiche du chien perdu',ic:'🐶',code:['poisson','etoile','cle'],pour:'barde'},
+  poils:{nom:'Touffe de poils',ic:'🐾',code:['cle','poisson','lune'],pour:'alchimiste'},
+  plume:{nom:'Plume noire',ic:'🐦',code:['chapeau','cloche','champi'],pour:'alchimiste'},
+  potion:{nom:'Potion révélatrice',ic:'🧪',code:['soleil','champi','arbre'],pour:'sage'},
+  carte:{nom:'Carte de la forêt',ic:'🗺️',code:['arbre','lune','etoile'],pour:'pisteur'}
+};
+var FINAL = ['cloche','soleil','etoile'];
+var CODE_INDEX = {};
+Object.keys(OBJETS).forEach(function(id){ CODE_INDEX[OBJETS[id].code.join('-')] = {id:id, pour:OBJETS[id].pour}; });
+
+var LIEUX = {
+  mairie:{court:'Mairie',nom:'La mairie',ic:'🏛️',x:22,y:44,
+    intro:"C'est ici que dormait la Lanterne d'Or. La fenêtre du bureau du maire est grande ouverte.",
+    points:[
+      {id:'traces',ic:'👣',nom:'Le massif de fleurs'},
+      {id:'fenetre',ic:'🔓',nom:'La fenêtre ouverte',obj:'fil',
+        t:"La fenêtre a été ouverte depuis le dehors. Accroché au loquet, il y a un petit fil de laine rouge !",
+        note:"Mairie : un fil de laine rouge était accroché à la fenêtre."},
+      {id:'gouttiere',ic:'🏠',nom:'La gouttière',
+        t:"La gouttière est toute tordue, comme si quelqu'un était descendu du toit en s'y accrochant. Quelqu'un de léger : sinon, elle aurait cassé !",
+        note:"Mairie : quelqu'un de léger est descendu du toit par la gouttière."}
+    ]},
+  boulangerie:{court:'Boulangerie',nom:'La boulangerie',ic:'🥖',x:80,y:45,
+    intro:"Ça sent bon le pain chaud ! C'est la boutique de Gaspard, le boulanger.",
+    points:[
+      {id:'sol',ic:'👣',nom:'Le sol',
+        t:"Il y a de la farine partout, et de grosses traces de bottes toutes blanches. Gaspard a de très grands pieds !",
+        note:"Boulangerie : Gaspard a de très grands pieds."},
+      {id:'four',ic:'🔥',nom:'Le four',
+        t:"Le four est encore chaud et il y a des dizaines de pains tout frais. Quelqu'un a travaillé ici toute la nuit.",
+        note:"Boulangerie : quelqu'un a fait du pain toute la nuit."}
+    ]},
+  place:{court:'Place',nom:'La place du village',ic:'⛲',x:50,y:69,
+    intro:"Au milieu, la fontaine. Tout autour, les lanternes de la fête attendent d'être allumées.",
+    points:[
+      {id:'fontaine',ic:'💧',nom:'La fontaine',
+        t:"Sur le bord de la fontaine, il y a de petites traces mouillées… Ce sont des traces de pattes de chien !",
+        note:"Place : des traces de pattes de chien près de la fontaine."},
+      {id:'affiche',ic:'📌',nom:"Le panneau d'affichage",obj:'affiche',
+        t:"Une affiche est punaisée sur le panneau : « PERDU : PIRATE, petit chien noir et blanc. Si vous le voyez, prévenez Tim ! »",
+        note:"Place : Tim a perdu son chien Pirate, noir et blanc."},
+      {id:'lanternes',ic:'🏮',nom:'Les lanternes',
+        t:"Des centaines de lanternes éteintes. Sans la Lanterne d'Or, impossible de les allumer ce soir !",
+        note:"Place : sans la Lanterne d'Or, pas de fête ce soir."}
+    ]},
+  foret:{court:'Forêt',nom:'La forêt de Brumeval',ic:'🌲',x:50,y:17,ferme:true,
+    verrou:"La forêt est immense et toute sombre. Sans carte, tu vas te perdre ! Le Grand Livre du Sage cache peut-être une carte…",
+    intro:"Grâce à la carte du Sage, tu trouves le bon sentier. Tu arrives à un carrefour, au milieu des arbres.",
+    points:[
+      {id:'carrefour',ic:'🔀',nom:'Le carrefour',
+        t:"Trois chemins partent d'ici : un vers le Moulin, un vers le Puits, et un vers le Vieux Chêne.",
+        note:"Forêt : trois chemins, vers le Moulin, le Puits et le Vieux Chêne."},
+      {id:'moulin',ic:'🌾',nom:'Chemin du Moulin',
+        t:"Le sol est plein de boue toute lisse. Personne n'est passé par ici.",
+        note:"Chemin du Moulin : aucune trace."},
+      {id:'puits',ic:'💧',nom:'Chemin du Puits',
+        t:"Il y a de grosses traces de sabots… C'est un sanglier qui est passé par là, pas un enfant !",
+        note:"Chemin du Puits : seulement des traces de sanglier."},
+      {id:'chene',ic:'🌳',nom:'Chemin du Vieux Chêne',
+        t:"Il fait bien trop sombre pour voir des traces sur ce chemin. Il faudrait une autre preuve…",
+        note:"Chemin du Vieux Chêne : trop sombre pour voir des traces."},
+      {id:'buisson',ic:'🌿',nom:'Le buisson épineux',obj:'poils',
+        t:"Une touffe de poils est restée accrochée aux épines du buisson !",
+        note:"Forêt : une touffe de poils accrochée au buisson."}
+    ]}
+};
+var T_TRACES = "Dans la terre, il y a deux sortes de traces de pas. Les grosses traces sont pleines de boue sèche et craquelée. Les petites traces sont toutes fraîches : elles datent de cette nuit !";
+var T_TRACES_OK = "Bravo ! La petite trace fraîche mesure 3 carreaux. La grosse trace mesure 5 carreaux. Le Sage connaît la taille de pied de chaque habitant : dis-lui !";
+
+var VILLAGEOIS = {
+  gaspard:{nom:'Gaspard',metier:'le boulanger',ic:'👨‍🍳',q:[
+    {q:'Où étiez-vous cette nuit ?',a:"Dans mon fournil, à faire le pain ! Toute la nuit. Odette a sûrement vu ma lumière : demandez-lui.",note:"Gaspard dit qu'il a fait le pain toute la nuit."},
+    {q:'Avez-vous vu quelque chose ?',a:"Rien du tout, j'avais de la farine jusque dans les yeux ! Je ne suis pas sorti de ma boulangerie.",note:"Gaspard n'a rien vu."},
+    {q:"Montrer l'affiche du chien perdu",besoin:'affiche',a:"Pirate, le chien de Tim ! Hier soir, Tim le cherchait partout en pleurant. Je lui ai dit : « Les chiens perdus filent souvent dans la forêt. »",note:"Gaspard : hier soir, Tim cherchait son chien en pleurant. Gaspard lui a parlé de la forêt."}
+  ]},
+  melusine:{nom:'Mélusine',metier:'la couturière',ic:'👩‍🦰',q:[
+    {q:'Où étiez-vous cette nuit ?',a:"Je dormais comme un loir. Personne ne peut le dire… à part mon oreiller !",note:"Mélusine dit qu'elle dormait, mais personne ne l'a vue."},
+    {q:'Avez-vous vu quelque chose ?',a:"Rien du tout. Mais cet hiver, j'ai tricoté trois écharpes en laine rouge : une pour moi, une pour Odette et une pour le petit Tim.",note:"Mélusine a tricoté 3 écharpes rouges : pour elle, pour Odette et pour Tim."},
+    {q:'Et votre écharpe rouge ?',a:"La voici, autour de mon cou. Regardez : pas un trou, pas un fil qui dépasse !",note:"L'écharpe de Mélusine n'a pas un trou."}
+  ]},
+  basile:{nom:'Basile',metier:'le jardinier',ic:'👨‍🌾',q:[
+    {q:'Où étiez-vous cette nuit ?',a:"Dans mon lit ! Mais hier après-midi, j'ai planté des fleurs devant la mairie. Mes grosses bottes ont dû laisser des traces dans la terre.",note:"Basile a planté des fleurs devant la mairie hier après-midi, avec ses grosses bottes."},
+    {q:'Avez-vous vu quelque chose ?',a:"Quand je suis parti, à six heures du soir, la fenêtre de la mairie était bien fermée.",note:"Basile : à 6 heures du soir, la fenêtre de la mairie était fermée."}
+  ]},
+  odette:{nom:'Odette',metier:'la grand-mère aux sept chats',ic:'👵',q:[
+    {q:'Où étiez-vous cette nuit ?',a:"À ma fenêtre, comme toutes les nuits : je ne dors jamais ! La lumière de la boulangerie de Gaspard est restée allumée jusqu'au matin.",note:"Odette : la lumière de la boulangerie est restée allumée toute la nuit."},
+    {q:'Avez-vous vu quelque chose ?',a:"Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, avec une lumière dorée qui brillait très fort. Elle est partie vers la forêt.",note:"Odette : à minuit, une petite silhouette avec une lumière dorée a filé sur les toits, vers la forêt."},
+    {q:'Et votre écharpe rouge ?',a:"Elle est sur mes épaules, toute neuve ! Et puis avec ma canne, ça fait longtemps que je ne grimpe plus sur les toits.",note:"L'écharpe d'Odette est neuve. Avec sa canne, elle ne peut pas grimper."},
+    {q:'Vos chats ont vu quelque chose ?',obj:'plume',a:"Mon chat Moustache a rapporté ça cette nuit. Je ne sais pas d'où ça vient… Tiens, prends-le.",note:"Odette t'a donné une plume noire rapportée par son chat."}
+  ]},
+  tim:{nom:'Tim',metier:'le petit ramoneur',ic:'🧒',q:[
+    {q:'Frapper à sa porte',a:"Personne ne répond. Le voisin passe la tête par sa fenêtre : « Tim ? Je ne l'ai pas vu depuis hier soir. »",note:"Personne chez Tim. Le voisin ne l'a pas vu depuis hier soir."}
+  ]}
+};
+
+var HABITANTS = [
+  {id:'gaspard',nom:'Gaspard',ic:'👨‍🍳',metier:'Boulanger',pied:5,note:'Fort comme un bœuf. Fait le pain la nuit.'},
+  {id:'melusine',nom:'Mélusine',ic:'👩‍🦰',metier:'Couturière',pied:3,note:'Tricote plus vite que son ombre.'},
+  {id:'basile',nom:'Basile',ic:'👨‍🌾',metier:'Jardinier',pied:5,note:'Toujours de la boue sur ses grosses bottes.'},
+  {id:'odette',nom:'Odette',ic:'👵',metier:'Grand-mère aux sept chats',pied:3,note:'Marche avec une canne.'},
+  {id:'tim',nom:'Tim',ic:'🧒',metier:'Ramoneur, 10 ans',pied:3,note:'Nettoie les cheminées en grimpant sur les toits. Toujours noir de suie !'}
+];
+var NOTE_HABITANTS = "Grand Livre : Gaspard et Basile ont de grands pieds (5 carreaux). Mélusine, Odette et Tim ont de petits pieds (3 carreaux). Tim est ramoneur.";
+var OU = [
+  {id:'moulin',ic:'🌾',n:'Le Moulin'},
+  {id:'puits',ic:'💧',n:'Le Puits'},
+  {id:'chene',ic:'🌳',n:'Le Vieux Chêne'},
+  {id:'toits',ic:'🏠',n:'Les toits'}
+];
+
+var RECETTE = ['bleu','bleu','jaune','rouge','rouge','rouge'];
+var T_RECETTE = "Pour lire l'encre invisible. Verse dans le chaudron, dans cet ordre : 2 gouttes BLEUES, puis 1 goutte JAUNE, puis 3 gouttes ROUGES. Surtout, pas de vert ! Ensuite, remue.";
+var COULEURS = {bleu:'#4b84e6', jaune:'#f3d03e', rouge:'#e24c4c', vert:'#52c05e'};
+var NOMS_COUL = {bleu:'Bleu', jaune:'Jaune', rouge:'Rouge', vert:'Vert'};
+
+var ANALYSES = {
+  fil:{t:"C'est de la laine rouge, tricotée à la main. Dessus, il y a une poudre noire qui sent le feu de bois… C'est de la SUIE de cheminée !",note:"Analyse du fil rouge : laine tricotée main, couverte de suie de cheminée."},
+  poils:{t:"Ce sont des poils de chien, noirs et blancs. Coincée dedans, il y a une petite feuille… une feuille de CHÊNE !",note:"Analyse de la touffe : poils de chien noirs et blancs, avec une feuille de chêne."},
+  plume:{t:"C'est une plume de corbeau. Bizarre : elle sent la lavande, comme un parfum… Elle n'a rien à voir avec la lanterne. Garde-la bien : elle servira peut-être un jour.",note:"Analyse de la plume noire : plume de corbeau qui sent la lavande. Mystère…"}
+};
+
+var LETTRE = "Chers enquêteurs, c'est une catastrophe ! Cette nuit, quelqu'un a pris la Lanterne d'Or dans mon bureau, à la mairie. Ce soir, c'est la Fête des Lanternes : sans elle, aucune lanterne du village ne pourra s'allumer ! Je compte sur vous pour découvrir QUI l'a prise… et OÙ elle se trouve.";
+
+var FIN = [
+  "Toute l'équipe court jusqu'au Vieux Chêne. Sous ses grosses racines, une lumière dorée brille dans le noir… C'est la Lanterne d'Or !",
+  "Juste à côté, Tim dort, roulé en boule, avec son chien Pirate blotti dans ses bras.",
+  "Tim se réveille en sursaut : « Pardon ! Pirate s'était perdu dans la forêt, et il faisait si noir… J'ai pris la lanterne juste pour le retrouver. Je voulais la rapporter avant la fête ! »",
+  "Le soir venu, la Lanterne d'Or allume toutes les lanternes de Brumeval. Devant tout le village, le maire vous remercie. Bravo, les enquêteurs !",
+  "Mais en repartant, vous remarquez quelque chose sur le tronc du Vieux Chêne : un corbeau gravé dans l'écorce, et trois mots…",
+  "<span class=\"corbeau\">LE CORBEAU VEILLE.</span>",
+  "Qui est le Corbeau ? La suite dans l'enquête n°2…"
+];
+
+var SEUILS = [0,100,300,550,850,1200];
+
+/* ---------- État ---------- */
+function enqueteNeuve(){ return {intro:false, codes:{}, vu:{}, carnet:[], indices:0, dernierIndice:null, rate:0, resolu:false, potion:false, mesure:false, chaudron:[], lieu:null, villageois:null, page:'habitants', qui:null, ou:null}; }
+function etatNeuf(){ return {heros:null, xp:0, gagne:{}, son:true, e1:enqueteNeuve()}; }
+function fusion(o){
+  var n = etatNeuf();
+  if(!o || typeof o !== 'object') return n;
+  n.heros = o.heros || null; n.xp = +o.xp || 0; n.gagne = o.gagne || {}; n.son = o.son !== false;
+  n.e1 = Object.assign(enqueteNeuve(), o.e1 || {});
+  return n;
+}
+function charger(){ try{ var t = localStorage.getItem(CLE); if(t) return fusion(JSON.parse(t)); }catch(err){} return etatNeuf(); }
+function sauver(){ try{ localStorage.setItem(CLE, JSON.stringify(S)); }catch(err){} }
+
+var S = charger();
+var UI = {onglet:'role', modal:null, saisie:[], crea:{nom:'',genre:'m',avatar:'🦊',role:null}, retourCode:null, retourAcc:null, confirmer:false, confirmR:null, fin:null, rate:null, mauvaiseMesure:false, lectures:[]};
+
+/* ---------- Règles ---------- */
+function niveau(xp){
+  var n = 1;
+  for(var i=1;i<SEUILS.length;i++){ if(xp >= SEUILS[i]) n = i+1; }
+  var bas = SEUILS[n-1], haut = SEUILS[n] || (bas + 400);
+  return {n:n, pct:Math.max(0, Math.min(100, Math.round((xp-bas)/(haut-bas)*100))), prochain:haut};
+}
+function lireCode(seq, role, e){
+  var k = seq.join('-');
+  if(k === FINAL.join('-')) return {type:'final'};
+  var o = CODE_INDEX[k];
+  if(!o) return {type:'rien'};
+  if(o.pour !== role) return {type:'autre'};
+  if(e.codes[o.id]) return {type:'deja', id:o.id};
+  return {type:'nouveau', id:o.id};
+}
+function lieuOuvert(id){ return !LIEUX[id].ferme || !!S.e1.codes.carte; }
+function questionsDispo(id){
+  return VILLAGEOIS[id].q.map(function(q,i){ return Object.assign({k:'b.'+id+'.'+i}, q); })
+    .filter(function(q){ return !q.besoin || S.e1.codes[q.besoin]; });
+}
+function nomRole(h){ var r = ROLES[h.role]; return h.genre === 'f' ? r.f : r.m; }
+function usagesMax(){ return niveau(S.xp).n >= 2 ? 3 : 2; }
+
+function gagner(id, n){
+  if(S.gagne[id]) return 0;
+  S.gagne[id] = true; S.xp += n; toast('+' + n + ' XP'); return n;
+}
+function noter(id, t, obj){
+  if(S.e1.carnet.some(function(x){ return x.id === id; })) return;
+  S.e1.carnet.push({id:id, t:t, obj:obj || null});
+}
+
+function indice(role, e){
+  var v = e.vu, c = e.codes;
+  if(role === 'pisteur'){
+    if(!v['p.mairie.fenetre']) return "Commence par la mairie, et regarde bien la fenêtre ouverte.";
+    if(!e.mesure) return "À la mairie, mesure les traces dans le massif de fleurs. Dis au Sage combien de carreaux elles font.";
+    if(!v['p.place.affiche']) return "Va sur la place du village : quelque chose est accroché au panneau d'affichage.";
+    if(!c.carte) return "La forêt est fermée. Demande au Sage s'il a trouvé une carte dans son Grand Livre.";
+    if(!v['p.foret.buisson']) return "Dans la forêt, fouille le buisson épineux du carrefour.";
+    return "Tu as tout trouvé ! Raconte tes découvertes au Sage pour l'aider à choisir QUI et OÙ.";
+  }
+  if(role === 'alchimiste'){
+    if(!e.potion) return "Le Sage a une recette dans son Grand Livre. Demande-lui de te la lire, et verse les gouttes dans le bon ordre.";
+    if(!c.fil) return "Le Pisteur va trouver quelque chose à la fenêtre de la mairie. Demande-lui le code !";
+    if(!c.plume) return "Odette, la grand-mère aux chats, va donner un objet au Barde. Demande-lui le code.";
+    if(!c.poils) return "Quand le Pisteur sera dans la forêt, il trouvera quelque chose pour toi dans un buisson.";
+    return "Raconte tes analyses à l'équipe : la poudre noire sur le fil rouge, et la feuille cachée dans les poils !";
+  }
+  if(role === 'barde'){
+    var restantes = Object.keys(VILLAGEOIS).reduce(function(acc,id){ return acc.concat(questionsDispo(id)); }, []).filter(function(q){ return !v[q.k]; });
+    if(!v['b.odette.1']) return "Va voir Odette, la grand-mère aux sept chats. Elle passe ses nuits à sa fenêtre : elle a sûrement vu quelque chose !";
+    if(!v['b.melusine.1']) return "Demande à Mélusine, la couturière, si elle a vu quelque chose. Elle va te parler d'écharpes…";
+    if(!c.affiche) return "Le Pisteur va trouver une affiche sur la place du village. Demande-lui son code, puis montre l'affiche à Gaspard.";
+    if(!v['b.gaspard.2']) return "Montre l'affiche du chien perdu à Gaspard, le boulanger.";
+    if(restantes.length) return "Il reste des questions à poser. Fais le tour des villageois !";
+    return "Raconte tout au Sage : qui a une écharpe rouge, qui ne peut pas grimper, et ce qu'Odette a vu sur les toits.";
+  }
+  if(!v['s.recettes'] && !c.potion) return "Ouvre la page des recettes et lis-la à l'Alchimiste : c'est lui qui a le chaudron.";
+  if(!c.potion) return "La page mystère est écrite à l'encre invisible. Il faut que l'Alchimiste fabrique la potion de la recette, puis te donne son code.";
+  if(e.rate >= 2) return "Le coupable a de petits pieds, une écharpe rouge et beaucoup de suie… Relis bien la page des habitants !";
+  return "Pour trouver QUI : la taille des petites traces (le Pisteur), la poudre sur le fil rouge (l'Alchimiste), et qui sait grimper sur les toits (le Barde). Pour trouver OÙ : demandez à l'Alchimiste ce qu'il y avait dans la touffe de poils.";
+}
+
+function finir(){
+  var e = S.e1;
+  if(e.resolu) return null;
+  e.resolu = true;
+  var nAvant = niveau(S.xp).n, gain = 0;
+  if(!S.gagne['fin-e1']){
+    S.gagne['fin-e1'] = true;
+    gain = S.heros.role === 'sage' ? Math.max(40, 80 - 10*(e.rate||0)) : 60;
+    S.xp += gain;
+    if(S.xp < SEUILS[1]){ gain += SEUILS[1] - S.xp; S.xp = SEUILS[1]; }
+  }
+  var nApres = niveau(S.xp).n;
+  return {gain:gain, monte:nApres > nAvant, n:nApres};
+}
+
+/* ---------- Petits outils ---------- */
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function btnLire(t){ var i = UI.lectures.push(t) - 1; return '<button class="lire" data-act="lire" data-i="' + i + '">🔊 Écouter</button>'; }
+function nettoyer(t){ return String(t).replace(/<[^>]+>/g,' ').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,'').replace(/\s+/g,' ').trim(); }
+function lire(t){
+  try{
+    if(!('speechSynthesis' in window)){ toast("La lecture à voix haute ne marche pas ici"); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(nettoyer(t));
+    u.lang = 'fr-FR'; u.rate = 0.92;
+    var voix = window.speechSynthesis.getVoices().filter(function(v){ return v.lang && v.lang.indexOf('fr') === 0; });
+    if(voix.length) u.voice = voix[0];
+    window.speechSynthesis.speak(u);
+  }catch(err){}
+}
+var audio = null;
+function son(type){
+  if(!S.son) return;
+  try{
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    var notes = {oui:[660,880,1320], non:[300,220], goutte:[980], fin:[523,659,784,1047], magie:[880,1175,1568]}[type] || [660];
+    notes.forEach(function(f,i){
+      var o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + i*0.11;
+      o.type = type === 'non' ? 'triangle' : 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+      o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t+0.55);
+    });
+  }catch(err){}
+}
+var toastTimer = null;
+function toast(t){
+  var el = document.getElementById('toast');
+  el.textContent = t; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.hidden = true; }, 1800);
+}
+function haut(){ try{ window.scrollTo(0,0); }catch(err){} }
+function codeHTML(c){
+  return '<div class="code-affiche" aria-label="' + c.map(function(s){ return SYM[s].n; }).join(', ') + '">' +
+    c.map(function(s){ return '<span class="cs"><span class="ce">' + SYM[s].e + '</span><span class="cn">' + SYM[s].n + '</span></span>'; }).join('') + '</div>';
+}
+function codeCourt(c){ return c.map(function(s){ return SYM[s].e; }).join(' '); }
+function carteObjet(id, titre){
+  var o = OBJETS[id];
+  return '<div class="objet"><span class="oi">' + o.ic + '</span><div class="pile-serree"><div class="objet-titre">' + (titre || 'Objet trouvé') + ' : ' + o.nom + '</div>' +
+    '<div>Donne ce code <b>' + A_QUI[o.pour] + '</b> :</div>' + codeHTML(o.code) + '</div></div>';
+}
+function couleurMelange(arr){
+  if(!arr.length) return '#2b3a5e';
+  var r=0,g=0,b=0;
+  arr.forEach(function(c){ var h = COULEURS[c]; r += parseInt(h.substr(1,2),16); g += parseInt(h.substr(3,2),16); b += parseInt(h.substr(5,2),16); });
+  var n = arr.length, x = function(v){ return ('0' + Math.round(v/n).toString(16)).slice(-2); };
+  return '#' + x(r) + x(g) + x(b);
+}
+
+/* ---------- Dessins ---------- */
+function svgLanterne(){
+  return '<svg class="lanterne" viewBox="0 0 80 110" aria-hidden="true">' +
+    '<circle class="halo" cx="40" cy="58" r="40"/>' +
+    '<path class="lt-anse" d="M31 20 a9 9 0 0 1 18 0"/>' +
+    '<path class="lt-metal" d="M22 20 L58 20 L51 31 L29 31 Z"/>' +
+    '<rect class="lt-verre" x="27" y="31" width="26" height="46" rx="6"/>' +
+    '<path class="lt-flamme" d="M40 45 C 46 53, 46 61, 40 67 C 34 61, 34 53, 40 45 Z"/>' +
+    '<line class="lt-barre" x1="27" y1="54" x2="53" y2="54"/>' +
+    '<rect class="lt-metal" x="22" y="77" width="36" height="8" rx="2"/>' +
+    '<rect class="lt-metal" x="30" y="85" width="20" height="5" rx="2"/></svg>';
+}
+function maison(x, y, s){
+  return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')">' +
+    '<rect class="mur" x="-12" y="-6" width="24" height="18"/>' +
+    '<polygon class="toit" points="-16,-6 0,-20 16,-6"/>' +
+    '<rect class="fen" x="-7" y="0" width="5" height="5"/><rect class="fen" x="3" y="0" width="5" height="5"/></g>';
+}
+function svgVillage(){
+  var arbres = '';
+  for(var i=0;i<24;i++){
+    var x = 6 + i*15.4, y = 30 + (i%2)*16 + (i*7)%6;
+    arbres += '<polygon class="' + (i%3 ? 'sapin' : 'sapin-2') + '" points="' + x + ',' + (y-20) + ' ' + (x-10) + ',' + (y+6) + ' ' + (x+10) + ',' + (y+6) + '"/>';
+  }
+  return '<svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+    '<rect class="sol" width="360" height="300"/>' +
+    '<rect class="lisiere" width="360" height="74"/>' + arbres +
+    '<circle class="astre" cx="330" cy="20" r="10"/>' +
+    '<path class="route" d="M180 207 Q 130 170 79 132"/>' +
+    '<path class="route" d="M180 207 Q 235 175 288 135"/>' +
+    '<path class="route" d="M180 207 C 170 150, 195 110, 180 60"/>' +
+    '<path class="riviere" d="M-10 262 C 70 238, 110 292, 180 280 S 290 248, 370 270"/>' +
+    '<path class="riviere-reflet" d="M-10 262 C 70 238, 110 292, 180 280 S 290 248, 370 270"/>' +
+    maison(40,196,1) + maison(112,230,.9) + maison(250,226,1) + maison(318,196,.9) + maison(26,124,.8) + maison(330,104,.8) + maison(128,92,.7) +
+    '</svg>';
+}
+function svgTraces(){
+  var g = '', i;
+  for(i=0;i<=9;i++) g += '<line class="grille" x1="' + (i*28) + '" y1="0" x2="' + (i*28) + '" y2="196"/>';
+  for(i=0;i<=7;i++) g += '<line class="grille" x1="0" y1="' + (i*28) + '" x2="252" y2="' + (i*28) + '"/>';
+  return '<svg class="traces-svg" viewBox="0 0 252 196" role="img" aria-label="Deux traces de pas sur un quadrillage : une grosse trace sèche et une petite trace fraîche.">' +
+    '<rect class="terre" width="252" height="196"/>' +
+    '<ellipse class="trace-seche" cx="56" cy="74" rx="22" ry="46"/>' +
+    '<ellipse class="trace-seche" cx="56" cy="146" rx="18" ry="22"/>' +
+    '<path class="fissure" d="M40 50 L72 50 M38 64 L74 64 M37 78 L75 78 M38 92 L74 92 M41 106 L71 106 M44 140 L68 140 M44 152 L68 152"/>' +
+    '<path class="fissure" d="M50 36 l6 10 l-4 8 M62 120 l-6 4 M48 160 l8 -6"/>' +
+    '<ellipse class="trace-fraiche" cx="182" cy="83.7" rx="13" ry="27.7"/>' +
+    '<ellipse class="trace-fraiche" cx="182" cy="127" rx="11" ry="13"/>' +
+    '<ellipse class="reflet" cx="177" cy="74" rx="3" ry="9"/>' +
+    g +
+    '<text class="traces-legende" x="56" y="187">grosse trace</text>' +
+    '<text class="traces-legende" x="182" y="187">petite trace</text></svg>';
+}
+function svgChaudron(c){
+  return '<svg viewBox="0 0 200 165" aria-hidden="true">' +
+    '<ellipse class="ombre" cx="100" cy="156" rx="72" ry="8"/>' +
+    '<rect class="pot" x="44" y="138" width="12" height="18" rx="3"/><rect class="pot" x="144" y="138" width="12" height="18" rx="3"/>' +
+    '<path class="pot" d="M28 62 Q 24 146 100 150 Q 176 146 172 62 Z"/>' +
+    '<ellipse class="rebord" cx="100" cy="62" rx="76" ry="16"/>' +
+    '<ellipse cx="100" cy="64" rx="66" ry="11" fill="' + c + '"/>' +
+    '<circle cx="78" cy="62" r="5" fill="' + c + '" stroke="#fff" stroke-opacity=".35"/>' +
+    '<circle cx="118" cy="66" r="3.5" fill="' + c + '" stroke="#fff" stroke-opacity=".35"/>' +
+    '<circle cx="100" cy="58" r="2.5" fill="' + c + '" stroke="#fff" stroke-opacity=".35"/></svg>';
+}
+function svgForet(){
+  var petits = [[38,140],[72,192],[108,176],[198,180],[236,196],[276,150],[22,200],[284,206],[28,100],[272,104]];
+  var arbres = petits.map(function(p){ return '<path class="encre-ligne" d="M' + p[0] + ' ' + (p[1]-12) + ' l-7 12 h14 Z M' + p[0] + ' ' + p[1] + ' v5"/>'; }).join('');
+  return '<svg class="carte-foret" viewBox="0 0 300 232" role="img" aria-label="Carte de la forêt : depuis l’entrée, trois chemins mènent au Moulin, au Puits et au Vieux Chêne.">' +
+    arbres +
+    '<path class="chemin" d="M150 214 L150 150"/>' +
+    '<path class="chemin" d="M150 150 C 122 124, 84 104, 62 76"/>' +
+    '<path class="chemin" d="M150 150 L150 82"/>' +
+    '<path class="chemin" d="M150 150 C 178 124, 216 104, 240 80"/>' +
+    '<circle class="encre-plein" cx="150" cy="150" r="4"/>' +
+    '<g transform="translate(62,52)"><rect class="encre-plein" x="-7" y="-4" width="14" height="22" rx="2"/><path class="encre-ligne" d="M0 -6 L-15 -20 M0 -6 L15 -20 M0 -6 L-15 8 M0 -6 L15 8"/></g>' +
+    '<g transform="translate(150,60)"><ellipse class="encre-ligne" rx="14" ry="5"/><path class="encre-ligne" d="M-14 0 V14 H14 V0 M-11 -3 V-20 H11 V-3"/></g>' +
+    '<g transform="translate(240,50)"><path class="encre-plein" d="M-4 30 L-3 8 L3 8 L4 30 Z"/><circle class="encre-ligne" cx="0" cy="-4" r="15"/><circle class="encre-ligne" cx="-12" cy="5" r="9"/><circle class="encre-ligne" cx="12" cy="5" r="9"/></g>' +
+    '<text class="etiq" x="62" y="22">Moulin</text>' +
+    '<text class="etiq" x="150" y="28">Puits</text>' +
+    '<text class="etiq" x="240" y="18">Vieux Chêne</text>' +
+    '<text class="etiq" x="150" y="230">Entrée</text></svg>';
+}
+
+/* ---------- Écrans ---------- */
+function vueCreation(){
+  var c = UI.crea;
+  return '<main class="accueil"><div class="wrap pile">' +
+    '<a class="lien-accueil" href="' + ACCUEIL + '">← Mes projets</a>' +
+    '<div class="titre-jeu">' + svgLanterne() + '<div class="pile-serree"><p class="sur-titre">Jeu d\'enquête à plusieurs écrans</p><h1>Les Enquêteurs de Brumeval</h1></div></div>' +
+    '<p class="doux">Chaque joueur ouvre ce jeu sur sa tablette ou son téléphone et crée son héros. Ensemble, vous allez résoudre une enquête.</p>' +
+    '<section class="panneau pile"><h2>Crée ton héros</h2>' +
+      '<div class="pile-serree"><label class="etiquette" for="nom-heros">Ton prénom</label>' +
+      '<input id="nom-heros" class="champ" maxlength="16" autocomplete="off" value="' + esc(c.nom) + '" placeholder="Écris ton prénom"></div>' +
+      '<div class="pile-serree"><span class="etiquette">Je suis</span><div class="puces">' +
+        '<button class="puce" data-act="genre" data-v="m" aria-pressed="' + (c.genre==='m') + '">un héros</button>' +
+        '<button class="puce" data-act="genre" data-v="f" aria-pressed="' + (c.genre==='f') + '">une héroïne</button></div></div>' +
+      '<div class="pile-serree"><span class="etiquette">Mon animal totem</span><div class="avatars">' +
+        AVATARS.map(function(a){ return '<button data-act="avatar" data-v="' + a + '" aria-pressed="' + (c.avatar===a) + '" aria-label="Avatar ' + a + '">' + a + '</button>'; }).join('') +
+      '</div></div></section>' +
+    '<section class="pile"><h2>Choisis ton rôle</h2>' +
+      '<div class="roles">' + Object.keys(ROLES).map(function(id){
+        var r = ROLES[id];
+        return '<button class="role" data-act="choix-role" data-v="' + id + '" aria-pressed="' + (c.role===id) + '"><span class="ri">' + r.ic + '</span><span class="pile-serree"><b>' + (c.genre==='f' ? r.f : r.m) + '</b><span>' + r.desc + '</span><span class="tag">' + r.tag + '</span></span></button>';
+      }).join('') + '</div>' +
+      '<p class="conseil">Chaque joueur prend un rôle différent. Le Barde et le Sage lisent beaucoup : ces rôles vont bien aux grands.</p>' +
+    '</section>' +
+    '<button class="btn grand" data-act="creer" ' + (c.nom.trim() && c.role ? '' : 'disabled') + '>C\'est moi !</button>' +
+  '</div></main>';
+}
+
+function vueIntro(){
+  var h = S.heros, r = ROLES[h.role];
+  return '<main class="accueil"><div class="wrap pile">' +
+    '<div class="titre-jeu">' + svgLanterne() + '<div class="pile-serree"><p class="sur-titre">Enquête n°1</p><h1>La Lanterne d\'Or</h1></div></div>' +
+    '<div class="parchemin pile"><p class="lettre-entete">Brumeval, le matin de la Fête des Lanternes</p><p>' + LETTRE + '</p><p class="signature">Monsieur Grosbec, maire de Brumeval</p>' + btnLire(LETTRE) + '</div>' +
+    '<section class="panneau pile"><h2>Comment on joue</h2><ul class="regles">' +
+      '<li>Chacun a un rôle différent. Ce que tu vois sur ton écran, les autres ne le voient pas : raconte-leur !</li>' +
+      '<li>Quand tu trouves un objet, il a un code de 3 symboles. Donne-le à la bonne personne.</li>' +
+      '<li>Quand on te donne un code, tape-le dans ton coffre à codes, dans l\'onglet Codes.</li>' +
+      '<li>Quand toute l\'équipe est d\'accord, le Sage fait l\'accusation.</li></ul></section>' +
+    '<section class="panneau pile"><h3>' + r.ic + ' Ta mission : ' + nomRole(h) + '</h3><p>' + r.mission + '</p></section>' +
+    '<button class="btn grand" data-act="commencer">C\'est parti !</button>' +
+  '</div></main>';
+}
+
+function vueJeu(){
+  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp);
+  var contenu = {role:vueRole, coffre:vueCoffre, carnet:vueCarnet, pouvoir:vuePouvoir}[UI.onglet] || vueRole;
+  return '<header class="entete"><div class="wrap">' +
+      '<div class="avatar" aria-hidden="true">' + h.avatar + '</div>' +
+      '<div class="heros-info"><div class="heros-nom">' + esc(h.nom) + '</div>' +
+        '<div class="heros-classe">' + r.ic + ' ' + nomRole(h) + ' · Niveau ' + niv.n + ' · ' + S.xp + ' XP</div>' +
+        '<div class="xp" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + niv.pct + '"><span style="width:' + niv.pct + '%"></span></div></div>' +
+      '<button class="icone-btn" data-act="reglages" aria-label="Réglages">⚙️</button>' +
+    '</div></header>' +
+    '<main><div class="wrap pile">' +
+      (S.e1.resolu ? '<div class="mission resolue">✓ Enquête résolue ! L\'enquête n°2 arrive bientôt.</div>' : '<div class="mission">🏮 Mission : trouver QUI a pris la Lanterne d\'Or, et OÙ elle est.</div>') +
+      contenu() +
+    '</div></main>' +
+    '<nav class="onglets" aria-label="Onglets"><div class="wrap">' +
+      ongletBtn('role', r.ic, r.onglet) + ongletBtn('coffre','🔐','Codes') + ongletBtn('carnet','📒','Carnet') + ongletBtn('pouvoir','✨','Pouvoir') +
+    '</div></nav>';
+}
+function ongletBtn(id, ic, nom){
+  return '<button class="onglet" data-act="onglet" data-v="' + id + '"' + (UI.onglet===id ? ' aria-current="page"' : '') + '><span class="oi">' + ic + '</span>' + nom + '</button>';
+}
+function vueRole(){
+  return {pisteur:vuePisteur, alchimiste:vueAlchimiste, barde:vueBarde, sage:vueSage}[S.heros.role]();
+}
+
+/* Pisteur */
+function vuePisteur(){
+  var e = S.e1;
+  if(e.lieu) return vueLieu(e.lieu);
+  return '<section class="pile"><div class="pile-serree"><h2>Le village de Brumeval</h2><p class="doux">Touche un lieu pour l\'explorer.</p></div>' +
+    '<div class="carte">' + svgVillage() + Object.keys(LIEUX).map(function(id){
+      var l = LIEUX[id], ouvert = lieuOuvert(id);
+      var fini = ouvert && l.points.every(function(p){ return S.e1.vu['p.'+id+'.'+p.id]; });
+      return '<button class="pin' + (ouvert ? '' : ' ferme') + '" style="left:' + l.x + '%;top:' + l.y + '%" data-act="lieu" data-id="' + id + '" aria-label="' + l.nom + (ouvert ? '' : ' (fermée)') + '">' +
+        '<span class="pin-rond">' + l.ic + (!ouvert ? '<span class="badge">🔒</span>' : (fini ? '<span class="badge ok">✓</span>' : '')) + '</span><span class="pin-nom">' + l.court + '</span></button>';
+    }).join('') + '</div></section>';
+}
+function vueLieu(id){
+  var l = LIEUX[id];
+  return '<section class="pile"><button class="retour" data-act="carte">← Retour à la carte</button>' +
+    '<div class="titre-lieu"><span class="gros-ic">' + l.ic + '</span><h2>' + l.nom + '</h2></div>' +
+    '<div class="parchemin pile"><p>' + l.intro + '</p>' + btnLire(l.intro) + '</div>' +
+    '<h3>Fouiller</h3><div class="tuiles">' + l.points.map(function(p){
+      return '<button class="tuile' + (S.e1.vu['p.'+id+'.'+p.id] ? ' vu' : '') + '" data-act="point" data-l="' + id + '" data-p="' + p.id + '"><span class="ti">' + p.ic + '</span><span>' + p.nom + '</span></button>';
+    }).join('') + '</div></section>';
+}
+
+/* Alchimiste */
+function vueAlchimiste(){
+  var e = S.e1, chaudron;
+  if(e.potion){
+    chaudron = '<div class="potion-ok"><span class="gros-ic">🧪</span><p>Ta potion révélatrice brille en violet ! Elle sert à lire l\'encre invisible.</p></div>' + carteObjet('potion','Potion fabriquée');
+  } else {
+    chaudron = '<p class="doux">Pour fabriquer une potion, il te faut une recette. Le Sage en a peut-être une dans son Grand Livre !</p>' +
+      '<div class="chaudron">' + svgChaudron(couleurMelange(e.chaudron)) + '</div>' +
+      '<div class="gouttes" aria-label="Gouttes dans le chaudron">' + (e.chaudron.length ? e.chaudron.map(function(g){ return '<span class="goutte" style="--c:var(--g-' + g + ')" title="' + NOMS_COUL[g] + '"></span>'; }).join('') : '<span class="doux petit">Le chaudron est vide.</span>') + '</div>' +
+      '<div class="fioles">' + ['bleu','jaune','rouge','vert'].map(function(c){ return '<button class="fiole" data-act="goutte" data-c="' + c + '"><span class="verre" style="--c:var(--g-' + c + ')"></span>' + NOMS_COUL[c] + '</button>'; }).join('') + '</div>' +
+      '<div class="rangee"><button class="btn second petit" data-act="vider">Vider</button><button class="btn petit" data-act="remuer"' + (e.chaudron.length ? '' : ' disabled') + '>Remuer !</button></div>' +
+      (UI.rate ? '<p class="rate">' + UI.rate + '</p>' : '');
+  }
+  var faites = ['fil','plume','poils'].filter(function(id){ return e.codes[id]; });
+  var analyses = faites.length ? '<div class="tuiles">' + faites.map(function(id){ return '<button class="tuile vu" data-act="voir-analyse" data-id="' + id + '"><span class="ti">' + OBJETS[id].ic + '</span><span>' + OBJETS[id].nom + '</span></button>'; }).join('') + '</div>'
+    : '<p class="doux">Pas encore d\'objet à analyser. Quand un équipier trouve un objet pour toi, il te donne un code de 3 symboles : tape-le dans l\'onglet Codes.</p>';
+  return '<section class="pile"><h2>Le laboratoire</h2>' +
+    '<div class="panneau pile"><h3>Le chaudron</h3>' + chaudron + '</div>' +
+    '<div class="panneau pile"><h3>Les analyses</h3>' + analyses + '</div></section>';
+}
+
+/* Barde */
+function vueBarde(){
+  var e = S.e1;
+  if(e.villageois) return vueDialogue(e.villageois);
+  return '<section class="pile"><div class="pile-serree"><h2>Les villageois</h2><p class="doux">Touche un habitant pour lui parler.</p></div>' +
+    '<div class="tuiles">' + Object.keys(VILLAGEOIS).map(function(id){
+      var v = VILLAGEOIS[id], fini = questionsDispo(id).every(function(q){ return e.vu[q.k]; });
+      return '<button class="tuile portrait' + (fini ? ' vu' : '') + '" data-act="villageois" data-id="' + id + '"><span class="ti">' + v.ic + '</span><span class="pile-serree"><b>' + v.nom + '</b><span class="doux petit">' + v.metier + '</span></span></button>';
+    }).join('') + '</div></section>';
+}
+function vueDialogue(id){
+  var v = VILLAGEOIS[id], e = S.e1;
+  return '<section class="pile"><button class="retour" data-act="villageois-retour">← Tous les villageois</button>' +
+    '<div class="titre-lieu"><span class="gros-ic">' + v.ic + '</span><div class="pile-serree"><h2>' + v.nom + '</h2><p class="doux">' + v.metier + '</p></div></div>' +
+    '<div class="pile">' + questionsDispo(id).map(function(q){
+      if(e.vu[q.k]) return '<div><div class="question-posee">Toi : ' + q.q + '</div><div class="bulle pile-serree"><p>' + q.a + '</p>' + btnLire(q.a) + (q.obj ? carteObjet(q.obj, 'Objet reçu') : '') + '</div></div>';
+      return '<button class="q-btn' + (q.besoin ? ' special' : '') + '" data-act="question" data-k="' + q.k + '">' + q.q + '</button>';
+    }).join('') + '</div></section>';
+}
+
+/* Sage */
+function vueSage(){
+  var pg = S.e1.page || 'habitants';
+  var pages = [['habitants','Habitants'],['recettes','Recettes'],['mystere','Page mystère'],['accusation','Accusation']];
+  var rendu = {habitants:pageHabitants, recettes:pageRecettes, mystere:pageMystere, accusation:pageAccusation}[pg]();
+  return '<section class="pile"><h2>Le Grand Livre de Brumeval</h2>' +
+    '<div class="segments" role="tablist">' + pages.map(function(p){ return '<button role="tab" aria-selected="' + (pg===p[0]) + '" data-act="page" data-id="' + p[0] + '">' + p[1] + '</button>'; }).join('') + '</div>' +
+    rendu + '</section>';
+}
+function pageHabitants(){
+  var texte = 'Les habitants de Brumeval. ' + HABITANTS.map(function(h){ return h.nom + ', ' + h.metier + '. Taille de pied : ' + h.pied + ' carreaux. ' + h.note; }).join(' ');
+  return '<div class="parchemin pile"><p>Voici les habitants de Brumeval. La taille de pied se mesure en carreaux.</p>' +
+    HABITANTS.map(function(h){
+      return '<div class="habitant"><span class="hic">' + h.ic + '</span><div class="pile-serree"><div><b>' + h.nom + '</b> · ' + h.metier + '</div>' +
+        '<div>Taille de pied :<span class="carreaux" aria-hidden="true">' + new Array(h.pied+1).join('<i></i>') + '</span><b>' + h.pied + ' carreaux</b></div>' +
+        '<div class="doux petit">' + h.note + '</div></div></div>';
+    }).join('') + btnLire(texte) + '</div>';
+}
+function pageRecettes(){
+  var gouttes = RECETTE.map(function(g){ return '<span class="goutte" style="--c:var(--g-' + g + ')" title="' + NOMS_COUL[g] + '"></span>'; }).join('');
+  return '<div class="parchemin pile">' +
+    '<div class="recette pile-serree"><h3>Potion révélatrice</h3><p>' + T_RECETTE + '</p><div class="gouttes" style="justify-content:flex-start">' + gouttes + '</div>' +
+    '<p class="doux petit">C\'est l\'Alchimiste qui a le chaudron : lis-lui la recette.</p>' + btnLire(T_RECETTE) + '</div>' +
+    '<div class="recette pile-serree"><h3>Soupe d\'orties du mardi</h3><p>Ne sert à rien pour l\'enquête. Mais c\'est très bon avec du pain de Gaspard.</p></div></div>';
+}
+function pageMystere(){
+  if(!S.e1.codes.potion){
+    var t = "Cette page a l'air toute blanche… Mais quand on la penche, on voit des reflets qui brillent. C'est sûrement de l'encre invisible ! Une potion révélatrice pourrait la faire apparaître.";
+    return '<div class="parchemin page-vide"><div class="pile" style="align-items:center"><p>' + t + '</p>' + btnLire(t) + '</div></div>' +
+      '<p class="doux">Quand l\'Alchimiste aura fabriqué la potion, il te donnera un code : tape-le dans l\'onglet Codes.</p>';
+  }
+  return '<div class="parchemin pile"><h3>La carte de la forêt</h3>' + svgForet() +
+    '<p>Depuis l\'entrée de la forêt, trois chemins partent du carrefour : vers le Moulin, vers le Puits et vers le Vieux Chêne.</p></div>' +
+    carteObjet('carte', 'Pour entrer dans la forêt');
+}
+function pageAccusation(){
+  var e = S.e1;
+  if(e.resolu){
+    return '<div class="parchemin pile"><h3>Enquête résolue !</h3><p>C\'était Tim, et la Lanterne d\'Or était sous le Vieux Chêne.</p>' +
+      '<p>Si ce n\'est pas déjà fait, dites à toute l\'équipe d\'entrer ce code dans leur coffre :</p>' +
+      '<div class="objet">' + codeHTML(FINAL) + '</div><button class="btn" data-act="revoir-fin">Revoir la fin</button></div>';
+  }
+  return '<div class="pile"><p>Quand toute l\'équipe est d\'accord, choisis QUI a pris la Lanterne d\'Or et OÙ elle se trouve.</p>' +
+    '<h3>Qui ?</h3><div class="choix">' + HABITANTS.map(function(h){ return '<button aria-pressed="' + (e.qui===h.id) + '" data-act="qui" data-id="' + h.id + '"><span class="ci">' + h.ic + '</span>' + h.nom + '</button>'; }).join('') + '</div>' +
+    '<h3>Où ?</h3><div class="choix">' + OU.map(function(o){ return '<button aria-pressed="' + (e.ou===o.id) + '" data-act="ou" data-id="' + o.id + '"><span class="ci">' + o.ic + '</span>' + o.n + '</button>'; }).join('') + '</div>' +
+    (UI.confirmer
+      ? '<div class="panneau pile"><p><b>Toute l\'équipe est d\'accord ?</b></p><div class="rangee"><button class="btn" data-act="accuser-oui">Oui, on accuse !</button><button class="btn second" data-act="accuser-non">Pas encore</button></div></div>'
+      : '<button class="btn" data-act="accuser"' + (e.qui && e.ou ? '' : ' disabled') + '>Accuser !</button>') +
+    (UI.retourAcc ? '<div class="parchemin pile"><p>' + UI.retourAcc + '</p>' + btnLire(UI.retourAcc) + '</div>' : '') +
+  '</div>';
+}
+
+/* Coffre, carnet, pouvoir */
+function vueCoffre(){
+  var s = UI.saisie, slots = '';
+  for(var i=0;i<3;i++) slots += '<div class="slot' + (s[i] ? ' plein' : '') + '">' + (s[i] ? SYM[s[i]].e : '') + '</div>';
+  return '<section class="pile"><div class="pile-serree"><h2>Le coffre à codes</h2><p class="doux">Un équipier t\'a donné un code de 3 symboles ? Tape-le ici, dans le bon ordre.</p></div>' +
+    '<div class="slots" aria-label="Code tapé">' + slots + '</div>' +
+    '<div class="clavier">' + ORDRE_SYM.map(function(k){ return '<button class="touche" data-act="sym" data-v="' + k + '"><span class="te">' + SYM[k].e + '</span><span class="tn">' + SYM[k].n + '</span></button>'; }).join('') + '</div>' +
+    '<div class="rangee" style="justify-content:center"><button class="btn second" data-act="effacer"' + (s.length ? '' : ' disabled') + '>Effacer</button><button class="btn" data-act="valider"' + (s.length === 3 ? '' : ' disabled') + '>Ouvrir le coffre</button></div>' +
+    (UI.retourCode ? '<p class="retour-code">' + UI.retourCode + '</p>' : '') +
+  '</section>';
+}
+function vueCarnet(){
+  var e = S.e1;
+  return '<section class="pile"><h2>Mon carnet d\'enquête</h2>' +
+    (e.carnet.length
+      ? '<ol class="notes">' + e.carnet.map(function(n){ return '<li>' + n.t + (n.obj ? '<div class="note-code">Code ' + A_QUI[OBJETS[n.obj].pour] + ' : <span>' + codeCourt(OBJETS[n.obj].code) + '</span></div>' : '') + '</li>'; }).join('') + '</ol>'
+      : '<p class="doux">Ton carnet est vide pour l\'instant. Chaque indice que tu trouves s\'écrit ici tout seul.</p>') +
+    '<p class="astuce"><b>Sur papier :</b> écrivez les 5 habitants sur une feuille, et barrez ceux qui sont innocents au fur et à mesure.</p>' +
+    (e.resolu ? '<button class="btn" data-act="revoir-fin">Revoir la fin de l\'enquête</button>' : '') +
+  '</section>';
+}
+function vuePouvoir(){
+  var h = S.heros, r = ROLES[h.role], niv = niveau(S.xp), reste = Math.max(0, usagesMax() - S.e1.indices);
+  return '<section class="pile"><h2>Mon pouvoir</h2>' +
+    '<div class="pouvoir"><span class="p-ic">✨</span><div class="pile-serree"><h3>' + r.pouvoir.n + '</h3><p>' + r.pouvoir.d + '</p><p class="doux petit">' + reste + ' utilisation' + (reste > 1 ? 's' : '') + ' restante' + (reste > 1 ? 's' : '') + ' pour cette enquête</p></div></div>' +
+    '<button class="btn" data-act="pouvoir"' + (reste && !S.e1.resolu ? '' : ' disabled') + '>Utiliser : ' + r.pouvoir.n + '</button>' +
+    (S.e1.dernierIndice ? '<div class="parchemin pile"><h3>Ce que ton pouvoir te souffle</h3><p>' + S.e1.dernierIndice + '</p>' + btnLire(S.e1.dernierIndice) + '</div>' : '') +
+    '<div class="panneau pile"><h3>Progression</h3><p>Niveau ' + niv.n + ' · ' + S.xp + ' XP · prochain niveau à ' + niv.prochain + ' XP</p>' +
+      '<div class="niveau-suivant' + (niv.n >= 2 ? ' debloque' : '') + '"><b>' + (niv.n >= 2 ? 'Débloqué' : 'Au niveau 2') + ' : ' + r.pouvoir2.n + '</b><br>' + r.pouvoir2.d +
+      (niv.n >= 2 ? '<br><span class="doux petit">À utiliser dans la prochaine enquête.</span>' : '') + '</div></div>' +
+  '</section>';
+}
+
+/* Fenêtres */
+function vueModal(){
+  var m = UI.modal, c = '', e = S.e1;
+  if(m.type === 'info'){
+    c = '<h2>' + m.titre + '</h2><p>' + m.t + '</p>' + btnLire(m.t) + '<button class="btn" data-act="fermer">Continuer</button>';
+  } else if(m.type === 'point'){
+    var p = LIEUX[m.lid].points.filter(function(x){ return x.id === m.pid; })[0];
+    c = '<h2>' + p.ic + ' ' + p.nom + '</h2><p>' + p.t + '</p>' + btnLire(p.t) + (p.obj ? carteObjet(p.obj) : '') + '<button class="btn" data-act="fermer">Continuer</button>';
+  } else if(m.type === 'traces'){
+    c = '<h2>👣 Le massif de fleurs</h2><p>' + T_TRACES + '</p>' + btnLire(T_TRACES) + svgTraces() +
+      (e.mesure
+        ? '<div class="reussi pile-serree"><p>' + T_TRACES_OK + '</p>' + btnLire(T_TRACES_OK) + '</div>'
+        : '<p><b>Compte les carreaux : combien mesure la petite trace fraîche, de haut en bas ?</b></p><div class="reponses">' +
+          [2,3,4,5].map(function(n){ return '<button class="btn second" data-act="mesure" data-v="' + n + '">' + n + '</button>'; }).join('') + '</div>' +
+          (UI.mauvaiseMesure ? '<p class="rate">Pas tout à fait… Recompte les carreaux, doucement.</p>' : '')) +
+      '<button class="btn" data-act="fermer">Continuer</button>';
+  } else if(m.type === 'analyse'){
+    var o = OBJETS[m.id];
+    c = m.pret
+      ? '<h2>' + o.ic + ' ' + o.nom + '</h2><p class="doux">Résultat de l\'analyse</p><p>' + ANALYSES[m.id].t + '</p>' + btnLire(ANALYSES[m.id].t) + '<button class="btn" data-act="fermer">Continuer</button>'
+      : '<h2>' + o.ic + ' ' + o.nom + '</h2><div class="analyse-anim" aria-hidden="true">⚗️</div><p class="centre">Analyse en cours…</p>';
+  } else if(m.type === 'potion'){
+    c = '<h2>🧪 Potion réussie !</h2><p>La potion brille en violet ! Elle sert à lire l\'encre invisible.</p>' + carteObjet('potion','Potion fabriquée') + '<button class="btn" data-act="fermer">Continuer</button>';
+  } else if(m.type === 'fin'){
+    var r = ROLES[S.heros.role], f = UI.fin;
+    c = '<p class="doux">Enquête n°1 résolue</p><h2>La Lanterne d\'Or est retrouvée !</h2>' +
+      '<div class="histoire pile">' + FIN.map(function(x){ return '<p>' + x + '</p>'; }).join('') + '</div>' + btnLire(FIN.join(' ')) +
+      (S.heros.role === 'sage' ? '<div class="objet"><span class="oi">🔔</span><div class="pile-serree"><div class="objet-titre">Pour toute l\'équipe</div><div>Dites aux autres d\'entrer ce code dans leur coffre :</div>' + codeHTML(FINAL) + '</div></div>' : '') +
+      (f && f.gain ? '<div class="recompense pile-serree"><div class="gain">+' + f.gain + ' XP</div>' + (f.monte ? '<div class="niveau-gagne">Tu passes au niveau ' + f.n + ' !</div>' : '') +
+        (f.n >= 2 ? '<p>Nouveau pouvoir pour la prochaine enquête : <b>' + r.pouvoir2.n + '</b>. ' + r.pouvoir2.d + '</p>' : '') + '</div>' : '') +
+      '<button class="btn" data-act="fermer">Retour au jeu</button>';
+  } else if(m.type === 'reglages'){
+    c = '<h2>Réglages</h2>' +
+      '<div class="rangee-reglage"><span>Sons</span><button class="btn second petit" data-act="son">' + (S.son ? 'Activés' : 'Coupés') + '</button></div>' +
+      (UI.confirmR === 'recommencer'
+        ? '<div class="pile-serree"><p><b>Recommencer l\'enquête depuis le début ?</b> Ton héros et tes XP sont gardés.</p><div class="rangee"><button class="btn" data-act="recommencer-oui">Oui, recommencer</button><button class="btn second" data-act="confirmR-non">Non</button></div></div>'
+        : '<button class="btn second" data-act="confirmR" data-v="recommencer">Recommencer l\'enquête</button>') +
+      (UI.confirmR === 'heros'
+        ? '<div class="pile-serree"><p><b>Effacer ton héros, ton niveau et ton carnet sur cet appareil ?</b></p><div class="rangee"><button class="btn" data-act="heros-oui">Oui, effacer</button><button class="btn second" data-act="confirmR-non">Non</button></div></div>'
+        : '<button class="btn second" data-act="confirmR" data-v="heros">Changer de héros</button>') +
+      '<a class="btn second" href="' + ACCUEIL + '">🏠 Retour à mes projets</a>' +
+      '<button class="btn" data-act="fermer">Fermer</button>';
+  }
+  return '<div class="voile" data-act="voile"><div class="feuille pile" role="dialog" aria-modal="true">' + c + '</div></div>';
+}
+
+/* ---------- Actions ---------- */
+function ouvrirPoint(lid, pid){
+  var p = LIEUX[lid].points.filter(function(x){ return x.id === pid; })[0], cle = 'p.' + lid + '.' + pid, e = S.e1;
+  if(pid === 'traces'){
+    e.vu[cle] = true; UI.mauvaiseMesure = false; UI.modal = {type:'traces'}; sauver(); render(); return;
+  }
+  if(!e.vu[cle]){
+    e.vu[cle] = true; gagner(cle, p.obj ? 15 : 5); noter(cle, p.note, p.obj); son('oui');
+  }
+  UI.modal = {type:'point', lid:lid, pid:pid}; sauver(); render();
+}
+function poser(k){
+  var parts = k.split('.'), v = VILLAGEOIS[parts[1]], q = v.q[+parts[2]], e = S.e1;
+  if(!e.vu[k]){ e.vu[k] = true; gagner(k, q.obj || q.besoin ? 15 : 10); noter(k, q.note, q.obj); son('oui'); }
+  sauver(); render();
+}
+function remuer(){
+  var e = S.e1;
+  if(!e.chaudron.length) return;
+  if(e.chaudron.join(',') === RECETTE.join(',')){
+    e.potion = true; e.chaudron = []; UI.rate = null;
+    gagner('a.potion', 20); noter('a.potion', 'Tu as fabriqué la potion révélatrice.', 'potion'); son('oui');
+    UI.modal = {type:'potion'};
+  } else {
+    e.chaudron = []; son('non');
+    UI.rate = "Pouf ! Une fumée verte s'échappe du chaudron… Raté ! Vérifie la recette avec le Sage et recommence.";
+  }
+  sauver(); render();
+}
+function debloquer(id){
+  var e = S.e1;
+  e.codes[id] = true;
+  if(id === 'fil' || id === 'poils' || id === 'plume'){
+    gagner('a.' + id, 20); noter('a.' + id, ANALYSES[id].note);
+    UI.modal = {type:'analyse', id:id, pret:false};
+    sauver(); render();
+    setTimeout(function(){ if(UI.modal && UI.modal.type === 'analyse' && UI.modal.id === id){ UI.modal.pret = true; son('oui'); render(); } }, 1700);
+    return;
+  }
+  if(id === 'affiche'){
+    gagner('b.affiche', 15); noter('b.affiche', "Tu as l'affiche du chien perdu de Tim. Montre-la aux villageois !");
+    UI.modal = {type:'info', titre:"🐶 L'affiche du chien perdu", t:"Le Pisteur t'a donné l'affiche : « PERDU : PIRATE, petit chien noir et blanc. Si vous le voyez, prévenez Tim ! » Montre-la aux villageois : une nouvelle question est apparue chez quelqu'un…"};
+  } else if(id === 'potion'){
+    gagner('s.potion', 25); e.page = 'mystere';
+    noter('s.potion', "La page mystère montre la carte de la forêt : trois chemins, vers le Moulin, le Puits et le Vieux Chêne.", 'carte');
+    UI.modal = {type:'info', titre:'🧪 La potion révélatrice', t:"Tu verses quelques gouttes de potion sur la page mystère… Des traits violets apparaissent ! C'est une carte de la forêt. Va la voir dans le Grand Livre."};
+  } else if(id === 'carte'){
+    gagner('p.carte', 15); noter('p.carte', 'La forêt est ouverte grâce à la carte du Sage.');
+    UI.modal = {type:'info', titre:'🗺️ La carte de la forêt', t:"Grâce à la carte du Sage, tu sais comment entrer dans la forêt sans te perdre. Elle est maintenant ouverte sur ta carte du village !"};
+  }
+  son('oui'); sauver(); render();
+}
+function declencherFin(){
+  UI.fin = finir(); UI.modal = {type:'fin'}; UI.retourCode = null;
+  sauver(); render(); son('fin');
+}
+function valider(){
+  var r = lireCode(UI.saisie, S.heros.role, S.e1);
+  UI.saisie = []; UI.retourCode = null;
+  if(r.type === 'rien'){ UI.retourCode = "Rien ne se passe… Vérifiez le code ensemble, dans le bon ordre."; son('non'); render(); return; }
+  if(r.type === 'autre'){ UI.retourCode = "Ce code n'ouvre pas ton coffre. Il est pour un autre membre de l'équipe : à qui faut-il le donner ?"; son('non'); render(); return; }
+  if(r.type === 'final'){
+    if(S.heros.role === 'sage' && !S.e1.resolu){ UI.retourCode = "Le Sage doit d'abord faire l'accusation dans le Grand Livre."; son('non'); render(); return; }
+    if(S.e1.resolu){ UI.fin = null; UI.modal = {type:'fin'}; render(); return; }
+    declencherFin(); return;
+  }
+  if(r.type === 'deja'){
+    if(r.id === 'fil' || r.id === 'poils' || r.id === 'plume'){ UI.modal = {type:'analyse', id:r.id, pret:true}; }
+    else { UI.retourCode = 'Ce code a déjà été utilisé. Regarde dans ton carnet !'; }
+    render(); return;
+  }
+  debloquer(r.id);
+}
+function accuser(){
+  var e = S.e1, bonQui = e.qui === 'tim', bonOu = e.ou === 'chene';
+  UI.confirmer = false;
+  if(bonQui && bonOu){ UI.retourAcc = null; declencherFin(); return; }
+  e.rate = (e.rate || 0) + 1; son('non');
+  UI.retourAcc = bonQui ? "Le maire hoche la tête : « Oui, je crois que c'est bien la bonne personne… Mais la lanterne n'est pas là-bas ! »"
+    : bonOu ? "Le maire réfléchit : « Ce lieu, peut-être… Mais cette personne-là n'a rien fait ! »"
+    : "Le maire fronce les sourcils : « Hum, je ne crois pas. Revérifiez vos indices ! »";
+  sauver(); render();
+}
+function utiliserPouvoir(){
+  if(S.e1.indices >= usagesMax()) return;
+  S.e1.indices++; S.e1.dernierIndice = indice(S.heros.role, S.e1); son('magie');
+  sauver(); render();
+}
+function fermer(){
+  UI.modal = null; UI.mauvaiseMesure = false; UI.confirmR = null;
+  try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(err){}
+  render();
+}
+
+function act(a, el){
+  var e = S.e1, d = el.dataset;
+  switch(a){
+    case 'genre': UI.crea.genre = d.v; render(); break;
+    case 'avatar': UI.crea.avatar = d.v; render(); break;
+    case 'choix-role': UI.crea.role = d.v; render(); break;
+    case 'creer':
+      if(!UI.crea.nom.trim() || !UI.crea.role) return;
+      S.heros = {nom:UI.crea.nom.trim(), genre:UI.crea.genre, avatar:UI.crea.avatar, role:UI.crea.role};
+      sauver(); haut(); render(); break;
+    case 'commencer':
+      e.intro = true; UI.onglet = 'role';
+      if(S.heros.role === 'sage'){ e.vu['s.habitants'] = true; gagner('s.habitants', 10); noter('s.habitants', NOTE_HABITANTS); }
+      sauver(); haut(); render(); break;
+    case 'onglet': UI.onglet = d.v; UI.retourCode = null; haut(); render(); break;
+    case 'lieu':
+      if(!lieuOuvert(d.id)){ UI.modal = {type:'info', titre:LIEUX[d.id].ic + ' ' + LIEUX[d.id].nom, t:LIEUX[d.id].verrou}; render(); return; }
+      e.lieu = d.id; sauver(); haut(); render(); break;
+    case 'carte': e.lieu = null; sauver(); haut(); render(); break;
+    case 'point': ouvrirPoint(d.l, d.p); break;
+    case 'mesure':
+      if(+d.v === 3){
+        e.mesure = true; UI.mauvaiseMesure = false; gagner('p.mesure', 15);
+        noter('p.mesure', 'Mairie : les traces fraîches de cette nuit mesurent 3 carreaux. Les vieilles traces de boue sèche en mesurent 5.'); son('oui');
+      } else { UI.mauvaiseMesure = true; son('non'); }
+      sauver(); render(); break;
+    case 'fermer': fermer(); break;
+    case 'lire': lire(UI.lectures[+d.i]); break;
+    case 'goutte':
+      if(e.chaudron.length >= 8){ UI.rate = 'Le chaudron est plein ! Remue-le ou vide-le.'; }
+      else { e.chaudron.push(d.c); UI.rate = null; son('goutte'); }
+      sauver(); render(); break;
+    case 'vider': e.chaudron = []; UI.rate = null; sauver(); render(); break;
+    case 'remuer': remuer(); break;
+    case 'voir-analyse': UI.modal = {type:'analyse', id:d.id, pret:true}; render(); break;
+    case 'villageois': e.villageois = d.id; sauver(); haut(); render(); break;
+    case 'villageois-retour': e.villageois = null; sauver(); haut(); render(); break;
+    case 'question': poser(d.k); break;
+    case 'page':
+      e.page = d.id; UI.confirmer = false; UI.retourAcc = null;
+      if(d.id === 'recettes'){ e.vu['s.recettes'] = true; gagner('s.recettes', 5); noter('s.recettes', "Grand Livre : la recette de la potion révélatrice (2 bleues, 1 jaune, 3 rouges) sert à lire l'encre invisible."); }
+      sauver(); render(); break;
+    case 'qui': e.qui = d.id; UI.confirmer = false; UI.retourAcc = null; sauver(); render(); break;
+    case 'ou': e.ou = d.id; UI.confirmer = false; UI.retourAcc = null; sauver(); render(); break;
+    case 'accuser': UI.confirmer = true; render(); break;
+    case 'accuser-non': UI.confirmer = false; render(); break;
+    case 'accuser-oui': accuser(); break;
+    case 'sym': if(UI.saisie.length < 3){ UI.saisie.push(d.v); UI.retourCode = null; render(); } break;
+    case 'effacer': UI.saisie.pop(); UI.retourCode = null; render(); break;
+    case 'valider': valider(); break;
+    case 'pouvoir': utiliserPouvoir(); break;
+    case 'reglages': UI.modal = {type:'reglages'}; UI.confirmR = null; render(); break;
+    case 'son': S.son = !S.son; sauver(); render(); break;
+    case 'confirmR': UI.confirmR = d.v; render(); break;
+    case 'confirmR-non': UI.confirmR = null; render(); break;
+    case 'recommencer-oui':
+      S.e1 = enqueteNeuve(); UI.modal = null; UI.confirmR = null; UI.onglet = 'role'; UI.saisie = []; UI.retourAcc = null; UI.rate = null;
+      sauver(); haut(); render(); break;
+    case 'heros-oui':
+      S = etatNeuf(); UI.modal = null; UI.confirmR = null; UI.onglet = 'role'; UI.saisie = []; UI.crea = {nom:'',genre:'m',avatar:'🦊',role:null};
+      sauver(); haut(); render(); break;
+    case 'revoir-fin': UI.fin = null; UI.modal = {type:'fin'}; render(); break;
+  }
+}
+
+/* ---------- Affichage ---------- */
+var app = document.getElementById('app');
+function render(){
+  UI.lectures = [];
+  var h;
+  if(!S.heros) h = vueCreation();
+  else if(!S.e1.intro) h = vueIntro();
+  else h = vueJeu();
+  if(UI.modal) h += vueModal();
+  app.innerHTML = h;
+  document.body.classList.toggle('bloque', !!UI.modal);
+}
+
+document.addEventListener('click', function(ev){
+  var b = ev.target.closest('[data-act]');
+  if(!b) return;
+  if(b.dataset.act === 'voile'){
+    if(ev.target === b && !(UI.modal && UI.modal.type === 'analyse' && !UI.modal.pret)) fermer();
+    return;
+  }
+  act(b.dataset.act, b);
+});
+app.addEventListener('input', function(ev){
+  if(ev.target.id !== 'nom-heros') return;
+  UI.crea.nom = ev.target.value;
+  var b = app.querySelector('[data-act="creer"]');
+  if(b) b.disabled = !(UI.crea.nom.trim() && UI.crea.role);
+});
+document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape' && UI.modal) fermer(); });
+
+function demarrer(data){
+  if(data && data.S) S = fusion(data.S);
+  render();
+}
+try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(function(){ return {S:S}; }); }catch(err){}
+if(window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(demarrer);
+else demarrer((window.claude && window.claude.hot && window.claude.hot.data) || {});
+
+})();
+</script>
+</body>
+</html>
