@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc des voix de Brumeval</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap">
+<style>
+/* Une colonne de pupitre : chaque voix est une ligne d'écoute */
+:root{
+  --fond:#f3eefb; --carte:#ffffff; --encre:#2a2140; --doux:#6b6188; --accent:#7a4fd6; --accent-doux:#ece4ff; --trait:#ddd3f0; --or:#c9922e; --ok:#2f8a57; --ko:#b8432f;
+  --titre:'Macondo', Georgia, serif; --texte:'Andika', 'Trebuchet MS', system-ui, sans-serif; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root{ --fond:#17132a; --carte:#221c3b; --encre:#efe9ff; --doux:#a99fca; --accent:#b493ff; --accent-doux:#30265a; --trait:#3a3160; --or:#e4b75a; --ok:#6fd39a; --ko:#ff9b85; color-scheme:dark } }
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--texte);font-size:17px;line-height:1.5;
+  padding-block:max(20px, env(safe-area-inset-top, 0px)) 40px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+a.retour{color:var(--accent);font-weight:700;text-decoration:none}
+h1{font-family:var(--titre);font-weight:400;font-size:clamp(1.9rem,5vw,2.6rem);margin:0;text-wrap:balance}
+h2{font-family:var(--titre);font-weight:400;font-size:1.45rem;margin:0}
+p{margin:0}
+.doux{color:var(--doux)}
+.bloc{background:var(--carte);border:1px solid var(--trait);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+textarea{width:100%;min-height:120px;border-radius:12px;border:1px solid var(--trait);background:var(--fond);color:var(--encre);font:inherit;padding:12px;resize:vertical}
+.reglage{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+.voix{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.voix li{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--trait);background:var(--fond)}
+.voix li.top{border-color:var(--or)}
+.voix b{display:block;overflow-wrap:anywhere}
+.voix small{color:var(--doux)}
+.voix .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.etat{grid-column:1 / -1;font-size:.9rem;color:var(--doux)}
+.etat.ok{color:var(--ok)}.etat.ko{color:var(--ko)}
+progress{width:100%;height:10px;accent-color:var(--accent)}
+button{font:inherit;font-weight:700;border-radius:999px;border:2px solid var(--accent);background:var(--accent);color:#fff;padding:8px 16px;cursor:pointer;min-height:44px}
+button.second{background:transparent;color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--accent-doux);color:var(--accent);margin-left:6px}
+.vide{padding:14px;border-radius:12px;background:var(--accent-doux)}
+#journal{font-size:.85rem;color:var(--doux);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+</style>
+</head>
+<body>
+<main>
+  <a class="retour" href="../../">← Accueil</a>
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <h1>Banc des voix de Brumeval</h1>
+    <p class="doux">Compare les voix neuronales gratuites (à télécharger une seule fois, puis sans internet) avec les voix de la tablette, sur le même texte.</p>
+  </header>
+
+  <section class="bloc" aria-labelledby="t-texte">
+    <h2 id="t-texte">Le texte à lire</h2>
+    <textarea id="texte">Chers enquêteurs, c'est une catastrophe ! Cette nuit, quelqu'un a pris la Lanterne d'Or dans mon bureau. « Moi ? Je dormais à la taverne, comme un bébé ! » dit Fortuné en souriant. Mais ses yeux glissent sur le côté…</textarea>
+    <div class="reglage"><label for="vitesse">Vitesse : <b id="vitesse-val">100 %</b></label><input id="vitesse" type="range" min="0.7" max="1.3" step="0.05" value="1"></div>
+    <div class="reglage"><button id="stop" class="second" type="button">■ Arrêter</button></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-neuro">
+    <h2 id="t-neuro">Voix neuronales gratuites (Piper)</h2>
+    <p class="doux">Touche « Télécharger » une fois par voix (il faut du wifi). La voix reste ensuite dans la tablette et marche sans internet. La première lecture peut prendre quelques secondes.</p>
+    <ul class="voix" id="neuro"></ul>
+    <div class="reglage"><button id="effacer" class="second" type="button">🗑 Effacer les voix téléchargées</button></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-appareil">
+    <h2 id="t-appareil">Les voix de cette tablette</h2>
+    <p class="doux">Classées de la plus naturelle à la plus robotique, selon leur nom.</p>
+    <ul class="voix" id="appareil"><li class="vide">Recherche des voix…</li></ul>
+  </section>
+
+  <details class="bloc"><summary>Journal technique (en cas de problème)</summary><pre id="journal"></pre></details>
+</main>
+<script type="module">
+const texte = document.getElementById('texte'), vitesse = document.getElementById('vitesse');
+const journal = document.getElementById('journal');
+function log(m){ journal.textContent += m + '\n'; }
+vitesse.oninput = () => { document.getElementById('vitesse-val').textContent = Math.round(vitesse.value * 100) + ' %'; };
+
+/* ---------- Voix neuronales Piper (dans le navigateur) ---------- */
+const VOIX = [
+  {id:'fr_FR-siwis-medium', nom:'Siwis', qui:'femme, voix claire', taille:'≈ 60 Mo'},
+  {id:'fr_FR-tom-medium', nom:'Tom', qui:'homme', taille:'≈ 60 Mo'},
+  {id:'fr_FR-upmc-medium', nom:'UPMC', qui:'femme / homme', taille:'≈ 75 Mo'},
+  {id:'fr_FR-mls-medium', nom:'MLS', qui:'voix variées', taille:'≈ 75 Mo'},
+  {id:'fr_FR-gilles-low', nom:'Gilles', qui:'homme, plus léger', taille:'≈ 25 Mo'},
+  {id:'fr_FR-siwis-low', nom:'Siwis légère', qui:'femme, plus léger', taille:'≈ 25 Mo'}
+];
+const SOURCES = [
+  'https://cdn.jsdelivr.net/npm/@diffusionstudio/vits-web@1.0.3/+esm',
+  'https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm'
+];
+let tts = null, audio = null;
+async function charger(){
+  if(tts) return tts;
+  for(const src of SOURCES){
+    try{ tts = await import(src); log('Bibliothèque chargée : ' + src); return tts; }
+    catch(e){ log('Échec de ' + src + ' : ' + e.message); }
+  }
+  throw new Error('Impossible de charger le moteur de voix.');
+}
+const neuro = document.getElementById('neuro');
+neuro.innerHTML = VOIX.map((v, i) => `<li data-i="${i}"><div><b>${v.nom}<span class="badge">${v.qui}</span></b><small>${v.id} · ${v.taille}</small></div>
+  <div class="actions"><button type="button" data-act="dl">⬇ Télécharger</button><button type="button" data-act="lire" disabled>▶ Écouter</button></div>
+  <div class="etat">Pas encore téléchargée.</div></li>`).join('');
+function ligne(i){ return neuro.querySelector(`li[data-i="${i}"]`); }
+function etat(i, t, cl){ const e = ligne(i).querySelector('.etat'); e.innerHTML = t; e.className = 'etat' + (cl ? ' ' + cl : ''); }
+async function majStockees(){
+  try{
+    const m = await charger();
+    const st = await m.stored();
+    VOIX.forEach((v, i) => {
+      const ok = st.includes(v.id);
+      ligne(i).querySelector('[data-act="lire"]').disabled = !ok;
+      ligne(i).querySelector('[data-act="dl"]').textContent = ok ? '✔ Téléchargée' : '⬇ Télécharger';
+      ligne(i).querySelector('[data-act="dl"]').disabled = ok;
+      if(ok) etat(i, 'Prête, même sans internet.', 'ok');
+    });
+  }catch(e){ VOIX.forEach((v, i) => etat(i, 'Le moteur de voix ne se charge pas sur cet appareil : ' + e.message, 'ko')); }
+}
+neuro.addEventListener('click', async ev => {
+  const b = ev.target.closest('button'); if(!b) return;
+  const i = +b.closest('li').dataset.i, v = VOIX[i];
+  try{
+    const m = await charger();
+    if(b.dataset.act === 'dl'){
+      b.disabled = true;
+      etat(i, '<progress max="100" value="0"></progress>');
+      await m.download(v.id, p => {
+        const pr = ligne(i).querySelector('progress');
+        if(pr && p && p.total) pr.value = Math.round(p.loaded * 100 / p.total);
+      });
+      await majStockees();
+    } else {
+      if(audio){ audio.pause(); audio = null; }
+      etat(i, 'Préparation de la voix…');
+      const t0 = performance.now();
+      const wav = await m.predict({text: texte.value, voiceId: v.id});
+      const s = ((performance.now() - t0) / 1000).toFixed(1);
+      audio = new Audio(URL.createObjectURL(wav));
+      audio.playbackRate = +vitesse.value;
+      audio.play();
+      etat(i, `Prête, même sans internet. (préparée en ${s} s)`, 'ok');
+    }
+  }catch(e){ log(v.id + ' : ' + (e && e.stack || e)); etat(i, 'Erreur : ' + (e.message || e), 'ko'); b.disabled = false; }
+});
+document.getElementById('effacer').onclick = async () => { try{ const m = await charger(); await m.flush(); await majStockees(); VOIX.forEach((v, i) => etat(i, 'Pas encore téléchargée.')); }catch(e){ log(String(e)); } };
+majStockees();
+
+/* ---------- Voix de l'appareil (synthèse du navigateur) ---------- */
+const dispo = 'speechSynthesis' in window, appareil = document.getElementById('appareil');
+let voixApp = [];
+function note(x){
+  const n = (x.name || '') + ' ' + (x.voiceURI || ''); let s = 0;
+  if(/natural|neural|naturelle|premium|enhanced|améliorée|wavenet|studio/i.test(n)) s += 50;
+  if(/network|réseau|online/i.test(n) || x.localService === false) s += 20;
+  if(/google/i.test(n)) s += 15;
+  if(/(Amélie|Thomas|Audrey|Marie|Denise|Hortense|Julie|Henri|Vivienne|Rémi|Eloise|Celeste)/i.test(n)) s += 10;
+  if(/fr[-_]FR/i.test(x.lang)) s += 5;
+  if(/compact|espeak|robot/i.test(n)) s -= 40;
+  return s;
+}
+function remplir(){
+  if(!dispo){ appareil.innerHTML = '<li class="vide">Ce navigateur ne sait pas lire à voix haute.</li>'; return; }
+  voixApp = speechSynthesis.getVoices().filter(x => /^fr/i.test(x.lang)).sort((a, b) => note(b) - note(a));
+  if(!voixApp.length){ appareil.innerHTML = '<li class="vide">Aucune voix française trouvée. Sur Android : Paramètres → Synthèse vocale → moteur Google → Installer les données vocales → Français (France).</li>'; return; }
+  appareil.innerHTML = voixApp.map((v, i) => `<li class="${i < 3 ? 'top' : ''}"><div><b>${v.name}${i === 0 ? '<span class="badge">la plus naturelle</span>' : ''}</b><small>${v.lang} · ${v.localService === false ? 'internet' : "sur l'appareil"}</small></div><div class="actions"><button type="button" data-v="${i}">▶ Écouter</button></div></li>`).join('');
+}
+appareil.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-v]'); if(!b) return;
+  if(audio){ audio.pause(); audio = null; }
+  speechSynthesis.cancel();
+  const v = voixApp[+b.dataset.v], u = new SpeechSynthesisUtterance(texte.value);
+  u.voice = v; u.lang = v.lang; u.rate = +vitesse.value; speechSynthesis.speak(u);
+});
+document.getElementById('stop').onclick = () => { if(audio){ audio.pause(); audio = null; } if(dispo) speechSynthesis.cancel(); };
+if(dispo){ remplir(); speechSynthesis.onvoiceschanged = remplir; setTimeout(remplir, 800); } else remplir();
+</script>
+</body>
+</html>
