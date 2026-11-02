@@ -3817,7 +3817,7 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-02 19:00 -->
+<!-- Brumeval v2 · version de test du 2026-11-02 19:14 -->
 <script>
 /* ===== donnees.js ===== */
 /* ==========================================================
@@ -22549,7 +22549,7 @@ window.REPLIQUES = {
   vie:[
     {t:"Je vais à la taverne presque tous les soirs.", v:1},
     {t:"La Fête des Lanternes, c'est mon moment préféré de l'année.", v:1},
-    {t:"Je connais Brumeval depuis que je suis tout petit.", v:1},
+    {t:"Je connais Brumeval depuis que je suis tout petit.", v:1, sur:['fortune', 'silas']},
     {t:"Je n'aime pas la brume : elle me donne froid jusqu'aux os.", v:1},
     {t:"Le pain de Gaspard est le meilleur de toute la vallée.", v:1, sur:['gaspard']},
     {t:"Quand il y a du vent, je dors très mal.", v:1},
@@ -22589,7 +22589,7 @@ window.REPLIQUES = {
     2:{
       vrai:[
         {t:"Les lettres arrivent toujours la nuit, jamais le jour."},
-        {t:"Les lettres du Corbeau sont pleines de drôles de symboles."},
+        {t:"La dernière lettre du Corbeau est pleine de drôles de symboles."},
         {t:"Cette semaine, le colporteur vendait des plumes noires.", sur:['fortune']},
         {t:"Quelqu'un au village doit beaucoup d'argent, ça se murmure."},
         {t:"Le soir, on voit parfois une silhouette avec une cape près du lavoir."},
@@ -24581,7 +24581,7 @@ E[1] = {
   signature:'Monsieur Grosbec, maire de Brumeval',
   missions:{
     pisteur:'Va voir la mairie, la place, la boulangerie. Trouve des traces et des objets : un objet trouvé a un code, donne-le à la bonne personne ! La forêt est fermée tant que tu n\'as pas de plan : le Sage ou un habitant pourra peut-être t\'en donner un. Note aussi ce qui pousse partout : l\'Alchimiste en a besoin.',
-    alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Tu ne sais pas ce qui pousse dans le village : le Pisteur, lui, le voit. Analyse aussi les objets que l\'équipe te confie.',
+    alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Tu ne sais pas ce qui pousse dans le village : le Pisteur, lui, le voit. Analyse aussi les objets que l\'équipe te confie : compare-les avec les échantillons de ton atelier et trouve vite le signe pareil !',
     barde:'Va parler aux habitants. Le Sage sait où ils habitent : pour parler à quelqu\'un chez lui, frappe à sa porte sur la carte.',
     sage:'Lis le Grand Livre à l\'équipe : les habitants et leurs adresses, la recette de l\'encre révélatrice, et une page toute blanche qui cache peut-être quelque chose. Tu donnes le code de chaque moment, et c\'est toi qui accuses à la fin.'
   },
@@ -24619,7 +24619,7 @@ E[1] = {
           note:'Mairie : traces fraîches de cette nuit, 3 carreaux. Les grosses traces sèches datent d\'hier.',
           rate:'Les traces se brouillent… Tu n\'as pas réussi à les suivre. Reviens plus tard pour réessayer.'},
         {id:'fenetre', ic:'🪟', nom:'La fenêtre', obj:'fil',
-          t:'La fenêtre a été ouverte depuis dehors. Accroché au loquet : un fil de laine rouge !',
+          t:'La fenêtre a été ouverte depuis dehors. Accroché à la poignée : un fil de laine rouge !',
           note:'Mairie : un fil de laine rouge accroché à la fenêtre.'},
         {id:'gouttiere', ic:'🏠', nom:'La gouttière',
           t:'La gouttière est tordue : quelqu\'un est descendu du toit en s\'y accrochant. Quelqu\'un de léger et agile, sinon elle aurait cassé !',
@@ -24656,7 +24656,7 @@ E[1] = {
     },
     foret:{
       verrou:{besoin:FORET, t:ALT_FORET},
-      pisteur:{intro:'Grâce au plan, tu trouves le bon sentier. Te voilà au carrefour de la forêt.', points:[
+      pisteur:{intro:'Tu trouves le bon sentier. Te voilà au carrefour de la forêt.', points:[
         {id:'carrefour', ic:'🔀', nom:'Le carrefour',
           t:'Trois chemins partent d\'ici : vers le Moulin, vers le Puits et vers le Vieux Chêne.'},
         {id:'ch_moulin', ic:'🌾', nom:'Chemin du Moulin',
@@ -24743,7 +24743,7 @@ E[1] = {
       rateNote:'Analyse du fil (pas finie) : de la laine rouge tricotée main, couverte d\'une poussière noire.',
       t:'C\'est de la laine rouge tricotée à la main : un morceau d\'écharpe ! Elle est couverte de SUIE noire, comme dans les cheminées.',
       note:'Analyse du fil : un bout d\'écharpe rouge tricotée main, plein de suie de cheminée.',
-      detail:{t:'La suie est toute fraîche : elle date d\'hier soir.', note:'Détail : la suie du fil est toute fraîche.'}},
+      detail:{t:'La suie est toute fraîche : elle date de cette nuit.', note:'Détail : la suie du fil est toute fraîche.'}},
     poils:{mj:'double', rate:'Des poils de chien, noirs et blancs, avec un petit bout de feuille coincé dedans. Quel arbre ? Tu n\'as pas eu le temps de comparer. Réessaie (1 action).',
       rateNote:'Analyse des poils (pas finie) : des poils de chien noirs et blancs, avec un bout de feuille.',
       t:'Des poils de chien, noirs et blancs. Coincée dedans : une petite feuille de CHÊNE !',
@@ -24785,11 +24785,11 @@ E[1] = {
   ],
   fin:{
     slides:[
-      'Toute l\'équipe court jusqu\'au Vieux Chêne. Sous ses grosses racines, une lumière dorée brille dans le noir… C\'est la Lanterne d\'Or !',
+      'Toute l\'équipe court jusqu\'au Vieux Chêne. Sous ses grosses racines, quelque chose est enroulé dans une écharpe rouge. Vous soulevez l\'écharpe : une lumière dorée jaillit dans le noir… C\'est la Lanterne d\'Or !',
       'Juste à côté, Tim dort en boule, avec son chien Pirate blotti dans ses bras.',
       'Tim se réveille en sursaut : « Pardon ! Pirate s\'était perdu dans la forêt, et il faisait si noir… J\'ai pris la lanterne juste pour le retrouver. Je voulais la rapporter avant la fête ! »',
       'Entre les racines, un courant d\'air froid souffle doucement, comme si le sol respirait…',
-      'Le maire arrive en courant. Il serre la Lanterne contre lui, très fort. Là où l\'or s\'est écaillé, vous apercevez du fer tout noir.',
+      'Le maire arrive en courant. Il serre la Lanterne contre lui, très fort. Là où l\'or s\'est abîmé, vous apercevez du fer tout noir.',
       'Le soir venu, la Lanterne d\'Or allume toutes les lanternes de Brumeval. Devant tout le village, le maire vous remercie : « Quelle équipe ! J\'aurai d\'autres missions pour vous. »',
       'En repartant, vous remarquez quelque chose sur le tronc du Vieux Chêne : un corbeau gravé dans l\'écorce, et trois mots…',
       '<b class="corbeau">LE CORBEAU VEILLE.</b>'
@@ -24799,7 +24799,7 @@ E[1] = {
       {ic:'🐦‍⬛', t:'« LE CORBEAU VEILLE », gravé sur le Vieux Chêne.'},
       {ic:'🪶', t:'La plume noire de la nuit du vol sentait la lavande.'},
       {ic:'🧤', t:'Le maire ne quitte jamais ses gants.'},
-      {ic:'🏮', t:'Sous l\'or écaillé de la Lanterne, du fer noir.'}
+      {ic:'🏮', t:'Sous l\'or abîmé de la Lanterne, du fer noir.'}
     ]
   },
   faits:[
@@ -24838,7 +24838,7 @@ E[2] = {
     sage:'Compare l\'écriture des lettres du Corbeau avec le Livre d\'or. Fais révéler la lettre blanche, ouvre les archives et déchiffre-la. Tu donnes les codes des moments et tu accuses à la fin.'
   },
   qui:{titre:'QUI glisse les lettres du Corbeau ?', choix:['melusine', 'odette', 'iris', 'margot', 'fortune', 'victor', 'anselme', 'gaspard']},
-  ou:{titre:'OÙ le Corbeau va-t-il frapper cette nuit ?', choix:[
+  ou:{titre:'OÙ le Corbeau va-t-il frapper à minuit ?', choix:[
     {id:'clocher', nom:'Le clocher', ic:'🔔'}, {id:'lavoir', nom:'Le lavoir', ic:'🧺'},
     {id:'mairie', nom:'La mairie', ic:'🏛️'}, {id:'puits', nom:'Le puits', ic:'🪣'}]},
   solution:{qui:'melusine', ou:'clocher'},
@@ -24871,15 +24871,15 @@ E[2] = {
     mairie:{
       pisteur:{intro:'C\'est sous cette porte que le maire a trouvé la lettre blanche, ce matin.', points:[
         {id:'porte', ic:'👣', nom:'Devant la porte', mj:'traces',
-          t:'Dans la boue, des petites traces de pas toutes fraîches. Elles mesurent 3 ou 4 carreaux, pas plus. Elles partent vers la ruelle des Brumes.',
-          note:'Mairie : petites traces fraîches de 3 ou 4 carreaux, vers la ruelle des Brumes.',
-          rate:'Les traces se mélangent dans la boue… Tu as seulement vu qu\'elles partent vers la ruelle des Brumes. Reviens plus tard pour mieux regarder.',
-          rateNote:'Mairie : des traces fraîches partent vers la ruelle des Brumes (taille pas vue).'},
+          t:'Dans la boue, des petites traces de pas toutes fraîches. Elles mesurent 3 ou 4 carreaux, pas plus. Elles partent vers le bas du village, puis se perdent sur les pavés.',
+          note:'Mairie : petites traces fraîches de 3 ou 4 carreaux, vers le bas du village.',
+          rate:'Les traces se mélangent dans la boue… Tu as seulement vu qu\'elles partent vers le bas du village. Reviens plus tard pour mieux regarder.',
+          rateNote:'Mairie : des traces fraîches partent vers le bas du village (taille pas vue).'},
         {id:'boite', ic:'📮', nom:'La boîte aux lettres',
           t:'Elle est vide. Les lettres du Corbeau n\'ont pas de timbre : on les glisse sous les portes, la nuit.',
           note:'Mairie : les lettres du Corbeau n\'ont pas de timbre, on les glisse sous les portes la nuit.'},
         {id:'guet', ic:'🫥', nom:'Guetter dans l\'ombre', moments:['soir', 'nuit'], mj:'cachette', obj:'plume2',
-          t:'La silhouette en cape lève sa lanterne et regarde partout… Tu restes caché. Elle glisse une lettre sous la porte, puis file : elle est petite et très rapide, elle saute par-dessus les bancs ! Sa cape s\'accroche au banc : il t\'en reste un morceau, avec une plume cousue dessus.',
+          t:'La silhouette en cape lève sa lanterne et regarde partout… Tu restes caché. Elle glisse une lettre sous la porte, comme chaque nuit, puis file : elle est petite et très rapide, elle saute par-dessus les bancs ! Sa cape s\'accroche au banc : il t\'en reste un morceau, avec une plume cousue dessus.',
           note:'Mairie : la silhouette en cape est petite et très rapide, elle saute par-dessus les bancs.',
           rate:'La lanterne t\'a presque trouvé ! Tu as juste vu une cape noire filer en sautant par-dessus les bancs.',
           rateNote:'Mairie : une silhouette en cape noire, très rapide, saute par-dessus les bancs.'}
@@ -24906,14 +24906,14 @@ E[2] = {
       verrou:{besoin:[{code:'info:passage_crypte'}], roles:['pisteur'], t:'Sous le clocher, il y a peut-être un vieux passage… Mais où ? Les vieux plans du Sage le diront peut-être.'},
       pisteur:{intro:'Un escalier humide descend sous le clocher. Ça sent la pierre mouillée et la vieille bougie.', points:[
         {id:'coffre', ic:'🧰', nom:'Le vieux coffre', mj:'tir', donne:'info:coffret',
-          t:'Au fond de la crypte, un vieux coffre est posé sur une corniche, de l\'autre côté d\'un trou noir. Ta flèche, avec une corde, se plante dans son anneau : tu le tires jusqu\'à toi ! Dedans : un coffret de teintures, un cahier plein de couleurs, une partition… et des pièces d\'or ! Le coffret est pour l\'Alchimiste.',
+          t:'Au fond de la crypte, un vieux coffre est posé sur un rebord, de l\'autre côté d\'un trou noir. Ta flèche, avec une corde, se plante dans son anneau : tu le tires jusqu\'à toi ! Dedans : un coffret de teintures, un cahier plein de couleurs, une partition… et des pièces d\'or ! Le coffret est pour l\'Alchimiste.',
           note:'Crypte : un coffre des fondateurs ! Coffret de teintures pour l\'Alchimiste.',
           rate:'La flèche rebondit sur la pierre… Le coffre est toujours là-bas. Tu pourras réessayer.'},
         {id:'cahier', ic:'🎨', nom:'Le cahier de couleurs', besoin:[{vu:'pisteur:crypte:coffre'}], obj:'nuancier',
           t:'Un vieux cahier : le nuancier des fondateurs, plein de couleurs et de recettes. C\'est pour le Sage !',
           note:'Crypte : le nuancier des fondateurs, pour le Sage.'},
         {id:'partition', ic:'🎼', nom:'La partition', besoin:[{vu:'pisteur:crypte:coffre'}], obj:'partition',
-          t:'Une partition très ancienne, avec une chanson que personne ne connaît. C\'est pour le Barde !',
+          t:'Une partition très ancienne, avec une chanson que personne ne connaît. C\'est pour le Barde : il peut la montrer au sonneur de cloches.',
           note:'Crypte : une partition des fondateurs, pour le Barde.'},
         {id:'pieces', ic:'🪙', nom:'Les pièces d\'or', besoin:[{vu:'pisteur:crypte:coffre'}], or:15,
           t:'Quinze pièces d\'or anciennes ! Elles sont pour toi.'},
@@ -25003,7 +25003,7 @@ E[2] = {
       params:{scene:{titre:'La soirée d\'avant-hier', ic:'🍺', texte:'Avant-hier soir, à la taverne. Trois disent la vérité, un seul ment.'},
         depositions:[
           {qui:'margot', phrases:[{t:'Avant-hier soir, il pleuvait à verse.', d:'pluie'}, {t:'Le colporteur est arrivé tout trempé, avec sa charrette.', d:'arrivee'}, 'Il m\'a pris une chambre pour la nuit.', {t:'Le sonneur est venu boire une soupe après ses neuf coups de cloche.', d:'cloche'}]},
-          {qui:'victor', phrases:[{t:'Il pleuvait tellement que mes lettres étaient toutes mouillées !', d:'pluie'}, {t:'J\'ai vu arriver la charrette du colporteur.', d:'arrivee'}, {t:'La cloche a sonné neuf coups.', d:'cloche'}, 'La veille, on avait déjà trouvé une lettre du Corbeau sous une porte.']},
+          {qui:'victor', phrases:[{t:'Il pleuvait tellement que mes lettres étaient toutes mouillées !', d:'pluie'}, {t:'J\'ai vu arriver la charrette du colporteur.', d:'arrivee'}, {t:'La cloche a sonné neuf coups.', d:'cloche'}, 'Le matin même, on avait déjà trouvé une lettre du Corbeau sous une porte.']},
           {qui:'anselme', phrases:[{t:'J\'ai sonné neuf coups, puis j\'ai couru à la taverne sous la pluie.', d:'cloche'}, {t:'Un inconnu est arrivé avec une charrette, ce soir-là.', d:'arrivee'}, {t:'Il dégoulinait comme un poisson !', d:'pluie'}]},
           {qui:'fortune', ment:true, phrases:[{t:'Avant-hier ? J\'étais déjà au village depuis une semaine !', faux:true, d:'arrivee'}, {t:'Il faisait un temps magnifique, on voyait toutes les étoiles.', faux:true, d:'pluie'}, {t:'J\'ai entendu la cloche sonner neuf coups.', d:'cloche'}]}
         ]},
@@ -25025,8 +25025,8 @@ E[2] = {
       noteRate:'Lavoir : deux silhouettes chuchotent. Il est question de « dettes » et d\'une « carte ».'}
   ],
   analyses:{
-    lettre:{mj:'bulles', t:'Le papier est épais : c\'est le même que celui des affiches de la mairie ! Il sent fort la lavande. Et dans un coin, une petite trace de poudre bleue.',
-      note:'Analyse de la lettre : papier épais de la mairie, odeur de lavande, un peu de poudre bleue.',
+    lettre:{mj:'bulles', t:'Le papier est épais : c\'est le même que celui des affiches de la mairie ! Il sent fort la lavande.',
+      note:'Analyse de la lettre : papier épais de la mairie, odeur de lavande.',
       rate:'Le papier est épais… et il sent une fleur. Laquelle ? Les bulles ont éclaté trop vite. Réessaie (1 action).',
       rateNote:'Analyse de la lettre (pas finie) : papier épais, odeur de fleur.',
       detail:{t:'Tout autour du papier, des dizaines de petits trous d\'épingle, comme si on l\'avait épinglé sur un tissu.', note:'Détail : la lettre a des trous d\'épingle, comme en couture.'}},
@@ -25076,7 +25076,7 @@ E[2] = {
       rate:'Tu as pu lire quelques mots : MINUIT… GRANDE… Le reste est trop abîmé. Tu pourras réessayer.'},
     {id:'plans', titre:'Les vieux plans du clocher', ic:'📐', action:true, mj:'plans', bouton:'Superposer les plans',
       params:{carte:'clocher', secret:'crypte', passage:'l\'escalier de la crypte'},
-      avant:'Les archives gardent un très vieux plan du clocher. Pose-le sur le plan d\'aujourd\'hui : il manque peut-être quelque chose !',
+      avant:'Le Grand Livre garde un très vieux plan du clocher. Pose-le sur le plan d\'aujourd\'hui : il manque peut-être quelque chose !',
       t:'Sur le vieux plan, un escalier descend sous le clocher : l\'escalier de la crypte ! Il n\'existe plus sur les plans d\'aujourd\'hui. Donne le code au Pisteur.',
       note:'Vieux plans : un escalier secret descend sous le clocher, vers une crypte. Code pour le Pisteur.', donne:'info:passage_crypte',
       rate:'Les plans ne coïncident pas… Tu pourras réessayer.'},
@@ -25127,7 +25127,7 @@ E[2] = {
     slides:[
       'À minuit, toute l\'équipe se cache en haut du clocher, près de la Grande Voix. Les marches grincent… Une silhouette en cape noire couverte de plumes ouvre la petite trappe de la cloche.',
       '« Pas si vite ! » Vous sortez de votre cachette. La capuche tombe : c\'est Mélusine, la couturière !',
-      'Mélusine éclate en sanglots : « Pardon ! J\'avais tant de dettes… Un homme masqué m\'a promis de tout payer si je glissais ses lettres sous les portes et si je lui rapportais la carte cachée dans la cloche. J\'ai cousu sa cape avec les plumes du colporteur. Je n\'ai jamais vu son visage… mais il porte une bague en argent à tête de corbeau. »',
+      'Mélusine éclate en sanglots : « Pardon ! J\'avais tant de dettes… Un homme masqué m\'a promis de tout payer si je recopiais ses lettres de ma main et si je les glissais sous les portes et si je lui rapportais la carte cachée dans la cloche. J\'ai cousu sa cape avec les plumes du colporteur. Je n\'ai jamais vu son visage… mais il porte une bague en argent à tête de corbeau. »',
       'Perché sur une poutre, Tim sourit jusqu\'aux oreilles : « Je vous l\'avais dit, qu\'elle était entrée rue des Lanternes ! »',
       'Dans la trappe, un vieux parchemin : la carte des souterrains de Brumeval ! Sous le village, des tunnels partout… et une grande croix rouge, juste sous la place.',
       'Le maire arrive, tout essoufflé : « Bravo ! Donnez-moi cette carte, je vais la mettre en sécurité à la mairie. » Vous la lui remettez.',
@@ -25187,7 +25187,7 @@ E[3] = {
     sage:'Étudie les vieux plans du moulin et remplis la grille « Où était chacun à minuit ? ». Compare la couleur de l\'Alchimiste avec le carnet de Mélusine. Tu donnes les codes et tu accuses : il y a TROIS questions.'
   },
   qui:{titre:'QUI vole la farine du moulin ?', choix:['fortune', 'farinel', 'silas', 'iris', 'margot']},
-  ou:{titre:'OÙ, dans le moulin, se cache son secret ?', choix:[
+  ou:{titre:'OÙ se cache son secret ?', choix:[
     {id:'meules', nom:'Sous les meules', ic:'⚙️'}, {id:'roue', nom:'Derrière la roue', ic:'🎡'}, {id:'pont', nom:'Sous le pont', ic:'🌉'}]},
   quoi:{titre:'QUI l\'aide à porter les sacs ?', choix:[
     {id:'basile', nom:'Basile', ic:'👨‍🌾', pnj:true}, {id:'silas', nom:'Silas', ic:'💂', pnj:true}, {id:'farinel', nom:'Farinel', ic:'🧑‍🌾', pnj:true}]},
@@ -25200,7 +25200,7 @@ E[3] = {
     silas:{maison:'B1', note:'Nouveau garde champêtre, arrivé cette semaine. Embauché par le maire.'},
     iris:{maison:'F4', note:'Herboriste. Elle cueille certaines plantes la nuit.'},
     margot:{maison:'L1', note:'Tavernière. La taverne ferme à une heure du matin.'},
-    basile:{maison:'B3', note:'Jardinier. Son potager est juste en face du moulin, de l\'autre côté de la rivière.'}
+    basile:{maison:'B3', note:'Jardinier. Toujours de la boue sur ses grosses bottes.'}
   },
   objets:{
     fil:{nom:'Fil vert', ic:'🧵', pour:'alchimiste'},
@@ -25211,7 +25211,7 @@ E[3] = {
   infos:{
     temoin_basile:{nom:'Basile, attrapé au bord de l\'eau', ic:'👨‍🌾', pour:'barde', t:'Le Pisteur a attrapé Basile au bord de la rivière, avec un sac vide. Il a peur et il cache quelque chose : va le voir chez lui (3, ruelle des Brumes) ou à la taverne.'},
     boite:{nom:'Boîte de teintures de Mélusine', ic:'🎨', pour:'alchimiste', outil:'teintures', t:'Mélusine te prête sa boîte de teintures : tu peux maintenant reproduire la couleur exacte d\'un fil.'},
-    passage_tunnel:{nom:'Le vieux tunnel sous le pont', ic:'🕳️', pour:'pisteur', t:'Sur les vieux plans du Sage, un vieux tunnel part de l\'arche du pont. Tu peux aller le fouiller !'},
+    passage_tunnel:{nom:'Le vieux tunnel sous le pont', ic:'🕳️', pour:'pisteur', t:'Sur les vieux plans du Sage, un vieux tunnel part de l\'arche du pont. Tu peux aller le fouiller ! Sur ta carte : le Tunnel du moulin.'},
     serrure:{nom:'La serrure de runes', ic:'🔷', pour:'sage', t:'Le Pisteur a trouvé un coffre fermé par une serrure de runes, dans le vieux tunnel. Remets les runes en place pour trouver la combinaison !'},
     combinaison:{nom:'La combinaison du coffre', ic:'🔓', pour:'pisteur', t:'Le Sage a trouvé la combinaison de la serrure de runes : tu peux ouvrir le coffre du vieux tunnel !'}
   },
@@ -25237,7 +25237,7 @@ E[3] = {
       ]}
     },
     pont:{
-      pisteur:{intro:'Le pont de pierre enjambe la rivière, juste en aval du moulin.', points:[
+      pisteur:{intro:'Le pont de pierre enjambe la rivière, un peu plus bas que le moulin, sur la rivière.', points:[
         {id:'riviere', ic:'🌊', nom:'Sous le pont',
           t:'Des tas de terre grise jetés dans la rivière, et des sacs de farine vides, tout mouillés. Dans la boue, de GROSSES empreintes de 5 carreaux vont du moulin jusqu\'au pont… et reviennent.',
           note:'Pont : terre grise et sacs vides dans la rivière. De grosses empreintes de 5 carreaux font des allers-retours entre le moulin et le pont.'},
@@ -25251,13 +25251,13 @@ E[3] = {
       verrou:{besoin:[{code:'info:passage_tunnel'}], roles:['pisteur'], t:'Il y a peut-être un vieux passage par ici… Les vieux plans du Sage le diront.'},
       pisteur:{intro:'Sous l\'arche du pont, derrière les ronces, une vieille porte de bois ! Un tunnel humide s\'enfonce sous la terre.', points:[
         {id:'tunnel', ic:'🕸️', nom:'Le tunnel',
-          t:'Le tunnel est plein de toiles d\'araignée : personne n\'est passé ici depuis des centaines d\'années. Au bout, un éboulement… et au-dessus de ta tête, toc… toc… : quelqu\'un creuse, juste au-dessus, sous le moulin !',
+          t:'Le tunnel est plein de toiles d\'araignée : personne n\'est passé ici depuis des centaines d\'années. Au bout, un éboulement… et au-dessus de ta tête, de la terre toute fraîche tombe du plafond : quelqu\'un a creusé juste au-dessus, sous le moulin !',
           note:'Vieux tunnel sous le pont : personne n\'y est passé depuis des siècles. Quelqu\'un creuse au-dessus, sous le moulin.'},
         {id:'serrure', ic:'🔷', nom:'Le coffre à runes', donne:'info:serrure',
           t:'Contre le mur, un vieux coffre fermé par une serrure de runes. Impossible de l\'ouvrir… Le Sage, lui, sait lire les runes : donne-lui le code !',
           note:'Vieux tunnel : un coffre fermé par une serrure de runes. Code pour le Sage.'},
         {id:'coffre', ic:'🧰', nom:'Ouvrir le coffre', besoin:[{code:'info:combinaison'}], obj:'registre_trappe', or:20,
-          t:'Clic ! Le coffre s\'ouvre. Dedans : vingt pièces d\'or anciennes (pour toi !) et un vieux registre, pour le Barde.',
+          t:'Clic ! Le coffre s\'ouvre. Dedans : vingt pièces d\'or anciennes (pour toi !) et un vieux registre, pour le Barde : il peut le montrer au meunier.',
           note:'Coffre du vieux tunnel : 20 pièces d\'or, et un registre pour le Barde.'}
       ]}
     },
@@ -25314,13 +25314,13 @@ E[3] = {
   },
   ecoutes:[
     {id:'depositions', role:'barde', lieu:'taverne', moments:['soir', 'nuit'], titre:'Les dépositions', mj:'depositions', reessai:true,
-      intro:'À la taverne, quatre habitants racontent la nuit dernière, au bord de la rivière. Trois disent la même chose, chacun avec ses mots. Un seul ment : lequel ?',
+      intro:'À la taverne, quatre habitants racontent ce qu\'ils ont entendu la nuit dernière, du côté du moulin. Trois disent la même chose, chacun avec ses mots. Un seul ment : lequel ?',
       params:{scene:{titre:'La nuit dernière', ic:'🌫️', texte:'La nuit dernière, près du moulin. Trois disent la vérité, un seul ment.'},
         depositions:[
           {qui:'margot', phrases:[{t:'Vers minuit, on a entendu des coups sourds, BOUM… BOUM…, du côté du moulin.', d:'coups'}, {t:'Il y avait un brouillard épais sur la rivière.', d:'brouillard'}, {t:'On entendait le meunier ronfler jusqu\'au pont !', d:'ronfle'}]},
           {qui:'victor', phrases:[{t:'En rentrant à minuit, j\'ai entendu des coups sourds, comme un tambour sous la terre.', d:'coups'}, {t:'Le meunier ronflait si fort qu\'on l\'entendait jusqu\'au pont.', d:'ronfle'}, {t:'Quel brouillard ! Je ne voyais même plus mes pieds.', d:'brouillard'}]},
           {qui:'gaspard', phrases:[{t:'Vers minuit, j\'ai entendu des boum, boum, sous le moulin.', d:'coups'}, 'Le garde est passé devant le moulin avec sa lanterne rouge, sans même s\'arrêter.', {t:'Et quel brouillard sur la rivière !', d:'brouillard'}]},
-          {qui:'iris', ment:true, phrases:['J\'étais à la clairière, loin du moulin.', {t:'Il n\'y avait pas un brin de brouillard.', faux:true, d:'brouillard'}, {t:'Je n\'ai rien entendu du tout, pas un bruit.', faux:true, d:'coups'}]}
+          {qui:'iris', ment:true, phrases:['Cette nuit-là, je suis sortie cueillir des plantes.', {t:'Il n\'y avait pas un brin de brouillard.', faux:true, d:'brouillard'}, {t:'Je n\'ai rien entendu du tout, pas un bruit.', faux:true, d:'coups'}]}
         ]},
       t:'Iris a menti sur la nuit dernière ! Tous les autres ont entendu des coups sourds vers minuit… et le meunier ronfler jusqu\'au pont : il dormait, il ne portait pas de sacs. Gaspard a aussi vu le garde passer devant le moulin à minuit, sans s\'arrêter.',
       note:'Dépositions : Iris a menti. Le meunier ronflait toute la nuit : ce n\'est pas lui qui porte les sacs. Le garde est passé devant le moulin à minuit sans s\'arrêter.',
@@ -25367,18 +25367,18 @@ E[3] = {
           victor:{lieu:'place', objet:'courrier'},
           gaspard:{lieu:'boulangerie', objet:'pain'},
           silas:{lieu:'moulin', objet:'lanterne'}},
-        confirme:'C\'est confirmé : à minuit, Margot servait la soupe à la taverne. Elle n\'a pas pu aller au moulin ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
+        confirme:'C\'est confirmé : à minuit pile, quand tout le monde entendait les coups sous le moulin, Margot servait la soupe à la taverne. Ce n\'est pas elle qui creuse ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
         note:'Grille : à minuit, Margot était à la taverne (elle n\'a pas pu aller au moulin). Silas, lui, était au moulin… et son rapport dit « rien à signaler ».'},
-      t:'C\'est confirmé : à minuit, Margot servait la soupe à la taverne. Elle n\'a pas pu aller au moulin ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
+      t:'C\'est confirmé : à minuit pile, quand tout le monde entendait les coups sous le moulin, Margot servait la soupe à la taverne. Ce n\'est pas elle qui creuse ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
       note:'Grille : à minuit, Margot était à la taverne. Silas était au moulin, mais son rapport dit « rien à signaler ».',
       rate:'La grille ne tombe pas juste… Réessaie plus tard.'},
     {id:'carnet', titre:'Le carnet de Mélusine', ic:'📒', besoin:[{code:'obj:carnet'}],
       avant:'Mélusine, la couturière, connaît toutes les couleurs du village. Le Barde peut lui demander son carnet.',
-      t:'Le carnet de couleurs de Mélusine. VERT SAPIN (2 menthes, 1 myrtille, 1 charbon) : le képi de Silas, le garde. VERT POMME (2 menthes, 1 pensée, 1 poussière de lune) : le tablier d\'Iris. VERT PERROQUET (3 pensées, 1 menthe) : je ne l\'ai jamais cousu ! Ce n\'est pas une couleur de Brumeval, c\'est une couleur de voyage.',
-      note:'Carnet de Mélusine : vert sapin = képi de Silas ; vert pomme = tablier d\'Iris ; vert perroquet (3 pensées, 1 menthe) = couleur de voyage, jamais cousue à Brumeval.'},
+      t:'Le carnet de couleurs de Mélusine. VERT SAPIN (2 menthes, 1 myrtille, 1 charbon) : le chapeau de Silas, le garde. VERT POMME (2 menthes, 1 pensée, 1 poussière de lune) : le tablier d\'Iris. VERT PERROQUET (3 pensées, 1 menthe) : je ne l\'ai jamais cousu ! Ce n\'est pas une couleur de Brumeval, c\'est une couleur de voyage.',
+      note:'Carnet de Mélusine : vert sapin = chapeau de Silas ; vert pomme = tablier d\'Iris ; vert perroquet (3 pensées, 1 menthe) = couleur de voyage, jamais cousue à Brumeval.'},
     {id:'rapport', titre:'Le rapport du garde', ic:'📋', action:true, bouton:'Lire le rapport à la mairie',
       avant:'Chaque matin, le garde champêtre dépose son rapport de nuit à la mairie.',
-      t:'Rapport de Silas Sec, garde champêtre. 22 heures : la taverne est pleine. 23 heures : Iris Lavandin cueille des champignons lumineux à la clairière, avec sa lanterne jaune. Minuit : rien à signaler au moulin. 1 heure : tout le monde dort.',
+      t:'Rapport de Silas Sec, garde champêtre. 22 heures : la taverne est pleine. 23 heures : Iris Lavandin part cueillir des plantes, avec sa lanterne jaune. Minuit : rien à signaler au moulin. 1 heure : tout le monde dort.',
       note:'Rapport de Silas : à minuit, « rien à signaler au moulin ».'},
     {id:'serrure', titre:'La serrure de runes', ic:'🔷', besoin:[{code:'info:serrure'}], mj:'runes', bouton:'Remettre les runes en place',
       params:{image:'runes'},
