@@ -66,6 +66,12 @@ button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
     <div class="reglage"><button id="effacer" class="second" type="button">🗑 Effacer les voix téléchargées</button></div>
   </section>
 
+  <section class="bloc" aria-labelledby="t-casting">
+    <h2 id="t-casting">Une voix pour chaque personnage</h2>
+    <p class="doux">Essai de distribution avec seulement deux voix téléchargées, Siwis (femme) et Tom (homme) : chaque personnage a sa hauteur et son débit. Télécharge d'abord Siwis et Tom plus haut.</p>
+    <ul class="voix" id="casting"></ul>
+  </section>
+
   <section class="bloc" aria-labelledby="t-appareil">
     <h2 id="t-appareil">Les voix de cette tablette</h2>
     <p class="doux">Classées de la plus naturelle à la plus robotique, selon leur nom.</p>
@@ -149,6 +155,40 @@ neuro.addEventListener('click', async ev => {
 });
 document.getElementById('effacer').onclick = async () => { try{ const m = await charger(); await m.flush(); await majStockees(); VOIX.forEach((v, i) => etat(i, 'Pas encore téléchargée.')); }catch(e){ log(String(e)); } };
 majStockees();
+
+/* ---------- Une voix par personnage : deux modèles, hauteur et débit différents ---------- */
+const CAST = [
+  {qui:'Le narrateur', voix:'fr_FR-siwis-medium', h:1.00, t:"Au petit matin, la brume recouvre encore Brumeval. Les enquêteurs se retrouvent sur la place."},
+  {qui:'Margot, la tavernière', voix:'fr_FR-siwis-medium', h:1.05, t:"Encore une limonade ? Ici, on entend tous les ragots du village, mon petit !"},
+  {qui:'Mélusine, la couturière', voix:'fr_FR-siwis-medium', h:1.12, t:"Une cape noire ? Oh, je couds tant de capes, je ne me souviens plus…"},
+  {qui:'Iris, l\'herboriste', voix:'fr_FR-siwis-medium', h:0.96, t:"La lavande se cueille à l'aube, quand la rosée brille encore."},
+  {qui:'Odette, la grand-mère', voix:'fr_FR-siwis-medium', h:0.88, t:"Mes sept chats dormaient près du feu. Aucun n'est sorti cette nuit."},
+  {qui:'Tim, le petit ramoneur', voix:'fr_FR-siwis-medium', h:1.25, t:"C'est pas moi ! Enfin… je voulais juste retrouver Pirate !"},
+  {qui:'Gaspard, le boulanger', voix:'fr_FR-tom-medium', h:1.00, t:"Je fais mon pain toute la nuit. Je n'ai rien vu, j'avais les mains dans la pâte !"},
+  {qui:'Basile, le jardinier', voix:'fr_FR-tom-medium', h:0.93, t:"Mes citrouilles n'ont jamais été aussi belles. Vous en voulez une ?"},
+  {qui:'Victor, le facteur', voix:'fr_FR-tom-medium', h:1.07, t:"Ces lettres n'ont pas de timbre. Ce n'est pas moi qui les apporte !"},
+  {qui:'Anselme, le sonneur', voix:'fr_FR-tom-medium', h:0.86, t:"Cent douze marches, tous les jours que les fées font. Mes vieux genoux s'en souviennent."},
+  {qui:'Fortuné, le colporteur', voix:'fr_FR-tom-medium', h:1.14, t:"Des pastilles, des chapeaux, des lanternes ! Approchez, approchez !"},
+  {qui:'Monsieur Grosbec, le maire', voix:'fr_FR-tom-medium', h:0.82, t:"Chers enquêteurs, Brumeval compte sur vous. Ne me décevez pas."}
+];
+const casting = document.getElementById('casting');
+casting.innerHTML = CAST.map((c, i) => `<li data-c="${i}"><div><b>${c.qui}</b><small>${c.voix.replace('fr_FR-','').replace('-medium','')} · hauteur ${Math.round(c.h * 100)} %</small></div><div class="actions"><button type="button">▶ Écouter</button></div><div class="etat"></div></li>`).join('');
+casting.addEventListener('click', async ev => {
+  const b = ev.target.closest('button'); if(!b) return;
+  const li = b.closest('li'), c = CAST[+li.dataset.c], e = li.querySelector('.etat');
+  try{
+    const m = await charger();
+    const st = await m.stored();
+    if(!st.includes(c.voix)){ e.textContent = 'Télécharge d\'abord la voix ' + (c.voix.includes('siwis') ? 'Siwis' : 'Tom') + ' plus haut.'; e.className = 'etat ko'; return; }
+    if(audio){ audio.pause(); audio = null; }
+    e.textContent = 'Préparation…'; e.className = 'etat';
+    const wav = await m.predict({text: c.t, voiceId: c.voix});
+    audio = new Audio(URL.createObjectURL(wav));
+    audio.preservesPitch = false; audio.mozPreservesPitch = false; audio.webkitPreservesPitch = false;
+    audio.playbackRate = c.h * +vitesse.value;
+    audio.play(); e.textContent = ''; 
+  }catch(err){ log(c.qui + ' : ' + (err && err.stack || err)); e.textContent = 'Erreur : ' + (err.message || err); e.className = 'etat ko'; }
+});
 
 /* ---------- Voix de l'appareil (synthèse du navigateur) ---------- */
 const dispo = 'speechSynthesis' in window, appareil = document.getElementById('appareil');
