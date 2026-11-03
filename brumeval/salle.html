@@ -3386,10 +3386,11 @@ MJ.CALIBRAGE = {
     (p.lignes || []).forEach(function(l){ if(l.nom === 'Pour la rattraper') l.val = '2 fois ' + p.rattrape + ' obstacles sans faute'; });
   }}
 };
-MJ.reglages = function(type, niveau, mods){
+/* opts.brut (salle des mini-jeux, pour recalibrer) : le niveau tel quel, sans le calibrage ci-dessus */
+MJ.reglages = function(type, niveau, mods, opts){
   var def = MJ.TYPES[type];
   mods = Object.assign({}, mods || {});
-  var C = MJ.CALIBRAGE[type] || {}, cal = C.decalage || 0, base = (niveau || 1) + cal;
+  var C = (opts && opts.brut) ? {} : (MJ.CALIBRAGE[type] || {}), cal = C.decalage || 0, base = (niveau || 1) + cal;
   /* fixe : le niveau décidé ne monte plus avec les enquêtes (seul l'équipement le baisse) */
   if(C.fixe) base = 3 + cal;
   if(C.mods) Object.keys(C.mods).forEach(function(k){ mods[k] = (mods[k] || 0) + C.mods[k]; });
@@ -21881,7 +21882,8 @@ var etat = {niveau:3, aides:false, journal:[]};
 try{ var t = JSON.parse(localStorage.getItem('brumeval-salle') || 'null'); if(t){ etat.niveau = t.niveau || 3; etat.aides = !!t.aides; etat.journal = t.journal || []; } }catch(e){}
 function sauver(){ try{ localStorage.setItem('brumeval-salle', JSON.stringify(etat)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-var LEGENDE = {1:'Plus facile que le jeu', 2:'Plus facile que le jeu', 3:'Le niveau de l\'enquête 1', 4:'Le niveau de l\'enquête 2', 5:'Le niveau de l\'enquête 3', 6:'Enquête 4', 7:'Enquête 5', 8:'Enquête 6', 9:'Enquête 7', 10:'Enquête 8'};
+/* Recalibrage (Romain, 4 novembre) : le niveau choisi est le niveau brut du jeu, sans le calibrage décidé (1 = le plus facile, 10 = le plus dur) */
+var LEGENDE = {1:'Le plus facile', 10:'Le plus dur'};
 /* Jeux retirés du jeu (remplacés) : on ne les montre plus */
 var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1};
 /* Variantes à essayer : mêmes règles et même difficulté, seulement le décor et le fuyard changent */
@@ -21893,13 +21895,21 @@ var MODS_AIDES = {erreurs:1, zone:1.25, lent:0.85, aide:1, temps:3, pouce:1};
 var EN_TRAVAUX = {};
 /* Où en est chaque jeu : ✅ validé · 🎯 réglage décidé, à retester · 🟡 modifié, pas encore testé · 🔨 en fabrication
    Les jeux ✅ et 🎯 se lancent toujours avec le réglage décidé ensemble (celui de l'enquête 1), sans les réglages de test. */
+/* 🔁 À recalibrer (4 novembre) : tous les jeux se relancent au niveau choisi, sans le calibrage, pour tout régler à nouveau */
 var STATUT = {
-  traces:'✅', poursuite:'✅', cachette:'✅', tir:'✅',
-  bulles:'✅', melange:'✅', chaudron:'✅', differences:'✅', double:'✅', insectes:'✅',
-  mensonge:'✅', ragots:'✅', mots:'✅', depositions:'✅',
-  alphabet:'✅', plans:'✅', grille:'✅', runes:'✅'
+  traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
+  bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
+  mensonge:'🔁', ragots:'🔁', mots:'🔁', depositions:'🔁',
+  alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };
-var NOM_STATUT = {'✅':'Validé', '🎯':'À retester avec le réglage décidé', '🟡':'Modifié, pas encore testé', '🔨':'En fabrication'};
+var NOM_STATUT = {'🔁':'À recalibrer : la difficulté choisie compte', '✅':'Validé', '🎯':'À retester avec le réglage décidé', '🟡':'Modifié, pas encore testé', '🔨':'En fabrication'};
+/* le niveau que ce jeu a aujourd'hui dans l'enquête 1, pour savoir d'où l'on part */
+function niveauActuel(k){
+  var C = MJ.CALIBRAGE && MJ.CALIBRAGE[k];
+  if(!C) return 'niveau 3';
+  var n = Math.min(10, 3 + (C.decalage || 0));
+  return 'niveau ' + n + (C.mods && C.mods.fleches ? ', avec ' + C.mods.fleches + ' flèche de plus' : '') + (k === 'poursuite' ? ', 5 obstacles sans faute' : '');
+}
 function regleDecide(k){ return !!(MJ.CALIBRAGE && MJ.CALIBRAGE[k]) && (STATUT[k] === '🎯' || STATUT[k] === '✅'); }
 
 function rendre(){
@@ -21908,7 +21918,7 @@ function rendre(){
   s += '<p class="sl-statuts">' + Object.keys(NOM_STATUT).map(function(k){ return '<span>' + k + ' ' + NOM_STATUT[k] + '</span>'; }).join('') + '</p>';
   s += '<section class="sl-reglages"><div class="sl-niveaux"><span class="sl-etiq">Difficulté</span><div class="sl-boutons">';
   for(var n = 1; n <= 10; n++) s += '<button class="sl-niv' + (etat.niveau === n ? ' on' : '') + '" data-niv="' + n + '">' + n + '</button>';
-  s += '</div><p class="sl-legende">' + esc(LEGENDE[etat.niveau] || ('Niveau ' + etat.niveau)) + '</p></div>' +
+  s += '</div><p class="sl-legende">' + esc('Niveau ' + etat.niveau + (LEGENDE[etat.niveau] ? ' : ' + LEGENDE[etat.niveau].toLowerCase() : '') + '. C\'est le niveau brut du jeu, sans le réglage actuel.') + '</p></div>' +
     '<label class="sl-aides"><input type="checkbox" id="aides"' + (etat.aides ? ' checked' : '') + '> Avec des aides (comme un héros bien équipé)</label></section>';
   ROLES.forEach(function(r){
     var jeux = Object.keys(MJ.TYPES).filter(function(k){ return MJ.TYPES[k].role === r.id && !RETIRES[k]; });
@@ -21920,6 +21930,7 @@ function rendre(){
       var st = STATUT[k] || '🟡';
       s += '<button class="sl-jeu" data-jeu="' + k + '"><span class="sl-statut" title="' + esc(NOM_STATUT[st]) + '">' + st + '</span><span class="sl-jeu-ic">' + (d.ic || '🎲') + '</span><b>' + esc(d.nom || k) + '</b>' +
         (regleDecide(k) ? '<small class="sl-cal">Réglage décidé (enquête 1) : le choix de difficulté et les aides ne comptent pas</small>' :
+          '<small class="sl-cal">Aujourd\'hui dans le jeu : ' + esc(niveauActuel(k)) + '</small>' +
           (dernier ? '<small>' + (dernier.ok ? '✔ réussi' : '✖ raté') + ' au niveau ' + dernier.n + '</small>' : '<small>pas encore joué</small>')) + '</button>';
       /* variantes du même jeu (mêmes réglages, autre décor), ex. le petit chien dans la forêt (E1) */
       (VARIANTES[k] || []).forEach(function(v){
@@ -21953,7 +21964,7 @@ function jouer(type, varId){
   /* Réglage décidé : on joue exactement comme dans l'enquête 1, sans aides de test */
   var decide = regleDecide(type), niveau = decide ? 3 : etat.niveau, avecAides = decide ? false : etat.aides;
   var mods = avecAides ? MODS_AIDES : {};
-  var params = MJ.reglages(type, niveau, Object.assign({}, mods));
+  var params = MJ.reglages(type, niveau, Object.assign({}, mods), {brut:!decide});   /* à recalibrer : le niveau choisi, sans le calibrage */
   var vr = (VARIANTES[type] || []).filter(function(v){ return v.id === varId; })[0];
   if(vr) Object.keys(vr.params).forEach(function(k){ params[k] = vr.params[k]; });
   var aides = avecAides ? [{ic:'🎒', nom:'Équipement et talents de héros', effet:'une erreur de plus, zones plus larges, un peu plus lent'}] : [];

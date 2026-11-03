@@ -5269,7 +5269,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-03 20:58 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 00:00 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -5734,10 +5734,11 @@ MJ.CALIBRAGE = {
     (p.lignes || []).forEach(function(l){ if(l.nom === 'Pour la rattraper') l.val = '2 fois ' + p.rattrape + ' obstacles sans faute'; });
   }}
 };
-MJ.reglages = function(type, niveau, mods){
+/* opts.brut (salle des mini-jeux, pour recalibrer) : le niveau tel quel, sans le calibrage ci-dessus */
+MJ.reglages = function(type, niveau, mods, opts){
   var def = MJ.TYPES[type];
   mods = Object.assign({}, mods || {});
-  var C = MJ.CALIBRAGE[type] || {}, cal = C.decalage || 0, base = (niveau || 1) + cal;
+  var C = (opts && opts.brut) ? {} : (MJ.CALIBRAGE[type] || {}), cal = C.decalage || 0, base = (niveau || 1) + cal;
   /* fixe : le niveau décidé ne monte plus avec les enquêtes (seul l'équipement le baisse) */
   if(C.fixe) base = 3 + cal;
   if(C.mods) Object.keys(C.mods).forEach(function(k){ mods[k] = (mods[k] || 0) + C.mods[k]; });
