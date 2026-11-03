@@ -137,10 +137,25 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mj-reglages li b{flex:0 1 auto;margin-left:auto;text-align:right;overflow-wrap:break-word}
 .mj-aides li{display:flex;align-items:center;gap:4px}
 .mj-resultat h2 .mj-lire-mini,.mj-resultat p .mj-lire-mini{font-size:1rem}
-/* la fiche des règles en images vient en premier, la démo et la consigne ensuite */
-.mj-intro.mj-avec-regles{gap:12px}
-.mj-intro.mj-avec-regles > *{flex-shrink:0}
-@media (min-width: 900px){ .mj-intro.mj-avec-regles{padding:16px max(16px, calc((100% - 1000px) / 2))} }
+/* Accueil tout simple : grande démo animée, une phrase + 🔊, « C'est parti ! » (tout tient sans défiler) */
+.mj-intro.mj-intro-simple{gap:12px;padding:12px 14px 14px}
+.mj-intro-simple > *{flex-shrink:0}
+.mj-intro-simple > .mj-demo-cadre{position:relative;flex:none;height:200px;overflow:hidden;margin-top:auto}
+.mj-intro-simple > .mj-go{margin-bottom:auto}
+.mj-intro-simple > .mj-demo-cadre[hidden]{display:none}
+.mj-demo-cadre > .mj-demo{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none}
+.mj-phrase-l{display:flex;align-items:center;justify-content:center;gap:10px}
+.mj-phrase{margin:0;font-size:1.35rem;font-weight:700;line-height:1.2;text-align:center;color:var(--or-pale);text-wrap:balance}
+.mj-phrase-l .mj-lire-consigne{width:48px;height:48px;font-size:1.35rem;margin:0}
+.mj-aides-ic{display:flex;justify-content:center;gap:8px;font-size:1.5rem;line-height:1}
+.mj-intro-simple .mj-unique{margin:0}
+.mj-details{border-radius:12px;background:rgba(0,0,0,.2);padding:6px 12px;font-size:.88rem}
+.mj-details summary{cursor:pointer;color:var(--brume);font-weight:700;padding:4px 0}
+.mj-details .mj-reglages{background:none;padding:4px 0}
+.mj-det-niv{margin:4px 0;color:var(--or-pale)}
+.mj-det-consigne{font-size:.85rem;text-align:left;color:var(--brume)}
+/* pendant l'accueil, le 🔊 est à côté de la phrase : pas de doublon dans l'en-tête */
+.mj-en-intro .mj-tete .mj-btn-lire{visibility:hidden}
 .mj-intro .mj-go{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px rgba(8,10,25,.85), 0 4px 0 rgba(0,0,0,.35);flex:none}
 
 /* ==========================================================
@@ -2738,127 +2753,102 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjs-d-coups b{font-family:var(--f-titre);font-size:1.5rem;font-weight:400;color:var(--or-pale)}
 .mjs-d-runes .mjs-d-leg{position:absolute;left:0;right:0;bottom:4px}
 
-/* Brumeval v2 — les règles en images (fiche en haut de l'écran de consigne) */
-.rg{display:flex;flex-direction:column;gap:10px;flex:none}
-.rg-groupe{display:flex;flex-direction:column;gap:6px}
-.rg-gt{margin:0;font-family:var(--f-titre);font-weight:400;font-size:1rem;color:var(--c-role, var(--or-pale));letter-spacing:.02em}
-.rg-cartes{display:grid;grid-template-columns:repeat(auto-fill, minmax(106px, 1fr));gap:8px}
-.rg-c{margin:0;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px 6px 7px;border-radius:14px;background:rgba(238,240,255,.07);border:2px solid rgba(238,240,255,.12);min-width:0}
-.rg-c.rg-ok{border-color:rgba(95,207,134,.75);background:rgba(95,207,134,.12)}
-.rg-c.rg-ko{border-color:rgba(232,105,60,.7);background:rgba(232,105,60,.1)}
-.rg-p{position:relative;height:74px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(0,0,0,.22);overflow:hidden}
-.rg-c figcaption{font-weight:700;font-size:.84rem;line-height:1.15;text-align:center;color:var(--lune);text-wrap:balance;overflow-wrap:break-word}
-.rg-svg{width:100%;height:100%;display:block;overflow:visible}
-.rg-emo{font-size:1.9rem;line-height:1;display:inline-block}
-.rg-emo.rg-petit{font-size:1.05rem;letter-spacing:-.1em}
-.rg-emo.rg-nb{font-size:1.15rem;font-weight:700;color:var(--or-pale);font-family:var(--f-texte)}
-.rg-rang{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:nowrap}
-.rg-rang .rg-emo{font-size:1.3rem}
-.rg-rang .rg-emo.rg-nb{font-size:1.1rem}
-.rg-coin{position:absolute;right:3px;top:2px;font-size:.8rem;line-height:1}
-.rg-badge{position:absolute;left:3px;top:3px;font-size:.95rem;line-height:1;background:rgba(19,25,50,.75);border-radius:8px;padding:2px}
-.rg-scene{position:relative;display:flex;width:100%;height:100%;align-items:center;justify-content:center}
-.rg-doigt{position:absolute;right:14%;bottom:2px;font-size:1.5rem;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));pointer-events:none}
-.rg-bouton{display:inline-flex;align-items:center;justify-content:center;padding:5px 7px;margin:0 2px;border-radius:999px;background:var(--or);color:var(--encre);font-weight:700;font-size:.76rem;line-height:1.1;text-align:center;white-space:normal;box-shadow:0 3px 0 rgba(0,0,0,.35)}
-.rg-bouton.second{background:rgba(238,240,255,.16);color:var(--lune)}
-.rg-bouton.magie{background:var(--violet);color:#fff}
-.rg-bouton.ok{background:#3f9a62;color:#fff}
-.rg-bouton.ko{background:#b5483a;color:#fff}
-.rg-pad{display:grid;grid-template-columns:repeat(4, 20px);gap:3px}
-.rg-pad i{font-style:normal;display:flex;align-items:center;justify-content:center;height:22px;border-radius:7px;background:rgba(238,240,255,.18);font-size:.85rem;color:var(--lune)}
-.rg-phrase{font-size:.85rem;color:var(--parchemin);display:flex;gap:4px;align-items:center}
-.rg-trou{font-style:normal;display:inline-block;min-width:22px;padding:1px 4px;border-radius:6px;border:2px dashed var(--or-pale);text-align:center;font-size:.75rem}
-.rg-mots,.rg-cases,.rg-cle{display:flex;gap:4px}
-.rg-mots i,.rg-cases i,.rg-cle i{font-style:normal;padding:3px 5px;border-radius:7px;background:rgba(238,240,255,.16);font-weight:700;font-size:.85rem}
-.rg-cases i{min-width:20px;text-align:center;background:var(--parchemin);color:var(--encre)}
-.rg-cases i.vide{outline:2px solid var(--or)}
-.rg-cases i.tache{background:radial-gradient(circle, #6b5434 40%, var(--parchemin) 70%);color:#fff}
-.rg-cle{gap:2px}.rg-cle i{font-size:.66rem;padding:3px 2px}
-.rg-signes{font-size:1.05rem;line-height:1.3;text-align:center;max-width:80px}
-.rg-code{font-size:1.3rem;letter-spacing:.15em;color:var(--parchemin)}
-.rg-grille{display:grid;grid-template-columns:repeat(3, 20px);gap:2px}
-.rg-grille i{font-style:normal;height:20px;display:flex;align-items:center;justify-content:center;background:var(--parchemin);border-radius:3px;font-weight:700;font-size:.8rem}
-.rg-grille i.x{color:#b5483a}
-.rg-grille i.v{color:#2f7a4c}
-
-/* ---------- Animations douces ---------- */
-.rg-saut .rg-cour{animation:rg-saut 2.6s ease-in-out infinite;transform:translate(0, -30px)}
-@keyframes rg-saut{0%{transform:translate(-46px, 0)}30%{transform:translate(-20px, 0)}50%{transform:translate(0, -34px)}70%{transform:translate(20px, 0)}100%{transform:translate(46px, 0)}}
-.rg-baisse .rg-cour{transform-box:fill-box;transform-origin:50% 100%;animation:rg-baisse 2.6s ease-in-out infinite;transform:scale(1, .5)}
-@keyframes rg-baisse{0%{transform:translate(-46px, 0) scale(1, 1)}28%{transform:translate(-20px, 0) scale(1, .5)}72%{transform:translate(20px, 0) scale(1, .5)}100%{transform:translate(46px, 0) scale(1, 1)}}
-.rg-evite .rg-dos{animation:rg-evite 2.6s ease-in-out infinite;transform:translate(100px, 0)}
-@keyframes rg-evite{0%,20%{transform:translate(0, 0)}45%,75%{transform:translate(110px, 0)}100%{transform:translate(0, 0)}}
-.rg-a-tape{animation:rg-tape 1.6s ease-in-out infinite}
-@keyframes rg-tape{0%,100%{transform:translateY(0)}45%{transform:translateY(-8px)}60%{transform:translateY(2px) scale(.92)}}
-.rg-a-tape-g{left:12%;right:auto;animation:rg-tape 1.6s ease-in-out infinite}
-.rg-a-tape-d{right:14%;animation:rg-tape 1.6s ease-in-out infinite}
-.rg-a-gd{animation:rg-gd 2.4s ease-in-out infinite}
-@keyframes rg-gd{0%,100%{transform:translateX(-12px)}50%{transform:translateX(12px)}}
-.rg-a-haut{animation:rg-haut 2s ease-in-out infinite}
-@keyframes rg-haut{0%{transform:translateY(10px);opacity:.3}60%{transform:translateY(-22px);opacity:1}100%{transform:translateY(-22px);opacity:0}}
-.rg-a-bas{animation:rg-bas 2s ease-in-out infinite;bottom:auto;top:2px}
-@keyframes rg-bas{0%{transform:translateY(-6px);opacity:.3}60%{transform:translateY(26px);opacity:1}100%{transform:translateY(26px);opacity:0}}
-.rg-a-suivre{animation:rg-suivre 3s ease-in-out infinite;right:auto;left:8%}
-@keyframes rg-suivre{0%{transform:translate(0, 0)}100%{transform:translate(70px, -38px)}}
-.rg-a-tire{animation:rg-tire 2.4s ease-in-out infinite;right:auto;left:22%;bottom:16px}
-@keyframes rg-tire{0%,15%{transform:translateX(0)}60%{transform:translateX(-18px)}62%,100%{transform:translateX(-18px);opacity:0}}
-.rg-a-glisse-d{animation:rg-glisse-d 2.6s ease-in-out infinite;right:auto;left:12%}
-@keyframes rg-glisse-d{0%,15%{transform:translateX(0)}70%,100%{transform:translateX(52px)}}
-.rg-a-glisse-hg{animation:rg-glisse-hg 2.6s ease-in-out infinite;right:20%}
-@keyframes rg-glisse-hg{0%,15%{transform:translate(0, 0)}70%,100%{transform:translate(-20px, -10px)}}
-.rg-a-calque{animation:rg-calque 2.6s ease-in-out infinite;transform:translate(-22px, -10px)}
-@keyframes rg-calque{0%,15%{transform:translate(0, 0)}70%,100%{transform:translate(-22px, -10px)}}
-.rg-a-range{animation:rg-calque-r 2.6s ease-in-out infinite}
-@keyframes rg-calque-r{0%,15%{transform:translate(0, 0)}70%,100%{transform:translate(38px, 0)}}
-.rg-a-pulse,.rg-a-pulse-t{animation:rg-pulse 1.8s ease-in-out infinite}
-.rg-a-pulse-g{transform-box:fill-box;transform-origin:center;animation:rg-pulse 1.8s ease-in-out infinite}
-.rg-a-pulse-t{transform-box:fill-box;transform-origin:center}
-@keyframes rg-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-.rg-a-clign{animation:rg-clign 1.8s ease-in-out infinite}
-@keyframes rg-clign{0%,100%{opacity:1}50%{opacity:.35}}
-.rg-a-flotte{animation:rg-flotte 2.4s ease-in-out infinite}
-@keyframes rg-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.rg-a-tremble{animation:rg-tremble .5s linear infinite}
-@keyframes rg-tremble{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
-.rg-a-horaire{animation:rg-tourne 3s linear infinite}
-.rg-a-antihoraire{animation:rg-tourne 3s linear infinite reverse}
-.rg-emo.rg-a-horaire{display:inline-block}
-@keyframes rg-tourne{to{transform:rotate(360deg)}}
-.rg-a-quart{animation:rg-quart 2.4s ease-in-out infinite}
-@keyframes rg-quart{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
-.rg-a-sablier{animation:rg-sablier 3s ease-in-out infinite}
-@keyframes rg-sablier{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
-.rg-a-remplit{animation:rg-remplit 3s ease-in-out infinite;transform:translateY(-34px)}
-@keyframes rg-remplit{0%{transform:translateY(0)}80%,100%{transform:translateY(-34px)}}
-.rg-a-aiguille{animation:rg-aiguille 3s ease-in-out infinite}
-@keyframes rg-aiguille{0%,100%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
-.rg-a-frise{animation:rg-frise 4s linear infinite}
-@keyframes rg-frise{from{transform:translateX(0)}to{transform:translateX(-36px)}}
-.rg-a-flamme{transform-box:fill-box;transform-origin:50% 100%;animation:rg-flamme 1.2s ease-in-out infinite}
-@keyframes rg-flamme{0%,100%{transform:scale(1, 1)}50%{transform:scale(.92, 1.08)}}
-.rg-a-entoure{transform-box:fill-box;transform-origin:center;animation:rg-entoure 1.6s ease-out infinite}
-@keyframes rg-entoure{0%,40%{transform:scale(0);opacity:0}60%,100%{transform:scale(1);opacity:1}}
-.rg-a-splotch{transform-box:fill-box;transform-origin:center;animation:rg-entoure 1.6s ease-out infinite}
-.rg-a-goutte{animation:rg-goutte 2s ease-in infinite}
-@keyframes rg-goutte{0%{transform:translateY(0);opacity:1}80%,100%{transform:translateY(14px);opacity:0}}
-.rg-a-lance{animation:rg-lance 2.2s ease-out infinite}
-@keyframes rg-lance{0%{transform:translate(0, 0)}50%{transform:translate(10px, -12px)}100%{transform:translate(20px, 0)}}
-.rg-a-derive{animation:rg-gd 5s ease-in-out infinite}
-.rg-a-derive2{animation:rg-gd 5s ease-in-out infinite reverse}
-.rg-b1,.rg-b2,.rg-b3{animation:rg-allume 3s ease-in-out infinite;opacity:.55}
-.rg-b2{animation-delay:1s}
-.rg-b3{animation-delay:2s}
-@keyframes rg-allume{0%,30%{opacity:1}35%,100%{opacity:.45}}
-.rg-a-bulles{animation:rg-bulles 3s ease-in-out infinite;right:auto;left:14%;bottom:12px}
-@keyframes rg-bulles{0%,30%{transform:translate(0, 0)}33%,63%{transform:translate(36px, -12px)}66%,100%{transform:translate(72px, 6px)}}
-.rg-fleche{animation:rg-fleche 2.4s ease-in-out infinite;offset-path:path("M10,66 Q60,-6 110,40");offset-rotate:auto}
-@keyframes rg-fleche{from{offset-distance:0%}to{offset-distance:100%}}
-.rg-a-surligne{transform-box:fill-box;transform-origin:0 50%;animation:rg-surligne 2.4s ease-out infinite}
-@keyframes rg-surligne{0%{transform:scaleX(0)}60%,100%{transform:scaleX(1)}}
-@media (prefers-reduced-motion: reduce){
-  .rg *{animation:none!important}
-  .rg-fleche{offset-distance:50%}
-}
+/* Brumeval v2 — démos des écrans d'accueil des mini-jeux (mj-regles.js), dessinées en 300 × 420 */
+.rg-demo-svg{display:block;width:100%;height:100%}
+.rg-h{position:absolute;inset:0;overflow:hidden;font-family:var(--f-texte);color:var(--lune)}
+.rg-main-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
+.rg-h .appuye{transform:translateY(3px);box-shadow:0 1px 0 var(--contour)!important}
+.rg-emoji{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:5rem}
+.rg-bouton-g{position:absolute;left:20px;right:20px;height:48px;border-radius:24px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:var(--contour)}
+/* Mensonge */
+.rg-mens{background:radial-gradient(120% 80% at 50% 0%, #3a2140, #1c1430 75%)}
+.rg-puces{position:absolute;left:0;right:0;top:12px;display:flex;justify-content:center;gap:10px}
+.rg-puces i{font-style:normal;width:34px;height:34px;border-radius:10px;border:2px solid rgba(255,227,163,.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--brume)}
+.rg-puces i.on{border-color:var(--or);color:var(--or-pale);background:rgba(245,185,69,.15)}
+.rg-puces i.ment{background:#e2557f;border-color:#ffa9c6;color:#fff;font-size:0}
+.rg-puces i.ment::after{content:'🤥';font-size:18px}
+.rg-puces i.fini{border-color:#5fcf86}
+.rg-mens-visage{position:absolute;left:50px;top:56px;width:200px;height:200px;border-radius:20px;overflow:hidden;border:3px solid var(--contour);box-shadow:0 0 0 3px rgba(255,143,179,.35);background:#f3e7cb}
+.rg-mens-visage svg{width:100%;height:100%;display:block}
+.rg-mens.reussi .rg-mens-visage{box-shadow:0 0 0 5px #5fcf86, 0 0 24px #5fcf86}
+.rg-mens-bulle{position:absolute;left:14px;right:14px;top:268px;min-height:56px;box-sizing:border-box;padding:8px 50px 8px 14px;border-radius:16px;background:var(--parchemin);color:var(--encre);font-size:16px;font-weight:700;display:flex;align-items:center;line-height:1.2}
+.rg-lire-faux{position:absolute;right:8px;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:16px}
+.rg-mens-b,.rg-mens-v{position:absolute;left:20px;right:20px;top:340px;height:50px;border-radius:25px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;background:linear-gradient(180deg,#ffa9c6,#e2557f)}
+.rg-mens-v{background:linear-gradient(180deg,#ffe3a3,#f5b945);color:var(--contour)}
+/* Ragots : la taverne */
+.rg-rag{background:radial-gradient(120% 90% at 50% 0%, #4a2a18, #24140c 75%)}
+.rg-rag-qui{position:absolute;left:84px;top:12px;width:132px;height:132px;border-radius:20px;overflow:hidden;border:3px solid var(--contour);background:#f3e7cb}
+.rg-rag-qui svg{width:100%;height:100%;display:block}
+.rg-rag-bulle{position:absolute;left:14px;right:14px;top:166px;min-height:86px;box-sizing:border-box;padding:12px 54px 12px 16px;border-radius:18px;background:var(--parchemin);color:var(--encre);font-size:17px;font-weight:700;line-height:1.25;display:flex;align-items:center;transform-origin:50% 0;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.rg-rag-bulle::before{content:'';position:absolute;left:50%;top:-12px;margin-left:-12px;border:12px solid transparent;border-top:0;border-bottom-color:var(--parchemin)}
+.rg-rag-lire{position:absolute;right:10px;top:50%;margin-top:-19px;width:38px;height:38px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:18px}
+.rg-rag-b{position:absolute;top:320px;width:134px;height:60px;border-radius:18px;border:3px solid var(--contour);color:var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-sizing:border-box;white-space:nowrap}
+.rg-rag-b.oui{left:14px;background:#9fe0b4}
+.rg-rag-b.non{left:154px;background:#ffb39a}
+.rg-rag-note{position:absolute;left:50%;top:268px;padding:5px 14px;border-radius:12px;background:#fff4d0;color:var(--encre);font-weight:800;font-size:17px;opacity:0;white-space:nowrap}
+/* Mots perdus */
+.rg-mots{background:#1c2447}
+.rg-mots-carte{position:absolute;left:14px;right:14px;top:40px;padding:22px 18px;border-radius:16px;background:var(--parchemin);color:var(--encre);font-size:21px;font-weight:700;line-height:1.3}
+.rg-mots-carte p{margin:0 0 14px}
+.rg-mots-carte p:last-child{margin:0}
+.rg-mots-carte .qui{font-size:22px}
+.rg-mots .trou{display:inline-block;min-width:56px;padding:2px 8px;border-radius:10px;border:2.5px dashed #c9a2b4;text-align:center;font-weight:800}
+.rg-mots .trou.choisi{border-color:var(--or);background:#ffe3a3}
+.rg-mots .trou.plein{border-style:solid;border-color:#b48cff;background:#efe6ff}
+.rg-mots .trou.juste{border-color:#3f9a62;background:#c9f2d5}
+.rg-mots-liste{position:absolute;left:24px;right:24px;top:220px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rg-mots-liste span,.rg-mots-vol{display:flex;align-items:center;justify-content:center;height:46px;border-radius:23px;border:3px solid var(--rose);color:var(--lune);font-size:19px;font-weight:700;background:rgba(239,127,168,.1)}
+.rg-mots-liste span.pris{opacity:.25}
+.rg-mots-vol{position:absolute;width:110px;transform:translate(-50%,-50%);background:#3a2f5a;opacity:0;z-index:4}
+.rg-mots-v,.rg-alpha-v,.rg-gr-v{position:absolute;left:50px;right:50px;height:46px;border-radius:23px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);background:linear-gradient(180deg,#ffe3a3,#f5b945);color:var(--contour);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+.rg-mots-v{top:356px}
+.rg-mots.reussi .rg-mots-carte{box-shadow:0 0 0 5px #5fcf86, 0 0 26px #5fcf86}
+/* Dépositions */
+.rg-dep{background:radial-gradient(120% 80% at 50% 0%, #4a2a4a, #1c1430 75%)}
+.rg-dep-c{position:absolute;left:12px;right:12px;height:80px;box-sizing:border-box;padding:8px 12px 8px 56px;border-radius:14px;background:#fff8e8;color:var(--encre);border:3px solid transparent}
+.rg-dep-c.c0{top:14px}.rg-dep-c.c1{top:102px}.rg-dep-c.c2{top:190px}
+.rg-dep-c .ic{position:absolute;left:10px;top:50%;margin-top:-20px;font-size:34px;line-height:40px}
+.rg-dep-c b{display:block;font-family:var(--f-titre);font-weight:400;font-size:17px;color:#b03a6a}
+.rg-dep-c p{margin:2px 0 0;font-size:16px;font-weight:700;line-height:1.25}
+.rg-dep-c .sur{background-repeat:no-repeat;background-size:0% 100%;padding:0 2px}
+.rg-dep-c.c0 .sur,.rg-dep-c.c1 .sur{background-image:linear-gradient(#8ee6a8,#8ee6a8)}
+.rg-dep-c.c2 .sur{background-image:linear-gradient(#ff9a9a,#ff9a9a)}
+.rg-dep-c.choisie{border-color:#ff8fb3}
+.rg-dep-c .tampon{position:absolute;right:10px;top:50%;margin-top:-24px;font-size:40px;line-height:48px;opacity:0;transform:rotate(-14deg) scale(1.4);transition:opacity .2s, transform .2s}
+.rg-dep-c.accusee{border-color:#e2557f;box-shadow:0 0 18px #e2557f}
+.rg-dep-c.accusee .tampon{opacity:1;transform:rotate(-14deg) scale(1)}
+.rg-dep-stylos{position:absolute;left:12px;right:12px;top:286px;display:flex;gap:8px}
+.rg-dep-stylos .s{flex:1;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--contour);border:3px solid transparent}
+.rg-dep-stylos .v{background:#8ee6a8}.rg-dep-stylos .r{background:#ff9a9a}.rg-dep-stylos .j{background:#ffe08a}
+.rg-dep-stylos .s.on{border-color:#fff;box-shadow:0 0 0 3px var(--contour)}
+.rg-dep-acc{position:absolute;left:40px;right:40px;top:350px;height:46px;border-radius:23px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);background:linear-gradient(180deg,#ffa9c6,#e2557f);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+/* Alphabet secret */
+.rg-alpha{background:#1c2447}
+.rg-alpha-parch{position:absolute;left:14px;right:14px;top:30px;height:116px;border-radius:14px;background:var(--parchemin);display:flex;justify-content:center;align-items:center;gap:10px}
+.rg-alpha .case{width:52px;height:96px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 0;box-sizing:border-box;border:3px solid transparent}
+.rg-alpha .case b{font-size:32px;line-height:1;color:var(--encre)}
+.rg-alpha .case i{font-style:normal;width:40px;height:36px;border-bottom:3px solid var(--encre-2);font-size:28px;font-weight:800;color:#2f4f9a;text-align:center;line-height:36px}
+.rg-alpha .case.choisie{border-color:#3fd0ff;background:rgba(63,208,255,.15)}
+.rg-alpha-cle{position:absolute;left:14px;right:14px;top:162px;height:52px;border-radius:12px;background:rgba(243,231,203,.9);color:var(--encre);display:flex;align-items:center;justify-content:space-around;font-size:17px;font-weight:800;padding:0 6px}
+.rg-alpha-clav{position:absolute;left:20px;right:20px;top:256px;display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px}
+.rg-alpha-clav span{height:44px;border-radius:10px;background:var(--parchemin);color:var(--encre);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;box-shadow:0 4px 0 var(--encre-2)}
+.rg-alpha-v{top:366px}
+.rg-alpha.reussi .rg-alpha-parch{box-shadow:0 0 0 5px #5fcf86, 0 0 26px #5fcf86}
+/* Grille de déduction */
+.rg-gr{background:#1c2447}
+.rg-gr .ind{position:absolute;left:14px;right:14px;height:40px;margin:0;box-sizing:border-box;padding:0 12px;border-radius:12px;background:var(--parchemin);color:var(--encre);display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;border:3px solid transparent}
+.rg-gr .ind i{font-style:normal;width:24px;height:24px;border-radius:50%;background:#3f7ad0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.rg-gr .i0{top:12px}.rg-gr .i1{top:60px}
+.rg-gr .ind.lu{border-color:var(--or)}
+.rg-gr .ind.fait{opacity:.45;text-decoration:line-through}
+.rg-gr-g{position:absolute;left:32px;top:112px;display:grid;grid-template-columns:60px 80px 80px;grid-template-rows:40px 66px 66px;gap:8px}
+.rg-gr-g b{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:400}
+.rg-gr-g span{border-radius:10px;background:var(--parchemin);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
+.rg-gr-g span.x{color:#c0392b}
+.rg-gr-g span.v{color:#2f9e44;background:#c9f2d5}
+.rg-gr-g span.auto{opacity:.75}
+.rg-gr-v{top:340px}
+.rg-gr.reussi .rg-gr-g{filter:drop-shadow(0 0 10px #5fcf86)}
 
 /* Relire un mini-jeu du Barde après coup */
 .rv{display:flex;flex-direction:column;gap:12px;text-align:left}
@@ -3167,16 +3157,26 @@ D.INGR = {
 };
 /* cuisson = mini-jeu ; pour = rôles qui peuvent s'en servir ; fx = effet quand on l'utilise */
 D.POTIONS = {
-  revelatrice:{nom:'Encre révélatrice', ic:'🫙', c:'#ff7a59', pour:['sage'], d:'Fait apparaître l\'encre invisible.', fx:{acces:['encre']}},
-  lumiere:{nom:'Potion de lumière', ic:'💡', c:'#8ff3ff', pour:['pisteur', 'barde', 'sage'], d:'Pour voir dans le noir pendant tout un moment.', fx:{acces:['sombre']}},
-  rapidite:{nom:'Potion de rapidité', ic:'💨', c:'#7cf09a', pour:['pisteur'], d:'Pour courir comme le vent : la poursuite est plus facile.', fx:{mj:{poursuite:{facile:2, lent:0.85}}}},
-  invisibilite:{nom:'Potion d\'invisibilité', ic:'👻', c:'#c9d3ff', pour:['barde', 'pisteur'], d:'Pour écouter ou se cacher sans être vu.', fx:{acces:['ecoute'], mj:{cachette:{facile:3}}}},
-  verite:{nom:'Potion de vérité', ic:'💬', c:'#ffd84a', pour:['barde'], d:'Démasquer un menteur devient très facile.', fx:{mj:{mensonge:{facile:3, revele:true}}}},
-  clarte:{nom:'Potion de clarté d\'esprit', ic:'🧠', c:'#6cb6ff', pour:['sage'], d:'Déchiffrer et réfléchir devient plus facile.', fx:{mj:{alphabet:{aide:2}, plans:{zone:1.4}, grille:{aide:1}, runes:{aide:1}}}},
-  fumigene:{nom:'Fumigène', ic:'💨', c:'#9aa3c8', pour:['pisteur', 'barde'], d:'Un nuage de fumée pour se cacher ou s\'enfuir.', fx:{mj:{cachette:{facile:2}, poursuite:{erreurs:1}}}},
-  eclairante:{nom:'Poudre éclairante', ic:'🌟', c:'#ffe3a3', pour:['pisteur', 'sage'], d:'Éclaire un lieu sombre.', fx:{acces:['sombre']}},
+  /* utile : à quoi elle sert et pour qui, en une ou deux phrases pour un enfant (montré dans le grimoire et l'armoire à potions de l'atelier) */
+  revelatrice:{nom:'Encre révélatrice', ic:'🫙', c:'#ff7a59', pour:['sage'], d:'Fait apparaître l\'encre invisible.', fx:{acces:['encre']},
+    utile:'Pour le Sage : elle fait apparaître l\'écriture invisible, sur une page blanche ou une lettre blanche. Donne-lui son code !'},
+  lumiere:{nom:'Potion de lumière', ic:'💡', c:'#8ff3ff', pour:['pisteur', 'barde', 'sage'], d:'Pour voir dans le noir pendant tout un moment.', fx:{acces:['sombre']},
+    utile:'Pour voir dans le noir pendant tout un moment. Le Pisteur en a besoin pour guetter dans le moulin, la nuit.'},
+  rapidite:{nom:'Potion de rapidité', ic:'💨', c:'#7cf09a', pour:['pisteur'], d:'Pour courir comme le vent : la poursuite est plus facile.', fx:{mj:{poursuite:{facile:2, lent:0.85}}},
+    utile:'Pour le Pisteur : il la boit avant une poursuite, il court comme le vent et rattrape plus facilement.'},
+  invisibilite:{nom:'Potion d\'invisibilité', ic:'👻', c:'#c9d3ff', pour:['barde', 'pisteur'], d:'Pour écouter ou se cacher sans être vu.', fx:{acces:['ecoute'], mj:{cachette:{facile:3}}},
+    utile:'Pour le Pisteur ou le Barde : quand il faut se cacher pour guetter quelqu\'un, personne ne te voit, c\'est bien plus facile.'},
+  verite:{nom:'Potion de vérité', ic:'💬', c:'#ffd84a', pour:['barde'], d:'Démasquer un menteur devient très facile.', fx:{mj:{mensonge:{facile:3, revele:true}}},
+    utile:'Pour le Barde : il la boit avant de démasquer quelqu\'un, et le mensonge se voit tout de suite.'},
+  clarte:{nom:'Potion de clarté d\'esprit', ic:'🧠', c:'#6cb6ff', pour:['sage'], d:'Déchiffrer et réfléchir devient plus facile.', fx:{mj:{alphabet:{aide:2}, plans:{zone:1.4}, grille:{aide:1}, runes:{aide:1}}},
+    utile:'Pour le Sage : ses énigmes deviennent plus faciles, l\'alphabet secret, les vieux plans, la grille et les runes.'},
+  fumigene:{nom:'Fumigène', ic:'💨', c:'#9aa3c8', pour:['pisteur', 'barde'], d:'Un nuage de fumée pour se cacher ou s\'enfuir.', fx:{mj:{cachette:{facile:2}, poursuite:{erreurs:1}}},
+    utile:'Pour le Pisteur ou le Barde : un nuage de fumée pour se cacher plus facilement, et une chance de plus pendant une poursuite.'},
+  eclairante:{nom:'Poudre éclairante', ic:'🌟', c:'#ffe3a3', pour:['pisteur', 'sage'], d:'Éclaire un lieu sombre.', fx:{acces:['sombre']},
+    utile:'Pour le Pisteur ou le Sage : elle éclaire un endroit tout noir pendant un moment, comme le moulin la nuit.'},
   /* Élixir du Cœur vaillant : rend 1 cœur d'accusation au Sage (une fois par enquête, jamais plus de 3). Effet géré par le moteur (clé coeur). */
-  coeur:{nom:'Élixir du Cœur vaillant', ic:'❤️', c:'#ff5a7a', pour:['sage'], d:'Rend un cœur d\'accusation au Sage, une fois par enquête.', fx:{coeur:1}}
+  coeur:{nom:'Élixir du Cœur vaillant', ic:'❤️', c:'#ff5a7a', pour:['sage'], d:'Rend un cœur d\'accusation au Sage, une fois par enquête.', fx:{coeur:1},
+    utile:'Pour le Sage : pendant l\'accusation, s\'il a perdu un cœur, il boit l\'élixir et le récupère (une fois par enquête).'}
 };
 /* recette : ingrédients dans l'ordre ; secrete = l'ordre et les quantités sont dans le Grand Livre du Sage.
    Toutes les potions se préparent au grand chaudron (mini-jeu 'chaudron', fichier mj-chaudron.js). */
@@ -3416,7 +3416,7 @@ MJ.lancer = function(el, type, params, fin, options){
     '<div class="mj-tete">' +
       '<span class="mj-ic">' + (def.ic || '🎲') + '</span>' +
       '<div class="mj-titres"><b class="mj-nom">' + esc(options.titre || def.nom) + '</b>' +
-      '<span class="mj-niv">Difficulté ' + params.niveau + (params.niveauEffectif < params.niveau ? ' → ' + params.niveauEffectif : '') + '</span></div>' +
+      '</div>' +
       '<button class="mj-btn-lire" type="button" aria-label="Écouter la consigne">🔊</button>' +
       '<button class="mj-btn-stop" type="button" aria-label="Arrêter la lecture">⏹</button>' +
     '</div>' +
@@ -3425,56 +3425,65 @@ MJ.lancer = function(el, type, params, fin, options){
   el.appendChild(racine);
   var scene = racine.querySelector('.mj-scene');
   var consigne = (typeof def.consigne === 'function') ? def.consigne(params) : (def.consigne || '');
-  racine.querySelector('.mj-btn-lire').onclick = function(){ U.lire(consigne); };
+  /* la phrase toute simple de l'écran d'accueil (mj-regles.js) ; la longue consigne reste pour la salle */
+  var phrase = (MJ.PHRASES && MJ.PHRASES[type]) || def.phrase || consigne;
+  racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
   racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
 
   function intro(){
     scene.innerHTML = '';
-    var aides = (options.aides || []).map(function(a){ return '<li><span>' + (a.ic || '✨') + '</span> ' + esc(a.nom) + (a.effet ? ' <i>· ' + esc(a.effet) + '</i>' : '') + '</li>'; }).join('');
+    /* Écran d'accueil tout simple (demande de Romain, 2 nov. au soir) :
+       une grande démo animée avec la main, UNE phrase courte + 🔊, « C'est parti ! ».
+       Les réglages restent pour la salle (options.details), repliés. */
+    racine.classList.add('mj-en-intro');
+    var aidesIc = (options.aides || []).map(function(a){ return '<span title="' + esc(a.nom + (a.effet ? ' · ' + a.effet : '')) + '">' + (a.ic || '✨') + '</span>'; }).join('');
     var lignes = (params.lignes || []).map(function(l){ return '<li><span>' + esc(l.nom) + '</span><b>' + esc(l.val) + '</b></li>'; }).join('');
-    var regles = '';
-    try{ if(MJ.regles && MJ.regles.html) regles = MJ.regles.html(type, params); }catch(e){ regles = ''; }
-    var bloc = U.html('<div class="mj-intro' + (regles ? ' mj-avec-regles' : '') + '">' +
-      regles +
-      '<div class="mj-demo"></div>' +
-      '<div class="mj-consigne-l"><p class="mj-consigne">' + esc(consigne) + '</p></div>' +
+    var details = options.details ? '<details class="mj-details"><summary>⚙️ Détails du réglage</summary>' +
+      '<p class="mj-det-niv">Difficulté ' + params.niveau + (params.niveauEffectif !== params.niveau ? ' → ' + params.niveauEffectif : '') + '</p>' +
       (lignes ? '<ul class="mj-reglages">' + lignes + '</ul>' : '') +
-      (aides ? '<div class="mj-aides"><span class="sur-titre">Ce qui t\'aide</span><ul>' + aides + '</ul></div>' : '') +
-      (options.essaiUnique ? '<p class="mj-unique">⚠️ Un seul essai : raté, c\'est raté !</p>' : '') +
+      '<p class="mj-consigne mj-det-consigne">' + esc(consigne) + '</p></details>' : '';
+    var bloc = U.html('<div class="mj-intro mj-intro-simple">' +
+      '<div class="mj-demo-cadre"><div class="mj-demo"></div></div>' +
+      '<div class="mj-phrase-l"><p class="mj-phrase">' + esc(phrase) + '</p></div>' +
+      (aidesIc ? '<div class="mj-aides-ic" aria-label="Ce qui t\'aide">' + aidesIc + '</div>' : '') +
+      (options.essaiUnique ? '<p class="mj-unique">⚠️ Un seul essai !</p>' : '') +
+      details +
       '<button class="btn grand mj-go" type="button">C\'est parti !</button>' +
     '</div>');
     scene.appendChild(bloc);
-    /* 🔊 : la consigne (relue au moment d'appuyer : certains jeux la changent), les réglages, les aides */
-    var lc = bloc.querySelector('.mj-consigne-l');
-    if(lc) lc.insertBefore(boutonLire(function(){ var c = bloc.querySelector('.mj-consigne'); return c ? c.textContent : consigne; }, 'mj-lire-consigne'), lc.firstChild);
-    ajouterLire(bloc, '.mj-reglages li', function(li){ var a = li.querySelector('span'), b = li.querySelector('b'); return (a ? a.textContent : '') + ' : ' + (b ? b.textContent : ''); }, true);
-    ajouterLire(bloc, '.mj-aides li');
-    ajouterLire(bloc, '.mj-unique');
-    var demo = bloc.querySelector('.mj-demo');
+    var pl = bloc.querySelector('.mj-phrase-l');
+    pl.insertBefore(boutonLire(phrase, 'mj-lire-consigne'), pl.firstChild);
+    var cadre = bloc.querySelector('.mj-demo-cadre'), demo = bloc.querySelector('.mj-demo');
+    /* la démo est dessinée à sa taille naturelle (W0 × H0), puis agrandie pour remplir la place libre */
+    var DM = MJ.DEMOS && MJ.DEMOS[type];
+    var W0 = (DM && DM.w) || 340, H0 = (DM && DM.h) || 190;
+    demo.style.width = W0 + 'px'; demo.style.height = H0 + 'px';
     var arretDemo = null;
-    if(def.demo){ try{ arretDemo = def.demo(demo, params); arretDemoG = arretDemo; }catch(e){ demo.hidden = true; } } else demo.hidden = true;
-    /* la démo montre parfois une légende de plus de 3 mots : petit 🔊 dans son coin, seulement à ce moment-là */
-    try{
-      if(!demo.hidden){
-        var texteDemo = function(){
-          var w = document.createTreeWalker(demo, NodeFilter.SHOW_TEXT, null), n, t = [];
-          while((n = w.nextNode())){ var pe = n.parentElement; if(!pe || pe.closest('svg') || pe.closest('.mj-lire-mini')) continue; if(pe.offsetParent === null && getComputedStyle(pe).position !== 'fixed') continue; if(n.nodeValue.trim()) t.push(n.nodeValue.trim()); }
-          return t.join(' ');
-        };
-        var derniere = '';
-        var rang = document.createElement('div'); rang.className = 'mj-demo-lire'; rang.hidden = true;
-        rang.appendChild(boutonLire(function(){ var t = texteDemo(); return nbMots(t) > 3 ? t : derniere; }, 'mj-lire-demo'));
-        demo.parentNode.insertBefore(rang, demo.nextSibling);
-        var majDemo = function(){
-          if(!bloc.isConnected){ clearInterval(tDemo); return; }
-          var t = texteDemo();
-          if(nbMots(t) > 3){ derniere = t; rang.hidden = false; }
-        };
-        var tDemo = setInterval(majDemo, 600); majDemo();
-      }
-    }catch(e){}
+    try{ arretDemo = DM && DM.f ? DM.f(demo, params) : (def.demo ? def.demo(demo, params) : null); arretDemoG = arretDemo; }catch(e){ if(window.console) console.warn('démo', type, e); }
+    if(!demo.firstChild) cadre.hidden = true;
+    /* moins de mouvement demandé : la démo d'un jeu s'arrête sur une image (les démos de mj-regles.js le font seules) */
+    try{ if(!(DM && DM.f) && arretDemo && window.matchMedia('(prefers-reduced-motion: reduce)').matches) setTimeout(function(){ try{ if(arretDemo.arreter) arretDemo.arreter(); else if(typeof arretDemo === 'function') arretDemo(); }catch(e){} }, 1600); }catch(e){}
+    /* ce qu'une démo ajoute à côté d'elle (ex. le choix « à l'oral / à lire ») sort du cadre */
+    while(demo.nextSibling) bloc.insertBefore(cadre.lastChild, cadre.nextSibling);
+    /* la démo prend toute la place que laissent la phrase et le bouton (sans faire défiler) */
+    function ajuste(){
+      if(!bloc.isConnected){ if(ro) ro.disconnect(); return; }
+      var cs = getComputedStyle(bloc), libre = bloc.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), n = 0;
+      Array.prototype.forEach.call(bloc.children, function(c){ if(c === cadre || c.hidden || getComputedStyle(c).display === 'none') return; libre -= c.offsetHeight; n++; });
+      libre -= (parseFloat(cs.rowGap) || 0) * n;
+      var cw = cadre.clientWidth; if(!cw || !bloc.clientHeight) return;
+      var k = Math.max(.4, Math.min(cw / W0, Math.max(libre, 150) / H0, 3.2));
+      cadre.style.height = Math.round(H0 * k) + 'px';
+      demo.style.transform = 'translate(' + Math.round((cw - W0 * k) / 2) + 'px,0) scale(' + k.toFixed(3) + ')';
+    }
+    var ro = window.ResizeObserver ? new ResizeObserver(ajuste) : null;
+    if(ro) ro.observe(bloc); else window.addEventListener('resize', ajuste);
+    var det = bloc.querySelector('.mj-details'); if(det) det.addEventListener('toggle', ajuste);
+    ajuste(); requestAnimationFrame(ajuste);
     bloc.querySelector('.mj-go').onclick = function(){
       if(arretDemo && arretDemo.arreter) arretDemo.arreter(); else if(typeof arretDemo === 'function') arretDemo();
+      if(ro) ro.disconnect();
+      racine.classList.remove('mj-en-intro');
       U.stop(); U.son('clic'); jouer();
     };
   }
@@ -20146,542 +20155,807 @@ MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:
 
 /* ===== mj-regles.js ===== */
 /* ==========================================================
-   Brumeval v2 — LES RÈGLES EN IMAGES (une fiche par mini-jeu)
-   MJ.REGLES[type](params) → [{t:'titre du groupe', c:[carte…]}]
-   carte = {p:'pictogramme (SVG ou emoji animé)', t:'3 mots max', k:'ok'|'ko'|''}
-   MJ.regles.html(type, params) → HTML de la fiche (vide si pas de fiche).
-   Affichée tout en haut de l'écran de consigne (mj-core.js).
-   Les étiquettes font 3 mots au plus : les enfants les lisent seuls,
-   donc pas de bouton 🔊 ici. Animations douces, coupées si
-   l'appareil demande moins de mouvement (prefers-reduced-motion).
-   Les obstacles de la course-poursuite sont les VRAIS dessins du jeu
-   (copiés de mj-pisteur-alchi.js, OBSTACLES_P).
+   Brumeval v2 — L'ÉCRAN D'ACCUEIL DES MINI-JEUX (version simple)
+   Romain, 2 nov. au soir : « Tu vires tout et tu simplifies au maximum. »
+   Avant chaque mini-jeu : une grande démo animée (comme une petite vidéo
+   en boucle, avec une main qui fait les gestes), UNE phrase courte + 🔊,
+   et « C'est parti ! ». Rien d'autre.
+
+   MJ.PHRASES[type] : la phrase (8 mots au plus, pour des enfants de 8 ans).
+   MJ.DEMOS[type] = {w, h, f(el, params)} : la démo, dessinée en hauteur
+     (300 × 420, comme les jeux sur un téléphone) ; mj-core.js l'agrandit
+     pour remplir la place libre. f renvoie {arreter()}.
+   Pas de légende écrite dans les démos : la main montre le geste.
+   prefers-reduced-motion : une image fixe, avec la main.
+   Dessins : ceux des jeux quand c'est possible (obstacles de la course,
+   cachettes, lanterne et flèche du tir copiés de mj-pisteur-alchi.js ;
+   villageois de persos.js via Persos.pnj / Persos.expression).
    ========================================================== */
 (function(){
 'use strict';
 var MJ = window.MJ = window.MJ || {};
-var K = '#24182e';
-/* dessins des obstacles de la course (identiques au jeu) */
-var SP = {"barriere":"<g><path d=\"M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34\" stroke=\"#24182e\" stroke-width=\"12\" stroke-linecap=\"round\"/><path d=\"M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34\" stroke=\"#a8743f\" stroke-width=\"7\" stroke-linecap=\"round\"/><rect x=\"-60\" y=\"-30\" width=\"120\" height=\"11\" rx=\"4\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"4\"/><rect x=\"-60\" y=\"-12\" width=\"120\" height=\"11\" rx=\"4\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"4\"/></g>",
-  "tronc":"<g><rect x=\"-46\" y=\"-22\" width=\"92\" height=\"30\" rx=\"14\" fill=\"#8a5a33\" stroke=\"#24182e\" stroke-width=\"5\"/><ellipse cx=\"-46\" cy=\"-7\" rx=\"9\" ry=\"15\" fill=\"#d9a066\" stroke=\"#24182e\" stroke-width=\"4\"/><path d=\"M-30,-14 L20,-14 M-20,-2 L30,-2\" stroke=\"#5e3a1e\" stroke-width=\"3\" stroke-linecap=\"round\"/></g>",
-  "chien":"<g><ellipse cx=\"0\" cy=\"-10\" rx=\"34\" ry=\"14\" fill=\"#e8d7ae\" stroke=\"#24182e\" stroke-width=\"5\"/><ellipse cx=\"-12\" cy=\"-12\" rx=\"10\" ry=\"8\" fill=\"#3b2a1e\"/><circle cx=\"24\" cy=\"-14\" r=\"11\" fill=\"#e8d7ae\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M18,-24 C14,-30 22,-32 24,-25 Z\" fill=\"#3b2a1e\" stroke=\"#24182e\" stroke-width=\"3\"/><path d=\"M20,-14 l4,1 M26,-15 l4,1\" stroke=\"#24182e\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><path d=\"M-34,-8 C-44,-14 -42,-24 -36,-22\" stroke=\"#24182e\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><text x=\"34\" y=\"-34\" font-size=\"16\" fill=\"#eef0ff\" font-family=\"sans-serif\">z</text></g>",
-  "flaque":"<g><ellipse cx=\"0\" cy=\"-2\" rx=\"50\" ry=\"13\" fill=\"#4a3220\" stroke=\"#24182e\" stroke-width=\"3\"/><ellipse cx=\"-12\" cy=\"-5\" rx=\"16\" ry=\"4\" fill=\"#7a5a3e\" opacity=\".7\"/><circle cx=\"18\" cy=\"-2\" r=\"3\" fill=\"#6d5238\"/></g>",
-  "branche":"<g><path d=\"M-62,-96 C-30,-110 20,-90 62,-104\" stroke=\"#24182e\" stroke-width=\"15\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M-62,-96 C-30,-110 20,-90 62,-104\" stroke=\"#7a4e2c\" stroke-width=\"9\" fill=\"none\" stroke-linecap=\"round\"/><circle cx=\"-34\" cy=\"-90\" r=\"15\" fill=\"#2a7050\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"6\" cy=\"-84\" r=\"17\" fill=\"#2f7a4c\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"40\" cy=\"-92\" r=\"14\" fill=\"#2a7050\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"10\" cy=\"-90\" r=\"7\" fill=\"#3c9a62\"/></g>",
-  "linge":"<g><path d=\"M-60,4 L-60,-120 M60,4 L60,-120\" stroke=\"#24182e\" stroke-width=\"10\" stroke-linecap=\"round\"/><path d=\"M-60,4 L-60,-120 M60,4 L60,-120\" stroke=\"#8a5a33\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M-60,-112 Q0,-96 60,-112\" stroke=\"#e8d7ae\" stroke-width=\"3\" fill=\"none\"/><path d=\"M-46,-110 L-24,-104 L-26,-70 L-48,-74 Z\" fill=\"#e5484d\" stroke=\"#24182e\" stroke-width=\"3.5\"/><path d=\"M-14,-102 L14,-102 L16,-64 L4,-64 L0,-80 L-4,-64 L-16,-64 Z\" fill=\"#6cb6ff\" stroke=\"#24182e\" stroke-width=\"3.5\"/><path d=\"M24,-104 L46,-110 L48,-76 L26,-72 Z\" fill=\"#f6d23a\" stroke=\"#24182e\" stroke-width=\"3.5\"/></g>",
-  "caisse":"<g><rect x=\"-30\" y=\"-56\" width=\"60\" height=\"58\" rx=\"5\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-30,-56 L30,2 M30,-56 L-30,2\" stroke=\"#7d5428\" stroke-width=\"5\"/><rect x=\"-30\" y=\"-56\" width=\"60\" height=\"58\" rx=\"5\" fill=\"none\" stroke=\"#24182e\" stroke-width=\"5\"/></g>",
-  "tonneau":"<g><path d=\"M-26,-60 C-36,-30 -36,-28 -26,2 L26,2 C36,-28 36,-30 26,-60 Z\" fill=\"#9a6235\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-31,-42 L31,-42 M-31,-16 L31,-16\" stroke=\"#3b3346\" stroke-width=\"6\"/><ellipse cx=\"0\" cy=\"-60\" rx=\"26\" ry=\"7\" fill=\"#b87a44\" stroke=\"#24182e\" stroke-width=\"4\"/></g>",
-  "foin":"<g><path d=\"M-44,2 L-40,-40 C-20,-54 20,-54 40,-40 L44,2 Z\" fill=\"#e6c25a\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-30,-30 L-26,-6 M-8,-40 L-6,-8 M14,-38 L12,-6 M32,-28 L30,-4\" stroke=\"#b08a2a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M-42,-22 L42,-22\" stroke=\"#8a5a33\" stroke-width=\"5\"/></g>",
-  "rocher":"<g><path d=\"M-40,2 C-46,-18 -30,-44 -6,-46 C20,-48 42,-30 40,-8 C40,-2 38,2 34,2 Z\" fill=\"#7d7a92\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-20,-30 C-10,-38 6,-38 14,-32\" stroke=\"#b5b2cc\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\"/></g>",
-  "charrette":"<g><rect x=\"-40\" y=\"-62\" width=\"80\" height=\"50\" rx=\"5\" fill=\"#a8743f\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-40,-46 L40,-46 M-40,-30 L40,-30\" stroke=\"#7d5428\" stroke-width=\"4\"/><path d=\"M-34,-62 C-30,-80 -6,-84 0,-72 C8,-86 32,-80 34,-62 Z\" fill=\"#e6c25a\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"-30\" cy=\"-6\" r=\"13\" fill=\"#5e3a1e\" stroke=\"#24182e\" stroke-width=\"5\"/><circle cx=\"30\" cy=\"-6\" r=\"13\" fill=\"#5e3a1e\" stroke=\"#24182e\" stroke-width=\"5\"/><circle cx=\"-30\" cy=\"-6\" r=\"4\" fill=\"#24182e\"/><circle cx=\"30\" cy=\"-6\" r=\"4\" fill=\"#24182e\"/></g>",
-  "etal":"<g><path d=\"M-44,2 L-44,-70 M44,2 L44,-70\" stroke=\"#24182e\" stroke-width=\"8\" stroke-linecap=\"round\"/><path d=\"M-44,2 L-44,-70 M44,2 L44,-70\" stroke=\"#8a5a33\" stroke-width=\"4\" stroke-linecap=\"round\"/><rect x=\"-46\" y=\"-34\" width=\"92\" height=\"30\" rx=\"4\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"5\"/><circle cx=\"-24\" cy=\"-40\" r=\"8\" fill=\"#e5484d\" stroke=\"#24182e\" stroke-width=\"3\"/><circle cx=\"-6\" cy=\"-41\" r=\"8\" fill=\"#f6d23a\" stroke=\"#24182e\" stroke-width=\"3\"/><circle cx=\"14\" cy=\"-40\" r=\"8\" fill=\"#5fcf86\" stroke=\"#24182e\" stroke-width=\"3\"/><circle cx=\"30\" cy=\"-41\" r=\"7\" fill=\"#e8693c\" stroke=\"#24182e\" stroke-width=\"3\"/><path d=\"M-54,-70 L54,-70 L48,-90 L-48,-90 Z\" fill=\"#fff\" stroke=\"#24182e\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M-36,-90 L-40,-70 M-12,-90 L-13,-70 M12,-90 L13,-70 M36,-90 L40,-70\" stroke=\"#e5484d\" stroke-width=\"9\"/><path d=\"M-54,-70 L54,-70 L48,-90 L-48,-90 Z\" fill=\"none\" stroke=\"#24182e\" stroke-width=\"5\" stroke-linejoin=\"round\"/></g>",
-  "poule":"<g><ellipse cx=\"0\" cy=\"-20\" rx=\"22\" ry=\"18\" fill=\"#fff\" stroke=\"#24182e\" stroke-width=\"5\"/><circle cx=\"16\" cy=\"-36\" r=\"10\" fill=\"#fff\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M14,-48 l4,-6 l3,6 l4,-5 l2,7\" fill=\"#e5484d\" stroke=\"#24182e\" stroke-width=\"3\"/><path d=\"M25,-36 l9,3 l-9,3 Z\" fill=\"#f6b23a\" stroke=\"#24182e\" stroke-width=\"2.5\"/><circle cx=\"18\" cy=\"-38\" r=\"2.2\" fill=\"#24182e\"/><path d=\"M-6,-2 L-8,8 M6,-2 L8,8\" stroke=\"#f6b23a\" stroke-width=\"4\" stroke-linecap=\"round\"/></g>",
-  "roule":"<g class=\"mja-roule\"><ellipse cx=\"0\" cy=\"-28\" rx=\"30\" ry=\"30\" fill=\"#9a6235\" stroke=\"#24182e\" stroke-width=\"5\"/><ellipse cx=\"0\" cy=\"-28\" rx=\"13\" ry=\"30\" fill=\"#b87a44\" stroke=\"#24182e\" stroke-width=\"4\"/><path d=\"M-28,-40 L28,-40 M-28,-16 L28,-16\" stroke=\"#3b3346\" stroke-width=\"5\"/></g>",
-  "haie":"<g><path d=\"M-50,4 C-56,-30 -40,-64 -20,-60 C-10,-80 14,-80 22,-62 C44,-66 58,-30 50,4 Z\" fill=\"#245e3c\" stroke=\"#24182e\" stroke-width=\"5\"/><circle cx=\"-18\" cy=\"-36\" r=\"4\" fill=\"#e5484d\"/><circle cx=\"16\" cy=\"-24\" r=\"4\" fill=\"#e5484d\"/><circle cx=\"4\" cy=\"-52\" r=\"4\" fill=\"#e5484d\"/></g>",
-  "arche":"<g><path d=\"M-58,4 L-58,-90 C-58,-150 58,-150 58,-90 L58,4 L36,4 L36,-86 C36,-120 -36,-120 -36,-86 L-36,4 Z\" fill=\"#8f8aa6\" stroke=\"#24182e\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M-36,4 L-36,-86 C-36,-120 36,-120 36,-86 L36,4 Z\" fill=\"#14112a\" opacity=\".85\"/><path d=\"M-50,-40 L-44,-40 M-50,-70 L-44,-70 M44,-56 L50,-56\" stroke=\"#24182e\" stroke-width=\"3\"/></g>"};
 
-function esc(s){ return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function S(vb, inner, cls){ return '<svg class="rg-svg' + (cls ? ' ' + cls : '') + '" viewBox="' + vb + '" aria-hidden="true">' + inner + '</svg>'; }
-/* emoji (éventuellement animé) */
-function E(e, cls){ return '<span class="rg-emo' + (cls ? ' ' + cls : '') + '" aria-hidden="true">' + e + '</span>'; }
-/* plusieurs emoji côte à côte */
-function R(){ return '<span class="rg-rang" aria-hidden="true">' + Array.prototype.slice.call(arguments).join('') + '</span>'; }
-/* une scène + un doigt animé par-dessus */
-function D(fond, anim, doigt){ return '<span class="rg-scene">' + fond + '<span class="rg-doigt ' + (anim || 'rg-a-tape') + '" aria-hidden="true">' + (doigt || '👆') + '</span></span>'; }
-function C(p, t, k){ return {p:p, t:t, k:k || ''}; }
-function G(t, c){ return {t:t, c:c.filter(Boolean)}; }
-function coeurs(n){ n = Math.max(0, Math.round(n || 0)); return n ? E(n <= 4 ? new Array(n + 1).join('❤️') : '❤️×' + n, 'rg-petit') : E('🚫'); }
-function sablier(sec){ return E('⏳', 'rg-a-sablier'); }
-function duree(sec){ sec = Math.round(sec || 0); if(sec < 60) return sec + ' s'; var m = Math.floor(sec / 60), s = sec % 60; return m + ' min' + (s ? ' ' + s : ''); }
-function val(p, nom){ var l = (p && p.lignes || []).filter(function(x){ return x.nom === nom; })[0]; return l ? l.val : null; }
-function vies(n, mot){ n = Math.round(n || 0); return C(coeurs(n), n ? n + ' ' + (mot || (n > 1 ? 'vies' : 'vie')) : 'Aucune erreur', n ? '' : 'ko'); }
-function erreursPermises(n){ n = Math.round(n || 0); return C(n ? R(E('❌'), E('×' + n, 'rg-nb')) : E('🎯'), n ? n + (n > 1 ? ' erreurs permises' : ' erreur permise') : 'Zéro erreur', n ? '' : 'ko'); }
-function gagne(p, t){ return C(p, t, 'ok'); }
-function perdu(p, t){ return C(p, t, 'ko'); }
+MJ.PHRASES = {
+  traces:'Suis bien les traces de pas !',
+  poursuite:'Saute, baisse-toi, attrape-la !',
+  cachette:'Cache-toi et file jusqu\'à la porte !',
+  tir:'Tire en arrière, vise et lâche !',
+  bulles:'Touche les bulles dans le même ordre !',
+  melange:'Fais la même couleur que la fiole !',
+  chaudron:'Tourne la louche et verse au bon moment !',
+  differences:'Trouve les différences entre les deux images !',
+  double:'Trouve vite le dessin pareil !',
+  insectes:'Écrase les méchants, pas les gentils !',
+  mensonge:'Regarde son visage : quand ment-il ?',
+  ragots:'Écoute : vrai ou faux ?',
+  mots:'Remets les mots qui manquent !',
+  depositions:'Trouve le témoin qui ment !',
+  alphabet:'Déchiffre le message avec la clé !',
+  plans:'Pose le calque pile sur le plan !',
+  grille:'Lis les indices et coche les cases !',
+  runes:'Tourne les pièces pour refaire l\'image !'
+};
 
-/* ---------- Petits dessins communs ---------- */
-/* coureur vu de côté (pieds en 0,0), aux couleurs du Pisteur de la course */
-var COUREUR_COTE = '<g class="rg-cour"><path d="M-4,-14 L-10,0 M4,-14 L10,-1" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>' +
-  '<path d="M-11,-12 C-13,-28 -7,-37 2,-37 C10,-37 13,-28 11,-12 Z" fill="#2f7a4c" stroke="' + K + '" stroke-width="3"/>' +
-  '<path d="M6,-28 L16,-21" stroke="' + K + '" stroke-width="4" stroke-linecap="round"/>' +
-  '<circle cx="3" cy="-42" r="8.5" fill="#3c9a62" stroke="' + K + '" stroke-width="3"/><path d="M5,-46 C11,-46 12,-38 6,-37 Z" fill="#f2c9a0"/></g>';
-/* coureur vu de dos (comme dans le jeu) */
-var COUREUR_DOS = '<g class="rg-dos"><path d="M-10,-6 L-14,10 M10,-6 L14,10" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/>' +
+var DEMOS = MJ.DEMOS = MJ.DEMOS || {};
+var K = '#24182e', LW = 300, LH = 420;
+/* dessins des jeux (copiés de mj-pisteur-alchi.js : OBSTACLES_P, COUVERTS, ART_TIR, FLECHE_ART) */
+var SP = {"barriere":"<g><path d=\"M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34\" stroke=\"#24182e\" stroke-width=\"12\" stroke-linecap=\"round\"/><path d=\"M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34\" stroke=\"#a8743f\" stroke-width=\"7\" stroke-linecap=\"round\"/><rect x=\"-60\" y=\"-30\" width=\"120\" height=\"11\" rx=\"4\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"4\"/><rect x=\"-60\" y=\"-12\" width=\"120\" height=\"11\" rx=\"4\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"4\"/></g>","branche":"<g><path d=\"M-62,-96 C-30,-110 20,-90 62,-104\" stroke=\"#24182e\" stroke-width=\"15\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M-62,-96 C-30,-110 20,-90 62,-104\" stroke=\"#7a4e2c\" stroke-width=\"9\" fill=\"none\" stroke-linecap=\"round\"/><circle cx=\"-34\" cy=\"-90\" r=\"15\" fill=\"#2a7050\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"6\" cy=\"-84\" r=\"17\" fill=\"#2f7a4c\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"40\" cy=\"-92\" r=\"14\" fill=\"#2a7050\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"10\" cy=\"-90\" r=\"7\" fill=\"#3c9a62\"/></g>","caisse":"<g><rect x=\"-30\" y=\"-56\" width=\"60\" height=\"58\" rx=\"5\" fill=\"#c08a4a\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-30,-56 L30,2 M30,-56 L-30,2\" stroke=\"#7d5428\" stroke-width=\"5\"/><rect x=\"-30\" y=\"-56\" width=\"60\" height=\"58\" rx=\"5\" fill=\"none\" stroke=\"#24182e\" stroke-width=\"5\"/></g>","tonneau":"<g><path d=\"M-26,-60 C-36,-30 -36,-28 -26,2 L26,2 C36,-28 36,-30 26,-60 Z\" fill=\"#9a6235\" stroke=\"#24182e\" stroke-width=\"5\"/><path d=\"M-31,-42 L31,-42 M-31,-16 L31,-16\" stroke=\"#3b3346\" stroke-width=\"6\"/><ellipse cx=\"0\" cy=\"-60\" rx=\"26\" ry=\"7\" fill=\"#b87a44\" stroke=\"#24182e\" stroke-width=\"4\"/></g>"};
+var SP2 = {"tonneau":"<circle r=\"20\" fill=\"#9a6235\" stroke=\"#24182e\" stroke-width=\"4\"/><circle r=\"13\" fill=\"none\" stroke=\"#3b3346\" stroke-width=\"3\"/><circle r=\"5\" fill=\"#6e4424\"/>","buisson":"<path d=\"M-24,4 C-30,-10 -16,-24 -4,-20 C2,-30 22,-24 22,-10 C32,-4 26,16 12,16 C4,24 -14,22 -18,14 C-28,14 -30,8 -24,4 Z\" fill=\"#2f7a4c\" stroke=\"#24182e\" stroke-width=\"4\"/><circle cx=\"-8\" cy=\"-6\" r=\"3\" fill=\"#e5484d\"/><circle cx=\"8\" cy=\"4\" r=\"3\" fill=\"#e5484d\"/>","lanterne":"<g class=\"mja-lant\"><path d=\"M-11,-18 L11,-18 L15,13 L-15,13 Z\" fill=\"#ffd36a\" stroke=\"#24182e\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/><path d=\"M-13,-24 L13,-24 L11,-18 L-11,-18 Z M-15,13 L15,13 L11,19 L-11,19 Z\" fill=\"#b8862e\" stroke=\"#24182e\" stroke-width=\"3\"/><path class=\"mja-lant-feu\" d=\"M0,-10 C6,-3 6,4 0,8 C-6,4 -6,-3 0,-10 Z\" fill=\"#e8693c\"/><path d=\"M-7,-14 L-9,9\" stroke=\"#fff\" stroke-width=\"2.5\" opacity=\".6\" stroke-linecap=\"round\"/></g>","pomme":"<path d=\"M0,-14 C-3,-19 -15,-19 -16,-8 C-18,4 -8,12 0,9 C8,12 18,4 16,-8 C15,-19 3,-19 0,-14 Z\" fill=\"#e5484d\" stroke=\"#24182e\" stroke-width=\"3.5\"/><path d=\"M-9,-9 C-9,-12 -7,-14 -4,-14\" stroke=\"#fff\" stroke-width=\"2.5\" fill=\"none\" stroke-linecap=\"round\" opacity=\".7\"/><path d=\"M0,-14 L1,-22\" stroke=\"#5e3a1e\" stroke-width=\"3\"/><path d=\"M1,-20 C6,-27 13,-24 13,-22 C8,-18 5,-18 1,-20 Z\" fill=\"#5fcf86\" stroke=\"#24182e\" stroke-width=\"2\"/>","fleche":"<path d=\"M-30,0 L4,0\" stroke=\"#c99a5e\" stroke-width=\"3.2\" stroke-linecap=\"round\"/><path d=\"M-30,0 L-24,0\" stroke=\"#24182e\" stroke-width=\"1\" /><path d=\"M2,-5 L12,0 L2,5 Z\" fill=\"#dfe6ff\" stroke=\"#24182e\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M-30,0 L-36,-6 L-26,-1 M-30,0 L-36,6 L-26,1\" stroke=\"#8ff3ff\" stroke-width=\"2.6\" stroke-linecap=\"round\" fill=\"none\"/>"};
+
+/* ---------- outils ---------- */
+function reduit(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+function lisse(u){ u = u < 0 ? 0 : (u > 1 ? 1 : u); return u * u * (3 - 2 * u); }
+function entre(t, a, b){ return lisse((t - a) / (b - a)); }
+function bosse(t, a, d){ var u = (t - a) / d; return u > 0 && u < 1 ? Math.sin(Math.PI * u) : 0; }
+function mix(a, b, u){ return a + (b - a) * u; }
+function hex(c){ return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)]; }
+function mixC(a, b, u){ var x = hex(a), y = hex(b); return 'rgb(' + [0, 1, 2].map(function(i){ return Math.round(mix(x[i], y[i], u)); }).join(',') + ')'; }
+function f1(v){ return (Math.round(v * 10) / 10).toString(); }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function $(el, s){ return el.querySelector(s); }
+function $$(el, s){ return Array.prototype.slice.call(el.querySelectorAll(s)); }
+function uid(p){ return p + Math.floor(Math.random() * 1e7); }
+/* déplacer / montrer un nœud SVG */
+function pose(n, x, y, sc, rot){ n.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(y) + ')' + (sc !== undefined && sc !== 1 ? ' scale(' + sc.toFixed(3) + ')' : '') + (rot ? ' rotate(' + f1(rot) + ')' : '')); }
+function vis(n, v){ n.setAttribute('opacity', Math.max(0, Math.min(1, v)).toFixed(2)); }
+function emo(x, y, s, ic, cls){ return '<text' + (cls ? ' class="' + cls + '"' : '') + ' x="' + x + '" y="' + y + '" font-size="' + s + '" text-anchor="middle" dominant-baseline="central">' + ic + '</text>'; }
+/* la main (même dessin que dans les jeux du Pisteur) : le bout du doigt est en (0,0) */
+var MAIN = '<g class="rg-main"><circle class="rg-onde" r="13" fill="none" stroke="#8ff3ff" stroke-width="3" opacity="0"/><g class="rg-main-g">' +
+  '<g transform="scale(.7) rotate(-12)"><path d="M-5,4 C-5,-4 5,-4 5,4 L5,24 C9,21 15,22 16,27 C19,25 24,27 24,32 C27,31 31,34 30,40 L28,54 C27,60 21,64 13,64 L1,64 C-7,64 -11,59 -13,52 L-20,34 C-22,28 -16,25 -12,30 L-5,39 Z" fill="#ffe0c2" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+  '<path d="M5,30 L5,40 M16,31 L16,41" stroke="' + K + '" stroke-width="2.5" stroke-linecap="round" opacity=".5"/></g></g></g>';
+/* trajet de la main : [[t, x, y, appuie], …] → position au temps t */
+function piste(cles){
+  return function(t){
+    for(var i = 0; i < cles.length - 1; i++){
+      var a = cles[i], b = cles[i + 1];
+      if(t >= a[0] && t <= b[0]){ var u = lisse((t - a[0]) / ((b[0] - a[0]) || 1)); return {x:mix(a[1], b[1], u), y:mix(a[2], b[2], u), p:!!a[3]}; }
+    }
+    var z = t < cles[0][0] ? cles[0] : cles[cles.length - 1];
+    return {x:z[1], y:z[2], p:!!z[3]};
+  };
+}
+/* pose la main : position, appui, et une onde quand on touche (tapes = instants des touchers) */
+function poserMain(g, x, y, appuie, t, tapes){
+  g.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(y) + ')');
+  var o = g.firstChild, m = g.lastChild, r = 13, op = appuie ? .8 : 0;
+  (tapes || []).forEach(function(tt){ if(t >= tt && t < tt + .5){ var u = (t - tt) / .5; r = 9 + 22 * u; op = 1 - u; } });
+  o.setAttribute('r', f1(r)); o.setAttribute('opacity', op.toFixed(2));
+  m.setAttribute('transform', appuie ? 'scale(.9)' : '');
+}
+/* une main toute prête : cles = trajet, tapes = touchers */
+function mainAuto(g, cles, tapes){ var pf = piste(cles); return function(t){ var m = pf(t); poserMain(g, m.x, m.y, m.p, t, tapes); return m; }; }
+/* boucle de P secondes ; image fixe (au temps tFixe) si l'appareil demande moins de mouvement */
+function boucle(el, P, image, tFixe){
+  if(reduit()){ image(tFixe); return {arreter:function(){}}; }
+  var actif = true, t0 = null;
+  function pas(ts){
+    if(!actif) return;
+    if(!el.isConnected){ actif = false; return; }
+    if(t0 === null) t0 = ts;
+    try{ image(el.__rgFige !== undefined ? el.__rgFige : ((ts - t0) / 1000) % P); }catch(e){ actif = false; if(window.console) console.warn(e); return; }
+    requestAnimationFrame(pas);
+  }
+  image(0);
+  el.__rgImage = image;   /* pour les essais : dessiner un instant précis */
+  requestAnimationFrame(pas);
+  return {arreter:function(){ actif = false; }};
+}
+/* une démo en SVG 300 × 420 (main par-dessus) */
+function svgDemo(el, inner){
+  el.innerHTML = '<svg class="rg-demo-svg" viewBox="0 0 ' + LW + ' ' + LH + '" preserveAspectRatio="xMidYMid meet">' + inner + MAIN + '</svg>';
+  return el.firstChild;
+}
+/* une démo en HTML (la main dans un calque SVG par-dessus) */
+function htmlDemo(el, cls, inner){
+  el.innerHTML = '<div class="rg-h ' + cls + '">' + inner + '<svg class="rg-main-svg" viewBox="0 0 ' + LW + ' ' + LH + '">' + MAIN + '</svg></div>';
+  return el.firstChild;
+}
+function D(type, f){ DEMOS[type] = {w:LW, h:LH, f:f}; }
+/* un villageois de Brumeval (persos.js) ; repli : un emoji */
+function villageois(id, opts, ic){
+  try{ if(window.Persos && Persos.pnj){ var h = Persos.pnj(id, Object.assign({cadre:'visage', id:uid('rgv')}, opts || {})); if(h) return h; } }catch(e){}
+  return '<span class="rg-emoji">' + (ic || '🙂') + '</span>';
+}
+
+/* ==========================================================
+   PISTEUR
+   ========================================================== */
+/* TRACES — la démo du jeu (Romain l'aime), vue de plus près et en hauteur :
+   on voit le chemin de pas qui arrive devant le Pisteur */
+DEMOS.traces = {w:LW, h:LH, f:function(el, p){
+  var r = MJ.TYPES.traces.demo(el, p);
+  var svg = el.querySelector('svg');
+  if(svg){ svg.setAttribute('viewBox', '80 -14 140 196'); svg.setAttribute('preserveAspectRatio', 'xMidYMid slice'); }
+  if(reduit() && r) setTimeout(function(){ try{ if(r.arreter) r.arreter(); else if(typeof r === 'function') r(); }catch(e){} }, 1200);
+  return r;
+}};
+
+/* POURSUITE — vers le haut : il saute la barrière ; vers le bas : il se baisse
+   sous la branche ; sur le côté : il change de couloir (caisse, tonneau). */
+var COUREUR = '<g class="rg-jambes"><path class="g" d="M-10,-6 L-14,10" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/><path class="d" d="M10,-6 L14,10" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/></g>' +
   '<path d="M-26,-12 C-28,-44 -18,-62 0,-64 C18,-62 28,-44 26,-12 C14,-6 -14,-6 -26,-12 Z" fill="#2f7a4c" stroke="' + K + '" stroke-width="5"/>' +
   '<path d="M-18,-58 C-18,-80 18,-80 18,-58 C12,-52 -12,-52 -18,-58 Z" fill="#3c9a62" stroke="' + K + '" stroke-width="5"/>' +
-  '<path d="M-6,-40 L6,-40 L4,-18 L-4,-18 Z" fill="#8a5a33" stroke="' + K + '" stroke-width="3"/></g>';
-/* la silhouette qui s'enfuit */
-var FUYARD = '<g><path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-52" r="9" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/></g>';
-var SOL = '<path d="M0,70 H120" stroke="#5e4634" stroke-width="4"/><rect x="0" y="70" width="120" height="10" fill="#7a5e4a"/>';
-function sprite(nom, x, y, s){ return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')">' + (SP[nom] || '') + '</g>'; }
-/* obstacle à sauter : le coureur passe par-dessus */
-function sceneSaut(nom, s){ return S('10 0 100 80', SOL + sprite(nom, 64, 70, s || .42) + '<g class="rg-saut" transform="translate(60,70) scale(.78)">' + COUREUR_COTE + '</g>'); }
-/* obstacle en hauteur : le coureur se baisse dessous */
-function sceneBaisse(nom, s){ return S('10 0 100 80', SOL + sprite(nom, 64, 70, s || .42) + '<g class="rg-baisse" transform="translate(60,70) scale(.78)">' + COUREUR_COTE + '</g>'); }
-/* obstacle à éviter : vu de dos, on change de couloir */
-var ROUTE = '<path d="M46,4 L74,4 L118,80 L2,80 Z" fill="#a37c5a" stroke="' + K + '" stroke-width="2"/><path d="M55,4 L41,80 M65,4 L79,80" stroke="#e8d7ae" stroke-width="1.5" stroke-dasharray="5 5"/>';
-function sceneEvite(nom, s){ return S('10 0 100 80', ROUTE + sprite(nom, 60, 46, s || .36) + '<g class="rg-evite" transform="translate(60,77) scale(.3)">' + COUREUR_DOS + '</g>'); }
-function badge(e){ return '<span class="rg-badge" aria-hidden="true">' + e + '</span>'; }
-
-/* empreinte de chaussure (vue du dessus) */
-function pas(x, y, r, c){ return '<g transform="translate(' + x + ',' + y + ') rotate(' + (r || 0) + ')"><ellipse cx="0" cy="-5" rx="4.2" ry="6.5" fill="' + (c || '#5a3a22') + '"/><ellipse cx="0" cy="6" rx="3.4" ry="3.6" fill="' + (c || '#5a3a22') + '"/></g>'; }
-var HERBE = '<rect width="120" height="80" rx="8" fill="#2c4a3a"/>';
-/* chaudron simple */
-function chaudron(cx, cy, coul, extra){ return '<g transform="translate(' + cx + ',' + cy + ')"><ellipse cx="0" cy="-14" rx="26" ry="6" fill="' + (coul || '#7cc493') + '" stroke="' + K + '" stroke-width="2.5"/><path d="M-26,-14 C-28,8 -16,16 0,16 C16,16 28,8 26,-14" fill="#3a3550" stroke="' + K + '" stroke-width="3"/>' + (extra || '') + '</g>'; }
-function fiole(x, y, coul, plein){ var h = plein === undefined ? 1 : plein; return '<g transform="translate(' + x + ',' + y + ')"><path d="M-4,-26 L4,-26 L4,-14 C13,-10 15,-2 15,4 C15,14 7,18 0,18 C-7,18 -15,14 -15,4 C-15,-2 -13,-10 -4,-14 Z" fill="#eef0ff22" stroke="' + K + '" stroke-width="2.5"/>' +
-  '<clipPath id="rgf' + x + '' + y + '"><path d="M-15,4 C-15,14 -7,18 0,18 C7,18 15,14 15,4 C15,-2 13,-10 4,-14 L-4,-14 C-13,-10 -15,-2 -15,4 Z"/></clipPath>' +
-  '<rect class="rg-remplit" clip-path="url(#rgf' + x + '' + y + ')" x="-16" y="' + (18 - 34 * h) + '" width="32" height="34" fill="' + (coul || '#b48cff') + '"/><rect x="-6" y="-30" width="12" height="5" rx="2" fill="#a8743f" stroke="' + K + '" stroke-width="2"/></g>'; }
-
-/* les arrivées de « Suivre la piste » (identiques au jeu) */
-var ARR = {"porte":"<rect x=\"-15\" y=\"-16\" width=\"30\" height=\"26\" rx=\"3\" fill=\"#7a5a3e\" stroke=\"#24182e\" stroke-width=\"3\"/><path d=\"M-15,-16 L0,-26 L15,-16\" fill=\"#a8743f\" stroke=\"#24182e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><rect x=\"-6\" y=\"-4\" width=\"12\" height=\"14\" rx=\"5\" fill=\"#3b2a1e\" stroke=\"#24182e\" stroke-width=\"2\"/><circle cx=\"3\" cy=\"3\" r=\"1.4\" fill=\"#ffd36a\"/>","terrier":"<path d=\"M-16,8 C-16,-8 16,-8 16,8 Z\" fill=\"#7a6250\" stroke=\"#24182e\" stroke-width=\"3\"/><ellipse cx=\"0\" cy=\"5\" rx=\"8\" ry=\"6\" fill=\"#14111f\"/><circle cx=\"-12\" cy=\"-6\" r=\"3\" fill=\"#8b7a62\" stroke=\"#24182e\" stroke-width=\"1.5\"/>","grotte":"<path d=\"M-18,10 L-14,-8 L-4,-16 L8,-14 L17,-4 L18,10 Z\" fill=\"#7d7a92\" stroke=\"#24182e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M-7,10 C-7,-2 7,-2 7,10 Z\" fill=\"#14111f\"/>","buisson":"<path d=\"M-17,8 C-22,-4 -12,-16 -2,-13 C4,-20 18,-14 16,-4 C24,0 20,12 10,12 C2,17 -10,16 -13,11 C-20,12 -21,8 -17,8 Z\" fill=\"#2f7a4c\" stroke=\"#24182e\" stroke-width=\"3\"/><circle cx=\"-5\" cy=\"-3\" r=\"2.3\" fill=\"#e5484d\"/><circle cx=\"7\" cy=\"3\" r=\"2.3\" fill=\"#e5484d\"/><ellipse cx=\"0\" cy=\"9\" rx=\"7\" ry=\"4\" fill=\"#14111f\"/>"};
-var REGLES = MJ.REGLES = MJ.REGLES || {};
-
-/* ================= PISTEUR ================= */
-REGLES.traces = function(p){
-  var fourche = '<path d="M60,78 L60,48 M60,48 C60,30 30,22 22,6 M60,48 C60,30 90,22 98,6" stroke="#8a6a4a" stroke-width="12" fill="none" stroke-linecap="round" opacity=".55"/>' +
-    pas(56, 70, 0) + pas(64, 58, 0) + pas(52, 40, -30) + pas(42, 28, -40) + pas(30, 16, -45) + pas(68, 40, 30, '#3b4a6a') + pas(80, 28, 35, '#3b4a6a') + pas(90, 16, 40, '#3b4a6a');
-  return [
-    G('Ta piste', [
-      C(S('0 0 120 80', HERBE + '<g transform="translate(60,42) scale(3.2)"><g class="rg-a-pulse-g">' + pas(0, 0, 0, '#5a3a22') + '</g></g>'), "Retiens l'empreinte"),
-      C(D(S('0 0 120 80', HERBE + pas(20, 66, 70) + pas(36, 58, 60) + pas(52, 52, 75) + pas(70, 44, 60) + pas(86, 34, 50) + pas(100, 22, 40)), 'rg-a-suivre'), 'Suis du doigt'),
-      C(S('0 0 120 80', HERBE + pas(30, 64, 0, '#3e5a46') + pas(90, 20, 0, '#3e5a46') + '<circle cx="60" cy="40" r="24" fill="#eef0ff22" stroke="#8ff3ff" stroke-width="2.5" class="rg-a-pulse-g"/>' + pas(56, 46, 0) + pas(64, 34, 0) + '<circle cx="60" cy="68" r="7" fill="#5fcf86" stroke="' + K + '" stroke-width="2"/>'), 'Tu vois ici'),
-      C(S('0 0 120 80', HERBE + fourche + '<text x="14" y="20" font-size="16">✅</text><text x="92" y="20" font-size="16">❌</text>'), 'La même trace'),
-      C(E('⏫', 'rg-a-haut'), 'Le sol défile')
-    ]),
-    G('Obstacles', [
-      C(S('0 0 120 80', HERBE + '<rect x="0" y="30" width="120" height="20" fill="#3a6a9a"/><path d="M0,36 Q15,32 30,36 T60,36 T90,36 T120,36" stroke="#a8d4ff" stroke-width="2" fill="none"/>' + pas(56, 72, 0) + pas(64, 60, 0) + pas(56, 20, 0) + pas(64, 8, 0) + '<path d="M60,54 L60,26" stroke="#ffe3a3" stroke-width="3" stroke-dasharray="4 4" class="rg-a-clign"/>'), 'Tout droit dedans'),
-      C(R(E('🌳'), E('🌊'), E('🪨')), 'Pas de traces')
-    ]),
-    G('Gagner, perdre', [
-      gagne(S('0 0 120 80', HERBE + pas(56, 74, 0) + pas(64, 62, 0) + pas(56, 50, 0) + '<g transform="translate(60,24) scale(1.2)"><circle r="21" fill="#5fcf8633" stroke="#5fcf86" stroke-width="2" class="rg-a-pulse-g"/>' + ARR.porte + '</g>'), 'Fin de piste'),
-      perdu(S('0 0 120 80', HERBE + '<g transform="translate(36,40) scale(1.1)">' + ARR.grotte + '</g><g transform="translate(86,40) scale(1.1)">' + ARR.terrier + '</g><text x="28" y="74" font-size="16">❌</text><text x="78" y="74" font-size="16">❌</text>'), 'Autre arrivée'),
-      perdu(R(E('👀'), E('💨')), 'Piste perdue'),
-      (p && p.essais > 1) ? C(E('🔁'), (p.essais - 1) + ' essai en plus') : null
-    ])
-  ];
-};
-
-REGLES.poursuite = function(p){
-  p = p || {}; var w = p.poids || {}, n = p.niveau || 1;
-  var saut = [], baisse = [], evite = [];
-  saut.push(C(sceneSaut('barriere') + badge('⬆️'), 'Barrière → saute'));
-  saut.push(C(sceneSaut('tronc', .4) + badge('⬆️'), 'Tronc → saute'));
-  if(w.bas1 || w.mixteS){ saut.push(C(sceneSaut('chien', .42) + badge('⬆️'), 'Chien → saute')); saut.push(C(sceneSaut('flaque', .42) + badge('⬆️'), 'Boue → saute')); }
-  if(w.glisse || w.mixteG || w.triple || !('glisse' in w)){
-    baisse.push(C(sceneBaisse('branche') + badge('⬇️'), 'Branche → baisse-toi'));
-    baisse.push(C(sceneBaisse('linge') + badge('⬇️'), 'Linge → baisse-toi'));
-  }
-  [['caisse', 'Caisse'], ['tonneau', 'Tonneau'], ['charrette', 'Charrette'], ['etal', 'Étal'], ['foin', 'Foin'], ['rocher', 'Rocher']].forEach(function(o){
-    evite.push(C(sceneEvite(o[0]) + badge('↔️'), o[1] + ' → évite'));
+  '<path d="M-6,-40 L6,-40 L4,-18 L-4,-18 Z" fill="#8a5a33" stroke="' + K + '" stroke-width="3"/>';
+var FUYARD = '<path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-52" r="9" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/>';
+D('poursuite', function(el){
+  var H = LH, HZ = 150, YR = 390, ER = (YR - HZ) / (H - HZ);
+  var LHa = [140.7, 150, 159.3], LB = [37, 150, 263];
+  function laneX(l, e){ var a = Math.floor(Math.min(1.999, Math.max(0, l))), b = a + 1, f = l - a; var xa = LHa[a] + (LB[a] - LHa[a]) * e, xb = LHa[b] + (LB[b] - LHa[b]) * e; return xa + (xb - xa) * f; }
+  var SEG = [
+    {o:'barriere', l:1, g:'haut', de:1, a:1},
+    {o:'branche', l:1, g:'bas', de:1, a:1},
+    {o:'caisse', l:1, g:'droite', de:1, a:2},
+    {o:'tonneau', l:2, g:'gauche', de:2, a:1}
+  ], DU = 2.6, P = DU * SEG.length, REPOS = [244, 290];
+  var GESTE = {haut:[[244, 330], [244, 236]], bas:[[244, 236], [244, 330]], droite:[[200, 290], [286, 290]], gauche:[[286, 290], [200, 290]]};
+  var cles = [[0, REPOS[0], REPOS[1], 0]];
+  SEG.forEach(function(s, i){
+    var t0 = i * DU, g = GESTE[s.g];
+    cles.push([t0 + .8, REPOS[0], REPOS[1], 0], [t0 + 1.12, g[0][0], g[0][1], 1], [t0 + 1.45, g[1][0], g[1][1], 0], [t0 + 2.2, REPOS[0], REPOS[1], 0]);
   });
-  if(w.poule) evite.push(C(sceneEvite('poule', .34) + badge('↔️'), 'Poule qui traverse'));
-  if(w.roule) evite.push(C(sceneEvite('roule', .34) + badge('💨'), 'Tonneau qui roule'));
-  var groupes = [
-    G('Les gestes', [
-      C(D(S('0 0 120 80', ROUTE + '<g transform="translate(60,77) scale(.3)" class="rg-evite">' + COUREUR_DOS + '</g>'), 'rg-a-gd') , '⬅️ ➡️ couloir'),
-      C(D(S('0 0 120 80', SOL + '<g class="rg-saut" transform="translate(60,70) scale(.78)">' + COUREUR_COTE + '</g>'), 'rg-a-haut'), '⬆️ saute'),
-      C(D(S('0 0 120 80', SOL + '<g class="rg-baisse" transform="translate(60,70) scale(.78)">' + COUREUR_COTE + '</g>'), 'rg-a-bas'), '⬇️ baisse-toi'),
-      C('<span class="rg-pad" aria-hidden="true"><i>◀</i><i>⤒</i><i>⤓</i><i>▶</i></span>', 'Ou les boutons')
-    ]),
-    G('Saute ⬆️', saut),
-    G('Baisse-toi ⬇️', baisse),
-    G('Change de couloir ↔️', evite)
-  ];
-  if(p.raccourci || n >= 4) groupes.push(G('Raccourci', [
-    C(S('0 0 120 80', ROUTE + sprite('arche', 22, 52, .3) + sprite('haie', 60, 52, .3) + sprite('arche', 98, 52, .3) + '<g transform="translate(98,40) scale(.42)" class="rg-a-clign">' + FUYARD.replace(/stroke="#24182e"/g, 'stroke="#ffe3a3"') + '</g><path d="M52,70 L84,70" stroke="#ffe3a3" stroke-width="4" stroke-linecap="round"/><path d="M90,70 l-9,-6 v12 Z" fill="#ffe3a3"/>') + badge('👀'), 'Suis-la → arche'),
-    C(sceneEvite('haie', .36) + badge('↔️'), 'Haie → évite')
-  ]));
-  var r = p.rattrape || 10, perduN = p.perdu || 3;
-  groupes.push(G('Gagner, perdre', [
-    C(R(E('✅'), E('×' + r, 'rg-nb')), r + ' sans faute'),
-    gagne(S('0 0 120 80', '<rect width="120" height="80" rx="8" fill="#a37c5a"/><g transform="translate(40,72) scale(.62)">' + COUREUR_COTE + '</g><g transform="translate(78,72) scale(.62)">' + FUYARD + '</g><text x="56" y="26" font-size="18">✋</text>'), 'Attrape-la !'),
-    perdu(R(E('💥'), E('➡️'), E('🏃')), 'Choc = recule'),
-    perdu(S('0 0 120 80', '<rect width="120" height="80" rx="8" fill="#a37c5a"/><g transform="translate(22,72) scale(.62)">' + COUREUR_COTE + '</g><g transform="translate(100,40) scale(.32)" opacity=".7">' + FUYARD + '</g><text x="44" y="56" font-size="16">💨</text>'), perduN + ' chocs : perdue')
-  ]));
-  return groupes;
-};
-
-REGLES.cachette = function(p){
-  p = p || {};
-  var nuit = '<rect width="120" height="80" rx="8" fill="#1b2340"/>';
-  var garde = '<g transform="translate(36,56)"><path d="M0,0 L80,-26 L80,26 Z" fill="#ffe3a3" opacity=".35" class="rg-a-clign"/><circle r="10" fill="#6b5434" stroke="' + K + '" stroke-width="3"/><circle cx="12" cy="0" r="4" fill="#f5b945" stroke="' + K + '" stroke-width="2"/></g>';
-  return [
-    G('Avance caché', [
-      C(D(S('0 0 120 80', nuit + '<circle cx="60" cy="40" r="22" fill="none" stroke="#6cb6ff" stroke-width="3" stroke-dasharray="6 4" class="rg-a-pulse-g"/><circle cx="54" cy="42" r="10" fill="#2a7050" stroke="' + K + '" stroke-width="2"/><circle cx="66" cy="40" r="11" fill="#2f7a4c" stroke="' + K + '" stroke-width="2"/>')), 'Touche le bleu'),
-      C(S('0 0 120 80', nuit + garde), 'Lanterne = danger', 'ko'),
-      C(R(E('🙈'), E('🏃', 'rg-a-gd')), 'Pas vu → cours'),
-      C(R(E('🛒'), E('➡️', 'rg-a-gd')), 'Charrette qui roule'),
-      C(R(E('🍂'), E('💧'), E('👂')), 'Bruit → garde vient', 'ko'),
-      C(R(E('🪨', 'rg-a-lance'), E('💂')), 'Lance un caillou')
-    ]),
-    G('Gagner, perdre', [
-      gagne(R(E('🚪', 'rg-a-pulse'), E('⬆️')), 'Porte en haut'),
-      C(sablier(p.duree), duree(p.duree)),
-      p.erreurs ? perdu(R(E('👀'), E('❗')), 'Vu = erreur') : perdu(R(E('👀'), E('❌')), 'Vu = perdu'),
-      p.erreurs ? erreursPermises(p.erreurs) : null
-    ])
-  ];
-};
-
-REGLES.tir = function(p){
-  p = p || {};
-  var NOMS = {lanterne:['🏮', 'Lanterne'], pomme:['🍎', 'Pomme'], corbeau:['🐦‍⬛', 'Corbeau'], sac:['🪢', 'Corde du sac']};
-  var arc = '<path d="M30,14 C10,30 10,50 30,66" stroke="#8a5a33" stroke-width="5" fill="none" stroke-linecap="round"/>';
-  var cibles = (p.cibles || ['lanterne', 'pomme', 'corbeau', 'sac']).filter(function(c, i, a){ return a.indexOf(c) === i; });
-  return [
-    G('Comme un lance-pierre', [
-      C(D(S('0 0 120 80', arc + '<path class="rg-corde" d="M30,14 L18,40 L30,66" stroke="#e8d7ae" stroke-width="2" fill="none"/><path d="M18,40 L64,40" stroke="#8a5a33" stroke-width="3"/><path d="M64,40 l-8,-5 v10 Z" fill="#cfd3e8"/>'), 'rg-a-tire'), 'Tire en arrière'),
-      C(S('0 0 120 80', '<path d="M10,66 Q60,-6 110,40" stroke="#ffe3a3" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/><g class="rg-fleche"><path d="M-10,0 L8,0" stroke="#8a5a33" stroke-width="3"/><path d="M8,0 l-6,-4 v8 Z" fill="#cfd3e8"/></g>'), 'Lâche : ça vole'),
-      (p.vent >= 5) ? C(R(E('🍃', 'rg-a-gd'), E('➡️')), 'Le vent pousse') : null,
-      (p.tenue && p.tenue < 50) ? C(E('🏹', 'rg-a-tremble'), 'Vite, ça tremble') : null
-    ]),
-    G('Les cibles', cibles.map(function(c){ var x = NOMS[c] || ['🎯', c]; return C(E(x[0], 'rg-a-flotte'), x[1]); })),
-    (p.branches || p.oiseaux) ? G('Attention', [p.branches ? C(E('🌿', 'rg-a-flotte'), 'Branches qui gênent') : null, p.oiseaux ? C(E('🐦', 'rg-a-gd'), 'Petits oiseaux') : null]) : null,
-    G('Gagner, perdre', [
-      C(R(E('🏹'), E('×' + (p.fleches >= 99 ? '∞' : (p.fleches || cibles.length)), 'rg-nb')), (p.fleches >= 99 ? '∞' : (p.fleches || '')) + ' flèches'),
-      gagne(R(E('🎯'), E('✅')), 'Toutes les cibles'),
-      perdu(R(E('🏹'), E('🚫')), 'Carquois vide')
-    ])
-  ].filter(Boolean);
-};
-
-/* ================= ALCHIMISTE ================= */
-function bulle(x, y, r, c, cls){ return '<circle class="' + (cls || '') + '" cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + c + '" stroke="' + K + '" stroke-width="2.5"/><circle cx="' + (x - r * .35) + '" cy="' + (y - r * .35) + '" r="' + (r * .25) + '" fill="#fff" opacity=".6"/>'; }
-REGLES.bulles = function(p){
-  p = p || {};
-  var lg = p.longueurs || [3, 4, 5, 6];
-  var trois = bulle(24, 44, 14, '#e5484d', 'rg-b1') + bulle(60, 30, 14, '#3fd0ff', 'rg-b2') + bulle(96, 48, 14, '#f5b945', 'rg-b3');
-  return [
-    G('Comme Simon', [
-      C(S('0 0 120 80', trois + '<text x="20" y="72" font-size="12" fill="#eef0ff">1</text><text x="56" y="62" font-size="12" fill="#eef0ff">2</text><text x="92" y="76" font-size="12" fill="#eef0ff">3</text>'), "Regarde l'ordre"),
-      C(D(S('0 0 120 80', trois), 'rg-a-bulles'), 'Touche pareil'),
-      C(S('0 0 120 80', '<g class="rg-a-derive">' + bulle(40, 40, 14, '#9d6ee3') + '</g><g class="rg-a-derive2">' + bulle(80, 40, 14, '#7cc493') + '</g>'), 'Elles bougent'),
-      C(R(E(lg[0], 'rg-nb'), E('➜'), E(lg[lg.length - 1], 'rg-nb')), 'La suite grandit')
-    ]),
-    G('Gagner, perdre', [
-      vies(p.vies),
-      perdu(R(E('❌'), E('💔')), 'Erreur = −1 ❤️'),
-      gagne(S('0 0 120 80', chaudron(60, 52, 'url(#rgArc)') + '<defs><linearGradient id="rgArc"><stop offset="0" stop-color="#e5484d"/><stop offset=".33" stop-color="#f5b945"/><stop offset=".66" stop-color="#5fcf86"/><stop offset="1" stop-color="#6cb6ff"/></linearGradient></defs>'), (lg.length || 4) + ' manches')
-    ])
-  ];
-};
-
-REGLES.melange = function(p){
-  p = p || {};
-  var et = JSON.stringify(p.etagere || '');
-  var pot = '<g transform="translate(22,40)"><rect x="-12" y="-14" width="24" height="28" rx="5" fill="#6cb6ff" stroke="' + K + '" stroke-width="2.5"/><rect x="-9" y="-20" width="18" height="7" rx="2" fill="#a8743f" stroke="' + K + '" stroke-width="2"/></g>';
-  return [
-    G('La recette', [
-      C(S('0 0 120 80', fiole(60, 46, '#9d6ee3')), 'La couleur modèle'),
-      C(D(S('0 0 120 80', pot + '<circle class="rg-goutte" cx="22" cy="40" r="4" fill="#6cb6ff"/>' + chaudron(84, 52, '#b48cff')), 'rg-a-tape-g'), 'Touche un pot'),
-      C(S('0 0 120 80', chaudron(38, 52, '#9d6ee3') + '<text x="62" y="48" font-size="18" fill="#ffe3a3">=</text>' + fiole(92, 46, '#9d6ee3')), 'Même couleur'),
-      C('<span class="rg-bouton">👅 Goûter</span>', 'Puis goûte'),
-      /lune/i.test(et) || !p.etagere ? C(R(E('✨'), E('☀️')), 'Lune : plus clair') : null,
-      /charbon/i.test(et) || !p.etagere ? C(R(E('⚫'), E('🌑')), 'Charbon : plus foncé') : null
-    ]),
-    G('Attention', [
-      C('<span class="rg-bouton magie">✂️ Simplifier</span>', 'Trop ? Simplifie'),
-      C('<span class="rg-bouton second">♻️ Vider</span>', 'Recommence'),
-      perdu(R(E('🤢'), E('💔')), 'Beurk = −1 ❤️')
-    ]),
-    G('Gagner, perdre', [
-      gagne(S('0 0 120 80', fiole(60, 46, '#9d6ee3', 0)).replace('rg-remplit', 'rg-remplit rg-a-remplit'), 'Fiole remplie'),
-      vies(p.coeurs, p.coeurs > 1 ? 'cœurs' : 'cœur'),
-      C(sablier(), duree(p.duree))
-    ])
-  ];
-};
-
-/* Chaudron : règles écrites d'après la nouvelle version (cuillère, bûches, frise, étagère). */
-REGLES.chaudron = function(p){
-  var cuillere = function(sens){
-    var c = sens > 0 ? '#e8693c' : '#3fd0ff';
-    return S('0 0 120 80', '<ellipse cx="60" cy="44" rx="34" ry="26" fill="#3a3550" stroke="' + K + '" stroke-width="3"/><ellipse cx="60" cy="44" rx="28" ry="20" fill="' + c + '" opacity=".75"/>' +
-      '<g class="' + (sens > 0 ? 'rg-a-horaire' : 'rg-a-antihoraire') + '" style="transform-origin:60px 44px"><path d="M60,44 L82,30" stroke="#c08a4a" stroke-width="5" stroke-linecap="round"/><ellipse cx="84" cy="29" rx="6" ry="4" fill="#c08a4a" stroke="' + K + '" stroke-width="2"/></g>' +
-      '<path d="' + (sens > 0 ? 'M30,14 A36,26 0 0 1 90,14' : 'M90,14 A36,26 0 0 0 30,14') + '" stroke="' + c + '" stroke-width="3" fill="none"/><path d="' + (sens > 0 ? 'M90,14 l-8,-4 l1,9 Z' : 'M30,14 l8,-4 l-1,9 Z') + '" fill="' + c + '"/>');
-  };
-  function buches(n, feu){
-    var s = '';
-    for(var i = 0; i < n; i++){ var x = 30 + (i % 4) * 16, y = 68 - Math.floor(i / 4) * 8; s += '<rect x="' + (x - 7) + '" y="' + (y - 4) + '" width="14" height="7" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="1.5"/>'; }
-    return S('0 0 120 80', (feu || '') + s);
-  }
-  var flamme = '<path class="rg-a-flamme" d="M60,58 C44,52 46,34 56,22 C56,32 62,34 64,26 C74,36 76,52 60,58 Z" fill="#f5b945" stroke="#e8693c" stroke-width="3"/>';
-  var frise = '<rect x="0" y="22" width="120" height="30" rx="6" fill="#2a2244" stroke="#3b4679" stroke-width="2"/><g class="rg-a-frise"><text x="10" y="44" font-size="16">🍄</text><text x="46" y="44" font-size="16">🌿</text><text x="82" y="44" font-size="16">🫐</text><text x="118" y="44" font-size="16">🍄</text></g>' +
-    '<path d="M60,18 l-7,-10 h14 Z" fill="#ffe3a3" stroke="' + K + '" stroke-width="2"/><rect x="44" y="22" width="32" height="30" rx="6" fill="none" stroke="#ffe3a3" stroke-width="2.5"/>';
-  var etagere = '<rect x="6" y="50" width="108" height="6" rx="2" fill="#8a5a33"/><text x="12" y="46" font-size="16">🍄</text><text x="40" y="46" font-size="16">🌿</text><text x="68" y="46" font-size="16">🫐</text><text x="94" y="46" font-size="16">🪶</text>';
-  return [
-    G('La louche', [
-      C(cuillere(1), '↻ Chauffe'),
-      C(cuillere(-1), '↺ Refroidis')
-    ]),
-    G('Les bûches', [
-      gagne(buches(4, flamme), '4 = feu parfait'),
-      perdu(buches(7, '<text x="44" y="40" font-size="26" class="rg-a-pulse">💥</text>'), '7 = explosion'),
-      perdu(buches(0, '<text x="46" y="48" font-size="26">💨</text>'), '0 = feu éteint'),
-      C('<span class="rg-bouton">＋ 🪵</span><span class="rg-bouton second">− 🪵</span>', 'Ajoute ou enlève')
-    ]),
-    G('Les ingrédients', [
-      C(S('0 0 120 80', frise), 'Sous la marmite'),
-      C(D(S('0 0 120 80', etagere), 'rg-a-tape'), 'Touche le bon'),
-      C(E('⏱️', 'rg-a-pulse'), '15-20 s'),
-      perdu(R(E('🍄'), E('≠'), E('🌿'), E('❌')), 'Mauvais = raté')
-    ]),
-    G('La fin', [
-      C(S('0 0 120 80', '<rect x="10" y="30" width="100" height="16" rx="8" fill="#2a2244" stroke="#3b4679" stroke-width="2"/><rect x="50" y="28" width="26" height="20" rx="4" fill="#5fcf8655" stroke="#5fcf86" stroke-width="2.5"/><path class="rg-a-aiguille" d="M62,22 L62,54" stroke="#ffe3a3" stroke-width="4" stroke-linecap="round"/>'), 'Reste dedans'),
-      gagne(S('0 0 120 80', fiole(60, 46, '#b48cff', 0)).replace('rg-remplit', 'rg-remplit rg-a-remplit'), 'Fiole pleine'),
-      C(E('⏱️'), '1 min 30')
-    ])
-  ];
-};
-
-function deuxImages(cercle){
-  var img = function(x){ return '<g transform="translate(' + x + ',0)"><rect x="0" y="12" width="52" height="56" rx="5" fill="#2b2148" stroke="#3b4679" stroke-width="2"/><rect x="6" y="40" width="40" height="4" fill="#8a5a33"/><circle cx="16" cy="33" r="6" fill="#e5484d"/><rect x="30" y="26" width="10" height="13" rx="2" fill="#6cb6ff"/>' + '</g>'; };
-  return img(6) + img(62) + '<circle cx="' + (6 + 26) + '" cy="58" r="4" fill="#f5b945"/>' + (cercle ? '<circle class="rg-a-entoure" cx="94" cy="58" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><circle class="rg-a-entoure" cx="38" cy="58" r="9" fill="none" stroke="#e5484d" stroke-width="3"/>' : '');
-}
-REGLES.differences = function(p){
-  p = p || {};
-  return [
-    G('Cherche bien', [
-      C(S('0 0 120 80', deuxImages(false)), 'Deux images'),
-      C(D(S('0 0 120 80', deuxImages(true)), 'rg-a-tape-d'), 'Touche la différence'),
-      C(R(E('🔍'), E('×' + (p.differences || 7), 'rg-nb')), (p.differences || 7) + ' à trouver')
-    ]),
-    G('Gagner, perdre', [
-      perdu(R(E('👆'), E('💔')), 'À côté = −1 ❤️'),
-      vies(p.vies, p.vies > 1 ? 'cœurs' : 'cœur'),
-      C(sablier(), duree(p.duree)),
-      gagne(R(E('✅'), E('🌟')), 'Toutes trouvées')
-    ])
-  ];
-};
-
-REGLES.double = function(p){
-  p = p || {};
-  var carte = function(x, sy){ return '<circle cx="' + x + '" cy="40" r="26" fill="#f3e7cb" stroke="' + K + '" stroke-width="3"/>' + sy; };
-  var cartes = carte(32, '<text x="18" y="36" font-size="13">🍄</text><text x="30" y="58" font-size="13">🌙</text><text x="34" y="34" font-size="13" class="rg-a-pulse-t">⭐</text>') +
-    carte(88, '<text x="74" y="56" font-size="13">🔑</text><text x="90" y="40" font-size="13">🐸</text><text x="76" y="34" font-size="13" class="rg-a-pulse-t">⭐</text>');
-  return [
-    G('Le double', [
-      C(S('0 0 120 80', cartes), 'Un seul pareil'),
-      C(D(S('0 0 120 80', cartes), 'rg-a-tape-d'), 'Touche-le vite'),
-      C(R(E('🃏'), E('➜', 'rg-a-gd'), E('🫕')), 'Nouvelle carte')
-    ]),
-    G('Gagner, perdre', [
-      C(R(E('🔗'), E('×' + (p.manches || 10), 'rg-nb')), (p.manches || 10) + ' paires'),
-      C(sablier(), duree(p.duree)),
-      perdu(R(E('❌'), E('−' + (p.penalite ? String(Math.round(p.penalite * 10) / 10).replace('.', ',') : '3') + ' s', 'rg-nb')), 'Erreur = −' + (p.penalite ? String(Math.round(p.penalite * 10) / 10).replace('.', ',') : '3') + ' s')
-    ])
-  ];
-};
-
-function bocal(x, coul, signe, bete){
-  return '<g transform="translate(' + x + ',0)"><rect x="-20" y="18" width="40" height="50" rx="9" fill="' + coul + '33" stroke="' + coul + '" stroke-width="3"/><rect x="-16" y="12" width="32" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' + bete + '<text x="-8" y="64" font-size="14">' + signe + '</text></g>';
-}
-var MECHANT = '<g transform="translate(0,40)"><ellipse rx="11" ry="8" fill="#3b2a1e" stroke="' + K + '" stroke-width="2"/><path d="M-9,-4 l-6,-5 M9,-4 l6,-5 M-10,4 l-6,4 M10,4 l6,4" stroke="' + K + '" stroke-width="2"/><circle cx="-4" cy="-3" r="2" fill="#e5484d"/><circle cx="4" cy="-3" r="2" fill="#e5484d"/></g>';
-var GENTIL = '<g transform="translate(0,40)"><circle r="9" fill="#e5484d" stroke="' + K + '" stroke-width="2"/><path d="M0,-9 L0,9" stroke="' + K + '" stroke-width="2"/><circle cx="-4" cy="-2" r="2" fill="' + K + '"/><circle cx="4" cy="3" r="2" fill="' + K + '"/></g>';
-REGLES.insectes = function(p){
-  p = p || {};
-  return [
-    G('Les méchants', [
-      C(S('0 0 120 80', bocal(60, '#e5484d', '☠️', MECHANT)), 'Bocal rouge'),
-      C(D(S('0 0 120 80', '<g transform="translate(60,0)">' + MECHANT + '</g><circle class="rg-a-splotch" cx="60" cy="40" r="18" fill="#7cc49388"/>'), 'rg-a-tape'), 'Écrase-les !'),
-      C(R(E('🐞'), E('🐛'), E('👀')), 'Regarde la forme')
-    ]),
-    G('Les gentils', [
-      C(S('0 0 120 80', bocal(60, '#5fcf86', '✔️', GENTIL)), 'Bocal vert'),
-      perdu(R(E('👆'), E('🚫')), 'Pas touche !'),
-      C(D(S('0 0 120 80', bocal(90, '#5fcf86', '', '') + '<g class="rg-a-range">' + '<g transform="translate(-30,0)">' + GENTIL.replace('translate(0,40)', 'translate(52,44)') + '</g></g>'), 'rg-a-glisse-d'), p.ranger ? 'Range-les (obligé)' : 'Range-les : bonus')
-    ]),
-    G('Gagner, perdre', [
-      C(R(E('☠️'), E('×' + (p.mauvais || ''), 'rg-nb')), (p.mauvais || '') + ' à écraser'),
-      vies(p.vies, p.vies > 1 ? 'cœurs' : 'cœur'),
-      C(sablier(), duree(p.duree)),
-      p.ensuite === 'differences' ? C(R(E('➜'), E('🔍')), 'Puis 7 différences') : null
-    ])
-  ];
-};
-
-/* ================= BARDE ================= */
-function visage(extra){
-  return '<g transform="translate(60,42)"><circle r="28" fill="#f2c9a0" stroke="' + K + '" stroke-width="3"/><path d="M-28,-6 C-30,-34 30,-34 28,-6 C20,-22 -20,-22 -28,-6 Z" fill="#6b5434"/>' +
-    '<circle cx="-10" cy="0" r="3.4" fill="' + K + '"/><circle cx="10" cy="0" r="3.4" fill="' + K + '"/><path d="M-9,14 Q0,20 9,14" stroke="' + K + '" stroke-width="3" fill="none" stroke-linecap="round"/>' + (extra || '') + '</g>';
-}
-REGLES.mensonge = function(p){
-  p = p || {};
-  var err = val(p, 'Erreurs permises');
-  return [
-    G('Regarde bien', [
-      C(S('0 0 120 80', visage('<text x="-44" y="-14" font-size="14">👀</text>')), 'Regarde son visage'),
-      C(S('0 0 120 80', visage('<path class="rg-a-goutte" d="M20,-18 C24,-12 25,-8 22,-6 C19,-5 17,-8 18,-12 Z" fill="#8ff3ff" stroke="' + K + '" stroke-width="1.5"/>')), 'Un signe = mensonge'),
-      C('<span class="rg-signes" aria-hidden="true">😏 🌸 💧 😬 👄</span>', 'Signes du menteur'),
-      C('<span class="rg-bouton second">📖 Les signes</span>', 'Revois les signes')
-    ]),
-    G('Marque, valide', [
-      C(D('<span class="rg-bouton ko">🤥</span>', 'rg-a-tape'), 'Marque la phrase'),
-      C(R(E('🤥'), E('↔️'), E('🙂')), "Change d'avis"),
-      C('<span class="rg-bouton">✔ Valider</span>', 'Valide en dernier')
-    ]),
-    G('Gagner, perdre', [
-      gagne(R(E('🤥'), E('✅')), 'Tous les mensonges'),
-      erreursPermises(err === 'aucune' ? 0 : parseInt(err, 10) || 0),
-      C(E('🤐'), 'Réponse jamais dite')
-    ])
-  ];
-};
-
-REGLES.ragots = function(p){
-  p = p || {};
-  var err = val(p, 'Erreurs permises');
-  return [
-    G('À la taverne', [
-      C(R(E('🗣️'), E('🔊', 'rg-a-pulse')), 'Écoute le ragot'),
-      C('<span class="rg-bouton ok">👍 J\'y crois</span>', 'Tu y crois'),
-      C('<span class="rg-bouton ko">👎 C\'est faux</span>', 'Ou pas ?'),
-      C(E('📒', 'rg-a-pulse'), 'Noté au carnet')
-    ]),
-    G('Gagner, perdre', [
-      C(R(E('🗣️'), E('×' + (val(p, 'Ragots') || 5), 'rg-nb')), (val(p, 'Ragots') || 5) + ' ragots'),
-      erreursPermises(err === 'aucune' ? 0 : parseInt(err, 10) || 0),
-      C(E('🤐'), 'Réponse jamais dite')
-    ])
-  ];
-};
-
-REGLES.mots = function(p){
-  var phrase = '<span class="rg-phrase">Le <i class="rg-trou rg-a-clign">1</i> du <i class="rg-trou">2</i></span>';
-  return [
-    G('Les mots perdus', [
-      C(phrase, 'Mots manquants'),
-      C(D(phrase, 'rg-a-tape'), 'Touche un trou'),
-      C(D('<span class="rg-mots"><i>lac</i><i>pré</i><i>toit</i></span>', 'rg-a-tape'), 'Choisis le mot'),
-      C('<span class="rg-bouton second">🔊 Relire</span>', 'Relis ta phrase')
-    ]),
-    G('Gagner, perdre', [
-      C('<span class="rg-bouton">✔ Valider</span>', 'Une seule fois'),
-      gagne(R(E('✅'), E('✅'), E('✅')), 'Tout juste'),
-      perdu(R(E('✅'), E('❌'), E('✅')), 'Un faux = raté')
-    ])
-  ];
-};
-
-REGLES.depositions = function(p){
-  p = p || {};
-  var feutre = function(c){ return S('0 0 120 80', '<rect x="10" y="30" width="100" height="18" rx="4" fill="#f3e7cb"/><rect class="rg-a-surligne" x="12" y="32" width="70" height="14" rx="3" fill="' + c + '" opacity=".6"/><path d="M16,40 H100" stroke="#6b5434" stroke-width="2"/>'); };
-  return [
-    G('Les témoins', [
-      C(R(E('🧑‍🌾'), E('👩'), E('🧔')), (p.nbDep || 3) + ' témoins'),
-      C(R(E('📖'), E('🎧')), 'Lis ou écoute'),
-      C(feutre('#5fcf86'), 'Vert = pareil'),
-      C(feutre('#e5484d'), 'Rouge = bizarre'),
-      C(feutre('#f5b945'), 'Jaune = hmm ?'),
-      C('<span class="rg-bouton second">⚖️</span>', 'Compare deux')
-    ]),
-    G('Trouve le menteur', [
-      C(D(R(E('🧑‍🌾'), E('🤥'), E('👩')), 'rg-a-tape'), 'Accuse le menteur'),
-      p.detail ? C(R(E('🤥'), E('➜'), E('📝')), 'Puis sa phrase') : null,
-      C(R(E('👉'), E('×' + (p.coeurs || 2), 'rg-nb')), (p.coeurs || 2) + ' accusations'),
-      p.duree ? C(sablier(), duree(p.duree)) : C(R(E('⏳'), E('🚫')), 'Pas de sablier')
-    ])
-  ];
-};
-
-/* ================= SAGE ================= */
-REGLES.alphabet = function(p){
-  p = p || {};
-  return [
-    G('Déchiffre', [
-      C('<span class="rg-code">ᚠ ᛟ ᚱ ᛏ</span>', 'Message codé'),
-      C('<span class="rg-cle"><i>ᚠ=F</i><i>ᛟ=O</i><i>ᚱ=R</i></span>', 'Regarde la clé'),
-      C(D('<span class="rg-cases"><i>F</i><i class="vide"></i><i>R</i></span>', 'rg-a-tape'), 'Touche une case'),
-      C(D('<span class="rg-mots"><i>N</i><i>O</i><i>P</i></span>', 'rg-a-tape'), 'Choisis la lettre'),
-      C('<span class="rg-cases"><i>F</i><i class="tache">?</i><i>R</i></span>', 'Abîmé ? Devine !')
-    ]),
-    G('Gagner, perdre', [
-      C('<span class="rg-bouton">✔ Valider</span>', 'Puis valide'),
-      perdu(R(E('❌'), E('💔')), 'Faux = −1 ❤️'),
-      vies(p.coeurs, p.coeurs > 1 ? 'essais' : 'essai'),
-      C(sablier(), 'Le temps compte')
-    ])
-  ];
-};
-
-REGLES.plans = function(p){
-  var calque = '<rect x="18" y="12" width="60" height="50" rx="4" fill="#f3e7cb" stroke="#6b5434" stroke-width="2"/><path d="M28,50 L44,26 L64,40" stroke="#35281b" stroke-width="2" fill="none"/><circle cx="44" cy="26" r="3" fill="#35281b"/>' +
-    '<g class="rg-a-calque"><rect x="40" y="22" width="60" height="50" rx="4" fill="#e5484d22" stroke="#e5484d" stroke-width="2" stroke-dasharray="4 3"/><path d="M50,60 L66,36 L86,50" stroke="#e5484d" stroke-width="2" fill="none"/></g>';
-  return [
-    G('Le calque', [
-      C(S('0 0 120 80', calque), 'Pose le calque'),
-      C(D(S('0 0 120 80', calque), 'rg-a-glisse-hg'), 'Glisse-le'),
-      C(R(E('✌️'), E('🔄', 'rg-a-horaire')), 'Tourne : 2 doigts'),
-      C(R(E('🤏'), E('🔍', 'rg-a-pulse')), 'Pince : zoom'),
-      C('<span class="rg-pad" aria-hidden="true"><i>▲</i><i>◀</i><i>▶</i><i>▼</i><i>⟲</i><i>⟳</i><i>−</i><i>+</i></span>', 'Ou les boutons')
-    ]),
-    G('Gagner', [
-      C(S('0 0 120 80', '<rect x="30" y="14" width="60" height="50" rx="4" fill="#f3e7cb" stroke="#6b5434" stroke-width="2"/><path d="M40,52 L56,28 L76,42" stroke="#35281b" stroke-width="3" fill="none"/><path d="M40,52 L56,28 L76,42" stroke="#e5484d" stroke-width="1.5" fill="none"/>'), 'Pile dessus'),
-      gagne(R(E('✋'), E('✨', 'rg-a-pulse')), 'Tiens : le secret'),
-      C(sablier(), 'Le temps compte')
-    ])
-  ];
-};
-
-REGLES.grille = function(p){
-  p = p || {};
-  var grille = function(cases){ return '<span class="rg-grille">' + cases.map(function(c){ return '<i class="' + (c === '✗' ? 'x' : c === '✓' ? 'v' : '') + '">' + c + '</i>'; }).join('') + '</span>'; };
-  return [
-    G('Déduis', [
-      C(E('📜'), 'Lis les indices'),
-      C(grille(['✗', '', '✗', '', '', '✗']), 'Croix = impossible'),
-      C(grille(['✗', '✓', '✗', '', '✗', '']), 'Coche = sûr'),
-      C(D(grille(['', '✗', '', '', '', '']), 'rg-a-tape'), 'Touche : ✗ puis ✓'),
-      p.aide ? C('<span class="rg-bouton second">💡</span>', 'Coup de pouce') : null
-    ]),
-    G('Gagner, perdre', [
-      C('<span class="rg-bouton">✔ Valider</span>', 'Puis valide'),
-      perdu(R(E('❌'), E('💔')), 'Faux = −1 ❤️'),
-      vies(p.coeurs, p.coeurs > 1 ? 'cœurs' : 'cœur'),
-      p.temps ? C(sablier(), duree(p.temps)) : null
-    ])
-  ];
-};
-
-REGLES.runes = function(p){
-  p = p || {};
-  var piece = function(x, y, r, c, cls){ return '<g class="' + (cls || '') + '" style="transform-origin:' + (x + 13) + 'px ' + (y + 13) + 'px" transform="rotate(' + r + ' ' + (x + 13) + ' ' + (y + 13) + ')"><rect x="' + x + '" y="' + y + '" width="26" height="26" rx="3" fill="#6cb6ff" stroke="' + K + '" stroke-width="2"/><path d="M' + (x + 6) + ',' + (y + 20) + ' L' + (x + 13) + ',' + (y + 6) + ' L' + (x + 20) + ',' + (y + 20) + '" stroke="' + c + '" stroke-width="3" fill="none"/></g>'; };
-  var reserve = val(p, 'Coups en réserve');
-  return [
-    G('Le puzzle', [
-      C(S('0 0 120 80', piece(30, 12, 90, '#24182e') + piece(62, 12, 0, '#24182e') + piece(30, 44, 180, '#24182e') + piece(62, 44, 270, '#24182e')), "Refais l'image"),
-      C(D(S('0 0 120 80', piece(47, 27, 0, '#24182e', 'rg-a-quart')), 'rg-a-tape'), 'Touche = tourne'),
-      C(D(S('0 0 120 80', piece(20, 27, 0, '#24182e') + piece(74, 27, 180, '#e5484d')), 'rg-a-glisse-d'), 'Glisse = échange')
-    ]),
-    G('Gagner, perdre', [
-      C(R(E('👆'), E('🔢')), reserve ? 'Coups comptés' : 'Coups comptés'),
-      C(R(E('⏳'), E('🚫')), 'Pas de sablier'),
-      gagne(R(E('🖼️'), E('✅')), 'Image complète'),
-      perdu(R(E('👆'), E('0', 'rg-nb')), 'Plus de coups')
-    ])
-  ];
-};
-
-/* ---------- Rendu ---------- */
-MJ.regles = {
-  html: function(type, params){
-    var f = REGLES[type];
-    if(!f) return '';
-    var groupes;
-    try{ groupes = f(params || {}); }catch(e){ if(window.console) console.warn('règles', type, e); return ''; }
-    if(!groupes || !groupes.length) return '';
-    var h = '<section class="rg" aria-label="Les règles en images">';
-    groupes.filter(Boolean).forEach(function(g){
-      if(!g.c || !g.c.length) return;
-      h += '<div class="rg-groupe"><h3 class="rg-gt">' + esc(g.t) + '</h3><div class="rg-cartes">';
-      g.c.forEach(function(c){
-        h += '<figure class="rg-c' + (c.k ? ' rg-' + c.k : '') + '"><div class="rg-p">' + c.p + (c.k === 'ok' ? '<span class="rg-coin" aria-hidden="true">✅</span>' : c.k === 'ko' ? '<span class="rg-coin" aria-hidden="true">⚠️</span>' : '') + '</div><figcaption>' + esc(c.t) + '</figcaption></figure>';
-      });
-      h += '</div></div>';
+  var main = piste(cles), id = uid('rgp');
+  var svg = svgDemo(el,
+    '<defs><linearGradient id="' + id + 'c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset=".6" stop-color="#3b2a6a"/><stop offset="1" stop-color="#e08a6a"/></linearGradient>' +
+    '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c4a3a"/><stop offset="1" stop-color="#12261f"/></linearGradient>' +
+    '<linearGradient id="' + id + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5e4a"/><stop offset="1" stop-color="#b48a62"/></linearGradient></defs>' +
+    '<rect width="' + LW + '" height="' + HZ + '" fill="url(#' + id + 'c)"/><circle cx="238" cy="52" r="20" fill="#fff4d0" opacity=".92"/><circle cx="238" cy="52" r="34" fill="#fff4d0" opacity=".1"/>' +
+    '<path d="M0,' + HZ + ' L0,124 L30,112 L62,128 L96,108 L130,126 L170,110 L206,128 L240,112 L276,126 L300,116 L300,' + HZ + ' Z" fill="#241d44"/>' +
+    '<rect y="' + HZ + '" width="' + LW + '" height="' + (H - HZ) + '" fill="url(#' + id + 's)"/>' +
+    '<path d="M136,' + HZ + ' L164,' + HZ + ' L320,' + H + ' L-20,' + H + ' Z" fill="url(#' + id + 'r)" stroke="' + K + '" stroke-width="2"/>' +
+    '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="#e8d7ae" stroke-width="2.5" stroke-dasharray="12 12" fill="none"/>' +
+    '<g class="rg-fuyard">' + FUYARD + '</g><g class="rg-obs"></g>' +
+    '<ellipse class="rg-ombre" cx="150" cy="' + YR + '" rx="22" ry="5" fill="#000" opacity=".3"/>' +
+    '<g class="rg-coureur">' + COUREUR + '</g>' +
+    '<g class="rg-trace" opacity="0"><path d="" stroke="#8ff3ff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><path d="" fill="#8ff3ff" opacity=".85"/></g>');
+  var gObs = $(svg, '.rg-obs'), cour = $(svg, '.rg-coureur'), ombre = $(svg, '.rg-ombre'), fuy = $(svg, '.rg-fuyard'), tir = $(svg, '.rg-tirets');
+  var jg = $(svg, '.rg-jambes .g'), jd = $(svg, '.rg-jambes .d'), trace = $(svg, '.rg-trace'), gMain = $(svg, '.rg-main');
+  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = SP[s.o]; gObs.appendChild(g); return g; });
+  return boucle(el, P, function(t){
+    var i = Math.min(SEG.length - 1, Math.floor(t / DU)), s = SEG[i], t0 = i * DU;
+    obs.forEach(function(g, j){
+      var u = (t - j * DU) / 1.9;
+      if(u < 0 || u > 1.22){ vis(g, 0); return; }
+      var e = ER * Math.pow(u, 1.6), sc = .04 + .76 * e / ER, y = HZ + (H - HZ) * e;
+      if(SEG[j].o === 'branche') y += 16 * sc;
+      vis(g, u > 1.1 ? (1.22 - u) / .12 : 1);
+      pose(g, laneX(SEG[j].l, e), y, sc);
     });
-    return h + '</section>';
+    var dy = 0, sy = 1, voie = s.de;
+    if(s.g === 'haut'){ var uj = (t - t0 - 1.45) / .7; if(uj > 0 && uj < 1) dy = -54 * Math.sin(Math.PI * uj); }
+    if(s.g === 'bas') sy = 1 - .48 * entre(t, t0 + 1.42, t0 + 1.58) * (1 - entre(t, t0 + 2.2, t0 + 2.4));
+    if(s.de !== s.a) voie = mix(s.de, s.a, entre(t, t0 + 1.45, t0 + 1.75));
+    var x = laneX(voie, ER), course = Math.sin(t * 14), sc = .74;
+    cour.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(YR - 7 + dy + (dy ? 0 : Math.abs(course) * -2)) + ') scale(' + sc + ',' + (sc * sy).toFixed(3) + ')');
+    ombre.setAttribute('cx', f1(x)); ombre.setAttribute('rx', f1(22 + dy / 6));
+    jg.setAttribute('transform', dy ? 'rotate(18)' : 'rotate(' + f1(course * 14) + ')');
+    jd.setAttribute('transform', dy ? 'rotate(-18)' : 'rotate(' + f1(-course * 14) + ')');
+    pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, .5);
+    tir.setAttribute('stroke-dashoffset', f1(-(t * 60) % 24));
+    var m = main(t); poserMain(gMain, m.x, m.y, m.p, t, []);
+    var g = GESTE[s.g], ut = entre(t, t0 + 1.12, t0 + 1.45), op = (t > t0 + 1.12 && t < t0 + 2) ? .9 * (1 - entre(t, t0 + 1.5, t0 + 2)) : 0;
+    if(op > 0){
+      var x1 = mix(g[0][0], g[1][0], ut), y1 = mix(g[0][1], g[1][1], ut), dx = g[1][0] - g[0][0], dy2 = g[1][1] - g[0][1], L = Math.hypot(dx, dy2) || 1, ux = dx / L, uy = dy2 / L;
+      trace.firstChild.setAttribute('d', 'M' + g[0][0] + ',' + g[0][1] + ' L' + f1(x1) + ',' + f1(y1));
+      trace.lastChild.setAttribute('d', 'M' + f1(x1 + ux * 12) + ',' + f1(y1 + uy * 12) + ' L' + f1(x1 - uy * 10) + ',' + f1(y1 + ux * 10) + ' L' + f1(x1 + uy * 10) + ',' + f1(y1 - ux * 10) + ' Z');
+    }
+    vis(trace, op);
+  }, 1.62);
+});
+
+/* CACHETTE — vue du dessus, la nuit : la main touche une cachette entourée de bleu
+   quand la lanterne regarde ailleurs ; le Pisteur y court, puis jusqu'à la porte. */
+D('cachette', function(el){
+  var P = 8, G = [222, 160], DEP = [150, 388], C1 = [206, 292], C2 = [80, 180], PO = [150, 48];
+  var A_C1 = Math.atan2(C1[1] - G[1], C1[0] - G[0]), A_LOIN = .05, A_C2 = Math.atan2(C2[1] - G[1], C2[0] - G[0]);
+  function angle(t){
+    if(t < 1.0) return A_C1;
+    if(t < 1.5) return mix(A_C1, A_LOIN, entre(t, 1, 1.5));
+    if(t < 2.5) return A_LOIN;
+    if(t < 3.0) return mix(A_LOIN, A_C1, entre(t, 2.5, 3));
+    if(t < 3.2) return A_C1;
+    if(t < 3.7) return mix(A_C1, A_LOIN, entre(t, 3.2, 3.7));
+    if(t < 6.8) return A_LOIN + .25 * Math.sin((t - 3.7) * 1.2);
+    return mix(A_LOIN, A_C1, entre(t, 6.8, 7.6));
   }
-};
+  var anneau = function(c, x, y, r){ return '<circle class="' + c + '" cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#6cb6ff" fill-opacity=".12" stroke="#6cb6ff" stroke-width="3.5" stroke-dasharray="7 6"/>'; };
+  var svg = svgDemo(el,
+    '<rect width="300" height="420" fill="#2b3150"/>' +
+    '<g stroke="#3a4470" stroke-width="2" fill="none" opacity=".8"><path d="M0,110 H300 M0,240 H300 M0,340 H300 M60,0 V110 M180,110 V240 M110,240 V340 M240,340 V420 M30,240 V340"/></g>' +
+    '<g transform="translate(' + PO[0] + ',' + (PO[1] + 4) + ') scale(1.7)"><rect x="-17" y="-16" width="34" height="30" rx="3" fill="#7a5a3e" stroke="' + K + '" stroke-width="3"/><path d="M-17,-16 L0,-28 L17,-16" fill="#a8743f" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/><rect x="-7" y="-4" width="14" height="18" rx="6" fill="#3b2a1e" stroke="' + K + '" stroke-width="2"/><circle cx="3" cy="5" r="1.6" fill="#ffd36a"/></g>' +
+    anneau('an an2', PO[0], PO[1] - 2, 42) +
+    '<g transform="translate(' + C1[0] + ',' + C1[1] + ') scale(1.3)">' + SP2.tonneau + '</g>' + anneau('an an0', C1[0], C1[1], 36) +
+    '<g transform="translate(' + C2[0] + ',' + C2[1] + ') scale(1.35)">' + SP2.buisson + '</g>' + anneau('an an1', C2[0], C2[1], 40) +
+    '<g class="rg-cone-g" transform="translate(' + G[0] + ',' + G[1] + ')"><path class="rg-cone" fill="#ffd36a" opacity=".42"/></g>' +
+    '<g class="rg-jd"><circle r="12" fill="#3c9a62" stroke="' + K + '" stroke-width="3"/><path d="M-5,-3 C-2,-8 2,-8 5,-3" stroke="#bff0cf" stroke-width="2" fill="none"/></g>' +
+    '<g transform="translate(' + G[0] + ',' + G[1] + ')"><circle r="14" fill="#3a5a9a" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-4" r="4.5" fill="#ffd36a"/></g>' +
+    '<g class="rg-ouf" opacity="0">' + emo(PO[0], PO[1] - 54, 30, '✨') + '</g>');
+  var cone = $(svg, '.rg-cone'), jd = $(svg, '.rg-jd'), an = [$(svg, '.an0'), $(svg, '.an1'), $(svg, '.an2')], ouf = $(svg, '.rg-ouf');
+  var main = mainAuto($(svg, '.rg-main'), [[0, 262, 400, 0], [1.25, 262, 400, 0], [1.65, C1[0], C1[1] + 6, 1], [1.8, C1[0], C1[1] + 6, 0], [2.5, 262, 400, 0], [3.5, 262, 400, 0], [3.85, C2[0], C2[1] + 8, 1], [4.0, C2[0], C2[1] + 8, 0], [4.55, PO[0] + 30, PO[1] + 40, 0], [4.9, PO[0], PO[1] + 6, 1], [5.05, PO[0], PO[1] + 6, 0], [6.0, 262, 400, 0], [P, 262, 400, 0]], [1.65, 3.85, 4.9]);
+  function chemin(t){
+    if(t < 1.8) return {p:DEP, c:false};
+    if(t < 2.4){ var u = entre(t, 1.8, 2.4); return {p:[mix(DEP[0], C1[0], u), mix(DEP[1], C1[1], u)], c:false}; }
+    if(t < 4.0) return {p:C1, c:true};
+    if(t < 4.6){ var v = entre(t, 4.0, 4.6); return {p:[mix(C1[0], C2[0], v), mix(C1[1], C2[1], v)], c:false}; }
+    if(t < 5.1) return {p:C2, c:true};
+    if(t < 5.8){ var w = entre(t, 5.1, 5.8); return {p:[mix(C2[0], PO[0], w), mix(C2[1], PO[1] + 10, w)], c:false}; }
+    return {p:[PO[0], PO[1] + 10], c:true};
+  }
+  return boucle(el, P, function(t){
+    var a = angle(t), L = 175, h = .42;
+    cone.setAttribute('d', 'M0,0 L' + f1(L * Math.cos(a - h)) + ',' + f1(L * Math.sin(a - h)) + ' A' + L + ',' + L + ' 0 0 1 ' + f1(L * Math.cos(a + h)) + ',' + f1(L * Math.sin(a + h)) + ' Z');
+    var c = chemin(t), fin = entre(t, 7.3, 7.9);
+    pose(jd, mix(c.p[0], DEP[0], fin), mix(c.p[1], DEP[1], fin), c.c ? .75 : 1);
+    vis(jd, (c.c ? .6 : 1) * (1 - bosse(t, 7.2, .8)));
+    var dash = f1(-t * 14);
+    an.forEach(function(n){ n.setAttribute('stroke-dashoffset', dash); });
+    vis(an[0], t < 1.9 ? 1 : 0); vis(an[1], t > 2.4 && t < 4.1 ? 1 : 0); vis(an[2], t > 4.6 && t < 5.2 ? 1 : 0);
+    vis(ouf, entre(t, 5.8, 6.1) * (1 - entre(t, 6.9, 7.2)));
+    main(t);
+  }, 1.65);
+});
+
+/* TIR — la main pose le doigt près de l'arc, tire vers l'arrière (la ligne de
+   visée apparaît), lâche : la flèche vole jusqu'à la lanterne. */
+D('tir', function(el){
+  var P = 5.4, ARC = [82, 330], CIBLE = [214, 140], CTRL = [104, 150];
+  function bez(s){ var a = 1 - s; return [a * a * ARC[0] + 2 * a * s * CTRL[0] + s * s * CIBLE[0], a * a * ARC[1] + 2 * a * s * CTRL[1] + s * s * CIBLE[1]]; }
+  function tang(s){ return Math.atan2(2 * (1 - s) * (CTRL[1] - ARC[1]) + 2 * s * (CIBLE[1] - CTRL[1]), 2 * (1 - s) * (CTRL[0] - ARC[0]) + 2 * s * (CIBLE[0] - CTRL[0])) * 180 / Math.PI; }
+  var pts = ''; for(var i = 1; i <= 14; i++){ var q = bez(i / 16); pts += '<circle class="pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3" fill="#ffe3a3"/>'; }
+  var a0 = tang(0), id = uid('rgt');
+  var svg = svgDemo(el,
+    '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset="1" stop-color="#2c3566"/></linearGradient></defs>' +
+    '<rect width="300" height="420" fill="url(#' + id + ')"/><circle cx="70" cy="80" r="26" fill="#fff4d0" opacity=".9"/>' +
+    '<path d="M300,64 C262,54 214,54 168,66" stroke="#7a4e2c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="186" cy="58" r="10" fill="#2f7a4c"/><circle cx="262" cy="52" r="12" fill="#2a7050"/>' +
+    '<line class="rg-corde" x1="' + CIBLE[0] + '" y1="62" x2="' + CIBLE[0] + '" y2="118" stroke="#c9c2e0" stroke-width="2"/>' +
+    '<g class="rg-lant">' + SP2.lanterne + '</g>' +
+    '<rect y="372" width="300" height="48" fill="#2b5038"/><path d="M0,374 Q75,364 150,374 T300,372" stroke="#3c7a52" stroke-width="4" fill="none"/>' +
+    '<g class="rg-pts">' + pts + '</g>' +
+    '<g transform="translate(' + ARC[0] + ',' + ARC[1] + ') rotate(' + f1(a0) + ') scale(1.35)"><path d="M0,-34 C20,-24 20,24 0,34" transform="rotate(0)" stroke="#8a5a33" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path class="rg-corde-arc" d="M0,-34 L0,34" stroke="#eee" stroke-width="1.8" fill="none"/></g>' +
+    '<g class="rg-fl">' + SP2.fleche + '</g>' +
+    '<g class="rg-bing" opacity="0">' + emo(CIBLE[0] + 26, CIBLE[1] - 30, 26, '✨') + emo(CIBLE[0] - 28, CIBLE[1] - 10, 20, '✨') + '</g>');
+  var lant = $(svg, '.rg-lant'), corde = $(svg, '.rg-corde'), ca = $(svg, '.rg-corde-arc'), fl = $(svg, '.rg-fl'), ptsG = $$(svg, '.pt'), bing = $(svg, '.rg-bing');
+  var rad = a0 * Math.PI / 180, bx = -Math.cos(rad), by = -Math.sin(rad);
+  var DEB = [ARC[0] + 4, ARC[1] + 4], FIN = [ARC[0] + bx * 46, ARC[1] + by * 46];
+  var main = mainAuto($(svg, '.rg-main'), [[0, 230, 400, 0], [.5, 230, 400, 0], [.95, DEB[0], DEB[1], 1], [1.75, FIN[0], FIN[1], 0], [2.4, 230, 400, 0], [P, 230, 400, 0]], [.95]);
+  return boucle(el, P, function(t){
+    var tire = t > .95 && t < 1.8 ? entre(t, .95, 1.75) : 0;
+    ca.setAttribute('d', 'M0,-34 L' + f1(-tire * 34) + ',0 L0,34');
+    ptsG.forEach(function(c, i){ vis(c, tire > i / 14 ? 1 : 0); });
+    var uf = (t - 1.8) / .55;
+    if(t < 1.8){ var ex = ARC[0] - Math.cos(rad) * tire * 46, ey = ARC[1] - Math.sin(rad) * tire * 46; pose(fl, ex + Math.cos(rad) * 22, ey + Math.sin(rad) * 22, 1.35, a0); vis(fl, 1); }
+    else if(uf < 1){ var b = bez(uf); pose(fl, b[0], b[1], 1.35, tang(uf)); vis(fl, 1); }
+    else vis(fl, t < 3.6 ? 1 - entre(t, 3.2, 3.6) : 0);
+    if(uf >= 1 && t < 3.6){ var bb = bez(.97); pose(fl, bb[0], bb[1], 1.35, tang(.97)); }
+    var bal = t > 2.35 ? Math.sin((t - 2.35) * 7) * 18 * Math.exp(-(t - 2.35) * 1.4) : 0;
+    lant.setAttribute('transform', 'rotate(' + f1(bal) + ' ' + CIBLE[0] + ' 62) translate(' + CIBLE[0] + ',' + (CIBLE[1] + 6) + ') scale(1.5)');
+    corde.setAttribute('transform', 'rotate(' + f1(bal) + ' ' + CIBLE[0] + ' 62)');
+    vis(bing, bosse(t, 2.35, 1.2));
+    main(t);
+  }, 1.6);
+});
+
+/* ==========================================================
+   ALCHIMISTE
+   ========================================================== */
+/* BULLES — les bulles s'allument dans un ordre (👀), puis la main les touche
+   dans le même ordre (👆) : leurs ingrédients tombent dans le chaudron. */
+D('bulles', function(el){
+  var P = 7.8, id = uid('rgb');
+  var B = [{x:78, y:120, c:'#e5484d', ic:'❤️'}, {x:222, y:104, c:'#f5b945', ic:'⭐'}, {x:150, y:214, c:'#3fa9ff', ic:'💧'}];
+  var MONTRE = [.6, 1.4, 2.2], TAPE = [3.5, 4.3, 5.1];
+  var svg = svgDemo(el,
+    '<defs>' + B.map(function(b, i){ return '<radialGradient id="' + id + i + '" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset=".25" stop-color="' + b.c + '" stop-opacity=".9"/><stop offset="1" stop-color="' + b.c + '" stop-opacity=".55"/></radialGradient>'; }).join('') + '</defs>' +
+    '<rect width="300" height="420" fill="#2a2040"/>' +
+    '<rect x="14" y="44" width="272" height="236" rx="26" fill="#3a2f5a" stroke="#4d4078" stroke-width="3"/>' +
+    '<g stroke="#4d4078" stroke-width="2" opacity=".7"><path d="M14,104 H286 M14,164 H286 M14,224 H286 M80,44 V104 M200,44 V104 M140,104 V164 M60,164 V224 M240,164 V224 M120,224 V280"/></g>' +
+    '<g class="rg-oeil">' + emo(150, 22, 22, '👀') + '</g><g class="rg-doigt" opacity="0">' + emo(150, 22, 22, '👆') + '</g>' +
+    B.map(function(b, i){ return '<g class="bu bu' + i + '"><circle class="halo" r="44" fill="none" stroke="#fff4d0" stroke-width="5" opacity="0"/><circle r="34" fill="url(#' + id + i + ')" stroke="' + K + '" stroke-width="3"/>' + emo(0, 2, 28, b.ic) + '</g>'; }).join('') +
+    B.map(function(b, i){ return '<circle class="gt gt' + i + '" r="7" fill="' + b.c + '" stroke="' + K + '" stroke-width="2" opacity="0"/>'; }).join('') +
+    '<path d="M112,338 C108,388 126,408 150,408 C174,408 192,388 188,338 Z" fill="#3a3550" stroke="' + K + '" stroke-width="4"/>' +
+    '<ellipse cx="150" cy="338" rx="40" ry="10" fill="#3a3550" stroke="' + K + '" stroke-width="4"/><ellipse class="rg-liq" cx="150" cy="338" rx="33" ry="7" fill="#8fb7d6"/>' +
+    '<g class="rg-arc" opacity="0">' + emo(118, 316, 20, '✨') + emo(182, 312, 22, '✨') + emo(150, 300, 18, '✨') + '</g>');
+  var bu = [0, 1, 2].map(function(i){ return $(svg, '.bu' + i); }), gt = [0, 1, 2].map(function(i){ return $(svg, '.gt' + i); });
+  var liq = $(svg, '.rg-liq'), arc = $(svg, '.rg-arc'), oeil = $(svg, '.rg-oeil'), doigt = $(svg, '.rg-doigt');
+  var cles = [[0, 262, 400, 0], [3.0, 262, 400, 0]];
+  TAPE.forEach(function(tt, i){ cles.push([tt, B[i].x, B[i].y + 6, 1], [tt + .15, B[i].x, B[i].y + 6, 0]); });
+  cles.push([6.2, 262, 400, 0], [P, 262, 400, 0]);
+  var main = mainAuto($(svg, '.rg-main'), cles, TAPE);
+  var COUL = ['#8fb7d6', '#e5484d', '#f08a4a', '#9d6ee3'];
+  return boucle(el, P, function(t){
+    bu.forEach(function(g, i){
+      var b = B[i], dx = 6 * Math.sin(t * .8 + i * 2), dy = 5 * Math.cos(t * .7 + i), lit = Math.max(bosse(t, MONTRE[i], .7), bosse(t, TAPE[i], .45));
+      pose(g, b.x + dx, b.y + dy, 1 + .14 * lit);
+      vis(g.firstChild, lit);
+      var u = (t - TAPE[i] - .1) / .6;
+      if(u > 0 && u < 1){ vis(gt[i], 1); pose(gt[i], mix(b.x, 150, u), mix(b.y + 30, 336, u * u)); } else vis(gt[i], 0);
+    });
+    var n = TAPE.filter(function(tt){ return t > tt + .7; }).length;
+    liq.setAttribute('fill', t > 7.2 ? COUL[0] : COUL[n]);
+    vis(arc, n === 3 ? .5 + .5 * Math.sin(t * 8) : 0);
+    vis(oeil, t < 2.95 ? 1 : 0); vis(doigt, t >= 2.95 && t < 6 ? 1 : 0);
+    main(t);
+  }, 3.55);
+});
+
+/* MÉLANGE — la main touche un pot (myrtille), puis un autre (pensée) : les gouttes
+   tombent dans le chaudron, la potion devient de la même couleur que la fiole ;
+   puis « Goûter » : c'est réussi. */
+D('melange', function(el){
+  var P = 8;
+  var POTS = [{x:48, ic:'🫐', c:'#4a5fc0'}, {x:116, ic:'🌺', c:'#e5484d'}, {x:184, ic:'🌼', c:'#f5c93e'}, {x:252, ic:'🌿', c:'#3fcf9a'}];
+  var CIBLE = '#5fae5a', EAU = '#8fb7d6';
+  var pot = function(p, i){ return '<g class="pot pot' + i + '" transform="translate(' + p.x + ',88)"><rect x="-22" y="-26" width="44" height="50" rx="10" fill="#eef0ff" fill-opacity=".18" stroke="#a6aed8" stroke-width="2.5"/><rect x="-18" y="-4" width="36" height="24" rx="7" fill="' + p.c + '"/><rect x="-16" y="-34" width="32" height="10" rx="3" fill="#a8743f" stroke="' + K + '" stroke-width="2"/>' + emo(0, -50, 22, p.ic) + '</g>'; };
+  var svg = svgDemo(el,
+    '<rect width="300" height="420" fill="#2b2148"/>' +
+    '<rect x="8" y="112" width="284" height="9" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' + POTS.map(pot).join('') +
+    '<rect y="350" width="300" height="70" fill="#6b3f24"/><rect y="344" width="300" height="8" fill="#62381d"/>' +
+    /* la fiole modèle */
+    '<g transform="translate(52,262)"><rect x="-26" y="40" width="52" height="8" rx="3" fill="#8a5a33"/><path d="M-6,-44 L6,-44 L6,-22 C22,-14 26,0 26,10 C26,30 12,40 0,40 C-12,40 -26,30 -26,10 C-26,0 -22,-14 -6,-22 Z" fill="' + CIBLE + '" stroke="' + K + '" stroke-width="3"/><path d="M-6,-44 L6,-44 L6,-22 C22,-14 26,0 26,10 C26,30 12,40 0,40 C-12,40 -26,30 -26,10 C-26,0 -22,-14 -6,-22 Z" fill="#fff" fill-opacity=".15"/><rect x="-9" y="-52" width="18" height="10" rx="3" fill="#a8743f" stroke="' + K + '" stroke-width="2"/></g>' +
+    '<g class="rg-ok" opacity="0">' + emo(52, 196, 30, '✅') + '</g>' +
+    /* le chaudron */
+    '<g transform="translate(184,258)"><path d="M-14,62 L-24,84 M14,62 L24,84" stroke="' + K + '" stroke-width="6"/><path d="M-62,0 C-64,44 -40,70 0,70 C40,70 64,44 62,0 Z" fill="#3a3550" stroke="' + K + '" stroke-width="4"/><ellipse rx="64" ry="15" fill="#3a3550" stroke="' + K + '" stroke-width="4"/><ellipse class="rg-liq" rx="54" ry="10" fill="' + EAU + '"/>' +
+      '<g class="rg-bul" opacity="0"><circle cx="-20" cy="-2" r="5" fill="#fff" opacity=".6"/><circle cx="14" cy="2" r="4" fill="#fff" opacity=".6"/></g></g>' +
+    '<circle class="rg-gtt" r="8" stroke="' + K + '" stroke-width="2" opacity="0"/>' +
+    '<g transform="translate(90,388)"><rect x="-58" y="-20" width="116" height="40" rx="20" fill="#eef0ff" fill-opacity=".16"/><text x="0" y="1" font-size="16" font-weight="700" fill="#eef0ff" text-anchor="middle" dominant-baseline="central">♻️ Vider</text></g>' +
+    '<g class="rg-gout" transform="translate(214,388)"><rect x="-66" y="-22" width="132" height="44" rx="22" fill="#f5b945" stroke="' + K + '" stroke-width="2.5"/><text x="0" y="1" font-size="17" font-weight="800" fill="#35281b" text-anchor="middle" dominant-baseline="central">👅 Goûter</text></g>');
+  var liq = $(svg, '.rg-liq'), gtt = $(svg, '.rg-gtt'), ok = $(svg, '.rg-ok'), bul = $(svg, '.rg-bul'), gout = $(svg, '.rg-gout');
+  var main = mainAuto($(svg, '.rg-main'), [[0, 262, 300, 0], [.6, 262, 300, 0], [1.0, POTS[0].x, 96, 1], [1.15, POTS[0].x, 96, 0], [2.0, POTS[2].x + 20, 160, 0], [2.4, POTS[2].x, 96, 1], [2.55, POTS[2].x, 96, 0], [3.6, 230, 340, 0], [4.0, 214, 392, 1], [4.2, 214, 392, 0], [5.0, 262, 300, 0], [P, 262, 300, 0]], [1.0, 2.4, 4.0]);
+  function goutte(t, t0, p){
+    var u = (t - t0) / .6; if(u <= 0 || u >= 1) return false;
+    gtt.setAttribute('fill', p.c); vis(gtt, 1); pose(gtt, mix(p.x, 184, u), mix(110, 254, u * u)); return true;
+  }
+  return boucle(el, P, function(t){
+    if(!goutte(t, 1.1, POTS[0]) && !goutte(t, 2.5, POTS[2])) vis(gtt, 0);
+    var c = EAU;
+    if(t > 1.7) c = mixC(EAU, POTS[0].c, entre(t, 1.7, 1.9));
+    if(t > 3.1) c = mixC(POTS[0].c, CIBLE, entre(t, 3.1, 3.4));
+    if(t > 7.2) c = mixC(CIBLE, EAU, entre(t, 7.2, 7.8));
+    liq.setAttribute('fill', c);
+    vis(ok, entre(t, 4.3, 4.6) * (1 - entre(t, 6.9, 7.2)));
+    vis(bul, t > 4.2 && t < 7 ? .5 + .5 * Math.sin(t * 9) : 0);
+    gout.setAttribute('transform', 'translate(214,' + (t > 4 && t < 4.2 ? 391 : 388) + ')');
+    main(t);
+  }, 4.1);
+});
+
+/* CHAUDRON (d'après la nouvelle règle ; mj-chaudron.js n'est pas touché) :
+   la main tourne la louche (sens des aiguilles : ça chauffe, la potion rougit),
+   touche les bûches (le feu monte), puis quand l'ingrédient de la frise arrive
+   sous le petit chaudron, touche le même sur l'étagère : il vole dans la marmite
+   et quitte la frise. */
+D('chaudron', function(el){
+  var P = 9.6, CX = 150, RY = 182, V = 140 / 6, ING = ['🌿', '🍄', '🫐', '🍯', '🪻'], CIBLE = 1, XE = [34, 92, 150, 208, 266], YE = 388, BU = [38, 290];
+  var th0 = -.55;
+  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
+  function th(t){ return th0 + Math.PI * 4 * Math.max(0, Math.min(1, (t - .55) / 2.65)); }
+  var b0 = bout(th0);
+  var hors = piste([[0, 262, 250, 0], [3.25, b0.hx, b0.hy, 0], [3.8, BU[0] + 2, BU[1] - 12, 1], [3.98, BU[0] + 2, BU[1] - 12, 0], [4.9, 266, 236, 0], [6.0, 266, 236, 0], [6.42, XE[CIBLE], YE - 4, 1], [6.62, XE[CIBLE], YE - 4, 0], [7.6, 262, 250, 0], [P, 262, 250, 0]]);
+  var depart = piste([[0, 262, 250, 0], [.5, b0.hx, b0.hy, 1]]);
+  var flammes = '<path d="M0,0 C-16,-6 -14,-26 -4,-40 C-4,-28 4,-26 6,-34 C18,-22 18,-4 0,0 Z" fill="#f5b945" stroke="#e8693c" stroke-width="3"/>';
+  var buche = function(x, y, r){ return '<g transform="translate(' + x + ',' + y + ') rotate(' + r + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/><ellipse cx="17" cy="0" rx="3.8" ry="5.5" fill="#d9a066" stroke="' + K + '" stroke-width="1.5"/></g>'; };
+  var id = uid('rgch');
+  var svg = svgDemo(el,
+    '<defs><linearGradient id="' + id + 'f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2148"/><stop offset="1" stop-color="#1a1430"/></linearGradient>' +
+    '<clipPath id="' + id + 'c"><rect x="10" y="12" width="280" height="44" rx="11"/></clipPath></defs>' +
+    '<rect width="300" height="420" fill="url(#' + id + 'f)"/>' +
+    '<rect x="10" y="12" width="280" height="44" rx="11" fill="#1d1730" stroke="#3b4679" stroke-width="2"/>' +
+    '<rect class="rg-rep" x="127" y="13" width="46" height="42" rx="9" fill="#ffe3a3" fill-opacity="0" stroke="#ffe3a3" stroke-width="2.5"/>' +
+    '<g clip-path="url(#' + id + 'c)"><g class="rg-frise">' + emo(0, 35, 28, ING[CIBLE], 'f0') + emo(0, 35, 28, '🫐', 'f1') + '</g></g>' +
+    '<g transform="translate(150,70)"><path d="M-10,-3 C-11,7 -6,11 0,11 C6,11 11,7 10,-3 Z" fill="#3a3550" stroke="#ffe3a3" stroke-width="2"/><path d="M-7,-8 L0,-14 L7,-8 Z" fill="#ffe3a3"/></g>' +
+    '<g>' + buche(BU[0], BU[1] + 26, 0) + buche(BU[0], BU[1] + 13, 0) + buche(BU[0], BU[1], 0) + '<circle cx="' + (BU[0] + 22) + '" cy="' + (BU[1] - 14) + '" r="10" fill="#5fcf86" stroke="' + K + '" stroke-width="2"/><path d="M' + (BU[0] + 16) + ',' + (BU[1] - 14) + ' H' + (BU[0] + 28) + ' M' + (BU[0] + 22) + ',' + (BU[1] - 20) + ' V' + (BU[1] - 8) + '" stroke="' + K + '" stroke-width="2.5"/></g>' +
+    '<ellipse class="rg-lueur" cx="150" cy="262" rx="64" ry="18" fill="#f5b945" opacity=".25"/>' +
+    '<g class="rg-feu" transform="translate(150,282)"><g transform="translate(-22,0)">' + flammes + '</g><g transform="translate(22,0) scale(.85)">' + flammes + '</g><g transform="scale(1.15)">' + flammes + '</g></g>' +
+    buche(135, 289, 18) + buche(165, 289, -18) +
+    '<path d="M84,' + RY + ' C82,226 104,252 150,252 C196,252 218,226 216,' + RY + ' Z" fill="#3a3550" stroke="' + K + '" stroke-width="4"/>' +
+    '<ellipse cx="150" cy="' + RY + '" rx="66" ry="16" fill="#3a3550" stroke="' + K + '" stroke-width="4"/>' +
+    '<ellipse class="rg-potion" cx="150" cy="' + RY + '" rx="56" ry="11" fill="#5fcf86"/>' +
+    '<g class="rg-bulles"><circle cx="130" cy="' + (RY - 2) + '" r="3" fill="#fff" opacity=".5"/><circle cx="168" cy="' + (RY + 2) + '" r="2.4" fill="#fff" opacity=".5"/></g>' +
+    '<g class="rg-ronds" opacity="0"><ellipse cx="150" cy="' + RY + '" rx="20" ry="5" fill="none" stroke="#fff" stroke-width="2.5"/><ellipse cx="150" cy="' + RY + '" rx="34" ry="8" fill="none" stroke="#fff" stroke-width="2"/></g>' +
+    '<g class="rg-louche"><path d="" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/><path d="" stroke="#c08a4a" stroke-width="6" stroke-linecap="round"/><ellipse rx="10" ry="5" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/></g>' +
+    '<g class="rg-fleche" opacity="0"><path d="M80,154 C100,128 200,128 220,154" stroke="#e8693c" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M224,160 L211,154 L223,146 Z" fill="#e8693c"/></g>' +
+    '<rect x="6" y="406" width="288" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
+    ING.map(function(ic, i){ return '<circle cx="' + XE[i] + '" cy="' + YE + '" r="22" fill="#eef0ff" fill-opacity=".1" stroke="#a6aed8" stroke-opacity=".4" stroke-width="1.5"/>' + emo(XE[i], YE, 26, ic, 'e' + i); }).join('') +
+    emo(0, 0, 26, ING[CIBLE], 'rg-vol') +
+    '<g class="rg-bvol" opacity="0">' + buche(0, 0, 0) + '</g>');
+  var louche = $(svg, '.rg-louche'), potion = $(svg, '.rg-potion'), fleche = $(svg, '.rg-fleche'), feu = $(svg, '.rg-feu'), lueur = $(svg, '.rg-lueur');
+  var f0 = $(svg, '.f0'), fx1 = $(svg, '.f1'), frise = $(svg, '.rg-frise'), rep = $(svg, '.rg-rep'), vol = $(svg, '.rg-vol'), bvol = $(svg, '.rg-bvol'), ronds = $(svg, '.rg-ronds');
+  var eCible = $(svg, '.e' + CIBLE), gMain = $(svg, '.rg-main'), bulles = $(svg, '.rg-bulles');
+  return boucle(el, P, function(t){
+    var a = th(t), b = bout(a), dl = 'M' + f1(b.bx) + ',' + f1(b.by) + ' L' + f1(b.hx) + ',' + f1(b.hy);
+    louche.children[0].setAttribute('d', dl); louche.children[1].setAttribute('d', dl);
+    louche.children[2].setAttribute('cx', f1(b.bx)); louche.children[2].setAttribute('cy', f1(b.by));
+    var m = t < .5 ? depart(t) : (t < 3.2 ? {x:b.hx, y:b.hy, p:true} : hors(t));
+    poserMain(gMain, m.x, m.y, m.p, t, [3.8, 6.42]);
+    var chaud = entre(t, .6, 3.1) * (1 - entre(t, 8.6, 9.5));
+    potion.setAttribute('fill', mixC('#5fcf86', '#e8693c', chaud));
+    vis(fleche, entre(t, .5, .9) * (1 - entre(t, 3.1, 3.5)));
+    bulles.setAttribute('transform', 'translate(0,' + f1(-Math.abs(Math.sin(t * 3)) * 3) + ')');
+    var ub = (t - 3.9) / .6;
+    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) - 70 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
+    var niv = .8 + .45 * entre(t, 4.45, 4.9) * (1 - entre(t, 8.8, 9.5)), danse = 1 + .06 * Math.sin(t * 11);
+    feu.setAttribute('transform', 'translate(150,282) scale(' + (niv * danse).toFixed(3) + ',' + (niv / danse).toFixed(3) + ')');
+    lueur.setAttribute('opacity', (.12 + .3 * (niv - .8) / .45).toFixed(2));
+    f0.setAttribute('x', f1(Math.max(150, 290 - V * t))); fx1.setAttribute('x', f1(410 - V * t));
+    var pop = entre(t, 7.05, 7.35);
+    vis(f0, 1 - pop); f0.setAttribute('font-size', f1(28 * (1 + .5 * pop)));
+    vis(frise, entre(t, 0, .3) * (1 - entre(t, 9.2, 9.55)));
+    var attend = t > 5.95 && t < 7.1;
+    rep.setAttribute('fill-opacity', attend ? (.2 + .15 * Math.sin(t * 9)).toFixed(2) : 0);
+    rep.setAttribute('stroke-width', attend ? 4 : 2.5);
+    var ui = (t - 6.5) / .6;
+    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4, ui) - 80 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(26 * (1 - .35 * ui))); }
+    else vis(vol, 0);
+    eCible.setAttribute('transform', t > 6.42 && t < 6.62 ? 'translate(0,3)' : '');
+    var ur = (t - 7.1) / .55, on = ur > 0 && ur < 1;
+    vis(ronds, on ? 1 - ur : 0);
+    ronds.setAttribute('transform', on ? 'translate(150,' + RY + ') scale(' + (1 + ur * .8).toFixed(2) + ') translate(-150,-' + RY + ')' : '');
+  }, 1.7);
+});
+
+/* LES 7 DIFFÉRENCES — deux étagères l'une sous l'autre ; la main touche une
+   différence en bas : elle s'entoure sur les deux images. Puis une autre. */
+D('differences', function(el){
+  var P = 7;
+  function image(y0, diff){
+    var champ = diff ? '#3fcf6a' : '#e5484d', fiole = diff ? '#9d6ee3' : '#3fa9ff';
+    return '<g transform="translate(16,' + y0 + ')"><rect width="268" height="184" rx="10" fill="#2f4a3a" stroke="#d29a5e" stroke-width="4"/>' +
+      '<rect x="10" y="74" width="248" height="9" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/><rect x="10" y="156" width="248" height="9" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
+      /* étagère du haut : fiole, bougie, livres */
+      '<g transform="translate(52,74)"><path d="M-5,-46 L5,-46 L5,-32 C16,-26 18,-16 18,-10 C18,-2 10,0 0,0 C-10,0 -18,-2 -18,-10 C-18,-16 -16,-26 -5,-32 Z" fill="' + fiole + '" stroke="' + K + '" stroke-width="3"/><rect x="-7" y="-52" width="14" height="7" rx="2" fill="#a8743f" stroke="' + K + '" stroke-width="2"/></g>' +
+      '<g transform="translate(134,74)"><rect x="-8" y="-34" width="16" height="34" rx="3" fill="#f3e7cb" stroke="' + K + '" stroke-width="2.5"/>' + (diff ? '' : '<path d="M0,-50 C-7,-42 -6,-36 0,-35 C6,-36 7,-42 0,-50 Z" fill="#f5b945" stroke="#e8693c" stroke-width="2"/>') + '</g>' +
+      '<g transform="translate(206,74)"><rect x="-26" y="-14" width="52" height="14" rx="2" fill="#9d6ee3" stroke="' + K + '" stroke-width="2"/><rect x="-22" y="-28" width="44" height="14" rx="2" fill="#5fcf86" stroke="' + K + '" stroke-width="2"/></g>' +
+      /* étagère du bas : champignon, pot de fleur, sac */
+      '<g transform="translate(60,156)"><rect x="-6" y="-22" width="12" height="22" rx="4" fill="#f3e7cb" stroke="' + K + '" stroke-width="2.5"/><path d="M-26,-20 C-24,-44 24,-44 26,-20 Z" fill="' + champ + '" stroke="' + K + '" stroke-width="3"/><circle cx="-10" cy="-30" r="4" fill="#fff"/><circle cx="8" cy="-34" r="3.5" fill="#fff"/></g>' +
+      '<g transform="translate(144,156)"><path d="M-16,-26 L16,-26 L12,0 L-12,0 Z" fill="#c96a3a" stroke="' + K + '" stroke-width="2.5"/><path d="M0,-26 C-4,-44 -18,-48 -20,-40 M0,-26 C4,-46 18,-50 20,-40 M0,-26 L0,-50" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/></g>' +
+      '<g transform="translate(214,156)"><path d="M-20,0 C-26,-30 26,-30 20,0 Z" fill="#b48a62" stroke="' + K + '" stroke-width="2.5"/><path d="M-10,-24 L10,-24" stroke="' + K + '" stroke-width="3"/></g>' +
+      '</g>';
+  }
+  var ann = function(x, y, cls){ return '<circle class="' + cls + '" cx="' + x + '" cy="' + y + '" r="30" fill="none" stroke="#ffe3a3" stroke-width="5" opacity="0"/>'; };
+  var svg = svgDemo(el, '<rect width="300" height="420" fill="#1c2447"/>' + image(16, false) + image(220, true) +
+    ann(76, 16 + 128, 'a0') + ann(76, 220 + 128, 'a0') + ann(150, 16 + 40, 'a1') + ann(150, 220 + 40, 'a1'));
+  var a0 = $$(svg, '.a0'), a1 = $$(svg, '.a1');
+  var main = mainAuto($(svg, '.rg-main'), [[0, 262, 404, 0], [.7, 262, 404, 0], [1.2, 76, 220 + 132, 1], [1.35, 76, 220 + 132, 0], [2.4, 210, 330, 0], [3.0, 150, 220 + 46, 1], [3.15, 150, 220 + 46, 0], [4.0, 262, 404, 0], [P, 262, 404, 0]], [1.2, 3.0]);
+  return boucle(el, P, function(t){
+    var fin = 1 - entre(t, 6.2, 6.7);
+    a0.forEach(function(c){ vis(c, entre(t, 1.25, 1.45) * fin); c.setAttribute('r', f1(30 + 10 * bosse(t, 1.25, .4))); });
+    a1.forEach(function(c){ vis(c, entre(t, 3.05, 3.25) * fin); c.setAttribute('r', f1(30 + 10 * bosse(t, 3.05, .4))); });
+    main(t);
+  }, 3.3);
+});
+
+/* LE DOUBLE — deux cartes l'une sous l'autre : un seul dessin est sur les deux.
+   La main le touche sur sa carte : ta carte monte sur la pile, une autre arrive. */
+D('double', function(el){
+  var P = 7.4, Y1 = 112, Y2 = 312, POS = [[0, -50], [48, -14], [30, 42], [-30, 44], [-48, -12]];
+  var CARTES = [['🍎', '🌙', '🔑', '🔥', '🍄'], ['⭐', '🔑', '🍃', '💧', '🐸'], ['🌻', '🦉', '💧', '🎃', '🪶']];
+  var COMMUN = [[2, 1], [3, 2]];
+  var carte = function(i, cls){ return '<g class="' + cls + '"><circle r="96" fill="' + (i === 0 ? '#f6ecd2' : '#fbf8ff') + '" stroke="' + K + '" stroke-width="5"/><circle r="86" fill="none" stroke="' + (i === 0 ? '#d29a5e' : '#b48cff') + '" stroke-width="3"/>' +
+    CARTES[i].map(function(ic, k){ return '<g class="s' + k + '" transform="translate(' + POS[k][0] + ',' + POS[k][1] + ')"><circle r="24" fill="#ffe3a3" opacity="0"/>' + emo(0, 2, 34, ic) + '</g>'; }).join('') + '</g>'; };
+  var svg = svgDemo(el, '<rect width="300" height="420" fill="#4a3424"/><rect x="10" y="10" width="280" height="400" rx="24" fill="#5a3a22" opacity=".6"/>' + carte(0, 'c0') + carte(1, 'c1') + carte(2, 'c2'));
+  var c = [$(svg, '.c0'), $(svg, '.c1'), $(svg, '.c2')];
+  function halo(g, k, v){ var n = g.querySelector('.s' + k + ' circle'); vis(n, v); }
+  var p1 = [150 + POS[1][0], Y2 + POS[1][1] + 4], p2 = [150 + POS[2][0], Y2 + POS[2][1] + 4];
+  var main = mainAuto($(svg, '.rg-main'), [[0, 262, 404, 0], [.7, 262, 404, 0], [1.25, p1[0], p1[1], 1], [1.4, p1[0], p1[1], 0], [2.1, 262, 404, 0], [3.8, 262, 404, 0], [4.35, p2[0], p2[1], 1], [4.5, p2[0], p2[1], 0], [5.2, 262, 404, 0], [P, 262, 404, 0]], [1.25, 4.35]);
+  return boucle(el, P, function(t){
+    var m1 = entre(t, 2.0, 2.6), m2 = entre(t, 2.6, 3.1), m3 = entre(t, 5.1, 5.7), fin = entre(t, 6.7, 7.3);
+    pose(c[0], 150, Y1); vis(c[0], 1);
+    pose(c[1], 150, mix(Y2, Y1, m1)); vis(c[1], 1 - fin);
+    pose(c[2], 150, mix(mix(560, Y2, m2), Y1, m3)); vis(c[2], 1 - fin);
+    var h1 = t > 1.3 && t < 2.6 ? .8 : 0, h2 = t > 4.4 && t < 5.7 ? .8 : 0;
+    halo(c[0], COMMUN[0][0], h1); halo(c[1], COMMUN[0][1], h1);
+    halo(c[1], COMMUN[1][0], h2); halo(c[2], COMMUN[1][1], h2);
+    main(t);
+  }, 1.5);
+});
+
+/* LE GRAND MÉNAGE DU LABO — la main écrase le cafard (bocal rouge ☠), puis
+   glisse la coccinelle (bocal vert ✔) dans son bocal. */
+D('insectes', function(el){
+  var P = 7;
+  var CAFARD = '<g><path d="M-8,-4 l-9,-6 M-8,4 l-10,5 M0,-6 l-2,-11 M0,6 l-2,11 M8,-5 l8,-8 M8,5 l8,8" stroke="' + K + '" stroke-width="2.4" stroke-linecap="round" class="pattes"/><ellipse rx="16" ry="10" fill="#6b4226" stroke="' + K + '" stroke-width="2.5"/><path d="M-12,0 H12" stroke="#3b2414" stroke-width="2"/><ellipse cx="17" cy="0" rx="6" ry="6" fill="#3b2414" stroke="' + K + '" stroke-width="2"/><path d="M21,-3 q12,-10 18,-6 M21,3 q12,10 18,6" stroke="' + K + '" stroke-width="1.8" fill="none"/></g>';
+  var COCCI = '<g><path d="M-6,-6 l-6,-6 M-6,6 l-6,6 M0,-9 l0,-7 M0,9 l0,7 M6,-6 l6,-6 M6,6 l6,6" stroke="' + K + '" stroke-width="2.2" stroke-linecap="round" class="pattes"/><circle r="13" fill="#e5484d" stroke="' + K + '" stroke-width="2.5"/><path d="M-13,0 H13" stroke="' + K + '" stroke-width="2"/><circle cx="-5" cy="-6" r="2.6" fill="' + K + '"/><circle cx="6" cy="-5" r="2.6" fill="' + K + '"/><circle cx="-4" cy="6" r="2.6" fill="' + K + '"/><circle cx="6" cy="6" r="2.4" fill="' + K + '"/><circle cx="15" cy="0" r="6" fill="' + K + '"/></g>';
+  var bocal = function(x, bon){ var c = bon ? '#2f9e44' : '#c0392b'; return '<g transform="translate(' + x + ',356)"><rect x="-46" y="-34" width="92" height="74" rx="14" fill="#cfe8ff" fill-opacity=".16" stroke="' + c + '" stroke-width="4"/><rect x="-40" y="-44" width="80" height="12" rx="4" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
+    '<g transform="translate(0,6) scale(.8)" opacity=".85">' + (bon ? COCCI : CAFARD) + '</g><rect x="-34" y="24" width="68" height="14" rx="4" fill="' + c + '"/><text x="0" y="32" font-size="12" fill="#fff" font-weight="700" text-anchor="middle" dominant-baseline="central">' + (bon ? '✔' : '☠') + '</text></g>'; };
+  var svg = svgDemo(el,
+    '<rect width="300" height="420" fill="#3e2f5f"/><path d="M110,20 C110,-10 190,-10 190,20 L190,80 L110,80 Z" fill="#1c2447" stroke="#5a4a8a" stroke-width="4"/><circle cx="168" cy="34" r="10" fill="#fff4d0" opacity=".9"/>' +
+    '<rect y="104" width="300" height="190" fill="#8a5634"/><path d="M0,104 H300" stroke="#62381d" stroke-width="5"/><g stroke="#7a4a2a" stroke-width="2" opacity=".6"><path d="M0,164 H300 M0,224 H300 M100,104 V164 M200,164 V224 M60,224 V294 M230,224 V294"/></g>' +
+    '<rect y="294" width="300" height="126" fill="#2b2148"/>' +
+    '<g class="rg-jus" opacity="0"><path d="M0,-26 C14,-30 20,-14 30,-12 C40,-8 34,8 24,10 C30,24 12,30 4,22 C-8,32 -22,22 -18,12 C-34,10 -32,-8 -20,-10 C-22,-24 -10,-30 0,-26 Z" fill="#9be15d" stroke="#5aa02c" stroke-width="3"/><circle cx="38" cy="-20" r="5" fill="#9be15d"/><circle cx="-34" cy="22" r="4" fill="#9be15d"/></g>' +
+    '<g class="rg-caf">' + CAFARD + '</g><g class="rg-coc">' + COCCI + '</g>' +
+    bocal(78, false) + bocal(222, true) + '<g class="rg-et" opacity="0">' + emo(250, 304, 26, '⭐') + '</g>');
+  var caf = $(svg, '.rg-caf'), coc = $(svg, '.rg-coc'), jus = $(svg, '.rg-jus'), et = $(svg, '.rg-et'), pattes = $$(svg, '.pattes');
+  var main = mainAuto($(svg, '.rg-main'), [[0, 262, 404, 0], [.6, 262, 404, 0], [1.45, 130, 186, 1], [1.6, 130, 186, 0], [2.6, 220, 260, 0], [3.3, 212, 232, 1], [4.4, 222, 352, 1], [4.5, 222, 352, 0], [5.4, 262, 404, 0], [P, 262, 404, 0]], [1.45, 3.3]);
+  return boucle(el, P, function(t){
+    var w = Math.sin(t * 22) * 6;
+    pattes.forEach(function(p){ p.setAttribute('transform', 'rotate(' + f1(w) + ')'); });
+    var cx = mix(40, 130, Math.min(1, t / 1.5)), cy = 180 + 6 * Math.sin(t * 4);
+    pose(caf, cx, cy, 1.25, 8); vis(caf, t < 1.5 ? entre(t, 0, .2) : 0);
+    vis(jus, t > 1.5 && t < 6.4 ? entre(t, 1.5, 1.6) * (1 - entre(t, 6, 6.4)) : 0);
+    pose(jus, 132, 184, .6 + .4 * entre(t, 1.5, 1.65));
+    var kx, ky, ks = 1.25;
+    if(t < 3.3){ kx = mix(262, 212, Math.min(1, t / 3.3)); ky = 232 + 8 * Math.sin(t * 3); }
+    else if(t < 4.45){ var u = entre(t, 3.35, 4.4); kx = mix(212, 222, u); ky = mix(228, 348, u); ks = mix(1.25, .9, u); }
+    else { kx = 222; ky = 348; ks = .9; }
+    pose(coc, kx, ky, ks, t < 3.3 ? 190 : 270); vis(coc, t > 4.45 ? 1 - entre(t, 4.45, 4.8) : entre(t, 0, .3));
+    vis(et, bosse(t, 4.5, 1.2));
+    main(t);
+  }, 1.5);
+});
+
+/* ==========================================================
+   BARDE
+   ========================================================== */
+/* REPÉRER LE MENSONGE — le villageois parle ; sur la phrase 2, son visage
+   trahit le mensonge (yeux de côté, sourire de travers) : la main touche
+   « 🤥 Mensonge ! », la phrase 2 est marquée ; à la fin, « ✔ Valider ». */
+D('mensonge', function(el, prm){
+  var P = 9.6, qui = (prm && prm.pnj && window.Persos && Persos.PNJ && Persos.PNJ[prm.pnj]) ? prm.pnj : 'fortune';
+  var racine = htmlDemo(el, 'rg-mens',
+    '<div class="rg-puces"><i class="p0">1</i><i class="p1">2</i><i class="p2">3</i></div>' +
+    '<div class="rg-mens-visage">' + villageois(qui, {expressif:true, anime:true}, (prm && prm.ic) || '🤠') + '</div>' +
+    '<div class="rg-mens-bulle"><span class="rg-mens-t"></span><span class="rg-lire-faux">🔊</span></div>' +
+    '<div class="rg-mens-b">🤥 Mensonge !</div><div class="rg-mens-v">✔ Valider</div>');
+  var svgV = $(racine, '.rg-mens-visage svg'), txt = $(racine, '.rg-mens-t'), puces = $$(racine, '.rg-puces i'), bMens = $(racine, '.rg-mens-b'), bVal = $(racine, '.rg-mens-v');
+  var PH = ['« Je dors à la taverne. »', '« Cette bague est en or ! »', '« Mon chapeau vient de la ville. »'];
+  var EX = {vrai:{sourire:1, bouche:'fermee', vitesse:.22}, parle:{bouche:'parle'}, ment:{regard:'cote-d', ampleur:.85, sourire:'coin', bouche:'fermee', vitesse:.24}, repos:{}};
+  var dernier = '', ph = -1;
+  function expr(k){ if(k === dernier) return; dernier = k; try{ if(svgV && window.Persos && Persos.expression) Persos.expression(svgV, EX[k]); }catch(e){} }
+  var main = mainAuto($(racine, '.rg-main'), [[0, 266, 404, 0], [3.6, 266, 404, 0], [4.25, 150, 362, 1], [4.4, 150, 362, 0], [5.2, 266, 404, 0], [7.0, 266, 404, 0], [7.5, 150, 362, 1], [7.65, 150, 362, 0], [8.4, 266, 404, 0], [P, 266, 404, 0]], [4.25, 7.5]);
+  return boucle(el, P, function(t){
+    var i = t < 2.6 ? 0 : (t < 5.6 ? 1 : 2);
+    if(i !== ph){ ph = i; txt.textContent = PH[i]; }
+    var lt = t - [0, 2.6, 5.6][i];
+    if(i === 1 && t > 3.4 && t < 4.7) expr('ment');
+    else if(lt < .9) expr('parle');
+    else expr(i === 1 ? 'repos' : 'vrai');
+    puces.forEach(function(p, k){ p.className = 'p' + k + (k === i && t < 6.9 ? ' on' : '') + (k === 1 && t > 4.3 ? ' ment' : '') + (t > 7.55 && t < 9.2 ? ' fini' : ''); });
+    bMens.classList.toggle('appuye', t > 4.25 && t < 4.5);
+    var val = t > 6.9;
+    bMens.style.display = val ? 'none' : ''; bVal.style.display = val ? '' : 'none';
+    bVal.classList.toggle('appuye', t > 7.5 && t < 7.75);
+    racine.classList.toggle('reussi', t > 7.7 && t < 9.2);
+    main(t);
+  }, 4.3);
+});
+
+/* RAGOTS — un villageois raconte ; la main touche 🔊 pour écouter, puis
+   👍 J'y crois ; un autre raconte : 👎 C'est faux. Tout va dans le carnet 📒. */
+D('ragots', function(el){
+  var P = 8.4;
+  var HIST = [{qui:'margot', ic:'👵', t:'« Le pont grince la veille d\'un jour de pluie… »'}, {qui:'gaspard', ic:'🧑‍🍳', t:'« Le chat du meunier sait compter jusqu\'à dix ! »'}];
+  var racine = htmlDemo(el, 'rg-rag',
+    '<div class="rg-rag-qui q0">' + villageois(HIST[0].qui, {}, HIST[0].ic) + '</div><div class="rg-rag-qui q1">' + villageois(HIST[1].qui, {}, HIST[1].ic) + '</div>' +
+    '<div class="rg-rag-bulle"><span class="rg-rag-t"></span><span class="rg-rag-lire">🔊</span></div>' +
+    '<span class="rg-rag-note">📒 noté !</span>' +
+    '<span class="rg-rag-b oui">👍 J\'y crois</span><span class="rg-rag-b non">👎 C\'est faux</span>');
+  var q = [$(racine, '.q0'), $(racine, '.q1')], bulle = $(racine, '.rg-rag-bulle'), txt = $(racine, '.rg-rag-t'), oui = $(racine, '.oui'), non = $(racine, '.non'), note = $(racine, '.rg-rag-note'), lire = $(racine, '.rg-rag-lire');
+  var main = mainAuto($(racine, '.rg-main'), [[0, 266, 404, 0], [.6, 266, 404, 0], [1.1, 257, 212, 0], [1.2, 257, 212, 1], [1.35, 257, 212, 0], [2.7, 257, 216, 0], [3.2, 80, 350, 0], [3.3, 80, 350, 1], [3.5, 80, 350, 0], [4.4, 150, 404, 0], [5.4, 150, 404, 0], [5.9, 222, 350, 0], [6.0, 222, 350, 1], [6.2, 222, 350, 0], [7.2, 266, 404, 0], [P, 266, 404, 0]], [1.2, 3.3, 6.0]);
+  var dernier = -1;
+  return boucle(el, P, function(t){
+    var k = t < 4.7 ? 0 : 1;
+    if(k !== dernier){ dernier = k; txt.textContent = HIST[k].t; }
+    var v = k === 0 ? entre(t, 0, .35) * (1 - entre(t, 4.4, 4.7)) : entre(t, 4.8, 5.15) * (1 - entre(t, 7.6, 8));
+    bulle.style.opacity = v.toFixed(2); bulle.style.transform = 'scale(' + (.9 + .1 * v).toFixed(3) + ')';
+    q[0].style.opacity = k === 0 ? v.toFixed(2) : 0; q[1].style.opacity = k === 1 ? v.toFixed(2) : 0;
+    var ec = t > 1.25 && t < 2.7;
+    lire.style.transform = ec ? 'scale(' + (1.12 + .08 * Math.sin(t * 12)).toFixed(3) + ')' : '';
+    lire.style.boxShadow = ec ? '0 0 0 5px rgba(245,185,69,.6)' : '';
+    oui.classList.toggle('appuye', t > 3.3 && t < 3.55);
+    non.classList.toggle('appuye', t > 6.0 && t < 6.25);
+    var n = Math.max(entre(t, 3.5, 3.75) * (1 - entre(t, 4.3, 4.5)), entre(t, 6.2, 6.45) * (1 - entre(t, 7, 7.2)));
+    note.style.opacity = n.toFixed(2); note.style.transform = 'translate(-50%,' + f1(-10 * n) + 'px) scale(' + (.8 + .2 * n).toFixed(2) + ')';
+    main(t);
+  }, 3.35);
+});
+
+/* LES MOTS PERDUS — la main touche le trou, puis le bon mot : il s'y range.
+   Puis « ✔ Valider » : c'est juste. */
+D('mots', function(el){
+  var P = 7;
+  var racine = htmlDemo(el, 'rg-mots',
+    '<div class="rg-mots-carte"><p><span class="qui">🧔</span> Et mes <b class="trou">&nbsp;1&nbsp;</b> ?</p><p><span class="qui">👩</span> Vous avez tout payé !</p></div>' +
+    '<div class="rg-mots-liste"><span class="m0">girafe</span><span class="m1">dettes</span><span class="m2">clé</span><span class="m3">lavoir</span></div>' +
+    '<span class="rg-mots-vol">dettes</span><div class="rg-mots-v">✔ Valider</div>');
+  var trou = $(racine, '.trou'), m1 = $(racine, '.m1'), vol = $(racine, '.rg-mots-vol'), val = $(racine, '.rg-mots-v');
+  var main = mainAuto($(racine, '.rg-main'), [[0, 266, 404, 0], [.5, 266, 404, 0], [1.0, 168, 84, 1], [1.15, 168, 84, 0], [1.6, 220, 200, 0], [2.0, 222, 252, 1], [2.15, 222, 252, 0], [3.2, 272, 320, 0], [3.6, 150, 378, 1], [3.75, 150, 378, 0], [4.6, 266, 404, 0], [P, 266, 404, 0]], [1.0, 2.0, 3.6]);
+  return boucle(el, P, function(t){
+    var plein = t > 2.6 && t < 6.4;
+    trou.textContent = plein ? 'dettes' : ' 1 ';
+    trou.className = 'trou' + (t > 1.05 && t < 2.6 ? ' choisi' : '') + (plein ? ' plein' : '') + (t > 3.8 && t < 6.4 ? ' juste' : '');
+    m1.className = 'm1' + (t > 2.1 && t < 6.4 ? ' pris' : '');
+    var u = (t - 2.1) / .5;
+    if(u > 0 && u < 1){ vol.style.opacity = 1; vol.style.left = f1(mix(222, 168, u)) + 'px'; vol.style.top = f1(mix(252, 84, u)) + 'px'; } else vol.style.opacity = 0;
+    val.classList.toggle('appuye', t > 3.6 && t < 3.85);
+    racine.classList.toggle('reussi', t > 3.85 && t < 6.4);
+    main(t);
+  }, 3.9);
+});
+
+/* LES DÉPOSITIONS — la main prend le feutre vert et surligne les deux témoins
+   qui disent pareil, le rouge sur celui qui ne colle pas, puis l'accuse. */
+D('depositions', function(el, prm){
+  var P = 9;
+  /* le choix « 🎧 À l'oral / 📖 À lire » change le jeu : on le garde. C'est la démo du jeu qui le fabrique ;
+     elle tourne dans une boîte cachée, et mj-core.js sort le choix du cadre de la démo. */
+  var cache = null, demoJeu = null;
+  try{
+    if(MJ.TYPES.depositions && MJ.TYPES.depositions.demo && el.parentNode){
+      cache = document.createElement('div'); cache.hidden = true; cache.className = 'rg-cache';
+      el.parentNode.insertBefore(cache, el.nextSibling);
+      demoJeu = MJ.TYPES.depositions.demo(cache, prm || {});
+    }
+  }catch(e){}
+  var T = [{ic:'🧔', nom:'Victor', t:'Il pleuvait très fort.'}, {ic:'👩‍🦰', nom:'Mélusine', t:'Dehors, il tombait des cordes.'}, {ic:'🤠', nom:'Fortuné', t:'Il faisait un temps magnifique !'}];
+  var racine = htmlDemo(el, 'rg-dep',
+    T.map(function(d, i){ return '<div class="rg-dep-c c' + i + '"><span class="ic">' + d.ic + '</span><b>' + esc(d.nom) + '</b><p><span class="sur">' + esc(d.t) + '</span></p><span class="tampon">🤥</span></div>'; }).join('') +
+    '<div class="rg-dep-stylos"><span class="s v">🖍️ Pareil</span><span class="s r">🖍️ Bizarre</span><span class="s j">🖍️ Hmm ?</span></div>' +
+    '<div class="rg-dep-acc">🤥 Accuser</div>');
+  var sur = $$(racine, '.sur'), cartes = $$(racine, '.rg-dep-c'), sv = $(racine, '.s.v'), sr = $(racine, '.s.r'), acc = $(racine, '.rg-dep-acc');
+  var Y = [44, 132, 220];
+  var anim, main = mainAuto($(racine, '.rg-main'), [[0, 266, 404, 0], [.4, 266, 404, 0], [.8, 54, 312, 1], [.95, 54, 312, 0], [1.2, 70, Y[0] + 20, 1], [1.8, 250, Y[0] + 20, 0], [2.1, 70, Y[1] + 20, 1], [2.7, 250, Y[1] + 20, 0], [3.2, 150, 312, 1], [3.35, 150, 312, 0], [3.7, 70, Y[2] + 20, 1], [4.3, 250, Y[2] + 20, 0], [5.0, 230, 240, 0], [5.3, 230, 240, 1], [5.45, 230, 240, 0], [6.0, 150, 370, 1], [6.15, 150, 370, 0], [7.0, 266, 404, 0], [P, 266, 404, 0]], [.8, 3.2, 5.3, 6.0]);
+  anim = boucle(el, P, function(t){
+    var fin = t > 8.4;
+    [[1.2, 1.8], [2.1, 2.7], [3.7, 4.3]].forEach(function(s, i){ var u = fin ? 0 : entre(t, s[0], s[1]); sur[i].style.backgroundSize = Math.round(u * 100) + '% 100%'; });
+    sv.classList.toggle('on', t > .85 && t < 3.25); sr.classList.toggle('on', t > 3.25 && t < 5);
+    cartes[2].classList.toggle('choisie', t > 5.35 && !fin);
+    cartes[2].classList.toggle('accusee', t > 6.1 && !fin);
+    acc.classList.toggle('appuye', t > 6.0 && t < 6.25);
+    main(t);
+  }, 6.3);
+  return {arreter:function(){ anim.arreter(); try{ if(demoJeu && demoJeu.arreter) demoJeu.arreter(); }catch(e){} }};
+});
+
+/* ==========================================================
+   SAGE
+   ========================================================== */
+/* L'ALPHABET SECRET — la main touche une case du message codé, puis la lettre
+   (la clé dit quel signe va avec quelle lettre) ; à la fin, « ✔ Valider ». */
+D('alphabet', function(el){
+  var P = 8.6, SIG = ['△', '◯', '☐', '✕'], LET = ['C', 'L', 'E', 'F'], CLAV = ['C', 'E', 'F', 'L', 'R', 'S'];
+  var racine = htmlDemo(el, 'rg-alpha',
+    '<div class="rg-alpha-parch">' + SIG.map(function(s, i){ return '<div class="case k' + i + '"><b>' + s + '</b><i></i></div>'; }).join('') + '</div>' +
+    '<div class="rg-alpha-cle">🔑 ' + SIG.map(function(s, i){ return '<span>' + s + ' = ' + LET[i] + '</span>'; }).join('') + '</div>' +
+    '<div class="rg-alpha-clav">' + CLAV.map(function(l){ return '<span class="l' + l + '">' + l + '</span>'; }).join('') + '</div>' +
+    '<div class="rg-alpha-v">✔ Valider</div>');
+  var cases = $$(racine, '.case'), val = $(racine, '.rg-alpha-v');
+  /* positions (px) des cases et des touches, en 300 × 420 */
+  var XC = [57, 119, 181, 243], YC = 88, XK = {C:60, E:150, F:240, L:60, R:150, S:240}, YK = {C:282, E:282, F:282, L:334, R:334, S:334};
+  var cles = [[0, 266, 404, 0], [.4, 266, 404, 0]], tapes = [];
+  LET.forEach(function(l, i){ var t0 = .8 + i * 1.3; cles.push([t0, XC[i], YC, 1], [t0 + .15, XC[i], YC, 0], [t0 + .6, XK[l], YK[l], 1], [t0 + .75, XK[l], YK[l], 0]); tapes.push(t0, t0 + .6); });
+  cles.push([6.4, 150, 388, 1], [6.55, 150, 388, 0], [7.3, 266, 404, 0], [P, 266, 404, 0]); tapes.push(6.4);
+  var main = mainAuto($(racine, '.rg-main'), cles, tapes);
+  var touches = {}; CLAV.forEach(function(l){ touches[l] = $(racine, '.l' + l); });
+  return boucle(el, P, function(t){
+    var fin = t > 8.2;
+    cases.forEach(function(c, i){ var t0 = .8 + i * 1.3; c.classList.toggle('choisie', t > t0 && t < t0 + .65 && !fin); c.lastChild.textContent = (t > t0 + .65 && !fin) ? LET[i] : ''; });
+    CLAV.forEach(function(l){ var i = LET.indexOf(l), t0 = .8 + i * 1.3 + .6; touches[l].classList.toggle('appuye', i >= 0 && t > t0 && t < t0 + .25); });
+    val.classList.toggle('appuye', t > 6.4 && t < 6.65);
+    racine.classList.toggle('reussi', t > 6.6 && !fin);
+    main(t);
+  }, 3.35);
+});
+
+/* SUPERPOSER LES PLANS — la main fait glisser le calque rouge, le tourne
+   avec deux doigts : les dessins tombent pile, le secret apparaît. */
+D('plans', function(el){
+  var P = 7;
+  var MARQ = [[-62, -54], [58, -30], [-20, 60]];
+  var marques = function(c, w){ return MARQ.map(function(m){ return '<circle cx="' + m[0] + '" cy="' + m[1] + '" r="13" fill="none" stroke="' + c + '" stroke-width="' + w + '"/>'; }).join(''); };
+  var svg = svgDemo(el,
+    '<rect width="300" height="420" fill="#1c2447"/>' +
+    '<g transform="translate(150,210)"><rect x="-120" y="-120" width="240" height="240" rx="8" fill="#f3e7cb" stroke="#6b5434" stroke-width="3"/>' +
+      '<path d="M-120,10 C-60,0 -20,30 40,10 S100,-20 120,-10 M-30,-120 C-20,-60 -40,-10 -20,120" stroke="#c9b48a" stroke-width="7" fill="none"/>' +
+      '<rect x="-90" y="20" width="30" height="24" fill="none" stroke="#6b5434" stroke-width="2.5"/><rect x="50" y="40" width="34" height="26" fill="none" stroke="#6b5434" stroke-width="2.5"/>' +
+      marques('#35281b', 3.5) + '<g class="rg-secret" opacity="0"><path d="M32,32 L56,56 M56,32 L32,56" stroke="#e5484d" stroke-width="7" stroke-linecap="round"/><circle cx="44" cy="44" r="22" fill="none" stroke="#f5b945" stroke-width="3"/></g></g>' +
+    '<g class="rg-calque"><rect x="-120" y="-120" width="240" height="240" rx="8" fill="#e5484d" fill-opacity=".12" stroke="#e5484d" stroke-width="3" stroke-dasharray="8 6"/>' + marques('#e5484d', 4) + '</g>' +
+    '<g class="rg-brille" opacity="0">' + emo(250, 84, 28, '✨') + emo(54, 316, 24, '✨') + '</g>' +
+    '<g class="rg-doigt2" opacity="0"><circle r="16" fill="none" stroke="#8ff3ff" stroke-width="3.5"/><circle r="6" fill="#8ff3ff"/></g>');
+  var calque = $(svg, '.rg-calque'), secret = $(svg, '.rg-secret'), brille = $(svg, '.rg-brille'), d2 = $(svg, '.rg-doigt2'), gMain = $(svg, '.rg-main');
+  var X0 = 196, Y0 = 246, R0 = 26;
+  return boucle(el, P, function(t){
+    var ut = entre(t, 1.1, 2.2), ur = entre(t, 2.7, 3.7), fin = entre(t, 6.3, 6.9);
+    var x = mix(mix(X0, 150, ut), X0, fin), y = mix(mix(Y0, 210, ut), Y0, fin), r = mix(mix(R0, 0, ur), R0, fin);
+    pose(calque, x, y, 1, r);
+    var ok = t > 3.7 && t < 6.3;
+    calque.firstChild.setAttribute('stroke', ok ? '#f5b945' : '#e5484d');
+    vis(secret, ok ? entre(t, 3.8, 4.2) : 0); vis(brille, ok ? .6 + .4 * Math.sin(t * 7) : 0);
+    /* la main : un doigt qui glisse, puis deux doigts qui tournent */
+    var m, p = false, a1 = (mix(R0, 0, ur) + 40) * Math.PI / 180, rr = 70;
+    if(t < .7) m = [266, 404];
+    else if(t < 1.0) m = [mix(266, X0 + 30, entre(t, .7, 1)), mix(404, Y0 + 40, entre(t, .7, 1))];
+    else if(t < 2.25){ m = [x + 30, y + 40]; p = t > 1.0; }
+    else if(t < 2.65) m = [mix(180, 150 + rr * Math.cos(a1), entre(t, 2.25, 2.65)), mix(250, 210 + rr * Math.sin(a1), entre(t, 2.25, 2.65))];
+    else if(t < 3.75){ m = [150 + rr * Math.cos(a1), 210 + rr * Math.sin(a1)]; p = true; }
+    else { var u = entre(t, 3.75, 4.6); m = [mix(150 + rr * Math.cos(a1), 266, u), mix(210 + rr * Math.sin(a1), 404, u)]; }
+    poserMain(gMain, m[0], m[1], p, t, []);
+    var deux = t > 2.65 && t < 3.75;
+    vis(d2, deux ? 1 : 0); pose(d2, 150 - rr * Math.cos(a1), 210 - rr * Math.sin(a1));
+  }, 3.2);
+});
+
+/* LA GRILLE DE DÉDUCTION — on lit un indice, la main met une croix ✗ ;
+   un autre indice : deux touches pour une coche ✓ ; puis « ✔ Valider ». */
+D('grille', function(el){
+  var P = 8.6;
+  var racine = htmlDemo(el, 'rg-gr',
+    '<p class="ind i0"><i>1</i> Tim n\'était pas au moulin.</p><p class="ind i1"><i>2</i> Odette était au moulin.</p>' +
+    '<div class="rg-gr-g"><b></b><b>🌾</b><b>🪣</b><b>🧒</b><span class="c0"></span><span class="c1"></span><b>👵</b><span class="c2"></span><span class="c3"></span></div>' +
+    '<div class="rg-gr-v">✔ Valider</div>');
+  var ind = $$(racine, '.ind'), c = [0, 1, 2, 3].map(function(i){ return $(racine, '.c' + i); }), val = $(racine, '.rg-gr-v');
+  /* cases : c0 Tim×moulin, c1 Tim×puits, c2 Odette×moulin, c3 Odette×puits */
+  var XC = [140, 228], YC = [193, 267];
+  var main = mainAuto($(racine, '.rg-main'), [[0, 266, 404, 0], [.9, 266, 404, 0], [1.3, XC[0], YC[0], 1], [1.45, XC[0], YC[0], 0], [2.4, 200, 230, 0], [2.9, XC[0], YC[1], 1], [3.05, XC[0], YC[1], 0], [3.4, XC[0], YC[1], 1], [3.55, XC[0], YC[1], 0], [4.6, 200, 320, 0], [5.4, 150, 363, 1], [5.55, 150, 363, 0], [6.4, 266, 404, 0], [P, 266, 404, 0]], [1.3, 2.9, 3.4, 5.4]);
+  function marque(n, s){ n.textContent = s === 'x' ? '✗' : (s === 'v' ? '✓' : ''); n.className = n.className.split(' ')[0] + (s ? ' ' + s : ''); }
+  return boucle(el, P, function(t){
+    var fin = t > 8.1;
+    ind[0].className = 'ind i0' + (t > .2 && t < 1.7 && !fin ? ' lu' : '') + (t > 1.7 && !fin ? ' fait' : '');
+    ind[1].className = 'ind i1' + (t > 2.0 && t < 3.7 && !fin ? ' lu' : '') + (t > 3.7 && !fin ? ' fait' : '');
+    marque(c[0], fin ? '' : (t > 1.35 ? 'x' : ''));
+    marque(c[2], fin ? '' : (t > 3.45 ? 'v' : (t > 2.95 ? 'x' : '')));
+    marque(c[1], fin ? '' : (t > 4.0 ? 'v auto' : ''));
+    marque(c[3], fin ? '' : (t > 4.0 ? 'x auto' : ''));
+    val.classList.toggle('appuye', t > 5.4 && t < 5.65);
+    racine.classList.toggle('reussi', t > 5.6 && !fin);
+    main(t);
+  }, 3.5);
+});
+
+/* ASSEMBLER LES RUNES — en haut, le modèle ; la main touche une pièce (elle
+   tourne d'un quart de tour), puis en glisse une sur une autre (elles
+   s'échangent) : l'image est refaite. Les coups 🕯️ diminuent. */
+D('runes', function(el){
+  var P = 7.6, id = uid('rgr');
+  var IMG = '<rect width="100" height="100" fill="#454b78"/><rect x="4" y="4" width="92" height="92" rx="6" fill="none" stroke="#c9a75a" stroke-width="3"/>' +
+    '<circle cx="50" cy="50" r="26" fill="none" stroke="#bff9ff" stroke-width="6"/><path d="M50 12V88M12 50H88" stroke="#bff9ff" stroke-width="5" stroke-linecap="round"/>' +
+    '<circle cx="14" cy="14" r="5" fill="#e8c46a"/><path d="M78 30L90 18" stroke="#e8c46a" stroke-width="5" stroke-linecap="round"/><path d="M14 86 L28 72" stroke="#e8c46a" stroke-width="5" stroke-linecap="round"/>';
+  var S = 112, X0 = 38, Y0 = 150;
+  function piece(h){ var qx = (h % 2) * 50, qy = Math.floor(h / 2) * 50; return '<g class="pc pc' + h + '"><svg x="' + (-S / 2) + '" y="' + (-S / 2) + '" width="' + S + '" height="' + S + '" viewBox="' + qx + ' ' + qy + ' 50 50"><use href="#' + id + '"/></svg><rect x="' + (-S / 2) + '" y="' + (-S / 2) + '" width="' + S + '" height="' + S + '" fill="none" stroke="' + K + '" stroke-width="3"/></g>'; }
+  var svg = svgDemo(el,
+    '<defs><g id="' + id + '">' + IMG + '</g></defs><rect width="300" height="420" fill="#1c2447"/>' +
+    '<g transform="translate(24,22) scale(.9)"><use href="#' + id + '"/><rect width="100" height="100" fill="none" stroke="#c9a75a" stroke-width="3"/></g>' +
+    '<g transform="translate(196,72)"><rect x="-58" y="-30" width="116" height="60" rx="14" fill="#14112a" stroke="#3b4679" stroke-width="2"/>' + emo(-24, 0, 28, '🕯️') + '<text class="rg-coups" x="22" y="2" font-size="30" font-weight="800" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">3</text></g>' +
+    '<rect x="' + (X0 - 8) + '" y="' + (Y0 - 8) + '" width="' + (2 * S + 16) + '" height="' + (2 * S + 16) + '" rx="12" fill="#14112a" stroke="#3b4679" stroke-width="2" class="rg-plateau"/>' +
+    [0, 1, 2, 3].map(piece).join('') + '<g class="rg-brille" opacity="0">' + emo(150, 404, 26, '✨') + emo(40, 400, 20, '✨') + emo(260, 400, 20, '✨') + '</g>');
+  var pc = [0, 1, 2, 3].map(function(h){ return $(svg, '.pc' + h); }), coups = $(svg, '.rg-coups'), plateau = $(svg, '.rg-plateau'), brille = $(svg, '.rg-brille');
+  function cx(slot){ return X0 + S / 2 + (slot % 2) * S; } function cy(slot){ return Y0 + S / 2 + Math.floor(slot / 2) * S; }
+  /* départ : pièce 0 tournée d'un quart ; pièces 1 et 3 échangées */
+  var main = mainAuto($(svg, '.rg-main'), [[0, 266, 404, 0], [.6, 266, 404, 0], [1.0, cx(0), cy(0) + 10, 1], [1.15, cx(0), cy(0) + 10, 0], [1.9, cx(1), cy(1) + 10, 0], [2.2, cx(1), cy(1) + 10, 1], [3.0, cx(3), cy(3) + 10, 1], [3.1, cx(3), cy(3) + 10, 0], [4.0, 266, 404, 0], [P, 266, 404, 0]], [1.0, 2.2]);
+  return boucle(el, P, function(t){
+    var fin = t > 7.0, rot = fin ? 90 : 90 * (1 - entre(t, 1.05, 1.4));
+    pose(pc[0], cx(0), cy(0), 1, rot);
+    pose(pc[2], cx(2), cy(2));
+    var u = fin ? 0 : entre(t, 2.25, 3.0), sw = fin ? 0 : entre(t, 3.0, 3.35);
+    /* la pièce 1 (posée en bas à droite) suit le doigt jusqu'en haut à droite ; la 3 descend à sa place */
+    pose(pc[3], mix(cx(1), cx(3), Math.max(u, sw)), mix(cy(1), cy(3), Math.max(u, sw)), 1 + .08 * (u > 0 && u < 1 ? 1 : 0));
+    pose(pc[1], mix(cx(3), cx(1), sw), mix(cy(3), cy(1), sw));
+    coups.textContent = fin ? '3' : (t > 3.0 ? '1' : (t > 1.1 ? '2' : '3'));
+    var ok = t > 3.4 && !fin;
+    plateau.setAttribute('stroke', ok ? '#f5b945' : '#3b4679'); plateau.setAttribute('stroke-width', ok ? 5 : 2);
+    vis(brille, ok ? .6 + .4 * Math.sin(t * 7) : 0);
+    main(t);
+  }, 1.1);
+});
 })();
 
 /* ===== revision.js ===== */
@@ -21046,8 +21320,35 @@ M.potionsPour = function(type){
 };
 
 /* ---------- Codes à trois symboles (déterministes) ---------- */
+/* Codes de passage (fin d'enquête, enquête suivante, défaite) : on peut les taper en retard,
+   sur une tablette qui est déjà dans l'enquête d'à côté, ou depuis le village */
+M.codePassage = function(id){ return /^(victoire|suite|defaite):/.test(id); };
 M.codesEnquete = function(E){
   if(E._codes) return E._codes;
+  var b = codesBruts(E), ids = b.ids, toutes = b.toutes;
+  /* Un code d'ici ne doit jamais être un code de passage d'une enquête voisine. Sinon, le code
+     « enquête suivante » de l'enquête 1, tapé sur une tablette déjà dans l'enquête 2, était lu comme
+     la potion d'invisibilité de l'enquête 2 (« Ce code n'est pas pour toi ») ! Seuls ces codes-là changent. */
+  var interdits = {};
+  [E.id - 1, E.id + 1].forEach(function(v){
+    var V = window.ENQUETES && window.ENQUETES[v]; if(!V) return;
+    var bv = codesBruts(V);
+    bv.ids.forEach(function(id, i){ if(M.codePassage(id)) interdits[bv.toutes[i].join('-')] = 1; });
+  });
+  var parId = {}, parCode = {}, libre = ids.length;
+  ids.forEach(function(id, i){
+    var seq = toutes[i];
+    if(!M.codePassage(id) && interdits[seq.join('-')]){
+      while(libre < toutes.length && interdits[toutes[libre].join('-')]) libre++;
+      seq = toutes[libre++];
+    }
+    parId[id] = seq; parCode[seq.join('-')] = id;
+  });
+  E._codes = {parId:parId, parCode:parCode};
+  return E._codes;
+};
+function codesBruts(E){
+  if(E._codesBruts) return E._codesBruts;
   var ids = [];
   E.moments.forEach(function(m, i){ if(i > 0) ids.push('moment:' + i); });
   M.cle(E.objets || {}).forEach(function(id){ ids.push('obj:' + id); });
@@ -21064,18 +21365,60 @@ M.codesEnquete = function(E){
   }); }); });
   var r = M.alea(7919 * E.id + 104729);
   for(var i = toutes.length - 1; i > 0; i--){ var j = Math.floor(r() * (i + 1)); var t = toutes[i]; toutes[i] = toutes[j]; toutes[j] = t; }
-  var parId = {}, parCode = {};
-  ids.forEach(function(id, i){ parId[id] = toutes[i]; parCode[toutes[i].join('-')] = id; });
-  E._codes = {parId:parId, parCode:parCode};
-  return E._codes;
-};
+  E._codesBruts = {ids:ids, toutes:toutes};
+  return E._codesBruts;
+}
 M.code = function(id){ return M.codesEnquete(M.E()).parId[id]; };
-M.idDuCode = function(seq){ return M.codesEnquete(M.E()).parCode[seq.join('-')] || null; };
+M.codeDe = function(E, id){ return E ? M.codesEnquete(E).parId[id] : null; };
+M.idDuCode = function(seq){ var E = M.E(); return E ? (M.codesEnquete(E).parCode[seq.join('-')] || null) : null; };
+/* Un code de passage d'une enquête voisine de « autour » : {id, e} ou null */
+M.passageVoisin = function(seq, autour){
+  var k = seq.join('-'), l = [];
+  [autour - 1, autour, autour + 1].forEach(function(v){
+    var V = window.ENQUETES[v]; if(!V) return;
+    var id = M.codesEnquete(V).parCode[k];
+    if(id && M.codePassage(id)) l.push({id:id, e:v});
+  });
+  return l[0] || null;
+};
+/* Le code « enquête suivante » qui a mené à l'enquête n (pour le Sage, si un équipier est en retard) */
+M.codeVenue = function(n){
+  var S = M.S, F = S.finies && S.finies[n - 1], V = window.ENQUETES[n - 1];
+  if(!F || !V || !window.ENQUETES[n]) return null;
+  return M.codeDe(V, 'suite:' + Math.min(F.erreurs || 0, 3));
+};
+/* Codes qui ouvrent un lieu (plan, chemin, passage secret…) : ceux des verrous et des besoins des lieux.
+   Toute l'équipe enquête : chacun peut les taper, et le lieu s'ouvre sur sa tablette. {code:[lieux]} */
+M.codesLieux = function(E){
+  if(!E) return {};
+  if(E._codesLieux) return E._codesLieux;
+  var l = {};
+  function voir(besoin, lieu){
+    (besoin || []).forEach(function(b){
+      if(!b) return;
+      if(b.code && /^(info|obj):/.test(b.code)){ l[b.code] = l[b.code] || []; if(l[b.code].indexOf(lieu) < 0) l[b.code].push(lieu); }
+      if(b.et) voir(b.et, lieu);
+    });
+  }
+  M.cle(E.lieux || {}).forEach(function(id){ var L = E.lieux[id] || {}; voir(L.verrou && L.verrou.besoin, id); voir(L.besoin, id); });
+  E._codesLieux = l;
+  return l;
+};
+M.codePourTous = function(id, E){ return !!M.codesLieux(E || M.E())[id]; };
+/* « donne ce code au Pisteur ! », ou, pour un plan : « ce code est pour toute l'équipe : chacun peut le taper ! » */
+M.texteDonne = function(code){
+  var d = M.destinataire(code);
+  if(D.ROLES[d]) return 'donne ce code ' + D.ROLES[d].au + ' !';
+  if(Array.isArray(d)) return 'donne ce code ' + d.map(function(r){ return D.ROLES[r].au; }).join(' ou ') + ' !';
+  if(d === 'tous') return 'ce code est pour toute l\'équipe : chacun peut le taper !';
+  return 'donne ce code aux autres joueurs !';
+};
 /* Pour qui est un code */
 M.destinataire = function(id){
   var E = M.E(), p = id.split(':'), t = p[0], x = p[1];
   if(t === 'moment') return 'tous-sauf-sage';
   if(t === 'victoire') return 'tous-sauf-sage';
+  if((t === 'obj' || t === 'info') && M.codePourTous(id, E)) return 'tous';
   if(t === 'obj') return E.objets[x].pour;
   if(t === 'info') return E.infos[x].pour;
   if(t === 'pot') return D.POTIONS[x].pour;
@@ -21101,7 +21444,7 @@ M.P = function(){ return M.S.e; };
 M.enqueteNeuve = function(id){
   var E = window.ENQUETES[id];
   return {id:id, etape:'lettre', moment:0, actions:2, vus:{}, recus:{}, objets:{}, carnet:[], notesCarte:{}, conv:{}, pages:{}, analyses:{},
-    potions:{}, bues:{}, erreurs:0, raye:[], bonus:{}, usages:{}, chances:0, resolu:false, fin:null, onglet:'carte', protege:false};
+    potions:{}, bues:{}, erreurs:0, raye:[], bonus:{}, usages:{}, chances:0, resolu:false, fin:null, onglet:'role', protege:false};
 };
 M.momentId = function(){ var E = M.E(), P = M.P(); return E.moments[Math.min(P.moment, E.moments.length - 1)]; };
 /* Ingrédients : rangés dans l'atelier si le module existe, sinon dans un simple sac */
@@ -21120,7 +21463,7 @@ M.reserve = function(){ var P = M.P(); return P ? Math.max(0, M.reserveMax() - (
 M.archiver = function(){
   var S = M.S, P = S.e, E = M.E(); if(!P || !E) return;
   S.journal = S.journal || {};
-  S.journal[P.id] = {titre:E.titre, carnet:(P.carnet || []).slice(), raye:(P.raye || []).slice(), suspects:(E.qui && E.qui.choix || []).slice(),
+  S.journal[P.id] = {titre:E.titre, e:P.id, tableau:P.tableau ? M.copie(P.tableau) : null, carnet:(P.carnet || []).slice(), raye:(P.raye || []).slice(), suspects:(E.qui && E.qui.choix || []).slice(),
     recus:M.cle(P.recus || {}).filter(function(k){ return P.recus[k] && /^(obj|info|pot):/.test(k); }).map(function(k){ try{ return M.nomCode(k); }catch(e){ return null; } }).filter(Boolean)};
 };
 M.noter = function(texte, ic, cle){
@@ -21167,7 +21510,7 @@ M.texteBesoin = function(besoin, role){
       var n = M.nomCode(b.code), de = '';
       var t = b.code.split(':')[0];
       if(t === 'pot') de = ' (de l\'Alchimiste)';
-      else if(t === 'obj' || t === 'info') de = ' (un code d\'un équipier)';
+      else if(t === 'obj' || t === 'info') de = M.codePourTous(b.code) ? ' (un code de l\'équipe : chacun peut le taper dans 🔢 Code)' : ' (un code d\'un équipier)';
       l.push({ic:n.ic, nom:n.nom + de});
     } else if(b.acces){
       M.sourcesAcces(b.acces, role || M.role()).forEach(function(x){ if(!vus[x.nom]){ vus[x.nom] = 1; l.push(x); } });
@@ -21275,7 +21618,7 @@ function jouer(type){
     etat.journal.push({type:type, n:decide ? 'décidé' : niveau, ok:!!res.reussi, aides:avecAides, essais:res.essais || 1, revision:res.revision || null});
     if(etat.journal.length > 30) etat.journal = etat.journal.slice(-30);
     sauver(); fermer();
-  }, {aides:aides, lireAuto:false});
+  }, {aides:aides, lireAuto:false, details:true});
   plein.querySelector('.sl-quitter').onclick = function(){ try{ partie.arreter(); }catch(e){} fermer(); };
   function fermer(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); }
 }
