@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Salle des mini-jeux</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Caveat:wght@500;700&family=Macondo&display=swap">
@@ -2962,9 +2966,12 @@ var D = window.DONNEES = {};
 D.SYM = {
   lune:{e:'🌙', n:'Lune'}, etoile:{e:'⭐', n:'Étoile'}, soleil:{e:'☀️', n:'Soleil'},
   cle:{e:'🔑', n:'Clé'}, champi:{e:'🍄', n:'Champignon'}, poisson:{e:'🐟', n:'Poisson'},
-  arbre:{e:'🌳', n:'Arbre'}, cloche:{e:'🔔', n:'Cloche'}, chapeau:{e:'🎩', n:'Chapeau'}
+  arbre:{e:'🌳', n:'Arbre'}, cloche:{e:'🔔', n:'Cloche'}, chapeau:{e:'🎩', n:'Chapeau'},
+  /* 12 symboles : 12³ − 12 = 1716 codes (au lieu de 720) ; une faute de frappe tombe sur un vrai code environ 1 fois sur 23.
+     Des emojis anciens (affichés même par les vieilles tablettes Android), faciles à nommer et à ne pas confondre. */
+  coeur:{e:'❤️', n:'Cœur'}, flamme:{e:'🔥', n:'Flamme'}, chat:{e:'🐱', n:'Chat'}
 };
-D.ORDRE_SYM = ['lune','etoile','soleil','cle','champi','poisson','arbre','cloche','chapeau'];
+D.ORDRE_SYM = ['lune','etoile','soleil','cle','champi','poisson','arbre','cloche','chapeau','coeur','flamme','chat'];
 
 D.MOMENTS = {
   matin:{nom:'Matin', ic:'🌅'}, apresmidi:{nom:'Après-midi', ic:'☀️'},
@@ -3668,7 +3675,7 @@ var OBJ = {
   /* pisteur */
   bottes_souples:[35,'pieds'], arc_court:[40,'main_g'], lanterne_sourde:[40,'ceinture'], sifflet:[30,'cou'], gants_pisteur:[35,'poignets'],
   grappin:[45,'epaule'], cape_rodeur:[80,'cape'], bottes_vent:[90,'pieds'], longue_vue_ch:[70,'ceinture'], carquois:[75,'carquois'],
-  collier:[60,null], pieges:[65,null], arc_elfique:[130,'main_g'], lanterne_lune:[120,'ceinture'], amulette_instinct:[110,'cou'],
+  collier:[60,null], pieges:[65,'ceinture'], arc_elfique:[130,'main_g'], lanterne_lune:[120,'ceinture'], amulette_instinct:[110,'cou'],
   bracelets_vent:[100,'poignets'], masque_ombre:[120,'masque'], arc_argent:[260,'main_g'], bottes_fondateurs:[280,'pieds'], oeil_faucon:[300,'broche'],
   /* alchimiste */
   fioles_renf:[30,'ceinture'], mortier:[35,'ceinture'], thermometre:[40,'poche'], ceinture_fioles:[40,'rangee'], herbier:[45,'ceinture'],
@@ -3677,7 +3684,7 @@ var OBJ = {
   oeil_cristal:[120,'yeux'], fioles_ether:[110,'bandouliere'], athanor:[280,'sol'], pierre_transmu:[260,'flottant'], grand_grimoire:[300,'flottant'],
   /* barde */
   luth_voyage:[40,'main_g'], carnet_ragots:[30,'ceinture'], bourse:[35,'ceinture'], bonbons:[30,'ceinture'], clochette:[50,'ceinture'],
-  chapeau_plume:[35,'tete'], cornet:[70,'ceinture'], deguisement:[80,null], cape_scene:[65,'cape'], pendule:[85,'cou'],
+  chapeau_plume:[35,'tete'], cornet:[70,'ceinture'], deguisement:[80,'ceinture'], cape_scene:[65,'cape'], pendule:[85,'cou'],
   lettre_maire:[60,'ceinture'], carillon:[75,'ceinture'], luth_enchante:[120,'main_g'], masque_velours:[110,'ceinture'], miroir:[130,'ceinture'],
   plume_rossignol:[100,'plume'], corne:[110,'ceinture'], harpe:[280,'main_g'], anneau:[260,'bague'], registre:[300,'flottant'],
   /* sage */
@@ -4899,8 +4906,23 @@ var PETITS = {
   cor:function(K){ return '<path d="M-10 2 C -4 10 4 12 10 6 L 10 12 C 2 18 -8 14 -12 4 Z" fill="' + K.u('or') + '"' + c(1.4) + '/>'; },
   sablier:function(K){ return '<path d="M-5 0 h10 M-5 16 h10" stroke="' + K.u('bois') + '" stroke-width="3" stroke-linecap="round"/><path d="M-4 1 L 4 1 L 0 8 L 4 15 L -4 15 L 0 8 Z" fill="#e6f6ff"' + c(1.2) + '/><path d="M-2 13 L 2 13 L 0 10 Z" fill="#f0c040"/>'; },
   cle_archives:function(K){ return '<circle cx="0" cy="3" r="4" fill="none" stroke="' + K.u('or') + '" stroke-width="2.4"/><path d="M0 7 v11 M0 14 h4 M0 17 h3" stroke="' + K.u('or') + '" stroke-width="2.4" stroke-linecap="round"/>'; },
-  pierre_runes:function(K){ return '<path d="M-6 2 L 5 0 L 8 12 L -3 16 L -8 10 Z" fill="#8a90a8"' + c(1.4) + '/><path d="M-2 4 l2 8 l3 -6" stroke="#8ff3ff" stroke-width="1.6" fill="none"/>'; }
+  pierre_runes:function(K){ return '<path d="M-6 2 L 5 0 L 8 12 L -3 16 L -8 10 Z" fill="#8a90a8"' + c(1.4) + '/><path d="M-2 4 l2 8 l3 -6" stroke="#8ff3ff" stroke-width="1.6" fill="none"/>'; },
+  /* pièges de chasseur (Pisteur) : un petit piège à mâchoires accroché à la ceinture */
+  pieges:function(K){ return '<path d="M0 -2 v4" stroke="' + O + '" stroke-width="1.6"/><path d="M-9 8 A 9 7 0 0 1 9 8 Z" fill="#9aa0b0"' + c(1.4) + '/><path d="M-7 8 l2 -4 l2 4 l2 -4 l2 4 l2 -4 l2 4" stroke="#e6ecf6" stroke-width="1.2" fill="none" stroke-linejoin="round"/><rect x="-10" y="8" width="20" height="4" rx="2" fill="#6b7080"' + c(1.2) + '/><circle cx="0" cy="2" r="2" fill="#6b7080"' + c(1) + '/>'; },
+  /* déguisement de colporteur (Barde) : lunettes, faux nez et moustache, pendus à la ceinture */
+  deguisement:function(K){ return '<path d="M0 -2 v3" stroke="' + O + '" stroke-width="1.4"/><circle cx="-5" cy="5" r="4.2" fill="#d8f4ff" fill-opacity=".5" stroke="' + O + '" stroke-width="1.6"/><circle cx="5" cy="5" r="4.2" fill="#d8f4ff" fill-opacity=".5" stroke="' + O + '" stroke-width="1.6"/><path d="M-1 5 h2" stroke="' + O + '" stroke-width="1.6"/><path d="M-2 6 Q 0 13 3 10 Z" fill="#f0a888"' + c(1.1) + '/><path d="M-9 14 Q -4 10 0 13 Q 4 10 9 14 Q 4 16 0 14.5 Q -4 16 -9 14 Z" fill="#4a3020"' + c(1.1) + '/>'; }
 };
+/* Des bottes magiques achetées, quand le Pisteur porte d'autres bottes de sa garde-robe : leurs petites ailes de vent s'ajoutent */
+function ailesBottes(eq){
+  var p = eq.pieds; if(p !== 'bottes_vent' && p !== 'bottes_fondateurs') return '';
+  var coul = p === 'bottes_fondateurs' ? '#d6fbff' : '#e8f7ff', r = '';
+  [[118, -1], [182, 1]].forEach(function(a){
+    var x = a[0], d = a[1];
+    r += '<path d="M' + x + ' 378 C ' + (x + d * 14) + ' 376 ' + (x + d * 24) + ' 366 ' + (x + d * 26) + ' 350 C ' + (x + d * 18) + ' 360 ' + (x + d * 10) + ' 364 ' + x + ' 366 Z" fill="#ffffff"' + c(1.6) + '/>';
+    r += '<path d="M' + x + ' 368 C ' + (x + d * 10) + ' 364 ' + (x + d * 16) + ' 356 ' + (x + d * 16) + ' 346 C ' + (x + d * 10) + ' 352 ' + (x + d * 6) + ' 354 ' + x + ' 356 Z" fill="' + coul + '"' + c(1.4) + '/>';
+  });
+  return A('pj-ailes', r);
+}
 
 function petitsCeinture(K, h, eq){
   var liste = (eq.ceinture || []).slice();
@@ -4964,7 +4986,7 @@ function cape(K, h, t, eq){
 
 /* Carquois du pisteur (dans le dos, épaule droite) */
 function carquois(K, h, t, eq, tal){
-  var u = K.u, s = '<g transform="rotate(18 198 150)">';
+  var u = K.u, s = '<g transform="rotate(30 198 150)">';   /* bien penché : il dépasse derrière l'épaule, loin de la tête (facile à toucher dans la cabane) */
   var mag = eq.carquois === 'carquois' || t === 4;
   var glow = tal.tir || eq.carquois === 'carquois';
   if(mag){
@@ -5187,6 +5209,9 @@ function heros(h, opts){
   if(guet) hy += DY * k;
   var G = GARDE && (h.garde || guet) ? GARDE.prep(h.garde || {}, K, h, {guet:guet, t:t, eq:eq, tal:tal, age:age, dy:DY}) : null;
   if(G && G.vide) G = null;
+  /* opts.zones (la cabane) : chaque partie du corps porte data-zone, pour savoir ce que le doigt a touché */
+  /* opts.zones (la cabane) : chaque partie du corps se touche ; le carquois a une marge invisible autour du haut (derrière tout le reste) pour qu'un doigt d'enfant l'attrape */
+  var zn = opts.zones ? function(z, x){ return x ? '<g data-zone="' + z + '">' + x + (z === 'carquois' ? '<rect x="170" y="66" width="60" height="92" rx="24" transform="rotate(30 198 150)" fill="#fff" fill-opacity="0"/>' : '') + '</g>' : ''; } : function(z, x){ return x; };
   var teteT = 'translate(150 ' + hy + ') scale(' + hs + ')' + (age === 'age' ? ' rotate(3)' : '') + (guet ? ' rotate(-4)' : '');
 
   var vb;
@@ -5209,10 +5234,10 @@ function heros(h, opts){
 
   var fig = '';
   /* --- arrière --- */
-  var corpsArr = G && G.a('cape') ? G.couche('capeDos') : cape(K, h, t, eq);
+  var corpsArr = zn('corps', G && G.a('cape') ? G.couche('capeDos') : cape(K, h, t, eq));
   if(eq.dos === 'banniere') corpsArr += '<path d="M206 60 L 206 300" stroke="' + O + '" stroke-width="6" stroke-linecap="round"/><path d="M206 60 L 206 300" stroke="' + K.u('boisV') + '" stroke-width="3.4"/>' + A('pj-cape', '<path d="M208 66 L 252 70 L 246 92 L 254 116 L 208 112 Z" fill="' + K.u('acc') + '"' + c(2) + '/><path d="' + etoile4(228, 90, 8) + '" fill="' + K.u('or') + '"/>', ' style="transform-origin:208px 66px"') + '<circle cx="206" cy="58" r="4" fill="' + K.u('or') + '"' + c(1.2) + '/>';
   if(eq.dos === 'cartes_fond') corpsArr += '<g transform="rotate(-28 200 140)"><rect x="192" y="90" width="16" height="80" rx="6" fill="' + K.u('cuir') + '"' + c(2) + '/><rect x="190" y="84" width="20" height="10" rx="3" fill="' + K.u('or') + '"' + c(1.4) + '/><path d="M196 84 l2 -10 l6 0 l2 10" fill="#f3e7cb"' + c(1.2) + '/></g>';
-  if(h.role === 'pisteur') corpsArr += G && (G.a('carquois') || G.a('fleches')) ? G.couche('carquois') : carquois(K, h, t, eq, tal);
+  if(h.role === 'pisteur') corpsArr += zn('carquois', G && (G.a('carquois') || G.a('fleches')) ? G.couche('carquois') : carquois(K, h, t, eq, tal));
   var coif = COIFF[h.coiffure] || COIFF.queue;
   var chapeau = chapeauDe(h, eq, t);
   var cacheCh = G ? G.cacheCheveux() : null;   /* garde-robe : 'haut' (chapeau, casque), 'capuche', 'tout' (cagoule) */
@@ -5220,13 +5245,15 @@ function heros(h, opts){
   var dosCh = cacheCh === 'capuche' || cacheCh === 'tout' ? '' : coif.dos && !(chapeau && chapeau.cache) ? coif.dos(K) : (coif.dos ? coif.dos(K) : '');
   /* aux aguets : le haut du corps descend (genoux pliés), la cape se raccourcit pour ne pas traîner par terre */
   fig += '<g transform="' + corpsT + (DY ? ' translate(0 ' + DY + ') translate(150 144) scale(1 .9) translate(-150 -144)' : '') + '">' + corpsArr + '</g>';
-  fig += '<g transform="' + teteT + '">' + (G ? G.couche('teteDos') : '') + dosCh + '</g>';
+  fig += '<g transform="' + teteT + '">' + zn('tete', (G ? G.couche('teteDos') : '') + dosCh) + '</g>';
 
   /* --- corps --- */
   var corps = '';
-  var bas = G && (guet || G.a('jambes') || G.a('pieds')) ? G.couche('jambes') : jambes(K, h, t, eq);
+  var bas = G && (guet || G.a('jambes') || G.a('pieds')) ? G.couche('jambes') + (G.a('pieds') && !guet ? ailesBottes(eq) : '') : jambes(K, h, t, eq);
   if(h.sexe === 'm') corps += '<path d="M139.5 112 L 139.5 142 Q 150 149 160.5 142 L 160.5 112 Z" fill="' + K.u('peau') + '"' + c(2.1) + '/><path d="M139.5 116 Q 150 129 160.5 116 L 160.5 129 Q 150 135 139.5 129 Z" fill="' + K.peau.ombre + '"/><path d="M152 118 L 152 140" stroke="' + K.peau.ombre + '" stroke-width="3" opacity=".7"/>';
   else corps += '<path d="M142 112 L 142 142 Q 150 148 158 142 L 158 112 Z" fill="' + K.u('peau') + '"' + c(2) + '/><path d="M142 116 Q 150 128 158 116 L 158 128 Q 150 134 142 128 Z" fill="' + K.peau.ombre + '"/>';
+  var iz = 0, zc = function(z){ if(opts.zones && corps.length > iz) corps = corps.slice(0, iz) + '<g data-zone="' + z + '">' + corps.slice(iz) + '</g>'; iz = corps.length; };
+  zc('cou');
   corps += G && G.a('corps') ? G.couche('corps') : torse(K, h, t);
   if(t === 1) corps += baudrierT1(K, h);
   if(h.role === 'alchimiste') corps += sacoche(K, h, t, eq);
@@ -5235,14 +5262,22 @@ function heros(h, opts){
   corps += bandouliere(K, h, eq, tal);
   corps += petitsCeinture(K, h, eq);
   if(eq.poche === 'thermometre') corps += '<path d="M112 282 L 108 260" stroke="' + O + '" stroke-width="5" stroke-linecap="round"/><path d="M112 282 L 108 260" stroke="#e6f6ff" stroke-width="3" stroke-linecap="round"/><circle cx="108" cy="259" r="3" fill="#e05a5a"' + c(1) + '/>';
+  zc('corps');
   if(t <= 1 && !(G && (G.a('bouche') || G.a('cou') || G.a('corps')))) corps += foulard(K, h);
-  if(G && G.a('cou')) corps += G.couche('cou');
-  else if(eq.cou) corps += objetCou(K, h, eq.cou);
+  /* un foulard de la garde-robe (dessiné avec la tête) cacherait le collier : il est alors posé après la tête, par-dessus */
+  var colDessus = G && G.a('bouche') && (G.a('cou') || eq.cou) ? (G.a('cou') ? G.couche('cou') : objetCou(K, h, eq.cou)) : '';
+  if(!colDessus){
+    if(G && G.a('cou')) corps += G.couche('cou');
+    else if(eq.cou) corps += objetCou(K, h, eq.cou);
+  }
+  zc('cou');
   if(eq.broche === 'oeil_faucon') corps += '<g transform="translate(130 150)"><circle r="12" fill="' + K.u('feu') + '" class="pj-pulse"/><path d="M-8 0 Q 0 -7 8 0 Q 0 7 -8 0 Z" fill="' + K.u('or') + '"' + c(1.4) + '/><circle r="3" fill="#2a6fd0"/><circle cx="-1" cy="-1" r="1" fill="#fff"/></g>';
   if(eq.epaule === 'grappin') corps += '<g transform="translate(120 150)"><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="#c9a46a" stroke-width="5"/><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="' + O + '" stroke-width="1" stroke-dasharray="3 2"/><path d="M10 8 L 16 18 M16 18 l-4 4 M16 18 l4 4 M16 18 l0 6" stroke="#9aa0b0" stroke-width="2.4" stroke-linecap="round"/></g>';
+  zc('corps');
   corps += G && G.a('arme') ? G.couche('arme') : mainGauche(K, h, t, eq);
   corps += bras(K, h.role, t, eq) + (G ? G.couche('bras') : '');
   corps += mains(K, h.role, eq) + (G ? G.couche('mains') : '');
+  zc('mains');
   if(h.role === 'pisteur' && t === 4 && !eq.cape) corps += '';
   if(h.role === 'pisteur' && t >= 3){
     corps += '<path d="M106 152 C 104 136 118 126 138 130 L 141 152 C 128 160 116 160 106 152 Z" fill="' + K.u('or') + '"' + c(2.2) + '/><path d="M112 148 C 118 140 128 138 136 140" stroke="#94620e" stroke-width="1.6" fill="none"/><circle cx="124" cy="143" r="3.4" fill="' + K.role.c + '"' + c(1) + '/>';
@@ -5254,11 +5289,13 @@ function heros(h, opts){
     corps += '<path d="M118 146 C 124 136 140 132 150 132 C 160 132 176 136 182 146 C 170 142 160 140 150 140 C 140 140 130 142 118 146 Z" fill="#9a1830"' + c(2) + '/><circle cx="150" cy="140" r="5" fill="' + K.u('or') + '"' + c(1.3) + '/>';
   }
   if(G) corps += G.couche('capeAvant') + G.couche('ceinture');
+  zc('corps');
   corps += mainDroite(K, h, t, eq);
-  fig += '<g transform="' + corpsT + '">' + bas + (DY ? '<g transform="translate(0 ' + DY + ')">' + corps + '</g>' : corps) + '</g>';
+  zc('mains');
+  fig += '<g transform="' + corpsT + '">' + zn('jambes', bas) + (DY ? '<g transform="translate(0 ' + DY + ')">' + corps + '</g>' : corps) + '</g>';
 
   /* --- cheveux sur le buste --- */
-  if(coif.devant && cacheCh !== 'capuche' && cacheCh !== 'tout') fig += '<g transform="' + teteT + '">' + coif.devant(K) + '</g>';
+  if(coif.devant && cacheCh !== 'capuche' && cacheCh !== 'tout') fig += '<g transform="' + teteT + '">' + zn('tete', coif.devant(K)) + '</g>';
 
   /* --- tête --- */
   var tete = '';
@@ -5292,7 +5329,8 @@ function heros(h, opts){
   }
   if(eq.plume === 'plume_encre') tete += '<g transform="translate(30 -10) rotate(24)"><path d="M0 8 C -5 -4 -4 -18 2 -30 C 7 -18 6 -4 0 8 Z" fill="#fff"' + c(1.4) + '/><path d="M0 6 L 1 -26" stroke="#9aa" stroke-width="1"/><path d="M0 8 l0 6" stroke="' + O + '" stroke-width="2"/></g>';
   if(eq.halo === 'couronne') tete += '<g transform="translate(0 ' + (chapeau ? (chapeau.id === 'etoile' ? -100 : -96) : -78) + ')">' + A('pj-flotte', '<ellipse cx="0" cy="0" rx="26" ry="7" fill="none" stroke="' + K.u('or') + '" stroke-width="3"/><ellipse cx="0" cy="0" rx="26" ry="7" fill="none" stroke="#8ff3ff" stroke-width="6" opacity=".35"/><g fill="#bff8ff" font-family="serif" font-size="9"><text x="-20" y="10">ᚠ</text><text x="-4" y="12">ᛟ</text><text x="12" y="10">ᚱ</text></g>') + '</g>';
-  fig += '<g transform="' + teteT + '">' + tete + '</g>';
+  fig += '<g transform="' + teteT + '">' + zn('tete', tete) + '</g>';
+  if(colDessus) fig += '<g transform="' + corpsT + '">' + (DY ? '<g transform="translate(0 ' + DY + ')">' : '') + zn('cou', colDessus) + (DY ? '</g>' : '') + '</g>';
 
   /* --- flottants et talents --- */
   if(eq.flottant) fig += flottants(K, eq.flottant);
@@ -21320,22 +21358,69 @@ function bruit(t0, duree, vol, passe){
   s.buffer = buf; g.gain.value = vol || 0.08;
   s.connect(f); f.connect(g); g.connect(a.destination); s.start(a.currentTime + t0);
 }
+/* Une note douce : attaque arrondie (pas de clic), fin en fondu ; un triangle passe par un filtre (son chaud, sans aigus durs) */
+function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+  var a = audio(); if(!a) return;
+  var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), sortie = g;
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(f, t);
+  if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+  if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+  sortie.connect(a.destination);
+  o.start(t); o.stop(t + duree + 0.03);
+}
+/* Une page de papier qu'on tourne (Grand Livre, livre.js) : un souffle doux qui monte puis retombe (bruit filtré),
+   un léger froissement (petits grains secs), et la page qui se pose. Environ 0,35 s, tout doux. */
+function feuille(){
+  var a = audio(); if(!a) return;
+  var t = a.currentTime + 0.01, sr = a.sampleRate, dur = 0.36, n = Math.floor(sr * dur);
+  function tampon(remplir){ var b = a.createBuffer(1, n, sr); remplir(b.getChannelData(0)); var s = a.createBufferSource(); s.buffer = b; return s; }
+  /* le souffle */
+  var s1 = tampon(function(d){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; });
+  var f1 = a.createBiquadFilter(), g1 = a.createGain();
+  f1.type = 'bandpass'; f1.Q.value = 0.8;
+  f1.frequency.setValueAtTime(700, t); f1.frequency.exponentialRampToValueAtTime(2600, t + 0.15); f1.frequency.exponentialRampToValueAtTime(1100, t + 0.34);
+  g1.gain.setValueAtTime(0.0001, t); g1.gain.exponentialRampToValueAtTime(0.05, t + 0.08); g1.gain.exponentialRampToValueAtTime(0.03, t + 0.2); g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+  s1.connect(f1); f1.connect(g1); g1.connect(a.destination);
+  /* le froissement : des grains de 1 à 4 ms, surtout au milieu du geste */
+  var s2 = tampon(function(d){
+    for(var k = 0; k < 26; k++){
+      var c = Math.floor(n * (0.08 + 0.7 * Math.pow(Math.random(), 1.3))), l = Math.floor(sr * (0.001 + Math.random() * 0.003)), v = 0.35 + Math.random() * 0.65;
+      for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random() * 2 - 1) * v * (1 - j / l);
+    }
+  });
+  var f2 = a.createBiquadFilter(), g2 = a.createGain();
+  f2.type = 'highpass'; f2.frequency.value = 2800; g2.gain.value = 0.028;
+  s2.connect(f2); f2.connect(g2); g2.connect(a.destination);
+  /* la page qui se pose */
+  var s3 = tampon(function(d){ var m = Math.floor(sr * 0.07); for(var i = 0; i < m; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / m); });
+  var f3 = a.createBiquadFilter(), g3 = a.createGain();
+  f3.type = 'lowpass'; f3.frequency.value = 520; g3.gain.value = 0.06;
+  s3.connect(f3); f3.connect(g3); g3.connect(a.destination);
+  s1.start(t); s2.start(t); s3.start(t + 0.26);
+  s1.stop(t + dur); s2.stop(t + dur); s3.stop(t + 0.26 + dur);
+}
 var SONS = {
-  clic:function(){ note(660, 0, .06, 'triangle', .07); },
+  clic:function(){ tendre(523, 0, .055, .045, 440, .005); },   /* un « toc » tout doux */
   ok:function(){ note(660, 0, .1, 'triangle', .1); note(990, .08, .14, 'triangle', .1); },
-  ko:function(){ note(220, 0, .18, 'sawtooth', .06, 150); },
+  ko:function(){ tendre(330, 0, .13, .06, 294, .01, 'triangle', 1100); tendre(247, .1, .2, .055, 220, .01, 'triangle', 900); },   /* deux notes qui descendent : « non » */
   gain:function(){ [784, 988, 1175, 1568].forEach(function(f, i){ note(f, i * .07, .16, 'triangle', .09); }); },
   magie:function(){ [523, 659, 784, 1047, 1319].forEach(function(f, i){ note(f, i * .06, .3, 'sine', .07); }); },
-  pas:function(){ bruit(0, .06, .06, 900); },
+  pas:function(){ tendre(240, 0, .08, .055, 160, .006); tendre(225, .15, .08, .05, 150, .006); },   /* deux pas feutrés */
   fleche:function(){ note(1200, 0, .18, 'sine', .05, 300); bruit(0, .12, .04, 3000); },
   bulle:function(){ note(500, 0, .12, 'sine', .08, 900); },
   plouf:function(){ note(700, 0, .2, 'sine', .08, 200); bruit(.02, .15, .03, 1200); },
-  tic:function(){ note(1500, 0, .03, 'square', .03); },
+  tic:function(){ tendre(988, 0, .035, .022, 880, .003); },   /* un tic très léger */
   victoire:function(){ [523, 659, 784, 1047].forEach(function(f, i){ note(f, i * .11, .25, 'triangle', .11); }); note(1319, .5, .5, 'triangle', .1); },
   echec:function(){ note(392, 0, .2, 'triangle', .08); note(311, .18, .35, 'triangle', .08); },
-  page:function(){ bruit(0, .18, .05, 2500); },
+  /* ouvrir un lieu, un objet, un panneau : un petit « plop » de bois chaud, une note plus haute, et une clochette très légère */
+  page:function(){ tendre(392, 0, .11, .07, 330, .008, 'triangle', 1100); tendre(587, .07, .17, .05, null, .01); tendre(1175, .07, .2, .012, null, .012); },
+  feuille:feuille,   /* tourner une page du Grand Livre */
   cloche:function(){ note(880, 0, 1.2, 'sine', .1); note(1320, 0, .9, 'sine', .04); },
-  porte:function(){ note(140, 0, .25, 'square', .04, 90); bruit(.05, .2, .05, 600); }
+  porte:function(){ tendre(270, 0, .09, .07, 190, .004, 'triangle', 800); tendre(255, .16, .09, .065, 180, .004, 'triangle', 800); }   /* toc-toc sur une porte en bois */
 };
 M.son = function(type){
   if(M.S && M.S.options && M.S.options.son === false) return;
@@ -21359,11 +21444,9 @@ function noteVoix(x){
 M.voixDispo = function(){
   try{ return speechSynthesis.getVoices().filter(function(x){ return /^fr/i.test(x.lang); }).sort(function(a, b){ return noteVoix(b) - noteVoix(a); }); }catch(e){ return []; }
 };
+/* Plus de choix de voix dans les Réglages : la meilleure voix française de l'appareil, en secours des voix naturelles */
 function choisirVoix(){
-  try{
-    var v = M.voixDispo(), voulue = M.S && M.S.options && M.S.options.voix;
-    voixFr = (voulue && v.filter(function(x){ return x.voiceURI === voulue || x.name === voulue; })[0]) || v[0] || null;
-  }catch(e){}
+  try{ voixFr = M.voixDispo()[0] || null; }catch(e){}
 }
 M.choisirVoix = choisirVoix;
 try{ choisirVoix(); speechSynthesis.onvoiceschanged = choisirVoix; }catch(e){}
@@ -21373,18 +21456,18 @@ M.lire = function(texte, opts){
   var t = M.nettoyer(texte);
   if(!t) return;
   opts = opts || {};
-  /* Voix naturelles (version installée) : chaque personnage a sa voix */
-  var o = (M.S && M.S.options) || {};
-  if(window.Voix && Voix.pret && o.voixNaturelles !== false){
+  /* Voix naturelles (version installée) : chaque personnage a sa voix, toujours dès qu'elles sont téléchargées
+     (plus de case à cocher ni de vitesse dans les Réglages ; une vieille sauvegarde qui les avait coupées les retrouve) */
+  if(window.Voix && Voix.pret){
     M.parle = true; majBoutonStop();
-    var ok = Voix.lire(t, opts.qui || 'narrateur', (o.vitesse || 0.95) / 0.95, function(){ M.parle = false; majBoutonStop(); });
+    var ok = Voix.lire(t, opts.qui || 'narrateur', 1, function(){ M.parle = false; majBoutonStop(); });
     if(ok) return;
     M.parle = false;
   }
   try{
     var u = new SpeechSynthesisUtterance(t);
     u.lang = 'fr-FR'; if(voixFr) u.voice = voixFr;
-    u.rate = (M.S && M.S.options && M.S.options.vitesse) || 0.95; u.pitch = 1;
+    u.rate = 0.95; u.pitch = 1;
     u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); };
     M.parle = true; majBoutonStop();
     speechSynthesis.speak(u);
@@ -21428,13 +21511,24 @@ M.sauver = function(){
   try{ localStorage.setItem(PREFIXE + n, JSON.stringify(M.S)); }catch(e){}
 };
 M.effacerEmplacement = function(n){ try{ localStorage.removeItem(PREFIXE + n); }catch(e){} };
-M.importer = function(fichier, fin){
-  var r = new FileReader();
-  r.onload = function(){
-    try{ var o = JSON.parse(r.result); if(o && o.jeu === 'brumeval' && o.etat && o.etat.heros){ M.S = o.etat; M.sauver(); fin(true); return; } }catch(e){}
-    fin(false);
-  };
-  r.readAsText(fichier);
+/* Lit un fichier de sauvegarde (💾 Sauvegarder du menu ☰, ou l'ancienne « sauvegarde de secours ») ; renvoie l'état, ou null s'il n'est pas bon */
+M.lireSauvegarde = function(texte){
+  var o;
+  try{ o = JSON.parse(String(texte || '').replace(/^﻿/, '')); }catch(e){ return null; }
+  var s = o && o.jeu === 'brumeval' && o.etat ? o.etat : (o && o.v === 2 && o.heros ? o : null);
+  if(!s || typeof s !== 'object' || !s.heros || typeof s.heros !== 'object') return null;
+  if(!D.ROLES[s.heros.role] || typeof s.heros.nom !== 'string' || !s.heros.nom.trim()) return null;
+  var base = M.etatNeuf();
+  for(var k in base) if(s[k] === undefined || (s[k] === null && base[k] !== null)) s[k] = base[k];
+  ['talents', 'equip', 'calepin', 'legendes'].forEach(function(k){ if(!Array.isArray(s[k])) s[k] = []; });
+  ['xp', 'or', 'fioles'].forEach(function(k){ s[k] = Math.max(0, +s[k] || 0); });
+  s.prochaine = Math.max(1, +s.prochaine || 1);
+  ['ingr', 'potions', 'finies', 'journal', 'options'].forEach(function(k){ if(typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = base[k]; });
+  s.talents = s.talents.filter(function(id){ return D.TALENTS[id]; });
+  s.equip = s.equip.filter(function(id){ return D.OBJETS[id]; });
+  if(s.e && (typeof s.e !== 'object' || !window.ENQUETES || !window.ENQUETES[s.e.id])) s.e = null;
+  delete s.heros.joueur;   /* plus de mode enfant */
+  return s;
 };
 
 /* ---------- Héros : niveau, effets ---------- */
@@ -21540,16 +21634,19 @@ M.codesEnquete = function(E){
   /* Un code d'ici ne doit jamais être un code de passage d'une enquête voisine. Sinon, le code
      « enquête suivante » de l'enquête 1, tapé sur une tablette déjà dans l'enquête 2, était lu comme
      la potion d'invisibilité de l'enquête 2 (« Ce code n'est pas pour toi ») ! Seuls ces codes-là changent. */
-  var interdits = {};
+  /* Les codes de passage eux-mêmes ne se croisent pas non plus d'une enquête à la suivante (passagesEnquete, ci-dessous) :
+     avec 12 symboles, « suite:2 » de l'enquête 2 tombait sur « victoire:2 » de l'enquête 3. */
+  var pE = passagesEnquete(E), interdits = {};
   [E.id - 1, E.id + 1].forEach(function(v){
     var V = window.ENQUETES && window.ENQUETES[v]; if(!V) return;
-    var bv = codesBruts(V);
-    bv.ids.forEach(function(id, i){ if(M.codePassage(id)) interdits[bv.toutes[i].join('-')] = 1; });
+    var pv = passagesEnquete(V);
+    M.cle(pv.parId).forEach(function(id){ interdits[pv.parId[id].join('-')] = 1; });
   });
-  var parId = {}, parCode = {}, libre = ids.length;
+  var parId = {}, parCode = {}, libre = pE.libre;
   ids.forEach(function(id, i){
     var seq = toutes[i];
-    if(!M.codePassage(id) && interdits[seq.join('-')]){
+    if(M.codePassage(id)) seq = pE.parId[id];
+    else if(interdits[seq.join('-')]){
       while(libre < toutes.length && interdits[toutes[libre].join('-')]) libre++;
       seq = toutes[libre++];
     }
@@ -21558,6 +21655,25 @@ M.codesEnquete = function(E){
   E._codes = {parId:parId, parCode:parCode};
   return E._codes;
 };
+/* Les codes de passage (fin, suite, défaite) d'une enquête : ceux qui tombent sur un code de passage de l'enquête
+   d'avant prennent un code libre. On remonte de l'enquête 1 vers la suivante, donc pas de boucle. */
+function passagesEnquete(V){
+  if(V._passages) return V._passages;
+  var b = codesBruts(V), avant = window.ENQUETES && window.ENQUETES[V.id - 1], pris = {};
+  if(avant){ var pa = passagesEnquete(avant); M.cle(pa.parId).forEach(function(id){ pris[pa.parId[id].join('-')] = 1; }); }
+  var res = {parId:{}, libre:b.ids.length};
+  b.ids.forEach(function(id, i){
+    if(!M.codePassage(id)) return;
+    var seq = b.toutes[i];
+    if(pris[seq.join('-')]){
+      while(res.libre < b.toutes.length && pris[b.toutes[res.libre].join('-')]) res.libre++;
+      seq = b.toutes[res.libre++];
+    }
+    res.parId[id] = seq;
+  });
+  V._passages = res;
+  return res;
+}
 function codesBruts(E){
   if(E._codesBruts) return E._codesBruts;
   var ids = [];
@@ -21619,6 +21735,7 @@ M.codePourTous = function(id, E){ return !!M.codesLieux(E || M.E())[id]; };
 /* « donne ce code au Pisteur ! », ou, pour un plan : « ce code est pour toute l'équipe : chacun peut le taper ! » */
 M.texteDonne = function(code){
   var d = M.destinataire(code);
+  if(d === 'barde' && M.surQui && M.surQui(code)) return 'donne ce code au Barde : il le notera sur ' + M.surQui(code) + '.';   /* un renseignement sur un habitant (carnet.js) */
   if(D.ROLES[d]) return 'donne ce code ' + D.ROLES[d].au + ' !';
   if(Array.isArray(d)) return 'donne ce code ' + d.map(function(r){ return D.ROLES[r].au; }).join(' ou ') + ' !';
   if(d === 'tous') return 'ce code est pour toute l\'équipe : chacun peut le taper !';
