@@ -1,6 +1,6 @@
 /* Brumeval : marche sans connexion après la première ouverture.
    Les voix (fichiers de Hugging Face) sont gardées par le moteur de voix lui-même (OPFS) : on ne les copie pas ici. */
-var CACHE = 'brumeval-20261103-0205';
+var CACHE = 'brumeval-20261103-1303';
 var FICHIERS = ['./', './index.html', './salle.html', './manifest.webmanifest', './favicon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', function(e){ e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(FICHIERS); }).then(function(){ return self.skipWaiting(); })); });
 self.addEventListener('activate', function(e){ e.waitUntil(caches.keys().then(function(l){ return Promise.all(l.filter(function(k){ return k !== CACHE && /^brumeval-/.test(k); }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });

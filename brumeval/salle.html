@@ -2849,6 +2849,25 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .rg-gr-g span.auto{opacity:.75}
 .rg-gr-v{top:340px}
 .rg-gr.reussi .rg-gr-g{filter:drop-shadow(0 0 10px #5fcf86)}
+/* Mensonge : le catalogue des mimiques sous la phrase (l'accueil défile pour ce jeu) */
+.rg-cat{display:flex;flex-direction:column;gap:14px;padding-bottom:6px}
+.rg-cat-t{margin:0 0 8px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--f-titre);font-weight:400;font-size:1.2rem}
+.rg-cat-t .rg-cat-lire{margin:0;width:40px;height:40px;font-size:1.15rem}
+.rg-cat-s.ment .rg-cat-t{color:#ff8a8a}
+.rg-cat-s.vrai .rg-cat-t{color:#8ee6a8}
+.rg-cat-g{display:grid;grid-template-columns:repeat(auto-fill, 76px);justify-content:center;gap:10px 6px}
+.rg-cat-c{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.rg-cat-f{width:68px;height:68px;border-radius:14px;overflow:hidden;background:#f3e7cb;border:3px solid #5fcf86;box-sizing:border-box}
+.rg-cat-s.ment .rg-cat-f{border-color:#e5484d;box-shadow:0 0 0 2px rgba(229,72,77,.3)}
+.rg-cat-s.vrai .rg-cat-f{border-color:#5fcf86}
+.rg-cat-f svg{width:100%;height:100%;display:block}
+.rg-cat-c figcaption{font-size:.78rem;font-weight:700;line-height:1.12;text-align:center;color:var(--lune);max-width:76px;overflow-wrap:break-word}
+@media (min-width:700px){ .rg-cat-g{grid-template-columns:repeat(auto-fill, 92px)} .rg-cat-f{width:82px;height:82px} .rg-cat-c figcaption{max-width:92px;font-size:.85rem} }
+.rg-cat-f svg{transform:scale(1.38);transform-origin:50% 64%}
+/* Mensonge : le bouton « 📖 Les signes » pendant la partie (ouvre l'écran des 7 signes du jeu) */
+.mjb-mensonge .mjb-m-signes{min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid rgba(255,227,163,.7);background:rgba(36,24,46,.85);color:var(--or-pale);font-weight:700;font-size:.95rem;white-space:nowrap}
+.mjb-mensonge .mjb-m-signes:active{transform:scale(.96)}
+.mjb-mensonge.verdict .mjb-m-signes{display:none}
 
 /* Relire un mini-jeu du Barde après coup */
 .rv{display:flex;flex-direction:column;gap:12px;text-align:left}
@@ -2955,13 +2974,13 @@ D.MOMENTS = {
 D.ROLES = {
   pisteur:{m:'Pisteur', f:'Pisteuse', ic:'🏹', c:'var(--c-pisteur)', le:'le Pisteur', au:'au Pisteur',
     desc:'Explore le village et la forêt. Suis les traces, trouve les objets cachés, cours, grimpe, tire à l\'arc.',
-    tag:'Action et réflexes', onglet:{ic:'🎒', nom:'Sac'}},
+    tag:'Action et réflexes', onglet:{ic:'🛖', nom:'Cabane'}},
   alchimiste:{m:'Alchimiste', f:'Alchimiste', ic:'⚗️', c:'var(--c-alchimiste)', le:'l\'Alchimiste', au:'à l\'Alchimiste',
     desc:'Cueille des ingrédients, fabrique des potions pour l\'équipe et analyse les objets trouvés.',
     tag:'Mémoire et précision', onglet:{ic:'⚗️', nom:'Atelier'}},
   barde:{m:'Barde', f:'Barde', ic:'🎻', c:'var(--c-barde)', le:'le Barde', au:'au Barde',
     desc:'Parle aux habitants, écoute les ragots et démasque les menteurs.',
-    tag:'Écoute et stratégie', onglet:{ic:'🎭', nom:'Habitants'}},
+    tag:'Écoute et stratégie', onglet:{ic:'📌', nom:'Tableau'}},
   sage:{m:'Sage', f:'Sage', ic:'📜', c:'var(--c-sage)', le:'le Sage', au:'au Sage',
     desc:'Garde le Grand Livre, déchiffre les secrets, donne les codes des moments et fait l\'accusation finale.',
     tag:'Logique · chef d\'enquête', onglet:{ic:'📖', nom:'Grand Livre'}}
@@ -3275,6 +3294,11 @@ D.PNJ = {
   margot:{nom:'Margot Chopine', court:'Margot', metier:'la tavernière', ic:'👩‍🍳', pied:4},
   voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
 };
+/* Le métier en court, avec son icône (les photos du tableau de liège du Barde, le Carnet) */
+var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melusine:['couturière', '🧵'], basile:['jardinier', '🥕'],
+  odette:['grand-mère', '🐈'], tim:['ramoneur', '🧹'], victor:['facteur', '✉️'], anselme:['sonneur', '🔔'], iris:['herboriste', '🌿'],
+  fortune:['colporteur', '🛒'], silas:['garde', '🛡️'], farinel:['meunier', '🌾'], margot:['tavernière', '🍺']};
+Object.keys(METIERS).forEach(function(id){ D.PNJ[id].metierCourt = METIERS[id][0]; D.PNJ[id].icMetier = METIERS[id][1]; });
 })();
 
 /* ===== mj-core.js ===== */
@@ -3427,6 +3451,7 @@ MJ.lancer = function(el, type, params, fin, options){
   var consigne = (typeof def.consigne === 'function') ? def.consigne(params) : (def.consigne || '');
   /* la phrase toute simple de l'écran d'accueil (mj-regles.js) ; la longue consigne reste pour la salle */
   var phrase = (MJ.PHRASES && MJ.PHRASES[type]) || def.phrase || consigne;
+  if(typeof phrase === 'function') try{ phrase = phrase(params); }catch(e){ phrase = consigne; }
   racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
   racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
 
@@ -3456,6 +3481,8 @@ MJ.lancer = function(el, type, params, fin, options){
     var cadre = bloc.querySelector('.mj-demo-cadre'), demo = bloc.querySelector('.mj-demo');
     /* la démo est dessinée à sa taille naturelle (W0 × H0), puis agrandie pour remplir la place libre */
     var DM = MJ.DEMOS && MJ.DEMOS[type];
+    /* exception voulue par Romain (« Repérer le mensonge ») : un catalogue sous la phrase ; là, l'accueil peut défiler */
+    try{ var plus = DM && DM.extra ? DM.extra(params) : null; if(plus){ plus.classList.add('mj-defile'); bloc.insertBefore(plus, bloc.querySelector('.mj-details') || bloc.querySelector('.mj-go')); } }catch(e){ if(window.console) console.warn('accueil', type, e); }
     var W0 = (DM && DM.w) || 340, H0 = (DM && DM.h) || 190;
     demo.style.width = W0 + 'px'; demo.style.height = H0 + 'px';
     var arretDemo = null;
@@ -3469,8 +3496,8 @@ MJ.lancer = function(el, type, params, fin, options){
     function ajuste(){
       if(!bloc.isConnected){ if(ro) ro.disconnect(); return; }
       var cs = getComputedStyle(bloc), libre = bloc.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), n = 0;
-      Array.prototype.forEach.call(bloc.children, function(c){ if(c === cadre || c.hidden || getComputedStyle(c).display === 'none') return; libre -= c.offsetHeight; n++; });
-      libre -= (parseFloat(cs.rowGap) || 0) * n;
+      Array.prototype.forEach.call(bloc.children, function(c){ if(c === cadre || c.hidden || c.classList.contains('mj-defile') || getComputedStyle(c).display === 'none') return; libre -= c.offsetHeight; n++; });
+      libre -= (parseFloat(cs.rowGap) || 0) * n + ((DM && DM.reserve) || 0);   /* reserve : on laisse voir le début du catalogue */
       var cw = cadre.clientWidth; if(!cw || !bloc.clientHeight) return;
       var k = Math.max(.4, Math.min(cw / W0, Math.max(libre, 150) / H0, 3.2));
       cadre.style.height = Math.round(H0 * k) + 'px';
@@ -3556,6 +3583,7 @@ MJ.lancer = function(el, type, params, fin, options){
 
 var O = '#24182e';
 var compteur = 0;
+var GARDE = null;   /* la garde-robe du Pisteur (garderobe.js), branchée par Persos.garde(ext) */
 
 /* ---------- Couleurs ---------- */
 function h2r(h){ h = String(h).replace('#',''); if(h.length === 3) h = h.split('').map(function(x){ return x + x; }).join(''); var n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
@@ -3706,6 +3734,7 @@ function defsCommuns(K, h){
   } else {
     tissu = [clair(T, .42), clair(T, .06), sombre(T, .5)];
   }
+  if(K.tissuForce) tissu = K.tissuForce;   /* garde-robe : la couleur du vêtement choisi (manches comprises) */
   K.tissu = tissu;
   var pant = t === 1 ? ['#8a6644','#4f3720'] : role === 'barde' ? [clair(sombre(T, .3), .1), sombre(T, .6)] : ['#4a4062','#221d33'];
   var d = '<defs>' +
@@ -5117,6 +5146,7 @@ function complet(h){
   r.talents = h.talents || []; r.equip = h.equip || [];
   r.niveau = Math.max(1, Math.min(10, +h.niveau || 1));
   r.potion = h.potion || null;
+  r.garde = h.garde || null;   /* garde-robe du Pisteur : {emplacement:{id, c}} (garderobe.js), purement décoratif */
   if(!COIFF[r.coiffure]) r.coiffure = d.coiffure;
   return r;
 }
@@ -5151,15 +5181,22 @@ function heros(h, opts){
   var corpsT = k === 1 ? '' : 'translate(150 414) scale(' + k + ') translate(-150 -414)';
   var hy = 414 - (414 - 112) * k - 20 + (age === 'age' ? 4 : 0);
   var hs = age === 'enfant' ? 1.06 : age === 'age' ? .97 : 1;
-  var teteT = 'translate(150 ' + hy + ') scale(' + hs + ')' + (age === 'age' ? ' rotate(3)' : '');
+  /* garde-robe (garderobe.js) : ce que le Pisteur a choisi de porter, et la pose « aux aguets » de sa cabane (accroupi, le haut du corps plus bas) */
+  var guet = opts.pose === 'guet' && h.role === 'pisteur' && !!GARDE;
+  var DY = guet ? 30 : 0;
+  if(guet) hy += DY * k;
+  var G = GARDE && (h.garde || guet) ? GARDE.prep(h.garde || {}, K, h, {guet:guet, t:t, eq:eq, tal:tal, age:age, dy:DY}) : null;
+  if(G && G.vide) G = null;
+  var teteT = 'translate(150 ' + hy + ') scale(' + hs + ')' + (age === 'age' ? ' rotate(3)' : '') + (guet ? ' rotate(-4)' : '');
 
   var vb;
-  if(vue === 'tete'){ var sz = 128 * hs; vb = (150 - sz / 2) + ' ' + (hy - 80 * hs) + ' ' + sz + ' ' + sz; }
+  if(vue === 'tete'){ var up = G ? G.haut() * .5 : 0, sz = (128 + up) * hs; vb = (150 - sz / 2) + ' ' + (hy - (80 + up) * hs) + ' ' + sz + ' ' + sz; }
   else if(vue === 'buste'){ var sb = age === 'enfant' ? 178 : 196; vb = (150 - sb / 2) + ' ' + (hy - 90 * hs) + ' ' + sb + ' ' + sb; }
   else vb = '0 0 300 440';
+  if(opts.cadre && GARDE && GARDE.cadre) vb = GARDE.cadre(opts.cadre, {hy:hy, hs:hs, k:k, dy:DY}) || vb;   /* vignette de la garde-robe */
 
-  var s = '<svg class="pj pj-heros pj-' + h.role + (anime ? ' pj-anime' : '') + '" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + K.role.nom + ' niveau ' + h.niveau + '">';
-  s += defsCommuns(K, h);
+  var s = '<svg class="pj pj-heros pj-' + h.role + (anime ? ' pj-anime' : '') + (guet ? ' pj-guet' : '') + '" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + K.role.nom + ' niveau ' + h.niveau + '">';
+  s += defsCommuns(K, h) + (G ? G.defs() : '');
   if(fond) s += decor(K, h, t);
   else if(vue !== 'pied') s += '';
 
@@ -5172,23 +5209,25 @@ function heros(h, opts){
 
   var fig = '';
   /* --- arrière --- */
-  var corpsArr = cape(K, h, t, eq);
+  var corpsArr = G && G.a('cape') ? G.couche('capeDos') : cape(K, h, t, eq);
   if(eq.dos === 'banniere') corpsArr += '<path d="M206 60 L 206 300" stroke="' + O + '" stroke-width="6" stroke-linecap="round"/><path d="M206 60 L 206 300" stroke="' + K.u('boisV') + '" stroke-width="3.4"/>' + A('pj-cape', '<path d="M208 66 L 252 70 L 246 92 L 254 116 L 208 112 Z" fill="' + K.u('acc') + '"' + c(2) + '/><path d="' + etoile4(228, 90, 8) + '" fill="' + K.u('or') + '"/>', ' style="transform-origin:208px 66px"') + '<circle cx="206" cy="58" r="4" fill="' + K.u('or') + '"' + c(1.2) + '/>';
   if(eq.dos === 'cartes_fond') corpsArr += '<g transform="rotate(-28 200 140)"><rect x="192" y="90" width="16" height="80" rx="6" fill="' + K.u('cuir') + '"' + c(2) + '/><rect x="190" y="84" width="20" height="10" rx="3" fill="' + K.u('or') + '"' + c(1.4) + '/><path d="M196 84 l2 -10 l6 0 l2 10" fill="#f3e7cb"' + c(1.2) + '/></g>';
-  if(h.role === 'pisteur') corpsArr += carquois(K, h, t, eq, tal);
+  if(h.role === 'pisteur') corpsArr += G && (G.a('carquois') || G.a('fleches')) ? G.couche('carquois') : carquois(K, h, t, eq, tal);
   var coif = COIFF[h.coiffure] || COIFF.queue;
   var chapeau = chapeauDe(h, eq, t);
-  K.chap = chapeau ? chapeau.id : null; K.age = age;
-  var dosCh = coif.dos && !(chapeau && chapeau.cache) ? coif.dos(K) : (coif.dos ? coif.dos(K) : '');
-  fig += '<g transform="' + corpsT + '">' + corpsArr + '</g>';
-  fig += '<g transform="' + teteT + '">' + dosCh + '</g>';
+  var cacheCh = G ? G.cacheCheveux() : null;   /* garde-robe : 'haut' (chapeau, casque), 'capuche', 'tout' (cagoule) */
+  K.chap = chapeau ? chapeau.id : cacheCh ? 'garde' : null; K.age = age;
+  var dosCh = cacheCh === 'capuche' || cacheCh === 'tout' ? '' : coif.dos && !(chapeau && chapeau.cache) ? coif.dos(K) : (coif.dos ? coif.dos(K) : '');
+  /* aux aguets : le haut du corps descend (genoux pliés), la cape se raccourcit pour ne pas traîner par terre */
+  fig += '<g transform="' + corpsT + (DY ? ' translate(0 ' + DY + ') translate(150 144) scale(1 .9) translate(-150 -144)' : '') + '">' + corpsArr + '</g>';
+  fig += '<g transform="' + teteT + '">' + (G ? G.couche('teteDos') : '') + dosCh + '</g>';
 
   /* --- corps --- */
   var corps = '';
-  corps += jambes(K, h, t, eq);
+  var bas = G && (guet || G.a('jambes') || G.a('pieds')) ? G.couche('jambes') : jambes(K, h, t, eq);
   if(h.sexe === 'm') corps += '<path d="M139.5 112 L 139.5 142 Q 150 149 160.5 142 L 160.5 112 Z" fill="' + K.u('peau') + '"' + c(2.1) + '/><path d="M139.5 116 Q 150 129 160.5 116 L 160.5 129 Q 150 135 139.5 129 Z" fill="' + K.peau.ombre + '"/><path d="M152 118 L 152 140" stroke="' + K.peau.ombre + '" stroke-width="3" opacity=".7"/>';
   else corps += '<path d="M142 112 L 142 142 Q 150 148 158 142 L 158 112 Z" fill="' + K.u('peau') + '"' + c(2) + '/><path d="M142 116 Q 150 128 158 116 L 158 128 Q 150 134 142 128 Z" fill="' + K.peau.ombre + '"/>';
-  corps += torse(K, h, t);
+  corps += G && G.a('corps') ? G.couche('corps') : torse(K, h, t);
   if(t === 1) corps += baudrierT1(K, h);
   if(h.role === 'alchimiste') corps += sacoche(K, h, t, eq);
   corps += ceinture(K, h, t);
@@ -5196,42 +5235,47 @@ function heros(h, opts){
   corps += bandouliere(K, h, eq, tal);
   corps += petitsCeinture(K, h, eq);
   if(eq.poche === 'thermometre') corps += '<path d="M112 282 L 108 260" stroke="' + O + '" stroke-width="5" stroke-linecap="round"/><path d="M112 282 L 108 260" stroke="#e6f6ff" stroke-width="3" stroke-linecap="round"/><circle cx="108" cy="259" r="3" fill="#e05a5a"' + c(1) + '/>';
-  if(t <= 1) corps += foulard(K, h);
-  if(eq.cou) corps += objetCou(K, h, eq.cou);
+  if(t <= 1 && !(G && (G.a('bouche') || G.a('cou') || G.a('corps')))) corps += foulard(K, h);
+  if(G && G.a('cou')) corps += G.couche('cou');
+  else if(eq.cou) corps += objetCou(K, h, eq.cou);
   if(eq.broche === 'oeil_faucon') corps += '<g transform="translate(130 150)"><circle r="12" fill="' + K.u('feu') + '" class="pj-pulse"/><path d="M-8 0 Q 0 -7 8 0 Q 0 7 -8 0 Z" fill="' + K.u('or') + '"' + c(1.4) + '/><circle r="3" fill="#2a6fd0"/><circle cx="-1" cy="-1" r="1" fill="#fff"/></g>';
   if(eq.epaule === 'grappin') corps += '<g transform="translate(120 150)"><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="#c9a46a" stroke-width="5"/><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="' + O + '" stroke-width="1" stroke-dasharray="3 2"/><path d="M10 8 L 16 18 M16 18 l-4 4 M16 18 l4 4 M16 18 l0 6" stroke="#9aa0b0" stroke-width="2.4" stroke-linecap="round"/></g>';
-  corps += mainGauche(K, h, t, eq);
-  corps += bras(K, h.role, t, eq);
-  corps += mains(K, h.role, eq);
+  corps += G && G.a('arme') ? G.couche('arme') : mainGauche(K, h, t, eq);
+  corps += bras(K, h.role, t, eq) + (G ? G.couche('bras') : '');
+  corps += mains(K, h.role, eq) + (G ? G.couche('mains') : '');
   if(h.role === 'pisteur' && t === 4 && !eq.cape) corps += '';
   if(h.role === 'pisteur' && t >= 3){
     corps += '<path d="M106 152 C 104 136 118 126 138 130 L 141 152 C 128 160 116 160 106 152 Z" fill="' + K.u('or') + '"' + c(2.2) + '/><path d="M112 148 C 118 140 128 138 136 140" stroke="#94620e" stroke-width="1.6" fill="none"/><circle cx="124" cy="143" r="3.4" fill="' + K.role.c + '"' + c(1) + '/>';
   }
-  if((h.role === 'pisteur' && (eq.cape === 'cape_rodeur' || t === 4))){
+  if((h.role === 'pisteur' && (eq.cape === 'cape_rodeur' || t === 4)) && !(G && G.a('cape'))){
     corps += '<path d="M114 148 C 118 130 134 124 150 124 C 166 124 182 130 186 148 C 176 142 164 140 150 140 C 136 140 124 142 114 148 Z" fill="' + K.u('cape') + '"' + c(2.2) + '/><circle cx="150" cy="141" r="5.5" fill="' + K.u('or') + '"' + c(1.4) + '/><circle cx="150" cy="141" r="2.2" fill="' + K.role.c + '"/>';
   }
   if(eq.cape === 'cape_scene'){
     corps += '<path d="M118 146 C 124 136 140 132 150 132 C 160 132 176 136 182 146 C 170 142 160 140 150 140 C 140 140 130 142 118 146 Z" fill="#9a1830"' + c(2) + '/><circle cx="150" cy="140" r="5" fill="' + K.u('or') + '"' + c(1.3) + '/>';
   }
+  if(G) corps += G.couche('capeAvant') + G.couche('ceinture');
   corps += mainDroite(K, h, t, eq);
-  fig += '<g transform="' + corpsT + '">' + corps + '</g>';
+  fig += '<g transform="' + corpsT + '">' + bas + (DY ? '<g transform="translate(0 ' + DY + ')">' + corps + '</g>' : corps) + '</g>';
 
   /* --- cheveux sur le buste --- */
-  if(coif.devant) fig += '<g transform="' + teteT + '">' + coif.devant(K) + '</g>';
+  if(coif.devant && cacheCh !== 'capuche' && cacheCh !== 'tout') fig += '<g transform="' + teteT + '">' + coif.devant(K) + '</g>';
 
   /* --- tête --- */
   var tete = '';
   if(chapeau && chapeau.id === 'etoile') tete += '';
-  tete += coif.nuque(K);
+  if(cacheCh !== 'tout') tete += coif.nuque(K);
   var garcon = h.sexe === 'm';
-  var face = {age:age, sexe:h.sexe, lueur:tal.vision || h.potion === 'vision', sansSourcils:true};
+  var face = {age:age, sexe:h.sexe, lueur:tal.vision || h.potion === 'vision', sansSourcils:true, regard:guet ? 1 : 0};
   tete += garcon ? visageM(K, face) : visage(K, face);
   var bb = garcon && age !== 'enfant' ? h.barbe : 'aucune';
   if(bb && bb !== 'aucune') tete += garcon ? barbeM(K, bb) : barbe(K, bb);
-  if(eq.masque === 'masque_ombre') tete += '<path d="' + (garcon ? 'M-26 14 C -20 10 20 10 26 14 C 25.6 18 23.6 21 20.4 24 C 15.6 30.2 9 34.6 0 36.6 C -9 34.6 -15.6 30.2 -20.4 24 C -23.6 21 -25.6 18 -26 14 Z' : 'M-26 14 C -20 10 20 10 26 14 C 26 26 16 34 0 36 C -16 34 -26 26 -26 14 Z') + '" fill="#2a2440"' + c(2) + '/><path d="M-26 14 C -20 10 20 10 26 14" stroke="#8ff3ff" stroke-width="1.4" fill="none" opacity=".7"/>';
+  if(G && G.a('bouche')) tete += G.couche('bouche');
+  else if(eq.masque === 'masque_ombre') tete += '<path d="' + (garcon ? 'M-26 14 C -20 10 20 10 26 14 C 25.6 18 23.6 21 20.4 24 C 15.6 30.2 9 34.6 0 36.6 C -9 34.6 -15.6 30.2 -20.4 24 C -23.6 21 -25.6 18 -26 14 Z' : 'M-26 14 C -20 10 20 10 26 14 C 26 26 16 34 0 36 C -16 34 -26 26 -26 14 Z') + '" fill="#2a2440"' + c(2) + '/><path d="M-26 14 C -20 10 20 10 26 14" stroke="#8ff3ff" stroke-width="1.4" fill="none" opacity=".7"/>';
   var sourc = garcon ? sourcilsM(K, face) : sourcils(K, face);
-  if(coif.sousMeche) tete += sourc + coif.avant(K);
+  if(cacheCh === 'tout') tete += sourc;
+  else if(coif.sousMeche) tete += sourc + coif.avant(K);
   else tete += coif.avant(K) + sourc;
+  if(G) tete += G.couche('yeux');
   /* yeux : lunettes, monocle */
   if(eq.yeux === 'lunettes_sage') tete += '<g fill="#d8f4ff" fill-opacity=".25" stroke="' + K.u('or') + '" stroke-width="2"><circle cx="-12" cy="6" r="10"/><circle cx="12" cy="6" r="10"/></g><path d="M-2 5 q 2 -2 4 0 M-22 4 l-6 -2 M22 4 l6 -2" stroke="' + K.u('or') + '" stroke-width="2" fill="none"/>';
   if(eq.yeux === 'oeil_cristal' || tal.savante){
@@ -5242,6 +5286,7 @@ function heros(h, opts){
   if(tal.herboriste) tete += '<g><path d="M-30 -36 C -20 -50 0 -54 2 -54" stroke="#4a8a3a" stroke-width="2.4" fill="none"/>' + [[-28,-38,-30],[-20,-46,-10],[-10,-51,10],[0,-54,30]].map(function(p){ return '<path d="M' + p[0] + ' ' + p[1] + ' q -4 -8 4 -10 q 2 6 -4 10 Z" fill="#7fd08a"' + c(1) + ' transform="rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')"/>'; }).join('') + '<circle cx="-24" cy="-44" r="3" fill="#ff9ac0"' + c(.8) + '/></g>';
   if(tal.oreille) tete += '<g transform="translate(31 14)"><circle r="2.4" fill="' + K.u('or') + '"' + c(1) + '/><g style="color:' + K.role.c + '" transform="translate(2 12)">' + note(0, 0, .55) + '</g></g>';
   if(chapeau) tete += chapeau.svg(K);
+  if(G) tete += G.couche('tete');
   if(eq.plume === 'plume_rossignol'){
     tete += chapeau ? '' : '<g transform="translate(30 -16) rotate(30)">' + A('pj-pulse', '<ellipse cx="0" cy="-14" rx="9" ry="16" fill="' + K.u('cyan') + '"/>') + '<path d="M0 6 C -6 -6 -6 -20 0 -32 C 6 -20 6 -6 0 6 Z" fill="#e8fbff"' + c(1.4) + '/><path d="M0 4 L 0 -28" stroke="#7fb8d8" stroke-width="1"/></g>';
   }
@@ -5797,7 +5842,10 @@ window.Persos = {
   expression:expression,
   PNJ:(function(){ var r = {}; Object.keys(PNJ).forEach(function(k){ r[k] = {nom:PNJ[k].nom, metier:PNJ[k].metier}; }); return r; })(),
   visible:function(id){ return !!VISIBLES[id]; },
-  palier:palier
+  palier:palier,
+  /* garde-robe : garderobe.js branche ici le dessin des vêtements (couches), avec les mêmes outils de dessin */
+  garde:function(ext){ GARDE = ext || null; },
+  outils:{O:O, c:c, A:A, mix:mix, clair:clair, sombre:sombre, etoile4:etoile4, f1:f1, lin:lin, linU:linU, rad:rad, bottes:bottes, palier:palier}
 };
 })();
 
@@ -6821,11 +6869,70 @@ var OBSTACLES_P = {
   arche: '<g><path d="M-58,4 L-58,-90 C-58,-150 58,-150 58,-90 L58,4 L36,4 L36,-86 C36,-120 -36,-120 -36,-86 L-36,4 Z" fill="#8f8aa6" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-36,4 L-36,-86 C-36,-120 36,-120 36,-86 L36,4 Z" fill="#14112a" opacity=".85"/><path d="M-50,-40 L-44,-40 M-50,-70 L-44,-70 M44,-56 L50,-56" stroke="' + CONTOUR + '" stroke-width="3"/></g>'
 };
 var GENRE_P = {caisse:'bloc', tonneau:'bloc', foin:'bloc', rocher:'bloc', poule:'bloc', roule:'bloc', haie:'bloc', charrette:'bloc', etal:'bloc', tronc:'bas', barriere:'bas', chien:'bas', flaque:'bas', linge:'haut', branche:'haut', boost:'boost', arche:'arche'};
+/* --- Variante « forêt » (params.decor = 'foret') : mêmes obstacles, mêmes genres (donc mêmes gestes),
+   autres dessins. Ex. E1 : poursuivre le petit chien noir et blanc entre les arbres (params.fuyard = 'chien'). --- */
+var FORET_P = {
+  /* à sauter (bas) : racines, tronc couché, flaque de boue */
+  barriere: '<g><path d="M-60,4 C-52,-32 -22,-36 0,-18 C22,-36 52,-32 60,4" stroke="' + CONTOUR + '" stroke-width="17" fill="none" stroke-linecap="round"/><path d="M-60,4 C-52,-32 -22,-36 0,-18 C22,-36 52,-32 60,4" stroke="#7a4e2c" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M-40,-24 C-34,-28 -26,-28 -20,-24 M22,-26 C28,-29 36,-28 40,-22" stroke="#b07a4a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M-6,-14 C-2,-20 6,-20 8,-14" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/></g>',
+  chien: '<g><path d="M-54,4 C-44,-28 -10,-28 4,4 M-4,4 C12,-24 42,-24 54,4" stroke="' + CONTOUR + '" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M-54,4 C-44,-28 -10,-28 4,4 M-4,4 C12,-24 42,-24 54,4" stroke="#8a5a33" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="-26" cy="-20" r="5" fill="#3c9a62"/><circle cx="28" cy="-18" r="4" fill="#3c9a62"/></g>',
+  /* à se baisser (haut) : liane qui pend (la branche basse reste la même) */
+  linge: '<g><path d="M-64,-116 C-24,-126 20,-106 64,-118" stroke="' + CONTOUR + '" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M-64,-116 C-24,-126 20,-106 64,-118" stroke="#6b4426" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-40,-118 C-46,-96 -34,-84 -40,-64 M-8,-114 C-14,-92 -2,-80 -8,-58 M26,-116 C20,-96 32,-84 26,-66 M48,-118 C44,-102 52,-92 48,-80" stroke="' + CONTOUR + '" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-40,-118 C-46,-96 -34,-84 -40,-64 M-8,-114 C-14,-92 -2,-80 -8,-58 M26,-116 C20,-96 32,-84 26,-66 M48,-118 C44,-102 52,-92 48,-80" stroke="#3c9a62" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="-40" cy="-64" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="-8" cy="-58" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="26" cy="-66" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="-36" cy="-92" rx="6" ry="4" fill="#5fcf86"/><ellipse cx="-12" cy="-88" rx="6" ry="4" fill="#5fcf86"/><ellipse cx="30" cy="-94" rx="6" ry="4" fill="#5fcf86"/></g>',
+  /* à éviter (bloc) : rocher moussu, souche, buisson, gros rochers, cercle de champignons, hérisson, rondin qui roule */
+  caisse: '<g><path d="M-38,2 C-44,-20 -28,-46 -4,-48 C22,-50 40,-30 38,-8 C38,-2 36,2 32,2 Z" fill="#6f7a6a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-30,-30 C-18,-46 10,-50 26,-36 C16,-30 -12,-26 -30,-30 Z" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="3"/></g>',
+  tonneau: '<g><path d="M-36,2 C-30,-2 -28,-6 -26,-10 L-24,-44 C-10,-50 10,-50 24,-44 L26,-10 C28,-6 30,-2 36,2 Z" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><ellipse cx="0" cy="-44" rx="24" ry="8" fill="#d9a066" stroke="' + CONTOUR + '" stroke-width="4"/><ellipse cx="0" cy="-44" rx="13" ry="4" fill="none" stroke="#a8743f" stroke-width="2.5"/><path d="M-12,-36 L-12,-6 M8,-34 L8,-4" stroke="#6b4426" stroke-width="3"/></g>',
+  foin: '<g><path d="M-46,2 C-52,-22 -36,-46 -16,-42 C-8,-58 18,-58 26,-42 C44,-46 54,-22 46,2 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-26,-22 C-20,-30 -10,-30 -6,-22 M8,-32 C14,-40 24,-38 28,-30" stroke="#5fcf86" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="-30" cy="-8" r="4" fill="#e5484d"/><circle cx="20" cy="-14" r="4" fill="#e5484d"/></g>',
+  charrette: '<g><path d="M-46,2 C-52,-24 -36,-58 -6,-60 C24,-62 46,-40 44,-10 C44,-4 42,2 38,2 Z" fill="#7d7a92" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M14,2 C10,-14 22,-30 38,-28 C52,-26 58,-12 54,2 Z" fill="#6f7a6a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-36,-40 C-22,-56 4,-60 22,-50 C10,-44 -18,-38 -36,-40 Z" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="3"/></g>',
+  etal: '<g><ellipse cx="0" cy="0" rx="50" ry="11" fill="#2f5a3a" opacity=".8"/>' +
+    '<path d="M-38,0 L-38,-16 M-12,-2 L-12,-28 M14,-2 L14,-20 M36,0 L36,-14" stroke="' + CONTOUR + '" stroke-width="10" stroke-linecap="round"/><path d="M-38,0 L-38,-16 M-12,-2 L-12,-28 M14,-2 L14,-20 M36,0 L36,-14" stroke="#f3e7cb" stroke-width="5" stroke-linecap="round"/>' +
+    '<path d="M-52,-14 C-50,-30 -26,-30 -24,-14 Z M-30,-26 C-28,-48 4,-48 6,-26 Z M0,-18 C2,-36 26,-36 28,-18 Z M24,-12 C26,-28 46,-28 48,-12 Z" fill="#e5484d" stroke="' + CONTOUR + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<circle cx="-16" cy="-38" r="3" fill="#fff"/><circle cx="-4" cy="-34" r="2.6" fill="#fff"/><circle cx="12" cy="-28" r="2.6" fill="#fff"/><circle cx="-40" cy="-22" r="2.4" fill="#fff"/><circle cx="36" cy="-20" r="2.4" fill="#fff"/></g>',
+  poule: '<g><path d="M-26,-2 C-30,-26 -10,-42 10,-38 C26,-34 32,-20 28,-2 Z" fill="#8a6a4a" stroke="' + CONTOUR + '" stroke-width="5"/>' +
+    '<path d="M-24,-14 l-8,-6 M-20,-26 l-6,-9 M-10,-34 l-2,-11 M2,-38 l3,-11 M14,-36 l7,-9 M-14,-20 l-6,-7 M-2,-28 l0,-9 M10,-26 l5,-8" stroke="' + CONTOUR + '" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M22,-20 C30,-24 40,-18 40,-10 C36,-4 26,-4 22,-8 Z" fill="#e8d7ae" stroke="' + CONTOUR + '" stroke-width="3.5"/><circle cx="40" cy="-11" r="2.6" fill="' + CONTOUR + '"/><circle cx="31" cy="-15" r="2" fill="' + CONTOUR + '"/><path d="M-8,-2 L-10,6 M10,-2 L12,6" stroke="' + CONTOUR + '" stroke-width="4" stroke-linecap="round"/></g>',
+  roule: '<g class="mja-roule"><circle cx="0" cy="-28" r="30" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="0" cy="-28" r="22" fill="#d9a066" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="0" cy="-28" r="14" fill="none" stroke="#a8743f" stroke-width="3"/><circle cx="0" cy="-28" r="6" fill="none" stroke="#a8743f" stroke-width="3"/><path d="M0,-50 L0,-40" stroke="#6b4426" stroke-width="3"/></g>',
+  /* le raccourci : des arches de bois couvertes de feuilles (et le buisson du milieu reste la haie) */
+  arche: '<g><path d="M-58,4 L-58,-90 C-58,-150 58,-150 58,-90 L58,4 L36,4 L36,-86 C36,-120 -36,-120 -36,-86 L-36,4 Z" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-36,4 L-36,-86 C-36,-120 36,-120 36,-86 L36,4 Z" fill="#0c1a12" opacity=".85"/>' +
+    '<circle cx="-46" cy="-112" r="18" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="-14" cy="-140" r="20" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="20" cy="-138" r="18" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="48" cy="-110" r="17" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-50,-40 L-44,-40 M-50,-70 L-44,-70 M44,-56 L50,-56" stroke="#4a3220" stroke-width="3"/></g>'
+};
+/* le petit chien noir et blanc qui s'enfuit, de profil (pattes et queue animées dans la boucle de jeu) */
+function chienSVG(){
+  var patte = function(cls, x, y, c){ return '<g transform="translate(' + x + ',' + y + ')"><g class="' + cls + '"><path d="M0,0 L-2,15" stroke="' + CONTOUR + '" stroke-width="8" stroke-linecap="round"/><path d="M0,0 L-2,15" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/></g></g>'; };
+  return '<g class="mja-fuyard-corps mja-chien"><g transform="scale(1.15)">' +
+    '<g transform="translate(-22,-27)"><g class="ch-queue"><path d="M0,0 C-8,-4 -14,-14 -10,-24" stroke="' + CONTOUR + '" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M0,0 C-8,-4 -14,-14 -10,-24" stroke="#f4f1ea" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M-11,-18 C-13,-21 -12,-24 -10,-24" stroke="#1d1a22" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>' +
+    patte('ch-ar2', -14, -16, '#1d1a22') + patte('ch-av2', 14, -16, '#f4f1ea') +
+    '<ellipse cx="0" cy="-23" rx="24" ry="12" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="4"/>' +
+    '<path d="M-18,-30 C-10,-37 6,-36 10,-28 C4,-20 -8,-19 -16,-24 Z" fill="#1d1a22"/>' +
+    patte('ch-ar1', -16, -15, '#1d1a22') + patte('ch-av1', 16, -15, '#f4f1ea') +
+    '<g transform="translate(22,-34)"><g class="ch-tete">' +
+      '<ellipse cx="3" cy="1" rx="13" ry="11" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="4"/>' +
+      '<path d="M-7,-5 C-3,-12 7,-12 11,-6 C9,1 1,3 -5,0 Z" fill="#1d1a22"/>' +
+      '<ellipse cx="15" cy="5" rx="7" ry="5" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="21" cy="3.5" r="3" fill="#1d1a22"/>' +
+      '<circle cx="6" cy="-2" r="2.4" fill="#fff"/><circle cx="6.5" cy="-2" r="1.4" fill="#1d1a22"/>' +
+      '<path d="M-6,-8 C-15,-10 -15,6 -8,7 C-5,3 -4,-3 -6,-8 Z" fill="#1d1a22" stroke="' + CONTOUR + '" stroke-width="2.5"/>' +
+      '<path d="M12,11 C13,16 18,16 19,12" fill="#ff8fb3" stroke="' + CONTOUR + '" stroke-width="2"/>' +
+    '</g></g></g></g>';
+}
+/* pattes qui galopent, queue qui frétille : appelé à chaque image avec le temps t (s) */
+function animerChien(g, t, vite){
+  if(!g) return;
+  var ph = t * (vite || 1) * 15;
+  var q = g.__q || (g.__q = {a1:g.querySelector('.ch-av1'), a2:g.querySelector('.ch-av2'), r1:g.querySelector('.ch-ar1'), r2:g.querySelector('.ch-ar2'), qu:g.querySelector('.ch-queue'), te:g.querySelector('.ch-tete')});
+  if(q.a1) q.a1.setAttribute('transform', 'rotate(' + (38 * Math.sin(ph)).toFixed(1) + ')');
+  if(q.a2) q.a2.setAttribute('transform', 'rotate(' + (38 * Math.sin(ph + 1.2)).toFixed(1) + ')');
+  if(q.r1) q.r1.setAttribute('transform', 'rotate(' + (-38 * Math.sin(ph + .4)).toFixed(1) + ')');
+  if(q.r2) q.r2.setAttribute('transform', 'rotate(' + (-38 * Math.sin(ph + 1.6)).toFixed(1) + ')');
+  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + (24 * Math.sin(t * 22)).toFixed(1) + ')');
+  if(q.te) q.te.setAttribute('transform', 'translate(0,' + (1.5 * Math.sin(ph * 2)).toFixed(1) + ')');
+}
 var HZ = 168, BAS = 470;
 function projette(p){ var e = Math.pow(fixe(p, 0, 1.3), 1.7); return {e:e, y:HZ + (BAS - HZ) * e, s:0.07 + 0.93 * e}; }
 var LANE_H = [168, 180, 192], LANE_B = [62, 180, 298];
 function laneX(l, e){ var a = Math.floor(fixe(l, 0, 2)), b = Math.min(2, a + 1), f = l - a; var xa = LANE_H[a] + (LANE_B[a] - LANE_H[a]) * e, xb = LANE_H[b] + (LANE_B[b] - LANE_H[b]) * e; return xa + (xb - xa) * f; }
-function routeSVG(id){
+function routeSVG(id, decor){
+  if(decor === 'foret') return foretSVG(id);
   var s = '<defs><linearGradient id="' + id + 'ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset=".55" stop-color="#3b2a6a"/><stop offset=".85" stop-color="#7a4a86"/><stop offset="1" stop-color="#e08a6a"/></linearGradient>' +
     '<linearGradient id="' + id + 'sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c4a3a"/><stop offset="1" stop-color="#12261f"/></linearGradient>' +
     '<linearGradient id="' + id + 'rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5e4a"/><stop offset="1" stop-color="#b48a62"/></linearGradient></defs>' +
@@ -6839,12 +6946,29 @@ function routeSVG(id){
     '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L-200,720 M' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720" stroke="#5e4634" stroke-width="5"/>';
   return s;
 }
+/* la forêt au crépuscule : lumière verte et dorée, rangées de sapins à l'horizon, sol de mousse, sentier de terre, lucioles */
+function foretSVG(id){
+  var s = '<defs><linearGradient id="' + id + 'ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2219"/><stop offset=".5" stop-color="#244a33"/><stop offset=".82" stop-color="#5f7a3e"/><stop offset="1" stop-color="#d9a65a"/></linearGradient>' +
+    '<linearGradient id="' + id + 'sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4a2c"/><stop offset="1" stop-color="#0f1f15"/></linearGradient>' +
+    '<linearGradient id="' + id + 'rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a4430"/><stop offset="1" stop-color="#8f6e48"/></linearGradient></defs>' +
+    '<rect x="' + DEC.x + '" y="' + DEC.y + '" width="' + DEC.w + '" height="' + (HZ - DEC.y) + '" fill="url(#' + id + 'ciel)"/>' +
+    '<circle cx="250" cy="132" r="34" fill="#ffe3a3" opacity=".55"/><circle cx="250" cy="132" r="64" fill="#ffe3a3" opacity=".12"/>';
+  for(var i = 0; i < 26; i++) s += '<circle class="mja-etoile" cx="' + U.rand(-230, 590).toFixed(0) + '" cy="' + U.rand(-120, HZ + 140).toFixed(0) + '" r="' + U.rand(1.2, 2.4).toFixed(1) + '" fill="#d8ff8a" style="animation-delay:-' + U.rand(0, 3).toFixed(1) + 's"/>';
+  var rang = function(y0, h, pas, coul){ var d = 'M-240,' + HZ; for(var x = -240; x <= 600; x += pas){ d += ' L' + x + ',' + (y0 - U.rand(h * .5, h)).toFixed(0) + ' L' + (x + pas / 2) + ',' + y0; } return '<path d="' + d + ' L600,' + HZ + ' Z" fill="' + coul + '"/>'; };
+  s += rang(HZ - 14, 70, 34, '#15301f') + rang(HZ, 46, 26, '#0e2417') +
+    '<rect x="' + DEC.x + '" y="' + HZ + '" width="' + DEC.w + '" height="' + (DEC.y + DEC.h - HZ) + '" fill="url(#' + id + 'sol)"/>' +
+    '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720 L-200,720 Z" fill="url(#' + id + 'rt)" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L-200,720 M' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720" stroke="#2f4a2a" stroke-width="7"/>';
+  return s;
+}
 function silhouetteSVG(){
   return '<g class="mja-fuyard-corps"><path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7 M-11,-22 l-11,3 M11,-22 l11,3" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/><path d="M-10,-40 C-6,-50 6,-50 10,-40" stroke="#3b2a6a" stroke-width="3" fill="none"/><circle cx="-4" cy="-38" r="2" fill="#ffd36a"/><circle cx="4" cy="-38" r="2" fill="#ffd36a"/></g>';
 }
 MJ.enregistrer('poursuite', {
   nom:'Course-poursuite', role:'pisteur', ic:'🏃',
-  consigne:'Rattrape la silhouette en glissant ton doigt : à gauche ou à droite pour changer de couloir, vers le haut pour sauter, vers le bas pour glisser !',
+  consigne:function(p){ return 'Rattrape ' + (p && p.fuyard === 'chien' ? 'le petit chien' : 'la silhouette') + ' en glissant ton doigt : à gauche ou à droite pour changer de couloir, vers le haut pour sauter, vers le bas pour glisser !'; },
+  /* dessins réutilisés par l'écran d'accueil (mj-regles.js) : le chien et les obstacles de la forêt */
+  art:{chien:chienSVG, animerChien:animerChien, foret:FORET_P},
   minuteur:false,
   reglages: function(n, mods){
     var p = {niveau:n};
@@ -6892,12 +7016,18 @@ MJ.enregistrer('poursuite', {
     var P = Partie(fin);
     var hud = creerHud(el);
     hud.el.classList.add('mja-hud-course');
-    var terrain = U.html('<div class="mja-terrain mja-poursuite"></div>');
+    /* variante : params.fuyard = 'chien' (le petit chien noir et blanc), params.decor = 'foret' ; sinon, comme avant */
+    var CHIEN = p.fuyard === 'chien', FORET = p.decor === 'foret';
+    var TX = CHIEN ? {raccourci:'👀 Il prend un raccourci !', aie:'Aïe ! Il s\'éloigne…', perdue:'💨 Il s\'échappe…', attrapee:'🙌 Attrapé !', tAttrapee:'attrapé', tPerdue:'perdu',
+        rate:'Le petit chien a disparu entre les arbres…', gagne:'Tu as rattrapé le petit chien !'}
+      : {raccourci:'👀 Elle prend un raccourci !', aie:'Aïe ! Elle s\'éloigne…', perdue:'💨 Elle s\'échappe…', attrapee:'🙌 Attrapée !', tAttrapee:'attrapée', tPerdue:'perdue',
+        rate:'La silhouette a disparu à l\'horizon…', gagne:'Tu as rattrapé la silhouette !'};
+    var terrain = U.html('<div class="mja-terrain mja-poursuite' + (FORET ? ' foret' : '') + '"></div>');
     el.appendChild(terrain);
     var id = nid('po');
-    terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id) +
+    terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id, FORET ? 'foret' : '') +
       '<g class="mja-bords"></g><g class="mja-tirets"></g><g class="mja-sol-obs"></g>' +
-      '<g class="mja-fuyard">' + silhouetteSVG() + '<text class="mja-fuyard-ex" x="0" y="-58" text-anchor="middle">!</text></g>' +
+      '<g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-58" text-anchor="middle">!</text></g>' +
       '<g class="mja-obstacles"></g>' +
       '<g class="mja-coureur"><ellipse class="mja-ombre-c" cx="0" cy="6" rx="30" ry="8" fill="#000" opacity=".3"/><g class="mja-coureur-corps">' +
         '<path class="mja-jambe g" d="M-10,-6 L-14,10" stroke="' + CONTOUR + '" stroke-width="9" stroke-linecap="round"/><path class="mja-jambe d" d="M10,-6 L14,10" stroke="' + CONTOUR + '" stroke-width="9" stroke-linecap="round"/>' +
@@ -6920,9 +7050,9 @@ MJ.enregistrer('poursuite', {
     var compteur = document.createElement('div'); compteur.className = 'mja-sans-faute'; hud.el.appendChild(compteur);
     var pas = 0, sansFaute = 0;
     function majHud(anim){
-      var s = '<span class="mja-pas-bout" title="attrapée">🙌</span>';
+      var s = '<span class="mja-pas-bout" title="' + TX.tAttrapee + '">🙌</span>';
       for(var k = -1; k < p.perdu; k++) s += '<span class="mja-pas-pt' + (k === pas ? ' ici' : '') + (k === 0 ? ' depart' : '') + '"></span>';
-      s += '<span class="mja-pas-bout" title="perdue">💨</span>';
+      s += '<span class="mja-pas-bout" title="' + TX.tPerdue + '">💨</span>';
       rangee.innerHTML = s;
       compteur.innerHTML = 'Sans faute : <b>' + sansFaute + '</b>/' + p.rattrape;
       if(anim){ compteur.classList.remove('pop'); void compteur.offsetWidth; compteur.classList.add('pop'); }
@@ -6933,12 +7063,14 @@ MJ.enregistrer('poursuite', {
     var arbres = [];
     for(var i = 0; i < 12; i++){
       var g = svgNoeud('g', {}, gBords);
-      if(i % 4 === 3) g.innerHTML = '<path d="M0,0 L0,-120" stroke="' + CONTOUR + '" stroke-width="8"/><path d="M0,0 L0,-120" stroke="#3b3346" stroke-width="4"/><rect x="-11" y="-146" width="22" height="28" rx="4" fill="#ffd36a" stroke="' + CONTOUR + '" stroke-width="4"/><circle cy="-132" r="30" fill="#ffd36a" opacity=".18"/>';
+      if(FORET && i % 2 === 1) g.innerHTML = '<path d="M0,0 L0,-56" stroke="' + CONTOUR + '" stroke-width="16"/><path d="M0,0 L0,-56" stroke="#5e3f26" stroke-width="10"/><circle cx="0" cy="-92" r="42" fill="#245e3c" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-20" cy="-104" r="20" fill="#2f7a4c"/><circle cx="16" cy="-84" r="16" fill="#2f7a4c"/><path d="M-22,0 C-30,-14 -16,-18 -10,-8 M22,0 C30,-14 16,-18 10,-8" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/>';
+      else if(i % 4 === 3 && !FORET) g.innerHTML = '<path d="M0,0 L0,-120" stroke="' + CONTOUR + '" stroke-width="8"/><path d="M0,0 L0,-120" stroke="#3b3346" stroke-width="4"/><rect x="-11" y="-146" width="22" height="28" rx="4" fill="#ffd36a" stroke="' + CONTOUR + '" stroke-width="4"/><circle cy="-132" r="30" fill="#ffd36a" opacity=".18"/>';
       else g.innerHTML = '<path d="M0,0 L0,-30" stroke="#4a3220" stroke-width="10"/><path d="M-34,-24 L0,-120 L34,-24 Z" fill="#1f5a40" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-26,-60 L0,-140 L26,-60 Z" fill="#2a7050" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/>';
       arbres.push({g:g, p:(i % 6) / 6, cote:i < 6 ? -1 : 1, loin:(i % 2) ? 1.6 : 1});
     }
     var tirets = [];
     for(var k = 0; k < 12; k++) tirets.push({l:svgNoeud('line', {'class':'mja-tiret'}, gTirets), p:(k % 6) / 6, voie:k < 6 ? 0.5 : 1.5});
+    if(FORET) tirets.forEach(function(tr){ tr.l.style.stroke = '#c9b48a'; tr.l.style.opacity = '.4'; });
 
     /* État */
     var voie = 1, xJ = LANE_B[1], saut = 0, glisse = 0, fini = false, t = 0, vagues = [], prochain = 1.1, nVagues = 0, etat = 'course';
@@ -6978,7 +7110,7 @@ MJ.enregistrer('poursuite', {
     function objet(type, voieO, en){
       var o = {type:type, genre:GENRE_P[type], voie:voieO, de:voieO, vers:voieO};
       o.g = svgNoeud('g', {'class':'mja-obstacle g-' + o.genre + (p.aide ? ' tot' : '')}, (type === 'flaque' || o.genre === 'boost') ? gSol : gObs);
-      o.g.innerHTML = OBSTACLES_P[type];
+      o.g.innerHTML = (FORET && FORET_P[type]) || OBSTACLES_P[type];
       if(en) Object.assign(o, en);
       return o;
     }
@@ -7024,9 +7156,9 @@ MJ.enregistrer('poursuite', {
       corps.classList.remove('trebuche'); void corps.getBoundingClientRect(); corps.classList.add('trebuche');
       choc = 0.9; invuln = 0.9; vitesseC = 0.5;
       sansFaute = 0; pas++;
-      texte('Aïe ! Elle s\'éloigne…', 'ko');
+      texte(TX.aie, 'ko');
       majHud(true);
-      if(pas >= p.perdu){ etat = 'perdue'; finT = 0; annonce(terrain, '💨 Elle s\'échappe…', 1300); }
+      if(pas >= p.perdu){ etat = 'perdue'; finT = 0; annonce(terrain, TX.perdue, 1300); }
     }
     function propre(){
       sansFaute++;
@@ -7036,7 +7168,7 @@ MJ.enregistrer('poursuite', {
         U.son('gain'); U.vibrer(20);
         coureur.classList.remove('sprint'); void coureur.getBoundingClientRect(); coureur.classList.add('sprint');
         texte('Je me rapproche !', 'ok');
-        if(pas <= -p.aDistance){ etat = 'attrape'; finT = 0; fuyard.classList.add('attrape'); U.son('victoire'); annonce(terrain, '🙌 Attrapée !', 1300); }
+        if(pas <= -p.aDistance){ etat = 'attrape'; finT = 0; fuyard.classList.add('attrape'); U.son('victoire'); annonce(terrain, TX.attrapee, 1300); }
       }
       majHud(true);
     }
@@ -7066,10 +7198,10 @@ MJ.enregistrer('poursuite', {
       if(etat === 'perdue'){
         finT += dt; pF = Math.max(-0.05, pF - dt * 0.15);
         fuyard.style.opacity = Math.max(0, 1 - finT / 1.1).toFixed(2);
-        if(finT > 1.2 && !fini){ fini = true; P.finir({reussi:false, score:0, erreurs:chocs, detail:'La silhouette a disparu à l\'horizon…'}, 400); }
+        if(finT > 1.2 && !fini){ fini = true; P.finir({reussi:false, score:0, erreurs:chocs, detail:TX.rate}, 400); }
       } else if(etat === 'attrape'){
         finT += dt; pF = Math.min(0.9, pF + dt * 1.2);
-        if(finT > 1.1 && !fini){ fini = true; P.finir({reussi:true, score:1, erreurs:chocs, detail:'Tu as rattrapé la silhouette !'}, 500); }
+        if(finT > 1.1 && !fini){ fini = true; P.finir({reussi:true, score:1, erreurs:chocs, detail:TX.gagne}, 500); }
       }
       if(saut > 0) saut = Math.max(0, saut - dt);
       if(glisse > 0) glisse = Math.max(0, glisse - dt);
@@ -7078,7 +7210,7 @@ MJ.enregistrer('poursuite', {
         var cote = U.choix([0, 2]);
         raccourci = {cote:cote, t:0};
         fuyCible = cote; fuyard.classList.add('alerte');
-        annonce(terrain, '👀 Elle prend un raccourci !', 1100);
+        annonce(terrain, TX.raccourci, 1100);
       }
       if(raccourci){ raccourci.t += dt; if(raccourci.t > 1.1 && !raccourci.lance){ raccourci.lance = true; lancerRaccourci(); } }
       else if(t > fuyChange){ fuyChange = t + U.rand(1.2, 2.6); fuyCible = U.randInt(0, 2); }
@@ -7116,6 +7248,7 @@ MJ.enregistrer('poursuite', {
       if(etat !== 'perdue') fuyard.style.opacity = cache ? '0' : '1';
       var xF = etat === 'attrape' ? xJ : laneX(fuyX, prF.e);
       fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 4 - Math.abs(Math.sin(t * 9)) * 2).toFixed(1) + ') scale(' + (0.55 + prF.s * 1.6).toFixed(3) + ')');
+      if(CHIEN && etat !== 'attrape') animerChien(fuyard, t, V);
       /* vagues */
       var conseilTxt = '';
       vagues.forEach(function(ev){
@@ -14029,7 +14162,7 @@ function demo(el, html, duree, etapes){
    mimiques, moments.
    mods : revele (signe plus long et un peu plus net : clochette de vérité), aide (+N « Revoir »
           à la fin), erreurs (+N erreurs permises), lent (<1 : tout plus lent), temps (+N s réparties),
-          signes (retire N sortes de signes, les secrets en dernier), phrases (N phrases de moins,
+          signes (retire N sortes de signes, voir RETRAIT_SIGNES), phrases (N phrases de moins,
           contenu d'exemple seulement, 3 au minimum), indice (N fois « flair » sur la liste finale :
           « Celle-ci est sûrement vraie » sur une phrase vraie, rien sur un mensonge).
    params : pnj, ic, nom, repliques [{texte, ment}] (4 à 6, parfois 2 mensonges ; facultatif :
@@ -14054,19 +14187,19 @@ var BANQUE_MENSONGE = [
   "Je range mes pièces dans une chaussette."
 ];
 
-/* Répertoire : 20 mimiques honnêtes et 5 signes du menteur (dont 2 secrets).
+/* Répertoire : 20 mimiques honnêtes et 7 signes du menteur, tous montrés aux joueurs (décision de Romain, 3 nov.).
    e(c) renvoie l'expression pour Persos.expression ; c.cote = -1 ou 1, c.F = netteté, c.p = réglages.
    d = durée (s) d'une mimique honnête. Tout passe par le visage et la tête : aucun mouvement du cadre. */
 function cote(c, g, d){ return c.cote < 0 ? g : d; }
 var MIMIQUES = {
-  /* --- signes du menteur : les trois premiers sont expliqués aux joueurs --- */
+  /* --- signes du menteur : les 7 sont expliqués aux joueurs (« Les signes » et l'écran d'accueil) --- */
   coin:        {sorte:'signe', ic:'😏', court:'Yeux de côté + sourire de travers', nom:'Yeux qui glissent sur le côté + petit sourire de travers', e:function(c){ return {regard:cote(c, 'cote-g', 'cote-d'), ampleur:.55 + .3 * c.F, sourire:'coin', bouche:'fermee', vitesse:.24}; }},
   rougeur:     {sorte:'signe', ic:'🌸', court:'Le haut du front rosit', nom:'Le haut du front rosit, lentement', e:function(c){ return {rougeur:.42 + .3 * c.F, vitesseRougeur:c.p.monte || 1.2}; }},
   sueur:       {sorte:'signe', ic:'💧', court:'Une goutte glisse sur le front', nom:'Une fine goutte glisse sur le front pendant toute la phrase', e:function(c){ return {sueur:c.F, sueurDuree:3}; }},
   force:       {sorte:'signe', ic:'😬', court:'Sourire forcé : les yeux ne sourient pas', nom:'Sourire forcé : la bouche sourit, les yeux restent plats', e:function(){ return {sourire:'force', bouche:'fermee', vitesse:.15}; }},
   mordille:    {sorte:'signe', ic:'👄', court:'Il mordille sa lèvre du bas', nom:'Rentre la lèvre du bas et la mordille (2 ou 3 petits coups)', e:function(){ return {bouche:'mordille', vitesse:.08}; }},
-  morsure:     {sorte:'signe', secret:true, ic:'🦷', nom:'Se mord la lèvre, très vite (dents du haut visibles)', e:function(){ return {bouche:'mord', vitesse:.07}; }},
-  double:      {sorte:'signe', secret:true, ic:'😑', nom:'Double clignement rapide', e:function(c){ return {cligne:'double', cligneDuree:c.p.double || .36}; }},
+  morsure:     {sorte:'signe', ic:'🦷', nom:'Se mord la lèvre, très vite (dents du haut visibles)', e:function(){ return {bouche:'mord', vitesse:.07}; }},
+  double:      {sorte:'signe', ic:'😑', nom:'Double clignement rapide', e:function(c){ return {cligne:'double', cligneDuree:c.p.double || .36}; }},
   /* --- 20 mimiques honnêtes, bien visibles --- */
   pencheD:     {sorte:'vraie', ic:'↗️', nom:'Penche la tête à droite', d:[1.1, 1.6], e:function(){ return {penche:1, vitesse:.32}; }},
   pencheG:     {sorte:'vraie', ic:'↖️', nom:'Penche la tête à gauche', d:[1.1, 1.6], e:function(){ return {penche:-1, vitesse:.32}; }},
@@ -14090,7 +14223,7 @@ var MIMIQUES = {
   plisse:      {sorte:'vraie', ic:'😑', nom:'Plisse les yeux', d:[.8, 1.2], e:function(){ return {paupieres:.5, yeuxRieurs:.5, sourcils:'bas', vitesse:.2}; }}
 };
 var SIGNES_M = Object.keys(MIMIQUES).filter(function(k){ return MIMIQUES[k].sorte === 'signe'; });
-/* ordre de retrait par l'aide « signes » : les plus discrets d'abord, les secrets en dernier */
+/* ordre de retrait par l'équipement (mods.signes) : sueur et rougeur d'abord ; ordre inchangé depuis que les 7 signes sont montrés */
 var RETRAIT_SIGNES = ['sueur', 'rougeur', 'mordille', 'force', 'coin', 'double', 'morsure'];
 function signesPossibles(n){ return SIGNES_M.filter(function(k){ return RETRAIT_SIGNES.indexOf(k) >= Math.min(n || 0, RETRAIT_SIGNES.length - 1); }); }
 var VRAIES_M = Object.keys(MIMIQUES).filter(function(k){ return MIMIQUES[k].sorte === 'vraie'; });
@@ -14170,17 +14303,19 @@ function visageMensonge(box, pnj, ic){
   };
 }
 
-/* Écran d'aide « Les signes du menteur » (seulement les trois signes connus) */
+/* Écran d'aide « Les signes du menteur » : les 7 signes (sauf ceux que l'équipement enlève) */
 var TEXTES_AIDE = {
   coin:'Ses yeux glissent sur le côté, avec un petit sourire de travers.',
   rougeur:'Le haut de son front rosit, tout doucement.',
   sueur:'Une fine goutte glisse lentement sur son front.',
   force:'Sa bouche sourit, mais ses yeux ne sourient pas.',
-  mordille:'Il rentre sa lèvre du bas et la mordille.'
+  mordille:'Il rentre sa lèvre du bas et la mordille.',
+  morsure:'Il se mord la lèvre, très vite : on voit ses dents.',
+  double:'Il cligne des yeux deux fois, très vite.'
 };
-function aideSignes(hote, pnj, ic, possibles){
+function aideSignes(hote, pnj, ic, possibles, quandFerme){
   var T = minuteurs();
-  var cartes = ['coin', 'force', 'mordille', 'rougeur', 'sueur'].filter(function(k){ return !possibles || possibles.indexOf(k) >= 0; })
+  var cartes = ['coin', 'force', 'mordille', 'morsure', 'rougeur', 'sueur', 'double'].filter(function(k){ return !possibles || possibles.indexOf(k) >= 0; })
     .map(function(k){ return [k, TEXTES_AIDE[k]]; });
   var vrais = [
     ['sourireFerme', 'Un vrai sourire : ses yeux sourient aussi.'],
@@ -14215,7 +14350,7 @@ function aideSignes(hote, pnj, ic, possibles){
     }
     T.t(boucle, 300 + i * 200);
   });
-  function fermer(){ T.tout(); U.stop(); if(ov.parentNode) ov.parentNode.removeChild(ov); }
+  function fermer(){ T.tout(); U.stop(); if(ov.parentNode) ov.parentNode.removeChild(ov); if(quandFerme){ var q = quandFerme; quandFerme = null; q(); } }
   ov.querySelector('.mjb-m-aide-ok').addEventListener('click', function(){ U.son('clic'); fermer(); });
   return fermer;
 }
@@ -14239,7 +14374,7 @@ MJ.enregistrer('mensonge', {
     var revoir = (n <= 3 ? 1 : 0) + (mods.aide || 0);
     var indices = mods.indice || 0, moins = mods.phrases || 0;
     var liste = signesPossibles(mods.signes || 0);
-    var connus = liste.filter(function(k){ return !MIMIQUES[k].secret; }).length;
+    var connus = liste.length;
     var voit = F >= .8 ? 'un peu' : F >= .66 ? 'à peine' : 'très peu';
     return {signe:T, force:F, double:dbl, monte:1.3 / lent, tient:tient, descend:1.2 / lent, trois:trois,
       kMim:U.parNiveau(n, 1.15, 1, .9) / lent, kParole:U.parNiveau(n, 1.25, 1, .9) / lent, temps:mods.temps || 0,
@@ -14323,7 +14458,7 @@ MJ.enregistrer('mensonge', {
     var nom = p.nom || (window.Persos && Persos.PNJ && Persos.PNJ[pnj] && Persos.PNJ[pnj].nom) || 'Le villageois';
     el.innerHTML =
       '<div class="mjb-jeu mjb-mensonge mjb-barde-fond">' +
-        '<div class="mjb-m-haut"><div class="mjb-m-puces">' + rep.map(function(r, i){ return '<button type="button" class="mjb-m-puce futur" data-i="' + i + '" disabled aria-pressed="false" aria-label="Phrase ' + (i + 1) + '"><b>' + (i + 1) + '</b><span>🤥</span></button>'; }).join('') + '</div>' + jaugeHTML(p.erreurs || 0) + '</div>' +
+        '<div class="mjb-m-haut"><div class="mjb-m-puces">' + rep.map(function(r, i){ return '<button type="button" class="mjb-m-puce futur" data-i="' + i + '" disabled aria-pressed="false" aria-label="Phrase ' + (i + 1) + '"><b>' + (i + 1) + '</b><span>🤥</span></button>'; }).join('') + '</div>' + jaugeHTML(p.erreurs || 0) + '<button type="button" class="mjb-m-signes">📖 Les signes</button></div>' +
         '<div class="mjb-m-scene">' +
           '<div class="mjb-m-visage"></div>' +
           '<div class="mjb-bulle-parole mjb-m-bulle"><p class="mjb-texte"></p>' + lireBtn('', 'mjb-m-lire') + '<div class="mjb-barre"><i></i></div></div>' +
@@ -14425,6 +14560,18 @@ MJ.enregistrer('mensonge', {
         revision:{type:'mensonge', qui:pnj, nom:nom, ic:ic, phrases:rep.map(function(r, i){ return {texte:r.texte, avis:!!marques[i]}; })}});
     }
     accuse.addEventListener('click', function(){ if(phase === 'parle' || phase === 'pause') basculer(k); });
+    /* « 📖 Les signes » pendant la partie : le villageois se tait ; à la fermeture, il redit la phrase en entier
+       (ou passe à la suivante si elle était finie), pour qu'on ne rate pas un mensonge en lisant l'aide. */
+    var fermerAideJeu = null;
+    root.querySelector('.mjb-m-signes').addEventListener('click', function(e){
+      e.stopPropagation(); if(termine || fermerAideJeu) return; U.son('page');
+      var avant = phase, i0 = k, reprendre = null;
+      if(avant === 'debut' || avant === 'parle' || avant === 'pause'){
+        R.tout(); T.tout(); phase = 'aide'; root.__signeActif = false; X({});
+        reprendre = function(){ if(termine) return; if(avant === 'pause') (i0 + 1 < rep.length ? parler(i0 + 1) : juger()); else parler(Math.max(0, i0)); };
+      }
+      fermerAideJeu = aideSignes(root.closest('.mj') || root, pnj, ic, permis, function(){ fermerAideJeu = null; if(reprendre) reprendre(); });
+    });
     Array.prototype.forEach.call(puces, function(b){ b.addEventListener('click', function(){ if(phase !== 'verdict') basculer(+b.dataset.i); }); });
     verdict.addEventListener('click', function(e){
       var ch = e.target.closest('.mjb-m-choix'), rv = e.target.closest('.mjb-m-revoir'), va = e.target.closest('.mjb-m-valider'), fl = e.target.closest('.mjb-m-flair');
@@ -14457,7 +14604,7 @@ MJ.enregistrer('mensonge', {
     X({});
     T.t(function(){ X({cligne:true}); }, 500);
     T.t(function(){ parler(0); }, 1200);
-    return {arreter: function(){ termine = true; T.tout(); R.tout(); }};
+    return {arreter: function(){ termine = true; T.tout(); R.tout(); if(fermerAideJeu) fermerAideJeu(); }};
   }
 });
 
@@ -20177,7 +20324,7 @@ var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
   traces:'Suis bien les traces de pas !',
-  poursuite:'Saute, baisse-toi, attrape-la !',
+  poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, attrape le chien !' : 'Saute, baisse-toi, attrape-la !'; },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire en arrière, vise et lâche !',
   bulles:'Touche les bulles dans le même ordre !',
@@ -20297,7 +20444,9 @@ var COUREUR = '<g class="rg-jambes"><path class="g" d="M-10,-6 L-14,10" stroke="
   '<path d="M-18,-58 C-18,-80 18,-80 18,-58 C12,-52 -12,-52 -18,-58 Z" fill="#3c9a62" stroke="' + K + '" stroke-width="5"/>' +
   '<path d="M-6,-40 L6,-40 L4,-18 L-4,-18 Z" fill="#8a5a33" stroke="' + K + '" stroke-width="3"/>';
 var FUYARD = '<path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-52" r="9" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/>';
-D('poursuite', function(el){
+D('poursuite', function(el, prm){
+  prm = prm || {};
+  var ART = (MJ.TYPES.poursuite && MJ.TYPES.poursuite.art) || {}, CHIEN = prm.fuyard === 'chien' && ART.chien, FORET = prm.decor === 'foret' && ART.foret;
   var H = LH, HZ = 150, YR = 390, ER = (YR - HZ) / (H - HZ);
   var LHa = [140.7, 150, 159.3], LB = [37, 150, 263];
   function laneX(l, e){ var a = Math.floor(Math.min(1.999, Math.max(0, l))), b = a + 1, f = l - a; var xa = LHa[a] + (LB[a] - LHa[a]) * e, xb = LHa[b] + (LB[b] - LHa[b]) * e; return xa + (xb - xa) * f; }
@@ -20315,21 +20464,26 @@ D('poursuite', function(el){
   });
   var main = piste(cles), id = uid('rgp');
   var svg = svgDemo(el,
-    '<defs><linearGradient id="' + id + 'c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset=".6" stop-color="#3b2a6a"/><stop offset="1" stop-color="#e08a6a"/></linearGradient>' +
-    '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c4a3a"/><stop offset="1" stop-color="#12261f"/></linearGradient>' +
-    '<linearGradient id="' + id + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5e4a"/><stop offset="1" stop-color="#b48a62"/></linearGradient></defs>' +
-    '<rect width="' + LW + '" height="' + HZ + '" fill="url(#' + id + 'c)"/><circle cx="238" cy="52" r="20" fill="#fff4d0" opacity=".92"/><circle cx="238" cy="52" r="34" fill="#fff4d0" opacity=".1"/>' +
-    '<path d="M0,' + HZ + ' L0,124 L30,112 L62,128 L96,108 L130,126 L170,110 L206,128 L240,112 L276,126 L300,116 L300,' + HZ + ' Z" fill="#241d44"/>' +
+    '<defs><linearGradient id="' + id + 'c" x1="0" y1="0" x2="0" y2="1">' + (FORET ? '<stop offset="0" stop-color="#0d2219"/><stop offset=".55" stop-color="#244a33"/><stop offset=".85" stop-color="#5f7a3e"/><stop offset="1" stop-color="#d9a65a"/>' : '<stop offset="0" stop-color="#141038"/><stop offset=".6" stop-color="#3b2a6a"/><stop offset="1" stop-color="#e08a6a"/>') + '</linearGradient>' +
+    '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#2a4a2c' : '#2c4a3a') + '"/><stop offset="1" stop-color="' + (FORET ? '#0f1f15' : '#12261f') + '"/></linearGradient>' +
+    '<linearGradient id="' + id + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#5a4430' : '#7a5e4a') + '"/><stop offset="1" stop-color="' + (FORET ? '#8f6e48' : '#b48a62') + '"/></linearGradient></defs>' +
+    '<rect width="' + LW + '" height="' + HZ + '" fill="url(#' + id + 'c)"/>' +
+    (FORET ? '<circle cx="216" cy="122" r="30" fill="#ffe3a3" opacity=".5"/><circle cx="216" cy="122" r="56" fill="#ffe3a3" opacity=".12"/>' +
+      '<path d="M0,' + HZ + ' L0,100 L14,130 L28,86 L42,124 L58,92 L72,128 L88,80 L102,122 L118,96 L134,130 L150,88 L166,126 L182,94 L198,128 L214,84 L230,124 L246,98 L262,128 L278,90 L292,124 L300,104 L300,' + HZ + ' Z" fill="#15301f"/>' +
+      '<path d="M0,' + HZ + ' L0,126 L12,144 L26,118 L40,142 L54,122 L70,146 L86,120 L100,144 L116,124 L132,146 L148,120 L164,144 L180,122 L196,146 L212,120 L228,144 L244,124 L260,146 L276,120 L290,144 L300,128 L300,' + HZ + ' Z" fill="#0e2417"/>'
+    : '<circle cx="238" cy="52" r="20" fill="#fff4d0" opacity=".92"/><circle cx="238" cy="52" r="34" fill="#fff4d0" opacity=".1"/>' +
+      '<path d="M0,' + HZ + ' L0,124 L30,112 L62,128 L96,108 L130,126 L170,110 L206,128 L240,112 L276,126 L300,116 L300,' + HZ + ' Z" fill="#241d44"/>') +
     '<rect y="' + HZ + '" width="' + LW + '" height="' + (H - HZ) + '" fill="url(#' + id + 's)"/>' +
     '<path d="M136,' + HZ + ' L164,' + HZ + ' L320,' + H + ' L-20,' + H + ' Z" fill="url(#' + id + 'r)" stroke="' + K + '" stroke-width="2"/>' +
-    '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="#e8d7ae" stroke-width="2.5" stroke-dasharray="12 12" fill="none"/>' +
-    '<g class="rg-fuyard">' + FUYARD + '</g><g class="rg-obs"></g>' +
+    '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="' + (FORET ? '#c9b48a' : '#e8d7ae') + '" stroke-width="2.5" stroke-dasharray="12 12" fill="none"' + (FORET ? ' opacity=".45"' : '') + '/>' +
+    (FORET ? '<g class="rg-arbres">' + [[22, 214, 1], [278, 214, 1], [6, 300, 1.5], [294, 300, 1.5], [40, 176, .7], [260, 176, .7]].map(function(a){ return '<g transform="translate(' + a[0] + ',' + a[1] + ') scale(' + a[2] + ')"><path d="M0,0 L0,-26" stroke="' + K + '" stroke-width="9"/><path d="M0,0 L0,-26" stroke="#5e3f26" stroke-width="5"/><circle cx="0" cy="-44" r="22" fill="#245e3c" stroke="' + K + '" stroke-width="3.5"/><circle cx="-8" cy="-50" r="9" fill="#2f7a4c"/></g>'; }).join('') + '</g>' : '') +
+    '<g class="rg-fuyard">' + (CHIEN ? ART.chien() : FUYARD) + '</g><g class="rg-obs"></g>' +
     '<ellipse class="rg-ombre" cx="150" cy="' + YR + '" rx="22" ry="5" fill="#000" opacity=".3"/>' +
     '<g class="rg-coureur">' + COUREUR + '</g>' +
     '<g class="rg-trace" opacity="0"><path d="" stroke="#8ff3ff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><path d="" fill="#8ff3ff" opacity=".85"/></g>');
   var gObs = $(svg, '.rg-obs'), cour = $(svg, '.rg-coureur'), ombre = $(svg, '.rg-ombre'), fuy = $(svg, '.rg-fuyard'), tir = $(svg, '.rg-tirets');
   var jg = $(svg, '.rg-jambes .g'), jd = $(svg, '.rg-jambes .d'), trace = $(svg, '.rg-trace'), gMain = $(svg, '.rg-main');
-  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = SP[s.o]; gObs.appendChild(g); return g; });
+  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = (FORET && FORET[s.o]) || SP[s.o]; gObs.appendChild(g); return g; });
   return boucle(el, P, function(t){
     var i = Math.min(SEG.length - 1, Math.floor(t / DU)), s = SEG[i], t0 = i * DU;
     obs.forEach(function(g, j){
@@ -20349,7 +20503,8 @@ D('poursuite', function(el){
     ombre.setAttribute('cx', f1(x)); ombre.setAttribute('rx', f1(22 + dy / 6));
     jg.setAttribute('transform', dy ? 'rotate(18)' : 'rotate(' + f1(course * 14) + ')');
     jd.setAttribute('transform', dy ? 'rotate(-18)' : 'rotate(' + f1(-course * 14) + ')');
-    pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, .5);
+    pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, CHIEN ? .62 : .5);
+    if(CHIEN && ART.animerChien) ART.animerChien(fuy, t, 1);
     tir.setAttribute('stroke-dashoffset', f1(-(t * 60) % 24));
     var m = main(t); poserMain(gMain, m.x, m.y, m.p, t, []);
     var g = GESTE[s.g], ut = entre(t, t0 + 1.12, t0 + 1.45), op = (t > t0 + 1.12 && t < t0 + 2) ? .9 * (1 - entre(t, t0 + 1.5, t0 + 2)) : 0;
@@ -20738,6 +20893,62 @@ D('mensonge', function(el, prm){
     main(t);
   }, 4.3);
 });
+
+/* Le catalogue des mimiques sous la phrase (exception voulue par Romain pour ce jeu) :
+   « 🤥 Signes de mensonge » (cadre rouge) et « 🙂 Pas un mensonge » (cadre vert).
+   La liste vient du jeu (MJ.TYPES.mensonge.MIMIQUES) ; chaque vignette est le visage du jeu
+   (Persos.pnj + Persos.expression) qui refait la mimique en boucle, comme l'écran « 📖 Les signes ».
+   Tous les signes du menteur sont montrés (décision de Romain, 3 nov.), sauf ceux que l'équipement enlève. */
+var NOMS_MIMIQUES = {
+  coin:'Yeux de côté', rougeur:'Front rose', sueur:'Goutte de sueur', force:'Sourire forcé', mordille:'Lèvre mordillée', morsure:'Lèvre mordue', double:'Double clignement',
+  pencheD:'Penche à droite', pencheG:'Penche à gauche', lent:'Yeux fermés', reflechit:'Yeux en l\'air', petitSourire:'Petit sourire', grandSourire:'Grand sourire',
+  sourireFerme:'Sourire fermé', rieurs:'Yeux rieurs', sourcils:'Sourcils levés', unSourcil:'Un sourcil levé', concentre:'Sourcils froncés', hoche:'Hoche la tête',
+  nonTete:'Petit non', pince:'Lèvres pincées', moue:'Fait la moue', mentonHaut:'Menton levé', mentonBas:'Menton baissé', calme:'Sourire calme', surpris:'Yeux étonnés', plisse:'Yeux plissés'
+};
+DEMOS.mensonge.reserve = 64;
+DEMOS.mensonge.extra = function(prm){
+  var def = MJ.TYPES.mensonge, M = def && def.MIMIQUES;
+  if(!M || !window.Persos || !Persos.pnj || !Persos.expression) return null;
+  prm = prm || {};
+  var qui = (prm.pnj && Persos.PNJ && Persos.PNJ[prm.pnj]) ? prm.pnj : 'fortune';
+  var permis = prm.listeSignes && prm.listeSignes.length ? prm.listeSignes : null;
+  var signes = Object.keys(M).filter(function(k){ return M[k].sorte === 'signe' && (!permis || permis.indexOf(k) >= 0); });
+  var vraies = Object.keys(M).filter(function(k){ return M[k].sorte === 'vraie'; });
+  function nom(k){ return NOMS_MIMIQUES[k] || M[k].court || M[k].nom; }
+  function section(cls, titre, ks){
+    return '<div class="rg-cat-s ' + cls + '"><h3 class="rg-cat-t"><span>' + titre + '</span></h3><div class="rg-cat-g">' +
+      ks.map(function(k){ return '<figure class="rg-cat-c" data-m="' + k + '"><div class="rg-cat-f">' + Persos.pnj(qui, {anime:true, expressif:true, cadre:'visage', id:uid('rgcat')}) + '</div><figcaption>' + esc(nom(k)) + '</figcaption></figure>'; }).join('') +
+      '</div></div>';
+  }
+  var box = document.createElement('section');
+  box.className = 'rg-cat';
+  box.innerHTML = section('ment', '🤥 Signes de mensonge', signes) + section('vrai', '🙂 Pas un mensonge', vraies);
+  /* un 🔊 par titre : il lit le titre et le nom de chaque mimique */
+  [['ment', 'Signes de mensonge', signes], ['vrai', 'Pas un mensonge', vraies]].forEach(function(x){
+    var h = box.querySelector('.rg-cat-s.' + x[0] + ' .rg-cat-t');
+    if(h && MJ.boutonLire) h.insertBefore(MJ.boutonLire(x[1] + ' : ' + x[2].map(nom).join(', ') + '.', 'rg-cat-lire'), h.firstChild);
+  });
+  /* chaque visage refait sa mimique, en décalé (même réglage que l'écran « Les signes » du jeu) */
+  var p = {double:.5, monte:.8}, figes = reduit();
+  Array.prototype.forEach.call(box.querySelectorAll('.rg-cat-c'), function(cd, i){
+    var svg = cd.querySelector('svg'), k = cd.dataset.m, m = M[k];
+    if(!svg || !m) return;
+    function jouer(){
+      if(!figes && !box.isConnected && box.__vu) return;
+      if(box.isConnected) box.__vu = true;
+      var e = m.e({cote:1, F:1, p:p});
+      if(k === 'coin') e.ampleur = 1;
+      if(k === 'rougeur') e.rougeur = .8;
+      if(k === 'sueur') e.sueurDuree = 2.6;
+      try{ Persos.expression(svg, Object.assign(m.sorte === 'signe' && !e.bouche ? {bouche:'fermee'} : {}, e)); }catch(er){}
+      if(figes) return;
+      setTimeout(function(){ if(box.isConnected) try{ Persos.expression(svg, {bouche:'fermee', vitesseRougeur:.8}); }catch(er){} }, k === 'sueur' ? 2700 : 2300);
+      setTimeout(jouer, 3400);
+    }
+    setTimeout(jouer, 400 + i * 120);
+  });
+  return box;
+};
 
 /* RAGOTS — un villageois raconte ; la main touche 🔊 pour écouter, puis
    👍 J'y crois ; un autre raconte : 👎 C'est faux. Tout va dans le carnet 📒. */
@@ -21463,7 +21674,7 @@ M.reserve = function(){ var P = M.P(); return P ? Math.max(0, M.reserveMax() - (
 M.archiver = function(){
   var S = M.S, P = S.e, E = M.E(); if(!P || !E) return;
   S.journal = S.journal || {};
-  S.journal[P.id] = {titre:E.titre, e:P.id, tableau:P.tableau ? M.copie(P.tableau) : null, carnet:(P.carnet || []).slice(), raye:(P.raye || []).slice(), suspects:(E.qui && E.qui.choix || []).slice(),
+  S.journal[P.id] = {titre:E.titre, e:P.id, tableau:P.tableau ? M.copie(P.tableau) : null, liege:P.liege ? M.copie(P.liege) : null, mission:P.mission ? M.copie(P.mission) : null, revisions:(P.revisions || []).slice(), vus:M.copie(P.vus || {}), carnet:(P.carnet || []).slice(), raye:(P.raye || []).slice(), suspects:(E.qui && E.qui.choix || []).slice(),
     recus:M.cle(P.recus || {}).filter(function(k){ return P.recus[k] && /^(obj|info|pot):/.test(k); }).map(function(k){ try{ return M.nomCode(k); }catch(e){ return null; } }).filter(Boolean)};
 };
 M.noter = function(texte, ic, cle){
@@ -21551,6 +21762,10 @@ function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'
 var LEGENDE = {1:'Plus facile que le jeu', 2:'Plus facile que le jeu', 3:'Le niveau de l\'enquête 1', 4:'Le niveau de l\'enquête 2', 5:'Le niveau de l\'enquête 3', 6:'Enquête 4', 7:'Enquête 5', 8:'Enquête 6', 9:'Enquête 7', 10:'Enquête 8'};
 /* Jeux retirés du jeu (remplacés) : on ne les montre plus */
 var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1};
+/* Variantes à essayer : mêmes règles et même difficulté, seulement le décor et le fuyard changent */
+var VARIANTES = {
+  poursuite:[{id:'chien', ic:'🐕', nom:'Course-poursuite : le petit chien', d:'Variante forêt (enquête 1)', params:{fuyard:'chien', decor:'foret'}}]
+};
 var MODS_AIDES = {erreurs:1, zone:1.25, lent:0.85, aide:1, temps:3, pouce:1};
 /* Jeux en cours de refonte : visibles mais pas encore jouables */
 var EN_TRAVAUX = {};
@@ -21584,6 +21799,10 @@ function rendre(){
       s += '<button class="sl-jeu" data-jeu="' + k + '"><span class="sl-statut" title="' + esc(NOM_STATUT[st]) + '">' + st + '</span><span class="sl-jeu-ic">' + (d.ic || '🎲') + '</span><b>' + esc(d.nom || k) + '</b>' +
         (regleDecide(k) ? '<small class="sl-cal">Réglage décidé (enquête 1) : le choix de difficulté et les aides ne comptent pas</small>' :
           (dernier ? '<small>' + (dernier.ok ? '✔ réussi' : '✖ raté') + ' au niveau ' + dernier.n + '</small>' : '<small>pas encore joué</small>')) + '</button>';
+      /* variantes du même jeu (mêmes réglages, autre décor), ex. le petit chien dans la forêt (E1) */
+      (VARIANTES[k] || []).forEach(function(v){
+        s += '<button class="sl-jeu sl-variante" data-jeu="' + k + '" data-var="' + v.id + '"><span class="sl-statut">' + st + '</span><span class="sl-jeu-ic">' + v.ic + '</span><b>' + esc(v.nom) + '</b><small>' + esc(v.d) + '</small></button>';
+      });
     });
     s += '</div></section>';
   });
@@ -21605,7 +21824,7 @@ function relire(k){
   Revision.monter(plein.querySelector('.sl-rv'), j.revision, sauver);
   plein.querySelector('.sl-quitter').onclick = function(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); };
 }
-function jouer(type){
+function jouer(type, varId){
   var plein = document.getElementById('sl-plein');
   plein.innerHTML = '<button class="sl-quitter">← Retour à la salle</button><div class="sl-cadre"></div>';
   plein.hidden = false; document.body.classList.add('sl-bloque');
@@ -21613,12 +21832,14 @@ function jouer(type){
   var decide = regleDecide(type), niveau = decide ? 3 : etat.niveau, avecAides = decide ? false : etat.aides;
   var mods = avecAides ? MODS_AIDES : {};
   var params = MJ.reglages(type, niveau, Object.assign({}, mods));
+  var vr = (VARIANTES[type] || []).filter(function(v){ return v.id === varId; })[0];
+  if(vr) Object.keys(vr.params).forEach(function(k){ params[k] = vr.params[k]; });
   var aides = avecAides ? [{ic:'🎒', nom:'Équipement et talents de héros', effet:'une erreur de plus, zones plus larges, un peu plus lent'}] : [];
   var partie = MJ.lancer(plein.querySelector('.sl-cadre'), type, params, function(res){
     etat.journal.push({type:type, n:decide ? 'décidé' : niveau, ok:!!res.reussi, aides:avecAides, essais:res.essais || 1, revision:res.revision || null});
     if(etat.journal.length > 30) etat.journal = etat.journal.slice(-30);
     sauver(); fermer();
-  }, {aides:aides, lireAuto:false, details:true});
+  }, {aides:aides, lireAuto:false, details:true, titre:vr ? vr.nom : undefined});
   plein.querySelector('.sl-quitter').onclick = function(){ try{ partie.arreter(); }catch(e){} fermer(); };
   function fermer(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); }
 }
@@ -21626,7 +21847,7 @@ document.addEventListener('click', function(ev){
   var b = ev.target.closest('[data-niv],[data-jeu],[data-effacer],[data-relire]');
   if(!b) return;
   if(b.dataset.niv){ etat.niveau = +b.dataset.niv; sauver(); rendre(); }
-  else if(b.dataset.jeu) jouer(b.dataset.jeu);
+  else if(b.dataset.jeu) jouer(b.dataset.jeu, b.dataset.var);
   else if(b.dataset.relire !== undefined){ relire(+b.dataset.relire); }
   else if(b.dataset.effacer){ etat.journal = []; sauver(); rendre(); }
   try{ if(window.Brume) Brume.son('clic'); }catch(e){}
