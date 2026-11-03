@@ -21465,14 +21465,18 @@ M.lire = function(texte, opts){
     if(ok) return;
     M.parle = false;
   }
+  M.lireAppareil(t);
+};
+/* La voix de l'appareil (aussi le secours de voix.js quand une voix naturelle échoue sur une tablette) */
+M.lireAppareil = function(t, fini){
   try{
     var u = new SpeechSynthesisUtterance(t);
     u.lang = 'fr-FR'; if(voixFr) u.voice = voixFr;
     u.rate = 0.95; u.pitch = 1;
-    u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); };
+    u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); if(fini) fini(); };
     M.parle = true; majBoutonStop();
     speechSynthesis.speak(u);
-  }catch(e){ M.parle = false; }
+  }catch(e){ M.parle = false; if(fini) fini(); }
 };
 M.stop = function(){ try{ speechSynthesis.cancel(); }catch(e){} try{ if(window.Voix) Voix.stop(); }catch(e){} M.parle = false; majBoutonStop(); };
 /* Jamais de lecture automatique : quatre tablettes qui parlent en même temps, c'est insupportable. On lit seulement sur un bouton 🔊. */

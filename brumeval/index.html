@@ -5269,7 +5269,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-03 19:17 -->
+<!-- Brumeval v2 · version de test du 2026-11-03 20:33 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -26277,6 +26277,80 @@ var SOURCES = [
   'https://cdn.jsdelivr.net/npm/@diffusionstudio/vits-web@1.0.3/+esm',
   'https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm'
 ];
+/* ---------- Tablettes Android sans « navigator.storage.getDirectory » (Chrome avant 109, autres navigateurs) ----------
+   Le moteur de voix range ses modèles dans le stockage privé du navigateur (OPFS). Quand il n'existe pas,
+   on le remplace par une petite copie faite avec IndexedDB (Romain, 3 novembre : « getDirectory is not a function »).
+   Seul ce que le moteur utilise : getDirectoryHandle, getFileHandle, createWritable (write, close), getFile, remove, keys. */
+(function(){
+  try{
+    if(!navigator.storage) Object.defineProperty(navigator, 'storage', {value:{}, configurable:true});
+    if(typeof navigator.storage.getDirectory === 'function' || !window.indexedDB) return;
+  }catch(e){ return; }
+  var dbp = null;
+  function base(){
+    return dbp || (dbp = new Promise(function(ok, ko){
+      var r = indexedDB.open('brumeval-voix', 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore('f'); };
+      r.onsuccess = function(){ ok(r.result); };
+      r.onerror = function(){ dbp = null; ko(r.error); };
+    }));
+  }
+  function op(mode, fn){
+    return base().then(function(d){ return new Promise(function(ok, ko){
+      var t = d.transaction('f', mode), st = t.objectStore('f'), res;
+      var q = fn(st); if(q) q.onsuccess = function(){ res = q.result; };
+      t.oncomplete = function(){ ok(res); };
+      t.onerror = t.onabort = function(){ ko(t.error || new Error('IndexedDB')); };
+    }); });
+  }
+  function absent(){ var e = new Error('A requested file or directory could not be found.'); e.name = 'NotFoundError'; return e; }
+  function sous(chemin){ return op('readonly', function(st){ return st.getAllKeys(); }).then(function(l){ return (l || []).filter(function(k){ return k.indexOf(chemin + '/') === 0; }); }); }
+  function fichier(chemin){
+    return {kind:'file', name:chemin.split('/').pop(),
+      getFile:function(){ return op('readonly', function(st){ return st.get(chemin); }).then(function(b){ if(b === undefined) throw absent(); return b; }); },
+      createWritable:function(){
+        var morceaux = [];
+        return Promise.resolve({
+          write:function(x){ morceaux.push(x && x.data !== undefined ? x.data : x); return Promise.resolve(); },
+          close:function(){ var b = new Blob(morceaux); return op('readwrite', function(st){ return st.put(b, chemin); }); },
+          abort:function(){ morceaux = []; return Promise.resolve(); }
+        });
+      },
+      remove:function(){ return op('readwrite', function(st){ return st.delete(chemin); }); }
+    };
+  }
+  function dossier(chemin){
+    return {kind:'directory', name:chemin.split('/').pop(),
+      getDirectoryHandle:function(n){ return Promise.resolve(dossier(chemin + '/' + n)); },
+      getFileHandle:function(n, o){
+        var c = chemin + '/' + n;
+        return op('readonly', function(st){ return st.get(c); }).then(function(b){
+          if(b !== undefined) return fichier(c);
+          if(o && o.create) return op('readwrite', function(st){ return st.put(new Blob([]), c); }).then(function(){ return fichier(c); });
+          throw absent();
+        });
+      },
+      removeEntry:function(n){ return op('readwrite', function(st){ return st.delete(chemin + '/' + n); }); },
+      remove:function(){ return sous(chemin).then(function(l){ return op('readwrite', function(st){ l.forEach(function(k){ st.delete(k); }); }); }); },
+      keys:function(){
+        var l = null, i = 0, prefixe = chemin + '/';
+        var it = {next:function(){
+          return (l ? Promise.resolve(l) : sous(chemin).then(function(x){ l = x.map(function(k){ return k.slice(prefixe.length); }).filter(function(k){ return k.indexOf('/') < 0; }); return l; }))
+            .then(function(){ return i < l.length ? {value:l[i++], done:false} : {value:undefined, done:true}; });
+        }};
+        if(window.Symbol && Symbol.asyncIterator) it[Symbol.asyncIterator] = function(){ return it; };
+        return it;
+      }
+    };
+  }
+  try{ navigator.storage.getDirectory = function(){ return Promise.resolve(dossier('opfs')); }; }catch(e){}
+  /* Blob.text() et Blob.arrayBuffer() (navigateurs anciens) */
+  function lireBlob(b, comment){ return new Promise(function(ok, ko){ var r = new FileReader(); r.onload = function(){ ok(r.result); }; r.onerror = function(){ ko(r.error); }; r[comment](b); }); }
+  if(window.Blob && !Blob.prototype.arrayBuffer) Blob.prototype.arrayBuffer = function(){ return lireBlob(this, 'readAsArrayBuffer'); };
+  if(window.Blob && !Blob.prototype.text) Blob.prototype.text = function(){ return lireBlob(this, 'readAsText'); };
+  window.__brumeOpfsSecours = true;
+})();
+
 var lib = null, audio = null, cache = {}, nCache = 0, jeton = 0;
 var V = window.Voix = {pret:false, possible:/^https:/.test(location.protocol) && !/claude\.ai|claudeusercontent/.test(location.hostname), etat:'', erreur:''};
 function charger(){
@@ -26335,7 +26409,12 @@ V.lire = function(texte, qui, vitesse, fini){
     audio.playbackRate = c.h * (vitesse || 1);
     audio.onended = audio.onerror = function(){ if(fini) fini(); };
     audio.play().catch(function(){ if(fini) fini(); });
-  }).catch(function(e){ V.erreur = e.message; if(fini) fini(); });
+  }).catch(function(e){
+    V.erreur = e.message;
+    /* la voix naturelle n'a pas marché sur cette tablette : on lit quand même, avec la voix de l'appareil */
+    if(mon === jeton && window.M && M.lireAppareil){ try{ M.lireAppareil(texte, fini); return; }catch(e2){} }
+    if(fini) fini();
+  });
   return true;
 };
 V.cast = CAST;
@@ -32508,14 +32587,18 @@ M.lire = function(texte, opts){
     if(ok) return;
     M.parle = false;
   }
+  M.lireAppareil(t);
+};
+/* La voix de l'appareil (aussi le secours de voix.js quand une voix naturelle échoue sur une tablette) */
+M.lireAppareil = function(t, fini){
   try{
     var u = new SpeechSynthesisUtterance(t);
     u.lang = 'fr-FR'; if(voixFr) u.voice = voixFr;
     u.rate = 0.95; u.pitch = 1;
-    u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); };
+    u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); if(fini) fini(); };
     M.parle = true; majBoutonStop();
     speechSynthesis.speak(u);
-  }catch(e){ M.parle = false; }
+  }catch(e){ M.parle = false; if(fini) fini(); }
 };
 M.stop = function(){ try{ speechSynthesis.cancel(); }catch(e){} try{ if(window.Voix) Voix.stop(); }catch(e){} M.parle = false; majBoutonStop(); };
 /* Jamais de lecture automatique : quatre tablettes qui parlent en même temps, c'est insupportable. On lit seulement sur un bouton 🔊. */
