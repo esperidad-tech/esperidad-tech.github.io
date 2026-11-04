@@ -5737,7 +5737,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 19:13 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 19:18 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-04 19:18';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35016,6 +35017,24 @@ E[3] = {
 };
 })();
 
+/* ===== codes-fixes.js ===== */
+/* ==========================================================
+   Codes gelés (4 novembre, 19 h 20)
+   Les codes d'une enquête dépendaient aussi des enquêtes voisines : quand l'enquête 2 a été réécrite,
+   le code du fil de l'enquête 1 a changé (« cloche-lune-flamme » → « cloche-étoile-chat »). Deux tablettes
+   qui n'avaient pas la même version du jeu ne se comprenaient plus. Maintenant, les codes des enquêtes
+   terminées sont gelés ici : réécrire une autre enquête ne les change plus jamais.
+   Un code ajouté plus tard à une enquête gelée prend un code libre (moteur-base.js, M.codesEnquete).
+   ========================================================== */
+(function(){
+'use strict';
+var GEL = {
+  1:{'moment:1':'champi-flamme-poisson', 'moment:2':'etoile-chapeau-coeur', 'obj:fil':'chat-flamme-cle', 'obj:poils':'chat-lune-soleil', 'obj:plume':'lune-arbre-soleil', 'obj:affiche':'flamme-arbre-chapeau', 'info:carte':'soleil-soleil-cle', 'info:chemin':'cloche-champi-cle', 'info:registre':'chat-lune-lune', 'info:echarpe':'cloche-etoile-chat', 'info:grands_pieds':'lune-chat-chat', 'pot:revelatrice':'cloche-lune-soleil', 'pot:lumiere':'chat-soleil-cle', 'pot:rapidite':'coeur-flamme-cloche', 'pot:invisibilite':'flamme-chapeau-chapeau', 'pot:verite':'flamme-soleil-cle', 'pot:clarte':'soleil-cloche-soleil', 'pot:fumigene':'etoile-soleil-chapeau', 'pot:eclairante':'flamme-cle-lune', 'pot:coeur':'champi-chat-chapeau', 'aide:action':'soleil-chat-soleil', 'victoire:0':'flamme-arbre-poisson', 'victoire:1':'coeur-coeur-champi', 'victoire:2':'coeur-lune-chat', 'victoire:3':'soleil-etoile-arbre', 'suite:0':'coeur-cle-poisson', 'suite:1':'flamme-chat-chapeau', 'suite:2':'soleil-champi-lune', 'suite:3':'poisson-cloche-chapeau', 'defaite:0':'chapeau-champi-cle', 'aide:pisteur:1':'coeur-cloche-chat', 'aide:pisteur:2':'soleil-coeur-chat', 'aide:pisteur:3':'cloche-poisson-champi', 'aide:pisteur:4':'cle-lune-coeur', 'aide:pisteur:5':'arbre-chapeau-chat', 'aide:pisteur:6':'soleil-flamme-cle', 'aide:alchimiste:1':'chapeau-arbre-chat', 'aide:alchimiste:2':'cloche-arbre-chapeau', 'aide:alchimiste:3':'cle-flamme-arbre', 'aide:alchimiste:4':'cloche-arbre-etoile', 'aide:alchimiste:5':'flamme-lune-coeur', 'aide:alchimiste:6':'etoile-cle-lune', 'aide:barde:1':'cle-lune-lune', 'aide:barde:2':'soleil-chapeau-etoile', 'aide:barde:3':'soleil-etoile-cle', 'aide:barde:4':'coeur-etoile-etoile', 'aide:barde:5':'coeur-etoile-champi', 'aide:barde:6':'champi-flamme-flamme', 'pot:hydromel':'arbre-etoile-poisson', 'rumeur:0':'chat-soleil-coeur', 'rumeur:1':'etoile-champi-coeur', 'rumeur:2':'etoile-flamme-cloche', 'rumeur:3':'chapeau-etoile-arbre', 'rumeur:4':'cle-coeur-champi', 'rumeur:5':'chat-poisson-chat', 'plaide:1':'cle-cle-flamme', 'recette:hydromel':'chat-arbre-chapeau'},
+  2:{'moment:1':'poisson-lune-chapeau', 'moment:2':'lune-arbre-cle', 'obj:eau_riviere':'champi-arbre-poisson', 'obj:eau_lavoir':'soleil-cle-coeur', 'obj:colorant':'coeur-etoile-cle', 'obj:pierre':'flamme-chapeau-flamme', 'info:registre':'chapeau-champi-chapeau', 'info:tim_chene':'cle-champi-chat', 'info:traces':'soleil-cle-champi', 'info:lavoir_rose':'etoile-lune-lune', 'info:champ_rase':'soleil-champi-champi', 'info:piece':'champi-coeur-lune', 'info:plans_moulin':'etoile-flamme-chat', 'info:passage':'poisson-chapeau-chapeau', 'info:detour':'flamme-lune-flamme', 'info:canne':'lune-champi-soleil', 'info:odette':'cle-flamme-soleil', 'info:rassemblement':'flamme-cloche-cloche', 'pot:revelatrice':'soleil-chat-etoile', 'pot:lumiere':'arbre-coeur-champi', 'pot:rapidite':'etoile-chapeau-soleil', 'pot:invisibilite':'coeur-etoile-chat', 'pot:verite':'cle-coeur-champi', 'pot:clarte':'cloche-champi-coeur', 'pot:fumigene':'flamme-arbre-chat', 'pot:eclairante':'lune-chat-cle', 'pot:coeur':'cloche-champi-etoile', 'aide:action':'etoile-soleil-champi', 'victoire:0':'champi-chapeau-poisson', 'victoire:1':'cle-cle-coeur', 'victoire:2':'coeur-lune-flamme', 'victoire:3':'chapeau-poisson-lune', 'suite:0':'arbre-poisson-poisson', 'suite:1':'cle-etoile-chat', 'suite:2':'cloche-soleil-chat', 'suite:3':'cloche-lune-flamme', 'defaite:0':'flamme-poisson-champi', 'aide:pisteur:1':'cloche-poisson-soleil', 'aide:pisteur:2':'chat-lune-cle', 'aide:pisteur:3':'champi-cloche-arbre', 'aide:pisteur:4':'chapeau-cloche-cloche', 'aide:pisteur:5':'lune-soleil-chat', 'aide:pisteur:6':'chat-etoile-chapeau', 'aide:alchimiste:1':'champi-cloche-chat', 'aide:alchimiste:2':'chapeau-cle-arbre', 'aide:alchimiste:3':'flamme-champi-lune', 'aide:alchimiste:4':'etoile-poisson-arbre', 'aide:alchimiste:5':'chapeau-soleil-cloche', 'aide:alchimiste:6':'lune-flamme-arbre', 'aide:barde:1':'poisson-chat-etoile', 'aide:barde:2':'poisson-arbre-etoile', 'aide:barde:3':'chat-cloche-flamme', 'aide:barde:4':'cloche-champi-chapeau', 'aide:barde:5':'champi-flamme-chat', 'aide:barde:6':'poisson-flamme-champi', 'pot:hydromel':'cloche-chapeau-coeur', 'rumeur:0':'coeur-lune-arbre', 'rumeur:1':'chat-chapeau-champi', 'rumeur:2':'arbre-champi-soleil', 'rumeur:3':'champi-cloche-flamme', 'rumeur:4':'cle-soleil-lune', 'rumeur:5':'cloche-coeur-lune', 'plaide:1':'etoile-chapeau-chapeau', 'recette:hydromel':'chat-etoile-etoile'}
+};
+Object.keys(GEL).forEach(function(n){ var E = window.ENQUETES && window.ENQUETES[n]; if(E) E.codesFixes = GEL[n]; });
+})();
+
 /* ===== souterrains.js ===== */
 /* ==========================================================
    Brumeval — les sous-sols du village (la carte du Pisteur, lui seul la voit)
@@ -35441,6 +35460,7 @@ M.potionsPour = function(type){
 M.codePassage = function(id){ return /^(victoire|suite|defaite):/.test(id); };
 M.codesEnquete = function(E){
   if(E._codes) return E._codes;
+  if(E.codesFixes) return codesGeles(E);
   var b = codesBruts(E), ids = b.ids, toutes = b.toutes;
   /* Un code d'ici ne doit jamais être un code de passage d'une enquête voisine. Sinon, le code
      « enquête suivante » de l'enquête 1, tapé sur une tablette déjà dans l'enquête 2, était lu comme
@@ -35466,12 +35486,37 @@ M.codesEnquete = function(E){
   E._codes = {parId:parId, parCode:parCode};
   return E._codes;
 };
+/* Une enquête aux codes gelés (codes-fixes.js) : ses codes ne bougent plus, quoi qu'on change dans les enquêtes voisines.
+   Un code ajouté après le gel prend le premier code libre (jamais un code déjà pris). On ne regarde pas les voisines ici
+   (sinon boucle sans fin) : ce sont les enquêtes non gelées qui évitent les codes gelés (passagesEnquete). */
+function codesGeles(E){
+  var b = codesBruts(E), F = E.codesFixes, parId = {}, parCode = {}, pris = {};
+  M.cle(F).forEach(function(id){ var s = F[id].split('-'); parId[id] = s; parCode[F[id]] = id; pris[F[id]] = 1; });
+  var k = 0;
+  b.ids.forEach(function(id){
+    if(parId[id]) return;
+    while(k < b.toutes.length && pris[b.toutes[k].join('-')]) k++;
+    var s = b.toutes[k++]; if(!s) return;
+    parId[id] = s; parCode[s.join('-')] = id; pris[s.join('-')] = 1;
+  });
+  E._codes = {parId:parId, parCode:parCode};
+  return E._codes;
+}
 /* Les codes de passage (fin, suite, défaite) d'une enquête : ceux qui tombent sur un code de passage de l'enquête
    d'avant prennent un code libre. On remonte de l'enquête 1 vers la suivante, donc pas de boucle. */
 function passagesEnquete(V){
   if(V._passages) return V._passages;
+  if(V.codesFixes){   /* enquête gelée : ses codes de passage sont ceux du gel */
+    var g = M.codesEnquete(V), rg = {parId:{}, libre:codesBruts(V).ids.length};
+    M.cle(g.parId).forEach(function(id){ if(M.codePassage(id)) rg.parId[id] = g.parId[id]; });
+    V._passages = rg; return rg;
+  }
   var b = codesBruts(V), avant = window.ENQUETES && window.ENQUETES[V.id - 1], pris = {};
-  if(avant){ var pa = passagesEnquete(avant); M.cle(pa.parId).forEach(function(id){ pris[pa.parId[id].join('-')] = 1; }); }
+  if(avant){
+    var pa = passagesEnquete(avant); M.cle(pa.parId).forEach(function(id){ pris[pa.parId[id].join('-')] = 1; });
+    /* l'enquête d'avant est gelée : aucun de ses codes ne doit servir de code de passage ici */
+    if(avant.codesFixes){ var ga = M.codesEnquete(avant); M.cle(ga.parId).forEach(function(id){ pris[ga.parId[id].join('-')] = 1; }); }
+  }
   var res = {parId:{}, libre:b.ids.length};
   b.ids.forEach(function(id, i){
     if(!M.codePassage(id)) return;
@@ -35981,8 +36026,14 @@ function vueReglages(){
       [['enfant', '🧒 Un enfant'], ['adulte', '🧑 Un adulte']].map(function(x){ return '<button class="btn ' + (M.joueur() === x[0] ? '' : 'second ') + 'petit" data-act="joueur" data-v="' + x[0] + '" aria-pressed="' + (M.joueur() === x[0]) + '">' + x[1] + (M.joueur() === x[0] ? ' ✔' : '') + '</button>'; }).join('') + '</div></section>' : '') +
     (M.modeDev() && M.S.heros ? '<section class="b-carte-verre b-mode-test"><h3>Mode test</h3>' +
       '<div class="b-rangee">' + [1, 2, 3].map(function(i){ return '<button class="btn second petit" data-act="mode-test" data-i="' + i + '">Enquête ' + i + '</button>'; }).join('') + '</div></section>' : '') +
+    (window.BRUMEVAL_VERSION ? '<p class="doux petit b-version">' + esc('Version du jeu : ' + M.versionTxt() + '. Toutes les tablettes doivent avoir la même, sinon les codes ne marchent pas.') + '</p>' : '') +
     '</main>';
 }
+/* La version du jeu, lisible : « 4/11 à 18 h 13 » (build.py écrit window.BRUMEVAL_VERSION = « 2026-11-04 18:13 ») */
+M.versionTxt = function(){
+  var v = String(window.BRUMEVAL_VERSION || ''), m = /^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d)/.exec(v);
+  return m ? (+m[3]) + '/' + (+m[2]) + ' à ' + m[4] + ' h ' + m[5] : v;
+};
 
 /* ---------- Enquête ---------- */
 function vueEnquete(){
@@ -36950,7 +37001,8 @@ function traiterCode(seq){
     if(N && M.codesEnquete(N).parCode[seq.join('-')]){
       M.son('ko'); M.ouvrir({type:'info', ic:'🔍', titre:'Commence d\'abord l\'enquête ' + N.id, t:'Ce code sert pendant l\'enquête ' + N.id + '. Touche d\'abord le bouton « Enquête ' + N.id + ' », puis tape-le dans ton onglet 🔢 Code.'}); return;
     }
-    M.son('ko'); M.ouvrir({type:'info', ic:'🤔', titre:'Ce code ne marche pas', t:'Vérifie les symboles avec ton équipier, et recommence.'}); return;
+    M.son('ko'); M.ouvrir({type:'info', ic:'🤔', titre:'Ce code ne marche pas', t:'Vérifie les symboles avec ton équipier, et recommence.' +
+      (window.BRUMEVAL_VERSION ? ' Si ça ne marche toujours pas, vérifiez que toutes les tablettes ont la même version du jeu (en bas des Réglages). Celle-ci : ' + M.versionTxt() + '.' : '')}); return;
   }
   var dest = M.destinataire(id), t = id.split(':')[0], x = id.split(':')[1];
   var ok = dest === 'tous' || (dest === 'tous-sauf-sage' && role !== 'sage') || dest === role || (Array.isArray(dest) && dest.indexOf(role) >= 0);

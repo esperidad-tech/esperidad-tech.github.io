@@ -22397,6 +22397,7 @@ M.potionsPour = function(type){
 M.codePassage = function(id){ return /^(victoire|suite|defaite):/.test(id); };
 M.codesEnquete = function(E){
   if(E._codes) return E._codes;
+  if(E.codesFixes) return codesGeles(E);
   var b = codesBruts(E), ids = b.ids, toutes = b.toutes;
   /* Un code d'ici ne doit jamais être un code de passage d'une enquête voisine. Sinon, le code
      « enquête suivante » de l'enquête 1, tapé sur une tablette déjà dans l'enquête 2, était lu comme
@@ -22422,12 +22423,37 @@ M.codesEnquete = function(E){
   E._codes = {parId:parId, parCode:parCode};
   return E._codes;
 };
+/* Une enquête aux codes gelés (codes-fixes.js) : ses codes ne bougent plus, quoi qu'on change dans les enquêtes voisines.
+   Un code ajouté après le gel prend le premier code libre (jamais un code déjà pris). On ne regarde pas les voisines ici
+   (sinon boucle sans fin) : ce sont les enquêtes non gelées qui évitent les codes gelés (passagesEnquete). */
+function codesGeles(E){
+  var b = codesBruts(E), F = E.codesFixes, parId = {}, parCode = {}, pris = {};
+  M.cle(F).forEach(function(id){ var s = F[id].split('-'); parId[id] = s; parCode[F[id]] = id; pris[F[id]] = 1; });
+  var k = 0;
+  b.ids.forEach(function(id){
+    if(parId[id]) return;
+    while(k < b.toutes.length && pris[b.toutes[k].join('-')]) k++;
+    var s = b.toutes[k++]; if(!s) return;
+    parId[id] = s; parCode[s.join('-')] = id; pris[s.join('-')] = 1;
+  });
+  E._codes = {parId:parId, parCode:parCode};
+  return E._codes;
+}
 /* Les codes de passage (fin, suite, défaite) d'une enquête : ceux qui tombent sur un code de passage de l'enquête
    d'avant prennent un code libre. On remonte de l'enquête 1 vers la suivante, donc pas de boucle. */
 function passagesEnquete(V){
   if(V._passages) return V._passages;
+  if(V.codesFixes){   /* enquête gelée : ses codes de passage sont ceux du gel */
+    var g = M.codesEnquete(V), rg = {parId:{}, libre:codesBruts(V).ids.length};
+    M.cle(g.parId).forEach(function(id){ if(M.codePassage(id)) rg.parId[id] = g.parId[id]; });
+    V._passages = rg; return rg;
+  }
   var b = codesBruts(V), avant = window.ENQUETES && window.ENQUETES[V.id - 1], pris = {};
-  if(avant){ var pa = passagesEnquete(avant); M.cle(pa.parId).forEach(function(id){ pris[pa.parId[id].join('-')] = 1; }); }
+  if(avant){
+    var pa = passagesEnquete(avant); M.cle(pa.parId).forEach(function(id){ pris[pa.parId[id].join('-')] = 1; });
+    /* l'enquête d'avant est gelée : aucun de ses codes ne doit servir de code de passage ici */
+    if(avant.codesFixes){ var ga = M.codesEnquete(avant); M.cle(ga.parId).forEach(function(id){ pris[ga.parId[id].join('-')] = 1; }); }
+  }
   var res = {parId:{}, libre:b.ids.length};
   b.ids.forEach(function(id, i){
     if(!M.codePassage(id)) return;
