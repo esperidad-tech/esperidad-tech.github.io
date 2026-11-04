@@ -5207,6 +5207,11 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lv-donner{align-self:center;width:min(100%, 440px)}
 .lv-fin-jour,.lv-encart{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:16px;border:2px dashed var(--c-sage);background:rgba(108,182,255,.1);text-align:center}
 .lv-fin-jour p,.lv-encart p{margin:0}
+/* Le verrou de l'accusation (enquête 2, regles.js) : ce qui reste à éclaircir, sur le papier du livre */
+.lv-verrou-acc{display:flex;flex-direction:column;gap:6px;padding:12px;margin:10px 0;border-radius:16px;border:2px dashed #c0563a;background:rgba(192,86,58,.08);color:inherit}
+.lv-verrou-acc p{margin:0}
+.lv-verrou-acc ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.lv-verrou-acc li{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.55);line-height:1.35}
 .lv-trouves h3{color:var(--encre);margin:6px 0 8px}
 
 /* ⚖️ L'accusation */
@@ -5662,7 +5667,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 17:18 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 18:41 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -8960,12 +8965,12 @@ var TROUVAILLES = {
     ],
     bonus:{ballon:'gant_archer'}
   },
-  2:{   /* Le Corbeau */
-    mj:{'mairie:porte':'bottes_lumineuses', 'mairie:guet':'cape_nuit', 'place:toits':'brassards_eclair'},
+  2:{   /* La rivière rouge (§ 12.11) : les mêmes vêtements que l'ancienne enquête 2, sur les nouveaux mini-jeux du Pisteur */
+    mj:{'foret:passer':'bottes_lumineuses', 'moulin:guet':'cape_nuit', 'chene:tim':'brassards_eclair'},
     paquets:[
-      {id:'coffre', quand:{vu:'pisteur:crypte:coffre'}, items:['arc_joyaux', 'masque_ancien', 'fleches_sifflet']}   /* le coffre des fondateurs, dans la crypte secrète */
+      {id:'piece', quand:{vu:'pisteur:moulin:alambics'}, items:['arc_joyaux', 'masque_ancien', 'fleches_sifflet']}   /* la pièce cachée du moulin */
     ],
-    bonus:{lapin:'bonnet_trappeur'}
+    bonus:{cerfvolant:'bonnet_trappeur'}
   },
   3:{   /* Le moulin */
     mj:{'moulin:farine':'foulard_vent', 'moulin:guet':'fleches_follet', 'pont:poursuite':'carquois_cristal'},
@@ -23043,22 +23048,13 @@ var R = [
   {t:"Le chien de Tim s'appelle Pirate.", v:1, sur:['tim'], des:2},
   {t:"Tim est le plus jeune ramoneur de toute la région.", v:1, sur:['tim'], des:2},
   {t:"Tim a passé toute une nuit dans la forêt, avec son chien.", v:1, sur:['tim'], des:2},
-  {t:"Quelqu'un a gravé un corbeau dans l'écorce du Vieux Chêne.", v:1, des:2},
-  {t:"On voit de plus en plus de corbeaux autour du clocher.", v:1, des:2},
+  /* (plus de Corbeau : les ragots de l'ancienne histoire sont retirés, Romain, 4 novembre) */
   {t:"Le maire a une armoire pleine de gants, tous pareils.", v:1, sur:['grosbec'], des:2},
-  {t:"Le maire collectionne les plumes noires.", v:0, sur:['grosbec'], des:2},
   {t:"Le Vieux Chêne a plus de cinq cents ans.", v:1, des:2},
+  {t:"Il y a un énorme trou sous les racines du Vieux Chêne.", v:1, des:2},
+  {t:"Le maire a fait couvrir le trou du Vieux Chêne avec de grosses planches.", v:1, sur:['grosbec'], des:2},
+  {t:"Au fond du trou du Vieux Chêne, il y a un dragon qui dort.", v:0, des:2},
   {t:"Fortuné vend de tout : des chapeaux, des pastilles et même des lanternes.", v:1, sur:['fortune'], des:3},
-  {t:"Mélusine glissait les lettres du Corbeau pour un homme masqué.", v:1, sur:['melusine'], des:3},
-  {t:"En vrai, c'est Mélusine, le Corbeau.", v:0, sur:['melusine'], des:3},
-  {t:"Mélusine va coudre de vraies capes pour les enquêteurs.", v:1, sur:['melusine'], des:3},
-  {t:"Le maire a gardé la carte des souterrains dans son bureau.", v:1, sur:['grosbec'], des:3},
-  {t:"Il y a des tunnels partout sous Brumeval.", v:1, des:3},
-  {t:"Sur la carte des souterrains, il y a une croix rouge juste sous la place.", v:1, des:3},
-  {t:"L'homme masqué porte une bague en argent à tête de corbeau.", v:1, des:3},
-  {t:"L'homme masqué a une petite voix aiguë, comme un oiseau.", v:0, des:3},
-  {t:"La plus grosse cloche du clocher s'appelle la Grande Voix.", v:1, sur:['anselme'], des:3},
-  {t:"Le maire a payé toutes les dettes de Mélusine dès le lendemain.", v:0, sur:['grosbec', 'melusine'], des:3},
   {t:"Fortuné cherchait un trésor sous le moulin.", v:1, sur:['fortune'], des:4},
   {t:"Fortuné a trouvé un coffre rempli d'or sous le moulin.", v:0, sur:['fortune'], des:4},
   {t:"Silas, le garde, écrit tout ce qu'il voit dans un petit carnet noir.", v:1, sur:['silas'], des:4},
@@ -23079,20 +23075,21 @@ var R = [
   {t:"Cette nuit, le moulin a brillé d'une drôle de lumière dorée.", v:0, enq:1},
   {t:"Mélusine avait besoin de la Lanterne pour finir ses écharpes de la fête.", v:0, sur:['melusine'], enq:1},
 
-  /* --- Enquête 2 : les lettres du Corbeau --- */
-  {t:"Cette semaine, le colporteur a vendu un gros sac de plumes noires.", v:1, sur:['fortune'], enq:2},
-  {t:"Quelqu'un qui cachait son visage a acheté des plumes noires au colporteur.", v:1, sur:['fortune'], enq:2},
-  {t:"Quelqu'un au village doit beaucoup d'argent et n'arrive plus à payer.", v:1, enq:2},
-  {t:"Anselme dit que sa grosse cloche sonne bizarrement depuis quelques jours.", v:1, sur:['anselme'], enq:2},
-  {t:"Le soir, une silhouette avec une cape traîne près du lavoir.", v:1, enq:2},
-  {t:"Une vieille histoire dit que les fondateurs ont caché une carte dans le village.", v:1, enq:2},
-  {t:"Le Corbeau écrit avec de drôles de symboles que presque personne ne sait lire.", v:1, enq:2},
-  {t:"Le Corbeau est un vrai oiseau qui glisse les lettres sous les portes avec son bec.", v:0, enq:2},
-  {t:"Odette sort la nuit, cachée sous une grande cape noire.", v:0, sur:['odette'], enq:2},
-  {t:"Victor ouvre les lettres des gens avant de les distribuer.", v:0, sur:['victor'], enq:2},
-  {t:"Le Corbeau prépare un mauvais coup au puits, cette nuit.", v:0, enq:2},
-  {t:"Margot a vu quelqu'un écrire avec une plume noire au fond de la taverne.", v:0, sur:['margot'], enq:2},
-  {t:"La mairie a reçu dix lettres du Corbeau en une seule nuit.", v:0, enq:2},
+  /* --- Enquête 2 : la rivière rouge (§ 12.11 : des ragots drôles, plus aucun ragot du Corbeau) --- */
+  {t:"Un ours a emporté Odette dans la forêt pour qu'elle lui tricote un pull.", v:0, sur:['odette'], enq:2},
+  {t:"Les poissons de la rivière ont rougi de honte.", v:0, enq:2},
+  {t:"Le meunier a renversé toute sa confiture de fraises dans la rivière.", v:0, sur:['farinel'], enq:2},
+  {t:"C'est le vin de la taverne qui a coulé dans la rivière et l'a rendue rouge.", v:0, sur:['margot'], enq:2},
+  {t:"Cette nuit, Mélusine a teint toutes ses robes en rouge dans la rivière.", v:0, sur:['melusine'], enq:2},
+  {t:"La rivière va rester rouge pour toujours, maintenant.", v:0, enq:2},
+  {t:"Le Vieux Chêne s'est écroulé tout seul, d'un coup, dans un grand boum.", v:0, enq:2},
+  {t:"Ce matin, à l'aube, la rivière était déjà toute rouge.", v:1, enq:2},
+  {t:"Ce matin, Odette n'est pas venue chercher son pain à la boulangerie.", v:1, sur:['odette', 'gaspard'], enq:2},
+  {t:"Quelqu'un a rasé tout le champ de coquelicots d'Iris.", v:1, sur:['iris'], enq:2},
+  {t:"Le chemin du Vieux Chêne est gardé jour et nuit par le garde.", v:1, sur:['silas'], enq:2},
+  {t:"Un homme en cape noire, avec un grand capuchon, a fait des achats au village.", v:1, enq:2},
+  {t:"Le maire dit que la rivière rouge, c'est une mauvaise farce.", v:1, sur:['grosbec'], enq:2},
+  {t:"L'eau du lavoir est devenue toute rose, comme un bonbon.", v:1, enq:2},
 
   /* --- Enquête 3 : les feux du moulin --- */
   {t:"La nuit, des lumières vertes entrent dans le moulin… et n'en ressortent pas.", v:1, enq:3},
@@ -33886,475 +33883,545 @@ E[1] = {
 
 /* ===== e2.js ===== */
 /* ==========================================================
-   Enquête 2 — Les lettres du Corbeau (niveau 2) — version saison 1 (DESIGN-saison1.md § 6)
-   Solution : Mélusine, au clocher (« la Grande Voix »).
-   Chaînes : Tim attrapé (Pisteur) → démasqué (Barde) ; lettre blanche → encre (Alchimiste)
-   + clé des archives (Barde) → alphabet (Sage) ; plans du clocher (Sage) → crypte (Pisteur, facultatif).
+   Enquête 2 — La rivière rouge (titre provisoire) — DESIGN-saison1.md § 12.11 (la spécification qui fait foi)
+   Solution : Bastien Roulebosse, le charretier · au moulin (la pièce cachée) · quelqu'un l'a payé.
+   Ce qui s'est passé (jamais dit tel quel) : avant-hier avant l'aube, Bastien, payé par un homme en cape noire,
+   a rasé le champ de coquelicots d'Iris et emporté les fleurs en charrette vers le moulin ; dans une pièce cachée
+   (oubliée depuis l'arrière-grand-père de Farinel), il en a tiré un concentré avec des alambics, et l'a versé dans
+   la rivière la nuit dernière. Pendant ce temps, les ouvriers du maire bouchent le trou du Vieux Chêne avec des
+   rochers ; Odette a vu ce qu'il ne fallait pas, elle est enfermée dans les sous-sols (en bonne santé).
+   Chaînes : Gaspard (pièce d'or toute neuve) + Pisteur (pièce sous l'alambic) → QUI ;
+   traces de charrette (Pisteur) → Farinel (Barde) → bibliothèque des plans (Sage) → passage (Pisteur, ou en secours
+   la silhouette qu'il guette la nuit) → colorant (Alchimiste) → OÙ ; Bastien démasqué (détecteur, « J'exige la vérité »,
+   potion de vérité) ou la pièce d'un charretier sans le sou → POURQUOI.
+   Le fond (verrou de l'accusation) : la maison d'Odette (Barde), la canne d'Odette (Pisteur), la pierre de Tim (Barde → Sage).
    ========================================================== */
 (function(){
 'use strict';
 var E = window.ENQUETES = window.ENQUETES || {};
 var D = window.DONNEES;
-/* « Pieds de 4 carreaux. » : la taille des pieds du registre (donnees.js), pour les renseignements au Barde */
+/* « Pieds de 5 carreaux. » : la taille des pieds du registre (donnees.js), pour les renseignements au Barde */
 function pied(id){ var x = D.PNJ[id]; return x && x.pied ? 'Pieds de ' + x.pied + ' carreaux. ' : ''; }
 
+/* Les signes des menteurs de cette enquête (barde.js lit E.tics). Un signe différent par menteur (§ 12.11).
+   PHASE 1 : des signes qui existent déjà. Bastien (« ses oreilles deviennent toutes rouges ») et Margot (« baisse les yeux
+   et lève les sourcils ») auront leurs nouveaux signes en phase 2 : en attendant, les deux signes encore libres. */
+var TICS = {bastien:'sueur', margot:'force', tim:'mordille', victor:'morsure', melusine:'rougeur', fortune:'coin', farinel:'double'};
+var GESTES = {coin:'ses yeux filent sur le côté, avec un petit sourire de travers', rougeur:'le haut de son front devient tout rose',
+  sueur:'une goutte de sueur glisse sur son front', force:'sa bouche sourit, mais ses yeux ne sourient pas',
+  mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite'};
+function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[id]].replace('{il}', elle ? 'elle' : 'il') + '.'; }
+
+/* Les arguments du rassemblement (Barde) : chaque villageois en entend trois, un seul le convainc */
+var ARG = {
+  odette:'Odette a disparu : il faut aller voir ce qui se passe au Vieux Chêne !',
+  canne:'On a trouvé la canne d\'Odette près des rochers du Vieux Chêne !',
+  porte:'Au fond du trou du Vieux Chêne, Tim a vu une porte couverte de runes !',
+  rochers:'Ce n\'est pas un éboulement : quelqu\'un a posé de gros rochers sur le trou !'
+};
+/* Les dialogues à choix (Romain, 4 novembre, 18 h 27, § 12.13) : tous les choix sont polis et plausibles ; seul un indice récolté
+   ailleurs (chez un autre villageois, à mots couverts ; parfois un leurre d'un menteur) dit lequel est le bon. Tous les mauvais choix
+   reçoivent la même réplique neutre (barde.js ajoute quand repasser), et le bon choix n'est jamais à la même place. */
+var NEUTRE = 'Hmm… je ne sais pas.';
+function choix(bon, autres, pos){ var l = autres.map(function(q){ return {q:q, vexe:NEUTRE}; }); l.splice(pos, 0, {q:bon, bon:true}); return l; }
+/* Le rassemblement : on peut le préparer l'après-midi (ou, en secours, la nuit), quand on sait que quelque chose cloche au Vieux Chêne.
+   Les indices : Gaspard ← Mélusine (« un client qui ne vient pas ») ; Mélusine ← Gaspard (la canne, c'est son cadeau) ;
+   Victor ← Silas (« chaque caillou de ses chemins ») ; Margot ← Gaspard (les portes secrètes des légendes) ;
+   Iris ← Silas (« son Vieux Chêne ») ; le leurre : Fortuné, qui ment sur Victor (« les contes de fées »). */
+var SAIT = [{code:'info:canne'}, {vu:'verite:tim:1'}, {vu:'barde:tim:2'}, {vu:'barde:voisin:0'}];
+function rassemble(bon, autres, pos, oui, moments){
+  return {q:'Venir au Vieux Chêne avec moi', sousTitre:'Avec quel argument ?', rassemble:true, moments:moments || ['apresmidi', 'nuit'], besoin:SAIT,
+    choix:choix(ARG[bon], autres.map(function(k){ return ARG[k]; }), pos), a:oui};
+}
+
 E[2] = {
-  id:2, titre:'Les lettres du Corbeau', niveau:2,
-  moments:['matin', 'apresmidi', 'soir', 'nuit'],
-  lettre:'Chers enquêteurs, grâce à vous, la Fête des Lanternes a été magnifique ! Mais un nouveau malheur frappe Brumeval. Depuis trois nuits, des lettres signées d\'une plume noire sont glissées sous les portes. Ce matin, sous la porte de la mairie, j\'ai trouvé une lettre toute blanche… avec juste une plume dessinée en bas. Le Corbeau se moque de nous ! Trouvez QUI glisse ces lettres… et OÙ le Corbeau va frapper !',
+  id:2, titre:'La rivière rouge', niveau:2,
+  moments:['matin', 'apresmidi', 'nuit'],
+  /* Pas de points d'action (comme l'enquête 1 : M.sansActions, moteur-base.js). Ce qui limite : un lieu ne donne qu'une chose
+     par moment, les moments des villageois, et une seule visite par moment pour certains d'entre eux (uneVisite, barde.js). */
+  sansActions:true,
+  lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',
   signature:'Monsieur Grosbec, maire de Brumeval',
+  /* l'affiche du maire, sous la lettre (moteur-ecrans.js) */
+  affiche:{titre:'Par ordre du maire', t:'Le chemin du Vieux Chêne est fermé : éboulement dangereux !'},
   missions:{
-    pisteur:'Suis les traces de celui qui glisse les lettres. Quelqu\'un t\'observe depuis les toits : attrape-le ! La nuit, cache-toi devant la mairie pour voir le Corbeau. Et note ce qui pousse partout : l\'Alchimiste en a besoin.',
-    alchimiste:'La lettre de la mairie est toute blanche : prépare l\'encre révélatrice pour le Sage. Analyse aussi la lettre du Corbeau qu\'il va te prêter. Attention aux bestioles, la nuit, dans ton atelier !',
-    barde:'Interroge les habitants : cette fois, certains vont te mentir ! Regarde bien leur visage quand ils répondent, et demande gentiment. Le soir, interroge ensemble les témoins de la taverne, et cache-toi au lavoir : deux personnes s\'y donnent rendez-vous.',
-    sage:'Compare l\'écriture des lettres du Corbeau avec le Livre d\'or. Fais révéler la lettre blanche, ouvre les archives et déchiffre-la. Tu donnes les codes des moments et tu accuses à la fin.'
+    pisteur:'Le chemin du Vieux Chêne est fermé et gardé : trouve un moyen d\'y aller sans te faire voir. Suis les traces, cherche partout… et la nuit, quand tout le monde dort, fouille là où il y avait trop de monde le jour. Ce que tu trouves a un code : donne-le à la bonne personne !',
+    alchimiste:'La rivière est toute rouge, et l\'eau du lavoir toute rose ! Va prendre un peu de cette eau (au pont, au lavoir) et analyse-la dans ton atelier. Cueille, prépare des potions (le Barde aimerait bien une potion de vérité), et analyse ce que l\'équipe te rapporte.',
+    barde:'Interroge tout le monde : cette fois, beaucoup vont te mentir ! Regarde bien leur visage. Certains ne veulent te voir qu\'une fois par moment : reviens quand tu as du nouveau pour eux. Et si le village a peur, rassemble-le !',
+    sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. Tu donnes le code de chaque moment, et tu accuses au petit matin : QUI, OÙ et POURQUOI.'
   },
-  /* Missions de base, en haut du Carnet (mission.js) : générales, sans chemin tout tracé. */
+  /* Missions de base, en haut du Carnet (mission.js) : générales, sans chemin tout tracé, sans jamais dire QUI, OÙ ni POURQUOI */
   etapes:{
     pisteur:[
-      {ic:'👣', t:'Suis la piste de celui qui glisse les lettres sous les portes.', fait:[{essaye:'pisteur:mairie:porte'}]},
-      {ic:'🏃', t:'Quelqu\'un t\'espionne depuis les toits du village : attrape-le !', fait:[{essaye:'pisteur:place:toits'}]},
-      {ic:'🫥', t:'Vois le Corbeau de tes propres yeux.', fait:[{essaye:'pisteur:mairie:guet'}]},
-      {piste:true, t:'Le clocher et le puits cachent peut-être quelque chose : va voir.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI glisse les lettres du Corbeau, et OÙ va-t-il frapper ?'}
+      {ic:'🌳', t:'Le chemin du Vieux Chêne est gardé : trouve un moyen d\'y aller, et regarde bien ce qui s\'y passe.', fait:[{vu:'pisteur:chene:ouvriers'}, {vu:'pisteur:chene:rochers'}, {vu:'pisteur:chene:canne'}]},
+      {ic:'👣', t:'Quand la brume sera levée, va à la clairière aux lièvres et suis les traces.', fait:[{essaye:'pisteur:clairiere:champ'}]},
+      {ic:'🌙', t:'La nuit, quand tout le monde dort, fouille là où il y avait trop de monde le jour.', fait:[{vu:'pisteur:moulin:alambics'}, {vu:'pisteur:moulin:piece'}]},
+      {piste:true, t:'Ce que tu trouves a un code : donne-le à la bonne personne !'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     alchimiste:[
-      {ic:'📃', t:'Aide le Sage à faire parler la lettre blanche du maire.', fait:[{donne:'pot:revelatrice'}]},
-      {ic:'✉️', t:'Découvre de quoi est faite une lettre du Corbeau.', fait:[{analyse:'lettre'}, {fini:'alchimiste:analyse:lettre'}]},
-      {piste:true, t:'L\'encre révélatrice demande des baies de sureau : elles poussent à la lisière.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI glisse les lettres du Corbeau, et OÙ va-t-il frapper ?'}
+      {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}, {fini:'alchimiste:analyse:eau_riviere'}]},
+      {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}, {fini:'alchimiste:analyse:eau_lavoir'}]},
+      {ic:'💬', t:'Prépare une potion de vérité pour le Barde (la recette est dans ton grimoire).', fait:[{potion:'verite'}]},
+      {ic:'⚗️', t:'Analyse ce que le Pisteur te rapportera de ses fouilles.', fait:[{analyse:'colorant'}, {fini:'alchimiste:analyse:colorant'}]},
+      {piste:true, t:'En cueillant, ouvre bien les yeux : certains coins du village ont changé.'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     barde:[
-      {ic:'🗣️', t:'Interroge au moins trois habitants. Regarde bien leur visage quand ils répondent.', fait:[{bavard:3}]},
-      {ic:'🔍', t:'Démasque un habitant qui te ment (🤥 pendant qu\'il parle, ou « J\'exige la vérité »).', fait:[{demasque:1}]},
-      {ic:'🍺', t:'Le soir, à la taverne, interroge les témoins tous ensemble : lequel ment ?', fait:[{vu:'ecoute:depositions'}, {vu:'ecoute2:depositions'}]},
-      {ic:'🧺', t:'Le soir, cache-toi au lavoir, puis complète dans ton Carnet ce que tu as entendu.', fait:[{vu:'trous:ecoute:chuchotis'}]},
-      {piste:true, t:'Demande gentiment : un habitant vexé ne te parle plus avant le moment suivant.'},
-      {piste:true, t:'Le sonneur de cloches connaît son clocher par cœur… et il garde de vieilles clés.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI glisse les lettres du Corbeau, et OÙ va-t-il frapper ?'}
+      {ic:'🗣️', t:'Interroge au moins quatre villageois. Regarde bien leur visage quand ils répondent !', fait:[{bavard:4}]},
+      {ic:'🤥', t:'Démasque deux menteurs (🤥 pendant qu\'ils parlent).', fait:[{demasque:2}]},
+      {ic:'🏠', t:'Odette a disparu : va voir chez elle.', fait:[{vu:'barde:voisin:0'}]},
+      {ic:'📣', t:'Le village a peur : convaincs trois villageois de venir avec toi au Vieux Chêne.', fait:[{vu:'rassemblement'}]},
+      {piste:true, t:'Certains villageois ne te parlent qu\'une fois par moment : reviens quand tu as du nouveau pour eux.'},
+      {piste:true, t:'Demande gentiment : un villageois vexé ne te parle plus avant le moment suivant.'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     sage:[
-      {ic:'✒️', t:'Compare l\'écriture du Corbeau avec celle des habitants.', fait:[{page:'livreor'}]},
-      {ic:'🔣', t:'Fais parler la lettre blanche du maire.', fait:[{page:'secret'}, {fini:'sage:page:secret'}]},
-      {piste:true, t:'Regarde bien comment chacun fait les points sur les i.'},
-      {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI glisse les lettres du Corbeau, et OÙ va-t-il frapper ?'}
+      {ic:'👥', t:'Lis « Les habitants » à l\'équipe, puis donne leur code au Barde.', fait:[{lu:'habitants'}]},
+      {ic:'🗺️', t:'Le garde ne laisse passer personne vers le Vieux Chêne : cherche un vieux chemin dans ton Grand Livre.', fait:[{page:'chemins'}]},
+      {ic:'📐', t:'Quand un code te mène à la bibliothèque des plans, répare le plan déchiré.', fait:[{page:'bibliotheque'}, {fini:'sage:page:bibliotheque'}]},
+      {ic:'🪨', t:'Déchiffre les runes qu\'on t\'apportera.', fait:[{page:'pierre'}, {fini:'sage:page:pierre'}]},
+      {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments). On accuse au petit matin, après la nuit.'},
+      {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ]
   },
-  qui:{titre:'QUI glisse les lettres du Corbeau ?', choix:['melusine', 'odette', 'iris', 'margot', 'fortune', 'victor', 'anselme', 'gaspard']},
-  ou:{titre:'OÙ le Corbeau va-t-il frapper à minuit ?', choix:[
-    {id:'clocher', nom:'Le clocher', ic:'🔔'}, {id:'lavoir', nom:'Le lavoir', ic:'🧺'},
-    {id:'mairie', nom:'La mairie', ic:'🏛️'}, {id:'puits', nom:'Le puits', ic:'🪣'}]},
-  solution:{qui:'melusine', ou:'clocher'},
-  /* Les photos du tableau de liège du Barde (liege.js) : tous les suspects, Tim le témoin, les lieux du OÙ, la place et l'herboristerie */
-  liege:{pnj:['melusine', 'odette', 'iris', 'margot', 'fortune', 'victor', 'anselme', 'gaspard', 'tim'], lieux:['mairie', 'place', 'clocher', 'lavoir', 'puits', 'herboristerie']},
-  sensibles:['mélusine', 'coud', 'couture', 'couturi', 'tissu', 'dette', 'grande voix'],
-  recettes:['revelatrice'],
+  qui:{titre:'QUI a rendu la rivière rouge ?', choix:['bastien', 'melusine', 'margot', 'iris', 'farinel']},
+  ou:{titre:'OÙ a-t-il fait ça ?', choix:[
+    {id:'moulin', nom:'Le moulin', ic:'🌾'}, {id:'lavoir', nom:'Le lavoir', ic:'🧺'}, {id:'chene', nom:'Le Vieux Chêne', ic:'🌳'},
+    {id:'pont', nom:'Le pont', ic:'🌉'}, {id:'clairiere', nom:'La clairière', ic:'🐇'}]},
+  pourquoi:{titre:'POURQUOI a-t-il fait ça ?', choix:[
+    {id:'paye', nom:'Quelqu\'un l\'a payé', ic:'🪙'}, {id:'joli', nom:'Pour faire joli', ic:'🌸'},
+    {id:'teindre', nom:'Pour teindre des tissus', ic:'🧵'}, {id:'farce', nom:'Pour faire une farce', ic:'😜'}]},
+  solution:{qui:'bastien', ou:'moulin', pourquoi:'paye'},
+  /* Le verrou de l'accusation (regles.js) : après la nuit (le Sage touche « 🌅 Le petit matin »), et quand l'équipe a vu
+     la maison d'Odette, la canne d'Odette et la pierre de Tim (des codes reçus sur la tablette du Sage). Sinon, ce qui reste. */
+  verrouAccusation:[
+    {aube:true, t:'🌙 La nuit n\'est pas finie. Quand toute l\'équipe a fini la nuit, touche « 🌅 Le petit matin ».'},
+    {code:'info:odette', t:'🏠 Odette a disparu : quelqu\'un est-il allé voir chez elle ?'},
+    {code:'info:canne', t:'🦯 Où est la canne d\'Odette ? Le Pisteur la trouvera peut-être…'},
+    {code:'obj:pierre', t:'🪨 Tim cache quelque chose… Le Barde doit le faire parler.'}
+  ],
+  /* Le Barde (barde.js) : une seule visite par moment pour ces villageois ; revenir avec du nouveau qui les concerne rouvre la porte.
+     Les questions qui attendent un indice restent cachées tant qu'on ne l'a pas (questionsCachees). La potion de vérité fait avouer. */
+  uneVisite:['bastien', 'tim', 'victor', 'iris', 'farinel', 'melusine'],
+  questionsCachees:true,
+  potionAveu:true,
+  vexeNeutre:true,   /* un mauvais choix : la même réplique neutre partout, sans « vexé » (§ 12.13) ; il reste fermé jusqu'au moment suivant */
+  tics:TICS,
+  /* Le rassemblement (barde.js) : trois villageois convaincus, et toute la troupe part au Vieux Chêne */
+  rassemblement:{n:3, code:'info:rassemblement', ic:'📣', titre:'Le rassemblement',
+    t:'Tu marches en tête, suivi de tes villageois. Silas veut vous arrêter… mais vous êtes bien trop nombreux ! Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive tout essoufflé : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
+    note:'Le rassemblement : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.'},
+  /* Les photos du tableau de liège du Barde (liege.js) : les suspects, les autres villageois de l'histoire, tous les lieux du OÙ */
+  liege:{pnj:['bastien', 'melusine', 'margot', 'iris', 'farinel', 'tim', 'victor', 'gaspard', 'fortune'], lieux:['moulin', 'lavoir', 'chene', 'pont', 'clairiere', 'place', 'foret']},
+  /* Le vérificateur refuse tout texte qu'un joueur obtient seul et qui contient un de ces mots, sauf s'il fait partie d'un indice prévu ou s'il a été relu (ok). */
+  sensibles:['bastien', 'roulebosse', 'pièce d\'or', 'payé', 'alambic'],
+  recettes:['verite'],
+  depart:{alchimiste:{ingr:{eau:2, miel:2}}},
   registre:{
-    melusine:{maison:'L4', note:'Couturière. Elle coud et tricote pour tout le village.'},
-    odette:{maison:'L2', note:'Marche avec une canne.'},
-    iris:{maison:'F4', note:'Herboriste. Cultive la lavande derrière sa boutique.'},
-    margot:{maison:'L1', note:'Tient la taverne du Chaudron fêlé, sur la place. Elle habite rue des Lanternes.'},
-    fortune:{note:'Colporteur : il va de village en village avec sa charrette. Il dort dans une chambre de la taverne.'},
-    victor:{maison:'L6', note:'Facteur. Se lève à cinq heures.'},
-    anselme:{note:'Sonneur de cloches. Habite la petite maison du clocher. Il a très mal au genou : il monte l\'escalier tout doucement.'},
-    gaspard:{maison:'F1', note:'Boulanger.'}
+    bastien:{maison:'B2', note:'Charretier : il transporte tout, partout, avec sa grande charrette. Jamais un sou en poche.'},
+    odette:{maison:'L2', note:'Ne dort presque jamais. Marche avec une canne gravée de sept chats.'},
+    tim:{maison:'L7', note:'Petit ramoneur. Son chien s\'appelle Pirate. Il ne confie ses secrets qu\'à ceux qui promettent de ne rien répéter.'},
+    victor:{maison:'L6', note:'Facteur : il passe partout, tous les jours.'},
+    melusine:{maison:'L4', note:'Couturière. Elle dit qu\'elle tisse tous ses tissus elle-même.'},
+    iris:{maison:'F4', note:'Herboriste. Cultive des fleurs à la clairière aux lièvres.'},
+    margot:{note:'Tient la taverne du Chaudron fêlé, sur la place.'},
+    farinel:{note:'Meunier. Il habite son moulin, au bord de la rivière.'},
+    gaspard:{maison:'F1', note:'Boulanger. Tout le village vient chercher son pain chez lui.'}
   },
   objets:{
-    lettre:{nom:'Lettre du Corbeau', ic:'✉️', pour:'alchimiste'},
-    cle_arch:{nom:'Vieille clé des archives', ic:'🗝️', pour:'sage'},
-    plume2:{nom:'Morceau de cape à plumes', ic:'🪶', pour:'alchimiste'},
-    nuancier:{nom:'Nuancier des fondateurs', ic:'🎨', pour:'sage'},
-    partition:{nom:'Partition des fondateurs', ic:'🎼', pour:'barde'}
+    eau_riviere:{nom:'Flacon d\'eau de la rivière', ic:'💧', pour:'alchimiste'},
+    eau_lavoir:{nom:'Flacon d\'eau du lavoir', ic:'🧺', pour:'alchimiste'},
+    colorant:{nom:'Reste de colorant rouge', ic:'🔴', pour:'alchimiste'},
+    pierre:{nom:'Pierre gravée de Tim', ic:'🪨', pour:'sage'}
   },
   infos:{
-    /* Renseignements sur un habitant, pour le Barde (carnet.js) : 4 codes dans l'enquête 2 (temoin_tim, registre, ecritures, lavande) */
-    registre:{nom:'Le registre des habitants', ic:'👥', pour:'barde', de:'sage', t:'Le registre du Sage : les pieds et les habitudes des habitants.', pnj:{
-      melusine:pied('melusine'), odette:pied('odette') + 'Elle marche avec une canne.', iris:pied('iris') + 'Elle cultive la lavande derrière sa boutique.',
-      margot:pied('margot') + 'Elle tient la taverne et habite rue des Lanternes.', fortune:pied('fortune') + 'Il dort dans une chambre de la taverne.',
-      victor:pied('victor') + 'Il se lève à cinq heures.', anselme:pied('anselme') + 'Il a très mal au genou : il monte l\'escalier tout doucement.', gaspard:pied('gaspard')}},
-    ecritures:{nom:'Les écritures du Livre d\'or', ic:'📗', pour:'barde', de:'sage', t:'Le Livre d\'or du Sage : comment chacun fait le point sur ses i.', pnj:{
-      fortune:'Dans le Livre d\'or, Fortuné fait un petit rond sur ses i.', melusine:'Dans le Livre d\'or, Mélusine fait un petit rond sur ses i.',
-      odette:'Dans le Livre d\'or, Odette fait un petit rond sur ses i.', margot:'Dans le Livre d\'or, Margot fait un petit rond sur ses i.',
-      iris:'Dans le Livre d\'or, Iris fait un point sur ses i.', anselme:'Dans le Livre d\'or, Anselme fait un point sur ses i.',
-      gaspard:'Dans le Livre d\'or, Gaspard fait un point sur ses i.', victor:'Dans le Livre d\'or, Victor fait un petit trait sur ses i.'}},
-    lavande:{nom:'L\'odeur de la lettre', ic:'💜', pour:'barde', de:'alchimiste', pnj:'iris', t:'La lettre du Corbeau sent fort la lavande, la fleur qu\'Iris cultive.'},
-    /* mimique : le Pisteur a vu comment Tim ment (barde.js : le geste se voit ensuite bien dans l'interrogatoire) */
-    temoin_tim:{nom:'Tim, attrapé sur les toits', ic:'🧒', pour:'barde', de:'pisteur', pnj:'tim', mimique:'tim', t:'Le Pisteur a attrapé Tim sur les toits. Il a peur et il cache quelque chose : va lui parler, sur la place ou chez lui (7, rue des Lanternes). Un secret : quand Tim ment, il mordille sa lèvre du bas.'},
-    passage_crypte:{nom:'L\'escalier de la crypte', ic:'🕯️', pour:'pisteur', t:'Sur les vieux plans du Sage, un escalier descend sous le clocher jusqu\'à une crypte oubliée. Le passage est ouvert !'},
-    coffret:{nom:'Coffret de teintures', ic:'🎨', pour:'alchimiste', outil:'teintures', t:'Un coffret de teintures des fondateurs ! Avec lui, tu peux reproduire la couleur exacte d\'un fil ou d\'une tache. Garde-le : il sert toute la saison.'},
-    recette_coeur:{nom:'Recette : Élixir du Cœur vaillant', ic:'❤️', pour:'alchimiste', recette:'coeur', t:'Iris t\'apprend une recette : 2 miel des ruches, puis 1 pensée sauvage, puis 1 eau de la fontaine ; à la fin, garder la potion dans la zone ROUGE du chaudron. Donne-la au Sage : elle lui rend un cœur d\'accusation. Elle est dans ton grimoire pour toute la saison.'}
+    /* Renseignements sur un habitant, pour le Barde (carnet.js) : 5 codes (registre, tim_chene, traces, lavoir_rose, champ_rase) */
+    registre:{nom:'Le registre des habitants', ic:'👥', pour:'barde', de:'sage', t:'Le registre du Sage : où habitent les villageois.', pnj:{
+      bastien:pied('bastien') + 'Il habite au 2, ruelle des Brumes, et transporte tout avec sa charrette.',
+      tim:pied('tim') + 'Il habite au 7, rue des Lanternes. Il ne confie ses secrets qu\'à ceux qui promettent de ne rien répéter.',
+      victor:pied('victor') + 'Il habite au 6, rue des Lanternes, au-dessus de la poste.',
+      melusine:pied('melusine') + 'Elle habite au 4, rue des Lanternes, au-dessus de son atelier.',
+      iris:pied('iris') + 'Elle habite au 4, rue du Four, derrière l\'herboristerie.',
+      margot:pied('margot') + 'Elle tient la taverne, sur la place.',
+      farinel:pied('farinel') + 'Il habite son moulin.',
+      gaspard:pied('gaspard') + 'Il habite au-dessus de sa boulangerie.'}},
+    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:'barde', de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : va lui parler !'},
+    traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.'},
+    lavoir_rose:{nom:'Le rose du lavoir', ic:'🧺', pour:'barde', de:'alchimiste', pnj:'melusine', t:'L\'Alchimiste a analysé l\'eau du lavoir : ce rose vient d\'un tissu qui déteint.'},
+    champ_rase:{nom:'Le champ rasé', ic:'🌺', pour:'barde', de:'alchimiste', pnj:'iris', t:'L\'Alchimiste a vu, à la clairière aux lièvres, un grand champ de coquelicots tout rasé.'},
+    /* les autres codes */
+    piece:{nom:'La pièce d\'or du moulin', ic:'🪙', pour:'barde', t:'Le Pisteur a trouvé, sous un alambic de la pièce cachée du moulin, une pièce d\'or toute neuve. Quelqu\'un a compté son or ici…'},
+    plans_moulin:{nom:'Les plans du moulin', ic:'📐', pour:'sage', t:'Farinel dit que son moulin a été bâti par son arrière-grand-père, et que ses vieux plans sont rangés dans la bibliothèque des plans du Grand Livre.'},
+    passage:{nom:'Le passage secret du moulin', ic:'🕳️', pour:'pisteur', t:'Sur le vieux plan du moulin, réparé par le Sage : une petite pièce sans porte, sous la grande roue, et un passage secret pour y entrer. Va voir la nuit, quand le moulin est vide !'},
+    detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.'},
+    canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…'},
+    odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.'},
+    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', pour:'tous', t:'Le Barde a emmené des villageois au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
   },
   lieux:{
-    mairie:{
-      pisteur:{intro:'C\'est sous cette porte que le maire a trouvé la lettre blanche, ce matin.', points:[
-        {id:'porte', ic:'👣', nom:'Devant la porte', mj:'traces',
-          t:'Dans la boue, des petites traces de pas toutes fraîches. Elles mesurent 3 ou 4 carreaux, pas plus. Elles partent vers le bas du village, puis se perdent sur les pavés.',
-          note:'Mairie : petites traces fraîches de 3 ou 4 carreaux, vers le bas du village.',
-          rate:'Les traces se mélangent dans la boue… Tu as seulement vu qu\'elles partent vers le bas du village.',
-          rateNote:'Mairie : des traces fraîches partent vers le bas du village (taille pas vue).'},
-        {id:'boite', ic:'📮', nom:'La boîte aux lettres',
-          t:'Elle est vide. Les lettres du Corbeau n\'ont pas de timbre : on les glisse sous les portes, la nuit.',
-          note:'Mairie : les lettres du Corbeau n\'ont pas de timbre, on les glisse sous les portes la nuit.'},
-        {id:'guet', ic:'🫥', nom:'Guetter dans l\'ombre', moments:['soir', 'nuit'], mj:'cachette', obj:'plume2',
-          t:'La silhouette en cape lève sa lanterne et regarde partout… Tu restes caché. Elle glisse une lettre sous la porte, comme chaque nuit, puis file : elle est petite et très rapide, elle saute par-dessus les bancs ! Sa cape s\'accroche au banc : il t\'en reste un morceau, avec une plume cousue dessus.',
-          note:'Mairie : la silhouette en cape est petite et très rapide, elle saute par-dessus les bancs.',
-          rate:'La lanterne t\'a presque trouvé ! Tu as juste vu une cape noire filer en sautant par-dessus les bancs.',
-          rateNote:'Mairie : une silhouette en cape noire, très rapide, saute par-dessus les bancs.', partiel:true}   /* clé : « très rapide, elle saute » suffit pour Odette et Anselme */
+    foret:{
+      pisteur:{intro:'Le carrefour de la forêt. Trois chemins : vers le Vieux Chêne, vers la clairière aux lièvres, vers le moulin.', points:[
+        {id:'branche', ic:'💂', nom:'Le garde',
+          t:'Silas, le garde champêtre, garde le chemin du Vieux Chêne : « Ordre du maire ! Personne ne passe ! » Les autres chemins, vers la clairière et le moulin, sont libres.',
+          note:'Carrefour : Silas garde le chemin du Vieux Chêne. Les autres chemins sont libres.'},
+        {id:'passer', ic:'🫥', nom:'Passer derrière son dos', mj:'cachette',
+          t:'Tu te glisses derrière les fougères, sans un bruit… Silas regarde ailleurs : tu passes derrière son dos ! Le chemin du Vieux Chêne est ouvert pour toi.',
+          note:'Carrefour : tu es passé derrière le dos de Silas. Le Vieux Chêne est ouvert pour toi.',
+          rate:'Silas tourne la tête : « Hé, toi ! Pas par là ! » Tu dois faire demi-tour.',
+          ferme:'Silas te surveille, maintenant : impossible de passer derrière son dos. Le Sage connaît peut-être un autre chemin…'}
+      ]},
+      alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit']}]}
+    },
+    chene:{
+      verrou:{besoin:[{code:'info:detour'}, {vu:'pisteur:foret:passer'}], t:'Silas, le garde, ne laisse passer personne vers le Vieux Chêne. Le Grand Livre du Sage connaît peut-être un vieux chemin… ou bien, au carrefour, passe derrière son dos sans te faire voir !'},
+      pisteur:{intro:'Le Vieux Chêne, immense et sombre. Personne ne doit te voir ici !', points:[
+        {id:'ouvriers', ic:'👷', nom:'Les ouvriers', moments:['matin'],
+          t:'Caché derrière un buisson, tu vois deux ouvriers poser les derniers gros rochers sur le trou du Vieux Chêne. Puis l\'un d\'eux cache un pot noir tout près, sous les branches basses. Ils s\'en vont en chuchotant.',
+          note:'Vieux Chêne (matin) : deux ouvriers finissent de boucher le trou avec de gros rochers. L\'un cache un pot noir sous les branches.'},
+        {id:'rochers', ic:'🪨', nom:'Les rochers', moments:['apresmidi', 'nuit'],
+          t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés !',
+          note:'Vieux Chêne : de gros rochers bouchent le trou, bien rangés. Ce n\'est pas un éboulement.'},
+        {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['apresmidi', 'nuit'],
+          t:'Sous les branches basses, il y a un pot noir, tout neuf : on l\'a posé ce matin. Il sent la poudre… Mais à quoi sert-il ?',
+          note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre.',
+          /* le texte change selon le moment et le rassemblement (regles.js : la première variante qui convient) */
+          variantes:[
+            {si:[{et:[{moment:'nuit'}, {code:'info:rassemblement'}]}], t:'Le pot noir est froid, tout noirci. C\'est de lui qu\'est sortie la fumée rouge du rassemblement : ce n\'étaient pas des vapeurs du trou !', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'},
+            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin…', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire.'},
+            {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'}
+          ]},
+        {id:'canne', ic:'🦯', nom:'Dans l\'herbe', donne:'info:canne',
+          t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle… Ce code est pour le Sage et le Barde.',
+          note:'Vieux Chêne : la canne d\'Odette (sept chats gravés) était dans l\'herbe, près des rochers.'},
+        {id:'tim', ic:'🧒', nom:'Quelqu\'un derrière le tronc', moments:['matin', 'apresmidi'], mj:'poursuite', params:{decor:'foret'}, donne:'info:tim_chene',
+          t:'Quelqu\'un t\'observe derrière le tronc… Il s\'enfuit ! Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose. Donne son code au Barde : lui saura le faire parler.',
+          note:'Vieux Chêne : Tim se cachait derrière le tronc. Il a très peur et il cache quelque chose : code pour le Barde.',
+          rate:'Il est bien trop rapide ! Tu as juste vu une petite casquette disparaître entre les arbres.',
+          rateNote:'Vieux Chêne : quelqu\'un de petit, avec une casquette, s\'est enfui entre les arbres.',
+          ferme:'Il a disparu pour de bon…'}
+      ]}
+    },
+    clairiere:{
+      pisteur:{intro:'La clairière aux lièvres, au bord de la forêt.', points:[
+        {id:'brume', ic:'🌫️', nom:'La brume', moments:['matin'],
+          t:'Une brume épaisse couvre toute la clairière : tu ne vois même pas tes pieds ! Impossible de suivre des traces ce matin. Reviens quand elle sera levée.'},
+        {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', donne:'info:traces',
+          /* ouvrePartiel : raté deux fois, le code est donné quand même, avec l'indice partiel (moteur-actions.js) */
+          ouvrePartiel:true, partiel:true,
+          t:'Le champ de coquelicots est tout rasé ! Dans la terre, deux longs traits de roues de charrette, et les traces de pas de celui qui la poussait. Tu les suis… jusqu\'à la cour du moulin ! Là, sur les pavés, elles disparaissent. Ici, on a seulement coupé des fleurs : on n\'y a rien fabriqué. Donne le code de ces traces au Barde.',
+          note:'Clairière : le champ de coquelicots est rasé. Des traces de charrette vont jusqu\'au moulin, puis se perdent sur les pavés de la cour. On n\'a rien fabriqué ici.',
+          rate:'Les traces se brouillent… Tu as juste vu des traits de roues partir vers le moulin. Ici, on a seulement coupé des fleurs : on n\'y a rien fabriqué.',
+          rateNote:'Clairière : des traces de roues partent vers le moulin. On a seulement coupé des fleurs ici.'}
+      ]},
+      alchimiste:{cueillir:[{ingr:'trefle', n:2}],
+        /* une trouvaille en cueillant (regles.js) : le champ rasé, à dire au Barde */
+        trouvaille:{moments:['apresmidi', 'nuit'], ic:'🌺', titre:'Un champ tout rasé', donne:'info:champ_rase',
+          t:'En cueillant, tu découvres un grand champ… tout rasé ! Il ne reste pas un seul coquelicot, juste des tiges coupées. C\'est bizarre ! Donne ce code au Barde : l\'herboriste voudra le savoir.',
+          note:'Clairière : un grand champ de coquelicots tout rasé. Bizarre !'}}
+    },
+    moulin:{
+      pisteur:{intro:'Le vieux moulin tourne au bord de la rivière.', points:[
+        {id:'cour', ic:'🌾', nom:'La cour', moments:['matin', 'apresmidi'],
+          t:'Le moulin est plein de monde : des clients, des sacs de farine, Farinel qui chante… Impossible de fouiller ici en plein jour. Il faudra revenir la nuit, quand tout le monde dort.',
+          note:'Moulin : trop de monde le jour pour fouiller. Revenir la nuit.'},
+        {id:'guet', ic:'🫥', nom:'Te cacher et guetter', moments:['nuit'], mj:'cachette', ouvrePartiel:true, partiel:true,
+          t:'Tu te caches derrière les sacs de farine… Soudain, une pierre du mur glisse, sous la grande roue ! Une silhouette avec un grand capuchon sort d\'une porte cachée et file dans la nuit. La porte est restée entrouverte…',
+          note:'Moulin (nuit) : une silhouette à capuchon est sortie d\'une porte cachée dans le mur, sous la grande roue.',
+          rate:'Tu as failli être vu ! Tu t\'aplatis derrière les sacs… mais tu as aperçu une silhouette à capuchon sortir du mur, sous la grande roue : il y a une porte cachée !',
+          rateNote:'Moulin (nuit) : une silhouette à capuchon est sortie du mur, sous la grande roue. Une porte cachée !'},
+        {id:'alambics', ic:'⚗️', nom:'La pièce cachée', moments:['nuit'], besoin:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}], obj:'colorant',
+          alt:'Il y a peut-être un secret dans ce vieux moulin… mais où ? Les vieux plans du Grand Livre le diront peut-être. Ou bien, cache-toi et guette !',
+          t:'Derrière la porte cachée : une petite pièce oubliée, sous la grande roue. Des alambics, des tuyaux, et au fond d\'une cuve, un reste de colorant tout rouge ! Une rigole descend droit dans la rivière. Pas un tissu, pas une bassine pour teindre : on a fabriqué le rouge ici, et on l\'a versé dans l\'eau. Le reste de colorant, c\'est pour l\'Alchimiste.',
+          note:'Moulin, la pièce cachée : des alambics, un reste de colorant rouge, une rigole vers la rivière. Ni tissu ni bassine.'},
+        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}], donne:'info:piece',
+          alt:'Il y a peut-être un secret dans ce vieux moulin… mais où ? Les vieux plans du Grand Livre le diront peut-être. Ou bien, cache-toi et guette !',
+          t:'Sous un alambic, quelque chose brille… Une pièce d\'or toute neuve ! Quelqu\'un a compté son or ici, et en a perdu une. Donne son code au Barde.',
+          note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic.'}
       ]}
     },
     place:{
-      pisteur:{intro:'La place du village. Tout autour, les toits se touchent presque.', points:[
-        {id:'toits', ic:'🏃', nom:'Quelqu\'un sur les toits', moments:['matin', 'apresmidi'], mj:'poursuite', donne:'info:temoin_tim',
-          t:'Là-haut, sur les toits, une petite silhouette t\'observe… Elle s\'enfuit ! Tu sautes de toit en toit et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je ne suis pas coupable, j\'ai eu peur, je me suis enfui, mais je n\'ai rien fait ! » Il mordille sa lèvre du bas : c\'est comme ça quand il cache quelque chose ! Donne son code au Barde : lui saura le faire parler.',
-          note:'Place : Tim s\'était caché sur les toits. Il a eu peur et il cache quelque chose : code pour le Barde.',
-          rate:'Il est bien trop rapide… Tu as juste vu une casquette et une écharpe rouge disparaître derrière une cheminée.',
-          rateNote:'Place : quelqu\'un avec une casquette et une écharpe rouge s\'est enfui sur les toits.'}
+      pisteur:{intro:'La place des Lanternes. Tout le monde ne parle que de la rivière rouge.', points:[
+        {id:'affiche', ic:'📜', nom:'Le panneau',
+          t:'Sur le panneau, l\'affiche du maire : « Par ordre du maire, le chemin du Vieux Chêne est fermé : éboulement dangereux ! »'},
+        {id:'charrette', ic:'🛒', nom:'La charrette', moments:['apresmidi'], ok:'La charrette lavée ne prouve rien.',
+          t:'Devant la fontaine, la charrette de Bastien le charretier. Elle est toute propre, lavée à grande eau : ça sent encore le savon ! Rien d\'autre.',
+          note:'Place : la charrette de Bastien est toute propre, lavée à grande eau.'},
+        {id:'carriole', ic:'🧳', nom:'La carriole', moments:['apresmidi'],
+          t:'La carriole de Fortuné, le colporteur : bien plus large qu\'une charrette, et pleine de tissus de toutes les couleurs.'}
       ]},
       alchimiste:{cueillir:[{ingr:'eau', n:2}]}
     },
-    clocher:{
-      pisteur:{intro:'L\'escalier en colimaçon monte jusqu\'aux cloches du village.', points:[
-        {id:'cloche', ic:'🔔', nom:'Les cloches',
-          t:'Tout en haut, trois cloches. La plus grosse est énorme ! Sur son côté, il y a une petite trappe, fermée par un cadenas tout neuf.',
-          note:'Clocher : la plus grosse cloche a une petite trappe, avec un cadenas tout neuf.'}
-      ]}
-    },
-    crypte:{
-      verrou:{besoin:[{code:'info:passage_crypte'}], roles:['pisteur'], t:'Sous le clocher, il y a peut-être un vieux passage… Mais où ? Les vieux plans du Sage le diront peut-être.'},
-      pisteur:{intro:'Un escalier humide descend sous le clocher. Ça sent la pierre mouillée et la vieille bougie.', points:[
-        {id:'coffre', ic:'🧰', nom:'Le vieux coffre', mj:'tir', donne:'info:coffret',
-          t:'Au fond de la crypte, un vieux coffre est posé sur un rebord, de l\'autre côté d\'un trou noir. Ta flèche, avec une corde, se plante dans son anneau : tu le tires jusqu\'à toi ! Dedans : un coffret de teintures, un cahier plein de couleurs, une partition… et des pièces d\'or ! Le coffret est pour l\'Alchimiste.',
-          note:'Crypte : un coffre des fondateurs ! Coffret de teintures pour l\'Alchimiste.',
-          rate:'La flèche rebondit sur la pierre… Le coffre est toujours là-bas.'},
-        {id:'cahier', ic:'🎨', nom:'Le cahier de couleurs', besoin:[{vu:'pisteur:crypte:coffre'}], obj:'nuancier',
-          t:'Un vieux cahier : le nuancier des fondateurs, plein de couleurs et de recettes. C\'est pour le Sage !',
-          note:'Crypte : le nuancier des fondateurs, pour le Sage.'},
-        {id:'partition', ic:'🎼', nom:'La partition', besoin:[{vu:'pisteur:crypte:coffre'}], obj:'partition',
-          t:'Une partition très ancienne, avec une chanson que personne ne connaît. C\'est pour le Barde : il peut la montrer au sonneur de cloches.',
-          note:'Crypte : une partition des fondateurs, pour le Barde.'},
-        {id:'pieces', ic:'🪙', nom:'Les pièces d\'or', besoin:[{vu:'pisteur:crypte:coffre'}], or:15,
-          t:'Quinze pièces d\'or anciennes ! Elles sont pour toi.'},
-        {id:'eboulement', ic:'🪨', nom:'Le fond du tunnel',
-          t:'Plus loin, un tas de pierres bouche le tunnel, vers le centre du village. Impossible d\'aller plus loin… pour l\'instant.',
-          note:'Crypte : un tas de pierres bouche le tunnel, vers le centre du village.'}
-      ]}
-    },
-    puits:{
-      pisteur:{intro:'Le vieux puits, au bord de la forêt.', points:[
-        {id:'grille', ic:'🪣', nom:'La grille',
-          t:'La grille du puits est toute rouillée, avec des toiles d\'araignée partout : personne ne l\'a ouverte depuis des années.',
-          note:'Puits : personne n\'a ouvert la grille depuis des années.'}
-      ]}
+    pont:{
+      pisteur:{intro:'Le pont de pierre, au-dessus de la rivière.', points:[
+        {id:'riviere', ic:'🌉', nom:'La rivière',
+          t:'Sous le pont, la rivière coule, toute rouge. Les poissons se cachent sous les pierres.'}
+      ]},
+      /* l'eau de la rivière : un échantillon à analyser dans l'atelier (regles.js) */
+      alchimiste:{cueillir:[], echantillon:{objet:'eau_riviere', t:'Tu te penches au bord du pont et tu remplis un petit flacon d\'eau toute rouge. Analyse-la sur ta table d\'analyse, dans ton atelier !'}}
     },
     lavoir:{
-      pisteur:{intro:'L\'eau est calme, une brume bleue flotte au-dessus.', points:[
-        {id:'banc', ic:'☕', nom:'Le banc',
-          t:'Sur le banc, deux tasses de tisane à la lavande, encore tièdes. Quelqu\'un se donne rendez-vous ici…',
-          note:'Lavoir : deux tasses de tisane à la lavande. Quelqu\'un se donne rendez-vous ici.'}
+      pisteur:{intro:'Le lavoir du village.', points:[
+        {id:'eau', ic:'🧺', nom:'L\'eau du lavoir',
+          t:'L\'eau du lavoir est toute rose… Pas rouge comme la rivière : rose, comme un bonbon !'}
       ]},
-      alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin', 'nuit']}, {ingr:'eau', n:2}]}
+      alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin']}, {ingr:'eau', n:2}],
+        echantillon:{objet:'eau_lavoir', t:'Tu remplis un petit flacon avec l\'eau rose du lavoir. Analyse-la sur ta table d\'analyse, dans ton atelier !'}}
     },
-    herboristerie:{
-      pisteur:{intro:'Le jardin de l\'herboriste sent bon les fleurs.', points:[
-        {id:'jardin', ic:'🪻', nom:'La lavande', ok:'La lavande ne désigne personne sans l\'aide du Barde.',
-          t:'Des rangées de lavande. Iris en fait des petits sachets pour parfumer les armoires.',
-          note:'Herboristerie : Iris fait des sachets de lavande pour parfumer les armoires.'}
-      ]},
-      alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}
-    },
+    herboristerie:{alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
     potager:{alchimiste:{cueillir:[{ingr:'miel', n:2}, {ingr:'menthe', n:2}]}},
-    foret:{alchimiste:{cueillir:[{ingr:'champignon', n:2}]}},
-    clairiere:{alchimiste:{cueillir:[{ingr:'trefle', n:2}]}},
-    lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}, {ingr:'ortie', n:1, besoin:[{acces:'gants'}]}]}}
+    lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}]}}
   },
-  /* Le Barde, refait pour le nouveau Barde (barde.js, Romain, 4 novembre). Quatre menteurs : Mélusine, Fortuné, Victor, Tim.
-     On les démasque pendant qu'ils répondent (🤥), ou avec le talent « Exige la vérité ». Questions à choix (choix) : la façon
-     maladroite vexe (« repasse ce soir »), jamais pour de bon. Secrets de menteur (mimique) : Tim (code du Pisteur),
-     Fortuné (Margot), Victor (en tendant l'oreille sur la place). Mélusine garde le sien : elle ne doit pas être trop désignée.
-     Les deux talents du niveau 2 servent ici : Tendre l'oreille (E.bribes : la mairie, la taverne, le clocher, la place),
-     Exige la vérité (Tim, Fortuné). tools/verif.js vérifie l'enquête avec l'un puis avec l'autre. */
+  /* Les villageois. Tous les interrogatoires sont le mini-jeu du mensonge (barde.js : visages animés, 🤥).
+     ou : où les trouver à chaque moment (un moment absent = introuvable). salut / saluts{moment} / occupe{moment}.
+     Les questions qui attendent un indice restent cachées (questionsCachees). Les menteurs : Bastien, Tim, Victor, Margot,
+     Mélusine, Fortuné, Farinel (un petit mensonge pour rire). Le maire ne ment jamais : il dit des choses vraies et tait le reste. */
   pnj:{
-    iris:{ou:{matin:'herboristerie', apresmidi:'place', soir:'herboristerie', nuit:'F4'}, salut:'Bonjour ! Tu sens ma lavande ? Elle est toute fraîche.', questions:[
-      {q:'Où étiez-vous la nuit dernière ?', a:'Dans ma cuisine, à préparer mes sachets de lavande. Toute la nuit !', note:'Iris préparait ses sachets de lavande toute la nuit.'},
-      {q:'Qui vous achète de la lavande ?', choix:[
-          {q:'Votre lavande sent si bon ! Qui vous en achète ?', bon:true},
-          {q:'C\'est votre lavande qui pue sur les lettres du Corbeau, hein ?', vexe:'Qui pue ?! Ma lavande sent bon, elle !'}],
-        a:'Oh, plein de monde ! Odette, pour que ses chats sentent bon. Victor, pour ses chaussettes, hi hi ! Et Mélusine, chaque semaine. Personne d\'autre.', note:'Iris : seuls Odette, Victor et Mélusine achètent de la lavande (et Iris en fabrique).'},
-      {q:'Avez-vous vu quelque chose ?', a:'Hier soir, deux personnes chuchotaient au lavoir, dans la brume. Je n\'ai pas osé m\'approcher…', note:'Iris : hier soir, deux personnes chuchotaient au lavoir.'},
-      {q:'Une potion pour donner du courage ?', a:'Ma grand-mère faisait l\'Élixir du Cœur vaillant : deux cuillères de miel, une pensée sauvage et un peu d\'eau, bien chaud. Tiens, je te l\'écris pour ton Alchimiste.', note:'Iris t\'a appris la recette de l\'Élixir du Cœur vaillant : son code est pour l\'Alchimiste.', donne:'info:recette_coeur'}
+    bastien:{ou:{apresmidi:'place', nuit:'B2'}, salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
+      {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
+        vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
+        note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
+      {q:'Montrer la pièce d\'or toute neuve du moulin', besoin:[{et:[{code:'info:piece'}, {vu:'barde:gaspard:1'}]}, {et:[{code:'info:piece'}, {vu:'barde:oreille:boulangerie'}]}],
+        a:'Bon, d\'accord… c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli. Une rivière rouge, c\'est beau, non ?', ment:true,
+        vrai:'Bon… Un homme en cape noire, avec un grand capuchon, m\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Je ne sais pas qui c\'était, je te le jure !',
+        note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
     ]},
-    victor:{ou:{matin:'poste', apresmidi:'place', soir:'taverne', nuit:'L6'}, salut:'Bonjour ! Pas de lettre pour toi aujourd\'hui.', questions:[
-      {q:'Avez-vous distribué ces lettres ?', a:'Jamais de la vie ! Elles n\'ont pas de timbre. On les glisse sous les portes, la nuit.', note:'Victor : ce n\'est pas lui qui distribue les lettres du Corbeau.'},
-      {q:'Vous écrivez des lettres, vous aussi ?', a:'Moi ? Jamais ! Je les distribue, c\'est tout.', ment:true, ok:'Écrire des poèmes ne prouve rien.', vrai:'Bon… j\'écris des poèmes en cachette, le soir. Mais pas de lettres de Corbeau, juré !', note:'Victor dit qu\'il n\'écrit jamais de lettres.', noteVrai:'Victor a avoué : il écrit des poèmes en cachette. Mais pas de lettres de Corbeau.'}
+    tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'}, questions:[
+      {q:'Salut Tim ! Ça va ?', a:'Euh… oui, oui, ça va. Je… je dois y aller !', note:'Tim a l\'air inquiet. Il veut s\'en aller.'},
+      /* l'indice : le registre du Sage (« il ne confie ses secrets qu'à ceux qui promettent de ne rien répéter ») */
+      {q:'Qu\'as-tu vu au fond du trou du Vieux Chêne ?', besoin:[{code:'info:tim_chene'}, {vu:'barde:margot:2'}],
+        choix:choix('Si tu me le dis, je te promets de ne le répéter à personne.', ['Tu as été très courageux, Tim. Qu\'as-tu vu, au fond du trou ?', 'Pirate va bien ? Raconte-moi ce que tu as vu au fond du trou.'], 1),
+        a:'Rien ! Je n\'ai rien vu du tout dans le trou, je le jure !', ment:true, objVrai:'pierre',
+        vrai:'Bon… Tout au fond du trou, il y avait une porte en pierre, couverte de runes bizarres. Et j\'ai ramassé ça, par terre : une pierre gravée. Je n\'ai rien dit au maire, j\'avais trop peur ! Tiens, prends-la. C\'est pour ton Sage.',
+        note:'Tim dit qu\'il n\'a rien vu au fond du trou du Vieux Chêne.', noteVrai:'Tim a avoué : au fond du trou du Vieux Chêne, il y a une porte en pierre couverte de runes. Il t\'a donné une pierre gravée (code pour le Sage).'},
+      /* filet de sécurité : si on n'a pas pu le démasquer, Tim finit par tout dire la nuit (jamais d'indice indispensable perdu) */
+      {q:'Tim, tu as l\'air triste…', moments:['nuit'], besoin:[{vu:'barde:tim:1'}], cacheSi:[{vu:'verite:tim:1'}], obj:'pierre',
+        a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Tiens, prends-la, elle me fait peur ! C\'est pour ton Sage.',
+        note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
-    anselme:{ou:{matin:'clocher', apresmidi:'clocher', soir:'taverne', nuit:'clocher'}, salut:'Hein ? Parle plus fort, mes cloches m\'ont rendu un peu sourd !', questions:[
-      {q:'Qui a la clé du clocher ?', a:'Moi seul ! Enfin… j\'en ai perdu une la semaine dernière. Impossible de la retrouver.', note:'Anselme a perdu une clé du clocher la semaine dernière.'},
-      {q:'Parlez-nous de vos cloches', choix:[
-          {q:'Elles sont belles, vos cloches ! Vous me les présentez ?', bon:true},
-          {q:'Vos vieilles cloches font un boucan terrible, non ?', vexe:'Un boucan ?! Mes cloches chantent, petit impertinent !'}],
-        a:'Ma plus grosse cloche, tout en haut, tout le village l\'appelle « la Grande Voix ». Quand elle sonne, on l\'entend jusqu\'au moulin !', note:'Anselme : la plus grosse cloche du clocher s\'appelle « la Grande Voix ».'},
-      {q:'Avez-vous une clé des archives ?', a:'La vieille clé des archives du Grand Livre ? Oui, plus personne ne s\'en sert. Tiens, donne-la au Sage.', note:'Anselme t\'a donné la vieille clé des archives : son code est pour le Sage.', obj:'cle_arch'},
-      {q:'Montrer la partition des fondateurs', besoin:[{code:'obj:partition'}], a:'Cette vieille chanson… Les fondateurs la chantaient pour ouvrir les portes, dit-on. Garde-la bien, petit !', note:'Anselme : les fondateurs chantaient la chanson de la partition « pour ouvrir les portes ».'}
+    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
+      {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
+        vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
+        note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'},
+      rassemble('rochers', ['odette', 'porte'], 2, 'Des rochers posés en une nuit ? Je passe par là tous les jours : avant-hier, il n\'y avait rien ! Je viens voir ça.')
     ]},
-    melusine:{ou:{matin:'atelier', apresmidi:'atelier', soir:'place', nuit:'L4'}, salut:'Bonjour ! Attention aux épingles, il y en a partout.', questions:[
-      {q:'Où étiez-vous la nuit dernière ?', a:'Je dormais, comme toutes les nuits.', ment:true, ok:'Sortir la nuit ne prouve rien.', vrai:'Bon, d\'accord… J\'étais dehors. Mais je ne dirai pas pourquoi !', note:'Mélusine dit qu\'elle dormait la nuit dernière.', noteVrai:'Mélusine a avoué : elle était dehors la nuit dernière.'},
-      {q:'Achetez-vous de la lavande ?', a:'De la lavande ? Jamais ! Je déteste cette odeur.', ment:true, ok:'La lavande ne compte qu\'avec l\'analyse de l\'Alchimiste.', vrai:'Si… J\'en achète chaque semaine pour parfumer mes tissus.', note:'Mélusine dit qu\'elle n\'achète jamais de lavande.', noteVrai:'Mélusine a avoué : elle achète de la lavande chaque semaine.'},
-      {q:'Votre boutique marche bien ?', a:'Oh, comme ci, comme ça. Il y a des jours avec et des jours sans !', ok:'Une boutique qui marche moyennement ne prouve rien.', note:'Mélusine : sa boutique marche « comme ci, comme ça ».'}
+    gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', nuit:'boulangerie'}, salut:'Bonjour ! Du bon pain chaud ?',
+      occupe:{matin:'Pas maintenant, c\'est le coup de feu ! Tout le village veut son pain. Reviens cet après-midi !'},
+      saluts:{nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
+      {q:'Quelles nouvelles, Gaspard ?', a:'Odette n\'est pas venue chercher son pain ce matin ! Elle vient tous les jours, à l\'aube… Elle habite au 2, rue des Lanternes : va donc voir si elle va bien ! Et Mélusine va s\'inquiéter : c\'est elle qui lui a offert sa canne aux sept chats, tu sais.', note:'Gaspard : Odette n\'est pas venue chercher son pain ce matin. Elle habite au 2, rue des Lanternes. C\'est Mélusine qui lui a offert sa canne.'},
+      {q:'Et rien d\'autre de bizarre ?', a:'Si ! Bastien, le charretier, m\'a payé son pain avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou ! Bizarre, non ?', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
+      {q:'Margot dit toujours la vérité ?', mimique:'margot', ok:'Un signe de menteur ne dit pas qui est coupable.',
+        a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
+        note:'Gaspard : Margot adore les légendes de portes secrètes. ' + signe('margot', 'Margot', true)},
+      rassemble('odette', ['canne', 'porte'], 1, 'Odette a disparu ? Ma meilleure cliente ! J\'enlève mon tablier et j\'arrive !')
     ]},
-    fortune:{ou:{matin:'place', apresmidi:'place', soir:'taverne', nuit:'taverne'}, salut:'Approchez, approchez ! Des merveilles pour tout le monde !', questions:[
-      {q:'Que vendez-vous ?', choix:[
-          {q:'Elle brille, votre bague ! Qu\'est-ce que vous vendez ?', bon:true},
-          {q:'Vous vendez du toc, comme tous les colporteurs, hein ?', vexe:'Du toc ?! Moi ?! Je ne vends que des merveilles !'}],
-        a:'Des merveilles ! Regardez cette bague : de l\'or véritable !', ment:true, vrai:'Bon… elle est en cuivre peint. Mais elle brille bien, non ?', note:'Fortuné vend des bagues « en or ».', noteVrai:'Fortuné a avoué : sa bague « en or » est en cuivre peint.'},
-      {q:'Avez-vous vendu des plumes noires ?', a:'Oui ! Un gros paquet, à quelqu\'un qui cachait son visage sous un capuchon. Je n\'ai pas vu qui c\'était.', note:'Fortuné a vendu un paquet de plumes noires à quelqu\'un qui cachait son visage.', ok:'On ne sait pas qui a acheté les plumes.'},
-      {q:'Depuis quand êtes-vous à Brumeval ?', a:'Oh, depuis une bonne semaine !', ment:true, vrai:'Bon… je suis arrivé avant-hier. Je dis ça pour que les gens me fassent confiance et m\'achètent plus !', note:'Fortuné dit qu\'il est à Brumeval depuis une semaine.', noteVrai:'Fortuné a avoué : il est arrivé avant-hier, après la première lettre du Corbeau.'}
+    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
+      {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
+        vrai:'Bon… c\'est vrai, la semaine dernière, un tonneau est tombé dans la rivière pendant un transport. Mais l\'eau n\'est pas devenue rouge du tout ! Ce n\'est pas mon vin.',
+        note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
+      {q:'Bastien, c\'est un farceur ?', a:'Bastien ? Une farce ? Il déteste les farces ! Il n\'a jamais ri de sa vie, celui-là.', note:'Margot : Bastien déteste les farces, il n\'a jamais ri de sa vie.'},
+      {q:'Comment sais-tu quand quelqu\'un ment ?', besoin:[{vu:'verite:margot:0'}], mimique:['victor', 'tim', 'bastien', 'melusine', 'fortune', 'farinel'], ok:'Des signes de menteurs ne disent pas qui est coupable.',
+        a:'Ha ! Toi, tu m\'as bien eue… Bon, je vais te confier mes secrets de tavernière. ' + signe('victor', 'Victor') + ' ' + signe('tim', 'Tim') + ' ' + signe('bastien', 'Bastien') + ' ' + signe('melusine', 'Mélusine', true) + ' ' + signe('fortune', 'Fortuné') + ' ' + signe('farinel', 'Farinel') + ' Regarde-les bien !',
+        note:'Margot t\'a confié comment mentent six villageois : c\'est écrit sur leur visage, dans ton Carnet.'},
+      rassemble('porte', ['canne', 'rochers'], 0, 'Une porte couverte de runes ? Comme dans les vieilles légendes ! Il faut que je voie ça. Je ferme la taverne et j\'arrive !')
     ]},
-    odette:{ou:{matin:'L2', apresmidi:'place', soir:'L2', nuit:'L2'}, questions:[
-      {q:'Avez-vous reçu une lettre ?', a:'Oh oui, sous ma porte ! Elle sentait la lavande, comme mes chats. Brr, ça m\'a fait peur.', note:'Odette a reçu une lettre du Corbeau qui sentait la lavande.'},
-      {q:'Avez-vous vu quelque chose ?', a:'Hier soir, une silhouette en cape noire filait dans la rue. Elle courait vite, vite… pas comme moi avec ma canne !', note:'Odette : hier soir, une silhouette en cape noire courait très vite dans la rue.'},
-      {q:'Parlez-nous du maire', a:'Monsieur Grosbec ? Un homme bien poli. Mais vous savez, chez les Grosbec, personne n\'a jamais eu de don. Pas le moindre ! Mon chat Moustache en a plus que lui, hi hi.', note:'Odette : chez les Grosbec, personne n\'a jamais eu de don.'}
+    melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, salut:'Bonjour ! Attention aux épingles…', questions:[
+      {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
+      {q:'Quand la rivière est-elle devenue rouge ?', a:'Ce matin, à l\'aube, quand je suis arrivée au lavoir, la rivière était déjà toute rouge ! Et l\'eau du lavoir est toute rose… mais ça, ce n\'est rien. La pauvre Iris en a pleuré, avec son champ… Pour la consoler, rien de tel qu\'un compliment sur ses fleurs.', note:'Mélusine : à l\'aube, la rivière était déjà toute rouge. L\'eau du lavoir est rose « mais ce n\'est rien ». Pour consoler Iris : un compliment sur ses fleurs.'},
+      {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même, avec de la bonne laine ! Ils ne déteignent jamais !', ment:true,
+        vrai:'Bon… je les achète en cachette à Fortuné, le colporteur. Ils ne coûtent presque rien… mais ils déteignent ! C\'est eux qui ont rendu l\'eau du lavoir toute rose. Pas la rivière, juré !',
+        note:'Mélusine dit qu\'elle tisse tous ses tissus elle-même.', noteVrai:'Mélusine a avoué : elle achète en cachette des tissus pas chers à Fortuné. Ils déteignent : c\'est eux qui ont rendu le lavoir rose, pas la rivière.'},
+      rassemble('canne', ['odette', 'rochers'], 2, 'La canne que je lui ai offerte ? Odette ne la quitte jamais, même pour dormir ! Je viens avec toi.', ['apresmidi'])
     ]},
-    margot:{ou:{matin:'taverne', apresmidi:'taverne', soir:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Une soupe ?', questions:[
-      {q:'Fortuné loge ici ?', a:'Oui, il a une chambre là-haut. Il ronfle comme un sanglier !', note:'Margot : Fortuné loge à la taverne.'},
-      {q:'Qui vient boire ici le soir ?', a:'Victor, Anselme, Fortuné… Mais depuis ces lettres, tout le monde a peur et rentre tôt. Moi aussi, je rentre vite chez moi, rue des Lanternes !', note:'Margot : depuis les lettres, les gens rentrent tôt. Elle habite rue des Lanternes.'},
-      /* un villageois révèle la mimique d'un menteur (barde.js) */
-      {q:'Fortuné raconte des histoires ?', mimique:'fortune', ok:'Un truc de menteur ne dit pas qui est le Corbeau.',
-        a:'Ha ! Celui-là, il raconte plus d\'histoires qu\'il ne vend de rubans. Et je connais son truc : quand il ment, ses yeux filent sur le côté, avec un petit sourire de travers. Regarde-le bien !',
-        note:'Margot : quand Fortuné ment, ses yeux filent sur le côté, avec un petit sourire de travers.'}
+    fortune:{ou:{apresmidi:'place'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
+      {q:'Vous vendez des tissus à Mélusine ?', a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
+        vrai:'Bon, d\'accord… Je lui vends des tissus pas chers, en cachette. Ils déteignent un peu, c\'est vrai. Mais chut, c\'est notre secret !',
+        note:'Fortuné dit qu\'il n\'a rien vendu à Mélusine.', noteVrai:'Fortuné a avoué : il vend en cachette à Mélusine des tissus pas chers, qui déteignent.'},
+      {q:'Vous avez vendu quelque chose d\'étrange ?', a:'Avant-hier, un homme en cape noire, avec un grand capuchon, m\'a acheté toute ma poudre noire. Il m\'a donné de l\'or, sans dire un mot. Je n\'ai pas vu son visage !', note:'Fortuné : avant-hier, un homme en cape noire lui a acheté toute sa poudre noire, avec de l\'or. Visage caché.'},
+      /* un indice leurre (§ 12.13) : Fortuné ment, avec son signe ; démasqué, il dit le vrai */
+      {q:'Vous connaissez bien Victor ?', a:'Victor ? Comme ma poche ! Pour le décider à quoi que ce soit, parle-lui de choses magiques, de portes secrètes : il adore les contes de fées !', ment:true, ok:'Un goût de Victor ne dit rien de la rivière.',
+        vrai:'Bon… en vrai, Victor déteste les contes de fées. Moi, je voulais surtout lui vendre mon gros livre de contes !',
+        note:'Fortuné : Victor adorerait les contes de fées et les portes secrètes.', noteVrai:'Fortuné a avoué : Victor déteste les contes de fées (Fortuné voulait lui vendre un livre).'}
     ]},
-    gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', soir:'place', nuit:'boulangerie'}, questions:[
-      {q:'Avez-vous reçu une lettre ?', a:'Oui ! Et elle a parfumé mes croissants avec son odeur de fleurs. Beurk !', note:'Gaspard a reçu une lettre parfumée aux fleurs.'},
-      {q:'Où étiez-vous la nuit dernière ?', a:'Dans mon fournil, comme toujours. Le pain ne se fait pas tout seul !', note:'Gaspard faisait le pain la nuit dernière.'}
+    farinel:{ou:{matin:'moulin', apresmidi:'moulin', nuit:'moulin'}, salut:'Bonjour, bonjour ! Tu veux de la farine ?', saluts:{nuit:'Hein ?! Qui me réveille en pleine nuit ?! Grrr… Bon, qu\'est-ce que tu veux ?'}, questions:[
+      /* Léo Mouture, l'apprenti (Romain, 4 novembre) : une seule ligne ici, on ne le voit jamais dans l'enquête 2 (il servira dans l'enquête 3) */
+      {q:'Rien de bizarre au moulin ?', a:'Rien du tout ! Mon moulin tourne, ma farine est blanche, tout va bien. Mon apprenti, Léo ? Encore parti livrer la farine, celui-là…', note:'Farinel : rien de bizarre au moulin. Son apprenti, Léo, est encore parti livrer la farine.'},
+      {q:'Vous travaillez toute la journée ?', a:'Toute la journée ! Jamais de sieste, moi : je travaille du matin au soir !', ment:true, ok:'Une sieste ne prouve rien.',
+        vrai:'Bon… je fais une petite sieste tous les après-midi, sur mes sacs de farine. Chut, ne le dis à personne !',
+        note:'Farinel dit qu\'il ne fait jamais la sieste.', noteVrai:'Farinel a avoué : il fait la sieste tous les après-midi sur ses sacs de farine. Rien à voir avec la rivière !'},
+      {q:'Des traces de charrette vont jusqu\'à votre moulin !', besoin:[{code:'info:traces'}], donne:'info:plans_moulin',
+        a:'Des traces de charrette ? Ça alors… Tout le monde passe dans ma cour ! Mais attends : mon moulin a été bâti par mon arrière-grand-père. Ses vieux plans doivent être rangés dans la bibliothèque des plans du Grand Livre. Demande à ton Sage !',
+        note:'Farinel : son moulin a été bâti par son arrière-grand-père ; ses plans sont dans la bibliothèque des plans du Grand Livre (code pour le Sage).'}
     ]},
-    grosbec:{ou:{matin:'mairie', apresmidi:'mairie', soir:'mairie', nuit:'mairie'}, salut:'Ah, mes enquêteurs ! Alors, ce Corbeau ?', questions:[
-      {q:'Que ferez-vous cette nuit ?', choix:[
-          {q:'Monsieur le maire, serez-vous en sécurité cette nuit ?', bon:true},
-          {q:'Et si c\'était vous, le Corbeau ?', vexe:'MOI ?! Le maire de Brumeval ?! Quelle insolence !'}],
-        a:'Cette nuit, je dors dans mon bureau, avec le garde ! La porte sera fermée à double tour, et nous veillerons jusqu\'au matin. Le Corbeau n\'osera jamais entrer ici !', note:'Le maire : cette nuit, il dort à la mairie avec le garde, porte fermée à double tour. Le Corbeau n\'y frappera pas.'},
-      {q:'Pourquoi gardez-vous toujours vos gants ?', a:'Encore cette question ? J\'ai froid aux mains, voilà tout. Allez, allez, au travail !', note:'Le maire ne quitte toujours pas ses gants.'}
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
+      {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
+      /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») */
+      {q:'À quoi servent vos coquelicots ?', choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
+        a:'Avec mes coquelicots, on peut faire un rouge magnifique… mais il part à l\'eau au premier lavage ! Pour teindre un tissu, ça ne vaut rien. Et pour en tirer le rouge, il faut des alambics : tout un bazar !',
+        note:'Iris : le rouge de coquelicot part à l\'eau, il ne sert à rien pour teindre un tissu. Pour le fabriquer, il faut des alambics.'},
+      {q:'Votre champ est tout rasé : on a emporté les fleurs ?', besoin:[{code:'info:champ_rase'}], a:'Tu as vu ? Jusqu\'à la dernière fleur ! Il a fallu une grande charrette pour tout emporter… Qui ferait une chose pareille ?', note:'Iris : il a fallu une grande charrette pour emporter toutes ses fleurs.'},
+      rassemble('rochers', ['odette', 'canne'], 1, 'Des rochers sur les racines de mon Vieux Chêne ? Ils vont l\'étouffer, le pauvre arbre ! J\'arrive !', ['apresmidi'])
     ]},
-    tim:{ou:{matin:'place', apresmidi:'place', soir:'L7', nuit:'L7'}, salut:'Oh… c\'est toi.', questions:[
-      {q:'Salut Tim !', a:'Salut les enquêteurs ! Pirate et moi, on vous doit bien un service.', note:'Tim et son chien Pirate sont contents de vous voir.'},
-      {q:'Que faisais-tu sur les toits ?', besoin:[{code:'info:temoin_tim'}], choix:[
-          {q:'N\'aie pas peur, Tim. Qu\'as-tu vu, là-haut, sur les toits ?', bon:true},
-          {q:'Avoue, petit voleur ! Que fabriquais-tu sur les toits ?', vexe:'Je ne suis pas un voleur ! Je ne dis plus rien.'}],
-        a:'Rien ! Je dormais, je n\'ai rien vu du tout !', ment:true, ok:'Tim ne dit pas laquelle des maisons.',
-        vrai:'Bon… j\'étais sur les toits, comme souvent. La nuit dernière, j\'ai vu la silhouette en cape glisser une lettre sous la porte de la mairie. Puis elle a filé dans la rue des Lanternes et elle est entrée dans une des maisons. Laquelle ? Je ne sais pas : la brume était trop épaisse.',
-        note:'Tim dit qu\'il dormait et qu\'il n\'a rien vu.', noteVrai:'Tim a avoué : la silhouette en cape est entrée dans une maison de la rue des Lanternes.'}
+    silas:{ou:{matin:'foret', apresmidi:'foret', nuit:'foret'}, salut:'Halte ! Ordre du maire.', questions:[
+      {q:'Pourquoi gardez-vous ce chemin ?', a:'Ordre du maire : personne ne va au Vieux Chêne ! Un éboulement, c\'est dangereux. Les autres chemins, tu peux y aller. Iris était furieuse : elle va voir son Vieux Chêne tous les jours, elle dit que c\'est le grand-père de tous les arbres.', note:'Silas : ordre du maire, personne ne va au Vieux Chêne. Les autres chemins sont libres. Iris va voir « son » Vieux Chêne tous les jours.'},
+      {q:'Vous avez vu passer quelqu\'un ?', a:'Avant-hier, avant l\'aube, une charrette est passée vers la clairière. Je n\'ai pas fait attention à qui la poussait. Et Victor, comme tous les jours : lui, il connaît chaque caillou de ses chemins !', note:'Silas : avant-hier, avant l\'aube, une charrette est passée vers la clairière. Victor connaît chaque caillou de ses chemins.'}
+    ]},
+    grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
+      {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
+      {q:'Pourquoi le chemin du Vieux Chêne est-il fermé ?', a:'Un éboulement, mon petit. C\'est très dangereux ! Que personne n\'y aille.', note:'Le maire : le chemin du Vieux Chêne est fermé à cause d\'un éboulement.'}
+    ]},
+    /* la maison d'Odette (2, rue des Lanternes) : la scène est la même quel que soit l'ordre du jeu */
+    voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'Tu frappes chez Odette… Pas de réponse. La porte n\'est pas fermée à clé.', questions:[
+      {q:'Pousser la porte d\'Odette', donne:'info:odette', ok:'Odette a disparu : ça ne dit pas qui a rougi la rivière.',
+        a:'La porte grince… Un chat jaillit entre tes jambes et file dehors ! Dedans, personne. Le lit n\'est pas défait : Odette n\'a pas dormi chez elle. Le voisin passe la tête par sa fenêtre : « Odette ? Je ne l\'ai pas vue depuis hier soir… » Donne ce code au Sage.',
+        note:'Chez Odette : personne. Son lit n\'est pas défait, elle n\'a pas dormi chez elle. Un de ses chats s\'est sauvé.'}
     ]}
   },
   ecoutes:[
-    /* mj:'depositions' : une scène de groupe dans l'interrogatoire (barde.js), deux essais */
-    {id:'depositions', role:'barde', lieu:'taverne', moments:['soir', 'nuit'], titre:'Les dépositions', mj:'depositions', reessai:true,
-      intro:'Ce soir, ils sont quatre au comptoir. Interroge-les tous ensemble sur la soirée d\'avant-hier : trois disent la même chose, chacun avec ses mots. Un seul ment : lequel ?',
-      params:{scene:{titre:'La soirée d\'avant-hier', ic:'🍺', texte:'Avant-hier soir, à la taverne. Trois disent la vérité, un seul ment.'},
-        depositions:[
-          {qui:'margot', phrases:[{t:'Avant-hier soir, il pleuvait à verse.', d:'pluie'}, {t:'Le colporteur est arrivé tout trempé, avec sa charrette.', d:'arrivee'}, 'Il m\'a pris une chambre pour la nuit.', {t:'Le sonneur est venu boire une soupe après ses neuf coups de cloche.', d:'cloche'}]},
-          {qui:'victor', phrases:[{t:'Il pleuvait tellement que mes lettres étaient toutes mouillées !', d:'pluie'}, {t:'J\'ai vu arriver la charrette du colporteur.', d:'arrivee'}, {t:'La cloche a sonné neuf coups.', d:'cloche'}, 'Le matin même, on avait déjà trouvé une lettre du Corbeau sous une porte.']},
-          {qui:'anselme', phrases:[{t:'J\'ai sonné neuf coups, puis j\'ai couru à la taverne sous la pluie.', d:'cloche'}, {t:'Un inconnu est arrivé avec une charrette, ce soir-là.', d:'arrivee'}, {t:'Il dégoulinait comme un poisson !', d:'pluie'}]},
-          {qui:'fortune', ment:true, phrases:[{t:'Avant-hier ? J\'étais déjà au village depuis une semaine !', faux:true, d:'arrivee'}, {t:'Il faisait un temps magnifique, on voyait toutes les étoiles.', faux:true, d:'pluie'}, {t:'J\'ai entendu la cloche sonner neuf coups.', d:'cloche'}]}
-        ]},
-      t:'Fortuné a menti ! Tout le monde le dit : il est arrivé AVANT-HIER soir, sous la pluie. La première lettre du Corbeau, c\'était la nuit d\'avant : ce n\'est donc pas lui qui a commencé.',
-      note:'Dépositions : Fortuné a menti. Il est arrivé avant-hier soir, sous la pluie, APRÈS la première lettre du Corbeau.',
-      rate:'Tu n\'as pas trouvé qui ment… Tu te souviens seulement qu\'il pleuvait à verse avant-hier.',
-      noteRate:'Dépositions : avant-hier soir, il pleuvait à verse (le menteur n\'est pas trouvé).'},
-    /* mj:'trous' : une phrase à trous dans le Carnet (barde.js) ; on ne dit jamais si c'est juste. Pour tous les Bardes, 1 action. */
-    {id:'chuchotis', role:'barde', lieu:'lavoir', moments:['soir'], titre:'Des voix au lavoir',
-      intro:'Au lavoir, deux silhouettes chuchotent dans la brume. Cache-toi derrière les draps qui sèchent, et tends l\'oreille !',
-      entendu:'Une voix grave, sous une capuche, et une petite voix inquiète… Avec le bruit de l\'eau, tu n\'as entendu que des morceaux. Puis un grand battement d\'ailes, et plus personne.',
-      mj:'trous', params:{phrases:[
-        {qui:'🦹', texte:'Ce [soir], tu iras chercher la [carte] toute seule.'},
-        {qui:'🙍', texte:'Et si on me [voit] ? J\'ai tellement peur !'},
-        {qui:'🦹', texte:'Quand j\'aurai la carte, tu auras ta [récompense]. Mais plus de rendez-vous au [lavoir] : c\'est trop risqué.'},
-        {qui:'🦹', texte:'Et mets ta [cape], que personne ne te reconnaisse.'}],
-        pieges:['matin', 'jour', 'lettre', 'clé', 'suit', 'part', 'moulin', 'clocher', 'robe', 'capuche']},   /* des pièges qui vont aussi dans la phrase */
-      t:'Une voix grave, sous une capuche : « Ce soir, tu iras chercher la carte toute seule. » Une petite voix inquiète : « Et si on me voit ? J\'ai tellement peur ! » La voix grave : « Quand j\'aurai la carte, tu auras ta récompense. Mais plus de rendez-vous au lavoir : c\'est trop risqué. Et mets ta cape, que personne ne te reconnaisse. » Puis un grand battement d\'ailes… Plus personne.',
-      note:'Lavoir : quelqu\'un doit chercher « la carte » ce soir pour un homme à la voix grave. Plus de rendez-vous au lavoir.',
-      rate:'Tu as tout mélangé… Tu as seulement compris les mots « carte » et « lavoir ».',
-      noteRate:'Lavoir : deux silhouettes chuchotent. Il est question d\'une « carte ».'}
+    /* mj:'trous' : une phrase à trous dans le Carnet (barde.js) ; on ne dit jamais si c'est juste. Pendant que le Barde attend la pièce du Pisteur. */
+    {id:'ouvriers', role:'barde', lieu:'lavoir', moments:['nuit'], titre:'Des voix au lavoir', mj:'trous', ok:'Les ouvriers ne parlent pas de la rivière.',
+      intro:'Il fait nuit noire. Au lavoir, deux ouvriers se lavent les mains pleines de terre en chuchotant. Cache-toi derrière les draps qui sèchent, et tends l\'oreille !',
+      entendu:'Avec le bruit de l\'eau, tu n\'as entendu que des morceaux…',
+      params:{phrases:[
+        {qui:'👷', texte:'Ouf ! On a tout [bouché] avant l\'[aube].'},
+        {qui:'👷', texte:'Et on nous a bien [payés] pour ça !'},
+        {qui:'👷', texte:'Chut ! Personne ne doit [approcher] du [chêne].'}],
+        pieges:['fermé', 'creusé', 'nuit', 'midi', 'grondés', 'aidés', 'parler', 'pont', 'moulin']},   /* des pièges qui vont aussi dans la phrase */
+      t:'Deux ouvriers, au lavoir, la nuit : « On a tout bouché avant l\'aube. On nous a bien payés pour ça. Chut ! Personne ne doit approcher du chêne. »',
+      note:'Lavoir (nuit) : deux ouvriers aux mains pleines de terre parlent d\'avoir tout bouché, et d\'être payés. Personne ne doit approcher du chêne.'}
   ],
-  /* Tendre l'oreille (talent du niveau 2, barde.js) : devant un bâtiment, gratuit, 2 fois par enquête. Chaque bribe est une phrase à trous.
-     Utiles, sans être indispensables : la mairie (le maire n'y craint rien), la taverne (l'arrivée du colporteur), le clocher (la Grande Voix),
-     la place (le secret de Victor). t : ce que dit la bribe en entier (pour le vérificateur). Aucun mot sensible. */
+  /* Tendre l'oreille (talent du niveau 2, barde.js) : devant un bâtiment, deux fois par enquête ; des phrases à trous.
+     Utiles sans être indispensables : la boulangerie (la pièce d'or), l'atelier (le lavoir rose), la taverne (le tonneau). t : la bribe en entier (vérificateur). */
   bribes:[
-    {id:'mairie', lieu:'mairie', moments:['matin', 'apresmidi', 'soir'], titre:'Derrière la porte du maire',
-      intro:'Tu te glisses sans bruit dans le couloir de la mairie. Derrière la porte, le maire parle au garde…',
+    {id:'boulangerie', lieu:'boulangerie', moments:['matin', 'apresmidi'], titre:'Dans le fournil',
+      intro:'Tu entres sans bruit dans le fournil. Gaspard bavarde avec son apprenti, les mains dans la pâte…',
       phrases:[
-        {qui:'grosbec', texte:'Cette nuit, nous dormirons ici, dans mon [bureau], tous les deux.'},
-        {qui:'grosbec', texte:'La porte sera fermée à double [tour], et nous veillerons jusqu\'au [matin].'},
-        {qui:'grosbec', texte:'Le Corbeau n\'osera jamais frapper à la [mairie] !'}],
-      pieges:['jardin', 'grenier', 'jour', 'clé', 'soir', 'poste', 'taverne'],
-      t:'Le maire : cette nuit, il dort dans son bureau avec le garde, porte fermée à double tour. Le Corbeau ne frappera pas à la mairie.'},
-    {id:'taverne', lieu:'taverne', moments:['matin', 'apresmidi'], titre:'Au comptoir de la taverne',
-      intro:'Tu entres sur la pointe des pieds. Au comptoir, Margot bavarde avec un client, sans te voir…',
+        {qui:'gaspard', texte:'Et devine quoi : Bastien m\'a payé son pain avec une [pièce] d\'or toute [neuve] !'},
+        {qui:'🧑‍🍳', texte:'Bastien ? Lui qui n\'a jamais un [sou] ?'},
+        {qui:'gaspard', texte:'Exactement ! C\'est [bizarre], non ?'}],
+      pieges:['brioche', 'vieille', 'cassée', 'ami', 'pain', 'drôle', 'normal'],
+      t:'Gaspard : Bastien l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou. C\'est bizarre.'},
+    {id:'atelier', lieu:'atelier', moments:['apresmidi'], titre:'Derrière la porte de l\'atelier',
+      intro:'Tu entres sur la pointe des pieds. Mélusine parle toute seule en rinçant un tissu…',
       phrases:[
-        {qui:'margot', texte:'Le colporteur ? Il est arrivé [avant-hier] soir, trempé comme une [soupe] !'},
-        {qui:'🧔', texte:'Avant-hier ? Mais la première lettre du Corbeau, c\'était la [veille] !'},
-        {qui:'margot', texte:'Alors ce n\'est pas [lui] qui a commencé…'}],
-      pieges:['hier', 'samedi', 'éponge', 'nuit', 'semaine', 'moi', 'elle'],
-      t:'Margot : le colporteur est arrivé avant-hier soir, trempé. La première lettre du Corbeau, c\'était la veille : ce n\'est pas lui qui a commencé.'},
-    {id:'clocher', lieu:'clocher', moments:['matin', 'apresmidi', 'nuit'], titre:'Dans l\'escalier du clocher',
-      intro:'Tu montes l\'escalier sur la pointe des pieds. Là-haut, Anselme parle tout seul en astiquant ses cloches…',
+        {qui:'melusine', texte:'Encore ce tissu de [Fortuné] qui déteint dans mon seau…'},
+        {qui:'melusine', texte:'Toute l\'eau du [lavoir] est devenue [rose] à cause de lui !'},
+        {qui:'melusine', texte:'Chut… Personne ne doit savoir que je ne [tisse] plus moi-même.'}],
+      pieges:['Margot', 'pont', 'bleue', 'rouge', 'couds', 'lave'],
+      t:'Mélusine : le tissu de Fortuné déteint ; c\'est lui qui a rendu le lavoir rose. Elle ne tisse plus elle-même.'},
+    {id:'taverne', lieu:'taverne', moments:['apresmidi', 'nuit'], titre:'Au comptoir de la taverne',
+      intro:'Tu entres sans bruit. Au comptoir, Margot bavarde avec un client, sans te voir…',
       phrases:[
-        {qui:'anselme', texte:'Ma belle Grande [Voix], la plus grosse [cloche] de Brumeval…'},
-        {qui:'anselme', texte:'Mais qui a mis ce [cadenas] tout neuf sur ta petite [trappe] ? Pas moi, en tout cas !'}],
-      pieges:['Dame', 'Amie', 'maison', 'panneau', 'ruban', 'porte', 'corde'],
-      t:'Anselme : la plus grosse cloche s\'appelle la Grande Voix. Quelqu\'un a mis un cadenas tout neuf sur sa petite trappe.'},
-    {id:'place', lieu:'place', moments:['apresmidi'], titre:'Derrière la fontaine', mimique:'victor',
-      intro:'Sur la place, derrière la fontaine, Odette et Iris bavardent à voix basse…',
-      phrases:[
-        {qui:'odette', texte:'Victor m\'a encore juré qu\'il n\'écrit [jamais] rien, à part des adresses !'},
-        {qui:'iris', texte:'Hi hi ! Il s\'est mordu la lèvre en le disant ? Quand Victor ment, il se mord la lèvre, très vite.'},
-        {qui:'odette', texte:'Exactement ! Et il cache un [carnet] tout plein de [poèmes]…'}],
-      pieges:['souvent', 'toujours', 'panier', 'cahier', 'recettes', 'dessins'],
-      t:'Odette et Iris : Victor jure qu\'il n\'écrit jamais. Quand il ment, il se mord la lèvre. Il cache un carnet plein de poèmes.'}
+        {qui:'margot', texte:'Le [tonneau] tombé dans la rivière la semaine dernière ? L\'eau n\'a même pas [rougi] !'},
+        {qui:'🧔', texte:'Alors ce n\'est pas ton [vin] qui a fait ça.'},
+        {qui:'margot', texte:'Bien sûr que non ! Mais chut, je n\'aime pas qu\'on en [parle].'}],
+      pieges:['sac', 'panier', 'bougé', 'gelé', 'pain', 'lait', 'rie', 'sache'],
+      t:'Margot : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'a pas rougi. Ce n\'est pas son vin.'}
   ],
-  /* Hydromel des confidences (talent du niveau 6) : ce qu'un villageois confie pour innocenter un suspect (jamais la coupable) */
+  /* Hydromel des confidences (talent du niveau 6) : ce qu'un villageois confie pour innocenter un suspect (jamais le coupable) */
   alibis:{
-    odette:'Odette ? La nuit, elle ne quitte jamais son fauteuil, avec sa canne. Elle n\'y est pour rien.',
-    iris:'Iris ? Elle passe ses nuits dans sa cuisine, au milieu de sa lavande. Je l\'ai vue par sa fenêtre.',
-    margot:'Margot ? Elle ferme sa taverne bien trop tard pour courir les rues avec des lettres.',
-    fortune:'Le colporteur ? Il n\'est arrivé qu\'avant-hier, et les lettres, ça a commencé avant !',
-    victor:'Victor ? Il dort à poings fermés dès huit heures, pour se lever à cinq heures.',
-    anselme:'Anselme ? Avec son genou, il ne saute pas par-dessus les bancs, crois-moi !',
-    gaspard:'Gaspard ? Il passe toutes ses nuits devant son four. Il n\'a pas le temps d\'écrire des lettres !'
+    melusine:'Mélusine ? Ses tissus déteignent, c\'est tout. Elle n\'a jamais touché à la rivière.',
+    margot:'Margot ? La nuit dernière, elle a servi la soupe jusqu\'à minuit, puis elle a dormi dans sa taverne.',
+    iris:'Iris ? C\'est son champ qu\'on a rasé ! Elle pleure ses coquelicots depuis deux jours.',
+    farinel:'Farinel ? Il dort comme une souche, la nuit. Il ronfle si fort qu\'on l\'entend du pont !'
   },
   analyses:{
-    lettre:{mj:'bulles', donne:'info:lavande', t:'Le papier est épais : c\'est le même que celui des affiches de la mairie ! Il sent fort la lavande.',
-      note:'Analyse de la lettre : papier épais de la mairie, odeur de lavande.',
-      rate:'Le papier est épais… et il sent une fleur : de la lavande, on dirait. Les bulles ont éclaté trop vite pour en être sûr.',
-      rateNote:'Analyse de la lettre (pas finie) : papier épais, qui sent la lavande, on dirait.', partiel:true,   /* clé : la lavande suffit, avec ce que dit Iris */
-      detail:{t:'Le pli est net et soigné : la lettre a été pliée avec beaucoup d\'attention.', note:'Détail : la lettre a été pliée avec soin.'}},
-    plume2:{mj:'double', t:'Une plume de corbeau, cousue sur un bout de tissu noir. Elle vient d\'une cape faite à la main… et elle sent la lavande.',
-      note:'Analyse du morceau de cape : une cape cousue à la main, qui sent la lavande.',
-      rate:'Du tissu noir et une plume… Tu n\'as pas eu le temps de comparer.',
-      detail:{t:'La plume est toute neuve : on vient de l\'acheter, elle n\'a jamais volé.', note:'Détail : la plume de la cape est toute neuve, achetée récemment.'}}
+    eau_riviere:{mj:'double', partiel:true,
+      t:'Dans l\'eau de la rivière, il y a un colorant rouge… un colorant qui part à l\'eau : il ne tient sur rien, il ne fait que colorer l\'eau. Et il arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
+      note:'Analyse de la rivière : un colorant rouge qui part à l\'eau (il ne tient sur rien). Il arrive d\'en haut : on ne l\'a pas versé au pont.',
+      rate:'Tu n\'as pas eu le temps de tout comparer… Mais une chose est sûre : ce rouge part à l\'eau, et il arrive d\'en haut de la rivière, pas du pont.',
+      rateNote:'Analyse de la rivière (pas finie) : un rouge qui part à l\'eau, qui arrive d\'en haut de la rivière (pas du pont).'},
+    eau_lavoir:{mj:'differences', donne:'info:lavoir_rose', partiel:true,
+      t:'L\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois ! Donne ce code au Barde.',
+      note:'Analyse du lavoir : ce rose vient d\'un tissu qui déteint. Rien à voir avec le rouge de la rivière.',
+      rate:'Tu n\'as pas eu le temps de tout voir… mais ce rose n\'est pas le rouge de la rivière, ça, c\'est sûr.',
+      rateNote:'Analyse du lavoir (pas finie) : ce rose n\'est pas le rouge de la rivière.'},
+    colorant:{mj:'melange', params:{recette:{coquelicot:2, myrtille:1}},
+      t:'Tu as retrouvé la couleur exacte : c\'est le même rouge que la rivière ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
+      note:'Analyse du colorant : c\'est le même rouge que la rivière. Il a été fabriqué dans la pièce cachée du moulin.',
+      rate:'Tu n\'as pas réussi à refaire cette couleur…'}
   },
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre', donne:'info:registre'},
-    {id:'lettres', titre:'Les lettres du Corbeau', ic:'✉️', type:'lettres',
-      lettres:[
-        {texte:'Le Corbeau veille. Bientôt, le secret de Brumeval sera à moi.', pt:'rond'},
-        {texte:'Vous ne me verrez pas venir. Le Corbeau voit tout.', pt:'rond'},
-        {texte:'Quand minuit sonnera, il sera trop tard.', pt:'rond'}],
-      t:'Trois lettres glissées sous les portes, signées d\'une plume noire. Regarde bien l\'écriture, surtout les points sur les i ! Prête une lettre à l\'Alchimiste pour qu\'il l\'analyse.',
-      donne:'obj:lettre', note:'Lettres du Corbeau : les points sur les i sont des petits ronds.'},
-    {id:'livreor', titre:'Le Livre d\'or', ic:'📗', type:'lettres', action:true, donne:'info:ecritures', bouton:'Emprunter le Livre d\'or à la mairie',
-      avant:'Pendant la Fête des Lanternes, chaque habitant a écrit un petit mot dans le Livre d\'or. Il est rangé à la mairie.',
-      lettres:[
-        {texte:'Merci pour cette fête si jolie !', pt:'point', signe:'Iris'},
-        {texte:'Vive Brumeval et vive la fête !', pt:'trait', signe:'Victor'},
-        {texte:'Belle fête, bravo à tous, merci !', pt:'point', signe:'Anselme'},
-        {texte:'Ce village est formidable, merci !', pt:'rond', signe:'Fortuné'},
-        {texte:'Quelle nuit magique, merci infiniment !', pt:'rond', signe:'Mélusine'},
-        {texte:'Merci pour ce beau soir de fête !', pt:'point', signe:'Gaspard'},
-        {texte:'Merci pour mes chats et pour la musique !', pt:'rond', signe:'Odette'},
-        {texte:'Ici on rit, on boit, on chante. Merci !', pt:'rond', signe:'Margot'}],
-      t:'Compare les points sur les i avec ceux des lettres du Corbeau !',
-      note:'Livre d\'or : les i avec un petit rond sont ceux de Fortuné, Mélusine, Odette et Margot. Iris, Anselme et Gaspard font un point, Victor un petit trait.'},
     {id:'recettes', titre:'Les recettes', ic:'🧪',
-      recette:'revelatrice', t:'Encre révélatrice, pour lire l\'encre invisible : ' + D.texteEtapes('revelatrice') + '.',
-      note:'Recette de l\'encre révélatrice : ' + D.texteEtapes('revelatrice') + '.'},
-    {id:'blanche', titre:'La lettre blanche', ic:'📃', besoin:[{code:'pot:revelatrice'}],
-      avant:'La lettre de la mairie est toute blanche, avec juste une plume dessinée en bas. De l\'encre invisible ? L\'Alchimiste sait peut-être la faire apparaître.',
-      t:'L\'encre révélatrice fait apparaître des symboles bizarres ! Il faut l\'alphabet secret des fondateurs pour les lire. Il est dans les archives scellées.',
-      note:'Lettre blanche : des symboles secrets sont apparus. Il faut l\'alphabet des archives.'},
-    {id:'archives', titre:'Les archives scellées', ic:'🗝️', action:true, besoin:[{code:'obj:cle_arch'}, {acces:'scelle'}], bouton:'Ouvrir le sceau',
-      avant:'La dernière partie du Grand Livre est fermée par un vieux sceau de cire. Dedans, il y a l\'alphabet secret des fondateurs. Anselme, le sonneur de cloches, a peut-être une vieille clé…',
-      t:'L\'alphabet secret des fondateurs : chaque lettre est un petit dessin. Tu peux maintenant déchiffrer la lettre blanche !',
-      note:'Archives : l\'alphabet secret des fondateurs est ouvert.'},
-    {id:'secret', titre:'La lettre secrète', ic:'🔣', besoin:[{et:[{page:'archives'}, {page:'blanche'}]}], mj:'alphabet', bouton:'Déchiffrer',
-      params:{message:'MINUIT A LA GRANDE VOIX'},
-      avant:'Pour lire la lettre de la mairie, il faut deux choses : que l\'encre de l\'Alchimiste ait fait apparaître les symboles, et l\'alphabet des archives.',
-      t:'Le message secret dit : « MINUIT À LA GRANDE VOIX ». C\'est là que le Corbeau va frapper… mais qu\'est-ce que « la Grande Voix » ?',
-      note:'Lettre secrète : « MINUIT À LA GRANDE VOIX ».',
-      rate:'Tu as pu lire quelques mots : MINUIT… À LA GRANDE VOIX… Le reste est trop abîmé.', rateNote:'Lettre secrète (abîmée) : « MINUIT… À LA GRANDE VOIX… »', partiel:true},   /* clé : le lieu reste lisible */
-    {id:'plans', titre:'Les vieux plans du clocher', ic:'📐', action:true, mj:'plans', bouton:'Superposer les plans',
-      params:{carte:'clocher', secret:'crypte', passage:'l\'escalier de la crypte'},
-      avant:'Le Grand Livre garde un très vieux plan du clocher. Pose-le sur le plan d\'aujourd\'hui : il manque peut-être quelque chose !',
-      t:'Sur le vieux plan, un escalier descend sous le clocher : l\'escalier de la crypte ! Il n\'existe plus sur les plans d\'aujourd\'hui. Le code est pour toute l\'équipe : chacun peut le taper.',
-      note:'Vieux plans : un escalier secret descend sous le clocher, vers une crypte. Code pour toute l\'équipe : chacun peut le taper.', donne:'info:passage_crypte',
-      rate:'Les plans ne coïncident pas…'},
-    {id:'nuancier', titre:'Le nuancier des fondateurs', ic:'🎨', besoin:[{code:'obj:nuancier'}],
-      avant:'Une page vide, avec juste un titre : « Les couleurs des fondateurs ». Le Pisteur trouvera peut-être de quoi la remplir…',
-      t:'Le nuancier des fondateurs : des dizaines de couleurs anciennes, chacune avec sa recette. Garde-le précieusement : il servira plus tard dans la saison.',
-      note:'Le nuancier des fondateurs est dans le Grand Livre.'},
-    {id:'carte', titre:'La carte des fondateurs', ic:'🗺️',
-      t:'Une vieille histoire dit que les fondateurs ont caché une carte de tous les passages secrets de Brumeval. Personne ne l\'a jamais retrouvée.'}
+      recette:'verite', t:'Potion de vérité, pour faire avouer un menteur : ' + D.texteEtapes('verite') + '.',
+      note:'Recette de la potion de vérité : ' + D.texteEtapes('verite') + '.'},
+    /* Les vieux chemins : Superposer les plans → le détour des bûcherons (un code de lieu, pour toute l'équipe).
+       Raté deux fois : l'indice partiel suffit, et le code est donné quand même (ouvrePartiel) : le Pisteur doit pouvoir aller au chêne. */
+    {id:'chemins', titre:'Les vieux chemins', ic:'🗺️', mj:'plans', params:{carte:'foret', secret:'chene', passage:'le chemin des bûcherons'}, bouton:'Superposer les vieux chemins',
+      ouvrePartiel:true, partiel:true, donne:'info:detour',
+      avant:'Un très vieux plan de la forêt, avec des chemins que plus personne ne prend. Pose-le sur le plan d\'aujourd\'hui : un vieux chemin mène peut-être au Vieux Chêne sans passer devant le garde…',
+      t:'Sur le vieux plan, un chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde ! Ce code est pour toute l\'équipe : chacun peut le taper.',
+      note:'Vieux chemins : le chemin des bûcherons arrive au Vieux Chêne par derrière, loin du garde. Code pour toute l\'équipe.',
+      rate:'La bougie s\'éteint, les plans se brouillent…',
+      tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière. Ce code est pour toute l\'équipe : chacun peut le taper.',
+      rateNote:'Vieux chemins (à moitié effacé) : un chemin des bûcherons arrive au Vieux Chêne par derrière.'},
+    /* La bibliothèque des plans (le code de Farinel) : plusieurs plans, celui du moulin est déchiré → Assembler les runes → le passage */
+    {id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'carte'}, bouton:'Réparer le plan déchiré',
+      avant:'Tous les vieux plans de Brumeval sont rangés ici : la mairie, le clocher, le pont… et un plan tout déchiré. Lequel chercher ? Un habitant saura peut-être te le dire.',
+      t:'Le plan du moulin, bâti par l\'arrière-grand-père de Farinel ! Une fois réparé, on voit une petite pièce sans porte, cachée sous la grande roue, et un passage secret pour y entrer. Ce code est pour le Pisteur.',
+      note:'Bibliothèque des plans : sur le vieux plan du moulin, une pièce sans porte sous la grande roue, et un passage secret (code pour le Pisteur).', donne:'info:passage',
+      rate:'Les morceaux du plan se mélangent…'},
+    /* La pierre de Tim (code du Barde) → L'alphabet secret (message proposé, Romain n'a pas encore choisi) */
+    {id:'pierre', titre:'La pierre gravée', ic:'🪨', besoin:[{code:'obj:pierre'}], mj:'alphabet', params:{message:'SOUS LA BRUME DORT LA VILLE D AVANT'}, bouton:'Déchiffrer les runes',
+      avant:'Une page pour les écritures mystérieuses. Si quelqu\'un trouve des runes, c\'est ici qu\'on les lit.',
+      t:'Les runes de la pierre disent : « SOUS LA BRUME DORT LA VILLE D\'AVANT ». Qu\'est-ce que ça veut dire ?',
+      note:'La pierre de Tim : « SOUS LA BRUME DORT LA VILLE D\'AVANT ».',
+      rate:'Les runes sont trop abîmées… Tu as juste pu lire : « … LA BRUME … LA VILLE … »', rateNote:'La pierre de Tim (abîmée) : « … LA BRUME … LA VILLE … »', partiel:true}
   ],
   bonus:[
-    {id:'lapin', role:'pisteur', lieu:'lisiere', moments:['matin', 'apresmidi'], mj:'traces', or:15, titre:'Le voleur de carottes',
-      t:'Un lapin a volé les carottes de Basile ! Suis ses traces jusqu\'à son terrier.'},
-    {id:'brioches', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi'], mj:'melange', or:15, titre:'La confiture de Gaspard',
+    {id:'cerfvolant', role:'pisteur', lieu:'clocher', moments:['matin', 'apresmidi'], mj:'tir', or:15, titre:'Le cerf-volant du clocher',
+      t:'Le cerf-volant d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
+    {id:'brioches', role:'alchimiste', lieu:'boulangerie', moments:['apresmidi', 'nuit'], mj:'melange', or:15, titre:'La confiture de Gaspard',
       t:'Gaspard a perdu la recette de la confiture de ses brioches ! Retrouve sa couleur exacte.'},
-    {id:'ragots', role:'barde', lieu:'taverne', moments:['matin', 'apresmidi', 'soir'], mj:'ragots', or:15, titre:'Les ragots de la taverne',
-      t:'À la taverne, chacun a son ragot. Lesquels sont vrais ? Personne ne te le dira…', params:{enquete:2}},
-    {id:'casse', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi', 'soir'], mj:'grille', or:15, titre:'Le casse-tête du maire',
-      t:'Le maire a noté les livraisons du jour de la première lettre du Corbeau. Qui a apporté quoi, où, et à quel moment ?',
-      /* Énigme fixe (solution unique et indices tous nécessaires, vérifiés par le solveur de mj-sage-plans.js).
-         Réussie, elle CONFIRME un indice (le facteur n'apporte que du courrier timbré) sans rien dire du coupable. */
-      params:{
-        intro:'Le jour de la première lettre du Corbeau, quatre habitants ont apporté quelque chose. Qui a apporté quoi, où, et à quel moment ?',
-        personnes:['victor', 'gaspard', 'iris', 'margot'],
-        objets:['courrier', 'pain', 'lavande', 'soupe'],
-        lieux:['mairie', 'clocher', 'odette', 'taverne'],
-        moments:['matin', 'midi', 'apresmidi', 'soir'],
-        verbes:{objet:'apporte', lieu:'alle', moment:'passe'},
-        indices:[
-          {t:'meme', c1:'moment', i1:'matin', c2:'objet', i2:'courrier'},
-          {t:'contre', p:'gaspard', c:'objet', i:'pain', texte:'Surprise : ce jour-là, Gaspard avait mal au dos. Il n\'a PAS apporté le pain !'},
-          {t:'apres', a:{p:'margot'}, b:{p:'victor'}, rel:'juste'},
-          {t:'meme', c1:'objet', i1:'soupe', c2:'lieu', i2:'clocher'},
-          {t:'nini', p:'iris', c:'objet', i:['pain', 'soupe']},
-          {t:'si', a:{p:'gaspard', c:'moment', i:'matin'}, b:{p:'gaspard', c:'lieu', i:'clocher'}},
-          {t:'nest', p:'victor', c:'lieu', i:'taverne'},
-          {t:'apres', a:{p:'iris'}, b:{p:'margot'}, rel:'juste'},
-          {t:'meme', c1:'objet', i1:'pain', c2:'lieu', i2:'odette'}],
-        solution:{
-          victor:{objet:'courrier', lieu:'mairie', moment:'matin'},
-          margot:{objet:'pain', lieu:'odette', moment:'midi'},
-          iris:{objet:'lavande', lieu:'taverne', moment:'apresmidi'},
-          gaspard:{objet:'soupe', lieu:'clocher', moment:'soir'}},
-        confirme:'Le maire sourit : « Exact ! Victor n\'a apporté que du courrier, avec de vrais timbres. Les lettres du Corbeau, elles, n\'ont pas de timbre : ce n\'est pas le facteur qui les apporte ! »',
-        note:'Casse-tête du maire : Victor n\'apporte que du courrier timbré. Les lettres du Corbeau n\'ont pas de timbre.'}}
+    {id:'ragots', role:'barde', lieu:'taverne', moments:['apresmidi', 'nuit'], mj:'ragots', or:15, titre:'Les ragots de la taverne',
+      t:'À la taverne, tout le monde parle de la rivière rouge… et chacun a son ragot. Lesquels sont vrais ? Personne ne te le dira…', params:{enquete:2}},
+    {id:'blason', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'Le blason de la mairie',
+      t:'Le vieux blason de la mairie est tombé et s\'est cassé en morceaux : remets-les en place !', params:{image:'blason'}}
   ],
   fin:{
     slides:[
-      'À minuit, toute l\'équipe se cache en haut du clocher, près de la Grande Voix. Les marches grincent… Une silhouette en cape noire couverte de plumes ouvre la petite trappe de la cloche.',
-      '« Pas si vite ! » Vous sortez de votre cachette. La capuche tombe : c\'est Mélusine, la couturière !',
-      'Mélusine éclate en sanglots : « Pardon ! J\'avais tant de dettes… Un homme masqué m\'a promis de tout payer si je recopiais ses lettres de ma main et si je les glissais sous les portes et si je lui rapportais la carte cachée dans la cloche. J\'ai cousu sa cape avec les plumes du colporteur. Je n\'ai jamais vu son visage… mais il porte une bague en argent à tête de corbeau. »',
-      'Perché sur une poutre, Tim sourit jusqu\'aux oreilles : « Je vous l\'avais dit, qu\'elle était entrée rue des Lanternes ! »',
-      'Dans la trappe, un vieux parchemin : la carte des souterrains de Brumeval ! Sous le village, des tunnels partout… et une grande croix rouge, juste sous la place.',
-      'Le maire arrive, tout essoufflé : « Bravo ! Donnez-moi cette carte, je vais la mettre en sécurité à la mairie. » Vous la lui remettez.',
-      'Il promet d\'aider Mélusine à payer ses dettes, si elle aide les enquêteurs. Elle promet de vous coudre de vraies capes, et de vous prêter tout ce qu\'il faut !',
-      'Mais au moment de partir, un grand battement d\'ailes résonne là-haut. Sur la cloche, quelqu\'un a épinglé un mot :',
-      '<b class="corbeau">« Merci pour la carte, petits enquêteurs. Le Corbeau »</b>'
+      'Au petit matin, vous racontez tout au maire. Il fait venir Bastien Roulebosse, le charretier. Bastien baisse la tête : « C\'est moi… Un homme en cape noire m\'a payé pour rendre la rivière rouge. Je ne sais pas qui c\'était ! »',
+      'Le maire tape sur la table : « En prison ! Payé ? Par qui ? Bah, peu importe : l\'affaire est close ! » Et il range très vite ses papiers.',
+      'Le lendemain, la rivière redevient claire. Les poissons ressortent, les lavandières chantent… Mais au village, tout le monde ne parle que d\'Odette. Où est-elle ? Personne ne l\'a revue.',
+      'Au Vieux Chêne, un des chats d\'Odette est assis devant les gros rochers. Il miaule, il gratte la pierre, comme s\'il attendait quelqu\'un…',
+      'Vous vous regardez tous les quatre. Une canne près des rochers, une porte couverte de runes au fond du trou, Odette disparue… Cette affaire n\'est pas finie. Il faut aller voir ce qu\'il y a derrière ces rochers !',
+      '<b>À suivre…</b>'
     ],
     calepin:[
-      {ic:'📜', t:'La lettre secrète était écrite sur le papier épais de la mairie.'},
-      {ic:'💍', t:'Mélusine : l\'homme masqué porte une bague en argent à tête de corbeau.'},
-      {ic:'👵', t:'Odette : chez les Grosbec, personne n\'a jamais eu de don.'},
-      {ic:'🗺️', t:'La carte des souterrains a été remise au maire.'},
-      {ic:'🔔', t:'« Minuit à la Grande Voix », le message secret du Corbeau.'},
-      {ic:'✉️', t:'Le mot du Corbeau : « Merci pour la carte, petits enquêteurs. »'},
-      {ic:'🪨', t:'Un tas de pierres bouche le tunnel de la crypte, vers le centre du village.'}
+      {ic:'👵', t:'Odette a disparu : elle n\'a pas dormi chez elle.'},
+      {ic:'🦯', t:'La canne d\'Odette était dans l\'herbe, près des rochers du Vieux Chêne.'},
+      {ic:'🚪', t:'Tim a vu une porte couverte de runes au fond du trou du Vieux Chêne.'},
+      {ic:'🪨', t:'La pierre gravée de Tim vient du fond du trou. Ses runes parlent d\'une « ville d\'avant ».'},
+      {ic:'🧥', t:'Un homme en cape noire a payé Bastien, et acheté de la poudre noire à Fortuné.'},
+      {ic:'🔴', t:'Devant la fumée rouge du Vieux Chêne, le maire a crié : « Vapeurs toxiques ! »'}
     ]
   },
   defaite:[
-    'Minuit sonne… La Grande Voix se tait. Au matin, la trappe de la cloche est vide : le Corbeau a emporté la carte des souterrains.',
+    'Le maire soupire : « Vous n\'avez pas trouvé ? Quelle déception… » La rivière reste toute rouge, et personne ne sait pourquoi.',
     'La brume entre dans le village et efface vos souvenirs… D\'autres enquêteurs viendront.'
   ],
+  /* Les faits (tools/verif.js) : ce que chaque indice écarte. QUI se trouve (la pièce d'or), OÙ et POURQUOI aussi. */
   faits:[
-    {sources:['pisteur:mairie:porte', 'sage:page:habitants'], qui:['victor', 'anselme', 'gaspard']},
-    {sources:[['barde:ecoute:depositions', 'barde:fortune:2:verite', 'barde:oreille:taverne']], qui:['fortune']},
-    {sources:['sage:page:lettres', 'alchimiste:analyse:lettre', 'barde:iris:1'], qui:['margot', 'gaspard', 'fortune', 'anselme']},
-    {sources:['sage:page:lettres', 'sage:page:livreor'], qui:['iris', 'gaspard', 'anselme', 'victor']},
-    {sources:['pisteur:place:toits', 'barde:tim:1:verite', 'sage:page:habitants'], qui:['iris', 'gaspard', 'fortune', 'anselme']},
-    {sources:['pisteur:mairie:guet', 'sage:page:habitants'], qui:['odette', 'anselme']},
-    {sources:['sage:page:secret', ['barde:anselme:1', 'barde:oreille:clocher']], ou:['lavoir', 'mairie', 'puits']},
-    {sources:['barde:ecoute:chuchotis'], ou:['lavoir']},
-    {sources:['pisteur:puits:grille'], ou:['puits']},
-    {sources:[['barde:grosbec:0', 'barde:oreille:mairie']], ou:['mairie']}
+    /* QUI : la pièce d'or toute neuve de Bastien (Gaspard, ou ce qu'on entend au fournil) + celle sous l'alambic (Pisteur) */
+    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie'], 'pisteur:moulin:piece'], qui:['melusine', 'margot', 'iris', 'farinel']},
+    {sources:['barde:bastien:1'], qui:['melusine', 'margot', 'iris', 'farinel']},
+    /* Mélusine : son rose, c'est le lavoir (ses tissus de Fortuné), pas la rivière */
+    {sources:[['barde:melusine:2:verite', 'barde:fortune:0:verite', 'barde:oreille:atelier'], 'alchimiste:analyse:eau_lavoir'], qui:['melusine']},
+    /* Margot : le tonneau tombé n'a pas rougi l'eau */
+    {sources:[['barde:margot:0:verite', 'barde:oreille:taverne']], qui:['margot']},
+    /* OÙ */
+    {sources:['barde:melusine:1', ['pisteur:chene:ouvriers', 'pisteur:chene:pot']], ou:['chene']},
+    {sources:['alchimiste:analyse:eau_lavoir', 'alchimiste:analyse:eau_riviere'], ou:['lavoir']},
+    {sources:['alchimiste:analyse:eau_riviere'], ou:['pont']},
+    {sources:['pisteur:clairiere:champ'], ou:['clairiere']},
+    {sources:['pisteur:moulin:alambics', 'alchimiste:analyse:colorant'], ou:['lavoir', 'chene', 'pont', 'clairiere']},
+    /* POURQUOI */
+    {sources:['barde:margot:1'], pourquoi:['farce']},
+    {sources:[['pisteur:moulin:alambics', 'barde:iris:1'], 'alchimiste:analyse:eau_riviere'], pourquoi:['teindre']},
+    {sources:['barde:bastien:1:verite'], pourquoi:['joli', 'teindre', 'farce']},
+    /* le filet : même sans aveu, la pièce toute neuve d'un charretier sans le sou dit qu'on l'a payé */
+    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie'], 'pisteur:moulin:piece'], pourquoi:['joli', 'farce']}
   ]
 };
 })();
@@ -34373,6 +34440,9 @@ var D = window.DONNEES;
 
 E[3] = {
   id:3, titre:'Les feux du moulin', niveau:3,
+  /* L'ancienne histoire (le Corbeau) ne suit plus la nouvelle enquête 2 (§ 12.11) : pas jouable tant qu'elle n'est pas réécrite.
+     Le village montre « Enquête 3 : en cours d'écriture » (moteur-ecrans.js, moteur-actions.js), verif.js la laisse de côté. */
+  enEcriture:true,
   moments:['matin', 'apresmidi', 'soir', 'nuit'],
   lettre:'Chers enquêteurs, depuis trois nuits, des lumières vertes dansent au vieux moulin, et chaque matin, un sac de farine a disparu ! Gaspard accuse le meunier, le meunier jure qu\'il n\'y est pour rien, et tout le village se dispute. Gaspard dit aussi que ces sacs sont bien trop lourds pour une seule personne… J\'ai embauché un garde champêtre, Silas, mais il ne voit rien. Trouvez QUI vole la farine, OÙ, dans le moulin, il cache son secret… et QUI l\'aide à porter les sacs !',
   signature:'Monsieur Grosbec, maire de Brumeval',
@@ -35574,13 +35644,14 @@ function vueAccueil(){
         (att.length ? '<span class="b-alerte">⭐ Nouveau talent à choisir !</span>' : '') + '</div></button>' +
       '<div class="b-hub-actions">' +
         (enCours ? '<button class="btn grand" data-act="reprendre">▶ Reprendre l\'enquête ' + S.e.id + '</button>' :
-          (E ? '<button class="btn grand" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button>' :
+          (E && E.enEcriture ? '<p class="b-carte-verre centre">🚧 <b>Enquête ' + E.id + ' : en cours d\'écriture.</b> Elle arrive bientôt ! ' + lire('Enquête ' + E.id + ' : en cours d\'écriture. Elle arrive bientôt !') + '</p>' :   /* pas encore jouable (e3.js) */
+          E ? '<button class="btn grand" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button>' :
             '<p class="b-carte-verre">Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt… ' + lire('Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt…') + '</p>')) +
         '<button class="btn second" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
         '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' +
         (S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +
       '</div>' +
-    '</section>' + (!enCours && E ? villageSuite(E) : '') + piedAccueil() + '</main>';
+    '</section>' + (!enCours && E && !E.enEcriture ? villageSuite(E) : '') + piedAccueil() + '</main>';
 }
 /* Entre deux enquêtes, au village : le Sage montre le code de l'enquête suivante, les autres peuvent le taper ici */
 function villageSuite(N){
@@ -35755,6 +35826,7 @@ function vueLettre(){
   return '<main class="b-page b-lettre-page"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
     '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
     '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
+    (E.affiche ? '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📜 ' + esc(E.affiche.titre || 'Affiche') + '</p><p class="centre"><b>' + esc(E.affiche.t) + '</b></p>' + lire((E.affiche.titre ? E.affiche.titre + ' : ' : '') + E.affiche.t, 'grosbec') + '</article>' : '') +   /* l'affiche du maire (enquête 2) */
     '<section class="b-carte-verre b-mission" style="--c:' + R.c + '"><h3>' + R.ic + ' Ta mission</h3><p>' + esc(E.missions[role]) + '</p>' + lire(E.missions[role]) + (M.lettreMission ? M.lettreMission() : '') +
     '<ul class="b-regles"><li><span>☀️</span> L\'enquête dure ' + E.moments.length + ' moments : ' + E.moments.map(function(m){ return D.MOMENTS[m].nom.toLowerCase(); }).join(', ') + '.</li>' +
     (M.sansActions() ? '' : '<li><span>' + (M.actionsMax() > 2 ? '●●●' : '●●') + '</span> À chaque moment, tu as ' + M.actionsMax() + ' actions : choisis bien !</li>') +
@@ -35932,6 +36004,7 @@ function vueDefaite(){
 function blocSuite(E, F){
   var N = window.ENQUETES[E.id + 1];
   if(!N) return '';
+  if(N.enEcriture){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
   if(M.role() === 'sage'){
     var t = 'Quand tout le monde est prêt, dis ce code à l\'équipe. Chacun le tape sur sa tablette, et vous partez ensemble pour l\'enquête ' + N.id + '. Si quelqu\'un est en retard, tu retrouveras ce code dans ton carnet.';
     return '<section class="b-carte-verre b-suite centre"><h3>➡️ Code pour l\'enquête suivante</h3><p>' + esc(t) + ' ' + lire(t) + '</p>' +
@@ -35944,7 +36017,7 @@ function blocSuite(E, F){
 /* Pendant l'histoire de fin : si le Sage donne déjà le code de l'enquête suivante, on peut le taper sans attendre */
 function padPendantHistoire(E){
   var N = window.ENQUETES[E.id + 1];
-  if(!N || M.role() === 'sage') return '';
+  if(!N || N.enEcriture || M.role() === 'sage') return '';
   if(!UI.padSuite) return '<div class="centre"><button class="btn second petit" data-act="pad-suite">🔢 Le Sage a déjà donné le code de l\'enquête ' + N.id + ' ?</button></div>';
   var t = 'Tape le code de l\'enquête ' + N.id + ' que le Sage te donne. Ne t\'inquiète pas : ton or et ton expérience sont déjà gagnés !';
   return '<section class="b-carte-verre b-suite centre"><h3>➡️ Code de l\'enquête ' + N.id + '</h3><p>' + esc(t) + ' ' + lire(t) + '</p>' + padHTML() +
@@ -36807,7 +36880,7 @@ function passerMoment(n){
 }
 
 /* ---------- Accusation (Sage) ---------- */
-function dims(){ var E = M.E(); return ['qui', 'ou', 'quoi'].filter(function(d){ return E[d]; }); }
+function dims(){ var E = M.E(); return ['qui', 'ou', 'quoi', 'pourquoi'].filter(function(d){ return E[d]; }); }   /* POURQUOI : l'enquête 2 */
 function accusationModal(m){
   var E = M.E(), P = M.P(), d = m.etape;
   if(d === 'confirmer'){
@@ -36952,6 +37025,7 @@ function enqueteSuivante(erreurs, depuis){
   }
   UI.modal = null; UI.saisie = []; UI.padSuite = false;
   nouvelleEnquete(id);
+  if(window.ENQUETES[id].enEcriture) return;   /* pas encore jouable : nouvelleEnquete l'a dit */
   M.son('cloche');
   M.toast('En route pour l\'enquête ' + id + ' !');
 }
@@ -37079,6 +37153,8 @@ function hasard(c){
 /* ---------- Début d'enquête ---------- */
 function nouvelleEnquete(id){
   var S = M.S, E = window.ENQUETES[id];
+  /* une enquête en cours d'écriture (E.enEcriture : l'enquête 3, tant qu'elle n'est pas réécrite) ne se joue pas */
+  if(E && E.enEcriture){ UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.ouvrir({type:'info', ic:'🚧', titre:'Enquête ' + id + ' : en cours d\'écriture', t:'L\'enquête ' + id + ' est en train d\'être écrite. Elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'}); return; }
   if(S.e && S.e.etape === 'fin' && !S.e.defaite) M.archiver();
   S.e = M.enqueteNeuve(id);
   var P = S.e;
@@ -37243,7 +37319,7 @@ A.point = function(el){
   var p = M.pointsVisibles(l, role).filter(function(x){ return x.id === id; })[0];
   if(!p) return;
   var k = role + ':' + l + ':' + p.id;
-  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:p.t, retour:'lieu', retourId:l}); return; }
+  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:'lieu', retourId:l}); return; }
   if(p.mj && M.ferme && M.ferme(k)){ M.ouvrir({type:'decouverte', ic:'🔒', titre:p.nom, t:M.texteEchec(p, M.MAX_ESSAIS), rate:true, retour:'lieu', retourId:l}); return; }   /* raté deux fois : fermé (essais.js) */
   if(P.vus['explore:' + l] !== P.moment) return;
   if(p.besoin && !M.besoinOk(p.besoin)){
@@ -37262,7 +37338,12 @@ A.point = function(el){
   if(p.mj){
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0), p.params, {titre:p.nom}, function(res){
       if(res.reussi) reveler();
-      else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic); M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:M.texteEchec ? M.texteEchec(p, n, 'Raté…') : (p.rate || 'Raté…'), rate:true, retour:'lieu', retourId:l, reessai:n < 2 ? {act:'point', l:l, id:p.id} : null}); }
+      else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
+        /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */
+        if(p.ouvrePartiel && n >= (M.MAX_ESSAIS || 2)){ P.vus[k] = 'ok'; P.vus[k + ':partiel'] = 1; M.consommerBesoin(p.besoin); var cp = null;
+          if(p.obj){ P.objets[p.obj] = true; cp = 'obj:' + p.obj; } if(p.donne){ cp = p.donne; P.objets['_' + p.donne] = true; } M.sauver();
+          M.decouvrir({ic:'💨', titre:p.nom, t:p.rate || 'Raté…', rate:true, code:cp, retour:'lieu', retourId:l}); return; }
+        M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:M.texteEchec ? M.texteEchec(p, n, 'Raté…') : (p.rate || 'Raté…'), rate:true, retour:'lieu', retourId:l, reessai:n < 2 ? {act:'point', l:l, id:p.id} : null}); }
     });
   } else reveler();
 };
@@ -38791,14 +38872,17 @@ var GESTE = {coin:'ses yeux filent sur le côté, avec un petit sourire de trave
   mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite'};
 var SIGNE_IC = {coin:'😏', rougeur:'🌸', sueur:'💧', force:'😬', mordille:'👄', morsure:'🦷', double:'😑'};
 B.TIC = TIC;
-B.phraseMimique = function(id){ return 'Quand ' + nom(id) + ' ment, ' + GESTE[TIC[id] || 'coin'].replace('{il}', il(id)) + '.'; };
-/* Les secrets connus : appris d'un villageois (question), d'un équipier (code), en écoutant (bribe), ou par le Physionomiste */
+/* Les signes d'une enquête (E.tics : à l'enquête 2, un signe différent par menteur, § 12.11), sinon le tic habituel */
+function tic(id){ var E = M.S && M.S.e ? M.E() : null; return (E && E.tics && E.tics[id]) || TIC[id]; }
+B.tic = tic;
+B.phraseMimique = function(id){ return 'Quand ' + nom(id) + ' ment, ' + GESTE[tic(id) || 'coin'].replace('{il}', il(id)) + '.'; };
+/* Les secrets connus : appris d'un villageois (question, q.mimique : un id ou une liste), d'un équipier (code), en écoutant (bribe), ou par le Physionomiste */
 B.mimiques = function(){
   var P = M.P(), E = M.E(), o = {};
   if(!P || !E) return o;
   M.cle(P.mimiques || {}).forEach(function(k){ o[k] = P.mimiques[k]; });
   M.cle(E.infos || {}).forEach(function(x){ var I = E.infos[x]; if(I.mimique && P.recus && P.recus['info:' + x]) o[I.mimique] = o[I.mimique] || 'code'; });
-  M.cle(E.pnj || {}).forEach(function(id){ (E.pnj[id].questions || []).forEach(function(q, i){ if(q.mimique && P.vus['barde:' + id + ':' + i] === 'ok') o[q.mimique] = o[q.mimique] || 'question'; }); });
+  M.cle(E.pnj || {}).forEach(function(id){ (E.pnj[id].questions || []).forEach(function(q, i){ if(q.mimique && P.vus['barde:' + id + ':' + i] === 'ok') [].concat(q.mimique).forEach(function(m){ o[m] = o[m] || 'question'; }); }); });
   return o;
 };
 
@@ -38821,9 +38905,9 @@ function scenario(id, texte, ment){
   if(!T || !T.scenario) return {D:2.4 + texte.length * .05, ev:[], couche:null};
   var p = reglagesMensonge(), signe = null;
   if(ment){
-    if(B.mimiques()[id] && TIC[id]){
+    if(B.mimiques()[id] && tic(id)){
       /* le secret est connu : SON geste, bien marqué, et il dure un peu */
-      signe = TIC[id];
+      signe = tic(id);
       p = Object.assign({}, p, {force:1, signe:Math.max(2.4, (p.signe || 1) * 2), double:Math.max(1, (p.double || .4) * 2.4), tient:Math.max(2.6, p.tient || 1), monte:.8, trois:0});
     } else {
       var l = p.listeSignes && p.listeSignes.length ? p.listeSignes : UN_SIGNE;
@@ -38831,7 +38915,7 @@ function scenario(id, texte, ment){
     }
   }
   var sc = T.scenario({texte:texte, ment:!!ment}, p, signe);
-  if(ment && B.mimiques()[id] && TIC[id]){   /* avec le secret : le geste au plus fort, et le visage s'avance (bd-net) */
+  if(ment && B.mimiques()[id] && tic(id)){   /* avec le secret : le geste au plus fort, et le visage s'avance (bd-net) */
     sc.net = true;
     if(sc.couche && sc.couche.id === 'rougeur') sc.couche.e.rougeur = 1;
     (sc.ev || []).forEach(function(x){ if(x.signe && x.id === 'coin') x.e.ampleur = 1.15; });
@@ -38845,7 +38929,8 @@ var HUMEUR = {
   vrai:{sourcils:'leves', regard:'bas', menton:'bas', vitesse:.3},
   exige:{sourcils:'leves', regard:'bas', menton:'bas', vitesse:.3},
   pardon:{sourire:1, vitesse:.3}, hydromel:{sourire:2, yeuxRieurs:true, rougeur:.35, vitesse:.3}, salut:{sourire:1, vitesse:.3},
-  cloche:{sourire:1, vitesse:.3}, rien:{sourire:1, vitesse:.3}
+  cloche:{sourire:1, vitesse:.3}, rien:{sourire:1, vitesse:.3},
+  encore:{sourcils:'fronces', bouche:'moue', regard:'cote-d', vitesse:.3}, nouveau:{sourcils:'leves', sourire:1, vitesse:.3}
 };
 /* Joue une réplique : bouche qui parle, mimiques (et le signe s'il ment), texte qui s'écrit ; fin() à la fin */
 function jouer(box, bulle, texte, sc, base, fin){
@@ -38888,8 +38973,54 @@ function visage(id){
    L'interrogatoire
    ========================================================== */
 var CHARME = 'Ha ha ! Tu es un peu direct… mais avec toi, impossible de se fâcher. ';
-function salut(id){ var N = (M.E().pnj || {})[id] || {}; return N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?'); }
+/* Ce qu'il dit en premier : trop occupé à ce moment (N.occupe), un salut du moment (N.saluts), ou son salut habituel */
+function salut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return occupe(id) || (N.saluts && N.saluts[mid]) || N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?'); }
+function occupe(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
 function estVexe(id){ var P = M.P(); return !!(P && P.vexe && P.vexe[id] === P.moment); }
+/* Une question qu'on ne montre pas : pas à ce moment (q.moments), plus utile (q.cacheSi), le rassemblement déjà fait,
+   ou qui attend un indice qu'on n'a pas encore (q.secret, ou E.questionsCachees : enquête 2). */
+function cachee(id, q){
+  var E = M.E(), P = M.P();
+  if(q.moments && !M.momentOk(q.moments)) return true;
+  if(q.cacheSi && M.besoinOk(q.cacheSi)) return true;
+  if(q.rassemble && P && P.vus && P.vus.rassemblement) return true;
+  return !!(q.besoin && !M.besoinOk(q.besoin) && (q.secret || (E && E.questionsCachees)));
+}
+B.cachee = cachee;
+
+/* ---------- Enquête 2 (§ 12.11) : une seule visite par moment pour certains villageois (E.uneVisite) ----------
+   « Encore toi ? Reviens plus tard ! » ; revenir avec du nouveau qui le concerne (une question qui s'ouvre, son signe de menteur
+   appris) rouvre la porte : « Tu as du nouveau ? Bon, je t'écoute. » Un villageois vexé reste fermé jusqu'au moment suivant.
+   P.visites {pnj:{m, sait}} ; UI.convOuverte : la conversation ouverte en ce moment (une découverte qui y revient en fait partie). */
+function uneVisite(id){ var E = M.E(); return !!(E && E.uneVisite && E.uneVisite.indexOf(id) >= 0); }
+function ceQuOnSait(id){
+  var l = [];
+  questions(id).forEach(function(q, i){ if(!repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin))) l.push('q' + i); });
+  if(B.mimiques()[id]) l.push('signe');
+  return l;
+}
+function dejaOuvert(id){
+  var m = UI.modal;
+  return UI.convOuverte === id && !!m && ((m.type === 'conv' && m.id === id) || (m.type === 'decouverte' && m.retourId === id));
+}
+/* true : il te reçoit ; false : « Encore toi ? » (la feuille s'ouvre sur sa porte fermée) */
+function porte(id){
+  var P = M.P();
+  if(!P || !uneVisite(id) || estVexe(id) || occupe(id) || dejaOuvert(id)) return true;
+  P.visites = P.visites || {};
+  var v = P.visites[id], sait = ceQuOnSait(id);
+  if(v && v.m === P.moment){
+    if(!sait.some(function(k){ return v.sait.indexOf(k) < 0; })){
+      UI.bd = {p:id, mode:'encore', t:'Encore toi ? Reviens plus tard !', m:P.moment};
+      M.son('porte'); M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'});
+      return false;
+    }
+    UI.bd = {p:id, mode:'nouveau', t:'Tu as du nouveau ? Bon, je t\'écoute.', m:P.moment};
+  }
+  P.visites[id] = {m:P.moment, sait:sait};
+  return true;
+}
+B.porte = porte;
 /* Pourra-t-on le revoir à un moment suivant ? Sinon, il accepte de reparler tout de suite (contre une action). */
 function peutRevoir(id){
   var E = M.E(), P = M.P(), N = (E.pnj || {})[id] || {}, o = N.ou || {};
@@ -38898,12 +39029,13 @@ function peutRevoir(id){
 }
 function texteVexe(id, c){
   var E = M.E(), P = M.P(), t = (c && c.vexe) || 'Hé ! Ce n\'est pas très poli, ça.';
+  var neutre = !!E.vexeNeutre;   /* enquête 2 (§ 12.13) : la même réplique neutre pour tous les mauvais choix, sans « vexé » */
   if(peutRevoir(id)){
     var n = P.moment + 1;
     while(n < E.moments.length && !(((E.pnj[id] || {}).ou || {})[E.moments[n]])) n++;
-    return t + ' J\'ai plus trop envie de parler. Repasse ' + (QUAND[E.moments[n]] || 'plus tard') + '.';
+    return t + (neutre ? ' Repasse ' : ' J\'ai plus trop envie de parler. Repasse ') + (QUAND[E.moments[n]] || 'plus tard') + '.';
   }
-  return t + ' J\'ai plus trop envie de parler… Bon. Si tu me demandes pardon, je veux bien t\'écouter quand même.';
+  return t + (neutre ? ' Bon… repose-moi la question autrement, si tu veux.' : ' J\'ai plus trop envie de parler… Bon. Si tu me demandes pardon, je veux bien t\'écouter quand même.');
 }
 function fermeDemasque(id){
   var p = reglagesMensonge();
@@ -38931,7 +39063,8 @@ M.feuilleConv = function(id){
   if(id === 'rumeur') return rumeurHTML();
   var E = M.E(), P = M.P(), x = D.PNJ[id] || {nom:id, court:id, metier:''}, Q = questions(id);
   var bd = UI.bd && UI.bd.p === id ? UI.bd : null;
-  var vexe = estVexe(id), e2 = enquete2(), ferme = e2 && fermeDemasque(id);
+  var vexe = estVexe(id), e2 = enquete2() && id !== 'voisin', ferme = e2 && fermeDemasque(id);   /* le voisin (une porte, une scène) : pas de 🤥 */
+  var occ = !vexe && occupe(id), encore = !vexe && !occ && !!(bd && bd.mode === 'encore');
   var t = bd ? texteDe(bd) : salut(id);
   var s = '<div class="bd-conv">';
   s += '<div class="bd-tete"><div class="bd-visage' + (vexe ? ' vexe' : '') + '" id="bd-visage">' + visage(id) + '</div>' +
@@ -38944,22 +39077,31 @@ M.feuilleConv = function(id){
   var sec = B.mimiques()[id];
   if(sec) s += '<p class="bd-secret">🤫 <b>Ton secret :</b> ' + esc(B.phraseMimique(id)) + ' ' + lire(B.phraseMimique(id)) + '</p>';
   if(vexe){
-    s += '<div class="bd-boude"><p>😤 ' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + '. ' + (peutRevoir(id) ? 'Reviens au moment suivant : ' + il(id) + ' te reparlera.' : 'C\'est le dernier moment où tu peux ' + (FEM[id] ? 'la' : 'le') + ' voir : demande-' + lui(id) + ' pardon !') + '</p>';
+    var neutre = !!E.vexeNeutre;   /* enquête 2 (§ 12.13) : pas « vexé », il ne veut juste plus parler pour ce moment */
+    s += '<div class="bd-boude"><p>' + (neutre ? '🤔 ' + esc(nom(id)) + ' n\'a plus rien à te dire pour ce moment. ' : '😤 ' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + '. ') +
+      (peutRevoir(id) ? 'Reviens au moment suivant : ' + il(id) + ' te reparlera.' : neutre ? 'C\'est le dernier moment où tu peux ' + (FEM[id] ? 'la' : 'le') + ' voir : repose ta question autrement !' : 'C\'est le dernier moment où tu peux ' + (FEM[id] ? 'la' : 'le') + ' voir : demande-' + lui(id) + ' pardon !') + '</p>';
     /* sans points d'action (enquête 1) : on revient au moment suivant ; s'il n'y en a plus, le pardon ne coûte rien */
-    if(!peutRevoir(id)) s += '<button class="btn magie grand" data-act="bd-pardon" data-p="' + id + '"' + (M.peutAgir() ? '' : ' disabled') + '>🙏 Demander pardon' + M.coutTxt() + '</button>' +
+    if(!peutRevoir(id)) s += '<button class="btn magie grand" data-act="bd-pardon" data-p="' + id + '"' + (M.peutAgir() ? '' : ' disabled') + '>' + (neutre ? '🔁 Reposer la question' : '🙏 Demander pardon') + M.coutTxt() + '</button>' +
       (M.peutAgir() ? '' : '<p class="doux petit">Plus d\'action ? Le Sage peut te donner une action de sa réserve 💡.</p>');
     return s + '</div></div>';
+  }
+  /* trop occupé à ce moment (N.occupe), ou déjà vu à ce moment sans rien de nouveau (E.uneVisite) : pas de questions */
+  if(occ || encore){
+    s += '<div class="bd-boude"><p>' + (occ ? '⏳ ' + esc(nom(id)) + ' est bien trop occupé' + (FEM[id] ? 'e' : '') + ' pour l\'instant. Reviens plus tard !' :
+      '🚪 ' + esc(nom(id)) + ' ne veut plus te parler pour ce moment. Reviens au moment suivant… ou quand tu auras du nouveau pour ' + lui(id) + ' !') + '</p></div>';
+    return s + '</div>';
   }
   s += '<div class="b-questions bd-questions">';
   Q.forEach(function(q, i){
     var k = 'barde:' + id + ':' + i, st = P.vus[k];
+    if(!st && cachee(id, q)) return;
     if(q.besoin && !M.besoinOk(q.besoin) && !st){
       s += '<div class="b-question ferme"><span>🔒</span><div><b>' + esc(q.q) + '</b>' + M.besoinHTML(q.besoin, 'barde') + '</div></div>';
       return;
     }
     if(st !== 'ok'){
       if(q.choix && q.choix.length){
-        s += '<div class="bd-choix"><p class="bd-choix-tit">💬 ' + esc(q.q) + ' <small>Comment tu le demandes ?</small></p>' + q.choix.map(function(c, kc){
+        s += '<div class="bd-choix"><p class="bd-choix-tit">💬 ' + esc(q.q) + ' <small>' + esc(q.sousTitre || 'Comment tu le demandes ?') + '</small></p>' + q.choix.map(function(c, kc){
           var barre = !!P.vus['maladroit:' + id + ':' + i + ':' + kc];
           return '<button class="b-question bd-facon' + (barre ? ' barre' : '') + '" data-act="question" data-p="' + id + '" data-i="' + i + '" data-c="' + kc + '"' + (barre ? ' disabled' : '') + '><span>' + (barre ? '❌' : '🗨️') + '</span><b>« ' + esc(c.q) + ' »</b></button>';
         }).join('') + '</div>';
@@ -38976,14 +39118,16 @@ M.feuilleConv = function(id){
   });
   s += '</div>';
   /* sans points d'action : un villageois ne donne qu'une chose par moment ; tout demandé, on le dit gentiment */
-  if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i); })) s += M.rienDePlus();
+  if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i) || cachee(id, q); })) s += M.rienDePlus();
   /* en bas : ce qui sert à la fin d'un interrogatoire */
   var bas = '';
   var parle = Q.some(function(q, i){ return repondu(id, i); });
   var ex = M.fxSomme('verite') - ((P.usages && P.usages.verite) || 0);
   if(e2 && ex > 0 && parle) bas += '<button class="btn magie" data-act="bd-exiger" data-p="' + id + '">⚖️ J\'exige la vérité ! <small>(encore ' + ex + ')</small></button>';
   if(talent('hydromel') && (P.potions.hydromel || 0) > 0 && !P.usages.hydromel && id !== 'voisin') bas += '<button class="btn magie" data-act="bd-hydromel" data-p="' + id + '">🍯 Offrir l\'Hydromel des confidences</button>';
-  if(e2 && (P.potions.verite || 0) > 0 && !(P.bues && P.bues.verite === P.moment)) bas += '<button class="btn second" data-act="boire" data-id="verite">💬 Boire la potion de vérité (tout ce moment)</button>';
+  /* la potion de vérité : à l'enquête 2 (E.potionAveu), on la fait boire au villageois, et il avoue tous ses mensonges de la conversation */
+  if(e2 && E.potionAveu && (P.potions.verite || 0) > 0 && parle) bas += '<button class="btn magie" data-act="bd-potion" data-p="' + id + '">💬 Lui faire boire la potion de vérité</button>';
+  else if(e2 && !E.potionAveu && (P.potions.verite || 0) > 0 && !(P.bues && P.bues.verite === P.moment)) bas += '<button class="btn second" data-act="boire" data-id="verite">💬 Boire la potion de vérité (tout ce moment)</button>';
   if(bas) s += '<div class="bd-bas">' + bas + '</div>';
   if(e2 && ferme) s += '<p class="doux petit bd-avert">🔒 ' + esc(nom(id)) + ' ne te croit plus : tu ne peux plus ' + (FEM[id] ? 'la' : 'le') + ' démasquer pendant cette enquête.</p>';
   else if(e2 && M.nbEchecs && M.nbEchecs('demasque:' + id) > 0) s += '<p class="doux petit bd-avert">⚠️ Attention : encore une fausse accusation, et ' + esc(nom(id)) + ' ne te croira plus.</p>';
@@ -38999,9 +39143,10 @@ function signesHTML(){
 
 /* ---------- Les actions de l'interrogatoire ---------- */
 var parler0 = A.parler, frapper0 = A.frapper;
-A.parler = function(el){ preparer(el.dataset.id); return parler0(el); };
+A.parler = function(el){ if(!porte(el.dataset.id)) return; preparer(el.dataset.id); return parler0(el); };
 A.frapper = function(el){
   var P = M.P(), ici = M.pnjIci(el.dataset.id);
+  if(ici.length && !porte(ici[0])) return;   /* une seule visite par moment (E.uneVisite) */
   if(ici.length) preparer(ici[0]);
   if(ici.length && P.conv[ici[0]] === P.moment){ M.son('porte'); M.ouvrir({type:'conv', id:ici[0], classe:'b-feuille-conv'}); return; }   /* déjà ouvert à ce moment : sans action */
   return frapper0(el);
@@ -39019,21 +39164,50 @@ A.question = function(el){
       P.vexe = P.vexe || {}; P.vexe[id] = P.moment;
       P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = texteVexe(id, c);
       UI.bd = {p:id, mode:'vexe', t:P.vexeTxt[id], m:P.moment};
-      M.noter(nom(id) + ' s\'est vexé' + (FEM[id] ? 'e' : '') + ' : « ' + c.q + ' », ce n\'était pas la bonne façon de demander.', '😤');
+      M.noter((M.E() || {}).vexeNeutre ? nom(id) + ' n\'a rien voulu dire quand tu as dit : « ' + c.q + ' ».' : nom(id) + ' s\'est vexé' + (FEM[id] ? 'e' : '') + ' : « ' + c.q + ' », ce n\'était pas la bonne façon de demander.', (M.E() || {}).vexeNeutre ? '🤔' : '😤');
       M.son('ko'); M.sauver(); M.render(); return;
     }
   }
   P.vus['barde:' + id + ':' + i] = 'ok';
-  if(q.mimique){ P.mimiques = P.mimiques || {}; P.mimiques[q.mimique] = P.mimiques[q.mimique] || 'question'; }
+  if(q.mimique){ P.mimiques = P.mimiques || {}; [].concat(q.mimique).forEach(function(m){ P.mimiques[m] = P.mimiques[m] || 'question'; }); }
   M.noter(q.note, (D.PNJ[id] || {}).ic);
   var code = null;
   if(q.obj){ P.objets[q.obj] = true; code = 'obj:' + q.obj; }
   if(q.donne){ P.objets['_' + q.donne] = true; code = q.donne; }
   UI.bd = {p:id, i:i, mode:'rep', charme:charme, m:P.moment};
   M.son('clic'); M.sauver();
+  if(q.rassemble && rassemblement(id, q)) return;   /* le troisième villageois convaincu : toute la troupe part au Vieux Chêne */
   if(code){ UI.bd.joue = true; M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.a, code:code, retour:'parler', retourId:id}); return; }
   M.render();
 };
+/* ---------- Le rassemblement (E.rassemblement, enquête 2) : convaincre n villageois (questions q.rassemble, le bon argument) ---------- */
+function convaincus(){ var E = M.E(); return M.cle(E.pnj || {}).filter(function(id){ return questions(id).some(function(q, i){ return q.rassemble && repondu(id, i); }); }); }
+B.convaincus = convaincus;
+function rassemblement(id, q){
+  var E = M.E(), P = M.P(), R = E && E.rassemblement;
+  if(!R || P.vus.rassemblement) return false;
+  var n = convaincus().length;
+  if(n < (R.n || 3)){ M.toast('📣 ' + n + ' villageois sur ' + (R.n || 3) + ' prêts à venir au Vieux Chêne !'); return false; }
+  P.vus.rassemblement = 1;
+  if(R.code) P.objets['_' + R.code] = true;
+  M.sauver();
+  M.decouvrir({ic:R.ic || '📣', titre:R.titre || 'Le rassemblement', t:'« ' + q.a + ' » ' + R.t, note:R.note, code:R.code || null});
+  return true;
+}
+/* Une vérité qui donne un objet (q.objVrai : la pierre de Tim) : son code s'affiche tout de suite */
+function apresVerite(id, idx){
+  var P = M.P(), l = idx.filter(function(i){ var q = questions(id)[i]; return q && q.objVrai; });
+  if(!l.length) return false;
+  var q = questions(id)[l[0]];
+  P.objets[q.objVrai] = true; M.sauver();
+  M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.vrai, code:'obj:' + q.objVrai, retour:'parler', retourId:id});
+  return true;
+}
+/* Il avoue (Exige la vérité, potion de vérité) : ces mensonges deviennent la vérité, notée dans le Carnet */
+function avouer(id, idx, ic){
+  var P = M.P();
+  idx.forEach(function(i){ var q = questions(id)[i]; P.vus['verite:' + id + ':' + i] = 1; M.noter(q.noteVrai || (nom(id) + ' a avoué : ' + String(q.vrai || '').replace(/[«»]/g, '').trim()), ic || '⚖️'); });
+}
 /* 🤥 : juste, la vérité sort ; faux, il est outré (un échec ; deux échecs, il ne te croit plus de l'enquête) */
 A['bd-ment'] = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i, q = questions(id)[i];
@@ -39043,7 +39217,9 @@ A['bd-ment'] = function(el){
     P.vus['verite:' + id + ':' + i] = 1;
     M.noter(q.noteVrai || (nom(id) + ' a avoué : ' + String(q.vrai || '').replace(/[«»]/g, '').trim()), '🔍');
     UI.bd = {p:id, i:i, mode:'vrai', m:P.moment};
-    M.son('magie'); M.sauver(); M.render(); M.toast('Démasqué ! ' + nom(id) + ' dit enfin la vérité.');
+    M.son('magie'); M.sauver();
+    if(apresVerite(id, [i])){ UI.bd.joue = true; return; }
+    M.render(); M.toast('Démasqué ! ' + nom(id) + ' dit enfin la vérité.');
     return;
   }
   var p = reglagesMensonge(), cloches = (p.mods && p.mods.indice) || 0;
@@ -39070,7 +39246,7 @@ A['bd-pardon'] = function(el){
   if(!estVexe(id) || peutRevoir(id)) return;
   if(!M.peutAgir()){ M.toast('Plus d\'action : demande au Sage une action de sa réserve 💡'); return; }
   M.depenser(); delete P.vexe[id];
-  UI.bd = {p:id, mode:'pardon', t:'Bon… j\'accepte tes excuses. Vas-y, demande-moi.', m:P.moment};
+  UI.bd = {p:id, mode:'pardon', t:(M.E() || {}).vexeNeutre ? 'Bon… vas-y, je t\'écoute.' : 'Bon… j\'accepte tes excuses. Vas-y, demande-moi.', m:P.moment};
   M.son('ok'); M.sauver(); M.render();
 };
 /* Exige la vérité : tous les mensonges de cet interrogatoire deviennent la vérité (le bouton est toujours là : il ne trahit rien) */
@@ -39079,15 +39255,27 @@ A['bd-exiger'] = function(el){
   P.usages = P.usages || {};
   if(M.fxSomme('verite') <= (P.usages.verite || 0)) return;
   P.usages.verite = (P.usages.verite || 0) + 1;
-  questions(id).forEach(function(q, i){
-    if(mentNonVu(id, i)){
-      P.vus['verite:' + id + ':' + i] = 1; aveux.push(i);
-      M.noter(q.noteVrai || (nom(id) + ' a avoué : ' + String(q.vrai || '').replace(/[«»]/g, '').trim()), '⚖️');
-    }
-  });
+  questions(id).forEach(function(q, i){ if(mentNonVu(id, i)) aveux.push(i); });
+  avouer(id, aveux, '⚖️');
   if(aveux.length) UI.bd = {p:id, i:aveux[0], mode:'exige', m:P.moment, t:'Bon, d\'accord… Je vais tout te dire. ' + aveux.map(function(i){ return questions(id)[i].vrai; }).join(' ')};
   else UI.bd = {p:id, mode:'rien', m:P.moment, t:'J\'ai tout dit vrai, je te le jure ! Tu peux me croire.'};
-  M.son('magie'); M.sauver(); M.render();
+  M.son('magie'); M.sauver();
+  if(aveux.length && apresVerite(id, aveux)){ UI.bd.joue = true; return; }
+  M.render();
+};
+/* La potion de vérité (enquête 2, E.potionAveu) : le villageois la boit, et avoue tous ses mensonges de la conversation.
+   S'il n'a encore rien dit de faux, on garde la potion. */
+A['bd-potion'] = function(el){
+  var P = M.P(), E = M.E(), id = el.dataset.p, l = [];
+  if(!P || !E || !E.potionAveu || !((P.potions.verite || 0) > 0)) return;
+  questions(id).forEach(function(q, i){ if(mentNonVu(id, i)) l.push(i); });
+  if(!l.length){ UI.bd = {p:id, mode:'rien', m:P.moment, t:'Une potion ? Pour quoi faire ? Je n\'ai rien dit de faux, moi !'}; M.son('page'); M.render(); M.toast(Il(id) + ' n\'a pas menti… pour l\'instant. Tu gardes ta potion.'); return; }
+  P.potions.verite--;
+  avouer(id, l, '💬');
+  UI.bd = {p:id, i:l[0], mode:'exige', m:P.moment, t:'Glou, glou… Oh ! Je… je ne peux plus mentir ! ' + l.map(function(i){ return questions(id)[i].vrai; }).join(' ')};
+  M.son('magie'); M.sauver();
+  if(apresVerite(id, l)){ UI.bd.joue = true; return; }
+  M.render(); M.toast('💬 ' + nom(id) + ' a bu la potion : ' + il(id) + ' dit enfin la vérité !');
 };
 A.forcer = function(el){ A['bd-exiger']({dataset:{p:el.dataset.p}}); };
 /* L'ancien bouton « Démasquer » (ancien mini-jeu) : on rouvre simplement la conversation */
@@ -39224,6 +39412,11 @@ function creerTrous(cle){
   var a = analyseTrous(cle); if(!a) return;
   var o = P.trous[cle] = {poses:{}, fixes:{}, elim:{}, m:P.moment};
   if(M.modsPour('mots').mods.revele && a.trous.length > 1){ var n = Math.floor(Math.random() * a.trous.length); o.poses[n] = a.trous[n]; o.fixes[n] = 1; }   /* le Carillon : un mot retrouvé tout seul */
+  /* Tendre l'oreille (talent) : il entend mieux que tout le monde, un mot de plus est déjà à sa place (et les premières lettres : trousHTML) */
+  if(talent('tendre') && a.trous.length > 1){
+    var libres = a.trous.map(function(m, k){ return k; }).filter(function(k){ return !o.fixes[k]; });
+    if(libres.length > 1){ var n2 = libres[Math.floor(Math.random() * libres.length)]; o.poses[n2] = a.trous[n2]; o.fixes[n2] = 1; }
+  }
 }
 B.creerTrous = creerTrous;
 function tirets(mot, premiere){
@@ -39235,7 +39428,7 @@ function texteActuel(a, o){
 }
 function trousHTML(cle){
   var P = M.P(), o = P.trous[cle], a = analyseTrous(cle); if(!o || !a) return '';
-  var E = M.E(), premiere = (E.niveau || 1) <= 1, ouvert = UI.trouOuvert === cle;
+  var E = M.E(), premiere = (E.niveau || 1) <= 1 || talent('tendre'), ouvert = UI.trouOuvert === cle;   /* Tendre l'oreille : la première lettre de chaque mot */
   var vides = a.trous.filter(function(m, n){ return !o.poses[n]; }).length;
   var titre = a.src.titre || 'Une conversation';
   var s = '<div class="bd-trous' + (ouvert ? ' ouvert' : '') + '" id="bdt-' + cle.replace(/[^a-z0-9]/gi, '-') + '"><button type="button" class="bd-trous-tete" data-act="bd-trous-ouvre" data-k="' + cle + '">' +
@@ -39340,6 +39533,7 @@ A['bd-oreille'] = function(el){
   var P = M.P(), E = M.E(), b = (E.bribes || []).filter(function(x){ return x.id === el.dataset.id; })[0];
   if(!P || !b || B.oreillesReste() <= 0 || (P.trous && P.trous['oreille:' + b.id])) return;
   P.usages = P.usages || {}; P.usages.oreille = (P.usages.oreille || 0) + 1;
+  P.vus['barde:oreille:' + b.id] = 1;   /* pour les conditions d'une enquête (ex. : {vu:'barde:oreille:boulangerie'}) */
   creerTrous('oreille:' + b.id);
   if(b.mimique){ P.mimiques = P.mimiques || {}; P.mimiques[b.mimique] = 'oreille'; }
   M.son('pas'); M.sauver();
@@ -39352,7 +39546,7 @@ A['bd-oreille'] = function(el){
 function carteGens(id){
   var P = M.P(), x = D.PNJ[id], ouvert = P.conv[id] === P.moment, vexe = estVexe(id);
   return '<div class="b-gens-carte' + (vexe ? ' bd-vexe' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(x.court) + '</b><small>' + esc(x.metier) + '</small>' +
-    (vexe ? '<small class="bd-boude-mini">😤 vexé' + (FEM[id] ? 'e' : '') + '</small>' : '') +
+    (vexe ? '<small class="bd-boude-mini">' + ((M.E() || {}).vexeNeutre ? '🤔 plus tard' : '😤 vexé' + (FEM[id] ? 'e' : '')) + '</small>' : '') +
     '<button class="btn petit' + (ouvert ? ' second' : '') + '" data-act="parler" data-id="' + id + '"' + (ouvert || M.peutAgir() ? '' : ' disabled') + '>' + (ouvert ? '💬 Continuer' : '💬 Parler' + M.coutTxt()) + '</button></div>';
 }
 M.lieuBarde = function(lieu){
@@ -39522,8 +39716,8 @@ function majTalents(){
   if(M.fxSomme('physio') > 0 && !P.physio){
     /* jamais le coupable ni son complice : le talent ne doit pas désigner la solution (Romain veut que le coupable ne soit pas trop désigné) */
     var sol = E.solution || {}, pasSol = function(id){ return id !== sol.qui && id !== sol.quoi; };
-    var men = sus.filter(function(id){ return pasSol(id) && questions(id).some(function(q){ return q.ment; }) && TIC[id]; });
-    var l = men.length ? men : sus.filter(function(id){ return pasSol(id) && TIC[id]; });
+    var men = sus.filter(function(id){ return pasSol(id) && questions(id).some(function(q){ return q.ment; }) && tic(id); });
+    var l = men.length ? men : sus.filter(function(id){ return pasSol(id) && tic(id); });
     if(l.length){
       var id = l[Math.floor(Math.random() * l.length)];
       P.physio = id; P.mimiques = P.mimiques || {}; P.mimiques[id] = 'physio';
@@ -39573,6 +39767,10 @@ M.carnetBarde = function(){
   }
   if(M.fxVrai('reseau')) t.push('<li>🧒 <b>Réseau d\'informateurs</b> : un enfant te parle à chaque moment.</li>');
   if(talent('plaidoirie')) t.push('<li>📜 <b>Plaidoirie</b> : <button class="btn petit second" data-act="bd-code" data-c="plaide:1">📜 Le code, pour le Sage</button></li>');
+  /* le rassemblement de l'enquête 2 : où il en est, et son code s'il est fait */
+  var Ra = E.rassemblement;
+  if(Ra) t.push('<li>📣 <b>' + esc(Ra.titre || 'Le rassemblement') + '</b> : ' + (P.vus.rassemblement ? 'fait ! ' + (Ra.code ? '<button class="btn petit second" data-act="bd-code" data-c="' + Ra.code + '">🔢 Le code, pour l\'équipe</button>' : '') :
+    convaincus().length + ' villageois sur ' + (Ra.n || 3) + ' prêts à venir au Vieux Chêne.') + '</li>');
   if(t.length) s += '<section class="bd-talents"><h3>🎻 Mes talents</h3><ul>' + t.join('') + '</ul></section>';
   var cles = M.cle(P.trous || {});
   if(cles.length){
@@ -39593,7 +39791,8 @@ M.repBarde = function(id, i, q){
 M.dossierBarde = function(id){
   var l = [], P = M.P();
   if(B.mimiques()[id]) l.push('<li class="cn-info bd-cn-secret"><div><p class="cn-de">🤫 Son secret de menteur</p><p>' + esc(B.phraseMimique(id)) + '</p></div>' + M.lireBtn(B.phraseMimique(id), id) + '</li>');
-  if(estVexe(id)) l.push('<li class="cn-note"><span class="cn-nic">😤</span><p>' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + ' : reviens plus tard.</p></li>');
+  if(estVexe(id)) l.push((M.E() || {}).vexeNeutre ? '<li class="cn-note"><span class="cn-nic">🤔</span><p>' + esc(nom(id)) + ' n\'a plus rien à te dire pour ce moment : reviens plus tard.</p></li>' :
+    '<li class="cn-note"><span class="cn-nic">😤</span><p>' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + ' : reviens plus tard.</p></li>');
   return l;
 };
 A['bd-intuition'] = function(){
@@ -39730,6 +39929,16 @@ if(window.Persos && Persos.heros){
     return h0.call(this, h, o);
   };
 }
+
+/* ---------- La conversation ouverte (une seule visite par moment, E.uneVisite) : ouverte jusqu'à ce qu'on la ferme ;
+   une découverte qui y revient (« D'accord » → la conversation) en fait partie ---------- */
+var ouvrir0 = M.ouvrir, fermer0 = M.fermer;
+M.ouvrir = function(m){
+  if(m && m.type === 'conv' && D.PNJ[m.id]) UI.convOuverte = UI.bd && UI.bd.p === m.id && UI.bd.mode === 'encore' ? null : m.id;
+  else if(!(m && m.type === 'decouverte' && m.retour === 'parler' && m.retourId === UI.convOuverte)) UI.convOuverte = null;
+  return ouvrir0.apply(this, arguments);
+};
+M.fermer = function(){ UI.convOuverte = null; return fermer0.apply(this, arguments); };
 
 /* ---------- Chaque rendu : arrêter la parole en cours, mettre les talents à jour, puis faire parler ---------- */
 var r0 = M.render;
@@ -40056,6 +40265,7 @@ function accusation(E, P){
   var q = dims.map(function(d){ return E[d].titre; }).join(' ');
   var s = '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t) + ' ' + lire(t + ' ' + q) + '</p></div>';
   s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + IC_Q[d] + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
+  if(M.verrouAccusationHTML) s += M.verrouAccusationHTML();   /* l'enquête 2 : ce qui reste à éclaircir avant d'accuser (regles.js) */
   s += '<button class="btn grand lv-accuser" data-act="accuser">⚖️ Accuser</button>';
   s += M.coeursHTML ? M.coeursHTML() : '';
   /* les suspects : ceux que le Sage a barrés dans son tableau sont grisés (ils restent choisissables à l'accusation) */
@@ -40393,6 +40603,148 @@ if(typeof rendreAvant === 'function'){
     return r;
   };
 }
+})();
+
+/* ===== regles.js ===== */
+/* ==========================================================
+   Brumeval — des règles qu'une enquête allume par un réglage (l'enquête 2, DESIGN-saison1.md § 12.11).
+   Les règles du Barde (une seule visite par moment, rassemblement, potion qui fait avouer…) sont dans barde.js.
+   · Un point dont le texte change (p.variantes : [{si:[conditions], t, note}], la première qui convient) : le pot du
+     Vieux Chêne l'après-midi, après le rassemblement, la nuit. Quand le texte change, le point redevient « à voir ».
+   · L'Alchimiste remplit un flacon dans un lieu (L.alchimiste.echantillon {objet, t, moments}) : un objet à analyser.
+   · Une trouvaille en cueillant (L.alchimiste.trouvaille {moments, ic, titre, t, note, donne}) : le champ rasé.
+   · Le verrou de l'accusation (E.verrouAccusation) et le petit matin (P.aube, sur la tablette du Sage) : on accuse
+     après la nuit, quand l'équipe a vu ce qu'il faut ; sinon un message dit exactement ce qui reste.
+   · Les vieilles sauvegardes de l'ancienne enquête 2 (le Corbeau) : une enquête 2 en cours repart de zéro (nouvelle histoire).
+   Chargé APRÈS moteur-actions.js, barde.js et livre.js (et avant tuto.js).
+   ========================================================== */
+(function(){
+'use strict';
+var M = window.M, D = window.DONNEES;
+if(!M || !M.A) return;
+var A = M.A, UI = M.UI;
+function esc(s){ return M.esc(s); }
+function lire(t, qui){ return M.lireBtn(t, qui); }
+
+/* ---------- 1. Les variantes de texte d'un point ---------- */
+function varianteDe(p){
+  if(!p || !p.variantes) return -1;
+  for(var i = 0; i < p.variantes.length; i++) if(M.besoinOk(p.variantes[i].si)) return i;
+  return -1;
+}
+var pv0 = M.pointsVisibles;
+M.pointsVisibles = function(lieu, role){
+  var l = pv0.apply(this, arguments), P = M.P();
+  if(!P) return l;
+  return l.map(function(p){
+    if(!p || !p.variantes) return p;
+    var i = varianteDe(p), k = role + ':' + lieu + ':' + p.id, vu = P.vus[k + ':var'];
+    if(P.vus[k] === 'ok' && (vu === undefined ? -1 : vu) !== i){ delete P.vus[k]; delete P.vus[k + ':var']; }   /* le texte a changé : à revoir */
+    var v = i >= 0 ? p.variantes[i] : null;
+    return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}) : p;
+  });
+};
+var point0 = A.point;
+A.point = function(el){
+  var r = point0.apply(this, arguments), P = M.P(), E = M.E(), role = M.role(), l = el.dataset.l, id = el.dataset.id;
+  var R = E && E.lieux && E.lieux[l] && E.lieux[l][role], p = R && (R.points || []).filter(function(x){ return x.id === id; })[0];
+  var k = role + ':' + l + ':' + id;
+  if(P && p && p.variantes && P.vus[k] === 'ok' && P.vus[k + ':var'] === undefined){ P.vus[k + ':var'] = varianteDe(p); M.sauver(); }
+  return r;
+};
+
+/* ---------- 2. L'Alchimiste : un flacon à remplir, une trouvaille en cueillant ---------- */
+function alchi(lieu){ var E = M.E(), L = E && E.lieux && E.lieux[lieu]; return (L && L.alchimiste) || {}; }
+var fl0 = M.feuilleLieu;
+M.feuilleLieu = function(lieu){
+  var s = fl0.apply(this, arguments);
+  if(M.role() !== 'alchimiste' || M.verrouLieu(lieu)) return s;
+  var X = alchi(lieu).echantillon;
+  if(!X || !M.momentOk(X.moments)) return s;
+  var E = M.E(), P = M.P(), o = (E.objets || {})[X.objet] || {nom:X.objet, ic:'🧪'}, deja = !!P.recus['obj:' + X.objet];
+  var td = 'Tu as déjà ton flacon : il t\'attend sur la table d\'analyse de ton atelier.';
+  var b = '<div class="b-ecoute b-echantillon"><h3>' + o.ic + ' ' + esc(o.nom) + '</h3>' +
+    (deja ? '<p class="doux">' + esc(td) + ' ' + lire(td) + '</p>' : '<button class="btn grand" data-act="echantillon" data-id="' + esc(lieu) + '">🧪 Remplir un flacon</button>') + '</div>';
+  var i = s.indexOf('<div class="b-ce-que-je-sais">');
+  return i >= 0 ? s.slice(0, i) + b + s.slice(i) : s + b;
+};
+A.echantillon = function(el){
+  var P = M.P(), E = M.E(), lieu = el.dataset.id, X = alchi(lieu).echantillon;
+  if(!P || !X || P.recus['obj:' + X.objet] || M.verrouLieu(lieu) || !M.momentOk(X.moments)) return;
+  P.recus['obj:' + X.objet] = true;
+  var o = (E.objets || {})[X.objet] || {};
+  M.noter('Pris : ' + (o.nom || X.objet) + '. Il t\'attend sur ta table d\'analyse.', o.ic || '🧪');
+  M.son('plouf'); M.sauver();
+  M.decouvrir({ic:o.ic || '🧪', titre:o.nom || 'Un flacon', t:X.t, retour:'lieu', retourId:lieu});
+};
+var cueillir0 = A.cueillir;
+A.cueillir = function(el){
+  var P = M.P(), lieu = el.dataset.id, T = alchi(lieu).trouvaille, avant = P && P.vus['cueilli:' + lieu];
+  var r = cueillir0.apply(this, arguments);
+  P = M.P();
+  if(!P || !T || P.vus['trouvaille:' + lieu] || P.vus['cueilli:' + lieu] !== P.moment || avant === P.moment || !M.momentOk(T.moments)) return r;
+  P.vus['trouvaille:' + lieu] = 1;
+  if(T.donne) P.objets['_' + T.donne] = true;
+  var m = UI.modal && UI.modal.type === 'info' ? (UI.modal.t || '') : '';   /* ce qu'elle a cueilli, à la suite */
+  M.sauver();
+  M.decouvrir({ic:T.ic || '👀', titre:T.titre || 'Une trouvaille', t:T.t + (m ? ' ' + m : ''), note:T.note, code:T.donne || null});
+  return r;
+};
+
+/* ---------- 3. Le verrou de l'accusation, et le petit matin ---------- */
+function derniereNuit(){ var E = M.E(), P = M.P(); return !!(E && P) && P.moment >= E.moments.length - 1; }
+function verrou(){
+  var E = M.E(), P = M.P();
+  if(!E || !P || !E.verrouAccusation) return [];
+  return E.verrouAccusation.filter(function(c){ return c.aube ? !P.aube : !M.uneCondition(c); });
+}
+M.verrouAccusation = verrou;
+M.verrouAccusationHTML = function(){
+  var l = verrou(); if(!l.length) return '';
+  var t = 'Il reste des mystères à éclaircir avant d\'accuser :', aube = l.some(function(c){ return c.aube; });
+  var s = '<div class="lv-verrou-acc"><p>🔒 <b>' + esc(t) + '</b></p><ul>' + l.map(function(c){ return '<li>' + esc(c.t) + '</li>'; }).join('') + '</ul>' +
+    lire(t + ' ' + l.map(function(c){ return c.t; }).join(' '));
+  if(aube && derniereNuit() && M.P().etape === 'jeu') s += '<div class="centre"><button class="btn magie grand" data-act="petit-matin">🌅 Le petit matin</button></div>';
+  else if(aube) s += '<p class="doux petit">On accuse au petit matin, après la nuit.</p>';
+  return s + '</div>';
+};
+var accuser0 = A.accuser;
+A.accuser = function(el){
+  var l = verrou();
+  if(l.length){
+    M.son('ko');
+    M.ouvrir({type:'info', ic:'🔒', titre:'Pas encore !', t:'Il reste des mystères à éclaircir avant d\'accuser : ' + l.map(function(c){ return c.t; }).join(' ')});
+    return;
+  }
+  return accuser0.apply(this, arguments);
+};
+A['petit-matin'] = function(){
+  var P = M.P(); if(!P || P.aube || !derniereNuit()) return;
+  UI.confirmer = function(){
+    var P2 = M.P(); if(!P2) return;
+    P2.aube = true; M.sauver(); UI.modal = null; M.render();
+    var f = document.getElementById('transition');
+    if(f){ f.innerHTML = '<div class="b-trans-ic">🌅</div><h2>Le petit matin</h2>'; f.className = 'on moment-matin'; setTimeout(function(){ f.className = ''; }, 2200); }
+    M.son('cloche');
+  };
+  M.ouvrir({type:'confirmer', titre:'Le petit matin ?', t:'Toute l\'équipe a fini la nuit ? Alors place au petit matin : c\'est l\'heure d\'accuser !', oui:'🌅 Oui, le petit matin'});
+};
+
+/* ---------- 4. Les vieilles sauvegardes de l'ancienne enquête 2 ---------- */
+/* Une enquête 2 commencée avec l'ancienne histoire (le Corbeau) n'a plus de sens : elle repart de zéro (le bouton « Enquête 2 » du village).
+   Une enquête 2 déjà finie est gardée telle quelle. Les nouvelles parties sont marquées P.histoire = 'riviere'. */
+function nouvelleE2(s){
+  try{ if(s && s.e && typeof s.e === 'object' && +s.e.id === 2 && s.e.histoire !== 'riviere' && s.e.etape !== 'fin') s.e = null; }catch(e){}
+  return s;
+}
+M.nouvelleE2 = nouvelleE2;
+var en0 = M.enqueteNeuve;
+M.enqueteNeuve = function(id){ var P = en0.apply(this, arguments); if(+id === 2 && P) P.histoire = 'riviere'; return P; };
+var ch0 = M.charger;
+M.charger = function(){ return nouvelleE2(ch0.apply(this, arguments)); };
+var ls0 = M.lireSauvegarde;
+M.lireSauvegarde = function(){ var s = ls0.apply(this, arguments); return s ? nouvelleE2(s) : s; };
+if(M.S) nouvelleE2(M.S);
 })();
 
 /* ===== carte-jeu.js ===== */
