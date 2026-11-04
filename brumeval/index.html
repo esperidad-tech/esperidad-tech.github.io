@@ -81,6 +81,15 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   background:linear-gradient(180deg,#ffd27a,var(--or));color:var(--encre);font-weight:700;font-size:1.05rem;text-align:center;
   box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35);transition:transform .08s, box-shadow .08s}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)}
+/* La règle de tout le jeu (Romain, 4 novembre, 21 h 22) : un bouton pour ALLER quelque part ou LANCER quelque chose
+   est JAUNE avec le texte NOIR. Le .btn de base l'est déjà ; .b-aller l'impose à n'importe quel bouton (atelier, Grand Livre…).
+   Les boutons secondaires (Retour, Fermer, Plus tard : .second) restent sombres. */
+.btn:not(.second):not(.danger):not(.magie){color:#111}
+/* (même doré que .b-dore du village et de « Enquête résolue », moteur.css ; le texte noir vient de la règle au-dessus) */
+.b-aller,.btn.b-aller{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:#24182e!important;
+  box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35)!important;font-weight:800}
+.b-aller:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)!important}
+.b-aller:disabled{filter:grayscale(.7);opacity:.55}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn.second{background:rgba(238,240,255,.06);color:var(--lune);border:2px solid var(--trait);box-shadow:none}
 .btn.danger{background:linear-gradient(180deg,#ff8c62,var(--braise));color:#fff;box-shadow:0 4px 0 var(--braise-sombre)}
@@ -130,6 +139,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mj-aides i{color:var(--brume);font-style:normal}
 .mj-unique{color:var(--braise);font-weight:700;text-align:center}
 .mj-go{align-self:center}
+/* au tutoriel, « C'est parti » clignote doucement (il appelle le doigt) */
+.mj-go-clignote{animation:mj-go-clignote 1s ease-in-out infinite}
+@keyframes mj-go-clignote{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.07);filter:brightness(1.18);box-shadow:0 4px 0 #b07a1c, 0 0 0 6px rgba(255,210,63,.45), 0 0 28px rgba(255,210,63,.85)}}
+@media (prefers-reduced-motion: reduce){ .mj-go-clignote{animation:mj-go-halo 1.2s ease-in-out infinite} @keyframes mj-go-halo{50%{box-shadow:0 0 0 6px rgba(255,210,63,.6)}} }
 .mj-resultat{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:rgba(13,17,38,.86);animation:b-apparait .3s ease-out}
 .mj-res-ic{font-size:4.2rem;animation:b-pulse 1.2s ease-in-out infinite}
 .mj-resultat.ok h2{color:var(--or-pale)}
@@ -1469,6 +1482,21 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-compte.vite{color:#ffb35c}
 .mjc-zone-f > .mjc-compte{left:auto;right:8px;top:50%;filter:none;opacity:1;font-size:.9rem}
 .mjc-limite{background:#fff6d8!important;opacity:.6}
+
+/* Niveau 1 seulement (enquête 1, le tutoriel) : un « ? » sur les carrés gris ; allumé dans la zone, l'icône de l'ingrédient */
+.mjc-ing.aide i{font-style:normal;line-height:1}
+.mjc-ing-q{font-size:1.5rem;font-weight:900;color:#e7e3f2;text-shadow:0 2px 0 #24182e}
+.mjc-ing.aide .mjc-ing-ic{display:none;font-size:1.55rem;filter:drop-shadow(0 2px 0 rgba(36,24,46,.55))}
+.mjc-ing.aide.zone .mjc-ing-q{display:none}
+.mjc-ing.aide.zone .mjc-ing-ic{display:block}
+/* … et à la fin, la frise se vide ; une grosse flèche rouge montre la zone à atteindre sur la jauge */
+.mjc-j-fleche{display:none;position:absolute;right:calc(100% + 18px);width:74px;height:44px;transform:translateY(50%);z-index:3;pointer-events:none;filter:drop-shadow(0 3px 0 #24182e)}
+.mjc-j-fleche::before{content:'';position:absolute;left:0;top:12px;width:44px;height:20px;border-radius:6px 0 0 6px;background:#ff3a2e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+.mjc-j-fleche::after{content:'';position:absolute;right:0;top:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:32px solid #ff3a2e}
+.mjc-fin-guidee .mjc-j-fleche{display:block;animation:mjc-j-fleche .6s ease-in-out infinite alternate}
+@keyframes mjc-j-fleche{from{margin-right:0}to{margin-right:-10px}}
+.mjc-fin-guidee .mjc-piste,.mjc-fin-guidee .mjc-zone-f,.mjc-fin-guidee .mjc-fl-next{visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .mjc-fin-guidee .mjc-j-fleche{animation:none} }
 
 /* le fond : l'intérieur du chalet, derrière le chaudron */
 .mjc-decor{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.95}
@@ -4048,6 +4076,38 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-guidage .at-bulle{display:none}
 @media (prefers-reduced-motion: reduce){ .at-guide-anneau,.at-guide-nouveau{animation:none!important} }
 
+/* La règle de tout le jeu (21 h 22) : les boutons pour aller quelque part ou lancer quelque chose sont JAUNES, texte NOIR
+   (« Préparer », « Analyser », « Donner », « Le chercher dans la pièce ») ; les secondaires (Vendre…) restent sombres */
+.at-rpreparer:not(.ko),.at-gros:not(.second),.at-ch-go-p{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:var(--contour)!important;box-shadow:0 5px 0 #b07a1c!important}
+.at-gros:not(.second):active,.at-rpreparer:not(.ko):active{box-shadow:0 2px 0 #b07a1c!important}
+.at-gros.second{background:rgba(36,24,46,.82)!important;color:#fff6d8!important;box-shadow:0 4px 0 rgba(0,0,0,.4)!important}
+.at-ch-go-p{font-size:1.05rem;padding:9px 16px}
+
+/* La recette secrète, sous la dictée du Sage : les « ? » (un par un), le petit menu des ingrédients */
+.at-ri-q{border:0;background:none;padding:0;font:inherit;cursor:pointer}
+.at-ri-q .at-ri-ic{background:#efe3c4;border-style:dashed;font-size:2rem}
+.at-ri-q small{font-size:1rem!important;font-weight:900}
+.at-ri-q.a-toi .at-ri-ic{border-style:solid;background:#fff2c2;box-shadow:0 0 0 3px #ffd36a}
+.at-ri-q:disabled{opacity:.45;cursor:default}
+.at-ri-q:active .at-ri-ic{transform:scale(.94)}
+.at-rcarte.dictee{box-shadow:0 0 0 3px var(--c), 0 0 0 7px rgba(124,240,168,.55), 0 6px 0 rgba(36,24,46,.25)}
+/* le rond lumineux du tutoriel sur le prochain « ? » */
+.at-ri-q.at-guide-q .at-ri-ic{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1s ease-in-out infinite}
+.at-ri-q.at-guide-q{position:relative}
+.at-ri-q.at-guide-q::before{content:'✨ Touche !';position:absolute;left:50%;top:-24px;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:10px;background:#ffd36a;color:#111;font-weight:900;font-size:.78rem;border:2px solid var(--contour);z-index:2}
+@keyframes at-guide-q{50%{transform:scale(1.1)}}
+.at-dicte{border-radius:16px;background:#fff1cf;border:3px solid var(--contour);padding:8px 10px 10px;box-shadow:0 6px 0 rgba(36,24,46,.25);animation:at-msg .25s ease-out}
+.at-dicte-t{display:flex;align-items:center;gap:8px;margin:0 0 8px!important;font-weight:800;color:var(--encre)}
+.at-dicte-t > b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffd36a;border:2px solid var(--contour);flex:none}
+.at-dicte-t .at-rond{width:42px;height:42px;flex:none;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-dicte-x{margin-left:auto}
+.at-dicte-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.at-dicte-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;border:2px solid var(--contour);background:#fff8e6;color:var(--encre);font:inherit;cursor:pointer}
+.at-dicte-i span{font-size:1.7rem;line-height:1}
+.at-dicte-i small{font-weight:700;font-size:.72rem;line-height:1.1;text-align:center}
+.at-dicte-i:active{transform:scale(.94)}
+@media (prefers-reduced-motion: reduce){ .at-ri-q.at-guide-q .at-ri-ic{animation:none} }
+
 /* ==========================================================
    Brumeval v2 — styles du moteur (écrans, fenêtres, jeu)
    ========================================================== */
@@ -5766,8 +5826,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 21:39 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-04 21:39';</script>
+<!-- Brumeval v2 · version de test du 2026-11-04 22:08 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-04 22:08';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -6326,6 +6386,11 @@ MJ.lancer = function(el, type, params, fin, options){
   params = params || MJ.reglages(type, 1, {});
   if(!def){ el.innerHTML = '<p>Mini-jeu inconnu : ' + esc(type) + '</p>'; setTimeout(function(){ fin({reussi:true, score:1}); }, 300); return {arreter:function(){}}; }
   var essais = 0, enCours = null, fini = false, arretDemoG = null;
+  /* au tutoriel (enquête 1, ou options.tutoriel) : « C'est parti » clignote (la salle des mini-jeux n'a pas de moteur : jamais) */
+  function auTuto(){
+    if(options.tutoriel) return true;
+    try{ var E = window.M && M.E && M.S && M.S.e ? M.E() : null; return !!(E && E.tuto && !window.BRUMEVAL_SANS_TUTO); }catch(e){ return false; }
+  }
   var chance = !!(options.deuxiemeChance || (params.mods && params.mods.deuxiemeChance));
   if(options.essaiUnique) chance = false;
 
@@ -6367,7 +6432,7 @@ MJ.lancer = function(el, type, params, fin, options){
       (aidesIc ? '<div class="mj-aides-ic" aria-label="Ce qui t\'aide">' + aidesIc + '</div>' : '') +
       (options.essaiUnique ? '<p class="mj-unique">⚠️ Un seul essai !</p>' : '') +
       details +
-      '<button class="btn grand mj-go" type="button">C\'est parti !</button>' +
+      '<button class="btn grand b-aller mj-go' + (auTuto() ? ' mj-go-clignote' : '') + '" type="button">C\'est parti !</button>' +
     '</div>');
     scene.appendChild(bloc);
     var pl = bloc.querySelector('.mj-phrase-l');
@@ -6437,8 +6502,8 @@ MJ.lancer = function(el, type, params, fin, options){
       '<div class="mj-res-ic">' + (ok ? '🌟' : '💨') + '</div>' +
       '<h2>' + esc(msg) + '</h2>' +
       (res.detail ? '<p class="doux">' + esc(res.detail) + '</p>' : '') +
-      (peutRejouer ? '<button class="btn magie grand mj-rejouer" type="button">' + (infini ? '🔁 Recommencer' : '✨ Deuxième chance') + '</button>' : '') +
-      '<button class="btn ' + (peutRejouer ? 'second' : 'grand') + ' mj-continuer" type="button">Continuer</button>' +
+      (peutRejouer ? '<button class="btn grand b-aller mj-rejouer" type="button">' + (infini ? '🔁 Recommencer' : '✨ Deuxième chance') + '</button>' : '') +
+      '<button class="btn ' + (peutRejouer ? 'second' : 'grand b-aller') + ' mj-continuer" type="button">Continuer</button>' +
     '</div>');
     if(ok){
       for(var i = 0; i < 14; i++){
@@ -19307,6 +19372,7 @@ MJ.enregistrer('chaudron', {
       zoneFin:P(n, 1, 0.5, 0.4),                                 /* la taille de la zone de fin : normale au niveau 1, moitié au 10 */
       vies:3 + (mods.erreurs || 0),                              /* cœurs = erreurs d'ingrédient permises : toujours 3, à tous les niveaux (Romain, 13 h 20) */
       fleche:n <= 3,
+      aideTuto:n <= 1,                                           /* niveau 1 (enquête 1) : « ? » puis l'icône dans la zone, grosse flèche rouge à la fin */
       aide:mods.aide || 0, revele:!!mods.revele,
       indices:true
     };
@@ -19361,6 +19427,8 @@ MJ.enregistrer('chaudron', {
     var cz = (Z[cible][0] + Z[cible][1]) / 2, dz1 = (Z1[cible][1] - Z1[cible][0]) * (R.zoneFin || 1) / 2;
     var zFin = [Math.max(1, cz - dz1), Math.min(98, cz + dz1)];
     E.jCible.style.bottom = zFin[0] + '%'; E.jCible.style.height = (zFin[1] - zFin[0]) + '%';
+    /* niveau 1 : la grosse flèche rouge qui montrera la zone de fin sur la jauge (elle n'apparaît qu'à la fin) */
+    if(R.aideTuto && E.jauge){ var flF = U.html('<i class="mjc-j-fleche" aria-hidden="true"><b></b></i>'); flF.style.bottom = ((zFin[0] + zFin[1]) / 2) + '%'; E.jauge.appendChild(flF); }
     function dansFin(h){ return h >= zFin[0] && h <= zFin[1]; }
     /* pendant les ingrédients, on ne verse que dans le vert : la bande verte de la jauge est soulignée doucement */
     if(E.jVert){ E.jVert.style.bottom = Z.vert[0] + '%'; E.jVert.style.height = (Z.vert[1] - Z.vert[0]) + '%'; }
@@ -19402,7 +19470,10 @@ MJ.enregistrer('chaudron', {
     C.frise.forEach(function(f, i){
       if(i) a0 += ecarts[i];
       /* gris hors de la zone ; il prend sa couleur unie quand il est allumé dans la zone (classe zone) */
-      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' + (connue ? '' : '<i>❓</i>') + '</div>');
+      /* niveau 1 : un « ? » sur le carré gris ; allumé dans la zone, l'icône de l'ingrédient apparaît (💧…) */
+      var aideT = R.aideTuto && connue, icT = aideT ? ((I[f.ingr] || {}).ic || '❔') : '';
+      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + (aideT ? ' aide' : '') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' +
+        (connue ? (aideT ? '<i class="mjc-ing-q">?</i><i class="mjc-ing-ic">' + icT + '</i>' : '') : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
       S.fen.push({ingr:f.ingr, a:a0, fait:false, el:d, g:gDe[i]});
     });
@@ -19603,6 +19674,7 @@ MJ.enregistrer('chaudron', {
       E.racine.classList.add('mjc-phase-fin');
       E.zoneF.style.setProperty('--c', E.Zi.c);
       E.racine.classList.remove('mjc-sans-cible'); E.racine.classList.add('mjc-cible-apparait');   /* hop : la zone apparaît sur la jauge */
+      if(R.aideTuto) E.racine.classList.add('mjc-fin-guidee');   /* niveau 1 : la frise se vide, la grosse flèche rouge montre la zone */
       E.recItems.forEach(function(el){ el.classList.remove('ici'); });
       var rf = E.racine.querySelector('.mjc-rec-fin'); if(rf) rf.classList.add('ici');
       bulle('<b>🎯 ' + esc(E.Zi.grand) + '</b>', 'cible');
@@ -31239,6 +31311,9 @@ function brancher(V){
     if(b.hasAttribute('data-peindre')){ peindrePanneau(V, b.getAttribute('data-peindre')); return; }
     if(b.hasAttribute('data-lire')){ lire(V, texteRecette(V, b.getAttribute('data-lire'))); return; }
     if(b.classList.contains('at-lire')){ lire(V, b.getAttribute('data-lu') || ''); return; }
+    if(b.hasAttribute('data-dicter')){ ouvrirDictee(V, b.getAttribute('data-dicter'), +b.getAttribute('data-j')); guideRafraichir(V); return; }
+    if(b.hasAttribute('data-dicte')){ choisirDictee(V, b.getAttribute('data-r'), +b.getAttribute('data-j'), b.getAttribute('data-dicte'), b); return; }
+    if(b.classList.contains('at-dicte-x')){ var md = b.closest('.at-dicte'); if(md) md.remove(); guideRafraichir(V); return; }
     if(b.classList.contains('at-rpreparer')){ preparerDepuisLivre(V, b.getAttribute('data-r'), b); return; }
     if(b.classList.contains('at-ch-go')){ demarrer(V, b.getAttribute('data-r'), b); return; }
     if(b.hasAttribute('data-prendre')){
@@ -32017,7 +32092,7 @@ function ouvrirCalque(V, cls, html){
   majTient(V);
   anim(V.grim.firstChild, [{transform:'translateY(30px) scale(.94)', opacity:0}, {transform:'none', opacity:1}], {duration:300, easing:'cubic-bezier(.3,1.3,.5,1)'});
 }
-function fermerGrimoire(V){ V.grim.hidden = true; V.grim.innerHTML = ''; majTient(V); }
+function fermerGrimoire(V){ V.grim.hidden = true; V.grim.innerHTML = ''; majTient(V); if(GUIDE && GUIDE.cible === 'grimoire') guidePlacer(V); }   /* (le rond revient sur le lutrin) */
 function ouvrirGrimoire(V){ ouvrirLivre(V); }      /* (ancien nom) */
 function lireBtn(t){ return '<button type="button" class="at-rond at-lire" data-lu="' + esc(t) + '" aria-label="Écouter">🔊</button>'; }
 function feuille(cls, titre, corps){
@@ -32154,29 +32229,84 @@ function ouvrirLivre(V){
   dessinerLivre(V);
   son(V, 'page');
 }
+/* La recette secrète, sous la dictée du Sage (Romain, 4 novembre, 21 h 22) : chaque « ? » (dans l'ordre) ouvre un petit menu
+   avec tous les ingrédients ; elle choisit celui que le Sage lui dit. Le bon : la case se remplit (icône, nom, quantité) ;
+   un autre : la case tremble (« demande au Sage »), sans rien perdre. Toutes remplies : la recette est connue (V.etat.dictees). */
+function groupesRecette(id){
+  var R = (DD().RECETTES || {})[id] || {ingr:[]}, vus = {}, ingr = [];
+  R.ingr.forEach(function(x){ if(vus[x[0]] === undefined){ vus[x[0]] = ingr.length; ingr.push([x[0], x[1]]); } else ingr[vus[x[0]]][1] += x[1]; });
+  return ingr;
+}
+function dicteeDe(V, id){ var d = V.etat.dictees && V.etat.dictees[id]; return Array.isArray(d) ? d : []; }
+function dicteeFinie(V, id){ var g = groupesRecette(id), d = dicteeDe(V, id); return g.length > 0 && d.length >= g.length; }
+/* une recette secrète qu'il reste à faire dicter (la première du grimoire) */
+function aDicter(V){ return recettesDe(V).filter(function(r){ return r.connue === false && !dicteeFinie(V, r.id); })[0] || null; }
+function ouvrirDictee(V, rid, j){
+  var f = V.grim.querySelector('[data-fiche="' + rid + '"]'); if(!f) return;
+  var vieux = f.querySelector('.at-dicte'); if(vieux) vieux.remove();
+  var I = DD().INGR || {}, t = 'Quel ingrédient le Sage te dit ? Ingrédient numéro ' + (j + 1) + '.';
+  var m = document.createElement('div');
+  m.className = 'at-dicte';
+  m.innerHTML = '<p class="at-dicte-t"><b>' + (j + 1) + '</b> ' + esc('Quel ingrédient dit le Sage ?') + ' ' + lireBtn(t) + '<button type="button" class="at-rond at-dicte-x" aria-label="Fermer">✖</button></p>' +
+    '<div class="at-dicte-l">' + cles(I).map(function(k){ return '<button type="button" class="at-dicte-i" data-dicte="' + k + '" data-r="' + rid + '" data-j="' + j + '"><span>' + icIngr(k) + '</span><small>' + esc(nomIngr(k)) + '</small></button>'; }).join('') + '</div>';
+  var rg = f.querySelector('.at-ringr');   /* juste sous les « ? » */
+  if(rg && rg.nextSibling) f.insertBefore(m, rg.nextSibling); else f.appendChild(m);
+  son(V, 'clic');
+  try{ m.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(e){}
+}
+function choisirDictee(V, rid, j, k, b){
+  var g = groupesRecette(rid), d = dicteeDe(V, rid).slice();
+  if(j !== d.length || !g[j]) return;
+  if(g[j][0] !== k){
+    son(V, 'ko'); vibrer(40);
+    if(b) anim(b, [{transform:'translateX(0)'}, {transform:'translateX(-7px)'}, {transform:'translateX(7px)'}, {transform:'translateX(0)'}], {duration:300});
+    var tk = 'Ce n\'est pas ça : demande au Sage de te redire la recette !';
+    toast(V, '<b>📜 ❓</b> ' + esc(tk), 3200, tk);
+    return;
+  }
+  d.push(k);
+  V.etat.dictees = V.etat.dictees || {};
+  V.etat.dictees[rid] = d;
+  changer(V);
+  son(V, 'ok');
+  dessinerLivre(V);
+  if(d.length >= g.length){
+    var tf = 'La recette est complète ! Ferme le grimoire et va au grand chaudron.';
+    toast(V, '<b>📜 ✔</b> ' + esc(tf), 4200, tf);
+    try{ guideFait(V, 'grimoire'); }catch(e){}
+  } else guideRafraichir(V);
+}
 function ficheRecette(V, r){
   var R = (DD().RECETTES || {})[r.id] || {ingr:[]}, e = etatRecette(V, r.id), s = stockRange(V), pan = V.etat.panier, secrete = r.connue === false;
-  var vus = {}, ingr = [];
-  R.ingr.forEach(function(x){ if(vus[x[0]] === undefined){ vus[x[0]] = ingr.length; ingr.push([x[0], x[1]]); } else ingr[vus[x[0]]][1] += x[1]; });
-  var ligne = ingr.map(function(x){
+  var ingr = groupesRecette(r.id), dic = secrete ? dicteeDe(V, r.id) : [], dicte = secrete && dic.length >= ingr.length;
+  var ligne = ingr.map(function(x, j){
     var k = x[0], a = s[k] || 0, ok = a >= x[1];
-    if(secrete) return '<div class="at-ri"><span class="at-ri-ic">❓</span><small>?</small></div>';
+    if(secrete && j >= dic.length){
+      /* le prochain « ? » s'ouvre (les autres attendent leur tour) ; au tutoriel, le rond lumineux est dessus */
+      var lui = j === dic.length;
+      return '<button type="button" class="at-ri at-ri-q' + (lui ? ' a-toi' : '') + '" data-dicter="' + r.id + '" data-j="' + j + '"' + (lui ? '' : ' disabled') + ' aria-label="Ingrédient ' + (j + 1) + ' : demande au Sage"><span class="at-ri-ic">❓</span><small>' + (j + 1) + '</small></button>';
+    }
     return '<div class="at-ri ' + (ok ? 'ok' : 'ko') + '" data-ingr="' + k + '"><span class="at-ri-ic" style="--c:' + coulIngr(k) + '">' + icIngr(k) +
       '<b>' + (ok ? '✓ ' : '') + Math.min(a, 99) + '/' + x[1] + '</b>' + (!ok && (pan[k] || 0) > 0 ? '<i class="at-ri-carton" title="par terre, devant la porte">🌿</i>' : '') + '</span><small>' + esc(nomIngr(k)) + '</small></div>';
   }).join('');
   var ut = utilePotion(r.id);
-  return '<div class="at-rcarte' + (e.pret ? ' pret' : ' manque') + (secrete ? ' secrete' : '') + '" style="--c:' + (r.c || '#8ff3ff') + '" data-fiche="' + r.id + '">' +
+  return '<div class="at-rcarte' + (e.pret ? ' pret' : ' manque') + (secrete && !dicte ? ' secrete' : '') + (dicte ? ' dictee' : '') + '" style="--c:' + (r.c || '#8ff3ff') + '" data-fiche="' + r.id + '">' +
     '<h4><span class="at-rec-ic">' + (r.ic || '🧪') + '</span><span>' + esc(r.nom) + '</span>' + lireBtn(r.nom + '. ' + ut) + '</h4>' +
     '<div class="at-ringr">' + ligne + '</div>' +
-    (secrete ? '<p class="at-rsage">📜 ' + esc('Recette secrète : demande au Sage de te la lire !') + ' <button type="button" class="at-rond" data-lire="sage" aria-label="Écouter">🔊</button></p>' : '') +
+    (secrete && !dicte ? '<p class="at-rsage">📜 ' + esc('Recette secrète : demande au Sage de te la lire, puis touche les « ? » dans l\'ordre !') + ' <button type="button" class="at-rond" data-lire="sage" aria-label="Écouter">🔊</button></p>' : '') +
+    (dicte ? '<p class="at-rsage">📜 ' + esc('Le Sage t\'a dicté la recette.') + '</p>' : '') +
     '<p class="at-rutile">' + esc(ut) + '</p>' +
     '<button type="button" class="at-rpreparer' + (e.pret ? '' : ' ko') + '" data-r="' + r.id + '">🍲 Préparer</button></div>';
 }
 function dessinerLivre(V){
-  var rs = recettesDe(V);
+  var rs = recettesDe(V).slice();
+  /* au tutoriel (ou pendant le guidage du grimoire) : la recette à faire dicter tout en haut, sans faire défiler */
+  var ad = aDicter(V);
+  if(ad && (V.o.tutoriel || (GUIDE && GUIDE.cible === 'grimoire'))) rs = [ad].concat(rs.filter(function(r){ return r.id !== ad.id; }));
   V.grim.innerHTML = '<div class="at-livre at-grimoire"><button type="button" class="at-rond at-fermer" aria-label="Fermer">✖</button>' +
     '<div class="at-livre-titre">📖 <span>Le grimoire</span>' + boutonPeindre(V, 'lu') + '</div>' +
     '<div class="at-rcartes">' + rs.map(function(r){ return ficheRecette(V, r); }).join('') + '</div></div>';
+  guideRafraichir(V);
 }
 /* « Préparer » sur une fiche : si tout est rangé, on va au chaudron ; sinon le bouton tremble et ce qui manque clignote */
 function preparerDepuisLivre(V, rid, b){
@@ -33490,7 +33620,7 @@ function guideElements(V){
   var c = GUIDE.cible, l = [];
   if(c === 'cueillette') l = (V.elTas || []).slice();
   else if(c === 'rangement'){ var m = meubleGuide(V); if(m && V.elO[m.id]) l = [V.elO[m.id]]; }
-  else if(c === 'grimoire'){ if(V.elO.lu) l = [V.elO.lu]; }
+  else if(c === 'grimoire'){ if(V.elO.lu && !grimoireOuvert(V)) l = [V.elO.lu]; }   /* (le grimoire ouvert : le rond est sur ses « ? », pas sur le lutrin caché dessous) */
   else if(c === 'chaudron'){ if(V.elO.ch) l = [V.elO.ch]; }
   else if(c === 'paillasse'){ if(V.elO.pa) l = [V.elO.pa]; }
   else if(c === 'carton'){ var ks = cartonsIci(V); if(ks.length && V.elK[ks[0].id]) l = [V.elK[ks[0].id]]; }
@@ -33556,12 +33686,25 @@ function guideAppliquer(V, montrer){
   V.root.classList.add('at-guidage');
   var F = guidePlacer(V);
   if(F && montrer) allerVers(V, F.x, F.y - F.h / 2);
+  guideRafraichir(V);
 }
 function guideEnlever(V){
   if(!V.root) return;
   V.root.classList.remove('at-guidage');
   var g = V.calque && V.calque.querySelector('.at-guide');
   if(g) g.remove();
+  guideRafraichir(V);
+}
+/* Dans le grimoire ouvert, pendant le guidage 'grimoire' : le rond lumineux est sur le prochain « ? » à toucher (un par un) ;
+   le menu des ingrédients ouvert, il n'y a pas de rond (elle choisit ce que le Sage lui dit) */
+function grimoireOuvert(V){ return !!(V.grim && !V.grim.hidden && V.grim.querySelector('.at-grimoire')); }
+function guideRafraichir(V){
+  if(!V.grim) return;
+  if(GUIDE && GUIDE.cible === 'grimoire' && V.calque) guidePlacer(V);
+  [].forEach.call(V.grim.querySelectorAll('.at-guide-q'), function(x){ x.classList.remove('at-guide-q'); });
+  if(!GUIDE || GUIDE.cible !== 'grimoire' || V.grim.querySelector('.at-dicte')) return;
+  var ad = aDicter(V), b = ad && V.grim.querySelector('[data-dicter="' + ad.id + '"].a-toi');
+  if(b) b.classList.add('at-guide-q');
 }
 /* L'action guidée est faite : on arrête, et on prévient le moteur */
 function guideFait(V, cible){
@@ -33575,7 +33718,9 @@ function guideFait(V, cible){
 /* (les actions guidées : chacune prévient le guidage quand elle a eu lieu) */
 (function(){
   function apresFait(nom, cible, f){ return function(V){ var r = f.apply(this, arguments); try{ guideFait(V, cible); }catch(e){} return r; }; }
-  ouvrirLivre = apresFait('ouvrirLivre', 'grimoire', ouvrirLivre);
+  /* le grimoire : fait quand il s'ouvre, sauf s'il reste une recette secrète à faire dicter (alors : quand elle est complète) */
+  var ol = ouvrirLivre;
+  ouvrirLivre = function(V){ var r = ol.apply(this, arguments); try{ if(!aDicter(V)) guideFait(V, 'grimoire'); else guideRafraichir(V); }catch(e){} return r; };
   ouvrirChaudron = apresFait('ouvrirChaudron', 'chaudron', ouvrirChaudron);
   ouvrirAnalyses = apresFait('ouvrirAnalyses', 'paillasse', ouvrirAnalyses);
   ouvrirPotions = apresFait('ouvrirPotions', 'potion', ouvrirPotions);
@@ -33662,7 +33807,7 @@ function demarrer(V, rid, bouton){
   if(aObjet(V, 'thermometre') && !mods.revele){ mods.revele = true; aides.push({ic:'🌡️', nom:'Thermomètre de cuivre'}); }
   var p = MJ.reglages('chaudron', V.o.niveau || 1, mods);
   p.potion = rid;
-  p.connue = r.connue !== false;
+  p.connue = r.connue !== false || dicteeFinie(V, rid);   /* la recette secrète que le Sage a dictée (grimoire) : connue */
   p.stock = function(){ return stockRange(V); };
   var ov = document.createElement('div');
   ov.className = 'at-mj';
@@ -33677,7 +33822,7 @@ function demarrer(V, rid, bouton){
   /* enquête 1 : chaque essai raté rend les ingrédients versés, et « 🔁 Recommencer » sans fin */
   var partie = MJ.lancer(ov.firstChild, 'chaudron', p, function(res){ finPreparation(V, rid, res); },
     {aides:aides, titre:(r.ic || '🧪') + ' ' + r.nom, lireAuto:false, deuxiemeChance:!!mods.deuxiemeChance,
-     reessaisInfinis:!!V.o.tutoriel, surEchec:V.o.tutoriel ? function(){ rendreVerses(V); } : null});
+     reessaisInfinis:!!V.o.tutoriel, tutoriel:!!V.o.tutoriel, surEchec:V.o.tutoriel ? function(){ rendreVerses(V); } : null});
   V.mjPartie = partie;
   /* un drapeau pour abandonner (deux touchers), dans l'en-tête du mini-jeu */
   var tete = ov.querySelector('.mj-tete'), lireBtn = ov.querySelector('.mj-btn-lire');
@@ -36239,6 +36384,19 @@ function vueFin(){
       '<div class="b-bas"><button class="btn grand" data-act="fin-suite">' + (i < slides.length - 1 ? 'Suite →' : 'Mes récompenses ✨') + '</button></div></main>';
   }
   var niv = M.niveau(M.S.xp);
+  /* « Enquête résolue » simplifié comme le village, pour tous les rôles (Romain, 4 novembre, 21 h 44) : le héros, son niveau,
+     ses pièces d'or, les deux boutons dorés (Boutique, Talent), le bouton de l'enquête suivante, le menu ☰ en haut.
+     Le calepin de fin reste dans le menu ☰ (Calepin). */
+  var h = M.S.heros, att = M.talentsEnAttente(), N = window.ENQUETES[E.id + 1];
+  return '<main class="b-page b-fin b-hub-simple"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button><h1 class="centre">Enquête résolue !</h1>' +
+    '<section class="b-hub"><div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '"><div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
+      '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + ' · niveau ' + niv.n + (F.monte ? ' 🎉' : '') + '</span>' +
+      '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + M.S.or + ' pièces d\'or (+' + F.or + ')</span></div>' +
+      '<div class="b-hub-dores"><button class="btn b-dore b-guide" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
+        (att.length ? '<button class="btn b-dore b-guide" data-act="choisir-talent" data-p="' + att[0] + '">⭐ Talent</button>' : '') + '</div></div>' +
+    '<div class="b-hub-actions">' + blocSuite(E, F) + (N && !N.enEcriture ? '' : '<button class="btn grand" data-act="fin-retour">🏘️ Retour au village</button>') + '</div></section></main>';
+}
+function vueFinAncienne(E, F, niv){   /* l'ancien écran des récompenses (gardé pour mémoire, plus affiché) */
   return '<main class="b-page b-fin"><h1 class="centre">Enquête résolue !</h1>' +
     '<div class="b-recompenses"><div class="b-fin-portrait">' + portrait('pied', true, true) + '</div><div>' +
     '<p class="b-gain">⭐ +' + F.xp + ' points d\'expérience</p><p class="b-gain">🪙 +' + F.or + ' pièces d\'or</p>' +
@@ -36296,7 +36454,7 @@ function blocSuite(E, F){
   if(N.enEcriture){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
   /* Plus de code pour partir à l'enquête suivante (Romain, 4 novembre, 20 h 41) : chacun touche le bouton, sur sa tablette.
      (Le code « suite » existe toujours dans la liste des codes : tapé par habitude, il marche encore.) */
-  return '<section class="b-carte-verre b-suite centre"><button class="btn grand b-guide" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button></section>';
+  return '<button class="btn grand b-guide" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button>';
 }
 /* Pendant l'histoire de fin : si le Sage donne déjà le code de l'enquête suivante, on peut le taper sans attendre */
 function padPendantHistoire(E){
@@ -40535,7 +40693,7 @@ function generique(p, E, P){
     if(p.besoin || p.action || p.mj){
       var sans = p.action && !M.peutAgir();
       return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div>' + (p.avant ? '<p class="lv-texte">' + esc(p.avant) + ' ' + lire(p.avant) + '</p>' : '') +
-        '<button class="btn grand lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : '📖 ') + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
+        '<button class="btn grand b-aller lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : '📖 ') + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
     }
   }
   s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(p.t || '') + ' ' + (p.t ? lire(p.t) : '') + '</p>') + '</div>';
@@ -43266,6 +43424,7 @@ function rangerPanneau(){
 /* Un panneau de l'atelier resté ouvert (le gros plan d'un meuble, la cueillette…) cache la prochaine chose à toucher : son ✕ */
 function panneauGenant(c){
   if(c === 'bouton' || c === 'brasser' || c === 'rangement') return null;
+  if(c === 'grimoire' && q('#atelier-ici .at-grim:not([hidden]) .at-grimoire')) return null;   /* le grimoire ouvert : l'atelier entoure ses « ? » */
   return premier(['#atelier-ici .at-ouvert:not([hidden]) .at-fermer', '#atelier-ici .at-grim:not([hidden]) .at-fermer']);
 }
 function coinLivre(id){
@@ -43314,6 +43473,7 @@ function trouver(d){
     case 'talent': return qa('[data-act=hr-talent][data-etat=dispo]');
     case 'atelier':
       if(d.c === 'bouton'){ el = boutonAtelier(d); break; }
+      if(d.c === 'brasser'){ el = premier(['#atelier-ici .at-ch-go[data-r=revelatrice]', '#atelier-ici .at-ch-go']); break; }   /* le chaudron ouvert : le rond sur « Préparer » */
       el = (d.c === 'rangement' || d.c === 'cueillette') && rangerPanneau();   /* « Ta cueillette » ou un meuble ouvert par-dessus la pièce : le rond va dans le panneau (celui de l'atelier est dessous) */
       if(!el) el = panneauGenant(d.c);   /* un panneau d'avant cache la chose à toucher : d'abord le fermer */
       if(el) break;
@@ -43357,9 +43517,9 @@ var PAGES = {habitants:'Les habitants', recettes:'Les recettes', mystere:'La pag
 var ATELIER_DIT = {
   carton:'Touche un carton 📦 pour l\'ouvrir, puis pose un meuble dans ton atelier.',
   cueillette:'Touche les ingrédients posés devant la porte, puis un rangement pour les ranger.',
-  grimoire:'Touche ton grimoire : la recette de l\'encre (le Sage te dit combien et dans quel ordre).',
+  grimoire:'Ouvre ton grimoire, puis touche chaque « ? » : choisis l\'ingrédient que le Sage te dit, dans l\'ordre.',
   chaudron:'Touche le grand chaudron et suis la recette que le Sage te lit.',
-  brasser:'Prépare l\'encre : verse les ingrédients dans l\'ordre que le Sage te lit.',
+  brasser:'Touche « Préparer » : l\'encre se prépare dans le grand chaudron.',
   rangement:'Maintenant, range-le : touche le meuble qui brille (un tiroir pour les baies, un bocal pour l\'eau et le miel).',
   potion:'Touche le flacon d\'encre devant la porte, puis « Donner » : dis son code au Sage.',
   paillasse:'Touche ta table d\'analyse 🔬, puis « Analyser ».',
@@ -43467,7 +43627,9 @@ var secousse = 0;
 document.addEventListener('click', function(ev){
   var t = ev.target;
   if(!t || !t.closest) return;
-  if(t.closest('[data-at=grimoire]')) UI.tutoGrimoire = 1;   /* l'Alchimiste a ouvert son grimoire : la suite est le chaudron */
+  /* l'Alchimiste a ouvert son grimoire : la suite est le chaudron (avec le vrai atelier, on attend son « guide-fait » :
+     il vient quand la recette secrète a été remplie sous la dictée du Sage) */
+  if(t.closest('[data-at=grimoire]') && !(window.Atelier && Atelier.guider)) UI.tutoGrimoire = 1;
   var G; try{ G = guide(); }catch(e){ console.error(e); return; }
   if(!G || !G.bloque || G.mj) return;
   if(t.closest('#mj-plein, #stop-voix')) return;

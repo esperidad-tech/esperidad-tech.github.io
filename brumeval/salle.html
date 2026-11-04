@@ -70,6 +70,15 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   background:linear-gradient(180deg,#ffd27a,var(--or));color:var(--encre);font-weight:700;font-size:1.05rem;text-align:center;
   box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35);transition:transform .08s, box-shadow .08s}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)}
+/* La règle de tout le jeu (Romain, 4 novembre, 21 h 22) : un bouton pour ALLER quelque part ou LANCER quelque chose
+   est JAUNE avec le texte NOIR. Le .btn de base l'est déjà ; .b-aller l'impose à n'importe quel bouton (atelier, Grand Livre…).
+   Les boutons secondaires (Retour, Fermer, Plus tard : .second) restent sombres. */
+.btn:not(.second):not(.danger):not(.magie){color:#111}
+/* (même doré que .b-dore du village et de « Enquête résolue », moteur.css ; le texte noir vient de la règle au-dessus) */
+.b-aller,.btn.b-aller{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:#24182e!important;
+  box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35)!important;font-weight:800}
+.b-aller:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)!important}
+.b-aller:disabled{filter:grayscale(.7);opacity:.55}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn.second{background:rgba(238,240,255,.06);color:var(--lune);border:2px solid var(--trait);box-shadow:none}
 .btn.danger{background:linear-gradient(180deg,#ff8c62,var(--braise));color:#fff;box-shadow:0 4px 0 var(--braise-sombre)}
@@ -119,6 +128,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mj-aides i{color:var(--brume);font-style:normal}
 .mj-unique{color:var(--braise);font-weight:700;text-align:center}
 .mj-go{align-self:center}
+/* au tutoriel, « C'est parti » clignote doucement (il appelle le doigt) */
+.mj-go-clignote{animation:mj-go-clignote 1s ease-in-out infinite}
+@keyframes mj-go-clignote{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.07);filter:brightness(1.18);box-shadow:0 4px 0 #b07a1c, 0 0 0 6px rgba(255,210,63,.45), 0 0 28px rgba(255,210,63,.85)}}
+@media (prefers-reduced-motion: reduce){ .mj-go-clignote{animation:mj-go-halo 1.2s ease-in-out infinite} @keyframes mj-go-halo{50%{box-shadow:0 0 0 6px rgba(255,210,63,.6)}} }
 .mj-resultat{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:rgba(13,17,38,.86);animation:b-apparait .3s ease-out}
 .mj-res-ic{font-size:4.2rem;animation:b-pulse 1.2s ease-in-out infinite}
 .mj-resultat.ok h2{color:var(--or-pale)}
@@ -1336,6 +1349,21 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-compte.vite{color:#ffb35c}
 .mjc-zone-f > .mjc-compte{left:auto;right:8px;top:50%;filter:none;opacity:1;font-size:.9rem}
 .mjc-limite{background:#fff6d8!important;opacity:.6}
+
+/* Niveau 1 seulement (enquête 1, le tutoriel) : un « ? » sur les carrés gris ; allumé dans la zone, l'icône de l'ingrédient */
+.mjc-ing.aide i{font-style:normal;line-height:1}
+.mjc-ing-q{font-size:1.5rem;font-weight:900;color:#e7e3f2;text-shadow:0 2px 0 #24182e}
+.mjc-ing.aide .mjc-ing-ic{display:none;font-size:1.55rem;filter:drop-shadow(0 2px 0 rgba(36,24,46,.55))}
+.mjc-ing.aide.zone .mjc-ing-q{display:none}
+.mjc-ing.aide.zone .mjc-ing-ic{display:block}
+/* … et à la fin, la frise se vide ; une grosse flèche rouge montre la zone à atteindre sur la jauge */
+.mjc-j-fleche{display:none;position:absolute;right:calc(100% + 18px);width:74px;height:44px;transform:translateY(50%);z-index:3;pointer-events:none;filter:drop-shadow(0 3px 0 #24182e)}
+.mjc-j-fleche::before{content:'';position:absolute;left:0;top:12px;width:44px;height:20px;border-radius:6px 0 0 6px;background:#ff3a2e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+.mjc-j-fleche::after{content:'';position:absolute;right:0;top:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:32px solid #ff3a2e}
+.mjc-fin-guidee .mjc-j-fleche{display:block;animation:mjc-j-fleche .6s ease-in-out infinite alternate}
+@keyframes mjc-j-fleche{from{margin-right:0}to{margin-right:-10px}}
+.mjc-fin-guidee .mjc-piste,.mjc-fin-guidee .mjc-zone-f,.mjc-fin-guidee .mjc-fl-next{visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .mjc-fin-guidee .mjc-j-fleche{animation:none} }
 
 /* le fond : l'intérieur du chalet, derrière le chaudron */
 .mjc-decor{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.95}
@@ -3607,6 +3635,11 @@ MJ.lancer = function(el, type, params, fin, options){
   params = params || MJ.reglages(type, 1, {});
   if(!def){ el.innerHTML = '<p>Mini-jeu inconnu : ' + esc(type) + '</p>'; setTimeout(function(){ fin({reussi:true, score:1}); }, 300); return {arreter:function(){}}; }
   var essais = 0, enCours = null, fini = false, arretDemoG = null;
+  /* au tutoriel (enquête 1, ou options.tutoriel) : « C'est parti » clignote (la salle des mini-jeux n'a pas de moteur : jamais) */
+  function auTuto(){
+    if(options.tutoriel) return true;
+    try{ var E = window.M && M.E && M.S && M.S.e ? M.E() : null; return !!(E && E.tuto && !window.BRUMEVAL_SANS_TUTO); }catch(e){ return false; }
+  }
   var chance = !!(options.deuxiemeChance || (params.mods && params.mods.deuxiemeChance));
   if(options.essaiUnique) chance = false;
 
@@ -3648,7 +3681,7 @@ MJ.lancer = function(el, type, params, fin, options){
       (aidesIc ? '<div class="mj-aides-ic" aria-label="Ce qui t\'aide">' + aidesIc + '</div>' : '') +
       (options.essaiUnique ? '<p class="mj-unique">⚠️ Un seul essai !</p>' : '') +
       details +
-      '<button class="btn grand mj-go" type="button">C\'est parti !</button>' +
+      '<button class="btn grand b-aller mj-go' + (auTuto() ? ' mj-go-clignote' : '') + '" type="button">C\'est parti !</button>' +
     '</div>');
     scene.appendChild(bloc);
     var pl = bloc.querySelector('.mj-phrase-l');
@@ -3718,8 +3751,8 @@ MJ.lancer = function(el, type, params, fin, options){
       '<div class="mj-res-ic">' + (ok ? '🌟' : '💨') + '</div>' +
       '<h2>' + esc(msg) + '</h2>' +
       (res.detail ? '<p class="doux">' + esc(res.detail) + '</p>' : '') +
-      (peutRejouer ? '<button class="btn magie grand mj-rejouer" type="button">' + (infini ? '🔁 Recommencer' : '✨ Deuxième chance') + '</button>' : '') +
-      '<button class="btn ' + (peutRejouer ? 'second' : 'grand') + ' mj-continuer" type="button">Continuer</button>' +
+      (peutRejouer ? '<button class="btn grand b-aller mj-rejouer" type="button">' + (infini ? '🔁 Recommencer' : '✨ Deuxième chance') + '</button>' : '') +
+      '<button class="btn ' + (peutRejouer ? 'second' : 'grand b-aller') + ' mj-continuer" type="button">Continuer</button>' +
     '</div>');
     if(ok){
       for(var i = 0; i < 14; i++){
@@ -14094,6 +14127,7 @@ MJ.enregistrer('chaudron', {
       zoneFin:P(n, 1, 0.5, 0.4),                                 /* la taille de la zone de fin : normale au niveau 1, moitié au 10 */
       vies:3 + (mods.erreurs || 0),                              /* cœurs = erreurs d'ingrédient permises : toujours 3, à tous les niveaux (Romain, 13 h 20) */
       fleche:n <= 3,
+      aideTuto:n <= 1,                                           /* niveau 1 (enquête 1) : « ? » puis l'icône dans la zone, grosse flèche rouge à la fin */
       aide:mods.aide || 0, revele:!!mods.revele,
       indices:true
     };
@@ -14148,6 +14182,8 @@ MJ.enregistrer('chaudron', {
     var cz = (Z[cible][0] + Z[cible][1]) / 2, dz1 = (Z1[cible][1] - Z1[cible][0]) * (R.zoneFin || 1) / 2;
     var zFin = [Math.max(1, cz - dz1), Math.min(98, cz + dz1)];
     E.jCible.style.bottom = zFin[0] + '%'; E.jCible.style.height = (zFin[1] - zFin[0]) + '%';
+    /* niveau 1 : la grosse flèche rouge qui montrera la zone de fin sur la jauge (elle n'apparaît qu'à la fin) */
+    if(R.aideTuto && E.jauge){ var flF = U.html('<i class="mjc-j-fleche" aria-hidden="true"><b></b></i>'); flF.style.bottom = ((zFin[0] + zFin[1]) / 2) + '%'; E.jauge.appendChild(flF); }
     function dansFin(h){ return h >= zFin[0] && h <= zFin[1]; }
     /* pendant les ingrédients, on ne verse que dans le vert : la bande verte de la jauge est soulignée doucement */
     if(E.jVert){ E.jVert.style.bottom = Z.vert[0] + '%'; E.jVert.style.height = (Z.vert[1] - Z.vert[0]) + '%'; }
@@ -14189,7 +14225,10 @@ MJ.enregistrer('chaudron', {
     C.frise.forEach(function(f, i){
       if(i) a0 += ecarts[i];
       /* gris hors de la zone ; il prend sa couleur unie quand il est allumé dans la zone (classe zone) */
-      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' + (connue ? '' : '<i>❓</i>') + '</div>');
+      /* niveau 1 : un « ? » sur le carré gris ; allumé dans la zone, l'icône de l'ingrédient apparaît (💧…) */
+      var aideT = R.aideTuto && connue, icT = aideT ? ((I[f.ingr] || {}).ic || '❔') : '';
+      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + (aideT ? ' aide' : '') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' +
+        (connue ? (aideT ? '<i class="mjc-ing-q">?</i><i class="mjc-ing-ic">' + icT + '</i>' : '') : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
       S.fen.push({ingr:f.ingr, a:a0, fait:false, el:d, g:gDe[i]});
     });
@@ -14390,6 +14429,7 @@ MJ.enregistrer('chaudron', {
       E.racine.classList.add('mjc-phase-fin');
       E.zoneF.style.setProperty('--c', E.Zi.c);
       E.racine.classList.remove('mjc-sans-cible'); E.racine.classList.add('mjc-cible-apparait');   /* hop : la zone apparaît sur la jauge */
+      if(R.aideTuto) E.racine.classList.add('mjc-fin-guidee');   /* niveau 1 : la frise se vide, la grosse flèche rouge montre la zone */
       E.recItems.forEach(function(el){ el.classList.remove('ici'); });
       var rf = E.racine.querySelector('.mjc-rec-fin'); if(rf) rf.classList.add('ici');
       bulle('<b>🎯 ' + esc(E.Zi.grand) + '</b>', 'cible');
