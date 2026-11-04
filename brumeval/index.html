@@ -4569,6 +4569,14 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .b-prison-barreaux{position:absolute;inset:0;z-index:3;pointer-events:none;
   background:linear-gradient(#2a2c33, #2a2c33) 0 9% / 100% 7px no-repeat, linear-gradient(#2a2c33, #2a2c33) 0 74% / 100% 7px no-repeat,
     repeating-linear-gradient(90deg, transparent 0 40px, #23252b 40px 46px, #7d828f 46px 48px, #3a3d46 48px 50px, transparent 50px 86px)}
+/* Le village simplifié (Romain, 4 novembre, 20 h 41) : le menu ☰ tout en haut, deux boutons dorés sous le héros */
+.b-hub-simple{position:relative}
+.b-menu-haut{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:5;width:46px;height:46px;border-radius:50%;border:2px solid var(--trait);background:rgba(10,14,32,.72);color:var(--or-pale);font-size:1.4rem;line-height:1;cursor:pointer;display:grid;place-items:center}
+.b-hub-dores{display:flex;gap:10px;padding:0 16px 16px}
+.b-hub-dores .btn{flex:1;min-height:52px;font-size:1.05rem}
+.btn.b-dore{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#3b2410;border-color:#b07a1e;font-weight:800}
+.hr-projets{text-decoration:none;text-align:center;margin-top:18px}
+.b-hub-simple .b-titre{padding-right:54px}
 
 /* ==========================================================
    Brumeval — les missions de base, en haut du Carnet (mission.js)
@@ -5737,8 +5745,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 19:18 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-04 19:18';</script>
+<!-- Brumeval v2 · version de test du 2026-11-04 20:54 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-04 20:54';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35874,23 +35882,26 @@ function vueAccueil(){
         '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + '</span></div></div>' +
       '<div class="b-hub-actions"><button class="btn grand b-guide" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button></div></section></main>';
   }
-  return '<main class="b-page b-accueil">' + titreJeu() + M.carteVoix(false) +
+  /* Le village, simplifié au maximum (Romain, 4 novembre, 20 h 41) : le héros, deux boutons dorés (Boutique, Talent),
+     le bouton de l'enquête pour tout le monde (plus de code pour y entrer), et le menu ☰ tout en haut. */
+  return '<main class="b-page b-accueil b-hub-simple"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button>' + titreJeu() + M.carteVoix(false) +
     '<section class="b-hub">' +
-      '<button class="b-hub-heros" data-act="ecran" data-e="heros" style="--c:' + D.ROLES[h.role].c + '">' +
+      '<div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '">' +
         '<div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
         '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + ' · niveau ' + niv.n + '</span>' +
-        '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + S.or + ' pièces d\'or</span>' +
-        (att.length ? '<span class="b-alerte">⭐ Nouveau talent à choisir !</span>' : '') + '</div></button>' +
+        '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + S.or + ' pièces d\'or</span></div>' +
+        '<div class="b-hub-dores">' +   /* en bas de l'image du héros */
+          '<button class="btn b-dore b-guide" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
+          (att.length ? '<button class="btn b-dore b-guide" data-act="choisir-talent" data-p="' + att[0] + '">⭐ Talent</button>' :
+            '<button class="btn b-dore" data-act="ecran" data-e="heros">⭐ Talents</button>') +
+        '</div></div>' +
       '<div class="b-hub-actions">' +
         (enCours ? '<button class="btn grand" data-act="reprendre">▶ Reprendre l\'enquête ' + S.e.id + '</button>' :
           (E && E.enEcriture ? '<p class="b-carte-verre centre">🚧 <b>Enquête ' + E.id + ' : en cours d\'écriture.</b> Elle arrive bientôt ! ' + lire('Enquête ' + E.id + ' : en cours d\'écriture. Elle arrive bientôt !') + '</p>' :   /* pas encore jouable (e3.js) */
           E ? '<button class="btn grand" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button>' :
             '<p class="b-carte-verre">Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt… ' + lire('Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt…') + '</p>')) +
-        '<button class="btn second" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
-        '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' +
-        (S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +
       '</div>' +
-    '</section>' + (!enCours && E && !E.enEcriture ? villageSuite(E) : '') + piedAccueil() + '</main>';
+    '</section></main>';   /* plus de code pour l'enquête suivante, plus de boutons en bas : Mon héros, le Calepin, Comment jouer… sont dans le menu ☰ */
 }
 /* Entre deux enquêtes, au village : le Sage montre le code de l'enquête suivante, les autres peuvent le taper ici */
 function villageSuite(N){
@@ -36072,7 +36083,12 @@ function vueLettre(){
     '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
     '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
     (E.affiche ? '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📜 ' + esc(E.affiche.titre || 'Affiche') + '</p><p class="centre"><b>' + esc(E.affiche.t) + '</b></p>' + lire((E.affiche.titre ? E.affiche.titre + ' : ' : '') + E.affiche.t, 'grosbec') + '</article>' : '') +   /* l'affiche du maire (enquête 2) */
-    '<section class="b-carte-verre b-mission" style="--c:' + R.c + '"><h3>' + R.ic + ' Ta mission</h3><p>' + esc(E.missions[role]) + '</p>' + lire(E.missions[role]) + (M.lettreMission ? M.lettreMission() : '') +
+    /* Simplifié pour toutes les enquêtes (Romain, 4 novembre, 20 h 49) : la lettre, l'affiche, et « Commencer l'enquête ».
+       Plus de mission, de règles ni de code ici : la mission est en haut du Carnet. */
+    '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
+}
+function vueLettreAncienne(E, role, R){   /* l'ancienne lettre complète (gardée pour mémoire, plus affichée) */
+  return '<section class="b-carte-verre b-mission" style="--c:' + R.c + '"><h3>' + R.ic + ' Ta mission</h3><p>' + esc(E.missions[role]) + '</p>' + lire(E.missions[role]) + (M.lettreMission ? M.lettreMission() : '') +
     '<ul class="b-regles"><li><span>☀️</span> L\'enquête dure ' + E.moments.length + ' moments : ' + E.moments.map(function(m){ return D.MOMENTS[m].nom.toLowerCase(); }).join(', ') + '.</li>' +
     (M.sansActions() ? '' : '<li><span>' + (M.actionsMax() > 2 ? '●●●' : '●●') + '</span> À chaque moment, tu as ' + M.actionsMax() + ' actions : choisis bien !</li>') +
     '<li><span>❤️</span> Le Sage a 2 cœurs : il peut se tromper 2 fois. À la 3e erreur, l\'enquête est perdue.</li>' +
@@ -36250,19 +36266,15 @@ function blocSuite(E, F){
   var N = window.ENQUETES[E.id + 1];
   if(!N) return '';
   if(N.enEcriture){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
-  if(M.role() === 'sage'){
-    var t = 'Quand tout le monde est prêt, dis ce code à l\'équipe. Chacun le tape sur sa tablette, et vous partez ensemble pour l\'enquête ' + N.id + '. Si quelqu\'un est en retard, tu retrouveras ce code dans ton carnet.';
-    return '<section class="b-carte-verre b-suite centre"><h3>➡️ Code pour l\'enquête suivante</h3><p>' + esc(t) + ' ' + lire(t) + '</p>' +
-      codeHTML(M.code('suite:' + Math.min(F.erreurs || 0, 3)), true) +
-      '<button class="btn grand" data-act="suite-sage">🔍 Partir pour l\'enquête ' + N.id + ' : ' + esc(N.titre) + '</button></section>';
-  }
-  var t2 = 'Le Sage va te donner le code de l\'enquête suivante. Tape les trois symboles ici.';
-  return '<section class="b-carte-verre b-suite centre"><h3>➡️ Enquête suivante</h3><p>' + esc(t2) + ' ' + lire(t2) + '</p>' + padHTML() + '</section>';
+  /* Plus de code pour partir à l'enquête suivante (Romain, 4 novembre, 20 h 41) : chacun touche le bouton, sur sa tablette.
+     (Le code « suite » existe toujours dans la liste des codes : tapé par habitude, il marche encore.) */
+  return '<section class="b-carte-verre b-suite centre"><button class="btn grand b-guide" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button></section>';
 }
 /* Pendant l'histoire de fin : si le Sage donne déjà le code de l'enquête suivante, on peut le taper sans attendre */
 function padPendantHistoire(E){
   var N = window.ENQUETES[E.id + 1];
   if(!N || N.enEcriture || M.role() === 'sage') return '';
+  return '';   /* plus de code pour l'enquête suivante (Romain, 4 novembre, 20 h 41) : le bouton est à la fin de l'histoire */
   if(!UI.padSuite) return '<div class="centre"><button class="btn second petit" data-act="pad-suite">🔢 Le Sage a déjà donné le code de l\'enquête ' + N.id + ' ?</button></div>';
   var t = 'Tape le code de l\'enquête ' + N.id + ' que le Sage te donne. Ne t\'inquiète pas : ton or et ton expérience sont déjà gagnés !';
   return '<section class="b-carte-verre b-suite centre"><h3>➡️ Code de l\'enquête ' + N.id + '</h3><p>' + esc(t) + ' ' + lire(t) + '</p>' + padHTML() +
@@ -42660,6 +42672,8 @@ M.ecranMenu = function(){
   var plein = pleinActif();
   return '<main class="b-page hr-page hr-menu">' + M.barreRetour('Menu') +
     '<nav class="hr-menu-l">' +
+      (M.S.heros ? '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' : '') +
+      (M.S.calepin && M.S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +
       '<button class="btn second" data-act="aide">❓ Comment jouer</button>' +
       '<button class="btn second" data-act="ecran" data-e="reglages">⚙️ Réglages</button>' +
       '<button class="btn second" data-act="changer-joueur">👥 Changer de joueur</button>' +
@@ -42670,6 +42684,7 @@ M.ecranMenu = function(){
       chargerBouton('📂 Charger') +
       '<button class="btn second" data-act="ecran" data-e="legendes">📖 Livre des Légendes</button>' +
       '<button class="btn danger" data-act="supprimer">🗑️ Supprimer le personnage</button>' +
+      '<a class="btn second hr-projets" href="https://esperidad-tech.github.io/">🏠 Revenir aux projets de Romain</a>' +   /* Romain, 4 novembre, 20 h 41 */
     '</nav>' +
   '</main>';
 };
