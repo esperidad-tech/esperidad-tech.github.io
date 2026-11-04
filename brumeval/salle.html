@@ -1317,6 +1317,22 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-cible-apparait .mjc-j-cible{animation:mjc-cible-in .8s cubic-bezier(.3,1.6,.5,1), b-lueur 1.4s .8s ease-in-out infinite}
 @keyframes mjc-cible-in{0%{opacity:0;transform:scale(.2, .2)}60%{opacity:1;transform:scale(1.35,1.15)}100%{transform:none}}
 
+/* on ne verse que dans le vert : la bande verte soulignée doucement pendant les ingrédients (pulse quand on en sort) */
+.mjc-j-vert{position:absolute;left:-6px;right:-6px;border-radius:8px;box-shadow:0 0 0 2px rgba(124,240,168,.5), 0 0 8px rgba(124,240,168,.35);pointer-events:none}
+.mjc-phase-fin .mjc-j-vert{display:none}
+.mjc-verrou .mjc-j-vert{animation:mjc-vert-pouls 1s ease-in-out infinite alternate}
+@keyframes mjc-vert-pouls{from{box-shadow:0 0 0 2px rgba(124,240,168,.45), 0 0 6px rgba(124,240,168,.3)}to{box-shadow:0 0 0 3px rgba(124,240,168,.95), 0 0 16px rgba(124,240,168,.8)}}
+/* hors du vert : les pots sont verrouillés (grisés, petit thermomètre) */
+.mjc-verrou .mjc-boite{filter:grayscale(.85) brightness(.62)}
+.mjc-verrou .mjc-boite::after{content:'🌡️';position:absolute;right:3px;top:2px;font-size:.85rem;line-height:1;filter:none}
+.mjc-oups.doux{background:#fff6d8;color:#35281b;box-shadow:0 0 0 3px #7cf0a8, 0 6px 0 rgba(0,0,0,.3)}
+.mjc-oups.doux::before{border-bottom-color:#7cf0a8}
+/* la fin : un petit compte à rebours calme dans la zone de la frise (orange dans les 10 dernières secondes) */
+.mjc-compte{position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.35);color:#fff6d8;font-weight:800;font-size:.9rem;white-space:nowrap}
+.mjc-compte.vite{color:#ffb35c}
+.mjc-zone-f > .mjc-compte{left:auto;right:8px;top:50%;filter:none;opacity:1;font-size:.9rem}
+.mjc-limite{background:#fff6d8!important;opacity:.6}
+
 /* le fond : l'intérieur du chalet, derrière le chaudron */
 .mjc-decor{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.95}
 .mjc-scene > .mjc-svg,.mjc-scene > .mjc-jauge{position:relative;z-index:1}
@@ -13887,7 +13903,7 @@ function construire(el, P, demo){
       '<div class="mjc-frise"><div class="mjc-zone-f"><span>🍲</span></div><div class="mjc-piste"></div><div class="mjc-fl-next" hidden><i></i></div></div>' +
       '<div class="mjc-boites">' + boites + '</div></div>') +
     '<div class="mjc-scene">' + (demo ? '' : decorChalet() + solChalet()) + svg +
-      '<div class="mjc-jauge"><span class="mjc-j-ic">🌋</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">🧊</span></div>' +
+      '<div class="mjc-jauge"><span class="mjc-j-ic">🌋</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-vert"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">🧊</span></div>' +
       '<div class="mjc-bulle" hidden></div><div class="mjc-danger" hidden></div><div class="mjc-fin" hidden></div>' +
     '</div>' + (demo ? '' : '<div class="mjc-err" hidden></div><div class="mjc-oups" hidden></div>') + '</div>');
   el.appendChild(r);
@@ -13901,7 +13917,7 @@ function construire(el, P, demo){
     bordArriere:q('.mjc-bord-arriere'), ride:q('.mjc-ride'), cuilleron:q('.mjc-cuilleron'), mancheIn:q('.mjc-manche-in'), manche:q('.mjc-manche'), reflet:q('.mjc-reflet'), pommeau:q('.mjc-pommeau'),
     flammes:q('.mjc-flammes'), lueur:q('.mjc-lueur-feu'), buches:[].slice.call(r.querySelectorAll('.mjc-buche')), tas:q('.mjc-tas'),
     chauffe:q('.mjc-chauffe'), refroidit:q('.mjc-refroidit'),
-    jauge:q('.mjc-j-tube'), curseur:q('.mjc-j-curseur'), jAe:q('.mjc-j-ae'), jCible:q('.mjc-j-cible'),
+    jauge:q('.mjc-j-tube'), curseur:q('.mjc-j-curseur'), jAe:q('.mjc-j-ae'), jCible:q('.mjc-j-cible'), jVert:q('.mjc-j-vert'),
     frise:q('.mjc-frise'), piste:q('.mjc-piste'), zoneF:q('.mjc-zone-f'), flNext:q('.mjc-fl-next'), boites:q('.mjc-boites'), vies:q('.mjc-vies'), bulle:q('.mjc-bulle'), fin:q('.mjc-fin'), scene:q('.mjc-scene'),
     err:q('.mjc-err'), oups:q('.mjc-oups'), danger:q('.mjc-danger'), plus:q('.mjc-plus'), sol:q('.mjc-sol')
   };
@@ -13968,7 +13984,7 @@ MJ.enregistrer('chaudron', {
     var C = (DD().CHAUDRON || {})[p.potion] || {zone:'vert'}, Z = infoZone(C.zone);
     return 'Le bois chauffe la potion : touche le tas de bois pour ajouter une bûche, la barre monte. Le bois brûle vite, pense à en remettre ! ' +
       'Touille avec ton doigt pour refroidir : la barre descend, et elle continue un peu quand tu t\'arrêtes. Trop chaud, ça explose ; trop froid, ça gèle. ' +
-      'La frise montre la couleur de chaque ingrédient, dans l\'ordre : quand son carré est dans la zone, touche la caisse de la même couleur. Si tu te trompes, tu perds un cœur. ' +
+      'Quand un carré s\'allume dans la zone de la frise, regarde sa couleur sur la recette et touche le bon pot. Tu ne peux verser que quand la barre est dans le vert. Si tu te trompes, tu perds un cœur. ' +
       'À la fin, garde la potion dans la zone ' + Z.nom + ' jusqu\'à ce que la fiole se remplisse.';
   },
   /* niveau 1 = le tutoriel (3 cœurs, l'ingrédient attend dans la zone, une flèche, barre légère, zones larges) ; jusqu'au niveau 10 :
@@ -13979,11 +13995,13 @@ MJ.enregistrer('chaudron', {
     var r = {
       attend:n < 2,                                              /* niveau 1 (le tutoriel) : l'ingrédient attend dans la zone */
       fenetre:P(n, 9, 2, 1.6) / lent + temps * 0.5,              /* le temps qu'il met à traverser la zone (s) : lent au niveau 1, très vite au 10 */
-      duree:P(n, 52, 48, 45) + temps * 2,                        /* durée visée, environ la moitié d'avant (106 à 137 s) */
+      duree:P(n, 52, 48, 45) + temps * 2,                        /* durée visée de la version de midi (environ la moitié d'avant) */
       marge:P(n, 11, 9, 8),                                      /* le temps laissé pour la fin (aller dans la zone, remplir la fiole) */
       ecartMax:14,                                               /* jamais plus de 14 s entre deux ingrédients */
       ecartMin:P(n, 1, 0.45, 0.45),                              /* doses rapprochées aux niveaux hauts (D.CHAUDRON : ecart) */
-      debut:P(n, 3.5, 2.5, 2),
+      debut0:P(n, 3.5, 2.5, 2),                                  /* (l'attente avant le premier carré, version de midi) */
+      debut:P(n, 2.5, 1.5, 1.2),
+      raccourci:10,                                              /* Romain, 13 h 06 : 10 s de moins à chaque niveau, même vitesse de défilement */
       buches:3,
       combustion:BRULE / lent,                                   /* une bûche brûle en… (s) : vite, à tous les niveaux */
       tau:P(n, 0.8, 2.2, 0.6, 2.6),                              /* inertie : la barre continue de descendre… (s) */
@@ -13991,7 +14009,8 @@ MJ.enregistrer('chaudron', {
       vertW:Math.min(50, P(n, 40, 18, 14) * zone),
       aeW:Math.min(16, P(n, 12, 6, 5) * zone),
       tenue:P(n, 2.5, 4, 2),                                     /* fiole à remplir dans la zone de fin (s) */
-      finaleMax:n < 3 ? 0 : P(n, 24, 12, 10) / lent + temps * 2, /* 0 = on a tout son temps */
+      finaleMax:P(n, 60, 20, 16) / lent + temps * 2,             /* le temps pour finir (aller dans la zone, remplir la fiole) : 60 s au niveau 1, 20 s au 10 */
+      zoneFin:P(n, 1, 0.5, 0.4),                                 /* la taille de la zone de fin : normale au niveau 1, moitié au 10 */
       vies:(n <= 1 ? 3 : (n <= 2 ? 2 : (n <= 5 ? 1 : 0))) + (mods.erreurs || 0),   /* cœurs = erreurs d'ingrédient permises */
       fleche:n <= 3,
       aide:mods.aide || 0, revele:!!mods.revele,
@@ -14004,7 +14023,8 @@ MJ.enregistrer('chaudron', {
       {nom:'Une bûche brûle en', val:s(r.combustion)},
       {nom:'La barre continue de descendre (inertie)', val:s(r.tau)},
       {nom:'Largeur de la zone verte', val:Math.round(r.vertW) + ' %'},
-      {nom:'Pour finir la potion', val:r.finaleMax ? s(r.finaleMax) : 'tout ton temps'},
+      {nom:'Pour finir la potion', val:s(r.finaleMax)},
+      {nom:'Taille de la zone de fin', val:Math.round(r.zoneFin * 100) + ' %'},
       {nom:'Cœurs (erreurs permises)', val:String(r.vies)},
       {nom:'Durée visée', val:'environ ' + Math.round(r.duree) + ' s'}
     ];
@@ -14042,6 +14062,14 @@ MJ.enregistrer('chaudron', {
     var tenueFin = R.tenue * (cible === 'arc-en-ciel' ? 0.7 : 1);
     var connue = R.connue !== false, stock = typeof R.stock === 'function' ? R.stock() : (R.stock ? Object.assign({}, R.stock) : null);
     preparerJauge(E, Z, cible);
+    /* la zone de fin : taille normale au niveau 1 (celle du niveau 1), moitié au niveau 10 (R.zoneFin), au milieu de la zone de la potion */
+    var zm = (R.mods && R.mods.zone > 0) ? R.mods.zone : 1, Z1 = zones({vertW:Math.min(50, 40 * zm), aeW:Math.min(16, 12 * zm)});
+    var cz = (Z[cible][0] + Z[cible][1]) / 2, dz1 = (Z1[cible][1] - Z1[cible][0]) * (R.zoneFin || 1) / 2;
+    var zFin = [Math.max(1, cz - dz1), Math.min(98, cz + dz1)];
+    E.jCible.style.bottom = zFin[0] + '%'; E.jCible.style.height = (zFin[1] - zFin[0]) + '%';
+    function dansFin(h){ return h >= zFin[0] && h <= zFin[1]; }
+    /* pendant les ingrédients, on ne verse que dans le vert : la bande verte de la jauge est soulignée doucement */
+    if(E.jVert){ E.jVert.style.bottom = Z.vert[0] + '%'; E.jVert.style.height = (Z.vert[1] - Z.vert[0]) + '%'; }
     /* pendant les ingrédients : aucune zone ni 🎯 sur la jauge (seulement ne pas exploser ni geler) ; elle apparaît à la fin */
     E.racine.classList.add('mjc-sans-cible');
     if(cible === 'arc-en-ciel') E.racine.classList.add('mjc-cible-ae');
@@ -14054,7 +14082,7 @@ MJ.enregistrer('chaudron', {
     var S = {
       t:0, tf:0, h:Z.centre, v:0, L:Math.min(MAX_BUCHES, R.buches || 3), braise:0, theta:Math.PI / 2, omega:0, tient:null, doigt:null,
       vies:R.vies, erreurs:0, etoiles:0, fini:false, termine:false, pause:false,
-      fen:[], finale:null, tenue:0, zone:'vert', indice:'', R:R, Z:Z, cible:cible
+      fen:[], finale:null, tenue:0, zone:'vert', indice:'', R:R, Z:Z, cible:cible, zFin:zFin
     };
     MJ.TYPES.chaudron._dernier = S;
 
@@ -14062,13 +14090,23 @@ MJ.enregistrer('chaudron', {
        f.a = l'instant (horloge de la frise S.tf) où il entre dans la zone 🍲 ; les doses sont réparties pour que
        la partie dure environ R.duree. Niveaux 1-2 (R.attend) : la frise s'arrête quand le prochain carré est au milieu de la zone. --- */
     var poids = C.frise.map(function(f, i){ return i ? Math.max(R.ecartMin, f.ecart || 1) : 0; }), somme = poids.reduce(function(a, b){ return a + b; }, 0);
-    var pas = somme ? U.borne((R.duree - R.marge - R.debut) / somme, 2.5, R.ecartMax) : 0, a0 = R.debut;
+    var deb0 = R.debut0 === undefined ? R.debut : R.debut0;
+    var pas = somme ? U.borne((R.duree - R.marge - deb0) / somme, 2.5, R.ecartMax) : 0, a0 = R.debut;
     var gDe = [], gk = -1;     /* le groupe de la carte de la recette de chaque dose (2 eau de suite = un seul groupe) */
     C.frise.forEach(function(f, i){ if(!i || C.frise[i - 1].ingr !== f.ingr) gk++; gDe.push(gk); });
     /* jamais deux carrés allumés ensemble : le suivant n'entre dans la zone qu'une fois le précédent sorti (ou, au niveau 1, arrêté au milieu) */
-    var ecartMini = R.attend ? R.fenetre / 2 + 1 : R.fenetre + 0.5;
+    var ecartMini0 = R.attend ? R.fenetre / 2 + 1 : R.fenetre + 0.5;
+    /* 10 s de moins (13 h 06), à la même vitesse : on prend les écarts de la version de midi et on retire ce qu'il faut
+       (moins l'attente avant le premier carré), sans descendre sous un écart minimum. Au-dessous de « le précédent est sorti »,
+       le carré suivant peut entrer dans la zone pendant que le précédent y est encore : il reste gris (seul le premier s'allume). */
+    var ecartMini = R.attend ? R.fenetre / 2 + 0.5 : R.fenetre * 0.8 + 0.3;
+    var g0 = poids.map(function(p, i){ return i ? Math.max(pas * p, ecartMini0) : 0; });
+    var mou = g0.reduce(function(s, g, i){ return s + (i ? Math.max(0, g - ecartMini) : 0); }, 0);
+    var reste = Math.max(0, (R.raccourci || 0) - (deb0 - R.debut)), kr = mou > 0 ? Math.min(1, reste / mou) : 0;
+    var ecarts = g0.map(function(g, i){ return i ? g - kr * Math.max(0, g - ecartMini) : 0; });
+    S.planAvant = deb0 + g0.reduce(function(s, g){ return s + g; }, 0);
     C.frise.forEach(function(f, i){
-      if(i) a0 += Math.max(pas * poids[i], ecartMini);
+      if(i) a0 += ecarts[i];
       /* gris hors de la zone ; il prend sa couleur unie quand il est allumé dans la zone (classe zone) */
       var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' + (connue ? '' : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
@@ -14083,7 +14121,7 @@ MJ.enregistrer('chaudron', {
         el.classList.toggle('ici', !!nx && nx.g === k);
       });
     }
-    S.duree = R.duree;
+    S.duree = R.duree; S.planApres = a0;   /* l'instant où le dernier carré entre dans la zone (avant / après le raccourci) */
     var recette = {};
     C.frise.forEach(function(f){ recette[f.ingr] = 1; });
     var G = {w:320, zl:6, zr:110, sq:44, pps:30};
@@ -14171,6 +14209,12 @@ MJ.enregistrer('chaudron', {
         bulle('<b>🎯 ' + esc(E.Zi.grand) + '</b>', 'cible');
         return;
       }
+      /* on ne verse que si la température est dans le VERT : sinon rien n'est versé, pas de cœur perdu, une petite bulle */
+      if(!dans(S.h, 'vert', Z)){
+        if(btn && btn.animate) btn.animate([{transform:'translateX(-5px)'}, {transform:'translateX(5px)'}, {transform:'none'}], {duration:240});
+        A.tic(); montrerOups('🌡️ Remets le chaudron dans le vert !', btn || E.zoneF, 'doux');
+        return;
+      }
       var dz = S.fen.filter(dansZone);
       var bonne = dz.filter(function(f){ return f.ingr === ingr; })[0];
       if(!bonne){
@@ -14234,11 +14278,11 @@ MJ.enregistrer('chaudron', {
       clearTimeout(S.errT); S.errT = setTimeout(function(){ o.hidden = true; E.racine.classList.remove('mjc-tremble'); }, 900); timers.push(S.errT);
     }
     /* la flèche qui montre la caisse touchée (ou la zone de la frise) avec la phrase, et son 🔊 */
-    function montrerOups(txt, cible){
+    function montrerOups(txt, cible, cls){
       var o = E.oups; if(!o) return;
       o.innerHTML = '<b>' + esc(txt) + '</b>';
       o.appendChild(MJ.boutonLire(txt));
-      o.hidden = false; o.classList.remove('haut');
+      o.hidden = false; o.classList.remove('haut'); o.classList.toggle('doux', cls === 'doux');
       var rr = E.racine.getBoundingClientRect(), rc = cible.getBoundingClientRect(), w = Math.min(rr.width - 16, 320);
       var cx = rc.left + rc.width / 2 - rr.left, x = U.borne(cx - w / 2, 8, rr.width - w - 8);
       o.style.width = w + 'px'; o.style.left = x + 'px'; o.style.top = (rc.bottom - rr.top + 12) + 'px';
@@ -14258,7 +14302,10 @@ MJ.enregistrer('chaudron', {
       if(S.finale || S.termine) return;
       var d = U.html('<div class="mjc-ing mjc-ing-fin' + (cible === 'arc-en-ciel' ? ' ae' : '') + (R.finaleMax ? ' limite' : '') + '" style="--c:' + E.Zi.c + '"><i>🧪</i><b class="mjc-tenue"></b><u class="mjc-limite"></u></div>');
       E.piste.appendChild(d);
-      S.finale = {t0:S.t, el:d, barre:d.querySelector('.mjc-tenue'), lim:d.querySelector('.mjc-limite')};
+      var cpt = U.html('<span class="mjc-compte">⏳ ' + Math.round(R.finaleMax) + ' s</span>');
+      E.zoneF.appendChild(cpt);
+      S.finale = {t0:S.t, el:d, barre:d.querySelector('.mjc-tenue'), lim:d.querySelector('.mjc-limite'), cpt:cpt};
+      E.racine.classList.remove('mjc-verrou');
       E.racine.classList.add('mjc-phase-fin');
       E.zoneF.style.setProperty('--c', E.Zi.c);
       E.racine.classList.remove('mjc-sans-cible'); E.racine.classList.add('mjc-cible-apparait');   /* hop : la zone apparaît sur la jauge */
@@ -14386,7 +14433,7 @@ MJ.enregistrer('chaudron', {
         }
       }
       if(S.finale){
-        if(dans(S.h, cible, Z)) S.tenue += dt; else S.tenue = Math.max(0, S.tenue - dt);
+        if(dansFin(S.h)) S.tenue += dt; else S.tenue = Math.max(0, S.tenue - dt);
         if(S.tenue >= tenueFin){ rendu(dt); reussir(); return false; }
         if(R.finaleMax && S.t - S.finale.t0 > R.finaleMax){ rendu(dt); echec('pasPris'); return false; }
       }
@@ -14456,10 +14503,16 @@ MJ.enregistrer('chaudron', {
         S.finale.el.style.transform = 'translateX(' + Math.round((G.zl + G.zr) / 2 - G.sq / 2) + 'px)';
         pose('barre', S.finale.barre, 'transform', 'scaleX(' + U.borne(S.tenue / tenueFin, 0, 1).toFixed(2) + ')');
         if(R.finaleMax) pose('lim', S.finale.lim, 'transform', 'scaleX(' + U.borne(1 - (S.t - S.finale.t0) / R.finaleMax, 0, 1).toFixed(2) + ')');
-        S.finale.el.classList.toggle('dedans', dans(S.h, cible, Z));
+        S.finale.el.classList.toggle('dedans', dansFin(S.h));
+        /* le compte à rebours, calme : les secondes qui restent (orange dans les 10 dernières) */
+        var rest = Math.max(0, Math.ceil(R.finaleMax - (S.t - S.finale.t0)));
+        if(rest !== avant.compte){ avant.compte = rest; S.finale.cpt.textContent = '⏳ ' + rest + ' s'; S.finale.cpt.classList.toggle('vite', rest <= 10); }
       }
       /* l'aide : la bonne caisse brille quand son carré est dans la zone */
       if(R.aide) E.boites.querySelectorAll('.mjc-boite').forEach(function(b){ b.classList.toggle('due', !!dus[b.getAttribute('data-ingr')]); });
+      /* pendant les ingrédients, hors du vert : les pots sont verrouillés (grisés, 🌡️) et la bande verte de la jauge pulse */
+      var verrou = !S.finale && !S.termine && !dans(S.h, 'vert', Z);
+      if(verrou !== !!avant.verrou){ avant.verrou = verrou; E.racine.classList.toggle('mjc-verrou', verrou); }
       /* près du haut : ça bout à gros bouillons et le chaudron tremble ; près du bas : ça gèle */
       var dg = danger();
       if(dg !== avant.danger){
@@ -14472,7 +14525,7 @@ MJ.enregistrer('chaudron', {
       /* indices : touiller quand ça monte trop ; remettre du bois quand ça descend trop */
       if(R.indices){
         /* pendant les ingrédients, pas de zone : on montre seulement quand ça devient trop chaud ou trop froid */
-        var ref = S.finale ? Z[cible] : [Z.violet[1] + 3, Z.rouge[0]], ind = '';
+        var ref = S.finale ? S.zFin : Z.vert, ind = '';   /* pendant les ingrédients : revenir dans le vert pour pouvoir verser */
         if(S.h > ref[1] - 1.5 && S.v > -1) ind = 'refroidit';
         else if(S.h < ref[0] + 1.5 && S.v < 1) ind = 'bois';
         if(ind !== avant.indice){
