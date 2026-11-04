@@ -427,10 +427,6 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-joueur{transition:opacity .2s}
 .mja-joueur.cache{opacity:.8}
 .mja-joueur.invisible{opacity:.25}
-.mja-caillou-vol{fill:#a6aed8;stroke:var(--contour);stroke-width:2}
-.mja-caillou.actif{background:rgba(143,243,255,.25);border-color:var(--cyan);box-shadow:0 0 14px rgba(143,243,255,.5)}
-.mja-cachette.vise-caillou svg{cursor:crosshair}
-.mja-cachette.vise-caillou::after{content:"🪨 Touche l'endroit où lancer";position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(13,17,38,.85);border:2px solid var(--cyan);font-weight:700;font-size:.95rem;pointer-events:none;white-space:nowrap}
 
 /* ---------- Tir à l'arc ---------- */
 .mja-tir{background:#1b2547}
@@ -451,6 +447,16 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-trainee{fill:none;stroke:var(--cyan);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
 .mja-jauge-arc{fill:none;stroke:var(--cyan);stroke-width:5;stroke-linecap:round;opacity:.75;transform:rotate(-90deg);filter:drop-shadow(0 0 4px var(--cyan))}
 .mja-jauge-arc.tremble{stroke:#ffb38a;animation:b-lueur .25s infinite}
+/* arc bandé à fond : la flèche transperce (jauge, aperçu et flèche dorés, « À fond ! ») */
+.mja-jauge-arc.fort{stroke:#ffd36a;stroke-width:7;opacity:1;filter:drop-shadow(0 0 6px #ffd36a)}
+.mja-apercu.fort .mja-pt{fill:#ffd36a;filter:drop-shadow(0 0 3px #ffd36a)}
+.mja-afond{font-family:var(--f-titre);font-size:17px;font-weight:700;fill:#ffe3a3;stroke:var(--contour);stroke-width:4;paint-order:stroke;stroke-linejoin:round;opacity:0;transition:opacity .12s;pointer-events:none}
+.mja-afond.on{opacity:1}
+.mja-fl-halo{display:none;fill:none;stroke:#ffd36a;stroke-width:9;stroke-linecap:round;opacity:.55}
+.mja-fl-vol.puissante .mja-fl-halo,.mja-fl-encoche.fort .mja-fl-halo{display:inline}
+.mja-trainee.puissante{stroke:#ffd36a;stroke-width:5;opacity:.8}
+.mja-flotte.perce{color:#ffe3a3;font-family:var(--f-titre);font-size:1.75rem;text-shadow:0 3px 0 var(--contour),0 0 14px rgba(255,211,106,.85);animation:mja-perce 1s ease-out forwards;z-index:6}
+@keyframes mja-perce{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}70%{opacity:1;transform:translate(-50%,-75%) scale(1)}100%{opacity:0;transform:translate(-50%,-110%) scale(1)}}
 .mja-corde-arc.vibre{animation:mja-vibre .25s}
 @keyframes mja-vibre{30%{transform:translateX(5px)}60%{transform:translateX(-3px)}}
 .mja-feuille{fill:#d79a3c;stroke:var(--contour);stroke-width:1;opacity:.85}
@@ -3360,47 +3366,42 @@ var U = MJ.util = {
 
 MJ.enregistrer = function(type, def){ def.type = type; MJ.TYPES[type] = def; };
 
-/* Calibrage validé par Romain dans la salle : décalage ajouté au niveau de ce jeu,
-   plafonné à 10 (« se cacher » : parfait au niveau 10, donc l'enquête 1 (niveau 3) joue au 10). */
-MJ.CALIBRAGE = {
-  cachette:{decalage:7},                   /* parfait au niveau 10 */
-  tir:{decalage:5, fixe:true, mods:{fleches:1}}, /* niveau 8, avec une flèche de plus */
-  mensonge:{decalage:7},                   /* très bien au niveau 10 */
-  bulles:{decalage:7},                     /* très bien au niveau 10 */
-  /* Calibrage du 2 novembre, 16 h : validés par Romain dans la salle */
-  traces:{decalage:7},                     /* niveau 10 */
-  melange:{decalage:5, fixe:true},         /* niveau 8 */
-  differences:{decalage:7},                /* niveau 10 */
-  double:{decalage:7},                     /* niveau 10 */
-  insectes:{decalage:7},                   /* niveau 10 */
-  chaudron:{decalage:7},                   /* niveau 10 : 16 s par ingrédient, environ 1 min 40 (validé le 2 novembre, 17 h 44) */
-  ragots:{decalage:7},                     /* niveau 10 */
-  mots:{decalage:7},                       /* niveau 10 */
-  alphabet:{decalage:7},                   /* niveau 10 */
-  plans:{decalage:7},                      /* niveau 10 */
-  grille:{decalage:4, fixe:true},          /* niveau 7 */
-  runes:{decalage:7},                      /* niveau 10 */
-  depositions:{decalage:7},                /* niveau 10 (validé le 2 novembre, 17 h 40) */
-  poursuite:{decalage:5, fixe:true, apres:function(p, mods){ /* niveau 8, et 5 obstacles sans faute suffisent pour se rapprocher (4 avec des bottes) */
+/* La difficulté des mini-jeux (Romain, 4 novembre : « tout recalibrer »).
+   Le moteur donne le rang de l'enquête (enquête 1 = 1, enquête 2 = 2…, plus un petit bonus pour certaines missions),
+   et le joueur du héros (M.S.heros.joueur, lu par le moteur dans window.MJ_JOUEUR) :
+   - enfant : niveau 1 à l'enquête 1, puis +1 à chaque enquête ; « Se cacher », trop facile, commence au niveau 3 ;
+   - adulte : niveau 5 à l'enquête 1, puis ça monte jusqu'au niveau 10 à l'enquête 10 (5, 6, 6, 7, 7, 8, 8, 9, 9, 10).
+   Toujours plafonné à 10 ; l'équipement et les talents du héros (mods.facile) le baissent ensuite.
+   La salle des mini-jeux passe opts.brut : le niveau choisi, tel quel. */
+MJ.COURBE = {
+  enfant:function(e, type){ return e + (type === 'cachette' ? 2 : 0); },
+  adulte:function(e){ return Math.round(5 + (e - 1) * 5 / 9); }
+};
+MJ.CALIBRAGE = {};   /* l'ancien calibrage par jeu (décalages) est remplacé par MJ.COURBE */
+/* Règles propres à un jeu, appliquées après ses réglages (pas une question de difficulté) */
+MJ.APRES = {
+  poursuite:function(p, mods){   /* 5 obstacles sans faute suffisent pour se rapprocher (4 avec des bottes) */
     p.rattrape = (mods.vitesse || 0) > 0 ? 4 : 5;
     (p.lignes || []).forEach(function(l){ if(l.nom === 'Pour la rattraper') l.val = '2 fois ' + p.rattrape + ' obstacles sans faute'; });
-  }}
+  }
 };
-/* opts.brut (salle des mini-jeux, pour recalibrer) : le niveau tel quel, sans le calibrage ci-dessus */
+MJ.niveauPour = function(type, rang, joueur){
+  var e = Math.max(1, rang || 1);
+  return Math.min(10, MJ.COURBE[joueur === 'enfant' ? 'enfant' : 'adulte'](e, type));
+};
+/* opts.brut (salle des mini-jeux, pour recalibrer) : le niveau tel quel ; opts.joueur : 'enfant' ou 'adulte' (sinon window.MJ_JOUEUR) */
 MJ.reglages = function(type, niveau, mods, opts){
   var def = MJ.TYPES[type];
   mods = Object.assign({}, mods || {});
-  var C = (opts && opts.brut) ? {} : (MJ.CALIBRAGE[type] || {}), cal = C.decalage || 0, base = (niveau || 1) + cal;
-  /* fixe : le niveau décidé ne monte plus avec les enquêtes (seul l'équipement le baisse) */
-  if(C.fixe) base = 3 + cal;
-  if(C.mods) Object.keys(C.mods).forEach(function(k){ mods[k] = (mods[k] || 0) + C.mods[k]; });
-  if(cal) base = Math.min(base, 10);
-  base -= (window.MJ_AJUST || 0);  /* joueur enfant : un cran plus facile (réglé par le moteur) */
+  var brut = !!(opts && opts.brut), joueur = (opts && opts.joueur) || window.MJ_JOUEUR || 'adulte';
+  var base = brut ? (niveau || 1) : MJ.niveauPour(type, niveau, joueur);
   var n = U.borne(base - (mods.facile || 0), 1, 12);
   var p = def && def.reglages ? def.reglages(n, mods) : {};
-  if(C.apres) try{ C.apres(p, mods, n); }catch(e){}
+  if(MJ.APRES[type]) try{ MJ.APRES[type](p, mods, n); }catch(e){}
   p.niveau = niveau || 1;
   p.niveauEffectif = n;
+  p.brut = brut;
+  p.joueur = brut ? null : joueur;
   p.mods = mods;
   if(!p.lignes) p.lignes = [];
   return p;
@@ -6318,7 +6319,8 @@ function Trace(noeuds){
 }
 var NOMS_OBST = {gravier:'gravier', haie:'haies', eau:'ruisseaux et flaques', dalles:'grandes dalles', cloture:'clôtures'};
 function genererMonde(p){
-  var W = p.largeur * 360, X0 = W / 2, D0 = 230, zones = [], fourches = [];
+  /* D0 : la ligne droite du départ, avec seulement la bonne piste (230 avant la partie raccourcie du 4 nov.) */
+  var W = p.largeur * 360, X0 = W / 2, D0 = 150, FIN = 200, zones = [], fourches = [];
   var EP = {haie:null, eau:null, dalles:[90, 120], cloture:[30, 30]};
   var evts = U.melanger(p.obstaclesListe.map(function(t){ return {type:t}; }).concat(Array.apply(null, Array(p.fourches)).map(function(){ return {type:'fourche'}; })));
   var noeuds = [{d:-900, x:X0, m:0}], dern = noeuds[0];
@@ -6380,7 +6382,7 @@ function genererMonde(p){
     }
   });
   vire(d + 60, borne(xA(d + 60), U.rand(-p.ampli, p.ampli) * 0.6));
-  var L = d + 300;
+  var L = d + FIN;   /* l'arrivée, après le dernier obstacle (300 avant le 4 nov.) */
   /* garde-fou : si la piste frôle un bord, on recommence la carte */
   for(var dd0 = 0; dd0 < L; dd0 += 40){ var xx0 = (function(dd){ var k = 0; while(k < noeuds.length - 1 && noeuds[k + 1].d <= dd) k++; return noeuds[k].x + noeuds[k].m * (dd - noeuds[k].d); })(dd0); if(xx0 < W * 0.06 || xx0 > W * 0.94){ if((p._essaiCarte = (p._essaiCarte || 0) + 1) < 25) return genererMonde(p); break; } }
   p._essaiCarte = 0;
@@ -6468,10 +6470,17 @@ MJ.enregistrer('traces', {
     p.marche = 52 * (1 + (mods.vitesse || 0));
     p.vision = courbe(n, {1:36, 3:31, 6:28, 9:25, 12:23}) * (mods.zone || 1);
     p.largeur = courbe(n, {1:4, 3:5, 6:7, 9:8.5, 12:10});
-    p.fourches = entier(n, {1:1, 3:2, 6:3, 9:4, 12:5});
-    var nbObst = entier(n, {1:3, 3:4, 6:6, 9:8, 12:9});
+    /* Romain, 4 nov. : « c'est beaucoup trop long » → une partie deux fois plus courte à chaque niveau :
+       environ deux fois moins d'embranchements et d'obstacles (avant : 1 à 4 embranchements, 3 à 8 obstacles ;
+       maintenant 1 à 2 embranchements et 1 à 4 obstacles), et un départ et une arrivée un peu plus courts
+       (genererMonde). Chaque obstacle et chaque embranchement restent aussi durs qu'avant.
+       Arrondi au hasard (1,8 obstacle = 2 obstacles 8 fois sur 10) : la durée moyenne suit le niveau sans à-coups. */
+    function auHasard(x){ return Math.floor(x + Math.random()); }
+    p.fourches = auHasard(courbe(n, {1:1, 5:1, 8:2, 12:2.5}));
+    var nbObst = auHasard(courbe(n, {1:1, 3:1.8, 6:2.7, 9:3.6, 12:4.2}));
+    /* les obstacles sont tirés parmi ceux de l'ancienne piste du même niveau : dalles et clôtures restent pour les grands niveaux */
     var sac = ['gravier', 'haie', 'eau', 'gravier', 'dalles', 'cloture', 'haie', 'gravier', 'eau'];
-    p.obstaclesListe = U.melanger(sac.slice(0, nbObst));
+    p.obstaclesListe = U.melanger(sac.slice(0, entier(n, {1:3, 3:4, 6:6, 9:8, 12:9}))).slice(0, nbObst);
     p.eventail = {gravier:entier(n, {1:1, 3:2, 6:3, 9:3}), haie:entier(n, {1:2, 3:3, 6:4, 9:4}), eau:entier(n, {1:1, 3:2, 6:2, 9:3}), dalles:entier(n, {1:0, 6:1, 9:2}), cloture:entier(n, {1:0, 3:1, 9:2})};
     p.ecart = courbe(n, {1:1.8, 3:2.4, 6:2.5, 9:2.6, 12:2.7});
     var v0 = courbe(n, {1:20, 3:24, 6:29, 9:34, 12:38});
@@ -6511,7 +6520,7 @@ MJ.enregistrer('traces', {
   verifier: function(n, nb){
     var r = {cartes:0, pistes:0, pareilleCible:0, fourchePareille:0, eventailPareil:0, virageDansZone:0, exemples:[]};
     for(var k = 0; k < (nb || 200); k++){
-      var p = MJ.reglages('traces', n, {}); p.empreinte = EMP_PRESETS[p.suspect];
+      var p = MJ.reglages('traces', n, {}, {brut:true}); p.empreinte = EMP_PRESETS[p.suspect];   /* n : le niveau du jeu tel quel */
       var M = genererMonde(p), C = M.cible.f;
       r.cartes++; r.pistes += M.leurres.length + 1;
       M.leurres.forEach(function(l){ if(memeEmpreinte(l.f, C)) r.pareilleCible++; });
@@ -7341,10 +7350,11 @@ MJ.enregistrer('poursuite', {
    où ils balaient la rue, demi-tours imprévus, guetteurs qui pivotent.
    Une charrette roule : cachée dedans, on avance avec elle. Les tas
    de feuilles et les flaques font du bruit : les gardes viennent voir.
-   On peut lancer un caillou 🪨 pour attirer un garde ailleurs.
+   (Romain, 4 nov. : on ne lance plus rien pour distraire les gardes,
+   on se cache seulement.)
    Mods : erreurs (+vies), lent (gardes plus lents), zone (lanternes
    moins longues), gardes (± gardes), invisible (N s d'invisibilité,
-   une fois), temps (+N s au sablier), cailloux (+N cailloux),
+   une fois), temps (+N s au sablier),
    aide / revele (chaque cachette dit si on peut y aller : vert/rouge).
    ========================================================== */
 var COUVERTS = {
@@ -7393,7 +7403,6 @@ MJ.enregistrer('cachette', {
     p.bruits = entier(n, {1:0, 3:1, 6:2, 9:3});
     p.portee = courbe(n, {1:200, 3:182, 6:170, 9:160});
     p.course = courbe(n, {1:205, 3:190, 6:178, 9:165});
-    p.cailloux = Math.max(0, entier(n, {1:3, 3:2, 6:2, 9:1}) + (mods.cailloux || 0));
     p.erreurs = erreursPermises(n, mods);
     p.duree = Math.round(courbe(n, {1:95, 3:80, 6:68, 9:58}) + (mods.temps || 0));
     p.invisible = mods.invisible || 0;
@@ -7402,7 +7411,6 @@ MJ.enregistrer('cachette', {
       {nom:'Gardes', val:String(p.gardes) + (p.guet ? ' (dont un guetteur)' : '')},
       {nom:'Portée des lanternes', val:Math.round(p.faisceau / 10) + ' pas'},
       {nom:'Ils changent d\'avis', val:p.imprevu > 0.2 ? 'souvent' : (p.imprevu > 0 ? 'parfois' : 'jamais')},
-      {nom:'Cailloux à lancer', val:'🪨 × ' + p.cailloux},
       {nom:'Sablier', val:p.duree + ' s'},
       {nom:'Erreurs permises', val:String(p.erreurs)}
     ];
@@ -7437,13 +7445,13 @@ MJ.enregistrer('cachette', {
       '<rect class="mja-voile-nuit" x="' + DEC.x + '" y="' + DEC.y + '" width="' + DEC.w + '" height="' + DEC.h + '"/>' +
       '<g class="mja-bruyants"></g><g class="mja-cones"></g><g class="mja-anneaux"></g><g class="mja-couverts"></g>' +
       '<g class="mja-joueur"><ellipse cx="0" cy="4" rx="12" ry="5" fill="#000" opacity=".35"/><circle r="11" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-7,-3 C-4,-9 4,-9 7,-3" stroke="#bff0cf" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="-4" cy="3" r="2.4" fill="#fff"/><circle cx="4" cy="3" r="2.4" fill="#fff"/></g>' +
-      '<g class="mja-gardes"></g><g class="mja-cailloux-vol"></g>' +
+      '<g class="mja-gardes"></g>' +
     '</svg>' +
-    '<div class="mja-actions"><button class="btn second mja-caillou" type="button">🪨 × <b>' + p.cailloux + '</b></button>' + (p.invisible ? '<button class="btn magie mja-invis" type="button">👻 ' + p.invisible + ' s</button>' : '') + '</div>';
+    (p.invisible ? '<div class="mja-actions"><button class="btn magie mja-invis" type="button">👻 ' + p.invisible + ' s</button></div>' : '');
     var svg = terrain.querySelector('svg');
     cadrer(P, svg);
-    var gC = svg.querySelector('.mja-couverts'), gG = svg.querySelector('.mja-gardes'), gCones = svg.querySelector('.mja-cones'), gAn = svg.querySelector('.mja-anneaux'), gBr = svg.querySelector('.mja-bruyants'), gVol = svg.querySelector('.mja-cailloux-vol'), joueur = svg.querySelector('.mja-joueur');
-    var btnC = terrain.querySelector('.mja-caillou'), btnI = terrain.querySelector('.mja-invis');
+    var gC = svg.querySelector('.mja-couverts'), gG = svg.querySelector('.mja-gardes'), gCones = svg.querySelector('.mja-cones'), gAn = svg.querySelector('.mja-anneaux'), gBr = svg.querySelector('.mja-bruyants'), joueur = svg.querySelector('.mja-joueur');
+    var btnI = terrain.querySelector('.mja-invis');
 
     /* Cachettes en rangées */
     var R = p.rangees, couv = [], types = Object.keys(COUVERTS), Y0 = 446, Y1 = 40;
@@ -7543,7 +7551,7 @@ MJ.enregistrer('cachette', {
         else if(gd.type === 'guet' && dist(gd, {x:x, y:y}) < rayon){ gd.base = Math.atan2(y - gd.y, x - gd.x); gd.tg = 0; } });
     }
     /* Joueur */
-    var ici = couv[0], dep = cachetteDe(ici), jx = dep.x, jy = dep.y, course = null, fini = false, restant = p.duree, invisT = 0, invisUtilise = false, cailloux = p.cailloux, modeCaillou = false;
+    var ici = couv[0], dep = cachetteDe(ici), jx = dep.x, jy = dep.y, course = null, fini = false, restant = p.duree, invisT = 0, invisUtilise = false;
     function accessibles(){ return couv.filter(function(c){ return c !== ici && dist(c, ici) <= p.portee && c.k >= ici.k - 1; }); }
     function majAnneaux(){
       var acc = course ? [] : accessibles();
@@ -7551,11 +7559,21 @@ MJ.enregistrer('cachette', {
     }
     majAnneaux();
     function dureeCourse(a, b){ return dist(a, b) / p.course; }
+    /* où sera la charrette dans tt secondes (elle rebondit entre 56 et 304) */
+    function charretteDans(c, tt){
+      var x = c.x + c.dir * c.v * tt;
+      for(var r = 0; r < 6 && (x < 56 || x > 304); r++) x = x > 304 ? 608 - x : 112 - x;
+      return {x:x, y:c.y, charrette:true};
+    }
     function surPredit(c){
       var a = {x:jx, y:jy}, b = cachetteDe(c), T = dureeCourse(a, b);
       var copies = gardes.map(function(gd){ return Object.assign({}, gd); });
       for(var tt = 0; tt <= T + 0.1; tt += 0.05){
-        var k = Math.min(1, tt / T), pt = {x:a.x + (b.x - a.x) * k, y:a.y + (b.y - a.y) * k};
+        /* même élan que la vraie course (lente au départ, rapide au milieu) ; la charrette continue de rouler */
+        var k = Math.min(1, tt / T), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, bb = c.charrette ? cachetteDe(charretteDans(c, tt)) : b;
+        var pt = {x:a.x + (bb.x - a.x) * e, y:a.y + (bb.y - a.y) * e};
+        /* passer sur des feuilles ou une flaque quand un garde est tout près : il se retourne vers toi */
+        for(var j = 0; j < bruyants.length; j++){ if(dist(bruyants[j], pt) < 26 && copies.some(function(gd){ return dist(gd, bruyants[j]) < 200; })) return false; }
         for(var i = 0; i < copies.length; i++){ if(copies[i].alerte <= 0 && voit(copies[i], pt, 1.15)) return false; majGarde(copies[i], 0.05, false); }
       }
       return true;
@@ -7567,29 +7585,17 @@ MJ.enregistrer('cachette', {
       U.son('pas');
       majAnneaux();
     }
-    P.ecoute(btnC, 'click', function(){ if(fini || cailloux <= 0) return; modeCaillou = !modeCaillou; btnC.classList.toggle('actif', modeCaillou); terrain.classList.toggle('vise-caillou', modeCaillou); });
     if(btnI) P.ecoute(btnI, 'click', function(){ if(invisUtilise || fini) return; invisUtilise = true; invisT = p.invisible; btnI.disabled = true; U.son('magie'); });
     P.ecoute(svg, 'pointerdown', function(e){
       if(fini) return;
       e.preventDefault();
       var pt = ptSVG(svg, e);
-      if(modeCaillou){ lancerCaillou(pt); return; }
       var best = null, bd = 48;
       couv.forEach(function(c){ var d = dist(pt, c); if(d < bd){ bd = d; best = c; } });
       if(!best || best === ici) return;
       if(best.acc) courir(best);
       else { secouer(best.g); var q = pctDans(svg, terrain, best.x, best.y - 30); flotter(terrain, q.x, q.y, 'Trop loin !', 'ko'); }
     });
-    function lancerCaillou(pt){
-      if(cailloux <= 0) return;
-      cailloux--; btnC.querySelector('b').textContent = cailloux;
-      modeCaillou = false; btnC.classList.remove('actif'); terrain.classList.remove('vise-caillou');
-      if(!cailloux) btnC.disabled = true;
-      var c = svgNoeud('circle', {r:5, 'class':'mja-caillou-vol'}, gVol), a = {x:jx, y:jy}, t0 = 0;
-      U.son('clic');
-      vols.push({c:c, a:a, b:pt, t:0});
-    }
-    var vols = [];
     terrain.mjaEtat = function(){ return {ici:couv.indexOf(ici), course:!!course, couv:couv.map(function(c, i){ return {i:i, acc:!!c.acc, sur:c.acc ? surPredit(c) : false, k:c.k, porte:!!c.porte, x:c.x, y:c.y}; })}; };
     terrain.mjaCourir = function(i){ if(couv[i] && couv[i].acc) courir(couv[i]); };
 
@@ -7625,14 +7631,6 @@ MJ.enregistrer('cachette', {
         gd.cone.classList.toggle('alerte', gd.alerte > 0);
         gd.g.setAttribute('transform', 'translate(' + gd.x.toFixed(1) + ',' + gd.y.toFixed(1) + ')');
         gd.corps.setAttribute('transform', 'rotate(' + (gd.ang * 57.3).toFixed(1) + ')');
-      });
-      /* cailloux en vol */
-      vols = vols.filter(function(v){
-        v.t += dt / 0.55;
-        var k = Math.min(1, v.t), x = v.a.x + (v.b.x - v.a.x) * k, y = v.a.y + (v.b.y - v.a.y) * k - Math.sin(Math.PI * k) * 50;
-        v.c.setAttribute('cx', x.toFixed(1)); v.c.setAttribute('cy', y.toFixed(1));
-        if(k >= 1){ v.c.parentNode.removeChild(v.c); U.son('tic'); bruit(v.b.x, v.b.y, 210, 'Toc !'); return false; }
-        return true;
       });
       /* joueur */
       if(course){
@@ -7674,6 +7672,12 @@ MJ.enregistrer('cachette', {
    branche. Obstacles : branches qui bougent, petits oiseaux.
    Flèches limitées ; au-delà du niveau 4, l'arc tremble si on le
    tient trop longtemps. Ralenti sur les tirs parfaits.
+   Flèche bien tirée (Romain, 4 nov.) : l'arc bandé à fond (puissance
+   ≥ PERCE, la jauge devient dorée et « À fond ! » s'affiche). Elle ne
+   s'arrête pas à la première cible : elle traverse et touche toutes les
+   cibles sur sa route (« Transpercé ! ×2 »). Les obstacles (branches,
+   oiseaux), le sac lui-même et le sol l'arrêtent toujours. Un tir moins
+   fort s'arrête à la première cible, comme avant.
    Mods : erreurs (+N flèches), fleches (+N, 99 = carquois sans fond),
    zone (cibles plus grosses), lent (tout bouge moins vite), stable
    (vent et tremblement ×), ralenti (N s de temps ralenti, une fois),
@@ -7682,6 +7686,7 @@ MJ.enregistrer('cachette', {
    revele (toujours la trajectoire entière).
    ========================================================== */
 var ARC = {g:560, v:610, tire:118, x:62, y:398};
+var PERCE = 0.95;   /* puissance à partir de laquelle la flèche traverse les cibles (arc bandé à fond) */
 var SLOTS_TIR = {
   lanterne:[{ax:205, ay:52, L:118}, {ax:292, ay:58, L:150}, {ax:150, ay:46, L:92}],
   sac:[{ax:300, ay:58, L:178}, {ax:232, ay:50, L:126}],
@@ -7695,6 +7700,8 @@ var ART_TIR = {
   corbeau:'<g class="mja-ailes"><path d="M-4,-2 C-18,-22 -34,-20 -40,-10 C-28,-10 -18,-4 -10,4 Z" fill="#2a2440" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M4,-2 C18,-22 34,-20 40,-10 C28,-10 18,-4 10,4 Z" fill="#2a2440" stroke="' + CONTOUR + '" stroke-width="3"/></g><path d="M-12,2 L-22,-2 L-20,6 Z" fill="#1d1730" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="0" cy="2" rx="13" ry="10" fill="#1d1730" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="10" cy="-5" r="8" fill="#1d1730" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M16,-6 L26,-3 L16,-1 Z" fill="#f6b23a" stroke="' + CONTOUR + '" stroke-width="2"/><circle cx="12" cy="-7" r="2.2" fill="#ffd36a"/><g class="mja-butin"><path d="M2,14 L2,24 M-1,22 L5,22 M2,18 L6,18" stroke="#ffd36a" stroke-width="3" stroke-linecap="round"/><circle cx="2" cy="11" r="3.5" fill="none" stroke="#ffd36a" stroke-width="2.5"/></g>'
 };
 var FLECHE_ART = '<path d="M-30,0 L4,0" stroke="#c99a5e" stroke-width="3.2" stroke-linecap="round"/><path d="M-30,0 L-24,0" stroke="' + CONTOUR + '" stroke-width="1" /><path d="M2,-5 L12,0 L2,5 Z" fill="#dfe6ff" stroke="' + CONTOUR + '" stroke-width="2" stroke-linejoin="round"/><path d="M-30,0 L-36,-6 L-26,-1 M-30,0 L-36,6 L-26,1" stroke="#8ff3ff" stroke-width="2.6" stroke-linecap="round" fill="none"/>';
+/* la flèche en main et en vol : un halo doré s'allume quand l'arc est bandé à fond (elle transperce) */
+var FLECHE_FORTE = '<path class="mja-fl-halo" d="M-36,0 L14,0"/>' + FLECHE_ART;
 function plumeSVG(c){ return '<path d="M0,-9 C5,-5 5,5 0,9 C-5,5 -5,-5 0,-9 Z M0,-9 L0,10" fill="' + (c || '#2a2440') + '" stroke="' + CONTOUR + '" stroke-width="1.5"/>'; }
 function distSeg(p, a, b){
   var dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, t = l2 ? fixe(((p.x - a.x) * dx + (p.y - a.y) * dy) / l2, 0, 1) : 0;
@@ -7730,7 +7737,7 @@ function archerSVG(){
 }
 MJ.enregistrer('tir', {
   nom:'Tir à l\'arc', role:'pisteur', ic:'🏹',
-  consigne:'Pose ton doigt, tire vers l\'arrière comme un lance-pierre et lâche : touche toutes les cibles avant d\'avoir vidé ton carquois !',
+  consigne:'Pose ton doigt, tire vers l\'arrière comme un lance-pierre et lâche : touche toutes les cibles avant d\'avoir vidé ton carquois ! Tirée à fond, la flèche transperce toutes les cibles sur sa route.',
   minuteur:false,
   reglages: function(n, mods){
     var p = {};
@@ -7739,7 +7746,8 @@ MJ.enregistrer('tir', {
       8:['sac', 'corbeau', 'lanterne', 'corbeau', 'pomme'], 9:['sac', 'corbeau', 'corbeau', 'lanterne', 'sac']};
     p.cibles = (listes[Math.min(9, n)] || listes[9]).slice();
     if(n >= 11) p.cibles.push('corbeau');
-    var reserve = Math.floor(courbe(n, {1:4, 3:2, 6:2, 9:1, 11:0}) + 0.001);
+    /* au niveau 10 (adultes, enquête 10), encore une flèche de réserve : sans elle, une seule flèche ratée = perdu (robot : 1 partie sur 8) */
+    var reserve = Math.floor(courbe(n, {1:4, 3:2, 6:2, 9:1, 10:1, 12:0}) + 0.001);
     p.fleches = p.cibles.length + reserve + (mods.erreurs || 0) + (mods.fleches || 0);
     if((mods.fleches || 0) >= 99) p.fleches = 99;
     var lent = mods.lent || 1, stable = mods.stable === undefined ? 1 : mods.stable;
@@ -7762,7 +7770,8 @@ MJ.enregistrer('tir', {
       {nom:'Flèches', val:p.fleches >= 99 ? '∞' : p.fleches + ' (' + (p.fleches - p.cibles.length) + ' de réserve)'},
       {nom:'Vent', val:p.vent < 5 ? 'aucun' : (p.vent < 60 ? 'léger' : (p.vent < 110 ? 'fort' : 'tempête')) + (p.rafales && p.vent >= 5 ? ', en rafales' : '')},
       {nom:'Ligne de visée', val:p.revele ? 'complète' : (p.apercu > 0.8 ? 'longue' : (p.apercu > 0.3 ? 'moyenne' : 'très courte'))},
-      {nom:'L\'arc tremble après', val:p.tenue > 50 ? 'jamais' : txtS(p.tenue)}
+      {nom:'L\'arc tremble après', val:p.tenue > 50 ? 'jamais' : txtS(p.tenue)},
+      {nom:'Flèche tirée à fond', val:'transperce les cibles'}
     ];
     return p;
   },
@@ -7806,18 +7815,20 @@ MJ.enregistrer('tir', {
     terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet"><g class="mja-cam">' + decorTir(id) +
       '<g class="mja-vent-g" transform="translate(150,404)"><path d="M0,0 L0,-52" stroke="#c9c2e0" stroke-width="4" stroke-linecap="round"/><g class="mja-manche-g" transform="translate(0,-50)"><path class="mja-manche" d="M0,0 L34,4 L34,14 L0,18 Z" fill="#e8693c" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M11,1.5 L11,16.5 M22,3 L22,15" stroke="#fff" stroke-width="3"/></g></g>' +
       '<g class="mja-feuilles"></g><g class="mja-cordes"></g><g class="mja-branches"></g><g class="mja-cibles-g"></g><g class="mja-oiseaux"></g><g class="mja-plantees"></g>' +
-      '<g class="mja-apercu"></g><path class="mja-trainee" d=""/><g class="mja-fl-vol" opacity="0">' + FLECHE_ART + '</g><g class="mja-parts"></g>' +
+      '<g class="mja-apercu"></g><path class="mja-trainee" d=""/><g class="mja-fl-vol" opacity="0">' + FLECHE_FORTE + '</g><g class="mja-parts"></g>' +
       archerSVG() +
-      '<g class="mja-arc-g" transform="translate(' + ARC.x + ',' + (ARC.y - 22) + ')"><circle class="mja-jauge-arc" r="44"/><g class="mja-arc-rot"><path d="M0,-38 C22,-28 22,28 0,38" stroke="#8a5a33" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M0,-38 C22,-28 22,28 0,38" stroke="' + CONTOUR + '" stroke-width="1.6" fill="none"/><path class="mja-corde-arc" d="M0,-38 L0,38" stroke="#eee" stroke-width="2" fill="none"/><g class="mja-fl-encoche">' + FLECHE_ART + '</g></g></g>' +
+      '<g class="mja-arc-g" transform="translate(' + ARC.x + ',' + (ARC.y - 22) + ')"><circle class="mja-jauge-arc" r="44"/><g class="mja-arc-rot"><path d="M0,-38 C22,-28 22,28 0,38" stroke="#8a5a33" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M0,-38 C22,-28 22,28 0,38" stroke="' + CONTOUR + '" stroke-width="1.6" fill="none"/><path class="mja-corde-arc" d="M0,-38 L0,38" stroke="#eee" stroke-width="2" fill="none"/><g class="mja-fl-encoche">' + FLECHE_FORTE + '</g></g>' +
+        '<text class="mja-afond" x="4" y="-56" text-anchor="middle">À fond !</text></g>' +
     '</g></svg>' +
     (p.ralenti ? '<div class="mja-actions"><button class="btn magie mja-ralenti" type="button">⏳ Ralentir le temps (' + p.ralenti + ' s)</button></div>' : '');
     var svg = terrain.querySelector('svg');
     cadrer(P, svg, {ancre:'bas'});
     var cam = svg.querySelector('.mja-cam'), gCordes = svg.querySelector('.mja-cordes'), gCibles = svg.querySelector('.mja-cibles-g'), gBr = svg.querySelector('.mja-branches'), gOis = svg.querySelector('.mja-oiseaux');
     var gPl = svg.querySelector('.mja-plantees'), gAp = svg.querySelector('.mja-apercu'), trainee = svg.querySelector('.mja-trainee'), flVol = svg.querySelector('.mja-fl-vol'), gParts = svg.querySelector('.mja-parts');
-    var arcRot = svg.querySelector('.mja-arc-rot'), cordeArc = svg.querySelector('.mja-corde-arc'), encoche = svg.querySelector('.mja-fl-encoche'), jaugeArc = svg.querySelector('.mja-jauge-arc'), manche = svg.querySelector('.mja-manche-g'), gFeuilles = svg.querySelector('.mja-feuilles');
+    var arcRot = svg.querySelector('.mja-arc-rot'), cordeArc = svg.querySelector('.mja-corde-arc'), encoche = svg.querySelector('.mja-fl-encoche'), jaugeArc = svg.querySelector('.mja-jauge-arc'), manche = svg.querySelector('.mja-manche-g'), gFeuilles = svg.querySelector('.mja-feuilles'), aFond = svg.querySelector('.mja-afond');
     var ventBase = p.vent * (Math.random() < 0.5 ? -1 : 1);
-    var fleches = p.fleches, tirs = 0, touches = 0, fini = false, t = 0, echelle = 1, ralentiT = 0, slow = 1, slowCible = 1;
+    /* utiles : flèches qui ont touché au moins une cible ; maxPerce : le plus de cibles touchées par une seule flèche */
+    var fleches = p.fleches, tirs = 0, touches = 0, utiles = 0, maxPerce = 0, fini = false, t = 0, echelle = 1, ralentiT = 0, slow = 1, slowCible = 1;
     var camZ = 1, camX = 180, camY = 240, camZc = 1, camXc = 180, camYc = 240, tenir = 0;
     function majCarquois(){ badge.innerHTML = '<span class="mja-carquois">🏹 ' + (fleches >= 99 ? '∞' : '× ' + fleches) + '</span>'; }
     majCarquois();
@@ -7868,9 +7879,9 @@ MJ.enregistrer('tir', {
       br.fl = br.g.querySelector('.mja-br-fl');
       branches.push(br);
     }
-    function angBranche(br){ return br.a0 + Math.sin(t * 0.9 * p.vitesse + br.ph) * br.amp; }
-    function collBranche(br, x, y){
-      var a = angBranche(br), ca = Math.cos(a), sa = Math.sin(a);
+    function angBranche(br, tt){ return br.a0 + Math.sin((tt === undefined ? t : tt) * 0.9 * p.vitesse + br.ph) * br.amp; }
+    function collBranche(br, x, y, tt){
+      var a = angBranche(br, tt), ca = Math.cos(a), sa = Math.sin(a);
       var lx = (x - br.bx) * ca + (y - br.by) * sa, ly = -(x - br.bx) * sa + (y - br.by) * ca;
       if(lx < br.L * 0.3 || lx > br.L + 16) return null;
       return Math.abs(ly) < 15 ? {lx:lx, ly:ly} : null;
@@ -7943,15 +7954,19 @@ MJ.enregistrer('tir', {
       e.preventDefault();
     });
     terrain.mjaTirer = function(ang, puis){ if(enVol || fini || fleches <= 0) return false; tirer({ang:ang, puis:puis, vx:Math.cos(ang) * puis * ARC.v, vy:Math.sin(ang) * puis * ARC.v}); return true; };
-    terrain.mjaEtat = function(){ return {t:t, vent:ventA(t), ventA:ventA, cibles:cibles.map(function(c){ return c.touche ? null : {type:c.type, q:posCible(c, t), c:c}; }), enVol:!!enVol, posCible:function(i, tt){ return posCible(cibles[i], tt); }, ARC:ARC, fleches:fleches}; };
+    terrain.mjaEtat = function(){ return {t:t, vent:ventA(t), ventA:ventA, cibles:cibles.map(function(c){ return c.touche ? null : {type:c.type, q:posCible(c, t), c:c}; }), enVol:!!enVol, posCible:function(i, tt){ return posCible(cibles[i], tt); }, ARC:ARC, fleches:fleches, PERCE:PERCE, tirs:tirs, touches:touches, utiles:utiles, maxPerce:maxPerce,
+      /* pour les robots : une branche ou un oiseau sera-t-il à cet endroit au temps tt ? */
+      obstacle:function(x, y, tt){ var dto = tt === undefined ? 0 : tt - t; for(var b = 0; b < branches.length; b++) if(collBranche(branches[b], x, y, tt)) return true; for(var o = 0; o < oiseaux.length; o++) if(!oiseaux[o].fuit && dist({x:x, y:y}, {x:oiseaux[o].x + oiseaux[o].vx * dto, y:oiseaux[o].y}) < 20) return true; return false; }}; };
 
     function tirer(s){
       if(fleches < 99) fleches--;
       tirs++;
       majCarquois();
       U.son('fleche');
-      var d = pointeDepart(s.ang);
-      enVol = {x:d.x, y:d.y, vx:s.vx, vy:s.vy, hist:[], age:0, ralenti:false};
+      var d = pointeDepart(s.ang), fort = s.puis >= PERCE;
+      /* perce : tirée à fond, elle traverse les cibles ; nb : cibles déjà traversées */
+      enVol = {x:d.x, y:d.y, vx:s.vx, vy:s.vy, hist:[], age:0, ralenti:false, perce:fort, nb:0};
+      flVol.classList.toggle('puissante', fort); trainee.classList.toggle('puissante', fort);
       flVol.setAttribute('opacity', '1');
       cordeArc.classList.remove('vibre'); void cordeArc.getBoundingClientRect(); cordeArc.classList.add('vibre');
       encoche.setAttribute('opacity', '0');
@@ -7966,30 +7981,49 @@ MJ.enregistrer('tir', {
     function finVol(){ enVol = null; flVol.setAttribute('opacity', '0'); trainee.setAttribute('d', ''); P.apres(250, function(){ if(!enVol) encoche.setAttribute('opacity', '1'); }); verifierFin(); }
     function verifierFin(){
       if(fini) return;
-      if(touches >= cibles.length){ fini = true; P.finir({reussi:true, score:1, erreurs:tirs - touches, detail:tirs === touches ? 'Pas une seule flèche perdue !' : 'Toutes les cibles sont tombées !'}, 1300); return; }
-      if(fleches <= 0 && !enVol){ fini = true; P.finir({reussi:false, score:touches / cibles.length, erreurs:tirs - touches, detail:'Plus de flèches dans le carquois…'}, 1000); }
+      var perdues = tirs - utiles, exploit = maxPerce >= 2 ? 'Une flèche en a transpercé ' + maxPerce + ' d\'un coup ! ' : '';
+      if(touches >= cibles.length){ fini = true; P.finir({reussi:true, score:1, erreurs:perdues, transperce:maxPerce, detail:exploit + (perdues === 0 ? 'Pas une seule flèche perdue !' : 'Toutes les cibles sont tombées !')}, 1300); return; }
+      if(fleches <= 0 && !enVol){ fini = true; P.finir({reussi:false, score:touches / cibles.length, erreurs:perdues, transperce:maxPerce, detail:'Plus de flèches dans le carquois…'}, 1000); }
     }
     function texte(x, y, s, cls){ var q = pctDans(svg, terrain, x, y); flotter(terrain, q.x, q.y, s, cls); }
-    function toucher(c, x, y, parfait){
+    /* sansTexte : la flèche qui transperce affiche « Transpercé ! ×2 » à la place */
+    function toucher(c, x, y, parfait, sansTexte){
       c.touche = true; touches++;
       hud.prog(touches, cibles.length, '🎯');
       U.son(parfait ? 'gain' : 'ok'); U.vibrer(25);
       c.g.classList.add('touchee');
-      if(c.type === 'corbeau'){ eclats(x, y, 'plumes'); c.chute = {vx:U.rand(-40, 40), vy:-160, r:0}; texte(x, y - 30, parfait ? 'Tir parfait ! Croâ !' : 'Croâ !', 'ok'); }
-      else if(c.type === 'lanterne'){ eclats(x, y, 'verre'); c.chute = {vx:0, vy:-40, r:0}; c.g.classList.add('eteinte'); texte(x, y - 30, parfait ? 'Tir parfait !' : 'Touché !', 'ok'); }
-      else if(c.type === 'sac'){ eclats(x, y, 'bois'); c.chute = {vx:U.rand(-30, 30), vy:0, r:0}; if(c.fil) c.fil.classList.add('coupee'); texte(c.q.x, c.q.y - 40, 'Corde coupée !', 'ok'); }
-      else { eclats(x, y, 'pomme'); c.chute = {vx:0, vy:0, r:0}; texte(x, y - 30, parfait ? 'Tir parfait !' : 'Touché !', 'ok'); }
+      var msg, mx = x, my = y - 30;
+      if(c.type === 'corbeau'){ eclats(x, y, 'plumes'); c.chute = {vx:U.rand(-40, 40), vy:-160, r:0}; msg = parfait ? 'Tir parfait ! Croâ !' : 'Croâ !'; }
+      else if(c.type === 'lanterne'){ eclats(x, y, 'verre'); c.chute = {vx:0, vy:-40, r:0}; c.g.classList.add('eteinte'); msg = parfait ? 'Tir parfait !' : 'Touché !'; }
+      else if(c.type === 'sac'){ eclats(x, y, 'bois'); c.chute = {vx:U.rand(-30, 30), vy:0, r:0}; if(c.fil) c.fil.classList.add('coupee'); msg = 'Corde coupée !'; mx = c.q.x; my = c.q.y - 40; }
+      else { eclats(x, y, 'pomme'); c.chute = {vx:0, vy:0, r:0}; msg = parfait ? 'Tir parfait !' : 'Touché !'; }
+      if(!sansTexte) texte(mx, my, msg, 'ok');
       if(parfait) eclats(x, y, 'etoiles');
       if(c.fil && c.type === 'lanterne') c.fil.classList.add('vide');
+    }
+    /* La flèche tirée à fond traverse la cible et continue sa route */
+    function traverser(res){
+      var vol = enVol; vol.nb++;
+      if(vol.nb === 1) utiles++;
+      maxPerce = Math.max(maxPerce, vol.nb);
+      toucher(res.c, res.x, res.y, res.parfait, vol.nb >= 2);
+      if(!res.parfait) eclats(res.x, res.y, 'etoiles');
+      if(vol.nb >= 2){
+        texte(res.x, res.y - 48, 'Transpercé ! ×' + vol.nb, 'perce');
+        U.son('magie'); U.vibrer(60);
+        [784, 988, 1175, 1568, 1976].slice(0, vol.nb + 1).forEach(function(f, i){ P.apres(i * 75, function(){ note(f, 0.3); }); });
+      }
+      /* fin du ralenti sur cette cible ; il peut repartir pour la suivante */
+      if(vol.ralenti){ vol.ralenti = false; P.apres(380, function(){ if(enVol && enVol.ralenti) return; slowCible = 1; camZc = 1; camXc = 180; camYc = 240; }); }
     }
     function rater(x, y, quoi){
       erreurSensorielle(terrain);
       texte(x, y - 24, quoi, 'ko');
     }
-    /* Une étape de vol : renvoie ce qui est touché */
-    function collision(x, y, tt){
+    /* Une étape de vol : renvoie ce qui est touché (ignore : cibles déjà traversées, pour l'aperçu) */
+    function collision(x, y, tt, ignore){
       for(var i = 0; i < cibles.length; i++){
-        var c = cibles[i]; if(c.touche) continue;
+        var c = cibles[i]; if(c.touche || (ignore && ignore.indexOf(c) >= 0)) continue;
         var q = posCible(c, tt);
         if(c.type === 'sac'){
           var seg = distSeg({x:x, y:y}, {x:c.s.ax, y:c.s.ay}, {x:q.nx, y:q.ny});
@@ -8015,18 +8049,19 @@ MJ.enregistrer('tir', {
       }
       return null;
     }
-    function apercu(v){
+    /* fort : arc bandé à fond, l'aperçu complet continue à travers les cibles (toutes surlignées) */
+    function apercu(v, fort){
       var complet = p.revele || tirs < p.aide;
       var duree = complet ? 2.2 : p.apercu;
-      var s = {x:v.x, y:v.y, vx:v.vx, vy:v.vy}, h = 1 / 60, n = 0, tt = t, vu = null;
+      var s = {x:v.x, y:v.y, vx:v.vx, vy:v.vy}, h = 1 / 60, n = 0, tt = t, vu = null, vues = [];
       for(var k = 0; k < duree / h && n < apercuPts.length; k++){
         if(complet) s.vx += ventA(tt) * h;
         s.vy += ARC.g * h; s.x += s.vx * h; s.y += s.vy * h; tt += h;
         if(k % 3 === 2){ var c = apercuPts[n++]; c.setAttribute('cx', s.x.toFixed(1)); c.setAttribute('cy', s.y.toFixed(1)); c.setAttribute('opacity', complet ? '0.9' : (1 - k * h / duree).toFixed(2)); }
-        if(complet && !vu){ var r = collision(s.x, s.y, tt); if(r){ vu = r; break; } }
+        if(complet && !vu){ var r = collision(s.x, s.y, tt, vues); if(r){ if(fort && r.c && !r.rate) vues.push(r.c); else { vu = r; break; } } }
       }
       for(; n < apercuPts.length; n++) apercuPts[n].setAttribute('opacity', '0');
-      cibles.forEach(function(c){ c.g.classList.toggle('visee', !!(vu && vu.c === c && !vu.rate)); });
+      cibles.forEach(function(c){ c.g.classList.toggle('visee', vues.indexOf(c) >= 0 || !!(vu && vu.c === c && !vu.rate)); });
     }
 
     P.boucle(function(dtR){
@@ -8071,11 +8106,16 @@ MJ.enregistrer('tir', {
         tenir += dtR;
         var v = {x:(vise.x0 - vise.x), y:(vise.y0 - vise.y)};
         var s = tirDepuis(v); ang = s.ang; puis = s.puis;
-        var d = pointeDepart(ang);
-        apercu({x:d.x, y:d.y, vx:s.vx, vy:s.vy});
+        var d = pointeDepart(ang), fort = puis >= PERCE;
+        apercu({x:d.x, y:d.y, vx:s.vx, vy:s.vy}, fort);
         jaugeArc.style.strokeDasharray = (puis * 276).toFixed(0) + ' 400';
         jaugeArc.classList.toggle('tremble', tenir > p.tenue);
-      } else { jaugeArc.style.strokeDasharray = '0 400'; tenir = 0; cibles.forEach(function(c){ c.g.classList.remove('visee'); }); }
+        /* bandé à fond : jauge dorée, flèche dorée, « À fond ! » */
+        if(fort !== !!vise.fort){ vise.fort = fort; jaugeArc.classList.toggle('fort', fort); gAp.classList.toggle('fort', fort); encoche.classList.toggle('fort', fort); aFond.classList.toggle('on', fort); if(fort){ U.son('tic'); U.vibrer(15); } }
+      } else {
+        jaugeArc.style.strokeDasharray = '0 400'; tenir = 0; cibles.forEach(function(c){ c.g.classList.remove('visee'); });
+        if(jaugeArc.classList.contains('fort')){ jaugeArc.classList.remove('fort'); gAp.classList.remove('fort'); encoche.classList.remove('fort'); aFond.classList.remove('on'); }
+      }
       if(vise || !enVol){ arcRot.setAttribute('transform', 'rotate(' + (ang * 57.3).toFixed(1) + ')'); }
       cordeArc.setAttribute('d', 'M0,-38 L' + (-puis * 26).toFixed(1) + ',0 L0,38');
       encoche.setAttribute('transform', 'translate(' + (-puis * 26 + 22).toFixed(1) + ',0)');
@@ -8085,25 +8125,32 @@ MJ.enregistrer('tir', {
         for(var k = 0; k < sub && !res; k++){
           enVol.vx += vent * h; enVol.vy += ARC.g * h; enVol.x += enVol.vx * h; enVol.y += enVol.vy * h;
           res = collision(enVol.x, enVol.y, t - dt + h * (k + 1));
+          /* tirée à fond : elle traverse la cible et continue (les obstacles et le sac l'arrêtent toujours) */
+          if(res && enVol.perce && res.c && !res.rate){ traverser(res); res = null; }
         }
+        /* toutes les cibles sont tombées : la flèche qui transperce n'a plus besoin de voler longtemps */
+        if(!res && enVol.nb && touches >= cibles.length){ enVol.age += dt; if(enVol.age > 0.6) res = {perdue:true, x:enVol.x, y:enVol.y}; }
         enVol.hist.push(enVol.x.toFixed(1) + ',' + enVol.y.toFixed(1)); if(enVol.hist.length > 9) enVol.hist.shift();
         trainee.setAttribute('d', 'M' + enVol.hist.join(' L'));
         var aV = Math.atan2(enVol.vy, enVol.vx);
         flVol.setAttribute('transform', 'translate(' + enVol.x.toFixed(1) + ',' + enVol.y.toFixed(1) + ') rotate(' + (aV * 57.3).toFixed(1) + ')');
         /* ralenti : tir parfait ou dernière cible */
-        if(!enVol.ralenti){
+        if(!enVol.ralenti && !res){
           var pr = prevoir(enVol, t, 0.26);
-          if(pr && pr.c && !pr.rate && (pr.parfait || touches === cibles.length - 1)){ enVol.ralenti = true; slowCible = 0.2; camZc = 1.55; camXc = pr.x; camYc = pr.y; }
+          /* ralenti : tir parfait, dernière cible, ou une flèche qui va en transpercer une deuxième */
+          if(pr && pr.c && !pr.rate && (pr.parfait || touches === cibles.length - 1 || enVol.nb >= 1)){ enVol.ralenti = true; enVol.zoom = true; slowCible = 0.2; camZc = 1.55; camXc = pr.x; camYc = pr.y; }
         }
         if(res){
-          var vol = enVol; enVol = null;
-          if(res.c && !res.rate){ toucher(res.c, res.x, res.y, res.parfait); if(res.c.type === 'pomme' || res.c.type === 'lanterne'){ var lo = local(res.c, res.x, res.y); planter(lo.x, lo.y, aV + lo.a, res.c.art); } }
-          else if(res.rate === 'sac'){ eclats(res.x, res.y, 'bois'); rater(res.x, res.y, 'Vise la corde !'); var lo2 = local(res.c, res.x, res.y); planter(lo2.x, lo2.y, aV + lo2.a, res.c.art); }
-          else if(res.branche){ eclats(res.x, res.y, 'bois'); rater(res.x, res.y, 'Dans la branche !'); planter(res.local.lx, res.local.ly, aV - angBranche(res.branche), res.branche.fl); U.son('ko'); }
-          else if(res.oiseau){ res.oiseau.fuit = true; res.oiseau.vx *= -1.6; particule(res.x, res.y, FLECHE_ART, vol.vx * 0.1, -80, 1.2, 500, 500); rater(res.x, res.y, 'Piou ! Un oiseau…'); }
-          else if(res.sol){ planter(res.x, res.y, aV); rater(res.x, res.y, 'Raté'); }
-          else { rater(fixe(res.x, 20, 340), fixe(res.y, 40, 420), 'Raté'); }
-          if(vol.ralenti){ P.apres(380, function(){ slowCible = 1; camZc = 1; camXc = 180; camYc = 240; }); }
+          /* deja : cette flèche a déjà transpercé une cible, ce n'est plus un raté */
+          var vol = enVol, deja = vol.nb > 0; enVol = null;
+          var rate2 = function(x, y, quoi){ if(deja) texte(x, y - 24, quoi, 'ko'); else rater(x, y, quoi); };
+          if(res.c && !res.rate){ utiles++; maxPerce = Math.max(maxPerce, 1); toucher(res.c, res.x, res.y, res.parfait); if(res.c.type === 'pomme' || res.c.type === 'lanterne'){ var lo = local(res.c, res.x, res.y); planter(lo.x, lo.y, aV + lo.a, res.c.art); } }
+          else if(res.rate === 'sac'){ eclats(res.x, res.y, 'bois'); rate2(res.x, res.y, 'Vise la corde !'); var lo2 = local(res.c, res.x, res.y); planter(lo2.x, lo2.y, aV + lo2.a, res.c.art); }
+          else if(res.branche){ eclats(res.x, res.y, 'bois'); rate2(res.x, res.y, 'Dans la branche !'); planter(res.local.lx, res.local.ly, aV - angBranche(res.branche), res.branche.fl); if(!deja) U.son('ko'); }
+          else if(res.oiseau){ res.oiseau.fuit = true; res.oiseau.vx *= -1.6; particule(res.x, res.y, FLECHE_ART, vol.vx * 0.1, -80, 1.2, 500, 500); rate2(res.x, res.y, deja ? 'Piou !' : 'Piou ! Un oiseau…'); }
+          else if(res.sol){ planter(res.x, res.y, aV); if(!deja) rater(res.x, res.y, 'Raté'); }
+          else if(!deja){ rater(fixe(res.x, 20, 340), fixe(res.y, 40, 420), 'Raté'); }
+          if(vol.ralenti || vol.zoom){ P.apres(380, function(){ if(enVol && enVol.ralenti) return; slowCible = 1; camZc = 1; camXc = 180; camYc = 240; }); }
           else { slowCible = 1; camZc = 1; }
           finVol();
         }
@@ -11255,7 +11302,7 @@ MJ.enregistrer('insectes', {
       else P.finir(resIns, 1500);
     }
     function enchainer(resIns){
-      var pd = MJ.reglages('differences', p.niveau || n, Object.assign({}, p.mods || {}));
+      var pd = MJ.reglages('differences', p.niveau || n, Object.assign({}, p.mods || {}), {brut:!!p.brut, joueur:p.joueur || undefined});
       pd.theme = 'labo'; pd._theme = 'labo';
       if(p.ingredient) pd.ingredient = p.ingredient;
       var voile = U.html('<div class="mjo-transition"><div class="mjo-trans-txt"><span>✨🔎✨</span><b>Le labo est propre !</b><i>Maintenant : trouve les ' + pd.differences + ' différences de l\'étagère</i></div></div>');
@@ -20366,7 +20413,7 @@ MJ.PHRASES = {
   traces:'Suis bien les traces de pas !',
   poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, attrape le chien !' : 'Saute, baisse-toi, attrape-la !'; },
   cachette:'Cache-toi et file jusqu\'à la porte !',
-  tir:'Tire en arrière, vise et lâche !',
+  tir:'Tire à fond, lâche : la flèche transperce !',
   bulles:'Touche les bulles dans le même ordre !',
   melange:'Fais la même couleur que la fiole !',
   chaudron:'Tourne la louche et verse au bon moment !',
@@ -20609,45 +20656,62 @@ D('cachette', function(el){
   }, 1.65);
 });
 
-/* TIR — la main pose le doigt près de l'arc, tire vers l'arrière (la ligne de
-   visée apparaît), lâche : la flèche vole jusqu'à la lanterne. */
+/* TIR — la main pose le doigt près de l'arc, tire À FOND vers l'arrière (la ligne
+   de visée apparaît puis devient dorée, la jauge autour de l'arc se remplit), lâche :
+   la flèche dorée transperce la lanterne, puis la pomme derrière (« ×2 »), et continue. */
 D('tir', function(el){
-  var P = 5.4, ARC = [82, 330], CIBLE = [214, 140], CTRL = [104, 150];
-  function bez(s){ var a = 1 - s; return [a * a * ARC[0] + 2 * a * s * CTRL[0] + s * s * CIBLE[0], a * a * ARC[1] + 2 * a * s * CTRL[1] + s * s * CIBLE[1]]; }
-  function tang(s){ return Math.atan2(2 * (1 - s) * (CTRL[1] - ARC[1]) + 2 * s * (CIBLE[1] - CTRL[1]), 2 * (1 - s) * (CTRL[0] - ARC[0]) + 2 * s * (CIBLE[0] - CTRL[0])) * 180 / Math.PI; }
-  var pts = ''; for(var i = 1; i <= 14; i++){ var q = bez(i / 16); pts += '<circle class="pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3" fill="#ffe3a3"/>'; }
-  var a0 = tang(0), id = uid('rgt');
+  var P = 6.4, ARC = [82, 330], LANT = [150, 167], POMME = [236, 92], CTRL = [141, 123];
+  /* une seule courbe : la lanterne est au milieu (s = 0,5), la pomme au bout (s = 1), la flèche sort de l'image après */
+  function bez(s){ var a = 1 - s; return [a * a * ARC[0] + 2 * a * s * CTRL[0] + s * s * POMME[0], a * a * ARC[1] + 2 * a * s * CTRL[1] + s * s * POMME[1]]; }
+  function tang(s){ return Math.atan2(2 * (1 - s) * (CTRL[1] - ARC[1]) + 2 * s * (POMME[1] - CTRL[1]), 2 * (1 - s) * (CTRL[0] - ARC[0]) + 2 * s * (POMME[0] - CTRL[0])) * 180 / Math.PI; }
+  var pts = ''; for(var i = 1; i <= 16; i++){ var q = bez(i / 15); pts += '<circle class="pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3"/>'; }
+  var a0 = tang(0), id = uid('rgt'), S_FIN = 1.35, T_LACHE = 1.95, VOL = .75;
+  var T_LANT = T_LACHE + VOL * .5 / S_FIN, T_POMME = T_LACHE + VOL / S_FIN;
   var svg = svgDemo(el,
     '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset="1" stop-color="#2c3566"/></linearGradient></defs>' +
-    '<rect width="300" height="420" fill="url(#' + id + ')"/><circle cx="70" cy="80" r="26" fill="#fff4d0" opacity=".9"/>' +
-    '<path d="M300,64 C262,54 214,54 168,66" stroke="#7a4e2c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="186" cy="58" r="10" fill="#2f7a4c"/><circle cx="262" cy="52" r="12" fill="#2a7050"/>' +
-    '<line class="rg-corde" x1="' + CIBLE[0] + '" y1="62" x2="' + CIBLE[0] + '" y2="118" stroke="#c9c2e0" stroke-width="2"/>' +
+    '<rect width="300" height="420" fill="url(#' + id + ')"/><circle cx="62" cy="78" r="24" fill="#fff4d0" opacity=".9"/>' +
+    '<path d="M300,64 C250,48 170,50 112,68" stroke="#7a4e2c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="196" cy="54" r="10" fill="#2f7a4c"/><circle cx="274" cy="54" r="12" fill="#2a7050"/><circle cx="124" cy="64" r="9" fill="#2a7050"/>' +
+    '<line class="rg-corde" x1="' + LANT[0] + '" y1="60" x2="' + LANT[0] + '" y2="' + (LANT[1] - 30) + '" stroke="#c9c2e0" stroke-width="2"/>' +
     '<g class="rg-lant">' + SP2.lanterne + '</g>' +
+    '<path class="rg-tige" d="M' + POMME[0] + ',56 L' + POMME[0] + ',' + (POMME[1] - 22) + '" stroke="#5e3a1e" stroke-width="3"/>' +
+    '<g class="rg-pomme">' + SP2.pomme + '</g>' +
     '<rect y="372" width="300" height="48" fill="#2b5038"/><path d="M0,374 Q75,364 150,374 T300,372" stroke="#3c7a52" stroke-width="4" fill="none"/>' +
     '<g class="rg-pts">' + pts + '</g>' +
+    '<circle class="rg-jauge" cx="' + ARC[0] + '" cy="' + ARC[1] + '" r="54" fill="none" stroke-width="6" stroke-linecap="round" transform="rotate(-90 ' + ARC[0] + ' ' + ARC[1] + ')"/>' +
     '<g transform="translate(' + ARC[0] + ',' + ARC[1] + ') rotate(' + f1(a0) + ') scale(1.35)"><path d="M0,-34 C20,-24 20,24 0,34" transform="rotate(0)" stroke="#8a5a33" stroke-width="6" fill="none" stroke-linecap="round"/>' +
       '<path class="rg-corde-arc" d="M0,-34 L0,34" stroke="#eee" stroke-width="1.8" fill="none"/></g>' +
-    '<g class="rg-fl">' + SP2.fleche + '</g>' +
-    '<g class="rg-bing" opacity="0">' + emo(CIBLE[0] + 26, CIBLE[1] - 30, 26, '✨') + emo(CIBLE[0] - 28, CIBLE[1] - 10, 20, '✨') + '</g>');
-  var lant = $(svg, '.rg-lant'), corde = $(svg, '.rg-corde'), ca = $(svg, '.rg-corde-arc'), fl = $(svg, '.rg-fl'), ptsG = $$(svg, '.pt'), bing = $(svg, '.rg-bing');
+    '<path class="rg-trainee" d="" stroke="#ffd36a" stroke-width="5" stroke-linecap="round" fill="none" opacity=".75"/>' +
+    '<g class="rg-fl"><path class="rg-halo" d="M-36,0 L14,0" stroke="#ffd36a" stroke-width="10" stroke-linecap="round" opacity="0"/>' + SP2.fleche + '</g>' +
+    '<g class="rg-bing1" opacity="0">' + emo(LANT[0] - 30, LANT[1] - 18, 22, '✨') + emo(LANT[0] + 28, LANT[1] + 4, 18, '✨') + '</g>' +
+    '<g class="rg-bing2" opacity="0">' + emo(POMME[0] + 30, POMME[1] - 26, 24, '✨') + emo(POMME[0] - 30, POMME[1] + 8, 18, '✨') +
+      '<text x="182" y="104" text-anchor="middle" font-size="34" font-weight="700" fill="#ffe3a3" stroke="' + K + '" stroke-width="5" paint-order="stroke" style="font-family:var(--f-titre)">×2</text></g>');
+  var lant = $(svg, '.rg-lant'), corde = $(svg, '.rg-corde'), pomme = $(svg, '.rg-pomme'), tige = $(svg, '.rg-tige'), ca = $(svg, '.rg-corde-arc'), fl = $(svg, '.rg-fl'), halo = $(svg, '.rg-halo');
+  var ptsG = $$(svg, '.pt'), jauge = $(svg, '.rg-jauge'), trainee = $(svg, '.rg-trainee'), bing1 = $(svg, '.rg-bing1'), bing2 = $(svg, '.rg-bing2');
   var rad = a0 * Math.PI / 180, bx = -Math.cos(rad), by = -Math.sin(rad);
   var DEB = [ARC[0] + 4, ARC[1] + 4], FIN = [ARC[0] + bx * 46, ARC[1] + by * 46];
-  var main = mainAuto($(svg, '.rg-main'), [[0, 230, 400, 0], [.5, 230, 400, 0], [.95, DEB[0], DEB[1], 1], [1.75, FIN[0], FIN[1], 0], [2.4, 230, 400, 0], [P, 230, 400, 0]], [.95]);
+  var main = mainAuto($(svg, '.rg-main'), [[0, 230, 400, 0], [.5, 230, 400, 0], [.95, DEB[0], DEB[1], 1], [1.85, FIN[0], FIN[1], 1], [T_LACHE, FIN[0], FIN[1], 0], [2.7, 230, 400, 0], [P, 230, 400, 0]], [.95]);
+  /* une cible transpercée tombe en tournant, puis revient doucement pour la boucle suivante */
+  function chute(t, t0){ var u = t - t0; return u > 0 && t < 5.4 ? {y:300 * u * u, r:120 * u, o:1 - entre(t, t0 + .7, t0 + 1.1)} : {y:0, r:0, o:entre(t, 5.5, 6.1) + (t < t0 ? 1 : 0)}; }
   return boucle(el, P, function(t){
-    var tire = t > .95 && t < 1.8 ? entre(t, .95, 1.75) : 0;
+    var tire = t > .95 && t < T_LACHE ? entre(t, .95, 1.85) : 0, fort = tire > .97;
     ca.setAttribute('d', 'M0,-34 L' + f1(-tire * 34) + ',0 L0,34');
-    ptsG.forEach(function(c, i){ vis(c, tire > i / 14 ? 1 : 0); });
-    var uf = (t - 1.8) / .55;
-    if(t < 1.8){ var ex = ARC[0] - Math.cos(rad) * tire * 46, ey = ARC[1] - Math.sin(rad) * tire * 46; pose(fl, ex + Math.cos(rad) * 22, ey + Math.sin(rad) * 22, 1.35, a0); vis(fl, 1); }
-    else if(uf < 1){ var b = bez(uf); pose(fl, b[0], b[1], 1.35, tang(uf)); vis(fl, 1); }
-    else vis(fl, t < 3.6 ? 1 - entre(t, 3.2, 3.6) : 0);
-    if(uf >= 1 && t < 3.6){ var bb = bez(.97); pose(fl, bb[0], bb[1], 1.35, tang(.97)); }
-    var bal = t > 2.35 ? Math.sin((t - 2.35) * 7) * 18 * Math.exp(-(t - 2.35) * 1.4) : 0;
-    lant.setAttribute('transform', 'rotate(' + f1(bal) + ' ' + CIBLE[0] + ' 62) translate(' + CIBLE[0] + ',' + (CIBLE[1] + 6) + ') scale(1.5)');
-    corde.setAttribute('transform', 'rotate(' + f1(bal) + ' ' + CIBLE[0] + ' 62)');
-    vis(bing, bosse(t, 2.35, 1.2));
+    /* la jauge se remplit ; à fond, elle devient dorée (comme dans le jeu) */
+    jauge.setAttribute('stroke', fort ? '#ffd36a' : '#8ff3ff'); jauge.setAttribute('stroke-dasharray', f1(tire * 339) + ' 400'); vis(jauge, tire > 0 ? (fort ? 1 : .8) : 0);
+    ptsG.forEach(function(c, i){ vis(c, tire > i / 16 ? 1 : 0); c.setAttribute('fill', fort ? '#ffd36a' : '#8ff3ff'); });
+    var s = (t - T_LACHE) / VOL * S_FIN;
+    if(t < T_LACHE){ var ex = ARC[0] - Math.cos(rad) * tire * 46, ey = ARC[1] - Math.sin(rad) * tire * 46; pose(fl, ex + Math.cos(rad) * 22, ey + Math.sin(rad) * 22, 1.35, a0); vis(fl, 1); vis(halo, fort ? .55 : 0); trainee.setAttribute('d', ''); }
+    else if(s < S_FIN){
+      var b = bez(s); pose(fl, b[0], b[1], 1.35, tang(s)); vis(fl, 1); vis(halo, .55);
+      var d = 'M'; for(var k = 0; k <= 6; k++){ var q2 = bez(Math.max(0, s - .3 + k * .05)); d += (k ? ' L' : '') + f1(q2[0]) + ',' + f1(q2[1]); } trainee.setAttribute('d', d);
+    } else { vis(fl, 0); trainee.setAttribute('d', ''); }
+    vis(trainee, s > 0 && s < S_FIN ? .75 : 0);
+    var cl = chute(t, T_LANT), cp = chute(t, T_POMME);
+    lant.setAttribute('transform', 'translate(' + LANT[0] + ',' + f1(LANT[1] + cl.y) + ') rotate(' + f1(cl.r) + ') scale(1.4)'); vis(lant, cl.o);
+    vis(corde, 1);
+    pomme.setAttribute('transform', 'translate(' + POMME[0] + ',' + f1(POMME[1] + cp.y) + ') rotate(' + f1(-cp.r) + ') scale(1.35)'); vis(pomme, cp.o);
+    vis(bing1, bosse(t, T_LANT, .9)); vis(bing2, entre(t, T_POMME, T_POMME + .12) * (1 - entre(t, T_POMME + 1.1, T_POMME + 1.5)));
     main(t);
-  }, 1.6);
+  }, 1.9);
 });
 
 /* ==========================================================
@@ -21533,7 +21597,7 @@ M.lireSauvegarde = function(texte){
   s.talents = s.talents.filter(function(id){ return D.TALENTS[id]; });
   s.equip = s.equip.filter(function(id){ return D.OBJETS[id]; });
   if(s.e && (typeof s.e !== 'object' || !window.ENQUETES || !window.ENQUETES[s.e.id])) s.e = null;
-  delete s.heros.joueur;   /* plus de mode enfant */
+  if(s.heros && s.heros.joueur !== 'enfant') s.heros.joueur = 'adulte';   /* qui joue ce héros (enfant / adulte) ; une vieille sauvegarde sans réponse = adulte */
   return s;
 };
 
@@ -21785,7 +21849,8 @@ M.momentId = function(){ var E = M.E(), P = M.P(); return E.moments[Math.min(P.m
 M.ingr = function(){ var S = M.S; if(window.Atelier && S.atelier) return Atelier.compter(S.atelier); return S.ingr || {}; };
 M.ajouterIngr = function(i, n){ var S = M.S; if(window.Atelier){ if(!S.atelier) S.atelier = Atelier.etatNeuf(); Atelier.ajouter(S.atelier, i, n); } else S.ingr[i] = (S.ingr[i] || 0) + n; };
 /* Pas de choix de difficulté dans le jeu : les mini-jeux suivent le numéro de l'enquête (+2), puis l'équipement et les talents du héros. */
-M.decalage = function(){ return 2; };
+M.decalage = function(){ return 0; };   /* le moteur donne le rang de l'enquête ; MJ.reglages en tire le niveau selon le joueur (mj-core.js : MJ.COURBE) */
+M.joueur = function(){ return M.S && M.S.heros && M.S.heros.joueur === 'enfant' ? 'enfant' : 'adulte'; };
 M.actionsMax = function(){ return (M.role() === 'alchimiste' ? 3 : 2) + M.fxSomme('actionBonus'); };
 /* Cœurs d'accusation du Sage : 3 par enquête, l'élixir en rend un (jamais plus de 3) */
 M.COEURS = 3;
@@ -21903,12 +21968,10 @@ var STATUT = {
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };
 var NOM_STATUT = {'🔁':'À recalibrer : la difficulté choisie compte', '✅':'Validé', '🎯':'À retester avec le réglage décidé', '🟡':'Modifié, pas encore testé', '🔨':'En fabrication'};
-/* le niveau que ce jeu a aujourd'hui dans l'enquête 1, pour savoir d'où l'on part */
+/* le niveau de ce jeu à l'enquête 1, pour un enfant et pour un adulte (mj-core.js : MJ.COURBE) */
 function niveauActuel(k){
-  var C = MJ.CALIBRAGE && MJ.CALIBRAGE[k];
-  if(!C) return 'niveau 3';
-  var n = Math.min(10, 3 + (C.decalage || 0));
-  return 'niveau ' + n + (C.mods && C.mods.fleches ? ', avec ' + C.mods.fleches + ' flèche de plus' : '') + (k === 'poursuite' ? ', 5 obstacles sans faute' : '');
+  if(!MJ.niveauPour) return '';
+  return 'enfant niveau ' + MJ.niveauPour(k, 1, 'enfant') + ', adulte niveau ' + MJ.niveauPour(k, 1, 'adulte');
 }
 function regleDecide(k){ return !!(MJ.CALIBRAGE && MJ.CALIBRAGE[k]) && (STATUT[k] === '🎯' || STATUT[k] === '✅'); }
 
@@ -21930,7 +21993,7 @@ function rendre(){
       var st = STATUT[k] || '🟡';
       s += '<button class="sl-jeu" data-jeu="' + k + '"><span class="sl-statut" title="' + esc(NOM_STATUT[st]) + '">' + st + '</span><span class="sl-jeu-ic">' + (d.ic || '🎲') + '</span><b>' + esc(d.nom || k) + '</b>' +
         (regleDecide(k) ? '<small class="sl-cal">Réglage décidé (enquête 1) : le choix de difficulté et les aides ne comptent pas</small>' :
-          '<small class="sl-cal">Aujourd\'hui dans le jeu : ' + esc(niveauActuel(k)) + '</small>' +
+          '<small class="sl-cal">Enquête 1 : ' + esc(niveauActuel(k)) + '</small>' +
           (dernier ? '<small>' + (dernier.ok ? '✔ réussi' : '✖ raté') + ' au niveau ' + dernier.n + '</small>' : '<small>pas encore joué</small>')) + '</button>';
       /* variantes du même jeu (mêmes réglages, autre décor), ex. le petit chien dans la forêt (E1) */
       (VARIANTES[k] || []).forEach(function(v){
