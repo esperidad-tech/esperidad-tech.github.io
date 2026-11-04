@@ -355,6 +355,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* ---------- Traces (la piste) ---------- */
 .mja-traces{background:#4a4330}
+/* la nuit (params.decor = 'nuit') : tout plus sombre et plus bleu, les traces restent lisibles */
+.mja-traces-nuit{background:#1d2233}
+.mja-traces-nuit > svg{filter:brightness(.68) saturate(.75) hue-rotate(-14deg)}
 .mja-empr .e-f{fill:#2a1d12;stroke:#e4d3a6;stroke-width:.9;stroke-linejoin:round}
 .mja-empr .e-c{fill:#efe0b8}
 .mja-empr .e-r{fill:none;stroke:#efe0b8;stroke-width:1.3;stroke-linecap:round}
@@ -6825,7 +6828,8 @@ MJ.enregistrer('traces', {
     hud.vies(essais, p.essais);
     hud.barre(0);
     if(p.aide){ var badge = hud.badge(traceCarte(cibleF, 30)); badge.classList.add('large'); }
-    var terrain = U.html('<div class="mja-terrain mja-traces"></div>');
+    /* params.decor = 'nuit' (enquête 2 : suivre Bastien, la nuit) : le même jeu, en plus sombre */
+    var terrain = U.html('<div class="mja-terrain mja-traces' + (p.decor === 'nuit' ? ' mja-traces-nuit' : '') + '"></div>');
     el.appendChild(terrain);
     var M = genererMonde(p), cible = M.cible, YB = 430, W = M.W, L = M.L;
     var id = nid('tr');
@@ -22585,6 +22589,12 @@ M.texteDonne = function(code){
   if(Array.isArray(d)) return 'donne ce code ' + d.map(function(r){ return D.ROLES[r].au; }).join(' ou ') + ' !';
   if(d === 'tous') return 'ce code est pour toute l\'équipe : chacun peut le taper !';
   return 'donne ce code aux autres joueurs !';
+};
+/* Une phrase dans l'histoire, sous un code donné (Romain, 23 h 11) : I.dire d'un renseignement ou d'un objet de l'enquête
+   (ex. : « Farinel, le meunier, sait peut-être quelque chose : donne ce code au Barde. ») ; sinon null (texteDonne) */
+M.direCode = function(code){
+  var E = M.E(), p = String(code || '').split(':'), I = E && (p[0] === 'info' ? E.infos : p[0] === 'obj' ? E.objets : null);
+  return (I && I[p[1]] && I[p[1]].dire) || null;
 };
 /* Pour qui est un code */
 M.destinataire = function(id){

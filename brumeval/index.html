@@ -488,6 +488,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* ---------- Traces (la piste) ---------- */
 .mja-traces{background:#4a4330}
+/* la nuit (params.decor = 'nuit') : tout plus sombre et plus bleu, les traces restent lisibles */
+.mja-traces-nuit{background:#1d2233}
+.mja-traces-nuit > svg{filter:brightness(.68) saturate(.75) hue-rotate(-14deg)}
 .mja-empr .e-f{fill:#2a1d12;stroke:#e4d3a6;stroke-width:.9;stroke-linejoin:round}
 .mja-empr .e-c{fill:#efe0b8}
 .mja-empr .e-r{fill:none;stroke:#efe0b8;stroke-width:1.3;stroke-linecap:round}
@@ -4354,6 +4357,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-feuille-decouverte{border:2px solid var(--or)}
 .b-decouverte,.b-info-modal{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
 .b-decouverte p{font-size:1.1rem}
+.b-choix-point{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:360px}   /* un choix au bout d'une découverte (au moulin, la nuit) */
 .b-grand-ic{font-size:4rem;line-height:1;animation:b-tourne-ic .6s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes b-tourne-ic{from{transform:scale(.2) rotate(-30deg);opacity:0}to{transform:none;opacity:1}}
 .b-decouverte.rate .b-grand-ic{animation:b-tremble .5s}
@@ -5861,8 +5865,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 23:10 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-04 23:10';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 00:13 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 00:13';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -9160,7 +9164,7 @@ var DEPART = ['capuche_foret', 'bandeau_simple', 'cache_cou', 'tunique_lin', 'pa
    4. Une mission bonus gagnée : un vêtement (bonus[id]).
    Conditions des paquets (quand) : {vu:'pisteur:lieu:point'} (réussi), {explore:'lieu'} (première fouille), {bonus:'id'}, {et:[…]}, {ou:[…]}.
    « tous » : valable dans n'importe quelle enquête (une seule fois). Une enquête future peut ajouter E.garderobe = {mj, paquets, bonus}.
-   Total E1 → E3 si tout est gagné : 8 + 7 + 9 = 24 vêtements (11 rares) ; il en reste plus de 120 pour la suite. */
+   Total E1 → E3 si tout est gagné : 8 + 8 + 9 = 25 vêtements (12 rares) ; il en reste plus de 120 pour la suite. */
 var TROUVAILLES = {
   tous:{paquets:[   /* les sous-sols des enquêtes suivantes */
     {id:'salle_coeur', quand:{explore:'salle_coeur'}, items:['capuche_etoiles', 'grande_cape', 'medaillon']},
@@ -9176,7 +9180,9 @@ var TROUVAILLES = {
     bonus:{ballon:'gant_archer'}
   },
   2:{   /* La rivière rouge (§ 12.11) : les mêmes vêtements que l'ancienne enquête 2, sur les nouveaux mini-jeux du Pisteur */
-    mj:{'foret:passer':'bottes_lumineuses', 'moulin:guet':'cape_nuit', 'chene:tim':'brassards_eclair'},
+    /* passer derrière le dos de Silas : très risqué (niveau 10, Romain, 23 h 13) → l'un des plus beaux rares, la cape d'aurore */
+    mj:{'foret:passer':'cape_aurore', 'moulin:guet':'cape_nuit', 'chene:tim':'brassards_eclair',
+      'moulin:suivre':'manteau_etoiles'},   /* suivre l'homme en cape jusqu'à la crypte (niveau 10, Romain, 23 h 58) : le plus beau, le manteau d'étoiles */
     paquets:[
       {id:'piece', quand:{vu:'pisteur:moulin:alambics'}, items:['arc_joyaux', 'masque_ancien', 'fleches_sifflet']}   /* la pièce cachée du moulin */
     ],
@@ -12108,7 +12114,8 @@ MJ.enregistrer('traces', {
     hud.vies(essais, p.essais);
     hud.barre(0);
     if(p.aide){ var badge = hud.badge(traceCarte(cibleF, 30)); badge.classList.add('large'); }
-    var terrain = U.html('<div class="mja-terrain mja-traces"></div>');
+    /* params.decor = 'nuit' (enquête 2 : suivre Bastien, la nuit) : le même jeu, en plus sombre */
+    var terrain = U.html('<div class="mja-terrain mja-traces' + (p.decor === 'nuit' ? ' mja-traces-nuit' : '') + '"></div>');
     el.appendChild(terrain);
     var M = genererMonde(p), cible = M.cible, YB = 430, W = M.W, L = M.L;
     var id = nid('tr');
@@ -34305,12 +34312,13 @@ E[1] = {
    Solution : Bastien Roulebosse, le charretier · au moulin (la pièce cachée) · quelqu'un l'a payé.
    Ce qui s'est passé (jamais dit tel quel) : avant-hier avant l'aube, Bastien, payé par un homme en cape noire,
    a rasé le champ de coquelicots d'Iris et emporté les fleurs en charrette vers le moulin ; dans une pièce cachée
-   (oubliée depuis l'arrière-grand-père de Farinel), il en a tiré un concentré avec des alambics, et l'a versé dans
+   (oubliée depuis les ancêtres de Farinel), il en a tiré un concentré avec des alambics, et l'a versé dans
    la rivière la nuit dernière. Pendant ce temps, les ouvriers du maire bouchent le trou du Vieux Chêne avec des
    rochers ; Odette a vu ce qu'il ne fallait pas, elle est enfermée dans les sous-sols (en bonne santé).
    Chaînes : Gaspard (pièce d'or toute neuve) + Pisteur (pièce sous l'alambic) → QUI ;
    traces de charrette (Pisteur) → Farinel (Barde) → bibliothèque des plans (Sage) → passage (Pisteur, ou en secours
-   la silhouette qu'il guette la nuit) → colorant (Alchimiste) → OÙ ; Bastien démasqué (détecteur, « J'exige la vérité »,
+   l'homme en cape qu'il guette la nuit, sorti d'une porte cachée ; le suivre mène à la crypte du clocher, un indice pour l'enquête 3)
+   → colorant (Alchimiste) → OÙ ; Bastien démasqué (détecteur, « J'exige la vérité »,
    potion de vérité) ou la pièce d'un charretier sans le sou → POURQUOI.
    Le fond (verrou de l'accusation) : la maison d'Odette (Barde), la canne d'Odette (Pisteur), la pierre de Tim (Barde → Sage).
    ========================================================== */
@@ -34440,9 +34448,12 @@ E[2] = {
   objets:{
     eau_riviere:{nom:'Flacon d\'eau de la rivière', ic:'💧', pour:'alchimiste'},
     eau_lavoir:{nom:'Flacon d\'eau du lavoir', ic:'🧺', pour:'alchimiste'},
-    colorant:{nom:'Reste de colorant rouge', ic:'🔴', pour:'alchimiste'},
-    pierre:{nom:'Pierre gravée de Tim', ic:'🪨', pour:'sage'}
+    colorant:{nom:'Reste de colorant rouge', ic:'🔴', pour:'alchimiste', dire:'L\'Alchimiste saura d\'où vient ce rouge : donne-lui ce code.'},
+    pierre:{nom:'Pierre gravée de Tim', ic:'🪨', pour:'sage', dire:'Des runes ! Le Sage saura peut-être les lire : donne-lui ce code.'},
+    /* la poudre du pot noir (Romain, 23 h 14) : un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
+    poudre:{nom:'Poudre du pot noir', ic:'⚫', pour:'alchimiste', dire:'L\'Alchimiste pourra l\'analyser dans son atelier : donne-lui ce code.'}
   },
+  /* dire : la phrase sous un code donné (moteur-base.js, M.direCode), dans l'histoire, à la place de « donne ce code au … » */
   infos:{
     /* Renseignements sur un habitant, pour le Barde (carnet.js) : 5 codes (registre, tim_chene, traces, lavoir_rose, champ_rase) */
     registre:{nom:'Le registre des habitants', ic:'👥', pour:'barde', de:'sage', t:'Le registre du Sage : où habitent les villageois.', pnj:{
@@ -34455,19 +34466,36 @@ E[2] = {
       farinel:pied('farinel') + 'Il habite son moulin.',
       gaspard:pied('gaspard') + 'Il habite au-dessus de sa boulangerie.'}},
     /* aussi pour le Sage : une preuve du rassemblement (le même code, son « pour » seul change) */
-    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !'},
-    traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.'},
-    lavoir_rose:{nom:'Le rose du lavoir', ic:'🧺', pour:'barde', de:'alchimiste', pnj:'melusine', t:'L\'Alchimiste a analysé l\'eau du lavoir : ce rose vient d\'un tissu qui déteint.'},
-    champ_rase:{nom:'Le champ rasé', ic:'🌺', pour:'barde', de:'alchimiste', pnj:'iris', t:'L\'Alchimiste a vu, à la clairière aux lièvres, un grand champ de coquelicots tout rasé.'},
+    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !',
+      dire:'Le Barde saura le faire parler : donne ce code au Barde, et aussi au Sage.'},
+    traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.',
+      dire:'Farinel, le meunier, sait peut-être quelque chose : donne ce code au Barde.'},   /* (Romain, 23 h 11) */
+    lavoir_rose:{nom:'Le rose du lavoir', ic:'🧺', pour:'barde', de:'alchimiste', pnj:'melusine', t:'L\'Alchimiste a analysé l\'eau du lavoir : ce rose vient d\'un tissu qui déteint.',
+      dire:'Mélusine, la couturière, sait peut-être d\'où vient ce tissu : donne ce code au Barde.'},
+    champ_rase:{nom:'Le champ rasé', ic:'🌺', pour:'barde', de:'alchimiste', pnj:'iris', t:'L\'Alchimiste a vu, à la clairière aux lièvres, un grand champ de coquelicots tout rasé.',
+      dire:'Iris, l\'herboriste, voudra le savoir : donne ce code au Barde.'},
     /* les autres codes */
-    piece:{nom:'La pièce d\'or du moulin', ic:'🪙', pour:'barde', t:'Le Pisteur a trouvé, sous un alambic de la pièce cachée du moulin, une pièce d\'or toute neuve. Quelqu\'un a compté son or ici…'},
-    plans_moulin:{nom:'Les plans du moulin', ic:'📐', pour:'sage', t:'Farinel dit que son moulin a été bâti par son arrière-grand-père, et que ses vieux plans sont rangés dans la bibliothèque des plans du Grand Livre.'},
-    passage:{nom:'Le passage secret du moulin', ic:'🕳️', pour:'pisteur', t:'Sur le vieux plan du moulin, réparé par le Sage : une petite pièce sans porte, sous la grande roue, et un passage secret pour y entrer. Va voir la nuit, quand le moulin est vide !'},
-    detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.'},
-    canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…'},
+    piece:{nom:'La pièce d\'or du moulin', ic:'🪙', pour:'barde', t:'Le Pisteur a trouvé, sous un alambic de la pièce cachée du moulin, une pièce d\'or toute neuve. Quelqu\'un a compté son or ici…',
+      dire:'À qui est cette pièce ? Le Barde va le découvrir : donne-lui ce code.'},
+    /* (Romain, 23 h 22) : bâti par « ses ancêtres » ; le plan arrive toujours dans la page de la bibliothèque des plans du Sage, à réparer */
+    plans_moulin:{nom:'Les plans du moulin', ic:'📐', pour:'sage', t:'Farinel a donné les vieux plans de son moulin, bâti par ses ancêtres. Ils sont tout déchirés : répare-les dans la bibliothèque des plans du Grand Livre.',
+      dire:'Les plans du moulin : donne ce code au Sage.'},
+    passage:{nom:'Le passage secret du moulin', ic:'🕳️', pour:'pisteur', t:'Sur le vieux plan du moulin, réparé par le Sage : une petite pièce sans porte, sous la grande roue, et un passage secret pour y entrer. Va voir la nuit, quand le moulin est vide !',
+      dire:'Le Pisteur pourra s\'y glisser, la nuit : donne-lui ce code.'},
+    detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.',
+      dire:'Par là, on passe loin du garde ! Ce code est pour toute l\'équipe : chacun peut le taper.'},
+    canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…',
+      dire:'Le Sage et le Barde voudront le savoir : donne ce code au Sage ou au Barde.'},
     /* une preuve pour le rassemblement du Sage (Romain, 22 h 41) : un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
-    rochers:{nom:'Les rochers posés exprès', ic:'🪨', pour:'sage', de:'pisteur', t:'Le Pisteur a vu les gros rochers qui bouchent le trou du Vieux Chêne : ils sont bien rangés, posés là exprès. Ce n\'est pas un éboulement !'},
-    odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.'},
+    rochers:{nom:'Les rochers posés exprès', ic:'🪨', pour:'sage', de:'pisteur', t:'Le Pisteur a vu les gros rochers qui bouchent le trou du Vieux Chêne : ils sont bien rangés, posés là exprès. Ce n\'est pas un éboulement !',
+      dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
+    odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.',
+      dire:'Odette a disparu ! Le Sage doit le savoir : donne-lui ce code.'},
+    /* l'homme en cape suivi la nuit jusqu'à la crypte du clocher (Romain, 23 h 58) : un indice de fond, sans effet sur l'accusation,
+       la porte d'entrée de l'enquête 3 ; un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
+    crypte:{nom:'La crypte du clocher', ic:'🗝️', pour:['sage', 'barde'], de:'pisteur',
+      t:'La nuit, le Pisteur a suivi l\'homme en cape noire sorti de la porte cachée du moulin : il est entré dans la crypte du clocher avec une clé, et a refermé à clé derrière lui.',
+      dire:'Un mystère pour plus tard… Le Sage et le Barde voudront le savoir : donne ce code au Sage ou au Barde.'},
     rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
   },
   lieux:{
@@ -34476,11 +34504,15 @@ E[2] = {
         {id:'branche', ic:'💂', nom:'Le garde',
           t:'Silas, le garde champêtre, garde le chemin du Vieux Chêne : « Ordre du maire ! Personne ne passe ! » Les autres chemins, vers la clairière et le moulin, sont libres.',
           note:'Carrefour : Silas garde le chemin du Vieux Chêne. Les autres chemins sont libres.'},
-        {id:'passer', ic:'🫥', nom:'Passer derrière son dos', mj:'cachette',
-          t:'Tu te glisses derrière les fougères, sans un bruit… Silas regarde ailleurs : tu passes derrière son dos ! Le chemin du Vieux Chêne est ouvert pour toi.',
-          note:'Carrefour : tu es passé derrière le dos de Silas. Le Vieux Chêne est ouvert pour toi.',
+        /* très risqué (Romain, 23 h 13) : « Se cacher » au niveau 10 pour tout le monde (moteur-actions.js : options.niveauFixe) ;
+           l'équipement, les talents et les potions du héros aident encore. Gagné : la cape d'aurore (garderobe.js). Raté : le détour du Sage. */
+        {id:'passer', ic:'🫥', nom:'Passer derrière son dos', mj:'cachette', mjNiveauFixe:10, visibleSi:[{vu:'pisteur:foret:branche'}],   /* après avoir vu le garde */
+          avant:'Silas a l\'œil partout… Il faudra être très, très discret ! C\'est très risqué : si tu rates, il faudra attendre que le Sage trouve un autre chemin.',
+          bouton:'🫥 Passer en douce',
+          t:'Tu te glisses derrière les fougères, sans un bruit… Silas regarde ailleurs : tu passes derrière son dos ! Tu peux aller au Vieux Chêne.',
+          note:'Carrefour : tu es passé derrière le dos de Silas. Tu peux aller au Vieux Chêne.',
           rate:'Silas tourne la tête : « Hé, toi ! Pas par là ! » Tu dois faire demi-tour.',
-          ferme:'Silas te surveille, maintenant : impossible de passer derrière son dos. Le Sage connaît peut-être un autre chemin…'}
+          ferme:'Silas te surveille, maintenant : impossible de passer derrière son dos. Attends que le Sage trouve un autre chemin, dans son Grand Livre.'}
       ]},
       alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit']}]}
     },
@@ -34491,22 +34523,24 @@ E[2] = {
           t:'Caché derrière un buisson, tu vois deux ouvriers poser les derniers gros rochers sur le trou du Vieux Chêne. Puis l\'un d\'eux cache un pot noir tout près, sous les branches basses. Ils s\'en vont en chuchotant.',
           note:'Vieux Chêne (matin) : deux ouvriers finissent de boucher le trou avec de gros rochers. L\'un cache un pot noir sous les branches.'},
         {id:'rochers', ic:'🪨', nom:'Les rochers', moments:['apresmidi', 'nuit'], donne:'info:rochers',
-          t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés ! Donne ce code au Sage : c\'est une preuve.',
+          t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés !',
           note:'Vieux Chêne : de gros rochers bouchent le trou, bien rangés. Ce n\'est pas un éboulement.'},
-        {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['apresmidi', 'nuit'],
-          t:'Sous les branches basses, il y a un pot noir, tout neuf : on l\'a posé ce matin. Il sent la poudre… Mais à quoi sert-il ?',
-          note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre.',
+        /* le pot noir (Romain, 23 h 14) : une pincée de sa poudre pour l'Alchimiste (obj:poudre, analyses.poudre) */
+        {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['apresmidi', 'nuit'], obj:'poudre',
+          t:'Sous les branches basses, il y a un pot noir, tout neuf : on l\'a posé ce matin. Il sent la poudre… Mais à quoi sert-il ? Tu en prends une pincée dans ton mouchoir.',
+          note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre. Une pincée pour l\'Alchimiste.',
           /* le texte change selon le moment et le rassemblement (regles.js : la première variante qui convient) */
           /* le rassemblement (le Sage, la nuit) : après lui, le pot est tout noirci, encore tiède */
           variantes:[
-            {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'},
-            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin…', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire.'}
+            {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou. Tu prends une pincée de ce qui reste au fond.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou. Une pincée pour l\'Alchimiste.'},
+            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin… Tu en prends une pincée dans ton mouchoir.', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire. Une pincée pour l\'Alchimiste.'}
           ]},
         {id:'canne', ic:'🦯', nom:'Dans l\'herbe', donne:'info:canne',
-          t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle… Ce code est pour le Sage et le Barde.',
+          t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle…',
           note:'Vieux Chêne : la canne d\'Odette (sept chats gravés) était dans l\'herbe, près des rochers.'},
         {id:'tim', ic:'🧒', nom:'Quelqu\'un derrière le tronc', moments:['matin', 'apresmidi'], mj:'poursuite', params:{decor:'foret'}, donne:'info:tim_chene',
-          t:'Quelqu\'un t\'observe derrière le tronc… Il s\'enfuit ! Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose. Donne son code au Barde (lui saura le faire parler), et au Sage.',
+          avant:'Quelqu\'un t\'observe, caché derrière le tronc… Il s\'enfuit ! Vite, cours-lui après !',
+          t:'Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose.',
           note:'Vieux Chêne : Tim se cachait derrière le tronc. Il a très peur et il cache quelque chose : code pour le Barde et le Sage.',
           rate:'Il est bien trop rapide ! Tu as juste vu une petite casquette disparaître entre les arbres.',
           rateNote:'Vieux Chêne : quelqu\'un de petit, avec une casquette, s\'est enfui entre les arbres.',
@@ -34522,35 +34556,59 @@ E[2] = {
         {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', params:{vehicule:'charrette'}, donne:'info:traces',
           /* ouvrePartiel : raté deux fois, le code est donné quand même, avec l'indice partiel (moteur-actions.js) */
           ouvrePartiel:true, partiel:true,
-          t:'Le champ de coquelicots est tout rasé ! Dans la terre, deux longs traits de roues de charrette, et les traces de pas de celui qui la poussait. Tu les suis… jusqu\'à la cour du moulin ! Là, sur les pavés, elles disparaissent. Ici, on a seulement coupé des fleurs : on n\'y a rien fabriqué. Donne le code de ces traces au Barde.',
-          note:'Clairière : le champ de coquelicots est rasé. Des traces de charrette vont jusqu\'au moulin, puis se perdent sur les pavés de la cour. On n\'a rien fabriqué ici.',
-          rate:'Les traces se brouillent… Tu as juste vu des traits de roues partir vers le moulin. Ici, on a seulement coupé des fleurs : on n\'y a rien fabriqué.',
-          rateNote:'Clairière : des traces de roues partent vers le moulin. On a seulement coupé des fleurs ici.'}
+          /* l'explication avant le mini-jeu, et le résultat (Romain, 23 h 11, mot pour mot) ; la ligne du code : infos.traces.dire */
+          avant:'Le champ de coquelicots est tout rasé ! Dans la terre, deux longs traits de roues de charrette… et les traces de pas de celui qui la poussait. Tu les suis…',
+          bouton:'👣 Suivre les traces',
+          t:'Tu as suivi les traces jusqu\'à la cour du moulin. Là, sur les pavés, elles disparaissent : tu ne peux plus les suivre. Au moulin, tu ne vois rien de spécial.',
+          note:'Clairière : le champ de coquelicots est rasé (on a seulement coupé des fleurs ici). Des traces de charrette vont jusqu\'à la cour du moulin, puis disparaissent sur les pavés.',
+          rate:'Les traces se brouillent… tu les as perdues ! Tu as juste vu qu\'elles partaient vers le moulin.',
+          rateNote:'Clairière : le champ de coquelicots est rasé (on a seulement coupé des fleurs ici). Des traces de roues partent vers le moulin.'}
       ]},
       alchimiste:{cueillir:[{ingr:'trefle', n:2}],
         /* une trouvaille en cueillant (regles.js) : le champ rasé, à dire au Barde */
         trouvaille:{moments:['apresmidi', 'nuit'], ic:'🌺', titre:'Un champ tout rasé', donne:'info:champ_rase',
-          t:'En cueillant, tu découvres un grand champ… tout rasé ! Il ne reste pas un seul coquelicot, juste des tiges coupées. C\'est bizarre ! Donne ce code au Barde : l\'herboriste voudra le savoir.',
+          t:'En cueillant, tu découvres un grand champ… tout rasé ! Il ne reste pas un seul coquelicot, juste des tiges coupées. C\'est bizarre !',
           note:'Clairière : un grand champ de coquelicots tout rasé. Bizarre !'}}
     },
     moulin:{
       pisteur:{intro:'Le vieux moulin tourne au bord de la rivière.', points:[
+        /* le jour, pas de pièce cachée (Romain, 23 h 48) : un message clair, surtout avec le plan du Sage */
         {id:'cour', ic:'🌾', nom:'La cour', moments:['matin', 'apresmidi'],
-          t:'Le moulin est plein de monde : des clients, des sacs de farine, Farinel qui chante… Impossible de fouiller ici en plein jour. Il faudra revenir la nuit, quand tout le monde dort.',
-          note:'Moulin : trop de monde le jour pour fouiller. Revenir la nuit.'},
-        {id:'guet', ic:'🫥', nom:'Te cacher et guetter', moments:['nuit'], mj:'cachette', ouvrePartiel:true, partiel:true,
-          t:'Tu te caches derrière les sacs de farine… Soudain, une pierre du mur glisse, sous la grande roue ! Une silhouette avec un grand capuchon sort d\'une porte cachée et file dans la nuit. La porte est restée entrouverte…',
-          note:'Moulin (nuit) : une silhouette à capuchon est sortie d\'une porte cachée dans le mur, sous la grande roue.',
-          rate:'Tu as failli être vu ! Tu t\'aplatis derrière les sacs… mais tu as aperçu une silhouette à capuchon sortir du mur, sous la grande roue : il y a une porte cachée !',
-          rateNote:'Moulin (nuit) : une silhouette à capuchon est sortie du mur, sous la grande roue. Une porte cachée !'},
-        {id:'alambics', ic:'⚗️', nom:'La pièce cachée', moments:['nuit'], besoin:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}], obj:'colorant',
-          alt:'Il y a peut-être un secret dans ce vieux moulin… mais où ? Les vieux plans du Grand Livre le diront peut-être. Ou bien, cache-toi et guette !',
-          t:'Derrière la porte cachée : une petite pièce oubliée, sous la grande roue. Des alambics, des tuyaux, et au fond d\'une cuve, un reste de colorant tout rouge ! Une rigole descend droit dans la rivière. Pas un tissu, pas une bassine pour teindre : on a fabriqué le rouge ici, et on l\'a versé dans l\'eau. Le reste de colorant, c\'est pour l\'Alchimiste.',
+          t:'Le moulin est plein de monde : Farinel et ses clients vont et viennent. Impossible de fouiller sans être vu… Mieux vaut revenir la nuit. 🌙',
+          note:'Moulin : trop de monde le jour pour fouiller. Revenir la nuit.',
+          variantes:[{si:[{code:'info:passage'}], t:'Le moulin est plein de monde : Farinel et ses clients vont et viennent. Impossible d\'ouvrir le passage sans être vu… Mieux vaut revenir la nuit. 🌙',
+            note:'Moulin : trop de monde le jour pour ouvrir le passage secret. Revenir la nuit.'}]},
+        /* La nuit au moulin (Romain, 23 h 31, puis la version finale de 23 h 58), les points l'un après l'autre (regles.js : visibleSi) :
+           - « Te cacher et guetter », toujours (raté : « Tout est calme… », on retente) ;
+           - réussi : l'homme en cape noire (le payeur ; on ne voit jamais son visage) sort d'une porte cachée, la referme mal → un choix (p.choix) :
+             🚪 entrer (la pièce cachée, puis « Sous l'alambic » : la pièce d'or) ou 👣 le suivre (niveau 10 : jusqu'à la crypte du clocher,
+             info:crypte pour le Sage et le Barde, un indice de fond pour l'enquête 3, sans effet sur l'accusation) ;
+           - avec le plan du Sage, « La pièce cachée » est là tout de suite (le plan montre où chercher) ; guetter reste possible, en plus. */
+        {id:'guet', ic:'🫥', nom:'Te cacher et guetter', moments:['nuit'], mj:'cachette', choix:['alambics', 'suivre'],
+          avant:'Il fait nuit noire au moulin. Tout est calme… Cache-toi près du mur sans te faire voir, et guette !',
+          bouton:'🫥 Se cacher et guetter',
+          t:'Une porte cachée s\'ouvre dans le mur. Un homme en cape noire, le capuchon rabattu, sort sans bruit… Il referme mal la porte derrière lui et file dans la nuit. Que fais-tu ?',
+          note:'Moulin (nuit) : un homme en cape noire, le capuchon rabattu, est sorti d\'une porte cachée dans le mur. Il l\'a mal refermée.',
+          rate:'Tu as failli être vu ! Vite, tu t\'aplatis derrière les sacs de farine… Tout est calme, tu n\'as rien vu.',
+          ferme:'Tout est calme… Plus personne ne sortira du moulin cette nuit. Le plan du Sage montrera peut-être où chercher.'},
+        {id:'alambics', ic:'⚗️', nom:'La pièce cachée', moments:['nuit'], choixTxt:'🚪 Entrer par la porte mal fermée', obj:'colorant',
+          besoin:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}], visibleSi:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}],
+          t:'Derrière la porte cachée : une petite pièce oubliée, sous la grande roue. Des alambics, des tuyaux, et au fond d\'une cuve, un reste de colorant tout rouge ! Une rigole descend droit dans la rivière. Pas un tissu, pas une bassine pour teindre : on a fabriqué le rouge ici, et on l\'a versé dans l\'eau. Tu prends un peu du colorant qui reste.',
           note:'Moulin, la pièce cachée : des alambics, un reste de colorant rouge, une rigole vers la rivière. Ni tissu ni bassine.'},
-        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{code:'info:passage'}, {vu:'pisteur:moulin:guet'}], donne:'info:piece',
-          alt:'Il y a peut-être un secret dans ce vieux moulin… mais où ? Les vieux plans du Grand Livre le diront peut-être. Ou bien, cache-toi et guette !',
-          t:'Sous un alambic, quelque chose brille… Une pièce d\'or toute neuve ! Quelqu\'un a compté son or ici, et en a perdu une. Donne son code au Barde.',
-          note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic.'}
+        /* suivre l'homme en cape : « Suivre la piste », la nuit (params.decor), au niveau 10 pour tout le monde (très difficile) ;
+           gagné : la crypte du clocher (info:crypte) et un vêtement rare (garderobe.js) ; raté : rien d'autre, aucune conséquence */
+        {id:'suivre', ic:'👣', nom:'Suivre l\'homme en cape', moments:['nuit'], choixTxt:'👣 Suivre l\'homme en cape', mj:'traces', mjNiveauFixe:10, params:{decor:'nuit', suspect:'botte'}, donne:'info:crypte',
+          besoin:[{vu:'pisteur:moulin:guet'}], visibleSi:[{vu:'pisteur:moulin:guet'}],
+          avant:'Il marche vite et sans bruit… Ce sera très difficile de ne pas le perdre !',
+          bouton:'👣 Le suivre',
+          /* (Romain, 00 h 00 : pas de farine sur sa cape, elle désignerait Farinel à tort) */
+          t:'Il traverse le village jusqu\'au clocher… Il s\'arrête devant la grille de la crypte, sort une clé, entre, et referme à clé derrière lui. Impossible d\'entrer : la piste s\'arrête là.',
+          note:'Nuit : l\'homme en cape noire du moulin est entré dans la crypte du clocher, avec une clé, et a refermé à clé derrière lui.',
+          rate:'Tu l\'as perdu dans les ruelles…',
+          ferme:'Il a disparu dans la nuit.'},
+        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{vu:'pisteur:moulin:alambics'}], visibleSi:[{vu:'pisteur:moulin:alambics'}], donne:'info:piece',
+          t:'Sous un alambic, quelque chose brille : quelqu\'un a compté son or ici, et en a perdu une ! Une pièce d\'or toute neuve… Qui, au village, en a eu une récemment ?',
+          note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic. Qui, au village, en a eu une récemment ?'}
       ]}
     },
     place:{
@@ -34594,12 +34652,15 @@ E[2] = {
       {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
-      {q:'Montrer la pièce d\'or toute neuve du moulin', besoin:[{et:[{code:'info:piece'}, {vu:'barde:gaspard:1'}]}, {et:[{code:'info:piece'}, {vu:'barde:oreille:boulangerie'}]}],
+      {q:'Montrer la pièce d\'or toute neuve du moulin', besoin:[{et:[{code:'info:piece'}, {vu:'barde:gaspard:1'}]}, {et:[{code:'info:piece'}, {vu:'barde:oreille:boulangerie'}]}, {et:[{code:'info:piece'}, {vu:'barde:margot:3'}]}],
         a:'Bon, d\'accord… c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli. Une rivière rouge, c\'est beau, non ?', ment:true,
         vrai:'Bon… Un homme en cape noire, avec un grand capuchon, m\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Je ne sais pas qui c\'était, je te le jure !',
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
     ]},
-    tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'}, questions:[
+    /* vexeDonne (Romain, 23 h 20) : vexé la nuit, Tim part fâché… mais lâche quand même sa pierre (barde.js, vexeLache) */
+    tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'},
+      vexeDonne:{obj:'pierre', moments:['nuit'], a:'Il sort une pierre de sa poche et te la lance : « Tiens, prends ton caillou et laisse-moi tranquille ! » C\'est une pierre gravée de runes bizarres…',
+        note:'Tim, fâché, t\'a lancé une pierre gravée de runes en partant (code pour le Sage).'}, questions:[
       {q:'Salut Tim ! Ça va ?', a:'Euh… oui, oui, ça va. Je… je dois y aller !', note:'Tim a l\'air inquiet. Il veut s\'en aller.'},
       /* l'indice : le registre du Sage (« il ne confie ses secrets qu'à ceux qui promettent de ne rien répéter ») */
       /* (ni la question ni les choix ne parlent du trou ni de son chien : le Barde ne le sait pas encore ; Tim le dit lui-même en avouant) */
@@ -34635,7 +34696,12 @@ E[2] = {
       {q:'Bastien, c\'est un farceur ?', a:'Bastien ? Une farce ? Il déteste les farces ! Il n\'a jamais ri de sa vie, celui-là.', note:'Margot : Bastien déteste les farces, il n\'a jamais ri de sa vie.'},
       {q:'Comment sais-tu quand quelqu\'un ment ?', besoin:[{vu:'verite:margot:0'}], mimique:['victor', 'tim', 'bastien', 'melusine', 'fortune', 'farinel'], ok:'Des signes de menteurs ne disent pas qui est coupable.',
         a:'Ha ! Toi, tu m\'as bien eue… Bon, je vais te confier mes secrets de tavernière. ' + signe('victor', 'Victor') + ' ' + signe('tim', 'Tim') + ' Et ce petit Tim traîne tout le temps près du Vieux Chêne, ces jours-ci… ' + signe('bastien', 'Bastien') + ' ' + signe('melusine', 'Mélusine', true) + ' ' + signe('fortune', 'Fortuné') + ' ' + signe('farinel', 'Farinel') + ' Regarde-les bien !',
-        note:'Margot t\'a confié comment mentent six villageois : six étiquettes pour ton tableau de liège.'}
+        note:'Margot t\'a confié comment mentent six villageois : six étiquettes pour ton tableau de liège.'},
+      /* une deuxième source de la pièce de Bastien, la nuit (Romain, 23 h 20) : si Gaspard est vexé la nuit, Margot la raconte aussi
+         (elle ouvre la même question chez Bastien) ; toujours à la fin de la liste : les numéros des questions ne bougent pas */
+      {q:'Quoi de neuf, ce soir ?', moments:['nuit'],
+        a:'Ici, tout se raconte à la taverne ! Ce soir, tout le monde ne parle que de ça : Bastien, le charretier, a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
+        note:'Margot (la nuit) : tout se raconte à la taverne. Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'}
     ]},
     melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, salut:'Bonjour ! Attention aux épingles…', questions:[
       {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
@@ -34666,8 +34732,9 @@ E[2] = {
         vrai:'Bon… je fais une petite sieste tous les après-midi, sur mes sacs de farine. Chut, ne le dis à personne !',
         note:'Farinel dit qu\'il ne fait jamais la sieste.', noteVrai:'Farinel a avoué : il fait la sieste tous les après-midi sur ses sacs de farine. Rien à voir avec la rivière !'},
       {q:'Des traces de charrette vont jusqu\'à votre moulin !', besoin:[{code:'info:traces'}], donne:'info:plans_moulin',
-        a:'Des traces de charrette ? Ça alors… Tout le monde passe dans ma cour ! Mais attends : mon moulin a été bâti par mon arrière-grand-père. Ses vieux plans doivent être rangés dans la bibliothèque des plans du Grand Livre. Demande à ton Sage !',
-        note:'Farinel : son moulin a été bâti par son arrière-grand-père ; ses plans sont dans la bibliothèque des plans du Grand Livre (code pour le Sage).'}
+        /* (Romain, 23 h 22) : le texte seulement ; la ligne du code : infos.plans_moulin.dire */
+        a:'Des traces de charrette, ici ? Ça alors… tout le monde passe dans ma cour ! Mais elles ne mènent nulle part, c\'est impossible. Et je peux te le prouver : tiens, voici les vieux plans du moulin, bâti par mes ancêtres.',
+        note:'Farinel : les traces de charrette ne mènent nulle part, dit-il. Il t\'a donné les vieux plans de son moulin, bâti par ses ancêtres (code pour le Sage).'}
     ]},
     iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
       {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
@@ -34697,7 +34764,7 @@ E[2] = {
     /* la maison d'Odette (2, rue des Lanternes) : la scène est la même quel que soit l'ordre du jeu */
     voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'Tu frappes chez Odette… Pas de réponse. La porte n\'est pas fermée à clé.', questions:[
       {q:'Pousser la porte d\'Odette', donne:'info:odette', ok:'Odette a disparu : ça ne dit pas qui a rougi la rivière.',
-        a:'La porte grince… Un chat jaillit entre tes jambes et file dehors ! Dedans, personne. Le lit n\'est pas défait : Odette n\'a pas dormi chez elle. Le voisin passe la tête par sa fenêtre : « Odette ? Je ne l\'ai pas vue depuis hier soir… » Donne ce code au Sage.',
+        a:'La porte grince… Un chat jaillit entre tes jambes et file dehors ! Dedans, personne. Le lit n\'est pas défait : Odette n\'a pas dormi chez elle. Le voisin passe la tête par sa fenêtre : « Odette ? Je ne l\'ai pas vue depuis hier soir… »',
         note:'Chez Odette : personne. Son lit n\'est pas défait, elle n\'a pas dormi chez elle. Un de ses chats s\'est sauvé.'}
     ]}
   },
@@ -34751,19 +34818,34 @@ E[2] = {
   },
   analyses:{
     eau_riviere:{mj:'double', partiel:true,
+      avant:'Tu poses une goutte d\'eau de la rivière sous ta loupe… Qu\'est-ce qui la rend si rouge ? Regarde bien !',
       t:'Dans l\'eau de la rivière, il y a un colorant rouge… un colorant qui part à l\'eau : il ne tient sur rien, il ne fait que colorer l\'eau. Et il arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
       note:'Analyse de la rivière : un colorant rouge qui part à l\'eau (il ne tient sur rien). Il arrive d\'en haut : on ne l\'a pas versé au pont.',
       rate:'Tu n\'as pas eu le temps de tout comparer… Mais une chose est sûre : ce rouge part à l\'eau, et il arrive d\'en haut de la rivière, pas du pont.',
       rateNote:'Analyse de la rivière (pas finie) : un rouge qui part à l\'eau, qui arrive d\'en haut de la rivière (pas du pont).'},
     eau_lavoir:{mj:'differences', donne:'info:lavoir_rose', partiel:true,
-      t:'L\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois ! Donne ce code au Barde.',
+      avant:'Tu poses une goutte d\'eau du lavoir sous ta loupe… Ce rose, est-ce le même que le rouge de la rivière ?',
+      t:'L\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois !',
       note:'Analyse du lavoir : ce rose vient d\'un tissu qui déteint. Rien à voir avec le rouge de la rivière.',
       rate:'Tu n\'as pas eu le temps de tout voir… mais ce rose n\'est pas le rouge de la rivière, ça, c\'est sûr.',
       rateNote:'Analyse du lavoir (pas finie) : ce rose n\'est pas le rouge de la rivière.'},
     colorant:{mj:'melange', params:{recette:{coquelicot:2, myrtille:1}},
+      avant:'Est-ce bien le rouge de la rivière ? Pour le savoir, essaie de refaire exactement la même couleur !', bouton:'🎨 Refaire la couleur',
       t:'Tu as retrouvé la couleur exacte : c\'est le même rouge que la rivière ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
       note:'Analyse du colorant : c\'est le même rouge que la rivière. Il a été fabriqué dans la pièce cachée du moulin.',
-      rate:'Tu n\'as pas réussi à refaire cette couleur…'}
+      rate:'Tu n\'as pas réussi à refaire cette couleur…'},
+    /* la poudre du pot noir (Romain, 23 h 14) : avant le rassemblement, elle fera une fumée rouge ; après, c'est elle qui l'a faite :
+       un fumigène, pas des vapeurs toxiques (variantes : moteur-actions.js, M.texteAnalyse, relu à chaque fois) */
+    poudre:{mj:'double', partiel:true,
+      avant:'Tu verses la pincée de poudre sous ta loupe… Regarde bien chaque grain !',
+      t:'De la poudre noire, comme celle des feux d\'artifice… mélangée à un colorant rouge ! Si on l\'allume, ça fera une grosse fumée toute rouge. Mais pour quoi faire ?',
+      note:'Analyse de la poudre du pot noir : de la poudre noire mélangée à un colorant rouge. De quoi faire une fumée rouge !',
+      variantes:[
+        {si:[{code:'info:rassemblement'}], t:'De la poudre noire mélangée à un colorant rouge : c\'est un fumigène ! C\'est lui qui a fait la fumée rouge du rassemblement. Ce n\'étaient pas des vapeurs toxiques : quelqu\'un a voulu vous faire peur !',
+          note:'Analyse de la poudre du pot noir : un fumigène (poudre noire et colorant rouge). La fumée rouge du rassemblement, ce n\'étaient pas des vapeurs toxiques.'}
+      ],
+      rate:'Tu n\'as pas eu le temps de tout regarder… Mais tu as vu de la poudre noire, avec de tout petits grains rouges.',
+      rateNote:'Analyse de la poudre du pot noir (pas finie) : de la poudre noire, avec de tout petits grains rouges.'}
   },
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre', donne:'info:registre'},
@@ -34775,16 +34857,16 @@ E[2] = {
     {id:'chemins', titre:'Les vieux chemins', ic:'🗺️', mj:'plans', params:{carte:'foret', secret:'chene', passage:'le chemin des bûcherons'}, bouton:'Superposer les vieux chemins',
       ouvrePartiel:true, partiel:true, donne:'info:detour',
       avant:'Un très vieux plan de la forêt, avec des chemins que plus personne ne prend. Pose-le sur le plan d\'aujourd\'hui : un vieux chemin mène peut-être au Vieux Chêne sans passer devant le garde…',
-      t:'Sur le vieux plan, un chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde ! Ce code est pour toute l\'équipe : chacun peut le taper.',
+      t:'Sur le vieux plan, un chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde !',
       note:'Vieux chemins : le chemin des bûcherons arrive au Vieux Chêne par derrière, loin du garde. Code pour toute l\'équipe.',
       rate:'La bougie s\'éteint, les plans se brouillent…',
-      tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière. Ce code est pour toute l\'équipe : chacun peut le taper.',
+      tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière.',
       rateNote:'Vieux chemins (à moitié effacé) : un chemin des bûcherons arrive au Vieux Chêne par derrière.'},
     /* Le plan du moulin (le code de Farinel) → Assembler les runes → le passage. Rangé DANS la page « 📐 La bibliothèque des plans »
        de toutes les enquêtes (dans, livre.js) : il n'y apparaît qu'une fois le code tapé, et la page ne dit jamais quoi chercher. */
     {id:'bibliotheque', dans:'bibliotheque', titre:'Le plan du moulin', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'moulin'}, bouton:'Réparer le plan déchiré',
       avant:'Voici le vieux plan du moulin de Farinel… mais il est tout déchiré ! Remets les morceaux en place.',
-      t:'Le plan du moulin, bâti par l\'arrière-grand-père de Farinel ! Une fois réparé, on voit une petite pièce sans porte, cachée sous la grande roue, et un passage secret pour y entrer. Ce code est pour le Pisteur.',
+      t:'Le plan du moulin, bâti par les ancêtres de Farinel ! Une fois réparé, on voit une petite pièce sans porte, cachée sous la grande roue, et un passage secret pour y entrer.',
       note:'Bibliothèque des plans : sur le vieux plan du moulin, une pièce sans porte sous la grande roue, et un passage secret (code pour le Pisteur).', donne:'info:passage',
       rate:'Les morceaux du plan se mélangent…'},
     /* La pierre de Tim (code du Barde) → L'alphabet secret (message proposé, Romain n'a pas encore choisi). Rangée DANS la page
@@ -34838,8 +34920,8 @@ E[2] = {
   ],
   /* Les faits (tools/verif.js) : ce que chaque indice écarte. QUI se trouve (la pièce d'or), OÙ et POURQUOI aussi. */
   faits:[
-    /* QUI : la pièce d'or toute neuve de Bastien (Gaspard, ou ce qu'on entend au fournil) + celle sous l'alambic (Pisteur) */
-    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie'], 'pisteur:moulin:piece'], qui:['melusine', 'margot', 'iris', 'farinel']},
+    /* QUI : la pièce d'or toute neuve de Bastien (Gaspard, ce qu'on entend au fournil, ou Margot la nuit) + celle sous l'alambic (Pisteur) */
+    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie', 'barde:margot:3'], 'pisteur:moulin:piece'], qui:['melusine', 'margot', 'iris', 'farinel']},
     {sources:['barde:bastien:1'], qui:['melusine', 'margot', 'iris', 'farinel']},
     /* Mélusine : son rose, c'est le lavoir (ses tissus de Fortuné), pas la rivière */
     {sources:[['barde:melusine:2:verite', 'barde:fortune:0:verite', 'barde:oreille:atelier'], 'alchimiste:analyse:eau_lavoir'], qui:['melusine']},
@@ -34856,7 +34938,7 @@ E[2] = {
     {sources:[['pisteur:moulin:alambics', 'barde:iris:1'], 'alchimiste:analyse:eau_riviere'], pourquoi:['teindre']},
     {sources:['barde:bastien:1:verite'], pourquoi:['joli', 'teindre', 'farce']},
     /* le filet : même sans aveu, la pièce toute neuve d'un charretier sans le sou dit qu'on l'a payé */
-    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie'], 'pisteur:moulin:piece'], pourquoi:['joli', 'farce']}
+    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie', 'barde:margot:3'], 'pisteur:moulin:piece'], pourquoi:['joli', 'farce']}
   ]
 };
 })();
@@ -35265,12 +35347,13 @@ E[3] = {
    qui n'avaient pas la même version du jeu ne se comprenaient plus. Maintenant, les codes des enquêtes
    terminées sont gelés ici : réécrire une autre enquête ne les change plus jamais.
    Un code ajouté plus tard à une enquête gelée prend un code libre (moteur-base.js, M.codesEnquete).
+   Dès qu'il est en ligne, on le gèle ici aussi (info:rochers, mis en ligne le 4 novembre vers 23 h) : un code ajouté après lui ne le déplace plus.
    ========================================================== */
 (function(){
 'use strict';
 var GEL = {
   1:{'moment:1':'champi-flamme-poisson', 'moment:2':'etoile-chapeau-coeur', 'obj:fil':'chat-flamme-cle', 'obj:poils':'chat-lune-soleil', 'obj:plume':'lune-arbre-soleil', 'obj:affiche':'flamme-arbre-chapeau', 'info:carte':'soleil-soleil-cle', 'info:chemin':'cloche-champi-cle', 'info:registre':'chat-lune-lune', 'info:echarpe':'cloche-etoile-chat', 'info:grands_pieds':'lune-chat-chat', 'pot:revelatrice':'cloche-lune-soleil', 'pot:lumiere':'chat-soleil-cle', 'pot:rapidite':'coeur-flamme-cloche', 'pot:invisibilite':'flamme-chapeau-chapeau', 'pot:verite':'flamme-soleil-cle', 'pot:clarte':'soleil-cloche-soleil', 'pot:fumigene':'etoile-soleil-chapeau', 'pot:eclairante':'flamme-cle-lune', 'pot:coeur':'champi-chat-chapeau', 'aide:action':'soleil-chat-soleil', 'victoire:0':'flamme-arbre-poisson', 'victoire:1':'coeur-coeur-champi', 'victoire:2':'coeur-lune-chat', 'victoire:3':'soleil-etoile-arbre', 'suite:0':'coeur-cle-poisson', 'suite:1':'flamme-chat-chapeau', 'suite:2':'soleil-champi-lune', 'suite:3':'poisson-cloche-chapeau', 'defaite:0':'chapeau-champi-cle', 'aide:pisteur:1':'coeur-cloche-chat', 'aide:pisteur:2':'soleil-coeur-chat', 'aide:pisteur:3':'cloche-poisson-champi', 'aide:pisteur:4':'cle-lune-coeur', 'aide:pisteur:5':'arbre-chapeau-chat', 'aide:pisteur:6':'soleil-flamme-cle', 'aide:alchimiste:1':'chapeau-arbre-chat', 'aide:alchimiste:2':'cloche-arbre-chapeau', 'aide:alchimiste:3':'cle-flamme-arbre', 'aide:alchimiste:4':'cloche-arbre-etoile', 'aide:alchimiste:5':'flamme-lune-coeur', 'aide:alchimiste:6':'etoile-cle-lune', 'aide:barde:1':'cle-lune-lune', 'aide:barde:2':'soleil-chapeau-etoile', 'aide:barde:3':'soleil-etoile-cle', 'aide:barde:4':'coeur-etoile-etoile', 'aide:barde:5':'coeur-etoile-champi', 'aide:barde:6':'champi-flamme-flamme', 'pot:hydromel':'arbre-etoile-poisson', 'rumeur:0':'chat-soleil-coeur', 'rumeur:1':'etoile-champi-coeur', 'rumeur:2':'etoile-flamme-cloche', 'rumeur:3':'chapeau-etoile-arbre', 'rumeur:4':'cle-coeur-champi', 'rumeur:5':'chat-poisson-chat', 'plaide:1':'cle-cle-flamme', 'recette:hydromel':'chat-arbre-chapeau'},
-  2:{'moment:1':'poisson-lune-chapeau', 'moment:2':'lune-arbre-cle', 'obj:eau_riviere':'champi-arbre-poisson', 'obj:eau_lavoir':'soleil-cle-coeur', 'obj:colorant':'coeur-etoile-cle', 'obj:pierre':'flamme-chapeau-flamme', 'info:registre':'chapeau-champi-chapeau', 'info:tim_chene':'cle-champi-chat', 'info:traces':'soleil-cle-champi', 'info:lavoir_rose':'etoile-lune-lune', 'info:champ_rase':'soleil-champi-champi', 'info:piece':'champi-coeur-lune', 'info:plans_moulin':'etoile-flamme-chat', 'info:passage':'poisson-chapeau-chapeau', 'info:detour':'flamme-lune-flamme', 'info:canne':'lune-champi-soleil', 'info:odette':'cle-flamme-soleil', 'info:rassemblement':'flamme-cloche-cloche', 'pot:revelatrice':'soleil-chat-etoile', 'pot:lumiere':'arbre-coeur-champi', 'pot:rapidite':'etoile-chapeau-soleil', 'pot:invisibilite':'coeur-etoile-chat', 'pot:verite':'cle-coeur-champi', 'pot:clarte':'cloche-champi-coeur', 'pot:fumigene':'flamme-arbre-chat', 'pot:eclairante':'lune-chat-cle', 'pot:coeur':'cloche-champi-etoile', 'aide:action':'etoile-soleil-champi', 'victoire:0':'champi-chapeau-poisson', 'victoire:1':'cle-cle-coeur', 'victoire:2':'coeur-lune-flamme', 'victoire:3':'chapeau-poisson-lune', 'suite:0':'arbre-poisson-poisson', 'suite:1':'cle-etoile-chat', 'suite:2':'cloche-soleil-chat', 'suite:3':'cloche-lune-flamme', 'defaite:0':'flamme-poisson-champi', 'aide:pisteur:1':'cloche-poisson-soleil', 'aide:pisteur:2':'chat-lune-cle', 'aide:pisteur:3':'champi-cloche-arbre', 'aide:pisteur:4':'chapeau-cloche-cloche', 'aide:pisteur:5':'lune-soleil-chat', 'aide:pisteur:6':'chat-etoile-chapeau', 'aide:alchimiste:1':'champi-cloche-chat', 'aide:alchimiste:2':'chapeau-cle-arbre', 'aide:alchimiste:3':'flamme-champi-lune', 'aide:alchimiste:4':'etoile-poisson-arbre', 'aide:alchimiste:5':'chapeau-soleil-cloche', 'aide:alchimiste:6':'lune-flamme-arbre', 'aide:barde:1':'poisson-chat-etoile', 'aide:barde:2':'poisson-arbre-etoile', 'aide:barde:3':'chat-cloche-flamme', 'aide:barde:4':'cloche-champi-chapeau', 'aide:barde:5':'champi-flamme-chat', 'aide:barde:6':'poisson-flamme-champi', 'pot:hydromel':'cloche-chapeau-coeur', 'rumeur:0':'coeur-lune-arbre', 'rumeur:1':'chat-chapeau-champi', 'rumeur:2':'arbre-champi-soleil', 'rumeur:3':'champi-cloche-flamme', 'rumeur:4':'cle-soleil-lune', 'rumeur:5':'cloche-coeur-lune', 'plaide:1':'etoile-chapeau-chapeau', 'recette:hydromel':'chat-etoile-etoile'}
+  2:{'obj:poudre':'coeur-chapeau-coeur', 'info:crypte':'arbre-cle-lune', /* gelés le 5 novembre, 0 h 10, à leur première mise en ligne */'moment:1':'poisson-lune-chapeau', 'moment:2':'lune-arbre-cle', 'obj:eau_riviere':'champi-arbre-poisson', 'obj:eau_lavoir':'soleil-cle-coeur', 'obj:colorant':'coeur-etoile-cle', 'obj:pierre':'flamme-chapeau-flamme', 'info:registre':'chapeau-champi-chapeau', 'info:tim_chene':'cle-champi-chat', 'info:traces':'soleil-cle-champi', 'info:lavoir_rose':'etoile-lune-lune', 'info:champ_rase':'soleil-champi-champi', 'info:piece':'champi-coeur-lune', 'info:plans_moulin':'etoile-flamme-chat', 'info:passage':'poisson-chapeau-chapeau', 'info:detour':'flamme-lune-flamme', 'info:canne':'lune-champi-soleil', 'info:odette':'cle-flamme-soleil', 'info:rassemblement':'flamme-cloche-cloche', 'info:rochers':'etoile-champi-etoile','pot:revelatrice':'soleil-chat-etoile', 'pot:lumiere':'arbre-coeur-champi', 'pot:rapidite':'etoile-chapeau-soleil', 'pot:invisibilite':'coeur-etoile-chat', 'pot:verite':'cle-coeur-champi', 'pot:clarte':'cloche-champi-coeur', 'pot:fumigene':'flamme-arbre-chat', 'pot:eclairante':'lune-chat-cle', 'pot:coeur':'cloche-champi-etoile', 'aide:action':'etoile-soleil-champi', 'victoire:0':'champi-chapeau-poisson', 'victoire:1':'cle-cle-coeur', 'victoire:2':'coeur-lune-flamme', 'victoire:3':'chapeau-poisson-lune', 'suite:0':'arbre-poisson-poisson', 'suite:1':'cle-etoile-chat', 'suite:2':'cloche-soleil-chat', 'suite:3':'cloche-lune-flamme', 'defaite:0':'flamme-poisson-champi', 'aide:pisteur:1':'cloche-poisson-soleil', 'aide:pisteur:2':'chat-lune-cle', 'aide:pisteur:3':'champi-cloche-arbre', 'aide:pisteur:4':'chapeau-cloche-cloche', 'aide:pisteur:5':'lune-soleil-chat', 'aide:pisteur:6':'chat-etoile-chapeau', 'aide:alchimiste:1':'champi-cloche-chat', 'aide:alchimiste:2':'chapeau-cle-arbre', 'aide:alchimiste:3':'flamme-champi-lune', 'aide:alchimiste:4':'etoile-poisson-arbre', 'aide:alchimiste:5':'chapeau-soleil-cloche', 'aide:alchimiste:6':'lune-flamme-arbre', 'aide:barde:1':'poisson-chat-etoile', 'aide:barde:2':'poisson-arbre-etoile', 'aide:barde:3':'chat-cloche-flamme', 'aide:barde:4':'cloche-champi-chapeau', 'aide:barde:5':'champi-flamme-chat', 'aide:barde:6':'poisson-flamme-champi', 'pot:hydromel':'cloche-chapeau-coeur', 'rumeur:0':'coeur-lune-arbre', 'rumeur:1':'chat-chapeau-champi', 'rumeur:2':'arbre-champi-soleil', 'rumeur:3':'champi-cloche-flamme', 'rumeur:4':'cle-soleil-lune', 'rumeur:5':'cloche-coeur-lune', 'plaide:1':'etoile-chapeau-chapeau', 'recette:hydromel':'chat-etoile-etoile'}
 };
 Object.keys(GEL).forEach(function(n){ var E = window.ENQUETES && window.ENQUETES[n]; if(E) E.codesFixes = GEL[n]; });
 })();
@@ -35848,6 +35931,12 @@ M.texteDonne = function(code){
   if(Array.isArray(d)) return 'donne ce code ' + d.map(function(r){ return D.ROLES[r].au; }).join(' ou ') + ' !';
   if(d === 'tous') return 'ce code est pour toute l\'équipe : chacun peut le taper !';
   return 'donne ce code aux autres joueurs !';
+};
+/* Une phrase dans l'histoire, sous un code donné (Romain, 23 h 11) : I.dire d'un renseignement ou d'un objet de l'enquête
+   (ex. : « Farinel, le meunier, sait peut-être quelque chose : donne ce code au Barde. ») ; sinon null (texteDonne) */
+M.direCode = function(code){
+  var E = M.E(), p = String(code || '').split(':'), I = E && (p[0] === 'info' ? E.infos : p[0] === 'obj' ? E.objets : null);
+  return (I && I[p[1]] && I[p[1]].dire) || null;
 };
 /* Pour qui est un code */
 M.destinataire = function(id){
@@ -36844,7 +36933,7 @@ function atelierClassique(){
   }).join('') + '</div>' : '<p class="doux">Aucune potion pour l\'instant.</p>');
   var recus = M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0; });
   s += '<h3>Objets à analyser</h3>' + (recus.length ? '<div class="b-analyses">' + recus.map(function(k){
-    var id = k.slice(4), o = E.objets[id], A = (E.analyses || {})[id], fait = P.analyses[id];
+    var id = k.slice(4), o = E.objets[id], A = M.texteAnalyse((E.analyses || {})[id]), fait = P.analyses[id];
     return '<div class="b-analyse' + (fait ? ' faite' : '') + '"><span class="b-ic">' + o.ic + '</span><div><b>' + esc(o.nom) + '</b>' +
       (fait ? '<p>' + esc(A.t) + '</p>' + (fait === 2 && A.detail ? '<p class="b-detail">🔍 ' + esc(A.detail.t) + '</p>' : '') + lire(A.t) : '<p class="doux petit">Pas encore analysé.</p>') + '</div>' +
       (fait ? '' : '<button class="btn petit" data-act="analyser" data-id="' + id + '"' + (M.peutAgir() ? '' : ' disabled') + '>🔬 Analyser' + M.coutTxt() + '</button>') + '</div>';
@@ -36872,7 +36961,7 @@ function potionsEtAnalyses(){
   }).join('') + '</div>' : '<p class="doux">Aucune potion pour l\'instant. Prépare-les au grand chaudron, dans ton atelier. ' + lire('Aucune potion pour l\'instant. Prépare-les au grand chaudron, dans ton atelier.') + '</p>');
   var recus = M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0; });
   s += '<h3>Objets à analyser</h3>' + (recus.length ? '<div class="b-analyses">' + recus.map(function(k){
-    var id = k.slice(4), o = E.objets[id], A = (E.analyses || {})[id], fait = P.analyses[id];
+    var id = k.slice(4), o = E.objets[id], A = M.texteAnalyse((E.analyses || {})[id]), fait = P.analyses[id];
     return '<div class="b-analyse' + (fait ? ' faite' : '') + '"><span class="b-ic">' + o.ic + '</span><div><b>' + esc(o.nom) + '</b>' +
       (fait ? '<p>' + esc(A.t) + '</p>' + (fait === 2 && A.detail ? '<p class="b-detail">🔍 ' + esc(A.detail.t) + '</p>' : '') + M.lireBtn(A.t) : '<p class="doux petit">Pas encore analysé.</p>') + '</div>' +
       (fait ? '' : '<button class="btn petit" data-act="analyser" data-id="' + id + '"' + (M.peutAgir() ? '' : ' disabled') + '>🔬 Analyser' + M.coutTxt() + '</button>') + '</div>';
@@ -36891,7 +36980,7 @@ M.analysesAtelier = function(){
   var E = M.E(), P = M.P();
   if(!E || !P) return [];
   return M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0 && E.objets && E.objets[k.slice(4)]; }).map(function(k){
-    var id = k.slice(4), o = E.objets[id], A = (E.analyses || {})[id] || {}, fait = P.analyses[id] || 0;
+    var id = k.slice(4), o = E.objets[id], A = M.texteAnalyse((E.analyses || {})[id] || {}), fait = P.analyses[id] || 0;
     return {id:id, ic:o.ic, nom:o.nom, fait:fait, t:fait ? A.t || '' : '', detail:fait === 2 && A.detail ? A.detail.t : ''};
   });
 };
@@ -37124,8 +37213,41 @@ function contenuModal(m){
     case 'auto-mj': return autoModal(m);
     case 'besoin': return '<div class="b-info-modal"><div class="b-grand-ic">🔒</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + M.besoinHTML(m.besoin, M.role()) + '<button class="btn" data-act="lieu" data-id="' + m.retourId + '">← Retour</button></div>';
     case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
+    case 'avant-mj': return avantMJHTML(m);
   }
   return '';
+}
+
+/* ---------- Avant un mini-jeu : toujours un court texte de la situation, puis un bouton JAUNE qui le lance
+   (Romain, 4 novembre, 23 h 11 : toutes les enquêtes, tous les rôles). M.lancerMJ ouvre cette fenêtre d'abord.
+   Le texte : options.avant (p.avant, An.avant… dans l'enquête), sinon celui du type de jeu ci-dessous ; le bouton : options.bouton.
+   Pas de « Plus tard » quand une action a déjà été dépensée (analyse, mission…) : seulement quand on vient d'un lieu (options.retour). ---------- */
+var AVANT_MJ = {
+  traces:'Des traces partent d\'ici. Tu les suis, sans jamais les perdre de vue !',
+  poursuite:'Quelqu\'un s\'enfuit ! Cours-lui après, et saute par-dessus tout ce qui te barre la route.',
+  cachette:'Il ne faut pas te faire voir ! Avance de cachette en cachette, quand personne ne regarde.',
+  tir:'Vise bien, et tire !',
+  differences:'Tu regardes de très près… Trouve tout ce qui n\'est pas pareil.',
+  double:'Tu regardes de très près… Trouve les deux dessins tout pareils.',
+  melange:'Mélange tes couleurs pour retrouver exactement la même.',
+  insectes:'Attention aux petites bêtes !',
+  bulles:'Attrape les bonnes bulles !',
+  plans:'Pose le vieux plan bien pile sur celui d\'aujourd\'hui : qu\'est-ce qui a changé ?',
+  runes:'Remets tous les morceaux à leur place.',
+  alphabet:'Un message secret ! Sers-toi de la clé pour le lire.',
+  grille:'Remets tout en ordre dans la grille.',
+  mensonge:'Écoute bien tout ce qu\'il a dit : un mensonge se cache dedans !',
+  ragots:'À la taverne, tout le monde raconte des histoires. Vrai ou pas vrai ? À toi de juger !',
+  mots:'Retrouve le mot caché !'
+};
+var BOUTON_MJ = {traces:'👣 Suivre les traces', poursuite:'🏃 Lui courir après', cachette:'🫥 Avancer sans être vu', tir:'🎯 Viser',
+  differences:'🔬 Commencer l\'analyse', double:'🔬 Commencer l\'analyse', melange:'🎨 Mélanger', plans:'🗺️ Superposer les plans', runes:'🧩 Réparer',
+  alphabet:'🔣 Déchiffrer', ragots:'🍺 Écouter les ragots', mensonge:'🤥 Trouver le mensonge'};
+M.AVANT_MJ = AVANT_MJ; M.BOUTON_MJ = BOUTON_MJ;
+function avantMJHTML(m){
+  return '<div class="b-info-modal b-avant-mj">' + illuOuIc(m, m.ic || '🎮') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire((m.titre ? m.titre + '. ' : '') + m.t) +
+    '<button class="btn grand b-aller" data-act="mj-go">' + esc(m.bouton) + '</button>' +
+    (m.retour ? '<button class="btn second" data-act="' + esc(m.retour) + '"' + (m.retourId ? ' data-id="' + esc(m.retourId) + '"' : '') + '>← Plus tard</button>' : '') + '</div>';
 }
 
 /* Une petite scène animée à la place de la grande icône (m.illu : regles.js, M.illustration), sinon l'icône */
@@ -37137,12 +37259,14 @@ function illuOuIc(m, ic){
 function decouverteHTML(m){
   var s = '<div class="b-decouverte' + (m.rate ? ' rate' : '') + '">' + illuOuIc(m, m.ic) + '<h2>' + esc(m.titre) + '</h2><p>' + (m.html || esc(m.t)) + '</p>' + lire(m.t);
   if(m.code){
-    var n = M.nomCode(m.code), td = M.texteDonne(m.code);
-    s += '<div class="b-donne"><p>' + n.ic + ' <b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td) + '</p>' + M.codeHTML(M.code(m.code), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
+    var n = M.nomCode(m.code), td = M.texteDonne(m.code), dit = M.direCode ? M.direCode(m.code) : null;
+    /* dit : une phrase dans l'histoire pour dire à qui donner ce code (I.dire, e2.js) ; sinon « nom : donne ce code au … » */
+    s += '<div class="b-donne"><p>' + n.ic + ' ' + (dit ? esc(dit) + ' ' + lire(dit) : '<b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td)) + '</p>' + M.codeHTML(M.code(m.code), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
   }
   if(m.note) s += '<p class="b-note-ajoutee">📒 Noté dans ton carnet</p>';
   if(m.reessai && M.boutonReessai) s += M.boutonReessai(m);   /* 1er échec d'un mini-jeu : la dernière chance (essais.js) */
-  return s + '<button class="btn grand' + (m.reessai ? ' second' : '') + '" data-act="' + (m.retour ? m.retour : 'fermer') + '"' + (m.retourId ? ' data-id="' + m.retourId + '"' : '') + '>D\'accord</button></div>';
+  if(m.choix) s += '<div class="b-choix-point">' + m.choix.map(function(c){ return '<button class="btn grand b-aller" data-act="point" data-l="' + esc(c.l) + '" data-id="' + esc(c.id) + '">' + esc(c.t) + '</button>'; }).join('') + '</div>';   /* un choix (A.point, p.choix) */
+  return s + '<button class="btn grand' + (m.reessai || m.choix ? ' second' : '') + '" data-act="' + (m.retour ? m.retour : 'fermer') + '"' + (m.retourId ? ' data-id="' + m.retourId + '"' : '') + '>D\'accord</button></div>';
 }
 M.decouvrir = function(m){
   if(m.note) M.noter(m.note, m.ic);
@@ -37155,13 +37279,21 @@ M.decouvrir = function(m){
 var mjEnCours = null;
 M.lancerMJ = function(type, niveau, extra, options, fin){
   options = options || {};
+  /* 0. L'explication de la situation, puis le bouton jaune (sauf la dernière chance : options.sansIntro) */
+  if(!options.introVue && !options.sansIntro){
+    UI.suiteMJ = {type:type, niveau:niveau, extra:extra, options:Object.assign({}, options, {introVue:true}), fin:fin};
+    M.ouvrir({type:'avant-mj', fixe:!options.retour, mj:type, ic:options.ic || (window.MJ && MJ.TYPES[type] || {}).ic || '🎮', illu:options.illu || null,
+      titre:options.titreAvant || options.titre || '', t:options.avant || AVANT_MJ[type] || 'À toi de jouer !', bouton:options.bouton || BOUTON_MJ[type] || '▶️ C\'est parti !',
+      retour:options.retour || null, retourId:options.retourId || null});
+    return;
+  }
   var pots = options.sansPotion ? [] : M.potionsPour(type);
   if(pots.length && !options.potionChoisie){
     UI.suiteMJ = {type:type, niveau:niveau, extra:extra, options:options, fin:fin};
     M.ouvrir({type:'boire-mj', pots:pots, mj:type, fixe:true});
     return;
   }
-  var auto = autoDispo(type);
+  var auto = options.niveauFixe ? null : autoDispo(type);   /* un passage très risqué (niveau fixe) : pas de réussite sans jouer */
   if(auto && !options.autoVu){
     UI.suiteMJ = {type:type, niveau:niveau, extra:extra, options:Object.assign({}, options, {autoVu:true}), fin:fin, auto:auto};
     M.ouvrir({type:'auto-mj', mj:type, auto:auto, fixe:true});
@@ -37184,7 +37316,9 @@ function lancer(type, niveau, extra, options, fin){
   var P = M.P();
   var potion = options.potion || null;
   var mm = M.modsPour(type, potion);
-  var params = MJ.reglages(type, (niveau || 1) + M.decalage(), mm.mods);
+  /* options.niveauFixe (ex. : forcer le passage devant Silas, enquête 2 : niveau 10 pour tout le monde) : le niveau tel quel,
+     sans la courbe enfant/adulte ; l'équipement, les talents et les potions du héros aident encore (mods.facile) */
+  var params = options.niveauFixe ? MJ.reglages(type, options.niveauFixe, mm.mods, {brut:true}) : MJ.reglages(type, (niveau || 1) + M.decalage(), mm.mods);
   if(extra) M.cle(extra).forEach(function(k){ params[k] = extra[k]; });
   var plein = document.getElementById('mj-plein');
   plein.innerHTML = '<div class="b-mj-cadre"></div>';
@@ -37603,7 +37737,7 @@ function cuire(m){
     M.decouvrir({ic:p.ic, titre:'Potion réussie !', t:'Tu as fabriqué : ' + p.nom + (doses > 1 ? ' (' + doses + ' doses)' : '') + '. ' + p.d + ' Donne-la à un équipier avec son code, depuis ton atelier.'});
   }
   if(auto){ reussi(); return; }
-  M.lancerMJ(R.cuisson, E.niveau, R.cuisson === 'chaudron' ? {potion:r} : null, {titre:'Cuisson : ' + p.nom, sansPotion:true}, function(res){
+  M.lancerMJ(R.cuisson, E.niveau, R.cuisson === 'chaudron' ? {potion:r} : null, {titre:'Cuisson : ' + p.nom, sansPotion:true, sansIntro:true}, function(res){
     if(res.reussi) reussi();
     else {
       var casse = !M.fxVrai('fioleSolide');
@@ -37824,7 +37958,12 @@ A.point = function(el){
   var p = M.pointsVisibles(l, role).filter(function(x){ return x.id === id; })[0];
   if(!p) return;
   var k = role + ':' + l + ':' + p.id;
-  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:'lieu', retourId:l}); return; }
+  /* p.choix (enquête 2, au moulin la nuit) : la découverte finit sur un choix, les points proposés encore à voir (leur bouton : choixTxt) */
+  function choix(){
+    var v = M.pointsVisibles(l, role), c = (p.choix || []).map(function(id){ return v.filter(function(x){ return x.id === id && !P.vus[role + ':' + l + ':' + x.id]; })[0]; }).filter(Boolean);
+    return c.length ? c.map(function(x){ return {l:l, id:x.id, t:x.choixTxt || x.nom}; }) : null;
+  }
+  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:'lieu', retourId:l, choix:choix()}); return; }
   if(p.mj && M.ferme && M.ferme(k)){ M.ouvrir({type:'decouverte', ic:'🔒', titre:p.nom, t:M.texteEchec(p, M.MAX_ESSAIS), rate:true, retour:'lieu', retourId:l}); return; }   /* raté deux fois : fermé (essais.js) */
   if(P.vus['explore:' + l] !== P.moment) return;
   if(p.besoin && !M.besoinOk(p.besoin)){
@@ -37838,10 +37977,12 @@ A.point = function(el){
     if(p.donne){ code = p.donne; P.objets['_' + p.donne] = true; }
     if(p.or){ M.S.or += p.or; }
     M.sauver();
-    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l});
+    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l, choix:choix()});
   }
   if(p.mj){
-    M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0), p.params, {titre:p.nom}, function(res){
+    /* l'explication avant (p.avant, p.bouton) ; « Plus tard » ramène au lieu : rien n'est encore dépensé ; p.mjNiveauFixe : un niveau fixe (Silas, e2.js) */
+    M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0), p.params, {titre:p.nom, ic:p.ic, avant:p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
+      sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null}, function(res){
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */
@@ -37906,7 +38047,7 @@ A.demasquer = function(el){
   Q.forEach(function(q, i){ if(P.vus['barde:' + id + ':' + i] === 'ok') rep.push({texte:q.a, ment:!!q.ment && !P.vus['verite:' + id + ':' + i], i:i}); });
   /* Il en dit plus quand on le fait répéter : du vrai, et parfois de quoi embrouiller l'enquête */
   if(window.REPLIQUES) rep = REPLIQUES.completer(rep, id, E.id || 1);
-  M.lancerMJ('mensonge', E.niveau, {pnj:id, ic:D.PNJ[id].ic, nom:D.PNJ[id].court, repliques:rep}, {titre:'Ce qu\'a dit ' + D.PNJ[id].court}, function(res){
+  M.lancerMJ('mensonge', E.niveau, {pnj:id, ic:D.PNJ[id].ic, nom:D.PNJ[id].court, repliques:rep}, {titre:'Ce qu\'a dit ' + D.PNJ[id].court, ic:D.PNJ[id].ic}, function(res){
     if(res.reussi){
       Q.forEach(function(q, i){ if(q.ment && P.vus['barde:' + id + ':' + i] === 'ok' && !P.vus['verite:' + id + ':' + i]){ P.vus['verite:' + id + ':' + i] = 1; M.noter(q.noteVrai || (D.PNJ[id].court + ' a avoué : ' + q.vrai.replace(/[«»]/g, '').trim()), '🔍'); } });
       M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'});
@@ -37940,14 +38081,14 @@ A.ecouter = function(el){
       if(n < 2) delete P.vus['ecoute:' + x.id];   /* encore un essai : la scène reste là */
       M.sauver(); M.decouvrir({ic:'👂', titre:x.titre, t:M.texteEchec ? M.texteEchec(x, n, 'Tu as tout mélangé… Tu n\'as compris que des morceaux.') : (x.rate || 'Tu as tout mélangé…'), note:x.noteRate, rate:true, reessai:n < 2 ? {act:'ecouter', id:x.id} : null}); }
   }
-  if(x.mj) M.lancerMJ(x.mj, E.niveau, x.params, {titre:x.titre}, function(res){ fini(res.reussi); });
+  if(x.mj) M.lancerMJ(x.mj, E.niveau, x.params, {titre:x.titre, avant:x.avant, bouton:x.bouton, sansIntro:gratuit}, function(res){ fini(res.reussi); });
   else fini(true);
 };
 A.bonus = function(el){
   var P = M.P(), E = M.E(), b = E.bonus.filter(function(x){ return x.id === el.dataset.id; })[0];
   if(!b || !M.peutAgir() || P.bonus[b.id]) return;
   M.depenser(); M.sauver();
-  M.lancerMJ(b.mj, E.niveau, b.params, {titre:b.titre, essaiUnique:true, sansPotion:false}, function(res){
+  M.lancerMJ(b.mj, E.niveau, b.params, {titre:b.titre, avant:b.avant || b.t, bouton:b.bouton, essaiUnique:true, sansPotion:false}, function(res){
     P.bonus[b.id] = res.reussi ? 'ok' : 'ko';
     if(res.reussi && res.note) M.noter(res.note, '🧩');
     if(res.ragots){
@@ -37958,8 +38099,14 @@ A.bonus = function(el){
     M.ouvrir({type:'info', ic:res.reussi ? '🪙' : '💨', titre:res.reussi ? 'Mission réussie : +' + b.or + ' pièces d\'or !' : 'Mission ratée', t:res.reussi ? 'Bravo ! L\'or est dans ta bourse.' : 'Dommage… Cette mission ne se rejoue pas.'});
   });
 };
+/* Le texte d'une analyse : An.variantes [{si:[conditions], t, note}], la première qui convient, sinon An.t
+   (ex. : la poudre du pot noir, enquête 2 : avant et après le rassemblement). Relu à chaque fois : la table d'analyse suit l'enquête. */
+M.texteAnalyse = function(An){
+  var v = An && (An.variantes || []).filter(function(x){ return M.besoinOk(x.si); })[0];
+  return v ? Object.assign({}, An, {t:v.t || An.t, note:v.note || An.note}) : An;
+};
 A.analyser = function(el){
-  var P = M.P(), E = M.E(), id = el.dataset.id, An = (E.analyses || {})[id];
+  var P = M.P(), E = M.E(), id = el.dataset.id, An = M.texteAnalyse((E.analyses || {})[id]);
   var ka = 'alchimiste:analyse:' + id, gratuit = !!(An && An.mj && M.essaiGratuit && M.essaiGratuit(el, ka));   /* 2 essais au plus (essais.js) */
   if(An && An.mj && !P.analyses[id] && M.ferme && M.ferme(ka)){ M.ouvrir({type:'info', ic:'🔒', titre:'Analyse : ' + E.objets[id].nom, t:M.texteEchec(An, M.MAX_ESSAIS)}); return; }
   if(!An || (!M.peutAgir() && !gratuit) || P.analyses[id]) return;
@@ -37977,7 +38124,7 @@ A.analyser = function(el){
     M.sauver();
     M.decouvrir({ic:E.objets[id].ic, titre:'Analyse : ' + E.objets[id].nom, t:An.t + (detail ? ' Et ce n\'est pas tout : ' + An.detail.t : ''), note:An.note, code:An.donne || null});
   }
-  if(An.mj) M.lancerMJ(An.mj, E.niveau, An.params, {titre:'Analyse : ' + E.objets[id].nom}, function(res){
+  if(An.mj) M.lancerMJ(An.mj, E.niveau, An.params, {titre:'Analyse : ' + E.objets[id].nom, ic:E.objets[id].ic, avant:An.avant, bouton:An.bouton, sansIntro:gratuit}, function(res){
     if(res.reussi) fini();
     else { var n = M.echec ? M.echec(ka) : 1; if(An.rateNote) M.noter(An.rateNote, '💨'); M.sauver(); M.decouvrir({ic:'💨', titre:'Analyse ratée', t:M.texteEchec ? M.texteEchec(An, n, 'Tu n\'as rien trouvé cette fois.') : (An.rate || 'Tu n\'as rien trouvé cette fois.'), rate:true, reessai:n < 2 ? {act:'analyser', id:id} : null}); }
   });
@@ -38008,6 +38155,10 @@ A['mj-potion'] = function(el){
   var o = Object.assign({}, s.options, {potionChoisie:true, potion:el.dataset.id || null});
   M.lancerMJ(s.type, s.niveau, s.extra, o, s.fin);
 };
+A['mj-go'] = function(){   /* le bouton jaune de l'explication (avantMJHTML) */
+  var s = UI.suiteMJ; UI.suiteMJ = null; UI.modal = null; M.render();
+  if(s) M.lancerMJ(s.type, s.niveau, s.extra, s.options, s.fin);
+};
 A['mj-auto'] = function(el){
   var s = UI.suiteMJ; UI.suiteMJ = null; UI.modal = null; M.render();
   if(el.dataset.oui){ var P = M.P(); P.usages[s.auto.cle] = (P.usages[s.auto.cle] || 0) + 1; M.son('magie'); M.sauver(); s.fin({reussi:true, score:1, essais:1}); }
@@ -38034,7 +38185,7 @@ A['ouvrir-page'] = function(el){
     M.sauver();
     M.decouvrir({ic:p.ic, illu:p.illu || null, titre:p.titre, t:p.t, note:p.note, code:p.donne || null});   /* illu : une petite scène animée (regles.js) */
   }
-  if(p.mj) M.lancerMJ(p.mj, E.niveau, p.params, {titre:p.titre}, function(res){
+  if(p.mj) M.lancerMJ(p.mj, E.niveau, p.params, {titre:p.titre, ic:p.ic, avant:p.avant, bouton:p.bouton ? (p.boutonIc || '') + p.bouton : null, sansIntro:gratuit || !!p.avant}, function(res){   /* p.avant : la page du Grand Livre explique déjà, avec son bouton jaune (livre.js) */
     if(res.reussi) ouvrir();
     else { var n = M.echec ? M.echec(kp) : 1; if(p.rateNote) M.noter(p.rateNote, p.ic);
       /* p.ouvrePartiel (la page blanche du tutoriel, enquête 1) : le dernier raté ouvre quand même la page, à moitié effacée, avec son code (l'indice partiel suffit) */
@@ -39776,7 +39927,7 @@ A.question = function(el){
       P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = texteVexe(id, c);
       UI.bd = {p:id, mode:'vexe', t:P.vexeTxt[id], m:P.moment};
       M.noter((M.E() || {}).vexeNeutre ? nom(id) + ' n\'a rien voulu dire quand tu as dit : « ' + c.q + ' ».' : nom(id) + ' s\'est vexé' + (FEM[id] ? 'e' : '') + ' : « ' + c.q + ' », ce n\'était pas la bonne façon de demander.', (M.E() || {}).vexeNeutre ? '🤔' : '😤');
-      M.son('ko'); M.sauver(); M.render(); return;
+      M.son('ko'); M.sauver(); if(vexeLache(id)) return; M.render(); return;
     }
   }
   P.vus['barde:' + id + ':' + i] = 'ok';
@@ -39812,6 +39963,16 @@ function rassemblement(id, q){
   if(R.code) P.objets['_' + R.code] = true;
   M.sauver();
   M.decouvrir({ic:R.ic || '📣', illu:R.illu || null, titre:R.titre || 'Le rassemblement', t:'« ' + q.a + ' » ' + R.t, note:R.note, code:R.code || null});
+  return true;
+}
+/* Un filet de sécurité (Romain, 23 h 20) : vexé (mauvais choix ou accusé à tort) au moment N.vexeDonne.moments, il part fâché…
+   mais lâche quand même ce qu'il cachait (N.vexeDonne {obj, moments, a, note} : Tim et sa pierre, la nuit). Rien si l'objet est déjà donné. */
+function vexeLache(id){
+  var P = M.P(), N = ((M.E() || {}).pnj || {})[id] || {}, V = N.vexeDonne;
+  if(!P || !V || !V.obj || P.objets[V.obj] || !M.momentOk(V.moments)) return false;
+  P.objets[V.obj] = true; if(V.note) M.noter(V.note, (D.PNJ[id] || {}).ic); M.sauver();
+  UI.bd.joue = true;
+  M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' s\'en va, fâché' + (FEM[id] ? 'e' : ''), t:((P.vexeTxt || {})[id] ? '« ' + P.vexeTxt[id] + ' » ' : '') + V.a, code:'obj:' + V.obj, retour:'parler', retourId:id});
   return true;
 }
 /* Une vérité qui donne un objet (q.objVrai : la pierre de Tim) : son code s'affiche tout de suite */
@@ -39856,7 +40017,7 @@ A['bd-ment'] = function(el){
   P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = VEXE_ACCUSE;
   M.noter(nom(id) + ' disait la vérité, et tu l\'as traité' + (FEM[id] ? 'e' : '') + ' de menteu' + (FEM[id] ? 'se' : 'r') + ' : ' + il(id) + ' ne te parle plus pour ce moment.', '😠');
   UI.bd = {p:id, mode:'accuse', t:VEXE_ACCUSE, m:P.moment};
-  M.son('ko'); M.sauver(); M.render();
+  M.son('ko'); M.sauver(); if(vexeLache(id)) return; M.render();
 };
 A['bd-repete'] = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i;
@@ -41321,6 +41482,8 @@ if(typeof rendreAvant === 'function'){
 /* ==========================================================
    Brumeval — des règles qu'une enquête allume par un réglage (l'enquête 2, DESIGN-saison1.md § 12.11).
    Les règles du Barde (une seule visite par moment, potion de vérité…) sont dans barde.js ; le rassemblement est une page du Sage (e2.js).
+   · Un point qui n'apparaît qu'après un autre (p.visibleSi : [conditions]), ou qui s'en va (p.cacheSi) : les points du moulin, la nuit,
+     l'un après l'autre. Un point peut finir sur un choix (p.choix : les points proposés, leur bouton p.choixTxt ; moteur-actions.js).
    · Un point dont le texte change (p.variantes : [{si:[conditions], t, note}], la première qui convient) : le pot du
      Vieux Chêne l'après-midi, après le rassemblement, la nuit. Quand le texte change, le point redevient « à voir ».
    · L'Alchimiste remplit un flacon dans un lieu (L.alchimiste.echantillon {objet, t, moments}) : un objet à analyser.
@@ -41348,10 +41511,17 @@ var pv0 = M.pointsVisibles;
 M.pointsVisibles = function(lieu, role){
   var l = pv0.apply(this, arguments), P = M.P();
   if(!P) return l;
+  /* p.visibleSi (Romain, 23 h 31) : un point qui n'apparaît qu'après un autre (au moulin, la nuit : guetter → la pièce cachée → sous l'alambic) ;
+     p.cacheSi : un point qui s'en va (pas encore utilisé) ; un point déjà regardé reste là */
+  l = l.filter(function(p){
+    if(!p || P.vus[role + ':' + lieu + ':' + p.id]) return true;
+    return (!p.visibleSi || M.besoinOk(p.visibleSi)) && !(p.cacheSi && M.besoinOk(p.cacheSi));
+  });
   return l.map(function(p){
     if(!p || !p.variantes) return p;
     var i = varianteDe(p), k = role + ':' + lieu + ':' + p.id, vu = P.vus[k + ':var'];
-    if(P.vus[k] === 'ok' && (vu === undefined ? -1 : vu) !== i){ delete P.vus[k]; delete P.vus[k + ':var']; }   /* le texte a changé : à revoir */
+    /* le texte a changé : à revoir (sans :var, il vient d'être vu : A.point ci-dessous le note juste après ; sinon il ne restait jamais vu) */
+    if(P.vus[k] === 'ok' && vu !== undefined && vu !== i){ delete P.vus[k]; delete P.vus[k + ':var']; }
     var v = i >= 0 ? p.variantes[i] : null;
     return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}) : p;
   });
@@ -43726,7 +43896,7 @@ function parleEncore(){
   return Date.now() - parole.t < 1200;
 }
 /* ---------- Le guide complet de ce moment : plan + cible + ce qui est permis ---------- */
-var LIBRES = {decouverte:1, info:1, code:1, besoin:1, moment:1, victoire:1, corbeau:1, talent:1, perso:1, conv:1, reserve:1, confirmer:1, 'boire-mj':1, 'auto-mj':1, revision:1, calepin:1, 'barde-sac':1, 'pisteur-sac':1, aide:1, chaudron:1, accusation:1};
+var LIBRES = {decouverte:1, info:1, code:1, besoin:1, moment:1, victoire:1, corbeau:1, talent:1, perso:1, conv:1, reserve:1, confirmer:1, 'boire-mj':1, 'auto-mj':1, 'avant-mj':1, revision:1, calepin:1, 'barde-sac':1, 'pisteur-sac':1, aide:1, chaudron:1, accusation:1};
 var SANS_ROND = {accusation:1, talent:1, perso:1, corbeau:1};   /* des choix : jamais de rond (on ne montre pas la réponse) */
 function guide(){
   var Pl = plan(); if(!Pl) return null;
