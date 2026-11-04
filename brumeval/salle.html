@@ -17939,7 +17939,6 @@ var R = [
   {t:"Le chien de Tim s'appelle Pirate.", v:1, sur:['tim'], des:2},
   {t:"Tim est le plus jeune ramoneur de toute la région.", v:1, sur:['tim'], des:2},
   {t:"Tim a passé toute une nuit dans la forêt, avec son chien.", v:1, sur:['tim'], des:2},
-  {t:"Sous sa peinture dorée, la Lanterne d'Or est en fer tout noir.", v:1, des:2},
   {t:"Quelqu'un a gravé un corbeau dans l'écorce du Vieux Chêne.", v:1, des:2},
   {t:"On voit de plus en plus de corbeaux autour du clocher.", v:1, des:2},
   {t:"Le maire a une armoire pleine de gants, tous pareils.", v:1, sur:['grosbec'], des:2},
@@ -20526,9 +20525,9 @@ function imgHorloge(u){
   var F = fondPierre(u, ['#8f8573', '#61584b', '#3a3329'], 23);
   var defs = F.defs + '<radialGradient id="' + u + '-ca" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="#fdf4dc"/><stop offset=".8" stop-color="#ead39f"/><stop offset="1" stop-color="#c9a76a"/></radialGradient>';
   var g = F.g + frise('#d2a24c');
-  /* coins : roue dentée, corbeau, feuille, clé */
+  /* coins : roue dentée, croissant de lune, feuille, clé (l'horloge est celle de l'enquête 1 : plus de corbeau, Romain, 4 novembre) */
   g += '<g fill="#e3b85e"><circle cx="11" cy="11" r="2.4"/><path d="M11 7.4V14.6M7.4 11H14.6M8.5 8.5L13.5 13.5M13.5 8.5L8.5 13.5" stroke="#e3b85e" stroke-width="1"/></g><circle cx="11" cy="11" r="1" fill="#3a3329"/>';
-  g += '<path d="M84 13C86 9.5 90 9 92.5 10.5L95 9.6L93.6 11.6C93.6 14 91.5 15.5 88.5 15.4L86.5 17.6L86.6 15.4C85 15 84.2 14.2 84 13Z" fill="#1d1a2a"/><circle cx="91.4" cy="11.4" r=".45" fill="#e3b85e"/>';
+  g += '<path d="M91 7.2A5 5 0 1 0 91 16.8A3.9 3.9 0 1 1 91 7.2Z" fill="#e3b85e"/>';
   g += '<path d="M8 92C8 87 11 84.5 15 84.5C15 89 12.5 92 8 92ZM8 92L13 87" fill="#7cae5a" stroke="#3a5a2a" stroke-width=".5"/>';
   g += '<circle cx="87.5" cy="88.5" r="1.8" fill="none" stroke="#e3b85e" stroke-width=".9"/><path d="M88.8 89.8L93 94M91.2 92.2L92.4 91M92.2 93.2L93.4 92" stroke="#e3b85e" stroke-width=".9" stroke-linecap="round"/>';
   /* cadran */
@@ -22390,6 +22389,14 @@ M.decalage = function(){ return 0; };   /* le moteur donne le rang de l'enquête
 M.debutant = function(){ var S = M.S; return !!(S && S.heros) && (+S.prochaine || 1) <= 1 && !(S.finies && Object.keys(S.finies).length); };
 M.joueur = function(){ return M.S && M.S.heros && M.S.heros.joueur === 'enfant' ? 'enfant' : 'adulte'; };
 M.actionsMax = function(){ return (M.role() === 'alchimiste' ? 3 : 2) + M.fxSomme('actionBonus'); };
+/* Une enquête sans points d'action (E.sansActions : l'enquête 1, Romain, 4 novembre, 14 h 13) : rien ne se compte ni ne se dépense,
+   aucun bouton n'est grisé faute d'action, pas de « · 1 action », pas de pastilles, pas de réserve du Sage.
+   Ce qui limite : le tutoriel (tuto.js), et « un lieu ou un villageois ne donne qu'une chose par moment » (M.rienDePlus, moteur-roles.js).
+   Tous les tests d'actions passent par ces trois petites fonctions : les autres enquêtes comptent leurs actions comme avant. */
+M.sansActions = function(){ var E = M.S && M.S.e ? M.E() : null; return !!(E && E.sansActions); };
+M.peutAgir = function(){ var P = M.P(); return M.sansActions() || !!(P && P.actions > 0); };
+M.depenser = function(){ var P = M.P(); if(P && !M.sansActions()) P.actions--; };
+M.coutTxt = function(t){ return M.sansActions() ? '' : (t === undefined ? ' · 1 action' : t); };   /* « · 1 action » sur un bouton (ou un autre texte), rien sans actions */
 /* Cœurs d'accusation du Sage : 3 par enquête, l'élixir en rend un (jamais plus de 3) */
 M.COEURS = 3;
 M.coeurs = function(){ var P = M.P(); if(!P) return M.COEURS; return Math.max(0, Math.min(M.COEURS, M.COEURS - (P.erreurs || 0) + (P.coeursBonus || 0))); };
