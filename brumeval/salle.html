@@ -3030,17 +3030,18 @@ D.TALENTS = {
   antidote:{role:'alchimiste', niv:8, nom:'Antidote', ic:'💚', d:'Tu neutralises les pièges alchimiques du Corbeau.', fx:{acces:['antidote']}},
   passe:{role:'alchimiste', niv:10, nom:'Potion du passé', ic:'⏳', d:'Une fois par enquête, tu vois une courte scène passée dans un lieu.', fx:{acces:['passe']}},
   ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
-  /* Barde */
-  conteur:{role:'barde', niv:2, nom:'Conteur', ic:'🗣️', d:'Deux fois par enquête, tu forces la vérité sur une réponse.', fx:{verite:2}},
-  ombre:{role:'barde', niv:2, nom:'Ombre', ic:'🌑', d:'Deux fois par enquête, tu écoutes une conversation en cachette.', fx:{acces:['ecoute'], ecoute:2}},
-  oreille:{role:'barde', niv:4, nom:'Oreille absolue', ic:'👂', d:'Tu connais les menteurs par cœur : deux signes de mensonge en moins à guetter.', fx:{mj:{mensonge:{signes:2}}}},
-  ami:{role:'barde', niv:4, nom:'Ami de tous', ic:'🤝', d:'Chaque villageois te confie une question secrète en plus.', fx:{acces:['ami']}},
-  apaisante:{role:'barde', niv:6, nom:'Chanson apaisante', ic:'🎶', d:'Tu calmes un villageois qui refuse de parler.', fx:{acces:['apaiser']}},
-  ragots:{role:'barde', niv:6, nom:'Ragots de taverne', ic:'🍺', d:'À la taverne, tu sais où tendre l\'oreille : un ragot de plus sur l\'enquête.', fx:{acces:['ragots'], mj:{ragots:{pistes:1}}}},
-  imitation:{role:'barde', niv:8, nom:'Imitation', ic:'🎭', d:'Tu imites une voix pour entrer quelque part ou obtenir une info.', fx:{acces:['imitation']}},
-  memoire:{role:'barde', niv:8, nom:'Mémoire du conteur', ic:'🧠', d:'Tu te souviens de tout : revoir une phrase du menteur, et un indice dans les mots perdus.', fx:{mj:{mots:{aide:1}, mensonge:{aide:1}}}},
-  ballade:{role:'barde', niv:10, nom:'Ballade de vérité', ic:'🎼', d:'Une fois par enquête, tous les villageois d\'une scène disent la vérité.', fx:{acces:['ballade']}},
-  reseau:{role:'barde', niv:10, nom:'Réseau d\'informateurs', ic:'🧒', d:'Les enfants du village te signalent un déplacement à chaque moment.', fx:{acces:['reseau']}},
+  /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
+     Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
+  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Devant un bâtiment, tu entres sans bruit et tu surprends un bout de conversation : une phrase à trous, dans ton Carnet. Gratuit, deux fois par enquête.', fx:{oreille:2}},
+  exiger:{role:'barde', niv:2, nom:'Exige la vérité', ic:'⚖️', d:'À la fin d\'un interrogatoire, tu exiges la vérité : tous ses mensonges deviennent vrais. Deux fois par enquête.', fx:{verite:2}},
+  charmeur:{role:'barde', niv:4, nom:'Charmeur', ic:'😊', d:'Tes questions maladroites ne vexent plus jamais personne.', fx:{charmeur:true}},
+  physio:{role:'barde', niv:4, nom:'Physionomiste', ic:'🧐', d:'Au début de chaque enquête, tu sais déjà comment ment un des suspects.', fx:{physio:1}},
+  rumeur:{role:'barde', niv:6, nom:'Lancer une rumeur', ic:'🗣️', d:'Avec le Pisteur : à la taverne, tu lances une fausse rumeur sur un lieu. Au moment suivant, le Pisteur guette : si quelqu\'un accourt, c\'est le bon lieu. Une fois par enquête.', fx:{rumeur:1}},
+  hydromel:{role:'barde', niv:6, nom:'Hydromel des confidences', ic:'🍯', d:'Avec l\'Alchimiste : il fabrique l\'Hydromel et te le donne. Offert pendant un interrogatoire, il fait innocenter un suspect. Une fois par enquête.', fx:{hydromel:1}},
+  intuition:{role:'barde', niv:8, nom:'Intuition', ic:'🔮', d:'Une fois par enquête, ton intuition te montre un mensonge que tu n\'avais pas repéré.', fx:{intuition:1}},
+  recoupement:{role:'barde', niv:8, nom:'Recoupement', ic:'🧩', d:'Une fois par enquête, tu compares deux phrases de ton Carnet : peuvent-elles être vraies toutes les deux ?', fx:{recoupement:1}},
+  reseau:{role:'barde', niv:10, nom:'Réseau d\'informateurs', ic:'🧒', d:'À chaque moment, un enfant du village te glisse une info vraie sur un suspect.', fx:{reseau:true}},
+  plaidoirie:{role:'barde', niv:10, nom:'Plaidoirie', ic:'📜', d:'Avec le Sage : une fois par enquête, s\'il accuse un innocent, tu plaides, l\'accusé prouve son innocence et le Sage ne perd pas de cœur.', fx:{plaidoirie:1}},
   /* Sage */
   archiviste:{role:'sage', niv:2, nom:'Archiviste', ic:'📚', d:'Tu ouvres les pages scellées du Grand Livre.', fx:{acces:['scelle']}},
   stratege:{role:'sage', niv:2, nom:'Stratège', ic:'♟️', d:'Au moment d\'accuser, deux innocents sont rayés pour toi, une fois par enquête.', fx:{stratege:2}},
@@ -3119,7 +3120,7 @@ O('barde', [
   ['bonbons', 1, 'Bonbons au miel', '🍯', 30, 'Les enfants du village te parlent.', null, {acces:['bonbons']}],
   ['clochette', 1, 'Clochette de vérité', '🛎️', 50, 'Repérer le mensonge : une fois, elle te dit qu\'une phrase est sûrement vraie.', 'verite', {mj:{mensonge:{indice:1}}}],
   ['chapeau_plume', 1, 'Chapeau à plume', '👒', 35, 'Les villageois timides te répondent.', null, {acces:['timide']}],
-  ['cornet', 2, 'Cornet acoustique', '📯', 70, 'Tu écoutes les conversations de loin.', 'espion', {acces:['ecoute']}],
+  ['cornet', 2, 'Cornet acoustique', '📯', 70, 'Tendre l\'oreille : une écoute aux portes de plus par enquête (avec ce talent).', 'espion', {oreille:1}],
   ['deguisement', 2, 'Déguisement de colporteur', '🥸', 80, 'Tu peux interroger quelqu\'un qui se méfie.', 'espion', {acces:['mefiant']}],
   ['cape_scene', 2, 'Cape de scène', '🎪', 65, 'Spectacle sur la place : tu vois qui ne vient pas.', 'troubadour', {acces:['spectacle']}],
   ['pendule', 2, 'Pendule de vérité', '🪀', 85, 'Repérer le mensonge : revoir une phrase, et un signe de mensonge en moins.', 'verite', {mj:{mensonge:{aide:1, signes:1}}}],
@@ -3166,7 +3167,7 @@ D.ENSEMBLES = {
   herbo:{role:'alchimiste', nom:'Herboriste', ic:'🌿', bonus:'Les ingrédients rares apparaissent sur la carte.', fx:{acces:['herbier'], cueilletteBonus:1}},
   savant:{role:'alchimiste', nom:'Savant', ic:'🧐', bonus:'Chaque analyse donne deux détails.', fx:{acces:['detail'], detail:9}},
   troubadour:{role:'barde', nom:'Troubadour', ic:'🎪', bonus:'Ton spectacle rassemble tout le village.', fx:{acces:['spectacle']}},
-  espion:{role:'barde', nom:'Espion', ic:'🕵️', bonus:'Écoute et imitation sans limite.', fx:{acces:['ecoute', 'imitation']}},
+  espion:{role:'barde', nom:'Espion', ic:'🕵️', bonus:'Tendre l\'oreille : encore une écoute de plus par enquête.', fx:{oreille:1}},
   verite:{role:'barde', nom:'Vérité', ic:'⚖️', bonus:'Tous les mensonges sont détectés.', fx:{mj:{mensonge:{facile:3, revele:true}}}},
   archiviste:{role:'sage', nom:'Archiviste', ic:'📚', bonus:'Le calepin relie seul les anciens indices utiles.', fx:{acces:['relier', 'index']}},
   chef:{role:'sage', nom:'Chef', ic:'🚩', bonus:'Une action en plus pour toi à chaque moment.', fx:{actionBonus:1}},
@@ -3209,7 +3210,11 @@ D.POTIONS = {
     utile:'Pour le Pisteur ou le Sage : elle éclaire un endroit tout noir pendant un moment, comme le moulin la nuit.'},
   /* Élixir du Cœur vaillant : rend 1 cœur d'accusation au Sage (une fois par enquête, jamais plus de 3). Effet géré par le moteur (clé coeur). */
   coeur:{nom:'Élixir du Cœur vaillant', ic:'❤️', c:'#ff5a7a', pour:['sage'], d:'Rend un cœur d\'accusation au Sage, une fois par enquête.', fx:{coeur:1},
-    utile:'Pour le Sage : pendant l\'accusation, s\'il a perdu un cœur, il boit l\'élixir et le récupère (une fois par enquête).'}
+    utile:'Pour le Sage : pendant l\'accusation, s\'il a perdu un cœur, il boit l\'élixir et le récupère (une fois par enquête).'},
+  /* Hydromel des confidences (talent du Barde) : le Barde donne la recette à l'Alchimiste par un code ; tard = son code
+     est ajouté à la fin de la liste des codes (moteur-base.js), pour que les codes déjà connus ne bougent pas. */
+  hydromel:{nom:'Hydromel des confidences', ic:'🍯', c:'#f0a830', pour:['barde'], d:'Le Barde l\'offre à un villageois pendant un interrogatoire : il innocente un suspect.', fx:{}, tard:true,
+    utile:'Pour le Barde (talent Hydromel des confidences) : il l\'offre à un villageois, qui lui confie qu\'un suspect n\'y est pour rien.'}
 };
 /* recette : ingrédients dans l'ordre ; secrete = l'ordre et les quantités sont dans le Grand Livre du Sage.
    Toutes les potions se préparent au grand chaudron (mini-jeu 'chaudron', fichier mj-chaudron.js). */
@@ -3222,7 +3227,8 @@ D.RECETTES = {
   clarte:{ingr:[['menthe', 2], ['eau', 1]], cuisson:'chaudron'},
   fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
   eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},
-  coeur:{ingr:[['miel', 2], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'}
+  coeur:{ingr:[['miel', 2], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},
+  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'}   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
 };
 
 /* ---------- Le grand chaudron ----------
@@ -3248,7 +3254,8 @@ var CHAUDRON_FRISES = {
   clarte:['bleu', [0, 0.45, 1.1]],
   fumigene:['bouillant', [0, 1]],
   eclairante:['arc-en-ciel', [0, 0.5]],
-  coeur:['rouge', [0, 0.8, 1, 0.6]]
+  coeur:['rouge', [0, 0.8, 1, 0.6]],
+  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]]
 };
 D.CHAUDRON = {};
 Object.keys(D.RECETTES).forEach(function(id){
@@ -3369,13 +3376,14 @@ MJ.enregistrer = function(type, def){ def.type = type; MJ.TYPES[type] = def; };
 /* La difficulté des mini-jeux (Romain, 4 novembre : « tout recalibrer »).
    Le moteur donne le rang de l'enquête (enquête 1 = 1, enquête 2 = 2…, plus un petit bonus pour certaines missions),
    et le joueur du héros (M.S.heros.joueur, lu par le moteur dans window.MJ_JOUEUR) :
-   - enfant : niveau 1 à l'enquête 1, puis +1 à chaque enquête ; « Se cacher », trop facile, commence au niveau 3 ;
-   - adulte : niveau 5 à l'enquête 1, puis ça monte jusqu'au niveau 10 à l'enquête 10 (5, 6, 6, 7, 7, 8, 8, 9, 9, 10).
+   - enquête 1 (le tutoriel) : niveau 1 pour tout le monde, adultes compris (« Se cacher », trop facile, au niveau 3) ;
+   - enfant : enquête n → niveau n (« Se cacher » : n + 2) ;
+   - adulte : niveau 5 à l'enquête 2, puis ça monte jusqu'au niveau 10 à l'enquête 10 (5, 6, 6, 7, 8, 8, 9, 9, 10).
    Toujours plafonné à 10 ; l'équipement et les talents du héros (mods.facile) le baissent ensuite.
    La salle des mini-jeux passe opts.brut : le niveau choisi, tel quel. */
 MJ.COURBE = {
   enfant:function(e, type){ return e + (type === 'cachette' ? 2 : 0); },
-  adulte:function(e){ return Math.round(5 + (e - 1) * 5 / 9); }
+  adulte:function(e, type){ return e <= 1 ? MJ.COURBE.enfant(1, type) : Math.round(5 + (e - 2) * 5 / 8); }   /* l'enquête 1 se joue comme un enfant */
 };
 MJ.CALIBRAGE = {};   /* l'ancien calibrage par jeu (décalages) est remplacé par MJ.COURBE */
 /* Règles propres à un jeu, appliquées après ses réglages (pas une question de difficulté) */
@@ -21750,12 +21758,17 @@ function codesBruts(E){
   E.moments.forEach(function(m, i){ if(i > 0) ids.push('moment:' + i); });
   M.cle(E.objets || {}).forEach(function(id){ ids.push('obj:' + id); });
   M.cle(E.infos || {}).forEach(function(id){ ids.push('info:' + id); });
-  M.cle(D.POTIONS).forEach(function(id){ ids.push('pot:' + id); });
+  M.cle(D.POTIONS).forEach(function(id){ if(!D.POTIONS[id].tard) ids.push('pot:' + id); });
   ids.push('aide:action');
   ids.push('victoire:0', 'victoire:1', 'victoire:2', 'victoire:3');
   /* Ajoutés à la fin de la liste : les codes déjà connus ne bougent pas */
   ids.push('suite:0', 'suite:1', 'suite:2', 'suite:3', 'defaite:0');
   ['pisteur', 'alchimiste', 'barde'].forEach(function(r){ for(var n = 1; n <= 6; n++) ids.push('aide:' + r + ':' + n); });
+  /* Les codes des talents du Barde (barde.js), à la fin eux aussi : l'Hydromel (potion « tard »), la rumeur d'un lieu du OÙ
+     (pour le Pisteur), la plaidoirie (pour le Sage), la recette de l'Hydromel (pour l'Alchimiste) */
+  M.cle(D.POTIONS).forEach(function(id){ if(D.POTIONS[id].tard) ids.push('pot:' + id); });
+  for(var nr = 0; nr < 6; nr++) ids.push('rumeur:' + nr);
+  ids.push('plaide:1', 'recette:hydromel');
   var toutes = [];
   D.ORDRE_SYM.forEach(function(a){ D.ORDRE_SYM.forEach(function(b){ D.ORDRE_SYM.forEach(function(c){
     if(!(a === b && b === c)) toutes.push([a, b, c]);
@@ -21850,6 +21863,8 @@ M.ingr = function(){ var S = M.S; if(window.Atelier && S.atelier) return Atelier
 M.ajouterIngr = function(i, n){ var S = M.S; if(window.Atelier){ if(!S.atelier) S.atelier = Atelier.etatNeuf(); Atelier.ajouter(S.atelier, i, n); } else S.ingr[i] = (S.ingr[i] || 0) + n; };
 /* Pas de choix de difficulté dans le jeu : les mini-jeux suivent le numéro de l'enquête (+2), puis l'équipement et les talents du héros. */
 M.decalage = function(){ return 0; };   /* le moteur donne le rang de l'enquête ; MJ.reglages en tire le niveau selon le joueur (mj-core.js : MJ.COURBE) */
+/* Un héros qui n'a encore fini aucune enquête : l'accueil, le village et la lettre sont réduits au strict nécessaire (Romain, 4 novembre) */
+M.debutant = function(){ var S = M.S; return !!(S && S.heros) && (+S.prochaine || 1) <= 1 && !(S.finies && Object.keys(S.finies).length); };
 M.joueur = function(){ return M.S && M.S.heros && M.S.heros.joueur === 'enfant' ? 'enfant' : 'adulte'; };
 M.actionsMax = function(){ return (M.role() === 'alchimiste' ? 3 : 2) + M.fxSomme('actionBonus'); };
 /* Cœurs d'accusation du Sage : 3 par enquête, l'élixir en rend un (jamais plus de 3) */
@@ -21971,7 +21986,7 @@ var NOM_STATUT = {'🔁':'À recalibrer : la difficulté choisie compte', '✅':
 /* le niveau de ce jeu à l'enquête 1, pour un enfant et pour un adulte (mj-core.js : MJ.COURBE) */
 function niveauActuel(k){
   if(!MJ.niveauPour) return '';
-  return 'enfant niveau ' + MJ.niveauPour(k, 1, 'enfant') + ', adulte niveau ' + MJ.niveauPour(k, 1, 'adulte');
+  return 'niveau ' + MJ.niveauPour(k, 1, 'adulte') + ' pour tous · enquête 2 : enfant ' + MJ.niveauPour(k, 2, 'enfant') + ', adulte ' + MJ.niveauPour(k, 2, 'adulte');
 }
 function regleDecide(k){ return !!(MJ.CALIBRAGE && MJ.CALIBRAGE[k]) && (STATUT[k] === '🎯' || STATUT[k] === '✅'); }
 
