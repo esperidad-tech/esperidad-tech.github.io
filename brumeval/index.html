@@ -268,6 +268,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .pj-expr .pjx-nez{transform:translateY(calc(var(--pjx-nez,0) * -1.2px));transition:transform var(--pjx-t) ease}
 .pj-expr .pjx-nez-plis{opacity:calc(var(--pjx-nez,0) * .9);transition:opacity var(--pjx-t)}
 .pj-expr .pjx-rouge{opacity:var(--pjx-rougeur,0);transition:opacity var(--pjx-tr) ease-in-out}
+.pj-expr .pjx-oreilles-r{opacity:var(--pjx-oreilles,0);transition:opacity var(--pjx-tr) ease-in-out}   /* le signe de Bastien (enquête 2) */
 .pj-expr .pjx-joues{transform:translateY(calc(var(--pjx-joue,0) * -1.8px));transition:transform calc(var(--pjx-t) * 1.3) ease}
 .pj-expr .pjx-pommettes{opacity:calc(var(--pjx-joue,0) * .75);transition:opacity var(--pjx-t)}
 .pj-expr .pjx-gorge,.pj-expr .pjx-sueur-g,.pj-expr .pjx-sueur-trace{opacity:0}
@@ -482,6 +483,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-empr .e-tache{fill:#3b2a1a;opacity:.6}
 .e-flou{fill:#2a1d12;fill-opacity:.55;stroke:#e4d3a6;stroke-opacity:.35;stroke-width:4;stroke-linejoin:round}
 .mja-empr.revele .e-f{fill:#bff9ff;stroke:var(--contour);filter:drop-shadow(0 0 3px var(--cyan))}
+/* variante charrette : les traits des roues (un bout par pas) */
+.mja-empr .e-roue{fill:#3a2614;stroke:#e4d3a6;stroke-width:.8}
+.mja-empr.revele .e-roue{fill:#bff9ff;stroke:var(--contour)}
 .mja-vision{fill:none;stroke:var(--cyan);stroke-width:1.6;stroke-dasharray:5 5;opacity:.8;pointer-events:none}
 .mja-vision-halo{fill:none;stroke:var(--cyan);stroke-width:5;opacity:.18;pointer-events:none}
 .mja-vision-sol{fill:#fff4d6;opacity:.13;pointer-events:none}
@@ -2925,7 +2929,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjs-modele{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.75rem;color:var(--brume);font-weight:700}
 .mjs-modele svg{display:block;width:84px;height:84px;border-radius:10px;border:3px solid var(--contour);box-shadow:0 0 0 2px rgba(201,167,90,.55), 0 6px 14px rgba(0,0,0,.4)}
 .mjs-quad{fill:none;stroke:rgba(255,255,255,.7);stroke-width:.6;stroke-dasharray:1.6 1.4}
-.mjs-img-carte .mjs-quad{stroke:rgba(60,30,10,.6)}
+.mjs-img-carte .mjs-quad,.mjs-img-moulin .mjs-quad{stroke:rgba(60,30,10,.6)}
 .mjs-r-coeurs{display:flex;justify-content:center;margin:2px 0}
 .mjs-coups{position:relative;display:grid;grid-template-columns:auto auto;align-items:center;column-gap:8px;padding:6px 14px 10px;border-radius:16px;background:rgba(0,0,0,.35);border:2px solid var(--trait);overflow:hidden}
 .mjs-coups-ic{font-size:1.6rem;grid-row:span 2;line-height:1}
@@ -4712,6 +4716,40 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lg-carte small{font-size:18px;padding:2px 9px}
 .lg-carte.lg-lieu b,.lg-carte.lg-obj b{font-size:22px}
 
+/* Les étiquettes des signes de menteur (enquête 2) : du papier jaune, un petit visage qui refait le signe en boucle */
+.lg-carte.lg-signe,.lg-bac-carte.lg-signe{background:linear-gradient(180deg, #fff6d2, #f2d98c);border-color:#c99a2e;color:#3b2a00}
+.lg-carte.lg-signe b{font-size:21px}
+.lg-carte.lg-signe small,.lg-bac-carte.lg-signe small{background:#d0312d;color:#fff}
+.lg-photo.lg-sg{background:#ffe7a0;box-shadow:inset 0 0 0 3px rgba(120,80,0,.2)}
+.lg-carte .lg-photo.lg-sg{width:90px;height:90px}
+.lg-sg svg{overflow:visible}
+.lg-sg .sg-or,.lg-sg .sg-front,.lg-sg .sg-goutte,.lg-sg .sg-b-coin,.lg-sg .sg-b-force,.lg-sg .sg-b-mordille,.lg-sg .sg-b-mord{opacity:0}
+.lg-sg .sg-paup{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0)}
+.lg-sg-oreilles .sg-or,.lg-sg-rougeur .sg-front{animation:sg-lent 3.4s ease-in-out infinite}
+.lg-sg-sueur .sg-goutte{animation:sg-goutte 3.4s ease-in infinite}
+.lg-sg-coin .sg-pup{animation:sg-cote 3.4s ease-in-out infinite}
+.lg-sg-coin .sg-b-n,.lg-sg-force .sg-b-n,.lg-sg-mordille .sg-b-n{animation:sg-off 3.4s infinite}
+.lg-sg-coin .sg-b-coin,.lg-sg-force .sg-b-force{animation:sg-on 3.4s infinite}
+.lg-sg-mordille .sg-b-mordille{animation:sg-mordille 3.4s infinite}
+.lg-sg-morsure .sg-b-n{animation:sg-off-vite 3.4s infinite}
+.lg-sg-morsure .sg-b-mord{animation:sg-flash 3.4s infinite}
+.lg-sg-double .sg-paup{animation:sg-double 3.4s infinite}
+.lg-sg-yeuxbas .sg-pup{animation:sg-bas 3.4s ease-in-out infinite}
+.lg-sg-yeuxbas .sg-sc{animation:sg-leve 3.4s ease-in-out infinite}
+.lg-sg-yeuxbas .sg-paup{animation:sg-mipaup 3.4s ease-in-out infinite}
+@keyframes sg-lent{0%,18%{opacity:0}42%,78%{opacity:1}100%{opacity:0}}
+@keyframes sg-on{0%,22%{opacity:0}30%,76%{opacity:1}84%,100%{opacity:0}}
+@keyframes sg-off{0%,22%{opacity:1}30%,76%{opacity:0}84%,100%{opacity:1}}
+@keyframes sg-flash{0%,42%{opacity:0}45%,57%{opacity:1}60%,100%{opacity:0}}
+@keyframes sg-off-vite{0%,42%{opacity:1}45%,57%{opacity:0}60%,100%{opacity:1}}
+@keyframes sg-goutte{0%,12%{opacity:0;transform:translateY(0)}22%{opacity:1}80%{opacity:1;transform:translateY(17px)}100%{opacity:0;transform:translateY(21px)}}
+@keyframes sg-cote{0%,22%{transform:none}32%,76%{transform:translateX(4px)}86%,100%{transform:none}}
+@keyframes sg-mordille{0%,22%{opacity:0;transform:none}27%{opacity:1}36%{transform:translateY(1.6px)}45%{transform:none}54%{transform:translateY(1.6px)}63%{transform:none}74%{opacity:1}80%,100%{opacity:0}}
+@keyframes sg-double{0%,40%{transform:scaleY(0)}44%{transform:scaleY(1)}48%{transform:scaleY(0)}52%{transform:scaleY(1)}56%,100%{transform:scaleY(0)}}
+@keyframes sg-bas{0%,20%{transform:none}34%,76%{transform:translateY(3.6px)}88%,100%{transform:none}}
+@keyframes sg-leve{0%,20%{transform:none}34%,76%{transform:translateY(-5px)}88%,100%{transform:none}}
+@keyframes sg-mipaup{0%,20%{transform:scaleY(0)}34%,76%{transform:scaleY(.42)}88%,100%{transform:scaleY(0)}}
+
 /* Les couleurs d'avis : vert innocent, orange à surveiller, rouge suspect */
 .lg-s-innocent{border-color:#2f9e44;box-shadow:0 0 0 4px #2f9e44, 0 6px 14px rgba(0,0,0,.38)}
 .lg-s-surveiller{border-color:#f08c00;box-shadow:0 0 0 4px #f08c00, 0 6px 14px rgba(0,0,0,.38)}
@@ -4766,7 +4804,9 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lg-jr{overflow-x:auto;margin:0 0 16px;border-radius:12px;-webkit-overflow-scrolling:touch}
 .lg-jr-boite{position:relative;overflow:hidden;border-radius:12px}
 .lg-jr .lg-carte{cursor:default}
-@media (prefers-reduced-motion: reduce){ .lg-pose{animation:none} }
+@media (prefers-reduced-motion: reduce){ .lg-pose{animation:none}
+  /* les étiquettes restent figées au plus fort de leur signe */
+  .lg-sg *{animation-play-state:paused !important;animation-delay:-1.75s !important} }
 
 /* ==========================================================
    Brumeval — le Carnet : les habitants qui s'ouvrent, Autres, Mes indices (carnet.js)
@@ -4955,6 +4995,36 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
   .bd-bulle.bd-vexe::before,.bd-bulle.bd-outre::before{border-right-color:#ffe1d6;border-bottom-color:transparent}
   .bd-bulle.bd-hydromel::before{border-right-color:#fff1c8;border-bottom-color:transparent}
 }
+
+/* La petite scène du rassemblement (regles.js, M.illustration) : une boucle de 11 s */
+.rs-scene{position:relative;width:100%;max-width:360px;aspect-ratio:16/10;margin:26px auto 8px;border-radius:16px;overflow:hidden;border:3px solid var(--contour, #24182e);box-shadow:0 6px 14px rgba(0,0,0,.3);background:#fbe4b4}
+.rs-decor{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rs-pion{position:absolute;bottom:9%;left:-24%;width:17%;aspect-ratio:1;margin-left:-8.5%;animation:rs-pion 11s linear infinite both}
+.rs-pion i{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#fff3d6;border:3px solid #24182e;box-sizing:border-box;animation:rs-pas .42s ease-in-out infinite alternate}
+.rs-pion i svg{display:block;width:100%;height:100%}
+.rs-pion i b{display:grid;place-items:center;width:100%;height:100%;font-size:1.6rem;font-style:normal}
+.rs-pion.rs-barde i{background:#ffd9ef;border-color:#b0307a}
+.rs-pion em{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.72rem;padding:1px 7px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0}
+.rs-kof{animation:rs-kof 11s linear infinite both}
+.rs-pion.rs-maire{left:112%;animation-name:rs-maire}
+.rs-pion.rs-maire i{background:#e8e2ff}
+.rs-bulle{animation:rs-bulle 11s linear infinite both;font-size:.8rem !important;color:#b3261e !important}
+.rs-ombre{position:absolute;left:84%;bottom:12%;width:11%;aspect-ratio:40/48;opacity:0;animation:rs-ombre 11s linear infinite both}
+.rs-ombre svg{display:block;width:100%;height:100%}
+/* la fumée rouge : des nuages flous qui montent de sous les branches (au pied de l'arbre) et cachent le feuillage */
+.rs-fumee{position:absolute;left:50%;top:54%;width:30%;height:34%;pointer-events:none}
+.rs-fumee i{position:absolute;width:58%;aspect-ratio:1;margin:-29% 0 0 -29%;border-radius:50%;background:radial-gradient(circle, rgba(236,58,66,.9) 0, rgba(229,50,60,.62) 38%, rgba(229,50,60,0) 70%);filter:blur(1.5px);opacity:0;animation:rs-fumee 11s ease-out infinite both}
+.rs-pfft{position:absolute;left:50%;top:6%;font-family:var(--f-titre, inherit);font-size:1.5rem;color:#d0312d;text-shadow:0 2px 0 #fff, 0 0 6px #fff;opacity:0;animation:rs-pfft 11s linear infinite both}
+@keyframes rs-pion{0%{left:-24%}22%{left:var(--x)}68%{left:var(--x)}80%{left:-30%}100%{left:-30%}}
+@keyframes rs-pas{from{transform:translateY(0)}to{transform:translateY(-7%)}}
+@keyframes rs-maire{0%,48%{left:112%}57%{left:80%}78%{left:80%}88%,100%{left:116%}}
+@keyframes rs-ombre{0%,25%{left:84%;opacity:0}27%{opacity:1}36%{left:110%;opacity:1}37%,100%{left:110%;opacity:0}}
+@keyframes rs-fumee{0%,36%{opacity:0;transform:translate(0,0) scale(.3)}42%{opacity:.95;transform:translate(0,-15%) scale(1)}70%{opacity:.85;transform:translate(var(--dx, 0px),-80%) scale(1.9)}88%,100%{opacity:0;transform:translate(var(--dx, 0px),-120%) scale(2.4)}}
+@keyframes rs-pfft{0%,37%{opacity:0;transform:translateX(-50%) scale(.4)}41%{opacity:1;transform:translateX(-50%) scale(1.15)}50%{opacity:1;transform:translateX(-50%) scale(1)}54%,100%{opacity:0;transform:translateX(-50%) scale(1)}}
+@keyframes rs-kof{0%,62%{opacity:0}64%,76%{opacity:1}78%,100%{opacity:0}}
+@keyframes rs-bulle{0%,55%{opacity:0}57%,74%{opacity:1}76%,100%{opacity:0}}
+/* moins de mouvement : la scène reste figée au moment de la fumée et du maire */
+@media (prefers-reduced-motion: reduce){ .rs-scene *{animation-play-state:paused !important;animation-delay:-6.6s !important} }
 
 /* ==========================================================
    Brumeval — le Grand Livre du Sage (livre.js)
@@ -5667,7 +5737,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 18:41 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 19:13 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -8360,6 +8430,15 @@ function rougeurX(K, id){
   return '<g class="pjx-rouge"><ellipse cx="' + r[0] + '" cy="' + r[1] + '" rx="' + r[2] + '" ry="' + r[3] + '" fill="' + K.u('rgf') + '"/><ellipse cx="' + r[0] + '" cy="' + (r[1] + 2.5) + '" rx="' + (r[2] * .56) + '" ry="' + (r[3] * .53) + '" fill="' + K.u('rgf') + '"/></g>';
 }
 
+/* Oreilles rouges (signe de Bastien, enquête 2) : les deux oreilles virent au rouge vif, lentement,
+   avec trois petits traits de chaleur à côté ; opacité pilotée par --pjx-oreilles (comme la rougeur).
+   Dessinées par-dessus les cheveux (Persos.pnj expressif), à la place exacte des oreilles. */
+function oreillesRougesX(){
+  return '<g class="pjx-oreilles-r" opacity="0"><path d="M-29 -4 Q -35 2 -32 10 Q -27 14 -24 8 Z M29 -4 Q 35 2 32 10 Q 27 14 24 8 Z" fill="#e5323c" stroke="#8c1a22" stroke-width="1.6"/>' +
+    '<path d="M-30.5 1 q 1.6 2.4 .6 5 M30.5 1 q -1.6 2.4 -.6 5" stroke="#ffb0a8" stroke-width="1.3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-37 -4 l-4 -3 M-38.5 3.5 l-5 0 M-37 11 l-4 3 M37 -4 l4 -3 M38.5 3.5 l5 0 M37 11 l4 3" stroke="#ff4d4d" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+}
+
 /* Visage animable : comme visage(), sans la bouche (dessinée après la barbe) */
 function visageX(K, f){
   var u = K.u, P = K.peau, s = '';
@@ -8521,6 +8600,7 @@ function pnjExpressif(id, sp, opts){
     if(sp.coiffure === 'boucles') t += [[-20,-32],[-8,-34],[6,-34],[18,-32]].map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="7" fill="' + K.u('chev') + '"' + c(1.6) + '/>'; }).join('');
     t += sourcilsX(K, fv) + CHAPEAUX[chap](K);
   }
+  t += oreillesRougesX();   /* par-dessus les cheveux : des oreilles rouges doivent se voir, même sous des boucles */
   t += accs(['lunettes','fleurs','epingles','boucle']);
   inner += '<g class="pjx-tete"><g class="pjx-tete-in">' + t + '</g></g>';
   inner += accs(opts.cadre === 'visage' ? ['chat','pirate'] : ['gants','chat','pirate','cles','chope']);
@@ -8535,7 +8615,7 @@ function pnjExpressif(id, sp, opts){
 /* ---------- Pilotage des expressions ---------- */
 var EXPR0 = {regard:'centre', ampleur:1, sourire:0, yeuxRieurs:0, sourcils:'neutre', penche:0, menton:false, rougeur:0,
   sueur:0, sueurDuree:1.8, cligne:false, cligneDuree:0, bouche:'fermee', nez:false, grandsYeux:false, paupieres:0,
-  avale:false, hoche:false, secoue:false, coin:0, vitesse:.22, vitesseRougeur:.9};
+  avale:false, hoche:false, secoue:false, coin:0, vitesse:.22, vitesseRougeur:.9, oreilles:0};
 var REGARD_X = {centre:[0,0], 'cote-g':[-3.2,.3], 'cote-d':[3.2,.3], haut:[1.3,-3.3], 'haut-g':[-1.7,-3.2], 'haut-d':[1.7,-3.2], bas:[.3,2.7]};
 /* [y gauche, rotation gauche, y droit, rotation droite] */
 var SOURCILS_X = {neutre:[0,0,0,0], leves:[-3.6,-5,-3.6,5], fronces:[1.8,10,1.8,-10], un:[-4,-4,.6,0], 'un-d':[.6,0,-4,4], bas:[1.2,0,1.2,0], tendus:[-1.8,2,-1.8,-2]};
@@ -8576,7 +8656,7 @@ function varsXObj(x){
   return {'--pjx-rx':f1(r[0] * a), '--pjx-ry':f1(ry), '--pjx-joue':f1(joue * 100) / 100, '--pjx-paup':f1(paup * 100) / 100, '--pjx-rieurs':f1(rie * 100) / 100,
     '--pjx-sgy':sc[0], '--pjx-sgr':sc[1], '--pjx-sdy':sc[2], '--pjx-sdr':sc[3],
     '--pjx-penche':Math.max(-1.5, Math.min(1.5, +x.penche || 0)), '--pjx-menton':mt, '--pjx-gy':gy,
-    '--pjx-nez':x.nez ? 1 : 0, '--pjx-rougeur':Math.max(0, Math.min(1, +x.rougeur || 0)), '--pjx-coin':cote,
+    '--pjx-nez':x.nez ? 1 : 0, '--pjx-rougeur':Math.max(0, Math.min(1, +x.rougeur || 0)), '--pjx-oreilles':Math.max(0, Math.min(1, +x.oreilles || 0)), '--pjx-coin':cote,
     '--pjx-t':(x.vitesse == null ? .22 : x.vitesse) + 's', '--pjx-tr':(x.vitesseRougeur == null ? .9 : x.vitesseRougeur) + 's'};
 }
 function varsPour(e){
@@ -11493,6 +11573,11 @@ function note(freq, duree){
    params.suspect (facultatif) : 'enfant' | 'femme' | 'homme' | 'sabot'
    | 'botte', ou params.empreinte = {L, W, bout, talon, detail, foulee,
    ouvre} ; params.meteo (essais) : 'bruine' | 'averse' | 'vent' | 'beau'.
+   params.vehicule = 'charrette' (enquête 2, le champ rasé) : la piste à
+   suivre est une charrette — deux traits de roues + les pieds de celui
+   qui la pousse. Pour embrouiller : la brouette (un seul trait de roue),
+   la carriole de Fortuné (deux traits bien plus écartés), une autre
+   charrette poussée par d'autres pieds.
    ========================================================== */
 var EMP_PRESETS = {
   enfant:{nom:'Petite chaussure d\'enfant', L:14.5, W:0.42, bout:'rond', talon:'separe', detail:'aucun', foulee:19, ouvre:6},
@@ -11529,6 +11614,31 @@ function formeSemelle(f){
   else if(f.detail === 'point') det += '<circle class="e-c" cx="' + n1(0.02 * w) + '" cy="' + n1(-0.28 * L) + '" r="' + n1(0.055 * L) + '"/>';
   else if(f.detail === 'trait') det += '<path class="e-r" d="M' + P(-0.2, 0.4) + ' L' + P(0.2, 0.4) + '"/>';
   return (formesCache[cle] = {d:d, det:det});
+}
+/* ---- Variante charrette : roues.n = nombre de traits de roues (1 : brouette), roues.e = écart entre les deux traits ---- */
+var ROUES = {charrette:{n:2, e:34}, brouette:{n:1, e:0}, carriole:{n:2, e:54}};
+function charretteCible(){ return Object.assign({}, EMP_PRESETS.homme, {nom:'La charrette et les pieds de celui qui la pousse', roues:ROUES.charrette}); }
+function memeVehicule(a, b){ var ra = a.roues, rb = b.roues; if(!ra || !rb) return !ra && !rb; return ra.n === rb.n && Math.abs(ra.e - rb.e) < 8; }
+/* Une fausse piste de charrette : la brouette, la carriole (mêmes pieds, autres roues) ou d'autres pieds (même charrette) ;
+   dans un même groupe (embranchement, éventail), d'abord des sortes différentes. */
+function varianteCharrette(c, n, evite){
+  var deja = (evite || []).map(function(v){ return v.sorte; });
+  var sortes = U.melanger(['brouette', 'carriole', 'pieds']).sort(function(a, b){ return (deja.indexOf(a) >= 0 ? 1 : 0) - (deja.indexOf(b) >= 0 ? 1 : 0); });
+  var s = sortes[0], v;
+  if(s === 'pieds') v = Object.assign(variante(c, n, (evite || []).filter(function(x){ return x.sorte === 'pieds'; })), {roues:c.roues});
+  else v = Object.assign({}, c, {roues:ROUES[s]});
+  v.sorte = s;
+  if(evite) evite.push(v);
+  return v;
+}
+/* La carte du départ (et le rappel de l'aide) : l'empreinte, ou pour une charrette ses traits de roues et deux pas, vus de dessus */
+function traceCarte(f, taille){
+  if(!f.roues) return empreinteCarte(f, taille);
+  var s = formeSemelle(f), r = f.roues, H = f.L * 3, Wd = Math.max(r.e, f.L) + 24, k = (taille || 70) / H, rr = '';
+  (r.n === 1 ? [0] : [-r.e / 2, r.e / 2]).forEach(function(o){ rr += '<rect class="e-roue" x="' + n1(o - 2.6) + '" y="' + n1(-H / 2) + '" width="5.2" height="' + n1(H) + '" rx="2.6"/>'; });
+  return '<svg class="mja-empr-carte" viewBox="' + n1(-Wd / 2) + ' ' + n1(-H / 2) + ' ' + n1(Wd) + ' ' + n1(H) + '" width="' + Math.round(Wd * k) + '" height="' + Math.round(taille || 70) + '" aria-hidden="true"><g class="mja-empr">' + rr + '</g>' +
+    '<g class="mja-empr" transform="translate(' + n1(-f.L * 0.3) + ',' + n1(f.L * 0.6) + ')"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g>' +
+    '<g class="mja-empr" transform="translate(' + n1(f.L * 0.3) + ',' + n1(-f.L * 0.6) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g></svg>';
 }
 function empreinteCarte(f, taille){
   var s = formeSemelle(f), h = f.L * 1.25, k = (taille || 70) / h;
@@ -11662,6 +11772,8 @@ function genererMonde(p){
   var arrivees = [{x:cible.x(L), d:L, trace:cible, cible:true}];
   function placeLibre(x, dd){ if(x < 50 || x > W - 50) return false; if(dansZone(dd, 30)) return false; if(dd < L + 40 && Math.abs(x - cible.x(dd)) < 64) return false; return arrivees.every(function(a){ return Math.abs(a.d - dd) > 560 || Math.abs(a.x - x) > 420; }); }
   var leurres = [];
+  /* l'empreinte d'une fausse piste (variante charrette : un autre véhicule, ou d'autres pieds) */
+  function faux(groupe){ return p.vehicule === 'charrette' && p.empreinte.roues ? varianteCharrette(p.empreinte, p.niveau, groupe) : variante(p.empreinte, p.niveau, groupe); }
   function ajoute(tr, f, dS, dFin){
     tr.f = f; tr.debut = dS + 4; tr.fin = dFin - 12; tr.vrai = false;
     var a = {x:tr.x(dFin), d:dFin, trace:tr, cible:false}; arrivees.push(a); tr.arrivee = a;
@@ -11684,15 +11796,15 @@ function genererMonde(p){
     var tr = Trace(nds);
     for(var e = 0; e < 40; e++){
       var dFin = U.rand(dS + 650, L + 650), x = tr.x(dFin);
-      if(placeLibre(x, dFin)) return ajoute(tr, variante(p.empreinte, p.niveau, groupe), dS, dFin);
+      if(placeLibre(x, dFin)) return ajoute(tr, faux(groupe), dS, dFin);
     }
-    return ajoute(tr, variante(p.empreinte, p.niveau, groupe), dS, L + 1100 + U.rand(0, 400));
+    return ajoute(tr, faux(groupe), dS, L + 1100 + U.rand(0, 400));
   }
   /* fausse piste courte : diverge peu, finit vite dans une arrivée (cul-de-sac) */
   function courte(dS, xS, mS, groupe){
     var lg = U.rand(170, 230), dFin = dS + lg, tr = Trace([{d:dS - 1, x:xS - mS, m:mS}, {d:dFin + 100, m:mS}]);
     if(!placeLibre(tr.x(dFin), dFin)) return -1;
-    return ajoute(tr, variante(p.empreinte, p.niveau, groupe), dS, dFin);
+    return ajoute(tr, faux(groupe), dS, dFin);
   }
   fourches.forEach(function(f){ var g = []; f.leurres = f.pentes.map(function(m){ return longue(f.d + 2, f.x, m, g); }); });
   zones.forEach(function(z){
@@ -11728,7 +11840,9 @@ var ARRIVEES_ART = {
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !',
+  consigne:function(p){ return p && p.vehicule === 'charrette' ? 'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
+    'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },
+  ROUES:ROUES,
   minuteur:false,
   reglages: function(n, mods){
     var p = {niveau:n};
@@ -11803,9 +11917,11 @@ MJ.enregistrer('traces', {
     }
     return r;
   },
-  demo: function(el){
-    var f = EMP_PRESETS.enfant, g = variante(EMP_PRESETS.enfant, 9);
-    g.L = 17.5; g.foulee = 23;
+  demo: function(el, prm){
+    /* variante charrette : la bonne piste a deux traits de roues, la fausse (une brouette) un seul */
+    var ch = !!(prm && prm.vehicule === 'charrette');
+    var f = ch ? charretteCible() : EMP_PRESETS.enfant, g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : variante(EMP_PRESETS.enfant, 9);
+    if(!ch){ g.L = 17.5; g.foulee = 23; }
     el.innerHTML = '<svg class="mja-demo-svg mja-traces" viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice"><rect x="-200" y="-20" width="700" height="210" fill="#5b5236"/>' +
       '<g class="dm"></g><circle class="dv" r="30" fill="#fff4d6" fill-opacity=".14" stroke="#8ff3ff" stroke-width="1.6" stroke-dasharray="4 4"/>' +
       '<g class="dj"><ellipse cx="0" cy="6" rx="10" ry="4" fill="#000" opacity=".3"/><circle r="8" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-4,-2 C-2,-6 2,-6 4,-2" stroke="#bff0cf" stroke-width="1.6" fill="none"/></g>' + MAIN + '</svg>';
@@ -11813,11 +11929,18 @@ MJ.enregistrer('traces', {
     var s1 = formeSemelle(f), s2 = formeSemelle(g), prints = [];
     function xb(y){ return y > 40 ? 150 : 150 - (40 - y) * 1.1; }
     function xl(y){ return y > 40 ? 150 : 150 + (40 - y) * 1.1; }
-    for(var y = 260, i = 0; y > -320; y -= 18, i++){
+    var pasY = ch ? 22 : 18;
+    /* un bout de trait de roue : décalé de côté (o), dans le sens de la piste (a, en degrés) */
+    function roue(x, y, o, a){ var r = a / 57.3; prints.push({x:x + o * Math.cos(r), y:y + o * Math.sin(r), a:a, h:pasY * 1.12 / Math.cos(r), roue:true}); }
+    for(var y = 260, i = 0; y > -320; y -= pasY, i++){
+      if(ch){ var ab = y > 40 ? 0 : -47.7; roue(xb(y), y, -17, ab); roue(xb(y), y, 17, ab); if(y < 36) roue(xl(y), y, 0, 47.7); }
       prints.push({x:xb(y) + (i % 2 ? 4 : -4), y:y, s:s1, sx:i % 2 ? -1 : 1});
       if(y < 36) prints.push({x:xl(y) + (i % 2 ? 4 : -4), y:y, s:s2, sx:i % 2 ? -1 : 1});
     }
-    gm.innerHTML = prints.map(function(q){ return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y + ') scale(' + q.sx + ',1)"><path class="e-f" d="' + q.s.d + '"/>' + q.s.det + '</g>'; }).join('');
+    gm.innerHTML = prints.map(function(q){
+      if(q.roue) return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y.toFixed(1) + ') rotate(' + q.a + ')"><rect class="e-roue" x="-2.6" y="' + (-q.h / 2).toFixed(1) + '" width="5.2" height="' + q.h.toFixed(1) + '" rx="2.6"/></g>';
+      return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y + ') scale(' + q.sx + ',1)"><path class="e-f" d="' + q.s.d + '"/>' + q.s.det + '</g>';
+    }).join('');
     var els = gm.querySelectorAll('.mja-empr');
     main.style.transition = 'none';
     return demoBoucle(svg, function(dt, t){
@@ -11831,13 +11954,14 @@ MJ.enregistrer('traces', {
   },
   jouer: function(el, p, fin){
     var P = Partie(fin);
-    var cibleF = p.empreinte || EMP_PRESETS[p.suspect] || EMP_PRESETS.enfant;
+    var ch = p.vehicule === 'charrette';
+    var cibleF = p.empreinte || (ch ? charretteCible() : null) || EMP_PRESETS[p.suspect] || EMP_PRESETS.enfant;
     p.empreinte = cibleF;
     var hud = creerHud(el);
     var essais = p.essais;
     hud.vies(essais, p.essais);
     hud.barre(0);
-    if(p.aide){ var badge = hud.badge(empreinteCarte(cibleF, 30)); badge.classList.add('large'); }
+    if(p.aide){ var badge = hud.badge(traceCarte(cibleF, 30)); badge.classList.add('large'); }
     var terrain = U.html('<div class="mja-terrain mja-traces"></div>');
     el.appendChild(terrain);
     var M = genererMonde(p), cible = M.cible, YB = 430, W = M.W, L = M.L;
@@ -11940,6 +12064,19 @@ MJ.enregistrer('traces', {
       return false;
     }
     var TACHE = 'M-6,-10 C-3,-15 5,-14 7,-8 C9,-2 8,6 6,10 C3,15 -4,15 -6,10 C-9,4 -9,-5 -6,-10 Z';
+    /* Variante charrette : à chaque pas, un bout de chaque trait de roue (il s'allume dans le cercle, comme une empreinte) */
+    function traitsRoues(f, x, d, rad, vrai){
+      var r = f.roues, lg = f.foulee * 1.1, deg = (rad * 57.3).toFixed(0);
+      (r.n === 1 ? [0] : [-r.e / 2, r.e / 2]).forEach(function(o){
+        var wx = x + Math.cos(rad) * o, wd = d - Math.sin(rad) * o;
+        var tr = 'translate(' + wx.toFixed(1) + ',' + (-wd).toFixed(1) + ') rotate(' + deg + ')', rect = {x:-2.6, y:(-lg / 2).toFixed(1), width:5.2, height:lg.toFixed(1), rx:2.6};
+        var m = {x:wx, d:wd, vrai:vrai, o:-1, of:-1};
+        m.g = svgNoeud('g', {'class':'mja-empr mja-roue', transform:tr, opacity:'0'}, gM);
+        svgNoeud('rect', Object.assign({'class':'e-roue'}, rect), m.g);
+        if(p.nuit) m.fl = svgNoeud('rect', Object.assign({'class':'e-flou', transform:tr, opacity:'0'}, rect), gFlous);
+        marques.push(m);
+      });
+    }
     /* ---- Empreintes : créées au fil du défilement ---- */
     var pistes = [cible].concat(M.leurres);
     pistes.forEach(function(t){ t.next = t.debut; t.k = 0; });
@@ -11951,6 +12088,7 @@ MJ.enregistrer('traces', {
           t.next += t.f.foulee / Math.sqrt(1 + pente * pente); t.k++;
           if(sansTrace(x, d)) continue;
           var cote = t.k % 2 ? 1 : -1, rad = Math.atan(pente), off = t.f.L * 0.3 * cote;
+          if(t.f.roues) traitsRoues(t.f, x, d, rad, t.vrai);   /* variante charrette : les roues d'abord, les pas par-dessus */
           var px = x + Math.cos(rad) * off, pd = d - Math.sin(rad) * off;
           var boue = mouille(px, pd), saut = !boue && atterrissage(d, t.f.foulee), fs = formeSemelle(t.f), tr, contenu, forme;
           if(boue){
@@ -12024,7 +12162,9 @@ MJ.enregistrer('traces', {
 
     /* Carte de départ : l'empreinte à retenir */
     function esc2(x){ return String(x).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
-    var carteD = U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien cette empreinte</span>' + empreinteCarte(cibleF, 96) + '<b>' + esc2(cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !</span></div></div>');
+    var carteD = ch && cibleF.roues ?
+      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien ces traces</span>' + traceCarte(cibleF, 110) + '<b>' + esc2(cibleF.nom) + '</b><span class="mja-depart-pt">Deux traits de roues, et ses pas au milieu. Attention : pas la brouette (une seule roue), ni la carriole de Fortuné (plus large) !</span></div></div>') :
+      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien cette empreinte</span>' + empreinteCarte(cibleF, 96) + '<b>' + esc2(cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !</span></div></div>');
     terrain.appendChild(carteD);
     P.apres(2800, function(){
       carteD.classList.add('part');
@@ -12046,14 +12186,14 @@ MJ.enregistrer('traces', {
         phase = 'fin'; fini = true;
         a.g.classList.add('bonne');
         U.son('victoire'); U.vibrer(40);
-        flotter(terrain, q.x, q.y, 'C\'est lui !', 'ok');
+        flotter(terrain, q.x, q.y, ch ? 'C\'est la charrette !' : 'C\'est lui !', 'ok');
         P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, 1500);
         return;
       }
       essais--; hud.perdVie(essais, p.essais);
       a.g.classList.add('fausse');
       erreurSensorielle(terrain);
-      flotter(terrain, q.x, q.y, 'Ce n\'est pas lui…', 'ko');
+      flotter(terrain, q.x, q.y, ch ? (a.trace && a.trace.f && a.trace.f.sorte === 'brouette' ? 'Une brouette…' : a.trace && a.trace.f && a.trace.f.sorte === 'carriole' ? 'La carriole de Fortuné…' : 'Pas ces pieds-là…') : 'Ce n\'est pas lui…', 'ko');
       if(essais <= 0) perdre('Tu as suivi la piste de quelqu\'un d\'autre…');
     }
     function cibleVisible(xMin, xMax, dTop){
@@ -19792,6 +19932,9 @@ var MIMIQUES = {
   mordille:    {sorte:'signe', ic:'👄', court:'Il mordille sa lèvre du bas', nom:'Rentre la lèvre du bas et la mordille (2 ou 3 petits coups)', e:function(){ return {bouche:'mordille', vitesse:.08}; }},
   morsure:     {sorte:'signe', ic:'🦷', nom:'Se mord la lèvre, très vite (dents du haut visibles)', e:function(){ return {bouche:'mord', vitesse:.07}; }},
   double:      {sorte:'signe', ic:'😑', nom:'Double clignement rapide', e:function(c){ return {cligne:'double', cligneDuree:c.p.double || .36}; }},
+  /* --- signes propres à un personnage (E.tics, enquête 2) : jamais tirés au hasard, absents du catalogue des 7 --- */
+  oreilles:    {sorte:'propre', ic:'👂', court:'Ses oreilles deviennent toutes rouges', nom:'Ses deux oreilles deviennent toutes rouges, lentement', e:function(c){ return {oreilles:.62 + .38 * c.F, vitesseRougeur:c.p.monte || 1.2}; }},
+  yeuxbas:     {sorte:'propre', ic:'🙄', court:'Baisse les yeux et lève les sourcils', nom:'Baisse les yeux et lève les sourcils en même temps', e:function(){ return {regard:'bas', sourcils:'leves', vitesse:.2}; }},
   /* --- 20 mimiques honnêtes, bien visibles --- */
   pencheD:     {sorte:'vraie', ic:'↗️', nom:'Penche la tête à droite', d:[1.1, 1.6], e:function(){ return {penche:1, vitesse:.32}; }},
   pencheG:     {sorte:'vraie', ic:'↖️', nom:'Penche la tête à gauche', d:[1.1, 1.6], e:function(){ return {penche:-1, vitesse:.32}; }},
@@ -19833,8 +19976,8 @@ function scenarioMensonge(rep, p, signe){
   var couche = null, T = p.signe || .6;
   if(rep.ment && MIMIQUES[signe]){
     var e = MIMIQUES[signe].e(ctx());
-    if(signe === 'sueur' || signe === 'rougeur') couche = {id:signe, e:e};
-    else ev.push({id:signe, signe:true, e:e, retour:.22, actif:signe === 'coin' ? T : signe === 'force' ? T * 1.2 : signe === 'mordille' ? Math.max(.55, T * .8) :
+    if(signe === 'sueur' || signe === 'rougeur' || signe === 'oreilles') couche = {id:signe, e:e};
+    else ev.push({id:signe, signe:true, e:e, retour:.22, actif:signe === 'coin' || signe === 'yeuxbas' ? T : signe === 'force' ? T * 1.2 : signe === 'mordille' ? Math.max(.55, T * .8) :
       signe === 'morsure' ? Math.max(.3, T * .7) : (p.double || .36)});
   }
   ev = U.melanger(ev);
@@ -19842,7 +19985,7 @@ function scenarioMensonge(rep, p, signe){
   ev.forEach(function(x){ occupe += x.actif + ecart; });
   var D = Math.max((2.8 + .05 * rep.texte.length) * (p.kParole || 1), occupe + debut + finMarge);
   var monte = p.monte || 1.2, tient = p.tient || 1, descend = p.descend || 1.2;
-  if(couche && couche.id === 'rougeur') D = Math.max(D, monte + tient + descend + 1.1);
+  if(couche && (couche.id === 'rougeur' || couche.id === 'oreilles')) D = Math.max(D, monte + tient + descend + 1.1);
   /* le temps libre est réparti au hasard : impossible de guetter un moment précis */
   var libre = D - debut - finMarge - occupe, poids = ev.map(function(){ return Math.random() + .2; }).concat([Math.random() + .2]);
   var somme = poids.reduce(function(a, b){ return a + b; }, 0), t = debut;
@@ -19870,7 +20013,7 @@ function jouerPhrase(sc, X, R, root, fin){
   if(sc.couche){
     var cc = sc.couche;
     R.t(function(){ couche = Object.assign({}, cc.e); root.__signeActif = cc.id; rendre(); }, cc.t * 1000);
-    R.t(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : {}; root.__signeActif = false; rendre(); }, (cc.t + cc.actif) * 1000);
+    R.t(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : cc.id === 'oreilles' ? {oreilles:0, vitesseRougeur:cc.descend} : {}; root.__signeActif = false; rendre(); }, (cc.t + cc.actif) * 1000);
   }
   R.t(fin, sc.D * 1000);
 }
@@ -25497,8 +25640,11 @@ var IMAGES = {
   runes:{nom:'la pierre de runes', ic:'🔷', fond:'pierre'},
   carte:{nom:'la carte de Brumeval', ic:'🗺️', fond:'parchemin'},
   blason:{nom:'le blason des fondateurs', ic:'🛡️', fond:'pierre'},
-  horloge:{nom:'l\'horloge de la mairie', ic:'🕰️', fond:'pierre'}
+  horloge:{nom:'l\'horloge de la mairie', ic:'🕰️', fond:'pierre'},
+  /* enquête 2 (la bibliothèque des plans) : jamais tirée au hasard (special) */
+  moulin:{nom:'le vieux plan du moulin', ic:'📐', fond:'parchemin', special:true}
 };
+function imagesAuHasard(){ return Object.keys(IMAGES).filter(function(k){ return !IMAGES[k].special; }); }
 var PETITES_RUNES = ['M-1.5 -3V3M-1.5 -2L1.8 -3.4M-1.5 .2L1.8 -1.2', 'M-1.6 3V-3L1.6 -.8V3', 'M-1.5 -3V3M-1.5 -1.4L1.6 0L-1.5 1.4',
   'M-1.5 -3V3M-1.5 -3L1.6 -1.6M-1.5 -.6L1.6 .8', 'M-1.6 3V-3L1.6 -1.6L-1.6 0L1.6 3', 'M1.6 -3L-1.6 0L1.6 3', 'M-2.2 -3L2.2 3M2.2 -3L-2.2 3',
   'M-1.5 3V-3L1.6 -1.5L-1.5 0', 'M-1.6 -3V3M1.6 -3V3M-1.6 -.8L1.6 .8', 'M0 -3V3M-1.8 -.9L1.8 .9', 'M0 -3V3M0 0L-2.2 -2.4M0 0L2.2 -2.4',
@@ -25651,13 +25797,58 @@ function imgHorloge(u){
   g += '<rect x="36" y="87.5" width="28" height="7.5" rx="1.5" fill="#c79a45" stroke="#6a4a1a" stroke-width=".6"/><text x="50" y="93" font-size="4.4" text-anchor="middle" font-family="Macondo, Georgia, serif" fill="#3a2810">MAIRIE</text>';
   return {defs:defs, g:g};
 }
+/* Le vieux plan du moulin (enquête 2) : vu de dessus, à l'encre sur un parchemin. Les meules, les sacs, la roue sur la rivière,
+   la cour pavée… et, derrière le mur du fond, une petite pièce oubliée, reliée par un passage en pointillés.
+   Des écritures et la rose des vents : on voit toujours dans quel sens va chaque morceau. */
+function imgMoulin(u){
+  var E = '#4a3018', e = ' stroke="' + E + '"';
+  var defs = '<linearGradient id="' + u + '-pa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e8c8"/><stop offset=".6" stop-color="#e8d09a"/><stop offset="1" stop-color="#d2b274"/></linearGradient>' +
+    '<radialGradient id="' + u + '-ta" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#a0682a" stop-opacity="0"/><stop offset=".82" stop-color="#a0682a" stop-opacity=".28"/><stop offset="1" stop-color="#a0682a" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="' + u + '-br" cx="0" cy="1" r=".55"><stop offset="0" stop-color="#4a2a0e" stop-opacity=".55"/><stop offset="1" stop-color="#4a2a0e" stop-opacity="0"/></radialGradient>' +
+    '<pattern id="' + u + '-pv" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#e3c88e"/><path d="M0 2H4M2 0V2M0 4V2M4 4V2" stroke="#b08a50" stroke-width=".35"/></pattern>';
+  var g = '<rect width="100" height="100" fill="url(#' + u + '-pa)"/>';
+  g += '<circle cx="24" cy="18" r="7" fill="url(#' + u + '-ta)"/><circle cx="66" cy="90" r="8" fill="url(#' + u + '-ta)"/>';
+  /* titre */
+  g += '<path d="M22 4.5H70L72 8.5L70 12.5H22L20 8.5Z" fill="#efdcae" stroke="' + E + '" stroke-width=".6"/>' + texteCarte(46, 10.6, 'PLAN DU MOULIN', 5);
+  /* la rivière à droite, et la grande roue à aubes contre le mur */
+  var riv = 'M88 -2C84 20 92 34 88 52S86 82 92 102';
+  g += '<path d="' + riv + '" fill="none" stroke="#4f8fbf" stroke-width="9" stroke-linecap="round"/><path d="' + riv + '" fill="none" stroke="#9fd0ee" stroke-width="5"/><path d="' + riv + '" fill="none" stroke="#e6f6ff" stroke-width=".5" stroke-dasharray="2 4"/>';
+  g += '<g transform="translate(80.5 56)"><circle r="7" fill="#c99a5e"' + e + ' stroke-width=".8"/><circle r="2" fill="#8a5a2a"' + e + ' stroke-width=".5"/><path d="M0 -7V7M-7 0H7M-5 -5L5 5M5 -5L-5 5" stroke="' + E + '" stroke-width=".6"/></g>' + texteCarte(81, 46.5, 'Roue', 2.8);
+  /* le bâtiment : murs épais */
+  g += '<rect x="14" y="22" width="62" height="50" fill="#f3e4c0"' + e + ' stroke-width="2.4"/>';
+  g += '<path d="M14 46H44M44 22V72" stroke="' + E + '" stroke-width="1.3"/>';   /* murs intérieurs */
+  g += '<path d="M28 46h5M44 56v6" stroke="#f3e4c0" stroke-width="1.6"/>';      /* portes intérieures */
+  /* les meules (grande salle) */
+  g += '<circle cx="60" cy="47" r="10" fill="#d9cfc0"' + e + ' stroke-width=".9"/><circle cx="60" cy="47" r="2.2" fill="#8a7a6a"' + e + ' stroke-width=".5"/><path d="M60 37V57M50 47H70M53 40L67 54M67 40L53 54" stroke="#8a7a6a" stroke-width=".4"/>' + texteCarte(60, 31.5, 'Les meules', 3.2);
+  g += '<path d="M60 47L76 52" stroke="' + E + '" stroke-width=".9"/>';   /* l'axe de la roue */
+  /* les sacs de farine (en haut à gauche) */
+  [[19, 28], [24, 27], [29, 28], [20, 34], [26, 34], [32, 33]].forEach(function(s){ g += '<ellipse cx="' + s[0] + '" cy="' + s[1] + '" rx="2.4" ry="2" fill="#fffaf0"' + e + ' stroke-width=".45"/>'; });
+  g += texteCarte(29, 42, 'Les sacs', 3.2);
+  /* l'escalier (en bas à gauche) */
+  g += '<path d="M18 52h20M18 55h20M18 58h20M18 61h20M18 64h20M18 67h20" stroke="' + E + '" stroke-width=".5"/><path d="M18 52V68M38 52V68" stroke="' + E + '" stroke-width=".7"/>' + texteCarte(28, 50.6, 'Escalier', 2.6);
+  /* la porte d'entrée et la cour pavée */
+  g += '<path d="M34 72h8" stroke="#f3e4c0" stroke-width="2.8"/><path d="M34 72l4 -3.2M42 72l-4 -3.2" stroke="' + E + '" stroke-width=".5"/>';
+  g += '<rect x="14" y="76" width="62" height="17" fill="url(#' + u + '-pv)"' + e + ' stroke-width=".7"/>' + texteCarte(45, 87.5, 'La cour', 3.6);
+  /* la petite pièce sans porte, sous la grande roue (en pointillés : elle est sous terre), et le passage secret pour y entrer */
+  g += '<rect x="63" y="61" width="15" height="9" fill="#ecd6a6" fill-opacity=".85" stroke="#8a2a1a" stroke-width=".8" stroke-dasharray="1.6 1"/>';
+  g += texteCarte(70.5, 68.2, '?', 5).replace('fill="#4a3018"', 'fill="#8a2a1a"');
+  g += '<path d="M48 58C50 66 55 68 61 66.5" fill="none" stroke="#8a2a1a" stroke-width=".9" stroke-dasharray="1.4 1.2"/><path d="M58.6 64.6L62 66.3L58.8 68.2" fill="none" stroke="#8a2a1a" stroke-width=".8" stroke-linejoin="round"/>';
+  /* rose des vents, échelle */
+  g += '<g transform="translate(8 92)"><circle r="4.5" fill="none" stroke="#7a5a2e" stroke-width=".45"/><path d="M0 -5.6L1.1 -1.1L5.6 0L1.1 1.1L0 5.6L-1.1 1.1L-5.6 0L-1.1 -1.1Z" fill="#c9a24a" stroke="#5a3a1a" stroke-width=".35"/>' + texteCarte(0, -6.6, 'N', 2.8) + '</g>';
+  g += '<path d="M80 95H94M80 94V96M87 94.4V95.6M94 94V96" stroke="' + E + '" stroke-width=".5"/>' + texteCarte(87, 98.6, '10 pas', 2.4);
+  /* une tache d'encre, un coin brûlé, le cadre */
+  g += '<path d="M8 30c1.4 -1.6 3.6 -.8 3.4 1c1.4 .6 .6 2.6 -.8 2.2c-.6 1.6 -3 1 -2.6 -.6c-1.6 -.2 -1.4 -2.2 0 -2.6Z" fill="#2a1d10" opacity=".55"/>';
+  g += '<rect x="0" y="50" width="50" height="50" fill="url(#' + u + '-br)"/>';
+  g += '<rect x="1.5" y="1.5" width="97" height="97" fill="none" stroke="#6a4a22" stroke-width=".9"/><rect x="3" y="3" width="94" height="94" fill="none" stroke="#6a4a22" stroke-width=".35"/>';
+  return {defs:defs, g:g};
+}
 function defsImage(u, R){
-  var im = R.image === 'carte' ? imgCarte(u) : R.image === 'blason' ? imgBlason(u) : R.image === 'horloge' ? imgHorloge(u) : imgRunes(u, R.symbole);
+  var im = R.image === 'carte' ? imgCarte(u) : R.image === 'moulin' ? imgMoulin(u) : R.image === 'blason' ? imgBlason(u) : R.image === 'horloge' ? imgHorloge(u) : imgRunes(u, R.symbole);
   return '<svg class="mjs-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>' + im.defs + '<g id="' + u + '">' + im.g + '</g></defs></svg>';
 }
 function resoudreImg(p){
   if(p.__mjsImg) return p.__mjsImg;
-  var im = IMAGES[p.image] ? p.image : (SYMBOLES[p.symbole] ? 'runes' : tirerSans(Object.keys(IMAGES), 'img'));
+  var im = IMAGES[p.image] ? p.image : (SYMBOLES[p.symbole] ? 'runes' : tirerSans(imagesAuHasard(), 'img'));
   var sym = SYMBOLES[p.symbole] ? p.symbole : U.choix(Object.keys(SYMBOLES));
   var R = {image:im, symbole:sym, nom:im === 'runes' ? SYMBOLES[sym].nom : IMAGES[im].nom};
   p.__mjsImg = R;
@@ -25675,7 +25866,7 @@ function derangement(m){
    ========================================================== */
 MJ.enregistrer('runes', {
   nom:'Assembler les runes', role:'sage', ic:'🔷', minuteur:false,
-  IMAGES:Object.keys(IMAGES),
+  IMAGES:imagesAuHasard(),
   consigne:function(p){
     var R = resoudreImg(p || {});
     return 'Reconstitue ' + R.nom + ' ! Touche une pièce pour la tourner, fais-la glisser sur une autre pour les échanger. Tes coups sont comptés.';
@@ -25928,7 +26119,7 @@ MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:
 var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
-  traces:'Suis bien les traces de pas !',
+  traces:function(p){ return p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : 'Suis bien les traces de pas !'; },
   poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, attrape le chien !' : 'Saute, baisse-toi, attrape-la !'; },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',
@@ -33904,12 +34095,12 @@ var D = window.DONNEES;
 function pied(id){ var x = D.PNJ[id]; return x && x.pied ? 'Pieds de ' + x.pied + ' carreaux. ' : ''; }
 
 /* Les signes des menteurs de cette enquête (barde.js lit E.tics). Un signe différent par menteur (§ 12.11).
-   PHASE 1 : des signes qui existent déjà. Bastien (« ses oreilles deviennent toutes rouges ») et Margot (« baisse les yeux
-   et lève les sourcils ») auront leurs nouveaux signes en phase 2 : en attendant, les deux signes encore libres. */
-var TICS = {bastien:'sueur', margot:'force', tim:'mordille', victor:'morsure', melusine:'rougeur', fortune:'coin', farinel:'double'};
+   Bastien et Margot ont chacun un signe à eux, créé pour cette enquête dans le moteur des visages (persos.js, mj-barde-sage.js) :
+   Bastien : ses oreilles deviennent toutes rouges ; Margot : elle baisse les yeux et lève les sourcils. */
+var TICS = {bastien:'oreilles', margot:'yeuxbas', tim:'mordille', victor:'morsure', melusine:'rougeur', fortune:'coin', farinel:'double'};
 var GESTES = {coin:'ses yeux filent sur le côté, avec un petit sourire de travers', rougeur:'le haut de son front devient tout rose',
-  sueur:'une goutte de sueur glisse sur son front', force:'sa bouche sourit, mais ses yeux ne sourient pas',
-  mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite'};
+  mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite',
+  oreilles:'ses oreilles deviennent toutes rouges', yeuxbas:'{il} baisse les yeux et lève les sourcils en même temps'};
 function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[id]].replace('{il}', elle ? 'elle' : 'il') + '.'; }
 
 /* Les arguments du rassemblement (Barde) : chaque villageois en entend trois, un seul le convainc */
@@ -34009,7 +34200,8 @@ E[2] = {
   vexeNeutre:true,   /* un mauvais choix : la même réplique neutre partout, sans « vexé » (§ 12.13) ; il reste fermé jusqu'au moment suivant */
   tics:TICS,
   /* Le rassemblement (barde.js) : trois villageois convaincus, et toute la troupe part au Vieux Chêne */
-  rassemblement:{n:3, code:'info:rassemblement', ic:'📣', titre:'Le rassemblement',
+  /* illu : la petite scène animée (regles.js), sur la tablette du Barde et dans le récit des autres (E.infos.rassemblement) */
+  rassemblement:{n:3, code:'info:rassemblement', ic:'📣', illu:'rassemblement', titre:'Le rassemblement',
     t:'Tu marches en tête, suivi de tes villageois. Silas veut vous arrêter… mais vous êtes bien trop nombreux ! Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive tout essoufflé : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
     note:'Le rassemblement : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.'},
   /* Les photos du tableau de liège du Barde (liege.js) : les suspects, les autres villageois de l'histoire, tous les lieux du OÙ */
@@ -34057,7 +34249,7 @@ E[2] = {
     detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.'},
     canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…'},
     odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.'},
-    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', pour:'tous', t:'Le Barde a emmené des villageois au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
+    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Le Barde a emmené des villageois au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
   },
   lieux:{
     foret:{
@@ -34106,7 +34298,9 @@ E[2] = {
       pisteur:{intro:'La clairière aux lièvres, au bord de la forêt.', points:[
         {id:'brume', ic:'🌫️', nom:'La brume', moments:['matin'],
           t:'Une brume épaisse couvre toute la clairière : tu ne vois même pas tes pieds ! Impossible de suivre des traces ce matin. Reviens quand elle sera levée.'},
-        {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', donne:'info:traces',
+        /* Suivre la piste, version charrette (mj-pisteur-alchi.js) : deux traits de roues + les pieds de celui qui pousse ;
+           pour embrouiller, la brouette (une roue) et la carriole plus large de Fortuné */
+        {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', params:{vehicule:'charrette'}, donne:'info:traces',
           /* ouvrePartiel : raté deux fois, le code est donné quand même, avec l'indice partiel (moteur-actions.js) */
           ouvrePartiel:true, partiel:true,
           t:'Le champ de coquelicots est tout rasé ! Dans la terre, deux longs traits de roues de charrette, et les traces de pas de celui qui la poussait. Tu les suis… jusqu\'à la cour du moulin ! Là, sur les pavés, elles disparaissent. Ici, on a seulement coupé des fleurs : on n\'y a rien fabriqué. Donne le code de ces traces au Barde.',
@@ -34357,7 +34551,7 @@ E[2] = {
       tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière. Ce code est pour toute l\'équipe : chacun peut le taper.',
       rateNote:'Vieux chemins (à moitié effacé) : un chemin des bûcherons arrive au Vieux Chêne par derrière.'},
     /* La bibliothèque des plans (le code de Farinel) : plusieurs plans, celui du moulin est déchiré → Assembler les runes → le passage */
-    {id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'carte'}, bouton:'Réparer le plan déchiré',
+    {id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'moulin'}, bouton:'Réparer le plan déchiré',
       avant:'Tous les vieux plans de Brumeval sont rangés ici : la mairie, le clocher, le pont… et un plan tout déchiré. Lequel chercher ? Un habitant saura peut-être te le dire.',
       t:'Le plan du moulin, bâti par l\'arrière-grand-père de Farinel ! Une fois réparé, on voit une petite pièce sans porte, cachée sous la grande roue, et un passage secret pour y entrer. Ce code est pour le Pisteur.',
       note:'Bibliothèque des plans : sur le vieux plan du moulin, une pièce sans porte sous la grande roue, et un passage secret (code pour le Pisteur).', donne:'info:passage',
@@ -36624,14 +36818,19 @@ function contenuModal(m){
     case 'boire-mj': return boireModal(m);
     case 'auto-mj': return autoModal(m);
     case 'besoin': return '<div class="b-info-modal"><div class="b-grand-ic">🔒</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + M.besoinHTML(m.besoin, M.role()) + '<button class="btn" data-act="lieu" data-id="' + m.retourId + '">← Retour</button></div>';
-    case 'info': return '<div class="b-info-modal"><div class="b-grand-ic">' + (m.ic || 'ℹ️') + '</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
+    case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
   return '';
 }
 
+/* Une petite scène animée à la place de la grande icône (m.illu : regles.js, M.illustration), sinon l'icône */
+function illuOuIc(m, ic){
+  var h = ''; if(m.illu && M.illustration){ try{ h = M.illustration(m.illu) || ''; }catch(e){ console.error(e); } }
+  return h || '<div class="b-grand-ic">' + ic + '</div>';
+}
 /* ---------- Découverte ---------- */
 function decouverteHTML(m){
-  var s = '<div class="b-decouverte' + (m.rate ? ' rate' : '') + '"><div class="b-grand-ic">' + m.ic + '</div><h2>' + esc(m.titre) + '</h2><p>' + (m.html || esc(m.t)) + '</p>' + lire(m.t);
+  var s = '<div class="b-decouverte' + (m.rate ? ' rate' : '') + '">' + illuOuIc(m, m.ic) + '<h2>' + esc(m.titre) + '</h2><p>' + (m.html || esc(m.t)) + '</p>' + lire(m.t);
   if(m.code){
     var n = M.nomCode(m.code), td = M.texteDonne(m.code);
     s += '<div class="b-donne"><p>' + n.ic + ' <b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td) + '</p>' + M.codeHTML(M.code(m.code), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
@@ -36800,7 +36999,7 @@ function traiterCode(seq){
     if(I.recette){ M.S.recettes = M.S.recettes || []; if(M.S.recettes.indexOf(I.recette) < 0) M.S.recettes.push(I.recette); M.sauver(); }
     if(I.outil){ M.S.outils = M.S.outils || []; if(M.S.outils.indexOf(I.outil) < 0) M.S.outils.push(I.outil); M.sauver(); }
     M.noter('Reçu : ' + nn.nom + '. ' + (I.t || ''), nn.ic);
-    M.ouvrir({type:'info', ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
+    M.ouvrir({type:'info', ic:nn.ic, illu:I.illu, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
   }
 }
 /* Un plan ou un passage : ce qu'il ouvre pour moi, ou qui va s'en servir */
@@ -38007,7 +38206,10 @@ if(M.A){
    → 🎯 suspect (rouge) → rien. La bobine 🧵 relie deux photos par un fil
    rouge (toucher un fil le coupe). Remettre une photo dans le bac l'enlève.
    C'est le bloc-notes du Barde : le jeu ne vérifie rien.
-   P.liege = {cartes:{'pnj:iris':{x, y, s:0..3, z}}, fils:[['pnj:iris', 'lieu:moulin']], z}
+   Dès l'enquête 2 (E.tics : un signe par menteur), chaque signe révélé par un villageois arrive dans le bac sous la forme
+   d'une ÉTIQUETTE ANIMÉE (un petit visage qui n'est personne refait le signe en boucle) : le Barde l'épingle et la relie
+   par un fil rouge à la bonne photo. Pas de validation non plus (comme les phrases à trous).
+   P.liege = {cartes:{'pnj:iris':{x, y, s:0..3, z}, 'signe:oreilles':{x, y, z}}, fils:[['pnj:iris', 'lieu:moulin']], z}
    Chargé APRÈS moteur-actions.js (M.monterLiege est appelé après chaque rendu).
    ========================================================== */
 (function(){
@@ -38043,10 +38245,51 @@ function photoLieu(E, id){
   }
   return null;
 }
+/* ---------- Les étiquettes des signes de menteur (E.tics) ----------
+   [nom court sur l'étiquette, la phrase entière (lue par le 🔊 du bac et donnée en légende)] */
+var SIGNES = {
+  oreilles:['Oreilles rouges', 'Ses oreilles deviennent toutes rouges.'],
+  yeuxbas:['Yeux baissés', 'Baisse les yeux et lève les sourcils en même temps.'],
+  mordille:['Lèvre mordillée', 'Mordille sa lèvre du bas.'],
+  morsure:['Lèvre mordue', 'Se mord la lèvre, très vite.'],
+  rougeur:['Front rose', 'Le haut de son front devient tout rose.'],
+  coin:['Yeux de côté', 'Ses yeux filent sur le côté, avec un petit sourire de travers.'],
+  double:['Cligne deux fois', 'Cligne des yeux deux fois, très vite.'],
+  sueur:['Goutte de sueur', 'Une goutte de sueur glisse sur son front.'],
+  force:['Sourire forcé', 'Sa bouche sourit, mais ses yeux ne sourient pas.']
+};
+/* Les signes révélés à cette tablette (les secrets connus du Barde, barde.js), dans l'ordre des menteurs de l'enquête */
+function signesRevel(E, P){
+  if(!E.tics || !P || P !== M.P() || !M.barde || !M.barde.mimiques) return [];
+  var o = M.barde.mimiques(), l = [];
+  M.cle(E.tics).forEach(function(id){ var k = E.tics[id]; if(o[id] && SIGNES[k] && l.indexOf(k) < 0) l.push(k); });
+  return l;
+}
+/* Le petit visage d'une étiquette : un dessin simple (personne du village), qui refait le signe en boucle (liege.css, .lg-sg-…) */
+var VISAGE_SIGNE = '<svg viewBox="-40 -40 80 80" aria-hidden="true" focusable="false">' +
+  '<ellipse cx="-29" cy="3" rx="6.5" ry="9.5" fill="#f4c38f" stroke="#24182e" stroke-width="2.2"/><ellipse cx="29" cy="3" rx="6.5" ry="9.5" fill="#f4c38f" stroke="#24182e" stroke-width="2.2"/>' +
+  '<g class="sg-or"><ellipse cx="-29" cy="3" rx="6.5" ry="9.5" fill="#e5323c" stroke="#8c1a22" stroke-width="2.2"/><ellipse cx="29" cy="3" rx="6.5" ry="9.5" fill="#e5323c" stroke="#8c1a22" stroke-width="2.2"/>' +
+    '<path d="M-38 -5 l-4 -3 M-39.5 3 l-5 0 M-38 11 l-4 3 M38 -5 l4 -3 M39.5 3 l5 0 M38 11 l4 3" stroke="#ff3b3b" stroke-width="2.4" stroke-linecap="round"/></g>' +
+  '<circle r="27" fill="#ffd9a8" stroke="#24182e" stroke-width="2.4"/>' +
+  '<ellipse class="sg-front" cx="0" cy="-17" rx="14" ry="5.5" fill="#ff6f91"/>' +
+  '<path class="sg-goutte" d="M19 -22 q-3.6 5.5 0 7.6 q3.6 -2.1 0 -7.6 z" fill="#8fd3ff" stroke="#24182e" stroke-width="1.2"/>' +
+  '<path class="sg-sc" d="M-18 -11 q6 -4.5 12 0 M6 -11 q6 -4.5 12 0" stroke="#5a3a24" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+  '<ellipse cx="-11" cy="-1" rx="6" ry="6.5" fill="#fff" stroke="#24182e" stroke-width="1.6"/><ellipse cx="11" cy="-1" rx="6" ry="6.5" fill="#fff" stroke="#24182e" stroke-width="1.6"/>' +
+  '<g class="sg-pup"><circle cx="-11" cy="-.5" r="3.2" fill="#24182e"/><circle cx="11" cy="-.5" r="3.2" fill="#24182e"/></g>' +
+  '<g class="sg-paup"><ellipse cx="-11" cy="-1" rx="6.8" ry="7.3" fill="#f6c99a" stroke="#24182e" stroke-width="1.6"/><ellipse cx="11" cy="-1" rx="6.8" ry="7.3" fill="#f6c99a" stroke="#24182e" stroke-width="1.6"/></g>' +
+  '<path class="sg-b sg-b-n" d="M-9 13 q9 6 18 0" stroke="#24182e" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+  '<path class="sg-b sg-b-coin" d="M-9 15 q9 3 16 -5" stroke="#24182e" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+  '<path class="sg-b sg-b-force" d="M-13 11 q13 11 26 0 z" fill="#fff" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+  '<g class="sg-b sg-b-mordille"><path d="M-9 14 q9 3 18 0" stroke="#24182e" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M-4 12.6 h8 v3.4 h-8 z" fill="#fff" stroke="#24182e" stroke-width="1.3"/></g>' +
+  '<g class="sg-b sg-b-mord"><path d="M-11 15 q11 6 22 0 q-11 2 -22 0 z" fill="#e0607a" stroke="#24182e" stroke-width="1.6"/><path d="M-7 11 h14 v5 h-14 z M0 11 v5" fill="#fff" stroke="#24182e" stroke-width="1.4"/></g>' +
+  '</svg>';
+
 function photos(E, P){
   var l = [], vus = {}, Lg = E.liege || {};
   function ajout(c){ if(c && !vus[c.k]){ vus[c.k] = 1; l.push(c); } }
   function gens(id){ if(id !== 'voisin' && D.PNJ[id]) ajout({k:'pnj:' + id, type:'pnj', id:id}); }
+  /* d'abord les étiquettes des signes révélés : en tête du bac, pour qu'on les voie arriver */
+  signesRevel(E, P).forEach(function(k){ ajout({k:'signe:' + k, type:'signe', id:k}); });
   (Lg.pnj || [].concat((E.qui && E.qui.choix) || [], ((E.quoi && E.quoi.choix) || []).filter(function(c){ return c.pnj; }).map(function(c){ return c.id; }))).forEach(gens);
   (Lg.lieux || ((E.ou && E.ou.choix) || []).map(function(c){ return c.id; })).forEach(function(id){ ajout(photoLieu(E, id)); });
   M.cle(E.objets || {}).forEach(function(id){
@@ -38058,6 +38301,7 @@ function photos(E, P){
     if(q[0] === 'pnj') gens(q[1]);
     else if(q[0] === 'lieu') ajout(photoLieu(E, q[1]));
     else if(q[0] === 'obj' && E.objets && E.objets[q[1]]) ajout({k:k, type:'obj', id:q[1], nom:E.objets[q[1]].nom, ic:E.objets[q[1]].ic});
+    else if(q[0] === 'signe' && SIGNES[q[1]]) ajout({k:k, type:'signe', id:q[1]});
   });
   return l;
 }
@@ -38072,6 +38316,7 @@ function metier(id){
   return (x.icMetier ? x.icMetier + ' ' : '') + (x.metierCourt || String(x.metier || '').replace(/^(le |la |l')/i, ''));
 }
 function contenu(c){
+  if(c.type === 'signe') return '<span class="lg-photo lg-sg lg-sg-' + c.id + '" role="img" aria-label="' + esc(SIGNES[c.id][1]) + '">' + VISAGE_SIGNE + '</span><b>' + esc(SIGNES[c.id][0]) + '</b><small>🤥 signe</small>';
   if(c.type === 'pnj') return '<span class="lg-photo">' + portrait(c.id) + '</span><b>' + esc(D.PNJ[c.id].court) + '</b><small>' + esc(metier(c.id)) + '</small>';
   return '<span class="lg-photo lg-objet"><span>' + c.ic + '</span></span><b>' + esc(c.nom) + '</b>';
 }
@@ -38176,7 +38421,8 @@ M.monterLiege = function(){
   if(!ici){ M.demonterLiege(); return; }
   M.demonterLiege();
   var E = M.E(), P = M.P(); if(!E || !P) return;
-  var aide = 'Glisse une photo du bac vers le haut pour l\'épingler. Touche une photo du tableau pour changer sa couleur : vert innocent, orange à surveiller, rouge suspect. La bobine relie deux photos par un fil rouge. Pour couper un fil, touche-le, ou relie encore les deux mêmes photos. Pour enlever une photo, remets-la dans le bac.';
+  var aide = 'Glisse une photo du bac vers le haut pour l\'épingler. Touche une photo du tableau pour changer sa couleur : vert innocent, orange à surveiller, rouge suspect. La bobine relie deux photos par un fil rouge. Pour couper un fil, touche-le, ou relie encore les deux mêmes photos. Pour enlever une photo, remets-la dans le bac.' +
+    (E.tics ? ' Quand un villageois te dit comment quelqu\'un ment, une étiquette jaune arrive dans le bac : épingle-la, et relie-la par un fil rouge à la bonne personne.' : '');
   ici.innerHTML = '<div class="lg-vue">' + decorHTML() + '<div class="lg-monde" style="width:' + W + 'px;height:' + H + 'px"></div>' +
     '<p class="lg-vide">📌 Glisse les photos du bac sur le tableau !</p>' +
     '<div class="lg-outils"><button type="button" class="lg-bobine" data-lg="bobine" aria-label="Relier deux photos par un fil rouge">🧵<small>Fil rouge</small></button>' +
@@ -38328,6 +38574,8 @@ function toucherCarte(k, el){
     finFil(); sauver(); majFils(); M.son('magie');
     return;
   }
+  /* une étiquette n'a pas de couleur d'avis : la toucher la fait juste sautiller */
+  if(k.indexOf('signe:') === 0){ el.classList.remove('lg-pose'); void el.offsetWidth; el.classList.add('lg-pose'); M.son('clic'); return; }
   d.s = ((d.s || 0) + 1) % ETATS.length;
   var s = ETATS[d.s];
   el.classList.remove('lg-s-innocent', 'lg-s-surveiller', 'lg-s-suspect');
@@ -38869,8 +39117,11 @@ var TIC = {fortune:'coin', melusine:'mordille', tim:'mordille', basile:'sueur', 
   odette:'rougeur', gaspard:'sueur', anselme:'double', margot:'coin', grosbec:'force', farinel:'mordille'};
 var GESTE = {coin:'ses yeux filent sur le côté, avec un petit sourire de travers', rougeur:'le haut de son front devient tout rose',
   sueur:'une goutte de sueur glisse sur son front', force:'sa bouche sourit, mais ses yeux ne sourient pas',
-  mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite'};
-var SIGNE_IC = {coin:'😏', rougeur:'🌸', sueur:'💧', force:'😬', mordille:'👄', morsure:'🦷', double:'😑'};
+  mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite',
+  /* signes propres à un personnage (enquête 2) */
+  oreilles:'ses oreilles deviennent toutes rouges', yeuxbas:'{il} baisse les yeux et lève les sourcils'};
+var SIGNE_IC = {coin:'😏', rougeur:'🌸', sueur:'💧', force:'😬', mordille:'👄', morsure:'🦷', double:'😑', oreilles:'👂', yeuxbas:'🙄'};
+B.GESTE = GESTE; B.SIGNE_IC = SIGNE_IC;
 B.TIC = TIC;
 /* Les signes d'une enquête (E.tics : à l'enquête 2, un signe différent par menteur, § 12.11), sinon le tic habituel */
 function tic(id){ var E = M.S && M.S.e ? M.E() : null; return (E && E.tics && E.tics[id]) || TIC[id]; }
@@ -38918,6 +39169,7 @@ function scenario(id, texte, ment){
   if(ment && B.mimiques()[id] && tic(id)){   /* avec le secret : le geste au plus fort, et le visage s'avance (bd-net) */
     sc.net = true;
     if(sc.couche && sc.couche.id === 'rougeur') sc.couche.e.rougeur = 1;
+    if(sc.couche && sc.couche.id === 'oreilles') sc.couche.e.oreilles = 1;
     (sc.ev || []).forEach(function(x){ if(x.signe && x.id === 'coin') x.e.ampleur = 1.15; });
   }
   return sc;
@@ -38953,7 +39205,7 @@ function jouer(box, bulle, texte, sc, base, fin){
   if(sc.couche){
     var cc = sc.couche;
     T(function(){ couche = Object.assign({}, cc.e); box.dataset.signe = cc.id; if(sc.net) box.classList.add('bd-net'); rendre(); }, cc.t * 1000);
-    T(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : {}; delete box.dataset.signe; box.classList.remove('bd-net'); rendre(); }, (cc.t + cc.actif) * 1000);
+    T(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : cc.id === 'oreilles' ? {oreilles:0, vitesseRougeur:cc.descend} : {}; delete box.dataset.signe; box.classList.remove('bd-net'); rendre(); }, (cc.t + cc.actif) * 1000);
   }
   T(function(){
     a.i.forEach(clearInterval); a.i = [];
@@ -39170,6 +39422,8 @@ A.question = function(el){
   }
   P.vus['barde:' + id + ':' + i] = 'ok';
   if(q.mimique){ P.mimiques = P.mimiques || {}; [].concat(q.mimique).forEach(function(m){ P.mimiques[m] = P.mimiques[m] || 'question'; }); }
+  /* dès l'enquête 2 (E.tics), les signes révélés deviennent des étiquettes du tableau de liège (liege.js) */
+  if(q.mimique && (M.E() || {}).tics) M.toast('📌 ' + ([].concat(q.mimique).length > 1 ? 'De nouvelles étiquettes' : 'Une nouvelle étiquette') + ' pour ton tableau de liège !');
   M.noter(q.note, (D.PNJ[id] || {}).ic);
   var code = null;
   if(q.obj){ P.objets[q.obj] = true; code = 'obj:' + q.obj; }
@@ -39191,7 +39445,7 @@ function rassemblement(id, q){
   P.vus.rassemblement = 1;
   if(R.code) P.objets['_' + R.code] = true;
   M.sauver();
-  M.decouvrir({ic:R.ic || '📣', titre:R.titre || 'Le rassemblement', t:'« ' + q.a + ' » ' + R.t, note:R.note, code:R.code || null});
+  M.decouvrir({ic:R.ic || '📣', illu:R.illu || null, titre:R.titre || 'Le rassemblement', t:'« ' + q.a + ' » ' + R.t, note:R.note, code:R.code || null});
   return true;
 }
 /* Une vérité qui donne un objet (q.objVrai : la pierre de Tim) : son code s'affiche tout de suite */
@@ -40745,6 +40999,54 @@ M.charger = function(){ return nouvelleE2(ch0.apply(this, arguments)); };
 var ls0 = M.lireSauvegarde;
 M.lireSauvegarde = function(){ var s = ls0.apply(this, arguments); return s ? nouvelleE2(s) : s; };
 if(M.S) nouvelleE2(M.S);
+
+/* ---------- 5. Les petites scènes animées (m.illu, à la place de la grande icône : moteur-actions.js) ----------
+   « rassemblement » (enquête 2) : le Barde arrive en tête au Vieux Chêne avec ses villageois ; une ombre se sauve
+   derrière le buisson ; PFFFT, la fumée rouge ; le maire accourt (« Reculez ! ») ; tout le monde s'enfuit en toussant.
+   Une boucle de 11 s en CSS (barde.css, .rs-…) ; figée au moment de la fumée si l'appareil demande moins de mouvement.
+   Sur la tablette du Barde : son héros et SES villageois convaincus ; ailleurs (le récit tapé en code) : le Barde et trois villageois. */
+var nIllu = 0;
+function visageRs(id){
+  try{ if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]) return Persos.pnj(id, {anime:false, cadre:'visage', id:'rs' + (++nIllu)}); }catch(e){}
+  return '<b>' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</b>';
+}
+function bardeRs(){
+  if(M.role() === 'barde' && window.Persos && Persos.heros && M.heroObj){ try{ return Persos.heros(M.heroObj(), {cadre:'tete', anime:false, fond:false, id:'rsh' + (++nIllu)}); }catch(e){} }
+  return '<b>' + D.ROLES.barde.ic + '</b>';
+}
+var DECOR_RS = '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+  '<defs><linearGradient id="rs-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3b46a"/><stop offset="1" stop-color="#fbe4b4"/></linearGradient></defs>' +
+  '<rect width="320" height="200" fill="url(#rs-ciel)"/><circle cx="60" cy="46" r="18" fill="#fff4cf" opacity=".85"/>' +
+  '<path d="M0 132 Q 60 104 130 124 T 320 116 V200 H0 Z" fill="#8fb26a"/><path d="M0 150 Q 90 136 180 148 T 320 144 V200 H0 Z" fill="#6f9a4e"/>' +
+  '<path d="M-10 186 Q 90 170 196 160" stroke="#d8b886" stroke-width="16" fill="none" stroke-linecap="round" opacity=".8"/>' +
+  /* le Vieux Chêne : un gros tronc, des racines, un grand feuillage */
+  '<path d="M190 162 C 192 140 194 118 192 96 L 222 96 C 220 118 222 140 226 162 C 234 166 240 168 244 172 L 170 172 C 176 168 182 166 190 162 Z" fill="#7a4e2c" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/>' +
+  '<path d="M200 110 q 4 20 0 44 M214 104 q -4 26 2 52" stroke="#5e3a1e" stroke-width="2.5" fill="none"/>' +
+  '<g stroke="#24182e" stroke-width="3"><circle cx="176" cy="74" r="30" fill="#2f6b3a"/><circle cx="240" cy="72" r="32" fill="#2f6b3a"/><circle cx="208" cy="48" r="36" fill="#3a7d44"/><circle cx="206" cy="86" r="26" fill="#2a5e33"/></g>' +
+  '<circle cx="196" cy="40" r="9" fill="#4f9a55"/><circle cx="246" cy="62" r="7" fill="#4f9a55"/>' +
+  /* les gros rochers sur le trou */
+  '<g stroke="#24182e" stroke-width="2.5"><path d="M182 172 C 180 158 196 152 204 160 C 206 168 200 174 182 172 Z" fill="#8c8aa0"/><path d="M200 174 C 198 156 222 150 228 162 C 232 170 224 176 200 174 Z" fill="#7d7a92"/><path d="M222 174 C 222 162 238 160 242 168 C 244 174 236 176 222 174 Z" fill="#9a98ae"/></g>' +
+  '<path d="M190 162 q 6 -4 10 -1 M210 158 q 6 -3 10 0" stroke="#c8c6d8" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+  /* le buisson, à droite */
+  '<path d="M262 176 C 254 164 262 150 276 152 C 282 140 304 142 306 156 C 318 158 318 176 304 178 Z" fill="#2f7a4c" stroke="#24182e" stroke-width="3"/>' +
+  '<circle cx="276" cy="162" r="2.6" fill="#e5484d"/><circle cx="294" cy="158" r="2.6" fill="#e5484d"/>' +
+  '</svg>';
+var OMBRE_RS = '<svg viewBox="-20 -44 40 48" aria-hidden="true" focusable="false"><path d="M-12 2 C -14 -14 -10 -28 0 -34 C 10 -28 14 -14 12 2 Z" fill="#1d1730"/><circle cx="0" cy="-36" r="8" fill="#1d1730"/><path d="M-11 -2 l-8 6 M11 -2 l8 6" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/></svg>';
+var ILLU = {
+  rassemblement:function(){
+    var gens = M.role() === 'barde' && M.barde && M.barde.convaincus ? M.barde.convaincus().slice(0, 3) : [];
+    ['gaspard', 'margot', 'victor', 'melusine', 'iris'].forEach(function(id){ if(gens.length < 3 && gens.indexOf(id) < 0) gens.push(id); });
+    var pions = [{h:bardeRs(), x:46, d:0, cls:' rs-barde'}].concat(gens.map(function(id, i){ return {h:visageRs(id), x:34 - 12 * i, d:.35 * (i + 1), cls:''}; }));
+    var s = '<div class="rs-scene" role="img" aria-label="Le Barde et les villageois au Vieux Chêne : une fumée rouge sort de sous les branches, le maire crie « Reculez ! »">' + DECOR_RS;
+    s += '<span class="rs-ombre">' + OMBRE_RS + '</span>';
+    s += '<span class="rs-fumee">' + [[-14, 0, -16], [2, -6, 0], [16, 2, 14], [-4, 6, -8], [10, -2, 8]].map(function(f, i){ return '<i style="left:' + (50 + f[0] * 2) + '%;top:' + (50 + f[1] * 3) + '%;--dx:' + f[2] + 'px;animation-delay:' + (i * .12).toFixed(2) + 's"></i>'; }).join('') + '</span>';
+    s += '<b class="rs-pfft">PFFFT !</b>';
+    pions.forEach(function(p){ s += '<span class="rs-pion' + p.cls + '" style="--x:' + p.x + '%;animation-delay:' + p.d + 's"><i>' + p.h + '</i><em class="rs-kof" style="animation-delay:' + p.d + 's">kof !</em></span>'; });
+    s += '<span class="rs-pion rs-maire"><i>' + visageRs('grosbec') + '</i><em class="rs-bulle">Reculez !</em></span>';
+    return s + '</div>';
+  }
+};
+M.illustration = function(id){ return ILLU[id] ? ILLU[id]() : ''; };
 })();
 
 /* ===== carte-jeu.js ===== */
