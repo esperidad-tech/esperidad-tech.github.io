@@ -161,6 +161,25 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mj-det-consigne{font-size:.85rem;text-align:left;color:var(--brume)}
 /* pendant l'accueil, le 🔊 est à côté de la phrase : pas de doublon dans l'en-tête */
 .mj-en-intro .mj-tete .mj-btn-lire{visibility:hidden}
+/* Les cœurs (même rangée dans tous les mini-jeux, MJ.util.coeurs) : nombre de cœurs = erreurs encore permises */
+.mj-coeurs{display:inline-flex;align-items:center;gap:2px;flex:none;vertical-align:middle;line-height:1}
+.mj-coeur{display:inline-block;width:22px;height:20px;flex:none}
+.mj-coeur svg{display:block;width:100%;height:100%;fill:#ff5b6e;stroke:#24182e;stroke-width:2;overflow:visible}
+.mj-coeur.perdu svg{fill:#3a3352;stroke:rgba(255,255,255,.4)}
+.mj-coeur.casse{animation:mj-coeur-casse .55s ease-out}
+.mj-coeurs-n{font-weight:800;font-size:.95rem;color:#ffd0d6;margin-left:3px;white-space:nowrap}
+.mj-coeurs-vide .mj-coeur svg{animation:mj-coeur-vide 1.3s ease-in-out infinite}
+@keyframes mj-coeur-casse{0%{transform:scale(1.7) rotate(-14deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
+@keyframes mj-coeur-vide{50%{stroke:#ff5b6e;filter:drop-shadow(0 0 4px #ff5b6e)}}
+/* « Plus de cœur : attention, la prochaine erreur fait perdre ! » */
+.mj-plus-coeur{position:absolute;left:50%;top:42%;z-index:45;transform:translateX(-50%);width:min(92%,480px);box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-radius:16px;
+  background:#3a0f1c;border:3px solid #ff5b6e;box-shadow:0 0 0 3px #24182e, 0 0 34px rgba(255,60,80,.65);color:#ffe3e6;font-size:1.08rem;line-height:1.2;pointer-events:none;animation:mj-pc-in .35s ease-out, mj-pc-pouls 1s .35s ease-in-out 3;transition:opacity .45s}
+.mj-plus-coeur b{flex:1;text-align:left}
+.mj-plus-coeur .mj-lire-mini{pointer-events:auto;margin:0}
+.mj-pc-ic{font-size:1.9rem;line-height:1}
+.mj-plus-coeur.part{opacity:0}
+@keyframes mj-pc-in{from{opacity:0;transform:translateX(-50%) scale(.7)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes mj-pc-pouls{50%{box-shadow:0 0 0 3px #24182e, 0 0 50px rgba(255,60,80,.95)}}
 .mj-intro .mj-go{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px rgba(8,10,25,.85), 0 4px 0 rgba(0,0,0,.35);flex:none}
 
 /* ==========================================================
@@ -376,7 +395,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-sans-faute{margin-left:auto;font-size:.85rem;color:var(--brume);white-space:nowrap}
 .mja-sans-faute b{color:#bff9ff;font-size:1rem}
 .mja-sans-faute.pop{animation:b-pulse .35s ease-out}
-.mja-hud-course .mja-prog,.mja-hud-course .mja-vies{display:none}
+.mja-hud-course .mja-prog{display:none}
+.mja-hud-course .mja-vies{order:2}   /* la règle des cœurs : les chocs encore permis avant qu'elle s'échappe */
 .mja-etoiles-choc{opacity:0}
 .mja-coureur-corps.trebuche .mja-etoiles-choc{animation:mja-etoiles .9s ease-out}
 @keyframes mja-etoiles{0%,80%{opacity:1}100%{opacity:0}}
@@ -1138,39 +1158,61 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-pastille{width:26px;height:26px;border-radius:50%;background:var(--c);border:3px solid #24182e;flex:none}
 .mjc-pastille.ae{background:conic-gradient(#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff,#ff5a5a)}
 
-/* La frise qui défile (sans chiffres) : une fenêtre par ingrédient, jamais l'une sur l'autre ; son icône reste devant le repère */
-.mjc-frise{position:relative;height:66px;border-radius:14px;border:3px solid #24182e;overflow:hidden;--tete:50px;
+/* La frise : un petit carré de la COULEUR de chaque ingrédient (rien d'autre), dans l'ordre de la recette ;
+   on le verse quand il est dans la zone 🍲 (à gauche). Une petite flèche montre le prochain (niveaux bas). */
+.mjc-frise{position:relative;height:76px;border-radius:14px;border:3px solid #24182e;overflow:hidden;
   background:repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 2px, transparent 2px 40px), linear-gradient(#4a3424,#2a1d14);box-shadow:inset 0 5px 12px rgba(0,0,0,.5)}
+.mjc-zone-f{position:absolute;top:3px;bottom:3px;left:6px;width:110px;border-radius:11px;border:3px dashed #ffd36a;background:rgba(255,211,106,.12);--c:#ffd36a;transition:background .2s, box-shadow .2s}
+.mjc-zone-f > span{position:absolute;left:5px;top:2px;font-size:1rem;line-height:1;filter:drop-shadow(0 1px 0 #24182e)}
+.mjc-zone-f.pret{border-style:solid;background:rgba(255,211,106,.25);box-shadow:0 0 16px rgba(255,211,106,.75), inset 0 0 12px rgba(255,211,106,.4)}
+.mjc-phase-fin .mjc-zone-f{border-style:solid;border-color:var(--c);background:rgba(255,255,255,.08);box-shadow:0 0 14px var(--c)}
 .mjc-piste{position:absolute;inset:0}
-.mjc-fen{position:absolute;left:0;top:7px;height:46px;border-radius:14px;border:3px solid var(--c);box-shadow:0 0 0 2px #24182e;will-change:transform;display:flex;align-items:center;transition:opacity .35s}
-.mjc-fen::before{content:'';position:absolute;inset:0;border-radius:11px;background:var(--c);opacity:.38}
-.mjc-fen > span{position:relative;display:grid;place-items:center;width:40px;height:40px;font-size:1.6rem;line-height:1}
-.mjc-fen:not(.mjc-fen-fin) > span{position:absolute;left:0;top:50%;margin-top:-20px;border-radius:50%;background:rgba(255,246,216,.94);border:3px solid #24182e;box-shadow:0 2px 0 rgba(0,0,0,.35)}
-.mjc-fen > span i{font-style:normal;display:block}
-.mjc-fen.maintenant{box-shadow:0 0 0 2px #24182e, 0 0 18px var(--c), 0 0 4px #fff inset}
-.mjc-fen.maintenant > span{box-shadow:0 0 0 3px #ffd36a, 0 0 16px #ffd36a}
-.mjc-fen.maintenant > span i{animation:mjc-saute .45s ease-in-out infinite alternate}
-.mjc-fen.fait{opacity:0}
-.mjc-fen.rate{opacity:.55;filter:grayscale(1)}
-.mjc-fen.rate::after{content:'✖';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-weight:900;font-size:1.3rem;color:#ff6a5a;text-shadow:0 2px 0 #24182e}
-.mjc-fen-fin{border-color:#ffd36a;border-style:dashed}
-.mjc-fen-fin > span{margin-left:4px}
-.mjc-fen-fin::before{opacity:.55}
-.mjc-fen-fin.ae::before{background:linear-gradient(90deg,#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff)}
-.mjc-fen-fin.dedans{box-shadow:0 0 0 2px #24182e, 0 0 22px #ffd36a}
-.mjc-tenue{position:absolute;left:4px;right:4px;bottom:3px;height:7px;border-radius:4px;background:#fff6d8;box-shadow:0 0 8px #fff;transform-origin:left center;transform:scaleX(0)}
-.mjc-passe{position:absolute;left:0;top:0;bottom:0;width:var(--tete);background:linear-gradient(90deg, rgba(18,10,6,.9), rgba(18,10,6,.55));z-index:2;pointer-events:none}
-.mjc-tete{position:absolute;left:var(--tete);top:0;bottom:0;width:4px;margin-left:-2px;background:#ffd36a;box-shadow:0 0 12px #ffd36a;z-index:3;pointer-events:none}
-.mjc-tete span{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);font-size:1.1rem;filter:drop-shadow(0 2px 0 #24182e)}
+.mjc-ing{position:absolute;left:0;bottom:6px;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--c);border:3px solid #24182e;
+  box-shadow:inset 0 4px 0 rgba(255,255,255,.35), inset 0 -5px 0 rgba(0,0,0,.18), 0 3px 0 rgba(0,0,0,.4);will-change:transform;transition:opacity .35s}
+.mjc-ing i{font-style:normal;font-size:1.5rem;line-height:1;display:block}
+.mjc-ing.zone{animation:mjc-ing-pouls .45s ease-in-out infinite alternate}
+@keyframes mjc-ing-pouls{from{box-shadow:0 0 0 3px #fff6d8, 0 0 10px 2px #ffd36a}to{box-shadow:0 0 0 4px #fff6d8, 0 0 22px 7px #ffd36a}}
+.mjc-ing.fait{opacity:0;transition:opacity .25s}
+.mjc-ing.rate{opacity:.45;filter:grayscale(1)}
+.mjc-ing.rate::after{content:'✖';position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:1.6rem;color:#ff4a3a;text-shadow:0 2px 0 #24182e}
+.mjc-ing-fin{background:rgba(255,246,216,.94);box-shadow:0 0 0 3px var(--c), 0 3px 0 rgba(0,0,0,.4)}
+.mjc-ing-fin.ae{box-shadow:0 0 0 3px #ff8fe0, 0 3px 0 rgba(0,0,0,.4)}
+.mjc-ing-fin.dedans{box-shadow:0 0 0 3px var(--c), 0 0 20px 4px var(--c)}
+.mjc-tenue{position:absolute;left:3px;right:3px;bottom:3px;height:6px;border-radius:3px;background:#3fcf6a;box-shadow:0 0 6px #fff;transform-origin:left center;transform:scaleX(0)}
+.mjc-limite{display:none;position:absolute;left:3px;right:3px;top:3px;height:4px;border-radius:2px;background:#ff6a5a;transform-origin:left center}
+.mjc-ing-fin.limite .mjc-limite{display:block}
+.mjc-fl-next{position:absolute;left:0;top:2px;width:0;height:0;z-index:3;pointer-events:none;will-change:transform}
+.mjc-fl-next[hidden]{display:none}
+.mjc-fl-next i{position:absolute;left:-11px;top:0;width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:16px solid #ffd36a;filter:drop-shadow(0 2px 0 #24182e);animation:mjc-fl-bond .5s ease-in-out infinite alternate}
+@keyframes mjc-fl-bond{from{transform:translateY(0)}to{transform:translateY(4px)}}
 
-.mjc-tete span{z-index:1}
+/* Une erreur d'ingrédient : l'écran tremble et rougit, une flèche montre la caisse avec la phrase (🔊) */
+.mjc-tremble{animation:mjc-tremble .45s ease-out}
+.mjc-err{position:absolute;inset:0;z-index:8;pointer-events:none;background:rgba(255,30,40,.3);box-shadow:inset 0 0 70px 18px rgba(255,0,20,.75);animation:mjc-err .9s ease-out forwards}
+.mjc-err[hidden]{display:none}
+@keyframes mjc-err{0%{opacity:0}12%{opacity:1}60%{opacity:1}100%{opacity:0}}
+.mjc-oups{position:absolute;z-index:9;display:flex;align-items:center;gap:8px;box-sizing:border-box;padding:9px 10px 9px 12px;border-radius:14px;background:#fff1ee;color:#8a1a10;border:3px solid #24182e;
+  box-shadow:0 0 0 3px #ff3a3a, 0 6px 0 rgba(0,0,0,.3);font-weight:800;font-size:1rem;line-height:1.2;pointer-events:none;animation:mjc-oups .3s ease-out}
+.mjc-oups[hidden]{display:none}
+.mjc-oups b{flex:1}
+.mjc-oups .mj-lire-mini{pointer-events:auto;margin:0;background:rgba(36,24,46,.12)}
+.mjc-oups::before{content:'';position:absolute;left:var(--ax, 50%);top:-19px;margin-left:-12px;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:16px solid #ff3a3a}
+@keyframes mjc-oups{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Trop chaud / trop froid : le badge d'alerte */
+.mjc-danger{position:absolute;right:62px;top:2%;z-index:4;padding:5px 12px;border-radius:14px;border:3px solid #24182e;font-weight:800;white-space:nowrap;pointer-events:none;animation:mjc-danger .35s ease-in-out infinite alternate}
+@keyframes mjc-danger{from{box-shadow:0 0 0 0 rgba(255,60,40,.0)}to{box-shadow:0 0 0 5px rgba(255,60,40,.55)}}
+.mjc-danger[hidden]{display:none}
+.mjc-danger.chaud{background:#ffe0d6;color:#a3180c}
+.mjc-danger.froid{background:#e3f4ff;color:#14507a}
 
 /* Toutes les caisses d'ingrédients de l'atelier, rangées en grille (icône + nom) ; les vies à côté de la zone visée */
 .mjc-boites{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:7px 6px}
 .mjc-boite{position:relative;min-width:0;height:58px;padding:5px 2px 3px;border-radius:12px;border:3px solid #24182e;touch-action:none;cursor:pointer;
   background:repeating-linear-gradient(0deg, transparent 0 16px, rgba(60,30,10,.35) 16px 18px), linear-gradient(90deg,#dca066,#a8693a);
   box-shadow:inset 0 3px 0 rgba(255,255,255,.3), 0 4px 0 #5e3416, 0 6px 12px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:space-between}
-.mjc-boite::before{content:'';position:absolute;left:7px;right:7px;top:5px;height:12px;border-radius:6px;background:var(--c);opacity:.65;box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
+.mjc-boite::before{content:'';position:absolute;left:5px;right:5px;top:4px;height:14px;border-radius:6px;background:var(--c);border:2px solid #24182e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+.mjc-phase-fin .mjc-boite{opacity:.45;filter:grayscale(.6)}
 .mjc-boite span{position:relative;font-size:1.55rem;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .mjc-boite small{position:relative;max-width:100%;padding:1px 4px;border-radius:6px;background:rgba(255,246,216,.9);color:#35281b;font-size:.6rem;font-weight:800;line-height:1.15;
   letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1180,10 +1222,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-boite.appui{animation:mjc-appui .25s ease-out}
 .mjc-boite.due{box-shadow:0 0 0 4px #ffd36a, 0 0 20px #ffd36a, 0 4px 0 #5e3416;animation:mjc-saute .4s ease-in-out infinite alternate}
 .mjc-vies{display:flex;gap:2px;flex:none}
-.mjc-coeur{width:24px;height:22px;display:inline-block}
-.mjc-coeur svg{width:100%;height:100%;display:block;fill:#ff5b6e;stroke:#24182e;stroke-width:2}
-.mjc-coeur.perdu svg{fill:#3a3352}
-.mjc-coeur.casse{animation:mjc-casse .5s ease-out}
+.mjc-vies .mj-coeur{width:24px;height:22px}
 
 /* La scène */
 .mjc-scene{position:relative;flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center}
@@ -1214,15 +1253,25 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-fl.f2{fill:#ff5a2c}
 .mjc-buche,.mjc-tas{cursor:pointer}
 .mjc-buche.brule .mjc-ember{animation:b-lueur .7s ease-in-out infinite}
+/* l'icône « remettre du bois » (sur le tas) : elle brille et pulse quand il ne reste qu'une bûche (ou que ça refroidit trop) */
 .mjc-plus{transform-box:fill-box;transform-origin:center}
-.mjc-indice-bois .mjc-plus{animation:mjc-gonfle .45s ease-in-out infinite alternate}
-.mjc-moins{display:none}
-.mjc-indice-retire .mjc-buche.brule .mjc-moins{display:inline;animation:b-lueur .5s ease-in-out infinite}
-.mjc-indice-retire .mjc-buche > rect:first-child{stroke:#ff3a3a;stroke-width:5}
+.mjc-plus-halo{fill:#ffd36a;opacity:0}
+.mjc-bois-vite .mjc-plus,.mjc-indice-bois .mjc-plus,.mjc-gele .mjc-plus{animation:mjc-bois .42s ease-in-out infinite alternate}
+.mjc-bois-vite .mjc-plus-halo,.mjc-indice-bois .mjc-plus-halo,.mjc-gele .mjc-plus-halo{opacity:.55}
+.mjc-bois-vite .mjc-tas,.mjc-gele .mjc-tas{filter:drop-shadow(0 0 8px #ffd36a)}
+@keyframes mjc-bois{from{transform:scale(1)}to{transform:scale(1.28)}}
 .mjc[data-buches="6"] .mjc-lueur-feu{animation:b-lueur .4s ease-in-out infinite}
 .mjc-fleche{opacity:.55;transform-box:fill-box;transform-origin:center;transition:opacity .2s}
 .mjc-fl-ic{opacity:.7;pointer-events:none}
+.mjc:not(.mjc-demo) .mjc-chauffe,.mjc:not(.mjc-demo) .mjc-fl-ic.chaud{display:none}   /* touiller refroidit seulement : plus de flèche « chauffe » */
 .mjc-indice-chauffe .mjc-chauffe,.mjc-indice-refroidit .mjc-refroidit,.mjc-demo-chauffe .mjc-chauffe,.mjc-demo-refroidit .mjc-refroidit{opacity:1;animation:mjc-gonfle .4s ease-in-out infinite alternate}
+/* tout près de l'explosion : ça bout à gros bouillons et le chaudron tremble */
+.mjc-bout .mjc-svg{animation:mjc-bout .14s linear infinite alternate}
+.mjc-bout .mjc-bl{animation:mjc-bl-l .55s ease-out infinite!important;fill:rgba(255,236,210,.8)}
+.mjc-bout .mjc-bl:nth-child(odd){r:11px}
+.mjc-bout .mjc-j-tube{box-shadow:0 0 0 3px #ff3a3a, 0 0 18px #ff3a3a}
+.mjc-gele .mjc-j-tube{box-shadow:0 0 0 3px #8fd0ff, 0 0 18px #8fd0ff}
+@keyframes mjc-bout{from{transform:translate(-2px,1px) rotate(-.6deg)}to{transform:translate(2px,-1px) rotate(.6deg)}}
 
 /* La jauge des couleurs */
 .mjc-jauge{flex:none;width:58px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 10px 10px 0}
@@ -1238,7 +1287,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-revele .mjc-jauge{width:84px}
 
 /* Petits effets */
-.mjc-bulle{position:absolute;left:50%;top:4%;z-index:4;transform:translateX(-50%);padding:5px 12px;border-radius:14px;background:#fff6e6;color:#35281b;border:3px solid #24182e;font-weight:700;white-space:nowrap;pointer-events:none;animation:mjc-bulle .3s ease-out;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.mjc-bulle{position:absolute;left:50%;top:15%;z-index:4;transform:translateX(-50%);padding:5px 12px;border-radius:14px;background:#fff6e6;color:#35281b;border:3px solid #24182e;font-weight:700;white-space:nowrap;pointer-events:none;animation:mjc-bulle .3s ease-out;box-shadow:0 4px 0 rgba(0,0,0,.25)}
 .mjc-bulle b{font-size:1.15rem}
 .mjc-bulle.ko{background:#ffe0d6}
 .mjc-bulle.ae{background:linear-gradient(90deg,#ffd0d0,#fff3b0,#c8f7d4,#cfe6ff,#ecd6ff)}
@@ -1295,29 +1344,28 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @media (max-width:420px){
   .mjc-haut{padding:6px 6px 0;gap:5px}
   .mjc-cible{font-size:.85rem;padding:4px 8px}
-  .mjc-frise{height:60px}
-  .mjc-fen{top:6px;height:42px}
+  .mjc-frise{height:70px}
+  .mjc-ing{width:42px;height:42px;bottom:5px}
   .mjc-boites{gap:6px 4px}
   .mjc-boite{height:54px}
   .mjc-boite span{font-size:1.4rem}
   .mjc-boite small{font-size:.56rem;padding:1px 2px}
   .mjc-jauge{width:46px;padding-right:6px}
-  .mjc-coeur{width:20px;height:18px}
+  .mjc-vies .mj-coeur{width:20px;height:18px}
 }
 @media (max-height:600px){
   .mjc-cible > span:nth-child(2){display:none}
-  .mjc-frise{height:52px}
-  .mjc-fen{top:4px;height:38px}
-  .mjc-fen > span{width:34px;height:34px;font-size:1.35rem}
-  .mjc-fen:not(.mjc-fen-fin) > span{margin-top:-17px}
+  .mjc-frise{height:60px}
+  .mjc-ing{width:36px;height:36px;bottom:4px}
+  .mjc-fl-next i{border-top-width:13px;border-left-width:9px;border-right-width:9px;left:-9px}
   .mjc-boite{height:46px;padding-top:3px}
   .mjc-boite span{font-size:1.25rem}
 }
 
 @media (max-height:500px){
   .mjc-haut{gap:4px;padding-top:4px}
-  .mjc-frise{height:46px}
-  .mjc-fen{top:3px;height:36px}
+  .mjc-frise{height:52px}
+  .mjc-ing{width:32px;height:32px;bottom:3px}
   .mjc-boite{height:40px;padding:2px 2px 2px}
   .mjc-boite::before{height:8px;top:3px}
   .mjc-boite span{font-size:1.05rem}
@@ -2125,6 +2173,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mm-main{0%,30%{transform:translate(0,10px)}40%{transform:translate(0,0)}60%,100%{transform:translate(0,10px);opacity:.4}}
 @keyframes mm-remplit{0%,50%{color:transparent}60%,100%{color:var(--or-pale)}}
 .mm-mot.elimine{opacity:.15;text-decoration:line-through;border-style:dashed}
+/* les cœurs (règle commune) : ici aucune erreur permise */
+.mm-coeurs{display:flex;justify-content:flex-end;padding:6px 10px 0}
 
 /* Les ragots de la taverne (Barde) */
 .mr{display:flex;flex-direction:column;gap:14px;padding:12px;flex:1;min-height:0;overflow-y:auto;background:radial-gradient(120% 70% at 50% 0%, #5a3a2a 0%, #2e1e2a 50%, var(--nuit) 100%)}
@@ -2147,7 +2197,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mr-texte{font-size:1.18rem;line-height:1.4;font-weight:600;margin:0}
 .mr-carnet{margin:8px 0 0;font-weight:800;color:#7a3a8a;font-size:.95rem}
 .mr-lire{position:absolute;right:8px;top:50%;margin-top:-21px;width:42px;height:42px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.5);font-size:1.1rem}
-.mr-pastilles{display:flex;gap:9px;justify-content:center}
+.mr-pastilles{display:flex;gap:9px;justify-content:center;align-items:center}
+.mr-coeurs{display:inline-flex;margin-left:8px}
 .mr-pastilles i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);transition:all .25s}
 .mr-pastilles i.cur{background:var(--or);border-color:var(--or-pale);box-shadow:0 0 10px var(--or)}
 .mr-pastilles i.note{background:var(--c-barde);border-color:#fff}
@@ -2682,6 +2733,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjs-modele svg{display:block;width:84px;height:84px;border-radius:10px;border:3px solid var(--contour);box-shadow:0 0 0 2px rgba(201,167,90,.55), 0 6px 14px rgba(0,0,0,.4)}
 .mjs-quad{fill:none;stroke:rgba(255,255,255,.7);stroke-width:.6;stroke-dasharray:1.6 1.4}
 .mjs-img-carte .mjs-quad{stroke:rgba(60,30,10,.6)}
+.mjs-r-coeurs{display:flex;justify-content:center;margin:2px 0}
 .mjs-coups{position:relative;display:grid;grid-template-columns:auto auto;align-items:center;column-gap:8px;padding:6px 14px 10px;border-radius:16px;background:rgba(0,0,0,.35);border:2px solid var(--trait);overflow:hidden}
 .mjs-coups-ic{font-size:1.6rem;grid-row:span 2;line-height:1}
 .mjs-coups b{font-family:var(--f-titre);font-weight:400;font-size:2.1rem;line-height:1;color:var(--or-pale)}
@@ -3443,6 +3495,40 @@ function ajouterLire(racine, sel, lireDe, vide){
 }
 MJ.boutonLire = boutonLire; MJ.nbMots = nbMots;
 
+/* ---------- La règle des cœurs, la même dans tous les mini-jeux (Romain, 4 novembre) ----------
+   Nombre de cœurs affichés = erreurs encore permises. Plus de cœur : on n'a pas encore perdu,
+   mais la prochaine erreur fait perdre (U.plusDeCoeur l'annonce, avec 🔊).
+   U.coeurs(restants, total[, casse]) : le HTML de la rangée (le même dessin partout) ;
+   casse = numéro du cœur qui vient de se briser (petite animation) ; total 0 : un cœur vide et « 0 » ;
+   plus de 8 cœurs : un cœur et « × n ». */
+var COEUR_SVG = '<svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5 C5 15 1.5 11.2 1.5 7 C1.5 3.8 4 1.5 7 1.5 C9.1 1.5 10.9 2.7 12 4.5 C13.1 2.7 14.9 1.5 17 1.5 C20 1.5 22.5 3.8 22.5 7 C22.5 11.2 19 15 12 20.5 Z"/></svg>';
+U.COEUR = COEUR_SVG;
+MJ.PLUS_DE_COEUR = 'Plus de cœur : attention, la prochaine erreur fait perdre !';
+U.coeurs = function(restants, total, casse){
+  total = Math.max(0, Math.round(total || 0));
+  restants = U.borne(Math.round(restants || 0), 0, total);
+  var lab = restants ? restants + ' cœur' + (restants > 1 ? 's' : '') + ' : encore ' + restants + ' erreur' + (restants > 1 ? 's' : '') + ' permise' + (restants > 1 ? 's' : '') : MJ.PLUS_DE_COEUR;
+  var s = '';
+  if(!total) s = '<span class="mj-coeur perdu">' + COEUR_SVG + '</span><b class="mj-coeurs-n">0</b>';
+  else if(total > 8) s = '<span class="mj-coeur' + (restants ? '' : ' perdu') + (casse !== undefined ? ' casse' : '') + '">' + COEUR_SVG + '</span><b class="mj-coeurs-n">× ' + restants + '</b>';
+  else for(var i = 0; i < total; i++) s += '<span class="mj-coeur' + (i < restants ? '' : ' perdu') + (i === casse ? ' casse' : '') + '">' + COEUR_SVG + '</span>';
+  return '<span class="mj-coeurs' + (restants ? '' : ' mj-coeurs-vide') + '" role="img" aria-label="' + esc(lab) + '">' + s + '</span>';
+};
+/* Le dernier cœur vient de se briser : un bandeau bien visible dans le mini-jeu (🔊 à côté, jamais lu tout seul) */
+U.plusDeCoeur = function(el){
+  try{
+    var hote = (el && el.closest && (el.closest('.mj-zone') || el.closest('.mj'))) || el;
+    if(!hote || !hote.appendChild) return;
+    var vieux = hote.querySelector('.mj-plus-coeur'); if(vieux && vieux.parentNode) vieux.parentNode.removeChild(vieux);
+    var b = U.html('<div class="mj-plus-coeur" role="alert"><span class="mj-pc-ic">💔</span><b>' + esc(MJ.PLUS_DE_COEUR) + '</b></div>');
+    b.appendChild(boutonLire(MJ.PLUS_DE_COEUR));
+    hote.appendChild(b);
+    U.vibrer([60, 50, 60]);
+    setTimeout(function(){ b.classList.add('part'); setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 450); }, 4200);
+  }catch(e){}
+};
+MJ.coeurs = U.coeurs; MJ.plusDeCoeur = U.plusDeCoeur;
+
 /* ---------- Écran commun : consigne → jeu → résultat ---------- */
 MJ.lancer = function(el, type, params, fin, options){
   var def = MJ.TYPES[type];
@@ -3551,13 +3637,17 @@ MJ.lancer = function(el, type, params, fin, options){
   function resultat(res){
     var ok = !!res.reussi;
     U.son(ok ? 'victoire' : 'echec');
-    var peutRejouer = !ok && chance && essais < 2;
+    /* options.reessaisInfinis (le chaudron de l'enquête 1, le tutoriel) : on peut recommencer autant qu'on veut ;
+       options.surEchec(res) est appelé à chaque essai raté (l'atelier y rend les ingrédients versés) */
+    if(!ok && options.surEchec) try{ options.surEchec(res); }catch(e){ if(window.console) console.error(e); }
+    var infini = !ok && !!options.reessaisInfinis;
+    var peutRejouer = !ok && (infini || (chance && essais < 2));
     var msg = ok ? (res.message || U.choix(['Bravo !','Magnifique !','Réussi !','Superbe !'])) : (res.message || U.choix(['Raté…','Presque !','Pas cette fois…']));
     var voile = U.html('<div class="mj-resultat ' + (ok ? 'ok' : 'ko') + '">' +
       '<div class="mj-res-ic">' + (ok ? '🌟' : '💨') + '</div>' +
       '<h2>' + esc(msg) + '</h2>' +
       (res.detail ? '<p class="doux">' + esc(res.detail) + '</p>' : '') +
-      (peutRejouer ? '<button class="btn magie grand mj-rejouer" type="button">✨ Deuxième chance</button>' : '') +
+      (peutRejouer ? '<button class="btn magie grand mj-rejouer" type="button">' + (infini ? '🔁 Recommencer' : '✨ Deuxième chance') + '</button>' : '') +
       '<button class="btn ' + (peutRejouer ? 'second' : 'grand') + ' mj-continuer" type="button">Continuer</button>' +
     '</div>');
     if(ok){
@@ -6024,17 +6114,12 @@ function creerHud(el, o){
   var vies = h.querySelector('.mja-vies'), prog = h.querySelector('.mja-prog'), sab = h.querySelector('.mja-sablier'), sabI = sab.querySelector('i');
   var api = {
     el: h,
-    vies: function(rest, max){
-      if(max === undefined) max = rest;
-      var s = '';
-      for(var i = 0; i < max; i++) s += '<span class="mja-coeur' + (i < rest ? '' : ' perdu') + '">' + COEUR + '</span>';
-      vies.innerHTML = s;
-    },
-    perdVie: function(rest, max){
-      api.vies(rest, max);
-      var c = vies.querySelectorAll('.mja-coeur')[rest];
-      if(c){ c.classList.add('casse'); }
-    },
+    /* la règle des cœurs (mj-core.js) : cœurs affichés = erreurs encore permises ; plus de cœur → on prévient */
+    coeurs: function(rest, total, casse){ vies.innerHTML = U.coeurs(rest, total, casse); },
+    perdCoeur: function(rest, total){ api.coeurs(rest, total, rest); if(rest === 0) U.plusDeCoeur(el); },
+    /* rest = vies restantes (on perd quand il n'en reste plus) : cœurs = vies − 1 */
+    vies: function(rest, max){ if(max === undefined) max = rest; api.coeurs(rest - 1, max - 1); },
+    perdVie: function(rest, max){ if(rest >= 1) api.perdCoeur(rest - 1, max - 1); },
     prog: function(k, n, ic){
       if(n > 14){ prog.innerHTML = '<div class="mja-prog-barre"><i style="width:' + Math.round(100 * k / n) + '%"></i></div><b>' + k + '/' + n + '</b>'; return; }
       var s = '';
@@ -6576,7 +6661,7 @@ MJ.enregistrer('traces', {
     p.empreinte = cibleF;
     var hud = creerHud(el);
     var essais = p.essais;
-    if(p.essais > 1) hud.vies(essais, p.essais);
+    hud.vies(essais, p.essais);
     hud.barre(0);
     if(p.aide){ var badge = hud.badge(empreinteCarte(cibleF, 30)); badge.classList.add('large'); }
     var terrain = U.html('<div class="mja-terrain mja-traces"></div>');
@@ -6791,7 +6876,7 @@ MJ.enregistrer('traces', {
         P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, 1500);
         return;
       }
-      essais--; if(p.essais > 1) hud.perdVie(essais, p.essais);
+      essais--; hud.perdVie(essais, p.essais);
       a.g.classList.add('fausse');
       erreurSensorielle(terrain);
       flotter(terrain, q.x, q.y, 'Ce n\'est pas lui…', 'ko');
@@ -7113,6 +7198,8 @@ MJ.enregistrer('poursuite', {
       rangee.innerHTML = s;
       compteur.innerHTML = 'Sans faute : <b>' + sansFaute + '</b>/' + p.rattrape;
       if(anim){ compteur.classList.remove('pop'); void compteur.offsetWidth; compteur.classList.add('pop'); }
+      /* les cœurs : les chocs encore permis avant qu'elle s'échappe (un rattrapage en rend un) */
+      hud.coeurs(Math.max(0, p.perdu - 1 - pas), p.perdu - 1, anim === 'choc' ? Math.max(0, p.perdu - 1 - pas) : undefined);
     }
     majHud();
 
@@ -7214,7 +7301,8 @@ MJ.enregistrer('poursuite', {
       choc = 0.9; invuln = 0.9; vitesseC = 0.5;
       sansFaute = 0; pas++;
       texte(TX.aie, 'ko');
-      majHud(true);
+      majHud('choc');
+      if(pas === p.perdu - 1) U.plusDeCoeur(terrain);
       if(pas >= p.perdu){ etat = 'perdue'; finT = 0; annonce(terrain, TX.perdue, 1300); }
     }
     function propre(){
@@ -7840,6 +7928,10 @@ MJ.enregistrer('tir', {
     var camZ = 1, camX = 180, camY = 240, camZc = 1, camXc = 180, camYc = 240, tenir = 0;
     function majCarquois(){ badge.innerHTML = '<span class="mja-carquois">🏹 ' + (fleches >= 99 ? '∞' : '× ' + fleches) + '</span>'; }
     majCarquois();
+    /* les cœurs : les flèches qu'on peut encore perdre (flèches − cibles debout) ; une flèche qui en transperce deux en rend un */
+    var coeursTir = Math.max(0, p.fleches - p.cibles.length), coeursAvant = coeursTir;
+    function restantsTir(){ return fleches - (cibles.length - touches); }
+    if(p.fleches < 99) hud.coeurs(coeursTir, coeursTir);
     /* Cibles */
     var utilises = {};
     var cibles = p.cibles.map(function(type){
@@ -7991,6 +8083,13 @@ MJ.enregistrer('tir', {
       if(fini) return;
       var perdues = tirs - utiles, exploit = maxPerce >= 2 ? 'Une flèche en a transpercé ' + maxPerce + ' d\'un coup ! ' : '';
       if(touches >= cibles.length){ fini = true; P.finir({reussi:true, score:1, erreurs:perdues, transperce:maxPerce, detail:exploit + (perdues === 0 ? 'Pas une seule flèche perdue !' : 'Toutes les cibles sont tombées !')}, 1300); return; }
+      if(fleches < 99 && !enVol){
+        var hr = restantsTir();
+        if(hr < 0){ fini = true; P.finir({reussi:false, score:touches / cibles.length, erreurs:perdues, transperce:maxPerce, detail:'Plus de cœur : une flèche perdue de trop… il n\'en reste plus assez pour toutes les cibles.'}, 1000); return; }
+        hud.coeurs(hr, Math.max(coeursTir, hr), hr < coeursAvant ? hr : undefined);
+        if(hr === 0 && coeursAvant > 0) U.plusDeCoeur(terrain);
+        coeursAvant = hr;
+      }
       if(fleches <= 0 && !enVol){ fini = true; P.finir({reussi:false, score:touches / cibles.length, erreurs:perdues, transperce:maxPerce, detail:'Plus de flèches dans le carquois…'}, 1000); }
     }
     function texte(x, y, s, cls){ var q = pctDans(svg, terrain, x, y); flotter(terrain, q.x, q.y, s, cls); }
@@ -9284,16 +9383,12 @@ function creerHud(el){
   var vies = h.querySelector('.mjo-vies'), prog = h.querySelector('.mjo-prog'), tps = h.querySelector('.mjo-temps'), bar = tps.querySelector('i');
   var api = {
     el: h,
-    vies: function(rest, max, bouclier){
-      var s = '';
-      for(var i = 0; i < max; i++) s += '<span class="mjo-coeur' + (bouclier ? ' bouclier' : '') + (i < rest ? '' : ' perdu') + '">' + (bouclier ? BOUCLIER : COEUR) + '</span>';
-      vies.innerHTML = s;
-    },
-    perdVie: function(rest, max, bouclier){
-      api.vies(rest, max, bouclier);
-      var c = vies.querySelectorAll('.mjo-coeur')[rest];
-      if(c) c.classList.add('casse');
-    },
+    /* la règle des cœurs (mj-core.js) : cœurs affichés = erreurs encore permises ; plus de cœur → on prévient */
+    coeurs: function(rest, total, casse){ vies.innerHTML = U.coeurs(rest, total, casse); },
+    perdCoeur: function(rest, total){ api.coeurs(rest, total, rest); if(rest === 0) U.plusDeCoeur(el); },
+    /* rest = vies restantes (on perd quand il n'en reste plus) : cœurs = vies − 1 */
+    vies: function(rest, max){ api.coeurs(rest - 1, max - 1); },
+    perdVie: function(rest, max){ if(rest >= 1) api.perdCoeur(rest - 1, max - 1); },
     prog: function(k, n, ic, seuil){
       var lim = seuil || 14;
       if(h.clientWidth && h.clientWidth < 420) lim = Math.min(lim, 7);
@@ -10462,7 +10557,7 @@ function reglagesDiff(n, mods){
     {nom:'Différences à trouver', val:String(p.differences)},
     {nom:'Elles sont', val:n <= 2 ? 'faciles à voir 👀' : (n <= 5 ? 'un peu cachées' : (n <= 8 ? 'bien cachées' : 'très bien cachées 🔍'))},
     {nom:'Le sablier', val:txtDuree(p.duree)},
-    {nom:'Tes cœurs', val:p.vies + ' ❤️'},
+    {nom:'Cœurs (erreurs permises)', val:p.erreurs + ' ❤️'},
     {nom:'Toucher à côté', val:'coûte un cœur'}
   ];
   if(p.marge > 1) p.lignes.push({nom:'Zones à toucher', val:'plus grandes'});
@@ -10564,7 +10659,7 @@ function partieDiff(el, p, P, quandFini){
     var x = svgNoeud('g', {'class':'mjo-croix', transform:'translate(' + f1(pt.x) + ',' + f1(pt.y) + ')'}, svgs[k].querySelector('.mjo-d-marques'));
     x.innerHTML = Tr('M-9,-9 L9,9 M9,-9 L-9,9', K, 7) + Tr('M-9,-9 L9,9 M9,-9 L-9,9', '#ff6b6b', 3.6);
     P.apres(750, function(){ retirer(x); });
-    if(vies <= 0){ fini = true; montrerTout(); quandFini({reussi:false, score:trouvees / nDiff, erreurs:rates, detail:'Plus de cœurs… Il en restait ' + (nDiff - trouvees) + ' à trouver.'}); }
+    if(vies <= 0){ fini = true; montrerTout(); quandFini({reussi:false, score:trouvees / nDiff, erreurs:rates, detail:'Plus de cœur : c\'était l\'erreur de trop… Il en restait ' + (nDiff - trouvees) + ' à trouver.'}); }
   }
   svgs.forEach(function(s, k){
     P.ecoute(s, 'pointerdown', function(e){ if(fini) return; e.preventDefault(); toucher(k, ptSVG(s, e)); });
@@ -10778,7 +10873,10 @@ function reglagesDouble(n, mods){
   p.manches = entier(n, {1:6, 3:8, 6:10, 10:12});
   p.duree = Math.round(courbe(n, {1:100, 3:95, 6:90, 10:75, 12:68}) / (mods.lent || 1) + (mods.temps || 0));
   p.penalite = Math.round(courbe(n, {1:2, 6:3, 10:4}) * 2) / 2;
-  p.boucliers = Math.max(0, Math.round(mods.erreurs || 0));
+  /* la règle des cœurs (Romain, 4 nov.) : une erreur coûte un cœur (et plus de temps) ; sans cœur, la prochaine fait perdre.
+     (avant : une erreur coûtait 2 à 4 s, les boucliers de mods.erreurs étaient des erreurs gratuites → ce sont des cœurs en plus) */
+  p.boucliers = 0;
+  p.coeurs = entier(n, {1:5, 3:4, 6:3, 10:2}) + Math.max(0, Math.round(mods.erreurs || 0));
   p.rotation = courbe(n, {1:20, 3:70, 5:180});
   p.tailles = courbe(n, {1:0.06, 3:0.16, 6:0.28, 10:0.4});
   p.ressemblance = n <= 3 ? 'distincts' : (n <= 6 ? 'meles' : 'familles');
@@ -10789,7 +10887,8 @@ function reglagesDouble(n, mods){
     {nom:'Symboles sur chaque carte', val:String(p.symboles)},
     {nom:'Paires à trouver', val:p.manches + ' paires'},
     {nom:'Le sablier', val:txtDuree(p.duree)},
-    {nom:'Une erreur', val:'tu perds ' + U.fmt(p.penalite, 1) + ' secondes'},
+    {nom:'Une erreur', val:'tu perds un cœur'},
+    {nom:'Cœurs (erreurs permises)', val:p.coeurs + ' ❤️'},
     {nom:'Les symboles', val:p.ressemblance === 'distincts' ? 'tous très différents' : (p.ressemblance === 'meles' ? 'certains se ressemblent' : 'mêmes couleurs par famille 🎨')},
     {nom:'Ils sont tournés', val:p.rotation < 40 ? 'un tout petit peu' : (p.rotation < 180 ? 'un peu' : 'dans tous les sens 🔄')},
     {nom:'Leurs tailles', val:p.tailles < 0.12 ? 'presque pareilles' : (p.tailles < 0.3 ? 'un peu variées' : 'très variées')}
@@ -10830,8 +10929,8 @@ MJ.enregistrer('double', {
     el.appendChild(racine);
     var hud = creerHud(racine);
     var manches = Math.min(p.manches || 8, cartes.length - 1), trouvees = 0, erreurs = 0, restant = p.duree || 90, fini = false, verrou = true, tPaire = 0, indices = p.indices || 0;
-    var boucliers = p.boucliers || 0, bouclMax = boucliers;
-    if(bouclMax) hud.vies(boucliers, bouclMax, true);
+    var coeursD = p.coeurs === undefined ? 4 : p.coeurs, coeursDMax = coeursD;
+    hud.coeurs(coeursD, coeursDMax);
     hud.prog(0, manches); hud.temps(1);
     var aire = U.html('<div class="mjo-db-aire"><svg class="mjo-db-svg" preserveAspectRatio="xMidYMid meet"><g class="mjo-db-cartes"></g><g class="mjo-db-fx"></g></svg></div>');
     racine.appendChild(aire);
@@ -10921,8 +11020,13 @@ MJ.enregistrer('double', {
       relancer(s.carte.inner, 'tremble');
       U.son('ko'); U.vibrer(40);
       var q2 = s.carte.pts[s.k], e = versEcran(svg, POS[s.carte.role].x + q2.x, POS[s.carte.role].y + q2.y), r = racine.getBoundingClientRect();
-      if(boucliers > 0){ boucliers--; hud.perdVie(boucliers, bouclMax, true); flotter(racine, (e.x - r.left) / r.width * 100, (e.y - r.top) / r.height * 100, '🛡️', 'ok'); }
-      else { restant -= p.penalite || 3; hud.moins(); flotter(racine, (e.x - r.left) / r.width * 100, (e.y - r.top) / r.height * 100, '−' + U.fmt(p.penalite || 3, 1) + ' s', 'ko'); }
+      if(coeursD <= 0){
+        fini = true;
+        P.finir({reussi:false, score:trouvees / manches, erreurs:erreurs, detail:'Plus de cœur : c\'était l\'erreur de trop… ' + trouvees + ' paire' + (trouvees > 1 ? 's' : '') + ' sur ' + manches + '.'}, 1200);
+        return;
+      }
+      coeursD--; hud.perdCoeur(coeursD, coeursDMax);
+      flotter(racine, (e.x - r.left) / r.width * 100, (e.y - r.top) / r.height * 100, '💔', 'ko');
       P.apres(600, function(){ if(!fini) verrou = false; });
     }
     P.ecoute(svg, 'pointerdown', function(e){ if(fini) return; e.preventDefault(); toucher(ptSVG(svg, e)); });
@@ -11131,7 +11235,7 @@ function reglagesInsectes(n, mods){
     {nom:'Ils se ressemblent', val:['pas du tout', 'un peu', 'beaucoup', 'énormément'][p.ressemblance - 1]},
     {nom:'Couleurs trompeuses', val:p.teintes < 0.2 ? 'quelques-unes' : (p.teintes < 0.4 ? 'pas mal' : 'beaucoup 🎨')},
     {nom:'Le sablier', val:txtDuree(p.duree)},
-    {nom:'Tes cœurs', val:p.vies + ' ❤️'},
+    {nom:'Cœurs (erreurs permises)', val:p.erreurs + ' ❤️'},
     {nom:'Ranger les gentils dans le bocal vert', val:p.ranger ? 'obligatoire' : 'en bonus ⭐'}
   ];
   if(p.zone > 1) p.lignes.push({nom:'Insectes', val:'plus faciles à toucher'});
@@ -11285,7 +11389,7 @@ MJ.enregistrer('insectes', {
       P.apres(1000, function(){ retirer(et); });
       var q2 = pctScene(b.x, b.y); flotter(racine, q2.x, q2.y - 6, 'Oh non !', 'ko');
       relancer(jarBon, 'montre');
-      if(vies <= 0){ fini = true; perdre('Oh non… trop de gentils insectes touchés.'); }
+      if(vies <= 0){ fini = true; perdre('Oh non… plus de cœur, et encore un gentil insecte touché.'); }
     }
     function verifier(){
       if(fini || tues < totalM) return;
@@ -11986,7 +12090,7 @@ var def = {
       {nom:'Pots sur l\'étagère', val:String(p.etagere.length)},
       {nom:'La couleur doit être', val:precis},
       {nom:'Portions en trop permises', val:p.marge ? String(p.marge) : 'aucune'},
-      {nom:'Cœurs', val:String(p.coeurs)},
+      {nom:'Cœurs (erreurs permises)', val:String(p.coeurs - 1)},
       {nom:'Temps', val:tempsTexte(p.duree)}
     ];
     if(p.barre) p.lignes.push({nom:'Barre de ressemblance', val:p.chiffres ? 'oui, avec les chiffres' : 'oui'});
@@ -12188,10 +12292,10 @@ var def = {
     mise();
 
     /* --- affichages --- */
+    /* la règle des cœurs (mj-core.js) : cœurs affichés = erreurs encore permises (coeurs − 1 : on perd quand coeurs tombe à 0) */
     function majCoeurs(casse){
-      var s = '';
-      for(var i = 0; i < coeursMax; i++) s += '<span class="mjm-coeur' + (i < coeurs ? '' : ' perdu') + (casse && i === coeurs ? ' casse' : '') + '">' + COEUR + '</span>';
-      coeursEl.innerHTML = s;
+      coeursEl.innerHTML = U.coeurs(coeurs - 1, coeursMax - 1, casse ? coeurs - 1 : undefined);
+      if(casse && coeurs === 1) U.plusDeCoeur(racine);
     }
     function majLiquide(){
       var affiche = depuisOklab(affL);
@@ -12346,12 +12450,12 @@ var def = {
       majCoeurs(true); majBoutons();
       U.son('ko'); U.vibrer(60);
       racine.classList.remove('mjm-beurk'); void racine.offsetWidth; racine.classList.add('mjm-beurk');
-      ouvrirPanneau('<div class="mjm-carte-l">' + visageBeurk() + '<div class="mjm-carte-t"><h3 class="mjm-titre-beurk">Beurk !</h3><p>La potion a un goût horrible…</p><p class="mjm-moins">−1 <span class="mjm-coeur mini">' + COEUR + '</span></p></div></div>' +
+      ouvrirPanneau('<div class="mjm-carte-l">' + visageBeurk() + '<div class="mjm-carte-t"><h3 class="mjm-titre-beurk">Beurk !</h3><p>La potion a un goût horrible…</p>' + (coeurs > 0 ? '<p class="mjm-moins">−1 <span class="mjm-coeur mini">' + COEUR + '</span></p>' : '<p class="mjm-moins">💔</p>') + '</div></div>' +
         (coeurs > 0 ? '<div class="mjm-carte-b"><button class="btn mjm-b-vider" type="button">♻️ Vider le chaudron</button><button class="btn second mjm-b-garder" type="button">Garder la potion</button></div>' : ''), 'beurk');
       G.apres(1700, function(){ racine.classList.remove('mjm-beurk'); });
       if(coeurs <= 0){
         etat = 'fini';
-        G.apres(2400, function(){ G.terminer({reussi:false, score:0, erreurs:coeursMax, message:'Beurk !', detail:'La potion a un goût horrible… et il n\'y a plus de cœurs.'}); });
+        G.apres(2400, function(){ G.terminer({reussi:false, score:0, erreurs:coeursMax, message:'Beurk !', detail:'La potion a un goût horrible… Plus de cœur : c\'était l\'erreur de trop.'}); });
         return;
       }
       G.apres(500, function(){ if(etat === 'anim') etat = 'panneau'; majBoutons(); });
@@ -12953,7 +13057,7 @@ function reglages(n, mods){
     {nom:'Elles bougent', val:bouge},
     {nom:'Elles s\'allument', val:allume},
     {nom:'Taille des bulles', val:p.rayon >= 39 ? 'grosses' : (p.rayon >= 33 ? 'moyennes' : 'petites')},
-    {nom:'Tes vies', val:p.vies + ' ❤️'}
+    {nom:'Cœurs (erreurs permises)', val:p.erreurs + ' ❤️'}
   ];
   if(p.eclate) p.lignes.push({nom:'Une bulle éclate 🫧', val:['', 'à la manche 2', 'aux manches 2 et 3', 'aux manches 2, 3 et 4'][p.eclate]});
   if(p.aide) p.lignes.push({nom:'Indices 💡', val:String(p.aide)});
@@ -13034,11 +13138,12 @@ MJ.enregistrer('bulles', {
     var hud = U.html('<div class="mjbu-hud"><div class="mjbu-vies" aria-label="Vies"></div><div class="mjbu-manches" aria-label="Manches"></div></div>');
     el.appendChild(hud);
     var hVies = hud.querySelector('.mjbu-vies'), hMan = hud.querySelector('.mjbu-manches');
-    var coeurs = [], gemmes = [];
-    for(var c = 0; c < maxVies; c++){ var sc = U.html('<span class="mjbu-coeur">' + COEUR + '</span>'); hVies.appendChild(sc); coeurs.push(sc); }
+    /* la règle des cœurs (mj-core.js) : cœurs = erreurs encore permises (vies − 1) ; plus de cœur → on prévient */
+    var gemmes = [];
+    hVies.innerHTML = U.coeurs(vies - 1, maxVies - 1);
     for(var g0 = 0; g0 < p.manches; g0++){ var sg = U.html('<span class="mjbu-manche' + (g0 === p.manches - 1 ? ' der' : '') + '" style="--c:' + (LIQ_MANCHES[g0] || '#fff') + '">' + (g0 + 1) + '</span>'); hMan.appendChild(sg); gemmes.push(sg); }
     function majManches(){ gemmes.forEach(function(gm, i){ gm.classList.toggle('ici', i === manche && phase !== 'perdu'); if(i < manche && !gm.classList.contains('fait')) gm.classList.add('fait'); }); }
-    function perdreCoeur(){ var cc = coeurs[vies]; if(cc){ cc.classList.add('perdu'); relancer(cc, 'casse'); } }
+    function perdreCoeur(){ if(vies < 1) return; hVies.innerHTML = U.coeurs(vies - 1, maxVies - 1, vies - 1); if(vies === 1) U.plusDeCoeur(el); }
     majManches();
 
     /* --- terrain --- */
@@ -13262,7 +13367,7 @@ MJ.enregistrer('bulles', {
       phase = 'perdu'; majEtat(); majIndice(); majManches(); noter('perdu');
       terrain.classList.add('mjbu-rate');
       liquide.teinter('#4a4458', 0.8); fumee();
-      var det = manche ? 'Plus de vies… ' + manche + ' manche' + (manche > 1 ? 's' : '') + ' réussie' + (manche > 1 ? 's' : '') + ' sur 4.' : 'Plus de vies… Réessaie, tu vas y arriver !';
+      var det = manche ? 'Plus de cœur : c\'était l\'erreur de trop… ' + manche + ' manche' + (manche > 1 ? 's' : '') + ' réussie' + (manche > 1 ? 's' : '') + ' sur 4.' : 'Plus de cœur : c\'était l\'erreur de trop… Réessaie, tu vas y arriver !';
       P.finir({reussi:false, score:manche / p.manches, erreurs:fautes, detail:det}, 1400);
     }
     function bon(b, maintenant){
@@ -13356,18 +13461,32 @@ MJ.enregistrer('bulles', {
 /* ===== mj-chaudron.js ===== */
 /* ==========================================================
    Brumeval v2 — mini-jeu « Le chaudron » (Alchimiste)
-   La seule façon de préparer une potion : on tourne la louche
-   (sens des aiguilles d'une montre = ça chauffe, l'autre sens =
-   ça refroidit), on entretient le feu (0 à 7 bûches), on verse
-   chaque ingrédient quand il passe sur la frise (16 à 20 s pour le verser ;
-   toutes les caisses de l'atelier sont là : un mauvais ingrédient gâche la potion,
-   une fenêtre oubliée compte comme une erreur), puis on garde la potion
-   dans sa zone de couleur jusqu'à ce que la fiole se remplisse (environ 1 min 40 en tout).
+   Version simplifiée (Romain, 4 novembre, 11 h 26) :
+   - Le FEU fait monter la température : chaque bûche ajoutée fait monter la barre, et plus il y a
+     de bûches, plus elle monte vite (même vitesse à tous les niveaux). Le bois se consume vite
+     (à tous les niveaux) : quand il ne reste qu'une bûche, l'icône « remettre du bois » brille.
+     6 bûches au plus (au-delà, rien ne se passe).
+   - TOUILLER (dans un sens ou dans l'autre) fait redescendre la barre, avec de l'inertie :
+     elle continue de descendre un peu quand on s'arrête. Ce qui change avec le niveau :
+     l'inertie, la largeur des zones, les ingrédients qui passent, les cœurs.
+   - Trop chaud (en haut de la jauge) : ça EXPLOSE, perdu. Plus assez de bois (en bas) :
+     ça GÈLE, perdu. Près du haut, le chaudron bout à gros bouillons et tremble.
+   - Les INGRÉDIENTS : la frise montre seulement le code couleur de chaque ingrédient, dans
+     l'ordre de la recette ; on verse celui dont le carré est dans la zone 🍲 (niveaux 1-2 :
+     il y attend ; ensuite il la traverse et compte comme oublié s'il en sort). Les caisses :
+     seulement les ingrédients du laboratoire (params.stock). Mauvais ingrédient, trop tôt ou
+     oublié : l'écran tremble, une flèche le dit, −1 cœur (3 au niveau 1 ; règle des cœurs :
+     cœurs = erreurs permises, sans cœur la prochaine erreur fait perdre).
+   - À la fin : garder la potion dans sa zone de couleur jusqu'à ce que la fiole se remplisse.
+   - Durée : environ deux fois moins longue qu'avant (≈ 50 s au lieu de 106 à 137 s).
    Préfixe CSS : .mjc-   Dépend de mj-core.js et donnees.js.
-   params (en plus des réglages) : potion (id), stock {ingr:n} ou function(){ return {ingr:n}; } (facultatif : n'est plus
-   affiché ni vérifié, il est seulement décompté et rendu dans reste), connue (false = recette secrète : la frise montre des ❓),
-   onVerse(ingr) (facultatif).
+   params (en plus des réglages) : potion (id), stock {ingr:n} ou function(){ return {ingr:n}; } (facultatif : les caisses
+   montrent seulement les ingrédients du stock ; sans stock, la salle montre la recette et 3 autres), décompté et rendu dans reste),
+   connue (false = recette secrète : la frise montre des ❓),
+   onVerse(ingr) (facultatif : appelé seulement pour le bon ingrédient, au moment où on le verse ;
+   l'atelier s'en sert pour son stock et pour les oreilles de Mimi).
    Résultat : {reussi, message, detail, score, erreurs, raison, reste:{ingr:n}}
+   (raison : ok, boum = la potion a débordé, gel, mauvais, tot, oubli, lent)
    ========================================================== */
 (function(){
 'use strict';
@@ -13382,8 +13501,12 @@ var uid = 0;
 var CX = 200, CY = 170, RL = 118, SINA = 0.36, COSA = Math.sqrt(1 - SINA * SINA), DP = 520;
 var RIM = {cx:200, cy:157, rxo:144, ryo:53, rxi:128, ryi:46};
 var LOUCHE = {r:64, L:168, a:0.55, b:0.83, haut:14};
-var KSTIR = 0.95;                       /* chaleur par radian/s de louche */
-var FEU_K = {1:0.8, 2:0.45, 3:0.22, 4:0.18, 5:0.35, 6:0.5};
+var KSTIR = 0.95;                       /* (démo de secours) chaleur par radian/s de louche */
+var MAX_BUCHES = 6;                     /* au-delà, on ne peut plus en ajouter */
+/* La température (échelle 0 = gel … 100 = explosion), la même à tous les niveaux :
+   chaque bûche chauffe de FEU_K unités/s, la potion perd FROID unités/s (neutre à 2 bûches) ;
+   une bûche ajoutée donne un petit coup de chaud (FEU_COUP) ; touiller un tour par seconde refroidit de TOUILLE unités/s. */
+var FEU_K = 1.6, FROID = 3.2, FEU_COUP = 3, TOUILLE = 9, BRULE = 6.5;
 var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6};
 var BUCHES = [[160, 344, -6], [240, 344, 6], [200, 348, 0], [180, 331, -12], [220, 331, 12], [200, 318, 2], [200, 336, 88]];
 var COUL = {violet:'#8b52e0', bleu:'#3f86f0', vert:'#3fcf6a', jaune:'#ffd23f', rouge:'#f04a35', bouillant:'#ff2410'};
@@ -13560,22 +13683,28 @@ function Sons(){
    ========================================================== */
 function construire(el, P, demo){
   var D = DD(), id = ++uid, C = (D.CHAUDRON || {})[P.potion] || {zone:'vert', frise:[]}, Zi = infoZone(C.zone);
-  /* toutes les sortes d'ingrédients de l'atelier : c'est à elle de choisir le bon (pas lié au stock) */
-  var I = D.INGR || {}, ingrs = Object.keys(I);
-  C.frise.forEach(function(f){ if(ingrs.indexOf(f.ingr) < 0) ingrs.push(f.ingr); });
+  /* les caisses : seulement les ingrédients vraiment là dans le laboratoire (le stock de l'atelier) ;
+     sans stock (salle d'entraînement) : ceux de la recette et 3 autres. Toujours ceux de la recette. */
+  var I = D.INGR || {}, tous = Object.keys(I), stock = null, voulus = {};
+  try{ stock = typeof P.stock === 'function' ? P.stock() : (P.stock || null); }catch(e){ stock = null; }
+  C.frise.forEach(function(f){ voulus[f.ingr] = 1; });
+  if(stock) Object.keys(stock).forEach(function(k){ if(stock[k] > 0) voulus[k] = 1; });
+  else U.melanger(tous.filter(function(k){ return !voulus[k]; })).slice(0, 3).forEach(function(k){ voulus[k] = 1; });
+  var ingrs = tous.filter(function(k){ return voulus[k]; });
+  Object.keys(voulus).forEach(function(k){ if(ingrs.indexOf(k) < 0) ingrs.push(k); });
   var flammes = '';
   for(var i = 0; i < 7; i++){
     var fx = 152 + i * 16, fh = 30 + ((i * 5) % 3) * 9, fb = 336;
     flammes += '<path class="mjc-fl f' + (i % 3) + '" style="animation-delay:-' + (i * 0.13).toFixed(2) + 's" d="M' + (fx - 12) + ',' + fb + ' C' + (fx - 17) + ',' + (fb - fh * 0.5) + ' ' + (fx - 4) + ',' + (fb - fh * 0.7) + ' ' + fx + ',' + (fb - fh) + ' C' + (fx + 4) + ',' + (fb - fh * 0.7) + ' ' + (fx + 17) + ',' + (fb - fh * 0.5) + ' ' + (fx + 12) + ',' + fb + ' Z"/>';
   }
-  var buches = BUCHES.map(function(b, k){
-    return '<g class="mjc-buche" data-act="buche" data-i="' + k + '" transform="translate(' + b[0] + ',' + b[1] + ') rotate(' + b[2] + ')">' +
+  /* les bûches du feu (on n'en retire plus) ; on en ajoute en touchant le tas de bois */
+  var buches = BUCHES.slice(0, MAX_BUCHES).map(function(b, k){
+    return '<g class="mjc-buche" data-i="' + k + '" transform="translate(' + b[0] + ',' + b[1] + ') rotate(' + b[2] + ')">' +
       '<rect x="-34" y="-9" width="68" height="18" rx="9" fill="url(#mjcb' + id + ')" stroke="' + K + '" stroke-width="3.5"/>' +
       '<path d="M-24,-3 H8 M-14,4 H18" stroke="#5a3218" stroke-width="2" stroke-linecap="round"/>' +
       '<ellipse cx="29" cy="0" rx="5" ry="8.5" fill="#f0c48c" stroke="' + K + '" stroke-width="3"/><ellipse cx="29" cy="0" rx="2" ry="4" fill="none" stroke="#b07a40" stroke-width="1.5"/>' +
       '<rect class="mjc-charbon" x="-34" y="-9" width="68" height="18" rx="9" fill="#2a1208" opacity="0"/>' +
       '<path class="mjc-ember" d="M-20,2 L-8,-2 L2,3 L14,-1" stroke="#ff8a3c" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0"/>' +
-      '<g class="mjc-moins"><circle cx="0" cy="-22" r="12" fill="#ff6a5a" stroke="' + K + '" stroke-width="3.5"/><path d="M-6,-22 H6" stroke="' + K + '" stroke-width="4" stroke-linecap="round"/></g>' +
       '<rect x="-36" y="-14" width="72" height="28" fill="transparent"/></g>';
   }).join('');
   var tas = '';
@@ -13609,10 +13738,11 @@ function construire(el, P, demo){
     '</defs>' +
     '<ellipse cx="200" cy="356" rx="150" ry="16" fill="rgba(0,0,0,.35)"/>' +
     '<g class="mjc-tas" data-act="bois"><ellipse cx="44" cy="356" rx="48" ry="10" fill="rgba(0,0,0,.3)"/>' + tas +
-      '<g class="mjc-plus"><circle cx="78" cy="296" r="15" fill="#7cf0a8" stroke="' + K + '" stroke-width="3.5"/><path d="M78,288 V304 M70,296 H86" stroke="' + K + '" stroke-width="4" stroke-linecap="round"/></g>' +
-      '<rect x="0" y="280" width="100" height="90" fill="transparent"/></g>' +
+      '<g class="mjc-plus"><circle class="mjc-plus-halo" cx="78" cy="292" r="25"/><circle cx="78" cy="292" r="17" fill="#7cf0a8" stroke="' + K + '" stroke-width="3.5"/><path d="M78,283 V301 M69,292 H87" stroke="' + K + '" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<text x="78" y="266" font-size="20" text-anchor="middle">🪵</text></g>' +
+      '<rect x="0" y="244" width="112" height="126" fill="transparent"/></g>' +
     fleche(-0.95, 0.55, true, '#ff6a4a', 'mjc-chauffe') + fleche(Math.PI + 0.95, Math.PI - 0.55, false, '#5ab8ff', 'mjc-refroidit') +
-    '<text class="mjc-fl-ic" x="384" y="178" font-size="22" text-anchor="middle">🔥</text><text class="mjc-fl-ic" x="16" y="178" font-size="22" text-anchor="middle">❄️</text>' +
+    '<text class="mjc-fl-ic chaud" x="384" y="178" font-size="22" text-anchor="middle">🔥</text><text class="mjc-fl-ic" x="16" y="178" font-size="22" text-anchor="middle">❄️</text>' +
     '<ellipse class="mjc-lueur-feu" cx="200" cy="318" rx="110" ry="48" fill="url(#mjcg' + id + ')"/>' +
     '<path d="M110,290 L96,330 M290,290 L304,330 M200,300 L200,336" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/>' +
     '<path d="M110,290 L96,330 M290,290 L304,330 M200,300 L200,336" stroke="#4a4166" stroke-width="5" stroke-linecap="round"/>' +
@@ -13638,19 +13768,28 @@ function construire(el, P, demo){
     '<g class="mjc-flammes">' + flammes + '</g>' +
     '<g class="mjc-feu-buches">' + buches + '</g>' +
     '</svg>';
-  var cible = '<div class="mjc-cible" style="--c:' + Zi.c + '"><span class="mjc-cible-ic">🎯</span><span>Cette potion se termine dans la zone</span> <b class="mjc-cible-nom' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '">' + esc(Zi.grand) + '</b><i class="mjc-pastille' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '"></i></div>';
+  var cible = '<div class="mjc-cible" style="--c:' + Zi.c + '"><span class="mjc-cible-ic">🎯</span><span>À la fin, zone</span> <b class="mjc-cible-nom' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '">' + esc(Zi.grand) + '</b><i class="mjc-pastille' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '"></i></div>';
+  /* La carte de la recette, à côté de la frise (Romain) : chaque ingrédient dans l'ordre, avec sa couleur, son icône, son nom
+     et le nombre à verser ; la frise, elle, ne montre que les couleurs. Recette secrète : seulement des ❓. */
+  var groupes = [];
+  C.frise.forEach(function(f){ var g = groupes[groupes.length - 1]; if(g && g.ingr === f.ingr) g.n++; else groupes.push({ingr:f.ingr, n:1}); });
+  var connueR = P.connue !== false, lireRec = 'La recette : ' + groupes.map(function(g){ var x = I[g.ingr] || {nom:g.ingr}; return g.n + ' ' + String(x.nom).toLowerCase(); }).join(', puis ') + '.';
+  var recette = '<div class="mjc-recette"><span class="mjc-rec-t">📜</span>' + (connueR ? groupes.map(function(g, k){
+      var x = I[g.ingr] || {ic:'❔', c:'#888', nom:g.ingr};
+      return (k ? '<span class="mjc-rec-sep">›</span>' : '') + '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + x.c + '"><b>' + g.n + '</b><i class="mjc-rec-c">' + x.ic + '</i><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
+    }).join('') : '<span class="mjc-rec-i secret" style="--c:#8d8a99"><i class="mjc-rec-c">❓</i><em>Recette secrète</em></span>') + '</div>';
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
     return '<button type="button" class="mjc-boite" data-ingr="' + k + '" style="--c:' + x.c + '" aria-label="' + esc(x.nom) + '"><span>' + x.ic + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></button>';
   }).join('');
   var r = U.html('<div class="mjc' + (demo ? ' mjc-demo' : '') + '">' +
     (demo ? '' : '<div class="mjc-haut"><div class="mjc-l1">' + cible + '<div class="mjc-vies"></div></div>' +
-      '<div class="mjc-frise"><div class="mjc-piste"></div><div class="mjc-passe"></div><div class="mjc-tete"><span>🍲</span></div></div>' +
+      '<div class="mjc-frise"><div class="mjc-zone-f"><span>🍲</span></div><div class="mjc-piste"></div><div class="mjc-fl-next" hidden><i></i></div></div>' +
       '<div class="mjc-boites">' + boites + '</div></div>') +
     '<div class="mjc-scene">' + svg +
-      '<div class="mjc-jauge"><span class="mjc-j-ic">💥</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">🧊</span></div>' +
-      '<div class="mjc-bulle" hidden></div><div class="mjc-fin" hidden></div>' +
-    '</div></div>');
+      '<div class="mjc-jauge"><span class="mjc-j-ic">🌋</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">🧊</span></div>' +
+      '<div class="mjc-bulle" hidden></div><div class="mjc-danger" hidden></div><div class="mjc-fin" hidden></div>' +
+    '</div>' + (demo ? '' : '<div class="mjc-err" hidden></div><div class="mjc-oups" hidden></div>') + '</div>');
   el.appendChild(r);
   var q = function(s){ return r.querySelector(s); };
   return {
@@ -13660,7 +13799,8 @@ function construire(el, P, demo){
     flammes:q('.mjc-flammes'), lueur:q('.mjc-lueur-feu'), buches:[].slice.call(r.querySelectorAll('.mjc-buche')), tas:q('.mjc-tas'),
     chauffe:q('.mjc-chauffe'), refroidit:q('.mjc-refroidit'),
     jauge:q('.mjc-j-tube'), curseur:q('.mjc-j-curseur'), jAe:q('.mjc-j-ae'), jCible:q('.mjc-j-cible'),
-    frise:q('.mjc-frise'), piste:q('.mjc-piste'), boites:q('.mjc-boites'), vies:q('.mjc-vies'), bulle:q('.mjc-bulle'), fin:q('.mjc-fin'), scene:q('.mjc-scene')
+    frise:q('.mjc-frise'), piste:q('.mjc-piste'), zoneF:q('.mjc-zone-f'), flNext:q('.mjc-fl-next'), boites:q('.mjc-boites'), vies:q('.mjc-vies'), bulle:q('.mjc-bulle'), fin:q('.mjc-fin'), scene:q('.mjc-scene'),
+    err:q('.mjc-err'), oups:q('.mjc-oups'), danger:q('.mjc-danger'), plus:q('.mjc-plus')
   };
 }
 
@@ -13722,39 +13862,47 @@ MJ.enregistrer('chaudron', {
   nom:'Le chaudron', role:'alchimiste', ic:'🍲',
   consigne:function(p){
     var C = (DD().CHAUDRON || {})[p.potion] || {zone:'vert'}, Z = infoZone(C.zone);
-    return 'Tourne la louche avec ton doigt. Dans le sens des aiguilles d\'une montre, ça chauffe et la potion devient rouge. Dans l\'autre sens, ça refroidit et elle devient bleue. ' +
-      'Quatre bûches, c\'est un feu stable : ajoute du bois quand une bûche a brûlé, enlève une bûche si ça chauffe trop. ' +
-      'Quand un ingrédient arrive sous le petit chaudron de la frise, touche sa caisse : tu as le temps, mais attention, un mauvais ingrédient gâche la potion ! ' +
+    return 'Le bois chauffe la potion : touche le tas de bois pour ajouter une bûche, la barre monte. Le bois brûle vite, pense à en remettre ! ' +
+      'Touille avec ton doigt pour refroidir : la barre descend, et elle continue un peu quand tu t\'arrêtes. Trop chaud, ça explose ; trop froid, ça gèle. ' +
+      'La frise montre la couleur de chaque ingrédient, dans l\'ordre : quand son carré est dans la zone, touche la caisse de la même couleur. Si tu te trompes, tu perds un cœur. ' +
       'À la fin, garde la potion dans la zone ' + Z.nom + ' jusqu\'à ce que la fiole se remplisse.';
   },
+  /* niveau 1 = le tutoriel (3 cœurs, l'ingrédient attend dans la zone, une flèche, barre légère, zones larges) ; jusqu'au niveau 10 :
+     barre plus lourde (inertie), zones plus étroites, ingrédients qui traversent la zone (niveau 3+), doses rapprochées,
+     fin chronométrée (niveau 3+), moins de cœurs, plus de flèche (niveau 4+). Le feu et le bois : pareils à tous les niveaux. */
   reglages:function(n, mods){
     var P = U.parNiveau, zone = mods.zone > 0 ? mods.zone : 1, lent = mods.lent > 0 ? mods.lent : 1, temps = mods.temps || 0;
     var r = {
-      fenetre:P(n, 20, 16, 14) + temps * 2,                      /* temps pour verser chaque ingrédient (s) */
-      duree:P(n, 106, 100, 95) + temps * 4,                      /* visée : du début à la fin de la zone tenue (s) */
-      debut:P(n, 5, 3, 2.5),
-      ecartMin:1,                                                /* jamais deux fenêtres l'une sur l'autre */
-      margeFin:P(n, 6, 3, 3),
-      combustion:P(n, 8.6, 4.6, 3.6) / lent,
-      vitesse:P(n, 0.7, 1.5, 0.6) * lent,
-      vertW:Math.min(50, P(n, 36, 22, 16) * zone),
-      aeW:Math.min(16, P(n, 11, 6.5, 5) * zone),
-      tenue:P(n, 1.4, 2.2, 1.2),
-      finale:P(n, 13, 9, 8) + temps * 0.6,
-      vies:(n <= 2 ? 3 : (n <= 5 ? 2 : 1)) + (mods.erreurs || 0),
-      chocs:P(n, 0.5, 1.3, 0.4),
+      attend:n < 3,                                              /* niveaux 1-2 : l'ingrédient attend dans la zone */
+      fenetre:P(n, 7, 2.6, 2.2) / lent + temps * 0.5,            /* sinon : le temps qu'il passe dans la zone (s) */
+      duree:P(n, 52, 48, 45) + temps * 2,                        /* durée visée, environ la moitié d'avant (106 à 137 s) */
+      marge:P(n, 11, 9, 8),                                      /* le temps laissé pour la fin (aller dans la zone, remplir la fiole) */
+      ecartMax:14,                                               /* jamais plus de 14 s entre deux ingrédients */
+      ecartMin:P(n, 1, 0.45, 0.45),                              /* doses rapprochées aux niveaux hauts (D.CHAUDRON : ecart) */
+      debut:P(n, 3.5, 2.5, 2),
+      buches:3,
+      combustion:BRULE / lent,                                   /* une bûche brûle en… (s) : vite, à tous les niveaux */
+      tau:P(n, 0.8, 2.2, 0.6, 2.6),                              /* inertie : la barre continue de descendre… (s) */
+      chocs:P(n, 0.5, 1, 0.4),                                   /* un ingrédient pousse un peu la barre */
+      vertW:Math.min(50, P(n, 40, 18, 14) * zone),
+      aeW:Math.min(16, P(n, 12, 6, 5) * zone),
+      tenue:P(n, 2.5, 4, 2),                                     /* fiole à remplir dans la zone de fin (s) */
+      finaleMax:n < 3 ? 0 : P(n, 24, 12, 10) / lent + temps * 2, /* 0 = on a tout son temps */
+      vies:(n <= 1 ? 3 : (n <= 2 ? 2 : (n <= 5 ? 1 : 0))) + (mods.erreurs || 0),   /* cœurs = erreurs d'ingrédient permises */
+      fleche:n <= 3,
       aide:mods.aide || 0, revele:!!mods.revele,
       indices:true
     };
     r.potion = choisirPotion(n);
     function s(x){ return U.fmt(x, 1) + ' s'; }
-    var mn = Math.floor(r.duree / 60), sec = Math.round(r.duree - mn * 60);
     r.lignes = [
-      {nom:'Durée de la préparation', val:'environ ' + mn + ' min' + (sec ? ' ' + sec + ' s' : '')},
-      {nom:'Temps pour verser chaque ingrédient', val:s(r.fenetre)},
+      {nom:'Les ingrédients', val:r.attend ? 'attendent dans la zone' : 'restent ' + s(r.fenetre) + ' dans la zone'},
       {nom:'Une bûche brûle en', val:s(r.combustion)},
-      {nom:'Tenir la zone de fin', val:s(r.tenue)},
-      {nom:'Vies', val:String(r.vies)}
+      {nom:'La barre continue de descendre (inertie)', val:s(r.tau)},
+      {nom:'Largeur de la zone verte', val:Math.round(r.vertW) + ' %'},
+      {nom:'Pour finir la potion', val:r.finaleMax ? s(r.finaleMax) : 'tout ton temps'},
+      {nom:'Cœurs (erreurs permises)', val:String(r.vies)},
+      {nom:'Durée visée', val:'environ ' + Math.round(r.duree) + ' s'}
     ];
     return r;
   },
@@ -13789,7 +13937,7 @@ MJ.enregistrer('chaudron', {
     /* l'arc-en-ciel est la bande la plus étroite : on le tient un peu moins longtemps */
     var tenueFin = R.tenue * (cible === 'arc-en-ciel' ? 0.7 : 1);
     var connue = R.connue !== false, stock = typeof R.stock === 'function' ? R.stock() : (R.stock ? Object.assign({}, R.stock) : null);
-    preparerJauge(E, Z, cible);
+    preparerJauge(E, Z, 'vert');         /* pendant les ingrédients, la bonne zone est le vert ; à la fin, celle de la potion */
     if(R.revele) E.racine.classList.add('mjc-revele');
     var stops = [], timers = [], A = Sons();
     function ecoute(c, t, f, o){ c.addEventListener(t, f, o); stops.push(function(){ c.removeEventListener(t, f, o); }); }
@@ -13797,58 +13945,61 @@ MJ.enregistrer('chaudron', {
 
     /* --- l'état --- */
     var S = {
-      t:0, h:Z.centre, v:0, L:4, braise:0, theta:Math.PI / 2, omega:0, tient:null, doigt:null,
-      E4:0, E4c:0, E4t:0, vies:R.vies, erreurs:0, etoiles:0, fini:false, termine:false, pause:false,
+      t:0, tf:0, h:Z.centre, v:0, L:Math.min(MAX_BUCHES, R.buches || 3), braise:0, theta:Math.PI / 2, omega:0, tient:null, doigt:null,
+      vies:R.vies, erreurs:0, etoiles:0, fini:false, termine:false, pause:false,
       fen:[], finale:null, tenue:0, zone:'vert', indice:'', R:R, Z:Z, cible:cible
     };
     MJ.TYPES.chaudron._dernier = S;
 
-    /* --- la frise : une fenêtre par dose, jamais l'une sur l'autre, réparties pour que la partie dure
-       environ R.duree (du début à la fin de la zone tenue) ; entre deux, on s'occupe du feu et de la louche. --- */
-    var nf = C.frise.length, W = R.fenetre;
-    S.debutFin = Math.max(R.duree - tenueFin, R.debut + nf * W + Math.max(0, nf - 1) * R.ecartMin + R.margeFin);
-    var libre = S.debutFin - R.margeFin - R.debut - nf * W, ecart, tt;
-    if(nf > 1 && libre / nf < R.ecartMin){ ecart = libre / (nf - 1); tt = R.debut; }
-    else { ecart = libre / Math.max(1, nf); tt = R.debut + ecart / 2; }
+    /* --- la frise : un petit carré de la couleur de chaque dose (rien d'autre), dans l'ordre de la recette.
+       f.a = l'instant (horloge de la frise S.tf) où il entre dans la zone 🍲 ; les doses sont réparties pour que
+       la partie dure environ R.duree. Niveaux 1-2 (R.attend) : la frise s'arrête quand le prochain carré est au milieu de la zone. --- */
+    var poids = C.frise.map(function(f, i){ return i ? Math.max(R.ecartMin, f.ecart || 1) : 0; }), somme = poids.reduce(function(a, b){ return a + b; }, 0);
+    var pas = somme ? U.borne((R.duree - R.marge - R.debut) / somme, 2.5, R.ecartMax) : 0, a0 = R.debut;
     C.frise.forEach(function(f, i){
-      if(i) tt += W + ecart;
-      var x = I[f.ingr] || {ic:'❔', c:'#888'};
-      var d = U.html('<div class="mjc-fen" style="--c:' + x.c + '"><span><i>' + (connue ? x.ic : '❓') + '</i></span></div>');
+      a0 += pas * poids[i];
+      var x = I[f.ingr] || {c:'#888'};
+      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? x.c : '#8d8a99') + '">' + (connue ? '' : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
-      S.fen.push({ingr:f.ingr, s:tt, e:tt + W, fait:false, el:d, ic:d.firstChild});
+      S.fen.push({ingr:f.ingr, a:a0, fait:false, el:d});
     });
+    S.duree = R.duree;
     var recette = {};
     C.frise.forEach(function(f){ recette[f.ingr] = 1; });
-    var pps = 30, tete = 50, HORIZON = 34;     /* la frise montre les 34 prochaines secondes */
+    var G = {w:320, zl:6, zr:110, sq:44, pps:30};
+    S.G = G;
     function mesurer(){
-      var w = E.frise.clientWidth || 320;
-      tete = Math.round(w * 0.14); pps = (w - tete) / HORIZON;
+      var w = E.frise.clientWidth || 320, zw = Math.round(U.borne(w * 0.26, 84, 150));
+      G.w = w; G.zl = 6; G.zr = G.zl + zw;
+      G.sq = (S.fen[0] && S.fen[0].el.offsetWidth) || 44;
+      G.pps = (zw + G.sq - 12) / (R.attend ? 4 : R.fenetre);
+      E.zoneF.style.left = G.zl + 'px'; E.zoneF.style.width = zw + 'px';
       /* les caisses : des rangées égales (12 → 1 rangée de 12, 2 de 6 ou 3 de 4), jamais une caisse toute seule */
       var nb = E.ingrs.length, cols = nb;
       for(var r = 1; r <= nb; r++){ cols = Math.ceil(nb / r); if(w / cols >= 66 || (r > 1 && w / cols >= 54)) break; }
       E.boites.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
       E.boites.classList.toggle('mjc-etroit', w / cols < 74);
-      S.fen.forEach(function(f){ f.w = (f.e - f.s) * pps; f.el.style.width = f.w + 'px'; f.icX = null; });
-      if(S.finale) S.finale.el.style.width = ((S.finale.e - S.finale.s) * pps) + 'px';
-      E.frise.style.setProperty('--tete', tete + 'px');
+      S.fen.forEach(function(f){ f.fige = false; });
     }
+    /* bord gauche du carré (px) ; dans la zone dès qu'il y entre, jusqu'à ce qu'il en sorte */
+    function posL(f){ return G.zr - 6 - (S.tf - f.a) * G.pps; }
+    function dansZone(f){ if(f.fait || S.tf < f.a - 1e-6) return false; return posL(f) + G.sq >= G.zl + 6; }
+    function prochain(){ for(var i = 0; i < S.fen.length; i++) if(!S.fen[i].fait) return S.fen[i]; return null; }
+    function arretDe(f){ return f.a + (G.zr - 6 - (G.zl + G.zr) / 2 + G.sq / 2) / G.pps; }
     mesurer();
     if(window.ResizeObserver){ var ro = new ResizeObserver(mesurer); ro.observe(E.frise); stops.push(function(){ ro.disconnect(); }); }
 
-    /* --- vies, caisses --- */
-    function majVies(casse){
-      var s = '';
-      for(var i = 0; i < R.vies; i++) s += '<span class="mjc-coeur' + (i < S.vies ? '' : ' perdu') + (casse && i === S.vies ? ' casse' : '') + '">' + COEUR + '</span>';
-      E.vies.innerHTML = s;
-    }
+    /* --- les cœurs (mj-core.js : la même rangée partout ; cœurs = erreurs encore permises) --- */
+    function majVies(casse){ E.vies.innerHTML = U.coeurs(S.vies, R.vies, casse ? S.vies : undefined); }
     majVies();
 
     /* --- bûches --- */
     function majBuches(){
       E.buches.forEach(function(b, i){ b.style.display = i < S.L ? '' : 'none'; b.classList.toggle('brule', i === S.L - 1); });
-      E.flammes.style.transform = 'scale(' + (0.35 + S.L * 0.16).toFixed(2) + ',' + (0.25 + S.L * 0.17).toFixed(2) + ')';
-      E.lueur.style.opacity = (0.15 + S.L * 0.12).toFixed(2);
+      E.flammes.style.transform = 'scale(' + (S.L ? 0.35 + S.L * 0.16 : 0).toFixed(2) + ',' + (S.L ? 0.25 + S.L * 0.17 : 0).toFixed(2) + ')';
+      E.lueur.style.opacity = (S.L ? 0.15 + S.L * 0.12 : 0).toFixed(2);
       E.racine.setAttribute('data-buches', S.L);
+      E.racine.classList.toggle('mjc-bois-vite', S.L <= 1);   /* presque plus de bois : l'icône « remettre du bois » brille */
     }
     majBuches();
     function bulle(html, cls){
@@ -13856,40 +14007,51 @@ MJ.enregistrer('chaudron', {
       E.bulle.style.animation = 'none'; void E.bulle.offsetWidth; E.bulle.style.animation = '';
       clearTimeout(S.bulleT); S.bulleT = apres(1300, function(){ E.bulle.hidden = true; });
     }
+    /* une bûche de plus : la barre monte (un petit coup de chaud tout de suite, puis le feu chauffe plus) ; 6 au plus */
     function ajouterBuche(){
-      if(S.fini) return;
-      S.L++; S.braise = Math.max(0, S.braise - R.combustion * 0.15);
+      if(S.fini || S.termine) return;
+      if(S.L >= MAX_BUCHES){
+        A.tic(); bulle('<b>🪵 Plein !</b>');
+        if(E.tas && E.tas.animate) E.tas.animate([{transform:'translateX(-4px)'}, {transform:'translateX(4px)'}, {transform:'none'}], {duration:220});
+        return;
+      }
+      if(!S.L) S.braise = 0;
+      S.L++;
+      S.v += FEU_COUP;
       A.tock(); apres(280, function(){ A.crepite(); });
       var nb = E.buches[S.L - 1];
       var bp = BUCHES[S.L - 1];
       if(nb && nb.animate && bp) nb.animate([{transform:'translate(' + (bp[0] - 120) + 'px,' + (bp[1] - 50) + 'px) rotate(' + (bp[2] - 40) + 'deg)', opacity:0}, {transform:'translate(' + bp[0] + 'px,' + bp[1] + 'px) rotate(' + bp[2] + 'deg)', opacity:1}], {duration:280, easing:'ease-out'});
       majBuches();
-      if(S.L >= 7){ echec('trop'); return; }
-      bulle('<b>🪵 +1</b>');
+      bulle('<b>🪵 +1 🔥</b>');
     }
+    /* (essais seulement : on ne retire plus de bûche dans le jeu) */
     function retirerBuche(){
       if(S.fini || S.L <= 0) return;
-      S.L--;
-      A.retire();
-      majBuches();
-      bulle('<b>🪵 −1</b>');
-      if(S.L <= 0) echec('eteint');
+      S.L--; majBuches();
     }
 
     /* --- verser un ingrédient --- */
+    /* on verse l'ingrédient dont le carré est dans la zone 🍲 ; sinon (mauvais, trop tôt) : une erreur d'ingrédient */
     function verser(ingr, btn){
       if(S.fini || S.termine) return;
-      var ouvertes = S.fen.filter(function(f){ return !f.fait && S.t >= f.s && S.t <= f.e; });
-      var bonne = ouvertes.filter(function(f){ return f.ingr === ingr; })[0];
-      if(!bonne){
-        /* un ingrédient qui n'est pas celui sous le repère (ou pas de la recette) : la potion est fichue */
-        if(ouvertes.length || !recette[ingr]){ if(btn && btn.animate) btn.animate([{transform:'translateX(-6px)'}, {transform:'translateX(6px)'}, {transform:'none'}], {duration:240}); chute(ingr, btn); echec('mauvais', ouvertes.length ? ouvertes[0].ingr : null); return; }
-        erreur('tot', btn);           /* le bon, mais trop tôt : une erreur */
+      if(S.finale || S.fen.every(function(f){ return f.fait; })){
+        /* tout est versé : il reste à finir la potion (pas une erreur) */
+        if(btn && btn.animate) btn.animate([{transform:'translateX(-4px)'}, {transform:'translateX(4px)'}, {transform:'none'}], {duration:200});
+        bulle('<b>🎯 ' + esc(E.Zi.grand) + '</b>', 'cible');
         return;
       }
-      bonne.fait = true;
+      var dz = S.fen.filter(dansZone);
+      var bonne = dz.filter(function(f){ return f.ingr === ingr; })[0];
+      if(!bonne){
+        if(dz.length || !recette[ingr]) erreur('mauvais', btn, dz.length ? dz[0].ingr : null);
+        else erreur('tot', btn, ingr);
+        return;
+      }
+      bonne.fait = true; bonne.verse = true;
       bonne.el.classList.add('fait');
       if(stock && stock[ingr] > 0) stock[ingr]--;
+      /* le crochet de l'atelier (stock des rangements, oreilles de Mimi) : seulement le bon ingrédient, au moment où on le verse */
       if(R.onVerse) try{ R.onVerse(ingr); }catch(e){}
       chute(ingr, btn);
       S.v += (CHOCS[ingr] || 0) * R.chocs * 1.6;
@@ -13897,7 +14059,7 @@ MJ.enregistrer('chaudron', {
       if(z === 'arc-en-ciel'){ S.etoiles++; bulle('<b>⭐ Parfait !</b>', 'ae'); apres(560, function(){ A.etoile(); }); }
       else if(z === 'vert'){ S.etoiles++; bulle('<b>✔</b>'); }
       else bulle('<b>✔</b>');
-      if(S.fen.every(function(f){ return f.fait; })) lancerFinale();
+      if(S.fen.every(function(f){ return f.fait; })) apres(600, lancerFinale);
     }
     function chute(ingr, btn){
       var x = I[ingr] || {ic:'❔'}, g = U.html('<span class="mjc-tombe">' + x.ic + '</span>'), sc = E.scene.getBoundingClientRect(), arr = versEl(E, CX, CY, E.scene);
@@ -13916,27 +14078,59 @@ MJ.enregistrer('chaudron', {
         apres(700, function(){ p.remove(); });
       });
     }
+    /* Une erreur d'ingrédient : l'écran tremble (et rougit), une flèche dit pourquoi, −1 cœur.
+       Règle des cœurs : sans cœur, cette erreur fait perdre ; le dernier cœur perdu, on prévient. */
+    var OUPS = {
+      mauvais:'Attention, ce n\'était pas le bon ingrédient !',
+      tot:'Attention, attends que son carré soit dans la zone !',
+      oubli:'Oublié ! Il fallait le verser quand il était dans la zone.'
+    };
     function erreur(raison, btn, ingr){
-      S.vies--; S.erreurs++;
-      A.erreur(); U.vibrer(70);
-      majVies(true);
-      if(btn && btn.animate) btn.animate([{transform:'translateX(-6px)'}, {transform:'translateX(6px)'}, {transform:'none'}], {duration:240});
-      bulle(raison === 'tard' ? '<b>⏳ Trop tard !</b>' : '<b>⏳ Pas maintenant !</b>', 'ko');
-      if(S.vies <= 0) echec(raison === 'tard' ? 'oubli' : 'erreurs', ingr);
+      if(S.fini || S.termine) return;
+      S.erreurs++;
+      A.erreur(); U.vibrer([80, 40, 80]);
+      if(btn && btn.animate) btn.animate([{transform:'translateX(-7px)'}, {transform:'translateX(7px)'}, {transform:'translateX(-4px)'}, {transform:'none'}], {duration:300});
+      ecranRouge();
+      montrerOups(OUPS[raison] || OUPS.mauvais, btn || E.zoneF);
+      if(S.vies <= 0){ echec(raison, ingr); return; }
+      S.vies--; majVies(true);
+      if(S.vies === 0) apres(1500, function(){ U.plusDeCoeur(E.racine); });
     }
-    /* une fenêtre passée sans rien verser : une erreur (comme verser trop tôt) */
+    function ecranRouge(){
+      var o = E.err; if(!o) return;
+      o.hidden = false; o.style.animation = 'none'; void o.offsetWidth; o.style.animation = '';
+      E.racine.classList.remove('mjc-tremble'); void E.racine.offsetWidth; E.racine.classList.add('mjc-tremble');
+      clearTimeout(S.errT); S.errT = setTimeout(function(){ o.hidden = true; E.racine.classList.remove('mjc-tremble'); }, 900); timers.push(S.errT);
+    }
+    /* la flèche qui montre la caisse touchée (ou la zone de la frise) avec la phrase, et son 🔊 */
+    function montrerOups(txt, cible){
+      var o = E.oups; if(!o) return;
+      o.innerHTML = '<b>' + esc(txt) + '</b>';
+      o.appendChild(MJ.boutonLire(txt));
+      o.hidden = false; o.classList.remove('haut');
+      var rr = E.racine.getBoundingClientRect(), rc = cible.getBoundingClientRect(), w = Math.min(rr.width - 16, 320);
+      var cx = rc.left + rc.width / 2 - rr.left, x = U.borne(cx - w / 2, 8, rr.width - w - 8);
+      o.style.width = w + 'px'; o.style.left = x + 'px'; o.style.top = (rc.bottom - rr.top + 12) + 'px';
+      o.style.setProperty('--ax', Math.round(cx - x) + 'px');
+      o.style.animation = 'none'; void o.offsetWidth; o.style.animation = '';
+      clearTimeout(S.oupsT); S.oupsT = setTimeout(function(){ o.hidden = true; }, 2600); timers.push(S.oupsT);
+    }
+    /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur */
     function manquee(f){
       f.fait = true; f.rate = true;
       f.el.classList.add('rate');
-      erreur('tard', null, f.ingr);
-      if(!S.termine && S.fen.every(function(x){ return x.fait; })) lancerFinale();
+      erreur('oubli', null, f.ingr);
+      if(!S.termine && S.fen.every(function(x){ return x.fait; })) apres(600, lancerFinale);
     }
+    /* tous les ingrédients sont passés : la fiole se remplit tant que la potion est dans sa zone */
     function lancerFinale(){
-      var s = Math.max(S.t + 1.2, S.debutFin), d = U.html('<div class="mjc-fen mjc-fen-fin' + (cible === 'arc-en-ciel' ? ' ae' : '') + '" style="--c:' + E.Zi.c + '"><span>🧪</span><i class="mjc-tenue"></i></div>');
+      if(S.finale || S.termine) return;
+      var d = U.html('<div class="mjc-ing mjc-ing-fin' + (cible === 'arc-en-ciel' ? ' ae' : '') + (R.finaleMax ? ' limite' : '') + '" style="--c:' + E.Zi.c + '"><i>🧪</i><b class="mjc-tenue"></b><u class="mjc-limite"></u></div>');
       E.piste.appendChild(d);
-      S.finale = {s:s, e:s + R.finale, el:d, barre:d.querySelector('.mjc-tenue')};
-      mesurer();
+      S.finale = {t0:S.t, el:d, barre:d.querySelector('.mjc-tenue'), lim:d.querySelector('.mjc-limite')};
       E.racine.classList.add('mjc-phase-fin');
+      E.zoneF.style.setProperty('--c', E.Zi.c);
+      preparerJauge(E, Z, cible);
       bulle('<b>🎯 ' + esc(E.Zi.grand) + '</b>', 'cible');
     }
 
@@ -13986,14 +14180,13 @@ MJ.enregistrer('chaudron', {
       if(S.termine) return;
       S.termine = true;
       E.bulle.hidden = true;
+      var deTrop = 'Plus de cœur : c\'était l\'erreur de trop. ';
       var M = {
-        boum:['Boum ! Tout a cramé', 'La potion était trop chaude : elle a explosé.', 'boum'],
-        trop:['Boum ! Tout a cramé', 'Sept bûches, c\'est trop : le feu a tout fait exploser.', 'boum'],
-        mauvais:['Mauvais ingrédient !', 'La potion est fichue.' + (ingr && I[ingr] ? ' Il fallait ' + I[ingr].ic + ' ' + I[ingr].nom + '.' : ''), 'rate'],
-        gel:['La potion a gelé', 'Trop froid : la potion est devenue de la glace.', 'gel'],
-        eteint:['Le feu s\'est éteint', 'Plus de bûches : le feu s\'est éteint et la potion est fichue.', 'eteint'],
-        oubli:['Trop tard !', 'Il fallait verser ' + (ingr && I[ingr] ? I[ingr].ic + ' ' + I[ingr].nom : 'l\'ingrédient') + ' pendant qu\'il passait sous le repère.', 'rate'],
-        erreurs:['Trop d\'erreurs', 'Des ingrédients versés trop tôt ou oubliés.', 'rate'],
+        boum:['Boum ! Ça a explosé', 'Trop chaud : la potion a explosé. Touille pour la refroidir, et pas trop de bois !', 'boum'],
+        gel:['La potion a gelé', 'Trop froid : il n\'y avait plus assez de bois. Remets une bûche quand l\'icône brille !', 'gel'],
+        mauvais:['Mauvais ingrédient !', deTrop + (ingr && I[ingr] ? 'Il fallait ' + I[ingr].ic + ' ' + I[ingr].nom + '.' : 'Suis la recette à la lettre.'), 'rate'],
+        tot:['Pas encore !', deTrop + 'Il faut attendre que le carré de l\'ingrédient soit dans la zone.', 'rate'],
+        oubli:['Trop tard !', deTrop + 'Il fallait verser ' + (ingr && I[ingr] ? I[ingr].ic + ' ' + I[ingr].nom : 'l\'ingrédient') + ' quand son carré était dans la zone.', 'rate'],
         pasPris:['La potion n\'a pas pris', 'Il fallait garder la potion dans la zone ' + E.Zi.nom + ' jusqu\'à ce que la fiole se remplisse.', 'rate']
       }[raison] || ['Raté…', '', 'rate'];
       A.calme();
@@ -14005,7 +14198,6 @@ MJ.enregistrer('chaudron', {
         M[2] === 'gel' ? '<i class="mjc-glace"></i><span class="mjc-cristaux">❄️ ❄️ ❄️</span>' :
         M[2] === 'eteint' ? '<i class="mjc-fumee grise"></i><i class="mjc-fumee grise f2"></i>' : '<i class="mjc-fumee grise"></i>') +
         '<b class="mjc-fin-txt">' + esc(M[0]) + '</b>';
-      if(M[2] === 'eteint'){ S.L = 0; majBuches(); }
       finir({reussi:false, message:M[0], detail:M[1], score:0, raison:raison}, 1900);
     }
     function reussir(){
@@ -14026,66 +14218,60 @@ MJ.enregistrer('chaudron', {
     }
 
     /* --- la boucle --- */
-    var avant = {coul:'', zone:'', curseur:-1, indice:'', bois:false, retire:false};
-    function equilibre(L){
-      if(L <= 1) return Z.violet[1] * 0.3;
-      if(L === 2) return (Z.bleu[0] + Z.bleu[1]) / 2;
-      if(L === 3) return Z.vert[0] + 2;
-      if(L === 4) return Z.centre + S.E4;
-      if(L === 5) return (Z.rouge[0] + Z.rouge[1]) / 2;
-      return Z.bouillant[0] + 1;
-    }
+    var avant = {coul:'', zone:'', curseur:-1, indice:'', bois:false, danger:''};
     function pasBoucle(dt){
       if(S.fini) return false;
       if(S.pause){ rendu(dt); return true; }
       S.t += dt;
-      /* le feu */
-      S.braise += dt;
-      if(S.braise >= R.combustion){ S.braise -= R.combustion; S.L--; majBuches(); if(S.L <= 0){ echec('eteint'); return false; } }
-      /* 4 bûches : l'équilibre se promène doucement d'un côté ou de l'autre */
-      S.E4t -= dt;
-      if(S.E4t <= 0){ var demi = (Z.vert[1] - Z.vert[0]) / 2; S.E4c = (Math.random() < 0.5 ? -1 : 1) * demi * U.rand(2, 3); S.E4t = U.rand(3, 5); }
-      S.E4 += (S.E4c - S.E4) * Math.min(1, dt * 0.8);
-      /* la louche (inertie quand on la lâche) */
+      /* le bois se consume (vite, à tous les niveaux) */
+      if(S.L > 0){ S.braise += dt; if(S.braise >= R.combustion){ S.braise -= R.combustion; S.L--; majBuches(); } }
+      /* la louche (elle s'arrête vite quand on la lâche : c'est la barre qui a de l'inertie) */
       if(S.tient !== null && S.doigt !== null){
         var d = wrap(S.doigt - S.theta);
         S.theta += d;
         S.omega += (d / Math.max(dt, 0.008) - S.omega) * Math.min(1, dt * 10);
       } else {
         S.theta += S.omega * dt;
-        S.omega *= Math.exp(-dt / 0.7);
+        S.omega *= Math.exp(-dt / 0.25);
       }
       S.omega = U.borne(S.omega, -16, 16);
-      /* la chaleur : le feu tire vers son équilibre, la louche pousse, avec de l'inertie */
-      var k = (FEU_K[Math.min(6, Math.max(1, S.L))] || 0.4) * R.vitesse;
-      var cibleV = k * (equilibre(S.L) - S.h) + KSTIR * S.omega;
-      S.v += (cibleV - S.v) * (1 - Math.exp(-dt / 0.45));
+      /* la température : le feu la fait monter (plus il y a de bûches, plus vite), touiller (dans un sens ou dans l'autre)
+         la fait descendre ; la barre suit avec de l'inertie (R.tau, plus forte aux niveaux hauts) */
+      var cibleV = FEU_K * S.L * (R.mods && R.mods.lent > 0 ? R.mods.lent : 1) - FROID - TOUILLE * Math.abs(S.omega) / (2 * Math.PI);
+      S.v += (cibleV - S.v) * (1 - Math.exp(-dt / R.tau));
       S.h += S.v * dt;
       if(S.h >= 100){ S.h = 100; rendu(dt); echec('boum'); return false; }
       if(S.h <= 0){ S.h = 0; rendu(dt); echec('gel'); return false; }
-      /* la frise */
-      for(var i = 0; i < S.fen.length; i++){
-        var f = S.fen[i];
-        if(!f.fait && S.t > f.e){ manquee(f); if(S.termine){ rendu(dt); return false; } }
+      /* la frise : niveaux 1-2, elle attend que le carré dans la zone soit versé ; sinon, un carré sorti est oublié */
+      S.tf += dt;
+      var nx = prochain();
+      if(R.attend && nx){ var st = arretDe(nx); if(S.tf > st) S.tf = Math.max(st, S.tf - dt); }
+      if(!R.attend){
+        for(var i = 0; i < S.fen.length; i++){
+          var f = S.fen[i];
+          if(!f.fait && S.tf > f.a && posL(f) + G.sq < G.zl + 6){ manquee(f); if(S.termine){ rendu(dt); return false; } }
+        }
       }
-      if(S.finale && S.t >= S.finale.s){
-        if(dans(S.h, cible, Z)) S.tenue += dt; else S.tenue = Math.max(0, S.tenue - dt * 1.5);
+      if(S.finale){
+        if(dans(S.h, cible, Z)) S.tenue += dt; else S.tenue = Math.max(0, S.tenue - dt);
         if(S.tenue >= tenueFin){ rendu(dt); reussir(); return false; }
-        if(S.t > S.finale.e){ rendu(dt); echec('pasPris'); return false; }
+        if(R.finaleMax && S.t - S.finale.t0 > R.finaleMax){ rendu(dt); echec('pasPris'); return false; }
       }
       sonsImage(dt);
       rendu(dt);
       return true;
     }
     /* sons de chaque image et alertes douces (pas trop insistantes) */
-    var alerte = {dedans:true, tZone:-99, feu:'', tFeu:-99};
+    var alerte = {danger:'', tZone:-99, feu:'', tFeu:-99};
+    /* tout en haut de la jauge, ça va exploser ; tout en bas, ça va geler */
+    function danger(){ return S.h >= Z.bouillant[0] ? 'chaud' : (S.h <= Z.violet[1] ? 'froid' : ''); }
     function sonsImage(dt){
       A.maj(dt, S.omega, S.h, true);
-      var ref = S.finale ? Z[cible] : Z.vert, dedans = S.h >= ref[0] && S.h <= ref[1];
-      if(alerte.dedans && !dedans && S.t - alerte.tZone > 4){ A.alerte(); alerte.tZone = S.t; }
-      alerte.dedans = dedans;
-      var feu = S.L <= 2 ? 'bas' : (S.L >= 6 && !(S.finale && cible === 'bouillant') ? 'haut' : '');
-      if(feu && (feu !== alerte.feu || S.t - alerte.tFeu > 10)){ if(feu === 'bas') A.feuBas(); else A.feuHaut(); alerte.tFeu = S.t; }
+      var dg = danger();
+      if(dg && dg !== alerte.danger && S.t - alerte.tZone > 3){ A.alerte(); alerte.tZone = S.t; }
+      alerte.danger = dg;
+      var feu = S.L <= 1 ? 'bas' : '';
+      if(feu && (feu !== alerte.feu || S.t - alerte.tFeu > 8)){ A.feuBas(); alerte.tFeu = S.t; }
       alerte.feu = feu;
     }
     /* n'écrit dans le DOM que ce qui a changé (tablettes modestes) */
@@ -14115,42 +14301,51 @@ MJ.enregistrer('chaudron', {
         pose('ch' + S.L, bl._ch, '@opacity', (pr * 0.75).toFixed(1));
         pose('em' + S.L, bl._em, '@opacity', (0.3 + pr * 0.7).toFixed(1));
       }
-      /* la frise défile */
+      /* la frise défile : chaque carré avance vers la zone 🍲 ; versé, il s'efface sur place */
+      var dus = {}, pret = false;
       S.fen.forEach(function(f){
-        if(!f.fait || !f.cache || f.rate){
-          var gx = tete + (f.s - S.t) * pps;
-          f.el.style.transform = 'translateX(' + gx.toFixed(0) + 'px)';
-          if(f.fait && !f.rate) f.cache = 1;
-          var ix = Math.round(Math.min(Math.max((f.w - 46) / 2, tete - gx + 2), f.w - 49));
-          if(ix !== f.icX){ f.icX = ix; f.ic.style.transform = 'translateX(' + ix + 'px)'; }
+        if(!f.fige){
+          f.el.style.transform = 'translateX(' + Math.round(posL(f)) + 'px)';
+          if(f.verse) f.fige = true;
         }
-        var ouv = !f.fait && S.t >= f.s && S.t <= f.e;
-        if(ouv !== !!f.ouv){ f.ouv = ouv; f.el.classList.toggle('maintenant', ouv); }
+        var z = dansZone(f);
+        if(z){ dus[f.ingr] = 1; pret = true; }
+        if(z !== !!f.z){ f.z = z; f.el.classList.toggle('zone', z); }
       });
+      if(pret !== !!avant.pret){ avant.pret = pret; E.zoneF.classList.toggle('pret', pret); }
+      /* la petite flèche : le prochain carré à verser (niveaux 1 à 3) */
+      var nx = R.fleche && !S.finale ? prochain() : null, fx = nx ? posL(nx) + G.sq / 2 : -99;
+      if(nx && fx < G.w + 12){
+        if(E.flNext.hidden) E.flNext.hidden = false;
+        E.flNext.style.transform = 'translateX(' + Math.round(fx) + 'px)';
+      } else if(!E.flNext.hidden) E.flNext.hidden = true;
       if(S.finale){
-        S.finale.el.style.transform = 'translateX(' + (tete + (S.finale.s - S.t) * pps).toFixed(0) + 'px)';
+        S.finale.el.style.transform = 'translateX(' + Math.round((G.zl + G.zr) / 2 - G.sq / 2) + 'px)';
         pose('barre', S.finale.barre, 'transform', 'scaleX(' + U.borne(S.tenue / tenueFin, 0, 1).toFixed(2) + ')');
-        S.finale.el.classList.toggle('dedans', S.t >= S.finale.s && dans(S.h, cible, Z));
+        if(R.finaleMax) pose('lim', S.finale.lim, 'transform', 'scaleX(' + U.borne(1 - (S.t - S.finale.t0) / R.finaleMax, 0, 1).toFixed(2) + ')');
+        S.finale.el.classList.toggle('dedans', dans(S.h, cible, Z));
       }
-      /* l'aide : la bonne caisse brille quand c'est son tour */
-      if(R.aide){
-        var dus = {};
-        S.fen.forEach(function(f){ if(!f.fait && S.t >= f.s && S.t <= f.e) dus[f.ingr] = 1; });
-        E.boites.querySelectorAll('.mjc-boite').forEach(function(b){ b.classList.toggle('due', !!dus[b.getAttribute('data-ingr')]); });
+      /* l'aide : la bonne caisse brille quand son carré est dans la zone */
+      if(R.aide) E.boites.querySelectorAll('.mjc-boite').forEach(function(b){ b.classList.toggle('due', !!dus[b.getAttribute('data-ingr')]); });
+      /* près du haut : ça bout à gros bouillons et le chaudron tremble ; près du bas : ça gèle */
+      var dg = danger();
+      if(dg !== avant.danger){
+        avant.danger = dg;
+        E.racine.classList.toggle('mjc-bout', dg === 'chaud');
+        E.racine.classList.toggle('mjc-gele', dg === 'froid');
+        if(dg){ E.danger.innerHTML = dg === 'chaud' ? '🌋 Ça va exploser !' : '🧊 Ça va geler !'; E.danger.className = 'mjc-danger ' + dg; E.danger.hidden = false; }
+        else E.danger.hidden = true;
       }
-      /* indices : quel sens tourner, le feu */
+      /* indices : touiller quand ça monte trop ; remettre du bois quand ça descend trop */
       if(R.indices){
         var ref = S.finale ? Z[cible] : Z.vert, ind = '';
-        if(S.h < ref[0] + 1.5 && S.v < 1) ind = 'chauffe';
-        else if(S.h > ref[1] - 1.5 && S.v > -1) ind = 'refroidit';
+        if(S.h > ref[1] - 1.5 && S.v > -1) ind = 'refroidit';
+        else if(S.h < ref[0] + 1.5 && S.v < 1) ind = 'bois';
         if(ind !== avant.indice){
-          E.racine.classList.toggle('mjc-indice-chauffe', ind === 'chauffe');
           E.racine.classList.toggle('mjc-indice-refroidit', ind === 'refroidit');
+          E.racine.classList.toggle('mjc-indice-bois', ind === 'bois');
           avant.indice = ind;
         }
-        var bois = S.L <= 2, retire = S.L >= 6 && !(S.finale && cible === 'bouillant');
-        if(bois !== avant.bois){ E.racine.classList.toggle('mjc-indice-bois', bois); avant.bois = bois; }
-        if(retire !== avant.retire){ E.racine.classList.toggle('mjc-indice-retire', retire); avant.retire = retire; }
       }
     }
     rendu(0);
@@ -14158,9 +14353,11 @@ MJ.enregistrer('chaudron', {
     S.api = {
       pause:function(b){ S.pause = !!b; if(b) A.calme(); },
       chaleur:function(h){ S.h = h; S.v = 0; avant.curseur = -1; rendu(0); },
+      vitesse:function(v){ S.v = v; },
       angle:function(a){ S.theta = a; S.omega = 0; rendu(0); },
-      buches:function(n){ S.L = n; majBuches(); },
+      buches:function(n){ S.L = U.borne(n, 0, MAX_BUCHES); majBuches(); },
       verser:function(ingr){ verser(ingr, E.boites.querySelector('[data-ingr="' + ingr + '"]')); },
+      dansZone:function(){ return S.fen.filter(dansZone).map(function(f){ return f.ingr; }); },
       ajouterBuche:ajouterBuche, retirerBuche:retirerBuche
     };
     return {arreter:function(){
@@ -14205,15 +14402,17 @@ function brancherLire(root){
     if(b && root.contains(b)){ e.stopPropagation(); U.son('clic'); U.lire(b.getAttribute('data-lire')); }
   });
 }
+/* la règle des cœurs (mj-core.js) : les erreurs permises sont des cœurs ; plus de cœur → la prochaine erreur fait perdre */
 function jaugeHTML(total){
-  if(total <= 0) return '<div class="mjb-jauge" data-total="0"><span class="mjb-jauge-txt">⚠️ Aucune erreur permise</span></div>';
-  return '<div class="mjb-jauge" data-total="' + total + '" aria-label="Erreurs permises"><span class="mjb-jauge-ic">🛡️</span>' + plage(total).map(function(){ return '<i class="on"></i>'; }).join('') + '</div>';
+  total = Math.max(0, total || 0);
+  return '<div class="mjb-jauge" data-total="' + total + '">' + U.coeurs(total, total) + '</div>';
 }
 function majJauge(root, erreurs){
   var j = root.querySelector('.mjb-jauge'); if(!j) return;
-  var pts = j.querySelectorAll('i');
-  for(var i = 0; i < pts.length; i++) pts[i].className = i < pts.length - erreurs ? 'on' : 'off';
+  var t = +j.getAttribute('data-total') || 0, r = Math.max(0, t - erreurs);
+  j.innerHTML = U.coeurs(r, t, erreurs <= t ? r : undefined);
   j.classList.remove('choc'); void j.offsetWidth; j.classList.add('choc');
+  if(r === 0 && erreurs === t && t > 0) U.plusDeCoeur(root);
 }
 function secoue(node){ if(!node) return; node.classList.remove('mjb-secoue'); void node.offsetWidth; node.classList.add('mjb-secoue'); }
 function sansAccents(s){ return String(s).normalize ? String(s).normalize('NFD').replace(/[̀-ͯ]/g, '') : String(s); }
@@ -17006,7 +17205,7 @@ function lignesGrille(p, info){
   l.push({nom:'À trouver', val:info.cats});
   if(info.multi) l.push({nom:'Attention', val:'on peut aller à 2 endroits !'});
   l.push({nom:'Indices', val:info.indices});
-  l.push({nom:'Cœurs (une erreur en coûte un)', val:new Array(p.coeurs + 1).join('❤️')});
+  l.push({nom:'Cœurs (erreurs permises)', val:p.coeurs > 1 ? new Array(p.coeurs).join('❤️') : '0'});
   l.push({nom:'Sablier', val:p.temps ? Math.floor(p.temps / 60) + ' min' + (p.temps % 60 ? ' ' + (p.temps % 60) + ' s' : '') : 'aucun'});
   if(p.aide) l.push({nom:'Croix automatiques', val:'oui'}, {nom:'Coups de pouce 💡', val:String(p.aide)});
   if(p.revele) l.push({nom:'Les erreurs se voient', val:'oui'});
@@ -17180,7 +17379,10 @@ MJ.enregistrer('grille', {
           s.textContent = Cc.mode === 'un' ? n + '/' + k : n + ' ✓';
         });
         var hc = root.querySelector('.mjg-coeurs');
-        hc.innerHTML = plage(coeursMax).map(function(j){ return '<i class="' + (j < coeurs ? 'on' : 'off') + '">' + (j < coeurs ? '❤️' : '🖤') + '</i>'; }).join('');
+        /* la règle des cœurs (mj-core.js) : cœurs = erreurs encore permises (coeurs − 1 : on perd quand coeurs tombe à 0) */
+        hc.innerHTML = U.coeurs(coeurs - 1, coeursMax - 1, hc.__avant !== undefined && coeurs < hc.__avant ? coeurs - 1 : undefined);
+        if(hc.__avant !== undefined && coeurs < hc.__avant && coeurs === 1) U.plusDeCoeur(root);
+        hc.__avant = coeurs;
         var bp = root.querySelector('.mjg-pouce'); if(bp){ bp.querySelector('b').textContent = '×' + pouces; bp.disabled = pouces <= 0 || termine; }
         root.__test.marques = Array.prototype.slice.call(marques);
       }
@@ -17268,7 +17470,7 @@ MJ.enregistrer('grille', {
         dessiner();
         if(coeurs <= 0){
           this.disabled = true;
-          T.t(function(){ finir({reussi:false, score:0, erreurs:coeursMax, message:'Ça ne tient pas debout…', detail:'Plus de cœurs : la grille reste un mystère.'}); }, 900);
+          T.t(function(){ finir({reussi:false, score:0, erreurs:coeursMax, message:'Ça ne tient pas debout…', detail:'Plus de cœur : c\'était l\'erreur de trop, la grille reste un mystère.'}); }, 900);
         }
       });
 
@@ -17377,7 +17579,8 @@ MJ.enregistrer('mots', {
     var banque = U.melanger(bons.concat(pieges, intrus)).map(function(m, i){ return {id:i, mot:m, utilise:null}; });
     var choisi = null, verifs = params.verifs || 0, indices = params.indices || 0, fini = false;
     var bonsMots = {}; trous.forEach(function(t){ bonsMots[t.mot] = true; });
-    var racine = U.html('<div class="mm"><div class="mm-parchemin"></div><div class="mm-info"></div><div class="mm-banque"></div>' +
+    /* la règle des cœurs : aucune erreur permise ici (un mot faux à la validation fait perdre) → 0 cœur */
+    var racine = U.html('<div class="mm"><div class="mm-coeurs">' + U.coeurs(0, 0) + '</div><div class="mm-parchemin"></div><div class="mm-info"></div><div class="mm-banque"></div>' +
       '<div class="mm-actions"><button class="btn second petit mm-relire" type="button">🔊 Relire ma phrase</button>' +
       '<button class="btn second petit mm-indice" type="button"></button>' +
       '<button class="btn second petit mm-verif" type="button"></button><button class="btn mm-valider" type="button">✔ Valider</button></div></div>');
@@ -17711,7 +17914,8 @@ MJ.enregistrer('ragots', {
         '<div class="mr-conteur"><div class="mr-portrait"></div><span class="mr-nom"></span></div>' +
         '<div class="mr-bulle"><p class="mr-texte"></p><button type="button" class="mr-lire" aria-label="Écouter le ragot">🔊</button><p class="mr-carnet"></p></div>' +
         '<div class="mr-comptoir"></div></div>' +
-      '<div class="mr-pastilles">' + rag.map(function(){ return '<i></i>'; }).join('') + '</div>' +
+      /* la règle des cœurs : les erreurs permises (on ne dit qu'à la fin lesquelles étaient fausses, donc ils ne bougent pas) */
+      '<div class="mr-pastilles">' + rag.map(function(){ return '<i></i>'; }).join('') + '<span class="mr-coeurs">' + U.coeurs(p.erreurs || 0, p.erreurs || 0) + '</span></div>' +
       '<div class="mr-choix"><button type="button" class="mr-gros mr-oui" data-v="1">👍 J\'y crois</button><button type="button" class="mr-gros mr-non" data-v="0">👎 C\'est faux</button></div>' +
       '<div class="mr-recap" hidden></div></div>');
     el.appendChild(racine);
@@ -18485,7 +18689,8 @@ MJ.enregistrer('depositions', {
       lignes:[
         {nom:'Témoins à écouter', val:String(nbDep)},
         {nom:'Le menteur', val:cache},
-        {nom:'Tu peux accuser', val:coeurs + ' fois'}
+        {nom:'Tu peux accuser', val:coeurs + ' fois'},
+        {nom:'Cœurs (erreurs permises)', val:String(coeurs - 1)}
       ].concat(detail ? [{nom:'Montrer aussi sa phrase fausse', val:'oui'}] : [])
        .concat(leurre ? [{nom:'Un témoin tête en l\'air (mais honnête)', val:leurre >= 1 ? 'oui' : 'peut-être'}] : [])
        .concat([{nom:'Sablier', val:duree ? fmtTemps(duree) : 'non, prends ton temps'}])
@@ -18727,11 +18932,11 @@ MJ.enregistrer('depositions', {
       }
     }
     function majCoeurs(choc){
-      var s = '';
-      for(var i = 0; i < etat.total; i++) s += '<i class="' + (i < etat.coeurs ? 'on' : 'off') + '">' + (i < etat.coeurs ? '❤️' : '🤍') + '</i>';
-      coeursEl.innerHTML = s;
+      /* la règle des cœurs (mj-core.js) : cœurs = erreurs encore permises (accusations − 1 : la dernière ne doit pas rater) */
+      coeursEl.innerHTML = U.coeurs(etat.coeurs - 1, etat.total - 1, choc ? etat.coeurs - 1 : undefined);
       coeursEl.setAttribute('aria-label', etat.coeurs + ' accusation' + (etat.coeurs > 1 ? 's' : '') + ' possible' + (etat.coeurs > 1 ? 's' : ''));
       if(choc){ coeursEl.classList.remove('choc'); void coeursEl.offsetWidth; coeursEl.classList.add('choc'); }
+      if(choc && etat.coeurs === 1) U.plusDeCoeur(coeursEl);
     }
     function majActions(){
       var enJeu = etat.phase === 'jeu', det = etat.phase === 'detail', actif = enJeu || det;
@@ -19731,7 +19936,8 @@ MJ.enregistrer('alphabet', {
     p.lignes = [
       {nom:'Le code', val:'tiré au hasard'},
       {nom:'Temps', val:'environ ' + U.fmt(p.tempsLettre / lent, 0) + ' s par lettre'},
-      {nom:'Essais pour valider', val:coeurs + ' ❤️'},
+      {nom:'Essais pour valider', val:String(coeurs)},
+      {nom:'Cœurs (erreurs permises)', val:(coeurs - 1) + ' ❤️'},
       {nom:'Parchemin abîmé', val:abime},
       {nom:'La clé', val:pCle >= .99 ? 'complète' : pCle >= .75 ? 'il manque quelques lettres' : 'il manque beaucoup de lettres'},
       {nom:'Lettres fausses', val:p.montrerFausses ? 'montrées en rouge' : 'seulement comptées'}
@@ -19813,7 +20019,7 @@ MJ.enregistrer('alphabet', {
       '<div class="mjs-in">' +
         '<div class="mjs-haut">' +
           '<div class="mjs-sablier" aria-label="Temps restant"><span class="mjs-sab-ic">⏳</span><span class="mjs-barre"><i></i></span><b class="mjs-sec">' + fmtTemps(total) + '</b></div>' +
-          '<div class="mjs-coeurs" aria-label="Essais pour valider">' + plage(coeurs).map(function(){ return '<i>❤️</i>'; }).join('') + '</div>' +
+          '<div class="mjs-coeurs">' + U.coeurs(coeurs - 1, coeursMax - 1) + '</div>' +
         '</div>' +
         '<div class="mjs-corps">' +
           '<div class="mjs-gauche">' +
@@ -19895,9 +20101,12 @@ MJ.enregistrer('alphabet', {
       if(bloque || sel < 0 || cases[sel].donne) return;
       poser(sel, ''); U.son('clic'); majValider();
     }
+    /* la règle des cœurs (mj-core.js) : cœurs = validations ratées encore permises (essais − 1) */
     function majCoeurs(){
-      for(var k = 0; k < coeursN.length; k++) coeursN[k].classList.toggle('perdu', k >= coeurs);
-      var cc = root.querySelector('.mjs-coeurs'); cc.classList.remove('choc'); void cc.offsetWidth; cc.classList.add('choc');
+      var cc = root.querySelector('.mjs-coeurs');
+      cc.innerHTML = U.coeurs(coeurs - 1, coeursMax - 1, coeurs - 1);
+      cc.classList.remove('choc'); void cc.offsetWidth; cc.classList.add('choc');
+      if(coeurs === 1) U.plusDeCoeur(root);
     }
     function finir(res){
       if(fini || arrete) return;
@@ -20266,6 +20475,7 @@ MJ.enregistrer('runes', {
           '<div class="mjs-modele"><svg viewBox="0 0 100 100" aria-label="Modèle"><use href="#' + u + '"/>' + (quad ? '<path class="mjs-quad" d="' + quad + '"/>' : '') + '</svg><span>Modèle</span></div>' +
           '<div class="mjs-coups" role="status" aria-label="Coups restants"><span class="mjs-coups-ic">🕯️</span><b>' + coups + '</b><span class="mjs-coups-txt">coups</span>' +
             '<small>au mieux : ' + optimum + '</small><span class="mjs-coups-barre"><i></i></span></div>' +
+          '<div class="mjs-r-coeurs"></div>' +
           (pouce ? '<button type="button" class="mjs-pouce">🤝 Coup de pouce <b>×' + pouce + '</b></button>' : '') +
           '<p class="mjs-r-aide">👆 Touche : tourner · ✋ Glisse : échanger</p>' +
         '</div>' +
@@ -20294,7 +20504,18 @@ MJ.enregistrer('runes', {
       coupsBar.style.transform = 'scaleX(' + Math.max(0, coups / coupsMax).toFixed(4) + ')';
       coupsBox.classList.toggle('alerte', coups <= Math.max(3, Math.round(coupsMax * .12)) && coups > 0);
       coupsBox.classList.remove('moins'); void coupsBox.offsetWidth; coupsBox.classList.add('moins');
+      /* la règle des cœurs : les coups « en trop » encore permis (coups − le minimum encore nécessaire) */
+      var h = coups - minRestant(), hc = root.querySelector('.mjs-r-coeurs');
+      if(hc){ hc.innerHTML = U.coeurs(Math.max(0, h), Math.max(coeursR, h), h < coeursAvant ? Math.max(0, h) : undefined); }
+      if(h === 0 && coeursAvant > 0) U.plusDeCoeur(root);
+      coeursAvant = h;
     }
+    function minRestant(){
+      var rot = tuiles.reduce(function(s, t){ return s + (4 - t.rot) % 4; }, 0), vu2 = {}, cyc = 0;
+      tuiles.forEach(function(t){ if(vu2[t.home]) return; cyc++; var c = t; while(!vu2[c.home]){ vu2[c.home] = true; c = tuiles[c.pos]; } });
+      return rot + (N - cyc);
+    }
+    var coeursR = Math.max(0, coups - optimum), coeursAvant = coeursR;
     majCoups(); coupsBox.classList.remove('moins');
     function resolu(){ return tuiles.every(bien); }
     function finir(res){ if(fini || arrete) return; fini = true; bloque = true; T.tout(); nettoyer(); fin(res); }
@@ -20305,7 +20526,7 @@ MJ.enregistrer('runes', {
     function perdre(){
       bloque = true; root.classList.add('eteint'); U.son('echec');
       var nb = tuiles.filter(bien).length;
-      T.t(function(){ finir({reussi:false, score:f2(nb / N * .5), coups:joues, optimum:optimum, image:R.image, message:'Tant pis…', detail:'Plus de coups : ' + R.nom + ' reste en morceaux (' + nb + ' pièce' + (nb > 1 ? 's' : '') + ' sur ' + N + ' en place).'}); }, 1100);
+      T.t(function(){ finir({reussi:false, score:f2(nb / N * .5), coups:joues, optimum:optimum, image:R.image, message:'Tant pis…', detail:(coups > 0 ? 'Plus de cœur : il ne reste plus assez de coups. ' : 'Plus de coups : ') + R.nom + ' reste en morceaux (' + nb + ' pièce' + (nb > 1 ? 's' : '') + ' sur ' + N + ' en place).'}); }, 1100);
     }
     function verifJuste(t){
       var n = noeud(t), ok = bien(t);
@@ -20317,7 +20538,7 @@ MJ.enregistrer('runes', {
     function coup(){
       coups--; joues++; majCoups();
       if(resolu()){ gagner(); return; }
-      if(coups <= 0) perdre();
+      if(coups <= 0 || coups < minRestant()) perdre();   /* plus de cœur et un coup de trop : on ne peut plus finir à temps */
     }
     function tourner(t){
       t.rot = (t.rot + 1) % 4; t.deg += 90; tourne(t); U.son('tic');
@@ -20424,7 +20645,7 @@ MJ.PHRASES = {
   tir:'Tire à fond, lâche : la flèche transperce !',
   bulles:'Touche les bulles dans le même ordre !',
   melange:'Fais la même couleur que la fiole !',
-  chaudron:'Tourne la louche et verse au bon moment !',
+  chaudron:'Le bois chauffe, touiller refroidit, puis verse !',
   differences:'Trouve les différences entre les deux images !',
   double:'Trouve vite le dessin pareil !',
   insectes:'Écrase les méchants, pas les gentils !',
@@ -20806,12 +21027,109 @@ D('melange', function(el){
   }, 4.1);
 });
 
-/* CHAUDRON (d'après la nouvelle règle ; mj-chaudron.js n'est pas touché) :
-   la main tourne la louche (sens des aiguilles : ça chauffe, la potion rougit),
-   touche les bûches (le feu monte), puis quand l'ingrédient de la frise arrive
-   sous le petit chaudron, touche le même sur l'étagère : il vole dans la marmite
-   et quitte la frise. */
+/* CHAUDRON (règle du 4 novembre, 11 h 26) : la main touche le tas de bois (une bûche vole
+   dans le feu, la barre de la jauge monte), puis touille (la barre redescend, et continue
+   un peu quand la main s'arrête : l'inertie) ; un carré de couleur arrive dans la zone de
+   la frise et y attend (une petite flèche le montre) ; la main touche la caisse de la même
+   couleur : l'ingrédient vole dans la marmite. Le petit + du bois pulse quand le feu baisse. */
 D('chaudron', function(el){
+  var P = 11.5, CX = 150, RY = 182, ING = ['💧', '🍯', '🫐', '🍄', '☘️'], CC = ['#5aa9ff', '#f3c13e', '#7d3aa8', '#8ff3ff', '#52c05e'], CIBLE = 2;
+  var XE = [34, 92, 150, 208, 266], YE = 384, BU = [40, 300], ZX = 20, ZW = 74, GX = 276, GY0 = 300, GH = 196;
+  var th0 = -.55;
+  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
+  /* la louche tourne entre 3,3 et 4,9 s */
+  function th(t){ return th0 - Math.PI * 4 * Math.max(0, Math.min(1, (t - 3.3) / 1.6)); }
+  var b0 = bout(th0);
+  /* la main : le tas de bois (0,9 s), la louche (3,3 → 4,9 s), la caisse (7,7 s) */
+  var hors = piste([[0, 262, 250, 0], [.7, BU[0] + 30, BU[1] - 24, 0], [.9, BU[0] + 30, BU[1] - 24, 1], [1.08, BU[0] + 30, BU[1] - 24, 0], [2.7, 230, 200, 0], [3.25, b0.hx, b0.hy, 0]]);
+  var apres = piste([[4.9, b0.hx, b0.hy, 0], [5.6, 262, 250, 0], [7.25, XE[CIBLE] + 4, YE - 30, 0], [7.6, XE[CIBLE], YE - 4, 1], [7.8, XE[CIBLE], YE - 4, 0], [8.7, 262, 250, 0], [P, 262, 250, 0]]);
+  var flammes = '<path d="M0,0 C-16,-6 -14,-26 -4,-40 C-4,-28 4,-26 6,-34 C18,-22 18,-4 0,0 Z" fill="#f5b945" stroke="#e8693c" stroke-width="3"/>';
+  var buche = function(x, y, r){ return '<g transform="translate(' + x + ',' + y + ') rotate(' + r + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/><ellipse cx="17" cy="0" rx="3.8" ry="5.5" fill="#d9a066" stroke="' + K + '" stroke-width="1.5"/></g>'; };
+  var id = uid('rgch');
+  var svg = svgDemo(el,
+    '<defs><linearGradient id="' + id + 'f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2148"/><stop offset="1" stop-color="#1a1430"/></linearGradient>' +
+    '<linearGradient id="' + id + 'g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#8b52e0"/><stop offset=".25" stop-color="#3f86f0"/><stop offset=".5" stop-color="#3fcf6a"/><stop offset=".72" stop-color="#ffd23f"/><stop offset=".88" stop-color="#f04a35"/><stop offset="1" stop-color="#ff2410"/></linearGradient>' +
+    '<clipPath id="' + id + 'c"><rect x="10" y="12" width="280" height="50" rx="11"/></clipPath></defs>' +
+    '<rect width="300" height="420" fill="url(#' + id + 'f)"/>' +
+    /* la frise et sa zone 🍲 */
+    '<rect x="10" y="12" width="280" height="50" rx="11" fill="#2a1d14" stroke="#24182e" stroke-width="3"/>' +
+    '<rect class="rg-zone" x="' + ZX + '" y="15" width="' + ZW + '" height="44" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#ffd36a" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    emo(ZX + 9, 23, 11, '🍲') +
+    '<g clip-path="url(#' + id + 'c)"><rect class="rg-carre" x="0" y="27" width="30" height="30" rx="7" fill="' + CC[CIBLE] + '" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<rect class="rg-carre2" x="0" y="27" width="30" height="30" rx="7" fill="' + CC[0] + '" stroke="' + K + '" stroke-width="2.5"/></g>' +
+    '<path class="rg-fl" d="M-8,0 L8,0 L0,10 Z" fill="#ffd36a" stroke="' + K + '" stroke-width="1.5"/>' +
+    /* la jauge : en haut ça explose, en bas ça gèle ; la bande verte au milieu */
+    emo(GX + 8, GY0 - GH - 12, 14, '🌋') + emo(GX + 8, GY0 + 14, 14, '🧊') +
+    '<rect x="' + GX + '" y="' + (GY0 - GH) + '" width="16" height="' + GH + '" rx="8" fill="url(#' + id + 'g)" stroke="' + K + '" stroke-width="3"/>' +
+    '<rect x="' + (GX - 4) + '" y="' + (GY0 - GH * .62) + '" width="24" height="' + (GH * .24) + '" rx="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/>' +
+    '<rect class="rg-curseur" x="' + (GX - 6) + '" y="0" width="28" height="7" rx="3.5" fill="#fff" stroke="' + K + '" stroke-width="2"/>' +
+    /* le tas de bois et son + */
+    '<g>' + buche(BU[0], BU[1] + 26, 0) + buche(BU[0], BU[1] + 13, 0) + buche(BU[0], BU[1], 0) +
+      '<g class="rg-plus"><circle cx="' + (BU[0] + 26) + '" cy="' + (BU[1] - 22) + '" r="16" fill="#ffd36a" opacity="0" class="rg-plus-halo"/><circle cx="' + (BU[0] + 26) + '" cy="' + (BU[1] - 22) + '" r="11" fill="#5fcf86" stroke="' + K + '" stroke-width="2"/><path d="M' + (BU[0] + 20) + ',' + (BU[1] - 22) + ' H' + (BU[0] + 32) + ' M' + (BU[0] + 26) + ',' + (BU[1] - 28) + ' V' + (BU[1] - 16) + '" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
+    '<ellipse class="rg-lueur" cx="150" cy="262" rx="64" ry="18" fill="#f5b945" opacity=".25"/>' +
+    '<g class="rg-feu" transform="translate(150,282)"><g transform="translate(-22,0)">' + flammes + '</g><g transform="translate(22,0) scale(.85)">' + flammes + '</g><g transform="scale(1.15)">' + flammes + '</g></g>' +
+    buche(135, 289, 18) + buche(165, 289, -18) +
+    '<g class="rg-marmite"><path d="M84,' + RY + ' C82,226 104,252 150,252 C196,252 218,226 216,' + RY + ' Z" fill="#3a3550" stroke="' + K + '" stroke-width="4"/>' +
+    '<ellipse cx="150" cy="' + RY + '" rx="66" ry="16" fill="#3a3550" stroke="' + K + '" stroke-width="4"/>' +
+    '<ellipse class="rg-potion" cx="150" cy="' + RY + '" rx="56" ry="11" fill="#5fcf86"/>' +
+    '<g class="rg-bulles"><circle cx="130" cy="' + (RY - 2) + '" r="3" fill="#fff" opacity=".5"/><circle cx="168" cy="' + (RY + 2) + '" r="2.4" fill="#fff" opacity=".5"/></g>' +
+    '<g class="rg-ronds" opacity="0"><ellipse cx="150" cy="' + RY + '" rx="20" ry="5" fill="none" stroke="#fff" stroke-width="2.5"/><ellipse cx="150" cy="' + RY + '" rx="34" ry="8" fill="none" stroke="#fff" stroke-width="2"/></g>' +
+    '<g class="rg-louche"><path d="" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/><path d="" stroke="#c08a4a" stroke-width="6" stroke-linecap="round"/><ellipse rx="10" ry="5" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
+    '<g class="rg-fleche" opacity="0"><path d="M220,150 C200,124 100,124 80,150" stroke="#5ab8ff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M76,156 L89,150 L77,142 Z" fill="#5ab8ff"/></g>' +
+    /* les caisses : chacune avec la bande de sa couleur */
+    '<rect x="6" y="408" width="288" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
+    ING.map(function(ic, i){ return '<g class="e' + i + '"><rect x="' + (XE[i] - 25) + '" y="' + (YE - 24) + '" width="50" height="48" rx="9" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<rect x="' + (XE[i] - 20) + '" y="' + (YE - 20) + '" width="40" height="10" rx="4" fill="' + CC[i] + '" stroke="' + K + '" stroke-width="1.5"/>' + emo(XE[i], YE + 7, 20, ic) + '</g>'; }).join('') +
+    emo(0, 0, 24, ING[CIBLE], 'rg-vol') +
+    '<g class="rg-bvol" opacity="0">' + buche(0, 0, 0) + '</g>');
+  var louche = $(svg, '.rg-louche'), potion = $(svg, '.rg-potion'), fleche = $(svg, '.rg-fleche'), feu = $(svg, '.rg-feu'), lueur = $(svg, '.rg-lueur');
+  var carre = $(svg, '.rg-carre'), carre2 = $(svg, '.rg-carre2'), zone = $(svg, '.rg-zone'), fl = $(svg, '.rg-fl'), curseur = $(svg, '.rg-curseur');
+  var vol = $(svg, '.rg-vol'), bvol = $(svg, '.rg-bvol'), ronds = $(svg, '.rg-ronds'), plus = $(svg, '.rg-plus'), halo = $(svg, '.rg-plus-halo');
+  var eCible = $(svg, '.e' + CIBLE), gMain = $(svg, '.rg-main'), bulles = $(svg, '.rg-bulles');
+  var XS = ZX + ZW / 2 - 15;   /* le carré s'arrête au milieu de la zone */
+  return boucle(el, P, function(t){
+    var a = th(t), b = bout(a), dl = 'M' + f1(b.bx) + ',' + f1(b.by) + ' L' + f1(b.hx) + ',' + f1(b.hy);
+    louche.children[0].setAttribute('d', dl); louche.children[1].setAttribute('d', dl);
+    louche.children[2].setAttribute('cx', f1(b.bx)); louche.children[2].setAttribute('cy', f1(b.by));
+    var m = t < 3.25 ? hors(t) : (t < 4.9 ? {x:b.hx, y:b.hy, p:true} : apres(t));
+    poserMain(gMain, m.x, m.y, m.p, t, [.9, 7.6]);
+    /* la barre : monte avec la bûche (1,3 → 3,2 s), redescend en touillant (3,4 → 4,9 s) et continue un peu (inertie, jusqu'à 5,5 s), puis le feu la remet au milieu */
+    var c = .5 + .2 * entre(t, 1.3, 3.2) - .27 * entre(t, 3.4, 5.5) + .07 * entre(t, 5.6, 7);
+    curseur.setAttribute('y', f1(GY0 - GH * c - 3.5));
+    potion.setAttribute('fill', c > .5 ? mixC('#5fcf86', '#e8693c', Math.min(1, (c - .5) / .2)) : mixC('#5fcf86', '#3f86f0', Math.min(1, (.5 - c) / .2)));
+    vis(fleche, entre(t, 3.3, 3.6) * (1 - entre(t, 4.8, 5.1)));
+    bulles.setAttribute('transform', 'translate(0,' + f1(-Math.abs(Math.sin(t * (3 + 6 * Math.max(0, c - .5)))) * 3) + ')');
+    /* la bûche vole du tas au feu */
+    var ub = (t - .95) / .5;
+    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) - 60 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
+    var niv = .75 + .45 * entre(t, 1.4, 1.8) - .4 * entre(t, 8.6, 10.6), danse = 1 + .06 * Math.sin(t * 11);
+    feu.setAttribute('transform', 'translate(150,282) scale(' + (niv * danse).toFixed(3) + ',' + (niv / danse).toFixed(3) + ')');
+    lueur.setAttribute('opacity', (.08 + .3 * Math.max(0, niv - .35)).toFixed(2));
+    /* le + du bois pulse quand le feu baisse (au début et à la fin) */
+    var pulse = (t < .9 || t > 9.6) ? .5 + .5 * Math.sin(t * 12) : 0;
+    vis(halo, pulse * .7);
+    plus.setAttribute('transform', pulse ? 'translate(' + (BU[0] + 26) + ',' + (BU[1] - 22) + ') scale(' + (1 + .18 * pulse).toFixed(3) + ') translate(' + (-(BU[0] + 26)) + ',' + (-(BU[1] - 22)) + ')' : '');
+    /* le carré de couleur : il arrive (5,4 → 6,8 s), attend dans la zone, puis disparaît quand on verse (7,9 s) */
+    var xc = Math.max(XS, 300 - (300 - XS) * entre(t, 5.4, 6.8)), pop = entre(t, 7.85, 8.1);
+    carre.setAttribute('x', f1(xc)); vis(carre, (1 - pop) * entre(t, 5.3, 5.5));
+    carre2.setAttribute('x', f1(300 - 70 * entre(t, 8.3, 11))); vis(carre2, entre(t, 8.3, 8.6) * (1 - entre(t, 11.1, 11.4)));
+    var dansZ = xc <= ZX + ZW - 4 && t < 7.9;
+    zone.setAttribute('fill-opacity', dansZ ? (.22 + .12 * Math.sin(t * 9)).toFixed(2) : '.12');
+    zone.setAttribute('stroke-dasharray', dansZ ? 'none' : '6 4');
+    pose(fl, xc + 15, 14 + 2 * Math.abs(Math.sin(t * 6))); vis(fl, t > 5.4 && t < 7.9 ? 1 : 0);
+    /* l'ingrédient vole de la caisse à la marmite */
+    var ui = (t - 7.7) / .6;
+    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4, ui) - 80 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(24 * (1 - .35 * ui))); }
+    else vis(vol, 0);
+    eCible.setAttribute('transform', t > 7.6 && t < 7.8 ? 'translate(0,3)' : '');
+    var ur = (t - 8.3) / .55, on = ur > 0 && ur < 1;
+    vis(ronds, on ? 1 - ur : 0);
+    ronds.setAttribute('transform', on ? 'translate(150,' + RY + ') scale(' + (1 + ur * .8).toFixed(2) + ') translate(-150,-' + RY + ')' : '');
+  }, 6.9);
+});
+
+/* (ancienne démo du chaudron, remplacée le 4 novembre : plus enregistrée) */
+function demoChaudronAncienne(el){
   var P = 9.6, CX = 150, RY = 182, V = 140 / 6, ING = ['🌿', '🍄', '🫐', '🍯', '🪻'], CIBLE = 1, XE = [34, 92, 150, 208, 266], YE = 388, BU = [38, 290];
   var th0 = -.55;
   function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
@@ -20878,7 +21196,8 @@ D('chaudron', function(el){
     vis(ronds, on ? 1 - ur : 0);
     ronds.setAttribute('transform', on ? 'translate(150,' + RY + ') scale(' + (1 + ur * .8).toFixed(2) + ') translate(-150,-' + RY + ')' : '');
   }, 1.7);
-});
+}
+void demoChaudronAncienne;
 
 /* LES 7 DIFFÉRENCES — deux étagères l'une sous l'autre ; la main touche une
    différence en bas : elle s'entoure sur les deux images. Puis une autre. */

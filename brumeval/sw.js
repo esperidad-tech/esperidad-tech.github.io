@@ -2,7 +2,7 @@
    Les voix (fichiers de Hugging Face) sont gardées par le moteur de voix lui-même (OPFS) : on ne les copie jamais ici.
    « 📥 Jouer sans internet » (menu ☰, heros.js) demande par message de tout garder tout de suite : le jeu, la salle,
    les icônes, le manifeste, les polices utilisées, et, si les voix sont là, les fichiers du moteur des voix. */
-var CACHE = 'brumeval-20261104-1025';
+var CACHE = 'brumeval-20261104-1107';
 var EXT = 'brumeval-ext';   /* polices et moteur des voix (adresses avec numéro de version) : gardés d'une version du jeu à l'autre */
 var FICHIERS = ['./', './index.html', './salle.html', './manifest.webmanifest', './favicon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 /* jsDelivr : le moteur des voix (vits-web) et ce qu'il importe ; cdnjs : le moteur ONNX ; Google : les polices */
