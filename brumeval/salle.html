@@ -3149,7 +3149,7 @@ D.TALENTS = {
   ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
   /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
      Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
-  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Devant un bâtiment, tu entres sans bruit et tu surprends un bout de conversation : une phrase à trous, dans ton Carnet. Gratuit, deux fois par enquête.', fx:{oreille:2}},
+  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Devant certains bâtiments, tu entres sans bruit et tu surprends un bout de conversation : une phrase à trous, dans ton Carnet (deux fois par enquête). Et tu entends mieux que tout le monde : dans toutes tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},
   exiger:{role:'barde', niv:2, nom:'Exige la vérité', ic:'⚖️', d:'À la fin d\'un interrogatoire, tu exiges la vérité : tous ses mensonges deviennent vrais. Deux fois par enquête.', fx:{verite:2}},
   charmeur:{role:'barde', niv:4, nom:'Charmeur', ic:'😊', d:'Tes questions maladroites ne vexent plus jamais personne.', fx:{charmeur:true}},
   physio:{role:'barde', niv:4, nom:'Physionomiste', ic:'🧐', d:'Au début de chaque enquête, tu sais déjà comment ment un des suspects.', fx:{physio:1}},
@@ -3430,12 +3430,14 @@ D.PNJ = {
   silas:{nom:'Silas Sec', court:'Silas', metier:'le garde champêtre', ic:'💂', pied:4},
   farinel:{nom:'Aimé Farinel', court:'Farinel', metier:'le meunier', ic:'🧑‍🌾', pied:5},
   margot:{nom:'Margot Chopine', court:'Margot', metier:'la tavernière', ic:'👩‍🍳', pied:4},
+  /* enquête 2 (§ 12.11) : le charretier (nom à confirmer par Romain) */
+  bastien:{nom:'Bastien Roulebosse', court:'Bastien', metier:'le charretier', ic:'🛒', pied:5},
   voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
 };
 /* Le métier en court, avec son icône (les photos du tableau de liège du Barde, le Carnet) */
 var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melusine:['couturière', '🧵'], basile:['jardinier', '🥕'],
   odette:['grand-mère', '🐈'], tim:['ramoneur', '🧹'], victor:['facteur', '✉️'], anselme:['sonneur', '🔔'], iris:['herboriste', '🌿'],
-  fortune:['colporteur', '🛒'], silas:['garde', '🛡️'], farinel:['meunier', '🌾'], margot:['tavernière', '🍺']};
+  fortune:['colporteur', '🧳'], silas:['garde', '🛡️'], farinel:['meunier', '🌾'], margot:['tavernière', '🍺'], bastien:['charretier', '🛒']};   /* 🛒 est au charretier (Romain) : le colporteur prend 🧳 */
 Object.keys(METIERS).forEach(function(id){ D.PNJ[id].metierCourt = METIERS[id][0]; D.PNJ[id].icMetier = METIERS[id][1]; });
 })();
 
@@ -5550,7 +5552,10 @@ var PNJ = {
   farinel: {nom:'Aimé Farinel', metier:'le meunier', fond:'#b8a070',
     sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'blond', yeux:'bleu', nez:'rond', corps:'rond', habit:'#d8ccb0', chemise:'#f4f0e6', chapeau:'bonnet', farine:true, bouche:'rire', accessoires:['farine_habit']},
   margot:  {nom:'Margot', metier:'la tavernière', fond:'#a8503a',
-    sexe:'f', age:'adulte', peau:'p3', coiffure:'chignon', cheveux:'brun', yeux:'noisette', corps:'normal', habit:'#a8302a', chemise:'#f4ecd8', joues:.7, bouche:'ouvert', accessoires:['tablier_blanc','chope']}
+    sexe:'f', age:'adulte', peau:'p3', coiffure:'chignon', cheveux:'brun', yeux:'noisette', corps:'normal', habit:'#a8302a', chemise:'#f4ecd8', joues:.7, bouche:'ouvert', accessoires:['tablier_blanc','chope']},
+  /* enquête 2 : le charretier */
+  bastien: {nom:'Bastien Roulebosse', metier:'le charretier', fond:'#8a6a3a',
+    sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'roux', yeux:'vert', nez:'rond', barbe:'courte', corps:'costaud', habit:'#7a4a26', chemise:'#e8d8b0', chapeau:'casquette', sourcils:'epais', terre:true, accessoires:['salopette']}
 };
 
 function busteCorps(K, sp){
@@ -22099,10 +22104,55 @@ M.etatNeuf = function(){
   return {v:2, heros:null, xp:0, or:0, talents:[], equip:[], ingr:{}, fioles:3, potions:{}, prochaine:1, finies:{}, calepin:[], e:null, journal:{}, legendes:[],
     options:{son:true, lecture:true, vitesse:0.95}};
 };
+/* L'enquête 1 refaite le 4 novembre après-midi (plus de Corbeau ni de « fer noir », la plume devient « une grande plume noire ») :
+   une enquête 1 déjà finie a recopié l'ancienne fin dans le calepin, et l'ancienne plume dans les notes de son carnet.
+   Au chargement, on les remet à jour. Seulement ce qui vient de l'enquête 1 : les autres enquêtes ne sont pas touchées. */
+var E1_VIEILLE_FIN = /CORBEAU VEILLE|du fer noir/i;
+var E1_NOTES = {
+  'Odette t\'a donné une plume noire rapportée par son chat.': 'Odette t\'a donné une grande plume noire rapportée par son chat.',
+  'Analyse de la plume noire : une plume de corbeau qui sent la lavande. Mystère…': 'Analyse de la plume : une grande plume noire qui sent la lavande. Mystère…',
+  'La plume noire de la nuit du vol sentait la lavande.': 'La grande plume noire de la nuit du vol sentait la lavande.'
+};
+function e1Texte(t){
+  if(typeof t !== 'string') return t;
+  return E1_NOTES[t] || t.replace(/Plume de corbeau/g, 'Grande plume noire').replace(/plume de corbeau/g, 'grande plume noire');
+}
+function e1Notes(l){ (Array.isArray(l) ? l : []).forEach(function(n){ if(n && typeof n.t === 'string') n.t = e1Texte(n.t); }); }
+M.reparerE1 = function(s){
+  if(!s || typeof s !== 'object') return s;
+  var E1 = window.ENQUETES && window.ENQUETES[1];
+  try{
+    /* le calepin : on retire les deux vieilles lignes, on renomme la plume, et on remet les lignes de la nouvelle fin qui manquent (🕳️ le trou, 🪵 les planches), dans l'ordre de la fin */
+    if(Array.isArray(s.calepin) && s.calepin.some(function(c){ return c && +c.e === 1; })){
+      var gardes = s.calepin.filter(function(c){ return c && +c.e === 1 && !E1_VIEILLE_FIN.test(c.t || ''); });
+      gardes.forEach(function(c){ c.t = e1Texte(c.t); });
+      var bloc = [];
+      ((E1 && E1.fin && E1.fin.calepin) || []).forEach(function(c){
+        var x = gardes.filter(function(g){ return g.t === c.t; })[0];
+        bloc.push(x || {e:1, ic:c.ic, t:c.t});
+      });
+      gardes.forEach(function(g){ if(!bloc.some(function(b){ return b.t === g.t; })) bloc.push(g); });
+      var l = [], mis = false;
+      s.calepin.forEach(function(c){
+        if(c && +c.e === 1){ if(!mis){ l = l.concat(bloc); mis = true; } return; }
+        l.push(c);
+      });
+      s.calepin = l;
+    }
+    /* les notes du carnet de l'enquête 1 : dans le journal (enquête finie), et dans l'enquête en cours si c'est encore l'enquête 1 */
+    var J = s.journal && s.journal[1];
+    if(J && typeof J === 'object'){
+      e1Notes(J.carnet);
+      if(Array.isArray(J.recus)) J.recus.forEach(function(r){ if(r && r.nom === 'Plume noire') r.nom = (E1 && E1.objets && E1.objets.plume && E1.objets.plume.nom) || 'Grande plume noire'; });
+    }
+    if(s.e && typeof s.e === 'object' && +s.e.id === 1) e1Notes(s.e.carnet);
+  }catch(e){}
+  return s;
+};
 M.charger = function(n){
   try{
     var t = localStorage.getItem(PREFIXE + (n || 1));
-    if(t){ var s = JSON.parse(t); var base = M.etatNeuf(); for(var k in base) if(s[k] === undefined) s[k] = base[k]; return s; }
+    if(t){ var s = JSON.parse(t); var base = M.etatNeuf(); for(var k in base) if(s[k] === undefined) s[k] = base[k]; return M.reparerE1(s); }
   }catch(e){}
   return M.etatNeuf();
 };
@@ -22128,7 +22178,7 @@ M.lireSauvegarde = function(texte){
   s.equip = s.equip.filter(function(id){ return D.OBJETS[id]; });
   if(s.e && (typeof s.e !== 'object' || !window.ENQUETES || !window.ENQUETES[s.e.id])) s.e = null;
   if(s.heros && s.heros.joueur !== 'enfant') s.heros.joueur = 'adulte';   /* qui joue ce héros (enfant / adulte) ; une vieille sauvegarde sans réponse = adulte */
-  return s;
+  return M.reparerE1(s);
 };
 
 /* ---------- Héros : niveau, effets ---------- */
