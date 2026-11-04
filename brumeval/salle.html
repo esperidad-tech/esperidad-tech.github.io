@@ -18121,7 +18121,7 @@ var R = [
 /* Qui raconte : les habitants qui vont à la taverne (et depuis quand ils sont au village). */
 var CONTEURS = [
   {id:'margot'}, {id:'basile'}, {id:'farinel'}, {id:'anselme'}, {id:'victor'}, {id:'iris'},
-  {id:'odette'}, {id:'gaspard'}, {id:'melusine'}, {id:'tim', des:2}, {id:'fortune', des:2}, {id:'silas', des:3}
+  {id:'odette', jusqua:1}, {id:'gaspard'},   /* Odette a disparu à partir de l'enquête 2 : elle ne raconte plus rien à la taverne */ {id:'melusine'}, {id:'tim', des:2}, {id:'fortune', des:2}, {id:'silas', des:3}
 ];
 /* Deux listes : la vie du village (et ce qu'on a appris des enquêtes passées), et les pistes de chaque enquête. */
 var ENQ = {};
@@ -18172,7 +18172,7 @@ function tirer(enq, imposes, pistesEnPlus){
     }
     choisis = U.melanger(choisis);
   }
-  var dispo = B.conteurs.filter(function(c){ return (c.des || 1) <= enq; }).map(function(c){ return c.id; });
+  var dispo = B.conteurs.filter(function(c){ return (c.des || 1) <= enq && (c.jusqua || 99) >= enq; }).map(function(c){ return c.id; });   /* jusqua : plus là après cette enquête (Odette, disparue) */
   var pris = {};
   choisis.forEach(function(r){
     var ok = U.melanger(dispo).filter(function(id){ return !pris[id] && (r.sur || []).indexOf(id) < 0; });
