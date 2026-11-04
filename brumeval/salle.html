@@ -22469,6 +22469,9 @@ M.codesEnquete = function(E){
 function codesGeles(E){
   var b = codesBruts(E), F = E.codesFixes, parId = {}, parCode = {}, pris = {};
   M.cle(F).forEach(function(id){ var s = F[id].split('-'); parId[id] = s; parCode[F[id]] = id; pris[F[id]] = 1; });
+  /* un code ajouté après le gel ne prend pas non plus un code de passage d'une voisine gelée (lu tard, il serait pris pour lui) ;
+     seulement leur gel (codesFixes) : pas de boucle. Les codes déjà gelés ne changent pas. */
+  [E.id - 1, E.id + 1].forEach(function(v){ var V = window.ENQUETES && window.ENQUETES[v]; if(V && V.codesFixes) M.cle(V.codesFixes).forEach(function(id){ if(M.codePassage(id)) pris[V.codesFixes[id]] = 1; }); });
   var k = 0;
   b.ids.forEach(function(id){
     if(parId[id]) return;

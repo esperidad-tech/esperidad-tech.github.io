@@ -4837,8 +4837,9 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 
 /* Les outils, à l'écran */
 .lg-outils{position:absolute;top:8px;left:8px;display:flex;gap:8px;z-index:20}
-.lg-bobine,.lg-sac{position:relative;min-width:58px;min-height:58px;padding:2px 8px;border-radius:16px;border:2px solid rgba(255,248,232,.55);background:rgba(28,20,14,.8);color:#fff;font-size:1.55rem;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.lg-bobine small,.lg-sac small{font-size:.62rem;font-weight:700}
+.lg-retour{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:#24182e!important}   /* aller quelque part : jaune */
+.lg-bobine,.lg-sac,.lg-retour{position:relative;min-width:58px;min-height:58px;padding:2px 8px;border-radius:16px;border:2px solid rgba(255,248,232,.55);background:rgba(28,20,14,.8);color:#fff;font-size:1.55rem;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.lg-bobine small,.lg-sac small,.lg-retour small{font-size:.62rem;font-weight:700}
 .lg-bobine.on{background:#d0312d;border-color:#fff;box-shadow:0 0 18px #d0312d}
 .lg-n{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#d0312d;color:#fff;font-style:normal;font-size:.75rem;font-weight:800;display:grid;place-items:center}
 .lg-n[hidden]{display:none}
@@ -4959,19 +4960,19 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
    ========================================================== */
 /* ---------- L'interrogatoire ---------- */
 .bd-conv{display:flex;flex-direction:column;gap:12px}
-.bd-tete{display:grid;grid-template-columns:124px 1fr;grid-template-areas:"v n" "b b";gap:12px 14px;align-items:center}
-.bd-visage{grid-area:v;width:124px;height:124px;border-radius:50%;overflow:hidden;border:4px solid var(--c-barde);background:radial-gradient(circle at 50% 35%, #3a4580, var(--nuit-3));box-shadow:0 6px 0 rgba(0,0,0,.25)}
+/* le visage en grand, comme le mini-jeu « Repérer le mensonge » (Romain, 4 novembre, 22 h 25 et 22 h 38) : en haut, seulement
+   le nom (et sa réplique du moment, s'il en a une) et le grand visage animé ; les réponses sont dans les boîtes des questions */
+.bd-tete{display:flex;flex-direction:column;align-items:center;gap:8px}
+.bd-visage{width:min(80vw, 42vh, 440px);aspect-ratio:1;border-radius:28px;overflow:hidden;border:4px solid var(--contour, #24182e);
+  background:radial-gradient(circle at 50% 38%, #7b4a72, #2f1c37 72%);box-shadow:0 0 0 3px rgba(255,143,179,.35), 0 0 22px rgba(143,243,255,.14), 0 10px 24px rgba(0,0,0,.45)}
 .bd-visage svg{width:100%;height:100%;display:block}
-.bd-visage{transition:transform .3s ease, box-shadow .3s ease}
-.bd-visage.bd-net{transform:scale(1.14);box-shadow:0 0 0 5px rgba(255,143,179,.45), 0 8px 0 rgba(0,0,0,.25)}   /* le secret est connu : le geste du menteur se voit bien */
-.bd-visage.bd-net svg{transform:scale(1.18);transform-origin:50% 62%;transition:transform .3s ease}
 .bd-visage.vexe{border-color:var(--braise);filter:saturate(.85)}
 .bd-emoji{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:3.6rem}
-.bd-nom{grid-area:n;padding-right:40px;min-width:0}
+.bd-nom{grid-area:n;padding:0 44px;min-width:0;text-align:center}
 .bd-nom h2{margin:0;font-size:1.25rem;line-height:1.15}
 .bd-nom .doux{font-size:.9rem}
-.bd-bulle{grid-area:b;position:relative;background:var(--parchemin);color:var(--encre);border-radius:18px;padding:10px 46px 10px 14px;min-height:3.2em;font-size:1.08rem;line-height:1.38;box-shadow:0 3px 0 rgba(0,0,0,.25)}
-.bd-bulle::before{content:'';position:absolute;left:34px;top:-11px;border:9px solid transparent;border-bottom:12px solid var(--parchemin);border-top:0}
+.bd-bulle{grid-area:b;justify-self:stretch;position:relative;background:var(--parchemin);color:var(--encre);border-radius:18px;padding:10px 46px 10px 14px;min-height:3.2em;font-size:1.08rem;line-height:1.38;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.bd-bulle::before{content:'';position:absolute;left:50%;margin-left:-9px;top:-11px;border:9px solid transparent;border-bottom:12px solid var(--parchemin);border-top:0}
 .bd-bulle p{margin:0;min-height:1.38em}
 .bd-bulle .b-lire{position:absolute;right:6px;top:6px}
 .bd-bulle.bd-vrai,.bd-bulle.bd-exige{background:#dff6e7;color:#173d26}
@@ -4992,6 +4993,39 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .bd-facon b{font-weight:400;font-style:italic}
 .bd-facon.barre{opacity:.55;text-decoration:line-through}
 .b-question.repondue.bd-cur{border-color:var(--c-barde);box-shadow:0 0 0 2px rgba(255,143,179,.35)}
+/* Les questions : de petites boîtes repliables (Romain, 4 novembre, 22 h 38). Fermée : ▸ et la question ; ouverte : ▾, et juste
+   dessous le cadre de la réponse avec 🔁 Répète et 🤥 Mensonge ?. Une seule ouverte à la fois. */
+.bd-boite{display:block;padding:0;text-align:left;width:100%;font:inherit;color:inherit;cursor:pointer}
+.bd-boite > summary,.bd-a-poser{display:flex;gap:10px;align-items:center;min-height:50px;padding:8px 14px;list-style:none;cursor:pointer}
+.bd-boite > summary::-webkit-details-marker{display:none}
+.bd-boite > summary::before,.bd-a-poser::before{content:'▸';flex:none;width:1.2em;font-size:1.25rem;color:var(--c-barde);transition:transform .15s}
+.bd-boite[open] > summary::before{content:'▾'}
+.bd-boite > summary b,.bd-a-poser b{flex:1;min-width:0;font-weight:700}
+.bd-a-poser{border-style:solid}
+.bd-a-poser::after{content:'💬';font-size:1.1rem;opacity:.8}
+.bd-boite.repondue > summary b{font-weight:600;opacity:.92}
+.bd-boite[open]{border-color:var(--c-barde);box-shadow:0 0 0 2px rgba(255,143,179,.3)}
+.bd-boite-in{padding:0 12px 12px}
+.bd-cadre{background:var(--parchemin);color:var(--encre);border-radius:14px;padding:10px 12px;box-shadow:0 3px 0 rgba(0,0,0,.25);display:flex;flex-direction:column;gap:6px}
+.bd-cadre .b-reponse{margin:0;color:var(--encre);font-size:1.05rem;line-height:1.38;min-height:1.38em}
+.bd-cadre .b-reponse.verite{color:#173d26}
+.bd-cadre span{font-size:inherit}   /* (.b-question span grossit les icônes : pas dans le cadre de la réponse) */
+.bd-cadre > .b-reponse:not(.verite){padding:0;background:none;animation:none}
+.bd-cadre .bd-replique{font-style:italic}
+.bd-cadre .bd-rep-outils{margin-top:4px}
+.bd-cadre .btn.second{background:#2e2547;color:#fff;border-color:#2e2547}   /* lisible sur le parchemin */
+.bd-tag-ment{margin:0;align-self:flex-start;padding:2px 10px;border-radius:999px;background:#d0312d;color:#fff;font-weight:800;font-size:.9rem}
+.bd-tag-ment small{font-weight:600;opacity:.9}
+.bd-boite .bd-mini-tag{flex:none;font-size:1.05rem}
+.bd-choix-sous{margin:0 0 8px;color:var(--brume);font-size:.9rem}
+.bd-boite.bd-choix{border:2px solid var(--c-barde);background:rgba(255,143,179,.05)}
+.bd-boite.bd-choix .bd-boite-in{display:flex;flex-direction:column;gap:8px}
+/* sous le nom : la réplique qui n'est pas une réponse (salut, « Encore toi ? », merci pour la potion…) */
+.bd-dit-haut{margin:0;max-width:34em;text-align:center;font-style:italic;font-size:1rem;line-height:1.35;color:var(--lune);display:flex;gap:6px;align-items:center;justify-content:center}
+.bd-dit-haut.bd-accuse,.bd-dit-haut.bd-vexe{color:#ffb3a0}
+.bd-potion-btn{width:100%}
+.bd-potion-bue{margin:0;padding:8px 12px;border-radius:12px;background:rgba(124,196,147,.14);border:1px solid var(--mousse);font-size:.95rem}
+.bd-tableau{align-self:flex-start}
 .bd-rep-outils{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
 .bd-ment-p{background:linear-gradient(180deg,#ffb38f,#e8693c);color:#fff}
 .bd-intu{margin:6px 0 0;color:#d9b3ff;font-weight:700}
@@ -5060,10 +5094,11 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .bd-cn-secret{border-left:4px solid var(--c-barde)}
 
 @media (min-width:700px){
-  .bd-tete{grid-template-columns:172px 1fr;grid-template-areas:"v n" "v b";align-items:start}
-  .bd-visage{width:172px;height:172px}
+  /* tablette : le grand visage, encore plus grand (la bulle ne sert plus qu'aux scènes à part) */
+  .bd-visage{width:min(60vw, 50vh, 460px)}
+  .bd-cadre .b-reponse{font-size:1.15rem}
   .bd-bulle{font-size:1.18rem;border-radius:4px 18px 18px 18px}
-  .bd-bulle::before{left:-12px;top:14px;border:8px solid transparent;border-right:12px solid var(--parchemin);border-left:0}
+  .bd-bulle::before{left:-12px;margin-left:0;top:14px;border:8px solid transparent;border-right:12px solid var(--parchemin);border-left:0}
   .bd-bulle.bd-vrai::before,.bd-bulle.bd-exige::before{border-right-color:#dff6e7;border-bottom-color:transparent}
   .bd-bulle.bd-vexe::before,.bd-bulle.bd-outre::before{border-right-color:#ffe1d6;border-bottom-color:transparent}
   .bd-bulle.bd-hydromel::before{border-right-color:#fff1c8;border-bottom-color:transparent}
@@ -5076,7 +5111,7 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .rs-pion i{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#fff3d6;border:3px solid #24182e;box-sizing:border-box;animation:rs-pas .42s ease-in-out infinite alternate}
 .rs-pion i svg{display:block;width:100%;height:100%}
 .rs-pion i b{display:grid;place-items:center;width:100%;height:100%;font-size:1.6rem;font-style:normal}
-.rs-pion.rs-barde i{background:#ffd9ef;border-color:#b0307a}
+.rs-pion.rs-chef i{background:#dfe6ff;border-color:#4a6fd8;box-shadow:0 0 14px 4px rgba(255,214,120,.55)}   /* le Sage, sa lanterne : il mène le village */
 .rs-pion em{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.72rem;padding:1px 7px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0}
 .rs-kof{animation:rs-kof 11s linear infinite both}
 .rs-pion.rs-maire{left:112%;animation-name:rs-maire}
@@ -5826,8 +5861,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 22:19 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-04 22:19';</script>
+<!-- Brumeval v2 · version de test du 2026-11-04 23:10 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-04 23:10';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -10461,11 +10496,14 @@ function dessinLisiere(p){
   return s;
 }
 
-function dessinLavoir(p){
+function dessinLavoir(p, rose){   /* rose : l'enquête 2, l'eau du lavoir rose (le tissu de Mélusine qui déteint), qui luit doucement */
   var x0 = 118, y0 = 1125, w = 134, h = 80, s = '';
   s += '<rect x="' + (x0 + 8) + '" y="' + (y0 + 8) + '" width="' + w + '" height="' + h + '" rx="10" fill="#0b1a10" opacity=".3"/>';
+  if(rose) s += '<rect class="ca-riv-lueur" x="' + (x0 - 14) + '" y="' + (y0 - 14) + '" width="' + (w + 28) + '" height="' + (h + 28) + '" rx="22" fill="#ff6fb4" opacity=".45"/>';
   s += '<rect x="' + x0 + '" y="' + y0 + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + p + 'pierre)" stroke="' + CONTOUR + '" stroke-width="3.5"/>';
-  s += '<rect x="' + (x0 + 12) + '" y="' + (y0 + 12) + '" width="' + (w - 24) + '" height="' + (h - 24) + '" rx="6" fill="url(#' + p + 'eau)" stroke="#2a4a6a" stroke-width="2"/>';
+  s += rose ? '<rect x="' + (x0 + 12) + '" y="' + (y0 + 12) + '" width="' + (w - 24) + '" height="' + (h - 24) + '" rx="6" fill="#ff8cc6" stroke="#a03a6e" stroke-width="2"/>' +
+      '<rect class="ca-riv-coeur" x="' + (x0 + 18) + '" y="' + (y0 + 18) + '" width="' + (w - 36) + '" height="' + (h - 36) + '" rx="5" fill="#ffc2e0" opacity=".7"/>' :
+    '<rect x="' + (x0 + 12) + '" y="' + (y0 + 12) + '" width="' + (w - 24) + '" height="' + (h - 24) + '" rx="6" fill="url(#' + p + 'eau)" stroke="#2a4a6a" stroke-width="2"/>';
   s += '<path class="ca-flot" d="M' + (x0 + 20) + ' ' + (y0 + 34) + ' h90 M' + (x0 + 26) + ' ' + (y0 + 50) + ' h80" stroke="#dff4ff" stroke-width="2.5" stroke-dasharray="8 14" opacity=".6"/>';
   // toit sur poteaux (demi-toit)
   s += '<path d="M' + (x0 - 8) + ' ' + (y0 + 10) + ' L' + (x0 + 6) + ' ' + (y0 - 22) + ' H' + (x0 + w - 6) + ' L' + (x0 + w + 8) + ' ' + (y0 + 10) + ' Z" fill="url(#' + p + 't-terre)" stroke="' + CONTOUR + '" stroke-width="3.5" stroke-linejoin="round"/>';
@@ -10565,7 +10603,7 @@ function svgSurface(p, o, ctx){
   s += dessinChamp(p);
   s += dessinJardinLavande(p);
   s += dessinPotager(p);
-  s += dessinLavoir(p);
+  s += dessinLavoir(p, o.lavoir === 'rose');
   s += dessinPlace(p, ctx, mo);
   s += dessinPont(p);
   // arbres de forêt + chêne + lisière + moulin
@@ -33789,12 +33827,13 @@ function demarrer(V, rid, bouton){
     toast(V, '<b>🗺️ 🌿</b> Il te manque des ingrédients : va cueillir !', 2800);
     return;
   }
-  var ok = true;
-  try{ if(V.o.peutPreparer) ok = V.o.peutPreparer() !== false; }catch(e){ ok = false; }
+  var ok = true, pourquoi = null;
+  /* peutPreparer(rid) : false, ou un texte qui dit pourquoi (une seule potion de vérité par enquête : moteur-actions.js) */
+  try{ if(V.o.peutPreparer){ var rp = V.o.peutPreparer(rid); if(typeof rp === 'string'){ ok = false; pourquoi = rp; } else ok = rp !== false; } }catch(e){ ok = false; }
   if(!ok){
     son(V, 'ko'); vibrer(60);
     if(bouton) anim(bouton, [{transform:'translateX(0)'}, {transform:'translateX(-8px)'}, {transform:'translateX(8px)'}, {transform:'translateX(0)'}], {duration:320});
-    toast(V, V.o.sansActions ? '<b>🚫 🧪</b> Plus de fiole vide !' : '<b>🚫 ⏳ 🧪</b> Plus d\'action ou plus de fiole vide !', 2800);
+    toast(V, pourquoi ? '<b>🚫 🧪</b> ' + esc(pourquoi) : V.o.sansActions ? '<b>🚫 🧪</b> Plus de fiole vide !' : '<b>🚫 ⏳ 🧪</b> Plus d\'action ou plus de fiole vide !', pourquoi ? 4200 : 2800, pourquoi || undefined);
     return;
   }
   fermerGrimoire(V); fermerOuvert(V);
@@ -34291,27 +34330,16 @@ var GESTES = {coin:'ses yeux filent sur le côté, avec un petit sourire de trav
   oreilles:'ses oreilles deviennent toutes rouges', yeuxbas:'{il} baisse les yeux et lève les sourcils en même temps'};
 function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[id]].replace('{il}', elle ? 'elle' : 'il') + '.'; }
 
-/* Les arguments du rassemblement (Barde) : chaque villageois en entend trois, un seul le convainc */
-var ARG = {
-  odette:'Odette a disparu : il faut aller voir ce qui se passe au Vieux Chêne !',
-  canne:'On a trouvé la canne d\'Odette près des rochers du Vieux Chêne !',
-  porte:'Au fond du trou du Vieux Chêne, Tim a vu une porte couverte de runes !',
-  rochers:'Ce n\'est pas un éboulement : quelqu\'un a posé de gros rochers sur le trou !'
-};
 /* Les dialogues à choix (Romain, 4 novembre, 18 h 27, § 12.13) : tous les choix sont polis et plausibles ; seul un indice récolté
    ailleurs (chez un autre villageois, à mots couverts ; parfois un leurre d'un menteur) dit lequel est le bon. Tous les mauvais choix
    reçoivent la même réplique neutre (barde.js ajoute quand repasser), et le bon choix n'est jamais à la même place. */
 var NEUTRE = 'Hmm… je ne sais pas.';
 function choix(bon, autres, pos){ var l = autres.map(function(q){ return {q:q, vexe:NEUTRE}; }); l.splice(pos, 0, {q:bon, bon:true}); return l; }
-/* Le rassemblement : on peut le préparer l'après-midi (ou, en secours, la nuit), quand on sait que quelque chose cloche au Vieux Chêne.
-   Les indices : Gaspard ← Mélusine (« un client qui ne vient pas ») ; Mélusine ← Gaspard (la canne, c'est son cadeau) ;
-   Victor ← Silas (« chaque caillou de ses chemins ») ; Margot ← Gaspard (les portes secrètes des légendes) ;
-   Iris ← Silas (« son Vieux Chêne ») ; le leurre : Fortuné, qui ment sur Victor (« les contes de fées »). */
-var SAIT = [{code:'info:canne'}, {vu:'verite:tim:1'}, {vu:'barde:tim:2'}, {vu:'barde:voisin:0'}];
-function rassemble(bon, autres, pos, oui, moments){
-  return {q:'Venir au Vieux Chêne avec moi', sousTitre:'Avec quel argument ?', rassemble:true, moments:moments || ['apresmidi', 'nuit'], besoin:SAIT,
-    choix:choix(ARG[bon], autres.map(function(k){ return ARG[k]; }), pos), a:oui};
-}
+/* Le rassemblement du village (Romain, 4 novembre, 22 h 41) : ce n'est plus le Barde, c'est le SAGE, la nuit seulement, et seulement
+   avec les preuves des étapes importantes (une page du Grand Livre : pages, id 'rassemblement'). Sans elles, pas de rassemblement :
+   l'enquête reste gagnable, on rate juste la scène. Les preuves : la canne d'Odette (Pisteur), les rochers posés exprès (Pisteur),
+   la maison d'Odette (Barde), et Tim (sa pierre gravée, Barde ; ou sa poursuite, Pisteur). */
+function preuves(tim){ return {et:[{moment:'nuit'}, {code:'info:canne'}, {code:'info:rochers'}, {code:'info:odette'}, {code:tim}]}; }
 
 E[2] = {
   id:2, titre:'La rivière rouge', niveau:2,
@@ -34327,8 +34355,8 @@ E[2] = {
   missions:{
     pisteur:'Le chemin du Vieux Chêne est fermé et gardé : trouve un moyen d\'y aller sans te faire voir. Suis les traces, cherche partout… et la nuit, quand tout le monde dort, fouille là où il y avait trop de monde le jour. Ce que tu trouves a un code : donne-le à la bonne personne !',
     alchimiste:'La rivière est toute rouge, et l\'eau du lavoir toute rose ! Va prendre un peu de cette eau (au pont, au lavoir) et analyse-la dans ton atelier. Cueille, prépare des potions (le Barde aimerait bien une potion de vérité), et analyse ce que l\'équipe te rapporte.',
-    barde:'Interroge tout le monde : cette fois, beaucoup vont te mentir ! Regarde bien leur visage. Certains ne veulent te voir qu\'une fois par moment : reviens quand tu as du nouveau pour eux. Et si le village a peur, rassemble-le !',
-    sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. Tu donnes le code de chaque moment, et tu accuses au petit matin : QUI, OÙ et POURQUOI.'
+    barde:'Interroge tout le monde : cette fois, beaucoup vont te mentir ! Regarde bien leur visage. Certains ne veulent te voir qu\'une fois par moment : reviens quand tu as du nouveau pour eux. Attention : si tu accuses quelqu\'un qui dit la vérité, il se vexe et ne te parle plus jusqu\'au moment suivant.',
+    sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. La nuit, si l\'équipe t\'a apporté assez de preuves, rassemble le village ! Tu donnes le code de chaque moment, et tu accuses au petit matin : QUI, OÙ et POURQUOI.'
   },
   /* Missions de base, en haut du Carnet (mission.js) : générales, sans chemin tout tracé, sans jamais dire QUI, OÙ ni POURQUOI */
   etapes:{
@@ -34342,7 +34370,7 @@ E[2] = {
     alchimiste:[
       {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}, {fini:'alchimiste:analyse:eau_riviere'}]},
       {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}, {fini:'alchimiste:analyse:eau_lavoir'}]},
-      {ic:'💬', t:'Prépare une potion de vérité pour le Barde (la recette est dans ton grimoire).', fait:[{potion:'verite'}]},
+      {ic:'💬', t:'Prépare la potion de vérité pour le Barde (la recette est dans ton grimoire). Une seule par enquête : ne la rate pas !', fait:[{potion:'verite'}]},
       {ic:'⚗️', t:'Analyse ce que le Pisteur te rapportera de ses fouilles.', fait:[{analyse:'colorant'}, {fini:'alchimiste:analyse:colorant'}]},
       {piste:true, t:'En cueillant, ouvre bien les yeux : certains coins du village ont changé.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
@@ -34351,9 +34379,9 @@ E[2] = {
       {ic:'🗣️', t:'Interroge au moins quatre villageois. Regarde bien leur visage quand ils répondent !', fait:[{bavard:4}]},
       {ic:'🤥', t:'Démasque deux menteurs (🤥 pendant qu\'ils parlent).', fait:[{demasque:2}]},
       {ic:'🏠', t:'Odette a disparu : va voir chez elle.', fait:[{vu:'barde:voisin:0'}]},
-      {ic:'📣', t:'Le village a peur : convaincs trois villageois de venir avec toi au Vieux Chêne.', fait:[{vu:'rassemblement'}]},
       {piste:true, t:'Certains villageois ne te parlent qu\'une fois par moment : reviens quand tu as du nouveau pour eux.'},
       {piste:true, t:'Demande gentiment : un villageois vexé ne te parle plus avant le moment suivant.'},
+      {piste:true, t:'Attention : si tu accuses quelqu\'un qui dit la vérité, il se vexe et ne te parle plus jusqu\'au moment suivant.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     sage:[
@@ -34361,6 +34389,7 @@ E[2] = {
       {ic:'🗺️', t:'Le garde ne laisse passer personne vers le Vieux Chêne : cherche un vieux chemin dans ton Grand Livre.', fait:[{page:'chemins'}]},
       {ic:'📐', t:'Quand un code te mène à la bibliothèque des plans, répare le plan déchiré.', fait:[{page:'bibliotheque'}, {fini:'sage:page:bibliotheque'}]},
       {ic:'🪨', t:'Déchiffre les runes qu\'on t\'apportera.', fait:[{page:'pierre'}, {fini:'sage:page:pierre'}]},
+      {piste:true, t:'La nuit, si l\'équipe t\'a apporté assez de preuves, rassemble le village (page 📣 du Grand Livre).'},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments). On accuse au petit matin, après la nuit.'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ]
@@ -34389,11 +34418,8 @@ E[2] = {
   potionAveu:true,
   vexeNeutre:true,   /* un mauvais choix : la même réplique neutre partout, sans « vexé » (§ 12.13) ; il reste fermé jusqu'au moment suivant */
   tics:TICS,
-  /* Le rassemblement (barde.js) : trois villageois convaincus, et toute la troupe part au Vieux Chêne */
-  /* illu : la petite scène animée (regles.js), sur la tablette du Barde et dans le récit des autres (E.infos.rassemblement) */
-  rassemblement:{n:3, code:'info:rassemblement', ic:'📣', illu:'rassemblement', titre:'Le rassemblement',
-    t:'Tu marches en tête, suivi de tes villageois. Silas veut vous arrêter… mais vous êtes bien trop nombreux ! Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive tout essoufflé : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
-    note:'Le rassemblement : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.'},
+  /* (le rassemblement n'est plus au Barde : c'est une page du Grand Livre du Sage, la nuit, avec les preuves ; voir pages, 'rassemblement') */
+  veriteUnique:true,   /* une seule potion de vérité par enquête : l'Alchimiste n'en prépare qu'une, le Barde la fait boire à un seul villageois */
   /* Les photos du tableau de liège du Barde (liege.js) : les suspects, les autres villageois de l'histoire, tous les lieux du OÙ */
   liege:{pnj:['bastien', 'melusine', 'margot', 'iris', 'farinel', 'tim', 'victor', 'gaspard', 'fortune'], lieux:['moulin', 'lavoir', 'chene', 'pont', 'clairiere', 'place', 'foret']},
   /* Le vérificateur refuse tout texte qu'un joueur obtient seul et qui contient un de ces mots, sauf s'il fait partie d'un indice prévu ou s'il a été relu (ok). */
@@ -34428,7 +34454,8 @@ E[2] = {
       margot:pied('margot') + 'Elle tient la taverne, sur la place.',
       farinel:pied('farinel') + 'Il habite son moulin.',
       gaspard:pied('gaspard') + 'Il habite au-dessus de sa boulangerie.'}},
-    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:'barde', de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : va lui parler !'},
+    /* aussi pour le Sage : une preuve du rassemblement (le même code, son « pour » seul change) */
+    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !'},
     traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.'},
     lavoir_rose:{nom:'Le rose du lavoir', ic:'🧺', pour:'barde', de:'alchimiste', pnj:'melusine', t:'L\'Alchimiste a analysé l\'eau du lavoir : ce rose vient d\'un tissu qui déteint.'},
     champ_rase:{nom:'Le champ rasé', ic:'🌺', pour:'barde', de:'alchimiste', pnj:'iris', t:'L\'Alchimiste a vu, à la clairière aux lièvres, un grand champ de coquelicots tout rasé.'},
@@ -34438,8 +34465,10 @@ E[2] = {
     passage:{nom:'Le passage secret du moulin', ic:'🕳️', pour:'pisteur', t:'Sur le vieux plan du moulin, réparé par le Sage : une petite pièce sans porte, sous la grande roue, et un passage secret pour y entrer. Va voir la nuit, quand le moulin est vide !'},
     detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.'},
     canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…'},
+    /* une preuve pour le rassemblement du Sage (Romain, 22 h 41) : un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
+    rochers:{nom:'Les rochers posés exprès', ic:'🪨', pour:'sage', de:'pisteur', t:'Le Pisteur a vu les gros rochers qui bouchent le trou du Vieux Chêne : ils sont bien rangés, posés là exprès. Ce n\'est pas un éboulement !'},
     odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.'},
-    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Le Barde a emmené des villageois au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
+    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
   },
   lieux:{
     foret:{
@@ -34461,24 +34490,24 @@ E[2] = {
         {id:'ouvriers', ic:'👷', nom:'Les ouvriers', moments:['matin'],
           t:'Caché derrière un buisson, tu vois deux ouvriers poser les derniers gros rochers sur le trou du Vieux Chêne. Puis l\'un d\'eux cache un pot noir tout près, sous les branches basses. Ils s\'en vont en chuchotant.',
           note:'Vieux Chêne (matin) : deux ouvriers finissent de boucher le trou avec de gros rochers. L\'un cache un pot noir sous les branches.'},
-        {id:'rochers', ic:'🪨', nom:'Les rochers', moments:['apresmidi', 'nuit'],
-          t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés !',
+        {id:'rochers', ic:'🪨', nom:'Les rochers', moments:['apresmidi', 'nuit'], donne:'info:rochers',
+          t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés ! Donne ce code au Sage : c\'est une preuve.',
           note:'Vieux Chêne : de gros rochers bouchent le trou, bien rangés. Ce n\'est pas un éboulement.'},
         {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['apresmidi', 'nuit'],
           t:'Sous les branches basses, il y a un pot noir, tout neuf : on l\'a posé ce matin. Il sent la poudre… Mais à quoi sert-il ?',
           note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre.',
           /* le texte change selon le moment et le rassemblement (regles.js : la première variante qui convient) */
+          /* le rassemblement (le Sage, la nuit) : après lui, le pot est tout noirci, encore tiède */
           variantes:[
-            {si:[{et:[{moment:'nuit'}, {code:'info:rassemblement'}]}], t:'Le pot noir est froid, tout noirci. C\'est de lui qu\'est sortie la fumée rouge du rassemblement : ce n\'étaient pas des vapeurs du trou !', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'},
-            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin…', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire.'},
-            {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'}
+            {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou.'},
+            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin…', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire.'}
           ]},
         {id:'canne', ic:'🦯', nom:'Dans l\'herbe', donne:'info:canne',
           t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle… Ce code est pour le Sage et le Barde.',
           note:'Vieux Chêne : la canne d\'Odette (sept chats gravés) était dans l\'herbe, près des rochers.'},
         {id:'tim', ic:'🧒', nom:'Quelqu\'un derrière le tronc', moments:['matin', 'apresmidi'], mj:'poursuite', params:{decor:'foret'}, donne:'info:tim_chene',
-          t:'Quelqu\'un t\'observe derrière le tronc… Il s\'enfuit ! Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose. Donne son code au Barde : lui saura le faire parler.',
-          note:'Vieux Chêne : Tim se cachait derrière le tronc. Il a très peur et il cache quelque chose : code pour le Barde.',
+          t:'Quelqu\'un t\'observe derrière le tronc… Il s\'enfuit ! Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose. Donne son code au Barde (lui saura le faire parler), et au Sage.',
+          note:'Vieux Chêne : Tim se cachait derrière le tronc. Il a très peur et il cache quelque chose : code pour le Barde et le Sage.',
           rate:'Il est bien trop rapide ! Tu as juste vu une petite casquette disparaître entre les arbres.',
           rateNote:'Vieux Chêne : quelqu\'un de petit, avec une casquette, s\'est enfui entre les arbres.',
           ferme:'Il a disparu pour de bon…'}
@@ -34573,31 +34602,31 @@ E[2] = {
     tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'}, questions:[
       {q:'Salut Tim ! Ça va ?', a:'Euh… oui, oui, ça va. Je… je dois y aller !', note:'Tim a l\'air inquiet. Il veut s\'en aller.'},
       /* l'indice : le registre du Sage (« il ne confie ses secrets qu'à ceux qui promettent de ne rien répéter ») */
-      {q:'Qu\'as-tu vu au fond du trou du Vieux Chêne ?', besoin:[{code:'info:tim_chene'}, {vu:'barde:margot:2'}],
-        choix:choix('Si tu me le dis, je te promets de ne le répéter à personne.', ['Tu as été très courageux, Tim. Qu\'as-tu vu, au fond du trou ?', 'Pirate va bien ? Raconte-moi ce que tu as vu au fond du trou.'], 1),
-        a:'Rien ! Je n\'ai rien vu du tout dans le trou, je le jure !', ment:true, objVrai:'pierre',
-        vrai:'Bon… Tout au fond du trou, il y avait une porte en pierre, couverte de runes bizarres. Et j\'ai ramassé ça, par terre : une pierre gravée. Je n\'ai rien dit au maire, j\'avais trop peur ! Tiens, prends-la. C\'est pour ton Sage.',
-        note:'Tim dit qu\'il n\'a rien vu au fond du trou du Vieux Chêne.', noteVrai:'Tim a avoué : au fond du trou du Vieux Chêne, il y a une porte en pierre couverte de runes. Il t\'a donné une pierre gravée (code pour le Sage).'},
+      /* (ni la question ni les choix ne parlent du trou ni de son chien : le Barde ne le sait pas encore ; Tim le dit lui-même en avouant) */
+      {q:'Que faisais-tu près du Vieux Chêne ?', besoin:[{code:'info:tim_chene'}, {vu:'barde:margot:2'}],
+        choix:choix('Si tu me le dis, je te promets de ne le répéter à personne.', ['Tu as été très courageux, Tim. Que faisais-tu là-bas ?', 'Tu peux tout me dire, Tim. Qu\'as-tu vu là-bas ?'], 1),
+        a:'Rien ! Je me promenais, c\'est tout ! Je n\'ai rien vu, je le jure !', ment:true, objVrai:'pierre',
+        vrai:'Bon… Tout au fond du trou du Vieux Chêne, il y avait une porte en pierre, couverte de runes bizarres. Et j\'ai ramassé ça, par terre : une pierre gravée. Ce matin, j\'ai vu des ouvriers poser de gros rochers sur le trou : ce n\'est pas un éboulement ! Je n\'ai rien dit au maire, j\'avais trop peur ! Tiens, prends la pierre. C\'est pour ton Sage.',
+        note:'Tim dit qu\'il se promenait près du Vieux Chêne, et qu\'il n\'a rien vu.', noteVrai:'Tim a avoué : au fond du trou du Vieux Chêne, il y a une porte en pierre couverte de runes. Ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'},
       /* filet de sécurité : si on n'a pas pu le démasquer, Tim finit par tout dire la nuit (jamais d'indice indispensable perdu) */
       {q:'Tim, tu as l\'air triste…', moments:['nuit'], besoin:[{vu:'barde:tim:1'}], cacheSi:[{vu:'verite:tim:1'}], obj:'pierre',
-        a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Tiens, prends-la, elle me fait peur ! C\'est pour ton Sage.',
-        note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes. Il t\'a donné une pierre gravée (code pour le Sage).'}
+        a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Ce matin, des ouvriers ont posé de gros rochers sur le trou : ce n\'est pas un éboulement ! Tiens, prends la pierre, elle me fait peur ! C\'est pour ton Sage.',
+        note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
     victor:{ou:{apresmidi:'poste', nuit:'taverne'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
       {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
         vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
-        note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'},
-      rassemble('rochers', ['odette', 'porte'], 2, 'Des rochers posés en une nuit ? Je passe par là tous les jours : avant-hier, il n\'y avait rien ! Je viens voir ça.')
+        note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
     ]},
+    /* Gaspard dès le matin (Romain, 4 novembre, 22 h 38) : Odette, sa toute première cliente, n'est pas venue ; la pièce d'or de Bastien
+       et le signe de Margot restent pour l'après-midi (moments) */
     gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', nuit:'boulangerie'}, salut:'Bonjour ! Du bon pain chaud ?',
-      occupe:{matin:'Pas maintenant, c\'est le coup de feu ! Tout le village veut son pain. Reviens cet après-midi !'},
-      saluts:{nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
-      {q:'Quelles nouvelles, Gaspard ?', a:'Odette n\'est pas venue chercher son pain ce matin ! Elle vient tous les jours, à l\'aube… Elle habite au 2, rue des Lanternes : va donc voir si elle va bien ! Et Mélusine va s\'inquiéter : c\'est elle qui lui a offert sa canne aux sept chats, tu sais.', note:'Gaspard : Odette n\'est pas venue chercher son pain ce matin. Elle habite au 2, rue des Lanternes. C\'est Mélusine qui lui a offert sa canne.'},
-      {q:'Et rien d\'autre de bizarre ?', a:'Si ! Bastien, le charretier, m\'a payé son pain avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou ! Bizarre, non ?', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
-      {q:'Margot dit toujours la vérité ?', mimique:'margot', ok:'Un signe de menteur ne dit pas qui est coupable.',
+      saluts:{matin:'Bonjour ! C\'est le coup de feu, mais pour toi, j\'ai une minute.', nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
+      {q:'Quelles nouvelles, Gaspard ?', a:'D\'habitude, Odette est ma toute première cliente : elle arrive à l\'aube, avant tout le monde ! Ce matin, elle n\'est pas venue… Elle habite au 2, rue des Lanternes : ce serait bien que quelqu\'un aille voir si elle va bien. Et Mélusine va s\'inquiéter : c\'est elle qui a offert à Odette sa canne aux sept chats, tu sais.', note:'Gaspard : Odette, sa toute première cliente, n\'est pas venue ce matin. Elle habite au 2, rue des Lanternes. C\'est Mélusine qui lui a offert sa canne.'},
+      {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], a:'Si ! Bastien, le charretier, m\'a payé son pain avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou ! Bizarre, non ?', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
+      {q:'Margot dit toujours la vérité ?', moments:['apresmidi', 'nuit'], mimique:'margot', ok:'Un signe de menteur ne dit pas qui est coupable.',
         a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
-        note:'Gaspard : Margot adore les légendes de portes secrètes. ' + signe('margot', 'Margot', true)},
-      rassemble('odette', ['canne', 'porte'], 1, 'Odette a disparu ? Ma meilleure cliente ! J\'enlève mon tablier et j\'arrive !')
+        note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
     ]},
     margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
       {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
@@ -34605,9 +34634,8 @@ E[2] = {
         note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
       {q:'Bastien, c\'est un farceur ?', a:'Bastien ? Une farce ? Il déteste les farces ! Il n\'a jamais ri de sa vie, celui-là.', note:'Margot : Bastien déteste les farces, il n\'a jamais ri de sa vie.'},
       {q:'Comment sais-tu quand quelqu\'un ment ?', besoin:[{vu:'verite:margot:0'}], mimique:['victor', 'tim', 'bastien', 'melusine', 'fortune', 'farinel'], ok:'Des signes de menteurs ne disent pas qui est coupable.',
-        a:'Ha ! Toi, tu m\'as bien eue… Bon, je vais te confier mes secrets de tavernière. ' + signe('victor', 'Victor') + ' ' + signe('tim', 'Tim') + ' ' + signe('bastien', 'Bastien') + ' ' + signe('melusine', 'Mélusine', true) + ' ' + signe('fortune', 'Fortuné') + ' ' + signe('farinel', 'Farinel') + ' Regarde-les bien !',
-        note:'Margot t\'a confié comment mentent six villageois : c\'est écrit sur leur visage, dans ton Carnet.'},
-      rassemble('porte', ['canne', 'rochers'], 0, 'Une porte couverte de runes ? Comme dans les vieilles légendes ! Il faut que je voie ça. Je ferme la taverne et j\'arrive !')
+        a:'Ha ! Toi, tu m\'as bien eue… Bon, je vais te confier mes secrets de tavernière. ' + signe('victor', 'Victor') + ' ' + signe('tim', 'Tim') + ' Et ce petit Tim traîne tout le temps près du Vieux Chêne, ces jours-ci… ' + signe('bastien', 'Bastien') + ' ' + signe('melusine', 'Mélusine', true) + ' ' + signe('fortune', 'Fortuné') + ' ' + signe('farinel', 'Farinel') + ' Regarde-les bien !',
+        note:'Margot t\'a confié comment mentent six villageois : six étiquettes pour ton tableau de liège.'}
     ]},
     melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, salut:'Bonjour ! Attention aux épingles…', questions:[
       {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
@@ -34615,10 +34643,14 @@ E[2] = {
       {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même, avec de la bonne laine ! Ils ne déteignent jamais !', ment:true,
         vrai:'Bon… je les achète en cachette à Fortuné, le colporteur. Ils ne coûtent presque rien… mais ils déteignent ! C\'est eux qui ont rendu l\'eau du lavoir toute rose. Pas la rivière, juré !',
         note:'Mélusine dit qu\'elle tisse tous ses tissus elle-même.', noteVrai:'Mélusine a avoué : elle achète en cachette des tissus pas chers à Fortuné. Ils déteignent : c\'est eux qui ont rendu le lavoir rose, pas la rivière.'},
-      rassemble('canne', ['odette', 'rochers'], 2, 'La canne que je lui ai offerte ? Odette ne la quitte jamais, même pour dormir ! Je viens avec toi.', ['apresmidi'])
+      /* un signe de menteur dès le matin : celui de Fortuné (qu'on verra l'après-midi, sur la place) */
+      {q:'Qui raconte des histoires, au village ?', mimique:'fortune', ok:'Un signe de menteur ne dit pas qui est coupable.',
+        a:'Des histoires ? Méfie-toi de Fortuné, le colporteur ! Avec lui, tout est toujours « à moitié prix »… Je connais son truc : ' + signe('fortune', 'Fortuné').replace(/^Q/, 'q') + ' Regarde-le bien, cet après-midi, sur la place !',
+        note:'Mélusine t\'a appris le signe de menteur de Fortuné : une étiquette pour ton tableau de liège.'}
     ]},
     fortune:{ou:{apresmidi:'place'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
-      {q:'Vous vendez des tissus à Mélusine ?', a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
+      /* seulement quand le Barde sait que Mélusine achète ses tissus à Fortuné (elle l'a avoué, ou l'oreille à l'atelier) */
+      {q:'Vous vendez des tissus à Mélusine ?', besoin:[{vu:'verite:melusine:2'}, {vu:'barde:oreille:atelier'}], a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
         vrai:'Bon, d\'accord… Je lui vends des tissus pas chers, en cachette. Ils déteignent un peu, c\'est vrai. Mais chut, c\'est notre secret !',
         note:'Fortuné dit qu\'il n\'a rien vendu à Mélusine.', noteVrai:'Fortuné a avoué : il vend en cachette à Mélusine des tissus pas chers, qui déteignent.'},
       {q:'Vous avez vendu quelque chose d\'étrange ?', a:'Avant-hier, un homme en cape noire, avec un grand capuchon, m\'a acheté toute ma poudre noire. Il m\'a donné de l\'or, sans dire un mot. Je n\'ai pas vu son visage !', note:'Fortuné : avant-hier, un homme en cape noire lui a acheté toute sa poudre noire, avec de l\'or. Visage caché.'},
@@ -34639,16 +34671,24 @@ E[2] = {
     ]},
     iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
       {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
-      /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») */
-      {q:'À quoi servent vos coquelicots ?', choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
+      /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
+         pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
+      {q:'À quoi servent vos coquelicots ?', besoin:[{vu:'barde:iris:0'}], choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
         a:'Avec mes coquelicots, on peut faire un rouge magnifique… mais il part à l\'eau au premier lavage ! Pour teindre un tissu, ça ne vaut rien. Et pour en tirer le rouge, il faut des alambics : tout un bazar !',
         note:'Iris : le rouge de coquelicot part à l\'eau, il ne sert à rien pour teindre un tissu. Pour le fabriquer, il faut des alambics.'},
       {q:'Votre champ est tout rasé : on a emporté les fleurs ?', besoin:[{code:'info:champ_rase'}], a:'Tu as vu ? Jusqu\'à la dernière fleur ! Il a fallu une grande charrette pour tout emporter… Qui ferait une chose pareille ?', note:'Iris : il a fallu une grande charrette pour emporter toutes ses fleurs.'},
-      rassemble('rochers', ['odette', 'canne'], 1, 'Des rochers sur les racines de mon Vieux Chêne ? Ils vont l\'étouffer, le pauvre arbre ! J\'arrive !', ['apresmidi'])
+      /* un signe de menteur dès le matin (Romain, 22 h 25) : celui de Mélusine, la menteuse du matin (son tissu) */
+      {q:'Vous connaissez bien Mélusine ?', mimique:'melusine', ok:'Un signe de menteur ne dit pas qui est coupable.',
+        a:'Mélusine ? Depuis toujours ! Elle est gentille… mais elle raconte parfois de petits mensonges. Je connais son truc : ' + signe('melusine', 'Mélusine', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
+        note:'Iris t\'a appris le signe de menteuse de Mélusine : une étiquette pour ton tableau de liège.'}
     ]},
     silas:{ou:{matin:'foret', apresmidi:'foret', nuit:'foret'}, salut:'Halte ! Ordre du maire.', questions:[
       {q:'Pourquoi gardez-vous ce chemin ?', a:'Ordre du maire : personne ne va au Vieux Chêne ! Un éboulement, c\'est dangereux. Les autres chemins, tu peux y aller. Iris était furieuse : elle va voir son Vieux Chêne tous les jours, elle dit que c\'est le grand-père de tous les arbres.', note:'Silas : ordre du maire, personne ne va au Vieux Chêne. Les autres chemins sont libres. Iris va voir « son » Vieux Chêne tous les jours.'},
-      {q:'Vous avez vu passer quelqu\'un ?', a:'Avant-hier, avant l\'aube, une charrette est passée vers la clairière. Je n\'ai pas fait attention à qui la poussait. Et Victor, comme tous les jours : lui, il connaît chaque caillou de ses chemins !', note:'Silas : avant-hier, avant l\'aube, une charrette est passée vers la clairière. Victor connaît chaque caillou de ses chemins.'}
+      {q:'Vous avez vu passer quelqu\'un ?', a:'Avant-hier, avant l\'aube, une charrette est passée vers la clairière. Je n\'ai pas fait attention à qui la poussait. Et Victor, comme tous les jours : lui, il connaît chaque caillou de ses chemins !', note:'Silas : avant-hier, avant l\'aube, une charrette est passée vers la clairière. Victor connaît chaque caillou de ses chemins.'},
+      /* un signe de menteur dès le matin : celui de Farinel (le meunier, qui ment pour rire, le matin aussi) */
+      {q:'On vous raconte souvent des histoires ?', mimique:'farinel', ok:'Un signe de menteur ne dit pas qui est coupable.',
+        a:'Des histoires ? Tous les jours ! Farinel, le meunier, m\'en raconte de belles… Mais je connais son truc : ' + signe('farinel', 'Farinel').replace(/^Q/, 'q') + ' Ouvre l\'œil !',
+        note:'Silas t\'a appris le signe de menteur de Farinel : une étiquette pour ton tableau de liège.'}
     ]},
     grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
       {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
@@ -34753,7 +34793,16 @@ E[2] = {
       avant:'La pierre de Tim est couverte de runes. Que disent-elles ?',
       t:'Les runes de la pierre disent : « SOUS LA BRUME DORT LA VILLE D\'AVANT ». Qu\'est-ce que ça veut dire ?',
       note:'La pierre de Tim : « SOUS LA BRUME DORT LA VILLE D\'AVANT ».',
-      rate:'Les runes sont trop abîmées… Tu as juste pu lire : « … LA BRUME … LA VILLE … »', rateNote:'La pierre de Tim (abîmée) : « … LA BRUME … LA VILLE … »', partiel:true}
+      rate:'Les runes sont trop abîmées… Tu as juste pu lire : « … LA BRUME … LA VILLE … »', rateNote:'La pierre de Tim (abîmée) : « … LA BRUME … LA VILLE … »', partiel:true},
+    /* 📣 Le rassemblement du village (Romain, 4 novembre, 22 h 41) : le Sage, la nuit seulement, avec les preuves (preuves, plus haut).
+       Tant qu'il manque une preuve : pas de bouton, un message neutre qui ne dit pas laquelle (besoinNeutre, livre.js). La scène animée
+       (illu, regles.js), puis le code du récit pour les autres tablettes. Pas de rassemblement ? L'enquête reste gagnable. */
+    {id:'rassemblement', titre:'Rassembler le village', ic:'📣', moments:['nuit'], besoin:[preuves('obj:pierre'), preuves('info:tim_chene')],
+      horsMoment:'Le village ne se rassemblera que la nuit, quand tout le monde sera rentré chez soi.',
+      besoinNeutre:'Vous n\'avez pas encore assez de preuves pour convaincre le village.',
+      avant:'Vous avez assez de preuves : le village va te croire ! Mène-le au Vieux Chêne, en pleine nuit.', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement',
+      t:'Tu frappes à toutes les portes, ta lanterne à la main… et tout le village te suit ! Silas veut vous arrêter, mais vous êtes bien trop nombreux. Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive en courant, en bonnet de nuit : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
+      note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
   ],
   bonus:[
     {id:'cerfvolant', role:'pisteur', lieu:'clocher', moments:['matin', 'apresmidi'], mj:'tir', or:15, titre:'Le cerf-volant du clocher',
@@ -35683,6 +35732,9 @@ M.codesEnquete = function(E){
 function codesGeles(E){
   var b = codesBruts(E), F = E.codesFixes, parId = {}, parCode = {}, pris = {};
   M.cle(F).forEach(function(id){ var s = F[id].split('-'); parId[id] = s; parCode[F[id]] = id; pris[F[id]] = 1; });
+  /* un code ajouté après le gel ne prend pas non plus un code de passage d'une voisine gelée (lu tard, il serait pris pour lui) ;
+     seulement leur gel (codesFixes) : pas de boucle. Les codes déjà gelés ne changent pas. */
+  [E.id - 1, E.id + 1].forEach(function(v){ var V = window.ENQUETES && window.ENQUETES[v]; if(V && V.codesFixes) M.cle(V.codesFixes).forEach(function(id){ if(M.codePassage(id)) pris[V.codesFixes[id]] = 1; }); });
   var k = 0;
   b.ids.forEach(function(id){
     if(parId[id]) return;
@@ -36969,8 +37021,10 @@ function monterAtelier(){
     tutoriel:!!(E && E.id === 1),
     moment:(E && E.moments && P) ? E.moments[Math.min(P.moment || 0, E.moments.length - 1)] : 'matin',
     onChange:function(){ M.sauver(); },
-    peutPreparer:function(){
-      var P2 = M.P();
+    peutPreparer:function(rid){
+      var P2 = M.P(), E2 = M.E();
+      /* une seule potion de vérité par enquête (E.veriteUnique, enquête 2 : Romain, 4 novembre, 22 h 38) */
+      if(rid === 'verite' && E2 && E2.veriteUnique && P2 && P2.veriteFaite) return 'Tu as déjà préparé la potion de vérité de cette enquête : une seule par enquête !';
       if(S.fioles <= 0){ M.toast('Plus de fiole vide ! Il en faudra une pour mettre la potion.'); return false; }
       if(P2 && !M.peutAgir()){ M.toast('Plus d\'action pour ce moment : attends le moment suivant.'); return false; }
       if(P2){ M.depenser(); M.majPips(); }
@@ -36981,6 +37035,8 @@ function monterAtelier(){
         S.fioles = Math.max(0, S.fioles - 1);
         var doses = 1 + M.fxSomme('doses');
         S.potions[id] = (S.potions[id] || 0) + doses;
+        var Pv = M.P(), Ev = M.E();
+        if(id === 'verite' && Ev && Ev.veriteUnique && Pv){ Pv.veriteFaite = true; }   /* la potion de vérité de cette enquête est faite */
         M.son('magie'); M.toast('Potion réussie : ' + D.POTIONS[id].nom + (doses > 1 ? ' (' + doses + ' doses)' : '') + ((window.Atelier && Atelier.OU_POTIONS) || ' ! Elle est dans l\'armoire à potions, au-dessus de la paillasse.'));
       } else {
         M.son('echec');
@@ -37968,6 +38024,7 @@ A['ouvrir-page'] = function(el){
   var P = M.P(), E = M.E(), p = E.pages.filter(function(x){ return x.id === el.dataset.id; })[0];
   if(!p || P.pages[p.id]) return;
   if(p.besoin && !M.besoinOk(p.besoin)) return;
+  if(p.moments && !M.momentOk(p.moments)) return;   /* une page d'un moment seulement (le rassemblement, la nuit : e2.js) */
   var kp = 'sage:page:' + p.id, gratuit = !!(p.mj && M.essaiGratuit && M.essaiGratuit(el, kp));   /* 2 essais au plus (essais.js) */
   if(p.mj && M.ferme && M.ferme(kp)){ M.ouvrir({type:'info', ic:'🔒', titre:p.titre, t:M.texteEchec(p, M.MAX_ESSAIS)}); return; }
   if(p.action && !gratuit){ if(!M.peutAgir()) return; M.depenser(); }
@@ -37975,7 +38032,7 @@ A['ouvrir-page'] = function(el){
     P.pages[p.id] = true; M.consommerBesoin(p.besoin);
     if(p.donne) P.objets['_' + p.donne] = true;
     M.sauver();
-    M.decouvrir({ic:p.ic, titre:p.titre, t:p.t, note:p.note, code:p.donne || null});
+    M.decouvrir({ic:p.ic, illu:p.illu || null, titre:p.titre, t:p.t, note:p.note, code:p.donne || null});   /* illu : une petite scène animée (regles.js) */
   }
   if(p.mj) M.lancerMJ(p.mj, E.niveau, p.params, {titre:p.titre}, function(res){
     if(res.reussi) ouvrir();
@@ -38676,7 +38733,9 @@ M.monterLiege = function(){
   ici.innerHTML = '<div class="lg-vue">' + decorHTML() + '<div class="lg-monde" style="width:' + W + 'px;height:' + H + 'px"></div>' +
     '<p class="lg-vide">📌 Glisse les photos du bac sur le tableau !</p>' +
     '<div class="lg-outils"><button type="button" class="lg-bobine" data-lg="bobine" aria-label="Relier deux photos par un fil rouge">🧵<small>Fil rouge</small></button>' +
-    '<button type="button" class="lg-sac" data-lg="sac" aria-label="Mon sac et mes codes">🎒<small>Mes codes</small><i class="lg-n"></i></button></div>' +
+    '<button type="button" class="lg-sac" data-lg="sac" aria-label="Mon sac et mes codes">🎒<small>Mes codes</small><i class="lg-n"></i></button>' +
+    /* venu d'un interrogatoire (« 📌 Mon tableau », barde.js) : on y retourne, dans la même visite */
+    (M.barde && M.barde.retourPossible && M.barde.retourPossible() ? '<button type="button" class="lg-retour" data-lg="retour" aria-label="Retour à l\'interrogatoire">↩️<small>' + esc((D.PNJ[M.barde.retourPossible()] || {}).court || 'Retour') + '</small></button>' : '') + '</div>' +
     '<p class="lg-consigne" hidden></p>' +
     '<button type="button" class="lg-fleche g" data-lg="gauche" aria-label="Voir à gauche">‹</button><button type="button" class="lg-fleche d" data-lg="droite" aria-label="Voir à droite">›</button></div>' +
     '<div class="lg-bac"><div class="lg-bac-tete"><b>📦 Les photos</b><span class="lg-bac-n"></span>' + M.lireBtn(aide) + '</div><div class="lg-bac-liste"></div></div>';
@@ -38900,6 +38959,7 @@ function brancher(){
       if(V.mode === 'fil'){ finFil(); return; }
       V.mode = 'fil'; V.sel = null; b.classList.add('on'); consigne('🧵 Touche deux photos pour les relier.'); M.son('clic');
     } else if(a === 'sac'){ M.ouvrir({type:'barde-sac'}); }
+    else if(a === 'retour'){ if(M.retourConv) M.retourConv(); }
     else if(a === 'gauche' || a === 'droite'){ V.ox = borne(V.ox + (a === 'gauche' ? 1 : -1) * V.w * 0.7, V.minOx, 0); appliquer(true); M.son('clic'); }
   });
   /* le panneau : une photo se touche ou se déplace ; un fil se coupe ; le liège fait défiler */
@@ -39407,21 +39467,17 @@ function scenario(id, texte, ment){
   var p = reglagesMensonge(), signe = null;
   if(ment){
     if(B.mimiques()[id] && tic(id)){
-      /* le secret est connu : SON geste, bien marqué, et il dure un peu */
+      /* le secret est connu : SON geste, un peu plus net que les signes au hasard, mais bref et glissé parmi les gestes naturels.
+         Durée et netteté suivent le niveau (MJ.reglages, le mini-jeu du mensonge) : au niveau 2, bien visible ; au niveau 10, très bref.
+         (Romain, 4 novembre, 22 h 44 : plus de zoom, plus de geste qui dure trop longtemps.) */
       signe = tic(id);
-      p = Object.assign({}, p, {force:1, signe:Math.max(2.4, (p.signe || 1) * 2), double:Math.max(1, (p.double || .4) * 2.4), tient:Math.max(2.6, p.tient || 1), monte:.8, trois:0});
+      p = Object.assign({}, p, {force:Math.min(1, (p.force || .7) + .12), signe:(p.signe || .6) * 1.2, double:(p.double || .36) * 1.15, tient:(p.tient || 1) * 1.15});
     } else {
       var l = p.listeSignes && p.listeSignes.length ? p.listeSignes : UN_SIGNE;
       signe = l[Math.floor(Math.random() * l.length)];
     }
   }
   var sc = T.scenario({texte:texte, ment:!!ment}, p, signe);
-  if(ment && B.mimiques()[id] && tic(id)){   /* avec le secret : le geste au plus fort, et le visage s'avance (bd-net) */
-    sc.net = true;
-    if(sc.couche && sc.couche.id === 'rougeur') sc.couche.e.rougeur = 1;
-    if(sc.couche && sc.couche.id === 'oreilles') sc.couche.e.oreilles = 1;
-    (sc.ev || []).forEach(function(x){ if(x.signe && x.id === 'coin') x.e.ampleur = 1.15; });
-  }
   return sc;
 }
 function sansMimiques(texte){ return {D:Math.max(2.2, 1.6 + texte.length * .045), ev:[], couche:null}; }
@@ -39432,7 +39488,8 @@ var HUMEUR = {
   exige:{sourcils:'leves', regard:'bas', menton:'bas', vitesse:.3},
   pardon:{sourire:1, vitesse:.3}, hydromel:{sourire:2, yeuxRieurs:true, rougeur:.35, vitesse:.3}, salut:{sourire:1, vitesse:.3},
   cloche:{sourire:1, vitesse:.3}, rien:{sourire:1, vitesse:.3},
-  encore:{sourcils:'fronces', bouche:'moue', regard:'cote-d', vitesse:.3}, nouveau:{sourcils:'leves', sourire:1, vitesse:.3}
+  encore:{sourcils:'fronces', bouche:'moue', regard:'cote-d', vitesse:.3}, nouveau:{sourcils:'leves', sourire:1, vitesse:.3},
+  pasencore:{regard:'haut-g', sourcils:'un', vitesse:.3}, potion:{sourire:2, yeuxRieurs:true, vitesse:.3}, accuse:{sourcils:'fronces', grandsYeux:true, menton:true, vitesse:.2}
 };
 /* Joue une réplique : bouche qui parle, mimiques (et le signe s'il ment), texte qui s'écrit ; fin() à la fin */
 function jouer(box, bulle, texte, sc, base, fin){
@@ -39449,13 +39506,13 @@ function jouer(box, bulle, texte, sc, base, fin){
   function rendre(){ X(Object.assign({bouche:'parle'}, base, couche, mim)); ['cligne', 'hoche', 'secoue', 'avale'].forEach(function(g){ delete mim[g]; }); }
   rendre();
   (sc.ev || []).forEach(function(x){
-    T(function(){ mim = Object.assign({}, x.e); if(x.signe){ box.dataset.signe = x.id; if(sc.net) box.classList.add('bd-net'); } rendre(); }, x.t * 1000);
-    T(function(){ mim = {vitesse:x.retour}; if(x.signe){ delete box.dataset.signe; box.classList.remove('bd-net'); } rendre(); }, (x.t + x.actif) * 1000);
+    T(function(){ mim = Object.assign({}, x.e); if(x.signe) box.dataset.signe = x.id; rendre(); }, x.t * 1000);
+    T(function(){ mim = {vitesse:x.retour}; if(x.signe) delete box.dataset.signe; rendre(); }, (x.t + x.actif) * 1000);
   });
   if(sc.couche){
     var cc = sc.couche;
-    T(function(){ couche = Object.assign({}, cc.e); box.dataset.signe = cc.id; if(sc.net) box.classList.add('bd-net'); rendre(); }, cc.t * 1000);
-    T(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : cc.id === 'oreilles' ? {oreilles:0, vitesseRougeur:cc.descend} : {}; delete box.dataset.signe; box.classList.remove('bd-net'); rendre(); }, (cc.t + cc.actif) * 1000);
+    T(function(){ couche = Object.assign({}, cc.e); box.dataset.signe = cc.id; rendre(); }, cc.t * 1000);
+    T(function(){ couche = cc.id === 'rougeur' ? {rougeur:0, vitesseRougeur:cc.descend} : cc.id === 'oreilles' ? {oreilles:0, vitesseRougeur:cc.descend} : {}; delete box.dataset.signe; rendre(); }, (cc.t + cc.actif) * 1000);
   }
   T(function(){
     a.i.forEach(clearInterval); a.i = [];
@@ -39475,10 +39532,19 @@ function visage(id){
    L'interrogatoire
    ========================================================== */
 var CHARME = 'Ha ha ! Tu es un peu direct… mais avec toi, impossible de se fâcher. ';
+function corrige(id){ return 'Non, attends… je me suis trompé' + (FEM[id] ? 'e' : '') + ' ! '; }
+var MERCI = 'Oh, c\'est pour moi ? C\'est très gentil, merci beaucoup !';
+var VEXE_ACCUSE = 'Tu me traites de menteur ?! Je ne te parle plus !';
+/* les réponses dites DANS la boîte de leur question (les autres répliques s'écrivent en haut, sous le nom) */
+var DANS_BOITE = {rep:1, vrai:1, exige:1, pasencore:1, outre:1, cloche:1, potionrep:1};
 /* Ce qu'il dit en premier : trop occupé à ce moment (N.occupe), un salut du moment (N.saluts), ou son salut habituel */
 function salut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return occupe(id) || (N.saluts && N.saluts[mid]) || N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?'); }
 function occupe(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
 function estVexe(id){ var P = M.P(); return !!(P && P.vexe && P.vexe[id] === P.moment); }
+/* vexé parce qu'accusé à tort (« Mensonge ? » sur une vérité) : P.vexeAccuse {pnj:moment} */
+function accuseAMoment(id){ var P = M.P(); return !!(P && P.vexeAccuse && P.vexeAccuse[id] === P.moment); }
+/* la potion de vérité (enquête 2) : bue par un seul villageois de l'enquête (P.potionBue) */
+function aBu(id){ var P = M.P(); return !!(P && P.potionBue === id); }
 /* Une question qu'on ne montre pas : pas à ce moment (q.moments), plus utile (q.cacheSi), le rassemblement déjà fait,
    ou qui attend un indice qu'on n'a pas encore (q.secret, ou E.questionsCachees : enquête 2). */
 function cachee(id, q){
@@ -39489,6 +39555,18 @@ function cachee(id, q){
   return !!(q.besoin && !M.besoinOk(q.besoin) && (q.secret || (E && E.questionsCachees)));
 }
 B.cachee = cachee;
+/* Les choix montrés (Romain, 4 novembre, 22 h 25) : un choix qui dit un fait (c.si) n'apparaît que si le Barde le sait vraiment ;
+   q.nbChoix : au plus ce nombre de choix (le bon, puis les premiers autres de la liste, dans l'ordre). Tant que le bon n'est pas
+   connu, aucun choix : le villageois dit gentiment qu'il faudrait en savoir plus (q.pasEncore), sans rien révéler ni se fermer.
+   Renvoie [{c, kc}] (kc : la place du choix dans q.choix, qui ne change jamais). */
+var PAS_ENCORE = 'Hmm… Pour l\'instant, je ne vois pas bien pourquoi. Reviens quand tu en sauras un peu plus !';
+function choixVisibles(q){
+  var l = (q.choix || []).map(function(c, kc){ return {c:c, kc:kc}; }).filter(function(x){ return !x.c.si || M.besoinOk(x.c.si); });
+  if(!l.some(function(x){ return x.c.bon; })) return [];
+  if(q.nbChoix && l.length > q.nbChoix){ var n = 0; l = l.filter(function(x){ return x.c.bon || ++n < q.nbChoix; }); }
+  return l;
+}
+B.choixVisibles = choixVisibles;
 
 /* ---------- Enquête 2 (§ 12.11) : une seule visite par moment pour certains villageois (E.uneVisite) ----------
    « Encore toi ? Reviens plus tard ! » ; revenir avec du nouveau qui le concerne (une question qui s'ouvre, son signe de menteur
@@ -39497,7 +39575,8 @@ B.cachee = cachee;
 function uneVisite(id){ var E = M.E(); return !!(E && E.uneVisite && E.uneVisite.indexOf(id) >= 0); }
 function ceQuOnSait(id){
   var l = [];
-  questions(id).forEach(function(q, i){ if(!repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin))) l.push('q' + i); });
+  /* une question à choix dont le bon argument vient d'être appris : c'est du nouveau (« :pret ») */
+  questions(id).forEach(function(q, i){ if(!repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin))) l.push('q' + i + (q.choix && choixVisibles(q).length ? ':pret' : '')); });
   if(B.mimiques()[id]) l.push('signe');
   return l;
 }
@@ -39550,6 +39629,7 @@ function texteDe(bd){
   var q = questions(bd.p)[bd.i];
   if(bd.mode === 'rep' && q) return (bd.charme ? CHARME : '') + q.a;
   if(bd.mode === 'vrai' && q) return q.vrai || q.a;
+  if(bd.mode === 'potionrep' && q) return q.a + ' ' + corrige(bd.p) + q.vrai;   /* la potion de vérité : le mensonge, puis il se reprend tout de suite */
   return bd.t || '';
 }
 function mentNonVu(id, i){ var P = M.P(), q = questions(id)[i]; return !!(q && q.ment && repondu(id, i) && !P.vus['verite:' + id + ':' + i]); }
@@ -39568,16 +39648,23 @@ M.feuilleConv = function(id){
   var vexe = estVexe(id), e2 = enquete2() && id !== 'voisin', ferme = e2 && fermeDemasque(id);   /* le voisin (une porte, une scène) : pas de 🤥 */
   var occ = !vexe && occupe(id), encore = !vexe && !occ && !!(bd && bd.mode === 'encore');
   var t = bd ? texteDe(bd) : salut(id);
+  /* Romain, 4 novembre, 22 h 38 (tous les interrogatoires) : en haut, seulement le nom et le grand visage animé. Une réponse s'écrit
+     DANS la boîte de sa question (DANS_BOITE) ; les autres répliques (salut, « Encore toi ? », merci pour la potion…) : une ligne sous le nom. */
+  var dansBoite = !!(bd && DANS_BOITE[bd.mode] && bd.i !== undefined && bd.i !== null);
+  var tHaut = dansBoite ? '' : t;
+  function texteEcrit(txt){ return bd && !bd.joue ? '' : esc(txt); }   /* le texte qui va s'écrire (apresRendu) commence vide */
   var s = '<div class="bd-conv">';
-  s += '<div class="bd-tete"><div class="bd-visage' + (vexe ? ' vexe' : '') + '" id="bd-visage">' + visage(id) + '</div>' +
-    '<div class="bd-nom"><h2>' + esc(x.nom) + '</h2><span class="doux">' + esc(x.metier) + '</span></div>' +
-    '<div class="bd-bulle' + (bd ? ' bd-' + bd.mode : '') + '"><p id="bd-texte">' + (bd && !bd.joue ? '' : esc(t)) + '</p>' + lire(t, id) + '</div></div>';
-  /* le gros bouton, pour la réponse qu'il vient de dire */
-  if(e2 && !vexe && bd && bd.mode === 'rep' && repondu(id, bd.i) && !P.vus['verite:' + id + ':' + bd.i] && !ferme){
-    s += '<button class="btn danger grand bd-ment" data-act="bd-ment" data-p="' + id + '" data-i="' + bd.i + '">🤥 ' + Il(id) + ' ment !</button>';
+  s += '<div class="bd-tete"><div class="bd-nom"><h2>' + esc(x.nom) + '</h2><span class="doux">' + esc(x.metier) + '</span></div>' +
+    (tHaut ? '<p class="bd-dit-haut' + (bd ? ' bd-' + bd.mode : '') + '"><span id="bd-texte">' + texteEcrit(tHaut) + '</span>' + lire(tHaut, id) + '</p>' : '') +
+    '<div class="bd-visage' + (vexe ? ' vexe' : '') + '" id="bd-visage">' + visage(id) + '</div></div>';
+  /* (Romain, 22 h 46 : plus de « 🤫 Ton secret » ici. Les signes ne sont QUE sur le tableau de liège : un petit bouton pour y aller et revenir.) */
+  var tableauHTML = M.role() === 'barde' && M.liegeHTML ? '<button class="btn petit second bd-tableau" data-act="bd-tableau" data-p="' + id + '">📌 Mon tableau</button>' : '';
+  if(vexe && accuseAMoment(id)){
+    /* accusé de mentir alors qu'il disait la vérité (Romain, 22 h 43) : pas de deuxième chance, fermé jusqu'au moment suivant (pas de pardon) */
+    s += '<div class="bd-boude"><p>😠 ' + esc(nom(id)) + ' ne te parle plus : tu ' + (FEM[id] ? 'l\'as traitée' : 'l\'as traité') + ' de menteu' + (FEM[id] ? 'se' : 'r') + '. ' +
+      (peutRevoir(id) ? 'Reviens au moment suivant.' : 'C\'était le dernier moment pour ' + (FEM[id] ? 'la' : 'le') + ' voir.') + '</p></div>';
+    return s + '</div>';
   }
-  var sec = B.mimiques()[id];
-  if(sec) s += '<p class="bd-secret">🤫 <b>Ton secret :</b> ' + esc(B.phraseMimique(id)) + ' ' + lire(B.phraseMimique(id)) + '</p>';
   if(vexe){
     var neutre = !!E.vexeNeutre;   /* enquête 2 (§ 12.13) : pas « vexé », il ne veut juste plus parler pour ce moment */
     s += '<div class="bd-boude"><p>' + (neutre ? '🤔 ' + esc(nom(id)) + ' n\'a plus rien à te dire pour ce moment. ' : '😤 ' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + '. ') +
@@ -39593,6 +39680,14 @@ M.feuilleConv = function(id){
       '🚪 ' + esc(nom(id)) + ' ne veut plus te parler pour ce moment. Reviens au moment suivant… ou quand tu auras du nouveau pour ' + lui(id) + ' !') + '</p></div>';
     return s + '</div>';
   }
+  /* la potion de vérité (enquête 2, E.potionAveu) : on l'offre AVANT les questions ; il accepte toujours, sans savoir ce que c'est.
+     Une seule par enquête : un seul villageois la boit (P.potionBue). Bouton jaune (la règle des boutons). */
+  var resteADemander = Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); });
+  if(e2 && E.potionAveu && (P.potions.verite || 0) > 0 && !P.potionBue && resteADemander) s += '<button class="btn b-aller bd-potion-btn" data-act="bd-potion" data-p="' + id + '">💬 Lui offrir la potion de vérité</button>';
+  if(aBu(id)) s += '<p class="bd-potion-bue">💬 ' + esc(nom(id)) + ' a bu ta potion de vérité : maintenant, tout ce qu\'' + il(id) + ' dit est vrai.</p>';
+  /* Chaque question : une petite boîte repliable (▸ fermée, ▾ ouverte), une seule ouverte à la fois (name + bd-boites, plus bas).
+     Pas encore posée : la toucher la pose, et sa boîte s'ouvre sur la réponse (avec 🔁 Répète et 🤥 Mensonge ?). */
+  var nomBoites = 'bdq-' + id;
   s += '<div class="b-questions bd-questions">';
   Q.forEach(function(q, i){
     var k = 'barde:' + id + ':' + i, st = P.vus[k];
@@ -39601,24 +39696,40 @@ M.feuilleConv = function(id){
       s += '<div class="b-question ferme"><span>🔒</span><div><b>' + esc(q.q) + '</b>' + M.besoinHTML(q.besoin, 'barde') + '</div></div>';
       return;
     }
+    var ici = dansBoite && bd.i === i;   /* la réplique de ce moment est pour cette question */
     if(st !== 'ok'){
-      if(q.choix && q.choix.length){
-        s += '<div class="bd-choix"><p class="bd-choix-tit">💬 ' + esc(q.q) + ' <small>' + esc(q.sousTitre || 'Comment tu le demandes ?') + '</small></p>' + q.choix.map(function(c, kc){
-          var barre = !!P.vus['maladroit:' + id + ':' + i + ':' + kc];
+      var vis = q.choix && q.choix.length ? choixVisibles(q) : null;
+      if(vis && vis.length){
+        /* une question à choix : sa boîte s'ouvre sur les façons de demander */
+        s += '<details class="b-question bd-boite bd-choix" name="' + nomBoites + '"><summary><b>' + esc(q.q) + '</b></summary><div class="bd-boite-in"><p class="bd-choix-sous">' + esc(q.sousTitre || 'Comment tu le demandes ?') + '</p>' + vis.map(function(x){
+          var c = x.c, kc = x.kc, barre = !!P.vus['maladroit:' + id + ':' + i + ':' + kc];
           return '<button class="b-question bd-facon' + (barre ? ' barre' : '') + '" data-act="question" data-p="' + id + '" data-i="' + i + '" data-c="' + kc + '"' + (barre ? ' disabled' : '') + '><span>' + (barre ? '❌' : '🗨️') + '</span><b>« ' + esc(c.q) + ' »</b></button>';
-        }).join('') + '</div>';
-      } else s += '<button class="b-question" data-act="question" data-p="' + id + '" data-i="' + i + '"><span>💬</span><b>' + esc(q.q) + '</b></button>';
+        }).join('') + '</div></details>';
+      } else if(ici){
+        /* une réplique sans réponse notée (le bon argument pas encore connu) : la boîte ouverte, la réplique dedans */
+        s += '<details class="b-question bd-boite" name="' + nomBoites + '" open><summary><b>' + esc(q.q) + '</b></summary><div class="bd-boite-in"><div class="bd-cadre"><p class="b-reponse" id="bd-texte">' + texteEcrit(t) + '</p></div></div></details>';
+      } else s += '<button class="b-question bd-boite bd-a-poser" data-act="question" data-p="' + id + '" data-i="' + i + '"><b>' + esc(q.q) + '</b></button>';
       return;
     }
-    var v = P.vus['verite:' + id + ':' + i], intu = P.vus['intuition:' + id + ':' + i] && !v;
-    var cur = bd && bd.i === i && (bd.mode === 'rep' || bd.mode === 'vrai');
-    s += '<div class="b-question repondue' + (cur ? ' bd-cur' : '') + '"><b>' + esc(q.q) + '</b><p class="b-reponse">« ' + esc(q.a) + ' »</p>' +
-      (v ? '<p class="b-reponse verite">🔍 La vérité : « ' + esc(q.vrai) + ' »</p>' : '') + (intu ? '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>' : '') +
-      '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
+    var v = P.vus['verite:' + id + ':' + i], intu = P.vus['intuition:' + id + ':' + i] && !v, pot = !!P.vus['potion:' + id + ':' + i];
+    /* le cadre de la réponse ; ce qui s'écrit en ce moment (id bd-texte) : la réponse, la vérité, ou sa réplique (outré, clochette) */
+    var ecrit = ici ? bd.mode : '';
+    var cadre = '<div class="bd-cadre">';
+    if(ecrit === 'potionrep') cadre += '<p class="b-reponse" id="bd-texte">' + texteEcrit(t) + '</p>';
+    else {
+      cadre += '<p class="b-reponse"' + (ecrit === 'rep' ? ' id="bd-texte"' : '') + '>' + (ecrit === 'rep' ? texteEcrit(t) : '« ' + esc(q.a) + ' »') + '</p>';
+      if(v) cadre += '<p class="b-reponse verite"><b>🔍 La vérité :</b> ' + (pot ? esc(corrige(id)) : '') + '<span' + (ecrit === 'vrai' || ecrit === 'exige' ? ' id="bd-texte">' + texteEcrit(t) : '>« ' + esc(q.vrai) + ' »') + '</span></p>';
+      if(ecrit === 'cloche' || ecrit === 'outre') cadre += '<p class="b-reponse bd-replique" id="bd-texte">' + texteEcrit(t) + '</p>';
+    }
+    if(v) cadre += '<p class="bd-tag-ment">🤥 Mensonge' + (pot ? ' <small>(potion de vérité)</small>' : '') + '</p>';
+    if(intu) cadre += '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>';
+    cadre += '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
       (e2 && repetes(id) < repetesMax() ? '<button class="btn petit second" data-act="bd-repete" data-p="' + id + '" data-i="' + i + '">🔁 Répète</button>' : '') +
       (e2 && !v && !ferme ? '<button class="btn petit bd-ment-p" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '">🤥 Mensonge ?</button>' : '') + '</div></div>';
+    s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
+  s += tableauHTML;
   /* sans points d'action : un villageois ne donne qu'une chose par moment ; tout demandé, on le dit gentiment */
   if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i) || cachee(id, q); })) s += M.rienDePlus();
   /* en bas : ce qui sert à la fin d'un interrogatoire */
@@ -39627,21 +39738,13 @@ M.feuilleConv = function(id){
   var ex = M.fxSomme('verite') - ((P.usages && P.usages.verite) || 0);
   if(e2 && ex > 0 && parle) bas += '<button class="btn magie" data-act="bd-exiger" data-p="' + id + '">⚖️ J\'exige la vérité ! <small>(encore ' + ex + ')</small></button>';
   if(talent('hydromel') && (P.potions.hydromel || 0) > 0 && !P.usages.hydromel && id !== 'voisin') bas += '<button class="btn magie" data-act="bd-hydromel" data-p="' + id + '">🍯 Offrir l\'Hydromel des confidences</button>';
-  /* la potion de vérité : à l'enquête 2 (E.potionAveu), on la fait boire au villageois, et il avoue tous ses mensonges de la conversation */
-  if(e2 && E.potionAveu && (P.potions.verite || 0) > 0 && parle) bas += '<button class="btn magie" data-act="bd-potion" data-p="' + id + '">💬 Lui faire boire la potion de vérité</button>';
-  else if(e2 && !E.potionAveu && (P.potions.verite || 0) > 0 && !(P.bues && P.bues.verite === P.moment)) bas += '<button class="btn second" data-act="boire" data-id="verite">💬 Boire la potion de vérité (tout ce moment)</button>';
+  /* (la potion de vérité de l'enquête 2 s'offre en haut, avant les questions ; sans E.potionAveu, on la boit soi-même) */
+  if(e2 && !E.potionAveu && (P.potions.verite || 0) > 0 && !(P.bues && P.bues.verite === P.moment)) bas += '<button class="btn second" data-act="boire" data-id="verite">💬 Boire la potion de vérité (tout ce moment)</button>';
   if(bas) s += '<div class="bd-bas">' + bas + '</div>';
   if(e2 && ferme) s += '<p class="doux petit bd-avert">🔒 ' + esc(nom(id)) + ' ne te croit plus : tu ne peux plus ' + (FEM[id] ? 'la' : 'le') + ' démasquer pendant cette enquête.</p>';
-  else if(e2 && M.nbEchecs && M.nbEchecs('demasque:' + id) > 0) s += '<p class="doux petit bd-avert">⚠️ Attention : encore une fausse accusation, et ' + esc(nom(id)) + ' ne te croira plus.</p>';
-  if(e2) s += signesHTML();
+  /* (le bloc « 📖 Les 7 signes du menteur » n'est plus dans l'interrogatoire : Romain, 4 novembre, 22 h 25) */
   return s + '</div>';
 };
-function signesHTML(){
-  var t = 'Quand quelqu\'un ment, un de ces signes se glisse parmi ses mimiques : ' + UN_SIGNE.map(function(k){ return GESTE[k].replace('{il}', 'il'); }).join(' ; ') + '. Les autres mimiques ne veulent rien dire.';
-  return '<details class="bd-signes"><summary>📖 Les 7 signes du menteur</summary><ul>' + UN_SIGNE.map(function(k){
-    var g = GESTE[k].replace('{il}', 'il'); return '<li><span>' + SIGNE_IC[k] + '</span>' + esc(g.charAt(0).toUpperCase() + g.slice(1)) + '</li>';
-  }).join('') + '</ul><p class="doux petit">Les autres mimiques (sourire, pencher la tête, lever les yeux…) ne veulent rien dire. ' + lire(t) + '</p></details>';
-}
 
 /* ---------- Les actions de l'interrogatoire ---------- */
 var parler0 = A.parler, frapper0 = A.frapper;
@@ -39659,6 +39762,12 @@ A.question = function(el){
   if(q.besoin && !M.besoinOk(q.besoin) && !P.vus['barde:' + id + ':' + i]) return;
   if(repondu(id, i)){ UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }
   var kc = el.dataset.c, c = q.choix && kc !== undefined && kc !== '' ? q.choix[+kc] : null, charme = false;
+  if(q.choix && q.choix.length){
+    var vis = choixVisibles(q);
+    /* le bon argument pas encore connu : une réplique gentille et neutre ; il ne se ferme pas, rien n'est noté */
+    if(!vis.length){ UI.bd = {p:id, i:i, mode:'pasencore', t:q.pasEncore || PAS_ENCORE, m:P.moment}; M.son('clic'); M.render(); return; }
+    if(!c || !vis.some(function(x){ return x.c === c; })) return;   /* un choix qu'on ne voit pas (pas encore su) */
+  }
   if(c && !c.bon){
     if(M.fxVrai('charmeur')) charme = true;   /* Charmeur : les maladroites ne vexent plus */
     else {
@@ -39675,11 +39784,18 @@ A.question = function(el){
   /* dès l'enquête 2 (E.tics), les signes révélés deviennent des étiquettes du tableau de liège (liege.js) */
   if(q.mimique && (M.E() || {}).tics) M.toast('📌 ' + ([].concat(q.mimique).length > 1 ? 'De nouvelles étiquettes' : 'Une nouvelle étiquette') + ' pour ton tableau de liège !');
   M.noter(q.note, (D.PNJ[id] || {}).ic);
+  /* il a bu la potion de vérité : il dit le mensonge, se reprend tout de suite (« je me suis trompé ! ») et dit la vérité */
+  var potionRep = !!(q.ment && aBu(id));
+  if(potionRep){
+    P.vus['verite:' + id + ':' + i] = 1; P.vus['potion:' + id + ':' + i] = 1;
+    M.noter(q.noteVrai || (nom(id) + ' a avoué : ' + String(q.vrai || '').replace(/[«»]/g, '').trim()), '💬');
+  }
   var code = null;
   if(q.obj){ P.objets[q.obj] = true; code = 'obj:' + q.obj; }
   if(q.donne){ P.objets['_' + q.donne] = true; code = q.donne; }
-  UI.bd = {p:id, i:i, mode:'rep', charme:charme, m:P.moment};
+  UI.bd = {p:id, i:i, mode:potionRep ? 'potionrep' : 'rep', charme:charme, m:P.moment};
   M.son('clic'); M.sauver();
+  if(potionRep && apresVerite(id, [i])){ UI.bd.joue = true; return; }   /* une vérité qui donne un objet (la pierre de Tim) */
   if(q.rassemble && rassemblement(id, q)) return;   /* le troisième villageois convaincu : toute la troupe part au Vieux Chêne */
   if(code){ UI.bd.joue = true; M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.a, code:code, retour:'parler', retourId:id}); return; }
   M.render();
@@ -39733,9 +39849,13 @@ A['bd-ment'] = function(el){
     UI.bd = {p:id, i:i, mode:'cloche', t:'Ding ! La clochette de vérité tinte : cette réponse est sûrement vraie. Tu gardes ton accusation pour plus tard.', m:P.moment};
     M.son('cloche'); M.sauver(); M.render(); return;
   }
-  var n = M.echec ? M.echec('demasque:' + id) : 1;
-  var reste = (M.MAX_ESSAIS || 2) + ((p.mods && p.mods.erreurs) || 0) - n;
-  UI.bd = {p:id, i:i, mode:'outre', m:P.moment, t:'Moi, mentir ?! Jamais de la vie ! Je t\'ai dit la vérité !' + (reste > 0 ? '' : ' Et maintenant, je ne te crois plus du tout.')};
+  /* Romain (4 novembre, 22 h 43) : pas de deuxième chance. Accusé à tort, il se vexe, la discussion s'arrête tout de suite,
+     et il reste fermé jusqu'au moment suivant (« du nouveau » ne rouvre pas la porte d'un vexé ; pas de pardon). */
+  P.vexe = P.vexe || {}; P.vexe[id] = P.moment;
+  P.vexeAccuse = P.vexeAccuse || {}; P.vexeAccuse[id] = P.moment;
+  P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = VEXE_ACCUSE;
+  M.noter(nom(id) + ' disait la vérité, et tu l\'as traité' + (FEM[id] ? 'e' : '') + ' de menteu' + (FEM[id] ? 'se' : 'r') + ' : ' + il(id) + ' ne te parle plus pour ce moment.', '😠');
+  UI.bd = {p:id, mode:'accuse', t:VEXE_ACCUSE, m:P.moment};
   M.son('ko'); M.sauver(); M.render();
 };
 A['bd-repete'] = function(el){
@@ -39747,7 +39867,7 @@ A['bd-repete'] = function(el){
 };
 A['bd-pardon'] = function(el){
   var P = M.P(), id = el.dataset.p;
-  if(!estVexe(id) || peutRevoir(id)) return;
+  if(!estVexe(id) || peutRevoir(id) || accuseAMoment(id)) return;   /* accusé à tort : pas de pardon */
   if(!M.peutAgir()){ M.toast('Plus d\'action : demande au Sage une action de sa réserve 💡'); return; }
   M.depenser(); delete P.vexe[id];
   UI.bd = {p:id, mode:'pardon', t:(M.E() || {}).vexeNeutre ? 'Bon… vas-y, je t\'écoute.' : 'Bon… j\'accepte tes excuses. Vas-y, demande-moi.', m:P.moment};
@@ -39767,20 +39887,33 @@ A['bd-exiger'] = function(el){
   if(aveux.length && apresVerite(id, aveux)){ UI.bd.joue = true; return; }
   M.render();
 };
-/* La potion de vérité (enquête 2, E.potionAveu) : le villageois la boit, et avoue tous ses mensonges de la conversation.
-   S'il n'a encore rien dit de faux, on garde la potion. */
+/* La potion de vérité (enquête 2, E.potionAveu ; Romain, 4 novembre, 22 h 38) : on l'offre AVANT de poser les questions.
+   Le villageois accepte toujours, sans savoir ce que c'est ; ensuite, tout ce qu'il dit est vrai (A.question : « je me suis trompé ! »).
+   Une seule par enquête : bue, elle est consommée, et ne sert que pour CE villageois (P.potionBue). */
 A['bd-potion'] = function(el){
-  var P = M.P(), E = M.E(), id = el.dataset.p, l = [];
-  if(!P || !E || !E.potionAveu || !((P.potions.verite || 0) > 0)) return;
-  questions(id).forEach(function(q, i){ if(mentNonVu(id, i)) l.push(i); });
-  if(!l.length){ UI.bd = {p:id, mode:'rien', m:P.moment, t:'Une potion ? Pour quoi faire ? Je n\'ai rien dit de faux, moi !'}; M.son('page'); M.render(); M.toast(Il(id) + ' n\'a pas menti… pour l\'instant. Tu gardes ta potion.'); return; }
-  P.potions.verite--;
-  avouer(id, l, '💬');
-  UI.bd = {p:id, i:l[0], mode:'exige', m:P.moment, t:'Glou, glou… Oh ! Je… je ne peux plus mentir ! ' + l.map(function(i){ return questions(id)[i].vrai; }).join(' ')};
-  M.son('magie'); M.sauver();
-  if(apresVerite(id, l)){ UI.bd.joue = true; return; }
-  M.render(); M.toast('💬 ' + nom(id) + ' a bu la potion : ' + il(id) + ' dit enfin la vérité !');
+  var P = M.P(), E = M.E(), id = el.dataset.p;
+  if(!P || !E || !E.potionAveu || !((P.potions.verite || 0) > 0) || P.potionBue) return;
+  P.potions.verite--; P.potionBue = id;
+  M.noter('Tu as offert ta potion de vérité à ' + nom(id) + ' (sans le lui dire) : tout ce qu\'' + il(id) + ' te dira maintenant est vrai.', '💬');
+  UI.bd = {p:id, mode:'potion', m:P.moment, t:MERCI};
+  M.son('magie'); M.sauver(); M.render();
 };
+/* 📌 Mon tableau : le tableau de liège (les signes des menteurs n'y sont plus qu'en étiquettes), puis ↩️ retour au même villageois,
+   dans la même visite (liege.js : M.retourConv) */
+A['bd-tableau'] = function(el){
+  var P = M.P(), id = el.dataset.p;
+  UI.bdRetour = {id:id, m:P.moment};
+  UI.modal = null; P.onglet = 'role'; M.sauver(); M.render(); window.scrollTo(0, 0);
+};
+M.retourConv = function(){
+  var r = UI.bdRetour, P = M.P();
+  UI.bdRetour = null;
+  if(!r || !P || r.m !== P.moment) return false;
+  preparer(r.id); if(UI.bd && UI.bd.p === r.id) UI.bd.joue = true;   /* il ne redit pas son salut */
+  M.ouvrir({type:'conv', id:r.id, classe:'b-feuille-conv'});
+  return true;
+};
+B.retourPossible = function(){ var r = UI.bdRetour, P = M.P(); return !!(r && P && r.m === P.moment) ? r.id : null; };
 A.forcer = function(el){ A['bd-exiger']({dataset:{p:el.dataset.p}}); };
 /* L'ancien bouton « Démasquer » (ancien mini-jeu) : on rouvre simplement la conversation */
 A.demasquer = function(el){ var id = el.dataset.p; preparer(id); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'}); };
@@ -39812,9 +39945,18 @@ function apresRendu(){
   bd.joue = true;
   var t = texteDe(bd), q = questions(bd.p)[bd.i];
   if(!t) return;
-  var sc = bd.mode === 'rep' ? scenario(bd.p, t, !!(q && q.ment)) : (bd.mode === 'vrai' || bd.mode === 'exige' ? scenario(bd.p, t, false) : sansMimiques(t));
-  jouer(box, bulle, t, sc, HUMEUR[bd.mode] || {}, function(){ if(bd.mode === 'vexe' || bd.mode === 'outre'){ var svg = box.querySelector('svg'); if(svg && window.Persos) try{ Persos.expression(svg, HUMEUR[bd.mode]); }catch(e){} } });
+  /* la réponse s'écrit dans sa boîte : on la fait voir (le moins de défilement possible, pour garder le visage) */
+  try{ var bx = bulle.closest && bulle.closest('.bd-boite'); if(bx && bx.scrollIntoView) bx.scrollIntoView({block:'nearest'}); }catch(e){}
+  var sc = bd.mode === 'rep' ? scenario(bd.p, t, !!(q && q.ment)) : (bd.mode === 'vrai' || bd.mode === 'exige' || bd.mode === 'potionrep' ? scenario(bd.p, t, false) : sansMimiques(t));
+  jouer(box, bulle, t, sc, HUMEUR[bd.mode] || {}, function(){ if(bd.mode === 'vexe' || bd.mode === 'outre' || bd.mode === 'accuse'){ var svg = box.querySelector('svg'); if(svg && window.Persos) try{ Persos.expression(svg, HUMEUR[bd.mode]); }catch(e){} } });
 }
+
+/* Les boîtes des questions : une seule ouverte à la fois (en plus de l'attribut name, pour les navigateurs qui ne le connaissent pas) */
+document.addEventListener('toggle', function(e){
+  var d = e.target;
+  if(!d || !d.classList || !d.classList.contains('bd-boite') || !d.open || !d.parentNode) return;
+  Array.prototype.forEach.call(d.parentNode.querySelectorAll('details.bd-boite[open]'), function(x){ if(x !== d) x.open = false; });
+}, true);
 
 /* ==========================================================
    Les dépositions : tous les témoins dans la même pièce
@@ -40225,8 +40367,9 @@ function majTalents(){
     if(l.length){
       var id = l[Math.floor(Math.random() * l.length)];
       P.physio = id; P.mimiques = P.mimiques || {}; P.mimiques[id] = 'physio';
-      M.noter('Physionomiste : ' + B.phraseMimique(id), '🧐'); M.sauver();
-      setTimeout(function(){ M.toast('🧐 Physionomiste : ' + B.phraseMimique(id)); }, 500);
+      var phy = (M.E() || {}).tics ? 'tu as deviné le signe de ' + nom(id) + ' : une étiquette pour ton tableau de liège !' : B.phraseMimique(id);   /* E.tics : les signes, seulement sur le liège */
+      M.noter('Physionomiste : ' + phy, '🧐'); M.sauver();
+      setTimeout(function(){ M.toast('🧐 Physionomiste : ' + phy); }, 500);
     } else P.physio = '-';
   }
   if(M.fxVrai('reseau')){
@@ -40256,7 +40399,7 @@ M.carnetBarde = function(){
   var ex = M.fxSomme('verite') - ((P.usages && P.usages.verite) || 0);
   if(talent('exiger') || M.fxSomme('verite') > 0) t.push('<li>⚖️ <b>Exige la vérité</b> : encore ' + Math.max(0, ex) + ' fois, à la fin d\'un interrogatoire.</li>');
   if(M.fxVrai('charmeur')) t.push('<li>😊 <b>Charmeur</b> : personne ne se vexe.</li>');
-  if(P.physio && P.physio !== '-') t.push('<li>🧐 <b>Physionomiste</b> : ' + esc(B.phraseMimique(P.physio)) + '</li>');
+  if(P.physio && P.physio !== '-') t.push('<li>🧐 <b>Physionomiste</b> : ' + ((M.E() || {}).tics ? 'tu as deviné le signe de ' + esc(nom(P.physio)) + ' : il est sur ton tableau de liège.' : esc(B.phraseMimique(P.physio))) + '</li>');
   if(talent('rumeur')) t.push('<li>🗣️ <b>Rumeur</b> : ' + (P.usages && P.usages.rumeur ? 'lancée.' : 'à lancer à la taverne (une fois).') + '</li>');
   if(talent('hydromel')){
     t.push('<li>🍯 <b>Hydromel</b> : ' + (P.usages && P.usages.hydromel ? 'offert.' : (P.potions.hydromel > 0 ? 'tu l\'as ! Offre-le pendant un interrogatoire.' : 'l\'Alchimiste doit le fabriquer.')) +
@@ -40294,7 +40437,10 @@ M.repBarde = function(id, i, q){
 };
 M.dossierBarde = function(id){
   var l = [], P = M.P();
-  if(B.mimiques()[id]) l.push('<li class="cn-info bd-cn-secret"><div><p class="cn-de">🤫 Son secret de menteur</p><p>' + esc(B.phraseMimique(id)) + '</p></div>' + M.lireBtn(B.phraseMimique(id), id) + '</li>');
+  /* dès l'enquête 2 (E.tics) : les signes ne sont que sur le tableau de liège (Romain, 22 h 46) ; le Carnet y renvoie sans les dire */
+  var Et = M.E() || {};
+  if(B.mimiques()[id]) l.push(Et.tics ? '<li class="cn-info bd-cn-secret"><div><p class="cn-de">📌 Son signe de menteur</p><p>Tu le connais : il est sur ton tableau de liège.</p></div></li>' :
+    '<li class="cn-info bd-cn-secret"><div><p class="cn-de">🤫 Son secret de menteur</p><p>' + esc(B.phraseMimique(id)) + '</p></div>' + M.lireBtn(B.phraseMimique(id), id) + '</li>');
   if(estVexe(id)) l.push((M.E() || {}).vexeNeutre ? '<li class="cn-note"><span class="cn-nic">🤔</span><p>' + esc(nom(id)) + ' n\'a plus rien à te dire pour ce moment : reviens plus tard.</p></li>' :
     '<li class="cn-note"><span class="cn-nic">😤</span><p>' + esc(nom(id)) + ' est vexé' + (FEM[id] ? 'e' : '') + ' : reviens plus tard.</p></li>');
   return l;
@@ -40686,14 +40832,21 @@ function generique(p, E, P){
     return s + (p.donne ? donne(p) : '');
   }
   if(!ouvert){
+    /* une page qui ne s'ouvre qu'à certains moments (p.moments : le rassemblement, la nuit) : un message, pas de bouton */
+    if(p.moments && !M.momentOk(p.moments)){
+      var hm = p.horsMoment || 'Ce n\'est pas encore le moment.';
+      return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div><p class="lv-texte">' + esc(hm) + ' ' + lire(hm) + '</p>';
+    }
     if(p.besoin && !M.besoinOk(p.besoin)){
+      /* p.besoinNeutre : un message neutre, sans la liste de ce qui manque (les preuves du rassemblement) */
+      if(p.besoinNeutre) return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div><p class="lv-texte">' + esc(p.besoinNeutre) + ' ' + lire(p.besoinNeutre) + '</p>';
       var av = p.avant || 'Cette page est fermée.';
       return '<div class="lv-sceau" aria-hidden="true"><span>🔒</span></div><p class="lv-texte">' + esc(av) + ' ' + lire(av) + '</p>' + M.besoinHTML(p.besoin, 'sage');
     }
     if(p.besoin || p.action || p.mj){
       var sans = p.action && !M.peutAgir();
       return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div>' + (p.avant ? '<p class="lv-texte">' + esc(p.avant) + ' ' + lire(p.avant) + '</p>' : '') +
-        '<button class="btn grand b-aller lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : '📖 ') + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
+        '<button class="btn grand b-aller lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : (p.boutonIc || '📖 ')) + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
     }
   }
   s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(p.t || '') + ' ' + (p.t ? lire(p.t) : '') + '</p>') + '</div>';
@@ -41167,7 +41320,7 @@ if(typeof rendreAvant === 'function'){
 /* ===== regles.js ===== */
 /* ==========================================================
    Brumeval — des règles qu'une enquête allume par un réglage (l'enquête 2, DESIGN-saison1.md § 12.11).
-   Les règles du Barde (une seule visite par moment, rassemblement, potion qui fait avouer…) sont dans barde.js.
+   Les règles du Barde (une seule visite par moment, potion de vérité…) sont dans barde.js ; le rassemblement est une page du Sage (e2.js).
    · Un point dont le texte change (p.variantes : [{si:[conditions], t, note}], la première qui convient) : le pot du
      Vieux Chêne l'après-midi, après le rassemblement, la nuit. Quand le texte change, le point redevient « à voir ».
    · L'Alchimiste remplit un flacon dans un lieu (L.alchimiste.echantillon {objet, t, moments}) : un objet à analyser.
@@ -41305,24 +41458,25 @@ M.lireSauvegarde = function(){ var s = ls0.apply(this, arguments); return s ? no
 if(M.S) nouvelleE2(M.S);
 
 /* ---------- 5. Les petites scènes animées (m.illu, à la place de la grande icône : moteur-actions.js) ----------
-   « rassemblement » (enquête 2) : le Barde arrive en tête au Vieux Chêne avec ses villageois ; une ombre se sauve
-   derrière le buisson ; PFFFT, la fumée rouge ; le maire accourt (« Reculez ! ») ; tout le monde s'enfuit en toussant.
+   « rassemblement » (enquête 2, Romain 22 h 41 : c'est le SAGE, la nuit) : le Sage arrive en tête au Vieux Chêne avec le village ;
+   une ombre se sauve derrière le buisson ; PFFFT, la fumée rouge ; le maire accourt (« Reculez ! ») ; tout le monde s'enfuit en toussant.
    Une boucle de 11 s en CSS (barde.css, .rs-…) ; figée au moment de la fumée si l'appareil demande moins de mouvement.
-   Sur la tablette du Barde : son héros et SES villageois convaincus ; ailleurs (le récit tapé en code) : le Barde et trois villageois. */
+   Sur la tablette du Sage : son héros en tête ; ailleurs (le récit tapé en code) : l'étoile du Sage. Un ciel de nuit, la lune, des étoiles. */
 var nIllu = 0;
 function visageRs(id){
   try{ if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]) return Persos.pnj(id, {anime:false, cadre:'visage', id:'rs' + (++nIllu)}); }catch(e){}
   return '<b>' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</b>';
 }
-function bardeRs(){
-  if(M.role() === 'barde' && window.Persos && Persos.heros && M.heroObj){ try{ return Persos.heros(M.heroObj(), {cadre:'tete', anime:false, fond:false, id:'rsh' + (++nIllu)}); }catch(e){} }
-  return '<b>' + D.ROLES.barde.ic + '</b>';
+function chefRs(){
+  if(M.role() === 'sage' && window.Persos && Persos.heros && M.heroObj){ try{ return Persos.heros(M.heroObj(), {cadre:'tete', anime:false, fond:false, id:'rsh' + (++nIllu)}); }catch(e){} }
+  return '<b>' + D.ROLES.sage.ic + '</b>';
 }
 var DECOR_RS = '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
-  '<defs><linearGradient id="rs-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3b46a"/><stop offset="1" stop-color="#fbe4b4"/></linearGradient></defs>' +
-  '<rect width="320" height="200" fill="url(#rs-ciel)"/><circle cx="60" cy="46" r="18" fill="#fff4cf" opacity=".85"/>' +
-  '<path d="M0 132 Q 60 104 130 124 T 320 116 V200 H0 Z" fill="#8fb26a"/><path d="M0 150 Q 90 136 180 148 T 320 144 V200 H0 Z" fill="#6f9a4e"/>' +
-  '<path d="M-10 186 Q 90 170 196 160" stroke="#d8b886" stroke-width="16" fill="none" stroke-linecap="round" opacity=".8"/>' +
+  '<defs><linearGradient id="rs-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121736"/><stop offset="1" stop-color="#3a3f78"/></linearGradient></defs>' +
+  '<rect width="320" height="200" fill="url(#rs-ciel)"/><circle cx="58" cy="40" r="16" fill="#fff4cf"/><circle cx="64" cy="36" r="14" fill="#1a2046"/>' +
+  '<g fill="#fff4cf"><circle cx="110" cy="22" r="1.6"/><circle cx="150" cy="44" r="1.2"/><circle cx="270" cy="20" r="1.6"/><circle cx="300" cy="52" r="1.1"/><circle cx="20" cy="74" r="1.2"/><circle cx="128" cy="70" r="1"/></g>' +
+  '<path d="M0 132 Q 60 104 130 124 T 320 116 V200 H0 Z" fill="#3f5c48"/><path d="M0 150 Q 90 136 180 148 T 320 144 V200 H0 Z" fill="#33503c"/>' +
+  '<path d="M-10 186 Q 90 170 196 160" stroke="#8a7a62" stroke-width="16" fill="none" stroke-linecap="round" opacity=".8"/>' +
   /* le Vieux Chêne : un gros tronc, des racines, un grand feuillage */
   '<path d="M190 162 C 192 140 194 118 192 96 L 222 96 C 220 118 222 140 226 162 C 234 166 240 168 244 172 L 170 172 C 176 168 182 166 190 162 Z" fill="#7a4e2c" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/>' +
   '<path d="M200 110 q 4 20 0 44 M214 104 q -4 26 2 52" stroke="#5e3a1e" stroke-width="2.5" fill="none"/>' +
@@ -41338,10 +41492,9 @@ var DECOR_RS = '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio=
 var OMBRE_RS = '<svg viewBox="-20 -44 40 48" aria-hidden="true" focusable="false"><path d="M-12 2 C -14 -14 -10 -28 0 -34 C 10 -28 14 -14 12 2 Z" fill="#1d1730"/><circle cx="0" cy="-36" r="8" fill="#1d1730"/><path d="M-11 -2 l-8 6 M11 -2 l8 6" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/></svg>';
 var ILLU = {
   rassemblement:function(){
-    var gens = M.role() === 'barde' && M.barde && M.barde.convaincus ? M.barde.convaincus().slice(0, 3) : [];
-    ['gaspard', 'margot', 'victor', 'melusine', 'iris'].forEach(function(id){ if(gens.length < 3 && gens.indexOf(id) < 0) gens.push(id); });
-    var pions = [{h:bardeRs(), x:46, d:0, cls:' rs-barde'}].concat(gens.map(function(id, i){ return {h:visageRs(id), x:34 - 12 * i, d:.35 * (i + 1), cls:''}; }));
-    var s = '<div class="rs-scene" role="img" aria-label="Le Barde et les villageois au Vieux Chêne : une fumée rouge sort de sous les branches, le maire crie « Reculez ! »">' + DECOR_RS;
+    var gens = ['gaspard', 'margot', 'iris'];
+    var pions = [{h:chefRs(), x:46, d:0, cls:' rs-chef'}].concat(gens.map(function(id, i){ return {h:visageRs(id), x:34 - 12 * i, d:.35 * (i + 1), cls:''}; }));
+    var s = '<div class="rs-scene" role="img" aria-label="La nuit, le Sage et le village au Vieux Chêne : une fumée rouge sort de sous les branches, le maire crie « Reculez ! »">' + DECOR_RS;
     s += '<span class="rs-ombre">' + OMBRE_RS + '</span>';
     s += '<span class="rs-fumee">' + [[-14, 0, -16], [2, -6, 0], [16, 2, 14], [-4, 6, -8], [10, -2, 8]].map(function(f, i){ return '<i style="left:' + (50 + f[0] * 2) + '%;top:' + (50 + f[1] * 3) + '%;--dx:' + f[2] + 'px;animation-delay:' + (i * .12).toFixed(2) + 's"></i>'; }).join('') + '</span>';
     s += '<b class="rs-pfft">PFFFT !</b>';
@@ -41512,7 +41665,7 @@ function contenu(ou, w, h){
       if(T && montrer && T.ici && UI.tutoIci !== T.ici){ UI.tutoIci = T.ici; res.commit = res.commit || {ids:[], tout:false}; res.commit.pan = centreDe([T.ici]); res.commit.force = true; }   /* l'étape change de lieu : la carte y glisse */
       res.depart = centreDe(T && T.ici ? [T.ici] : guide || actifs) || {x:500, y:745};
       var ouverts = actifs.filter(function(id){ return P.vus['lieu:' + id + ':' + P.moment]; });
-      svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, notes:info.notes, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null,
+      svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, notes:info.notes, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts});
     }
   }catch(e){ console.error(e); svg = '<p>Erreur de carte</p>'; }
