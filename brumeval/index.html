@@ -5662,7 +5662,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 13:21 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 13:26 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -18676,10 +18676,12 @@ var BUCHES = [[160, 344, -6], [240, 344, 6], [200, 348, 0], [180, 331, -12], [22
 /* La palette du chaudron (Romain, 4 novembre) : une couleur unie bien à part par ingrédient (pas de motif), pour les carrés
    allumés de la frise et les pastilles de la carte de la recette. Les boîtes, elles, n'ont pas de couleur : c'est la recette
    qui fait le lien couleur → ingrédient. D.INGR garde ses couleurs à lui (le mélange et les teintures de l'enquête 3). */
+/* Romain, 13 h 26 : la couleur de chaque ingrédient = la couleur majoritaire de son icône (mesurée sur les émojis
+   Noto, ceux des tablettes Android) ; tant pis si plusieurs verts se ressemblent. */
 var CODES = {
-  eau:{c:'#2f6fed'}, miel:{c:'#ff8c1a'}, baies:{c:'#7b2cbf'}, champignon:{c:'#12d4f0'},
-  trefle:{c:'#8ad62a'}, brume:{c:'#cfd4e0'}, lavande:{c:'#e45bd5'}, pensee:{c:'#ffe14a'},
-  menthe:{c:'#0b6e4f'}, ortie:{c:'#e63946'}, racine:{c:'#8b5a2b'}, lune:{c:'#1f2a6b'}
+  eau:{c:'#4ec1f5'}, miel:{c:'#e07f14'}, baies:{c:'#5165cb'}, champignon:{c:'#ff521a'},
+  trefle:{c:'#8bc02b'}, brume:{c:'#e3e8ea'}, lavande:{c:'#9a6cf0'}, pensee:{c:'#febb02'},
+  menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'}
 };
 function codeDe(k){ return CODES[k] || {c:(((window.DONNEES || {}).INGR || {})[k] || {}).c || '#888'}; }
 /* Le plancher du chalet, en légère perspective (planches qui fuient vers le mur) : un calque à part, dont le haut (la ligne
