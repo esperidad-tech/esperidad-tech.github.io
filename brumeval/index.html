@@ -1298,6 +1298,24 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-ing{position:absolute;left:0;bottom:6px;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--c);border:3px solid #24182e;
   box-shadow:inset 0 4px 0 rgba(255,255,255,.35), inset 0 -5px 0 rgba(0,0,0,.18), 0 3px 0 rgba(0,0,0,.4);will-change:transform;transition:opacity .35s}
 .mjc-ing i{font-style:normal;font-size:1.5rem;line-height:1;display:block}
+.mjc-motif{display:block;overflow:visible}
+.mjc-ing .mjc-motif{width:66%;height:66%}
+
+/* La carte de la recette (à côté de la frise) : nombre, couleur + motif, icône, nom, dans l'ordre ; 🔊 pour l'entendre */
+.mjc-recette{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 5px;padding:4px 6px;border-radius:12px;background:rgba(255,246,216,.08);border:2px solid rgba(255,246,216,.22)}
+.mjc-rec-t{font-size:1.05rem;line-height:1}
+.mjc-rec-sep{font-weight:900;color:#ffe3a3;opacity:.7}
+.mjc-rec-i{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 4px;border-radius:999px;background:rgba(0,0,0,.38);border:2px solid var(--c);color:#fff6d8;font-weight:800;font-size:.9rem;line-height:1;white-space:nowrap;transition:opacity .25s}
+.mjc-rec-i b{font-size:1.05rem;color:#ffe3a3;min-width:.7em;text-align:center}
+.mjc-rec-c{display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--c);border:2px solid #24182e;flex:none;font-style:normal}
+.mjc-rec-c .mjc-motif{width:19px;height:19px}
+.mjc-rec-ic{font-size:1.05rem}
+.mjc-rec-i em{font-style:normal}
+.mjc-rec-i.ici{box-shadow:0 0 0 2px #ffd36a, 0 0 12px #ffd36a}
+.mjc-rec-i.fait{opacity:.45}
+.mjc-rec-i.fait::after{content:'✔';color:#7cf0a8;margin-left:2px}
+.mjc-rec-i.secret .mjc-rec-c{font-size:.95rem}
+.mjc-recette .mj-lire-mini{width:30px;height:30px;font-size:.9rem;margin-left:2px}
 .mjc-ing.zone{animation:mjc-ing-pouls .45s ease-in-out infinite alternate}
 @keyframes mjc-ing-pouls{from{box-shadow:0 0 0 3px #fff6d8, 0 0 10px 2px #ffd36a}to{box-shadow:0 0 0 4px #fff6d8, 0 0 22px 7px #ffd36a}}
 .mjc-ing.fait{opacity:0;transition:opacity .25s}
@@ -1336,10 +1354,13 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* Toutes les caisses d'ingrédients de l'atelier, rangées en grille (icône + nom) ; les vies à côté de la zone visée */
 .mjc-boites{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:7px 6px}
-.mjc-boite{position:relative;min-width:0;height:58px;padding:5px 2px 3px;border-radius:12px;border:3px solid #24182e;touch-action:none;cursor:pointer;
+.mjc-boite{position:relative;min-width:0;height:66px;padding:4px 2px 3px;border-radius:12px;border:3px solid #24182e;touch-action:none;cursor:pointer;
   background:repeating-linear-gradient(0deg, transparent 0 16px, rgba(60,30,10,.35) 16px 18px), linear-gradient(90deg,#dca066,#a8693a);
   box-shadow:inset 0 3px 0 rgba(255,255,255,.3), 0 4px 0 #5e3416, 0 6px 12px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:space-between}
-.mjc-boite::before{content:'';position:absolute;left:5px;right:5px;top:4px;height:14px;border-radius:6px;background:var(--c);border:2px solid #24182e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+.mjc-boite::before{display:none}
+/* la bande de couleur de la caisse, avec le motif de l'ingrédient (les mêmes que sur la frise et la recette) */
+.mjc-bande{align-self:stretch;margin:0 2px;height:17px;border-radius:6px;background:var(--c);border:2px solid #24182e;box-shadow:inset 0 3px 0 rgba(255,255,255,.3);display:grid;place-items:center;flex:none}
+.mjc-bande .mjc-motif{width:15px;height:15px}
 .mjc-phase-fin .mjc-boite{opacity:.45;filter:grayscale(.6)}
 .mjc-boite span{position:relative;font-size:1.55rem;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .mjc-boite small{position:relative;max-width:100%;padding:1px 4px;border-radius:6px;background:rgba(255,246,216,.9);color:#35281b;font-size:.6rem;font-weight:800;line-height:1.15;
@@ -1475,32 +1496,42 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   .mjc-frise{height:70px}
   .mjc-ing{width:42px;height:42px;bottom:5px}
   .mjc-boites{gap:6px 4px}
-  .mjc-boite{height:54px}
-  .mjc-boite span{font-size:1.4rem}
+  .mjc-boite{height:60px}
+  .mjc-boite span{font-size:1.3rem}
   .mjc-boite small{font-size:.56rem;padding:1px 2px}
+  .mjc-bande{height:15px}
+  .mjc-bande .mjc-motif{width:13px;height:13px}
   .mjc-jauge{width:46px;padding-right:6px}
   .mjc-vies .mj-coeur{width:20px;height:18px}
+  .mjc-recette{gap:3px 3px;padding:3px 4px}
+  .mjc-rec-i{font-size:.8rem;padding:2px 6px 2px 3px;gap:3px}
+  .mjc-rec-c{width:22px;height:22px}
+  .mjc-rec-c .mjc-motif{width:16px;height:16px}
+  .mjc-rec-ic{font-size:.9rem}
+  .mjc-recette .mj-lire-mini{width:28px;height:28px}
 }
 @media (max-height:600px){
   .mjc-cible > span:nth-child(2){display:none}
   .mjc-frise{height:60px}
   .mjc-ing{width:36px;height:36px;bottom:4px}
   .mjc-fl-next i{border-top-width:13px;border-left-width:9px;border-right-width:9px;left:-9px}
-  .mjc-boite{height:46px;padding-top:3px}
-  .mjc-boite span{font-size:1.25rem}
+  .mjc-boite{height:50px;padding-top:3px}
+  .mjc-boite span{font-size:1.15rem}
+  .mjc-rec-ic{display:none}
 }
 
 @media (max-height:500px){
   .mjc-haut{gap:4px;padding-top:4px}
   .mjc-frise{height:52px}
   .mjc-ing{width:32px;height:32px;bottom:3px}
-  .mjc-boite{height:40px;padding:2px 2px 2px}
-  .mjc-boite::before{height:8px;top:3px}
-  .mjc-boite span{font-size:1.05rem}
+  .mjc-boite{height:44px;padding:2px 2px 2px}
+  .mjc-bande{height:12px}
+  .mjc-bande .mjc-motif{width:10px;height:10px}
+  .mjc-boite span{font-size:1rem}
   .mjc-boite small{font-size:.52rem}
 }
 @media (min-width:700px) and (min-height:900px){
-  .mjc-boite{height:70px}
+  .mjc-boite{height:76px}
   .mjc-boite span{font-size:1.85rem}
   .mjc-boite small{font-size:.68rem}
 }
@@ -5597,7 +5628,7 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 12:00 -->
+<!-- Brumeval v2 · version de test du 2026-11-04 12:12 -->
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -18608,6 +18639,36 @@ var MAX_BUCHES = 6;                     /* au-delà, on ne peut plus en ajouter 
 var FEU_K = 1.6, FROID = 3.2, FEU_COUP = 3, TOUILLE = 9, BRULE = 6.5;
 var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6};
 var BUCHES = [[160, 344, -6], [240, 344, 6], [200, 348, 0], [180, 331, -12], [220, 331, 12], [200, 318, 2], [200, 336, 88]];
+/* La palette du chaudron (Romain, 4 novembre) : une couleur bien à part ET un motif par ingrédient (pour un enfant, et pour
+   qui distingue mal le rouge et le vert) ; les mêmes dans les carrés de la frise, sur la carte de la recette et sur les caisses.
+   D.INGR garde ses couleurs à lui (le mélange et les teintures de l'enquête 3 s'en servent). */
+var CODES = {
+  eau:{c:'#2f6fed', f:'rond'}, miel:{c:'#ff8c1a', f:'triangle'}, baies:{c:'#7b2cbf', f:'etoile'}, champignon:{c:'#12d4f0', f:'carre'},
+  trefle:{c:'#8ad62a', f:'plus'}, brume:{c:'#cfd4e0', f:'vagues'}, lavande:{c:'#e45bd5', f:'losange'}, pensee:{c:'#ffe14a', f:'rayures'},
+  menthe:{c:'#0b6e4f', f:'hexagone'}, ortie:{c:'#e63946', f:'points'}, racine:{c:'#8b5a2b', f:'anneau'}, lune:{c:'#1f2a6b', f:'lune'}
+};
+var FORMES = {
+  rond:'<circle cx="12" cy="12" r="6.5"/>',
+  triangle:'<path d="M12 4.5 L19.5 18.5 H4.5 Z"/>',
+  etoile:'<path d="M12 3.2 L14.5 8.9 L20.6 9.4 L16 13.4 L17.4 19.4 L12 16.2 L6.6 19.4 L8 13.4 L3.4 9.4 L9.5 8.9 Z"/>',
+  carre:'<rect x="5.5" y="5.5" width="13" height="13" rx="1.5"/>',
+  plus:'<path d="M9.5 4.5 H14.5 V9.5 H19.5 V14.5 H14.5 V19.5 H9.5 V14.5 H4.5 V9.5 H9.5 Z"/>',
+  vagues:'<path fill="none" d="M4 9 Q8 5.5 12 9 T20 9 M4 15.5 Q8 12 12 15.5 T20 15.5"/>',
+  losange:'<path d="M12 3.5 L20 12 L12 20.5 L4 12 Z"/>',
+  rayures:'<path fill="none" d="M4.5 12 L12 4.5 M6.5 18 L18 6.5 M12 19.5 L19.5 12"/>',
+  hexagone:'<path d="M12 4 L19 8 V16 L12 20 L5 16 V8 Z"/>',
+  points:'<circle cx="8" cy="8" r="2.9"/><circle cx="16" cy="8" r="2.9"/><circle cx="8" cy="16" r="2.9"/><circle cx="16" cy="16" r="2.9"/>',
+  anneau:'<circle fill="none" cx="12" cy="12" r="6"/>',
+  lune:'<path d="M15.5 4.6 A7.8 7.8 0 1 0 15.5 19.4 A6 6 0 1 1 15.5 4.6 Z"/>'
+};
+function codeDe(k){ return CODES[k] || {c:(((window.DONNEES || {}).INGR || {})[k] || {}).c || '#888', f:'rond'}; }
+/* le motif blanc (bordé de sombre) d'un ingrédient ; attrs : les attributs du <svg> (par défaut class="mjc-motif") */
+function motif(k, attrs){
+  var f = FORMES[codeDe(k).f] || FORMES.rond, trait = f.indexOf('fill="none"') >= 0;
+  var corps = trait ? '<g stroke="#24182e" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round">' + f + '</g><g stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">' + f + '</g>'
+    : '<g fill="#fff" stroke="#24182e" stroke-width="1.8" stroke-linejoin="round">' + f + '</g>';
+  return '<svg ' + (attrs || 'class="mjc-motif"') + ' viewBox="0 0 24 24" aria-hidden="true">' + corps + '</svg>';
+}
 var COUL = {violet:'#8b52e0', bleu:'#3f86f0', vert:'#3fcf6a', jaune:'#ffd23f', rouge:'#f04a35', bouillant:'#ff2410'};
 var ORDRE = ['violet', 'bleu', 'vert', 'jaune', 'rouge', 'bouillant'];
 var COEUR = '<svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5 C5 15 1.5 11.2 1.5 7 C1.5 3.8 4 1.5 7 1.5 C9.1 1.5 10.9 2.7 12 4.5 C13.1 2.7 14.9 1.5 17 1.5 C20 1.5 22.5 3.8 22.5 7 C22.5 11.2 19 15 12 20.5 Z"/></svg>';
@@ -18875,14 +18936,15 @@ function construire(el, P, demo){
   var connueR = P.connue !== false, lireRec = 'La recette : ' + groupes.map(function(g){ var x = I[g.ingr] || {nom:g.ingr}; return g.n + ' ' + String(x.nom).toLowerCase(); }).join(', puis ') + '.';
   var recette = '<div class="mjc-recette"><span class="mjc-rec-t">📜</span>' + (connueR ? groupes.map(function(g, k){
       var x = I[g.ingr] || {ic:'❔', c:'#888', nom:g.ingr};
-      return (k ? '<span class="mjc-rec-sep">›</span>' : '') + '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + x.c + '"><b>' + g.n + '</b><i class="mjc-rec-c">' + x.ic + '</i><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
+      return (k ? '<span class="mjc-rec-sep">›</span>' : '') + '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + codeDe(g.ingr).c + '"><b>' + g.n + '</b><i class="mjc-rec-c">' + motif(g.ingr) + '</i>' +
+        '<span class="mjc-rec-ic">' + x.ic + '</span><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
     }).join('') : '<span class="mjc-rec-i secret" style="--c:#8d8a99"><i class="mjc-rec-c">❓</i><em>Recette secrète</em></span>') + '</div>';
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
-    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" style="--c:' + x.c + '" aria-label="' + esc(x.nom) + '"><span>' + x.ic + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></button>';
+    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" style="--c:' + codeDe(k).c + '" aria-label="' + esc(x.nom) + '"><i class="mjc-bande">' + motif(k) + '</i><span>' + x.ic + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></button>';
   }).join('');
   var r = U.html('<div class="mjc' + (demo ? ' mjc-demo' : '') + '">' +
-    (demo ? '' : '<div class="mjc-haut"><div class="mjc-l1">' + cible + '<div class="mjc-vies"></div></div>' +
+    (demo ? '' : '<div class="mjc-haut"><div class="mjc-l1">' + cible + '<div class="mjc-vies"></div></div>' + recette +
       '<div class="mjc-frise"><div class="mjc-zone-f"><span>🍲</span></div><div class="mjc-piste"></div><div class="mjc-fl-next" hidden><i></i></div></div>' +
       '<div class="mjc-boites">' + boites + '</div></div>') +
     '<div class="mjc-scene">' + svg +
@@ -18891,7 +18953,10 @@ function construire(el, P, demo){
     '</div>' + (demo ? '' : '<div class="mjc-err" hidden></div><div class="mjc-oups" hidden></div>') + '</div>');
   el.appendChild(r);
   var q = function(s){ return r.querySelector(s); };
+  var rec = q('.mjc-recette');
+  if(rec && connueR && MJ.boutonLire) rec.appendChild(MJ.boutonLire(lireRec, 'mjc-rec-lire'));   /* 🔊 : jamais lu tout seul */
   return {
+    groupes:groupes, recItems:[].slice.call(r.querySelectorAll('.mjc-rec-i[data-g]')),
     id:id, racine:r, svg:q('.mjc-svg'), C:C, ingrs:ingrs, zoneCible:C.zone, Zi:Zi,
     liq:q('.mjc-liq'), ae:q('.mjc-ae'), tour:q('.mjc-tour'), givre:q('.mjc-givre'), vapeur:q('.mjc-vapeur'),
     bordArriere:q('.mjc-bord-arriere'), ride:q('.mjc-ride'), cuilleron:q('.mjc-cuilleron'), mancheIn:q('.mjc-manche-in'), manche:q('.mjc-manche'), reflet:q('.mjc-reflet'), pommeau:q('.mjc-pommeau'),
@@ -18959,6 +19024,7 @@ function preparerJauge(E, Z, nomCible){
    ========================================================== */
 MJ.enregistrer('chaudron', {
   nom:'Le chaudron', role:'alchimiste', ic:'🍲',
+  codes:CODES, motif:motif,      /* la palette et les motifs du chaudron (la démo de mj-regles.js s'en sert) */
   consigne:function(p){
     var C = (DD().CHAUDRON || {})[p.potion] || {zone:'vert'}, Z = infoZone(C.zone);
     return 'Le bois chauffe la potion : touche le tas de bois pour ajouter une bûche, la barre monte. Le bois brûle vite, pense à en remettre ! ' +
@@ -19055,13 +19121,23 @@ MJ.enregistrer('chaudron', {
        la partie dure environ R.duree. Niveaux 1-2 (R.attend) : la frise s'arrête quand le prochain carré est au milieu de la zone. --- */
     var poids = C.frise.map(function(f, i){ return i ? Math.max(R.ecartMin, f.ecart || 1) : 0; }), somme = poids.reduce(function(a, b){ return a + b; }, 0);
     var pas = somme ? U.borne((R.duree - R.marge - R.debut) / somme, 2.5, R.ecartMax) : 0, a0 = R.debut;
+    var gDe = [], gk = -1;     /* le groupe de la carte de la recette de chaque dose (2 eau de suite = un seul groupe) */
+    C.frise.forEach(function(f, i){ if(!i || C.frise[i - 1].ingr !== f.ingr) gk++; gDe.push(gk); });
     C.frise.forEach(function(f, i){
       a0 += pas * poids[i];
-      var x = I[f.ingr] || {c:'#888'};
-      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? x.c : '#8d8a99') + '">' + (connue ? '' : '<i>❓</i>') + '</div>');
+      var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' + (connue ? motif(f.ingr) : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
-      S.fen.push({ingr:f.ingr, a:a0, fait:false, el:d});
+      S.fen.push({ingr:f.ingr, a:a0, fait:false, el:d, g:gDe[i]});
     });
+    /* la carte de la recette suit : l'ingrédient à verser brille, ceux qui sont faits sont cochés */
+    function majRecette(){
+      var nx = prochain();
+      E.recItems.forEach(function(el, k){
+        var fs = S.fen.filter(function(f){ return f.g === k; });
+        el.classList.toggle('fait', fs.length > 0 && fs.every(function(f){ return f.fait; }));
+        el.classList.toggle('ici', !!nx && nx.g === k);
+      });
+    }
     S.duree = R.duree;
     var recette = {};
     C.frise.forEach(function(f){ recette[f.ingr] = 1; });
@@ -19085,7 +19161,7 @@ MJ.enregistrer('chaudron', {
     function dansZone(f){ if(f.fait || S.tf < f.a - 1e-6) return false; return posL(f) + G.sq >= G.zl + 6; }
     function prochain(){ for(var i = 0; i < S.fen.length; i++) if(!S.fen[i].fait) return S.fen[i]; return null; }
     function arretDe(f){ return f.a + (G.zr - 6 - (G.zl + G.zr) / 2 + G.sq / 2) / G.pps; }
-    mesurer();
+    mesurer(); majRecette();
     if(window.ResizeObserver){ var ro = new ResizeObserver(mesurer); ro.observe(E.frise); stops.push(function(){ ro.disconnect(); }); }
 
     /* --- les cœurs (mj-core.js : la même rangée partout ; cœurs = erreurs encore permises) --- */
@@ -19148,7 +19224,7 @@ MJ.enregistrer('chaudron', {
         return;
       }
       bonne.fait = true; bonne.verse = true;
-      bonne.el.classList.add('fait');
+      bonne.el.classList.add('fait'); majRecette();
       if(stock && stock[ingr] > 0) stock[ingr]--;
       /* le crochet de l'atelier (stock des rangements, oreilles de Mimi) : seulement le bon ingrédient, au moment où on le verse */
       if(R.onVerse) try{ R.onVerse(ingr); }catch(e){}
@@ -19217,7 +19293,7 @@ MJ.enregistrer('chaudron', {
     /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur */
     function manquee(f){
       f.fait = true; f.rate = true;
-      f.el.classList.add('rate');
+      f.el.classList.add('rate'); majRecette();
       erreur('oubli', null, f.ingr);
       if(!S.termine && S.fen.every(function(x){ return x.fait; })) apres(600, lancerFinale);
     }
@@ -26132,7 +26208,11 @@ D('melange', function(el){
    la frise et y attend (une petite flèche le montre) ; la main touche la caisse de la même
    couleur : l'ingrédient vole dans la marmite. Le petit + du bois pulse quand le feu baisse. */
 D('chaudron', function(el){
-  var P = 11.5, CX = 150, RY = 182, ING = ['💧', '🍯', '🫐', '🍄', '☘️'], CC = ['#5aa9ff', '#f3c13e', '#7d3aa8', '#8ff3ff', '#52c05e'], CIBLE = 2;
+  /* la palette et les motifs du chaudron (mj-chaudron.js) : les mêmes que dans le jeu */
+  var TC = MJ.TYPES && MJ.TYPES.chaudron, KS = ['eau', 'miel', 'baies', 'champignon', 'trefle'];
+  var CC = KS.map(function(k){ return TC && TC.codes && TC.codes[k] ? TC.codes[k].c : '#888'; });
+  function MO(k, x, y, s){ return TC && TC.motif ? TC.motif(k, 'x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '"') : ''; }
+  var P = 11.5, CX = 150, RY = 182, ING = ['💧', '🍯', '🫐', '🍄', '☘️'], CIBLE = 2;
   var XE = [34, 92, 150, 208, 266], YE = 384, BU = [40, 300], ZX = 20, ZW = 74, GX = 276, GY0 = 300, GH = 196;
   var th0 = -.55;
   function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
@@ -26154,8 +26234,8 @@ D('chaudron', function(el){
     '<rect x="10" y="12" width="280" height="50" rx="11" fill="#2a1d14" stroke="#24182e" stroke-width="3"/>' +
     '<rect class="rg-zone" x="' + ZX + '" y="15" width="' + ZW + '" height="44" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#ffd36a" stroke-width="2.5" stroke-dasharray="6 4"/>' +
     emo(ZX + 9, 23, 11, '🍲') +
-    '<g clip-path="url(#' + id + 'c)"><rect class="rg-carre" x="0" y="27" width="30" height="30" rx="7" fill="' + CC[CIBLE] + '" stroke="' + K + '" stroke-width="2.5"/>' +
-      '<rect class="rg-carre2" x="0" y="27" width="30" height="30" rx="7" fill="' + CC[0] + '" stroke="' + K + '" stroke-width="2.5"/></g>' +
+    '<g clip-path="url(#' + id + 'c)"><g class="rg-carre"><rect x="0" y="27" width="30" height="30" rx="7" fill="' + CC[CIBLE] + '" stroke="' + K + '" stroke-width="2.5"/>' + MO(KS[CIBLE], 5, 32, 20) + '</g>' +
+      '<g class="rg-carre2"><rect x="0" y="27" width="30" height="30" rx="7" fill="' + CC[0] + '" stroke="' + K + '" stroke-width="2.5"/>' + MO(KS[0], 5, 32, 20) + '</g></g>' +
     '<path class="rg-fl" d="M-8,0 L8,0 L0,10 Z" fill="#ffd36a" stroke="' + K + '" stroke-width="1.5"/>' +
     /* la jauge : en haut ça explose, en bas ça gèle ; la bande verte au milieu */
     emo(GX + 8, GY0 - GH - 12, 14, '🌋') + emo(GX + 8, GY0 + 14, 14, '🧊') +
@@ -26178,7 +26258,7 @@ D('chaudron', function(el){
     /* les caisses : chacune avec la bande de sa couleur */
     '<rect x="6" y="408" width="288" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
     ING.map(function(ic, i){ return '<g class="e' + i + '"><rect x="' + (XE[i] - 25) + '" y="' + (YE - 24) + '" width="50" height="48" rx="9" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
-      '<rect x="' + (XE[i] - 20) + '" y="' + (YE - 20) + '" width="40" height="10" rx="4" fill="' + CC[i] + '" stroke="' + K + '" stroke-width="1.5"/>' + emo(XE[i], YE + 7, 20, ic) + '</g>'; }).join('') +
+      '<rect x="' + (XE[i] - 20) + '" y="' + (YE - 21) + '" width="40" height="13" rx="4" fill="' + CC[i] + '" stroke="' + K + '" stroke-width="1.5"/>' + MO(KS[i], XE[i] - 5.5, YE - 20, 11) + emo(XE[i], YE + 8, 20, ic) + '</g>'; }).join('') +
     emo(0, 0, 24, ING[CIBLE], 'rg-vol') +
     '<g class="rg-bvol" opacity="0">' + buche(0, 0, 0) + '</g>');
   var louche = $(svg, '.rg-louche'), potion = $(svg, '.rg-potion'), fleche = $(svg, '.rg-fleche'), feu = $(svg, '.rg-feu'), lueur = $(svg, '.rg-lueur');
@@ -26210,8 +26290,8 @@ D('chaudron', function(el){
     plus.setAttribute('transform', pulse ? 'translate(' + (BU[0] + 26) + ',' + (BU[1] - 22) + ') scale(' + (1 + .18 * pulse).toFixed(3) + ') translate(' + (-(BU[0] + 26)) + ',' + (-(BU[1] - 22)) + ')' : '');
     /* le carré de couleur : il arrive (5,4 → 6,8 s), attend dans la zone, puis disparaît quand on verse (7,9 s) */
     var xc = Math.max(XS, 300 - (300 - XS) * entre(t, 5.4, 6.8)), pop = entre(t, 7.85, 8.1);
-    carre.setAttribute('x', f1(xc)); vis(carre, (1 - pop) * entre(t, 5.3, 5.5));
-    carre2.setAttribute('x', f1(300 - 70 * entre(t, 8.3, 11))); vis(carre2, entre(t, 8.3, 8.6) * (1 - entre(t, 11.1, 11.4)));
+    pose(carre, xc, 0); vis(carre, (1 - pop) * entre(t, 5.3, 5.5));
+    pose(carre2, 300 - 70 * entre(t, 8.3, 11), 0); vis(carre2, entre(t, 8.3, 8.6) * (1 - entre(t, 11.1, 11.4)));
     var dansZ = xc <= ZX + ZW - 4 && t < 7.9;
     zone.setAttribute('fill-opacity', dansZ ? (.22 + .12 * Math.sin(t * 9)).toFixed(2) : '.12');
     zone.setAttribute('stroke-dasharray', dansZ ? 'none' : '6 4');
