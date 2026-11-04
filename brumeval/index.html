@@ -329,6 +329,11 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes ca-fumee{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:.75}100%{transform:translate(-14px,-46px) scale(2.3);opacity:0}}
 .ca-flot{animation:ca-flot 3.2s linear infinite}
 @keyframes ca-flot{to{stroke-dashoffset:-88}}
+/* la rivière rouge (enquête 2) : sa lueur respire doucement (immobile avec prefers-reduced-motion, plus bas) */
+.ca-riv-lueur{animation:ca-riv 3.6s ease-in-out infinite}
+@keyframes ca-riv{0%,100%{opacity:.12}50%{opacity:1}}
+.ca-riv-coeur{animation:ca-riv-c 3.6s ease-in-out infinite}
+@keyframes ca-riv-c{0%,100%{opacity:.55}50%{opacity:1}}
 .ca-roue{animation:ca-roue 9s linear infinite}
 @keyframes ca-roue{to{transform:rotate(360deg)}}
 .ca-onde{animation:ca-onde 2.6s ease-out infinite}
@@ -5215,6 +5220,22 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lv-cinquieme .lv-med-svg{transform:rotate(-6deg);opacity:.9}
 .lv-fin-histoire{font-family:var(--f-titre);font-size:1.15rem;text-align:center;color:#6b4a1c}
 
+/* 📐 La bibliothèque des plans et 🔮 Les objets magiques (toutes les enquêtes, toujours ouvertes) */
+.lv-rayons{align-self:center;display:flex;align-items:flex-end;gap:7px;height:64px;padding:0 14px;border-bottom:7px solid #7a5131;border-radius:3px;filter:drop-shadow(0 3px 0 rgba(53,40,27,.18))}
+.lv-rayons i{width:20px;height:var(--h);border-radius:10px 10px 5px 5px;background:linear-gradient(90deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%, rgba(0,0,0,.12)), var(--c);border:2.5px solid var(--contour)}
+.lv-rayons i:nth-child(2n){transform:rotate(-6deg);transform-origin:bottom center}
+.lv-rien{text-align:center;font-style:italic;opacity:.8}
+.lv-rangee{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:16px;background:rgba(255,255,255,.45);border:2px solid rgba(53,40,27,.25)}
+.lv-rangee h3{margin:0;font-family:var(--f-titre);font-weight:400;font-size:1.25rem;color:var(--encre)}
+.lv-objet{margin:0;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:rgba(255,236,170,.35);border:2px solid color-mix(in srgb, #f5b945 60%, rgba(53,40,27,.3))}
+.lv-objet figcaption{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lv-objet b{font-family:var(--f-titre);font-weight:400;font-size:1.25rem;color:var(--encre)}
+.lv-objet span{font-size:.98rem;line-height:1.4}
+.lv-lanterne{flex:none;width:92px;height:auto;overflow:visible}
+.lv-lanterne-halo{transform-box:fill-box;transform-origin:center;animation:lv-lanterne 3.4s ease-in-out infinite}
+@keyframes lv-lanterne{0%,100%{opacity:.7;transform:scale(.94)}50%{opacity:1;transform:scale(1.05)}}
+@media (prefers-reduced-motion: reduce){.lv-lanterne-halo{animation:none}}
+
 /* ⏭️ Les codes des moments : le même cadre pour chaque moment (comme les cartes des recettes).
    Le logo du moment dans un médaillon et son nom à gauche (au téléphone) ou en haut (tablette), les trois dessins
    du code dans un plateau, l'état sur une étiquette posée au coin haut droit. --t : la petite teinte du moment. */
@@ -5745,8 +5766,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-04 20:54 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-04 20:54';</script>
+<!-- Brumeval v2 · version de test du 2026-11-04 21:39 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-04 21:39';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -10129,6 +10150,18 @@ function eau(p, pts, larg, classe){
     '<path class="ca-flot ' + (classe || '') + '" d="' + d + '" fill="none" stroke="#dff4ff" stroke-width="' + Math.max(2, larg * .07) + '" stroke-dasharray="10 34" stroke-linecap="round" opacity=".55"/>';
 }
 
+/* La rivière rouge (enquête 2) : la même rivière, en rouge, avec une lueur qui respire doucement (carte.css, .ca-riv-lueur ;
+   immobile si l'appareil demande moins de mouvement) */
+function eauRouge(p, pts, larg){
+  var d = lisse(pts), bout = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  return '<g class="ca-riv-lueur" opacity=".6"><path d="' + d + '"' + bout + ' stroke="#ff2d2d" stroke-width="' + (larg + 84) + '" opacity=".3"/>' +
+      '<path d="' + d + '"' + bout + ' stroke="#ff6a55" stroke-width="' + (larg + 40) + '" opacity=".55"/></g>' +
+    '<path d="' + d + '"' + bout + ' stroke="#5c1420" stroke-width="' + (larg + 10) + '"/>' +
+    '<path d="' + d + '"' + bout + ' stroke="#b3202c" stroke-width="' + larg + '"/>' +
+    '<path class="ca-riv-coeur" d="' + d + '"' + bout + ' stroke="#ff5a5f" stroke-width="' + (larg * .55) + '" opacity=".85"/>' +
+    '<path class="ca-flot" d="' + d + '" fill="none" stroke="#ffd9d2" stroke-width="' + Math.max(2, larg * .07) + '" stroke-dasharray="10 34" stroke-linecap="round" opacity=".55"/>';
+}
+
 function chemin(pts, larg, couleur, bord){
   var d = lisse(pts);
   return '<path d="' + d + '" fill="none" stroke="' + (bord || '#6b5236') + '" stroke-width="' + (larg + 6) + '" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>' +
@@ -10444,18 +10477,18 @@ function svgSurface(p, o, ctx){
   var bord = 'M0 0 H1000';
   for(var x = 1000; x >= 0; x -= 25){ var y = 452 + 14 * Math.sin(x / 47) + 8 * Math.sin(x / 13); bord += ' L' + x + ' ' + f(y); }
   s += '<path d="' + bord + ' Z" fill="url(#' + p + 'foret)" stroke="#1b3a2a" stroke-width="4"/>';
-  // eaux
+  // eaux (o.riviere === 'rouge' : l'enquête 2, la rivière rouge qui luit)
   s += eau(p, RUISSEAU, 22);
-  s += eau(p, RIVIERE, 62);
+  s += o.riviere === 'rouge' ? eauRouge(p, RIVIERE, 62) : eau(p, RIVIERE, 62);
   // chemins de forêt
   Object.keys(CHEMINS).forEach(function(k){ s += chemin(CHEMINS[k], 24, '#b99a6a', '#6b5236'); });
   // clairières
   s += dessinClairiere(p);
-  s += dessinCarrefour(p);
   s += dessinPuits(p);
   // routes du village
   s += chemin(ROUTE_NS, 52, 'url(#' + p + 'route)', '#7d6a4c');
   s += '<path d="M500 300 V1420" stroke="#000" stroke-width="2" stroke-dasharray="3 22" opacity=".18"/>';
+  s += dessinCarrefour(p);   /* après la grande rue : les panneaux du carrefour restent par-dessus le chemin */
   s += chemin(RUE_FOUR, 46, 'url(#' + p + 'route)', '#7d6a4c');
   s += chemin(RUELLE, 26, '#a596a8', '#5a4b62');
   s += chemin(VERS_TAVERNE, 30, '#c9b48a', '#7d6a4c');
@@ -10495,9 +10528,9 @@ function svgSurface(p, o, ctx){
     s += '<circle class="ca-fumee" cx="' + f(c[0]) + '" cy="' + f(c[1]) + '" r="7" fill="#f2f2f7" style="animation-delay:' + d1 + 's"/>' +
          '<circle class="ca-fumee" cx="' + f(c[0]) + '" cy="' + f(c[1]) + '" r="7" fill="#f2f2f7" style="animation-delay:' + d2 + 's"/>';
   });
-  // plaques de rue
+  // plaques de rue (la rue des Lanternes : une au-dessus de la place, à l'entrée du village, et une juste en dessous)
+  s += plaque(500, 432, 'Rue des Lanternes');
   s += plaque(500, 888, 'Rue des Lanternes');
-  s += plaque(500, 1380, 'Rue des Lanternes');
   s += plaque(800, 745, 'Rue du Four');
   s += plaque(312, 990, 'Ruelle des Brumes', -58);
   s += rose();
@@ -11006,8 +11039,8 @@ function svg(opts){
 
 /* ==========================================================
    La carte en plein écran (onglet Carte du jeu)
-   Téléphone : la carte est bien plus grande que l'écran, on la fait glisser au doigt (avec l'élan)
-   ou à la souris ; les boutons ＋ / − zooment, de la taille de départ (le plus gros) jusqu'à toute la carte dans l'écran.
+   À l'ouverture, toute la carte tient dans l'écran (opts.zoom = 0, carte-jeu.js) ; les boutons ＋ / − zooment, jusqu'au plus gros
+   (téléphone : la carte devient bien plus grande que l'écran, on la fait glisser au doigt, avec l'élan, ou à la souris).
    Plus de zoom à deux doigts (Romain, 3 novembre) : sur iPhone, on pouvait tirer la carte hors de l'écran. Deux doigts ne font rien de plus qu'un.
    Tablette : la carte prend toute la largeur (couchée, on la fait glisser de haut en bas).
    HTML attendu : <div class="ca-plein"><div class="ca-vue"><div class="ca-monde">svg</div></div></div>
@@ -11038,8 +11071,9 @@ function monter(ici, opts){
   opts = opts || {};
   var vue = ici && ici.querySelector('.ca-vue'), monde = ici && ici.querySelector('.ca-monde');
   if(!vue || !monde) return null;
-  /* k : px par unité de carte ; kMax = la taille de départ (déjà bien zoomée), kMin = toute la carte dans l'écran ; z = k / kMax */
-  var V = {k: 0, kMin: 0, kMax: 0, z: Math.max(0.05, Math.min(1, opts.zoom || 1)), bloque: false, fins: []};
+  /* k : px par unité de carte ; kMax = le plus gros zoom, kMin = toute la carte dans l'écran ; z = k / kMax.
+     opts.zoom === 0 : on part de toute la carte dans l'écran (l'ouverture de la carte, Romain, 4 novembre, 21 h 12 ; ＋ / − pour zoomer) */
+  var V = {k: 0, kMin: 0, kMax: 0, z: opts.zoom === 0 ? 0 : Math.max(0.05, Math.min(1, opts.zoom || 1)), bloque: false, fins: []};
   var raf = 0;
   function centreVue(){
     if(!V.k) return null;
@@ -34140,6 +34174,7 @@ E[2] = {
   /* Pas de points d'action (comme l'enquête 1 : M.sansActions, moteur-base.js). Ce qui limite : un lieu ne donne qu'une chose
      par moment, les moments des villageois, et une seule visite par moment pour certains d'entre eux (uneVisite, barde.js). */
   sansActions:true,
+  riviereRouge:true,   /* sur la carte, l'eau de la rivière est rouge et luit doucement (carte.js, Romain, 4 novembre, 21 h 12) */
   lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',
   signature:'Monsieur Grosbec, maire de Brumeval',
   /* l'affiche du maire, sous la lettre (moteur-ecrans.js) */
@@ -34194,7 +34229,8 @@ E[2] = {
     {id:'teindre', nom:'Pour teindre des tissus', ic:'🧵'}, {id:'farce', nom:'Pour faire une farce', ic:'😜'}]},
   solution:{qui:'bastien', ou:'moulin', pourquoi:'paye'},
   /* Le verrou de l'accusation (regles.js) : après la nuit (le Sage touche « 🌅 Le petit matin »), et quand l'équipe a vu
-     la maison d'Odette, la canne d'Odette et la pierre de Tim (des codes reçus sur la tablette du Sage). Sinon, ce qui reste. */
+     la maison d'Odette, la canne d'Odette et la pierre de Tim (des codes reçus sur la tablette du Sage). Sinon, un message neutre
+     (« Pas encore ! Toute l'équipe n'a pas fini d'enquêter »), sans la liste : les textes t ci-dessous ne sont plus montrés. */
   verrouAccusation:[
     {aube:true, t:'🌙 La nuit n\'est pas finie. Quand toute l\'équipe a fini la nuit, touche « 🌅 Le petit matin ».'},
     {code:'info:odette', t:'🏠 Odette a disparu : quelqu\'un est-il allé voir chez elle ?'},
@@ -34559,15 +34595,17 @@ E[2] = {
       rate:'La bougie s\'éteint, les plans se brouillent…',
       tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière. Ce code est pour toute l\'équipe : chacun peut le taper.',
       rateNote:'Vieux chemins (à moitié effacé) : un chemin des bûcherons arrive au Vieux Chêne par derrière.'},
-    /* La bibliothèque des plans (le code de Farinel) : plusieurs plans, celui du moulin est déchiré → Assembler les runes → le passage */
-    {id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'moulin'}, bouton:'Réparer le plan déchiré',
-      avant:'Tous les vieux plans de Brumeval sont rangés ici : la mairie, le clocher, le pont… et un plan tout déchiré. Lequel chercher ? Un habitant saura peut-être te le dire.',
+    /* Le plan du moulin (le code de Farinel) → Assembler les runes → le passage. Rangé DANS la page « 📐 La bibliothèque des plans »
+       de toutes les enquêtes (dans, livre.js) : il n'y apparaît qu'une fois le code tapé, et la page ne dit jamais quoi chercher. */
+    {id:'bibliotheque', dans:'bibliotheque', titre:'Le plan du moulin', ic:'📐', besoin:[{code:'info:plans_moulin'}], mj:'runes', params:{image:'moulin'}, bouton:'Réparer le plan déchiré',
+      avant:'Voici le vieux plan du moulin de Farinel… mais il est tout déchiré ! Remets les morceaux en place.',
       t:'Le plan du moulin, bâti par l\'arrière-grand-père de Farinel ! Une fois réparé, on voit une petite pièce sans porte, cachée sous la grande roue, et un passage secret pour y entrer. Ce code est pour le Pisteur.',
       note:'Bibliothèque des plans : sur le vieux plan du moulin, une pièce sans porte sous la grande roue, et un passage secret (code pour le Pisteur).', donne:'info:passage',
       rate:'Les morceaux du plan se mélangent…'},
-    /* La pierre de Tim (code du Barde) → L'alphabet secret (message proposé, Romain n'a pas encore choisi) */
-    {id:'pierre', titre:'La pierre gravée', ic:'🪨', besoin:[{code:'obj:pierre'}], mj:'alphabet', params:{message:'SOUS LA BRUME DORT LA VILLE D AVANT'}, bouton:'Déchiffrer les runes',
-      avant:'Une page pour les écritures mystérieuses. Si quelqu\'un trouve des runes, c\'est ici qu\'on les lit.',
+    /* La pierre de Tim (code du Barde) → L'alphabet secret (message proposé, Romain n'a pas encore choisi). Rangée DANS la page
+       « 🔮 Les objets magiques » de toutes les enquêtes (dans, livre.js) : elle n'y apparaît qu'une fois le code tapé. */
+    {id:'pierre', dans:'objets', titre:'La pierre gravée', ic:'🪨', besoin:[{code:'obj:pierre'}], mj:'alphabet', params:{message:'SOUS LA BRUME DORT LA VILLE D AVANT'}, bouton:'Déchiffrer les runes',
+      avant:'La pierre de Tim est couverte de runes. Que disent-elles ?',
       t:'Les runes de la pierre disent : « SOUS LA BRUME DORT LA VILLE D\'AVANT ». Qu\'est-ce que ça veut dire ?',
       note:'La pierre de Tim : « SOUS LA BRUME DORT LA VILLE D\'AVANT ».',
       rate:'Les runes sont trop abîmées… Tu as juste pu lire : « … LA BRUME … LA VILLE … »', rateNote:'La pierre de Tim (abîmée) : « … LA BRUME … LA VILLE … »', partiel:true}
@@ -35577,8 +35615,12 @@ M.passageVoisin = function(seq, autour){
   });
   return l[0] || null;
 };
-/* Le code « enquête suivante » qui a mené à l'enquête n (pour le Sage, si un équipier est en retard) */
+/* Le code « enquête suivante » qui a mené à l'enquête n. Plus montré nulle part (Romain, 4 novembre, 20 h 41 et 21 h 12) :
+   chacun touche le bouton « Enquête N ». Le code « suite » reste dans la liste des codes (tapé par habitude, il marche encore). */
 M.codeVenue = function(n){
+  return null;
+};
+M.codeVenueAncien = function(n){
   var S = M.S, F = S.finies && S.finies[n - 1], V = window.ENQUETES[n - 1];
   if(!F || !V || !window.ENQUETES[n]) return null;
   return M.codeDe(V, 'suite:' + Math.min(F.erreurs || 0, 3));
@@ -35903,19 +35945,8 @@ function vueAccueil(){
       '</div>' +
     '</section></main>';   /* plus de code pour l'enquête suivante, plus de boutons en bas : Mon héros, le Calepin, Comment jouer… sont dans le menu ☰ */
 }
-/* Entre deux enquêtes, au village : le Sage montre le code de l'enquête suivante, les autres peuvent le taper ici */
-function villageSuite(N){
-  var S = M.S;
-  if(N.id <= 1) return '';
-  if(M.role() === 'sage'){
-    var c = M.codeVenue(N.id);
-    if(!c) return '';
-    var t = 'Le code pour partir à l\'enquête ' + N.id + ' : dis-le à l\'équipe. Chacun le tape sur sa tablette.';
-    return '<section class="b-carte-verre b-suite centre"><h3>➡️ Code pour l\'enquête ' + N.id + '</h3><p>' + esc(t) + ' ' + lire(t) + '</p>' + codeHTML(c, true) + '</section>';
-  }
-  var t2 = 'Le Sage te donne le code de l\'enquête ' + N.id + ' ? Tape les trois symboles ici. Tu peux aussi toucher le bouton « Enquête ' + N.id + ' ».';
-  return '<section class="b-carte-verre b-suite centre"><h3>🔢 Le code du Sage</h3><p>' + esc(t2) + ' ' + lire(t2) + '</p>' + padHTML() + '</section>';
-}
+/* Entre deux enquêtes, au village : plus de code pour l'enquête suivante (Romain, 4 novembre, 20 h 41) : chacun touche le bouton « Enquête N » */
+function villageSuite(N){ return ''; }
 /* Le pavé des trois symboles (onglet Code, fin d'enquête, village) : seulement les dessins, le nom dans aria-label */
 function touchesSym(){
   return '<div class="b-pave">' + D.ORDRE_SYM.map(function(k){ return '<button data-act="sym" data-s="' + k + '" aria-label="' + D.SYM[k].n + '" title="' + D.SYM[k].n + '"><span aria-hidden="true">' + D.SYM[k].e + '</span></button>'; }).join('') + '</div>';
@@ -36099,12 +36130,10 @@ function vueLettreAncienne(E, role, R){   /* l'ancienne lettre complète (gardé
     lettreSuite(E) +
     '<div class="b-bas"><button class="btn grand" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
 }
-/* Sur la lettre : un talent gagné à l'enquête d'avant, et (Sage) le code pour un équipier encore en retard */
+/* Sur la lettre : un talent gagné à l'enquête d'avant (plus de code pour un équipier en retard : chacun touche le bouton « Enquête N ») */
 function lettreSuite(E){
   var s = '', att = M.talentsEnAttente();
   if(att.length){ var t = 'Tu as gagné un niveau : choisis ton nouveau talent !'; s += '<section class="b-carte-verre centre"><p>⭐ ' + esc(t) + ' ' + lire(t) + '</p><button class="btn magie" data-act="choisir-talent" data-p="' + att[0] + '">⭐ Choisir mon talent du niveau ' + att[0] + '</button></section>'; }
-  var c = M.role() === 'sage' && M.codeVenue(E.id);
-  if(c){ var t2 = 'Un équipier est encore à l\'enquête ' + (E.id - 1) + ' ? Redis-lui ce code : il le tape sur sa tablette et il vous rejoint.'; s += '<section class="b-carte-verre b-suite centre"><p>➡️ ' + esc(t2) + ' ' + lire(t2) + '</p>' + codeHTML(c) + '</section>'; }
   return s;
 }
 
@@ -36135,8 +36164,7 @@ function ongletCarnet(){
   if(vue !== P.id) return s + journalPasse(S.journal[vue]) + '</section>';
   if(M.sectionMissions) s += M.sectionMissions(); /* 🎯 Mes missions (mission.js) */
   /* (Sage : « 💡 Donner une action » a sa page dans le Grand Livre, livre.js) */
-  var venue = M.role() === 'sage' && M.codeVenue(P.id);
-  if(venue) s += '<div class="b-codes-donnes"><h3>➡️ Un équipier est encore à l\'enquête ' + (P.id - 1) + ' ?</h3><p class="doux petit">Redis-lui ce code : il le tape sur sa tablette, et il vous rejoint dans l\'enquête ' + P.id + '.</p><div class="b-code-ligne"><b>➡️ Enquête ' + P.id + '</b>' + M.codeHTML(venue) + '</div></div>';
+  /* (plus de code pour rejoindre l'enquête suivante, Romain, 4 novembre, 20 h 41 : chacun touche le bouton « Enquête N ») */
   if(M.role() === 'sage' && (P.moment > 0 || P.resolu)){
     s += '<div class="b-codes-donnes"><h3>🔢 Les codes que tu as donnés</h3><p class="doux petit">Si un équipier a oublié de taper un code, redonne-le-lui. Ces codes s\'effacent à la fin de l\'enquête.</p>';
     for(var i = 1; i <= P.moment && i < E.moments.length; i++){
@@ -37099,20 +37127,20 @@ function codeVoisin(v){
   }
   if(P && v.e > ici){
     M.son('ko');
-    M.ouvrir({type:'info', ic:'⏳', titre:'Ta tablette est en retard', t:'Ce code est celui de l\'enquête ' + v.e + ', mais ta tablette est encore à l\'enquête ' + ici + '. Demande au Sage le code pour venir à l\'enquête ' + v.e + ' : il est dans son carnet 📒.'});
+    M.ouvrir({type:'info', ic:'⏳', titre:'Ta tablette est en retard', t:'Ce code est celui de l\'enquête ' + v.e + ', mais ta tablette est encore à l\'enquête ' + ici + '. Finis-la d\'abord, puis touche le bouton « 🔍 Enquête ' + v.e + ' ».'});
     return;
   }
   /* Pas d'enquête sur la tablette (au village, après « Retour au village ») */
   if(t === 'suite' && v.e === S.prochaine - 1){
-    if(M.role() === 'sage'){ M.son('ko'); M.ouvrir({type:'info', ic:'🤝', titre:'Ce code est pour un équipier', t:codePourUnAutre('tous-sauf-sage') + ' Toi, touche « 🔍 Enquête ' + S.prochaine + ' ».'}); return; }
+    if(M.role() === 'sage'){ M.son('ko'); M.ouvrir({type:'info', ic:'🔍', titre:'Pas besoin de code', t:'Pour partir à l\'enquête ' + S.prochaine + ', chacun touche le bouton « 🔍 Enquête ' + S.prochaine + ' » sur sa tablette.'}); return; }
     enqueteSuivante(x, v.e); return;
   }
   if(t === 'victoire' && v.e < S.prochaine){
     M.son('ok');
-    M.ouvrir({type:'info', ic:'🏆', titre:'L\'enquête ' + v.e + ' est déjà finie', t:'Tu as déjà fini l\'enquête ' + v.e + ' ! Pour partir à l\'enquête suivante, tape le code que le Sage te donne, ou touche le bouton « 🔍 Enquête ' + S.prochaine + ' ».'});
+    M.ouvrir({type:'info', ic:'🏆', titre:'L\'enquête ' + v.e + ' est déjà finie', t:'Tu as déjà fini l\'enquête ' + v.e + ' ! Pour partir à l\'enquête suivante, touche le bouton « 🔍 Enquête ' + S.prochaine + ' ».'});
     return;
   }
-  M.son('ko'); M.ouvrir({type:'info', ic:'🤔', titre:'Ce code ne sert plus', t:'Ce code est celui d\'une autre enquête. Demande au Sage le bon code, ou touche le bouton de l\'enquête sur l\'écran du village.'});
+  M.son('ko'); M.ouvrir({type:'info', ic:'🤔', titre:'Ce code ne sert plus', t:'Ce code est celui d\'une autre enquête. Pour changer d\'enquête, touche le bouton de l\'enquête sur l\'écran du village.'});
 }
 
 /* ---------- Moments ---------- */
@@ -40284,8 +40312,9 @@ M.render = function(){
      coin de la page se soulève tout seul pour montrer qu'on peut la tourner.
    · Les pages, dans l'ordre : 📋 Mon tableau d'enquête (tableau.js),
      👥 Les habitants, 🧪 Les recettes, ❔ la page blanche (enquête 1),
-     🏛️ Les fondateurs (l'histoire de la saison, dans toutes les enquêtes),
+     🏛️ Les fondateurs (cachée pour l'instant : FONDATEURS_VISIBLE, plus bas),
      les autres pages de l'enquête (E.pages, dans l'ordre de l'histoire),
+     📐 La bibliothèque des plans et 🔮 Les objets magiques (dans toutes les enquêtes, toujours ouvertes),
      ⏭️ Les codes des moments, 💡 Donner une action (la réserve du Sage, qui
      était dans son Carnet), ⚖️ L'accusation. Les boutons ⏭️ et ⚖️ du bandeau
      vivent ici maintenant.
@@ -40316,12 +40345,20 @@ function calme(){ try{ return window.matchMedia && matchMedia('(prefers-reduced-
 var RANG = {tableau:0, habitants:1, recettes:2, mystere:3, fondateurs:4, carte:5, moulin:5,
   /* enquête 2 */ lettres:10, livreor:11, blanche:12, archives:13, secret:14, plans:15, nuancier:16,
   /* enquête 3 */ plan:10, rapport:11, grille:12, carnet:13, serrure:14,
+  /* toutes les enquêtes */ bibliotheque:80, objets:81,
   codes:90, actions:91, accusation:99};
+/* 🏛️ Les fondateurs : cachée pour l'instant (Romain, 4 novembre, 21 h 12 : on la découvrira plus tard, dans les sous-sols).
+   Son contenu reste plus bas (HISTOIRE, fondateurs()) : true pour la remettre dans le livre de toutes les enquêtes. */
+var FONDATEURS_VISIBLE = false;
 function pagesDuLivre(){
   var E = M.E(), l = [];
   if(M.pageTableau) l.push(M.pageTableau());
-  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs') l.push(p); });   /* les fondateurs : la page de la saison (plus bas) */
-  l.push({id:'fondateurs', titre:'Les fondateurs', ic:'🏛️', livre:true});
+  /* les fondateurs : la page de la saison (plus bas) ; p.dans : une page de l'enquête rangée DANS une page de toutes les enquêtes
+     (le plan du moulin dans la bibliothèque des plans, la pierre de Tim dans les objets magiques) */
+  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans) l.push(p); });
+  if(FONDATEURS_VISIBLE) l.push({id:'fondateurs', titre:'Les fondateurs', ic:'🏛️', livre:true});
+  l.push({id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', livre:true});
+  l.push({id:'objets', titre:'Les objets magiques', ic:'🔮', livre:true});
   l.push({id:'codes', titre:'Les codes des moments', ic:'⏭️', livre:true});
   if(!M.sansActions()) l.push({id:'actions', titre:'Donner une action', ic:'💡', livre:true});   /* une enquête sans points d'action : pas de réserve */
   l.push({id:'accusation', titre:'L\'accusation', ic:'⚖️', livre:true});
@@ -40398,6 +40435,8 @@ function contenu(p){
   if(p.type === 'registre') return tete(p) + registre(E) + (p.donne ? donne(p) : '');   /* le registre peut donner un code (au Barde) */
   if(p.id === 'recettes') return tete(p) + recettes(E, P);
   if(p.id === 'fondateurs' && p.livre) return tete(p) + fondateurs();
+  if(p.id === 'bibliotheque' && p.livre) return tete(p) + bibliotheque(E, P);
+  if(p.id === 'objets' && p.livre) return tete(p) + objetsMagiques(E, P);
   if(p.id === 'codes' && p.livre) return tete(p) + codesMoments(E, P);
   if(p.id === 'actions' && p.livre) return tete(p) + donnerAction(P);
   if(p.id === 'accusation' && p.livre) return tete(p) + accusation(E, P);
@@ -40429,16 +40468,18 @@ function recettes(E, P){
   M.recettesConnues().forEach(function(r){ if(D.RECETTES[r] && l.indexOf(r) < 0) l.push(r); });
   var s = '<div class="lv-recettes">' + l.map(function(r){ return carteRecette(r, E, P); }).join('') + '</div>';
   var autres = M.cle(P.potions || {}).filter(function(k){ return P.potions[k] > 0 && D.POTIONS[k] && l.indexOf(k) < 0; });
-  if(autres.length) s += '<div class="lv-sac-rangee"><b>🎒 Dans ton sac</b>' + autres.map(function(k){ var p = D.POTIONS[k]; return '<span class="lv-puce">' + p.ic + ' ' + esc(p.nom) + ' ×' + P.potions[k] + ' ' + lire(p.nom + '. ' + (p.utile || p.d)) + '</span>'; }).join('') + '</div>';
+  if(autres.length) s += '<div class="lv-sac-rangee"><b>🎒 Dans ton sac</b>' + autres.map(function(k){ var p = D.POTIONS[k], ut = sertA(p); return '<span class="lv-puce">' + p.ic + ' ' + esc(p.nom) + ' ×' + P.potions[k] + (ut ? ' <small>' + esc(ut) + '</small>' : '') + ' ' + lire(p.nom + '. ' + ut) + '</span>'; }).join('') + '</div>';
   return s;
 }
+/* À quoi sert une potion, en une phrase courte pour un enfant (Romain, 4 novembre, 21 h 12) : la phrase courte (d), sinon la longue (utile) */
+function sertA(p){ return (p && (p.d || p.utile)) || ''; }
 function carteRecette(r, E, P){
-  var R = D.RECETTES[r], p = D.POTIONS[r], secrete = !!R.secrete, ut = p.utile || p.d || '';
+  var R = D.RECETTES[r], p = D.POTIONS[r], secrete = !!R.secrete, ut = sertA(p);
   var ingr = R.ingr.map(function(x, k){
     var I = D.INGR[x[0]] || {nom:x[0], ic:'❔', c:'#ddd'};
     return (k ? '<i class="lv-suite" aria-hidden="true">›</i>' : '') + '<span class="lv-ingr" style="--c:' + I.c + '"><span class="lv-ingr-ic">' + I.ic + '<b>×' + x[1] + '</b></span><small>' + esc(I.nom) + '</small></span>';
   }).join('');
-  var dire = (secrete ? 'Recette secrète : lis-la à l\'Alchimiste ! ' : '') + p.nom + '. Il faut : ' + R.ingr.map(function(x){ return x[1] + ' ' + (D.INGR[x[0]] || {nom:x[0]}).nom.toLowerCase(); }).join(', ') + '. ' + ut;
+  var dire = (secrete ? 'Recette secrète : lis-la à l\'Alchimiste ! ' : '') + p.nom + '. ' + (ut ? 'À quoi elle sert ? ' + ut + ' ' : '') + 'Il faut : ' + R.ingr.map(function(x){ return x[1] + ' ' + (D.INGR[x[0]] || {nom:x[0]}).nom.toLowerCase(); }).join(', ') + '.';
   var n = P.potions && P.potions[r] > 0 ? P.potions[r] : 0;
   /* L'encre révélatrice : un raccourci vers la page (ou la lettre) blanche qu'elle fait parler */
   var lien = '';
@@ -40449,7 +40490,8 @@ function carteRecette(r, E, P){
   return '<article class="lv-recette' + (secrete ? ' secrete' : '') + '" style="--p:' + p.c + '">' +
     '<header>' + fiole(p.c, p.ic) + '<div class="lv-rec-nom"><h3>' + esc(p.nom) + '</h3>' +
       (secrete ? '<span class="lv-badge secret">📜 Secrète : lis-la à l\'Alchimiste !</span>' : '') + (n ? '<span class="lv-badge sac">🎒 Tu en as ' + n + '</span>' : '') + '</div>' + lire(dire) + '</header>' +
-    '<div class="lv-ingrs">' + ingr + '</div><p class="lv-utile">' + esc(ut) + '</p>' + lien + '</article>';
+    (ut ? '<p class="lv-utile"><b>À quoi elle sert ?</b> ' + esc(ut) + '</p>' : '') +
+    '<div class="lv-ingrs">' + ingr + '</div>' + lien + '</article>';
 }
 
 /* ❔ La page blanche : toute blanche, des reflets bleu-violet qui bougent, pas un mot */
@@ -40529,6 +40571,51 @@ function fondateurs(){
   return s;
 }
 
+/* 📐 La bibliothèque des plans et 🔮 Les objets magiques (Romain, 4 novembre, 21 h 12) : deux pages de toutes les enquêtes,
+   toujours ouvertes (pas de cadenas), qui ne disent jamais quoi chercher ni ce qui « marcherait ».
+   Ce qu'une enquête y range (E.pages avec dans:'bibliotheque' ou dans:'objets' : le plan du moulin de Farinel, la pierre de Tim)
+   n'y apparaît qu'une fois son code tapé ; c'est alors la même page qu'avant (réparer le plan, déchiffrer les runes). */
+var T_PLANS = 'Ici sont rangés tous les vieux plans de Brumeval : la mairie, le clocher, le pont, la taverne, la place des Lanternes, la ruelle des Brumes… Un de tes coéquipiers finira bien par mettre la main sur celui qu\'il te faut, au fil de vos aventures.';
+var T_RIEN = 'Pour l\'instant, vous n\'avez rien trouvé.';
+var T_OBJETS = 'Ici seront rangés les plans des runes et tous les autres objets magiques.';
+var T_LANTERNE = 'La Lanterne d\'Or est un objet magique. Tout le monde croit que son pouvoir se limite à allumer les lanternes du village, sur la place de la fontaine.';
+function rangees(E, P, ou){ return (E.pages || []).filter(function(p){ return p.dans === ou && (P.pages[p.id] || !p.besoin || M.besoinOk(p.besoin)); }); }
+function rangee(p, E, P){ return '<section class="lv-rangee"><h3><span aria-hidden="true">' + p.ic + '</span> ' + esc(p.titre) + '</h3>' + generique(p, E, P) + '</section>'; }
+function bibliotheque(E, P){
+  var l = rangees(E, P, 'bibliotheque');
+  return '<div class="lv-rayons" aria-hidden="true">' + ['#c9a06a', '#e3c78f', '#b98a55', '#d8b77c', '#c49a62', '#e8d3a2'].map(function(c, k){ return '<i style="--c:' + c + ';--h:' + (62 + (k * 17) % 26) + '%"></i>'; }).join('') + '</div>' +
+    '<p class="lv-texte">' + esc(T_PLANS) + ' ' + lire(T_PLANS) + '</p>' +
+    (l.length ? l.map(function(p){ return rangee(p, E, P); }).join('') : '<p class="lv-texte lv-rien">' + esc(T_RIEN) + ' ' + lire(T_RIEN) + '</p>');
+}
+function objetsMagiques(E, P){
+  return '<p class="lv-texte">' + esc(T_OBJETS) + ' ' + lire(T_OBJETS) + '</p>' +
+    '<figure class="lv-objet">' + lanterneOr() + '<figcaption><b>La Lanterne d\'Or</b><span>' + esc(T_LANTERNE) + ' ' + lire(T_LANTERNE) + '</span></figcaption></figure>' +
+    rangees(E, P, 'objets').map(function(p){ return rangee(p, E, P); }).join('');
+}
+/* La Lanterne d'Or : cadre doré, verre chaud, une flamme, un halo qui respire doucement (immobile si l'appareil demande moins de mouvement) */
+function lanterneOr(){
+  var k = 'lvl' + (++uid), K = '#24182e';
+  return '<svg class="lv-lanterne" viewBox="0 0 120 160" role="img" aria-label="La Lanterne d\'Or">' +
+    '<defs><radialGradient id="' + k + 'h" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff3c4"/><stop offset=".45" stop-color="#ffc457" stop-opacity=".7"/><stop offset="1" stop-color="#ff9a2e" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="' + k + 'o" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#f5b945"/><stop offset="1" stop-color="#c8862a"/></linearGradient>' +
+    '<linearGradient id="' + k + 'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d6"/><stop offset="1" stop-color="#ffd77a"/></linearGradient></defs>' +
+    '<circle class="lv-lanterne-halo" cx="60" cy="90" r="58" fill="url(#' + k + 'h)"/>' +
+    '<circle cx="60" cy="13" r="8.5" fill="none" stroke="' + K + '" stroke-width="7"/><circle cx="60" cy="13" r="8.5" fill="none" stroke="#f5b945" stroke-width="3"/>' +
+    '<path d="M34 46 Q36 25 60 21 Q84 25 86 46 Z" fill="url(#' + k + 'o)" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<path d="M44 34 Q50 27 60 26" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>' +
+    '<rect x="28" y="44" width="64" height="11" rx="4" fill="url(#' + k + 'o)" stroke="' + K + '" stroke-width="4"/>' +
+    '<path d="M36 55 H84 L80 121 H40 Z" fill="url(#' + k + 'v)" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<path class="lv-lanterne-flamme" d="M60 72 C71 87 71 100 60 109 C49 100 49 87 60 72 Z" fill="#ff9a2e" stroke="' + K + '" stroke-width="2.5"/>' +
+    '<path d="M60 87 C65 94 64 101 60 104 C56 101 55 94 60 87 Z" fill="#fff3c4"/>' +
+    '<path d="M48 55 L46 121 M72 55 L74 121" stroke="' + K + '" stroke-width="6.5"/><path d="M48 55 L46 121 M72 55 L74 121" stroke="#f5b945" stroke-width="2.8"/>' +
+    '<path d="M41 62 L39.5 104" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".75"/>' +
+    '<rect x="32" y="119" width="56" height="12" rx="4" fill="url(#' + k + 'o)" stroke="' + K + '" stroke-width="4"/>' +
+    '<path d="M40 131 H80 L74 146 H46 Z" fill="url(#' + k + 'o)" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<circle cx="60" cy="125" r="3" fill="#fff3c4" stroke="' + K + '" stroke-width="1.5"/>' +
+    '<path class="lv-lanterne-eclat" d="M16 38 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4z M103 70 l1.8 4.5 4.5 1.8 -4.5 1.8 -1.8 4.5 -1.8 -4.5 -4.5 -1.8 4.5 -1.8z M98 128 l1.4 3.6 3.6 1.4 -3.6 1.4 -1.4 3.6 -1.4 -3.6 -3.6 -1.4 3.6 -1.4z" fill="#fff3c4" stroke="' + K + '" stroke-width="1.4" stroke-linejoin="round"/>' +
+    '</svg>';
+}
+
 /* ⏭️ Les codes des moments : un cadre identique par moment (logo et nom en haut, les trois dessins du code dessous,
    l'état « maintenant / le prochain » sur une étiquette au même coin), une petite teinte par moment ; le bouton pour
    passer au moment suivant sous les cadres (dans un cadre, il le rendrait plus grand que les autres). */
@@ -40552,11 +40639,7 @@ function codesMoments(E, P){
     var t2 = 'C\'est le dernier moment. Quand l\'équipe est prête, accuse !';
     s += '<div class="lv-fin-jour"><p>🌙 ' + esc(t2) + ' ' + lire(t2) + '</p><button type="button" class="btn" data-lv="aller" data-id="accusation">⚖️ L\'accusation ›</button></div>';
   }
-  var venue = M.codeVenue && M.codeVenue(P.id);
-  if(venue){
-    var t3 = 'Un équipier est encore à l\'enquête ' + (P.id - 1) + ' ? Redis-lui ce code : il le tape, et il vous rejoint.';
-    s += '<div class="lv-encart"><p>➡️ ' + esc(t3) + ' ' + lire(t3) + '</p>' + M.codeHTML(venue) + '</div>';
-  }
+  /* (plus de code pour rejoindre l'enquête suivante, Romain, 4 novembre, 20 h 41 : chacun touche le bouton « Enquête N ») */
   var trouves = M.objetsTrouves ? M.objetsTrouves() : '';
   if(trouves.indexOf('b-objet-code') >= 0) s += '<div class="lv-trouves">' + trouves + '</div>';
   return s;
@@ -40583,7 +40666,7 @@ function accusation(E, P){
   var q = dims.map(function(d){ return E[d].titre; }).join(' ');
   var s = '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t) + ' ' + lire(t + ' ' + q) + '</p></div>';
   s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + IC_Q[d] + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
-  if(M.verrouAccusationHTML) s += M.verrouAccusationHTML();   /* l'enquête 2 : ce qui reste à éclaircir avant d'accuser (regles.js) */
+  if(M.verrouAccusationHTML) s += M.verrouAccusationHTML();   /* l'enquête 2 : le bouton « 🌅 Le petit matin » (regles.js), sans dire ce qui manque */
   s += '<button class="btn grand lv-accuser" data-act="accuser">⚖️ Accuser</button>';
   s += M.coeursHTML ? M.coeursHTML() : '';
   /* les suspects : ceux que le Sage a barrés dans son tableau sont grisés (ils restent choisissables à l'accusation) */
@@ -40932,7 +41015,7 @@ if(typeof rendreAvant === 'function'){
    · L'Alchimiste remplit un flacon dans un lieu (L.alchimiste.echantillon {objet, t, moments}) : un objet à analyser.
    · Une trouvaille en cueillant (L.alchimiste.trouvaille {moments, ic, titre, t, note, donne}) : le champ rasé.
    · Le verrou de l'accusation (E.verrouAccusation) et le petit matin (P.aube, sur la tablette du Sage) : on accuse
-     après la nuit, quand l'équipe a vu ce qu'il faut ; sinon un message dit exactement ce qui reste.
+     après la nuit, quand l'équipe a vu ce qu'il faut ; sinon un message court et neutre, qui ne dit pas quoi chercher.
    · Les vieilles sauvegardes de l'ancienne enquête 2 (le Corbeau) : une enquête 2 en cours repart de zéro (nouvelle histoire).
    Chargé APRÈS moteur-actions.js, barde.js et livre.js (et avant tuto.js).
    ========================================================== */
@@ -41017,21 +41100,20 @@ function verrou(){
   return E.verrouAccusation.filter(function(c){ return c.aube ? !P.aube : !M.uneCondition(c); });
 }
 M.verrouAccusation = verrou;
+/* Sur la page de l'accusation : seulement le bouton « 🌅 Le petit matin » (ou quand on accuse). Plus de liste de ce qui manque
+   (Romain, 4 novembre, 21 h 12 : trop d'informations) ; le verrou reste, avec un message court et neutre (A.accuser, plus bas). */
 M.verrouAccusationHTML = function(){
-  var l = verrou(); if(!l.length) return '';
-  var t = 'Il reste des mystères à éclaircir avant d\'accuser :', aube = l.some(function(c){ return c.aube; });
-  var s = '<div class="lv-verrou-acc"><p>🔒 <b>' + esc(t) + '</b></p><ul>' + l.map(function(c){ return '<li>' + esc(c.t) + '</li>'; }).join('') + '</ul>' +
-    lire(t + ' ' + l.map(function(c){ return c.t; }).join(' '));
-  if(aube && derniereNuit() && M.P().etape === 'jeu') s += '<div class="centre"><button class="btn magie grand" data-act="petit-matin">🌅 Le petit matin</button></div>';
-  else if(aube) s += '<p class="doux petit">On accuse au petit matin, après la nuit.</p>';
-  return s + '</div>';
+  var l = verrou(), aube = l.some(function(c){ return c.aube; });
+  if(!aube) return '';
+  if(derniereNuit() && M.P().etape === 'jeu') return '<div class="lv-verrou-acc centre"><button class="btn magie grand" data-act="petit-matin">🌅 Le petit matin</button></div>';
+  return '<p class="doux petit centre">On accuse au petit matin, après la nuit.</p>';
 };
 var accuser0 = A.accuser;
 A.accuser = function(el){
   var l = verrou();
   if(l.length){
     M.son('ko');
-    M.ouvrir({type:'info', ic:'🔒', titre:'Pas encore !', t:'Il reste des mystères à éclaircir avant d\'accuser : ' + l.map(function(c){ return c.t; }).join(' ')});
+    M.ouvrir({type:'info', ic:'⏳', titre:'Pas encore !', t:'Toute l\'équipe n\'a pas fini d\'enquêter : parlez-en ensemble.'});
     return;
   }
   return accuser0.apply(this, arguments);
@@ -41117,7 +41199,7 @@ M.illustration = function(id){ return ILLU[id] ? ILLU[id]() : ''; };
 /* ==========================================================
    Brumeval — la carte dans le jeu
    - L'onglet Carte : seulement la carte, en grand, entre le bandeau et les onglets, sans cadre ni liste.
-     Téléphone : bien plus grande que l'écran, on la fait glisser au doigt. Tablette : toute la carte (carte.js, Carte.monter).
+     À l'ouverture, tout le village tient dans l'écran ; ＋ / − pour zoomer, puis on la fait glisser au doigt (carte.js, Carte.monter).
    - Enquête 1, Pisteur : la carte se dévoile pas à pas, en suivant ses missions (mission.js : M.missionsLieux).
    - Le Pisteur, et lui seul, a aussi la carte des sous-sols (souterrains.js). Pas de doublon (Romain, 3 novembre) :
      l'onglet Carte ne montre que le village, la carte du chevalet de sa cabane ne montre que les sous-sols,
@@ -41272,7 +41354,7 @@ function contenu(ou, w, h){
       if(T && montrer && T.ici && UI.tutoIci !== T.ici){ UI.tutoIci = T.ici; res.commit = res.commit || {ids:[], tout:false}; res.commit.pan = centreDe([T.ici]); res.commit.force = true; }   /* l'étape change de lieu : la carte y glisse */
       res.depart = centreDe(T && T.ici ? [T.ici] : guide || actifs) || {x:500, y:745};
       var ouverts = actifs.filter(function(id){ return P.vus['lieu:' + id + ':' + P.moment]; });
-      svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, notes:info.notes, marqueurs:marqueurs,
+      svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, notes:info.notes, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null,
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts});
     }
   }catch(e){ console.error(e); svg = '<p>Erreur de carte</p>'; }
@@ -41293,12 +41375,16 @@ M.ongletCarteHTML = function(){
 
 /* ---------- Monter une carte (après le rendu) : elle garde l'endroit où on regardait, fait surgir ce qui est nouveau ---------- */
 var vues = {onglet:null, cabane:null};
+/* Une carte qui s'ouvre (l'onglet Carte, ou la cabane du Pisteur, qui n'étaient pas à l'écran au rendu d'avant) montre tout le village
+   en entier (Romain, 4 novembre, 21 h 12) ; ＋ / − pour zoomer. Tant qu'elle reste ouverte, elle garde son zoom et sa place d'un rendu à l'autre. */
+var ouverture = {onglet:true, cabane:true};
 function arreterVue(ou){ var v = vues[ou]; vues[ou] = null; if(v){ try{ v.arreter(); }catch(e){} } if(ou === 'cabane') UI.carteMurale = null; }
 function monterVue(el, c){
   var P = M.P();
   var cle = P.id + ':' + M.role() + ':' + c.ou + ':' + c.couche;
-  var mem = vuesMem()[cle] || null;
-  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:mem || c.depart, zoom:mem && mem.z ? mem.z : 1,   /* on garde le zoom à deux doigts d'un rendu à l'autre */
+  var neuve = ouverture[c.ou]; ouverture[c.ou] = false;
+  var mem = neuve ? null : (vuesMem()[cle] || null);
+  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:mem || c.depart, zoom:mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
     surVue:function(p){ vuesMem()[cle] = p; },
     surTaille:function(w, h){
       /* le cadre a beaucoup changé (tablette tournée) : si les étiquettes doivent changer de taille, on redessine cette carte */
@@ -41335,6 +41421,7 @@ function remonter(ou){
 }
 M.monterCarte = function(){
   try{ M.majSousSols(); }catch(e){ console.error(e); }
+  ouverture.onglet = !vues.onglet; ouverture.cabane = !vues.cabane;   /* pas à l'écran au rendu d'avant : elle s'ouvre */
   arreterVue('onglet'); arreterVue('cabane');
   if(!window.Carte || !Carte.monter || !M.P()) return;
   var ici = document.getElementById('carte-ici');

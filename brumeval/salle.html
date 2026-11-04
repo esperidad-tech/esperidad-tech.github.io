@@ -22506,8 +22506,12 @@ M.passageVoisin = function(seq, autour){
   });
   return l[0] || null;
 };
-/* Le code « enquête suivante » qui a mené à l'enquête n (pour le Sage, si un équipier est en retard) */
+/* Le code « enquête suivante » qui a mené à l'enquête n. Plus montré nulle part (Romain, 4 novembre, 20 h 41 et 21 h 12) :
+   chacun touche le bouton « Enquête N ». Le code « suite » reste dans la liste des codes (tapé par habitude, il marche encore). */
 M.codeVenue = function(n){
+  return null;
+};
+M.codeVenueAncien = function(n){
   var S = M.S, F = S.finies && S.finies[n - 1], V = window.ENQUETES[n - 1];
   if(!F || !V || !window.ENQUETES[n]) return null;
   return M.codeDe(V, 'suite:' + Math.min(F.erreurs || 0, 3));
