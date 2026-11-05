@@ -23656,7 +23656,18 @@ document.addEventListener('click', function(ev){
   try{ if(window.Brume) Brume.son('clic'); }catch(e){}
 });
 document.addEventListener('change', function(ev){ if(ev.target.id === 'aides'){ etat.aides = ev.target.checked; sauver(); } });
-if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', rendre); else rendre();
+/* Un lien direct vers un jeu et sa difficulté (la page « Le point sur les mini-jeux », 5 novembre) : salle.html#jeu=poursuite&n=5&v=chien */
+function lienDirect(){
+  var h = String(location.hash || '').replace(/^#/, ''); if(!h) return;
+  var q = {}; h.split('&').forEach(function(x){ var p = x.split('='); if(p[0]) q[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || ''); });
+  if(!q.jeu || !MJ.TYPES[q.jeu] || RETIRES[q.jeu]) return;
+  etat.niveau = Math.max(1, Math.min(10, Math.round(+q.n) || etat.niveau)); sauver(); rendre();
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}   /* (revenir à la salle ne relance pas le jeu) */
+  jouer(q.jeu, q.v || null);
+}
+function demarrer(){ rendre(); lienDirect(); }
+window.addEventListener('hashchange', lienDirect);
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
 })();
 
 </script>
