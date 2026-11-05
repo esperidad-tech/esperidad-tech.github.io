@@ -4224,6 +4224,13 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-coin.at-guide-q::before{left:auto;right:0;transform:none}
 @media (prefers-reduced-motion: reduce){ .at-coin.at-guide-q,.at-res-o.at-guide-q{animation:none} }
 
+/* Le voyage d'un ingrédient jusqu'à son rangement (Romain, 5 novembre, 15 h 58) : lent, pour qu'on le suive des yeux */
+.at-voyage{position:absolute;pointer-events:none;display:flex;align-items:center;gap:2px;padding:4px 9px 4px 6px;border-radius:999px;
+  background:#fff6e6;border:3px solid #24182e;box-shadow:0 6px 14px rgba(0,0,0,.4), 0 0 0 4px rgba(255,211,106,.55);white-space:nowrap;
+  font-size:calc(22px * var(--k, 1) * 1.6)}
+.at-voyage span{line-height:1}
+.at-voyage b{font-size:.6em;color:#24182e;font-weight:900}
+
 /* ==========================================================
    Brumeval v2 — styles du moteur (écrans, fenêtres, jeu)
    ========================================================== */
@@ -6314,8 +6321,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 15:39 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 15:39';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 16:11 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 16:11';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -33120,8 +33127,51 @@ function feuille(cls, titre, corps){
    Chaque ingrédient va d'abord là où son étiquette est collée, puis là où il y en a déjà, puis dans une case vide, puis là où il reste
    de la place ; liquides dans le verre (bocaux, fioles), le reste dans les tiroirs et les placards. Ce qui ne trouve pas de place reste
    devant la porte (la fenêtre « Ta cueillette » s'ouvre alors pour le dire). */
+/* D'où part chaque ingrédient : son tas devant la porte (en unités de la pièce) */
+function departsTas(V){
+  var d = {}, mr = V.monde && V.monde.getBoundingClientRect();
+  if(!mr || !V.k) return d;
+  (V.elTas || []).forEach(function(e){ var r = e.getBoundingClientRect(); if(!r.width) return; d[e._k] = {x:V.vb.x0 + ((r.left + r.right) / 2 - mr.left) / V.k, y:V.vb.y0 + ((r.top + r.bottom) / 2 - mr.top) / V.k}; });
+  return d;
+}
+/* Le voyage des ingrédients (Romain, 5 novembre, 15 h 58) : un par un, lentement, chaque ingrédient s'envole de son tas jusqu'au meuble
+   où il se range (la vue glisse jusqu'à lui) ; à l'arrivée, le meuble tressaille, « +3 🫐 » et des étincelles. Rend la durée totale (ms). */
+var VOYAGE = 1500, ECART = 1100;
+function voyagesRangement(V, mv){
+  if(!mv.length) return 0;
+  if(MOINS_MOUV){ mv.forEach(function(m){ flotter(V, m.o, '+' + m.q + ' ' + icIngr(m.k)); }); son(V, 'plouf'); return 400; }
+  mv.forEach(function(m, i){
+    apres(V, i * ECART, function(){
+      var F = cadreObjet(V, m.o.id) || {x:600, y:600, w:0, h:0}, a = m.de || {x:F.x, y:F.y + 200}, b = {x:F.x, y:F.y - F.h * 0.5};
+      allerVers(V, b.x, b.y);   /* la vue glisse jusqu'au meuble : on voit où il arrive */
+      var e = document.createElement('div');
+      e.className = 'at-voyage';
+      e.innerHTML = '<span>' + icIngr(m.k) + '</span><b>×' + m.q + '</b>';
+      e.style.zIndex = 99000;
+      V.calque.appendChild(e);
+      var hy = Math.min(a.y, b.y) - 160;
+      var an = anim(e, [
+        {left:pX(V, a.x), top:pY(V, a.y), transform:'translate(-50%,-50%) scale(.6)', opacity:0},
+        {left:pX(V, a.x + (b.x - a.x) * 0.15), top:pY(V, a.y - 60), transform:'translate(-50%,-50%) scale(1.15)', opacity:1, offset:0.15},
+        {left:pX(V, (a.x + b.x) / 2), top:pY(V, hy), transform:'translate(-50%,-50%) scale(1.1)', opacity:1, offset:0.5},
+        {left:pX(V, b.x), top:pY(V, b.y), transform:'translate(-50%,-50%) scale(.75)', opacity:1}
+      ], {duration:VOYAGE, easing:'ease-in-out', fill:'forwards'});
+      son(V, 'clic');
+      apres(V, VOYAGE, function(){
+        e.remove();
+        var d = V.elO[m.o.id];
+        if(d && d._s) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + d._s * 1.07 + ',' + d._s * 0.93 + ')', offset:0.4}, {transform:'scale(' + d._s + ')'}], {duration:320});
+        flotter(V, m.o, '+' + m.q + ' ' + icIngr(m.k));
+        etincelles(V, m.o);
+        son(V, 'plouf');
+      });
+      if(!an){ e.style.left = pX(V, b.x); e.style.top = pY(V, b.y); }
+    });
+  });
+  return (mv.length - 1) * ECART + VOYAGE + 300;
+}
 function rangerAuto(V){
-  var p = V.etat.panier, mis = 0, reste = 0, ou = {};
+  var p = V.etat.panier, mis = 0, reste = 0, ou = {}, mv = [], dep = departsTas(V);
   cles(p).forEach(function(k){
     if(!(p[k] > 0)) return;
     var places = [];
@@ -33142,25 +33192,32 @@ function rangerAuto(V){
       if(q <= 0) return;
       prendre(V, {de:'panier', ingr:k}, q); cs.i[k] = (cs.i[k] || 0) + q; mis += q;
       ou[x.o.id] = (ou[x.o.id] || '') + icIngr(k);
+      var m0 = mv.filter(function(m){ return m.k === k && m.o === x.o; })[0];
+      if(m0) m0.q += q; else mv.push({k:k, o:x.o, q:q, de:dep[k]});
     });
     if(p[k] > 0) reste += p[k];
   });
+  var duree = 0;
   if(mis){
-    son(V, 'plouf');
-    cles(ou).forEach(function(id){ var o = V.parId[id], d = V.elO[id]; if(!o) return; flotter(V, o, '+ ' + ou[id]);
-      if(d && d._s) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + d._s * 1.06 + ',' + d._s * 0.94 + ')', offset:0.4}, {transform:'scale(' + d._s + ')'}], {duration:260}); });
+    duree = voyagesRangement(V, mv);   /* (Romain, 15 h 58 : on voit chaque ingrédient aller lentement jusqu'à son rangement) */
     changer(V);
     try{ guideFait(V, 'rangement'); }catch(e){}
   }
-  return {mis:mis, reste:reste};
+  V.rangeFin = mis ? Date.now() + duree : 0;
+  return {mis:mis, reste:reste, duree:duree};
 }
 function ouvrirArrivage(V, k){
   V.etat.nouveaux = 0;
   changer(V);
   var ra = rangerAuto(V);
   if(ra.mis){
+    V.avaitCarton = false;   /* (le message vient après le voyage des ingrédients, pas tout de suite) */
     apresRangement(V);
-    if(!ra.reste){ toast(V, '<b>🌿 ✔</b> Tout est rangé !', 2400, 'Tout est rangé !'); return; }
+    if(!ra.reste){
+      apres(V, ra.duree, function(){ toast(V, '<b>🌿 ✔</b> Tout est rangé !', 2600, 'Tout est rangé !'); });
+      V.rangeFin = Date.now() + ra.duree + 2600;   /* le tutoriel attend la fin du message pour montrer la suite (Atelier.rangeEnCours) */
+      return;
+    }
     k = null;
   }
   if(ra.reste){ var tr = 'Plus de place pour le reste : installe un meuble de plus (ouvre un carton), ou range à la main.'; toast(V, '<b>📦 ?</b> ' + esc(tr), 4200, tr); }
@@ -34838,6 +34895,7 @@ function chasseFin(V){
 
 /* ---------- Pendant une potion : il dresse les oreilles quand on verse le bon ingrédient (un petit coup de pouce) ---------- */
 function chatPotion(V, ov){
+  return null;   /* (Romain, 5 novembre, 15 h 58 : plus de chat dans le mini-jeu du chaudron) */
   var o = chatsTous(V).filter(function(c){ return !V.chats[c.id] || !V.chats[c.id].depart; })[0];
   if(!o || bonheur(o) < 45 || tama(V).butin) return null;
   var p = CHATS[(o.v || 0) % 3], el = document.createElement('div');
@@ -35189,6 +35247,7 @@ window.Atelier = {
   LIQUIDES:LIQUIDES,
   THEMES:THEMES,
   aRangementSec:aRangementSec,
+  rangeEnCours:function(){ return VUES.some(function(V){ return !V.arrete && (V.rangeFin || 0) > Date.now(); }); },
   /* le chat (étape 3) : Mimi vit chez Odette après la naissance du chaton (à partir de l'enquête 4) ; la réplique d'Odette, pour le village */
   chezOdette:chezOdette,
   /* le guidage du tutoriel (voir en tête du fichier) */
@@ -46126,6 +46185,8 @@ function cibleAtelier(e){
   if(e.atelier === 'analyse') return boutonAtelier(e) ? 'bouton' : 'paillasse';
   if(e.atelier === 'encre'){
     if((S.potions.revelatrice || 0) > 0) return boutonAtelier(e) ? 'bouton' : 'potion';
+    /* les ingrédients voyagent jusqu'à leurs rangements, puis « Tout est rangé ! » : rien ne brille pendant ce temps (Romain, 15 h 58) */
+    if(window.Atelier && Atelier.rangeEnCours && Atelier.rangeEnCours()) return 'regarde';
     var pan = at.panier || {};
     if(M.cle(pan).some(function(k){ return pan[k] > 0 && /^(baies|eau|miel)$/.test(k); })) return fait.cueillette ? 'rangement' : 'cueillette';   /* toucher un ingrédient devant la porte, puis le ranger */
     if(q('#atelier-ici .at-grim:not([hidden]) .at-livre-ch')) return 'brasser';   /* le chaudron est ouvert : on prépare l'encre dedans (pas de rond : c'est le mini-jeu) */
@@ -46265,7 +46326,7 @@ function rangerPanneau(){
 }
 /* Un panneau de l'atelier resté ouvert (le gros plan d'un meuble, la cueillette…) cache la prochaine chose à toucher : son ✕ */
 function panneauGenant(c){
-  if(c === 'bouton' || c === 'brasser' || c === 'rangement') return null;
+  if(c === 'bouton' || c === 'brasser' || c === 'rangement' || c === 'regarde') return null;
   if(c === 'grimoire' && q('#atelier-ici .at-grim:not([hidden]) .at-grimoire')) return null;   /* le grimoire ouvert : l'atelier entoure ses « ? » */
   if(c === 'carton' && q('#atelier-ici .at-grim:not([hidden]) .at-f-reserve')) return null;    /* le 📦 ouvert : l'atelier fait briller le meuble à installer */
   return premier(['#atelier-ici .at-ouvert:not([hidden]) .at-fermer', '#atelier-ici .at-grim:not([hidden]) .at-fermer']);
@@ -46362,7 +46423,8 @@ var PAGES = {lettre:'La lettre du maire', archives:'Les archives', habitants:'Le
 var ATELIER_DIT = {
   carton:'Touche un carton pour l\'ouvrir : tout ce qu\'il contient file dans le carton 📦, en bas à droite.',   /* (Romain, 15 h 10) */
   reserve:'Touche le carton 📦, en bas à droite, puis un meuble pour ranger tes ingrédients : il s\'installe dans la pièce.',
-  cueillette:'Touche les ingrédients posés devant la porte : ils se rangent tout seuls dans tes meubles.',   /* (rangement automatique, Romain, 5 novembre, 12 h 31) */
+  cueillette:'Touche les ingrédients posés devant la porte : ils se rangent tout seuls dans tes meubles.',
+  regarde:'Regarde bien où vont tes ingrédients : c\'est là qu\'ils sont rangés !',   /* (rangement automatique, Romain, 5 novembre, 12 h 31) */
   grimoire:'Ouvre ton grimoire, puis touche chaque « ? » : choisis l\'ingrédient que le Sage te dit, dans l\'ordre.',
   chaudron:'Touche le grand chaudron et suis la recette que le Sage te lit.',
   brasser:'Touche « Préparer » : l\'encre se prépare dans le grand chaudron.',
@@ -46693,7 +46755,7 @@ function cacherTout(){
 }
 var atelierCible = undefined;
 function guiderAtelier(c){
-  if(c === 'bouton' || c === 'brasser') c = null;   /* le bouton du panneau : c'est notre rond ; le chaudron ouvert : rien à entourer */
+  if(c === 'bouton' || c === 'brasser' || c === 'regarde') c = null;   /* le bouton du panneau : c'est notre rond ; le chaudron ouvert : rien à entourer */
   if(c === atelierCible && (!c || !window.Atelier || !Atelier.guidage || Atelier.guidage() === c)) return;
   atelierCible = c;
   try{ if(window.Atelier && Atelier.guider) Atelier.guider(c || null);   /* quand c'est fait, l'atelier envoie 'atelier:guide-fait' (écouté plus haut) */ }catch(e){ console.error(e); }
