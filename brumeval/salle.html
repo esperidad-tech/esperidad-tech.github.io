@@ -3309,6 +3309,9 @@ O('sage', [
   ['couronne', 4, 'Couronne de runes', '👑', 260, 'Les sceaux et les runes s\'ouvrent sans mini-jeu.', 'runes', {auto:{runes:9}}],
   ['oeil_temps', 4, 'Œil du Temps', '👁️', 300, 'Une fois par enquête, ton équipe rejoue tout un moment.', null, {acces:['oeil_temps']}]
 ]);
+/* Les objets qu'on ne vend plus (gardés pour les vieilles sauvegardes qui les ont déjà) : le carnet de ragots
+   (Romain, 5 novembre, 9 h 03 : le mini-jeu des ragots est abandonné) */
+D.OBJETS.carnet_ragots.retire = true;
 
 D.ENSEMBLES = {
   ombre:{role:'pisteur', nom:'Ombre', ic:'🌑', bonus:'Aucune ronde ne te repère : se cacher devient très facile.', fx:{mj:{cachette:{facile:2}}}},
@@ -22284,6 +22287,12 @@ function e1Texte(t){
   return E1_NOTES[t] || t.replace(/Plume de corbeau/g, 'Grande plume noire').replace(/plume de corbeau/g, 'grande plume noire');
 }
 function e1Notes(l){ (Array.isArray(l) ? l : []).forEach(function(n){ if(n && typeof n.t === 'string') n.t = e1Texte(n.t); }); }
+var E2_VIEUX = {
+  'Devant la fumée rouge du Vieux Chêne, le maire a crié : « Vapeurs toxiques ! »': 'Devant la fumée rouge du Vieux Chêne, Silas a crié : « Vapeurs toxiques ! » Le maire a fait condamner la zone.',
+  'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.':
+    'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Le maire : « La zone est condamnée. Rentrez chez vous ! » Quelqu\'un s\'est sauvé derrière un buisson.'
+};
+function e2Notes(l){ (Array.isArray(l) ? l : []).forEach(function(n){ if(n && typeof n.t === 'string' && E2_VIEUX[n.t]) n.t = E2_VIEUX[n.t]; }); }
 M.reparerE1 = function(s){
   if(!s || typeof s !== 'object') return s;
   var E1 = window.ENQUETES && window.ENQUETES[1];
@@ -22312,6 +22321,12 @@ M.reparerE1 = function(s){
       if(Array.isArray(J.recus)) J.recus.forEach(function(r){ if(r && r.nom === 'Plume noire') r.nom = (E1 && E1.objets && E1.objets.plume && E1.objets.plume.nom) || 'Grande plume noire'; });
     }
     if(s.e && typeof s.e === 'object' && +s.e.id === 1) e1Notes(s.e.carnet);
+    /* L'enquête 2 (Romain, 5 novembre, 8 h 59 : le maire ne ment jamais) : ce n'est plus lui qui crie « vapeurs toxiques », c'est Silas.
+       Le calepin d'une enquête 2 finie, et la note du rassemblement dans le carnet (journal et enquête en cours), sont remis à jour. */
+    if(Array.isArray(s.calepin)) s.calepin.forEach(function(c){ if(c && +c.e === 2 && E2_VIEUX[c.t]) c.t = E2_VIEUX[c.t]; });
+    var J2 = s.journal && s.journal[2];
+    if(J2 && typeof J2 === 'object') e2Notes(J2.carnet);
+    if(s.e && typeof s.e === 'object' && +s.e.id === 2) e2Notes(s.e.carnet);
   }catch(e){}
   return s;
 };
@@ -22752,7 +22767,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'
 /* Recalibrage (Romain, 4 novembre) : le niveau choisi est le niveau brut du jeu, sans le calibrage décidé (1 = le plus facile, 10 = le plus dur) */
 var LEGENDE = {1:'Le plus facile', 10:'Le plus dur'};
 /* Jeux retirés du jeu (remplacés) : on ne les montre plus */
-var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1};
+var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1, ragots:1};   /* ragots : abandonné (Romain, 5 novembre, 9 h 03) */
 /* Variantes à essayer : mêmes règles et même difficulté, seulement le décor et le fuyard changent */
 var VARIANTES = {
   poursuite:[{id:'chien', ic:'🐕', nom:'Course-poursuite : le petit chien', d:'Variante forêt (enquête 1)', params:{fuyard:'chien', decor:'foret'}}]
@@ -22766,7 +22781,7 @@ var EN_TRAVAUX = {};
 var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
-  mensonge:'🔁', ragots:'🔁', mots:'🔁', depositions:'🔁',
+  mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };
 var NOM_STATUT = {'🔁':'À recalibrer : la difficulté choisie compte', '✅':'Validé', '🎯':'À retester avec le réglage décidé', '🟡':'Modifié, pas encore testé', '🔨':'En fabrication'};

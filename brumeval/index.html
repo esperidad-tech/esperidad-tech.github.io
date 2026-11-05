@@ -5891,8 +5891,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 02:38 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 02:38';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 09:06 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 09:06';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -6122,6 +6122,9 @@ O('sage', [
   ['couronne', 4, 'Couronne de runes', '👑', 260, 'Les sceaux et les runes s\'ouvrent sans mini-jeu.', 'runes', {auto:{runes:9}}],
   ['oeil_temps', 4, 'Œil du Temps', '👁️', 300, 'Une fois par enquête, ton équipe rejoue tout un moment.', null, {acces:['oeil_temps']}]
 ]);
+/* Les objets qu'on ne vend plus (gardés pour les vieilles sauvegardes qui les ont déjà) : le carnet de ragots
+   (Romain, 5 novembre, 9 h 03 : le mini-jeu des ragots est abandonné) */
+D.OBJETS.carnet_ragots.retire = true;
 
 D.ENSEMBLES = {
   ombre:{role:'pisteur', nom:'Ombre', ic:'🌑', bonus:'Aucune ronde ne te repère : se cacher devient très facile.', fx:{mj:{cachette:{facile:2}}}},
@@ -34430,8 +34433,7 @@ E[1] = {
       t:'Le ballon rouge d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
     {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:15, titre:'Les fournées de Gaspard',
       t:'Gaspard a oublié l\'ordre de ses fournées. Aide-le à s\'en souvenir !'},
-    {id:'ragots', role:'barde', lieu:'taverne', moments:['matin'], mj:'ragots', or:15, titre:'Les ragots de la taverne',
-      t:'Au petit matin, la taverne bourdonne déjà : tout le monde parle de la Lanterne ! Lesquels de ces ragots sont vrais ?', params:{enquete:1}},
+    /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     /* La première phrase à trous du Barde (barde.js) : elle s'écrit dans son Carnet ; on la chante ensuite à Margot, une seule fois */
     {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:15, titre:'La chanson de la fête',
       t:'Margot chante la chanson de la fête, mais il y a tant de bruit dans la taverne ! Écoute-la, puis retrouve les mots qui manquent.',
@@ -34671,7 +34673,7 @@ E[2] = {
     crypte:{nom:'La crypte du clocher', ic:'🗝️', pour:['sage', 'barde'], de:'pisteur',
       t:'La nuit, le Pisteur a suivi l\'homme en cape noire sorti de la porte cachée du moulin : il est entré dans la crypte du clocher avec une clé, et a refermé à clé derrière lui.',
       dire:'Un mystère pour plus tard… Le Sage et le Barde voudront le savoir : donne ce code au Sage ou au Barde.'},
-    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant : « Reculez, ce sont des vapeurs toxiques ! » Et tout le monde est rentré en toussant.'}
+    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant, avec Silas. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Et le maire : « Reculez ! Ne respirez pas ça ! La zone est condamnée. Rentrez chez vous ! » Tout le monde est rentré en toussant.'}
   },
   lieux:{
     foret:{
@@ -35077,16 +35079,16 @@ E[2] = {
     {id:'rassemblement', titre:'Rassembler le village', ic:'📣', moments:['nuit'], obligatoire:true,
       horsMoment:'Le village ne se rassemblera que la nuit, quand tout le monde sera rentré chez soi.',
       avant:'La nuit tombe sur Brumeval. Tout le village se demande ce qui se passe au Vieux Chêne, que le maire a fermé… Prends ta lanterne, frappe à toutes les portes, et emmène tout le monde là-bas !', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement',
-      t:'Tu frappes à toutes les portes, ta lanterne à la main… et tout le village te suit ! Silas veut vous arrêter, mais vous êtes bien trop nombreux. Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive en courant, en bonnet de nuit : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
-      note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
+      t:'Tu frappes à toutes les portes, ta lanterne à la main… et tout le village te suit ! Silas veut vous arrêter, mais vous êtes bien trop nombreux. Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive en courant, en bonnet de nuit, avec Silas sur ses talons. Silas crie : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Et le maire : « Reculez ! Ne respirez pas ça ! La zone est condamnée. Rentrez chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
+      /* le maire ne ment jamais (Romain, 5 novembre, 8 h 59) : c'est Silas qui parle des vapeurs toxiques (il le croit, comme l'« éboulement ») */
+      note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Le maire : « La zone est condamnée. Rentrez chez vous ! » Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
   ],
   bonus:[
     {id:'cerfvolant', role:'pisteur', lieu:'clocher', moments:['matin', 'apresmidi'], mj:'tir', or:15, titre:'Le cerf-volant du clocher',
       t:'Le cerf-volant d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
     {id:'brioches', role:'alchimiste', lieu:'boulangerie', moments:['apresmidi', 'nuit'], mj:'melange', or:15, titre:'La confiture de Gaspard',
       t:'Gaspard a perdu la recette de la confiture de ses brioches ! Retrouve sa couleur exacte.'},
-    {id:'ragots', role:'barde', lieu:'taverne', moments:['apresmidi', 'nuit'], mj:'ragots', or:15, titre:'Les ragots de la taverne',
-      t:'À la taverne, tout le monde parle de la rivière rouge… et chacun a son ragot. Lesquels sont vrais ? Personne ne te le dira…', params:{enquete:2}},
+    /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     {id:'blason', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'Le blason de la mairie',
       t:'Le vieux blason de la mairie est tombé et s\'est cassé en morceaux : remets-les en place !', params:{image:'blason'}}
   ],
@@ -35105,7 +35107,7 @@ E[2] = {
       {ic:'🚪', t:'Tim a vu une porte couverte de runes au fond du trou du Vieux Chêne.'},
       {ic:'🪨', t:'La pierre gravée de Tim vient du fond du trou. Ses runes parlent d\'une « ville d\'avant ».'},
       {ic:'🧥', t:'Un homme en cape noire a payé Bastien, et acheté de la poudre noire à Fortuné.'},
-      {ic:'🔴', t:'Devant la fumée rouge du Vieux Chêne, le maire a crié : « Vapeurs toxiques ! »'}
+      {ic:'🔴', t:'Devant la fumée rouge du Vieux Chêne, Silas a crié : « Vapeurs toxiques ! » Le maire a fait condamner la zone.'}
     ]
   },
   defaite:[
@@ -35473,8 +35475,7 @@ E[3] = {
       t:'Dans sa boutique, Iris a rangé ses bouquets sur deux étagères presque pareilles. Trouve les différences entre les deux !', params:{theme:'herboristerie'}},
     {id:'cartes', role:'alchimiste', lieu:'place', moments:['matin', 'apresmidi'], mj:'double', or:20, titre:'Le jeu de cartes du colporteur',
       t:'Sur la place, le colporteur propose un jeu de cartes : trouve le symbole commun plus vite que lui !'},
-    {id:'ragots', role:'barde', lieu:'taverne', moments:['matin', 'apresmidi'], mj:'ragots', or:20, titre:'Les ragots de la taverne',
-      t:'Tout le village se dispute à propos du moulin. À la taverne, les ragots vont bon train…', params:{enquete:3}},
+    /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     /* dans la conversation (barde.js) : Margot raconte, son visage la trahit ; un seul essai */
     {id:'menteurs', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], or:20, titre:'Le concours de menteurs', pnj:'margot',
       t:'Ce soir, concours de menteurs à la taverne ! Margot raconte trois histoires : une seule est une blague. Laquelle ?',
@@ -35815,6 +35816,12 @@ function e1Texte(t){
   return E1_NOTES[t] || t.replace(/Plume de corbeau/g, 'Grande plume noire').replace(/plume de corbeau/g, 'grande plume noire');
 }
 function e1Notes(l){ (Array.isArray(l) ? l : []).forEach(function(n){ if(n && typeof n.t === 'string') n.t = e1Texte(n.t); }); }
+var E2_VIEUX = {
+  'Devant la fumée rouge du Vieux Chêne, le maire a crié : « Vapeurs toxiques ! »': 'Devant la fumée rouge du Vieux Chêne, Silas a crié : « Vapeurs toxiques ! » Le maire a fait condamner la zone.',
+  'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.':
+    'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Le maire : « La zone est condamnée. Rentrez chez vous ! » Quelqu\'un s\'est sauvé derrière un buisson.'
+};
+function e2Notes(l){ (Array.isArray(l) ? l : []).forEach(function(n){ if(n && typeof n.t === 'string' && E2_VIEUX[n.t]) n.t = E2_VIEUX[n.t]; }); }
 M.reparerE1 = function(s){
   if(!s || typeof s !== 'object') return s;
   var E1 = window.ENQUETES && window.ENQUETES[1];
@@ -35843,6 +35850,12 @@ M.reparerE1 = function(s){
       if(Array.isArray(J.recus)) J.recus.forEach(function(r){ if(r && r.nom === 'Plume noire') r.nom = (E1 && E1.objets && E1.objets.plume && E1.objets.plume.nom) || 'Grande plume noire'; });
     }
     if(s.e && typeof s.e === 'object' && +s.e.id === 1) e1Notes(s.e.carnet);
+    /* L'enquête 2 (Romain, 5 novembre, 8 h 59 : le maire ne ment jamais) : ce n'est plus lui qui crie « vapeurs toxiques », c'est Silas.
+       Le calepin d'une enquête 2 finie, et la note du rassemblement dans le carnet (journal et enquête en cours), sont remis à jour. */
+    if(Array.isArray(s.calepin)) s.calepin.forEach(function(c){ if(c && +c.e === 2 && E2_VIEUX[c.t]) c.t = E2_VIEUX[c.t]; });
+    var J2 = s.journal && s.journal[2];
+    if(J2 && typeof J2 === 'object') e2Notes(J2.carnet);
+    if(s.e && typeof s.e === 'object' && +s.e.id === 2) e2Notes(s.e.carnet);
   }catch(e){}
   return s;
 };
@@ -36514,7 +36527,7 @@ function vueBoutique(){
   var ouvert = n >= D.PALIER_NIVEAU[pal];
   if(!ouvert) s += '<p class="b-carte-verre centre">🔒 Ces objets s\'achètent à partir du niveau ' + D.PALIER_NIVEAU[pal] + '. Tu peux déjà les regarder et économiser ! ' + lire('Ces objets s\'achètent à partir du niveau ' + D.PALIER_NIVEAU[pal] + '. Tu peux déjà les regarder et économiser !') + '</p>';
   s += '<div class="b-objets">';
-  M.cle(D.OBJETS).filter(function(id){ return D.OBJETS[id].role === role && D.OBJETS[id].palier === pal; }).forEach(function(id){
+  M.cle(D.OBJETS).filter(function(id){ return D.OBJETS[id].role === role && D.OBJETS[id].palier === pal && (!D.OBJETS[id].retire || S.equip.indexOf(id) >= 0); }).forEach(function(id){
     var o = D.OBJETS[id], a = S.equip.indexOf(id) >= 0, peut = ouvert && !a && S.or >= o.prix;
     s += '<div class="b-objet' + (a ? ' possede' : '') + '"><div class="b-objet-ic">' + o.ic + '</div><div class="b-objet-txt"><b>' + esc(o.nom) + '</b><p>' + esc(o.d) + ' ' + lire(o.nom + '. ' + o.d) + '</p>' +
       (o.ens ? '<span class="b-ens">' + D.ENSEMBLES[o.ens].ic + ' Ensemble ' + esc(D.ENSEMBLES[o.ens].nom) + ' (' + M.compteEnsemble(o.ens) + '/3)</span>' : '') + '</div>' +
