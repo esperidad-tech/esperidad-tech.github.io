@@ -5116,6 +5116,21 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lg-cat.on .lg-cat-fl{transform:none}
 .lg-bac-liste[hidden]{display:none}
 
+/* La fiche « ? » (quelqu'un dont on ne sait pas encore le nom) et les mots-clés du dossier « Autre » (Romain, 5 novembre, 14 h 18) */
+.lg-photo.lg-inconnu{display:grid;place-items:center;background:radial-gradient(circle at 50% 38%, #4a3f7a, #241d45);box-shadow:inset 0 0 0 3px rgba(255,210,63,.35)}
+.lg-inconnu span{font-size:70px;font-weight:900;line-height:1;color:#ffd23f;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.lg-bac-carte .lg-inconnu span{font-size:34px}
+.lg-carte.lg-mot,.lg-bac-carte.lg-mot{background:linear-gradient(180deg, #fffaf0, #f1e4c4);border-color:#b99b62;color:#3a2a12}
+.lg-carte.lg-mot{background-image:repeating-linear-gradient(180deg, transparent 0 33px, rgba(80,120,200,.18) 33px 35px), linear-gradient(180deg, #fffaf0, #f1e4c4)}
+.lg-photo.lg-mot-ic{background:rgba(120,80,20,.1);box-shadow:inset 0 0 0 3px rgba(120,80,20,.16)}
+.lg-carte.lg-mot .lg-photo{width:92px;height:92px}
+.lg-carte .lg-mot-ic span{font-size:58px}
+.lg-carte.lg-mot b{font-size:22px}
+.lg-carte .lg-inconnu + b{font-size:22px}
+.lg-bac-carte.lg-mot{width:100px}
+.lg-bac-carte.lg-mot b{font-size:.74rem;overflow-wrap:normal;hyphens:auto}
+@media (min-width:700px){ .lg-bac-carte.lg-mot{width:112px} .lg-bac-carte.lg-mot b{font-size:.82rem} }
+
 /* ==========================================================
    Brumeval — le Carnet : les habitants qui s'ouvrent, Autres, Mes indices (carnet.js)
    ========================================================== */
@@ -6257,8 +6272,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 14:12 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 14:12';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 14:27 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 14:27';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35215,7 +35230,23 @@ E[1] = {
     {id:'chene', nom:'Le Vieux Chêne', ic:'🌳'}, {id:'toits', nom:'Les toits du village', ic:'🏠'}]},
   solution:{qui:'tim', ou:'chene'},
   /* Les photos du tableau de liège du Barde (liege.js) : les suspects, et les lieux qui comptent (tous les choix du OÙ) */
-  liege:{pnj:['gaspard', 'basile', 'victor', 'melusine', 'odette', 'tim'], lieux:['mairie', 'place', 'boulangerie', 'foret', 'moulin', 'puits', 'chene', 'toits']},
+  liege:{pnj:['gaspard', 'basile', 'victor', 'melusine', 'odette', 'tim'], lieux:['mairie', 'place', 'boulangerie', 'foret', 'moulin', 'puits', 'chene', 'toits'],
+    /* le dossier « Autre » (Romain, 5 novembre, 14 h 18) : les mots-clés des dialogues, chacun dès que le Barde l'a appris (liege.js) */
+    mots:[
+      {id:'lanterne', ic:'🏮', nom:'Lanterne d\'Or'},
+      {id:'fenetre', ic:'🪟', nom:'Fenêtre de la mairie', si:[{vu:'barde:basile:1'}]},
+      {id:'six', ic:'🕕', nom:'Six heures du soir', si:[{vu:'barde:basile:1'}]},
+      {id:'minuit', ic:'🕛', nom:'Minuit', si:[{vu:'barde:odette:1'}]},
+      {id:'silhouette', ic:'🌙', nom:'Silhouette sur les toits', si:[{vu:'barde:odette:1'}]},
+      {id:'lumiere', ic:'✨', nom:'Lumière dorée', si:[{vu:'barde:odette:1'}]},
+      {id:'fournil', ic:'💡', nom:'Lumière du fournil', si:[{vu:'barde:odette:0'}, {vu:'barde:margot:0'}, {vu:'barde:gaspard:0'}]},
+      {id:'echarpes', ic:'🧣', nom:'Écharpes rouges', si:[{vu:'barde:melusine:1'}, {vu:'barde:melusine:2'}, {vu:'barde:odette:2'}, {code:'info:echarpe'}]},
+      {id:'pirate', ic:'🐕', nom:'Pirate, le chien', si:[{vu:'barde:gaspard:1'}, {vu:'barde:victor:1'}]},
+      {id:'gants', ic:'🧤', nom:'Gants gris', si:[{vu:'barde:grosbec:1'}]},
+      {id:'bottes', ic:'🥾', nom:'Grosses bottes', si:[{vu:'barde:basile:0'}]},
+      {id:'pieds', ic:'👣', nom:'Grands pieds', si:[{code:'info:grands_pieds'}]},
+      {id:'canne', ic:'🦯', nom:'Canne d\'Odette', si:[{vu:'barde:odette:2'}]}
+    ]},
   /* Le vérificateur refuse tout texte qu'un joueur obtient seul et qui contient un de ces mots, sauf s'il fait partie d'un indice prévu ou s'il a été relu (ok). */
   sensibles:['tim', 'suie', 'ramon', 'petite main', 'petites main', 'ronfle'],
   depart:{alchimiste:{ingr:{eau:2, miel:2}}},
@@ -35582,7 +35613,33 @@ E[2] = {
   /* (le rassemblement n'est plus au Barde : c'est une page du Grand Livre du Sage, chaque nuit, sans preuves ; voir pages, 'rassemblement') */
   veriteUnique:true,   /* une seule potion de vérité par enquête : l'Alchimiste n'en prépare qu'une, le Barde la fait boire à un seul villageois */
   /* Les photos du tableau de liège du Barde (liege.js) : les suspects, les autres villageois de l'histoire, tous les lieux du OÙ */
-  liege:{pnj:['bastien', 'melusine', 'margot', 'iris', 'farinel', 'tim', 'victor', 'gaspard', 'fortune'], lieux:['moulin', 'lavoir', 'chene', 'pont', 'clairiere', 'place', 'foret']},
+  liege:{pnj:['bastien', 'melusine', 'margot', 'iris', 'farinel', 'tim', 'victor', 'gaspard', 'fortune'], lieux:['moulin', 'lavoir', 'chene', 'pont', 'clairiere', 'place', 'foret'],
+    /* le dossier « Autre » (Romain, 5 novembre, 14 h 18) : les mots-clés des dialogues, pour que le Barde s'amuse à faire des liens.
+       Chacun arrive dès que le Barde l'a appris (si : les conditions des questions), pour ne rien dévoiler.
+       Pas de Léo (une seule ligne à l'enquête 2, il servira à l'enquête 3), pas de crypte (dite à l'oral par le Pisteur). */
+    mots:[
+      {id:'riviere', ic:'🔴', nom:'Rivière rouge'},
+      {id:'interdit', ic:'🚧', nom:'Chemin interdit'},
+      {id:'ordre', ic:'✋', nom:'Ordre du maire', si:[{vu:'barde:silas:0'}, {vu:'barde:grosbec:1'}]},
+      {id:'eboulement', ic:'⛰️', nom:'Éboulement', si:[{vu:'barde:silas:0'}]},
+      {id:'odette', ic:'👵', nom:'Odette disparue'},   /* dans les missions du Barde dès le début */
+      {id:'canne', ic:'🦯', nom:'Canne aux sept chats', si:[{vu:'barde:melusine:0'}, {vu:'barde:gaspard:0'}, {code:'info:canne'}]},
+      {id:'aube', ic:'🌅', nom:'Avant l\'aube', si:[{vu:'barde:silas:1'}, {vu:'barde:melusine:1'}, {vu:'verite:victor:0'}]},
+      {id:'lavoir_rose', ic:'🩷', nom:'Lavoir rose', si:[{vu:'barde:melusine:1'}, {code:'info:lavoir_rose'}]},
+      {id:'champ', ic:'🌺', nom:'Champ rasé', si:[{vu:'barde:iris:0'}, {code:'info:champ_rase'}]},
+      {id:'rouge_fleurs', ic:'🎨', nom:'Rouge de coquelicot', si:[{vu:'barde:iris:1'}]},
+      {id:'charrette', ic:'🛒', nom:'Charrette', si:[{vu:'barde:silas:1'}, {vu:'barde:iris:2'}, {vu:'verite:victor:0'}, {code:'info:traces'}]},
+      {id:'piece', ic:'🪙', nom:'Pièce d\'or neuve', si:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}, {code:'info:piece'}]},
+      {id:'cape', ic:'🧥', nom:'Cape noire', si:[{vu:'barde:fortune:1'}, {vu:'verite:bastien:1'}]},
+      {id:'poudre', ic:'⚫', nom:'Poudre noire', si:[{vu:'barde:fortune:1'}]},
+      {id:'tissus', ic:'🧵', nom:'Tissus qui déteignent', si:[{vu:'verite:melusine:2'}, {vu:'verite:fortune:0'}, {vu:'barde:oreille:atelier'}, {code:'info:lavoir_rose'}]},
+      {id:'tonneau', ic:'🍷', nom:'Tonneau de vin', si:[{vu:'barde:margot:0'}]},
+      {id:'legendes', ic:'📜', nom:'Vieilles légendes', si:[{vu:'barde:gaspard:2'}, {vu:'barde:fortune:2'}]},
+      {id:'runes', ic:'🚪', nom:'Porte aux runes', si:[{vu:'verite:tim:1'}, {vu:'barde:tim:2'}]},
+      {id:'rochers', ic:'🪨', nom:'Gros rochers', si:[{vu:'barde:tim:2'}, {vu:'ecoute:ouvriers'}, {code:'info:rassemblement'}]},
+      {id:'plans', ic:'📐', nom:'Vieux plans du moulin', si:[{vu:'barde:farinel:2'}]},
+      {id:'sieste', ic:'😴', nom:'Sieste de Farinel', si:[{vu:'verite:farinel:1'}]}
+    ]},
   /* Le vérificateur refuse tout texte qu'un joueur obtient seul et qui contient un de ces mots, sauf s'il fait partie d'un indice prévu ou s'il a été relu (ok). */
   sensibles:['bastien', 'roulebosse', 'pièce d\'or', 'payé', 'alambic'],
   recettes:['verite'],
@@ -37690,8 +37747,10 @@ function ongletCarnet(){
   var P = M.P(), E = M.E(), S = M.S;
   var s = '<section class="b-carnet"><h2>📒 Mon carnet</h2>';
   /* Onglets par enquête : l'enquête en cours est choisie par défaut */
-  var passees = M.cle(S.journal || {}).map(Number).filter(function(k){ return k !== P.id && S.journal[k]; }).sort(function(a, b){ return a - b; });
-  var vue = UI.journalE && UI.journalE.p === P.id && S.journal && S.journal[UI.journalE.e] ? UI.journalE.e : P.id;
+  /* (Romain, 5 novembre, 14 h 15) les archives — les enquêtes passées, leur calepin, la lettre du maire — sont au Sage seulement */
+  var sage = M.role() === 'sage';
+  var passees = sage ? M.cle(S.journal || {}).map(Number).filter(function(k){ return k !== P.id && S.journal[k]; }).sort(function(a, b){ return a - b; }) : [];
+  var vue = sage && UI.journalE && UI.journalE.p === P.id && S.journal && S.journal[UI.journalE.e] ? UI.journalE.e : P.id;
   if(passees.length){
     s += '<nav class="b-journal-onglets">' + passees.concat([P.id]).map(function(k){ return '<button class="' + (k === vue ? 'on' : '') + '" data-act="journal" data-e="' + k + '">' + (k === P.id ? '🔍 ' : '📖 ') + 'Enquête ' + k + '</button>'; }).join('') + '</nav>';
   }
@@ -37713,7 +37772,7 @@ function ongletCarnet(){
   var lettre = '<button class="btn second" data-act="relire-lettre">✉️ La lettre du maire</button>';
   if(M.carnetCorps){
     s += M.carnetCorps();
-    s += '<div class="b-rangee centre">' + lettre + (S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Ouvrir le calepin des enquêtes passées</button>' : '') + '</div>';
+    if(sage) s += '<div class="b-rangee centre">' + lettre + (S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Ouvrir le calepin des enquêtes passées</button>' : '') + '</div>';
     return s + '</section>';
   }
   s += '<div class="b-rangee centre">' + lettre + '</div>';
@@ -38816,7 +38875,7 @@ M.reprendreMJ = function(){
 };
 /* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
 var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
-  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'gens-plier':1,
   sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
   opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
@@ -40273,6 +40332,8 @@ var VISAGE_SIGNE = '<svg viewBox="-40 -40 80 80" aria-hidden="true" focusable="f
   '<g class="sg-b sg-b-mord"><path d="M-11 15 q11 6 22 0 q-11 2 -22 0 z" fill="#e0607a" stroke="#24182e" stroke-width="1.6"/><path d="M-7 11 h14 v5 h-14 z M0 11 v5" fill="#fff" stroke="#24182e" stroke-width="1.4"/></g>' +
   '</svg>';
 
+var INCONNU = {k:'pnj:inconnu', type:'pnj', id:'inconnu'};
+function mot(m){ return m ? {k:'mot:' + m.id, type:'mot', id:m.id, nom:m.nom, ic:m.ic} : null; }
 function photos(E, P){
   var l = [], vus = {}, Lg = E.liege || {};
   function ajout(c){ if(c && !vus[c.k]){ vus[c.k] = 1; l.push(c); } }
@@ -40281,13 +40342,19 @@ function photos(E, P){
   signesRevel(E, P).forEach(function(k){ ajout({k:'signe:' + k, type:'signe', id:k}); });
   (Lg.pnj || [].concat((E.qui && E.qui.choix) || [], ((E.quoi && E.quoi.choix) || []).filter(function(c){ return c.pnj; }).map(function(c){ return c.id; }))).forEach(gens);
   (Lg.lieux || ((E.ou && E.ou.choix) || []).map(function(c){ return c.id; })).forEach(function(id){ ajout(photoLieu(E, id)); });
+  /* la fiche « ? » (Romain, 5 novembre, 14 h 18) : quelqu'un dont on ne connaît pas encore le nom */
+  ajout(INCONNU);
   M.cle(E.objets || {}).forEach(function(id){
     if(P && ((P.recus || {})['obj:' + id] || (P.objets || {})[id])) ajout({k:'obj:' + id, type:'obj', id:id, nom:E.objets[id].nom, ic:E.objets[id].ic});
   });
+  /* le dossier « Autre » : les mots-clés de l'enquête (E.liege.mots), chacun dès que cette tablette l'a appris
+     (m.si : les mêmes conditions que les questions ; sans m.si, connu dès le début) */
+  (Lg.mots || []).forEach(function(m){ if(!m.si || (P && P === M.P() && M.besoinOk(m.si))) ajout(mot(m)); });
   /* une photo épinglée avant un changement de liste ne disparaît pas */
   M.cle(((P && P.liege) || {}).cartes || {}).forEach(function(k){
     var q = k.split(':');
-    if(q[0] === 'pnj') gens(q[1]);
+    if(q[0] === 'pnj'){ if(q[1] === INCONNU.id) ajout(INCONNU); else gens(q[1]); }
+    else if(q[0] === 'mot') ajout(mot((Lg.mots || []).filter(function(m){ return m.id === q[1]; })[0]));
     else if(q[0] === 'lieu') ajout(photoLieu(E, q[1]));
     else if(q[0] === 'obj' && E.objets && E.objets[q[1]]) ajout({k:k, type:'obj', id:q[1], nom:E.objets[q[1]].nom, ic:E.objets[q[1]].ic});
     else if(q[0] === 'signe' && SIGNES[q[1]]) ajout({k:k, type:'signe', id:q[1]});
@@ -40306,6 +40373,8 @@ function metier(id){
 }
 function contenu(c){
   if(c.type === 'signe') return '<span class="lg-photo lg-sg lg-sg-' + c.id + '" role="img" aria-label="' + esc(SIGNES[c.id][1]) + '">' + VISAGE_SIGNE + '</span><b>' + esc(SIGNES[c.id][0]) + '</b><small>🤥 signe</small>';
+  if(c.type === 'pnj' && c.id === INCONNU.id) return '<span class="lg-photo lg-inconnu" aria-hidden="true"><span>?</span></span><b>Quelqu\'un</b><small>❓ inconnu</small>';
+  if(c.type === 'mot') return '<span class="lg-photo lg-objet lg-mot-ic"><span>' + c.ic + '</span></span><b>' + esc(c.nom) + '</b>';
   if(c.type === 'pnj') return '<span class="lg-photo">' + portrait(c.id) + '</span><b>' + esc(D.PNJ[c.id].court) + '</b><small>' + esc(metier(c.id)) + '</small>';
   return '<span class="lg-photo lg-objet"><span>' + c.ic + '</span></span><b>' + esc(c.nom) + '</b>';
 }
@@ -40476,8 +40545,9 @@ function dessiner(){
   ajuster();   /* le bac a pu changer de hauteur : le tableau se recale */
 }
 /* Le bac est rangé en dossiers qu'on déroule (Romain, 5 novembre, 13 h 19 : « sinon, c'est un peu le bordel ») :
-   🤥 les mensonges (les signes), 👥 les habitants, 📍 les lieux, 🎒 les objets. Un seul dossier ouvert à la fois (M.UI.lgCat). */
-var CATS = [{t:'signe', ic:'🤥', nom:'Mensonges'}, {t:'pnj', ic:'👥', nom:'Habitants'}, {t:'lieu', ic:'📍', nom:'Lieux'}, {t:'obj', ic:'🎒', nom:'Objets'}];
+   🤥 les mensonges (les signes), 👥 les habitants (et la fiche « ? »), 📍 les lieux, 🎒 les objets,
+   🏷️ autre (les mots-clés de l'enquête, Romain, 14 h 18). Un seul dossier ouvert à la fois (M.UI.lgCat). */
+var CATS = [{t:'signe', ic:'🤥', nom:'Mensonges'}, {t:'pnj', ic:'👥', nom:'Habitants'}, {t:'lieu', ic:'📍', nom:'Lieux'}, {t:'obj', ic:'🎒', nom:'Objets'}, {t:'mot', ic:'🏷️', nom:'Autre'}];
 function majBac(){
   var L = etat(V.P), dispo = photos(V.E, V.P).filter(function(c){ return !L.cartes[c.k]; });
   var UI = M.UI || {}, cats = CATS.map(function(C){ return {C:C, l:dispo.filter(function(c){ return c.type === C.t; })}; }).filter(function(x){ return x.l.length; });
@@ -40999,7 +41069,26 @@ M.carnetCorps = function(){
      le Sage pilote avec le Grand Livre). Les autres donnent leurs renseignements au Barde par un code. */
   var avecGens = role === 'barde';
   var gens = avecGens ? habitants(E, P) : [];
-  if(avecGens && M.carnetBarde) s += M.carnetBarde();   /* 👂 Ce que j'ai entendu (phrases à trous), 🎻 mes talents (barde.js) */
+  /* (Romain, 5 novembre, 14 h 15 : dans le Carnet du Barde, seulement ses missions et les habitants ; plus de « mes talents », de
+     « ce que j'ai entendu », d'indices ni de « ce que l'équipe m'a donné ». Les habitants : repliables comme les missions, fermés au départ) */
+  if(role === 'barde'){
+    if(M.trousBonusBarde) s += M.trousBonusBarde();   /* (la chanson d'une mission bonus en cours, barde.js) */
+    var go = !!P.gensOuvert;
+    s += '<section class="b-missions cn-gens' + (go ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="gens-plier" aria-expanded="' + go + '"><span>👥 Les habitants</span>' +
+      '<small class="b-mi-compte">' + gens.length + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+    if(!go) return s + '</section>';
+    s += '<div class="cn-liste">';
+    gens.forEach(function(id){
+      var items = dossier(E, P, id, notesQ), ouvert = !!ouverts[id];
+      s += '<div class="cn-pnj' + (ouvert ? ' ouvert' : '') + (items.length ? '' : ' vide') + '">' +
+        '<button type="button" class="cn-tete" data-act="carnet-pnj" data-id="' + id + '" aria-expanded="' + ouvert + '">' +
+        '<span class="cn-por">' + portrait(id) + '</span><span class="cn-noms"><b>' + esc(nom(id)) + '</b><small>' + esc(metier(id)) + '</small></span>' +
+        (items.length ? '<span class="cn-n">💬 ' + items.length + '</span>' : '') + '<span class="cn-fleche" aria-hidden="true">' + (ouvert ? '▴' : '▾') + '</span></button>';
+      if(ouvert) s += '<ul class="cn-dossier">' + (items.length ? items.join('') : '<li class="cn-rien">Rien pour l\'instant.</li>') + '</ul>';
+      s += '</div>';
+    });
+    return s + '</div></section>';
+  }
   if(avecGens) s += '<section class="cn-gens"><h3>👥 Les habitants</h3><div class="cn-liste">';
   gens.forEach(function(id){
     var items = dossier(E, P, id, notesQ), ouvert = !!ouverts[id];
@@ -41029,6 +41118,7 @@ M.carnetCorps = function(){
 };
 
 if(M.A){
+  M.A['gens-plier'] = function(){ var P = M.P(); if(!P) return; P.gensOuvert = !P.gensOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
   M.A['fil-plier'] = function(){ var P = M.P(); if(!P) return; P.filOuvert = !P.filOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
   M.A['carnet-pnj'] = function(el){
     var UI = M.UI; UI.carnetOuverts = UI.carnetOuverts || {};
@@ -41917,8 +42007,10 @@ A.ecouter = function(el){
   if(P.vus['ecoute:' + x.id]){ A['bd-carnet']({dataset:{id:'ecoute:' + x.id}}); return; }
   if(!M.peutAgir()) return;
   M.depenser(); M.consommerBesoin(x.besoin); P.vus['ecoute:' + x.id] = 1;
-  creerTrous('ecoute:' + x.id);
   if(x.mimique){ P.mimiques = P.mimiques || {}; P.mimiques[x.mimique] = 'oreille'; }
+  /* (Romain, 5 novembre, 14 h 15 : plus de phrase à trous ; ce qu'il entend est dit tout de suite, et noté) */
+  if(x.t){ M.sauver(); M.decouvrir({ic:'👂', titre:x.titre, t:x.t, note:x.note}); return; }
+  creerTrous('ecoute:' + x.id);
   M.sauver();
   M.decouvrir({ic:'👂', titre:x.titre, t:(x.entendu || 'Tu tends l\'oreille… mais tu n\'entends que des morceaux !') + ' ' + TROUS_TXT, retour:'bd-carnet', retourId:'ecoute:' + x.id});
 };
@@ -42267,6 +42359,13 @@ M.carnetBarde = function(){
     s += '<section class="bd-entendu"><h3>👂 Ce que j\'ai entendu</h3><p class="doux petit">' + esc(aide) + ' ' + lire(aide) + '</p>' + cles.map(trousHTML).join('') + '</section>';
   }
   return s;
+};
+/* Ce qui reste dans le Carnet du Barde (Romain, 5 novembre, 14 h 15 : ses missions et les habitants) : la chanson d'une mission bonus
+   en cours (la phrase à trous de la fête, enquête 1), sinon elle ne se jouerait nulle part */
+M.trousBonusBarde = function(){
+  var P = M.P(); if(!P) return '';
+  var cles = M.cle(P.trous || {}).filter(function(k){ return k.indexOf('bonus:') === 0; });
+  return cles.length ? '<section class="bd-entendu">' + cles.map(trousHTML).join('') + '</section>' : '';
 };
 M.repBarde = function(id, i, q){
   var P = M.P(), s = '';
@@ -45432,7 +45531,7 @@ M.ecranMenu = function(){
   return '<main class="b-page hr-page hr-menu">' + M.barreRetour('Menu') +
     '<nav class="hr-menu-l">' +
       (M.S.heros ? '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' : '') +
-      (M.S.calepin && M.S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +
+      (M.S.calepin && M.S.calepin.length && M.S.heros && M.S.heros.role === 'sage' ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +   /* (le calepin des enquêtes passées : au Sage, Romain, 14 h 15) */
       '<button class="btn second" data-act="aide">❓ Comment jouer</button>' +
       '<button class="btn second" data-act="ecran" data-e="reglages">⚙️ Réglages</button>' +
       '<button class="btn second" data-act="changer-joueur">👥 Changer de joueur</button>' +
@@ -46124,7 +46223,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1, 'gens-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){
