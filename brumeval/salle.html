@@ -23615,7 +23615,7 @@ function regleDecide(k){ return !!(MJ.CALIBRAGE && MJ.CALIBRAGE[k]) && (STATUT[k
 
 function rendre(){
   var app = document.getElementById('salle');
-  var s = '<nav class="sl-liens"><a href="https://esperidad-tech.github.io/">← Les projets de Romain</a><a href="./">🏮 Jouer à Brumeval</a></nav>' +
+  var s = '<nav class="sl-liens"><a href="https://esperidad-tech.github.io/">← Les projets de Romain</a><a href="mini-jeux.html">📋 Le point sur les mini-jeux</a><a href="./">🏮 Jouer à Brumeval</a></nav>' +
     '<header class="sl-tete"><h1>Salle d\'entraînement</h1><p class="sl-sous">Tous les mini-jeux de Brumeval, sans passer par l\'enquête. Le choix de la difficulté sert seulement à régler les jeux : dans le jeu, elle suit le numéro de l\'enquête et l\'équipement du héros.</p></header>';
   s += '<p class="sl-statuts">' + Object.keys(NOM_STATUT).map(function(k){ return '<span>' + k + ' ' + NOM_STATUT[k] + '</span>'; }).join('') + '</p>';
   s += '<section class="sl-reglages"><div class="sl-niveaux"><span class="sl-etiq">Difficulté</span><div class="sl-boutons">';
