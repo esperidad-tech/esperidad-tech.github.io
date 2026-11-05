@@ -336,8 +336,13 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .ca-marqueur.magie{--ca-m:var(--cyan)}
 .ca-marqueur.alerte{--ca-m:var(--braise)}
 /* La présence d'un villageois (dès l'enquête 2) : son petit visage là où il est en ce moment ; un bleu clair (pas le jaune des aides), immobile */
-.ca-marqueur.presence{--ca-m:#9fd8ff}
+/* la position d'un villageois (Romain, 5 novembre, 8 h 59) : cerclée de jaune comme le rond de sa maison ; seul le petit triangle au-dessus flotte */
+.ca-marqueur.presence{--ca-m:#f3d27a}
 .ca-marqueur.presence .ca-flotte{animation:none}
+.ca-fleche{transform-box:fill-box;transform-origin:center;animation:ca-fleche 1.2s ease-in-out infinite alternate}
+@keyframes ca-fleche{from{transform:translateY(-7px)}to{transform:translateY(1px)}}
+/* il n'est pas chez lui : le rond de sa maison est grisé */
+.ca-habitant.ca-absent{filter:grayscale(1);opacity:.5}
 
 /* Animations (transform / opacity uniquement) */
 .ca-fumee,.ca-roue,.ca-onde,.ca-pulse,.ca-tourne,.ca-bat,.ca-flotte,.ca-brume,.ca-follet,.ca-vacille,.ca-drapeau{transform-box:fill-box;transform-origin:center}
@@ -5141,32 +5146,40 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 /* La petite scène du rassemblement (regles.js, M.illustration) : une boucle de 11 s */
 .rs-scene{position:relative;width:100%;max-width:360px;aspect-ratio:16/10;margin:26px auto 8px;border-radius:16px;overflow:hidden;border:3px solid var(--contour, #24182e);box-shadow:0 6px 14px rgba(0,0,0,.3);background:#fbe4b4}
 .rs-decor{position:absolute;inset:0;width:100%;height:100%;display:block}
-.rs-pion{position:absolute;bottom:9%;left:-24%;width:17%;aspect-ratio:1;margin-left:-8.5%;animation:rs-pion 11s linear infinite both}
-.rs-pion i{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#fff3d6;border:3px solid #24182e;box-sizing:border-box;animation:rs-pas .42s ease-in-out infinite alternate}
-.rs-pion i svg{display:block;width:100%;height:100%}
-.rs-pion i b{display:grid;place-items:center;width:100%;height:100%;font-size:1.6rem;font-style:normal}
-.rs-pion.rs-chef i{background:#dfe6ff;border-color:#4a6fd8;box-shadow:0 0 14px 4px rgba(255,214,120,.55)}   /* le Sage, sa lanterne : il mène le village */
-.rs-pion em{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.72rem;padding:1px 7px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0}
+/* Les personnages en entier (Romain, 5 novembre, 8 h 59 : plus de petits ronds, des personnages avec les jambes et les pieds) :
+   chacun a sa hauteur (--h) et sa forme (--ar, largeur / hauteur de son dessin) ; --x = où il s'arrête (le milieu de ses pieds) */
+.rs-gens{position:absolute;bottom:5%;left:-24%;height:var(--h, 48%);aspect-ratio:var(--ar, .57);transform:translateX(-50%);animation:rs-pion 11s linear infinite both}
+.rs-gens i{display:block;width:100%;height:100%;transform-origin:50% 100%;animation:rs-pas .42s ease-in-out infinite alternate}
+.rs-gens i svg{display:block;width:100%;height:100%;overflow:visible}
+.rs-gens i b{display:grid;place-items:end center;width:100%;height:100%;font-size:2rem;font-style:normal}
+.rs-gens.rs-chef i svg{filter:drop-shadow(0 0 6px rgba(255,214,120,.9))}   /* le Sage, sa lanterne : il mène le village */
+.rs-gens em{position:absolute;left:50%;bottom:96%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.66rem;line-height:1.25;padding:1px 6px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0}
 .rs-kof{animation:rs-kof 11s linear infinite both}
-.rs-pion.rs-maire{left:112%;animation-name:rs-maire}
-.rs-pion.rs-maire i{background:#e8e2ff}
-.rs-bulle{animation:rs-bulle 11s linear infinite both;font-size:.8rem !important;color:#b3261e !important}
+.rs-gens.rs-maire, .rs-gens.rs-silas{left:118%;animation-name:rs-arrive}
+.rs-gens.rs-silas{animation-delay:.3s}
+.rs-bulle{font-size:.72rem !important;color:#b3261e !important}
+.rs-maire .rs-bulle{animation:rs-bulle-maire 11s linear infinite both}
+.rs-silas .rs-bulle{left:auto;right:-6%;transform:none;animation:rs-bulle-silas 11s linear .3s infinite both}   /* (tout à droite : sa bulle ne sort pas de l'image) */
 .rs-ombre{position:absolute;left:84%;bottom:12%;width:11%;aspect-ratio:40/48;opacity:0;animation:rs-ombre 11s linear infinite both}
 .rs-ombre svg{display:block;width:100%;height:100%}
-/* la fumée rouge : des nuages flous qui montent de sous les branches (au pied de l'arbre) et cachent le feuillage */
+/* la fumée rouge : des nuages flous qui montent de sous les branches (au pied de l'arbre) et cachent le feuillage.
+   Le grand PFFFT revient à chaque tour ; une fois partie, la fumée ne s'arrête plus jamais (Romain, 5 novembre, 8 h 59) : .rs-fumee-sans-fin */
 .rs-fumee{position:absolute;left:50%;top:54%;width:30%;height:34%;pointer-events:none}
 .rs-fumee i{position:absolute;width:58%;aspect-ratio:1;margin:-29% 0 0 -29%;border-radius:50%;background:radial-gradient(circle, rgba(236,58,66,.9) 0, rgba(229,50,60,.62) 38%, rgba(229,50,60,0) 70%);filter:blur(1.5px);opacity:0;animation:rs-fumee 11s ease-out infinite both}
+.rs-fumee-sans-fin i{width:46%;margin:-23% 0 0 -23%;filter:none;animation:rs-fumee-monte 3.5s linear infinite both}
 .rs-pfft{position:absolute;left:50%;top:6%;font-family:var(--f-titre, inherit);font-size:1.5rem;color:#d0312d;text-shadow:0 2px 0 #fff, 0 0 6px #fff;opacity:0;animation:rs-pfft 11s linear infinite both}
 @keyframes rs-pion{0%{left:-24%}22%{left:var(--x)}68%{left:var(--x)}80%{left:-30%}100%{left:-30%}}
-@keyframes rs-pas{from{transform:translateY(0)}to{transform:translateY(-7%)}}
-@keyframes rs-maire{0%,48%{left:112%}57%{left:80%}78%{left:80%}88%,100%{left:116%}}
+@keyframes rs-pas{from{transform:translateY(0) rotate(-2.5deg)}to{transform:translateY(-4%) rotate(2.5deg)}}
+@keyframes rs-arrive{0%,48%{left:118%}57%{left:var(--x)}79%{left:var(--x)}89%,100%{left:122%}}
 @keyframes rs-ombre{0%,25%{left:84%;opacity:0}27%{opacity:1}36%{left:110%;opacity:1}37%,100%{left:110%;opacity:0}}
 @keyframes rs-fumee{0%,36%{opacity:0;transform:translate(0,0) scale(.3)}42%{opacity:.95;transform:translate(0,-15%) scale(1)}70%{opacity:.85;transform:translate(var(--dx, 0px),-80%) scale(1.9)}88%,100%{opacity:0;transform:translate(var(--dx, 0px),-120%) scale(2.4)}}
+@keyframes rs-fumee-monte{0%{opacity:0;transform:translate(0,0) scale(.4)}12%{opacity:.85}60%{opacity:.7;transform:translate(calc(var(--dx, 0px) * .6),-140%) scale(1.5)}100%{opacity:0;transform:translate(var(--dx, 0px),-260%) scale(2.3)}}
 @keyframes rs-pfft{0%,37%{opacity:0;transform:translateX(-50%) scale(.4)}41%{opacity:1;transform:translateX(-50%) scale(1.15)}50%{opacity:1;transform:translateX(-50%) scale(1)}54%,100%{opacity:0;transform:translateX(-50%) scale(1)}}
-@keyframes rs-kof{0%,62%{opacity:0}64%,76%{opacity:1}78%,100%{opacity:0}}
-@keyframes rs-bulle{0%,55%{opacity:0}57%,74%{opacity:1}76%,100%{opacity:0}}
-/* moins de mouvement : la scène reste figée au moment de la fumée et du maire */
-@media (prefers-reduced-motion: reduce){ .rs-scene *{animation-play-state:paused !important;animation-delay:-6.6s !important} }
+@keyframes rs-kof{0%,68%{opacity:0}70%,78%{opacity:1}80%,100%{opacity:0}}
+@keyframes rs-bulle-silas{0%,57%{opacity:0}58.5%,64.5%{opacity:1}66%,100%{opacity:0}}
+@keyframes rs-bulle-maire{0%,68.5%{opacity:0}70%,78%{opacity:1}80%,100%{opacity:0}}
+/* moins de mouvement : la scène reste figée au moment de la fumée, de Silas et du maire */
+@media (prefers-reduced-motion: reduce){ .rs-scene *{animation-play-state:paused !important;animation-delay:-6.8s !important} }
 
 /* ==========================================================
    Brumeval — le Grand Livre du Sage (livre.js)
@@ -5891,8 +5904,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 09:06 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 09:06';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 09:31 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 09:31';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -8472,7 +8485,13 @@ function pnj(id, opts){
   var K = contexte(uid, h);
   var anime = opts.anime !== false, fond = opts.fond !== false;
   var humeur = opts.humeur && opts.humeur !== 'normal' ? opts.humeur : null;
-  var s = '<svg class="pj pj-pnj pj-pnj-' + id + (anime ? ' pj-anime' : '') + (humeur ? ' pj-h-' + humeur : '') + '" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + sp.nom + ', ' + sp.metier + '">';
+  /* opts.pied : le villageois en entier, de la tête aux pieds (les petites scènes animées, regles.js ; Romain, 5 novembre, 8 h 59) */
+  var pied = !!opts.pied;
+  if(pied) fond = false;
+  var hs = sp.age === 'enfant' ? 1.16 : 1.08;
+  var hy = sp.age === 'enfant' ? 100 : 104;
+  var GP = pied ? geoPied(sp) : null, HV = pied ? Math.ceil(hy + GP.sol * hs + 5) : 200;
+  var s = '<svg class="pj pj-pnj pj-pnj-' + id + (pied ? ' pj-pnj-pied' : '') + (anime ? ' pj-anime' : '') + (humeur ? ' pj-h-' + humeur : '') + '" viewBox="0 0 200 ' + HV + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + sp.nom + ', ' + sp.metier + '">';
   s += '<defs>' +
     lin(K.n('peau'), [[0, K.peau.c[0]], [1, K.peau.c[1]]]) +
     lin(K.n('chev'), [[0, K.chev.c[0]], [.5, K.chev.c[1]], [1, K.chev.c[2]]], 0, 0, .6, 1) +
@@ -8491,17 +8510,19 @@ function pnj(id, opts){
     s += '<rect width="200" height="200" fill="' + K.u('fd') + '"/>';
     s += '<circle cx="160" cy="40" r="3" fill="#fff" opacity=".35"/><circle cx="30" cy="60" r="2" fill="#fff" opacity=".3"/><circle cx="176" cy="96" r="1.6" fill="#fff" opacity=".3"/>';
   }
-  var hs = sp.age === 'enfant' ? 1.16 : 1.08;
-  var hy = sp.age === 'enfant' ? 100 : 104;
   var T = 'translate(100 ' + hy + ') scale(' + hs + ')';
   var coif = COIFF_V[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
   var inner = '';
+  /* en entier : les jambes et les chaussures, derrière tout le reste */
+  if(pied) inner += jambesPnj(K, sp, GP);
   /* cheveux derrière */
   if(coif.dos && !sp.chapeau) inner += coif.dos(K);
   /* buste */
   var corpsSp = sp.corps;
   inner += busteCorps(K, sp);
   (sp.accessoires || []).forEach(function(a){ if(['echarpe_maire','cravate','tablier_blanc','tablier_vert','salopette','chale','gilet_carreaux','sacoche','sifflet','metre','farine_habit'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
+  /* en entier : le bas du corps (veste et ceinture, ou jupe), le bas des tabliers, les bras et les mains */
+  if(pied) inner += bassinPnj(K, sp, GP) + brasPnj(K, sp, GP);
   if(coif.devant) inner += coif.devant(K);
   (sp.accessoires || []).forEach(function(a){ if(['echarpe_rouge'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
   /* tête */
@@ -8521,9 +8542,94 @@ function pnj(id, opts){
     inner += sourcils(K, fv) + CHAPEAUX[chap](K);
   }
   (sp.accessoires || []).forEach(function(a){ if(['lunettes','fleurs','epingles','boucle'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
-  (sp.accessoires || []).forEach(function(a){ if(['gants','chat','pirate','cles','chope'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
+  (sp.accessoires || []).forEach(function(a){
+    if(['gants','chat','pirate','cles','chope'].indexOf(a) < 0) return;
+    if(!pied || a === 'chat'){ inner += accessoire(K, sp, a); return; }
+    /* en entier : les gants sont ses mains (brasPnj) ; la chope dans la main, le chien par terre, les clés à la ceinture */
+    /* (chaque accessoire se place lui-même : chope en (-34, 72), chien en (38, 74), clés en (-28, 70) ; on le décale jusqu'à sa nouvelle place) */
+    if(a === 'chope') inner += '<g transform="translate(' + (28 - GP.L) + ' ' + (GP.main - 76) + ')">' + accessoire(K, sp, a) + '</g>';
+    if(a === 'pirate') inner += '<g transform="translate(' + (GP.L - 18) + ' ' + (GP.sol - 98) + ')">' + accessoire(K, sp, a) + '</g>';
+    if(a === 'cles') inner += '<g transform="translate(' + (38 - GP.L) + ' ' + (GP.taille - 82) + ')">' + accessoire(K, sp, a) + '</g>';
+  });
   s += '<g transform="' + T + '">' + (anime && opts.souffle ? A('pj-souffle-pnj', inner) : inner) + '</g>';
   return s + '</svg>';
+}
+
+/* ---------- Le villageois en entier (Persos.pnj(id, {pied:true})) ----------
+   Mêmes repères que le buste (la tête en 0,0 ; le buste s'arrête à y = 120) : on ajoute la taille et la ceinture (ou la jupe),
+   les jambes, les chaussures, les bras le long du corps et les mains. Le bas des tabliers continue sur la jupe ou le pantalon. */
+var BAS_PNJ = {grosbec:'#2a2440', gaspard:'#6a5440', melusine:'#2a5a4a', basile:'#3f5f9a', odette:'#5a4a7a', tim:'#3a3a48', victor:'#26386a',
+  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a'};
+function geoPied(sp){
+  var enf = sp.age === 'enfant';
+  var L = sp.corps === 'rond' ? 64 : sp.corps === 'costaud' ? 60 : sp.corps === 'maigre' ? 42 : sp.corps === 'enfant' ? 42 : 50;
+  var lw = sp.corps === 'rond' || sp.corps === 'costaud' ? 18 : enf ? 12 : sp.corps === 'maigre' ? 13 : 15;
+  return {L:L, lw:lw, jupe:sp.sexe === 'f', enf:enf, taille:enf ? 134 : 146, sol:enf ? 190 : 226, main:enf ? 126 : 136,
+    salopette:(sp.accessoires || []).indexOf('salopette') >= 0, gants:(sp.accessoires || []).indexOf('gants') >= 0};
+}
+function basPnj(sp){
+  for(var id in PNJ) if(PNJ[id] === sp && BAS_PNJ[id]) return BAS_PNJ[id];
+  return sombre(sp.habit, .45);
+}
+function jambesPnj(K, sp, G){
+  var s = '', g = 3, lw = G.jupe ? 9 : G.lw, bot = G.sol - 8;
+  var top = G.jupe ? G.sol - 40 : G.taille - 6;
+  var col = G.jupe ? '#3a2e3a' : basPnj(sp);
+  [-1, 1].forEach(function(k){
+    var x1 = k * g, x2 = k * (g + lw);
+    s += '<path d="M' + x1 + ' ' + top + ' L ' + x1 + ' ' + bot + ' L ' + x2 + ' ' + bot + ' L ' + (x2 + k * (G.jupe ? 0 : 1)) + ' ' + top + ' Z" fill="' + col + '"' + c(2.2) + '/>';
+    if(!G.jupe) s += '<path d="M' + (k * (g + lw * .55)) + ' ' + (top + 10) + ' L ' + (k * (g + lw * .55)) + ' ' + (bot - 6) + '" stroke="#000" stroke-opacity=".18" stroke-width="2"/>';
+    /* la chaussure, vue de face : un ovale de cuir, un reflet */
+    var cx = k * (g + lw / 2 + 1.5), rx = lw / 2 + 5;
+    s += '<ellipse cx="' + cx + '" cy="' + (G.sol - 5.5) + '" rx="' + rx + '" ry="6.5" fill="#3b2618"' + c(2) + '/>' +
+      '<path d="M' + (cx - rx * .5) + ' ' + (G.sol - 8.5) + ' q ' + (rx * .45) + ' -2.5 ' + (rx * .9) + ' 0" stroke="#8a6a4a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  });
+  return s;
+}
+function bassinPnj(K, sp, G){
+  var u = K.u, s = '', L = G.L, y0 = 112;
+  if(G.jupe){
+    /* la jupe : le haut sans contour (il se fond sous le corsage), les côtés et l'ourlet dessinés */
+    var yb = G.sol - 30, Lb = L + 12, col = basPnj(sp);
+    s += '<path d="M' + (1 - L) + ' ' + y0 + ' L ' + (L - 1) + ' ' + y0 + ' L ' + Lb + ' ' + yb + ' Q 0 ' + (yb + 9) + ' ' + (-Lb) + ' ' + yb + ' Z" fill="' + col + '"/>' +
+      '<path d="M' + (L - 1) + ' ' + y0 + ' L ' + Lb + ' ' + yb + ' Q ' + (L * .5) + ' ' + (yb + 6) + ' ' + (L * .3) + ' ' + (yb + 7) + ' L ' + (L * .3) + ' ' + (y0 + 8) + ' Z" fill="#000" opacity=".16"/>' +
+      '<path d="M' + (1 - L) + ' ' + y0 + ' L ' + (-Lb) + ' ' + yb + ' Q 0 ' + (yb + 9) + ' ' + Lb + ' ' + yb + ' L ' + (L - 1) + ' ' + y0 + '" fill="none"' + c(2.2) + '/>' +
+      '<path d="M-15 ' + (y0 + 18) + ' L -20 ' + (yb + 3) + ' M15 ' + (y0 + 18) + ' L 20 ' + (yb + 3) + ' M0 ' + (y0 + 14) + ' L 0 ' + (yb + 6) + '" stroke="#000" stroke-opacity=".2" stroke-width="1.8" fill="none"/>';
+  } else {
+    /* le bas de la veste (ou de la salopette), le bout de chemise, la ceinture */
+    var yt = G.taille, Lw = sp.corps === 'rond' ? L + 4 : L - 2, fill = G.salopette ? '#3f5f9a' : u('hab');
+    var d = 'M' + (-L) + ' ' + y0 + ' L ' + L + ' ' + y0 + ' C ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + Lw + ' ' + (yt - 10) + ' ' + (Lw - 4) + ' ' + yt +
+      ' L ' + (4 - Lw) + ' ' + yt + ' C ' + (-Lw) + ' ' + (yt - 10) + ' ' + (-Lw - 3) + ' ' + (y0 + 12) + ' ' + (-L) + ' ' + y0 + ' Z';
+    s += '<path d="' + d + '" fill="' + fill + '"/>';
+    if(!G.salopette) s += '<path d="M-3 ' + y0 + ' L 3 ' + y0 + ' L 3 ' + (yt - 6) + ' L -3 ' + (yt - 6) + ' Z" fill="' + sp.chemise + '"/>';
+    s += '<path d="M' + L + ' ' + y0 + ' C ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + Lw + ' ' + (yt - 10) + ' ' + (Lw - 4) + ' ' + yt + ' L ' + (Lw * .45) + ' ' + yt + ' C ' + (Lw * .6) + ' ' + (y0 + 20) + ' ' + (L * .6) + ' ' + (y0 + 8) + ' ' + (L * .55) + ' ' + y0 + ' Z" fill="#000" opacity=".18"/>';
+    s += '<path d="M' + (-L) + ' ' + y0 + ' C ' + (-Lw - 3) + ' ' + (y0 + 12) + ' ' + (-Lw) + ' ' + (yt - 10) + ' ' + (4 - Lw) + ' ' + yt + ' L ' + (Lw - 4) + ' ' + yt + ' C ' + Lw + ' ' + (yt - 10) + ' ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + L + ' ' + y0 + '" fill="none"' + c(2.2) + '/>';
+    if(sp.corps === 'rond') s += '<path d="M-16 ' + (y0 + 14) + ' Q 0 ' + (y0 + 24) + ' 16 ' + (y0 + 14) + '" stroke="' + O + '" stroke-width="1.4" fill="none" opacity=".35"/>';
+    if(!G.salopette) s += '<path d="M' + (6 - Lw) + ' ' + (yt - 9) + ' L ' + (Lw - 6) + ' ' + (yt - 9) + ' L ' + (Lw - 6) + ' ' + (yt - 1) + ' L ' + (6 - Lw) + ' ' + (yt - 1) + ' Z" fill="#3b2618"' + c(1.8) + '/>' +
+      '<rect x="-5.5" y="' + (yt - 10) + '" width="11" height="10" rx="2" fill="' + u('or') + '"' + c(1.4) + '/>';
+  }
+  /* le bas des tabliers : sans contour en haut, il continue celui du buste */
+  var ac = sp.accessoires || [];
+  [['tablier_blanc', '#fbf8f0', 34, 38], ['tablier_vert', '#6aa85a', 32, 36]].forEach(function(t){
+    if(ac.indexOf(t[0]) < 0) return;
+    var yf = G.jupe ? G.sol - 46 : G.taille + 24;
+    s += '<path d="M' + (-t[2]) + ' ' + (y0 - 2) + ' L ' + t[2] + ' ' + (y0 - 2) + ' L ' + t[3] + ' ' + yf + ' Q 0 ' + (yf + 5) + ' ' + (-t[3]) + ' ' + yf + ' Z" fill="' + t[1] + '"/>' +
+      '<path d="M' + (-t[2]) + ' ' + (y0 - 2) + ' L ' + (-t[3]) + ' ' + yf + ' Q 0 ' + (yf + 5) + ' ' + t[3] + ' ' + yf + ' L ' + t[2] + ' ' + (y0 - 2) + '" fill="none"' + c(2) + '/>';
+  });
+  /* ce qui pend devant (l'écharpe du maire, la sacoche, le mètre ruban) repasse par-dessus */
+  ac.forEach(function(a){ if(['echarpe_maire', 'sacoche', 'metre'].indexOf(a) >= 0) s += accessoire(K, sp, a); });
+  return s;
+}
+function brasPnj(K, sp, G){
+  var s = '', L = G.L, yh = G.main, main = G.gants ? '#a8acb8' : K.u('peau');
+  [-1, 1].forEach(function(k){
+    var d = 'M' + (k * (L - 14)) + ' 62 Q ' + (k * (L + 7)) + ' 86 ' + (k * (L + 3)) + ' ' + (yh - 9);
+    s += '<path d="' + d + '" stroke="' + O + '" stroke-width="21" fill="none" stroke-linecap="round"/>' +
+      '<path d="' + d + '" stroke="' + sp.habit + '" stroke-width="16" fill="none" stroke-linecap="round"/>' +
+      '<path d="' + d + '" stroke="#000" stroke-opacity=".14" stroke-width="5" fill="none" stroke-linecap="round" transform="translate(' + (k * 4) + ' 2)"/>' +
+      '<circle cx="' + (k * (L + 3)) + '" cy="' + yh + '" r="8.5" fill="' + main + '"' + c(2) + '/>';
+  });
+  return s;
 }
 
 /* ==========================================================
@@ -11084,7 +11190,7 @@ function visageUse(p, id, x, y, d){ return '<use href="#' + p + 'v-' + esc(id) +
 function habitantDe(o, k){
   var hb = (o.habitants || {})[k], id = hb && (typeof hb === 'string' ? hb : hb.id);
   if(hb && hb.inconnu) return {inconnu:true, nom:''};
-  return id && (o.visages || {})[id] ? {id:id, nom:(hb && hb.nom) || ''} : null;
+  return id && (o.visages || {})[id] ? {id:id, nom:(hb && hb.nom) || '', elle:!!(hb && hb.elle)} : null;
 }
 /* Le « ? » d'un villageois qu'on ne connaît pas (rond foncé, point d'interrogation clair) */
 function inconnuSvg(x, y, r){
@@ -11092,10 +11198,19 @@ function inconnuSvg(x, y, r){
     '<text class="ca-t" x="' + f(x) + '" y="' + f(y + r * .06) + '" font-size="' + f(r * 1.45) + '" text-anchor="middle" dominant-baseline="central" fill="#fff3d6">?</text>';
 }
 function posMedaillon(k){ var h = MAISONS[k], d = MED_POS[k] || [MED.dx, MED.dy]; return {x:h.x + d[0], y:h.y + d[1], r:MED.r}; }
+/* Où est chacun (Romain, 5 novembre, 8 h 59 ; DESIGN 12.20), pareil pour tous les rôles et toutes les enquêtes :
+   o.presents = {maison: 1} : l'habitant est chez lui → le petit triangle jaune qui flotte au-dessus du rond de sa maison (pas d'autre icône) ;
+   o.absents = {maison: 1} : il est ailleurs → le rond de sa maison est grisé, et son visage (cerclé de jaune, avec le triangle) est là où il est. */
+function fleche(x, y, i){
+  return '<g transform="translate(' + f(x) + ' ' + f(y) + ')" pointer-events="none"><g class="ca-fleche" style="animation-delay:-' + (((i || 0) * .37) % 1.2).toFixed(2) + 's">' +
+    '<path d="M-13 -19 L 13 -19 L 0 0 Z" fill="#ffd23f" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linejoin="round"/>' +
+    '<path d="M-6 -15 L 3 -15" stroke="#fff6c8" stroke-width="2.6" stroke-linecap="round"/></g></g>';
+}
+var FLECHE_H = 26;   /* la place du triangle au-dessus d'un rond (avec son balancement) */
 function medaillon(p, o, k){
   var hb = habitantDe(o, k); if(!hb) return '';
-  var m = posMedaillon(k), x = m.x, y = m.y, r = m.r;
-  return '<g class="ca-habitant' + (hb.inconnu ? ' ca-inconnu' : '') + '" data-pnj="' + esc(hb.id || '?') + '">' + (hb.nom ? '<title>' + esc(hb.nom) + '</title>' : '') +
+  var m = posMedaillon(k), x = m.x, y = m.y, r = m.r, absent = !!(o.absents || {})[k];
+  return '<g class="ca-habitant' + (hb.inconnu ? ' ca-inconnu' : '') + (absent ? ' ca-absent' : '') + '" data-pnj="' + esc(hb.id || '?') + '">' + (hb.nom ? '<title>' + esc(hb.nom) + (absent ? ' (pas chez ' + (hb.elle ? 'elle' : 'lui') + ')' : '') + '</title>' : '') +
     '<circle cx="' + f(x + 3) + '" cy="' + f(y + 4) + '" r="' + r + '" fill="#0b1a10" opacity=".3"/>' +
     '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + r + '" fill="' + (hb.inconnu ? '#cfc6b0' : '#f3d27a') + '" stroke="' + CONTOUR + '" stroke-width="3"/>' +
     (hb.inconnu ? inconnuSvg(x, y, r - 4) : visageUse(p, hb.id, x, y, (r - 4) * 2)) +
@@ -11155,16 +11270,20 @@ function marqueurPose(p, mq, i, fx, fy, dir, avecNom, ks, rHit){
                dir === 'h' ? 'M-12 ' + (-R + 8) + ' L0 ' + (-R - MQ_POINTE) + ' L12 ' + (-R + 8) + ' Z' :
                'M-12 ' + (R - 8) + ' L0 ' + (R + MQ_POINTE) + ' L12 ' + (R - 8) + ' Z';
   var cid = p + 'clip' + i, r2 = R - 6;
+  /* la position d'un villageois : comme le rond de sa maison (cerclé de jaune), sans pointe, avec le petit triangle qui flotte au-dessus */
+  var presence = mq.classe === 'presence';
   var s = '<g class="ca-marqueur ca-pose' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + '" data-lieu="' + esc(mq.lieu || mq.maison || '') + '"' + (mq.visage ? ' data-pnj="' + esc(mq.visage) + '"' : '') + ' transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '>' +
     (mq.titre ? '<title>' + esc(mq.titre) + '</title>' : '') +
     '<g class="ca-flotte" style="animation-delay:-' + ((i * .41) % 2.4).toFixed(2) + 's">' +
-    '<path d="' + pointe + '" fill="var(--ca-m, #f5b945)" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/>' +
+    (presence ? '<circle cx="3" cy="4" r="' + R + '" fill="#0b1a10" opacity=".3"/>' : '<path d="' + pointe + '" fill="var(--ca-m, #f5b945)" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/>') +
     '<circle r="' + R + '" fill="var(--ca-m, #f5b945)" stroke="' + CONTOUR + '" stroke-width="3"/><circle r="' + r2 + '" fill="#fffaf0"/>';
   if(mq.inconnu) s += inconnuSvg(0, 0, r2);   /* quelqu'un qu'on ne connaît pas encore : un « ? » */
   else if(mq.visage) s += visageUse(p, mq.visage, 0, 0, r2 * 2);   /* le visage d'un villageois (o.visages) */
   else if(estSvg(mq.ic)) s += '<clipPath id="' + cid + '"><circle r="' + r2 + '"/></clipPath><g clip-path="url(#' + cid + ')">' + svgImbrique(mq.ic, -r2, -r2, r2 * 2) + '</g>';
   else if(mq.ic){ var nIc = nbEmojis(String(mq.ic)); s += '<text x="0" y="1" font-size="' + (nIc <= 1 ? 29 : nIc === 2 ? 20 : 15) + '" text-anchor="middle" dominant-baseline="central">' + esc(mq.ic) + '</text>'; }
+  if(presence) s += '<circle r="' + r2 + '" fill="none" stroke="' + CONTOUR + '" stroke-width="1.6"/>';
   s += '</g>';
+  if(presence) s += fleche(0, -R - 5, i);
   if(avecNom && mq.label) s += etiquette(0, -R - 4 - (MQ_NOM + 16) / 2, '', mq.label, {taille: MQ_NOM, classe: 'ca-nom'});
   /* sa zone à toucher, plus grande que le rond, va dans la couche du dessous (sous les étiquettes) */
   var z = '<g class="ca-zone ca-zone-mq' + (mq.act ? ' ca-clic' : '') + '" data-zone-mq="' + esc(mq.lieu || '') + '" transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '><circle class="ca-hit" r="' + f(rHit) + '" fill="#fff" opacity="0"/></g>';
@@ -11180,16 +11299,17 @@ function poserMarqueurs(p, o, G, items, occupes, ks, tmin, sortie){
   var r = G.rect, n = items.length, ignore = G.ignore || [];
   ks = ks * Math.min.apply(null, items.map(function(it){ return it.mq.echelle || 1; }));   /* mq.echelle : un marqueur plus petit (la présence d'un villageois) */
   var R = MQ_R * ks, rHit = Math.max(40 * ks, tmin / 2), bord = R + 6 * ks;
+  var fl = items.some(function(it){ return it.mq.classe === 'presence'; }) ? (FLECHE_H + 5) * ks : 0;   /* le triangle au-dessus des villageois */
   var pasNom = Math.max(2 * R + 8 * ks, Math.max.apply(null, items.map(function(it){ return it.mq.label ? (largeurTexte(it.mq.label, MQ_NOM) + 34) * ks : 0; })));
   var pas = 2 * R + 8 * ks;
   var cx = G.e[0], cy = G.e[1];   /* centre de l'étiquette (sans le cadenas) */
   var haut = r[1] - 1 - (MQ_POINTE + MQ_R) * ks, bas = r[3] + 1 + (MQ_POINTE + MQ_R) * ks;
   var essais = [
     {dir:'b', nom:true, pas:pasNom, x0:cx - (n - 1) / 2 * pasNom, y:haut, dx:pasNom, rect:[cx - n * pasNom / 2, haut - R - (MQ_NOM + 20) * ks, cx + n * pasNom / 2, r[1] - 1]},
-    {dir:'b', nom:false, x0:cx - (n - 1) / 2 * pas, y:haut, dx:pas, rect:[cx - n * pas / 2 - (bord - R), haut - bord, cx + n * pas / 2 + (bord - R), r[1] - 1]},
-    {dir:'g', nom:false, x0:r[2] + 2 + (MQ_POINTE + MQ_R) * ks, y:cy, dx:pas, rect:[r[2] + 2, cy - bord, r[2] + 2 + (MQ_POINTE + MQ_R) * ks + (n - 1) * pas + bord, cy + bord]},
-    {dir:'d', nom:false, x0:r[0] - 2 - (MQ_POINTE + MQ_R) * ks, y:cy, dx:-pas, rect:[r[0] - 2 - (MQ_POINTE + MQ_R) * ks - (n - 1) * pas - bord, cy - bord, r[0] - 2, cy + bord]},
-    {dir:'h', nom:false, x0:cx - (n - 1) / 2 * pas, y:bas, dx:pas, rect:[cx - n * pas / 2 - (bord - R), r[3] + 1, cx + n * pas / 2 + (bord - R), bas + bord]}
+    {dir:'b', nom:false, x0:cx - (n - 1) / 2 * pas, y:haut, dx:pas, rect:[cx - n * pas / 2 - (bord - R), haut - bord - fl, cx + n * pas / 2 + (bord - R), r[1] - 1]},
+    {dir:'g', nom:false, x0:r[2] + 2 + (MQ_POINTE + MQ_R) * ks, y:cy, dx:pas, rect:[r[2] + 2, cy - bord - fl, r[2] + 2 + (MQ_POINTE + MQ_R) * ks + (n - 1) * pas + bord, cy + bord]},
+    {dir:'d', nom:false, x0:r[0] - 2 - (MQ_POINTE + MQ_R) * ks, y:cy, dx:-pas, rect:[r[0] - 2 - (MQ_POINTE + MQ_R) * ks - (n - 1) * pas - bord, cy - bord - fl, r[0] - 2, cy + bord]},
+    {dir:'h', nom:false, x0:cx - (n - 1) / 2 * pas, y:bas + fl, dx:pas, rect:[cx - n * pas / 2 - (bord - R), r[3] + 1, cx + n * pas / 2 + (bord - R), bas + bord + fl]}
   ];
   /* le premier essai qui ne touche rien ; sinon celui qui recouvre le moins */
   var choix = null, moins = 1e9;
@@ -11209,7 +11329,7 @@ function poserMarqueurs(p, o, G, items, occupes, ks, tmin, sortie){
 
 function marqueurs(p, o, geo){
   var liste = o.marqueurs || [], s = '';
-  var groupes = {}, parLieu = {}, ordre = [], chezEux = {};
+  var groupes = {}, parLieu = {}, ordre = [], chezEux = {}, geoCache = {};
   var ks = (o.etiquette || 25) / 25, tmin = o.toucheMin || 0;
   geo = geo || {liste:[], parId:{}};
   liste.forEach(function(mq, i){
@@ -11220,8 +11340,14 @@ function marqueurs(p, o, geo){
       x = MAISONS[mq.maison].x; y = MAISONS[mq.maison].y - 30;
     }
     else if(mq.lieu && LIEUX[mq.lieu]){
-      if((o.caches || []).indexOf(mq.lieu) >= 0) return;   /* lieu caché : son marqueur aussi */
-      var G = geo.parId[mq.lieu];
+      /* lieu caché : son marqueur aussi… sauf la position d'un villageois (on sait toujours où est chacun) : posée sur le lieu, sans étiquette */
+      if((o.caches || []).indexOf(mq.lieu) >= 0){
+        if(mq.classe !== 'presence' || LIEUX[mq.lieu].zone === 'dessous') return;
+        if(!geoCache[mq.lieu]){ var pe = ETIQ[mq.lieu] || [LIEUX[mq.lieu].x, LIEUX[mq.lieu].y]; geoCache[mq.lieu] = {id:mq.lieu, e:pe, rect:[pe[0] - 2, pe[1] - 2, pe[0] + 2, pe[1] + 2]}; }
+      }
+      var G = geoCache[mq.lieu] || geo.parId[mq.lieu];
+      /* un lieu sans étiquette (la ruelle, dont le nom est sur la plaque de rue) : le villageois est posé sur le lieu lui-même */
+      if(mq.classe === 'presence' && !(G && G.rect) && o.marqueursPoses !== false){ var pl = [LIEUX[mq.lieu].x, LIEUX[mq.lieu].y]; G = geoCache[mq.lieu] = {id:mq.lieu, e:pl, rect:[pl[0] - 2, pl[1] - 2, pl[0] + 2, pl[1] + 2]}; }
       /* posé à côté de l'étiquette du lieu, pour ne jamais la cacher */
       if(G && G.rect && o.marqueursPoses !== false){ if(!parLieu[mq.lieu]){ parLieu[mq.lieu] = []; ordre.push(mq.lieu); } parLieu[mq.lieu].push({mq: mq, i: i}); return; }
       x = LIEUX[mq.lieu].x; y = LIEUX[mq.lieu].y;
@@ -11242,6 +11368,13 @@ function marqueurs(p, o, geo){
       sortie.dessus += pastille(p, it.mq, x, y);
     });
   });
+  /* chez eux (Romain, 5 novembre, 8 h 59) : seulement le petit triangle qui flotte au-dessus du rond de leur maison */
+  Object.keys(o.presents || {}).forEach(function(k, j){
+    if(!MAISONS[k] || !habitantDe(o, k)) return;
+    var m = posMedaillon(k);
+    pastilles.push([m.x - 15, m.y - m.r - FLECHE_H - 4, m.x + 15, m.y - m.r]);
+    sortie.dessus += fleche(m.x, m.y - m.r - 5, j);
+  });
   if(ordre.length){
     /* tout ce qui est déjà écrit sur la carte : les étiquettes des lieux et les notes des maisons */
     var occupes = geo.liste.filter(function(G){ return G.rect; }).map(function(G){ return G.rect; });
@@ -11253,7 +11386,7 @@ function marqueurs(p, o, geo){
     });
     pastilles.forEach(function(R){ occupes.push(R); });
     PLAQUES.forEach(function(P){ plaqueRects(P).forEach(function(R){ occupes.push(R); }); });
-    ordre.forEach(function(id){ poserMarqueurs(p, o, geo.parId[id], parLieu[id], occupes, ks, tmin, sortie); });
+    ordre.forEach(function(id){ poserMarqueurs(p, o, geoCache[id] || geo.parId[id], parLieu[id], occupes, ks, tmin, sortie); });
   }
   Object.keys(groupes).forEach(function(cle){
     var g = groupes[cle], n = g.length;
@@ -34147,6 +34280,8 @@ E[1] = {
   /* Pas de points d'action dans cette enquête (Romain, 4 novembre, 14 h 13 ; M.sansActions, moteur-base.js) : ce qui limite, c'est le tutoriel,
      et « un lieu ou un villageois ne donne qu'une chose par moment ». Les enquêtes 2 et 3 gardent leurs actions. */
   sansActions:true,
+  /* La carte montre où est chacun (Romain, 5 novembre, 8 h 59), sauf Tim : où il est, c'est la solution (9 h 23). Sa maison reste normale. */
+  carteSecret:['tim'],
   lettre:'Chers enquêteurs, c\'est une catastrophe ! Cette nuit, quelqu\'un a pris la Lanterne d\'Or dans mon bureau, à la mairie. Ce soir, c\'est la Fête des Lanternes : sans elle, aucune lanterne du village ne pourra s\'allumer ! Trouvez QUI l\'a prise, et OÙ elle se trouve, avant ce soir.',
   signature:'Monsieur Grosbec, maire de Brumeval',
   missions:{
@@ -34833,7 +34968,9 @@ E[2] = {
      Les questions qui attendent un indice restent cachées (questionsCachees). Les menteurs : Bastien, Tim, Victor, Margot,
      Mélusine, Fortuné, Farinel (un petit mensonge pour rire). Le maire ne ment jamais : il dit des choses vraies et tait le reste. */
   pnj:{
-    bastien:{ou:{apresmidi:'place', nuit:'B2'}, salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
+    /* carte + occupe (Romain, 5 novembre, 8 h 59 : la carte montre toujours où est chacun) : là où il est quand on ne peut pas lui parler,
+       et ce qu'on voit en arrivant (moteur-roles.js, M.pnjOccupesIci). Le rythme de l'enquête ne change pas. */
+    bastien:{ou:{apresmidi:'place', nuit:'B2'}, carte:{matin:'lisiere'}, occupe:{matin:'Bastien passe avec sa grande charrette : « Pas le temps, je pars livrer de l\'autre côté de la forêt ! Repasse cet après-midi. »'}, salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
       {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
@@ -34843,6 +34980,8 @@ E[2] = {
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
     ]},
     /* vexeDonne (Romain, 23 h 20) : vexé la nuit, Tim part fâché… mais lâche quand même sa pierre (barde.js, vexeLache) */
+    /* (le matin, Tim se cache au Vieux Chêne : la carte ne le montre pas, pour garder la surprise du Pisteur — Romain, 5 novembre, 9 h 30 ;
+       sa maison est grisée, il est sorti, sans dire où) */
     tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'},
       vexeDonne:{obj:'pierre', moments:['nuit'], a:'Il sort une pierre de sa poche et te la lance : « Tiens, prends ton caillou et laisse-moi tranquille ! » C\'est une pierre gravée de runes bizarres…',
         note:'Tim, fâché, t\'a lancé une pierre gravée de runes en partant (code pour le Sage).'}, questions:[
@@ -34859,7 +34998,7 @@ E[2] = {
         a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Ce matin, des ouvriers ont posé de gros rochers sur le trou : ce n\'est pas un éboulement ! Tiens, prends la pierre, elle me fait peur ! C\'est pour ton Sage.',
         note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
-    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
+    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, carte:{matin:'ruelle'}, occupe:{matin:'Victor court de porte en porte avec sa grosse sacoche : « Bonjour ! Pas le temps, je fais ma tournée. Repasse cet après-midi ! »'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
       {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
         vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
         note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
@@ -34874,7 +35013,7 @@ E[2] = {
         a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
         note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
     ]},
-    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
+    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, carte:{matin:'taverne'}, occupe:{matin:'La taverne est encore fermée. Margot range sa cave : « On ouvre cet après-midi ! »'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
       {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
         vrai:'Bon… c\'est vrai, la semaine dernière, un tonneau est tombé dans la rivière pendant un transport. Mais l\'eau n\'est pas devenue rouge du tout ! Ce n\'est pas mon vin.',
         note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
@@ -34888,7 +35027,7 @@ E[2] = {
         a:'Ici, tout se raconte à la taverne ! Ce soir, tout le monde ne parle que de ça : Bastien, le charretier, a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
         note:'Margot (la nuit) : tout se raconte à la taverne. Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'}
     ]},
-    melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, salut:'Bonjour ! Attention aux épingles…', questions:[
+    melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, carte:{nuit:'atelier'}, occupe:{nuit:'Mélusine dort à poings fermés. Personne ne répond.'}, salut:'Bonjour ! Attention aux épingles…', questions:[
       {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
       {q:'Quand la rivière est-elle devenue rouge ?', a:'Ce matin, à l\'aube, quand je suis arrivée au lavoir, la rivière était déjà toute rouge ! Et l\'eau du lavoir est toute rose… mais ça, ce n\'est rien. La pauvre Iris en a pleuré, avec son champ… Pour la consoler, rien de tel qu\'un compliment sur ses fleurs.', note:'Mélusine : à l\'aube, la rivière était déjà toute rouge. L\'eau du lavoir est rose « mais ce n\'est rien ». Pour consoler Iris : un compliment sur ses fleurs.'},
       {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même, avec de la bonne laine ! Ils ne déteignent jamais !', ment:true,
@@ -34899,7 +35038,7 @@ E[2] = {
         a:'Des histoires ? Méfie-toi de Fortuné, le colporteur ! Avec lui, tout est toujours « à moitié prix »… Je connais son truc : ' + signe('fortune', 'Fortuné').replace(/^Q/, 'q') + ' Regarde-le bien, cet après-midi, sur la place !',
         note:'Mélusine t\'a appris le signe de menteur de Fortuné : une étiquette pour ton tableau de liège.'}
     ]},
-    fortune:{ou:{apresmidi:'place'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
+    fortune:{ou:{apresmidi:'place'}, carte:{matin:'pont', nuit:'lisiere'}, occupe:{matin:'Sur le pont, une carriole toute colorée arrive au village. Le colporteur te fait signe : « Je m\'installe sur la place cet après-midi ! »', nuit:'Le colporteur ronfle dans sa carriole, à la lisière de la forêt.'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
       /* seulement quand le Barde sait que Mélusine achète ses tissus à Fortuné (elle l'a avoué, ou l'oreille à l'atelier) */
       {q:'Vous vendez des tissus à Mélusine ?', besoin:[{vu:'verite:melusine:2'}, {vu:'barde:oreille:atelier'}], a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
         vrai:'Bon, d\'accord… Je lui vends des tissus pas chers, en cachette. Ils déteignent un peu, c\'est vrai. Mais chut, c\'est notre secret !',
@@ -34926,7 +35065,7 @@ E[2] = {
         a:'Des traces de charrette, ici ? Ça alors… tout le monde passe dans ma cour ! Mais elles ne mènent nulle part, c\'est impossible. Et je peux te le prouver : tiens, voici les vieux plans du moulin, bâti par mes ancêtres.',
         note:'Farinel : les traces de charrette ne mènent nulle part, dit-il. Il t\'a donné les vieux plans de son moulin, bâti par ses ancêtres (code pour le Sage).'}
     ]},
-    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'Iris dort. Elle se lève avec le soleil pour soigner ses fleurs.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
       {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
       /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
          pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
@@ -34947,7 +35086,7 @@ E[2] = {
         a:'Des histoires ? Tous les jours ! Farinel, le meunier, m\'en raconte de belles… Mais je connais son truc : ' + signe('farinel', 'Farinel').replace(/^Q/, 'q') + ' Ouvre l\'œil !',
         note:'Silas t\'a appris le signe de menteur de Farinel : une étiquette pour ton tableau de liège.'}
     ]},
-    grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
+    grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, carte:{nuit:'mairie'}, occupe:{nuit:'La mairie est fermée pour la nuit. Le maire ne reçoit personne.'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
       {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
       /* le maire ne ment jamais (Romain, 5 novembre, 01 h 36) : il ne parle pas d'éboulement, il tait le reste */
       {q:'Pourquoi le chemin du Vieux Chêne est-il fermé ?', a:'C\'est très dangereux là-bas, mon petit. Je ne peux pas t\'en dire plus. Que personne n\'y aille !', note:'Le maire : c\'est très dangereux au Vieux Chêne, et il ne peut pas en dire plus. Personne ne doit y aller.'}
@@ -36839,6 +36978,16 @@ M.pnjIci = function(lieu){
   var E = M.E(), mid = M.momentId();
   return M.cle(E.pnj || {}).filter(function(id){ return E.pnj[id].ou && E.pnj[id].ou[mid] === lieu; });
 };
+/* Là, mais occupé (Romain, 5 novembre, 8 h 59 : la carte montre toujours où est chacun) : E.pnj[id].carte[moment] = où il est
+   quand on ne peut pas lui parler (Victor en tournée, Mélusine qui dort…) ; E.pnj[id].occupe[moment] = ce qu'on voit en arrivant. */
+M.pnjOccupesIci = function(lieu){
+  var E = M.E(), mid = M.momentId();
+  return M.cle(E.pnj || {}).filter(function(id){ var N = E.pnj[id]; return id !== 'voisin' && !(N.ou && N.ou[mid]) && N.carte && N.carte[mid] === lieu; });
+};
+M.texteOccupe = function(id){
+  var E = M.E(), N = (E.pnj || {})[id] || {}, x = D.PNJ[id] || {};
+  return (N.occupe && N.occupe[M.momentId()]) || (x.court || 'Quelqu\'un') + ' est très occupé' + (FEM[id] ? 'e' : '') + ' en ce moment. Repasse plus tard !';
+};
 M.bonusIci = function(lieu){
   var E = M.E(), P = M.P(), role = M.role();
   return (E.bonus || []).filter(function(b){ return b.role === role && b.lieu === lieu && M.momentOk(b.moments) && !P.bonus[b.id]; });
@@ -36913,13 +37062,7 @@ M.infosCarte = function(){
     var connu = role !== 'alchimiste' || (P.notesIngr && P.notesIngr[id] && P.notesIngr[id].length);
     liste.push({id:id, nom:M.nomLieu(id), ic:connu ? M.icLieu(id) : '❔', verrou:!!v, bonus:M.bonusIci(id).length > 0, nouveau:a && !P.vus['lieu:' + id + ':' + P.moment]});
   });
-  if(role === 'barde'){
-    var parLieu = {};
-    M.cle(E.pnj || {}).forEach(function(id){ var o = E.pnj[id].ou; if(o && o[mid] && !/^[LFB]\d$/.test(o[mid])) (parLieu[o[mid]] = parLieu[o[mid]] || []).push(id); });
-    M.cle(parLieu).forEach(function(l){
-      marqueurs.push({lieu:l, ic:parLieu[l].map(function(id){ return D.PNJ[id].ic; }).join(''), label:(function(n){ return n.length > 2 ? n.slice(0, 2).join(', ') + ' +' + (n.length - 2) : n.join(', '); })(parLieu[l].map(function(id){ return D.PNJ[id].court; })), act:'lieu', id:l, classe:'pnj'});
-    });
-  }
+  /* (plus de marqueurs « qui est là » pour le Barde : depuis le 5 novembre, 8 h 59, la carte montre à tout le monde où est chacun, carte-jeu.js) */
   (E.bonus || []).forEach(function(b){
     if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:'✨', label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
   });
@@ -37034,6 +37177,7 @@ M.habitantMaison = function(maison){
 M.chezLui = function(id){ return 'chez ' + (FEM[id] ? 'elle' : 'lui'); };
 M.texteAbsent = function(maison){
   var id = M.habitantMaison(maison), x = id && D.PNJ[id];
+  if(id && M.pnjOccupesIci(maison).indexOf(id) >= 0) return M.texteOccupe(id);   /* chez lui, mais il n'ouvre pas (il dort…) */
   return x ? x.court + ' n\'est pas ' + M.chezLui(id) + ' en ce moment.' : 'Tu frappes, tu attends… Personne ne répond.';
 };
 M.feuilleMaison = function(maison){
@@ -38249,7 +38393,8 @@ A.revoir = function(el){ M.ouvrir({type:'revision', i:+el.dataset.i}); };
 A.frapper = function(el){
   var P = M.P(), m = el.dataset.id, ici = M.pnjIci(m);
   /* personne à la maison : un petit message (« Odette n'est pas chez elle en ce moment. »), sans rien dépenser */
-  if(!ici.length){ M.son('porte'); M.ouvrir({type:'info', ic:'🚪', titre:M.habitantMaison && M.habitantMaison(m) ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.'}); return; }
+  if(!ici.length){ var hm = M.habitantMaison && M.habitantMaison(m), occ = hm && M.pnjOccupesIci && M.pnjOccupesIci(m).indexOf(hm) >= 0;
+    M.son('porte'); M.ouvrir({type:'info', ic:'🚪', titre:occ ? 'Pas maintenant' : hm ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.'}); return; }
   if(!M.peutAgir()) return;
   M.depenser(); M.son('porte');
   P.conv[ici[0]] = P.moment; M.sauver(); M.ouvrir({type:'conv', id:ici[0], classe:'b-feuille-conv'});
@@ -40588,6 +40733,12 @@ function carteGens(id){
 M.lieuBarde = function(lieu){
   var E = M.E(), P = M.P(), s = '', gens = M.pnjIci(lieu);
   if(gens.length) s += '<p class="sur-titre">Ici en ce moment</p><div class="b-gens">' + gens.map(carteGens).join('') + '</div>';
+  /* ceux qu'on voit ici sur la carte, mais trop occupés pour parler en ce moment (E.pnj[id].carte et .occupe : moteur-roles.js) */
+  var occ = M.pnjOccupesIci ? M.pnjOccupesIci(lieu) : [];
+  if(occ.length) s += (gens.length ? '' : '<p class="sur-titre">Ici en ce moment</p>') + '<div class="b-gens">' + occ.map(function(id){
+    var t = M.texteOccupe(id);
+    return '<div class="b-gens-carte bd-occupe"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t) + '</div>';
+  }).join('') + '</div>';
   /* Tendre l'oreille (talent) */
   if(talent('tendre')) B.bribesIci(lieu).forEach(function(b){
     var r = B.oreillesReste();
@@ -41858,17 +42009,39 @@ if(M.S) nouvelleE2(M.S);
 
 /* ---------- 5. Les petites scènes animées (m.illu, à la place de la grande icône : moteur-actions.js) ----------
    « rassemblement » (enquête 2, Romain 22 h 41 : c'est le SAGE, la nuit) : le Sage arrive en tête au Vieux Chêne avec le village ;
-   une ombre se sauve derrière le buisson ; PFFFT, la fumée rouge ; le maire accourt (« Reculez ! ») ; tout le monde s'enfuit en toussant.
-   Une boucle de 11 s en CSS (barde.css, .rs-…) ; figée au moment de la fumée si l'appareil demande moins de mouvement.
+   une ombre se sauve derrière le buisson ; PFFFT, la fumée rouge ; le maire accourt avec Silas (Silas : « Vapeurs toxiques ! »,
+   le maire : « Reculez ! ») ; tout le monde s'enfuit en toussant. Des personnages en entier (Romain, 5 novembre, 8 h 59), et la fumée,
+   une fois partie, ne s'arrête plus jamais. Une boucle de 11 s en CSS (barde.css, .rs-…) ; figée au moment de la fumée si l'appareil demande moins de mouvement.
    Sur la tablette du Sage : son héros en tête ; ailleurs (le récit tapé en code) : l'étoile du Sage. Un ciel de nuit, la lune, des étoiles. */
 var nIllu = 0;
-function visageRs(id){
-  try{ if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]) return Persos.pnj(id, {anime:false, cadre:'visage', id:'rs' + (++nIllu)}); }catch(e){}
-  return '<b>' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</b>';
+/* Les personnages en entier (Romain, 5 novembre, 8 h 59 : plus de petits ronds avec un visage) : {h: le dessin, ar: largeur / hauteur, k: hauteur relative} */
+var HAUT_PNJ = 353;   /* la hauteur du dessin d'un villageois adulte en entier (persos.js, pnj {pied:true}) */
+function forme(svg, w0, h0){
+  var m = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg || ''), w = m ? +m[1] : w0, h = m ? +m[2] : h0;
+  return {ar:w / h, h:h};
 }
+function genRs(id){
+  try{
+    if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]){
+      var s = Persos.pnj(id, {anime:false, pied:true, id:'rs' + (++nIllu)}), f = forme(s, 200, HAUT_PNJ);
+      if(s) return {h:s, ar:f.ar, k:f.h / HAUT_PNJ};
+    }
+  }catch(e){}
+  return {h:'<b>' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</b>', ar:.57, k:1};
+}
+/* Le Sage : son héros sur sa tablette ; sur les autres (le récit tapé en code), un Sage comme les autres */
 function chefRs(){
-  if(M.role() === 'sage' && window.Persos && Persos.heros && M.heroObj){ try{ return Persos.heros(M.heroObj(), {cadre:'tete', anime:false, fond:false, id:'rsh' + (++nIllu)}); }catch(e){} }
-  return '<b>' + D.ROLES.sage.ic + '</b>';
+  try{
+    if(window.Persos && Persos.heros){
+      var h = M.role() === 'sage' && M.heroObj ? M.heroObj() : (Persos.defaut ? Persos.defaut('sage', 'm') : null);
+      if(h){ var s = Persos.heros(h, {vue:'pied', anime:false, fond:false, id:'rsh' + (++nIllu)}), f = forme(s, 300, 440); if(s) return {h:s, ar:f.ar, k:1.16}; }
+    }
+  }catch(e){}
+  return {h:'<b>' + D.ROLES.sage.ic + '</b>', ar:.57, k:1};
+}
+function personnageRs(p, cls, x, delai, bulle){
+  var H = 46;   /* la hauteur d'un villageois adulte : 46 % de l'image */
+  return '<span class="rs-gens' + cls + '" style="--x:' + x + '%;--h:' + (H * p.k).toFixed(1) + '%;--ar:' + p.ar.toFixed(3) + (delai != null ? ';animation-delay:' + delai + 's' : '') + '"><i>' + p.h + '</i>' + (bulle || '') + '</span>';
 }
 var DECOR_RS = '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
   '<defs><linearGradient id="rs-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121736"/><stop offset="1" stop-color="#3a3f78"/></linearGradient></defs>' +
@@ -41892,13 +42065,18 @@ var OMBRE_RS = '<svg viewBox="-20 -44 40 48" aria-hidden="true" focusable="false
 var ILLU = {
   rassemblement:function(){
     var gens = ['gaspard', 'margot', 'iris'];
-    var pions = [{h:chefRs(), x:46, d:0, cls:' rs-chef'}].concat(gens.map(function(id, i){ return {h:visageRs(id), x:34 - 12 * i, d:.35 * (i + 1), cls:''}; }));
-    var s = '<div class="rs-scene" role="img" aria-label="La nuit, le Sage et le village au Vieux Chêne : une fumée rouge sort de sous les branches, le maire crie « Reculez ! »">' + DECOR_RS;
+    var s = '<div class="rs-scene" role="img" aria-label="La nuit, le Sage et le village au Vieux Chêne : une fumée rouge sort de sous les branches. Silas crie « Vapeurs toxiques ! », le maire crie « Reculez ! »">' + DECOR_RS;
     s += '<span class="rs-ombre">' + OMBRE_RS + '</span>';
     s += '<span class="rs-fumee">' + [[-14, 0, -16], [2, -6, 0], [16, 2, 14], [-4, 6, -8], [10, -2, 8]].map(function(f, i){ return '<i style="left:' + (50 + f[0] * 2) + '%;top:' + (50 + f[1] * 3) + '%;--dx:' + f[2] + 'px;animation-delay:' + (i * .12).toFixed(2) + 's"></i>'; }).join('') + '</span>';
+    /* la fumée sans fin : elle part avec le premier PFFFT (au bout de 4 s) et ne s'arrête plus, même quand la scène recommence */
+    s += '<span class="rs-fumee rs-fumee-sans-fin">' + [[-6, -10], [8, 12], [0, -4], [-12, 8], [12, -14], [4, 6], [-2, 16]].map(function(f, i){ return '<i style="left:' + (50 + f[0] * 2) + '%;top:86%;--dx:' + f[1] + 'px;animation-delay:' + (4 + i * .5).toFixed(2) + 's"></i>'; }).join('') + '</span>';
     s += '<b class="rs-pfft">PFFFT !</b>';
-    pions.forEach(function(p){ s += '<span class="rs-pion' + p.cls + '" style="--x:' + p.x + '%;animation-delay:' + p.d + 's"><i>' + p.h + '</i><em class="rs-kof" style="animation-delay:' + p.d + 's">kof !</em></span>'; });
-    s += '<span class="rs-pion rs-maire"><i>' + visageRs('grosbec') + '</i><em class="rs-bulle">Reculez !</em></span>';
+    var kof = function(d){ return '<em class="rs-kof" style="animation-delay:' + d + 's">kof !</em>'; };
+    s += personnageRs(chefRs(), ' rs-chef', 40, 0, kof(0));
+    gens.forEach(function(id, i){ var d = .35 * (i + 1); s += personnageRs(genRs(id), '', 29 - 10.5 * i, d, kof(d)); });
+    /* le maire accourt, Silas sur ses talons : c'est Silas qui parle des vapeurs (il y croit), le maire ne dit que des choses vraies */
+    s += personnageRs(genRs('grosbec'), ' rs-maire', 73, null, '<em class="rs-bulle">Reculez !</em>');
+    s += personnageRs(genRs('silas'), ' rs-silas', 89, null, '<em class="rs-bulle">Vapeurs toxiques !</em>');
     return s + '</div>';
   }
 };
@@ -42068,35 +42246,56 @@ function visage(id){
 M.visageCarte = visage;
 /* Ceux qu'on connaît : le registre de l'enquête (le Sage le lit à toute l'équipe). Les autres (Romain, 5 novembre, 01 h 20) :
    un petit « ? » à la place de leur visage, sur leur maison comme sur la carte. */
-function connu(E, id){ return !!(E && E.registre && E.registre[id]); }
+/* (le maire signe la lettre de chaque enquête : tout le monde le connaît, même s'il n'est pas dans le registre, comme à l'enquête 1) */
+function connu(E, id){ return id === 'grosbec' || !!(E && E.registre && E.registre[id]); }
 /* Qui habite où : {maison: {id, nom} | {inconnu:true}} — le registre de l'enquête d'abord, puis où chacun habite d'habitude
    (donnees.js, D.PNJ[id].domicile) ; une maison sans habitant n'a rien */
+var ELLES = {melusine:1, odette:1, iris:1, margot:1};
 function habitants(E){
   var h = {};
   M.cle((E && E.registre) || {}).forEach(function(id){
     var m = E.registre[id].maison;
-    if(m && Carte.MAISONS[m] && !h[m] && visage(id)) h[m] = {id:id, nom:(D.PNJ[id] || {}).nom || id};
+    if(m && Carte.MAISONS[m] && !h[m] && visage(id)) h[m] = {id:id, nom:(D.PNJ[id] || {}).nom || id, elle:!!ELLES[id]};
   });
   M.cle(D.PNJ).forEach(function(id){
     var m = D.PNJ[id].domicile;
-    if(m && Carte.MAISONS[m] && !h[m] && !connu(E, id)) h[m] = {inconnu:true};
+    if(m && Carte.MAISONS[m] && !h[m] && !connu(E, id)) h[m] = {inconnu:true, pid:id};   /* (pid : pour savoir s'il est chez lui, jamais montré) */
   });
   return h;
 }
 M.habitantsCarte = function(){ var E = M.E(); return window.Carte && E ? habitants(E) : {}; };
-/* Où est chacun en ce moment (dès l'enquête 2) : les marqueurs de présence, les lieux d'abord, puis ceux qui sont chez eux ;
-   quelqu'un qu'on ne connaît pas : un « ? » (ni son visage, ni son nom) */
-function presences(E){
-  var mid = M.momentId(), lieux = [], maisons = [];
-  M.cle(E.pnj || {}).forEach(function(id){
-    var ou = E.pnj[id].ou && E.pnj[id].ou[mid];
-    if(id === 'voisin' || !ou || !visage(id)) return;   /* (le voisin n'est pas un villageois : une porte) */
-    var c = connu(E, id), nom = c ? (D.PNJ[id] || {}).court || id : 'Quelqu\'un', chez = /^[LFB]\d$/.test(ou);
-    if(chez ? !Carte.MAISONS[ou] : !Carte.LIEUX[ou]) return;
-    var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:chez ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8};
-    if(chez){ mq.maison = ou; maisons.push(mq); } else { mq.lieu = ou; lieux.push(mq); }
+/* ---------- Où est chacun, à chaque moment de chaque enquête (Romain, 5 novembre, 8 h 59 ; DESIGN 12.20) ----------
+   Pour tous les rôles, dès l'enquête 1. Tous ceux qui comptent dans l'enquête (E.pnj, et ceux du registre) :
+   · chez lui : le rond de sa maison, et le petit triangle jaune qui flotte au-dessus (pas d'autre icône) ;
+   · ailleurs : le rond de sa maison est grisé, et son visage (cerclé de jaune, le triangle au-dessus) est là où il est ;
+   · on ne sait pas où il est (Tim au fond du trou à l'enquête 1, Odette enfermée à l'enquête 2) : seulement le rond grisé.
+   Là où il est : E.pnj[id].ou (on peut lui parler), sinon E.pnj[id].carte (il est là, mais occupé : E.pnj[id].occupe, moteur-roles.js).
+   Quelqu'un qu'on ne connaît pas : un « ? » (ni son visage, ni son nom). */
+function ouEst(E, id, mid){ var N = (E.pnj || {})[id] || {}; return (N.ou && N.ou[mid]) || (N.carte && N.carte[mid]) || null; }
+M.ouEst = function(id){ var E = M.E(); return E ? ouEst(E, id, M.momentId()) : null; };
+function concernes(E){
+  var l = M.cle(E.pnj || {}).filter(function(id){ return id !== 'voisin' && D.PNJ[id]; });   /* (le voisin n'est pas un villageois : une porte) */
+  M.cle(E.registre || {}).forEach(function(id){ if(l.indexOf(id) < 0 && D.PNJ[id]) l.push(id); });
+  return l;
+}
+function presences(E, hab){
+  var mid = M.momentId(), lieux = [], maisons = [], chez = {}, absents = {}, maisonDe = {};
+  M.cle(hab).forEach(function(m){ var i = hab[m].id || hab[m].pid; if(i) maisonDe[i] = m; });
+  concernes(E).forEach(function(id){
+    /* E.carteSecret : ceux dont la carte ne doit rien dire, même pas qu'ils ne sont pas chez eux (Tim à l'enquête 1 : ce serait la solution ;
+       Romain, 5 novembre, 9 h 23) : le rond de leur maison reste normal, sans triangle ni gris */
+    if((E.carteSecret || []).indexOf(id) >= 0) return;
+    var ou = ouEst(E, id, mid), m = maisonDe[id];
+    var ouM = ou && (/^[LFB]\d$/.test(ou) ? ou : (Carte.LIEUX[ou] && Carte.LIEUX[ou].maison) || null);   /* (sa boutique est sa maison : Gaspard à la boulangerie) */
+    if(m && ouM === m){ chez[m] = 1; return; }
+    if(m) absents[m] = 1;
+    if(!ou || !visage(id)) return;
+    var c = connu(E, id), nom = c ? (D.PNJ[id] || {}).court || id : 'Quelqu\'un', estMaison = /^[LFB]\d$/.test(ou);
+    if(estMaison ? !Carte.MAISONS[ou] : !Carte.LIEUX[ou]) return;
+    var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:estMaison ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8};
+    if(estMaison){ mq.maison = ou; maisons.push(mq); } else { mq.lieu = ou; lieux.push(mq); }
   });
-  return lieux.concat(maisons);
+  return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents};
 }
 /* Dès l'enquête 2, la carte n'aide plus (plus de ronds jaunes) : seulement la position des villageois */
 function sansAides(E){ return !!E && (E.id || 1) >= 2; }
@@ -42171,13 +42370,20 @@ function contenu(ou, w, h){
       /* dès l'enquête 2 : plus de ronds jaunes ni de marqueurs d'aide (les habitants du Barde, ✨ les missions bonus) ; tous les lieux se touchent,
          et seulement la position de chaque villageois. Les ingrédients notés par l'Alchimiste (ses propres notes) restent. */
       var aides = !sansAides(E) || !!T;
-      if(!aides) marqueurs = marqueurs.filter(function(mq){ return mq.classe === 'ingr'; }).concat(presences(E));
       var hab = habitants(E), vis = {};
+      /* où est chacun, dans toutes les enquêtes (dès l'enquête 1 : la position de chacun remplace le marqueur « à qui parler » du tutoriel) */
+      var PR = presences(E, hab);
+      /* (un villageois sur un lieu qu'on ne peut pas encore toucher : on le voit, mais son visage ne se touche pas) */
+      PR.marqueurs.forEach(function(mq){
+        if(mq.lieu && (caches.indexOf(mq.lieu) >= 0 || (T && T.ouverts.indexOf(mq.lieu) < 0) || (guide && actifs.indexOf(mq.lieu) < 0 && verrous.indexOf(mq.lieu) < 0))) mq.act = null;
+        if(mq.maison && T && (T.maisons || []).indexOf(mq.maison) < 0) mq.act = null;
+      });
+      marqueurs = (aides ? marqueurs.filter(function(mq){ return mq.classe !== 'pnj'; }) : marqueurs.filter(function(mq){ return mq.classe === 'ingr'; })).concat(PR.marqueurs);
       M.cle(hab).forEach(function(k){ if(hab[k].id) vis[hab[k].id] = visage(hab[k].id); });
       marqueurs.forEach(function(mq){ if(mq.visage) vis[mq.visage] = visage(mq.visage); });
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts,
-        habitants:hab, visages:vis, aides:aides});
+        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents});
     }
   }catch(e){ console.error(e); svg = '<p>Erreur de carte</p>'; }
   res.html = '<div class="ca-vue"><div class="ca-monde">' + svg + '</div></div>' +

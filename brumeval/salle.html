@@ -5659,7 +5659,13 @@ function pnj(id, opts){
   var K = contexte(uid, h);
   var anime = opts.anime !== false, fond = opts.fond !== false;
   var humeur = opts.humeur && opts.humeur !== 'normal' ? opts.humeur : null;
-  var s = '<svg class="pj pj-pnj pj-pnj-' + id + (anime ? ' pj-anime' : '') + (humeur ? ' pj-h-' + humeur : '') + '" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + sp.nom + ', ' + sp.metier + '">';
+  /* opts.pied : le villageois en entier, de la tête aux pieds (les petites scènes animées, regles.js ; Romain, 5 novembre, 8 h 59) */
+  var pied = !!opts.pied;
+  if(pied) fond = false;
+  var hs = sp.age === 'enfant' ? 1.16 : 1.08;
+  var hy = sp.age === 'enfant' ? 100 : 104;
+  var GP = pied ? geoPied(sp) : null, HV = pied ? Math.ceil(hy + GP.sol * hs + 5) : 200;
+  var s = '<svg class="pj pj-pnj pj-pnj-' + id + (pied ? ' pj-pnj-pied' : '') + (anime ? ' pj-anime' : '') + (humeur ? ' pj-h-' + humeur : '') + '" viewBox="0 0 200 ' + HV + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + sp.nom + ', ' + sp.metier + '">';
   s += '<defs>' +
     lin(K.n('peau'), [[0, K.peau.c[0]], [1, K.peau.c[1]]]) +
     lin(K.n('chev'), [[0, K.chev.c[0]], [.5, K.chev.c[1]], [1, K.chev.c[2]]], 0, 0, .6, 1) +
@@ -5678,17 +5684,19 @@ function pnj(id, opts){
     s += '<rect width="200" height="200" fill="' + K.u('fd') + '"/>';
     s += '<circle cx="160" cy="40" r="3" fill="#fff" opacity=".35"/><circle cx="30" cy="60" r="2" fill="#fff" opacity=".3"/><circle cx="176" cy="96" r="1.6" fill="#fff" opacity=".3"/>';
   }
-  var hs = sp.age === 'enfant' ? 1.16 : 1.08;
-  var hy = sp.age === 'enfant' ? 100 : 104;
   var T = 'translate(100 ' + hy + ') scale(' + hs + ')';
   var coif = COIFF_V[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
   var inner = '';
+  /* en entier : les jambes et les chaussures, derrière tout le reste */
+  if(pied) inner += jambesPnj(K, sp, GP);
   /* cheveux derrière */
   if(coif.dos && !sp.chapeau) inner += coif.dos(K);
   /* buste */
   var corpsSp = sp.corps;
   inner += busteCorps(K, sp);
   (sp.accessoires || []).forEach(function(a){ if(['echarpe_maire','cravate','tablier_blanc','tablier_vert','salopette','chale','gilet_carreaux','sacoche','sifflet','metre','farine_habit'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
+  /* en entier : le bas du corps (veste et ceinture, ou jupe), le bas des tabliers, les bras et les mains */
+  if(pied) inner += bassinPnj(K, sp, GP) + brasPnj(K, sp, GP);
   if(coif.devant) inner += coif.devant(K);
   (sp.accessoires || []).forEach(function(a){ if(['echarpe_rouge'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
   /* tête */
@@ -5708,9 +5716,94 @@ function pnj(id, opts){
     inner += sourcils(K, fv) + CHAPEAUX[chap](K);
   }
   (sp.accessoires || []).forEach(function(a){ if(['lunettes','fleurs','epingles','boucle'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
-  (sp.accessoires || []).forEach(function(a){ if(['gants','chat','pirate','cles','chope'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
+  (sp.accessoires || []).forEach(function(a){
+    if(['gants','chat','pirate','cles','chope'].indexOf(a) < 0) return;
+    if(!pied || a === 'chat'){ inner += accessoire(K, sp, a); return; }
+    /* en entier : les gants sont ses mains (brasPnj) ; la chope dans la main, le chien par terre, les clés à la ceinture */
+    /* (chaque accessoire se place lui-même : chope en (-34, 72), chien en (38, 74), clés en (-28, 70) ; on le décale jusqu'à sa nouvelle place) */
+    if(a === 'chope') inner += '<g transform="translate(' + (28 - GP.L) + ' ' + (GP.main - 76) + ')">' + accessoire(K, sp, a) + '</g>';
+    if(a === 'pirate') inner += '<g transform="translate(' + (GP.L - 18) + ' ' + (GP.sol - 98) + ')">' + accessoire(K, sp, a) + '</g>';
+    if(a === 'cles') inner += '<g transform="translate(' + (38 - GP.L) + ' ' + (GP.taille - 82) + ')">' + accessoire(K, sp, a) + '</g>';
+  });
   s += '<g transform="' + T + '">' + (anime && opts.souffle ? A('pj-souffle-pnj', inner) : inner) + '</g>';
   return s + '</svg>';
+}
+
+/* ---------- Le villageois en entier (Persos.pnj(id, {pied:true})) ----------
+   Mêmes repères que le buste (la tête en 0,0 ; le buste s'arrête à y = 120) : on ajoute la taille et la ceinture (ou la jupe),
+   les jambes, les chaussures, les bras le long du corps et les mains. Le bas des tabliers continue sur la jupe ou le pantalon. */
+var BAS_PNJ = {grosbec:'#2a2440', gaspard:'#6a5440', melusine:'#2a5a4a', basile:'#3f5f9a', odette:'#5a4a7a', tim:'#3a3a48', victor:'#26386a',
+  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a'};
+function geoPied(sp){
+  var enf = sp.age === 'enfant';
+  var L = sp.corps === 'rond' ? 64 : sp.corps === 'costaud' ? 60 : sp.corps === 'maigre' ? 42 : sp.corps === 'enfant' ? 42 : 50;
+  var lw = sp.corps === 'rond' || sp.corps === 'costaud' ? 18 : enf ? 12 : sp.corps === 'maigre' ? 13 : 15;
+  return {L:L, lw:lw, jupe:sp.sexe === 'f', enf:enf, taille:enf ? 134 : 146, sol:enf ? 190 : 226, main:enf ? 126 : 136,
+    salopette:(sp.accessoires || []).indexOf('salopette') >= 0, gants:(sp.accessoires || []).indexOf('gants') >= 0};
+}
+function basPnj(sp){
+  for(var id in PNJ) if(PNJ[id] === sp && BAS_PNJ[id]) return BAS_PNJ[id];
+  return sombre(sp.habit, .45);
+}
+function jambesPnj(K, sp, G){
+  var s = '', g = 3, lw = G.jupe ? 9 : G.lw, bot = G.sol - 8;
+  var top = G.jupe ? G.sol - 40 : G.taille - 6;
+  var col = G.jupe ? '#3a2e3a' : basPnj(sp);
+  [-1, 1].forEach(function(k){
+    var x1 = k * g, x2 = k * (g + lw);
+    s += '<path d="M' + x1 + ' ' + top + ' L ' + x1 + ' ' + bot + ' L ' + x2 + ' ' + bot + ' L ' + (x2 + k * (G.jupe ? 0 : 1)) + ' ' + top + ' Z" fill="' + col + '"' + c(2.2) + '/>';
+    if(!G.jupe) s += '<path d="M' + (k * (g + lw * .55)) + ' ' + (top + 10) + ' L ' + (k * (g + lw * .55)) + ' ' + (bot - 6) + '" stroke="#000" stroke-opacity=".18" stroke-width="2"/>';
+    /* la chaussure, vue de face : un ovale de cuir, un reflet */
+    var cx = k * (g + lw / 2 + 1.5), rx = lw / 2 + 5;
+    s += '<ellipse cx="' + cx + '" cy="' + (G.sol - 5.5) + '" rx="' + rx + '" ry="6.5" fill="#3b2618"' + c(2) + '/>' +
+      '<path d="M' + (cx - rx * .5) + ' ' + (G.sol - 8.5) + ' q ' + (rx * .45) + ' -2.5 ' + (rx * .9) + ' 0" stroke="#8a6a4a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  });
+  return s;
+}
+function bassinPnj(K, sp, G){
+  var u = K.u, s = '', L = G.L, y0 = 112;
+  if(G.jupe){
+    /* la jupe : le haut sans contour (il se fond sous le corsage), les côtés et l'ourlet dessinés */
+    var yb = G.sol - 30, Lb = L + 12, col = basPnj(sp);
+    s += '<path d="M' + (1 - L) + ' ' + y0 + ' L ' + (L - 1) + ' ' + y0 + ' L ' + Lb + ' ' + yb + ' Q 0 ' + (yb + 9) + ' ' + (-Lb) + ' ' + yb + ' Z" fill="' + col + '"/>' +
+      '<path d="M' + (L - 1) + ' ' + y0 + ' L ' + Lb + ' ' + yb + ' Q ' + (L * .5) + ' ' + (yb + 6) + ' ' + (L * .3) + ' ' + (yb + 7) + ' L ' + (L * .3) + ' ' + (y0 + 8) + ' Z" fill="#000" opacity=".16"/>' +
+      '<path d="M' + (1 - L) + ' ' + y0 + ' L ' + (-Lb) + ' ' + yb + ' Q 0 ' + (yb + 9) + ' ' + Lb + ' ' + yb + ' L ' + (L - 1) + ' ' + y0 + '" fill="none"' + c(2.2) + '/>' +
+      '<path d="M-15 ' + (y0 + 18) + ' L -20 ' + (yb + 3) + ' M15 ' + (y0 + 18) + ' L 20 ' + (yb + 3) + ' M0 ' + (y0 + 14) + ' L 0 ' + (yb + 6) + '" stroke="#000" stroke-opacity=".2" stroke-width="1.8" fill="none"/>';
+  } else {
+    /* le bas de la veste (ou de la salopette), le bout de chemise, la ceinture */
+    var yt = G.taille, Lw = sp.corps === 'rond' ? L + 4 : L - 2, fill = G.salopette ? '#3f5f9a' : u('hab');
+    var d = 'M' + (-L) + ' ' + y0 + ' L ' + L + ' ' + y0 + ' C ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + Lw + ' ' + (yt - 10) + ' ' + (Lw - 4) + ' ' + yt +
+      ' L ' + (4 - Lw) + ' ' + yt + ' C ' + (-Lw) + ' ' + (yt - 10) + ' ' + (-Lw - 3) + ' ' + (y0 + 12) + ' ' + (-L) + ' ' + y0 + ' Z';
+    s += '<path d="' + d + '" fill="' + fill + '"/>';
+    if(!G.salopette) s += '<path d="M-3 ' + y0 + ' L 3 ' + y0 + ' L 3 ' + (yt - 6) + ' L -3 ' + (yt - 6) + ' Z" fill="' + sp.chemise + '"/>';
+    s += '<path d="M' + L + ' ' + y0 + ' C ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + Lw + ' ' + (yt - 10) + ' ' + (Lw - 4) + ' ' + yt + ' L ' + (Lw * .45) + ' ' + yt + ' C ' + (Lw * .6) + ' ' + (y0 + 20) + ' ' + (L * .6) + ' ' + (y0 + 8) + ' ' + (L * .55) + ' ' + y0 + ' Z" fill="#000" opacity=".18"/>';
+    s += '<path d="M' + (-L) + ' ' + y0 + ' C ' + (-Lw - 3) + ' ' + (y0 + 12) + ' ' + (-Lw) + ' ' + (yt - 10) + ' ' + (4 - Lw) + ' ' + yt + ' L ' + (Lw - 4) + ' ' + yt + ' C ' + Lw + ' ' + (yt - 10) + ' ' + (Lw + 3) + ' ' + (y0 + 12) + ' ' + L + ' ' + y0 + '" fill="none"' + c(2.2) + '/>';
+    if(sp.corps === 'rond') s += '<path d="M-16 ' + (y0 + 14) + ' Q 0 ' + (y0 + 24) + ' 16 ' + (y0 + 14) + '" stroke="' + O + '" stroke-width="1.4" fill="none" opacity=".35"/>';
+    if(!G.salopette) s += '<path d="M' + (6 - Lw) + ' ' + (yt - 9) + ' L ' + (Lw - 6) + ' ' + (yt - 9) + ' L ' + (Lw - 6) + ' ' + (yt - 1) + ' L ' + (6 - Lw) + ' ' + (yt - 1) + ' Z" fill="#3b2618"' + c(1.8) + '/>' +
+      '<rect x="-5.5" y="' + (yt - 10) + '" width="11" height="10" rx="2" fill="' + u('or') + '"' + c(1.4) + '/>';
+  }
+  /* le bas des tabliers : sans contour en haut, il continue celui du buste */
+  var ac = sp.accessoires || [];
+  [['tablier_blanc', '#fbf8f0', 34, 38], ['tablier_vert', '#6aa85a', 32, 36]].forEach(function(t){
+    if(ac.indexOf(t[0]) < 0) return;
+    var yf = G.jupe ? G.sol - 46 : G.taille + 24;
+    s += '<path d="M' + (-t[2]) + ' ' + (y0 - 2) + ' L ' + t[2] + ' ' + (y0 - 2) + ' L ' + t[3] + ' ' + yf + ' Q 0 ' + (yf + 5) + ' ' + (-t[3]) + ' ' + yf + ' Z" fill="' + t[1] + '"/>' +
+      '<path d="M' + (-t[2]) + ' ' + (y0 - 2) + ' L ' + (-t[3]) + ' ' + yf + ' Q 0 ' + (yf + 5) + ' ' + t[3] + ' ' + yf + ' L ' + t[2] + ' ' + (y0 - 2) + '" fill="none"' + c(2) + '/>';
+  });
+  /* ce qui pend devant (l'écharpe du maire, la sacoche, le mètre ruban) repasse par-dessus */
+  ac.forEach(function(a){ if(['echarpe_maire', 'sacoche', 'metre'].indexOf(a) >= 0) s += accessoire(K, sp, a); });
+  return s;
+}
+function brasPnj(K, sp, G){
+  var s = '', L = G.L, yh = G.main, main = G.gants ? '#a8acb8' : K.u('peau');
+  [-1, 1].forEach(function(k){
+    var d = 'M' + (k * (L - 14)) + ' 62 Q ' + (k * (L + 7)) + ' 86 ' + (k * (L + 3)) + ' ' + (yh - 9);
+    s += '<path d="' + d + '" stroke="' + O + '" stroke-width="21" fill="none" stroke-linecap="round"/>' +
+      '<path d="' + d + '" stroke="' + sp.habit + '" stroke-width="16" fill="none" stroke-linecap="round"/>' +
+      '<path d="' + d + '" stroke="#000" stroke-opacity=".14" stroke-width="5" fill="none" stroke-linecap="round" transform="translate(' + (k * 4) + ' 2)"/>' +
+      '<circle cx="' + (k * (L + 3)) + '" cy="' + yh + '" r="8.5" fill="' + main + '"' + c(2) + '/>';
+  });
+  return s;
 }
 
 /* ==========================================================
