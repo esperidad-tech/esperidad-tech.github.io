@@ -2,7 +2,7 @@
    Les voix (fichiers de Hugging Face) sont gardées par le moteur de voix lui-même (OPFS) : on ne les copie jamais ici.
    « 📥 Jouer sans internet » (menu ☰, heros.js) demande par message de tout garder tout de suite : le jeu, la salle,
    les icônes, le manifeste, les polices utilisées, et, si les voix sont là, les fichiers du moteur des voix. */
-var CACHE = 'brumeval-20261105-1930';
+var CACHE = 'brumeval-20261105-1937';
 var EXT = 'brumeval-ext';   /* polices et moteur des voix (adresses avec numéro de version) : gardés d'une version du jeu à l'autre */
 var FICHIERS = ['./', './index.html', './salle.html', './manifest.webmanifest', './favicon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 /* jsDelivr : le moteur des voix (vits-web) et ce qu'il importe ; cdnjs : le moteur ONNX ; Google : les polices */
@@ -17,7 +17,11 @@ function aGarder(url){
 function boite(url){ return new URL(url).origin === self.location.origin ? CACHE : EXT; }
 self.addEventListener('fetch', function(e){
   if(e.request.method !== 'GET' || !aGarder(e.request.url)) return;
-  e.respondWith(fetch(e.request).then(function(r){
+  /* le jeu lui-même (même site) : toujours redemandé au serveur (cache:'no-cache'), pour ne jamais rejouer une version d'avant
+     après une mise en ligne (Romain, 5 novembre, 20 h 37 : une tablette avait encore la version de 20 h 02) */
+  var meme = new URL(e.request.url).origin === self.location.origin;
+  var req = meme ? fetch(e.request.url, {cache:'no-cache', credentials:'same-origin'}) : fetch(e.request);
+  e.respondWith(req.then(function(r){
     if(r && (r.ok || r.type === 'opaque')){ var copie = r.clone(); caches.open(boite(e.request.url)).then(function(c){ c.put(e.request, copie); }); }
     return r;
   }).catch(function(){
