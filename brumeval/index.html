@@ -4349,6 +4349,67 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (min-width:760px){#voile{align-items:center}.b-feuille{border-radius:24px;max-height:88vh}}
 @keyframes b-monte{from{transform:translateY(60px)}to{transform:none}}
 .b-fermer{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.2rem;z-index:2}
+/* La bulle de la carte (Romain, 5 novembre, 10 h 07) : posée sur la carte, à côté de ce qu'on a touché, sans fond noir ;
+   la carte reste touchable autour (moteur-actions.js, placerBulle) */
+#voile.b-voile-bulle{pointer-events:none;display:block}
+/* Romain, 10 h 17 puis 10 h 25 : plus de cadre du tout. Chaque chose est sa propre petite pastille posée sur la carte (un villageois,
+   un bouton, une phrase) ; entre les pastilles, on touche la carte. Le cadre qui les porte est invisible et ne se touche pas. */
+#voile.b-voile-bulle .b-feuille.b-bulle{pointer-events:none;position:fixed;left:8px;top:80px;width:max-content;max-width:min(250px, calc(100vw - 16px));max-height:min(46vh, 340px);
+  background:none;border:0;border-radius:0;box-shadow:none;padding:2px;gap:4px;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle .14s ease-out;overflow-y:auto;scrollbar-width:none}
+.b-bulle-pointe{display:none}
+@keyframes b-bulle{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* ce qui n'est pas l'essentiel : caché (le nom du lieu est déjà écrit sur la carte ; Romain, 10 h 32 : pas de 🔊 dans les pastilles,
+   la mission bonus réduite à « ✨ Mission bonus · Tenter », sans « D'accord » : toucher ailleurs ferme) */
+.b-bulle .b-feuille-tete, .b-bulle .b-teaser, .b-bulle .sur-titre, .b-bulle .doux.petit, .b-bulle .b-ce-que-je-sais > p, .b-bulle .b-bonus > p, .b-bulle .b-lire, .b-bulle .b-long,
+.b-bulle .b-gens-carte:not(.bd-occupe) > small:not(.bd-boude-mini), .b-bulle .b-maison-hab small, .b-bulle .b-info-modal .b-grand-ic, .b-bulle .b-info-modal .b-illu, .b-bulle .b-info-modal h2,
+.b-bulle .b-info-modal > .btn, .b-bulle .b-echantillon > h3, .b-bulle .b-intro-lieu, .b-bulle .b-ecoute > h3, .b-bulle .b-ecoute > p, .b-bulle .b-ecoute .bd-mini-gens,
+.b-bulle .bd-occupe > b{display:none}
+/* les cadres qui regroupent : invisibles, ils ne se touchent pas */
+.b-bulle .b-gens, .b-bulle .b-ce-que-je-sais, .b-bulle .b-info-modal, .b-bulle .b-verrou, .b-bulle .b-points, .b-bulle .b-ecoute{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:0;padding:0;margin:0;box-shadow:none;pointer-events:none}
+/* LA PASTILLE : le bleu du jeu (Romain, 10 h 32), un contour foncé, toute ronde, une ombre ; elle seule se touche.
+   (moteur-actions.js lui donne la classe .b-pastille et son rang --i : elles apparaissent l'une après l'autre, en rebondissant) */
+.b-bulle .b-gens-carte, .b-bulle > .btn, .b-bulle .b-ce-que-je-sais > .btn, .b-bulle .b-bonus, .b-bulle .b-ecoute > .btn, .b-bulle > p, .b-bulle .b-maison-hab, .b-bulle .b-info-modal > p,
+.b-bulle .b-verrou > *, .b-bulle .b-point, .b-bulle .b-ingr-carte, #voile.b-voile-bulle .b-fermer{
+  pointer-events:auto;position:relative;display:flex;flex-direction:row;align-items:center;gap:5px;width:max-content;max-width:100%;box-sizing:border-box;margin:0;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:999px;padding:3px 10px;min-height:30px;font-size:.8rem;line-height:1.25;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);animation:none}
+.b-bulle > p, .b-bulle .b-info-modal > p, .b-bulle .b-verrou > p, .b-bulle .bd-occupe{border-radius:15px;width:auto}   /* (une phrase sur deux lignes : des coins arrondis) */
+.b-bulle .b-bonus{padding:2px 3px 2px 10px}
+.b-bulle .b-bonus h3{flex-basis:auto}
+/* elles arrivent l'une après l'autre, en rebondissant (seulement quand la bulle s'ouvre, pas à chaque rendu) */
+.b-bulle-neuve .b-pastille{animation:b-pastille .5s cubic-bezier(.3,1.65,.5,1) both;animation-delay:calc(var(--i, 0) * 70ms)}
+@keyframes b-pastille{0%{opacity:0;transform:translateY(10px) scale(.4)}55%{opacity:1;transform:translateY(-3px) scale(1.1)}78%{transform:translateY(1px) scale(.96)}100%{opacity:1;transform:none}}
+/* un bouton : la même pastille, en jaune (les boutons qui lancent quelque chose sont jaunes, texte noir) */
+.b-bulle .btn{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;font-weight:800;font-size:.8rem;min-height:28px;padding:3px 12px;gap:4px}
+.b-bulle .btn.second{background:var(--nuit-3);color:var(--lune)}
+.b-bulle .b-ecoute > .btn:not(.second){background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111}   /* (remplir un flacon, écouter en cachette : jaunes aussi) */
+/* une icône jaune sur un bouton jaune (le panier 🧺) : un fin contour foncé pour qu'on la voie (Romain, 10 h 45) */
+.b-ic-contour{display:inline-block;filter:drop-shadow(1px 0 0 #24182e) drop-shadow(-1px 0 0 #24182e) drop-shadow(0 1px 0 #24182e) drop-shadow(0 -1px 0 #24182e)}
+/* un villageois : son petit visage, son nom, 💬 Parler ; toute la pastille se touche (le bouton la recouvre) */
+.b-bulle .b-gens-carte{padding:2px 4px 2px 2px;gap:6px;text-align:left}
+.b-bulle .b-gens-img, .b-bulle .b-maison-hab .b-gens-img{width:28px;height:28px;border-width:1.5px;flex:none}
+.b-bulle .b-maison-hab{padding:2px 10px 2px 2px}
+.b-bulle .b-maison-hab b{font-size:.8rem}
+.b-bulle .b-maison-mini{border-radius:15px;padding:2px 10px 2px 2px;max-width:230px}
+.b-bulle .b-gens-carte > b{font-size:.8rem;color:inherit}
+.b-bulle .b-gens-carte > .btn{position:static;min-height:24px;padding:2px 9px;border:1.5px solid #24182e;box-shadow:none;font-size:.74rem}
+.b-bulle .b-gens-carte > .btn::after{content:'';position:absolute;inset:0;border-radius:inherit}
+.b-bulle .bd-occupe{padding:2px 10px 2px 2px;max-width:240px}   /* (occupé : son visage et sa phrase, sans son nom) */
+.b-bulle .bd-occupe > small{flex:1;color:var(--lune);font-size:.76rem;line-height:1.25}
+/* les textes, en petit */
+.b-bulle p, .b-bulle small, .b-bulle .doux{margin:0;color:inherit}
+.b-bulle h3{font-size:.8rem;margin:0;color:inherit;font-family:inherit;flex-basis:100%}
+/* la mission bonus : « ✨ Mission bonus », Tenter */
+.b-bulle .b-bonus > .btn, .b-bulle .b-ecoute > .btn{min-height:24px;padding:2px 10px;border:1.5px solid #24182e;box-shadow:none}
+/* ce que le Pisteur trouve en explorant, les ingrédients : des pastilles aussi */
+.b-bulle .b-point{flex-direction:row}
+.b-bulle .b-point-ic{font-size:.95rem}
+.b-bulle .b-point b{font-size:.76rem}
+.b-bulle .b-point small{display:none}
+.b-bulle .b-ingr-carte span{font-size:.95rem;animation:none}
+/* ✕ : une toute petite pastille ronde et jaune (c'est un bouton), à la fin */
+#voile.b-voile-bulle .b-fermer{order:99;width:28px;height:28px;min-height:0;padding:0;justify-content:center;font-size:.72rem;font-weight:900;top:auto;right:auto;
+  background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;border-color:#24182e}
 .b-feuille-tete{display:flex;gap:12px;align-items:center;padding-right:44px}
 .b-feuille-ic{font-size:2.4rem}
 .b-verrou{background:rgba(0,0,0,.25);border:2px dashed var(--braise);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
@@ -6043,8 +6104,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 09:48 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 09:48';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 10:45 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 10:45';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35112,7 +35173,7 @@ E[2] = {
   pnj:{
     /* carte + occupe (Romain, 5 novembre, 8 h 59 : la carte montre toujours où est chacun) : là où il est quand on ne peut pas lui parler,
        et ce qu'on voit en arrivant (moteur-roles.js, M.pnjOccupesIci). Le rythme de l'enquête ne change pas. */
-    bastien:{ou:{apresmidi:'place', nuit:'B2'}, carte:{matin:'lisiere'}, occupe:{matin:'Bastien passe avec sa grande charrette : « Pas le temps, je pars livrer de l\'autre côté de la forêt ! Repasse cet après-midi. »'}, salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
+    bastien:{ou:{apresmidi:'place', nuit:'B2'}, carte:{matin:'lisiere'}, occupe:{matin:'« Pas le temps, je pars livrer ! Reviens cet après-midi. »'},   /* (des phrases courtes : elles tiennent dans une pastille de la carte) */ salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
       {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
@@ -35140,7 +35201,7 @@ E[2] = {
         a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Ce matin, des ouvriers ont posé de gros rochers sur le trou : ce n\'est pas un éboulement ! Tiens, prends la pierre, elle me fait peur ! C\'est pour ton Sage.',
         note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
-    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, carte:{matin:'ruelle'}, occupe:{matin:'Victor court de porte en porte avec sa grosse sacoche : « Bonjour ! Pas le temps, je fais ma tournée. Repasse cet après-midi ! »'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
+    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, carte:{matin:'ruelle'}, occupe:{matin:'« Pas le temps, je fais ma tournée ! Reviens cet après-midi. »'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
       {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
         vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
         note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
@@ -35155,7 +35216,7 @@ E[2] = {
         a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
         note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
     ]},
-    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, carte:{matin:'taverne'}, occupe:{matin:'La taverne est encore fermée. Margot range sa cave : « On ouvre cet après-midi ! »'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
+    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, carte:{matin:'taverne'}, occupe:{matin:'« La taverne ouvre cet après-midi ! »'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
       {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
         vrai:'Bon… c\'est vrai, la semaine dernière, un tonneau est tombé dans la rivière pendant un transport. Mais l\'eau n\'est pas devenue rouge du tout ! Ce n\'est pas mon vin.',
         note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
@@ -35169,7 +35230,7 @@ E[2] = {
         a:'Ici, tout se raconte à la taverne ! Ce soir, tout le monde ne parle que de ça : Bastien, le charretier, a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
         note:'Margot (la nuit) : tout se raconte à la taverne. Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'}
     ]},
-    melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, carte:{nuit:'atelier'}, occupe:{nuit:'Mélusine dort à poings fermés. Personne ne répond.'}, salut:'Bonjour ! Attention aux épingles…', questions:[
+    melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, carte:{nuit:'atelier'}, occupe:{nuit:'😴 Elle dort à poings fermés.'}, salut:'Bonjour ! Attention aux épingles…', questions:[
       {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
       {q:'Quand la rivière est-elle devenue rouge ?', a:'Ce matin, à l\'aube, quand je suis arrivée au lavoir, la rivière était déjà toute rouge ! Et l\'eau du lavoir est toute rose… mais ça, ce n\'est rien. La pauvre Iris en a pleuré, avec son champ… Pour la consoler, rien de tel qu\'un compliment sur ses fleurs.', note:'Mélusine : à l\'aube, la rivière était déjà toute rouge. L\'eau du lavoir est rose « mais ce n\'est rien ». Pour consoler Iris : un compliment sur ses fleurs.'},
       {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même, avec de la bonne laine ! Ils ne déteignent jamais !', ment:true,
@@ -35180,7 +35241,7 @@ E[2] = {
         a:'Des histoires ? Méfie-toi de Fortuné, le colporteur ! Avec lui, tout est toujours « à moitié prix »… Je connais son truc : ' + signe('fortune', 'Fortuné').replace(/^Q/, 'q') + ' Regarde-le bien, cet après-midi, sur la place !',
         note:'Mélusine t\'a appris le signe de menteur de Fortuné : une étiquette pour ton tableau de liège.'}
     ]},
-    fortune:{ou:{apresmidi:'place'}, carte:{matin:'pont', nuit:'lisiere'}, occupe:{matin:'Sur le pont, une carriole toute colorée arrive au village. Le colporteur te fait signe : « Je m\'installe sur la place cet après-midi ! »', nuit:'Le colporteur ronfle dans sa carriole, à la lisière de la forêt.'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
+    fortune:{ou:{apresmidi:'place'}, carte:{matin:'pont', nuit:'lisiere'}, occupe:{matin:'« Je m\'installe sur la place cet après-midi ! »', nuit:'😴 Il ronfle dans sa carriole.'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
       /* seulement quand le Barde sait que Mélusine achète ses tissus à Fortuné (elle l'a avoué, ou l'oreille à l'atelier) */
       {q:'Vous vendez des tissus à Mélusine ?', besoin:[{vu:'verite:melusine:2'}, {vu:'barde:oreille:atelier'}], a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
         vrai:'Bon, d\'accord… Je lui vends des tissus pas chers, en cachette. Ils déteignent un peu, c\'est vrai. Mais chut, c\'est notre secret !',
@@ -35207,7 +35268,7 @@ E[2] = {
         a:'Des traces de charrette, ici ? Ça alors… tout le monde passe dans ma cour ! Mais elles ne mènent nulle part, c\'est impossible. Et je peux te le prouver : tiens, voici les vieux plans du moulin, bâti par mes ancêtres.',
         note:'Farinel : les traces de charrette ne mènent nulle part, dit-il. Il t\'a donné les vieux plans de son moulin, bâti par ses ancêtres (code pour le Sage).'}
     ]},
-    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'Iris dort. Elle se lève avec le soleil pour soigner ses fleurs.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
       {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
       /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
          pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
@@ -35228,7 +35289,7 @@ E[2] = {
         a:'Des histoires ? Tous les jours ! Farinel, le meunier, m\'en raconte de belles… Mais je connais son truc : ' + signe('farinel', 'Farinel').replace(/^Q/, 'q') + ' Ouvre l\'œil !',
         note:'Silas t\'a appris le signe de menteur de Farinel : une étiquette pour ton tableau de liège.'}
     ]},
-    grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, carte:{nuit:'mairie'}, occupe:{nuit:'La mairie est fermée pour la nuit. Le maire ne reçoit personne.'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
+    grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, carte:{nuit:'mairie'}, occupe:{nuit:'🔒 La mairie est fermée pour la nuit.'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
       {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
       /* le maire ne ment jamais (Romain, 5 novembre, 01 h 36) : il ne parle pas d'éboulement, il tait le reste */
       {q:'Pourquoi le chemin du Vieux Chêne est-il fermé ?', a:'C\'est très dangereux là-bas, mon petit. Je ne peux pas t\'en dire plus. Que personne n\'y aille !', note:'Le maire : c\'est très dangereux au Vieux Chêne, et il ne peut pas en dire plus. Personne ne doit y aller.'}
@@ -37257,11 +37318,11 @@ M.feuilleLieu = function(lieu){
     s += '<div class="b-ce-que-je-sais"><span class="sur-titre">Ce que tu sais de ce lieu</span>' +
       (notes.length ? '<div class="b-cueillette">' + notes.map(function(i){ var I = D.INGR[i]; return '<div class="b-ingr-carte"><span>' + I.ic + '</span><b>' + esc(I.nom) + '</b></div>'; }).join('') + '</div>' :
         '<p class="doux">❔ Tu ne sais pas ce qui pousse ici. Le Pisteur, lui, explore partout : demande-lui ! ' + lire('Tu ne sais pas ce qui pousse ici. Le Pisteur, lui, explore partout : demande-lui !') + '</p>') +
-      '<button class="btn second petit" data-act="noter-ingr" data-id="' + lieu + '">📝 Noter ce qui pousse ici</button></div>';
+      '<button class="btn second petit" data-act="noter-ingr" data-id="' + lieu + '">📝 Noter<span class="b-long"> ce qui pousse ici</span></button></div>';   /* (.b-long : caché dans la bulle de la carte) */
     var deja = P.vus['cueilli:' + lieu] === P.moment;
     var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
     s += deja ? (M.sansActions() ? rienDePlus() : '<p class="doux">Tu as déjà cherché ici à ce moment de la journée. ' + lire('Tu as déjà cherché ici à ce moment de la journée.') + '</p>') :
-      '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '>🧺 Chercher des ingrédients' + M.coutTxt(' · ' + (gratuit ? 'gratuit (Herboriste)' : '1 action')) + '</button>' +
+      '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '><span class="b-ic-contour">🧺</span> Chercher<span class="b-long"> des ingrédients</span>' + M.coutTxt(   /* (le panier, jaune sur le bouton jaune : un contour foncé, Romain 10 h 45) */' · ' + (gratuit ? 'gratuit (Herboriste)' : '1 action')) + '</button>' +
       '<p class="doux petit">On trouve parfois 1, parfois 2 ou 3 ingrédients d\'un coup : c\'est la chance !</p>' + plusDAction();
     if(UI.modal && UI.modal.noterIngr){
       s += '<div class="b-noter-ingr"><p>Touche ce qui pousse ici : ' + lire('Touche ce qui pousse ici.') + '</p><div class="b-cueillette">' + M.cle(D.INGR).map(function(i){
@@ -37299,7 +37360,8 @@ M.plusDAction = plusDAction;
 function bonusHTML(lieu){
   var P = M.P();
   return M.bonusIci(lieu).map(function(b){
-    return '<div class="b-bonus"><h3>✨ Mission bonus : ' + esc(b.titre) + '</h3><p>' + esc(b.t) + '</p>' + lire(b.t) +
+    /* (dans la bulle de la carte : seulement « ✨ Mission bonus » et « Tenter » ; le nom et l'histoire sont dans la fenêtre du mini-jeu) */
+    return '<div class="b-bonus"><h3>✨ Mission bonus<span class="b-long"> : ' + esc(b.titre) + '</span></h3><p>' + esc(b.t) + '</p>' + lire(b.t) +
       '<p class="b-bonus-gain">🪙 ' + b.or + ' pièces d\'or · ⚠️ un seul essai</p><button class="btn magie" data-act="bonus" data-id="' + b.id + '"' + (M.peutAgir() ? '' : ' disabled') + '>Tenter' + M.coutTxt() + '</button></div>';
   }).join('');
 }
@@ -37330,7 +37392,9 @@ M.feuilleMaison = function(maison){
   if(x){
     var la = !!(E.pnj && E.pnj[id] && E.pnj[id].ou && E.pnj[id].ou[mid] === maison);
     var t = la ? x.court + ' est ' + M.chezLui(id) + ' en ce moment.' : M.texteAbsent(maison);
-    s += '<div class="b-maison-hab"><div class="b-gens-img">' + M.pnjImg(id) + '</div><div><b>' + esc(x.nom) + '</b><small>' + esc(x.metier) + '</small></div></div>' +
+    /* dans la bulle de la carte (Romain, 10 h 32) : une seule pastille, son visage et la phrase */
+    if(UI.modal && UI.modal.bulle) s += '<div class="b-maison-hab b-maison-mini"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span>' + esc(t) + '</span></div>';
+    else s += '<div class="b-maison-hab"><div class="b-gens-img">' + M.pnjImg(id) + '</div><div><b>' + esc(x.nom) + '</b><small>' + esc(x.metier) + '</small></div></div>' +
       '<p class="doux">' + esc(t) + ' ' + lire(t) + '</p>';
   } else {
     /* quelqu'un habite là, mais il n'est pas dans le registre de cette enquête : sur la carte, un « ? » (carte-jeu.js) */
@@ -37676,18 +37740,89 @@ M.render = function(){
 };
 function rendreModal(){
   var v = document.getElementById('voile');
-  if(!UI.modal){ v.hidden = true; v.innerHTML = ''; document.body.classList.remove('b-bloque'); return; }
-  var c = contenuModal(UI.modal);
-  v.innerHTML = '<div class="b-fond" data-act="' + (UI.modal.fixe ? '' : 'fermer') + '"></div><div class="b-feuille ' + (UI.modal.classe || '') + '" role="dialog" aria-modal="true">' +
+  if(UI.modal && UI.modal.bulle && !carteIci()) UI.modal = null;   /* une bulle de la carte, quand la carte n'est plus là : elle s'en va */
+  if(!UI.modal){ v.hidden = true; v.innerHTML = ''; v.classList.remove('b-voile-bulle'); document.body.classList.remove('b-bloque'); return; }
+  var c = contenuModal(UI.modal), bulle = !!UI.modal.bulle;
+  /* la bulle de la carte (Romain, 5 novembre, 10 h 07) : pas de fond noir, la carte reste touchable autour ;
+     toucher ailleurs sur la carte la remplace, toucher dans le vide la ferme. Elle reste dans #voile (le tutoriel y cherche ses boutons). */
+  v.classList.toggle('b-voile-bulle', bulle);
+  v.innerHTML = (bulle ? '<i class="b-bulle-pointe" aria-hidden="true"></i>' : '<div class="b-fond" data-act="' + (UI.modal.fixe ? '' : 'fermer') + '"></div>') +
+    '<div class="b-feuille ' + (bulle ? 'b-bulle ' : '') + (UI.modal.classe || '') + '" role="dialog"' + (bulle ? '' : ' aria-modal="true"') + '>' +
     (UI.modal.fixe ? '' : '<button class="b-fermer" data-act="fermer" aria-label="Fermer">✕</button>') + c + '</div>';
   v.hidden = false;
-  document.body.classList.add('b-bloque');
+  document.body.classList.toggle('b-bloque', !bulle);
+  if(bulle){
+    /* les pastilles (moteur.css) : chacune son rang, pour arriver l'une après l'autre en rebondissant ; seulement quand la bulle s'ouvre */
+    var f = v.querySelector('.b-feuille.b-bulle'), neuve = UI.modal.neuve !== false;
+    UI.modal.neuve = false;
+    f.classList.toggle('b-bulle-neuve', neuve);
+    var ps = [].slice.call(f.querySelectorAll(PASTILLES)), x = f.querySelector('.b-fermer');
+    ps.forEach(function(el, i){ el.classList.add('b-pastille'); el.style.setProperty('--i', el === x ? ps.length : i); });
+    placerBulle();
+  }
   if(UI.modal.type === 'revision' && window.Revision){
     var P = M.P(), rv = P && P.revisions ? P.revisions[UI.modal.i] : null;
     Revision.monter(document.getElementById('rv-ici'), rv, function(){ M.sauver(); });
   }
 }
-M.ouvrir = function(m){ UI.modal = m; M.sauver(); M.render(); var f = document.querySelector('#voile .b-feuille'); if(f) f.scrollTop = 0; };
+M.ouvrir = function(m){
+  /* fouiller, cueillir… depuis la bulle d'un lieu : on reste dans la même bulle */
+  var avant = UI.modal;
+  if(m && !m.bulle && avant && avant.bulle && (m.type === 'lieu' || m.type === 'maison') && avant.type === m.type && avant.id === m.id){ m.bulle = true; m.ancre = avant.ancre; m.neuve = false; }
+  UI.modal = m; M.sauver(); M.render(); var f = document.querySelector('#voile .b-feuille'); if(f) f.scrollTop = 0;
+};
+
+/* ---------- La bulle de la carte (Romain, 5 novembre, 10 h 07) ----------
+   Toucher un lieu, une maison ou un visage sur la carte (l'onglet Carte) n'ouvre plus une fenêtre : une bulle s'ouvre à côté, sur la carte.
+   m.bulle = true, m.ancre = où elle pointe ({x, h, b} : le milieu, le haut et le bas de ce qu'on a touché, en fractions du dessin de la carte,
+   pour la suivre quand on fait glisser ou qu'on zoome). Les conversations, découvertes et mini-jeux restent en plein écran. */
+function carteIci(){ var ici = document.getElementById('carte-ici'); return ici && ici.querySelector('.ca-monde') ? ici : null; }
+/* ce qui fait une pastille dans la bulle (moteur.css, LA PASTILLE) */
+var PASTILLES = '.b-gens-carte, :scope > .btn, .b-ce-que-je-sais > .btn, .b-bonus, .b-ecoute > .btn, :scope > p, .b-maison-hab, .b-info-modal > p, .b-verrou > *, .b-point, .b-ingr-carte, .b-fermer';
+function bulleDe(el){
+  var ici = el && el.closest && el.closest('#carte-ici');
+  if(!ici){
+    /* (un bouton de la bulle elle-même : frapper, après « Pas à la maison »…) */
+    return el && el.closest && el.closest('#voile .b-bulle') && UI.modal && UI.modal.bulle ? {bulle:true, ancre:UI.modal.ancre} : {};
+  }
+  var monde = ici.querySelector('.ca-monde'); if(!monde) return {};
+  var id = el.dataset.id, cible = el.closest('.ca-marqueur, .ca-zone-mq');
+  if(!cible && /^[LFB]\d$/.test(id || '')) cible = ici.querySelector('g.ca-maison[data-id="' + id + '"] .ca-habitant') || ici.querySelector('g.ca-maison[data-id="' + id + '"]');
+  if(!cible && id) cible = ici.querySelector('g.ca-lieu[data-lieu="' + id + '"] .ca-etiq-lieu');
+  var r = (cible || el).getBoundingClientRect(), R = monde.getBoundingClientRect();
+  if(!R.width || !R.height) return {};
+  return {bulle:true, ancre:{x:((r.left + r.right) / 2 - R.left) / R.width, h:(r.top - R.top) / R.height, b:(r.bottom - R.top) / R.height}};
+}
+M.bulleDe = bulleDe;
+/* La bulle se pose sous ce qu'on a touché (ou au-dessus, s'il y a plus de place), sans sortir de la carte ; une petite pointe le montre */
+function placerBulle(){
+  var v = document.getElementById('voile'), f = v && v.querySelector('.b-feuille.b-bulle'), p = v && v.querySelector('.b-bulle-pointe'), m = UI.modal, ici = carteIci();
+  if(!f || !m || !m.bulle || !ici) return;
+  var R = ici.querySelector('.ca-monde').getBoundingClientRect(), C = ici.getBoundingClientRect(), a = m.ancre || {x:.5, h:.5, b:.5};
+  var x = R.left + a.x * R.width, yh = R.top + a.h * R.height, yb = R.top + a.b * R.height;
+  /* (entre le bandeau du haut — et celui du tutoriel — et la barre des onglets : rien ne doit passer dessous) */
+  var bord = function(s, cote){ var e = document.querySelector(s), r = e && !e.hidden && e.getBoundingClientRect(); return r && r.height ? r[cote] : null; };
+  var haut = Math.max(C.top, 0, bord('.b-entete', 'bottom') || 0, bord('.tu-bandeau', 'bottom') || 0) + 6;
+  var bas = Math.min(C.bottom, window.innerHeight, bord('.b-onglets', 'top') || window.innerHeight) - 6, ecart = 12;
+  /* ce qu'on a touché est sorti de la carte (on l'a fait glisser) : la bulle se cache, elle revient avec lui */
+  var hors = x < C.left || x > C.right || yb < C.top || yh > C.bottom;
+  f.style.visibility = p.style.visibility = hors ? 'hidden' : '';
+  f.style.maxHeight = '';
+  var W = f.offsetWidth, H = f.offsetHeight;
+  var dessous = bas - (yb + ecart), dessus = (yh - ecart) - haut, enBas = dessous >= H || dessous >= dessus;
+  var dispo = Math.max(130, enBas ? dessous : dessus);
+  if(H > dispo){ f.style.maxHeight = dispo + 'px'; H = f.offsetHeight; }
+  var top = enBas ? yb + ecart : yh - ecart - H, left = Math.min(Math.max(x - W / 2, 8), window.innerWidth - W - 8);
+  f.style.left = Math.round(left) + 'px'; f.style.top = Math.round(top) + 'px';
+  p.style.left = Math.round(Math.min(Math.max(x, left + 22), left + W - 22) - 11) + 'px';
+  p.style.top = Math.round(enBas ? top - 11 : top + H - 1) + 'px';
+  p.classList.toggle('vers-haut', enBas);
+}
+M.placerBulle = placerBulle;
+var bulleRaf = 0;
+function suivreBulle(){ if(!UI.modal || !UI.modal.bulle || bulleRaf) return; bulleRaf = requestAnimationFrame(function(){ bulleRaf = 0; placerBulle(); }); }
+document.addEventListener('scroll', suivreBulle, true);   /* la carte qu'on fait glisser (ou qui zoome) : la bulle la suit */
+window.addEventListener('resize', suivreBulle);
 M.fermer = function(){ UI.modal = null; M.stop(); M.sauver(); UI.garderDefilement = true; M.render(); };
 var toastT = null;
 M.toast = function(t){
@@ -38449,14 +38584,14 @@ A.lieu = function(el){
   var id = el.dataset.id, P = M.P(); if(!P || P.etape !== 'jeu') return;
   if(/^[LFB]\d$/.test(id)) return A.maison(el);
   P.vus['lieu:' + id + ':' + P.moment] = 1;
-  M.son('page'); M.ouvrir({type:'lieu', id:id});
+  M.son('page'); M.ouvrir(Object.assign({type:'lieu', id:id}, bulleDe(el)));   /* touché sur la carte : une bulle sur la carte */
 };
 /* Une maison : on sait qui y habite (son visage est dessus, carte-jeu.js). Le Barde frappe tout de suite (sans points d'action,
    ou quand personne n'est là : il ne dépense rien) ; les autres rôles, et le Barde quand frapper coûte une action, ont la feuille de la maison. */
 A.maison = function(el){
   var P = M.P(); if(!P || P.etape !== 'jeu') return;
   if(M.role() === 'barde' && (M.sansActions() || !M.pnjIci(el.dataset.id).length)) return A.frapper(el);
-  M.son('page'); M.ouvrir({type:'maison', id:el.dataset.id});
+  M.son('page'); M.ouvrir(Object.assign({type:'maison', id:el.dataset.id}, bulleDe(el)));
 };
 /* (« Qui habite ici ? » : plus d'habitants à noter sur la carte, Romain, 5 novembre, 00 h 14) */
 A.explorer = function(el){
@@ -38538,7 +38673,7 @@ A.frapper = function(el){
   var P = M.P(), m = el.dataset.id, ici = M.pnjIci(m);
   /* personne à la maison : un petit message (« Odette n'est pas chez elle en ce moment. »), sans rien dépenser */
   if(!ici.length){ var hm = M.habitantMaison && M.habitantMaison(m), occ = hm && M.pnjOccupesIci && M.pnjOccupesIci(m).indexOf(hm) >= 0;
-    M.son('porte'); M.ouvrir({type:'info', ic:'🚪', titre:occ ? 'Pas maintenant' : hm ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.'}); return; }
+    M.son('porte'); M.ouvrir(Object.assign({type:'info', ic:'🚪', titre:occ ? 'Pas maintenant' : hm ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.'}, bulleDe(el))); return; }
   if(!M.peutAgir()) return;
   M.depenser(); M.son('porte');
   P.conv[ici[0]] = P.moment; M.sauver(); M.ouvrir({type:'conv', id:ici[0], classe:'b-feuille-conv'});
@@ -38801,6 +38936,8 @@ function demarrer(){
   M.S = em ? M.charger(em) : M.etatNeuf();
   document.addEventListener('click', function(ev){
     var el = ev.target.closest('[data-act]');
+    /* un toucher dans le vide de la carte ferme sa bulle (après un glisser, la carte ne laisse pas passer le clic : carte.js) */
+    if((!el || !el.dataset.act) && UI.modal && UI.modal.bulle && ev.target.closest && ev.target.closest('#carte-ici') && !ev.target.closest('#voile, .ca-zoom')){ M.fermer(); return; }
     if(!el || !el.dataset.act) return;
     if(el.tagName === 'INPUT') return;
     var f = A[el.dataset.act];
@@ -44881,7 +45018,7 @@ function dire(d){
     case 'frapper': return 'Touche « 🚪 Frapper à la porte »' + ua + '.';
     case 'parler': return 'Touche « 💬 Parler » sous ' + pn(d.id) + ua + '.';
     case 'question': return 'Pose tes questions à ' + pn(d.p) + ' : touche-les une par une.';
-    case 'cueillir': return 'Touche « 🧺 Chercher des ingrédients »' + ua + '.';
+    case 'cueillir': return 'Touche « 🧺 Chercher »' + ua + '.';
     case 'bonus': return 'Touche « Tenter » : un seul essai !';
     case 'page': return 'Touche le coin qui brille pour aller à la page « ' + (PAGES[d.id] || d.id) + ' ».';
     case 'blanche': return 'Touche la page blanche !';
