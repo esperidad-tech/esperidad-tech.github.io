@@ -22284,11 +22284,21 @@ var SONS = {
   page:function(){ tendre(392, 0, .11, .07, 330, .008, 'triangle', 1100); tendre(587, .07, .17, .05, null, .01); tendre(1175, .07, .2, .012, null, .012); },
   feuille:feuille,   /* tourner une page du Grand Livre */
   cloche:function(){ note(880, 0, 1.2, 'sine', .1); note(1320, 0, .9, 'sine', .04); },
-  porte:function(){ tendre(270, 0, .09, .07, 190, .004, 'triangle', 800); tendre(255, .16, .09, .065, 180, .004, 'triangle', 800); }   /* toc-toc sur une porte en bois */
+  porte:function(){ tendre(270, 0, .09, .07, 190, .004, 'triangle', 800); tendre(255, .16, .09, .065, 180, .004, 'triangle', 800); },   /* toc-toc sur une porte en bois */
+  /* les pastilles de la carte qui arrivent (Romain, 5 novembre, 11 h 08 : un petit bruit discret et satisfaisant) :
+     un « pop » tout doux par pastille, au moment où elle rebondit (70 ms d'écart, moteur.css), chacun un peu plus haut que le précédent */
+  pastilles:function(n){
+    var gamme = [523, 587, 659, 784, 880, 1047];
+    for(var i = 0; i < Math.min(Math.max(n || 1, 1), 6); i++){
+      var f = gamme[i], t = .07 * i + .05;
+      tendre(f * .72, t, .085, .03, f * 1.18, .005, 'sine', 2600);   /* le pop : une petite note qui remonte */
+      tendre(f * 2, t + .012, .05, .006, null, .003);                /* un brin de brillance, à peine audible */
+    }
+  }
 };
-M.son = function(type){
+M.son = function(type, x){
   if(M.S && M.S.options && M.S.options.son === false) return;
-  try{ (SONS[type] || SONS.clic)(); }catch(e){}
+  try{ (SONS[type] || SONS.clic)(x); }catch(e){}
 };
 
 /* ---------- Voix (lecture à voix haute) ---------- */

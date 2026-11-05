@@ -4354,8 +4354,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #voile.b-voile-bulle{pointer-events:none;display:block}
 /* Romain, 10 h 17 puis 10 h 25 : plus de cadre du tout. Chaque chose est sa propre petite pastille posée sur la carte (un villageois,
    un bouton, une phrase) ; entre les pastilles, on touche la carte. Le cadre qui les porte est invisible et ne se touche pas. */
-#voile.b-voile-bulle .b-feuille.b-bulle{pointer-events:none;position:fixed;left:8px;top:80px;width:max-content;max-width:min(250px, calc(100vw - 16px));max-height:min(46vh, 340px);
-  background:none;border:0;border-radius:0;box-shadow:none;padding:2px;gap:4px;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle .14s ease-out;overflow-y:auto;scrollbar-width:none}
+/* (le cadre invisible a une marge de 16 px tout autour : les pastilles qui grossissent en rebondissant, et leurs ombres, ne sont jamais coupées
+   — Romain, 11 h 08 ; placerBulle en tient compte) */
+#voile.b-voile-bulle .b-feuille.b-bulle{pointer-events:none;position:fixed;left:8px;top:80px;width:max-content;max-width:min(282px, calc(100vw + 16px));max-height:min(52vh, 380px);
+  background:none;border:0;border-radius:0;box-shadow:none;padding:16px;gap:4px;box-sizing:border-box;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle .14s ease-out;overflow-y:auto;scrollbar-width:none}
 .b-bulle-pointe{display:none}
 @keyframes b-bulle{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 /* ce qui n'est pas l'essentiel : caché (le nom du lieu est déjà écrit sur la carte ; Romain, 10 h 32 : pas de 🔊 dans les pastilles,
@@ -6104,8 +6106,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 10:45 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 10:45';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 11:12 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 11:12';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -36061,11 +36063,21 @@ var SONS = {
   page:function(){ tendre(392, 0, .11, .07, 330, .008, 'triangle', 1100); tendre(587, .07, .17, .05, null, .01); tendre(1175, .07, .2, .012, null, .012); },
   feuille:feuille,   /* tourner une page du Grand Livre */
   cloche:function(){ note(880, 0, 1.2, 'sine', .1); note(1320, 0, .9, 'sine', .04); },
-  porte:function(){ tendre(270, 0, .09, .07, 190, .004, 'triangle', 800); tendre(255, .16, .09, .065, 180, .004, 'triangle', 800); }   /* toc-toc sur une porte en bois */
+  porte:function(){ tendre(270, 0, .09, .07, 190, .004, 'triangle', 800); tendre(255, .16, .09, .065, 180, .004, 'triangle', 800); },   /* toc-toc sur une porte en bois */
+  /* les pastilles de la carte qui arrivent (Romain, 5 novembre, 11 h 08 : un petit bruit discret et satisfaisant) :
+     un « pop » tout doux par pastille, au moment où elle rebondit (70 ms d'écart, moteur.css), chacun un peu plus haut que le précédent */
+  pastilles:function(n){
+    var gamme = [523, 587, 659, 784, 880, 1047];
+    for(var i = 0; i < Math.min(Math.max(n || 1, 1), 6); i++){
+      var f = gamme[i], t = .07 * i + .05;
+      tendre(f * .72, t, .085, .03, f * 1.18, .005, 'sine', 2600);   /* le pop : une petite note qui remonte */
+      tendre(f * 2, t + .012, .05, .006, null, .003);                /* un brin de brillance, à peine audible */
+    }
+  }
 };
-M.son = function(type){
+M.son = function(type, x){
   if(M.S && M.S.options && M.S.options.son === false) return;
-  try{ (SONS[type] || SONS.clic)(); }catch(e){}
+  try{ (SONS[type] || SONS.clic)(x); }catch(e){}
 };
 
 /* ---------- Voix (lecture à voix haute) ---------- */
@@ -37758,6 +37770,8 @@ function rendreModal(){
     f.classList.toggle('b-bulle-neuve', neuve);
     var ps = [].slice.call(f.querySelectorAll(PASTILLES)), x = f.querySelector('.b-fermer');
     ps.forEach(function(el, i){ el.classList.add('b-pastille'); el.style.setProperty('--i', el === x ? ps.length : i); });
+    /* un petit pop par pastille (moteur-base.js) ; pas pour « Pas à la maison » (la porte a déjà fait toc-toc) */
+    if(neuve && (UI.modal.type === 'lieu' || UI.modal.type === 'maison')) M.son('pastilles', ps.length - (x ? 1 : 0));
     placerBulle();
   }
   if(UI.modal.type === 'revision' && window.Revision){
@@ -37769,8 +37783,15 @@ M.ouvrir = function(m){
   /* fouiller, cueillir… depuis la bulle d'un lieu : on reste dans la même bulle */
   var avant = UI.modal;
   if(m && !m.bulle && avant && avant.bulle && (m.type === 'lieu' || m.type === 'maison') && avant.type === m.type && avant.id === m.id){ m.bulle = true; m.ancre = avant.ancre; m.neuve = false; }
-  UI.modal = m; M.sauver(); M.render(); var f = document.querySelector('#voile .b-feuille'); if(f) f.scrollTop = 0;
+  /* regarder la carte (Romain, 5 novembre, 11 h 09) : ouvrir ou changer une bulle en touchant la carte ne redessine pas la page,
+     seulement la bulle ; la carte garde ses animations (brume, fumées, eau) sans saute d'image */
+  var leger = !!(m && m.bulle && m.leger && carteIci() && (!avant || avant.bulle));
+  if(m) delete m.leger;
+  UI.modal = m; M.sauver();
+  if(leger) rendreLeger(); else M.render();
+  var f = document.querySelector('#voile .b-feuille'); if(f) f.scrollTop = 0;
 };
+function rendreLeger(){ rendreModal(); if(M.tutoMaj) M.tutoMaj(); }
 
 /* ---------- La bulle de la carte (Romain, 5 novembre, 10 h 07) ----------
    Toucher un lieu, une maison ou un visage sur la carte (l'onglet Carte) n'ouvre plus une fenêtre : une bulle s'ouvre à côté, sur la carte.
@@ -37802,8 +37823,9 @@ function placerBulle(){
   var x = R.left + a.x * R.width, yh = R.top + a.h * R.height, yb = R.top + a.b * R.height;
   /* (entre le bandeau du haut — et celui du tutoriel — et la barre des onglets : rien ne doit passer dessous) */
   var bord = function(s, cote){ var e = document.querySelector(s), r = e && !e.hidden && e.getBoundingClientRect(); return r && r.height ? r[cote] : null; };
-  var haut = Math.max(C.top, 0, bord('.b-entete', 'bottom') || 0, bord('.tu-bandeau', 'bottom') || 0) + 6;
-  var bas = Math.min(C.bottom, window.innerHeight, bord('.b-onglets', 'top') || window.innerHeight) - 6, ecart = 12;
+  /* MARGE : la marge invisible du cadre (moteur.css, padding 16 px) : les pastilles, elles, restent à 6 px des bords et à 2 px de ce qu'on a touché */
+  var MARGE = 16, haut = Math.max(C.top, 0, bord('.b-entete', 'bottom') || 0, bord('.tu-bandeau', 'bottom') || 0) + 6 - MARGE;
+  var bas = Math.min(C.bottom, window.innerHeight, bord('.b-onglets', 'top') || window.innerHeight) - 6 + MARGE, ecart = 2 - MARGE + 10;
   /* ce qu'on a touché est sorti de la carte (on l'a fait glisser) : la bulle se cache, elle revient avec lui */
   var hors = x < C.left || x > C.right || yb < C.top || yh > C.bottom;
   f.style.visibility = p.style.visibility = hors ? 'hidden' : '';
@@ -37812,7 +37834,7 @@ function placerBulle(){
   var dessous = bas - (yb + ecart), dessus = (yh - ecart) - haut, enBas = dessous >= H || dessous >= dessus;
   var dispo = Math.max(130, enBas ? dessous : dessus);
   if(H > dispo){ f.style.maxHeight = dispo + 'px'; H = f.offsetHeight; }
-  var top = enBas ? yb + ecart : yh - ecart - H, left = Math.min(Math.max(x - W / 2, 8), window.innerWidth - W - 8);
+  var top = enBas ? yb + ecart : yh - ecart - H, left = Math.min(Math.max(x - W / 2, 8 - MARGE), window.innerWidth - W - 8 + MARGE);
   f.style.left = Math.round(left) + 'px'; f.style.top = Math.round(top) + 'px';
   p.style.left = Math.round(Math.min(Math.max(x, left + 22), left + W - 22) - 11) + 'px';
   p.style.top = Math.round(enBas ? top - 11 : top + H - 1) + 'px';
@@ -37823,7 +37845,12 @@ var bulleRaf = 0;
 function suivreBulle(){ if(!UI.modal || !UI.modal.bulle || bulleRaf) return; bulleRaf = requestAnimationFrame(function(){ bulleRaf = 0; placerBulle(); }); }
 document.addEventListener('scroll', suivreBulle, true);   /* la carte qu'on fait glisser (ou qui zoome) : la bulle la suit */
 window.addEventListener('resize', suivreBulle);
-M.fermer = function(){ UI.modal = null; M.stop(); M.sauver(); UI.garderDefilement = true; M.render(); };
+M.fermer = function(){
+  var bulle = !!(UI.modal && UI.modal.bulle && carteIci());   /* fermer une bulle de la carte : la carte ne bouge pas (Romain, 11 h 09) */
+  UI.modal = null; M.stop(); M.sauver();
+  if(bulle){ rendreLeger(); return; }
+  UI.garderDefilement = true; M.render();
+};
 var toastT = null;
 M.toast = function(t){
   var el = document.getElementById('toast');
@@ -38584,14 +38611,18 @@ A.lieu = function(el){
   var id = el.dataset.id, P = M.P(); if(!P || P.etape !== 'jeu') return;
   if(/^[LFB]\d$/.test(id)) return A.maison(el);
   P.vus['lieu:' + id + ':' + P.moment] = 1;
-  M.son('page'); M.ouvrir(Object.assign({type:'lieu', id:id}, bulleDe(el)));   /* touché sur la carte : une bulle sur la carte */
+  var bl = bulleDe(el);   /* touché sur la carte : une bulle sur la carte (avec ses pops à elle, plus le bruit de page), sans redessiner la page */
+  if(!bl.bulle) M.son('page');
+  M.ouvrir(Object.assign({type:'lieu', id:id, leger:true}, bl));
 };
 /* Une maison : on sait qui y habite (son visage est dessus, carte-jeu.js). Le Barde frappe tout de suite (sans points d'action,
    ou quand personne n'est là : il ne dépense rien) ; les autres rôles, et le Barde quand frapper coûte une action, ont la feuille de la maison. */
 A.maison = function(el){
   var P = M.P(); if(!P || P.etape !== 'jeu') return;
   if(M.role() === 'barde' && (M.sansActions() || !M.pnjIci(el.dataset.id).length)) return A.frapper(el);
-  M.son('page'); M.ouvrir(Object.assign({type:'maison', id:el.dataset.id}, bulleDe(el)));
+  var bl = bulleDe(el);
+  if(!bl.bulle) M.son('page');
+  M.ouvrir(Object.assign({type:'maison', id:el.dataset.id, leger:true}, bl));
 };
 /* (« Qui habite ici ? » : plus d'habitants à noter sur la carte, Romain, 5 novembre, 00 h 14) */
 A.explorer = function(el){
@@ -38673,7 +38704,7 @@ A.frapper = function(el){
   var P = M.P(), m = el.dataset.id, ici = M.pnjIci(m);
   /* personne à la maison : un petit message (« Odette n'est pas chez elle en ce moment. »), sans rien dépenser */
   if(!ici.length){ var hm = M.habitantMaison && M.habitantMaison(m), occ = hm && M.pnjOccupesIci && M.pnjOccupesIci(m).indexOf(hm) >= 0;
-    M.son('porte'); M.ouvrir(Object.assign({type:'info', ic:'🚪', titre:occ ? 'Pas maintenant' : hm ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.'}, bulleDe(el))); return; }
+    M.son('porte'); M.ouvrir(Object.assign({type:'info', ic:'🚪', titre:occ ? 'Pas maintenant' : hm ? 'Pas à la maison' : 'Personne ne répond', t:M.texteAbsent ? M.texteAbsent(m) : 'Personne ne répond.', leger:true}, bulleDe(el))); return; }
   if(!M.peutAgir()) return;
   M.depenser(); M.son('porte');
   P.conv[ici[0]] = P.moment; M.sauver(); M.ouvrir({type:'conv', id:ici[0], classe:'b-feuille-conv'});
@@ -45369,6 +45400,8 @@ if(typeof rendreAvant === 'function'){
     return r;
   };
 }
+/* La bulle de la carte s'ouvre ou se ferme sans redessiner la page (moteur-actions.js, M.rendreLeger) : le rond suit quand même tout de suite */
+M.tutoMaj = function(){ try{ derniereOff = null; maj(true); suivreUnMoment(); }catch(e){ console.error(e); } };
 setInterval(function(){ try{ if(M.S) maj(false); }catch(e){} }, 250);
 /* Juste après un rendu, les fenêtres et les écrans glissent en entrant : le rond les suit image par image, pendant 0,8 s */
 var suivi = 0;
