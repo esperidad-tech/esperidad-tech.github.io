@@ -5718,6 +5718,7 @@ function pnj(id, opts){
   (sp.accessoires || []).forEach(function(a){ if(['lunettes','fleurs','epingles','boucle'].indexOf(a) >= 0) inner += accessoire(K, sp, a); });
   (sp.accessoires || []).forEach(function(a){
     if(['gants','chat','pirate','cles','chope'].indexOf(a) < 0) return;
+    if(opts.sans && opts.sans.indexOf(a) >= 0) return;   /* opts.sans : sans cet accessoire (Tim sans son chien, qui court à part dans une scène) */
     if(!pied || a === 'chat'){ inner += accessoire(K, sp, a); return; }
     /* en entier : les gants sont ses mains (brasPnj) ; la chope dans la main, le chien par terre, les clés à la ceinture */
     /* (chaque accessoire se place lui-même : chope en (-34, 72), chien en (38, 74), clés en (-28, 70) ; on le décale jusqu'à sa nouvelle place) */
