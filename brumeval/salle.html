@@ -205,6 +205,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mj-decompte b{font-family:var(--f-titre, inherit);font-size:min(34vw, 9rem);line-height:1;color:#ffe08a;text-shadow:0 4px 0 #8a5a12, 0 0 30px rgba(255,224,138,.6);animation:mj-decompte .6s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
+.mj.mj-fixe{min-height:0}   /* plein écran verrouillé (MJ.PLEIN_ECRAN, mj-core.js) : il tient dans l'écran, même couché */
 
 /* ==========================================================
    PERSOS — animations des héros et des villageois
@@ -2281,6 +2282,16 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   .mjg-portrait{width:32px;height:32px}
   .mjg-ind p{font-size:.94rem}
 }
+/* Superposer les plans sur un écran bas (téléphone couché) : les commandes plus serrées, tout tient sans défiler
+   (Romain, 6 novembre, 0 h 40 : plein écran verrouillé) */
+@media (orientation: landscape) and (max-height:500px){
+  .mjp.paysage .mjp-commandes{gap:6px}
+  .mjp-pad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,38px);gap:3px}
+  .mjp-b{min-width:42px;min-height:38px;font-size:1.15rem;border-radius:11px}
+  .mjp-reg .mjp-b{width:42px}
+  .mjp-regs{gap:4px}
+  .mjp-range{height:32px}
+}
 
 /* Les mots perdus (Barde) */
 .mm{display:flex;flex-direction:column;gap:12px;padding:12px;flex:1;min-height:0;overflow-y:auto}
@@ -3140,6 +3151,8 @@ body.sl-bloque{overflow:hidden}
 /* Écran trop bas (téléphone couché) : la fenêtre du jeu défile au lieu d'être coupée */
 #sl-plein{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sl-cadre{height:auto;min-height:100%}
+#sl-plein.mj-fixe{overflow:hidden;overscroll-behavior:none;touch-action:none}   /* les mini-jeux en plein écran verrouillé (MJ.PLEIN_ECRAN) */
+#sl-plein.mj-fixe .sl-cadre{height:100%;min-height:0}
 .sl-relire{display:block}
 .sl-rv{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r-3);padding:14px;max-width:820px;margin:0 auto}
 .sl-jeu{position:relative}
@@ -3149,6 +3162,7 @@ body.sl-bloque{overflow:hidden}
 .sl-liens{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 .sl-liens a{color:var(--or-pale);font-weight:700;text-decoration:none;padding:6px 12px;border-radius:999px;border:2px solid var(--trait);background:rgba(10,14,32,.6)}
 .sl-liens a:hover{border-color:var(--or)}
+#sl-plein.sl-defile{overflow-y:auto;touch-action:auto}   /* « Relire » une partie : ce n'est pas un mini-jeu, ça peut défiler */
 </style>
 <main id="salle"></main>
 <div id="sl-plein" hidden></div>
@@ -3805,6 +3819,38 @@ U.plusDeCoeur = function(el){
 MJ.coeurs = U.coeurs; MJ.plusDeCoeur = U.plusDeCoeur;
 
 /* ---------- Écran commun : consigne → jeu → résultat ---------- */
+/* ---------- Plein écran verrouillé (Romain, 6 novembre, 0 h 14 et 0 h 40) : ces mini-jeux tiennent dans l'écran, rien ne défile ----------
+   (les autres — mensonge, mots, alphabet, grille, dépositions — peuvent défiler). Ce qui dépasse encore (l'accueil d'un jeu sur un
+   téléphone couché, son résultat) se serre : un zoom CSS sur la zone qui déborde, jusqu'à 50 % ; dans le jeu lui-même, seulement
+   là où l'on touche des boutons (ZOOM_JEU), pas là où l'on glisse le doigt sur un dessin (le zoom y fausserait les positions). */
+MJ.PLEIN_ECRAN = {traces:1, poursuite:1, cachette:1, tir:1, bulles:1, melange:1, differences:1, double:1, insectes:1, chaudron:1, plans:1, runes:1};
+var ZOOM_JEU = {bulles:1, melange:1, double:1};
+function zoneDeborde(e){
+  var cs = getComputedStyle(e);
+  return /(auto|scroll)/.test(cs.overflowY) && e.clientHeight > 20;
+}
+MJ.ajusterHauteur = function(racine, type){
+  var attente = 0, obs = null;
+  function passe(){
+    attente = 0;
+    if(!racine.isConnected){ if(obs) obs.disconnect(); window.removeEventListener('resize', bientot); return; }
+    racine.querySelectorAll(ZOOM_JEU[type] ? '*' : '.mj-intro, .mj-intro *, .mj-resultat, .mj-resultat *').forEach(function(e){
+      if(e instanceof SVGElement) return;
+      if(!zoneDeborde(e)) return;
+      var z = parseFloat(e.style.zoom) || 1;
+      for(var n = 0; n < 5; n++){
+        var sh = e.scrollHeight, ch = e.clientHeight;
+        if(sh > ch + 2 && z > .5){ z = Math.max(.5, Math.round(z * ch / sh * 0.985 * 1000) / 1000); e.style.zoom = String(z); }
+        else if(z < 1 && sh < ch * .9){ z = Math.min(1, Math.round(z * ch / sh * 0.97 * 1000) / 1000); e.style.zoom = z >= .999 ? '' : String(z); }
+        else break;
+      }
+    });
+  }
+  function bientot(){ if(attente) return; attente = setTimeout(passe, 120); }   /* (au plus une fois tous les 120 ms : un chrono qui change sans arrêt ne coûte presque rien) */
+  try{ obs = new MutationObserver(bientot); obs.observe(racine, {childList:true, subtree:true}); }catch(e){}
+  window.addEventListener('resize', bientot);
+  bientot();
+};
 MJ.lancer = function(el, type, params, fin, options){
   var def = MJ.TYPES[type];
   options = options || {};
@@ -3832,6 +3878,10 @@ MJ.lancer = function(el, type, params, fin, options){
     '<div class="mj-scene"></div>' +
   '</div>');
   el.appendChild(racine);
+  /* plein écran verrouillé : la classe mj-fixe sur le mini-jeu et sur la fenêtre qui le porte (#mj-plein du jeu, #sl-plein de la salle) */
+  var fixe = !!MJ.PLEIN_ECRAN[type], hote = el.closest ? el.closest('#mj-plein, #sl-plein') : null;
+  racine.classList.toggle('mj-fixe', fixe); if(hote) hote.classList.toggle('mj-fixe', fixe);
+  if(fixe) try{ MJ.ajusterHauteur(racine, type); }catch(e){}
   var scene = racine.querySelector('.mj-scene');
   var consigne = (typeof def.consigne === 'function') ? def.consigne(params) : (def.consigne || '');
   /* la phrase toute simple de l'écran d'accueil (mj-regles.js) ; la longue consigne reste pour la salle */
@@ -23655,9 +23705,9 @@ function relire(k){
   var j = etat.journal[k]; if(!j || !j.revision || !window.Revision) return;
   var plein = document.getElementById('sl-plein');
   plein.innerHTML = '<button class="sl-quitter">← Retour à la salle</button><div class="sl-cadre sl-relire"><div class="sl-rv"></div></div>';
-  plein.hidden = false; document.body.classList.add('sl-bloque');
+  plein.hidden = false; plein.classList.add('sl-defile'); document.body.classList.add('sl-bloque');
   Revision.monter(plein.querySelector('.sl-rv'), j.revision, sauver);
-  plein.querySelector('.sl-quitter').onclick = function(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); };
+  plein.querySelector('.sl-quitter').onclick = function(){ plein.hidden = true; plein.innerHTML = ''; plein.classList.remove('sl-defile'); document.body.classList.remove('sl-bloque'); rendre(); };
 }
 function jouer(type, varId){
   var plein = document.getElementById('sl-plein');
