@@ -1515,6 +1515,16 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mjc-ing.revient{animation:mjc-revient .5s ease-out}
 @keyframes mjc-revient{0%{filter:brightness(2.2) drop-shadow(0 0 8px #ff4a3a)}100%{filter:none}}
 
+/* La flèche rouge vers le bois (tutoriel, niveau 1 ; Romain, 5 novembre, 16 h 30) : elle arrive en rebondissant quand il ne reste
+   qu'une bûche, se balance doucement, et repart en douceur dès qu'il y a 2 bûches */
+.mjc-fl-bois{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:translateY(-30px) scale(.35);pointer-events:none;
+  transition:opacity .3s ease-in, transform .4s ease-in;filter:drop-shadow(0 4px 0 rgba(36,24,46,.55))}
+.mjc-bois-fleche .mjc-fl-bois{opacity:1;transform:none;transition:opacity .25s ease-out, transform .6s cubic-bezier(.34,1.56,.64,1)}
+.mjc-fl-bois > g{transform-box:fill-box}
+.mjc-bois-fleche .mjc-fl-bois > g{animation:mjc-fl-bois .55s ease-in-out .6s infinite alternate}
+@keyframes mjc-fl-bois{to{transform:translateY(10px)}}
+@media (prefers-reduced-motion: reduce){ .mjc-bois-fleche .mjc-fl-bois > g{animation:none} .mjc-fl-bois{transition:opacity .2s} }
+
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage (préfixe .mjb-)
    ========================================================== */
@@ -3926,9 +3936,29 @@ MJ.lancer = function(el, type, params, fin, options){
       if(ro) ro.disconnect();
       racine.classList.remove('mj-en-intro');
       U.stop(); U.son('clic'); jouer();
+      if(auTuto() || options.decompte) decompteDepart();
     };
   }
 
+  /* Au tutoriel (enquête 1), un compte à rebours avant de jouer (Romain, 5 novembre, 16 h 32 : « on prend bien le temps de comprendre ») :
+     le jeu est déjà dessiné, mais figé (mj-temps.js) ; « 3, 2, 1 », lentement, puis il démarre. Aussi au « 🔁 Recommencer ». */
+  function decompteDepart(){
+    if(!window.MJT || fini || decompte) return;
+    MJT.pause(el);
+    var R = MJT.reel, n = 3;
+    decompte = U.html('<div class="mj-decompte mj-decompte-depart" aria-live="assertive"><b>3</b></div>');
+    racine.appendChild(decompte);
+    (function tic(){
+      if(!decompte) return;
+      if(n === 0 || fini){
+        if(decompte.parentNode) decompte.parentNode.removeChild(decompte);
+        decompte = null; if(!enPause) MJT.reprendre(); return;
+      }
+      decompte.innerHTML = '<b>' + n + '</b>';
+      U.son('tic'); n--;
+      R.setTimeout(tic, 850);
+    })();
+  }
   function jouer(){
     essais++;
     scene.innerHTML = '';
@@ -3972,7 +4002,7 @@ MJ.lancer = function(el, type, params, fin, options){
     scene.appendChild(voile);
     ajouterLire(voile, 'h2'); ajouterLire(voile, 'p.doux');
     var r = voile.querySelector('.mj-rejouer');
-    if(r) r.onclick = function(){ U.stop(); jouer(); };
+    if(r) r.onclick = function(){ U.stop(); jouer(); if(auTuto() || options.decompte) decompteDepart(); };
     voile.querySelector('.mj-continuer').onclick = function(){
       if(fini) return; fini = true; U.stop();
       /* tout ce que le jeu renvoie est transmis (ragots entendus, relecture…) */
@@ -14298,6 +14328,9 @@ function construire(el, P, demo){
     '<path class="mjc-bord-arriere" d="M' + (RIM.cx - RIM.rxo) + ',' + RIM.cy + ' A' + RIM.rxo + ',' + RIM.ryo + ' 0 0 1 ' + (RIM.cx + RIM.rxo) + ',' + RIM.cy + ' L' + (RIM.cx + RIM.rxi) + ',' + RIM.cy + ' A' + RIM.rxi + ',' + RIM.ryi + ' 0 0 0 ' + (RIM.cx - RIM.rxi) + ',' + RIM.cy + ' Z" fill="#4a4166" stroke="' + K + '" stroke-width="5" stroke-linejoin="round" opacity="0"/>' +
     '<g class="mjc-flammes">' + flammes + '</g>' +
     '<g class="mjc-feu-buches">' + buches + '</g>' +
+    /* le tutoriel (niveau 1) : une grosse flèche rouge vers le tas de bois quand il ne reste qu'une bûche (Romain, 5 novembre, 16 h 30) */
+    '<g class="mjc-fl-bois" aria-hidden="true"><g><path d="M32,150 H56 V200 H76 L44,238 L12,200 H32 Z" fill="#ff3a2e" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+      '<path d="M37,156 V203" stroke="rgba(255,255,255,.45)" stroke-width="5" stroke-linecap="round"/></g></g>' +
     '</svg>';
   var cible = '<div class="mjc-cible" style="--c:' + Zi.c + '"><span class="mjc-cible-ic">🎯</span><span>À la fin, zone</span> <b class="mjc-cible-nom' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '">' + esc(Zi.grand) + '</b><i class="mjc-pastille' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '"></i></div>';
   /* La carte de la recette, à côté de la frise (Romain) : chaque ingrédient dans l'ordre, avec sa couleur, son icône, son nom
@@ -14594,6 +14627,7 @@ MJ.enregistrer('chaudron', {
       E.lueur.style.opacity = (S.L ? 0.15 + S.L * 0.12 : 0).toFixed(2);
       E.racine.setAttribute('data-buches', S.L);
       E.racine.classList.toggle('mjc-bois-vite', S.L <= 1);   /* presque plus de bois : l'icône « remettre du bois » brille */
+      E.racine.classList.toggle('mjc-bois-fleche', !!R.aideTuto && S.L <= 1 && !S.fini);   /* (le tutoriel : la flèche rouge arrive, et repart dès 2 bûches) */
     }
     majBuches();
     function bulle(html, cls){
@@ -14786,7 +14820,7 @@ MJ.enregistrer('chaudron', {
 
     /* --- fin de partie --- */
     function finir(res, ms){
-      S.fini = true;
+      S.fini = true; E.racine.classList.remove('mjc-bois-fleche');
       res.erreurs = S.erreurs;
       res.reste = stock;
       apres2(ms, function(){ fin(res); });
@@ -14984,7 +15018,7 @@ MJ.enregistrer('chaudron', {
       ajouterBuche:ajouterBuche, retirerBuche:retirerBuche
     };
     return {arreter:function(){
-      S.fini = true;
+      S.fini = true; E.racine.classList.remove('mjc-bois-fleche');
       A.couper();
       arret();
       stops.forEach(function(f){ try{ f(); }catch(e){} });
