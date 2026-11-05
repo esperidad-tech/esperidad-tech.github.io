@@ -613,7 +613,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-etoiles-choc{opacity:0}
 .mja-coureur-corps.trebuche .mja-etoiles-choc{animation:mja-etoiles .9s ease-out}
 @keyframes mja-etoiles{0%,80%{opacity:1}100%{opacity:0}}
-.mja-coureur-corps.trebuche .pt{animation:mja-rouge .9s ease-out}
+.mja-coureur-corps.trebuche .pant{animation:mja-rouge .9s ease-out}
 @keyframes mja-rouge{0%,60%{opacity:.55}100%{opacity:1}}
 .mja-coureur.sprint .mja-coureur-corps{animation:mja-sprint .8s ease-out}
 @keyframes mja-sprint{0%{filter:drop-shadow(0 0 0 var(--cyan))}30%{filter:drop-shadow(0 0 14px var(--cyan))}100%{filter:none}}
@@ -4242,10 +4242,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-vol{position:absolute;z-index:99400;width:74px;height:74px;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
 .at-vol svg{display:block;width:100%;height:100%}
 /* le guidage du tutoriel : le 📦 du coin, puis le meuble à installer dans son panneau (ils brillent eux-mêmes) */
-.at-coin.at-guide-q,.at-res-o.at-guide-q{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1s ease-in-out infinite}
+.at-coin.at-guide-q,.at-res-o.at-guide-q{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1.3s ease-in-out infinite}
 .at-res-o.at-guide-q{position:relative;z-index:2}
-.at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'✨ Touche !';position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:10px;background:#ffd36a;color:#111;font-weight:900;font-size:.78rem;border:2px solid #24182e;z-index:3}
-.at-coin.at-guide-q::before{left:auto;right:0;transform:none}
+/* (plus d'écriteau « Touche ! » : l'onde du rond du tutoriel, la même partout — Romain, 5 novembre, 20 h 16) */
+.at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'';position:absolute;inset:-6px;border-radius:inherit;border:4px solid #ffd36a;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:3}
 @media (prefers-reduced-motion: reduce){ .at-coin.at-guide-q,.at-res-o.at-guide-q{animation:none} }
 
 /* Le voyage d'un ingrédient jusqu'à son rangement (Romain, 5 novembre, 15 h 58) : lent, pour qu'on le suive des yeux */
@@ -4400,9 +4400,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-et-heros svg{width:100%;height:100%}
 /* l'accueil du tout début (M.debutant) : la carte du héros n'est pas un bouton ; le bouton à toucher brille */
 .b-hub-fixe{cursor:default}
-.b-guide{box-shadow:0 0 0 4px rgba(255,214,102,.55), 0 0 22px 6px rgba(255,200,80,.45);animation:b-guide-pulse 1.6s ease-in-out infinite}
+.b-guide{position:relative;box-shadow:0 0 0 4px rgba(255,214,102,.55), 0 0 22px 6px rgba(255,200,80,.45);animation:b-guide-pulse 1.3s ease-in-out infinite}
+/* l'onde du rond du tutoriel, la même partout (Romain, 5 novembre, 20 h 16) */
+.b-guide::after{content:'';position:absolute;inset:-4px;border-radius:inherit;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
 @keyframes b-guide-pulse{0%,100%{box-shadow:0 0 0 3px rgba(255,214,102,.5), 0 0 16px 4px rgba(255,200,80,.35)}50%{box-shadow:0 0 0 7px rgba(255,214,102,.25), 0 0 30px 10px rgba(255,200,80,.55)}}
-@media (prefers-reduced-motion: reduce){.b-guide{animation:none}}
+@media (prefers-reduced-motion: reduce){.b-guide{animation:none}.b-guide::after{display:none}}
 .b-et-info{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.08}
 .b-et-info b{font-family:var(--f-titre);font-weight:400;font-size:1.1rem;color:var(--or-pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b-et-info span{font-size:.8rem;color:var(--brume)}
@@ -6334,7 +6336,7 @@ body.hr-plein{overflow:hidden}
 .tu-guide.tu-hors .b-contenu{opacity:.42;filter:grayscale(.75);pointer-events:none;transition:opacity .3s, filter .3s}   /* il faut toucher un onglet : l'écran attend, grisé */
 .tu-guide #carte-ici .ca-maison-off{opacity:.7}
 .b-point.tu-apres{opacity:.8;filter:grayscale(.55) brightness(.82)}
-.b-point.tu-ici{box-shadow:0 0 0 3px #ffd23f, 0 0 16px rgba(255,210,63,.6)}
+/* (.b-point.tu-ici : plus de cadre fixe à lui, le rond du tutoriel qui pulse est dessus) */
 
 /* « Mes missions » du Carnet : l'étape en cours, celles à venir, le moment prévu */
 .b-missions li.tu-courante{background:rgba(255,210,63,.18);box-shadow:0 0 0 2px rgba(255,210,63,.75)}
@@ -6359,8 +6361,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 20:02 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 20:02';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 20:22 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 20:22';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -13346,7 +13348,8 @@ MJ.enregistrer('traces', {
       return false;
     }
 
-    P.boucle(function(dt){
+    /* (une image tout de suite : pendant le « 3, 2, 1 » du tutoriel, la forêt est déjà dessinée) */
+    function imageT(dt){
       if(fini) return false;
       t += dt;
       /* le sol défile toujours, même à la fin */
@@ -13421,7 +13424,9 @@ MJ.enregistrer('traces', {
       }
       marques = garde;
       if(reveles.length && reveles.every(function(rv){ return t > rv.fin; })){ reveles = []; marques.forEach(function(m){ if(m.rv){ m.rv = false; m.g.classList.remove('revele'); } }); }
-    });
+    }
+    imageT(0);
+    P.boucle(imageT);
     return {arreter: P.arreter};
   }
 });
@@ -13738,18 +13743,18 @@ var PANTINS = {
 };
 function coureurSVG(sorte){
   var C = PANTINS[sorte] || PANTINS.pisteur;
-  var jambe = function(c){ return '<g class="pt-' + c + '"><path class="pt-jc" d=""' + trait(13) + ' stroke-linecap="round" fill="none"/><path class="pt-jf" d="" stroke="' + C.pant + '" stroke-width="7.5" stroke-linecap="round" fill="none"/>' +
-    '<g class="pt-pied"><path d="M-6.5,-7 C-7.5,-2 -6.5,2.5 -4,3.5 L4,3.5 C6.5,2.5 7.5,-2 6.5,-7 Z" fill="' + C.botte + '"' + trait(2.6) + '/><path d="M-6.8,-6.5 L6.8,-6.5" stroke="' + C.botteC + '" stroke-width="3" stroke-linecap="round"/><ellipse class="pt-sem" cx="0" cy="1.5" rx="5.6" ry="3.4" fill="' + C.sem + '" opacity="0"/></g></g>'; };
-  var bras = function(c){ return '<g class="pt-' + c + '"><path class="pt-bc" d=""' + trait(11) + ' stroke-linecap="round" fill="none"/><path class="pt-bf" d="" stroke="' + C.tun + '" stroke-width="6.5" stroke-linecap="round" fill="none"/><g class="pt-main"><circle r="4.6" fill="' + C.peau + '"' + trait(2.4) + '/></g></g>'; };
-  return '<g class="pt">' + jambe('jg') + jambe('jd') +
-    '<g class="pt-haut">' +
+  var jambe = function(c){ return '<g class="pant-' + c + '"><path class="pant-jc" d=""' + trait(13) + ' stroke-linecap="round" fill="none"/><path class="pant-jf" d="" stroke="' + C.pant + '" stroke-width="7.5" stroke-linecap="round" fill="none"/>' +
+    '<g class="pant-pied"><path d="M-6.5,-7 C-7.5,-2 -6.5,2.5 -4,3.5 L4,3.5 C6.5,2.5 7.5,-2 6.5,-7 Z" fill="' + C.botte + '"' + trait(2.6) + '/><path d="M-6.8,-6.5 L6.8,-6.5" stroke="' + C.botteC + '" stroke-width="3" stroke-linecap="round"/><ellipse class="pant-sem" cx="0" cy="1.5" rx="5.6" ry="3.4" fill="' + C.sem + '" opacity="0"/></g></g>'; };
+  var bras = function(c){ return '<g class="pant-' + c + '"><path class="pant-bc" d=""' + trait(11) + ' stroke-linecap="round" fill="none"/><path class="pant-bf" d="" stroke="' + C.tun + '" stroke-width="6.5" stroke-linecap="round" fill="none"/><g class="pant-main"><circle r="4.6" fill="' + C.peau + '"' + trait(2.4) + '/></g></g>'; };
+  return '<g class="pant">' + jambe('jg') + jambe('jd') +
+    '<g class="pant-haut">' +
       '<path d="M-17,-66 C-20,-54 -17,-42 -15,-34 L-17.5,-24 C-6,-20.5 6,-20.5 17.5,-24 L15,-34 C17,-42 20,-54 17,-66 C8,-71 -8,-71 -17,-66 Z" fill="' + C.tun + '"' + trait(4) + ' stroke-linejoin="round"/>' +
       '<path d="M6,-68 C14,-62 16,-46 14,-34 L16.5,-25.5 C12,-23.5 8,-22.5 5,-22.5 Z" fill="' + C.tunS + '"/><path d="M0,-27 L0,-21.5" stroke="' + C.tunS + '" stroke-width="2.4"/>' +
       '<path d="M-16.5,-39 L16.5,-39 L17,-32.5 L-17,-32.5 Z" fill="' + C.ceint + '"' + trait(2.4) + '/>' +
       '<rect x="-21" y="-39" width="10" height="12" rx="3" fill="#8a5a33"' + trait(2.4) + '/><path d="M-21,-35 L-11,-35" stroke="' + CONTOUR + '" stroke-width="1.6"/>' +
       bras('bg') + bras('bd') +
-      (C.doublure ? '<path class="pt-cape2" d="" fill="' + C.doublure + '"' + trait(3.5) + ' stroke-linejoin="round"/>' : '') +
-      '<path class="pt-cape" d=""  fill="' + C.cape + '"' + trait(4) + ' stroke-linejoin="round"/>' +
+      (C.doublure ? '<path class="pant-cape2" d="" fill="' + C.doublure + '"' + trait(3.5) + ' stroke-linejoin="round"/>' : '') +
+      '<path class="pant-cape" d=""  fill="' + C.cape + '"' + trait(4) + ' stroke-linejoin="round"/>' +
       (C.carquois ? '<path d="M15,-67 L-13,-37" stroke="' + CONTOUR + '" stroke-width="6" stroke-linecap="round"/><path d="M15,-67 L-13,-37" stroke="#8a5a33" stroke-width="3" stroke-linecap="round"/>' +
         '<g transform="translate(7,-57) rotate(32)">' +
           '<path d="M-3,-21 L-4.5,-32 M1,-21 L1.5,-34 M4,-20 L6,-31" stroke="#c99a5e" stroke-width="2"/>' +
@@ -13757,7 +13762,7 @@ function coureurSVG(sorte){
           '<rect x="-6.5" y="-21" width="13" height="38" rx="5" fill="#7a4e2c"' + trait(3.4) + '/><path d="M-6.5,-13 L6.5,-13 M-6.5,10 L6.5,10" stroke="#ffd36a" stroke-width="2.6"/><ellipse cx="0" cy="-21" rx="6.5" ry="2.6" fill="#3b2a1e"' + trait(2) + '/>' +
         '</g>' : '') +
     '</g>' +
-    '<g class="pt-tete">' +
+    '<g class="pant-tete">' +
       '<path d="M-13.5,-70 C-17.5,-80 -14.5,-94 0,-96.5 C14.5,-94 17.5,-80 13.5,-70 C7,-65.5 -7,-65.5 -13.5,-70 Z" fill="' + C.capeC + '"' + trait(4) + '/>' +
       '<path d="M0,-95.5 C1.2,-86 0,-78 0,-70" stroke="' + C.capeS + '" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M-10,-86 C-9,-91 -5.5,-93.5 -2,-94.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".3"/>' +
       '<path d="M-4.5,-70 C-3.5,-63 -0.5,-59 2,-55 C3.5,-61 4.5,-66 4.5,-70 Z" fill="' + C.capeC + '"' + trait(2.6) + ' stroke-linejoin="round"/>' +
@@ -13766,9 +13771,9 @@ function coureurSVG(sorte){
 function Pantin(g, sorte){
   var C = PANTINS[sorte] || PANTINS.pisteur;
   var q = function(s){ return g.querySelector(s); };
-  var J = ['jg', 'jd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-jc'), f:n.querySelector('.pt-jf'), p:n.querySelector('.pt-pied'), s:n.querySelector('.pt-sem')}; });
-  var B = ['bg', 'bd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-bc'), f:n.querySelector('.pt-bf'), m:n.querySelector('.pt-main')}; });
-  var haut = q('.pt-haut'), tete = q('.pt-tete'), cape = q('.pt-cape'), cape2 = q('.pt-cape2');
+  var J = ['jg', 'jd'].map(function(c){ var n = q('.pant-' + c); return {c:n.querySelector('.pant-jc'), f:n.querySelector('.pant-jf'), p:n.querySelector('.pant-pied'), s:n.querySelector('.pant-sem')}; });
+  var B = ['bg', 'bd'].map(function(c){ var n = q('.pant-' + c); return {c:n.querySelector('.pant-bc'), f:n.querySelector('.pant-bf'), m:n.querySelector('.pant-main')}; });
+  var haut = q('.pant-haut'), tete = q('.pant-tete'), cape = q('.pant-cape'), cape2 = q('.pant-cape2');
   function n1(v){ return (Math.round(v * 10) / 10).toString(); }
   return {poser:function(st){
     var b = st.b || 0, j = st.j || 0, l = st.l || 0, ph = st.ph || 0, t = st.t || 0;
@@ -13968,7 +13973,7 @@ MJ.enregistrer('poursuite', {
     cadrer(P, svg);
     var gObs = svg.querySelector('.mja-obstacles'), gLoin = svg.querySelector('.mja-loin'), gBords = svg.querySelector('.mja-bords'), gTirets = svg.querySelector('.mja-tirets');
     var coureur = svg.querySelector('.mja-coureur'), corps = svg.querySelector('.mja-coureur-corps'), ombre = svg.querySelector('.mja-ombre-c'), fuyard = svg.querySelector('.mja-fuyard'), conseil = svg.querySelector('.mja-conseil'), conseilT = svg.querySelector('.mja-conseil-t'), conseilF = svg.querySelector('.mja-conseil-f');
-    var pantin = Pantin(corps.querySelector('.pt'), 'pisteur'), pantinF = CHIEN ? null : Pantin(fuyard.querySelector('.pt'), 'ombre');
+    var pantin = Pantin(corps.querySelector('.pant'), 'pisteur'), pantinF = CHIEN ? null : Pantin(fuyard.querySelector('.pant'), 'ombre');
     /* la poussière que soulève le fuyard : huit petits nuages qui servent chacun leur tour */
     var gPous = svg.querySelector('.mja-poussiere'), nuages = [], nuageT = 0, nuageK = 0;
     for(var nn = 0; nn < 8; nn++) nuages.push({c:svgNoeud('circle', {r:0, fill:FORET ? '#c9b48a' : '#c49a72', opacity:0}, gPous), age:9});
@@ -14151,7 +14156,9 @@ MJ.enregistrer('poursuite', {
     var faites = 0, chocs = 0;
 
     var PC = 0.93;
-    P.boucle(function(dt){
+    /* une image tout de suite, avant que la boucle ne parte : pendant le « 3, 2, 1 » du tutoriel (le jeu est figé), tout est déjà
+       à sa place (Romain, 5 novembre, 20 h 16 : « le chien et un arbre sont en haut à gauche de l'écran ») */
+    function image(dt){
       if(fini) return false;
       t += dt;
       if(choc > 0) choc -= dt;
@@ -14294,7 +14301,9 @@ MJ.enregistrer('poursuite', {
         var mi = conseilF.getAttribute('width') / 2 + 8;
         conseil.setAttribute('transform', 'translate(' + fixe(xJ, mi, 360 - mi).toFixed(1) + ',' + (326 - haut + 26 * baisse).toFixed(1) + ')');
       } else if(conseilAff){ conseilAff = ''; conseil.setAttribute('opacity', '0'); }
-    });
+    }
+    image(0);
+    P.boucle(image);
     return {arreter: P.arreter};
   }
 });
@@ -27970,7 +27979,7 @@ D('tir', function(el){
   /* une seule courbe : la lanterne est au milieu (s = 0,5), la pomme au bout (s = 1), la flèche sort de l'image après */
   function bez(s){ var a = 1 - s; return [a * a * ARC[0] + 2 * a * s * CTRL[0] + s * s * POMME[0], a * a * ARC[1] + 2 * a * s * CTRL[1] + s * s * POMME[1]]; }
   function tang(s){ return Math.atan2(2 * (1 - s) * (CTRL[1] - ARC[1]) + 2 * s * (POMME[1] - CTRL[1]), 2 * (1 - s) * (CTRL[0] - ARC[0]) + 2 * s * (POMME[0] - CTRL[0])) * 180 / Math.PI; }
-  var pts = ''; for(var i = 1; i <= 16; i++){ var q = bez(i / 15); pts += '<circle class="pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3"/>'; }
+  var pts = ''; for(var i = 1; i <= 16; i++){ var q = bez(i / 15); pts += '<circle class="rg-pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3"/>'; }
   var a0 = tang(0), id = uid('rgt'), S_FIN = 1.35, T_LACHE = 1.95, VOL = .75;
   var T_LANT = T_LACHE + VOL * .5 / S_FIN, T_POMME = T_LACHE + VOL / S_FIN;
   var svg = svgDemo(el,
@@ -27992,7 +28001,7 @@ D('tir', function(el){
     '<g class="rg-bing2" opacity="0">' + emo(POMME[0] + 30, POMME[1] - 26, 24, '✨') + emo(POMME[0] - 30, POMME[1] + 8, 18, '✨') +
       '<text x="182" y="104" text-anchor="middle" font-size="34" font-weight="700" fill="#ffe3a3" stroke="' + K + '" stroke-width="5" paint-order="stroke" style="font-family:var(--f-titre)">×2</text></g>');
   var lant = $(svg, '.rg-lant'), corde = $(svg, '.rg-corde'), pomme = $(svg, '.rg-pomme'), tige = $(svg, '.rg-tige'), ca = $(svg, '.rg-corde-arc'), fl = $(svg, '.rg-fl'), halo = $(svg, '.rg-halo');
-  var ptsG = $$(svg, '.pt'), jauge = $(svg, '.rg-jauge'), trainee = $(svg, '.rg-trainee'), bing1 = $(svg, '.rg-bing1'), bing2 = $(svg, '.rg-bing2');
+  var ptsG = $$(svg, '.rg-pt'), jauge = $(svg, '.rg-jauge'), trainee = $(svg, '.rg-trainee'), bing1 = $(svg, '.rg-bing1'), bing2 = $(svg, '.rg-bing2');
   var rad = a0 * Math.PI / 180, bx = -Math.cos(rad), by = -Math.sin(rad);
   var DEB = [ARC[0] + 4, ARC[1] + 4], FIN = [ARC[0] + bx * 46, ARC[1] + by * 46];
   var main = mainAuto($(svg, '.rg-main'), [[0, 230, 400, 0], [.5, 230, 400, 0], [.95, DEB[0], DEB[1], 1], [1.85, FIN[0], FIN[1], 1], [T_LACHE, FIN[0], FIN[1], 0], [2.7, 230, 400, 0], [P, 230, 400, 0]], [.95]);
@@ -39512,6 +39521,9 @@ function lancer(type, niveau, extra, options, fin){
      sans la courbe enfant/adulte ; l'équipement, les talents et les potions du héros aident encore (mods.facile) */
   var params = options.niveauFixe ? MJ.reglages(type, options.niveauFixe, mm.mods, {brut:true}) : MJ.reglages(type, (niveau || 1) + M.decalage(), mm.mods);
   if(extra) M.cle(extra).forEach(function(k){ params[k] = extra[k]; });
+  /* une fenêtre encore ouverte (le « Raté… tu peux réessayer », la dernière chance) se ferme quand le mini-jeu part : sinon, en pause,
+     on la retrouvait derrière, avec le rond du tutoriel dessus (Romain, 5 novembre, 20 h 16) */
+  if(UI.modal){ UI.modal = null; rendreModal(); }
   var plein = document.getElementById('mj-plein');
   plein.innerHTML = '<div class="b-mj-cadre"></div>';
   plein.hidden = false;
