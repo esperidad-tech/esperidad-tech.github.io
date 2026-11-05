@@ -479,6 +479,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 .ca-fixe *,.ca-fixe{animation:none!important}
 @media (prefers-reduced-motion: reduce){.ca-carte *{animation:none!important}.ca-badge{animation:none}}
+/* L'Alchimiste : le rond des ingrédients d'un lieu se grise quand elle y a déjà cherché à ce moment (Romain, 5 novembre, 12 h 31) */
+.ca-marqueur.ingr-fait{filter:grayscale(1);opacity:.55}
+/* Le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31) */
+.ca-marqueur.presence.ca-fache{--ca-m:#ff5a4a}
 
 /* ==========================================================
    Mini-jeux du Pisteur et de l'Alchimiste (préfixe .mja-)
@@ -1678,6 +1682,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mjc-tourne{to{transform:rotate(360deg)}}
 @keyframes mjc-remplit{to{transform:translateY(18px)}}
 @keyframes mjc-eclat{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}100%{transform:rotate(var(--a)) translateX(130px) scale(.2);opacity:0}}
+
+/* un ingrédient oublié revient au bout de la frise (Romain, 5 novembre, 12 h 31) */
+.mjc-ing.revient{animation:mjc-revient .5s ease-out}
+@keyframes mjc-revient{0%{filter:brightness(2.2) drop-shadow(0 0 8px #ff4a3a)}100%{filter:none}}
 
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage (préfixe .mjb-)
@@ -4053,6 +4061,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-bonheur.plein .at-bonheur-barre b{background:linear-gradient(90deg,#ffd84a,#ff8fb3,#ff5f9a)}
 .at-bonheur-hab{pointer-events:auto;width:calc(52 * var(--u));height:calc(52 * var(--u));min-width:0;padding:0;border-radius:50%;font-size:calc(26 * var(--u));line-height:1;
   background:#ffe9f3;border:calc(3 * var(--u)) solid var(--contour,#24182e);display:grid;place-items:center;cursor:pointer}
+/* ✕ à côté de la barre : elle s'enlève tout de suite (Romain, 5 novembre, 12 h 31) */
+.at-bonheur-x{pointer-events:auto;width:calc(40 * var(--u));height:calc(40 * var(--u));min-width:0;padding:0;border-radius:50%;font-size:calc(19 * var(--u));font-weight:800;line-height:1;
+  background:#efe9f7;color:var(--contour,#24182e);border:calc(3 * var(--u)) solid var(--contour,#24182e);display:grid;place-items:center;cursor:pointer;margin-left:calc(-1 * var(--u))}
+.at-bonheur-x svg{width:62%;height:62%;display:block;overflow:visible;pointer-events:none}
+.at-bonheur-x path{fill:none;stroke:var(--contour,#24182e);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
+.at-bonheur-x:active,.at-bonheur-hab:active{transform:scale(.9)}
 .at-c-bonheur .at-bulle{display:none}
 .at-c-dehors{visibility:hidden}
 .at-c-dehors *{visibility:hidden!important}
@@ -4107,6 +4121,42 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes at-oreilles-hop{30%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion: reduce){
   .at-c-fesses .at-c-g-debout,.at-souris svg,.at-acc-brille{animation:none!important}
+}
+/* ==========================================================
+   L'arbre à chat et l'autre pièce (Romain, 5 novembre, 12 h 31)
+   ========================================================== */
+/* dressé sur ses pattes arrière : il gratte la colonne (griffe : ses pattes de devant montent et descendent) ou tape la boule (boule) */
+.at-t-chat.at-c-griffe .at-c-g-debout,.at-t-chat.at-c-boule .at-c-g-debout{display:inline}
+.at-c-griffe .at-c-g-debout,.at-c-boule .at-c-g-debout{transform-box:fill-box;transform-origin:14% 100%;transform:rotate(-54deg)}
+.at-c-griffe .at-c-j1,.at-c-griffe .at-c-j2,.at-c-boule .at-c-j1,.at-c-boule .at-c-j2{transform:rotate(54deg)}
+.at-c-griffe .at-c-j3,.at-c-griffe .at-c-j4{transform:rotate(-62deg)}
+.at-c-griffe .at-c-j3{animation:at-griffe .3s ease-in-out infinite alternate}
+.at-c-griffe .at-c-j4{animation:at-griffe .3s ease-in-out infinite alternate-reverse}
+.at-c-boule .at-c-j3{transform:rotate(-30deg)}
+.at-c-boule .at-c-j4{transform:rotate(-120deg);animation:at-tape-boule .32s ease-in-out infinite alternate}
+.at-c-griffe .at-c-tete,.at-c-boule .at-c-tete{transform-origin:30% 90%;transform:rotate(28deg)}
+.at-c-griffe .at-bulle,.at-c-boule .at-bulle{display:none}
+@keyframes at-griffe{from{transform:rotate(-82deg)}to{transform:rotate(-44deg)}}
+@keyframes at-tape-boule{from{transform:rotate(-70deg)}to{transform:rotate(-150deg)}}
+/* la boule qui pend : elle se balance autour de son fil */
+.at-ac-boule{transform-box:fill-box;transform-origin:50% 0}
+/* les traces de griffes sur la colonne, et trois copeaux qui tombent */
+.at-griffures{position:absolute;pointer-events:none;animation:at-griffures 1.7s ease-out forwards}
+.at-griffures svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.at-griffures path{fill:none;stroke:#6b4422;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:32;stroke-dashoffset:32;animation:at-griffe-trait .45s ease-out forwards}
+.at-griffures i{position:absolute;top:60%;width:16%;height:9%;border-radius:2px;background:#e2c48e;border:1px solid #8a6a3a;opacity:0;animation:at-copeau .9s ease-in forwards}
+.at-griffures i:nth-of-type(1){left:10%;--cx:-120%;animation-delay:.1s}
+.at-griffures i:nth-of-type(2){left:46%;--cx:60%;animation-delay:.25s}
+.at-griffures i:nth-of-type(3){left:76%;--cx:150%;animation-delay:.4s}
+@keyframes at-griffures{0%,72%{opacity:1}100%{opacity:0}}
+@keyframes at-griffe-trait{to{stroke-dashoffset:0}}
+@keyframes at-copeau{0%{opacity:1;transform:translate(0,0) rotate(0deg)}100%{opacity:0;transform:translate(var(--cx),420%) rotate(160deg)}}
+/* il passe l'arche : on ne le prend pas, sa bulle et sa barre se cachent */
+.at-c-passe,.at-c-passe *{pointer-events:none!important}
+.at-c-passe .at-bulle,.at-c-passe .at-bonheur{display:none!important}
+@media (prefers-reduced-motion: reduce){
+  .at-c-griffe .at-c-j3,.at-c-griffe .at-c-j4,.at-c-boule .at-c-j4,.at-griffures,.at-griffures path{animation:none!important}
+  .at-griffures path{stroke-dashoffset:0}
 }
 /* ==========================================================
    Le guidage du tutoriel : un rond lumineux doré (« ✨ Nouveau ! ») autour de la chose à toucher ; le reste attend
@@ -4785,6 +4835,26 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .b-mj-pause-l{position:relative;display:inline-block}
 .b-mj-pause-ic{position:absolute;right:-.4em;bottom:-.1em;font-size:.45em}
 
+/* ---------- Bulles de la carte : rien ne déborde (Romain, 5 novembre, 12 h 31 : « le Vieux Chêne du Sage, ça déborde de partout ») ----------
+   Les boîtes prennent la largeur de la bulle (sans ça, une pastille large de 349 px poussait la bulle de 282 px), les pastilles s'y plient
+   sur plusieurs lignes, et rien ne rétrécit en hauteur (le texte sortait de sa pastille). tools/bot-carte.py mesure tout ça. */
+.b-bulle .b-gens, .b-bulle .b-ce-que-je-sais, .b-bulle .b-info-modal, .b-bulle .b-verrou, .b-bulle .b-points, .b-bulle .b-ecoute, .b-bulle .b-besoin{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.b-feuille.b-bulle > *, .b-bulle .b-gens > *, .b-bulle .b-ce-que-je-sais > *, .b-bulle .b-info-modal > *, .b-bulle .b-verrou > *, .b-bulle .b-points > *, .b-bulle .b-ecoute > *,
+.b-bulle .b-besoin > *, .b-bulle .b-besoin li{flex-shrink:0}
+.b-bulle p, .b-bulle li, .b-bulle small, .b-bulle b, .b-bulle .btn{white-space:normal;overflow-wrap:break-word}
+.b-bulle .b-verrou > .b-lire, .b-bulle .b-lire{display:none!important}
+.b-bulle .b-verrou > p{display:block}
+.b-bulle .b-verrou > .b-besoin{background:none;border:0;box-shadow:none;padding:0;border-radius:0;min-height:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
+.b-bulle .b-besoin ul{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;margin:0;padding:0}
+.b-bulle .b-besoin li{pointer-events:auto;display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;box-sizing:border-box;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:15px;padding:3px 10px;min-height:30px;font-size:.8rem;line-height:1.25;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14)}
+.b-bulle .b-besoin li > span{flex:none}
+.b-bulle .b-besoin > .btn{pointer-events:auto}
+/* (la classe .b-pastille des bulles porte le même nom que les ronds de couleur des potions, 44 × 44 px : sans ceci, chaque pastille
+   de la bulle faisait 44 px de haut, et un texte de plusieurs lignes en sortait) */
+.b-feuille.b-bulle .b-pastille{height:auto}
+
 /* ==========================================================
    Brumeval — les missions de base, en haut du Carnet (mission.js)
    ========================================================== */
@@ -4830,6 +4900,16 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
   .b-mi-case{width:30px;height:30px;min-width:30px}
   .b-missions li p{font-size:.95rem}
 }
+
+/* « 🎯 Mes missions » repliable (Romain, 5 novembre, 12 h 31) */
+.b-missions h3{margin:0 0 8px}
+.b-mi-plier{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;cursor:pointer;font-family:var(--f-titre);font-size:1.25rem;color:var(--or-pale)}
+.b-mi-plier > span{flex:1}
+.b-mi-compte{font-family:var(--f-texte, inherit);font-size:.85rem;font-weight:700;color:var(--lune);background:rgba(0,0,0,.25);border-radius:999px;padding:3px 10px}
+.b-mi-fleche{font-style:normal;font-size:1rem;transition:transform .2s}
+.b-missions.plie{padding-bottom:12px}
+.b-missions.plie h3{margin:0}
+.b-missions.plie .b-mi-fleche{transform:rotate(-90deg)}
 
 /* ==========================================================
    Brumeval — « 📋 Mon tableau d'enquête » du Sage (tableau.js)
@@ -5283,6 +5363,23 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 @keyframes rs-bulle-maire{0%,68.5%{opacity:0}70%,78%{opacity:1}80%,100%{opacity:0}}
 /* moins de mouvement : la scène reste figée au moment de la fumée, de Silas et du maire */
 @media (prefers-reduced-motion: reduce){ .rs-scene *{animation-play-state:paused !important;animation-delay:-6.8s !important} }
+
+/* ---------- 👂 Écouter aux portes, dans la bulle de la carte (Romain, 5 novembre, 12 h 31 ; barde.js) ----------
+   Une boîte de dialogue par personne : son visage, son nom, le texte qui s'écrit lettre après lettre. */
+.b-bulle .bd-porte{pointer-events:auto;display:flex;align-items:flex-start;gap:8px;width:max-content;max-width:100%;box-sizing:border-box;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:15px;padding:6px 10px 7px 6px;font-size:.8rem;line-height:1.3;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);flex-shrink:0;cursor:pointer}
+.b-bulle .bd-porte .b-gens-img{width:30px;height:30px;flex:none}
+.bd-porte-ic{font-size:1.3rem;line-height:30px;flex:none}
+.bd-porte-corps{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bd-porte-corps b{font-size:.78rem;color:#ffe08a}
+.bd-porte-txt{margin:0;min-height:1.3em;width:220px;max-width:100%;white-space:normal}
+.b-bulle .bd-porte-secret{border-color:#6b4fa8}
+.b-bulle .bd-porte-secret p{margin:0;width:auto}
+.b-bulle .bd-porte-btn{}
+/* fâché, ou « Encore toi ? » : son visage et « Reviens plus tard », cerclés de rouge */
+.b-gens-carte.bd-fache{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important;padding:2px 12px 2px 2px!important;gap:8px}
+.b-gens-carte.bd-fache > span{font-size:.8rem;font-weight:700;color:#ffd2cb}
 
 /* ==========================================================
    Les petites scènes animées des fins d'enquête (illus-fin.js ; Romain, 5 novembre, 9 h 37).
@@ -6147,8 +6244,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 11:45 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 11:45';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 13:13 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 13:13';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -6253,7 +6350,7 @@ D.TALENTS = {
   ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
   /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
      Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
-  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Devant certains bâtiments, tu entres sans bruit et tu surprends un bout de conversation : une phrase à trous, dans ton Carnet (deux fois par enquête). Et tu entends mieux que tout le monde : dans toutes tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},
+  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Écouter aux portes : sur la carte, partout où quelqu\'un se trouve, tu entends ce qu\'il dit, tout le temps et gratuitement. Tout est gardé dans ton Carnet, sur sa page. Et tu entends mieux que tout le monde : dans tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},   /* (Romain, 5 novembre, 12 h 31 : plus de limite, plus de phrase à trous aux portes) */
   exiger:{role:'barde', niv:2, nom:'Exige la vérité', ic:'⚖️', d:'À la fin d\'un interrogatoire, tu exiges la vérité : tous ses mensonges deviennent vrais. Deux fois par enquête.', fx:{verite:2}},
   charmeur:{role:'barde', niv:4, nom:'Charmeur', ic:'😊', d:'Tes questions maladroites ne vexent plus jamais personne.', fx:{charmeur:true}},
   physio:{role:'barde', niv:4, nom:'Physionomiste', ic:'🧐', d:'Au début de chaque enquête, tu sais déjà comment ment un des suspects.', fx:{physio:1}},
@@ -6852,7 +6949,6 @@ MJ.lancer = function(el, type, params, fin, options){
       '<div class="mj-titres"><b class="mj-nom">' + esc(options.titre || def.nom) + '</b>' +
       '</div>' +
       '<button class="mj-btn-lire" type="button" aria-label="Écouter la consigne">🔊</button>' +
-      '<button class="mj-btn-stop" type="button" aria-label="Arrêter la lecture">⏹</button>' +
     '</div>' +
     '<div class="mj-scene"></div>' +
   '</div>');
@@ -6863,7 +6959,7 @@ MJ.lancer = function(el, type, params, fin, options){
   var phrase = (MJ.PHRASES && MJ.PHRASES[type]) || def.phrase || consigne;
   if(typeof phrase === 'function') try{ phrase = phrase(params); }catch(e){ phrase = consigne; }
   racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
-  racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
+  /* (plus de bouton ⏹ dans l'en-tête : Romain, 5 novembre, 12 h 31 ; le ⏹ du moteur, #stop-voix, apparaît pendant la lecture) */
 
   /* ---------- La pause (Romain, 5 novembre, 11 h 21 : tous les mini-jeux, tous les joueurs, tout le temps) ----------
      ⏸️ dans l'en-tête : tout se fige (mj-temps.js), le mini-jeu se cache (options.cadrePause, sinon le cadre autour de el)
@@ -11596,7 +11692,7 @@ var MED_POS = {F1:[-4, -5], L4:[0, 3], L6:[-3, -4]};
 var PASTILLE = {r:18, '*':[22, -21], F1:[27, 9], L4:[27, 7], L6:[27, 8]};
 function pastille(p, mq, x, y){
   var r = PASTILLE.r, act = mq.act ? ' data-act="' + esc(mq.act) + '" data-id="' + esc(mq.id || '') + '"' : '';
-  return '<g class="ca-marqueur ca-pastille' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + '" data-lieu="' + esc(mq.maison || '') + '"' + (mq.visage ? ' data-pnj="' + esc(mq.visage) + '"' : '') +
+  return '<g class="ca-marqueur ca-pastille' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + (mq.grise ? ' ingr-fait' : '') + '" data-lieu="' + esc(mq.maison || '') + '"' + (mq.visage ? ' data-pnj="' + esc(mq.visage) + '"' : '') +
     ' transform="translate(' + f(x) + ' ' + f(y) + ')"' + act + '>' + (mq.titre ? '<title>' + esc(mq.titre) + '</title>' : '') +
     '<circle cx="2" cy="3" r="' + (r + 1) + '" fill="#0b1a10" opacity=".3"/>' +
     '<circle r="' + r + '" fill="var(--ca-m, #9fd8ff)" stroke="' + CONTOUR + '" stroke-width="2.5"/><circle r="' + (r - 4) + '" fill="#fffaf0"/>' +
@@ -11622,10 +11718,10 @@ function posMedaillon(k){ var h = MAISONS[k], d = MED_POS[k] || [MED.dx, MED.dy]
 /* Où est chacun (Romain, 5 novembre, 8 h 59 ; DESIGN 12.20), pareil pour tous les rôles et toutes les enquêtes :
    o.presents = {maison: 1} : l'habitant est chez lui → le petit triangle jaune qui flotte au-dessus du rond de sa maison (pas d'autre icône) ;
    o.absents = {maison: 1} : il est ailleurs → le rond de sa maison est grisé, et son visage (cerclé de jaune, avec le triangle) est là où il est. */
-function fleche(x, y, i){
+function fleche(x, y, i, rouge){   /* rouge : un villageois fâché (le Barde, carte-jeu.js) */
   return '<g transform="translate(' + f(x) + ' ' + f(y) + ')" pointer-events="none"><g class="ca-fleche" style="animation-delay:-' + (((i || 0) * .37) % 1.2).toFixed(2) + 's">' +
-    '<path d="M-13 -19 L 13 -19 L 0 0 Z" fill="#ffd23f" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linejoin="round"/>' +
-    '<path d="M-6 -15 L 3 -15" stroke="#fff6c8" stroke-width="2.6" stroke-linecap="round"/></g></g>';
+    '<path d="M-13 -19 L 13 -19 L 0 0 Z" fill="' + (rouge ? '#ff5a4a' : '#ffd23f') + '" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linejoin="round"/>' +
+    '<path d="M-6 -15 L 3 -15" stroke="' + (rouge ? '#ffd2cb' : '#fff6c8') + '" stroke-width="2.6" stroke-linecap="round"/></g></g>';
 }
 var FLECHE_H = 26;   /* la place du triangle au-dessus d'un rond (avec son balancement) */
 function medaillon(p, o, k){
@@ -11633,7 +11729,7 @@ function medaillon(p, o, k){
   var m = posMedaillon(k), x = m.x, y = m.y, r = m.r, absent = !!(o.absents || {})[k];
   return '<g class="ca-habitant' + (hb.inconnu ? ' ca-inconnu' : '') + (absent ? ' ca-absent' : '') + '" data-pnj="' + esc(hb.id || '?') + '">' + (hb.nom ? '<title>' + esc(hb.nom) + (absent ? ' (pas chez ' + (hb.elle ? 'elle' : 'lui') + ')' : '') + '</title>' : '') +
     '<circle cx="' + f(x + 3) + '" cy="' + f(y + 4) + '" r="' + r + '" fill="#0b1a10" opacity=".3"/>' +
-    '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + r + '" fill="' + (hb.inconnu ? '#cfc6b0' : '#f3d27a') + '" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + r + '" fill="' + (hb.inconnu ? '#cfc6b0' : (o.presents || {})[k] === 'fache' ? '#ff5a4a' : '#f3d27a') + '" stroke="' + CONTOUR + '" stroke-width="3"/>' +   /* (rouge : fâché, chez lui) */
     (hb.inconnu ? inconnuSvg(x, y, r - 4) : visageUse(p, hb.id, x, y, (r - 4) * 2)) +
     '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + (r - 4) + '" fill="none" stroke="' + CONTOUR + '" stroke-width="1.6"/></g>';
 }
@@ -11693,7 +11789,7 @@ function marqueurPose(p, mq, i, fx, fy, dir, avecNom, ks, rHit){
   var cid = p + 'clip' + i, r2 = R - 6;
   /* la position d'un villageois : comme le rond de sa maison (cerclé de jaune), sans pointe, avec le petit triangle qui flotte au-dessus */
   var presence = mq.classe === 'presence';
-  var s = '<g class="ca-marqueur ca-pose' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + '" data-lieu="' + esc(mq.lieu || mq.maison || '') + '"' + (mq.visage ? ' data-pnj="' + esc(mq.visage) + '"' : '') + ' transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '>' +
+  var s = '<g class="ca-marqueur ca-pose' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + (mq.grise ? ' ingr-fait' : '') + (mq.fache ? ' ca-fache' : '') + '" data-lieu="' + esc(mq.lieu || mq.maison || '') + '"' + (mq.visage ? ' data-pnj="' + esc(mq.visage) + '"' : '') + ' transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '>' +
     (mq.titre ? '<title>' + esc(mq.titre) + '</title>' : '') +
     '<g class="ca-flotte" style="animation-delay:-' + ((i * .41) % 2.4).toFixed(2) + 's">' +
     (presence ? '<circle cx="3" cy="4" r="' + R + '" fill="#0b1a10" opacity=".3"/>' : '<path d="' + pointe + '" fill="var(--ca-m, #f5b945)" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/>') +
@@ -11704,7 +11800,7 @@ function marqueurPose(p, mq, i, fx, fy, dir, avecNom, ks, rHit){
   else if(mq.ic){ var nIc = nbEmojis(String(mq.ic)); s += '<text x="0" y="1" font-size="' + (nIc <= 1 ? 29 : nIc === 2 ? 20 : 15) + '" text-anchor="middle" dominant-baseline="central">' + esc(mq.ic) + '</text>'; }
   if(presence) s += '<circle r="' + r2 + '" fill="none" stroke="' + CONTOUR + '" stroke-width="1.6"/>';
   s += '</g>';
-  if(presence) s += fleche(0, -R - 5, i);
+  if(presence) s += fleche(0, -R - 5, i, mq.fache);
   if(avecNom && mq.label) s += etiquette(0, -R - 4 - (MQ_NOM + 16) / 2, '', mq.label, {taille: MQ_NOM, classe: 'ca-nom'});
   /* sa zone à toucher, plus grande que le rond, va dans la couche du dessous (sous les étiquettes) */
   var z = '<g class="ca-zone ca-zone-mq' + (mq.act ? ' ca-clic' : '') + '" data-zone-mq="' + esc(mq.lieu || '') + '" transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '><circle class="ca-hit" r="' + f(rHit) + '" fill="#fff" opacity="0"/></g>';
@@ -11794,7 +11890,7 @@ function marqueurs(p, o, geo){
     if(!MAISONS[k] || !habitantDe(o, k)) return;
     var m = posMedaillon(k);
     pastilles.push([m.x - 15, m.y - m.r - FLECHE_H - 4, m.x + 15, m.y - m.r]);
-    sortie.dessus += fleche(m.x, m.y - m.r - 5, j);
+    sortie.dessus += fleche(m.x, m.y - m.r - 5, j, o.presents[k] === 'fache');
   });
   if(ordre.length){
     /* tout ce qui est déjà écrit sur la carte : les étiquettes des lieux et les notes des maisons */
@@ -11818,7 +11914,7 @@ function marqueurs(p, o, geo){
       var dx = (j - (n - 1) / 2) * pas, x = it.x + dx, y = it.y - (n > 1 ? Math.abs(dx) * .15 : 0);
       var act = mq.act ? ' data-act="' + esc(mq.act) + '" data-id="' + esc(mq.id || '') + '"' : '';
       var cid = p + 'clip' + it.i;
-      var m2 = '<g class="ca-marqueur' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + '" transform="translate(' + f(x) + ' ' + f(y) + ')"' + act + '>' +
+      var m2 = '<g class="ca-marqueur' + (mq.act ? ' ca-clic' : '') + (mq.classe ? ' ' + esc(mq.classe) : '') + (mq.grise ? ' ingr-fait' : '') + '" transform="translate(' + f(x) + ' ' + f(y) + ')"' + act + '>' +
         '<g class="ca-flotte" style="animation-delay:-' + ((it.i * .41) % 2.4).toFixed(2) + 's">' +
         '<ellipse cx="0" cy="4" rx="12" ry="5" fill="#000" opacity=".3"/>' +
         '<path d="M-13 -30 L0 0 L13 -30 Z" fill="var(--ca-m, #f5b945)" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/>' +
@@ -20444,12 +20540,21 @@ MJ.enregistrer('chaudron', {
       o.style.animation = 'none'; void o.offsetWidth; o.style.animation = '';
       clearTimeout(S.oupsT); S.oupsT = setTimeout(function(){ o.hidden = true; }, 2600); timers.push(S.oupsT);
     }
-    /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur */
+    /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur (−1 cœur).
+       Avant, il comptait comme fait : on pouvait tout laisser passer, perdre ses cœurs et réussir la potion sans rien y mettre.
+       Maintenant (Romain, 5 novembre, 12 h 31) la frise repart de lui : il revient, avec tous ceux d'après (ceux déjà versés restent versés),
+       et la frise défile plus vite pour que la partie ne dure pas plus longtemps que prévu (au plus 1,7 fois plus vite). */
+    var VITESSE_MAX = 1.7;
     function manquee(f){
-      f.fait = true; f.rate = true;
-      f.el.classList.add('rate'); majRecette();
       erreur('oubli', null, f.ingr);
-      if(!S.termine && S.fen.every(function(x){ return x.fait; })) apres(600, lancerFinale);
+      if(S.fini || S.termine) return;
+      var i0 = S.fen.indexOf(f), decale = (S.tf + 0.9) - f.a;
+      for(var i = i0; i < S.fen.length; i++){ var x = S.fen[i]; if(x.fait) continue; x.a += decale; x.fige = false; x.z = false; x.el.classList.remove('zone', 'rate'); }
+      if(S.finReelle === undefined) S.finReelle = S.planApres + R.fenetre;   /* (la fin prévue de la frise, en secondes de jeu) */
+      var der = S.fen[S.fen.length - 1], reste = der.a + R.fenetre - S.tf, budget = Math.max(reste / VITESSE_MAX, S.finReelle - S.t);
+      S.vitesse = U.borne(reste / Math.max(budget, 0.1), 1, VITESSE_MAX);
+      f.el.classList.remove('revient'); void f.el.offsetWidth; f.el.classList.add('revient');
+      majRecette();
     }
     /* tous les ingrédients sont passés : la fiole se remplit tant que la potion est dans sa zone */
     function lancerFinale(){
@@ -20578,7 +20683,7 @@ MJ.enregistrer('chaudron', {
       if(S.h >= 100){ S.h = 100; rendu(dt); echec('boum'); return false; }
       if(S.h <= 0){ S.h = 0; rendu(dt); echec('gel'); return false; }
       /* la frise : niveaux 1-2, elle attend que le carré dans la zone soit versé ; sinon, un carré sorti est oublié */
-      S.tf += dt;
+      S.tf += dt * (S.vitesse || 1);   /* (plus vite après un ingrédient oublié : manquee) */
       var nx = prochain();
       if(R.attend && nx){ var st = arretDe(nx); if(S.tf > st) S.tf = Math.max(st, S.tf - dt); }
       if(!R.attend){
@@ -30297,7 +30402,8 @@ def('arbre_chat', {w:180, h:300, p:120, z:'sol', deco:true, chambre:true, chat:t
     if(c.fo === 2) s += c.boite(94, -44, 170, 2, cz - 30, cz + 30, UNI(G('pierre'), '#c9c5e2', '#77729c')) + c.sur(P('M119,2 V-18 C119,-30 145,-30 145,-18 V2 Z', '#2a1d14', ' stroke-width="3"'), cz - 30);
     if(c.fo === 3) s += c.cylindre(132, cz, 26, -30, 2, p[0], null) + c.tour(132, cz, [[-60, 4], [-42, 20], [-30, 30]], p[0], null) + c.sur(Cir(132, -14, 8, '#bff3ff', ' stroke-width="3"'), cz - 26);
     if(c.fo === 1) s += c.boule(150, 70, cz, 8, '#ff8fb3') + c.boule(24, 150, cz, 7, '#ffd36a');
-    s += c.ligne([[150, 98, cz], [152, 140, cz]], '#5a4630', 2) + c.boule(152, 146, cz, 9, c.ti ? p[1] : '#ff7a59');
+    /* la boule qui pend (le chat la tape, elle se balance : .at-ac-boule ; un peu plus bas et plus grosse pour qu'il l'attrape) */
+    s += '<g class="at-ac-boule">' + c.ligne([[150, 98, cz - 26], [152, 194, cz - 26]], '#5a4630', 2) + c.boule(152, 205, cz - 26, 11, c.ti ? p[1] : '#ff7a59') + '</g>';
     return [N(s)];
   }});
 
@@ -31392,6 +31498,12 @@ function vue(el, opts){
     _dehors:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); st.pos = chatSolVisible(V); placerEl(V, o); var d = V.elO[id]; if(d) d.style.zIndex = Math.round(chatPos(V, o).z * 5); return st.pos; },
     _reveil:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} } if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; placerEl(V, o); chatPose(V, o, 'assis'); chatPlanifier(V, o, 20000); return true; },
     _bulle:function(id){ var d = V.elO[id], b = d && d.querySelector('.at-bulle'); return b && !b.hidden ? b.getAttribute('data-bulle') : null; },
+    /* l'arbre à chat, l'autre pièce (Romain, 5 novembre, 12 h 31) : un jeu à l'arbre tout de suite ('grimpe', 'boule', 'griffe') ;
+       aller dans l'autre pièce maintenant ; revenir maintenant ; où il est */
+    _arbre:function(id, quoi){ var o = V.parId[id]; if(!o) return null; var st = chatEtat(V, o); if(st.anim || st.tenu) return null; if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; chatPose(V, o, 'assis'); return chatArbre(V, o, quoi); },
+    _passe:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; if(st.pose === 'dort') chatPose(V, o, 'assis'); PASSAGE_T = 0; return peutPasser(V, o) ? chatPasse(V, o) : false; },
+    _revient:function(id){ var o = V.parId[id]; return o ? chatRevient(V, o, true) : false; },
+    _ou:function(id){ var o = V.parId[id], st = o && V.chats[id]; return o ? {salle:salleDe(o), x:o.x, y:o.y, sur:o.sur || null, vu:!!V.elO[id], passe:!!(st && st.passe), pose:st ? st.pose : null, pos:st ? st.pos : null, retour:RETOUR_MEMO[id] ? Math.round(RETOUR_MEMO[id] - Date.now()) : null} : null; },
     _guide:function(){ return guideElements(V).map(function(e){ return e.getAttribute('data-obj') || e.getAttribute('data-tas') || e.getAttribute('data-carton') || e.getAttribute('data-pot') || e.className; }); },
     _flacons:function(){ return (V.elFl || []).map(function(d){ return {k:d._k, n:d._n, cadre:cadreEl(d), neuf:d.classList.contains('at-nouveau')}; }); }
   };
@@ -32039,6 +32151,8 @@ function brancher(V){
     /* la bulle du chat (ce qu'il demande) : un toucher dit quoi faire */
     if(obj && t.closest('.at-bulle')){ var oc = V.parId[obj.getAttribute('data-obj')]; gesteOuDefile(V, e, function(){ if(oc) bulleChat(V, oc); }); return; }
     if(obj && t.closest('.at-bonheur-hab')){ var oh = obj.getAttribute('data-obj'); gesteOuDefile(V, e, function(){ ouvrirGarde(V, oh); }); return; }
+    /* ✕ à côté de sa barre de bonheur : elle s'enlève tout de suite (Romain, 5 novembre, 12 h 31) */
+    if(obj && t.closest('.at-bonheur-x')){ var ox = V.parId[obj.getAttribute('data-obj')]; gesteOuDefile(V, e, function(){ if(ox){ cacherBonheur(V, ox); son(V, 'clic'); } }); return; }
     if(obj){
       var o = V.parId[obj.getAttribute('data-obj')];
       if(o) prendreObjet(V, e, o);
@@ -32065,6 +32179,7 @@ function brancher(V){
     if(carton){ ouvrirCarton(V, carton.getAttribute('data-carton')); return; }
     if(obj && t.closest('.at-bulle')){ var oc = V.parId[obj.getAttribute('data-obj')]; if(oc) bulleChat(V, oc); return; }
     if(obj && t.closest('.at-bonheur-hab')){ ouvrirGarde(V, obj.getAttribute('data-obj')); return; }
+    if(obj && t.closest('.at-bonheur-x')){ var ox2 = V.parId[obj.getAttribute('data-obj')]; if(ox2){ cacherBonheur(V, ox2); son(V, 'clic'); } return; }
     if(obj){ var o = V.parId[obj.getAttribute('data-obj')]; if(o) toucherObjet(V, o, e); return; }
     if(fixe){ var pot = t.closest('[data-pot]'); action(V, fixe.getAttribute('data-at'), pot ? pot.getAttribute('data-pot') : fixe.getAttribute('data-b')); return; }
     if(surf) restylerSurface(V, surf.getAttribute('data-surf'));
@@ -32907,9 +33022,54 @@ function feuille(cls, titre, corps){
 }
 
 /* ---------- La cueillette (posée devant la porte) : « où la ranger ? » ---------- */
+/* Un toucher sur la cueillette devant la porte : tout se range tout seul (Romain, 5 novembre, 12 h 31 : « c'est trop chiant de ranger »).
+   Chaque ingrédient va d'abord là où son étiquette est collée, puis là où il y en a déjà, puis dans une case vide, puis là où il reste
+   de la place ; liquides dans le verre (bocaux, fioles), le reste dans les tiroirs et les placards. Ce qui ne trouve pas de place reste
+   devant la porte (la fenêtre « Ta cueillette » s'ouvre alors pour le dire). */
+function rangerAuto(V){
+  var p = V.etat.panier, mis = 0, reste = 0, ou = {};
+  cles(p).forEach(function(k){
+    if(!(p[k] > 0)) return;
+    var places = [];
+    V.etat.objets.forEach(function(o){
+      var c = catDe(o);
+      if(!c.cases || !!c.verre !== estLiquide(k) || (o.sur && !V.parId[o.sur.o])) return;
+      o.cases.forEach(function(cs, j){
+        var cap = c.cases[j] ? c.cases[j].cap : 0, s0 = somme(cs.i), e = cs.e || [];
+        if(cap - s0 <= 0) return;
+        var rang = e.indexOf(k) >= 0 ? 0 : (cs.i[k] || 0) > 0 ? 1 : (!s0 && !e.length) ? 2 : (!s0 ? 3 : 4);
+        places.push({o:o, j:j, cap:cap, rang:rang});
+      });
+    });
+    places.sort(function(a, b){ return a.rang - b.rang; });
+    places.forEach(function(x){
+      if(!(p[k] > 0)) return;
+      var cs = x.o.cases[x.j], q = Math.min(p[k], x.cap - somme(cs.i));
+      if(q <= 0) return;
+      prendre(V, {de:'panier', ingr:k}, q); cs.i[k] = (cs.i[k] || 0) + q; mis += q;
+      ou[x.o.id] = (ou[x.o.id] || '') + icIngr(k);
+    });
+    if(p[k] > 0) reste += p[k];
+  });
+  if(mis){
+    son(V, 'plouf');
+    cles(ou).forEach(function(id){ var o = V.parId[id], d = V.elO[id]; if(!o) return; flotter(V, o, '+ ' + ou[id]);
+      if(d && d._s) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + d._s * 1.06 + ',' + d._s * 0.94 + ')', offset:0.4}, {transform:'scale(' + d._s + ')'}], {duration:260}); });
+    changer(V);
+    try{ guideFait(V, 'rangement'); }catch(e){}
+  }
+  return {mis:mis, reste:reste};
+}
 function ouvrirArrivage(V, k){
   V.etat.nouveaux = 0;
   changer(V);
+  var ra = rangerAuto(V);
+  if(ra.mis){
+    apresRangement(V);
+    if(!ra.reste){ toast(V, '<b>🌿 ✔</b> Tout est rangé !', 2400, 'Tout est rangé !'); return; }
+    k = null;
+  }
+  if(ra.reste){ var tr = 'Plus de place pour le reste : installe un meuble de plus (ouvre un carton), ou range à la main.'; toast(V, '<b>📦 ?</b> ' + esc(tr), 4200, tr); }
   dessinerTas(V); majReperes(V);
   V.avaitCarton = somme(V.etat.panier) > 0;
   if(k && V.etat.panier[k] > 0){ V.sel = k; V.selCase = null; }
@@ -33182,7 +33342,7 @@ function dessinerChaudron(V, prets){
    ========================================================== */
 var CHAT_VITESSE = 135;          /* unités logiques par seconde */
 var CHAT_SIESTE_TOUCHE = 30000;  /* toucher le chat : il dort 30 secondes */
-var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut'];
+var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut', 'griffe', 'boule'];   /* (griffe, boule : à l'arbre à chat, dressé sur ses pattes arrière) */
 
 function chatsDe(V){ return ici(V).filter(function(o){ return o.t === 'chat'; }); }   /* (les chats de la pièce dessinée) */
 function chatEtat(V, o){
@@ -33201,6 +33361,8 @@ function posValide(V, pos){
 function chatPos(V, o){
   var st = chatEtat(V, o);
   if(st.pos && !posValide(V, st.pos)) st.pos = null;
+  /* (le meuble où il était assis est passé dans l'autre pièce : il reprend sa place à lui, il ne flotte jamais en l'air) */
+  if(st.pos && st.pos.sur && V.parId[st.pos.sur.o] && salleDe(V.parId[st.pos.sur.o]) !== salleDe(o)) st.pos = null;
   if(!st.pos) return tailleChat(o, posObj(V, o));
   var ps = {t:'chat', x:st.pos.x, y:st.pos.y, sur:st.pos.sur ? {o:st.pos.sur.o, k:st.pos.sur.k, dx:st.pos.sur.dx} : null};
   var p = posObj(V, ps);
@@ -33228,6 +33390,8 @@ function chatPlanifier(V, o, ms){
 }
 function chatsDemarrer(V){
   chatsDe(V).forEach(function(o){ chatPose(V, o, chatEtat(V, o).pose); chatPlanifier(V, o, 2000 + Math.random() * 3000); });
+  /* (un chat de l'autre pièce reviendra par l'arche, un peu plus tard : Romain, 5 novembre, 12 h 31) */
+  chatsTous(V).forEach(function(o){ if(salleDe(o) !== V.salle) chatPlanifierRetour(V, o); else delete RETOUR_MEMO[o.id]; });
 }
 
 /* ---------- Se déplacer : marcher ou sauter, de là où il est jusqu'à la nouvelle place ---------- */
@@ -33300,17 +33464,28 @@ function chatSolVisible(V){
 }
 /* Là où il est : sur un meuble ? */
 function chatSurMeuble(V, o){ var st = chatEtat(V, o); return !!(st.pos ? st.pos.sur : o.sur); }
-/* Une suite de pas : descendre du meuble si besoin, marcher jusqu'au pied du meuble visé, sauter dessus */
+/* Une suite de pas : descendre du meuble si besoin, marcher jusqu'au pied du meuble visé, sauter dessus.
+   L'arbre à chat, on y monte et on en descend de plateforme en plateforme (Romain, 5 novembre, 12 h 31 : « qu'il puisse monter dessus ») */
 function chatAller(V, o, cible, fin){
-  var etapes = [];
-  if(chatSurMeuble(V, o)){
-    var p = chatPos(V, o);
-    etapes.push(['saute', chatSol(V, p.x + (Math.random() < 0.5 ? -50 : 50), Math.max(p.y + 40, SOL_MIN + 50))]);
+  var etapes = [], st0 = chatEtat(V, o), la = st0.pos ? st0.pos.sur : o.sur, aL = surArbre(V, la), aV = surArbre(V, cible.sur), k;
+  if(aL && aL === aV){                                 /* déjà sur cet arbre : d'une plateforme à l'autre */
+    for(k = la.k; k !== cible.sur.k; ){ k += cible.sur.k > k ? 1 : -1; etapes.push(['saute', {sur:k === cible.sur.k ? cible.sur : platArbre(aL, k)}]); }
+  } else {
+    if(chatSurMeuble(V, o)){
+      var p = chatPos(V, o);
+      if(aL){                                          /* il descend de l'arbre : plateforme par plateforme, puis par terre, devant */
+        for(k = la.k - 1; k >= 0; k--) etapes.push(['saute', {sur:platArbre(aL, k)}]);
+        var pa = posObj(V, aL);
+        etapes.push(['saute', chatSol(V, pa.x + (platArbre(aL, 0).dx - 34) * pa.s, Math.min(solMax(V), pa.y + 36))]);
+      } else etapes.push(['saute', chatSol(V, p.x + (Math.random() < 0.5 ? -50 : 50), Math.max(p.y + 40, SOL_MIN + 50))]);
+    }
+    if(cible.sur){
+      var pv = aV ? posObj(V, aV) : null, dep = aV ? {x:pv.x + platArbre(aV, 0).dx * pv.s, y:Math.min(solMax(V), pv.y + 28)} : cible.depart;
+      etapes.push(['marche', chatSol(V, dep.x, dep.y)]);
+      if(aV) for(k = 0; k < cible.sur.k; k++) etapes.push(['saute', {sur:platArbre(aV, k)}]);   /* il grimpe : la plus basse d'abord */
+      etapes.push(['saute', {sur:cible.sur}]);
+    } else etapes.push(['marche', cible]);
   }
-  if(cible.sur){
-    etapes.push(['marche', chatSol(V, cible.depart.x, cible.depart.y)]);
-    etapes.push(['saute', {sur:cible.sur}]);
-  } else etapes.push(['marche', cible]);
   (function suite(i){
     var st = chatEtat(V, o);
     if(V.arrete || st.tenu) return;
@@ -33354,6 +33529,10 @@ function chatAgir(V, o){
   }
   var suite = function(ms){ chatPose(V, o, 'assis'); chatPlanifier(V, o, ms || (2200 + Math.random() * 2800)); };
   if(tamaAgir(V, o)) return;                      /* ses besoins d'abord (manger, boire, dormir, demander) ; le chaton joue */
+  /* l'arbre à chat de la pièce : il y grimpe, il joue avec la boule, il s'y fait les griffes ;
+     de temps en temps, il va faire un tour dans l'autre pièce, par l'arche (Romain, 5 novembre, 12 h 31) */
+  if(arbreIci(V) && Math.random() < 0.25 && chatArbre(V, o)) return;
+  if(Math.random() < PASSAGE.chance && peutPasser(V, o)){ chatPasse(V, o); return; }
   var r = Math.random() * (st.reveil ? 0.87 : 1);   /* pas de sieste juste après s'être réveillé */
   st.reveil = false;
   if(r < 0.27){                                   /* une petite promenade */
@@ -33456,6 +33635,195 @@ function chatLache(V, o){
   st.pos = null;
   if(st.pose !== 'dort') chatPose(V, o, 'assis');
   chatPlanifier(V, o, st.pose === 'dort' ? Math.max(1000, st.dortJusqua - Date.now()) : 3500);
+}
+
+/* ==========================================================
+   L'arbre à chat (Romain, 5 novembre, 12 h 31 : « Qu'il puisse monter dessus, jouer avec la boule,
+   gratter ses pattes sur les colonnes verticales de l'arbre à chat. »)
+   Quand un arbre à chat est dans sa pièce, il y va de temps en temps (chatAgir), jamais deux fois de suite pour la même chose :
+   - grimpe : de plateforme en plateforme jusqu'en haut (chatAller), puis il s'y couche ou s'y assoit ;
+   - boule : sous la boule qui pend, il se dresse et la tape de la patte, elle se balance ;
+   - griffe : dressé contre une colonne, il s'y fait les griffes (ses pattes montent et descendent, des traces, des copeaux).
+   Moins de mouvement demandé (MOINS_MOUV) : juste la pose, sans sauts ni balancement.
+   ========================================================== */
+var ARBRE = {poteaux:[[46, 174, 282], [132, 14, 282]], boule:[152, 205, -26], griffes:214};   /* (dans le dessin de l'arbre : x, y du haut, y du bas ; la boule : x, y, z depuis le milieu) */
+var ARBRE_JEUX = ['grimpe', 'boule', 'griffe'];
+function arbreIci(V){ return ici(V).filter(function(x){ return x.t === 'arbre_chat' && !x.sur && !x.cote; })[0] || null; }
+function surArbre(V, sur){ var a = sur && V.parId[sur.o]; return a && a.t === 'arbre_chat' && !a.sur ? a : null; }
+function platArbre(a, k){ var sf = catDe(a).surf[k]; return {o:a.id, k:k, dx:Math.round((sf.x0 + sf.x1) / 2)}; }
+/* un point du dessin de l'arbre (x, y locaux ; z : la profondeur, le milieu par défaut), à l'écran */
+function ptArbre(V, a, lx, ly, lz){
+  var R = posObj(V, a).R, q = mondeDe(R, lx, ly, lz === undefined ? (catDe(a).p || 40) / 2 : lz), e = proj(q[0], q[1], q[2]);
+  return {x:e[0], y:e[1]};
+}
+/* (toujours là, à sa pose, dans la pièce dessinée : sinon le jeu s'arrête) */
+function enJeu(V, o, d, pose){ var st = V.chats[o.id]; return !!(st && !st.tenu && !st.anim && !V.arrete && V.elO[o.id] === d && st.pose === pose && salleDe(o) === V.salle); }
+function chatArbre(V, o, quoi){
+  var a = arbreIci(V), st = chatEtat(V, o);
+  if(!a || !V.elO[o.id] || st.tenu || st.anim || st.depart || salleDe(o) !== V.salle) return null;
+  var l = ARBRE_JEUX.filter(function(j){ return j !== st.dernierArbre; });
+  quoi = ARBRE_JEUX.indexOf(quoi) >= 0 ? quoi : l[Math.floor(Math.random() * l.length)];
+  st.dernierArbre = quoi;
+  if(quoi === 'grimpe') arbreGrimper(V, o, a);
+  else if(quoi === 'boule') arbreBoule(V, o, a);
+  else arbreGriffer(V, o, a);
+  return quoi;
+}
+/* Il grimpe (le plus souvent tout en haut) ; là-haut, il se couche un moment ou il s'assoit et regarde la pièce */
+function arbreGrimper(V, o, a){
+  var st = chatEtat(V, o), n = catDe(a).surf.length, k = Math.random() < 0.65 ? n - 1 : n - 2;
+  chatAller(V, o, {sur:platArbre(a, k), depart:{x:0, y:0}}, function(){
+    if(Math.random() < 0.5){ chatPose(V, o, 'dort'); st.dortJusqua = Date.now() + 9000 + Math.random() * 7000; chatPlanifier(V, o, st.dortJusqua - Date.now() + 30); }
+    else { chatPose(V, o, Math.random() < 0.5 ? 'lave' : 'assis'); chatPlanifier(V, o, 4000 + Math.random() * 3000); }
+    donner(o, 'jeu', 5); majHumeur(V, o);
+  });
+}
+/* La boule qui pend sous la plateforme du milieu : elle se balance (sens : 1 tapée depuis la gauche, -1 depuis la droite) */
+function balancerBoule(V, a, sens){
+  var d = V.elO[a.id], g = d && d.querySelector('.at-ac-boule');
+  if(!g || MOINS_MOUV) return;
+  anim(g, [0, -30, 22, -13, 7, -3, 0].map(function(x){ return {transform:'rotate(' + (x * (sens || 1)) + 'deg)'}; }), {duration:1600, easing:'ease-out'});
+}
+function arbreBoule(V, o, a){
+  var st = chatEtat(V, o), pa = posObj(V, a), b = ptArbre(V, a, ARBRE.boule[0], ARBRE.boule[1], (catDe(a).p || 40) / 2 + ARBRE.boule[2]);
+  var y = Math.min(solMax(V), pa.y + 8), sc = echelleSol(y), c = chatSol(V, b.x - 4 * sc, y);
+  chatAller(V, o, c, function(){
+    var d = V.elO[o.id];
+    if(!d) return;
+    st.gauche = b.x < chatPos(V, o).x - 30 * sc;                  /* (la boule est devant lui) */
+    d.classList.toggle('at-c-gauche', st.gauche);
+    chatPose(V, o, 'assis');                                       /* il la regarde… */
+    chatPlanifier(V, o, 4200);
+    apres(V, 650, function(){
+      if(!enJeu(V, o, d, 'assis')) return;
+      chatPose(V, o, 'boule');                                     /* … il se dresse et la tape, trois fois */
+      [0, 640, 1280].forEach(function(t){
+        apres(V, t, function(){
+          if(!enJeu(V, o, d, 'boule')) return;
+          if(!MOINS_MOUV) animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translateY(-24%)', offset:0.45}, {transform:'translateY(0)'}], {duration:520, easing:'cubic-bezier(.3,0,.4,1)'});
+          apres(V, 220, function(){ if(enJeu(V, o, d, 'boule')){ balancerBoule(V, a, st.gauche ? -1 : 1); son(V, 'tic'); } });
+        });
+      });
+      apres(V, 2050, function(){ if(enJeu(V, o, d, 'boule')){ chatPose(V, o, 'assis'); donner(o, 'jeu', 10); majHumeur(V, o); } });
+    });
+  });
+}
+/* Des traces de griffes sur la colonne (et quelques copeaux qui tombent) : juste devant l'arbre, derrière le chat */
+function griffures(V, a, x, y, s){
+  var e = document.createElement('div'), dA = V.elO[a.id];
+  e.className = 'at-griffures';
+  e.style.left = pX(V, x - 17 * s); e.style.top = pY(V, y - 20 * s); e.style.width = pW(V, 34 * s); e.style.height = pH(V, 40 * s);
+  e.style.zIndex = dA ? (parseInt(dA.style.zIndex, 10) || 0) + 1 : 5;
+  e.innerHTML = '<svg viewBox="0 0 28 34" aria-hidden="true"><path d="M6,3 L9,29 M14,1 L16,31 M22,3 L23,27"/></svg><i></i><i></i><i></i>';
+  V.scene.appendChild(e);
+  apres(V, 1700, function(){ e.remove(); });
+}
+function arbreGriffer(V, o, a){
+  var st = chatEtat(V, o), pa = posObj(V, a), y = Math.min(solMax(V), pa.y + 12), sc = echelleSol(y);
+  /* la colonne de gauche, lui à gauche (il regarde à droite) ; contre un mur, la grande colonne, lui à droite */
+  var q = ARBRE.poteaux[0], pt = ptArbre(V, a, q[0], q[2]), droite = true, x = pt.x - 6 * sc, c = chatSol(V, x, y);
+  if(Math.abs(c.x - x) > 8){ q = ARBRE.poteaux[1]; pt = ptArbre(V, a, q[0], q[2]); droite = false; c = chatSol(V, pt.x + 6 * sc, y); }
+  chatAller(V, o, c, function(){
+    var d = V.elO[o.id];
+    if(!d) return;
+    st.gauche = !droite; d.classList.toggle('at-c-gauche', st.gauche);
+    chatPose(V, o, 'griffe');
+    chatPlanifier(V, o, 4300);
+    var h = ptArbre(V, a, q[0], ARBRE.griffes, (catDe(a).p || 40) / 2 - 11);
+    [250, 1050].forEach(function(t){ apres(V, t, function(){ if(enJeu(V, o, d, 'griffe')){ griffures(V, a, h.x, h.y, pa.s); son(V, 'tic'); } }); });
+    apres(V, 2300, function(){ if(enJeu(V, o, d, 'griffe')){ chatPose(V, o, 'lave'); donner(o, 'jeu', 6); majHumeur(V, o); } });   /* puis il se lèche la patte */
+  });
+}
+
+/* ==========================================================
+   Il va faire un tour dans l'autre pièce, par l'arche (Romain, 5 novembre, 12 h 31 : « que le chat il puisse aller dans l'autre pièce aussi »)
+   - De temps en temps (chatAgir ; au plus une fois toutes les 90 secondes), s'il n'a besoin de rien : il marche jusqu'à l'arche et passe de l'autre côté.
+   - Là-bas (la pièce qu'on ne voit pas), il attend ; il revient au bout d'un moment (plus sûrement s'il a besoin de quelque chose), par l'arche.
+     Si on va le voir, il est là, devant l'arche.
+   - Jamais quand on le tient, quand on déplace un meuble, pendant une potion (V.mode 'prep'), pendant le guidage du tutoriel,
+     ni pendant une sortie par la chatière ; pas dans les bancs d'essai (sansSurprise).
+   - Dans l'état : o.pc dit sa pièce ; sa place à lui (o.x, o.y) devient un point du plancher de cette pièce, devant l'arche : il ne se perd jamais.
+   ========================================================== */
+var PASSAGE = {entre:90000, ailleurs:22000, plus:26000, chance:0.07};
+var PASSAGE_T = Date.now();     /* le dernier passage (il tient d'un remontage de la vue à l'autre) */
+var RETOUR_MEMO = {};           /* … et quand le chat d'à côté reviendra (par chat) */
+/* Le point du plancher devant l'arche, dans la pièce s (à droite dans l'atelier, à gauche dans la chambre) ; dans : un pas dans l'arche */
+function devantArche(V, s, dans){
+  var zc = (ARCHE.z0 + ARCHE.z1) / 2, X = s ? murG(V) + (dans ? -30 : 70) : murD(V) - (dans ? -30 : 70), q = proj(X, 0, zc);
+  return dans ? {x:q[0], y:q[1], sur:null} : chatSol(V, q[0], q[1]);
+}
+function peutPasser(V, o){
+  var st = V.chats[o.id];
+  return !GUIDE && !V.arrete && !V.o.sansSurprise && V.mode === 'ranger' && !V.glisse && !V.ouvert && V.grim.hidden && !!st && !st.tenu && !st.anim && !st.depart && !st.chasse &&
+    !!V.elO[o.id] && salleDe(o) === V.salle && !tama(V).butin && !besoinUrgent(o) && Date.now() - PASSAGE_T > PASSAGE.entre;
+}
+/* Il change de pièce (dans l'état) : sa place à lui est devant l'arche de là-bas, par terre,
+   et entre les murs de la pièce la plus étroite (un téléphone en hauteur : murs à 70 et LARGEUR - 70), quel que soit l'écran */
+function chatDansPiece(V, o, s){
+  if(s) o.pc = 1; else delete o.pc;
+  var a = devantArche(V, s), y = borne(a.y, SOL_MIN + 20, SOL_MAX), m = 60, st = chatEtat(V, o);
+  o.sur = null; if(o.cote) o.cote = 0;
+  o.x = Math.round(borne(a.x, xF(70, y) + m, xF(LARGEUR - 70, y) - m) * 10) / 10; o.y = Math.round(y * 10) / 10;
+  st.pos = null;
+}
+function chatPasse(V, o){
+  var st = chatEtat(V, o), s = V.salle, id = (V.passeN = (V.passeN || 0) + 1);
+  PASSAGE_T = Date.now();
+  st.passeId = id;
+  chatAller(V, o, devantArche(V, s), function(){
+    var d = V.elO[o.id];
+    /* (entre-temps : on l'a pris, on déplace un meuble, une potion commence, le guidage… il reste ici) */
+    if(st.passeId !== id || !d || V.arrete || V.mode !== 'ranger' || V.glisse || st.tenu || st.depart || GUIDE || salleDe(o) !== V.salle){ if(d && !st.tenu) chatPose(V, o, 'assis'); chatPlanifier(V, o, 2600); return; }
+    var p = chatPos(V, o), q = devantArche(V, s, true), k = V.k, vers = 1 - s;
+    if(st.t){ clearTimeout(st.t); st.t = null; }
+    st.gauche = q.x < p.x; d.classList.toggle('at-c-gauche', st.gauche);
+    chatPose(V, o, 'marche');
+    st.tenu = true; st.passe = true; d.classList.add('at-c-passe');
+    chatDansPiece(V, o, vers);
+    changer(V);
+    anim(d, [{transform:'translate(0,0) scale(' + d._s + ')', opacity:1}, {transform:'translate(' + ((q.x - p.x) * k).toFixed(1) + 'px,' + ((q.y - p.y) * k).toFixed(1) + 'px) scale(' + (d._s * 0.92).toFixed(3) + ')', opacity:0}], {duration:700, easing:'ease-in', fill:'forwards'});
+    var t = nomChat(o) + (vers ? ' va faire un tour dans la chambre.' : ' va faire un tour dans l\'atelier.');
+    if(V.toastEl.hidden) toast(V, '<b>🐈 ➡️ ' + (vers ? '🛏️' : '⚗️') + '</b> ' + esc(t), 3000, t);      /* (sans cacher un message plus important) */
+    apres(V, 720, function(){
+      st.tenu = false; st.passe = false;
+      if(V.elO[o.id] === d){ delete V.elO[o.id]; d.remove(); }
+      chatPose(V, o, 'assis');                                      /* (là-bas, il s'assoit ; si on est passé dans sa pièce entre-temps, il y est déjà) */
+      chatPlanifierRetour(V, o, PASSAGE.ailleurs + Math.random() * PASSAGE.plus);
+    });
+  });
+  return true;
+}
+function chatPlanifierRetour(V, o, ms){
+  var st = chatEtat(V, o), due = ms ? Date.now() + ms : (RETOUR_MEMO[o.id] || Date.now() + PASSAGE.ailleurs + Math.random() * PASSAGE.plus);
+  RETOUR_MEMO[o.id] = due;
+  clearTimeout(st.retourT);
+  st.retourT = apres(V, Math.max(1500, due - Date.now()), function(){ st.retourT = null; chatRevient(V, o); });
+}
+/* Il revient par l'arche, dans la pièce qu'on regarde (force : tout de suite, pour les bancs d'essai) */
+function chatRevient(V, o, force){
+  var st = chatEtat(V, o);
+  if(V.arrete || !V.parId[o.id] || st.depart) return false;
+  if(salleDe(o) === V.salle){ delete RETOUR_MEMO[o.id]; return false; }     /* (on est allé le voir : il est là) */
+  if(GUIDE || V.mode !== 'ranger' || V.glisse || (!force && !besoinUrgent(o) && Math.random() < 0.35)){ chatPlanifierRetour(V, o, 9000 + Math.random() * 9000); return false; }
+  delete RETOUR_MEMO[o.id];
+  var s = V.salle, q = devantArche(V, s, true), a = devantArche(V, s), k = V.k;
+  chatDansPiece(V, o, s);
+  st.pos = a;                                  /* (là où il est : juste devant l'arche de cet écran-ci) */
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  if(st.anim){ var a0 = st.anim; st.anim = null; try{ a0.cancel(); }catch(e){} }
+  st.dortJusqua = 0; st.pose = 'marche';
+  var d = elObjet(V, o);
+  V.scene.appendChild(d);
+  st.gauche = q.x > a.x; d.classList.toggle('at-c-gauche', st.gauche);
+  st.tenu = true; st.passe = true; d.classList.add('at-c-passe');
+  changer(V);
+  anim(d, [{transform:'translate(' + ((q.x - a.x) * k).toFixed(1) + 'px,' + ((q.y - a.y) * k).toFixed(1) + 'px) scale(' + (d._s * 0.92).toFixed(3) + ')', opacity:0}, {transform:'translate(0,0) scale(' + d._s + ')', opacity:1}], {duration:700, easing:'ease-out'});
+  apres(V, 720, function(){
+    st.tenu = false; st.passe = false; d.classList.remove('at-c-passe');
+    if(V.elO[o.id] !== d || salleDe(o) !== V.salle) return;
+    chatAller(V, o, chatSolVisible(V), function(){ chatPose(V, o, 'assis'); chatPlanifier(V, o, 2600); });
+  });
+  return true;
 }
 
 /* ==========================================================
@@ -33985,7 +34353,18 @@ function bonheurHTML(o){
   var n = bonheur(o);
   return '<div class="at-bonheur" hidden><span class="at-bonheur-c" aria-hidden="true">' + (n >= BONHEUR_SORTIE ? '💖' : n >= 45 ? '💗' : '🩶') + '</span>' +
     '<i class="at-bonheur-barre"><b style="width:' + n + '%"></b></i>' +
-    '<button type="button" class="at-bonheur-hab" aria-label="Habiller le chat">🎀</button></div>';
+    '<button type="button" class="at-bonheur-hab" aria-label="Habiller le chat">🎀</button>' +
+    /* une petite croix à côté : on l'enlève tout de suite (Romain, 5 novembre, 12 h 31) */
+    '<button type="button" class="at-bonheur-x" aria-label="Fermer"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5,5.5 L14.5,14.5 M14.5,5.5 L5.5,14.5"/></svg></button></div>';
+}
+/* La barre se cache (au bout d'un moment, ou tout de suite avec ✕) ; le chat reprend sa place parmi les meubles */
+function cacherBonheur(V, o){
+  var d = V.elO[o.id], el = d && d.querySelector('.at-bonheur');
+  if(!el) return;
+  clearTimeout(d._bonT);
+  el.hidden = true; d.classList.remove('at-c-bonheur');
+  var st = V.chats[o.id];
+  if(!(st && (st.anim || st.tenu))) d.style.zIndex = Math.round(chatPos(V, o).z * 5);
 }
 function montrerBonheur(V, o, ms){
   var d = V.elO[o.id];
@@ -34001,9 +34380,8 @@ function montrerBonheur(V, o, ms){
   d.style.zIndex = 99000;          /* (au-dessus des meubles qui sont devant lui : on voit la barre, on touche 🎀) */
   clearTimeout(d._bonT);
   d._bonT = apres(V, ms || 6500, function(){
-    el.hidden = true; d.classList.remove('at-c-bonheur');
-    var st = V.chats[o.id];
-    if(V.elO[o.id] === d && !(st && (st.anim || st.tenu))) d.style.zIndex = Math.round(chatPos(V, o).z * 5);
+    if(V.elO[o.id] === d) cacherBonheur(V, o);
+    else { el.hidden = true; d.classList.remove('at-c-bonheur'); }
   });      /* (le temps de toucher 🎀) */
 }
 
@@ -35329,7 +35707,8 @@ E[2] = {
       ]},
       alchimiste:{cueillir:[{ingr:'trefle', n:2}],
         /* une trouvaille en cueillant (regles.js) : le champ rasé, à dire au Barde */
-        trouvaille:{moments:['apresmidi', 'nuit'], ic:'🌺', titre:'Un champ tout rasé', donne:'info:champ_rase',
+        /* (dès le matin : le champ a été rasé avant, Romain, 5 novembre, 12 h 31) */
+        trouvaille:{ic:'🌺', titre:'Un champ tout rasé', donne:'info:champ_rase',
           t:'En cueillant, tu découvres un grand champ… tout rasé ! Il ne reste pas un seul coquelicot, juste des tiges coupées. C\'est bizarre !',
           note:'Clairière : un grand champ de coquelicots tout rasé. Bizarre !'}}
     },
@@ -35464,7 +35843,8 @@ E[2] = {
         a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
         note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
     ]},
-    margot:{ou:{apresmidi:'taverne', nuit:'taverne'}, carte:{matin:'taverne'}, occupe:{matin:'« La taverne ouvre cet après-midi ! »'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
+    /* la taverne est ouverte dès le matin (Romain, 5 novembre, 12 h 31 : c'est Margot qui confie les signes des menteurs) */
+    margot:{ou:{matin:'taverne', apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
       {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
         vrai:'Bon… c\'est vrai, la semaine dernière, un tonneau est tombé dans la rivière pendant un transport. Mais l\'eau n\'est pas devenue rouge du tout ! Ce n\'est pas mon vin.',
         note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
@@ -35590,6 +35970,38 @@ E[2] = {
       pieges:['sac', 'panier', 'bougé', 'gelé', 'pain', 'lait', 'rie', 'sache'],
       t:'Margot : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'a pas rougi. Ce n\'est pas son vin.'}
   ],
+  /* 👂 Écouter aux portes (talent « Tendre l'oreille », Romain, 5 novembre, 12 h 31) : chacun a toujours quelque chose à dire, à chaque
+     moment, là où il est (barde.js : B.porteIci). Ce qu'ils pensent de l'enquête, en rapport avec leur métier ; rien qui ne soit prévu
+     ailleurs (les vrais indices restent dans les bribes ci-dessus, qui passent avant). Le Carnet le garde sur la page de chacun. */
+  portes:{
+    bastien:{matin:'Allez, hue, Cocotte ! Encore trois livraisons avant midi… Et avec cette rivière rouge, tu as peur de boire, hein ? Moi aussi.',
+      apresmidi:'Tout le monde ne parle que de cette rivière rouge… Moi, je transporte, je ne pose pas de questions !',
+      nuit:'Bastien bâille dans sa cuisine : « Quelle journée… Mes roues grincent. Il faudra les graisser demain. »'},
+    tim:{apresmidi:'Tim parle tout bas à son chien : « Avec la rivière rouge, plus personne ne fait ramoner sa cheminée. Hein, Pirate ? »',
+      nuit:'Tim chuchote à Pirate : « Dors, mon chien. Demain, on ramonera chez Gaspard. »'},
+    victor:{matin:'Une lettre pour la mairie, deux pour la place… Ma sacoche n\'a jamais été aussi lourde : tout le monde écrit au maire à cause de la rivière !',
+      apresmidi:'Victor tamponne ses lettres : « Rouge, la rivière ! On n\'a jamais vu ça. Même les canards sont partis ! »',
+      nuit:'Victor raconte au comptoir : « Moi, je passe partout, et je vous le dis : un chêne fermé par le maire, c\'est bizarre. »'},
+    gaspard:{nuit:'Gaspard pétrit la pâte de demain : « Avec l\'eau de la rivière, je ferais du pain rose ! Heureusement que j\'ai mon puits. »'},
+    margot:{matin:'Margot essuie ses chopes : « Une rivière rouge, un chêne interdit… Ce village devient plus mystérieux que mes histoires ! »'},
+    melusine:{matin:'Mélusine frotte son linge en soupirant : « Ce lavoir tout rose ! Mes draps blancs ressemblent à des fraises… »',
+      nuit:'Mélusine marmonne en dormant : « Un point… encore un point… la robe sera prête demain… »'},
+    fortune:{matin:'Fortuné chantonne en rangeant ses rubans : « Des couleurs du jamais-vu ! Cet après-midi, tout le monde voudra mes tissus ! »',
+      apresmidi:'Fortuné vante sa marchandise : « Approchez ! Moi, cette rivière rouge, je la trouve plutôt jolie… Mais ce n\'est pas moi, hein ! »',
+      nuit:'Fortuné ronfle dans sa carriole… et marmonne : « Trois rubans pour le prix de deux… »'},
+    farinel:{matin:'Farinel chante en versant son grain : « Tourne, tourne, mon moulin… Même avec de l\'eau rouge, ma roue tourne toujours ! »',
+      apresmidi:'Farinel tousse dans un nuage de farine : « Que de monde dans ma cour aujourd\'hui ! Je ne sais plus où donner de la tête. »',
+      nuit:'Farinel ronfle si fort que les murs tremblent : « Rrrr… pas touche à mon grain… rrrr… »'},
+    iris:{matin:'Iris arrose ses plantes en grognant : « Grrr… L\'eau de la rivière est toute rouge : pas question d\'en donner à mes fleurs ! »',
+      apresmidi:'Iris trie ses herbes : « Lavande, menthe, ortie… Au moins, ici, personne ne touche à mes plantes. »',
+      nuit:'Iris dort… et murmure : « Rouges… elles étaient toutes rouges… »'},
+    silas:{matin:'Silas fait les cent pas : « Ordre du maire : personne ne passe. Personne ! Même pas les écureuils. »',
+      apresmidi:'Silas bâille : « Garder un chemin toute la journée… Et si quelqu\'un passait derrière mon dos ? Bah, impossible ! »',
+      nuit:'Silas grelotte près de sa lanterne : « Pourquoi moi ? Toute la nuit dans le froid… et ce vieux chêne qui grince ! »'},
+    grosbec:{matin:'Le maire soupire derrière sa porte : « Une rivière rouge… Les gens ont peur. Il faut que mes enquêteurs trouvent, et vite ! »',
+      apresmidi:'Le maire relit une lettre : « Encore une plainte pour la rivière… Au moins, Silas tient bon au Vieux Chêne. »',
+      nuit:'Derrière la porte fermée, le maire marche de long en large : « Cette nuit, je ne dormirai pas… »'}
+  },
   /* Hydromel des confidences (talent du niveau 6) : ce qu'un villageois confie pour innocenter un suspect (jamais le coupable) */
   alibis:{
     melusine:'Mélusine ? Ses tissus déteignent, c\'est tout. Elle n\'a jamais touché à la rivière.',
@@ -36383,7 +36795,7 @@ function majBoutonStop(){
   var b = document.getElementById('stop-voix');
   if(b) b.hidden = !M.parle;
 }
-window.Brume = {lire:M.lire, stop:M.stop, son:M.son, sonActif:function(){ return !(M.S && M.S.options && M.S.options.son === false); }};
+window.Brume = {lire:function(t, o){ return M.lire(t, o); }, stop:function(){ return M.stop(); }, son:function(t, x){ return M.son(t, x); }, sonActif:function(){ return !(M.S && M.S.options && M.S.options.son === false); }};
 
 /* ---------- Sauvegarde (emplacements : plusieurs héros par appareil) ---------- */
 var PREFIXE = 'brumeval-v2-';
@@ -37532,7 +37944,8 @@ M.infosCarte = function(){
   if(role === 'alchimiste'){
     M.cle(P.notesIngr || {}).forEach(function(id){
       var l = P.notesIngr[id] || [];
-      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return D.INGR[i].ic; }).join(''), act:'lieu', id:id, classe:'ingr'});
+      /* (grisé quand elle a déjà cherché ici à ce moment : Romain, 5 novembre, 12 h 31) */
+      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return D.INGR[i].ic; }).join(''), act:'lieu', id:id, classe:'ingr', grise:P.vus['cueilli:' + id] === P.moment});
     });
   }
   /* (plus de notes « qui habite ici » sur la carte : chaque maison montre le visage de son habitant, carte-jeu.js) */
@@ -37572,15 +37985,19 @@ M.feuilleLieu = function(lieu){
     } else if(!M.bonusIci(lieu).length) s += '<p class="doux">Rien de spécial ici pour l\'instant. ' + lire('Rien de spécial ici pour l\'instant.') + '</p>';   /* (dès l'enquête 2, tous les lieux se touchent : carte-jeu.js) */
   }
   if(role === 'alchimiste'){
-    var notes = (P.notesIngr && P.notesIngr[lieu]) || [];
-    s += '<div class="b-ce-que-je-sais"><span class="sur-titre">Ce que tu sais de ce lieu</span>' +
-      (notes.length ? '<div class="b-cueillette">' + notes.map(function(i){ var I = D.INGR[i]; return '<div class="b-ingr-carte"><span>' + I.ic + '</span><b>' + esc(I.nom) + '</b></div>'; }).join('') + '</div>' :
-        '<p class="doux">❔ Tu ne sais pas ce qui pousse ici. Le Pisteur, lui, explore partout : demande-lui ! ' + lire('Tu ne sais pas ce qui pousse ici. Le Pisteur, lui, explore partout : demande-lui !') + '</p>') +
-      '<button class="btn second petit" data-act="noter-ingr" data-id="' + lieu + '">📝 Noter<span class="b-long"> ce qui pousse ici</span></button></div>';   /* (.b-long : caché dans la bulle de la carte) */
+    /* (Romain, 5 novembre, 12 h 31) plus de « Ce que tu sais de ce lieu » ni de « 📝 Noter » : le petit rond qui flotte sur la carte
+       montre déjà ce qui pousse ici (il se grise quand elle a cherché). Déjà cherché à ce moment : « ✅ Déjà récolté » ;
+       rien à cueillir ici à ce moment : « 🍂 Rien à trouver » tout de suite, sans « Chercher » (ni action dépensée pour rien). */
     var deja = P.vus['cueilli:' + lieu] === P.moment;
     var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
-    s += deja ? (M.sansActions() ? rienDePlus() : '<p class="doux">Tu as déjà cherché ici à ce moment de la journée. ' + lire('Tu as déjà cherché ici à ce moment de la journée.') + '</p>') :
-      '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '><span class="b-ic-contour">🧺</span> Chercher<span class="b-long"> des ingrédients</span>' + M.coutTxt(   /* (le panier, jaune sur le bouton jaune : un contour foncé, Romain 10 h 45) */' · ' + (gratuit ? 'gratuit (Herboriste)' : '1 action')) + '</button>' +
+    var pousse = M.cueilletteIci(lieu), cueillable = pousse.filter(function(x){ return M.besoinOk(x.besoin); });
+    if(deja) s += '<p class="b-recolte">✅ Déjà récolté</p>';
+    else if(!pousse.length) s += '<p class="b-recolte">🍂 Rien à trouver</p>';
+    else if(!cueillable.length){
+      var il = []; pousse.forEach(function(x){ M.texteBesoin(x.besoin, role).forEach(function(b){ if(il.indexOf(b.ic + ' ' + b.nom) < 0) il.push(b.ic + ' ' + b.nom); }); });
+      s += '<p class="b-recolte">🔒 Il te faut : ' + esc(il.join(', ') || 'le bon matériel') + '</p>';
+    }
+    else s += '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '><span class="b-ic-contour">🧺</span> Chercher<span class="b-long"> des ingrédients</span>' + M.coutTxt(   /* (le panier, jaune sur le bouton jaune : un contour foncé, Romain 10 h 45) */' · ' + (gratuit ? 'gratuit (Herboriste)' : '1 action')) + '</button>' +
       '<p class="doux petit">On trouve parfois 1, parfois 2 ou 3 ingrédients d\'un coup : c\'est la chance !</p>' + plusDAction();
     if(UI.modal && UI.modal.noterIngr){
       s += '<div class="b-noter-ingr"><p>Touche ce qui pousse ici : ' + lire('Touche ce qui pousse ici.') + '</p><div class="b-cueillette">' + M.cle(D.INGR).map(function(i){
@@ -37661,8 +38078,13 @@ M.feuilleMaison = function(maison){
     s += '<p class="doux">' + esc(t0) + ' ' + lire(t0) + '</p>';
   }
   /* (une enquête avec des points d'action : frapper coûte une action, alors le Barde a d'abord cette feuille, avec le bouton) */
-  if(role === 'barde' && M.pnjIci(maison).length)
-    s += '<button class="btn grand" data-act="frapper" data-id="' + maison + '"' + (M.peutAgir() ? '' : ' disabled') + '>🚪 Frapper à la porte' + M.coutTxt() + '</button>' + plusDAction();
+  if(role === 'barde' && M.pnjIci(maison).length){
+    var ic0 = M.pnjIci(maison)[0];
+    /* fâché, ou « Encore toi ? » (barde.js : M.pnjFache) : son visage et « Reviens plus tard », cerclés de rouge */
+    if(M.pnjFache && M.pnjFache(ic0)) s += '<div class="b-gens-carte bd-fache"><div class="b-gens-img">' + M.pnjImg(ic0) + '</div><span>Reviens plus tard</span></div>';
+    else s += '<button class="btn grand" data-act="frapper" data-id="' + maison + '"' + (M.peutAgir() ? '' : ' disabled') + '>🚪 Frapper à la porte' + M.coutTxt() + '</button>' + plusDAction();
+  }
+  if(role === 'barde' && M.porteBouton) s += M.porteBouton(maison);   /* 👂 écouter aux portes (talent, barde.js) */
   return s;
 };
 
@@ -38065,6 +38487,7 @@ M.ouvrir = function(m){
   var f = document.querySelector('#voile .b-feuille'); if(f) f.scrollTop = 0;
 };
 function rendreLeger(){ rendreModal(); if(M.tutoMaj) M.tutoMaj(); }
+M.rendreBulle = rendreLeger;   /* (redessiner seulement la bulle de la carte : barde.js, quand le texte entendu aux portes a fini de s'écrire) */
 
 /* ---------- La bulle de la carte (Romain, 5 novembre, 10 h 07) ----------
    Toucher un lieu, une maison ou un visage sur la carte (l'onglet Carte) n'ouvre plus une fenêtre : une bulle s'ouvre à côté, sur la carte.
@@ -38072,7 +38495,8 @@ function rendreLeger(){ rendreModal(); if(M.tutoMaj) M.tutoMaj(); }
    pour la suivre quand on fait glisser ou qu'on zoome). Les conversations, découvertes et mini-jeux restent en plein écran. */
 function carteIci(){ var ici = document.getElementById('carte-ici'); return ici && ici.querySelector('.ca-monde') ? ici : null; }
 /* ce qui fait une pastille dans la bulle (moteur.css, LA PASTILLE) */
-var PASTILLES = '.b-gens-carte, :scope > .btn, .b-ce-que-je-sais > .btn, .b-bonus, .b-ecoute > .btn, :scope > p, .b-maison-hab, .b-info-modal > p, .b-verrou > *, .b-point, .b-ingr-carte, .b-fermer';
+var PASTILLES = '.b-gens-carte, :scope > .btn, .b-ce-que-je-sais > .btn, .b-bonus, .b-ecoute > .btn, :scope > p, .b-maison-hab, .b-info-modal > p, .b-verrou > *, .b-point, .b-ingr-carte, .bd-porte, .b-fermer';
+M.bulleDe = function(el){ return bulleDe(el); };
 function bulleDe(el){
   var ici = el && el.closest && el.closest('#carte-ici');
   if(!ici){
@@ -38158,6 +38582,7 @@ function contenuModal(m){
     case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
     case 'avant-mj': return avantMJHTML(m);
     case 'mj-pause': return pauseModal(m);
+    case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
   }
   return '';
 }
@@ -38223,7 +38648,10 @@ M.decouvrir = function(m){
 var mjEnCours = null;
 M.lancerMJ = function(type, niveau, extra, options, fin){
   options = options || {};
+  /* au retour dans le jeu, après l'avoir quitté pendant ce mini-jeu (M.rateQuitte) : il est raté tout de suite */
+  if(rejeu){ var rj = rejeu; rejeu = null; rj.rendre(); try{ fin({reussi:false, score:0, essais:1, erreurs:0, detail:'', quitte:true}); }catch(e){ console.error(e); } return; }
   if(M.mjPause){ M.rappelPause(); return; }   /* un mini-jeu en pause : il faut le finir d'abord */
+  if(!options.origine && UI.actEnCours && !/^mj-/.test(UI.actEnCours.act)) options.origine = UI.actEnCours;
   /* 0. L'explication de la situation, puis le bouton jaune (sauf la dernière chance : options.sansIntro) */
   if(!options.introVue && !options.sansIntro){
     UI.suiteMJ = {type:type, niveau:niveau, extra:extra, options:Object.assign({}, options, {introVue:true}), fin:fin};
@@ -38273,8 +38701,11 @@ function lancer(type, niveau, extra, options, fin){
   var aides = mm.aides.slice();
   if(potion) aides.push({ic:D.POTIONS[potion].ic, nom:D.POTIONS[potion].nom});
   var titrePause = options.titre || (MJ.TYPES[type] || {}).nom || 'Le mini-jeu', icPause = options.ic || (MJ.TYPES[type] || {}).ic || '🎮';
+  /* quitter le jeu pendant le mini-jeu (fermer l'appli, recharger) : il comptera comme raté au retour (Romain, 5 novembre, 12 h 31 ; M.rateQuitte) */
+  if(P && options.origine){ P.mjOuvert = {act:options.origine.act, ds:options.origine.ds, type:type}; M.sauver(); }
   mjEnCours = MJ.lancer(plein.firstChild, type, params, function(res){
     plein.hidden = true; plein.innerHTML = ''; mjEnCours = null;
+    if(P && P.mjOuvert) delete P.mjOuvert;
     if(M.mjPause && M.mjPause.hote === 'plein') M.finPause();
     document.body.classList.toggle('b-bloque', !!UI.modal);
     if(P && res.essais > 1 && P.chances > 0) P.chances--;
@@ -38308,6 +38739,33 @@ M.pauseMJ = function(info){
   M.majRappel();
   if(M.tutoMaj) M.tutoMaj();
 };
+/* On revient dans le jeu alors qu'un mini-jeu était ouvert (l'appli fermée, la page rechargée) : il compte comme raté.
+   L'action qui l'avait lancé est rejouée sans rien redépenser, et M.lancerMJ rend « raté » tout de suite : la suite est celle d'un vrai raté
+   (un essai de moins, la note, « Tu as encore un essai »…). */
+var rejeu = null;
+M.rateQuitte = function(){
+  var P = M.P(); if(!P || !P.mjOuvert || mjEnCours || M.mjPause) return;
+  var o = P.mjOuvert; delete P.mjOuvert; M.sauver();
+  var f = o.act && A[o.act]; if(!f) return;
+  var garde = {dep:M.depenser, cb:M.consommerBesoin, pa:M.peutAgir};
+  rejeu = {rendre:function(){ M.depenser = garde.dep; M.consommerBesoin = garde.cb; M.peutAgir = garde.pa; }};
+  M.depenser = function(){}; M.consommerBesoin = function(){}; M.peutAgir = function(){ return true; };   /* (déjà dépensé avant de quitter) */
+  var fait = false;
+  UI.ecran = 'enquete'; UI.modal = null;   /* (on revient dans l'enquête : le raté s'ouvre là) */
+  try{ f({dataset:o.ds || {}}); fait = !rejeu; }catch(e){ console.error(e); }
+  if(!UI.modal) M.render();
+  if(rejeu){ rejeu.rendre(); rejeu = null; }
+  M.sauver();
+  if(fait) setTimeout(function(){ M.toast('Tu avais quitté le jeu pendant un mini-jeu : il compte comme raté.'); }, 400);
+};
+/* L'appli passe derrière (une autre appli, l'écran qui s'éteint) : le mini-jeu se met en pause tout seul */
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden || M.mjPause) return;
+  try{
+    if(mjEnCours && mjEnCours.pause) mjEnCours.pause();
+    else if(atelierMonte && atelierMonte.partie && atelierMonte.partie()) atelierMonte.partie().pause();
+  }catch(e){ console.error(e); }
+});
 M.finPause = function(){ M.mjPause = null; M.majRappel(); if(M.tutoMaj) M.tutoMaj(); };
 M.reprendreMJ = function(){
   var p = M.mjPause; if(!p) return;
@@ -38326,8 +38784,8 @@ M.reprendreMJ = function(){
 };
 /* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
 var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
-  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1,
-  sym:1, 'sym-efface':1, 'bd-code':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1,
+  sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
   opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
   'mj-reprendre':1};
@@ -39319,7 +39777,10 @@ function demarrer(){
     var f = A[el.dataset.act];
     /* un mini-jeu en pause : on regarde, on tape un code… mais rien ne fait avancer l'enquête avant de l'avoir fini */
     if(f && M.mjPause && !LIBRE_EN_PAUSE[el.dataset.act]){ ev.preventDefault(); M.rappelPause(); return; }
-    if(f){ ev.preventDefault(); try{ audioReveil(); f(el); }catch(e){ console.error(e); M.toast('Oups : ' + e.message); } }
+    /* UI.actEnCours : l'action qui lance peut-être un mini-jeu (M.lancerMJ la retient : quitter le jeu pendant ce mini-jeu le fait compter comme raté) */
+    if(f){ ev.preventDefault(); UI.actEnCours = {act:el.dataset.act, ds:Object.assign({}, el.dataset)};
+      try{ audioReveil(); f(el); }catch(e){ console.error(e); M.toast('Oups : ' + e.message); }
+      UI.actEnCours = null; }
   });
   document.addEventListener('change', function(ev){
     var el = ev.target;
@@ -39332,6 +39793,7 @@ function demarrer(){
   document.getElementById('stop-voix').addEventListener('click', function(){ M.stop(); });
   if(M.S.heros && M.S.e && !M.S.e.resolu) UI.ecran = 'accueil';
   M.render();
+  try{ M.rateQuitte(); }catch(e){ console.error(e); }   /* un mini-jeu laissé ouvert quand on a quitté : raté */
   /* le service worker : la version GitHub, et un serveur local pour les essais (Jouer sans internet, heros.js) */
   if('serviceWorker' in navigator && ((location.protocol === 'https:' && /github\.io$/.test(location.hostname)) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
     navigator.serviceWorker.register('sw.js').catch(function(){});
@@ -39473,9 +39935,16 @@ M.sectionMissions = function(){
   var P = M.P(); if(!P || P.etape !== 'jeu') return '';
   var L = M.etapesMission(); if(!L.length) return '';
   var Mi = etat();
+  if(Mi.nonLus > 0) Mi.plie = false;   /* une nouvelle mission : la liste se déplie toute seule */
   Mi.nonLus = 0;
   var R = D.ROLES[M.role()];
-  var s = '<section class="b-missions" style="--c:' + R.c + '"><h3>🎯 Mes missions</h3><ul>';
+  /* repliable (Romain, 5 novembre, 12 h 31 : pour tous les rôles) : le titre est un bouton ; replié, on voit combien sont faites */
+  var nb = 0, faites = 0;
+  L.forEach(function(e, i){ if(e.libre || e.piste) return; nb++; if(Mi.faits[i] || Mi.coches[i]) faites++; });
+  var s = '<section class="b-missions' + (Mi.plie ? ' plie' : '') + '" style="--c:' + R.c + '"><h3><button type="button" class="b-mi-plier" data-act="missions-plier" aria-expanded="' + !Mi.plie + '">' +
+    '<span>🎯 Mes missions</span>' + (nb ? '<small class="b-mi-compte">' + faites + ' / ' + nb + ' ✅</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+  if(Mi.plie) return s + '</section>';
+  s += '<ul>';
   L.forEach(function(e, i){
     var fait = !!Mi.faits[i], coche = !!Mi.coches[i];
     var t = e.piste ? 'Piste : ' + e.t : e.t;
@@ -39524,6 +39993,7 @@ if(M.A){
     M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render();
   };
   M.A['mission-fait'] = function(el){ M.A['mission-coche'](el); };   /* ancien bouton « C'est fait » */
+  M.A['missions-plier'] = function(){ var P = M.P(); if(!P) return; var Mi = etat(); Mi.plie = !Mi.plie; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
 }
 })();
 
@@ -40770,7 +41240,9 @@ function porte(id){
   if(!P || !uneVisite(id) || estVexe(id) || occupe(id) || dejaOuvert(id)) return true;
   P.visites = P.visites || {};
   var v = P.visites[id], sait = ceQuOnSait(id);
-  if(v && v.m === P.moment){
+  /* (Romain, 5 novembre, 12 h 31) la visite ne compte qu'une fois au moins une question posée (v.q, A.question) :
+     ouvrir la conversation puis repartir sans rien demander laisse la porte ouverte */
+  if(v && v.m === P.moment && v.q){
     if(!sait.some(function(k){ return v.sait.indexOf(k) < 0; })){
       UI.bd = {p:id, mode:'encore', t:'Encore toi ? Reviens plus tard !', m:P.moment};
       M.son('porte'); M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'});
@@ -40778,9 +41250,18 @@ function porte(id){
     }
     UI.bd = {p:id, mode:'nouveau', t:'Tu as du nouveau ? Bon, je t\'écoute.', m:P.moment};
   }
-  P.visites[id] = {m:P.moment, sait:sait};
   return true;
 }
+/* sans rien changer : est-ce qu'il dirait « Encore toi ? » (la carte le montre en rouge : B.fache) */
+function encoreToi(id){
+  var P = M.P(); if(!P || !uneVisite(id) || estVexe(id) || occupe(id)) return false;
+  var v = P.visites && P.visites[id]; if(!v || v.m !== P.moment || !v.q) return false;
+  var sait = ceQuOnSait(id);
+  return !sait.some(function(k){ return v.sait.indexOf(k) < 0; });
+}
+/* fâché (vexé) ou « Encore toi ? » : on ne peut plus lui parler pour ce moment */
+B.fache = function(id){ return estVexe(id) || encoreToi(id); };
+M.pnjFache = function(id){ try{ return M.role() === 'barde' && B.fache(id); }catch(e){ return false; } };
 B.porte = porte;
 /* Pourra-t-on le revoir à un moment suivant ? Sinon, il accepte de reparler tout de suite (contre une action). */
 function peutRevoir(id){
@@ -40940,6 +41421,7 @@ A.question = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i, q = questions(id)[i];
   if(!P || !q || estVexe(id)) return;
   if(q.besoin && !M.besoinOk(q.besoin) && !P.vus['barde:' + id + ':' + i]) return;
+  if(uneVisite(id)){ P.visites = P.visites || {}; var vv = P.visites[id]; if(!(vv && vv.m === P.moment && vv.q)) P.visites[id] = {m:P.moment, sait:ceQuOnSait(id), q:1}; }   /* la visite compte (porte) */
   if(repondu(id, i)){ UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }
   var kc = el.dataset.c, c = q.choix && kc !== undefined && kc !== '' ? q.choix[+kc] : null, charme = false;
   if(q.choix && q.choix.length){
@@ -41381,10 +41863,97 @@ A['bd-oreille'] = function(el){
 };
 
 /* ==========================================================
+   👂 Écouter aux portes (talent « Tendre l'oreille » ; Romain, 5 novembre, 12 h 31)
+   Sur la carte, partout où quelqu'un se trouve (un bâtiment, une maison, dehors), tout le temps et gratuit : plus de compte par enquête,
+   plus de phrase à trous. Ce qui se dit s'écrit lettre après lettre dans une bulle posée sur la carte, puis reste dans le Carnet, sur la
+   page de chacun (M.dossierBarde). Une bribe de l'enquête (E.bribes : un vrai indice, un signe de menteur) passe avant les petites
+   phrases de tous les jours (E.portes[pnj][moment]).
+   ========================================================== */
+var BATIMENTS = {taverne:1, boulangerie:1, moulin:1, mairie:1, poste:1, atelier:1, herboristerie:1, clocher:1};
+function batiment(l){ return !!BATIMENTS[l] || /^[LFB]\d$/.test(l || ''); }
+function bribeLignes(b){
+  return (b.phrases || []).map(function(p){ return (D.PNJ[p.qui] ? nom(p.qui) : p.qui) + ' : « ' + String(p.texte || '').replace(/[\[\]]/g, '') + ' »'; }).join('\n');
+}
+B.porteIci = function(lieu){
+  if(!talent('tendre') || !lieu) return null;
+  var E = M.E(), mid = M.momentId(), l = [], pris = {};
+  var qui = M.pnjIci(lieu).concat(M.pnjOccupesIci ? M.pnjOccupesIci(lieu) : []).filter(function(id, i, a){ return a.indexOf(id) === i && id !== 'voisin' && D.PNJ[id]; });
+  var b = (E.bribes || []).filter(function(x){ return x.lieu === lieu && M.momentOk(x.moments); })[0];
+  if(b){
+    var q0 = (b.phrases || []).map(function(p){ return p.qui; }).filter(function(q){ return D.PNJ[q]; })[0] || null;
+    (b.phrases || []).forEach(function(p){ if(D.PNJ[p.qui]) pris[p.qui] = 1; });
+    l.push({pnj:q0, t:(b.intro ? b.intro + '\n' : '') + bribeLignes(b), b:b.id, mimique:b.mimique || null});
+  }
+  qui.forEach(function(id){ var t = ((E.portes || {})[id] || {})[mid]; if(t && !pris[id]) l.push({pnj:id, t:t}); });
+  if(!l.length) return null;
+  return {cle:lieu + ':' + mid, l:lieu, morceaux:l};
+};
+B.porteBouton = function(lieu){
+  if(!B.porteIci(lieu)) return '';
+  return '<button class="btn bd-porte-btn" data-act="bd-porte" data-l="' + esc(lieu) + '">👂 ' + (batiment(lieu) ? 'Écouter aux portes' : 'Écouter en douce') + '</button>';
+};
+M.porteBouton = function(lieu){ try{ return M.role() === 'barde' ? B.porteBouton(lieu) : ''; }catch(e){ console.error(e); return ''; } };
+A['bd-porte'] = function(el){
+  var P = M.P(), x = B.porteIci(el.dataset.l); if(!P || !x) return;
+  P.portes = P.portes || {};
+  var secret = '';
+  x.morceaux.forEach(function(mo){
+    if(mo.pnj){ var L = P.portes[mo.pnj] = P.portes[mo.pnj] || [], k = mo.b ? 'b:' + mo.b : 'p:' + P.moment;
+      if(!L.some(function(e){ return e.k === k; })) L.push({k:k, m:P.moment, t:mo.t}); }
+    if(mo.b){
+      P.vus['barde:oreille:' + mo.b] = 1;   /* pour les conditions d'une enquête (ex. : {vu:'barde:oreille:boulangerie'}) */
+      if(mo.mimique){ P.mimiques = P.mimiques || {}; if(!P.mimiques[mo.mimique]){ P.mimiques[mo.mimique] = 'oreille'; secret = 'Tu as appris un secret : ' + B.phraseMimique(mo.mimique); } }
+    }
+  });
+  M.son('pas'); M.sauver();
+  UI.porteTape = {cle:x.cle, i:0, n:0, fini:false};
+  M.ouvrir(Object.assign({type:'porte', l:x.l, cle:x.cle, morceaux:x.morceaux, secret:secret, leger:true}, M.bulleDe ? M.bulleDe(el) : {}));
+  taperPorte();
+};
+/* la bulle : un visage, un nom, le texte qui s'écrit (toucher la bulle : tout s'écrit d'un coup) */
+function texteBr(t){ return esc(t).replace(/\n/g, '<br>'); }
+M.porteHTML = function(m){
+  var u = UI.porteTape && UI.porteTape.cle === m.cle ? UI.porteTape : {fini:true, i:99};
+  var s = (m.morceaux || []).map(function(mo, k){
+    var t = u.fini || k < u.i ? texteBr(mo.t) : k === u.i ? texteBr(mo.t.slice(0, u.n)) : '';
+    if(!u.fini && k > u.i) return '';
+    return '<div class="bd-porte" data-act="bd-porte-fin" data-i="' + k + '">' + (mo.pnj ? '<div class="b-gens-img">' + M.pnjImg(mo.pnj) + '</div>' : '<span class="bd-porte-ic">👂</span>') +
+      '<div class="bd-porte-corps"><b>' + esc(mo.pnj ? nom(mo.pnj) : 'Derrière la porte') + '</b><p class="bd-porte-txt" data-i="' + k + '">' + t + '</p></div></div>';
+  }).join('');
+  if(u.fini && m.secret) s += '<div class="bd-porte bd-porte-secret"><span class="bd-porte-ic">🤫</span><div class="bd-porte-corps"><p>' + esc(m.secret) + '</p></div></div>';
+  return s;
+};
+var tapeT = null;
+function taperPorte(){
+  clearInterval(tapeT);
+  tapeT = setInterval(function(){
+    var u = UI.porteTape, m = UI.modal;
+    if(!u || u.fini || !m || m.type !== 'porte' || m.cle !== u.cle){ clearInterval(tapeT); return; }
+    var mo = m.morceaux[u.i]; if(!mo){ finPorte(); return; }
+    u.n = Math.min(mo.t.length, u.n + 1);
+    var el = document.querySelector('#voile .bd-porte-txt[data-i="' + u.i + '"]');
+    if(el) el.innerHTML = texteBr(mo.t.slice(0, u.n));
+    if(u.n >= mo.t.length){
+      if(u.i + 1 >= m.morceaux.length){ finPorte(); return; }
+      u.i++; u.n = 0;
+      if(M.rendreBulle) M.rendreBulle();   /* la bulle suivante (celui qui parle après) */
+    }
+  }, 30);
+}
+function finPorte(){
+  clearInterval(tapeT);
+  var u = UI.porteTape; if(u) u.fini = true;
+  if(UI.modal && UI.modal.type === 'porte' && M.rendreBulle) M.rendreBulle();
+}
+A['bd-porte-fin'] = function(){ var u = UI.porteTape; if(u && !u.fini) finPorte(); };   /* toucher la bulle : tout le texte d'un coup */
+
+/* ==========================================================
    La feuille d'un lieu, pour le Barde (moteur-roles.js appelle M.lieuBarde)
    ========================================================== */
 function carteGens(id){
   var P = M.P(), x = D.PNJ[id], ouvert = P.conv[id] === P.moment, vexe = estVexe(id);
+  /* fâché, ou « Encore toi ? » (Romain, 5 novembre, 12 h 31) : son visage et « Reviens plus tard », cerclés de rouge (son rond aussi, sur la carte) */
+  if(B.fache(id)) return '<div class="b-gens-carte bd-fache"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span>Reviens plus tard</span></div>';
   return '<div class="b-gens-carte' + (vexe ? ' bd-vexe' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(x.court) + '</b><small>' + esc(x.metier) + '</small>' +
     (vexe ? '<small class="bd-boude-mini">' + ((M.E() || {}).vexeNeutre ? '🤔 plus tard' : '😤 vexé' + (FEM[id] ? 'e' : '')) + '</small>' : '') +
     '<button class="btn petit' + (ouvert ? ' second' : '') + '" data-act="parler" data-id="' + id + '"' + (ouvert || M.peutAgir() ? '' : ' disabled') + '>' + (ouvert ? '💬 Continuer' : '💬 Parler' + M.coutTxt()) + '</button></div>';
@@ -41398,13 +41967,8 @@ M.lieuBarde = function(lieu){
     var t = M.texteOccupe(id);
     return '<div class="b-gens-carte bd-occupe"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t) + '</div>';
   }).join('') + '</div>';
-  /* Tendre l'oreille (talent) */
-  if(talent('tendre')) B.bribesIci(lieu).forEach(function(b){
-    var r = B.oreillesReste();
-    s += '<div class="b-ecoute bd-ecoute-oreille"><h3>👂 ' + esc(b.titre) + '</h3>' +
-      (r > 0 ? '<button class="btn grand magie" data-act="bd-oreille" data-id="' + b.id + '">👂 Entrer sans bruit et tendre l\'oreille · gratuit</button><p class="doux petit">Encore ' + r + ' fois dans cette enquête.</p>' :
-        '<p class="doux petit">Tu as déjà tendu l\'oreille ' + B.oreillesMax() + ' fois dans cette enquête.</p>') + '</div>';
-  });
+  /* Tendre l'oreille (talent) : 👂 Écouter aux portes, partout où quelqu'un parle, tout le temps (B.porteIci) */
+  s += B.porteBouton(lieu);
   /* Les écoutes et les scènes de l'enquête */
   M.ecoutesIci(lieu).forEach(function(x){
     var ok = M.besoinOk(x.besoin);
@@ -41595,7 +42159,7 @@ function majTalents(){
    ========================================================== */
 M.carnetBarde = function(){
   var P = M.P(), E = M.E(), s = '', t = [];
-  if(B.oreillesMax() > 0) t.push('<li>👂 <b>Tendre l\'oreille</b> : encore ' + B.oreillesReste() + ' fois. Va devant un bâtiment où l\'on parle.</li>');
+  if(talent('tendre')) t.push('<li>👂 <b>Tendre l\'oreille</b> : sur la carte, touche un bâtiment où quelqu\'un se trouve, puis « Écouter aux portes ». Tout le temps, gratuit.</li>');
   var ex = M.fxSomme('verite') - ((P.usages && P.usages.verite) || 0);
   if(talent('exiger') || M.fxSomme('verite') > 0) t.push('<li>⚖️ <b>Exige la vérité</b> : encore ' + Math.max(0, ex) + ' fois, à la fin d\'un interrogatoire.</li>');
   if(M.fxVrai('charmeur')) t.push('<li>😊 <b>Charmeur</b> : personne ne se vexe.</li>');
@@ -41637,6 +42201,11 @@ M.repBarde = function(id, i, q){
 };
 M.dossierBarde = function(id){
   var l = [], P = M.P();
+  /* 👂 ce qu'il a dit derrière sa porte (A['bd-porte']) */
+  ((P.portes || {})[id] || []).forEach(function(e){
+    var mo = D.MOMENTS[(M.E().moments || [])[e.m]] || {ic:'👂', nom:''};
+    l.push('<li class="cn-rep bd-cn-porte"><div><p class="cn-q">👂 Entendu aux portes · ' + mo.ic + ' ' + esc(mo.nom) + '</p><p class="cn-a">' + esc(e.t).replace(/\n/g, '<br>') + '</p></div>' + M.lireBtn(e.t, id) + '</li>');
+  });
   /* dès l'enquête 2 (E.tics) : les signes ne sont que sur le tableau de liège (Romain, 22 h 46) ; le Carnet y renvoie sans les dire */
   var Et = M.E() || {};
   if(B.mimiques()[id]) l.push(Et.tics ? '<li class="cn-info bd-cn-secret"><div><p class="cn-de">📌 Son signe de menteur</p><p>Tu le connais : il est sur ton tableau de liège.</p></div></li>' :
@@ -41859,7 +42428,10 @@ function pagesDuLivre(){
   if(M.pageTableau) l.push(M.pageTableau());
   /* les fondateurs : la page de la saison (plus bas) ; p.dans : une page de l'enquête rangée DANS une page de toutes les enquêtes
      (le plan du moulin dans la bibliothèque des plans, la pierre de Tim dans les objets magiques) */
-  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans) l.push(p); });
+  /* une page d'un moment seulement (p.moments : 📣 le rassemblement, la nuit) n'est pas dans le livre avant son moment
+     (Romain, 5 novembre, 12 h 31) ; elle y apparaît quand on y passe, et le livre s'ouvre dessus (passer-moment, plus bas) */
+  var P0 = M.P();
+  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans && !(p.moments && !M.momentOk(p.moments) && !(P0 && P0.pages[p.id]))) l.push(p); });
   if(FONDATEURS_VISIBLE) l.push({id:'fondateurs', titre:'Les fondateurs', ic:'🏛️', livre:true});
   l.push({id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', livre:true});
   l.push({id:'objets', titre:'Les objets magiques', ic:'🔮', livre:true});
@@ -43152,7 +43724,9 @@ M.visageCarte = visage;
 /* Ceux qu'on connaît : le registre de l'enquête (le Sage le lit à toute l'équipe). Les autres (Romain, 5 novembre, 01 h 20) :
    un petit « ? » à la place de leur visage, sur leur maison comme sur la carte. */
 /* (le maire signe la lettre de chaque enquête : tout le monde le connaît, même s'il n'est pas dans le registre, comme à l'enquête 1) */
-function connu(E, id){ return id === 'grosbec' || !!(E && E.registre && E.registre[id]); }
+/* (et ceux qui jouent un rôle dans l'histoire : ceux à qui on peut parler dans cette enquête, comme Silas le garde ou Fortuné à l'E2 ;
+   Romain, 5 novembre, 12 h 31 ; jamais « voisin », qui n'est personne en particulier) */
+function connu(E, id){ return id === 'grosbec' || !!(E && E.registre && E.registre[id]) || !!(E && E.pnj && E.pnj[id] && id !== 'voisin'); }
 /* Qui habite où : {maison: {id, nom} | {inconnu:true}} — le registre de l'enquête d'abord, puis où chacun habite d'habitude
    (donnees.js, D.PNJ[id].domicile) ; une maison sans habitant n'a rien */
 var ELLES = {melusine:1, odette:1, iris:1, margot:1};
@@ -43164,7 +43738,9 @@ function habitants(E){
   });
   M.cle(D.PNJ).forEach(function(id){
     var m = D.PNJ[id].domicile;
-    if(m && Carte.MAISONS[m] && !h[m] && !connu(E, id)) h[m] = {inconnu:true, pid:id};   /* (pid : pour savoir s'il est chez lui, jamais montré) */
+    if(!m || !Carte.MAISONS[m] || h[m]) return;
+    if(!connu(E, id)) h[m] = {inconnu:true, pid:id};   /* (pid : pour savoir s'il est chez lui, jamais montré) */
+    else if(visage(id)) h[m] = {id:id, nom:(D.PNJ[id] || {}).nom || id, elle:!!ELLES[id]};   /* connu sans être au registre (Silas, E2) : son visage chez lui */
   });
   return h;
 }
@@ -43192,12 +43768,14 @@ function presences(E, hab){
     if((E.carteSecret || []).indexOf(id) >= 0) return;
     var ou = ouEst(E, id, mid), m = maisonDe[id];
     var ouM = ou && (/^[LFB]\d$/.test(ou) ? ou : (Carte.LIEUX[ou] && Carte.LIEUX[ou].maison) || null);   /* (sa boutique est sa maison : Gaspard à la boulangerie) */
-    if(m && ouM === m){ chez[m] = 1; return; }
+    /* le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31 ; barde.js) */
+    var fache = !!(M.pnjFache && M.pnjFache(id));
+    if(m && ouM === m){ chez[m] = fache ? 'fache' : 1; return; }
     if(m) absents[m] = 1;
     if(!ou || !visage(id)) return;
     var c = connu(E, id), nom = c ? (D.PNJ[id] || {}).court || id : 'Quelqu\'un', estMaison = /^[LFB]\d$/.test(ou);
     if(estMaison ? !Carte.MAISONS[ou] : !Carte.LIEUX[ou]) return;
-    var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:estMaison ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8};
+    var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:estMaison ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8, fache:fache};
     if(estMaison){ mq.maison = ou; maisons.push(mq); } else { mq.lieu = ou; lieux.push(mq); }
   });
   return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents};
@@ -45468,7 +46046,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){

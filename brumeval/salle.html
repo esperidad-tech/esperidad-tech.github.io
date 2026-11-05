@@ -1511,6 +1511,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mjc-remplit{to{transform:translateY(18px)}}
 @keyframes mjc-eclat{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}100%{transform:rotate(var(--a)) translateX(130px) scale(.2);opacity:0}}
 
+/* un ingrédient oublié revient au bout de la frise (Romain, 5 novembre, 12 h 31) */
+.mjc-ing.revient{animation:mjc-revient .5s ease-out}
+@keyframes mjc-revient{0%{filter:brightness(2.2) drop-shadow(0 0 8px #ff4a3a)}100%{filter:none}}
+
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage (préfixe .mjb-)
    ========================================================== */
@@ -3195,7 +3199,7 @@ D.TALENTS = {
   ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
   /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
      Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
-  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Devant certains bâtiments, tu entres sans bruit et tu surprends un bout de conversation : une phrase à trous, dans ton Carnet (deux fois par enquête). Et tu entends mieux que tout le monde : dans toutes tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},
+  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Écouter aux portes : sur la carte, partout où quelqu\'un se trouve, tu entends ce qu\'il dit, tout le temps et gratuitement. Tout est gardé dans ton Carnet, sur sa page. Et tu entends mieux que tout le monde : dans tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},   /* (Romain, 5 novembre, 12 h 31 : plus de limite, plus de phrase à trous aux portes) */
   exiger:{role:'barde', niv:2, nom:'Exige la vérité', ic:'⚖️', d:'À la fin d\'un interrogatoire, tu exiges la vérité : tous ses mensonges deviennent vrais. Deux fois par enquête.', fx:{verite:2}},
   charmeur:{role:'barde', niv:4, nom:'Charmeur', ic:'😊', d:'Tes questions maladroites ne vexent plus jamais personne.', fx:{charmeur:true}},
   physio:{role:'barde', niv:4, nom:'Physionomiste', ic:'🧐', d:'Au début de chaque enquête, tu sais déjà comment ment un des suspects.', fx:{physio:1}},
@@ -3794,7 +3798,6 @@ MJ.lancer = function(el, type, params, fin, options){
       '<div class="mj-titres"><b class="mj-nom">' + esc(options.titre || def.nom) + '</b>' +
       '</div>' +
       '<button class="mj-btn-lire" type="button" aria-label="Écouter la consigne">🔊</button>' +
-      '<button class="mj-btn-stop" type="button" aria-label="Arrêter la lecture">⏹</button>' +
     '</div>' +
     '<div class="mj-scene"></div>' +
   '</div>');
@@ -3805,7 +3808,7 @@ MJ.lancer = function(el, type, params, fin, options){
   var phrase = (MJ.PHRASES && MJ.PHRASES[type]) || def.phrase || consigne;
   if(typeof phrase === 'function') try{ phrase = phrase(params); }catch(e){ phrase = consigne; }
   racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
-  racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
+  /* (plus de bouton ⏹ dans l'en-tête : Romain, 5 novembre, 12 h 31 ; le ⏹ du moteur, #stop-voix, apparaît pendant la lecture) */
 
   /* ---------- La pause (Romain, 5 novembre, 11 h 21 : tous les mini-jeux, tous les joueurs, tout le temps) ----------
      ⏸️ dans l'en-tête : tout se fige (mj-temps.js), le mini-jeu se cache (options.cadrePause, sinon le cadre autour de el)
@@ -14713,12 +14716,21 @@ MJ.enregistrer('chaudron', {
       o.style.animation = 'none'; void o.offsetWidth; o.style.animation = '';
       clearTimeout(S.oupsT); S.oupsT = setTimeout(function(){ o.hidden = true; }, 2600); timers.push(S.oupsT);
     }
-    /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur */
+    /* (niveaux 3+) un carré sorti de la zone sans qu'on le verse : oublié, une erreur (−1 cœur).
+       Avant, il comptait comme fait : on pouvait tout laisser passer, perdre ses cœurs et réussir la potion sans rien y mettre.
+       Maintenant (Romain, 5 novembre, 12 h 31) la frise repart de lui : il revient, avec tous ceux d'après (ceux déjà versés restent versés),
+       et la frise défile plus vite pour que la partie ne dure pas plus longtemps que prévu (au plus 1,7 fois plus vite). */
+    var VITESSE_MAX = 1.7;
     function manquee(f){
-      f.fait = true; f.rate = true;
-      f.el.classList.add('rate'); majRecette();
       erreur('oubli', null, f.ingr);
-      if(!S.termine && S.fen.every(function(x){ return x.fait; })) apres(600, lancerFinale);
+      if(S.fini || S.termine) return;
+      var i0 = S.fen.indexOf(f), decale = (S.tf + 0.9) - f.a;
+      for(var i = i0; i < S.fen.length; i++){ var x = S.fen[i]; if(x.fait) continue; x.a += decale; x.fige = false; x.z = false; x.el.classList.remove('zone', 'rate'); }
+      if(S.finReelle === undefined) S.finReelle = S.planApres + R.fenetre;   /* (la fin prévue de la frise, en secondes de jeu) */
+      var der = S.fen[S.fen.length - 1], reste = der.a + R.fenetre - S.tf, budget = Math.max(reste / VITESSE_MAX, S.finReelle - S.t);
+      S.vitesse = U.borne(reste / Math.max(budget, 0.1), 1, VITESSE_MAX);
+      f.el.classList.remove('revient'); void f.el.offsetWidth; f.el.classList.add('revient');
+      majRecette();
     }
     /* tous les ingrédients sont passés : la fiole se remplit tant que la potion est dans sa zone */
     function lancerFinale(){
@@ -14847,7 +14859,7 @@ MJ.enregistrer('chaudron', {
       if(S.h >= 100){ S.h = 100; rendu(dt); echec('boum'); return false; }
       if(S.h <= 0){ S.h = 0; rendu(dt); echec('gel'); return false; }
       /* la frise : niveaux 1-2, elle attend que le carré dans la zone soit versé ; sinon, un carré sorti est oublié */
-      S.tf += dt;
+      S.tf += dt * (S.vitesse || 1);   /* (plus vite après un ingrédient oublié : manquee) */
       var nx = prochain();
       if(R.attend && nx){ var st = arretDe(nx); if(S.tf > st) S.tf = Math.max(st, S.tf - dt); }
       if(!R.attend){
@@ -22570,7 +22582,7 @@ function majBoutonStop(){
   var b = document.getElementById('stop-voix');
   if(b) b.hidden = !M.parle;
 }
-window.Brume = {lire:M.lire, stop:M.stop, son:M.son, sonActif:function(){ return !(M.S && M.S.options && M.S.options.son === false); }};
+window.Brume = {lire:function(t, o){ return M.lire(t, o); }, stop:function(){ return M.stop(); }, son:function(t, x){ return M.son(t, x); }, sonActif:function(){ return !(M.S && M.S.options && M.S.options.son === false); }};
 
 /* ---------- Sauvegarde (emplacements : plusieurs héros par appareil) ---------- */
 var PREFIXE = 'brumeval-v2-';
