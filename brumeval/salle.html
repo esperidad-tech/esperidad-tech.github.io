@@ -8278,7 +8278,8 @@ MJ.enregistrer('poursuite', {
           var lec = montre && ev.lecon && Math.round(o.voie) === voie;
           if(lec !== !!o.lec){ o.lec = lec; o.g.classList.toggle('lecon', lec); }
         });
-        if(montre){ var c = conseilPour(ev); if(c){ conseilTxt = c; ev.dit = c; } }
+        /* la bulle parle de la vague la plus proche qui demande un geste (les vagues sont rangées de la plus proche à la plus loin) */
+        if(montre && !conseilTxt){ var c = conseilPour(ev); if(c){ conseilTxt = c; ev.dit = c; } }
         if(!ev.compte && ev.p >= PC + p.grace && etat === 'course'){
           ev.compte = true;
           ev.objs.forEach(function(o){ if(o.lec){ o.lec = false; o.g.classList.remove('lecon'); } });

@@ -4454,6 +4454,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   padding:20px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:b-monte .28s cubic-bezier(.2,.9,.3,1.1);box-shadow:0 -10px 40px rgba(0,0,0,.5)}
 @media (min-width:760px){#voile{align-items:center}.b-feuille{border-radius:24px;max-height:88vh}}
 @keyframes b-monte{from{transform:translateY(60px)}to{transform:none}}
+/* une fenêtre qui en remplace une autre (le fond sombre reste) : elle se fond, sans remonter ; la même fenêtre redessinée ne bouge pas */
+.b-feuille.b-feuille-suite{animation:b-suite .2s ease-out}
+.b-feuille.b-feuille-meme{animation:none}
+.b-feuille.b-feuille-meme .b-point{animation:none}
+.b-feuille.b-feuille-meme .b-point:not(:disabled):not(.vu){animation:b-respire 2.4s ease-in-out infinite}
+@keyframes b-suite{from{opacity:.25}to{opacity:1}}
 .b-fermer{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.2rem;z-index:2}
 /* La bulle de la carte (Romain, 5 novembre, 10 h 07) : posée sur la carte, à côté de ce qu'on a touché, sans fond noir ;
    la carte reste touchable autour (moteur-actions.js, placerBulle) */
@@ -6310,17 +6316,22 @@ body.hr-plein{overflow:hidden}
 .tu-tag{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;font-size:.82rem;font-weight:700;line-height:1;padding:5px 10px;border-radius:999px;
   background:#ffd23f;color:#35281b;border:2px solid #24182e;box-shadow:0 3px 8px rgba(0,0,0,.35);animation:tu-tag 1.6s ease-in-out infinite}
 .tu-rond.tu-dessous .tu-tag{bottom:auto;top:calc(100% + 6px)}
+.tu-rond.tu-sans-tag .tu-tag{display:none}
+/* il arrive en douceur, une fois la cible posée (tuto.js, placer) */
+.tu-rond.tu-arrive{animation:tu-arrive .24s ease-out}
+@keyframes tu-arrive{from{opacity:0;scale:.86}to{opacity:1;scale:1}}
 @keyframes tu-tag{0%,100%{transform:translate(-50%, 0)}50%{transform:translate(-50%, -4px)}}
 .tu-rond.tu-secoue .tu-anneau{animation:tu-secoue .5s ease-in-out}
 @keyframes tu-secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
 
 /* Ce qui ne se touche pas maintenant : grisé */
-.tu-guide .tu-off{opacity:.45;filter:grayscale(.85) brightness(.6)}   /* filter : les animations d'entrée ne le remettent pas à zéro */
+/* (Romain, 5 novembre, 18 h 15 : « les autres propositions, on ne les voit pas, elles sont à moitié transparentes » : on les voit bien, juste ternies) */
+.tu-guide .tu-off{opacity:.8;filter:grayscale(.55) brightness(.82)}   /* filter : les animations d'entrée ne le remettent pas à zéro */
 .tu-guide .b-onglets button.tu-off span{transform:none;filter:grayscale(.8)}
 .tu-guide #carte-ici .ca-inactif{opacity:.55;filter:grayscale(.7)}
 .tu-guide.tu-hors .b-contenu{opacity:.42;filter:grayscale(.75);pointer-events:none;transition:opacity .3s, filter .3s}   /* il faut toucher un onglet : l'écran attend, grisé */
 .tu-guide #carte-ici .ca-maison-off{opacity:.7}
-.b-point.tu-apres{opacity:.45;filter:grayscale(.9) brightness(.55)}
+.b-point.tu-apres{opacity:.8;filter:grayscale(.55) brightness(.82)}
 .b-point.tu-ici{box-shadow:0 0 0 3px #ffd23f, 0 0 16px rgba(255,210,63,.6)}
 
 /* « Mes missions » du Carnet : l'étape en cours, celles à venir, le moment prévu */
@@ -6346,8 +6357,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 17:49 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 17:49';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 18:39 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 18:39';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -14185,7 +14196,8 @@ MJ.enregistrer('poursuite', {
           var lec = montre && ev.lecon && Math.round(o.voie) === voie;
           if(lec !== !!o.lec){ o.lec = lec; o.g.classList.toggle('lecon', lec); }
         });
-        if(montre){ var c = conseilPour(ev); if(c){ conseilTxt = c; ev.dit = c; } }
+        /* la bulle parle de la vague la plus proche qui demande un geste (les vagues sont rangées de la plus proche à la plus loin) */
+        if(montre && !conseilTxt){ var c = conseilPour(ev); if(c){ conseilTxt = c; ev.dit = c; } }
         if(!ev.compte && ev.p >= PC + p.grace && etat === 'course'){
           ev.compte = true;
           ev.objs.forEach(function(o){ if(o.lec){ o.lec = false; o.g.classList.remove('lecon'); } });
@@ -39164,9 +39176,15 @@ function garderCarte(){
     var h = jeu.querySelector(':scope > .b-entete'), n = jeu.querySelector(':scope > .b-onglets'); if(!h || !n) return false;
     var E = M.E(), mid = M.momentId(), R = D.ROLES[M.role()];
     jeu.className = 'b-jeu moment-' + mid; jeu.style.setProperty('--c', R.c);
-    var t = document.createElement('div');
-    t.innerHTML = M.enteteEnqueteHTML(); h.replaceWith(t.firstChild);
-    t.innerHTML = M.ongletsEnqueteHTML(); n.replaceWith(t.firstChild);
+    /* le bandeau du haut et les onglets ne sont refaits que s'ils ont changé (sinon leurs dessins et leurs animations repartaient
+       à zéro à chaque toucher : un petit saut de plus) ; la phrase du tutoriel, elle, change sur place (tuto.js) */
+    var t = document.createElement('div'), norm = function(x){ return x.replace(/\b([a-z]{1,6})\d+-/g, '$1#-'); };
+    var bt = M.bandeauTuto, avecTuto = !!(bt && bt()), cleH;
+    M.bandeauTuto = null;
+    try{ cleH = norm(M.enteteEnqueteHTML()) + (avecTuto ? '|tuto' : ''); } finally { M.bandeauTuto = bt; }
+    if(h.__cle !== cleH){ t.innerHTML = M.enteteEnqueteHTML(); var nh = t.firstChild; nh.__cle = cleH; h.replaceWith(nh); }
+    var o = M.ongletsEnqueteHTML();
+    if(n.__cle !== o){ t.innerHTML = o; var nn = t.firstChild; nn.__cle = o; n.replaceWith(nn); }
     majEntete(); if(M.carteAjuster) M.carteAjuster();
     return true;
   }catch(e){ console.error(e); return false; }
@@ -39174,14 +39192,25 @@ function garderCarte(){
 function rendreModal(){
   var v = document.getElementById('voile');
   if(UI.modal && UI.modal.bulle && !carteIci()) UI.modal = null;   /* une bulle de la carte, quand la carte n'est plus là : elle s'en va */
-  if(!UI.modal){ v.hidden = true; v.innerHTML = ''; v.classList.remove('b-voile-bulle'); document.body.classList.remove('b-bloque'); return; }
+  if(!UI.modal){ v.hidden = true; v.innerHTML = ''; v.classList.remove('b-voile-bulle'); document.body.classList.remove('b-bloque'); v.__modal = null; return; }
   var c = contenuModal(UI.modal), bulle = !!UI.modal.bulle;
+  /* une fenêtre pleine est déjà ouverte (Romain, 5 novembre, 18 h 15 : « quand il y a plusieurs icônes d'affilée, il faut que la carte
+     reste sombre et que ce soit juste la fenêtre qui change ») : le fond sombre reste tel quel (plus d'éclair : il ne se refait plus),
+     la fenêtre ne remonte plus du bas ; une autre fenêtre se fond à la place, la même fenêtre redessinée ne bouge pas (et garde son défilement) */
+  var fond = !bulle && !v.hidden && v.querySelector(':scope > .b-fond');
+  var meme = !!fond && v.__modal === UI.modal, vieille = fond ? v.querySelector(':scope > .b-feuille') : null, defile = meme && vieille ? vieille.scrollTop : 0;
   /* la bulle de la carte (Romain, 5 novembre, 10 h 07) : pas de fond noir, la carte reste touchable autour ;
      toucher ailleurs sur la carte la remplace, toucher dans le vide la ferme. Elle reste dans #voile (le tutoriel y cherche ses boutons). */
   v.classList.toggle('b-voile-bulle', bulle);
-  v.innerHTML = (bulle ? '<i class="b-bulle-pointe" aria-hidden="true"></i>' : '<div class="b-fond" data-act="' + (UI.modal.fixe ? '' : 'fermer') + '"></div>') +
-    '<div class="b-feuille ' + (bulle ? 'b-bulle ' : '') + (UI.modal.classe || '') + '" role="dialog"' + (bulle ? '' : ' aria-modal="true"') + '>' +
+  var feuille = '<div class="b-feuille ' + (bulle ? 'b-bulle ' : '') + (fond ? (meme ? 'b-feuille-meme ' : 'b-feuille-suite ') : '') + (UI.modal.classe || '') + '" role="dialog"' + (bulle ? '' : ' aria-modal="true"') + '>' +
     (UI.modal.fixe ? '' : '<button class="b-fermer" data-act="fermer" aria-label="Fermer">✕</button>') + c + '</div>';
+  if(fond){
+    fond.setAttribute('data-act', UI.modal.fixe ? '' : 'fermer');
+    [].slice.call(v.children).forEach(function(n){ if(n !== fond) v.removeChild(n); });
+    v.insertAdjacentHTML('beforeend', feuille);
+    if(defile){ var nf = v.querySelector(':scope > .b-feuille'); if(nf) nf.scrollTop = defile; }
+  } else v.innerHTML = (bulle ? '<i class="b-bulle-pointe" aria-hidden="true"></i>' : '<div class="b-fond" data-act="' + (UI.modal.fixe ? '' : 'fermer') + '"></div>') + feuille;
+  v.__modal = UI.modal;
   v.hidden = false;
   document.body.classList.toggle('b-bloque', !bulle);
   if(bulle){
@@ -39997,8 +40026,11 @@ function nouvelleEnquete(id){
   /* une enquête en cours d'écriture (E.enEcriture : l'enquête 3, tant qu'elle n'est pas réécrite) ne se joue pas */
   if(E && E.enEcriture){ UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.ouvrir({type:'info', ic:'🚧', titre:'Enquête ' + id + ' : en cours d\'écriture', t:'L\'enquête ' + id + ' est en train d\'être écrite. Elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'}); return; }
   if(S.e && S.e.etape === 'fin' && !S.e.defaite) M.archiver();
+  var avant = S.e;
   S.e = M.enqueteNeuve(id);
   var P = S.e;
+  /* le tableau de liège du Barde reste comme il était à la fin de l'enquête d'avant (liege.js) */
+  if(M.role() === 'barde' && M.liegeGarde){ var lg = M.liegeGarde(S, avant); if(lg) P.liege = lg; }
   P.actions = M.actionsMax();
   P.chances = M.fxSomme('chance');
   if(M.role() === 'alchimiste'){
@@ -40928,8 +40960,13 @@ function etat(src){
    Chaque enquête choisit ses photos intéressantes : E.liege = {pnj:[…], lieux:[…]} (e1.js, e2.js…).
    Sans liste : les suspects (QUI, et QUI l'aide) et les lieux du OÙ. Les objets : seulement ceux que
    cette tablette connaît (trouvés ou reçus), pour ne rien dévoiler. Une photo déjà épinglée reste toujours. */
+/* une photo épinglée dans une enquête d'avant : on retrouve son nom dans l'enquête où elle est née */
+function autresEnquetes(E){ var l = [E]; M.cle(window.ENQUETES || {}).forEach(function(n){ if(window.ENQUETES[n] && window.ENQUETES[n] !== E) l.push(window.ENQUETES[n]); }); return l; }
+function motAilleurs(E, id){ var m = null; autresEnquetes(E).some(function(X){ m = ((X.liege && X.liege.mots) || []).filter(function(x){ return x.id === id; })[0] || null; return !!m; }); return m; }
+function objetAilleurs(E, id){ var o = null; autresEnquetes(E).some(function(X){ o = (X.objets && X.objets[id]) || null; return !!o; }); return o; }
 function photoLieu(E, id){
-  var c = ((E.ou && E.ou.choix) || []).filter(function(x){ return x.id === id; })[0];
+  var c = null;
+  autresEnquetes(E).some(function(X){ c = ((X.ou && X.ou.choix) || []).filter(function(x){ return x.id === id; })[0] || null; return !!c; });
   if(c) return {k:'lieu:' + id, type:'lieu', id:id, nom:c.nom, ic:c.ic};
   if(window.Carte && Carte.LIEUX && Carte.LIEUX[id]){
     if(Carte.LIEUX[id].zone === 'dessous') return null;   /* les souterrains restent secrets */
@@ -40998,9 +41035,9 @@ function photos(E, P){
   M.cle(((P && P.liege) || {}).cartes || {}).forEach(function(k){
     var q = k.split(':');
     if(q[0] === 'pnj'){ if(q[1] === INCONNU.id) ajout(INCONNU); else gens(q[1]); }
-    else if(q[0] === 'mot') ajout(mot((Lg.mots || []).filter(function(m){ return m.id === q[1]; })[0]));
+    else if(q[0] === 'mot') ajout(mot(motAilleurs(E, q[1])));
     else if(q[0] === 'lieu') ajout(photoLieu(E, q[1]));
-    else if(q[0] === 'obj' && E.objets && E.objets[q[1]]) ajout({k:k, type:'obj', id:q[1], nom:E.objets[q[1]].nom, ic:E.objets[q[1]].ic});
+    else if(q[0] === 'obj'){ var ob = objetAilleurs(E, q[1]); if(ob) ajout({k:k, type:'obj', id:q[1], nom:ob.nom, ic:ob.ic}); }
     else if(q[0] === 'signe' && SIGNES[q[1]]) ajout({k:k, type:'signe', id:q[1]});
   });
   return l;
@@ -41218,7 +41255,12 @@ function majFils(){
   if(bas) bas.innerHTML = filsSVG(L, true);
   if(haut) haut.innerHTML = filsSVG(L, false);
 }
-function sauver(){ try{ M.sauver(); }catch(e){} }
+/* le tableau du Barde est gardé d'une enquête à l'autre (Romain, 5 novembre, 18 h 15 : « le tableau en liège, il bouge pas,
+   il reste comme il est ») : chaque changement est aussi recopié dans la sauvegarde (S.liege), et une nouvelle enquête repart de là */
+function sauver(){
+  try{ if(V && V.P && V.P === M.P() && M.S) M.S.liege = M.copie(etat(V.P)); }catch(e){}
+  try{ M.sauver(); }catch(e){}
+}
 function consigne(t){ V.consigne.hidden = !t; V.consigne.textContent = t || ''; }
 
 /* ---------- Gestes ---------- */
@@ -41467,6 +41509,16 @@ M.sacBarde = function(){
   if(objs.length) s += '<h3>Objets à montrer aux habitants</h3><div class="b-recus">' + objs.map(function(k){ var n = M.nomCode(k); return '<span class="b-puce-ingr">' + n.ic + ' ' + esc(n.nom) + '</span>'; }).join('') + '</div>';
   s += M.potionsRecues() + M.equipementUtile();
   return s + '<button class="btn grand" data-act="fermer">D\'accord</button>';
+};
+
+/* ---------- Le tableau qu'une nouvelle enquête reprend ----------
+   S.liege (recopié à chaque changement) ; pour une ancienne sauvegarde : le tableau de l'enquête d'avant
+   (en cours, ou le plus récent du journal). */
+M.liegeGarde = function(S, avant){
+  var L = S.liege || (avant && avant.liege) || null;
+  if(!L){ var n = -1; M.cle(S.journal || {}).forEach(function(e){ var J = S.journal[e]; if(J && J.liege && (+e || J.e) > n){ n = +e || J.e; L = J.liege; } }); }
+  if(!L || !L.cartes || !M.cle(L.cartes).length) return null;
+  return {cartes:M.copie(L.cartes), fils:M.copie(L.fils || []), z:L.z || 1};
 };
 
 /* ---------- Le journal : le tableau d'une enquête passée, en lecture seule ---------- */
@@ -47261,28 +47313,84 @@ function rond(k){
 function messagesVisibles(){
   return qa('#atelier-ici .at-toast:not([hidden]), #toast.on').map(function(t){ return t.getBoundingClientRect(); }).filter(function(r){ return r.width > 2 && r.height > 2; });
 }
-/* Sur la carte, le nom d'un lieu et son « ✨ Nouveau ! » : le rond les entoure tous les deux (il ne passe plus sur l'écriture) */
+/* Sur la carte, le nom d'un lieu et son « ✨ Nouveau ! » : le rond les entoure tous les deux (il ne passe plus sur l'écriture).
+   La pancarte se balance (carte.css, ca-nouveau) : on prend sa place AU REPOS et toute la hauteur où elle se balance,
+   pour que le rond garde la même taille (Romain, 5 novembre, 18 h 15 : « la zone jaune autour, c'est bizarre ») */
+function rectRepos(n){
+  try{
+    var b = n.getBBox(), m = n.parentNode && n.parentNode.getScreenCTM && n.parentNode.getScreenCTM();
+    if(!m || !b.width) return n.getBoundingClientRect();
+    var xs = [b.x, b.x + b.width], ys = [b.y - 8, b.y + b.height], X = [], Y = [];
+    xs.forEach(function(x){ ys.forEach(function(y){ X.push(m.a * x + m.c * y + m.e); Y.push(m.b * x + m.d * y + m.f); }); });
+    var L = Math.min.apply(null, X), T = Math.min.apply(null, Y), R = Math.max.apply(null, X), B = Math.max.apply(null, Y);
+    return {left:L, top:T, right:R, bottom:B, width:R - L, height:B - T};
+  }catch(e){ return n.getBoundingClientRect(); }
+}
 function rectCible(el){
   var r = el.getBoundingClientRect(), g = el.closest && el.closest('g.ca-lieu'), n = g && g.querySelector('.ca-nouveau');
   if(!n || !el.classList.contains('ca-etiq-lieu')) return r;
-  var q = n.getBoundingClientRect(); if(!q.width) return r;
+  var q = rectRepos(n); if(!q.width) return r;
   var L = Math.min(r.left, q.left), T = Math.min(r.top, q.top), R = Math.max(r.right, q.right), B = Math.max(r.bottom, q.bottom);
   return {left:L, top:T, right:R, bottom:B, width:R - L, height:B - T};
 }
+/* Le rond (Romain, 5 novembre, 18 h 15 : « le Ici, il saute, il n'est pas fluide ; il devrait être en bas ») :
+   - il suit sa cible À CHAQUE IMAGE (plus par à-coups quatre fois par seconde) ;
+   - il n'arrive qu'une fois la cible posée (une pastille qui rebondit en entrant, une fenêtre qui monte) : il apparaît alors en douceur ;
+   - son « 👆 Ici ! » est EN DESSOUS de la cible (il ne cache plus le nom ni le « Nouveau ! »), au-dessus seulement s'il n'y a pas la place en bas. */
+var derniersMsg = [], boucleRonds = 0;
 function poserRonds(els){
-  var l = (els || []).filter(vuVraiment).slice(0, 4), msg = messagesVisibles();
+  var l = (els || []).filter(vuVraiment).slice(0, 4);
+  derniersMsg = messagesVisibles();
   for(var k = 0; k < Math.max(l.length, ronds.length); k++){
     var d = rond(k), el = l[k];
-    if(!el){ d.hidden = true; continue; }
-    var r = rectCible(el), w = Math.max(r.width + 14, 46), h = Math.max(r.height + 14, 46);
-    var x0 = r.left + r.width / 2 - w / 2 - 30, y0 = r.top + r.height / 2 - h / 2 - 34, x1 = x0 + w + 60, y1 = y0 + h + 64;   /* (avec son « 👆 Ici ! ») */
-    if(msg.some(function(m){ return m.left < x1 && m.right > x0 && m.top < y1 && m.bottom > y0; })){ d.hidden = true; continue; }
-    d.hidden = false;
-    d.style.width = Math.round(w) + 'px'; d.style.height = Math.round(h) + 'px';
-    d.style.transform = 'translate(' + Math.round(r.left + r.width / 2 - w / 2) + 'px,' + Math.round(r.top + r.height / 2 - h / 2) + 'px)';
-    d.classList.toggle('tu-dessous', r.top < 110 || !!el.closest('#carte-ici'));   /* tout en haut, ou sur la carte (sa pancarte « Nouveau ! » est au-dessus) : la nôtre passe dessous */
-    d.classList.toggle('tu-secoue', Date.now() - secousse < 600);
+    if(!el){ d.hidden = true; d.__el = null; continue; }
+    if(d.__el !== el){
+      /* la même chose redessinée (même place) : le rond reste ; une autre cible : il attend qu'elle soit posée */
+      var r0 = el.getBoundingClientRect(), a = d.__r;
+      var pareil = d.__vu && a && Math.abs(r0.left - a.left) < 3 && Math.abs(r0.top - a.top) < 3 && Math.abs(r0.width - a.width) < 3 && Math.abs(r0.height - a.height) < 3;
+      d.__el = el; d.__t0 = performance.now(); d.__depuis = d.__t0; d.__der = null;
+      if(!pareil){ d.__vu = false; d.hidden = true; }
+    }
+    placer(d);
   }
+  if(!boucleRonds && ronds.some(function(x){ return x.__el; })) boucleRonds = requestAnimationFrame(suivreRonds);
+}
+function suivreRonds(){
+  boucleRonds = 0;
+  var encore = false;
+  ronds.forEach(function(d){ if(d.__el){ encore = true; try{ placer(d); }catch(e){} } });
+  if(encore) boucleRonds = requestAnimationFrame(suivreRonds);
+}
+function placer(d){
+  var el = d.__el;
+  if(!el || !el.isConnected){ d.hidden = true; d.__el = null; return; }
+  var r = rectCible(el), now = performance.now(), der = d.__der;
+  if(!der || Math.abs(r.left - der.left) > 1 || Math.abs(r.top - der.top) > 1 || Math.abs(r.width - der.width) > 1 || Math.abs(r.height - der.height) > 1) d.__depuis = now;
+  d.__der = {left:r.left, top:r.top, width:r.width, height:r.height};
+  if(!r.width && !r.height){ d.hidden = true; return; }
+  if(!d.__vu){
+    if(now - d.__depuis < 140 && now - d.__t0 < 900) return;   /* la cible bouge encore (elle arrive) : on attend qu'elle soit posée */
+    d.__vu = true; d.__arrive = true;
+  }
+  var w = Math.max(r.width + 14, 46), h = Math.max(r.height + 14, 46);
+  var x = r.left + r.width / 2 - w / 2, y = r.top + r.height / 2 - h / 2;
+  var bas = y + h + 40 <= innerHeight - 4;   /* la place pour « 👆 Ici ! » sous la cible ? */
+  /* pas la place en bas : au-dessus pour un onglet du bas ; ailleurs (une fenêtre, la carte), le rond suffit, sans « Ici ! » qui cacherait quelque chose */
+  var sansTag = !bas && !el.closest('.b-onglets');
+  var x0 = x - 30, x1 = x + w + 30, y0 = bas || sansTag ? y : y - 34, y1 = bas ? y + h + 34 : y + h;
+  if(derniersMsg.some(function(m){ return m.left < x1 && m.right > x0 && m.top < y1 && m.bottom > y0; })){ d.hidden = true; d.__vu = false; return; }
+  var st = Math.round(w) + 'x' + Math.round(h) + '@' + Math.round(x) + ',' + Math.round(y) + (bas ? 'b' : 'h') + (sansTag ? 's' : '');
+  if(d.__st !== st){
+    d.__st = st;
+    d.style.width = Math.round(w) + 'px'; d.style.height = Math.round(h) + 'px';
+    d.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+    d.classList.toggle('tu-dessous', bas);
+    d.classList.toggle('tu-sans-tag', sansTag);
+  }
+  if(d.hidden){ d.hidden = false; if(d.__arrive){ d.classList.remove('tu-arrive'); void d.offsetWidth; d.classList.add('tu-arrive'); } }
+  d.__arrive = false;
+  d.__r = d.__der;
+  d.classList.toggle('tu-secoue', Date.now() - secousse < 600);
 }
 /* La cible est cachée plus bas dans une fenêtre, une page du livre ou la carte : on la fait venir sous les yeux (pas plus d'une fois toutes les 2,5 s) */
 var dernierDefil = {el:null, t:0};
@@ -47295,7 +47403,7 @@ function amener(els){
   try{ el.scrollIntoView({block:'center', inline:'center', behavior:'smooth'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
 }
 function cacherTout(){
-  ronds.forEach(function(d){ d.hidden = true; });
+  ronds.forEach(function(d){ d.hidden = true; d.__el = null; d.__vu = false; });
   document.body.classList.remove('tu-guide');
   if(astuce) astuce.hidden = true;
   griser(null);
@@ -47365,18 +47473,8 @@ if(typeof rendreAvant === 'function'){
 /* La bulle de la carte s'ouvre ou se ferme sans redessiner la page (moteur-actions.js, M.rendreLeger) : le rond suit quand même tout de suite */
 M.tutoMaj = function(){ try{ derniereOff = null; maj(true); suivreUnMoment(); }catch(e){ console.error(e); } };
 setInterval(function(){ try{ if(M.S) maj(false); }catch(e){} }, 250);
-/* Juste après un rendu, les fenêtres et les écrans glissent en entrant : le rond les suit image par image, pendant 0,8 s */
-var suivi = 0;
-function suivreUnMoment(){
-  var fin = Date.now() + 800;
-  if(suivi){ suivi = fin; return; }
-  suivi = fin;
-  (function pas(){
-    if(Date.now() > suivi){ suivi = 0; return; }
-    try{ if(derniereGuide && !derniereGuide.mj) poserRonds(derniereGuide.els); }catch(e){}
-    requestAnimationFrame(pas);
-  })();
-}
+/* Juste après un rendu : on recalcule tout de suite (la boucle de poserRonds suit ensuite la cible à chaque image) */
+function suivreUnMoment(){ try{ if(derniereGuide && !derniereGuide.mj) poserRonds(derniereGuide.els); }catch(e){} }
 window.addEventListener('scroll', function(){ try{ if(derniereGuide) poserRonds(derniereGuide.mj ? [] : derniereGuide.els); }catch(e){} }, true);
 
 /* ==========================================================
