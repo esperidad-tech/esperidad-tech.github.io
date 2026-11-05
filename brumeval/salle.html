@@ -416,8 +416,18 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-tiret{stroke:#efe2bf;stroke-linecap:round;opacity:.75}
 .mja-obstacle.casse{opacity:.35}
 .mja-obstacle.pris{opacity:0;transition:opacity .2s}
-.mja-boost{animation:mja-boost .5s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px var(--cyan))}
-.mja-obstacle.tot{filter:drop-shadow(0 0 5px var(--cyan)) drop-shadow(0 0 2px var(--cyan))}
+.mja-boost{animation:mja-boost .5s ease-in-out infinite alternate}
+/* l'anneau au sol autour de l'obstacle à regarder (leçon, aide) : jaune = saute, bleu = baisse-toi, orange = évite */
+.mja-halo{fill:none;stroke-width:5;opacity:0}
+.mja-obstacle.tot .mja-halo,.mja-obstacle.lecon .mja-halo{opacity:1;animation:mja-halo .55s ease-in-out infinite alternate}
+.mja-obstacle.g-bas .mja-halo{stroke:#ffd36a;fill:rgba(255,211,106,.2)}
+.mja-obstacle.g-haut .mja-halo{stroke:#8ff3ff;fill:rgba(143,243,255,.18)}
+.mja-obstacle.g-bloc .mja-halo{stroke:#ffa36b;fill:rgba(255,163,107,.18)}
+@keyframes mja-halo{from{opacity:.45}to{opacity:1}}
+/* la vache et le cerf marchent en traversant */
+.bt-p1,.bt-p2{transform-box:fill-box;transform-origin:50% 0;animation:mja-bt-pas .5s ease-in-out infinite alternate}
+.bt-p2{animation-delay:-.25s}
+@keyframes mja-bt-pas{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
 .mja-pas-rangee{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.25);border:2px solid var(--trait);flex:none}
 .mja-pas-bout{font-size:1rem;line-height:1}
 .mja-pas-pt{width:12px;height:12px;border-radius:50%;background:#2b2f55;border:2px solid var(--trait);transition:transform .3s,background .3s}
@@ -431,25 +441,26 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-etoiles-choc{opacity:0}
 .mja-coureur-corps.trebuche .mja-etoiles-choc{animation:mja-etoiles .9s ease-out}
 @keyframes mja-etoiles{0%,80%{opacity:1}100%{opacity:0}}
-.mja-coureur-corps.trebuche{filter:drop-shadow(0 0 6px #ff6b6b)}
+.mja-coureur-corps.trebuche .pt{animation:mja-rouge .9s ease-out}
+@keyframes mja-rouge{0%,60%{opacity:.55}100%{opacity:1}}
 .mja-coureur.sprint .mja-coureur-corps{animation:mja-sprint .8s ease-out}
 @keyframes mja-sprint{0%{filter:drop-shadow(0 0 0 var(--cyan))}30%{filter:drop-shadow(0 0 14px var(--cyan))}100%{filter:none}}
 @keyframes mja-boost{to{opacity:.55}}
-.mja-roule{animation:mja-roule .35s linear infinite;transform-box:fill-box;transform-origin:center}
+.mja-roule{animation:mja-roule .45s linear infinite;transform-box:fill-box;transform-origin:center}
 @keyframes mja-roule{to{transform:rotate(360deg)}}
-.mja-fuyard-corps{animation:mja-fuyard .32s ease-in-out infinite alternate}
-@keyframes mja-fuyard{to{transform:translateY(-3px)}}
 .mja-fuyard{transition:opacity .25s}
 .mja-fuyard-ex{font-family:var(--f-titre);font-size:30px;fill:#ffd36a;stroke:var(--contour);stroke-width:2;opacity:0}
 .mja-fuyard.alerte .mja-fuyard-ex{opacity:1;animation:b-pulse .4s infinite}
 .mja-fuyard.attrape .mja-fuyard-corps{animation:mja-attrape .6s ease-out forwards}
 @keyframes mja-attrape{to{transform:rotate(-12deg) translateY(4px)}}
-.mja-coureur.pas2 .mja-jambe.g{transform:translateY(-4px)}
-.mja-coureur:not(.pas2) .mja-jambe.d{transform:translateY(-4px)}
 .mja-coureur-corps.bute{animation:b-tremble .25s}
 .mja-coureur.boost .mja-coureur-corps{filter:drop-shadow(0 0 8px var(--cyan))}
-.mja-conseil{filter:drop-shadow(0 0 6px var(--cyan));transition:opacity .15s}
-.mja-conseil-t{fill:#8ff3ff;font-size:22px;font-weight:700;font-family:var(--f-texte)}
+/* la bulle qui dit quoi faire : jaune = saute, bleue = baisse-toi, orange = change de couloir */
+.mja-conseil{transition:opacity .15s}
+.mja-conseil-f{fill:#ffd36a;stroke:var(--contour);stroke-width:3.5}
+.mja-conseil.c-bas .mja-conseil-f{fill:#8ff3ff}
+.mja-conseil.c-cote .mja-conseil-f{fill:#ffb36b}
+.mja-conseil-t{fill:#14112a;font-size:19px;font-weight:800;font-family:var(--f-texte)}
 .mja-pad{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:space-between;padding:0 10px;pointer-events:none;z-index:3}
 .mja-pb{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:3px solid var(--contour);background:rgba(238,240,255,.16);color:#fff;font-size:1.5rem;line-height:1;display:grid;place-items:center;padding:0;box-shadow:0 4px 0 rgba(0,0,0,.35)}
 .mja-pb:active{background:rgba(143,243,255,.45);transform:translateY(2px)}
@@ -7477,102 +7488,430 @@ MJ.enregistrer('traces', {
 /* ==========================================================
    POURSUITE (Pisteur) — course sur 3 couloirs vue de derrière.
    Glisser ⬅️ ➡️ pour changer de couloir, ⬆️ pour sauter, ⬇️ pour
-   glisser (ou toucher à gauche / à droite, ou les boutons).
-   Beaucoup d'obstacles, variés et serrés : caisses, charrettes, étals
-   du marché, barrières, chien endormi, flaques de boue, linge et
-   branches basses, poules qui traversent, tonneaux qui roulent, et
-   des enchaînements (changer vite de couloir puis sauter).
+   se baisser (ou toucher à gauche / à droite, ou les boutons).
+   Romain, 5 nov. (17 h 05) : « on ne sait pas quand il faut sauter, se
+   baisser ou se décaler ; ce n'est pas fluide ; les dessins ne sont pas
+   jolis » → refaite. Trois familles d'obstacles, chacune avec UNE forme
+   qu'on reconnaît du premier coup d'œil :
+   - À SAUTER : bas, couchés en travers du couloir, plus bas que les
+     genoux (barrière basse, tronc couché, sacs de farine, chien endormi ;
+     en forêt : tronc couché, bouleau, muret de pierres, tronc creux).
+   - À SE BAISSER : une barre à hauteur de tête tenue par deux poteaux ou
+     deux arbres, avec un grand vide dessous où l'on voit le chemin (linge
+     sur sa corde, poutre et enseigne ; en forêt : arbre tombé entre deux
+     troncs, grosse branche basse).
+   - À ÉVITER (changer de couloir) : plus hauts que le coureur et pleins
+     jusqu'au sol (piles de caisses et de tonneaux, meule de foin, charrette
+     chargée, étal, vache qui traverse, meule de moulin qui roule ; en forêt :
+     gros rocher, grand arbre, roncier, tas de bûches, cerf, rondin).
+   Aux premiers niveaux (l'enquête 1), les trois premières vagues montrent
+   chaque geste une fois, plus lentement ; une bulle dit quoi faire
+   (« ⤒ Saute ! », « ⤓ Baisse-toi ! », « ◀ À gauche ! ») et l'obstacle à
+   regarder est entouré, deux fois par famille (p.apprendre).
+   Le coureur est un pantin vu de dos (capuche, petite cape qui flotte,
+   carquois), animé à chaque image : la course, le saut (genoux repliés,
+   bras en l'air), le « baisse-toi » (il se baisse en douceur), il se
+   penche quand il change de couloir, il s'écrase un peu en retombant.
+   La silhouette qui fuit : le même pantin, en sombre, à grande cape.
+   Le petit chien est vu de dos : queue qui frétille, oreilles qui volent,
+   coussinets roses quand il galope.
+   Fluidité : la foulée avance avec la vitesse (plus de saccade quand on
+   ralentit après un choc), plus de filtre CSS sur ce qui bouge, et ce qui
+   est près est dessiné par-dessus ce qui est loin.
    Un choc ne finit pas la partie : on trébuche, on ralentit, et la
    silhouette s'éloigne d'un pas (plus petite, plus haut sur la route).
-   10 obstacles sans faute d'affilée : elle se rapproche d'un pas.
+   N obstacles sans faute d'affilée : elle se rapproche d'un pas.
    Départ : 2 pas de « attrapée », 3 pas de « perdue ». Pas d'autre
    fin : les obstacles arrivent jusqu'à ce qu'on l'attrape ou la perde.
    Mods : erreurs (+1 pas avant de la perdre), lent et temps (tout
    arrive moins vite), zone (sauts et glissades plus longs, chocs plus
-   tolérants), aide (obstacles visibles et surlignés plus tôt, et une
-   flèche dit quoi faire pour les N×6 premiers), revele (toujours la
-   flèche), obstacles (− = moins serrés, + = plus serrés), vitesse
-   (bottes : elle se rapproche après 8 obstacles sans faute au lieu de 10).
+   tolérants), aide (obstacles entourés plus tôt, et la bulle dit quoi
+   faire pour les N×6 premiers), revele (toujours la bulle), obstacles
+   (− = moins serrés, + = plus serrés), vitesse (bottes : elle se
+   rapproche plus vite).
    ========================================================== */
+function trait(n){ return ' stroke="' + CONTOUR + '" stroke-width="' + n + '"'; }
+function ombreSol(rx, ry, op){ return '<ellipse cx="0" cy="1" rx="' + rx + '" ry="' + (ry || 7) + '" fill="#000" opacity="' + (op || 0.3) + '"/>'; }
+/* l'anneau qui montre l'obstacle à regarder (leçons, aide) : caché sinon ; sa couleur dit la famille */
+var HALO = '<ellipse class="mja-halo" cx="0" cy="-2" rx="64" ry="16"/>';
+/* l'ombre d'une barre en hauteur : une bande claire au sol, le chemin passe dessous */
+function ombreBarre(){ return '<ellipse cx="0" cy="1" rx="50" ry="5" fill="#000" opacity=".16"/><ellipse cx="-55" cy="1" rx="10" ry="4" fill="#000" opacity=".32"/><ellipse cx="55" cy="1" rx="10" ry="4" fill="#000" opacity=".32"/>'; }
+function boucleN(n, f){ var s = ''; for(var i = 0; i < n; i++) s += f(i); return s; }
+
+/* ---- pièces de bois et de pierre ---- */
+function caisseV(x, y, w, h, rot, marque){
+  var l = -w / 2, r = w / 2, t = -h;
+  return '<g transform="translate(' + x + ',' + y + ')' + (rot ? ' rotate(' + rot + ')' : '') + '">' +
+    '<rect x="' + l + '" y="' + t + '" width="' + w + '" height="' + h + '" rx="3" fill="#c08a4a"' + trait(4.5) + '/>' +
+    '<rect x="' + (l + 5) + '" y="' + (t + 5) + '" width="' + (w - 10) + '" height="' + (h - 10) + '" fill="#b07a3c" stroke="#7d5428" stroke-width="2.5"/>' +
+    '<path d="M' + (l + 7) + ',-7 L' + (r - 7) + ',' + (t + 7) + '" stroke="#7d5428" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M' + (l + 7) + ',-7 L' + (r - 7) + ',' + (t + 7) + '" stroke="#d9a066" stroke-width="2" stroke-linecap="round"/>' +
+    '<circle cx="' + (l + 4.5) + '" cy="' + (t + 4.5) + '" r="1.6" fill="' + CONTOUR + '"/><circle cx="' + (r - 4.5) + '" cy="' + (t + 4.5) + '" r="1.6" fill="' + CONTOUR + '"/><circle cx="' + (l + 4.5) + '" cy="-4.5" r="1.6" fill="' + CONTOUR + '"/><circle cx="' + (r - 4.5) + '" cy="-4.5" r="1.6" fill="' + CONTOUR + '"/>' +
+    (marque ? '<g transform="translate(' + (r - 14) + ',' + (t + h * 0.62) + ')"><circle r="6" fill="#e5484d" opacity=".85"/><path d="M0,-6 L1,-10" stroke="#5e3a1e" stroke-width="2"/></g>' : '') +
+  '</g>';
+}
+function tonneauV(x, yb, w, h){
+  var l = x - w / 2, r = x + w / 2, t = yb - h, a = t + h * 0.3, b = t + h * 0.7;
+  return '<path d="M' + (l + 4) + ',' + (t + 3) + ' C' + (l - 4) + ',' + (t + h * 0.35) + ' ' + (l - 4) + ',' + (t + h * 0.65) + ' ' + (l + 4) + ',' + (yb - 2) + ' L' + (r - 4) + ',' + (yb - 2) + ' C' + (r + 4) + ',' + (t + h * 0.65) + ' ' + (r + 4) + ',' + (t + h * 0.35) + ' ' + (r - 4) + ',' + (t + 3) + ' Z" fill="#9a6235"' + trait(4.5) + '/>' +
+    '<path d="M' + (x - 9) + ',' + (t + 5) + ' C' + (x - 12) + ',' + (t + h * 0.4) + ' ' + (x - 12) + ',' + (t + h * 0.6) + ' ' + (x - 9) + ',' + (yb - 4) + ' M' + (x + 9) + ',' + (t + 5) + ' C' + (x + 12) + ',' + (t + h * 0.4) + ' ' + (x + 12) + ',' + (t + h * 0.6) + ' ' + (x + 9) + ',' + (yb - 4) + '" stroke="#7a4a26" stroke-width="2.5" fill="none"/>' +
+    '<path d="M' + (x - 18) + ',' + (t + 8) + ' C' + (x - 21) + ',' + (t + h * 0.4) + ' ' + (x - 21) + ',' + (t + h * 0.6) + ' ' + (x - 18) + ',' + (yb - 7) + '" stroke="#c48a52" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M' + (l - 1.5) + ',' + a + ' L' + (r + 1.5) + ',' + a + ' M' + (l - 1.5) + ',' + b + ' L' + (r + 1.5) + ',' + b + '" stroke="' + CONTOUR + '" stroke-width="7"/>' +
+    '<path d="M' + (l - 1) + ',' + a + ' L' + (r + 1) + ',' + a + ' M' + (l - 1) + ',' + b + ' L' + (r + 1) + ',' + b + '" stroke="#5a5470" stroke-width="3.5"/>' +
+    '<ellipse cx="' + x + '" cy="' + (t + 3) + '" rx="' + (w / 2 - 4) + '" ry="5" fill="#b87a44"' + trait(3.5) + '/><ellipse cx="' + x + '" cy="' + (t + 3) + '" rx="' + (w / 2 - 10) + '" ry="2.5" fill="none" stroke="#8a5a33" stroke-width="2"/>';
+}
+/* un tronc couché en travers : écorce, bout coupé avec ses cernes (à gauche ou à droite) */
+function troncCouche(h, c, cS, bout, cote){
+  var y0 = -h, ym = -h / 2, xb = cote > 0 ? 46 : -46;
+  return '<path d="M-48,' + y0 + ' L48,' + y0 + ' C56,' + y0 + ' 60,' + (ym - h * 0.25) + ' 60,' + ym + ' C60,' + (ym + h * 0.25) + ' 56,-1 48,-1 L-48,-1 C-56,-1 -60,' + (ym + h * 0.25) + ' -60,' + ym + ' C-60,' + (ym - h * 0.25) + ' -56,' + y0 + ' -48,' + y0 + ' Z" fill="' + c + '"' + trait(4.5) + '/>' +
+    '<path d="M-30,' + (y0 + 8) + ' C-12,' + (y0 + 5) + ' 10,' + (y0 + 10) + ' 34,' + (y0 + 7) + ' M-24,' + (ym + 5) + ' C0,' + (ym + 2) + ' 18,' + (ym + 7) + ' 40,' + (ym + 4) + '" stroke="' + cS + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-40,-4 C-10,-7 20,-6 44,-4" stroke="#000" stroke-width="5" opacity=".14" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="' + xb + '" cy="' + ym + '" rx="' + (h * 0.32) + '" ry="' + (h / 2 - 0.5) + '" fill="' + bout + '"' + trait(4) + '/>' +
+    '<ellipse cx="' + xb + '" cy="' + ym + '" rx="' + (h * 0.2) + '" ry="' + (h * 0.31) + '" fill="none" stroke="#a8743f" stroke-width="2"/><ellipse cx="' + xb + '" cy="' + ym + '" rx="' + (h * 0.08) + '" ry="' + (h * 0.13) + '" fill="#a8743f"/>';
+}
+function fleurette(x, y, c){ return '<g transform="translate(' + x + ',' + y + ')"><circle cx="-2.6" cy="0" r="2.4" fill="' + c + '"/><circle cx="2.6" cy="0" r="2.4" fill="' + c + '"/><circle cx="0" cy="-2.6" r="2.4" fill="' + c + '"/><circle cx="0" cy="2.6" r="2.4" fill="' + c + '"/><circle r="1.6" fill="#ffd36a"/></g>'; }
+function feuilles(pts, c, cC){ return pts.map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="' + c + '"' + trait(4) + '/>'; }).join('') + pts.map(function(q){ return '<circle cx="' + (q[0] - q[2] * 0.3) + '" cy="' + (q[1] - q[2] * 0.3) + '" r="' + (q[2] * 0.42) + '" fill="' + cC + '"/>'; }).join(''); }
+/* deux poteaux de bois (les barres à se baisser sont tenues par eux) */
+function poteaux(haut){ var d = 'M-55,2 L-55,' + haut + ' M55,2 L55,' + haut; return '<path d="' + d + '"' + trait(12) + ' stroke-linecap="round"/><path d="' + d + '" stroke="#8a5a33" stroke-width="6.5" stroke-linecap="round"/><path d="M-57,-4 L-57,' + (haut + 6) + ' M53,-4 L53,' + (haut + 6) + '" stroke="#b07a4a" stroke-width="2" stroke-linecap="round"/>'; }
+function patte(x, y, c, cls, long){ return '<g transform="translate(' + x + ',' + y + ')"><g class="' + cls + '"><path d="M0,0 L0,' + long + '"' + trait(10) + ' stroke-linecap="round"/><path d="M0,0 L0,' + long + '" stroke="' + c + '" stroke-width="5.5" stroke-linecap="round"/><path d="M-4.5,' + (long - 2) + ' L4.5,' + (long - 2) + ' L4,' + (long + 4) + ' L-4,' + (long + 4) + ' Z" fill="#2e1f18"' + trait(2) + '/></g></g>'; }
+
 var OBSTACLES_P = {
-  tronc: '<g><rect x="-46" y="-22" width="92" height="30" rx="14" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="5"/><ellipse cx="-46" cy="-7" rx="9" ry="15" fill="#d9a066" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-30,-14 L20,-14 M-20,-2 L30,-2" stroke="#5e3a1e" stroke-width="3" stroke-linecap="round"/></g>',
-  caisse: '<g><rect x="-30" y="-56" width="60" height="58" rx="5" fill="#c08a4a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-30,-56 L30,2 M30,-56 L-30,2" stroke="#7d5428" stroke-width="5"/><rect x="-30" y="-56" width="60" height="58" rx="5" fill="none" stroke="' + CONTOUR + '" stroke-width="5"/></g>',
-  tonneau: '<g><path d="M-26,-60 C-36,-30 -36,-28 -26,2 L26,2 C36,-28 36,-30 26,-60 Z" fill="#9a6235" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-31,-42 L31,-42 M-31,-16 L31,-16" stroke="#3b3346" stroke-width="6"/><ellipse cx="0" cy="-60" rx="26" ry="7" fill="#b87a44" stroke="' + CONTOUR + '" stroke-width="4"/></g>',
-  foin: '<g><path d="M-44,2 L-40,-40 C-20,-54 20,-54 40,-40 L44,2 Z" fill="#e6c25a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-30,-30 L-26,-6 M-8,-40 L-6,-8 M14,-38 L12,-6 M32,-28 L30,-4" stroke="#b08a2a" stroke-width="3" stroke-linecap="round"/><path d="M-42,-22 L42,-22" stroke="#8a5a33" stroke-width="5"/></g>',
-  rocher: '<g><path d="M-40,2 C-46,-18 -30,-44 -6,-46 C20,-48 42,-30 40,-8 C40,-2 38,2 34,2 Z" fill="#7d7a92" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-20,-30 C-10,-38 6,-38 14,-32" stroke="#b5b2cc" stroke-width="4" fill="none" stroke-linecap="round"/></g>',
-  poule: '<g><ellipse cx="0" cy="-20" rx="22" ry="18" fill="#fff" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="16" cy="-36" r="10" fill="#fff" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M14,-48 l4,-6 l3,6 l4,-5 l2,7" fill="#e5484d" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M25,-36 l9,3 l-9,3 Z" fill="#f6b23a" stroke="' + CONTOUR + '" stroke-width="2.5"/><circle cx="18" cy="-38" r="2.2" fill="' + CONTOUR + '"/><path d="M-6,-2 L-8,8 M6,-2 L8,8" stroke="#f6b23a" stroke-width="4" stroke-linecap="round"/></g>',
-  roule: '<g class="mja-roule"><ellipse cx="0" cy="-28" rx="30" ry="30" fill="#9a6235" stroke="' + CONTOUR + '" stroke-width="5"/><ellipse cx="0" cy="-28" rx="13" ry="30" fill="#b87a44" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-28,-40 L28,-40 M-28,-16 L28,-16" stroke="#3b3346" stroke-width="5"/></g>',
-  barriere: '<g><path d="M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34" stroke="' + CONTOUR + '" stroke-width="12" stroke-linecap="round"/><path d="M-52,4 L-52,-34 M52,4 L52,-34 M0,4 L0,-34" stroke="#a8743f" stroke-width="7" stroke-linecap="round"/><rect x="-60" y="-30" width="120" height="11" rx="4" fill="#c08a4a" stroke="' + CONTOUR + '" stroke-width="4"/><rect x="-60" y="-12" width="120" height="11" rx="4" fill="#c08a4a" stroke="' + CONTOUR + '" stroke-width="4"/></g>',
-  linge: '<g><path d="M-60,4 L-60,-120 M60,4 L60,-120" stroke="' + CONTOUR + '" stroke-width="10" stroke-linecap="round"/><path d="M-60,4 L-60,-120 M60,4 L60,-120" stroke="#8a5a33" stroke-width="5" stroke-linecap="round"/><path d="M-60,-112 Q0,-96 60,-112" stroke="#e8d7ae" stroke-width="3" fill="none"/>' +
-    '<path d="M-46,-110 L-24,-104 L-26,-70 L-48,-74 Z" fill="#e5484d" stroke="' + CONTOUR + '" stroke-width="3.5"/><path d="M-14,-102 L14,-102 L16,-64 L4,-64 L0,-80 L-4,-64 L-16,-64 Z" fill="#6cb6ff" stroke="' + CONTOUR + '" stroke-width="3.5"/><path d="M24,-104 L46,-110 L48,-76 L26,-72 Z" fill="#f6d23a" stroke="' + CONTOUR + '" stroke-width="3.5"/></g>',
-  branche: '<g><path d="M-62,-96 C-30,-110 20,-90 62,-104" stroke="' + CONTOUR + '" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M-62,-96 C-30,-110 20,-90 62,-104" stroke="#7a4e2c" stroke-width="9" fill="none" stroke-linecap="round"/>' +
-    '<circle cx="-34" cy="-90" r="15" fill="#2a7050" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="6" cy="-84" r="17" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="40" cy="-92" r="14" fill="#2a7050" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="10" cy="-90" r="7" fill="#3c9a62"/></g>',
+  /* ---------- à sauter : bas et couchés en travers ---------- */
+  barriere: '<g>' + ombreSol(58, 7) + HALO +
+    '<path d="M-47,2 L-47,-34 L-43,-40 L-39,-34 L-39,2 Z M39,2 L39,-34 L43,-40 L47,-34 L47,2 Z" fill="#a8743f"' + trait(4) + ' stroke-linejoin="round"/>' +
+    '<rect x="-58" y="-32" width="116" height="11" rx="3" fill="#f3e7cb"/><rect x="-58" y="-17" width="116" height="11" rx="3" fill="#f3e7cb"/>' +
+    '<path d="M-44,-32 l10,0 l-6,11 l-10,0 Z M-16,-32 l10,0 l-6,11 l-10,0 Z M12,-32 l10,0 l-6,11 l-10,0 Z M40,-32 l10,0 l-6,11 l-10,0 Z M-30,-17 l10,0 l-6,11 l-10,0 Z M-2,-17 l10,0 l-6,11 l-10,0 Z M26,-17 l10,0 l-6,11 l-10,0 Z" fill="#e5484d"/>' +
+    '<rect x="-58" y="-32" width="116" height="11" rx="3" fill="none"' + trait(4) + '/><rect x="-58" y="-17" width="116" height="11" rx="3" fill="none"' + trait(4) + '/>' +
+    '<circle cx="-43" cy="-26.5" r="1.8" fill="' + CONTOUR + '"/><circle cx="43" cy="-26.5" r="1.8" fill="' + CONTOUR + '"/><circle cx="-43" cy="-11.5" r="1.8" fill="' + CONTOUR + '"/><circle cx="43" cy="-11.5" r="1.8" fill="' + CONTOUR + '"/></g>',
+  tronc: '<g>' + ombreSol(60, 7) + HALO + troncCouche(30, '#8a5a33', '#5e3a1e', '#e0b07a', -1) +
+    '<path d="M18,-29 L24,-40"' + trait(7) + ' stroke-linecap="round"/><path d="M18,-29 L24,-40" stroke="#8a5a33" stroke-width="3.5" stroke-linecap="round"/><path d="M24,-40 C30,-47 38,-43 36,-37 C32,-35 27,-36 24,-40 Z" fill="#5fcf86"' + trait(2.5) + '/></g>',
+  sacs: '<g>' + ombreSol(60, 7) + HALO + [-38, 38, 0].map(function(x){
+      return '<path d="M' + (x - 19) + ',-2 C' + (x - 23) + ',-14 ' + (x - 20) + ',-27 ' + (x - 12) + ',-30 L' + (x + 12) + ',-30 C' + (x + 20) + ',-27 ' + (x + 23) + ',-14 ' + (x + 19) + ',-2 Z" fill="#eadcb8"' + trait(4) + ' stroke-linejoin="round"/>' +
+        '<path d="M' + (x + 8) + ',-28 C' + (x + 16) + ',-22 ' + (x + 17) + ',-10 ' + (x + 14) + ',-4" stroke="#c9b48e" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '<path d="M' + (x - 6) + ',-30 L' + (x - 9) + ',-36 M' + (x + 6) + ',-30 L' + (x + 9) + ',-36" stroke="' + CONTOUR + '" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M' + x + ',-8 L' + x + ',-22 M' + x + ',-19 l-4,-3 M' + x + ',-15 l-4,-3 M' + x + ',-11 l-4,-3 M' + x + ',-19 l4,-3 M' + x + ',-15 l4,-3 M' + x + ',-11 l4,-3" stroke="#c99a5e" stroke-width="2" stroke-linecap="round"/>';
+    }).join('') + '<circle cx="-20" cy="-3" r="3" fill="#fff" opacity=".6"/><circle cx="22" cy="-2" r="2.4" fill="#fff" opacity=".6"/></g>',
+  chien: '<g>' + ombreSol(58, 7) + HALO +
+    '<path d="M-44,-10 C-58,-14 -58,-30 -46,-28" stroke="' + CONTOUR + '" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M-44,-10 C-58,-14 -58,-30 -46,-28" stroke="#c99a5e" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="-4" cy="-13" rx="44" ry="13" fill="#e2c08a"' + trait(4.5) + '/><path d="M-30,-22 C-20,-28 -4,-26 0,-20 C-8,-14 -24,-14 -30,-22 Z" fill="#a8743f"/>' +
+    '<path d="M-24,-2 L-34,1 M14,-2 L26,1" stroke="' + CONTOUR + '" stroke-width="7" stroke-linecap="round"/><path d="M-24,-2 L-34,1 M14,-2 L26,1" stroke="#e2c08a" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<circle cx="40" cy="-16" r="13" fill="#e2c08a"' + trait(4.5) + '/><path d="M33,-26 C24,-30 22,-14 30,-10 Z" fill="#a8743f"' + trait(3) + '/><ellipse cx="51" cy="-11" rx="6" ry="4.5" fill="#f3e2c0"' + trait(2.5) + '/><circle cx="56" cy="-12" r="2.2" fill="' + CONTOUR + '"/>' +
+    '<path d="M38,-18 C40,-16 43,-16 45,-18" stroke="' + CONTOUR + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+    '<text x="50" y="-34" font-size="13" font-weight="700" fill="#eef0ff" stroke="' + CONTOUR + '" stroke-width="3" paint-order="stroke">z</text><text x="58" y="-46" font-size="10" font-weight="700" fill="#eef0ff" stroke="' + CONTOUR + '" stroke-width="2.5" paint-order="stroke">z</text></g>',
+  /* ---------- à se baisser : une barre à hauteur de tête, du vide dessous ---------- */
+  linge: '<g>' + ombreBarre() + HALO + poteaux(-108) +
+    '<path d="M-64,-106 L-46,-106 M46,-106 L64,-106"' + trait(7) + ' stroke-linecap="round"/><path d="M-64,-106 L-46,-106 M46,-106 L64,-106" stroke="#8a5a33" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M-55,-101 Q0,-88 55,-101" stroke="#e8d7ae" stroke-width="2.5" fill="none"/>' +
+    '<path d="M-51,-97 L-41,-99 C-39,-95 -33,-95 -31,-99 L-21,-97 L-18,-86 L-24,-84 L-24,-66 L-48,-66 L-48,-84 L-54,-86 Z" fill="#6cb6ff"' + trait(3.5) + ' stroke-linejoin="round"/><path d="M-36,-90 L-36,-67" stroke="#3f86d0" stroke-width="2"/>' +
+    '<path d="M-16,-94 L16,-94 L16,-69 C11,-65 5,-71 0,-66 C-5,-71 -11,-65 -16,-69 Z" fill="#f3e7cb"' + trait(3.5) + ' stroke-linejoin="round"/><path d="M-16,-87 L16,-87 M-16,-79 L16,-79" stroke="#e5484d" stroke-width="3"/>' +
+    '<path d="M20,-96 L50,-98 L52,-66 L42,-66 L37,-84 L32,-66 L22,-66 Z" fill="#f6d23a"' + trait(3.5) + ' stroke-linejoin="round"/>' +
+    '<rect x="-45" y="-104" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/><rect x="-27" y="-102" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/><rect x="-12" y="-99" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/><rect x="8" y="-99" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/><rect x="24" y="-101" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/><rect x="44" y="-103" width="4" height="9" rx="1" fill="#8a5a33"' + trait(1.2) + '/></g>',
+  branche: '<g>' + ombreBarre() + HALO + poteaux(-100) +
+    '<rect x="-66" y="-102" width="132" height="18" rx="4" fill="#7a4e2c"' + trait(4.5) + '/><path d="M-56,-93 L-20,-94 M2,-92 L44,-93" stroke="#5e3a1e" stroke-width="2.5" stroke-linecap="round"/><path d="M-60,-98 L60,-98" stroke="#a8743f" stroke-width="2" opacity=".7"/>' +
+    '<path d="M-16,-84 L-16,-81 M16,-84 L16,-81" stroke="#3b3346" stroke-width="3"/>' +
+    '<rect x="-30" y="-82" width="60" height="17" rx="5" fill="#c08a4a"' + trait(4) + '/><ellipse cx="0" cy="-73.5" rx="15" ry="5.5" fill="#e8b04a"' + trait(2.5) + '/><path d="M-7,-76.5 l3,5 M0,-77.5 l3,5 M7,-76.5 l3,5" stroke="#a8743f" stroke-width="2" stroke-linecap="round"/></g>',
+  /* ---------- à éviter : plus hauts que le coureur, pleins jusqu'au sol ---------- */
+  caisse: '<g>' + ombreSol(58, 8) + HALO + caisseV(-26, 0, 50, 50) + caisseV(26, 0, 50, 50, 0, true) + caisseV(-1, -50, 50, 46, -3) + caisseV(5, -95, 34, 32, 7) + '</g>',
+  tonneau: '<g>' + ombreSol(58, 8) + HALO + tonneauV(-25, 0, 48, 58) + tonneauV(25, 0, 48, 58) + tonneauV(0, -54, 48, 58) + '</g>',
+  foin: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-52,2 C-58,-36 -44,-92 0,-120 C44,-92 58,-36 52,2 Z" fill="#e6c25a"' + trait(5) + '/>' +
+    '<path d="M12,-110 C32,-90 44,-50 42,2 L50,2 C56,-36 42,-90 4,-116 Z" fill="#c9a23e" opacity=".8"/>' +
+    '<path d="M-36,-30 l-4,10 M-24,-62 l-3,10 M-6,-92 l-1,9 M14,-76 l2,10 M30,-44 l3,10 M-12,-44 l-2,10 M6,-16 l1,10 M-40,-8 l-2,8 M36,-14 l2,9 M-28,-88 l-3,8 M20,-100 l2,8 M2,-56 l0,9" stroke="#a8862a" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M-6,-118 L-10,-129 M0,-120 L0,-132 M6,-118 L11,-128"' + trait(5) + ' stroke-linecap="round"/><path d="M-6,-118 L-10,-129 M0,-120 L0,-132 M6,-118 L11,-128" stroke="#e6c25a" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M-48,-30 C-20,-36 20,-36 48,-30" stroke="#8a5a33" stroke-width="4" fill="none" opacity=".8"/>' +
+    '<path d="M30,2 L47,-96"' + trait(7) + ' stroke-linecap="round"/><path d="M30,2 L47,-96" stroke="#a8743f" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M39,-97 L55,-94 M40,-97 L37,-114 M47,-95.5 L46,-113 M54,-94 L55,-111"' + trait(5) + ' stroke-linecap="round"/><path d="M39,-97 L55,-94 M40,-97 L37,-114 M47,-95.5 L46,-113 M54,-94 L55,-111" stroke="#cfcfe0" stroke-width="2.2" stroke-linecap="round"/></g>',
+  rocher: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-54,2 C-60,-28 -50,-76 -18,-104 C8,-124 46,-100 52,-58 C56,-30 56,-8 50,2 Z" fill="#8a87a0"' + trait(5) + '/>' +
+    '<path d="M20,-108 C40,-96 50,-70 52,-44 C54,-24 52,-6 50,2 L26,2 C36,-20 36,-62 20,-108 Z" fill="#6d6a84"/>' +
+    '<path d="M-38,-58 C-32,-80 -16,-96 0,-100" stroke="#b5b2cc" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-8,-72 L0,-60 L-4,-48 M20,-32 L28,-22 M-30,-24 L-22,-18" stroke="' + CONTOUR + '" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-54,2 C-50,-8 -40,-11 -30,-5 C-24,-13 -12,-11 -8,-2 L-8,2 Z M24,2 C28,-6 38,-8 44,-2 L44,2 Z" fill="#4f8a3e"' + trait(2.5) + '/></g>',
+  charrette: '<g>' + ombreSol(60, 9) + HALO +
+    '<ellipse cx="-46" cy="-22" rx="9" ry="22" fill="#5e3a1e"' + trait(4) + '/>' +
+    '<path d="M-52,-64 C-56,-84 -42,-98 -28,-94 C-24,-112 -2,-116 6,-104 C16,-122 40,-114 38,-96 C50,-92 54,-76 46,-64 Z" fill="#e6c25a"' + trait(4.5) + '/>' +
+    '<path d="M-40,-76 l-2,8 M-24,-92 l-1,8 M-6,-100 l0,8 M14,-104 l1,8 M30,-90 l2,8 M42,-74 l2,7" stroke="#a8862a" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M-34,-96 C-38,-108 -32,-122 -22,-124 L-10,-124 C-2,-120 0,-108 -4,-96 Z" fill="#eadcb8"' + trait(3.5) + '/><path d="M-22,-124 L-25,-130 M-10,-124 L-7,-130" stroke="' + CONTOUR + '" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M-50,-66 L36,-66 L36,-18 L-50,-18 Z" fill="#a8743f"' + trait(4.5) + ' stroke-linejoin="round"/><path d="M-50,-50 L36,-50 M-50,-34 L36,-34" stroke="#7d5428" stroke-width="3"/><path d="M-24,-66 L-24,-18 M8,-66 L8,-18" stroke="#7d5428" stroke-width="2.5"/>' +
+    '<path d="M36,-66 L52,-74 L52,-26 L36,-18 Z" fill="#8a5a33"' + trait(4.5) + ' stroke-linejoin="round"/>' +
+    '<ellipse cx="47" cy="-23" rx="13" ry="23" fill="#7a4e2c"' + trait(4.5) + '/><path d="M47,-45 L47,-1 M35,-23 L59,-23 M38,-38 L56,-8 M38,-8 L56,-38" stroke="#5e3a1e" stroke-width="2.5"/><ellipse cx="47" cy="-23" rx="4" ry="6" fill="#3b2a1e"' + trait(1.5) + '/></g>',
+  etal: '<g>' + ombreSol(60, 9) + HALO +
+    '<path d="M-51,2 L-51,-124 M51,2 L51,-124"' + trait(9) + ' stroke-linecap="round"/><path d="M-51,2 L-51,-124 M51,2 L51,-124" stroke="#8a5a33" stroke-width="4.5" stroke-linecap="round"/>' +
+    '<rect x="-48" y="-120" width="96" height="82" fill="#6b4a2e"' + trait(4) + '/><path d="M-24,-120 L-24,-38 M0,-120 L0,-38 M24,-120 L24,-38" stroke="#4a3220" stroke-width="2.5"/>' +
+    '<path d="M-46,-88 L46,-88" stroke="#a8743f" stroke-width="5"/>' +
+    '<rect x="-38" y="-104" width="12" height="15" rx="3" fill="#8ff3ff" opacity=".85"' + trait(2.5) + '/><rect x="-18" y="-102" width="12" height="13" rx="3" fill="#ffd36a"' + trait(2.5) + '/><rect x="2" y="-105" width="12" height="16" rx="3" fill="#e5484d"' + trait(2.5) + '/><rect x="22" y="-103" width="13" height="14" rx="3" fill="#b48cff"' + trait(2.5) + '/>' +
+    '<path d="M-30,-118 L-30,-110 M-10,-118 L-10,-112 M18,-118 L18,-110" stroke="' + CONTOUR + '" stroke-width="1.5"/><ellipse cx="-30" cy="-108" rx="4" ry="5" fill="#f3e7cb"' + trait(1.8) + '/><ellipse cx="-10" cy="-110" rx="3.5" ry="4" fill="#f3e7cb"' + trait(1.8) + '/><ellipse cx="18" cy="-108" rx="4" ry="5" fill="#f3e7cb"' + trait(1.8) + '/>' +
+    '<path d="M-54,-32 L54,-32 L53,2 L-53,2 Z" fill="#f3e7cb"' + trait(4) + '/><path d="M-40,-32 L-40,2 M-16,-32 L-16,2 M8,-32 L8,2 M32,-32 L32,2" stroke="#e5484d" stroke-width="9"/><path d="M-54,-32 L54,-32 L53,2 L-53,2 Z" fill="none"' + trait(4) + '/>' +
+    '<circle cx="-34" cy="-50" r="7" fill="#e5484d"' + trait(3) + '/><circle cx="-22" cy="-50" r="7" fill="#e5484d"' + trait(3) + '/><circle cx="-28" cy="-60" r="7" fill="#f05a5f"' + trait(3) + '/>' +
+    '<circle cx="2" cy="-54" r="11" fill="#5fcf86"' + trait(3) + '/><path d="M-4,-58 C0,-54 4,-54 8,-58 M2,-64 L2,-46" stroke="#2f7a4c" stroke-width="2" fill="none"/>' +
+    '<ellipse cx="32" cy="-53" rx="15" ry="11" fill="#f6a23a"' + trait(3) + '/><path d="M27,-63 C26,-50 26,-50 27,-43 M37,-63 C38,-50 38,-50 37,-43" stroke="#d07a1a" stroke-width="2" fill="none"/><path d="M32,-64 L33,-70" stroke="#5e3a1e" stroke-width="3"/>' +
+    '<rect x="-56" y="-46" width="112" height="14" rx="3" fill="#c08a4a"' + trait(4) + '/>' +
+    '<path d="M-62,-138 L62,-138 L62,-120' + boucleN(8, function(i){ var x1 = 62 - (i + 1) * 15.5; return ' C' + (x1 + 12) + ',-111 ' + (x1 + 4) + ',-111 ' + x1 + ',-120'; }) + ' Z" fill="#e5484d"' + trait(4) + ' stroke-linejoin="round"/>' +
+    '<path d="' + boucleN(4, function(i){ var x0 = -62 + i * 31 + 15.5; return 'M' + x0 + ',-138 L' + x0 + ',-121 L' + (x0 + 15.5) + ',-121 L' + (x0 + 15.5) + ',-138 Z '; }) + '" fill="#f3e7cb" opacity=".9"/>' +
+    '<path d="M-62,-138 L62,-138 L62,-120' + boucleN(8, function(i){ var x1 = 62 - (i + 1) * 15.5; return ' C' + (x1 + 12) + ',-111 ' + (x1 + 4) + ',-111 ' + x1 + ',-120'; }) + ' Z" fill="none"' + trait(4) + ' stroke-linejoin="round"/></g>',
+  /* la vache qui traverse (dessinée tournée vers la droite ; retournée quand elle va à gauche) */
+  bete: '<g>' + ombreSol(58, 8) + HALO +
+    patte(-34, -46, '#f4f1ea', 'bt-p1', 40) + patte(22, -46, '#f4f1ea', 'bt-p2', 40) +
+    '<path d="M-48,-80 C-58,-70 -58,-54 -55,-44" stroke="' + CONTOUR + '" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M-58,-46 c-4,4 -1,9 2,9 c4,0 5,-6 0,-9 Z" fill="#1d1a22"/>' +
+    '<path d="M-48,-52 C-52,-82 -32,-90 -4,-88 L26,-88 C46,-88 52,-74 50,-52 C44,-42 -42,-42 -48,-52 Z" fill="#f4f1ea"' + trait(5) + '/>' +
+    '<path d="M-32,-84 C-22,-90 -8,-86 -10,-74 C-14,-64 -30,-66 -32,-84 Z M10,-72 C18,-80 32,-76 30,-64 C26,-56 12,-60 10,-72 Z M-44,-62 C-40,-66 -30,-62 -32,-52 L-44,-50 Z" fill="#1d1a22"/>' +
+    '<path d="M10,-46 C12,-38 22,-38 24,-46 Z" fill="#ff8fb3"' + trait(2.5) + '/>' +
+    patte(-22, -46, '#f4f1ea', 'bt-p2', 40) + patte(34, -46, '#f4f1ea', 'bt-p1', 40) +
+    '<g transform="translate(54,-88)">' +
+      '<path d="M-2,-12 C-6,-24 0,-28 5,-26 M12,-12 C13,-24 19,-28 23,-24"' + trait(6) + ' stroke-linecap="round" fill="none"/><path d="M-2,-12 C-6,-24 0,-28 5,-26 M12,-12 C13,-24 19,-28 23,-24" stroke="#f3e7cb" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+      '<path d="M-6,-8 C-18,-14 -20,-4 -10,0 Z" fill="#f4f1ea"' + trait(2.5) + '/>' +
+      '<path d="M-6,-12 C2,-17 14,-15 18,-7 L22,14 C22,22 6,24 0,16 Z" fill="#f4f1ea"' + trait(4) + '/><path d="M2,-14 C10,-14 14,-8 12,-2 C6,0 2,-6 2,-14 Z" fill="#1d1a22"/>' +
+      '<ellipse cx="12" cy="16" rx="11" ry="8" fill="#ffb3c8"' + trait(3.5) + '/><circle cx="9" cy="17" r="1.8" fill="' + CONTOUR + '"/><circle cx="16" cy="16" r="1.8" fill="' + CONTOUR + '"/>' +
+      '<circle cx="7" cy="-2" r="3" fill="#fff"/><circle cx="7.5" cy="-2" r="1.8" fill="' + CONTOUR + '"/>' +
+      '<path d="M-6,8 C-3,15 0,20 3,22" stroke="#e5484d" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M-1,22 L8,22 L7,31 L0,31 Z" fill="#ffd36a"' + trait(2.2) + ' stroke-linejoin="round"/>' +
+    '</g></g>',
+  /* la meule du moulin qui roule vers toi, vite */
+  roule: '<g>' + ombreSol(48, 8) + HALO +
+    '<g transform="translate(0,-47)"><g class="mja-roule"><circle r="46" fill="#9a97ad"' + trait(5) + '/><circle r="35" fill="none" stroke="#7d7a92" stroke-width="3"/>' +
+      '<path d="' + boucleN(8, function(i){ var a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); return 'M' + (c * 13).toFixed(1) + ',' + (s * 13).toFixed(1) + ' L' + (c * 43).toFixed(1) + ',' + (s * 43).toFixed(1) + ' '; }) + '" stroke="#6d6a84" stroke-width="3" stroke-linecap="round"/>' +
+      '<rect x="-8" y="-8" width="16" height="16" rx="2" fill="#2b2540"' + trait(3) + '/><path d="M-32,-30 A44,44 0 0 1 8,-44" stroke="#c9c6dc" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>' +
+    '<circle cx="-48" cy="-6" r="7" fill="#e8d7ae" opacity=".55"/><circle cx="-58" cy="-12" r="5" fill="#e8d7ae" opacity=".4"/><circle cx="48" cy="-6" r="7" fill="#e8d7ae" opacity=".55"/><circle cx="58" cy="-12" r="5" fill="#e8d7ae" opacity=".4"/></g>',
+  haie: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-54,2 C-60,-30 -54,-70 -40,-86 C-36,-106 -12,-114 0,-104 C14,-118 40,-108 42,-86 C58,-72 60,-30 54,2 Z" fill="#2f7a4c"' + trait(5) + '/>' +
+    '<path d="M-30,-70 C-26,-80 -14,-80 -12,-72 M6,-92 C10,-100 22,-100 24,-92 M-40,-36 C-36,-44 -26,-44 -24,-36 M20,-52 C24,-60 36,-60 38,-52 M-10,-20 C-6,-28 4,-28 6,-20" stroke="#5fcf86" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+    fleurette(-26, -56, '#ff8fb3') + fleurette(14, -76, '#fff') + fleurette(32, -30, '#ff8fb3') + fleurette(-38, -16, '#fff') + fleurette(-6, -96, '#ff8fb3') + '</g>',
   boost: '<g class="mja-boost"><path d="M-30,-2 L0,-22 L30,-2 L30,-12 L0,-32 L-30,-12 Z M-30,18 L0,-2 L30,18 L30,8 L0,-12 L-30,8 Z" fill="#8ff3ff" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/></g>',
-  flaque: '<g><ellipse cx="0" cy="-2" rx="50" ry="13" fill="#4a3220" stroke="' + CONTOUR + '" stroke-width="3"/><ellipse cx="-12" cy="-5" rx="16" ry="4" fill="#7a5a3e" opacity=".7"/><circle cx="18" cy="-2" r="3" fill="#6d5238"/></g>',
-  haie: '<g><path d="M-50,4 C-56,-30 -40,-64 -20,-60 C-10,-80 14,-80 22,-62 C44,-66 58,-30 50,4 Z" fill="#245e3c" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-18" cy="-36" r="4" fill="#e5484d"/><circle cx="16" cy="-24" r="4" fill="#e5484d"/><circle cx="4" cy="-52" r="4" fill="#e5484d"/></g>',
-  charrette: '<g><rect x="-40" y="-62" width="80" height="50" rx="5" fill="#a8743f" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-40,-46 L40,-46 M-40,-30 L40,-30" stroke="#7d5428" stroke-width="4"/><path d="M-34,-62 C-30,-80 -6,-84 0,-72 C8,-86 32,-80 34,-62 Z" fill="#e6c25a" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="-30" cy="-6" r="13" fill="#5e3a1e" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="30" cy="-6" r="13" fill="#5e3a1e" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-30" cy="-6" r="4" fill="' + CONTOUR + '"/><circle cx="30" cy="-6" r="4" fill="' + CONTOUR + '"/></g>',
-  etal: '<g><path d="M-44,2 L-44,-70 M44,2 L44,-70" stroke="' + CONTOUR + '" stroke-width="8" stroke-linecap="round"/><path d="M-44,2 L-44,-70 M44,2 L44,-70" stroke="#8a5a33" stroke-width="4" stroke-linecap="round"/><rect x="-46" y="-34" width="92" height="30" rx="4" fill="#c08a4a" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-24" cy="-40" r="8" fill="#e5484d" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="-6" cy="-41" r="8" fill="#f6d23a" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="14" cy="-40" r="8" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="30" cy="-41" r="7" fill="#e8693c" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-54,-70 L54,-70 L48,-90 L-48,-90 Z" fill="#fff" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-36,-90 L-40,-70 M-12,-90 L-13,-70 M12,-90 L13,-70 M36,-90 L40,-70" stroke="#e5484d" stroke-width="9"/><path d="M-54,-70 L54,-70 L48,-90 L-48,-90 Z" fill="none" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/></g>',
-  chien: '<g><ellipse cx="0" cy="-10" rx="34" ry="14" fill="#e8d7ae" stroke="' + CONTOUR + '" stroke-width="5"/><ellipse cx="-12" cy="-12" rx="10" ry="8" fill="#3b2a1e"/><circle cx="24" cy="-14" r="11" fill="#e8d7ae" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M18,-24 C14,-30 22,-32 24,-25 Z" fill="#3b2a1e" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M20,-14 l4,1 M26,-15 l4,1" stroke="' + CONTOUR + '" stroke-width="2.5" stroke-linecap="round"/><path d="M-34,-8 C-44,-14 -42,-24 -36,-22" stroke="' + CONTOUR + '" stroke-width="5" fill="none" stroke-linecap="round"/><text x="34" y="-34" font-size="16" fill="#eef0ff" font-family="sans-serif">z</text></g>',
-  arche: '<g><path d="M-58,4 L-58,-90 C-58,-150 58,-150 58,-90 L58,4 L36,4 L36,-86 C36,-120 -36,-120 -36,-86 L-36,4 Z" fill="#8f8aa6" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-36,4 L-36,-86 C-36,-120 36,-120 36,-86 L36,4 Z" fill="#14112a" opacity=".85"/><path d="M-50,-40 L-44,-40 M-50,-70 L-44,-70 M44,-56 L50,-56" stroke="' + CONTOUR + '" stroke-width="3"/></g>'
+  /* le raccourci : on passe sous l'arche (le buisson du milieu reste la haie) */
+  arche: '<g>' + ombreSol(62, 8) +
+    '<path d="M-60,4 L-60,-92 C-60,-152 60,-152 60,-92 L60,4 L38,4 L38,-88 C38,-122 -38,-122 -38,-88 L-38,4 Z" fill="#8f8aa6"' + trait(5) + ' stroke-linejoin="round"/>' +
+    '<path d="M-38,4 L-38,-88 C-38,-122 38,-122 38,-88 L38,4 Z" fill="#14112a" opacity=".55"/>' +
+    '<path d="M-60,-30 L-38,-30 M-60,-62 L-38,-62 M38,-30 L60,-30 M38,-62 L60,-62 M-56,-100 L-37,-94 M56,-100 L37,-94 M-34,-128 L-24,-112 M34,-128 L24,-112" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<path d="M-8,-144 L8,-144 L6,-120 L-6,-120 Z" fill="#a8a3c0"' + trait(3.5) + '/>' +
+    '<path d="M-60,-80 C-70,-60 -64,-40 -68,-20 M60,-110 C70,-90 64,-70 68,-50" stroke="#3c9a62" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="-66" cy="-60" r="4" fill="#5fcf86"/><circle cx="-66" cy="-36" r="4" fill="#5fcf86"/><circle cx="66" cy="-88" r="4" fill="#5fcf86"/><circle cx="66" cy="-64" r="4" fill="#5fcf86"/></g>'
 };
-var GENRE_P = {caisse:'bloc', tonneau:'bloc', foin:'bloc', rocher:'bloc', poule:'bloc', roule:'bloc', haie:'bloc', charrette:'bloc', etal:'bloc', tronc:'bas', barriere:'bas', chien:'bas', flaque:'bas', linge:'haut', branche:'haut', boost:'boost', arche:'arche'};
-/* --- Variante « forêt » (params.decor = 'foret') : mêmes obstacles, mêmes genres (donc mêmes gestes),
+var GENRE_P = {caisse:'bloc', tonneau:'bloc', foin:'bloc', rocher:'bloc', bete:'bloc', roule:'bloc', haie:'bloc', charrette:'bloc', etal:'bloc', tronc:'bas', barriere:'bas', chien:'bas', sacs:'bas', linge:'haut', branche:'haut', boost:'boost', arche:'arche'};
+/* --- Variante « forêt » (params.decor = 'foret') : mêmes obstacles, mêmes familles (donc mêmes gestes),
    autres dessins. Ex. E1 : poursuivre le petit chien noir et blanc entre les arbres (params.fuyard = 'chien'). --- */
 var FORET_P = {
-  /* à sauter (bas) : racines, tronc couché, flaque de boue */
-  barriere: '<g><path d="M-60,4 C-52,-32 -22,-36 0,-18 C22,-36 52,-32 60,4" stroke="' + CONTOUR + '" stroke-width="17" fill="none" stroke-linecap="round"/><path d="M-60,4 C-52,-32 -22,-36 0,-18 C22,-36 52,-32 60,4" stroke="#7a4e2c" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M-40,-24 C-34,-28 -26,-28 -20,-24 M22,-26 C28,-29 36,-28 40,-22" stroke="#b07a4a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M-6,-14 C-2,-20 6,-20 8,-14" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/></g>',
-  chien: '<g><path d="M-54,4 C-44,-28 -10,-28 4,4 M-4,4 C12,-24 42,-24 54,4" stroke="' + CONTOUR + '" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M-54,4 C-44,-28 -10,-28 4,4 M-4,4 C12,-24 42,-24 54,4" stroke="#8a5a33" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="-26" cy="-20" r="5" fill="#3c9a62"/><circle cx="28" cy="-18" r="4" fill="#3c9a62"/></g>',
-  /* à se baisser (haut) : liane qui pend (la branche basse reste la même) */
-  linge: '<g><path d="M-64,-116 C-24,-126 20,-106 64,-118" stroke="' + CONTOUR + '" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M-64,-116 C-24,-126 20,-106 64,-118" stroke="#6b4426" stroke-width="8" fill="none" stroke-linecap="round"/>' +
-    '<path d="M-40,-118 C-46,-96 -34,-84 -40,-64 M-8,-114 C-14,-92 -2,-80 -8,-58 M26,-116 C20,-96 32,-84 26,-66 M48,-118 C44,-102 52,-92 48,-80" stroke="' + CONTOUR + '" stroke-width="8" fill="none" stroke-linecap="round"/>' +
-    '<path d="M-40,-118 C-46,-96 -34,-84 -40,-64 M-8,-114 C-14,-92 -2,-80 -8,-58 M26,-116 C20,-96 32,-84 26,-66 M48,-118 C44,-102 52,-92 48,-80" stroke="#3c9a62" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
-    '<ellipse cx="-40" cy="-64" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="-8" cy="-58" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="26" cy="-66" rx="7" ry="5" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="2.5"/><ellipse cx="-36" cy="-92" rx="6" ry="4" fill="#5fcf86"/><ellipse cx="-12" cy="-88" rx="6" ry="4" fill="#5fcf86"/><ellipse cx="30" cy="-94" rx="6" ry="4" fill="#5fcf86"/></g>',
-  /* à éviter (bloc) : rocher moussu, souche, buisson, gros rochers, cercle de champignons, hérisson, rondin qui roule */
-  caisse: '<g><path d="M-38,2 C-44,-20 -28,-46 -4,-48 C22,-50 40,-30 38,-8 C38,-2 36,2 32,2 Z" fill="#6f7a6a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-30,-30 C-18,-46 10,-50 26,-36 C16,-30 -12,-26 -30,-30 Z" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="3"/></g>',
-  tonneau: '<g><path d="M-36,2 C-30,-2 -28,-6 -26,-10 L-24,-44 C-10,-50 10,-50 24,-44 L26,-10 C28,-6 30,-2 36,2 Z" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><ellipse cx="0" cy="-44" rx="24" ry="8" fill="#d9a066" stroke="' + CONTOUR + '" stroke-width="4"/><ellipse cx="0" cy="-44" rx="13" ry="4" fill="none" stroke="#a8743f" stroke-width="2.5"/><path d="M-12,-36 L-12,-6 M8,-34 L8,-4" stroke="#6b4426" stroke-width="3"/></g>',
-  foin: '<g><path d="M-46,2 C-52,-22 -36,-46 -16,-42 C-8,-58 18,-58 26,-42 C44,-46 54,-22 46,2 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-26,-22 C-20,-30 -10,-30 -6,-22 M8,-32 C14,-40 24,-38 28,-30" stroke="#5fcf86" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="-30" cy="-8" r="4" fill="#e5484d"/><circle cx="20" cy="-14" r="4" fill="#e5484d"/></g>',
-  charrette: '<g><path d="M-46,2 C-52,-24 -36,-58 -6,-60 C24,-62 46,-40 44,-10 C44,-4 42,2 38,2 Z" fill="#7d7a92" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M14,2 C10,-14 22,-30 38,-28 C52,-26 58,-12 54,2 Z" fill="#6f7a6a" stroke="' + CONTOUR + '" stroke-width="5"/><path d="M-36,-40 C-22,-56 4,-60 22,-50 C10,-44 -18,-38 -36,-40 Z" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="3"/></g>',
-  etal: '<g><ellipse cx="0" cy="0" rx="50" ry="11" fill="#2f5a3a" opacity=".8"/>' +
-    '<path d="M-38,0 L-38,-16 M-12,-2 L-12,-28 M14,-2 L14,-20 M36,0 L36,-14" stroke="' + CONTOUR + '" stroke-width="10" stroke-linecap="round"/><path d="M-38,0 L-38,-16 M-12,-2 L-12,-28 M14,-2 L14,-20 M36,0 L36,-14" stroke="#f3e7cb" stroke-width="5" stroke-linecap="round"/>' +
-    '<path d="M-52,-14 C-50,-30 -26,-30 -24,-14 Z M-30,-26 C-28,-48 4,-48 6,-26 Z M0,-18 C2,-36 26,-36 28,-18 Z M24,-12 C26,-28 46,-28 48,-12 Z" fill="#e5484d" stroke="' + CONTOUR + '" stroke-width="4" stroke-linejoin="round"/>' +
-    '<circle cx="-16" cy="-38" r="3" fill="#fff"/><circle cx="-4" cy="-34" r="2.6" fill="#fff"/><circle cx="12" cy="-28" r="2.6" fill="#fff"/><circle cx="-40" cy="-22" r="2.4" fill="#fff"/><circle cx="36" cy="-20" r="2.4" fill="#fff"/></g>',
-  poule: '<g><path d="M-26,-2 C-30,-26 -10,-42 10,-38 C26,-34 32,-20 28,-2 Z" fill="#8a6a4a" stroke="' + CONTOUR + '" stroke-width="5"/>' +
-    '<path d="M-24,-14 l-8,-6 M-20,-26 l-6,-9 M-10,-34 l-2,-11 M2,-38 l3,-11 M14,-36 l7,-9 M-14,-20 l-6,-7 M-2,-28 l0,-9 M10,-26 l5,-8" stroke="' + CONTOUR + '" stroke-width="3" stroke-linecap="round"/>' +
-    '<path d="M22,-20 C30,-24 40,-18 40,-10 C36,-4 26,-4 22,-8 Z" fill="#e8d7ae" stroke="' + CONTOUR + '" stroke-width="3.5"/><circle cx="40" cy="-11" r="2.6" fill="' + CONTOUR + '"/><circle cx="31" cy="-15" r="2" fill="' + CONTOUR + '"/><path d="M-8,-2 L-10,6 M10,-2 L12,6" stroke="' + CONTOUR + '" stroke-width="4" stroke-linecap="round"/></g>',
-  roule: '<g class="mja-roule"><circle cx="0" cy="-28" r="30" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="0" cy="-28" r="22" fill="#d9a066" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="0" cy="-28" r="14" fill="none" stroke="#a8743f" stroke-width="3"/><circle cx="0" cy="-28" r="6" fill="none" stroke="#a8743f" stroke-width="3"/><path d="M0,-50 L0,-40" stroke="#6b4426" stroke-width="3"/></g>',
-  /* le raccourci : des arches de bois couvertes de feuilles (et le buisson du milieu reste la haie) */
-  arche: '<g><path d="M-58,4 L-58,-90 C-58,-150 58,-150 58,-90 L58,4 L36,4 L36,-86 C36,-120 -36,-120 -36,-86 L-36,4 Z" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-36,4 L-36,-86 C-36,-120 36,-120 36,-86 L36,4 Z" fill="#0c1a12" opacity=".85"/>' +
-    '<circle cx="-46" cy="-112" r="18" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="-14" cy="-140" r="20" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="20" cy="-138" r="18" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="4"/><circle cx="48" cy="-110" r="17" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-50,-40 L-44,-40 M-50,-70 L-44,-70 M44,-56 L50,-56" stroke="#4a3220" stroke-width="3"/></g>'
+  /* à sauter : tronc couché, bouleau couché, muret de pierres moussues, tronc creux (un lapin y dort) */
+  barriere: '<g>' + ombreSol(60, 7) + HALO + troncCouche(34, '#7a4e2c', '#5e3a1e', '#d9a066', -1) +
+    '<path d="M-22,-34 C-18,-42 -6,-42 -2,-34 Z M16,-34 C20,-40 30,-40 32,-34 Z" fill="#6aa84f"' + trait(2.5) + '/>' +
+    '<path d="M38,-34 L38,-40" stroke="#f3e7cb" stroke-width="3"/><path d="M33,-40 C33,-46 43,-46 43,-40 Z" fill="#e5484d"' + trait(2) + '/><circle cx="37" cy="-43" r="1" fill="#fff"/></g>',
+  tronc: '<g>' + ombreSol(60, 7) + HALO + troncCouche(30, '#efe9dc', '#cfc6b0', '#e8d2a8', 1) +
+    '<path d="M-34,-30 l7,0 l-2,6 Z M-8,-1 l9,0 l-3,-6 Z M12,-30 l6,0 l-1,7 Z M28,-1 l7,0 l-2,-6 Z" fill="' + CONTOUR + '"/>' +
+    '<path d="M-24,-16 l10,1 M0,-18 l9,0 M-44,-14 l6,0 M18,-12 l7,1" stroke="' + CONTOUR + '" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<path d="M-14,-29 L-20,-40"' + trait(6) + ' stroke-linecap="round"/><path d="M-14,-29 L-20,-40" stroke="#efe9dc" stroke-width="3" stroke-linecap="round"/><ellipse cx="-23" cy="-43" rx="6" ry="3.5" fill="#9ad66a"' + trait(2) + ' transform="rotate(-30 -23 -43)"/></g>',
+  sacs: '<g>' + ombreSol(60, 7) + HALO +
+    '<path d="M-58,2 C-60,-14 -52,-26 -40,-26 C-30,-26 -26,-14 -28,2 Z M-30,2 C-32,-18 -22,-30 -8,-29 C4,-28 8,-14 6,2 Z M4,2 C2,-16 12,-28 26,-27 C38,-26 42,-14 40,2 Z M38,2 C36,-12 44,-24 52,-22 C60,-20 62,-8 58,2 Z" fill="#8a8f84"' + trait(4) + ' stroke-linejoin="round"/>' +
+    '<path d="M-50,-22 C-44,-28 -34,-28 -32,-22 M-20,-26 C-14,-31 -2,-31 2,-24 M14,-24 C20,-30 32,-29 36,-22 M44,-19 C48,-23 54,-23 56,-18" stroke="#6aa84f" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-44,-12 C-40,-14 -36,-14 -34,-12 M-12,-14 C-8,-17 -2,-17 0,-14 M18,-12 C22,-15 28,-15 30,-12" stroke="#b5bbad" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>',
+  chien: '<g>' + ombreSol(60, 7) + HALO + troncCouche(32, '#6b4426', '#4a2e18', '#3b2a1e', -1) +
+    '<ellipse cx="-45" cy="-15" rx="6.5" ry="10.5" fill="#120c08"/>' +
+    '<path d="M-49,-20 C-54,-36 -46,-38 -45,-23 M-42,-21 C-38,-36 -31,-34 -38,-20" fill="#d9c3a5"' + trait(2) + '/><circle cx="-44" cy="-15" r="5.5" fill="#d9c3a5"' + trait(2) + '/><circle cx="-46" cy="-16" r="1.2" fill="' + CONTOUR + '"/><circle cx="-42" cy="-16" r="1.2" fill="' + CONTOUR + '"/><circle cx="-44" cy="-13" r="1.2" fill="#ff8fb3"/>' +
+    '<path d="M-6,-32 C-2,-40 10,-40 14,-32 Z" fill="#6aa84f"' + trait(2.5) + '/><path d="M26,-32 C30,-36 36,-36 38,-32" stroke="#6aa84f" stroke-width="4" fill="none" stroke-linecap="round"/></g>',
+  /* à se baisser : un arbre tombé coincé entre deux troncs ; une grosse branche basse (un écureuil dessus) */
+  linge: '<g>' + ombreBarre() + HALO +
+    '<path d="M-64,4 C-62,-40 -63,-100 -61,-152 L-47,-152 C-45,-100 -46,-40 -46,4 Z M46,4 C46,-40 45,-100 47,-152 L61,-152 C63,-100 62,-40 64,4 Z" fill="#6b4426"' + trait(4.5) + '/>' +
+    '<path d="M-56,-10 L-56,-40 M-52,-70 L-52,-120 M54,-20 L54,-60 M52,-90 L52,-140" stroke="#4a2e18" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<path d="M-70,4 C-66,-4 -62,-6 -58,-4 M70,4 C66,-4 62,-6 58,-4" stroke="' + CONTOUR + '" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M-70,4 C-66,-4 -62,-6 -58,-4 M70,4 C66,-4 62,-6 58,-4" stroke="#6b4426" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-62,-96 C-20,-102 20,-100 62,-92 L62,-66 C20,-72 -20,-74 -62,-70 Z" fill="#8a5a33"' + trait(4.5) + ' stroke-linejoin="round"/>' +
+    '<path d="M-44,-88 C-20,-91 10,-90 40,-86 M-36,-78 C-10,-80 16,-79 44,-75" stroke="#5e3a1e" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-32,-99 C-26,-108 -14,-108 -10,-100 Z M14,-99 C20,-107 32,-105 34,-96 Z" fill="#6aa84f"' + trait(2.5) + '/>' +
+    '<path d="M-38,-71 C-40,-68 -36,-67 -38,-65 M-6,-72 C-8,-69 -4,-68 -6,-66 M26,-70 C24,-67 28,-66 26,-64" stroke="#3c9a62" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="-38" cy="-65" r="2.6" fill="#5fcf86"/><circle cx="-6" cy="-66" r="2.6" fill="#5fcf86"/><circle cx="26" cy="-64" r="2.6" fill="#5fcf86"/></g>',
+  branche: '<g>' + ombreBarre() + HALO +
+    '<path d="M-66,4 C-62,-40 -64,-100 -60,-160 L-42,-160 C-44,-100 -44,-40 -40,4 Z" fill="#6b4426"' + trait(4.5) + '/><path d="M-56,-20 L-56,-60 M-52,-110 L-52,-150" stroke="#4a2e18" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<path d="M-72,4 C-68,-4 -62,-6 -58,-2 M-34,4 C-38,-4 -44,-6 -48,-2" stroke="' + CONTOUR + '" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M-72,4 C-68,-4 -62,-6 -58,-2 M-34,4 C-38,-4 -44,-6 -48,-2" stroke="#6b4426" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-46,-96 C-10,-102 30,-94 64,-98 L64,-82 C30,-78 -10,-82 -46,-68 Z" fill="#7a4e2c"' + trait(4.5) + ' stroke-linejoin="round"/><path d="M-30,-86 C0,-90 30,-86 54,-89" stroke="#5e3a1e" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+    feuilles([[2, -106, 13], [34, -104, 13], [58, -106, 12]], '#2f7a4c', '#3c9a62') +
+    '<path d="M-26,-100 C-40,-102 -42,-122 -32,-126 C-36,-118 -32,-110 -28,-104 Z" fill="#d9874a"' + trait(2.5) + '/><ellipse cx="-22" cy="-107" rx="6.5" ry="8" fill="#c0703a"' + trait(2.5) + '/><circle cx="-17" cy="-117" r="5" fill="#c0703a"' + trait(2.2) + '/><path d="M-19,-121 l1,-5 l3,4" fill="#c0703a"' + trait(1.8) + '/><circle cx="-15.5" cy="-118" r="1.2" fill="' + CONTOUR + '"/><ellipse cx="-14" cy="-108" rx="3" ry="2.4" fill="#8a5a33"' + trait(1.5) + '/></g>',
+  /* à éviter : gros rocher moussu, grand arbre (une chouette dans son trou), roncier, tas de rochers,
+     vieux tronc cassé, tas de bûches, cerf qui traverse, rondin qui roule, buisson épais */
+  caisse: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-54,2 C-60,-34 -46,-86 -12,-108 C18,-124 50,-96 54,-56 C58,-28 56,-8 50,2 Z" fill="#7d8478"' + trait(5) + '/>' +
+    '<path d="M24,-104 C44,-88 52,-62 54,-40 C56,-20 54,-6 50,2 L28,2 C38,-22 40,-64 24,-104 Z" fill="#626a5e"/>' +
+    '<path d="M-36,-60 C-30,-78 -18,-92 -4,-98" stroke="#a7ad9f" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-42,-82 C-30,-104 -2,-118 20,-110 C34,-104 44,-92 46,-80 C30,-90 10,-88 -4,-82 C-18,-76 -32,-78 -42,-82 Z" fill="#4f8a3e"' + trait(3) + '/><path d="M-20,-84 C-20,-78 -16,-76 -18,-70 M12,-88 C12,-82 16,-80 14,-74" stroke="#4f8a3e" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-6,-50 L2,-40 L-2,-28" stroke="' + CONTOUR + '" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-48,2 C-52,-12 -60,-18 -68,-20 M-48,2 C-44,-14 -38,-22 -28,-26" stroke="#3c9a62" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M-60,-16 l-4,-6 M-56,-12 l-6,-3 M-40,-18 l2,-7 M-36,-22 l5,-4" stroke="#5fcf86" stroke-width="3" stroke-linecap="round"/></g>',
+  tonneau: '<g>' + ombreSol(62, 9) + HALO +
+    '<path d="M-62,4 C-46,-2 -36,-10 -32,-26 L-28,-168 L28,-168 L32,-26 C36,-10 46,-2 62,4 Z" fill="#6b4426"' + trait(5) + ' stroke-linejoin="round"/>' +
+    '<path d="M-20,-20 L-18,-70 M-8,-40 L-6,-150 M10,-30 L12,-80 M20,-110 L20,-160 M-18,-110 L-16,-150" stroke="#4a2e18" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M-26,-30 L-24,-160" stroke="#8a5a33" stroke-width="4" stroke-linecap="round" opacity=".8"/>' +
+    '<ellipse cx="6" cy="-98" rx="10" ry="13" fill="#2a1a10"' + trait(3) + '/><circle cx="1.5" cy="-100" r="3.2" fill="#ffd36a"/><circle cx="10.5" cy="-100" r="3.2" fill="#ffd36a"/><circle cx="1.5" cy="-100" r="1.4" fill="' + CONTOUR + '"/><circle cx="10.5" cy="-100" r="1.4" fill="' + CONTOUR + '"/><path d="M4,-94 L6,-91 L8,-94" fill="#f6b23a"/>' +
+    '<path d="M-64,-156 C-74,-186 -44,-212 -16,-204 C-2,-226 40,-222 46,-196 C72,-190 74,-158 52,-148 C30,-138 -42,-138 -64,-156 Z" fill="#245e3c"' + trait(5) + '/>' +
+    '<circle cx="-34" cy="-182" r="12" fill="#2f7a4c"/><circle cx="10" cy="-196" r="13" fill="#2f7a4c"/><circle cx="40" cy="-172" r="11" fill="#2f7a4c"/><circle cx="-38" cy="-186" r="5" fill="#3c9a62"/><circle cx="6" cy="-200" r="5" fill="#3c9a62"/></g>',
+  foin: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-54,2 C-60,-30 -50,-70 -30,-84 C-22,-104 4,-110 14,-96 C30,-106 52,-90 50,-66 C60,-48 58,-18 54,2 Z" fill="#2a5a3a"' + trait(5) + '/>' +
+    '<path d="M-44,-20 C-36,-60 -10,-80 10,-70 M-20,-40 C0,-70 30,-74 40,-50 M-40,-60 C-20,-90 10,-96 24,-84 M0,-10 C10,-30 30,-34 44,-24" stroke="#7a3a52" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-38,-44 l-5,-4 l6,-1 Z M-16,-70 l-2,-6 l5,2 Z M14,-72 l2,-6 l3,5 Z M30,-66 l5,-3 l0,6 Z M-8,-52 l-4,-4 l5,-1 Z M20,-50 l4,-4 l1,5 Z M-28,-80 l-1,-6 l4,3 Z M8,-90 l1,-6 l4,4 Z M36,-34 l5,-2 l-1,5 Z M14,-24 l2,-5 l3,4 Z" fill="#e8c6d0"/>' +
+    '<path d="M-30,-30 C-24,-36 -18,-34 -18,-28 C-24,-26 -28,-26 -30,-30 Z M24,-80 C30,-86 36,-84 36,-78 C30,-76 26,-76 24,-80 Z M-4,-34 C2,-40 8,-38 8,-32 C2,-30 -2,-30 -4,-34 Z" fill="#5fcf86"' + trait(2) + '/>' +
+    boucleN(1, function(){ return [[-22, -60], [6, -64], [28, -40], [-36, -12], [-6, -92], [38, -70], [10, -14]].map(function(q){ return '<g transform="translate(' + q[0] + ',' + q[1] + ')"><circle cx="-2.4" cy="0" r="3" fill="#3b1f4a"' + trait(1.4) + '/><circle cx="2.4" cy="0" r="3" fill="#3b1f4a"' + trait(1.4) + '/><circle cx="0" cy="-3.4" r="3" fill="#3b1f4a"' + trait(1.4) + '/><circle cx="0" cy="2.4" r="3" fill="#3b1f4a"' + trait(1.4) + '/><circle cx="-1" cy="-4" r="1" fill="#fff" opacity=".7"/></g>'; }).join(''); }) + '</g>',
+  rocher: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-56,2 C-60,-30 -48,-58 -20,-62 C6,-66 40,-60 52,-40 C58,-24 56,-8 52,2 Z" fill="#7d8478"' + trait(5) + '/><path d="M20,-62 C40,-56 54,-40 54,-20 L52,2 L30,2 C38,-20 36,-44 20,-62 Z" fill="#626a5e"/>' +
+    '<path d="M-36,-60 C-40,-84 -24,-112 2,-118 C26,-122 40,-100 36,-74 C34,-62 26,-58 18,-58 Z" fill="#8a9084"' + trait(5) + '/><path d="M-24,-80 C-20,-98 -8,-108 6,-110" stroke="#b0b6a8" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-30,-104 C-20,-120 4,-126 20,-118 C10,-112 -12,-106 -30,-104 Z" fill="#4f8a3e"' + trait(2.5) + '/><path d="M-50,-30 C-44,-36 -36,-34 -34,-28" stroke="#4f8a3e" stroke-width="5" fill="none" stroke-linecap="round"/></g>',
+  charrette: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-52,4 C-40,-2 -34,-10 -32,-26 L-30,-108 L-22,-128 L-12,-114 L-2,-138 L8,-112 L18,-126 L30,-104 L32,-26 C34,-10 40,-2 52,4 Z" fill="#5e4632"' + trait(5) + ' stroke-linejoin="round"/>' +
+    '<path d="M-20,-20 L-18,-90 M-4,-30 L-2,-110 M14,-24 L16,-96" stroke="#3e2c1e" stroke-width="3" stroke-linecap="round"/><path d="M-26,-30 L-24,-100" stroke="#7a5e46" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<ellipse cx="2" cy="-70" rx="5" ry="7" fill="#1a120c"/><ellipse cx="-10" cy="-48" rx="4" ry="5" fill="#1a120c"/>' +
+    '<path d="M26,-60 C40,-62 44,-54 42,-50 L26,-50 Z M26,-80 C36,-82 40,-76 38,-72 L26,-72 Z" fill="#f6a23a"' + trait(2.5) + '/>' +
+    '<path d="M-32,-40 C-40,-50 -38,-62 -32,-70 M-32,-60 l-6,-2 M-34,-48 l-6,1" stroke="#3c9a62" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
+  etal: '<g>' + ombreSol(60, 9) + HALO +
+    '<path d="M-60,2 L-58,-62 M60,2 L58,-62"' + trait(8) + ' stroke-linecap="round"/><path d="M-60,2 L-58,-62 M60,2 L58,-62" stroke="#8a5a33" stroke-width="4" stroke-linecap="round"/>' +
+    [[-40.5, -14], [-13.5, -14], [13.5, -14], [40.5, -14], [-27, -40], [0, -40], [27, -40], [-13.5, -66], [13.5, -66], [0, -92]].map(function(q){
+      return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="13.5" fill="#d9a066"' + trait(3.5) + '/><circle cx="' + q[0] + '" cy="' + q[1] + '" r="11" fill="none" stroke="#8a5a33" stroke-width="2.5"/><circle cx="' + q[0] + '" cy="' + q[1] + '" r="6.5" fill="none" stroke="#b07a44" stroke-width="1.8"/><circle cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="#b07a44"/>';
+    }).join('') +
+    '<path d="M4,-104 L18,-126"' + trait(6) + ' stroke-linecap="round"/><path d="M4,-104 L18,-126" stroke="#a8743f" stroke-width="3" stroke-linecap="round"/><path d="M12,-130 C18,-140 30,-134 26,-124 L20,-120 Z" fill="#cfcfe0"' + trait(3) + ' stroke-linejoin="round"/></g>',
+  bete: '<g>' + ombreSol(58, 8) + HALO +
+    patte(-32, -54, '#a8743f', 'bt-p1', 48) + patte(22, -54, '#a8743f', 'bt-p2', 48) +
+    '<path d="M-46,-82 C-52,-84 -54,-78 -50,-74" stroke="' + CONTOUR + '" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M-46,-82 C-52,-84 -54,-78 -50,-74" stroke="#f4f1ea" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-46,-60 C-50,-84 -30,-92 -6,-90 L24,-90 C42,-90 48,-76 46,-60 C40,-50 -40,-50 -46,-60 Z" fill="#a8743f"' + trait(5) + '/><path d="M-36,-56 C-10,-52 20,-52 40,-56 C36,-60 -30,-62 -36,-56 Z" fill="#e8c79a"/>' +
+    patte(-20, -54, '#a8743f', 'bt-p2', 48) + patte(34, -54, '#a8743f', 'bt-p1', 48) +
+    '<path d="M24,-84 L36,-112 L50,-106 L42,-80 Z" fill="#a8743f"' + trait(4) + ' stroke-linejoin="round"/>' +
+    '<g transform="translate(44,-114)">' +
+      '<path d="M-4,-6 C-10,-22 -18,-28 -26,-34 M-10,-20 L-20,-20 M-14,-26 L-18,-34 M4,-8 C8,-24 16,-32 24,-40 M12,-24 L22,-22 M16,-30 L18,-40"' + trait(6) + ' stroke-linecap="round" fill="none"/>' +
+      '<path d="M-4,-6 C-10,-22 -18,-28 -26,-34 M-10,-20 L-20,-20 M-14,-26 L-18,-34 M4,-8 C8,-24 16,-32 24,-40 M12,-24 L22,-22 M16,-30 L18,-40" stroke="#e8d7ae" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
+      '<path d="M-8,-4 C-18,-10 -20,-2 -10,2 Z" fill="#a8743f"' + trait(2.5) + '/>' +
+      '<path d="M-8,-6 C0,-12 12,-10 16,-2 L22,8 C22,14 14,16 10,12 L-6,6 Z" fill="#a8743f"' + trait(4) + ' stroke-linejoin="round"/>' +
+      '<circle cx="21" cy="9" r="3" fill="' + CONTOUR + '"/><circle cx="6" cy="-2" r="2.8" fill="#fff"/><circle cx="6.6" cy="-2" r="1.7" fill="' + CONTOUR + '"/><path d="M10,10 C14,12 18,12 20,12" stroke="#e8c79a" stroke-width="2.5" fill="none"/>' +
+    '</g></g>',
+  roule: '<g>' + ombreSol(48, 8) + HALO +
+    '<g transform="translate(0,-45)"><g class="mja-roule"><circle r="44" fill="#d9a066"' + trait(5) + '/><circle r="39.5" fill="none" stroke="#6b4426" stroke-width="7"/>' +
+      '<circle r="28" fill="none" stroke="#b07a44" stroke-width="2.5"/><circle r="17" fill="none" stroke="#b07a44" stroke-width="2.5"/><circle r="7" fill="none" stroke="#b07a44" stroke-width="2.5"/>' +
+      '<path d="M2,-2 L32,-14" stroke="#8a5a33" stroke-width="2.5" stroke-linecap="round"/><circle r="2" fill="#8a5a33"/></g></g>' +
+    '<circle cx="-46" cy="-6" r="7" fill="#c9b48a" opacity=".5"/><circle cx="-56" cy="-12" r="5" fill="#c9b48a" opacity=".35"/><circle cx="46" cy="-6" r="7" fill="#c9b48a" opacity=".5"/><circle cx="56" cy="-12" r="5" fill="#c9b48a" opacity=".35"/></g>',
+  haie: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-54,2 C-62,-30 -54,-74 -36,-88 C-30,-110 0,-116 10,-100 C28,-114 54,-96 48,-74 C62,-56 60,-24 54,2 Z" fill="#245e3c"' + trait(5) + '/>' +
+    '<path d="M-34,-70 C-30,-80 -18,-80 -16,-72 M4,-94 C8,-102 20,-102 22,-94 M-42,-36 C-38,-44 -28,-44 -26,-36 M18,-56 C22,-64 34,-64 36,-56 M-12,-24 C-8,-32 2,-32 4,-24" stroke="#3c9a62" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<circle cx="-20" cy="-50" r="3.6" fill="#e5484d"' + trait(1.4) + '/><circle cx="12" cy="-72" r="3.6" fill="#e5484d"' + trait(1.4) + '/><circle cx="30" cy="-30" r="3.6" fill="#e5484d"' + trait(1.4) + '/><circle cx="-34" cy="-14" r="3.6" fill="#e5484d"' + trait(1.4) + '/><circle cx="-4" cy="-88" r="3.6" fill="#e5484d"' + trait(1.4) + '/></g>',
+  arche: '<g>' + ombreSol(62, 8) +
+    '<path d="M-60,4 L-60,-90 C-60,-152 60,-152 60,-90 L60,4 L38,4 L38,-86 C38,-122 -38,-122 -38,-86 L-38,4 Z" fill="#6b4a2e"' + trait(5) + ' stroke-linejoin="round"/>' +
+    '<path d="M-38,4 L-38,-86 C-38,-122 38,-122 38,-86 L38,4 Z" fill="#0c1a12" opacity=".6"/>' +
+    '<path d="M-50,-20 L-48,-70 M50,-20 L48,-70" stroke="#4a3220" stroke-width="3" stroke-linecap="round"/>' +
+    feuilles([[-48, -112, 18], [-16, -140, 20], [20, -138, 18], [50, -110, 17]], '#2f7a4c', '#3c9a62') + fleurette(-30, -128, '#fff') + fleurette(34, -124, '#ff8fb3') + '</g>'
 };
-/* le petit chien noir et blanc qui s'enfuit, de profil (pattes et queue animées dans la boucle de jeu) */
-function chienSVG(){
-  var patte = function(cls, x, y, c){ return '<g transform="translate(' + x + ',' + y + ')"><g class="' + cls + '"><path d="M0,0 L-2,15" stroke="' + CONTOUR + '" stroke-width="8" stroke-linecap="round"/><path d="M0,0 L-2,15" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/></g></g>'; };
-  return '<g class="mja-fuyard-corps mja-chien"><g transform="scale(1.15)">' +
-    '<g transform="translate(-22,-27)"><g class="ch-queue"><path d="M0,0 C-8,-4 -14,-14 -10,-24" stroke="' + CONTOUR + '" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M0,0 C-8,-4 -14,-14 -10,-24" stroke="#f4f1ea" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M-11,-18 C-13,-21 -12,-24 -10,-24" stroke="#1d1a22" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>' +
-    patte('ch-ar2', -14, -16, '#1d1a22') + patte('ch-av2', 14, -16, '#f4f1ea') +
-    '<ellipse cx="0" cy="-23" rx="24" ry="12" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="4"/>' +
-    '<path d="M-18,-30 C-10,-37 6,-36 10,-28 C4,-20 -8,-19 -16,-24 Z" fill="#1d1a22"/>' +
-    patte('ch-ar1', -16, -15, '#1d1a22') + patte('ch-av1', 16, -15, '#f4f1ea') +
-    '<g transform="translate(22,-34)"><g class="ch-tete">' +
-      '<ellipse cx="3" cy="1" rx="13" ry="11" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="4"/>' +
-      '<path d="M-7,-5 C-3,-12 7,-12 11,-6 C9,1 1,3 -5,0 Z" fill="#1d1a22"/>' +
-      '<ellipse cx="15" cy="5" rx="7" ry="5" fill="#f4f1ea" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="21" cy="3.5" r="3" fill="#1d1a22"/>' +
-      '<circle cx="6" cy="-2" r="2.4" fill="#fff"/><circle cx="6.5" cy="-2" r="1.4" fill="#1d1a22"/>' +
-      '<path d="M-6,-8 C-15,-10 -15,6 -8,7 C-5,3 -4,-3 -6,-8 Z" fill="#1d1a22" stroke="' + CONTOUR + '" stroke-width="2.5"/>' +
-      '<path d="M12,11 C13,16 18,16 19,12" fill="#ff8fb3" stroke="' + CONTOUR + '" stroke-width="2"/>' +
-    '</g></g></g></g>';
+
+/* ---------- Le coureur, vu de dos : un pantin animé à chaque image ----------
+   coureurSVG(sorte) : le dessin ('pisteur' ou 'ombre' = la silhouette qui fuit) ;
+   Pantin(g, sorte).poser({ph, j, b, l, t, v}) : la foulée ph (radians, elle avance avec la vitesse),
+   j = saut (0..1, genoux repliés, bras en l'air), b = baissé (0..1), l = écrasé en retombant (0..1),
+   t = le temps (la cape), v = la vitesse. Les pieds sont en (0, 0), la tête vers y = −96. */
+var PANTINS = {
+  pisteur:{cape:'#2f7a4c', capeC:'#3c9a62', capeS:'#1f5a38', tun:'#3c8a58', tunS:'#2a6a42', pant:'#4a3b52', botte:'#6b4426', botteC:'#8a5a33', sem:'#2e1f18', peau:'#f1c7a0', ceint:'#5e3a1e', bas:-46, carquois:true},
+  ombre:{cape:'#2a2140', capeC:'#3a2f58', capeS:'#16112a', tun:'#2b2342', tunS:'#1d1730', pant:'#1d1730', botte:'#2a2030', botteC:'#3b3046', sem:'#100c18', peau:'#c9a080', ceint:'#3b3046', bas:-16, carquois:false}
+};
+function coureurSVG(sorte){
+  var C = PANTINS[sorte] || PANTINS.pisteur;
+  var jambe = function(c){ return '<g class="pt-' + c + '"><path class="pt-jc" d=""' + trait(13) + ' stroke-linecap="round" fill="none"/><path class="pt-jf" d="" stroke="' + C.pant + '" stroke-width="7.5" stroke-linecap="round" fill="none"/>' +
+    '<g class="pt-pied"><path d="M-6.5,-7 C-7.5,-2 -6.5,2.5 -4,3.5 L4,3.5 C6.5,2.5 7.5,-2 6.5,-7 Z" fill="' + C.botte + '"' + trait(2.6) + '/><path d="M-6.8,-6.5 L6.8,-6.5" stroke="' + C.botteC + '" stroke-width="3" stroke-linecap="round"/><ellipse class="pt-sem" cx="0" cy="1.5" rx="5.6" ry="3.4" fill="' + C.sem + '" opacity="0"/></g></g>'; };
+  var bras = function(c){ return '<g class="pt-' + c + '"><path class="pt-bc" d=""' + trait(11) + ' stroke-linecap="round" fill="none"/><path class="pt-bf" d="" stroke="' + C.tun + '" stroke-width="6.5" stroke-linecap="round" fill="none"/><g class="pt-main"><circle r="4.6" fill="' + C.peau + '"' + trait(2.4) + '/></g></g>'; };
+  return '<g class="pt">' + jambe('jg') + jambe('jd') +
+    '<g class="pt-haut">' +
+      '<path d="M-17,-66 C-20,-54 -17,-42 -15,-34 L-17.5,-24 C-6,-20.5 6,-20.5 17.5,-24 L15,-34 C17,-42 20,-54 17,-66 C8,-71 -8,-71 -17,-66 Z" fill="' + C.tun + '"' + trait(4) + ' stroke-linejoin="round"/>' +
+      '<path d="M6,-68 C14,-62 16,-46 14,-34 L16.5,-25.5 C12,-23.5 8,-22.5 5,-22.5 Z" fill="' + C.tunS + '"/><path d="M0,-27 L0,-21.5" stroke="' + C.tunS + '" stroke-width="2.4"/>' +
+      '<path d="M-16.5,-39 L16.5,-39 L17,-32.5 L-17,-32.5 Z" fill="' + C.ceint + '"' + trait(2.4) + '/>' +
+      '<rect x="-21" y="-39" width="10" height="12" rx="3" fill="#8a5a33"' + trait(2.4) + '/><path d="M-21,-35 L-11,-35" stroke="' + CONTOUR + '" stroke-width="1.6"/>' +
+      bras('bg') + bras('bd') +
+      '<path class="pt-cape" d=""  fill="' + C.cape + '"' + trait(4) + ' stroke-linejoin="round"/>' +
+      (C.carquois ? '<path d="M15,-67 L-13,-37" stroke="' + CONTOUR + '" stroke-width="6" stroke-linecap="round"/><path d="M15,-67 L-13,-37" stroke="#8a5a33" stroke-width="3" stroke-linecap="round"/>' +
+        '<g transform="translate(7,-57) rotate(32)">' +
+          '<path d="M-3,-21 L-4.5,-32 M1,-21 L1.5,-34 M4,-20 L6,-31" stroke="#c99a5e" stroke-width="2"/>' +
+          '<path d="M-4.5,-32 l-3,-6 l3,1.5 l3,-1.5 Z M1.5,-34 l-3,-6 l3,1.5 l3,-1.5 Z M6,-31 l-3,-6 l3,1.5 l3,-1.5 Z" fill="#e5484d"' + trait(1.2) + '/>' +
+          '<rect x="-6.5" y="-21" width="13" height="38" rx="5" fill="#7a4e2c"' + trait(3.4) + '/><path d="M-6.5,-13 L6.5,-13 M-6.5,10 L6.5,10" stroke="#ffd36a" stroke-width="2.6"/><ellipse cx="0" cy="-21" rx="6.5" ry="2.6" fill="#3b2a1e"' + trait(2) + '/>' +
+        '</g>' : '') +
+    '</g>' +
+    '<g class="pt-tete">' +
+      '<path d="M-13.5,-70 C-17.5,-80 -14.5,-94 0,-96.5 C14.5,-94 17.5,-80 13.5,-70 C7,-65.5 -7,-65.5 -13.5,-70 Z" fill="' + C.capeC + '"' + trait(4) + '/>' +
+      '<path d="M0,-95.5 C1.2,-86 0,-78 0,-70" stroke="' + C.capeS + '" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M-10,-86 C-9,-91 -5.5,-93.5 -2,-94.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".3"/>' +
+      '<path d="M-4.5,-70 C-3.5,-63 -0.5,-59 2,-55 C3.5,-61 4.5,-66 4.5,-70 Z" fill="' + C.capeC + '"' + trait(2.6) + ' stroke-linejoin="round"/>' +
+    '</g></g>';
 }
-/* pattes qui galopent, queue qui frétille : appelé à chaque image avec le temps t (s) */
+function Pantin(g, sorte){
+  var C = PANTINS[sorte] || PANTINS.pisteur;
+  var q = function(s){ return g.querySelector(s); };
+  var J = ['jg', 'jd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-jc'), f:n.querySelector('.pt-jf'), p:n.querySelector('.pt-pied'), s:n.querySelector('.pt-sem')}; });
+  var B = ['bg', 'bd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-bc'), f:n.querySelector('.pt-bf'), m:n.querySelector('.pt-main')}; });
+  var haut = q('.pt-haut'), tete = q('.pt-tete'), cape = q('.pt-cape');
+  function n1(v){ return (Math.round(v * 10) / 10).toString(); }
+  return {poser:function(st){
+    var b = st.b || 0, j = st.j || 0, l = st.l || 0, ph = st.ph || 0, t = st.t || 0;
+    var amp = (1 - 0.6 * b) * (1 - j);
+    var bob = -Math.abs(Math.sin(ph)) * 3 * amp;
+    var hy = -32 + 18 * b + bob + 3 * l, roll = Math.sin(ph) * 2.2 * amp;
+    for(var k = 0; k < 2; k++){
+      var sg = k ? 1 : -1, s = Math.sin(ph + k * Math.PI) * amp, lev = Math.max(0, s), pose = Math.max(0, -s);
+      var fx = sg * (10 + 2 * lev + 8 * b + 3 * j), fy = -lev * 16 - j * 15 + pose * 0.5;
+      var hx = sg * 8, hyy = hy + 2;
+      var kx = sg * (11 + 3 * lev + 12 * b + 7 * j), ky = (hyy + fy) / 2 - 2 + 3 * b - 3 * j;
+      var d = 'M' + n1(hx) + ',' + n1(hyy) + ' Q' + n1(kx) + ',' + n1(ky) + ' ' + n1(fx) + ',' + n1(fy);
+      J[k].c.setAttribute('d', d); J[k].f.setAttribute('d', d);
+      J[k].p.setAttribute('transform', 'translate(' + n1(fx) + ',' + n1(fy) + ') scale(' + (1 + 0.14 * lev + 0.1 * j - 0.05 * pose).toFixed(3) + ')');
+      J[k].s.setAttribute('opacity', Math.min(1, lev * 1.4 + j * 0.8).toFixed(2));
+    }
+    var sx = 1 + 0.08 * b + 0.05 * l, sy = 1 - 0.38 * b - 0.09 * l;
+    haut.setAttribute('transform', 'translate(0,' + n1(hy) + ') rotate(' + n1(roll) + ') scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ') translate(0,32)');
+    for(var m = 0; m < 2; m++){
+      var sgn = m ? 1 : -1, a = Math.sin(ph + (m ? 0 : Math.PI)) * amp, ar = Math.max(0, a), av = Math.max(0, -a);
+      var ex = sgn * (23 + 2 * ar - 4 * b + 9 * j), ey = -51 - 4 * av + 2 * ar - 15 * j;
+      var mx = sgn * (20 + 6 * ar - 5 * b + 15 * j), my = -41 - 12 * av + 3 * ar - 36 * j - 7 * b;
+      var db = 'M' + (sgn * 16) + ',-63 Q' + n1(ex) + ',' + n1(ey) + ' ' + n1(mx) + ',' + n1(my);
+      B[m].c.setAttribute('d', db); B[m].f.setAttribute('d', db);
+      B[m].m.setAttribute('transform', 'translate(' + n1(mx) + ',' + n1(my) + ')');
+    }
+    /* la cape : son bas ondule, se soulève pendant le saut */
+    var bas = C.bas - 7 * j + 2 * b, larg = C.bas > -30 ? 1.18 : 1, w = 1.4 + 1.2 * (st.v || 1), pts = [];
+    for(var i = 0; i < 5; i++){ var xx = (-25 + i * 12.5) * (larg + (i % 4 ? 0 : 0.04)); pts.push([xx, bas + w * Math.sin(t * 13 + i * 1.3) + (i === 0 || i === 4 ? -2 : 0)]); }
+    var dc = 'M-12,-74 C-21,-72 -26,-66 -26,-58 L' + n1(pts[0][0]) + ',' + n1(pts[0][1]);
+    for(var p2 = 1; p2 < 5; p2++){ var cx = (pts[p2 - 1][0] + pts[p2][0]) / 2, cy = (pts[p2 - 1][1] + pts[p2][1]) / 2 + 3.5; dc += ' Q' + n1(cx) + ',' + n1(cy) + ' ' + n1(pts[p2][0]) + ',' + n1(pts[p2][1]); }
+    dc += ' L26,-58 C26,-66 21,-72 12,-74 Z';
+    cape.setAttribute('d', dc);
+    /* la tête suit le haut du dos (sans s'écraser), et rentre dans les épaules quand on se baisse */
+    var cou = hy + sy * (-70 + 32);
+    tete.setAttribute('transform', 'translate(0,' + n1(cou + 70 + 15 * b) + ') rotate(' + n1(roll * 0.6) + ')');
+  }};
+}
+
+/* ---------- Le petit chien noir et blanc, vu de dos, qui galope ---------- */
+function chienSVG(){
+  var jambe = function(c, x){ return '<g transform="translate(' + x + ',-9)"><g class="' + c + '"><path class="chj-c" d="M0,0 L0,9"' + trait(8.5) + ' stroke-linecap="round" fill="none"/><path class="chj-f" d="M0,0 L0,9" stroke="#f4f1ea" stroke-width="4.5" stroke-linecap="round" fill="none"/>' +
+    '<g class="chj-p"><ellipse cx="0" cy="0" rx="4.4" ry="3" fill="#f4f1ea"' + trait(2) + '/><ellipse class="chj-pad" cx="0" cy="0.4" rx="2.6" ry="1.7" fill="#ff8fb3" opacity="0"/></g></g></g>'; };
+  return '<g class="mja-fuyard-corps mja-chien"><g transform="scale(1.15)"><g class="ch-c">' +
+    '<g class="ch-av1" transform="translate(-6,-13)"><path d="M0,0 L0,10"' + trait(7) + ' stroke-linecap="round"/><path d="M0,0 L0,10" stroke="#e4e0d6" stroke-width="3.5" stroke-linecap="round"/></g>' +
+    '<g class="ch-av2" transform="translate(6,-13)"><path d="M0,0 L0,10"' + trait(7) + ' stroke-linecap="round"/><path d="M0,0 L0,10" stroke="#1d1a22" stroke-width="3.5" stroke-linecap="round"/></g>' +
+    '<path d="M-7,-28 C-8,-36 -6,-42 0,-44 C6,-42 8,-36 7,-28 Z" fill="#1d1a22"' + trait(3) + '/>' +
+    '<g class="ch-tete" transform="translate(0,-44)">' +
+      '<ellipse cx="11.5" cy="3" rx="6.4" ry="4.6" fill="#f4f1ea"' + trait(2.5) + '/><circle cx="17.2" cy="2" r="2.3" fill="' + CONTOUR + '"/>' +
+      '<circle r="11.5" fill="#1d1a22"' + trait(3.5) + '/><path d="M-6,-6.5 C-3,-9.5 2,-9.5 5,-7.5" stroke="#fff" stroke-width="2" fill="none" opacity=".25" stroke-linecap="round"/>' +
+      '<path d="M-2,-11 C0,-7 0,-3 -1,1" stroke="#f4f1ea" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+      '<g transform="translate(-9,-5)"><g class="ch-o1"><path d="M1,-1 C-6,0 -10,7 -9,15 C-6,16 -2,12 2,4 Z" fill="#1d1a22"' + trait(2.5) + ' stroke-linejoin="round"/></g></g>' +
+      '<g transform="translate(9,-5)"><g class="ch-o2"><path d="M-1,-1 C6,0 10,7 9,15 C6,16 2,12 -2,4 Z" fill="#1d1a22"' + trait(2.5) + ' stroke-linejoin="round"/></g></g>' +
+    '</g>' +
+    '<ellipse cx="0" cy="-17" rx="17" ry="14" fill="#f4f1ea"' + trait(4) + '/>' +
+    '<path d="M-15,-21 C-12,-27 -3,-29 1,-25 C-1,-18 -8,-15 -14,-16 Z" fill="#1d1a22"/><path d="M8,-10 C12,-12 15,-9 14,-5 C11,-5 9,-7 8,-10 Z" fill="#1d1a22"/>' +
+    '<path d="M-8.5,-29 C-4,-26.5 4,-26.5 8.5,-29" stroke="' + CONTOUR + '" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M-8.5,-29 C-4,-26.5 4,-26.5 8.5,-29" stroke="#e5484d" stroke-width="3.6" fill="none" stroke-linecap="round"/><circle cx="6.5" cy="-26.5" r="2.4" fill="#ffd36a"' + trait(1.2) + '/>' +
+    jambe('ch-ar1', -9) + jambe('ch-ar2', 9) +
+    '<g transform="translate(6,-24)"><g class="ch-queue"><path d="M0,0 C6,-3 10,-9 9,-16"' + trait(7) + ' fill="none" stroke-linecap="round"/><path d="M0,0 C6,-3 10,-9 9,-16" stroke="#f4f1ea" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M9.6,-11 C9.6,-13 9.4,-14.6 9,-16" stroke="#1d1a22" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g>' +
+  '</g></g></g>';
+}
+/* il galope : appelé à chaque image avec le temps t (s) ; la foulée avance avec la vitesse (sans saccade) */
 function animerChien(g, t, vite){
   if(!g) return;
-  var ph = t * (vite || 1) * 15;
-  var q = g.__q || (g.__q = {a1:g.querySelector('.ch-av1'), a2:g.querySelector('.ch-av2'), r1:g.querySelector('.ch-ar1'), r2:g.querySelector('.ch-ar2'), qu:g.querySelector('.ch-queue'), te:g.querySelector('.ch-tete')});
-  if(q.a1) q.a1.setAttribute('transform', 'rotate(' + (38 * Math.sin(ph)).toFixed(1) + ')');
-  if(q.a2) q.a2.setAttribute('transform', 'rotate(' + (38 * Math.sin(ph + 1.2)).toFixed(1) + ')');
-  if(q.r1) q.r1.setAttribute('transform', 'rotate(' + (-38 * Math.sin(ph + .4)).toFixed(1) + ')');
-  if(q.r2) q.r2.setAttribute('transform', 'rotate(' + (-38 * Math.sin(ph + 1.6)).toFixed(1) + ')');
-  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + (24 * Math.sin(t * 22)).toFixed(1) + ')');
-  if(q.te) q.te.setAttribute('transform', 'translate(0,' + (1.5 * Math.sin(ph * 2)).toFixed(1) + ')');
+  var q = g.__q;
+  if(!q){
+    q = g.__q = {c:g.querySelector('.ch-c'), a1:g.querySelector('.ch-av1'), a2:g.querySelector('.ch-av2'), qu:g.querySelector('.ch-queue'), te:g.querySelector('.ch-tete'), o1:g.querySelector('.ch-o1'), o2:g.querySelector('.ch-o2'), ph:0, t:t,
+      ar:['.ch-ar1', '.ch-ar2'].map(function(s){ var n = g.querySelector(s); return n ? {c:n.querySelector('.chj-c'), f:n.querySelector('.chj-f'), p:n.querySelector('.chj-p'), pad:n.querySelector('.chj-pad')} : null; })};
+  }
+  var dt = Math.max(0, Math.min(0.05, t - q.t)); q.t = t; q.ph += dt * (vite || 1) * 15;
+  var ph = q.ph, f = function(v){ return (Math.round(v * 10) / 10).toString(); };
+  if(q.c) q.c.setAttribute('transform', 'translate(0,' + f(-Math.abs(Math.sin(ph)) * 2.6) + ')');
+  q.ar.forEach(function(a, k){
+    if(!a || !a.c) return;
+    var s = Math.sin(ph + k * 0.7), lev = Math.max(0, s), sg = k ? 1 : -1;
+    var fx = sg * lev * 1.5, fy = 9 - lev * 7.5, d = 'M0,0 Q' + (sg * 2) + ',' + f(fy * 0.55) + ' ' + f(fx) + ',' + f(fy);
+    a.c.setAttribute('d', d); a.f.setAttribute('d', d);
+    a.p.setAttribute('transform', 'translate(' + f(fx) + ',' + f(fy) + ') scale(' + (1 + 0.22 * lev).toFixed(2) + ')');
+    a.pad.setAttribute('opacity', Math.min(1, lev * 1.5).toFixed(2));
+  });
+  if(q.a1) q.a1.setAttribute('transform', 'translate(-6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI)) * 3) + ')');
+  if(q.a2) q.a2.setAttribute('transform', 'translate(6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI + 0.6)) * 3) + ')');
+  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + f(-8 + 26 * Math.sin(t * 22)) + ')');
+  if(q.o1) q.o1.setAttribute('transform', 'rotate(' + f(4 + 14 * Math.sin(ph)) + ')');
+  if(q.o2) q.o2.setAttribute('transform', 'rotate(' + f(-4 - 14 * Math.sin(ph)) + ')');
+  if(q.te) q.te.setAttribute('transform', 'translate(0,' + f(-44 + 1.2 * Math.sin(ph * 2)) + ')');
 }
 var HZ = 168, BAS = 470;
 function projette(p){ var e = Math.pow(fixe(p, 0, 1.3), 1.7); return {e:e, y:HZ + (BAS - HZ) * e, s:0.07 + 0.93 * e}; }
@@ -7608,14 +7947,20 @@ function foretSVG(id){
     '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L-200,720 M' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720" stroke="#2f4a2a" stroke-width="7"/>';
   return s;
 }
-function silhouetteSVG(){
-  return '<g class="mja-fuyard-corps"><path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7 M-11,-22 l-11,3 M11,-22 l11,3" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/><path d="M-10,-40 C-6,-50 6,-50 10,-40" stroke="#3b2a6a" stroke-width="3" fill="none"/><circle cx="-4" cy="-38" r="2" fill="#ffd36a"/><circle cx="4" cy="-38" r="2" fill="#ffd36a"/></g>';
-}
+/* la silhouette qui fuit : le même pantin, en sombre, à grande cape */
+function silhouetteSVG(){ return '<g class="mja-fuyard-corps"><g transform="scale(.56)">' + coureurSVG('ombre') + '</g></g>'; }
+/* les familles d'obstacles (pour choisir les vagues) */
+var SAUTS = ['barriere', 'tronc', 'sacs', 'chien'], BAISSES = ['linge', 'branche'],
+    BLOCS = ['caisse', 'tonneau', 'foin', 'rocher', 'charrette', 'etal'];
+/* ce que dit la bulle, selon le geste à faire */
+var GESTE_TXT = {'⤒':'⤒ Saute !', '⤓':'⤓ Baisse-toi !', '◀':'◀ À gauche !', '▶':'À droite ▶'};
+var GESTE_CL = {'⤒':'saut', '⤓':'bas', '◀':'cote', '▶':'cote'};
+function familleGeste(c){ return c === '⤒' ? 'bas' : (c === '⤓' ? 'haut' : 'bloc'); }
 MJ.enregistrer('poursuite', {
   nom:'Course-poursuite', role:'pisteur', ic:'🏃',
-  consigne:function(p){ return 'Rattrape ' + (p && p.fuyard === 'chien' ? 'le petit chien' : 'la silhouette') + ' en glissant ton doigt : à gauche ou à droite pour changer de couloir, vers le haut pour sauter, vers le bas pour glisser !'; },
-  /* dessins réutilisés par l'écran d'accueil (mj-regles.js) : le chien et les obstacles de la forêt */
-  art:{chien:chienSVG, animerChien:animerChien, foret:FORET_P},
+  consigne:function(p){ return 'Rattrape ' + (p && p.fuyard === 'chien' ? 'le petit chien' : 'la silhouette') + ' ! Ce qui est bas : saute (glisse vers le haut). Ce qui passe à hauteur de tête : baisse-toi (vers le bas). Ce qui est grand : change de couloir (à gauche ou à droite).'; },
+  /* dessins réutilisés par l'écran d'accueil (mj-regles.js) : le coureur, le chien, la silhouette et les obstacles */
+  art:{chien:chienSVG, animerChien:animerChien, foret:FORET_P, route:OBSTACLES_P, coureur:coureurSVG, Pantin:Pantin, silhouette:silhouetteSVG},
   minuteur:false,
   reglages: function(n, mods){
     var p = {niveau:n};
@@ -7630,10 +7975,13 @@ MJ.enregistrer('poursuite', {
     p.aide = (mods.aide || 0) > 0;
     p.conseils = (mods.aide || 0) * 6;
     p.revele = !!mods.revele;
+    /* apprendre les gestes : aux premiers niveaux, une vague de chaque au début, et la bulle 2 fois par famille */
+    p.intro = n <= 3;
+    p.apprendre = n <= 2 ? 2 : (n <= 4 ? 1 : 0);
     p.raccourci = n >= 4 ? courbe(n, {4:0.04, 9:0.07}) : 0;
-    p.poids = {un:3, deux:courbe(n, {1:2, 6:3}), saut:1.6, bas1:1.6, glisse:n >= 2 ? 1.6 : 0, poule:n >= 3 ? 1.2 : 0, mixteS:n >= 3 ? courbe(n, {3:1, 8:2}) : 0,
+    p.poids = {un:3, deux:courbe(n, {1:2, 6:3}), saut:1.6, bas1:1.6, glisse:n >= 2 ? 1.6 : 1, bete:n >= 3 ? 1.2 : 0, mixteS:n >= 3 ? courbe(n, {3:1, 8:2}) : 0,
       enchaine:n >= 3 ? courbe(n, {3:0.8, 6:1.6, 9:2.4}) : 0, roule:n >= 4 ? 1 : 0, mixteG:n >= 5 ? 1.4 : 0, triple:n >= 7 ? courbe(n, {7:0.8, 10:1.6}) : 0};
-    var noms = {un:'📦', deux:'🚧', saut:'⤒', bas1:'🐕', glisse:'⤓', poule:'🐔', mixteS:'🔀', enchaine:'⚡', roule:'🛢️', mixteG:'🧺', triple:'🏪'};
+    var noms = {un:'📦', deux:'🚧', saut:'⤒', bas1:'🪵', glisse:'⤓', bete:'🐄', mixteS:'🔀', enchaine:'⚡', roule:'🪨', mixteG:'🧺', triple:'🏪'};
     p.lignes = [
       {nom:'Vitesse de course', val:n <= 5 ? 'normale' : (n <= 8 ? 'un peu plus rapide' : 'rapide')},
       {nom:'Obstacles', val:Object.keys(p.poids).filter(function(k){ return p.poids[k] > 0; }).map(function(k){ return noms[k]; }).join(' ')},
@@ -7643,27 +7991,11 @@ MJ.enregistrer('poursuite', {
     ];
     return p;
   },
-  demo: function(el){
-    var d = demoScene(el, '<rect x="-60" width="420" height="170" fill="#2c4a3a"/><path d="M140,10 L160,10 L270,170 L30,170 Z" fill="#a37c5a" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M147,10 L105,170 M153,10 L195,170" stroke="#e8d7ae" stroke-width="2" stroke-dasharray="8 8"/>');
-    d.contenu.innerHTML = '<g class="mja-obs-demo">' + OBSTACLES_P.barriere + '</g><g class="mja-obs-demo2">' + OBSTACLES_P.charrette + '</g><g class="mja-coureur-demo"><circle cx="0" cy="-26" r="11" fill="#5fcf86" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-14,-12 C-14,-22 14,-22 14,-12 L12,8 L-12,8 Z" fill="#3a8a5a" stroke="' + CONTOUR + '" stroke-width="4"/></g>';
-    var obs = d.contenu.querySelector('.mja-obs-demo'), obs2 = d.contenu.querySelector('.mja-obs-demo2'), cour = d.contenu.querySelector('.mja-coureur-demo');
-    function placer(o, x, y, s, ms){ o.style.transition = 'transform ' + (ms || 0) + 'ms linear, opacity .2s'; o.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')'; }
-    return scenario([
-      [10, function(){ obs.style.opacity = '0'; obs2.style.opacity = '1'; placer(obs2, 150, 20, 0.12); placer(cour, 150, 160, 1); d.vers(150, 160, 0); placer(obs, 225, 20, 0.12); }],
-      [150, function(){ placer(obs2, 150, 160, 1.1, 1200); obs.style.opacity = '1'; placer(obs, 225, 160, 1.1, 1700); }],
-      [550, function(){ d.vers(150, 140, 0); d.appuie(true); d.vers(230, 140, 300); }],
-      [280, function(){ d.appuie(false); placer(cour, 225, 160, 1, 160); U.son('pas'); }],
-      [650, function(){ d.vers(225, 150, 0); d.appuie(true); d.vers(225, 90, 300); }],
-      [280, function(){ d.appuie(false); placer(cour, 225, 112, 1, 200); U.son('pas'); }],
-      [380, function(){ placer(cour, 225, 160, 1, 220); obs2.style.opacity = '0'; }],
-      [500, function(){ obs.style.opacity = '0'; }]
-    ], 400);
-  },
   jouer: function(el, p, fin){
     var P = Partie(fin);
     var hud = creerHud(el);
     hud.el.classList.add('mja-hud-course');
-    /* variante : params.fuyard = 'chien' (le petit chien noir et blanc), params.decor = 'foret' ; sinon, comme avant */
+    /* variante : params.fuyard = 'chien' (le petit chien noir et blanc), params.decor = 'foret' ; sinon, la silhouette sur la route */
     var CHIEN = p.fuyard === 'chien', FORET = p.decor === 'foret';
     var TX = CHIEN ? {raccourci:'👀 Il prend un raccourci !', aie:'Aïe ! Il s\'éloigne…', perdue:'💨 Il s\'échappe…', attrapee:'🙌 Attrapé !', tAttrapee:'attrapé', tPerdue:'perdu',
         rate:'Le petit chien a disparu entre les arbres…', gagne:'Tu as rattrapé le petit chien !'}
@@ -7673,24 +8005,20 @@ MJ.enregistrer('poursuite', {
     el.appendChild(terrain);
     var id = nid('po');
     terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id, FORET ? 'foret' : '') +
-      '<g class="mja-bords"></g><g class="mja-tirets"></g><g class="mja-sol-obs"></g>' +
-      '<g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-58" text-anchor="middle">!</text></g>' +
+      '<g class="mja-bords"></g><g class="mja-tirets"></g><g class="mja-loin"></g>' +
+      '<g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-74" text-anchor="middle">!</text></g>' +
       '<g class="mja-obstacles"></g>' +
-      '<g class="mja-coureur"><ellipse class="mja-ombre-c" cx="0" cy="6" rx="30" ry="8" fill="#000" opacity=".3"/><g class="mja-coureur-corps">' +
-        '<path class="mja-jambe g" d="M-10,-6 L-14,10" stroke="' + CONTOUR + '" stroke-width="9" stroke-linecap="round"/><path class="mja-jambe d" d="M10,-6 L14,10" stroke="' + CONTOUR + '" stroke-width="9" stroke-linecap="round"/>' +
-        '<path d="M-26,-12 C-28,-44 -18,-62 0,-64 C18,-62 28,-44 26,-12 C14,-6 -14,-6 -26,-12 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="5"/>' +
-        '<path d="M-18,-58 C-18,-80 18,-80 18,-58 C12,-52 -12,-52 -18,-58 Z" fill="#3c9a62" stroke="' + CONTOUR + '" stroke-width="5"/>' +
-        '<path d="M-6,-40 L6,-40 L4,-18 L-4,-18 Z" fill="#8a5a33" stroke="' + CONTOUR + '" stroke-width="3"/>' +
-        '<path d="M14,-56 L22,-66 M18,-54 L28,-60" stroke="#8ff3ff" stroke-width="3" stroke-linecap="round"/>' +
-        '<g class="mja-etoiles-choc"><path d="M-30,-80 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z M24,-86 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z" fill="#ffe3a3" stroke="' + CONTOUR + '" stroke-width="1.5"/></g>' +
+      '<g class="mja-coureur"><ellipse class="mja-ombre-c" cx="0" cy="3" rx="30" ry="8" fill="#000" opacity=".3"/><g class="mja-coureur-corps">' + coureurSVG('pisteur') +
+        '<g class="mja-etoiles-choc"><path d="M-30,-104 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z M24,-110 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z" fill="#ffe3a3" stroke="' + CONTOUR + '" stroke-width="1.5"/></g>' +
       '</g></g>' +
-      '<g class="mja-conseil" opacity="0"><circle r="20" fill="#14112a" stroke="#8ff3ff" stroke-width="3"/><text class="mja-conseil-t" y="8" text-anchor="middle"></text></g>' +
+      '<g class="mja-conseil" opacity="0"><rect class="mja-conseil-f" x="-60" y="-19" width="120" height="38" rx="19"/><text class="mja-conseil-t" y="7" text-anchor="middle"></text></g>' +
     '</svg>' +
-    '<div class="mja-pad"><button class="mja-pb" data-k="g" type="button" aria-label="À gauche">◀</button><button class="mja-pb" data-k="h" type="button" aria-label="Sauter">⤒</button><button class="mja-pb" data-k="b" type="button" aria-label="Glisser">⤓</button><button class="mja-pb" data-k="d" type="button" aria-label="À droite">▶</button></div>';
+    '<div class="mja-pad"><button class="mja-pb" data-k="g" type="button" aria-label="À gauche">◀</button><button class="mja-pb" data-k="h" type="button" aria-label="Sauter">⤒</button><button class="mja-pb" data-k="b" type="button" aria-label="Se baisser">⤓</button><button class="mja-pb" data-k="d" type="button" aria-label="À droite">▶</button></div>';
     var svg = terrain.querySelector('svg');
     cadrer(P, svg);
-    var gObs = svg.querySelector('.mja-obstacles'), gSol = svg.querySelector('.mja-sol-obs'), gBords = svg.querySelector('.mja-bords'), gTirets = svg.querySelector('.mja-tirets');
-    var coureur = svg.querySelector('.mja-coureur'), corps = svg.querySelector('.mja-coureur-corps'), ombre = svg.querySelector('.mja-ombre-c'), fuyard = svg.querySelector('.mja-fuyard'), conseil = svg.querySelector('.mja-conseil'), conseilT = svg.querySelector('.mja-conseil-t');
+    var gObs = svg.querySelector('.mja-obstacles'), gLoin = svg.querySelector('.mja-loin'), gBords = svg.querySelector('.mja-bords'), gTirets = svg.querySelector('.mja-tirets');
+    var coureur = svg.querySelector('.mja-coureur'), corps = svg.querySelector('.mja-coureur-corps'), ombre = svg.querySelector('.mja-ombre-c'), fuyard = svg.querySelector('.mja-fuyard'), conseil = svg.querySelector('.mja-conseil'), conseilT = svg.querySelector('.mja-conseil-t'), conseilF = svg.querySelector('.mja-conseil-f');
+    var pantin = Pantin(corps.querySelector('.pt'), 'pisteur'), pantinF = CHIEN ? null : Pantin(fuyard.querySelector('.pt'), 'ombre');
 
     /* HUD discret : la rangée des pas (attrapée … perdue) et le compteur sans faute */
     var rangee = hud.badge(''); rangee.className = 'mja-pas-rangee';
@@ -7724,6 +8052,9 @@ MJ.enregistrer('poursuite', {
     /* État */
     var voie = 1, xJ = LANE_B[1], saut = 0, glisse = 0, fini = false, t = 0, vagues = [], prochain = 1.1, nVagues = 0, etat = 'course';
     var choc = 0, invuln = 0, vitesseC = 1, fuyX = 1, fuyCible = 1, fuyChange = 2, pF = 0.38, raccourci = null, finT = 0;
+    /* l'allure : la foulée avance avec la vitesse (accumulée), le baissé et le penché arrivent en douceur */
+    var foulee = 0, fouleeF = 0, baisse = 0, penche = 0, retombe = 0, sautAvant = 0, conseilAff = '';
+    var appris = {bas:0, haut:0, bloc:0}, intro = p.intro ? ['ici', 'saut', 'glisse'] : [];
     function pFcible(){ var f = fixe((pas + p.aDistance) / (p.perdu + p.aDistance), 0, 1); return 0.86 * Math.pow(1 - f, 1.6); }
     pF = pFcible();
     /* Commandes */
@@ -7754,12 +8085,13 @@ MJ.enregistrer('poursuite', {
       if(kk){ action(kk); e.preventDefault(); }
     });
 
-    /* Fabrication des vagues */
-    var BLOCS = ['caisse', 'tonneau', 'foin', 'rocher', 'charrette', 'etal'], BAS1 = ['flaque', 'chien', 'tronc', 'barriere'];
+    /* Fabrication des vagues : les objets naissent au loin (derrière le fuyard), et ce qui est près passe devant */
     function objet(type, voieO, en){
       var o = {type:type, genre:GENRE_P[type], voie:voieO, de:voieO, vers:voieO};
-      o.g = svgNoeud('g', {'class':'mja-obstacle g-' + o.genre + (p.aide ? ' tot' : '')}, (type === 'flaque' || o.genre === 'boost') ? gSol : gObs);
+      o.g = svgNoeud('g', {'class':'mja-obstacle g-' + o.genre + (p.aide ? ' tot' : '') + (type === 'bete' ? ' mja-bete' : '')});
       o.g.innerHTML = (FORET && FORET_P[type]) || OBSTACLES_P[type];
+      o.g.style.opacity = '0';
+      gLoin.insertBefore(o.g, gLoin.firstChild);
       if(en) Object.assign(o, en);
       return o;
     }
@@ -7769,25 +8101,41 @@ MJ.enregistrer('poursuite', {
       for(var i = 0; i < cles.length; i++){ r -= p.poids[cles[i]]; if(r <= 0) return cles[i]; }
       return 'un';
     }
-    function pousser(objs, decale){ nVagues++; vagues.push({p:-(decale || 0), objs:objs, conseil:nVagues <= p.conseils || p.revele, compte:false, vit:objs.some(function(o){ return o.rapide; }) ? 1.7 : 1}); }
+    function pousser(objs, decale, lent){
+      nVagues++;
+      var fam = {};
+      objs.forEach(function(o){ if(o.genre === 'bas' || o.genre === 'haut' || o.genre === 'bloc') fam[o.genre] = 1; });
+      var lecon = Object.keys(fam).some(function(f){ return appris[f] < p.apprendre; });
+      vagues.push({p:-(decale || 0), objs:objs, lecon:lecon, conseil:lecon || nVagues <= p.conseils || p.revele, compte:false, loin:true, dit:'',
+        vit:(objs.some(function(o){ return o.rapide; }) ? 1.7 : 1) * (lent ? 0.8 : 1)});
+    }
+    function rangee3(type){ return [0, 1, 2].map(function(v){ return objet(type, v); }); }
     function lancerVague(){
+      if(intro.length){
+        /* les premières vagues des premiers niveaux : un geste à la fois, un peu plus lentement */
+        var q = intro.shift();
+        if(q === 'ici') pousser([objet(U.choix(BLOCS), voie)], 0, true);
+        else if(q === 'saut') pousser(rangee3(U.choix(SAUTS)), 0, true);
+        else if(q === 'glisse' && p.poids.glisse > 0) pousser(rangee3(U.choix(BAISSES)), 0, true);
+        return true;
+      }
       var genre = choisirGenre(), libre = U.randInt(0, 2), autres = [0, 1, 2].filter(function(v){ return v !== libre; }), objs = [];
       if(genre === 'un') objs.push(objet(U.choix(BLOCS), U.randInt(0, 2)));
       else if(genre === 'deux') autres.forEach(function(v){ objs.push(objet(U.choix(BLOCS), v)); });
-      else if(genre === 'saut'){ var tb = U.choix(['barriere', 'tronc', 'barriere']); [0, 1, 2].forEach(function(v){ objs.push(objet(tb, v)); }); }
-      else if(genre === 'bas1'){ objs.push(objet(U.choix(BAS1), autres[0])); if(Math.random() < 0.5) objs.push(objet(U.choix(BAS1), autres[1])); }
-      else if(genre === 'glisse'){ var tg = Math.random() < .5 ? 'linge' : 'branche'; [0, 1, 2].forEach(function(v){ objs.push(objet(tg, v)); }); }
-      else if(genre === 'poule'){ var de = U.choix([0, 2]); objs.push(objet('poule', de, {de:de, vers:2 - de, mobile:true})); if(Math.random() < 0.4) objs.push(objet(U.choix(BAS1), 1)); }
-      else if(genre === 'mixteS'){ objs.push(objet(U.choix(BLOCS), libre)); autres.forEach(function(v){ objs.push(objet(U.choix(['barriere', 'chien', 'flaque']), v)); }); }
-      else if(genre === 'mixteG'){ objs.push(objet(U.choix(BLOCS), libre)); autres.forEach(function(v){ objs.push(objet('branche', v)); }); }
+      else if(genre === 'saut') objs = rangee3(U.choix(SAUTS));
+      else if(genre === 'bas1'){ objs.push(objet(U.choix(SAUTS), autres[0])); if(Math.random() < 0.5) objs.push(objet(U.choix(SAUTS), autres[1])); }
+      else if(genre === 'glisse') objs = rangee3(U.choix(BAISSES));
+      else if(genre === 'bete'){ var de = U.choix([0, 2]); objs.push(objet('bete', de, {de:de, vers:2 - de, mobile:true})); if(Math.random() < 0.4) objs.push(objet(U.choix(SAUTS), 1)); }
+      else if(genre === 'mixteS'){ objs.push(objet(U.choix(BLOCS), libre)); autres.forEach(function(v){ objs.push(objet(U.choix(SAUTS), v)); }); }
+      else if(genre === 'mixteG'){ objs.push(objet(U.choix(BLOCS), libre)); autres.forEach(function(v){ objs.push(objet(U.choix(BAISSES), v)); }); }
       else if(genre === 'roule') objs.push(objet('roule', U.randInt(0, 2), {rapide:1.7}));
-      else if(genre === 'triple'){ autres.forEach(function(v){ objs.push(objet(U.choix(BLOCS), v)); }); pousser(objs); objs = [objet(U.choix(['linge', 'branche']), libre), objet(U.choix(BLOCS), autres[0]), objet(U.choix(BLOCS), autres[1])]; pousser(objs, 0.3); return; }
+      else if(genre === 'triple'){ autres.forEach(function(v){ objs.push(objet(U.choix(BLOCS), v)); }); pousser(objs); objs = [objet(U.choix(BAISSES), libre), objet(U.choix(BLOCS), autres[0]), objet(U.choix(BLOCS), autres[1])]; pousser(objs, 0.3); return; }
       else if(genre === 'enchaine'){
         /* changer vite de couloir… puis sauter */
         var ici = voie, cible = U.choix([0, 1, 2].filter(function(v){ return v !== ici; }));
         [0, 1, 2].filter(function(v){ return v !== cible; }).forEach(function(v){ objs.push(objet(U.choix(BLOCS), v)); });
         pousser(objs);
-        pousser([0, 1, 2].map(function(v){ return objet(v === cible ? U.choix(['barriere', 'chien', 'flaque']) : U.choix(BLOCS), v); }), 0.27);
+        pousser([0, 1, 2].map(function(v){ return objet(v === cible ? U.choix(SAUTS) : U.choix(BLOCS), v); }), 0.27);
         return;
       }
       pousser(objs);
@@ -7797,7 +8145,7 @@ MJ.enregistrer('poursuite', {
       pousser([objet('arche', 0, {arche:cote === 0}), objet('haie', 1), objet('arche', 2, {arche:cote === 2})]);
       vagues[vagues.length - 1].raccourci = true;
     }
-    function texte(s, cls){ var q = pctDans(svg, terrain, xJ, 360); flotter(terrain, q.x, q.y, s, cls); }
+    function texte(s, cls){ var q = pctDans(svg, terrain, xJ, 330); flotter(terrain, q.x, q.y, s, cls); }
     function heurte(o){
       if(invuln > 0) return;
       if(o) o.g.classList.add('casse');
@@ -7832,7 +8180,8 @@ MJ.enregistrer('poursuite', {
       sur.sort(function(a, b){ return Math.abs(a - voie) - Math.abs(b - voie); });
       return sur.length ? (sur[0] < voie ? '◀' : '▶') : '';
     }
-    terrain.mjaEtat = function(){ return {voie:voie, saut:saut, glisse:glisse, pas:pas, sansFaute:sansFaute, etat:etat, nVagues:nVagues, faites:faites, chocs:chocs, invuln:invuln, vagues:vagues.map(function(v){ return {p:v.p, raccourci:!!v.raccourci, objs:v.objs.map(function(o){ return {genre:o.genre, voie:Math.round(o.voie), arche:o.arche}; })}; }), cote:raccourci ? raccourci.cote : -1}; };
+    terrain.mjaEtat = function(){ return {voie:voie, saut:saut, glisse:glisse, pas:pas, sansFaute:sansFaute, etat:etat, nVagues:nVagues, faites:faites, chocs:chocs, invuln:invuln, appris:appris, conseil:conseilAff,
+      vagues:vagues.map(function(v){ return {p:v.p, raccourci:!!v.raccourci, lecon:v.lecon, objs:v.objs.map(function(o){ return {type:o.type, genre:o.genre, voie:Math.round(o.voie), arche:o.arche}; })}; }), cote:raccourci ? raccourci.cote : -1}; };
     var faites = 0, chocs = 0;
 
     var PC = 0.93;
@@ -7864,18 +8213,18 @@ MJ.enregistrer('poursuite', {
       }
       if(raccourci){ raccourci.t += dt; if(raccourci.t > 1.1 && !raccourci.lance){ raccourci.lance = true; lancerRaccourci(); } }
       else if(t > fuyChange){ fuyChange = t + U.rand(1.2, 2.6); fuyCible = U.randInt(0, 2); }
-      fuyX += (fuyCible - fuyX) * Math.min(1, dt * 5);
+      fuyX += (fuyCible - fuyX) * Math.min(1, dt * 4);
       /* vagues : sans fin, jusqu'à l'attraper ou la perdre */
       if(etat === 'course' && !raccourci){
         prochain -= dt * V;
-        if(prochain <= 0){ lancerVague(); prochain = p.intervalle * U.rand(0.85, 1.2); }
+        if(prochain <= 0){ var doux = lancerVague(); prochain = p.intervalle * (doux ? 1.75 : U.rand(0.85, 1.2)); }
       }
       /* décor */
       arbres.forEach(function(a){
         a.p += dt * V / p.approche * 0.9; if(a.p > 1.25) a.p -= 1.25;
         var pr = projette(a.p), x = 180 + a.cote * (36 + 250 * pr.e * a.loin);
         a.g.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + pr.y.toFixed(1) + ') scale(' + (pr.s * 1.1).toFixed(3) + ')');
-        a.g.style.opacity = a.p < 0.05 ? a.p / 0.05 : 1;
+        a.g.style.opacity = a.p < 0.05 ? (a.p / 0.05).toFixed(2) : '1';
       });
       tirets.forEach(function(tr){
         tr.p += dt * V / p.approche; if(tr.p > 1.2) tr.p -= 1.2;
@@ -7883,37 +8232,56 @@ MJ.enregistrer('poursuite', {
         tr.l.setAttribute('x1', laneX(tr.voie, a.e).toFixed(1)); tr.l.setAttribute('y1', a.y.toFixed(1)); tr.l.setAttribute('x2', laneX(tr.voie, b.e).toFixed(1)); tr.l.setAttribute('y2', b.y.toFixed(1));
         tr.l.setAttribute('stroke-width', (1 + 5 * a.e).toFixed(1));
       });
-      /* coureur */
-      xJ += (LANE_B[voie] - xJ) * Math.min(1, dt * 16);
-      var haut = saut > 0 ? Math.sin(Math.PI * (1 - saut / p.saut)) * 64 : 0;
-      var rebond = saut > 0 || glisse > 0 ? 0 : Math.abs(Math.sin(t * 11 * V)) * 5;
+      /* coureur : la foulée, le saut (genoux repliés), le baissé en douceur, penché dans les virages */
+      foulee += dt * 11 * V;
+      var bC = glisse > 0 ? 1 : 0;
+      baisse += (bC - baisse) * Math.min(1, dt * (bC ? 22 : 12));
+      var u = saut > 0 ? 1 - saut / p.saut : 0, arc = saut > 0 ? Math.sin(Math.PI * u) : 0;
+      var haut = arc * 64, jT = Math.min(1, arc * 1.8);
+      if(sautAvant > 0 && saut <= 0) retombe = 0.16;
+      sautAvant = saut;
+      if(retombe > 0) retombe = Math.max(0, retombe - dt);
+      xJ += (LANE_B[voie] - xJ) * Math.min(1, dt * 14);
+      penche += (fixe((LANE_B[voie] - xJ) * 0.13, -13, 13) - penche) * Math.min(1, dt * 18);
       var avance = etat === 'attrape' ? Math.min(1, finT / 0.9) * 150 : 0;
       coureur.setAttribute('transform', 'translate(' + xJ.toFixed(1) + ',' + (452 - avance).toFixed(1) + ') scale(' + (1 - avance / 400).toFixed(3) + ')');
-      corps.setAttribute('transform', 'translate(0,' + (-haut - rebond).toFixed(1) + ')' + (glisse > 0 ? ' translate(0,8) scale(1.12,.52) rotate(-8)' : '') + (choc > 0 ? ' rotate(' + (Math.sin(t * 30) * 8).toFixed(1) + ')' : ''));
+      corps.setAttribute('transform', 'translate(0,' + (-haut).toFixed(1) + ') rotate(' + (penche + (choc > 0 ? Math.sin(t * 30) * 7 : 0)).toFixed(1) + ')');
+      pantin.poser({ph:foulee, j:jT, b:baisse, l:retombe > 0 ? Math.sin(Math.PI * retombe / 0.16) : 0, t:t, v:V});
       ombre.setAttribute('rx', (30 - haut * 0.2).toFixed(1));
-      coureur.classList.toggle('pas2', Math.sin(t * 11 * V) > 0 && !saut && !glisse);
-      /* silhouette : plus loin = plus petite et plus haut sur la route */
+      ombre.setAttribute('opacity', (0.3 - haut * 0.0018).toFixed(3));
+      /* le fuyard : plus loin = plus petit et plus haut sur la route */
       var prF = projette(Math.max(0, pF));
       var cache = raccourci && raccourci.disparu;
       if(etat !== 'perdue') fuyard.style.opacity = cache ? '0' : '1';
       var xF = etat === 'attrape' ? xJ : laneX(fuyX, prF.e);
-      fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 4 - Math.abs(Math.sin(t * 9)) * 2).toFixed(1) + ') scale(' + (0.55 + prF.s * 1.6).toFixed(3) + ')');
-      if(CHIEN && etat !== 'attrape') animerChien(fuyard, t, V);
+      fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 4).toFixed(1) + ') scale(' + (0.55 + prF.s * 1.6).toFixed(3) + ')');
+      if(etat !== 'attrape'){
+        if(CHIEN) animerChien(fuyard, t, V);
+        else { fouleeF += dt * 12; pantinF.poser({ph:fouleeF, j:0, b:0, l:0, t:t, v:1}); }
+      }
       /* vagues */
       var conseilTxt = '';
       vagues.forEach(function(ev){
         ev.p += dt * V * ev.vit / p.approche;
         if(raccourci && ev.raccourci && !raccourci.disparu && ev.p > pF){ raccourci.disparu = true; fuyard.classList.remove('alerte'); }
+        /* passée devant le fuyard : on la dessine par-dessus lui (et derrière les vagues plus proches) */
+        if(ev.loin && ev.p >= pF){ ev.loin = false; ev.objs.forEach(function(o){ gObs.insertBefore(o.g, gObs.firstChild); }); }
         var pr = projette(Math.max(0, ev.p));
+        var montre = !ev.compte && ev.conseil && ev.p > (ev.lecon || p.aide ? 0.18 : 0.28) && ev.p < PC;
         ev.objs.forEach(function(o){
           if(o.mobile){ var f = lisse(fixe((ev.p - 0.25) / 0.55, 0, 1)); o.voie = o.de + (o.vers - o.de) * f; }
-          var sc = pr.s * (o.genre === 'arche' || o.genre === 'haut' ? 1.05 : 1);
-          o.g.setAttribute('transform', 'translate(' + laneX(o.voie, pr.e).toFixed(1) + ',' + pr.y.toFixed(1) + ') scale(' + (o.type === 'poule' && o.vers < o.de ? -sc : sc).toFixed(3) + ',' + sc.toFixed(3) + ')');
-          o.g.style.opacity = ev.p < 0 ? '0' : (p.aide ? '' : (ev.p < 0.1 ? (ev.p / 0.1 * 0.6).toFixed(2) : ''));
+          var sc = pr.s;
+          o.g.setAttribute('transform', 'translate(' + laneX(o.voie, pr.e).toFixed(1) + ',' + pr.y.toFixed(1) + ') scale(' + (o.type === 'bete' && o.vers < o.de ? -sc : sc).toFixed(3) + ',' + sc.toFixed(3) + ')');
+          var op = ev.p < 0 ? '0' : (ev.p < 0.1 ? (ev.p / 0.1).toFixed(2) : '');
+          if(op !== o.op){ o.op = op; o.g.style.opacity = op; }
+          /* l'obstacle à regarder (celui de ton couloir) est entouré pendant la leçon */
+          var lec = montre && ev.lecon && Math.round(o.voie) === voie;
+          if(lec !== !!o.lec){ o.lec = lec; o.g.classList.toggle('lecon', lec); }
         });
-        if(!ev.compte && ev.conseil && ev.p > (p.aide ? 0.15 : 0.28) && ev.p < PC) conseilTxt = conseilPour(ev) || conseilTxt;
+        if(montre){ var c = conseilPour(ev); if(c){ conseilTxt = c; ev.dit = c; } }
         if(!ev.compte && ev.p >= PC + p.grace && etat === 'course'){
           ev.compte = true;
+          ev.objs.forEach(function(o){ if(o.lec){ o.lec = false; o.g.classList.remove('lecon'); } });
           if(ev.raccourci){
             if(voie === raccourci.cote){ faites++; propre(); texte('Bien vu !', 'ok'); }
             else { chocs++; heurte(voie === 1 ? ev.objs[1] : null); if(voie !== 1) texte('Pas par là !', 'ko'); }
@@ -7929,7 +8297,11 @@ MJ.enregistrer('poursuite', {
               else if(o.genre === 'haut' && glisse <= 0) touche = touche || o;
             });
             if(touche){ if(invuln <= 0){ chocs++; heurte(touche); } }
-            else if(avecObs){ faites++; propre(); }
+            else if(avecObs){
+              faites++; propre();
+              /* une leçon réussie : la famille est apprise une fois de plus */
+              if(ev.lecon && ev.dit){ appris[familleGeste(ev.dit)]++; if(sansFaute > 0) texte('Bravo !', 'ok'); }
+            }
           }
         }
       });
@@ -7937,8 +8309,18 @@ MJ.enregistrer('poursuite', {
         if(ev.p > 1.3){ ev.objs.forEach(function(o){ if(o.g.parentNode) o.g.parentNode.removeChild(o.g); }); return false; }
         return true;
       });
-      if(conseilTxt && etat === 'course'){ conseil.setAttribute('opacity', '1'); conseilT.textContent = conseilTxt; conseil.setAttribute('transform', 'translate(' + xJ.toFixed(1) + ',' + (360 - haut).toFixed(1) + ')'); }
-      else conseil.setAttribute('opacity', '0');
+      /* la bulle : ce qu'il faut faire, au-dessus du coureur */
+      if(conseilTxt && etat === 'course'){
+        if(conseilTxt !== conseilAff){
+          conseilAff = conseilTxt;
+          var tt = GESTE_TXT[conseilTxt] || conseilTxt, w = 30 + tt.length * 11;
+          conseilT.textContent = tt; conseilF.setAttribute('x', (-w / 2).toFixed(0)); conseilF.setAttribute('width', w.toFixed(0));
+          conseil.setAttribute('class', 'mja-conseil c-' + (GESTE_CL[conseilTxt] || 'cote'));
+          conseil.setAttribute('opacity', '1');
+        }
+        var mi = conseilF.getAttribute('width') / 2 + 8;
+        conseil.setAttribute('transform', 'translate(' + fixe(xJ, mi, 360 - mi).toFixed(1) + ',' + (326 - haut + 26 * baisse).toFixed(1) + ')');
+      } else if(conseilAff){ conseilAff = ''; conseil.setAttribute('opacity', '0'); }
     });
     return {arreter: P.arreter};
   }
@@ -21353,7 +21735,7 @@ var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
   traces:function(p){ return p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : 'Suis bien les traces de pas !'; },
-  poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, attrape le chien !' : 'Saute, baisse-toi, attrape-la !'; },
+  poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : 'Saute, baisse-toi, évite : attrape-la !'; },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',
   bulles:'Touche les bulles dans le même ordre !',
@@ -21475,7 +21857,7 @@ var COUREUR = '<g class="rg-jambes"><path class="g" d="M-10,-6 L-14,10" stroke="
 var FUYARD = '<path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-52" r="9" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/>';
 D('poursuite', function(el, prm){
   prm = prm || {};
-  var ART = (MJ.TYPES.poursuite && MJ.TYPES.poursuite.art) || {}, CHIEN = prm.fuyard === 'chien' && ART.chien, FORET = prm.decor === 'foret' && ART.foret;
+  var ART = (MJ.TYPES.poursuite && MJ.TYPES.poursuite.art) || {}, CHIEN = prm.fuyard === 'chien' && ART.chien, FORET = prm.decor === 'foret' && ART.foret, PANT = ART.coureur && ART.Pantin;
   var H = LH, HZ = 150, YR = 390, ER = (YR - HZ) / (H - HZ);
   var LHa = [140.7, 150, 159.3], LB = [37, 150, 263];
   function laneX(l, e){ var a = Math.floor(Math.min(1.999, Math.max(0, l))), b = a + 1, f = l - a; var xa = LHa[a] + (LB[a] - LHa[a]) * e, xb = LHa[b] + (LB[b] - LHa[b]) * e; return xa + (xb - xa) * f; }
@@ -21506,20 +21888,22 @@ D('poursuite', function(el, prm){
     '<path d="M136,' + HZ + ' L164,' + HZ + ' L320,' + H + ' L-20,' + H + ' Z" fill="url(#' + id + 'r)" stroke="' + K + '" stroke-width="2"/>' +
     '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="' + (FORET ? '#c9b48a' : '#e8d7ae') + '" stroke-width="2.5" stroke-dasharray="12 12" fill="none"' + (FORET ? ' opacity=".45"' : '') + '/>' +
     (FORET ? '<g class="rg-arbres">' + [[22, 214, 1], [278, 214, 1], [6, 300, 1.5], [294, 300, 1.5], [40, 176, .7], [260, 176, .7]].map(function(a){ return '<g transform="translate(' + a[0] + ',' + a[1] + ') scale(' + a[2] + ')"><path d="M0,0 L0,-26" stroke="' + K + '" stroke-width="9"/><path d="M0,0 L0,-26" stroke="#5e3f26" stroke-width="5"/><circle cx="0" cy="-44" r="22" fill="#245e3c" stroke="' + K + '" stroke-width="3.5"/><circle cx="-8" cy="-50" r="9" fill="#2f7a4c"/></g>'; }).join('') + '</g>' : '') +
-    '<g class="rg-fuyard">' + (CHIEN ? ART.chien() : FUYARD) + '</g><g class="rg-obs"></g>' +
+    '<g class="rg-fuyard">' + (CHIEN ? ART.chien() : (PANT && ART.silhouette ? ART.silhouette() : FUYARD)) + '</g><g class="rg-obs"></g>' +
     '<ellipse class="rg-ombre" cx="150" cy="' + YR + '" rx="22" ry="5" fill="#000" opacity=".3"/>' +
-    '<g class="rg-coureur">' + COUREUR + '</g>' +
+    '<g class="rg-coureur">' + (PANT ? ART.coureur('pisteur') : COUREUR) + '</g>' +
     '<g class="rg-trace" opacity="0"><path d="" stroke="#8ff3ff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><path d="" fill="#8ff3ff" opacity=".85"/></g>');
   var gObs = $(svg, '.rg-obs'), cour = $(svg, '.rg-coureur'), ombre = $(svg, '.rg-ombre'), fuy = $(svg, '.rg-fuyard'), tir = $(svg, '.rg-tirets');
   var jg = $(svg, '.rg-jambes .g'), jd = $(svg, '.rg-jambes .d'), trace = $(svg, '.rg-trace'), gMain = $(svg, '.rg-main');
-  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = (FORET && FORET[s.o]) || SP[s.o]; gObs.appendChild(g); return g; });
+  /* le coureur du jeu (pantin vu de dos) et la silhouette, quand mj-pisteur-alchi.js les donne */
+  var pant = PANT ? ART.Pantin(cour, 'pisteur') : null, pantF = (PANT && !CHIEN && ART.silhouette) ? ART.Pantin(fuy, 'ombre') : null;
+  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = (FORET && FORET[s.o]) || (ART.route && ART.route[s.o]) || SP[s.o]; gObs.appendChild(g); return g; });
   return boucle(el, P, function(t){
     var i = Math.min(SEG.length - 1, Math.floor(t / DU)), s = SEG[i], t0 = i * DU;
     obs.forEach(function(g, j){
       var u = (t - j * DU) / 1.9;
       if(u < 0 || u > 1.22){ vis(g, 0); return; }
       var e = ER * Math.pow(u, 1.6), sc = .04 + .76 * e / ER, y = HZ + (H - HZ) * e;
-      if(SEG[j].o === 'branche') y += 16 * sc;
+      if(SEG[j].o === 'branche' && !ART.route) y += 16 * sc;
       vis(g, u > 1.1 ? (1.22 - u) / .12 : 1);
       pose(g, laneX(SEG[j].l, e), y, sc);
     });
@@ -21528,12 +21912,19 @@ D('poursuite', function(el, prm){
     if(s.g === 'bas') sy = 1 - .48 * entre(t, t0 + 1.42, t0 + 1.58) * (1 - entre(t, t0 + 2.2, t0 + 2.4));
     if(s.de !== s.a) voie = mix(s.de, s.a, entre(t, t0 + 1.45, t0 + 1.75));
     var x = laneX(voie, ER), course = Math.sin(t * 14), sc = .74;
-    cour.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(YR - 7 + dy + (dy ? 0 : Math.abs(course) * -2)) + ') scale(' + sc + ',' + (sc * sy).toFixed(3) + ')');
+    if(pant){
+      var lean = s.de !== s.a ? (s.a - s.de) * 11 * bosse(t, t0 + 1.45, .32) : 0;
+      cour.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(YR - 4 + dy) + ') scale(' + sc + ') rotate(' + f1(lean) + ')');
+      pant.poser({ph:t * 11, j:dy ? Math.min(1, -dy / 54 * 1.8) : 0, b:(1 - sy) / .48, l:0, t:t, v:1});
+    } else {
+      cour.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(YR - 7 + dy + (dy ? 0 : Math.abs(course) * -2)) + ') scale(' + sc + ',' + (sc * sy).toFixed(3) + ')');
+      jg.setAttribute('transform', dy ? 'rotate(18)' : 'rotate(' + f1(course * 14) + ')');
+      jd.setAttribute('transform', dy ? 'rotate(-18)' : 'rotate(' + f1(-course * 14) + ')');
+    }
     ombre.setAttribute('cx', f1(x)); ombre.setAttribute('rx', f1(22 + dy / 6));
-    jg.setAttribute('transform', dy ? 'rotate(18)' : 'rotate(' + f1(course * 14) + ')');
-    jd.setAttribute('transform', dy ? 'rotate(-18)' : 'rotate(' + f1(-course * 14) + ')');
     pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, CHIEN ? .62 : .5);
     if(CHIEN && ART.animerChien) ART.animerChien(fuy, t, 1);
+    if(pantF) pantF.poser({ph:t * 12, j:0, b:0, l:0, t:t, v:1});
     tir.setAttribute('stroke-dashoffset', f1(-(t * 60) % 24));
     var m = main(t); poserMain(gMain, m.x, m.y, m.p, t, []);
     var g = GESTE[s.g], ut = entre(t, t0 + 1.12, t0 + 1.45), op = (t > t0 + 1.12 && t < t0 + 2) ? .9 * (1 - entre(t, t0 + 1.5, t0 + 2)) : 0;
