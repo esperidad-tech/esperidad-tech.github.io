@@ -4214,6 +4214,16 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-mj.mj-cache::after{content:"⏸️ En pause";position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;
   background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:2px solid #0b1030;box-shadow:0 0 0 2px rgba(255,224,138,.55);font-size:1.15rem;font-weight:700;white-space:nowrap}
 
+/* Le carton qui se vide dans le 📦 du coin (Romain, 5 novembre, 15 h 10) : chaque objet y vole, le compteur monte */
+.at-vol{position:absolute;z-index:99400;width:74px;height:74px;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.at-vol svg{display:block;width:100%;height:100%}
+/* le guidage du tutoriel : le 📦 du coin, puis le meuble à installer dans son panneau (ils brillent eux-mêmes) */
+.at-coin.at-guide-q,.at-res-o.at-guide-q{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1s ease-in-out infinite}
+.at-res-o.at-guide-q{position:relative;z-index:2}
+.at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'✨ Touche !';position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:10px;background:#ffd36a;color:#111;font-weight:900;font-size:.78rem;border:2px solid #24182e;z-index:3}
+.at-coin.at-guide-q::before{left:auto;right:0;transform:none}
+@media (prefers-reduced-motion: reduce){ .at-coin.at-guide-q,.at-res-o.at-guide-q{animation:none} }
+
 /* ==========================================================
    Brumeval v2 — styles du moteur (écrans, fenêtres, jeu)
    ========================================================== */
@@ -5878,6 +5888,9 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lv-arch-partie.plie .b-mi-fleche{transform:rotate(-90deg)}
 .lv .lv-arch li{background:rgba(255,255,255,.55);color:var(--encre)}
 .lv .lv-arch li p{font-weight:600}
+/* 📚 La bibliothèque des plans (Romain, 15 h 05) : de vieux livres sur une étagère, et les plans en menus qui se déplient */
+.lv-etagere{align-self:center;display:block;width:min(260px, 72%);height:auto;filter:drop-shadow(0 3px 0 rgba(53,40,27,.15))}
+.lv-bib-corps{display:flex;flex-direction:column;gap:10px;padding:0 0 10px;color:var(--encre)}
 
 /* ==========================================================
    Brumeval — la cabane du Pisteur et sa garde-robe (cabane.js, garderobe.js)
@@ -6293,8 +6306,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 14:38 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 14:38';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 15:18 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 15:18';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -31952,7 +31965,7 @@ function majDessin(V){
 /* Le contenu changeant : le carton du coin (son nombre), la paillasse (objets reçus), le chaudron (prêt, fioles vides) */
 function analysesEnAttente(V){ return (V.o.analyses || []).filter(function(a){ return !a.fait; }).length; }
 function majFixes(V){
-  var nr = V.etat.reserve.length, rb = V.elReserve && V.elReserve.querySelector('.at-badge');
+  var nr = Math.max(0, V.etat.reserve.length - (V.enVol || 0)), rb = V.elReserve && V.elReserve.querySelector('.at-badge');
   if(rb){ rb.textContent = nr; rb.style.display = nr ? '' : 'none'; }
   majDessin(V);
   var pa = V.parId.pa, att = analysesEnAttente(V);
@@ -32063,7 +32076,8 @@ function elCarton(V, k, i){
 /* Petite main qui montre le premier carton tant que l'atelier est vide */
 function majIndiceCarton(V){
   var m = q(V, '.at-main-indice');
-  var montrer = V.mode === 'ranger' && !ici(V).some(function(o){ var c = catDe(o); return !c.special && o.t !== 'fioles_ingr'; }) && cartonsIci(V).length;
+  /* (pas pendant le guidage du tutoriel, ni quand le 📦 du coin a déjà des objets à installer : c'est lui qu'il faut toucher) */
+  var montrer = V.mode === 'ranger' && !GUIDE && !V.etat.reserve.length && !ici(V).some(function(o){ var c = catDe(o); return !c.special && o.t !== 'fioles_ingr'; }) && cartonsIci(V).length;
   if(!montrer){ if(m) m.remove(); return; }
   if(!m){ m = document.createElement('div'); m.className = 'at-main-indice'; m.textContent = '👆'; V.calque.appendChild(m); }
   var p = POS_CARTONS[0];
@@ -32623,7 +32637,7 @@ function dessinerReserve(V){
     var tv = 'Le carton est vide. Pour y ranger une décoration, garde le doigt dessus, puis glisse-la jusqu\'au carton.';
     corps = '<p class="at-feuille-txt">' + esc(tv) + ' ' + lireBtn(tv) + '</p>';
   } else {
-    var tr = 'Touche une décoration pour la remettre dans la pièce.';
+    var tr = 'Touche un objet pour l\'installer dans la pièce, un par un.';
     corps = '<p class="at-feuille-txt">' + esc(tr) + ' ' + lireBtn(tr) + '</p><div class="at-res-liste">' + l.map(function(x, i){
       return '<button type="button" class="at-res-o" data-res="' + i + '"><span class="at-res-ic">' + svgObjet({t:x.t, st:x.st, v:x.v, on:x.on, cases:x.cases}) + '</span><b>' + esc(catDe(x).nom) + '</b></button>';
     }).join('') + '</div>';
@@ -32638,6 +32652,7 @@ function sortirReserve(V, i){
   if(V.parId[o.id]) o.id = 'o' + (++V.etat.n);
   if(x.on !== undefined) o.on = x.on;
   if(x.cases) o.cases = x.cases;
+  else if(catDe(o).cases) o.cases = catDe(o).cases.map(function(){ return {e:[], i:{}}; });   /* (un meuble rangé sans ses cases : on les lui rend) */
   if(V.salle) o.pc = 1;
   trouverPlace(V, o);
   V.etat.objets.push(o);
@@ -32655,59 +32670,81 @@ function sortirReserve(V, i){
   changer(V);
 }
 
-/* ---------- Ouvrir un carton de meubles : un objet sort à chaque toucher ----------
-   S'il n'y a plus de place pour une décoration, elle va dans le carton du coin (la pièce reste rangée). */
+/* ---------- Ouvrir un carton de meubles : tout va dans le carton du coin 📦 (plus bas, ouvrirCarton) ---------- */
+/* (Romain, 5 novembre, 15 h 10) Toucher un carton le vide d'un coup : tout ce qu'il contient file dans le carton de rangement 📦
+   du coin (une petite animation par objet, le compteur du 📦 monte à chaque arrivée) ; la pièce reste rangée. On pose ensuite
+   les objets soi-même, un par un, en touchant le 📦. Seul ce qui ne se range pas (le chat) s'installe tout de suite dans la pièce.
+   (Le grimoire, le chaudron et la table d'analyse sont déjà dans l'atelier : ils ne sont dans aucun carton.) */
+function poserDuCarton(V, o, ke){
+  trouverPlace(V, o);
+  V.etat.objets.push(o);
+  V.parId[o.id] = o;
+  var d = elObjet(V, o);
+  V.scene.appendChild(d);
+  placerEl(V, o);
+  var p = posObj(V, o), dx = (ke._p[0] - p.x) * V.k, dy = (ke._p[1] - ke._t[1] * ke._s * 0.6 - p.y) * V.k;
+  anim(d, [
+    {transform:'translate(' + dx + 'px,' + dy + 'px) scale(' + p.s * 0.15 + ')', opacity:0},
+    {transform:'translate(' + dx * 0.5 + 'px,' + (dy * 0.5 - 150 * V.k) + 'px) scale(' + p.s * 1.12 + ')', opacity:1, offset:0.5},
+    {transform:'translate(0,0) scale(' + p.s * 1.08 + ',' + p.s * 0.9 + ')', offset:0.85},
+    {transform:'translate(0,0) scale(' + p.s + ')'}
+  ], {duration:720, easing:'ease-out'});
+  if(o.t === 'chat') chatsDemarrer(V);
+}
+/* Un objet qui vole du carton ouvert jusqu'au 📦 du coin ; à l'arrivée, le compteur monte d'un (V.enVol : ceux encore en l'air) */
+function volerVersReserve(V, ke, o, n){
+  var fin = function(){ V.enVol = Math.max(0, (V.enVol || 0) - 1); majFixes(V); if(V.elReserve) anim(V.elReserve, [{transform:'scale(1)'}, {transform:'scale(1.18,.86)', offset:0.4}, {transform:'scale(1)'}], {duration:300}); son(V, 'clic'); };
+  var cible = V.elReserve, rr = V.root && V.root.getBoundingClientRect();
+  if(!cible || !rr || !rr.width){ apres(V, 60 + 170 * n, fin); return; }
+  var a = ke.getBoundingClientRect(), b = cible.getBoundingClientRect();
+  var x0 = a.left + a.width / 2 - rr.left, y0 = a.top + a.height * 0.35 - rr.top, x1 = b.left + b.width / 2 - rr.left, y1 = b.top + b.height / 2 - rr.top;
+  var f = document.createElement('div');
+  f.className = 'at-vol'; f.setAttribute('aria-hidden', 'true');
+  f.innerHTML = svgObjet({t:o.t, st:o.st, v:o.v, on:o.on, cases:o.cases});
+  f.style.left = x0 + 'px'; f.style.top = y0 + 'px';
+  V.root.appendChild(f);
+  var dx = x1 - x0, dy = y1 - y0;
+  var an = anim(f, [
+    {transform:'translate(-50%,-50%) scale(.3)', opacity:0},
+    {transform:'translate(calc(-50% + ' + dx * 0.25 + 'px), calc(-50% + ' + (dy * 0.25 - 120) + 'px)) scale(1.05)', opacity:1, offset:0.35},
+    {transform:'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.35)', opacity:.9}
+  ], {duration:760, delay:170 * n, easing:'ease-in', fill:'both'});
+  var fait = false, fini = function(){ if(fait) return; fait = true; f.remove(); if(!V.arrete) fin(); };
+  if(an){ an.onfinish = fini; an.oncancel = fini; } else apres(V, 60 + 170 * n, fini);
+}
 function ouvrirCarton(V, kid){
   var k = V.etat.cartons.filter(function(x){ return x.id === kid; })[0], ke = V.elK[kid];
   if(!k || !ke || !k.reste.length) return;
   if(!k.ouvert){ k.ouvert = 1; ke.classList.add('at-ouvert-c'); }
   anim(ke, [{transform:'scale(' + ke._s + ')'}, {transform:'scale(' + ke._s * 1.1 + ',' + ke._s * 0.86 + ')', offset:0.3}, {transform:'scale(' + ke._s * 0.96 + ',' + ke._s * 1.06 + ')', offset:0.6}, {transform:'scale(' + ke._s + ')'}], {duration:380});
-  var t = k.reste.shift();
-  if(k.t === 'colis' && V.etat.boutique.indexOf(t) < 0) V.etat.boutique.push(t);
-  var o = creerObjet(V, t);
-  if(k.ch) o.pc = 1;
-  var place = trouverPlace(V, o);
-  if(!place && rangeable(o)){
+  var liste = k.reste.splice(0, k.reste.length), n = 0;
+  liste.forEach(function(t){
+    if(k.t === 'colis' && V.etat.boutique.indexOf(t) < 0) V.etat.boutique.push(t);
+    var o = creerObjet(V, t);
+    if(k.ch) o.pc = 1;
+    if(!rangeable(o)){ poserDuCarton(V, o, ke); return; }
     var item = {id:o.id, t:o.t, st:o.st || 0, v:o.v || 0};
     if(o.on !== undefined) item.on = o.on;
+    if(o.cases) item.cases = o.cases;
     V.etat.reserve.push(item);
-    majFixes(V);
-    anim(V.elReserve, [{transform:'scale(1)'}, {transform:'scale(1.12,.9)', offset:0.4}, {transform:'scale(1)'}], {duration:360});
-    var tp = 'Il n\'y a plus de place : je l\'ai mis dans le carton 📦.';
-    toast(V, '<b>' + (catDe(o).ic || '✨') + ' ➡️ 📦</b> ' + esc(tp), 3600, tp);
-    son(V, 'gain');
-  } else {
-    V.etat.objets.push(o);
-    V.parId[o.id] = o;
-    var d = elObjet(V, o);
-    V.scene.appendChild(d);
-    placerEl(V, o);
-    var p = posObj(V, o), dx = (ke._p[0] - p.x) * V.k, dy = (ke._p[1] - ke._t[1] * ke._s * 0.6 - p.y) * V.k;
-    anim(d, [
-      {transform:'translate(' + dx + 'px,' + dy + 'px) scale(' + p.s * 0.15 + ')', opacity:0},
-      {transform:'translate(' + dx * 0.5 + 'px,' + (dy * 0.5 - 150 * V.k) + 'px) scale(' + p.s * 1.12 + ')', opacity:1, offset:0.5},
-      {transform:'translate(0,0) scale(' + p.s * 1.08 + ',' + p.s * 0.9 + ')', offset:0.85},
-      {transform:'translate(0,0) scale(' + p.s + ')'}
-    ], {duration:720, easing:'ease-out'});
-    son(V, 'gain');
-    if(o.t === 'chat') chatsDemarrer(V);
-  }
-  var reste = ke.querySelector('.at-reste');
-  if(reste) reste.innerHTML = new Array(Math.min(6, k.reste.length) + 1).join('<i></i>');
-  if(!k.reste.length){
-    V.etat.cartons = V.etat.cartons.filter(function(x){ return x !== k; });
-    delete V.elK[kid];
-    anim(ke, [{transform:'scale(' + ke._s + ')', opacity:1}, {transform:'scale(' + ke._s * 1.2 + ',' + ke._s * 0.2 + ')', opacity:0}], {duration:450, delay:250, fill:'forwards', easing:'ease-in'});
-    apres(V, 720, function(){
-      ke.remove();
-      V.etat.cartons.forEach(function(x, i){
-        var e2 = V.elK[x.id];
-        if(!e2) return;
-        var n2 = elCarton(V, x, i);
-        e2.replaceWith(n2);
-      });
+    V.enVol = (V.enVol || 0) + 1;
+    volerVersReserve(V, ke, o, n++);
+  });
+  son(V, 'gain');
+  majFixes(V);
+  if(n){ var tp = 'Tout est dans le carton 📦, en bas à droite : touche-le pour installer tes objets, un par un.'; apres(V, 700 + 170 * n, function(){ toast(V, '<b>📦 ' + n + '</b> ' + esc(tp), 4200, tp); }); }
+  V.etat.cartons = V.etat.cartons.filter(function(x){ return x !== k; });
+  delete V.elK[kid];
+  anim(ke, [{transform:'scale(' + ke._s + ')', opacity:1}, {transform:'scale(' + ke._s * 1.2 + ',' + ke._s * 0.2 + ')', opacity:0}], {duration:450, delay:250, fill:'forwards', easing:'ease-in'});
+  apres(V, 720, function(){
+    ke.remove();
+    V.etat.cartons.forEach(function(x, i){
+      var e2 = V.elK[x.id];
+      if(!e2) return;
+      var n2 = elCarton(V, x, i);
+      e2.replaceWith(n2);
     });
-  }
+  });
   majIndiceCarton(V);
   majLumiere(V);
   changer(V);
@@ -34847,6 +34884,18 @@ function meubleGuide(V){
   });
   return best;
 }
+/* Le guidage 'carton', quand les cartons ont tout mis dans le 📦 (Romain, 15 h 10) et qu'aucun meuble de rangement n'est installé :
+   d'abord le 📦 du coin, puis, son panneau ouvert, un meuble de rangement (tiroirs, placard…). Ils brillent eux-mêmes (at-guide-q) :
+   le rond de la pièce glisse avec elle, eux sont fixes à l'écran. */
+function reserveOuverte(V){ return !!(V.grim && !V.grim.hidden && V.grim.querySelector('.at-f-reserve')); }
+function guideReserve(V){
+  if(!GUIDE || GUIDE.cible !== 'carton' || aRangementSec(V.etat)) return null;
+  var i = -1;
+  V.etat.reserve.some(function(x, k){ var c = CAT[x.t]; if(c && c.cases && !c.verre){ i = k; return true; } return false; });
+  if(i < 0) return null;
+  if(reserveOuverte(V)) return V.grim.querySelector('[data-res="' + i + '"]');
+  return V.elReserve || null;
+}
 /* Les éléments de la pièce que le guidage montre (et qui restent actifs) */
 function guideElements(V){
   if(!GUIDE) return [];
@@ -34856,7 +34905,7 @@ function guideElements(V){
   else if(c === 'grimoire'){ if(V.elO.lu && !grimoireOuvert(V)) l = [V.elO.lu]; }   /* (le grimoire ouvert : le rond est sur ses « ? », pas sur le lutrin caché dessous) */
   else if(c === 'chaudron'){ if(V.elO.ch) l = [V.elO.ch]; }
   else if(c === 'paillasse'){ if(V.elO.pa) l = [V.elO.pa]; }
-  else if(c === 'carton'){ var ks = cartonsIci(V); if(ks.length && V.elK[ks[0].id]) l = [V.elK[ks[0].id]]; }
+  else if(c === 'carton'){ var ks = cartonsIci(V); if(!guideReserve(V) && ks.length && V.elK[ks[0].id]) l = [V.elK[ks[0].id]]; }
   else if(c === 'potion') l = (V.elFl || []).slice();
   return l.filter(Boolean);
 }
@@ -34873,7 +34922,7 @@ function guideAutorise(V, t){
   }
   if(c === 'cueillette' && t.closest('.at-tas')) return true;
   if(c === 'potion' && t.closest('[data-at=potions]')) return true;
-  if(c === 'carton' && t.closest('.at-carton')) return true;
+  if(c === 'carton' && (t.closest('.at-carton') || t.closest('[data-at=reserve]'))) return true;
   return false;
 }
 function pasMaintenant(V){
@@ -34914,7 +34963,7 @@ function guideAppliquer(V, montrer){
   /* (tout ce qu'on guide est dans l'atelier ; un carton peut attendre dans la chambre) */
   var c = GUIDE.cible, s = 0;
   var kd = function(n){ return V.etat.cartons.filter(function(k){ return (k.ch ? 1 : 0) === n; }).length; };
-  if(c === 'carton' && !kd(0) && kd(1)) s = 1;
+  if(c === 'carton' && !guideReserve(V) && !kd(0) && kd(1)) s = 1;
   if(V.salle !== s && V.mode === 'ranger') changerSalle(V, s);
   V.root.classList.add('at-guidage');
   var F = guidePlacer(V);
@@ -34934,7 +34983,9 @@ function grimoireOuvert(V){ return !!(V.grim && !V.grim.hidden && V.grim.querySe
 function guideRafraichir(V){
   if(!V.grim) return;
   if(GUIDE && GUIDE.cible === 'grimoire' && V.calque) guidePlacer(V);
-  [].forEach.call(V.grim.querySelectorAll('.at-guide-q'), function(x){ x.classList.remove('at-guide-q'); });
+  [].forEach.call((V.root || V.grim).querySelectorAll('.at-guide-q'), function(x){ x.classList.remove('at-guide-q'); });
+  var gr = guideReserve(V);
+  if(gr){ gr.classList.add('at-guide-q'); if(V.calque) guidePlacer(V); return; }
   if(!GUIDE || GUIDE.cible !== 'grimoire' || V.grim.querySelector('.at-dicte')) return;
   var ad = aDicter(V), b = ad && V.grim.querySelector('[data-dicter="' + ad.id + '"].a-toi');
   if(b) b.classList.add('at-guide-q');
@@ -34961,7 +35012,14 @@ function guideFait(V, cible){
   var rd = rangerDans;      /* (ranger : fait seulement quand un ingrédient est vraiment rangé) */
   rangerDans = function(V){ var r = rd.apply(this, arguments); if(r > 0) try{ guideFait(V, 'rangement'); }catch(e){} return r; };
   var oc = ouvrirCarton;
-  ouvrirCarton = function(V){ var n = V.etat.objets.length + V.etat.reserve.length, r = oc.apply(this, arguments); if(V.etat.objets.length + V.etat.reserve.length > n) guideFait(V, 'carton'); return r; };
+  ouvrirCarton = function(V){ var n = V.etat.objets.length + V.etat.reserve.length, r = oc.apply(this, arguments); if(V.etat.objets.length + V.etat.reserve.length > n) guideFait(V, 'carton'); else guideRafraichir(V); return r; };
+  /* le 📦 : l'ouvrir ne finit rien (le rond passe sur le meuble à installer) ; en sortir un objet, si */
+  var orv = ouvrirReserve;
+  ouvrirReserve = function(V){ var r = orv.apply(this, arguments); try{ guideRafraichir(V); }catch(e){} return r; };
+  var fg = fermerGrimoire;   /* (le 📦 refermé sans rien choisir : il rebrille) */
+  fermerGrimoire = function(V){ var r = fg.apply(this, arguments); try{ if(GUIDE && GUIDE.cible === 'carton') guideRafraichir(V); }catch(e){} return r; };
+  var sr = sortirReserve;
+  sortirReserve = function(V){ var n = V.etat.objets.length, r = sr.apply(this, arguments); if(V.etat.objets.length > n) try{ guideFait(V, 'carton'); }catch(e){} return r; };
   var mt = majTient;        /* (elle prend un autre ingrédient : le rond va sur un meuble qui lui convient) */
   majTient = function(V){ var r = mt.apply(this, arguments); if(GUIDE && GUIDE.cible === 'rangement') try{ guidePlacer(V); }catch(e){} return r; };
   var gt = glisserTas;
@@ -35199,7 +35257,7 @@ E[1] = {
       {ic:'🐕', m:1, action:true, lieu:'foret', points:['buisson'], t:'Forêt : attrape le petit chien (course-poursuite) → donne le code des poils à l\'Alchimiste.', court:'Forêt : attrape le petit chien ! Ses poils, c\'est pour l\'Alchimiste.', fait:[{vu:'pisteur:foret:buisson'}, {fini:'pisteur:foret:buisson'}]},
       {ic:'🌳', m:2, action:true, lieu:'chene', points:['racines'], t:'Les chemins du Moulin et du Puits sont vides. Ce soir, va au bout du chemin du Vieux Chêne, là où il faisait trop noir pour voir des traces.', court:'Va au bout du chemin du Vieux Chêne, là où il faisait trop noir !',
         fait:[{vu:'pisteur:chene:racines'}, {vu:'pisteur:puits:grille'}, {vu:'pisteur:moulin:roue'}]},
-      {ic:'📜', m:2, t:'Raconte tout au Sage : ce que tu as vu et trouvé (ton fil d\'aventure, dans le Carnet).', court:'Raconte tout au Sage : ce que tu as vu et trouvé.', manuel:true},
+      {ic:'📜', m:2, t:'Raconte tout au Sage : ce que tu as vu et trouvé.', court:'Raconte tout au Sage : ce que tu as vu et trouvé.', manuel:true},
       {piste:true, t:'Ici, pour t\'entraîner, un mini-jeu raté se retente autant que tu veux. Dans les autres enquêtes, tu n\'auras qu\'un seul essai !'},   /* (Romain, 5 novembre, 13 h 19) */
       {libre:true, ic:'🔍', t:'Ensuite, cherche, parle, déduis : trouvez ensemble QUI a pris la Lanterne, et OÙ elle est !'}
     ],
@@ -36188,7 +36246,8 @@ E[2] = {
       note:'Recette de la potion de vérité : ' + D.texteEtapes('verite') + '.'},
     /* Les vieux chemins : Superposer les plans → le détour des bûcherons (un chemin secret, pour le Pisteur seulement : chemins, plus haut).
        Raté deux fois : l'indice partiel suffit, et le code est donné quand même (ouvrePartiel) : le Pisteur doit pouvoir aller au chêne. */
-    {id:'chemins', titre:'Les vieux chemins', ic:'🗺️', mj:'plans', params:{carte:'foret', secret:'chene', passage:'le chemin des bûcherons'}, bouton:'Superposer les vieux chemins',
+    /* rangés DANS « 📚 La bibliothèque des plans » (Romain, 5 novembre, 15 h 05 : « ça fait deux pages pour rien »), dès le début */
+    {id:'chemins', dans:'bibliotheque', titre:'Les vieux chemins', ic:'🗺️', mj:'plans', params:{carte:'foret', secret:'chene', passage:'le chemin des bûcherons'}, bouton:'Superposer les vieux chemins',
       ouvrePartiel:true, partiel:true, donne:'info:detour',
       avant:'Un très vieux plan de la forêt, avec des chemins que plus personne ne prend. Pose-le sur le plan d\'aujourd\'hui : un vieux chemin mène peut-être au Vieux Chêne sans passer devant le garde…',
       t:'Sur le vieux plan, un chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde !',
@@ -38764,7 +38823,8 @@ function decouverteHTML(m){
     /* dit : une phrase dans l'histoire pour dire à qui donner ce code (I.dire, e2.js) ; sinon « nom : donne ce code au … » */
     s += '<div class="b-donne"><p>' + n.ic + ' ' + (dit ? esc(dit) + ' ' + lire(dit) : '<b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td)) + '</p>' + M.codeHTML(M.code(m.code), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
   }
-  if(m.note) s += '<p class="b-note-ajoutee">📒 Noté dans ton carnet</p>';
+  /* (Romain, 5 novembre, 14 h 26 : seul le Carnet du Barde garde ce qu'on apprend, sur le visage des habitants ; les autres n'ont plus d'indices) */
+  if(m.note && M.role() === 'barde') s += '<p class="b-note-ajoutee">📒 Noté dans ton carnet</p>';
   if(m.reessai && M.boutonReessai) s += M.boutonReessai(m);   /* 1er échec d'un mini-jeu : la dernière chance (essais.js) */
   if(m.choix) s += '<div class="b-choix-point">' + m.choix.map(function(c){ return '<button class="btn grand b-aller" data-act="point" data-l="' + esc(c.l) + '" data-id="' + esc(c.id) + '">' + esc(c.t) + '</button>'; }).join('') + '</div>';   /* un choix (A.point, p.choix) */
   return s + '<button class="btn grand' + (m.reessai || m.choix ? ' second' : '') + '" data-act="' + (m.retour ? m.retour : 'fermer') + '"' + (m.retourId ? ' data-id="' + m.retourId + '"' : '') + '>D\'accord</button></div>';
@@ -38916,7 +38976,7 @@ M.reprendreMJ = function(){
 };
 /* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
 var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
-  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'gens-plier':1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'bib-plier':1, 'gens-plier':1,
   sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
   opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
@@ -42664,7 +42724,7 @@ function pagesDuLivre(){
   var P0 = M.P();
   (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans && !(p.moments && !M.momentOk(p.moments) && !(P0 && P0.pages[p.id]))) l.push(p); });
   if(FONDATEURS_VISIBLE) l.push({id:'fondateurs', titre:'Les fondateurs', ic:'🏛️', livre:true});
-  l.push({id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📐', livre:true});
+  l.push({id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📚', livre:true});   /* (un vieux livre, plus une équerre : Romain, 15 h 05) */
   l.push({id:'objets', titre:'Les objets magiques', ic:'🔮', livre:true});
   l.push({id:'codes', titre:'Les codes des moments', ic:'⏭️', livre:true});
   if(!M.sansActions()) l.push({id:'actions', titre:'Donner une action', ic:'💡', livre:true});   /* une enquête sans points d'action : pas de réserve */
@@ -42952,12 +43012,38 @@ var T_OBJETS = 'Ici seront rangés les plans des runes et tous les autres objets
 var T_LANTERNE = 'La Lanterne d\'Or est un objet magique. Tout le monde croit que son pouvoir se limite à allumer les lanternes du village, sur la place de la fontaine.';
 function rangees(E, P, ou){ return (E.pages || []).filter(function(p){ return p.dans === ou && (P.pages[p.id] || !p.besoin || M.besoinOk(p.besoin)); }); }
 function rangee(p, E, P){ return '<section class="lv-rangee"><h3><span aria-hidden="true">' + p.ic + '</span> ' + esc(p.titre) + '</h3>' + generique(p, E, P) + '</section>'; }
-function bibliotheque(E, P){
-  var l = rangees(E, P, 'bibliotheque');
-  return '<div class="lv-rayons" aria-hidden="true">' + ['#c9a06a', '#e3c78f', '#b98a55', '#d8b77c', '#c49a62', '#e8d3a2'].map(function(c, k){ return '<i style="--c:' + c + ';--h:' + (62 + (k * 17) % 26) + '%"></i>'; }).join('') + '</div>' +
-    '<p class="lv-texte">' + esc(T_PLANS) + ' ' + lire(T_PLANS) + '</p>' +
-    (l.length ? l.map(function(p){ return rangee(p, E, P); }).join('') : '<p class="lv-texte lv-rien">' + esc(T_RIEN) + ' ' + lire(T_RIEN) + '</p>');
+/* La bibliothèque des plans (Romain, 5 novembre, 15 h 05) : en haut, de vieux livres sur une étagère (dessin) ;
+   chaque plan rangé est un menu qui se déplie (cadres des missions, fermé au départ, UI.bibOuverts) ;
+   dès qu'il y a un plan, plus de texte d'explication (dans l'enquête 2, les vieux chemins y sont dès le début). */
+function livreSVG(x, w, h, c, bande, penche){
+  var y = 84 - h, t = penche ? ' transform="rotate(' + penche + ' ' + (x + w) + ' 84)"' : '';
+  return '<g' + t + '><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="2.5" fill="' + c + '" stroke="#35281b" stroke-width="2"/>' +
+    '<rect x="' + (x + 3) + '" y="' + (y + 2) + '" width="' + Math.max(3, w * .22) + '" height="' + (h - 4) + '" fill="rgba(255,255,255,.18)"/>' +
+    '<rect x="' + x + '" y="' + (y + 7) + '" width="' + w + '" height="3" fill="' + bande + '"/><rect x="' + x + '" y="' + (y + h - 11) + '" width="' + w + '" height="3" fill="' + bande + '"/>' +
+    '<rect x="' + (x + 4) + '" y="' + (y + h * .36) + '" width="' + (w - 8) + '" height="' + Math.round(h * .2) + '" rx="1.5" fill="#efdcae" stroke="#35281b" stroke-width="1.2"/></g>';
 }
+var ETAGERE = '<svg class="lv-etagere" viewBox="0 0 240 104" role="img" aria-label="De vieux livres sur une étagère">' +
+  livreSVG(22, 20, 62, '#7b2d26', '#d9b15c') + livreSVG(44, 15, 52, '#2f4f3a', '#d9b15c') + livreSVG(61, 24, 68, '#5a3a22', '#c99a48') +
+  livreSVG(87, 17, 57, '#23395b', '#d9b15c') + livreSVG(107, 19, 60, '#8a5a2b', '#e3c27a', 16) +
+  /* une pile de livres couchés, et un vieux plan roulé posé dessus */
+  '<rect x="150" y="71" width="64" height="13" rx="2.5" fill="#6b2a3a" stroke="#35281b" stroke-width="2"/><rect x="150" y="75" width="64" height="2.5" fill="#d9b15c"/>' +
+  '<rect x="155" y="58" width="56" height="13" rx="2.5" fill="#3d5a4a" stroke="#35281b" stroke-width="2"/><rect x="155" y="62" width="56" height="2.5" fill="#d9b15c"/>' +
+  '<rect x="160" y="45" width="48" height="11" rx="5.5" fill="#efdcae" stroke="#35281b" stroke-width="2"/><ellipse cx="160" cy="50.5" rx="4" ry="5.5" fill="#e0c88f" stroke="#35281b" stroke-width="2"/>' +
+  '<path d="M178 45v11M190 45v11" stroke="#b0453a" stroke-width="2.5"/>' +
+  /* la planche et ses équerres */
+  '<rect x="6" y="84" width="228" height="10" rx="2" fill="#7a4a26" stroke="#35281b" stroke-width="2"/><rect x="8" y="85.5" width="224" height="2.5" fill="#a5703f"/>' +
+  '<path d="M32 94h14l-14 10z M194 94h14v10z" fill="#5e3618" stroke="#35281b" stroke-width="2" stroke-linejoin="round"/></svg>';
+function bibliotheque(E, P){
+  var l = rangees(E, P, 'bibliotheque'), O = UI.bibOuverts = UI.bibOuverts || {};
+  if(!l.length) return ETAGERE + '<p class="lv-texte">' + esc(T_PLANS) + ' ' + lire(T_PLANS) + '</p><p class="lv-texte lv-rien">' + esc(T_RIEN) + ' ' + lire(T_RIEN) + '</p>';
+  return ETAGERE + l.map(function(p){
+    var ouvert = !!O[p.id], fait = P.pages[p.id];
+    return '<section class="b-missions lv-arch lv-bib' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="bib-plier" data-id="' + esc(p.id) + '" aria-expanded="' + ouvert + '">' +
+      '<span>' + p.ic + ' ' + esc(p.titre) + '</span>' + (fait ? '<small class="b-mi-compte">✅</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>' +
+      (ouvert ? '<div class="lv-bib-corps">' + generique(p, E, P) + '</div>' : '') + '</section>';
+  }).join('');
+}
+if(M.A) M.A['bib-plier'] = function(el){ var O = UI.bibOuverts = UI.bibOuverts || {}; O[el.dataset.id] = !O[el.dataset.id]; M.son('page'); M.render(); };
 function objetsMagiques(E, P){
   return '<p class="lv-texte">' + esc(T_OBJETS) + ' ' + lire(T_OBJETS) + '</p>' +
     '<figure class="lv-objet">' + lanterneOr() + '<figcaption><b>La Lanterne d\'Or</b><span>' + esc(T_LANTERNE) + ' ' + lire(T_LANTERNE) + '</span></figcaption></figure>' +
@@ -46145,6 +46231,7 @@ function rangerPanneau(){
 function panneauGenant(c){
   if(c === 'bouton' || c === 'brasser' || c === 'rangement') return null;
   if(c === 'grimoire' && q('#atelier-ici .at-grim:not([hidden]) .at-grimoire')) return null;   /* le grimoire ouvert : l'atelier entoure ses « ? » */
+  if(c === 'carton' && q('#atelier-ici .at-grim:not([hidden]) .at-f-reserve')) return null;    /* le 📦 ouvert : l'atelier fait briller le meuble à installer */
   return premier(['#atelier-ici .at-ouvert:not([hidden]) .at-fermer', '#atelier-ici .at-grim:not([hidden]) .at-fermer']);
 }
 function coinLivre(id){
@@ -46154,6 +46241,10 @@ function coinLivre(id){
   if(cible < 0 || cur < 0 || cible === cur) return null;
   var som = ici.querySelector('.lv-sommaire');
   if(som && !som.hidden) return som.querySelector('[data-lv=aller][data-i="' + cible + '"]');
+  /* les deux façons de changer de page (Romain, 5 novembre, 15 h) : une page proche, le coin corné ‹ › ; une page loin (3 pages ou plus),
+     le numéro en bas (« 2 / 9 ») qui montre toutes les pages d'un coup, puis la page dans la liste. Dans l'enquête 1, le Sage tourne
+     d'abord les coins (les habitants, les recettes), puis passe par la liste pour aller aux codes des moments. */
+  if(Math.abs(cible - cur) >= 3) return ici.querySelector('.lv-num');
   return ici.querySelector(cible > cur ? '.lv-coin.d' : '.lv-coin.g');
 }
 var ATELIER_SEL = {
@@ -46231,10 +46322,11 @@ function correspond(d, el){
   return false;
 }
 /* La phrase « 👆 … » : ce qu'il faut toucher */
-var PAGES = {habitants:'Les habitants', recettes:'Les recettes', mystere:'La page blanche', tableau:'Mon tableau d\'enquête', codes:'Les codes des moments', accusation:'L\'accusation'};
+var PAGES = {lettre:'La lettre du maire', archives:'Les archives', habitants:'Les habitants', recettes:'Les recettes', mystere:'La page blanche', tableau:'Mon tableau d\'enquête', codes:'Les codes des moments', accusation:'L\'accusation'};
 var ATELIER_DIT = {
-  carton:'Touche un carton 📦 pour l\'ouvrir, puis pose un meuble dans ton atelier.',
-  cueillette:'Touche les ingrédients posés devant la porte, puis un rangement pour les ranger.',
+  carton:'Touche un carton pour l\'ouvrir : tout ce qu\'il contient file dans le carton 📦, en bas à droite.',   /* (Romain, 15 h 10) */
+  reserve:'Touche le carton 📦, en bas à droite, puis un meuble pour ranger tes ingrédients : il s\'installe dans la pièce.',
+  cueillette:'Touche les ingrédients posés devant la porte : ils se rangent tout seuls dans tes meubles.',   /* (rangement automatique, Romain, 5 novembre, 12 h 31) */
   grimoire:'Ouvre ton grimoire, puis touche chaque « ? » : choisis l\'ingrédient que le Sage te dit, dans l\'ordre.',
   chaudron:'Touche le grand chaudron et suis la recette que le Sage te lit.',
   brasser:'Touche « Préparer » : l\'encre se prépare dans le grand chaudron.',
@@ -46260,7 +46352,11 @@ function dire(d){
     case 'question': return 'Pose tes questions à ' + pn(d.p) + ' : touche-les une par une.';
     case 'cueillir': return 'Touche « 🧺 Chercher »' + ua + '.';
     case 'bonus': return 'Touche « Tenter » : un seul essai !';
-    case 'page': return 'Touche le coin qui brille pour aller à la page « ' + (PAGES[d.id] || d.id) + ' ».';
+    case 'page':
+      var cp = coinLivre(d.id), np = PAGES[d.id] || d.id;
+      if(cp && cp.classList.contains('lv-num')) return 'Touche le numéro de la page, en bas : il montre toutes les pages du livre d\'un coup !';
+      if(cp && cp.closest('.lv-sommaire')) return 'Voici toutes les pages du livre ! Touche « ' + np + ' ».';
+      return 'Touche le coin corné qui brille, en bas : il tourne la page. Va jusqu\'à « ' + np + ' ».';
     case 'blanche': return 'Touche la page blanche !';
     case 'fait': return 'Quand c\'est fait, touche « ✔ C\'est fait ».';
     case 'chanter': return q('.bd-trou.choisi') ? 'Touche le mot qui va dans ce trou (c\'est toi qui choisis).' : q('[data-act=bd-chanter]') ? 'Touche « 🎶 Chanter la chanson à Margot ».' : 'Touche un trou, puis le mot qui va dedans.';
@@ -46276,7 +46372,9 @@ function dire(d){
       var dansPanneau = (d.c === 'rangement' || d.c === 'cueillette') && rangerPanneau();
       if(dansPanneau) return dansPanneau.classList.contains('at-fermer') ? 'Ce meuble n\'est pas pour cet ingrédient : touche ✕ pour le fermer. Ensuite : ' + ATELIER_DIT.rangement :
         dansPanneau.hasAttribute('data-vers') || dansPanneau.classList.contains('at-case') ? ATELIER_DIT.rangement : 'Touche un ingrédient, puis le meuble où le ranger.';
-      return (panneauGenant(d.c) ? 'Touche ✕ pour fermer ce panneau. Ensuite : ' : '') + (ATELIER_DIT[d.c] || 'Va dans ton atelier.');
+      var dc = d.c;
+      if(dc === 'carton' && q('#atelier-ici .at-coin.at-guide-q, #atelier-ici .at-res-o.at-guide-q')) dc = 'reserve';   /* tout est dans le 📦 : on y installe un meuble */
+      return (panneauGenant(d.c) ? 'Touche ✕ pour fermer ce panneau. Ensuite : ' : '') + (ATELIER_DIT[dc] || 'Va dans ton atelier.');
   }
   return '';
 }
@@ -46315,8 +46413,10 @@ function guide(){
     if(LIBRES[m.type]){
       G.libre = true; G.d = {k:'modal'};
       var b = SANS_ROND[m.type] ? null : (q('#voile .b-feuille .b-reessai') || premier(['#voile .b-feuille [data-act=question]:not([disabled])', '#voile .b-feuille .btn.grand:not(.second)', '#voile .b-feuille .btn:not(.second):not([disabled])', '#voile .b-feuille .btn']) || (m.type === 'conv' ? q('#voile .b-fermer') : null));
+      /* une conversation finie (plus de question à poser) : le rond sur ✕, pas sur « 📌 Mon tableau » (qui emmenait au tableau de liège sans rien dire) */
+      if(m.type === 'conv' && b && b.classList.contains('bd-tableau')){ var fx = q('#voile .b-fermer'); if(fx){ b = fx; G.d = {k:'fermer'}; } }
       G.els = b ? [b] : [];
-      G.dire = m.type === 'accusation' ? 'Choisissez ensemble !' : b ? 'Touche « ' + String(b.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40) + ' ».' : '';
+      G.dire = m.type === 'accusation' ? 'Choisissez ensemble !' : b && G.d.k === 'fermer' ? 'Tu as posé toutes tes questions : touche ✕ pour fermer.' : b ? 'Touche « ' + String(b.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40) + ' ».' : '';
     } else {
       G.d = {k:'fermer'}; var f = q('#voile .b-fermer'); G.els = f ? [f] : []; G.dire = 'Ce n\'est pas ici maintenant : touche ✕ pour fermer.';
     }
@@ -46330,7 +46430,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'gens-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'bib-plier':1, 'gens-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){
