@@ -185,11 +185,11 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mj-coeur-casse{0%{transform:scale(1.7) rotate(-14deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
 @keyframes mj-coeur-vide{50%{stroke:#ff5b6e;filter:drop-shadow(0 0 4px #ff5b6e)}}
 /* « Plus de cœur : attention, la prochaine erreur fait perdre ! » */
-.mj-plus-coeur{position:absolute;left:50%;top:42%;z-index:45;transform:translateX(-50%);width:min(92%,480px);box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-radius:16px;
-  background:#3a0f1c;border:3px solid #ff5b6e;box-shadow:0 0 0 3px #24182e, 0 0 34px rgba(255,60,80,.65);color:#ffe3e6;font-size:1.08rem;line-height:1.2;pointer-events:none;animation:mj-pc-in .35s ease-out, mj-pc-pouls 1s .35s ease-in-out 3;transition:opacity .45s}
+.mj-plus-coeur{position:absolute;left:50%;top:8px;z-index:45;transform:translateX(-50%);width:min(92%,420px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 12px;border-radius:14px;
+  background:#3a0f1c;border:3px solid #ff5b6e;box-shadow:0 0 0 3px #24182e, 0 0 34px rgba(255,60,80,.65);color:#ffe3e6;font-size:.95rem;line-height:1.2;pointer-events:none;animation:mj-pc-in .35s ease-out, mj-pc-pouls 1s .35s ease-in-out 3;transition:opacity .45s}
 .mj-plus-coeur b{flex:1;text-align:left}
 .mj-plus-coeur .mj-lire-mini{pointer-events:auto;margin:0}
-.mj-pc-ic{font-size:1.9rem;line-height:1}
+.mj-pc-ic{font-size:1.45rem;line-height:1}
 .mj-plus-coeur.part{opacity:0}
 @keyframes mj-pc-in{from{opacity:0;transform:translateX(-50%) scale(.7)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 @keyframes mj-pc-pouls{50%{box-shadow:0 0 0 3px #24182e, 0 0 50px rgba(255,60,80,.95)}}
@@ -3789,8 +3789,13 @@ U.plusDeCoeur = function(el){
     var b = U.html('<div class="mj-plus-coeur" role="alert"><span class="mj-pc-ic">💔</span><b>' + esc(MJ.PLUS_DE_COEUR) + '</b></div>');
     b.appendChild(boutonLire(MJ.PLUS_DE_COEUR));
     hote.appendChild(b);
+    /* juste sous la rangée des cœurs, en haut du jeu (Romain, 5 novembre, 19 h 31 : « ce message cache les obstacles ») */
+    try{
+      var hud = hote.querySelector('[class*="-hud"]'), rh = hud && hud.getBoundingClientRect(), ro = hote.getBoundingClientRect();
+      b.style.top = Math.max(6, Math.round(rh && rh.height ? rh.bottom - ro.top + 6 : 8)) + 'px';
+    }catch(e2){}
     U.vibrer([60, 50, 60]);
-    setTimeout(function(){ b.classList.add('part'); setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 450); }, 4200);
+    setTimeout(function(){ b.classList.add('part'); setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 450); }, 3200);
   }catch(e){}
 };
 MJ.coeurs = U.coeurs; MJ.plusDeCoeur = U.plusDeCoeur;
@@ -7792,7 +7797,8 @@ var FORET_P = {
    t = le temps (la cape), v = la vitesse. Les pieds sont en (0, 0), la tête vers y = −96. */
 var PANTINS = {
   pisteur:{cape:'#2f7a4c', capeC:'#3c9a62', capeS:'#1f5a38', tun:'#3c8a58', tunS:'#2a6a42', pant:'#4a3b52', botte:'#6b4426', botteC:'#8a5a33', sem:'#2e1f18', peau:'#f1c7a0', ceint:'#5e3a1e', bas:-46, carquois:true},
-  ombre:{cape:'#2a2140', capeC:'#3a2f58', capeS:'#16112a', tun:'#2b2342', tunS:'#1d1730', pant:'#1d1730', botte:'#2a2030', botteC:'#3b3046', sem:'#100c18', peau:'#c9a080', ceint:'#3b3046', bas:-16, carquois:false}
+  ombre:{cape:'#2a2140', capeC:'#3a2f58', capeS:'#16112a', tun:'#2b2342', tunS:'#1d1730', pant:'#1d1730', botte:'#2a2030', botteC:'#3b3046', sem:'#100c18', peau:'#c9a080', ceint:'#3b3046', bas:-16, carquois:false,
+    bob:4.6, bras:1.5, vague:4.5, doublure:'#5a2f7a'}   /* la silhouette : elle rebondit plus, ses bras battent, sa grande cape (doublée de violet) flotte derrière elle */
 };
 function coureurSVG(sorte){
   var C = PANTINS[sorte] || PANTINS.pisteur;
@@ -7806,6 +7812,7 @@ function coureurSVG(sorte){
       '<path d="M-16.5,-39 L16.5,-39 L17,-32.5 L-17,-32.5 Z" fill="' + C.ceint + '"' + trait(2.4) + '/>' +
       '<rect x="-21" y="-39" width="10" height="12" rx="3" fill="#8a5a33"' + trait(2.4) + '/><path d="M-21,-35 L-11,-35" stroke="' + CONTOUR + '" stroke-width="1.6"/>' +
       bras('bg') + bras('bd') +
+      (C.doublure ? '<path class="pt-cape2" d="" fill="' + C.doublure + '"' + trait(3.5) + ' stroke-linejoin="round"/>' : '') +
       '<path class="pt-cape" d=""  fill="' + C.cape + '"' + trait(4) + ' stroke-linejoin="round"/>' +
       (C.carquois ? '<path d="M15,-67 L-13,-37" stroke="' + CONTOUR + '" stroke-width="6" stroke-linecap="round"/><path d="M15,-67 L-13,-37" stroke="#8a5a33" stroke-width="3" stroke-linecap="round"/>' +
         '<g transform="translate(7,-57) rotate(32)">' +
@@ -7825,12 +7832,12 @@ function Pantin(g, sorte){
   var q = function(s){ return g.querySelector(s); };
   var J = ['jg', 'jd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-jc'), f:n.querySelector('.pt-jf'), p:n.querySelector('.pt-pied'), s:n.querySelector('.pt-sem')}; });
   var B = ['bg', 'bd'].map(function(c){ var n = q('.pt-' + c); return {c:n.querySelector('.pt-bc'), f:n.querySelector('.pt-bf'), m:n.querySelector('.pt-main')}; });
-  var haut = q('.pt-haut'), tete = q('.pt-tete'), cape = q('.pt-cape');
+  var haut = q('.pt-haut'), tete = q('.pt-tete'), cape = q('.pt-cape'), cape2 = q('.pt-cape2');
   function n1(v){ return (Math.round(v * 10) / 10).toString(); }
   return {poser:function(st){
     var b = st.b || 0, j = st.j || 0, l = st.l || 0, ph = st.ph || 0, t = st.t || 0;
     var amp = (1 - 0.6 * b) * (1 - j);
-    var bob = -Math.abs(Math.sin(ph)) * 3 * amp;
+    var bob = -Math.abs(Math.sin(ph)) * (C.bob || 3) * amp;
     var hy = -32 + 18 * b + bob + 3 * l, roll = Math.sin(ph) * 2.2 * amp;
     for(var k = 0; k < 2; k++){
       var sg = k ? 1 : -1, s = Math.sin(ph + k * Math.PI) * amp, lev = Math.max(0, s), pose = Math.max(0, -s);
@@ -7845,20 +7852,24 @@ function Pantin(g, sorte){
     var sx = 1 + 0.08 * b + 0.05 * l, sy = 1 - 0.38 * b - 0.09 * l;
     haut.setAttribute('transform', 'translate(0,' + n1(hy) + ') rotate(' + n1(roll) + ') scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ') translate(0,32)');
     for(var m = 0; m < 2; m++){
-      var sgn = m ? 1 : -1, a = Math.sin(ph + (m ? 0 : Math.PI)) * amp, ar = Math.max(0, a), av = Math.max(0, -a);
+      var sgn = m ? 1 : -1, a = Math.sin(ph + (m ? 0 : Math.PI)) * amp * (C.bras || 1), ar = Math.max(0, a), av = Math.max(0, -a);
       var ex = sgn * (23 + 2 * ar - 4 * b + 9 * j), ey = -51 - 4 * av + 2 * ar - 15 * j;
       var mx = sgn * (20 + 6 * ar - 5 * b + 15 * j), my = -41 - 12 * av + 3 * ar - 36 * j - 7 * b;
       var db = 'M' + (sgn * 16) + ',-63 Q' + n1(ex) + ',' + n1(ey) + ' ' + n1(mx) + ',' + n1(my);
       B[m].c.setAttribute('d', db); B[m].f.setAttribute('d', db);
       B[m].m.setAttribute('transform', 'translate(' + n1(mx) + ',' + n1(my) + ')');
     }
-    /* la cape : son bas ondule, se soulève pendant le saut */
-    var bas = C.bas - 7 * j + 2 * b, larg = C.bas > -30 ? 1.18 : 1, w = 1.4 + 1.2 * (st.v || 1), pts = [];
-    for(var i = 0; i < 5; i++){ var xx = (-25 + i * 12.5) * (larg + (i % 4 ? 0 : 0.04)); pts.push([xx, bas + w * Math.sin(t * 13 + i * 1.3) + (i === 0 || i === 4 ? -2 : 0)]); }
-    var dc = 'M-12,-74 C-21,-72 -26,-66 -26,-58 L' + n1(pts[0][0]) + ',' + n1(pts[0][1]);
-    for(var p2 = 1; p2 < 5; p2++){ var cx = (pts[p2 - 1][0] + pts[p2][0]) / 2, cy = (pts[p2 - 1][1] + pts[p2][1]) / 2 + 3.5; dc += ' Q' + n1(cx) + ',' + n1(cy) + ' ' + n1(pts[p2][0]) + ',' + n1(pts[p2][1]); }
-    dc += ' L26,-58 C26,-66 21,-72 12,-74 Z';
-    cape.setAttribute('d', dc);
+    /* la cape : son bas ondule, se soulève pendant le saut ; celle de la silhouette s'évase et flotte avec la foulée */
+    var w = (C.vague || 1.4) + 1.2 * (st.v || 1), larg0 = C.bas > -30 ? 1.18 : 1;
+    function capeD(dec, plus){
+      var bas = C.bas - 7 * j + 2 * b + plus + (C.vague ? 3 * Math.sin(ph * 2 + dec) : 0), larg = larg0 + (C.vague ? 0.07 * Math.sin(ph * 2 + 1 + dec) : 0), pts = [];
+      for(var i = 0; i < 5; i++){ var xx = (-25 + i * 12.5) * (larg + (i % 4 ? 0 : 0.05)); pts.push([xx, bas + w * Math.sin(t * 13 + i * 1.3 + dec) + (i === 0 || i === 4 ? -2 : 0)]); }
+      var dc = 'M-12,-74 C-21,-72 -26,-66 -26,-58 L' + n1(pts[0][0]) + ',' + n1(pts[0][1]);
+      for(var p2 = 1; p2 < 5; p2++){ var cx = (pts[p2 - 1][0] + pts[p2][0]) / 2, cy = (pts[p2 - 1][1] + pts[p2][1]) / 2 + 3.5; dc += ' Q' + n1(cx) + ',' + n1(cy) + ' ' + n1(pts[p2][0]) + ',' + n1(pts[p2][1]); }
+      return dc + ' L26,-58 C26,-66 21,-72 12,-74 Z';
+    }
+    cape.setAttribute('d', capeD(0, 0));
+    if(cape2) cape2.setAttribute('d', capeD(0.9, 4));
     /* la tête suit le haut du dos (sans s'écraser), et rentre dans les épaules quand on se baisse */
     var cou = hy + sy * (-70 + 32);
     tete.setAttribute('transform', 'translate(0,' + n1(cou + 70 + 15 * b) + ') rotate(' + n1(roll * 0.6) + ')');
@@ -7897,21 +7908,24 @@ function animerChien(g, t, vite){
   }
   var dt = Math.max(0, Math.min(0.05, t - q.t)); q.t = t; q.ph += dt * (vite || 1) * 15;
   var ph = q.ph, f = function(v){ return (Math.round(v * 10) / 10).toString(); };
-  if(q.c) q.c.setAttribute('transform', 'translate(0,' + f(-Math.abs(Math.sin(ph)) * 2.6) + ')');
+  /* le corps rebondit, s'écrase un peu en touchant le sol et s'étire en l'air, roule d'un côté à l'autre */
+  var air = Math.abs(Math.sin(ph)), sx = 1 + 0.05 * (1 - air) - 0.02, sy = 1 - 0.07 * (1 - air) + 0.03;
+  if(q.c) q.c.setAttribute('transform', 'translate(0,' + f(-air * 3.4) + ') rotate(' + f(3 * Math.sin(ph)) + ') scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')');
   q.ar.forEach(function(a, k){
     if(!a || !a.c) return;
     var s = Math.sin(ph + k * 0.7), lev = Math.max(0, s), sg = k ? 1 : -1;
-    var fx = sg * lev * 1.5, fy = 9 - lev * 7.5, d = 'M0,0 Q' + (sg * 2) + ',' + f(fy * 0.55) + ' ' + f(fx) + ',' + f(fy);
+    var fx = sg * lev * 2.6, fy = 9 - lev * 8.8, d = 'M0,0 Q' + (sg * 2.4) + ',' + f(fy * 0.55) + ' ' + f(fx) + ',' + f(fy);
     a.c.setAttribute('d', d); a.f.setAttribute('d', d);
-    a.p.setAttribute('transform', 'translate(' + f(fx) + ',' + f(fy) + ') scale(' + (1 + 0.22 * lev).toFixed(2) + ')');
-    a.pad.setAttribute('opacity', Math.min(1, lev * 1.5).toFixed(2));
+    a.p.setAttribute('transform', 'translate(' + f(fx) + ',' + f(fy) + ') scale(' + (1 + 0.3 * lev).toFixed(2) + ')');
+    a.pad.setAttribute('opacity', Math.min(1, lev * 1.6).toFixed(2));
   });
-  if(q.a1) q.a1.setAttribute('transform', 'translate(-6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI)) * 3) + ')');
-  if(q.a2) q.a2.setAttribute('transform', 'translate(6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI + 0.6)) * 3) + ')');
-  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + f(-8 + 26 * Math.sin(t * 22)) + ')');
-  if(q.o1) q.o1.setAttribute('transform', 'rotate(' + f(4 + 14 * Math.sin(ph)) + ')');
-  if(q.o2) q.o2.setAttribute('transform', 'rotate(' + f(-4 - 14 * Math.sin(ph)) + ')');
-  if(q.te) q.te.setAttribute('transform', 'translate(0,' + f(-44 + 1.2 * Math.sin(ph * 2)) + ')');
+  if(q.a1) q.a1.setAttribute('transform', 'translate(-6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI)) * 4) + ')');
+  if(q.a2) q.a2.setAttribute('transform', 'translate(6,' + f(-13 - Math.max(0, Math.sin(ph + Math.PI + 0.6)) * 4) + ')');
+  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + f(-6 + 30 * Math.sin(t * 24)) + ')');
+  /* les oreilles volent un peu en retard sur la tête */
+  if(q.o1) q.o1.setAttribute('transform', 'rotate(' + f(6 + 18 * Math.sin(ph - 0.7)) + ')');
+  if(q.o2) q.o2.setAttribute('transform', 'rotate(' + f(-6 - 18 * Math.sin(ph - 0.7)) + ')');
+  if(q.te) q.te.setAttribute('transform', 'translate(0,' + f(-44 + 1.6 * Math.sin(ph * 2 + 0.8)) + ') rotate(' + f(2.5 * Math.sin(ph)) + ')');
 }
 var HZ = 168, BAS = 470;
 function projette(p){ var e = Math.pow(fixe(p, 0, 1.3), 1.7); return {e:e, y:HZ + (BAS - HZ) * e, s:0.07 + 0.93 * e}; }
@@ -8006,7 +8020,7 @@ MJ.enregistrer('poursuite', {
     var id = nid('po');
     terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id, FORET ? 'foret' : '') +
       '<g class="mja-bords"></g><g class="mja-tirets"></g><g class="mja-loin"></g>' +
-      '<g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-74" text-anchor="middle">!</text></g>' +
+      '<g class="mja-poussiere"></g><g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-74" text-anchor="middle">!</text></g>' +
       '<g class="mja-obstacles"></g>' +
       '<g class="mja-coureur"><ellipse class="mja-ombre-c" cx="0" cy="3" rx="30" ry="8" fill="#000" opacity=".3"/><g class="mja-coureur-corps">' + coureurSVG('pisteur') +
         '<g class="mja-etoiles-choc"><path d="M-30,-104 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z M24,-110 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z" fill="#ffe3a3" stroke="' + CONTOUR + '" stroke-width="1.5"/></g>' +
@@ -8019,6 +8033,22 @@ MJ.enregistrer('poursuite', {
     var gObs = svg.querySelector('.mja-obstacles'), gLoin = svg.querySelector('.mja-loin'), gBords = svg.querySelector('.mja-bords'), gTirets = svg.querySelector('.mja-tirets');
     var coureur = svg.querySelector('.mja-coureur'), corps = svg.querySelector('.mja-coureur-corps'), ombre = svg.querySelector('.mja-ombre-c'), fuyard = svg.querySelector('.mja-fuyard'), conseil = svg.querySelector('.mja-conseil'), conseilT = svg.querySelector('.mja-conseil-t'), conseilF = svg.querySelector('.mja-conseil-f');
     var pantin = Pantin(corps.querySelector('.pt'), 'pisteur'), pantinF = CHIEN ? null : Pantin(fuyard.querySelector('.pt'), 'ombre');
+    /* la poussière que soulève le fuyard : huit petits nuages qui servent chacun leur tour */
+    var gPous = svg.querySelector('.mja-poussiere'), nuages = [], nuageT = 0, nuageK = 0;
+    for(var nn = 0; nn < 8; nn++) nuages.push({c:svgNoeud('circle', {r:0, fill:FORET ? '#c9b48a' : '#c49a72', opacity:0}, gPous), age:9});
+    function poussiere(dt, x, y, sc, cache){
+      nuageT -= dt;
+      if(nuageT <= 0 && !cache){
+        nuageT = 0.11; var n = nuages[nuageK++ % nuages.length], cote = nuageK % 2 ? -1 : 1;
+        n.age = 0; n.x = x + cote * 9 * sc; n.y = y - 1; n.sc = sc; n.dx = cote * 6 * sc;
+      }
+      nuages.forEach(function(n){
+        if(n.age > 0.55){ if(n.vu){ n.vu = false; n.c.setAttribute('opacity', 0); } return; }
+        n.age += dt; n.vu = true; var u = n.age / 0.55;
+        n.c.setAttribute('cx', (n.x + n.dx * u).toFixed(1)); n.c.setAttribute('cy', (n.y - 5 * n.sc * u).toFixed(1));
+        n.c.setAttribute('r', ((3 + 7 * u) * n.sc).toFixed(1)); n.c.setAttribute('opacity', (0.42 * (1 - u)).toFixed(2));
+      });
+    }
 
     /* HUD discret : la rangée des pas (attrapée … perdue) et le compteur sans faute */
     var rangee = hud.badge(''); rangee.className = 'mja-pas-rangee';
@@ -8053,7 +8083,7 @@ MJ.enregistrer('poursuite', {
     var voie = 1, xJ = LANE_B[1], saut = 0, glisse = 0, fini = false, t = 0, vagues = [], prochain = 1.1, nVagues = 0, etat = 'course';
     var choc = 0, invuln = 0, vitesseC = 1, fuyX = 1, fuyCible = 1, fuyChange = 2, pF = 0.38, raccourci = null, finT = 0;
     /* l'allure : la foulée avance avec la vitesse (accumulée), le baissé et le penché arrivent en douceur */
-    var foulee = 0, fouleeF = 0, baisse = 0, penche = 0, retombe = 0, sautAvant = 0, conseilAff = '';
+    var foulee = 0, fouleeF = 0, baisse = 0, penche = 0, retombe = 0, sautAvant = 0, conseilAff = '', bute = 0;
     var appris = {bas:0, haut:0, bloc:0}, intro = p.intro ? ['ici', 'saut', 'glisse'] : [];
     function pFcible(){ var f = fixe((pas + p.aDistance) / (p.perdu + p.aDistance), 0, 1); return 0.86 * Math.pow(1 - f, 1.6); }
     pF = pFcible();
@@ -8063,7 +8093,7 @@ MJ.enregistrer('poursuite', {
       if(k === 'g' || k === 'd'){
         var v = fixe(voie + (k === 'g' ? -1 : 1), 0, 2);
         if(v !== voie){ voie = v; U.son('pas'); }
-        else { corps.classList.remove('bute'); void corps.getBoundingClientRect(); corps.classList.add('bute'); }
+        else bute = 0.25;   /* contre le bord du chemin : un petit tremblement (dans la boucle : il garde sa hauteur de saut et sa place) */
       } else if(k === 'h'){ if(saut <= 0 && glisse <= 0){ saut = p.saut; U.son('pas'); } }
       else if(k === 'b'){ if(saut <= 0.12 && glisse <= 0){ saut = 0; glisse = p.saut; U.son('pas'); } }
     }
@@ -8242,22 +8272,28 @@ MJ.enregistrer('poursuite', {
       sautAvant = saut;
       if(retombe > 0) retombe = Math.max(0, retombe - dt);
       xJ += (LANE_B[voie] - xJ) * Math.min(1, dt * 14);
-      penche += (fixe((LANE_B[voie] - xJ) * 0.13, -13, 13) - penche) * Math.min(1, dt * 18);
+      penche += (fixe((LANE_B[voie] - xJ) * 0.07, -7, 7) - penche) * Math.min(1, dt * 14);
+      if(bute > 0) bute = Math.max(0, bute - dt);
       var avance = etat === 'attrape' ? Math.min(1, finT / 0.9) * 150 : 0;
       coureur.setAttribute('transform', 'translate(' + xJ.toFixed(1) + ',' + (452 - avance).toFixed(1) + ') scale(' + (1 - avance / 400).toFixed(3) + ')');
-      corps.setAttribute('transform', 'translate(0,' + (-haut).toFixed(1) + ') rotate(' + (penche + (choc > 0 ? Math.sin(t * 30) * 7 : 0)).toFixed(1) + ')');
+      corps.setAttribute('transform', 'translate(' + (bute > 0 ? Math.sin(bute * 75) * 6 * bute / 0.25 : 0).toFixed(1) + ',' + (-haut).toFixed(1) + ') rotate(' + (penche + (choc > 0 ? Math.sin(t * 30) * 5 * Math.min(1, choc / 0.4) : 0)).toFixed(1) + ')');
       pantin.poser({ph:foulee, j:jT, b:baisse, l:retombe > 0 ? Math.sin(Math.PI * retombe / 0.16) : 0, t:t, v:V});
       ombre.setAttribute('rx', (30 - haut * 0.2).toFixed(1));
       ombre.setAttribute('opacity', (0.3 - haut * 0.0018).toFixed(3));
       /* le fuyard : plus loin = plus petit et plus haut sur la route */
-      var prF = projette(Math.max(0, pF));
+      /* (Romain, 5 novembre, 19 h 31 : « plus il s'éloigne, plus il est petit ») : sa taille suit vraiment la perspective,
+         comme les obstacles (avant, un minimum le gardait presque aussi grand au loin), et sa distance ondule un peu en courant */
+      var pFv = etat === 'course' ? Math.max(0, pF + 0.035 * Math.sin(t * 0.8) + 0.02 * Math.sin(t * 2.1)) : Math.max(0, pF);
+      var prF = projette(pFv), scF = Math.min(CHIEN ? 1.15 : 1.6, 2.15 * prF.s);   /* (tout près, le petit chien reste petit à côté du coureur) */
       var cache = raccourci && raccourci.disparu;
       if(etat !== 'perdue') fuyard.style.opacity = cache ? '0' : '1';
       var xF = etat === 'attrape' ? xJ : laneX(fuyX, prF.e);
-      fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 4).toFixed(1) + ') scale(' + (0.55 + prF.s * 1.6).toFixed(3) + ')');
+      fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 3).toFixed(1) + ') scale(' + scF.toFixed(3) + ')');
       if(etat !== 'attrape'){
         if(CHIEN) animerChien(fuyard, t, V);
-        else { fouleeF += dt * 12; pantinF.poser({ph:fouleeF, j:0, b:0, l:0, t:t, v:1}); }
+        else { fouleeF += dt * 13 * (0.8 + 0.2 * V); pantinF.poser({ph:fouleeF, j:0, b:0, l:0, t:t, v:1.4}); }
+        /* la poussière de ses pas */
+        poussiere(dt, xF, prF.y + 3, scF, cache);
       }
       /* vagues */
       var conseilTxt = '';
