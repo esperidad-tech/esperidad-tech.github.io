@@ -5202,6 +5202,13 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .cn-dossier > li.cn-info{background:rgba(143,243,255,.1);border-left:4px solid #8ff3ff}
 .cn-de{display:inline-block;margin:0 0 3px !important;padding:1px 8px;border-radius:999px;background:rgba(143,243,255,.18);color:#bff8ff;font-size:.75rem;font-weight:800}
 
+/* 🔢 Les codes donnés (Romain, 5 novembre, 14 h 26) : le même cadre que les missions */
+.cn-codes-l{display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.cn-code{padding:8px 10px;border-radius:14px;background:rgba(0,0,0,.18)}
+.cn-code > p{margin:0;flex:1 1 150px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;line-height:1.25}
+.cn-code > p small{flex-basis:100%;color:var(--brume);font-size:.8rem}
+.cn-codes-aide,.cn-codes-vide{margin:0 0 8px}
+
 /* ==========================================================
    Brumeval — le nouveau Barde (barde.js) : l'interrogatoire qui parle,
    les dépositions en scène, les phrases à trous du Carnet, les talents.
@@ -5858,6 +5865,20 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 #app.b-sans-entree .b-objet,#app.b-sans-entree .b-quatre-h,#app.b-sans-entree .b-sym,#app.b-sans-entree .b-reponse,#app.b-sans-entree .b-fin-slide,
 #voile.b-sans-entree .b-fond,#voile.b-sans-entree .b-feuille{animation:none}
 
+/* ✉️ La lettre du maire, 🗄️ les archives (Romain, 5 novembre, 14 h 26) : les cadres des missions, sur le papier du livre */
+.lv-lettre{margin:0}
+.lv-arch-intro,.lv-arch-resume{margin:0;color:var(--encre);line-height:1.4}
+.lv-arch-resume{font-style:italic}
+.lv .lv-arch{margin:0;background:rgba(255,255,255,.45);border-color:rgba(138,106,58,.6);color:var(--encre)}
+.lv .lv-arch .b-mi-plier{color:#5a3d16}
+.lv .lv-arch .b-mi-compte{background:rgba(90,61,22,.14);color:#5a3d16}
+.lv-arch-partie{margin:0 0 8px;padding:2px 10px 6px;border-radius:14px;background:rgba(138,106,58,.12)}
+.lv-arch-partie.plie{padding-bottom:2px}
+.lv-arch-partie .b-mi-plier{font-size:1.1rem}
+.lv-arch-partie.plie .b-mi-fleche{transform:rotate(-90deg)}
+.lv .lv-arch li{background:rgba(255,255,255,.55);color:var(--encre)}
+.lv .lv-arch li p{font-weight:600}
+
 /* ==========================================================
    Brumeval — la cabane du Pisteur et sa garde-robe (cabane.js, garderobe.js)
    Préfixes : .cb- (cabane), .gr- (garde-robe), .pjg- (vêtements dessinés sur le héros)
@@ -6272,8 +6293,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 14:27 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 14:27';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 14:38 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 14:38';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35247,6 +35268,50 @@ E[1] = {
       {id:'pieds', ic:'👣', nom:'Grands pieds', si:[{code:'info:grands_pieds'}]},
       {id:'canne', ic:'🦯', nom:'Canne d\'Odette', si:[{vu:'barde:odette:2'}]}
     ]},
+  /* 🗄️ Les archives de l'enquête (Romain, 5 novembre, 14 h 26) : dans le Grand Livre du Sage, à partir de l'enquête 2 (livre.js).
+     Les grands moments et ce qui peut servir pour la suite, les quatre héros confondus. Quand l'histoire ajoute une graine pour plus tard, l'écrire ici. */
+  archive:{
+    resume:'La nuit avant la Fête des Lanternes, la Lanterne d\'Or a disparu du bureau du maire. C\'est Tim, le petit ramoneur, qui l\'avait prise pour chercher son chien perdu.',
+    parties:[
+      {ic:'📜', titre:'Ce qui s\'est passé', lignes:[
+        ['🐶', 'Pirate, le petit chien noir et blanc de Tim, s\'était perdu dans la forêt.'],
+        ['🏮', 'Il faisait trop noir pour le chercher : Tim a pris la Lanterne d\'Or dans le bureau du maire, à la mairie.'],
+        ['🌙', 'À minuit, Odette a vu de sa fenêtre une petite silhouette sauter de toit en toit, avec une lumière dorée, vers la forêt.'],
+        ['🕳️', 'Sous le Vieux Chêne, Tim a cru entendre Pirate. La terre a cédé : il est tombé tout au fond d\'un énorme trou.'],
+        ['🪢', 'Toute l\'équipe a couru au Vieux Chêne. Gaspard est descendu au bout d\'une corde et a remonté Tim, avec la Lanterne. Pirate est revenu !'],
+        ['🎉', 'Le soir, la Lanterne d\'Or a allumé toutes les lanternes de Brumeval : la fête était sauvée.']
+      ]},
+      {ic:'⭐', titre:'Les grands moments de l\'enquête', lignes:[
+        ['🧶', 'À la fenêtre de la mairie, un fil de laine rouge : un bout d\'écharpe tricotée par Mélusine, couvert de suie de cheminée.'],
+        ['🧣', 'L\'écharpe de Mélusine n\'avait pas un trou : ce n\'était pas elle.'],
+        ['👣', 'Les grosses traces devant la mairie : les bottes de Basile, qui avait planté des fleurs l\'après-midi.'],
+        ['📜', 'Sur la place, l\'affiche du chien perdu : « Prévenez Tim, 7, rue des Lanternes. »'],
+        ['🐾', 'Dans un buisson de la forêt, des poils de chien noirs et blancs, avec une petite feuille de chêne.'],
+        ['🗺️', 'Basile a dessiné le chemin de la forêt, et la page blanche du Grand Livre cachait le plan de la forêt.'],
+        ['🌲', 'Sur les chemins du moulin et du puits, aucune trace d\'enfant : la Lanterne n\'y était pas.']
+      ]},
+      {ic:'🔑', titre:'À retenir pour la suite', lignes:[
+        ['🕳️', 'Un énorme trou sous le Vieux Chêne : personne au village ne sait d\'où il vient.'],
+        ['🌬️', 'Un courant d\'air froid sort d\'entre les racines, comme si un passage s\'enfonçait sous la terre.'],
+        ['🪵', 'Le maire a fait couvrir le trou de grosses planches : « C\'est bien trop dangereux, que personne ne s\'en approche ! »'],
+        ['✊', 'En remontant du trou, Tim gardait l\'autre main bien fermée au fond de sa poche.'],
+        ['🪶', 'La grande plume noire rapportée par le chat d\'Odette, la nuit du vol, sentait la lavande.'],
+        ['🧤', 'Le maire ne quitte jamais ses gants gris, même à l\'intérieur.'],
+        ['🏮', 'Le maire garde la Lanterne d\'Or dans son bureau toute l\'année. Quand on la lui a rendue, il l\'a serrée très fort contre lui.'],
+        ['🔮', 'La Lanterne d\'Or est un objet magique : tout le monde croit qu\'elle sert seulement à allumer les lanternes du village.']
+      ]},
+      {ic:'👥', titre:'Ce qu\'on sait des habitants', lignes:[
+        ['🧒', 'Tim, le petit ramoneur : il habite au 7, rue des Lanternes, avec Pirate. Il part très tôt pour ramoner les cheminées.'],
+        ['👵', 'Odette, la grand-mère aux sept chats : elle ne dort presque jamais et voit tout ce qui se passe au village. Avec sa canne, elle ne grimpe plus.'],
+        ['👨‍🍳', 'Gaspard, le boulanger : il fait son pain toute la nuit. Il a de très grands pieds, et il est fort comme un bœuf.'],
+        ['👩‍🦰', 'Mélusine, la couturière : elle a tricoté des écharpes en laine rouge pour la moitié du village.'],
+        ['👨‍🌾', 'Basile, le jardinier : il connaît la forêt comme sa poche.'],
+        ['🧔', 'Victor, le facteur : il se lève à 5 heures pour trier le courrier.'],
+        ['👩‍🍳', 'Margot, la tavernière : à la taverne, tout le village vient bavarder.'],
+        ['🎩', 'Monsieur Grosbec, le maire : « J\'aurai d\'autres missions pour vous. »']
+      ]}
+    ]
+  },
   /* Le vérificateur refuse tout texte qu'un joueur obtient seul et qui contient un de ces mots, sauf s'il fait partie d'un indice prévu ou s'il a été relu (ok). */
   sensibles:['tim', 'suie', 'ramon', 'petite main', 'petites main', 'ronfle'],
   depart:{alchimiste:{ingr:{eau:2, miel:2}}},
@@ -37746,35 +37811,11 @@ function ongletRole(){
 function ongletCarnet(){
   var P = M.P(), E = M.E(), S = M.S;
   var s = '<section class="b-carnet"><h2>📒 Mon carnet</h2>';
-  /* Onglets par enquête : l'enquête en cours est choisie par défaut */
-  /* (Romain, 5 novembre, 14 h 15) les archives — les enquêtes passées, leur calepin, la lettre du maire — sont au Sage seulement */
-  var sage = M.role() === 'sage';
-  var passees = sage ? M.cle(S.journal || {}).map(Number).filter(function(k){ return k !== P.id && S.journal[k]; }).sort(function(a, b){ return a - b; }) : [];
-  var vue = sage && UI.journalE && UI.journalE.p === P.id && S.journal && S.journal[UI.journalE.e] ? UI.journalE.e : P.id;
-  if(passees.length){
-    s += '<nav class="b-journal-onglets">' + passees.concat([P.id]).map(function(k){ return '<button class="' + (k === vue ? 'on' : '') + '" data-act="journal" data-e="' + k + '">' + (k === P.id ? '🔍 ' : '📖 ') + 'Enquête ' + k + '</button>'; }).join('') + '</nav>';
-  }
-  if(vue !== P.id) return s + journalPasse(S.journal[vue]) + '</section>';
+  /* (Romain, 5 novembre, 14 h 26) pour tout le monde : 🎯 les missions, puis 🔢 les codes donnés (et 👥 les habitants pour le Barde), carnet.js.
+     Plus d'onglets des enquêtes passées, de lettre ni de calepin ici : la lettre du maire et les archives sont des pages du Grand Livre du Sage. */
   if(M.sectionMissions) s += M.sectionMissions(); /* 🎯 Mes missions (mission.js) */
-  /* (Sage : « 💡 Donner une action » a sa page dans le Grand Livre, livre.js) */
-  /* (plus de code pour rejoindre l'enquête suivante, Romain, 4 novembre, 20 h 41 : chacun touche le bouton « Enquête N ») */
-  if(M.role() === 'sage' && (P.moment > 0 || P.resolu)){
-    s += '<div class="b-codes-donnes"><h3>🔢 Les codes que tu as donnés</h3><p class="doux petit">Si un équipier a oublié de taper un code, redonne-le-lui. Ces codes s\'effacent à la fin de l\'enquête.</p>';
-    for(var i = 1; i <= P.moment && i < E.moments.length; i++){
-      var mo = D.MOMENTS[E.moments[i]];
-      s += '<div class="b-code-ligne"><b>' + mo.ic + ' ' + mo.nom + '</b>' + M.codeHTML(M.code('moment:' + i)) + '</div>';
-    }
-    if(P.resolu && P.fin) s += '<div class="b-code-ligne"><b>🏆 Fin de l\'enquête</b>' + M.codeHTML(M.code('victoire:' + Math.min(P.fin.erreurs || 0, 3))) + '</div>';
-    s += '</div>';
-  }
-  /* Le nouveau Carnet (carnet.js) : les habitants qui s'ouvrent, Autres, Mes indices ; plus de « À relire » ni de suspects à rayer */
-  /* la lettre du maire se relit d'ici (elle n'est plus dans le menu ☰) */
+  if(M.carnetCorps) return s + M.carnetCorps() + '</section>';
   var lettre = '<button class="btn second" data-act="relire-lettre">✉️ La lettre du maire</button>';
-  if(M.carnetCorps){
-    s += M.carnetCorps();
-    if(sage) s += '<div class="b-rangee centre">' + lettre + (S.calepin.length ? '<button class="btn second" data-act="calepin">📔 Ouvrir le calepin des enquêtes passées</button>' : '') + '</div>';
-    return s + '</section>';
-  }
   s += '<div class="b-rangee centre">' + lettre + '</div>';
   if(P.revisions && P.revisions.length){
     s += '<div class="b-relire"><h3>🔁 À relire</h3><p class="doux petit">Tu peux relire, réfléchir et changer d\'avis… mais personne ne te donnera la réponse.</p>' +
@@ -38875,7 +38916,7 @@ M.reprendreMJ = function(){
 };
 /* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
 var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
-  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'gens-plier':1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'gens-plier':1,
   sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
   opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
@@ -40026,15 +40067,16 @@ M.sectionMissions = function(){
   var P = M.P(); if(!P || P.etape !== 'jeu') return '';
   var L = M.etapesMission(); if(!L.length) return '';
   var Mi = etat();
-  if(Mi.nonLus > 0) Mi.plie = false;   /* une nouvelle mission : la liste se déplie toute seule */
+  /* fermée au départ, pour tous (Romain, 5 novembre, 14 h 26) : on la déplie soi-même (Mi.plie === false : dépliée) */
+  var plie = Mi.plie !== false;
   Mi.nonLus = 0;
   var R = D.ROLES[M.role()];
   /* repliable (Romain, 5 novembre, 12 h 31 : pour tous les rôles) : le titre est un bouton ; replié, on voit combien sont faites */
   var nb = 0, faites = 0;
   L.forEach(function(e, i){ if(e.libre || e.piste) return; nb++; if(Mi.faits[i] || Mi.coches[i]) faites++; });
-  var s = '<section class="b-missions' + (Mi.plie ? ' plie' : '') + '" style="--c:' + R.c + '"><h3><button type="button" class="b-mi-plier" data-act="missions-plier" aria-expanded="' + !Mi.plie + '">' +
+  var s = '<section class="b-missions' + (plie ? ' plie' : '') + '" style="--c:' + R.c + '"><h3><button type="button" class="b-mi-plier" data-act="missions-plier" aria-expanded="' + !plie + '">' +
     '<span>🎯 Mes missions</span>' + (nb ? '<small class="b-mi-compte">' + faites + ' / ' + nb + ' ✅</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
-  if(Mi.plie) return s + '</section>';
+  if(plie) return s + '</section>';
   s += '<ul>';
   L.forEach(function(e, i){
     var fait = !!Mi.faits[i], coche = !!Mi.coches[i];
@@ -40084,7 +40126,7 @@ if(M.A){
     M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render();
   };
   M.A['mission-fait'] = function(el){ M.A['mission-coche'](el); };   /* ancien bouton « C'est fait » */
-  M.A['missions-plier'] = function(){ var P = M.P(); if(!P) return; var Mi = etat(); Mi.plie = !Mi.plie; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
+  M.A['missions-plier'] = function(){ var P = M.P(); if(!P) return; var Mi = etat(); Mi.plie = Mi.plie === false; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
 }
 })();
 
@@ -41056,40 +41098,63 @@ function titreRev(r){
   if(r.type === 'mensonge') return (r.titre || 'Repérer le mensonge') + (r.nom ? ' · ' + r.nom : (r.qui && D.PNJ[r.qui] ? ' · ' + D.PNJ[r.qui].court : ''));
   return r.titre || 'À relire';
 }
+/* ---------- 🔢 Les codes donnés (Romain, 5 novembre, 14 h 26) ----------
+   Pour tout le monde, sous les missions, repliés au départ (P.codesOuvert) : chaque code que cette tablette a eu à dire
+   (P.objets : les objets et les « _code » trouvés ; les potions données ; pour le Sage, les codes des moments et de la fin).
+   Classe b-codes-donnes : un rappel, pas un nouveau code (tools/tuto.py). */
+function pourQui(code){
+  var d = null; try{ d = M.destinataire(code); }catch(e){}
+  if(Array.isArray(d)) return d.map(function(r){ return D.ROLES[r] ? D.ROLES[r].ic + ' ' + D.ROLES[r].le : ''; }).join(' ou ');
+  if(D.ROLES[d]) return D.ROLES[d].ic + ' ' + D.ROLES[d].le;
+  return '👥 toute l\'équipe';
+}
+function codesDonnes(E, P){
+  var l = [], vus = {};
+  function aj(code, n){
+    if(!code || vus[code]) return; vus[code] = 1;
+    try{ n = n || M.nomCode(code); }catch(e){ return; }
+    if(n) l.push({code:code, ic:n.ic, nom:n.nom});
+  }
+  if(M.role() === 'sage'){
+    for(var i = 1; i <= P.moment && i < E.moments.length; i++) aj('moment:' + i);
+    if(P.resolu && P.fin) aj('victoire:' + Math.min(P.fin.erreurs || 0, 3), {ic:'🏆', nom:'Fin de l\'enquête'});
+  }
+  M.cle(P.objets || {}).forEach(function(id){ if(P.objets[id]) aj(id.charAt(0) === '_' ? id.slice(1) : 'obj:' + id); });
+  M.cle(P.donnes || {}).forEach(function(k){ if(P.donnes[k] && k.indexOf('pot:') === 0) aj(k); });
+  return l;
+}
+function sectionCodes(E, P){
+  var l = codesDonnes(E, P), ouvert = !!P.codesOuvert;
+  var s = '<section class="b-missions b-codes-donnes cn-codes' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="codes-plier" aria-expanded="' + ouvert + '">' +
+    '<span>🔢 Les codes donnés</span><small class="b-mi-compte">' + l.length + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+  if(!ouvert) return s + '</section>';
+  if(!l.length){ var v = 'Pas encore de code. Chaque code que tu trouves pour l\'équipe se range ici.'; return s + '<p class="doux cn-codes-vide">' + esc(v) + ' ' + M.lireBtn(v) + '</p></section>'; }
+  var aide = 'Si un équipier a oublié de taper un code, redonne-le-lui.';
+  s += '<p class="doux petit cn-codes-aide">' + esc(aide) + ' ' + M.lireBtn(aide) + '</p><div class="cn-codes-l">';
+  l.forEach(function(c){
+    var pour = pourQui(c.code);
+    s += '<div class="b-code-ligne cn-code"><p><span aria-hidden="true">' + c.ic + '</span> <b>' + esc(c.nom) + '</b><small>Pour ' + esc(pour) + '</small></p>' + M.codeHTML(M.code(c.code)) + '</div>';
+  });
+  return s + '</div></section>';
+}
+
+/* Le Carnet (Romain, 5 novembre, 14 h 26) : pour tout le monde, seulement 🎯 les missions (mission.js, au-dessus) et 🔢 les codes donnés ;
+   le Barde a en plus 👥 les habitants. Plus d'indices, de fil d'aventure (Pisteur), de « ce que l'équipe m'a donné » ni d'« Autres ».
+   La lettre du maire et les archives des enquêtes passées sont dans le Grand Livre du Sage (livre.js). */
 M.carnetCorps = function(){
   var E = M.E(), P = M.P(), role = M.role(), UI = M.UI;
+  var s = sectionCodes(E, P);
+  if(role !== 'barde') return s;
   var notesQ = notesDesReponses(E), ouverts = UI.carnetOuverts || {};
-  var s = '';
-  /* Le Pisteur : ses missions (au-dessus), puis son fil d'aventure. Pas de visages ni de suspects. */
-  if(role === 'pisteur'){
-    try{ M.majAventure(); }catch(e){}
-    return filAventure(P);
-  }
-  /* 👥 Les habitants — seulement pour le Barde (Romain : « le Barde est l'informateur des habitants » ;
-     le Sage pilote avec le Grand Livre). Les autres donnent leurs renseignements au Barde par un code. */
-  var avecGens = role === 'barde';
-  var gens = avecGens ? habitants(E, P) : [];
-  /* (Romain, 5 novembre, 14 h 15 : dans le Carnet du Barde, seulement ses missions et les habitants ; plus de « mes talents », de
-     « ce que j'ai entendu », d'indices ni de « ce que l'équipe m'a donné ». Les habitants : repliables comme les missions, fermés au départ) */
-  if(role === 'barde'){
-    if(M.trousBonusBarde) s += M.trousBonusBarde();   /* (la chanson d'une mission bonus en cours, barde.js) */
-    var go = !!P.gensOuvert;
-    s += '<section class="b-missions cn-gens' + (go ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="gens-plier" aria-expanded="' + go + '"><span>👥 Les habitants</span>' +
-      '<small class="b-mi-compte">' + gens.length + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
-    if(!go) return s + '</section>';
-    s += '<div class="cn-liste">';
-    gens.forEach(function(id){
-      var items = dossier(E, P, id, notesQ), ouvert = !!ouverts[id];
-      s += '<div class="cn-pnj' + (ouvert ? ' ouvert' : '') + (items.length ? '' : ' vide') + '">' +
-        '<button type="button" class="cn-tete" data-act="carnet-pnj" data-id="' + id + '" aria-expanded="' + ouvert + '">' +
-        '<span class="cn-por">' + portrait(id) + '</span><span class="cn-noms"><b>' + esc(nom(id)) + '</b><small>' + esc(metier(id)) + '</small></span>' +
-        (items.length ? '<span class="cn-n">💬 ' + items.length + '</span>' : '') + '<span class="cn-fleche" aria-hidden="true">' + (ouvert ? '▴' : '▾') + '</span></button>';
-      if(ouvert) s += '<ul class="cn-dossier">' + (items.length ? items.join('') : '<li class="cn-rien">Rien pour l\'instant.</li>') + '</ul>';
-      s += '</div>';
-    });
-    return s + '</div></section>';
-  }
-  if(avecGens) s += '<section class="cn-gens"><h3>👥 Les habitants</h3><div class="cn-liste">';
+  var gens = habitants(E, P);
+  /* (la chanson d'une mission bonus en cours, barde.js : elle n'apparaît que pendant cette mission) */
+  if(M.trousBonusBarde) s += M.trousBonusBarde();
+  /* 👥 Les habitants : repliables comme les missions, fermés au départ (Romain, 14 h 15) */
+  var go = !!P.gensOuvert;
+  s += '<section class="b-missions cn-gens' + (go ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="gens-plier" aria-expanded="' + go + '"><span>👥 Les habitants</span>' +
+    '<small class="b-mi-compte">' + gens.length + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+  if(!go) return s + '</section>';
+  s += '<div class="cn-liste">';
   gens.forEach(function(id){
     var items = dossier(E, P, id, notesQ), ouvert = !!ouverts[id];
     s += '<div class="cn-pnj' + (ouvert ? ' ouvert' : '') + (items.length ? '' : ' vide') + '">' +
@@ -41099,26 +41164,12 @@ M.carnetCorps = function(){
     if(ouvert) s += '<ul class="cn-dossier">' + (items.length ? items.join('') : '<li class="cn-rien">Rien pour l\'instant.</li>') + '</ul>';
     s += '</div>';
   });
-  if(avecGens) s += '</div></section>';
-  /* 📝 Autres : les mini-jeux relus qui ne sont liés à personne (sans visages : tous les mini-jeux relus, rien ne se perd) */
-  var autres = (P.revisions || []).map(function(r, i){ return {r:r, i:i}; }).filter(function(x){ return !avecGens || (x.r.type !== 'mensonge' && x.r.type !== 'ragots' && x.r.type !== 'depositions'); });
-  if(autres.length) s += '<section class="cn-autres"><h3>📝 Autres</h3><ul class="cn-dossier">' + autres.map(function(x){
-    return '<li class="cn-rev"><div><p class="cn-q">' + (x.r.ic || '🔁') + ' ' + esc(titreRev(x.r)) + '</p>' + (x.r.bilan ? '<p class="cn-bilan">' + esc(x.r.bilan) + '</p>' : '') + '</div>' +
-      '<button class="btn petit second cn-relire" data-act="revoir" data-i="' + x.i + '">🔁 Relire</button></li>';
-  }).join('') + '</ul></section>';
-  /* 📝 Mes indices : les autres notes */
-  var notes = (P.carnet || []).filter(function(n){ return !(role === 'barde' && notesQ[n.t]); });
-  s += '<section class="cn-indices"><h3>📝 Mes indices</h3>';
-  if(!notes.length) s += '<p class="doux">Rien pour l\'instant. Tout ce que tu découvres s\'écrit ici. ' + M.lireBtn('Rien pour l\'instant. Tout ce que tu découvres s\'écrit ici.') + '</p>';
-  else s += '<ul class="b-notes cn-compact">' + notes.slice().reverse().map(function(n){ return '<li><span class="b-ic">' + (n.ic || '📝') + '</span><p>' + esc(n.t) + '</p>' + M.lireBtn(n.t) + '</li>'; }).join('') + '</ul>';
-  s += '</section>';
-  var objs = M.cle(P.recus).filter(function(k){ return P.recus[k]; });
-  if(objs.length) s += '<h3>Ce que l\'équipe m\'a donné</h3><div class="b-recus">' + objs.map(function(k){ var n = M.nomCode(k); return '<span class="b-puce-ingr">' + n.ic + ' ' + esc(n.nom) + '</span>'; }).join('') + '</div>';
-  return s;
+  return s + '</div></section>';
 };
 
 if(M.A){
   M.A['gens-plier'] = function(){ var P = M.P(); if(!P) return; P.gensOuvert = !P.gensOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
+  M.A['codes-plier'] = function(){ var P = M.P(); if(!P) return; P.codesOuvert = !P.codesOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
   M.A['fil-plier'] = function(){ var P = M.P(); if(!P) return; P.filOuvert = !P.filOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
   M.A['carnet-pnj'] = function(el){
     var UI = M.UI; UI.carnetOuverts = UI.carnetOuverts || {};
@@ -42592,10 +42643,10 @@ var DUREE = 480;
 function calme(){ try{ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
 
 /* ---------- Les pages, dans l'ordre du livre ---------- */
-var RANG = {tableau:0, habitants:1, recettes:2, mystere:3, fondateurs:4, carte:5, moulin:5,
-  /* enquête 2 */ lettres:10, livreor:11, blanche:12, archives:13, secret:14, plans:15, nuancier:16,
+var RANG = {tableau:0, lettre:0.5, habitants:1, recettes:2, mystere:3, fondateurs:4, carte:5, moulin:5,
+  /* enquête 2 */ lettres:10, livreor:11, blanche:12, secret:14, plans:15, nuancier:16,
   /* enquête 3 */ plan:10, rapport:11, grille:12, carnet:13, serrure:14,
-  /* toutes les enquêtes */ bibliotheque:80, objets:81,
+  /* toutes les enquêtes */ bibliotheque:80, objets:81, archives:82,
   codes:90, actions:91, accusation:99};
 /* 🏛️ Les fondateurs : cachée pour l'instant (Romain, 4 novembre, 21 h 12 : on la découvrira plus tard, dans les sous-sols).
    Son contenu reste plus bas (HISTOIRE, fondateurs()) : true pour la remettre dans le livre de toutes les enquêtes. */
@@ -42603,6 +42654,9 @@ var FONDATEURS_VISIBLE = false;
 function pagesDuLivre(){
   var E = M.E(), l = [];
   if(M.pageTableau) l.push(M.pageTableau());
+  /* ✉️ la lettre du maire et 🗄️ les archives des enquêtes passées : des pages du livre (Romain, 5 novembre, 14 h 26 ; elles étaient dans le Carnet) */
+  if(E.lettre) l.push({id:'lettre', titre:'La lettre du maire', ic:'✉️', livre:true});
+  if(archivesDe(E).length) l.push({id:'archives', titre:'Les archives', ic:'🗄️', livre:true});
   /* les fondateurs : la page de la saison (plus bas) ; p.dans : une page de l'enquête rangée DANS une page de toutes les enquêtes
      (le plan du moulin dans la bibliothèque des plans, la pierre de Tim dans les objets magiques) */
   /* une page d'un moment seulement (p.moments : 📣 le rassemblement, la nuit) n'est pas dans le livre avant son moment
@@ -42687,6 +42741,8 @@ function contenu(p){
   if(p.tableau) return tete(p) + (M.tableauHTML ? M.tableauHTML() : '');
   if(p.type === 'registre') return tete(p) + registre(E) + (p.donne ? donne(p) : '');   /* (le registre ne donne plus de code au Barde depuis le 5 novembre : les visages sont sur les maisons ; p.donne reste possible) */
   if(p.id === 'recettes') return tete(p) + recettes(E, P);
+  if(p.id === 'lettre' && p.livre) return tete(p) + lettreMaire(E);
+  if(p.id === 'archives' && p.livre) return tete(p) + archives(E);
   if(p.id === 'fondateurs' && p.livre) return tete(p) + fondateurs();
   if(p.id === 'bibliotheque' && p.livre) return tete(p) + bibliotheque(E, P);
   if(p.id === 'objets' && p.livre) return tete(p) + objetsMagiques(E, P);
@@ -42697,6 +42753,57 @@ function contenu(p){
   if(encreRequise(p)) return tete(p) + (P.pages[p.id] ? revele(p) : lettreBlanche(p));
   return tete(p) + generique(p, E, P);
 }
+/* ---------- ✉️ La lettre du maire (celle du début de l'enquête, et son affiche) ---------- */
+function lettreMaire(E){
+  var sg = E.signature || 'Monsieur Grosbec, maire de Brumeval';
+  var s = '<article class="parchemin b-lettre lv-lettre"><p class="b-lettre-date">Brumeval, ' + esc(D.MOMENTS[E.moments[0]].nom.toLowerCase()) + '</p>' +
+    '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(sg) + '</p>' + lire(E.lettre, 'grosbec') + '</article>';
+  if(E.affiche) s += '<article class="parchemin b-lettre b-affiche lv-lettre"><p class="sur-titre centre">📜 ' + esc(E.affiche.titre || 'Affiche') + '</p><p class="centre"><b>' + esc(E.affiche.t) + '</b></p>' +
+    lire((E.affiche.titre ? E.affiche.titre + ' : ' : '') + E.affiche.t, 'grosbec') + '</article>';
+  return s;
+}
+
+/* ---------- 🗄️ Les archives (Romain, 5 novembre, 14 h 26) ----------
+   Le Sage range ce qu'il faut retenir des enquêtes passées (E.archive, dans e1.js, e2.js… : les grands moments, ce qui servira plus tard,
+   les quatre héros confondus). À l'enquête N : les archives des enquêtes 1 à N − 1 (à l'enquête 1, pas de page).
+   Chaque enquête est un dossier qui se déplie (le dernier : déplié au départ) ; dedans, des parties qui se déplient aussi,
+   dans les cadres des missions. UI.archOuverts : ce qui est déplié (le temps de la partie). */
+function archivesDe(E){
+  var l = [];
+  M.cle(window.ENQUETES || {}).map(Number).sort(function(a, b){ return a - b; }).forEach(function(n){
+    var A = window.ENQUETES[n]; if(n < E.id && A && A.archive) l.push(A);
+  });
+  return l;
+}
+function archives(E){
+  var l = archivesDe(E), O = UI.archOuverts = UI.archOuverts || {};
+  var aide = 'Ici, le Sage range ce qu\'il faut retenir des enquêtes passées. Certaines choses serviront plus tard !';
+  var s = '<p class="lv-arch-intro">' + esc(aide) + ' ' + lire(aide) + '</p>';
+  l.forEach(function(A, k){
+    var id = 'e' + A.id, ouvert = O[id] === undefined ? k === l.length - 1 : !!O[id];
+    s += '<section class="b-missions lv-arch' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="arch-plier" data-id="' + id + '" aria-expanded="' + ouvert + '">' +
+      '<span>📁 Enquête ' + A.id + ' · ' + esc(A.titre) + '</span><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+    if(ouvert){
+      if(A.archive.resume) s += '<p class="lv-arch-resume">' + esc(A.archive.resume) + ' ' + lire(A.archive.resume) + '</p>';
+      (A.archive.parties || []).forEach(function(pt, j){
+        var pid = id + ':' + j, po = !!O[pid];
+        s += '<div class="lv-arch-partie' + (po ? '' : ' plie') + '"><button type="button" class="b-mi-plier lv-arch-tete" data-act="arch-plier" data-id="' + pid + '" aria-expanded="' + po + '">' +
+          '<span>' + pt.ic + ' ' + esc(pt.titre) + '</span><small class="b-mi-compte">' + pt.lignes.length + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button>';
+        if(po) s += '<ul>' + pt.lignes.map(function(x){ return '<li><span class="b-mi-ic">' + x[0] + '</span><div class="b-mi-corps"><p>' + esc(x[1]) + '</p></div>' + lire(x[1]) + '</li>'; }).join('') + '</ul>';
+        s += '</div>';
+      });
+    }
+    s += '</section>';
+  });
+  return s;
+}
+if(M.A) M.A['arch-plier'] = function(el){
+  var O = UI.archOuverts = UI.archOuverts || {}, id = el.dataset.id, E = M.E();
+  var dernier = archivesDe(E).length ? 'e' + archivesDe(E).slice(-1)[0].id : '';
+  var avant = O[id] === undefined ? id === dernier : !!O[id];
+  O[id] = !avant; M.son('page'); M.render();
+};
+
 function donne(p){
   var n = M.nomCode(p.donne), td = M.texteDonne(p.donne);
   return '<div class="b-donne"><p>' + n.ic + ' <b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td) + '</p>' + M.codeHTML(M.code(p.donne)) + '</div>';
@@ -46223,7 +46330,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1, 'gens-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'gens-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){
