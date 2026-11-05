@@ -4195,7 +4195,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 /* pendant le guidage : le chat laisse passer le doigt (on touche ce qui est derrière lui), sa bulle se cache */
 .at-guidage .at-t-chat,.at-guidage .at-t-chat svg *{pointer-events:none!important}
 .at-guidage .at-bulle{display:none}
-@media (prefers-reduced-motion: reduce){ .at-guide-anneau,.at-guide-nouveau{animation:none!important} }
+
 /* le même rond que partout ailleurs dans le tutoriel (Romain, 5 novembre, 19 h 39) : pas d'écriteau, il pulse et une onde part de lui */
 .at-guide-nouveau{display:none}
 .at-guide::after{content:'';position:absolute;inset:0;border-radius:50%;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
@@ -4230,7 +4230,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-dicte-i span{font-size:1.7rem;line-height:1}
 .at-dicte-i small{font-weight:700;font-size:.72rem;line-height:1.1;text-align:center}
 .at-dicte-i:active{transform:scale(.94)}
-@media (prefers-reduced-motion: reduce){ .at-ri-q.at-guide-q .at-ri-ic{animation:none} }
+
 
 /* Le chaudron en pause (mj-core.js, Romain, 5 novembre) : la pièce est cachée pendant la préparation (.at-mode-prep),
    alors le chaudron reste là, figé et assombri, avec ⏸️ au milieu ; « ▶️ Reprendre » est dans le rappel du bas (moteur.css) */
@@ -4247,7 +4247,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-res-o.at-guide-q{position:relative;z-index:2}
 /* (plus d'écriteau « Touche ! » : l'onde du rond du tutoriel, la même partout — Romain, 5 novembre, 20 h 16) */
 .at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'';position:absolute;inset:-6px;border-radius:inherit;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:3}
-@media (prefers-reduced-motion: reduce){ .at-coin.at-guide-q,.at-res-o.at-guide-q{animation:none} }
+
 
 /* Le voyage d'un ingrédient jusqu'à son rangement (Romain, 5 novembre, 15 h 58) : lent, pour qu'on le suive des yeux */
 .at-voyage{position:absolute;pointer-events:none;display:flex;align-items:center;gap:2px;padding:4px 9px 4px 6px;border-radius:999px;
@@ -4410,7 +4410,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-guide::after,.hr-talent.hr-dispo::after{content:'';position:absolute;inset:-7px;border-radius:18px;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
 @keyframes b-jaune-pouls{0%,100%{box-shadow:0 0 0 3px rgba(255,211,106,.65), 0 0 12px rgba(255,211,106,.45)}50%{box-shadow:0 0 0 6px rgba(255,211,106,.9), 0 0 26px 6px rgba(255,210,63,.7)}}
 .tu-vise.b-guide::before,.tu-vise.b-guide::after,.tu-vise.hr-dispo::before,.tu-vise.hr-dispo::after{display:none}
-@media (prefers-reduced-motion: reduce){.b-guide::before,.hr-talent.hr-dispo::before{animation:none}.b-guide::after,.hr-talent.hr-dispo::after{display:none}}
+
 .b-et-info{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.08}
 .b-et-info b{font-family:var(--f-titre);font-weight:400;font-size:1.1rem;color:var(--or-pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b-et-info span{font-size:.8rem;color:var(--brume)}
@@ -6459,7 +6459,8 @@ body.hr-plein{overflow:hidden}
 /* La page blanche ratée deux fois : le plan à moitié effacé (livre.js) */
 .lv-revele.partiel{opacity:.55;filter:blur(.5px) saturate(.6)}
 
-@media (prefers-reduced-motion: reduce){ .tu-anneau{animation:none} .tu-onde{display:none} }
+/* (plus de version immobile quand l'appareil demande moins d'animations — économie de batterie, réglage d'accessibilité :
+   Romain, 5 novembre, 23 h 32, « il faut que le bouton soit animé », partout ; c'est la seule chose qui montre où toucher) */
 
 /* Le bandeau du tutoriel, le plus petit possible (Romain, 5 novembre, 23 h 06 : « il prend beaucoup de place ; même l'écran du code,
    on est obligé de descendre ») : deux lignes au plus, les phrases se suivent sur la même ligne, en plus petit ; un cadre fin ;
@@ -6474,6 +6475,22 @@ body.hr-plein{overflow:hidden}
 .tu-but2,.tu-dire{margin-left:.35em}
 .tu-bandeau .tu-lire{min-width:34px;height:32px;font-size:.9rem;margin:0}
 .tu-bandeau .tu-fait,.tu-bandeau .tu-passer{min-height:34px;padding:2px 10px;font-size:.82rem}
+/* Le bouton à toucher bouge lui-même, en plus du rond (Romain, 5 novembre, 23 h 32 : « il faut que le bouton soit animé ») :
+   il grossit un peu au rythme du rond (propriété scale : elle s'ajoute à son transform, elle ne le remplace pas) */
+.tu-respire{animation:tu-respire 1.3s ease-in-out infinite !important}   /* (!important : les pastilles des lieux ont déjà leur petite respiration, trop discrète) */
+@keyframes tu-respire{0%,100%{scale:1}50%{scale:1.07}}
+
+/* le bandeau encore un peu plus petit (Romain, 23 h 35 : « le plus petit possible ») */
+.tu-bandeau{padding:2px 3px 2px 7px}
+.tu-bandeau .tu-lire{min-width:30px;height:28px;font-size:.85rem}
+/* Même quand l'appareil demande moins d'animations (base.css les coupe toutes) : ce qui montre où toucher reste animé */
+@media (prefers-reduced-motion: reduce){
+  .tu-rond .tu-anneau{animation:tu-pulse 1.3s ease-in-out infinite !important}
+  .tu-rond .tu-onde{animation:tu-onde 1.3s ease-out infinite !important}
+  .tu-respire.tu-respire{animation:tu-respire 1.3s ease-in-out infinite !important}
+  .b-guide.b-guide::before,.hr-talent.hr-dispo::before{animation:tu-pulse 1.3s ease-in-out infinite !important}
+  .b-guide.b-guide::after,.hr-talent.hr-dispo::after{animation:tu-onde 1.3s ease-out infinite !important}
+}
 
 </style>
 </head>
@@ -6487,8 +6504,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 23:22 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 23:22';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 23:57 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 23:57';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35954,35 +35971,35 @@ E[1] = {
   tuto:true,
   etapes:{
     pisteur:[
-      {ic:'👣', m:0, action:true, lieu:'mairie', points:['massif'], t:'Mairie : le massif de fleurs. Suis les traces !', court:'Mairie : suis les traces du massif de fleurs !', fait:[{essaye:'pisteur:mairie:massif'}]},
-      {ic:'🪟', m:0, action:true, lieu:'mairie', points:['fenetre'], t:'Mairie : la fenêtre. Tu y trouves un fil → donne son code à l\'Alchimiste.', court:'Mairie : la fenêtre. Ta trouvaille, c\'est pour l\'Alchimiste !', fait:[{vu:'pisteur:mairie:fenetre'}]},
-      {ic:'🏠', m:0, action:true, lieu:'mairie', points:['gouttiere'], t:'Mairie : la gouttière.', court:'Mairie : regarde la gouttière.', fait:[{vu:'pisteur:mairie:gouttiere'}]},
-      {ic:'⛲', m:0, action:true, lieu:'place', points:['fontaine', 'affiche'], t:'Place : la fontaine et le panneau → donne le code de l\'affiche au Barde.', court:'Place : la fontaine, puis le panneau (pour le Barde).',
+      {ic:'👣', m:0, action:true, lieu:'mairie', points:['massif'], t:'Mairie : le massif de fleurs. Suis les traces !', court:'Mairie : suis les traces du massif de fleurs !', histoire:'Des traces de pas toutes fraîches, au pied de la mairie… Suis-les, enquêteur !', fait:[{essaye:'pisteur:mairie:massif'}]},
+      {ic:'🪟', m:0, action:true, lieu:'mairie', points:['fenetre'], t:'Mairie : la fenêtre. Tu y trouves un fil → donne son code à l\'Alchimiste.', court:'Mairie : la fenêtre. Ta trouvaille, c\'est pour l\'Alchimiste !', histoire:'Un détail cloche, à la fenêtre de la mairie… Approche, et ouvre l\'œil !', fait:[{vu:'pisteur:mairie:fenetre'}]},
+      {ic:'🏠', m:0, action:true, lieu:'mairie', points:['gouttiere'], t:'Mairie : la gouttière.', court:'Mairie : regarde la gouttière.', histoire:'Cette gouttière est toute tordue… Et si le voleur était passé par là ?', fait:[{vu:'pisteur:mairie:gouttiere'}]},
+      {ic:'⛲', m:0, action:true, lieu:'place', points:['fontaine', 'affiche'], t:'Place : la fontaine et le panneau → donne le code de l\'affiche au Barde.', court:'Place : la fontaine, puis le panneau (pour le Barde).', histoire:'Sur la place, des empreintes de chien… et une affiche sur le panneau !',
         fait:[{et:[{vu:'pisteur:place:fontaine'}, {vu:'pisteur:place:affiche'}]}]},
-      {ic:'🍞', m:1, action:true, lieu:'boulangerie', points:['sol', 'four'], t:'Boulangerie : regarde le sol et le four → donne le code du sol au Barde.', court:'Boulangerie : le sol (pour le Barde), puis le four.', fait:[{et:[{vu:'pisteur:boulangerie:sol'}, {vu:'pisteur:boulangerie:four'}]}]},
-      {ic:'🗺️', m:1, lieu:'foret', t:'Entre dans la forêt : le Barde peut demander le chemin à Basile, ou le Sage peut trouver un plan → tape leur code dans ton onglet Code 🔢.', court:'Entre dans la forêt avec le plan !',
-        attend:[{code:'info:carte'}, {code:'info:chemin'}], attendT:'Attends le plan de la forêt : le Barde ou le Sage → 🔢 Code.',
+      {ic:'🍞', m:1, action:true, lieu:'boulangerie', points:['sol', 'four'], t:'Boulangerie : regarde le sol et le four → donne le code du sol au Barde.', court:'Boulangerie : le sol (pour le Barde), puis le four.', histoire:'Ça sent le bon pain chaud… Les traces mènent-elles chez Gaspard ?', fait:[{et:[{vu:'pisteur:boulangerie:sol'}, {vu:'pisteur:boulangerie:four'}]}]},
+      {ic:'🗺️', m:1, lieu:'foret', t:'Entre dans la forêt : le Barde peut demander le chemin à Basile, ou le Sage peut trouver un plan → tape leur code dans ton onglet Code 🔢.', court:'Entre dans la forêt avec le plan !', histoire:'Le plan de la forêt ! En route, sous les grands arbres…',
+        attend:[{code:'info:carte'}, {code:'info:chemin'}], attendT:'Les traces filent vers la forêt… Le Barde ou le Sage va t\'en trouver le plan.',
         fait:[{code:'info:carte'}, {code:'info:chemin'}]},
       {ic:'🔀', m:1, action:true, lieu:'foret', points:['carrefour', 'ch_moulin', 'ch_puits', 'ch_chene'], t:'Forêt : le carrefour et les trois chemins (Moulin, Puits, Vieux Chêne).', court:'Forêt : le carrefour, puis les trois chemins.',
         fait:[{et:[{vu:'pisteur:foret:carrefour'}, {vu:'pisteur:foret:ch_moulin'}, {vu:'pisteur:foret:ch_puits'}, {vu:'pisteur:foret:ch_chene'}]}]},
       {ic:'🐕', m:1, action:true, lieu:'foret', points:['buisson'], t:'Forêt : attrape le petit chien (course-poursuite) → donne le code des poils à l\'Alchimiste.', court:'Forêt : attrape le chien ! Ses poils : pour l\'Alchimiste.', fait:[{vu:'pisteur:foret:buisson'}, {fini:'pisteur:foret:buisson'}]},
       {ic:'🌳', m:2, action:true, lieu:'chene', points:['racines'], t:'Les chemins du Moulin et du Puits sont vides. Ce soir, va au bout du chemin du Vieux Chêne, là où il faisait trop noir pour voir des traces.', court:'Va au bout du chemin du Vieux Chêne !',
         fait:[{vu:'pisteur:chene:racines'}, {vu:'pisteur:puits:grille'}, {vu:'pisteur:moulin:roue'}]},
-      {ic:'📜', m:2, t:'Raconte tout au Sage : ce que tu as vu et trouvé.', court:'Raconte au Sage tout ce que tu as trouvé.', manuel:true},
+      {ic:'📜', m:2, t:'Raconte tout au Sage : ce que tu as vu et trouvé.', court:'Raconte au Sage tout ce que tu as trouvé.', histoire:'Le Sage t\'attend : raconte-lui tout ce que tu as découvert !', manuel:true},
       {piste:true, t:'Ici, pour t\'entraîner, un mini-jeu raté se retente autant que tu veux. Dans les autres enquêtes, tu n\'auras qu\'un seul essai !'},   /* (Romain, 5 novembre, 13 h 19) */
       {libre:true, ic:'🔍', t:'Ensuite, cherche, parle, déduis : trouvez ensemble QUI a pris la Lanterne, et OÙ elle est !'}
     ],
     alchimiste:[
-      {ic:'📦', m:0, atelier:'installer', t:'Installe ton atelier : ouvre tes cartons et installe un meuble pour ranger tes ingrédients.', court:'Atelier : ouvre un carton, puis installe un meuble.', fait:[{rangement:1}]},
-      {ic:'🫐', m:0, action:true, lieu:'lisiere', cueillir:true, t:'Va à la lisière de la forêt et rapporte 3 baies de sureau.', court:'Lisière de la forêt : cueille 3 baies de sureau.', fait:[{ingr:{baies:3}}, {potion:'revelatrice'}]},
-      {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice et donne-la au Sage : il a la recette dans son Grand Livre !', court:'Prépare l\'encre avec le Sage, puis donne-la-lui.', fait:[{donne:'pot:revelatrice'}]},
-      {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.',
-        attend:[{code:'obj:fil'}], attendT:'Attends le code du fil : le Pisteur te le donne → 🔢 Code.', fait:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]},
-      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', passer:true, t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.',
-        attend:[{code:'obj:poils'}], attendT:'Attends le code des poils : le Pisteur te le donne → 🔢 Code.', fait:[{analyse:'poils'}, {fini:'alchimiste:analyse:poils'}]},
-      {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.',
-        attend:[{code:'obj:plume'}], attendT:'Attends le code de la plume : le Barde te le donne → 🔢 Code.', fait:[{analyse:'plume'}]},
-      {ic:'📜', m:2, t:'Raconte au Sage ce que tes analyses ont montré.', court:'Raconte au Sage ce que tes analyses ont montré.', manuel:true},
+      {ic:'📦', m:0, atelier:'installer', t:'Installe ton atelier : ouvre tes cartons et installe un meuble pour ranger tes ingrédients.', court:'Atelier : ouvre un carton, puis installe un meuble.', histoire:'Bienvenue dans ton atelier ! Il sent encore la poussière… Déballe tes trésors.', fait:[{rangement:1}]},
+      {ic:'🫐', m:0, action:true, lieu:'lisiere', cueillir:true, t:'Va à la lisière de la forêt et rapporte 3 baies de sureau.', court:'Lisière de la forêt : cueille 3 baies de sureau.', histoire:'L\'encre a besoin de 3 baies de sureau : elles poussent à la lisière.', fait:[{ingr:{baies:3}}, {potion:'revelatrice'}]},
+      {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice et donne-la au Sage : il a la recette dans son Grand Livre !', court:'Prépare l\'encre avec le Sage, puis donne-la-lui.', histoire:'Le Sage connaît la recette de l\'encre révélatrice : prépare-la avec lui !', fait:[{donne:'pot:revelatrice'}]},
+      {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.', histoire:'Un fil de laine rouge, trouvé à la mairie… Sous ta loupe, il va parler !',
+        attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]},
+      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', passer:true, t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Des poils de chien ! Analyse-les, puis raconte tout au Pisteur.',
+        attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}, {fini:'alchimiste:analyse:poils'}]},
+      {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.', histoire:'Une grande plume noire… À qui peut-elle bien appartenir ?',
+        attend:[{code:'obj:plume'}], attendT:'Le Barde rend visite à Odette… Elle lui confiera peut-être un indice.', fait:[{analyse:'plume'}]},
+      {ic:'📜', m:2, t:'Raconte au Sage ce que tes analyses ont montré.', court:'Raconte au Sage ce que tes analyses ont montré.', histoire:'Le Sage t\'attend : raconte-lui ce que tes analyses ont révélé !', manuel:true},
       {piste:true, t:'Pour analyser, compare l\'objet avec les échantillons de ton atelier et trouve vite le signe pareil.'},
       {libre:true, ic:'🔍', t:'Ensuite, analyse ce que l\'équipe te confie, et aide-la à trouver QUI a pris la Lanterne, et OÙ elle est !'}
     ],
@@ -35990,26 +36007,26 @@ E[1] = {
       /* (Romain, 5 novembre, 00 h 14 et 01 h 20 : plus d'adresses à noter, chaque maison montre le visage de son habitant, et plus de code
          du registre ; une astuce garde la place de l'ancienne première étape : les étapes suivantes gardent leur numéro, P.mission) */
       {piste:true, t:'Sur la carte, chaque maison montre le visage de celui qui y habite : touche-la pour frapper à sa porte.'},
-      {ic:'👵', m:0, action:true, pnj:'odette', t:'Frappe chez Odette : touche sa maison sur la carte (son visage est dessus), et pose-lui toutes tes questions. Si elle te donne quelque chose, donne son code à l\'Alchimiste.', court:'Chez Odette : pose tes questions. Son cadeau : pour l\'Alchimiste.',
+      {ic:'👵', m:0, action:true, pnj:'odette', t:'Frappe chez Odette : touche sa maison sur la carte (son visage est dessus), et pose-lui toutes tes questions. Si elle te donne quelque chose, donne son code à l\'Alchimiste.', court:'Chez Odette : pose tes questions. Son cadeau : pour l\'Alchimiste.', histoire:'Odette, la grand-mère aux sept chats, a peut-être vu quelque chose…',
         fait:[{et:[{vu:'barde:odette:1'}, {vu:'barde:odette:2'}, {vu:'barde:odette:3'}]}]},
-      {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui s\'il connaît la forêt → dis son code au Pisteur.', court:'Basile, au potager : le chemin de la forêt (pour le Pisteur).', fait:[{vu:'barde:basile:2'}]},
-      {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.',
+      {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui s\'il connaît la forêt → dis son code au Pisteur.', court:'Basile, au potager : le chemin de la forêt (pour le Pisteur).', histoire:'Basile connaît la forêt comme sa poche : demande-lui le chemin !', fait:[{vu:'barde:basile:2'}]},
+      {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.', histoire:'Mélusine tricote des écharpes… Une écharpe rouge, ça lui dit quelque chose ?',
         fait:[{et:[{vu:'barde:melusine:1'}, {vu:'barde:melusine:2'}]}]},
-      {ic:'🐶', m:1, action:true, pnj:'gaspard', t:'Quand le Pisteur te donne l\'affiche du chien, montre-la à Gaspard, à la boulangerie.', court:'Boulangerie : montre l\'affiche du chien à Gaspard.',
-        attend:[{code:'obj:affiche'}], attendT:'Attends l\'affiche du chien : le Pisteur te la donne → 🔢 Code.', fait:[{vu:'barde:gaspard:1'}]},
-      {ic:'🧔', m:2, action:true, pnj:'victor', t:'Ce soir, Victor le facteur est à la taverne : demande-lui ce qu\'il a vu.', court:'Taverne : demande à Victor ce qu\'il a vu.', fait:[{vu:'barde:victor:1'}]},
-      {ic:'📜', m:2, t:'Raconte au Sage ce que les habitants t\'ont dit.', court:'Raconte au Sage ce que les habitants t\'ont dit.', manuel:true},
+      {ic:'🐶', m:1, action:true, pnj:'gaspard', t:'Quand le Pisteur te donne l\'affiche du chien, montre-la à Gaspard, à la boulangerie.', court:'Boulangerie : montre l\'affiche du chien à Gaspard.', histoire:'L\'affiche du chien perdu ! Gaspard connaît tout le monde : montre-la-lui.',
+        attend:[{code:'obj:affiche'}], attendT:'Le Pisteur a repéré une affiche sur la place… Il va te l\'apporter !', fait:[{vu:'barde:gaspard:1'}]},
+      {ic:'🧔', m:2, action:true, pnj:'victor', t:'Ce soir, Victor le facteur est à la taverne : demande-lui ce qu\'il a vu.', court:'Taverne : demande à Victor ce qu\'il a vu.', histoire:'Ce soir, Victor le facteur traîne à la taverne… Lui, il voit tout !', fait:[{vu:'barde:victor:1'}]},
+      {ic:'📜', m:2, t:'Raconte au Sage ce que les habitants t\'ont dit.', court:'Raconte au Sage ce que les habitants t\'ont dit.', histoire:'Le Sage t\'attend : raconte-lui ce que les villageois t\'ont confié !', manuel:true},
       {piste:true, t:'Pour trouver quelqu\'un, regarde sa tête sur la carte : elle montre où il est en ce moment.'},
       {piste:true, t:'Les autres te donnent des codes 📨 sur les habitants : tape-les, ils s\'écrivent sur le bon visage de ton Carnet.'},
       {libre:true, ic:'🔍', t:'Ensuite, cherche, parle, déduis : trouvez ensemble QUI a pris la Lanterne, et OÙ elle est !'}
     ],
     sage:[
-      {ic:'👥', m:0, livre:'habitants', t:'Lis à voix haute « Les habitants » à toute l\'équipe : qui fait quoi, où chacun habite, et la taille de leurs pieds.', court:'Lis « Les habitants » à l\'équipe (la taille des pieds !).', manuel:true},
-      {ic:'🧪', m:0, livre:'recettes', t:'Lis à l\'Alchimiste la recette de l\'encre révélatrice (page « Les recettes »).', court:'Lis la recette de l\'encre à l\'Alchimiste.', fait:[{lu:'recettes'}]},
-      {ic:'🔭', m:0, action:true, lieu:'mairie', points:['balcon'], t:'Mairie : monte au balcon et regarde les toits.', court:'Mairie : monte au balcon et regarde les toits.', fait:[{vu:'sage:mairie:balcon'}]},
-      {ic:'❔', m:1, livre:'mystere', passer:true, t:'Quand l\'Alchimiste t\'apporte l\'encre, fais parler la page blanche de ton Grand Livre → donne le code du plan au Pisteur.', court:'Page blanche : reconstitue le plan (pour le Pisteur).',
-        attend:[{code:'pot:revelatrice'}], attendT:'Attends l\'encre : l\'Alchimiste la prépare → 🔢 Code.', fait:[{page:'mystere'}]},
-      {ic:'📋', m:2, livre:'tableau', t:'Écoute ce que chacun a trouvé, et barre les innocents dans ton tableau d\'enquête (la première page du Grand Livre).', court:'Écoute chacun, et barre les innocents dans ton tableau.', manuel:true},
+      {ic:'👥', m:0, livre:'habitants', t:'Lis à voix haute « Les habitants » à toute l\'équipe : qui fait quoi, où chacun habite, et la taille de leurs pieds.', court:'Lis « Les habitants » à l\'équipe (la taille des pieds !).', histoire:'Ton Grand Livre connaît tout Brumeval : lis « Les habitants » à l\'équipe !', manuel:true},
+      {ic:'🧪', m:0, livre:'recettes', t:'Lis à l\'Alchimiste la recette de l\'encre révélatrice (page « Les recettes »).', court:'Lis la recette de l\'encre à l\'Alchimiste.', histoire:'L\'Alchimiste a besoin de toi : lis-lui la recette de l\'encre révélatrice.', fait:[{lu:'recettes'}]},
+      {ic:'🔭', m:0, action:true, lieu:'mairie', points:['balcon'], t:'Mairie : monte au balcon et regarde les toits.', court:'Mairie : monte au balcon et regarde les toits.', histoire:'Du balcon de la mairie, on voit tous les toits… Va jeter un œil !', fait:[{vu:'sage:mairie:balcon'}]},
+      {ic:'❔', m:1, livre:'mystere', passer:true, t:'Quand l\'Alchimiste t\'apporte l\'encre, fais parler la page blanche de ton Grand Livre → donne le code du plan au Pisteur.', court:'Page blanche : reconstitue le plan (pour le Pisteur).', histoire:'L\'encre est là ! La page blanche de ton livre cache un secret…',
+        attend:[{code:'pot:revelatrice'}], attendT:'L\'Alchimiste prépare l\'encre… Ça bouillonne, ça fume, patience !', fait:[{page:'mystere'}]},
+      {ic:'📋', m:2, livre:'tableau', t:'Écoute ce que chacun a trouvé, et barre les innocents dans ton tableau d\'enquête (la première page du Grand Livre).', court:'Écoute chacun, et barre les innocents dans ton tableau.', histoire:'Chacun te raconte ses trouvailles : barre les innocents dans ton tableau !', manuel:true},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments, dans ton Grand Livre).'},
       {libre:true, ic:'🔍', t:'Ensuite, écoute l\'équipe, barre les innocents dans ton tableau d\'enquête, et accuse : QUI a pris la Lanterne, et OÙ est-elle ?'}
     ]
@@ -36269,13 +36286,13 @@ E[1] = {
   ],
   bonus:[
     /* (tutoriel) une mission bonus n'est proposée que pendant une attente (un code qui n'est pas encore là, le moment suivant, la fin), une seule fois */
-    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', or:15, titre:'Le ballon du clocher',
+    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', or:15, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
       t:'Le ballon rouge d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
-    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:15, titre:'Les fournées de Gaspard',
+    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:15, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
       t:'Gaspard a oublié l\'ordre de ses fournées. Aide-le à s\'en souvenir !'},
     /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     /* La première phrase à trous du Barde (barde.js) : elle s'écrit dans son Carnet ; on la chante ensuite à Margot, une seule fois */
-    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:15, titre:'La chanson de la fête',
+    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:15, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
       t:'Margot chante la chanson de la fête, mais il y a tant de bruit dans la taverne ! Écoute-la, puis retrouve les mots qui manquent.',
       entendu:'Margot chante à tue-tête… mais avec tout ce bruit, tu n\'as entendu que des morceaux de sa chanson !',
       params:{phrases:[
@@ -36284,7 +36301,7 @@ E[1] = {
         {qui:'🎶', texte:'on [danse] autour de la [fontaine],'},
         {qui:'🎶', texte:'jusqu\'à ce que se couche la [lune].'}],
         pieges:['neige', 'pluie', 'Bruxelles', 'bougies', 'étoiles', 'deux', 'chante', 'saute', 'mairie', 'rivière', 'soleil']}},   /* des pièges qui vont aussi dans la phrase */
-    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'L\'horloge de la mairie',
+    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
       t:'La vieille horloge de la mairie est déréglée : remets ses runes en place !', params:{image:'horloge'}}
   ],
   fin:{
@@ -46995,10 +47012,13 @@ function nomsDe(l){ var n = l.map(function(r){ return D.ROLES[r].le; }); return 
 function attenteTexte(e){
   if(e && e.attendT) return e.attendT;
   var l = quiDonne(e);
-  if(!l.length) return 'Attends le code de ton équipe → 🔢 Code.';
-  return 'Attends ' + nomsDe(l) + ' : ' + (l.length > 1 ? 'l\'un d\'eux te donne' : IL[l[0]] + ' te donne') + ' un code → 🔢 Code.';
+  if(!l.length) return 'Ton équipe cherche encore… Un indice va bientôt arriver !';
+  return 'Attends ' + nomsDe(l) + ' : un indice va bientôt arriver !';
 }
 var CE = {matin:'ce matin', apresmidi:'cet après-midi', soir:'ce soir', nuit:'cette nuit'};
+/* la fin d'un moment, racontée (Romain, 5 novembre, 23 h 32 : « quelle matinée ! », un peu d'humour : le Sage est long) */
+var FIN_MOMENT = {matin:'Quelle matinée !', apresmidi:'Le soleil se couche sur Brumeval…', soir:'La nuit est tombée…'};
+var SAGE_LENT = {matin:'… dès qu\'il aura fini de lisser sa barbe.', apresmidi:'… s\'il retrouve ses lunettes.', soir:'.'};
 M.tutoEtat = function(){
   if(!actif()) return null;
   var c = courante(), P = M.P(), E = M.E(), r;
@@ -47098,10 +47118,10 @@ function pasEtape(e){
 }
 /* Ce qu'il faut faire maintenant : {etat, ic, but, but2, pas, fait (i d'une étape à cocher), passer, force} */
 function plan(){
-  if(talentForce()) return {etat:'talent', ic:'⭐', but:'Un niveau de plus ! Choisis ton nouveau talent.', pas:[{k:'portrait'}, {k:'arbre'}, {k:'talent'}], force:true};
+  if(talentForce()) return {etat:'talent', ic:'⭐', but:'Ton héros grandit ! Choisis ton nouveau talent.', pas:[{k:'portrait'}, {k:'arbre'}, {k:'talent'}], force:true};
   var Pv = M.S && M.S.e, Ev = Pv ? M.E() : null;
   if(Ev && Ev.tuto && !window.BRUMEVAL_SANS_TUTO && Pv.etape === 'jeu' && Pv.resolu && !Pv.defaite && UI.modal && (UI.modal.type === 'victoire' || UI.modal.type === 'corbeau'))   /* la bonne accusation : jusqu'à la fin de l'histoire */
-    return {etat:'bravo', ic:'🏆', but:'Bravo ! Dis le code de la fin à toute l\'équipe, puis regarde la fin.', pas:[]};
+    return {etat:'bravo', ic:'🏆', but:'Bravo, c\'est la bonne réponse ! Dis le code de la fin à toute l\'équipe.', pas:[]};
   if(!actif()) return null;
   var T = M.tutoEtat(), E = M.E(), sage = M.role() === 'sage';
   var mid = M.momentId(), suiv = E.moments[momentN() + 1], R = {etat:T.etat, i:T.i, e:T.e};
@@ -47113,16 +47133,18 @@ function plan(){
     return R;
   }
   if(T.etat === 'faire'){
-    R.ic = T.e.ic || '🎯'; R.but = T.e.court || T.e.t; R.pas = pasEtape(T.e);
+    R.ic = T.e.ic || '🎯'; R.but = T.e.histoire || T.e.court || T.e.t; R.pas = pasEtape(T.e);
+    /* (Romain, 5 novembre, 23 h 32) le bandeau ne raconte que l'histoire ; une étape sans histoire (la forêt du Pisteur…) : plus de bandeau, le bouton animé suffit */
+    if(!T.e.histoire && !T.e.manuel) R.sansBandeau = true;
     if(T.e.manuel) R.fait = T.i;
     return R;
   }
   if(T.etat === 'fini'){
-    if(sage){ R.ic = '⚖️'; R.but = 'Tous d\'accord ? Accuse : QUI a pris la Lanterne, et OÙ est-elle ?'; R.pas = [{k:'onglet', o:'role'}, {k:'page', id:'accusation'}, {k:'accuser'}]; }
+    if(sage){ R.ic = '⚖️'; R.but = 'L\'heure de vérité ! Tous d\'accord ? Qui a pris la Lanterne d\'Or, et où est-elle ?'; R.pas = [{k:'onglet', o:'role'}, {k:'page', id:'accusation'}, {k:'accuser'}]; }
     else {
-      R.ic = '🔍'; R.but = 'Tout est fait ! Aide le Sage : QUI et OÙ ? Son code de fin → 🔢 Code.'; R.pas = codes;
+      R.ic = '🔍'; R.but = 'Bravo ! Aide le Sage : qui a pris la Lanterne d\'Or, et où est-elle ?'; R.pas = codes;
       var bf = T.bonus[0];   /* une action en trop, le soir (sans points d'action : en attendant le code de la fin) : la mission bonus */
-      if(bf){ R.but2 = '✨ Bonus : « ' + bf.titre + ' » !'; R.pas = [OC, {k:'lieu', id:bf.lieu}, {k:'bonus', id:bf.id}]; R.bonus = bf; }
+      if(bf){ R.but2 = '✨ ' + (bf.histoire || 'Bonus : « ' + bf.titre + ' » !'); R.pas = [OC, {k:'lieu', id:bf.lieu}, {k:'bonus', id:bf.id}]; R.bonus = bf; }
     }
     return R;
   }
@@ -47130,14 +47152,14 @@ function plan(){
     R.ic = '⏳'; R.but = attenteTexte(T.e);   /* tout est bloqué ; le message nomme toujours qui va donner le code */
     if(T.e.passer && momentN() > (T.e.m || 0)) R.passer = T.i;   /* l'équipier n'a pas pu (mini-jeu raté) : on peut passer */
   } else if(sage){
-    R.ic = '✅'; R.but = suiv ? 'Tu as tout fait pour ' + CE[mid] + ' ! Tous prêts ? Passe ' + ({matin:'au matin', apresmidi:'à l\'après-midi', soir:'au soir', nuit:'à la nuit'}[suiv] || 'à la suite') + '.' : 'Tu as tout fait pour ' + CE[mid] + '.';
+    R.ic = '✅'; R.but = suiv ? (FIN_MOMENT[mid] || 'Tu as tout fait pour ' + CE[mid] + ' !') + ' Tous prêts ? Passe ' + ({matin:'au matin', apresmidi:'à l\'après-midi', soir:'au soir', nuit:'à la nuit'}[suiv] || 'à la suite') + '.' : 'Tu as tout fait pour ' + CE[mid] + '.';
   } else if(T.etat === 'action'){   /* (jamais sans points d'action) */
     R.ic = '⏳'; R.but = suiv ? 'Plus d\'action pour ' + AU[mid] + '. Attends le code ' + DU[suiv] + ' (le Sage).' : 'Plus d\'action ! Demande au Sage une action de sa réserve (page 💡).';
   } else {   /* tout fait pour ce moment */
-    R.ic = '✅'; R.but = 'Tu as tout fait pour ' + CE[mid] + ' ! Le Sage a le code ' + DU[suiv] + '.';
+    R.ic = '✅'; R.but = (FIN_MOMENT[mid] || 'Tu as tout fait pour ' + CE[mid] + ' !') + ' Le Sage a le code ' + DU[suiv] + (T.bonus[0] ? '.' : (SAGE_LENT[mid] || '.'));
   }
   var b = T.bonus[0];
-  if(b){ R.but2 = '✨ Bonus : « ' + b.titre + ' » !'; R.pas = [OC, {k:'lieu', id:b.lieu}, {k:'bonus', id:b.id}]; R.bonus = b; return R; }
+  if(b){ R.but2 = '✨ ' + (b.histoire || 'Bonus : « ' + b.titre + ' » !'); R.pas = [OC, {k:'lieu', id:b.lieu}, {k:'bonus', id:b.id}]; R.bonus = b; return R; }
   if(R.passer !== undefined){ R.pas = [{k:'passe'}]; return R; }   /* le code n'est pas venu au moment prévu : l'équipier n'a pas pu, on passe */
   R.pas = sage && suiv && (T.etat !== 'attend' || sagePeutPasser()) ? moment : codes;
   return R;
@@ -47297,47 +47319,14 @@ function correspond(d, el){
 }
 /* La phrase « 👆 … » : ce qu'il faut toucher */
 var PAGES = {lettre:'La lettre du maire', archives:'Les archives', habitants:'Les habitants', recettes:'Les recettes', mystere:'La page blanche', tableau:'Mon tableau d\'enquête', codes:'Les codes des moments', accusation:'L\'accusation'};
-/* (Romain, 5 novembre, 23 h 09) seulement ce que le rond ne montre pas */
-var ATELIER_DIT = {
-  carton:'Tout file dans le 📦, en bas.',   /* (Romain, 15 h 10) */
-  reserve:'Puis un meuble : il s\'installe.',
-  cueillette:'Ils se rangent tout seuls dans tes meubles.',
-  regarde:'Regarde où vont tes ingrédients !',
-  recette:'Recette complète ! Lis bien le message.',   /* (rangement automatique, Romain, 5 novembre, 12 h 31) */
-  grimoire:'Chaque « ? » : l\'ingrédient que dit le Sage.',
-  chaudron:'Suis la recette que le Sage te lit.',
-  brasser:'',
-  rangement:'',
-  potion:'Puis « Donner » : son code est pour le Sage.',
-  paillasse:'',
-  analyse:'',
-  donner:'Son code est pour le Sage.'
-};
 function nomLieu(id){ var L = window.Carte && Carte.LIEUX && Carte.LIEUX[id]; return L ? L.ic + ' ' + L.court : M.nomLieu(id); }
-/* La petite phrase « 👆 » du bandeau (Romain, 5 novembre, 23 h 09 : « tu peux enlever tous les trucs “touche le clocher sur la carte” :
-   on voit bien qu'il faut appuyer dessus ») : le rond jaune montre où toucher ; la phrase ne dit plus que ce que le rond ne dit pas. */
+/* La petite phrase « 👆 » du bandeau : plus aucune explication de ce qu'il faut toucher (Romain, 5 novembre, 23 h 09 et 23 h 35 :
+   « c'est du visuel, il n'y a pas besoin d'explication ; tout ce qu'il me faut, c'est du narratif et les boutons animés ») :
+   le bouton à toucher bouge, avec le rond jaune autour. Seul reste le « ⏭️ Passer » (un bouton du bandeau, qu'il faut expliquer). */
 function dire(d){
   if(!d) return '';
-  var pn = function(id){ return (D.PNJ[id] || {}).court || id; };
-  switch(d.k){
-    case 'question': return 'Pose tes questions une par une.';
-    case 'bonus': return 'Un seul essai !';
-    case 'fait': return 'Quand c\'est fait, touche ✔.';
-    case 'chanter': return q('.bd-trou.choisi') ? 'Choisis le mot de ce trou.' : q('[data-act=bd-chanter]') ? '' : 'Un trou, puis son mot.';
-    case 'passe': var qp = quiDonne((T0() || {}).e), nq = qp.length ? nomsDe(qp) : 'ton équipier'; return nq.charAt(0).toUpperCase() + nq.slice(1) + ' n\'a pas pu ? ⏭️ Passer.';
-    case 'passer': return 'Dis ce code à toute l\'équipe.';
-    case 'accuser': return 'Le choix, c\'est à vous !';
-    case 'talent': return 'Lis les deux talents, puis choisis !';
-    case 'atelier':
-      if(d.c === 'bouton') return d.objet ? ATELIER_DIT.analyse : ATELIER_DIT.donner;
-      var dansPanneau = (d.c === 'rangement' || d.c === 'cueillette') && rangerPanneau();
-      if(dansPanneau) return dansPanneau.classList.contains('at-fermer') ? 'Pas ce meuble-là : ferme-le (✕).' :
-        dansPanneau.hasAttribute('data-vers') || dansPanneau.classList.contains('at-case') ? ATELIER_DIT.rangement : 'Un ingrédient, puis son meuble.';
-      var dc = d.c === 'regarde' && window.Atelier && Atelier.attenteDit ? (Atelier.attenteDit() || 'regarde') : d.c;
-      if(dc === 'carton' && q('#atelier-ici .at-coin.at-guide-q, #atelier-ici .at-res-o.at-guide-q')) dc = 'reserve';   /* tout est dans le 📦 : on y installe un meuble */
-      return panneauGenant(d.c) ? 'D\'abord, ferme ce panneau (✕).' : (ATELIER_DIT[dc] !== undefined ? ATELIER_DIT[dc] : '');
-  }
-  return '';   /* onglet, lieu, maison, explorer, point, frapper, parler, cueillir, page, moment, portrait, arbre : le rond suffit */
+  if(d.k === 'passe'){ var qp = quiDonne((T0() || {}).e), nq = qp.length ? nomsDe(qp) : 'ton équipier'; return nq.charAt(0).toUpperCase() + nq.slice(1) + ' n\'a pas pu ? ⏭️ Passer.'; }
+  return '';
 }
 
 /* Le villageois parle encore : sa bulle (#bd-texte, barde.js) s'écrit ; on attend qu'elle ne bouge plus depuis 1,2 s (la fin de ses mimiques) */
@@ -47360,7 +47349,7 @@ function guide(){
   if(M.mjPause){
     var rp = q('#mj-rappel .mj-rp-go');
     G.pause = true; G.d = {k:'pause'}; G.els = rp ? [rp] : [];
-    G.dire = 'Ton mini-jeu est en pause : reprends-le !';
+    G.dire = 'Ton mini-jeu t\'attend : reprends-le !'; G.bandeau = true;
     return G;
   }
   var mj = document.getElementById('mj-plein');
@@ -47380,9 +47369,9 @@ function guide(){
       /* une conversation finie (plus de question à poser) : le rond sur ✕, pas sur « 📌 Mon tableau » (qui emmenait au tableau de liège sans rien dire) */
       if(m.type === 'conv' && b && b.classList.contains('bd-tableau')){ var fx = q('#voile .b-fermer'); if(fx){ b = fx; G.d = {k:'fermer'}; } }
       G.els = b ? [b] : [];
-      G.dire = m.type === 'accusation' ? 'Choisissez ensemble !' : b && G.d.k === 'fermer' ? 'Tu as tout demandé.' : '';
+      G.dire = '';
     } else {
-      G.d = {k:'fermer'}; var f = q('#voile .b-fermer'); G.els = f ? [f] : []; G.dire = 'Pas maintenant : ferme (✕).';
+      G.d = {k:'fermer'}; var f = q('#voile .b-fermer'); G.els = f ? [f] : []; G.dire = '';
     }
   }
   return G;
@@ -47553,10 +47542,11 @@ function contenuBandeau(G){
   if(Pl.passer !== undefined && Pl.passer !== null) s += '<button type="button" class="btn second petit tu-passer" data-act="tuto-passer">⏭️ Passer</button>';
   return s;
 }
-function signature(G){ return G ? [G.plan.etat, G.plan.i, G.plan.but, G.plan.but2 || '', G.dire, G.plan.fait, G.plan.passer].join('|') : ''; }
+function signature(G){ return G ? [G.plan.etat, G.plan.i, G.plan.but, G.plan.but2 || '', G.dire, G.plan.fait, G.plan.passer, G.d && G.d.k === 'fait' ? 'F' : ''].join('|') : ''; }   /* (le ✔ apparaît quand la cible devient « fait » : sans phrase « 👆 », seule la cible change) */
+function sansBandeau(G){ return !!(G && G.plan && G.plan.sansBandeau && !G.bandeau); }   /* une étape sans histoire : pas de bandeau (plan) */
 M.bandeauTuto = function(){
   var G; try{ G = guide(); }catch(e){ console.error(e); return ''; }
-  if(!G) return '';
+  if(!G || sansBandeau(G)) return '';
   return '<div class="tu-bandeau tu-' + esc(G.plan.etat) + '" role="status" data-sig="' + esc(signature(G)) + '">' + contenuBandeau(G) + '</div>';
 };
 M.tutoClasse = function(e, i){
@@ -47609,6 +47599,10 @@ function rectRepos(n){
 }
 function rectCible(el){
   var r = el.getBoundingClientRect(), g = el.closest && el.closest('g.ca-lieu'), n = g && g.querySelector('.ca-nouveau');
+  if(el.classList && el.classList.contains('tu-respire')){   /* le bouton qui respire : le rond garde la taille du bouton au repos */
+    var k = parseFloat(getComputedStyle(el).scale) || 1;
+    if(k > 0 && Math.abs(k - 1) > .001){ var cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2, w = r.width / k, h = r.height / k; r = {left:cx - w / 2, top:cy - h / 2, right:cx + w / 2, bottom:cy + h / 2, width:w, height:h}; }
+  }
   if(!n || !el.classList.contains('ca-etiq-lieu')) return r;
   var q = rectRepos(n); if(!q.width) return r;
   var L = Math.min(r.left, q.left), T = Math.min(r.top, q.top), R = Math.max(r.right, q.right), B = Math.max(r.bottom, q.bottom);
@@ -47624,8 +47618,10 @@ function poserRonds(els){
   var l = (els || []).filter(vuVraiment).slice(0, 4);
   derniersMsg = messagesVisibles();
   /* .tu-vise : ce que le rond entoure ; s'il brillait déjà de son propre cadre jaune (.b-guide, un talent à choisir), il n'en garde qu'un */
-  vises.forEach(function(e){ if(l.indexOf(e) < 0) e.classList.remove('tu-vise'); });
-  l.forEach(function(e){ e.classList.add('tu-vise'); });
+  vises.forEach(function(e){ if(l.indexOf(e) < 0) e.classList.remove('tu-vise', 'tu-respire'); });
+  /* .tu-respire : le bouton lui-même bouge doucement, en plus du rond (Romain, 5 novembre, 23 h 32 : « il faut que le bouton soit animé ») ;
+     pas les dessins de la carte (SVG : leur place est dans leur transform) */
+  l.forEach(function(e){ e.classList.add('tu-vise'); if(!(e instanceof SVGElement)) e.classList.add('tu-respire'); });
   vises = l.slice();
   for(var k = 0; k < Math.max(l.length, ronds.length); k++){
     var d = rond(k), el = l[k];
@@ -47662,7 +47658,7 @@ function placer(d){
   var w = Math.max(r.width + 14, 46), h = Math.max(r.height + 14, 46);
   var x = r.left + r.width / 2 - w / 2, y = r.top + r.height / 2 - h / 2;
   var x0 = x - 6, x1 = x + w + 6, y0 = y - 6, y1 = y + h + 6;
-  if(derniersMsg.some(function(m){ return m.left < x1 && m.right > x0 && m.top < y1 && m.bottom > y0; })){ d.hidden = true; d.__vu = false; return; }
+  if(messagesVisibles().some(function(m){ return m.left < x1 && m.right > x0 && m.top < y1 && m.bottom > y0; })){ d.hidden = true; d.__vu = false; return; }   /* (à chaque image : le rond revient dès que le message s'en va) */
   var st = Math.round(w) + 'x' + Math.round(h) + '@' + Math.round(x) + ',' + Math.round(y);
   if(d.__st !== st){
     d.__st = st;
@@ -47686,6 +47682,7 @@ function amener(els){
 }
 function cacherTout(){
   ronds.forEach(function(d){ d.hidden = true; d.__el = null; d.__vu = false; });
+  vises.forEach(function(e){ e.classList.remove('tu-vise', 'tu-respire'); }); vises = [];
   document.body.classList.remove('tu-guide');
   if(astuce) astuce.hidden = true;
   griser(null);
@@ -47719,13 +47716,15 @@ function maj(rendu){
   var P = M.P(), hors = !!(G.bloque && G.d && G.d.k === 'onglet' && !(G.plan.etat === 'fini' && !G.plan.bonus) && !UI.modal && UI.ecran === 'enquete' && P && (P.onglet === 'role' || P.onglet === 'carte'));
   document.body.classList.toggle('tu-hors', hors);
   /* le bandeau : il change sans redessiner l'écran (une page tournée, une fenêtre ouverte…) */
-  var b = q('.tu-bandeau'), sig = signature(G);
-  if(b && b.getAttribute('data-sig') !== sig){
+  var b = q('.b-entete .tu-bandeau'), sig = signature(G), sansB = sansBandeau(G), ent = q('.b-entete');
+  if(sansB){ if(b){ b.remove(); b = null; hauteurEntete(); } }   /* une étape sans histoire : le bandeau s'en va (Romain, 23 h 32) */
+  else if(!b && ent){ ent.insertAdjacentHTML('beforeend', M.bandeauTuto()); b = q('.b-entete .tu-bandeau'); hauteurEntete(); }   /* … et revient avec l'histoire */
+  else if(b && b.getAttribute('data-sig') !== sig){
     b.className = 'tu-bandeau tu-' + G.plan.etat; b.setAttribute('data-sig', sig); b.innerHTML = contenuBandeau(G);
     hauteurEntete();
   }
   /* pas de bandeau à l'écran (l'écran du héros) : une petite astuce flottante */
-  if(!b && G.bloque){
+  if(!b && !ent && G.bloque && !sansB){
     if(!astuce){ astuce = document.createElement('div'); astuce.id = 'tu-astuce'; document.body.appendChild(astuce); }
     if(astuce.getAttribute('data-sig') !== sig){ astuce.setAttribute('data-sig', sig); astuce.innerHTML = '<div class="tu-bandeau tu-' + esc(G.plan.etat) + '">' + contenuBandeau(G) + '</div>'; }
     astuce.hidden = false;
