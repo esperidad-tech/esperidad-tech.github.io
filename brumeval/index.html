@@ -206,6 +206,17 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mj-pc-pouls{50%{box-shadow:0 0 0 3px #24182e, 0 0 50px rgba(255,60,80,.95)}}
 .mj-intro .mj-go{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px rgba(8,10,25,.85), 0 4px 0 rgba(0,0,0,.35);flex:none}
 
+/* ---------- La pause (Romain, 5 novembre, 11 h 21 ; mj-core.js, mj-temps.js) ---------- */
+.mj-btn-pause{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,224,138,.55);background:rgba(255,224,138,.12);font-size:1.15rem;flex:none;padding:0;line-height:1}
+.mj-btn-pause:active{transform:scale(.92)}
+/* le mini-jeu en pause se cache tout entier (son voile compris) : on voit et on touche ce qu'il y a dessous */
+.mj-cache,.mj-cache *{visibility:hidden!important;pointer-events:none!important}
+/* « 3, 2, 1 » à la reprise */
+.mj-decompte{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,10,25,.45);pointer-events:auto}
+.mj-decompte b{font-family:var(--f-titre, inherit);font-size:min(34vw, 9rem);line-height:1;color:#ffe08a;text-shadow:0 4px 0 #8a5a12, 0 0 30px rgba(255,224,138,.6);animation:mj-decompte .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
+
 /* ==========================================================
    PERSOS — animations des héros et des villageois
    Les animations ne tournent que dans un SVG .pj-anime.
@@ -4146,6 +4157,13 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-dicte-i:active{transform:scale(.94)}
 @media (prefers-reduced-motion: reduce){ .at-ri-q.at-guide-q .at-ri-ic{animation:none} }
 
+/* Le chaudron en pause (mj-core.js, Romain, 5 novembre) : la pièce est cachée pendant la préparation (.at-mode-prep),
+   alors le chaudron reste là, figé et assombri, avec ⏸️ au milieu ; « ▶️ Reprendre » est dans le rappel du bas (moteur.css) */
+.at-mj.mj-cache,.at-mj.mj-cache *{visibility:visible!important}
+.at-mj.mj-cache .mj{filter:brightness(.42) saturate(.55)}
+.at-mj.mj-cache::after{content:"⏸️ En pause";position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;
+  background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:2px solid #0b1030;box-shadow:0 0 0 2px rgba(255,224,138,.55);font-size:1.15rem;font-weight:700;white-space:nowrap}
+
 /* ==========================================================
    Brumeval v2 — styles du moteur (écrans, fenêtres, jeu)
    ========================================================== */
@@ -4744,6 +4762,28 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .btn.b-dore{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#3b2410;border-color:#b07a1e;font-weight:800}
 .hr-projets{text-decoration:none;text-align:center;margin-top:18px}
 .b-hub-simple .b-titre{padding-right:54px}
+
+/* ---------- Un mini-jeu en pause (Romain, 5 novembre, 11 h 21 ; moteur-actions.js : M.majRappel) ----------
+   Le rappel reste en bas de l'écran, au-dessus des onglets, sur tous les écrans, jusqu'à ce qu'on reprenne. */
+#mj-rappel{position:fixed;left:50%;bottom:84px;z-index:55;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+  width:max-content;max-width:calc(100vw - 20px);padding:6px 6px 6px 8px;border-radius:999px;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;box-shadow:0 0 0 2px rgba(255,224,138,.55), 0 8px 22px rgba(0,0,0,.5);
+  animation:mj-rp-entre .45s cubic-bezier(.3,1.5,.5,1) both, mj-rp-pouls 2.6s 1s ease-in-out infinite}
+#mj-rappel[hidden]{display:none}
+.mj-rp-ic{position:relative;flex:none;width:40px;height:40px;border-radius:50%;background:var(--nuit-3);display:flex;align-items:center;justify-content:center;font-size:1.35rem}
+.mj-rp-ic i{position:absolute;right:-5px;bottom:-4px;font-style:normal;font-size:.8rem;line-height:1}
+.mj-rp-t{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.mj-rp-t b{font-size:.95rem;white-space:nowrap}
+.mj-rp-t small{font-size:.8rem;color:#ffe08a;white-space:nowrap}
+#mj-rappel .mj-rp-go{flex:none;margin:0;min-height:44px;padding:8px 14px;border-radius:999px;font-size:.95rem;white-space:nowrap;border-width:2px;border-style:solid}
+@keyframes mj-rp-entre{0%{transform:translate(-50%,30px) scale(.7);opacity:0}100%{transform:translate(-50%,0) scale(1);opacity:1}}
+@keyframes mj-rp-pouls{0%,100%{box-shadow:0 0 0 2px rgba(255,224,138,.55), 0 8px 22px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 5px rgba(255,224,138,.25), 0 8px 22px rgba(0,0,0,.5)}}
+@media (prefers-reduced-motion: reduce){#mj-rappel{animation:none}}
+/* l'atelier mis de côté pendant que son chaudron est en pause : hors de l'écran, tel quel */
+#mj-parking{position:fixed;left:-300vw;top:0;width:100vw;height:100vh;overflow:hidden;visibility:hidden;pointer-events:none;z-index:-1}
+/* la fenêtre « Un mini-jeu est en pause » */
+.b-mj-pause-l{position:relative;display:inline-block}
+.b-mj-pause-ic{position:absolute;right:-.4em;bottom:-.1em;font-size:.45em}
 
 /* ==========================================================
    Brumeval — les missions de base, en haut du Carnet (mission.js)
@@ -6103,11 +6143,12 @@ body.hr-plein{overflow:hidden}
 <div id="app"></div>
 <div id="voile" hidden></div>
 <div id="mj-plein" hidden></div>
+<div id="mj-parking" aria-hidden="true"></div>
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 11:12 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 11:12';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 11:45 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 11:45';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -6512,7 +6553,127 @@ var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melu
 Object.keys(METIERS).forEach(function(id){ D.PNJ[id].metierCourt = METIERS[id][0]; D.PNJ[id].icMetier = METIERS[id][1]; });
 })();
 
+/* ===== mj-temps.js ===== */
+/* ==========================================================
+   Brumeval — l'horloge des mini-jeux, qu'on peut arrêter (window.MJT)
+   (Romain, 5 novembre, 11 h 21 : « mettre le mini-jeu en pause et revenir sur la carte, taper un code… »)
+
+   build.py enveloppe chaque fichier mj-*.js dans une fonction qui remplace, pour ce fichier seulement,
+   setTimeout, setInterval, requestAnimationFrame (et leurs clear/cancel), Date.now et performance.now
+   par ceux d'ici. Le reste du jeu (la carte, le tutoriel, l'atelier…) garde l'horloge du navigateur.
+
+   MJT.pause(el)   : tout ce que les mini-jeux attendent est figé (minuteurs, images, temps qui passe),
+                     et les animations CSS sous el (getAnimations) aussi ;
+   MJT.reprendre() : tout repart exactement où on en était (le temps passé en pause ne compte pas).
+   Un seul mini-jeu tourne à la fois : la pause est donc unique, pour tous les mini-jeux.
+   MJT.reel : les vraies fonctions du navigateur (le « 3, 2, 1 » de la reprise, mj-core.js).
+   ========================================================== */
+(function(){
+'use strict';
+var W = window;
+var vST = W.setTimeout.bind(W), vCT = W.clearTimeout.bind(W),
+    vRAF = (W.requestAnimationFrame || function(f){ return vST(function(){ f(W.performance.now()); }, 16); }).bind(W),
+    vCAF = (W.cancelAnimationFrame || vCT).bind(W);
+function reelNow(){ return W.performance.now(); }
+
+var enPause = false, debut = 0, decal = 0, dernierTs = -Infinity, anims = [];
+/* le temps des mini-jeux : celui du navigateur, moins tout le temps passé en pause */
+function perf(){ return (enPause ? debut : reelNow()) - decal; }
+function date(){ return Date.now() - decal - (enPause ? reelNow() - debut : 0); }
+
+/* ---------- Minuteurs (setTimeout / setInterval) ---------- */
+var MIN = {}, nMin = 700000000;   /* des numéros loin de ceux du navigateur */
+function armer(m){ m.reel = vST(function(){ sonner(m); }, Math.max(0, m.quand - perf())); }
+function sonner(m){
+  m.reel = null;
+  if(MIN[m.id] !== m || enPause) return;
+  if(m.quand - perf() > 2){ armer(m); return; }
+  if(m.tous){ m.quand = perf() + m.tous; armer(m); } else delete MIN[m.id];
+  m.fn.apply(W, m.args);
+}
+function poser(fn, ms, args, tous){
+  if(typeof fn !== 'function') return 0;
+  ms = Math.max(0, +ms || 0);
+  var m = {id:++nMin, fn:fn, args:args, quand:perf() + ms, tous:tous ? Math.max(4, ms) : 0, reel:null};
+  MIN[m.id] = m;
+  if(!enPause) armer(m);
+  return m.id;
+}
+function setTimeout_(fn, ms){ return poser(fn, ms, Array.prototype.slice.call(arguments, 2), false); }
+function setInterval_(fn, ms){ return poser(fn, ms, Array.prototype.slice.call(arguments, 2), true); }
+function effacer(id){
+  var m = MIN[id];
+  if(m){ if(m.reel) vCT(m.reel); delete MIN[id]; }
+  else if(id) vCT(id);   /* un minuteur du navigateur (créé ailleurs) */
+}
+
+/* ---------- Images (requestAnimationFrame) ---------- */
+var IMG = {}, nImg = 900000000;
+function demander(o){
+  o.reel = vRAF(function(ts){
+    o.reel = null;
+    if(IMG[o.id] !== o || enPause) return;
+    delete IMG[o.id];
+    var t = Math.max(dernierTs, ts - decal); dernierTs = t;   /* le temps de l'image, sans les pauses (jamais en arrière) */
+    o.fn(t);
+  });
+}
+function raf(fn){
+  if(typeof fn !== 'function') return 0;
+  var o = {id:++nImg, fn:fn, reel:null};
+  IMG[o.id] = o;
+  if(!enPause) demander(o);
+  return o.id;
+}
+function caf(id){
+  var o = IMG[id];
+  if(o){ if(o.reel) vCAF(o.reel); delete IMG[id]; }
+  else if(id) vCAF(id);
+}
+
+/* ---------- Pause / reprise ---------- */
+function pause(el){
+  if(enPause) return;
+  enPause = true; debut = reelNow();
+  var k;
+  for(k in MIN) if(MIN[k].reel){ vCT(MIN[k].reel); MIN[k].reel = null; }
+  for(k in IMG) if(IMG[k].reel){ vCAF(IMG[k].reel); IMG[k].reel = null; }
+  /* les animations CSS (et celles des scripts) du mini-jeu s'arrêtent aussi */
+  anims = [];
+  try{
+    if(el && el.getAnimations) el.getAnimations({subtree:true}).forEach(function(a){
+      if(a.playState === 'running'){ try{ a.pause(); anims.push(a); }catch(e){} }
+    });
+  }catch(e){}
+  anims.el = el;
+}
+function reprendre(){
+  if(!enPause) return;
+  decal += reelNow() - debut; enPause = false;
+  var k;
+  for(k in MIN) if(MIN[k] && !MIN[k].reel) armer(MIN[k]);
+  for(k in IMG) if(IMG[k] && !IMG[k].reel) demander(IMG[k]);
+  /* seulement celles qui sont encore là (une animation CSS annulée entre-temps ne revient pas) */
+  var vivantes = null;
+  try{ if(anims.el && anims.el.getAnimations) vivantes = anims.el.getAnimations({subtree:true}); }catch(e){}
+  anims.forEach(function(a){ if(!vivantes || vivantes.indexOf(a) >= 0){ try{ a.play(); }catch(e){} } });
+  anims = [];
+}
+
+W.MJT = {
+  setTimeout:setTimeout_, setInterval:setInterval_, clearTimeout:effacer, clearInterval:effacer,
+  raf:raf, caf:caf,
+  Date:{now:date}, performance:{now:perf},
+  pause:pause, reprendre:reprendre,
+  enPause:function(){ return enPause; },
+  reel:{setTimeout:vST, clearTimeout:vCT, raf:vRAF, caf:vCAF},
+  /* pour les tests : combien de minuteurs et d'images attendent */
+  _etat:function(){ return {pause:enPause, minuteurs:Object.keys(MIN).length, images:Object.keys(IMG).length, decal:Math.round(decal)}; }
+};
+})();
+
 /* ===== mj-core.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — cœur des mini-jeux (registre + écran commun)
    Les jeux s'enregistrent avec MJ.enregistrer(type, def).
@@ -6673,7 +6834,9 @@ MJ.lancer = function(el, type, params, fin, options){
   options = options || {};
   params = params || MJ.reglages(type, 1, {});
   if(!def){ el.innerHTML = '<p>Mini-jeu inconnu : ' + esc(type) + '</p>'; setTimeout(function(){ fin({reussi:true, score:1}); }, 300); return {arreter:function(){}}; }
-  var essais = 0, enCours = null, fini = false, arretDemoG = null;
+  var essais = 0, enCours = null, fini = false, arretDemoG = null, enPause = false, decompte = null;
+  /* un mini-jeu oublié en pause (ne devrait pas arriver : le moteur n'en lance pas d'autre) : on ne fige pas le nouveau */
+  if(window.MJT && MJT.enPause()) MJT.reprendre();
   /* au tutoriel (enquête 1, ou options.tutoriel) : « C'est parti » clignote (la salle des mini-jeux n'a pas de moteur : jamais) */
   function auTuto(){
     if(options.tutoriel) return true;
@@ -6701,6 +6864,65 @@ MJ.lancer = function(el, type, params, fin, options){
   if(typeof phrase === 'function') try{ phrase = phrase(params); }catch(e){ phrase = consigne; }
   racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
   racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
+
+  /* ---------- La pause (Romain, 5 novembre, 11 h 21 : tous les mini-jeux, tous les joueurs, tout le temps) ----------
+     ⏸️ dans l'en-tête : tout se fige (mj-temps.js), le mini-jeu se cache (options.cadrePause, sinon le cadre autour de el)
+     et options.surPause(partie) laisse le moteur montrer la carte, les codes… partie.reprendre() le remet,
+     avec « 3, 2, 1 » quand on était en train de jouer (pas sur l'accueil ni sur le résultat). */
+  function cadrePause(){ return options.cadrePause || el.parentNode || el; }
+  function mettreEnPause(){
+    if(enPause || fini || !window.MJT) return;
+    enPause = true;
+    U.stop(); U.son('clic');
+    try{ var a = document.activeElement; if(a && el.contains(a) && a.blur) a.blur(); }catch(e){}
+    MJT.pause(el);
+    racine.classList.add('mj-en-pause');
+    var c = cadrePause(); if(c && c.classList) c.classList.add('mj-cache');
+    try{ if(options.surPause) options.surPause(partie); }catch(e){ if(window.console) console.error(e); }
+  }
+  function reprendre(){
+    if(!enPause || decompte) return;
+    var c = cadrePause(); if(c && c.classList) c.classList.remove('mj-cache');
+    racine.classList.remove('mj-en-pause');
+    var enJeu = !racine.classList.contains('mj-en-intro') && !scene.querySelector('.mj-resultat');
+    if(!enJeu || fini){ enPause = false; MJT.reprendre(); return; }
+    /* 3, 2, 1… : le temps de remettre les doigts sur l'écran (les vraies horloges : le mini-jeu, lui, est encore figé) */
+    var R = MJT.reel, n = 3;
+    decompte = U.html('<div class="mj-decompte" aria-live="assertive"><b>3</b></div>');
+    racine.appendChild(decompte);
+    (function tic(){
+      if(!decompte) return;
+      if(n === 0 || fini){
+        if(decompte.parentNode) decompte.parentNode.removeChild(decompte);
+        decompte = null; enPause = false; MJT.reprendre(); return;
+      }
+      decompte.innerHTML = '<b>' + n + '</b>';
+      U.son('tic'); n--;
+      R.setTimeout(tic, 600);
+    })();
+  }
+  var partie = {
+    arreter:function(){
+      fini = true;
+      if(decompte && decompte.parentNode) decompte.parentNode.removeChild(decompte);
+      decompte = null;
+      if(enPause){ enPause = false; var c = cadrePause(); if(c && c.classList) c.classList.remove('mj-cache'); if(window.MJT) MJT.reprendre(); }
+      if(arretDemoG){ try{ if(arretDemoG.arreter) arretDemoG.arreter(); else if(typeof arretDemoG === 'function') arretDemoG(); }catch(e){} }
+      if(enCours && enCours.arreter) try{ enCours.arreter(); }catch(e){}
+      U.stop();
+    },
+    pause:mettreEnPause,
+    reprendre:reprendre,
+    enPause:function(){ return enPause; },
+    titre:options.titre || def.nom, ic:def.ic || '🎮', type:type
+  };
+  if(options.surPause && window.MJT){
+    var bp = document.createElement('button');
+    bp.type = 'button'; bp.className = 'mj-btn-pause'; bp.textContent = '⏸️';
+    bp.setAttribute('aria-label', 'Mettre en pause');
+    bp.onclick = function(ev){ ev.stopPropagation(); mettreEnPause(); };
+    racine.querySelector('.mj-tete').insertBefore(bp, racine.querySelector('.mj-btn-lire'));
+  }
 
   function intro(){
     scene.innerHTML = '';
@@ -6814,15 +7036,11 @@ MJ.lancer = function(el, type, params, fin, options){
   }
 
   if(options.sansIntro) jouer(); else intro();
-  return {arreter: function(){
-    fini = true;
-    if(arretDemoG){ try{ if(arretDemoG.arreter) arretDemoG.arreter(); else if(typeof arretDemoG === 'function') arretDemoG(); }catch(e){} }
-    if(enCours && enCours.arreter) try{ enCours.arreter(); }catch(e){}
-    U.stop();
-  }};
+  return partie;
 };
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== persos.js ===== */
 /* ==========================================================
    Brumeval v2 — PERSOS : héros et villageois en SVG
@@ -11912,6 +12130,7 @@ window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, svg: svg, W: W, H: H, echelle: e
 })();
 
 /* ===== mj-pisteur-alchi.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Pisteur et de l'Alchimiste
    traces, poursuite, cachette, tir · rythme, bulles, melange,
@@ -15210,7 +15429,9 @@ MJ.enregistrer('loupe', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-observation.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — jeux d'observation de l'Alchimiste (préfixe .mjo-)
    · differences : « Les 7 différences » (remplace « loupe ») — 10 décors,
@@ -17509,7 +17730,9 @@ MJ.enregistrer('insectes', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-melange.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — « Le bon mélange » (Alchimiste), nouvelle version.
    Remplace l'ancien 'melange' de mj-pisteur-alchi.js (chargé après lui).
@@ -18579,7 +18802,9 @@ def._modele = {INGR:INGR, ORDRE:ORDRE, couleur:couleur, ecart:ecart, oklab:oklab
 MJ.enregistrer('melange', def);
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-bulles.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — LES BULLES MAGIQUES (Alchimiste), version 2.
    Ce fichier est chargé APRÈS mj-pisteur-alchi.js et ré-enregistre
@@ -19442,7 +19667,9 @@ MJ.enregistrer('bulles', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-chaudron.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeu « Le chaudron » (Alchimiste)
    Version simplifiée (Romain, 4 novembre, 11 h 26) :
@@ -20486,7 +20713,9 @@ MJ.enregistrer('chaudron', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-barde-sage.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage
    mensonge, ordre, ragots (Barde) · alphabet, plans, grille, runes (Sage)
@@ -21826,7 +22055,9 @@ MJ.enregistrer('runes', {
 MJ.bardeSage = {glyphe:glyphe, schemaPigpen:schemaPigpen, SYMBOLES:SYMBOLES};
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-sage-plans.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Sage, nouvelle version :
    « Superposer les plans » ('plans') et « La grille de déduction » ('grille').
@@ -23217,7 +23448,7 @@ MJ.enregistrer('plans', {
     });
     /* --- clavier --- */
     function clavier(ev){
-      if(termine || pause || !root.isConnected) return;
+      if(termine || pause || !root.isConnected || (window.MJT && MJT.enPause())) return;   /* en pause (mj-temps.js) : le clavier sert au reste du jeu */
       if(ev.target && ev.target.tagName === 'INPUT') return;
       var g = ev.shiftKey ? 8 : 1, fait = true, c = appliquer(e, PC, PC);
       switch(ev.key){
@@ -23233,7 +23464,7 @@ MJ.enregistrer('plans', {
       }
       if(fait){ ev.preventDefault(); bouge(); }
     }
-    function clavierHaut(){ verifierAimant(); }
+    function clavierHaut(){ if(window.MJT && MJT.enPause()) return; verifierAimant(); }
     document.addEventListener('keydown', clavier);
     document.addEventListener('keyup', clavierHaut);
     T.s(function(){ document.removeEventListener('keydown', clavier); document.removeEventListener('keyup', clavierHaut); });
@@ -23617,7 +23848,9 @@ MJ.enregistrer('grille', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-mots.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les mots perdus »
    Le Barde n'a pas tout entendu. Il remet les mots manquants
@@ -23793,6 +24026,7 @@ MJ.enregistrer('mots', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== ragots.js ===== */
 /* ==========================================================
    Brumeval — les ragots de la taverne (une centaine).
@@ -23937,6 +24171,7 @@ window.RAGOTS = {village:R.filter(function(r){ return !r.enq; }), enquete:ENQ, l
 })();
 
 /* ===== mj-ragots.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les ragots de la taverne »
    Cinq ragots tirés au hasard parmi une centaine (ragots.js),
@@ -24087,7 +24322,9 @@ MJ.enregistrer('ragots', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-depositions.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les dépositions »  (type 'depositions', préfixe .mjd-)
    Inspiré de « Petits Meurtres et Faits Divers » et des « deux versions » :
@@ -25405,7 +25642,9 @@ MJ.enregistrer('depositions', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-sage-codes.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeux du Sage, nouvelle version (retours du 2 nov.)
    « L'alphabet secret » ('alphabet') et « Assembler les runes » ('runes').
@@ -26260,7 +26499,7 @@ MJ.enregistrer('alphabet', {
     });
     btnVal.addEventListener('click', valider);
     function clavierPhysique(e){
-      if(bloque || !root.isConnected) return;
+      if(bloque || !root.isConnected || (window.MJT && MJT.enPause())) return;   /* en pause : le clavier sert au reste du jeu (un code…) */
       var k = e.key;
       if(/^[a-zA-Z]$/.test(k)){ taper(k.toUpperCase()); e.preventDefault(); }
       else if(k === 'Backspace' || k === 'Delete'){ effacer(); e.preventDefault(); }
@@ -26773,7 +27012,9 @@ MJ.enregistrer('runes', {
 MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:construire, resoudre:resoudre, resoluble:resoluble};
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-regles.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — L'ÉCRAN D'ACCUEIL DES MINI-JEUX (version simple)
    Romain, 2 nov. au soir : « Tu vires tout et tu simplifies au maximum. »
@@ -27772,6 +28013,7 @@ D('runes', function(el){
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== revision.js ===== */
 /* ==========================================================
    Brumeval — relire un mini-jeu du Barde après coup.
@@ -31126,6 +31368,8 @@ function vue(el, opts){
     arreter:function(){ arreter(V); },
     maj:function(o2){ maj(V, o2); },
     etat:function(){ return V.etat; },
+    /* le chaudron en cours (MJ.lancer) : le moteur le met en pause au lieu de l'abandonner quand on change d'onglet (moteur-actions.js) */
+    partie:function(){ return V.mjPartie || null; },
     /* pour les bancs d'essai */
     _vb:function(){ return {x0:V.vb.x0, y0:V.vb.y0, w:V.vb.w, h:V.vb.h, k:V.k, pan:{x:V.pan.x, y:V.pan.y}}; },
     _voir:function(x, y){ centrerSur(V, x, y); },
@@ -34385,7 +34629,9 @@ function demarrer(V, rid, bouton){
   /* enquête 1 : chaque essai raté rend les ingrédients versés, et « 🔁 Recommencer » sans fin */
   var partie = MJ.lancer(ov.firstChild, 'chaudron', p, function(res){ finPreparation(V, rid, res); },
     {aides:aides, titre:(r.ic || '🧪') + ' ' + r.nom, lireAuto:false, deuxiemeChance:!!mods.deuxiemeChance,
-     reessaisInfinis:!!V.o.tutoriel, tutoriel:!!V.o.tutoriel, surEchec:V.o.tutoriel ? function(){ rendreVerses(V); } : null});
+     reessaisInfinis:!!V.o.tutoriel, tutoriel:!!V.o.tutoriel, surEchec:V.o.tutoriel ? function(){ rendreVerses(V); } : null,
+     /* ⏸️ la pause (mj-core.js, Romain, 5 novembre) : le moteur garde l'atelier tel quel pendant qu'on va ailleurs */
+     surPause:V.o.surPause ? function(pt){ V.o.surPause(pt, r); } : null});
   V.mjPartie = partie;
   /* un drapeau pour abandonner (deux touchers), dans l'en-tête du mini-jeu */
   var tete = ov.querySelector('.mj-tete'), lireBtn = ov.querySelector('.mj-btn-lire');
@@ -37671,8 +37917,25 @@ function ajusterAtelier(){
     ici.style.height = Math.max(plein ? 220 : 460, Math.round(window.innerHeight - (ici.getBoundingClientRect().top + window.scrollY) - bas - (plein ? 0 : 10))) + 'px';
   }catch(e){}
 }
+/* L'atelier mis de côté pendant qu'un chaudron est en pause (M.render) : ses éléments attendent dans #mj-parking, tels quels */
+var atelierParque = false;
+function parquerAtelier(){
+  var ici = document.getElementById('atelier-ici'), pk = document.getElementById('mj-parking');
+  if(!ici || !pk || atelierParque) return;
+  while(ici.firstChild) pk.appendChild(ici.firstChild);
+  atelierParque = true;
+}
 function monterAtelier(){
   var ici = document.getElementById('atelier-ici');
+  if(atelierParque){
+    if(!ici) return;   /* on est ailleurs : il attend encore */
+    var pk = document.getElementById('mj-parking');
+    while(pk && pk.firstChild) ici.appendChild(pk.firstChild);
+    atelierParque = false;
+    ajusterAtelier();
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+    return;
+  }
   if(!ici || !window.Atelier) return;
   var S = M.S, P = M.P(), E = M.E();
   if(!S.atelier) S.atelier = Atelier.etatNeuf();
@@ -37699,6 +37962,7 @@ function monterAtelier(){
       /* une seule potion de vérité par enquête (E.veriteUnique, enquête 2 : Romain, 4 novembre, 22 h 38) */
       if(rid === 'verite' && E2 && E2.veriteUnique && P2 && P2.veriteFaite) return 'Tu as déjà préparé la potion de vérité de cette enquête : une seule par enquête !';
       if(S.fioles <= 0){ M.toast('Plus de fiole vide ! Il en faudra une pour mettre la potion.'); return false; }
+      if(M.mjPause) return 'Un mini-jeu est en pause : finis-le d\'abord !';
       if(P2 && !M.peutAgir()){ M.toast('Plus d\'action pour ce moment : attends le moment suivant.'); return false; }
       if(P2){ M.depenser(); M.majPips(); }
       M.sauver(); return true;
@@ -37720,7 +37984,9 @@ function monterAtelier(){
       M.sauver();
       try{ if(atelierMonte && atelierMonte.maj) atelierMonte.maj({fioles:S.fioles, potions:S.potions}); }catch(e){}
     },
-    son:M.son, lire:M.lire
+    son:M.son, lire:M.lire,
+    /* (le chaudron se met aussi en pause tout seul quand on change d'onglet : on était dans l'atelier, l'onglet du rôle) */
+    surPause:function(pt, r){ M.pauseMJ({partie:pt, hote:'atelier', ic:(r && r.ic) || '🧪', titre:'Le chaudron' + (r && r.nom ? ' : ' + r.nom : ''), ecran:'enquete', onglet:'role'}); }
   });
 }
 /* Le bandeau du haut est fixe (moteur.css) : l'écran de jeu garde sa hauteur en haut, pour que rien ne passe dessous */
@@ -37735,7 +38001,14 @@ M.render = function(){
   /* Qui joue ce héros (Romain, 4 novembre : le mode enfant / adulte revient) : la difficulté des mini-jeux en dépend (MJ.COURBE, mj-core.js) */
   window.MJ_JOUEUR = M.joueur();
   if(UI.pile && {accueil:1, enquete:1, creation:1}[UI.ecran]) UI.pile = [];   /* « ← Retour » repart d'ici (heros.js) */
-  if(atelierMonte){ try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
+  if(atelierMonte){
+    /* le chaudron de l'atelier tourne et on change d'écran (un onglet…) : il se met en pause au lieu d'être abandonné ;
+       en pause, l'atelier est mis de côté tel quel (hors de #app), et il revient quand on retourne à l'atelier (monterAtelier) */
+    var pt = null; try{ pt = atelierMonte.partie ? atelierMonte.partie() : null; }catch(e){}
+    if(pt && pt.pause && !pt.enPause() && !M.mjPause) try{ pt.pause(); }catch(e){ console.error(e); }
+    if(pt && pt.enPause && pt.enPause()) parquerAtelier();   /* (aussi pendant le « 3, 2, 1 » de la reprise) */
+    else { try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
+  }
   try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); } /* missions de base validées (mission.js) */
   try{ if(M.demonterLiege) M.demonterLiege(); }catch(e){ console.error(e); } /* tableau de liège du Barde (liege.js) */
   try{ if(M.demonterCabane) M.demonterCabane(); }catch(e){ console.error(e); } /* cabane du Pisteur (cabane.js) */
@@ -37825,7 +38098,7 @@ function placerBulle(){
   var bord = function(s, cote){ var e = document.querySelector(s), r = e && !e.hidden && e.getBoundingClientRect(); return r && r.height ? r[cote] : null; };
   /* MARGE : la marge invisible du cadre (moteur.css, padding 16 px) : les pastilles, elles, restent à 6 px des bords et à 2 px de ce qu'on a touché */
   var MARGE = 16, haut = Math.max(C.top, 0, bord('.b-entete', 'bottom') || 0, bord('.tu-bandeau', 'bottom') || 0) + 6 - MARGE;
-  var bas = Math.min(C.bottom, window.innerHeight, bord('.b-onglets', 'top') || window.innerHeight) - 6 + MARGE, ecart = 2 - MARGE + 10;
+  var bas = Math.min(C.bottom, window.innerHeight, bord('.b-onglets', 'top') || window.innerHeight, bord('#mj-rappel', 'top') || window.innerHeight) - 6 + MARGE, ecart = 2 - MARGE + 10;   /* (et au-dessus du rappel d'un mini-jeu en pause) */
   /* ce qu'on a touché est sorti de la carte (on l'a fait glisser) : la bulle se cache, elle revient avec lui */
   var hors = x < C.left || x > C.right || yb < C.top || yh > C.bottom;
   f.style.visibility = p.style.visibility = hors ? 'hidden' : '';
@@ -37884,6 +38157,7 @@ function contenuModal(m){
     case 'besoin': return '<div class="b-info-modal"><div class="b-grand-ic">🔒</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + M.besoinHTML(m.besoin, M.role()) + '<button class="btn" data-act="lieu" data-id="' + m.retourId + '">← Retour</button></div>';
     case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
     case 'avant-mj': return avantMJHTML(m);
+    case 'mj-pause': return pauseModal(m);
   }
   return '';
 }
@@ -37949,6 +38223,7 @@ M.decouvrir = function(m){
 var mjEnCours = null;
 M.lancerMJ = function(type, niveau, extra, options, fin){
   options = options || {};
+  if(M.mjPause){ M.rappelPause(); return; }   /* un mini-jeu en pause : il faut le finir d'abord */
   /* 0. L'explication de la situation, puis le bouton jaune (sauf la dernière chance : options.sansIntro) */
   if(!options.introVue && !options.sansIntro){
     UI.suiteMJ = {type:type, niveau:niveau, extra:extra, options:Object.assign({}, options, {introVue:true}), fin:fin};
@@ -37997,8 +38272,10 @@ function lancer(type, niveau, extra, options, fin){
   M.stop();
   var aides = mm.aides.slice();
   if(potion) aides.push({ic:D.POTIONS[potion].ic, nom:D.POTIONS[potion].nom});
+  var titrePause = options.titre || (MJ.TYPES[type] || {}).nom || 'Le mini-jeu', icPause = options.ic || (MJ.TYPES[type] || {}).ic || '🎮';
   mjEnCours = MJ.lancer(plein.firstChild, type, params, function(res){
     plein.hidden = true; plein.innerHTML = ''; mjEnCours = null;
+    if(M.mjPause && M.mjPause.hote === 'plein') M.finPause();
     document.body.classList.toggle('b-bloque', !!UI.modal);
     if(P && res.essais > 1 && P.chances > 0) P.chances--;
     if(potion && P && P.potions[potion] > 0){
@@ -38014,8 +38291,72 @@ function lancer(type, niveau, extra, options, fin){
     if(res && res.reussi && M.role() === 'alchimiste'){ try{ if(window.Atelier && Atelier.mjGagne) Atelier.mjGagne(M.S, type); }catch(e){} }   /* un accessoire pour le chat de l'atelier (la première fois pour chaque mini-jeu) */
     M.sauver();
     fin(res);
-  }, {aides:aides, titre:options.titre, essaiUnique:options.essaiUnique, deuxiemeChance:!options.essaiUnique && P && P.chances > 0, lireAuto:false});
+  }, {aides:aides, titre:options.titre, essaiUnique:options.essaiUnique, deuxiemeChance:!options.essaiUnique && P && P.chances > 0, lireAuto:false,
+     /* ⏸️ (mj-core.js) : #mj-plein se cache, on retrouve la carte, les codes… et le rappel en bas de l'écran */
+     surPause:function(pt){ M.pauseMJ({partie:pt, hote:'plein', ic:icPause, titre:titrePause}); }});
 }
+
+/* ---------- Un mini-jeu en pause (Romain, 5 novembre, 11 h 21) ----------
+   M.mjPause = {partie, hote:'plein'|'atelier', ic, titre, ecran, onglet} : où on était quand on a mis en pause.
+   Pendant la pause : la carte, les codes, le carnet… tout se regarde ; rien ne fait avancer l'enquête (LIBRE_EN_PAUSE),
+   pas d'autre mini-jeu ; un rappel reste en bas de l'écran, avec « ▶️ Reprendre ». */
+M.pauseMJ = function(info){
+  var P = M.P();
+  M.mjPause = Object.assign({ecran:UI.ecran, onglet:P ? P.onglet : null}, info);
+  document.body.classList.toggle('b-bloque', !!(UI.modal && !UI.modal.bulle));
+  M.stop();
+  M.majRappel();
+  if(M.tutoMaj) M.tutoMaj();
+};
+M.finPause = function(){ M.mjPause = null; M.majRappel(); if(M.tutoMaj) M.tutoMaj(); };
+M.reprendreMJ = function(){
+  var p = M.mjPause; if(!p) return;
+  var P = M.P();
+  /* on revient là où le mini-jeu tournait (son résultat s'ouvre là, comme avant) */
+  var ailleurs = !!UI.modal || UI.ecran !== p.ecran || !!(P && p.onglet && P.onglet !== p.onglet) || (p.hote === 'atelier' && atelierParque);
+  UI.modal = null; UI.saisie = [];
+  UI.ecran = p.ecran; if(P && p.onglet) P.onglet = p.onglet;
+  M.mjPause = null;
+  M.majRappel();
+  if(ailleurs) M.render();
+  if(p.hote === 'plein'){ document.body.classList.add('b-bloque'); }
+  M.son('clic');
+  try{ p.partie.reprendre(); }catch(e){ console.error(e); }
+  if(M.tutoMaj) M.tutoMaj();
+};
+/* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
+var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1,
+  sym:1, 'sym-efface':1, 'bd-code':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
+  opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
+  'mj-reprendre':1};
+M.LIBRE_EN_PAUSE = LIBRE_EN_PAUSE;
+/* « Un mini-jeu est en pause » : la petite fenêtre quand on veut faire autre chose (t : pourquoi, si besoin) */
+M.rappelPause = function(t){ M.son('ko'); M.ouvrir({type:'mj-pause', t:t || null}); };
+function pauseModal(m){
+  var p = M.mjPause || {};
+  var t = (m.t ? m.t + ' ' : '') + 'Il faut d\'abord finir ton mini-jeu' + (p.titre ? ' « ' + p.titre + ' »' : '') + '.';
+  return '<div class="b-info-modal b-mj-pause"><div class="b-grand-ic"><span class="b-mj-pause-l">' + (p.ic || '🎮') + '<span class="b-mj-pause-ic">⏸️</span></span></div><h2>Un mini-jeu est en pause</h2><p>' + esc(t) + '</p>' + lire('Un mini-jeu est en pause. ' + t) +
+    '<button class="btn grand b-aller" data-act="mj-reprendre">▶️ Reprendre le mini-jeu</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
+}
+/* Le rappel, en bas de l'écran (hors de #app : il reste quand l'écran se redessine) */
+M.majRappel = function(){
+  var r = document.getElementById('mj-rappel');
+  var p = M.mjPause;
+  if(!p){ if(r) r.hidden = true; return; }
+  if(!r){ r = document.createElement('div'); r.id = 'mj-rappel'; r.setAttribute('role', 'status'); document.body.appendChild(r); }
+  r.innerHTML = '<span class="mj-rp-ic">' + esc(p.ic || '🎮') + '<i>⏸️</i></span><span class="mj-rp-t"><b>Mini-jeu en pause</b><small>Il faut le finir !</small></span>' +
+    '<button class="btn b-aller mj-rp-go" data-act="mj-reprendre">▶️ Reprendre</button>';
+  r.hidden = false;
+  placerRappel();
+};
+function placerRappel(){
+  var r = document.getElementById('mj-rappel'); if(!r || r.hidden) return;
+  var o = document.querySelector('.b-onglets'), h = o && o.getBoundingClientRect();
+  r.style.bottom = (h && h.height ? Math.round(window.innerHeight - h.top + 10) : 14) + 'px';
+}
+window.addEventListener('resize', placerRappel);
 function boireModal(m){
   return '<h2>Une potion peut t\'aider !</h2><p>Tu as une potion qui rend ce mini-jeu plus facile. Tu la bois ?</p>' + lire('Une potion peut t\'aider ! Tu as une potion qui rend ce mini-jeu plus facile. Tu la bois ?') + '<div class="b-potions">' + m.pots.map(function(k){
     var p = D.POTIONS[k];
@@ -38071,6 +38412,8 @@ function traiterCode(seq){
     M.ouvrir({type:'info', ic:'🤝', titre:'Ce code est pour un équipier', t:codePourUnAutre(dest)});
     return;
   }
+  /* un mini-jeu en pause : le moment, la fin de l'enquête… attendent qu'il soit fini */
+  if(M.mjPause && /^(moment|victoire|suite|defaite)$/.test(t)){ M.rappelPause('Ce code fait avancer toute l\'enquête : tu le taperas après.'); return; }
   /* Tapé depuis le village : on revient à l'enquête */
   UI.ecran = 'enquete';
   if(t === 'moment'){
@@ -38141,6 +38484,7 @@ function ouvertPourMoi(code){
 /* Code de passage (fin, enquête suivante) d'une autre enquête que celle de cette tablette */
 function codeVoisin(v){
   var S = M.S, P = M.P(), t = v.id.split(':')[0], x = +v.id.split(':')[1], ici = P ? P.id : null;
+  if(M.mjPause){ M.rappelPause(); return; }
   if(P && v.e < ici){
     UI.modal = null; UI.ecran = 'enquete'; M.son('ok');
     M.ouvrir({type:'info', ic:'✅', titre:'Tu es déjà dans l\'enquête ' + ici, t:(t === 'suite' ? 'Ce code servait à venir dans l\'enquête ' + ici + '.' : 'Ce code était celui de la fin de l\'enquête ' + v.e + '.') + ' Ta tablette est déjà dans l\'enquête ' + ici + ' : c\'est tout bon !'});
@@ -38486,6 +38830,7 @@ function nouvelleEnquete(id){
 
 /* ---------- Gestionnaire d'actions ---------- */
 var A = {};
+A['mj-reprendre'] = function(){ M.reprendreMJ(); };   /* ▶️ Reprendre un mini-jeu en pause (le rappel, la fenêtre) */
 A['voix-telecharger'] = function(){
   var V = window.Voix; if(!V || !V.possible) return;
   var boite = document.getElementById('voix-prog'), barre = boite && boite.querySelector('progress'), mot = boite && boite.querySelector('small');
@@ -38972,6 +39317,8 @@ function demarrer(){
     if(!el || !el.dataset.act) return;
     if(el.tagName === 'INPUT') return;
     var f = A[el.dataset.act];
+    /* un mini-jeu en pause : on regarde, on tape un code… mais rien ne fait avancer l'enquête avant de l'avoir fini */
+    if(f && M.mjPause && !LIBRE_EN_PAUSE[el.dataset.act]){ ev.preventDefault(); M.rappelPause(); return; }
     if(f){ ev.preventDefault(); try{ audioReveil(); f(el); }catch(e){ console.error(e); M.toast('Oups : ' + e.message); } }
   });
   document.addEventListener('change', function(ev){
@@ -42075,7 +42422,7 @@ function haut(e, annuler){
 function annule(e){ haut(e, true); }
 function clavier(e){
   if(!V || UI.modal) return;
-  var mj = document.getElementById('mj-plein'); if(mj && !mj.hidden) return;
+  var mj = document.getElementById('mj-plein'); if(mj && !mj.hidden && !mj.classList.contains('mj-cache')) return;   /* (un mini-jeu en pause : le livre se feuillette) */
   if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
   if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); tourner(1); }
   else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); tourner(-1); }
@@ -45088,6 +45435,13 @@ function guide(){
   var G = {plan:Pl, force:!!Pl.force, d:null, els:[], dire:'', libre:false, verrous:[]};
   G.bloque = Pl.force ? (UI.ecran === 'enquete' || UI.ecran === 'heros') : UI.ecran === 'enquete';
   var T = !Pl.force ? M.tutoCarte() : null; G.verrous = T ? T.verrous : [];
+  /* un mini-jeu en pause (moteur-actions.js) : le guide montre « ▶️ Reprendre » ; on peut regarder partout en attendant */
+  if(M.mjPause){
+    var rp = q('#mj-rappel .mj-rp-go');
+    G.pause = true; G.d = {k:'pause'}; G.els = rp ? [rp] : [];
+    G.dire = 'Ton mini-jeu est en pause : touche « ▶️ Reprendre » pour le finir.';
+    return G;
+  }
   var mj = document.getElementById('mj-plein');
   if(mj && !mj.hidden){ G.mj = true; return G; }
   var d = cibleDe(Pl.pas || []);
@@ -45114,7 +45468,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){
@@ -45139,8 +45493,8 @@ document.addEventListener('click', function(ev){
      il vient quand la recette secrète a été remplie sous la dictée du Sage) */
   if(t.closest('[data-at=grimoire]') && !(window.Atelier && Atelier.guider)) UI.tutoGrimoire = 1;
   var G; try{ G = guide(); }catch(e){ console.error(e); return; }
-  if(!G || !G.bloque || G.mj) return;
-  if(t.closest('#mj-plein, #stop-voix')) return;
+  if(!G || !G.bloque || G.mj || G.pause) return;   /* en pause : le moteur dit lui-même ce qui attend (LIBRE_EN_PAUSE) */
+  if(t.closest('#mj-plein, #stop-voix, #mj-rappel')) return;
   var el = t.closest('[data-act]');
   if(!el || !el.dataset.act || el.tagName === 'INPUT') return;
   if(permis(el, G)) return;
@@ -45352,7 +45706,7 @@ function griser(G){
   if(cle && cle === derniereOff) return;
   derniereOff = cle;
   qa('.tu-off').forEach(function(el){ el.classList.remove('tu-off'); });
-  if(!G || !G.bloque || G.mj) return;
+  if(!G || !G.bloque || G.mj || G.pause) return;
   qa('#app [data-act], #voile [data-act]').forEach(function(el){
     if(el.closest('#carte-ici') || el.closest('.tu-bandeau') || el.classList.contains('on')) return;   /* la carte grise déjà elle-même ce qui est fermé ; l'onglet ouvert reste net */
     if(!permis(el, G)) el.classList.add('tu-off');

@@ -195,6 +195,17 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mj-pc-pouls{50%{box-shadow:0 0 0 3px #24182e, 0 0 50px rgba(255,60,80,.95)}}
 .mj-intro .mj-go{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px rgba(8,10,25,.85), 0 4px 0 rgba(0,0,0,.35);flex:none}
 
+/* ---------- La pause (Romain, 5 novembre, 11 h 21 ; mj-core.js, mj-temps.js) ---------- */
+.mj-btn-pause{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,224,138,.55);background:rgba(255,224,138,.12);font-size:1.15rem;flex:none;padding:0;line-height:1}
+.mj-btn-pause:active{transform:scale(.92)}
+/* le mini-jeu en pause se cache tout entier (son voile compris) : on voit et on touche ce qu'il y a dessous */
+.mj-cache,.mj-cache *{visibility:hidden!important;pointer-events:none!important}
+/* « 3, 2, 1 » à la reprise */
+.mj-decompte{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,10,25,.45);pointer-events:auto}
+.mj-decompte b{font-family:var(--f-titre, inherit);font-size:min(34vw, 9rem);line-height:1;color:#ffe08a;text-shadow:0 4px 0 #8a5a12, 0 0 30px rgba(255,224,138,.6);animation:mj-decompte .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
+
 /* ==========================================================
    PERSOS — animations des héros et des villageois
    Les animations ne tournent que dans un SVG .pj-anime.
@@ -3484,7 +3495,127 @@ var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melu
 Object.keys(METIERS).forEach(function(id){ D.PNJ[id].metierCourt = METIERS[id][0]; D.PNJ[id].icMetier = METIERS[id][1]; });
 })();
 
+/* ===== mj-temps.js ===== */
+/* ==========================================================
+   Brumeval — l'horloge des mini-jeux, qu'on peut arrêter (window.MJT)
+   (Romain, 5 novembre, 11 h 21 : « mettre le mini-jeu en pause et revenir sur la carte, taper un code… »)
+
+   build.py enveloppe chaque fichier mj-*.js dans une fonction qui remplace, pour ce fichier seulement,
+   setTimeout, setInterval, requestAnimationFrame (et leurs clear/cancel), Date.now et performance.now
+   par ceux d'ici. Le reste du jeu (la carte, le tutoriel, l'atelier…) garde l'horloge du navigateur.
+
+   MJT.pause(el)   : tout ce que les mini-jeux attendent est figé (minuteurs, images, temps qui passe),
+                     et les animations CSS sous el (getAnimations) aussi ;
+   MJT.reprendre() : tout repart exactement où on en était (le temps passé en pause ne compte pas).
+   Un seul mini-jeu tourne à la fois : la pause est donc unique, pour tous les mini-jeux.
+   MJT.reel : les vraies fonctions du navigateur (le « 3, 2, 1 » de la reprise, mj-core.js).
+   ========================================================== */
+(function(){
+'use strict';
+var W = window;
+var vST = W.setTimeout.bind(W), vCT = W.clearTimeout.bind(W),
+    vRAF = (W.requestAnimationFrame || function(f){ return vST(function(){ f(W.performance.now()); }, 16); }).bind(W),
+    vCAF = (W.cancelAnimationFrame || vCT).bind(W);
+function reelNow(){ return W.performance.now(); }
+
+var enPause = false, debut = 0, decal = 0, dernierTs = -Infinity, anims = [];
+/* le temps des mini-jeux : celui du navigateur, moins tout le temps passé en pause */
+function perf(){ return (enPause ? debut : reelNow()) - decal; }
+function date(){ return Date.now() - decal - (enPause ? reelNow() - debut : 0); }
+
+/* ---------- Minuteurs (setTimeout / setInterval) ---------- */
+var MIN = {}, nMin = 700000000;   /* des numéros loin de ceux du navigateur */
+function armer(m){ m.reel = vST(function(){ sonner(m); }, Math.max(0, m.quand - perf())); }
+function sonner(m){
+  m.reel = null;
+  if(MIN[m.id] !== m || enPause) return;
+  if(m.quand - perf() > 2){ armer(m); return; }
+  if(m.tous){ m.quand = perf() + m.tous; armer(m); } else delete MIN[m.id];
+  m.fn.apply(W, m.args);
+}
+function poser(fn, ms, args, tous){
+  if(typeof fn !== 'function') return 0;
+  ms = Math.max(0, +ms || 0);
+  var m = {id:++nMin, fn:fn, args:args, quand:perf() + ms, tous:tous ? Math.max(4, ms) : 0, reel:null};
+  MIN[m.id] = m;
+  if(!enPause) armer(m);
+  return m.id;
+}
+function setTimeout_(fn, ms){ return poser(fn, ms, Array.prototype.slice.call(arguments, 2), false); }
+function setInterval_(fn, ms){ return poser(fn, ms, Array.prototype.slice.call(arguments, 2), true); }
+function effacer(id){
+  var m = MIN[id];
+  if(m){ if(m.reel) vCT(m.reel); delete MIN[id]; }
+  else if(id) vCT(id);   /* un minuteur du navigateur (créé ailleurs) */
+}
+
+/* ---------- Images (requestAnimationFrame) ---------- */
+var IMG = {}, nImg = 900000000;
+function demander(o){
+  o.reel = vRAF(function(ts){
+    o.reel = null;
+    if(IMG[o.id] !== o || enPause) return;
+    delete IMG[o.id];
+    var t = Math.max(dernierTs, ts - decal); dernierTs = t;   /* le temps de l'image, sans les pauses (jamais en arrière) */
+    o.fn(t);
+  });
+}
+function raf(fn){
+  if(typeof fn !== 'function') return 0;
+  var o = {id:++nImg, fn:fn, reel:null};
+  IMG[o.id] = o;
+  if(!enPause) demander(o);
+  return o.id;
+}
+function caf(id){
+  var o = IMG[id];
+  if(o){ if(o.reel) vCAF(o.reel); delete IMG[id]; }
+  else if(id) vCAF(id);
+}
+
+/* ---------- Pause / reprise ---------- */
+function pause(el){
+  if(enPause) return;
+  enPause = true; debut = reelNow();
+  var k;
+  for(k in MIN) if(MIN[k].reel){ vCT(MIN[k].reel); MIN[k].reel = null; }
+  for(k in IMG) if(IMG[k].reel){ vCAF(IMG[k].reel); IMG[k].reel = null; }
+  /* les animations CSS (et celles des scripts) du mini-jeu s'arrêtent aussi */
+  anims = [];
+  try{
+    if(el && el.getAnimations) el.getAnimations({subtree:true}).forEach(function(a){
+      if(a.playState === 'running'){ try{ a.pause(); anims.push(a); }catch(e){} }
+    });
+  }catch(e){}
+  anims.el = el;
+}
+function reprendre(){
+  if(!enPause) return;
+  decal += reelNow() - debut; enPause = false;
+  var k;
+  for(k in MIN) if(MIN[k] && !MIN[k].reel) armer(MIN[k]);
+  for(k in IMG) if(IMG[k] && !IMG[k].reel) demander(IMG[k]);
+  /* seulement celles qui sont encore là (une animation CSS annulée entre-temps ne revient pas) */
+  var vivantes = null;
+  try{ if(anims.el && anims.el.getAnimations) vivantes = anims.el.getAnimations({subtree:true}); }catch(e){}
+  anims.forEach(function(a){ if(!vivantes || vivantes.indexOf(a) >= 0){ try{ a.play(); }catch(e){} } });
+  anims = [];
+}
+
+W.MJT = {
+  setTimeout:setTimeout_, setInterval:setInterval_, clearTimeout:effacer, clearInterval:effacer,
+  raf:raf, caf:caf,
+  Date:{now:date}, performance:{now:perf},
+  pause:pause, reprendre:reprendre,
+  enPause:function(){ return enPause; },
+  reel:{setTimeout:vST, clearTimeout:vCT, raf:vRAF, caf:vCAF},
+  /* pour les tests : combien de minuteurs et d'images attendent */
+  _etat:function(){ return {pause:enPause, minuteurs:Object.keys(MIN).length, images:Object.keys(IMG).length, decal:Math.round(decal)}; }
+};
+})();
+
 /* ===== mj-core.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — cœur des mini-jeux (registre + écran commun)
    Les jeux s'enregistrent avec MJ.enregistrer(type, def).
@@ -3645,7 +3776,9 @@ MJ.lancer = function(el, type, params, fin, options){
   options = options || {};
   params = params || MJ.reglages(type, 1, {});
   if(!def){ el.innerHTML = '<p>Mini-jeu inconnu : ' + esc(type) + '</p>'; setTimeout(function(){ fin({reussi:true, score:1}); }, 300); return {arreter:function(){}}; }
-  var essais = 0, enCours = null, fini = false, arretDemoG = null;
+  var essais = 0, enCours = null, fini = false, arretDemoG = null, enPause = false, decompte = null;
+  /* un mini-jeu oublié en pause (ne devrait pas arriver : le moteur n'en lance pas d'autre) : on ne fige pas le nouveau */
+  if(window.MJT && MJT.enPause()) MJT.reprendre();
   /* au tutoriel (enquête 1, ou options.tutoriel) : « C'est parti » clignote (la salle des mini-jeux n'a pas de moteur : jamais) */
   function auTuto(){
     if(options.tutoriel) return true;
@@ -3673,6 +3806,65 @@ MJ.lancer = function(el, type, params, fin, options){
   if(typeof phrase === 'function') try{ phrase = phrase(params); }catch(e){ phrase = consigne; }
   racine.querySelector('.mj-btn-lire').onclick = function(){ U.stop(); U.lire(phrase); };
   racine.querySelector('.mj-btn-stop').onclick = function(){ U.stop(); };
+
+  /* ---------- La pause (Romain, 5 novembre, 11 h 21 : tous les mini-jeux, tous les joueurs, tout le temps) ----------
+     ⏸️ dans l'en-tête : tout se fige (mj-temps.js), le mini-jeu se cache (options.cadrePause, sinon le cadre autour de el)
+     et options.surPause(partie) laisse le moteur montrer la carte, les codes… partie.reprendre() le remet,
+     avec « 3, 2, 1 » quand on était en train de jouer (pas sur l'accueil ni sur le résultat). */
+  function cadrePause(){ return options.cadrePause || el.parentNode || el; }
+  function mettreEnPause(){
+    if(enPause || fini || !window.MJT) return;
+    enPause = true;
+    U.stop(); U.son('clic');
+    try{ var a = document.activeElement; if(a && el.contains(a) && a.blur) a.blur(); }catch(e){}
+    MJT.pause(el);
+    racine.classList.add('mj-en-pause');
+    var c = cadrePause(); if(c && c.classList) c.classList.add('mj-cache');
+    try{ if(options.surPause) options.surPause(partie); }catch(e){ if(window.console) console.error(e); }
+  }
+  function reprendre(){
+    if(!enPause || decompte) return;
+    var c = cadrePause(); if(c && c.classList) c.classList.remove('mj-cache');
+    racine.classList.remove('mj-en-pause');
+    var enJeu = !racine.classList.contains('mj-en-intro') && !scene.querySelector('.mj-resultat');
+    if(!enJeu || fini){ enPause = false; MJT.reprendre(); return; }
+    /* 3, 2, 1… : le temps de remettre les doigts sur l'écran (les vraies horloges : le mini-jeu, lui, est encore figé) */
+    var R = MJT.reel, n = 3;
+    decompte = U.html('<div class="mj-decompte" aria-live="assertive"><b>3</b></div>');
+    racine.appendChild(decompte);
+    (function tic(){
+      if(!decompte) return;
+      if(n === 0 || fini){
+        if(decompte.parentNode) decompte.parentNode.removeChild(decompte);
+        decompte = null; enPause = false; MJT.reprendre(); return;
+      }
+      decompte.innerHTML = '<b>' + n + '</b>';
+      U.son('tic'); n--;
+      R.setTimeout(tic, 600);
+    })();
+  }
+  var partie = {
+    arreter:function(){
+      fini = true;
+      if(decompte && decompte.parentNode) decompte.parentNode.removeChild(decompte);
+      decompte = null;
+      if(enPause){ enPause = false; var c = cadrePause(); if(c && c.classList) c.classList.remove('mj-cache'); if(window.MJT) MJT.reprendre(); }
+      if(arretDemoG){ try{ if(arretDemoG.arreter) arretDemoG.arreter(); else if(typeof arretDemoG === 'function') arretDemoG(); }catch(e){} }
+      if(enCours && enCours.arreter) try{ enCours.arreter(); }catch(e){}
+      U.stop();
+    },
+    pause:mettreEnPause,
+    reprendre:reprendre,
+    enPause:function(){ return enPause; },
+    titre:options.titre || def.nom, ic:def.ic || '🎮', type:type
+  };
+  if(options.surPause && window.MJT){
+    var bp = document.createElement('button');
+    bp.type = 'button'; bp.className = 'mj-btn-pause'; bp.textContent = '⏸️';
+    bp.setAttribute('aria-label', 'Mettre en pause');
+    bp.onclick = function(ev){ ev.stopPropagation(); mettreEnPause(); };
+    racine.querySelector('.mj-tete').insertBefore(bp, racine.querySelector('.mj-btn-lire'));
+  }
 
   function intro(){
     scene.innerHTML = '';
@@ -3786,15 +3978,11 @@ MJ.lancer = function(el, type, params, fin, options){
   }
 
   if(options.sansIntro) jouer(); else intro();
-  return {arreter: function(){
-    fini = true;
-    if(arretDemoG){ try{ if(arretDemoG.arreter) arretDemoG.arreter(); else if(typeof arretDemoG === 'function') arretDemoG(); }catch(e){} }
-    if(enCours && enCours.arreter) try{ enCours.arreter(); }catch(e){}
-    U.stop();
-  }};
+  return partie;
 };
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== persos.js ===== */
 /* ==========================================================
    Brumeval v2 — PERSOS : héros et villageois en SVG
@@ -6211,6 +6399,7 @@ window.Persos = {
 })();
 
 /* ===== mj-pisteur-alchi.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Pisteur et de l'Alchimiste
    traces, poursuite, cachette, tir · rythme, bulles, melange,
@@ -9509,7 +9698,9 @@ MJ.enregistrer('loupe', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-observation.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — jeux d'observation de l'Alchimiste (préfixe .mjo-)
    · differences : « Les 7 différences » (remplace « loupe ») — 10 décors,
@@ -11808,7 +11999,9 @@ MJ.enregistrer('insectes', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-melange.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — « Le bon mélange » (Alchimiste), nouvelle version.
    Remplace l'ancien 'melange' de mj-pisteur-alchi.js (chargé après lui).
@@ -12878,7 +13071,9 @@ def._modele = {INGR:INGR, ORDRE:ORDRE, couleur:couleur, ecart:ecart, oklab:oklab
 MJ.enregistrer('melange', def);
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-bulles.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — LES BULLES MAGIQUES (Alchimiste), version 2.
    Ce fichier est chargé APRÈS mj-pisteur-alchi.js et ré-enregistre
@@ -13741,7 +13936,9 @@ MJ.enregistrer('bulles', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-chaudron.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeu « Le chaudron » (Alchimiste)
    Version simplifiée (Romain, 4 novembre, 11 h 26) :
@@ -14785,7 +14982,9 @@ MJ.enregistrer('chaudron', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-barde-sage.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage
    mensonge, ordre, ragots (Barde) · alphabet, plans, grille, runes (Sage)
@@ -16125,7 +16324,9 @@ MJ.enregistrer('runes', {
 MJ.bardeSage = {glyphe:glyphe, schemaPigpen:schemaPigpen, SYMBOLES:SYMBOLES};
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-sage-plans.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — mini-jeux du Sage, nouvelle version :
    « Superposer les plans » ('plans') et « La grille de déduction » ('grille').
@@ -17516,7 +17717,7 @@ MJ.enregistrer('plans', {
     });
     /* --- clavier --- */
     function clavier(ev){
-      if(termine || pause || !root.isConnected) return;
+      if(termine || pause || !root.isConnected || (window.MJT && MJT.enPause())) return;   /* en pause (mj-temps.js) : le clavier sert au reste du jeu */
       if(ev.target && ev.target.tagName === 'INPUT') return;
       var g = ev.shiftKey ? 8 : 1, fait = true, c = appliquer(e, PC, PC);
       switch(ev.key){
@@ -17532,7 +17733,7 @@ MJ.enregistrer('plans', {
       }
       if(fait){ ev.preventDefault(); bouge(); }
     }
-    function clavierHaut(){ verifierAimant(); }
+    function clavierHaut(){ if(window.MJT && MJT.enPause()) return; verifierAimant(); }
     document.addEventListener('keydown', clavier);
     document.addEventListener('keyup', clavierHaut);
     T.s(function(){ document.removeEventListener('keydown', clavier); document.removeEventListener('keyup', clavierHaut); });
@@ -17916,7 +18117,9 @@ MJ.enregistrer('grille', {
 
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-mots.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les mots perdus »
    Le Barde n'a pas tout entendu. Il remet les mots manquants
@@ -18092,6 +18295,7 @@ MJ.enregistrer('mots', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== ragots.js ===== */
 /* ==========================================================
    Brumeval — les ragots de la taverne (une centaine).
@@ -18236,6 +18440,7 @@ window.RAGOTS = {village:R.filter(function(r){ return !r.enq; }), enquete:ENQ, l
 })();
 
 /* ===== mj-ragots.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les ragots de la taverne »
    Cinq ragots tirés au hasard parmi une centaine (ragots.js),
@@ -18386,7 +18591,9 @@ MJ.enregistrer('ragots', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-depositions.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeu du Barde : « Les dépositions »  (type 'depositions', préfixe .mjd-)
    Inspiré de « Petits Meurtres et Faits Divers » et des « deux versions » :
@@ -19704,7 +19911,9 @@ MJ.enregistrer('depositions', {
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-sage-codes.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval — mini-jeux du Sage, nouvelle version (retours du 2 nov.)
    « L'alphabet secret » ('alphabet') et « Assembler les runes » ('runes').
@@ -20559,7 +20768,7 @@ MJ.enregistrer('alphabet', {
     });
     btnVal.addEventListener('click', valider);
     function clavierPhysique(e){
-      if(bloque || !root.isConnected) return;
+      if(bloque || !root.isConnected || (window.MJT && MJT.enPause())) return;   /* en pause : le clavier sert au reste du jeu (un code…) */
       var k = e.key;
       if(/^[a-zA-Z]$/.test(k)){ taper(k.toUpperCase()); e.preventDefault(); }
       else if(k === 'Backspace' || k === 'Delete'){ effacer(); e.preventDefault(); }
@@ -21072,7 +21281,9 @@ MJ.enregistrer('runes', {
 MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:construire, resoudre:resoudre, resoluble:resoluble};
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-regles.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
    Brumeval v2 — L'ÉCRAN D'ACCUEIL DES MINI-JEUX (version simple)
    Romain, 2 nov. au soir : « Tu vires tout et tu simplifies au maximum. »
@@ -22071,6 +22282,7 @@ D('runes', function(el){
 });
 })();
 
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== revision.js ===== */
 /* ==========================================================
    Brumeval — relire un mini-jeu du Barde après coup.
