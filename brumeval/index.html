@@ -5103,6 +5103,16 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 @media (prefers-reduced-motion: reduce){ .lg-pose{animation:none}
   /* les étiquettes restent figées au plus fort de leur signe */
   .lg-sg *{animation-play-state:paused !important;animation-delay:-1.75s !important} }
+/* Le bac rangé en dossiers (Romain, 5 novembre, 13 h 19) : on touche un dossier pour le dérouler */
+.lg-bac-cats{display:flex;gap:6px;flex-wrap:wrap;padding:2px 10px 4px}
+.lg-cat{display:flex;align-items:center;gap:5px;min-height:40px;padding:4px 10px 4px 8px;border-radius:999px;border:2px solid #6b4a2f;background:linear-gradient(#f3e3c3, #e0c99a);color:#3b2a00;font-size:.85rem;cursor:pointer;box-shadow:0 2px 0 #2a1d14}
+.lg-cat b{font-weight:800}
+.lg-cat i{font-style:normal;font-weight:800;background:#3b2a1d;color:#fff3dc;border-radius:999px;padding:0 7px;font-size:.75rem;line-height:1.5}
+.lg-cat-ic{font-size:1.05rem}
+.lg-cat-fl{font-size:.8rem;transition:transform .2s;transform:rotate(-90deg)}
+.lg-cat.on{background:linear-gradient(#ffe08a, #e8a93a);border-color:#24182e}
+.lg-cat.on .lg-cat-fl{transform:none}
+.lg-bac-liste[hidden]{display:none}
 
 /* ==========================================================
    Brumeval — le Carnet : les habitants qui s'ouvrent, Autres, Mes indices (carnet.js)
@@ -5380,6 +5390,7 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 /* fâché, ou « Encore toi ? » : son visage et « Reviens plus tard », cerclés de rouge */
 .b-gens-carte.bd-fache{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important;padding:2px 12px 2px 2px!important;gap:8px}
 .b-gens-carte.bd-fache > span{font-size:.8rem;font-weight:700;color:#ffd2cb}
+.b-gens-carte.bd-fache > span b{color:#fff;font-weight:800}
 
 /* ==========================================================
    Les petites scènes animées des fins d'enquête (illus-fin.js ; Romain, 5 novembre, 9 h 37).
@@ -6244,8 +6255,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 13:13 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 13:13';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 14:01 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 14:01';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -35151,7 +35162,7 @@ E[1] = {
       {ic:'🌳', m:2, action:true, lieu:'chene', points:['racines'], t:'Les chemins du Moulin et du Puits sont vides. Ce soir, va au bout du chemin du Vieux Chêne, là où il faisait trop noir pour voir des traces.', court:'Va au bout du chemin du Vieux Chêne, là où il faisait trop noir !',
         fait:[{vu:'pisteur:chene:racines'}, {vu:'pisteur:puits:grille'}, {vu:'pisteur:moulin:roue'}]},
       {ic:'📜', m:2, t:'Raconte tout au Sage : ce que tu as vu et trouvé (ton fil d\'aventure, dans le Carnet).', court:'Raconte tout au Sage : ce que tu as vu et trouvé.', manuel:true},
-      {piste:true, t:'Un mini-jeu se tente deux fois au plus. Si tu rates, tu as tout de suite une dernière chance ; après, il te reste ce que tu as vu.'},
+      {piste:true, t:'Ici, pour t\'entraîner, un mini-jeu raté se retente autant que tu veux. Dans les autres enquêtes, tu n\'auras qu\'un seul essai !'},   /* (Romain, 5 novembre, 13 h 19) */
       {libre:true, ic:'🔍', t:'Ensuite, cherche, parle, déduis : trouvez ensemble QUI a pris la Lanterne, et OÙ elle est !'}
     ],
     alchimiste:[
@@ -35658,7 +35669,9 @@ E[2] = {
       alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit']}]}
     },
     chene:{
-      verrou:{besoin:[{code:'info:detour'}, {vu:'pisteur:foret:passer'}], t:'Silas, le garde, ne laisse passer personne vers le Vieux Chêne. Le Grand Livre du Sage connaît peut-être un vieux chemin… ou bien, au carrefour, passe derrière son dos sans te faire voir !'},
+      /* (Romain, 5 novembre, 13 h 56 : la phrase courte pour tout le monde ; le conseil et « ce qui marcherait », seulement pour le Pisteur) */
+      verrou:{besoin:[{code:'info:detour'}, {vu:'pisteur:foret:passer'}], t:'Silas, le garde, ne laisse passer personne vers le Vieux Chêne.', besoinPour:['pisteur'],
+        tPour:{pisteur:'Silas, le garde, ne laisse passer personne vers le Vieux Chêne. Le Grand Livre du Sage connaît peut-être un vieux chemin… ou bien, au carrefour, passe derrière son dos sans te faire voir !'}},
       pisteur:{intro:'Le Vieux Chêne, immense et sombre. Personne ne doit te voir ici !', points:[
         {id:'ouvriers', ic:'👷', nom:'Les ouvriers', moments:['matin'],
           t:'Caché derrière un buisson, tu vois deux ouvriers poser les derniers gros rochers sur le trou du Vieux Chêne. Puis l\'un d\'eux cache un pot noir tout près, sous les branches basses. Ils s\'en vont en chuchotant.',
@@ -35745,7 +35758,7 @@ E[2] = {
           note:'Moulin, la pièce cachée : des alambics, un reste de colorant rouge, une rigole vers la rivière. Ni tissu ni bassine.'},
         /* suivre l'homme en cape : « Suivre la piste », la nuit (params.decor), au niveau 10 pour tout le monde (très difficile) ;
            gagné : la crypte du clocher (info:crypte) et un vêtement rare (garderobe.js) ; raté : rien d'autre, aucune conséquence */
-        {id:'suivre', ic:'👣', nom:'Suivre l\'homme en cape', moments:['nuit'], choixTxt:'👣 Suivre l\'homme en cape', mj:'traces', mjNiveauFixe:10, params:{decor:'nuit', suspect:'botte'}, donne:'info:crypte',
+        {id:'suivre', ic:'👣', nom:'Suivre l\'homme en cape', moments:['nuit'], choixTxt:'👣 Suivre l\'homme en cape', mj:'traces', mjNiveauFixe:10, params:{decor:'nuit', suspect:'botte'},   /* (plus de code info:crypte : il le raconte à l'oral, Romain, 5 novembre, 13 h 19 ; la crypte va sur son tableau des chemins secrets) */
           besoin:[{vu:'pisteur:moulin:guet'}], visibleSi:[{vu:'pisteur:moulin:guet'}],
           avant:'Il marche vite et sans bruit… Ce sera très difficile de ne pas le perdre !',
           bouton:'👣 Le suivre',
@@ -35756,8 +35769,8 @@ E[2] = {
           rate:'Tu as perdu sa trace… mais il partait vers le sud-ouest, du côté du clocher.',
           rateNote:'Nuit : l\'homme en cape noire du moulin est parti vers le sud-ouest, du côté du clocher. Tu as perdu sa trace.',
           ferme:'Il a disparu dans la nuit.'},
-        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{vu:'pisteur:moulin:alambics'}], visibleSi:[{vu:'pisteur:moulin:alambics'}], donne:'info:piece',
-          t:'Sous un alambic, quelque chose brille : quelqu\'un a compté son or ici, et en a perdu une ! Une pièce d\'or toute neuve… Qui, au village, en a eu une récemment ?',
+        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{vu:'pisteur:moulin:alambics'}], visibleSi:[{vu:'pisteur:moulin:alambics'}],   /* (plus de code info:piece : il le raconte au Barde) */
+          t:'Sous un alambic, quelque chose brille : quelqu\'un a compté son or ici, et en a perdu une ! Une pièce d\'or toute neuve… Qui, au village, en a eu une récemment ? Raconte-le au Barde !',
           note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic. Qui, au village, en a eu une récemment ?'}
       ]}
     },
@@ -35776,7 +35789,7 @@ E[2] = {
     pont:{
       pisteur:{intro:'Le pont de pierre, au-dessus de la rivière.', points:[
         {id:'riviere', ic:'🌉', nom:'La rivière',
-          t:'Sous le pont, la rivière coule, toute rouge. Les poissons se cachent sous les pierres.'}
+          t:'Sous le pont, la rivière coule, toute rouge. Les poissons se cachent sous les pierres. Dis à l\'Alchimiste de venir voir !'}
       ]},
       /* l'eau de la rivière : un échantillon à analyser dans l'atelier (regles.js) */
       alchimiste:{cueillir:[], echantillon:{objet:'eau_riviere', t:'Tu te penches au bord du pont et tu remplis un petit flacon d\'eau toute rouge. Analyse-la sur ta table d\'analyse, dans ton atelier !'}}
@@ -35784,7 +35797,7 @@ E[2] = {
     lavoir:{
       pisteur:{intro:'Le lavoir du village.', points:[
         {id:'eau', ic:'🧺', nom:'L\'eau du lavoir',
-          t:'L\'eau du lavoir est toute rose… Pas rouge comme la rivière : rose, comme un bonbon !'}
+          t:'L\'eau du lavoir est toute rose… Pas rouge comme la rivière : rose, comme un bonbon ! Dis à l\'Alchimiste de venir voir !'}
       ]},
       alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin']}, {ingr:'eau', n:2}],
         echantillon:{objet:'eau_lavoir', t:'Tu remplis un petit flacon avec l\'eau rose du lavoir. Analyse-la sur ta table d\'analyse, dans ton atelier !'}}
@@ -35804,7 +35817,8 @@ E[2] = {
       {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
-      {q:'Montrer la pièce d\'or toute neuve du moulin', besoin:[{et:[{code:'info:piece'}, {vu:'barde:gaspard:1'}]}, {et:[{code:'info:piece'}, {vu:'barde:oreille:boulangerie'}]}, {et:[{code:'info:piece'}, {vu:'barde:margot:3'}]}],
+      /* (Romain, 5 novembre, 13 h 47 : plus de code de la pièce du moulin ; le ragot de Gaspard, ou de Margot la nuit, suffit ; le Pisteur raconte sa pièce à l'oral) */
+      {q:'On t\'a vu payer avec une pièce d\'or toute neuve !', besoin:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}],
         a:'Bon, d\'accord… c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli. Une rivière rouge, c\'est beau, non ?', ment:true,
         vrai:'Bon… Un homme en cape noire, avec un grand capuchon, m\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Je ne sais pas qui c\'était, je te le jure !',
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
@@ -35828,7 +35842,8 @@ E[2] = {
         a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Ce matin, des ouvriers ont posé de gros rochers sur le trou : ce n\'est pas un éboulement ! Tiens, prends la pierre, elle me fait peur ! C\'est pour ton Sage.',
         note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
-    victor:{ou:{apresmidi:'poste', nuit:'taverne'}, carte:{matin:'ruelle'}, occupe:{matin:'« Pas le temps, je fais ma tournée ! Reviens cet après-midi. »'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
+    /* (Romain, 5 novembre, 13 h 19 : son mensonge dès le matin ; il fait sa tournée dans la ruelle, on peut lui parler) */
+    victor:{ou:{matin:'ruelle', apresmidi:'poste', nuit:'taverne'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
       {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
         vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
         note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
@@ -35839,7 +35854,7 @@ E[2] = {
       saluts:{matin:'Bonjour ! C\'est le coup de feu, mais pour toi, j\'ai une minute.', nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
       {q:'Quelles nouvelles, Gaspard ?', a:'D\'habitude, Odette est ma toute première cliente : elle arrive à l\'aube, avant tout le monde ! Ce matin, elle n\'est pas venue… Elle habite au 2, rue des Lanternes : ce serait bien que quelqu\'un aille voir si elle va bien. Et Mélusine va s\'inquiéter : c\'est elle qui a offert à Odette sa canne aux sept chats, tu sais.', note:'Gaspard : Odette, sa toute première cliente, n\'est pas venue ce matin. Elle habite au 2, rue des Lanternes. C\'est Mélusine qui lui a offert sa canne.'},
       {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], a:'Si ! Bastien, le charretier, m\'a payé son pain avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou ! Bizarre, non ?', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
-      {q:'Margot dit toujours la vérité ?', moments:['apresmidi', 'nuit'], mimique:'margot', ok:'Un signe de menteur ne dit pas qui est coupable.',
+      {q:'Margot dit toujours la vérité ?', mimique:'margot',   /* (dès le matin : Romain, 5 novembre, 13 h 19) */ ok:'Un signe de menteur ne dit pas qui est coupable.',
         a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
         note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
     ]},
@@ -35970,6 +35985,8 @@ E[2] = {
       pieges:['sac', 'panier', 'bougé', 'gelé', 'pain', 'lait', 'rie', 'sache'],
       t:'Margot : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'a pas rougi. Ce n\'est pas son vin.'}
   ],
+  /* Odette n'est pas chez elle : pour le Pisteur, l'Alchimiste et le Sage (le Barde, lui, trouve la porte ouverte : « voisin ») */
+  absentTexte:{odette:'Odette n\'est pas chez elle… C\'est bizarre ! Dis au Barde de venir voir.'},
   /* 👂 Écouter aux portes (talent « Tendre l'oreille », Romain, 5 novembre, 12 h 31) : chacun a toujours quelque chose à dire, à chaque
      moment, là où il est (barde.js : B.porteIci). Ce qu'ils pensent de l'enquête, en rapport avec leur métier ; rien qui ne soit prévu
      ailleurs (les vrais indices restent dans les bribes ci-dessus, qui passent avant). Le Carnet le garde sur la page de chacun. */
@@ -36590,6 +36607,14 @@ window.SOUTERRAINS = {
       t:'Entre les racines du Vieux Chêne, de l\'air froid sort de la terre… Il y a peut-être un trou, tout en dessous.'},
     {id:'q_puits', type:'mystere', enquete:1, x:118, y:352, ic:'❔', nom:'Au fond du puits', revele:[{vu:'pisteur:puits:grille'}],
       t:'Sous la grille rouillée, le puits descend tout noir. Jusqu\'où va-t-il ?'},
+    /* Enquête 2 : les choses bizarres que le Pisteur a repérées (Romain, 5 novembre, 13 h 19 : « le Pisteur, il veut repérer les trucs
+       bizarres ») ; le chemin des bûcherons, lui, est un chemin secret en surface (e2.js, E.chemins) */
+    {id:'q_chene_trou', type:'mystere', enquete:2, x:322, y:226, ic:'🪨', nom:'Le trou du Vieux Chêne', revele:[{vu:'pisteur:chene:ouvriers'}, {vu:'pisteur:chene:rochers'}],
+      t:'On a bouché le trou du Vieux Chêne avec de gros rochers bien rangés. De l\'air froid passe encore entre les pierres… Qu\'est-ce qu\'on veut cacher là-dessous ?'},
+    {id:'q_moulin_porte', type:'mystere', enquete:2, x:812, y:440, ic:'🚪', nom:'Une porte cachée au moulin', revele:[{vu:'pisteur:moulin:guet'}, {vu:'pisteur:moulin:alambics'}],
+      t:'La nuit, une porte cachée s\'est ouverte dans le mur du moulin, puis s\'est fondue dans le mur. Il y a une pièce cachée là-dedans !'},
+    {id:'q_crypte', type:'mystere', enquete:2, x:700, y:640, ic:'🗝️', nom:'La crypte du clocher', revele:[{vu:'pisteur:moulin:suivre'}],
+      t:'La nuit, l\'homme en cape noire du moulin est entré dans la crypte du clocher avec une clé, et a refermé à clé derrière lui. Qu\'y a-t-il en bas ?'},
     /* Enquête 2 : la crypte sous le clocher, dès que son passage est trouvé */
     {id:'entree_clocher', type:'entree', enquete:2, x:660, y:548, ic:'🔔', nom:'Le clocher', revele:[{code:'info:passage_crypte'}]},
     {id:'escalier_crypte', type:'passage', enquete:2, de:'entree_clocher', a:'crypte', escalier:true, pts:[[660,572],[668,600],[665,624]], revele:[{code:'info:passage_crypte'}]},
@@ -36985,7 +37010,7 @@ M.modsPour = function(type, potion){
   });
   if(potion){ var p = D.POTIONS[potion]; if(p && p.fx.mj && p.fx.mj[type]) ajoute({ic:p.ic, nom:p.nom}, p.fx.mj[type]); }
   var P = M.S.e;
-  if(P && P.chances > 0) mods.deuxiemeChance = true;
+  /* (plus de deuxième chance dans les mini-jeux, Romain, 5 novembre, 13 h 19 : P.chances reste, inutilisé, pour la boutique plus tard) */
   return {mods:mods, aides:aides};
 };
 M.potionsPour = function(type){
@@ -37892,7 +37917,7 @@ function pointPlantes(lieu){
 M.pointsVisibles = function(lieu, role){
   var E = M.E(), L = E.lieux[lieu], R = L && L[role];
   var l = (R && R.points) ? R.points.filter(function(p){ return M.momentOk(p.moments); }) : [];
-  if(role === 'pisteur' && !(M.cacherPlantes && M.cacherPlantes())){ var pp = pointPlantes(lieu); if(pp) l = l.concat([pp]); }   /* E1 : après ses missions (mission.js) */
+  /* (plus de « Ce qui pousse ici » pour le Pisteur : il ne renseigne plus l'Alchimiste, Romain, 5 novembre, 13 h 19 ; pointPlantes reste, inutilisé) */
   return l;
 };
 /* Lieux où l'Alchimiste peut chercher (elle ne sait pas ce qui y pousse) */
@@ -37959,7 +37984,9 @@ M.feuilleLieu = function(lieu){
   var s = '<div class="b-feuille-tete"><span class="b-feuille-ic">' + M.icLieu(lieu) + '</span><div><h2>' + esc(M.nomLieu(lieu)) + '</h2><span class="doux">' + D.MOMENTS[mid].ic + ' ' + D.MOMENTS[mid].nom + '</span></div></div>';
   var v = M.verrouLieu(lieu);
   if(v){
-    s += '<div class="b-verrou"><p>🔒 ' + esc(v.t) + '</p>' + lire(v.t) + M.besoinHTML(v.besoin, role) + '</div>';
+    /* v.tPour[role] : le texte pour ce rôle ; v.besoinPour : ceux à qui « ce qui marcherait » s'adresse (le Vieux Chêne de l'E2 : le Pisteur) */
+    var vt = (v.tPour && v.tPour[role]) || v.t, vb = !v.besoinPour || v.besoinPour.indexOf(role) >= 0;
+    s += '<div class="b-verrou"><p>🔒 ' + esc(vt) + '</p>' + lire(vt) + (vb ? M.besoinHTML(v.besoin, role) : '') + '</div>';
     return s + bonusHTML(lieu);
   }
   if(role === 'pisteur' || role === 'sage'){
@@ -37976,7 +38003,7 @@ M.feuilleLieu = function(lieu){
           var k = role + ':' + lieu + ':' + p.id, st = P.vus[k];
           var ouvert = P.vus[cle] === P.moment;
           return '<button class="b-point' + (st === 'ok' ? ' vu' : st === 'rate' ? ' rate' : '') + '" data-act="point" data-l="' + lieu + '" data-id="' + p.id + '"' + (!st && !ouvert ? ' disabled' : '') + '>' +
-            '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 dernière chance</small>') : '') + '</button>';
+            '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (M.essaisInfinis && M.essaisInfinis() ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
         }).join('') + '</div>';
         if(M.sansActions()){ if(toutVu(lieu, role)) s += rienDePlus(); }   /* sans actions : un lieu ne donne qu'une chose par moment ; tout vu, on ne le redonne pas */
         else if(P.vus[cle] !== P.moment) s += M.fouilleGratuite && M.fouilleGratuite(lieu) ? '<button class="btn second" data-act="explorer" data-id="' + lieu + '">🔦 Fouiller à nouveau · gratuit</button>' :
@@ -38057,7 +38084,9 @@ M.habitantMaison = function(maison){
 };
 M.chezLui = function(id){ return 'chez ' + (FEM[id] ? 'elle' : 'lui'); };
 M.texteAbsent = function(maison){
-  var id = M.habitantMaison(maison), x = id && D.PNJ[id];
+  var id = M.habitantMaison(maison), x = id && D.PNJ[id], E0 = M.E();
+  /* une absence qui compte dans l'enquête (E.absentTexte : Odette, à l'E2), pour les autres que le Barde (Romain, 5 novembre, 13 h 19) */
+  if(id && E0 && E0.absentTexte && E0.absentTexte[id] && M.role() !== 'barde') return E0.absentTexte[id];
   if(id && M.pnjOccupesIci(maison).indexOf(id) >= 0) return M.texteOccupe(id);   /* chez lui, mais il n'ouvre pas (il dort…) */
   return x ? x.court + ' n\'est pas ' + M.chezLui(id) + ' en ce moment.' : 'Tu frappes, tu attends… Personne ne répond.';
 };
@@ -38081,7 +38110,8 @@ M.feuilleMaison = function(maison){
   if(role === 'barde' && M.pnjIci(maison).length){
     var ic0 = M.pnjIci(maison)[0];
     /* fâché, ou « Encore toi ? » (barde.js : M.pnjFache) : son visage et « Reviens plus tard », cerclés de rouge */
-    if(M.pnjFache && M.pnjFache(ic0)) s += '<div class="b-gens-carte bd-fache"><div class="b-gens-img">' + M.pnjImg(ic0) + '</div><span>Reviens plus tard</span></div>';
+    var rouge0 = M.pastilleRouge ? M.pastilleRouge(ic0) : '';
+    if(rouge0) s += rouge0;
     else s += '<button class="btn grand" data-act="frapper" data-id="' + maison + '"' + (M.peutAgir() ? '' : ' disabled') + '>🚪 Frapper à la porte' + M.coutTxt() + '</button>' + plusDAction();
   }
   if(role === 'barde' && M.porteBouton) s += M.porteBouton(maison);   /* 👂 écouter aux portes (talent, barde.js) */
@@ -38722,7 +38752,7 @@ function lancer(type, niveau, extra, options, fin){
     if(res && res.reussi && M.role() === 'alchimiste'){ try{ if(window.Atelier && Atelier.mjGagne) Atelier.mjGagne(M.S, type); }catch(e){} }   /* un accessoire pour le chat de l'atelier (la première fois pour chaque mini-jeu) */
     M.sauver();
     fin(res);
-  }, {aides:aides, titre:options.titre, essaiUnique:options.essaiUnique, deuxiemeChance:!options.essaiUnique && P && P.chances > 0, lireAuto:false,
+  }, {aides:aides, titre:options.titre, essaiUnique:options.essaiUnique, deuxiemeChance:false, lireAuto:false,   /* (plus jamais de « ✨ Deuxième chance » : Romain, 5 novembre, 13 h 19) */
      /* ⏸️ (mj-core.js) : #mj-plein se cache, on retrouve la carte, les codes… et le rappel en bas de l'écran */
      surPause:function(pt){ M.pauseMJ({partie:pt, hote:'plein', ic:icPause, titre:titrePause}); }});
 }
@@ -38784,7 +38814,7 @@ M.reprendreMJ = function(){
 };
 /* Ce qu'on peut toucher pendant la pause : regarder, lire, taper ou donner un code, les réglages. Le reste attend la fin du mini-jeu. */
 var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-passer':1, lieu:1, maison:1, onglet:1, menu:1, 'menu-enquete':1, ecran:1, retour:1, aide:1,
-  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1,
+  journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1,
   sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
   opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
@@ -39468,10 +39498,10 @@ A.point = function(el){
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */
-        if(p.ouvrePartiel && n >= (M.MAX_ESSAIS || 2)){ P.vus[k] = 'ok'; P.vus[k + ':partiel'] = 1; M.consommerBesoin(p.besoin); var cp = null;
+        if(p.ouvrePartiel && n >= M.MAX_ESSAIS){ P.vus[k] = 'ok'; P.vus[k + ':partiel'] = 1; M.consommerBesoin(p.besoin); var cp = null;
           if(p.obj){ P.objets[p.obj] = true; cp = 'obj:' + p.obj; } if(p.donne){ cp = p.donne; P.objets['_' + p.donne] = true; } M.sauver();
           M.decouvrir({ic:'💨', titre:p.nom, t:p.rate || 'Raté…', rate:true, code:cp, retour:'lieu', retourId:l}); return; }
-        M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:M.texteEchec ? M.texteEchec(p, n, 'Raté…') : (p.rate || 'Raté…'), rate:true, retour:'lieu', retourId:l, reessai:n < 2 ? {act:'point', l:l, id:p.id} : null}); }
+        M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:M.texteEchec ? M.texteEchec(p, n, 'Raté…') : (p.rate || 'Raté…'), rate:true, retour:'lieu', retourId:l, reessai:n < M.MAX_ESSAIS ? {act:'point', l:l, id:p.id} : null}); }
     });
   } else reveler();
 };
@@ -39536,7 +39566,7 @@ A.demasquer = function(el){
       Q.forEach(function(q, i){ if(q.ment && P.vus['barde:' + id + ':' + i] === 'ok' && !P.vus['verite:' + id + ':' + i]){ P.vus['verite:' + id + ':' + i] = 1; M.noter(q.noteVrai || (D.PNJ[id].court + ' a avoué : ' + q.vrai.replace(/[«»]/g, '').trim()), '🔍'); } });
       M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'});
       M.toast('Démasqué ! ' + D.PNJ[id].court + ' dit enfin la vérité.');
-    } else { var n = M.echec ? M.echec(kd) : 2; M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'}); M.toast(n < 2 ? 'Raté… Tu as encore une dernière chance.' : D.PNJ[id].court + ' ne se laissera plus piéger pendant cette enquête.'); }
+    } else { var n = M.echec ? M.echec(kd) : 2; M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'}); M.toast(n < M.MAX_ESSAIS ? 'Raté… Tu peux réessayer.' : D.PNJ[id].court + ' ne se laissera plus piéger pendant cette enquête.'); }
   });
 };
 A.forcer = function(el){
@@ -39562,8 +39592,8 @@ A.ecouter = function(el){
     if(ok){ M.decouvrir({ic:'👂', titre:x.titre, t:x.t, note:x.note}); }
     else { if(x.noteRate) M.noter(x.noteRate, '👂');
       var n = M.echec ? M.echec(ke) : 2;
-      if(n < 2) delete P.vus['ecoute:' + x.id];   /* encore un essai : la scène reste là */
-      M.sauver(); M.decouvrir({ic:'👂', titre:x.titre, t:M.texteEchec ? M.texteEchec(x, n, 'Tu as tout mélangé… Tu n\'as compris que des morceaux.') : (x.rate || 'Tu as tout mélangé…'), note:x.noteRate, rate:true, reessai:n < 2 ? {act:'ecouter', id:x.id} : null}); }
+      if(n < M.MAX_ESSAIS) delete P.vus['ecoute:' + x.id];   /* encore un essai (l'enquête 1) : la scène reste là */
+      M.sauver(); M.decouvrir({ic:'👂', titre:x.titre, t:M.texteEchec ? M.texteEchec(x, n, 'Tu as tout mélangé… Tu n\'as compris que des morceaux.') : (x.rate || 'Tu as tout mélangé…'), note:x.noteRate, rate:true, reessai:n < M.MAX_ESSAIS ? {act:'ecouter', id:x.id} : null}); }
   }
   if(x.mj) M.lancerMJ(x.mj, E.niveau, x.params, {titre:x.titre, avant:x.avant, bouton:x.bouton, sansIntro:gratuit}, function(res){ fini(res.reussi); });
   else fini(true);
@@ -39610,7 +39640,7 @@ A.analyser = function(el){
   }
   if(An.mj) M.lancerMJ(An.mj, E.niveau, An.params, {titre:'Analyse : ' + E.objets[id].nom, ic:E.objets[id].ic, avant:An.avant, bouton:An.bouton, sansIntro:gratuit}, function(res){
     if(res.reussi) fini();
-    else { var n = M.echec ? M.echec(ka) : 1; if(An.rateNote) M.noter(An.rateNote, '💨'); M.sauver(); M.decouvrir({ic:'💨', titre:'Analyse ratée', t:M.texteEchec ? M.texteEchec(An, n, 'Tu n\'as rien trouvé cette fois.') : (An.rate || 'Tu n\'as rien trouvé cette fois.'), rate:true, reessai:n < 2 ? {act:'analyser', id:id} : null}); }
+    else { var n = M.echec ? M.echec(ka) : 1; if(An.rateNote) M.noter(An.rateNote, '💨'); M.sauver(); M.decouvrir({ic:'💨', titre:'Analyse ratée', t:M.texteEchec ? M.texteEchec(An, n, 'Tu n\'as rien trouvé cette fois.') : (An.rate || 'Tu n\'as rien trouvé cette fois.'), rate:true, reessai:n < M.MAX_ESSAIS ? {act:'analyser', id:id} : null}); }
   });
   else fini();
 };
@@ -39673,9 +39703,9 @@ A['ouvrir-page'] = function(el){
     if(res.reussi) ouvrir();
     else { var n = M.echec ? M.echec(kp) : 1; if(p.rateNote) M.noter(p.rateNote, p.ic);
       /* p.ouvrePartiel (la page blanche du tutoriel, enquête 1) : le dernier raté ouvre quand même la page, à moitié effacée, avec son code (l'indice partiel suffit) */
-      if(p.ouvrePartiel && n >= (M.MAX_ESSAIS || 2)){ P.pages[p.id] = 'partiel'; M.consommerBesoin(p.besoin); if(p.donne) P.objets['_' + p.donne] = true; M.sauver();
+      if(p.ouvrePartiel && n >= M.MAX_ESSAIS){ P.pages[p.id] = 'partiel'; M.consommerBesoin(p.besoin); if(p.donne) P.objets['_' + p.donne] = true; M.sauver();
         M.decouvrir({ic:'💨', titre:p.titre, t:(p.rate || 'Raté…') + ' ' + (p.tPartiel || ''), code:p.donne || null, rate:true}); return; }
-      M.sauver(); M.decouvrir({ic:'💨', titre:p.titre, t:M.texteEchec ? M.texteEchec(p, n, 'Pas cette fois…') : (p.rate || 'Pas cette fois…'), rate:true, reessai:n < 2 ? {act:'ouvrir-page', id:p.id} : null}); }
+      M.sauver(); M.decouvrir({ic:'💨', titre:p.titre, t:M.texteEchec ? M.texteEchec(p, n, 'Pas cette fois…') : (p.rate || 'Pas cette fois…'), rate:true, reessai:n < M.MAX_ESSAIS ? {act:'ouvrir-page', id:p.id} : null}); }
   });
   else ouvrir();
 };
@@ -40388,7 +40418,7 @@ M.monterLiege = function(){
     (M.barde && M.barde.retourPossible && M.barde.retourPossible() ? '<button type="button" class="lg-retour" data-lg="retour" aria-label="Retour à l\'interrogatoire">↩️<small>' + esc((D.PNJ[M.barde.retourPossible()] || {}).court || 'Retour') + '</small></button>' : '') + '</div>' +
     '<p class="lg-consigne" hidden></p>' +
     '<button type="button" class="lg-fleche g" data-lg="gauche" aria-label="Voir à gauche">‹</button><button type="button" class="lg-fleche d" data-lg="droite" aria-label="Voir à droite">›</button></div>' +
-    '<div class="lg-bac"><div class="lg-bac-tete"><b>📦 Les photos</b><span class="lg-bac-n"></span>' + M.lireBtn(aide) + '</div><div class="lg-bac-liste"></div></div>';
+    '<div class="lg-bac"><div class="lg-bac-tete"><b>📦 Les photos</b><span class="lg-bac-n"></span>' + M.lireBtn(aide) + '</div><div class="lg-bac-cats"></div><div class="lg-bac-liste" hidden></div></div>';
   V = {ici:ici, vue:ici.querySelector('.lg-vue'), monde:ici.querySelector('.lg-monde'), decor:ici.querySelector('.lg-decor'), mur:ici.querySelector('.lg-mur'), bac:ici.querySelector('.lg-bac'), liste:ici.querySelector('.lg-bac-liste'),
     consigne:ici.querySelector('.lg-consigne'), k:1, mode:null, sel:null, suivis:[], E:E, P:P, pts:{}, geste:0, annule:0, pinch:null, reste:null, avale:0};
   var mem = (M.UI && M.UI.liegeVue) || {}; V.ox = mem.ox || 0; V.oy = mem.oy || 0; V.z = mem.z || 1;
@@ -40443,10 +40473,24 @@ function dessiner(){
   majBac(); majSac();
   ajuster();   /* le bac a pu changer de hauteur : le tableau se recale */
 }
+/* Le bac est rangé en dossiers qu'on déroule (Romain, 5 novembre, 13 h 19 : « sinon, c'est un peu le bordel ») :
+   🤥 les mensonges (les signes), 👥 les habitants, 📍 les lieux, 🎒 les objets. Un seul dossier ouvert à la fois (M.UI.lgCat). */
+var CATS = [{t:'signe', ic:'🤥', nom:'Mensonges'}, {t:'pnj', ic:'👥', nom:'Habitants'}, {t:'lieu', ic:'📍', nom:'Lieux'}, {t:'obj', ic:'🎒', nom:'Objets'}];
 function majBac(){
   var L = etat(V.P), dispo = photos(V.E, V.P).filter(function(c){ return !L.cartes[c.k]; });
-  V.liste.innerHTML = dispo.length ? dispo.map(function(c){ return '<button type="button" class="lg-bac-carte lg-' + c.type + '" data-k="' + esc(c.k) + '">' + contenu(c) + '</button>'; }).join('') :
-    '<p class="lg-bac-fini">Toutes les photos sont au tableau ! ✨</p>';
+  var UI = M.UI || {}, cats = CATS.map(function(C){ return {C:C, l:dispo.filter(function(c){ return c.type === C.t; })}; }).filter(function(x){ return x.l.length; });
+  if(UI.lgCat && !cats.some(function(x){ return x.C.t === UI.lgCat; })) UI.lgCat = null;
+  /* une étiquette de signe toute neuve : le dossier des mensonges s'ouvre tout seul, pour qu'on la voie arriver */
+  var nSg = dispo.filter(function(c){ return c.type === 'signe'; }).length;
+  if(nSg > (UI.lgSignes || 0)) UI.lgCat = 'signe';
+  UI.lgSignes = nSg;
+  V.ici.querySelector('.lg-bac-cats').innerHTML = cats.map(function(x){
+    var on = UI.lgCat === x.C.t;
+    return '<button type="button" class="lg-cat' + (on ? ' on' : '') + '" data-cat="' + x.C.t + '" aria-expanded="' + on + '"><span class="lg-cat-ic">' + x.C.ic + '</span><b>' + esc(x.C.nom) + '</b><i>' + x.l.length + '</i><span class="lg-cat-fl" aria-hidden="true">▾</span></button>';
+  }).join('') || '<p class="lg-bac-fini">Toutes les photos sont au tableau ! ✨</p>';
+  var ouverte = cats.filter(function(x){ return x.C.t === UI.lgCat; })[0];
+  V.liste.hidden = !ouverte;
+  V.liste.innerHTML = ouverte ? ouverte.l.map(function(c){ return '<button type="button" class="lg-bac-carte lg-' + c.type + '" data-k="' + esc(c.k) + '">' + contenu(c) + '</button>'; }).join('') : '';
   V.ici.querySelector('.lg-bac-n').textContent = dispo.length ? dispo.length + ' à épingler' : '';
 }
 function majSac(){
@@ -40662,6 +40706,12 @@ function brancher(){
         if(!bouge && !coupe && fil){ var L = etat(V.P), i = +fil.dataset.fil; L.fils.splice(i, 1); sauver(); majFils(); M.son('page'); M.toast('✂️ Fil coupé'); }
       }
     });
+  });
+  /* les dossiers du bac : toucher l'un l'ouvre (et ferme les autres) */
+  V.ici.querySelector('.lg-bac-cats').addEventListener('click', function(e){
+    var b = e.target.closest('.lg-cat'); if(!b || !M.UI) return;
+    M.UI.lgCat = M.UI.lgCat === b.dataset.cat ? null : b.dataset.cat;
+    M.son('clic'); majBac(); ajuster();
   });
   /* le bac : glisser une photo vers le haut l'épingle ; la toucher l'épingle au milieu du tableau */
   V.liste.addEventListener('pointerdown', function(e){
@@ -40903,7 +40953,12 @@ M.majAventure = function(){
 function filAventure(P){
   var l = (P.aventure || []).slice().reverse(), E = M.E();
   var aide = 'Tout ce que tu fais et trouves s\'écrit ici, le plus récent en haut.';
-  var s = '<section class="cn-aventure"><h3>📜 Mon fil d\'aventure</h3><p class="doux petit">' + esc(aide) + ' ' + M.lireBtn(aide) + '</p>';
+  /* repliable, fermé au départ (Romain, 5 novembre, 13 h 19) : le titre est un bouton (P.filOuvert) */
+  var ouvert = !!P.filOuvert;
+  var s = '<section class="cn-aventure' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier cn-fil-plier" data-act="fil-plier" aria-expanded="' + ouvert + '"><span>📜 Mon fil d\'aventure</span>' +
+    (l.length ? '<small class="b-mi-compte">' + l.length + '</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
+  if(!ouvert) return s + '</section>';
+  s += '<p class="doux petit">' + esc(aide) + ' ' + M.lireBtn(aide) + '</p>';
   if(!l.length) return s + '<p class="cn-ev-vide">🥾 Ton aventure commence ! Va explorer : tout ce que tu fais s\'écrira ici. ' + M.lireBtn('Ton aventure commence ! Va explorer : tout ce que tu fais s\'écrira ici.') + '</p></section>';
   s += '<ol class="cn-fil">';
   l.forEach(function(e){
@@ -40972,6 +41027,7 @@ M.carnetCorps = function(){
 };
 
 if(M.A){
+  M.A['fil-plier'] = function(){ var P = M.P(); if(!P) return; P.filOuvert = !P.filOuvert; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render(); };
   M.A['carnet-pnj'] = function(el){
     var UI = M.UI; UI.carnetOuverts = UI.carnetOuverts || {};
     var id = el.dataset.id;
@@ -40996,7 +41052,11 @@ if(M.A){
 'use strict';
 var M = window.M;
 if(!M) return;
-M.MAX_ESSAIS = 2;
+/* Combien d'essais (Romain, 5 novembre, 13 h 19) : à l'enquête 1 (le tutoriel), autant qu'on veut ; ensuite UN SEUL, partout, jamais de
+   deuxième essai (plus de « dernière chance »). Un indice qui ne doit pas bloquer l'enquête garde son p.ouvrePartiel : le raté le donne à moitié. */
+var INFINI = 1e9;
+Object.defineProperty(M, 'MAX_ESSAIS', {configurable:true, get:function(){ var E = M.S && M.S.e && M.E ? M.E() : null; return E && E.id === 1 ? INFINI : 1; }});
+M.essaisInfinis = function(){ return M.MAX_ESSAIS >= INFINI; };
 function etat(){ var P = M.P(); if(P) P.essais = P.essais || {}; return P; }
 /* Nombre d'échecs. Une vieille sauvegarde n'a pas P.essais : un « raté » déjà là compte pour un échec. */
 M.nbEchecs = function(k){
@@ -41019,13 +41079,13 @@ M.rouvrir = function(k){ var P = etat(); if(!P) return; P.essais[k] = M.MAX_ESSA
 M.texteFerme = function(x){ return (x && x.ferme) || 'C\'est fini pour cette piste, jusqu\'à la fin de l\'enquête. Tu gardes ce que tu as vu.'; };
 M.texteEchec = function(x, n, defaut){
   var t = (x && x.rate) || defaut || 'Raté…';
-  return n >= M.MAX_ESSAIS ? t + ' ' + M.texteFerme(x) : t + ' Tu as encore un essai : c\'est ta dernière chance !';
+  return n >= M.MAX_ESSAIS ? t + ' ' + M.texteFerme(x) : t + (M.essaisInfinis() ? ' Tu peux réessayer !' : ' Tu as encore un essai : c\'est ta dernière chance !');
 };
 /* Le bouton « 🔁 Réessayer (dernière chance) » du message d'échec : m.reessai = {act, id, l…} */
 M.boutonReessai = function(m){
   if(!m || !m.reessai) return '';
   var r = m.reessai, d = M.cle(r).filter(function(k){ return k !== 'act'; }).map(function(k){ return ' data-' + k + '="' + M.esc(r[k]) + '"'; }).join('');
-  return '<button class="btn magie grand b-reessai" data-act="' + M.esc(r.act) + '" data-gratuit="1"' + d + '>🔁 Réessayer (dernière chance)</button>';
+  return '<button class="btn magie grand b-reessai" data-act="' + M.esc(r.act) + '" data-gratuit="1"' + d + '>🔁 Réessayer' + (M.essaisInfinis() ? '' : ' (dernière chance)') + '</button>';
 };
 })();
 
@@ -41262,6 +41322,22 @@ function encoreToi(id){
 /* fâché (vexé) ou « Encore toi ? » : on ne peut plus lui parler pour ce moment */
 B.fache = function(id){ return estVexe(id) || encoreToi(id); };
 M.pnjFache = function(id){ try{ return M.role() === 'barde' && B.fache(id); }catch(e){ return false; } };
+/* Plus rien de nouveau à lui demander (Romain, 5 novembre, 13 h 19) : toutes ses questions ouvertes sont posées, pas de mensonge à démasquer,
+   pas d'hydromel à offrir → sur la carte, son visage et « Rien de plus à dire », cerclés de rouge (sans « Parler ») */
+B.rienADire = function(id){
+  var P = M.P(), E = M.E(); if(!P || !E || !E.pnj || !E.pnj[id] || id === 'voisin') return false;
+  var Q = questions(id); if(!Q.length) return false;
+  if(Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); })) return false;
+  if(enquete2() && !fermeDemasque(id) && Q.some(function(q, i){ return mentNonVu(id, i); })) return false;
+  if(talent('hydromel') && (P.potions.hydromel || 0) > 0 && !(P.usages && P.usages.hydromel)) return false;
+  return true;
+};
+/* la pastille rouge de la carte (fâché, « Encore toi », plus rien à dire) ; '' : on peut lui parler */
+B.pastilleRouge = function(id){
+  var t = B.fache(id) ? 'reviens plus tard' : B.rienADire(id) ? 'rien de plus à dire' : '';
+  return t ? '<div class="b-gens-carte bd-fache"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span><b>' + esc(nom(id)) + '</b> : ' + t + '</span></div>' : '';
+};
+M.pastilleRouge = function(id){ try{ return M.role() === 'barde' ? B.pastilleRouge(id) : ''; }catch(e){ console.error(e); return ''; } };
 B.porte = porte;
 /* Pourra-t-on le revoir à un moment suivant ? Sinon, il accepte de reparler tout de suite (contre une action). */
 function peutRevoir(id){
@@ -41281,7 +41357,7 @@ function texteVexe(id, c){
 }
 function fermeDemasque(id){
   var p = reglagesMensonge();
-  return M.nbEchecs ? M.nbEchecs('demasque:' + id) >= (M.MAX_ESSAIS || 2) + ((p.mods && p.mods.erreurs) || 0) : false;
+  return M.nbEchecs ? M.nbEchecs('demasque:' + id) >= M.MAX_ESSAIS + ((p.mods && p.mods.erreurs) || 0) : false;
 }
 function repetesMax(){ var p = reglagesMensonge(); return 1 + (p.revoir || 0); }
 function repetes(id){ var P = M.P(); return ((P.repete || {})[id + ':' + P.moment]) || 0; }
@@ -41687,7 +41763,7 @@ A['bd-dep'] = function(el){
   }
   var n = M.echec ? M.echec('barde:ecoute:' + x.id) : 1;
   st.faux.push(w);
-  if(n >= (M.MAX_ESSAIS || 2)){
+  if(n >= M.MAX_ESSAIS){
     P.vus['ecoute:' + x.id] = 'rate'; P.vus['ecoute2:' + x.id] = 1; revisionScene(x, false);
     if(x.noteRate) M.noter(x.noteRate, '🗣️');
     M.sauver();
@@ -41953,7 +42029,7 @@ A['bd-porte-fin'] = function(){ var u = UI.porteTape; if(u && !u.fini) finPorte(
 function carteGens(id){
   var P = M.P(), x = D.PNJ[id], ouvert = P.conv[id] === P.moment, vexe = estVexe(id);
   /* fâché, ou « Encore toi ? » (Romain, 5 novembre, 12 h 31) : son visage et « Reviens plus tard », cerclés de rouge (son rond aussi, sur la carte) */
-  if(B.fache(id)) return '<div class="b-gens-carte bd-fache"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span>Reviens plus tard</span></div>';
+  var rouge = B.pastilleRouge(id); if(rouge) return rouge;
   return '<div class="b-gens-carte' + (vexe ? ' bd-vexe' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(x.court) + '</b><small>' + esc(x.metier) + '</small>' +
     (vexe ? '<small class="bd-boude-mini">' + ((M.E() || {}).vexeNeutre ? '🤔 plus tard' : '😤 vexé' + (FEM[id] ? 'e' : '')) + '</small>' : '') +
     '<button class="btn petit' + (ouvert ? ' second' : '') + '" data-act="parler" data-id="' + id + '"' + (ouvert || M.peutAgir() ? '' : ' disabled') + '>' + (ouvert ? '💬 Continuer' : '💬 Parler' + M.coutTxt()) + '</button></div>';
@@ -46046,7 +46122,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
   'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
-  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
+  'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1, 'mj-reprendre':1, 'missions-plier':1, 'fil-plier':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
   if(G.force){

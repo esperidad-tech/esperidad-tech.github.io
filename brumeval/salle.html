@@ -22772,7 +22772,7 @@ M.modsPour = function(type, potion){
   });
   if(potion){ var p = D.POTIONS[potion]; if(p && p.fx.mj && p.fx.mj[type]) ajoute({ic:p.ic, nom:p.nom}, p.fx.mj[type]); }
   var P = M.S.e;
-  if(P && P.chances > 0) mods.deuxiemeChance = true;
+  /* (plus de deuxième chance dans les mini-jeux, Romain, 5 novembre, 13 h 19 : P.chances reste, inutilisé, pour la boutique plus tard) */
   return {mods:mods, aides:aides};
 };
 M.potionsPour = function(type){
