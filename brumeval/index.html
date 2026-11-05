@@ -5425,6 +5425,14 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .b-gens-carte.bd-fache{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important;padding:2px 12px 2px 2px!important;gap:8px}
 .b-gens-carte.bd-fache > span{font-size:.8rem;font-weight:700;color:#ffd2cb}
 .b-gens-carte.bd-fache > span b{color:#fff;font-weight:800}
+/* Une réplique à la fois (Romain, 15 h 34 : les longs dialogues) : la boîte garde sa taille, le texte long défile dedans */
+.b-bulle .bd-porte-long .bd-porte-txt{height:6.6em;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.bd-porte-pied{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:3px}
+.bd-porte-pied small{font-size:.7rem;opacity:.75}
+.bd-porte-suite{font-weight:900;font-size:.8rem;color:#111;background:#ffd23f;border-radius:999px;padding:3px 11px;animation:bd-suite 1.2s ease-in-out infinite}
+.bd-porte-suite.fin{background:#3fcf6a}
+@keyframes bd-suite{50%{transform:scale(1.07)}}
+@media (prefers-reduced-motion: reduce){ .bd-porte-suite{animation:none} }
 
 /* ==========================================================
    Les petites scènes animées des fins d'enquête (illus-fin.js ; Romain, 5 novembre, 9 h 37).
@@ -6306,8 +6314,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 15:18 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 15:18';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 15:39 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 15:39';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -42187,46 +42195,74 @@ A['bd-porte'] = function(el){
     }
   });
   M.son('pas'); M.sauver();
-  UI.porteTape = {cle:x.cle, i:0, n:0, fini:false};
-  M.ouvrir(Object.assign({type:'porte', l:x.l, cle:x.cle, morceaux:x.morceaux, secret:secret, leger:true}, M.bulleDe ? M.bulleDe(el) : {}));
+  UI.porteTape = {cle:x.cle, i:0, n:0, tape:false};
+  M.ouvrir(Object.assign({type:'porte', l:x.l, cle:x.cle, morceaux:x.morceaux, rep:repliques(x.morceaux, secret), leger:true}, M.bulleDe ? M.bulleDe(el) : {}));
   taperPorte();
 };
-/* la bulle : un visage, un nom, le texte qui s'écrit (toucher la bulle : tout s'écrit d'un coup) */
+/* Les longs dialogues (Romain, 5 novembre, 15 h 34 : Margot et Victor à la taverne, la nuit, débordaient de l'écran et la bulle
+   sautait d'un bout à l'autre de la carte) : la bulle montre UNE réplique à la fois — un visage, un nom, le texte qui s'écrit —
+   dans une boîte de taille fixe (le texte défile dedans s'il est long). Toucher la bulle : tout le texte d'un coup, puis
+   « ▶ Suite » (la réplique suivante), puis « ✔ C'est tout » (la bulle se ferme). La bulle ne bouge plus et ne grandit plus :
+   n'importe quelle longueur passe. Une bribe d'enquête (E.bribes) devient une réplique par phrase ; une personne qui n'est pas
+   un habitant parle avec son emoji et son nom (p.nom, sinon VOIX). Le Carnet garde tout, comme avant (P.portes). */
+var VOIX = {'🧑‍🍳':'L\'apprenti', '🧔':'Un client'};
+function repliques(morceaux, secret){
+  var E = M.E(), l = [];
+  (morceaux || []).forEach(function(mo){
+    var b = mo.b && (E.bribes || []).filter(function(x){ return x.id === mo.b; })[0];
+    if(b){
+      if(b.intro) l.push({ic:'👂', nom:'Derrière la porte', t:b.intro});
+      (b.phrases || []).forEach(function(p){
+        var t = '« ' + String(p.texte || '').replace(/[\[\]]/g, '') + ' »';
+        l.push(D.PNJ[p.qui] ? {pnj:p.qui, t:t} : {ic:p.qui, nom:p.nom || VOIX[p.qui] || 'Quelqu\'un', t:t});
+      });
+    } else l.push({pnj:mo.pnj, t:mo.t});
+  });
+  if(secret) l.push({ic:'🤫', nom:'Un secret', t:secret});
+  return l;
+}
 function texteBr(t){ return esc(t).replace(/\n/g, '<br>'); }
+function porteEtat(m){ var u = UI.porteTape, n = (m.rep || []).length; return u && u.cle === m.cle ? u : {i:Math.max(0, n - 1), n:1e9, tape:true}; }
+function porteDedans(m){
+  var R = m.rep || [], u = porteEtat(m), r = R[Math.min(u.i, R.length - 1)] || {t:''};
+  var t = u.tape ? r.t : r.t.slice(0, u.n);
+  var s = (r.pnj ? '<div class="b-gens-img">' + M.pnjImg(r.pnj) + '</div>' : '<span class="bd-porte-ic">' + esc(r.ic || '👂') + '</span>') +
+    '<div class="bd-porte-corps"><b>' + esc(r.pnj ? nom(r.pnj) : (r.nom || '')) + '</b><p class="bd-porte-txt">' + texteBr(t) + '</p>';
+  if(R.length > 1) s += '<div class="bd-porte-pied"><small>' + (u.i + 1) + ' / ' + R.length + '</small>' +
+    (u.tape ? '<span class="bd-porte-suite' + (u.i + 1 < R.length ? '' : ' fin') + '">' + (u.i + 1 < R.length ? '▶ Suite' : '✔ C\'est tout') + '</span>' : '') + '</div>';
+  return s + '</div>';
+}
 M.porteHTML = function(m){
-  var u = UI.porteTape && UI.porteTape.cle === m.cle ? UI.porteTape : {fini:true, i:99};
-  var s = (m.morceaux || []).map(function(mo, k){
-    var t = u.fini || k < u.i ? texteBr(mo.t) : k === u.i ? texteBr(mo.t.slice(0, u.n)) : '';
-    if(!u.fini && k > u.i) return '';
-    return '<div class="bd-porte" data-act="bd-porte-fin" data-i="' + k + '">' + (mo.pnj ? '<div class="b-gens-img">' + M.pnjImg(mo.pnj) + '</div>' : '<span class="bd-porte-ic">👂</span>') +
-      '<div class="bd-porte-corps"><b>' + esc(mo.pnj ? nom(mo.pnj) : 'Derrière la porte') + '</b><p class="bd-porte-txt" data-i="' + k + '">' + t + '</p></div></div>';
-  }).join('');
-  if(u.fini && m.secret) s += '<div class="bd-porte bd-porte-secret"><span class="bd-porte-ic">🤫</span><div class="bd-porte-corps"><p>' + esc(m.secret) + '</p></div></div>';
-  return s;
+  if(!m.rep) m.rep = repliques(m.morceaux, m.secret);   /* (une bulle d'avant cette version) */
+  return '<div class="bd-porte bd-porte-un' + ((m.rep || []).length > 1 ? ' bd-porte-long' : '') + '" data-act="bd-porte-fin">' + porteDedans(m) + '</div>';
 };
+/* sur place, sans redessiner la bulle (elle ne bouge pas) */
+function majPorte(tout){
+  var m = UI.modal, box = document.querySelector('#voile .bd-porte-un'); if(!m || m.type !== 'porte' || !box) return;
+  if(tout){ box.innerHTML = porteDedans(m); return; }
+  var u = porteEtat(m), r = (m.rep || [])[u.i], el = box.querySelector('.bd-porte-txt'); if(!r || !el) return;
+  el.innerHTML = texteBr(u.tape ? r.t : r.t.slice(0, u.n));
+  el.scrollTop = el.scrollHeight;   /* le texte long défile dans sa boîte */
+}
 var tapeT = null;
 function taperPorte(){
   clearInterval(tapeT);
   tapeT = setInterval(function(){
     var u = UI.porteTape, m = UI.modal;
-    if(!u || u.fini || !m || m.type !== 'porte' || m.cle !== u.cle){ clearInterval(tapeT); return; }
-    var mo = m.morceaux[u.i]; if(!mo){ finPorte(); return; }
-    u.n = Math.min(mo.t.length, u.n + 1);
-    var el = document.querySelector('#voile .bd-porte-txt[data-i="' + u.i + '"]');
-    if(el) el.innerHTML = texteBr(mo.t.slice(0, u.n));
-    if(u.n >= mo.t.length){
-      if(u.i + 1 >= m.morceaux.length){ finPorte(); return; }
-      u.i++; u.n = 0;
-      if(M.rendreBulle) M.rendreBulle();   /* la bulle suivante (celui qui parle après) */
-    }
+    if(!u || u.tape || !m || m.type !== 'porte' || m.cle !== u.cle){ clearInterval(tapeT); return; }
+    var r = (m.rep || [])[u.i]; if(!r){ clearInterval(tapeT); return; }
+    u.n = Math.min(r.t.length, u.n + 1);
+    if(u.n >= r.t.length){ u.tape = true; clearInterval(tapeT); majPorte(true); return; }
+    majPorte(false);
   }, 30);
 }
-function finPorte(){
-  clearInterval(tapeT);
-  var u = UI.porteTape; if(u) u.fini = true;
-  if(UI.modal && UI.modal.type === 'porte' && M.rendreBulle) M.rendreBulle();
-}
-A['bd-porte-fin'] = function(){ var u = UI.porteTape; if(u && !u.fini) finPorte(); };   /* toucher la bulle : tout le texte d'un coup */
+/* toucher la bulle : finir d'écrire ; sinon la réplique suivante ; à la fin, fermer */
+A['bd-porte-fin'] = function(){
+  var u = UI.porteTape, m = UI.modal; if(!u || !m || m.type !== 'porte' || m.cle !== u.cle) return;
+  if(!u.tape){ u.tape = true; clearInterval(tapeT); majPorte(true); return; }
+  if(u.i + 1 < (m.rep || []).length){ u.i++; u.n = 0; u.tape = false; majPorte(true); M.son('clic'); taperPorte(); return; }
+  if((m.rep || []).length > 1) M.fermer();
+};
 
 /* ==========================================================
    La feuille d'un lieu, pour le Barde (moteur-roles.js appelle M.lieuBarde)
