@@ -22569,15 +22569,17 @@ M.codeVenueAncien = function(n){
   return M.codeDe(V, 'suite:' + Math.min(F.erreurs || 0, 3));
 };
 /* Codes qui ouvrent un lieu (plan, chemin, passage secret…) : ceux des verrous et des besoins des lieux.
-   Toute l'équipe enquête : chacun peut les taper, et le lieu s'ouvre sur sa tablette. {code:[lieux]} */
+   Toute l'équipe enquête : chacun peut les taper, et le lieu s'ouvre sur sa tablette. {code:[lieux]}
+   Sauf les codes des chemins secrets du Pisteur (E.chemins, Romain, 5 novembre, 01 h 30 : le chemin des bûcherons) : pour lui seul. */
 M.codesLieux = function(E){
   if(!E) return {};
   if(E._codesLieux) return E._codesLieux;
-  var l = {};
+  var l = {}, seul = {};
+  (E.chemins || []).forEach(function(c){ if(c && c.code) seul[c.code] = 1; });
   function voir(besoin, lieu){
     (besoin || []).forEach(function(b){
       if(!b) return;
-      if(b.code && /^(info|obj):/.test(b.code)){ l[b.code] = l[b.code] || []; if(l[b.code].indexOf(lieu) < 0) l[b.code].push(lieu); }
+      if(b.code && /^(info|obj):/.test(b.code) && !seul[b.code]){ l[b.code] = l[b.code] || []; if(l[b.code].indexOf(lieu) < 0) l[b.code].push(lieu); }
       if(b.et) voir(b.et, lieu);
     });
   }

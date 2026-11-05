@@ -428,6 +428,33 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .ca-couche-dessous .ca-bord.g{background:linear-gradient(90deg, rgba(0,0,0,.6), transparent)}
 .ca-couche-dessous .ca-bord.d{background:linear-gradient(270deg, rgba(0,0,0,.6), transparent)}
 .ca-passage,.ca-ss-entree{transform-box:fill-box;transform-origin:center}
+/* Les chemins secrets en surface (carte.js : cheminsTraces, cheminsInteractifs ; Romain, 5 novembre, 01 h 30). Un chemin neuf se trace
+   (1,4 s), puis ses pas, son nom et le rond jaune de son départ apparaissent ; sans animation, tout est là, en entier. */
+.ca-chemin-depart,.ca-chemin-nom,.ca-chemin-signe,.ca-chemin-bout{transform-box:fill-box;transform-origin:center}
+.ca-chemin-neuf .ca-chemin-trait,.ca-chemin-neuf .ca-chemin-halo,.ca-chemin-neuf .ca-chemin-bord{stroke-dasharray:1 1;animation:ca-trace 1.4s ease-in-out .15s both}
+@keyframes ca-trace{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.ca-chemin-neuf .ca-chemin-pas,.ca-chemin-neuf .ca-chemin-bout,.ca-chemin-nom.ca-chemin-neuf{animation:ca-fondu .5s ease-out 1.45s both}
+@keyframes ca-fondu{from{opacity:0}to{opacity:1}}
+.ca-chemin-depart.ca-chemin-neuf{animation:ca-apparait .7s cubic-bezier(.3,1.55,.5,1) 1.5s both}
+.ca-chemin-signe.ca-chemin-neuf{animation:ca-fondu .4s ease-out 2s both}
+.ca-chemin-depart{cursor:pointer}
+.ca-chemin-depart:active .ca-chemin-rond{fill-opacity:.7}
+.ca-etiq-chemin rect{stroke:#ffd23f}
+.ca-chemin-pion{filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+/* la bulle de la première fois, en bas du tableau (au-dessus du titre, à gauche des boutons ＋ / −) ; 🔊 pour l'entendre */
+.ca-chemin-bulle{position:absolute;left:62px;right:62px;bottom:52px;z-index:4;display:flex;align-items:center;gap:8px;max-width:520px;margin:0 auto;padding:10px 10px 10px 12px;border-radius:16px;background:#ffe9a8;color:#24182e;border:3px solid #24182e;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ca-chemin-bulle > span{font-size:1.6rem;line-height:1}
+.ca-chemin-bulle p{margin:0;flex:1;font:700 1rem/1.3 var(--f-texte)}
+.ca-chemin-bulle .b-lire{flex:none}
+.ca-chemin-bulle-neuve{animation:ca-bulle .45s ease-out 2s both}
+@keyframes ca-bulle{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* cadre étroit (téléphone debout) : toute la largeur, au-dessus des boutons ＋ / − ; très petit cadre (téléphone couché) : plus serrée */
+.ca-serre .ca-chemin-bulle{left:6px;right:6px;bottom:112px;margin:0}
+.ca-serre .ca-chemin-bulle p{font-size:.92rem}
+.ca-etroit .ca-chemin-bulle{left:4px;right:54px;bottom:40px;margin:0;padding:6px 8px;gap:6px}
+.ca-bas .ca-chemin-bulle{display:none}
+.ca-etroit .ca-chemin-bulle p{font-size:.85rem}
+@media (prefers-reduced-motion: reduce){.ca-chemin-bulle{animation:none!important}}
 .ca-etiq-dessous rect{stroke:#8ff3ff;stroke-opacity:.55}
 .ca-clic:active .ca-ss-salle > circle,.ca-ss-salle.ca-clic:active > circle:nth-child(2),.ca-ss-mystere.ca-clic:active > circle:nth-child(2){fill:#4a3a60}
 /* pastille ✨ sur l'onglet Carte : un nouveau lieu s'est ouvert */
@@ -5408,11 +5435,7 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .lv-donner{align-self:center;width:min(100%, 440px)}
 .lv-fin-jour,.lv-encart{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:16px;border:2px dashed var(--c-sage);background:rgba(108,182,255,.1);text-align:center}
 .lv-fin-jour p,.lv-encart p{margin:0}
-/* Le verrou de l'accusation (enquête 2, regles.js) : ce qui reste à éclaircir, sur le papier du livre */
-.lv-verrou-acc{display:flex;flex-direction:column;gap:6px;padding:12px;margin:10px 0;border-radius:16px;border:2px dashed #c0563a;background:rgba(192,86,58,.08);color:inherit}
-.lv-verrou-acc p{margin:0}
-.lv-verrou-acc ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
-.lv-verrou-acc li{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.55);line-height:1.35}
+/* (le verrou de l'accusation de l'enquête 2 et son « petit matin » : supprimés le 5 novembre, 01 h 36) */
 .lv-trouves h3{color:var(--encre);margin:6px 0 8px}
 
 /* ⚖️ L'accusation */
@@ -5868,8 +5891,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 01:35 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 01:35';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 02:38 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 02:38';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -10729,6 +10752,8 @@ function fondDessous(p){
   [[306,562,158,96],[628,470,64,180],[219,700,132,90],[795,350,110,80]].forEach(function(b){ s += '<rect x="' + b[0] + '" y="' + b[1] + '" width="' + b[2] + '" height="' + b[3] + '" rx="8" stroke-width="2.5" ' + g + '/>'; });
   s += '<circle cx="270" cy="128" r="100" stroke-width="3" stroke-dasharray="10 8" ' + g + '/>';
   s += '<circle cx="112" cy="345" r="30" stroke-width="3" ' + g + '/>';
+  /* les chemins de la forêt, depuis le carrefour (pour situer les chemins secrets en surface du tableau du Pisteur) */
+  Object.keys(CHEMINS).forEach(function(k){ s += '<path d="' + lisse(CHEMINS[k]) + '" stroke-width="16" stroke-linecap="round" ' + g.replace('.16', '.08') + '/>'; });
   return s;
 }
 function galerie(p, pts, o){
@@ -10754,10 +10779,12 @@ function galerie(p, pts, o){
   }
   return s;
 }
-/* ---------- Les sous-sols découverts (la carte du Pisteur) : seulement ce qu'il a trouvé ----------
-   o.sousSols = {elements:[…souterrains.js], apparus:[ids]} */
+/* ---------- Le tableau « Les chemins secrets » du Pisteur (sa cabane) : seulement ce qu'il a trouvé ----------
+   o.sousSols = {elements:[…souterrains.js], apparus:[ids]} : les passages sous terre ;
+   o.chemins = {liste:[{id, nom, ic, pts, neuf, pris, guide}]} : les chemins secrets en surface (E.chemins, carte-jeu.js) */
 function svgSousSols(p, o){
   var S = o.sousSols || {}, l = S.elements || [], ap = S.apparus || [], s = fondDessous(p);
+  var lch = (o.chemins && o.chemins.liste) || [];
   /* les noms du village, en fantôme */
   Object.keys(LIEUX).forEach(function(id){ var e = ETIQ[id]; if(LIEUX[id].zone === 'dessous' || !e) return; s += texte(e[0], e[1], LIEUX[id].court, 22, '#8ff3ff', {}).replace('<text', '<text opacity=".3"'); });
   l.forEach(function(x){
@@ -10769,11 +10796,57 @@ function svgSousSols(p, o){
     s += '<g class="ca-ss-entree' + (ap.indexOf(x.id) >= 0 ? ' ca-apparait' : '') + '" data-ss="' + esc(x.id) + '"><circle cx="' + x.x + '" cy="' + x.y + '" r="26" fill="#3b2a1e" stroke="#8ff3ff" stroke-width="3" stroke-dasharray="6 5"/>' +
       '<text x="' + x.x + '" y="' + (x.y + 1) + '" font-size="24" text-anchor="middle" dominant-baseline="central">' + esc(x.ic || '⬆️') + '</text></g>';
   });
-  if(!l.length){
+  s += cheminsTraces(lch);
+  if(!l.length && !lch.length){
     s += texte(500, 640, 'Rien pour l\'instant…', 40, '#c9f8ff', {}) + texte(500, 700, 'Explore bien : il y a peut-être', 28, '#8ff3ff', {}).replace('<text', '<text opacity=".8"') +
-      texte(500, 740, 'des passages secrets sous Brumeval !', 28, '#8ff3ff', {}).replace('<text', '<text opacity=".8"');
+      texte(500, 740, 'des chemins secrets à Brumeval !', 28, '#8ff3ff', {}).replace('<text', '<text opacity=".8"');
   }
   return s;
+}
+/* Les chemins secrets en surface (Romain, 5 novembre, 01 h 30) : un sentier doré, des petits pas dessus, un rond au bout.
+   Un chemin neuf (c.neuf) se trace d'un bout à l'autre (carte.css : ca-chemin-neuf), puis ses pas et son nom apparaissent.
+   (Sans animation, prefers-reduced-motion : il est là tout de suite, en entier.) */
+function cheminsTraces(l){
+  var s = '';
+  (l || []).forEach(function(c){
+    if(!c || !c.pts || c.pts.length < 2) return;
+    var d = lisse(c.pts), z = c.pts[c.pts.length - 1];
+    s += '<g class="ca-chemin' + (c.neuf ? ' ca-chemin-neuf' : '') + '" data-chemin="' + esc(c.id) + '" pointer-events="none">' +
+      '<path class="ca-chemin-halo" d="' + d + '" pathLength="1" fill="none" stroke="#ffd23f" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity=".16"/>' +
+      '<path class="ca-chemin-bord" d="' + d + '" pathLength="1" fill="none" stroke="#0b0710" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>' +
+      '<path class="ca-chemin-trait" d="' + d + '" pathLength="1" fill="none" stroke="#e9c77e" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path class="ca-chemin-pas" d="' + d + '" fill="none" stroke="#7a4e22" stroke-width="5" stroke-dasharray="1 16" stroke-linecap="round"/>' +
+      '<g class="ca-chemin-bout"><circle cx="' + z[0] + '" cy="' + z[1] + '" r="15" fill="#e9c77e" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="' + z[0] + '" cy="' + z[1] + '" r="5" fill="' + CONTOUR + '"/></g>' +
+      '</g>';
+  });
+  return s;
+}
+/* Ce qu'on touche sur un chemin secret : le chemin lui-même (une large zone invisible) et, à son départ, le rond jaune qui palpite tant
+   qu'il n'a pas été pris ; son nom au milieu de la boucle ; « 👆 Touche ici ! » sous le rond, la première fois (c.guide). */
+function cheminsInteractifs(p, o){
+  var l = (o.chemins && o.chemins.liste) || [], taille = o.etiquette || 25, tmin = o.toucheMin || 0, ks = taille / 25;
+  var fond = '', s = '';
+  l.forEach(function(c){
+    if(!c || !c.pts || c.pts.length < 2) return;
+    var a = c.pts[0], d = lisse(c.pts), R = 28 * ks, act = ' data-act="chemin" data-id="' + esc(c.id) + '"';
+    var xs = c.pts.map(function(q){ return q[0]; }), ys = c.pts.map(function(q){ return q[1]; });
+    var mx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2, my = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2 + 10 * ks;
+    if(c.etiquette && c.etiquette.length === 2){ mx = c.etiquette[0]; my = c.etiquette[1]; }   /* (E.chemins : où poser son nom) */
+    fond += '<g class="ca-zone ca-clic ca-chemin-zone"' + act + '>' +
+      '<path class="ca-hit ca-chemin-ligne" d="' + d + '" fill="none" stroke="#fff" stroke-width="' + f(Math.max(46, tmin)) + '" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>' +
+      '<circle class="ca-hit" cx="' + a[0] + '" cy="' + a[1] + '" r="' + f(Math.max(R + 16, tmin / 2)) + '" fill="#fff" opacity="0"/></g>';
+    /* le nom, au milieu de la boucle du chemin */
+    var nom = String(c.nom || '').replace(/^(Le|La|Les|L') ?/, ''); nom = nom.charAt(0).toUpperCase() + nom.slice(1);
+    s += '<g class="ca-chemin-nom' + (c.neuf ? ' ca-chemin-neuf' : '') + '" pointer-events="none">' + etiquette(mx, my, c.ic || '', nom, {taille: Math.round(taille * .84), fond: '#2c2238', encre: '#ffe3a3', classe: 'ca-etiq-chemin'}) + '</g>';
+    var g = '<g class="ca-chemin-depart ca-clic' + (c.pris ? ' ca-chemin-pris' : '') + (c.neuf ? ' ca-chemin-neuf' : '') + '"' + act + '>';
+    if(!c.pris) g += '<circle class="ca-pulse ca-chemin-onde" cx="' + a[0] + '" cy="' + a[1] + '" r="' + f(R + 12) + '" fill="none" stroke="#ffd23f" stroke-width="' + f(7 * ks) + '" pointer-events="none"/>';
+    g += '<circle class="ca-chemin-rond" cx="' + a[0] + '" cy="' + a[1] + '" r="' + f(R) + '" fill="#ffd23f" fill-opacity="' + (c.pris ? '.22' : '.4') + '" stroke="#ffd23f" stroke-width="' + f(6 * ks) + '"/>';
+    g += '<circle cx="' + a[0] + '" cy="' + a[1] + '" r="' + f(R + 3 * ks) + '" fill="none" stroke="' + CONTOUR + '" stroke-width="' + f(2.5 * ks) + '" pointer-events="none"/>';
+    g += '<text class="ca-ic" x="' + a[0] + '" y="' + f(a[1] + 1) + '" font-size="' + f(R * 1.05) + '" text-anchor="middle" dominant-baseline="central" pointer-events="none">👣</text>';
+    s += g + '</g>';
+    if(c.guide) s += '<g class="ca-chemin-signe' + (c.neuf ? ' ca-chemin-neuf' : '') + '" pointer-events="none"><g class="ca-nouveau">' + etiquette(a[0], a[1] + R + 34 * ks, '👆', 'Touche ici !', {taille: taille, fond: '#ffd23f'}) + '</g></g>';
+  });
+  return {fond: fond, dessus: s};
 }
 /* Les salles et les mystères des sous-sols : on les touche (deux couches, comme les lieux) */
 function sousSolsInteractifs(p, o){
@@ -11240,7 +11313,7 @@ function svg(opts){
   var cls = 'ca-carte ca-' + niveau + ' ca-m-' + (o.moment || 'apresmidi') + (o.anime === false ? ' ca-fixe' : '') + (o.calque ? ' ca-calque-' + o.calque : '');
   if(ss) o = Object.assign({}, o, {caches: Object.keys(LIEUX)});
   var geo = geoLieux(o, niveau), li = lieuxInteractifs(p, o, niveau, geo), mq = marqueurs(p, o, geo);
-  if(ss){ var si = sousSolsInteractifs(p, o); li = {fond: li.fond + si.fond, dessus: li.dessus + si.dessus}; }
+  if(ss){ var si = sousSolsInteractifs(p, o), ci = cheminsInteractifs(p, o); li = {fond: li.fond + si.fond + ci.fond, dessus: li.dessus + si.dessus + ci.dessus}; }
   /* de bas en haut : le dessin, les maisons, les zones invisibles à toucher, les étiquettes, les notes, les marqueurs */
   return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
     defs(p) + defsVisages(p, o) + corps +
@@ -34418,7 +34491,8 @@ E[1] = {
    Romain, 5 novembre, 00 h 27) → colorant (Alchimiste) → OÙ ; à côté, la nuit, le Pisteur peut guetter l'homme en cape qui sort
    d'une porte cachée du moulin : le suivre mène à la crypte du clocher, un indice pour l'enquête 3 ; Bastien démasqué (détecteur, « J'exige la vérité »,
    potion de vérité) ou la pièce d'un charretier sans le sou → POURQUOI.
-   Le fond (verrou de l'accusation) : la maison d'Odette (Barde), la canne d'Odette (Pisteur), la pierre de Tim (Barde → Sage).
+   Le fond : la maison d'Odette (Barde), la canne d'Odette (Pisteur), la pierre de Tim (Barde → Sage). Plus de verrou sur l'accusation
+   (Romain, 5 novembre, 01 h 36) : le Sage accuse quand il veut, même s'il manque des choses.
    ========================================================== */
 (function(){
 'use strict';
@@ -34439,11 +34513,9 @@ function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[i
    reçoivent la même réplique neutre (barde.js ajoute quand repasser), et le bon choix n'est jamais à la même place. */
 var NEUTRE = 'Hmm… je ne sais pas.';
 function choix(bon, autres, pos){ var l = autres.map(function(q){ return {q:q, vexe:NEUTRE}; }); l.splice(pos, 0, {q:bon, bon:true}); return l; }
-/* Le rassemblement du village (Romain, 4 novembre, 22 h 41) : ce n'est plus le Barde, c'est le SAGE, la nuit seulement, et seulement
-   avec les preuves des étapes importantes (une page du Grand Livre : pages, id 'rassemblement'). Sans elles, pas de rassemblement :
-   l'enquête reste gagnable, on rate juste la scène. Les preuves : la canne d'Odette (Pisteur), les rochers posés exprès (Pisteur),
-   la maison d'Odette (Barde), et Tim (sa pierre gravée, Barde ; ou sa poursuite, Pisteur). */
-function preuves(tim){ return {et:[{moment:'nuit'}, {code:'info:canne'}, {code:'info:rochers'}, {code:'info:odette'}, {code:tim}]}; }
+/* Le rassemblement du village (Romain, 4 novembre, 22 h 41, puis 5 novembre, 01 h 36) : c'est le SAGE, la nuit seulement, et il a lieu
+   quoi qu'il arrive : plus besoin de preuves. Quand sa tablette passe à la nuit, le Grand Livre s'ouvre tout seul sur la page
+   (pages, id 'rassemblement', obligatoire : livre.js), tant qu'il ne l'a pas fait. */
 
 E[2] = {
   id:2, titre:'La rivière rouge', niveau:2,
@@ -34454,13 +34526,14 @@ E[2] = {
   riviereRouge:true,   /* sur la carte, l'eau de la rivière est rouge et luit doucement (carte.js, Romain, 4 novembre, 21 h 12) */
   lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',
   signature:'Monsieur Grosbec, maire de Brumeval',
-  /* l'affiche du maire, sous la lettre (moteur-ecrans.js) */
-  affiche:{titre:'Par ordre du maire', t:'Le chemin du Vieux Chêne est fermé : éboulement dangereux !'},
+  /* l'affiche du maire, sous la lettre (moteur-ecrans.js). Le maire ne ment jamais (Romain, 5 novembre, 01 h 36) : pas d'« éboulement »,
+     seulement « danger » (c'est Silas, le garde, qui croit à l'éboulement) */
+  affiche:{titre:'Par ordre du maire', t:'Le chemin du Vieux Chêne est fermé : danger !'},
   missions:{
     pisteur:'Le chemin du Vieux Chêne est fermé et gardé : trouve un moyen d\'y aller sans te faire voir. Suis les traces, cherche partout… et la nuit, quand tout le monde dort, fouille là où il y avait trop de monde le jour. Ce que tu trouves a un code : donne-le à la bonne personne !',
     alchimiste:'La rivière est toute rouge, et l\'eau du lavoir toute rose ! Va prendre un peu de cette eau (au pont, au lavoir) et analyse-la dans ton atelier. Cueille, prépare des potions (le Barde aimerait bien une potion de vérité), et analyse ce que l\'équipe te rapporte.',
     barde:'Interroge tout le monde : cette fois, beaucoup vont te mentir ! Regarde bien leur visage. Certains ne veulent te voir qu\'une fois par moment : reviens quand tu as du nouveau pour eux. Attention : si tu accuses quelqu\'un qui dit la vérité, il se vexe et ne te parle plus jusqu\'au moment suivant.',
-    sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. La nuit, si l\'équipe t\'a apporté assez de preuves, rassemble le village ! Tu donnes le code de chaque moment, et tu accuses au petit matin : QUI, OÙ et POURQUOI.'
+    sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. La nuit, rassemble tout le village au Vieux Chêne ! Tu donnes le code de chaque moment, et quand toute l\'équipe est d\'accord, tu accuses : QUI, OÙ et POURQUOI.'
   },
   /* Missions de base, en haut du Carnet (mission.js) : générales, sans chemin tout tracé, sans jamais dire QUI, OÙ ni POURQUOI */
   etapes:{
@@ -34493,8 +34566,8 @@ E[2] = {
       {ic:'🗺️', t:'Le garde ne laisse passer personne vers le Vieux Chêne : cherche un vieux chemin dans ton Grand Livre.', fait:[{page:'chemins'}]},
       {ic:'📐', t:'Quand un code te mène à la bibliothèque des plans, répare le plan déchiré.', fait:[{page:'bibliotheque'}, {fini:'sage:page:bibliotheque'}]},
       {ic:'🪨', t:'Déchiffre les runes qu\'on t\'apportera.', fait:[{page:'pierre'}, {fini:'sage:page:pierre'}]},
-      {piste:true, t:'La nuit, si l\'équipe t\'a apporté assez de preuves, rassemble le village (page 📣 du Grand Livre).'},
-      {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments). On accuse au petit matin, après la nuit.'},
+      {piste:true, t:'Quand la nuit tombe, ton Grand Livre s\'ouvre sur la page 📣 « Rassembler le village » : emmène tout le village au Vieux Chêne !'},
+      {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments). Tu peux accuser à n\'importe quel moment (page ⚖️), dès que toute l\'équipe est d\'accord.'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ]
   },
@@ -34506,14 +34579,19 @@ E[2] = {
     {id:'paye', nom:'Quelqu\'un l\'a payé', ic:'🪙'}, {id:'joli', nom:'Pour faire joli', ic:'🌸'},
     {id:'teindre', nom:'Pour teindre des tissus', ic:'🧵'}, {id:'farce', nom:'Pour faire une farce', ic:'😜'}]},
   solution:{qui:'bastien', ou:'moulin', pourquoi:'paye'},
-  /* Le verrou de l'accusation (regles.js) : après la nuit (le Sage touche « 🌅 Le petit matin »), et quand l'équipe a vu
-     la maison d'Odette, la canne d'Odette et la pierre de Tim (des codes reçus sur la tablette du Sage). Sinon, un message neutre
-     (« Pas encore ! Toute l'équipe n'a pas fini d'enquêter »), sans la liste : les textes t ci-dessous ne sont plus montrés. */
-  verrouAccusation:[
-    {aube:true, t:'🌙 La nuit n\'est pas finie. Quand toute l\'équipe a fini la nuit, touche « 🌅 Le petit matin ».'},
-    {code:'info:odette', t:'🏠 Odette a disparu : quelqu\'un est-il allé voir chez elle ?'},
-    {code:'info:canne', t:'🦯 Où est la canne d\'Odette ? Le Pisteur la trouvera peut-être…'},
-    {code:'obj:pierre', t:'🪨 Tim cache quelque chose… Le Barde doit le faire parler.'}
+  /* (Plus de verrou sur l'accusation ni de « petit matin », Romain, 5 novembre, 01 h 36 : le Sage accuse quand il veut.
+     Une accusation fausse garde ses conséquences habituelles : moteur-actions.js, validerAccusation.) */
+  /* Les chemins secrets du Pisteur (Romain, 5 novembre, 01 h 30 ; carte-jeu.js) : sur le tableau « Les chemins secrets » du chevalet
+     de sa cabane, avec les passages des sous-sols. Chaque enquête peut en ajouter. Un chemin : id (unique dans la saison), nom, ic,
+     code (son code le fait apparaître ; pour le Pisteur SEULEMENT : moteur-base.js ne le compte pas dans les codes de lieu de toute l'équipe),
+     vers (le lieu où il mène : le toucher y emmène le Pisteur), pts (le tracé, en unités de la carte 1000 × 1400, du départ — le rond jaune —
+     à l'arrivée), etiquette (facultatif : où poser son nom, sinon au milieu du tracé), t (ce qu'on lit en le touchant sur le tableau,
+     s'il ne mène nulle part). Gardé toute la saison, comme les sous-sols.
+     Le chemin des bûcherons : il quitte le carrefour (Carte.LIEUX.foret, 500 × 270) par le chemin libre de la clairière, loin de Silas
+     qui garde celui du Vieux Chêne, fait le tour de la forêt par le nord, et arrive au Vieux Chêne (270 × 128) par derrière. */
+  chemins:[
+    {id:'bucherons', nom:'Le chemin des bûcherons', ic:'🪓', code:'info:detour', vers:'chene', etiquette:[486, 116],
+      pts:[[572,232],[640,186],[662,112],[612,54],[510,32],[410,36],[338,60],[306,94]]}
   ],
   /* Le Barde (barde.js) : une seule visite par moment pour ces villageois ; revenir avec du nouveau qui les concerne rouvre la porte.
      Les questions qui attendent un indice restent cachées tant qu'on ne l'a pas (questionsCachees). La potion de vérité fait avouer. */
@@ -34522,7 +34600,7 @@ E[2] = {
   potionAveu:true,
   vexeNeutre:true,   /* un mauvais choix : la même réplique neutre partout, sans « vexé » (§ 12.13) ; il reste fermé jusqu'au moment suivant */
   tics:TICS,
-  /* (le rassemblement n'est plus au Barde : c'est une page du Grand Livre du Sage, la nuit, avec les preuves ; voir pages, 'rassemblement') */
+  /* (le rassemblement n'est plus au Barde : c'est une page du Grand Livre du Sage, chaque nuit, sans preuves ; voir pages, 'rassemblement') */
   veriteUnique:true,   /* une seule potion de vérité par enquête : l'Alchimiste n'en prépare qu'une, le Barde la fait boire à un seul villageois */
   /* Les photos du tableau de liège du Barde (liege.js) : les suspects, les autres villageois de l'histoire, tous les lieux du OÙ */
   liege:{pnj:['bastien', 'melusine', 'margot', 'iris', 'farinel', 'tim', 'victor', 'gaspard', 'fortune'], lieux:['moulin', 'lavoir', 'chene', 'pont', 'clairiere', 'place', 'foret']},
@@ -34559,7 +34637,7 @@ E[2] = {
        (plus de code du registre, Romain, 5 novembre, 01 h 20 : le Sage lit « Les habitants » à tout le monde, et les visages sont sur les
        maisons ; le code gelé reste dans codes-fixes.js, inutilisé. L'indice de Tim, « il ne confie ses secrets qu'à ceux qui promettent
        de ne rien répéter », est dans le registre, que le Sage lit à voix haute.) */
-    /* aussi pour le Sage : une preuve du rassemblement (le même code, son « pour » seul change) */
+    /* aussi pour le Sage, qui accuse (le même code, son « pour » seul change ; ce n'est plus une condition du rassemblement) */
     tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !',
       dire:'Le Barde saura le faire parler : donne ce code au Barde, et aussi au Sage.'},
     traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.',
@@ -34576,11 +34654,14 @@ E[2] = {
       dire:'Les plans du moulin : donne ce code au Sage.'},
     passage:{nom:'Le passage secret du moulin', ic:'🕳️', pour:'pisteur', t:'Sur le vieux plan du moulin, réparé par le Sage : une petite pièce sans porte, sous la grande roue, et un passage secret pour y entrer. Va voir la nuit, quand le moulin est vide !',
       dire:'Le Pisteur pourra s\'y glisser, la nuit : donne-lui ce code.'},
+    /* un chemin secret du Pisteur, et de lui seul (Romain, 5 novembre, 01 h 30 : chemins, plus haut) : tapé sur sa tablette, le jeu l'emmène
+       à son tableau des chemins secrets ; tapé sur une autre tablette, « Ce code est pour le Pisteur » */
     detour:{nom:'Le chemin des bûcherons', ic:'🗺️', pour:'pisteur', t:'Un vieux chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde.',
-      dire:'Par là, on passe loin du garde ! Ce code est pour toute l\'équipe : chacun peut le taper.'},
+      dire:'Par là, on passe loin du garde ! C\'est un chemin secret pour le Pisteur : donne-lui ce code.'},
     canne:{nom:'La canne d\'Odette', ic:'🦯', pour:['sage', 'barde'], t:'Le Pisteur a trouvé la canne d\'Odette, gravée de sept chats, dans l\'herbe près des gros rochers du Vieux Chêne. Odette ne sort jamais sans elle…',
       dire:'Le Sage et le Barde voudront le savoir : donne ce code au Sage ou au Barde.'},
-    /* une preuve pour le rassemblement du Sage (Romain, 22 h 41) : un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
+    /* une preuve pour le Sage, qui accuse (Romain, 22 h 41 ; plus une condition du rassemblement depuis le 5 novembre, 01 h 36) :
+       un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
     rochers:{nom:'Les rochers posés exprès', ic:'🪨', pour:'sage', de:'pisteur', t:'Le Pisteur a vu les gros rochers qui bouchent le trou du Vieux Chêne : ils sont bien rangés, posés là exprès. Ce n\'est pas un éboulement !',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
     odette:{nom:'La maison d\'Odette', ic:'🏠', pour:'sage', t:'Le Barde est allé chez Odette : la porte n\'était pas fermée, un chat s\'est sauvé, et son lit n\'est pas défait. Odette n\'a pas dormi chez elle.',
@@ -34716,7 +34797,7 @@ E[2] = {
     place:{
       pisteur:{intro:'La place des Lanternes. Tout le monde ne parle que de la rivière rouge.', points:[
         {id:'affiche', ic:'📜', nom:'Le panneau',
-          t:'Sur le panneau, l\'affiche du maire : « Par ordre du maire, le chemin du Vieux Chêne est fermé : éboulement dangereux ! »'},
+          t:'Sur le panneau, l\'affiche du maire : « Par ordre du maire, le chemin du Vieux Chêne est fermé : danger ! »'},
         {id:'charrette', ic:'🛒', nom:'La charrette', moments:['apresmidi'], ok:'La charrette lavée ne prouve rien.',
           t:'Devant la fontaine, la charrette de Bastien le charretier. Elle est toute propre, lavée à grande eau : ça sent encore le savon ! Rien d\'autre.',
           note:'Place : la charrette de Bastien est toute propre, lavée à grande eau.'},
@@ -34866,7 +34947,8 @@ E[2] = {
     ]},
     grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
       {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
-      {q:'Pourquoi le chemin du Vieux Chêne est-il fermé ?', a:'Un éboulement, mon petit. C\'est très dangereux ! Que personne n\'y aille.', note:'Le maire : le chemin du Vieux Chêne est fermé à cause d\'un éboulement.'}
+      /* le maire ne ment jamais (Romain, 5 novembre, 01 h 36) : il ne parle pas d'éboulement, il tait le reste */
+      {q:'Pourquoi le chemin du Vieux Chêne est-il fermé ?', a:'C\'est très dangereux là-bas, mon petit. Je ne peux pas t\'en dire plus. Que personne n\'y aille !', note:'Le maire : c\'est très dangereux au Vieux Chêne, et il ne peut pas en dire plus. Personne ne doit y aller.'}
     ]},
     /* la maison d'Odette (2, rue des Lanternes) : la scène est la même quel que soit l'ordre du jeu */
     voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'Tu frappes chez Odette… Pas de réponse. La porte n\'est pas fermée à clé.', questions:[
@@ -34959,13 +35041,13 @@ E[2] = {
     {id:'recettes', titre:'Les recettes', ic:'🧪',
       recette:'verite', t:'Potion de vérité, pour faire avouer un menteur : ' + D.texteEtapes('verite') + '.',
       note:'Recette de la potion de vérité : ' + D.texteEtapes('verite') + '.'},
-    /* Les vieux chemins : Superposer les plans → le détour des bûcherons (un code de lieu, pour toute l'équipe).
+    /* Les vieux chemins : Superposer les plans → le détour des bûcherons (un chemin secret, pour le Pisteur seulement : chemins, plus haut).
        Raté deux fois : l'indice partiel suffit, et le code est donné quand même (ouvrePartiel) : le Pisteur doit pouvoir aller au chêne. */
     {id:'chemins', titre:'Les vieux chemins', ic:'🗺️', mj:'plans', params:{carte:'foret', secret:'chene', passage:'le chemin des bûcherons'}, bouton:'Superposer les vieux chemins',
       ouvrePartiel:true, partiel:true, donne:'info:detour',
       avant:'Un très vieux plan de la forêt, avec des chemins que plus personne ne prend. Pose-le sur le plan d\'aujourd\'hui : un vieux chemin mène peut-être au Vieux Chêne sans passer devant le garde…',
       t:'Sur le vieux plan, un chemin des bûcherons fait le tour de la forêt et arrive au Vieux Chêne par derrière, loin du garde !',
-      note:'Vieux chemins : le chemin des bûcherons arrive au Vieux Chêne par derrière, loin du garde. Code pour toute l\'équipe.',
+      note:'Vieux chemins : le chemin des bûcherons arrive au Vieux Chêne par derrière, loin du garde. Code pour le Pisteur.',
       rate:'La bougie s\'éteint, les plans se brouillent…',
       tPartiel:'Il reste juste assez du dessin : un vieux chemin des bûcherons qui arrive au Vieux Chêne par derrière.',
       rateNote:'Vieux chemins (à moitié effacé) : un chemin des bûcherons arrive au Vieux Chêne par derrière.'},
@@ -34988,13 +35070,13 @@ E[2] = {
       t:'Les runes de la pierre disent : « SOUS LA BRUME DORT LA VILLE D\'AVANT ». Qu\'est-ce que ça veut dire ?',
       note:'La pierre de Tim : « SOUS LA BRUME DORT LA VILLE D\'AVANT ».',
       rate:'Les runes sont trop abîmées… Tu as juste pu lire : « … LA BRUME … LA VILLE … »', rateNote:'La pierre de Tim (abîmée) : « … LA BRUME … LA VILLE … »', partiel:true},
-    /* 📣 Le rassemblement du village (Romain, 4 novembre, 22 h 41) : le Sage, la nuit seulement, avec les preuves (preuves, plus haut).
-       Tant qu'il manque une preuve : pas de bouton, un message neutre qui ne dit pas laquelle (besoinNeutre, livre.js). La scène animée
-       (illu, regles.js), puis le code du récit pour les autres tablettes. Pas de rassemblement ? L'enquête reste gagnable. */
-    {id:'rassemblement', titre:'Rassembler le village', ic:'📣', moments:['nuit'], besoin:[preuves('obj:pierre'), preuves('info:tim_chene')],
+    /* 📣 Le rassemblement du village (Romain, 4 novembre, 22 h 41, puis 5 novembre, 01 h 36) : le Sage, la nuit seulement, et quoi qu'il
+       arrive (plus de preuves à réunir). obligatoire (livre.js) : quand sa tablette passe à la nuit, le Grand Livre s'ouvre sur cette page,
+       et il y revient chaque fois qu'il rouvre son livre, tant que le village n'est pas rassemblé (il peut toujours tourner les pages).
+       La scène animée (illu, regles.js), puis le code du récit pour les autres tablettes. Le texte tient même si l'équipe n'a encore rien trouvé. */
+    {id:'rassemblement', titre:'Rassembler le village', ic:'📣', moments:['nuit'], obligatoire:true,
       horsMoment:'Le village ne se rassemblera que la nuit, quand tout le monde sera rentré chez soi.',
-      besoinNeutre:'Vous n\'avez pas encore assez de preuves pour convaincre le village.',
-      avant:'Vous avez assez de preuves : le village va te croire ! Mène-le au Vieux Chêne, en pleine nuit.', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement',
+      avant:'La nuit tombe sur Brumeval. Tout le village se demande ce qui se passe au Vieux Chêne, que le maire a fermé… Prends ta lanterne, frappe à toutes les portes, et emmène tout le monde là-bas !', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement',
       t:'Tu frappes à toutes les portes, ta lanterne à la main… et tout le village te suit ! Silas veut vous arrêter, mais vous êtes bien trop nombreux. Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive en courant, en bonnet de nuit : « Reculez ! Ce sont des vapeurs toxiques ! Rentrez tous chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
       note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Le maire a crié « Reculez, ce sont des vapeurs toxiques ! ». Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
   ],
@@ -36018,15 +36100,17 @@ M.codeVenueAncien = function(n){
   return M.codeDe(V, 'suite:' + Math.min(F.erreurs || 0, 3));
 };
 /* Codes qui ouvrent un lieu (plan, chemin, passage secret…) : ceux des verrous et des besoins des lieux.
-   Toute l'équipe enquête : chacun peut les taper, et le lieu s'ouvre sur sa tablette. {code:[lieux]} */
+   Toute l'équipe enquête : chacun peut les taper, et le lieu s'ouvre sur sa tablette. {code:[lieux]}
+   Sauf les codes des chemins secrets du Pisteur (E.chemins, Romain, 5 novembre, 01 h 30 : le chemin des bûcherons) : pour lui seul. */
 M.codesLieux = function(E){
   if(!E) return {};
   if(E._codesLieux) return E._codesLieux;
-  var l = {};
+  var l = {}, seul = {};
+  (E.chemins || []).forEach(function(c){ if(c && c.code) seul[c.code] = 1; });
   function voir(besoin, lieu){
     (besoin || []).forEach(function(b){
       if(!b) return;
-      if(b.code && /^(info|obj):/.test(b.code)){ l[b.code] = l[b.code] || []; if(l[b.code].indexOf(lieu) < 0) l[b.code].push(lieu); }
+      if(b.code && /^(info|obj):/.test(b.code) && !seul[b.code]){ l[b.code] = l[b.code] || []; if(l[b.code].indexOf(lieu) < 0) l[b.code].push(lieu); }
       if(b.et) voir(b.et, lieu);
     });
   }
@@ -37550,6 +37634,7 @@ function traiterCode(seq){
     M.ouvrir({type:'info', ic:p.ic, titre:'Tu as reçu : ' + p.nom, t:p.d}); return;
   }
   if(M.codeSpecial && M.codeSpecial(t, x, id)) return;   /* les codes des talents du Barde : rumeur, plaidoirie, recette (barde.js) */
+  if(M.codeChemin && M.codeChemin(id)) return;   /* un chemin secret du Pisteur : tout droit à son tableau, dans sa cabane (carte-jeu.js) */
   if(P.recus[id]){ M.ouvrir({type:'info', ic:'👍', titre:'Déjà reçu', t:'Tu as déjà ce code.'}); return; }
   P.recus[id] = true; M.son('gain');
   var nn = M.nomCode(id);
@@ -37581,11 +37666,11 @@ function ouvertPourMoi(code){
   var guide = M.carteGuidee ? M.carteGuidee() : null;   /* E1, Pisteur : sa carte se dévoile pas à pas, on ne nomme que ce qu'elle montre */
   if(guide && moi.some(function(l){ return guide.indexOf(l) >= 0; })) moi = moi.filter(function(l){ return guide.indexOf(l) >= 0; });
   if(moi.length){
-    /* le Pisteur : un passage trouvé sous terre est sur la carte des sous-sols de sa cabane (carte-jeu.js) */
+    /* le Pisteur : un passage trouvé sous terre est sur son tableau des chemins secrets, dans sa cabane (carte-jeu.js) */
     var cab = moi.filter(function(l){ return M.dansCabane && M.dansCabane(l); }), vil = moi.filter(function(l){ return cab.indexOf(l) < 0; });
     var noms = function(l){ return l.map(function(x){ return M.nomLieu(x); }).join(', '); };
     return (vil.length ? 'C\'est ouvert sur ta carte 🗺️ : ' + noms(vil) + '.' : '') + (vil.length && cab.length ? ' ' : '') +
-      (cab.length ? 'C\'est ouvert sur la carte des sous-sols, dans ta cabane 🛖 : ' + noms(cab) + '.' : '');
+      (cab.length ? 'C\'est sur ton tableau des chemins secrets, dans ta cabane 🛖 : ' + noms(cab) + '.' : '');
   }
   var qui = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== role && lieux.some(function(l){ return lieuUtile(l, r); }); });
   return 'Pour toi, il n\'y a rien à faire là-bas pour l\'instant' + (qui.length ? ' : c\'est ' + qui.map(function(r){ return D.ROLES[r].le; }).join(' et ') + (qui.length > 1 ? ' qui y vont.' : ' qui y va.') : '.');
@@ -41134,15 +41219,15 @@ function generique(p, E, P){
       return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div><p class="lv-texte">' + esc(hm) + ' ' + lire(hm) + '</p>';
     }
     if(p.besoin && !M.besoinOk(p.besoin)){
-      /* p.besoinNeutre : un message neutre, sans la liste de ce qui manque (les preuves du rassemblement) */
-      if(p.besoinNeutre) return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div><p class="lv-texte">' + esc(p.besoinNeutre) + ' ' + lire(p.besoinNeutre) + '</p>';
+      /* (plus de p.besoinNeutre : c'était le message « pas assez de preuves » du rassemblement, qui n'en demande plus depuis le 5 novembre, 01 h 36) */
       var av = p.avant || 'Cette page est fermée.';
       return '<div class="lv-sceau" aria-hidden="true"><span>🔒</span></div><p class="lv-texte">' + esc(av) + ' ' + lire(av) + '</p>' + M.besoinHTML(p.besoin, 'sage');
     }
-    if(p.besoin || p.action || p.mj){
+    /* (p.obligatoire : la page où le livre s'ouvre tout seul, plus bas ; son gros bouton jaune palpite) */
+    if(p.besoin || p.action || p.mj || p.obligatoire){
       var sans = p.action && !M.peutAgir();
       return '<div class="lv-illu" aria-hidden="true">' + p.ic + '</div>' + (p.avant ? '<p class="lv-texte">' + esc(p.avant) + ' ' + lire(p.avant) + '</p>' : '') +
-        '<button class="btn grand b-aller lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : (p.boutonIc || '📖 ')) + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
+        '<button class="btn grand b-aller lv-ouvrir' + (p.obligatoire ? ' b-guide' : '') + '" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : (p.boutonIc || '📖 ')) + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
     }
   }
   s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(p.t || '') + ' ' + (p.t ? lire(p.t) : '') + '</p>') + '</div>';
@@ -41273,7 +41358,7 @@ function accusation(E, P){
   var q = dims.map(function(d){ return E[d].titre; }).join(' ');
   var s = '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t) + ' ' + lire(t + ' ' + q) + '</p></div>';
   s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + IC_Q[d] + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
-  if(M.verrouAccusationHTML) s += M.verrouAccusationHTML();   /* l'enquête 2 : le bouton « 🌅 Le petit matin » (regles.js), sans dire ce qui manque */
+  /* (plus de verrou ni de « petit matin », Romain, 5 novembre, 01 h 36 : le Sage accuse quand il veut, à n'importe quel moment) */
   s += '<button class="btn grand lv-accuser" data-act="accuser">⚖️ Accuser</button>';
   s += M.coeursHTML ? M.coeursHTML() : '';
   /* les suspects : ceux que le Sage a barrés dans son tableau sont grisés (ils restent choisissables à l'accusation) */
@@ -41284,12 +41369,26 @@ function accusation(E, P){
   return s;
 }
 
+/* ---------- Une page « un peu obligatoire » (p.obligatoire ; enquête 2 : 📣 Rassembler le village, la nuit, Romain, 5 novembre, 01 h 36) ----------
+   Tant qu'elle n'est pas faite (et qu'elle est ouverte à ce moment), le Grand Livre s'ouvre dessus : quand la tablette du Sage passe à ce
+   moment (passer-moment, plus bas), et chaque fois qu'il revient sur son livre (un autre onglet, le village, la page rechargée…).
+   Jamais pendant qu'il le lit : il peut toujours tourner les pages, et rien ne boucle si quelque chose rate. */
+function pageObligatoire(){
+  var E = M.E(), P = M.P();
+  if(!E || !P || P.etape !== 'jeu' || M.role() !== 'sage') return null;
+  var p = (E.pages || []).filter(function(x){ return x.obligatoire && !x.dans && !P.pages[x.id] && (!x.moments || M.momentOk(x.moments)) && (!x.besoin || M.besoinOk(x.besoin)); })[0];
+  return p ? p.id : null;
+}
+M.pageObligatoire = pageObligatoire;
+
 /* ---------- L'onglet ---------- */
 var BATI = null;   /* ce que la dernière vue a préparé, pour le montage */
 M.livrePlein = function(){ return M.role() === 'sage' && !!M.E() && !!M.P(); };
 M.livreHTML = function(){
   var P = M.P(), L = pagesDuLivre(), n = L.length;
   if(UI.livreE !== P.id){ UI.livreE = P.id; UI.livrePage = L[0].id; UI.livreDefil = {}; }
+  /* le livre n'était pas à l'écran au rendu d'avant : il s'ouvre, sur la page obligatoire s'il y en a une */
+  if(!UI.livreAffiche){ var ob = pageObligatoire(); if(ob && indexDe(L, ob) >= 0) UI.livrePage = ob; }
   var i = indexDe(L, UI.livrePage); if(i < 0) i = 0;
   UI.livrePage = L[i].id;
   BATI = {L:L, i:i};
@@ -41366,7 +41465,7 @@ function vuPage(p){
   var ch = false, k = 'page:' + p.id;
   if(!P.vus[k]){ P.vus[k] = 1; ch = true; }
   var Ep = pageE(p.id);
-  if(Ep && Ep.donne && !Ep.besoin && !Ep.action && !Ep.mj && !P.objets['_' + Ep.donne]){
+  if(Ep && Ep.donne && !Ep.besoin && !Ep.action && !Ep.mj && !Ep.obligatoire && !Ep.moments && !P.objets['_' + Ep.donne]){   /* (le rassemblement : son code seulement une fois le village rassemblé) */
     P.objets['_' + Ep.donne] = true; ch = true;
     if(V){ var c = indexDe(V.L, 'codes'); if(c >= 0 && c !== V.i) V.bati[c] = false; }   /* la page des codes se redessinera */
   }
@@ -41590,6 +41689,18 @@ if(M.A){
     vuPage({id:id});
     M.son('feuille'); M.render();
   };
+  /* Le Sage passe au moment suivant : s'il y a une page obligatoire à ce moment (le rassemblement, la nuit), le livre s'y ouvre */
+  var passer0 = M.A['passer-moment'];
+  if(passer0) M.A['passer-moment'] = function(){
+    var r = passer0.apply(this, arguments);
+    try{
+      var ob = pageObligatoire(), P = M.P();
+      if(ob && P){
+        if(P.onglet !== 'role' || !M.livreAller(ob, true)){ P.onglet = 'role'; UI.livrePage = ob; M.sauver(); M.render(); }
+      }
+    }catch(e){ console.error(e); }
+    return r;
+  };
 }
 
 /* ---------- M.render enveloppé ---------- */
@@ -41606,7 +41717,9 @@ if(typeof rendreAvant === 'function'){
     if(voile) voile.classList.toggle('b-sans-entree', !!UI.modal && UI.modal === derniereModale);   /* la même fenêtre qui change (accusation : qui → où…) ne remonte pas */
     derniere = k; derniereModale = UI.modal;
     demonter();
-    var r = rendreAvant.apply(this, arguments);
+    var r;
+    try{ r = rendreAvant.apply(this, arguments); }
+    finally{ UI.livreAffiche = !!document.getElementById('livre-ici'); }   /* pour la page obligatoire (M.livreHTML) : le livre est-il à l'écran ? */
     try{ monter(); }catch(e){ console.error(e); }
     return r;
   };
@@ -41624,8 +41737,8 @@ if(typeof rendreAvant === 'function'){
      (sauf p.varianteFigee : guetter au moulin garde le texte du moment où on l'a vu).
    · L'Alchimiste remplit un flacon dans un lieu (L.alchimiste.echantillon {objet, t, moments}) : un objet à analyser.
    · Une trouvaille en cueillant (L.alchimiste.trouvaille {moments, ic, titre, t, note, donne}) : le champ rasé.
-   · Le verrou de l'accusation (E.verrouAccusation) et le petit matin (P.aube, sur la tablette du Sage) : on accuse
-     après la nuit, quand l'équipe a vu ce qu'il faut ; sinon un message court et neutre, qui ne dit pas quoi chercher.
+   · (Plus de verrou de l'accusation ni de « petit matin », Romain, 5 novembre, 01 h 36 : le Sage accuse quand il veut.
+     Un vieux P.aube d'une sauvegarde ne sert plus à rien.)
    · Les vieilles sauvegardes de l'ancienne enquête 2 (le Corbeau) : une enquête 2 en cours repart de zéro (nouvelle histoire).
    Chargé APRÈS moteur-actions.js, barde.js et livre.js (et avant tuto.js).
    ========================================================== */
@@ -41712,43 +41825,7 @@ A.cueillir = function(el){
   return r;
 };
 
-/* ---------- 3. Le verrou de l'accusation, et le petit matin ---------- */
-function derniereNuit(){ var E = M.E(), P = M.P(); return !!(E && P) && P.moment >= E.moments.length - 1; }
-function verrou(){
-  var E = M.E(), P = M.P();
-  if(!E || !P || !E.verrouAccusation) return [];
-  return E.verrouAccusation.filter(function(c){ return c.aube ? !P.aube : !M.uneCondition(c); });
-}
-M.verrouAccusation = verrou;
-/* Sur la page de l'accusation : seulement le bouton « 🌅 Le petit matin » (ou quand on accuse). Plus de liste de ce qui manque
-   (Romain, 4 novembre, 21 h 12 : trop d'informations) ; le verrou reste, avec un message court et neutre (A.accuser, plus bas). */
-M.verrouAccusationHTML = function(){
-  var l = verrou(), aube = l.some(function(c){ return c.aube; });
-  if(!aube) return '';
-  if(derniereNuit() && M.P().etape === 'jeu') return '<div class="lv-verrou-acc centre"><button class="btn magie grand" data-act="petit-matin">🌅 Le petit matin</button></div>';
-  return '<p class="doux petit centre">On accuse au petit matin, après la nuit.</p>';
-};
-var accuser0 = A.accuser;
-A.accuser = function(el){
-  var l = verrou();
-  if(l.length){
-    M.son('ko');
-    M.ouvrir({type:'info', ic:'⏳', titre:'Pas encore !', t:'Toute l\'équipe n\'a pas fini d\'enquêter : parlez-en ensemble.'});
-    return;
-  }
-  return accuser0.apply(this, arguments);
-};
-A['petit-matin'] = function(){
-  var P = M.P(); if(!P || P.aube || !derniereNuit()) return;
-  UI.confirmer = function(){
-    var P2 = M.P(); if(!P2) return;
-    P2.aube = true; M.sauver(); UI.modal = null; M.render();
-    var f = document.getElementById('transition');
-    if(f){ f.innerHTML = '<div class="b-trans-ic">🌅</div><h2>Le petit matin</h2>'; f.className = 'on moment-matin'; setTimeout(function(){ f.className = ''; }, 2200); }
-    M.son('cloche');
-  };
-  M.ouvrir({type:'confirmer', titre:'Le petit matin ?', t:'Toute l\'équipe a fini la nuit ? Alors place au petit matin : c\'est l\'heure d\'accuser !', oui:'🌅 Oui, le petit matin'});
-};
+/* ---------- 3. (Le verrou de l'accusation et le petit matin : supprimés, Romain, 5 novembre, 01 h 36) ---------- */
 
 /* ---------- 4. Les vieilles sauvegardes de l'ancienne enquête 2 ---------- */
 /* Une enquête 2 commencée avec l'ancienne histoire (le Corbeau) n'a plus de sens : elle repart de zéro (le bouton « Enquête 2 » du village).
@@ -41821,11 +41898,15 @@ M.illustration = function(id){ return ILLU[id] ? ILLU[id]() : ''; };
    - L'onglet Carte : seulement la carte, en grand, entre le bandeau et les onglets, sans cadre ni liste.
      À l'ouverture, tout le village tient dans l'écran ; ＋ / − pour zoomer, puis on la fait glisser au doigt (carte.js, Carte.monter).
    - Enquête 1, Pisteur : la carte se dévoile pas à pas, en suivant ses missions (mission.js : M.missionsLieux).
-   - Le Pisteur, et lui seul, a aussi la carte des sous-sols (souterrains.js). Pas de doublon (Romain, 3 novembre) :
-     l'onglet Carte ne montre que le village, la carte du chevalet de sa cabane ne montre que les sous-sols,
-     avec tous les passages secrets trouvés. Un passage ouvert quitte la carte du village pour celle de la cabane.
-     Ce qu'il y découvre est gardé toute la saison (M.S.sousSols) ; le fouiller ne lui coûte aucune action (M.fouilleGratuite).
-   - La cabane du Pisteur laisse un <div id="cabane-carte"> : on y accroche la carte des sous-sols (M.carteMurale).
+   - Le Pisteur, et lui seul, a aussi son tableau « Les chemins secrets » (Romain, 5 novembre, 01 h 30 ; c'était « Sous le village ») :
+     les passages des sous-sols (souterrains.js) ET les chemins secrets en surface, que chaque enquête déclare (E.chemins : le chemin
+     des bûcherons de l'enquête 2). Pas de doublon (Romain, 3 novembre) : l'onglet Carte ne montre que le village, le tableau du chevalet
+     de sa cabane ne montre que ses chemins secrets. Un passage ouvert sous terre quitte la carte du village pour celle de la cabane.
+     Ce qu'il y découvre est gardé toute la saison (M.S.sousSols) ; fouiller sous terre ne lui coûte aucune action (M.fouilleGratuite).
+   - La cabane du Pisteur laisse un <div id="cabane-carte"> : on y accroche le tableau des chemins secrets (M.carteMurale).
+   - Un chemin secret en surface (plus bas, « Les chemins secrets en surface ») : son code, tapé par le Pisteur, l'emmène tout droit à son
+     tableau ; le chemin s'y trace, un rond jaune palpite à son départ (la première fois, une bulle explique) ; le toucher le fait
+     marcher le long du chemin jusqu'au lieu où il mène, qui s'ouvre. Le chemin reste sur le tableau : le retoucher y ramène.
    - Les visages (Romain, 5 novembre, 00 h 14) : dès l'enquête 1, le visage de l'habitant sur chaque maison ; dès l'enquête 2, plus de
      ronds jaunes d'aide, seulement la position de chaque villageois en ce moment (plus bas, « Les visages des villageois »).
    Chargé APRÈS moteur-actions.js : ajoute ses actions à M.A ; M.render appelle M.monterCarte après chaque rendu.
@@ -41868,13 +41949,27 @@ function suiviCarte(){
   return {suivi:true, guide:guide, tout:!guide, nouveaux:visibles.filter(function(id){ return !vu[id]; })};
 }
 
-/* ---------- Les sous-sols (Pisteur seulement) ---------- */
+/* ---------- Les sous-sols et les chemins secrets (Pisteur seulement) ---------- */
+/* M.S.sousSols = {vus:{élément des sous-sols: enquête}, montres:{déjà regardé sur le tableau}, joue:{enquête: 1},
+   chemins:{chemin secret en surface: enquête}, pris:{chemin déjà pris au moins une fois}} ; dans montres, un chemin est 'ch:' + id */
 function etatSS(){
   var S = M.S;
   if(!S.sousSols || typeof S.sousSols !== 'object') S.sousSols = {};
-  var st = S.sousSols; st.vus = st.vus || {}; st.montres = st.montres || {}; st.joue = st.joue || {};
+  var st = S.sousSols; st.vus = st.vus || {}; st.montres = st.montres || {}; st.joue = st.joue || {}; st.chemins = st.chemins || {}; st.pris = st.pris || {};
   return st;
 }
+/* Les chemins secrets en surface de toutes les enquêtes (E.chemins) : [{c:chemin, e:numéro de l'enquête}] */
+function tousChemins(){
+  var l = [];
+  M.cle(window.ENQUETES || {}).forEach(function(n){
+    var V = window.ENQUETES[n];
+    ((V && V.chemins) || []).forEach(function(c){ if(c && c.id && c.pts && c.pts.length > 1) l.push({c:c, e:+n}); });
+  });
+  return l;
+}
+function cheminDef(id){ var x = tousChemins().filter(function(y){ return y.c.id === id; })[0]; return x ? x.c : null; }
+/* ce qui fait apparaître un chemin : ses conditions (c.revele), sinon son code reçu */
+function reveleChemin(c){ return c.revele || (c.code ? [{code:c.code}] : []); }
 /* Note les découvertes de l'enquête en cours (appelé après chaque rendu) : elles restent pour toute la saison */
 M.majSousSols = function(){
   var E = M.E(), P = M.P();
@@ -41884,9 +41979,20 @@ M.majSousSols = function(){
   (SS.elements || []).forEach(function(x){
     if(x.enquete === E.id && !st.vus[x.id] && x.revele && x.revele.length && M.besoinOk(x.revele)){ st.vus[x.id] = E.id; chg = true; }
   });
+  (E.chemins || []).forEach(function(c){
+    var r = reveleChemin(c);
+    if(c && c.id && !st.chemins[c.id] && r.length && M.besoinOk(r)){ st.chemins[c.id] = E.id; chg = true; }
+  });
   if(chg) M.sauver();
   return chg;
 };
+/* Les chemins secrets en surface qu'il connaît (même règle que les sous-sols pour une enquête d'avant jouée sans eux) */
+function cheminsConnus(){
+  var E = M.E(), st = etatSS();
+  if(M.role() !== 'pisteur') return [];
+  try{ M.majSousSols(); }catch(e){}
+  return tousChemins().filter(function(x){ return st.chemins[x.c.id] || (E && x.e < E.id && !st.joue[x.e]); }).map(function(x){ return x.c; });
+}
 /* Tout ce qu'il a découvert sous le village : {id:1}.
    Une enquête d'avant jouée sans les sous-sols (vieille sauvegarde, mode test) compte comme toute découverte. */
 function decouverts(){
@@ -41898,9 +42004,14 @@ function decouverts(){
   });
   return l;
 }
-function nouveauxSS(){ var st = etatSS(); return M.cle(decouverts()).filter(function(id){ return !st.montres[id]; }); }
+function nouveauxSS(){
+  var st = etatSS();
+  return M.cle(decouverts()).filter(function(id){ return !st.montres[id]; })
+    .concat(cheminsConnus().filter(function(c){ return !st.montres['ch:' + c.id]; }).map(function(c){ return 'ch:' + c.id; }));
+}
 M.sousSolsDecouverts = function(){ return M.cle(decouverts()); };
-/* ✨ sur l'onglet Cabane : des sous-sols pas encore regardés sur le chevalet (cabane.js) */
+M.cheminsSecrets = function(){ return cheminsConnus().map(function(c){ return c.id; }); };
+/* ✨ sur l'onglet Cabane : des chemins secrets (sous terre ou en surface) pas encore regardés sur le chevalet (cabane.js) */
 M.nouveauxSousSols = function(){ return M.role() === 'pisteur' ? nouveauxSS().length : 0; };
 /* Un lieu souterrain que le Pisteur a trouvé sous terre : il est sur la carte de sa cabane, plus sur celle du village */
 function dansCabane(lieu, ss){
@@ -42004,15 +42115,29 @@ function contenu(ou, w, h){
       var st = etatSS();
       var elems = (SS.elements || []).filter(function(x){ return ss[x.id]; });
       var neufs = montrer ? elems.filter(function(x){ return !st.montres[x.id]; }).map(function(x){ return x.id; }) : [];
-      res.commit = {ss:neufs, pan:neufs.length ? milieu(elems.filter(function(x){ return neufs.indexOf(x.id) >= 0; }).map(posSS)) : null};
-      res.depart = milieu(elems.map(posSS)) || {x:500, y:700};
+      /* les chemins secrets en surface : un chemin pas encore regardé n'est dessiné que sous ses yeux (montrer) : il s'y trace alors */
+      var chs = cheminsConnus().filter(function(c){ return montrer || st.montres['ch:' + c.id]; });
+      var neufsCh = montrer ? chs.filter(function(c){ return !st.montres['ch:' + c.id]; }).map(function(c){ return c.id; }) : [];
+      var premier = !M.cle(st.pris).length;   /* il n'a encore jamais pris de chemin secret : la bulle qui explique */
+      var lch = chs.map(function(c){ return {id:c.id, nom:c.nom || 'Un chemin secret', ic:c.ic || '👣', pts:c.pts, etiquette:c.etiquette || null, neuf:neufsCh.indexOf(c.id) >= 0, pris:!!st.pris[c.id], guide:false}; });
+      var g0 = premier ? lch.filter(function(c){ return !c.pris; })[0] : null;
+      if(g0) g0.guide = true;
+      var ptsCh = function(l){ var t = []; l.forEach(function(c){ c.pts.forEach(function(q){ t.push({x:q[0], y:q[1]}); }); }); return t; };
+      /* le tableau s'ouvre entre le milieu du chemin neuf et son départ (le rond jaune et son « Touche ici ! » restent dans un cadre bas) */
+      var chNeuf = chs.filter(function(c){ return neufsCh.indexOf(c.id) >= 0; }), focus = chNeuf.length ? milieu(ptsCh(chNeuf)) : null;
+      if(focus){ var a0 = chNeuf[0].pts[0]; focus = {x:focus.x, y:(focus.y + a0[1]) / 2}; }   /* (en largeur, le milieu : un cadre étroit voit tout le chemin) */
+      res.commit = {ss:neufs, ch:neufsCh, pan:!focus && neufs.length ? milieu(elems.filter(function(x){ return neufs.indexOf(x.id) >= 0; }).map(posSS)) : null};
+      res.focus = focus;   /* un chemin qui apparaît : le tableau s'ouvre dessus, zoomé (monterVue) */
+      res.depart = milieu(elems.map(posSS).concat(ptsCh(chs))) || {x:500, y:700};
+      res.guide = g0 || null;
+      res.vide = !elems.length && !chs.length;
       svg = Carte.svg({id:'ss' + ou, moment:mid, niveau:'dessous', actifs:info.actifs, verrous:info.verrous, caches:DESSOUS,
-        sousSols:{elements:elems, apparus:neufs}, etiquette:r.etiquette, toucheMin:r.toucheMin});
+        sousSols:{elements:elems, apparus:neufs}, chemins:{liste:lch}, etiquette:r.etiquette, toucheMin:r.toucheMin});
     } else {
       var suivi = suiviCarte(), guide = suivi.guide;
       var actifs = info.actifs, verrous = info.verrous, marqueurs = info.marqueurs;
       /* les souterrains : leur entrée n'apparaît que pour le rôle qui doit y aller (ouverte ou fermée à clé).
-         Pour le Pisteur, une fois le passage trouvé, elle part sur la carte des sous-sols de sa cabane. */
+         Pour le Pisteur, une fois le passage trouvé, elle part sur le tableau des chemins secrets de sa cabane. */
       var caches = DESSOUS.filter(function(id){ return (actifs.indexOf(id) < 0 && verrous.indexOf(id) < 0) || dansCabane(id, ss); });
       actifs = actifs.filter(function(id){ return caches.indexOf(id) < 0; });
       verrous = verrous.filter(function(id){ return caches.indexOf(id) < 0; });
@@ -42044,9 +42169,15 @@ function contenu(ou, w, h){
   }catch(e){ console.error(e); svg = '<p>Erreur de carte</p>'; }
   res.html = '<div class="ca-vue"><div class="ca-monde">' + svg + '</div></div>' +
     '<i class="ca-bord g"></i><i class="ca-bord d"></i><i class="ca-bord h"></i><i class="ca-bord b"></i>' +
-    (couche === 'dessous' ? '<div class="ca-titre-ss">🕳️ Sous le village</div>' +
-      (M.cle(ss).length ? '' : '<p class="ca-vide-ss">Rien pour l\'instant… Explore le village : ce que tu découvres sous la terre apparaîtra ici.</p>') : '');
+    (couche === 'dessous' ? '<div class="ca-titre-ss">🗺️ Les chemins secrets</div>' +
+      (res.vide ? '<p class="ca-vide-ss">Rien pour l\'instant… Explore bien : chaque chemin secret que tu découvres, dans le village ou sous la terre, apparaîtra ici.</p>' : '') +
+      (res.guide ? bulleChemin(res.guide) : '') : '');
   return res;
+}
+/* La première fois qu'il utilise son tableau (Romain, 5 novembre, 01 h 30 : un vrai guidage) : une bulle courte, avec 🔊 (jamais lue toute seule) */
+function bulleChemin(c){
+  var nom = String(c.nom || 'ce chemin'), t = 'Voici ton tableau des chemins secrets ! Touche le rond jaune pour prendre ' + nom.charAt(0).toLowerCase() + nom.slice(1) + '.';
+  return '<div class="ca-chemin-bulle' + (c.neuf ? ' ca-chemin-bulle-neuve' : '') + '" role="status"><span aria-hidden="true">👆</span><p>' + M.esc(t) + '</p>' + M.lireBtn(t) + '</div>';
 }
 
 /* ---------- L'onglet Carte ---------- */
@@ -42068,7 +42199,8 @@ function monterVue(el, c){
   var cle = P.id + ':' + M.role() + ':' + c.ou + ':' + c.couche;
   var neuve = ouverture[c.ou]; ouverture[c.ou] = false;
   var mem = neuve ? null : (vuesMem()[cle] || null);
-  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:mem || c.depart, zoom:mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
+  var foc = c.focus || null;   /* un chemin secret qui apparaît sur le tableau : on zoome dessus (le plus gros zoom du cadre) */
+  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:foc || mem || c.depart, zoom:foc ? 1 : mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
     surVue:function(p){ vuesMem()[cle] = p; },
     surTaille:function(w, h){
       /* le cadre a beaucoup changé (tablette tournée) : si les étiquettes doivent changer de taille, on redessine cette carte */
@@ -42080,10 +42212,12 @@ function monterVue(el, c){
   if(A){
     if(A.ids){ P.carteVue = P.carteVue || {}; A.ids.forEach(function(id){ P.carteVue[id] = 1; }); if(A.tout) P.carteVue['*'] = 1; }
     if(A.ss){ var st = etatSS(); A.ss.forEach(function(id){ st.montres[id] = 1; }); }
+    if(A.ch){ var st2 = etatSS(); A.ch.forEach(function(id){ st2.montres['ch:' + id] = 1; }); }
     M.sauver();
-    if((A.ids && A.ids.length) || (A.ss && A.ss.length) || A.force){
+    var nv = (A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length);
+    if(nv || A.force){
       setTimeout(function(){ if(A.pan && vues[c.ou] && vues[c.ou].vue === v) v.allerVers(A.pan); }, 250);
-      if((A.ids && A.ids.length) || (A.ss && A.ss.length)) setTimeout(function(){ if(vues[c.ou] && vues[c.ou].vue === v) M.son('magie'); }, 420);
+      if(nv) setTimeout(function(){ if(vues[c.ou] && vues[c.ou].vue === v) M.son('magie'); }, 420);
     }
   }
   return v;
@@ -42126,6 +42260,8 @@ M.carteMurale = function(el){
   arreterVue('cabane');
   el.classList.add('ca-plein', 'ca-murale');
   el.classList.toggle('ca-etroit', (el.clientWidth || 300) < 300);   /* petit cadre (téléphone couché) : bouton Village / Sous-sols plus serré */
+  el.classList.toggle('ca-serre', (el.clientWidth || 300) < 480);    /* cadre étroit (téléphone) : la bulle des chemins secrets prend toute la largeur */
+  el.classList.toggle('ca-bas', (el.clientHeight || 300) < 320);     /* cadre très bas (téléphone couché) : pas de place pour la bulle, le « 👆 Touche ici ! » suffit */
   var c = contenu('cabane', el.clientWidth || 300, el.clientHeight || 250);
   el.classList.toggle('ca-couche-dessous', c.couche === 'dessous');
   el.innerHTML = c.html;
@@ -42150,7 +42286,34 @@ window.addEventListener('resize', function(){
   ajusterOnglet();   /* la hauteur suit l'écran ; la vue s'ajuste toute seule (ResizeObserver) */
 });
 
-/* ---------- Actions ---------- */
+/* ---------- Les chemins secrets en surface : le code, et prendre le chemin ---------- */
+/* Le code d'un chemin secret de cette enquête, tapé par le Pisteur (moteur-actions.js, traiterCode) : noté dans son Carnet comme
+   tout code reçu, puis tout droit à son tableau, dans sa cabane (cabane.js, UI.cbVersCarte) ; le chemin s'y trace sous ses yeux.
+   Déjà reçu : on l'y ramène simplement. Pour un autre rôle, ce n'est pas un code à lui (« Ce code est pour le Pisteur »). */
+M.codeChemin = function(id){
+  var E = M.E(), P = M.P();
+  if(!E || !P || M.role() !== 'pisteur' || !M.cabanePlein || !M.cabanePlein()) return false;
+  var c = (E.chemins || []).filter(function(x){ return x && x.code === id && x.pts; })[0];
+  if(!c) return false;
+  if(!P.recus[id]){
+    P.recus[id] = true;
+    var n = M.nomCode(id), p = id.split(':'), I = ((p[0] === 'info' ? E.infos : E.objets) || {})[p[1]] || {};
+    M.noter('Reçu : ' + n.nom + '. ' + (I.t || ''), n.ic);
+    M.son('gain');
+  } else M.son('page');
+  try{ M.majSousSols(); }catch(e){ console.error(e); }
+  P.onglet = 'role'; UI.modal = null; UI.saisie = []; UI.ecran = 'enquete'; UI.cbVersCarte = true;
+  M.sauver(); M.render(); window.scrollTo(0, 0);
+  return true;
+};
+function calme(){ try{ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+/* Le petit pion du Pisteur qui marche le long du chemin : sa tête (Persos), sinon son icône */
+function pionChemin(){
+  var t = '';
+  try{ if(window.Persos && Persos.heros && M.heroObj) t = Persos.heros(M.heroObj(), {cadre:'tete', anime:false, fond:false, id:'chp' + Date.now()}) || ''; }catch(e){ t = ''; }
+  var dedans = t ? t.replace(/^\s*<svg/i, '<svg x="-21" y="-21" width="42" height="42"') : '<text font-size="26" text-anchor="middle" dominant-baseline="central">' + ((D.ROLES.pisteur || {}).ic || '👣') + '</text>';
+  return '<circle r="27" fill="#ffd23f" stroke="#24182e" stroke-width="4"/><circle r="22" fill="#fff4cf"/>' + dedans;
+}
 if(M.A){
   /* un mystère des sous-sols : relire ce qu'il a senti ou vu */
   M.A['sous-sol'] = function(el){
@@ -42158,6 +42321,44 @@ if(M.A){
     if(!x || !decouverts()[x.id]) return;
     M.son('page');
     M.ouvrir({type:'info', ic:x.ic || '❔', titre:x.nom, t:x.t || ''});
+  };
+  /* Toucher un chemin secret (son rond jaune, ou le chemin lui-même) : le Pisteur le suit jusqu'au bout, puis le lieu s'ouvre
+     (comme s'il avait passé le garde). Un chemin qui ne mène à aucun lieu : on relit ce qu'on en sait. */
+  var enRoute = 0;
+  M.A.chemin = function(el){
+    var id = el.dataset.id, c = cheminDef(id), P = M.P();
+    if(!c || !P || P.etape !== 'jeu' || M.role() !== 'pisteur' || cheminsConnus().indexOf(c) < 0) return;
+    if(enRoute && Date.now() - enRoute < 4000) return;   /* il marche déjà */
+    var st = etatSS(); st.pris[id] = 1; M.sauver();
+    var fin = function(){
+      enRoute = 0;
+      if(c.vers) M.A.lieu({dataset:{id:c.vers}});
+      else { M.son('page'); M.ouvrir({type:'info', ic:c.ic || '👣', titre:c.nom || 'Un chemin secret', t:c.t || ''}); }
+    };
+    var svg = el.closest ? el.closest('svg') : null, ligne = svg && svg.querySelector('[data-act="chemin"][data-id="' + id + '"] .ca-chemin-ligne');
+    M.son('pas');
+    /* la bulle et le « Touche ici ! » s'en vont tout de suite */
+    var mur = svg && svg.closest('.ca-plein'); if(mur){ [].forEach.call(mur.querySelectorAll('.ca-chemin-bulle, .ca-chemin-signe, .ca-chemin-onde'), function(x){ x.style.display = 'none'; }); }
+    if(!ligne || !ligne.getTotalLength || calme()){ fin(); return; }
+    var lg = 0; try{ lg = ligne.getTotalLength(); }catch(e){ lg = 0; }
+    if(!lg){ fin(); return; }
+    enRoute = Date.now();
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'ca-chemin-pion'); g.setAttribute('pointer-events', 'none');
+    try{ g.innerHTML = pionChemin(); }catch(e){}
+    svg.appendChild(g);
+    var t0 = 0, DUREE = 1700, fini = false;
+    function poser(k){ var q = ligne.getPointAtLength(lg * k); g.setAttribute('transform', 'translate(' + q.x.toFixed(1) + ' ' + q.y.toFixed(1) + ')'); }
+    function pas(t){
+      if(fini) return;
+      if(!t0) t0 = t;
+      var k = Math.min(1, (t - t0) / DUREE), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      try{ poser(e); }catch(er){ k = 1; }
+      if(k < 1) requestAnimationFrame(pas); else { fini = true; setTimeout(fin, 260); }
+    }
+    poser(0);
+    requestAnimationFrame(pas);
+    setTimeout(function(){ if(!fini){ fini = true; fin(); } }, DUREE + 1500);   /* filet : l'onglet caché, rien ne bouge (requestAnimationFrame en pause) */
   };
 }
 })();
@@ -42172,7 +42373,8 @@ if(M.A){
        et les bulles de couleur sur le côté (toucher ailleurs les referme) ;
      - l'armoire montre la collection : tout ce qui est trouvé et ce qui reste à trouver ;
      - le sac 🎒 ouvre ce que montrait l'ancien onglet Sac (codes, potions, infos, équipement) ;
-     - la grande carte des sous-sols, dans un cadre de bois sur un chevalet (#cabane-carte, remplie par carte-jeu.js : M.carteMurale) ;
+     - le grand tableau « Les chemins secrets » (sous terre et en surface), dans un cadre de bois sur un chevalet
+       (#cabane-carte, rempli par carte-jeu.js : M.carteMurale) ;
        le village est dans l'onglet Carte, pour ne pas faire doublon.
    La garde-robe : M.S.garde = {v:2, a:{id:{c, n, o}}, p:{emplacement:id}, f:{trouvailles faites}, n}
      (v:2 = les règles « moins souvent, mais plus belles » de garderobe.js : TROUVAILLES)
@@ -42402,7 +42604,7 @@ function badgeOnglet(){
   var b = document.querySelector('.b-onglets [data-o="role"] span');
   if(!b) return;
   var G = M.role() === 'pisteur' ? etatGarde() : null, n = G ? nouveaux(G) : 0;
-  var ss = 0; try{ ss = M.nouveauxSousSols ? M.nouveauxSousSols() : 0; }catch(e){}   /* du nouveau sous terre, sur le chevalet */
+  var ss = 0; try{ ss = M.nouveauxSousSols ? M.nouveauxSousSols() : 0; }catch(e){}   /* un chemin secret nouveau (sous terre ou en surface), sur le chevalet */
   n += ss;
   var x = b.querySelector('.cb-onglet-badge');
   if(n && !x){ x = document.createElement('em'); x.className = 'cb-onglet-badge'; x.setAttribute('aria-label', 'Du nouveau dans ta cabane'); x.textContent = '✨'; b.appendChild(x); }
@@ -42585,7 +42787,7 @@ function estimer(){ var w = window.innerWidth || 800, h = Math.max(240, (window.
 M.cabaneHTML = function(){
   var S = M.S, G = etatGarde(S), P = M.P(), e = estimer(), L = mise(e.w, e.h), mid = M.momentId ? M.momentId() : 'matin';
   var n = G ? nouveaux(G) : 0, codes = P ? M.cle(P.objets || {}).length : 0;
-  var aide = 'Glisse avec ton doigt pour voir toute ta cabane. Pour t\'habiller, touche ton personnage : la tête, le cou, le torse, le pantalon, les bottes, les mains ou le carquois. Les bulles changent la couleur. L\'armoire montre ta collection, le sac tes objets et leurs codes.';
+  var aide = 'Glisse avec ton doigt pour voir toute ta cabane. Pour t\'habiller, touche ton personnage : la tête, le cou, le torse, le pantalon, les bottes, les mains ou le carquois. Les bulles changent la couleur. L\'armoire montre ta collection, le sac tes objets et leurs codes, et le grand tableau tous tes chemins secrets.';
   var s = '<div id="cabane-ici" class="cb cb-m-' + mid + '" style="height:' + e.h + 'px"><div class="cb-vue">';
   s += '<div class="cb-monde" style="width:' + L.mw.toFixed(1) + 'px;height:' + L.mh.toFixed(1) + 'px">';
   s += '<div class="cb-fond">' + fond(L, mid, S.heros && S.heros.nom) + '</div>';
@@ -42621,6 +42823,12 @@ M.monterCabane = function(){
     pan:{x:0, y:0}, suivis:[], nettoie:[], L:null, avaler:false};
   V.centre = function(){ var L = V.L; if(!L) return null; return {x:L.vb.x0 + (V.pan.x + L.w / 2) / L.k, y:L.vb.y0 + (V.pan.y + L.h / 2) / L.k}; };
   hauteur();
+  /* UI.cbVersCarte (carte-jeu.js, le code d'un chemin secret) : la cabane s'ouvre devant le tableau des chemins secrets du chevalet */
+  if(UI.cbVersCarte){
+    UI.cbVersCarte = false;
+    var L0 = mise(V.vue.clientWidth || 800, V.vue.clientHeight || 600), c0 = L0.B.cadre;
+    UI.cbPan = {x:c0[0] + c0[2] / 2, y:c0[1] + c0[3] / 2};
+  }
   appliquerMise(true);
   remplirCarte();
   brancher();
@@ -42668,7 +42876,7 @@ function panA(x, y){
   if(UI.cbChoix) placerChoix();
   carteSousLesYeux();
 }
-/* La carte des sous-sols est bien à l'écran : ce qui est nouveau sous terre surgit (carte-jeu.js : M.regarderCarteMurale) */
+/* Le tableau des chemins secrets est bien à l'écran : ce qui est nouveau (sous terre ou en surface) surgit (carte-jeu.js : M.regarderCarteMurale) */
 function carteSousLesYeux(){
   if(!V || !V.L || V.carteVue || !M.regarderCarteMurale) return;
   var L = V.L, c = L.B.cadre, x0 = (c[0] - L.vb.x0) * L.k - V.pan.x, x1 = x0 + c[2] * L.k;
@@ -44128,7 +44336,7 @@ M.tutoGuide = function(){ var G = guide(); return G ? {etat:G.plan.etat, but:G.p
    4. La barrière : seul ce qui est sur le chemin se touche
    ========================================================== */
 var TOUJOURS = {lire:1, 'tuto-lire':1, fermer:1, 'menu-enquete':1, menu:1, sym:1, 'sym-efface':1, 'carnet-pnj':1, revoir:1, 'relire-lettre':1, journal:1, calepin:1,
-  'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, opt:1, 'test-voix':1, 'confirmer-oui':1,
+  'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mj-potion':1, 'mj-auto':1, 'tuto-fait':1, 'tuto-passer':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, chemin:1, opt:1, 'test-voix':1, 'confirmer-oui':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-chanter':1};   /* la phrase à trous du Barde, dans le Carnet (barde.js) */
 function permis(el, G){
   var a = el.dataset.act, x = el.dataset;
