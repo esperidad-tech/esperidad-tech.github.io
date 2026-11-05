@@ -4184,11 +4184,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
    ========================================================== */
 .at-guide{position:absolute;pointer-events:none;z-index:99500}
 .at-guide[hidden]{display:none}
-.at-guide-anneau{position:absolute;inset:0;border-radius:50%;border:calc(5px + 3px * var(--k,1)) solid #ffd36a;
-  box-shadow:0 0 0 4px rgba(255,255,255,.55),0 0 26px 8px rgba(255,211,106,.85),inset 0 0 22px rgba(255,211,106,.6);animation:at-guide-pulse 1.3s ease-in-out infinite}
+/* le même cadre jaune que le rond du tutoriel (tuto.css : .tu-anneau ; Romain, 5 novembre, 21 h 46) */
+.at-guide-anneau{position:absolute;inset:0;border-radius:50%;border:4px solid #ffd23f;
+  box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75), inset 0 0 12px rgba(255,210,63,.5);animation:tu-pulse 1.3s ease-in-out infinite}
 .at-guide-nouveau{position:absolute;left:50%;top:0;transform:translate(-50%,-70%);white-space:nowrap;font-size:calc(13px + 5px * var(--k,1));font-weight:800;color:#3a2410;
   background:#ffe36b;border:3px solid #24182e;border-radius:999px;padding:3px 12px;box-shadow:0 3px 0 rgba(36,24,46,.35);animation:at-scint 1.3s ease-in-out infinite}
-.at-guide.at-guide-hop .at-guide-anneau{animation:at-guide-hop .45s ease-out, at-guide-pulse 1.3s ease-in-out .45s infinite}
+.at-guide.at-guide-hop .at-guide-anneau{animation:at-guide-hop .45s ease-out, tu-pulse 1.3s ease-in-out .45s infinite}
 @keyframes at-guide-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.8}}
 @keyframes at-guide-hop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
 /* pendant le guidage : le chat laisse passer le doigt (on touche ce qui est derrière lui), sa bulle se cache */
@@ -4197,7 +4198,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @media (prefers-reduced-motion: reduce){ .at-guide-anneau,.at-guide-nouveau{animation:none!important} }
 /* le même rond que partout ailleurs dans le tutoriel (Romain, 5 novembre, 19 h 39) : pas d'écriteau, il pulse et une onde part de lui */
 .at-guide-nouveau{display:none}
-.at-guide::after{content:'';position:absolute;inset:0;border-radius:50%;border:4px solid #ffd36a;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
+.at-guide::after{content:'';position:absolute;inset:0;border-radius:50%;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
 
 /* La règle de tout le jeu (21 h 22) : les boutons pour aller quelque part ou lancer quelque chose sont JAUNES, texte NOIR
    (« Préparer », « Analyser », « Donner », « Le chercher dans la pièce ») ; les secondaires (Vendre…) restent sombres */
@@ -4215,10 +4216,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-ri-q:active .at-ri-ic{transform:scale(.94)}
 .at-rcarte.dictee{box-shadow:0 0 0 3px var(--c), 0 0 0 7px rgba(124,240,168,.55), 0 6px 0 rgba(36,24,46,.25)}
 /* le rond lumineux du tutoriel sur le prochain « ? » */
-.at-ri-q.at-guide-q .at-ri-ic{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1.3s ease-in-out infinite}
+.at-ri-q.at-guide-q .at-ri-ic{box-shadow:0 0 0 4px #ffd23f, 0 0 0 7px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75);animation:at-guide-q 1.3s ease-in-out infinite}
 .at-ri-q.at-guide-q{position:relative}
-.at-ri-q.at-guide-q::before{content:'';position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid #ffd36a;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:2}   /* (plus d'écriteau « Touche ! » : l'onde, comme partout) */
-@keyframes at-guide-q{50%{transform:scale(1.1)}}
+.at-ri-q.at-guide-q::before{content:'';position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;margin:-50% 0 0 -50%;border-radius:50%;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:2}   /* (plus d'écriteau « Touche ! » : l'onde, comme partout) */
+@keyframes at-guide-q{50%{transform:scale(1.07)}}
 .at-dicte{border-radius:16px;background:#fff1cf;border:3px solid var(--contour);padding:8px 10px 10px;box-shadow:0 6px 0 rgba(36,24,46,.25);animation:at-msg .25s ease-out}
 .at-dicte-t{display:flex;align-items:center;gap:8px;margin:0 0 8px!important;font-weight:800;color:var(--encre)}
 .at-dicte-t > b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffd36a;border:2px solid var(--contour);flex:none}
@@ -4242,10 +4243,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .at-vol{position:absolute;z-index:99400;width:74px;height:74px;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
 .at-vol svg{display:block;width:100%;height:100%}
 /* le guidage du tutoriel : le 📦 du coin, puis le meuble à installer dans son panneau (ils brillent eux-mêmes) */
-.at-coin.at-guide-q,.at-res-o.at-guide-q{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1.3s ease-in-out infinite}
+.at-coin.at-guide-q,.at-res-o.at-guide-q{box-shadow:0 0 0 4px #ffd23f, 0 0 0 7px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75);animation:at-guide-q 1.3s ease-in-out infinite}
 .at-res-o.at-guide-q{position:relative;z-index:2}
 /* (plus d'écriteau « Touche ! » : l'onde du rond du tutoriel, la même partout — Romain, 5 novembre, 20 h 16) */
-.at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'';position:absolute;inset:-6px;border-radius:inherit;border:4px solid #ffd36a;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:3}
+.at-coin.at-guide-q::before,.at-res-o.at-guide-q::before{content:'';position:absolute;inset:-6px;border-radius:inherit;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:3}
 @media (prefers-reduced-motion: reduce){ .at-coin.at-guide-q,.at-res-o.at-guide-q{animation:none} }
 
 /* Le voyage d'un ingrédient jusqu'à son rangement (Romain, 5 novembre, 15 h 58) : lent, pour qu'on le suive des yeux */
@@ -4400,11 +4401,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-et-heros svg{width:100%;height:100%}
 /* l'accueil du tout début (M.debutant) : la carte du héros n'est pas un bouton ; le bouton à toucher brille */
 .b-hub-fixe{cursor:default}
-.b-guide{position:relative;box-shadow:0 0 0 4px rgba(255,214,102,.55), 0 0 22px 6px rgba(255,200,80,.45);animation:b-guide-pulse 1.3s ease-in-out infinite}
-/* l'onde du rond du tutoriel, la même partout (Romain, 5 novembre, 20 h 16) */
-.b-guide::after{content:'';position:absolute;inset:-4px;border-radius:inherit;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
-@keyframes b-guide-pulse{0%,100%{box-shadow:0 0 0 3px rgba(255,214,102,.5), 0 0 16px 4px rgba(255,200,80,.35)}50%{box-shadow:0 0 0 7px rgba(255,214,102,.25), 0 0 30px 10px rgba(255,200,80,.55)}}
-@media (prefers-reduced-motion: reduce){.b-guide{animation:none}.b-guide::after{display:none}}
+.b-guide{position:relative}
+/* Le cadre jaune, le même partout (Romain, 5 novembre, 21 h 46 : « plus qu'une seule version, la version animée ») : exactement le rond
+   du tutoriel (tuto.css : .tu-anneau, .tu-onde) — l'anneau, 7 px autour, qui pulse, et l'onde qui part de lui. Sur ce qui brille pour
+   dire « touche ici » hors du tutoriel : les boutons du village, de la lettre, de la fin, du Grand Livre ; les talents à choisir.
+   Quand le rond du tutoriel est déjà dessus (.tu-vise, tuto.js), il n'y en a qu'un. */
+.b-guide::before,.hr-talent.hr-dispo::before{content:'';position:absolute;inset:-7px;border-radius:18px;border:4px solid #ffd23f;box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75), inset 0 0 12px rgba(255,210,63,.5);animation:tu-pulse 1.3s ease-in-out infinite;pointer-events:none}
+.b-guide::after,.hr-talent.hr-dispo::after{content:'';position:absolute;inset:-7px;border-radius:18px;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
+.tu-vise.b-guide::before,.tu-vise.b-guide::after,.tu-vise.hr-dispo::before,.tu-vise.hr-dispo::after{display:none}
+@media (prefers-reduced-motion: reduce){.b-guide::before,.hr-talent.hr-dispo::before{animation:none}.b-guide::after,.hr-talent.hr-dispo::after{display:none}}
 .b-et-info{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.08}
 .b-et-info b{font-family:var(--f-titre);font-weight:400;font-size:1.1rem;color:var(--or-pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b-et-info span{font-size:.8rem;color:var(--brume)}
@@ -4908,6 +4913,86 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 /* (la classe .b-pastille des bulles porte le même nom que les ronds de couleur des potions, 44 × 44 px : sans ceci, chaque pastille
    de la bulle faisait 44 px de haut, et un texte de plusieurs lignes en sortait) */
 .b-feuille.b-bulle .b-pastille{height:auto}
+
+/* ==========================================================
+   Écrans fixes (Romain, 5 novembre, 21 h 46) : « Enquête N » (la lettre), « Enquête résolue », le village.
+   Plein écran verrouillé : rien ne défile, rien ne glisse, sur tous les téléphones et toutes les tablettes.
+   La grande image du héros rapetisse d'abord (le paysage continue sur les côtés : persos.js, decor) ; s'il manque encore
+   de la place, M.ecranFixe (moteur-actions.js) serre tout avec --serre (de 1 à .6).
+   ========================================================== */
+html.b-fixe, html.b-fixe body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.b-fixe #app{min-height:0}
+.b-ecran-fixe{--serre:1;height:var(--h-ecran, 100vh);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  padding-block:calc(10px * var(--serre) + env(safe-area-inset-top, 0px)) calc(10px * var(--serre) + env(safe-area-inset-bottom, 0px));
+  gap:calc(12px * var(--serre));justify-content:center;animation:b-fixe-entre .35s ease-out}
+@keyframes b-fixe-entre{from{opacity:0}to{opacity:1}}
+.b-ecran-fixe.b-deborde{overflow-y:auto;touch-action:pan-y;justify-content:flex-start}   /* le dernier filet : défiler plutôt que perdre un bouton */
+.b-ecran-fixe > *{flex:none}
+.b-ecran-fixe h1{font-size:calc(clamp(1.6rem, 6vw, 2.5rem) * var(--serre))}
+.b-ecran-fixe .b-titre{padding-top:0;gap:calc(12px * var(--serre))}
+.b-ecran-fixe .b-titre h1{font-size:calc(clamp(1.5rem, 5.6vw, 2.4rem) * var(--serre))}
+.b-ecran-fixe .b-lanterne{width:calc(64px * var(--serre))}
+.b-ecran-fixe .sur-titre{font-size:calc(.76rem * var(--serre))}
+.b-ecran-fixe h3{font-size:calc(1.15rem * var(--serre))}
+.b-ecran-fixe .btn{min-height:max(42px, calc(52px * var(--serre)));font-size:calc(1.02rem * var(--serre));padding:calc(8px * var(--serre)) calc(18px * var(--serre))}
+.b-ecran-fixe .btn.grand{min-height:max(46px, calc(60px * var(--serre)));font-size:calc(1.18rem * var(--serre));padding:calc(10px * var(--serre)) calc(24px * var(--serre))}
+.b-ecran-fixe .b-lire{height:max(30px, calc(36px * var(--serre)));min-width:calc(40px * var(--serre))}
+.b-ecran-fixe .b-carte-verre{padding:calc(14px * var(--serre));gap:calc(8px * var(--serre));font-size:calc(1rem * var(--serre))}
+.b-ecran-fixe .b-carte-verre p{font-size:inherit}
+.b-ecran-fixe .b-menu-haut{top:calc(8px * var(--serre) + env(safe-area-inset-top, 0px))}
+
+/* la lettre du maire : le portrait du maire flotte à droite du texte, le 🔊 dans le coin, sous la signature */
+.b-ecran-fixe .b-lettre{display:block;font-size:calc(1.08rem * var(--serre));padding:calc(18px * var(--serre)) calc(16px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-lettre > * + *{margin-top:calc(8px * var(--serre))}
+.b-ecran-fixe .b-lettre-maire{width:calc(84px * var(--serre));height:calc(84px * var(--serre));margin:0 0 calc(6px * var(--serre)) calc(10px * var(--serre))}
+.b-ecran-fixe .b-lettre-date{font-size:calc(.92rem * var(--serre));margin-top:0}
+.b-ecran-fixe .b-signature{font-size:calc(1.45rem * var(--serre));padding-left:calc(52px * var(--serre));clear:both}
+.b-ecran-fixe .b-lettre > .b-lire{position:absolute;left:calc(12px * var(--serre));bottom:calc(12px * var(--serre));margin:0}
+.b-ecran-fixe .b-affiche{display:grid;grid-template-columns:minmax(0, 1fr) auto;column-gap:10px;align-items:center;padding:calc(12px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-affiche > p{grid-column:1;margin:0}
+.b-ecran-fixe .b-affiche > p + p{margin-top:calc(4px * var(--serre))}
+.b-ecran-fixe .b-affiche > .b-lire{grid-column:2;grid-row:1 / 3;position:static;margin:0}
+.b-ecran-fixe .b-bas{padding-top:0}
+/* téléphone couché : la lettre à gauche, l'affiche et le bouton à droite */
+@media (orientation: landscape) and (max-height: 600px){
+  .b-lettre-page.b-ecran-fixe{display:grid;max-width:1100px;grid-template-columns:minmax(0, 1.45fr) minmax(0, 1fr);grid-template-rows:auto auto minmax(0, 1fr) minmax(0, 1fr);
+    column-gap:calc(16px * var(--serre));row-gap:calc(8px * var(--serre));align-content:center}
+  .b-lettre-page.b-ecran-fixe > .sur-titre, .b-lettre-page.b-ecran-fixe > h1{grid-column:1 / -1}
+  .b-lettre-page.b-ecran-fixe > .b-lettre:not(.b-affiche){grid-column:1;grid-row:3 / 5;align-self:center}
+  .b-lettre-page.b-ecran-fixe > .b-affiche{grid-column:2;grid-row:3;align-self:end}
+  .b-lettre-page.b-ecran-fixe > .b-bas{grid-column:2;grid-row:4;align-self:start}
+  .b-lettre-page.b-ecran-fixe:not(.b-avec-affiche) > .b-bas{grid-row:3 / 5;align-self:center}
+}
+
+/* le village et « Enquête résolue » : debout, l'un sous l'autre ; l'image du héros prend la place qui reste */
+.b-ecran-fixe .b-hub{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;gap:calc(12px * var(--serre))}
+.b-ecran-fixe .b-hub-heros{flex:0 1 auto;min-height:0;width:min(100%, 520px);align-self:center}
+.b-ecran-fixe .b-hub-portrait{flex:0 1 auto;min-height:calc(var(--h-ecran, 100vh) * .3);aspect-ratio:300 / 440;position:relative;overflow:hidden}
+.b-ecran-fixe .b-hub-portrait svg{position:absolute;inset:0;width:100%;height:100%;max-height:none}
+.b-ecran-fixe .b-hub-info, .b-ecran-fixe .b-hub-dores, .b-ecran-fixe .b-hub-actions{flex:none}
+.b-ecran-fixe .b-hub-info{gap:calc(5px * var(--serre));padding:calc(10px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-hub-info b{font-size:calc(1.5rem * var(--serre))}
+.b-ecran-fixe .b-hub-info span{font-size:calc(1rem * var(--serre))}
+.b-ecran-fixe .b-hub-dores{gap:calc(10px * var(--serre));padding:0 calc(14px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-hub-dores .btn{min-height:max(42px, calc(50px * var(--serre)))}
+.b-ecran-fixe .b-hub-actions{gap:calc(10px * var(--serre));width:min(100%, 520px);align-self:center}
+.b-ecran-fixe .b-hub-actions .b-suite{margin-top:0}
+/* couché (téléphone couché, tablette couchée, ordinateur) : le héros à gauche, sur toute la hauteur ; le reste à droite */
+@media (orientation: landscape){
+  .b-hub-simple.b-ecran-fixe, .b-debut.b-ecran-fixe{--l-portrait:calc((var(--h-ecran, 100vh) - 20px * var(--serre) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * .682);
+    display:grid;max-width:calc(var(--l-portrait) + 660px);grid-template-columns:var(--l-portrait) minmax(0, 1fr);
+    grid-template-rows:minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr);column-gap:calc(22px * var(--serre));row-gap:0;align-content:stretch}
+  .b-ecran-fixe .b-hub, .b-ecran-fixe .b-hub-heros{display:contents}
+  .b-ecran-fixe .b-hub-portrait{grid-column:1;grid-row:1 / -1;height:100%;min-height:0;aspect-ratio:auto;border-radius:var(--r-3);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));background:var(--nuit-2)}
+  .b-ecran-fixe > .b-titre, .b-ecran-fixe > h1{grid-column:2;grid-row:2;margin-bottom:calc(12px * var(--serre))}
+  .b-ecran-fixe > .b-carte-voix{grid-column:2;grid-row:3;margin-bottom:calc(12px * var(--serre))}
+  .b-ecran-fixe .b-hub-info{grid-column:2;grid-row:4;background:var(--nuit-2);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-bottom:0;border-radius:var(--r-3) var(--r-3) 0 0}
+  .b-ecran-fixe .b-hub-dores{grid-column:2;grid-row:5;background:var(--nuit-2);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-top:0;border-radius:0 0 var(--r-3) var(--r-3)}
+  .b-debut.b-ecran-fixe .b-hub-info{border-bottom:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-radius:var(--r-3)}
+  .b-ecran-fixe .b-hub-actions{grid-column:2;grid-row:6;width:auto;align-self:stretch;margin-top:calc(12px * var(--serre))}
+  .b-ecran-fixe.b-hub-simple > h1{padding-right:54px}
+}
+.b-ecran-fixe .b-hub-dores .btn{white-space:nowrap;padding-inline:calc(10px * var(--serre))}
 
 /* ==========================================================
    Brumeval — les missions de base, en haut du Carnet (mission.js)
@@ -5477,6 +5562,21 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .bd-porte-suite.fin{background:#3fcf6a}
 @keyframes bd-suite{50%{transform:scale(1.07)}}
 @media (prefers-reduced-motion: reduce){ .bd-porte-suite{animation:none} }
+/* 🤥 Mensonge ? qui part en fumée quand on pose une autre question (Romain, 5 novembre, 21 h 46 ; barde.js, enFumee) */
+.bd-ment-p.bd-part{pointer-events:none;animation:bd-part .38s ease-in forwards}
+@keyframes bd-part{0%{opacity:1;filter:blur(0)}100%{opacity:0;filter:blur(6px);transform:translateY(-8px) scale(1.12)}}
+.bd-fumee{position:fixed;z-index:200;width:0;height:0;pointer-events:none}
+.bd-fumee i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;opacity:0;
+  background:radial-gradient(circle at 50% 50%, rgba(214,210,228,.95), rgba(160,154,182,.55) 45%, rgba(160,154,182,0) 70%);
+  animation:bd-bouffee .95s ease-out forwards}
+.bd-fumee i:nth-child(1){--x:-34px;--y:-26px;animation-delay:0s}
+.bd-fumee i:nth-child(2){--x:-8px;--y:-42px;animation-delay:.05s}
+.bd-fumee i:nth-child(3){--x:22px;--y:-30px;animation-delay:.1s}
+.bd-fumee i:nth-child(4){--x:40px;--y:-8px;animation-delay:.07s}
+.bd-fumee i:nth-child(5){--x:-44px;--y:-2px;animation-delay:.12s}
+@keyframes bd-bouffee{0%{opacity:0;transform:translate(0, 0) scale(.4)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--x), var(--y)) scale(1.7)}}
+@media (prefers-reduced-motion: reduce){.bd-fumee{display:none}.bd-ment-p.bd-part{animation-duration:.01s}}
+.bd-fantome{position:fixed;z-index:199;margin:0}
 
 /* ==========================================================
    Les petites scènes animées des fins d'enquête (illus-fin.js ; Romain, 5 novembre, 9 h 37).
@@ -6213,8 +6313,8 @@ body.hr-plein{overflow:hidden}
 .hr-ecran:not(.hr-large) .hr-talent{flex-direction:column;justify-content:center;text-align:center;gap:4px}
 .hr-talent.hr-pris{border-color:var(--or);background:radial-gradient(circle at 50% 30%, rgba(255,227,163,.3), rgba(28,36,71,.95) 75%);box-shadow:0 0 16px rgba(245,185,69,.5)}
 .hr-talent.hr-pris .hr-t-etat{border-color:var(--or);color:var(--or)}
-.hr-talent.hr-dispo{border-color:var(--cyan);box-shadow:0 0 18px rgba(143,243,255,.55);animation:hr-appel 1.6s ease-in-out infinite}
-.hr-talent.hr-dispo .hr-t-etat{border-color:var(--cyan)}
+.hr-talent.hr-dispo{border-color:var(--or)}   /* à choisir : le cadre jaune du tutoriel, comme partout (moteur.css, .b-guide) */
+.hr-talent.hr-dispo .hr-t-etat{border-color:var(--or)}
 @keyframes hr-appel{0%,100%{box-shadow:0 0 10px rgba(143,243,255,.35)}50%{box-shadow:0 0 24px rgba(143,243,255,.85)}}
 /* verrouillé, ou l'autre talent de l'étage a été pris : la boîte reste opaque, seul son contenu pâlit */
 .hr-talent.hr-ferme{border-color:#2c3466;background:#121834}
@@ -6361,8 +6461,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 20:22 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 20:22';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 22:38 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 22:38';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -8843,14 +8943,18 @@ function talentsAvant(K, h, tal){
 function decor(K, h, t){
   var u = K.u, s = '';
   s += '<rect x="-200" y="-200" width="700" height="840" fill="' + u('ciel') + '"/>';
-  s += '<g fill="#fff">' + [[24,30,1.2],[70,58,1],[118,22,1.3],[40,140,1],[270,190,1.1],[16,230,1.2],[200,30,1]].map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" opacity=".8"/>'; }).join('') +
+  s += '<g fill="#fff">' + [[24,30,1.2],[70,58,1],[118,22,1.3],[40,140,1],[270,190,1.1],[16,230,1.2],[200,30,1],[-40,60,1.1],[-110,150,1],[-160,40,1.2],[-70,210,1],[330,50,1.1],[400,130,1.2],[460,30,1],[350,200,1]].map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" opacity=".8"/>'; }).join('') +
     '<circle class="pj-scintille" cx="96" cy="96" r="1.6"/><circle class="pj-scintille" style="animation-delay:-1s" cx="276" cy="140" r="1.5"/><circle class="pj-scintille" style="animation-delay:-.5s" cx="150" cy="14" r="1.4"/></g>';
   s += '<circle cx="232" cy="96" r="78" fill="' + u('halo') + '"/><circle cx="232" cy="96" r="38" fill="' + u('lune') + '"/><circle cx="220" cy="88" r="6" fill="#f3dcb0" opacity=".6"/><circle cx="244" cy="108" r="4" fill="#f3dcb0" opacity=".5"/>';
-  s += '<path d="M0 300 L 30 248 L 56 282 L 92 226 L 128 276 L 160 240 L 196 284 L 232 236 L 268 280 L 300 252 V 440 H 0 Z" fill="' + u('mont') + '"/>';
-  s += '<path d="M0 352 ' + [0,20,40,60,80,100,200,220,240,260,280,300].map(function(x, i){ var hh = 30 + (i * 13 % 26); return 'L ' + x + ' ' + (352 - hh) + ' L ' + (x + 10) + ' ' + (360 - hh * .2); }).join(' ') + ' V 440 H 0 Z" fill="#1a1846"/>';
-  s += A('pj-derive', '<ellipse cx="150" cy="352" rx="190" ry="16" fill="#cfc9ff" opacity=".12"/>');
-  s += '<path d="M0 398 Q 80 382 150 390 Q 230 398 300 382 V 440 H 0 Z" fill="' + u('sol') + '"/>';
-  s += '<path d="M20 398 l3 -10 l3 9 M44 394 l3 -9 l3 8 M252 392 l3 -11 l3 10 M276 388 l3 -9 l3 8" stroke="#3f7f78" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  /* le paysage continue de chaque côté (et en bas) : quand l'image est plus large que le héros (écrans fixes du village et de la fin,
+     Romain, 5 novembre, 21 h 46), on voit plus de montagnes, jamais un bord coupé */
+  s += '<path d="M-200 262 L -164 236 L -132 274 L -96 232 L -62 270 L -30 238 L 0 300 L 30 248 L 56 282 L 92 226 L 128 276 L 160 240 L 196 284 L 232 236 L 268 280 L 300 252 L 334 286 L 366 240 L 402 278 L 436 234 L 470 272 L 500 250 V 640 H -200 Z" fill="' + u('mont') + '"/>';
+  s += '<path d="M0 352 ' + [0,20,40,60,80,100,200,220,240,260,280,300].map(function(x, i){ var hh = 30 + (i * 13 % 26); return 'L ' + x + ' ' + (352 - hh) + ' L ' + (x + 10) + ' ' + (360 - hh * .2); }).join(' ') + ' V 640 H 0 Z" fill="#1a1846"/>';
+  s += '<path d="M-200 352 ' + [-200,-180,-160,-140,-120,-100,-80,-60,-40,-20].map(function(x, i){ var hh = 30 + (i * 11 % 26); return 'L ' + x + ' ' + (352 - hh) + ' L ' + (x + 10) + ' ' + (360 - hh * .2); }).join(' ') + ' L 0 352 V 640 H -200 Z" fill="#1a1846"/>';
+  s += '<path d="M300 352 ' + [310,330,350,370,390,410,430,450,470,490].map(function(x, i){ var hh = 30 + (i * 17 % 26); return 'L ' + x + ' ' + (352 - hh) + ' L ' + (x + 10) + ' ' + (360 - hh * .2); }).join(' ') + ' L 500 352 V 640 H 300 Z" fill="#1a1846"/>';
+  s += A('pj-derive', '<ellipse cx="150" cy="352" rx="360" ry="16" fill="#cfc9ff" opacity=".12"/>');
+  s += '<path d="M-200 390 Q -100 376 0 398 Q 80 382 150 390 Q 230 398 300 382 Q 400 368 500 390 V 640 H -200 Z" fill="' + u('sol') + '"/>';
+  s += '<path d="M20 398 l3 -10 l3 9 M44 394 l3 -9 l3 8 M252 392 l3 -11 l3 10 M276 388 l3 -9 l3 8 M-60 392 l3 -10 l3 9 M-130 386 l3 -9 l3 8 M350 384 l3 -10 l3 9 M420 378 l3 -9 l3 8" stroke="#3f7f78" stroke-width="2" fill="none" stroke-linecap="round"/>';
   return s;
 }
 
@@ -9363,13 +9467,12 @@ function rougeurX(K, id){
   return '<g class="pjx-rouge"><ellipse cx="' + r[0] + '" cy="' + r[1] + '" rx="' + r[2] + '" ry="' + r[3] + '" fill="' + K.u('rgf') + '"/><ellipse cx="' + r[0] + '" cy="' + (r[1] + 2.5) + '" rx="' + (r[2] * .56) + '" ry="' + (r[3] * .53) + '" fill="' + K.u('rgf') + '"/></g>';
 }
 
-/* Oreilles rouges (signe de Bastien, enquête 2) : les deux oreilles virent au rouge vif, lentement,
-   avec trois petits traits de chaleur à côté ; opacité pilotée par --pjx-oreilles (comme la rougeur).
+/* Oreilles rouges (signe de Bastien, enquête 2) : ses oreilles prennent doucement une teinte rouge, en fondu
+   (Romain, 5 novembre, 21 h 46 : « pas cette énorme couleur rouge, on dirait qu'il saigne des oreilles ; pas de traits, discret ») :
+   une teinte posée sur la peau des oreilles, sans contour ni traits de chaleur ; opacité pilotée par --pjx-oreilles (comme la rougeur).
    Dessinées par-dessus les cheveux (Persos.pnj expressif), à la place exacte des oreilles. */
 function oreillesRougesX(){
-  return '<g class="pjx-oreilles-r" opacity="0"><path d="M-29 -4 Q -35 2 -32 10 Q -27 14 -24 8 Z M29 -4 Q 35 2 32 10 Q 27 14 24 8 Z" fill="#e5323c" stroke="#8c1a22" stroke-width="1.6"/>' +
-    '<path d="M-30.5 1 q 1.6 2.4 .6 5 M30.5 1 q -1.6 2.4 -.6 5" stroke="#ffb0a8" stroke-width="1.3" fill="none" stroke-linecap="round"/>' +
-    '<path d="M-37 -4 l-4 -3 M-38.5 3.5 l-5 0 M-37 11 l-4 3 M37 -4 l4 -3 M38.5 3.5 l5 0 M37 11 l4 3" stroke="#ff4d4d" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+  return '<g class="pjx-oreilles-r" opacity="0"><path d="M-29 -4 Q -35 2 -32 10 Q -27 14 -24 8 Z M29 -4 Q 35 2 32 10 Q 27 14 24 8 Z" fill="#d9504a" fill-opacity=".5"/></g>';
 }
 
 /* Visage animable : comme visage(), sans la bouche (dessinée après la barbe) */
@@ -36216,11 +36319,11 @@ var D = window.DONNEES;
 
 /* Les signes des menteurs de cette enquête (barde.js lit E.tics). Un signe différent par menteur (§ 12.11).
    Bastien et Margot ont chacun un signe à eux, créé pour cette enquête dans le moteur des visages (persos.js, mj-barde-sage.js) :
-   Bastien : ses oreilles deviennent toutes rouges ; Margot : elle baisse les yeux et lève les sourcils. */
+   Bastien : ses oreilles rougissent (doucement, Romain 5 novembre 21 h 46) ; Margot : elle baisse les yeux et lève les sourcils. */
 var TICS = {bastien:'oreilles', margot:'yeuxbas', tim:'mordille', victor:'morsure', melusine:'rougeur', fortune:'coin', farinel:'double'};
 var GESTES = {coin:'ses yeux filent sur le côté, avec un petit sourire de travers', rougeur:'le haut de son front devient tout rose',
   mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite',
-  oreilles:'ses oreilles deviennent toutes rouges', yeuxbas:'{il} baisse les yeux et lève les sourcils en même temps'};
+  oreilles:'ses oreilles rougissent', yeuxbas:'{il} baisse les yeux et lève les sourcils en même temps'};
 function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[id]].replace('{il}', elle ? 'elle' : 'il') + '.'; }
 
 /* Les dialogues à choix (Romain, 4 novembre, 18 h 27, § 12.13) : tous les choix sont polis et plausibles ; seul un indice récolté
@@ -36582,7 +36685,7 @@ E[2] = {
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
       /* (Romain, 5 novembre, 13 h 47 : plus de code de la pièce du moulin ; le ragot de Gaspard, ou de Margot la nuit, suffit ; le Pisteur raconte sa pièce à l'oral) */
-      {q:'On t\'a vu payer avec une pièce d\'or toute neuve !', besoin:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}],
+      {q:'On t\'a vu payer avec une pièce d\'or toute neuve !', moments:['nuit'], besoin:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}],
         a:'Bon, d\'accord… c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli. Une rivière rouge, c\'est beau, non ?', ment:true,
         vrai:'Bon… Un homme en cape noire, avec un grand capuchon, m\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Je ne sais pas qui c\'était, je te le jure !',
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
@@ -36607,7 +36710,7 @@ E[2] = {
         note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
     /* (Romain, 5 novembre, 13 h 19 : son mensonge dès le matin ; il fait sa tournée dans la ruelle, on peut lui parler) */
-    victor:{ou:{matin:'ruelle', apresmidi:'poste', nuit:'taverne'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
+    victor:{ou:{matin:'ruelle', apresmidi:'poste'}, carte:{nuit:'taverne'}, occupe:{nuit:'😴 Victor est trop fatigué pour parler.'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
       {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
         vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
         note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
@@ -36755,33 +36858,28 @@ E[2] = {
      moment, là où il est (barde.js : B.porteIci). Ce qu'ils pensent de l'enquête, en rapport avec leur métier ; rien qui ne soit prévu
      ailleurs (les vrais indices restent dans les bribes ci-dessus, qui passent avant). Le Carnet le garde sur la page de chacun. */
   portes:{
-    bastien:{matin:'Allez, hue, Cocotte ! Encore trois livraisons avant midi… Et avec cette rivière rouge, tu as peur de boire, hein ? Moi aussi.',
+    bastien:{matin:'Allez, hue, Cocotte ! Encore trois livraisons avant midi… Et avec cette rivière rouge, tu as peur de boire, hein ? Ne t\'inquiète pas, tu n\'as rien à craindre.',
       apresmidi:'Tout le monde ne parle que de cette rivière rouge… Moi, je transporte, je ne pose pas de questions !',
       nuit:'Bastien bâille dans sa cuisine : « Quelle journée… Mes roues grincent. Il faudra les graisser demain. »'},
     tim:{apresmidi:'Tim parle tout bas à son chien : « Avec la rivière rouge, plus personne ne fait ramoner sa cheminée. Hein, Pirate ? »',
       nuit:'Tim chuchote à Pirate : « Dors, mon chien. Demain, on ramonera chez Gaspard. »'},
     victor:{matin:'Une lettre pour la mairie, deux pour la place… Ma sacoche n\'a jamais été aussi lourde : tout le monde écrit au maire à cause de la rivière !',
-      apresmidi:'Victor tamponne ses lettres : « Rouge, la rivière ! On n\'a jamais vu ça. Même les canards sont partis ! »',
-      nuit:'Victor raconte au comptoir : « Moi, je passe partout, et je vous le dis : un chêne fermé par le maire, c\'est bizarre. »'},
+      apresmidi:'Victor tamponne ses lettres : « Rouge, la rivière ! On n\'a jamais vu ça. Même les canards sont partis ! »'},
     gaspard:{nuit:'Gaspard pétrit la pâte de demain : « Avec l\'eau de la rivière, je ferais du pain rose ! Heureusement que j\'ai mon puits. »'},
     margot:{matin:'Margot essuie ses chopes : « Une rivière rouge, un chêne interdit… Ce village devient plus mystérieux que mes histoires ! »'},
-    melusine:{matin:'Mélusine frotte son linge en soupirant : « Ce lavoir tout rose ! Mes draps blancs ressemblent à des fraises… »',
-      nuit:'Mélusine marmonne en dormant : « Un point… encore un point… la robe sera prête demain… »'},
+    melusine:{matin:'Mélusine frotte son linge dans le lavoir tout rose, en soupirant : « J\'aurais dû m\'en douter… Quel escroc ! »'},
     fortune:{matin:'Fortuné chantonne en rangeant ses rubans : « Des couleurs du jamais-vu ! Cet après-midi, tout le monde voudra mes tissus ! »',
-      apresmidi:'Fortuné vante sa marchandise : « Approchez ! Moi, cette rivière rouge, je la trouve plutôt jolie… Mais ce n\'est pas moi, hein ! »',
-      nuit:'Fortuné ronfle dans sa carriole… et marmonne : « Trois rubans pour le prix de deux… »'},
+      apresmidi:'Fortuné vante sa marchandise : « Approchez ! Moi, cette rivière rouge, je la trouve plutôt jolie… Mais ce n\'est pas moi, hein ! »'},
     farinel:{matin:'Farinel chante en versant son grain : « Tourne, tourne, mon moulin… Même avec de l\'eau rouge, ma roue tourne toujours ! »',
       apresmidi:'Farinel tousse dans un nuage de farine : « Que de monde dans ma cour aujourd\'hui ! Je ne sais plus où donner de la tête. »',
       nuit:'Farinel ronfle si fort que les murs tremblent : « Rrrr… pas touche à mon grain… rrrr… »'},
     iris:{matin:'Iris arrose ses plantes en grognant : « Grrr… L\'eau de la rivière est toute rouge : pas question d\'en donner à mes fleurs ! »',
-      apresmidi:'Iris trie ses herbes : « Lavande, menthe, ortie… Au moins, ici, personne ne touche à mes plantes. »',
-      nuit:'Iris dort… et murmure : « Rouges… elles étaient toutes rouges… »'},
+      apresmidi:'Iris trie ses herbes : « Lavande, menthe, ortie… Au moins, ici, personne ne touche à mes plantes. »'},
     silas:{matin:'Silas fait les cent pas : « Ordre du maire : personne ne passe. Personne ! Même pas les écureuils. »',
       apresmidi:'Silas bâille : « Garder un chemin toute la journée… Et si quelqu\'un passait derrière mon dos ? Bah, impossible ! »',
       nuit:'Silas grelotte près de sa lanterne : « Pourquoi moi ? Toute la nuit dans le froid… et ce vieux chêne qui grince ! »'},
-    grosbec:{matin:'Le maire soupire derrière sa porte : « Une rivière rouge… Les gens ont peur. Il faut que mes enquêteurs trouvent, et vite ! »',
-      apresmidi:'Le maire relit une lettre : « Encore une plainte pour la rivière… Au moins, Silas tient bon au Vieux Chêne. »',
-      nuit:'Derrière la porte fermée, le maire marche de long en large : « Cette nuit, je ne dormirai pas… »'}
+    grosbec:{matin:'Le maire soupire derrière sa porte : « Une rivière rouge… Les gens ont peur. Voilà qui va les occuper : au moins, ils ont l\'esprit ailleurs. »',
+      apresmidi:'Le maire relit une lettre : « Encore une plainte pour la rivière… Au moins, Silas tient bon au Vieux Chêne. »'}
   },
   /* Hydromel des confidences (talent du niveau 6) : ce qu'un villageois confie pour innocenter un suspect (jamais le coupable) */
   alibis:{
@@ -37494,7 +37592,23 @@ function feuille(){
   s1.start(t); s2.start(t); s3.start(t + 0.26);
   s1.stop(t + dur); s2.stop(t + dur); s3.stop(t + 0.26 + dur);
 }
+/* Un petit nuage de fumée (le 🤥 du Barde qui s'évapore, Romain, 5 novembre, 21 h 46) : un souffle très doux, à peine audible,
+   qui descend (bruit filtré), un peu moins d'une demi-seconde. */
+function fumee(){
+  var a = audio(); if(!a) return;
+  var t = a.currentTime + 0.01, sr = a.sampleRate, dur = 0.5, n = Math.floor(sr * dur);
+  var b = a.createBuffer(1, n, sr), d = b.getChannelData(0);
+  for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  var s = a.createBufferSource(); s.buffer = b;
+  var f = a.createBiquadFilter(), g = a.createGain();
+  f.type = 'bandpass'; f.Q.value = 0.7;
+  f.frequency.setValueAtTime(1900, t); f.frequency.exponentialRampToValueAtTime(520, t + 0.46);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.022, t + 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.48);
+  s.connect(f); f.connect(g); g.connect(a.destination);
+  s.start(t); s.stop(t + dur);
+}
 var SONS = {
+  fumee:fumee,   /* le 🤥 qui part en fumée */
   clic:function(){ tendre(523, 0, .055, .045, 440, .005); },   /* un « toc » tout doux */
   ok:function(){ note(660, 0, .1, 'triangle', .1); note(990, .08, .14, 'triangle', .1); },
   ko:function(){ tendre(330, 0, .13, .06, 294, .01, 'triangle', 1100); tendre(247, .1, .2, .055, 220, .01, 'triangle', 900); },   /* deux notes qui descendent : « non » */
@@ -38216,14 +38330,14 @@ function vueAccueil(){
   var niv = M.niveau(S.xp), h = S.heros, E = window.ENQUETES[S.prochaine], att = M.talentsEnAttente();
   var enCours = S.e && !S.e.resolu;
   if(M.debutant() && !enCours && E){   /* avant la toute première enquête : seulement l'enquête 1 (Romain, 4 novembre) */
-    return '<main class="b-page b-accueil b-debut">' + titreJeu() + M.carteVoix(false) +
+    return '<main class="b-page b-accueil b-debut b-ecran-fixe">' + titreJeu() + M.carteVoix(false) +
       '<section class="b-hub"><div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '"><div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
         '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + '</span></div></div>' +
       '<div class="b-hub-actions"><button class="btn grand b-guide" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button></div></section></main>';
   }
   /* Le village, simplifié au maximum (Romain, 4 novembre, 20 h 41) : le héros, deux boutons dorés (Boutique, Talent),
      le bouton de l'enquête pour tout le monde (plus de code pour y entrer), et le menu ☰ tout en haut. */
-  return '<main class="b-page b-accueil b-hub-simple"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button>' + titreJeu() + M.carteVoix(false) +
+  return '<main class="b-page b-accueil b-hub-simple b-ecran-fixe"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button>' + titreJeu() + M.carteVoix(false) +
     '<section class="b-hub">' +
       '<div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '">' +
         '<div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
@@ -38412,12 +38526,13 @@ function ong(id, ic, nom, n){
 function vueLettre(){
   var E = M.E(), role = M.role(), R = D.ROLES[role];
   if(E.id === 1){   /* le tutoriel : seulement la lettre du maire, puis on commence (Romain, 4 novembre) */
-    return '<main class="b-page b-lettre-page"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
+    return '<main class="b-page b-lettre-page b-ecran-fixe"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
       '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
       '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
       '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
   }
-  return '<main class="b-page b-lettre-page"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
+  /* b-ecran-fixe : tout tient dans l'écran, sans défiler (Romain, 5 novembre, 21 h 46 ; moteur-actions.js, M.ecranFixe) */
+  return '<main class="b-page b-lettre-page b-ecran-fixe' + (E.affiche ? ' b-avec-affiche' : '') + '"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
     '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
     '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
     (E.affiche ? '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📜 ' + esc(E.affiche.titre || 'Affiche') + '</p><p class="centre"><b>' + esc(E.affiche.t) + '</b></p>' + lire((E.affiche.titre ? E.affiche.titre + ' : ' : '') + E.affiche.t, 'grosbec') + '</article>' : '') +   /* l'affiche du maire (enquête 2) */
@@ -38530,7 +38645,7 @@ function vueFin(){
      ses pièces d'or, les deux boutons dorés (Boutique, Talent), le bouton de l'enquête suivante, le menu ☰ en haut.
      Le calepin de fin reste dans le menu ☰ (Calepin). */
   var h = M.S.heros, att = M.talentsEnAttente(), N = window.ENQUETES[E.id + 1];
-  return '<main class="b-page b-fin b-hub-simple"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button><h1 class="centre">Enquête résolue !</h1>' +
+  return '<main class="b-page b-fin b-hub-simple b-ecran-fixe"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button><h1 class="centre">Enquête résolue !</h1>' +
     '<section class="b-hub"><div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '"><div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
       '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + ' · niveau ' + niv.n + (F.monte ? ' 🎉' : '') + '</span>' +
       '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + M.S.or + ' pièces d\'or (+' + F.or + ')</span></div>' +
@@ -39209,6 +39324,36 @@ M.majBandeau = function(){
   document.documentElement.style.setProperty('--h-bandeau', v + 'px');
 };
 window.addEventListener('resize', majEntete);
+/* Les écrans fixes (Romain, 5 novembre, 21 h 46) : « Enquête N » (la lettre), « Enquête résolue », le village.
+   Plein écran verrouillé : la page ne défile plus et ne glisse plus (html.b-fixe), sur tous les téléphones et les tablettes.
+   La grande image du héros rapetisse d'abord (moteur.css) ; si ça ne tient toujours pas, on serre tout, pas à pas
+   (--serre, de 1 jusqu'à .6 : textes, marges, boutons). Si même serré ça dépasse encore, on laisse défiler (b-deborde) plutôt
+   que de cacher un bouton. */
+function depasse(m){
+  var r = m.getBoundingClientRect(), pb = parseFloat(getComputedStyle(m).paddingBottom) || 0, bas = r.top, l = m.querySelectorAll('*');
+  for(var i = 0; i < l.length; i++){
+    var e = l[i]; if(e.closest('svg') && e.tagName.toLowerCase() !== 'svg') continue;
+    var q = e.getBoundingClientRect(); if(q.height && q.bottom > bas) bas = q.bottom;
+  }
+  return bas > r.bottom - pb + 2;
+}
+M.ecranFixe = function(){
+  var m = document.querySelector('#app > main.b-ecran-fixe');
+  document.documentElement.classList.toggle('b-fixe', !!m);
+  if(!m) return;
+  document.documentElement.style.setProperty('--h-ecran', window.innerHeight + 'px');
+  m.querySelectorAll('.b-hub-portrait svg').forEach(function(g){ g.setAttribute('preserveAspectRatio', 'xMidYMax meet'); });   /* les pieds en bas, le ciel au-dessus */
+  m.classList.remove('b-deborde');
+  var s = 1; m.style.setProperty('--serre', '1');
+  while(s > .6 && depasse(m)){ s = Math.round((s - .05) * 100) / 100; m.style.setProperty('--serre', String(s)); }
+  if(depasse(m)) m.classList.add('b-deborde');
+  if(window.scrollY) window.scrollTo(0, 0);
+};
+var fixeAttente = 0;
+function fixeRedim(){ if(fixeAttente) return; fixeAttente = requestAnimationFrame(function(){ fixeAttente = 0; M.ecranFixe(); }); }
+window.addEventListener('resize', fixeRedim);
+window.addEventListener('orientationchange', function(){ setTimeout(M.ecranFixe, 250); });
+try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ M.ecranFixe(); }); }catch(e){}
 M.render = function(){
   var app = document.getElementById('app');
   var haut = window.scrollY;
@@ -39236,6 +39381,7 @@ M.render = function(){
   try{ if(M.monterCarte) M.monterCarte(); }catch(e){ console.error(e); } /* la carte plein écran, qu'on fait glisser (moteur-ecrans.js, carte.js) */
   try{ if(M.monterCabane) M.monterCabane(); }catch(e){ console.error(e); } /* cabane du Pisteur, après la carte (elle remplit #cabane-carte) ; trouvailles de vêtements (cabane.js) */
   try{ if(M.monterHeros) M.monterHeros(); }catch(e){ console.error(e); } /* l'écran du héros : tailles et paysage à la mesure de l'écran (heros.js) */
+  try{ M.ecranFixe(); }catch(e){ console.error(e); }   /* la lettre, la fin, le village : tout tient dans l'écran */
   rendreModal();
   if(UI.garderDefilement) window.scrollTo(0, haut);
   UI.garderDefilement = false;
@@ -41052,7 +41198,7 @@ function photoLieu(E, id){
 /* ---------- Les étiquettes des signes de menteur (E.tics) ----------
    [nom court sur l'étiquette, la phrase entière (lue par le 🔊 du bac et donnée en légende)] */
 var SIGNES = {
-  oreilles:['Oreilles rouges', 'Ses oreilles deviennent toutes rouges.'],
+  oreilles:['Oreilles rouges', 'Ses oreilles rougissent.'],
   yeuxbas:['Yeux baissés', 'Baisse les yeux et lève les sourcils en même temps.'],
   mordille:['Lèvre mordillée', 'Mordille sa lèvre du bas.'],
   morsure:['Lèvre mordue', 'Se mord la lèvre, très vite.'],
@@ -42011,7 +42157,7 @@ var GESTE = {coin:'ses yeux filent sur le côté, avec un petit sourire de trave
   sueur:'une goutte de sueur glisse sur son front', force:'sa bouche sourit, mais ses yeux ne sourient pas',
   mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite',
   /* signes propres à un personnage (enquête 2) */
-  oreilles:'ses oreilles deviennent toutes rouges', yeuxbas:'{il} baisse les yeux et lève les sourcils'};
+  oreilles:'ses oreilles rougissent', yeuxbas:'{il} baisse les yeux et lève les sourcils'};
 var SIGNE_IC = {coin:'😏', rougeur:'🌸', sueur:'💧', force:'😬', mordille:'👄', morsure:'🦷', double:'😑', oreilles:'👂', yeuxbas:'🙄'};
 B.GESTE = GESTE; B.SIGNE_IC = SIGNE_IC;
 B.TIC = TIC;
@@ -42334,7 +42480,7 @@ M.feuilleConv = function(id){
     if(intu) cadre += '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>';
     cadre += '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
       (e2 && repetes(id) < repetesMax() ? '<button class="btn petit second" data-act="bd-repete" data-p="' + id + '" data-i="' + i + '">🔁 Répète</button>' : '') +
-      (e2 && !v && !ferme ? '<button class="btn petit bd-ment-p" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '">🤥 Mensonge ?</button>' : '') + '</div></div>';
+      (e2 && !v && !ferme && derniere(id) === i ? '<button class="btn petit bd-ment-p" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '">🤥 Mensonge ?</button>' : '') + '</div></div>';
     s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
@@ -42365,12 +42511,54 @@ A.frapper = function(el){
   if(ici.length && P.conv[ici[0]] === P.moment){ M.son('porte'); M.ouvrir({type:'conv', id:ici[0], classe:'b-feuille-conv'}); return; }   /* déjà ouvert à ce moment : sans action */
   return frapper0(el);
 };
+/* 🤥 Mensonge ? seulement juste après la réponse (Romain, 5 novembre, 21 h 46 : « trop simple pour détecter les mensonges ») :
+   le bouton n'est que sous la dernière réponse de ce villageois (P.derniere[id]) ; dès qu'on pose une autre question, il part
+   en fumée, avec un tout petit souffle (M.son('fumee')). « 🔁 Répète » redonne la chance sur la réponse répétée. */
+function derniere(id){ var P = M.P(); return P && P.derniere ? P.derniere[id] : undefined; }
+function poserDerniere(id, i){ var P = M.P(); P.derniere = P.derniere || {}; P.derniere[id] = i; }
+B.derniere = derniere;
+/* La fumée : sur un vrai toucher, le bouton s'évapore à sa place, puis la question part (un tiers de seconde) ; appelée par le code
+   (les tests), la question part tout de suite et une copie du bouton s'évapore là où il était (rien n'attend). */
+var fumeeEnCours = false;
+function bouffees(r){
+  var f = document.createElement('div');
+  f.className = 'bd-fumee'; f.setAttribute('aria-hidden', 'true');
+  f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px';
+  f.innerHTML = '<i></i><i></i><i></i><i></i><i></i>';
+  document.body.appendChild(f);
+  setTimeout(function(){ f.remove(); }, 1100);
+}
+function fantome(b, r){   /* r : sa place, mesurée avant que la fenêtre ne se redessine */
+  var g = b.cloneNode(true);
+  g.removeAttribute('data-act'); g.setAttribute('aria-hidden', 'true'); g.classList.add('bd-part', 'bd-fantome');
+  g.style.left = r.left + 'px'; g.style.top = r.top + 'px'; g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+  document.body.appendChild(g); bouffees(r);
+  setTimeout(function(){ g.remove(); }, 1100);
+}
 A.question = function(el){
+  if(fumeeEnCours) return;
+  var P0 = M.P(), id0 = el.dataset.p, i0 = +el.dataset.i, avant = derniere(id0), b = null, r = null;
+  if(P0 && avant !== undefined && avant !== i0){
+    b = document.querySelector('#voile .bd-ment-p[data-act="bd-ment"][data-p="' + id0 + '"][data-i="' + avant + '"]');
+    r = b && b.getBoundingClientRect();
+    if(!r || !r.width || !r.height) b = null;   /* sa boîte est refermée : rien à voir partir */
+  }
+  if(b && el.nodeType === 1){
+    fumeeEnCours = true; b.classList.add('bd-part'); bouffees(r); M.son('fumee');
+    setTimeout(function(){ fumeeEnCours = false; try{ question(el); }catch(e){ console.error(e); } }, 330);
+    return;
+  }
+  var res = question(el);
+  try{ if(b && derniere(id0) !== avant){ fantome(b, r); M.son('fumee'); } }catch(e){ console.error(e); }
+  return res;
+};
+function question(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i, q = questions(id)[i];
   if(!P || !q || estVexe(id)) return;
   if(q.besoin && !M.besoinOk(q.besoin) && !P.vus['barde:' + id + ':' + i]) return;
   if(uneVisite(id)){ P.visites = P.visites || {}; var vv = P.visites[id]; if(!(vv && vv.m === P.moment && vv.q)) P.visites[id] = {m:P.moment, sait:ceQuOnSait(id), q:1}; }   /* la visite compte (porte) */
-  if(repondu(id, i)){ UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }
+  if(repondu(id, i)){ poserDerniere(id, i); UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }   /* redemandée : c'est la dernière réponse */
+  if(P.derniere) delete P.derniere[id];   /* une autre question : la chance du 🤥 sur la réponse d'avant est passée */
   var kc = el.dataset.c, c = q.choix && kc !== undefined && kc !== '' ? q.choix[+kc] : null, charme = false;
   if(q.choix && q.choix.length){
     var vis = choixVisibles(q);
@@ -42390,6 +42578,7 @@ A.question = function(el){
     }
   }
   P.vus['barde:' + id + ':' + i] = 'ok';
+  poserDerniere(id, i);
   if(q.mimique){ P.mimiques = P.mimiques || {}; [].concat(q.mimique).forEach(function(m){ P.mimiques[m] = P.mimiques[m] || 'question'; }); }
   /* dès l'enquête 2 (E.tics), les signes révélés deviennent des étiquettes du tableau de liège (liege.js) */
   if(q.mimique && (M.E() || {}).tics) M.toast('📌 ' + ([].concat(q.mimique).length > 1 ? 'De nouvelles étiquettes' : 'Une nouvelle étiquette') + ' pour ton tableau de liège !');
@@ -42409,7 +42598,7 @@ A.question = function(el){
   if(q.rassemble && rassemblement(id, q)) return;   /* le troisième villageois convaincu : toute la troupe part au Vieux Chêne */
   if(code){ UI.bd.joue = true; M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.a, code:code, retour:'parler', retourId:id}); return; }
   M.render();
-};
+}
 /* ---------- Le rassemblement (E.rassemblement, enquête 2) : convaincre n villageois (questions q.rassemble, le bon argument) ---------- */
 function convaincus(){ var E = M.E(); return M.cle(E.pnj || {}).filter(function(id){ return questions(id).some(function(q, i){ return q.rassemble && repondu(id, i); }); }); }
 B.convaincus = convaincus;
@@ -42456,6 +42645,7 @@ function avouer(id, idx, ic){
 A['bd-ment'] = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i, q = questions(id)[i];
   if(!P || !q || !enquete2() || !repondu(id, i) || P.vus['verite:' + id + ':' + i]) return;
+  if(derniere(id) !== i) return;   /* plus que sous la dernière réponse */
   if(fermeDemasque(id)){ M.toast(nom(id) + ' ne te croit plus : plus possible de ' + (FEM[id] ? 'la' : 'le') + ' démasquer dans cette enquête.'); return; }
   if(q.ment){
     P.vus['verite:' + id + ':' + i] = 1;
@@ -42486,6 +42676,7 @@ A['bd-repete'] = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i;
   if(!repondu(id, i) || repetes(id) >= repetesMax()) return;
   P.repete = P.repete || {}; P.repete[id + ':' + P.moment] = repetes(id) + 1;
+  poserDerniere(id, i);   /* répétée : c'est de nouveau la dernière réponse, le 🤥 y revient */
   UI.bd = {p:id, i:i, mode:'rep', m:P.moment};
   M.son('page'); M.sauver(); M.render();
 };
@@ -42827,7 +43018,8 @@ function bribeLignes(b){
 B.porteIci = function(lieu){
   if(!talent('tendre') || !lieu) return null;
   var E = M.E(), mid = M.momentId(), l = [], pris = {};
-  var qui = M.pnjIci(lieu).concat(M.pnjOccupesIci ? M.pnjOccupesIci(lieu) : []).filter(function(id, i, a){ return a.indexOf(id) === i && id !== 'voisin' && D.PNJ[id]; });
+  /* la nuit, ceux qui dorment ou ne sont pas disponibles (occupe) : plus rien à écouter derrière leur porte (Romain, 5 novembre, 21 h 46) */
+  var qui = M.pnjIci(lieu).concat(M.pnjOccupesIci && mid !== 'nuit' ? M.pnjOccupesIci(lieu) : []).filter(function(id, i, a){ return a.indexOf(id) === i && id !== 'voisin' && D.PNJ[id]; });
   var b = (E.bribes || []).filter(function(x){ return x.lieu === lieu && M.momentOk(x.moments); })[0];
   if(b){
     var q0 = (b.phrases || []).map(function(p){ return p.qui; }).filter(function(q){ return D.PNJ[q]; })[0] || null;
@@ -47170,7 +47362,10 @@ function guide(){
     /* une fenêtre ouverte qui n'est pas sur le chemin */
     if(LIBRES[m.type]){
       G.libre = true; G.d = {k:'modal'};
-      var b = SANS_ROND[m.type] ? null : (q('#voile .b-feuille .b-reessai') || premier(['#voile .b-feuille [data-act=question]:not([disabled])', '#voile .b-feuille .btn.grand:not(.second)', '#voile .b-feuille .btn:not(.second):not([disabled])', '#voile .b-feuille .btn']) || (m.type === 'conv' ? q('#voile .b-fermer') : null));
+      /* le talent forcé de l'enquête 2 : la fiche du talent choisi, le rond sur « ⭐ Je prends ce talent » (ce n'est pas une réponse à deviner :
+         le joueur a déjà choisi lequel regarder ; Romain, 5 novembre, 21 h 46 : le même cadre jaune jusqu'au bout) */
+      var bt = m.type === 'perso' && m.quoi === 'talent' && G.force ? q('#voile [data-act=talent]') : null;
+      var b = bt || (SANS_ROND[m.type] ? null : (q('#voile .b-feuille .b-reessai') || premier(['#voile .b-feuille [data-act=question]:not([disabled])', '#voile .b-feuille .btn.grand:not(.second)', '#voile .b-feuille .btn:not(.second):not([disabled])', '#voile .b-feuille .btn']) || (m.type === 'conv' ? q('#voile .b-fermer') : null)));
       /* une conversation finie (plus de question à poser) : le rond sur ✕, pas sur « 📌 Mon tableau » (qui emmenait au tableau de liège sans rien dire) */
       if(m.type === 'conv' && b && b.classList.contains('bd-tableau')){ var fx = q('#voile .b-fermer'); if(fx){ b = fx; G.d = {k:'fermer'}; } }
       G.els = b ? [b] : [];
@@ -47413,9 +47608,14 @@ function rectCible(el){
    - il n'arrive qu'une fois la cible posée (une pastille qui rebondit en entrant, une fenêtre qui monte) : il apparaît alors en douceur ;
    - plus de « 👆 Ici ! » (19 h 39) : le rond seul, avec la même animation partout (il pulse, une onde part de lui). */
 var derniersMsg = [], boucleRonds = 0;
+var vises = [];
 function poserRonds(els){
   var l = (els || []).filter(vuVraiment).slice(0, 4);
   derniersMsg = messagesVisibles();
+  /* .tu-vise : ce que le rond entoure ; s'il brillait déjà de son propre cadre jaune (.b-guide, un talent à choisir), il n'en garde qu'un */
+  vises.forEach(function(e){ if(l.indexOf(e) < 0) e.classList.remove('tu-vise'); });
+  l.forEach(function(e){ e.classList.add('tu-vise'); });
+  vises = l.slice();
   for(var k = 0; k < Math.max(l.length, ronds.length); k++){
     var d = rond(k), el = l[k];
     if(!el){ d.hidden = true; d.__el = null; continue; }
