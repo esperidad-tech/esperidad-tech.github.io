@@ -4452,9 +4452,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* (le cadre invisible a une marge de 16 px tout autour : les pastilles qui grossissent en rebondissant, et leurs ombres, ne sont jamais coupées
    — Romain, 11 h 08 ; placerBulle en tient compte) */
 #voile.b-voile-bulle .b-feuille.b-bulle{pointer-events:none;position:fixed;left:8px;top:80px;width:max-content;max-width:min(282px, calc(100vw + 16px));max-height:min(52vh, 380px);
-  background:none;border:0;border-radius:0;box-shadow:none;padding:16px;gap:4px;box-sizing:border-box;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle .14s ease-out;overflow-y:auto;scrollbar-width:none}
+  background:none;border:0;border-radius:0;box-shadow:none;padding:16px;gap:4px;box-sizing:border-box;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle-arrive .14s ease-out;overflow-y:auto;scrollbar-width:none}
+/* (Romain, 5 novembre, 17 h 01 : « ça fait sauter l'image ») une bulle redessinée (on a touché un de ses boutons) ne rejoue pas son arrivée ;
+   et son arrivée a son propre nom : « b-bulle » était aussi celui des bulles du chaudron, plus bas, qui montent et s'effacent — la bulle de la
+   carte sautait de 26 px et disparaissait à chaque toucher */
+#voile.b-voile-bulle .b-feuille.b-bulle:not(.b-bulle-neuve){animation:none}
 .b-bulle-pointe{display:none}
-@keyframes b-bulle{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes b-bulle-arrive{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 /* ce qui n'est pas l'essentiel : caché (le nom du lieu est déjà écrit sur la carte ; Romain, 10 h 32 : pas de 🔊 dans les pastilles,
    la mission bonus réduite à « ✨ Mission bonus · Tenter », sans « D'accord » : toucher ailleurs ferme) */
 .b-bulle .b-feuille-tete, .b-bulle .b-teaser, .b-bulle .sur-titre, .b-bulle .doux.petit, .b-bulle .b-ce-que-je-sais > p, .b-bulle .b-bonus > p, .b-bulle .b-lire, .b-bulle .b-long,
@@ -6331,8 +6335,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-05 16:40 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-05 16:40';</script>
+<!-- Brumeval v2 · version de test du 2026-11-05 17:16 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-05 17:16';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -12048,8 +12052,7 @@ function surbrillance(o){
   else if(LIEUX[id]){
     var L = LIEUX[id];
     if(L.maison){ x = MAISONS[L.maison].x; y = MAISONS[L.maison].y; r = 72; }
-    else if(RECTS[id]){ var R = RECTS[id]; x = R[0] + R[2] / 2; y = R[1] + R[3] / 2; r = Math.max(R[2], R[3]) / 2 + 10; }
-    else { x = L.x; y = L.y; r = ((HIT[id] || [0,0,70])[2]) + 12; }
+    else return '';   /* un lieu a déjà son rond doré qui pulse (et le rond du tutoriel) : plus de grand rond bleu par-dessus son dessin (Romain, 17 h 08) */
   } else return '';
   return '<g class="ca-surbrillance" pointer-events="none"><circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r + 8) + '" fill="none" stroke="#8ff3ff" stroke-width="16" opacity=".25"/>' +
     '<circle class="ca-tourne" cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '" fill="none" stroke="#8ff3ff" stroke-width="6" stroke-dasharray="18 12" stroke-linecap="round"/></g>';
@@ -12074,13 +12077,16 @@ function svg(opts){
   if(ss) o = Object.assign({}, o, {caches: Object.keys(LIEUX)});
   var geo = geoLieux(o, niveau), li = lieuxInteractifs(p, o, niveau, geo), mq = marqueurs(p, o, geo);
   if(ss){ var si = sousSolsInteractifs(p, o), ci = cheminsInteractifs(p, o); li = {fond: li.fond + si.fond + ci.fond, dessus: li.dessus + si.dessus + ci.dessus}; }
-  /* de bas en haut : le dessin, les maisons, les zones invisibles à toucher, les étiquettes, les notes, les marqueurs */
+  /* de bas en haut : le dessin, la surbrillance du tutoriel (sous la maison), les maisons, les zones invisibles à toucher, les notes,
+     les marqueurs, et TOUT EN HAUT les écritures — le nom des lieux, « ✨ Nouveau ! » — : rien ne passe plus dessus
+     (Romain, 5 novembre, 17 h 08 : « il faut toujours que les écritures soient au-dessus, pour qu'on ne soit pas gêné pour lire ») */
   return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
     defs(p) + defsVisages(p, o) + corps +
+    surbrillance(o) +
     (niveau === 'surface' ? maisonsInteractives(o, p) : '') +
-    li.fond + mq.fond + li.dessus +
+    li.fond + mq.fond +
     (niveau === 'surface' ? notes(o) : '') +
-    surbrillance(o) + mq.dessus + calque(o) +
+    mq.dessus + li.dessus + calque(o) +
     '</svg>';
 }
 
@@ -37902,6 +37908,20 @@ M.versionTxt = function(){
   return m ? (+m[3]) + '/' + (+m[2]) + ' à ' + m[4] + ' h ' + m[5] : v;
 };
 
+/* Le bandeau du haut et la barre des onglets, à part (Romain, 5 novembre, 17 h 01 : M.render les redessine seuls quand la carte reste la même) */
+M.enteteEnqueteHTML = function(){
+  var P = M.P(), E = M.E(), role = M.role(), R = D.ROLES[role], mid = M.momentId(), mo = D.MOMENTS[mid], s = '';
+  s += '<header class="b-entete"><button class="b-et-heros" data-act="ecran" data-e="heros" aria-label="Mon héros">' + portrait('tete', false) + '</button>' +
+    '<button class="b-et-info" data-act="ecran" data-e="heros"><b>' + esc(M.S.heros.nom) + '</b><span>' + R.ic + ' ' + M.nomRole(role, M.S.heros.sexe) + '</span><span class="b-et-enq">📜 Enquête ' + E.id + '</span></button>' +   /* le nom, le rôle et l'enquête en cours (Romain, 3 novembre) ; ils ouvrent aussi l'écran du héros */
+    '<div class="b-et-moment"><span class="b-et-m">' + mo.ic + ' ' + mo.nom + '</span>' + pips() + '</div>' +
+    (role === 'sage' && !M.livreHTML ? '<button class="b-et-btn" data-act="moment-suivant" aria-label="Moment suivant">⏭️</button><button class="b-et-btn" data-act="accuser" aria-label="Accuser">⚖️</button>' : '') +   /* Sage : les codes des moments et l'accusation sont des pages du Grand Livre (livre.js) */
+    '<button class="b-et-btn" data-act="menu-enquete" aria-label="Menu">☰</button>' + (M.bandeauTuto ? M.bandeauTuto() : '') + '</header>';   /* le tutoriel (tuto.js) : une phrase courte avec 🔊, sous le bandeau */
+  return s;
+};
+M.ongletsEnqueteHTML = function(){
+  var P = M.P(), R = D.ROLES[M.role()];
+  return '<nav class="b-onglets">' + ong('role', R.onglet.ic, R.onglet.nom) + ong('carnet', '📒' + (M.badgeMission ? M.badgeMission() : ''), 'Carnet', P.carnet.length) + ong('carte', '🗺️' + badgeCarte(), 'Carte') + ong('code', '🔢', 'Code') + '</nav>';
+};
 /* ---------- Enquête ---------- */
 function vueEnquete(){
   var P = M.P(), E = M.E();
@@ -37911,15 +37931,11 @@ function vueEnquete(){
   if(P.etape === 'fin') return vueFin();
   var role = M.role(), R = D.ROLES[role], mid = M.momentId(), mo = D.MOMENTS[mid];
   var s = '<div class="b-jeu moment-' + mid + '" style="--c:' + R.c + '">';
-  s += '<header class="b-entete"><button class="b-et-heros" data-act="ecran" data-e="heros" aria-label="Mon héros">' + portrait('tete', false) + '</button>' +
-    '<button class="b-et-info" data-act="ecran" data-e="heros"><b>' + esc(M.S.heros.nom) + '</b><span>' + R.ic + ' ' + M.nomRole(role, M.S.heros.sexe) + '</span><span class="b-et-enq">📜 Enquête ' + E.id + '</span></button>' +   /* le nom, le rôle et l'enquête en cours (Romain, 3 novembre) ; ils ouvrent aussi l'écran du héros */
-    '<div class="b-et-moment"><span class="b-et-m">' + mo.ic + ' ' + mo.nom + '</span>' + pips() + '</div>' +
-    (role === 'sage' && !M.livreHTML ? '<button class="b-et-btn" data-act="moment-suivant" aria-label="Moment suivant">⏭️</button><button class="b-et-btn" data-act="accuser" aria-label="Accuser">⚖️</button>' : '') +   /* Sage : les codes des moments et l'accusation sont des pages du Grand Livre (livre.js) */
-    '<button class="b-et-btn" data-act="menu-enquete" aria-label="Menu">☰</button>' + (M.bandeauTuto ? M.bandeauTuto() : '') + '</header>';   /* le tutoriel (tuto.js) : une phrase courte avec 🔊, sous le bandeau */
+  s += M.enteteEnqueteHTML();
   var plein = P.onglet === 'role' && ((M.atelierPlein && M.atelierPlein()) || (M.liegePlein && M.liegePlein()) || (M.livrePlein && M.livrePlein()) || (M.cabanePlein && M.cabanePlein()));   /* … et la cabane du Pisteur (cabane.js) */   /* l'atelier de l'Alchimiste, le liège du Barde, le Grand Livre du Sage : plein écran, sans marges */
   if(P.onglet === 'carte' && window.Carte && Carte.monter) plein = true;   /* la carte aussi : plein écran, sans cadre */
   s += '<main class="b-contenu' + (plein ? ' b-plein' : '') + '">' + (P.onglet === 'carte' ? ongletCarte() : P.onglet === 'role' ? ongletRole() : P.onglet === 'carnet' ? ongletCarnet() : ongletCode()) + '</main>';
-  s += '<nav class="b-onglets">' + ong('role', R.onglet.ic, R.onglet.nom) + ong('carnet', '📒' + (M.badgeMission ? M.badgeMission() : ''), 'Carnet', P.carnet.length) + ong('carte', '🗺️' + badgeCarte(), 'Carte') + ong('code', '🔢', 'Code') + '</nav></div>';
+  s += M.ongletsEnqueteHTML() + '</div>';
   return s;
 }
 function ong(id, ic, nom, n){
@@ -38733,6 +38749,9 @@ M.render = function(){
     else { try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
   }
   try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); } /* missions de base validées (mission.js) */
+  /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
+     et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
+  if(garderCarte()){ majEntete(); rendreModal(); if(UI.garderDefilement) window.scrollTo(0, haut); UI.garderDefilement = false; return; }
   try{ if(M.demonterLiege) M.demonterLiege(); }catch(e){ console.error(e); } /* tableau de liège du Barde (liege.js) */
   try{ if(M.demonterCabane) M.demonterCabane(); }catch(e){ console.error(e); } /* cabane du Pisteur (cabane.js) */
   app.innerHTML = M.vue();
@@ -38746,6 +38765,21 @@ M.render = function(){
   if(UI.garderDefilement) window.scrollTo(0, haut);
   UI.garderDefilement = false;
 };
+function garderCarte(){
+  try{
+    var P = M.P(), jeu = document.querySelector('#app > .b-jeu');
+    if(UI.ecran !== 'enquete' || !P || P.etape !== 'jeu' || P.defaite || P.onglet !== 'carte' || !jeu || !M.carteInchangee || !M.carteInchangee()) return false;
+    if(!M.enteteEnqueteHTML || !M.ongletsEnqueteHTML) return false;
+    var h = jeu.querySelector(':scope > .b-entete'), n = jeu.querySelector(':scope > .b-onglets'); if(!h || !n) return false;
+    var E = M.E(), mid = M.momentId(), R = D.ROLES[M.role()];
+    jeu.className = 'b-jeu moment-' + mid; jeu.style.setProperty('--c', R.c);
+    var t = document.createElement('div');
+    t.innerHTML = M.enteteEnqueteHTML(); h.replaceWith(t.firstChild);
+    t.innerHTML = M.ongletsEnqueteHTML(); n.replaceWith(t.firstChild);
+    majEntete(); if(M.carteAjuster) M.carteAjuster();
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
 function rendreModal(){
   var v = document.getElementById('voile');
   if(UI.modal && UI.modal.bulle && !carteIci()) UI.modal = null;   /* une bulle de la carte, quand la carte n'est plus là : elle s'en va */
@@ -44452,7 +44486,7 @@ function remonter(ou){
   ici.className = 'ca-plein ca-r-' + M.role() + ' ca-couche-' + c.couche;
   ici.innerHTML = c.html;
   var v = monterVue(ici, c);
-  vues.onglet = v ? {vue:v, arreter:v.arreter, ajuster:v.ajuster} : null;
+  vues.onglet = v ? {vue:v, arreter:v.arreter, ajuster:v.ajuster, html:c.html, couche:c.couche, el:ici} : null;
 }
 M.monterCarte = function(){
   try{ M.majSousSols(); }catch(e){ console.error(e); }
@@ -44465,11 +44499,68 @@ M.monterCarte = function(){
     var c = UI.carteAttente || contenu('onglet', window.innerWidth || 800, Math.max(200, (window.innerHeight || 800) - 140));
     UI.carteAttente = null;
     var v = monterVue(ici, c);
-    vues.onglet = v ? {vue:v, arreter:v.arreter, ajuster:v.ajuster} : null;
+    vues.onglet = v ? {vue:v, arreter:v.arreter, ajuster:v.ajuster, html:c.html, couche:c.couche, el:ici} : null;
   }
   var cab = document.getElementById('cabane-carte');
   if(cab && !cab.children.length) M.carteMurale(cab);
 };
+/* (Romain, 5 novembre, 17 h 01 : « ça fait sauter l'image ») M.render garde la carte telle quelle — sans la redessiner — quand
+   rien n'y change : même dessin (mêmes lieux ouverts, mêmes visages, même surbrillance du tutoriel), rien de neuf à faire surgir.
+   Alors seuls le bandeau du haut, les onglets et la fenêtre (ou la bulle) sont redessinés : la carte garde sa place, ses animations,
+   et la bulle ne disparaît plus un instant. (contenu() est appelé « pour voir » : ce qu'il note dans UI est remis comme avant.) */
+/* (chaque dessin a ses propres ids, « caonglet4-herbe » : on donne au nouveau ceux du dessin affiché) */
+function memesIds(neuf, ancien){
+  var a = /\bca(?:ss)?(?:onglet|cabane)\d+-/.exec(ancien || ''), b = /\bca(?:ss)?(?:onglet|cabane)\d+-/.exec(neuf || '');
+  return a && b && a[0] !== b[0] ? String(neuf).split(b[0]).join(a[0]) : String(neuf || '');
+}
+/* De petites différences (un rond qui ne pulse plus, une étiquette, un visage qui change de place…) : on les recopie sur la carte
+   affichée, sans la redessiner. ancien et neuf sont les deux dessins (texte) ; vivant, la carte à l'écran (faite d'ancien, plus ce
+   que la carte y a ajouté en marchant, à la fin). Même forme partout, sinon on renonce (false : on redessine). */
+function recopier(vivant, a, b, prof){
+  if(!vivant || vivant.nodeName !== a.nodeName) return false;
+  /* (un morceau qui change de forme — une étiquette « Nouveau ! » qui s'en va… — : on remplace ce morceau-là seulement) */
+  if(a.nodeType !== b.nodeType || a.nodeName !== b.nodeName){ if(prof < 2) return false; vivant.parentNode.replaceChild(document.importNode(b, true), vivant); return true; }
+  if(a.nodeType === 3){ if(a.nodeValue !== b.nodeValue) vivant.nodeValue = b.nodeValue; return true; }
+  if(a.nodeType !== 1) return true;
+  var k, at;
+  for(k = 0; k < b.attributes.length; k++){ at = b.attributes[k]; if(a.getAttribute(at.name) !== at.value) vivant.setAttribute(at.name, at.value); }
+  for(k = 0; k < a.attributes.length; k++){ at = a.attributes[k]; if(!b.hasAttribute(at.name)) vivant.removeAttribute(at.name); }
+  var ca = a.childNodes, cb = b.childNodes, cv = vivant.childNodes;
+  if(cv.length < ca.length) return false;
+  if(ca.length !== cb.length){
+    if(prof < 2) return false;
+    var nv = document.importNode(b, true); vivant.parentNode.replaceChild(nv, vivant); return true;
+  }
+  for(k = ca.length - 1; k >= 0; k--) if(!recopier(cv[k], ca[k], cb[k], (prof || 0) + 1)) return false;
+  return true;
+}
+function patcherCarte(ici, ancien, neuf){
+  try{
+    var ta = document.createElement('template'), tb = document.createElement('template');
+    ta.innerHTML = ancien; tb.innerHTML = neuf;
+    var A = ta.content.childNodes, B = tb.content.childNodes, V = ici.childNodes;
+    if(A.length !== B.length || V.length < A.length) return false;
+    for(var k = 0; k < A.length; k++) if(!recopier(V[k], A[k], B[k], 0)) return false;
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+M.carteInchangee = function(){
+  var v = vues.onglet, ici = document.getElementById('carte-ici');
+  if(!v || !v.html || !ici || ici !== v.el || !ici.isConnected || !window.Carte || !M.P()) return false;
+  try{ M.majSousSols(); }catch(e){ console.error(e); }
+  var ti = UI.tutoIci, c;
+  try{ c = contenu('onglet', window.innerWidth || 800, Math.max(200, (window.innerHeight || 800) - 140)); } finally { UI.tutoIci = ti; }
+  if(!c || c.couche !== v.couche) return false;
+  var A = c.commit;
+  if(A && ((A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length) || A.force || A.tout)) return false;
+  var h = memesIds(c.html, v.html);
+  if(h === v.html) return true;
+  if(!patcherCarte(ici, v.html, h)) return false;
+  v.html = h;
+  return true;
+};
+/* (la carte gardée : le bandeau du haut a pu changer de hauteur) */
+M.carteAjuster = function(){ ajusterOnglet(); var v = vues.onglet; if(v && v.ajuster) try{ v.ajuster(); }catch(e){} };
 /* La carte murale de la cabane du Pisteur : la même carte, accrochée dans le cadre que la cabane a préparé.
    Renvoie {ajuster, allerVers, couche, arreter} (aussi dans M.UI.carteMurale). */
 M.carteMurale = function(el){
@@ -46779,12 +46870,20 @@ function rond(k){
 function messagesVisibles(){
   return qa('#atelier-ici .at-toast:not([hidden]), #toast.on').map(function(t){ return t.getBoundingClientRect(); }).filter(function(r){ return r.width > 2 && r.height > 2; });
 }
+/* Sur la carte, le nom d'un lieu et son « ✨ Nouveau ! » : le rond les entoure tous les deux (il ne passe plus sur l'écriture) */
+function rectCible(el){
+  var r = el.getBoundingClientRect(), g = el.closest && el.closest('g.ca-lieu'), n = g && g.querySelector('.ca-nouveau');
+  if(!n || !el.classList.contains('ca-etiq-lieu')) return r;
+  var q = n.getBoundingClientRect(); if(!q.width) return r;
+  var L = Math.min(r.left, q.left), T = Math.min(r.top, q.top), R = Math.max(r.right, q.right), B = Math.max(r.bottom, q.bottom);
+  return {left:L, top:T, right:R, bottom:B, width:R - L, height:B - T};
+}
 function poserRonds(els){
   var l = (els || []).filter(vuVraiment).slice(0, 4), msg = messagesVisibles();
   for(var k = 0; k < Math.max(l.length, ronds.length); k++){
     var d = rond(k), el = l[k];
     if(!el){ d.hidden = true; continue; }
-    var r = el.getBoundingClientRect(), w = Math.max(r.width + 14, 46), h = Math.max(r.height + 14, 46);
+    var r = rectCible(el), w = Math.max(r.width + 14, 46), h = Math.max(r.height + 14, 46);
     var x0 = r.left + r.width / 2 - w / 2 - 30, y0 = r.top + r.height / 2 - h / 2 - 34, x1 = x0 + w + 60, y1 = y0 + h + 64;   /* (avec son « 👆 Ici ! ») */
     if(msg.some(function(m){ return m.left < x1 && m.right > x0 && m.top < y1 && m.bottom > y0; })){ d.hidden = true; continue; }
     d.hidden = false;
