@@ -3469,6 +3469,11 @@ D.PNJ = {
   bastien:{nom:'Bastien Roulebosse', court:'Bastien', metier:'le charretier', ic:'🛒', pied:5},
   voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
 };
+/* Où habite chacun, d'une enquête à l'autre (la carte, carte-jeu.js) : une maison dont l'habitant n'est pas dans le registre de
+   l'enquête (on ne le connaît pas encore) montre un rond « ? » au lieu de son visage (Romain, 5 novembre, 01 h 20).
+   Le registre de l'enquête (E.registre[id].maison) passe avant. (Margot : la taverne ; Farinel : le moulin ; Fortuné : sa carriole.) */
+var DOMICILES = {gaspard:'F1', melusine:'L4', victor:'L6', iris:'F4', odette:'L2', tim:'L7', basile:'B3', bastien:'B2', silas:'B1'};
+Object.keys(DOMICILES).forEach(function(id){ D.PNJ[id].domicile = DOMICILES[id]; });
 /* Le métier en court, avec son icône (les photos du tableau de liège du Barde, le Carnet) */
 var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melusine:['couturière', '🧵'], basile:['jardinier', '🥕'],
   odette:['grand-mère', '🐈'], tim:['ramoneur', '🧹'], victor:['facteur', '✉️'], anselme:['sonneur', '🔔'], iris:['herboriste', '🌿'],
@@ -22626,7 +22631,7 @@ M.E = function(){ var P = M.S.e; return P ? window.ENQUETES[P.id] : null; };
 M.P = function(){ return M.S.e; };
 M.enqueteNeuve = function(id){
   var E = window.ENQUETES[id];
-  return {id:id, etape:'lettre', moment:0, actions:2, vus:{}, recus:{}, objets:{}, carnet:[], notesCarte:{}, conv:{}, pages:{}, analyses:{},
+  return {id:id, etape:'lettre', moment:0, actions:2, vus:{}, recus:{}, objets:{}, carnet:[], conv:{}, pages:{}, analyses:{},
     potions:{}, bues:{}, erreurs:0, raye:[], bonus:{}, usages:{}, chances:0, resolu:false, fin:null, onglet:'role', protege:false};
 };
 M.momentId = function(){ var E = M.E(), P = M.P(); return E.moments[Math.min(P.moment, E.moments.length - 1)]; };
