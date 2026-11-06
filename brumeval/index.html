@@ -6730,8 +6730,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-06 15:53 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-06 15:53';</script>
+<!-- Brumeval v2 · version de test du 2026-11-06 16:26 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-06 16:26';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -31266,8 +31266,10 @@ MJ.enregistrer('tir', {
     p.apercu = courbe(n, {1:1.25, 3:0.8, 6:0.6, 9:0.46, 12:0.4}) + 0.12 * Math.min(5, mods.temps || 0);
     /* les obstacles du décor, solides (la flèche s'y plante) : fixes, et un qui bouge à partir du niveau 6 */
     /* (6 nov., 14 h 30 : peu de décor qui gêne aux petits niveaux ; au niveau difficile, 3 dont 2 qui bougent) */
-    p.fixes = n >= 3 ? 1 : 0;
-    p.mobiles = n >= 9 ? 2 : 1;
+    /* (Romain, 6 nov., 16 h 14 : seulement le seau et l'échafaudage, qui montent et descendent, plus le grand arbre ;
+       chacun sur le clocher OU sur la maison, jamais les deux sur le même ; au niveau 10, le seau et l'échafaudage) */
+    p.decors = n >= 9 ? 3 : (n >= 4 ? 2 : 1);
+    p.fixes = 0; p.mobiles = p.decors;
     p.branches = 0;
     p.niveau = n;
     p.oiseaux = n >= 5 ? courbe(n, {5:7.5, 9:5.5, 12:4.5}) : 0;   /* (moins d'oiseaux : 6 nov., 14 h 30) */
@@ -31289,7 +31291,7 @@ MJ.enregistrer('tir', {
       {nom:'Vent', val:p.vent < 5 ? 'aucun' : (p.vent < 60 ? 'léger' : (p.vent < 110 ? 'fort' : 'tempête')) + (p.rafales && p.vent >= 5 ? ', en rafales' : '')},
       {nom:'Ligne de visée', val:p.revele ? 'complète' : (p.apercu > 0.8 ? 'longue' : (p.apercu > 0.3 ? 'moyenne' : 'très courte'))},
       {nom:'Tiré à fond, l\'arc tremble après', val:p.tenue > 50 ? 'jamais' : A.txtS(p.tenue)},
-      {nom:'Décors qui gênent', val:String(p.fixes + p.mobiles) + ' (dont au moins ' + p.mobiles + ' qui bouge' + (p.mobiles > 1 ? 'nt' : '') + ')'},
+      {nom:'Décors qui gênent', val:{1:'le seau ou l\'échafaudage', 2:'le seau ou l\'échafaudage, et le grand arbre', 3:'le seau, l\'échafaudage et le grand arbre'}[p.decors]},
       {nom:'Oiseaux', val:(p.perche ? 'des corbeaux se posent sur les cibles' : 'aucun') + (p.oiseaux ? ', des tourterelles passent (touchées, elles s\'en vont)' : '')},
       {nom:'Flèche tirée à fond', val:'traverse une cible (ou un oiseau) : 2 d\'un coup'}
     ];
@@ -31399,25 +31401,27 @@ MJ.enregistrer('tir', {
        bougent, mais qu'on comprenne que ce sont des trucs qui gênent ; il faut pouvoir jouer quand même ») -----
        Tous en bois ou en fer, bien dessinés, avec un contour sombre ; une flèche s'y plante (« Toc ! »), même tirée à fond.
        Quand la ligne de visée les touche, elle devient rouge et l'obstacle s'entoure de rouge. */
-    var obstacles = [];
+    var obstacles = [], enfX = ENF;
     (function(){
-      /* (le balcon ne barrait aucun chemin vers les cibles, trop bas : retiré) */
-      /* (la pancarte qui se balançait est retirée : Romain, 6 nov., 12 h 49 : « elle gêne vraiment trop ») */
-      /* (6 nov., 14 h 30 : la branche du platane bouge maintenant avec le vent ; Basile passe avec son échelle) */
-      var F = ['echafaudage', 'enseigne'], M = BAND ? ['seau', 'linge', 'echelle'] : ['seau', 'linge', 'platane', 'echelle'];
-      if(p.obstaclesForces){ p.obstaclesForces.forEach(function(t){ obstacles.push(creerObstacle(t)); }); return; }   /* (pour les essais) */
-      var fx = U.melanger(F).slice(0, p.fixes || 0);
-      fx.forEach(function(t){ obstacles.push(creerObstacle(t)); });
-      /* (l'enseigne, la pancarte et le linge sont au même endroit : jamais ensemble) */
-      /* (le linge est sous l'échafaudage : jamais ensemble) */
-      if(fx.indexOf('echafaudage') >= 0) M = M.filter(function(t){ return t !== 'linge'; });
-      /* (le seau et le linge sont au même endroit ; Basile marcherait dans le seau posé par terre) */
-      var pris = [];
-      U.melanger(M).forEach(function(t){ if(pris.length >= (p.mobiles || 0)) return; if(t === 'linge' && pris.indexOf('seau') >= 0) return; if(t === 'seau' && (pris.indexOf('linge') >= 0 || pris.indexOf('echelle') >= 0)) return; if(t === 'echelle' && pris.indexOf('seau') >= 0) return; pris.push(t); });
-      pris.forEach(function(t){ obstacles.push(creerObstacle(t)); });
+      /* (le balcon, la pancarte, le linge, l'enseigne du forgeron et Basile à l'échelle sont retirés : Romain, 6 nov.,
+         16 h 14 : « on va se contenter du seau qui monte et qui descend, et d'un échafaudage » ; leur code reste) */
+      /* le seau et l'échafaudage : l'un sur le clocher, l'autre sur la maison à colombages (tirés au sort), jamais les deux
+         sur le même bâtiment ; le grand arbre en plus aux niveaux 4 et plus (pas aux banderoles : il cacherait le mât) */
+      var lieux = U.melanger(['clocher', 'maison']), deux = U.melanger(['seau', 'echafaudage']), lieuDe = {seau:lieux[0], echafaudage:lieux[1]}, choix;
+      if(p.decors >= 3) choix = ['seau', 'echafaudage'].concat(BAND ? [] : ['platane']);
+      else if(p.decors === 2) choix = [deux[0], BAND ? deux[1] : 'platane'];
+      else choix = [deux[0]];
+      if(p.obstaclesForces){ p.obstaclesForces.forEach(function(t){ var q = t.split('@'); obstacles.push(creerObstacle(q[0], q[1] || 'maison')); }); return; }   /* (pour les essais : 'seau@clocher') */
+      choix.forEach(function(t){ obstacles.push(creerObstacle(t, lieuDe[t])); });
     })();
-    function creerObstacle(type){
-      var o = {type:type, ph:R(0, 6), formes:[]}, s = '';
+    /* (16 h 16 : « tu alternes entre les deux » : même rythme, à l'opposé — quand le seau est en haut, l'échafaudage est en
+       bas, et inversement) */
+    var se = obstacles.filter(function(o){ return o.type === 'seau'; })[0], ec = obstacles.filter(function(o){ return o.type === 'echafaudage'; })[0];
+    if(se && ec) ec.ph = se.ph + Math.PI;
+    /* (l'échafaudage du clocher descend jusque devant la porte : l'enfant attend alors son ballon plus à gauche) */
+    if(obstacles.some(function(o){ return o.type === 'echafaudage' && o.lieu === 'clocher'; })){ enfX = 200; var en0 = svg.querySelector('.ti-enfant'); if(en0) en0.setAttribute('transform', 'translate(200,' + SOL + ')'); }
+    function creerObstacle(type, lieu){
+      var o = {type:type, lieu:lieu || 'maison', ph:R(0, 6), formes:[]}, s = '';
       var bois = '#b07a4a', boisF = '#7d5428', fer = '#3b3346';
       if(type === 'echafaudage'){
         /* le plancher du peintre, pendu à deux cordes sous le toit de la maison à colombages, avec ses pots de peinture
@@ -31430,10 +31434,16 @@ MJ.enregistrer('tir', {
            colombages, ENTRE l'archer et les cibles) */
         /* (Romain, 6 nov., 15 h 51 : « fais-le descendre et remonter, anime-le » : il descend jusqu'au-dessus du lampadaire
            et remonte, doucement, toujours au même rythme ; ses deux cordes s'allongent) */
-        s = '<path class="ti-e-corde" d="" stroke="#d9c8a8" stroke-width="2"/><circle cx="168" cy="179" r="3" fill="' + fer + '"/><circle cx="208" cy="187" r="3" fill="' + fer + '"/>';
-        o.art = '<rect x="158" y="256" width="60" height="11" rx="2" fill="#c99a5e"' + st(3) + '/><path d="M162,261.5 H214" stroke="' + boisF + '" stroke-width="1.6"/><rect x="170" y="245" width="11" height="11" rx="2" fill="#5e8ac8"' + st(2) + '/><rect x="194" y="247" width="9" height="9" rx="2" fill="#e5484d"' + st(2) + '/><path d="M188,256 l4,-14" stroke="' + boisF + '" stroke-width="2.4"/><path d="M191,241 l3,-4" stroke="#f6d23a" stroke-width="4" stroke-linecap="round"/>';
-        o.formesL = [{r:[156, 242, 64, 27]}];
-        o.mob = {ax:0, ay:0, haut:-18, bas:42, w:0.55};
+        /* (Romain, 6 nov., 16 h 16 : « fais-le descendre jusqu'en bas, jusqu'à la rue, et monter le plus haut possible ») :
+           il va de juste sous le toit jusqu'aux pavés, et remonte ; le plancher est dessiné en haut, il descend de « d » */
+        var X0 = o.lieu === 'clocher' ? 270 : 102, LG = o.lieu === 'clocher' ? 60 : 52, Y0 = o.lieu === 'clocher' ? 224 : 226;
+        o.cordes = o.lieu === 'clocher' ? [[278, 156], [322, 156]] : [[112, 226 - 6], [146, 196]];
+        s = '<path class="ti-e-corde" d="" stroke="#d9c8a8" stroke-width="2"/>' + o.cordes.map(function(c){ return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="3" fill="' + fer + '"/>'; }).join('');
+        o.art = '<rect x="' + X0 + '" y="' + Y0 + '" width="' + LG + '" height="11" rx="2" fill="#c99a5e"' + st(3) + '/><path d="M' + (X0 + 4) + ',' + (Y0 + 5.5) + ' H' + (X0 + LG - 4) + '" stroke="' + boisF + '" stroke-width="1.6"/>' +
+          '<rect x="' + (X0 + 10) + '" y="' + (Y0 - 11) + '" width="11" height="11" rx="2" fill="#5e8ac8"' + st(2) + '/><rect x="' + (X0 + LG - 22) + '" y="' + (Y0 - 9) + '" width="9" height="9" rx="2" fill="#e5484d"' + st(2) + '/><path d="M' + (X0 + LG / 2) + ',' + Y0 + ' l4,-14" stroke="' + boisF + '" stroke-width="2.4"/><path d="M' + (X0 + LG / 2 + 3) + ',' + (Y0 - 15) + ' l3,-4" stroke="#f6d23a" stroke-width="4" stroke-linecap="round"/>';
+        o.formesL = [{r:[X0 - 2, Y0 - 14, LG + 4, 27]}];
+        o.mob = {ax:0, ay:0, haut:0, bas:SOL - 2 - 11 - Y0, w:0.6};
+        o.bas0 = Y0 + 2;
         o.planche = true;
       } else if(type === 'enseigne'){
         /* l'enseigne du forgeron : une potence en fer et un panneau de bois (l'enclume) */
@@ -31447,8 +31457,10 @@ MJ.enregistrer('tir', {
         /* (14 h 57 : le platane pousse derrière l'archer ; sa branche avance au-dessus de lui, entre lui et les cibles) */
         var FE = [[146, 176, 14], [167, 169, 16], [156, 192, 11], [130, 186, 10]];   /* (réglé au robot : plus haut et plus petit, il arrêtait la moitié des tirs) */
         s = '<path d="M30,' + (SOL - 14) + ' C24,340 28,268 46,226"' + st(13) + ' fill="none" stroke-linecap="round"/><path d="M30,' + (SOL - 14) + ' C24,340 28,268 46,226" stroke="#8a6a4a" stroke-width="8" fill="none" stroke-linecap="round"/>' +
-          '<path class="ti-br-c" d=""' + st(11) + ' fill="none" stroke-linecap="round"/><path class="ti-br-b" d="" stroke="#8a6a4a" stroke-width="6.5" fill="none" stroke-linecap="round"/>';
-        o.art = FE.map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#4f9a4a"' + st(3) + '/>'; }).join('') +
+          '';
+        /* (Romain, 6 nov., 16 h 14 : « vent de gauche à droite, l'arbre gêne ; vent de droite à gauche, il se tourne carrément
+           de l'autre côté et ne gêne plus du tout » : la branche et son feuillage se retournent autour du haut du tronc) */
+        o.art = '<path d="M46,226 C76,200 110,184 146,184"' + st(11) + ' fill="none" stroke-linecap="round"/><path d="M46,226 C76,200 110,184 146,184" stroke="#8a6a4a" stroke-width="6.5" fill="none" stroke-linecap="round"/>' + FE.map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#4f9a4a"' + st(3) + '/>'; }).join('') +
           [[142, 171, 5], [163, 164, 7]].map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#8fd07a" opacity=".55"/>'; }).join('');
         o.formesL = FE.map(function(q){ return {c:q}; });
         o.vent = true;
@@ -31473,14 +31485,19 @@ MJ.enregistrer('tir', {
         /* la poulie du grenier (sous le toit de la maison à colombages) : un seau qui monte et descend (ça bouge : attention) */
         /* (Romain, 6 nov., 12 h 49 : « j'aime bien le petit seau qui monte et qui descend ; fais-le descendre vraiment
            jusqu'en bas » : sa potence sort du mur du clocher ; il descend jusqu'aux pavés et s'y pose un instant) */
-        if(BAND){
+        if(o.lieu === 'clocher'){
+          /* (sa potence sort du mur du clocher ; il descend jusqu'aux pavés) */
+          /* (sa potence sort du mur du clocher juste sous la corniche : il monte jusque-là et descend jusqu'aux pavés) */
+          s = '<path d="M268,162 H236 M268,182 L250,162"' + st(6) + ' stroke-linecap="round"/><path d="M268,162 H236 M268,182 L250,162" stroke="' + bois + '" stroke-width="3" stroke-linecap="round"/><circle cx="242" cy="166" r="5" fill="#9aa4b4"' + st(2) + '/>';
+          o.mob = {ax:242, ay:170, bas:234, haut:8, w:0.6};
+        } else if(BAND){
           /* (aux banderoles, il pend à une potence en haut du mât de la fête : l'échelle de Basile est près du clocher) */
           s = '<path d="M118,226 H146 M118,246 L134,226"' + st(6) + ' stroke-linecap="round"/><path d="M118,226 H146 M118,246 L134,226" stroke="' + bois + '" stroke-width="3" stroke-linecap="round"/><circle cx="142" cy="230" r="5" fill="#9aa4b4"' + st(2) + '/>';
-          o.mob = {ax:142, ay:234, bas:170, haut:4, w:0.7};
+          o.mob = {ax:142, ay:234, bas:170, haut:4, w:0.6};
         } else {
           /* (14 h 57 : sa potence sort du coin entre les deux maisons de gauche : il monte et descend entre l'archer et les cibles) */
-          s = '<path d="M94,236 H146 M98,256 L116,236"' + st(6) + ' stroke-linecap="round"/><path d="M94,236 H146 M98,256 L116,236" stroke="' + bois + '" stroke-width="3" stroke-linecap="round"/><circle cx="142" cy="240" r="5" fill="#9aa4b4"' + st(2) + '/>';
-          o.mob = {ax:142, ay:244, bas:160, haut:4, w:0.7};
+          s = '<path d="M94,214 H146 M98,234 L116,214"' + st(6) + ' stroke-linecap="round"/><path d="M94,214 H146 M98,234 L116,214" stroke="' + bois + '" stroke-width="3" stroke-linecap="round"/><circle cx="142" cy="218" r="5" fill="#9aa4b4"' + st(2) + '/>';
+          o.mob = {ax:142, ay:222, bas:182, haut:4, w:0.6};
         }
         o.art = '<path class="ti-o-corde" d="M0,-200 V-12" stroke="#d9c8a8" stroke-width="1.8"/><path d="M-11,-12 L11,-12 L8,12 L-8,12 Z" fill="#9aa4b4"' + st(2.6) + ' stroke-linejoin="round"/><path d="M-11,-12 C-11,-24 11,-24 11,-12" stroke="' + fer + '" stroke-width="2" fill="none"/><path d="M-9,-4 H9" stroke="#6a7484" stroke-width="2"/>';
         o.formesL = [{r:[-12, -13, 24, 26]}];
@@ -31500,7 +31517,7 @@ MJ.enregistrer('tir', {
       /* (un décalage par obstacle, réglé au robot : chacun barre une partie des chemins vers les cibles, pas tous) */
       var OFF = [0, 0];
       /* la place que l'obstacle prend (pour ne pas y mettre de cible) */
-      o.zones = {echafaudage:[[156, 224, 64, 87]], enseigne:[[220, 176, 46, 36]], seau:[[130, 226, 24, 196]], linge:[[108, 226, 90, 44]], pancarte:[[220, 150, 32, 40]], balcon:[[174, 282, 66, 36]]}[type] || [];
+      o.zones = {echafaudage:[o.lieu === 'clocher' ? [268, 208, 64, 214] : [100, 210, 56, 212]], enseigne:[[220, 176, 46, 36]], seau:[o.lieu === 'clocher' ? [230, 158, 24, 264] : [130, 210, 24, 212]], linge:[[108, 226, 90, 44]], pancarte:[[220, 150, 32, 40]], balcon:[[174, 282, 66, 36]]}[type] || [];
       if(type === 'platane') o.zones = o.formesL.map(function(f){ return [f.c[0] - f.c[2] - 18, f.c[1] - f.c[2] - 4, f.c[2] * 2 + 36, f.c[2] * 2 + 8]; });
       if(type === 'echelle') o.zones = [[90, 260, 380, 162]];
       o.dx = OFF[0]; o.dy = OFF[1];
@@ -31509,7 +31526,7 @@ MJ.enregistrer('tir', {
       o.g.innerHTML = s;
       if(o.marcheur){ o.w = svgNoeud('g', {'class':'ti-marcheur'}, o.g); o.w.innerHTML = o.marcheur; o.jg = o.w.querySelector('.ti-mj-g'); o.jd = o.w.querySelector('.ti-mj-d'); o.wc = o.w.querySelector('.ti-mj-corps'); }
       if(o.art){ o.m = svgNoeud('g', {'class':'ti-o-mob'}, o.g); o.m.innerHTML = o.art; }
-      if(o.vent){ o.brc = o.g.querySelector('.ti-br-c'); o.brb = o.g.querySelector('.ti-br-b'); }
+
       if(o.draps){ o.dr = o.draps.map(function(d){ var e = svgNoeud('g', {'class':'ti-o-mob'}, o.g); e.innerHTML = '<path d="M-9,0 H9 L10,28 Q0,24 -10,28 Z" fill="' + d[2] + '"' + st(2.4) + ' stroke-linejoin="round"/><path d="M-6,0 V-3 M6,0 V-3" stroke="#8a5a33" stroke-width="2.4"/>'; return e; }); }
       o.pl = svgNoeud('g', {}, o.g);   /* (les flèches plantées dans un obstacle fixe) */
       return o;
@@ -31518,9 +31535,10 @@ MJ.enregistrer('tir', {
     function posMob(o, tt){
       if(o.mob) return {x:o.mob.ax, y:o.mob.ay + o.mob.haut + (o.mob.bas - o.mob.haut) * (0.5 + 0.5 * Math.sin(tt * o.mob.w + o.ph)), a:0};
       if(o.pend){ var a = Math.sin(tt * o.pend.w + o.ph) * o.pend.amp; return {x:o.pend.ax, y:o.pend.ay, a:a}; }
-      /* (Romain, 6 nov., 15 h 51 : « j'aime bien comment il se courbe à droite ; quand le vent va de droite à gauche, qu'il
-         se courbe plus de l'autre côté, pour moins qu'il gêne » : deux fois plus loin vers la gauche, et un peu plus haut) */
-      if(o.vent){ var wd = ventDecor(tt) * (p.vent >= 5 ? 1 : 0.35); return {x:(wd > 0 ? wd * 24 : wd * 52) + Math.sin(tt * 1.9 + o.ph) * 2.2, y:(wd > 0 ? -wd * 3 : wd * 12) + Math.sin(tt * 2.3 + o.ph) * 1.4, a:0}; }
+      /* l'arbre : m = 1 quand le vent souffle vers la droite (la branche avance au-dessus de l'archer et gêne), m = −1 quand
+         il souffle vers la gauche (elle est retournée de l'autre côté du tronc, hors du chemin des flèches) ; entre les deux,
+         pendant que le vent tourne (en retard sur les feuilles, comme le reste du décor) */
+      if(o.vent){ var m = fixe(ventDecor(tt) * 1.6, -1, 1); return {x:Math.sin(tt * 1.9 + o.ph) * 2.2, y:Math.sin(tt * 2.3 + o.ph) * 1.4, a:0, m:m}; }
       if(o.marche){
         /* où est Basile au temps tt : il marche vers la gauche, se retourne, repart vers la droite, attend dehors */
         var M = o.marche, u = ((tt + o.ph) % M.C + M.C) % M.C, x, th, pas = 0;
@@ -31539,14 +31557,15 @@ MJ.enregistrer('tir', {
     function collObstacle(o, x, y, tt){
       var i; x -= o.dx; y -= o.dy;
       for(i = 0; i < o.formes.length; i++) if(dansForme(o.formes[i], x, y)) return {loc:null};
+      if(o.vent){ var pv = posMob(o, tt); if(Math.abs(pv.m) < 0.15) return null; var lx = 46 + (x - 46 - pv.x) / pv.m, ly = y - pv.y; for(i = 0; i < o.formesL.length; i++) if(dansForme(o.formesL[i], lx, ly)) return {loc:{x:lx, y:ly}, mob:true}; return null; }
       if(o.formesL){ var pm = posMob(o, tt), l = enLocal(pm, x, y); for(i = 0; i < o.formesL.length; i++) if(dansForme(o.formesL[i], l.x, l.y)) return {loc:l, mob:true}; }
       if(o.draps){ for(i = 0; i < o.draps.length; i++){ var pd = posDrap(o, i, tt), ld = enLocal(pd, x, y); if(ld.x > -10 && ld.x < 10 && ld.y > -2 && ld.y < 28) return {loc:ld, drap:i}; } }
       return null;
     }
     function dessinerObstacle(o){
       if(o.m){ var pm = posMob(o, t); o.m.setAttribute('transform', 'translate(' + f1(pm.x) + ',' + f1(pm.y) + ') rotate(' + f1(pm.a * 57.3) + ')'); var co = o.m.querySelector('.ti-o-corde'); if(co) co.setAttribute('d', 'M0,' + f1(o.mob.ay - pm.y - 4) + ' V-12'); }
-      if(o.planche){ var pp = posMob(o, t), yb = f1(258 + pp.y); o.g.querySelector('.ti-e-corde').setAttribute('d', 'M168,180 V' + yb + ' M208,188 V' + yb); }
-      if(o.vent){ var pv = posMob(o, t), d = 'M46,226 C' + f1(76 + pv.x * 0.4) + ',' + f1(200 + pv.y * 0.4) + ' ' + f1(110 + pv.x * 0.8) + ',' + f1(184 + pv.y * 0.8) + ' ' + f1(146 + pv.x) + ',' + f1(184 + pv.y); o.brc.setAttribute('d', d); o.brb.setAttribute('d', d); }
+      if(o.planche){ var pp = posMob(o, t), yb = f1(o.bas0 + pp.y); o.g.querySelector('.ti-e-corde').setAttribute('d', 'M' + o.cordes[0][0] + ',' + o.cordes[0][1] + ' V' + yb + ' M' + o.cordes[1][0] + ',' + o.cordes[1][1] + ' V' + yb); }
+      if(o.vent){ var pv = posMob(o, t); o.m.setAttribute('transform', 'translate(' + f1(46 + pv.x) + ',' + f1(pv.y) + ') scale(' + pv.m.toFixed(3) + ',1) translate(-46,0)'); }
       if(o.marche){
         var pw = posMob(o, t), ph2 = pw.bx / 9, g1 = pw.pas ? Math.sin(ph2) : 0;
         o.w.setAttribute('transform', 'translate(' + f1(pw.bx) + ',' + SOL + ') scale(' + pw.dir + ',1)');
@@ -32200,12 +32219,12 @@ MJ.enregistrer('tir', {
           if(ch.mode === 'libre'){
             ch.t += dt;
             /* il remonte un peu, puis plane jusqu'à l'enfant (en 2,4 s) */
-            var u2 = Math.min(1, ch.t / 2.4), cxE = ENF, cyE = SOL - 52;
+            var u2 = Math.min(1, ch.t / 2.4), cxE = enfX, cyE = SOL - 52;
             var x = ch.x0 + (cxE - ch.x0) * lisse(u2) + Math.sin(ch.t * 3) * 10 * (1 - u2), y = ch.y0 - 30 * Math.sin(Math.min(1, ch.t / 0.8) * Math.PI / 2) * (1 - u2) + (cyE - ch.y0) * Math.pow(u2, 1.4);
             c.q.x = x; c.q.y = y;
             c.g.setAttribute('transform', 'translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(Math.sin(ch.t * 4) * 10) + ') scale(' + f1(1 - 0.25 * u2) + ')');
             if(c.fil){ c.fil.setAttribute('x1', f1(x)); c.fil.setAttribute('y1', f1(y + 20)); c.fil.setAttribute('x2', f1(x + Math.sin(ch.t * 2) * 6)); c.fil.setAttribute('y2', f1(y + 60)); }
-            if(u2 >= 1 && !ch.fini){ ch.fini = true; if(enfant) enfant.classList.add('ti-joie'); var bo = enfant && enfant.querySelector('.ti-enf-bouche'); if(bo) bo.setAttribute('d', 'M-3,-29.4 Q0,-25.6 3,-29.4'); texte(ENF, SOL - 90, 'Merci !', 'ok'); }
+            if(u2 >= 1 && !ch.fini){ ch.fini = true; if(enfant) enfant.classList.add('ti-joie'); var bo = enfant && enfant.querySelector('.ti-enf-bouche'); if(bo) bo.setAttribute('d', 'M-3,-29.4 Q0,-25.6 3,-29.4'); texte(enfX, SOL - 90, 'Merci !', 'ok'); }
             return;
           }
           if(ch.mode === 'fuit'){
@@ -32326,10 +32345,10 @@ MJ.enregistrer('tir', {
             var ob2 = res.obstacle, hh = res.hit;
             if(!hh.loc) planter(res.x - ob2.dx, res.y - ob2.dy, aV, ob2.pl);
             else if(hh.drap !== undefined){ var pdd = posDrap(ob2, hh.drap, t); planter(hh.loc.x, hh.loc.y, aV - pdd.a, ob2.dr[hh.drap]); }
-            else { var pmm = posMob(ob2, t); planter(hh.loc.x, hh.loc.y, aV - pmm.a, ob2.m); }
+            else if(!ob2.vent){ var pmm = posMob(ob2, t); planter(hh.loc.x, hh.loc.y, aV - pmm.a, ob2.m); }
             ob2.g.classList.remove('ti-toc'); void ob2.g.getBoundingClientRect(); ob2.g.classList.add('ti-toc');
             eclats(res.x, res.y, hh.drap !== undefined ? 'tissu' : (ob2.type === 'platane' ? 'feuilles' : 'bois'));
-            perdues++; rate2(res.x, res.y, 'Toc ! Perdue là-haut…'); if(!deja) U.son('ko');
+            perdues++; rate2(res.x, res.y, ob2.vent ? 'Perdue dans les feuilles…' : 'Toc ! Perdue là-haut…'); if(!deja) U.son('ko');
           }
           else if(res.rate === 'eclate'){ eclater(res.c, res.x, res.y); }
           else if(res.branche){ eclats(res.x, res.y, 'tissu'); particule(res.x, res.y, FLECHE_ART, -vol.vx * 0.12, -60, 1.1, 520, 380); rate2(res.x, res.y, 'Dans le drapeau !'); if(!deja) U.son('ko'); }
