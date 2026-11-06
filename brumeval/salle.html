@@ -25211,7 +25211,7 @@ MJ.enregistrer('tir', {
       {nom:'Vent', val:p.vent < 5 ? 'aucun' : (p.vent < 60 ? 'léger' : (p.vent < 110 ? 'fort' : 'tempête')) + (p.rafales && p.vent >= 5 ? ', en rafales' : '')},
       {nom:'Ligne de visée', val:p.revele ? 'complète' : (p.apercu > 0.8 ? 'longue' : (p.apercu > 0.3 ? 'moyenne' : 'très courte'))},
       {nom:'Tiré à fond, l\'arc tremble après', val:p.tenue > 50 ? 'jamais' : A.txtS(p.tenue)},
-      {nom:'Décors qui gênent', val:(p.fixes ? p.fixes + ' fixe + ' : '') + p.mobiles + ' qui bouge' + (p.mobiles > 1 ? 'nt' : '')},
+      {nom:'Décors qui gênent', val:String(p.fixes + p.mobiles) + ' (dont au moins ' + p.mobiles + ' qui bouge' + (p.mobiles > 1 ? 'nt' : '') + ')'},
       {nom:'Oiseaux', val:(p.perche ? 'des corbeaux se posent sur les cibles' : 'aucun') + (p.oiseaux ? ', des tourterelles passent (touchées, elles s\'en vont)' : '')},
       {nom:'Flèche tirée à fond', val:'traverse une cible (ou un oiseau) : 2 d\'un coup'}
     ];
@@ -25350,9 +25350,13 @@ MJ.enregistrer('tir', {
            doit plus être au milieu) */
         /* (6 nov., 14 h 57 : les cibles sont toutes en haut à droite ; il pend de nouveau sous le toit de la maison à
            colombages, ENTRE l'archer et les cibles) */
-        s = '<path d="M168,178 V256 M208,186 V256" stroke="#d9c8a8" stroke-width="2"/><circle cx="168" cy="179" r="3" fill="' + fer + '"/><circle cx="208" cy="187" r="3" fill="' + fer + '"/>' +
-          '<rect x="158" y="256" width="60" height="11" rx="2" fill="#c99a5e"' + st(3) + '/><path d="M162,261.5 H214" stroke="' + boisF + '" stroke-width="1.6"/><rect x="170" y="245" width="11" height="11" rx="2" fill="#5e8ac8"' + st(2) + '/><rect x="194" y="247" width="9" height="9" rx="2" fill="#e5484d"' + st(2) + '/><path d="M188,256 l4,-14" stroke="' + boisF + '" stroke-width="2.4"/><path d="M191,241 l3,-4" stroke="#f6d23a" stroke-width="4" stroke-linecap="round"/>';
-        o.formes = [{r:[156, 242, 64, 27]}];
+        /* (Romain, 6 nov., 15 h 51 : « fais-le descendre et remonter, anime-le » : il descend jusqu'au-dessus du lampadaire
+           et remonte, doucement, toujours au même rythme ; ses deux cordes s'allongent) */
+        s = '<path class="ti-e-corde" d="" stroke="#d9c8a8" stroke-width="2"/><circle cx="168" cy="179" r="3" fill="' + fer + '"/><circle cx="208" cy="187" r="3" fill="' + fer + '"/>';
+        o.art = '<rect x="158" y="256" width="60" height="11" rx="2" fill="#c99a5e"' + st(3) + '/><path d="M162,261.5 H214" stroke="' + boisF + '" stroke-width="1.6"/><rect x="170" y="245" width="11" height="11" rx="2" fill="#5e8ac8"' + st(2) + '/><rect x="194" y="247" width="9" height="9" rx="2" fill="#e5484d"' + st(2) + '/><path d="M188,256 l4,-14" stroke="' + boisF + '" stroke-width="2.4"/><path d="M191,241 l3,-4" stroke="#f6d23a" stroke-width="4" stroke-linecap="round"/>';
+        o.formesL = [{r:[156, 242, 64, 27]}];
+        o.mob = {ax:0, ay:0, haut:-18, bas:42, w:0.55};
+        o.planche = true;
       } else if(type === 'enseigne'){
         /* l'enseigne du forgeron : une potence en fer et un panneau de bois (l'enclume) */
         s = '<path d="M266,176 H220 M262,176 L246,160"' + st(5) + ' stroke-linecap="round"/><path d="M266,176 H220 M262,176 L246,160" stroke="' + fer + '" stroke-width="2.6" stroke-linecap="round"/><path d="M228,176 V182 M254,176 V182" stroke="' + fer + '" stroke-width="2"/>' +
@@ -25418,7 +25422,7 @@ MJ.enregistrer('tir', {
       /* (un décalage par obstacle, réglé au robot : chacun barre une partie des chemins vers les cibles, pas tous) */
       var OFF = [0, 0];
       /* la place que l'obstacle prend (pour ne pas y mettre de cible) */
-      o.zones = {echafaudage:[[156, 242, 64, 27]], enseigne:[[220, 176, 46, 36]], seau:[[130, 226, 24, 196]], linge:[[108, 226, 90, 44]], pancarte:[[220, 150, 32, 40]], balcon:[[174, 282, 66, 36]]}[type] || [];
+      o.zones = {echafaudage:[[156, 224, 64, 87]], enseigne:[[220, 176, 46, 36]], seau:[[130, 226, 24, 196]], linge:[[108, 226, 90, 44]], pancarte:[[220, 150, 32, 40]], balcon:[[174, 282, 66, 36]]}[type] || [];
       if(type === 'platane') o.zones = o.formesL.map(function(f){ return [f.c[0] - f.c[2] - 18, f.c[1] - f.c[2] - 4, f.c[2] * 2 + 36, f.c[2] * 2 + 8]; });
       if(type === 'echelle') o.zones = [[90, 260, 380, 162]];
       o.dx = OFF[0]; o.dy = OFF[1];
@@ -25436,7 +25440,9 @@ MJ.enregistrer('tir', {
     function posMob(o, tt){
       if(o.mob) return {x:o.mob.ax, y:o.mob.ay + o.mob.haut + (o.mob.bas - o.mob.haut) * (0.5 + 0.5 * Math.sin(tt * o.mob.w + o.ph)), a:0};
       if(o.pend){ var a = Math.sin(tt * o.pend.w + o.ph) * o.pend.amp; return {x:o.pend.ax, y:o.pend.ay, a:a}; }
-      if(o.vent){ var wd = ventDecor(tt) * (p.vent >= 5 ? 1 : 0.35); return {x:wd * 24 + Math.sin(tt * 1.9 + o.ph) * 2.2, y:-Math.abs(wd) * 3 + Math.sin(tt * 2.3 + o.ph) * 1.4, a:0}; }
+      /* (Romain, 6 nov., 15 h 51 : « j'aime bien comment il se courbe à droite ; quand le vent va de droite à gauche, qu'il
+         se courbe plus de l'autre côté, pour moins qu'il gêne » : deux fois plus loin vers la gauche, et un peu plus haut) */
+      if(o.vent){ var wd = ventDecor(tt) * (p.vent >= 5 ? 1 : 0.35); return {x:(wd > 0 ? wd * 24 : wd * 52) + Math.sin(tt * 1.9 + o.ph) * 2.2, y:(wd > 0 ? -wd * 3 : wd * 12) + Math.sin(tt * 2.3 + o.ph) * 1.4, a:0}; }
       if(o.marche){
         /* où est Basile au temps tt : il marche vers la gauche, se retourne, repart vers la droite, attend dehors */
         var M = o.marche, u = ((tt + o.ph) % M.C + M.C) % M.C, x, th, pas = 0;
@@ -25461,6 +25467,7 @@ MJ.enregistrer('tir', {
     }
     function dessinerObstacle(o){
       if(o.m){ var pm = posMob(o, t); o.m.setAttribute('transform', 'translate(' + f1(pm.x) + ',' + f1(pm.y) + ') rotate(' + f1(pm.a * 57.3) + ')'); var co = o.m.querySelector('.ti-o-corde'); if(co) co.setAttribute('d', 'M0,' + f1(o.mob.ay - pm.y - 4) + ' V-12'); }
+      if(o.planche){ var pp = posMob(o, t), yb = f1(258 + pp.y); o.g.querySelector('.ti-e-corde').setAttribute('d', 'M168,180 V' + yb + ' M208,188 V' + yb); }
       if(o.vent){ var pv = posMob(o, t), d = 'M46,226 C' + f1(76 + pv.x * 0.4) + ',' + f1(200 + pv.y * 0.4) + ' ' + f1(110 + pv.x * 0.8) + ',' + f1(184 + pv.y * 0.8) + ' ' + f1(146 + pv.x) + ',' + f1(184 + pv.y); o.brc.setAttribute('d', d); o.brb.setAttribute('d', d); }
       if(o.marche){
         var pw = posMob(o, t), ph2 = pw.bx / 9, g1 = pw.pas ? Math.sin(ph2) : 0;
