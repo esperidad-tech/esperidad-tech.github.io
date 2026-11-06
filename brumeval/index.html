@@ -3327,6 +3327,18 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .mja-couvert.cc-devoile{animation:b-tremble .5s ease-out;filter:sepia(.4) saturate(1.4)}
 .cc-devoile-r{fill:#ff6b6b;fill-opacity:.12;stroke:#ff8a6a;stroke-width:2.6;stroke-dasharray:6 5}
 .cc-pattes{pointer-events:none}
+.cc-waf{font-family:var(--f-titre, serif);font-size:17px;font-weight:700;fill:#ff8a6a;stroke:#24182e;stroke-width:4;paint-order:stroke;stroke-linejoin:round;pointer-events:none}
+.cc-devoile-t{font-family:var(--f-titre, serif);font-size:20px;font-weight:700;fill:#ff8a6a;stroke:#24182e;stroke-width:3;paint-order:stroke}
+/* le chien qui renifle, museau levé : des petites bouffées devant sa truffe */
+.cc-snif{fill:none;stroke:#fff8e8;stroke-width:1.8;stroke-linecap:round;opacity:0;animation:cc-snif .65s ease-out forwards;pointer-events:none;transform-box:fill-box}
+@keyframes cc-snif{0%{opacity:.95}100%{opacity:0;translate:0 -8px}}
+/* les villageois : le rond de leur travail (orangé), les baies qui volent jusqu'au panier */
+.cc-jauge-v{stroke:#ffb35a;filter:drop-shadow(0 0 4px rgba(255,179,90,.8))}
+.cc-baie{fill:#e5484d;stroke:#24182e;stroke-width:.8;pointer-events:none;animation:cc-baie .6s ease-in forwards}
+@keyframes cc-baie{0%{transform:translate(0,0)}40%{transform:translate(calc(var(--dx) * .45), calc(var(--dy) * .45 - 10px))}100%{transform:translate(var(--dx), var(--dy));opacity:.6}}
+/* la pie bavarde : son petit regard, en pointillé violet (ce n'est pas un garde : elle crie) */
+.cc-cone-pie{fill:#d9c8ff;opacity:.3;stroke:#c9b4ff;stroke-width:1.6;stroke-dasharray:4 5;pointer-events:none}
+.cc-cone-pie.alerte{fill:#ff6b6b;stroke:#ff6b6b;opacity:.42}
 @media (prefers-reduced-motion: reduce){
   .cc-porte-halo,.cc-animal .cc-dort,.cc-zzz,.cc-clochette,.cc-linge,.cc-vague,.cc-brume-g,.cc-torche-c,.cd-flamme,.cc-onde{animation:none}
   .cc-onde{opacity:.8}
@@ -3379,6 +3391,49 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes ti-cb{from{transform:rotate(-24deg)}to{transform:rotate(34deg) scaleY(.75)}}
 .ti-pose:not(.ti-vole) .ti-cb-aile{transform:rotate(30deg) scale(.82)}
 .ti-pose:not(.ti-vole) .ti-cb-aile2{opacity:0}
+/* ===== Lisibilité (6 novembre, 10 h 50) ===== */
+/* ce qu'il faut toucher : un rond doré en pointillé qui tourne ; la ficelle du ballon brille, avec des ciseaux */
+.ti-marque{fill:none;stroke:#ffd36a;stroke-width:3;stroke-dasharray:7 5;filter:drop-shadow(0 0 3px rgba(255,200,80,.9));animation:ti-marque 2.4s linear infinite;pointer-events:none}
+@keyframes ti-marque{to{stroke-dashoffset:-48}}
+.mja-cible.touchee .ti-marque,.ti-fuit .ti-marque{display:none}
+.mja-cible.visee .ti-marque{stroke:#fff3b0;stroke-width:4.4;stroke-dasharray:none}
+.ti-ficelle-m{stroke:#ffd36a;stroke-width:5.5;stroke-linecap:round;stroke-dasharray:6 6;opacity:.85;filter:drop-shadow(0 0 3px rgba(255,200,80,.95));animation:ti-marque 1.6s linear infinite;pointer-events:none}
+.ti-ciseaux{animation:ti-ciseaux 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center;pointer-events:none}
+@keyframes ti-ciseaux{50%{scale:1.15}}
+/* la ligne de visée : de gros points blancs bordés de sombre ; dorés si on va dans une cible, rouges si c'est raté */
+.mja-tir .mja-pt{fill:#fffdf4;stroke:#24182e;stroke-width:1.3;filter:none;r:3.3px}
+.mja-tir .mja-apercu.fort .mja-pt{fill:#ffe9a8}
+.mja-tir .mja-apercu.ti-ap-ok .mja-pt{fill:#ffd36a}
+.mja-tir .mja-apercu.ti-ap-ko .mja-pt{fill:#ff8a7a}
+.ti-ap-marque .ti-ap-mauvais{display:none}
+.ti-ap-marque.ko .ti-ap-bon{display:none}
+.ti-ap-marque.ko .ti-ap-mauvais{display:inline}
+/* les obstacles : solides ; entourés de rouge quand la visée va dedans ; ils tremblent quand une flèche s'y plante */
+.ti-obstacle{transition:filter .15s}
+.ti-obstacle.ti-bloque,.mja-cible.ti-bloque .mja-cible-art{filter:drop-shadow(0 0 0 #ff5b5b) drop-shadow(0 0 3px #ff5b5b) drop-shadow(0 0 2px #ff5b5b)}
+.ti-obstacle.ti-toc{animation:b-tremble .3s ease-out}
+/* la jauge de puissance : du vert au doré */
+.ti-puiss{opacity:0;transition:opacity .15s;pointer-events:none}
+.ti-puiss.on{opacity:1}
+.ti-pu-fond{fill:rgba(20,16,40,.55);stroke:#24182e;stroke-width:2.6}
+.ti-pu-rempli{fill:#7cd3a0}
+.ti-pu-moyen .ti-pu-rempli{fill:#f6d23a}
+.ti-pu-fort .ti-pu-rempli{fill:#ff9a3c}
+.ti-pu-max .ti-pu-rempli{fill:#ffd36a;filter:drop-shadow(0 0 6px #ffd36a)}
+.ti-pu-traits{stroke:#fff;stroke-width:1.6;opacity:.6}
+.ti-pu-eclair circle{fill:rgba(20,16,40,.55);stroke:#24182e;stroke-width:2.4}
+.ti-pu-eclair path{fill:#8a8098}
+.ti-puiss.ti-pu-max .ti-pu-eclair circle{fill:#ffd36a;filter:drop-shadow(0 0 8px #ffd36a)}
+.ti-puiss.ti-pu-max .ti-pu-eclair path{fill:#24182e}
+.ti-puiss.ti-pu-max .ti-pu-eclair{animation:ti-pu-max .45s ease-in-out infinite alternate}
+@keyframes ti-pu-max{from{transform:translate(16px,212px) scale(1)}to{transform:translate(16px,212px) scale(1.18)}}
+.ti-pu-mot{font-family:var(--f-titre, serif);font-size:15px;font-weight:700;fill:#fff;stroke:#24182e;stroke-width:4;paint-order:stroke;stroke-linejoin:round}
+.ti-pu-max .ti-pu-mot{fill:#ffd36a;font-size:18px}
+.mja-tir .mja-jauge-arc{stroke:#7cd3a0;stroke-width:7;opacity:.95;filter:drop-shadow(0 0 2px #24182e)}
+.mja-tir .mja-jauge-arc.pu-moyen{stroke:#f6d23a}
+.mja-tir .mja-jauge-arc.pu-fort{stroke:#ff9a3c}
+.mja-tir .mja-jauge-arc.fort{stroke:#ffd36a;stroke-width:9;filter:drop-shadow(0 0 6px #ffd36a)}
+.mja-tir .mja-afond{display:none}   /* (« À fond ! » est écrit à côté de la jauge de puissance) */
 /* le ballon éclaté, le cerf-volant déchiré : l'enfant est triste */
 .ti-dechire .ti-kite{animation:none;filter:saturate(.55) brightness(.9)}
 .ti-triste .ti-enf-bras{animation:none;transform:rotate(14deg) translateY(10px)}
@@ -6654,8 +6709,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-06 10:05 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-06 10:05';</script>
+<!-- Brumeval v2 · version de test du 2026-11-06 12:18 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-06 12:18';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -29415,7 +29470,11 @@ var GC = {
    derrière lui), le porteur de torche (un grand cercle de lumière autour de lui) ; et le chien (chienDessus) */
 var ROLES = {
   veilleur:{manteau:'#5d4f7a', manteauC:'#9488b8', chap:'rond', chapC:'#3a3046', chapB:'#5a4a6a', peau:'#f1c7a0', lanterne:'grande', botte:'#2a2030', botteC:'#4a3e58'},
-  torche:{manteau:'#a8452e', manteauC:'#e0805e', chap:'cheveux', chapC:'#5a3a24', chapB:'#e8b04a', peau:'#e8b98f', lanterne:'torche', botte:'#3b2a1e', botteC:'#5e4430'}
+  torche:{manteau:'#a8452e', manteauC:'#e0805e', chap:'cheveux', chapC:'#5a3a24', chapB:'#e8b04a', peau:'#e8b98f', lanterne:'torche', botte:'#3b2a1e', botteC:'#5e4430'},
+  /* les villageois, sans vision (6 nov., 10 h 50) : la cueilleuse de baies (forêt, chapeau de paille, panier) et le
+     porteur (ville, moulin : il déplace caisses, tonneaux et sacs) */
+  cueilleur:{manteau:'#c8574a', manteauC:'#f08a7a', chap:'rond', chapC:'#e6c25a', chapB:'#c9a03a', peau:'#f1c7a0', lanterne:false, panier:true, botte:'#5e3e26', botteC:'#8a5a3a'},
+  porteur:{manteau:'#7a6a4a', manteauC:'#b4a07a', chap:'casquette', chapC:'#4a5a6e', chapB:'#6a7a8e', peau:'#e8b98f', lanterne:false, botte:'#3b2a1e', botteC:'#5e4430'}
 };
 function gardeDessus(sorte, role){
   var C = (role && ROLES[role]) ? Object.assign({}, ROLES[role], sorte === 'foret' && role === 'veilleur' ? {manteau:'#6b5a3a', manteauC:'#a8926a', chapC:'#3e3424', chapB:'#5e4e34'} : {}) : (GC[sorte] || GC.ville), chap;
@@ -29432,6 +29491,8 @@ function gardeDessus(sorte, role){
     '<ellipse cx="0" cy="1" rx="12.6" ry="8.6" fill="' + C.manteau + '"' + st(2.2) + '/>' +
     '<path d="M-8.6,-2.6 C-5,-6.2 4.6,-6.6 8.2,-3.2" stroke="' + C.manteauC + '" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".75"/>' +
     (C.or ? '<path d="M-12,-.5 l3.6,-2 M12,-.5 l-3.6,-2" stroke="#ffd36a" stroke-width="2.6" stroke-linecap="round"/>' : '') +
+    (role === 'cueilleur' ? '<path d="M-6,4 C-2,8 4,8 7,4" stroke="#f4ecdc" stroke-width="3" fill="none" stroke-linecap="round"/>' : '') +
+    (C.panier ? '<g class="cd-panier" transform="translate(-13,5)"><ellipse rx="7" ry="6" fill="#b8864a"' + st(2) + '/><ellipse rx="4.6" ry="3.8" fill="#7a5232"/><circle cx="-1.6" cy="-.6" r="1.7" fill="#e5484d"/><circle cx="1.6" cy=".4" r="1.7" fill="#e5484d"/><circle cx="0" cy="-2" r="1.5" fill="#c4303a"/><path d="M-6,-2 C-4,-9 4,-9 6,-2" stroke="#8a5a33" stroke-width="1.8" fill="none"/></g>' : '') +
     '<g class="cd-tete">' + chap + '</g></g></g>';
 }
 /* Fait bouger un personnage : pieds qui avancent l'un après l'autre, bras qui balancent, cape qui flotte.
@@ -29464,6 +29525,15 @@ function Bonhomme(g){
         hx = 8.4 + Math.sin(t * 2.1) * 0.8; hy = -14 + Math.cos(t * 2.6) * 1 + s * 1.3;
         d = 'M8.8,-2 Q12.6,-7.4 ' + f1(hx) + ',' + f1(hy);
         b.l.setAttribute('transform', 'translate(' + f1(hx) + ',' + f1(hy - 3.2) + ') rotate(' + f1(Math.sin(t * 2.1) * 12) + ')');
+      } else if(e.pose === 'porte'){
+        /* les deux mains devant, qui tiennent ce qu'il porte */
+        hx = sg * 8; hy = -13 + s * 0.8;
+        d = 'M' + f1(sg * 9.2) + ',-2 Q' + f1(sg * 12) + ',-8 ' + f1(hx) + ',' + f1(hy);
+      } else if(e.pose === 'cueille'){
+        /* une main puis l'autre vont chercher les baies devant, et reviennent au panier */
+        var ph2 = t * 5.2 + k * Math.PI, ve = Math.max(0, Math.sin(ph2));
+        hx = sg * (7 - ve * 2); hy = -4 - ve * 13;
+        d = 'M' + f1(sg * 9.2) + ',-2 Q' + f1(sg * 12) + ',' + f1(hy / 2 - 2) + ' ' + f1(hx) + ',' + f1(hy);
       } else {
         var w = (k ? -s : s) * 6;
         hx = sg * (11.4 - c * 5 + Math.abs(w) * 0.1); hy = 1.5 + w - c * 9;
@@ -29752,6 +29822,18 @@ var ANIMAUX = {
 };
 function animalDe(decor, type){ return decor === 'foret' ? 'lapin' : (decor === 'moulin' && type === 'cour' ? 'oie' : 'chat'); }
 var FLAIR = 30;   /* le chien ne voit presque rien : il sent le Pisteur qui court tout près de son museau */
+/* les villageois : ce qu'ils viennent chercher dans chaque décor */
+var METIERS = {foret:{metier:'cueille', types:['buisson']}, ville:{metier:'porte', types:['caisses', 'tonneau', 'paille']}, moulin:{metier:'porte', types:['sacs', 'caisses', 'tonneau', 'brouette']}};
+var PIE = {L:96, h:0.42};
+/* la pie vue du dessus (elle regarde vers le haut) : noire et blanche, reflets bleus, longue queue */
+function pieDessus(){
+  return '<g class="cd-pie"><ellipse cx="2" cy="4" rx="8" ry="13" fill="#000" opacity=".28"/>' +
+    '<path d="M0,6 L-3.4,25 L0,28 L3.4,25 Z" fill="#1d2440"' + st(1.6) + ' stroke-linejoin="round"/><path d="M0,10 V24" stroke="#3f6ad8" stroke-width="1.4" opacity=".8"/>' +
+    '<ellipse cy="1" rx="7.4" ry="10" fill="#1d2440"' + st(2) + '/>' +
+    '<path d="M-7,1 C-8.4,-6 -5.4,-9 -3.2,-8 L-3,6 Z M7,1 C8.4,-6 5.4,-9 3.2,-8 L3,6 Z" fill="#f4f1ea"' + st(1.2) + '/>' +
+    '<path d="M-6.4,4 C-6,8 -3,10 0,10 M6.4,4 C6,8 3,10 0,10" stroke="#3f6ad8" stroke-width="1.6" fill="none" opacity=".85"/>' +
+    '<circle cy="-10" r="5.2" fill="#1d2440"' + st(1.8) + '/><path d="M-1.7,-14.6 L0,-19.6 L1.7,-14.6 Z" fill="#4a4458"' + st(1.2) + ' stroke-linejoin="round"/><circle cx="-2.1" cy="-11.4" r="1.1" fill="#fff"/><circle cx="2.1" cy="-11.4" r="1.1" fill="#fff"/></g>';
+}
 
 /* ==========================================================
    LE JEU
@@ -29768,9 +29850,11 @@ MJ.enregistrer('cachette', {
     p.rangees = n >= 3 ? 3 : 2;
     p.gardes = fixe(entier(n, {1:1, 3:2, 6:3, 9:4}) + (mods.gardes || 0), 1, 5);
     p.vitesse = courbe(n, {1:30, 3:44, 6:60, 9:78, 12:90}) * (mods.lent || 1);
-    p.faisceau = courbe(n, {1:92, 3:110, 6:132, 9:156, 12:170}) / (mods.zone || 1);
+    /* (lumières un peu moins longues et gardes un peu moins imprévisibles aux niveaux 9 et plus : il y a maintenant plus de
+       monde, un chien qui oblige à bouger et des villageois ; robot, 6 nov.) */
+    p.faisceau = courbe(n, {1:92, 3:110, 6:132, 9:140, 12:150}) / (mods.zone || 1);
     p.pause = courbe(n, {1:1.6, 3:1.2, 6:0.85, 9:0.6});
-    p.imprevu = courbe(n, {1:0, 3:0.05, 6:0.16, 9:0.3, 12:0.38});
+    p.imprevu = courbe(n, {1:0, 3:0.05, 6:0.16, 9:0.22, 12:0.3});
     p.guet = n >= 5;
     p.boucle = n >= 4;
     p.charrette = n >= 3;
@@ -29781,10 +29865,14 @@ MJ.enregistrer('cachette', {
     /* (les pièces sont plus grandes : on court un peu plus vite qu'avant ; un peu moins vite aux niveaux 9 et plus) */
     p.course = courbe(n, {1:205, 3:190, 6:178, 9:165}) * courbe(n, {1:1.15, 8:1.15, 10:1.04});
     /* une erreur permise même aux grands niveaux : l'aboiement du chien en coûte une (avant : aucune à partir du niveau 9) */
-    p.erreurs = A.erreursPermises(n, mods, {1:3, 3:2, 6:1, 12:1});
+    /* (6 nov., 10 h 50 : deux erreurs permises aux niveaux 9 et plus : il y a maintenant trois façons de se faire prendre,
+       les gardes, le chien et les villageois) */
+    p.erreurs = A.erreursPermises(n, mods, {1:3, 3:2, 6:1, 8:1, 9:2, 12:2});
     var rOrig = entier(n, {1:3, 3:4, 7:4, 8:5});
     /* les gens par pièce (sans le chien) : 1, puis 2, puis 3 aux niveaux 9 et plus */
-    p.gardesPiece = fixe(entier(n, {1:1, 3:2, 12:2}) + (mods.gardes || 0), 1, 4);   /* (3 par pièce au niveau 10 + le chien : le robot ne gagnait plus jamais) */
+    /* (Romain, 6 nov., 10 h 50 : « un peu plus de surveillants au niveau 10 » : 3 par pièce, la première en a un de moins) */
+    p.gardesPiece = fixe(entier(n, {1:1, 3:2, 12:2}) + (mods.gardes || 0), 1, 4);
+    p.gardeEnPlus = n >= 10;   /* (un garde de plus dans la dernière pièce : avec 3 gardes dans chaque pièce, le robot ne gagnait plus jamais) */
     /* plusieurs styles d'ennemis (Romain, 6 nov., 9 h 02) : le veilleur à la grosse lanterne (niveau 3 et plus : elle éclaire
        devant et derrière lui), le porteur de torche (niveau 5 et plus : un grand cercle de lumière autour de lui), et le
        chien (niveau 4 : dans la dernière pièce ; niveau 6 et plus : dans chaque pièce). Le chien ne voit presque rien, mais
@@ -29793,11 +29881,20 @@ MJ.enregistrer('cachette', {
     p.lanterne = n >= 3; p.torche = n >= 5;
     p.rTorche = courbe(n, {5:56, 9:64, 12:70});
     p.chiens = n >= 6 ? 'toutes' : (n >= 4 ? 'une' : '');
-    p.odeur = courbe(n, {4:9, 6:8.5, 9:7.5, 12:6.5});   /* secondes dans la même cachette avant que le chien sente l'odeur */
-    p.renifle = courbe(n, {4:3, 9:2.6});
+    /* le chien (Romain, 6 nov., 10 h 50) : au bout de 3 s dans la même cachette (2 s au niveau 10), il renifle (on le voit
+       bien), fait « Waf ! Waf ! » et court jusqu'à la cachette, puis la fouille ; il ne sent que s'il est assez près, sauf au
+       niveau 10 (de n'importe où) */
+    p.odeur = n >= 10 ? 2 : 3;
+    p.flairPortee = n >= 10 ? 9999 : 190;
+    p.renifle = 3;   /* (le temps de la fouille : le même partout, pour qu'on apprenne le rythme ; 2,4 s au niveau 10 : trop dur) */
+    /* les villageois sans vision : cueillette (forêt) ou déménagement de caisses (ville, moulin) ; ils fouillent aussi
+       longtemps que le chien. La pie bavarde (nouveau piège) : elle crie si l'on court dans son regard. */
+    p.villageois = n >= 4 ? 1 : 0;   /* (2 par pièce au niveau 10, avec 3 gardes et le chien : le robot ne gagnait plus jamais) */
+    p.fouille = p.renifle;
+    p.pie = n >= 3 ? 'une' : '';   /* (une pièce sur deux environ, toujours la dernière) */
     p.vMobile = courbe(n, {3:24, 9:38});
     /* le sablier : le temps par rangée de l'ancienne pièce unique, pour toutes les rangées de toutes les pièces, + 8 s par pièce */
-    p.duree = Math.round(courbe(n, {1:95, 3:80, 6:68, 9:58}) / rOrig * p.pieces * p.rangees + 8 * p.pieces + (mods.temps || 0));
+    p.duree = Math.round((courbe(n, {1:95, 3:80, 6:68, 9:58}) / rOrig * p.pieces * p.rangees + 8 * p.pieces) * courbe(n, {3:1, 4:1.1, 9:1.25}) + (mods.temps || 0));   /* (+10 à 25 % : le chien et les villageois font bouger) */
     p.invisible = mods.invisible || 0;
     p.aide = !!(mods.aide || mods.revele);
     p.lignes = [
@@ -29805,6 +29902,8 @@ MJ.enregistrer('cachette', {
       {nom:'Gardes par pièce', val:String(p.gardesPiece) + (p.guet && p.gardesPiece >= 2 ? ' (dont un guetteur)' : '') + (p.chiens === 'toutes' ? ' + un chien' : '')},
       {nom:'Lumières', val:'devant' + (p.lanterne ? ', devant et derrière' : '') + (p.torche ? ', tout autour' : '')},
       {nom:'Chien', val:p.chiens === 'toutes' ? 'dans chaque pièce' : (p.chiens ? 'dans la dernière pièce' : 'aucun')},
+      {nom:'Villageois', val:p.villageois ? p.villageois + ' par pièce' : 'aucun'},
+      {nom:'Pie bavarde', val:p.pie === 'toutes' ? 'dans chaque pièce' : (p.pie ? 'parfois' : 'aucune')},
       {nom:'Portée des lumières', val:Math.round(p.faisceau / 10) + ' pas'},
       {nom:'Ils changent d\'avis', val:p.imprevu > 0.2 ? 'souvent' : (p.imprevu > 0 ? 'parfois' : 'jamais')},
       {nom:'Pièges', val:p.bruits + ' qui font du bruit' + (p.animaux ? ', un animal qui dort' : '') + (p.fil ? ', un fil à clochettes' : '')},
@@ -29942,7 +30041,7 @@ MJ.enregistrer('cachette', {
       }
       /* les gardes : la première pièce un peu plus calme */
       S.gardes = [];
-      var G0 = p.gardesPiece || Math.min(p.gardes, Rg + 1), G = Math.max(1, Math.min(G0 - (k === 0 && G0 > 1 && p.gardes > 2 ? 1 : 0), Rg + 1));
+      var G0 = p.gardesPiece || Math.min(p.gardes, Rg + 1), G = Math.max(1, Math.min(G0 - (k === 0 && G0 > 1 && p.gardes > 2 ? 1 : 0) + (p.gardeEnPlus && k === p.pieces - 1 ? 1 : 0), Rg + 1));
       /* qui est qui : le guetteur est toujours un garde ; les autres prennent d'abord la lanterne et la torche (au hasard) */
       var sortes = n0 < 3 ? ['garde'] : (n0 < 5 ? ['garde', 'lanterne'] : U.melanger([p.lanterne ? 'lanterne' : null, p.torche ? 'torche' : null].filter(Boolean)).concat(['garde', 'garde']));
       var iS = 0;
@@ -29987,6 +30086,43 @@ MJ.enregistrer('cachette', {
         bulle(ch);
         S.gardes.push(ch);
       }
+      /* le chemin jusqu'à la porte existe-t-il encore ? (quand un villageois déplace une caisse) */
+      S.relie = function(){ return relie(S.couv.filter(function(c){ return !c.emporte && !c.porte; }), S.fil); };
+      /* les villageois sans vision (Romain, 6 nov., 10 h 50) : la cueilleuse va de buisson à baies en buisson à baies ;
+         le porteur soulève une caisse, un tonneau, un sac… et va le reposer ailleurs dans la pièce. Il faut assez de
+         cachettes pour eux : au besoin, on en change quelques-unes. */
+      S.villageois = [];
+      var MT = METIERS[decor];
+      if(p.villageois && MT){
+        var elig = couv.filter(function(c){ return !c.entree && !c.porte && !c.mobile && MT.types.indexOf(c.type) >= 0; });
+        var autres = couv.filter(function(c){ return !c.entree && !c.porte && !c.mobile && MT.types.indexOf(c.type) < 0; });
+        while(elig.length < p.villageois + 1 && autres.length){ var c2 = autres.splice(U.randInt(0, autres.length - 1), 1)[0]; c2.type = U.choix(MT.types); c2.g.innerHTML = '<g transform="rotate(' + f0(R(-14, 14)) + ')">' + COUV[c2.type]() + '</g>'; elig.push(c2); }
+        for(var iv = 0; iv < p.villageois; iv++){
+          var vg = {sorte:'villageois', metier:MT.metier, x:iv % 2 ? 330 : 30, y:ligneGap(U.randInt(1, Rg)), ang:iv % 2 ? Math.PI : 0, etat:'pause', t:R(1, 2.5) + iv * 2.5, phase:0, alerte:0, ph:R(0, 6), ampM:0, vf:0.7};
+          vg.g = svgNoeud('g', {'class':'mja-garde cc-garde cc-villageois'}, S.c.gardes);
+          vg.g.innerHTML = '<g class="cc-g-rot">' + gardeDessus(decor, MT.metier === 'cueille' ? 'cueilleur' : 'porteur') + '</g>';
+          vg.rot = vg.g.querySelector('.cc-g-rot'); vg.anim = Bonhomme(vg.g);
+          vg.jauge = svgNoeud('circle', {'class':'cc-jauge cc-jauge-v', r:29, opacity:0}, S.c.bulles);
+          bulle(vg);
+          S.gardes.push(vg); S.villageois.push(vg);
+        }
+      }
+      /* la pie bavarde (le nouveau piège) : perchée au bord de la pièce, elle tourne la tête ; si l'on court dans son
+         regard, elle crie et tous les gardes de la pièce accourent */
+      S.pie = null;
+      if(p.pie === 'toutes' || (p.pie === 'une' && (k === p.pieces - 1 || Math.random() < 0.5))){
+        var gapsL = []; for(var gp = 1; gp <= Rg; gp++) if(gapsPris.indexOf(gp) < 0) gapsL.push(gp);
+        var gPie = gapsL.length ? U.choix(gapsL) : U.randInt(1, Rg), gauche = Math.random() < 0.5;
+        var guetIci = S.gardes.filter(function(gd){ return gd.type === 'guet' && Math.abs(gd.y - ligneGap(gPie)) < 30; })[0];
+        if(guetIci) gauche = guetIci.x > 180;
+        var pie = {x:gauche ? 28 : 332, y:ligneGap(gPie) + R(-8, 8), base:gauche ? 0 : Math.PI, amp:0.8, w:R(0.75, 1.05), tg:R(0, 6), cd:0};
+        pie.ang = pie.base + Math.sin(pie.tg) * pie.amp;
+        pie.cone = svgNoeud('path', {'class':'cc-cone-pie'}, NUIT ? S.c['cones-air'] : S.c['cones-sol']);
+        pie.g = svgNoeud('g', {'class':'cc-pie', transform:'translate(' + f0(pie.x) + ',' + f0(pie.y) + ')'}, S.c.gardes);
+        pie.g.innerHTML = '<circle r="11" fill="#7a5232"' + st(2.4) + '/><circle r="6" fill="none" stroke="#5e3e26" stroke-width="1.6"/><g class="cc-pie-rot">' + pieDessus() + '</g>';
+        pie.rot = pie.g.querySelector('.cc-pie-rot');
+        S.pie = pie;
+      }
       return S;
     }
     function placer(c){ if(c.g) c.g.setAttribute('transform', 'translate(' + f1(c.x) + ',' + f1(c.y) + ')'); if(c.an){ c.an.setAttribute('cx', f1(c.x)); c.an.setAttribute('cy', f1(c.y)); } }
@@ -30014,10 +30150,23 @@ MJ.enregistrer('cachette', {
       var v = p.vitesse * (gd.vf || 1);
       if(gd.alerte > 0){ gd.alerte -= dt; return; }
       gd.phase += dt;
+      if(gd.sorte === 'villageois'){
+        /* le villageois marche jusqu'à sa cachette (ou porte sa caisse) ; sinon il attend ou il travaille */
+        if(gd.etat === 'va' || gd.etat === 'porte'){
+          var vv = p.vitesse * (gd.etat === 'porte' ? 0.55 : 0.75) + 12, wx = gd.cible.x - gd.x, wy = gd.cible.y - gd.y, wd = Math.sqrt(wx * wx + wy * wy);
+          tourner(gd, Math.atan2(wy, wx), dt, 6);
+          if(wd < vv * dt + 0.5){ gd.x = gd.cible.x; gd.y = gd.cible.y; gd.arrive = true; }
+          else { gd.x += wx / wd * vv * dt; gd.y += wy / wd * vv * dt; }
+        } else gd.t -= dt;
+        return;
+      }
       if(gd.sorte === 'chien'){
-        /* le chien qui a flairé : il trotte jusqu'à la cachette, renifle, aboie… ou reste perplexe */
+        /* le chien qui a senti l'odeur : il renifle sur place (museau levé), aboie, court jusqu'à la cachette, la fouille,
+           aboie si le Pisteur y est encore… ou reste perplexe */
+        if(gd.etat === 'flaire'){ gd.t -= dt; tourner(gd, Math.atan2(gd.cibleP.y - gd.y, gd.cibleP.x - gd.x), dt, 2.2); return; }
+        if(gd.etat === 'aboie1'){ gd.t -= dt; tourner(gd, Math.atan2(gd.cibleP.y - gd.y, gd.cibleP.x - gd.x), dt, 8); return; }
         if(gd.etat === 'piste'){
-          var vc = p.vitesse * 1.12, tx = gd.cible.x - gd.x, ty = gd.cible.y - gd.y, td = Math.sqrt(tx * tx + ty * ty);
+          var vc = p.vitesse * 1.7 + 30, tx = gd.cible.x - gd.x, ty = gd.cible.y - gd.y, td = Math.sqrt(tx * tx + ty * ty);
           tourner(gd, Math.atan2(ty, tx), dt, 7);
           if(td < vc * dt + 0.5){ gd.x = gd.cible.x; gd.y = gd.cible.y; gd.etat = 'renifle'; gd.t = p.renifle; gd.ang = Math.atan2(gd.cibleP.y - gd.y, gd.cibleP.x - gd.x); }
           else { gd.x += tx / td * vc * dt; gd.y += ty / td * vc * dt; }
@@ -30050,10 +30199,13 @@ MJ.enregistrer('cachette', {
     /* qui voit quoi : le garde, un cône devant lui ; le veilleur, un cône devant et un plus court derrière (sa grosse
        lanterne) ; la torche, un cercle tout autour ; le chien, seulement tout près de son museau (et pas pendant qu'il
        renifle une cachette : il a le nez dedans) */
-    function flaireActif(gd){ return gd.etat === 'marche' || gd.etat === 'pause' || gd.etat === 'piste'; }
+    /* (quand il court vers la cachette, il ne pense qu'à elle : on peut s'enfuir à côté de lui) */
+    function flaireActif(gd){ return gd.etat === 'marche' || gd.etat === 'pause'; }
+    function voitPie(pi, ang, pt){ var dx = pt.x - pi.x, dy = pt.y - pi.y, d = Math.sqrt(dx * dx + dy * dy); if(d < 16) return true; if(d > PIE.L) return false; return Math.abs(angleNorm(Math.atan2(dy, dx) - ang)) < PIE.h; }
     function voit(gd, pt, marge){
       marge = marge || 1;
       var dx = pt.x - gd.x, dy = pt.y - gd.y, d = Math.sqrt(dx * dx + dy * dy);
+      if(gd.sorte === 'villageois') return false;   /* (sans vision) */
       if(gd.sorte === 'chien') return flaireActif(gd) && d < FLAIR * marge;
       if(d < 24) return true;
       if(gd.sorte === 'torche') return d < p.rTorche * marge;
@@ -30068,14 +30220,14 @@ MJ.enregistrer('cachette', {
       texte(x, y, quoi);
       S.gardes.forEach(function(gd){
         var proche = tous || dist(gd, {x:x, y:y}) < rayon;
-        if(!proche || gd.sorte === 'chien') return;
+        if(!proche || gd.sorte === 'chien' || gd.sorte === 'villageois') return;
         if(gd.type !== 'guet' && gd.alerte <= 0){ gd.etat = 'enquete'; gd.bruit = {x:x, y:y}; gd.g.classList.add('doute'); gd.bulle.classList.add('doute'); P.apres(1600, function(){ gd.g.classList.remove('doute'); gd.bulle.classList.remove('doute'); }); }
         else if(gd.type === 'guet'){ gd.base = Math.atan2(y - gd.y, x - gd.x); gd.tg = 0; }
       });
     }
 
     /* ----- le Pisteur ----- */
-    function accessibles(){ return S.couv.filter(function(c){ return c !== ici && !c.entree && !(c.devoile > tJeu) && dist(c, ici) <= p.portee && c.k >= ici.k - 1; }); }
+    function accessibles(){ return S.couv.filter(function(c){ return c !== ici && !c.entree && !c.emporte && !(c.devoile > tJeu) && dist(c, ici) <= p.portee && c.k >= ici.k - 1; }); }
     function majAnneaux(){
       var acc = (course || passage) ? [] : accessibles();
       S.couv.forEach(function(c){ var a = acc.indexOf(c) >= 0; if(c.an) c.an.classList.toggle('on', a); c.acc = a; if(!a && c.an) c.an.classList.remove('sur', 'danger'); });
@@ -30101,6 +30253,7 @@ MJ.enregistrer('cachette', {
         var pt = {x:a.x + (bb.x - a.x) * e, y:a.y + (bb.y - a.y) * e};
         for(var j = 0; j < S.bruyants.length; j++){ if(dist(S.bruyants[j], pt) < 26 && copies.some(function(gd){ return dist(gd, S.bruyants[j]) < 200; })) return false; }
         if(an && !an.reveille && dist(an, pt) < 38 && copies.some(function(gd){ return dist(gd, an) < 170; })) return false;
+        if(S.pie && S.pie.cd <= tt && voitPie(S.pie, S.pie.base + Math.sin(S.pie.tg + S.pie.w * tt) * S.pie.amp, pt)) return false;
         for(var i = 0; i < copies.length; i++){ if(copies[i].alerte <= 0 && voit(copies[i], pt, 1.15)) return false; majGarde(copies[i], 0.05, false); }
       }
       return true;
@@ -30133,7 +30286,7 @@ MJ.enregistrer('cachette', {
       else { A.secouer(best.g || svg); texte(best.x, best.y - 30, 'Trop loin !'); }
     });
     terrain.mjaEtat = function(){ return {salle:ki, pieces:p.pieces, passage:!!passage, ici:S.couv.indexOf(ici), course:!!course, j:{x:jx, y:jy}, restant:restant,
-      odeur:S.gardes.some(function(gd){ return gd.sorte === 'chien'; }) ? odeurT / p.odeur : null, chasse:S.gardes.some(function(gd){ return gd.sorte === 'chien' && gd.cibleC === ici && (gd.etat === 'piste' || gd.etat === 'renifle' || gd.etat === 'surveille'); }),
+      odeur:S.gardes.some(function(gd){ return gd.sorte === 'chien'; }) ? odeurT / p.odeur : null, chasse:S.gardes.some(function(gd){ return gd.cibleC === ici && ((gd.sorte === 'chien' && (gd.etat === 'flaire' || gd.etat === 'aboie1' || gd.etat === 'piste' || gd.etat === 'renifle' || gd.etat === 'surveille')) || (gd.sorte === 'villageois' && (gd.etat === 'va' || gd.etat === 'travaille'))); }),
       gardes:S.gardes.map(function(gd){ return {x:Math.round(gd.x), y:Math.round(gd.y), a:Math.round(gd.ang * 57.3), type:gd.type, sorte:gd.sorte, etat:gd.etat}; }), couv:S.couv.map(function(c, i){ return {i:i, acc:!!c.acc, sur:c.acc ? surPredit(c) : false, k:c.k, porte:!!c.porte, x:c.x, y:c.y}; })}; };
     terrain.mjaCourir = function(i){ if(S.couv[i] && S.couv[i].acc) courir(S.couv[i]); };
 
@@ -30151,15 +30304,50 @@ MJ.enregistrer('cachette', {
       A.erreurSensorielle(terrain); U.son('ko');
       gd.g.classList.add('alerte'); gd.bulle.classList.remove('doute'); gd.bulle.classList.add('alerte'); P.apres(1100, function(){ gd.g.classList.remove('alerte'); gd.bulle.classList.remove('alerte'); });
       texte(gd.x, gd.y - 30, 'Ouaf ! Ouaf !');
-      var c = gd.cibleC;
-      if(c && !c.entree){
-        c.devoile = tJeu + 7;
-        if(c.g) c.g.classList.add('cc-devoile');
-        if(!c.pattes){ c.pattes = svgNoeud('g', {'class':'cc-pattes'}, S.c.anneaux); c.pattes.innerHTML = '<g transform="translate(' + f1(c.x) + ',' + f1(c.y) + ')"><circle r="30" class="cc-devoile-r"/>' + [[-9, 14, -20], [3, 21, 10]].map(function(q){ return '<g transform="translate(' + q[0] + ',' + q[1] + ') rotate(' + q[2] + ')"><ellipse cy="2" rx="3.6" ry="3" fill="#ff8a6a"/><circle cx="-3.2" cy="-2.6" r="1.4" fill="#ff8a6a"/><circle cx="0" cy="-3.8" r="1.4" fill="#ff8a6a"/><circle cx="3.2" cy="-2.6" r="1.4" fill="#ff8a6a"/></g>'; }).join('') + '</g>'; }
-        c.pattes.setAttribute('display', 'inline');
-        majAnneaux();
-      }
+      devoiler(gd.cibleC, true);
       if(vies <= 0){ fini = true; P.finir({reussi:false, score:(ki + ici.k / (S.R + 1)) / p.pieces, erreurs:maxVies, detail:'Le chien t\'a trouvé !'}, 900); }
+    }
+    /* une cachette dévoilée : pendant 7 s on ne peut plus y aller (traces de pattes si c'est le chien) */
+    function devoiler(c, pattes){
+      if(!c || c.entree) return;
+      c.devoile = tJeu + 7;
+      if(c.g) c.g.classList.add('cc-devoile');
+      if(c.pattes) c.pattes.parentNode.removeChild(c.pattes);
+      c.pattes = svgNoeud('g', {'class':'cc-pattes'}, S.c.anneaux);
+      c.pattes.innerHTML = '<g transform="translate(' + f1(c.x) + ',' + f1(c.y) + ')"><circle r="30" class="cc-devoile-r"/>' + (pattes ? [[-9, 14, -20], [3, 21, 10]].map(function(q){ return '<g transform="translate(' + q[0] + ',' + q[1] + ') rotate(' + q[2] + ')"><ellipse cy="2" rx="3.6" ry="3" fill="#ff8a6a"/><circle cx="-3.2" cy="-2.6" r="1.4" fill="#ff8a6a"/><circle cx="0" cy="-3.8" r="1.4" fill="#ff8a6a"/><circle cx="3.2" cy="-2.6" r="1.4" fill="#ff8a6a"/></g>'; }).join('') : '<text y="-34" text-anchor="middle" class="cc-devoile-t">!</text>') + '</g>';
+      majAnneaux();
+    }
+    /* un villageois a fini sa cueillette (ou soulève la caisse) et le Pisteur est dedans : il le trouve (une erreur) */
+    function trouve(v, c){
+      vies--; hud.perdVie(vies, maxVies);
+      A.erreurSensorielle(terrain); U.son('ko');
+      v.bulle.classList.add('alerte'); P.apres(1100, function(){ v.bulle.classList.remove('alerte'); });
+      texte(v.x, v.y - 30, v.metier === 'cueille' ? 'Oh ! Coucou, toi !' : 'Oh ! Qu\'est-ce que tu fais là ?');
+      devoiler(c, false);
+      if(vies <= 0){ fini = true; P.finir({reussi:false, score:(ki + ici.k / (S.R + 1)) / p.pieces, erreurs:maxVies, detail:'Un villageois t\'a trouvé !'}, 900); }
+    }
+    /* le villageois choisit où aller : un buisson à baies, une caisse, un sac… (souvent celui du Pisteur) */
+    function choisirTravail(v){
+      var MT = METIERS[decor], prises = S.villageois.map(function(o){ return o !== v ? o.cibleC : null; });
+      var cand = S.couv.filter(function(c){ return !c.entree && !c.porte && !c.mobile && !c.emporte && !(c.devoile > tJeu) && prises.indexOf(c) < 0 && c !== v.dernier && MT.types.indexOf(c.type) >= 0; });
+      if(!cand.length){ v.etat = 'pause'; v.t = 1.5; return; }
+      var c = cand.indexOf(ici) >= 0 && Math.random() < 0.35 ? ici : U.choix(cand);
+      var a = Math.atan2(v.y - c.y, v.x - c.x), r = 28;
+      v.cibleC = c; v.cible = {x:fixe(c.x + Math.cos(a) * r, 26, 334), y:fixe(c.y + Math.sin(a) * r, 50, 440)}; v.etat = 'va'; v.arrive = false;
+    }
+    /* où reposer la caisse : dans une rangée, loin des autres cachettes et des pièges, sans couper le chemin de la porte */
+    function nouvellePlace(c){
+      var x0 = c.x, y0 = c.y, k0 = c.k, ok = null;
+      for(var e = 0; e < 40 && !ok; e++){
+        var kk = U.randInt(1, S.R), q = {x:R(54, 306), y:S.ry(kk) + R(-10, 10), k:kk};
+        if(dist(q, {x:x0, y:y0}) < 70) continue;
+        if(S.type === 'ruisseau' && q.y > 205 && q.y < 280) continue;
+        if(S.couv.some(function(o){ return o !== c && !o.porte && dist(o, q) < 66; }) || S.bruyants.some(function(o){ return dist(o, q) < 46; }) || (S.animal && dist(S.animal, q) < 50)) continue;
+        c.x = q.x; c.y = q.y; c.k = q.k;
+        if(S.relie()) ok = q;
+        c.x = x0; c.y = y0; c.k = k0;
+      }
+      return ok;
     }
     /* la porte d'une pièce : on la passe, la pièce suivante glisse à sa place */
     function pieceSuivante(){
@@ -30224,7 +30412,8 @@ MJ.enregistrer('cachette', {
         if(gd.flair){ var fa = flaireActif(gd); gd.flair.setAttribute('cx', f1(gd.x + Math.cos(gd.ang) * 8)); gd.flair.setAttribute('cy', f1(gd.y + Math.sin(gd.ang) * 8)); if(gd.flair._v !== fa){ gd.flair._v = fa; gd.flair.setAttribute('opacity', fa ? 1 : 0); } }
         gd.g.setAttribute('transform', 'translate(' + f1(gd.x) + ',' + f1(gd.y) + ')');
         gd.rot.setAttribute('transform', 'rotate(' + f1(gd.ang * 57.2958 + 90) + ')');
-        if(gd.sorte === 'chien') gd.anim.poser({ph:gd.ph, amp:gd.ampM, t:tJeu, renifle:gd.etat === 'renifle' || gd.etat === 'perplexe' || (gd.etat === 'pause' && gd.ampM < 0.3), dresse:gd.etat === 'piste' || gd.etat === 'surveille', content:gd.etat === 'perplexe'});
+        if(gd.sorte === 'chien') gd.anim.poser({ph:gd.ph, amp:gd.ampM, t:tJeu, renifle:gd.etat === 'renifle' || gd.etat === 'perplexe' || gd.etat === 'flaire' || (gd.etat === 'pause' && gd.ampM < 0.3), dresse:gd.etat === 'piste' || gd.etat === 'surveille' || gd.etat === 'aboie1' || gd.etat === 'flaire', content:gd.etat === 'perplexe'});
+        else if(gd.sorte === 'villageois') gd.anim.poser({ph:gd.ph, amp:gd.ampM, t:tJeu, pose:gd.etat === 'travaille' ? (gd.metier === 'cueille' ? 'cueille' : 'porte') : (gd.etat === 'porte' ? 'porte' : '')});
         else gd.anim.poser({ph:gd.ph, amp:gd.ampM, t:restant * -1});
         if(gd.lant){ var la = gd.sorte === 'lanterne' ? gd.ang + 1.5 : (gd.sorte === 'torche' ? gd.ang + 0.8 : gd.ang + 0.62), lr = gd.sorte === 'lanterne' ? 16 : 18; gd.lant.setAttribute('cx', f1(gd.x + Math.cos(la) * lr)); gd.lant.setAttribute('cy', f1(gd.y + Math.sin(la) * lr)); }
         gd.bulle.setAttribute('transform', 'translate(' + f1(gd.x) + ',' + f1(gd.y - 30) + ')');
@@ -30232,36 +30421,92 @@ MJ.enregistrer('cachette', {
       /* le chien : l'odeur monte quand on reste caché au même endroit ; trop longtemps, et il vient renifler */
       var chiens = S.gardes.filter(function(gd){ return gd.sorte === 'chien'; });
       if(chiens.length){
-        if(!course && !ici.porte) odeurT += dt;
-        var chasse = chiens.some(function(gd){ return gd.etat === 'piste' || gd.etat === 'renifle' || gd.etat === 'surveille'; });
+        /* (pas à l'entrée de la pièce : on doit pouvoir y attendre le bon moment pour partir) */
+        if(!course && !ici.porte && !ici.entree) odeurT += dt;
+        var chasse = chiens.some(function(gd){ return gd.etat === 'flaire' || gd.etat === 'aboie1' || gd.etat === 'piste' || gd.etat === 'renifle' || gd.etat === 'surveille'; });
         if(!chasse && !course && odeurT >= p.odeur){
-          var libres = chiens.filter(function(gd){ return (gd.etat === 'marche' || gd.etat === 'pause') && gd.alerte <= 0; });
+          var moi = cachetteDe(ici);
+          var libres = chiens.filter(function(gd){ return (gd.etat === 'marche' || gd.etat === 'pause') && gd.alerte <= 0 && dist(gd, moi) <= p.flairPortee; });
           if(libres.length){
-            var moi = cachetteDe(ici), chn = libres.sort(function(a, b){ return dist(a, moi) - dist(b, moi); })[0], aa0 = Math.atan2(chn.y - moi.y, chn.x - moi.x);
+            var chn = libres.sort(function(a, b){ return dist(a, moi) - dist(b, moi); })[0], aa0 = Math.atan2(chn.y - moi.y, chn.x - moi.x);
             chn.cibleC = ici; chn.cibleP = moi; chn.cible = {x:fixe(moi.x + Math.cos(aa0) * 22, 30, 330), y:fixe(moi.y + Math.sin(aa0) * 22, 50, 450)};
-            chn.etat = 'piste'; chn.bulle.classList.add('doute');
-            texte(chn.x, chn.y - 28, 'Snif ? Snif !', 'ok');
+            /* 1. il s'arrête et renifle, museau levé (on le voit bien) */
+            chn.etat = 'flaire'; chn.t = 1.3; chn.snifT = 0; chn.bulle.classList.add('doute');
+            texte(chn.x, chn.y - 30, 'Snif ? Snif ?', 'ok');
           }
         }
         chiens.forEach(function(gd){
-          if(gd.etat === 'renifle'){
+          if(gd.etat === 'flaire'){
+            /* des petites bouffées devant sa truffe */
+            gd.snifT -= dt;
+            if(gd.snifT <= 0){ gd.snifT = 0.22; var nx = gd.x + Math.cos(gd.ang) * 16, ny = gd.y + Math.sin(gd.ang) * 16, sn = svgNoeud('path', {'class':'cc-snif', d:'M0,0 c2,-3 5,-3 6,0 c1,2 4,2 5,0', transform:'translate(' + f1(nx + R(-4, 4)) + ',' + f1(ny + R(-4, 4)) + ') rotate(' + f0(gd.ang * 57.3 + R(-40, 40)) + ')'}, S.c.bulles); (function(n){ P.apres(650, function(){ if(n.parentNode) n.parentNode.removeChild(n); }); })(sn); }
+            /* 2. il aboie */
+            if(gd.t <= 0){ gd.etat = 'aboie1'; gd.t = 0.55; gd.bulle.classList.remove('doute'); gd.bulle.classList.add('alerte'); P.apres(700, function(){ gd.bulle.classList.remove('alerte'); }); texte(gd.x, gd.y - 32, 'Waf ! Waf !'); U.son('ko'); }
+          } else if(gd.etat === 'aboie1' && gd.t <= 0){
+            /* 3. il court jusqu'à la cachette */
+            gd.etat = 'piste';
+          } else if(gd.etat === 'renifle'){
             var pr = fixe(1 - gd.t / p.renifle, 0, 1), cj = gd.cibleC, cpp = cachetteDe(cj);
             gd.jauge.setAttribute('cx', f1(cj.x)); gd.jauge.setAttribute('cy', f1(cj.y)); gd.jauge.setAttribute('opacity', 1);
             gd.jauge.setAttribute('stroke-dasharray', f1(pr * 170) + ' 170');
             if(gd.t <= 0){
               gd.jauge.setAttribute('opacity', 0);
-              if(!course && ici === cj){ aboie(gd); gd.etat = 'surveille'; gd.t = 2.6; }
+              if(!course && ici === cj){ aboie(gd); gd.etat = 'surveille'; gd.t = 4; }   /* (4 s pour s'en aller avant qu'il ré-aboie) */
               else { gd.etat = 'perplexe'; gd.t = 1.2; gd.phase = 0; gd.base = gd.ang; gd.bulle.classList.add('doute'); texte(cpp.x, cpp.y - 30, 'Personne ?', 'ok'); }
             }
           } else if(gd.etat === 'surveille'){
             if(course || ici !== gd.cibleC){ gd.etat = 'perplexe'; gd.t = 0.8; gd.phase = 0; gd.base = gd.ang; }
-            else if(gd.t <= 0){ aboie(gd); gd.t = 2.6; }
+            else if(gd.t <= 0){ aboie(gd); gd.t = 4; }
           } else if(gd.etat === 'perplexe' && gd.t <= 0){
             gd.etat = 'marche'; gd.bulle.classList.remove('doute');
             var best = 0; gd.pts.forEach(function(q, i){ if(dist(q, gd) < dist(gd.pts[best], gd)) best = i; }); gd.i = best;
           }
         });
         if(fini) return false;
+      }
+      /* les villageois : ils vont à un buisson à baies (ou une caisse), y travaillent aussi longtemps que le chien fouille ;
+         si le Pisteur est dedans à la fin, ils le trouvent ; sinon le porteur emporte la caisse et la repose ailleurs */
+      S.villageois.forEach(function(v){
+        if(v.etat === 'pause' && v.t <= 0) choisirTravail(v);
+        else if(v.etat === 'va' && v.arrive){
+          v.arrive = false;
+          if(v.cibleC.emporte || v.cibleC.devoile > tJeu){ v.etat = 'pause'; v.t = 0.6; return; }
+          v.etat = 'travaille'; v.t = p.fouille; v.ang = Math.atan2(v.cibleC.y - v.y, v.cibleC.x - v.x); v.baieT = 0;
+          if(v.metier === 'cueille') texte(v.x, v.y - 30, U.choix(['Des baies !', 'Miam, des baies !']), 'ok');
+        } else if(v.etat === 'travaille'){
+          var c = v.cibleC, pr = fixe(1 - v.t / p.fouille, 0, 1);
+          v.jauge.setAttribute('cx', f1(c.x)); v.jauge.setAttribute('cy', f1(c.y)); v.jauge.setAttribute('opacity', 1); v.jauge.setAttribute('stroke-dasharray', f1(pr * 182) + ' 182');
+          if(v.metier === 'cueille'){
+            /* les petites baies rouges volent du buisson au panier */
+            v.baieT -= dt;
+            if(v.baieT <= 0){ v.baieT = 0.32; var bx = c.x + R(-12, 12), by = c.y + R(-12, 8), pa = v.ang + Math.PI / 2, tx = v.x - Math.cos(v.ang + 0.3) * 4 + Math.cos(pa) * 13, ty = v.y - Math.sin(v.ang + 0.3) * 4 + Math.sin(pa) * 13; var bb = svgNoeud('circle', {'class':'cc-baie', r:2.6, cx:f1(bx), cy:f1(by)}, S.c.bulles); bb.style.setProperty('--dx', f1(tx - bx) + 'px'); bb.style.setProperty('--dy', f1(ty - by) + 'px'); (function(n){ P.apres(600, function(){ if(n.parentNode) n.parentNode.removeChild(n); }); })(bb); }
+          } else if(c.g){ c.g.setAttribute('transform', 'translate(' + f1(c.x) + ',' + f1(c.y + Math.sin(tJeu * 20) * 1.2 * pr) + ')'); }
+          if(v.t <= 0){
+            v.jauge.setAttribute('opacity', 0); v.dernier = c;
+            if(!course && ici === c){ trouve(v, c); v.etat = 'pause'; v.t = 2; placer(c); }
+            else if(v.metier === 'porte'){
+              var np = nouvellePlace(c);
+              if(np){ c.emporte = true; v.porteC = c; v.np = np; v.cible = {x:np.x, y:np.y}; v.etat = 'porte'; v.arrive = false; S.c.lant.appendChild(c.g); if(c.an) c.an.setAttribute('display', 'none'); majAnneaux(); texte(v.x, v.y - 30, 'Hop !', 'ok'); }
+              else { v.etat = 'pause'; v.t = 1.5; placer(c); }
+            } else { v.etat = 'pause'; v.t = R(0.8, 1.8); }
+            v.cibleC = null;
+          }
+        } else if(v.etat === 'porte'){
+          var cp2 = v.porteC; cp2.x = v.x + Math.cos(v.ang) * 15; cp2.y = v.y + Math.sin(v.ang) * 15; placer(cp2);
+          if(v.arrive){
+            v.arrive = false; cp2.x = v.np.x; cp2.y = v.np.y; cp2.k = v.np.k; cp2.emporte = false; placer(cp2); S.c.couverts.appendChild(cp2.g); if(cp2.an) cp2.an.removeAttribute('display');
+            poussiere(cp2.x, cp2.y + 10); v.porteC = null; v.etat = 'pause'; v.t = R(1.5, 3); majAnneaux();
+            /* (il recule d'un pas pour la poser) */
+            v.x -= Math.cos(v.ang) * 6; v.y -= Math.sin(v.ang) * 6;
+          }
+        }
+      });
+      if(fini) return false;
+      /* la pie bavarde tourne la tête ; elle se repose un peu après avoir crié */
+      if(S.pie){
+        var pi = S.pie; pi.tg += dt * pi.w; pi.ang = pi.base + Math.sin(pi.tg) * pi.amp; pi.cd = Math.max(0, pi.cd - dt);
+        coneD(pi.cone, pi, pi.ang, PIE.L, PIE.h); pi.cone.classList.toggle('alerte', pi.cd > 0);
+        pi.rot.setAttribute('transform', 'rotate(' + f1(pi.ang * 57.2958 + 90) + ') scale(.9)');
       }
       /* l'odeur qui monte de la cachette (on comprend que le chien va venir) */
       var od = chiens.length && !course ? fixe((odeurT / p.odeur - 0.25) / 0.75, 0, 1) : 0;
@@ -30292,6 +30537,8 @@ MJ.enregistrer('cachette', {
           }
           if(coupeFil(avant, {x:jx, y:jy})){ S.fil.tombe = true; S.fil.g.classList.add('tombe'); U.son('cloche'); bruit((S.fil.a.x + S.fil.b.x) / 2, (S.fil.a.y + S.fil.b.y) / 2, 999, 'Ding ! Ding !', true); }
           if(invisT <= 0){ for(var i = 0; i < S.gardes.length; i++){ if(S.gardes[i].alerte <= 0 && voit(S.gardes[i], {x:jx, y:jy})){ repere(S.gardes[i]); break; } } }
+          /* la pie bavarde : si on court dans son regard, elle crie, et tous les gardes de la pièce accourent */
+          if(invisT <= 0 && course && S.pie && S.pie.cd <= 0 && voitPie(S.pie, S.pie.ang, {x:jx, y:jy})){ S.pie.cd = 3.2; U.son('ko'); A.secouer(S.pie.g); bruit(jx, jy, 999, 'Kra ! Kra !', true); }
         }
         if(!fini && course && course.t >= 1){
           if(!course.retour){
@@ -30365,8 +30612,10 @@ if(MJ.DEMOS){
     var cone = q('.cdm-cone'), jg = q('.cdm-j'), jr = q('.cdm-jr'), gr = q('.cdm-gr'), an = [q('.an0'), q('.an1'), q('.an2')], ouf = q('.cdm-ouf'), main = q('.mja-main');
     var J = Bonhomme(jg), Gb = Bonhomme(q('.cdm-g'));
     var cg = q('.cdm-c'), cr = q('.cdm-cr'), Cb = cg ? Chien(cg) : null, od = q('.cdm-od'), jgC = q('.cdm-jg'), cq = q('.cdm-cq');
+    var waf = null; if(Cb){ waf = svgNoeud('text', {'class':'cc-waf', 'text-anchor':'middle', opacity:0}, svg); waf.textContent = 'Waf ! Waf !'; }
     /* le chien : il trotte en bas à gauche, flaire (2,6 s), file vers la cachette, renifle (3,9 → 4,9), reste perplexe, repart */
-    var CD = [[0, [24, 350]], [2.6, [70, 350]], [3.9, [C1[0] - 26, C1[1] + 8]], [5.6, [C1[0] - 26, C1[1] + 8]], [8, [24, 350]]];
+    /* (6 nov., 10 h 50 : il s'arrête et renifle museau levé (2,5 → 3,1), aboie (« Waf ! »), court (3,3 → 3,8), fouille) */
+    var CD = [[0, [24, 350]], [2.5, [66, 350]], [3.3, [66, 350]], [3.8, [C1[0] - 26, C1[1] + 8]], [5.6, [C1[0] - 26, C1[1] + 8]], [8, [24, 350]]];
     function chienEn(t){ for(var i = 0; i < CD.length - 1; i++){ if(t >= CD[i][0] && t < CD[i + 1][0]){ var u = (t - CD[i][0]) / (CD[i + 1][0] - CD[i][0]), a = CD[i][1], b = CD[i + 1][1]; return {x:a[0] + (b[0] - a[0]) * u, y:a[1] + (b[1] - a[1]) * u, m:a[0] !== b[0] || a[1] !== b[1], a:Math.atan2(b[1] - a[1], b[0] - a[0])}; } } return {x:CD[0][1][0], y:CD[0][1][1], m:false, a:0}; }
     var cAng = 0, cPh = 0;
     main.style.transition = 'none';
@@ -30413,15 +30662,16 @@ if(MJ.DEMOS){
       var tape = tapes.some(function(x){ return t >= x && t < x + .3; });
       main.classList.toggle('appuie', tape);
       if(Cb){
-        var cp = chienEn(t), renif = t >= 3.9 && t < 5.6;
-        if(cp.m){ cAng += angleNorm(cp.a - cAng) * Math.min(1, dt * 8); cPh += dt * (t > 2.6 && t < 3.9 ? 16 : 9); }
-        else if(renif) cAng += angleNorm(Math.atan2(C1[1] - cp.y, C1[0] - cp.x) - cAng) * Math.min(1, dt * 8);
-        cg.setAttribute('transform', 'translate(' + f1(cp.x) + ',' + f1(cp.y) + ')');
+        var cp = chienEn(t), renif = (t >= 3.8 && t < 5.6) || (t >= 2.5 && t < 3.1), versC = Math.atan2(C1[1] - cp.y, C1[0] - cp.x);
+        if(cp.m){ cAng += angleNorm(cp.a - cAng) * Math.min(1, dt * 8); cPh += dt * (t > 3.3 && t < 3.8 ? 22 : 9); }
+        else if(t >= 2.5) cAng += angleNorm(versC - cAng) * Math.min(1, dt * 5);
+        cg.setAttribute('transform', 'translate(' + f1(cp.x) + ',' + f1(cp.y + (t > 3.1 && t < 3.3 ? -4 * Math.sin((t - 3.1) / 0.2 * Math.PI) : 0)) + ')');
         cr.setAttribute('transform', 'rotate(' + f1(cAng * 57.3 + 90) + ') scale(1.4)');
-        Cb.poser({ph:cPh, amp:cp.m ? 1 : 0, t:T, renifle:renif, dresse:t > 2.6 && t < 3.9, content:t >= 4.9 && t < 5.6});
-        od.setAttribute('opacity', f1(t > 2.4 && t < 4.0 ? Math.min(1, (t - 2.4) / 1.2) : 0)); od.setAttribute('transform', 'translate(' + (C1[0] + 5) + ',' + (C1[1] - 34) + ')');
-        jgC.setAttribute('opacity', t >= 3.9 && t < 4.9 ? 1 : 0); jgC.setAttribute('stroke-dasharray', f1(fixe((t - 3.9) / 1, 0, 1) * 170) + ' 170');
-        cq.setAttribute('opacity', (t > 2.6 && t < 3.9) || (t >= 4.9 && t < 5.6) ? 1 : 0); cq.setAttribute('transform', 'translate(' + f1(cp.x) + ',' + f1(cp.y - 36) + ')');
+        Cb.poser({ph:cPh, amp:cp.m ? 1 : 0, t:T, renifle:renif, dresse:t >= 2.5 && t < 3.8, content:t >= 4.9 && t < 5.6});
+        od.setAttribute('opacity', f1(t > 1.6 && t < 4.0 ? Math.min(1, (t - 1.6) / 0.8) : 0)); od.setAttribute('transform', 'translate(' + (C1[0] + 5) + ',' + (C1[1] - 34) + ')');
+        jgC.setAttribute('opacity', t >= 3.8 && t < 4.9 ? 1 : 0); jgC.setAttribute('stroke-dasharray', f1(fixe((t - 3.8) / 1.1, 0, 1) * 170) + ' 170');
+        cq.setAttribute('opacity', (t >= 2.5 && t < 3.1) || (t >= 4.9 && t < 5.6) ? 1 : 0); cq.setAttribute('transform', 'translate(' + f1(cp.x) + ',' + f1(cp.y - 36) + ')');
+        waf.setAttribute('opacity', t >= 3.1 && t < 3.7 ? 1 : 0); waf.setAttribute('transform', 'translate(' + f1(cp.x) + ',' + f1(cp.y - 34) + ')');
       }
     });
     return {arreter:function(){ stop(); }};
@@ -30817,8 +31067,12 @@ MJ.enregistrer('tir', {
     p.ficelle = Math.max(p.corde, courbe(n, {1:11, 3:9, 6:7, 9:5, 12:4}) * (mods.zone || 1));
     p.vent = courbe(n, {1:0, 2:0, 3:38, 6:88, 9:130, 12:165}) * stable;
     p.rafales = n >= 6;
-    p.apercu = courbe(n, {1:1.15, 3:0.42, 6:0.24, 9:0.13, 12:0.08}) + 0.12 * Math.min(5, mods.temps || 0);
-    p.branches = entier(n, {1:0, 3:1, 7:1, 8:2});
+    /* la ligne de visée : plus longue qu'avant à tous les niveaux (Romain, 6 nov., 10 h 50 : « même au niveau 10 ») */
+    p.apercu = courbe(n, {1:1.25, 3:0.8, 6:0.6, 9:0.46, 12:0.4}) + 0.12 * Math.min(5, mods.temps || 0);
+    /* les obstacles du décor, solides (la flèche s'y plante) : fixes, et un qui bouge à partir du niveau 6 */
+    p.fixes = entier(n, {1:0, 2:0, 3:1, 8:1, 9:2});
+    p.mobiles = n >= 6 ? 1 : 0;
+    p.branches = 0;
     p.niveau = n;
     p.oiseaux = n >= 5 ? courbe(n, {5:4.5, 6:3.6, 9:2.6, 12:2}) : 0;
     p.grands = n >= 9;   /* les grosses tourterelles qui traversent (Romain : « au niveau 10, des gros oiseaux ») */
@@ -30836,8 +31090,8 @@ MJ.enregistrer('tir', {
       {nom:'Vent', val:p.vent < 5 ? 'aucun' : (p.vent < 60 ? 'léger' : (p.vent < 110 ? 'fort' : 'tempête')) + (p.rafales && p.vent >= 5 ? ', en rafales' : '')},
       {nom:'Ligne de visée', val:p.revele ? 'complète' : (p.apercu > 0.8 ? 'longue' : (p.apercu > 0.3 ? 'moyenne' : 'très courte'))},
       {nom:'L\'arc tremble après', val:p.tenue > 50 ? 'jamais' : A.txtS(p.tenue)},
-      {nom:'Drapeaux au vent', val:p.branches ? String(p.branches) : 'aucun'},
-      {nom:'Oiseaux', val:(p.perche ? 'des corbeaux se posent sur les cibles' : 'aucun') + (p.oiseaux ? ', des pigeons traversent' : '') + (p.grands ? ', et de grosses tourterelles' : '')},
+      {nom:'Obstacles', val:(p.fixes + p.mobiles) ? p.fixes + ' fixe' + (p.fixes > 1 ? 's' : '') + (p.mobiles ? ' + 1 qui bouge' : '') : 'aucun'},
+      {nom:'Oiseaux', val:(p.perche ? 'des corbeaux se posent sur les cibles' : 'aucun') + (p.oiseaux ? ', des tourterelles passent (pas des cibles)' : '')},
       {nom:'Flèche tirée à fond', val:'transperce les cibles'}
     ];
     return p;
@@ -30848,9 +31102,7 @@ MJ.enregistrer('tir', {
     /* la liste des cibles : le ballon (ou le cerf-volant) est toujours là, dès le niveau 1 */
     var liste = p.cibles.slice();
     if(!BAND && liste.indexOf('sac') < 0) liste[0] = 'sac';
-    /* banderoles, niveau 5 et plus : des anneaux au bout des drapeaux (ils bougent avec le vent), à la place de Basile */
-    var nFan = 0;
-    if(BAND && (p.niveau || 1) >= 5) liste = liste.map(function(s){ if(s === 'corbeau' && nFan < DRAPEAUX.length){ nFan++; return 'fanion'; } return s; });
+    /* (les anneaux au bout des drapeaux ont été retirés avec les drapeaux : Romain, 6 nov., 10 h 50) */
     hud.prog(0, liste.length, '🎯');
     var badge = hud.badge(''); badge.classList.add('large');
     var terrain = U.html('<div class="mja-terrain mja-tir ti-' + MODE + '"></div>');
@@ -30865,6 +31117,14 @@ MJ.enregistrer('tir', {
       archerSVG() +
       '<g class="mja-arc-g" transform="translate(' + ARC.x + ',' + (ARC.y - 22) + ')"><circle class="mja-jauge-arc" r="46"/><g class="mja-arc-rot">' + ARC_ART + '<path class="mja-corde-arc" d="M0,-38 L0,38" stroke="#f4f1ea" stroke-width="2" fill="none"/><g class="mja-fl-encoche">' + FLECHE_FORTE + '</g></g>' +
         '<text class="mja-afond" x="4" y="-58" text-anchor="middle">À fond !</text></g>' +
+      /* la jauge de puissance (Romain, 6 nov., 10 h 50 : « plus clair sur la puissance de l'arc, c'est important ») : une
+         barre qui se remplit du bas vers le haut (vert, jaune, orange), et devient dorée, avec l'éclair, quand c'est à fond */
+      '<g class="ti-puiss" opacity="0"><rect class="ti-pu-fond" x="5" y="226" width="22" height="148" rx="11"/>' +
+        '<clipPath id="' + id + 'pu"><rect x="9" y="230" width="14" height="140" rx="7"/></clipPath>' +
+        '<rect class="ti-pu-rempli" x="9" y="370" width="14" height="0" clip-path="url(#' + id + 'pu)"/>' +
+        '<path class="ti-pu-traits" d="M9,323 h14 M9,277 h14 M9,237 h14"/>' +
+        '<g class="ti-pu-eclair" transform="translate(16,212)"><circle r="12"/><path d="M2,-8 L-5,1 L0,1 L-2,8 L5,-1 L0,-1 Z"/></g>' +
+        '<text class="ti-pu-mot" x="32" y="236"></text></g>' +
     '</g></svg>' +
     (p.ralenti ? '<div class="mja-actions"><button class="btn magie mja-ralenti" type="button">⏳ Ralentir le temps (' + p.ralenti + ' s)</button></div>' : '');
     var svg = terrain.querySelector('svg');
@@ -30873,6 +31133,7 @@ MJ.enregistrer('tir', {
     var gPl = svg.querySelector('.mja-plantees'), gAp = svg.querySelector('.mja-apercu'), trainee = svg.querySelector('.mja-trainee'), flVol = svg.querySelector('.mja-fl-vol'), gParts = svg.querySelector('.mja-parts'), gGuir = svg.querySelector('.ti-guirlandes'), gVolB = svg.querySelector('.ti-vol-band');
     var arcRot = svg.querySelector('.mja-arc-rot'), cordeArc = svg.querySelector('.mja-corde-arc'), encoche = svg.querySelector('.mja-fl-encoche'), jaugeArc = svg.querySelector('.mja-jauge-arc'), manche = svg.querySelector('.mja-manche-g'), aFond = svg.querySelector('.mja-afond');
     var archer = Archer(svg.querySelector('.ti-archer')), humeur = '', humeurT = 0;
+    var puG = svg.querySelector('.ti-puiss'), puRempli = svg.querySelector('.ti-pu-rempli'), puMot = svg.querySelector('.ti-pu-mot');
     var coq = svg.querySelector('.ti-coq'), nuages = Array.prototype.slice.call(svg.querySelectorAll('.ti-nuage')), enfant = svg.querySelector('.ti-enfant');
     nuages.forEach(function(n){ n.__x = +n.getAttribute('data-x'); n.__y = +n.getAttribute('data-y'); n.__s = +n.getAttribute('data-s'); });
     var perche = svg.querySelector('.ti-perche'), perche2 = svg.querySelector('.ti-perche2');
@@ -30901,7 +31162,7 @@ MJ.enregistrer('tir', {
 
     /* ----- les drapeaux au vent (obstacles ; aux banderoles, certains portent un anneau) ----- */
     var drapeaux = [];
-    for(var b = 0; b < Math.min(DRAPEAUX.length, Math.max(p.branches, nFan)); b++){
+    for(var b = 0; b < 0; b++){   /* (plus de drapeaux : Romain, 6 nov., 10 h 50 ; le code reste au cas où) */
       var dr = Object.assign({ph:R(0, 6), k:b}, DRAPEAUX[b]);
       dr.g = svgNoeud('g', {'class':'ti-drapeau-v'}, gBr);
       dr.g.innerHTML = matDrapeauSVG(dr) + '<g class="ti-dr-t"><path class="ti-dr-tissu-v" fill="' + dr.coul + '"' + st(2.2) + ' stroke-linejoin="round"/><path class="ti-dr-bande" fill="none" stroke="' + dr.bande + '" stroke-width="5"/><circle class="ti-dr-rond" r="4.6" fill="' + dr.bande + '"' + st(1.4) + '/></g>';
@@ -30932,6 +31193,101 @@ MJ.enregistrer('tir', {
       dr.t.setAttribute('transform', 'translate(' + po.cx + ',' + f1(po.cy) + ') rotate(' + f1(po.phi * 57.2958) + ') scale(' + po.sx.toFixed(3) + ',1)');
     }
 
+    /* ----- les obstacles du décor (Romain, 6 nov., 10 h 50 : « des décors solides, variés, des fixes et d'autres qui
+       bougent, mais qu'on comprenne que ce sont des trucs qui gênent ; il faut pouvoir jouer quand même ») -----
+       Tous en bois ou en fer, bien dessinés, avec un contour sombre ; une flèche s'y plante (« Toc ! »), même tirée à fond.
+       Quand la ligne de visée les touche, elle devient rouge et l'obstacle s'entoure de rouge. */
+    var obstacles = [];
+    (function(){
+      /* (le balcon ne barrait aucun chemin vers les cibles, trop bas : retiré) */
+      var F = BAND ? ['echafaudage', 'enseigne'] : ['echafaudage', 'enseigne', 'platane'], M = BAND ? ['linge', 'seau'] : ['seau', 'linge', 'pancarte'];
+      if(p.obstaclesForces){ p.obstaclesForces.forEach(function(t){ obstacles.push(creerObstacle(t)); }); return; }   /* (pour les essais) */
+      var fx = U.melanger(F).slice(0, p.fixes || 0);
+      fx.forEach(function(t){ obstacles.push(creerObstacle(t)); });
+      /* (l'enseigne, la pancarte et le linge sont au même endroit : jamais ensemble) */
+      if(fx.indexOf('enseigne') >= 0) M = M.filter(function(t){ return t !== 'pancarte' && t !== 'linge'; });
+      U.melanger(M).slice(0, p.mobiles || 0).forEach(function(t){ obstacles.push(creerObstacle(t)); });
+    })();
+    function creerObstacle(type){
+      var o = {type:type, ph:R(0, 6), formes:[]}, s = '';
+      var bois = '#b07a4a', boisF = '#7d5428', fer = '#3b3346';
+      if(type === 'echafaudage'){
+        /* le plancher du peintre, pendu à deux cordes sous le toit de la maison à colombages, avec ses pots de peinture
+           (avant : un échafaudage sur poteaux ; les poteaux arrêtaient presque toutes les flèches, juste devant l'archer) */
+        /* (robot, 6 nov. : les obstacles juste devant l'archer arrêtaient presque tous les tirs ; ils sont maintenant plus
+           loin, vers les cibles, et chacun ne barre qu'une partie des chemins) */
+        s = '<path d="M158,228 V258 M198,228 V258" stroke="#d9c8a8" stroke-width="2"/><circle cx="158" cy="228" r="3" fill="' + fer + '"/><circle cx="198" cy="228" r="3" fill="' + fer + '"/>' +
+          '<rect x="150" y="258" width="56" height="11" rx="2" fill="#c99a5e"' + st(3) + '/><path d="M154,263.5 H202" stroke="' + boisF + '" stroke-width="1.6"/><rect x="160" y="247" width="11" height="11" rx="2" fill="#5e8ac8"' + st(2) + '/><rect x="184" y="249" width="9" height="9" rx="2" fill="#e5484d"' + st(2) + '/><path d="M178,258 l4,-14" stroke="' + boisF + '" stroke-width="2.4"/><path d="M181,243 l3,-4" stroke="#f6d23a" stroke-width="4" stroke-linecap="round"/>';
+        o.formes = [{r:[148, 244, 60, 27]}];
+      } else if(type === 'enseigne'){
+        /* l'enseigne du forgeron : une potence en fer et un panneau de bois (l'enclume) */
+        s = '<path d="M266,176 H220 M262,176 L246,160"' + st(5) + ' stroke-linecap="round"/><path d="M266,176 H220 M262,176 L246,160" stroke="' + fer + '" stroke-width="2.6" stroke-linecap="round"/><path d="M228,176 V182 M254,176 V182" stroke="' + fer + '" stroke-width="2"/>' +
+          '<rect x="222" y="182" width="38" height="28" rx="4" fill="#a8743f"' + st(3) + '/><path d="M229,203 H253 M233,203 L235,195 H247 L249,203 M237,195 C237,189 249,189 251,193" fill="none" stroke="' + fer + '" stroke-width="2.6" stroke-linejoin="round"/>';
+        o.formes = [{r:[220, 180, 42, 32]}];
+      } else if(type === 'platane'){
+        /* la grosse branche du platane de la place, qui avance au-dessus de la rue */
+        /* (le platane pousse derrière la maison de droite ; sa branche avance au-dessus de la rue, à droite du clocher) */
+        var FE = [[318, 196, 19], [342, 186, 22], [298, 208, 15], [330, 216, 15], [358, 204, 16]];
+        s = '<path d="M420,' + SOL + ' C412,320 400,262 372,234 C354,214 330,202 304,204"' + st(13) + ' fill="none" stroke-linecap="round"/><path d="M420,' + SOL + ' C412,320 400,262 372,234 C354,214 330,202 304,204" stroke="#8a6a4a" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+          FE.map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#4f9a4a"' + st(3) + '/>'; }).join('') +
+          [[314, 190, 7], [338, 180, 9], [354, 198, 7]].map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#8fd07a" opacity=".55"/>'; }).join('');
+        o.formes = FE.map(function(q){ return {c:q}; });
+      } else if(type === 'balcon'){
+        /* un balcon de pierre avec sa rambarde de fer et ses fleurs, sur la maison à colombages */
+        s = '<rect x="176" y="306" width="62" height="10" rx="2" fill="#c9bca4"' + st(3) + '/><path d="M180,306 V290 M190,306 V290 M200,306 V290 M210,306 V290 M220,306 V290 M230,306 V290 M178,290 H236" stroke="' + fer + '" stroke-width="2.6"/>' +
+          [184, 196, 208, 220, 232].map(function(x, i){ return '<circle cx="' + x + '" cy="287" r="4.4" fill="' + ['#e5484d', '#f6d23a', '#ef7fb0', '#fff4f0', '#e5484d'][i] + '"' + st(1.4) + '/>'; }).join('');
+        o.formes = [{r:[174, 282, 66, 36]}];
+      } else if(type === 'seau'){
+        /* la poulie du grenier (sous le toit de la maison à colombages) : un seau qui monte et descend (ça bouge : attention) */
+        s = '<path d="M154,184 H180"' + st(6) + '/><path d="M154,184 H180" stroke="' + bois + '" stroke-width="3"/><circle cx="176" cy="188" r="5" fill="#9aa4b4"' + st(2) + '/>';
+        o.mob = {ax:176, ay:192, bas:78, haut:8, w:0.85};
+        o.art = '<path class="ti-o-corde" d="M0,-200 V-12" stroke="#d9c8a8" stroke-width="1.8"/><path d="M-11,-12 L11,-12 L8,12 L-8,12 Z" fill="#9aa4b4"' + st(2.6) + ' stroke-linejoin="round"/><path d="M-11,-12 C-11,-24 11,-24 11,-12" stroke="' + fer + '" stroke-width="2" fill="none"/><path d="M-9,-4 H9" stroke="#6a7484" stroke-width="2"/>';
+        o.formesL = [{r:[-12, -13, 24, 26]}];
+      } else if(type === 'linge'){
+        /* le linge qui sèche entre deux maisons : trois draps qui bougent un peu au vent (on peut tirer entre eux) */
+        /* (deux draps, bien écartés : entre la maison à colombages et le clocher ; aux banderoles, plus bas à gauche) */
+        if(BAND){ s = '<path d="M66,232 Q104,246 142,232" stroke="#f4ecdc" stroke-width="2" fill="none"/><circle cx="66" cy="232" r="3.4" fill="' + fer + '"/><circle cx="142" cy="232" r="3.4" fill="' + fer + '"/>'; o.draps = [[84, 239, '#f4f1ea'], [122, 239, '#f4c0c8']]; }
+        else { s = '<path d="M196,214 Q231,226 266,214" stroke="#f4ecdc" stroke-width="2" fill="none"/><circle cx="196" cy="214" r="3.4" fill="' + fer + '"/><circle cx="266" cy="214" r="3.4" fill="' + fer + '"/>'; o.draps = [[212, 221, '#f4f1ea'], [250, 221, '#9ec6ec']]; }
+        o.formesL = null;
+      } else if(type === 'pancarte'){
+        /* une pancarte qui se balance au bout de sa chaîne, sous une potence accrochée au clocher */
+        s = '<path d="M264,152 H230"' + st(5) + '/><path d="M264,152 H230" stroke="' + fer + '" stroke-width="2.6"/>';
+        o.pend = {ax:236, ay:154, L:26, amp:0.45, w:1.3};
+        o.art = '<path d="M0,0 V' + 14 + '" stroke="' + fer + '" stroke-width="2"/><rect x="-14" y="14" width="28" height="20" rx="3" fill="#e6c25a"' + st(2.6) + '/><path d="M-7,24 h14 M-4,19 h8" stroke="#8a5a33" stroke-width="2" stroke-linecap="round"/>';
+        o.formesL = [{r:[-15, 13, 30, 22]}];
+      }
+      /* (un décalage par obstacle, réglé au robot : chacun barre une partie des chemins vers les cibles, pas tous) */
+      var OFF = {echafaudage:[28, 18], enseigne:[0, 0], platane:[-30, 0]}[type] || [0, 0];
+      o.dx = OFF[0]; o.dy = OFF[1];
+      o.g = svgNoeud('g', {'class':'ti-obstacle ti-o-' + type, transform:(o.dx || o.dy) ? 'translate(' + o.dx + ',' + o.dy + ')' : null}, gBr);
+      if(!(o.dx || o.dy)) o.g.removeAttribute('transform');
+      o.g.innerHTML = s;
+      if(o.art){ o.m = svgNoeud('g', {'class':'ti-o-mob'}, o.g); o.m.innerHTML = o.art; }
+      if(o.draps){ o.dr = o.draps.map(function(d){ var e = svgNoeud('g', {'class':'ti-o-mob'}, o.g); e.innerHTML = '<path d="M-9,0 H9 L10,28 Q0,24 -10,28 Z" fill="' + d[2] + '"' + st(2.4) + ' stroke-linejoin="round"/><path d="M-6,0 V-3 M6,0 V-3" stroke="#8a5a33" stroke-width="2.4"/>'; return e; }); }
+      o.pl = svgNoeud('g', {}, o.g);   /* (les flèches plantées dans un obstacle fixe) */
+      return o;
+    }
+    /* où est la partie qui bouge au temps tt ; et ses formes, dans le monde */
+    function posMob(o, tt){
+      if(o.mob) return {x:o.mob.ax, y:o.mob.ay + o.mob.haut + (o.mob.bas - o.mob.haut) * (0.5 + 0.5 * Math.sin(tt * o.mob.w + o.ph)), a:0};
+      if(o.pend){ var a = Math.sin(tt * o.pend.w + o.ph) * o.pend.amp; return {x:o.pend.ax, y:o.pend.ay, a:a}; }
+      return null;
+    }
+    function posDrap(o, i, tt){ var d = o.draps[i], w = ventSens(tt); return {x:d[0] + w * 3 + Math.sin(tt * 2.6 + i * 1.7 + o.ph) * 2, y:d[1], a:-w * 0.12 + Math.sin(tt * 3.1 + i) * 0.05}; }
+    function dansForme(f, x, y){ if(f.c) return Math.hypot(x - f.c[0], y - f.c[1]) < f.c[2]; return x > f.r[0] && x < f.r[0] + f.r[2] && y > f.r[1] && y < f.r[1] + f.r[3]; }
+    function enLocal(pm, x, y){ var dx = x - pm.x, dy = y - pm.y, ca = Math.cos(-pm.a), sa = Math.sin(-pm.a); return {x:dx * ca - dy * sa, y:dx * sa + dy * ca}; }
+    function collObstacle(o, x, y, tt){
+      var i; x -= o.dx; y -= o.dy;
+      for(i = 0; i < o.formes.length; i++) if(dansForme(o.formes[i], x, y)) return {loc:null};
+      if(o.formesL){ var pm = posMob(o, tt), l = enLocal(pm, x, y); for(i = 0; i < o.formesL.length; i++) if(dansForme(o.formesL[i], l.x, l.y)) return {loc:l, mob:true}; }
+      if(o.draps){ for(i = 0; i < o.draps.length; i++){ var pd = posDrap(o, i, tt), ld = enLocal(pd, x, y); if(ld.x > -10 && ld.x < 10 && ld.y > -2 && ld.y < 28) return {loc:ld, drap:i}; } }
+      return null;
+    }
+    function dessinerObstacle(o){
+      if(o.m){ var pm = posMob(o, t); o.m.setAttribute('transform', 'translate(' + f1(pm.x) + ',' + f1(pm.y) + ') rotate(' + f1(pm.a * 57.3) + ')'); var co = o.m.querySelector('.ti-o-corde'); if(co) co.setAttribute('d', 'M0,' + f1(o.mob.ay - pm.y - 4) + ' V-12'); }
+      if(o.dr) o.dr.forEach(function(e, i){ var pd = posDrap(o, i, t); e.setAttribute('transform', 'translate(' + f1(pd.x) + ',' + f1(pd.y) + ') rotate(' + f1(pd.a * 57.3) + ')'); });
+    }
+
     /* ----- les cibles ----- */
     var utilises = {};
     var cibles = liste.map(function(sorte){
@@ -30943,6 +31299,13 @@ MJ.enregistrer('tir', {
       c.art = svgNoeud('g', {'class':'mja-cible-art'}, c.g);
       c.art.innerHTML = cibleArt(type, id) + '<circle class="mja-cible-halo" r="' + (c.mv === 'ficelle' ? 26 : (type === 'crochet' ? 14 : 22)) + '"/>';
       if(c.mv === 'pendule' || c.mv === 'ficelle') c.fil = svgNoeud('line', {'class':'mja-fil' + (c.mv === 'ficelle' ? ' corde ti-ficelle' : '')}, gCordes);
+      /* ce qu'il faut toucher brille en doré (6 nov., 10 h 50 : « on ne comprend pas ce qu'on doit toucher ») : un rond doré
+         qui tourne ; pour le ballon et le cerf-volant, c'est LA FICELLE qui brille, avec des ciseaux (pas le ballon) */
+      if(c.mv === 'ficelle'){
+        c.filM = svgNoeud('line', {'class':'ti-ficelle-m'}, gCordes);
+        c.ciseaux = svgNoeud('g', {'class':'ti-ciseaux'}, gCordes);
+        c.ciseaux.innerHTML = '<circle r="9" fill="#fff6d8" stroke="#24182e" stroke-width="1.8"/><g stroke="#24182e" stroke-width="1.6" fill="none"><circle cx="-3" cy="3.4" r="2.2"/><circle cx="3" cy="3.4" r="2.2"/><path d="M-1.6,1.6 L3.6,-5.6 M1.6,1.6 L-3.6,-5.6"/></g>';
+      } else c.marque = svgNoeud('circle', {'class':'ti-marque', r:{lampion:22, cible:24, corbeau:22, anneau:20, basile:20, enseigne:19, crochet:16}[type] || 21}, c.g);
       if(type === 'cible' || type === 'anneau') c.clou = svgNoeud('path', {'class':'ti-support', d:'M' + sl.x + ',' + (sl.y - 30) + ' l-10,0', stroke:K, 'stroke-width':4, 'stroke-linecap':'round'}, gCordes);
       return c;
     });
@@ -30977,7 +31340,10 @@ MJ.enregistrer('tir', {
       else if(c.mv === 'ficelle') c.g.setAttribute('transform', 'translate(' + f1(q.x) + ',' + f1(q.y) + ') rotate(' + f1(q.a * 57.3 * (c.type === 'cerfvolant' ? 0.6 : 0.3)) + ')');
       else c.g.setAttribute('transform', 'translate(' + f1(q.x) + ',' + f1(q.y) + ') rotate(' + f1(-(q.a || 0) * 57.3) + ')');
       if(c.fil){
-        if(c.mv === 'ficelle'){ c.fil.setAttribute('x1', c.s.ax); c.fil.setAttribute('y1', c.s.ay); c.fil.setAttribute('x2', f1(q.nx)); c.fil.setAttribute('y2', f1(q.ny)); }
+        if(c.mv === 'ficelle'){
+          c.fil.setAttribute('x1', c.s.ax); c.fil.setAttribute('y1', c.s.ay); c.fil.setAttribute('x2', f1(q.nx)); c.fil.setAttribute('y2', f1(q.ny));
+          if(c.filM && !c.touche){ c.filM.setAttribute('x1', c.s.ax); c.filM.setAttribute('y1', c.s.ay); c.filM.setAttribute('x2', f1(q.nx)); c.filM.setAttribute('y2', f1(q.ny)); c.ciseaux.setAttribute('transform', 'translate(' + f1(c.s.ax + (q.nx - c.s.ax) * 0.5 + 12) + ',' + f1(c.s.ay + (q.ny - c.s.ay) * 0.5 + 6) + ')'); }
+        }
         else { c.fil.setAttribute('x1', c.s.ax); c.fil.setAttribute('y1', c.s.ay); c.fil.setAttribute('x2', f1(q.nx)); c.fil.setAttribute('y2', f1(q.ny)); }
       }
       if(c.type === 'basile' && perche){ var d = 'M262,176 Q' + f1((262 + q.x) / 2) + ',' + f1(Math.min(176, q.y) - 8) + ' ' + f1(q.x) + ',' + f1(q.y + 10); perche.setAttribute('d', d); perche2.setAttribute('d', d); }
@@ -30992,8 +31358,9 @@ MJ.enregistrer('tir', {
       var y0 = grand ? R(90, 230) : R(110, 320), y1 = y0 + R(-80, 80), creux = R(-70, 70);
       var o = {grand:!!grand, dir:dir, x0:x0, x1:x1, y0:y0, y1:y1, yc:(y0 + y1) / 2 + creux, t0:t, D:(grand ? R(12, 15) : R(6, 8)) / Math.max(0.7, Math.min(1.4, p.vitesse)), ph:R(0, 6), r:grand ? 20 : 14, sursaut:0};
       o.g = svgNoeud('g', {'class':'mja-oiseau ti-traverse'}, gOis);
-      o.g.innerHTML = '<g class="ti-o-s">' + (grand ? tourterelleSVG() : pigeonSVG()) + '</g>';
-      o.s = o.g.firstChild; o.ailes = o.g.querySelectorAll(grand ? '.ti-to-aile, .ti-to-aile2' : '.ti-pg-ailes');
+      /* (des tourterelles blanches, sans rond doré : ce ne sont pas des cibles — 6 nov., 10 h 50) */
+      o.g.innerHTML = '<g class="ti-o-s">' + tourterelleSVG() + '</g>';
+      o.s = o.g.firstChild; o.ailes = o.g.querySelectorAll('.ti-to-aile, .ti-to-aile2');
       oiseaux.push(o); posOiseau(o, t);
     }
     /* sa position au temps tt (une courbe douce d'un bord à l'autre, qui ondule un peu) */
@@ -31009,8 +31376,8 @@ MJ.enregistrer('tir', {
       var c = U.choix(libres), dir = Math.random() < 0.5 ? 1 : -1;
       var pg = {c:c, etat:'arrive', t:0, x:dir > 0 ? -80 : 440, y:R(40, 120), dir:dir, reste:p.percheT * R(0.85, 1.2)};
       pg.g = svgNoeud('g', {'class':'ti-pose'}, gPerch);
-      pg.g.innerHTML = '<g class="ti-pose-s">' + corbeauSVG() + '</g>';   /* (un corbeau grognon : Romain, 6 nov.) */
-      pg.s = pg.g.firstChild;
+      pg.g.innerHTML = '<circle class="ti-marque" r="18"/><g class="ti-pose-s">' + corbeauSVG() + '</g>';   /* (un corbeau grognon, entouré d'or : on peut le chasser) */
+      pg.s = pg.g.querySelector('.ti-pose-s');
       c.pigeon = pg; poses.push(pg);
     }
     function ouPose(c){ var q = c.q || posCible(c, t); return c.mv === 'pendule' ? {x:q.x, y:q.y - 18} : (c.type === 'crochet' ? {x:q.x, y:q.y - 16} : {x:q.x, y:q.y - (c.type === 'cible' ? 20 : 14)}); }
@@ -31038,6 +31405,7 @@ MJ.enregistrer('tir', {
       else if(sorte === 'bois'){ for(i = 0; i < 6; i++) particule(x, y, '<path d="M-3,-1 L3,-1 L2,1 L-2,1 Z" fill="#c99a5e"' + st(.8) + '/>', R(-90, 90), R(-140, -20), 0.7, 500); }
       else if(sorte === 'etoiles'){ for(i = 0; i < 10; i++){ var a = i / 10 * 6.28; particule(x, y, '<path d="M0,-6 L1.6,-1.6 L6,0 L1.6,1.6 L0,6 L-1.6,1.6 L-6,0 L-1.6,-1.6 Z" fill="#ffe3a3"/>', Math.cos(a) * 170, Math.sin(a) * 170, 0.6, 0, 200); } }
       else if(sorte === 'tissu'){ for(i = 0; i < 6; i++) particule(x, y, '<path d="M-3,-2 L3,-2 L2,3 Z" fill="#3f6aa8"/>', R(-80, 80), R(-100, 10), 0.8, 300); }
+      else if(sorte === 'feuilles'){ for(i = 0; i < 7; i++) particule(x, y, '<path d="M-4,0 C-2,-4 3,-4 5,0 C3,3 -2,3 -4,0 Z" fill="' + (i % 2 ? '#4f9a4a' : '#8fd07a') + '"' + st(.8) + '/>', R(-90, 90), R(-120, 0), R(0.9, 1.4), 160); }
     }
 
     /* ----- les banderoles ----- */
@@ -31157,9 +31525,10 @@ MJ.enregistrer('tir', {
       else return;
       e.preventDefault();
     });
+    terrain.mjaVol = function(){ return enVol ? {x:enVol.x, y:enVol.y, t:t} : null; };   /* (pour les robots de test) */
     terrain.mjaTirer = function(ang, puis){ if(enVol || fini || fleches <= 0) return false; tirer({ang:ang, puis:puis, vx:Math.cos(ang) * puis * ARC.v, vy:Math.sin(ang) * puis * ARC.v}); return true; };
     terrain.mjaEtat = function(){ return {t:t, vent:ventA(t), ventA:ventA, mode:MODE, cibles:cibles.map(function(c){ return c.touche ? null : {type:c.sorte, habit:c.type, q:posCible(c, t), c:c, pigeon:!!c.pigeon}; }), enVol:!!enVol, depart:pointeDepart, posCible:function(i, tt){ return posCible(cibles[i], tt); }, ARC:ARC, fleches:fleches, PERCE:PERCE, tirs:tirs, touches:touches, utiles:utiles, maxPerce:maxPerce,
-      obstacle:function(x, y, tt){ for(var b = 0; b < drapeaux.length; b++) if(collDrapeau(drapeaux[b], x, y, tt)) return true; for(var o = 0; o < oiseaux.length; o++) if(dist({x:x, y:y}, posOiseau(oiseaux[o], tt === undefined ? t : tt)) < oiseaux[o].r + 6) return true; return false; },
+      obstacle:function(x, y, tt){ for(var b = 0; b < drapeaux.length; b++) if(collDrapeau(drapeaux[b], x, y, tt)) return true; for(var ob = 0; ob < obstacles.length; ob++) if(collObstacle(obstacles[ob], x, y, tt === undefined ? t : tt)) return true; for(var o = 0; o < oiseaux.length; o++) if(dist({x:x, y:y}, posOiseau(oiseaux[o], tt === undefined ? t : tt)) < oiseaux[o].r + 6) return true; return false; },
       /* toucher le ballon ou le cerf-volant fait perdre */
       interdit:function(x, y, tt){ for(var i = 0; i < cibles.length; i++){ var c = cibles[i]; if(c.touche || c.mv !== 'ficelle') continue; if(dist({x:x, y:y}, posCible(c, tt === undefined ? t : tt)) < (c.type === 'cerfvolant' ? 24 : 23)) return true; } return false; },
       vents:SAUTS, drapeaux:drapeaux.length, chaine:chaine ? chaine.anneaux.length : 0}; };
@@ -31175,7 +31544,7 @@ MJ.enregistrer('tir', {
       flVol.setAttribute('opacity', '1');
       cordeArc.classList.remove('vibre'); void cordeArc.getBoundingClientRect(); cordeArc.classList.add('vibre');
       encoche.setAttribute('opacity', '0');
-      apercuPts.forEach(function(c){ c.setAttribute('opacity', '0'); });
+      apercuPts.forEach(function(c){ c.setAttribute('opacity', '0'); }); cacherApercu();
       commencerVolBand(d.x, d.y);
     }
     function local(c, x, y){ var a = c.q.a || 0, dx = x - c.q.x, dy = y - c.q.y, ca = Math.cos(a), sa = Math.sin(a); return {x:dx * ca - dy * sa, y:dx * sa + dy * ca, a:a}; }
@@ -31215,6 +31584,7 @@ MJ.enregistrer('tir', {
       if(c.type === 'ballon' || c.type === 'cerfvolant'){
         /* la ficelle coupée : il s'envole un peu… puis redescend tout doucement jusqu'à l'enfant */
         if(c.fil) c.fil.classList.add('coupee');
+        if(c.filM){ c.filM.setAttribute('display', 'none'); c.ciseaux.setAttribute('display', 'none'); }
         c.chute = {mode:'libre', t:0, x0:c.q.x, y0:c.q.y, r:0};
         msg = c.type === 'ballon' ? 'La ficelle est coupée !' : 'Le cerf-volant est libre !'; mx = c.q.x; my = c.q.y - 34;
         eclats(c.q.nx || x, c.q.ny || y, 'etoiles');
@@ -31237,6 +31607,7 @@ MJ.enregistrer('tir', {
       fini = true;
       var q = c.q || posCible(c, t), bal = c.type === 'ballon';
       if(c.fil) c.fil.setAttribute('display', 'none');
+      if(c.filM){ c.filM.setAttribute('display', 'none'); c.ciseaux.setAttribute('display', 'none'); }
       if(bal){
         c.g.style.display = 'none';
         for(var i = 0; i < 12; i++){ var a = i / 12 * 6.283; particule(q.x, q.y, '<path d="M-4,-2 C-1,-4 3,-3 4,0 C2,3 -2,3 -4,-2 Z" fill="' + (i % 3 ? '#e5484d' : '#a8262c') + '"' + st(1) + '/>', Math.cos(a) * R(90, 170), Math.sin(a) * R(90, 170) - 40, R(0.8, 1.3), 380); }
@@ -31275,11 +31646,14 @@ MJ.enregistrer('tir', {
           /* Romain, 6 nov. : dans le ballon, il éclate ; dans le cerf-volant, il se déchire : perdu */
           if(dist({x:x, y:y}, q) < (c.type === 'cerfvolant' ? 20 : 19)) return {rate:'eclate', c:c, x:x, y:y};
         } else {
-          var r = c.mv === 'point' ? Math.max(p.corde * 1.6, 7) : (c.mv === 'huit' ? p.rayon * 1.05 : p.rayon), dd = dist({x:x, y:y}, q);
+          /* (les anneaux, les enseignes et les crochets : une zone plus grande — Romain, 6 nov. : « j'arrive pas du tout à viser les anneaux ») */
+          var anneauLike = c.type === 'anneau' || c.type === 'basile' || c.type === 'enseigne' || c.type === 'fanion';
+          var r = c.mv === 'point' ? Math.max(p.corde * 2.4, 13) : (anneauLike ? Math.max(p.rayon * 1.4, 17) : (c.mv === 'huit' ? p.rayon * 1.1 : p.rayon)), dd = dist({x:x, y:y}, q);
           if(dd < r) return {c:c, parfait:dd < r * 0.42, x:x, y:y};
         }
       }
       for(var b = 0; b < drapeaux.length; b++){ var h = collDrapeau(drapeaux[b], x, y, tt); if(h) return {branche:drapeaux[b], local:h, x:x, y:y}; }
+      for(var ob = 0; ob < obstacles.length; ob++){ var ho = collObstacle(obstacles[ob], x, y, tt); if(ho) return {obstacle:obstacles[ob], hit:ho, x:x, y:y}; }
       for(var o = 0; o < oiseaux.length; o++){ var oi = oiseaux[o], po = posOiseau(oi, tt); if(oi.sursaut <= 0 && dist({x:x, y:y}, po) < oi.r) return {oiseau:oi, x:x, y:y}; }
       if(y > SOL + Math.sin(x / 50) * 2) return {sol:true, x:x, y:y};
       if(x > 640 || x < -280 || y > 720) return {perdue:true, x:x, y:y};
@@ -31298,6 +31672,14 @@ MJ.enregistrer('tir', {
       }
       return null;
     }
+    /* La ligne de visée (Romain, 6 nov., 10 h 50 : « un repère plus prononcé, des pointillés qui vont plus loin, même au
+       niveau 10 ; un petit peu d'aide à la visée ») : des points blancs bien visibles, qui tiennent compte du vent. Sur la
+       longueur montrée (pas plus loin : c'est la petite aide), elle dit ce qui va arriver : DORÉE si la flèche va dans une
+       cible (la cible s'entoure), ROUGE si elle va dans un obstacle, un oiseau, le ballon ou par terre (l'obstacle s'entoure
+       de rouge), avec une étoile ou une croix au point d'arrivée. */
+    var marqueAp = svgNoeud('g', {'class':'ti-ap-marque', opacity:0}, gAp);
+    marqueAp.innerHTML = '<g class="ti-ap-bon"><path d="M0,-9 L2.6,-2.6 L9,0 L2.6,2.6 L0,9 L-2.6,2.6 L-9,0 L-2.6,-2.6 Z" fill="#ffd36a" stroke="#24182e" stroke-width="1.6"/></g><g class="ti-ap-mauvais"><path d="M-6,-6 L6,6 M6,-6 L-6,6" stroke="#24182e" stroke-width="6" stroke-linecap="round"/><path d="M-6,-6 L6,6 M6,-6 L-6,6" stroke="#ff5b5b" stroke-width="3.4" stroke-linecap="round"/></g>';
+    var bloqueAp = null;
     function apercu(v, fort){
       var complet = p.revele || tirs < p.aide;
       var duree = complet ? 2.2 : p.apercu;
@@ -31305,12 +31687,20 @@ MJ.enregistrer('tir', {
       for(var k = 0; k < duree / h && n < apercuPts.length; k++){
         s.vx += ventA(tt) * h;   /* (les points de visée tiennent compte du vent qui tourne : 6 nov.) */
         s.vy += ARC.g * h; s.x += s.vx * h; s.y += s.vy * h; tt += h;
-        if(k % 3 === 2){ var c = apercuPts[n++]; c.setAttribute('cx', f1(s.x)); c.setAttribute('cy', f1(s.y)); c.setAttribute('opacity', complet ? '0.9' : (1 - k * h / duree).toFixed(2)); }
-        if(complet && !vu){ var r = collision(s.x, s.y, tt, vues); if(r){ if(fort && r.c && !r.rate && !r.pigeon) vues.push(r.c); else { vu = r; break; } } }
+        if(k % 3 === 2){ var c = apercuPts[n++]; c.setAttribute('cx', f1(s.x)); c.setAttribute('cy', f1(s.y)); c.setAttribute('opacity', complet ? '0.95' : Math.max(0.35, 1 - 0.65 * k * h / duree).toFixed(2)); }
+        var r = collision(s.x, s.y, tt, vues);
+        if(r && !r.perdue){ if(fort && r.c && !r.rate && !r.pigeon) vues.push(r.c); else { vu = r; break; } }
       }
       for(; n < apercuPts.length; n++) apercuPts[n].setAttribute('opacity', '0');
+      var bon = (vu && ((vu.c && !vu.rate) || vu.pigeon)) || (!vu && vues.length > 0), mauvais = !!vu && !bon;
+      gAp.classList.toggle('ti-ap-ok', !!bon); gAp.classList.toggle('ti-ap-ko', mauvais);
+      if(vu){ marqueAp.setAttribute('opacity', 1); marqueAp.setAttribute('transform', 'translate(' + f1(vu.x) + ',' + f1(vu.y) + ')'); marqueAp.classList.toggle('ko', mauvais); }
+      else marqueAp.setAttribute('opacity', 0);
+      var bl = vu && vu.obstacle ? vu.obstacle.g : (vu && vu.rate === 'eclate' ? vu.c.g : null);
+      if(bl !== bloqueAp){ if(bloqueAp) bloqueAp.classList.remove('ti-bloque'); if(bl) bl.classList.add('ti-bloque'); bloqueAp = bl; }
       cibles.forEach(function(c){ c.g.classList.toggle('visee', vues.indexOf(c) >= 0 || !!(vu && vu.c === c && !vu.rate && !vu.pigeon)); });
     }
+    function cacherApercu(){ marqueAp.setAttribute('opacity', 0); gAp.classList.remove('ti-ap-ok', 'ti-ap-ko'); if(bloqueAp){ bloqueAp.classList.remove('ti-bloque'); bloqueAp = null; } }
 
     P.boucle(function(dtR){
       if(ralentiT > 0){ ralentiT -= dtR; if(ralentiT <= 0) terrain.classList.remove('ralenti'); }
@@ -31359,6 +31749,7 @@ MJ.enregistrer('tir', {
         } else dessinerCible(c);
       });
       drapeaux.forEach(dessinerDrapeau);
+      obstacles.forEach(dessinerObstacle);
       if(p.oiseaux){ prochainOiseau -= dt; if(prochainOiseau <= 0){ lancerOiseau(false); prochainOiseau = p.oiseaux * R(0.7, 1.3); } }
       if(p.grands){ prochainGrand -= dt; if(prochainGrand <= 0){ lancerOiseau(true); prochainGrand = R(6, 9); } }
       oiseaux = oiseaux.filter(function(o){
@@ -31372,9 +31763,9 @@ MJ.enregistrer('tir', {
         var bat = plane ? -6 + Math.sin(t * 3) * 3 : Math.sin(t * (o.sursaut > 0 ? 34 : (o.grand ? 9 : 16)) + o.ph) * (o.grand ? 30 : 34);
         var bond = o.sursaut > 0 ? -Math.sin((0.9 - o.sursaut) / 0.9 * Math.PI) * 16 : 0;
         o.g.setAttribute('transform', 'translate(' + f1(po.x) + ',' + f1(po.y + bond) + ')');
-        o.s.setAttribute('transform', 'scale(' + (o.grand ? 1.25 * o.dir : o.dir) + ',' + (o.grand ? 1.25 : 1) + ') rotate(' + f1(pente * o.dir) + ')');
-        /* (l'aile du pigeon tourne autour de son coin, fixé par le CSS ; celles de la tourterelle autour de leur attache) */
-        for(var ai = 0; ai < o.ailes.length; ai++) o.ailes[ai].setAttribute('transform', o.grand ? 'rotate(' + f1(ai ? bat * 0.8 : bat) + ' -4 -1)' : 'rotate(' + f1(bat) + ')');
+        var sc = o.grand ? 1.25 : 0.72;
+        o.s.setAttribute('transform', 'scale(' + (sc * o.dir).toFixed(2) + ',' + sc + ') rotate(' + f1(pente * o.dir) + ')');
+        for(var ai = 0; ai < o.ailes.length; ai++) o.ailes[ai].setAttribute('transform', 'rotate(' + f1(ai ? bat * 0.8 : bat) + ' -4 -1)');
         return true;
       });
       /* les pigeons qui se posent */
@@ -31405,9 +31796,14 @@ MJ.enregistrer('tir', {
         apercu({x:d.x, y:d.y, vx:s.vx, vy:s.vy}, fort);
         jaugeArc.style.strokeDasharray = (puis * 289).toFixed(0) + ' 400';
         jaugeArc.classList.toggle('tremble', tenir > p.tenue);
+        /* la barre de puissance */
+        var niv = fort ? 'max' : (puis > 0.75 ? 'fort' : (puis > 0.45 ? 'moyen' : 'faible'));
+        puRempli.setAttribute('y', f1(370 - 140 * puis)); puRempli.setAttribute('height', f1(140 * puis));
+        if(niv !== puG._n){ puG._n = niv; puG.setAttribute('class', 'ti-puiss on ti-pu-' + niv); puMot.textContent = {faible:'Faible', moyen:'Moyen', fort:'Fort', max:'À fond !'}[niv]; jaugeArc.classList.remove('pu-faible', 'pu-moyen', 'pu-fort'); if(niv !== 'max') jaugeArc.classList.add('pu-' + niv); }
         if(fort !== !!vise.fort){ vise.fort = fort; jaugeArc.classList.toggle('fort', fort); gAp.classList.toggle('fort', fort); encoche.classList.toggle('fort', fort); aFond.classList.toggle('on', fort); if(fort){ U.son('tic'); U.vibrer(15); } }
       } else {
         jaugeArc.style.strokeDasharray = '0 400'; tenir = 0; cibles.forEach(function(c){ c.g.classList.remove('visee'); });
+        if(puG._n){ puG._n = ''; puG.setAttribute('class', 'ti-puiss'); puRempli.setAttribute('height', 0); cacherApercu(); }
         if(jaugeArc.classList.contains('fort')){ jaugeArc.classList.remove('fort'); gAp.classList.remove('fort'); encoche.classList.remove('fort'); aFond.classList.remove('on'); }
       }
       if(vise || !enVol){ arcRot.setAttribute('transform', 'rotate(' + f1(ang * 57.3) + ')'); arcRot.__a = ang; var K1 = corpsArcher(ang); arcG.setAttribute('transform', 'translate(' + f1(ARC.x + K1.Bx) + ',' + f1(ARC.y + K1.By) + ')'); pointArc = [ARC.x + K1.Bx + 4, ARC.y + K1.By]; }
@@ -31438,10 +31834,25 @@ MJ.enregistrer('tir', {
           var vol = enVol, deja = vol.nb > 0; enVol = null;
           var rate2 = function(x, y, quoi){ if(deja) texte(x, y - 24, quoi, 'ko'); else rater(x, y, quoi); };
           if(res.c && !res.rate && !res.pigeon){ utiles++; maxPerce = Math.max(maxPerce, 1); toucher(res.c, res.x, res.y, res.parfait); if(BAND) vol.anneaux.push(res.c); if(res.c.type === 'lampion' || res.c.type === 'cible'){ var lo = local(res.c, res.x, res.y); planter(lo.x, lo.y, aV + lo.a, res.c.art); } }
-          else if(res.pigeon){ envolerPigeon(res.pigeon, true); U.son('ko'); particule(res.x, res.y, FLECHE_ART, vol.vx * 0.08, -80, 1.1, 500, 500); rate2(res.x, res.y, deja ? 'Croâ !' : 'Croâ ! Ouste, le corbeau !'); }
+          else if(res.pigeon){
+            /* un corbeau posé : on le chasse, et la flèche est rendue (les corbeaux, on peut toujours les chasser) */
+            envolerPigeon(res.pigeon, true); U.son('ok'); particule(res.x, res.y, FLECHE_ART, vol.vx * 0.08, -80, 1.1, 500, 500);
+            if(fleches < 99){ fleches++; majCarquois(); } utiles++;
+            texte(res.x, res.y - 24, 'Croâ ! Ouste ! (flèche rendue)', 'ok');
+          }
+          else if(res.obstacle){
+            /* un obstacle du décor : la flèche s'y plante, même tirée à fond */
+            var ob2 = res.obstacle, hh = res.hit;
+            if(!hh.loc) planter(res.x - ob2.dx, res.y - ob2.dy, aV, ob2.pl);
+            else if(hh.drap !== undefined){ var pdd = posDrap(ob2, hh.drap, t); planter(hh.loc.x, hh.loc.y, aV - pdd.a, ob2.dr[hh.drap]); }
+            else { var pmm = posMob(ob2, t); planter(hh.loc.x, hh.loc.y, aV - pmm.a, ob2.m); }
+            ob2.g.classList.remove('ti-toc'); void ob2.g.getBoundingClientRect(); ob2.g.classList.add('ti-toc');
+            eclats(res.x, res.y, hh.drap !== undefined ? 'tissu' : (ob2.type === 'platane' ? 'feuilles' : 'bois'));
+            rate2(res.x, res.y, 'Toc ! Un obstacle…'); if(!deja) U.son('ko');
+          }
           else if(res.rate === 'eclate'){ eclater(res.c, res.x, res.y); }
           else if(res.branche){ eclats(res.x, res.y, 'tissu'); particule(res.x, res.y, FLECHE_ART, -vol.vx * 0.12, -60, 1.1, 520, 380); rate2(res.x, res.y, 'Dans le drapeau !'); if(!deja) U.son('ko'); }
-          else if(res.oiseau){ var oi2 = res.oiseau; oi2.sursaut = 0.9; for(var pl = 0; pl < 4; pl++) particule(res.x, res.y, oi2.grand ? PLUME_CLAIRE : '<path d="M0,-5 C3,-3 3,3 0,5 C-3,3 -3,-3 0,-5 Z" fill="#c8cde0"' + st(1) + '/>', R(-70, 70), R(-100, 0), R(1.1, 1.6), 50); particule(res.x, res.y, FLECHE_ART, -vol.vx * 0.15, -90, 1.2, 500, 500); rate2(res.x, res.y, oi2.grand ? (deja ? 'Rrouhou !' : 'Rrouhou ! Une tourterelle…') : (deja ? 'Rrou !' : 'Rrou ! Un pigeon…')); }
+          else if(res.oiseau){ var oi2 = res.oiseau; oi2.sursaut = 0.9; for(var pl = 0; pl < 4; pl++) particule(res.x, res.y, PLUME_CLAIRE, R(-70, 70), R(-100, 0), R(1.1, 1.6), 50); particule(res.x, res.y, FLECHE_ART, -vol.vx * 0.15, -90, 1.2, 500, 500); rate2(res.x, res.y, deja ? 'Rrouhou !' : 'Rrouhou ! Pas les tourterelles !'); }
           else if(res.sol){ planter(res.x, res.y, aV); if(!deja) rater(res.x, res.y, 'Raté'); }
           else if(!deja){ rater(fixe(res.x, 20, 340), fixe(res.y, 40, 420), 'Raté'); }
           /* la banderole : accrochée aux anneaux touchés (elle reste accrochée à l'arc), sinon le bout emporté retombe */
@@ -31477,6 +31888,7 @@ MJ.enregistrer('tir', {
       });
     });
     archer.poser(clav.ang, 0, 0, 0, '');
+    P.apres(500, function(){ texte(190, 250, 'Vise ce qui brille en doré !', 'ok'); });
     return {arreter: P.arreter};
   }
 });
@@ -31489,7 +31901,7 @@ MJ.enregistrer('tir', {
    ========================================================== */
 /* la phrase de l'écran d'accueil (mj-regles.js : MJ.PHRASES), selon la version */
 MJ.PHRASES = MJ.PHRASES || {};
-MJ.PHRASES.tir = function(p){ var m = modeDe(p); return m === 'banderoles' ? 'Touche tous les anneaux avec ta banderole !' : (m === 'cerfvolant' ? 'Coupe la ficelle, pas le cerf-volant !' : 'Coupe la ficelle, pas le ballon !'); };
+MJ.PHRASES.tir = function(p){ var m = modeDe(p); return m === 'banderoles' ? 'Touche tous les anneaux dorés !' : (m === 'cerfvolant' ? 'Coupe la ficelle dorée, pas le cerf-volant !' : 'Coupe la ficelle dorée, pas le ballon !'); };
 if(MJ.DEMOS){
   MJ.DEMOS.tir = {w:300, h:420, f:function(el, prm){
     var MODE = modeDe(prm), BAND = MODE === 'banderoles', id = A.nid('tid');
@@ -31503,17 +31915,21 @@ if(MJ.DEMOS){
     var Kv = corpsArcher(VISEE), Bc = [ARC.x + Kv.Bx, ARC.y + Kv.By];
     function bez(s){ var a = 1 - s; return [a * a * Bc[0] + 2 * a * s * CTRL[0] + s * s * FIN[0], a * a * Bc[1] + 2 * a * s * CTRL[1] + s * s * FIN[1]]; }
     function tang(s){ return Math.atan2(2 * (1 - s) * (CTRL[1] - Bc[1]) + 2 * s * (FIN[1] - CTRL[1]), 2 * (1 - s) * (CTRL[0] - Bc[0]) + 2 * s * (FIN[0] - CTRL[0])); }
-    var pts = ''; for(var i = 1; i <= 14; i++){ var q = bez(i / 14); pts += '<circle class="rg-pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3"/>'; }
-    var cib = BAND ? '<g class="tid-c" transform="translate(' + CIB[0] + ',' + CIB[1] + ')">' + cibleArt('anneau', id) + '</g>' :
-      '<line class="tid-fil" x1="' + NOEUD[0] + '" y1="' + NOEUD[1] + '" stroke="#f4ecdc" stroke-width="2.2"/><g class="tid-c">' + cibleArt(MODE === 'cerfvolant' ? 'cerfvolant' : 'ballon', id) + '</g>';
+    var pts = ''; for(var i = 1; i <= 14; i++){ var q = bez(i / 14); pts += '<circle class="rg-pt" cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3.3" stroke="#24182e" stroke-width="1.3"/>'; }
+    /* (comme dans le jeu : ce qu'il faut toucher brille en doré — l'anneau, ou la ficelle du ballon) */
+    var cib = BAND ? '<g class="tid-c" transform="translate(' + CIB[0] + ',' + CIB[1] + ')">' + cibleArt('anneau', id) + '<circle class="ti-marque" r="20"/></g>' :
+      '<line class="tid-fil" x1="' + NOEUD[0] + '" y1="' + NOEUD[1] + '" stroke="#f4ecdc" stroke-width="2.2"/><line class="ti-ficelle-m tid-film" x1="' + NOEUD[0] + '" y1="' + NOEUD[1] + '"/><g class="tid-c">' + cibleArt(MODE === 'cerfvolant' ? 'cerfvolant' : 'ballon', id) + '</g>';
+    /* la jauge de puissance, comme dans le jeu */
+    var jaugeP = '<g class="ti-puiss on tid-pu" transform="translate(12,0)"><rect class="ti-pu-fond" x="5" y="226" width="22" height="148" rx="11"/><clipPath id="' + id + 'pu"><rect x="9" y="230" width="14" height="140" rx="7"/></clipPath><rect class="ti-pu-rempli" x="9" y="370" width="14" height="0" clip-path="url(#' + id + 'pu)"/><path class="ti-pu-traits" d="M9,323 h14 M9,277 h14 M9,237 h14"/><g class="ti-pu-eclair" transform="translate(16,212)"><circle r="12"/><path d="M2,-8 L-5,1 L0,1 L-2,8 L5,-1 L0,-1 Z"/></g><text class="ti-pu-mot" x="32" y="236"></text></g>';
     el.innerHTML = '<svg class="rg-demo-svg" viewBox="0 0 300 420" preserveAspectRatio="xMidYMid meet"><g transform="translate(-4,-40)">' + sceneTir(id, MODE) + (BAND ? matSVG(id) : enfantSVG()) + cib +
       '<g class="tid-guir"><path class="ti-g-fil" d=""/></g>' +
       '<g class="rg-pts">' + pts + '</g>' + archerSVG() +
       '<g transform="translate(' + Bc[0] + ',' + Bc[1] + ')"><circle class="rg-jauge" r="46" fill="none" stroke-width="6" stroke-linecap="round" transform="rotate(-90)"/><g class="tid-arc">' + ARC_ART + '<path class="tid-corde" d="M0,-38 L0,38" stroke="#f4f1ea" stroke-width="2" fill="none"/><g class="tid-enc">' + FLECHE_ART + '</g></g></g>' +
-      '<g class="tid-fl" opacity="0">' + FLECHE_ART + '</g></g>' + A.MAIN + '</svg>';
+      '<g class="tid-fl" opacity="0">' + FLECHE_ART + '</g>' + jaugeP + '</g>' + A.MAIN + '</svg>';
     var svg = el.firstChild, q = function(s){ return svg.querySelector(s); };
     var archer = Archer(q('.ti-archer')), arc = q('.tid-arc'), corde = q('.tid-corde'), enc = q('.tid-enc'), fl = q('.tid-fl'), c = q('.tid-c'), fil = q('.tid-fil'), jauge = q('.rg-jauge'), guir = q('.tid-guir'), gfil = guir.querySelector('path');
     var ptsG = Array.prototype.slice.call(svg.querySelectorAll('.rg-pt')), main = q('.mja-main');
+    var puD = q('.tid-pu'), puDr = puD.querySelector('.ti-pu-rempli'), puDm = puD.querySelector('.ti-pu-mot'), filM = q('.tid-film');
     var drap = []; for(var j = 0; j < 22; j++){ var d = svgNoeud('path', {'class':'ti-g-drap', d:'M-5,0 L5,0 L0,10 Z', fill:COUL_DRAP[j % COUL_DRAP.length], display:'none'}, guir); drap.push(d); }
     main.style.transition = 'none';
     var P0 = 6.4, T_LACHE = 2.0, VOL = 0.7;
@@ -31525,8 +31941,12 @@ if(MJ.DEMOS){
       corde.setAttribute('d', 'M0,-38 L' + f1(-tire * 26) + ',0 L0,38');
       enc.setAttribute('transform', 'translate(' + f1(-tire * 26 + 22) + ',0)');
       enc.setAttribute('opacity', t < T_LACHE || t > 4 ? 1 : 0);
-      jauge.setAttribute('stroke', fort ? '#ffd36a' : '#8ff3ff'); jauge.setAttribute('stroke-dasharray', f1(tire * 289) + ' 400'); jauge.setAttribute('opacity', tire > 0 ? 1 : 0);
-      ptsG.forEach(function(p, i){ p.setAttribute('opacity', tire > i / 14 ? 1 : 0); p.setAttribute('fill', fort ? '#ffd36a' : '#8ff3ff'); });
+      jauge.setAttribute('stroke', fort ? '#ffd36a' : (tire > 0.75 ? '#ff9a3c' : (tire > 0.45 ? '#f6d23a' : '#7cd3a0'))); jauge.setAttribute('stroke-dasharray', f1(tire * 289) + ' 400'); jauge.setAttribute('opacity', tire > 0 ? 1 : 0);
+      var nivD = tire <= 0 ? '' : (fort ? 'max' : (tire > 0.75 ? 'fort' : (tire > 0.45 ? 'moyen' : 'faible')));
+      if(nivD !== puD._n){ puD._n = nivD; puD.setAttribute('class', 'ti-puiss tid-pu' + (nivD ? ' on ti-pu-' + nivD : '')); puDm.textContent = nivD ? {faible:'Faible', moyen:'Moyen', fort:'Fort', max:'À fond !'}[nivD] : ''; }
+      puDr.setAttribute('y', f1(370 - 140 * tire)); puDr.setAttribute('height', f1(140 * tire));
+      if(filM){ var fm = fil; filM.setAttribute('x1', fm.getAttribute('x1')); filM.setAttribute('y1', fm.getAttribute('y1')); filM.setAttribute('x2', fm.getAttribute('x2')); filM.setAttribute('y2', fm.getAttribute('y2')); filM.setAttribute('opacity', t > T_LACHE + VOL ? 0 : 1); }
+      ptsG.forEach(function(p, i){ p.setAttribute('opacity', tire > i / 14 ? 1 : 0); p.setAttribute('fill', fort ? '#ffd36a' : '#fffdf4'); });
       archer.poser(a, tire, T, 0, t > T_LACHE + VOL && t < 4.4 ? 'content' : '');
       /* la main : elle se pose près de l'arc, tire vers l'arrière, lâche */
       var mx = t < 0.9 ? 230 + (Bc[0] + 6 - 230) * lisse(t / 0.9) : (t < T_LACHE ? Bc[0] + 6 - Math.cos(a) * tire * 60 : Bc[0] + 6 - Math.cos(a) * 60 + (230 - Bc[0]) * lisse((t - T_LACHE) / 0.8));
