@@ -6519,8 +6519,8 @@ body.hr-plein{overflow:hidden}
 <div id="transition" aria-hidden="true"></div>
 <button id="stop-voix" type="button" hidden>⏹ Stop</button>
 <div id="toast" role="status" aria-live="polite"></div>
-<!-- Brumeval v2 · version de test du 2026-11-06 00:48 -->
-<script>window.BRUMEVAL_VERSION = '2026-11-06 00:48';</script>
+<!-- Brumeval v2 · version de test du 2026-11-06 02:04 -->
+<script>window.BRUMEVAL_VERSION = '2026-11-06 02:04';</script>
 <script>
 /* ===== sans-zoom.js ===== */
 /* ==========================================================
@@ -36872,7 +36872,9 @@ E[2] = {
         a:'Des traces de charrette, ici ? Ça alors… tout le monde passe dans ma cour ! Mais elles ne mènent nulle part, c\'est impossible. Et je peux te le prouver : tiens, voici les vieux plans du moulin, bâti par mes ancêtres.',
         note:'Farinel : les traces de charrette ne mènent nulle part, dit-il. Il t\'a donné les vieux plans de son moulin, bâti par ses ancêtres (code pour le Sage).'}
     ]},
-    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais.', questions:[
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais. Et les gens qui achètent mes bouquets sans même les sentir… ça me rend folle ! Celui qui prendra la peine de sentir mes fleurs, je lui ferai une réduction, foi d\'Iris !',
+      /* (Bible §13.10, 6 novembre : l'astuce d'Iris, pour le marché aux fleurs de l'enquête 3 ; elle s'inscrit aussi dans le Carnet) */
+      noteSalut:'Iris fait une réduction à qui prend la peine de sentir ses fleurs.', questions:[
       {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
       /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
          pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
@@ -42483,6 +42485,8 @@ function texteDe(bd){
 }
 function mentNonVu(id, i){ var P = M.P(), q = questions(id)[i]; return !!(q && q.ment && repondu(id, i) && !P.vus['verite:' + id + ':' + i]); }
 function preparer(id){
+  /* N.noteSalut : ce que dit sa phrase d'accueil s'inscrit aussi dans le Carnet, une seule fois (Iris, enquête 2 : Bible §13.10) */
+  try{ var P0 = M.P(), N0 = ((M.E() || {}).pnj || {})[id] || {}; if(N0.noteSalut && P0 && !estVexe(id) && !P0.vus['salut-note:' + id]){ P0.vus['salut-note:' + id] = 1; M.noter(N0.noteSalut, (D.PNJ[id] || {}).ic); } }catch(e){ console.error(e); }
   if(UI.bd && UI.bd.p === id && UI.bd.m === M.P().moment) return;
   UI.bd = estVexe(id) ? {p:id, mode:'vexe', t:(M.P().vexeTxt || {})[id] || texteVexe(id), m:M.P().moment, joue:true} : {p:id, mode:'salut', t:salut(id), m:M.P().moment};
 }
