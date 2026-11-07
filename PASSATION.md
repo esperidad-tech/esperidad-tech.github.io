@@ -1,4 +1,4 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 7 novembre à 14 h 15)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 7 novembre à 14 h 25)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
@@ -146,6 +146,10 @@ Les chemins secrets durent toute la saison (comme les sous-sols) : chaque enquê
 - **Mise en ligne dans une nouvelle session** : le push vers GitHub n'est possible qu'une fois le dépôt rattaché à la session (outil `add_repo`, owner `esperidad-tech`, repo `esperidad-tech.github.io`, accès `push`), et avec l'accord de Romain dans la conversation. Penser à remplacer la ligne `Claude-Session:` de `deploy/deployer.sh` par celle de la session en cours.
 
 ## À faire ensuite (rien de lancé)
+- **LA PROCHAINE CONVERSATION (demandée par Romain le 7 novembre à 14 h 21)** — Romain est content des enquêtes 1 (tutoriel léger) et 2 (un peu plus exigeante, facile). Il veut, dans une nouvelle conversation :
+  1. **Le Barde lit trop** (même pour un adulte, surtout avec le talent qui fait écouter aux portes) : reprendre la proposition des « 30 % de lecture en moins » (réponses de 2 phrases au plus, Margot épingle ses six signes au lieu de les lire, une phrase aux portes, vérités de 25 mots au plus, salut à la première visite seulement ; Bible §12.48 « Proposition » et §13.13), **la lui remontrer avec des exemples avant/après tirés de l'E2**, simplifier les phrases. Rien ne se construit sans son go.
+  2. **Faire le point sur ce qu'il faudrait changer dans l'E2 à cause de l'E3**, avec de petites propositions : déjà fait, la phrase d'Iris (§13.10) ; à voir : l'archive de l'E2 pour le Grand Livre du Sage (à écrire avant l'E3, §12.27-28), la poursuite de Tim de 5 à 4, le Sage et l'Alchimiste plus utiles dans l'E2 (partir des idées de Romain), plus de questions à 3 choix du Barde, l'or des missions bonus, et tout ce que `PASSATION-E3.md` et le §13 demandent à l'E2.
+  Garder en tête le nouveau public (Bible §12.49 : 11-12 ans, « niveau 13 ans »).
 - (Réglé à 9 h 30 : Tim n'est pas montré le matin de l'enquête 2, sa maison est grisée. Règle : jamais de fausse position sur la carte.)
 - **Chaque nouvelle enquête** (E3…) doit donner une place à chaque personnage à chaque moment (`ou`, sinon `carte` + `occupe`).
 - **Rendre le Sage et l'Alchimiste plus utiles dans l'E2** : Romain le veut, mais il a refusé mes propositions (papier blanc, potions pour le Pisteur, rivière, fumée-diversion, roues). Repartir de ses idées à lui.
