@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc d'essai — l'atelier de l'Alchimiste</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/mj-core.css">
+<link rel="stylesheet" href="../../src/mj-chaudron.css">
+<link rel="stylesheet" href="../../../atelier-dev/atelier.css">
+<style>
+  html,body{height:100%;overflow:hidden}
+  body{display:flex;flex-direction:column}
+  #banc{flex:1;min-height:0;display:flex}
+  #banc > .at{flex:1}
+  #reglages{position:fixed;right:8px;bottom:8px;z-index:100;font-size:.85rem}
+  #reglages > summary{list-style:none;width:44px;height:44px;border-radius:50%;background:#1c2447;border:2px solid #3b4679;display:grid;place-items:center;cursor:pointer;font-size:1.3rem;margin-left:auto}
+  #reglages > summary::-webkit-details-marker{display:none}
+  #reglages[open] > summary{margin-bottom:6px}
+  .moteur{width:min(92vw,360px);max-height:70vh;overflow:auto;background:#1c2447;border:2px solid #3b4679;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+  .moteur .l{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .moteur button,.moteur select{font:inherit;min-height:36px;border-radius:10px;border:1px solid #3b4679;background:#28325e;color:#eef0ff;padding:4px 10px}
+  .moteur label{display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+  .moteur b{color:#ffe3a3}
+  #journal{font-family:monospace;font-size:.75rem;color:#a6aed8;max-height:90px;overflow:auto;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div id="banc"></div>
+<details id="reglages">
+  <summary aria-label="Faux moteur">⚙️</summary>
+  <div class="moteur">
+    <b>Faux moteur</b>
+    <div class="l">
+      <button data-ajout="baies:3">+3 🫐 baies</button><button data-ajout="eau:2">+2 💧 eau</button>
+      <button data-ajout="miel:2">+2 🍯 miel</button><button data-ajout="champignon:2">+2 🍄</button>
+      <button data-ajout="trefle:2">+2 ☘️</button><button data-ajout="brume:2">+2 🌫️</button><button data-ajout="lavande:1">+1 🪻</button>
+    </div>
+    <div class="l"><button id="carton">📦 nouveau carton</button><button id="fiole">+1 🧪 fiole</button><button id="raz">♻️ atelier neuf</button></div>
+    <div class="l">
+      <label><input type="checkbox" id="connue"> 🫙 révélatrice connue</label>
+      <label><input type="checkbox" id="refus"> 🚫 refuser</label>
+    </div>
+    <div class="l">
+      <label>Niveau <select id="niveau"></select></label>
+      <label>Moment <select id="moment"><option value="matin">🌅 matin</option><option value="apresmidi">☀️ après-midi</option><option value="soir">🌇 soir</option><option value="nuit">🌙 nuit</option></select></label>
+      <label><input type="checkbox" data-mod="revele"> révèle</label>
+      <label><input type="checkbox" data-mod="zone" data-v="1.4"> zone</label>
+      <label><input type="checkbox" data-mod="erreurs" data-v="2"> +2 erreurs</label>
+      <label><input type="checkbox" data-mod="aide" data-v="3"> aide</label>
+      <label><input type="checkbox" data-mod="lent" data-v="0.7"> lent</label>
+      <label><input type="checkbox" data-mod="temps" data-v="3"> temps</label>
+    </div>
+    <div class="l">
+      <label><input type="checkbox" data-obj="alambic"> ⚗️</label><label><input type="checkbox" data-obj="thermometre"> 🌡️</label>
+      <label><input type="checkbox" data-obj="balance_or"> ⚖️</label><label><input type="checkbox" data-obj="mortier"> 🥣</label>
+      <label><input type="checkbox" data-obj="chaudron_cuivre"> 🍲</label><label><input type="checkbox" data-obj="oeil_cristal"> 🔮</label>
+      <label><input type="checkbox" data-obj="serre"> 🪴</label><label><input type="checkbox" data-obj="herbier"> 📗</label>
+    </div>
+    <div id="journal"></div>
+  </div>
+</details>
+<script>
+  window.journal = [];
+  function note(t){ window.journal.push(t); var j = document.getElementById('journal'); if(j){ j.textContent = window.journal.slice(-8).join('\n'); j.scrollTop = 1e6; } }
+  window.Brume = {
+    lire:function(t){ note('🔊 ' + t); },
+    stop:function(){},
+    son:function(t){ window.sons = (window.sons || 0) + 1; }
+  };
+</script>
+<script src="../../src/donnees.js"></script>
+<script src="../../src/mj-core.js"></script>
+<script src="../../src/mj-chaudron.js"></script>
+<script src="../../../atelier-dev/atelier.js"></script>
+<script>
+(function(){
+  var D = window.DONNEES;
+  var banc = document.getElementById('banc');
+  var M = window.banc = {
+    enquete:1, sansSurprise:true, etat:Atelier.etatNeuf(), fioles:3, potions:{lumiere:1}, niveau:3, mods:{}, objets:[], connue:false, refus:false, moment:'matin',
+    resultats:[], changements:0, vue:null, actions:3, vendre:false, donnees:[], actes:[],
+    analyses:[{id:'fil', ic:'🧵', nom:'Un fil vert', fait:0, t:'C\'est un fil de laine teint en vert, tout neuf.'}, {id:'poils', ic:'🐾', nom:'Des poils', fait:1, t:'Ce sont des poils de chien, roux et courts.'}]
+  };
+  for(var i = 1; i <= 10; i++){ var o = document.createElement('option'); o.value = i; o.textContent = i; if(i === 3) o.selected = true; document.getElementById('niveau').appendChild(o); }
+  function recettes(){
+    return ['revelatrice', 'lumiere', 'rapidite', 'invisibilite'].map(function(id){
+      var p = D.POTIONS[id];
+      return {id:id, nom:p.nom, ic:p.ic, c:p.c, connue:id === 'revelatrice' ? M.connue : true};
+    });
+  }
+  function options(){
+    return {
+      etat:M.etat, ingr:D.INGR, objets:M.objets.slice(), fioles:M.fioles, potions:M.potions, recettes:recettes(), niveau:M.niveau, mods:M.mods, moment:M.moment, enquete:M.enquete, sansSurprise:M.sansSurprise,
+      analyses:M.analyses, actions:M.actions, vendre:M.vendre,
+      onChange:function(e){ M.etat = e; M.changements++; },
+      peutPreparer:function(){ if(M.refus || M.fioles <= 0) return false; M.fioles--; note('action décomptée, fioles = ' + M.fioles); return true; },
+      aides:[],
+      potionFinie:function(id, ok, detail){
+        M.resultats.push({id:id, reussi:ok, detail:detail});
+        note((ok ? '✅ ' : '❌ ') + id + ' — ' + detail);
+        if(ok) M.potions[id] = (M.potions[id] || 0) + 1;
+        if(M.vue) M.vue.maj({fioles:M.fioles, potions:M.potions});
+      },
+      son:function(t){ Brume.son(t); },
+      lire:function(t){ Brume.lire(t); }
+    };
+  }
+  M.creer = function(){
+    if(M.vue) M.vue.arreter();
+    M.vue = Atelier.vue(banc, options());
+    return M.vue;
+  };
+  M.majVue = function(){ if(M.vue) M.vue.maj(options()); };
+  document.querySelectorAll('[data-ajout]').forEach(function(b){
+    b.onclick = function(){ var a = b.getAttribute('data-ajout').split(':'); Atelier.ajouter(M.etat, a[0], +a[1]); M.majVue(); };
+  });
+  document.getElementById('carton').onclick = function(){ Atelier.donnerCartons(M.etat, 1); M.majVue(); };
+  document.getElementById('fiole').onclick = function(){ M.fioles++; M.majVue(); };
+  document.getElementById('raz').onclick = function(){ M.etat = Atelier.etatNeuf(); M.creer(); };
+  document.getElementById('connue').onchange = function(e){ M.connue = e.target.checked; M.majVue(); };
+  document.getElementById('refus').onchange = function(e){ M.refus = e.target.checked; };
+  document.getElementById('niveau').onchange = function(e){ M.niveau = +e.target.value; M.majVue(); };
+  document.getElementById('moment').onchange = function(e){ M.moment = e.target.value; M.majVue(); };
+  document.querySelectorAll('[data-mod]').forEach(function(c){
+    c.onchange = function(){ var k = c.getAttribute('data-mod'); if(c.checked) M.mods[k] = c.hasAttribute('data-v') ? +c.getAttribute('data-v') : true; else delete M.mods[k]; M.majVue(); };
+  });
+  document.querySelectorAll('[data-obj]').forEach(function(c){
+    c.onchange = function(){ var k = c.getAttribute('data-obj'); M.objets = M.objets.filter(function(x){ return x !== k; }); if(c.checked) M.objets.push(k); M.creer(); };
+  });
+  /* les boutons du moteur (data-act) : ici on les simule */
+  document.addEventListener('click', function(ev){
+    var el = ev.target.closest('[data-act]');
+    if(!el) return;
+    var a = el.dataset.act, id = el.dataset.id;
+    if(a === 'donner-potion'){ M.actes.push(a + ':' + id); note('🎁 code de ' + id); if(M.potions[id] > 0) M.potions[id]--; M.donnees.push(id); M.majVue(); }
+    else if(a === 'vendre'){ M.actes.push(a + ':' + id); if(M.potions[id] > 0) M.potions[id]--; M.majVue(); }
+    else if(a === 'analyser'){ M.actes.push(a + ':' + id); M.actions = Math.max(0, M.actions - 1); M.analyses.forEach(function(x){ if(x.id === id) x.fait = 1; }); M.creer(); }
+  });
+  M.creer();
+})();
+</script>
+</body>
+</html>

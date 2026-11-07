@@ -1,0 +1,43 @@
+/* ==========================================================
+   Brumeval — « 📋 Mon tableau d'enquête » du Sage (tableau.js)
+   Sur le parchemin du Grand Livre : encre foncée, ✗ rouge, ✓ vert.
+   ========================================================== */
+.tb-zone{display:flex;flex-direction:column;gap:10px}
+.tb-boite{overflow-x:auto;margin:0 -6px;padding:8px 6px 4px;-webkit-overflow-scrolling:touch}
+.tb-grille{display:grid;grid-template-columns:66px repeat(var(--n), minmax(48px, 1fr));gap:4px;min-width:min-content}
+.tb-coin{display:flex;justify-content:space-between;align-items:flex-end;padding:4px 6px;font-size:1.15rem;opacity:.55}
+.tb-col,.tb-ligne,.tb-case,.tb-puce{position:relative;appearance:none;font:inherit;color:var(--encre);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tb-col,.tb-ligne,.tb-puce{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px;border:2px solid rgba(36,24,46,.22);background:rgba(255,255,255,.35)}
+.tb-col{justify-content:flex-end;padding:6px 2px 4px;min-height:66px}
+.tb-ligne{justify-content:center;padding:3px 2px;min-height:58px}
+.tb-col small,.tb-ligne small,.tb-puce small{font-size:.7rem;font-weight:700;line-height:1.1;text-align:center;overflow-wrap:anywhere}
+.tb-ic{font-size:1.55rem;line-height:1}
+.tb-por{display:block;width:40px;height:40px;border-radius:50%;overflow:hidden;background:rgba(36,24,46,.1);flex:none}
+.tb-por svg{display:block;width:100%;height:100%}
+.tb-emoji{font-size:1.6rem}
+.tb-case{min-width:44px;min-height:58px;padding:0;border-radius:12px;border:2px dashed rgba(36,24,46,.22);background:rgba(255,255,255,.55);font-size:1.75rem;font-weight:900;line-height:1}
+.tb-case.tb-x{color:#c0392b;background:rgba(192,57,43,.13);border-style:solid;border-color:rgba(192,57,43,.45)}
+.tb-case.tb-v{color:#2f9e44;background:rgba(47,158,68,.18);border-style:solid;border-color:rgba(47,158,68,.6)}
+.tb-case.tb-grise{background:rgba(36,24,46,.13);border-style:solid;opacity:.6}
+.tb-case:active,.tb-col:active,.tb-ligne:active,.tb-puce:active{transform:scale(.94)}
+
+/* Un suspect, un lieu ou un choix barré : grisé, avec un grand ✗ ; « sûr » : bordure verte et ✓ */
+.tb-m{position:absolute;font-style:normal;font-weight:900;line-height:1;pointer-events:none}
+.tb-x > .tb-por,.tb-x > .tb-ic,.tb-x > small{opacity:.4;filter:grayscale(1)}
+.tb-x > .tb-m{top:50%;left:50%;transform:translate(-50%,-62%);font-size:2.7rem;color:#c0392b;text-shadow:0 0 3px #fff, 0 0 6px #fff}
+.tb-v{border-color:#2f9e44;background:rgba(47,158,68,.16)}
+.tb-v > .tb-m{top:-7px;right:-6px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:#2f9e44;color:#fff;font-size:.95rem;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* Les autres questions (QUI l'aide ?…) */
+.tb-plus h4{margin:14px 0 6px;font-size:1rem}
+.tb-rang{display:flex;flex-wrap:wrap;gap:8px}
+.tb-puce{min-width:74px;min-height:74px;padding:6px 6px 4px;justify-content:center}
+
+.tb-zone .btn.tb-effacer,.b-page-livre .btn.tb-effacer{align-self:flex-start;color:#35281b !important;background:rgba(255,255,255,.45);border:2px solid rgba(36,24,46,.4);box-shadow:none}
+.b-tb-journal{margin:0 0 16px}
+.b-tb-journal .tb-col,.b-tb-journal .tb-ligne,.b-tb-journal .tb-case,.b-tb-journal .tb-puce{cursor:default}
+
+/* Écran d'accusation : ce que le Sage a barré reste choisissable, mais grisé */
+.b-lieu-acc{position:relative}
+.b-lieu-acc.raye{opacity:.45}
+.b-lieu-acc.raye::after{content:"";position:absolute;left:12%;right:12%;top:45%;height:5px;border-radius:4px;background:var(--braise);transform:rotate(-20deg)}

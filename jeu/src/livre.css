@@ -1,0 +1,327 @@
+/* ==========================================================
+   Brumeval — le Grand Livre du Sage (livre.js)
+   Plein écran entre le bandeau et les onglets du bas ; des pages de papier
+   qui tournent autour de la reliure (à gauche).
+   ========================================================== */
+.lv{position:relative;width:100%;overflow:hidden;background:#1b1430;color:var(--encre);-webkit-tap-highlight-color:transparent}
+.lv-pages{position:absolute;inset:0;perspective:1700px;perspective-origin:30% 50%}
+/* Une page : du papier, l'ombre de la reliure à gauche, la tranche des pages à droite */
+.lv-page{position:absolute;inset:0;visibility:hidden;transform-origin:0 50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:
+    linear-gradient(90deg, rgba(70,45,20,.26), rgba(70,45,20,.08) 10px, rgba(70,45,20,0) 26px),
+    radial-gradient(120% 70% at 75% 0%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%),
+    radial-gradient(50% 35% at 12% 92%, rgba(150,105,50,.13), rgba(150,105,50,0) 70%),
+    radial-gradient(40% 30% at 92% 70%, rgba(150,105,50,.09), rgba(150,105,50,0) 70%),
+    linear-gradient(#f7eed6, #efe0bb);
+  box-shadow:inset -1px 0 0 rgba(107,84,52,.45), inset -4px 0 0 #f4e8c9, inset -5px 0 0 rgba(107,84,52,.3), inset -8px 0 0 #efe1bf, inset -9px 0 0 rgba(107,84,52,.22)}
+.lv-page.on{visibility:visible;z-index:2}
+.lv-page.lv-bas{visibility:visible;z-index:1}
+.lv-page.lv-haut{visibility:visible;z-index:3;will-change:transform}
+.lv-page.blanc{background:linear-gradient(90deg, rgba(90,80,140,.12), rgba(90,80,140,0) 22px), #fdfcff;box-shadow:inset -1px 0 0 rgba(120,110,170,.3), inset -5px 0 0 #f3f2fb, inset -6px 0 0 rgba(120,110,170,.2)}
+.lv-feuille{position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;
+  padding:14px max(18px, env(safe-area-inset-right, 0px)) 86px max(24px, env(safe-area-inset-left, 0px))}
+.lv-contenu{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+/* L'ombre pendant qu'on tourne : la page soulevée s'assombrit vers son bord, la page dessous est dans l'ombre */
+.lv-ombre{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg, rgba(30,15,40,.05), rgba(30,15,40,.6))}
+.lv-bas .lv-ombre{background:linear-gradient(90deg, rgba(30,15,40,.55), rgba(30,15,40,.12) 55%, rgba(30,15,40,.3))}
+
+/* Le titre de la page */
+.lv-tete{display:flex;align-items:center;gap:10px;padding-bottom:6px;border-bottom:2px solid rgba(107,84,52,.25)}
+.lv-tete-ic{font-size:1.7rem;line-height:1;flex:none}
+.lv-tete h2{color:var(--encre);font-size:clamp(1.35rem, 5.4vw, 1.75rem);line-height:1.1}
+.lv-intro,.lv-texte{margin:0;font-size:1.04rem;line-height:1.42}
+.lv-intro.centre{text-align:center}
+.lv .centre{text-align:center}
+/* Ce qui vient du reste du jeu, sur du papier */
+.lv .b-lire{background:rgba(53,40,27,.12);color:var(--encre)}
+.lv .doux{color:var(--encre-2)}
+.lv .sur-titre{color:var(--encre-2)}
+.lv .btn.second{color:var(--encre);border-color:rgba(53,40,27,.35);background:rgba(255,255,255,.45)}
+.lv .b-besoin{background:rgba(53,40,27,.06);border-color:rgba(53,40,27,.28);color:var(--encre)}
+.lv .b-plus-action{color:var(--encre)}
+.lv .b-donne{background:rgba(245,185,69,.16);border-color:var(--laiton);color:var(--encre)}
+.lv .b-objet-code{background:rgba(255,255,255,.5);border-color:var(--laiton);color:var(--encre)}
+.lv .b-pour{color:var(--encre-2)}
+.lv .b-objets-trouves{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.lv .b-coeurs{margin:4px 0 0}
+/* Le tableau d'enquête tient dans la largeur : pas de défilement de côté qui volerait le glisser des pages */
+.lv .tb-boite{overflow:visible;margin:0;padding:6px 0 2px}
+.lv .tb-grille{grid-template-columns:60px repeat(var(--n), minmax(40px, 1fr));min-width:0}
+.lv-page .btn.tb-effacer{align-self:flex-start;color:#35281b !important;background:rgba(255,255,255,.45);border:2px solid rgba(36,24,46,.4);box-shadow:none}
+.lv-illu{align-self:center;font-size:3.4rem;line-height:1;filter:drop-shadow(0 3px 0 rgba(53,40,27,.18))}
+.lv-ouvrir{align-self:center}
+.lv-texte-page{display:flex;flex-direction:column;gap:8px}
+.lv-emoji{display:grid;place-items:center;width:100%;height:100%;font-size:1.8rem}
+
+/* Le coin corné (page suivante / précédente), le numéro de page, le sommaire */
+/* Le bouton fait 48 px (facile à toucher) ; le coin replié qu'on voit est petit et discret (28 px) */
+.lv-coin{position:absolute;bottom:0;z-index:6;width:48px;height:48px;padding:0;border:0;background:none;cursor:pointer;transition:opacity .15s}
+.lv-coin.d{right:0;transform-origin:100% 100%}
+.lv-coin.g{left:0;transform-origin:0 100%}
+.lv-coin::before,.lv-coin::after{content:"";position:absolute;bottom:0;width:28px;height:28px;pointer-events:none}
+.lv-coin.d::before,.lv-coin.d::after{right:0}
+.lv-coin.g::before,.lv-coin.g::after{left:0}
+/* sous le coin replié : la page d'en dessous, dans l'ombre du pli */
+.lv-coin.d::after{background:linear-gradient(to bottom right, transparent 50%, rgba(45,28,10,.38) 50%, #c2aa74 60%, #d6c290 100%)}
+.lv-coin.g::after{background:linear-gradient(to bottom left, transparent 50%, rgba(45,28,10,.38) 50%, #c2aa74 60%, #d6c290 100%)}
+/* le rabat : le dos du papier, plus clair près du pli */
+.lv-coin.d::before{background:linear-gradient(to bottom right, #dcc690 0%, #f3e6c3 34%, #fffaf0 49.6%, transparent 50%)}
+.lv-coin.g::before{background:linear-gradient(to bottom left, #dcc690 0%, #f3e6c3 34%, #fffaf0 49.6%, transparent 50%)}
+.lv-coin span{position:absolute;top:20px;font-size:.9rem;font-weight:900;line-height:1;color:#8a6a3a;opacity:.8}
+.lv-coin.d span{left:24px}
+.lv-coin.g span{left:17px}
+.lv-coin:active{transform:scale(1.15)}
+.lv-coin:focus-visible{outline:3px solid var(--c-sage);outline-offset:-5px;border-radius:8px}
+.lv-coin[hidden]{display:none}
+.lv-num{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 16px;border-radius:999px;
+  border:2px solid rgba(53,40,27,.35);background:rgba(255,249,232,.94);color:var(--encre);font-weight:700;font-size:1rem;box-shadow:0 3px 10px rgba(53,40,27,.25);transition:opacity .15s;white-space:nowrap}
+.lv-num b{font-size:1.15rem}
+.lv-num-ic{font-size:1.2rem}
+.lv-tourne .lv-coin,.lv-tourne .lv-num{opacity:0;pointer-events:none}
+.lv-sommaire{position:absolute;left:50%;bottom:62px;transform:translateX(-50%);z-index:7;width:min(420px, calc(100% - 24px));max-height:calc(100% - 80px);overflow-y:auto;
+  display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:18px;background:#fff9e8;border:2px solid rgba(53,40,27,.35);box-shadow:0 10px 30px rgba(20,10,30,.45)}
+.lv-sommaire[hidden]{display:none}
+.lv-sommaire button{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 10px;border:0;border-radius:12px;background:transparent;color:var(--encre);font:inherit;text-align:left}
+.lv-sommaire button span{font-size:1.4rem;width:32px;text-align:center;flex:none}
+.lv-sommaire button b{flex:1;font-weight:700;font-size:1rem}
+.lv-sommaire button small{flex:none;font-weight:800;opacity:.55}
+.lv-sommaire button.on{background:rgba(108,182,255,.22);box-shadow:inset 0 0 0 2px var(--c-sage)}
+
+/* 👥 Les habitants */
+.lv-registre .b-reg-ligne{align-items:flex-start}
+.lv-registre .b-reg-img{width:60px;height:60px}
+.lv-reg-txt{min-width:0}
+.lv-reg-txt p{margin:2px 0 0}
+
+/* 🧪 Les recettes : une belle carte par potion */
+.lv-recettes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%, 330px),1fr));gap:14px}
+.lv-recette{display:flex;flex-direction:column;gap:10px;padding:10px 12px 12px;border-radius:20px;background:#fffaf0;border:3px solid var(--contour);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--p) 70%, #fff), 0 6px 0 rgba(36,24,46,.2)}
+.lv-recette header{display:flex;align-items:center;gap:10px}
+.lv-rec-nom{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.lv-rec-nom h3{font-family:var(--f-titre);color:var(--encre);font-size:1.3rem;line-height:1.1}
+.lv-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8rem;font-weight:800;line-height:1.3}
+.lv-badge.secret{background:#ffe3a3;border:2px solid var(--laiton)}
+.lv-badge.sac{background:#c9f2d2;border:2px solid #2f9e44;color:#145c2c}
+.lv-fiole{position:relative;flex:none;width:56px;height:74px;filter:drop-shadow(0 0 8px color-mix(in srgb, var(--p) 55%, transparent))}
+.lv-fiole svg{display:block;width:100%;height:100%}
+.lv-fiole-ic{position:absolute;right:-8px;bottom:-4px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:1.05rem;background:#fff;border:2.5px solid var(--contour)}
+.lv-ingrs{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 2px}
+.lv-ingr{display:flex;flex-direction:column;align-items:center;gap:6px;width:78px}
+.lv-ingr-ic{position:relative;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:1.95rem;line-height:1;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.9), rgba(255,255,255,0) 46%), color-mix(in srgb, var(--c) 55%, #fff8e6)}
+.lv-ingr-ic b{position:absolute;right:-10px;bottom:-7px;min-width:36px;height:26px;padding:0 5px;border-radius:13px;display:grid;place-items:center;font-size:.98rem;font-weight:900;border:2.5px solid var(--contour);background:#fff;color:var(--encre)}
+.lv-ingr small{font-size:.8rem;font-weight:700;line-height:1.1;text-align:center}
+.lv-suite{align-self:flex-start;margin-top:17px;font-style:normal;font-weight:900;font-size:1.3rem;opacity:.4;width:14px;text-align:center}
+.lv-utile{margin:0;font-size:1rem;line-height:1.35;font-weight:600}
+.lv-vers{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 14px 6px 8px;border-radius:999px;border:2px solid rgba(110,90,200,.5);background:#fff;color:#4b3aa0;font-weight:800;font-size:.95rem}
+.lv-mini-blanc{position:relative;width:24px;height:30px;border-radius:3px;background:#fdfcff;border:1.5px solid rgba(110,90,200,.45);overflow:hidden}
+.lv-mini-blanc::after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg, transparent 40%, rgba(150,120,255,.55) 50%, transparent 60%);animation:lv-lustre 3.2s ease-in-out infinite}
+.lv-sac-rangee{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.lv-puce{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;border-radius:999px;background:rgba(255,255,255,.55);border:2px solid rgba(53,40,27,.25);font-weight:700}
+
+/* ❔ La page blanche : des reflets bleu-violet qui bougent doucement, et rien d'écrit */
+.lv-blanc{position:relative;display:block;width:100%;padding:0;border:0;background:#fdfcff;overflow:hidden;cursor:pointer;color:inherit}
+.lv-blanc-page{position:absolute;inset:0;border-radius:0}
+.lv-page.vierge .lv-feuille{padding:0}
+.lv-blanc-lettre{align-self:center;width:min(100%, 400px);aspect-ratio:3 / 4;max-height:60vh;border-radius:4px;box-shadow:0 2px 0 #e8e6f4, 0 8px 22px rgba(53,40,27,.25);transform:rotate(-1.2deg)}
+.lv-reflets{position:absolute;inset:-35%;pointer-events:none;
+  background:
+    radial-gradient(34% 26% at 30% 34%, rgba(150,125,255,.26), rgba(150,125,255,0) 70%),
+    radial-gradient(30% 24% at 70% 58%, rgba(105,165,255,.22), rgba(105,165,255,0) 70%),
+    radial-gradient(26% 22% at 44% 78%, rgba(195,140,255,.18), rgba(195,140,255,0) 70%),
+    radial-gradient(22% 18% at 76% 24%, rgba(130,190,255,.16), rgba(130,190,255,0) 70%);
+  animation:lv-reflets 11s ease-in-out infinite alternate}
+@keyframes lv-reflets{0%{transform:translate(-5%,-3%) rotate(0deg)}50%{transform:translate(3%,4%) rotate(6deg)}100%{transform:translate(6%,-2%) rotate(-4deg)}}
+.lv-lustre{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lv-lustre::before{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;background:linear-gradient(105deg, rgba(160,140,255,0), rgba(170,150,255,.28) 45%, rgba(130,190,255,.2) 55%, rgba(160,140,255,0));transform:skewX(-12deg);animation:lv-balaye 7s ease-in-out infinite}
+@keyframes lv-balaye{0%,55%{transform:translateX(0) skewX(-12deg)}100%{transform:translateX(420%) skewX(-12deg)}}
+@keyframes lv-lustre{0%,40%{transform:translateX(-60%)}100%{transform:translateX(60%)}}
+.lv-fantome{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:5rem;line-height:1;opacity:0;pointer-events:none;filter:grayscale(.4) blur(1px)}
+.lv-fantome::before{content:attr(data-ic)}   /* pas un caractère dans la page : la page blanche reste sans rien d'écrit */
+/* l'encre de l'Alchimiste est là : la page brille plus fort, comme si elle attendait */
+.lv-blanc.pret .lv-reflets{animation-duration:5s}
+.lv-blanc.pret::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 70px rgba(130,110,255,.38);animation:b-lueur 2.4s ease-in-out infinite}
+.lv-blanc.pret .lv-lustre::before{animation-duration:3.5s}
+.lv-plume{position:absolute;right:12%;bottom:7%;width:64px;height:56px;opacity:.75}
+/* Ce que l'encre fait apparaître */
+.lv-revele{align-self:center;width:min(100%, 520px);padding:6px;border-radius:14px;background:#fdfcff;box-shadow:0 0 0 2px rgba(110,90,200,.18), 0 0 30px rgba(140,120,255,.18)}
+.lv-carte-foret{display:block;width:100%;height:auto}
+.lv-carte-foret .lv-trace{fill:none;stroke:#4b3aa0;stroke-width:4;stroke-linecap:round;stroke-dasharray:.035 .03}
+.lv-carte-foret .lv-arbre{fill:none;stroke:#8f84c9;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.lv-carte-foret .lv-carrefour{fill:#fdfcff;stroke:#4b3aa0;stroke-width:3}
+.lv-carte-foret .lv-nom{font-family:var(--f-main);font-size:16px;font-weight:700;fill:#3b2d86}
+.lv-carte-foret .lv-nom.petit{font-size:13px;fill:#6b5fb0}
+.lv-revele.neuf .lv-trace{stroke-dasharray:1 1;stroke-dashoffset:1;animation:lv-trace 1.6s ease-out .2s forwards}
+.lv-revele.neuf .lv-arbre,.lv-revele.neuf .lv-lieu,.lv-revele.neuf .lv-carrefour{opacity:0;animation:lv-paraît .9s ease-out 1.2s forwards}
+@keyframes lv-trace{to{stroke-dashoffset:0}}
+@keyframes lv-paraît{to{opacity:1}}
+.lv-glyphes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 8px;padding:14px 8px}
+.lv-glyphes svg{width:34px;height:34px;fill:none;stroke:#4b3aa0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.lv-glyphes circle{fill:#4b3aa0;stroke:none}
+.lv-revele.neuf.lettre .lv-glyphes svg{opacity:0;animation:lv-paraît .6s ease-out forwards;animation-delay:var(--d)}
+
+/* Une page fermée par un sceau */
+.lv-sceau{align-self:center;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;
+  background:radial-gradient(circle at 36% 30%, #e46a5a, #a8261a 70%);box-shadow:0 0 0 5px rgba(168,38,26,.25), 0 4px 0 #7a1a12;transform:rotate(-8deg)}
+
+/* 🏛️ Les fondateurs */
+.lv-histoire{margin:0;font-size:1.08rem;line-height:1.5}
+.lv-histoire.lettrine::first-letter{float:left;font-family:var(--f-titre);font-size:3.1rem;line-height:.9;margin:4px 8px 0 0;color:#8a5a1c}
+.lv-fondateurs{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+@media (min-width:560px){ .lv-fondateurs{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.lv-fond,.lv-cinquieme{margin:0;display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:16px;background:rgba(255,255,255,.45);border:2px solid color-mix(in srgb, var(--c) 55%, rgba(53,40,27,.3))}
+.lv-med-svg{flex:none;width:68px;height:68px;filter:drop-shadow(0 2px 0 rgba(53,40,27,.2))}
+.lv-fond figcaption,.lv-cinquieme figcaption{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lv-fond b,.lv-cinquieme b{font-family:var(--f-titre);font-weight:400;font-size:1.2rem;color:var(--encre)}
+.lv-fond span,.lv-cinquieme span{font-size:.98rem;line-height:1.38}
+.lv-cinquieme{--c:#8a7a66;border-style:dashed;background:rgba(53,40,27,.05)}
+.lv-cinquieme .lv-med-svg{transform:rotate(-6deg);opacity:.9}
+.lv-fin-histoire{font-family:var(--f-titre);font-size:1.15rem;text-align:center;color:#6b4a1c}
+
+/* 📐 La bibliothèque des plans et 🔮 Les objets magiques (toutes les enquêtes, toujours ouvertes) */
+.lv-rayons{align-self:center;display:flex;align-items:flex-end;gap:7px;height:64px;padding:0 14px;border-bottom:7px solid #7a5131;border-radius:3px;filter:drop-shadow(0 3px 0 rgba(53,40,27,.18))}
+.lv-rayons i{width:20px;height:var(--h);border-radius:10px 10px 5px 5px;background:linear-gradient(90deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%, rgba(0,0,0,.12)), var(--c);border:2.5px solid var(--contour)}
+.lv-rayons i:nth-child(2n){transform:rotate(-6deg);transform-origin:bottom center}
+.lv-rien{text-align:center;font-style:italic;opacity:.8}
+.lv-rangee{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:16px;background:rgba(255,255,255,.45);border:2px solid rgba(53,40,27,.25)}
+.lv-rangee h3{margin:0;font-family:var(--f-titre);font-weight:400;font-size:1.25rem;color:var(--encre)}
+.lv-objet{margin:0;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:rgba(255,236,170,.35);border:2px solid color-mix(in srgb, #f5b945 60%, rgba(53,40,27,.3))}
+.lv-objet figcaption{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lv-objet b{font-family:var(--f-titre);font-weight:400;font-size:1.25rem;color:var(--encre)}
+.lv-objet span{font-size:.98rem;line-height:1.4}
+.lv-lanterne{flex:none;width:92px;height:auto;overflow:visible}
+.lv-lanterne-halo{transform-box:fill-box;transform-origin:center;animation:lv-lanterne 3.4s ease-in-out infinite}
+@keyframes lv-lanterne{0%,100%{opacity:.7;transform:scale(.94)}50%{opacity:1;transform:scale(1.05)}}
+@media (prefers-reduced-motion: reduce){.lv-lanterne-halo{animation:none}}
+
+/* ⏭️ Les codes des moments : le même cadre pour chaque moment (comme les cartes des recettes).
+   Le logo du moment dans un médaillon et son nom à gauche (au téléphone) ou en haut (tablette), les trois dessins
+   du code dans un plateau, l'état sur une étiquette posée au coin haut droit. --t : la petite teinte du moment. */
+.lv-moments{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+.lv-mo{--tuile:56px;position:relative;display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:10px;padding:14px 12px 12px 8px;border-radius:20px;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--t) 34%, #fffaf0), color-mix(in srgb, var(--t) 14%, #fffaf0));
+  border:3px solid var(--contour);box-shadow:0 0 0 3px color-mix(in srgb, var(--t) 75%, #fff), 0 6px 0 rgba(36,24,46,.2)}
+.lv-mo-tete{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.lv-mo-ic{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:1.8rem;line-height:1;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.9), rgba(255,255,255,0) 46%), var(--t)}
+.lv-mo-tete b{font-family:var(--f-titre);font-weight:400;font-size:1.12rem;line-height:1.1;text-align:center;color:var(--encre);white-space:nowrap}
+.lv-mo-code{display:flex;align-items:center;justify-content:center;min-width:0;min-height:calc(var(--tuile) + 24px);padding:8px;border-radius:16px;
+  background:rgba(255,253,246,.9);border:2px solid rgba(53,40,27,.14);box-shadow:inset 0 2px 5px rgba(53,40,27,.1)}
+.lv-mo .b-code{gap:8px;flex-wrap:nowrap}
+.lv-mo .b-sym{width:var(--tuile);height:var(--tuile);aspect-ratio:auto;padding:0;border-radius:14px;animation:none;box-shadow:0 3px 0 var(--encre-2)}
+.lv-mo .b-sym span{font-size:calc(var(--tuile) * .54)}
+.lv-depart{font-weight:800;font-size:1.05rem;color:var(--encre-2)}
+.lv-mo-badge{position:absolute;top:-15px;right:14px;padding:3px 11px;border-radius:999px;border:2px solid var(--contour);background:#fffaf0;color:var(--encre);
+  font-size:.84rem;font-weight:800;line-height:1.25;white-space:nowrap}
+.lv-mo.passe{opacity:.55;filter:saturate(.6)}
+.lv-mo.passe .lv-mo-badge{background:#c9f2d2;color:#145c2c}
+.lv-mo.maintenant .lv-mo-badge{background:var(--c-sage);color:#0c2440}
+.lv-mo.suivant{box-shadow:0 0 0 3px color-mix(in srgb, var(--t) 75%, #fff), 0 0 0 8px rgba(245,185,69,.55), 0 6px 0 rgba(36,24,46,.2);animation:lv-mo-pouls 1.3s ease-in-out infinite}   /* respire comme le rond du tutoriel */
+@keyframes lv-mo-pouls{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb, var(--t) 75%, #fff), 0 0 0 6px rgba(245,185,69,.45), 0 6px 0 rgba(36,24,46,.2)}50%{box-shadow:0 0 0 3px color-mix(in srgb, var(--t) 75%, #fff), 0 0 0 10px rgba(245,185,69,.75), 0 0 22px 6px rgba(255,210,63,.55), 0 6px 0 rgba(36,24,46,.2)}}
+.lv-mo.suivant .lv-mo-badge{background:var(--or)}
+.lv-passer{align-self:center;width:min(100%, 440px);margin-top:6px}
+@media (max-width:380px){
+  .lv-mo{--tuile:50px;grid-template-columns:90px minmax(0,1fr);gap:8px}
+  .lv-mo-tete b{font-size:1.04rem}
+}
+/* Téléphone, avec la nuit (quatre moments) : des cadres un peu plus serrés, pour que tout tienne sur l'écran */
+@media (max-width:759px){
+  .lv-moments.n4{gap:18px}
+  .lv-moments.n4 .lv-mo{--tuile:50px;padding-top:10px;padding-bottom:10px}
+  .lv-moments.n4 .lv-mo-code{min-height:calc(var(--tuile) + 18px);padding:6px}
+}
+/* Tablette : trois cadres côte à côte, le logo et le nom en haut ; avec la nuit, deux par rangée,
+   le logo et le nom à gauche du code (comme au téléphone, en plus grand) */
+@media (min-width:760px){
+  .lv-moments{grid-template-columns:repeat(3, minmax(0,1fr));gap:26px 18px}
+  .lv-mo{--tuile:52px;grid-template-columns:minmax(0,1fr);align-content:start;gap:12px;padding:18px 12px 12px}
+  .lv-mo-ic{width:64px;height:64px;font-size:2.2rem}
+  .lv-mo-tete b{font-size:1.4rem}
+  .lv-moments.n4,.lv-moments.n2{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .lv-moments.n4 .lv-mo,.lv-moments.n2 .lv-mo{grid-template-columns:116px minmax(0,1fr);align-content:center;padding:16px 14px 14px 10px}
+  .lv-moments.n4 .lv-mo-tete b,.lv-moments.n2 .lv-mo-tete b{font-size:1.28rem}
+}
+@media (min-width:820px){ .lv-mo{--tuile:58px} }
+@media (min-width:960px){ .lv-mo{--tuile:66px} }
+/* Peu de hauteur (tablette ou téléphone couchés) : le logo à côté du nom, des cadres plus serrés */
+@media (min-width:760px) and (max-height:600px){
+  .lv-moments:not(.n4):not(.n2) .lv-mo-tete{flex-direction:row;justify-content:flex-start;gap:10px;padding-left:4px}   /* à gauche : le logo au même endroit dans chaque cadre */
+  .lv-mo-ic{width:48px;height:48px;font-size:1.65rem}
+}
+@media (max-height:460px){
+  .lv-moments{margin-top:10px;gap:18px}
+  .lv-mo{--tuile:48px;padding-top:12px;padding-bottom:8px;gap:8px}
+  .lv-mo-code{min-height:calc(var(--tuile) + 14px);padding:5px}
+}
+
+/* 💡 Donner une action : une ampoule par action de la réserve (allumée = encore à donner) */
+.lv-reserve{align-self:center;display:flex;justify-content:center;flex-wrap:wrap;gap:14px;max-width:100%;padding:14px 18px;border-radius:20px;
+  background:rgba(255,253,246,.9);border:2px solid rgba(53,40,27,.14);box-shadow:inset 0 2px 5px rgba(53,40,27,.1)}   /* le même plateau que les codes des moments */
+.lv-ampoule{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;line-height:1;border:3px solid var(--contour);
+  background:color-mix(in srgb, #8a7a66 22%, #fffaf0);box-shadow:0 5px 0 rgba(36,24,46,.2)}
+.lv-ampoule span{filter:grayscale(1);opacity:.32}
+.lv-ampoule.pleine{background:radial-gradient(circle at 50% 42%, #fffbe0, #ffe27a 62%, #f5b945);box-shadow:0 5px 0 rgba(36,24,46,.2), 0 0 24px rgba(255,210,80,.8)}
+.lv-ampoule.pleine span{filter:none;opacity:1}
+.lv-donner{align-self:center;width:min(100%, 440px)}
+.lv-fin-jour,.lv-encart{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:16px;border:2px dashed var(--c-sage);background:rgba(108,182,255,.1);text-align:center}
+.lv-fin-jour p,.lv-encart p{margin:0}
+/* (le verrou de l'accusation de l'enquête 2 et son « petit matin » : supprimés le 5 novembre, 01 h 36) */
+.lv-trouves h3{color:var(--encre);margin:6px 0 8px}
+
+/* ⚖️ L'accusation */
+.lv-acc-haut{display:flex;align-items:center;gap:12px}
+.lv-balance{flex:none;font-size:3.4rem;line-height:1;filter:drop-shadow(0 4px 0 rgba(53,40,27,.2));animation:b-flotte 3s ease-in-out infinite}
+.lv-questions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lv-questions li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.5);border:2px solid rgba(53,40,27,.2);font-size:1.05rem}
+.lv-questions li span{font-size:1.5rem}
+.lv-suspects{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.lv-suspect{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:64px}
+.lv-suspect-img{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#e9d8b0;border:2px solid var(--encre-2)}
+.lv-suspect-img svg{display:block;width:100%;height:100%}
+.lv-suspect small{font-size:.76rem;font-weight:700}
+.lv-suspect.raye{opacity:.42;filter:grayscale(1)}
+.lv-suspect.raye::after{content:"✗";position:absolute;top:2px;left:50%;transform:translateX(-50%);font-size:2.6rem;font-weight:900;line-height:1;color:#c0392b}
+.lv-accuser{align-self:center;min-width:220px}
+
+@media (max-width:420px){
+  .lv-feuille{padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(14px, env(safe-area-inset-right, 0px))}
+  .lv-recette{padding:8px 10px 10px}
+  .lv-ingr{width:70px}
+  .lv-ingr-ic{width:52px;height:52px;font-size:1.75rem}
+  .lv-suite{width:10px;font-size:1.1rem}
+}
+@media (max-height:460px){
+  .lv-feuille{padding-top:8px;padding-bottom:70px}
+  .lv-coin{width:48px;height:48px}
+  .lv-num{bottom:6px;min-height:40px}
+}
+
+/* Partout dans le jeu, les codes n'ont plus que leurs dessins (M.codeHTML et le pavé, moteur-ecrans.js) :
+   des tuiles carrées, le dessin au milieu */
+.b-sym{justify-content:center;aspect-ratio:1;padding:0}
+.b-code-ligne .b-sym span{font-size:2rem}
+.b-pave span{font-size:2.5rem}
+@media (orientation:landscape) and (max-height:600px){ .b-pave span{font-size:2.1rem} }
+
+/* Le même écran redessiné (une case cochée, une fenêtre fermée…) : pas d'animation d'entrée, donc pas de clignotement */
+#app.b-sans-entree .b-page,#app.b-sans-entree .b-contenu,#app.b-sans-entree .b-notes li,#app.b-sans-entree .b-page-livre,
+#app.b-sans-entree .b-objet,#app.b-sans-entree .b-quatre-h,#app.b-sans-entree .b-sym,#app.b-sans-entree .b-reponse,#app.b-sans-entree .b-fin-slide,
+#voile.b-sans-entree .b-fond,#voile.b-sans-entree .b-feuille{animation:none}
+
+/* ✉️ La lettre du maire, 🗄️ les archives (Romain, 5 novembre, 14 h 26) : les cadres des missions, sur le papier du livre */
+.lv-lettre{margin:0}
+.lv-arch-intro,.lv-arch-resume{margin:0;color:var(--encre);line-height:1.4}
+.lv-arch-resume{font-style:italic}
+.lv .lv-arch{margin:0;background:rgba(255,255,255,.45);border-color:rgba(138,106,58,.6);color:var(--encre)}
+.lv .lv-arch .b-mi-plier{color:#5a3d16}
+.lv .lv-arch .b-mi-compte{background:rgba(90,61,22,.14);color:#5a3d16}
+.lv-arch-partie{margin:0 0 8px;padding:2px 10px 6px;border-radius:14px;background:rgba(138,106,58,.12)}
+.lv-arch-partie.plie{padding-bottom:2px}
+.lv-arch-partie .b-mi-plier{font-size:1.1rem}
+.lv-arch-partie.plie .b-mi-fleche{transform:rotate(-90deg)}
+.lv .lv-arch li{background:rgba(255,255,255,.55);color:var(--encre)}
+.lv .lv-arch li p{font-weight:600}
+/* 📚 La bibliothèque des plans (Romain, 15 h 05) : de vieux livres sur une étagère, et les plans en menus qui se déplient */
+.lv-etagere{align-self:center;display:block;width:min(260px, 72%);height:auto;filter:drop-shadow(0 3px 0 rgba(53,40,27,.15))}
+.lv-bib-corps{display:flex;flex-direction:column;gap:10px;padding:0 0 10px;color:var(--encre)}

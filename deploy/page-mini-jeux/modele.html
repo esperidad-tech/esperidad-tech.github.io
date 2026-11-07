@@ -1,0 +1,89 @@
+<title>Mini-jeux de Brumeval</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap">
+<style>
+/* Mise en page : une veillée dans le village de Brumeval — fond de nuit, or des lanternes, parchemin pour les règles ;
+   un sommaire en pastilles, puis une fiche par mini-jeu (l'image du jeu à gauche, ce qu'il faut savoir à droite, le tableau des niveaux dessous). */
+:root{
+  --nuit:#121731; --nuit-2:#1b2246; --nuit-3:#252e5c; --trait:#3a4479;
+  --or:#ffd36a; --or-doux:rgba(255,211,106,.16); --brume:#aab3d8; --texte:#eef0ff;
+  --pisteur:#5fcf86; --alchimiste:#b48cff; --sage:#6cb6ff;
+  --titre:'Macondo', 'Georgia', serif; --corps:'Andika', 'Trebuchet MS', 'Segoe UI', sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--nuit);color:var(--texte);font-family:var(--corps);font-size:16px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 56px;
+  background-image:radial-gradient(1px 1px at 12% 8%, rgba(238,240,255,.5), transparent 60%),radial-gradient(1px 1px at 78% 14%, rgba(238,240,255,.4), transparent 60%),radial-gradient(1.5px 1.5px at 45% 4%, rgba(255,211,106,.5), transparent 60%);background-repeat:no-repeat}
+.page{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+a{color:var(--or)}
+a:focus-visible,.jouer:focus-visible{outline:3px solid var(--or);outline-offset:3px;border-radius:8px}
+header.tete{display:flex;flex-direction:column;gap:10px}
+.tete h1{font-family:var(--titre);font-weight:400;font-size:clamp(2rem, 5vw, 3rem);line-height:1.1;margin:0;color:var(--or);text-wrap:balance;text-shadow:0 2px 0 #000}
+.tete p{margin:0;max-width:68ch;color:var(--brume)}
+.tete p b{color:var(--texte)}
+.regle{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px;margin:4px 0 0}
+.regle div{background:var(--nuit-2);border:1px solid var(--trait);border-radius:14px;padding:10px 14px;min-width:0}
+.regle b{display:block;font-family:var(--titre);font-weight:400;font-size:1.15rem;color:var(--or)}
+.regle span{color:var(--brume);font-size:.92rem}
+nav.sommaire{display:flex;flex-wrap:wrap;gap:8px}
+nav.sommaire a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:2px solid var(--c);color:var(--texte);text-decoration:none;font-weight:700;font-size:.9rem;background:color-mix(in srgb, var(--c) 14%, transparent)}
+nav.sommaire a:hover{background:color-mix(in srgb, var(--c) 30%, transparent)}
+section.role{display:flex;flex-direction:column;gap:22px}
+.role h2{font-family:var(--titre);font-weight:400;font-size:2rem;margin:8px 0 0;color:var(--c);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:2px solid color-mix(in srgb, var(--c) 45%, transparent);padding-bottom:6px}
+.role h2 small{font-family:var(--corps);font-size:.9rem;color:var(--brume)}
+article.jeu{background:var(--nuit-2);border:1px solid var(--trait);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+.haut{display:grid;grid-template-columns:minmax(0, 220px) minmax(0, 1fr);gap:20px;align-items:start}
+figure{margin:0}
+figure img{display:block;width:100%;height:auto;border-radius:12px;border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.infos{min-width:0;display:flex;flex-direction:column;gap:6px}
+.infos h3{font-family:var(--titre);font-weight:400;font-size:1.7rem;margin:0;line-height:1.15;text-wrap:balance}
+.phrase{margin:0;font-weight:700;color:var(--or)}
+.consigne{margin:0;color:var(--brume);font-size:.95rem;max-width:70ch}
+h4{margin:10px 0 2px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+ul.ou{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+ul.ou li{padding-left:12px;border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);font-size:.95rem}
+.enq{display:block;font-weight:700;font-size:.85rem;color:var(--texte)}
+.enq i{font-weight:400;color:var(--brume)}
+.niveaux{margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.pastille{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--or-doux);border:1px solid rgba(255,211,106,.45);font-size:.85rem;font-variant-numeric:tabular-nums}
+.pastille.doux{background:transparent;border-color:var(--trait);color:var(--brume)}
+.boutons{margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.jouer{display:inline-block;padding:7px 14px;border-radius:12px;background:var(--or);color:#161111;font-weight:700;text-decoration:none;font-size:.9rem;box-shadow:0 3px 0 rgba(0,0,0,.4)}
+.jouer:hover{filter:brightness(1.08)}
+.jouer:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.h-tab{margin-top:4px}
+.h-tab span{text-transform:none;letter-spacing:0;color:var(--brume);font-weight:400;font-size:.82rem}
+.tab{overflow-x:auto;border-radius:12px;border:1px solid var(--trait)}
+table{border-collapse:collapse;width:100%;min-width:980px;font-size:.82rem;font-variant-numeric:tabular-nums}
+thead th{background:var(--nuit-3);padding:6px 6px;text-align:center;vertical-align:top;border-bottom:1px solid var(--trait)}
+thead th a{display:inline-block;min-width:30px;padding:3px 8px;border-radius:8px;background:var(--nuit);border:1px solid var(--trait);color:var(--texte);text-decoration:none;font-weight:700}
+thead th a:hover{border-color:var(--or);color:var(--or)}
+thead th small{display:block;margin-top:3px;font-size:.68rem;color:var(--or);font-weight:700;white-space:nowrap}
+thead th.coin{text-align:left;color:var(--brume);font-weight:400}
+tbody th{text-align:left;font-weight:700;padding:6px 8px;background:var(--nuit-3);position:sticky;left:0;z-index:1;min-width:150px;max-width:190px;border-right:1px solid var(--trait)}
+td{padding:6px 8px;border-top:1px solid rgba(58,68,121,.55);vertical-align:top;color:var(--brume)}
+td.joue,thead th.joue{background:rgba(255,211,106,.06)}
+td.chg{color:var(--texte);box-shadow:inset 3px 0 0 var(--or)}
+footer{color:var(--brume);font-size:.88rem;max-width:70ch}
+@media (max-width:620px){
+  .haut{grid-template-columns:1fr}
+  figure{max-width:260px}
+  .role h2{font-size:1.6rem}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+<div class="page">
+<header class="tete">
+  <h1>Les mini-jeux de Brumeval</h1>
+  <p>Tous les mini-jeux du <b>Pisteur</b>, de l'<b>Alchimiste</b> et du <b>Sage</b> (%%NB%% en tout ; ceux du Barde ne sont plus là). Pour chacun : à quoi il ressemble, où il sert dans les enquêtes, à quel niveau on le joue, et ce qui change d'un niveau à l'autre. Chaque bouton jaune ouvre la <a href="%%SALLE%%" target="_blank" rel="noopener">salle d'entraînement</a> directement sur ce jeu, au niveau choisi.</p>
+  <div class="regle">
+    <div><b>Niveau 1 → 10</b><span>1 est le plus facile, 10 le plus dur. Les images ci-dessous sont prises au niveau 3.</span></div>
+    <div><b>Enquête 1</b><span>Niveau 1 pour tout le monde (Se cacher : niveau 3). C'est le tutoriel.</span></div>
+    <div><b>Enquête 2 et après</b><span>Un enfant joue au niveau du numéro de l'enquête ; un adulte au niveau 5 à l'enquête 2, puis ça monte jusqu'à 10 à l'enquête 10.</span></div>
+  </div>
+</header>
+<nav class="sommaire" aria-label="Les mini-jeux">%%SOMMAIRE%%</nav>
+%%SECTIONS%%
+<footer>Les niveaux joués (E1, E2 enfant, E2 adulte) sont surlignés dans chaque tableau. L'équipement du héros (bottes, potions, talents) rend ensuite chaque jeu un peu plus facile, à partir de ce niveau.</footer>
+</div>

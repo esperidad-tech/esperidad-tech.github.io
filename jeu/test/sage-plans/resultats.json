@@ -1,0 +1,801 @@
+{
+ "plans: départ décalé (erreur > 4×tolérance)": [
+  {
+   "ok": true,
+   "info": "erreur 232.5 tol 12.7"
+  }
+ ],
+ "plans: transformation exacte → gagné": [
+  {
+   "ok": true,
+   "info": "Le tunnel du vieux puits."
+  }
+ ],
+ "plans: fin appelée une seule fois": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: classe gagne + secret visible": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: hors tolérance (sans lâcher) → pas gagné": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: lâché tout près → l'aimant aligne et c'est gagné": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: mauvaise transformation → pas gagné": [
+  {
+   "ok": true,
+   "info": "erreur 69.4"
+  }
+ ],
+ "plans: bougie éteinte → raté, fin une seule fois": [
+  {
+   "ok": true,
+   "info": "La bougie s'est éteinte…"
+  }
+ ],
+ "plans: arreter() → fin jamais appelée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: arreter() pendant la révélation → fin jamais appelée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans: un doigt déplace (tx, ty)": [
+  {
+   "ok": true,
+   "info": "Δ=(31.7, 15.9) attendu (31.7, 15.9)"
+  }
+ ],
+ "plans: pincer à deux doigts zoome": [
+  {
+   "ok": true,
+   "info": "s 0.800 → 1.200"
+  }
+ ],
+ "plans: tourner à deux doigts": [
+  {
+   "ok": true,
+   "info": "θ 20.0 → 50.0"
+  }
+ ],
+ "plans: boutons ⟳ + ▶ (petits pas précis)": [
+  {
+   "ok": true,
+   "info": "Δθ 0.250°, ×1.0025"
+  }
+ ],
+ "plans: appui long sur ⟲ tourne vite": [
+  {
+   "ok": true,
+   "info": "Δθ 20.0°"
+  }
+ ],
+ "plans: réglette de rotation": [
+  {
+   "ok": true,
+   "info": "θ = 12.50"
+  }
+ ],
+ "plans: réglette de zoom": [
+  {
+   "ok": true,
+   "info": "s = 1.189"
+  }
+ ],
+ "plans: souris (glisser + molette)": [
+  {
+   "ok": true,
+   "info": "tx 19.4 s 1.094"
+  }
+ ],
+ "plans: aligné au doigt (pincer + tourner) → gagné": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: trois calques": [
+  {
+   "ok": true,
+   "info": [
+    {
+     "visibles": 4,
+     "leurres": 1,
+     "brule": true,
+     "cote": 1,
+     "dechire": true
+    },
+    {
+     "visibles": 4,
+     "leurres": 2,
+     "brule": true,
+     "cote": 0,
+     "dechire": true
+    },
+    {
+     "visibles": 4,
+     "leurres": 2,
+     "brule": true,
+     "cote": 3,
+     "dechire": true
+    }
+   ]
+  }
+ ],
+ "plans n=10: parchemins brûlés, au moins 3 repères visibles chacun": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: calque 1 actif": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: après le 1er calque, pas encore gagné": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: calque 2 actif": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: calque 3 actif": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=10: chaque calque a son propre décalage": [
+  {
+   "ok": true,
+   "info": [
+    [
+     1.582,
+     88.1,
+     -77.4,
+     7.4
+    ],
+    [
+     0.836,
+     100.4,
+     55.0,
+     -73.5
+    ],
+    [
+     0.689,
+     -43.0,
+     -49.2,
+     -36.0
+    ]
+   ]
+  }
+ ],
+ "plans n=10: les trois calques posés → gagné": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans aide « echelle »: taille déjà juste et bloquée": [
+  {
+   "ok": true,
+   "info": "s=1.000 θ=47.1"
+  },
+  {
+   "ok": true,
+   "info": "s=1.000 θ=-114.5"
+  },
+  {
+   "ok": true,
+   "info": "s=1.000 θ=72.1"
+  }
+ ],
+ "plans aide « echelle »: commandes de zoom remplacées par 🔒": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans aide « echelle »: le pincement ne change pas la taille, la rotation marche": [
+  {
+   "ok": true,
+   "info": "s=1.000 Δθ=20.0"
+  }
+ ],
+ "plans aide « rotation »: rotation déjà juste et bloquée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans aide « rotation »: torsion sans effet, zoom oui": [
+  {
+   "ok": true,
+   "info": "θ=0.00 s×1.250"
+  }
+ ],
+ "plans: les deux aides → il ne reste qu'à glisser": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans aides zone/aide/temps: tolérance ×1,5, aimant fort, 2 repères montrés, +20 s": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "e3 « Les vieux plans du moulin » → carte moulin, secret sous les meules": [
+  {
+   "ok": true,
+   "info": {
+    "carte": "moulin",
+    "secret": "meules"
+   }
+  }
+ ],
+ "e3: gagné, le secret est « la cave sous les meules »": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "ancien params {passage} → carte du moulin": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "grille: 200 énigmes générées (n=1…10) : solution unique, indices vrais, le robot gagne": [
+  {
+   "ok": true,
+   "info": "200/200 en 52 s"
+  }
+ ],
+ "grille_courbe": {
+  "1": {
+   "personnes": 3,
+   "categories": 2,
+   "multi": false,
+   "indices_min": 2,
+   "indices_med": 2,
+   "indices_max": 3,
+   "types": {
+    "nest": 16,
+    "est": 25
+   }
+  },
+  "2": {
+   "personnes": 3,
+   "categories": 3,
+   "multi": false,
+   "indices_min": 3,
+   "indices_med": 4,
+   "indices_max": 5,
+   "types": {
+    "est": 34,
+    "nest": 26,
+    "meme": 22
+   }
+  },
+  "3": {
+   "personnes": 4,
+   "categories": 3,
+   "multi": false,
+   "indices_min": 5,
+   "indices_med": 6,
+   "indices_max": 8,
+   "types": {
+    "nini": 28,
+    "meme": 26,
+    "nest": 29,
+    "est": 30,
+    "ou": 10
+   }
+  },
+  "4": {
+   "personnes": 4,
+   "categories": 3,
+   "multi": false,
+   "indices_min": 5,
+   "indices_med": 7,
+   "indices_max": 8,
+   "types": {
+    "meme": 35,
+    "nini_p": 10,
+    "nini": 23,
+    "est": 14,
+    "ou": 23,
+    "ou_p": 5,
+    "nest": 21
+   }
+  },
+  "5": {
+   "personnes": 4,
+   "categories": 4,
+   "multi": false,
+   "indices_min": 8,
+   "indices_med": 9,
+   "indices_max": 12,
+   "types": {
+    "meme": 53,
+    "ou_p": 19,
+    "ou": 12,
+    "nest": 12,
+    "apres": 33,
+    "nini": 20,
+    "nini_p": 27,
+    "est": 9
+   }
+  },
+  "6": {
+   "personnes": 4,
+   "categories": 4,
+   "multi": true,
+   "indices_min": 11,
+   "indices_med": 14,
+   "indices_max": 15,
+   "types": {
+    "ou": 8,
+    "nini": 34,
+    "meme": 63,
+    "croise": 15,
+    "rcompte": 32,
+    "compte": 47,
+    "apres": 27,
+    "ou_p": 11,
+    "nini_p": 15,
+    "nest": 6,
+    "si": 11
+   }
+  },
+  "7": {
+   "personnes": 5,
+   "categories": 4,
+   "multi": false,
+   "indices_min": 10,
+   "indices_med": 12,
+   "indices_max": 15,
+   "types": {
+    "meme": 62,
+    "si": 24,
+    "apres": 61,
+    "ou_p": 31,
+    "ou": 21,
+    "nini_p": 17,
+    "contre": 2,
+    "nini": 16,
+    "nest": 4
+   }
+  },
+  "8": {
+   "personnes": 5,
+   "categories": 4,
+   "multi": true,
+   "indices_min": 15,
+   "indices_med": 19,
+   "indices_max": 22,
+   "types": {
+    "rcompte": 38,
+    "meme": 66,
+    "soit": 19,
+    "si": 23,
+    "croise": 39,
+    "ou_p": 38,
+    "apres": 55,
+    "compte": 49,
+    "nini_p": 9,
+    "nini": 22,
+    "nest": 5,
+    "contre": 2
+   }
+  },
+  "9": {
+   "personnes": 5,
+   "categories": 4,
+   "multi": true,
+   "indices_min": 15,
+   "indices_med": 19,
+   "indices_max": 21,
+   "types": {
+    "nini": 25,
+    "apres": 35,
+    "rcompte": 36,
+    "meme": 53,
+    "soit": 44,
+    "compte": 56,
+    "ou_p": 13,
+    "nini_p": 19,
+    "si": 28,
+    "pasfaux": 15,
+    "croise": 38,
+    "nest": 3,
+    "contre": 2
+   }
+  },
+  "10": {
+   "personnes": 5,
+   "categories": 4,
+   "multi": true,
+   "indices_min": 16,
+   "indices_med": 19,
+   "indices_max": 22,
+   "types": {
+    "apres": 55,
+    "compte": 54,
+    "pasfaux": 21,
+    "nini": 23,
+    "nini_p": 23,
+    "rcompte": 49,
+    "ou_p": 12,
+    "nest": 2,
+    "croise": 39,
+    "meme": 46,
+    "si": 24,
+    "soit": 32,
+    "contre": 1
+   }
+  }
+ },
+ "grille: valider une grille incomplète ne coûte pas de cœur": [
+  {
+   "ok": true,
+   "info": "✋ Il manque des ✓ : Anselme (lieux) doit avoir une seule ✓."
+  }
+ ],
+ "grille: une mauvaise réponse coûte un cœur": [
+  {
+   "ok": true,
+   "info": "2 → 1"
+  }
+ ],
+ "grille: plus de cœurs → raté, fin une seule fois": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "grille mod « erreurs »: +2 cœurs": [
+  {
+   "ok": true,
+   "info": "1 → 3"
+  }
+ ],
+ "grille: arreter() juste après la victoire → fin jamais appelée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "grille aide: 💡 révèle une déduction juste (et ses croix)": [
+  {
+   "ok": true,
+   "info": "💡 ✗ Farinel · Chêne — grâce à l'indice 7. / ×1"
+  }
+ ],
+ "grille aide: croix automatiques autour d'une ✓": [
+  {
+   "ok": true,
+   "info": [
+    1,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "grille mod « revele »: les contradictions s'allument": [
+  {
+   "ok": true,
+   "info": "4 cases en rouge"
+  }
+ ],
+ "grille sans aide: ni croix automatiques ni contradictions montrées": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "grille: toucher un indice le barre": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "e2: l'intro décrit l'énigme fournie (4 personnes, 9 indices, consigne du maire)": [
+  {
+   "ok": true,
+   "info": "Personnes 4 À trouver 🏠 lieux, 🎒 objets, 🕰️ moments Indices 9 Cœurs (une erreur en coûte un) ❤️❤️ Sablier aucun | Le jour de la première let"
+  }
+ ],
+ "e2 « Le casse-tête du maire »: énigme fixe 4 personnes × lieu/objet/moment, 9 indices": [
+  {
+   "ok": true,
+   "info": [
+    "lieu",
+    "objet",
+    "moment"
+   ]
+  }
+ ],
+ "e2: solution unique et chaque indice nécessaire": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "e2: aucun indice ne nomme la coupable (Mélusine)": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "e2: réussie → confirme un indice (lettres sans timbre) sans donner la solution": [
+  {
+   "ok": true,
+   "info": "🌟 Tout est logique !  Le maire sourit : « Exact ! Victor n'a apporté que du courrier, avec de vrais timbres. Les lettres"
+  }
+ ],
+ "e2: résultat transmis au moteur (reussi, note)": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "ancien format de params (textes) : jouable et gagnable": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "plans n=3 à 390x844 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 352
+   }
+  }
+ ],
+ "plans n=3 à 390x844 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "plans n=10 à 390x844 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 352
+   }
+  }
+ ],
+ "plans n=10 à 390x844 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=3 à 390x844 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=3 à 390x844 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=10 à 390x844 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=10 à 390x844 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "plans n=3 à 800x1280 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 762
+   }
+  }
+ ],
+ "plans n=3 à 800x1280 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "plans n=10 à 800x1280 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 762
+   }
+  }
+ ],
+ "plans n=10 à 800x1280 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=3 à 800x1280 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=3 à 800x1280 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=10 à 800x1280 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=10 à 800x1280 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "plans n=3 à 1280x800 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 534
+   }
+  }
+ ],
+ "plans n=3 à 1280x800 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "plans n=10 à 1280x800 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 534
+   }
+  }
+ ],
+ "plans n=10 à 1280x800 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=3 à 1280x800 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=3 à 1280x800 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "grille n=10 à 1280x800 : tient dans le cadre, cibles assez grandes": [
+  {
+   "ok": true,
+   "info": {
+    "hors": 0,
+    "petites": 0,
+    "scrollX": false,
+    "carte": 0
+   }
+  }
+ ],
+ "grille n=10 à 1280x800 : aucune erreur console": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ],
+ "démo plans affichée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "démo grille affichée": [
+  {
+   "ok": true,
+   "info": ""
+  }
+ ],
+ "aucune erreur console dans tous les tests": [
+  {
+   "ok": true,
+   "info": []
+  }
+ ]
+}

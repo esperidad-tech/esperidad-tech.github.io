@@ -1,0 +1,30 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../src/base.css"><link rel="stylesheet" href="../../src/persos.css"><link rel="stylesheet" href="../../src/cabane.css">
+<style>body{padding:10px;background:#1c2447}.grille{display:flex;flex-wrap:wrap;gap:6px}.c{width:150px;background:#28325e;border-radius:10px;padding:4px;text-align:center;font-size:12px}.c svg{width:100%;height:auto;display:block}.c b{display:block}h2{margin:10px 0 4px}.rare{outline:2px solid gold}.big{width:330px}</style></head>
+<body><div id="out"></div>
+<script src="../../src/persos.js"></script><script src="../../src/garderobe.js"></script>
+<script>
+var G = Garde, P = Persos, out = document.getElementById('out');
+function hero(sexe, age, look, niv){ return Object.assign(P.defaut('pisteur', sexe), {age:age || 'adulte', niveau:niv || 5, garde:look}); }
+window.planche = function(mode, arg){
+  var s = '';
+  if(mode === 'slot'){
+    G.SLOTS.filter(function(x){ return !arg || arg.indexOf(x.id) >= 0; }).forEach(function(S){
+      s += '<h2>' + S.nom + '</h2><div class="grille">';
+      G.parSlot(S.id).forEach(function(id, i){
+        var it = G.ITEMS[id], cols = ['rouge','bleu','vert','noir','blanc','jaune'];
+        var look = {}; look[S.id] = {id:id, c:it.c};
+        var z = S.id + (it.p.hanche ? '-hanche' : '');
+        s += '<div class="c' + (it.rare ? ' rare' : '') + '">' + P.heros(hero(i % 2 ? 'm' : 'f', 'adulte', look), {vue:'pied', fond:false, anime:false, cadre:z}) + '<b>' + it.nom + '</b></div>';
+      });
+      s += '</div>';
+    });
+  }
+  if(mode === 'pied'){
+    s += '<div class="grille">';
+    arg.forEach(function(o){ s += '<div class="c big">' + P.heros(hero(o.sexe, o.age, o.look, o.niv), {vue:'pied', fond:true, anime:false, pose:o.pose}) + '<b>' + (o.nom || '') + '</b></div>'; });
+    s += '</div>';
+  }
+  out.innerHTML = s;
+};
+</script></body></html>

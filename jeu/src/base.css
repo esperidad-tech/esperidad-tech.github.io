@@ -1,0 +1,98 @@
+/* ==========================================================
+   Brumeval v2 — base commune (jetons, typographie, boutons)
+   Tous les modules (persos, carte, mini-jeux, moteur) s'appuient
+   sur ces variables. Ne pas redéfinir ailleurs.
+   ========================================================== */
+:root{
+  /* Nuit de Brumeval */
+  --nuit:#131932;
+  --nuit-2:#1c2447;
+  --nuit-3:#28325e;
+  --nuit-4:#34407a;
+  --trait:#3b4679;
+  --brume:#a6aed8;
+  --lune:#eef0ff;
+  --cyan:#8ff3ff;          /* lueurs magiques */
+  --cyan-2:#3fd0ff;
+  /* Parchemin et encre */
+  --parchemin:#f3e7cb;
+  --parchemin-2:#e8d7ae;
+  --encre:#35281b;
+  --encre-2:#6b5434;
+  /* Or des lanternes */
+  --or:#f5b945;
+  --or-pale:#ffe3a3;
+  --laiton:#b8862e;
+  --braise:#e8693c;
+  --braise-sombre:#a8391a;
+  --mousse:#7cc493;
+  --violet:#9d6ee3;
+  --rose:#ef7fa8;
+  /* Couleurs des rôles */
+  --c-pisteur:#5fcf86;
+  --c-alchimiste:#b48cff;
+  --c-barde:#ff8fb3;
+  --c-sage:#6cb6ff;
+  /* Contour du style retenu */
+  --contour:#24182e;
+  /* Polices */
+  --f-titre:"Macondo", "Georgia", "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --f-main:"Caveat", "Segoe Script", "Comic Sans MS", cursive;
+  /* Rayons, ombres */
+  --r-1:10px; --r-2:16px; --r-3:24px;
+  --ombre:0 10px 30px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{overscroll-behavior:none}   /* pas de rebond ni de « tirer pour recharger » sur toute la page */
+body{margin:0;background:var(--nuit);color:var(--lune);font-family:var(--f-texte);font-size:18px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+h1,h2,h3{font-family:var(--f-titre);font-weight:400;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.9rem,6.5vw,2.8rem);color:var(--or-pale)}
+h2{font-size:1.55rem;color:var(--or-pale)}
+h3{font-size:1.2rem;color:var(--lune)}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+[hidden]{display:none!important}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 22px;border-radius:999px;border:0;
+  background:linear-gradient(180deg,#ffd27a,var(--or));color:var(--encre);font-weight:700;font-size:1.05rem;text-align:center;
+  box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35);transition:transform .08s, box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)}
+/* La règle de tout le jeu (Romain, 4 novembre, 21 h 22) : un bouton pour ALLER quelque part ou LANCER quelque chose
+   est JAUNE avec le texte NOIR. Le .btn de base l'est déjà ; .b-aller l'impose à n'importe quel bouton (atelier, Grand Livre…).
+   Les boutons secondaires (Retour, Fermer, Plus tard : .second) restent sombres. */
+.btn:not(.second):not(.danger):not(.magie){color:#111}
+/* (même doré que .b-dore du village et de « Enquête résolue », moteur.css ; le texte noir vient de la règle au-dessus) */
+.b-aller,.btn.b-aller{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:#24182e!important;
+  box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.35)!important;font-weight:800}
+.b-aller:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)!important}
+.b-aller:disabled{filter:grayscale(.7);opacity:.55}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.second{background:rgba(238,240,255,.06);color:var(--lune);border:2px solid var(--trait);box-shadow:none}
+.btn.danger{background:linear-gradient(180deg,#ff8c62,var(--braise));color:#fff;box-shadow:0 4px 0 var(--braise-sombre)}
+.btn.magie{background:linear-gradient(180deg,#bff9ff,var(--cyan-2));color:#06243a;box-shadow:0 4px 0 #1b86a8, 0 0 22px rgba(143,243,255,.45)}
+.btn.petit{min-height:42px;padding:6px 16px;font-size:.95rem}
+.btn.grand{font-size:1.2rem;min-height:62px;padding:12px 30px}
+.btn.rond{width:52px;height:52px;padding:0;border-radius:50%}
+
+.parchemin{background:var(--parchemin);color:var(--encre);border-radius:6px 12px 8px 14px;padding:20px 18px;
+  box-shadow:0 12px 34px rgba(0,0,0,.4), inset 0 0 44px rgba(140,100,40,.22)}
+.parchemin h2,.parchemin h3{color:var(--encre)}
+.panneau{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r-2);padding:16px}
+.doux{color:var(--brume)}
+.petit{font-size:.88rem}
+.centre{text-align:center}
+.sur-titre{text-transform:uppercase;letter-spacing:.12em;font-size:.76rem;color:var(--or);font-weight:700}
+
+/* Animations communes */
+@keyframes b-apparait{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+@keyframes b-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes b-lueur{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes b-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes b-tremble{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

@@ -1,0 +1,348 @@
+{
+ "ok": true,
+ "tests": {
+  "390x844 salle : boutons differences/double/insectes présents, loupe retirée": {
+   "ok": true,
+   "info": [
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  "390x844 differences robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Superbe ! » Les 6 différences sont trouvées, sans une seule erreur !"
+  },
+  "390x844 differences robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Plus de cœurs… Il en restait 6 à trouver."
+  },
+  "390x844 double robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Superbe ! » 8 paires trouvées, sans une erreur !"
+  },
+  "390x844 double robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Presque ! » Le sablier est vide… 1 paire sur 8."
+  },
+  "390x844 insectes robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Réussi ! » Les 8 mauvais insectes sont écrasés !"
+  },
+  "390x844 insectes robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Oh non… trop de gentils insectes touchés."
+  },
+  "390x844 aucune erreur console": {
+   "ok": true,
+   "info": []
+  },
+  "800x1280 salle : boutons differences/double/insectes présents, loupe retirée": {
+   "ok": true,
+   "info": [
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  "800x1280 differences robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Réussi ! » Les 6 différences sont trouvées, sans une seule erreur !"
+  },
+  "800x1280 differences robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Plus de cœurs… Il en restait 6 à trouver."
+  },
+  "800x1280 double robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Réussi ! » 8 paires trouvées, sans une erreur !"
+  },
+  "800x1280 double robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Le sablier est vide… 1 paire sur 8."
+  },
+  "800x1280 insectes robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Bravo ! » Les 8 mauvais insectes sont écrasés !"
+  },
+  "800x1280 insectes robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Oh non… trop de gentils insectes touchés."
+  },
+  "800x1280 aucune erreur console": {
+   "ok": true,
+   "info": []
+  },
+  "1280x800 salle : boutons differences/double/insectes présents, loupe retirée": {
+   "ok": true,
+   "info": [
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  "1280x800 differences robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Superbe ! » Les 6 différences sont trouvées, sans une seule erreur !"
+  },
+  "1280x800 differences robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Raté… » Plus de cœurs… Il en restait 5 à trouver."
+  },
+  "1280x800 double robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Superbe ! » 8 paires trouvées, sans une erreur !"
+  },
+  "1280x800 double robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Presque ! » Le sablier est vide… 0 paire sur 8."
+  },
+  "1280x800 insectes robot parfait gagne (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Bravo ! » Les 8 mauvais insectes sont écrasés !"
+  },
+  "1280x800 insectes robot étourdi perd (niveau 3)": {
+   "ok": true,
+   "info": "fins=1 « Pas cette fois… » Oh non… trop de gentils insectes touchés."
+  },
+  "1280x800 aucune erreur console": {
+   "ok": true,
+   "info": []
+  },
+  "differences : 10 décors": {
+   "ok": true,
+   "info": [
+    "labo",
+    "place",
+    "lisiere",
+    "taverne",
+    "marche",
+    "herboristerie",
+    "cave",
+    "baies",
+    "moulin",
+    "puits"
+   ]
+  },
+  "differences « labo » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "teinte"
+   ]
+  },
+  "differences « place » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "teinte"
+   ]
+  },
+  "differences « lisiere » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "nombre"
+   ]
+  },
+  "differences « taverne » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "teinte"
+   ]
+  },
+  "differences « marche » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "teinte"
+   ]
+  },
+  "differences « herboristerie » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "nombre",
+    "teinte"
+   ]
+  },
+  "differences « cave » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail"
+   ]
+  },
+  "differences « baies » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "miroir",
+    "teinte"
+   ]
+  },
+  "differences « moulin » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "teinte"
+   ]
+  },
+  "differences « puits » niveau 10 : 7 différences, gagné": {
+   "ok": true,
+   "info": [
+    "deplace",
+    "detail",
+    "teinte"
+   ]
+  },
+  "differences niveau 1 : 5 différences, 6 cœurs": {
+   "ok": true,
+   "info": [
+    "absent",
+    "absent",
+    "absent",
+    "absent",
+    "absent"
+   ]
+  },
+  "differences niveau 3 : 6 différences, 5 cœurs": {
+   "ok": true,
+   "info": [
+    "couleur",
+    "deplace",
+    "absent",
+    "deplace",
+    "absent",
+    "absent"
+   ]
+  },
+  "differences niveau 6 : 7 différences, 4 cœurs": {
+   "ok": true,
+   "info": [
+    "couleur",
+    "teinte",
+    "teinte",
+    "miroir",
+    "detail",
+    "teinte",
+    "miroir"
+   ]
+  },
+  "differences cueillette « champignon » (décor cave, 3 dans la scène)": {
+   "ok": true,
+   "info": "« Tu as trouvé des champignons lumineux ! » · « Trouve les 6 différences entre les deux images pour cueillir… »"
+  },
+  "differences cueillette « baies » (décor baies, 3 dans la scène)": {
+   "ok": true,
+   "info": "« Tu as trouvé des baies de sureau ! » · « Trouve les 6 différences entre les deux images pour cueillir… »"
+  },
+  "differences cueillette « Fleur de lune » (décor puits, 3 dans la scène)": {
+   "ok": true,
+   "info": "« Tu as trouvé : Fleur de lune ! » · « Trouve les 6 différences entre les deux images pour cueillir… »"
+  },
+  "double : plan d'ordre 5 → 31 cartes de [6] symboles, 465 paires, toutes avec exactement 1 symbole commun": {
+   "ok": true,
+   "info": {
+    "cartes": 31,
+    "paires": 465,
+    "mauvaises": 0,
+    "tailles": [
+     6
+    ],
+    "doublons": false,
+    "symboles": 31
+   }
+  },
+  "double : plan d'ordre 7 → 57 cartes de [8] symboles, 1596 paires, toutes avec exactement 1 symbole commun": {
+   "ok": true,
+   "info": {
+    "cartes": 57,
+    "paires": 1596,
+    "mauvaises": 0,
+    "tailles": [
+     8
+    ],
+    "doublons": false,
+    "symboles": 57
+   }
+  },
+  "double : 57 symboles dessinés, tous différents": {
+   "ok": true,
+   "info": {
+    "n": 57,
+    "uniques": 57
+   }
+  },
+  "double niveau 3 : 8 paires montrées, chacune avec exactement 1 symbole commun (6 symboles par carte), gagné": {
+   "ok": true,
+   "info": ""
+  },
+  "double niveau 10 : 12 paires montrées, chacune avec exactement 1 symbole commun (8 symboles par carte), gagné": {
+   "ok": true,
+   "info": ""
+  },
+  "insectes niveau 8 : robot parfait écrase les mauvais et range les gentils dans le bocal (glisser)": {
+   "ok": true,
+   "info": "13 écrasés, 5 rangés · Les 13 mauvais insectes sont écrasés et 5 gentils rangés dans le bocal ⭐ !"
+  },
+  "800x1280 insectes + ensuite:differences : insectes puis 7 différences du labo, fin une seule fois": {
+   "ok": true,
+   "info": "Labo nettoyé, puis : Les 6 différences sont trouvées, sans une seule erreur !"
+  },
+  "390x844 insectes + ensuite:differences : insectes puis 7 différences du labo, fin une seule fois": {
+   "ok": true,
+   "info": "Labo nettoyé, puis : Les 6 différences sont trouvées, sans une seule erreur !"
+  },
+  "differences : après arreter(), plus de boucle (rAF +0) et fin jamais appelée": {
+   "ok": true,
+   "info": ""
+  },
+  "double : après arreter(), plus de boucle (rAF +0) et fin jamais appelée": {
+   "ok": true,
+   "info": ""
+  },
+  "insectes : après arreter(), plus de boucle (rAF +0) et fin jamais appelée": {
+   "ok": true,
+   "info": ""
+  },
+  "insectes : arreter() pendant l'enchaînement → pas d'étape différences, fin jamais appelée": {
+   "ok": true,
+   "info": ""
+  },
+  "differences mods : aide (💡 montre une différence sur les 2 images), revele (scintillements), erreurs (+2 cœurs)": {
+   "ok": true,
+   "info": "indice=2 scint=14 cœurs=6 (base 4)"
+  },
+  "double mods : aide (le symbole commun brille sur les 2 cartes), erreurs (+1 bouclier)": {
+   "ok": true,
+   "info": "indice=2 boucliers=1"
+  },
+  "insectes mods : revele (rond rouge sur les mauvais), aide (un mauvais est montré)": {
+   "ok": true,
+   "info": "revele=5 indice=1"
+  },
+  "mods lent / temps : insectes plus lents, sablier plus long": {
+   "ok": true,
+   "info": [
+    40,
+    32,
+    95,
+    105
+   ]
+  },
+  "800x1280 : aucune erreur console (tests 2 à 6)": {
+   "ok": true,
+   "info": []
+  }
+ }
+}

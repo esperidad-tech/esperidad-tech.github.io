@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc d'essai — Le chaudron</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/mj-core.css">
+<link rel="stylesheet" href="../../src/mj-chaudron.css">
+<style>
+  html,body{height:100%;overflow:hidden}
+  body{display:flex;flex-direction:column}
+  #banc{flex:1;min-height:0;padding:6px;display:flex}
+  #banc > .mj{flex:1}
+  #reglages{position:fixed;right:8px;bottom:8px;z-index:100;font-size:.85rem}
+  #reglages > summary{list-style:none;width:44px;height:44px;border-radius:50%;background:#1c2447;border:2px solid #3b4679;display:grid;place-items:center;cursor:pointer;font-size:1.3rem;margin-left:auto}
+  #reglages > summary::-webkit-details-marker{display:none}
+  .m{width:min(92vw,360px);background:#1c2447;border:2px solid #3b4679;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .m .l{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .m select,.m button{font:inherit;min-height:34px;border-radius:10px;border:1px solid #3b4679;background:#28325e;color:#eef0ff;padding:2px 8px}
+  #res{font-family:monospace;font-size:.75rem;color:#a6aed8}
+</style>
+</head>
+<body>
+<div id="banc"></div>
+<details id="reglages"><summary>⚙️</summary><div class="m">
+  <div class="l"><label>Potion <select id="potion"></select></label><label>Niveau <select id="niv"></select></label></div>
+  <div class="l"><label><input type="checkbox" data-mod="zone" data-v="1.3"> zone</label><label><input type="checkbox" data-mod="lent" data-v="0.8"> lent</label>
+    <label><input type="checkbox" data-mod="temps" data-v="3"> temps</label><label><input type="checkbox" data-mod="erreurs" data-v="1"> +1 vie</label>
+    <label><input type="checkbox" data-mod="aide" data-v="1"> aide</label><label><input type="checkbox" data-mod="revele" data-v="1"> révèle</label>
+    <label><input type="checkbox" data-mod="facile" data-v="1"> facile</label><label><input type="checkbox" id="secret"> secrète</label></div>
+  <div class="l"><button id="go">▶ Avec consigne</button><button id="direct">⏩ Direct</button></div>
+  <div id="res"></div>
+</div></details>
+<script>window.Brume = {lire:function(t){ console.log('[lire] ' + t); }, stop:function(){}, son:function(){}};</script>
+<script src="../../src/donnees.js"></script>
+<script src="../../src/mj-core.js"></script>
+<script src="../../src/mj-chaudron.js"></script>
+<script>
+(function(){
+  var D = DONNEES, banc = document.getElementById('banc'), partie = null;
+  Object.keys(D.CHAUDRON).forEach(function(id){ var o = document.createElement('option'); o.value = id; o.textContent = D.POTIONS[id].ic + ' ' + D.POTIONS[id].nom + ' → ' + D.CHAUDRON[id].zone; document.getElementById('potion').appendChild(o); });
+  for(var i = 1; i <= 10; i++){ var o = document.createElement('option'); o.value = i; o.textContent = i; if(i === 3) o.selected = true; document.getElementById('niv').appendChild(o); }
+  function mods(){ var m = {}; document.querySelectorAll('[data-mod]').forEach(function(c){ if(c.checked) m[c.getAttribute('data-mod')] = +c.getAttribute('data-v'); }); return m; }
+  window.lancer = function(o){
+    o = o || {};
+    if(partie) partie.arreter();
+    window.resultat = null;
+    var p = MJ.reglages('chaudron', o.niveau || +document.getElementById('niv').value, o.mods || mods());
+    p.potion = o.potion || document.getElementById('potion').value;
+    if(o.stock) p.stock = o.stock;
+    if(o.connue === false || document.getElementById('secret').checked) p.connue = false;
+    partie = MJ.lancer(banc, 'chaudron', p, function(r){ window.resultat = r; document.getElementById('res').textContent = JSON.stringify(r); }, {lireAuto:false, sansIntro:!!o.direct, deuxiemeChance:false});
+    return p;
+  };
+  document.getElementById('go').onclick = function(){ lancer(); };
+  document.getElementById('direct').onclick = function(){ lancer({direct:true}); };
+  lancer();
+})();
+</script>
+</body>
+</html>

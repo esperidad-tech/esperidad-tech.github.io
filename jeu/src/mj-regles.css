@@ -1,0 +1,115 @@
+/* Brumeval v2 — démos des écrans d'accueil des mini-jeux (mj-regles.js), dessinées en 300 × 420 */
+.rg-demo-svg{display:block;width:100%;height:100%}
+.rg-h{position:absolute;inset:0;overflow:hidden;font-family:var(--f-texte);color:var(--lune)}
+.rg-main-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
+.rg-h .appuye{transform:translateY(3px);box-shadow:0 1px 0 var(--contour)!important}
+.rg-emoji{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:5rem}
+.rg-bouton-g{position:absolute;left:20px;right:20px;height:48px;border-radius:24px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:var(--contour)}
+/* Mensonge */
+.rg-mens{background:radial-gradient(120% 80% at 50% 0%, #3a2140, #1c1430 75%)}
+.rg-puces{position:absolute;left:0;right:0;top:12px;display:flex;justify-content:center;gap:10px}
+.rg-puces i{font-style:normal;width:34px;height:34px;border-radius:10px;border:2px solid rgba(255,227,163,.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--brume)}
+.rg-puces i.on{border-color:var(--or);color:var(--or-pale);background:rgba(245,185,69,.15)}
+.rg-puces i.ment{background:#e2557f;border-color:#ffa9c6;color:#fff;font-size:0}
+.rg-puces i.ment::after{content:'🤥';font-size:18px}
+.rg-puces i.fini{border-color:#5fcf86}
+.rg-mens-visage{position:absolute;left:50px;top:56px;width:200px;height:200px;border-radius:20px;overflow:hidden;border:3px solid var(--contour);box-shadow:0 0 0 3px rgba(255,143,179,.35);background:#f3e7cb}
+.rg-mens-visage svg{width:100%;height:100%;display:block}
+.rg-mens.reussi .rg-mens-visage{box-shadow:0 0 0 5px #5fcf86, 0 0 24px #5fcf86}
+.rg-mens-bulle{position:absolute;left:14px;right:14px;top:268px;min-height:56px;box-sizing:border-box;padding:8px 50px 8px 14px;border-radius:16px;background:var(--parchemin);color:var(--encre);font-size:16px;font-weight:700;display:flex;align-items:center;line-height:1.2}
+.rg-lire-faux{position:absolute;right:8px;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:16px}
+.rg-mens-b,.rg-mens-v{position:absolute;left:20px;right:20px;top:340px;height:50px;border-radius:25px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;background:linear-gradient(180deg,#ffa9c6,#e2557f)}
+.rg-mens-v{background:linear-gradient(180deg,#ffe3a3,#f5b945);color:var(--contour)}
+/* Ragots : la taverne */
+.rg-rag{background:radial-gradient(120% 90% at 50% 0%, #4a2a18, #24140c 75%)}
+.rg-rag-qui{position:absolute;left:84px;top:12px;width:132px;height:132px;border-radius:20px;overflow:hidden;border:3px solid var(--contour);background:#f3e7cb}
+.rg-rag-qui svg{width:100%;height:100%;display:block}
+.rg-rag-bulle{position:absolute;left:14px;right:14px;top:166px;min-height:86px;box-sizing:border-box;padding:12px 54px 12px 16px;border-radius:18px;background:var(--parchemin);color:var(--encre);font-size:17px;font-weight:700;line-height:1.25;display:flex;align-items:center;transform-origin:50% 0;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.rg-rag-bulle::before{content:'';position:absolute;left:50%;top:-12px;margin-left:-12px;border:12px solid transparent;border-top:0;border-bottom-color:var(--parchemin)}
+.rg-rag-lire{position:absolute;right:10px;top:50%;margin-top:-19px;width:38px;height:38px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:18px}
+.rg-rag-b{position:absolute;top:320px;width:134px;height:60px;border-radius:18px;border:3px solid var(--contour);color:var(--contour);box-shadow:0 5px 0 var(--contour);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-sizing:border-box;white-space:nowrap}
+.rg-rag-b.oui{left:14px;background:#9fe0b4}
+.rg-rag-b.non{left:154px;background:#ffb39a}
+.rg-rag-note{position:absolute;left:50%;top:268px;padding:5px 14px;border-radius:12px;background:#fff4d0;color:var(--encre);font-weight:800;font-size:17px;opacity:0;white-space:nowrap}
+/* Mots perdus */
+.rg-mots{background:#1c2447}
+.rg-mots-carte{position:absolute;left:14px;right:14px;top:40px;padding:22px 18px;border-radius:16px;background:var(--parchemin);color:var(--encre);font-size:21px;font-weight:700;line-height:1.3}
+.rg-mots-carte p{margin:0 0 14px}
+.rg-mots-carte p:last-child{margin:0}
+.rg-mots-carte .qui{font-size:22px}
+.rg-mots .trou{display:inline-block;min-width:56px;padding:2px 8px;border-radius:10px;border:2.5px dashed #c9a2b4;text-align:center;font-weight:800}
+.rg-mots .trou.choisi{border-color:var(--or);background:#ffe3a3}
+.rg-mots .trou.plein{border-style:solid;border-color:#b48cff;background:#efe6ff}
+.rg-mots .trou.juste{border-color:#3f9a62;background:#c9f2d5}
+.rg-mots-liste{position:absolute;left:24px;right:24px;top:220px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rg-mots-liste span,.rg-mots-vol{display:flex;align-items:center;justify-content:center;height:46px;border-radius:23px;border:3px solid var(--rose);color:var(--lune);font-size:19px;font-weight:700;background:rgba(239,127,168,.1)}
+.rg-mots-liste span.pris{opacity:.25}
+.rg-mots-vol{position:absolute;width:110px;transform:translate(-50%,-50%);background:#3a2f5a;opacity:0;z-index:4}
+.rg-mots-v,.rg-alpha-v,.rg-gr-v{position:absolute;left:50px;right:50px;height:46px;border-radius:23px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);background:linear-gradient(180deg,#ffe3a3,#f5b945);color:var(--contour);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+.rg-mots-v{top:356px}
+.rg-mots.reussi .rg-mots-carte{box-shadow:0 0 0 5px #5fcf86, 0 0 26px #5fcf86}
+/* Dépositions */
+.rg-dep{background:radial-gradient(120% 80% at 50% 0%, #4a2a4a, #1c1430 75%)}
+.rg-dep-c{position:absolute;left:12px;right:12px;height:80px;box-sizing:border-box;padding:8px 12px 8px 56px;border-radius:14px;background:#fff8e8;color:var(--encre);border:3px solid transparent}
+.rg-dep-c.c0{top:14px}.rg-dep-c.c1{top:102px}.rg-dep-c.c2{top:190px}
+.rg-dep-c .ic{position:absolute;left:10px;top:50%;margin-top:-20px;font-size:34px;line-height:40px}
+.rg-dep-c b{display:block;font-family:var(--f-titre);font-weight:400;font-size:17px;color:#b03a6a}
+.rg-dep-c p{margin:2px 0 0;font-size:16px;font-weight:700;line-height:1.25}
+.rg-dep-c .sur{background-repeat:no-repeat;background-size:0% 100%;padding:0 2px}
+.rg-dep-c.c0 .sur,.rg-dep-c.c1 .sur{background-image:linear-gradient(#8ee6a8,#8ee6a8)}
+.rg-dep-c.c2 .sur{background-image:linear-gradient(#ff9a9a,#ff9a9a)}
+.rg-dep-c.choisie{border-color:#ff8fb3}
+.rg-dep-c .tampon{position:absolute;right:10px;top:50%;margin-top:-24px;font-size:40px;line-height:48px;opacity:0;transform:rotate(-14deg) scale(1.4);transition:opacity .2s, transform .2s}
+.rg-dep-c.accusee{border-color:#e2557f;box-shadow:0 0 18px #e2557f}
+.rg-dep-c.accusee .tampon{opacity:1;transform:rotate(-14deg) scale(1)}
+.rg-dep-stylos{position:absolute;left:12px;right:12px;top:286px;display:flex;gap:8px}
+.rg-dep-stylos .s{flex:1;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--contour);border:3px solid transparent}
+.rg-dep-stylos .v{background:#8ee6a8}.rg-dep-stylos .r{background:#ff9a9a}.rg-dep-stylos .j{background:#ffe08a}
+.rg-dep-stylos .s.on{border-color:#fff;box-shadow:0 0 0 3px var(--contour)}
+.rg-dep-acc{position:absolute;left:40px;right:40px;top:350px;height:46px;border-radius:23px;border:3px solid var(--contour);box-shadow:0 5px 0 var(--contour);background:linear-gradient(180deg,#ffa9c6,#e2557f);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+/* Alphabet secret */
+.rg-alpha{background:#1c2447}
+.rg-alpha-parch{position:absolute;left:14px;right:14px;top:30px;height:116px;border-radius:14px;background:var(--parchemin);display:flex;justify-content:center;align-items:center;gap:10px}
+.rg-alpha .case{width:52px;height:96px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 0;box-sizing:border-box;border:3px solid transparent}
+.rg-alpha .case b{font-size:32px;line-height:1;color:var(--encre)}
+.rg-alpha .case i{font-style:normal;width:40px;height:36px;border-bottom:3px solid var(--encre-2);font-size:28px;font-weight:800;color:#2f4f9a;text-align:center;line-height:36px}
+.rg-alpha .case.choisie{border-color:#3fd0ff;background:rgba(63,208,255,.15)}
+.rg-alpha-cle{position:absolute;left:14px;right:14px;top:162px;height:52px;border-radius:12px;background:rgba(243,231,203,.9);color:var(--encre);display:flex;align-items:center;justify-content:space-around;font-size:17px;font-weight:800;padding:0 6px}
+.rg-alpha-clav{position:absolute;left:20px;right:20px;top:256px;display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px}
+.rg-alpha-clav span{height:44px;border-radius:10px;background:var(--parchemin);color:var(--encre);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;box-shadow:0 4px 0 var(--encre-2)}
+.rg-alpha-v{top:366px}
+.rg-alpha.reussi .rg-alpha-parch{box-shadow:0 0 0 5px #5fcf86, 0 0 26px #5fcf86}
+/* Grille de déduction */
+.rg-gr{background:#1c2447}
+.rg-gr .ind{position:absolute;left:14px;right:14px;height:40px;margin:0;box-sizing:border-box;padding:0 12px;border-radius:12px;background:var(--parchemin);color:var(--encre);display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;border:3px solid transparent}
+.rg-gr .ind i{font-style:normal;width:24px;height:24px;border-radius:50%;background:#3f7ad0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.rg-gr .i0{top:12px}.rg-gr .i1{top:60px}
+.rg-gr .ind.lu{border-color:var(--or)}
+.rg-gr .ind.fait{opacity:.45;text-decoration:line-through}
+.rg-gr-g{position:absolute;left:32px;top:112px;display:grid;grid-template-columns:60px 80px 80px;grid-template-rows:40px 66px 66px;gap:8px}
+.rg-gr-g b{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:400}
+.rg-gr-g span{border-radius:10px;background:var(--parchemin);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
+.rg-gr-g span.x{color:#c0392b}
+.rg-gr-g span.v{color:#2f9e44;background:#c9f2d5}
+.rg-gr-g span.auto{opacity:.75}
+.rg-gr-v{top:340px}
+.rg-gr.reussi .rg-gr-g{filter:drop-shadow(0 0 10px #5fcf86)}
+/* Mensonge : le catalogue des mimiques sous la phrase (l'accueil défile pour ce jeu) */
+.rg-cat{display:flex;flex-direction:column;gap:14px;padding-bottom:6px}
+.rg-cat-t{margin:0 0 8px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--f-titre);font-weight:400;font-size:1.2rem}
+.rg-cat-t .rg-cat-lire{margin:0;width:40px;height:40px;font-size:1.15rem}
+.rg-cat-s.ment .rg-cat-t{color:#ff8a8a}
+.rg-cat-s.vrai .rg-cat-t{color:#8ee6a8}
+.rg-cat-g{display:grid;grid-template-columns:repeat(auto-fill, 76px);justify-content:center;gap:10px 6px}
+.rg-cat-c{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.rg-cat-f{width:68px;height:68px;border-radius:14px;overflow:hidden;background:#f3e7cb;border:3px solid #5fcf86;box-sizing:border-box}
+.rg-cat-s.ment .rg-cat-f{border-color:#e5484d;box-shadow:0 0 0 2px rgba(229,72,77,.3)}
+.rg-cat-s.vrai .rg-cat-f{border-color:#5fcf86}
+.rg-cat-f svg{width:100%;height:100%;display:block}
+.rg-cat-c figcaption{font-size:.78rem;font-weight:700;line-height:1.12;text-align:center;color:var(--lune);max-width:76px;overflow-wrap:break-word}
+@media (min-width:700px){ .rg-cat-g{grid-template-columns:repeat(auto-fill, 92px)} .rg-cat-f{width:82px;height:82px} .rg-cat-c figcaption{max-width:92px;font-size:.85rem} }
+.rg-cat-f svg{transform:scale(1.38);transform-origin:50% 64%}
+/* Mensonge : le bouton « 📖 Les signes » pendant la partie (ouvre l'écran des 7 signes du jeu) */
+.mjb-mensonge .mjb-m-signes{min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid rgba(255,227,163,.7);background:rgba(36,24,46,.85);color:var(--or-pale);font-weight:700;font-size:.95rem;white-space:nowrap}
+.mjb-mensonge .mjb-m-signes:active{transform:scale(.96)}
+.mjb-mensonge.verdict .mjb-m-signes{display:none}

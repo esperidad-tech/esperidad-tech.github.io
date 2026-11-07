@@ -1,0 +1,576 @@
+<title>Dialogues du matin de Brumeval</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Mise en page : une colonne de lecture, des tiroirs fermés (un par villageois), des questions repliées dedans. */
+:root{
+  --bg:#eef2f3; --surface:#ffffff; --surface-2:#f5f7f8; --ink:#1c2a38; --muted:#5b6b78; --line:#d5dde2;
+  --gold:#a8700c; --gold-bg:#fbf1dc; --blue:#2c5d8f; --blue-bg:#e6eef7; --sage:#3f7154; --sage-bg:#e5f1e9; --rose:#b13a63; --rose-bg:#f8e6ec;
+  --ok:#2f7a48;
+  --display:"Alegreya", Georgia, "Times New Roman", serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111a23; --surface:#18232e; --surface-2:#1d2a36; --ink:#e4eaef; --muted:#9aa9b5; --line:#2c3b48;
+  --gold:#e5b04e; --gold-bg:#3a2e17; --blue:#8bb6e3; --blue-bg:#1d3047; --sage:#8fc6a2; --sage-bg:#1b3326; --rose:#ee8fb0; --rose-bg:#3d1f2b; --ok:#7fd19a;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#111a23; --surface:#18232e; --surface-2:#1d2a36; --ink:#e4eaef; --muted:#9aa9b5; --line:#2c3b48;
+  --gold:#e5b04e; --gold-bg:#3a2e17; --blue:#8bb6e3; --blue-bg:#1d3047; --sage:#8fc6a2; --sage-bg:#1b3326; --rose:#ee8fb0; --rose-bg:#3d1f2b; --ok:#7fd19a;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:24px 48px}
+.page{max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+header h1{font-family:var(--display); font-weight:700; font-size:2rem; line-height:1.15; margin:0; text-wrap:balance}
+header p{margin:6px 0 0; color:var(--muted)}
+.outils{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.outils button{font:inherit; font-size:.9rem; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.outils button:focus-visible, summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+.legende{display:flex; flex-wrap:wrap; gap:6px 12px; font-size:.85rem; color:var(--muted)}
+.chip{display:inline-flex; align-items:center; gap:4px; font-size:.75rem; font-weight:700; letter-spacing:.02em; padding:2px 8px; border-radius:999px; white-space:nowrap}
+.chip{max-width:100%; white-space:normal}
+.page > *, .page > * > *{min-width:0; max-width:100%}
+.c-ruban{background:var(--gold-bg); color:var(--gold)} .c-enquete{background:var(--blue-bg); color:var(--blue)}
+.c-suite{background:var(--sage-bg); color:var(--sage)} .c-ment{background:var(--rose-bg); color:var(--rose)}
+h2.groupe{font-family:var(--display); font-size:1.35rem; margin:12px 0 0; text-wrap:balance}
+p.groupe-intro{margin:-12px 0 0; color:var(--muted); font-size:.95rem}
+.liste{display:flex; flex-direction:column; gap:10px}
+details.perso{background:var(--surface); border:1px solid var(--line); border-radius:12px}
+details.perso > summary{list-style:none; cursor:pointer; padding:14px 16px; display:grid; grid-template-columns:1fr auto; gap:2px 12px; align-items:center}
+details.perso > summary::-webkit-details-marker{display:none}
+.nom{font-family:var(--display); font-weight:700; font-size:1.2rem}
+.lieu{grid-column:1; color:var(--muted); font-size:.9rem}
+.fleche{grid-row:1 / span 2; grid-column:2; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--surface-2); color:var(--muted); transition:transform .2s}
+details[open] > summary .fleche{transform:rotate(90deg)}
+.resume{grid-column:1; display:flex; flex-wrap:wrap; gap:6px; margin-top:4px}
+.corps{padding:0 16px 16px; display:flex; flex-direction:column; gap:8px}
+.signe{font-size:.9rem; color:var(--muted); font-style:italic; margin:0 0 4px}
+details.q{border-top:1px solid var(--line)}
+details.q > summary{list-style:none; cursor:pointer; padding:10px 0; display:flex; gap:10px; align-items:flex-start}
+details.q > summary::-webkit-details-marker{display:none}
+.num{flex:none; width:22px; height:22px; border-radius:50%; background:var(--surface-2); color:var(--muted); font-size:.8rem; font-weight:700; display:grid; place-items:center; margin-top:1px}
+.qtexte{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px}
+.qtexte b{font-weight:700}
+.tags{display:flex; flex-wrap:wrap; gap:4px}
+.rep{margin:0 0 10px 32px; padding:10px 12px; background:var(--surface-2); border-radius:8px; display:flex; flex-direction:column; gap:6px}
+.rep p{margin:0}
+.etiq{font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.etiq.ment{color:var(--rose)} .etiq.vrai{color:var(--ok)}
+.lettre{font-family:var(--display); font-size:1.05rem; font-style:italic; background:var(--surface-2); border-left:3px solid var(--gold); padding:10px 14px; border-radius:0 8px 8px 0; margin:0}
+.corps ul{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px}
+.etape h3{font-family:var(--display); font-size:1.05rem; margin:8px 0 4px}
+.choix{display:flex; flex-direction:column; gap:6px; margin:0; padding:0; list-style:none}
+.choix li{padding:8px 10px; border-radius:8px; background:var(--surface-2); display:flex; flex-direction:column; gap:2px}
+.choix li.bon{background:var(--sage-bg)}
+.choix li.bon .t::before{content:"✓ "; color:var(--ok); font-weight:700}
+.choix .rp{color:var(--muted); font-size:.92rem}
+.tab-wrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:.92rem}
+th, td{text-align:left; padding:8px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.note{color:var(--muted); font-size:.92rem; margin:0}
+.onglets{display:flex; gap:4px; border-bottom:2px solid var(--line); overflow-x:auto}
+.onglets button{font:inherit; font-family:var(--display); font-weight:700; font-size:1.15rem; padding:10px 16px; border:0; background:none; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; white-space:nowrap}
+.onglets button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--gold)}
+.onglets button:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+details.perso.occupe{background:var(--rose-bg); border-color:var(--rose)}
+details.perso.occupe .nom{color:var(--rose)}
+details.perso.occupe .rep{margin-left:0; background:var(--surface)}
+.talents{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.talents-titre{font-weight:700; font-size:.9rem}
+.talents button{font:inherit; font-size:.9rem; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.talents button[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.talents button:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+.note:empty{display:none}
+.ecoute{display:none; flex-direction:column; gap:4px; padding:10px 12px; border-radius:8px; border:1px dashed var(--gold); background:var(--gold-bg)}
+.ecoute p{margin:0}
+.ecoute .etiq{color:var(--gold)}
+body.t-tendre .ecoute{display:flex}
+#p-aprem .ecoute{display:none}
+.chip.exige{display:none}
+body.t-exige .chip.exige{display:inline-flex}
+.c-rire{background:var(--surface-2); color:var(--muted)}
+@media (prefers-reduced-motion: reduce){ .fleche{transition:none} }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Enquête 3 · les dialogues du Barde</h1>
+    <p>Touche un villageois pour l'ouvrir, puis une question pour voir sa réponse. En rouge : ceux qui sont occupés à ce moment-là ; touche-les pour lire ce qu'ils répondent.</p>
+  </header>
+  <div class="outils">
+    <button type="button" id="tout-ouvrir">Tout ouvrir</button>
+    <button type="button" id="tout-fermer">Tout fermer</button>
+  </div>
+  <div class="legende">
+    <span><span class="chip c-ruban">Ruban</span> sert pour un grand dialogue</span>
+    <span><span class="chip c-enquete">Enquête</span> fait avancer l'enquête</span>
+    <span><span class="chip c-suite">Histoire</span> en apprend plus sur le village</span>
+    <span><span class="chip c-ment">Ment</span> il ment d'abord</span>
+  </div>
+  <div class="talents" role="group" aria-label="Talent du Barde">
+    <span class="talents-titre">Talent du Barde :</span>
+    <button type="button" data-t="" aria-pressed="true">Aucun</button>
+    <button type="button" data-t="tendre" aria-pressed="false">👂 Tendre l'oreille</button>
+    <button type="button" data-t="exige" aria-pressed="false">⚖️ Exige la vérité</button>
+  </div>
+  <p class="note" id="talent-note"></p>
+  <div class="onglets" role="tablist">
+    <button type="button" role="tab" id="o-matin" data-p="matin" aria-selected="true">Matin</button>
+    <button type="button" role="tab" id="o-aprem" data-p="aprem" aria-selected="false">Après-midi</button>
+    <button type="button" role="tab" id="o-suite" data-p="suite" aria-selected="false">Ce qui se prépare</button>
+    <button type="button" role="tab" id="o-barde" data-p="barde" aria-selected="false">Talents et objets</button>
+  </div>
+  <div id="p-matin" class="page" role="tabpanel"></div>
+  <div id="p-aprem" class="page" role="tabpanel" hidden></div>
+  <div id="p-suite" class="page" role="tabpanel" hidden></div>
+  <div id="p-barde" class="page" role="tabpanel" hidden></div>
+</div>
+
+<script>
+const R = (d) => ({k:'ruban', d}), EN = {k:'enquete'}, SU = {k:'suite'}, M = {k:'ment'};
+const NOMS = {ruban:'Ruban', enquete:'Enquête', suite:'Histoire', ment:'Ment', rire:'Pour rire'};
+const CL = {ruban:'c-ruban', enquete:'c-enquete', suite:'c-suite', ment:'c-ment', rire:'c-rire'};
+
+const MENEURS = [
+ {nom:`Gaspard`, lieu:`La boulangerie`, signe:`Il ne ment jamais.`, qs:[
+  {q:`Et le maire, il est comment ?`, t:[R(`maire, étape 1`)], r:`« Le maire ? Il est très fier de ses fêtes. C'est ce qui lui fait le plus plaisir au monde. Ce matin, il m'a commandé le plus gros gâteau de ma vie ! »`},
+  {q:`Odette est toujours votre première cliente ?`, t:[EN], r:`« Tous les matins depuis quarante ans, à l'aube : une brioche aux raisins. Ses chats l'attendent devant ma porte. Ce matin, ils étaient encore là… tous sauf Moustache, le gros gris. Celui-là ne la quitte jamais. »`},
+  {q:`Qu'est-ce que vous pensez de la lettre ?`, t:[EN], r:`« Ça m'a fait plaisir… et en même temps, c'est drôle : Odette parle de sa canne, mais pas un mot de ses chats. Elle qui ne parle QUE de ses chats ! »`},
+  {q:`Depuis quand votre famille fait-elle le pain ici ?`, t:[SU], r:`« Depuis toujours ! Mon four a été construit par mon arrière-arrière-grand-mère. Il est si vieux que les briques du fond portent de drôles de dessins, comme des petites étoiles. Personne ne sait qui les a gravés. »`}]},
+ {nom:`Margot`, lieu:`La taverne, elle prépare la fête`, signe:`Quand elle ment, elle baisse les yeux et lève les sourcils.`, qs:[
+  {q:`Et le maire, il est comment ?`, t:[R(`maire, étape 2`)], r:`« Ce qu'il déteste par-dessus tout, c'est qu'on raconte qu'il cache des choses. Une fois, j'ai dit en riant qu'il avait un coffre secret… il est devenu tout rouge ! »`},
+  {q:`Vous croyez qu'Odette est vraiment chez sa sœur ?`, t:[M, EN], r:`« Bien sûr ! Elle m'en parlait tout le temps, de sa sœur. »`, v:`« Bon… non. Je ne l'ai jamais entendue parler d'une sœur. Mais tout le monde était si content ce matin… je n'ai pas voulu gâcher la fête. »`},
+  {q:`Quelle est la plus vieille légende de Brumeval ?`, t:[SU], r:`« Celle des Cinq ! Ma grand-mère disait que cinq familles ont bâti le village, il y a très longtemps, par-dessus une autre ville, encore plus vieille. Et qu'un jour, les enfants des Cinq reviendraient. Des histoires de grand-mère, bien sûr… »`},
+  {q:`Qu'est-ce qui se prépare pour la fête ?`, t:[R(`nuit, Mélusine`)], r:`« Tout le village sera sur la place ! Gaspard fait un gâteau énorme, Anselme sonnera les cloches, et Mélusine coud les banderoles jour et nuit. Elle a même acheté du tissu tout neuf… elle qui n'a jamais un sou. »`}]},
+ {nom:`Victor`, lieu:`La poste`, signe:`Quand il ment, il se mord la lèvre, très vite.`, qs:[
+  {q:`Et le maire, il est comment ?`, t:[R(`maire, étape 3`)], r:`« Très ordonné. Il range tous ses papiers dans son grand coffre, et il les compte chaque soir avant d'aller dormir. Gare à celui qui en emprunte un ! »`},
+  {q:`C'est vous qui avez apporté la lettre d'Odette ?`, t:[EN], r:`« Moi ? Non ! Elle n'est jamais passée par la poste : pas de timbre, pas de tampon. Et je vais vous dire autre chose : en vingt ans de tournée, Odette n'a jamais reçu une seule lettre. Ni d'une sœur, ni de personne. »`},
+  {q:`Quel est l'endroit le plus étrange de votre tournée ?`, t:[SU], r:`« Le vieux puits. Les jours de brume, j'entends comme de l'eau qui coule tout au fond… alors qu'il est sec depuis cent ans. Je passe très vite, je vous le dis ! »`},
+  {q:`Vous n'avez jamais peur, pendant votre tournée ?`, t:[M, SU], r:`« Peur, moi ? Jamais de la vie ! »`, v:`« Bon… si. J'ai peur des chats ! Et depuis hier, ceux d'Odette me suivent partout en miaulant. Ils ont faim, les pauvres… »`}]},
+ {nom:`Fortuné`, lieu:`La place, il vend des lampions`, signe:`Quand il ment, ses yeux filent sur le côté, avec un petit sourire de travers.`, qs:[
+  {q:`Et le maire, il est comment ?`, t:[M, R(`le leurre`)], r:`« Le maire ? Il adore qu'on lui parle de son chapeau neuf ! »`, v:`« Bon… c'est surtout moi qui voudrais lui vendre un chapeau. »`},
+  {q:`D'où venez-vous, avec votre carriole ?`, t:[SU], r:`« De partout ! Je suis le seul à traverser la brume, une fois par mois. Et je vais te dire un secret : quand je la traverse, j'ai toujours l'impression qu'elle me regarde… Brrr. Bon, un lampion ? »`},
+  {q:`Vous avez revu l'homme en cape noire ?`, t:[R(`nuit, Mélusine`)], r:`« Celui qui m'a acheté toute ma poudre noire ? Jamais revu. Mais hier soir, très tard, quelqu'un m'a acheté un flacon d'encre et une plume. Je n'ai vu que sa main, par la fenêtre de ma carriole : une main fine, avec des épingles plantées dans la manche. »`},
+  {q:`Qu'est-ce que vous vendez de plus précieux ?`, t:[SU], r:`« Ça ! » Il sort une vieille clé rouillée, couverte de petits dessins de runes. « Je l'ai trouvée de l'autre côté de la brume, dans des ruines. Personne n'en veut. » Dès ce dialogue, la clé apparaît dans la boutique du Barde, à 320 pièces.`}]}
+];
+
+const AUTRES = [
+ {nom:`Mélusine`, lieu:`Son atelier, elle coud les banderoles`, signe:`Quand elle ment, le haut de son front devient rose.`, qs:[
+  {q:`Vous avez entendu la lettre d'Odette ?`, t:[M, R(`nuit, Mélusine`)], r:`« Oui… enfin, de loin. Je n'ai pas bien écouté. Je ne sais rien de cette lettre, moi ! »`, v:`« Bon… si, je l'ai entendue. » Mélusine a les larmes aux yeux. « Je ne peux pas en dire plus. Pas maintenant. »`},
+  {q:`Pourquoi Odette part-elle toujours avec sa canne ?`, t:[EN], r:`« C'est moi qui la lui ai offerte ! Sept chats gravés, un pour chacun des siens. Elle dit qu'avec sa canne, elle n'a jamais peur. Elle ne la quitterait pour rien au monde… » Elle baisse la voix : « Pour rien au monde. »`},
+  {q:`Vous avez acheté du beau tissu neuf ?`, t:[M, R(`nuit, Mélusine`)], r:`« Ce vieux tissu ? Il traînait dans mon grenier ! »`, v:`« Bon… je l'ai acheté hier, avec de l'or qu'on m'a donné. Ne me demande pas qui. S'il te plaît. »`},
+  {q:`Qu'est-ce que vous cousez pour la fête ?`, t:[EN, SU], r:`« Sept banderoles, une pour chaque chat d'Odette, avec leur nom : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette et Grisette. Moustache, c'est le chef. Il est très malin : il retrouve toujours Odette, où qu'elle soit… »`}]},
+ {nom:`Iris`, lieu:`L'herboristerie, elle prépare les fleurs`, signe:`Elle ne ment jamais.`, qs:[
+  {q:`Ça sent bon la lavande, ici !`, t:[EN], r:`« Évidemment, je m'appelle Iris Lavandin ! Mais tout le village a mes sachets de lavande dans ses tiroirs : le maire, Mélusine, Margot, et même Silas. Une odeur de lavande, à Brumeval, ça ne prouve rien du tout ! »`},
+  {q:`Vos coquelicots vont repousser ?`, t:[SU], r:`« Oui, j'avais gardé des graines ! Au printemps, mon champ sera de nouveau tout rouge. Mais plus jamais pour faire des bêtises dans la rivière, ça non ! »`},
+  {q:`Pourquoi le Vieux Chêne compte tant pour vous ?`, t:[SU], r:`« C'est le grand-père de tous les arbres. Ses racines descendent plus profond que n'importe quel puits. Ma mère disait qu'elles touchent "la ville d'en dessous". Je n'ai jamais su ce qu'elle voulait dire… »`},
+  {q:`Je voudrais des fleurs pour la fête. (seulement s'il reste de l'argent au Barde)`, t:[], r:`Ouvre le marchandage, au prix déjà obtenu le matin (voir « La mission du maire », onglet Matin).`}]},
+ {nom:`Tim`, lieu:`Sur les toits, il ramone`, signe:`Quand il ment, il mordille sa lèvre du bas.`, qs:[
+  {q:`Tu étais déjà sur les toits ce matin, à l'aube ?`, t:[M, EN], r:`« Non ! Je dormais, comme tout le monde ! »`, v:`« Bon… oui. J'ai vu quelqu'un avec un grand capuchon glisser une lettre sous la porte de la mairie. Après, il est parti vers le clocher. Je ne l'ai pas dit au maire… j'ai encore eu peur. »`},
+  {q:`Ça fait quoi, d'être ramoneur ?`, t:[SU], r:`« Du haut des toits, je vois tout le village ! Et dans les cheminées, on trouve des trucs incroyables : un nid de chouette, une fois. Et une vieille pièce avec une lanterne dessinée dessus. Je la garde dans ma poche, c'est mon porte-bonheur. »`},
+  {q:`Comment va Pirate, ton chien ?`, t:[SU], r:`« Il est malin comme tout : il sait ouvrir le loquet de ma porte tout seul ! Mais il a peur du maire. Dès qu'il le voit, il file se cacher sous mon lit. »`},
+  {q:`Tu as revu la porte aux runes ?`, t:[EN, SU], r:`« Non, ils ont tout bouché avec les rochers. Mais tu sais quoi ? Les mêmes runes… je les ai vues gravées sur la grille de la crypte, sous le clocher. Bon, j'avoue… je suis un peu curieux. Je vais toujours dans les endroits où il ne faut pas ! »`}]},
+ {nom:`Anselme`, lieu:`Le clocher, il sonne les cloches`, signe:`Il ne ment jamais. Un peu sourd, il parle très fort.`, qs:[
+  {q:`Vous avez sonné les cloches pour la bonne nouvelle ?`, t:[SU], r:`« HEIN ? Ah, les cloches ! Oui, oui, à toute volée, à l'aube ! Elles s'appellent Bertille, Gontran et la Grosse Marie. La Grosse Marie, c'est la plus vieille : elle date des Fondateurs. »`},
+  {q:`Qu'y a-t-il sous le clocher ?`, t:[R(`après-midi, Anselme`)], r:`« La crypte ! Les tombes des Fondateurs. Personne n'y descend : c'est fermé à clé, et la clé ne quitte jamais ma ceinture. Le jour, en tout cas… »`},
+  {q:`Depuis quand êtes-vous sonneur ?`, t:[SU], r:`« Cinquante ans ! Mon père était sonneur, et son père avant lui. Il me disait : "Quand la brume s'épaissit, sonne la Grosse Marie : elle la fait reculer." Des bêtises, sûrement… mais je la sonne quand même. »`},
+  {q:`Que ferez-vous pendant la fête ?`, t:[EN], r:`« LA FÊTE ? Je sonnerai la Grosse Marie à minuit pile ! C'est le maire qui me l'a demandé. Il dit qu'après minuit, tout le monde doit rentrer se coucher. »`}]},
+ {nom:`Farinel`, lieu:`Le moulin`, signe:`Quand il ment, il cligne des yeux deux fois, très vite.`, qs:[
+  {q:`Où est Léo, votre apprenti ?`, t:[EN], r:`« Encore parti ! Il n'a pas dormi au moulin cette nuit, et ce matin ses bottes étaient pleines de boue. Il dit qu'il livre la farine… la nuit ? Drôle de livraison ! »`},
+  {q:`Léo est un bon apprenti ?`, t:[EN], r:`« Le meilleur ! Fort comme un bœuf, avec des pieds immenses : il use une paire de bottes par mois. »`},
+  {q:`Vous viendrez à la fête, ce soir ?`, t:[M], r:`« Bien sûr ! Je danserai toute la nuit ! »`, v:`« Bon… je vais dormir. Je m'endors toujours avant le dessert. »`},
+  {q:`Votre moulin est vraiment si vieux ?`, t:[SU], r:`« Le plus vieux de Brumeval ! Mes ancêtres disaient que les Fondateurs venaient y travailler la nuit, avec des lanternes. Il y a même une pierre du mur où est gravée une lanterne. »`}]},
+ {nom:`Silas`, lieu:`Le garde champêtre`, signe:`Il ne ment pas : il croit vraiment à l'éboulement.`, qs:[
+  {q:`Vous gardez encore le chemin du Vieux Chêne ?`, t:[SU], r:`« Ordre du maire : les rochers, c'est dangereux, à cause de l'éboulement. Et ce soir, je garde la fête. Personne ne fera de bêtises pendant que Silas Sec veille ! »`},
+  {q:`C'est vous qui avez emmené Bastien en prison ?`, t:[EN], r:`« Oui. Ça ne m'a pas fait plaisir : il pleurait comme un enfant. Il répète qu'un homme en cape l'a payé, et qu'il a plus peur de lui que de la prison. »`},
+  {q:`Vous avez fait votre ronde, cette nuit ?`, t:[EN], r:`« Comme toutes les nuits ! Je n'ai rien vu… sauf la porte du clocher qui grinçait. Le vent, sûrement. »`},
+  {q:`Pourquoi êtes-vous devenu garde ?`, t:[SU], r:`« Quand j'étais petit, je me suis perdu dans la brume, dehors. Trois jours ! C'est le père d'Anselme qui m'a retrouvé, en sonnant la Grosse Marie toute la nuit. Depuis, je veille sur le village. »`}]},
+ {nom:`Le voisin d'Odette`, lieu:`Rue des Lanternes, à côté de chez elle`, signe:`Il ne ment jamais.`, qs:[
+  {q:`Les chats d'Odette sont chez vous ?`, t:[EN], r:`« Six sur sept, sur ma fenêtre, à miauler ! Je leur donne du lait. Mais Moustache, le gros gris, a disparu depuis hier soir. Il grattait la porte d'Odette, et puis plus rien. »`},
+  {q:`Odette vous a dit qu'elle partait ?`, t:[EN], r:`« Odette ? Partir ? Elle ne dort jamais et elle ne part jamais ! Elle me dit toujours : "Je ne peux pas laisser mes chats, ils ne savent pas ouvrir les boîtes de sardines." »`},
+  {q:`Vous connaissez Odette depuis longtemps ?`, t:[R(`le Sage et l'Alchimiste : l'écriture d'Odette`)], r:`« Trente ans qu'on est voisins ! Elle sait tout sur tout le monde. Elle note tout dans un carnet, avec un chat dessiné à chaque page. Il doit être chez elle, sur sa table. »`},
+  {q:`Si on rapporte la canne, vous la surveillerez ?`, t:[EN], r:`« Bien sûr ! Je la poserai contre sa porte et je garderai un œil dessus… enfin, tant que je ne m'endors pas. »`}]},
+ {nom:`Basile`, lieu:`Sur la place, il décore pour la fête`, signe:`Il ne ment jamais.`, qs:[
+  {q:`Vous décorez la place pour la fête ?`, t:[EN], r:`« Le maire veut des fleurs partout, des lampions partout, des banderoles partout ! Et il veut que la fête dure jusqu'à minuit. Il n'a jamais fait ça. Tout le village sera sur la place… même Silas. »`},
+  {q:`Anselme est quelqu'un de gentil ?`, t:[R(`après-midi, Anselme`)], r:`« Bourru, mais gentil. Il ne prête jamais rien… sauf à ceux qui l'aident à sonner la Grosse Marie. Elle est si lourde ! Je ne sais pas comment il fait quand il est tout seul. »`},
+  {q:`Vous connaissez le vieux puits ?`, t:[SU], r:`« Celui de la forêt ? Sa grille est rouillée depuis que je suis tout petit. Mon grand-père disait qu'au fond, il y a une porte. Mais personne n'est jamais descendu voir. »`},
+  {q:`Quelle est votre fleur préférée ?`, t:[SU], r:`« La pensée sauvage ! Elle pousse même dans la brume. On dit que les Alchimistes d'autrefois en mettaient dans toutes leurs potions. »`}]}
+];
+
+const MAIRE = {
+  qs:[
+   {q:`D'où vient cette lettre, Monsieur le maire ?`, t:[EN], r:`« Je l'ai trouvée glissée sous la porte de la mairie, ce matin, en arrivant. Une lettre d'Odette ! Quel soulagement, n'est-ce pas ? »`},
+   {q:`Pourquoi une fête, alors qu'Odette n'est pas encore rentrée ?`, t:[SU], r:`« Le village a eu si peur ! Une fête, ça rassure tout le monde. Et un village rassuré… ne pose plus de questions. Euh… je veux dire : un village rassuré est un village heureux ! »`},
+   {q:`Vous connaissez Odette depuis longtemps ?`, t:[SU], r:`« Depuis toujours. Sa famille et la mienne sont là depuis la fondation de Brumeval. Les vieilles familles, voyez-vous… Il n'en reste plus beaucoup. »`},
+   {q:`Je voudrais vous parler de la lettre…`, t:[], r:`Lance le grand dialogue, juste en dessous.`}],
+  etapes:[
+   {titre:`Étape 1 · le compliment`, indice:`indice : Gaspard`, choix:[
+     {t:`« Quelle belle fête vous préparez pour Odette ! »`, ok:true, rp:`« Ah, n'est-ce pas ? Les lampions, le gâteau, les fleurs… Que puis-je pour vous ? »`},
+     {t:`« Quel beau discours vous avez fait ce matin ! »`},
+     {t:`« Votre mairie est vraiment très bien rangée ! »`},
+     {t:`« Votre chapeau neuf vous va très bien ! »`, rp:`Le leurre de Fortuné.`}]},
+   {titre:`Étape 2 · la demande`, indice:`indice : Margot`, choix:[
+     {t:`« Les enfants du village voudraient voir l'écriture d'Odette, pour être rassurés. »`},
+     {t:`« Je voudrais recopier ses mots dans mon carnet, pour les chanter à la fête. »`},
+     {t:`« Certains disent que vous gardez cette lettre pour vous… Moi, je suis sûr que c'est faux ! »`, ok:true, rp:`« Pour moi ?! Mais bien sûr que c'est faux, je n'ai rien à cacher, moi ! Tenez, la voilà, votre lettre… Mais vous me la rendez quand, hein ? »`},
+     {t:`« Odette est ma grande amie, j'aimerais lire ses mots moi-même. »`}]},
+   {titre:`Étape 3 · la promesse`, indice:`indice : Victor`, choix:[
+     {t:`« Je vous la rapporte avant ce soir, promis. »`, ok:true, rp:`« Hmm… Bon. Mais avant ce soir, c'est bien compris ? » Il donne la lettre : code pour le Sage.`},
+     {t:`« Je vous la rapporte demain matin, à la première heure. »`},
+     {t:`« Le Sage la rangera précieusement dans son Grand Livre. »`},
+     {t:`« Je peux la recopier ici, devant vous ? »`, rp:`Le piège : « Mais bien sûr, recopiez donc ! » Le Barde repart avec une copie de sa propre écriture, inutile. Le Sage : « C'est ton écriture à toi, ça ! »`}]}
+  ]
+};
+
+const RUBANS = [
+ [`Le maire (matin)`, `Gaspard`, `Il est très fier de ses fêtes`],
+ [`Le maire (matin)`, `Margot`, `Il déteste qu'on dise qu'il cache des choses`],
+ [`Le maire (matin)`, `Victor`, `Il compte ses papiers chaque soir`],
+ [`Le maire (matin)`, `Fortuné, qui ment`, `Le leurre du chapeau neuf`],
+ [`Anselme (après-midi)`, `Anselme`, `La clé ne quitte jamais sa ceinture, « le jour »`],
+ [`Anselme (après-midi)`, `Basile`, `Il ne prête rien, sauf à qui l'aide à sonner la Grosse Marie`],
+ [`Anselme (après-midi)`, `Silas`, `Le père d'Anselme l'a sauvé en sonnant la Grosse Marie`],
+ [`Le marché aux fleurs (matin)`, `Silas, devant Fortuné (Tendre l'oreille)`, `Montrer qu'on veut quelque chose, ça coûte plus cher (l'astuce d'Iris vient de l'enquête 2)`],
+ [`Mélusine (nuit)`, `Margot`, `Du tissu neuf, elle qui n'a jamais un sou`],
+ [`Mélusine (nuit)`, `Fortuné`, `Une main fine, avec des épingles dans la manche, a acheté encre et plume`],
+ [`Mélusine (nuit)`, `Mélusine`, `Elle a pleuré en entendant la lettre ; on lui a donné de l'or`],
+ [`L'écriture (Sage et Alchimiste)`, `Le voisin`, `Le carnet d'Odette, un chat à chaque page, est sur sa table`]
+];
+const PISTES = [
+ [`Moustache (pour le Pisteur)`, `Il a disparu hier soir, il grattait la porte d'Odette, il la retrouve toujours (Gaspard, le voisin, Mélusine).`],
+ [`Le capuchon et le clocher`, `La lettre glissée à l'aube, puis vers le clocher ; les mêmes runes sur la grille de la crypte (Tim). L'après-midi, Silas ajoute la porte du clocher qui grinçait cette nuit.`],
+ [`Léo, l'apprenti`, `Pas dormi au moulin, bottes pleines de boue, grands pieds (Farinel, l'après-midi). Il prépare les traces de la nuit.`]
+];
+const FILS = [
+ [`Les Cinq familles`, `Margot, le maire`, `Le conseil des cinq, par le sang`],
+ [`La ville d'en dessous`, `Iris, Margot, Basile, Victor`, `Les racines du chêne, la porte au fond du puits, l'eau qui coule dans un puits sec`],
+ [`La brume`, `Fortuné, Anselme, Silas`, `Elle « regarde », la Grosse Marie la fait reculer, on s'y perd dehors`],
+ [`Les lanternes gravées`, `Tim, Farinel`, `La pièce de Tim, la pierre du moulin : la Lanterne d'Or`],
+ [`Les étoiles du four`, `Gaspard`, `Des dessins dans les briques, personne ne sait qui les a gravés`],
+ [`La clé rouillée`, `Fortuné`, `Trouvée dans des ruines au-delà de la brume, couverte de runes : en boutique dès ce dialogue, 320 pièces`],
+ [`La pensée sauvage`, `Basile`, `Les Alchimistes d'autrefois : un lien avec la lignée de l'Alchimiste`]
+];
+const POINTS = [
+ [`✓ Trop de villageois le matin :`, `d'accord. Mélusine, Iris, Anselme, Farinel, Silas et Basile passent à l'après-midi (groupe « Gardés pour l'après-midi »). Le matin, il reste le maire, Gaspard, Margot, Victor, Fortuné, Tim et le voisin.`],
+ [`✓ Trop d'indices vers le clocher :`, `d'accord. Le matin, il reste Tim (le capuchon parti vers le clocher, les runes de la crypte). Pirate et la question d'Anselme sont changés ; la porte qui grince passe à l'après-midi avec Silas.`],
+ [`✓ Le dé à coudre :`, `remplacé par « une main fine, avec des épingles plantées dans la manche ».`],
+ [`✓ Le lapsus du maire :`, `gardé.`],
+ [`✓ Le dehors de la brume :`, `gardé.`],
+ [`✓ Les noms des sept chats :`, `gardés.`],
+ [`Mélusine ment deux fois dès le matin :`, `c'est voulu. Je propose que le grand dialogue de la nuit, pendant la fête, soit avec elle : lui faire dire qui lui a dicté la lettre. Ses deux mensonges du matin préparent ce moment. Si le Barde la démasque dès le matin, elle avoue l'or reçu, mais pas le nom : la nuit garde ce secret.`],
+ [`✓ Le marché aux fleurs :`, `décidé le 5 novembre au soir. Il se joue au tout début du matin (le maire apparaît, Fortuné d'abord, puis Iris et Basile), et les fleurs sont remises le soir, au début de la fête.`],
+ [`L'image spéciale de Fortuné :`, `l'étape 2 du marchandage, à créer par l'autre conversation.`],
+ [`La remise des fleurs, le soir :`, `à placer dans le déroulé de la nuit quand on l'écrira, avant le grand dialogue de Mélusine.`]
+];
+
+const APRES = ['Mélusine', 'Iris', 'Anselme', 'Farinel', 'Silas', 'Basile'];
+const OCCUPES = [
+ [`Mélusine`, ``, [`« Pas maintenant, pas maintenant ! J'ai sept banderoles à coudre avant ce soir… et je viens de coudre ma manche à la banderole de Pompon. »`, `« Encore toi ? Repasse cet après-midi. Et ne marche pas sur mes épingles ! »`]],
+ [`Iris`, ``, [`« Chut ! Je parle à mes fleurs. Si je m'arrête, elles boudent et elles fanent ! Reviens cet après-midi. »`, `« Tu vois ce bouquet ? Il m'en reste quarante-sept comme ça à faire pour le maire. Cet après-midi, d'accord ? »`]],
+ [`Anselme`, `du haut du clocher`, [`« QUOI ? JE N'ENTENDS RIEN ! » DONG ! « REVIENS QUAND LES CLOCHES SE TAISENT ! » DONG !`, `« HEIN ? UNE BRIOCHE ? NON MERCI, J'AI DÉJÀ MANGÉ ! » DONG !`]],
+ [`Farinel`, `tout blanc de farine`, [`« Pas le temps ! Mon apprenti n'est pas là, alors je fais tout le travail tout seul. » Il éternue dans un nuage de farine. « Atchoum ! Reviens cet après-midi. »`, `« Encore toi ? Regarde-moi : je suis tellement couvert de farine qu'on dirait un fantôme ! Reviens cet après-midi. »`]],
+ [`Silas`, `raide comme un piquet`, [`« Halte ! Je suis en mission secrète. Tellement secrète que même moi, je ne sais pas ce que c'est. Repasse cet après-midi ! »`, `« Chut ! Je surveille une fourmi très suspecte. Elle rôde autour de la boulangerie depuis ce matin… Repasse cet après-midi. »`]],
+ [`Basile`, `perché sur une échelle, les bras pleins de lampions`, [`« Pas maintenant, j'ai les bras pleins de lampions ! »`, `« Attention en dessous ! » Un lampion tombe à côté de toi. « Oups ! Reviens cet après-midi. »`]]
+];
+const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const chip = (t) => `<span class="chip ${CL[t.k]}">${NOMS[t.k]}${t.d ? ' · ' + esc(t.d) : ''}</span>`;
+const fleche = `<span class="fleche" aria-hidden="true">›</span>`;
+const RI = {k:'rire'};
+/* Tendre l'oreille : deux villageois proches l'un de l'autre se parlent ; sinon, une phrase dite tout seul. */
+const ECOUTES = [
+  {qui:['Le maire', 'Victor'], lieu:`à la mairie`, t:[EN], l:[
+    ['Le maire', `« Si on vous demande d'où vient la lettre d'Odette, vous ne savez rien, compris ? »`],
+    ['Victor', `« Mais… je ne sais rien, Monsieur le maire. Elle n'est pas passée par moi. »`]],
+    bonus:{pour:`Victor`, q:`Le maire vous a demandé de vous taire ?`, r:`« Oui… et ça m'a fait drôle. Pourquoi cacher d'où vient une lettre qui rassure tout le monde ? »`}},
+  {qui:['Gaspard', 'Margot'], lieu:`à la boulangerie`, t:[R(`maire, étapes 1 et 2 d'un coup`)], l:[
+    ['Margot', `« Le maire est passé à la taverne ce matin. Je lui ai dit, pour rire : "Alors, cette lettre, vous la gardez pour vous tout seul ?" Il est devenu rouge comme une tomate ! »`],
+    ['Gaspard', `« Ha ! Chez moi, il était tout sourire : je lui ai dit que sa fête serait la plus belle du siècle. Il m'a commandé trois gâteaux de plus ! »`]]},
+  {qui:['Le voisin d\'Odette', 'Mélusine'], lieu:`rue des Lanternes`, t:[EN, R(`nuit, Mélusine`)], l:[
+    ['Le voisin', `« Tu as entendu, Mélusine ? Odette est chez sa sœur ! »`],
+    ['Mélusine', `« Oui… oui, c'est ce que dit la lettre. »`],
+    ['Le voisin', `« Drôle de chose. En trente ans, elle ne m'a jamais parlé d'une sœur. »`],
+    ['Mélusine', `« Je… j'ai du travail. » Quand il est parti, elle murmure : « Pardon, Odette… »`]]},
+  {qui:['Anselme', 'Tim'], lieu:`au clocher`, t:[EN, R(`après-midi, Anselme`)], l:[
+    ['Anselme', `« TIM ! TU N'AS PAS VU MA CLÉ ? HIER SOIR, ELLE ÉTAIT À MA CEINTURE. CE MATIN, ELLE ÉTAIT PAR TERRE ! »`],
+    ['Tim', `« Par terre ? Quelqu'un l'a prise, alors… »`],
+    ['Anselme', `« QUOI ? TU AS FAIM ? »`]]},
+  {qui:['Silas', 'Fortuné'], lieu:`devant la carriole de Fortuné, juste avant son marchandage (automatique)`, t:[R(`le leurre démasqué`), R(`le truc pour la lanterne de Fortuné`)], l:[
+    ['Silas', `« Halte, Fortuné ! On ne vend rien sur la place sans permis ! »`],
+    ['Fortuné', `« Chut, Silas ! Je raconte partout que le maire adore qu'on lui parle de son chapeau neuf… mais il le déteste ! C'est pour lui en vendre un autre. »`],
+    ['Silas', `« Ah. Bon. Alors ça va… Mais ne me refais pas le coup de la pendule ! J'avais juste dit qu'elle était belle, et tu me l'as vendue deux fois plus cher ! »`],
+    ['Fortuné', `« Ha ha ! Quand on montre qu'on veut quelque chose, mon ami, ça coûte toujours plus cher ! »`]]},
+  {qui:['Iris'], lieu:`à l'herboristerie`, t:[EN], l:[['Iris', `« Celui qui est entré ici cette nuit a pris mes sachets de lavande… et il a mis de la boue partout ! »`]]},
+  {qui:['Farinel'], lieu:`au moulin`, t:[EN], l:[['Farinel', `« Léo ! C'est toi qui as mis de la boue partout ? Viens nettoyer ! … Léo ? »`]]},
+  {qui:['Basile'], lieu:`sur la place`, t:[RI], l:[['Basile', `« Un lampion ici, un lampion là… et un lampion sur ma tête ! »`]]}
+];
+const IMPATIENCE = {
+  'Le maire': `« Voilà, voilà. J'ai une fête à organiser, moi ! Repassez plus tard. »`,
+  'Gaspard': `« Ma pâte va retomber ! Allez, file, repasse plus tard. »`,
+  'Margot': `« Toi, tu poses plus de questions que mes clients ne boivent de cidre ! Reviens plus tard. »`,
+  'Victor': `« J'ai trois cents lettres à distribuer ! Une autre fois. »`,
+  'Fortuné': `« Les questions, c'est gratuit… mais pas illimité ! Reviens plus tard, mon ami. »`,
+  'Tim': `« Il faut que je finisse cette cheminée, sinon mon patron va crier ! Salut ! »`,
+  'Le voisin d\'Odette': `« Les chats ont encore faim… Excuse-moi, je dois y aller. »`,
+  'Mélusine': `« Je t'en prie, laisse-moi coudre… Reviens plus tard. »`,
+  'Iris': `« Mes fleurs vont faner si je continue à bavarder ! Reviens plus tard. »`,
+  'Anselme': `« ASSEZ DE QUESTIONS ! TU VAS ME CASSER LES OREILLES… ENFIN, CE QU'IL EN RESTE ! »`,
+  'Farinel': `Il bâille. « Toutes ces questions me donnent envie de faire la sieste. Reviens plus tard. »`,
+  'Silas': `« Assez ! Un garde ne bavarde pas pendant son service. Circulez ! »`,
+  'Basile': `« Si je continue à parler, je vais tomber de mon échelle ! Plus tard ! »`
+};
+function impatience(nom){
+  const t = IMPATIENCE[nom]; if(!t) return '';
+  return `<p class="note"><b>Quand il s'impatiente</b> (3e question, ou « Encore toi ? ») : ${esc(t)}</p>`;
+}
+const BOUSSOLE = {'Victor': 'le matin', 'Basile': 'l\'après-midi'};
+function ecoute(nom){
+  const e = ECOUTES.find(x => x.qui.includes(nom)); if(!e) return '';
+  const titre = e.qui.length > 1 ? `👂 Tu entends ${e.qui.map(q => q === 'Le voisin d\'Odette' ? 'le voisin' : q === 'Le maire' ? 'le maire' : q).join(' et ')}, ${e.lieu}` : `👂 Derrière la porte, ${e.lieu}`;
+  return `<div class="ecoute"><span class="etiq">${esc(titre)}</span>${e.l.map(x => `<p><b>${esc(x[0])} :</b> ${esc(x[1])}</p>`).join('')}${e.bonus ? `<p><b>Question en plus pour ${esc(e.bonus.pour)} :</b> « ${esc(e.bonus.q)} » → ${esc(e.bonus.r)}</p>` : ''}<span class="tags">${e.t.map(chip).join('')}</span></div>`;
+}
+
+function question(x, i){
+  const rep = x.v
+    ? `<span class="etiq ment">Il ment</span><p>${esc(x.r)}</p><span class="etiq vrai">Démasqué</span><p>${esc(x.v)}</p>`
+    : `<p>${esc(x.r)}</p>`;
+  return `<details class="q"><summary><span class="num">${i + 1}</span><span class="qtexte"><b>« ${esc(x.q)} »</b>${x.t.length || x.v ? `<span class="tags">${x.t.map(chip).join('')}${x.v ? '<span class="chip c-suite exige">⚖️ Exige la vérité : il avoue tout</span>' : ''}</span>` : ''}</span></summary><div class="rep">${rep}</div></details>`;
+}
+function resume(qs){
+  const n = (k) => qs.filter(x => x.t.some(t => t.k === k)).length;
+  return ['ruban', 'enquete', 'ment'].filter(k => n(k)).map(k => `<span class="chip ${CL[k]}">${n(k)} ${NOMS[k].toLowerCase()}</span>`).join('');
+}
+function perso(p){
+  return `<details class="perso"><summary><span class="nom">${esc(p.nom)}</span>${fleche}<span class="lieu">${esc(p.lieu)}</span><span class="resume">${resume(p.qs)}${BOUSSOLE[p.nom] ? `<span class="chip c-ruban">🧭 la Boussole le montre ${esc(BOUSSOLE[p.nom])}</span>` : ''}</span></summary>
+    <div class="corps"><p class="signe">${esc(p.signe)}</p>${ecoute(p.nom)}${p.qs.map(question).join('')}${impatience(p.nom)}</div></details>`;
+}
+function tiroir(nom, lieu, corps){
+  return `<details class="perso"><summary><span class="nom">${nom}</span>${fleche}<span class="lieu">${lieu}</span></summary><div class="corps">${corps}</div></details>`;
+}
+function table(entetes, lignes){
+  return `<div class="tab-wrap"><table><thead><tr>${entetes.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${lignes.map(l => `<tr>${l.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+const decor = `
+  <p>Le matin, le grand dialogue est celui du maire : obtenir la lettre d'Odette. Tout le reste du matin sert à récolter les indices pour y arriver, et à préparer l'après-midi et la nuit.</p>
+  <p><b>Ce qui s'est passé à l'aube.</b> Le maire a réuni tout le village sur la place et a lu une lettre « d'Odette » :</p>
+  <p class="lettre">Mon cher Monsieur le maire, ne vous faites pas de souci pour moi : je suis partie quelques jours chez ma sœur, de l'autre côté de la forêt. Je vais très bien et je reviendrai la semaine prochaine. Je ne retrouve plus ma canne : si quelqu'un la trouve, qu'il la rapporte chez moi, au 2, rue des Lanternes. Je vous embrasse tous. Odette.</p>
+  <p>Le maire, ravi, annonce une grande fête ce soir sur la place, « pour fêter la bonne nouvelle ». Tout le village est rassuré. Pas l'équipe : la canne d'Odette était près des rochers du Vieux Chêne. Le maire garde la lettre dans son grand coffre.</p>
+  <p><b>Ce qui cloche dans la lettre (à découvrir) :</b></p>
+  <ul>
+    <li>Odette n'a pas de sœur, et n'a jamais reçu une seule lettre (Victor).</li>
+    <li>Elle ne parle pas de ses chats, elle qui ne parle que d'eux (Gaspard, le voisin).</li>
+    <li>Elle ne part jamais sans sa canne (Mélusine).</li>
+    <li>La lettre n'est pas passée par la poste (Victor) : quelqu'un en capuchon l'a glissée sous la porte de la mairie, puis il est parti vers le clocher (Tim).</li>
+    <li>Elle sent la lavande (l'Alchimiste), mais tout le village a des sachets de lavande (Iris).</li>
+  </ul>
+  <p><b>Le secret (pour nous, pas pour les joueurs) : c'est Mélusine qui a écrit la lettre.</b> Elle n'a plus d'argent depuis l'enquête 2. L'homme en cape noire lui a donné de l'or et lui a dicté la lettre, mot pour mot. Elle n'a fait aucun mal à Odette et ne sait pas où elle est, mais elle s'en veut énormément : Odette est son amie. Le Sage et l'Alchimiste trouvent que c'est son écriture ; la nuit, pendant la fête, le Barde la fait avouer qui lui a dicté la lettre (un homme en cape, à la voix étouffée, qui sentait la lavande).</p>
+  <p><b>Les règles du Barde.</b> Chaque villageois propose 4 questions. Le Barde en pose 2, puis : « Ça suffit, laisse-moi tranquille, repasse plus tard ! ». Il faut donc choisir.</p>`;
+
+const maire = `
+  <p class="signe">Il ne ment jamais, mais il ne dit pas tout. Comme on n'en pose que 2, celui qui gaspille une question n'a plus qu'un essai pour la lettre.</p>
+  ${ecoute('Le maire')}
+  ${MAIRE.qs.map(question).join('')}
+  <p class="note">Le grand dialogue : tous les choix sont polis et plausibles. Un mauvais choix : « Bien, bien… J'ai beaucoup à faire. Revenez plus tard. », la même réplique partout, et la porte reste fermée jusqu'au moment suivant.</p>
+  ${MAIRE.etapes.map(e => `<details class="q etape"><summary><span class="num">${e.titre.slice(6, 7)}</span><span class="qtexte"><b>${esc(e.titre)}</b><span class="tags"><span class="chip c-ruban">${esc(e.indice)}</span></span></span></summary>
+    <ul class="choix">${e.choix.map(c => `<li class="${c.ok ? 'bon' : ''}"><span class="t">${esc(c.t)}</span>${c.rp ? `<span class="rp">${esc(c.rp)}</span>` : ''}</li>`).join('')}</ul></details>`).join('')}
+  <p class="note"><b>Les chances</b> : sans indice, 1 sur 64 ; avec Gaspard et Margot, environ 1 sur 4 ; avec les trois indices, c'est sûr si l'enfant fait le lien ; croire Fortuné fait rater l'étape 1. Si le Barde échoue, le Pisteur peut toujours aller chercher la lettre (Se cacher dans la mairie).</p>
+  ${impatience('Le maire')}`;
+
+const prepare = `
+  <p>Le matin pose les indices de trois grands dialogues et de trois pistes. Je propose Anselme pour l'après-midi (obtenir la clé de la crypte) et Mélusine pour la nuit, pendant la fête (lui faire dire qui lui a dicté la lettre) : rien n'est écrit pour eux encore.</p>
+  <h2 class="groupe" style="font-size:1.1rem">Les rubans des grands dialogues</h2>
+  ${table(['Grand dialogue', 'Qui donne l\'indice', 'Ce que ça dit'], RUBANS)}
+  <h2 class="groupe" style="font-size:1.1rem">Les trois pistes de l'enquête</h2>
+  <ul>${PISTES.map(p => `<li><b>${esc(p[0])}</b> : ${esc(p[1])}</li>`).join('')}</ul>
+  <h2 class="groupe" style="font-size:1.1rem">Les fils pour la suite de la saison</h2>
+  ${table(['Fil', 'Qui en parle', 'Ce que ça peut préparer'], FILS)}`;
+
+function occupe(o){
+  return `<details class="perso occupe"><summary><span class="nom">${esc(o[0])}</span>${fleche}<span class="lieu">Occupé le matin${o[1] ? ' · ' + esc(o[1]) : ''}</span></summary>
+    <div class="corps">${ecoute(o[0])}<div class="rep"><span class="etiq">1re visite</span><p>${esc(o[2][0])}</p><span class="etiq">2e visite</span><p>${esc(o[2][1])}</p></div></div></details>`;
+}
+const points = `<ul>${POINTS.map(p => `<li><b>${esc(p[0])}</b> ${esc(p[1])}</li>`).join('')}</ul>`;
+
+const MJ_MATIN = [
+  [`🤥 Repérer le mensonge`, `Margot, Victor, Fortuné et Tim (une question chacun)`, `La vérité : Odette n'a pas de sœur (Margot), la peur des chats (Victor), le leurre du chapeau (Fortuné), le capuchon parti vers le clocher (Tim)`],
+  [`🏛️ Le grand dialogue du maire`, `Le maire (une énigme en 3 étapes, pas un jeu d'adresse)`, `La lettre d'Odette`]
+];
+const CODES_MATIN = [
+  [`La lettre d'Odette`, `Le grand dialogue du maire (ou le Pisteur, caché dans la mairie)`, `Le Sage`],
+  [`Le carnet d'Odette`, `Chez Odette, sur la table`, `Le Sage et l'Alchimiste (comparer les écritures)`],
+  [`Les traces de Moustache`, `Chez Odette, des traces de pattes dans le lait renversé`, `Le Pisteur`],
+  [`Le capuchon vers le clocher`, `Tim, démasqué`, `Le Pisteur et le Sage`],
+  [`La lettre n'est pas passée par la poste`, `Victor`, `Le Sage`]
+];
+const mjMatin = `
+  <p class="note">Le matin, le Barde a deux mini-jeux et donne cinq codes à l'équipe. Les codes de l'enquête 3 n'existent pas encore : ils seront créés (et gelés) quand on construira l'enquête, on ne connaît donc pas encore leurs icônes.</p>
+  <h2 class="groupe" style="font-size:1.1rem">Les mini-jeux</h2>
+  ${table(['Mini-jeu', 'Avec qui', 'Ce que ça rapporte'], MJ_MATIN)}
+  <p class="note">Les écoutes de Tendre l'oreille et la maison d'Odette se lisent directement, sans mini-jeu.</p>
+  <h2 class="groupe" style="font-size:1.1rem">La maison d'Odette (2, rue des Lanternes)</h2>
+  <p class="lettre">Tu poses la canne contre la porte, comme le demande la lettre. Dedans, sur la table, un carnet avec un chat dessiné à chaque page : l'écriture d'Odette ! Par terre, un bol de lait renversé… et des petites traces de pattes qui filent vers la porte.</p>
+  <h2 class="groupe" style="font-size:1.1rem">Les codes du matin</h2>
+  ${table(['Code', 'Où le Barde l\'obtient', 'Pour qui'], CODES_MATIN)}
+  <p class="note"><b>À décider</b> : la canne d'Odette a été trouvée dans l'enquête 2. Je propose que le Barde l'ait dès le début de l'enquête 3, pour pouvoir la déposer chez Odette.</p>`;
+
+const MARCHE = [
+  {nom:`Iris, à l'herboristerie`, prix:`Prix normal : 2 pièces le bouquet`, intro:`Iris : « Des fleurs pour la fête ? J'ai les plus belles de Brumeval ! 2 pièces le bouquet. »`, choix:[
+    {ok:true, t:`« Attendez… je peux les sentir ? Mmmh… elles sentent si bon ! »`, rp:`« Ah ! Enfin quelqu'un qui prend le temps ! Pour toi, ce sera 1 pièce le bouquet. »`},
+    {t:`« C'est le maire qui paie, vous pouvez bien me faire un prix ! »`, rp:`« Le maire paie ? Alors c'est 2 pièces, comme pour tout le monde. »`},
+    {t:`« Lesquelles sont les moins chères ? »`, rp:`« Les moins chères ? Elles sont toutes au même prix : 2 pièces le bouquet ! »`},
+    {t:`Maladroit : « 2 pièces ? Mais c'est du vol ! »`, rp:`« Du vol ?! Va donc acheter tes fleurs ailleurs ! »`}],
+    indice:`dans l'enquête 2, Iris le dit elle-même au Barde, dans sa phrase d'accueil (à ajouter dans l'enquête 2) : « Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c'est toute ma vie, tu sais. Et les gens qui achètent mes bouquets sans même les sentir… ça me rend folle ! Celui qui prendra la peine de sentir mes fleurs, je lui ferai une réduction, foi d'Iris ! » Si le jeu le permet, la phrase s'inscrit aussi dans les notes du Barde. La bonne réponse est aussi la plus gentille des quatre : on peut la trouver sans souvenir.`},
+  {nom:`Basile, sur la place, sur son échelle`, prix:`Prix normal : 2 pièces le bouquet`, intro:`Basile : « Des fleurs ? J'en ai plein mon jardin… mais là, je suis coincé sur mon échelle avec ces lampions ! 2 pièces le bouquet, si tu veux. »`, choix:[
+    {ok:true, t:`« Attendez, je vous tiens l'échelle ! »`, rp:`Il accroche son lampion. « Ouf, merci ! Tiens, prends 3 bouquets de mon jardin : c'est cadeau ! » (ensuite, 2 pièces le bouquet)`},
+    {t:`« Combien de bouquets pour 2 pièces ? »`, rp:`« Un bouquet, pardi ! 2 pièces le bouquet. »`},
+    {t:`« Vos lampions sont magnifiques ! »`, rp:`« Merci ! Mais mes fleurs, c'est quand même 2 pièces. »`},
+    {t:`Maladroit : « Dépêchez-vous de descendre, je suis pressé ! »`, rp:`« Pressé ? Eh bien attends ! Je ne vends rien aux gens pressés. »`}],
+    indice:`Basile le dit lui-même en arrivant : il est coincé sur son échelle avec ses lampions. Il a besoin d'aide.`}
+];
+const FORTUNE = [
+  {titre:`Étape 1 · l'accroche`, intro:`Fortuné : « Psst ! Barde ! De magnifiques fleurs en papier pour la fête ! 4 bouquets pour 2 pièces, c'est moitié prix, profites-en ! »`, choix:[
+    {t:`« Marché conclu ! »`, rp:`Il paie 2 pièces et reçoit les 4 bouquets. Fin.`},
+    {t:`« Vous me faites un prix ? »`, rp:`« Un prix ? C'est déjà moitié prix, mon ami ! » + la relance.`},
+    {t:`« Je vais d'abord voir chez Iris. »`, rp:`« Attends, attends ! Ne pars pas si vite… » + la relance.`},
+    {t:`« Je peux les toucher ? »`, rp:`Il les retire vite. « Pas touche ! On regarde avec les yeux ! » + la relance.`},
+    {t:`La relance, toujours la même`, rp:`« Viens voir, j'en ai d'autres dans ma carriole, encore plus belles ! » Il soulève sa bâche et fouille dedans. → étape 2.`}]},
+  {titre:`Étape 2 · la diversion`, intro:`le décor change : Fortuné est penché sur sa carriole, la bâche soulevée. Au milieu des bouquets en papier, une vieille lanterne cabossée dépasse et brille. Aucun texte ne la décrit, l'image suffit.`, choix:[
+    {ok:true, t:`« Et ce vieux truc cabossé qui brille, là, vous en faites quoi ? »`, rp:`« Oh, ça ? Une très belle lanterne ! Regarde, je te la montre. » Il sort une vieille lanterne de cuivre, toute cabossée, qui brille encore. « Alors, on fait affaire ? » → étape 3. (Note pour nous, jamais affichée dans le jeu : c'est la bonne réponse parce que le Barde fait semblant de ne pas s'y intéresser.)`},
+    {t:`« Cette lanterne, là, elle est magnifique ! Combien vous la vendez ? »`, rp:`« Ah, celle-là, c'est un trésor : 10 pièces ! Elle vient de l'autre côté de la brume. Très rare. Alors, on fait affaire ? » → étape 3, mais Fortuné sait maintenant que le Barde la veut.`},
+    {t:`« Vous n'auriez pas de vraies fleurs, plutôt qu'en papier ? »`, rp:`« De vraies fleurs ? Il n'y a pas plus solide que les miennes ! Et en plus, elles ne fanent jamais ! » → on reste à l'étape 2, et cette réponse disparaît.`},
+    {t:`« Bon, d'accord, je vous prends vos 4 bouquets. »`, rp:`Il paie 2 pièces. Fin.`}]},
+  {titre:`Étape 3 · le coup final (seulement une fois la lanterne montrée)`, intro:`les 4 réponses terminent le dialogue. Celui qui a fait semblant de ne pas s'y intéresser peut avoir la lanterne gratuite, ou pour 1 pièce de plus. Celui qui a demandé le prix ne peut l'avoir qu'en payant 2 pièces de plus : Fortuné sait qu'il la veut.`, choix:[
+    {ok:true, t:`« Je vous prends vos 4 bouquets… si vous me donnez la vieille lanterne en plus. Sinon, je file chez Iris. »`, rp:`S'il a fait semblant de ne pas s'y intéresser : « Tu es dur en affaires, toi ! … Bon, d'accord. Mais c'est bien parce que c'est toi ! Prends-en soin : elle vient des ruines, de l'autre côté de la brume. Il y a les mêmes dessins dessus que sur ma vieille clé rouillée… » → 2 pièces, les bouquets et la lanterne (Histoire). S'il a demandé le prix : « La lanterne en plus ?! Un trésor à 10 pièces ? Tu rêves, mon ami ! » → 2 pièces, les bouquets seulement.`},
+    {t:`« Allez, je vous donne 1 pièce de plus pour la lanterne, et on n'en parle plus. »`, rp:`S'il a fait semblant de ne pas s'y intéresser : « 1 pièce… Bon, va, parce que c'est la fête ! Prends-en soin : elle vient des ruines… » (même fin) → 3 pièces, les bouquets et la lanterne ; il ne reste que 7 pièces pour le marché. S'il a demandé le prix : « 1 pièce ? Pour un trésor ? Allez, 2 pièces, et c'est bien parce que c'est la fête ! » Le Barde soupire et paie. « Prends-en soin : elle vient des ruines… » (même fin) → 4 pièces, les bouquets et la lanterne ; il ne reste que 6 pièces pour le marché.`},
+    {t:`« Elle est toute cabossée, votre lanterne. Elle ne vaut rien ! »`, rp:`Il la serre contre lui. « Rien ?! Puisque c'est comme ça, je la garde ! » Il la range sous sa bâche. → 2 pièces, les bouquets seulement. (Note pour nous, jamais affichée : faire semblant de ne pas s'y intéresser, oui ; vexer Fortuné, non.)`},
+    {t:`« Et si je vous l'échangeais contre une chanson ? »`, rp:`« Une chanson ? Ha ha ! Avec une chanson, je ne mange pas, moi ! » → 2 pièces, les bouquets seulement.`}]}
+];
+const fortuneHtml = `<details class="q etape"><summary><span class="num">🧳</span><span class="qtexte"><b>Fortuné, le premier vendeur, juste après l'apparition du maire (le matin)</b><span class="note">Le marchandage du colporteur, en 3 étapes</span></span></summary>
+    <p class="note" style="margin:0 0 6px">Juste après l'apparition du maire, Fortuné est le seul vendeur de fleurs sur la carte. Avec Tendre l'oreille, quand le Barde le touche, il entend d'abord la scène de Silas avec Fortuné (le chapeau du maire et la pendule) ; ensuite seulement, Fortuné se tourne vers lui. Quoi qu'il fasse, il finit par payer 2 pièces pour 4 bouquets en papier, qui se déchireront chez le premier vrai fleuriste (« Oh là là… des fleurs en papier ! Regarde, elles se déchirent déjà ! »). Celui qui marchande bien repart en plus avec une vieille lanterne de cuivre. S'il revient se plaindre : « Remboursé ? Ah non, mon ami : marchandise vendue, ni reprise ni échangée ! » Ce dialogue n'a pas de bouton « il ment ». <b>Règle :</b> chaque réplique de Fortuné se termine par la même relance, quelle que soit la réponse choisie, pour que les 4 choix suivants aient du sens d'où qu'on vienne. Une réponse qui fait rester à la même étape disparaît une fois choisie.</p>
+    ${FORTUNE.map(e => `<p class="note" style="margin:8px 0 4px"><b>${esc(e.titre)}</b>${e.intro ? ' : ' + esc(e.intro) : ''}</p><ul class="choix">${e.choix.map(c => `<li class="${c.ok ? 'bon' : ''}"><span class="t">${esc(c.t)}</span><span class="rp">${esc(c.rp)}</span></li>`).join('')}</ul>`).join('')}
+    <div style="height:10px"></div></details>`;
+const MISSION = [
+  [`🎻 Barde`, `Acheter les fleurs de la fête avec l'argent du maire`, `Pas de mini-jeu : il marchande en interrogeant les vendeurs, avec deux compteurs sur sa carte (l'argent et les bouquets)`],
+  [`⚗️ Alchimiste`, `Le gâteau de la fête, d'après la commande de Gaspard`, `Assembler selon une commande, noté en étoiles (nouveau moteur, réutilisable plus tard)`],
+  [`📜 Sage`, `Le tableau en l'honneur d'Odette et de ses chats`, `Assembler les runes, version tableau, niveau 10`],
+  [`🐾 Pisteur`, `Accrocher les banderoles ; rattraper l'oie du festin, échappée de chez Gaspard`, `Tir à l'arc en décor de fête ; Course-poursuite en ville (une oie vue de dos)`]
+];
+const mission = `
+  <p class="note">Le matin, juste après la lettre, l'écran des missions du maire donne à chacun sa mission pour la fête de ce soir, puis chacun commence sa journée. Les missions restent ouvertes jusqu'au soir : on les fait quand on veut. Pendant que le Barde fait son marché, au tout début du matin, les autres ont donc de quoi s'occuper. C'est l'affaire « officielle » : elle se règle vite, pendant que la vraie enquête continue. Les mini-jeux ont été choisis le 4 novembre ; ils restent à construire.</p>
+  ${table(['Rôle', 'Sa mission', 'Le mini-jeu'], MISSION)}
+  <h2 class="groupe" style="font-size:1.1rem">La mission du Barde : le marché aux fleurs</h2>
+  <p class="note">Le Barde n'a pas de mini-jeu : il marchande en interrogeant, comme d'habitude. Son marché se joue au tout début du matin :</p>
+  <ol class="note" style="margin:4px 0 8px;padding-left:22px">
+    <li>Sur la tablette du Barde, 2 ou 3 secondes après le bouton « Commencer l'enquête 3 », le maire arrive en plein écran, comme si le Barde l'avait touché : « Barde ! Voici 10 pièces. Rapporte-moi au moins 10 bouquets pour la fête de ce soir ! » Cette apparition ne compte pas comme une visite : plus tard, le maire ne dira pas « Encore vous ? ».</li>
+    <li>Deux petits compteurs apparaissent sur sa carte : 🪙 l'argent (10 pièces) et 🌸 les bouquets (0 sur 10).</li>
+    <li>Toute la carte est ouverte, mais Iris et Basile ne sont pas encore là. Fortuné porte une petite bulle 🌸 : c'est le seul vendeur de fleurs visible.</li>
+    <li>Pendant que le Barde marchande avec Fortuné, Iris et Basile apparaissent discrètement sur la carte, comme s'ils avaient toujours été là.</li>
+    <li>Le matin, Iris et Basile ne font que vendre leurs fleurs. Après l'achat, ils redeviennent occupés (leurs phrases de refus). Leurs questions d'enquête restent pour l'après-midi.</li>
+    <li>Le soir, au début de la fête, le maire compte les bouquets devant tout le monde (« Voici les fleurs pour la fête ! »), accroche la lanterne si le Barde l'a, et les compteurs disparaissent.</li>
+  </ol>
+  <p class="note">Chez Iris et chez Basile, le matin, le dialogue commence directement par le marchandage : 4 façons de marchander. La bonne donne une réduction ; les autres donnent le prix normal, sauf une, maladroite, qui fâche le vendeur : il ne vend plus rien de la journée. Ensuite, le Barde choisit combien de bouquets il achète, et les compteurs bougent. L'après-midi, s'il reste de l'argent, « Je voudrais des fleurs pour la fête » devient une des questions de la visite, au prix déjà obtenu (ou avec le marchandage, si le Barde n'est pas encore passé).</p>
+  ${fortuneHtml}
+  ${MARCHE.map(v => `<details class="q etape"><summary><span class="num">🌸</span><span class="qtexte"><b>${esc(v.nom)}</b><span class="note">${esc(v.prix)}</span></span></summary>
+    <p class="note" style="margin:0 0 6px">${esc(v.intro)}</p>
+    <ul class="choix">${v.choix.map(c => `<li class="${c.ok ? 'bon' : ''}"><span class="t">${esc(c.t)}</span><span class="rp">${esc(c.rp)}</span></li>`).join('')}</ul>
+    <p class="note" style="margin:6px 0 10px"><b>L'indice</b> : ${esc(v.indice)}</p></details>`).join('')}
+  <h2 class="groupe" style="font-size:1.1rem">Le soir, au début de la fête : le maire compte les bouquets</h2>
+  <p class="note">L'argent : 10 pièces. Fortuné en prend toujours au moins 2 (ses bouquets en papier se déchirent chez Iris : ils ne comptent pas). Il reste 8 pièces, 7 si la lanterne a coûté 1 pièce, 6 si elle en a coûté 2. Chez Iris : 1 pièce le bouquet avec son astuce, sinon 2. Chez Basile : 3 bouquets gratuits avec son astuce, puis 2 pièces le bouquet. Un vendeur fâché ne vend plus rien : c'est comme si on avait raté son astuce.</p>
+  <p class="note"><b>Toutes les possibilités</b> (le Barde achète au mieux) :</p>
+  ${table(['Avec Fortuné', 'Iris + Basile', 'Iris seule', 'Basile seul', 'Aucune astuce'], [
+    ['Pas de lanterne (8 pièces)', '11 bouquets · 10 or', '8 bouquets · 0', '7 bouquets · 0', '4 bouquets · 0'],
+    ['Lanterne gratuite (8 pièces)', '11 bouquets · 15 or', '8 bouquets · 5 or', '7 bouquets · 5 or', '4 bouquets · 5 or'],
+    ['Lanterne à 1 pièce (7 pièces)', '10 bouquets · 15 or', '7 bouquets · 5 or', '6 bouquets · 5 or', '3 bouquets · 5 or'],
+    ['Lanterne à 2 pièces (6 pièces)', '9 bouquets · 10 or', '6 bouquets · 5 or', '6 bouquets · 5 or', '3 bouquets · 5 or']])}
+  <p class="note"><b>Ce que dit le maire :</b></p>
+  ${table(['Bouquets', 'Le maire', 'Or'], [
+    ['10 ou 11', '« Bravo ! Voici 10 pièces d\'or pour ta peine. »', '10'],
+    ['9', '« 9 bouquets… Il en manque un ! Tu es un bien mauvais négociateur, Barde. Enfin, la fête sera belle quand même. »', '5'],
+    ['6 à 8', '« Il manque des fleurs… mais la fête sera jolie quand même. »', '0'],
+    ['3 ou 4', '« Si peu de bouquets ?! C\'est une fête ou un enterrement ? »', '0'],
+    ['En plus, la lanterne', '« Une lanterne… comme celle que… Euh. Elle est parfaite ! Ce sera le clou de la fête ! » (le lapsus est un indice)', '+ 5']])}
+  <p class="note">Au maximum, 15 pièces d'or. 9 bouquets n'arrive que si le Barde a payé la lanterne 2 pièces : avec les deux astuces, il gagne alors 10 or, autant que sans lanterne. Pas d'autre punition : rater la récompense suffit.</p>`;
+
+document.getElementById('p-matin').innerHTML = `
+  <div class="liste">${tiroir('Le décor du matin', 'La fausse lettre, ce qui cloche, les règles', decor)}${tiroir('La mission du maire', 'La fête du retour d\'Odette : un mini-jeu pour chaque rôle', mission)}${tiroir('Les mini-jeux et les codes du matin', 'Deux mini-jeux, la maison d\'Odette, cinq codes à donner', mjMatin)}</div>
+  <h2 class="groupe">Le grand dialogue du matin</h2>
+  <div class="liste">${tiroir('Le maire', 'La mairie · la lettre d\'Odette, en 3 étapes', maire)}</div>
+  <h2 class="groupe">Ceux qui mènent au maire</h2>
+  <p class="groupe-intro">Gaspard, Margot et Victor donnent chacun l'indice d'une étape. Fortuné, qui ment, donne le leurre.</p>
+  <div class="liste">${MENEURS.map(perso).join('')}</div>
+  <h2 class="groupe">Les pistes du jour</h2>
+  <p class="groupe-intro">Le capuchon parti vers le clocher (Tim) et Moustache disparu (le voisin).</p>
+  <div class="liste">${AUTRES.filter(p => !APRES.includes(p.nom)).map(perso).join('')}</div>
+  <h2 class="groupe">Occupés le matin</h2>
+  <p class="groupe-intro">Ils ne parlent qu'à partir de l'après-midi. Le matin, ils renvoient le Barde avec une petite phrase. Ça ne compte pas comme une visite : il ne perd rien.</p>
+  <div class="liste">${OCCUPES.map(occupe).join('')}</div>`;
+
+document.getElementById('p-aprem').innerHTML = `
+  <p class="groupe-intro" style="margin:0">Le grand dialogue de l'après-midi est celui d'Anselme (la clé de la crypte), encore à écrire ; Basile et Silas en donnent les rubans. Les questions de l'après-midi des villageois du matin sont à écrire aussi.</p>
+  <div class="liste">${AUTRES.filter(p => APRES.includes(p.nom)).map(perso).join('')}</div>`;
+
+document.getElementById('p-suite').innerHTML = `
+  <div class="liste">${tiroir('Ce que le matin prépare', 'Les rubans, les trois pistes, les fils de la saison', prepare)}${tiroir('Points à corriger ensemble', 'Six décidés, un à expliquer', points)}</div>`;
+
+const TALENTS = [
+ [`👂 Tendre l'oreille`, `Il écoute aux portes autant qu'il veut. Tout le monde y dit des petites phrases, pas toujours importantes ; certaines écoutes, elles, comptent vraiment.`],
+ [`⚖️ Exige la vérité`, `Deux fois par enquête, à la fin d'un interrogatoire, tous les mensonges du villageois deviennent vrais.`]
+];
+const OBJETS = [
+ [`🏮 Lanterne du veilleur`, `La nuit, un villageois endormi t'ouvre sa porte et te confie un gros indice`, `1 fois par enquête`, `115`, `« La nuit, on t'ouvre même quand tout le monde dort. » (1 fois par enquête)`],
+ [`💌 Carte de visite`, `Un villageois accepte une deuxième visite au même moment : tu peux lui poser ses 4 questions`, `1 fois par enquête`, `110`, `« Sonne une deuxième fois : on te rouvre la porte. » (1 fois par enquête)`],
+ [`🧭 Boussole des confidences`, `Montre à qui parler en premier`, `À chaque moment`, `105`, `« Elle montre qui a le plus à dire. » (matin, après-midi et nuit)`],
+ [`✉️ Lettre de recommandation`, `Avant de poser une question, tu vois si elle sert à l'enquête ou à l'histoire`, `4 fois par enquête`, `100`, `« Elle te dit quelles questions valent la peine. » (4 fois par enquête)`],
+ [`🌼 Fleur de patience`, `Une question de plus avant que le villageois s'impatiente`, `2 fois par enquête`, `90`, `« Offre-la : on t'écoute un peu plus longtemps. » (2 fois par enquête)`],
+ [`🎩 Chapeau de politesse`, `Un mauvais choix ne ferme pas la porte : « Pardon, je reformule… »`, `1 fois par enquête`, `85`, `« Une maladresse ? Un coup de chapeau, et on oublie. » (1 fois par enquête)`],
+ [`🍯 Bonbons au miel`, `Un villageois vexé te reparle tout de suite`, `1 fois par enquête`, `80`, `« Même les plus fâchés fondent pour un bonbon. » (1 fois par enquête)`],
+ [`🎀 Carnet à rubans`, `Quand quelqu'un dit une chose utile à l'enquête, un ruban s'affiche`, `Toujours`, `70`, `« Un ruban marque ce qui compte. » (toujours actif)`],
+ [`🗝️ La vieille clé rouillée`, `Apparaît dès le dialogue avec Fortuné ; ce qu'elle ouvre est à décider`, `Une seule`, `320`, `« Une vieille clé couverte de runes, trouvée au-delà de la brume. Personne ne sait ce qu'elle ouvre. »`]
+];
+document.getElementById('p-barde').innerHTML = `
+  <p class="groupe-intro" style="margin:0">Deux talents pour l'instant, et 9 objets très chers : le Barde ne peut s'en offrir qu'un seul à la fin de l'enquête 2.</p>
+  <h2 class="groupe">Les talents (niveau 2, il en choisit un)</h2>
+  ${table(['Talent', 'Ce qu\'il fait'], TALENTS)}
+  <p class="note">Les autres talents (Charmeur, Physionomiste, Lancer une rumeur, Hydromel, Intuition, Recoupement, Réseau, Plaidoirie) sont mis de côté jusqu'à l'enquête 3.</p>
+  <h2 class="groupe">Les objets</h2>
+  ${table(['Objet', 'Ce qu\'il fait', 'Combien de fois', 'Prix', 'Texte de la boutique'], OBJETS)}
+  <p class="note"><b>L'or du Barde</b> : au maximum 65 pièces après l'enquête 1 (rien à acheter) et 115 après l'enquête 2 (un seul objet), depuis que les ragots de la taverne sont retirés. Sans les missions bonus, il ne reste que les objets les moins chers. Les prix suivent ce que vaut chaque objet : la Lanterne, qui donne un gros indice, est la plus chère. Ensuite, environ un objet toutes les deux enquêtes.</p>
+  <h2 class="groupe">Ce que les objets changent aux dialogues</h2>
+  <ul class="note" style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px">
+    <li><b>Boussole</b> : le matin, elle montre <b>Victor</b> (l'indice le plus difficile, l'étape 3 du maire, et les deux preuves que la lettre est fausse) ; l'après-midi, <b>Basile</b> (il donne la clé du dialogue d'Anselme) ; la nuit, à décider avec les dialogues de la nuit.</li>
+    <li><b>Bonbons, Fleur, Chapeau, Carnet</b> : pas de nouveau dialogue.</li>
+    <li><b>Carte de visite</b> : pas de nouveau dialogue, mais on peut poser les 4 questions d'un villageois.</li>
+    <li><b>Lettre de recommandation</b> : l'étiquette Enquête ou Histoire s'affiche sur 4 questions, avant de les poser.</li>
+    <li><b>Lanterne du veilleur</b> : le seul objet qui crée un dialogue. La nuit, une fois par enquête : un gros indice, à écrire avec la nuit.</li>
+  </ul>`;
+
+const ONGLETS = ['matin', 'aprem', 'suite', 'barde'];
+function montrer(id){
+  ONGLETS.forEach(k => {
+    document.getElementById('p-' + k).hidden = k !== id;
+    document.getElementById('o-' + k).setAttribute('aria-selected', k === id ? 'true' : 'false');
+  });
+  try { localStorage.setItem('onglet', id); } catch(e) {}
+}
+document.querySelectorAll('.onglets button').forEach(b => b.addEventListener('click', () => montrer(b.dataset.p)));
+try { const o = localStorage.getItem('onglet'); if (ONGLETS.includes(o)) montrer(o); } catch(e) {}
+
+const NOTES_T = {'': '', tendre:`Tendre l'oreille : ce qu'on entend derrière une porte, personne ne te le dirait en face (un secret, deux indices d'un coup, ou une question en plus). Deux villageois proches se parlent entre eux ; sinon, une phrase dite tout seul.`, exige:`Exige la vérité : pas de dialogue en plus. Deux fois par enquête, à la fin d'un interrogatoire, tous les mensonges du villageois deviennent vrais (marqués ⚖️).`};
+function talent(t){
+  document.body.classList.toggle('t-tendre', t === 'tendre');
+  document.body.classList.toggle('t-exige', t === 'exige');
+  document.querySelectorAll('.talents button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t ? 'true' : 'false'));
+  document.getElementById('talent-note').textContent = NOTES_T[t];
+  try { localStorage.setItem('talent', t); } catch(e) {}
+}
+document.querySelectorAll('.talents button').forEach(b => b.addEventListener('click', () => talent(b.dataset.t)));
+try { const t = localStorage.getItem('talent'); if (t !== null && t in NOTES_T) talent(t); } catch(e) {}
+
+const tous = () => document.querySelectorAll('[role=tabpanel]:not([hidden]) details');
+document.getElementById('tout-ouvrir').addEventListener('click', () => tous().forEach(d => d.open = true));
+document.getElementById('tout-fermer').addEventListener('click', () => tous().forEach(d => d.open = false));
+</script>

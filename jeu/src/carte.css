@@ -1,0 +1,160 @@
+/* ==========================================================
+   Brumeval v2 — carte du village
+   ========================================================== */
+.ca-carte{display:block;width:100%;height:auto;border-radius:var(--r-3, 24px);background:#4f8c55;touch-action:pan-x pan-y;-webkit-user-select:none;user-select:none}
+.ca-dessous{background:#120d18}
+.ca-t{font-family:var(--f-texte);font-weight:700;letter-spacing:.01em}
+.ca-ic{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif}
+
+/* Interactions */
+.ca-clic{cursor:pointer}
+.ca-tap{opacity:0;transition:opacity .12s;pointer-events:none}
+.ca-clic:active .ca-tap{opacity:.22}
+.ca-etiquette rect{transition:fill .15s}
+.ca-etiq-actif rect{fill:#ffe3a3}
+.ca-clic:active .ca-etiquette rect{fill:#ffd27a}
+.ca-note{cursor:pointer}
+.ca-marqueur{--ca-m:#f5b945}
+.ca-marqueur.barde{--ca-m:var(--c-barde)}
+.ca-marqueur.pisteur{--ca-m:var(--c-pisteur)}
+.ca-marqueur.alchimiste{--ca-m:var(--c-alchimiste)}
+.ca-marqueur.sage{--ca-m:var(--c-sage)}
+.ca-marqueur.magie{--ca-m:var(--cyan)}
+.ca-marqueur.alerte{--ca-m:var(--braise)}
+/* La présence d'un villageois (dès l'enquête 2) : son petit visage là où il est en ce moment ; un bleu clair (pas le jaune des aides), immobile */
+/* la position d'un villageois (Romain, 5 novembre, 8 h 59) : cerclée de jaune comme le rond de sa maison ; seul le petit triangle au-dessus flotte */
+.ca-marqueur.presence{--ca-m:#f3d27a}
+.ca-marqueur.presence .ca-flotte{animation:none}
+.ca-fleche{transform-box:fill-box;transform-origin:center;animation:ca-fleche 1.2s ease-in-out infinite alternate}
+@keyframes ca-fleche{from{transform:translateY(-7px)}to{transform:translateY(1px)}}
+/* il n'est pas chez lui : le rond de sa maison est grisé */
+.ca-habitant.ca-absent{filter:grayscale(1);opacity:.5}
+
+/* Animations (transform / opacity uniquement) */
+.ca-fumee,.ca-roue,.ca-onde,.ca-pulse,.ca-tourne,.ca-bat,.ca-flotte,.ca-brume,.ca-follet,.ca-vacille,.ca-drapeau{transform-box:fill-box;transform-origin:center}
+.ca-fumee{opacity:0;animation:ca-fumee 4s linear infinite}
+@keyframes ca-fumee{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:.75}100%{transform:translate(-14px,-46px) scale(2.3);opacity:0}}
+.ca-flot{animation:ca-flot 3.2s linear infinite}
+@keyframes ca-flot{to{stroke-dashoffset:-88}}
+/* la rivière rouge (enquête 2) : sa lueur respire doucement (immobile avec prefers-reduced-motion, plus bas) */
+.ca-riv-lueur{animation:ca-riv 3.6s ease-in-out infinite}
+@keyframes ca-riv{0%,100%{opacity:.12}50%{opacity:1}}
+.ca-riv-coeur{animation:ca-riv-c 3.6s ease-in-out infinite}
+@keyframes ca-riv-c{0%,100%{opacity:.55}50%{opacity:1}}
+.ca-roue{animation:ca-roue 9s linear infinite}
+@keyframes ca-roue{to{transform:rotate(360deg)}}
+.ca-onde{animation:ca-onde 2.6s ease-out infinite}
+.ca-onde2{animation-delay:-1.3s}
+@keyframes ca-onde{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.85);opacity:0}}
+.ca-pulse{animation:ca-pulse 1.8s ease-in-out infinite}
+@keyframes ca-pulse{0%,100%{transform:scale(.94);opacity:.95}50%{transform:scale(1.07);opacity:.35}}
+.ca-tourne{animation:ca-roue 8s linear infinite}
+.ca-bat{animation:ca-bat 1.6s ease-in-out infinite}
+@keyframes ca-bat{0%,100%{transform:scale(.92);opacity:.55}14%{transform:scale(1.06);opacity:1}28%{transform:scale(.96);opacity:.7}42%{transform:scale(1.03);opacity:.9}}
+.ca-flotte{animation:ca-flotte 2.4s ease-in-out infinite}
+@keyframes ca-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.ca-brume{animation:ca-brume 34s ease-in-out infinite alternate}
+.ca-brume1{animation-duration:46s;animation-direction:alternate-reverse}
+@keyframes ca-brume{from{transform:translateX(-70px)}to{transform:translateX(70px)}}
+.ca-vacille{animation:ca-vacille 2.2s ease-in-out infinite}
+@keyframes ca-vacille{0%,100%{opacity:.95}40%{opacity:.6}60%{opacity:.85}80%{opacity:.7}}
+.ca-follet{animation:ca-follet 9s ease-in-out infinite}
+.ca-follet1{animation-duration:12s}
+.ca-follet2{animation-duration:7s;animation-direction:reverse}
+@keyframes ca-follet{0%,100%{transform:translate(0,0);opacity:.9}25%{transform:translate(18px,-12px);opacity:.5}50%{transform:translate(4px,-26px);opacity:1}75%{transform:translate(-16px,-8px);opacity:.6}}
+.ca-drapeau{animation:ca-drapeau 2.8s ease-in-out infinite;transform-origin:0 50%}
+@keyframes ca-drapeau{0%,100%{transform:skewY(0)}50%{transform:skewY(5deg)}}
+
+/* États des lieux sur la carte */
+.ca-inactif .ca-etiq-lieu{opacity:.78}
+.ca-inactif{pointer-events:none}   /* rien à faire là pour ce rôle : le doigt passe à travers (la maison dessous reste touchable) */
+.ca-anneau{opacity:.55}
+.ca-calme .ca-etiq-lieu rect{fill:#f6ead0}
+.ca-etiq-dessous.ca-etiq-actif rect{fill:#3a2d4c}
+.ca-clic:active .ca-etiq-dessous rect{fill:#4a3a60}
+.ca-nom rect{fill:#fffaf0}
+.ca-apparait,.ca-etincelle,.ca-nouveau{transform-box:fill-box;transform-origin:center}
+/* Un lieu qui vient de s'ouvrir : il surgit, des étincelles, une pancarte « Nouveau ! » */
+.ca-apparait{animation:ca-apparait .9s cubic-bezier(.3,1.55,.5,1) .35s both}
+@keyframes ca-apparait{0%{transform:scale(.1);opacity:0}60%{opacity:1}100%{transform:scale(1);opacity:1}}
+.ca-etincelle{opacity:0;animation:ca-etincelle 1.3s ease-out both}
+@keyframes ca-etincelle{0%{transform:scale(.2);opacity:0}25%{transform:scale(1.5);opacity:1}100%{transform:scale(.3) translateY(-24px);opacity:0}}
+.ca-nouveau{animation:ca-nouveau 2.4s ease-in-out 1.1s infinite both}
+@keyframes ca-nouveau{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* ---------- Plein écran (onglet Carte) : toute la place entre le bandeau et les onglets, sans cadre ---------- */
+/* autour de la carte (quand on voit toute la carte) : de l'eau bleue, comme un lac autour du village */
+.ca-plein{position:relative;width:100%;min-height:220px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%, #3f7fb3 0%, #2b5f8f 55%, #1f4a73 100%)}
+.ca-plein.ca-couche-dessous{background:radial-gradient(ellipse at 50% 45%, #2a2036 0%, #140f1c 80%)}
+/* les boutons ＋ / − (carte.js) : en bas à droite, toujours au-dessus de la carte */
+.ca-zoom{position:absolute;right:10px;bottom:10px;z-index:5;display:flex;flex-direction:column;gap:8px}
+.ca-zoom[hidden]{display:none}
+.ca-zoom button{width:52px;height:52px;border-radius:50%;border:2px solid var(--trait, #3b4679);background:rgba(19,25,50,.9);color:var(--or-pale, #ffe3a3);font:700 1.7rem/1 var(--f-texte);display:grid;place-items:center;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.45);touch-action:manipulation;cursor:pointer}
+.ca-zoom button:active:not(:disabled){transform:scale(.93)}
+.ca-zoom button:disabled{opacity:.35;cursor:default}
+.ca-murale .ca-zoom{right:6px;bottom:6px;gap:6px}
+.ca-murale .ca-zoom button{width:46px;height:46px;font-size:1.5rem}
+.ca-etroit .ca-zoom button{width:44px;height:44px;font-size:1.35rem}
+.ca-vue{position:absolute;inset:0;display:flex;overflow:auto;overscroll-behavior:contain;touch-action:none;scrollbar-width:none;cursor:grab}   /* glisser et zoomer : carte.js s'en occupe (Carte.monter) */
+.ca-vue::-webkit-scrollbar{display:none}
+.ca-tire .ca-vue{cursor:grabbing}
+.ca-monde{position:relative;flex:none;margin:auto}
+.ca-monde > .ca-carte{width:100%;height:100%;border-radius:0}
+/* bords qui s'assombrissent : il y a encore de la carte de ce côté-là */
+.ca-bord{position:absolute;pointer-events:none;z-index:2;opacity:0;transition:opacity .25s}
+.ca-bord.g,.ca-bord.d{top:0;bottom:0;width:26px}
+.ca-bord.h,.ca-bord.b{left:0;right:0;height:26px}
+.ca-bord.g{left:0;background:linear-gradient(90deg, rgba(10,14,34,.55), transparent)}
+.ca-bord.d{right:0;background:linear-gradient(270deg, rgba(10,14,34,.55), transparent)}
+.ca-bord.h{top:0;background:linear-gradient(180deg, rgba(10,14,34,.5), transparent)}
+.ca-bord.b{bottom:0;background:linear-gradient(0deg, rgba(10,14,34,.5), transparent)}
+.ca-plus-g .ca-bord.g,.ca-plus-d .ca-bord.d,.ca-plus-h .ca-bord.h,.ca-plus-b .ca-bord.b{opacity:1}
+/* La carte des sous-sols, sur le chevalet de la cabane du Pisteur : un petit titre, et un mot quand elle est encore vide */
+.ca-plein.ca-murale{min-height:0}   /* la carte murale prend la taille que la cabane lui donne, rien de plus */
+.ca-titre-ss{position:absolute;bottom:8px;left:8px;z-index:4;padding:6px 14px;border-radius:999px;background:rgba(19,25,50,.88);border:2px solid #4a3d66;color:#c9f8ff;font:700 .95rem var(--f-texte);white-space:nowrap;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.ca-vide-ss{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;width:min(80%, 340px);margin:0;padding:12px 16px;border-radius:16px;background:rgba(19,25,50,.86);border:1px solid #4a3d66;color:#c9f8ff;font-size:.95rem;line-height:1.35;text-align:center;pointer-events:none}
+.ca-etroit .ca-titre-ss{bottom:4px;left:4px;padding:4px 10px;font-size:.8rem}
+.ca-etroit .ca-vide-ss{font-size:.82rem;padding:8px 10px}
+.ca-couche-dessous{background:#120d18}
+.ca-couche-dessous .ca-bord.g{background:linear-gradient(90deg, rgba(0,0,0,.6), transparent)}
+.ca-couche-dessous .ca-bord.d{background:linear-gradient(270deg, rgba(0,0,0,.6), transparent)}
+.ca-passage,.ca-ss-entree{transform-box:fill-box;transform-origin:center}
+/* Les chemins secrets en surface (carte.js : cheminsTraces, cheminsInteractifs ; Romain, 5 novembre, 01 h 30). Un chemin neuf se trace
+   (1,4 s), puis ses pas, son nom et le rond jaune de son départ apparaissent ; sans animation, tout est là, en entier. */
+.ca-chemin-depart,.ca-chemin-nom,.ca-chemin-signe,.ca-chemin-bout{transform-box:fill-box;transform-origin:center}
+.ca-chemin-neuf .ca-chemin-trait,.ca-chemin-neuf .ca-chemin-halo,.ca-chemin-neuf .ca-chemin-bord{stroke-dasharray:1 1;animation:ca-trace 1.4s ease-in-out .15s both}
+@keyframes ca-trace{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.ca-chemin-neuf .ca-chemin-pas,.ca-chemin-neuf .ca-chemin-bout,.ca-chemin-nom.ca-chemin-neuf{animation:ca-fondu .5s ease-out 1.45s both}
+@keyframes ca-fondu{from{opacity:0}to{opacity:1}}
+.ca-chemin-depart.ca-chemin-neuf{animation:ca-apparait .7s cubic-bezier(.3,1.55,.5,1) 1.5s both}
+.ca-chemin-signe.ca-chemin-neuf{animation:ca-fondu .4s ease-out 2s both}
+.ca-chemin-depart{cursor:pointer}
+.ca-chemin-depart:active .ca-chemin-rond{fill-opacity:.7}
+.ca-etiq-chemin rect{stroke:#ffd23f}
+.ca-chemin-pion{filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+/* la bulle de la première fois, en bas du tableau (au-dessus du titre, à gauche des boutons ＋ / −) ; 🔊 pour l'entendre */
+.ca-chemin-bulle{position:absolute;left:62px;right:62px;bottom:52px;z-index:4;display:flex;align-items:center;gap:8px;max-width:520px;margin:0 auto;padding:10px 10px 10px 12px;border-radius:16px;background:#ffe9a8;color:#24182e;border:3px solid #24182e;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ca-chemin-bulle > span{font-size:1.6rem;line-height:1}
+.ca-chemin-bulle p{margin:0;flex:1;font:700 1rem/1.3 var(--f-texte)}
+.ca-chemin-bulle .b-lire{flex:none}
+.ca-chemin-bulle-neuve{animation:ca-bulle .45s ease-out 2s both}
+@keyframes ca-bulle{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* cadre étroit (téléphone debout) : toute la largeur, au-dessus des boutons ＋ / − ; très petit cadre (téléphone couché) : plus serrée */
+.ca-serre .ca-chemin-bulle{left:6px;right:6px;bottom:112px;margin:0}
+.ca-serre .ca-chemin-bulle p{font-size:.92rem}
+.ca-etroit .ca-chemin-bulle{left:4px;right:54px;bottom:40px;margin:0;padding:6px 8px;gap:6px}
+.ca-bas .ca-chemin-bulle{display:none}
+.ca-etroit .ca-chemin-bulle p{font-size:.85rem}
+@media (prefers-reduced-motion: reduce){.ca-chemin-bulle{animation:none!important}}
+.ca-etiq-dessous rect{stroke:#8ff3ff;stroke-opacity:.55}
+.ca-clic:active .ca-ss-salle > circle,.ca-ss-salle.ca-clic:active > circle:nth-child(2),.ca-ss-mystere.ca-clic:active > circle:nth-child(2){fill:#4a3a60}
+/* pastille ✨ sur l'onglet Carte : un nouveau lieu s'est ouvert */
+.ca-badge{position:absolute;top:-6px;right:-14px;font-style:normal;font-size:.8rem;line-height:1;padding:3px;border-radius:50%;background:#8ff3ff;box-shadow:0 0 0 2px var(--nuit, #1c2447), 0 0 10px rgba(143,243,255,.85);animation:ca-badge 1.6s ease-in-out infinite}
+@keyframes ca-badge{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+.ca-fixe *,.ca-fixe{animation:none!important}
+@media (prefers-reduced-motion: reduce){.ca-carte *{animation:none!important}.ca-badge{animation:none}}
+/* L'Alchimiste : le rond des ingrédients d'un lieu se grise quand elle y a déjà cherché à ce moment (Romain, 5 novembre, 12 h 31) */
+.ca-marqueur.ingr-fait{filter:grayscale(1);opacity:.55}
+/* Le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31) */
+.ca-marqueur.presence.ca-fache{--ca-m:#ff5a4a}

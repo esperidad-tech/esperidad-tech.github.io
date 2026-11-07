@@ -1,0 +1,229 @@
+/* ==========================================================
+   Brumeval — le nouveau Barde (barde.js) : l'interrogatoire qui parle,
+   les dépositions en scène, les phrases à trous du Carnet, les talents.
+   Préfixe .bd-
+   ========================================================== */
+/* ---------- L'interrogatoire ---------- */
+.bd-conv{display:flex;flex-direction:column;gap:12px}
+/* le visage en grand, comme le mini-jeu « Repérer le mensonge » (Romain, 4 novembre, 22 h 25 et 22 h 38) : en haut, seulement
+   le nom (et sa réplique du moment, s'il en a une) et le grand visage animé ; les réponses sont dans les boîtes des questions */
+.bd-tete{display:flex;flex-direction:column;align-items:center;gap:8px}
+.bd-visage{width:min(80vw, 42vh, 440px);aspect-ratio:1;border-radius:28px;overflow:hidden;border:4px solid var(--contour, #24182e);
+  background:radial-gradient(circle at 50% 38%, #7b4a72, #2f1c37 72%);box-shadow:0 0 0 3px rgba(255,143,179,.35), 0 0 22px rgba(143,243,255,.14), 0 10px 24px rgba(0,0,0,.45)}
+.bd-visage svg{width:100%;height:100%;display:block}
+.bd-visage.vexe{border-color:var(--braise);filter:saturate(.85)}
+.bd-emoji{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:3.6rem}
+.bd-nom{grid-area:n;padding:0 44px;min-width:0;text-align:center}
+.bd-nom h2{margin:0;font-size:1.25rem;line-height:1.15}
+.bd-nom .doux{font-size:.9rem}
+.bd-bulle{grid-area:b;justify-self:stretch;position:relative;background:var(--parchemin);color:var(--encre);border-radius:18px;padding:10px 46px 10px 14px;min-height:3.2em;font-size:1.08rem;line-height:1.38;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.bd-bulle::before{content:'';position:absolute;left:50%;margin-left:-9px;top:-11px;border:9px solid transparent;border-bottom:12px solid var(--parchemin);border-top:0}
+.bd-bulle p{margin:0;min-height:1.38em}
+.bd-bulle .b-lire{position:absolute;right:6px;top:6px}
+.bd-bulle.bd-vrai,.bd-bulle.bd-exige{background:#dff6e7;color:#173d26}
+.bd-bulle.bd-vrai::before,.bd-bulle.bd-exige::before{border-bottom-color:#dff6e7}
+.bd-bulle.bd-vexe,.bd-bulle.bd-outre{background:#ffe1d6;color:#5a1f0c}
+.bd-bulle.bd-vexe::before,.bd-bulle.bd-outre::before{border-bottom-color:#ffe1d6}
+.bd-bulle.bd-hydromel{background:#fff1c8}
+.bd-bulle.bd-hydromel::before{border-bottom-color:#fff1c8}
+.bd-ment{width:100%;font-size:1.15rem}
+.bd-secret{margin:0;padding:8px 12px;border-radius:12px;background:rgba(255,143,179,.12);border:1px solid rgba(255,143,179,.5);font-size:.98rem}
+.bd-boude{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:14px;border:2px dashed var(--braise);background:rgba(232,105,60,.08)}
+.bd-boude p{margin:0}
+.bd-questions{display:flex;flex-direction:column;gap:10px}
+.bd-choix{border:2px solid var(--c-barde);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;background:rgba(255,143,179,.05)}
+.bd-choix-tit{margin:0;font-weight:700}
+.bd-choix-tit small{display:block;font-weight:400;color:var(--brume);font-size:.85rem}
+.bd-facon{border-style:dashed}
+.bd-facon b{font-weight:400;font-style:italic}
+.bd-facon.barre{opacity:.55;text-decoration:line-through}
+.b-question.repondue.bd-cur{border-color:var(--c-barde);box-shadow:0 0 0 2px rgba(255,143,179,.35)}
+/* Les questions : de petites boîtes repliables (Romain, 4 novembre, 22 h 38). Fermée : ▸ et la question ; ouverte : ▾, et juste
+   dessous le cadre de la réponse avec 🔁 Répète et 🤥 Mensonge ?. Une seule ouverte à la fois. */
+.bd-boite{display:block;padding:0;text-align:left;width:100%;font:inherit;color:inherit;cursor:pointer}
+.bd-boite > summary,.bd-a-poser{display:flex;gap:10px;align-items:center;min-height:50px;padding:8px 14px;list-style:none;cursor:pointer}
+.bd-boite > summary::-webkit-details-marker{display:none}
+.bd-boite > summary::before,.bd-a-poser::before{content:'▸';flex:none;width:1.2em;font-size:1.25rem;color:var(--c-barde);transition:transform .15s}
+.bd-boite[open] > summary::before{content:'▾'}
+.bd-boite > summary b,.bd-a-poser b{flex:1;min-width:0;font-weight:700}
+.bd-a-poser{border-style:solid}
+.bd-a-poser::after{content:'💬';font-size:1.1rem;opacity:.8}
+.bd-boite.repondue > summary b{font-weight:600;opacity:.92}
+.bd-boite[open]{border-color:var(--c-barde);box-shadow:0 0 0 2px rgba(255,143,179,.3)}
+.bd-boite-in{padding:0 12px 12px}
+.bd-cadre{background:var(--parchemin);color:var(--encre);border-radius:14px;padding:10px 12px;box-shadow:0 3px 0 rgba(0,0,0,.25);display:flex;flex-direction:column;gap:6px}
+.bd-cadre .b-reponse{margin:0;color:var(--encre);font-size:1.05rem;line-height:1.38;min-height:1.38em}
+.bd-cadre .b-reponse.verite{color:#173d26}
+.bd-cadre span{font-size:inherit}   /* (.b-question span grossit les icônes : pas dans le cadre de la réponse) */
+.bd-cadre > .b-reponse:not(.verite){padding:0;background:none;animation:none}
+.bd-cadre .bd-replique{font-style:italic}
+.bd-cadre .bd-rep-outils{margin-top:4px}
+.bd-cadre .btn.second{background:#2e2547;color:#fff;border-color:#2e2547}   /* lisible sur le parchemin */
+.bd-tag-ment{margin:0;align-self:flex-start;padding:2px 10px;border-radius:999px;background:#d0312d;color:#fff;font-weight:800;font-size:.9rem}
+.bd-tag-ment small{font-weight:600;opacity:.9}
+.bd-boite .bd-mini-tag{flex:none;font-size:1.05rem}
+.bd-choix-sous{margin:0 0 8px;color:var(--brume);font-size:.9rem}
+.bd-boite.bd-choix{border:2px solid var(--c-barde);background:rgba(255,143,179,.05)}
+.bd-boite.bd-choix .bd-boite-in{display:flex;flex-direction:column;gap:8px}
+/* sous le nom : la réplique qui n'est pas une réponse (salut, « Encore toi ? », merci pour la potion…) */
+.bd-dit-haut{margin:0;max-width:34em;text-align:center;font-style:italic;font-size:1rem;line-height:1.35;color:var(--lune);display:flex;gap:6px;align-items:center;justify-content:center}
+.bd-dit-haut.bd-accuse,.bd-dit-haut.bd-vexe{color:#ffb3a0}
+.bd-potion-btn{width:100%}
+.bd-potion-bue{margin:0;padding:8px 12px;border-radius:12px;background:rgba(124,196,147,.14);border:1px solid var(--mousse);font-size:.95rem}
+.bd-tableau{align-self:flex-start}
+.bd-rep-outils{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.bd-ment-p{background:linear-gradient(180deg,#ffb38f,#e8693c);color:#fff}
+.bd-intu{margin:6px 0 0;color:#d9b3ff;font-weight:700}
+.bd-bas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding-top:4px;border-top:1px dashed var(--trait)}
+.bd-bas small{font-weight:400;opacity:.8}
+.bd-avert{margin:0;text-align:center}
+.bd-signes{border:1px solid var(--trait);border-radius:12px;padding:6px 12px;background:rgba(0,0,0,.12)}
+.bd-signes summary{cursor:pointer;min-height:40px;display:flex;align-items:center;font-weight:700}
+.bd-signes ul{list-style:none;margin:6px 0;padding:0;display:grid;gap:6px}
+.bd-signes li{display:flex;gap:8px;align-items:center}
+.bd-signes li span{font-size:1.3rem;width:1.6em;text-align:center}
+.bd-fini{margin:0;padding:10px 12px;border-radius:12px;background:rgba(124,196,147,.15);border:1px solid var(--mousse);text-align:center;font-weight:700}
+.bd-aide{margin:0;font-size:.98rem;color:var(--brume)}
+
+/* ---------- La feuille d'un lieu ---------- */
+.b-gens-carte.bd-vexe{border-color:var(--braise)}
+.bd-boude-mini{color:var(--braise);font-weight:700}
+.bd-mini-gens{display:flex;gap:6px;flex-wrap:wrap}
+.bd-mini-gens span{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid var(--c-barde);background:var(--nuit-3);display:block}
+.bd-mini-gens svg{width:100%;height:100%}
+.bd-ecoute-oreille{border-color:var(--cyan)}
+.bd-rumeur{border-color:var(--or)}
+
+/* ---------- Les dépositions ---------- */
+.bd-temoins{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:700px){ .bd-temoins{grid-template-columns:1fr 1fr} }
+.bd-temoin{border:2px solid var(--trait);border-radius:16px;padding:10px;background:rgba(0,0,0,.14);display:flex;flex-direction:column;gap:8px}
+.bd-temoin.innocent{opacity:.6;border-style:dashed}
+.bd-t-tete{display:flex;align-items:center;gap:10px}
+.bd-t-tete b{flex:1;font-size:1.08rem}
+.bd-t-img{width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--c-barde);background:var(--nuit-3);flex:none}
+.bd-t-img svg{width:100%;height:100%}
+.bd-temoin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bd-ph{width:100%;text-align:left;border:2px solid transparent;border-radius:10px;padding:8px 10px;min-height:44px;background:var(--parchemin);color:var(--encre);font:inherit;font-size:1rem;line-height:1.3;cursor:pointer}
+.bd-ph.m-v{background:#c9f2d4;border-color:#3a9a5c}
+.bd-ph.m-v::after{content:' 🟢';}
+.bd-ph.m-r{background:#ffd0c4;border-color:#d0502a}
+.bd-ph.m-r::after{content:' 🔴';}
+.bd-t-accuse{align-self:flex-start}
+.bd-t-vrai{margin:0;color:var(--mousse);font-weight:700}
+
+/* ---------- Le Carnet : mes talents, ce que j'ai entendu ---------- */
+.bd-talents,.bd-entendu{margin:12px 0;padding:12px;border-radius:16px;border:2px solid var(--c-barde);background:rgba(255,143,179,.06)}
+.bd-talents h3,.bd-entendu h3{margin:0 0 6px}
+.bd-talents ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.bd-talents li{line-height:1.4}
+.bd-talents li .btn{margin:4px 4px 0 0}
+.bd-trous{border:1px solid var(--trait);border-radius:14px;margin-top:8px;background:rgba(0,0,0,.14);overflow:hidden}
+.bd-trous-tete{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.bd-trous-tete span{font-size:1.4rem}
+.bd-trous-tete b{flex:1}
+.bd-trous-tete small{color:var(--brume)}
+.bd-trous-corps{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px}
+.bd-parchemin{background:var(--parchemin);color:var(--encre);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 0 2px var(--parchemin-2)}
+.bd-tl{margin:0;line-height:2.1;font-size:1.06rem}
+.bd-tq{display:inline-block;margin-right:6px;font-weight:700;color:var(--encre-2)}
+.bd-trou{display:inline-flex;align-items:center;justify-content:center;min-width:3.2em;min-height:40px;margin:2px 3px;padding:2px 8px;border-radius:9px;border:2px dashed var(--encre-2);background:#fff8e6;color:var(--encre);font:inherit;font-weight:700;cursor:pointer;vertical-align:middle}
+.bd-trou.plein{border-style:solid;border-color:var(--laiton);background:#ffe9b0}
+.bd-trou.choisi{border-color:var(--c-barde);box-shadow:0 0 0 3px rgba(255,143,179,.5)}
+.bd-trou.fixe{border-color:#3a9a5c;background:#d8f3df;cursor:default}
+.bd-tirets{letter-spacing:.06em;font-family:monospace;font-size:1.02rem}
+.bd-banque{display:flex;flex-wrap:wrap;gap:8px}
+.bd-mot{min-height:44px;padding:6px 14px;border-radius:22px;border:2px solid var(--c-barde);background:rgba(255,143,179,.1);color:var(--lune);font:inherit;font-size:1rem;cursor:pointer}
+.bd-mot.pris{opacity:.35}
+.bd-mot.elimine{opacity:.2;text-decoration:line-through}
+.bd-cn-secret{border-left:4px solid var(--c-barde)}
+
+@media (min-width:700px){
+  /* tablette : le grand visage, encore plus grand (la bulle ne sert plus qu'aux scènes à part) */
+  .bd-visage{width:min(60vw, 50vh, 460px)}
+  .bd-cadre .b-reponse{font-size:1.15rem}
+  .bd-bulle{font-size:1.18rem;border-radius:4px 18px 18px 18px}
+  .bd-bulle::before{left:-12px;margin-left:0;top:14px;border:8px solid transparent;border-right:12px solid var(--parchemin);border-left:0}
+  .bd-bulle.bd-vrai::before,.bd-bulle.bd-exige::before{border-right-color:#dff6e7;border-bottom-color:transparent}
+  .bd-bulle.bd-vexe::before,.bd-bulle.bd-outre::before{border-right-color:#ffe1d6;border-bottom-color:transparent}
+  .bd-bulle.bd-hydromel::before{border-right-color:#fff1c8;border-bottom-color:transparent}
+}
+
+/* La petite scène du rassemblement (regles.js, M.illustration) : une boucle de 11 s */
+.rs-scene{position:relative;width:100%;max-width:360px;aspect-ratio:16/10;margin:26px auto 8px;border-radius:16px;overflow:hidden;border:3px solid var(--contour, #24182e);box-shadow:0 6px 14px rgba(0,0,0,.3);background:#fbe4b4}
+.rs-decor{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* Les personnages en entier (Romain, 5 novembre, 8 h 59 : plus de petits ronds, des personnages avec les jambes et les pieds) :
+   chacun a sa hauteur (--h) et sa forme (--ar, largeur / hauteur de son dessin) ; --x = où il s'arrête (le milieu de ses pieds) */
+.rs-gens{position:absolute;bottom:5%;left:-24%;height:var(--h, 48%);aspect-ratio:var(--ar, .57);transform:translateX(-50%);animation:rs-pion 11s linear infinite both}
+.rs-gens i{display:block;width:100%;height:100%;transform-origin:50% 100%;animation:rs-pas .42s ease-in-out infinite alternate}
+.rs-gens i svg{display:block;width:100%;height:100%;overflow:visible}
+.rs-gens i b{display:grid;place-items:end center;width:100%;height:100%;font-size:2rem;font-style:normal}
+.rs-gens.rs-chef i svg{filter:drop-shadow(0 0 6px rgba(255,214,120,.9))}   /* le Sage, sa lanterne : il mène le village */
+.rs-gens em{position:absolute;left:50%;bottom:96%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.66rem;line-height:1.25;padding:1px 6px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0}
+.rs-kof{animation:rs-kof 11s linear infinite both}
+.rs-gens.rs-maire, .rs-gens.rs-silas{left:118%;animation-name:rs-arrive}
+.rs-gens.rs-silas{animation-delay:.3s}
+.rs-bulle{font-size:.72rem !important;color:#b3261e !important}
+.rs-maire .rs-bulle{animation:rs-bulle-maire 11s linear infinite both}
+.rs-silas .rs-bulle{left:auto;right:-6%;transform:none;animation:rs-bulle-silas 11s linear .3s infinite both}   /* (tout à droite : sa bulle ne sort pas de l'image) */
+.rs-ombre{position:absolute;left:84%;bottom:12%;width:11%;aspect-ratio:40/48;opacity:0;animation:rs-ombre 11s linear infinite both}
+.rs-ombre svg{display:block;width:100%;height:100%}
+/* la fumée rouge : des nuages flous qui montent de sous les branches (au pied de l'arbre) et cachent le feuillage.
+   Le grand PFFFT revient à chaque tour ; une fois partie, la fumée ne s'arrête plus jamais (Romain, 5 novembre, 8 h 59) : .rs-fumee-sans-fin */
+.rs-fumee{position:absolute;left:50%;top:54%;width:30%;height:34%;pointer-events:none}
+.rs-fumee i{position:absolute;width:58%;aspect-ratio:1;margin:-29% 0 0 -29%;border-radius:50%;background:radial-gradient(circle, rgba(236,58,66,.9) 0, rgba(229,50,60,.62) 38%, rgba(229,50,60,0) 70%);filter:blur(1.5px);opacity:0;animation:rs-fumee 11s ease-out infinite both}
+.rs-fumee-sans-fin i{width:46%;margin:-23% 0 0 -23%;filter:none;animation:rs-fumee-monte 3.5s linear infinite both}
+.rs-pfft{position:absolute;left:50%;top:6%;font-family:var(--f-titre, inherit);font-size:1.5rem;color:#d0312d;text-shadow:0 2px 0 #fff, 0 0 6px #fff;opacity:0;animation:rs-pfft 11s linear infinite both}
+@keyframes rs-pion{0%{left:-24%}22%{left:var(--x)}68%{left:var(--x)}80%{left:-30%}100%{left:-30%}}
+@keyframes rs-pas{from{transform:translateY(0) rotate(-2.5deg)}to{transform:translateY(-4%) rotate(2.5deg)}}
+@keyframes rs-arrive{0%,48%{left:118%}57%{left:var(--x)}79%{left:var(--x)}89%,100%{left:122%}}
+@keyframes rs-ombre{0%,25%{left:84%;opacity:0}27%{opacity:1}36%{left:110%;opacity:1}37%,100%{left:110%;opacity:0}}
+@keyframes rs-fumee{0%,36%{opacity:0;transform:translate(0,0) scale(.3)}42%{opacity:.95;transform:translate(0,-15%) scale(1)}70%{opacity:.85;transform:translate(var(--dx, 0px),-80%) scale(1.9)}88%,100%{opacity:0;transform:translate(var(--dx, 0px),-120%) scale(2.4)}}
+@keyframes rs-fumee-monte{0%{opacity:0;transform:translate(0,0) scale(.4)}12%{opacity:.85}60%{opacity:.7;transform:translate(calc(var(--dx, 0px) * .6),-140%) scale(1.5)}100%{opacity:0;transform:translate(var(--dx, 0px),-260%) scale(2.3)}}
+@keyframes rs-pfft{0%,37%{opacity:0;transform:translateX(-50%) scale(.4)}41%{opacity:1;transform:translateX(-50%) scale(1.15)}50%{opacity:1;transform:translateX(-50%) scale(1)}54%,100%{opacity:0;transform:translateX(-50%) scale(1)}}
+@keyframes rs-kof{0%,68%{opacity:0}70%,78%{opacity:1}80%,100%{opacity:0}}
+@keyframes rs-bulle-silas{0%,57%{opacity:0}58.5%,64.5%{opacity:1}66%,100%{opacity:0}}
+@keyframes rs-bulle-maire{0%,68.5%{opacity:0}70%,78%{opacity:1}80%,100%{opacity:0}}
+/* moins de mouvement : la scène reste figée au moment de la fumée, de Silas et du maire */
+@media (prefers-reduced-motion: reduce){ .rs-scene *{animation-play-state:paused !important;animation-delay:-6.8s !important} }
+
+/* ---------- 👂 Écouter aux portes, dans la bulle de la carte (Romain, 5 novembre, 12 h 31 ; barde.js) ----------
+   Une boîte de dialogue par personne : son visage, son nom, le texte qui s'écrit lettre après lettre. */
+.b-bulle .bd-porte{pointer-events:auto;display:flex;align-items:flex-start;gap:8px;width:max-content;max-width:100%;box-sizing:border-box;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:15px;padding:6px 10px 7px 6px;font-size:.8rem;line-height:1.3;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);flex-shrink:0;cursor:pointer}
+.b-bulle .bd-porte .b-gens-img{width:30px;height:30px;flex:none}
+.bd-porte-ic{font-size:1.3rem;line-height:30px;flex:none}
+.bd-porte-corps{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bd-porte-corps b{font-size:.78rem;color:#ffe08a}
+.bd-porte-txt{margin:0;min-height:1.3em;width:220px;max-width:100%;white-space:normal}
+.b-bulle .bd-porte-secret{border-color:#6b4fa8}
+.b-bulle .bd-porte-secret p{margin:0;width:auto}
+.b-bulle .bd-porte-btn{}
+/* fâché, ou « Encore toi ? » : son visage et « Reviens plus tard », cerclés de rouge */
+.b-gens-carte.bd-fache{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important;padding:2px 12px 2px 2px!important;gap:8px}
+.b-gens-carte.bd-fache > span{font-size:.8rem;font-weight:700;color:#ffd2cb}
+.b-gens-carte.bd-fache > span b{color:#fff;font-weight:800}
+/* Une réplique à la fois (Romain, 15 h 34 : les longs dialogues) : la boîte garde sa taille, le texte long défile dedans */
+.b-bulle .bd-porte-long .bd-porte-txt{height:6.6em;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.bd-porte-pied{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:3px}
+.bd-porte-pied small{font-size:.7rem;opacity:.75}
+.bd-porte-suite{font-weight:900;font-size:.8rem;color:#111;background:#ffd23f;border-radius:999px;padding:3px 11px;animation:bd-suite 1.2s ease-in-out infinite}
+.bd-porte-suite.fin{background:#3fcf6a}
+@keyframes bd-suite{50%{transform:scale(1.07)}}
+@media (prefers-reduced-motion: reduce){ .bd-porte-suite{animation:none} }
+/* 🤥 Mensonge ? qui part en fumée quand on pose une autre question (Romain, 5 novembre, 21 h 46 ; barde.js, enFumee) */
+.bd-ment-p.bd-part{pointer-events:none;animation:bd-part .38s ease-in forwards}
+@keyframes bd-part{0%{opacity:1;filter:blur(0)}100%{opacity:0;filter:blur(6px);transform:translateY(-8px) scale(1.12)}}
+.bd-fumee{position:fixed;z-index:200;width:0;height:0;pointer-events:none}
+.bd-fumee i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;opacity:0;
+  background:radial-gradient(circle at 50% 50%, rgba(214,210,228,.95), rgba(160,154,182,.55) 45%, rgba(160,154,182,0) 70%);
+  animation:bd-bouffee .95s ease-out forwards}
+.bd-fumee i:nth-child(1){--x:-34px;--y:-26px;animation-delay:0s}
+.bd-fumee i:nth-child(2){--x:-8px;--y:-42px;animation-delay:.05s}
+.bd-fumee i:nth-child(3){--x:22px;--y:-30px;animation-delay:.1s}
+.bd-fumee i:nth-child(4){--x:40px;--y:-8px;animation-delay:.07s}
+.bd-fumee i:nth-child(5){--x:-44px;--y:-2px;animation-delay:.12s}
+@keyframes bd-bouffee{0%{opacity:0;transform:translate(0, 0) scale(.4)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--x), var(--y)) scale(1.7)}}
+@media (prefers-reduced-motion: reduce){.bd-fumee{display:none}.bd-ment-p.bd-part{animation-duration:.01s}}
+.bd-fantome{position:fixed;z-index:199;margin:0}

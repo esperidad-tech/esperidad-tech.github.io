@@ -1,0 +1,43 @@
+"""Test de fumée : créer un héros, démarrer l'enquête 1, ouvrir quelques écrans."""
+import sys, os
+from playwright.sync_api import sync_playwright
+ICI = os.path.dirname(os.path.abspath(__file__))
+URL = 'file://' + os.path.join(os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist')), 'index.html')
+OUT = os.path.join(ICI, '..', 'test', 'moteur')
+os.makedirs(OUT, exist_ok=True)
+role = sys.argv[1] if len(sys.argv) > 1 else 'pisteur'
+W, H = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (390, 844)
+
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    pg = b.new_page(viewport={'width': W, 'height': H})
+    erreurs = []
+    pg.on('console', lambda m: erreurs.append(m.text) if m.type == 'error' else None)
+    pg.on('pageerror', lambda e: erreurs.append('PAGEERROR ' + str(e)))
+    pg.goto(URL)
+    pg.wait_for_timeout(500)
+    pg.screenshot(path=f'{OUT}/01-accueil-{role}.png')
+    pg.click('[data-act=creer]')
+    pg.click(f'[data-act=crea-role][data-r={role}]')
+    pg.screenshot(path=f'{OUT}/02-roles-{role}.png')
+    pg.click('[data-act=crea-suite]')
+    pg.wait_for_timeout(300)
+    pg.screenshot(path=f'{OUT}/03-apparence-{role}.png')
+    pg.click('[data-act=crea-suite]')
+    pg.fill('#nom', 'Test')
+    pg.click('[data-act=crea-fin]')
+    pg.wait_for_timeout(300)
+    pg.screenshot(path=f'{OUT}/04-hub-{role}.png')
+    pg.click('[data-act=nouvelle-enquete]')
+    pg.wait_for_timeout(300)
+    pg.screenshot(path=f'{OUT}/05-lettre-{role}.png', full_page=True)
+    pg.click('[data-act=commencer]')
+    pg.wait_for_timeout(500)
+    pg.screenshot(path=f'{OUT}/06-carte-{role}.png')
+    pg.click('[data-act=onglet][data-o=role]')
+    pg.wait_for_timeout(300)
+    pg.screenshot(path=f'{OUT}/07-role-{role}.png', full_page=True)
+    pg.click('[data-act=onglet][data-o=code]')
+    pg.screenshot(path=f'{OUT}/08-code-{role}.png')
+    print('erreurs :', erreurs)
+    b.close()

@@ -1,0 +1,907 @@
+/* ==========================================================
+   Brumeval v2 — l'atelier de l'Alchimiste (préfixe .at-)
+   La pièce prend tout l'écran (sans cadre) ; tout se fait en touchant l'image.
+   ========================================================== */
+.at{position:relative;width:100%;height:100%;min-height:220px;overflow:hidden;
+  background:#1a1430;color:var(--lune);font-family:var(--f-texte);
+  -webkit-user-select:none;user-select:none;--k:.6}
+.at-defs{position:absolute;width:0;height:0;overflow:hidden}
+.at [hidden]{display:none!important}
+:where(.at-grim, .at-ouvert, .at-toast) :where(h3, h4, p){margin:0}
+.at button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+.at-rond{width:48px;height:48px;border-radius:50%;border:2px solid var(--trait);background:rgba(238,240,255,.08);font-size:1.3rem;display:grid;place-items:center;flex:none;padding:0;transition:transform .08s}
+.at-rond:active{transform:scale(.9)}
+
+/* ---------- La pièce (le monde) et le défilement au doigt ---------- */
+.at-piece{position:absolute;inset:0;overflow:hidden;touch-action:none;background:#1a1430}
+.at-monde{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0}
+.at-fond-box{position:absolute;inset:0}
+.at-fond{position:absolute;inset:0;width:100%;height:100%;display:block}
+.at-scene{position:absolute;inset:0;z-index:1;isolation:isolate}
+.at-halos{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;transition:opacity .8s}
+.at-calque{position:absolute;inset:0;pointer-events:none;z-index:3}
+.at-lumiere{position:absolute;inset:0;z-index:4;pointer-events:none;transition:background .8s}
+.at-defile .at-piece{cursor:grabbing}
+/* il y a encore de la pièce de ce côté : une ombre douce et une petite flèche */
+.at-bords i{position:absolute;z-index:5;pointer-events:none;opacity:0;transition:opacity .3s}
+.at-bords .g,.at-bords .d{top:0;bottom:0;width:34px}
+.at-bords .h,.at-bords .b{left:0;right:0;height:30px}
+.at-bords .g{left:0;background:linear-gradient(90deg, rgba(10,6,24,.55), rgba(10,6,24,0))}
+.at-bords .d{right:0;background:linear-gradient(270deg, rgba(10,6,24,.55), rgba(10,6,24,0))}
+.at-bords .h{top:0;background:linear-gradient(180deg, rgba(10,6,24,.5), rgba(10,6,24,0))}
+.at-bords .b{bottom:0;background:linear-gradient(0deg, rgba(10,6,24,.5), rgba(10,6,24,0))}
+.at-bords .g::after,.at-bords .d::after{content:'';position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border:solid rgba(255,246,216,.8);border-width:0 4px 4px 0}
+.at-bords .g::after{left:9px;transform:rotate(135deg)}
+.at-bords .d::after{right:9px;transform:rotate(-45deg)}
+.at-glisse-g .at-bords .g,.at-glisse-d .at-bords .d,.at-glisse-h .at-bords .h,.at-glisse-b .at-bords .b{opacity:1}
+/* une chose importante hors de l'écran : un rond au bord, qu'on peut toucher */
+.at-reperes{position:absolute;inset:0;z-index:6;pointer-events:none}
+.at-repere{position:absolute;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;border:3px solid var(--contour);padding:0;pointer-events:auto;
+  background:radial-gradient(circle at 35% 30%, #fff6d8, #ffd36a);font-size:1.5rem;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,211,106,.45), 0 0 20px #ffd36a;animation:at-repere 1.1s ease-in-out infinite alternate}
+.at-repere::after{content:'';position:absolute;width:12px;height:12px;border:solid var(--contour);border-width:0 4px 4px 0;background:none}
+.at-rep-g::after{left:-12px;top:17px;transform:rotate(135deg)}
+.at-rep-d::after{right:-12px;top:17px;transform:rotate(-45deg)}
+.at-rep-h::after{top:-12px;left:17px;transform:rotate(-135deg)}
+.at-rep-b::after{bottom:-12px;left:17px;transform:rotate(45deg)}
+@keyframes at-repere{from{transform:scale(1)}to{transform:scale(1.1)}}
+
+/* ---------- Les choses fixes qu'on touche : elles s'allument doucement quand il y a du nouveau ---------- */
+.at-touche{cursor:pointer}
+.at-badge{position:absolute;right:2%;top:-6%;z-index:3;min-width:34px;height:34px;padding:0 8px;border-radius:17px;display:grid;place-items:center;
+  background:#e8693c;color:#fff;font-weight:800;font-size:1.1rem;border:3px solid #fff6d8;box-shadow:0 3px 0 rgba(36,24,46,.55), 0 0 14px rgba(232,105,60,.6);pointer-events:none}
+.at-fixe::after{content:'';position:absolute;inset:-6%;border-radius:24%;opacity:0;pointer-events:none;box-shadow:0 0 0 5px rgba(255,211,106,.85), 0 0 34px 8px rgba(255,211,106,.55)}
+.at-arrivage.at-nouveau::after,.at-pupitre.at-attente::after{animation:at-appel 1.6s ease-in-out infinite alternate}
+.at-arrivage.at-nouveau > svg{animation:at-hop 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.at-arrivage:not(.at-plein) > svg{filter:saturate(.6) brightness(.85)}
+.at-pupitre .at-a-analyser{animation:b-lueur 1.4s ease-in-out infinite}
+.at-chp.at-pret .at-liq-p{animation:at-pret 2s ease-in-out infinite alternate}
+.at-arrivage::before,.at-pupitre::before{content:'';position:absolute;left:4%;right:4%;bottom:-6%;height:16%;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(10,4,16,.5), rgba(10,4,16,0));z-index:-1;pointer-events:none}
+@keyframes at-appel{from{opacity:.25}to{opacity:1}}
+@keyframes at-pret{from{fill:#3d7f8f}to{fill:#5fd0e0}}
+
+/* ---------- L'ingrédient qu'elle tient : une étiquette en bas de l'écran, les rangements qui l'acceptent brillent ---------- */
+.at-tient{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100% - 16px);
+  padding:6px 6px 6px 8px;border-radius:999px;background:#fff6e6;color:var(--encre);border:3px solid var(--contour);box-shadow:0 6px 0 rgba(0,0,0,.3);animation:at-pop .25s ease-out}
+.at-tient-j{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.9rem;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.8), rgba(255,255,255,0) 44%), var(--c)}
+.at-tient-t{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.at-tient-t b{font-size:1.05rem}
+.at-tient-t small{font-size:.85rem;font-weight:700;opacity:.8}
+.at-tient-x{width:48px;height:48px;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-o.at-dispo::after{content:'';position:absolute;inset:-6%;border-radius:22%;border:5px dashed #ffd36a;box-shadow:0 0 22px rgba(255,211,106,.8);animation:at-cible .9s ease-in-out infinite;pointer-events:none}
+/* la petite règle de chaque rangement : 💧 le verre, 🍃 les choses sèches */
+.at-regle{position:absolute;right:-3%;top:-6%;z-index:2;width:38px;height:38px;border-radius:50%;display:none;place-items:center;
+  font-size:1.25rem;line-height:1;background:#fff6d8;border:3px solid var(--contour);box-shadow:0 3px 0 rgba(36,24,46,.5);pointer-events:none}
+.at-regle-v{background:#d8f1ff}
+.at-regle-s{background:#e4f7cf}
+.at-choix .at-o.at-dispo .at-regle,.at-regle-flash .at-regle{display:grid;animation:at-regle 1.2s ease-in-out infinite alternate}
+@keyframes at-regle{from{transform:translateY(0) scale(1)}to{transform:translateY(-4px) scale(1.1)}}
+
+/* ---------- Le fantôme qu'on glisse ---------- */
+.at-fantomes{position:absolute;inset:0;pointer-events:none;z-index:60;overflow:visible}
+.at-fantome{position:absolute;left:0;top:0;width:76px;height:76px;margin:-82px 0 0 -38px;border-radius:50%;display:grid;place-items:center;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.8), rgba(255,255,255,0) 44%), var(--c);box-shadow:0 16px 18px rgba(0,0,0,.45);will-change:transform}
+.at-fantome span{font-size:2.4rem;line-height:1}
+.at-fantome b{position:absolute;right:-14px;top:-10px;padding:0 6px;border-radius:12px;background:#fff6d8;color:#35281b;border:3px solid var(--contour);font-size:.95rem}
+
+/* ==========================================================
+   Le gros plan d'un rangement : presque tout l'écran, de grosses cases, de grosses icônes
+   ========================================================== */
+.at-ouvert{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:8px;background:rgba(10,8,24,.62)}
+.at-zoom{width:100%;max-width:720px;max-height:100%;display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:22px;border:4px solid var(--contour);
+  background:linear-gradient(#f6e8c8,#e2c896);color:#35281b;box-shadow:0 8px 0 rgba(36,24,46,.55), 0 20px 40px rgba(0,0,0,.5);overflow:hidden}
+.at-zoom-tete{flex:none;display:flex;align-items:center;gap:10px}
+.at-zoom-ic{width:56px;height:56px;flex:none;display:grid;place-items:center}
+.at-zoom-ic svg{width:100%;height:100%;overflow:visible}
+.at-zoom-ic svg *{pointer-events:none}
+.at-zoom-nom{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.at-zoom-nom b{font-family:var(--f-titre);font-weight:400;font-size:1.45rem;line-height:1.05;color:var(--encre)}
+.at-zoom-regle{align-self:flex-start;font-weight:700;font-size:.88rem;padding:2px 10px;border-radius:999px;border:2px solid var(--contour)}
+.at-zoom-regle.v{background:#d8f1ff}
+.at-zoom-regle.s{background:#e4f7cf}
+.at-zoom .at-rond{background:#fffaf0;border-color:var(--contour);color:#35281b}
+.at-zoom-etq.on{background:#ffd36a}
+.at-zoom-corps{flex:1 1 auto;min-height:0;overflow:auto;display:grid;gap:10px;padding:4px;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+.at-disp-tiroirs,.at-disp-un{grid-template-columns:minmax(0,1fr)}
+.at-disp-grille{grid-template-columns:repeat(2,minmax(0,1fr))}
+.at-case{position:relative;min-height:96px;display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:16px;cursor:pointer;
+  background:linear-gradient(#efbd88,#c98450);border:4px solid var(--contour);box-shadow:inset 0 3px 0 rgba(255,255,255,.35), 0 5px 0 #7d4626;transition:transform .12s, box-shadow .15s}
+.at-disp-un .at-case{min-height:180px}
+.at-ouv-bocaux .at-case,.at-ouv-fioles_ingr .at-case{background:linear-gradient(rgba(255,255,255,.75),rgba(191,243,255,.45)), #9fd8ea;border-radius:26px 26px 30px 30px;box-shadow:inset 0 3px 0 rgba(255,255,255,.6), 0 5px 0 #3a6f86;min-height:160px}
+.at-ouv-sac .at-case{background:repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 3px, transparent 3px 6px), repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 3px, transparent 3px 6px), #d9bd84}
+.at-ouv-tonneau .at-case{background:linear-gradient(90deg,#9a5c31,#c98450 30%,#c98450 70%,#9a5c31)}
+.at-case.at-ok{box-shadow:0 0 0 5px #ffd36a, 0 0 22px #ffd36a, 0 5px 0 #7d4626;animation:at-case-ok 1s ease-in-out infinite alternate}
+.at-case.at-non{filter:grayscale(.6) brightness(.88);opacity:.75}
+.at-case.at-survol{box-shadow:0 0 0 6px #8ff3ff, 0 0 26px #8ff3ff}
+@keyframes at-case-ok{from{transform:scale(1)}to{transform:scale(1.015)}}
+.at-case-contenu{flex:1;display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px}
+.at-case-vide{align-self:center;margin:auto;font-weight:700;font-size:1rem;color:rgba(53,40,27,.5)}
+.at-chipi{display:inline-flex;align-items:center;gap:6px;min-height:58px;padding:4px 12px 4px 4px;border-radius:999px;border:3px solid var(--contour);
+  background:#fffaf0;color:var(--encre);touch-action:none;box-shadow:0 3px 0 rgba(36,24,46,.45)}
+.at-chipi span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:2rem;line-height:1;
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c)}
+.at-chipi{max-width:100%;min-width:0}
+.at-chipi small{min-width:0}
+.at-chipi b{font-size:1.15rem}
+.at-chipi small{font-size:.85rem;font-weight:700;opacity:.8;max-width:8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-chipi.on{box-shadow:0 0 0 4px #3fd0ff, 0 0 18px #8ff3ff;transform:translateY(-3px)}
+.at-chipi.at-pris{opacity:.35}
+.at-case-places{display:flex;flex-wrap:wrap;gap:4px}
+.at-case-places i{width:11px;height:11px;border-radius:50%;background:rgba(36,24,46,.22)}
+.at-case-places i.p{background:#24182e}
+.at-case-etq{display:flex;gap:6px;flex-wrap:wrap}
+.at-etq-g{width:44px;height:44px;border-radius:50%;border:3px solid var(--contour);background:#fffaf0;font-size:1.4rem;display:grid;place-items:center;box-shadow:0 3px 0 rgba(0,0,0,.35);padding:0;transform:rotate(-7deg)}
+/* en bas : ce qui attend dans le carton de cueillette */
+.at-plateau{flex:none;border-radius:18px;padding:8px 10px 10px;background:linear-gradient(#d29b5c,#a87240);border:3px solid var(--contour);box-shadow:inset 0 4px 0 rgba(255,255,255,.25)}
+.at-plateau.at-retour{background:linear-gradient(#bff9ff,#7fd3ec);animation:at-case-ok 1s ease-in-out infinite alternate;cursor:pointer}
+.at-plateau-tit{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1rem;color:#2a1a0c;margin-bottom:6px;min-height:48px}
+.at-plateau-tit .at-rond{width:48px;height:48px;font-size:1.1rem}
+.at-plateau-j{display:flex;flex-wrap:wrap;gap:8px 10px;max-height:34vh;overflow-y:auto;padding:4px 2px 4px;touch-action:pan-y;scrollbar-width:thin}
+.at-jeton-g{flex:none;display:flex;align-items:center;gap:8px;min-height:64px;padding:4px 14px 4px 5px;border-radius:999px;border:3px solid var(--contour);background:#fffaf0;
+  color:var(--encre);font-weight:800;cursor:pointer;touch-action:none;box-shadow:0 4px 0 rgba(36,24,46,.5);transition:transform .12s, box-shadow .12s}
+.at-jeton-g span{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:2.1rem;background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c)}
+.at-jeton-g b{font-size:1.05rem;white-space:nowrap}
+.at-jeton-g.on{transform:translateY(-4px);box-shadow:0 0 0 4px #3fd0ff, 0 0 20px #8ff3ff}
+.at-jeton-g.at-pris{opacity:.35}
+.at-planche{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px;touch-action:pan-x;scrollbar-width:thin}
+.at-autoc{flex:none;width:52px;height:52px;border-radius:50%;border:3px solid var(--contour);background:#fffaf0;font-size:1.5rem;display:grid;place-items:center;padding:0;box-shadow:0 3px 0 rgba(36,24,46,.5)}
+.at-autoc.on{box-shadow:0 0 0 4px #3fd0ff, 0 0 16px #8ff3ff}
+
+/* ==========================================================
+   Les grands panneaux : carton de cueillette, potions, analyses
+   ========================================================== */
+.at-grim{position:absolute;inset:0;z-index:40;background:rgba(10,8,24,.74);display:flex;align-items:center;justify-content:center;padding:10px;perspective:900px}
+.at-feuille{position:relative;width:100%;max-width:760px;max-height:100%;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:20px;border:4px solid var(--contour);
+  background:linear-gradient(#f6ecd2,#e8d7ae);color:var(--encre);box-shadow:0 0 0 6px #7a4a2a, 0 0 0 9px var(--contour), 0 24px 50px rgba(0,0,0,.6);overflow:hidden}
+.at-feuille > .at-fermer{position:absolute;right:10px;top:10px;z-index:2;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-feuille-tete{display:flex;align-items:center;gap:10px;padding-right:56px;min-height:48px}
+.at-feuille-tete h3{flex:1;font-family:var(--f-titre);font-weight:400;font-size:1.6rem;color:var(--encre);line-height:1.05}
+.at-f-ic{font-size:2.2rem;line-height:1}
+.at-feuille-corps{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:2px}
+.at-feuille-txt{font-weight:700;font-size:1.08rem;line-height:1.35;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.at-feuille .at-rond{background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-gros-jetons{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.at-gj{position:relative;display:flex;align-items:center;gap:10px;min-height:76px;padding:6px 12px 6px 6px;border-radius:20px;border:3px solid var(--contour);background:#fffaf0;color:var(--encre)!important;
+  box-shadow:0 4px 0 rgba(36,24,46,.45);text-align:left}
+.at-gj span{flex:none;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c)}
+.at-gj b{flex:1;min-width:0;font-size:1.05rem;line-height:1.15;overflow-wrap:break-word}
+.at-gj span{position:relative}
+.at-gj i{position:absolute;right:-8px;bottom:-6px;min-width:30px;height:26px;padding:0 5px;border-radius:13px;display:grid;place-items:center;
+  font-style:normal;font-weight:800;font-size:.95rem;line-height:1;background:#fff6d8;border:2px solid var(--contour);color:var(--encre)}
+.at-gj.liquide::after{content:'💧';position:absolute;left:4px;top:-8px;font-size:1.1rem}
+.at-gj.on{box-shadow:0 0 0 5px #3fd0ff, 0 0 22px #8ff3ff;transform:translateY(-2px)}
+.at-ou{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:18px;background:#fff8e6;border:3px dashed rgba(53,40,27,.4)}
+.at-ou-tit{font-weight:700;font-size:1.08rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.at-ou-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.at-ou-b{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:120px;padding:8px;border-radius:16px;border:3px solid var(--contour);background:linear-gradient(#fffdf6,#f3e2bf);color:var(--encre)!important;box-shadow:0 4px 0 rgba(36,24,46,.4)}
+.at-ou-ic{width:72px;height:66px;display:grid;place-items:center}
+.at-ou-ic svg{width:100%;height:100%;overflow:visible}
+.at-ou-ic svg *{pointer-events:none}
+.at-ou-b b{font-size:1rem;line-height:1.1;text-align:center}
+.at-ou-b small{font-weight:700;font-size:.85rem;opacity:.75}
+.at-ou-b.plein{opacity:.55}
+.at-dans-piece{align-self:center}
+/* les potions */
+.at-fioles-l{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 10px;border-radius:16px;background:rgba(255,255,255,.4);border:2px solid rgba(53,40,27,.25)}
+.at-fioles-l p{flex:1 1 180px;font-weight:700;font-size:.98rem}
+.at-fioles-l > b{font-weight:800}
+.at-fv{display:inline-block;width:20px;height:32px;border:3px solid var(--contour);border-radius:5px 5px 10px 10px;background:linear-gradient(rgba(255,255,255,.8),rgba(191,243,255,.35));position:relative}
+.at-fv::before{content:'';position:absolute;left:3px;right:3px;top:-9px;height:7px;border-radius:2px;background:#c58a4a;border:2px solid var(--contour)}
+.at-fv-aucune{font-weight:800;opacity:.5}
+.at-pot-onglets{display:flex;gap:8px;flex-wrap:wrap}
+.at-pot-o{position:relative;width:64px;height:64px;border-radius:50%;border:3px solid var(--contour);font-size:2rem;display:grid;place-items:center;padding:0;
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), var(--c)}
+.at-pot-o b{position:absolute;right:-6px;bottom:-6px;min-width:26px;height:26px;padding:0 4px;border-radius:13px;background:#fff6d8;border:2px solid var(--contour);font-size:.9rem;display:grid;place-items:center;color:#24182e}
+.at-pot-o.on{box-shadow:0 0 0 4px #fff8e6, 0 0 0 7px var(--c), 0 0 20px var(--c)}
+.at-pot-carte{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:14px;border-radius:20px;background:#fff8e6;border:3px solid var(--contour);box-shadow:0 0 0 3px var(--c)}
+.at-pot-gros{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-size:3.4rem;border:4px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c);box-shadow:0 0 24px var(--c)}
+.at-pot-txt{display:flex;flex-direction:column;gap:6px;min-width:0}
+.at-pot-txt h4{font-family:var(--f-titre);font-weight:400;font-size:1.4rem;line-height:1.1}
+.at-pot-txt h4 span{font-family:var(--f-texte);font-weight:800;font-size:1.1rem;opacity:.7}
+.at-pot-txt p{font-size:1.02rem;line-height:1.3}
+.at-pour{font-weight:700}
+.at-pot-txt .at-rond{align-self:flex-start}
+.at-pot-actions{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.at-gros.second{background:linear-gradient(180deg,#fff1b8,#f5b945);color:#35281b;box-shadow:0 5px 0 #b07a1c}
+/* les analyses */
+.at-an-liste{display:flex;flex-direction:column;gap:10px}
+.at-an{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:18px;background:#fff8e6;border:3px solid var(--contour)}
+.at-an.attend{box-shadow:0 0 0 4px rgba(255,211,106,.8), 0 0 18px rgba(255,211,106,.6)}
+.at-an-ic{flex:none;width:72px;height:72px;border-radius:18px;display:grid;place-items:center;font-size:2.6rem;background:linear-gradient(#fffdf6,#efe0bd);border:3px solid var(--contour)}
+.at-an-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.at-an-txt h4{font-size:1.15rem;font-weight:800;line-height:1.15}
+.at-an-txt p{font-size:1.02rem;line-height:1.35}
+.at-an-pas{font-weight:700;opacity:.75}
+.at-an-detail{font-weight:700}
+.at-gros:disabled{filter:grayscale(.8);opacity:.6}
+.at-fioles-mini{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#fff8e6;border:2px solid var(--contour)}
+.at-fioles-mini .at-fv{width:14px;height:24px;border-width:2px}
+.at-fioles-mini .at-fv::before{top:-7px;height:5px;border-width:1.5px}
+.at-fioles-mini b{font-weight:800;color:var(--encre)}
+
+/* ---------- Bulle d'info ---------- */
+.at-toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:50;width:max-content;max-width:min(94%,640px);padding:10px 14px;border-radius:16px;background:#fff6e6;color:var(--encre);
+  border:3px solid var(--contour);font-weight:700;font-size:1.02rem;box-shadow:0 6px 0 rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;pointer-events:none;text-wrap:balance}
+.at-toast b{font-size:1.3rem;white-space:nowrap;margin-right:4px;vertical-align:-2px}
+.at-toast-t{display:block;line-height:1.3}
+.at-toast-lire{pointer-events:auto;width:48px;height:48px;font-size:1.15rem;background:#ffe2a0;border-color:var(--contour);color:var(--encre)}
+.at-toast-on{animation:at-msg .35s ease-out}
+.at-gros{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:8px 22px;border-radius:999px;border:3px solid var(--contour);
+  background:linear-gradient(180deg,#bff9ff,#3fd0ff);color:#06243a;font-weight:700;font-size:1.15rem;box-shadow:0 5px 0 #1b86a8, 0 0 22px rgba(143,243,255,.35);transition:transform .08s, box-shadow .08s}
+.at-gros:active{transform:translateY(3px);box-shadow:0 2px 0 #1b86a8}
+.at-gros-ic{font-size:1.8rem;line-height:1}
+
+/* ---------- Petits écrans ---------- */
+@media (max-width:520px){
+  .at-ouvert{padding:4px}
+  .at-zoom{padding:8px;gap:8px;border-radius:18px}
+  .at-zoom-nom b{font-size:1.25rem}
+  .at-disp-bocaux,.at-disp-fioles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .at-disp-bocaux{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .at-disp-bocaux .at-case{padding:8px 6px;min-height:150px}
+  .at-disp-bocaux .at-chipi{flex-direction:column;padding:4px;border-radius:20px;gap:0;min-height:0}
+  .at-disp-bocaux .at-chipi small{display:none}
+  .at-chipi small{max-width:6em}
+  .at-grim{padding:4px}
+  .at-feuille{padding:10px;gap:8px;border-radius:16px;box-shadow:0 0 0 4px #7a4a2a, 0 0 0 6px var(--contour)}
+  .at-feuille-tete h3{font-size:1.35rem}
+  /* le carton ouvert : des jetons debout (icône, nom dessous), trois par rangée */
+  .at-gros-jetons{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .at-gj{flex-direction:column;justify-content:flex-start;min-height:0;padding:7px 4px 8px;gap:4px;border-radius:18px}
+  .at-gj span{width:56px;height:56px;font-size:2.2rem}
+  .at-gj b{flex:none;font-size:.86rem;line-height:1.12;text-align:center}
+  .at-gj.liquide::after{left:6px;top:-6px}
+  .at-disp-tiroirs .at-chipi small{max-width:none}
+  .at-ou-liste{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* le plateau du gros plan : de petits jetons debout (icône, nom dessous), trois par rangée */
+  .at-plateau-j{gap:8px}
+  .at-jeton-g{flex-direction:column;justify-content:flex-start;gap:3px;width:calc((100% - 16px) / 3);min-height:0;padding:6px 4px 7px;border-radius:18px}
+  .at-jeton-g span{width:50px;height:50px;font-size:2rem}
+  .at-jeton-g b{font-size:.82rem;line-height:1.12;white-space:normal;text-align:center;overflow-wrap:break-word}
+  .at-toast{font-size:.98rem;padding:8px 10px}
+  .at-pot-carte{gap:10px;padding:10px;align-items:start}
+  .at-pot-gros{width:68px;height:68px;font-size:2.4rem;border-width:3px}
+  .at-pot-txt h4{font-size:1.2rem}
+  .at-pot-txt p{font-size:.98rem;line-height:1.28}
+  .at-pot-actions .at-gros{width:100%}
+  .at-fioles-l{padding:6px 8px;gap:5px}
+  .at-fioles-l p{flex:1 1 130px;font-size:.92rem}
+}
+@media (max-height:460px){
+  .at-zoom{flex-direction:row;flex-wrap:wrap}
+  .at-zoom-tete{width:100%}
+  .at-zoom-corps{flex:1 1 60%}
+  .at-plateau{flex:1 1 30%;min-width:180px;max-height:100%;overflow:auto}
+  .at-plateau-j{flex-wrap:wrap}
+  .at-case{min-height:70px}
+  .at-disp-un .at-case,.at-ouv-bocaux .at-case,.at-ouv-fioles_ingr .at-case{min-height:110px}
+  .at-tient{bottom:6px}
+  /* téléphone couché : des panneaux plus serrés en hauteur */
+  .at-grim{padding:4px}
+  .at-feuille{padding:8px 12px;gap:6px}
+  .at-feuille-tete{min-height:44px}
+  .at-feuille-tete h3{font-size:1.3rem}
+  .at-f-ic{font-size:1.7rem}
+  .at-gj{min-height:66px;padding:4px 10px 4px 4px}
+  .at-gj span{width:54px;height:54px;font-size:2.1rem}
+  .at-ou{padding:8px;gap:6px}
+  .at-ou-b{min-height:0;padding:6px}
+  .at-ou-ic{width:58px;height:50px}
+  .at-livre.at-grimoire{padding:8px 12px;gap:6px}
+  .at-disp-bocaux .at-chipi,.at-disp-fioles .at-chipi{flex-direction:column;padding:4px;border-radius:20px;gap:0;min-height:0}
+  .at-disp-bocaux .at-chipi small,.at-disp-fioles .at-chipi small{display:none}
+  .at-plateau-j{gap:6px}
+  .at-jeton-g{flex-direction:column;justify-content:flex-start;gap:2px;width:calc((100% - 6px) / 2);min-height:0;padding:5px 3px 6px;border-radius:16px}
+  .at-jeton-g span{width:46px;height:46px;font-size:2rem}
+  .at-jeton-g b{font-size:.82rem;line-height:1.12;white-space:normal;text-align:center;overflow-wrap:break-word}
+}
+
+/* ---------- Objets de la pièce ---------- */
+.at-o,.at-fixe,.at-carton{position:absolute;pointer-events:none;transform-origin:50% 100%;
+  transform:translate(var(--dx,0px),var(--dy,0px)) scale(calc(var(--s,1) * var(--lev,1)))}
+.at-o > svg,.at-fixe > svg,.at-carton > svg{position:relative;width:100%;height:100%;display:block;overflow:visible}
+.at-o svg *,.at-carton svg *{pointer-events:visiblePainted}
+.at-fixe svg *{pointer-events:none}
+.at-fixe [data-at],.at-fixe [data-at] *,.at-fixe.at-touche svg *{pointer-events:visiblePainted}
+.at-o .at-halo,.at-fixe .at-halo,.at-carton .at-halo,.at-zzz{pointer-events:none!important}
+/* (l'ombre est dans le dessin, couchée sur le plancher ; seul le chat, dessiné à plat, garde une ombre simple) */
+.at-o.at-plat::before{content:'';position:absolute;left:6%;right:6%;bottom:-5%;height:16%;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(10,4,16,.5), rgba(10,4,16,0));z-index:-1;pointer-events:none}
+.at-o.at-leve{--lev:1.07;z-index:99000;filter:drop-shadow(0 16px 10px rgba(0,0,0,.45))}
+.at-o.at-neuf::after{content:'✨';position:absolute;right:-4%;top:-12%;font-size:calc(12px + 26px * var(--k));animation:at-scint 1.3s ease-in-out infinite;pointer-events:none}
+
+/* Cartons */
+.at-carton .at-rabats,.at-carton .at-dessus-ouvert{display:none}
+.at-carton.at-ouvert-c .at-rabats,.at-carton.at-ouvert-c .at-dessus-ouvert{display:inline}
+.at-carton.at-ouvert-c .at-dessus-ferme{display:none}
+.at-carton:not(.at-ouvert-c) > svg{animation:at-hop 3.4s ease-in-out infinite;transform-origin:50% 100%}
+.at-mode-prep .at-carton > svg{animation:none}
+.at-reste{position:absolute;left:8%;bottom:6%;display:flex;gap:3px;pointer-events:none}
+.at-reste i{width:calc(5px + 6px * var(--k));height:calc(5px + 6px * var(--k));border-radius:50%;background:#fff6d8;border:2px solid var(--contour)}
+.at-main-indice{position:absolute;font-size:calc(24px + 24px * var(--k));transform:translate(-50%,-100%);animation:at-tape 1.1s ease-in-out infinite;pointer-events:none;z-index:3;text-shadow:0 3px 0 #24182e}
+.at-coeur-vole{position:absolute;font-size:calc(16px + 20px * var(--k));animation:at-coeur 1.4s ease-out forwards;pointer-events:none}
+
+/* Petites vies du décor */
+.at-flamme{transform-box:fill-box;transform-origin:50% 100%;animation:at-flamme .45s ease-in-out infinite alternate}
+.at-halo{opacity:.8}
+.at-grimoire-p .at-halo,.at-t-lampe .at-halo,.at-t-oeil_cristal .at-halo{animation:b-lueur 3s ease-in-out infinite}
+.at-feuilles{transform-box:fill-box;transform-origin:50% 100%;animation:at-feuille 4.2s ease-in-out infinite}
+.at-lueur{animation:b-lueur 2.2s ease-in-out infinite}
+.at-aig-m{transform-box:fill-box;transform-origin:50% 100%;animation:at-tour 40s linear infinite}
+.at-aig-h{transform-box:fill-box;transform-origin:50% 100%;animation:at-tour 480s linear infinite}
+.at-balancier{transform-box:fill-box;transform-origin:50% 0;animation:at-pendule 1.6s ease-in-out infinite alternate}
+.at-respire{transform-box:fill-box;transform-origin:50% 100%;animation:at-respire 3.2s ease-in-out infinite}
+.at-zzz{animation:at-zzz 3s ease-out infinite}
+.at-ampoule{animation:b-lueur 1.8s ease-in-out infinite}
+.at-tourne{transform-box:fill-box;transform-origin:50% 50%;animation:at-tour 6s linear infinite}
+.at-balance{transform-box:fill-box;transform-origin:50% 4%;animation:at-bascule 3.6s ease-in-out infinite alternate}
+.at-braise{animation:b-lueur .9s ease-in-out infinite}
+.at-scintille{animation:at-scint 1.6s ease-in-out infinite}
+.at-mercure{transform-box:fill-box;transform-origin:50% 100%;animation:at-mercure 6s ease-in-out infinite}
+.at-runes{animation:b-flotte 3s ease-in-out infinite}
+.at-grimoire-p{cursor:pointer}
+.at-fl{stroke:#24182e;stroke-width:3;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;animation:at-flamme .5s ease-in-out infinite alternate}
+.at-fl.f1{fill:#ff8a3c}
+.at-fl.f2{fill:#ffd36a;animation-delay:.15s}
+.at-fl.f3{fill:#ff6a3c;animation-delay:.3s}
+
+/* Le chaudron de la pièce */
+.at-ch-p{cursor:pointer}
+.at-chp .at-liq-p{fill:var(--liq,#3d7f8f);stroke:#24182e;stroke-width:3;transition:fill .5s}
+.at-chp .at-flammes{transform-box:fill-box;transform-origin:50% 100%;transform:scale(.8,.45);transition:transform .3s}
+.at-blp{transform-box:fill-box;transform-origin:center;animation:at-blp 2.2s ease-out infinite}
+.at-vapeur path{fill:none;stroke:rgba(238,240,255,.35);stroke-width:8;stroke-linecap:round;animation:at-vap 3s ease-in-out infinite}
+.at-vapeur path:nth-child(2){animation-delay:-1s}
+.at-vapeur path:nth-child(3){animation-delay:-2s}
+.at-chp-rate .at-liq-p{fill:#8d8a99}
+/* ---------- Grimoire ---------- */
+.at-livre{position:relative;width:100%;max-width:900px;max-height:100%;overflow:auto;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr);border-radius:12px 18px 18px 12px;border:4px solid var(--contour);
+  background:linear-gradient(90deg,#f3e7cb 0,#e8d7ae 46%,#c9b285 50%,#e8d7ae 54%,#f3e7cb 100%);color:var(--encre);
+  box-shadow:0 0 0 8px #7a2a3a, 0 0 0 11px var(--contour), 0 24px 50px rgba(0,0,0,.6)}
+.at-page{padding:18px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.at-livre-titre{font-family:var(--f-titre);font-size:1.6rem;display:flex;align-items:center;gap:8px}
+.at-recs{display:flex;flex-direction:column;gap:7px}
+.at-rec{display:flex;align-items:center;gap:10px;min-height:54px;padding:4px 10px 4px 4px;border-radius:999px;border:2px solid rgba(53,40,27,.25);background:rgba(255,255,255,.35);text-align:left;color:var(--encre)!important;font-weight:700}
+.at-rec.on{background:#fff8e6;border-color:var(--contour);box-shadow:0 3px 0 rgba(36,24,46,.6)}
+.at-rec-ic,.at-pot-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.45rem;flex:none;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.75), rgba(255,255,255,0) 46%), var(--c,#ffd36a)}
+.at-rec-nom{flex:1;font-size:.98rem;line-height:1.15}
+.at-rec-q{font-size:1.15rem}
+.at-det-tete{display:flex;align-items:center;gap:10px;padding-right:44px}
+.at-det-tete h3{flex:1;color:var(--encre);font-family:var(--f-titre);font-size:1.45rem}
+.at-pot-ic{width:60px;height:60px;font-size:2rem;box-shadow:0 0 18px var(--c)}
+.at-chips{display:flex;flex-wrap:wrap;gap:10px 8px}
+.at-livre .at-rond{background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-livre > .at-fermer{position:absolute;right:8px;top:8px;z-index:2}
+.at-det-texte{font-style:italic;font-size:.95rem;color:var(--encre-2)}
+.at-besoin{display:flex;flex-wrap:wrap;gap:6px}
+.at-besoin-i{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:2px solid var(--contour);background:#fff8e6;font-weight:700}
+.at-besoin-i.ok{background:#d8f7df}
+.at-besoin-i.ko{background:#ffe0d6}
+.at-besoin-i i{font-style:normal;font-size:1.3rem}
+.at-besoin-i small{font-size:.78rem;opacity:.8}
+.at-sage{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:#fff8e6;border:3px solid var(--contour)}
+.at-sage-ic{font-size:2.2rem}
+.at-sage p{flex:1;font-weight:700;font-size:1.05rem}
+.at-avert{font-weight:700;color:#a8391a;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.at-avert b{font-size:1.3rem}
+.at-preparer{align-self:center;margin-top:4px}
+
+.at-chip{flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:46px;height:46px;padding:0 9px;border-radius:12px;background:#fff8e6;border:2px solid var(--contour);color:var(--encre)}
+.at-chip em{position:absolute;left:-7px;top:-9px;min-width:20px;height:20px;padding:0 3px;border-radius:10px;background:#7a2a3a;color:#fff;font-style:normal;font-size:.7rem;font-weight:700;display:grid;place-items:center;border:2px solid var(--contour)}
+.at-chip b{font-size:.9rem;color:var(--encre)}
+.at-chip-zone{padding:0 10px 0 8px;gap:6px;box-shadow:0 0 0 3px var(--z), 0 0 12px var(--z)}
+.at-chip-zone em{background:#fff8e6;color:#000;font-size:.75rem}
+.at-zone-pastille{width:22px;height:22px;border-radius:50%;background:var(--z);border:2px solid var(--contour);flex:none}
+.at-chip-zone.ae .at-zone-pastille{background:conic-gradient(#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff,#ff5a5a)}
+.at-chip-zone.ae{box-shadow:0 0 0 3px #c77dff, 0 0 12px #5ab8ff}
+.at-ic-e{font-size:1.35rem;line-height:1}
+.at-preparer.at-manque{filter:grayscale(.7);opacity:.75}
+/* ---------- Le mini-jeu « Le chaudron » par-dessus l'atelier ---------- */
+.at-mj{position:absolute;inset:0;z-index:48;display:flex;padding:6px;background:var(--nuit)}
+.at-mode-prep > .at-piece{visibility:hidden}
+.at-mj-cadre{flex:1;min-height:0;display:flex}
+.at-mj-cadre > .mj{flex:1;min-height:0}
+.at-mj-abandon{width:44px;height:44px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.1rem;flex:none;padding:0;white-space:nowrap}
+.at-mj-abandon.arme{width:auto;padding:0 10px;border-radius:22px;background:#e8693c}
+.at-chp-ok .at-liq-p{fill:var(--liq,#8ff3ff)}
+.at-chp-ok .at-ch-p{animation:at-pop .6s ease-out}
+.at-chp-rate .at-liq-p{fill:#8d8a99}
+/* ---------- Animations ---------- */
+@keyframes at-tour{to{transform:rotate(360deg)}}
+@keyframes at-scint{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes at-pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes at-msg{0%{opacity:0;transform:translate(-50%,10px) scale(.9)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes at-casse{0%{transform:scale(1.6) rotate(-14deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
+@keyframes at-onde{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(2.6)}}
+@keyframes at-bl-p{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(.45);opacity:1}100%{transform:scale(.6);opacity:0}}
+@keyframes at-bl-m{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(.85);opacity:1}100%{transform:scale(1.05);opacity:0}}
+@keyframes at-bl-g{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(1.55);opacity:1}100%{transform:scale(1.9);opacity:0}}
+@keyframes at-blp{0%{transform:scale(0);opacity:0}40%{opacity:1}100%{transform:scale(1.3) translateY(-6px);opacity:0}}
+@keyframes at-vap{0%{transform:translateY(10px);opacity:0}40%{opacity:1}100%{transform:translateY(-22px);opacity:0}}
+@keyframes at-flamme{from{transform:scale(1,1)}to{transform:scale(.88,1.14)}}
+@keyframes at-feuille{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2.6deg)}}
+@keyframes at-pendule{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@keyframes at-bascule{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes at-respire{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,1.055)}}
+@keyframes at-zzz{0%{opacity:0;transform:translate(0,6px) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translate(10px,-16px) scale(1.15)}}
+@keyframes at-mercure{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.82)}}
+@keyframes at-brume{0%,100%{transform:translateX(-40px)}50%{transform:translateX(30px)}}
+@keyframes at-rayon{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes at-pouss{0%{transform:translate(0,0);opacity:0}20%{opacity:.9}80%{opacity:.6}100%{transform:translate(24px,-70px);opacity:0}}
+@keyframes at-foyer{from{transform:scale(1,1);opacity:.85}to{transform:scale(1.05,1.12);opacity:1}}
+@keyframes at-hop{0%,82%,100%{transform:translateY(0) rotate(0)}86%{transform:translateY(-6%) rotate(-3deg)}90%{transform:translateY(0) rotate(2deg)}94%{transform:translateY(-3%) rotate(-1deg)}}
+@keyframes at-tape{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-80%) scale(.92)}}
+@keyframes at-cible{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes at-coeur{0%{opacity:0;transform:translateY(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(-60px) scale(1.2)}}
+@keyframes at-alarme{from{transform:scale(.9) rotate(-8deg)}to{transform:scale(1.15) rotate(8deg)}}
+@keyframes at-crache{0%{transform:translate(-50%,0) scale(1);opacity:1}100%{transform:translate(60px,-90px) rotate(200deg) scale(.4);opacity:0}}
+@keyframes at-eclat{from{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}to{transform:rotate(var(--a)) translateX(var(--d)) scale(.2);opacity:0}}
+@keyframes at-fumee{0%{opacity:0;transform:translateY(0) scale(.4)}25%{opacity:.85}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
+@keyframes at-flaque{from{transform:scale(.1,.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes at-penche{0%{transform:rotate(0)}60%{transform:rotate(-24deg) translateY(6px)}100%{transform:rotate(-18deg) translateY(4px)}}
+
+.at-pouf{position:absolute;height:0;transform:translateX(-50%);pointer-events:none}
+.at-pouf i{position:absolute;bottom:-6px;width:calc(10px + 22px * var(--k));height:calc(10px + 22px * var(--k));border-radius:50%;background:rgba(240,228,210,.75);animation:at-pouf .6s ease-out forwards}
+.at-pouf i:nth-child(1){left:0;--px:-26px}
+.at-pouf i:nth-child(2){left:30%;--px:-8px;animation-delay:.04s}
+.at-pouf i:nth-child(3){left:60%;--px:8px;animation-delay:.02s}
+.at-pouf i:nth-child(4){right:0;--px:26px}
+@keyframes at-pouf{0%{transform:translate(0,0) scale(.3);opacity:.9}100%{transform:translate(var(--px),-18px) scale(1.2);opacity:0}}
+.at-flotte{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:calc(14px + 18px * var(--k));color:#fff6d8;white-space:nowrap;pointer-events:none;
+  text-shadow:0 2px 0 #24182e,0 0 8px rgba(0,0,0,.6);animation:at-flotte 1s ease-out forwards}
+@keyframes at-flotte{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-180%) scale(1)}}
+/* Lumières animées du fond (calque HTML composité) */
+.at-fond-anim{position:absolute;inset:0;pointer-events:none;z-index:0}
+.at-fond-anim > *{position:absolute;display:block}
+.at-a-mur{left:41%;top:19.8%;width:68%;height:62.8%;border-radius:50%;background:radial-gradient(closest-side, rgba(255,154,74,.24), rgba(255,122,60,0));animation:at-rayon 2.8s ease-in-out infinite}
+.at-a-rayon{left:35.2%;top:36.3%;width:30%;height:55.6%;clip-path:polygon(10.7% 0,54.7% 0,100% 100%,0 100%);background:linear-gradient(rgba(191,249,255,.22), rgba(143,243,255,0));animation:at-rayon 6s ease-in-out infinite}
+.at-a-foyer{left:65.4%;top:50.3%;width:19.2%;height:15.4%;border-radius:50%;background:radial-gradient(closest-side, rgba(255,211,106,.95), rgba(255,122,60,.7) 50%, rgba(168,57,26,0));transform-origin:50% 100%;animation:at-foyer 1.3s ease-in-out infinite alternate}
+.at-a-fen{left:38.3%;top:9.7%;width:13.4%;height:24.8%;overflow:hidden;border-radius:50% 50% 0 0 / 31% 31% 0 0}
+.at-a-fen i{position:absolute;left:-60%;bottom:0;width:220%;height:34%;background:radial-gradient(40% 50% at 25% 60%, rgba(214,222,255,.5), rgba(214,222,255,0)), radial-gradient(35% 45% at 70% 70%, rgba(214,222,255,.4), rgba(214,222,255,0));animation:at-brume 14s ease-in-out infinite}
+.at-a-pouss{width:calc(3px + 3px * var(--k));height:calc(3px + 3px * var(--k));border-radius:50%;background:#bff9ff;box-shadow:0 0 6px #8ff3ff;animation:at-pouss 9s linear infinite}
+/* ==========================================================
+   La lumière du moment : murs, plancher, ciel, soleil ou lune, voile coloré, halos des lampes
+   (classes .at-l-matin / -apresmidi / -soir / -nuit sur .at, posées par la vue)
+   ========================================================== */
+.at-ciel-soleil,.at-ciel-nuages{display:none}
+.at-l-matin .at-ciel-nuit,.at-l-apresmidi .at-ciel-nuit,.at-l-soir .at-ciel-nuit{display:none}
+.at-l-matin .at-ciel-soleil,.at-l-apresmidi .at-ciel-soleil,.at-l-soir .at-ciel-soleil{display:inline}
+.at-l-matin .at-ciel-nuages,.at-l-apresmidi .at-ciel-nuages{display:inline}
+.at-ciel-soleil{transition:transform .8s}
+.at-l-matin .at-ciel-soleil{transform:translate(-36px,62px)}
+.at-l-matin .at-soleil{fill:#ffe7c4}
+.at-l-apresmidi .at-ciel-soleil{transform:translate(18px,-64px)}
+.at-l-apresmidi .at-soleil{fill:#fff7d0}
+.at-l-soir .at-ciel-soleil{transform:translate(30px,78px)}
+.at-l-soir .at-soleil{fill:#ffb35c}
+.at-l-matin .at-collines{fill:#3d4f6a}
+.at-l-apresmidi .at-collines{fill:#3f6a50}
+.at-l-soir .at-collines{fill:#3a2448}
+/* matin : lumière pâle et fraîche, couleurs de lever du soleil */
+.at-l-matin .at-s-murF0{stop-color:#77739e}.at-l-matin .at-s-murF1{stop-color:#918cb4}.at-l-matin .at-s-murF2{stop-color:#a39bbf}
+.at-l-matin .at-s-murC0{stop-color:#4f4b76}.at-l-matin .at-s-murC1{stop-color:#6c6894}
+.at-l-matin .at-s-murD0{stop-color:#6c6894}.at-l-matin .at-s-murD1{stop-color:#4f4b76}
+.at-l-matin .at-s-sol0{stop-color:#8a5a36}.at-l-matin .at-s-sol1{stop-color:#a87348}.at-l-matin .at-s-sol2{stop-color:#764628}
+.at-l-matin .at-s-ciel0{stop-color:#8fb4ee}.at-l-matin .at-s-ciel1{stop-color:#ffc6aa}.at-l-matin .at-s-ciel2{stop-color:#ffe4ba}
+.at-l-matin .at-lumiere{background:linear-gradient(180deg, rgba(170,195,255,.10), rgba(255,200,180,.06))}
+.at-l-matin .at-a-rayon{background:linear-gradient(rgba(255,214,200,.3), rgba(255,214,200,0))}
+.at-l-matin .at-halos{opacity:.25}
+/* après-midi : grand jour, lumière chaude */
+.at-l-apresmidi .at-s-murF0{stop-color:#a99282}.at-l-apresmidi .at-s-murF1{stop-color:#c2aa94}.at-l-apresmidi .at-s-murF2{stop-color:#cfb89f}
+.at-l-apresmidi .at-s-murC0{stop-color:#7d6a5c}.at-l-apresmidi .at-s-murC1{stop-color:#9a8574}
+.at-l-apresmidi .at-s-murD0{stop-color:#9a8574}.at-l-apresmidi .at-s-murD1{stop-color:#7d6a5c}
+.at-l-apresmidi .at-s-sol0{stop-color:#a0683c}.at-l-apresmidi .at-s-sol1{stop-color:#c4874f}.at-l-apresmidi .at-s-sol2{stop-color:#8a5530}
+.at-l-apresmidi .at-s-ciel0{stop-color:#3f9cf5}.at-l-apresmidi .at-s-ciel1{stop-color:#8fd0ff}.at-l-apresmidi .at-s-ciel2{stop-color:#cbeeff}
+.at-l-apresmidi .at-lumiere{background:rgba(255,236,190,.07)}
+.at-l-apresmidi .at-a-rayon{background:linear-gradient(rgba(255,240,170,.42), rgba(255,226,140,0))}
+.at-l-apresmidi .at-a-pouss{background:#fff3c4;box-shadow:0 0 6px #ffe08a}
+.at-l-apresmidi .at-halos{opacity:.15}
+/* soir : coucher de soleil orangé */
+.at-l-soir .at-s-murF0{stop-color:#6a4462}.at-l-soir .at-s-murF1{stop-color:#8c566a}.at-l-soir .at-s-murF2{stop-color:#a2665f}
+.at-l-soir .at-s-murC0{stop-color:#43293f}.at-l-soir .at-s-murC1{stop-color:#5e3850}
+.at-l-soir .at-s-murD0{stop-color:#5e3850}.at-l-soir .at-s-murD1{stop-color:#43293f}
+.at-l-soir .at-s-sol0{stop-color:#73401f}.at-l-soir .at-s-sol1{stop-color:#94552f}.at-l-soir .at-s-sol2{stop-color:#5f331a}
+.at-l-soir .at-s-ciel0{stop-color:#352a6e}.at-l-soir .at-s-ciel1{stop-color:#d8685a}.at-l-soir .at-s-ciel2{stop-color:#ffaa5c}
+.at-l-soir .at-lumiere{background:linear-gradient(180deg, rgba(255,140,60,.12), rgba(120,40,70,.2))}
+.at-l-soir .at-a-rayon{background:linear-gradient(rgba(255,170,90,.36), rgba(255,140,60,0))}
+.at-l-soir .at-halos{opacity:.7}
+/* nuit : sombre, la lune, les bougies et la lampe qui brillent ; une lampe allumée éclaire la pièce */
+.at-l-nuit .at-lumiere{background:rgba(8,10,44,calc(.5 - var(--lampes, 0) * .12))}
+.at-l-nuit .at-halos{opacity:1}
+.at-h{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side, rgba(255,214,130,.55), rgba(255,170,80,.18) 55%, rgba(255,150,60,0));animation:at-veille 3.2s ease-in-out infinite}
+.at-h.bougie{background:radial-gradient(closest-side, rgba(255,214,130,.5), rgba(255,170,80,0));animation-duration:1.4s}
+.at-h.foyer{background:radial-gradient(closest-side, rgba(255,140,60,.45), rgba(255,110,40,0));animation-duration:1.1s}
+.at-h.lampe{background:radial-gradient(closest-side, rgba(255,226,150,.7), rgba(255,190,100,.22) 50%, rgba(255,160,70,0))}
+/* ==========================================================
+   Le chat : ses poses (dort, assis, marche, saute, lave, tape) et ses petits mouvements
+   ========================================================== */
+.at-t-chat .at-c-g-dort,.at-t-chat .at-c-g-assis,.at-t-chat .at-c-g-debout,.at-t-chat .at-zzz,.at-t-chat .at-c-ferme{display:none}
+.at-t-chat.at-c-dort .at-c-g-dort,.at-t-chat.at-c-dort .at-zzz{display:inline}
+.at-t-chat.at-c-assis .at-c-g-assis,.at-t-chat.at-c-lave .at-c-g-assis,.at-t-chat.at-c-tape .at-c-g-assis{display:inline}
+.at-t-chat.at-c-marche .at-c-g-debout,.at-t-chat.at-c-saute .at-c-g-debout{display:inline}
+.at-t-chat.at-c-gauche:not(.at-c-dort) > svg{transform:scaleX(-1)}
+.at-t-chat .at-zzz.z2{animation-delay:-1.5s}
+.at-c-j,.at-c-patte,.at-c-patte-b,.at-c-queue,.at-c-tete,.at-c-corps{transform-box:fill-box}
+.at-c-j{transform-origin:50% 0}
+.at-c-marche .at-c-j1,.at-c-marche .at-c-j4{animation:at-pas .4s ease-in-out infinite alternate}
+.at-c-marche .at-c-j2,.at-c-marche .at-c-j3{animation:at-pas .4s ease-in-out infinite alternate-reverse}
+.at-c-marche .at-c-corps{animation:at-trot .2s ease-in-out infinite alternate}
+.at-c-saute .at-c-j1,.at-c-saute .at-c-j2{transform:rotate(38deg)}
+.at-c-saute .at-c-j3,.at-c-saute .at-c-j4{transform:rotate(-38deg)}
+.at-c-queue{transform-origin:100% 100%;animation:at-queue 2.6s ease-in-out infinite}
+.at-c-marche .at-c-queue{animation-duration:.8s}
+.at-c-patte{transform-origin:50% 6%}
+.at-c-lave .at-c-patte{animation:at-lave .6s ease-in-out infinite alternate}
+.at-c-lave .at-c-tete{transform-origin:50% 100%;transform:rotate(-7deg)}
+.at-c-lave .at-c-yeux{display:none}
+.at-c-lave .at-c-ferme{display:inline}
+.at-c-tape .at-c-patte{animation:at-tape .32s ease-in-out infinite alternate}
+.at-c-assis .at-c-tete{transform-origin:50% 100%;animation:at-regard 5s ease-in-out infinite}
+/* ---------- Le chat, un petit Tamagotchi (étape 3) : son humeur, sa bulle, ses poses ---------- */
+.at-t-chat .at-c-moue,.at-t-chat .at-c-paupieres,.at-t-chat .at-c-ventre{display:none}
+.at-t-chat.at-c-triste .at-c-moue,.at-t-chat.at-c-fatigue .at-c-paupieres,.at-t-chat.at-c-ronde .at-c-ventre{display:inline}
+.at-t-chat.at-c-triste .at-c-bouche{display:none}
+.at-t-chat.at-c-triste .at-c-queue{animation-duration:6s}
+.at-t-chat.at-c-mange .at-c-g-assis,.at-t-chat.at-c-salut .at-c-g-assis{display:inline}
+.at-c-mange .at-c-tete{transform-origin:30% 100%;transform:translate(6px,12px) rotate(24deg)}
+.at-c-mange .at-c-yeux,.at-c-ronron .at-c-yeux{display:none}
+.at-c-mange .at-c-ferme,.at-c-ronron .at-c-ferme{display:inline}
+.at-c-mange .at-c-g-assis{animation:at-croque .5s ease-in-out infinite alternate}
+.at-c-salut .at-c-patte{animation:at-salut .42s ease-in-out infinite alternate}
+.at-c-ronron .at-c-corps{animation:at-ronron .09s linear infinite alternate}
+.at-c-tourne > svg{animation:at-tourne .85s ease-in-out 2}
+.at-t-chat.at-c-gauche.at-c-tourne:not(.at-c-dort) > svg{animation-name:at-tourne-g}
+@keyframes at-croque{to{transform:translateY(1.5px)}}
+@keyframes at-salut{from{transform:rotate(-96deg)}to{transform:rotate(-142deg)}}
+@keyframes at-ronron{to{transform:translate(.7px,-.5px)}}
+@keyframes at-tourne{0%,100%{transform:scaleX(1)}25%{transform:scaleX(-1) translateY(-6%)}50%{transform:scaleX(1)}75%{transform:scaleX(-1) translateY(-6%)}}
+@keyframes at-tourne-g{0%,100%{transform:scaleX(-1)}25%{transform:scaleX(1) translateY(-6%)}50%{transform:scaleX(-1)}75%{transform:scaleX(1) translateY(-6%)}}
+/* sa bulle de pensée (ce qu'il demande) : toujours de la même taille à l'écran (≥ 48 px), au-dessus de sa tête */
+.at-bulle{--b:calc((46px + 22px * var(--k,1)) / var(--s,1));position:absolute;left:66%;bottom:80%;width:var(--b);height:var(--b);margin:0 0 0 calc(var(--b) / -2);padding:0;
+  border-radius:50%;background:#fffdf6;border:calc(3px / var(--s,1)) solid var(--contour,#24182e);box-shadow:0 calc(4px / var(--s,1)) 0 rgba(36,24,46,.3);
+  display:grid;place-items:center;pointer-events:auto;cursor:pointer;z-index:2;transform-origin:20% 100%;animation:at-bulle-hop 1.8s ease-in-out infinite}
+.at-bulle span{font-size:calc(var(--b) * .5);line-height:1;pointer-events:none}
+.at-bulle i{position:absolute;border-radius:50%;background:#fffdf6;border:calc(2.5px / var(--s,1)) solid var(--contour,#24182e);pointer-events:none}
+.at-bulle i:nth-of-type(1){width:22%;height:22%;left:4%;bottom:-16%}
+.at-bulle i:nth-of-type(2){width:13%;height:13%;left:-8%;bottom:-34%}
+.at-bulle[hidden],.at-c-dort .at-bulle,.at-c-marche .at-bulle,.at-c-saute .at-bulle,.at-c-mange .at-bulle,.at-c-salut .at-bulle,.at-o.at-leve .at-bulle{display:none}
+.at-c-triste .at-bulle{animation-duration:1.1s}
+@keyframes at-bulle-hop{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8%) scale(1.05)}}
+.at-mode-prep .at-bulle{display:none}
+/* les bêtises : une fiole par terre, une pelote déroulée (un toucher les répare) */
+.at-betise{pointer-events:auto;cursor:pointer}
+.at-betise > svg{animation:at-hop 2.6s ease-in-out infinite;transform-origin:50% 100%}
+.at-pelote{position:absolute;pointer-events:none;z-index:99000;line-height:1}
+.at-z-fixe::before{display:none}
+/* ==========================================================
+   Le chaudron : ce qu'elle peut préparer tout de suite
+   ========================================================== */
+.at-livre.at-livre-ch{display:flex;flex-direction:column;max-width:820px;padding:16px;gap:12px}
+.at-ch-titre{display:flex;align-items:center;gap:10px;padding-right:52px}
+.at-ch-titre > span:first-child{font-size:2.1rem}
+.at-ch-titre h3{flex:1;color:var(--encre);font-family:var(--f-titre);font-size:1.6rem}
+.at-ch-titre .at-hud-puce{background:#fff8e6;color:var(--encre);border-color:var(--contour)}
+.at-ch-titre .at-hud-puce b{color:var(--encre)}
+.at-ch-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;min-height:0;overflow:auto;padding:4px}
+.at-ch-carte{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;border-radius:18px;border:3px solid rgba(53,40,27,.3);background:rgba(255,255,255,.35)}
+.at-ch-carte.pret{border-color:var(--contour);background:#fff8e6;box-shadow:0 0 0 3px var(--c), 0 6px 0 rgba(36,24,46,.25)}
+.at-ch-tete{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--encre)}
+.at-ch-tete b{flex:1;line-height:1.15}
+.at-ch-etat{font-weight:700;font-size:.98rem;line-height:1.3;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.at-ch-etat.ok{color:#1e7a3e}
+.at-ch-etat.panier{color:#a8391a}
+.at-ch-etat.ko{color:#7a4a2a}
+.at-manque-i{display:inline-flex;align-items:center;gap:2px;padding:1px 8px;border-radius:999px;background:#ffe0d6;border:2px solid var(--contour);font-size:1.05rem}
+.at-manque-i b{font-size:.85rem}
+.at-ch-carte .at-preparer{align-self:stretch;margin-top:auto}
+.at-preparer.at-manque{filter:grayscale(.6);opacity:.72}
+.at-chip-secret{background:#efe3c8!important}
+.at-vers-chaudron{align-self:center;margin-top:4px}
+
+@keyframes at-brille{0%{box-shadow:0 0 0 0 rgba(255,246,216,.9), 0 4px 0 rgba(36,24,46,.6)}100%{box-shadow:0 0 0 16px rgba(255,246,216,0), 0 4px 0 rgba(36,24,46,.6)}}
+@keyframes at-montre{from{transform:scale(1)}to{transform:scale(1.04);box-shadow:0 0 0 5px #ffd36a, 0 0 30px #ffd36a}}
+@keyframes at-pointe-b{from{transform:translate(-50%,-100%)}to{transform:translate(-50%,-70%)}}
+@keyframes at-pointe-d{from{transform:translate(-100%,-50%)}to{transform:translate(-70%,-50%)}}
+@keyframes at-pas{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+@keyframes at-trot{to{transform:translateY(-2.5px)}}
+@keyframes at-queue{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(9deg)}}
+@keyframes at-lave{from{transform:rotate(-158deg)}to{transform:rotate(-170deg)}}
+@keyframes at-tape{from{transform:rotate(-15deg)}to{transform:rotate(-95deg)}}
+@keyframes at-regard{0%,40%,100%{transform:rotate(0)}50%,85%{transform:rotate(-6deg)}}
+@keyframes at-veille{0%,100%{opacity:.85}50%{opacity:1}}
+
+/* ---------- Le livre sur un téléphone ---------- */
+@media (max-width:640px){
+  .at-livre{grid-template-columns:minmax(0,1fr);background:linear-gradient(#f3e7cb,#e8d7ae)}
+  .at-page-g{padding-bottom:6px}
+  .at-recs{flex-direction:row;flex-wrap:wrap}
+  .at-rec{flex:1 1 140px}
+  .at-rec-nom{font-size:.95rem}
+  .at-page-d{border-top:3px dashed rgba(53,40,27,.25)}
+  .at-gros{min-height:56px;font-size:1.08rem;padding:6px 16px}
+  .at-ch-liste{grid-template-columns:minmax(0,1fr)}
+  .at-livre.at-livre-ch{padding:12px}
+}
+
+/* ==========================================================
+   Le grimoire : une fiche par recette (nom, ingrédients a/b, à quoi elle sert, Préparer)
+   ========================================================== */
+.at-livre.at-grimoire{display:flex;flex-direction:column;gap:12px;max-width:900px;padding:16px;background:linear-gradient(#f3e7cb,#e8d7ae)}
+.at-grimoire .at-livre-titre{padding-right:52px}
+.at-rcartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;min-height:0;overflow:auto;padding:4px}
+.at-rcarte{display:flex;flex-direction:column;gap:10px;padding:12px 14px 14px;border-radius:20px;background:#fff8e6;border:3px solid var(--contour);box-shadow:0 0 0 3px var(--c), 0 6px 0 rgba(36,24,46,.25)}
+.at-rcarte h4{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-titre);font-weight:400;font-size:1.35rem;line-height:1.1;color:var(--encre)}
+.at-rcarte h4 > span:nth-child(2){flex:1;min-width:0}
+.at-rcarte h4 .at-rond{width:48px;height:48px;font-family:var(--f-texte);font-size:1.15rem}
+.at-rcarte p{margin:0}
+.at-ringr{display:flex;flex-wrap:wrap;gap:12px 10px}
+.at-ri{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}
+.at-ri-ic{position:relative;width:70px;height:70px;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;line-height:1;border:4px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c,#efe3c8)}
+.at-ri-ic b{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);min-width:44px;height:26px;padding:0 6px;border-radius:13px;display:grid;place-items:center;
+  font-size:.95rem;font-weight:800;white-space:nowrap;border:3px solid var(--contour);background:#fff;color:var(--encre)}
+.at-ri.ok .at-ri-ic b{background:#c9f2d2;color:#145c2c}
+.at-ri.ko .at-ri-ic{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.25)}
+.at-ri.ko .at-ri-ic b{background:#ffd9d2;color:#a8261a;border-color:#c0392b}
+.at-ri.ko.at-flash .at-ri-ic{animation:at-ri-flash .3s ease-in-out 4 alternate}
+.at-ri.ko.at-flash .at-ri-ic b{animation:at-ri-b .3s ease-in-out 4 alternate}
+@keyframes at-ri-flash{from{transform:scale(1);box-shadow:0 0 0 3px rgba(192,57,43,.25)}to{transform:scale(1.12);box-shadow:0 0 0 6px #e74c3c, 0 0 18px #e74c3c}}
+@keyframes at-ri-b{from{background:#ffd9d2}to{background:#e74c3c;color:#fff}}
+.at-ri-carton{position:absolute;right:-10px;top:-8px;font-style:normal;font-size:1.1rem}
+.at-ri small{margin-top:10px;font-weight:700;font-size:.82rem;line-height:1.1;text-align:center;color:var(--encre)}
+.at-ri.ko small{color:#a8261a}
+.at-rutile,.at-rsage{font-size:1.02rem;line-height:1.35;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.at-rutile .at-rond,.at-rsage .at-rond{width:48px;height:48px;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-rsage{font-weight:800}
+.at-rpreparer{margin-top:auto;min-height:56px;border-radius:999px;border:3px solid var(--contour);font-weight:800;font-size:1.15rem;
+  background:linear-gradient(180deg,#bff9ff,#3fd0ff);color:#06243a!important;box-shadow:0 5px 0 #1b86a8}
+.at-rpreparer.ko{background:linear-gradient(180deg,#ff9a8a,#e74c3c);color:#fff!important;box-shadow:0 5px 0 #9a2a1e}
+.at-rpreparer:active{transform:translateY(3px)}
+/* le chaudron : les potions possibles tout de suite */
+.at-ch-boutons{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.at-ch-go{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:6px;align-items:center;min-height:92px;padding:10px 14px 10px 10px;border-radius:22px;border:3px solid var(--contour);text-align:left;
+  background:#fff8e6;color:var(--encre)!important;box-shadow:0 0 0 3px var(--c), 0 6px 0 rgba(36,24,46,.3)}
+.at-ch-go-ic{grid-row:1 / span 2;flex:none;width:70px;height:70px;border-radius:50%;display:grid;place-items:center;font-size:2.3rem;border:3px solid var(--contour);
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 46%), var(--c)}
+.at-ch-go b{font-size:1.1rem;line-height:1.15;align-self:end}
+.at-ch-go-p{justify-self:start;align-self:start;padding:8px 14px;border-radius:999px;background:linear-gradient(180deg,#bff9ff,#3fd0ff);border:2px solid var(--contour);font-weight:800;white-space:nowrap}
+.at-ch-go:active{transform:translateY(3px)}
+/* rien de possible : le chaudron bouillonne, le grimoire brille */
+.at-chp.at-bouillonne > svg{animation:at-bouillon .18s ease-in-out 8 alternate}
+.at-chp.at-bouillonne .at-blp{animation-duration:.6s}
+@keyframes at-bouillon{from{transform:translate(-2px,0) rotate(-1deg)}to{transform:translate(2px,-3px) rotate(1deg)}}
+.at-etabli.at-livre-appel .at-grimoire-p .at-halo{opacity:1;animation:at-appel .5s ease-in-out infinite alternate}
+.at-etabli.at-livre-appel .at-grimoire-p{animation:at-hop 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@media (max-width:520px){
+  .at-livre.at-grimoire{padding:10px;gap:8px}
+  .at-rcartes{grid-template-columns:minmax(0,1fr);gap:12px}
+  .at-rcarte{padding:8px 10px 10px;gap:8px}
+  .at-rcarte h4{font-size:1.22rem}
+  .at-rcarte .at-rec-ic{width:40px;height:40px;font-size:1.3rem}
+  .at-ringr{gap:8px 6px}
+  .at-ri{width:72px;gap:2px}
+  .at-ri-ic{width:58px;height:58px;font-size:2rem;border-width:3px}
+  .at-ri-ic b{height:24px;min-width:42px;font-size:.9rem;bottom:-11px}
+  .at-ri small{margin-top:9px;font-size:.82rem}
+  .at-rutile{font-size:.96rem;line-height:1.3}
+  .at-rpreparer{min-height:52px;font-size:1.1rem}
+  .at-ch-boutons{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ==========================================================
+   v4 — la décoration (toucher = un autre style), la cueillette posée devant la porte,
+   le carton de rangement 📦, les meubles spéciaux qu'on déplace (chaudron, lutrin, paillasse), les flacons de potions
+   ========================================================== */
+.at-scene{pointer-events:none}
+.at-fond [data-surf]{cursor:pointer}
+.at-o.at-appui{--lev:.96}
+.at-t-paillasse .at-a-analyser,.at-t-paillasse .at-halo.at-a-analyser{animation:b-lueur 1.4s ease-in-out infinite}
+.at-o .at-badge{pointer-events:none}
+.at-t-paillasse .at-badge{right:6%;top:-14%}
+/* la cueillette, en gros tas devant la porte */
+.at-tas{position:absolute;pointer-events:none;transform-origin:50% 100%;transform:scale(var(--s,1))}
+.at-tas > svg{width:100%;height:100%;display:block;overflow:visible;animation:at-tas 2.8s ease-in-out infinite;transform-origin:50% 100%}
+.at-tas:nth-child(2n) > svg{animation-delay:-1.2s}
+.at-tas svg *{pointer-events:visiblePainted}
+.at-tas.at-pris{opacity:.35}
+@keyframes at-tas{0%,100%{transform:translateY(0)}50%{transform:translateY(-4%)}}
+.at-tas-neuf{position:absolute;display:grid;place-items:center;pointer-events:auto;cursor:pointer}
+.at-tas-neuf span{font-weight:800;font-size:calc(12px + 12px * var(--k));line-height:1;padding:.3em .7em;border-radius:999px;background:#fff6d8;color:#24182e;border:3px solid #24182e;
+  box-shadow:0 3px 0 rgba(0,0,0,.35);white-space:nowrap;animation:at-hop 1.8s ease-in-out infinite;pointer-events:none}
+/* le carton de rangement : une icône 📦 fixe en bas à droite de l'écran (juste au-dessus de l'onglet Code) ; elle ne bouge pas quand la pièce glisse,
+   elle ne change jamais de couleur ; elle réagit quand on tient une décoration au-dessus */
+.at-coin{position:absolute;right:10px;bottom:10px;z-index:8;width:64px;height:64px;padding:0;border-radius:18px;border:3px solid var(--contour);
+  background:#fff6d8;box-shadow:0 5px 0 rgba(36,24,46,.55);display:grid;place-items:center;cursor:pointer;pointer-events:auto;touch-action:none;
+  transition:transform .15s ease-out, box-shadow .15s ease-out}
+.at-coin-ic{font-size:2.2rem;line-height:1;pointer-events:none}
+.at-coin .at-badge{right:auto;left:-10px;top:-12px;min-width:30px;height:30px;font-size:1rem;background:#24182e}
+.at-coin.at-cible-ok{animation:at-coin 1s ease-in-out infinite alternate}
+.at-coin.at-survol{animation:none;transform:scale(1.28);box-shadow:0 5px 0 rgba(36,24,46,.55), 0 0 0 6px #fff6d8, 0 0 0 9px #24182e, 0 0 26px 10px rgba(255,246,216,.8)}
+@keyframes at-coin{from{transform:scale(1)}to{transform:scale(1.12)}}
+.at-mode-prep .at-coin{display:none}
+/* l'autre pièce : un bouton fixe en bas à gauche (🛏️ la chambre, ⚗️ l'atelier) ; on peut aussi y lâcher un objet */
+.at-salle{position:absolute;left:10px;bottom:10px;z-index:8;width:64px;height:64px;padding:0;border-radius:50%;border:3px solid var(--contour);
+  background:#e9e2ff;box-shadow:0 5px 0 rgba(36,24,46,.55);display:grid;place-items:center;cursor:pointer;pointer-events:auto;touch-action:none;transition:transform .15s ease-out, box-shadow .15s ease-out}
+.at-salle-ic{font-size:2.1rem;line-height:1;pointer-events:none}
+.at-salle .at-badge{left:auto;right:-10px;top:-12px;min-width:30px;height:30px;font-size:1rem}
+.at-salle.at-appel{animation:at-coin 1s ease-in-out infinite alternate}
+.at-salle.at-cible-ok{animation:at-coin 1s ease-in-out infinite alternate}
+.at-salle.at-survol{animation:none;transform:scale(1.28);box-shadow:0 5px 0 rgba(36,24,46,.55), 0 0 0 6px #e9e2ff, 0 0 0 9px #24182e, 0 0 26px 10px rgba(233,226,255,.8)}
+.at-mode-prep .at-salle{display:none}
+.at-arche{cursor:pointer}
+.at-arche-survol .at-arche path{filter:brightness(1.35)}
+.at-mobile{transform-box:fill-box;transform-origin:50% 0;animation:at-mobile 5s ease-in-out infinite alternate}
+@keyframes at-mobile{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+.at-sable{animation:at-sable 1.6s steps(2) infinite}
+@keyframes at-sable{50%{opacity:.35}}
+.at-bulles circle{animation:at-bulle 2.4s ease-in infinite;transform-box:fill-box}
+.at-bulles circle + circle{animation-delay:-1.1s}
+@keyframes at-bulle{from{transform:translateY(0);opacity:.9}to{transform:translateY(-22px);opacity:0}}
+/* les potions finies : des flacons debout devant la porte */
+.at-flacon{position:absolute;pointer-events:none;transform:scale(var(--s,1))}
+.at-flacon > svg{width:100%;height:100%;display:block;overflow:visible}
+.at-flacon svg *{pointer-events:visiblePainted}
+.at-flacon .at-halo{pointer-events:none;opacity:.45}
+.at-flacon.at-nouveau .at-halo{opacity:1;animation:at-appel .6s ease-in-out infinite alternate}
+.at-flacon.at-nouveau > svg{animation:at-hop 1.6s ease-in-out infinite;transform-origin:50% 100%}
+/* les fioles vides : un petit badge sur le chaudron */
+.at-vides{position:absolute;left:4%;top:2%;z-index:3;display:flex;align-items:center;gap:2px;height:38px;padding:0 9px 0 5px;border-radius:19px;
+  background:#fff6d8;color:#24182e;border:3px solid #24182e;box-shadow:0 3px 0 rgba(36,24,46,.5);pointer-events:none}
+.at-vides svg{width:22px;height:30px;display:block}
+.at-vides b{font-size:1.15rem;font-weight:800}
+.at-vides.zero{background:#ffd9c9}
+.at-vides-appel .at-vides{animation:at-appel .45s ease-in-out infinite alternate}
+.at-res-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.at-res-o{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:120px;padding:8px;border-radius:16px;border:3px solid var(--contour);
+  background:linear-gradient(#fffdf6,#f3e2bf);color:var(--encre)!important;box-shadow:0 4px 0 rgba(36,24,46,.4)}
+.at-res-ic{width:84px;height:70px;flex:none;display:flex;align-items:center;justify-content:center}
+.at-res-ic svg{width:100%;height:100%;overflow:visible}
+.at-res-ic svg *{pointer-events:none}
+.at-res-o b{font-size:.95rem;line-height:1.1;text-align:center}
+/* 🎨 dans les panneaux : une petite image de l'objet, qui change de couleur */
+.at-f-apercu{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;margin-left:auto}
+.at-f-apercu svg{width:100%;height:100%;overflow:visible}
+.at-f-apercu svg *{pointer-events:none}
+.at-peindre{background:#fff8e6!important;border-color:var(--contour)!important;color:var(--encre)!important;font-size:1.25rem}
+.at-feuille-tete .at-peindre,.at-livre-titre .at-peindre,.at-ch-titre .at-peindre{flex:none}
+.at-livre-titre,.at-ch-titre{display:flex;align-items:center;gap:8px}
+.at-livre-titre > span:first-of-type{flex:1}
+.at-zoom-tete .at-peindre{margin-left:auto}
+.at-toast-peindre{pointer-events:auto;width:48px;height:48px;font-size:1.15rem;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+/* le lutrin : le grimoire brille doucement, de petites étoiles */
+.at-lu-halo{opacity:.5;animation:at-lu 3.2s ease-in-out infinite alternate}
+@keyframes at-lu{from{opacity:.35}to{opacity:.85}}
+.at-lu-scint text{animation:at-scint 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+.at-lu-scint text + text{animation-delay:-1.1s}
+.at-t-lutrin.at-livre-appel .at-lu-halo{opacity:1;animation:at-appel .5s ease-in-out infinite alternate}
+.at-t-lutrin.at-livre-appel > svg{animation:at-hop 1.4s ease-in-out infinite;transform-origin:50% 100%}
+/* un toucher sur la décoration : de petites étincelles */
+.at-etinc{position:absolute;width:0;height:0;pointer-events:none;z-index:5}
+.at-etinc i{position:absolute;left:0;top:0;font-style:normal;font-size:calc(12px + 14px * var(--k));color:#fff3a8;text-shadow:0 0 6px #ffd36a;animation:at-etinc .65s ease-out forwards}
+.at-etinc i:nth-child(1){--ex:-38px;--ey:-30px}.at-etinc i:nth-child(2){--ex:36px;--ey:-34px}.at-etinc i:nth-child(3){--ex:-26px;--ey:22px}.at-etinc i:nth-child(4){--ex:30px;--ey:18px}
+@keyframes at-etinc{from{transform:translate(-50%,-50%) scale(.4);opacity:1}to{transform:translate(calc(-50% + var(--ex)),calc(-50% + var(--ey))) scale(1.1);opacity:0}}
+/* moins de mouvement si l'enfant (ou l'appareil) le demande */
+@media (prefers-reduced-motion: reduce){
+  .at *,.at *::before,.at *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+/* ==========================================================
+   Étape 4 : Mimi (barre de bonheur, chatière, sortie, souris, jeux, garde-robe, oreilles pendant la potion)
+   ========================================================== */
+/* la barre de bonheur : au-dessus de sa tête, toujours de la même taille à l'écran ; 🎀 ouvre sa garde-robe */
+.at-bonheur{--u:calc(1px / var(--s,1));position:absolute;left:50%;bottom:92%;transform:translateX(-50%);display:flex;align-items:center;gap:calc(6 * var(--u));
+  padding:calc(5 * var(--u)) calc(6 * var(--u)) calc(5 * var(--u)) calc(10 * var(--u));border-radius:calc(30 * var(--u));background:#fffdf6;
+  border:calc(3 * var(--u)) solid var(--contour,#24182e);box-shadow:0 calc(4 * var(--u)) 0 rgba(36,24,46,.3);pointer-events:none;z-index:3;white-space:nowrap;
+  animation:at-bonheur-in .3s ease-out}
+.at-bonheur[hidden]{display:none}
+.at-bonheur-c{font-size:calc(24 * var(--u));line-height:1}
+.at-bonheur-barre{display:block;width:calc(96 * var(--u));height:calc(16 * var(--u));border-radius:calc(9 * var(--u));background:#e9e1f4;border:calc(2.5 * var(--u)) solid var(--contour,#24182e);overflow:hidden}
+.at-bonheur-barre b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff8fb3,#ff5f9a);transition:width .6s ease-out}
+.at-bonheur.plein .at-bonheur-barre b{background:linear-gradient(90deg,#ffd84a,#ff8fb3,#ff5f9a)}
+.at-bonheur-hab{pointer-events:auto;width:calc(52 * var(--u));height:calc(52 * var(--u));min-width:0;padding:0;border-radius:50%;font-size:calc(26 * var(--u));line-height:1;
+  background:#ffe9f3;border:calc(3 * var(--u)) solid var(--contour,#24182e);display:grid;place-items:center;cursor:pointer}
+.at-c-bonheur .at-bulle{display:none}
+.at-c-dehors{visibility:hidden}
+.at-c-dehors *{visibility:hidden!important}
+@keyframes at-bonheur-in{from{opacity:0;transform:translateX(-50%) translateY(8px) scale(.8)}to{opacity:1;transform:translateX(-50%)}}
+/* l'ingrédient qu'il rapporte, dans la gueule */
+.at-c-butin{position:absolute;left:62%;top:30%;font-size:calc(22px / var(--s,1));line-height:1;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));animation:at-butin .5s ease-in-out infinite alternate}
+.at-c-gauche .at-c-butin{left:18%}
+@keyframes at-butin{to{transform:translateY(-3px) rotate(-8deg)}}
+/* la chatière : son volet bascule quand il passe */
+.at-chatiere-volet{transform-box:fill-box;transform-origin:50% 0}
+.at-chatiere-bat .at-chatiere-volet{animation:at-volet .85s ease-out}
+@keyframes at-volet{0%{transform:scaleY(1)}20%{transform:scaleY(-.35)}45%{transform:scaleY(.55)}70%{transform:scaleY(-.15)}100%{transform:scaleY(1)}}
+/* ses jeux : se tapir, remuer les fesses, s'étirer */
+.at-c-tapi .at-c-g-debout{transform-box:fill-box;transform-origin:80% 100%;transform:translateY(7px) scaleY(.8)}
+.at-c-tapi .at-c-j,.at-c-tapi .at-c-corps,.at-c-fige .at-c-j,.at-c-fige .at-c-corps{animation:none!important}
+.at-c-fesses .at-c-g-debout{animation:at-fesses .16s ease-in-out infinite alternate}
+@keyframes at-fesses{from{transform:translateY(7px) scaleY(.8) rotate(-4deg)}to{transform:translateY(7px) scaleY(.8) rotate(4deg)}}
+/* la souris */
+.at-souris{position:absolute;transform:translate(-50%,-100%);pointer-events:none;line-height:0}
+.at-souris svg{width:100%;height:auto;display:block;animation:at-trotte .14s ease-in-out infinite alternate}
+.at-souris.g svg{transform:scaleX(-1)}
+@keyframes at-trotte{to{translate:0 -2px}}
+/* les accessoires rares brillent */
+.at-acc-brille{animation:at-acc-brille 2.2s ease-in-out infinite}
+@keyframes at-acc-brille{0%,100%{filter:none}50%{filter:brightness(1.35) drop-shadow(0 0 2px #fff6a8)}}
+/* la garde-robe du chat */
+.at-f-garde .at-garde-haut{display:flex;align-items:center;gap:12px}
+.at-garde-chat{flex:none;width:110px;height:110px;border-radius:22px;background:#fff8e6;border:3px solid var(--contour);display:grid;place-items:center}
+.at-garde-chat svg{width:100px;height:100px}
+.at-garde-slot{margin-top:12px}
+.at-garde-slot > b{display:block;color:var(--encre);font-size:1.05rem;margin-bottom:6px}
+.at-garde-l{display:flex;flex-wrap:wrap;gap:8px}
+.at-garde-it{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;width:96px;min-height:104px;padding:6px 4px;border-radius:16px;
+  border:3px solid rgba(53,40,27,.3);background:rgba(255,255,255,.55);font:inherit;color:var(--encre);cursor:pointer}
+.at-garde-it svg{width:64px;height:64px}
+.at-garde-it small{font-size:.82rem;line-height:1.1;text-align:center;font-weight:700}
+.at-garde-it.on{border-color:var(--contour);background:#fff8e6;box-shadow:0 0 0 3px #ff8fb3}
+.at-garde-it.rare{background:linear-gradient(160deg,#fff6c8,#ffe1f0)}
+.at-garde-it.rare::after{content:'✨';position:absolute;right:4px;top:2px;font-size:.9rem}
+.at-garde-rien{display:grid;place-items:center;width:64px;height:64px;font-size:1.8rem}
+.at-garde-verrou{cursor:default;opacity:.7;border-style:dashed}
+.at-garde-neuf{position:absolute;left:4px;top:2px;font-style:normal;animation:at-scint 1.3s ease-in-out infinite}
+/* pendant une potion : le chat dans un coin, il dresse les oreilles quand on verse le bon ingrédient */
+.at-mj-chat{position:absolute;left:10px;bottom:10px;z-index:30;width:70px;height:70px;border-radius:50%;background:rgba(255,253,246,.92);border:3px solid var(--contour,#24182e);
+  display:grid;place-items:center;pointer-events:none;box-shadow:0 4px 0 rgba(36,24,46,.3)}
+.at-mj-chat svg{width:62px;height:62px;overflow:visible}
+.at-mj-chat-n{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);font-size:.82rem;font-weight:800;background:#fff8e6;border:2px solid var(--contour,#24182e);border-radius:8px;padding:0 5px;color:#24182e}
+.at-mj-chat .at-c-oreilles{transform-box:fill-box;transform-origin:50% 100%;transition:transform .2s ease-out}
+.at-mj-chat.at-oreilles .at-c-oreilles{transform:translateY(-3px) scaleY(1.3)}
+.at-mj-chat.at-oreilles{animation:at-oreilles-hop .5s ease-out}
+.at-mj-chat.at-oreilles::after{content:'❗';position:absolute;right:-6px;top:-10px;font-size:1.1rem}
+@keyframes at-oreilles-hop{30%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion: reduce){
+  .at-c-fesses .at-c-g-debout,.at-souris svg,.at-acc-brille{animation:none!important}
+}
+/* ==========================================================
+   Le guidage du tutoriel : un rond lumineux doré (« ✨ Nouveau ! ») autour de la chose à toucher ; le reste attend
+   ========================================================== */
+.at-guide{position:absolute;pointer-events:none;z-index:99500}
+.at-guide[hidden]{display:none}
+.at-guide-anneau{position:absolute;inset:0;border-radius:50%;border:calc(5px + 3px * var(--k,1)) solid #ffd36a;
+  box-shadow:0 0 0 4px rgba(255,255,255,.55),0 0 26px 8px rgba(255,211,106,.85),inset 0 0 22px rgba(255,211,106,.6);animation:at-guide-pulse 1.1s ease-in-out infinite}
+.at-guide-nouveau{position:absolute;left:50%;top:0;transform:translate(-50%,-70%);white-space:nowrap;font-size:calc(13px + 5px * var(--k,1));font-weight:800;color:#3a2410;
+  background:#ffe36b;border:3px solid #24182e;border-radius:999px;padding:3px 12px;box-shadow:0 3px 0 rgba(36,24,46,.35);animation:at-scint 1.3s ease-in-out infinite}
+.at-guide.at-guide-hop .at-guide-anneau{animation:at-guide-hop .45s ease-out, at-guide-pulse 1.1s ease-in-out .45s infinite}
+@keyframes at-guide-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.75}}
+@keyframes at-guide-hop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+/* pendant le guidage : le chat laisse passer le doigt (on touche ce qui est derrière lui), sa bulle se cache */
+.at-guidage .at-t-chat,.at-guidage .at-t-chat svg *{pointer-events:none!important}
+.at-guidage .at-bulle{display:none}
+@media (prefers-reduced-motion: reduce){ .at-guide-anneau,.at-guide-nouveau{animation:none!important} }
+
+/* La règle de tout le jeu (21 h 22) : les boutons pour aller quelque part ou lancer quelque chose sont JAUNES, texte NOIR
+   (« Préparer », « Analyser », « Donner », « Le chercher dans la pièce ») ; les secondaires (Vendre…) restent sombres */
+.at-rpreparer:not(.ko),.at-gros:not(.second),.at-ch-go-p{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:var(--contour)!important;box-shadow:0 5px 0 #b07a1c!important}
+.at-gros:not(.second):active,.at-rpreparer:not(.ko):active{box-shadow:0 2px 0 #b07a1c!important}
+.at-gros.second{background:rgba(36,24,46,.82)!important;color:#fff6d8!important;box-shadow:0 4px 0 rgba(0,0,0,.4)!important}
+.at-ch-go-p{font-size:1.05rem;padding:9px 16px}
+
+/* La recette secrète, sous la dictée du Sage : les « ? » (un par un), le petit menu des ingrédients */
+.at-ri-q{border:0;background:none;padding:0;font:inherit;cursor:pointer}
+.at-ri-q .at-ri-ic{background:#efe3c4;border-style:dashed;font-size:2rem}
+.at-ri-q small{font-size:1rem!important;font-weight:900}
+.at-ri-q.a-toi .at-ri-ic{border-style:solid;background:#fff2c2;box-shadow:0 0 0 3px #ffd36a}
+.at-ri-q:disabled{opacity:.45;cursor:default}
+.at-ri-q:active .at-ri-ic{transform:scale(.94)}
+.at-rcarte.dictee{box-shadow:0 0 0 3px var(--c), 0 0 0 7px rgba(124,240,168,.55), 0 6px 0 rgba(36,24,46,.25)}
+/* le rond lumineux du tutoriel sur le prochain « ? » */
+.at-ri-q.at-guide-q .at-ri-ic{box-shadow:0 0 0 5px #ffd36a, 0 0 0 10px rgba(255,211,106,.45), 0 0 26px #ffd36a;animation:at-guide-q 1s ease-in-out infinite}
+.at-ri-q.at-guide-q{position:relative}
+.at-ri-q.at-guide-q::before{content:'✨ Touche !';position:absolute;left:50%;top:-24px;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:10px;background:#ffd36a;color:#111;font-weight:900;font-size:.78rem;border:2px solid var(--contour);z-index:2}
+@keyframes at-guide-q{50%{transform:scale(1.1)}}
+.at-dicte{border-radius:16px;background:#fff1cf;border:3px solid var(--contour);padding:8px 10px 10px;box-shadow:0 6px 0 rgba(36,24,46,.25);animation:at-msg .25s ease-out}
+.at-dicte-t{display:flex;align-items:center;gap:8px;margin:0 0 8px!important;font-weight:800;color:var(--encre)}
+.at-dicte-t > b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffd36a;border:2px solid var(--contour);flex:none}
+.at-dicte-t .at-rond{width:42px;height:42px;flex:none;background:#fff8e6;border-color:var(--contour);color:var(--encre)}
+.at-dicte-x{margin-left:auto}
+.at-dicte-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.at-dicte-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;border:2px solid var(--contour);background:#fff8e6;color:var(--encre);font:inherit;cursor:pointer}
+.at-dicte-i span{font-size:1.7rem;line-height:1}
+.at-dicte-i small{font-weight:700;font-size:.72rem;line-height:1.1;text-align:center}
+.at-dicte-i:active{transform:scale(.94)}
+@media (prefers-reduced-motion: reduce){ .at-ri-q.at-guide-q .at-ri-ic{animation:none} }

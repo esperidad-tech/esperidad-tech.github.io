@@ -1,0 +1,46 @@
+/* Salle d'entraînement */
+body{background:radial-gradient(120% 70% at 50% -10%, #2a3570 0%, var(--nuit) 55%) fixed, var(--nuit)}
+body.sl-bloque{overflow:hidden}
+#salle{max-width:900px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:18px}
+.sl-tete h1{font-size:clamp(1.8rem,6vw,2.6rem)}
+.sl-sous{color:var(--brume);max-width:60ch}
+.sl-reglages{display:flex;flex-direction:column;gap:12px;background:rgba(28,36,71,.85);border:1px solid var(--trait);border-radius:var(--r-3);padding:16px}
+.sl-etiq{font-weight:700;color:var(--brume)}
+.sl-boutons{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:6px}
+.sl-niv{min-height:46px;border-radius:12px;border:2px solid var(--trait);background:var(--nuit-2);font-weight:700;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.sl-niv.on{border-color:var(--or);background:rgba(245,185,69,.2);color:var(--or-pale)}
+.sl-legende{color:var(--or-pale);font-weight:700;margin-top:6px}
+.sl-aides{display:flex;gap:10px;align-items:center;font-weight:700}
+.sl-aides input{width:24px;height:24px;accent-color:var(--or)}
+.sl-role{display:flex;flex-direction:column;gap:10px}
+.sl-role h2{color:var(--c)}
+.sl-jeux{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sl-jeu{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border-radius:18px;border:2px solid var(--c);background:radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--c) 20%, transparent), var(--nuit-2) 70%);min-height:120px}
+.sl-jeu:active{transform:scale(.97)}
+.sl-jeu-ic{font-size:2.2rem}
+.sl-jeu small{color:var(--brume);font-size:.78rem}
+.sl-journal ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:4px;color:var(--brume)}
+#sl-plein{position:fixed;inset:0;z-index:80;background:rgba(8,10,25,.96);display:flex;justify-content:center;padding:calc(60px + env(safe-area-inset-top, 0px)) 8px max(8px, env(safe-area-inset-bottom, 0px))}
+#sl-plein[hidden]{display:none}
+.sl-cadre{width:100%;max-width:820px;height:100%;display:flex}
+.sl-cadre > .mj{flex:1}
+.sl-quitter{position:absolute;top:calc(8px + env(safe-area-inset-top, 0px));left:calc(12px + env(safe-area-inset-left, 0px));z-index:90;height:44px;padding:0 16px;border-radius:999px;border:0;background:rgba(238,240,255,.15);font-weight:700}
+@media (max-width:480px){.sl-boutons{grid-template-columns:repeat(5,1fr)}}
+
+.sl-travaux{opacity:.55;cursor:default;border-style:dashed}
+.sl-cal{color:#9fe0b4;font-weight:700}
+/* Écran trop bas (téléphone couché) : la fenêtre du jeu défile au lieu d'être coupée */
+#sl-plein{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sl-cadre{height:auto;min-height:100%}
+#sl-plein.mj-fixe{overflow:hidden;overscroll-behavior:none;touch-action:none}   /* les mini-jeux en plein écran verrouillé (MJ.PLEIN_ECRAN) */
+#sl-plein.mj-fixe .sl-cadre{height:100%;min-height:0}
+.sl-relire{display:block}
+.sl-rv{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r-3);padding:14px;max-width:820px;margin:0 auto}
+.sl-jeu{position:relative}
+.sl-statut{position:absolute;top:6px;right:8px;font-size:1.15rem}
+.sl-statuts{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin:4px 0 10px;font-size:.9rem;color:var(--brume)}
+/* les liens du haut : les projets de Romain, le jeu (Romain, 5 novembre, 21 h 46 : la salle s'ouvre depuis l'écran d'accueil du GitHub) */
+.sl-liens{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+.sl-liens a{color:var(--or-pale);font-weight:700;text-decoration:none;padding:6px 12px;border-radius:999px;border:2px solid var(--trait);background:rgba(10,14,32,.6)}
+.sl-liens a:hover{border-color:var(--or)}
+#sl-plein.sl-defile{overflow-y:auto;touch-action:auto}   /* « Relire » une partie : ce n'est pas un mini-jeu, ça peut défiler */

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banc d'essai · Persos</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/persos.css">
+<style>
+body{padding:16px;user-select:auto}
+.page{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+section{display:flex;flex-direction:column;gap:10px}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.grille.grand{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.grille.petit{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+figure{margin:0;background:var(--nuit-2);border:1px solid var(--trait);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px}
+figure svg{border-radius:10px}
+figcaption{font-size:.8rem;color:var(--brume);text-align:center;line-height:1.2}
+figcaption b{color:var(--or-pale);font-weight:700;display:block}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Persos · banc d'essai</h1>
+  <section><h2>Les quatre rôles</h2><div class="grille" id="roles"></div></section>
+  <section><h2>Les trois âges</h2><div class="grille" id="ages"></div></section>
+  <section><h2>Coiffures filles</h2><div class="grille petit" id="cf"></div></section>
+  <section><h2>Coiffures garçons</h2><div class="grille petit" id="cm"></div></section>
+  <section><h2>Du niveau 1 au niveau 10</h2><div class="grille grand" id="niveaux"></div></section>
+  <section><h2>Bustes et têtes</h2><div class="grille petit" id="bustes"></div></section>
+  <section><h2>Les villageois</h2><div class="grille petit" id="pnj"></div></section>
+  <section><h2>Humeurs</h2><div class="grille petit" id="humeurs"></div></section>
+</div>
+<script src="../../src/persos.js"></script>
+<script>
+(function(){
+var P = window.Persos;
+var anime = !/anim=0/.test(location.search);
+function fig(svg, titre, sous){ return '<figure>' + svg + '<figcaption><b>' + titre + '</b>' + (sous || '') + '</figcaption></figure>'; }
+var roles = ['pisteur','alchimiste','barde','sage'];
+var h = '';
+roles.forEach(function(r){ ['f','m'].forEach(function(s){ var d = P.defaut(r, s); h += fig(P.heros(d, {anime:anime}), P.ROLES[r].nom, s === 'f' ? 'fille' : 'garçon'); }); });
+document.getElementById('roles').innerHTML = h;
+
+h = '';
+[['pisteur','m','enfant'],['alchimiste','f','enfant'],['barde','f','adulte'],['sage','m','adulte'],['alchimiste','m','age'],['sage','m','age'],['barde','f','age'],['pisteur','f','enfant']].forEach(function(a){
+  var d = P.defaut(a[0], a[1]); d.age = a[2];
+  if(a[2] === 'age'){ d.cheveux = a[0] === 'sage' ? 'blanc' : 'gris'; if(a[1] === 'm') d.barbe = a[0] === 'sage' ? 'longue' : 'courte'; if(a[0] === 'sage') d.coiffure = 'degarni'; }
+  h += fig(P.heros(d, {anime:anime}), P.ROLES[a[0]].nom, a[2]);
+});
+document.getElementById('ages').innerHTML = h;
+
+['f','m'].forEach(function(s){
+  var out = '';
+  var coul = ['roux','brun','blond','noir','chatain','rose','nuit','gris'];
+  P.CHOIX.coiffure[s].forEach(function(c, i){
+    var d = P.defaut('pisteur', s); d.coiffure = c.id; d.cheveux = coul[i % coul.length];
+    out += fig(P.heros(d, {vue:'tete', anime:anime}), c.nom);
+  });
+  document.getElementById('c' + s).innerHTML = out;
+});
+
+h = '';
+var TAL = {pisteur:['vision','compagnon','camouflage','tir','traque'], alchimiste:['savante','herboriste','poudres','transmutation','ultime'], barde:['oreille','ami','apaisante','memoire','ballade'], sage:['archiviste','dechiffreur','cartographe','etoiles','verification']};
+var EQ = {
+  pisteur:[['arc_court','bottes_souples','sifflet'], ['arc_elfique','cape_rodeur','bottes_vent','lanterne_sourde','gants_pisteur','grappin'], ['arc_argent','bottes_fondateurs','lanterne_lune','amulette_instinct','bracelets_vent','carquois','oeil_faucon','collier','longue_vue_ch']],
+  alchimiste:[['thermometre','herbier'], ['lunettes_alchi','sac_herbo','alambic','loupe_doree','gants_cuir','fioles_ether'], ['oeil_cristal','athanor','grand_grimoire','pierre_transmu','ceinture_fioles','grimoire_rec','balance_or']],
+  barde:[['luth_voyage','bourse'], ['chapeau_plume','cape_scene','clochette','cornet','pendule'], ['harpe','plume_rossignol','miroir','corne','anneau','registre','chapeau_plume']],
+  sage:[['plume_encre','sablier'], ['baton_marche','lunettes_sage','cle_archives','livre_annote','astrolabe','banniere'], ['baton_cristal','chapeau_etoile','couronne','boule','grimoire_sage','oeil_temps','longue_vue','cartes_fond']]
+};
+roles.forEach(function(r, ri){
+  [1,5,10].forEach(function(n, i){
+    var d = P.defaut(r, ri % 2 ? 'm' : 'f');
+    d.niveau = n; d.talents = TAL[r].slice(0, i === 0 ? 0 : i === 1 ? 2 : 5); d.equip = EQ[r][i]; d.animal = ['faucon','renard','loup'][ri % 3];
+    if(r === 'sage' && n === 10){ d.age = 'age'; d.cheveux = 'blanc'; d.barbe = 'longue'; d.coiffure = 'degarni'; }
+    h += fig(P.heros(d, {anime:anime}), P.ROLES[r].nom + ' · niveau ' + n, d.talents.join(', '));
+  });
+});
+document.getElementById('niveaux').innerHTML = h;
+
+h = '';
+roles.forEach(function(r, i){ var d = P.defaut(r, i % 2 ? 'f' : 'm'); d.niveau = 1 + i * 3; h += fig(P.heros(d, {vue:'buste', anime:anime}), 'buste'); h += fig(P.heros(d, {vue:'tete', anime:anime}), 'tête'); });
+var e = P.defaut('pisteur', 'f'); e.age = 'enfant'; h += fig(P.heros(e, {vue:'buste', anime:anime}), 'buste enfant');
+var v = P.defaut('sage', 'm'); v.age = 'age'; v.barbe = 'longue'; v.cheveux = 'blanc'; h += fig(P.heros(v, {vue:'buste', anime:anime}), 'buste âgé');
+document.getElementById('bustes').innerHTML = h;
+
+h = '';
+Object.keys(P.PNJ).forEach(function(id){ h += fig(P.pnj(id, {anime:anime}), P.PNJ[id].nom, P.PNJ[id].metier); });
+document.getElementById('pnj').innerHTML = h;
+h = '';
+['grosbec','melusine','fortune','tim'].forEach(function(id){ ['normal','ment','peur','content'].forEach(function(hu){ h += fig(P.pnj(id, {anime:anime, humeur:hu}), P.PNJ[id].nom, hu); }); });
+document.getElementById('humeurs').innerHTML = h;
+})();
+</script>
+</body>
+</html>

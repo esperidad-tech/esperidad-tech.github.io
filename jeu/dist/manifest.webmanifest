@@ -1,0 +1,20 @@
+{
+  "name": "Les Enquêteurs de Brumeval",
+  "short_name": "Brumeval",
+  "description": "Un jeu d'enquête coopératif à quatre écrans.",
+  "lang": "fr",
+  "dir": "ltr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display_override": ["fullscreen", "standalone"],
+  "display": "standalone",
+  "background_color": "#131932",
+  "theme_color": "#1c2447",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

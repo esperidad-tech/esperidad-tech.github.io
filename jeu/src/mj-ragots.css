@@ -1,0 +1,54 @@
+/* Les ragots de la taverne (Barde) */
+.mr{display:flex;flex-direction:column;gap:14px;padding:12px;flex:1;min-height:0;overflow-y:auto;background:radial-gradient(120% 70% at 50% 0%, #5a3a2a 0%, #2e1e2a 50%, var(--nuit) 100%)}
+.mr-scene{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:340px;padding:10px 4px 24px}
+.mr-lampes{position:absolute;inset:0 0 auto 0;display:flex;justify-content:space-around;pointer-events:none}
+.mr-lampes i{width:14px;height:14px;border-radius:50%;background:#ffd27a;box-shadow:0 0 22px 10px rgba(255,190,90,.35);animation:mr-flamme 2.6s ease-in-out infinite}
+.mr-lampes i:nth-child(2){animation-delay:.8s}.mr-lampes i:nth-child(3){animation-delay:1.5s}
+@keyframes mr-flamme{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+.mr-comptoir{position:absolute;left:-12px;right:-12px;bottom:0;height:22px;background:linear-gradient(#8a5a34,#5c3a20);border-top:3px solid #b07a46;border-radius:4px}
+.mr-conteur{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0}
+.mr-conteur.entre{animation:mr-entre .45s ease-out forwards}
+@keyframes mr-entre{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+.mr-portrait{width:min(34vw,150px);aspect-ratio:1;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 38%, #8a5a4a, #3a2430 72%);border:4px solid var(--contour);box-shadow:0 0 0 3px rgba(255,190,90,.35), 0 10px 26px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
+.mr-portrait svg{width:100%;height:100%}
+.mr-emoji{font-size:4rem}
+.mr-nom{font-weight:800;color:var(--or-pale);font-size:1.05rem}
+.mr-bulle{position:relative;max-width:560px;width:100%;background:var(--parchemin);color:var(--encre);border-radius:18px;padding:16px 56px 16px 18px;box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transform:scale(.92);transition:opacity .3s, transform .3s}
+.mr-bulle::before{content:'';position:absolute;left:50%;top:-12px;margin-left:-12px;border:12px solid transparent;border-top:0;border-bottom-color:var(--parchemin)}
+.mr-bulle.montre{opacity:1;transform:none}
+.mr-texte{font-size:1.18rem;line-height:1.4;font-weight:600;margin:0}
+.mr-carnet{margin:8px 0 0;font-weight:800;color:#7a3a8a;font-size:.95rem}
+.mr-lire{position:absolute;right:8px;top:50%;margin-top:-21px;width:42px;height:42px;border-radius:50%;border:2px solid var(--encre-2);background:rgba(255,255,255,.5);font-size:1.1rem}
+.mr-pastilles{display:flex;gap:9px;justify-content:center;align-items:center}
+.mr-coeurs{display:inline-flex;margin-left:8px}
+.mr-pastilles i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);transition:all .25s}
+.mr-pastilles i.cur{background:var(--or);border-color:var(--or-pale);box-shadow:0 0 10px var(--or)}
+.mr-pastilles i.note{background:var(--c-barde);border-color:#fff}
+.mr-choix{display:grid;grid-template-columns:1fr 1fr;gap:12px;opacity:.45;transition:opacity .25s}
+.mr-choix.pret{opacity:1}
+.mr-gros{min-height:64px;border-radius:18px;font-size:1.2rem;font-weight:800;border:3px solid var(--contour);color:var(--contour);box-shadow:0 5px 0 var(--contour);transition:transform .1s, box-shadow .1s}
+.mr-oui{background:#9fe0b4}.mr-non{background:#ffb39a}
+.mr-gros:active,.mr-gros.appuye{transform:translateY(4px);box-shadow:0 1px 0 var(--contour)}
+.mr-recap{display:flex;flex-direction:column;gap:12px;animation:b-apparait .35s}
+.mr-bilan{text-align:center;padding:14px;border-radius:18px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.15)}
+.mr-bilan span{font-size:2.6rem}
+.mr-bilan h3{margin:6px 0 4px;color:var(--or-pale);font-size:1.3rem}
+.mr-bilan p{margin:0;color:var(--brume);font-style:italic}
+.mr-bilan.parfait{border-color:var(--or);box-shadow:0 0 18px rgba(255,200,90,.3)}
+.mr-recap ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.mr-recap li{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.12);border-radius:14px;padding:8px 10px;animation:b-apparait .35s both}
+.mr-recap li p{flex:1;margin:0;font-size:.98rem;line-height:1.3}
+.mr-qui{font-size:1.6rem;flex:none}
+.mr-avis{flex:none;font-weight:800;font-size:.8rem;padding:4px 8px;border-radius:8px;border:2px solid}
+.mr-avis.oui{color:#9fe0b4;border-color:#9fe0b4}.mr-avis.non{color:#ffb39a;border-color:#ffb39a}
+.mr-note{text-align:center;margin:0;color:var(--brume)}
+.mr-demo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--lune)}
+.mr-demo-bulle{background:var(--parchemin);color:var(--encre);border-radius:14px;padding:8px 14px;font-weight:600;max-width:90%}
+.mr-demo-boutons{display:flex;gap:10px}
+.mr-demo-boutons span{border-radius:12px;padding:6px 12px;font-weight:800;color:var(--contour)}
+.mr-demo-boutons .oui{background:#9fe0b4;animation:mr-d-appui 3s infinite}.mr-demo-boutons .non{background:#ffb39a}
+.mr-demo-main{position:absolute;left:38%;top:64%;font-size:1.6rem;animation:mr-d-main 3s infinite}
+.mr-demo-note{position:absolute;top:22%;right:14%;font-weight:800;color:var(--or-pale);animation:mr-d-note 3s infinite}
+@keyframes mr-d-main{0%,30%{transform:translate(0,14px)}40%{transform:translate(0,0)}60%,100%{transform:translate(0,14px);opacity:.4}}
+@keyframes mr-d-appui{0%,38%{transform:none}42%{transform:translateY(3px)}50%,100%{transform:none}}
+@keyframes mr-d-note{0%,45%{opacity:0;transform:translateY(8px)}55%,85%{opacity:1;transform:none}100%{opacity:0}}

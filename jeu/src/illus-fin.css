@@ -1,0 +1,138 @@
+/* ==========================================================
+   Les petites scènes animées des fins d'enquête (illus-fin.js ; Romain, 5 novembre, 9 h 37).
+   Le cadre est celui de la scène du rassemblement (.rs-scene, barde.css). Préfixe .sf-.
+   ========================================================== */
+/* les personnages en entier : --x = le milieu de leurs pieds, --h = leur hauteur, --ar = largeur / hauteur de leur dessin */
+.sf-gens{position:absolute;bottom:var(--b, 8%);left:var(--x);height:var(--h, 44%);aspect-ratio:var(--ar, .57);transform:translateX(-50%)}
+.sf-gens>i{display:block;width:100%;height:100%;transform-origin:50% 100%}
+.sf-gens>i svg{display:block;width:100%;height:100%;overflow:visible}
+.sf-gens>i b{display:grid;place-items:end center;width:100%;height:100%;font-size:2rem;font-style:normal}
+.sf-bulle{position:absolute;left:50%;bottom:97%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:800;font-size:.64rem;line-height:1.25;padding:1px 6px;border-radius:10px;background:#fff;color:#24182e;border:2px solid #24182e;opacity:0;z-index:3}
+.sf-bulle.sf-g{left:0;transform:none}
+.sf-bulle.sf-d{left:auto;right:0;transform:none}
+
+/* la Lanterne d'Or et son halo */
+.sf-lanterne{position:absolute;display:block;left:var(--lx, 80%);top:var(--ly, 60%);width:var(--w, 24%);aspect-ratio:24/36;transform:translate(-50%, -30%);z-index:2;pointer-events:none}
+.sf-lanterne svg{position:relative;display:block;width:100%;height:100%}
+.sf-lanterne s{position:absolute;left:50%;top:55%;width:300%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, rgba(255,232,130,.95) 0, rgba(255,205,80,.55) 30%, rgba(255,205,80,0) 68%);transform:translate(-50%, -50%);animation:sf-halo 1.5s ease-in-out infinite alternate}
+@keyframes sf-halo{from{opacity:.65;transform:translate(-50%, -50%) scale(.85)}to{opacity:1;transform:translate(-50%, -50%) scale(1.12)}}
+
+/* Pirate, le chien de Tim */
+.sf-chien{position:absolute;bottom:8%;left:var(--x, 50%);width:9%;aspect-ratio:40/44;transform:translateX(-50%);z-index:2}
+.sf-chien svg{display:block;width:100%;height:100%;overflow:visible}
+.sf-queue{transform-box:fill-box;transform-origin:0% 100%;animation:sf-queue .22s ease-in-out infinite alternate}
+@keyframes sf-queue{from{transform:rotate(-16deg)}to{transform:rotate(14deg)}}
+
+/* le trou du Vieux Chêne : la lueur dorée, ses rayons, des étincelles qui montent */
+.sf-lueur{transform-box:fill-box;transform-origin:center;animation:sf-lueur 1.3s ease-in-out infinite alternate}
+@keyframes sf-lueur{from{opacity:.55;transform:scale(.8)}to{opacity:1;transform:scale(1.15)}}
+.sf-rayon{animation:sf-rayon 1.3s ease-in-out infinite alternate}
+@keyframes sf-rayon{from{opacity:.35}to{opacity:.9}}
+.sf-etincelle{transform-box:fill-box;transform-origin:center;opacity:0;animation:sf-etincelle 2.8s ease-out infinite}
+@keyframes sf-etincelle{0%{opacity:0;transform:translate(0, 0)}20%{opacity:1}100%{opacity:0;transform:translate(4px, -46px)}}
+
+/* on marche, on court, on saute de joie */
+@keyframes sf-pas{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-4%) rotate(3deg)}}
+.sf-hop>i{animation-delay:inherit}
+
+/* ---- 1. La course au Vieux Chêne (9 s) ---- */
+.sf-court{left:-22%;animation:sf-course 9s ease-out infinite both}
+.sf-court>i{animation:sf-pas .3s ease-in-out infinite alternate}
+@keyframes sf-course{0%{left:-22%;opacity:1}32%{left:var(--x)}90%{left:var(--x);opacity:1}97%, 100%{left:var(--x);opacity:0}}
+
+/* ---- 2. Gaspard remonte Tim, Pirate lui saute dans les bras (10 s) ---- */
+.sf-trou-clip{position:absolute;left:0;right:0;top:0;bottom:8%;overflow:hidden;pointer-events:none}   /* ce qui descend dans le trou disparaît sous le bord */
+.sf-trou-clip .sf-gens{bottom:0}
+.sf-gaspard-corde{animation:sf-gaspard 10s ease-in-out infinite both}
+@keyframes sf-gaspard{0%{left:62%;transform:translate(-50%, 0);opacity:0}4%, 10%{left:62%;transform:translate(-50%, 0);opacity:1}24%, 40%{left:62%;transform:translate(-50%, 108%)}54%{left:62%;transform:translate(-50%, 0)}64%, 92%{left:56%;transform:translate(-50%, 0);opacity:1}98%, 100%{left:56%;transform:translate(-50%, 0);opacity:0}}
+.sf-tim-sort{animation:sf-tim 10s ease-in-out infinite both}
+@keyframes sf-tim{0%, 40%{left:70%;transform:translate(-50%, 108%);opacity:1}54%{left:70%;transform:translate(-50%, 0)}66%, 92%{left:42%;transform:translate(-50%, 0);opacity:1}98%, 100%{left:42%;transform:translate(-50%, 0);opacity:0}}
+.sf-chien-saute{left:90%;animation:sf-chien 10s linear infinite both}
+@keyframes sf-chien{0%, 66%{left:90%;transform:translate(-50%, 0);opacity:0}68%{left:88%;transform:translate(-50%, 0);opacity:1}76%{left:54%;transform:translate(-50%, 0)}80%{left:49%;transform:translate(-50%, -150%)}84%, 92%{left:46.5%;transform:translate(-50%, -68%);opacity:1}98%, 100%{left:46.5%;transform:translate(-50%, -68%);opacity:0}}   /* (il atterrit dans ses bras, sans cacher son visage) */
+.sf-coeur{position:absolute;left:50%;bottom:90%;font-style:normal;font-weight:900;color:#e5484d;font-size:.95rem;text-shadow:0 1px 0 #fff;opacity:0;animation:sf-coeur 10s linear infinite both}
+@keyframes sf-coeur{0%, 84%{opacity:0;transform:translate(-50%, 0) scale(.4)}87%{opacity:1;transform:translate(-50%, -20%) scale(1.25)}93%{opacity:1;transform:translate(-50%, -90%) scale(1)}97%, 100%{opacity:0;transform:translate(-50%, -110%)}}
+.sf-remonte .sf-hop>i{animation:sf-hop-remonte 10s ease-in-out infinite both}
+@keyframes sf-hop-remonte{0%, 82%, 87%, 93%, 100%{transform:translateY(0)}84.5%{transform:translateY(-7%)}90%{transform:translateY(-6%)}}
+
+/* ---- 3. « Pardon ! » (8 s) ---- */
+.sf-sanglot>i{animation:sf-sanglot .55s ease-in-out infinite alternate}
+@keyframes sf-sanglot{from{transform:translateY(0)}to{transform:translateY(-1.6%)}}
+.sf-larme{position:absolute;top:31%;width:9%;aspect-ratio:3/4;background:#8fd4ff;border:1px solid #24182e;border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;opacity:0;transform:translateX(-50%);animation:sf-larme 1.4s ease-in infinite;z-index:2}
+@keyframes sf-larme{0%{opacity:0;transform:translate(-50%, 0)}18%{opacity:1}100%{opacity:0;transform:translate(-50%, 220%)}}
+.sf-b-pardon{font-size:.8rem;animation:sf-b-pardon 8s linear infinite both}
+@keyframes sf-b-pardon{0%, 6%{opacity:0;transform:translateX(-50%) scale(.6)}10%{opacity:1;transform:translateX(-50%) scale(1.1)}14%, 92%{opacity:1;transform:translateX(-50%) scale(1)}97%, 100%{opacity:0;transform:translateX(-50%) scale(1)}}
+.sf-chien-joie{animation:sf-joie .45s ease-in-out infinite alternate}
+@keyframes sf-joie{from{transform:translate(-50%, 0)}to{transform:translate(-50%, -40%)}}
+
+/* ---- 4. Le courant d'air froid, sous la terre (en boucle) ---- */
+.sf-vent{opacity:0;animation:sf-vent 3.6s ease-in infinite both}
+@keyframes sf-vent{0%{opacity:0;transform:translate(0, 0)}10%{opacity:.9}45%{opacity:.9;transform:translate(132px, 0)}90%{opacity:.6}100%{opacity:0;transform:translate(136px, -150px)}}   /* (le long du passage, puis tout droit dans le trou, et dehors) */
+.sf-feuille{transform-box:fill-box;transform-origin:center;opacity:0;animation:sf-feuille 3.6s ease-out 1.2s infinite both}
+@keyframes sf-feuille{0%{opacity:0;transform:translate(0, 0) rotate(0)}15%{opacity:1}50%{transform:translate(-12px, -22px) rotate(-50deg)}100%{opacity:0;transform:translate(16px, -44px) rotate(90deg)}}
+.sf-lueur-bleue{transform-box:fill-box;transform-origin:center;animation:sf-lueur-bleue 2.4s ease-in-out infinite alternate}
+@keyframes sf-lueur-bleue{from{opacity:.08}to{opacity:.45}}
+
+/* ---- 5. Le maire serre la Lanterne contre lui (9 s) ---- */
+.sf-maire-arrive{animation:sf-maire 9s ease-out infinite both}
+@keyframes sf-maire{0%{left:118%;opacity:1}22%{left:var(--x)}94%{left:var(--x);opacity:1}99%, 100%{left:var(--x);opacity:0}}
+.sf-maire-arrive>i{animation:sf-maire-corps 9s linear infinite both}
+@keyframes sf-maire-corps{0%, 6%, 12%, 18%, 24%, 50%{transform:translateY(0) scale(1)}3%, 9%, 15%, 21%{transform:translateY(-4%) scale(1)}54%, 62%, 70%, 78%, 86%{transform:translateY(0) scale(.97, 1.03)}58%, 66%, 74%, 82%, 90%, 100%{transform:translateY(0) scale(1)}}
+.sf-lant-tim{animation:sf-lant-tim 9s linear infinite both}
+@keyframes sf-lant-tim{0%, 36%{opacity:1}38%, 100%{opacity:0}}
+.sf-lant-vol{--w:4.4%;left:34%;top:auto;bottom:12%;transform:translate(-50%, 0);opacity:0;animation:sf-lant-vol 9s ease-in-out infinite both}
+@keyframes sf-lant-vol{0%, 36%{left:34%;bottom:12%;opacity:0}38%{left:34%;bottom:12%;opacity:1}50%, 94%{left:52%;bottom:19%;opacity:1}99%, 100%{left:52%;bottom:19%;opacity:0}}   /* (contre son ventre, à deux mains) */
+.sf-serre{position:absolute;left:52%;bottom:18%;width:11%;height:13%;transform:translateX(-50%);opacity:0;animation:sf-serre 9s linear infinite both;pointer-events:none;z-index:3}
+.sf-serre i{position:absolute;top:8%;width:34%;height:84%;border:2.5px solid transparent;border-radius:50%}
+.sf-serre i:first-child{left:-22%;border-left-color:#fff}
+.sf-serre i:last-child{right:-22%;border-right-color:#fff}
+@keyframes sf-serre{0%, 52%{opacity:0}56%, 92%{opacity:1}96%, 100%{opacity:0}}
+
+/* ---- 6. Les lampions s'allument, « Quelle équipe ! » (10 s) ---- */
+.sf-lampion .sf-feu, .sf-lampion .sf-feu-halo{opacity:0;animation-delay:inherit}
+.sf-fete .sf-lampion .sf-feu{animation:sf-allume 10s linear infinite both;animation-delay:inherit}
+.sf-fete .sf-lampion .sf-feu-halo{animation:sf-allume-halo 10s linear infinite both;animation-delay:inherit}
+@keyframes sf-allume{0%{opacity:0}4%, 86%{opacity:1}92%, 100%{opacity:0}}
+@keyframes sf-allume-halo{0%{opacity:0}4%, 86%{opacity:.5}92%, 100%{opacity:0}}
+.sf-lampion.sf-allume .sf-feu{opacity:1;animation:sf-vacille 1.6s ease-in-out infinite alternate;animation-delay:inherit}
+.sf-lampion.sf-allume .sf-feu-halo{opacity:.45;animation:sf-vacille-halo 1.6s ease-in-out infinite alternate;animation-delay:inherit}
+@keyframes sf-vacille{from{opacity:.75}to{opacity:1}}
+@keyframes sf-vacille-halo{from{opacity:.28}to{opacity:.55}}
+.sf-jets path{stroke-dasharray:4 5;animation:sf-jet .8s linear infinite}
+@keyframes sf-jet{to{stroke-dashoffset:-18}}
+.sf-lant-haut s{width:420%}
+.sf-b-equipe{font-size:.74rem;animation:sf-b-equipe 10s linear infinite both}
+@keyframes sf-b-equipe{0%, 58%{opacity:0;transform:translateX(-50%) scale(.6)}62%{opacity:1;transform:translateX(-50%) scale(1.1)}66%, 94%{opacity:1;transform:translateX(-50%) scale(1)}98%, 100%{opacity:0;transform:translateX(-50%) scale(1)}}
+.sf-fete .sf-hop>i{animation:sf-hop-fete 10s ease-in-out infinite both}
+@keyframes sf-hop-fete{0%, 60%, 68%, 76%, 84%, 100%{transform:translateY(0)}64%, 72%, 80%{transform:translateY(-7%)}}
+
+/* ---- 7. Pendant la fête, on ne parle que du trou (12 s) ---- */
+.sf-b1{animation:sf-b1 12s linear infinite both}
+.sf-b2{animation:sf-b2 12s linear infinite both}
+.sf-b3{animation:sf-b3 12s linear infinite both}
+.sf-b4{animation:sf-b4 12s linear infinite both}
+@keyframes sf-b1{0%, 3%{opacity:0}6%, 24%{opacity:1}27%, 100%{opacity:0}}
+@keyframes sf-b2{0%, 27%{opacity:0}30%, 47%{opacity:1}50%, 100%{opacity:0}}
+@keyframes sf-b3{0%, 50%{opacity:0}53%, 71%{opacity:1}74%, 100%{opacity:0}}
+@keyframes sf-b4{0%, 74%{opacity:0}77%, 94%{opacity:1}97%, 100%{opacity:0}}
+
+/* ---- 8. La nuit, le maire regarde le trou ; le lendemain, les planches (12 s) ---- */
+.sf-nuit{position:absolute;inset:0;background:linear-gradient(rgba(18,23,54,.97), rgba(40,46,110,.78) 60%, rgba(11,16,48,.74));animation:sf-nuit 12s linear infinite both;pointer-events:none}
+.sf-nuit svg{position:absolute;inset:0;width:100%;height:100%}
+@keyframes sf-nuit{0%, 40%{opacity:1}52%, 92%{opacity:0}100%{opacity:1}}
+.sf-planche{position:absolute;left:65%;bottom:calc(5.5% + var(--i) * 1.8%);width:21%;height:3.4%;box-sizing:border-box;background:repeating-linear-gradient(90deg, #b47e4a 0 14px, #a06c3c 14px 16px);border:2px solid #24182e;border-radius:3px;opacity:0;animation:sf-planche 12s ease-in infinite both;z-index:1}
+@keyframes sf-planche{
+  0%, 56%{opacity:0;transform:translate(-50%, -600%) rotate(calc((var(--i) - 1) * 3deg))}
+  58%{opacity:1}
+  62%{transform:translate(-50%, 0) rotate(calc((var(--i) - 1) * 3deg))}
+  64%{transform:translate(-50%, -25%) rotate(calc((var(--i) - 1) * 3deg))}
+  66%, 94%{opacity:1;transform:translate(-50%, 0) rotate(calc((var(--i) - 1) * 3deg))}
+  98%, 100%{opacity:0;transform:translate(-50%, 0) rotate(calc((var(--i) - 1) * 3deg))}
+}
+.sf-b-rien{animation:sf-b-rien 12s linear infinite both}
+@keyframes sf-b-rien{0%, 6%{opacity:0}10%, 40%{opacity:1}44%, 100%{opacity:0}}
+.sf-b-danger{animation:sf-b-danger 12s linear infinite both}
+@keyframes sf-b-danger{0%, 74%{opacity:0}78%, 94%{opacity:1}98%, 100%{opacity:0}}
+
+/* moins de mouvement : chaque scène reste figée sur son moment le plus parlant */
+.sf-course{--sf-fige:-4s}.sf-remonte{--sf-fige:-8.8s}.sf-pardon{--sf-fige:-3s}.sf-courant{--sf-fige:-2s}.sf-maire{--sf-fige:-6s}.sf-fete{--sf-fige:-7.4s}.sf-ragots{--sf-fige:-1.8s}.sf-planches{--sf-fige:-10s}
+@media (prefers-reduced-motion: reduce){ .rs-scene.sf-scene *{animation-play-state:paused !important;animation-delay:var(--sf-fige, -5s) !important} }

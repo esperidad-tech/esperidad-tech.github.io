@@ -1,0 +1,115 @@
+/* ==========================================================
+   Les bulles magiques, version 2 (préfixe .mjbu-)
+   Même allure que les autres jeux de l'Alchimiste (cœurs, chaudron)
+   et que l'atelier (briques, poutre, fenêtre de nuit, étagères).
+   ========================================================== */
+/* Bandeau : vies et manches */
+.mjbu-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;min-height:48px;background:rgba(0,0,0,.18);flex:none}
+.mjbu-vies{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.mjbu-coeur{width:26px;height:24px;display:inline-block}
+.mjbu-coeur svg{width:100%;height:100%;display:block;fill:#ff5b6e;stroke:var(--contour);stroke-width:2;filter:drop-shadow(0 0 4px rgba(255,91,110,.45));transition:fill .3s}
+.mjbu-coeur.perdu svg{fill:#3a3352;filter:none}
+.mjbu-coeur.casse{animation:mjbu-casse .6s ease-out}
+@keyframes mjbu-casse{0%{transform:scale(1.8) rotate(-14deg)}45%{transform:scale(.7) rotate(10deg)}100%{transform:none}}
+.mjbu-manches{display:flex;gap:6px;align-items:center}
+.mjbu-manche{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:700;line-height:1;color:var(--brume);background:#2b2f55;border:2px solid var(--trait);transition:background .4s,border-color .4s}
+.mjbu-manche.ici{border-color:var(--or-pale);color:var(--or-pale);box-shadow:0 0 10px rgba(255,227,163,.5)}
+.mjbu-manche.fait{background:radial-gradient(circle at 35% 30%,#fff 0 12%,var(--c) 48%);border-color:var(--contour);color:var(--contour);animation:mjbu-gemme .5s ease-out}
+.mjbu-manche.der.fait{background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9) 0 12%,rgba(255,255,255,0) 40%),conic-gradient(#ff5b6e,#ffa43a,#ffe14d,#5fdc7a,#4fb6ff,#9d7bff,#ff5b6e)}
+@keyframes mjbu-gemme{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+@media (max-width:440px){
+  .mjbu-hud{padding:8px 10px;gap:6px}
+  .mjbu-coeur{width:22px;height:20px}
+  .mjbu-manche{width:25px;height:25px;font-size:.8rem}
+}
+
+/* Terrain */
+.mjbu-terrain{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;background:#2b2148}
+.mjbu-decor{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;will-change:transform}
+.mjbu-decor-demo{pointer-events:none}
+.mjbu-chaleur{position:absolute;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,170,90,.34),rgba(255,122,60,.12) 55%,rgba(255,122,60,0));animation:mjbu-chaleur 2.6s ease-in-out infinite alternate;will-change:opacity}
+@keyframes mjbu-chaleur{0%{opacity:.75}35%{opacity:1}60%{opacity:.85}100%{opacity:.95}}
+.mjbu-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mjbu-voile{fill:rgba(14,10,32,.58)}
+.mjbu-arene{stroke:rgba(143,243,255,.28);stroke-width:2;stroke-dasharray:2 9;stroke-linecap:round}
+.mjbu-etoile{fill:#fff;opacity:.15;animation:mjbu-scint 3s ease-in-out infinite}
+@keyframes mjbu-scint{0%,100%{opacity:.08}50%{opacity:.35}}
+.mjbu-etoile-f{animation:mjbu-scint 2.6s ease-in-out infinite}
+.mjbu-bougie{transform-box:fill-box;transform-origin:50% 100%;animation:mjbu-flamme .45s ease-in-out infinite alternate}
+
+/* Pastille d'état : 👀 regarde / 👆 à toi, et les points de la suite */
+.mjbu-etat{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:8px;min-height:38px;padding:5px 14px;border-radius:999px;background:rgba(13,17,38,.78);border:2px solid var(--trait);pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.mjbu-etat.attends{animation:b-pulse .4s ease-out}
+.mjbu-etat-ic{font-size:1.35rem;line-height:1}
+.mjbu-pas{display:flex;gap:5px;align-items:center}
+.mjbu-pas i{width:14px;height:14px;border-radius:50%;background:#2b2f55;border:2px solid var(--trait);transition:background .2s,transform .2s}
+.mjbu-pas i.fait{background:var(--c,#fff);border-color:var(--contour);box-shadow:0 0 7px var(--c,#fff);transform:scale(1.12)}
+
+/* Bouton indice */
+.mjbu-indice{position:absolute;right:12px;bottom:12px;z-index:3;width:76px;height:76px;padding:0;border-radius:50%;border:3px solid var(--contour);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--encre);font-weight:700;
+  background:radial-gradient(circle at 40% 32%,#fff7cf,#ffd36a 45%,#c98a1c);box-shadow:0 4px 0 rgba(0,0,0,.35),0 0 18px rgba(255,211,106,.55);transition:transform .08s,opacity .2s}
+.mjbu-indice:active{transform:translateY(3px)}
+.mjbu-indice span{font-size:1.65rem;line-height:1}
+.mjbu-indice small{font-size:.72rem;line-height:1.05}
+.mjbu-indice b{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;padding:0 4px;border-radius:13px;background:#ff5b6e;color:#fff;border:2px solid var(--contour);font-size:.9rem;display:grid;place-items:center}
+.mjbu-indice:disabled{opacity:.42;filter:grayscale(.7);box-shadow:0 4px 0 rgba(0,0,0,.35);cursor:default}
+
+/* Messages */
+.mjbu-annonce{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);z-index:4;pointer-events:none;max-width:94%;text-align:center;font-family:var(--f-titre);font-size:clamp(1.6rem,7vw,2.4rem);line-height:1.1;color:var(--or-pale);padding:4px 22px 6px;border-radius:999px;background:rgba(13,10,30,.72);border:2px solid rgba(255,227,163,.35);box-shadow:0 6px 20px rgba(0,0,0,.4);text-shadow:0 3px 0 var(--contour),0 0 18px rgba(245,185,69,.6);animation:mjbu-annonce 1.15s ease-out forwards;white-space:nowrap}
+@keyframes mjbu-annonce{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(1)}}
+.mjbu-flotte{position:absolute;z-index:5;transform:translate(-50%,-50%);font-size:1.6rem;pointer-events:none;animation:mjbu-monte 1s ease-out forwards}
+@keyframes mjbu-monte{from{opacity:1;transform:translate(-50%,-50%) scale(.7)}25%{transform:translate(-50%,-80%) scale(1.2)}to{opacity:0;transform:translate(-50%,-180%) scale(1)}}
+
+/* Bulles */
+.mjbu-corps{transform-box:fill-box;transform-origin:center;transition:transform .15s ease-out}
+.mjbu-ombre{fill:#120a24;opacity:0;transition:opacity .2s;pointer-events:none}
+.mjbu-montre .mjbu-bulle:not(.allume) .mjbu-ombre{opacity:.5}
+.mjbu-bulle.allume .mjbu-corps{transform:scale(1.17)}
+.mjbu-halo{opacity:0;transition:opacity .15s}
+.mjbu-bulle.allume .mjbu-halo{opacity:.55}
+.mjbu-anneau{fill:none;stroke:transparent;stroke-width:4}
+.mjbu-bulle.indice .mjbu-anneau{stroke:#ffe3a3;stroke-dasharray:10 7;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:mjbu-tourne 2.6s linear infinite}
+.mjbu-bulle.indice .mjbu-halo{fill:#ffd36a;animation:mjbu-luit 1s ease-in-out infinite}
+@keyframes mjbu-luit{0%,100%{opacity:.22}50%{opacity:.7}}
+@keyframes mjbu-tourne{to{transform:rotate(360deg)}}
+.mjbu-flash{fill:none;stroke:#fff;stroke-width:6;opacity:0;transform-box:fill-box;transform-origin:center}
+.mjbu-bulle.tape .mjbu-flash{animation:mjbu-flash .42s ease-out}
+.mjbu-bulle.faux .mjbu-flash{stroke:#ff5b6e;animation:mjbu-flash .5s ease-out}
+.mjbu-bulle.donne .mjbu-flash{stroke:#ffe3a3;animation:mjbu-flash .5s ease-out}
+@keyframes mjbu-flash{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(1.5)}}
+.mjbu-bulle.faux .mjbu-tr{animation:mjbu-tremble .42s ease-out}
+@keyframes mjbu-tremble{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.mjbu-bulle.eclate .mjbu-corps{animation:mjbu-eclate .42s ease-out forwards}
+@keyframes mjbu-eclate{0%{transform:scale(1);opacity:1}35%{transform:scale(1.3);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.mjbu-pop-rond{fill:none;stroke-width:4;transform-box:fill-box;transform-origin:center;animation:mjbu-rond .55s ease-out forwards}
+.mjbu-goutte{stroke:var(--contour);stroke-width:1.2;animation:mjbu-giclee .6s ease-out forwards}
+@keyframes mjbu-giclee{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.mjbu-rond{fill:none;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:mjbu-rond .6s ease-out forwards}
+@keyframes mjbu-rond{from{opacity:1;transform:scale(.4)}to{opacity:0;transform:scale(1.8)}}
+.mjbu-ingr{pointer-events:none}
+
+/* Chaudron */
+.mjbu-flamme{transform-box:fill-box;transform-origin:bottom center;stroke:var(--contour);stroke-width:3;animation:mjbu-flamme .5s ease-in-out infinite alternate}
+.mjbu-flamme.f1{fill:#e8693c}
+.mjbu-flamme.f2{fill:#ffb03a;animation-delay:-.2s}
+.mjbu-flamme.f3{fill:#e8693c;animation-delay:-.35s}
+@keyframes mjbu-flamme{to{transform:scaleY(.82) scaleX(1.06)}}
+.mjbu-braises{fill:#a8391a;stroke:var(--contour);stroke-width:3}
+.mjbu-vapeur path{fill:none;stroke:#e6ecff;stroke-width:7;stroke-linecap:round;opacity:0;animation:mjbu-vapeur 3.2s ease-in-out infinite}
+.mjbu-vapeur path:nth-child(2){animation-delay:-1.6s}
+@keyframes mjbu-vapeur{0%{transform:translateY(12px);opacity:0}45%{opacity:.32}100%{transform:translateY(-34px);opacity:0}}
+.mjbu-pb{stroke:var(--contour);stroke-width:1.5;opacity:.9;animation:mjbu-pb 1.2s ease-out forwards}
+@keyframes mjbu-pb{to{transform:translateY(-44px);opacity:0}}
+.mjbu-etincelle{stroke:var(--contour);stroke-width:1;animation:mjbu-etin 1.3s ease-out forwards;opacity:0}
+@keyframes mjbu-etin{0%{opacity:1}100%{opacity:0;translate:var(--dx) var(--dy)}}
+.mjbu-fumee{fill:#7d7690;opacity:0;transform-box:fill-box;transform-origin:center;animation:mjbu-fumee 1.7s ease-out forwards}
+@keyframes mjbu-fumee{0%{opacity:.75;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-70px) scale(1.6)}}
+.mjbu-gagne .mjbu-vapeur path{stroke:#fff4d0}
+
+/* Démo */
+.mjbu-demo-svg{width:100%;height:100%;display:block}
+.mjbu-main .mjbu-onde{fill:none;stroke:var(--cyan);stroke-width:3;opacity:0}
+.mjbu-main.tape .mjbu-onde{animation:mjbu-onde .5s ease-out}
+@keyframes mjbu-onde{from{opacity:1;r:6}to{opacity:0;r:26}}
+.mjbu-main.tape > g{animation:mjbu-tape .3s ease-out}
+@keyframes mjbu-tape{50%{transform:scale(.52) rotate(-12deg)}}

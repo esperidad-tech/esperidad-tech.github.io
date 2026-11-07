@@ -1,0 +1,341 @@
+/* ==========================================================
+   Mini-jeux du Pisteur et de l'Alchimiste (préfixe .mja-)
+   ========================================================== */
+.mja-hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;min-height:46px;background:rgba(0,0,0,.18)}
+.mja-vies{display:flex;gap:3px}
+.mja-coeur{width:24px;height:22px;display:inline-block}
+.mja-coeur svg{width:100%;height:100%;display:block;fill:#ff5b6e;stroke:var(--contour);stroke-width:2;filter:drop-shadow(0 0 4px rgba(255,91,110,.45))}
+.mja-coeur.perdu svg{fill:#3a3352;filter:none}
+.mja-coeur.casse{animation:mja-casse .5s ease-out}
+@keyframes mja-casse{0%{transform:scale(1.5) rotate(-12deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
+.mja-prog{display:flex;gap:4px;align-items:center;flex-wrap:wrap;flex:1;justify-content:center;min-width:50px}
+.mja-gemme{width:22px;height:22px;border-radius:7px;transform:rotate(45deg) scale(.8);background:#2b2f55;border:2px solid var(--trait);display:grid;place-items:center;font-size:0}
+.mja-gemme.ok{background:linear-gradient(135deg,#bff9ff,var(--cyan-2));border-color:var(--contour);box-shadow:0 0 10px rgba(143,243,255,.6)}
+.mja-gemme.neuf{animation:mja-gemme .5s ease-out}
+@keyframes mja-gemme{0%{transform:rotate(45deg) scale(1.6)}100%{transform:rotate(45deg) scale(.8)}}
+.mja-prog-barre{flex:1;height:12px;border-radius:6px;background:#2b2f55;overflow:hidden}
+.mja-prog-barre i{display:block;height:100%;background:var(--cyan-2)}
+.mja-sablier{display:flex;align-items:center;gap:6px;min-width:80px;flex:0 1 130px}
+@media (max-width:440px){
+  .mja-hud{gap:6px;padding:8px 10px}
+  .mja-vies{gap:1px}
+  .mja-coeur{width:20px;height:18px}
+  .mja-gemme{width:18px;height:18px}
+  .mja-badge{width:34px;height:34px}
+  .mja-badge.large{width:auto}
+}
+.mja-sablier span{font-size:1.1rem}
+.mja-sab-barre{flex:1;height:12px;border-radius:6px;background:#2b2f55;border:2px solid var(--contour);overflow:hidden}
+.mja-sab-barre i{display:block;height:100%;width:100%;transform-origin:left center;background:linear-gradient(90deg,#ffe3a3,var(--or))}
+.mja-sablier.presse .mja-sab-barre i{background:linear-gradient(90deg,#ffb38a,var(--braise));animation:b-lueur .5s infinite}
+.mja-terrain{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;touch-action:none}
+.mja-terrain > svg{flex:1;width:100%;height:100%;min-height:0;display:block}
+.mja-actions{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding:10px 12px 14px}
+.mja-flotte{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:1.25rem;pointer-events:none;white-space:nowrap;text-shadow:0 2px 0 var(--contour),0 0 10px rgba(0,0,0,.6);animation:mja-monte 1s ease-out forwards;z-index:5}
+.mja-flotte.ok{color:#bff9ff}
+.mja-flotte.ko{color:#ffb3a3}
+@keyframes mja-monte{from{opacity:1;transform:translate(-50%,-50%) scale(.8)}20%{transform:translate(-50%,-70%) scale(1.15)}to{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+.mja-annonce{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;font-family:var(--f-titre);font-size:clamp(1.6rem,7vw,2.4rem);color:var(--or-pale);text-shadow:0 3px 0 var(--contour),0 0 18px rgba(245,185,69,.6);animation:mja-annonce 1.3s ease-out forwards;white-space:nowrap}
+@keyframes mja-annonce{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
+.mja-secoue{animation:b-tremble .35s ease-out}
+
+/* Main de démonstration */
+.mja-demo-svg{width:100%;height:100%;display:block}
+.mja-main .mja-onde{fill:none;stroke:var(--cyan);stroke-width:3;opacity:0}
+.mja-main.tape .mja-onde{animation:mja-onde .5s ease-out}
+.mja-main.appuie .mja-onde{opacity:.8;stroke-width:5}
+@keyframes mja-onde{from{opacity:1;r:6}to{opacity:0;r:26}}
+.mja-main > g{transition:transform .12s}
+.mja-main.tape > g{animation:mja-tape .3s ease-out}
+.mja-main.appuie > g{transform:scale(.56) rotate(-12deg)}
+@keyframes mja-tape{50%{transform:scale(.52) rotate(-12deg)}}
+
+/* ---------- Traces (la piste) ---------- */
+.mja-traces{background:#4a4330}
+/* la nuit (params.decor = 'nuit') : tout plus sombre et plus bleu, les traces restent lisibles */
+.mja-traces-nuit{background:#1d2233}
+.mja-traces-nuit > svg{filter:brightness(.68) saturate(.75) hue-rotate(-14deg)}
+.mja-empr .e-f{fill:#2a1d12;stroke:#e4d3a6;stroke-width:.9;stroke-linejoin:round}
+.mja-empr .e-c{fill:#efe0b8}
+.mja-empr .e-r{fill:none;stroke:#efe0b8;stroke-width:1.3;stroke-linecap:round}
+.mja-empr .e-trou{fill:#5b5236}
+.mja-empr .e-rebord{fill:none;stroke:#e4d3a6;stroke-width:.9;opacity:.75}
+.mja-alerte-perdu{fill:#ff3b4e;pointer-events:none}
+.mja-bruine-g{pointer-events:none}
+.mja-empr.boue .e-f{fill:#24170c;stroke:#7a5c3c;stroke-width:1.4}
+.mja-empr.saut .e-f{fill:#140c06;stroke:#f0e2bb;stroke-width:1.2}
+.mja-empr .e-creux{fill:none;stroke:#2a1d12;stroke-width:4.5;opacity:.55;stroke-linejoin:round}
+.mja-empr .e-tache{fill:#3b2a1a;opacity:.6}
+.e-flou{fill:#2a1d12;fill-opacity:.55;stroke:#e4d3a6;stroke-opacity:.35;stroke-width:4;stroke-linejoin:round}
+.mja-empr.revele .e-f{fill:#bff9ff;stroke:var(--contour);filter:drop-shadow(0 0 3px var(--cyan))}
+/* variante charrette : les traits des roues (un bout par pas) */
+.mja-empr .e-roue{fill:#3a2614;stroke:#e4d3a6;stroke-width:.8}
+.mja-empr.revele .e-roue{fill:#bff9ff;stroke:var(--contour)}
+.mja-vision{fill:none;stroke:var(--cyan);stroke-width:1.6;stroke-dasharray:5 5;opacity:.8;pointer-events:none}
+.mja-vision-halo{fill:none;stroke:var(--cyan);stroke-width:5;opacity:.18;pointer-events:none}
+.mja-vision-sol{fill:#fff4d6;opacity:.13;pointer-events:none}
+.mja-feuille-v{stroke:var(--contour);stroke-width:1;pointer-events:none}
+.mja-feuilles-v,.mja-pluie,.mja-nuit-g{pointer-events:none}
+.mja-arr-halo{fill:#ffd36a;opacity:0;transition:opacity .3s}
+.mja-arrivee.bonne .mja-arr-halo{opacity:.55;filter:drop-shadow(0 0 10px #ffd36a)}
+.mja-arrivee.revelee .mja-arr-halo{animation:b-lueur .6s ease-in-out infinite}
+.mja-arr-x{font-size:22px;font-weight:700;fill:#ff6b6b;stroke:var(--contour);stroke-width:1.5;opacity:0}
+.mja-arrivee.fausse .mja-arr-x{opacity:1}
+.mja-arrivee.fausse{opacity:.6}
+.mja-empr-carte{display:block;overflow:visible}
+.mja-badge{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#5b5236;border:3px solid var(--contour);box-shadow:0 0 0 2px rgba(143,243,255,.35),inset 0 0 10px rgba(0,0,0,.4);flex:none}
+.mja-badge-q{font-family:var(--f-titre);font-size:1.5rem;color:var(--or-pale)}
+.mja-prog-barre i{transform-origin:left center;width:100%;background:linear-gradient(90deg,#bff9ff,var(--cyan-2));box-shadow:0 0 8px rgba(143,243,255,.6)}
+.mja-vaguelettes path{fill:none;stroke:#bfe6ff;stroke-width:2.5;opacity:.55;animation:mja-vague 1.6s linear infinite}
+@keyframes mja-vague{to{transform:translateX(-40px)}}
+.mja-pluie path{stroke:#c9dcff;stroke-width:2.1;stroke-linecap:round;opacity:.75}
+@keyframes mja-pluie{from{transform:translate(0,-40px)}to{transform:translate(-16px,46px)}}
+.mja-depart{position:absolute;inset:0;display:grid;place-items:center;z-index:6;background:rgba(13,17,38,.55);transition:opacity .4s}
+.mja-depart.part{opacity:0}
+.mja-depart-in{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:86%;padding:16px 22px 18px;border-radius:22px;background:radial-gradient(circle at 50% 40%,#6b6040,#4a4330);border:4px solid var(--contour);box-shadow:0 0 0 3px rgba(143,243,255,.5),0 0 30px rgba(143,243,255,.35),var(--ombre);animation:b-apparait .35s ease-out;text-align:center}
+.mja-depart-in b{font-family:var(--f-titre);font-weight:400;font-size:1.35rem;color:var(--or-pale);text-shadow:0 2px 0 var(--contour)}
+.mja-depart-pt{font-size:.9rem;color:var(--brume)}
+.mja-depart-in .mja-empr-carte{filter:drop-shadow(0 0 8px rgba(143,243,255,.5))}
+
+/* ---------- Poursuite ---------- */
+.mja-poursuite{background:#12261f}
+.mja-tiret{stroke:#efe2bf;stroke-linecap:round;opacity:.75}
+.mja-obstacle.casse{opacity:.35}
+.mja-obstacle.pris{opacity:0;transition:opacity .2s}
+.mja-boost{animation:mja-boost .5s ease-in-out infinite alternate}
+/* l'anneau au sol autour de l'obstacle à regarder (leçon, aide) : jaune = saute, bleu = baisse-toi, orange = évite */
+.mja-halo{fill:none;stroke-width:5;opacity:0}
+.mja-obstacle.tot .mja-halo,.mja-obstacle.lecon .mja-halo{opacity:1;animation:mja-halo .55s ease-in-out infinite alternate}
+.mja-obstacle.g-bas .mja-halo{stroke:#ffd36a;fill:rgba(255,211,106,.2)}
+.mja-obstacle.g-haut .mja-halo{stroke:#8ff3ff;fill:rgba(143,243,255,.18)}
+.mja-obstacle.g-bloc .mja-halo{stroke:#ffa36b;fill:rgba(255,163,107,.18)}
+@keyframes mja-halo{from{opacity:.45}to{opacity:1}}
+/* la vache et le cerf marchent en traversant */
+.bt-p1,.bt-p2{transform-box:fill-box;transform-origin:50% 0;animation:mja-bt-pas .5s ease-in-out infinite alternate}
+.bt-p2{animation-delay:-.25s}
+@keyframes mja-bt-pas{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+.mja-pas-rangee{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.25);border:2px solid var(--trait);flex:none}
+.mja-pas-bout{font-size:1rem;line-height:1}
+.mja-pas-pt{width:12px;height:12px;border-radius:50%;background:#2b2f55;border:2px solid var(--trait);transition:transform .3s,background .3s}
+.mja-pas-pt.depart{border-color:var(--brume)}
+.mja-pas-pt.ici{background:#1d1730;border-color:#ffd36a;transform:scale(1.45);box-shadow:0 0 8px #ffd36a}
+.mja-sans-faute{margin-left:auto;font-size:.85rem;color:var(--brume);white-space:nowrap}
+.mja-sans-faute b{color:#bff9ff;font-size:1rem}
+.mja-sans-faute.pop{animation:b-pulse .35s ease-out}
+.mja-hud-course .mja-prog{display:none}
+.mja-hud-course .mja-vies{order:2}   /* la règle des cœurs : les chocs encore permis avant qu'elle s'échappe */
+.mja-etoiles-choc{opacity:0}
+.mja-coureur-corps.trebuche .mja-etoiles-choc{animation:mja-etoiles .9s ease-out}
+@keyframes mja-etoiles{0%,80%{opacity:1}100%{opacity:0}}
+.mja-coureur-corps.trebuche .pant{animation:mja-rouge .9s ease-out}
+@keyframes mja-rouge{0%,60%{opacity:.55}100%{opacity:1}}
+.mja-coureur.sprint .mja-coureur-corps{animation:mja-sprint .8s ease-out}
+@keyframes mja-sprint{0%{filter:drop-shadow(0 0 0 var(--cyan))}30%{filter:drop-shadow(0 0 14px var(--cyan))}100%{filter:none}}
+@keyframes mja-boost{to{opacity:.55}}
+.mja-roule{animation:mja-roule .45s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes mja-roule{to{transform:rotate(360deg)}}
+.mja-fuyard{transition:opacity .25s}
+.mja-fuyard-ex{font-family:var(--f-titre);font-size:30px;fill:#ffd36a;stroke:var(--contour);stroke-width:2;opacity:0}
+.mja-fuyard.alerte .mja-fuyard-ex{opacity:1;animation:b-pulse .4s infinite}
+.mja-fuyard.attrape .mja-fuyard-corps{animation:mja-attrape .6s ease-out forwards}
+@keyframes mja-attrape{to{transform:rotate(-12deg) translateY(4px)}}
+.mja-coureur-corps.bute{animation:b-tremble .25s}
+.mja-coureur.boost .mja-coureur-corps{filter:drop-shadow(0 0 8px var(--cyan))}
+/* la bulle qui dit quoi faire : jaune = saute, bleue = baisse-toi, orange = change de couloir */
+.mja-conseil{transition:opacity .15s}
+.mja-conseil-f{fill:#ffd36a;stroke:var(--contour);stroke-width:3.5}
+.mja-conseil.c-bas .mja-conseil-f{fill:#8ff3ff}
+.mja-conseil.c-cote .mja-conseil-f{fill:#ffb36b}
+.mja-conseil-t{fill:#14112a;font-size:19px;font-weight:800;font-family:var(--f-texte)}
+.mja-pad{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:space-between;padding:0 10px;pointer-events:none;z-index:3}
+.mja-pb{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:3px solid var(--contour);background:rgba(238,240,255,.16);color:#fff;font-size:1.5rem;line-height:1;display:grid;place-items:center;padding:0;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.mja-pb:active{background:rgba(143,243,255,.45);transform:translateY(2px)}
+.mja-pb[data-k="h"]{margin-left:auto;margin-right:8px}
+.mja-pb[data-k="b"]{margin-right:auto}
+
+/* ---------- Cachette ---------- */
+.mja-cachette{background:#1d2240}
+.mja-voile-nuit{fill:#0b1030;opacity:.32;pointer-events:none}
+.mja-cone{fill:#ffe39a;opacity:.38;transition:fill .2s}
+.mja-cone.alerte{fill:#ff6b6b;opacity:.45}
+.mja-garde .mja-alerte,.mja-garde .mja-doute{font-family:var(--f-titre);font-size:30px;stroke:var(--contour);stroke-width:2;opacity:0}
+.mja-garde .mja-alerte{fill:#ff5b6e}
+.mja-garde .mja-doute{fill:#ffd36a}
+.mja-garde.alerte .mja-alerte{opacity:1;animation:b-pulse .4s infinite}
+.mja-garde.doute:not(.alerte) .mja-doute{opacity:1;animation:b-pulse .5s infinite}
+.mja-lanterne{filter:drop-shadow(0 0 6px #ffd36a)}
+.mja-demo-anneau{fill:none;stroke:var(--cyan);stroke-width:3;stroke-dasharray:6 5;filter:drop-shadow(0 0 4px var(--cyan))}
+.mja-anneau{fill:none;stroke:transparent;stroke-width:4;pointer-events:none}
+.mja-anneau.on{stroke:var(--cyan);stroke-dasharray:7 6;animation:mja-tourne 3s linear infinite;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 4px var(--cyan))}
+.mja-anneau.on.sur{stroke:#7cf0a8;filter:drop-shadow(0 0 5px #7cf0a8)}
+.mja-anneau.on.danger{stroke:#ff8a6a;filter:none}
+@keyframes mja-tourne{to{transform:rotate(360deg)}}
+.mja-couvert.porte.ouverte{filter:drop-shadow(0 0 10px #ffd36a)}
+.mja-couvert.porte{filter:drop-shadow(0 0 6px rgba(255,211,106,.6))}
+.mja-joueur{transition:opacity .2s}
+.mja-joueur.cache{opacity:.8}
+.mja-joueur.invisible{opacity:.25}
+
+/* ---------- Tir à l'arc ---------- */
+.mja-tir{background:#1b2547}
+.mja-cible-art{transform-box:fill-box;transform-origin:center}
+.mja-cible-halo{fill:none;stroke:var(--cyan);stroke-width:3;stroke-dasharray:6 6;opacity:0;transition:opacity .15s}
+.mja-cible.visee .mja-cible-halo{opacity:1;filter:drop-shadow(0 0 6px var(--cyan))}
+.mja-cible.t-lanterne .mja-lant{filter:drop-shadow(0 0 10px rgba(255,211,106,.75))}
+.mja-cible.eteinte .mja-lant{filter:none}
+.mja-cible.eteinte .mja-lant-feu{opacity:0}
+.mja-lant-feu{transform-box:fill-box;transform-origin:bottom center;animation:mja-flamme .4s ease-in-out infinite alternate}
+.mja-fil{stroke:#c9c2e0;stroke-width:2.5;stroke-linecap:round}
+.mja-fil.corde{stroke:#d9b48a;stroke-width:3.6;stroke-dasharray:5 2}
+.mja-fil.corde.coupee{stroke-dasharray:none}
+.mja-tige{fill:none;stroke:#5e3a1e;stroke-width:4;stroke-linecap:round}
+.mja-butin{animation:b-flotte 1s ease-in-out infinite}
+.mja-cible.touchee .mja-butin{opacity:0}
+.mja-pt{fill:var(--cyan);filter:drop-shadow(0 0 3px var(--cyan))}
+.mja-trainee{fill:none;stroke:var(--cyan);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+.mja-jauge-arc{fill:none;stroke:var(--cyan);stroke-width:5;stroke-linecap:round;opacity:.75;transform:rotate(-90deg);filter:drop-shadow(0 0 4px var(--cyan))}
+.mja-jauge-arc.tremble{stroke:#ffb38a;animation:b-lueur .25s infinite}
+/* arc bandé à fond : la flèche transperce (jauge, aperçu et flèche dorés, « À fond ! ») */
+.mja-jauge-arc.fort{stroke:#ffd36a;stroke-width:7;opacity:1;filter:drop-shadow(0 0 6px #ffd36a)}
+.mja-apercu.fort .mja-pt{fill:#ffd36a;filter:drop-shadow(0 0 3px #ffd36a)}
+.mja-afond{font-family:var(--f-titre);font-size:17px;font-weight:700;fill:#ffe3a3;stroke:var(--contour);stroke-width:4;paint-order:stroke;stroke-linejoin:round;opacity:0;transition:opacity .12s;pointer-events:none}
+.mja-afond.on{opacity:1}
+.mja-fl-halo{display:none;fill:none;stroke:#ffd36a;stroke-width:9;stroke-linecap:round;opacity:.55}
+.mja-fl-vol.puissante .mja-fl-halo,.mja-fl-encoche.fort .mja-fl-halo{display:inline}
+.mja-trainee.puissante{stroke:#ffd36a;stroke-width:5;opacity:.8}
+.mja-flotte.perce{color:#ffe3a3;font-family:var(--f-titre);font-size:1.75rem;text-shadow:0 3px 0 var(--contour),0 0 14px rgba(255,211,106,.85);animation:mja-perce 1s ease-out forwards;z-index:6}
+@keyframes mja-perce{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}70%{opacity:1;transform:translate(-50%,-75%) scale(1)}100%{opacity:0;transform:translate(-50%,-110%) scale(1)}}
+.mja-corde-arc.vibre{animation:mja-vibre .25s}
+@keyframes mja-vibre{30%{transform:translateX(5px)}60%{transform:translateX(-3px)}}
+.mja-feuille{fill:#d79a3c;stroke:var(--contour);stroke-width:1;opacity:.85}
+.mja-manche{transform-box:fill-box;transform-origin:left center;animation:mja-manche .5s ease-in-out infinite alternate}
+@keyframes mja-manche{to{transform:skewY(5deg)}}
+.mja-ailes{transform-box:fill-box;transform-origin:center;animation:mja-ailes .22s ease-in-out infinite alternate}
+@keyframes mja-ailes{to{transform:scaleY(-.6)}}
+.mja-oiseau .mja-ailes{animation-duration:.12s}
+.mja-carquois{font-weight:700;font-size:1rem;white-space:nowrap}
+.mja-badge.large{width:auto;padding:0 12px;background:#2b2f55}
+.mja-tir.ralenti{filter:hue-rotate(-30deg) saturate(1.3)}
+.mja-tir.ralenti svg{animation:mja-ralenti 1s ease-in-out infinite alternate}
+@keyframes mja-ralenti{to{filter:drop-shadow(0 0 12px rgba(143,243,255,.5))}}
+
+/* ---------- Chaudron commun ---------- */
+.mja-liquide{fill:#7cc4ff;transition:fill .4s}
+.mja-liquide.brille{filter:drop-shadow(0 0 10px #fff)}
+.mja-liquide.eclabousse{animation:mja-eclabousse .4s}
+@keyframes mja-eclabousse{30%{transform:translateY(-6px)}}
+.mja-liquide.vide{animation:mja-vide .4s}
+@keyframes mja-vide{50%{opacity:.2}}
+.mja-tourbillon{transform-box:fill-box;transform-origin:center}
+.mja-tourbillon.remue{animation:mja-remue .7s ease-out}
+@keyframes mja-remue{to{transform:rotate(360deg) scaleX(1)}}
+.mja-bulle-ch{stroke:var(--contour);stroke-width:1.5;opacity:.9;animation:mja-bulle-monte 1.2s ease-out forwards}
+@keyframes mja-bulle-monte{to{transform:translateY(-70px);opacity:0}}
+.mja-feu .mja-flamme{transform-box:fill-box;transform-origin:bottom center;stroke:var(--contour);stroke-width:3;animation:mja-flamme .5s ease-in-out infinite alternate}
+.mja-flamme.f1{fill:#e8693c}
+.mja-flamme.f2{fill:#ffb03a;animation-delay:-.2s}
+.mja-flamme.f3{fill:#e8693c;animation-delay:-.35s}
+.mja-braises{fill:#a8391a;stroke:var(--contour);stroke-width:3}
+@keyframes mja-flamme{to{transform:scaleY(.82) scaleX(1.06)}}
+.mja-feu .mja-flamme{transition:transform .2s}
+.mja-feu.fort .mja-flamme{animation:mja-flamme-fort .18s ease-in-out infinite alternate}
+.mja-feu.emballe .mja-flamme{animation:mja-flamme-fort .1s ease-in-out infinite alternate;filter:drop-shadow(0 0 8px #ffb03a)}
+.mja-souffle{transition:opacity .3s}
+@keyframes mja-flamme-fort{from{transform:scaleY(1.45)}to{transform:scaleY(1.7) scaleX(1.1)}}
+.mja-vapeur path{fill:none;stroke:#dfe6ff;stroke-width:6;stroke-linecap:round;opacity:.18;animation:mja-vapeur 3s ease-in-out infinite}
+.mja-vapeur path:nth-child(2){animation-delay:-1.5s}
+@keyframes mja-vapeur{0%{transform:translateY(10px);opacity:0}50%{opacity:.25}100%{transform:translateY(-30px);opacity:0}}
+
+/* ---------- Rythme (la cuillère qui tourne) ---------- */
+.mja-rythme{background:radial-gradient(circle at 50% 50%,#2a2350,#141832 70%)}
+.mja-remous{animation:mja-tourne 9s linear infinite;transform-box:view-box;transform-origin:0 0}
+.mja-liq-dessus{transition:fill .3s}
+.mja-liq-dessus.flash{animation:mja-flash .35s ease-out}
+@keyframes mja-flash{30%{fill:#fff4c8}}
+.mja-liq-dessus.rouge{animation:mja-rougeL .45s ease-out}
+@keyframes mja-rougeL{30%{fill:#ff6b6b}}
+.mja-liq-dessus.brille{filter:drop-shadow(0 0 16px #fff)}
+.mja-goutte-arc{fill:none;stroke:#ffd36a;stroke-width:24;stroke-linecap:round;opacity:.75;filter:drop-shadow(0 0 6px rgba(255,211,106,.8))}
+.mja-goutte-r.poison .mja-goutte-arc{stroke:#7a3aa0;opacity:.7;filter:none}
+.mja-goutte-r.maintenant .mja-goutte-arc{stroke:#fff4c8;opacity:1;filter:drop-shadow(0 0 12px #ffd36a)}
+.mja-goutte-r.nait{animation:mja-nait .3s ease-out}
+@keyframes mja-nait{from{opacity:0}}
+.mja-cuillere{filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+.mja-giclee{stroke:var(--contour);stroke-width:1.5;animation:mja-giclee .55s ease-out forwards}
+@keyframes mja-giclee{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.mja-combo{fill:#ffe3a3;font-family:var(--f-titre);font-size:20px}
+
+/* ---------- Bulles ---------- */
+.mja-bulle{cursor:pointer}
+.mja-bulle-in{transform-box:fill-box;transform-origin:center;transition:transform .12s;opacity:.55}
+.mja-bulle .mja-halo{opacity:0;transition:opacity .12s}
+.mja-bulle.allume .mja-bulle-in{transform:scale(1.15);opacity:1}
+.mja-bulle.allume .mja-halo{opacity:.45}
+.mja-bulles:not(.montre) .mja-bulle-in{opacity:.85}
+.mja-bulle.indice .mja-halo{opacity:.25;animation:b-lueur 1s infinite}
+.mja-bulle.faux .mja-bulle-in{animation:b-tremble .4s}
+.mja-bulle-in{animation:mja-flotte-b 3s ease-in-out infinite}
+.mja-bulle:nth-child(odd) .mja-bulle-in{animation-delay:-1.4s}
+@keyframes mja-flotte-b{0%,100%{translate:0 0}50%{translate:0 -6px}}
+.mja-bulle-demo{transition:transform .12s;opacity:.6}
+.mja-bulle-demo.allume{opacity:1;filter:drop-shadow(0 0 8px #fff)}
+.mja-etat{font-size:1.6rem;min-width:40px;text-align:center}
+.mja-bulles.envers .mja-liquide{fill:#ff8fb3!important}
+.mja-bulles.envers .mja-etat{color:#ff8fb3;animation:b-pulse .8s infinite}
+
+/* ---------- Mélange ---------- */
+.mja-melange > svg{max-height:60%}
+.mja-pigments{display:flex;gap:14px;justify-content:center;padding:4px 10px}
+.mja-pig{width:68px;height:68px;border-radius:50%;border:4px solid var(--contour);background:radial-gradient(circle at 35% 30%,#fff 0 12%,var(--pc) 34%);background:radial-gradient(circle at 35% 30%,#fff 0 12%,var(--pc) 34%,color-mix(in srgb,var(--pc) 70%,#000) 100%);box-shadow:0 5px 0 rgba(0,0,0,.35);transition:transform .08s;padding:0}
+.mja-pig:active{transform:translateY(3px) scale(.95)}
+.mja-pig:disabled{opacity:.35}
+.mja-pig.indice{animation:b-pulse .8s infinite;box-shadow:0 0 0 4px var(--cyan),0 0 18px var(--cyan)}
+.mja-goutte{animation:mja-goutte .38s ease-in forwards}
+@keyframes mja-goutte{from{transform:translateY(0)}to{transform:translateY(118px)}}
+.mja-recette{fill:var(--or-pale);font-size:14px;font-weight:700}
+.mja-jauge-v{fill:#8a9ac6;transition:width .3s}
+.mja-jauge-v.chaud{fill:#7cf0a8}
+.mja-jauge-t{fill:var(--brume);font-size:13px;letter-spacing:.05em}
+.mja-melange .mja-tourbillon.remue{animation:mja-remue .7s ease-out}
+
+/* ---------- Température ---------- */
+.mja-zone-v{fill:#4fbf6a;opacity:.85;transition:y .8s,opacity .3s}
+.mja-rouge{fill:#e5484d;opacity:.6}
+.mja-colonne{fill:#e8693c}
+.mja-aiguille{fill:#eef0ff;stroke:var(--contour);stroke-width:3}
+.mja-aiguille.lache{fill:#8ff3ff;animation:b-lueur .3s infinite}
+.mja-cercle-v{transition:stroke-dasharray .1s}
+.mja-cercle-t{fill:var(--lune);font-size:22px;font-weight:700;font-family:var(--f-texte)}
+.mja-temperature[data-etat="chaud"] .mja-vapeur path{opacity:.6;stroke:#ffd0c0}
+.mja-temperature[data-etat="bon"] .mja-cercle-v{filter:drop-shadow(0 0 6px #4fbf6a)}
+.mja-chauffer{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.mja-chauffer.presse{transform:translateY(3px);box-shadow:0 1px 0 var(--braise-sombre),0 0 24px rgba(232,105,60,.7)}
+
+/* ---------- Loupe ---------- */
+.mja-images{flex:1;display:flex;flex-direction:column;gap:8px;padding:8px;min-height:0}
+.mja-images.cote{flex-direction:row}
+.mja-image{flex:1;min-height:0;min-width:0;border-radius:14px;overflow:hidden;border:3px solid var(--contour);background:#262050;display:flex}
+.mja-image svg{width:100%;height:100%;display:block}
+.mja-rond{fill:none;stroke:var(--cyan);stroke-width:4;filter:drop-shadow(0 0 4px var(--cyan));animation:mja-rond .4s ease-out}
+.mja-rond.manque{stroke:#ff8a6a;stroke-dasharray:6 5;filter:none}
+@keyframes mja-rond{from{r:4;opacity:0}}
+.mja-scintille{fill:#fff;opacity:.06;animation:mja-scint 1.6s ease-in-out infinite}
+@keyframes mja-scint{0%,100%{opacity:.03}50%{opacity:.16}}
+.mja-indice-rond{fill:none;stroke:#ffe3a3;stroke-width:5;stroke-dasharray:8 6;animation:b-lueur .5s infinite}
+.mja-croix{fill:#ff8a6a;font-size:26px;font-weight:700;stroke:var(--contour);stroke-width:1.5}
+.mja-nuit{fill:#07081a;opacity:.94;pointer-events:none;transition:opacity .4s}
+.mja-loupe:not(.de-nuit) .mja-nuit,.mja-loupe:not(.de-nuit) .mja-lentille{opacity:0}
+.mja-lentille{stroke:#8ff3ff;stroke-width:3;pointer-events:none;filter:drop-shadow(0 0 6px var(--cyan))}
+.mja-loupe.de-nuit .mja-image{cursor:none}
+.mja-obj.o-bougie path[fill="#ffb03a"]{transform-box:fill-box;transform-origin:bottom center;animation:mja-flamme .35s ease-in-out infinite alternate}
+.mja-obj.o-cristal{animation:mja-cristal 2.4s ease-in-out infinite}
+@keyframes mja-cristal{50%{filter:drop-shadow(0 0 5px rgba(143,243,255,.8))}}
+.mja-etoile{animation:b-lueur 3s ease-in-out infinite}
+/* Suivre la piste en ville (Romain, 6 novembre) : les pavés, la fumée des cheminées, l'eau des fontaines */
+.mja-traces-ville{background:#8c8173}
+.mja-traces-ville .mja-vision-sol{fill:#fffaf0;opacity:.2}
+.mjv-fumee{animation:mjv-fumee 4s ease-out infinite;transform-box:fill-box}
+@keyframes mjv-fumee{0%{opacity:0;transform:translate(0,4px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(10px,-14px) scale(1.25)}}
+.mjv-rond{animation:mjv-rond 2.2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes mjv-rond{from{transform:scale(.4);opacity:.8}to{transform:scale(1.35);opacity:0}}
+@media (prefers-reduced-motion: reduce){.mjv-fumee,.mjv-rond{animation:none}}

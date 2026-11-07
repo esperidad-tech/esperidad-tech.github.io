@@ -1,0 +1,21 @@
+import os
+from playwright.sync_api import sync_playwright
+ICI = os.path.dirname(os.path.abspath(__file__))
+URL = 'file://' + os.path.join(os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist')), 'index.html')
+OUT = os.path.join(ICI, '..', 'test', 'integ')
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    pg = b.new_context(viewport={'width': 390, 'height': 844}).new_page(); pg.set_default_timeout(6000)
+    errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.goto(URL)
+    pg.click('[data-act=creer]'); pg.click('[data-act=crea-role][data-r=pisteur]'); pg.click('[data-act=crea-suite]')
+    pg.fill('#nom', 'Naim'); pg.click('[data-act=crea-fin]')
+    pg.click('[data-act=ecran][data-e=reglages]'); pg.click('[data-act=mode-test][data-i="3"]'); pg.click('#voile [data-act=confirmer-oui]')
+    pg.click('[data-act=nouvelle-enquete]'); pg.click('[data-act=commencer]')
+    pg.evaluate("() => { var P = M.P(); P.moment = 3; P.actions = 2; P.potions.lumiere = 1; M.render(); MJ.lancer = function(el, t, pa, fin){ setTimeout(function(){ fin({reussi:true, essais:1}); }, 30); return {arreter:function(){}}; }; }")
+    pg.click('[data-act=onglet][data-o=carte]'); pg.click('#carte-ici g.ca-lieu[data-lieu=moulin] .ca-etiq-lieu'); pg.click('#voile [data-act=explorer]')
+    pg.click('#voile [data-act=point][data-id=guet]'); pg.wait_for_timeout(200); pg.screenshot(path=f'{OUT}/guet-besoin.png')
+    pg.click('#voile [data-act=boire][data-id=lumiere]'); pg.wait_for_timeout(200); pg.screenshot(path=f'{OUT}/guet-apres-boire.png')
+    pg.click('#voile [data-act=point][data-id=guet]'); pg.wait_for_timeout(400); pg.screenshot(path=f'{OUT}/guet-ok.png')
+    print(pg.evaluate("() => M.P().vus['pisteur:moulin:guet']"), errs)
+    b.close()

@@ -1,0 +1,752 @@
+/* ==========================================================
+   Brumeval v2 — styles du moteur (écrans, fenêtres, jeu)
+   ========================================================== */
+body{background:radial-gradient(120% 70% at 50% -10%, #2a3570 0%, var(--nuit) 55%) fixed, var(--nuit)}
+body.b-bloque{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:30;background:var(--nuit-2)}
+.b-ciel{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6;
+  background-image:radial-gradient(1.4px 1.4px at 22px 34px,var(--lune),transparent),radial-gradient(1px 1px at 140px 86px,var(--lune),transparent),
+  radial-gradient(1.2px 1.2px at 200px 20px,var(--or-pale),transparent),radial-gradient(1px 1px at 80px 160px,var(--lune),transparent),
+  radial-gradient(1.6px 1.6px at 180px 200px,var(--lune),transparent),radial-gradient(1px 1px at 40px 220px,var(--brume),transparent);background-size:240px 240px}
+.b-brume{position:fixed;left:-20%;right:-20%;bottom:-40px;height:220px;z-index:0;pointer-events:none;opacity:.35;
+  background:radial-gradient(40% 60% at 30% 70%, rgba(166,174,216,.5), transparent 70%), radial-gradient(35% 50% at 75% 60%, rgba(166,174,216,.35), transparent 70%);
+  animation:b-brume 22s ease-in-out infinite alternate}
+@keyframes b-brume{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+#app{position:relative;z-index:1;min-height:100%}
+.b-page{width:100%;max-width:880px;margin:0 auto;padding-block:16px 120px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:16px;animation:b-apparait .35s ease-out}
+.b-carte-verre{background:rgba(28,36,71,.82);border:1px solid var(--trait);border-radius:var(--r-3);padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--ombre)}
+.b-rangee{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.b-rangee.centre{justify-content:center}
+.b-bas{display:flex;justify-content:center;padding-top:6px}
+.b-lire{border:0;background:rgba(238,240,255,.12);border-radius:999px;min-width:40px;height:36px;font-size:1rem;vertical-align:middle;margin-left:4px;flex:none}
+.parchemin .b-lire{background:rgba(53,40,27,.12)}
+.b-ic{font-size:1.6rem;line-height:1;flex:none;width:36px;text-align:center}
+.b-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.b-liste li{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.18);border-radius:12px;padding:10px 12px}
+.b-liste p{font-size:.92rem;color:var(--brume)}
+.b-emoji-heros{font-size:5rem;text-align:center}
+.b-emoji-pnj{font-size:2.4rem;display:grid;place-items:center;width:100%;height:100%}
+.puce{border-radius:999px;border:2px solid var(--trait);background:rgba(0,0,0,.15);padding:8px 16px;font-weight:700;min-height:44px}
+.puce.on{border-color:var(--or);background:rgba(245,185,69,.18);color:var(--or-pale)}
+
+/* Titre */
+.b-titre{display:flex;align-items:center;gap:14px;padding-top:8px}
+.b-titre h1{font-size:clamp(1.8rem,6vw,2.7rem)}
+.b-lanterne{width:72px;flex:none;overflow:visible}
+.b-halo{animation:b-lueur 3s ease-in-out infinite}
+.b-flamme{transform-origin:40px 60px;transform-box:view-box;animation:b-flamme 1.2s ease-in-out infinite alternate}
+@keyframes b-flamme{from{transform:scale(1,1)}to{transform:scale(.86,1.12)}}
+.b-grand-texte{font-size:1.15rem}
+.b-quatre{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.b-quatre-h{display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:16px;padding:6px;background:radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%);animation:b-apparait .6s ease-out both}
+.b-quatre-h svg{width:100%;height:auto}
+.b-quatre-h b{font-family:var(--f-titre);font-weight:400;color:var(--or-pale)}
+
+/* Qui joue */
+.b-qui{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.b-qui-h{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px;border-radius:18px;border:2px solid var(--trait);background:var(--nuit-3)}
+.b-qui-h.nouveau{border-style:dashed}
+.b-qui-portrait{width:96px;height:96px;border-radius:50%;overflow:hidden;background:var(--nuit-2);display:grid;place-items:center;font-size:2.4rem}
+.b-qui-portrait svg{width:100%;height:100%}
+.b-qui-h b{font-family:var(--f-titre);font-weight:400;font-size:1.2rem;color:var(--or-pale)}
+.b-qui-h span{font-size:.85rem;color:var(--brume)}
+
+/* Hub */
+.b-hub{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:640px){.b-hub{grid-template-columns:1fr}}
+.b-hub-heros{display:flex;flex-direction:column;align-items:stretch;padding:0;border-radius:var(--r-3);overflow:hidden;border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));background:var(--nuit-2);text-align:left}
+.b-hub-portrait svg{width:100%;height:auto;display:block;max-height:52vh}
+.b-hub-info{display:flex;flex-direction:column;gap:6px;padding:12px 16px 16px}
+.b-hub-info b{font-family:var(--f-titre);font-weight:400;font-size:1.6rem;color:var(--or-pale)}
+.b-hub-info span{color:var(--brume)}
+.b-hub-actions{display:flex;flex-direction:column;gap:12px}
+.b-xp{height:12px;border-radius:99px;background:rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--trait)}
+.b-xp.grand{height:18px}
+.b-xp i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan-2),var(--cyan));box-shadow:0 0 12px var(--cyan);border-radius:99px;transition:width 1s}
+.b-or{font-weight:700;color:var(--or)}
+.b-alerte{color:var(--or-pale)!important;font-weight:700;animation:b-pulse 1.4s infinite}
+.b-pied{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding-top:10px}
+
+/* Barre de titre */
+.b-barre{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.b-barre h2{text-align:center;flex:1}
+.b-etapes{display:flex;gap:6px}
+.b-etapes i{width:12px;height:12px;border-radius:50%;background:var(--trait)}
+.b-etapes i.on{background:var(--or)}
+.b-consigne{font-size:1.1rem;text-align:center}
+
+/* Création */
+.b-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.b-role{display:flex;gap:10px;align-items:center;padding:10px;border-radius:20px;border:2px solid var(--trait);background:var(--nuit-2);text-align:left;transition:transform .15s}
+.b-role.choisi{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent), 0 0 30px color-mix(in srgb, var(--c) 35%, transparent);transform:scale(1.02)}
+.b-role-img{width:110px;flex:none;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%)}
+.b-role-img svg{width:100%;height:auto;display:block}
+.b-role-txt b{font-family:var(--f-titre);font-weight:400;font-size:1.3rem;color:var(--or-pale);display:block}
+.b-role-txt p{font-size:.9rem;color:var(--brume)}
+.b-tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--c);font-weight:700}
+.b-crea-grille{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+@media (max-width:700px){.b-crea-grille{grid-template-columns:1fr}}
+.b-crea-apercu{position:sticky;top:8px;display:flex;flex-direction:column;align-items:center;gap:8px;border-radius:var(--r-3);overflow:hidden;background:var(--nuit-2);border:1px solid var(--trait);padding-bottom:10px;z-index:2}
+@media (max-width:700px){.b-crea-apercu{position:relative}.b-crea-apercu svg{max-height:46vh}}
+.b-crea-apercu svg{width:100%;height:auto;display:block}
+.b-crea-apercu.petit{max-width:240px;margin:0 auto}
+.b-crea-options{display:flex;flex-direction:column;gap:14px}
+.b-opt{display:flex;flex-direction:column;gap:6px}
+.b-etiquette{font-weight:700;color:var(--brume);font-size:.95rem}
+.b-opt-l{display:flex;flex-wrap:wrap;gap:8px}
+.b-pastille{width:44px;height:44px;border-radius:50%;border:3px solid var(--trait);background:var(--p);box-shadow:inset 0 -6px 10px rgba(0,0,0,.25)}
+.b-pastille.on{border-color:var(--or);box-shadow:0 0 0 3px rgba(245,185,69,.35), inset 0 -6px 10px rgba(0,0,0,.25)}
+.b-crea-nom{display:flex;flex-direction:column;gap:12px;align-items:stretch;max-width:520px;margin:0 auto;width:100%}
+.b-champ{width:100%;font:inherit;font-size:1.3rem;padding:14px 16px;border-radius:14px;border:2px solid var(--trait);background:var(--nuit);color:var(--lune)}
+.b-suggestions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Fiche */
+.b-fiche-grille{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+@media (max-width:700px){.b-fiche-grille{grid-template-columns:1fr}}
+.b-fiche-portrait{border-radius:var(--r-3);overflow:hidden;border:2px solid color-mix(in srgb, var(--c) 50%, var(--trait))}
+.b-fiche-portrait svg{width:100%;height:auto;display:block}
+.b-fiche-infos{display:flex;flex-direction:column;gap:10px}
+.b-ingr{display:flex;flex-wrap:wrap;gap:8px}
+.b-puce-ingr{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--trait);border-radius:999px;padding:4px 12px;font-size:.9rem;background:var(--nuit-3)}
+
+/* Boutique */
+.b-boutique-haut{display:flex;gap:12px;align-items:center}
+.b-marchand{width:96px;height:96px;flex:none;border-radius:50%;overflow:hidden;background:var(--nuit-3);display:grid;place-items:center;font-size:3rem;border:2px solid var(--or)}
+.b-marchand svg{width:100%;height:100%}
+.b-bulle{position:relative;background:var(--parchemin);color:var(--encre);border-radius:16px;padding:12px 14px;font-size:.98rem}
+.b-paliers{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.b-paliers button{flex:1;min-width:92px;border-radius:14px;border:2px solid var(--trait);background:var(--nuit-2);padding:10px 8px;font-weight:700}
+.b-paliers button.on{border-color:var(--or);background:rgba(245,185,69,.15);color:var(--or-pale)}
+.b-paliers button.ferme{opacity:.6}
+.b-objets{display:flex;flex-direction:column;gap:10px}
+.b-objet{display:flex;gap:12px;align-items:center;background:var(--nuit-2);border:1px solid var(--trait);border-radius:18px;padding:12px;animation:b-apparait .3s ease-out both}
+.b-objet.possede{border-color:var(--mousse);background:rgba(124,196,147,.08)}
+.b-objet-ic{font-size:2.3rem;width:52px;height:52px;display:grid;place-items:center;flex:none;border-radius:14px;background:radial-gradient(circle, rgba(143,243,255,.18), transparent 70%)}
+.b-objet-txt{flex:1;min-width:0}
+.b-objet-txt b{display:block}
+.b-objet-txt p{font-size:.9rem;color:var(--brume)}
+.b-ens{font-size:.8rem;color:var(--or)}
+.b-possede{color:var(--mousse);font-weight:700}
+.b-sous-titre{margin-top:10px}
+
+/* Réglages */
+.b-interr{display:flex;align-items:center;gap:10px;font-weight:700;min-height:44px}
+.b-interr input{width:26px;height:26px;accent-color:var(--or)}
+
+/* ---------- Écran de jeu ---------- */
+/* Le bandeau du haut et les onglets du bas sont fixes : seul l'intérieur défile, même quand on tire vers le bas (Romain, 3 novembre).
+   --h-entete : la hauteur du bandeau, mesurée à chaque rendu (moteur-actions.js), pour que rien ne passe dessous. */
+.b-jeu{min-height:100vh;display:flex;flex-direction:column;padding-top:var(--h-entete, 66px);--c:var(--or)}
+.b-entete{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:8px;padding-top:calc(6px + env(safe-area-inset-top, 0px));padding-bottom:6px;padding-left:max(12px, env(safe-area-inset-left, 0px));padding-right:max(12px, env(safe-area-inset-right, 0px));
+  background:linear-gradient(180deg, rgba(28,36,71,.97), rgba(28,36,71,.92));border-bottom:2px solid color-mix(in srgb, var(--c) 50%, var(--trait));backdrop-filter:blur(4px)}
+.b-et-heros{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--c);background:var(--nuit-3);padding:0;flex:none}
+.b-et-heros svg{width:100%;height:100%}
+/* l'accueil du tout début (M.debutant) : la carte du héros n'est pas un bouton ; le bouton à toucher brille */
+.b-hub-fixe{cursor:default}
+.b-guide{position:relative}
+/* Le cadre jaune, le même partout (Romain, 5 novembre, 21 h 46 : « plus qu'une seule version, la version animée ») : exactement le rond
+   du tutoriel (tuto.css : .tu-anneau, .tu-onde) — l'anneau, 7 px autour, qui pulse, et l'onde qui part de lui. Sur ce qui brille pour
+   dire « touche ici » hors du tutoriel : les boutons du village, de la lettre, de la fin, du Grand Livre ; les talents à choisir.
+   Quand le rond du tutoriel est déjà dessus (.tu-vise, tuto.js), il n'y en a qu'un. */
+.b-guide::before,.hr-talent.hr-dispo::before{content:'';position:absolute;inset:-7px;border-radius:18px;border:4px solid #ffd23f;box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75), inset 0 0 12px rgba(255,210,63,.5);animation:tu-pulse 1.3s ease-in-out infinite;pointer-events:none}
+.b-guide::after,.hr-talent.hr-dispo::after{content:'';position:absolute;inset:-7px;border-radius:18px;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none}
+@keyframes b-jaune-pouls{0%,100%{box-shadow:0 0 0 3px rgba(255,211,106,.65), 0 0 12px rgba(255,211,106,.45)}50%{box-shadow:0 0 0 6px rgba(255,211,106,.9), 0 0 26px 6px rgba(255,210,63,.7)}}
+.tu-vise.b-guide::before,.tu-vise.b-guide::after,.tu-vise.hr-dispo::before,.tu-vise.hr-dispo::after{display:none}
+
+.b-et-info{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.08}
+.b-et-info b{font-family:var(--f-titre);font-weight:400;font-size:1.1rem;color:var(--or-pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b-et-info span{font-size:.8rem;color:var(--brume)}
+.b-et-info span.b-et-enq{font-size:.74rem;font-weight:700;color:var(--or-pale);opacity:.9;white-space:nowrap}
+.b-et-moment{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;border-radius:12px;background:rgba(0,0,0,.25)}
+.b-et-m{font-weight:700;font-size:.9rem;white-space:nowrap}
+.b-pips{display:flex;gap:4px}
+.b-pips i{width:13px;height:13px;border-radius:50%;border:2px solid var(--or);background:transparent}
+.b-pips i.plein{background:var(--or);box-shadow:0 0 8px var(--or)}
+.b-et-btn{width:46px;height:46px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.3rem;flex:none}
+.b-contenu{flex:1;width:100%;max-width:900px;margin:0 auto;padding-block:12px 110px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));animation:b-apparait .3s ease-out}
+.b-onglets{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(19,25,50,.97);border-top:2px solid var(--trait);padding-bottom:env(safe-area-inset-bottom, 0px);padding-left:env(safe-area-inset-left, 0px);padding-right:env(safe-area-inset-right, 0px)}
+.b-onglets button{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;border:0;background:transparent;padding:8px 2px 10px;min-height:64px}
+.b-onglets span{font-size:1.6rem;line-height:1.1;transition:transform .15s}
+.b-onglets b{font-size:.78rem;color:var(--brume)}
+.b-onglets button.on b{color:var(--or-pale)}
+.b-onglets button.on span{transform:scale(1.18) translateY(-2px);filter:drop-shadow(0 0 8px var(--c))}
+.b-onglets button.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 4px 4px;background:var(--c)}
+.b-onglets i{position:absolute;top:4px;right:calc(50% - 26px);min-width:20px;height:20px;border-radius:99px;background:var(--braise);color:#fff;font-size:.72rem;font-style:normal;font-weight:700;display:grid;place-items:center;padding:0 5px}
+
+/* Ambiance des moments */
+.b-jeu.moment-matin{background:linear-gradient(180deg, rgba(255,170,150,.08), transparent 40%)}
+.b-jeu.moment-soir{background:linear-gradient(180deg, rgba(232,105,60,.10), transparent 40%)}
+.b-jeu.moment-nuit{background:linear-gradient(180deg, rgba(10,14,40,.5), transparent 60%)}
+
+/* Carte */
+.b-carte-boite{border-radius:var(--r-3);overflow:hidden;border:2px solid var(--trait);box-shadow:var(--ombre);background:var(--nuit-2)}
+.b-carte-boite svg{width:100%;height:auto;display:block}
+.b-aide-carte{font-size:.92rem;color:var(--brume);text-align:center;margin:10px 0}
+.b-lieux-liste{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.b-lieu-chip{border-radius:999px;border:2px solid var(--trait);background:var(--nuit-2);padding:8px 14px;font-weight:700;min-height:44px}
+.b-lieu-chip.nouveau{border-color:var(--c);box-shadow:0 0 12px color-mix(in srgb, var(--c) 40%, transparent)}
+.b-lieu-chip.verrou{opacity:.7}
+
+/* Lettre */
+.b-lettre{position:relative;padding-top:24px;display:flex;flex-direction:column;gap:12px;font-size:1.08rem}
+.b-lettre-maire{float:right;width:96px;height:96px;margin:-8px -4px 6px 10px;border-radius:50%;overflow:hidden;border:3px solid var(--encre-2);background:#e9d8b0}
+.b-lettre-maire svg{width:100%;height:100%}
+.b-lettre-date{font-style:italic;color:var(--encre-2);font-size:.92rem}
+.b-signature{font-family:var(--f-main);font-size:1.6rem;text-align:right}
+.b-mission{border-color:var(--c)}
+.b-regles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.b-regles li{display:flex;gap:10px;align-items:center}
+.b-regles span{flex:none;width:44px;text-align:center;font-size:1.2rem}
+
+/* Fenêtres */
+#voile{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+#voile[hidden]{display:none}
+.b-fond{position:absolute;inset:0;background:rgba(8,10,25,.72);animation:b-fondu .2s ease-out}
+@keyframes b-fondu{from{opacity:0}to{opacity:1}}
+.b-feuille{position:relative;width:100%;max-width:720px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--nuit-2);border:1px solid var(--trait);border-radius:24px 24px 0 0;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:b-monte .28s cubic-bezier(.2,.9,.3,1.1);box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+@media (min-width:760px){#voile{align-items:center}.b-feuille{border-radius:24px;max-height:88vh}}
+@keyframes b-monte{from{transform:translateY(60px)}to{transform:none}}
+/* une fenêtre qui en remplace une autre (le fond sombre reste) : elle se fond, sans remonter ; la même fenêtre redessinée ne bouge pas */
+.b-feuille.b-feuille-suite{animation:b-suite .2s ease-out}
+.b-feuille.b-feuille-meme{animation:none}
+.b-feuille.b-feuille-meme .b-point{animation:none}
+.b-feuille.b-feuille-meme .b-point:not(:disabled):not(.vu){animation:b-respire 2.4s ease-in-out infinite}
+@keyframes b-suite{from{opacity:.25}to{opacity:1}}
+.b-fermer{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.2rem;z-index:2}
+/* La bulle de la carte (Romain, 5 novembre, 10 h 07) : posée sur la carte, à côté de ce qu'on a touché, sans fond noir ;
+   la carte reste touchable autour (moteur-actions.js, placerBulle) */
+#voile.b-voile-bulle{pointer-events:none;display:block}
+/* Romain, 10 h 17 puis 10 h 25 : plus de cadre du tout. Chaque chose est sa propre petite pastille posée sur la carte (un villageois,
+   un bouton, une phrase) ; entre les pastilles, on touche la carte. Le cadre qui les porte est invisible et ne se touche pas. */
+/* (le cadre invisible a une marge de 16 px tout autour : les pastilles qui grossissent en rebondissant, et leurs ombres, ne sont jamais coupées
+   — Romain, 11 h 08 ; placerBulle en tient compte) */
+#voile.b-voile-bulle .b-feuille.b-bulle{pointer-events:none;position:fixed;left:8px;top:80px;width:max-content;max-width:min(282px, calc(100vw + 16px));max-height:min(52vh, 380px);
+  background:none;border:0;border-radius:0;box-shadow:none;padding:16px;gap:4px;box-sizing:border-box;align-items:flex-start;color:var(--lune);font-size:.8rem;animation:b-bulle-arrive .14s ease-out;overflow-y:auto;scrollbar-width:none}
+/* (Romain, 5 novembre, 17 h 01 : « ça fait sauter l'image ») une bulle redessinée (on a touché un de ses boutons) ne rejoue pas son arrivée ;
+   et son arrivée a son propre nom : « b-bulle » était aussi celui des bulles du chaudron, plus bas, qui montent et s'effacent — la bulle de la
+   carte sautait de 26 px et disparaissait à chaque toucher */
+#voile.b-voile-bulle .b-feuille.b-bulle:not(.b-bulle-neuve){animation:none}
+.b-bulle-pointe{display:none}
+@keyframes b-bulle-arrive{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* ce qui n'est pas l'essentiel : caché (le nom du lieu est déjà écrit sur la carte ; Romain, 10 h 32 : pas de 🔊 dans les pastilles,
+   la mission bonus réduite à « ✨ Mission bonus · Tenter », sans « D'accord » : toucher ailleurs ferme) */
+.b-bulle .b-feuille-tete, .b-bulle .b-teaser, .b-bulle .sur-titre, .b-bulle .doux.petit, .b-bulle .b-ce-que-je-sais > p, .b-bulle .b-bonus > p, .b-bulle .b-lire, .b-bulle .b-long,
+.b-bulle .b-gens-carte:not(.bd-occupe) > small:not(.bd-boude-mini), .b-bulle .b-maison-hab small, .b-bulle .b-info-modal .b-grand-ic, .b-bulle .b-info-modal .b-illu, .b-bulle .b-info-modal h2,
+.b-bulle .b-info-modal > .btn, .b-bulle .b-echantillon > h3, .b-bulle .b-intro-lieu, .b-bulle .b-ecoute > h3, .b-bulle .b-ecoute > p, .b-bulle .b-ecoute .bd-mini-gens,
+.b-bulle .bd-occupe > b{display:none}
+/* les cadres qui regroupent : invisibles, ils ne se touchent pas */
+.b-bulle .b-gens, .b-bulle .b-ce-que-je-sais, .b-bulle .b-info-modal, .b-bulle .b-verrou, .b-bulle .b-points, .b-bulle .b-ecoute{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:0;padding:0;margin:0;box-shadow:none;pointer-events:none}
+/* LA PASTILLE : le bleu du jeu (Romain, 10 h 32), un contour foncé, toute ronde, une ombre ; elle seule se touche.
+   (moteur-actions.js lui donne la classe .b-pastille et son rang --i : elles apparaissent l'une après l'autre, en rebondissant) */
+.b-bulle .b-gens-carte, .b-bulle > .btn, .b-bulle .b-ce-que-je-sais > .btn, .b-bulle .b-bonus, .b-bulle .b-ecoute > .btn, .b-bulle > p, .b-bulle .b-maison-hab, .b-bulle .b-info-modal > p,
+.b-bulle .b-verrou > *, .b-bulle .b-point, .b-bulle .b-ingr-carte, #voile.b-voile-bulle .b-fermer{
+  pointer-events:auto;position:relative;display:flex;flex-direction:row;align-items:center;gap:5px;width:max-content;max-width:100%;box-sizing:border-box;margin:0;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:999px;padding:3px 10px;min-height:30px;font-size:.8rem;line-height:1.25;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);animation:none}
+.b-bulle > p, .b-bulle .b-info-modal > p, .b-bulle .b-verrou > p, .b-bulle .bd-occupe{border-radius:15px;width:auto}   /* (une phrase sur deux lignes : des coins arrondis) */
+.b-bulle .b-bonus{padding:2px 3px 2px 10px}
+.b-bulle .b-bonus h3{flex-basis:auto}
+/* elles arrivent l'une après l'autre, en rebondissant (seulement quand la bulle s'ouvre, pas à chaque rendu) */
+.b-bulle-neuve .b-pastille{animation:b-pastille .5s cubic-bezier(.3,1.65,.5,1) both;animation-delay:calc(var(--i, 0) * 70ms)}
+@keyframes b-pastille{0%{opacity:0;transform:translateY(10px) scale(.4)}55%{opacity:1;transform:translateY(-3px) scale(1.1)}78%{transform:translateY(1px) scale(.96)}100%{opacity:1;transform:none}}
+/* un bouton : la même pastille, en jaune (les boutons qui lancent quelque chose sont jaunes, texte noir) */
+.b-bulle .btn{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;font-weight:800;font-size:.8rem;min-height:28px;padding:3px 12px;gap:4px}
+.b-bulle .btn.second{background:var(--nuit-3);color:var(--lune)}
+.b-bulle .b-ecoute > .btn:not(.second){background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111}   /* (remplir un flacon, écouter en cachette : jaunes aussi) */
+/* une icône jaune sur un bouton jaune (le panier 🧺) : un fin contour foncé pour qu'on la voie (Romain, 10 h 45) */
+.b-ic-contour{display:inline-block;filter:drop-shadow(1px 0 0 #24182e) drop-shadow(-1px 0 0 #24182e) drop-shadow(0 1px 0 #24182e) drop-shadow(0 -1px 0 #24182e)}
+/* un villageois : son petit visage, son nom, 💬 Parler ; toute la pastille se touche (le bouton la recouvre) */
+.b-bulle .b-gens-carte{padding:2px 4px 2px 2px;gap:6px;text-align:left}
+.b-bulle .b-gens-img, .b-bulle .b-maison-hab .b-gens-img{width:28px;height:28px;border-width:1.5px;flex:none}
+.b-bulle .b-maison-hab{padding:2px 10px 2px 2px}
+.b-bulle .b-maison-hab b{font-size:.8rem}
+.b-bulle .b-maison-mini{border-radius:15px;padding:2px 10px 2px 2px;max-width:230px}
+.b-bulle .b-gens-carte > b{font-size:.8rem;color:inherit}
+.b-bulle .b-gens-carte > .btn{position:static;min-height:24px;padding:2px 9px;border:1.5px solid #24182e;box-shadow:none;font-size:.74rem}
+.b-bulle .b-gens-carte > .btn::after{content:'';position:absolute;inset:0;border-radius:inherit}
+.b-bulle .bd-occupe{padding:2px 10px 2px 2px;max-width:240px}   /* (occupé : son visage et sa phrase, sans son nom) */
+.b-bulle .bd-occupe > small{flex:1;color:var(--lune);font-size:.76rem;line-height:1.25}
+/* les textes, en petit */
+.b-bulle p, .b-bulle small, .b-bulle .doux{margin:0;color:inherit}
+.b-bulle h3{font-size:.8rem;margin:0;color:inherit;font-family:inherit;flex-basis:100%}
+/* la mission bonus : « ✨ Mission bonus », Tenter */
+.b-bulle .b-bonus > .btn, .b-bulle .b-ecoute > .btn{min-height:24px;padding:2px 10px;border:1.5px solid #24182e;box-shadow:none}
+/* ce que le Pisteur trouve en explorant, les ingrédients : des pastilles aussi */
+.b-bulle .b-point{flex-direction:row}
+.b-bulle .b-point-ic{font-size:.95rem}
+.b-bulle .b-point b{font-size:.76rem}
+.b-bulle .b-point small{display:none}
+.b-bulle .b-ingr-carte span{font-size:.95rem;animation:none}
+/* ✕ : une toute petite pastille ronde et jaune (c'est un bouton), à la fin */
+#voile.b-voile-bulle .b-fermer{order:99;width:28px;height:28px;min-height:0;padding:0;justify-content:center;font-size:.72rem;font-weight:900;top:auto;right:auto;
+  background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;border-color:#24182e}
+.b-feuille-tete{display:flex;gap:12px;align-items:center;padding-right:44px}
+.b-feuille-ic{font-size:2.4rem}
+.b-verrou{background:rgba(0,0,0,.25);border:2px dashed var(--braise);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.b-besoin{background:rgba(143,243,255,.06);border:1px solid rgba(143,243,255,.3);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.b-besoin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.b-besoin li{display:flex;gap:8px}
+.b-teaser{font-style:italic;color:var(--brume)}
+.b-intro-lieu{font-size:1.02rem}
+.b-points{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.b-point{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border-radius:18px;border:2px solid var(--c);background:radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 18%, transparent), var(--nuit-3));min-height:120px;animation:b-apparait .3s ease-out both}
+.b-point:not(:disabled):not(.vu){animation:b-apparait .3s ease-out both, b-respire 2.4s ease-in-out .3s infinite}
+@keyframes b-respire{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--c) 0%, transparent)}50%{box-shadow:0 0 18px 2px color-mix(in srgb, var(--c) 45%, transparent)}}
+.b-point.vu{border-color:var(--trait);opacity:.75}
+.b-point.rate{border-style:dashed;border-color:var(--braise)}
+.b-point:disabled{opacity:.45}
+.b-point-ic{font-size:2.2rem}
+.b-point b{font-size:.95rem;text-align:center}
+.b-point small{font-size:.78rem;color:var(--brume)}
+.b-plus-action{color:var(--or-pale);font-weight:700;text-align:center}
+.b-bonus{border:2px solid var(--or);border-radius:18px;padding:14px;background:radial-gradient(circle at 50% 0%, rgba(245,185,69,.18), transparent 70%);display:flex;flex-direction:column;gap:8px}
+.b-bonus-gain{font-weight:700;color:var(--or-pale)}
+.b-gens{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.b-gens-carte{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:18px;background:var(--nuit-3);border:1px solid var(--trait);text-align:center}
+.b-gens-img{width:84px;height:84px;border-radius:50%;overflow:hidden;background:var(--nuit-2);border:2px solid var(--c)}
+.b-gens-img svg{width:100%;height:100%}
+.b-gens-carte small{color:var(--brume);font-size:.8rem}
+.b-ou{font-size:.85rem;font-weight:700;color:var(--or-pale)}
+.b-ecoute{border:2px dashed var(--c);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.b-cueillette{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.b-ingr-carte{display:flex;flex-direction:column;align-items:center;gap:2px;width:118px;padding:12px 8px;border-radius:18px;background:var(--nuit-3);border:2px solid var(--c)}
+.b-ingr-carte span{font-size:2.2rem;animation:b-flotte 2.4s ease-in-out infinite}
+.b-ingr-carte b{font-size:.85rem;text-align:center}
+.b-ingr-carte.ferme{opacity:.5;border-style:dashed}
+/* une maison : qui y habite (son visage est aussi sur la carte) */
+.b-maison-hab{display:flex;align-items:center;gap:12px;padding:10px;border-radius:18px;background:var(--nuit-3);border:1px solid var(--trait)}
+.b-maison-hab > div:last-child{display:flex;flex-direction:column;gap:2px}
+.b-maison-hab small{color:var(--brume);font-size:.85rem}
+.b-maison-hab .b-gens-img{flex:none;width:72px;height:72px}
+
+/* Découverte */
+.b-feuille-decouverte{border:2px solid var(--or)}
+.b-decouverte,.b-info-modal{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.b-decouverte p{font-size:1.1rem}
+.b-choix-point{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:360px}   /* un choix au bout d'une découverte (au moulin, la nuit) */
+.b-grand-ic{font-size:4rem;line-height:1;animation:b-tourne-ic .6s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes b-tourne-ic{from{transform:scale(.2) rotate(-30deg);opacity:0}to{transform:none;opacity:1}}
+.b-decouverte.rate .b-grand-ic{animation:b-tremble .5s}
+.b-note-ajoutee{font-size:.85rem;color:var(--mousse);font-weight:700}
+.b-donne{background:rgba(245,185,69,.1);border:2px dashed var(--or);border-radius:18px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.b-code{display:flex;gap:10px;justify-content:center}
+.b-sym{display:flex;flex-direction:column;align-items:center;gap:2px;width:76px;padding:10px 4px;border-radius:16px;background:var(--parchemin);color:var(--encre);border:3px solid var(--encre);box-shadow:0 4px 0 var(--encre-2);animation:b-sym-pop .45s cubic-bezier(.2,.9,.3,1.4) both}
+.b-sym span{font-size:2.2rem;line-height:1}
+.b-sym small{font-weight:700;font-size:.75rem}
+.b-code.grand .b-sym{width:90px}
+.b-code.grand .b-sym span{font-size:2.8rem}
+@keyframes b-sym-pop{from{transform:scale(.3) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+
+/* Conversation */
+.b-feuille-conv{border-top:3px solid var(--c-barde)}
+.b-conv{display:flex;gap:14px;align-items:center;padding-right:40px}
+.b-conv-img{width:110px;height:110px;flex:none;border-radius:50%;overflow:hidden;border:3px solid var(--c-barde);background:var(--nuit-3)}
+.b-conv-img svg{width:100%;height:100%}
+.b-questions{display:flex;flex-direction:column;gap:10px}
+.b-question{display:flex;gap:10px;align-items:center;text-align:left;border-radius:16px;border:2px solid var(--c-barde);background:rgba(255,143,179,.08);padding:12px 14px;font-size:1rem}
+.b-question span{font-size:1.4rem}
+.b-question.ferme{border-style:dashed;opacity:.85;align-items:flex-start}
+.b-question.repondue{flex-direction:column;align-items:stretch;border-color:var(--trait);background:rgba(0,0,0,.18)}
+.b-reponse{background:var(--parchemin);color:var(--encre);border-radius:4px 16px 16px 16px;padding:10px 14px;font-size:1.04rem;animation:b-apparait .3s}
+.b-reponse.suspecte{box-shadow:0 0 0 2px rgba(232,105,60,.35)}
+.b-reponse.verite{background:#dff6e7;color:#173d26}
+
+/* Onglets des rôles */
+.b-sac,.b-atelier,.b-habitants,.b-livre,.b-carnet,.b-code-page{display:flex;flex-direction:column;gap:14px}
+.b-objets-trouves{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.b-objet-code{display:flex;flex-direction:column;gap:8px;align-items:center;padding:12px;border-radius:18px;background:var(--nuit-2);border:2px solid var(--or)}
+.b-oc-tete{display:flex;gap:8px;align-items:center;font-size:1.05rem}
+.b-oc-tete span{font-size:1.8rem}
+.b-pour{font-weight:700;color:var(--or-pale)}
+.b-recus{display:flex;flex-wrap:wrap;gap:8px}
+.b-etagere{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:18px;background:linear-gradient(180deg,#3a2c22,#2a2019);border:2px solid #5a4330}
+.b-fioles{font-size:1.1rem}
+.b-bocal{display:inline-flex;flex-direction:column;align-items:center;width:84px;padding:8px 4px 6px;border-radius:14px 14px 18px 18px;border:2px solid #24182e;
+  background:linear-gradient(180deg, rgba(255,255,255,.18), color-mix(in srgb, var(--p) 55%, #1c2447) 45%, color-mix(in srgb, var(--p) 80%, #000) 100%);color:#fff;text-shadow:0 1px 2px #000}
+.b-bocal i{font-style:normal;font-size:1.7rem}
+.b-bocal b{font-size:1.1rem}
+.b-bocal small{font-size:.66rem;line-height:1.1;text-align:center}
+.b-bocal:disabled{opacity:.35}
+button.b-bocal:not(:disabled):active{transform:scale(.94)}
+.b-potions{display:flex;flex-direction:column;gap:10px}
+.b-potion{display:flex;gap:10px;align-items:center;padding:12px;border-radius:18px;border:2px solid var(--p);background:radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--p) 25%, transparent), var(--nuit-2) 60%);text-align:left;flex-wrap:wrap}
+.b-potion > div{flex:1;min-width:150px}
+.b-potion-ic{font-size:2.2rem;filter:drop-shadow(0 0 8px var(--p));animation:b-flotte 2.6s ease-in-out infinite}
+.b-potion p,.b-potion small{font-size:.86rem;color:var(--brume)}
+.b-analyses{display:flex;flex-direction:column;gap:10px}
+.b-analyse{display:flex;gap:10px;align-items:center;padding:12px;border-radius:16px;background:var(--nuit-2);border:1px solid var(--trait);flex-wrap:wrap}
+.b-analyse > div{flex:1;min-width:160px}
+.b-analyse.faite{border-color:var(--mousse)}
+.b-detail{color:var(--cyan)}
+.b-recettes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.b-recette{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:18px;border:2px solid var(--p);background:var(--nuit-2)}
+.b-recette-tete{display:flex;gap:8px;align-items:center;font-size:1.05rem}
+.b-recette-tete span{font-size:1.8rem}
+.b-recette-ingr{font-size:1.3rem;letter-spacing:.04em}
+.b-secret{font-size:.88rem;color:var(--or-pale)}
+.b-chaudron-scene{display:flex;flex-direction:column;align-items:center;gap:6px}
+.b-chaudron{width:min(260px,70vw)}
+.b-surface{transition:fill .4s}
+.b-bul{animation:b-bulle 1.6s ease-in infinite}
+.b-bul.b2{animation-delay:.7s}
+@keyframes b-bulle{0%{transform:translateY(0);opacity:.6}100%{transform:translateY(-26px);opacity:0}}
+.b-feu{transform-origin:100px 152px;transform-box:view-box;animation:b-flamme .5s ease-in-out infinite alternate}
+.b-seq{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;min-height:40px;font-size:1.6rem}
+.b-seq span{animation:b-sym-pop .3s both}
+.b-bocaux{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+
+/* Grand Livre */
+.b-livre-onglets{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.b-livre-onglets button{flex:none;border-radius:12px 12px 4px 4px;border:2px solid var(--trait);background:var(--nuit-2);padding:8px 12px;font-weight:700;font-size:.92rem}
+.b-livre-onglets button.on{background:var(--parchemin);color:var(--encre);border-color:var(--encre-2)}
+.b-livre-onglets button.ferme{opacity:.7}
+.b-page-livre{display:flex;flex-direction:column;gap:10px;min-height:200px;animation:b-page .4s ease-out}
+@keyframes b-page{from{transform:perspective(800px) rotateY(-12deg);opacity:0}to{transform:none;opacity:1}}
+.b-texte-page{font-size:1.05rem;display:flex;flex-direction:column;gap:8px}
+.b-registre{display:flex;flex-direction:column;gap:8px}
+.b-reg-ligne{display:flex;gap:10px;align-items:center;border-bottom:1px dashed rgba(107,84,52,.4);padding-bottom:8px}
+.b-reg-img{width:56px;height:56px;flex:none;border-radius:50%;overflow:hidden;background:#e9d8b0;border:2px solid var(--encre-2)}
+.b-reg-img svg{width:100%;height:100%}
+.b-lettre-corbeau{background:#fffaf0;border-radius:6px;padding:10px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2);font-family:var(--f-main);font-size:1.4rem}
+
+/* Carnet */
+.b-notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.b-notes li{display:flex;gap:10px;align-items:center;background:var(--parchemin);color:var(--encre);border-radius:6px 14px 8px 14px;padding:10px 12px;animation:b-apparait .3s both}
+.b-notes p{flex:1}
+.b-suspects{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.b-suspect{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:16px;border:2px solid var(--trait);background:var(--nuit-3);padding:8px 4px}
+.b-suspect-img{width:68px;height:68px;border-radius:50%;overflow:hidden;background:var(--nuit-2)}
+.b-suspect-img svg{width:100%;height:100%}
+.b-suspect small{font-size:.7rem;color:var(--brume);text-align:center;line-height:1.1}
+.b-suspect.raye{opacity:.45}
+.b-suspect.raye::after{content:"";position:absolute;left:12%;right:12%;top:40%;height:5px;border-radius:4px;background:var(--braise);transform:rotate(-20deg)}
+.b-suspect.on{border-color:var(--or);background:rgba(245,185,69,.18)}
+
+/* Code */
+.b-code-page{align-items:center;text-align:center}
+.b-saisie{display:flex;gap:12px}
+.b-case{width:84px;height:84px;border-radius:18px;border:3px dashed var(--trait);display:grid;place-items:center;font-size:2.6rem;background:rgba(0,0,0,.2)}
+.b-case.pleine{border-style:solid;border-color:var(--or);background:var(--parchemin);animation:b-sym-pop .3s}
+.b-pave{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:420px}
+.b-pave button{display:flex;flex-direction:column;align-items:center;padding:12px 4px;border-radius:18px;border:2px solid var(--trait);background:var(--nuit-2);min-height:84px}
+.b-pave button:active{transform:scale(.94);background:var(--nuit-3)}
+.b-pave span{font-size:2.2rem;line-height:1.1}
+.b-pave small{font-size:.8rem;color:var(--brume)}
+/* 12 symboles : 3 × 4 debout ; 4 × 3 couché. Touches d'au moins 56 px partout. */
+.b-pave button{justify-content:center}
+@media (max-width:600px){ .b-pave button{min-height:72px;padding:8px 4px} }
+@media (orientation:landscape){ .b-pave{grid-template-columns:repeat(4,1fr);max-width:560px} }
+@media (orientation:landscape) and (max-height:600px){
+  /* téléphone couché : le titre et les trois cases à gauche, le pavé à droite */
+  .b-code-page{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:20px;row-gap:10px;align-items:center;justify-items:center}
+  .b-code-page > h2,.b-code-page > .b-saisie,.b-code-page > .b-rangee{grid-column:1}
+  .b-code-page > .b-pave{grid-column:2;grid-row:1 / span 3}
+  .b-code-page .b-case{width:64px;height:64px;font-size:2rem}
+  .b-pave{gap:8px}
+  .b-pave button{min-height:58px;padding:5px 4px}
+  .b-pave span{font-size:1.8rem}
+}
+
+/* Accusation */
+.b-lieux-acc{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.b-lieu-acc{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border-radius:18px;border:2px solid var(--trait);background:var(--nuit-3)}
+.b-lieu-acc span{font-size:2.4rem}
+.b-lieu-acc.on{border-color:var(--or)}
+.b-acc-resume{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.b-acc-choix{display:flex;flex-direction:column;align-items:center;gap:4px}
+.b-acc-img{width:110px;height:110px;border-radius:50%;overflow:hidden;border:3px solid var(--braise)}
+.b-acc-img svg{width:100%;height:100%}
+.b-victoire .b-grand-ic{animation:b-tourne-ic .6s, b-pulse 1.4s .6s infinite}
+
+/* Talents */
+.b-talents-choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.b-talent-carte{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;border-radius:20px;border:2px solid var(--cyan);background:radial-gradient(circle at 50% 20%, rgba(143,243,255,.15), var(--nuit-3) 70%);text-align:center}
+.b-talent-img{width:140px;border-radius:14px;overflow:hidden}
+.b-talent-img svg{width:100%;height:auto;display:block}
+.b-talent-carte b{font-size:1.1rem;color:var(--or-pale)}
+.b-talent-carte p{font-size:.9rem;color:var(--brume)}
+.b-menu{display:flex;flex-direction:column;gap:10px}
+
+/* Fin */
+.b-fin-slide{font-size:1.2rem;min-height:160px;display:flex;flex-direction:column;gap:10px;justify-content:center;animation:b-apparait .5s ease-out}
+.corbeau{font-family:var(--f-titre);font-weight:400;font-size:1.6rem;letter-spacing:.06em;color:#3b1d3d;display:block;text-align:center}
+.b-points{display:flex;gap:6px;justify-content:center}
+.b-points i{width:10px;height:10px;border-radius:50%;background:var(--trait)}
+.b-points i.on{background:var(--or)}
+.b-recompenses{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:center}
+@media (max-width:640px){.b-recompenses{grid-template-columns:1fr}}
+.b-fin-portrait{border-radius:var(--r-3);overflow:hidden}
+.b-fin-portrait svg{width:100%;height:auto;display:block;max-height:50vh}
+.b-gain{font-size:1.4rem;font-weight:700;color:var(--or-pale);animation:b-sym-pop .5s both}
+.b-gain + .b-gain{animation-delay:.25s}
+.b-niveau-monte{font-family:var(--f-titre);font-size:2rem;color:var(--cyan);text-shadow:0 0 18px var(--cyan);animation:b-pulse 1.2s infinite}
+
+/* Mini-jeu plein écran */
+#mj-plein{position:fixed;inset:0;z-index:80;background:rgba(8,10,25,.94);display:flex;align-items:stretch;justify-content:center;padding:max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom))}
+#mj-plein[hidden]{display:none}
+.b-mj-cadre{width:100%;max-width:820px;height:100%;display:flex}
+.b-mj-cadre > .mj{flex:1}
+
+/* Transition de moment */
+#transition{position:fixed;inset:0;z-index:90;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;background:radial-gradient(circle, rgba(19,25,50,.92), rgba(8,10,25,.98))}
+#transition.on{animation:b-transition 2.2s ease-in-out forwards}
+@keyframes b-transition{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.b-trans-ic{font-size:6rem;animation:b-soleil 2.2s ease-in-out}
+@keyframes b-soleil{from{transform:translateY(60px) scale(.6)}to{transform:none}}
+#transition h2{font-size:2.6rem}
+#transition.moment-matin{background:radial-gradient(circle, rgba(255,190,160,.35), rgba(19,25,50,.97))}
+#transition.moment-soir{background:radial-gradient(circle, rgba(232,105,60,.35), rgba(19,25,50,.97))}
+
+/* Divers */
+#stop-voix{position:fixed;right:calc(14px + env(safe-area-inset-right, 0px));bottom:calc(84px + env(safe-area-inset-bottom, 0px));z-index:95;border:0;border-radius:999px;padding:10px 18px;font-weight:700;background:var(--braise);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.4);animation:b-apparait .2s}
+#toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top, 0px));z-index:96;transform:translate(-50%,-30px);opacity:0;pointer-events:none;background:var(--parchemin);color:var(--encre);font-weight:700;border-radius:999px;padding:10px 20px;box-shadow:var(--ombre);transition:.3s;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.b-intro-jeu{align-items:center;text-align:center}
+
+/* Écriture à la main (points sur les i) */
+.b-lettres{display:flex;flex-direction:column;gap:10px}
+.b-lettre-corbeau{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 14px;background:#fffaf0;border-radius:6px;padding:10px 14px;box-shadow:0 2px 6px rgba(0,0,0,.18);color:var(--encre)}
+.b-lettre-corbeau.signee{border-left:4px solid var(--laiton)}
+.b-plume{font-size:1.4rem}
+.b-signe{font-weight:700}
+.ecriture{font-family:var(--f-main);font-size:1.6rem;line-height:1.3;font-weight:500}
+.i-sans{position:relative;display:inline-block;line-height:1}
+.pt{position:absolute;left:50%;transform:translateX(-50%);top:.04em}
+.pt-point{width:.15em;height:.15em;border-radius:50%;background:currentColor}
+.pt-rond{width:.26em;height:.26em;border-radius:50%;border:.05em solid currentColor;top:-.05em}
+.pt-trait{width:.3em;height:.055em;background:currentColor;top:.09em;transform:translateX(-50%) rotate(-25deg)}
+.pt-etoile::before{content:"✶";font-size:.42em;display:block;line-height:1;transform:translateY(-.25em)}
+.pt-coeur::before{content:"♡";font-size:.42em;display:block;line-height:1;transform:translateY(-.3em);font-weight:700}
+
+/* Tablette en paysage : la carte à gauche, les lieux à droite */
+@media (orientation: landscape) and (min-width: 900px){
+  .b-contenu{max-width:1200px}
+  .b-carte-onglet{display:grid;grid-template-columns:minmax(0, calc((100vh - 170px) * 0.714)) minmax(260px, 1fr);gap:18px;align-items:start}
+  .b-carte-cote{position:sticky;top:90px}
+  .b-lieux-liste{justify-content:flex-start}
+}
+.b-coller{font-size:.85rem;font-family:ui-monospace, monospace;resize:vertical}
+.b-aide{display:flex;flex-direction:column;gap:10px}
+.b-aide-carte{display:flex;gap:12px;align-items:center;background:var(--nuit-3);border-radius:16px;padding:12px}
+.b-aide-carte > div{flex:1;min-width:0}
+.b-aide-carte p{font-size:.92rem;color:var(--brume)}
+.b-codes-donnes{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:16px;border:2px dashed var(--c-sage);background:rgba(108,182,255,.08)}
+.b-code-ligne{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.b-code-ligne .b-sym{width:64px;padding:6px 2px}
+.b-code-ligne .b-sym span{font-size:1.7rem}
+.b-code-fin{align-self:center;background:rgba(108,182,255,.1);border:1px dashed var(--c-sage);border-radius:14px;padding:8px 14px}
+.b-code-fin summary{cursor:pointer;font-weight:700}
+.b-code-fin .b-code{margin-top:8px}
+.b-ce-que-je-sais{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;background:rgba(180,140,255,.08);border:1px dashed var(--c-alchimiste)}
+.b-noter-ingr{display:flex;flex-direction:column;gap:8px}
+.b-noter-ingr .b-ingr-carte{cursor:pointer;opacity:.6;border-style:dashed}
+.b-noter-ingr .b-ingr-carte.on{opacity:1;border-style:solid;box-shadow:0 0 14px color-mix(in srgb, var(--c-alchimiste) 50%, transparent)}
+.b-sous-onglets{display:flex;gap:8px}
+.b-sous-onglets button{flex:1;border-radius:14px;border:2px solid var(--trait);background:var(--nuit-2);padding:10px;font-weight:700;position:relative}
+.b-sous-onglets button.on{border-color:var(--c-alchimiste);background:rgba(180,140,255,.15);color:var(--lune)}
+.b-sous-onglets i{font-style:normal;background:var(--braise);color:#fff;border-radius:99px;padding:0 7px;font-size:.8rem;margin-left:4px}
+.b-atelier-montage{min-height:60vh}
+/* L'atelier de l'Alchimiste en plein écran : ni cadre ni marges, entre le bandeau du haut et les onglets du bas
+   (sa hauteur exacte est posée par ajusterAtelier, d'après la place qui reste vraiment) */
+.b-contenu.b-plein{max-width:none;padding:0;animation:none}
+.b-contenu.b-contenu-carte{margin-top:calc(-1 * var(--h-bandeau, 0px))}   /* la carte passe sous la phrase du tutoriel : elle ne bouge plus quand la phrase change de hauteur */
+.b-atelier-plein{min-height:0;width:100%;overflow:hidden}
+/* Écran trop bas (téléphone couché) : la fenêtre du mini-jeu défile au lieu d'être coupée… */
+#mj-plein{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.b-mj-cadre{height:auto;min-height:100%}
+/* … sauf les mini-jeux en plein écran verrouillé (MJ.PLEIN_ECRAN, mj-core.js ; Romain, 6 novembre, 0 h 40) : rien ne défile,
+   même sur un téléphone couché ; ce qui dépasse se serre (MJ.ajusterHauteur) */
+#mj-plein.mj-fixe{overflow:hidden;overscroll-behavior:none;touch-action:none}
+#mj-plein.mj-fixe .b-mj-cadre{height:100%;min-height:0}
+
+.b-relire{display:flex;flex-direction:column;gap:8px;margin:6px 0 14px}
+.b-relire h3{margin:0}
+.b-relire-l{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;text-align:left;padding:10px 12px;border-radius:14px;border:2px solid var(--c-barde);background:rgba(255,143,179,.08);color:var(--lune);font:inherit}
+.b-relire-l span{grid-row:span 2;font-size:1.5rem}
+.b-relire-l small{color:var(--brume)}
+.b-demasquer{margin-top:12px;padding:10px 12px;border-radius:14px;border:1px dashed var(--c-barde);background:rgba(255,143,179,.06)}
+.b-voix-prog{display:flex;flex-direction:column;gap:4px;margin-top:8px}.b-voix-prog progress{width:100%;height:12px}
+.b-carte-voix{border-color:var(--or)}
+/* --- Systèmes de saison : journal par enquête, cœurs, défaite, suite --- */
+.b-journal-onglets{display:flex;gap:6px;overflow-x:auto;margin:4px 0 12px;padding-bottom:4px}
+.b-journal-onglets button{flex:0 0 auto;min-height:44px;border-radius:12px;border:2px solid var(--trait);background:var(--nuit-2);padding:8px 12px;font-weight:700;font-size:.92rem}
+.b-journal-onglets button.on{border-color:var(--or);background:rgba(245,185,69,.15);color:var(--or-pale)}
+.b-coeurs{display:flex;justify-content:center;align-items:center;gap:6px;font-size:1.6rem;margin:8px 0}
+.b-coeurs .vide{filter:grayscale(1);opacity:.35}
+.b-suite{margin-top:14px}.b-suite .b-pave{margin:10px auto}.b-suite .b-saisie{display:flex;justify-content:center;gap:8px;margin:10px auto}
+.b-defaite-page .b-fin-slide{border-color:#7a7f99}
+.b-alerte-defaite{border-color:#ff8a8a;background:rgba(255,90,90,.08)}
+.b-reserve-roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+.b-reserve-roles .btn{min-height:56px}
+.b-joueur{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.b-joueur .puce{min-height:48px;font-size:1.05rem;padding:8px 16px}
+
+/* ---------- Enquête 3 : « QUI est le Corbeau ? » et le cachot de la fin (moteur-actions.js, moteur-ecrans.js) ---------- */
+.b-corbeau-q{text-align:center}
+.b-corbeau-q p{margin:0 0 12px}
+.b-corbeau-rep{margin:0 0 10px;padding:10px 14px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--trait);font-weight:700}
+.b-corbeau-rep.ok{background:rgba(120,80,200,.25);border-color:#9b7be0;color:#e9dcff}
+.b-prison{position:relative;height:clamp(230px, 46vw, 330px);margin:0 0 14px;border-radius:14px;overflow:hidden;border:3px solid #2a2530;
+  background-color:#4b4f5c;
+  background-image:radial-gradient(ellipse 60% 70% at 50% 8%, rgba(170,190,255,.32), transparent 70%),
+    linear-gradient(rgba(0,0,0,.28) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0,0,0,.22) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0,0,0,.22) 2px, transparent 2px);
+  background-size:100% 100%, 100% 30px, 64px 60px, 64px 60px;
+  background-position:0 0, 0 0, 0 0, 32px 30px}
+.b-prison-fenetre{position:absolute;top:14px;left:50%;width:76px;height:54px;transform:translateX(-50%);border-radius:10px 10px 3px 3px;border:5px solid #2b2d36;
+  background:repeating-linear-gradient(90deg, transparent 0 13px, #2b2d36 13px 17px), linear-gradient(#18204a, #33427f);box-shadow:0 0 34px 8px rgba(160,180,255,.28)}
+.b-prison-rayon{position:absolute;top:60px;left:50%;width:240px;height:75%;transform:translateX(-50%);background:linear-gradient(rgba(190,205,255,.20), rgba(190,205,255,0));clip-path:polygon(38% 0, 62% 0, 100% 100%, 0 100%);pointer-events:none}
+.b-prison-sol{position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(#5d4a30, #3a2c1c);box-shadow:inset 0 6px 10px rgba(0,0,0,.35)}
+.b-prison-sol::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg, transparent 0 9px, rgba(230,190,90,.35) 9px 11px, transparent 11px 23px);opacity:.7}
+.b-prison-ombre,.b-prison-moi{position:absolute;bottom:8%}
+.b-prison-ombre svg,.b-prison-moi svg{height:100%;width:auto;display:block}
+.b-prison-ombre{height:60%;filter:brightness(0);opacity:.62}
+.b-prison-ombre.o0{left:6%}
+.b-prison-ombre.o1{left:24%;bottom:12%;height:56%}
+.b-prison-ombre.o2{right:7%}
+.b-prison-moi{height:78%;left:50%;transform:translateX(-46%);z-index:2;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5))}
+.b-prison-barreaux{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(#2a2c33, #2a2c33) 0 9% / 100% 7px no-repeat, linear-gradient(#2a2c33, #2a2c33) 0 74% / 100% 7px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 40px, #23252b 40px 46px, #7d828f 46px 48px, #3a3d46 48px 50px, transparent 50px 86px)}
+/* Le village simplifié (Romain, 4 novembre, 20 h 41) : le menu ☰ tout en haut, deux boutons dorés sous le héros */
+.b-hub-simple{position:relative}
+.b-menu-haut{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:5;width:46px;height:46px;border-radius:50%;border:2px solid var(--trait);background:rgba(10,14,32,.72);color:var(--or-pale);font-size:1.4rem;line-height:1;cursor:pointer;display:grid;place-items:center}
+.b-hub-dores{display:flex;gap:10px;padding:0 16px 16px}
+.b-hub-dores .btn{flex:1;min-height:52px;font-size:1.05rem}
+.btn.b-dore{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#3b2410;border-color:#b07a1e;font-weight:800}
+.hr-projets{text-decoration:none;text-align:center;margin-top:18px}
+.b-hub-simple .b-titre{padding-right:54px}
+
+/* ---------- Un mini-jeu en pause (Romain, 5 novembre, 11 h 21 ; moteur-actions.js : M.majRappel) ----------
+   Le rappel reste en bas de l'écran, au-dessus des onglets, sur tous les écrans, jusqu'à ce qu'on reprenne. */
+#mj-rappel{position:fixed;left:50%;bottom:84px;z-index:55;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+  width:max-content;max-width:calc(100vw - 20px);padding:6px 6px 6px 8px;border-radius:999px;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;box-shadow:0 0 0 2px rgba(255,224,138,.55), 0 8px 22px rgba(0,0,0,.5);
+  animation:mj-rp-entre .45s cubic-bezier(.3,1.5,.5,1) both, mj-rp-pouls 2.6s 1s ease-in-out infinite}
+#mj-rappel[hidden]{display:none}
+.mj-rp-ic{position:relative;flex:none;width:40px;height:40px;border-radius:50%;background:var(--nuit-3);display:flex;align-items:center;justify-content:center;font-size:1.35rem}
+.mj-rp-ic i{position:absolute;right:-5px;bottom:-4px;font-style:normal;font-size:.8rem;line-height:1}
+.mj-rp-t{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.mj-rp-t b{font-size:.95rem;white-space:nowrap}
+.mj-rp-t small{font-size:.8rem;color:#ffe08a;white-space:nowrap}
+#mj-rappel .mj-rp-go{flex:none;margin:0;min-height:44px;padding:8px 14px;border-radius:999px;font-size:.95rem;white-space:nowrap;border-width:2px;border-style:solid}
+@keyframes mj-rp-entre{0%{transform:translate(-50%,30px) scale(.7);opacity:0}100%{transform:translate(-50%,0) scale(1);opacity:1}}
+@keyframes mj-rp-pouls{0%,100%{box-shadow:0 0 0 2px rgba(255,224,138,.55), 0 8px 22px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 5px rgba(255,224,138,.25), 0 8px 22px rgba(0,0,0,.5)}}
+@media (prefers-reduced-motion: reduce){#mj-rappel{animation:none}}
+/* l'atelier mis de côté pendant que son chaudron est en pause : hors de l'écran, tel quel */
+#mj-parking{position:fixed;left:-300vw;top:0;width:100vw;height:100vh;overflow:hidden;visibility:hidden;pointer-events:none;z-index:-1}
+/* la fenêtre « Un mini-jeu est en pause » */
+.b-mj-pause-l{position:relative;display:inline-block}
+.b-mj-pause-ic{position:absolute;right:-.4em;bottom:-.1em;font-size:.45em}
+
+/* ---------- Bulles de la carte : rien ne déborde (Romain, 5 novembre, 12 h 31 : « le Vieux Chêne du Sage, ça déborde de partout ») ----------
+   Les boîtes prennent la largeur de la bulle (sans ça, une pastille large de 349 px poussait la bulle de 282 px), les pastilles s'y plient
+   sur plusieurs lignes, et rien ne rétrécit en hauteur (le texte sortait de sa pastille). tools/bot-carte.py mesure tout ça. */
+.b-bulle .b-gens, .b-bulle .b-ce-que-je-sais, .b-bulle .b-info-modal, .b-bulle .b-verrou, .b-bulle .b-points, .b-bulle .b-ecoute, .b-bulle .b-besoin{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.b-feuille.b-bulle > *, .b-bulle .b-gens > *, .b-bulle .b-ce-que-je-sais > *, .b-bulle .b-info-modal > *, .b-bulle .b-verrou > *, .b-bulle .b-points > *, .b-bulle .b-ecoute > *,
+.b-bulle .b-besoin > *, .b-bulle .b-besoin li{flex-shrink:0}
+.b-bulle p, .b-bulle li, .b-bulle small, .b-bulle b, .b-bulle .btn{white-space:normal;overflow-wrap:break-word}
+.b-bulle .b-verrou > .b-lire, .b-bulle .b-lire{display:none!important}
+.b-bulle .b-verrou > p{display:block}
+.b-bulle .b-verrou > .b-besoin{background:none;border:0;box-shadow:none;padding:0;border-radius:0;min-height:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
+.b-bulle .b-besoin ul{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;margin:0;padding:0}
+.b-bulle .b-besoin li{pointer-events:auto;display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;box-sizing:border-box;
+  background:var(--nuit-2);color:var(--lune);border:2px solid #0b1030;border-radius:15px;padding:3px 10px;min-height:30px;font-size:.8rem;line-height:1.25;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14)}
+.b-bulle .b-besoin li > span{flex:none}
+.b-bulle .b-besoin > .btn{pointer-events:auto}
+/* (la classe .b-pastille des bulles porte le même nom que les ronds de couleur des potions, 44 × 44 px : sans ceci, chaque pastille
+   de la bulle faisait 44 px de haut, et un texte de plusieurs lignes en sortait) */
+.b-feuille.b-bulle .b-pastille{height:auto}
+
+/* ==========================================================
+   Écrans fixes (Romain, 5 novembre, 21 h 46) : « Enquête N » (la lettre), « Enquête résolue », le village.
+   Plein écran verrouillé : rien ne défile, rien ne glisse, sur tous les téléphones et toutes les tablettes.
+   La grande image du héros rapetisse d'abord (le paysage continue sur les côtés : persos.js, decor) ; s'il manque encore
+   de la place, M.ecranFixe (moteur-actions.js) serre tout avec --serre (de 1 à .6).
+   ========================================================== */
+html.b-fixe, html.b-fixe body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.b-fixe #app{min-height:0}
+.b-ecran-fixe{--serre:1;height:var(--h-ecran, 100vh);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  padding-block:calc(10px * var(--serre) + env(safe-area-inset-top, 0px)) calc(10px * var(--serre) + env(safe-area-inset-bottom, 0px));
+  gap:calc(12px * var(--serre));justify-content:center;animation:b-fixe-entre .35s ease-out}
+@keyframes b-fixe-entre{from{opacity:0}to{opacity:1}}
+.b-ecran-fixe.b-deborde{overflow-y:auto;touch-action:pan-y;justify-content:flex-start}   /* le dernier filet : défiler plutôt que perdre un bouton */
+.b-ecran-fixe > *{flex:none}
+.b-ecran-fixe h1{font-size:calc(clamp(1.6rem, 6vw, 2.5rem) * var(--serre))}
+.b-ecran-fixe .b-titre{padding-top:0;gap:calc(12px * var(--serre))}
+.b-ecran-fixe .b-titre h1{font-size:calc(clamp(1.5rem, 5.6vw, 2.4rem) * var(--serre))}
+.b-ecran-fixe .b-lanterne{width:calc(64px * var(--serre))}
+.b-ecran-fixe .sur-titre{font-size:calc(.76rem * var(--serre))}
+.b-ecran-fixe h3{font-size:calc(1.15rem * var(--serre))}
+.b-ecran-fixe .btn{min-height:max(42px, calc(52px * var(--serre)));font-size:calc(1.02rem * var(--serre));padding:calc(8px * var(--serre)) calc(18px * var(--serre))}
+.b-ecran-fixe .btn.grand{min-height:max(46px, calc(60px * var(--serre)));font-size:calc(1.18rem * var(--serre));padding:calc(10px * var(--serre)) calc(24px * var(--serre))}
+.b-ecran-fixe .b-lire{height:max(30px, calc(36px * var(--serre)));min-width:calc(40px * var(--serre))}
+.b-ecran-fixe .b-carte-verre{padding:calc(14px * var(--serre));gap:calc(8px * var(--serre));font-size:calc(1rem * var(--serre))}
+.b-ecran-fixe .b-carte-verre p{font-size:inherit}
+.b-ecran-fixe .b-menu-haut{top:calc(8px * var(--serre) + env(safe-area-inset-top, 0px))}
+
+/* la lettre du maire : le portrait du maire flotte à droite du texte, le 🔊 dans le coin, sous la signature */
+.b-ecran-fixe .b-lettre{display:block;font-size:calc(1.08rem * var(--serre));padding:calc(18px * var(--serre)) calc(16px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-lettre > * + *{margin-top:calc(8px * var(--serre))}
+.b-ecran-fixe .b-lettre-maire{width:calc(84px * var(--serre));height:calc(84px * var(--serre));margin:0 0 calc(6px * var(--serre)) calc(10px * var(--serre))}
+.b-ecran-fixe .b-lettre-date{font-size:calc(.92rem * var(--serre));margin-top:0}
+.b-ecran-fixe .b-signature{font-size:calc(1.45rem * var(--serre));padding-left:calc(52px * var(--serre));clear:both}
+.b-ecran-fixe .b-lettre > .b-lire{position:absolute;left:calc(12px * var(--serre));bottom:calc(12px * var(--serre));margin:0}
+.b-ecran-fixe .b-affiche{display:grid;grid-template-columns:minmax(0, 1fr) auto;column-gap:10px;align-items:center;padding:calc(12px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-affiche > p{grid-column:1;margin:0}
+.b-ecran-fixe .b-affiche > p + p{margin-top:calc(4px * var(--serre))}
+.b-ecran-fixe .b-affiche > .b-lire{grid-column:2;grid-row:1 / 3;position:static;margin:0}
+.b-ecran-fixe .b-bas{padding-top:0}
+/* téléphone couché : la lettre à gauche, l'affiche et le bouton à droite */
+@media (orientation: landscape) and (max-height: 600px){
+  .b-lettre-page.b-ecran-fixe{display:grid;max-width:1100px;grid-template-columns:minmax(0, 1.45fr) minmax(0, 1fr);grid-template-rows:auto auto minmax(0, 1fr) minmax(0, 1fr);
+    column-gap:calc(16px * var(--serre));row-gap:calc(8px * var(--serre));align-content:center}
+  .b-lettre-page.b-ecran-fixe > .sur-titre, .b-lettre-page.b-ecran-fixe > h1{grid-column:1 / -1}
+  .b-lettre-page.b-ecran-fixe > .b-lettre:not(.b-affiche){grid-column:1;grid-row:3 / 5;align-self:center}
+  .b-lettre-page.b-ecran-fixe > .b-affiche{grid-column:2;grid-row:3;align-self:end}
+  .b-lettre-page.b-ecran-fixe > .b-bas{grid-column:2;grid-row:4;align-self:start}
+  .b-lettre-page.b-ecran-fixe:not(.b-avec-affiche) > .b-bas{grid-row:3 / 5;align-self:center}
+}
+
+/* le village et « Enquête résolue » : debout, l'un sous l'autre ; l'image du héros prend la place qui reste */
+.b-ecran-fixe .b-hub{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;gap:calc(12px * var(--serre))}
+.b-ecran-fixe .b-hub-heros{flex:0 1 auto;min-height:0;width:min(100%, 520px);align-self:center}
+.b-ecran-fixe .b-hub-portrait{flex:0 1 auto;min-height:calc(var(--h-ecran, 100vh) * .3);aspect-ratio:300 / 440;position:relative;overflow:hidden}
+.b-ecran-fixe .b-hub-portrait svg{position:absolute;inset:0;width:100%;height:100%;max-height:none}
+.b-ecran-fixe .b-hub-info, .b-ecran-fixe .b-hub-dores, .b-ecran-fixe .b-hub-actions{flex:none}
+.b-ecran-fixe .b-hub-info{gap:calc(5px * var(--serre));padding:calc(10px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-hub-info b{font-size:calc(1.5rem * var(--serre))}
+.b-ecran-fixe .b-hub-info span{font-size:calc(1rem * var(--serre))}
+.b-ecran-fixe .b-hub-dores{gap:calc(10px * var(--serre));padding:0 calc(14px * var(--serre)) calc(14px * var(--serre))}
+.b-ecran-fixe .b-hub-dores .btn{min-height:max(42px, calc(50px * var(--serre)))}
+.b-ecran-fixe .b-hub-actions{gap:calc(10px * var(--serre));width:min(100%, 520px);align-self:center}
+.b-ecran-fixe .b-hub-actions .b-suite{margin-top:0}
+/* couché (téléphone couché, tablette couchée, ordinateur) : le héros à gauche, sur toute la hauteur ; le reste à droite */
+@media (orientation: landscape){
+  .b-hub-simple.b-ecran-fixe, .b-debut.b-ecran-fixe{--l-portrait:calc((var(--h-ecran, 100vh) - 20px * var(--serre) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * .682);
+    display:grid;max-width:calc(var(--l-portrait) + 660px);grid-template-columns:var(--l-portrait) minmax(0, 1fr);
+    grid-template-rows:minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr);column-gap:calc(22px * var(--serre));row-gap:0;align-content:stretch}
+  .b-ecran-fixe .b-hub, .b-ecran-fixe .b-hub-heros{display:contents}
+  .b-ecran-fixe .b-hub-portrait{grid-column:1;grid-row:1 / -1;height:100%;min-height:0;aspect-ratio:auto;border-radius:var(--r-3);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));background:var(--nuit-2)}
+  .b-ecran-fixe > .b-titre, .b-ecran-fixe > h1{grid-column:2;grid-row:2;margin-bottom:calc(12px * var(--serre))}
+  .b-ecran-fixe > .b-carte-voix{grid-column:2;grid-row:3;margin-bottom:calc(12px * var(--serre))}
+  .b-ecran-fixe .b-hub-info{grid-column:2;grid-row:4;background:var(--nuit-2);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-bottom:0;border-radius:var(--r-3) var(--r-3) 0 0}
+  .b-ecran-fixe .b-hub-dores{grid-column:2;grid-row:5;background:var(--nuit-2);border:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-top:0;border-radius:0 0 var(--r-3) var(--r-3)}
+  .b-debut.b-ecran-fixe .b-hub-info{border-bottom:2px solid color-mix(in srgb, var(--c) 60%, var(--trait));border-radius:var(--r-3)}
+  .b-ecran-fixe .b-hub-actions{grid-column:2;grid-row:6;width:auto;align-self:stretch;margin-top:calc(12px * var(--serre))}
+  .b-ecran-fixe.b-hub-simple > h1{padding-right:54px}
+}
+.b-ecran-fixe .b-hub-dores .btn{white-space:nowrap;padding-inline:calc(10px * var(--serre))}
+
+/* L'onglet Code tient dans l'écran, même sur un petit téléphone avec le bandeau du tutoriel (Romain, 5 novembre, 23 h 06 :
+   « même l'écran du code, tu es obligé de descendre ») : les cases et les touches suivent la hauteur de l'écran */
+.b-code-page{gap:10px}
+.b-code-page h2{font-size:clamp(1.25rem, 3.6vh, 1.55rem)}
+.b-code-page .b-case{width:clamp(52px, 9vh, 84px);height:clamp(52px, 9vh, 84px);font-size:clamp(1.8rem, 5.2vh, 2.6rem)}
+.b-code-page .b-pave{gap:8px}
+.b-code-page .b-pave button{min-height:clamp(50px, 8.6vh, 84px);padding:4px}
+.b-code-page .b-pave span{font-size:clamp(1.6rem, 5vh, 2.5rem)}
+.b-code-page .b-rangee .btn{min-height:44px}

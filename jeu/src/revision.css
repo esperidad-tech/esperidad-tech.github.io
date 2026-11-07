@@ -1,0 +1,37 @@
+/* Relire un mini-jeu du Barde après coup */
+.rv{display:flex;flex-direction:column;gap:12px;text-align:left}
+.rv-tete h3{margin:0 0 4px;color:var(--or-pale)}
+.rv-bilan{margin:0 0 6px;font-weight:800;color:var(--c-barde)}
+.rv-sous{margin:0;color:var(--brume);font-size:.95rem}
+.rv-liste{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.rv-item{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;color:var(--lune);font:inherit;min-height:56px}
+.rv-item p{flex:1;margin:0;line-height:1.35}
+.rv-item small{display:block;color:var(--brume);font-size:.8rem;margin-top:3px}
+.rv-num{flex:none;width:32px;text-align:center;font-weight:800;font-size:1.2rem}
+.rv-etiq{flex:none;font-weight:800;font-size:.8rem;padding:5px 8px;border-radius:8px;border:2px solid;white-space:nowrap}
+.rv-item.faux{border-color:rgba(255,143,179,.6)}.rv-item.faux .rv-etiq{color:#ffb39a;border-color:#ffb39a}
+.rv-item.vrai .rv-etiq{color:#9fe0b4;border-color:#9fe0b4}
+.rv-item.doute .rv-etiq{color:var(--or-pale);border-color:var(--or-pale)}
+.rv-parchemin{background:var(--parchemin);color:var(--encre);border-radius:8px 14px 8px 14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.rv-ligne{display:flex;gap:8px;margin:0;line-height:2.1;font-size:1.02rem}
+.rv-qui{font-size:1.4rem;line-height:1.4;flex:none}
+.rv-trou{display:inline-block;min-width:60px;margin:0 2px;padding:1px 8px;border-radius:9px;border:2px solid var(--laiton);background:#fff6dd;color:var(--encre);font:inherit;font-weight:700;line-height:1.5}
+.rv-trou.choisi{border-color:var(--c-barde);box-shadow:0 0 0 3px rgba(255,143,179,.45)}
+.rv-trou.change{background:#efe3ff;border-style:dashed}
+.rv-mots{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.rv-mot{border-radius:999px;border:2px solid var(--c-barde);background:var(--nuit-2);padding:7px 12px;font-weight:700;color:var(--lune);min-height:40px}
+.rv-mot:disabled{opacity:.35}
+/* Les dépositions : le carnet relu, avec ses coups de feutre */
+.rv-scene{margin:0;padding:8px 12px;border-radius:8px 14px 8px 12px;background:var(--parchemin);color:var(--encre);font-weight:700;line-height:1.3}
+.rv-legende{display:flex;flex-wrap:wrap;gap:6px 12px;margin:0;font-size:.85rem;color:var(--brume)}
+.rv-legende span{padding:1px 8px;border-radius:6px;color:var(--encre);font-weight:700}
+.rv-legende .rv-m-v{background:#8fe0a5}.rv-legende .rv-m-r{background:#ff9fb6}.rv-legende .rv-m-j{background:#ffd95e}
+.rv-depos{display:flex;flex-direction:column;gap:10px}
+.rv-depo{background:linear-gradient(180deg,#fffdf6,#f6ecd2);color:var(--encre);border-radius:8px 14px 10px 8px;padding:10px 12px 12px;border:2px solid rgba(36,24,46,.55);box-shadow:0 4px 0 rgba(36,24,46,.45)}
+.rv-depo-tete{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-family:var(--f-titre);font-size:1.15rem;border-bottom:2px dashed rgba(107,84,52,.3);padding-bottom:4px}
+.rv-depo-tete span{font-size:1.4rem;line-height:1}
+.rv-depo-txt{margin:0;line-height:2.05;font-weight:600}
+.rv-ph{cursor:pointer;padding:.14em .12em;border-radius:.45em .2em .5em .25em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.rv-m-v{background:rgba(110,215,135,.62)}
+.rv-m-r{background:rgba(255,105,140,.5)}
+.rv-m-j{background:rgba(255,206,60,.7)}

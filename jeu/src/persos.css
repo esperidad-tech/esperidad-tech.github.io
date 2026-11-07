@@ -1,0 +1,105 @@
+/* ==========================================================
+   PERSOS — animations des héros et des villageois
+   Les animations ne tournent que dans un SVG .pj-anime.
+   ========================================================== */
+.pj{display:block;width:100%;height:auto;overflow:hidden}
+
+
+.pj-anime .pj-souffle{transform-box:view-box;transform-origin:150px 414px;animation:pj-souffle 4.2s ease-in-out infinite}
+.pj-anime .pj-souffle-pnj{transform-box:view-box;transform-origin:0px 120px;animation:pj-souffle 4.6s ease-in-out infinite}
+@keyframes pj-souffle{0%,100%{transform:scale(1,1)}50%{transform:scale(1.006,1.012)}}
+
+.pj-anime .pj-yeux{transform-box:fill-box;transform-origin:50% 55%;animation:pj-cligne 5.2s infinite}
+@keyframes pj-cligne{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+
+.pj-anime .pj-pulse{animation:pj-pulse 2.4s ease-in-out infinite}
+@keyframes pj-pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.pj-anime .pj-scintille{animation:pj-scintille 1.9s ease-in-out infinite}
+@keyframes pj-scintille{0%,100%{opacity:.2}50%{opacity:1}}
+
+.pj-anime .pj-meche,.pj-anime .pj-meche2,.pj-anime .pj-plume,.pj-anime .pj-aile,.pj-anime .pj-queue,.pj-anime .pj-tete-anim{transform-box:view-box}
+.pj-anime .pj-meche{animation:pj-meche 3.4s ease-in-out infinite}
+@keyframes pj-meche{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(3deg)}}
+.pj-anime .pj-meche2{animation:pj-meche2 3.8s ease-in-out infinite}
+@keyframes pj-meche2{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-2deg)}}
+.pj-anime .pj-plume{animation:pj-plume 2.8s ease-in-out infinite}
+@keyframes pj-plume{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(5deg)}}
+.pj-anime .pj-barbe{transform-box:view-box;transform-origin:0px 22px;animation:pj-meche2 4.4s ease-in-out infinite}
+
+.pj-anime .pj-cape{transform-box:fill-box;transform-origin:50% 0;animation:pj-cape 4.6s ease-in-out infinite}
+@keyframes pj-cape{0%,100%{transform:rotate(-1.2deg) skewX(0deg)}50%{transform:rotate(1.4deg) skewX(-2.2deg)}}
+
+.pj-anime .pj-tourne{transform-box:fill-box;transform-origin:50% 50%;animation:pj-tourne 12s linear infinite}
+@keyframes pj-tourne{to{transform:rotate(360deg)}}
+.pj-anime .pj-monte{transform-box:fill-box;transform-origin:50% 50%;animation:pj-monte 2.4s linear infinite}
+@keyframes pj-monte{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:1}100%{transform:translateY(-52px) scale(.3);opacity:0}}
+.pj-anime .pj-flotte{animation:pj-flotte 3.2s ease-in-out infinite}
+@keyframes pj-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.pj-anime .pj-derive{animation:pj-derive 11s ease-in-out infinite}
+@keyframes pj-derive{0%,100%{transform:translateX(-14px)}50%{transform:translateX(14px)}}
+.pj-anime .pj-vent{animation:pj-vent 1.6s linear infinite}
+@keyframes pj-vent{0%{opacity:0;transform:translateX(6px)}30%{opacity:.9}100%{opacity:0;transform:translateX(-10px)}}
+.pj-anime .pj-ailes{animation:pj-ailes 1.8s ease-in-out infinite}
+@keyframes pj-ailes{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.pj-anime .pj-aile{animation:pj-aile 2.6s ease-in-out infinite}
+@keyframes pj-aile{0%,80%,100%{transform:rotate(0deg)}88%{transform:rotate(-22deg)}94%{transform:rotate(6deg)}}
+.pj-anime .pj-respire{animation:pj-flotte 2.6s ease-in-out infinite}
+.pj-anime .pj-queue{animation:pj-queue 1.4s ease-in-out infinite}
+@keyframes pj-queue{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+.pj-anime .pj-tete-anim{animation:pj-tete 5s ease-in-out infinite}
+@keyframes pj-tete{0%,70%,100%{transform:rotate(0deg)}78%{transform:rotate(-10deg)}88%{transform:rotate(6deg)}}
+.pj-anime .pj-onde,.pj-anime .pj-onde2{transform-box:fill-box;transform-origin:50% 50%;animation:pj-onde 2.6s ease-out infinite}
+@keyframes pj-onde{0%{transform:scale(.4);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+.pj-anime .pj-note{animation:pj-note 3.4s ease-in-out infinite}
+@keyframes pj-note{0%{transform:translate(0,6px);opacity:0}20%{opacity:1}100%{transform:translate(8px,-34px);opacity:0}}
+.pj-anime .pj-vole{animation:pj-vole 5s ease-in-out infinite}
+@keyframes pj-vole{0%,100%{transform:translate(0,0)}25%{transform:translate(-10px,-8px)}50%{transform:translate(-4px,-16px)}75%{transform:translate(6px,-6px)}}
+.pj-anime .pj-goutte{animation:pj-goutte 1.6s ease-in infinite}
+@keyframes pj-goutte{0%{transform:translateY(-2px);opacity:0}30%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+
+/* ---------- Villageois expressifs : Persos.pnj(id, {expressif:true}) + Persos.expression() ----------
+   Tout est piloté par des variables --pjx-* posées sur la racine du SVG et par data-pjx-b (bouche). */
+.pj-expr{--pjx-t:.22s;--pjx-tr:.9s}
+.pj-expr .pjx-iris{transform:translate(calc(var(--pjx-rx,0) * 1px), calc(var(--pjx-ry,0) * 1px));transition:transform var(--pjx-t) cubic-bezier(.3,.6,.35,1)}
+.pj-expr .pjx-paup,.pj-expr .pjx-liner{transform:translateY(calc(var(--pjx-paup,0) * 5.5px));transition:transform var(--pjx-t) ease}
+.pj-expr .pjx-rieur{transform:translateY(calc((1 - var(--pjx-rieurs,0)) * 11px));transition:transform calc(var(--pjx-t) * 1.3) ease}
+.pj-expr .pjx-pli{opacity:calc(var(--pjx-rieurs,0) * .7);transition:opacity var(--pjx-t)}
+.pj-expr .pjx-cilsb{opacity:calc(1 - var(--pjx-rieurs,0) * 1.8);transition:opacity var(--pjx-t)}
+.pj-expr .pjx-oeil-in{transform:scale(var(--pjx-gy,1));transition:transform var(--pjx-t) ease}
+.pj-expr .pjx-sc{transition:transform var(--pjx-t) ease}
+.pj-expr .pjx-sc-g{transform:translateY(calc(var(--pjx-sgy,0) * 1px)) rotate(calc(var(--pjx-sgr,0) * 1deg))}
+.pj-expr .pjx-sc-d{transform:translateY(calc(var(--pjx-sdy,0) * 1px)) rotate(calc(var(--pjx-sdr,0) * 1deg))}
+.pj-expr .pjx-tete{transform-origin:0px 30px;transform:translateY(calc(var(--pjx-menton,0) * -3px)) rotate(calc(var(--pjx-penche,0) * 7deg));transition:transform calc(var(--pjx-t) * 2.2) cubic-bezier(.45,0,.3,1)}
+.pj-expr .pjx-nez{transform:translateY(calc(var(--pjx-nez,0) * -1.2px));transition:transform var(--pjx-t) ease}
+.pj-expr .pjx-nez-plis{opacity:calc(var(--pjx-nez,0) * .9);transition:opacity var(--pjx-t)}
+.pj-expr .pjx-rouge{opacity:var(--pjx-rougeur,0);transition:opacity var(--pjx-tr) ease-in-out}
+.pj-expr .pjx-oreilles-r{opacity:var(--pjx-oreilles,0);transition:opacity var(--pjx-tr) ease-in-out}   /* le signe de Bastien (enquête 2) */
+.pj-expr .pjx-joues{transform:translateY(calc(var(--pjx-joue,0) * -1.8px));transition:transform calc(var(--pjx-t) * 1.3) ease}
+.pj-expr .pjx-pommettes{opacity:calc(var(--pjx-joue,0) * .75);transition:opacity var(--pjx-t)}
+.pj-expr .pjx-gorge,.pj-expr .pjx-sueur-g,.pj-expr .pjx-sueur-trace{opacity:0}
+/* bouche : une seule forme visible */
+.pj-expr .pjx-b > g{opacity:0;transition:opacity .08s}
+.pj-expr[data-pjx-b="repos"] .pjx-b-repos,.pj-expr[data-pjx-b="s0"] .pjx-b-s0,.pj-expr[data-pjx-b="o"] .pjx-b-o,.pj-expr[data-pjx-b="s1"] .pjx-b-s1,.pj-expr[data-pjx-b="s2"] .pjx-b-s2,.pj-expr[data-pjx-b="coin"] .pjx-b-coin,
+.pj-expr[data-pjx-b="pince"] .pjx-b-pince,.pj-expr[data-pjx-b="mord"] .pjx-b-mord,.pj-expr[data-pjx-b="moue"] .pjx-b-moue,
+.pj-expr[data-pjx-b="parle"] .pjx-b-parle,.pj-expr[data-pjx-b="parles"] .pjx-b-parles,.pj-expr[data-pjx-b="mordille"] .pjx-b-mordille,.pj-expr[data-pjx-b="sforce"] .pjx-b-sforce{opacity:1}
+/* mordillement : 3 petits coups rapides de la lèvre rentrée */
+.pj-expr .pjx-b-mordille-in{transform-origin:0px 1px}
+.pj-anime.pj-expr[data-pjx-b="mordille"] .pjx-b-mordille-in{animation:pjx-mordille .17s ease-in-out 3}
+@keyframes pjx-mordille{0%,100%{transform:translate(0,0) scale(1,1)}35%{transform:translate(-.6px,.6px) scale(.93,1.08)}70%{transform:translate(.6px,-.3px) scale(1.04,.9)}}
+.pj-expr .pjx-b-coin-in{transform:scaleX(var(--pjx-coin,1))}
+.pj-expr .pjx-b-anim{transform-origin:0px -1.5px;transform:scale(1,.55)}
+.pj-anime.pj-expr[data-pjx-b="parle"] .pjx-b-parle .pjx-b-anim,.pj-anime.pj-expr[data-pjx-b="parles"] .pjx-b-parles .pjx-b-anim{animation:pjx-parle .84s linear infinite}
+@keyframes pjx-parle{0%{transform:scale(1,.22)}13%{transform:scale(1.02,.92)}26%{transform:scale(.97,.42)}39%{transform:scale(1.04,.78)}51%{transform:scale(1,.16)}63%{transform:scale(.95,.66)}76%{transform:scale(1.03,1)}88%{transform:scale(1,.34)}100%{transform:scale(1,.22)}}
+/* moustache : suit la bouche */
+.pj-expr .pjx-mou{transform-origin:0px 20px;transition:transform var(--pjx-t) ease}
+.pj-expr[data-pjx-b="s1"] .pjx-mou,.pj-expr[data-pjx-b="s0"] .pjx-mou,.pj-expr[data-pjx-b="parles"] .pjx-mou{transform:translateY(-.8px) scale(1.05,1)}
+.pj-expr[data-pjx-b="s2"] .pjx-mou,.pj-expr[data-pjx-b="sforce"] .pjx-mou{transform:translateY(-1.4px) scale(1.08,1)}
+.pj-anime.pj-expr[data-pjx-b="mordille"] .pjx-mou{animation:pjx-mou-mord .17s ease-in-out 3}
+@keyframes pjx-mou-mord{0%,100%{transform:translateY(0)}50%{transform:translateY(.7px) scale(.97,1)}}
+.pj-expr[data-pjx-b="coin"] .pjx-mou{transform:translateY(-.4px) rotate(calc(var(--pjx-coin,1) * -6deg))}
+.pj-expr[data-pjx-b="pince"] .pjx-mou,.pj-expr[data-pjx-b="mord"] .pjx-mou{transform:translateY(.5px) scale(.97,1)}
+.pj-expr[data-pjx-b="o"] .pjx-mou{transform:translateY(-.6px) scale(.94,1)}
+.pj-expr[data-pjx-b="moue"] .pjx-mou{transform:translateY(.6px) scale(.9,1.05)}
+.pj-anime.pj-expr[data-pjx-b="parle"] .pjx-mou{animation:pjx-mou .84s linear infinite}
+@keyframes pjx-mou{0%,51%,100%{transform:translateY(0)}13%,76%{transform:translateY(.7px)}39%{transform:translateY(.45px)}}
+@media (prefers-reduced-motion: reduce){ .pj-anime *{animation:none!important} }

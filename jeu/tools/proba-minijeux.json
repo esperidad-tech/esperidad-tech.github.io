@@ -1,0 +1,111 @@
+{
+  "_lisezmoi": [
+    "Table des chances de réussite des mini-jeux, utilisée par tools/equilibre.js.",
+    "TOUS CES CHIFFRES SONT DES SUPPOSITIONS. Ils doivent être recalibrés avec les vraies parties en famille (voir le journal de statistiques décrit dans EQUILIBRE.md).",
+    "Modèle : chance de réussir = 1 / (1 + exp(pente × (niveauEffectif − niveau50))).",
+    "niveau50 = le niveau où ce joueur réussit une fois sur deux. Il est donné PAR RAPPORT au niveau validé par Romain dans la salle des mini-jeux (10 pour la plupart, 8 pour tir/mélange/poursuite, 7 pour la grille) : niveau50 = niveauValidé + écart.",
+    "Romain (adulte moyen) a trouvé la plupart des jeux « bien / parfait » à leur niveau validé : on suppose 58 % de réussite à ce niveau, d'où un écart de +0,7.",
+    "Les mods (objets, talents, potions) sont convertis en « niveaux en moins » (voir 'mods'). facile = exactement 1 niveau (c'est le moteur qui le fait). Les autres sont estimés en lisant les réglages de chaque jeu (node tools/equilibre.js --mods les affiche)."
+  ],
+  "pente": 0.45,
+  "pente_hypothese": "Un niveau de plus multiplie les chances de rater par environ 1,57. Pour Romain : 58 % au niveau 10, 77 % au niveau 8, 91 % au niveau 5.",
+
+  "jeux": {
+    "traces":      {"role":"pisteur",    "famille":"action",      "minuteur":false},
+    "poursuite":   {"role":"pisteur",    "famille":"action",      "minuteur":false},
+    "cachette":    {"role":"pisteur",    "famille":"action",      "minuteur":true},
+    "tir":         {"role":"pisteur",    "famille":"action",      "minuteur":false},
+    "chaudron":    {"role":"alchimiste", "famille":"precision",   "minuteur":true},
+    "bulles":      {"role":"alchimiste", "famille":"memoire",     "minuteur":false},
+    "melange":     {"role":"alchimiste", "famille":"precision",   "minuteur":true},
+    "differences": {"role":"alchimiste", "famille":"observation", "minuteur":true},
+    "double":      {"role":"alchimiste", "famille":"observation", "minuteur":true},
+    "insectes":    {"role":"alchimiste", "famille":"observation", "minuteur":true},
+    "mensonge":    {"role":"barde",      "famille":"observation", "minuteur":true},
+    "depositions": {"role":"barde",      "famille":"lecture",     "minuteur":false},
+    "ragots":      {"role":"barde",      "famille":"lecture",     "minuteur":true},
+    "mots":        {"role":"barde",      "famille":"lecture",     "minuteur":true},
+    "ordre":       {"role":"barde",      "famille":"lecture",     "minuteur":true},
+    "alphabet":    {"role":"sage",       "famille":"lecture",     "minuteur":true},
+    "plans":       {"role":"sage",       "famille":"logique",     "minuteur":true},
+    "grille":      {"role":"sage",       "famille":"logique",     "minuteur":true},
+    "runes":       {"role":"sage",       "famille":"logique",     "minuteur":true}
+  },
+
+  "profils": {
+    "enfant": {
+      "nom": "Enfant de 8 ans (joueur tablette ordinaire)",
+      "ecart": {"action": -1.8, "memoire": -1.5, "observation": -1.5, "precision": -2.2, "lecture": -3.2, "logique": -3.0},
+      "jeux": {"double": -0.8},
+      "hypothese": "Au niveau validé : environ 27 % (réflexes), 33 % (mémoire, observation), 24 % (chaudron, mélange), 16-17 % (lecture, logique : les enfants lisent peu). « Le double » plus haut : Alicia adore ce type de jeu (Dobble)."
+    },
+    "naim": {
+      "nom": "Naïm (8 ans, très fort sur tablette)",
+      "ecart": {"action": 0.2, "memoire": -0.5, "observation": -0.3, "precision": -1.0, "lecture": -2.2, "logique": -1.8},
+      "jeux": {},
+      "hypothese": "Aussi fort qu'un adulte moyen dans les jeux d'action (environ 52 %), plus faible dans ce qui demande de lire ou de déduire."
+    },
+    "adulte_moyen": {
+      "nom": "Adulte moyen (Romain, Siham)",
+      "ecart": {"action": 0.7, "memoire": 0.7, "observation": 0.7, "precision": 0.7, "lecture": 0.7, "logique": 0.7},
+      "jeux": {},
+      "hypothese": "58 % au niveau validé (Romain a jugé ces niveaux « bien » ou « parfaits »)."
+    },
+    "adulte_fort": {
+      "nom": "Adulte fort (joueur habitué)",
+      "ecart": {"action": 2.7, "memoire": 2.7, "observation": 2.7, "precision": 2.7, "lecture": 2.7, "logique": 2.7},
+      "jeux": {},
+      "hypothese": "Environ 77 % au niveau validé : deux niveaux d'avance sur Romain."
+    }
+  },
+
+  "mods": {
+    "_lisezmoi": "Valeur = niveaux en moins (négatif = plus facile). type 'lineaire' : par unité ; 'facteur' : par multiplication de la valeur indiquée (ex. zone ×1,25) ; 'oui' : une fois si présent. 'max' = plafond de l'effet de ce mod. 'jeux' = réglage propre à un jeu.",
+    "facile":   {"type":"lineaire", "parUnite":-1.0, "pourquoi":"Le moteur retire exactement 1 niveau."},
+    "erreurs":  {"type":"lineaire", "parUnite":-1.0, "max":-3, "jeux":{"tir":{"parUnite":-0.75}, "poursuite":{"parUnite":-1.2}}, "pourquoi":"Cachette : 1 erreur permise = niveau 5 au lieu de 10 pour ce seul réglage ; tir : 2 flèches de plus ≈ 1,5 niveau."},
+    "zone":     {"type":"facteur", "base":1.25, "parPas":-1.0, "max":-3, "pourquoi":"Cachette ×1,25 : faisceau 161 → 129 (niveau 5 pour ce seul réglage). Traces ×1,3 : vision 24 → 32. Un ×1,25 ≈ 1 niveau."},
+    "lent":     {"type":"facteur", "base":0.8, "parPas":-1.0, "max":-3, "pourquoi":"Tir ×0,65 : la cible va 1,5 fois moins vite (≈ 2 niveaux)."},
+    "vitesse":  {"type":"lineaire", "parUnite":-1.5, "max":-2, "jeux":{"poursuite":{"type":"oui", "valeur":-1.0}}, "pourquoi":"Traces : le Pisteur marche plus vite (+30 % ≈ 0,5 niveau). Poursuite : 4 obstacles au lieu de 5."},
+    "aide":     {"type":"lineaire", "parUnite":-0.8, "max":-3,
+                 "jeux":{"traces":{"type":"oui", "valeur":-1.0}, "bulles":{"parUnite":-0.8}, "melange":{"parUnite":-1.0}, "chaudron":{"parUnite":-1.0},
+                         "differences":{"parUnite":-0.7}, "double":{"parUnite":-0.7}, "insectes":{"parUnite":-0.7}, "mensonge":{"parUnite":-0.8},
+                         "ragots":{"parUnite":-1.2}, "mots":{"parUnite":-0.5}, "alphabet":{"parUnite":-0.4, "max":-3.5}, "grille":{"parUnite":-0.4},
+                         "runes":{"parUnite":-0.4, "max":-3}},
+                 "pourquoi":"Un indice ≈ 0,4 (une lettre ou une case sur une douzaine) à 1,2 niveau (une réponse sur 5 aux ragots)."},
+    "revele":   {"type":"oui", "valeur":-1.0,
+                 "jeux":{"traces":{"valeur":-1.2}, "chaudron":{"valeur":-1.2}, "mensonge":{"valeur":-1.5}, "plans":{"valeur":-2.0}, "mots":{"valeur":-0.5}},
+                 "pourquoi":"Plans : l'aimant passe de 1,35 à 2,5 (le calque se colle tout seul). Mensonge : les signes durent 0,9 s au lieu de 0,55 s."},
+    "nuit":     {"type":"oui", "valeur":-0.8, "pourquoi":"Traces : toutes les empreintes sont visibles."},
+    "signes":   {"type":"lineaire", "parUnite":-0.5, "max":-2.5, "pourquoi":"Mensonge : une sorte de signe en moins à surveiller (5 au départ, 1 au minimum)."},
+    "indice":   {"type":"lineaire", "parUnite":-0.6, "pourquoi":"Mensonge : un « flair » (une phrase sûrement vraie)."},
+    "pistes":   {"type":"lineaire", "parUnite":-0.8, "pourquoi":"Ragots : un ragot de plus sur l'enquête."},
+    "temps":    {"type":"lineaire", "parUnite":-0.06, "max":-1, "pourquoi":"+5 s sur un jeu à sablier ≈ 0,3 niveau."},
+    "echelle":  {"type":"oui", "valeur":-1.0, "pourquoi":"Plans : plus besoin de zoomer."},
+    "fleches":  {"type":"lineaire", "parUnite":0, "pourquoi":"Déjà compté dans le calibrage du tir."}
+  },
+
+  "durees": {
+    "_lisezmoi": "Durée moyenne en minutes, pour estimer la longueur d'une enquête (lecture des textes comprise). Supposition, à mesurer.",
+    "actions": {"explorer":1.0, "parler":1.5, "ecouter":0.5, "analyser":0.7, "cueillir":0.7, "cuire":0.5, "page":1.0, "bonus":0.3, "saison":1.5},
+    "minijeux": {"traces":1.5, "poursuite":1.5, "cachette":1.2, "tir":1.0, "chaudron":2.5, "bulles":1.0, "melange":2.5, "differences":1.2, "double":1.3, "insectes":1.1,
+                 "mensonge":1.2, "depositions":3.0, "ragots":1.5, "mots":2.0, "ordre":1.5, "alphabet":2.0, "plans":2.5, "grille":6.0, "runes":3.0},
+    "parMoment": 3.0,
+    "horsMoments": 8.0,
+    "pourquoi": "parMoment = se raconter ce qu'on a trouvé et passer le code ; horsMoments = lettre du maire + accusation + histoire de fin."
+  },
+
+  "trivial": {
+    "niveauMin": 4,
+    "chanceMaxAdulteMoyen": 0.9,
+    "pourquoi": "Un mini-jeu est jugé « presque gratuit » s'il tombe à un niveau effectif ≤ 4 ou si un adulte moyen le réussit 9 fois sur 10."
+  },
+
+  "raisonnement": {
+    "_lisezmoi": "Chance que l'équipe se trompe à sa première accusation alors qu'elle a toutes les informations (mauvaise lecture d'un indice, oubli…). Supposition.",
+    "enfants": 0.15, "famille": 0.04, "adultes_moyens": 0.04, "adultes_forts": 0.01
+  },
+  "efficacite": {
+    "_lisezmoi": "Part des actions jouées « utilement » ; le reste part en curiosité (lieux au hasard, habitants sans intérêt…). Supposition.",
+    "enfant": 0.7, "naim": 0.8, "adulte_moyen": 0.88, "adulte_fort": 0.95
+  }
+}

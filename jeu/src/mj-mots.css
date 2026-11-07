@@ -1,0 +1,29 @@
+/* Les mots perdus (Barde) */
+.mm{display:flex;flex-direction:column;gap:12px;padding:12px;flex:1;min-height:0;overflow-y:auto}
+.mm-parchemin{background:var(--parchemin);color:var(--encre);border-radius:6px 14px 8px 14px;padding:14px 14px 10px;box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 0 40px rgba(140,100,40,.2);display:flex;flex-direction:column;gap:10px}
+.mm-ligne{display:flex;gap:8px;align-items:flex-start;font-size:1.08rem;line-height:2.1}
+.mm-qui{font-size:1.5rem;line-height:1.4;flex:none}
+.mm-trou{display:inline-block;min-width:76px;min-height:38px;margin:0 3px;padding:2px 10px;border-radius:10px;border:2px dashed var(--encre-2);background:rgba(255,255,255,.45);color:var(--encre-2);font:inherit;font-weight:700;line-height:1.5;vertical-align:middle;transition:transform .12s}
+.mm-trou.plein{border-style:solid;border-color:var(--laiton);background:#fff6dd;color:var(--encre)}
+.mm-trou.choisi{border-color:var(--c-barde);box-shadow:0 0 0 3px rgba(255,143,179,.45);transform:scale(1.05)}
+.mm-trou.fixe{border-style:solid;border-color:var(--mousse);background:#e7f6ea;cursor:default}
+.mm-trou.faux{border-color:var(--braise);background:#ffe1d6;animation:b-tremble .4s}
+.mm-info{text-align:center;font-weight:700;color:var(--or-pale);min-height:1.4em}
+.mm-banque{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.mm-mot{border-radius:999px;border:2px solid var(--c-barde);background:var(--nuit-2);padding:8px 14px;font-weight:700;font-size:1rem;min-height:44px;color:var(--lune);transition:transform .1s, opacity .2s}
+.mm-mot:active{transform:scale(.94)}
+.mm-mot.pris{opacity:.25}
+.mm-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding-bottom:6px}
+.mm-actions .mm-valider{min-width:150px}
+.mm-demo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--lune);font-size:1.1rem}
+.mm-trou-demo{display:inline-block;min-width:70px;border-bottom:2px dashed var(--or);animation:mm-remplit 2.4s infinite}
+.mm-demo-mots{display:flex;gap:8px}
+.mm-demo-mots span{border:2px solid var(--c-barde);border-radius:999px;padding:4px 12px}
+.mm-demo-mots .mm-bon{animation:mm-saute 2.4s infinite}
+.mm-main{position:absolute;left:52%;top:62%;font-size:1.6rem;animation:mm-main 2.4s infinite}
+@keyframes mm-saute{0%,40%{transform:none;opacity:1}55%,100%{transform:translateY(-46px);opacity:0}}
+@keyframes mm-main{0%,30%{transform:translate(0,10px)}40%{transform:translate(0,0)}60%,100%{transform:translate(0,10px);opacity:.4}}
+@keyframes mm-remplit{0%,50%{color:transparent}60%,100%{color:var(--or-pale)}}
+.mm-mot.elimine{opacity:.15;text-decoration:line-through;border-style:dashed}
+/* les cœurs (règle commune) : ici aucune erreur permise */
+.mm-coeurs{display:flex;justify-content:flex-end;padding:6px 10px 0}

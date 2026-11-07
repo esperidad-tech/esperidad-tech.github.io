@@ -1,0 +1,369 @@
+/* ==========================================================
+   Brumeval v2 — données communes (rôles, talents, boutique,
+   ingrédients, potions, villageois, niveaux)
+   ========================================================== */
+(function(){
+'use strict';
+var D = window.DONNEES = {};
+
+D.SYM = {
+  lune:{e:'🌙', n:'Lune'}, etoile:{e:'⭐', n:'Étoile'}, soleil:{e:'☀️', n:'Soleil'},
+  cle:{e:'🔑', n:'Clé'}, champi:{e:'🍄', n:'Champignon'}, poisson:{e:'🐟', n:'Poisson'},
+  arbre:{e:'🌳', n:'Arbre'}, cloche:{e:'🔔', n:'Cloche'}, chapeau:{e:'🎩', n:'Chapeau'},
+  /* 12 symboles : 12³ − 12 = 1716 codes (au lieu de 720) ; une faute de frappe tombe sur un vrai code environ 1 fois sur 23.
+     Des emojis anciens (affichés même par les vieilles tablettes Android), faciles à nommer et à ne pas confondre. */
+  coeur:{e:'❤️', n:'Cœur'}, flamme:{e:'🔥', n:'Flamme'}, chat:{e:'🐱', n:'Chat'}
+};
+D.ORDRE_SYM = ['lune','etoile','soleil','cle','champi','poisson','arbre','cloche','chapeau','coeur','flamme','chat'];
+
+D.MOMENTS = {
+  matin:{nom:'Matin', ic:'🌅'}, apresmidi:{nom:'Après-midi', ic:'☀️'},
+  soir:{nom:'Soir', ic:'🌇'}, nuit:{nom:'Nuit', ic:'🌙'}
+};
+
+D.ROLES = {
+  pisteur:{m:'Pisteur', f:'Pisteuse', ic:'🏹', c:'var(--c-pisteur)', le:'le Pisteur', au:'au Pisteur',
+    desc:'Explore le village et la forêt. Suis les traces, trouve les objets cachés, cours, grimpe, tire à l\'arc.',
+    tag:'Action et réflexes', onglet:{ic:'🛖', nom:'Cabane'}},
+  alchimiste:{m:'Alchimiste', f:'Alchimiste', ic:'⚗️', c:'var(--c-alchimiste)', le:'l\'Alchimiste', au:'à l\'Alchimiste',
+    desc:'Cueille des ingrédients, fabrique des potions pour l\'équipe et analyse les objets trouvés.',
+    tag:'Mémoire et précision', onglet:{ic:'⚗️', nom:'Atelier'}},
+  barde:{m:'Barde', f:'Barde', ic:'🎻', c:'var(--c-barde)', le:'le Barde', au:'au Barde',
+    desc:'Parle aux habitants, écoute les ragots et démasque les menteurs.',
+    tag:'Écoute et stratégie', onglet:{ic:'📌', nom:'Tableau'}},
+  sage:{m:'Sage', f:'Sage', ic:'📜', c:'var(--c-sage)', le:'le Sage', au:'au Sage',
+    desc:'Garde le Grand Livre, déchiffre les secrets, donne les codes des moments et fait l\'accusation finale.',
+    tag:'Logique · chef d\'enquête', onglet:{ic:'📖', nom:'Grand Livre'}}
+};
+
+/* ---------- Niveaux ---------- */
+D.SEUILS = [0, 120, 250, 380, 510, 640, 770, 900, 1030, 1160];
+D.TITRES = ['Apprenti', 'Débutant', 'Enquêteur', 'Enquêteur confirmé', 'Aventurier', 'Aventurier confirmé', 'Expert', 'Maître', 'Grand Maître', 'Héros de Brumeval'];
+D.PALIER_NIVEAU = {1:1, 2:3, 3:5, 4:7};
+
+/* ---------- Talents ----------
+   fx.mj : mods ajoutés aux mini-jeux ; fx.acces : clés d'accès ; fx.usages : nombre d'utilisations par enquête */
+D.TALENTS = {
+  /* Pisteur */
+  vision:{role:'pisteur', niv:2, nom:'Vision de nuit', ic:'🌙', d:'Tu vois dans les lieux sombres. Tes yeux brillent. Pistes : tu vois toutes les empreintes, floues au loin.', fx:{acces:['sombre'], mj:{traces:{nuit:1}}}},
+  pistage:{role:'pisteur', niv:2, nom:'Pistage', ic:'🐾', d:'Tu gardes l\'empreinte en mémoire (rappel dans un coin), les pas suivants s\'allument après chaque obstacle, et tu repères les chemins cachés.', fx:{mj:{traces:{aide:1, revele:1}}, acces:['piste']}},
+  reflexes:{role:'pisteur', niv:4, nom:'Réflexes de chat', ic:'🐱', d:'Les mini-jeux de réflexe sont plus faciles, avec une seconde chance par enquête.', fx:{mj:{poursuite:{facile:1}, tir:{facile:1}, cachette:{facile:1}}, chance:1}},
+  compagnon:{role:'pisteur', niv:4, nom:'Compagnon animal', ic:'🦊', d:'Ton animal fouille un lieu où tu ne peux pas aller et te rapporte un objet. Sur une piste, il renifle avec toi : le sol défile moins vite.', fx:{acces:['compagnon'], mj:{traces:{lent:0.8}}}},
+  camouflage:{role:'pisteur', niv:6, nom:'Camouflage', ic:'🍃', d:'Tu te caches dans un lieu pour voir qui entre et qui sort. Se cacher devient plus facile.', fx:{mj:{cachette:{facile:2}}, acces:['cache']}},
+  course:{role:'pisteur', niv:6, nom:'Course du loup', ic:'🐺', d:'Tu gagnes une course-poursuite sans mini-jeu, deux fois par enquête.', fx:{auto:{poursuite:2}}},
+  instinct:{role:'pisteur', niv:8, nom:'Instinct', ic:'⚡', d:'Tu sens un piège avant d\'y tomber.', fx:{acces:['piege']}},
+  tir:{role:'pisteur', niv:8, nom:'Tir précis', ic:'🎯', d:'Tirer à l\'arc devient bien plus facile.', fx:{mj:{tir:{facile:2}}, acces:['tir']}},
+  scene:{role:'pisteur', niv:10, nom:'Lecture de la scène', ic:'👁️', d:'Une fois par enquête, tu sais dans quel ordre les gens sont passés dans un lieu.', fx:{acces:['scene']}},
+  traque:{role:'pisteur', niv:10, nom:'Maître de la traque', ic:'🗺️', d:'Une fois par enquête, tu suis un suspect pendant tout un moment.', fx:{acces:['traque']}},
+  /* Alchimiste */
+  potionniste:{role:'alchimiste', niv:2, nom:'Potionniste', ic:'🧪', d:'Chaque potion réussie fait deux doses.', fx:{doses:1}},
+  savante:{role:'alchimiste', niv:2, nom:'Savante', ic:'🧐', d:'Deux fois par enquête, une analyse révèle un détail caché.', fx:{acces:['detail'], detail:2}},
+  herboriste:{role:'alchimiste', niv:4, nom:'Herboriste', ic:'🌿', d:'Un jardin pousse dans ton atelier : une cueillette gratuite par enquête.', fx:{cueilletteGratuite:1}},
+  mainsure:{role:'alchimiste', niv:4, nom:'Main sûre', ic:'✋', d:'Les mini-jeux de potion sont plus faciles, avec une seconde chance.', fx:{mj:{chaudron:{facile:1}, bulles:{facile:1}, melange:{facile:1}}, chanceCuisson:true}},
+  poudres:{role:'alchimiste', niv:6, nom:'Poudres d\'action', ic:'💨', d:'Tu fabriques un fumigène et une poudre éclairante pour l\'équipe.', fx:{recettes:['fumigene','eclairante']}},
+  empreintes:{role:'alchimiste', niv:6, nom:'Poudre à empreintes', ic:'🫆', d:'Tu relèves les empreintes sur un objet.', fx:{acces:['empreintes']}},
+  transmutation:{role:'alchimiste', niv:8, nom:'Transmutation', ic:'🔄', d:'Deux ingrédients communs deviennent un ingrédient rare.', fx:{transmutation:true}},
+  antidote:{role:'alchimiste', niv:8, nom:'Antidote', ic:'💚', d:'Tu neutralises les pièges alchimiques du Corbeau.', fx:{acces:['antidote']}},
+  passe:{role:'alchimiste', niv:10, nom:'Potion du passé', ic:'⏳', d:'Une fois par enquête, tu vois une courte scène passée dans un lieu.', fx:{acces:['passe']}},
+  ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
+  /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
+     Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
+  tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Écouter aux portes : sur la carte, partout où quelqu\'un se trouve, tu entends ce qu\'il dit, tout le temps et gratuitement. Tout est gardé dans ton Carnet, sur sa page. Et tu entends mieux que tout le monde : dans tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},   /* (Romain, 5 novembre, 12 h 31 : plus de limite, plus de phrase à trous aux portes) */
+  exiger:{role:'barde', niv:2, nom:'Exige la vérité', ic:'⚖️', d:'À la fin d\'un interrogatoire, tu exiges la vérité : tous ses mensonges deviennent vrais. Deux fois par enquête.', fx:{verite:2}},
+  charmeur:{role:'barde', niv:4, nom:'Charmeur', ic:'😊', d:'Tes questions maladroites ne vexent plus jamais personne.', fx:{charmeur:true}},
+  physio:{role:'barde', niv:4, nom:'Physionomiste', ic:'🧐', d:'Au début de chaque enquête, tu sais déjà comment ment un des suspects.', fx:{physio:1}},
+  rumeur:{role:'barde', niv:6, nom:'Lancer une rumeur', ic:'🗣️', d:'Avec le Pisteur : à la taverne, tu lances une fausse rumeur sur un lieu. Au moment suivant, le Pisteur guette : si quelqu\'un accourt, c\'est le bon lieu. Une fois par enquête.', fx:{rumeur:1}},
+  hydromel:{role:'barde', niv:6, nom:'Hydromel des confidences', ic:'🍯', d:'Avec l\'Alchimiste : il fabrique l\'Hydromel et te le donne. Offert pendant un interrogatoire, il fait innocenter un suspect. Une fois par enquête.', fx:{hydromel:1}},
+  intuition:{role:'barde', niv:8, nom:'Intuition', ic:'🔮', d:'Une fois par enquête, ton intuition te montre un mensonge que tu n\'avais pas repéré.', fx:{intuition:1}},
+  recoupement:{role:'barde', niv:8, nom:'Recoupement', ic:'🧩', d:'Une fois par enquête, tu compares deux phrases de ton Carnet : peuvent-elles être vraies toutes les deux ?', fx:{recoupement:1}},
+  reseau:{role:'barde', niv:10, nom:'Réseau d\'informateurs', ic:'🧒', d:'À chaque moment, un enfant du village te glisse une info vraie sur un suspect.', fx:{reseau:true}},
+  plaidoirie:{role:'barde', niv:10, nom:'Plaidoirie', ic:'📜', d:'Avec le Sage : une fois par enquête, s\'il accuse un innocent, tu plaides, l\'accusé prouve son innocence et le Sage ne perd pas de cœur.', fx:{plaidoirie:1}},
+  /* Sage */
+  archiviste:{role:'sage', niv:2, nom:'Archiviste', ic:'📚', d:'Tu ouvres les pages scellées du Grand Livre.', fx:{acces:['scelle']}},
+  stratege:{role:'sage', niv:2, nom:'Stratège', ic:'♟️', d:'Au moment d\'accuser, deux innocents sont rayés pour toi, une fois par enquête.', fx:{stratege:2}},
+  dechiffreur:{role:'sage', niv:4, nom:'Déchiffreur', ic:'🔣', d:'Une partie de chaque code secret se traduit toute seule.', fx:{mj:{alphabet:{aide:3}, runes:{aide:1}}}},
+  inspiration:{role:'sage', niv:4, nom:'Inspiration', ic:'💡', d:'Une fois par enquête, tu donnes une action en plus à un équipier (par code).', fx:{inspiration:1}},
+  cartographe:{role:'sage', niv:6, nom:'Cartographe', ic:'🧭', d:'Les passages secrets apparaissent sur ta carte. Superposer les plans devient facile.', fx:{acces:['passage'], mj:{plans:{revele:true}}}},
+  tableau:{role:'sage', niv:6, nom:'Tableau des indices', ic:'🗂️', d:'La grille de déduction se remplit en partie toute seule.', fx:{mj:{grille:{aide:2}}}},
+  protection:{role:'sage', niv:8, nom:'Runes de protection', ic:'🛡️', d:'Une fausse accusation ne compte pas, une fois par enquête.', fx:{protection:1}},
+  etoiles:{role:'sage', niv:8, nom:'Lecture des étoiles', ic:'✨', d:'Tu devines QUAND aura lieu le prochain coup.', fx:{acces:['etoiles']}},
+  verification:{role:'sage', niv:10, nom:'Vérification', ic:'✅', d:'Une fois par enquête, tu demandes si un indice est vrai ou un leurre.', fx:{acces:['verification']}},
+  conseil:{role:'sage', niv:10, nom:'Conseil des anciens', ic:'🏛️', d:'Une fois par enquête, tous les suspects répondent à une même question.', fx:{acces:['conseil']}}
+};
+D.TALENTS_PAR_ROLE = {};
+Object.keys(D.TALENTS).forEach(function(id){
+  var t = D.TALENTS[id]; t.id = id;
+  var r = D.TALENTS_PAR_ROLE[t.role] = D.TALENTS_PAR_ROLE[t.role] || {};
+  (r[t.niv] = r[t.niv] || []).push(id);
+});
+
+/* ---------- Boutique ----------
+   [id, palier, nom, icône, prix, effet, ensemble, fx] */
+function O(role, liste){
+  liste.forEach(function(a){
+    D.OBJETS[a[0]] = {id:a[0], role:role, palier:a[1], nom:a[2], ic:a[3], prix:a[4], d:a[5], ens:a[6] || null, fx:a[7] || {}};
+  });
+}
+D.OBJETS = {};
+O('pisteur', [
+  ['bottes_souples', 1, 'Bottes souples', '🥾', 35, 'Se cacher : les gardes te repèrent moins vite. Pistes : tu marches plus vite.', 'ombre', {mj:{cachette:{zone:1.25}, traces:{vitesse:0.3}}}],
+  ['arc_court', 1, 'Arc court de chasseur', '🏹', 40, 'Tir : le viseur tremble moins.', 'chasseur', {mj:{tir:{zone:1.25}}}],
+  ['lanterne_sourde', 1, 'Lanterne sourde', '🏮', 40, 'Éclaire les lieux sombres. Pistes : ton cercle de vision est plus grand.', 'lune', {acces:['sombre'], mj:{traces:{zone:1.3}}}],
+  ['sifflet', 1, 'Sifflet de chasse', '📯', 30, 'Ton compagnon fait un envoi de plus par enquête.', null, {acces:['sifflet']}],
+  ['gants_pisteur', 1, 'Gants de pisteur', '🧤', 35, 'Pistes : après chaque obstacle, les pas suivants s\'allument un instant.', null, {mj:{traces:{revele:1}}}],
+  ['grappin', 1, 'Corde et grappin', '🪝', 45, 'Tu peux monter sur les toits.', null, {acces:['toits']}],
+  ['cape_rodeur', 2, 'Cape de rôdeur', '🧥', 80, 'Se cacher : une ronde de garde en moins.', 'lune', {mj:{cachette:{facile:1}}}],
+  ['bottes_vent', 2, 'Bottes de vent', '👢', 90, 'Poursuite : 8 obstacles sans faute suffisent pour te rapprocher. Pistes : tu marches bien plus vite.', 'vent', {mj:{poursuite:{vitesse:0.5}, traces:{vitesse:0.5}}}],
+  ['longue_vue_ch', 2, 'Longue-vue de chasseur', '🔭', 70, 'Observer un lieu sans y aller, une fois par moment.', null, {acces:['longuevue']}],
+  ['carquois', 2, 'Carquois sans fond', '🎒', 75, 'Tir : des flèches en plus.', 'chasseur', {mj:{tir:{erreurs:2}}}],
+  ['collier', 2, 'Collier de compagnon', '📿', 60, 'Ton compagnon descend dans les puits et les caves.', null, {acces:['profond']}],
+  ['pieges', 2, 'Pièges de chasseur', '🪤', 65, 'Posé la nuit dans un lieu : révèle qui y est passé.', null, {acces:['piege_pose']}],
+  ['arc_elfique', 3, 'Arc elfique', '🏹', 130, 'Tir : le temps ralentit.', 'chasseur', {mj:{tir:{lent:0.65}}}],
+  ['lanterne_lune', 3, 'Lanterne de lune', '🌕', 120, 'Révèle les traces magiques du Corbeau. Pistes : un grand cercle de vision.', 'lune', {acces:['sombre', 'magique'], mj:{traces:{zone:1.5}}}],
+  ['amulette_instinct', 3, 'Amulette d\'instinct', '🧿', 110, 'Un frisson te prévient avant chaque piège.', 'ombre', {acces:['piege']}],
+  ['bracelets_vent', 3, 'Bracelets du vent', '💫', 100, 'Poursuite : une erreur pardonnée.', 'vent', {mj:{poursuite:{erreurs:1}}}],
+  ['masque_ombre', 3, 'Masque d\'ombre', '🎭', 120, 'Se cacher : tu deviens presque invisible.', 'ombre', {mj:{cachette:{facile:2}}}],
+  ['arc_argent', 4, 'Arc d\'argent enchanté', '🏹', 260, 'Tous les tirs deviennent bien plus faciles.', null, {mj:{tir:{facile:3}}}],
+  ['bottes_fondateurs', 4, 'Bottes des Fondateurs', '👢', 280, 'Un fuyard n\'est jamais perdu, et tu sautes jusqu\'aux toits. Pistes : tu marches très vite.', 'vent', {mj:{poursuite:{facile:3, vitesse:1}, traces:{vitesse:0.6}}, acces:['toits']}],
+  ['oeil_faucon', 4, 'Œil du faucon royal', '🦅', 300, 'Une fois par enquête, tu vois où se trouve chaque habitant.', null, {acces:['faucon']}]
+]);
+O('alchimiste', [
+  ['fioles_renf', 1, 'Fioles renforcées', '🧴', 30, 'Une potion ratée ne casse pas sa fiole.', null, {fioleSolide:true}],
+  ['mortier', 1, 'Mortier de pierre', '🥣', 35, 'Tu peux broyer les ingrédients durs (racines, écorces).', null, {acces:['mortier']}],
+  ['thermometre', 1, 'Thermomètre de cuivre', '🌡️', 40, 'Au chaudron : la jauge précise s\'affiche, avec les chiffres.', 'labo', {mj:{chaudron:{revele:true, zone:1.2}}}],
+  ['ceinture_fioles', 1, 'Ceinture à fioles', '🎗️', 40, 'Deux fioles vides en plus à chaque enquête.', null, {fiolesBonus:2}],
+  ['herbier', 1, 'Herbier illustré', '📗', 45, 'Les ingrédients cachés apparaissent sur ta carte.', 'herbo', {acces:['herbier']}],
+  ['gants_cuir', 1, 'Gants de cuir', '🧤', 35, 'Tu peux cueillir les plantes qui piquent (orties, chardons).', null, {acces:['gants']}],
+  ['alambic', 2, 'Alambic de verre', '⚗️', 85, 'Potions concentrées : une dose de plus.', 'labo', {doses:1}],
+  ['loupe_doree', 2, 'Loupe dorée', '🔍', 70, 'Chaque analyse révèle un détail caché.', 'savant', {acces:['detail'], detail:9, mj:{differences:{aide:1}}}],
+  ['etal', 2, 'Étal du marché', '🛒', 60, 'Tu peux vendre des potions au marché (2 fois par enquête).', null, {acces:['etal']}],
+  ['sac_herbo', 2, 'Sac d\'herboriste', '👜', 65, 'Chaque cueillette rapporte un ingrédient de plus.', 'herbo', {cueilletteBonus:1}],
+  ['lunettes_alchi', 2, 'Lunettes d\'alchimiste', '🥽', 75, 'Tes yeux voient tout : un indice dans les 7 différences, le double et le grand ménage.', 'savant', {mj:{differences:{aide:1}, double:{aide:1}, insectes:{aide:1}}}],
+  ['grimoire_rec', 2, 'Grimoire des recettes', '📕', 80, 'Nouvelles recettes : clarté d\'esprit, vérité.', null, {recettes:['clarte', 'verite']}],
+  ['chaudron_cuivre', 3, 'Chaudron de cuivre', '🍲', 110, 'Tous les mini-jeux de cuisson sont plus faciles.', 'labo', {mj:{chaudron:{facile:1}, bulles:{facile:1}, melange:{facile:1}}}],
+  ['balance_or', 3, 'Balance d\'or', '⚖️', 100, 'Mélange : la zone de réussite est plus large.', null, {mj:{melange:{zone:1.4}}}],
+  ['serre', 3, 'Serre enchantée', '🪴', 130, 'Un ingrédient rare pousse dans ton atelier à chaque enquête.', 'herbo', {rareGratuit:1}],
+  ['oeil_cristal', 3, 'Œil de cristal', '🔮', 120, 'Une analyse révèle aussi d\'où vient l\'objet.', 'savant', {acces:['origine']}],
+  ['fioles_ether', 3, 'Fioles d\'éther', '✨', 110, 'Tes potions ne s\'usent plus après un seul mini-jeu (deux usages).', null, {potionDouble:true}],
+  ['athanor', 4, 'Athanor des Fondateurs', '🔥', 280, 'Une potion réussie d\'office à chaque moment.', null, {autoPotion:true}],
+  ['pierre_transmu', 4, 'Pierre de transmutation', '💎', 260, 'Change un ingrédient en un autre, une fois par moment.', null, {transmutation:true}],
+  ['grand_grimoire', 4, 'Grand Grimoire de la Fondatrice', '📜', 300, 'Recettes légendaires : potion du passé, élixir de vérité.', null, {recettes:['verite', 'clarte'], acces:['passe']}]
+]);
+O('barde', [
+  ['luth_voyage', 1, 'Luth de voyage', '🪕', 40, 'Les mots perdus : un indice (la liste diminue de moitié pour un mot).', 'troubadour', {mj:{mots:{aide:1}}}],
+  ['carnet_ragots', 1, 'Carnet de ragots', '📓', 30, 'Vrai ou faux des ragots : une réponse donnée.', null, {mj:{ragots:{aide:1}}}],
+  ['bourse', 1, 'Bourse de pièces', '👛', 35, 'Payer un verre : une conversation gratuite à la taverne par moment.', null, {acces:['bourse']}],
+  ['bonbons', 1, 'Bonbons au miel', '🍯', 30, 'Les enfants du village te parlent.', null, {acces:['bonbons']}],
+  ['clochette', 1, 'Clochette de vérité', '🛎️', 50, 'Repérer le mensonge : une fois, elle te dit qu\'une phrase est sûrement vraie.', 'verite', {mj:{mensonge:{indice:1}}}],
+  ['chapeau_plume', 1, 'Chapeau à plume', '👒', 35, 'Les villageois timides te répondent.', null, {acces:['timide']}],
+  ['cornet', 2, 'Cornet acoustique', '📯', 70, 'Tendre l\'oreille : une écoute aux portes de plus par enquête (avec ce talent).', 'espion', {oreille:1}],
+  ['deguisement', 2, 'Déguisement de colporteur', '🥸', 80, 'Tu peux interroger quelqu\'un qui se méfie.', 'espion', {acces:['mefiant']}],
+  ['cape_scene', 2, 'Cape de scène', '🎪', 65, 'Spectacle sur la place : tu vois qui ne vient pas.', 'troubadour', {acces:['spectacle']}],
+  ['pendule', 2, 'Pendule de vérité', '🪀', 85, 'Repérer le mensonge : revoir une phrase, et un signe de mensonge en moins.', 'verite', {mj:{mensonge:{aide:1, signes:1}}}],
+  ['lettre_maire', 2, 'Lettre de recommandation du maire', '✉️', 60, 'Tu entres dans les maisons fermées.', null, {acces:['ferme']}],
+  ['carillon', 2, 'Carillon des souvenirs', '🎐', 75, 'Les mots perdus : un mot retrouvé tout seul, et un indice.', null, {mj:{mots:{revele:true, aide:1}}}],
+  ['luth_enchante', 3, 'Luth enchanté', '🎸', 120, 'Ta chanson apaise tout le monde, même les animaux.', 'troubadour', {acces:['apaiser']}],
+  ['masque_velours', 3, 'Masque de velours', '🎭', 110, 'Imitation parfaite d\'une voix.', 'espion', {acces:['imitation']}],
+  ['miroir', 3, 'Miroir de vérité', '🪞', 130, 'Dans le reflet, les signes de mensonge durent plus longtemps, et deux signes en moins.', 'verite', {mj:{mensonge:{signes:2, revele:true}}}],
+  ['plume_rossignol', 3, 'Plume de rossignol', '🪶', 100, 'Une question de plus par villageois.', null, {acces:['ami']}],
+  ['corne', 3, 'Corne des messagers', '📯', 110, 'Tu convoques un habitant sur la place au moment suivant.', null, {acces:['corne']}],
+  ['harpe', 4, 'Harpe des Fondateurs', '🪉', 280, 'Une fois par moment, tout le monde dit la vérité.', null, {verite:4}],
+  ['anneau', 4, 'Anneau de l\'orateur', '💍', 260, 'Interroger ne coûte plus d\'action pendant un moment, une fois par enquête.', null, {acces:['anneau']}],
+  ['registre', 4, 'Grand Registre des secrets', '📔', 300, 'Un secret de chaque villageois, une fois par enquête.', null, {acces:['ami', 'secrets']}]
+]);
+O('sage', [
+  ['loupe_lecture', 1, 'Loupe de lecture', '🔎', 30, 'Déchiffrer : une lettre donnée.', null, {mj:{alphabet:{aide:1}}}],
+  ['plume_encre', 1, 'Plume et encre', '🖋️', 30, 'Tu annotes la grille de déduction.', null, {mj:{grille:{aide:1}}}],
+  ['baton_marche', 1, 'Bâton de marche', '🦯', 35, 'Une fois par enquête, aller dans un lieu hors du village ne coûte rien.', null, {acces:['baton']}],
+  ['sablier', 1, 'Sablier', '⏳', 45, 'Mini-jeux à chrono : 5 secondes de plus pour toi.', 'chef', {mjTous:{temps:5}}],
+  ['cle_archives', 1, 'Clé des archives', '🗝️', 50, 'Ouvre une page scellée par enquête.', 'archiviste', {acces:['scelle']}],
+  ['lunettes_sage', 1, 'Lunettes de sage', '👓', 40, 'Plans : la taille du calque est déjà la bonne (plus besoin de zoomer).', null, {mj:{plans:{echelle:1, zone:1.2}}}],
+  ['longue_vue', 2, 'Longue-vue', '🔭', 70, 'Tu observes le village la nuit depuis la mairie.', null, {acces:['longuevue']}],
+  ['livre_annote', 2, 'Grand Livre annoté', '📘', 80, 'Relie tout seul un indice du calepin à l\'enquête en cours.', 'archiviste', {acces:['relier']}],
+  ['cor', 2, 'Cor du rassemblement', '📯', 75, 'Une fois par enquête, une action en plus pour toute l\'équipe.', 'chef', {acces:['cor']}],
+  ['astrolabe', 2, 'Astrolabe', '🧭', 85, 'Prévoit l\'heure d\'un événement.', null, {acces:['etoiles']}],
+  ['pierre_runes', 2, 'Pierre-runes', '🪨', 65, 'Runes : une rune placée pour toi.', 'runes', {mj:{runes:{aide:1}}}],
+  ['cartes_fond', 2, 'Cartes des Fondateurs', '🗺️', 90, 'Les passages secrets apparaissent sur ta carte.', null, {acces:['passage']}],
+  ['baton_cristal', 3, 'Bâton de cristal', '🔮', 130, 'Révèle les runes cachées dans tous les lieux.', 'runes', {acces:['runes_cachees'], mj:{runes:{aide:1}}}],
+  ['chapeau_etoile', 3, 'Chapeau étoilé', '🎩', 110, 'Grille de déduction : une case remplie pour toi.', null, {mj:{grille:{aide:1}}}],
+  ['banniere', 3, 'Bannière de l\'équipe', '🚩', 120, 'Mini-jeux : une seconde chance pour toi.', 'chef', {chance:1}],
+  ['index', 3, 'Index des archives', '🗃️', 100, 'Chercher dans les archives ne coûte pas d\'action.', 'archiviste', {acces:['index']}],
+  ['boule', 3, 'Boule de cristal', '🔮', 140, 'Au moment d\'accuser, deux innocents sont rayés.', null, {stratege:2}],
+  ['grimoire_sage', 4, 'Grimoire du Sage fondateur', '📖', 280, 'Une fois par moment, tu vérifies si un indice est vrai.', null, {acces:['verification']}],
+  ['couronne', 4, 'Couronne de runes', '👑', 260, 'Les sceaux et les runes s\'ouvrent sans mini-jeu.', 'runes', {auto:{runes:9}}],
+  ['oeil_temps', 4, 'Œil du Temps', '👁️', 300, 'Une fois par enquête, ton équipe rejoue tout un moment.', null, {acces:['oeil_temps']}]
+]);
+/* Les objets qu'on ne vend plus (gardés pour les vieilles sauvegardes qui les ont déjà) : le carnet de ragots
+   (Romain, 5 novembre, 9 h 03 : le mini-jeu des ragots est abandonné) */
+D.OBJETS.carnet_ragots.retire = true;
+
+D.ENSEMBLES = {
+  ombre:{role:'pisteur', nom:'Ombre', ic:'🌑', bonus:'Aucune ronde ne te repère : se cacher devient très facile.', fx:{mj:{cachette:{facile:2}}}},
+  chasseur:{role:'pisteur', nom:'Chasseur', ic:'🦌', bonus:'Un tir raté se rejoue sans pénalité.', fx:{mj:{tir:{erreurs:2}}}},
+  lune:{role:'pisteur', nom:'Rôdeur de lune', ic:'🌙', bonus:'Toutes les traces brillent : tu vois toutes les empreintes, floues au loin, et ton cercle de vision grandit.', fx:{mj:{traces:{nuit:1, zone:1.2}}}},
+  vent:{role:'pisteur', nom:'Vent', ic:'🌬️', bonus:'Chaque poursuite a une étape de moins.', fx:{mj:{poursuite:{facile:2}}}},
+  labo:{role:'alchimiste', nom:'Laboratoire', ic:'⚗️', bonus:'Chaque potion fait une dose de plus.', fx:{doses:1}},
+  herbo:{role:'alchimiste', nom:'Herboriste', ic:'🌿', bonus:'Les ingrédients rares apparaissent sur la carte.', fx:{acces:['herbier'], cueilletteBonus:1}},
+  savant:{role:'alchimiste', nom:'Savant', ic:'🧐', bonus:'Chaque analyse donne deux détails.', fx:{acces:['detail'], detail:9}},
+  troubadour:{role:'barde', nom:'Troubadour', ic:'🎪', bonus:'Ton spectacle rassemble tout le village.', fx:{acces:['spectacle']}},
+  espion:{role:'barde', nom:'Espion', ic:'🕵️', bonus:'Tendre l\'oreille : encore une écoute de plus par enquête.', fx:{oreille:1}},
+  verite:{role:'barde', nom:'Vérité', ic:'⚖️', bonus:'Tous les mensonges sont détectés.', fx:{mj:{mensonge:{facile:3, revele:true}}}},
+  archiviste:{role:'sage', nom:'Archiviste', ic:'📚', bonus:'Le calepin relie seul les anciens indices utiles.', fx:{acces:['relier', 'index']}},
+  chef:{role:'sage', nom:'Chef', ic:'🚩', bonus:'Une action en plus pour toi à chaque moment.', fx:{actionBonus:1}},
+  runes:{role:'sage', nom:'Runes', ic:'ᚱ', bonus:'Les runes du Corbeau deviennent lisibles.', fx:{mj:{runes:{facile:3}, alphabet:{aide:2}}}}
+};
+
+/* ---------- Alchimie ---------- */
+D.INGR = {
+  eau:{nom:'Eau de la fontaine', ic:'💧', c:'#5aa9ff'},
+  miel:{nom:'Miel des ruches', ic:'🍯', c:'#f3c13e'},
+  baies:{nom:'Baies de sureau', ic:'🫐', c:'#7d3aa8'},
+  champignon:{nom:'Champignon lumineux', ic:'🍄', c:'#8ff3ff'},
+  trefle:{nom:'Trèfle des lièvres', ic:'☘️', c:'#52c05e'},
+  brume:{nom:'Brume du lavoir', ic:'🌫️', c:'#c9d3ff'},
+  lavande:{nom:'Lavande', ic:'🪻', c:'#a77bf0'},
+  pensee:{nom:'Pensées sauvages', ic:'🌼', c:'#ffd84a'},
+  menthe:{nom:'Menthe poivrée', ic:'🌿', c:'#3fcf9a'},
+  ortie:{nom:'Ortie piquante', ic:'🌱', c:'#2f9e44', rare:true},
+  racine:{nom:'Racine du Vieux Chêne', ic:'🪵', c:'#9b6a3c', rare:true},
+  lune:{nom:'Poussière de lune', ic:'✨', c:'#eef0ff', rare:true}
+};
+/* cuisson = mini-jeu ; pour = rôles qui peuvent s'en servir ; fx = effet quand on l'utilise */
+D.POTIONS = {
+  /* utile : à quoi elle sert et pour qui, en une ou deux phrases pour un enfant (montré dans le grimoire et l'armoire à potions de l'atelier) */
+  revelatrice:{nom:'Encre révélatrice', ic:'🫙', c:'#ff7a59', pour:['sage'], d:'Fait apparaître l\'encre invisible.', fx:{acces:['encre']},
+    utile:'Pour le Sage : elle fait apparaître l\'écriture invisible, sur une page blanche ou une lettre blanche. Donne-lui son code !'},
+  lumiere:{nom:'Potion de lumière', ic:'💡', c:'#8ff3ff', pour:['pisteur', 'barde', 'sage'], d:'Pour voir dans le noir pendant tout un moment.', fx:{acces:['sombre']},
+    utile:'Pour voir dans le noir pendant tout un moment. Le Pisteur en a besoin pour guetter dans le moulin, la nuit.'},
+  rapidite:{nom:'Potion de rapidité', ic:'💨', c:'#7cf09a', pour:['pisteur'], d:'Pour courir comme le vent : la poursuite est plus facile.', fx:{mj:{poursuite:{facile:2, lent:0.85}}},
+    utile:'Pour le Pisteur : il la boit avant une poursuite, il court comme le vent et rattrape plus facilement.'},
+  invisibilite:{nom:'Potion d\'invisibilité', ic:'👻', c:'#c9d3ff', pour:['barde', 'pisteur'], d:'Pour écouter ou se cacher sans être vu.', fx:{acces:['ecoute'], mj:{cachette:{facile:3}}},
+    utile:'Pour le Pisteur ou le Barde : quand il faut se cacher pour guetter quelqu\'un, personne ne te voit, c\'est bien plus facile.'},
+  verite:{nom:'Potion de vérité', ic:'💬', c:'#ffd84a', pour:['barde'], d:'Démasquer un menteur devient très facile.', fx:{mj:{mensonge:{facile:3, revele:true}}},
+    utile:'Pour le Barde : il la boit avant de démasquer quelqu\'un, et le mensonge se voit tout de suite.'},
+  clarte:{nom:'Potion de clarté d\'esprit', ic:'🧠', c:'#6cb6ff', pour:['sage'], d:'Déchiffrer et réfléchir devient plus facile.', fx:{mj:{alphabet:{aide:2}, plans:{zone:1.4}, grille:{aide:1}, runes:{aide:1}}},
+    utile:'Pour le Sage : ses énigmes deviennent plus faciles, l\'alphabet secret, les vieux plans, la grille et les runes.'},
+  fumigene:{nom:'Fumigène', ic:'💨', c:'#9aa3c8', pour:['pisteur', 'barde'], d:'Un nuage de fumée pour se cacher ou s\'enfuir.', fx:{mj:{cachette:{facile:2}, poursuite:{erreurs:1}}},
+    utile:'Pour le Pisteur ou le Barde : un nuage de fumée pour se cacher plus facilement, et une chance de plus pendant une poursuite.'},
+  eclairante:{nom:'Poudre éclairante', ic:'🌟', c:'#ffe3a3', pour:['pisteur', 'sage'], d:'Éclaire un lieu sombre.', fx:{acces:['sombre']},
+    utile:'Pour le Pisteur ou le Sage : elle éclaire un endroit tout noir pendant un moment, comme le moulin la nuit.'},
+  /* Élixir du Cœur vaillant : rend 1 cœur d'accusation au Sage (une fois par enquête, jamais plus de 3). Effet géré par le moteur (clé coeur). */
+  coeur:{nom:'Élixir du Cœur vaillant', ic:'❤️', c:'#ff5a7a', pour:['sage'], d:'Rend un cœur d\'accusation au Sage, une fois par enquête.', fx:{coeur:1},
+    utile:'Pour le Sage : pendant l\'accusation, s\'il a perdu un cœur, il boit l\'élixir et le récupère (une fois par enquête).'},
+  /* Hydromel des confidences (talent du Barde) : le Barde donne la recette à l'Alchimiste par un code ; tard = son code
+     est ajouté à la fin de la liste des codes (moteur-base.js), pour que les codes déjà connus ne bougent pas. */
+  hydromel:{nom:'Hydromel des confidences', ic:'🍯', c:'#f0a830', pour:['barde'], d:'Le Barde l\'offre à un villageois pendant un interrogatoire : il innocente un suspect.', fx:{}, tard:true,
+    utile:'Pour le Barde (talent Hydromel des confidences) : il l\'offre à un villageois, qui lui confie qu\'un suspect n\'y est pour rien.'}
+};
+/* recette : ingrédients dans l'ordre ; secrete = l'ordre et les quantités sont dans le Grand Livre du Sage.
+   Toutes les potions se préparent au grand chaudron (mini-jeu 'chaudron', fichier mj-chaudron.js). */
+D.RECETTES = {
+  revelatrice:{ingr:[['eau', 2], ['miel', 1], ['baies', 3]], cuisson:'chaudron', secrete:true},
+  lumiere:{ingr:[['champignon', 2], ['eau', 1]], cuisson:'chaudron'},
+  rapidite:{ingr:[['trefle', 2], ['miel', 1]], cuisson:'chaudron'},
+  invisibilite:{ingr:[['brume', 2], ['lavande', 1]], cuisson:'chaudron'},
+  verite:{ingr:[['pensee', 2], ['miel', 1]], cuisson:'chaudron'},
+  clarte:{ingr:[['menthe', 2], ['eau', 1]], cuisson:'chaudron'},
+  fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
+  eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},
+  coeur:{ingr:[['miel', 2], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},
+  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'}   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
+};
+
+/* ---------- Le grand chaudron ----------
+   Les couleurs de la potion, du plus froid au plus chaud. En dessous du violet : ça gèle ; au-dessus du bouillant : ça explose. */
+D.ZONES_CHAUDRON = {
+  violet:{nom:'violette', grand:'VIOLETTE', dit:'tout en bas, très froide', c:'#8b52e0'},
+  bleu:{nom:'bleue', grand:'BLEUE', dit:'froide', c:'#3f86f0'},
+  vert:{nom:'verte', grand:'VERTE', dit:'au milieu', c:'#3fcf6a'},
+  'arc-en-ciel':{nom:'arc-en-ciel', grand:'ARC-EN-CIEL', dit:'la petite bande au milieu du vert', c:'#ff8fe0'},
+  jaune:{nom:'jaune', grand:'JAUNE', dit:'chaude', c:'#ffd23f'},
+  rouge:{nom:'rouge', grand:'ROUGE', dit:'très chaude', c:'#f04a35'},
+  bouillant:{nom:'bouillante', grand:'BOUILLANTE', dit:'tout en haut, quand ça bouillonne', c:'#ff2410'}
+};
+D.ORDRE_ZONES = ['violet', 'bleu', 'vert', 'jaune', 'rouge', 'bouillant'];
+/* Pour chaque potion : la zone où elle doit finir, et la frise des ingrédients (mêmes ingrédients et quantités que D.RECETTES,
+   dans l'ordre). ecart = temps relatif avant la dose (1 = un écart normal ; 0,5 = deux doses presque ensemble aux niveaux élevés). */
+var CHAUDRON_FRISES = {
+  revelatrice:['rouge', [0, 1, 1.2, 1, 0.45, 1]],
+  lumiere:['vert', [0, 0.5, 1.2]],
+  rapidite:['vert', [0, 1, 0.6]],
+  invisibilite:['vert', [0, 0.45, 1.2]],
+  verite:['jaune', [0, 1, 0.5]],
+  clarte:['bleu', [0, 0.45, 1.1]],
+  fumigene:['bouillant', [0, 1]],
+  eclairante:['arc-en-ciel', [0, 0.5]],
+  coeur:['rouge', [0, 0.8, 1, 0.6]],
+  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]]
+};
+D.CHAUDRON = {};
+Object.keys(D.RECETTES).forEach(function(id){
+  var c = CHAUDRON_FRISES[id] || ['vert', []], frise = [];
+  D.RECETTES[id].ingr.forEach(function(x){
+    for(var k = 0; k < x[1]; k++){ var i = frise.length; frise.push({ingr:x[0], ecart:c[1][i] !== undefined ? c[1][i] : (i ? 1 : 0)}); }
+  });
+  D.CHAUDRON[id] = {zone:c[0], frise:frise};
+});
+D.RECETTES_DE_BASE = ['lumiere', 'rapidite', 'invisibilite'];
+
+/* ANCIEN chaudron pas à pas : n'est plus utilisé par l'atelier ni par le Sage (remplacé par D.CHAUDRON).
+   Gardé seulement parce que moteur-actions.js le lit encore (recettes passées à l'atelier).
+   Étapes de préparation au grand chaudron (dans l'ordre).
+   verser {ingr, n} · feu {f:'doux'|'moyen'|'vif'} · tourner {sens:'droite'|'gauche', n:tours}
+   attendre {bulles:'petites'|'grosses'} · fiole (mettre en fiole au bon moment) */
+D.ETAPES = {
+  revelatrice:[{t:'verser', ingr:'eau', n:2}, {t:'feu', f:'doux'}, {t:'verser', ingr:'miel', n:1}, {t:'tourner', sens:'droite', n:3},
+    {t:'verser', ingr:'baies', n:3}, {t:'feu', f:'vif'}, {t:'attendre', bulles:'grosses'}, {t:'tourner', sens:'gauche', n:1}, {t:'fiole'}],
+  lumiere:[{t:'verser', ingr:'eau', n:1}, {t:'feu', f:'moyen'}, {t:'verser', ingr:'champignon', n:2}, {t:'tourner', sens:'droite', n:2},
+    {t:'attendre', bulles:'petites'}, {t:'fiole'}],
+  rapidite:[{t:'verser', ingr:'trefle', n:2}, {t:'verser', ingr:'miel', n:1}, {t:'feu', f:'vif'}, {t:'tourner', sens:'gauche', n:4}, {t:'fiole'}],
+  invisibilite:[{t:'verser', ingr:'brume', n:2}, {t:'feu', f:'doux'}, {t:'tourner', sens:'droite', n:1}, {t:'verser', ingr:'lavande', n:1},
+    {t:'tourner', sens:'gauche', n:1}, {t:'attendre', bulles:'petites'}, {t:'fiole'}],
+  verite:[{t:'verser', ingr:'pensee', n:2}, {t:'feu', f:'moyen'}, {t:'verser', ingr:'miel', n:1}, {t:'tourner', sens:'droite', n:2}, {t:'feu', f:'doux'}, {t:'fiole'}],
+  clarte:[{t:'verser', ingr:'menthe', n:2}, {t:'verser', ingr:'eau', n:1}, {t:'feu', f:'doux'}, {t:'tourner', sens:'gauche', n:2}, {t:'attendre', bulles:'petites'}, {t:'fiole'}],
+  fumigene:[{t:'verser', ingr:'ortie', n:1}, {t:'feu', f:'vif'}, {t:'verser', ingr:'brume', n:1}, {t:'tourner', sens:'droite', n:3}, {t:'fiole'}],
+  eclairante:[{t:'verser', ingr:'champignon', n:1}, {t:'verser', ingr:'pensee', n:1}, {t:'feu', f:'moyen'}, {t:'tourner', sens:'gauche', n:2}, {t:'fiole'}]
+};
+/* Texte d'une recette (Grand Livre du Sage, grimoire) : les ingrédients dans l'ordre, combien, puis la zone de fin.
+   Ex. : « 2 eau de la fontaine, puis 1 miel des ruches, puis 3 baies de sureau ; à la fin, garder la potion dans la zone ROUGE du chaudron (très chaude) » */
+D.texteEtapes = function(id){
+  var R = D.RECETTES[id], C = D.CHAUDRON[id];
+  if(!R) return '';
+  var s = R.ingr.map(function(x){ return x[1] + ' ' + D.INGR[x[0]].nom.toLowerCase(); }).join(', puis ');
+  var Z = C && D.ZONES_CHAUDRON[C.zone];
+  if(Z) s += ' ; à la fin, garder la potion ' + (C.zone === 'arc-en-ciel' ? 'dans l\'ARC-EN-CIEL du chaudron (' : 'dans la zone ' + Z.grand + ' du chaudron (') + Z.dit + ')';
+  return s;
+};
+/* Meubles et rangements de l'atelier (ce qui sort des cartons) */
+D.MEUBLES = ['etagere', 'commode', 'caisse', 'sac', 'bocaux', 'tapis', 'lampe', 'plante', 'table', 'tabouret', 'tableau', 'horloge', 'chat'];
+
+/* ---------- Villageois (fixes d'une enquête à l'autre) ---------- */
+D.PNJ = {
+  grosbec:{nom:'Monsieur Grosbec', court:'Grosbec', metier:'le maire', ic:'🎩', pied:5},
+  gaspard:{nom:'Gaspard Levain', court:'Gaspard', metier:'le boulanger', ic:'👨‍🍳', pied:5},
+  melusine:{nom:'Mélusine Dufil', court:'Mélusine', metier:'la couturière', ic:'👩‍🦰', pied:3},
+  basile:{nom:'Basile Potiron', court:'Basile', metier:'le jardinier', ic:'👨‍🌾', pied:5},
+  odette:{nom:'Odette Ronron', court:'Odette', metier:'la grand-mère aux sept chats', ic:'👵', pied:3},
+  tim:{nom:'Tim', court:'Tim', metier:'le petit ramoneur', ic:'🧒', pied:3},
+  victor:{nom:'Victor Lettrier', court:'Victor', metier:'le facteur', ic:'🧔', pied:5},
+  anselme:{nom:'Anselme Bourdon', court:'Anselme', metier:'le sonneur de cloches', ic:'👴', pied:5},
+  iris:{nom:'Iris Lavandin', court:'Iris', metier:'l\'herboriste', ic:'👩‍🌾', pied:4},
+  fortune:{nom:'Fortuné Malin', court:'Fortuné', metier:'le colporteur', ic:'🤠', pied:4},
+  silas:{nom:'Silas Sec', court:'Silas', metier:'le garde champêtre', ic:'💂', pied:4},
+  farinel:{nom:'Aimé Farinel', court:'Farinel', metier:'le meunier', ic:'🧑‍🌾', pied:5},
+  margot:{nom:'Margot Chopine', court:'Margot', metier:'la tavernière', ic:'👩‍🍳', pied:4},
+  /* enquête 2 (§ 12.11) : le charretier (nom à confirmer par Romain) */
+  bastien:{nom:'Bastien Roulebosse', court:'Bastien', metier:'le charretier', ic:'🛒', pied:5},
+  voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
+};
+/* Où habite chacun, d'une enquête à l'autre (la carte, carte-jeu.js) : une maison dont l'habitant n'est pas dans le registre de
+   l'enquête (on ne le connaît pas encore) montre un rond « ? » au lieu de son visage (Romain, 5 novembre, 01 h 20).
+   Le registre de l'enquête (E.registre[id].maison) passe avant. (Margot : la taverne ; Farinel : le moulin ; Fortuné : sa carriole.) */
+var DOMICILES = {gaspard:'F1', melusine:'L4', victor:'L6', iris:'F4', odette:'L2', tim:'L7', basile:'B3', bastien:'B2', silas:'B1'};
+Object.keys(DOMICILES).forEach(function(id){ D.PNJ[id].domicile = DOMICILES[id]; });
+/* Le métier en court, avec son icône (les photos du tableau de liège du Barde, le Carnet) */
+var METIERS = {grosbec:['maire', '🏛️'], gaspard:['boulanger', '🍞'], melusine:['couturière', '🧵'], basile:['jardinier', '🥕'],
+  odette:['grand-mère', '🐈'], tim:['ramoneur', '🧹'], victor:['facteur', '✉️'], anselme:['sonneur', '🔔'], iris:['herboriste', '🌿'],
+  fortune:['colporteur', '🧳'], silas:['garde', '🛡️'], farinel:['meunier', '🌾'], margot:['tavernière', '🍺'], bastien:['charretier', '🛒']};   /* 🛒 est au charretier (Romain) : le colporteur prend 🧳 */
+Object.keys(METIERS).forEach(function(id){ D.PNJ[id].metierCourt = METIERS[id][0]; D.PNJ[id].icMetier = METIERS[id][1]; });
+})();

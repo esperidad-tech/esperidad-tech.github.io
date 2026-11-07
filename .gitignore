@@ -1,0 +1,5 @@
+# constructions et fichiers de travail (refaits à chaque fois)
+d-*/
+final-*.html
+*.zip
+__pycache__/

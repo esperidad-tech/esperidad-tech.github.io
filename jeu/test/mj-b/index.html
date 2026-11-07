@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc d'essai — mini-jeux Barde et Sage</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/mj-core.css">
+<link rel="stylesheet" href="../../src/mj-barde-sage.css">
+<style>
+body{padding:10px;background:var(--nuit)}
+.barre{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.barre button{min-height:40px;padding:4px 10px;border-radius:10px;border:2px solid var(--trait);background:var(--nuit-2);color:var(--lune);font-size:.85rem}
+.barre button[aria-pressed="true"]{border-color:var(--or);color:var(--or-pale)}
+.barre label{font-size:.8rem;display:flex;align-items:center;gap:4px}
+select{font:inherit;font-size:.85rem}
+#scene{height:calc(100vh - 92px);min-height:560px;display:flex}
+#scene > .mj{flex:1}
+#journal{position:fixed;left:8px;right:8px;bottom:6px;font-size:.75rem;color:var(--brume);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</head>
+<body>
+<div class="barre">
+  <select id="jeux" aria-label="Jeu"></select>
+  <label>Niv. <select id="niv"></select></label>
+  <label><input type="checkbox" data-mod="erreurs"> +1 erreur</label>
+  <label><input type="checkbox" data-mod="aide"> aide 1</label>
+  <label><input type="checkbox" data-mod="revele"> révèle</label>
+  <label><input type="checkbox" data-mod="lent"> lent</label>
+  <label><input type="checkbox" data-mod="zone"> zone ×1,5</label>
+  <label><input type="checkbox" data-mod="transparence"> lunettes</label>
+  <label><input type="checkbox" data-mod="deuxiemeChance"> 2ᵉ chance</label>
+</div>
+<div id="scene"></div>
+<div id="journal"></div>
+<script>
+window.__lus = []; window.__sons = []; window.__fins = [];
+window.Brume = {
+  lire: function(t){ window.__lus.push(t); document.getElementById('journal').textContent = '🔊 ' + t; },
+  stop: function(){},
+  son: function(t){ window.__sons.push(t); }
+};
+</script>
+<script>
+if(/persos=1/.test(location.search)) document.write('<link rel="stylesheet" href="../../src/persos.css"><script src="../../src/persos.js"><\/script>');
+</script>
+<script src="../../src/mj-core.js"></script>
+<script src="../../src/mj-barde-sage.js"></script>
+<script>
+(function(){
+  var JEUX = ['mensonge','ordre','ragots','alphabet','plans','grille','runes'];
+  var cour = 'mensonge', barre = document.getElementById('jeux'), niv = document.getElementById('niv');
+  for(var n = 1; n <= 10; n++){ var o = document.createElement('option'); o.value = n; o.textContent = n; niv.appendChild(o); }
+  JEUX.forEach(function(j){
+    var o = document.createElement('option'); o.value = j; o.textContent = MJ.TYPES[j].ic + ' ' + MJ.TYPES[j].nom; barre.appendChild(o);
+  });
+  barre.onchange = function(){ cour = barre.value; lancer(); };
+  function mods(){
+    var m = {};
+    document.querySelectorAll('[data-mod]').forEach(function(c){
+      if(!c.checked) return;
+      var k = c.dataset.mod;
+      m[k] = k === 'erreurs' || k === 'aide' ? 1 : k === 'lent' ? 0.8 : k === 'zone' ? 1.5 : true;
+    });
+    return m;
+  }
+  window.lancer = function(j, n, m){
+    if(j) cour = j;
+    if(n) niv.value = n;
+    barre.value = cour;
+    var p = MJ.reglages(cour, +niv.value, m || mods());
+    if(cour === 'ragots') p.ouvrirCarnet = function(){ window.Brume.lire('carnet ouvert'); };
+    var sc = document.getElementById('scene');
+    if(window.__jeu) window.__jeu.arreter();
+    window.__jeu = MJ.lancer(sc, cour, p, function(r){ window.__fins.push(r); document.getElementById('journal').textContent = 'FIN : ' + JSON.stringify(r).slice(0, 200); }, {aides: (m || mods()).aide ? [{ic:'🛎️', nom:'Clochette de vérité', effet:'tinte au mensonge'}] : []});
+  };
+  niv.onchange = function(){ lancer(); };
+  lancer();
+})();
+</script>
+</body>
+</html>

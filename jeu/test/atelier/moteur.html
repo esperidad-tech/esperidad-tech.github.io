@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier dans un conteneur sans hauteur (comme le moteur)</title>
+<link rel="stylesheet" href="../../src/base.css"><link rel="stylesheet" href="../../src/atelier.css">
+<style>header{height:140px;background:#1c2447;display:grid;place-items:center} .b-atelier-montage{min-height:60vh}</style>
+</head><body>
+<header><h2>En-tête du moteur (onglets…)</h2></header>
+<section><div id="atelier-ici" class="b-atelier-montage"></div></section>
+<script src="../../src/donnees.js"></script><script src="../../src/mj-core.js"></script><script src="../../src/atelier.js"></script>
+<script>
+  var etat = Atelier.etatNeuf(); Atelier.ajouter(etat, 'baies', 3);
+  window.v = Atelier.vue(document.getElementById('atelier-ici'), {etat:etat, ingr:DONNEES.INGR, fioles:2, potions:{}, niveau:3});
+</script></body></html>

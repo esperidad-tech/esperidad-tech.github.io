@@ -1,0 +1,55 @@
+/* ==========================================================
+   Brumeval — les missions de base, en haut du Carnet (mission.js)
+   ========================================================== */
+.b-missions{margin:0 0 18px;padding:12px 14px 6px;border-radius:18px;background:linear-gradient(180deg, rgba(255,210,63,.13), rgba(255,210,63,.05));border:2px solid rgba(255,210,63,.55)}
+.b-missions h3{margin:0 0 8px;font-family:var(--f-titre);font-weight:400;font-size:1.25rem;color:var(--or-pale)}
+.b-missions ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.b-missions li{display:flex;align-items:center;gap:10px;padding:8px 6px 8px 10px;border-radius:14px;background:rgba(0,0,0,.18);min-height:52px}
+.b-mi-corps{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.b-missions li p{margin:0;font-weight:700;line-height:1.3}
+.b-missions li .b-lire{flex:none}
+.b-mi-ic{flex:none;font-size:1.45rem;width:1.6em;text-align:center}
+.b-missions li.fait{background:rgba(63,207,106,.14)}
+.b-missions li.fait p{color:var(--brume);font-weight:400}
+.b-mi-ok{flex:none;display:flex;flex-direction:column;align-items:center;font-size:1.35rem;line-height:1;color:#3fcf6a;animation:b-mi-pop .5s ease-out}
+.b-mi-ok small{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.b-missions li.libre{background:transparent;border:2px dashed rgba(238,240,255,.25)}
+.b-missions li.libre p{font-weight:400;font-style:italic;color:var(--brume)}
+.b-mi-fait{min-height:44px;width:auto}
+@keyframes b-mi-pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}
+
+/* La case que le joueur coche lui-même */
+.b-mi-case{flex:none;width:34px;height:34px;min-width:34px;margin:0;padding:0;border-radius:9px;border:2.5px solid rgba(238,240,255,.55);background:rgba(0,0,0,.25);color:#1c2447;font-size:1.25rem;font-weight:900;line-height:1;display:grid;place-items:center;cursor:pointer}
+.b-mi-case.on{background:#3fcf6a;border-color:#3fcf6a;color:#10301a}
+.b-missions li.coche p{opacity:.8}
+.b-missions li.piste{background:rgba(143,243,255,.08);border:2px dashed rgba(143,243,255,.35)}
+.b-missions li.piste p{font-weight:400}
+.b-missions li.piste p b{color:#8ff3ff}
+
+/* Pastille sur l'onglet Carnet */
+.b-onglets button span{position:relative}
+.b-badge-mission{position:absolute;top:-6px;right:-14px;font-style:normal;font-size:.8rem;line-height:1;padding:3px;border-radius:50%;background:#ffd23f;box-shadow:0 0 0 2px var(--nuit, #1c2447), 0 0 10px rgba(255,210,63,.8);animation:b-mi-bat 1.6s ease-in-out infinite}
+@keyframes b-mi-bat{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+/* Écran de la lettre */
+.b-lettre-mission{margin:10px 0 0;padding:8px 12px;border-radius:12px;background:rgba(255,210,63,.12);border:1.5px solid rgba(255,210,63,.5);font-weight:700}
+@media (prefers-reduced-motion: reduce){ .b-badge-mission, .b-mi-ok{animation:none} }
+
+/* Téléphone : plus de place pour le texte des missions (l'enquête 1 en a beaucoup) */
+@media (max-width: 520px){
+  .b-missions{padding:10px 8px 6px}
+  .b-missions li{gap:7px;padding:7px 4px 7px 7px}
+  .b-mi-ic{font-size:1.2rem;width:1.2em}
+  .b-mi-case{width:30px;height:30px;min-width:30px}
+  .b-missions li p{font-size:.95rem}
+}
+
+/* « 🎯 Mes missions » repliable (Romain, 5 novembre, 12 h 31) */
+.b-missions h3{margin:0 0 8px}
+.b-mi-plier{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;cursor:pointer;font-family:var(--f-titre);font-size:1.25rem;color:var(--or-pale)}
+.b-mi-plier > span{flex:1}
+.b-mi-compte{font-family:var(--f-texte, inherit);font-size:.85rem;font-weight:700;color:var(--lune);background:rgba(0,0,0,.25);border-radius:999px;padding:3px 10px}
+.b-mi-fleche{font-style:normal;font-size:1rem;transition:transform .2s}
+.b-missions.plie{padding-bottom:12px}
+.b-missions.plie h3{margin:0}
+.b-missions.plie .b-mi-fleche{transform:rotate(-90deg)}

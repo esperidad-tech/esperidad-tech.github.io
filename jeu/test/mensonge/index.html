@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc d'essai — Repérer le mensonge</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/mj-core.css">
+<link rel="stylesheet" href="../../src/persos.css">
+<link rel="stylesheet" href="../../src/mj-barde-sage.css">
+<style>
+body{padding:8px;background:var(--nuit);user-select:auto}
+.barre{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:6px;font-size:.8rem}
+.barre select,.barre button{font:inherit;font-size:.8rem;min-height:34px;border-radius:8px;border:2px solid var(--trait);background:var(--nuit-2);color:var(--lune);padding:2px 6px}
+.barre label{display:flex;align-items:center;gap:3px}
+.onglets button[aria-pressed="true"]{border-color:var(--or);color:var(--or-pale)}
+#scene{height:calc(100vh - 96px);min-height:600px;display:flex}
+#scene > .mj{flex:1}
+#journal{font-size:.72rem;color:var(--brume);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.2em}
+#planche{display:none}
+body.vue-planche #planche,body.vue-mimiques #planche,body.vue-sourires #planche{display:block}
+body.vue-planche #jeu,body.vue-mimiques #jeu,body.vue-sourires #jeu{display:none}
+.pl-ligne{display:grid;grid-template-columns:96px repeat(var(--n), var(--w, minmax(0,1fr)));gap:5px;align-items:start;margin-bottom:6px}
+.pl-ligne > b{font-size:.78rem;color:var(--or-pale);line-height:1.1;align-self:center}
+.pl-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.pl-cadre{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;border:3px solid var(--trait)}
+.pl-cadre svg{width:100%;height:100%;display:block}
+.pl-cell.signe .pl-cadre{border-color:#ff8fb3}
+.pl-cell.piege .pl-cadre{border-color:#f5b945}
+.pl-cell.vraie .pl-cadre{border-color:#5fcf86}
+.pl-cell.secret .pl-cadre{border-color:#ff4f66;box-shadow:0 0 0 2px #ff4f66}
+.pl-nom{font-size:.66rem;color:var(--lune);text-align:center;line-height:1.12;font-weight:700}
+.pl-sorte{font-size:.6rem;color:var(--brume);text-align:center;text-transform:uppercase;letter-spacing:.06em}
+.pl-titre{font-family:var(--f-titre);color:var(--or-pale);font-size:1.4rem;margin:4px 0 8px}
+.pl-legende{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;margin-bottom:10px}
+.pl-legende span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.pl-grille{display:grid;grid-template-columns:repeat(var(--cols,5), 1fr);gap:10px}
+</style>
+</head>
+<body>
+<div class="barre">
+  <span class="onglets"><button data-vue="jeu" aria-pressed="true">🎮 Jeu</button> <button data-vue="planche">🎭 Planche des villageois</button> <button data-vue="mimiques">📋 Les 27 mimiques</button> <button data-vue="sourires">😬 Sourires et lèvres</button></span>
+  <label>Villageois <select id="pnj"></select></label>
+  <label>Niv. <select id="niv"></select></label>
+  <label><input type="checkbox" data-mod="revele"> révèle (clochette)</label>
+  <label><input type="checkbox" data-mod="aide"> aide +1 (Revoir)</label>
+  <label><input type="checkbox" data-mod="erreurs"> +1 erreur</label>
+  <label><input type="checkbox" data-mod="lent"> lent ×0,8</label>
+  <label><input type="checkbox" data-mod="temps"> temps +3 s</label>
+  <label><input type="checkbox" data-mod="signes"> signes −2</label>
+  <label><input type="checkbox" data-mod="phrases"> phrases −1</label>
+  <label><input type="checkbox" data-mod="indice"> flair ×2</label>
+  <label><input type="checkbox" id="enquete"> répliques de l'enquête 3</label>
+  <button id="relancer">↻ Relancer</button>
+</div>
+<div id="jeu"><div id="scene"></div><div id="journal"></div></div>
+<div id="planche"></div>
+<script>
+window.__lus = []; window.__sons = []; window.__fins = [];
+window.Brume = {
+  lire: function(t){ window.__lus.push(t); document.getElementById('journal').textContent = '🔊 ' + t; },
+  stop: function(){},
+  son: function(t){ window.__sons.push(t); }
+};
+</script>
+<script src="../../src/mj-core.js"></script>
+<script src="../../src/persos.js"></script>
+<script src="../../src/mj-barde-sage.js"></script>
+<script>
+(function(){
+var q = new URLSearchParams(location.search);
+var P = window.Persos, DEF = MJ.TYPES.mensonge;
+/* banc seulement : garde le résultat brut du jeu (mj-core n'en transmet qu'une partie) */
+var jouer0 = DEF.jouer; DEF.jouer = function(el, p, fin){ return jouer0.call(this, el, p, function(r){ window.__brut = r; fin(r); }); };
+var selP = document.getElementById('pnj'), selN = document.getElementById('niv');
+selP.innerHTML = '<option value="">par défaut (Fortuné)</option>' + Object.keys(P.PNJ).map(function(id){ return '<option value="' + id + '">' + P.PNJ[id].nom + '</option>'; }).join('');
+for(var n = 1; n <= 10; n++) selN.innerHTML += '<option value="' + n + '">' + n + '</option>';
+selN.value = q.get('niv') || '10'; selP.value = q.get('pnj') || '';
+(q.get('mods') || '').split(',').forEach(function(m){ var c = document.querySelector('[data-mod="' + m + '"]'); if(c) c.checked = true; });
+function mods(){
+  var m = {};
+  document.querySelectorAll('[data-mod]').forEach(function(c){
+    if(!c.checked) return;
+    var k = c.dataset.mod;
+    m[k] = k === 'erreurs' || k === 'aide' || k === 'phrases' ? 1 : k === 'signes' || k === 'indice' ? 2 : k === 'lent' ? .8 : k === 'temps' ? 3 : true;
+  });
+  return m;
+}
+var ENQ = [{texte:'La soupe d\'aujourd\'hui est aux poireaux.', ment:false}, {texte:'Hier, j\'ai vu un poisson voler au-dessus du lavoir !', ment:true}, {texte:'Gaspard a fait cent pains cette nuit.', ment:false}];
+window.lancer = function(opts){
+  opts = opts || {};
+  var m = opts.mods || mods(), niv = +(opts.niv || selN.value);
+  var p = MJ.reglages('mensonge', niv, m);
+  var id = opts.pnj !== undefined ? opts.pnj : selP.value;
+  if(document.getElementById('enquete').checked){ p.pnj = 'margot'; p.repliques = ENQ; }
+  if(id) p.pnj = id;
+  if(opts.repliques) p.repliques = opts.repliques;
+  if(opts.signes) p.listeSignes = opts.signes;
+  var sc = document.getElementById('scene');
+  if(window.__jeu) window.__jeu.arreter();
+  window.__params = p;
+  window.__jeu = MJ.lancer(sc, 'mensonge', p, function(r){ window.__fins.push(r); document.getElementById('journal').textContent = 'FIN : ' + JSON.stringify(r).slice(0, 220); },
+    {aides: m.revele ? [{ic:'🛎️', nom:'Clochette de vérité', effet:'signes plus longs'}] : [], sansIntro: !!opts.sansIntro});
+};
+document.getElementById('relancer').onclick = function(){ lancer(); };
+selP.onchange = selN.onchange = function(){ lancer(); if(document.body.className) planche(); };
+document.querySelectorAll('[data-mod],#enquete').forEach(function(c){ c.onchange = function(){ lancer(); }; });
+
+/* ---------- Planches ---------- */
+var ORDRE = Object.keys(DEF.MIMIQUES).filter(function(k){ return DEF.MIMIQUES[k].sorte === 'signe'; }).concat(Object.keys(DEF.MIMIQUES).filter(function(k){ return DEF.MIMIQUES[k].sorte !== 'signe'; }));
+/* moment (ms) où l'on fige les gestes brefs pour la photo */
+var GEL = {sueur:1300, double:110, lent:330, hoche:200, nonTete:160};
+var SORTE = {signe:'signe du menteur', vraie:'mimique honnête'};
+function cellule(id, mid, i, grand){
+  var m = DEF.MIMIQUES[mid];
+  var cls = m.sorte + (m.secret ? ' secret' : '');
+  var svg = P.pnj(id, {anime:false, expressif:true, cadre:'visage', id:'pl-' + id + '-' + i + (grand ? 'g' : '')});
+  return '<div class="pl-cell ' + cls + '"><div class="pl-cadre" data-m="' + mid + '">' + svg + '</div>' +
+    '<div class="pl-nom">' + (i + 1) + '. ' + m.ic + ' ' + m.nom + '</div>' +
+    (grand ? '<div class="pl-sorte">' + (m.secret ? '★ signe secret' : SORTE[m.sorte]) + '</div>' : '') + '</div>';
+}
+function figer(){
+  document.querySelectorAll('.pl-cadre[data-m]').forEach(function(cd){
+    var mid = cd.dataset.m, m = DEF.MIMIQUES[mid], svg = cd.querySelector('svg');
+    var e = m.e({cote:1, F:.85, p:{signe:.9, double:.4}});
+    if(mid === 'sueur') e.sueurDuree = 3;
+    e = Object.assign({}, e, {vitesse:0, vitesseRougeur:0});
+    if(mid === 'rougeur') e.rougeur = .7;
+    P.expression(svg, e);
+    if(GEL[mid] != null && svg.getAnimations) svg.getAnimations({subtree:true}).forEach(function(a){ a.pause(); a.currentTime = GEL[mid]; });
+  });
+}
+function planche(){
+  var out = '', vue = document.body.className;
+  if(vue === 'vue-sourires'){
+    /* les 2 nouveaux signes à côté des vrais sourires et de la morsure secrète */
+    var COLS = ['sourireFerme', 'petitSourire', 'grandSourire', 'calme', 'rieurs', 'force', 'coin', 'mordille', 'morsure', 'pince'];
+    var vids = q.get('ids') ? q.get('ids').split(',') : ['margot', 'gaspard', 'iris', 'fortune', 'odette', 'tim'];
+    out += '<div class="pl-titre">Sourire forcé et mordillement, à côté des vrais sourires</div>' +
+      '<div class="pl-legende"><span style="--c:#5fcf86">honnête</span><span style="--c:#ff8fb3">signe du menteur</span><span style="--c:#ff4f66">★ signe secret</span></div>';
+    out += '<div class="pl-ligne" style="--n:' + COLS.length + '"><b></b>' + COLS.map(function(mid){ var m = DEF.MIMIQUES[mid]; return '<div class="pl-nom">' + m.ic + ' ' + (m.court || m.nom) + (m.secret ? ' ★' : '') + '</div>'; }).join('') + '</div>';
+    vids.forEach(function(id){
+      out += '<div class="pl-ligne" style="--n:' + COLS.length + '"><b>' + P.PNJ[id].nom + '</b>' + COLS.map(function(mid, i){
+        var m = DEF.MIMIQUES[mid];
+        return '<div class="pl-cell ' + m.sorte + (m.secret ? ' secret' : '') + '"><div class="pl-cadre" data-m="' + mid + '">' + P.pnj(id, {anime:false, expressif:true, cadre:'visage', id:'ps-' + id + '-' + i}) + '</div></div>';
+      }).join('') + '</div>';
+    });
+  } else if(vue === 'vue-mimiques'){
+    var id = selP.value || q.get('pnj') || 'margot';
+    out += '<div class="pl-titre">Les 25 mimiques de ' + P.PNJ[id].nom + '</div>' +
+      '<div class="pl-legende"><span style="--c:#ff8fb3">signe du menteur (expliqué aux joueurs)</span><span style="--c:#ff4f66">★ signe secret</span><span style="--c:#5fcf86">mimique honnête</span></div>' +
+      '<div class="pl-grille" style="--cols:' + (q.get('cols') || 5) + '">' + ORDRE.map(function(mid, i){ return cellule(id, mid, i, true); }).join('') + '</div>';
+    out = out.replace('Les 25 mimiques', 'Les ' + ORDRE.length + ' mimiques');
+  } else {
+    var ids = q.get('ids') ? q.get('ids').split(',') : Object.keys(P.PNJ);
+    out += '<div class="pl-titre">Planche des expressions — les 13 villageois</div>';
+    out += '<div class="pl-ligne" style="--n:' + ORDRE.length + '"><b></b>' + ORDRE.map(function(mid, i){ return '<div class="pl-nom">' + (i + 1) + '. ' + DEF.MIMIQUES[mid].ic + '</div>'; }).join('') + '</div>';
+    ids.forEach(function(id){
+      out += '<div class="pl-ligne" style="--n:' + ORDRE.length + '"><b>' + P.PNJ[id].nom + '</b>' + ORDRE.map(function(mid, i){
+        var m = DEF.MIMIQUES[mid];
+        return '<div class="pl-cell ' + m.sorte + (m.secret ? ' secret' : '') + '"><div class="pl-cadre" data-m="' + mid + '">' + P.pnj(id, {anime:false, expressif:true, cadre:'visage', id:'pv-' + id + '-' + i}) + '</div></div>';
+      }).join('') + '</div>';
+    });
+  }
+  document.getElementById('planche').innerHTML = out;
+  figer();
+}
+document.querySelectorAll('[data-vue]').forEach(function(b){
+  b.onclick = function(){
+    document.querySelectorAll('[data-vue]').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    document.body.className = b.dataset.vue === 'jeu' ? '' : 'vue-' + b.dataset.vue;
+    if(b.dataset.vue !== 'jeu'){ if(window.__jeu) window.__jeu.arreter(); planche(); } else lancer();
+  };
+});
+if(q.get('w')) document.documentElement.style.setProperty('--w', q.get('w') + 'px');
+var vue = q.get('vue');
+if(vue && vue !== 'jeu') document.querySelector('[data-vue="' + vue + '"]').click(); else lancer();
+window.__pret = true;
+})();
+</script>
+</body>
+</html>

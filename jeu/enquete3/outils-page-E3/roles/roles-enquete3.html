@@ -1,0 +1,418 @@
+<title>Pisteur, Alchimiste, Sage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Mise en page : la même que la page du Barde. Une colonne de lecture, des tiroirs fermés (une action par tiroir),
+   et des schémas en colonne qui se lisent de haut en bas, une couleur par rôle. */
+:root{
+  --bg:#eef2f3; --surface:#ffffff; --surface-2:#f5f7f8; --ink:#1c2a38; --muted:#5b6b78; --line:#d5dde2;
+  --gold:#a8700c; --gold-bg:#fbf1dc; --blue:#2c5d8f; --blue-bg:#e6eef7; --sage:#3f7154; --sage-bg:#e5f1e9; --rose:#b13a63; --rose-bg:#f8e6ec;
+  --ok:#2f7a48; --violet:#6a4c9c; --violet-bg:#efeaf7;
+  --display:"Alegreya", Georgia, "Times New Roman", serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111a23; --surface:#18232e; --surface-2:#1d2a36; --ink:#e4eaef; --muted:#9aa9b5; --line:#2c3b48;
+  --gold:#e5b04e; --gold-bg:#3a2e17; --blue:#8bb6e3; --blue-bg:#1d3047; --sage:#8fc6a2; --sage-bg:#1b3326; --rose:#ee8fb0; --rose-bg:#3d1f2b; --ok:#7fd19a;
+  --violet:#c3a8ee; --violet-bg:#2c2340;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#111a23; --surface:#18232e; --surface-2:#1d2a36; --ink:#e4eaef; --muted:#9aa9b5; --line:#2c3b48;
+  --gold:#e5b04e; --gold-bg:#3a2e17; --blue:#8bb6e3; --blue-bg:#1d3047; --sage:#8fc6a2; --sage-bg:#1b3326; --rose:#ee8fb0; --rose-bg:#3d1f2b; --ok:#7fd19a;
+  --violet:#c3a8ee; --violet-bg:#2c2340;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:24px 48px}
+.page{max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+.page > *, .page > * > *{min-width:0; max-width:100%}
+header h1{font-family:var(--display); font-weight:700; font-size:2rem; line-height:1.15; margin:0; text-wrap:balance}
+header p{margin:6px 0 0; color:var(--muted)}
+.outils{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.outils button{font:inherit; font-size:.9rem; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+button:focus-visible, summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+.legende{display:flex; flex-wrap:wrap; gap:6px 12px; font-size:.85rem; color:var(--muted); align-items:center}
+.chip{display:inline-flex; align-items:center; gap:4px; font-size:.75rem; font-weight:700; letter-spacing:.02em; padding:2px 8px; border-radius:999px; max-width:100%}
+.r-pisteur{background:var(--sage-bg); color:var(--sage)} .r-alchimiste{background:var(--violet-bg); color:var(--violet)}
+.r-sage{background:var(--blue-bg); color:var(--blue)} .r-barde{background:var(--gold-bg); color:var(--gold)}
+.r-tous{background:var(--surface-2); color:var(--muted); border:1px solid var(--line)}
+.c-mj{background:var(--surface-2); color:var(--ink); border:1px solid var(--line)}
+.c-propose{background:var(--rose-bg); color:var(--rose)}
+h2.groupe{font-family:var(--display); font-size:1.35rem; margin:12px 0 0; text-wrap:balance; display:flex; align-items:baseline; gap:10px}
+h2.groupe .quand{font-family:var(--body); font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
+p.groupe-intro{margin:-12px 0 0; color:var(--muted); font-size:.95rem}
+.liste{display:flex; flex-direction:column; gap:10px}
+details.perso{background:var(--surface); border:1px solid var(--line); border-radius:12px}
+details.perso > summary{list-style:none; cursor:pointer; padding:14px 16px; display:grid; grid-template-columns:1fr auto; gap:2px 12px; align-items:center}
+details.perso > summary::-webkit-details-marker{display:none}
+.nom{font-family:var(--display); font-weight:700; font-size:1.2rem; text-wrap:balance}
+.lieu{grid-column:1; color:var(--muted); font-size:.9rem}
+.fleche{grid-row:1 / span 2; grid-column:2; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--surface-2); color:var(--muted); transition:transform .2s}
+details[open] > summary .fleche{transform:rotate(90deg)}
+.resume{grid-column:1; display:flex; flex-wrap:wrap; gap:6px; margin-top:4px}
+.corps{padding:0 16px 16px; display:flex; flex-direction:column; gap:10px}
+.corps p{margin:0}
+.bloc{display:flex; flex-direction:column; gap:4px}
+.etiq{font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.ecran{font-family:var(--display); font-size:1.05rem; font-style:italic; background:var(--surface-2); border-left:3px solid var(--gold); padding:10px 14px; border-radius:0 8px 8px 0; margin:0}
+.codes{display:flex; flex-direction:column; gap:6px; margin:0; padding:0; list-style:none}
+.codes li{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:.95rem}
+.note{color:var(--muted); font-size:.92rem; margin:0}
+.onglets{display:flex; gap:4px; border-bottom:2px solid var(--line); overflow-x:auto}
+.onglets button{font:inherit; font-family:var(--display); font-weight:700; font-size:1.15rem; padding:10px 16px; border:0; background:none; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; white-space:nowrap}
+.onglets button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--gold)}
+/* Les échanges : « de » → code → « pour » */
+.echanges{display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none}
+.echanges li{display:grid; grid-template-columns:auto 1fr; gap:4px 10px; align-items:center; padding:8px 10px; border-radius:8px; background:var(--surface-2)}
+.echanges .de{grid-row:1 / span 2}
+.echanges .code{font-weight:700}
+.echanges .vers{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:.9rem; color:var(--muted)}
+/* Les chaînes : des étapes en colonne, reliées par une flèche */
+.chaine{display:flex; flex-direction:column; gap:0; margin:0; padding:0; list-style:none}
+.chaine > li{display:flex; flex-direction:column; align-items:stretch}
+.chaine > li + li::before{content:"↓"; align-self:center; color:var(--muted); font-size:1.1rem; line-height:1.4}
+.boite{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 12px; display:flex; flex-direction:column; gap:4px}
+.boite .qui{display:flex; flex-wrap:wrap; gap:4px}
+.boite p{margin:0; font-size:.95rem}
+.boite.cle{border-color:var(--gold); background:var(--gold-bg)}
+.fourche{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.fourche h4{font-family:var(--display); font-size:1.05rem; margin:0 0 4px; text-align:center}
+.fourche .chaine .boite p{font-size:.9rem}
+.reunion{align-self:center; color:var(--muted); font-size:.85rem; text-align:center; margin:4px 0 0}
+.titre-chaine{font-family:var(--display); font-weight:700; font-size:1.1rem; margin:4px 0 6px}
+.tab-wrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:.92rem}
+th, td{text-align:left; padding:8px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.role-intro{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:6px}
+.role-intro p{margin:0}
+@media (prefers-reduced-motion: reduce){ .fleche{transition:none} }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Enquête 3 · le Pisteur, l'Alchimiste et le Sage</h1>
+    <p>La journée des trois autres rôles, du matin à la nuit. Touche une action pour l'ouvrir. Les schémas montrent qui donne quel code à qui.</p>
+  </header>
+  <div class="outils">
+    <button type="button" id="tout-ouvrir">Tout ouvrir</button>
+    <button type="button" id="tout-fermer">Tout fermer</button>
+  </div>
+  <div class="legende">
+    <span class="chip r-pisteur">Pisteur</span><span class="chip r-alchimiste">Alchimiste</span><span class="chip r-sage">Sage</span><span class="chip r-barde">Barde</span>
+    <span><span class="chip c-mj">🎮 mini-jeu</span></span>
+    <span><span class="chip c-propose">Proposé</span> idée de Claude, à valider</span>
+  </div>
+  <div class="onglets" role="tablist">
+    <button type="button" role="tab" id="o-ensemble" data-p="ensemble" aria-selected="true">Les schémas</button>
+    <button type="button" role="tab" id="o-pisteur" data-p="pisteur" aria-selected="false">Pisteur</button>
+    <button type="button" role="tab" id="o-alchimiste" data-p="alchimiste" aria-selected="false">Alchimiste</button>
+    <button type="button" role="tab" id="o-sage" data-p="sage" aria-selected="false">Sage</button>
+  </div>
+  <div id="p-ensemble" class="page" role="tabpanel"></div>
+  <div id="p-pisteur" class="page" role="tabpanel" hidden></div>
+  <div id="p-alchimiste" class="page" role="tabpanel" hidden></div>
+  <div id="p-sage" class="page" role="tabpanel" hidden></div>
+</div>
+
+<script>
+const ROLES = {pisteur:'Pisteur', alchimiste:'Alchimiste', sage:'Sage', barde:'Barde', tous:'Tout le monde'};
+const MOMENTS = {matin:'Le matin', aprem:'L\'après-midi', nuit:'La nuit'};
+const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const role = (r) => `<span class="chip r-${r}">${ROLES[r]}</span>`;
+const fleche = `<span class="fleche" aria-hidden="true">›</span>`;
+
+/* ---------- Les actions des trois rôles ----------
+   besoin : les codes qu'il faut avoir (de qui) ; donne : les codes donnés (pour qui) ; ecran : ce que voit le joueur. */
+const ACTIONS = [
+ /* ===== LE PISTEUR ===== */
+ {role:'pisteur', moment:'matin', titre:'Les banderoles de la fête', lieu:'La place', mj:'Tir à l\'arc, décor de fête',
+  fait:'À chaque tir, une banderole de petits drapeaux part avec la flèche. Il vise les cibles en haut du mât et des lampadaires.',
+  ecran:'Bravo ! Les banderoles flottent au-dessus de la place. Basile, du haut de son échelle : « Ça, c\'est de la décoration ! »',
+  donne:[{code:'Mission de fête (1 sur 2)', pour:['tous'], note:'rendue au maire l\'après-midi'}]},
+ {role:'pisteur', moment:'matin', titre:'L\'oie du festin', lieu:'Chez Gaspard, puis les rues', mj:'Course-poursuite en ville (une oie vue de dos)',
+  fait:'L\'oie de Gaspard s\'est échappée. Même mini-jeu que dans la forêt, mais dans les rues du village.',
+  ecran:'COUAC ! Tu sautes les tonneaux, tu passes sous les lampions… et tu la rattrapes. Gaspard : « Sans elle, pas de festin ! Merci ! »',
+  donne:[{code:'Mission de fête (2 sur 2)', pour:['tous'], note:'rendue au maire l\'après-midi'}]},
+ {role:'pisteur', moment:'matin', titre:'Un coup d\'œil au clocher', lieu:'Le clocher', propose:true,
+  besoin:[{code:'Le capuchon vers le clocher', de:'barde', note:'Tim, démasqué'}],
+  fait:'Facultatif. Il va voir là où le capuchon est parti. Rien à transmettre : ça prépare l\'après-midi.',
+  ecran:'Sous le clocher, la porte de la crypte est fermée à clé. Sur la grille, des runes, comme sur la porte du Vieux Chêne. Et tout au fond… un miaulement.'},
+ {role:'pisteur', moment:'aprem', titre:'La lettre, en se cachant', lieu:'La mairie', mj:'Se cacher',
+  fait:'Seulement si le Barde rate le grand dialogue du maire. Les deux chemins donnent le même code, qui ne compte qu\'une fois.',
+  ecran:'Tu te glisses derrière le grand rideau. Le maire ouvre son coffre, compte ses papiers un par un… puis il sort. La lettre est là, sur le dessus.',
+  donne:[{code:'La lettre d\'Odette', pour:['sage', 'alchimiste']}]},
+ {role:'pisteur', moment:'aprem', titre:'Les traces de Moustache', lieu:'Chez Odette, puis tout le village', mj:'Suivre la piste, version traces de chats',
+  besoin:[{code:'Les traces de Moustache', de:'barde', note:'Moustache file de chez Odette'}, {code:'Moustache a six doigts', de:'sage', note:'sans ce code, la piste est bien plus dure : toutes les traces se ressemblent'}],
+  fait:'Des traces de chats partout, les sept chats d\'Odette traînent dans tout le village. Seules les traces à six doigts sont celles de Moustache.',
+  ecran:'Les traces à six doigts font des allers-retours. Une partie file vers le clocher et s\'arrête sous la porte de la crypte, fermée à clé. L\'autre part dans la forêt, jusqu\'au vieux puits : Moustache s\'est glissé entre les barreaux rouillés.',
+  donne:[{code:'La crypte est fermée', pour:['barde'], note:'il faut la clé d\'Anselme'}, {code:'La grille du puits', pour:['alchimiste', 'sage'], note:'une potion pour la rouille, et les archives des souterrains'}]},
+ {role:'pisteur', moment:'aprem', titre:'Rendre sa mission', lieu:'La mairie',
+  fait:'Les banderoles et l\'oie. Le maire le récompense en or.',
+  ecran:'Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu\'à minuit, hein ! »'},
+ {role:'pisteur', moment:'nuit', titre:'Recevoir le sac de l\'Alchimiste', lieu:'Pendant le grand dialogue d\'Anselme',
+  besoin:[{code:'Le sac (6 symboles)', de:'alchimiste'}],
+  fait:'Pendant que le Barde parle à Anselme, il ouvre l\'écran « Descendre » : le jeu demande le code du sac, ou « Descendre sans potions ». L\'écran montre ensuite le sac reçu, et l\'Alchimiste vérifie que c\'est le bon. Comme ça, personne n\'attend : le donjon commence dès que le chemin s\'ouvre.',
+  ecran:'Tu reçois : 2 💡, 1 ❤️, 2 💨, 1 👻. C\'est bien ça ?'},
+ {role:'pisteur', moment:'nuit', titre:'La clé d\'Anselme', lieu:'Le clocher · chemin court', mj:'Se cacher',
+  besoin:[{code:'La clé est au clou', de:'barde', note:'si le Barde a réussi le grand dialogue d\'Anselme'}],
+  fait:'Pendant que le Barde et Anselme sonnent l\'ouverture de la fête, il décroche la clé sans être vu.',
+  ecran:'DONG ! DONG ! Tu te faufiles derrière les grosses cordes. Anselme a les yeux fermés, il compte les coups. La clé est là, au clou… Tu la décroches.',
+  donne:[{code:'La crypte s\'ouvre', pour:['pisteur'], note:'donjon court, 3 salles'}]},
+ {role:'pisteur', moment:'nuit', titre:'La grille du puits', lieu:'Le vieux puits · chemin long',
+  besoin:[{code:'La potion qui ronge la rouille', de:'alchimiste'}, {code:'Le chemin, à voix haute', de:'sage', note:'le parchemin déchiffré'}],
+  fait:'Si le Barde a raté Anselme, ou si l\'équipe préfère ce chemin.',
+  ecran:'Tu verses la potion verte. Pssshhh ! Les barreaux fondent comme du sucre. Une vieille échelle descend dans le noir.',
+  donne:[{code:'Le puits s\'ouvre', pour:['pisteur'], note:'donjon long, 6 salles, en labyrinthe'}]},
+ {role:'pisteur', moment:'nuit', titre:'Le donjon', lieu:'Sous le clocher', mj:'Le donjon (nouveau, façon Darkest Dungeon)', propose:true,
+  fait:'Tout se joue sur sa tablette, avec les trois héros en file : Pisteur, Alchimiste, Sage. Chacun touche l\'écran à son tour. Lui : la dague, la flèche (touche l\'ennemi du fond), « inspecter » pour voir un piège. Aux embranchements, c\'est le Sage qui connaît le chemin.',
+  ecran:'La torche crépite. Trois portes. Derrière l\'une d\'elles, quelque chose gratte… « Sage, on prend laquelle ? »',
+  note:'Le court dure 8 à 10 minutes, le long environ 15. Personne ne meurt : un héros tombé est « sonné ». Si les trois le sont, ils remontent à l\'entrée et recommencent. La fiche complète du donjon reste à écrire.'},
+ {role:'pisteur', moment:'nuit', titre:'La porte aux quatre signes', lieu:'L\'avant-dernière salle du donjon',
+  fait:'Moustache est là. Une voix répond derrière la porte, mais la porte ne s\'ouvre pas.',
+  ecran:'Une immense porte de pierre, avec quatre signes gravés. Moustache gratte le bas de la porte et miaule. Derrière, une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? »',
+  donne:[{code:'Odette est derrière la porte', pour:['sage'], note:'pour OÙ est Odette, à l\'accusation'}]},
+ {role:'pisteur', moment:'nuit', titre:'Léo !', lieu:'La dernière salle du donjon',
+  fait:'Pas de poursuite : Léo est coincé. L\'équipe le remonte dans la crypte (de l\'intérieur, la porte s\'ouvre sans clé), et son grand dialogue commence tout de suite, chez le Barde.',
+  ecran:'Une lanterne toute blanche de farine. Léo, un panier au bras, lâche tout et se colle au mur : « Laissez-moi partir ! »',
+  donne:[{code:'Léo attrapé', pour:['barde'], note:'ouvre le grand dialogue de Léo'}]},
+
+ /* ===== L'ALCHIMISTE ===== */
+ {role:'alchimiste', moment:'matin', titre:'Le gâteau de la fête', lieu:'La boulangerie de Gaspard', mj:'Assembler selon une commande (nouveau moteur)',
+  fait:'La fiche de Gaspard : sept étages, un pour chaque chat d\'Odette. Il faut choisir et empiler les bons étages et les bonnes décorations. La note est en étoiles.',
+  ecran:'Gaspard : « Sept étages ! Et les sept chats en pâte d\'amande ! Le maire va être ravi. »',
+  donne:[{code:'Mission de fête', pour:['tous'], note:'rendue au maire l\'après-midi'}]},
+ {role:'alchimiste', moment:'matin', titre:'Les cueillettes pour la nuit', lieu:'La forêt, le lavoir, les jardins', propose:true,
+  fait:'Elle sait où trouver ses ingrédients. Certains ne se cueillent que le matin, d\'autres que l\'après-midi. Plus elle cueille, plus elle pourra préparer de potions pour le donjon.',
+  ecran:'La rosée sur les pensées sauvages, la menthe au soleil, l\'eau claire du lavoir… Ton panier se remplit.',
+  note:'Les ingrédients exacts seront fixés avec la fiche du donjon.'},
+ {role:'alchimiste', moment:'aprem', titre:'L\'odeur de la lettre', lieu:'L\'atelier', mj:'Les bulles magiques',
+  besoin:[{code:'La lettre d\'Odette', de:'barde', note:'ou du Pisteur'}],
+  fait:'Une fausse piste : ça ne prouve rien tout seul.',
+  ecran:'De la lavande ! Toute la lettre sent la lavande… Mais Iris dit que tout le village a ses sachets dans les tiroirs.'},
+ {role:'alchimiste', moment:'aprem', titre:'Qui a écrit la lettre ?', lieu:'L\'atelier', mj:'Les ressemblances (variante des 7 différences)',
+  besoin:[{code:'La lettre d\'Odette', de:'barde'}, {code:'Le carnet d\'Odette', de:'barde'}, {code:'Les écritures du village', de:'sage', note:'le Livre d\'or de la fête'}],
+  fait:'En bas, la lettre. En haut, les écritures. Il faut trouver trois formes de lettres identiques (le moteur sait déjà dessiner des écritures différentes).',
+  ecran:'Ce n\'est pas l\'écriture d\'Odette : elle, elle dessine un petit chat à côté de chaque « O ». Mais ces « M » qui piquent, ces « t » barrés en vague… ce sont ceux de Mélusine !',
+  donne:[{code:'L\'écriture de Mélusine', pour:['barde', 'sage'], note:'chez Mélusine, le Barde peut lui dire « C\'est votre écriture »'}]},
+ {role:'alchimiste', moment:'aprem', titre:'La potion qui ronge la rouille', lieu:'L\'atelier', mj:'Le chaudron',
+  besoin:[{code:'La grille du puits', de:'pisteur'}, {code:'La recette qui ronge la rouille', de:'sage', propose:true}],
+  fait:'Pour le chemin du puits. À préparer l\'après-midi, sans savoir encore si on en aura besoin.',
+  ecran:'Une potion verte qui fait des bulles et sent le vinaigre. Une goutte sur un vieux clou : il fond en un instant.',
+  donne:[{code:'La potion qui ronge la rouille', pour:['pisteur'], note:'à donner la nuit, au puits'}]},
+ {role:'alchimiste', moment:'aprem', titre:'Les potions du donjon', lieu:'L\'atelier', mj:'Le chaudron',
+  fait:'Lumière, Élixir du Cœur vaillant, fumigène, poudre éclairante, rapidité, invisibilité. Tout ce qu\'elle prépare pourra entrer dans son sac, cette nuit. Plus elle en prépare, plus le donjon sera facile.',
+  ecran:'Les fioles s\'alignent sur l\'étagère. Mimi les renifle une par une… et éternue sur la poudre éclairante.'},
+ {role:'alchimiste', moment:'aprem', titre:'Rendre le gâteau', lieu:'La mairie',
+  fait:'Le maire le récompense en or, selon les étoiles.',
+  ecran:'Le maire : « Un gâteau à sept étages ! On le coupera à minuit pile. Pas une minute avant ! »'},
+ {role:'alchimiste', moment:'nuit', titre:'Composer le sac', lieu:'Pendant le grand dialogue d\'Anselme',
+  fait:'Elle choisit dans ses potions ce qu\'elle emporte : jusqu\'à 19 potions, de 8 sortes au plus. Son écran affiche un code de 6 symboles.',
+  ecran:'Ton sac : 2 lumières, 1 Cœur vaillant, 2 rapidités, 1 invisibilité. Code du sac : 🌙 🔑 🐟 · 🔔 ❤️ 🐱',
+  donne:[{code:'Le sac (6 symboles)', pour:['pisteur'], note:'tapé pendant le grand dialogue d\'Anselme, puis vérifié'}]},
+ {role:'alchimiste', moment:'nuit', titre:'Dans le donjon', lieu:'Sur la tablette du Pisteur', mj:'Le donjon',
+  fait:'Quand c\'est son tour, elle touche l\'écran du Pisteur. Ses actions : lancer une fiole, soigner (relève un héros sonné), fumigène (l\'ennemi rate son coup), rallumer la torche. Les potions sont celles de son sac.',
+  ecran:'« À toi, Alchimiste ! » Un rat géant montre les dents. Tu sors ta poudre éclairante…'},
+
+ /* ===== LE SAGE ===== */
+ {role:'sage', moment:'matin', titre:'Le tableau d\'Odette', lieu:'La mairie', mj:'Assembler les runes, version tableau, niveau 10',
+  fait:'Un grand tableau en l\'honneur d\'Odette et de ses chats, à reconstituer.',
+  ecran:'Odette, sa canne à la main, et ses sept chats autour d\'elle. Le maire : « Magnifique ! On l\'accrochera au-dessus du gâteau. »',
+  donne:[{code:'Mission de fête', pour:['tous'], note:'rendue au maire l\'après-midi'}]},
+ {role:'sage', moment:'matin', titre:'Les premiers doutes', lieu:'Le Grand Livre',
+  besoin:[{code:'La lettre n\'est pas passée par la poste', de:'barde', note:'Victor'}, {code:'Le capuchon vers le clocher', de:'barde', note:'Tim, démasqué'}],
+  fait:'Le Grand Livre range les doutes dans une page « La lettre d\'Odette ».',
+  ecran:'Pas de timbre, pas de tampon. Glissée sous la porte de la mairie, à l\'aube, par un grand capuchon reparti vers le clocher. Qui envoie une lettre comme ça ?'},
+ {role:'sage', moment:'matin', titre:'Le Livre d\'or de la fête', lieu:'La mairie', propose:true,
+  fait:'Le matin, tout le village écrit un mot pour Odette dans le Livre d\'or. Le Sage peut l\'emprunter à la mairie, le matin ou l\'après-midi.',
+  ecran:'« Reviens vite, Odette ! » « Tes chats t\'attendent ! » « Vive la fête ! » Une page entière d\'écritures différentes.',
+  donne:[{code:'Les écritures du village', pour:['alchimiste'], note:'pour comparer avec la lettre'}]},
+ {role:'sage', moment:'aprem', titre:'La lettre et le carnet d\'Odette', lieu:'Le Grand Livre',
+  besoin:[{code:'La lettre d\'Odette', de:'barde', note:'ou du Pisteur'}, {code:'Le carnet d\'Odette', de:'barde'}],
+  fait:'Il compare les deux écritures dans son Grand Livre.',
+  ecran:'Odette écrit penché, avec un petit chat dessiné à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n\'est pas Odette qui l\'a écrite : la lettre est fausse.'},
+ {role:'sage', moment:'aprem', titre:'Les sept chats du carnet', lieu:'Le Grand Livre',
+  besoin:[{code:'Le carnet d\'Odette', de:'barde'}],
+  fait:'Une page par chat, de la main d\'Odette.',
+  ecran:'« Moustache : mon gros gris, mon malin. Il a un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! »',
+  donne:[{code:'Moustache a six doigts', pour:['pisteur'], note:'pour reconnaître ses traces'}]},
+ {role:'sage', moment:'aprem', titre:'Le parchemin des souterrains', lieu:'La bibliothèque, les archives', mj:'L\'alphabet secret',
+  besoin:[{code:'La grille du puits', de:'pisteur'}],
+  fait:'Pour le chemin long. Une fois déchiffré, le plan reste sur sa tablette : c\'est lui qui guidera le donjon.',
+  ecran:'« Du vieux puits part le chemin des Fondateurs. Il serpente sous la forêt et finit sous le clocher. » Et un plan, plein d\'embranchements.'},
+ {role:'sage', moment:'aprem', titre:'La recette qui ronge la rouille', lieu:'Le Grand Livre', propose:true,
+  besoin:[{code:'La grille du puits', de:'pisteur'}],
+  fait:'Une recette secrète, qu\'il lit à voix haute à l\'Alchimiste, comme l\'encre révélatrice.',
+  donne:[{code:'La recette qui ronge la rouille', pour:['alchimiste']}]},
+ {role:'sage', moment:'aprem', titre:'La porte des Fondateurs', lieu:'La bibliothèque, les archives', propose:true,
+  fait:'Une page qu\'on n\'est pas obligé de trouver. C\'est une graine pour l\'enquête 4.',
+  ecran:'Sous le clocher, une grande porte à quatre signes : une main qui cherche, un chaudron, une bouche qui chante, un livre ouvert. « Seuls les quatre, ensemble, pourront l\'ouvrir. »',
+  note:'Les quatre signes sont les quatre rôles : ça rejoint la légende des Cinq familles de Margot (« une pour chercher, une pour soigner, une pour parler, une pour savoir… et une pour garder »).'},
+ {role:'sage', moment:'aprem', titre:'L\'aveu de Mélusine', lieu:'Le Grand Livre',
+  besoin:[{code:'L\'écriture de Mélusine', de:'alchimiste'}, {code:'L\'aveu de Mélusine', de:'barde'}],
+  fait:'Les deux preuves pour la question QUI.',
+  ecran:'Mélusine a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape noire, à la voix étouffée, qui sentait la lavande. Il reviendra cette nuit, quand la Grosse Marie sonnera.'},
+ {role:'sage', moment:'aprem', titre:'Rendre le tableau, et lancer la nuit', lieu:'La mairie',
+  fait:'Le maire le récompense en or. Puis, comme à chaque moment, le Sage donne le code de la nuit à chacun quand il a fini.',
+  donne:[{code:'Le code de la nuit', pour:['tous']}]},
+ {role:'sage', moment:'nuit', titre:'Guider le donjon', lieu:'Sur sa propre tablette',
+  fait:'Pour le chemin long, il lui faut le parchemin déchiffré l\'après-midi ; le chemin court, 3 salles, n\'a pas besoin de plan. Le Pisteur ne voit que les embranchements. Le Sage regarde le plan sur sa tablette et dit le chemin à voix haute. Une mauvaise porte : un cul-de-sac, une rencontre de plus et de la torche perdue.',
+  ecran:'« À gauche après l\'arche, puis tout droit. Attention, la troisième salle est un cul-de-sac ! »'},
+ {role:'sage', moment:'nuit', titre:'Dans le donjon', lieu:'Sur la tablette du Pisteur', mj:'Le donjon',
+  fait:'Quand c\'est son tour, il touche l\'écran du Pisteur. Ses actions : éblouir (un animal passe son tour), lire le Grand Livre (la faiblesse de l\'ennemi apparaît), bouclier de runes.',
+  ecran:'« À toi, Sage ! » L\'araignée des caves descend de son fil. Tu ouvres le Grand Livre : elle a peur de la lumière.'},
+ {role:'sage', moment:'nuit', titre:'Où est Odette ?', lieu:'Devant la porte aux quatre signes',
+  besoin:[{code:'Odette est derrière la porte', de:'pisteur'}],
+  fait:'Le code du Pisteur répond à OÙ, pour l\'accusation : sous le clocher, derrière la porte aux quatre signes.',
+  ecran:'« Moustache ? Mon gros gris, c\'est toi ? » C\'est la voix d\'Odette : elle est vivante, derrière la porte. Mais la porte reste fermée.'},
+ {role:'sage', moment:'nuit', titre:'L\'accusation', lieu:'Dans la crypte',
+  besoin:[{code:'Ce que Léo a avoué, à voix haute', de:'barde', note:'facultatif : selon la fin'}],
+  fait:'QUI a écrit la fausse lettre ? OÙ est Odette ? Puis la question bonus, qui ne coûte aucun cœur : QUI est le Corbeau ? Juste après, la Grosse Marie sonne minuit, et le maire descend dans la crypte.',
+  ecran:'QUI a écrit la lettre ? Mélusine · Margot · Iris · Victor · Fortuné. OÙ est Odette ? Sous le clocher · Au fond du puits · Au moulin · Au Vieux Chêne.'}
+];
+
+/* Les codes du Barde, pour que les schémas soient complets (le détail est dans la page du Barde). */
+const BARDE = [
+ {moment:'matin', code:'La lettre n\'est pas passée par la poste', pour:['sage'], note:'Victor'},
+ {moment:'matin', code:'Le capuchon vers le clocher', pour:['pisteur', 'sage'], note:'Tim, démasqué'},
+ {moment:'aprem', code:'La lettre d\'Odette', pour:['sage', 'alchimiste'], note:'le grand dialogue du maire'},
+ {moment:'aprem', code:'Le carnet d\'Odette', pour:['sage', 'alchimiste'], note:'chez Odette'},
+ {moment:'aprem', code:'Les traces de Moustache', pour:['pisteur'], note:'chez Odette'},
+ {moment:'aprem', code:'L\'aveu de Mélusine', pour:['sage']},
+ {moment:'nuit', code:'La clé est au clou', pour:['pisteur'], note:'le grand dialogue d\'Anselme'},
+ {moment:'nuit', code:'Ce que Léo a avoué, à voix haute', pour:['sage']}
+];
+
+/* ---------- Les schémas ---------- */
+const boite = (qui, t, cle) => `<li><div class="boite${cle ? ' cle' : ''}"><span class="qui">${qui.map(role).join('')}</span><p>${esc(t)}</p></div></li>`;
+const CHAINES = {
+ matin:[
+  {titre:'Le matin, c\'est la fête qui compte', etapes:[
+   [['tous'], 'Le maire lit la lettre « d\'Odette » et annonce la fête de cette nuit. L\'écran des missions donne à chacun sa mission.'],
+   [['barde'], 'Le maire apparaît sur la tablette du Barde et lui donne 10 pièces : le marché aux fleurs.'],
+   [['pisteur'], 'Les banderoles (Tir à l\'arc) et l\'oie du festin (Course-poursuite).'],
+   [['alchimiste'], 'Le gâteau à sept étages, et les cueillettes pour la nuit.'],
+   [['sage'], 'Le tableau d\'Odette (Assembler les runes), et le Livre d\'or de la fête.'],
+   [['barde', 'sage'], 'Les premiers doutes : pas de timbre (Victor), un capuchon parti vers le clocher (Tim).', true]]}
+ ],
+ aprem:[
+  {titre:'Qui a écrit la lettre ?', etapes:[
+   [['barde', 'pisteur'], 'La lettre : le grand dialogue du maire, ou le Pisteur caché dans la mairie.'],
+   [['barde'], 'Chez Odette : le carnet, avec sa vraie écriture.'],
+   [['sage'], 'La lettre et le carnet : ce n\'est pas Odette. La lettre est fausse.'],
+   [['sage'], 'Le Livre d\'or : toutes les écritures du village, pour l\'Alchimiste.'],
+   [['alchimiste'], 'Les ressemblances : c\'est l\'écriture de Mélusine.'],
+   [['barde'], '« C\'est votre écriture. » Mélusine avoue : un homme en cape, et « il reviendra cette nuit ».', true],
+   [['sage'], 'Deux preuves pour la question QUI.']]},
+  {titre:'Où aller cette nuit ?', etapes:[
+   [['barde'], 'Chez Odette, Moustache file en laissant des traces.'],
+   [['sage'], 'Le carnet : Moustache a six doigts.'],
+   [['pisteur'], 'Il suit les traces à six doigts, au milieu de celles de tous les chats.'],
+   [['pisteur'], 'Deux pistes : sous la porte de la crypte, fermée à clé, et à la grille rouillée du puits.', true]]}
+ ],
+ fourche:{
+  clocher:[[['barde'], 'Indices posés l\'après-midi : Anselme, Basile, Silas.'], [['barde'], 'La nuit : le grand dialogue d\'Anselme, au clocher.']],
+  puits:[[['alchimiste'], 'La potion qui ronge la rouille.'], [['sage'], 'Le parchemin des souterrains, déchiffré.']]
+ },
+ nuit:{
+  avant:[[['tous'], 'La fête commence sur la place. Tout le village y est : c\'est la couverture.'], [['alchimiste', 'pisteur'], 'Pendant le grand dialogue d\'Anselme : l\'Alchimiste compose son sac, le Pisteur le tape.']],
+  clocher:[
+   [['barde'], 'Le grand dialogue d\'Anselme. Il accepte de l\'aide pour sonner l\'ouverture.'],
+   [['pisteur'], 'DONG ! Il décroche la clé du clou (Se cacher).'],
+   [['pisteur', 'alchimiste', 'sage'], 'Le donjon court : 3 salles, 8 à 10 minutes.']],
+  puits:[
+   [['barde'], 'Anselme n\'a pas compris : « Bon, je monte sonner, moi ! »'],
+   [['alchimiste', 'pisteur'], 'La potion fait fondre la grille.'],
+   [['pisteur', 'alchimiste', 'sage'], 'Le donjon long, en labyrinthe : 6 salles, environ 15 minutes. Le Sage guide.']],
+  apres:[
+   [['pisteur'], 'L\'avant-dernière salle : la porte aux quatre signes. Moustache gratte, une voix répond : « Moustache ? Mon gros gris, c\'est toi ? »', true],
+   [['sage'], 'Le code du Pisteur : Odette est derrière la porte.'],
+   [['pisteur'], 'La dernière salle : Léo, coincé. On le remonte dans la crypte.'],
+   [['barde'], 'Le grand dialogue de Léo, tout de suite, sans questions : 4 fins possibles.'],
+   [['sage'], 'L\'accusation : QUI a écrit la lettre, OÙ est Odette, et le Corbeau.'],
+   [['tous'], 'Minuit. La Grosse Marie sonne. Le maire descend dans la crypte, retire ses gants : la bague à tête de corbeau. « Gardes, enfermez-les ! »', true]]
+ }
+};
+const chaine = (etapes) => `<ol class="chaine">${etapes.map(e => boite(e[0], e[1], e[2])).join('')}</ol>`;
+
+function echanges(moment){
+  const lignes = [];
+  BARDE.filter(b => b.moment === moment).forEach(b => lignes.push({de:'barde', code:b.code, pour:b.pour, note:b.note}));
+  ACTIONS.filter(a => a.moment === moment && a.donne).forEach(a => a.donne.filter(d => !d.pour.includes('tous') || d.code.startsWith('Le code')).forEach(d => {
+    if(d.pour.length === 1 && d.pour[0] === a.role) return;
+    lignes.push({de:a.role, code:d.code, pour:d.pour, note:d.note});
+  }));
+  return `<ul class="echanges">${lignes.map(l => `<li><span class="de">${role(l.de)}</span><span class="code">${esc(l.code)}</span><span class="vers">→ ${l.pour.map(role).join('')}${l.note ? ' · ' + esc(l.note) : ''}</span></li>`).join('')}</ul>`;
+}
+function tiroir(nom, lieu, corps, ouvert){
+  return `<details class="perso"${ouvert ? ' open' : ''}><summary><span class="nom">${nom}</span>${fleche}<span class="lieu">${lieu}</span></summary><div class="corps">${corps}</div></details>`;
+}
+const RESUME = {matin:'Les jeux de la fête, et les premiers doutes', aprem:'L\'enquête sur la lettre, et les deux pistes pour la nuit', nuit:'Le clocher ou le puits, le donjon, Léo, et la fin'};
+
+function ensemble(){
+  const qui = ['pisteur', 'alchimiste', 'sage'];
+  const grille = `<div class="tab-wrap"><table><thead><tr><th>Rôle</th>${Object.values(MOMENTS).map(m => `<th>${m}</th>`).join('')}</tr></thead><tbody>${qui.map(r => `<tr><td>${role(r)}</td>${Object.keys(MOMENTS).map(m => `<td>${ACTIONS.filter(a => a.role === r && a.moment === m).map(a => esc(a.titre)).join('<br>')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const matin = CHAINES.matin.map(c => chaine(c.etapes)).join('') + `<p class="titre-chaine">Les codes du matin</p>` + echanges('matin');
+  const aprem = CHAINES.aprem.map(c => `<p class="titre-chaine">${esc(c.titre)}</p>` + chaine(c.etapes)).join('')
+    + `<p class="titre-chaine">On prépare les deux chemins de la nuit</p><div class="fourche"><div><h4>Par le clocher</h4>${chaine(CHAINES.fourche.clocher)}</div><div><h4>Par le puits</h4>${chaine(CHAINES.fourche.puits)}</div></div>`
+    + `<p class="titre-chaine">Les codes de l'après-midi</p>` + echanges('aprem');
+  const N = CHAINES.nuit;
+  const nuit = chaine(N.avant) + `<div class="fourche"><div><h4>Par le clocher</h4>${chaine(N.clocher)}</div><div><h4>Par le puits</h4>${chaine(N.puits)}</div></div><p class="reunion">↓ les deux chemins arrivent au même endroit ↓</p>` + chaine(N.apres)
+    + `<p class="titre-chaine">Les codes de la nuit</p>` + echanges('nuit');
+  return `
+  <p class="groupe-intro" style="margin:0">Trois moments. Le matin, on s'amuse avec la fête. L'après-midi, on enquête et la tension monte. La nuit, c'est l'aventure : tout va se jouer à minuit, quand la Grosse Marie sonnera.</p>
+  <div class="liste">
+   ${tiroir('Qui fait quoi', 'Les actions des trois rôles, moment par moment', grille, true)}
+   ${tiroir('Le matin', RESUME.matin, matin)}
+   ${tiroir('L\'après-midi', RESUME.aprem, aprem)}
+   ${tiroir('La nuit', RESUME.nuit, nuit)}
+  </div>`;
+}
+
+/* ---------- Les tiroirs des actions ---------- */
+function codeLigne(c, sens){
+  const qui = sens === 'besoin' ? `de ${role(c.de)}` : `pour ${c.pour.map(role).join('')}`;
+  return `<li><b>${esc(c.code)}</b> ${qui}${c.propose ? '<span class="chip c-propose">Proposé</span>' : ''}${c.note ? `<span class="note">· ${esc(c.note)}</span>` : ''}</li>`;
+}
+function action(a){
+  const resume = [a.mj ? `<span class="chip c-mj">🎮 ${esc(a.mj)}</span>` : '', a.besoin ? `<span class="chip r-tous">${a.besoin.length} code${a.besoin.length > 1 ? 's' : ''} à recevoir</span>` : '', a.donne ? `<span class="chip r-tous">${a.donne.length} à donner</span>` : '', a.propose ? '<span class="chip c-propose">Proposé</span>' : ''].join('');
+  const corps = [
+    a.besoin ? `<div class="bloc"><span class="etiq">Il lui faut</span><ul class="codes">${a.besoin.map(c => codeLigne(c, 'besoin')).join('')}</ul></div>` : '',
+    `<div class="bloc"><span class="etiq">Ce qu'il fait</span><p>${esc(a.fait)}</p></div>`,
+    a.ecran ? `<div class="bloc"><span class="etiq">Ce que voit le joueur</span><p class="ecran">${esc(a.ecran)}</p></div>` : '',
+    a.donne ? `<div class="bloc"><span class="etiq">Ce que ça donne</span><ul class="codes">${a.donne.map(c => codeLigne(c, 'donne')).join('')}</ul></div>` : '',
+    a.note ? `<p class="note">${esc(a.note)}</p>` : ''
+  ].join('');
+  return `<details class="perso"><summary><span class="nom">${esc(a.titre)}</span>${fleche}<span class="lieu">${esc(a.lieu)}</span><span class="resume">${resume}</span></summary><div class="corps">${corps}</div></details>`;
+}
+const INTRO = {
+  pisteur:'Le rôle de l\'action. Le matin, les deux jeux de la fête. L\'après-midi, les traces de Moustache, qui donnent les deux chemins de la nuit. La nuit, il mène le donjon sur sa tablette et coince Léo dans la dernière salle.',
+  alchimiste:'Le rôle des preuves et des potions. L\'après-midi, c\'est elle qui trouve qui a écrit la lettre. Tout ce qu\'elle prépare l\'après-midi part dans son sac pour le donjon.',
+  sage:'Le rôle des livres et du chemin. Il lit le carnet d\'Odette, déchiffre les archives, guide le donjon avec le plan, puis accuse. C\'est aussi lui qui donne les codes des moments.'
+};
+function pageRole(r){
+  return `<div class="role-intro">${role(r)}<p>${esc(INTRO[r])}</p></div>` + Object.keys(MOMENTS).map(m => {
+    const liste = ACTIONS.filter(a => a.role === r && a.moment === m);
+    return `<h2 class="groupe">${MOMENTS[m]}<span class="quand">${liste.length} action${liste.length > 1 ? 's' : ''}</span></h2><div class="liste">${liste.map(action).join('')}</div>`;
+  }).join('');
+}
+
+document.getElementById('p-ensemble').innerHTML = ensemble();
+['pisteur', 'alchimiste', 'sage'].forEach(r => { document.getElementById('p-' + r).innerHTML = pageRole(r); });
+
+const ONGLETS = ['ensemble', 'pisteur', 'alchimiste', 'sage'];
+function montrer(id){
+  ONGLETS.forEach(k => {
+    document.getElementById('p-' + k).hidden = k !== id;
+    document.getElementById('o-' + k).setAttribute('aria-selected', k === id ? 'true' : 'false');
+  });
+  try { localStorage.setItem('onglet-roles', id); } catch(e) {}
+}
+document.querySelectorAll('.onglets button').forEach(b => b.addEventListener('click', () => montrer(b.dataset.p)));
+try { const o = localStorage.getItem('onglet-roles'); if (ONGLETS.includes(o)) montrer(o); } catch(e) {}
+const tous = () => document.querySelectorAll('[role=tabpanel]:not([hidden]) details');
+document.getElementById('tout-ouvrir').addEventListener('click', () => tous().forEach(d => d.open = true));
+document.getElementById('tout-fermer').addEventListener('click', () => tous().forEach(d => d.open = false));
+</script>

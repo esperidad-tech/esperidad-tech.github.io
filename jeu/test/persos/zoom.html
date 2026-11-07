@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../src/base.css"><link rel="stylesheet" href="../../src/persos.css">
+<style>body{margin:0;padding:8px;background:#0d1026}#z{display:flex;flex-wrap:wrap;gap:8px}#z>div{width:var(--w,300px)}</style></head>
+<body><div id="z"></div><script src="../../src/persos.js"></script><script>
+var L = JSON.parse(decodeURIComponent(location.hash.slice(1)));
+var w = L.w || 300; document.documentElement.style.setProperty('--w', w + 'px');
+document.getElementById('z').innerHTML = L.items.map(function(it){ return '<div>' + (it.pnj ? Persos.pnj(it.pnj, {anime:false, humeur:it.humeur}) : Persos.heros(it, {anime:false, vue:it.vue})) + '</div>'; }).join('');
+</script></body></html>

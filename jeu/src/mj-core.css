@@ -1,0 +1,102 @@
+/* Cœur des mini-jeux : cadre commun */
+.mj{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-height:520px;background:radial-gradient(120% 80% at 50% 0%, var(--nuit-3), var(--nuit) 70%);border-radius:var(--r-3);overflow:hidden;border:1px solid var(--trait)}
+.mj-role-pisteur{--c-role:var(--c-pisteur)}
+.mj-role-alchimiste{--c-role:var(--c-alchimiste)}
+.mj-role-barde{--c-role:var(--c-barde)}
+.mj-role-sage{--c-role:var(--c-sage)}
+.mj-tete{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.25);border-bottom:1px solid var(--trait)}
+.mj-ic{font-size:1.8rem;line-height:1;filter:drop-shadow(0 0 8px var(--c-role, var(--cyan)))}
+.mj-titres{display:flex;flex-direction:column;min-width:0;flex:1}
+.mj-nom{font-family:var(--f-titre);font-weight:400;font-size:1.2rem;color:var(--or-pale);line-height:1.1}
+.mj-niv{font-size:.8rem;color:var(--brume)}
+.mj-btn-lire,.mj-btn-stop{width:44px;height:44px;border-radius:50%;border:0;background:rgba(238,240,255,.1);font-size:1.2rem;flex:none}
+.mj-scene{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
+.mj-zone{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
+.mj-intro{display:flex;flex-direction:column;gap:14px;padding:16px;align-items:stretch;animation:b-apparait .35s ease-out}
+.mj-demo{position:relative;height:170px;border-radius:var(--r-2);background:rgba(0,0,0,.25);border:1px dashed var(--trait);overflow:hidden}
+.mj-consigne{font-size:1.1rem;text-align:center;text-wrap:balance}
+.mj-reglages{list-style:none;margin:0;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.2);display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.mj-reglages li{display:flex;justify-content:space-between;gap:12px}
+.mj-reglages b{color:var(--or-pale)}
+.mj-aides ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.92rem}
+.mj-aides i{color:var(--brume);font-style:normal}
+.mj-unique{color:var(--braise);font-weight:700;text-align:center}
+.mj-go{align-self:center}
+/* au tutoriel, « C'est parti » clignote doucement (il appelle le doigt) */
+.mj-go-clignote{animation:mj-go-clignote 1s ease-in-out infinite}
+@keyframes mj-go-clignote{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.07);filter:brightness(1.18);box-shadow:0 4px 0 #b07a1c, 0 0 0 6px rgba(255,210,63,.45), 0 0 28px rgba(255,210,63,.85)}}
+@media (prefers-reduced-motion: reduce){ .mj-go-clignote{animation:mj-go-halo 1.2s ease-in-out infinite} @keyframes mj-go-halo{50%{box-shadow:0 0 0 6px rgba(255,210,63,.6)}} }
+.mj-resultat{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:rgba(13,17,38,.86);animation:b-apparait .3s ease-out}
+.mj-res-ic{font-size:4.2rem;animation:b-pulse 1.2s ease-in-out infinite}
+.mj-resultat.ok h2{color:var(--or-pale)}
+.mj-resultat.ko h2{color:var(--brume)}
+.mj-etincelle{position:absolute;left:50%;top:38%;width:10px;height:10px;border-radius:50%;background:var(--or-pale);box-shadow:0 0 12px var(--or);animation:mj-eclat .9s ease-out forwards}
+@keyframes mj-eclat{from{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}to{transform:rotate(var(--a)) translateX(var(--d)) scale(.2);opacity:0}}
+/* L'écran de consigne défile si l'écran est petit, et « C'est parti ! » reste toujours visible en bas */
+.mj-intro{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+/* 🔊 à côté des textes de plus de 3 mots */
+.mj-lire-mini{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:rgba(238,240,255,.14);font-size:1rem;line-height:1;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;padding:0;cursor:pointer}
+.mj-lire-mini:active{transform:scale(.92)}
+.mj-lire-vide{flex:none;width:34px;margin-left:6px}
+.mj-demo-lire{display:flex;justify-content:flex-end;margin-top:-8px}
+.mj-demo-lire[hidden]{display:none}
+.mj-demo-lire .mj-lire-demo{margin:0}
+.mj-consigne-l{display:flex;align-items:center;gap:8px;justify-content:center}
+.mj-consigne-l .mj-lire-consigne{width:42px;height:42px;font-size:1.2rem;margin:0}
+.mj-consigne-l .mj-consigne{margin:0;flex:0 1 auto;min-width:0}
+.mj-reglages li{align-items:center}
+.mj-reglages li span{flex:0 1 auto}
+.mj-reglages li b{flex:0 1 auto;margin-left:auto;text-align:right;overflow-wrap:break-word}
+.mj-aides li{display:flex;align-items:center;gap:4px}
+.mj-resultat h2 .mj-lire-mini,.mj-resultat p .mj-lire-mini{font-size:1rem}
+/* Accueil tout simple : grande démo animée, une phrase + 🔊, « C'est parti ! » (tout tient sans défiler) */
+.mj-intro.mj-intro-simple{gap:12px;padding:12px 14px 14px}
+.mj-intro-simple > *{flex-shrink:0}
+.mj-intro-simple > .mj-demo-cadre{position:relative;flex:none;height:200px;overflow:hidden;margin-top:auto}
+.mj-intro-simple > .mj-go{margin-bottom:auto}
+.mj-intro-simple > .mj-demo-cadre[hidden]{display:none}
+.mj-demo-cadre > .mj-demo{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none}
+.mj-phrase-l{display:flex;align-items:center;justify-content:center;gap:10px}
+.mj-phrase{margin:0;font-size:1.35rem;font-weight:700;line-height:1.2;text-align:center;color:var(--or-pale);text-wrap:balance}
+.mj-phrase-l .mj-lire-consigne{width:48px;height:48px;font-size:1.35rem;margin:0}
+.mj-aides-ic{display:flex;justify-content:center;gap:8px;font-size:1.5rem;line-height:1}
+.mj-intro-simple .mj-unique{margin:0}
+.mj-details{border-radius:12px;background:rgba(0,0,0,.2);padding:6px 12px;font-size:.88rem}
+.mj-details summary{cursor:pointer;color:var(--brume);font-weight:700;padding:4px 0}
+.mj-details .mj-reglages{background:none;padding:4px 0}
+.mj-det-niv{margin:4px 0;color:var(--or-pale)}
+.mj-det-consigne{font-size:.85rem;text-align:left;color:var(--brume)}
+/* pendant l'accueil, le 🔊 est à côté de la phrase : pas de doublon dans l'en-tête */
+.mj-en-intro .mj-tete .mj-btn-lire{visibility:hidden}
+/* Les cœurs (même rangée dans tous les mini-jeux, MJ.util.coeurs) : nombre de cœurs = erreurs encore permises */
+.mj-coeurs{display:inline-flex;align-items:center;gap:2px;flex:none;vertical-align:middle;line-height:1}
+.mj-coeur{display:inline-block;width:22px;height:20px;flex:none}
+.mj-coeur svg{display:block;width:100%;height:100%;fill:#ff5b6e;stroke:#24182e;stroke-width:2;overflow:visible}
+.mj-coeur.perdu svg{fill:#3a3352;stroke:rgba(255,255,255,.4)}
+.mj-coeur.casse{animation:mj-coeur-casse .55s ease-out}
+.mj-coeurs-n{font-weight:800;font-size:.95rem;color:#ffd0d6;margin-left:3px;white-space:nowrap}
+.mj-coeurs-vide .mj-coeur svg{animation:mj-coeur-vide 1.3s ease-in-out infinite}
+@keyframes mj-coeur-casse{0%{transform:scale(1.7) rotate(-14deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
+@keyframes mj-coeur-vide{50%{stroke:#ff5b6e;filter:drop-shadow(0 0 4px #ff5b6e)}}
+/* « Plus de cœur : attention, la prochaine erreur fait perdre ! » */
+.mj-plus-coeur{position:absolute;left:50%;top:8px;z-index:45;transform:translateX(-50%);width:min(92%,420px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 12px;border-radius:14px;
+  background:#3a0f1c;border:3px solid #ff5b6e;box-shadow:0 0 0 3px #24182e, 0 0 34px rgba(255,60,80,.65);color:#ffe3e6;font-size:.95rem;line-height:1.2;pointer-events:none;animation:mj-pc-in .35s ease-out, mj-pc-pouls 1s .35s ease-in-out 3;transition:opacity .45s}
+.mj-plus-coeur b{flex:1;text-align:left}
+.mj-plus-coeur .mj-lire-mini{pointer-events:auto;margin:0}
+.mj-pc-ic{font-size:1.45rem;line-height:1}
+.mj-plus-coeur.part{opacity:0}
+@keyframes mj-pc-in{from{opacity:0;transform:translateX(-50%) scale(.7)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes mj-pc-pouls{50%{box-shadow:0 0 0 3px #24182e, 0 0 50px rgba(255,60,80,.95)}}
+.mj-intro .mj-go{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px rgba(8,10,25,.85), 0 4px 0 rgba(0,0,0,.35);flex:none}
+
+/* ---------- La pause (Romain, 5 novembre, 11 h 21 ; mj-core.js, mj-temps.js) ---------- */
+.mj-btn-pause{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,224,138,.55);background:rgba(255,224,138,.12);font-size:1.15rem;flex:none;padding:0;line-height:1}
+.mj-btn-pause:active{transform:scale(.92)}
+/* le mini-jeu en pause se cache tout entier (son voile compris) : on voit et on touche ce qu'il y a dessous */
+.mj-cache,.mj-cache *{visibility:hidden!important;pointer-events:none!important}
+/* « 3, 2, 1 » à la reprise */
+.mj-decompte{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,10,25,.45);pointer-events:auto}
+.mj-decompte b{font-family:var(--f-titre, inherit);font-size:min(34vw, 9rem);line-height:1;color:#ffe08a;text-shadow:0 4px 0 #8a5a12, 0 0 30px rgba(255,224,138,.6);animation:mj-decompte .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
+.mj.mj-fixe{min-height:0}   /* plein écran verrouillé (MJ.PLEIN_ECRAN, mj-core.js) : il tient dans l'écran, même couché */

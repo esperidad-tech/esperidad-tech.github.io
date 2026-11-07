@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banc d'essai — Carte de Brumeval</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/carte.css">
+<style>
+body{padding:16px;background:var(--nuit)}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+.bloc{display:flex;flex-direction:column;gap:8px}
+#journal{position:sticky;top:0;z-index:5;background:var(--nuit-2);border:1px solid var(--trait);border-radius:12px;padding:8px 12px;font-size:.9rem;min-height:2.6em}
+.reglages{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<h1>Carte de Brumeval</h1>
+<p class="doux">Touchez les lieux et les maisons : le journal affiche data-act / data-id.</p>
+<div id="journal">—</div>
+<h2>Exemple du jeu (Barde, après-midi)</h2>
+<div id="exemple" style="max-width:640px"></div>
+<h2>Les quatre moments</h2>
+<div class="grille" id="moments"></div>
+<h2>Le dessous</h2>
+<div class="grille" id="dessous"></div>
+<script src="../../src/carte.js"></script>
+<script>
+var J = document.getElementById('journal');
+document.addEventListener('click', function(e){
+  var el = e.target.closest('[data-act]');
+  if(el) J.textContent = 'clic : data-act="' + el.getAttribute('data-act') + '" data-id="' + el.getAttribute('data-id') + '"';
+});
+document.getElementById('exemple').innerHTML = Carte.svg({
+  moment:'apresmidi', calque:'barde',
+  actifs:['place','boulangerie','lavoir','taverne','herboristerie','chene'],
+  verrous:['foret'],
+  notes:{L2:{texte:'Odette', ic:'👵'}, F1:{texte:'Gaspard', ic:'👨‍🍳'}, L7:{texte:'Tim ?', ic:'🧒'}},
+  marqueurs:[
+    {lieu:'place', ic:'👩‍🦰', label:'Mélusine', classe:'barde', act:'pnj', id:'melusine'},
+    {lieu:'place', ic:'🧔', label:'Victor', classe:'barde', act:'pnj', id:'victor'},
+    {lieu:'boulangerie', ic:'👨‍🍳', classe:'barde', act:'pnj', id:'gaspard'},
+    {maison:'L2', ic:'👵', act:'pnj', id:'odette', classe:'barde'},
+    {lieu:'chene', ic:'<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#9d6ee3"/></svg>', classe:'magie', act:'indice', id:'x'}
+  ],
+  surbrillance:'lavoir'
+});
+var M = ['matin','apresmidi','soir','nuit'], N = {matin:'Matin', apresmidi:'Après-midi', soir:'Soir', nuit:'Nuit'};
+document.getElementById('moments').innerHTML = M.map(function(mo){
+  return '<div class="bloc"><h3>' + N[mo] + '</h3>' + Carte.svg({moment:mo, notes:{L1:{texte:'Mairie ?', ic:'❓'}}}) + '</div>';
+}).join('');
+document.getElementById('dessous').innerHTML =
+  '<div class="bloc"><h3>Tout découvert</h3>' + Carte.svg({niveau:'dessous', actifs:['salle_coeur','tunnel_moulin'], surbrillance:'salle_coeur'}) + '</div>' +
+  '<div class="bloc"><h3>Seulement le tunnel du moulin</h3>' + Carte.svg({niveau:'dessous', caches:['salle_coeur','tunnel_chene','crypte','tunnel_puits'], verrous:['tunnel_moulin']}) + '</div>';
+</script>
+</body>
+</html>

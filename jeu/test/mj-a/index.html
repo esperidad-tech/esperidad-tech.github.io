@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banc d'essai — mini-jeux Pisteur et Alchimiste</title>
+<link rel="stylesheet" href="../../src/base.css">
+<link rel="stylesheet" href="../../src/mj-core.css">
+<link rel="stylesheet" href="../../src/mj-pisteur-alchi.css">
+<style>
+  body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .barre{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;background:var(--nuit-2);border-bottom:1px solid var(--trait);font-size:.9rem}
+  .barre select,.barre button{font:inherit;min-height:38px;border-radius:10px;border:1px solid var(--trait);background:var(--nuit-3);color:var(--lune);padding:4px 10px}
+  .barre label{display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+  .jeux{display:flex;gap:6px;flex-wrap:wrap}
+  .jeux button[aria-pressed="true"]{border-color:var(--or);background:rgba(245,185,69,.2)}
+  #banc{flex:1;min-height:0;padding:8px;display:flex}
+  #banc > .mj{flex:1}
+  #res{font-weight:700;color:var(--or-pale)}
+  body.plein .barre{display:none}
+  body.plein #banc{padding:0}
+  body.plein #banc > .mj{border-radius:0;border:0}
+</style>
+</head>
+<body>
+<div class="barre">
+  <div class="jeux" id="jeux"></div>
+  <label>Niveau <select id="niv"></select></label>
+  <label><input type="checkbox" data-mod="erreurs" data-v="1"> +1 erreur</label>
+  <label><input type="checkbox" data-mod="temps" data-v="2"> +2 s</label>
+  <label><input type="checkbox" data-mod="lent" data-v="0.8"> lent</label>
+  <label><input type="checkbox" data-mod="zone" data-v="1.3"> zone</label>
+  <label><input type="checkbox" data-mod="aide" data-v="2"> aide 2</label>
+  <label><input type="checkbox" data-mod="revele" data-v="1"> révèle</label>
+  <label><input type="checkbox" data-mod="facile" data-v="1"> facile</label>
+  <label><input type="checkbox" data-mod="deuxiemeChance" data-v="1"> 2e chance</label>
+  <label><input type="checkbox" data-mod="invisible" data-v="5"> 👻 5 s</label>
+  <label><input type="checkbox" data-mod="ralenti" data-v="2"> ⏳ 2 s</label>
+  <label><input type="checkbox" data-mod="fleches" data-v="99"> carquois ∞</label>
+  <label><input type="checkbox" data-mod="stable" data-v="0.6"> stable</label>
+  <label><input type="checkbox" data-mod="gardes" data-v="-1"> −1 garde</label>
+  <button id="go" type="button">▶ Lancer</button>
+  <span id="res"></span>
+</div>
+<div id="banc"></div>
+<script>
+  window.Brume = {
+    lire: function(t){ console.log('[lire] ' + t); },
+    stop: function(){},
+    son: function(t){ console.log('[son] ' + t); }
+  };
+</script>
+<script src="../../src/mj-core.js"></script>
+<script src="../../src/mj-pisteur-alchi.js"></script>
+<script>
+(function(){
+  if(/plein/.test(location.search)) document.body.classList.add('plein');
+  var TYPES = ['traces','poursuite','cachette','tir','rythme','bulles','melange','temperature','loupe'];
+  var jeux = document.getElementById('jeux'), niv = document.getElementById('niv'), banc = document.getElementById('banc'), res = document.getElementById('res');
+  for(var i = 1; i <= 12; i++){ var o = document.createElement('option'); o.value = i; o.textContent = i; niv.appendChild(o); }
+  var choix = 'traces', partie = null;
+  TYPES.forEach(function(t){
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = (MJ.TYPES[t] ? MJ.TYPES[t].ic + ' ' : '') + t;
+    b.onclick = function(){ choix = t; maj(); lancer(); };
+    b.setAttribute('data-t', t); jeux.appendChild(b);
+  });
+  function maj(){ jeux.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-t') === choix); }); }
+  function mods(){ var m = {}; document.querySelectorAll('[data-mod]').forEach(function(c){ if(c.checked) m[c.getAttribute('data-mod')] = +c.getAttribute('data-v'); }); return m; }
+  function lancer(type, n, m, options, extra){
+    if(partie && partie.arreter) partie.arreter();
+    type = type || choix; n = n || +niv.value; m = m || mods();
+    res.textContent = '';
+    window.dernierResultat = null;
+    var p = MJ.reglages(type, n, m, {brut:true});   /* le niveau du jeu tel quel (comme la salle des mini-jeux) */
+    if(extra) Object.assign(p, extra);
+    window.derniersParams = p;
+    partie = MJ.lancer(banc, type, p, function(r){ window.dernierResultat = r; res.textContent = (r.reussi ? '✅ ' : '❌ ') + JSON.stringify(r); }, Object.assign({aides:m.facile ? [{ic:'🥾', nom:'Bottes de vent', effet:'plus facile'}] : [], lireAuto:false}, options || {}));
+    return p;
+  }
+  window.lancerJeu = lancer;
+  document.getElementById('go').onclick = function(){ lancer(); };
+  maj(); lancer();
+})();
+</script>
+</body>
+</html>

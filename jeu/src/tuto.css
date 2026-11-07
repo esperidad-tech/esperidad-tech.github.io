@@ -1,0 +1,95 @@
+/* ==========================================================
+   Brumeval — le tutoriel de l'enquête 1 (tuto.js) : le bandeau, le rond lumineux, ce qui est grisé
+   ========================================================== */
+/* Le bandeau : une deuxième ligne dans le bandeau fixe du haut (sa hauteur est mesurée : rien ne passe dessous) */
+.b-entete:has(.tu-bandeau){flex-wrap:wrap;row-gap:6px}
+.tu-bandeau{flex:1 0 100%;order:10;display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 6px 6px 10px;border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,210,63,.2), rgba(255,210,63,.08));border:2px solid rgba(255,210,63,.7);color:var(--lune);
+  box-shadow:0 0 14px rgba(255,210,63,.18)}
+.tu-bandeau.tu-attend{background:linear-gradient(180deg, rgba(143,243,255,.16), rgba(143,243,255,.06));border-color:rgba(143,243,255,.65);box-shadow:0 0 14px rgba(143,243,255,.16)}
+.tu-bandeau.tu-moment,.tu-bandeau.tu-action{background:linear-gradient(180deg, rgba(63,207,106,.17), rgba(63,207,106,.06));border-color:rgba(124,196,147,.75)}
+.tu-bandeau.tu-talent{background:linear-gradient(180deg, rgba(180,140,255,.24), rgba(180,140,255,.1));border-color:rgba(200,170,255,.8)}
+.tu-ic{flex:none;font-size:1.45rem;line-height:1}
+.tu-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tu-but{margin:0;font-weight:700;font-size:.95rem;line-height:1.25}
+.tu-but2{margin:0;font-size:.86rem;line-height:1.25;color:#bff9ff}
+.tu-dire{margin:0;font-size:.86rem;line-height:1.25;color:var(--or-pale)}
+.tu-bandeau .tu-lire{flex:none;min-width:44px;height:44px}
+.tu-bandeau .tu-fait,.tu-bandeau .tu-passer{flex:none;min-height:44px;padding:4px 12px;white-space:nowrap}
+@media (max-width:520px){
+  .tu-bandeau{gap:6px;padding:5px 4px 5px 8px}
+  .tu-ic{font-size:1.2rem}
+  .tu-but{font-size:.88rem}
+  .tu-but2,.tu-dire{font-size:.8rem}
+  .tu-bandeau .tu-fait,.tu-bandeau .tu-passer{padding:4px 9px;font-size:.85rem}
+}
+/* Sans bandeau à l'écran (l'écran du héros, au début de l'enquête 2) : la même phrase, en haut, qui flotte */
+#tu-astuce{position:fixed;left:max(10px, env(safe-area-inset-left, 0px));right:max(10px, env(safe-area-inset-right, 0px));top:calc(10px + env(safe-area-inset-top, 0px));z-index:65;pointer-events:none}
+#tu-astuce .tu-bandeau{pointer-events:auto;background:rgba(40,30,80,.94);box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:760px;margin:0 auto}
+#tu-astuce[hidden]{display:none}
+
+/* Le rond lumineux : posé par-dessus la chose à toucher (il ne gêne pas le doigt) */
+.tu-rond{position:fixed;left:0;top:0;z-index:70;pointer-events:none;border-radius:18px;will-change:transform}
+.tu-rond[hidden]{display:none}
+.tu-anneau{position:absolute;inset:0;border-radius:inherit;border:4px solid #ffd23f;box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75), inset 0 0 12px rgba(255,210,63,.5);animation:tu-pulse 1.3s ease-in-out infinite}
+/* le rond du tutoriel : la même animation partout (Romain, 5 novembre, 19 h 39) — il pulse, et une onde part de lui pour attirer l'œil */
+@keyframes tu-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 14px 4px rgba(255,210,63,.6), inset 0 0 10px rgba(255,210,63,.4)}50%{transform:scale(1.07);box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 28px 10px rgba(255,210,63,.95), inset 0 0 16px rgba(255,210,63,.6)}}
+.tu-onde{position:absolute;inset:0;border-radius:inherit;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite}
+@keyframes tu-onde{0%{transform:scale(1);opacity:.85}100%{transform:scale(1.45);opacity:0}}
+/* il arrive en douceur, une fois la cible posée (tuto.js, placer) */
+.tu-rond.tu-arrive{animation:tu-arrive .24s ease-out}
+@keyframes tu-arrive{from{opacity:0}to{opacity:1}}   /* (seulement l'opacité : une échelle ferait aussi rétrécir sa position, il arriverait en volant du coin de l'écran) */
+.tu-rond.tu-secoue .tu-anneau{animation:tu-secoue .5s ease-in-out}
+@keyframes tu-secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+
+/* Ce qui ne se touche pas maintenant : grisé */
+/* (Romain, 5 novembre, 18 h 15 : « les autres propositions, on ne les voit pas, elles sont à moitié transparentes » : on les voit bien, juste ternies) */
+.tu-guide .tu-off{opacity:.8;filter:grayscale(.55) brightness(.82)}   /* filter : les animations d'entrée ne le remettent pas à zéro */
+.tu-guide .b-onglets button.tu-off span{transform:none;filter:grayscale(.8)}
+.tu-guide #carte-ici .ca-inactif{opacity:.55;filter:grayscale(.7)}
+.tu-guide.tu-hors .b-contenu{opacity:.42;filter:grayscale(.75);pointer-events:none;transition:opacity .3s, filter .3s}   /* il faut toucher un onglet : l'écran attend, grisé */
+.tu-guide #carte-ici .ca-maison-off{opacity:.7}
+.b-point.tu-apres{opacity:.8;filter:grayscale(.55) brightness(.82)}
+/* (.b-point.tu-ici : plus de cadre fixe à lui, le rond du tutoriel qui pulse est dessus) */
+
+/* « Mes missions » du Carnet : l'étape en cours, celles à venir, le moment prévu */
+.b-missions li.tu-courante{background:rgba(255,210,63,.18);box-shadow:0 0 0 2px rgba(255,210,63,.75)}
+.b-missions li.tu-avenir{opacity:.62}
+.tu-mi-m{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;background:rgba(238,240,255,.1);color:var(--brume)}
+.tu-mi-etat{display:block;font-size:.86rem;font-weight:700;color:var(--or-pale)}
+
+/* La page blanche ratée deux fois : le plan à moitié effacé (livre.js) */
+.lv-revele.partiel{opacity:.55;filter:blur(.5px) saturate(.6)}
+
+/* (plus de version immobile quand l'appareil demande moins d'animations — économie de batterie, réglage d'accessibilité :
+   Romain, 5 novembre, 23 h 32, « il faut que le bouton soit animé », partout ; c'est la seule chose qui montre où toucher) */
+
+/* Le bandeau du tutoriel, le plus petit possible (Romain, 5 novembre, 23 h 06 : « il prend beaucoup de place ; même l'écran du code,
+   on est obligé de descendre ») : deux lignes au plus, les phrases se suivent sur la même ligne, en plus petit ; un cadre fin ;
+   des phrases plus courtes (e1.js, tuto.js : la phrase « 👆 » ne dit plus que ce que le rond ne montre pas). */
+.b-entete:has(.tu-bandeau){row-gap:4px}
+.tu-bandeau{min-height:0;gap:6px;padding:3px 4px 3px 8px;border-radius:10px;border-width:1px;box-shadow:none}
+.tu-ic{font-size:1rem}
+/* toujours la même hauteur, deux lignes (Romain, 23 h 08 : « la taille maximum beaucoup réduite ») : un message plus long
+   s'écrit un peu plus petit (--k, tuto.js : bandeauStable) ; rien ne saute quand le message change */
+.tu-txt{display:block;line-height:1.22;font-size:calc(.8rem * var(--k, 1));min-height:31.5px}
+.tu-but,.tu-but2,.tu-dire{display:inline;font-size:1em;line-height:1.22}
+.tu-but2,.tu-dire{margin-left:.35em}
+.tu-bandeau .tu-lire{min-width:34px;height:32px;font-size:.9rem;margin:0}
+.tu-bandeau .tu-fait,.tu-bandeau .tu-passer{min-height:34px;padding:2px 10px;font-size:.82rem}
+/* Le bouton à toucher bouge lui-même, en plus du rond (Romain, 5 novembre, 23 h 32 : « il faut que le bouton soit animé ») :
+   il grossit un peu au rythme du rond (propriété scale : elle s'ajoute à son transform, elle ne le remplace pas) */
+.tu-respire{animation:tu-respire 1.3s ease-in-out infinite !important}   /* (!important : les pastilles des lieux ont déjà leur petite respiration, trop discrète) */
+@keyframes tu-respire{0%,100%{scale:1}50%{scale:1.07}}
+
+/* le bandeau encore un peu plus petit (Romain, 23 h 35 : « le plus petit possible ») */
+.tu-bandeau{padding:2px 3px 2px 7px}
+.tu-bandeau .tu-lire{min-width:30px;height:28px;font-size:.85rem}
+/* Même quand l'appareil demande moins d'animations (base.css les coupe toutes) : ce qui montre où toucher reste animé */
+@media (prefers-reduced-motion: reduce){
+  .tu-rond .tu-anneau{animation:tu-pulse 1.3s ease-in-out infinite !important}
+  .tu-rond .tu-onde{animation:tu-onde 1.3s ease-out infinite !important}
+  .tu-respire.tu-respire{animation:tu-respire 1.3s ease-in-out infinite !important}
+  .b-guide.b-guide::before,.hr-talent.hr-dispo::before{animation:tu-pulse 1.3s ease-in-out infinite !important}
+  .b-guide.b-guide::after,.hr-talent.hr-dispo::after{animation:tu-onde 1.3s ease-out infinite !important}
+}

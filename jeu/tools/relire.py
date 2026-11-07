@@ -1,0 +1,41 @@
+import os
+from playwright.sync_api import sync_playwright
+f='file://'+os.path.abspath('dist/salle-mini-jeux.html')
+OUT=os.path.abspath('..')
+with sync_playwright() as p:
+    b=p.chromium.launch(); pg=b.new_context(viewport={'width':800,'height':1280}).new_page()
+    errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.goto(f); pg.wait_for_timeout(300)
+    pg.check('#aides'); pg.click('[data-niv="3"]')
+    # Mots perdus avec aides : un indice, puis on perd exprès
+    pg.click('[data-jeu="mots"]'); pg.wait_for_timeout(300); pg.click('.mj-go'); pg.wait_for_timeout(500)
+    print('réglages ok; indice visible:', pg.locator('.mm-indice:not([hidden])').count(), 'mots déjà placés:', pg.locator('.mm-trou.fixe').count())
+    avant = pg.locator('.mm-mot:not([disabled])').count()
+    pg.click('.mm-indice'); pg.wait_for_timeout(200)
+    print('mots dispo avant/après indice:', avant, pg.locator('.mm-mot:not([disabled])').count(), '| info:', pg.inner_text('.mm-info'))
+    pg.screenshot(path=OUT+'/verif-mots-indice.png')
+    while pg.locator('.mm-trou:not(.plein)').count():
+        pg.locator('.mm-mot:not([disabled])').first.click(); pg.wait_for_timeout(60)
+    pg.click('.mm-valider'); pg.wait_for_timeout(700)
+    print('fin:', pg.inner_text('.mj-resultat').replace('\n',' | ')[:160])
+    pg.click('.mj-continuer'); pg.wait_for_timeout(400)
+    # Ragots
+    pg.click('[data-jeu="ragots"]'); pg.wait_for_timeout(300); pg.click('.mj-go'); pg.wait_for_timeout(500)
+    for i in range(5):
+        pg.wait_for_selector('.mr-choix.pret', timeout=5000); pg.click('.mr-oui'); pg.wait_for_timeout(150)
+    pg.wait_for_timeout(1200); pg.click('.mr-fin'); pg.wait_for_timeout(600); pg.click('.mj-continuer'); pg.wait_for_timeout(400)
+    print('boutons Relire:', pg.locator('[data-relire]').count())
+    pg.locator('[data-relire]').first.click(); pg.wait_for_timeout(400)
+    print('relire ragots:', pg.inner_text('.sl-rv')[:200].replace('\n',' | '))
+    pg.locator('[data-rv-avis]').first.click(); pg.wait_for_timeout(200)
+    pg.screenshot(path=OUT+'/verif-relire-ragots.png')
+    pg.click('.sl-quitter'); pg.wait_for_timeout(300)
+    pg.locator('[data-relire]').nth(1).click(); pg.wait_for_timeout(400)
+    pg.locator('[data-rv-trou]').first.click(); pg.locator('[data-rv-mot]').nth(3).click(); pg.wait_for_timeout(200)
+    pg.screenshot(path=OUT+'/verif-relire-mots.png')
+    print('relire mots, trou changé:', pg.locator('.rv-trou.change').count())
+    pg.click('.sl-quitter'); pg.wait_for_timeout(300)
+    pg.reload(); pg.wait_for_timeout(400)
+    pg.locator('[data-relire]').first.click(); pg.wait_for_timeout(300)
+    print('après rechargement, avis gardés:', pg.eval_on_selector_all('.rv-item', 'l=>l.map(x=>x.className.split(" ")[1])'))
+    print('errs', errs); b.close()

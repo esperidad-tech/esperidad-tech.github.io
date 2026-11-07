@@ -1,0 +1,175 @@
+/* ==========================================================
+   Brumeval — le tableau de liège du Barde (liege.js)
+   Le panneau est en unités du monde (1500 × 900), mis à l'échelle de l'écran.
+   ========================================================== */
+.lg{position:relative;display:flex;flex-direction:column;background:#2a1d14;-webkit-user-select:none;user-select:none}
+.lg-vue{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;background:#213b3d}
+.lg-vue.lg-defile{cursor:grabbing}
+/* « dépose ici » : le liseré jaune passe par-dessus le mur et le tableau */
+.lg-vue::after{content:'';position:absolute;inset:0;z-index:19;pointer-events:none;box-shadow:inset 0 0 0 4px #ffd23f;opacity:0;transition:opacity .2s}
+.lg-vue.lg-cible::after{opacity:1}
+
+/* Le mur du bureau et le cadre de bois, sous le liège (liege.js : decorHTML). Ils suivent le liège
+   (même transformation) : tout est en unités du monde. Le mur : un vieux papier peint bleu canard,
+   à bandes et à fleurs de lys dorées, éclairé par la lampe au-dessus du tableau, plus sombre au loin. */
+.lg-decor{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.lg-mur{position:absolute;left:-3300px;top:-3600px;width:8100px;height:8100px;background-color:#284547;
+  background-image:radial-gradient(ellipse 2700px 2000px at 50% 49%, rgba(255,212,150,.15), rgba(255,212,150,.09) 28%, rgba(5,12,14,0) 42%, rgba(5,12,14,.5) 100%),
+    radial-gradient(ellipse 34% 30% at 30% 35%, rgba(0,0,0,.09), rgba(0,0,0,0) 72%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='240'%3E%3Cg fill='%23e2c48a' fill-opacity='.2'%3E%3Cpath transform='translate(110 120)' d='M0-22C6-15 7-7 2.5 1L-2.5 1C-7-7-6-15 0-22ZM-3 1C-6-6-14-9-18-4C-21 0-18 6-12 5C-14 2-13-1-10-1C-7-1-5 0-3 3ZM3 1C6-6 14-9 18-4C21 0 18 6 12 5C14 2 13-1 10-1C7-1 5 0 3 3ZM-9 3H9V7H-9ZM-2.5 7C-3 13-7 17-11 18C-6 20-2 17 0 13C2 17 6 20 11 18C7 17 3 13 2.5 7Z'/%3E%3Cpath fill-opacity='.7' d='M0-11L7 0L0 11L-7 0ZM220-11L227 0L220 11L213 0ZM0 229L7 240L0 251L-7 240ZM220 229L227 240L220 251L213 240Z'/%3E%3C/g%3E%3C/svg%3E"),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 54px, rgba(226,196,138,.13) 54px 57px, rgba(255,255,255,.025) 57px 163px, rgba(226,196,138,.13) 163px 166px, rgba(0,0,0,.06) 166px 220px);
+  background-size:100% 100%, 1260px 1000px, 220px 240px, auto}
+/* l'ombre du cadre, qui tombe sur le bord du liège (le cadre est plus épais que le liège) */
+.lg-vue .lg-monde::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  box-shadow:inset 0 11px 9px -7px rgba(24,10,2,.6), inset 9px 0 8px -7px rgba(24,10,2,.45), inset -7px 0 7px -7px rgba(24,10,2,.35), inset 0 -7px 7px -7px rgba(24,10,2,.3)}
+.lg-cadre{position:absolute;border-radius:6px;box-shadow:0 24px 46px rgba(6,14,16,.62), 0 5px 12px rgba(6,14,16,.5)}
+.lg-cadre svg{display:block;width:100%;height:100%;overflow:visible}
+.lg-monde{position:absolute;left:0;top:0;transform-origin:0 0;background-color:#bf8656;
+  background-image:radial-gradient(circle at 20% 30%, rgba(92,52,22,.38) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 60%, rgba(255,232,196,.28) 0 1.5px, transparent 2.6px),
+    radial-gradient(circle at 45% 85%, rgba(80,44,18,.32) 0 1.8px, transparent 3px),
+    radial-gradient(ellipse at 50% 50%, rgba(255,220,170,.18), rgba(70,36,12,.35));
+  background-size:23px 23px, 31px 31px, 17px 17px, 100% 100%;box-shadow:inset 0 0 70px rgba(50,24,8,.6)}
+
+/* Les fils rouges */
+.lg-fils{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:0}
+.lg-fils-haut{z-index:99990}
+.lg-fil{fill:none;stroke:#d0312d;stroke-width:5;stroke-linecap:round}
+.lg-fil-ombre{fill:none;stroke:rgba(30,10,0,.32);stroke-width:5;stroke-linecap:round;transform:translate(3px,6px)}
+.lg-fil-zone{fill:none;stroke:transparent;stroke-width:36;stroke-linecap:round;pointer-events:stroke;cursor:pointer}
+
+/* Une photo épinglée (unités du monde) */
+.lg-carte{position:absolute;width:150px;height:196px;box-sizing:border-box;padding:16px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:linear-gradient(180deg, var(--nuit-3, #28325e), var(--nuit-2, #1c2447));border:5px solid var(--nuit-4, #34407a);border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,.45);color:var(--lune, #eef0ff);text-align:center;
+  transform:rotate(var(--r, 0deg));cursor:grab;transition:border-color .2s, box-shadow .2s}
+.lg-epingle{position:absolute;top:-9px;left:50%;width:26px;height:26px;margin-left:-13px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle at 35% 30%, #ff9a8c 0 18%, #e0352b 45%, #8e1a14 100%);box-shadow:2px 5px 5px rgba(0,0,0,.4)}
+.lg-photo{display:block;width:104px;height:104px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 3px rgba(255,255,255,.12);flex:none}
+.lg-photo svg{display:block;width:100%;height:100%}
+.lg-photo.lg-objet{border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.1)}
+.lg-carte .lg-objet span{font-size:66px;line-height:1}
+.lg-emoji{display:grid;place-items:center;width:100%;height:100%;font-size:60px}
+.lg-carte b{font-size:26px;line-height:1.05;font-weight:800;overflow-wrap:anywhere}
+.lg-carte small,.lg-bac-carte small{display:inline-block;background:#ffd23f;color:#3b2a00;border-radius:999px;font-weight:800;line-height:1.15;white-space:nowrap}
+.lg-carte small{font-size:18px;padding:2px 9px}
+.lg-carte.lg-lieu b,.lg-carte.lg-obj b{font-size:22px}
+
+/* Les étiquettes des signes de menteur (enquête 2) : du papier jaune, un petit visage qui refait le signe en boucle */
+.lg-carte.lg-signe,.lg-bac-carte.lg-signe{background:linear-gradient(180deg, #fff6d2, #f2d98c);border-color:#c99a2e;color:#3b2a00}
+.lg-carte.lg-signe b{font-size:21px}
+.lg-carte.lg-signe small,.lg-bac-carte.lg-signe small{background:#d0312d;color:#fff}
+.lg-photo.lg-sg{background:#ffe7a0;box-shadow:inset 0 0 0 3px rgba(120,80,0,.2)}
+.lg-carte .lg-photo.lg-sg{width:90px;height:90px}
+.lg-sg svg{overflow:visible}
+.lg-sg .sg-or,.lg-sg .sg-front,.lg-sg .sg-goutte,.lg-sg .sg-b-coin,.lg-sg .sg-b-force,.lg-sg .sg-b-mordille,.lg-sg .sg-b-mord{opacity:0}
+.lg-sg .sg-paup{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0)}
+.lg-sg-oreilles .sg-or,.lg-sg-rougeur .sg-front{animation:sg-lent 3.4s ease-in-out infinite}
+.lg-sg-sueur .sg-goutte{animation:sg-goutte 3.4s ease-in infinite}
+.lg-sg-coin .sg-pup{animation:sg-cote 3.4s ease-in-out infinite}
+.lg-sg-coin .sg-b-n,.lg-sg-force .sg-b-n,.lg-sg-mordille .sg-b-n{animation:sg-off 3.4s infinite}
+.lg-sg-coin .sg-b-coin,.lg-sg-force .sg-b-force{animation:sg-on 3.4s infinite}
+.lg-sg-mordille .sg-b-mordille{animation:sg-mordille 3.4s infinite}
+.lg-sg-morsure .sg-b-n{animation:sg-off-vite 3.4s infinite}
+.lg-sg-morsure .sg-b-mord{animation:sg-flash 3.4s infinite}
+.lg-sg-double .sg-paup{animation:sg-double 3.4s infinite}
+.lg-sg-yeuxbas .sg-pup{animation:sg-bas 3.4s ease-in-out infinite}
+.lg-sg-yeuxbas .sg-sc{animation:sg-leve 3.4s ease-in-out infinite}
+.lg-sg-yeuxbas .sg-paup{animation:sg-mipaup 3.4s ease-in-out infinite}
+@keyframes sg-lent{0%,18%{opacity:0}42%,78%{opacity:1}100%{opacity:0}}
+@keyframes sg-on{0%,22%{opacity:0}30%,76%{opacity:1}84%,100%{opacity:0}}
+@keyframes sg-off{0%,22%{opacity:1}30%,76%{opacity:0}84%,100%{opacity:1}}
+@keyframes sg-flash{0%,42%{opacity:0}45%,57%{opacity:1}60%,100%{opacity:0}}
+@keyframes sg-off-vite{0%,42%{opacity:1}45%,57%{opacity:0}60%,100%{opacity:1}}
+@keyframes sg-goutte{0%,12%{opacity:0;transform:translateY(0)}22%{opacity:1}80%{opacity:1;transform:translateY(17px)}100%{opacity:0;transform:translateY(21px)}}
+@keyframes sg-cote{0%,22%{transform:none}32%,76%{transform:translateX(4px)}86%,100%{transform:none}}
+@keyframes sg-mordille{0%,22%{opacity:0;transform:none}27%{opacity:1}36%{transform:translateY(1.6px)}45%{transform:none}54%{transform:translateY(1.6px)}63%{transform:none}74%{opacity:1}80%,100%{opacity:0}}
+@keyframes sg-double{0%,40%{transform:scaleY(0)}44%{transform:scaleY(1)}48%{transform:scaleY(0)}52%{transform:scaleY(1)}56%,100%{transform:scaleY(0)}}
+@keyframes sg-bas{0%,20%{transform:none}34%,76%{transform:translateY(3.6px)}88%,100%{transform:none}}
+@keyframes sg-leve{0%,20%{transform:none}34%,76%{transform:translateY(-5px)}88%,100%{transform:none}}
+@keyframes sg-mipaup{0%,20%{transform:scaleY(0)}34%,76%{transform:scaleY(.42)}88%,100%{transform:scaleY(0)}}
+
+/* Les couleurs d'avis : vert innocent, orange à surveiller, rouge suspect */
+.lg-s-innocent{border-color:#2f9e44;box-shadow:0 0 0 4px #2f9e44, 0 6px 14px rgba(0,0,0,.38)}
+.lg-s-surveiller{border-color:#f08c00;box-shadow:0 0 0 4px #f08c00, 0 6px 14px rgba(0,0,0,.38)}
+.lg-s-suspect{border-color:#d0312d;box-shadow:0 0 0 4px #d0312d, 0 6px 14px rgba(0,0,0,.38)}
+.lg-etiq{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%);white-space:nowrap;font-size:19px;font-weight:900;padding:3px 12px;border-radius:999px;color:#fff;background:#2f9e44;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.lg-s-surveiller .lg-etiq{background:#f08c00}
+.lg-s-suspect .lg-etiq{background:#d0312d}
+.lg-tenue{cursor:grabbing;transform:rotate(0deg) scale(1.07);box-shadow:0 20px 32px rgba(0,0,0,.45)}
+.lg-choisie{outline:6px dashed #d0312d;outline-offset:8px}
+.lg-pose{animation:lg-pose .45s ease-out}
+@keyframes lg-pose{0%{transform:translateY(-46px) scale(1.15) rotate(var(--r, 0deg));opacity:.2}60%{transform:translateY(5px) scale(.97) rotate(var(--r, 0deg));opacity:1}100%{transform:rotate(var(--r, 0deg))}}
+
+/* Les outils, à l'écran */
+.lg-outils{position:absolute;top:8px;left:8px;display:flex;gap:8px;z-index:20}
+.lg-retour{background:linear-gradient(180deg,#ffe08a,#e8a93a)!important;color:#111!important;border-color:#24182e!important}   /* aller quelque part : jaune */
+.lg-bobine,.lg-sac,.lg-retour{position:relative;min-width:58px;min-height:58px;padding:2px 8px;border-radius:16px;border:2px solid rgba(255,248,232,.55);background:rgba(28,20,14,.8);color:#fff;font-size:1.55rem;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.lg-bobine small,.lg-sac small,.lg-retour small{font-size:.62rem;font-weight:700}
+.lg-bobine.on{background:#d0312d;border-color:#fff;box-shadow:0 0 18px #d0312d}
+.lg-n{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#d0312d;color:#fff;font-style:normal;font-size:.75rem;font-weight:800;display:grid;place-items:center}
+.lg-n[hidden]{display:none}
+.lg-consigne{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:20;margin:0;max-width:calc(100% - 24px);padding:8px 14px;border-radius:999px;background:#d0312d;color:#fff;font-weight:800;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.lg-vide{position:absolute;inset:0;z-index:1;display:grid;place-items:center;margin:0;padding:0 62px;pointer-events:none;color:rgba(255,250,235,.9);font-weight:800;font-size:1.2rem;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.lg-vide[hidden]{display:none}
+.lg-fleche{position:absolute;top:50%;z-index:20;width:44px;height:66px;margin-top:-33px;border:0;border-radius:14px;background:rgba(28,20,14,.62);color:#fff;font-size:2rem;line-height:1}
+.lg-fleche.g{left:6px}
+.lg-fleche.d{right:6px}
+.lg-fleche[hidden]{display:none}
+
+/* Le bac des photos */
+.lg-bac{flex:none;padding:6px 0 8px;background:linear-gradient(#3b2a1d, #2a1d14);border-top:3px solid #6b4a2f;transition:background .2s, box-shadow .2s}
+.lg-bac.lg-survol{background:linear-gradient(#6a4520, #3b2a14);box-shadow:inset 0 0 0 4px #ffd23f, 0 -8px 26px rgba(255,210,63,.65)}
+.lg-bac-tete{display:flex;align-items:center;gap:8px;padding:0 12px 4px;color:#fff3dc}
+.lg-bac-tete b{font-size:.95rem}
+.lg-bac-n{flex:1;font-size:.78rem;opacity:.8}
+.lg-bac-tete .b-lire{width:38px;height:38px;min-width:38px;font-size:1rem}
+.lg-bac-liste{display:flex;gap:10px;overflow-x:auto;padding:4px 12px;touch-action:pan-x;scrollbar-width:thin}
+.lg-bac-carte{flex:none;width:80px;min-height:98px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 3px;border-radius:10px;border:2px solid var(--trait, #3b4679);background:linear-gradient(180deg, var(--nuit-3, #28325e), var(--nuit-2, #1c2447));color:var(--lune, #eef0ff);font:inherit;text-align:center;touch-action:pan-x;cursor:grab}
+.lg-bac-carte .lg-photo{width:50px;height:50px}
+.lg-bac-carte .lg-objet span{font-size:30px}
+.lg-bac-carte b{font-size:.8rem;line-height:1.1;overflow-wrap:anywhere}
+.lg-bac-carte small{font-size:.6rem;padding:1px 6px}
+.lg-bac-carte.lg-partie{opacity:.3}
+.lg-bac-fini{margin:6px 12px;color:#fff3dc;opacity:.85}
+.lg-fantome{position:fixed;z-index:300;margin:0;pointer-events:none;transform:scale(1.15) rotate(-4deg);box-shadow:0 16px 30px rgba(0,0,0,.5)}
+@media (min-width:700px){
+  .lg-bac-carte{width:98px;min-height:118px}
+  .lg-bac-carte .lg-photo{width:64px;height:64px}
+  .lg-bac-carte b{font-size:.9rem}
+  .lg-bac-carte small{font-size:.68rem}
+}
+
+/* Dans le journal : le tableau d'une enquête passée, en petit, en lecture seule */
+.lg-jr{overflow-x:auto;margin:0 0 16px;border-radius:12px;-webkit-overflow-scrolling:touch}
+.lg-jr-boite{position:relative;overflow:hidden;border-radius:12px}
+.lg-jr .lg-carte{cursor:default}
+@media (prefers-reduced-motion: reduce){ .lg-pose{animation:none}
+  /* les étiquettes restent figées au plus fort de leur signe */
+  .lg-sg *{animation-play-state:paused !important;animation-delay:-1.75s !important} }
+/* Le bac rangé en dossiers (Romain, 5 novembre, 13 h 19) : on touche un dossier pour le dérouler */
+/* (Romain, 14 h 12 : les dossiers sur une seule ligne, qu'on fait défiler de droite à gauche) */
+.lg-bac-cats{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 10px 4px}
+.lg-bac-cats::-webkit-scrollbar{display:none}
+.lg-cat{flex:none;white-space:nowrap;display:flex;align-items:center;gap:5px;min-height:40px;padding:4px 10px 4px 8px;border-radius:999px;border:2px solid #6b4a2f;background:linear-gradient(#f3e3c3, #e0c99a);color:#3b2a00;font-size:.85rem;cursor:pointer;box-shadow:0 2px 0 #2a1d14}
+.lg-cat b{font-weight:800}
+.lg-cat i{font-style:normal;font-weight:800;background:#3b2a1d;color:#fff3dc;border-radius:999px;padding:0 7px;font-size:.75rem;line-height:1.5}
+.lg-cat-ic{font-size:1.05rem}
+.lg-cat-fl{font-size:.8rem;transition:transform .2s;transform:rotate(-90deg)}
+.lg-cat.on{background:linear-gradient(#ffe08a, #e8a93a);border-color:#24182e}
+.lg-cat.on .lg-cat-fl{transform:none}
+.lg-bac-liste[hidden]{display:none}
+
+/* La fiche « ? » (quelqu'un dont on ne sait pas encore le nom) et les mots-clés du dossier « Autre » (Romain, 5 novembre, 14 h 18) */
+.lg-photo.lg-inconnu{display:grid;place-items:center;background:radial-gradient(circle at 50% 38%, #4a3f7a, #241d45);box-shadow:inset 0 0 0 3px rgba(255,210,63,.35)}
+.lg-inconnu span{font-size:70px;font-weight:900;line-height:1;color:#ffd23f;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.lg-bac-carte .lg-inconnu span{font-size:34px}
+.lg-carte.lg-mot,.lg-bac-carte.lg-mot{background:linear-gradient(180deg, #fffaf0, #f1e4c4);border-color:#b99b62;color:#3a2a12}
+.lg-carte.lg-mot{background-image:repeating-linear-gradient(180deg, transparent 0 33px, rgba(80,120,200,.18) 33px 35px), linear-gradient(180deg, #fffaf0, #f1e4c4)}
+.lg-photo.lg-mot-ic{background:rgba(120,80,20,.1);box-shadow:inset 0 0 0 3px rgba(120,80,20,.16)}
+.lg-carte.lg-mot .lg-photo{width:92px;height:92px}
+.lg-carte .lg-mot-ic span{font-size:58px}
+.lg-carte.lg-mot b{font-size:22px}
+.lg-carte .lg-inconnu + b{font-size:22px}
+.lg-bac-carte.lg-mot{width:100px}
+.lg-bac-carte.lg-mot b{font-size:.74rem;overflow-wrap:normal;hyphens:auto}
+@media (min-width:700px){ .lg-bac-carte.lg-mot{width:112px} .lg-bac-carte.lg-mot b{font-size:.82rem} }
