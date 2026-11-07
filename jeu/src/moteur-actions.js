@@ -447,7 +447,8 @@ function lancer(type, niveau, extra, options, fin){
   var mm = M.modsPour(type, potion);
   /* options.niveauFixe (ex. : forcer le passage devant Silas, enquête 2 : niveau 10 pour tout le monde) : le niveau tel quel,
      sans la courbe enfant/adulte ; l'équipement, les talents et les potions du héros aident encore (mods.facile) */
-  var params = options.niveauFixe ? MJ.reglages(type, options.niveauFixe, mm.mods, {brut:true}) : MJ.reglages(type, (niveau || 1) + M.decalage(), mm.mods);
+  /* options.niveauMax (ex. : la poursuite de Tim, enquête 2) : la courbe enfant/adulte, mais jamais plus haut que ce niveau */
+  var params = options.niveauFixe ? MJ.reglages(type, options.niveauFixe, mm.mods, {brut:true}) : MJ.reglages(type, (niveau || 1) + M.decalage(), mm.mods, options.niveauMax ? {max:options.niveauMax} : null);
   if(extra) M.cle(extra).forEach(function(k){ params[k] = extra[k]; });
   /* une fenêtre encore ouverte (le « Raté… tu peux réessayer », la dernière chance) se ferme quand le mini-jeu part : sinon, en pause,
      on la retrouvait derrière, avec le rond du tutoriel dessus (Romain, 5 novembre, 20 h 16) */
@@ -1226,7 +1227,7 @@ A.point = function(el){
   if(p.mj){
     /* l'explication avant (p.avant, p.bouton) ; « Plus tard » ramène au lieu : rien n'est encore dépensé ; p.mjNiveauFixe : un niveau fixe (Silas, e2.js) */
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0), p.params, {titre:p.nom, ic:p.ic, avant:p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
-      sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null}, function(res){
+      sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null}, function(res){
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */

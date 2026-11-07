@@ -130,8 +130,19 @@ function metier(id){
   var x = D.PNJ[id] || {};
   return (x.icMetier ? x.icMetier + ' ' : '') + (x.metierCourt || String(x.metier || '').replace(/^(le |la |l')/i, ''));
 }
+/* À qui est ce signe (Romain, 7 novembre : « le Barde lit trop » → les villageois n'énumèrent plus les signes des menteurs,
+   ils les « épinglent » : l'étiquette porte le nom). D'abord l'enquête en cours, parmi les secrets connus ; sinon l'enquête
+   où l'étiquette est née (une étiquette gardée d'une enquête à l'autre). */
+function aQui(k){
+  var E = M.E ? M.E() : null, o = {};
+  try{ o = (M.barde && M.barde.mimiques && M.P()) ? M.barde.mimiques() : {}; }catch(e){}
+  var id = null;
+  if(E && E.tics) M.cle(E.tics).some(function(p){ if(E.tics[p] === k && o[p]){ id = p; return true; } return false; });
+  if(!id && E) autresEnquetes(E).some(function(X){ if(!X.tics) return false; return M.cle(X.tics).some(function(p){ if(X.tics[p] === k){ id = p; return true; } return false; }); });
+  return id && D.PNJ[id] ? (D.PNJ[id].court || D.PNJ[id].nom) : null;
+}
 function contenu(c){
-  if(c.type === 'signe') return '<span class="lg-photo lg-sg lg-sg-' + c.id + '" role="img" aria-label="' + esc(SIGNES[c.id][1]) + '">' + VISAGE_SIGNE + '</span><b>' + esc(SIGNES[c.id][0]) + '</b><small>🤥 signe</small>';
+  if(c.type === 'signe'){ var qui = aQui(c.id); return '<span class="lg-photo lg-sg lg-sg-' + c.id + '" role="img" aria-label="' + esc((qui ? qui + ' : ' : '') + SIGNES[c.id][1]) + '">' + VISAGE_SIGNE + '</span><b>' + esc(SIGNES[c.id][0]) + '</b><small>🤥 ' + esc(qui || 'signe') + '</small>'; }
   if(c.type === 'pnj' && c.id === INCONNU.id) return '<span class="lg-photo lg-inconnu" aria-hidden="true"><span>?</span></span><b>Quelqu\'un</b><small>❓ inconnu</small>';
   if(c.type === 'mot') return '<span class="lg-photo lg-objet lg-mot-ic"><span>' + c.ic + '</span></span><b>' + esc(c.nom) + '</b>';
   if(c.type === 'pnj') return '<span class="lg-photo">' + portrait(c.id) + '</span><b>' + esc(D.PNJ[c.id].court) + '</b><small>' + esc(metier(c.id)) + '</small>';

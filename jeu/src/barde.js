@@ -156,7 +156,14 @@ var VEXE_ACCUSE = 'Tu me traites de menteur ?! Je ne te parle plus !';
 /* les réponses dites DANS la boîte de leur question (les autres répliques s'écrivent en haut, sous le nom) */
 var DANS_BOITE = {rep:1, vrai:1, exige:1, pasencore:1, outre:1, cloche:1, potionrep:1};
 /* Ce qu'il dit en premier : trop occupé à ce moment (N.occupe), un salut du moment (N.saluts), ou son salut habituel */
-function salut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return occupe(id) || (N.saluts && N.saluts[mid]) || N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?'); }
+function salut(id){
+  var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(), o = occupe(id); if(o) return o;
+  /* E.salutUneFois (enquête 2, Romain, 7 novembre : « le Barde lit trop ») : le salut n'est dit qu'à la première visite ;
+     le salut d'un moment (N.saluts), à la première visite de ce moment. Ensuite, rien sous le nom : le visage, et les questions. */
+  var P = M.P(), E = M.E(); if(E && E.salutUneFois && P && P.vus && P.vus[cleSalut(id)]) return '';
+  return (N.saluts && N.saluts[mid]) || N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?');
+}
+function cleSalut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return 'salut:' + id + ':' + (N.saluts && N.saluts[mid] ? mid : '*'); }
 function occupe(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
 function estVexe(id){ var P = M.P(); return !!(P && P.vexe && P.vexe[id] === P.moment); }
 /* vexé parce qu'accusé à tort (« Mensonge ? » sur une vérité) : P.vexeAccuse {pnj:moment} */
@@ -283,6 +290,8 @@ function preparer(id){
   try{ var P0 = M.P(), N0 = ((M.E() || {}).pnj || {})[id] || {}; if(N0.noteSalut && P0 && !estVexe(id) && !P0.vus['salut-note:' + id]){ P0.vus['salut-note:' + id] = 1; M.noter(N0.noteSalut, (D.PNJ[id] || {}).ic); } }catch(e){ console.error(e); }
   if(UI.bd && UI.bd.p === id && UI.bd.m === M.P().moment) return;
   UI.bd = estVexe(id) ? {p:id, mode:'vexe', t:(M.P().vexeTxt || {})[id] || texteVexe(id), m:M.P().moment, joue:true} : {p:id, mode:'salut', t:salut(id), m:M.P().moment};
+  /* le salut est dit : la prochaine visite n'en aura plus (E.salutUneFois) ; « occupé » n'est pas un salut */
+  try{ var E1 = M.E(), P1 = M.P(); if(E1 && E1.salutUneFois && UI.bd.mode === 'salut' && UI.bd.t && !occupe(id)){ P1.vus[cleSalut(id)] = 1; M.sauver(); } }catch(e){ console.error(e); }
 }
 B.preparer = preparer;
 

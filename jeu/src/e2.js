@@ -26,7 +26,8 @@ var TICS = {bastien:'oreilles', margot:'yeuxbas', tim:'mordille', victor:'morsur
 var GESTES = {coin:'ses yeux filent sur le côté, avec un petit sourire de travers', rougeur:'le haut de son front devient tout rose',
   mordille:'{il} mordille sa lèvre du bas', morsure:'{il} se mord la lèvre, très vite', double:'{il} cligne des yeux deux fois, très vite',
   oreilles:'ses oreilles rougissent', yeuxbas:'{il} baisse les yeux et lève les sourcils en même temps'};
-function signe(id, nom, elle){ return 'Quand ' + nom + ' ment, ' + GESTES[TICS[id]].replace('{il}', elle ? 'elle' : 'il') + '.'; }
+/* (7 novembre : plus de phrase « Quand X ment, … » dans les réponses ; les villageois « épinglent » le signe sur le liège, avec le nom.
+   GESTES reste la description des gestes, pour s'y retrouver.) */
 
 /* Les dialogues à choix (Romain, 4 novembre, 18 h 27, § 12.13) : tous les choix sont polis et plausibles ; seul un indice récolté
    ailleurs (chez un autre villageois, à mots couverts ; parfois un leurre d'un menteur) dit lequel est le bon. Tous les mauvais choix
@@ -43,6 +44,9 @@ E[2] = {
   /* Pas de points d'action (comme l'enquête 1 : M.sansActions, moteur-base.js). Ce qui limite : un lieu ne donne qu'une chose
      par moment, les moments des villageois, et une seule visite par moment pour certains d'entre eux (uneVisite, barde.js). */
   sansActions:true,
+  /* le salut d'un villageois n'est dit qu'à la première visite (le salut du moment, à la première visite de ce moment) : Romain,
+     7 novembre, « le Barde lit trop » (barde.js, salut ; Bible §12.50) */
+  salutUneFois:true,
   riviereRouge:true,   /* sur la carte, l'eau de la rivière est rouge et luit doucement (carte.js, Romain, 4 novembre, 21 h 12) */
   lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',
   signature:'Monsieur Grosbec, maire de Brumeval',
@@ -133,9 +137,9 @@ E[2] = {
       {id:'ordre', ic:'✋', nom:'Ordre du maire', si:[{vu:'barde:silas:0'}, {vu:'barde:grosbec:1'}]},
       {id:'eboulement', ic:'⛰️', nom:'Éboulement', si:[{vu:'barde:silas:0'}]},
       {id:'odette', ic:'👵', nom:'Odette disparue'},   /* dans les missions du Barde dès le début */
-      {id:'canne', ic:'🦯', nom:'Canne aux sept chats', si:[{vu:'barde:melusine:0'}, {vu:'barde:gaspard:0'}, {code:'info:canne'}]},
+      {id:'canne', ic:'🦯', nom:'Canne aux sept chats', si:[{vu:'barde:melusine:0'}, {code:'info:canne'}]},
       {id:'aube', ic:'🌅', nom:'Avant l\'aube', si:[{vu:'barde:silas:1'}, {vu:'barde:melusine:1'}, {vu:'verite:victor:0'}]},
-      {id:'lavoir_rose', ic:'🩷', nom:'Lavoir rose', si:[{vu:'barde:melusine:1'}, {code:'info:lavoir_rose'}]},
+      {id:'lavoir_rose', ic:'🩷', nom:'Lavoir rose', si:[{code:'info:lavoir_rose'}, {vu:'verite:melusine:2'}]},
       {id:'champ', ic:'🌺', nom:'Champ rasé', si:[{vu:'barde:iris:0'}, {code:'info:champ_rase'}]},
       {id:'rouge_fleurs', ic:'🎨', nom:'Rouge de coquelicot', si:[{vu:'barde:iris:1'}]},
       {id:'charrette', ic:'🛒', nom:'Charrette', si:[{vu:'barde:silas:1'}, {vu:'barde:iris:2'}, {vu:'verite:victor:0'}, {code:'info:traces'}]},
@@ -144,7 +148,7 @@ E[2] = {
       {id:'poudre', ic:'⚫', nom:'Poudre noire', si:[{vu:'barde:fortune:1'}]},
       {id:'tissus', ic:'🧵', nom:'Tissus qui déteignent', si:[{vu:'verite:melusine:2'}, {vu:'verite:fortune:0'}, {vu:'barde:oreille:atelier'}, {code:'info:lavoir_rose'}]},
       {id:'tonneau', ic:'🍷', nom:'Tonneau de vin', si:[{vu:'barde:margot:0'}]},
-      {id:'legendes', ic:'📜', nom:'Vieilles légendes', si:[{vu:'barde:gaspard:2'}, {vu:'barde:fortune:2'}]},
+      {id:'legendes', ic:'📜', nom:'Vieilles légendes', si:[{vu:'barde:gaspard:2'}]},
       {id:'runes', ic:'🚪', nom:'Porte aux runes', si:[{vu:'verite:tim:1'}, {vu:'barde:tim:2'}]},
       {id:'rochers', ic:'🪨', nom:'Gros rochers', si:[{vu:'barde:tim:2'}, {vu:'ecoute:ouvriers'}, {code:'info:rassemblement'}]},
       {id:'plans', ic:'📐', nom:'Vieux plans du moulin', si:[{vu:'barde:farinel:2'}]},
@@ -261,7 +265,8 @@ E[2] = {
         {id:'canne', ic:'🦯', nom:'Dans l\'herbe', donne:'info:canne',
           t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle…',
           note:'Vieux Chêne : la canne d\'Odette (sept chats gravés) était dans l\'herbe, près des rochers.'},
-        {id:'tim', ic:'🧒', nom:'Quelqu\'un derrière le tronc', moments:['matin', 'apresmidi'], mj:'poursuite', params:{decor:'foret'}, donne:'info:tim_chene',
+        /* mjNiveauMax (Romain, 7 novembre) : jamais plus que le niveau 4 (un adulte jouait au 5, trop dur pour un seul essai) */
+        {id:'tim', ic:'🧒', nom:'Quelqu\'un derrière le tronc', moments:['matin', 'apresmidi'], mj:'poursuite', mjNiveauMax:4, params:{decor:'foret'}, donne:'info:tim_chene',
           avant:'Quelqu\'un t\'observe, caché derrière le tronc… Il s\'enfuit ! Vite, cours-lui après !',
           t:'Tu cours, tu sautes les racines… et tu l\'attrapes par le col : c\'est Tim, le petit ramoneur ! Il tremble : « Je n\'ai rien fait ! Laisse-moi ! » Il a peur, et il cache quelque chose.',
           note:'Vieux Chêne : Tim se cachait derrière le tronc. Il a très peur et il cache quelque chose : code pour le Barde et le Sage.',
@@ -383,125 +388,127 @@ E[2] = {
     /* carte + occupe (Romain, 5 novembre, 8 h 59 : la carte montre toujours où est chacun) : là où il est quand on ne peut pas lui parler,
        et ce qu'on voit en arrivant (moteur-roles.js, M.pnjOccupesIci). Le rythme de l'enquête ne change pas. */
     bastien:{ou:{apresmidi:'place', nuit:'B2'}, carte:{matin:'lisiere'}, occupe:{matin:'« Pas le temps, je pars livrer ! Reviens cet après-midi. »'},   /* (des phrases courtes : elles tiennent dans une pastille de la carte) */ salut:'Salut ! Bastien Roulebosse, charretier. Je transporte tout, partout !', saluts:{nuit:'Hein ? Qui frappe à ma porte en pleine nuit ?'}, questions:[
-      {q:'Qu\'as-tu fait ces derniers jours ?', a:'Moi ? Rien du tout ! J\'ai dormi chez moi, je me suis levé tard. Rien fait, je te dis !', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
-        vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout ! Je n\'ai rien d\'autre à dire.',
+      /* (Romain, 7 novembre : le Barde lit trop → réponses de 2 phrases courtes, vérités de 25 à 30 mots, Bible §12.50) */
+      {q:'Qu\'as-tu fait ces derniers jours ?', a:'Rien du tout ! J\'ai dormi chez moi, et je me suis levé tard.', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
+        vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout !',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
       /* (Romain, 5 novembre, 13 h 47 : plus de code de la pièce du moulin ; le ragot de Gaspard, ou de Margot la nuit, suffit ; le Pisteur raconte sa pièce à l'oral) */
       {q:'On t\'a vu payer avec une pièce d\'or toute neuve !', moments:['nuit'], besoin:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}],
-        a:'Bon, d\'accord… c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli. Une rivière rouge, c\'est beau, non ?', ment:true,
-        vrai:'Bon… Un homme en cape noire, avec un grand capuchon, m\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Je ne sais pas qui c\'était, je te le jure !',
+        a:'D\'accord, c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli.', ment:true,
+        vrai:'Bon… Un homme en cape noire m\'a payé en pièces d\'or toutes neuves. Je n\'ai jamais vu son visage, je le jure !',
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
     ]},
     /* vexeDonne (Romain, 23 h 20) : vexé la nuit, Tim part fâché… mais lâche quand même sa pierre (barde.js, vexeLache) */
     /* (le matin, Tim se cache au Vieux Chêne : la carte ne le montre pas, pour garder la surprise du Pisteur — Romain, 5 novembre, 9 h 30 ;
        sa maison est grisée, il est sorti, sans dire où) */
     tim:{ou:{apresmidi:'place', nuit:'L7'}, salut:'Oh… c\'est toi.', saluts:{nuit:'Tu ne dors pas, toi non plus ?'},
-      vexeDonne:{obj:'pierre', moments:['nuit'], a:'Il sort une pierre de sa poche et te la lance : « Tiens, prends ton caillou et laisse-moi tranquille ! » C\'est une pierre gravée de runes bizarres…',
+      vexeDonne:{obj:'pierre', moments:['nuit'], a:'Il te lance une pierre : « Tiens, ton caillou, et laisse-moi tranquille ! » Elle est gravée de runes.',
         note:'Tim, fâché, t\'a lancé une pierre gravée de runes en partant (code pour le Sage).'}, questions:[
       {q:'Salut Tim ! Ça va ?', a:'Euh… oui, oui, ça va. Je… je dois y aller !', note:'Tim a l\'air inquiet. Il veut s\'en aller.'},
       /* l'indice : le registre du Sage (« il ne confie ses secrets qu'à ceux qui promettent de ne rien répéter ») */
       /* (ni la question ni les choix ne parlent du trou ni de son chien : le Barde ne le sait pas encore ; Tim le dit lui-même en avouant) */
       {q:'Que faisais-tu près du Vieux Chêne ?', besoin:[{code:'info:tim_chene'}, {vu:'barde:margot:2'}],
         choix:choix('Si tu me le dis, je te promets de ne le répéter à personne.', ['Tu as été très courageux, Tim. Que faisais-tu là-bas ?', 'Tu peux tout me dire, Tim. Qu\'as-tu vu là-bas ?'], 1),
-        a:'Rien ! Je me promenais, c\'est tout ! Je n\'ai rien vu, je le jure !', ment:true, objVrai:'pierre',
-        vrai:'Bon… Tout au fond du trou du Vieux Chêne, il y avait une porte en pierre, couverte de runes bizarres. Et j\'ai ramassé ça, par terre : une pierre gravée. Ce matin, j\'ai vu des ouvriers poser de gros rochers sur le trou : ce n\'est pas un éboulement ! Je n\'ai rien dit au maire, j\'avais trop peur ! Tiens, prends la pierre. C\'est pour ton Sage.',
+        a:'Rien ! Je me promenais. Je n\'ai rien vu, je le jure !', ment:true, objVrai:'pierre',
+        vrai:'Au fond du trou, il y a une porte couverte de runes. J\'y ai ramassé cette pierre : donne-la à ton Sage. Et ce matin, des ouvriers ont bouché le trou avec de gros rochers !',
         note:'Tim dit qu\'il se promenait près du Vieux Chêne, et qu\'il n\'a rien vu.', noteVrai:'Tim a avoué : au fond du trou du Vieux Chêne, il y a une porte en pierre couverte de runes. Ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'},
       /* filet de sécurité : si on n'a pas pu le démasquer, Tim finit par tout dire la nuit (jamais d'indice indispensable perdu) */
       {q:'Tim, tu as l\'air triste…', moments:['nuit'], besoin:[{vu:'barde:tim:1'}], cacheSi:[{vu:'verite:tim:1'}], obj:'pierre',
-        a:'Tu sais… je n\'arrive pas à dormir. Il faut que je le dise à quelqu\'un : au fond du trou du Vieux Chêne, il y avait une porte en pierre couverte de runes. Et j\'ai ramassé cette pierre gravée. Ce matin, des ouvriers ont posé de gros rochers sur le trou : ce n\'est pas un éboulement ! Tiens, prends la pierre, elle me fait peur ! C\'est pour ton Sage.',
+        a:'Je n\'arrive pas à dormir… Au fond du trou, il y a une porte couverte de runes : j\'y ai ramassé cette pierre, prends-la ! Et ce matin, des ouvriers ont bouché le trou avec de gros rochers.',
         note:'Tim a fini par tout dire : au fond du trou du Vieux Chêne, une porte en pierre couverte de runes ; ce matin, des ouvriers ont posé de gros rochers sur le trou. Il t\'a donné une pierre gravée (code pour le Sage).'}
     ]},
     /* (Romain, 5 novembre, 13 h 19 : son mensonge dès le matin ; il fait sa tournée dans la ruelle, on peut lui parler) */
     victor:{ou:{matin:'ruelle', apresmidi:'poste'}, carte:{nuit:'taverne'}, occupe:{nuit:'😴 Victor est trop fatigué pour parler.'}, salut:'Bonjour ! Je passe partout, tous les jours, avec mes lettres.', questions:[
-      {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Je suis toujours à l\'heure pour ma tournée ! Je n\'ai rien vu de spécial.', ment:true,
-        vrai:'Bon, d\'accord… Avant-hier, j\'étais en retard, alors j\'ai coupé par la clairière aux lièvres. Il faisait encore tout sombre… et j\'ai vu une charrette partir du champ de coquelicots ! Trop sombre pour voir qui la poussait.',
+      {q:'Avez-vous vu quelque chose de bizarre ces jours-ci ?', a:'Moi ? Toujours à l\'heure pour ma tournée ! Je n\'ai rien vu.', ment:true,
+        vrai:'Bon… avant-hier, en retard, j\'ai coupé par la clairière aux lièvres. Avant l\'aube, une charrette partait du champ de coquelicots. Trop sombre pour voir qui !',
         note:'Victor dit qu\'il est toujours à l\'heure et qu\'il n\'a rien vu.', noteVrai:'Victor a avoué : avant-hier, en retard, il a coupé par la clairière. Avant l\'aube, une charrette partait du champ de coquelicots (trop sombre pour voir qui).'}
     ]},
     /* Gaspard dès le matin (Romain, 4 novembre, 22 h 38) : Odette, sa toute première cliente, n'est pas venue ; la pièce d'or de Bastien
        et le signe de Margot restent pour l'après-midi (moments) */
     gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', nuit:'boulangerie'}, salut:'Bonjour ! Du bon pain chaud ?',
       saluts:{matin:'Bonjour ! C\'est le coup de feu, mais pour toi, j\'ai une minute.', nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
-      {q:'Quelles nouvelles, Gaspard ?', a:'D\'habitude, Odette est ma toute première cliente : elle arrive à l\'aube, avant tout le monde ! Ce matin, elle n\'est pas venue… Elle habite au 2, rue des Lanternes : ce serait bien que quelqu\'un aille voir si elle va bien. Et Mélusine va s\'inquiéter : c\'est elle qui a offert à Odette sa canne aux sept chats, tu sais.', note:'Gaspard : Odette, sa toute première cliente, n\'est pas venue ce matin. Elle habite au 2, rue des Lanternes. C\'est Mélusine qui lui a offert sa canne.'},
-      {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], a:'Si ! Bastien, le charretier, m\'a payé son pain avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou ! Bizarre, non ?', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
+      /* (7 novembre : l'adresse d'Odette est sur la carte, son visage sur sa maison ; la canne, Mélusine en parle) */
+      {q:'Quelles nouvelles, Gaspard ?', a:'Odette, ma toute première cliente, n\'est pas venue ce matin. Ça ne lui ressemble pas… Quelqu\'un devrait aller voir chez elle !', note:'Gaspard : Odette, sa toute première cliente, n\'est pas venue ce matin. Ça ne lui ressemble pas.'},
+      {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], a:'Si ! Bastien, le charretier, m\'a payé avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
+      /* les signes des menteurs ne se lisent plus : ils s'épinglent sur le liège, avec le nom (liege.js, Bible §12.50) */
       {q:'Margot dit toujours la vérité ?', mimique:'margot',   /* (dès le matin : Romain, 5 novembre, 13 h 19) */ ok:'Un signe de menteur ne dit pas qui est coupable.',
-        a:'Margot ? Elle adore les vieilles légendes : les portes secrètes, les trésors cachés… elle en raconte tous les soirs ! Mais elle raconte parfois des histoires, aussi. Et je connais son truc : ' + signe('margot', 'Margot', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
-        note:'Gaspard : Margot adore les légendes de portes secrètes. Il t\'a appris son signe de menteuse : une étiquette pour ton tableau de liège.'}
+        a:'Margot ? Elle adore les vieilles légendes… et elle en invente parfois. Je connais son truc pour mentir : je te l\'épingle !',
+        note:'Gaspard : Margot adore les vieilles légendes, et elle en invente parfois. Son signe de menteuse est sur ton tableau de liège.'}
     ]},
     /* la taverne est ouverte dès le matin (Romain, 5 novembre, 12 h 31 : c'est Margot qui confie les signes des menteurs) */
-    margot:{ou:{matin:'taverne', apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ici, on adore les histoires mystérieuses !', questions:[
+    margot:{ou:{matin:'taverne', apresmidi:'taverne', nuit:'taverne'}, salut:'Bienvenue au Chaudron fêlé !', questions:[
       {q:'On dit que c\'est votre vin qui a rougi la rivière !', a:'Mon vin ? N\'importe quoi ! Aucun tonneau n\'a disparu de ma taverne !', ment:true,
-        vrai:'Bon… c\'est vrai, la semaine dernière, un tonneau est tombé dans la rivière pendant un transport. Mais l\'eau n\'est pas devenue rouge du tout ! Ce n\'est pas mon vin.',
+        vrai:'Bon… un tonneau est tombé dans la rivière la semaine dernière. Et l\'eau n\'a pas rougi du tout !',
         note:'Margot dit qu\'aucun tonneau n\'a disparu de sa taverne.', noteVrai:'Margot a avoué : un tonneau est tombé dans la rivière la semaine dernière, et l\'eau n\'est pas devenue rouge. Ce n\'est pas son vin.'},
-      {q:'Bastien, c\'est un farceur ?', a:'Bastien ? Une farce ? Il déteste les farces ! Il n\'a jamais ri de sa vie, celui-là.', note:'Margot : Bastien déteste les farces, il n\'a jamais ri de sa vie.'},
+      {q:'Bastien, c\'est un farceur ?', a:'Bastien, une farce ? Il déteste les farces ! Il n\'a jamais ri de sa vie.', note:'Margot : Bastien déteste les farces, il n\'a jamais ri de sa vie.'},
+      /* (7 novembre) elle ne lit plus les six signes : six étiquettes, avec le nom, s'épinglent sur le liège (liege.js) */
       {q:'Comment sais-tu quand quelqu\'un ment ?', besoin:[{vu:'verite:margot:0'}], mimique:['victor', 'tim', 'bastien', 'melusine', 'fortune', 'farinel'], ok:'Des signes de menteurs ne disent pas qui est coupable.',
-        a:'Ha ! Toi, tu m\'as bien eue… Bon, je vais te confier mes secrets de tavernière. ' + signe('victor', 'Victor') + ' ' + signe('tim', 'Tim') + ' Et ce petit Tim traîne tout le temps près du Vieux Chêne, ces jours-ci… ' + signe('bastien', 'Bastien') + ' ' + signe('melusine', 'Mélusine', true) + ' ' + signe('fortune', 'Fortuné') + ' ' + signe('farinel', 'Farinel') + ' Regarde-les bien !',
-        note:'Margot t\'a confié comment mentent six villageois : six étiquettes pour ton tableau de liège.'},
+        a:'Ha ! Tu m\'as bien eue… Tiens, mes secrets de tavernière : je te les épingle. Et surveille le petit Tim : il traîne au Vieux Chêne, ces jours-ci.',
+        note:'Margot t\'a confié comment mentent six villageois : six étiquettes sur ton tableau de liège. Le petit Tim traîne au Vieux Chêne, ces jours-ci.'},
       /* une deuxième source de la pièce de Bastien, la nuit (Romain, 23 h 20) : si Gaspard est vexé la nuit, Margot la raconte aussi
          (elle ouvre la même question chez Bastien) ; toujours à la fin de la liste : les numéros des questions ne bougent pas */
       {q:'Quoi de neuf, ce soir ?', moments:['nuit'],
-        a:'Ici, tout se raconte à la taverne ! Ce soir, tout le monde ne parle que de ça : Bastien, le charretier, a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
+        a:'Ce soir, toute la taverne en parle : Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
         note:'Margot (la nuit) : tout se raconte à la taverne. Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'}
     ]},
     melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, carte:{nuit:'atelier'}, occupe:{nuit:'😴 Elle dort à poings fermés.'}, salut:'Bonjour ! Attention aux épingles…', questions:[
-      {q:'Odette vient laver son linge ici ?', a:'Odette ? Elle ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats. Elle habite au 2, rue des Lanternes : tu devrais aller voir. Gaspard aussi se fait du souci : quand un de ses clients ne vient pas, il ne dort plus de la nuit !', note:'Mélusine : Odette ne vient plus au lavoir. Elle ne sort jamais sans sa canne. Elle habite au 2, rue des Lanternes. Gaspard ne dort plus quand un client ne vient pas.'},
-      {q:'Quand la rivière est-elle devenue rouge ?', a:'Ce matin, à l\'aube, quand je suis arrivée au lavoir, la rivière était déjà toute rouge ! Et l\'eau du lavoir est toute rose… mais ça, ce n\'est rien. La pauvre Iris en a pleuré, avec son champ… Pour la consoler, rien de tel qu\'un compliment sur ses fleurs.', note:'Mélusine : à l\'aube, la rivière était déjà toute rouge. L\'eau du lavoir est rose « mais ce n\'est rien ». Pour consoler Iris : un compliment sur ses fleurs.'},
-      {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même, avec de la bonne laine ! Ils ne déteignent jamais !', ment:true,
-        vrai:'Bon… je les achète en cachette à Fortuné, le colporteur. Ils ne coûtent presque rien… mais ils déteignent ! C\'est eux qui ont rendu l\'eau du lavoir toute rose. Pas la rivière, juré !',
+      {q:'Odette vient laver son linge ici ?', a:'Odette ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats.', note:'Mélusine : Odette ne vient plus au lavoir depuis hier. Elle ne sort jamais sans sa canne aux sept chats.'},
+      {q:'Quand la rivière est-elle devenue rouge ?', a:'À l\'aube, la rivière était déjà toute rouge ! La pauvre Iris en a pleuré… Pour la consoler, rien de tel qu\'un compliment sur ses fleurs.', note:'Mélusine : à l\'aube, la rivière était déjà toute rouge. Pour consoler Iris : un compliment sur ses fleurs.'},
+      {q:'Vos tissus déteignent dans le lavoir ?', besoin:[{code:'info:lavoir_rose'}], a:'Mes tissus ? Je les tisse tous moi-même ! Ils ne déteignent jamais.', ment:true,
+        vrai:'Bon… je les achète en cachette à Fortuné, pas cher. Ils déteignent : c\'est eux qui ont rendu le lavoir tout rose. Pas la rivière, juré !',
         note:'Mélusine dit qu\'elle tisse tous ses tissus elle-même.', noteVrai:'Mélusine a avoué : elle achète en cachette des tissus pas chers à Fortuné. Ils déteignent : c\'est eux qui ont rendu le lavoir rose, pas la rivière.'},
       /* un signe de menteur dès le matin : celui de Fortuné (qu'on verra l'après-midi, sur la place) */
       {q:'Qui raconte des histoires, au village ?', mimique:'fortune', ok:'Un signe de menteur ne dit pas qui est coupable.',
-        a:'Des histoires ? Méfie-toi de Fortuné, le colporteur ! Avec lui, tout est toujours « à moitié prix »… Je connais son truc : ' + signe('fortune', 'Fortuné').replace(/^Q/, 'q') + ' Regarde-le bien, cet après-midi, sur la place !',
-        note:'Mélusine t\'a appris le signe de menteur de Fortuné : une étiquette pour ton tableau de liège.'}
+        a:'Méfie-toi de Fortuné, le colporteur ! Je connais son truc pour mentir : je te l\'épingle. Regarde-le bien, cet après-midi.',
+        note:'Mélusine : méfie-toi de Fortuné, le colporteur. Son signe de menteur est sur ton tableau de liège.'}
     ]},
     fortune:{ou:{apresmidi:'place'}, carte:{matin:'pont', nuit:'lisiere'}, occupe:{matin:'« Je m\'installe sur la place cet après-midi ! »', nuit:'😴 Il ronfle dans sa carriole.'}, salut:'Approchez, approchez ! Des tissus, des rubans, des merveilles !', questions:[
       /* seulement quand le Barde sait que Mélusine achète ses tissus à Fortuné (elle l'a avoué, ou l'oreille à l'atelier) */
-      {q:'Vous vendez des tissus à Mélusine ?', besoin:[{vu:'verite:melusine:2'}, {vu:'barde:oreille:atelier'}], a:'À Mélusine ? Jamais de la vie ! Je ne lui ai rien vendu !', ment:true,
-        vrai:'Bon, d\'accord… Je lui vends des tissus pas chers, en cachette. Ils déteignent un peu, c\'est vrai. Mais chut, c\'est notre secret !',
+      {q:'Vous vendez des tissus à Mélusine ?', besoin:[{vu:'verite:melusine:2'}, {vu:'barde:oreille:atelier'}], a:'À Mélusine ? Jamais de la vie !', ment:true,
+        vrai:'Bon… je lui vends des tissus pas chers, en cachette. Ils déteignent un peu. Chut !',
         note:'Fortuné dit qu\'il n\'a rien vendu à Mélusine.', noteVrai:'Fortuné a avoué : il vend en cachette à Mélusine des tissus pas chers, qui déteignent.'},
-      {q:'Vous avez vendu quelque chose d\'étrange ?', a:'Avant-hier, un homme en cape noire, avec un grand capuchon, m\'a acheté toute ma poudre noire. Il m\'a donné de l\'or, sans dire un mot. Je n\'ai pas vu son visage !', note:'Fortuné : avant-hier, un homme en cape noire lui a acheté toute sa poudre noire, avec de l\'or. Visage caché.'},
-      /* un indice leurre (§ 12.13) : Fortuné ment, avec son signe ; démasqué, il dit le vrai */
-      {q:'Vous connaissez bien Victor ?', a:'Victor ? Comme ma poche ! Pour le décider à quoi que ce soit, parle-lui de choses magiques, de portes secrètes : il adore les contes de fées !', ment:true, ok:'Un goût de Victor ne dit rien de la rivière.',
-        vrai:'Bon… en vrai, Victor déteste les contes de fées. Moi, je voulais surtout lui vendre mon gros livre de contes !',
-        note:'Fortuné : Victor adorerait les contes de fées et les portes secrètes.', noteVrai:'Fortuné a avoué : Victor déteste les contes de fées (Fortuné voulait lui vendre un livre).'}
+      {q:'Vous avez vendu quelque chose d\'étrange ?', a:'Avant-hier, un homme en cape noire m\'a acheté toute ma poudre noire. Il m\'a donné de l\'or, sans un mot, le visage caché.', note:'Fortuné : avant-hier, un homme en cape noire lui a acheté toute sa poudre noire, avec de l\'or. Visage caché.'}
+      /* (7 novembre : plus de question sur Victor et les contes de fées, un leurre pour un dialogue qui n'existe plus) */
     ]},
     /* vexeDonne (5 novembre, 1 h 40) : sans les plans du moulin, plus de pièce cachée (Romain, 0 h 27) ; vexé la nuit avant d'avoir parlé
        des traces, Farinel ne pouvait plus les donner et l'enquête n'avait plus de OÙ. Fâché, il les donne quand même (si le Barde a les traces). */
     farinel:{ou:{matin:'moulin', apresmidi:'moulin', nuit:'moulin'}, salut:'Bonjour, bonjour ! Tu veux de la farine ?', saluts:{nuit:'Hein ?! Qui me réveille en pleine nuit ?! Grrr… Bon, qu\'est-ce que tu veux ?'},
       vexeDonne:{info:'plans_moulin', besoin:[{code:'info:traces'}], deja:'barde:farinel:2', moments:['nuit'],
-        a:'Il te fourre un vieux rouleau de papier dans les mains : « Tiens, les vieux plans de mon moulin ! Tu verras bien qu\'il n\'y a rien à trouver chez moi. Et maintenant, laisse-moi dormir ! »',
+        a:'Il te fourre un vieux rouleau dans les mains : « Les plans de mon moulin ! Tu verras qu\'il n\'y a rien chez moi. Et laisse-moi dormir ! »',
         note:'Farinel, fâché, t\'a donné les vieux plans de son moulin (code pour le Sage).'}, questions:[
       /* Léo Mouture, l'apprenti (Romain, 4 novembre) : une seule ligne ici, on ne le voit jamais dans l'enquête 2 (il servira dans l'enquête 3) */
-      {q:'Rien de bizarre au moulin ?', a:'Rien du tout ! Mon moulin tourne, ma farine est blanche, tout va bien. Mon apprenti, Léo ? Encore parti livrer la farine, celui-là…', note:'Farinel : rien de bizarre au moulin. Son apprenti, Léo, est encore parti livrer la farine.'},
-      {q:'Vous travaillez toute la journée ?', a:'Toute la journée ! Jamais de sieste, moi : je travaille du matin au soir !', ment:true, ok:'Une sieste ne prouve rien.',
-        vrai:'Bon… je fais une petite sieste tous les après-midi, sur mes sacs de farine. Chut, ne le dis à personne !',
+      {q:'Rien de bizarre au moulin ?', a:'Rien du tout, tout va bien ! Mon apprenti, Léo ? Encore parti livrer la farine, celui-là…', note:'Farinel : rien de bizarre au moulin. Son apprenti, Léo, est encore parti livrer la farine.'},
+      {q:'Vous travaillez toute la journée ?', a:'Toute la journée ! Jamais de sieste, moi !', ment:true, ok:'Une sieste ne prouve rien.',
+        vrai:'Bon… je fais la sieste tous les après-midi, sur mes sacs de farine. Chut !',
         note:'Farinel dit qu\'il ne fait jamais la sieste.', noteVrai:'Farinel a avoué : il fait la sieste tous les après-midi sur ses sacs de farine. Rien à voir avec la rivière !'},
       {q:'Des traces de charrette vont jusqu\'à votre moulin !', besoin:[{code:'info:traces'}], donne:'info:plans_moulin',
         /* (Romain, 23 h 22) : le texte seulement ; la ligne du code : infos.plans_moulin.dire */
-        a:'Des traces de charrette, ici ? Ça alors… tout le monde passe dans ma cour ! Mais elles ne mènent nulle part, c\'est impossible. Et je peux te le prouver : tiens, voici les vieux plans du moulin, bâti par mes ancêtres.',
+        a:'Des traces, chez moi ? Tout le monde passe dans ma cour ! Tiens, les vieux plans du moulin de mes ancêtres : tu verras qu\'il n\'y a rien.',
         note:'Farinel : les traces de charrette ne mènent nulle part, dit-il. Il t\'a donné les vieux plans de son moulin, bâti par ses ancêtres (code pour le Sage).'}
     ]},
-    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Pardon. Mes plantes, mes fleurs, mes arbres : c\'est toute ma vie, tu sais. Et les gens qui achètent mes bouquets sans même les sentir… ça me rend folle ! Celui qui prendra la peine de sentir mes fleurs, je lui ferai une réduction, foi d\'Iris !',
+    /* (7 novembre : la phrase de §13.10, raccourcie ; l'astuce pour l'enquête 3 reste mot pour mot, et le salut n'est dit qu'une fois) */
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Les gens achètent mes bouquets sans même les sentir ! Celui qui prendra la peine de sentir mes fleurs, je lui ferai une réduction, foi d\'Iris !',
       /* (Bible §13.10, 6 novembre : l'astuce d'Iris, pour le marché aux fleurs de l'enquête 3 ; elle s'inscrit aussi dans le Carnet) */
       noteSalut:'Iris fait une réduction à qui prend la peine de sentir ses fleurs.', questions:[
-      {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'Fâchée ? Je suis FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Il n\'en reste pas un seul !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
+      {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
       /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
          pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
       {q:'À quoi servent vos coquelicots ?', besoin:[{vu:'barde:iris:0'}], choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
-        a:'Avec mes coquelicots, on peut faire un rouge magnifique… mais il part à l\'eau au premier lavage ! Pour teindre un tissu, ça ne vaut rien. Et pour en tirer le rouge, il faut des alambics : tout un bazar !',
+        a:'Ils donnent un rouge magnifique… qui part au premier lavage : pour teindre, ça ne vaut rien. Et pour le tirer des fleurs, il faut des alambics.',
         note:'Iris : le rouge de coquelicot part à l\'eau, il ne sert à rien pour teindre un tissu. Pour le fabriquer, il faut des alambics.'},
-      {q:'Votre champ est tout rasé : on a emporté les fleurs ?', besoin:[{code:'info:champ_rase'}], a:'Tu as vu ? Jusqu\'à la dernière fleur ! Il a fallu une grande charrette pour tout emporter… Qui ferait une chose pareille ?', note:'Iris : il a fallu une grande charrette pour emporter toutes ses fleurs.'},
+      {q:'Votre champ est tout rasé : on a emporté les fleurs ?', besoin:[{code:'info:champ_rase'}], a:'Jusqu\'à la dernière ! Il a fallu une grande charrette pour tout emporter.', note:'Iris : il a fallu une grande charrette pour emporter toutes ses fleurs.'},
       /* un signe de menteur dès le matin (Romain, 22 h 25) : celui de Mélusine, la menteuse du matin (son tissu) */
       {q:'Vous connaissez bien Mélusine ?', mimique:'melusine', ok:'Un signe de menteur ne dit pas qui est coupable.',
-        a:'Mélusine ? Depuis toujours ! Elle est gentille… mais elle raconte parfois de petits mensonges. Je connais son truc : ' + signe('melusine', 'Mélusine', true).replace(/^Q/, 'q') + ' Regarde-la bien !',
-        note:'Iris t\'a appris le signe de menteuse de Mélusine : une étiquette pour ton tableau de liège.'}
+        a:'Mélusine ? Elle est gentille… mais elle raconte de petits mensonges. Je connais son truc : je te l\'épingle.',
+        note:'Iris : Mélusine raconte de petits mensonges. Son signe de menteuse est sur ton tableau de liège.'}
     ]},
     silas:{ou:{matin:'foret', apresmidi:'foret', nuit:'foret'}, salut:'Halte ! Ordre du maire.', questions:[
-      {q:'Pourquoi gardez-vous ce chemin ?', a:'Ordre du maire : personne ne va au Vieux Chêne ! Un éboulement, c\'est dangereux. Les autres chemins, tu peux y aller. Iris était furieuse : elle va voir son Vieux Chêne tous les jours, elle dit que c\'est le grand-père de tous les arbres.', note:'Silas : ordre du maire, personne ne va au Vieux Chêne. Les autres chemins sont libres. Iris va voir « son » Vieux Chêne tous les jours.'},
-      {q:'Vous avez vu passer quelqu\'un ?', a:'Avant-hier, avant l\'aube, une charrette est passée vers la clairière. Je n\'ai pas fait attention à qui la poussait. Et Victor, comme tous les jours : lui, il connaît chaque caillou de ses chemins !', note:'Silas : avant-hier, avant l\'aube, une charrette est passée vers la clairière. Victor connaît chaque caillou de ses chemins.'},
+      {q:'Pourquoi gardez-vous ce chemin ?', a:'Ordre du maire : personne ne va au Vieux Chêne ! Un éboulement, c\'est dangereux. Les autres chemins sont libres.', note:'Silas : ordre du maire, personne ne va au Vieux Chêne. Les autres chemins sont libres.'},
+      {q:'Vous avez vu passer quelqu\'un ?', a:'Avant-hier, avant l\'aube, une charrette est passée vers la clairière. Je n\'ai pas vu qui la poussait. Et Victor est passé aussi, comme tous les jours.', note:'Silas : avant-hier, avant l\'aube, une charrette est passée vers la clairière. Victor aussi, comme tous les jours.'},
       /* un signe de menteur dès le matin : celui de Farinel (le meunier, qui ment pour rire, le matin aussi) */
       {q:'On vous raconte souvent des histoires ?', mimique:'farinel', ok:'Un signe de menteur ne dit pas qui est coupable.',
-        a:'Des histoires ? Tous les jours ! Farinel, le meunier, m\'en raconte de belles… Mais je connais son truc : ' + signe('farinel', 'Farinel').replace(/^Q/, 'q') + ' Ouvre l\'œil !',
-        note:'Silas t\'a appris le signe de menteur de Farinel : une étiquette pour ton tableau de liège.'}
+        a:'Tous les jours ! Farinel, le meunier, m\'en raconte de belles… Je connais son truc : je te l\'épingle.',
+        note:'Silas : Farinel, le meunier, raconte des histoires. Son signe de menteur est sur ton tableau de liège.'}
     ]},
     grosbec:{ou:{matin:'mairie', apresmidi:'mairie'}, carte:{nuit:'mairie'}, occupe:{nuit:'🔒 La mairie est fermée pour la nuit.'}, salut:'Ah, mes enquêteurs ! Alors, cette rivière ?', questions:[
       {q:'Qui a rendu la rivière rouge ?', a:'Sans doute une mauvaise farce ! Trouvez vite le coupable, que le village se calme.', note:'Le maire pense que c\'est « une mauvaise farce ».'},
@@ -511,14 +518,14 @@ E[2] = {
     /* la maison d'Odette (2, rue des Lanternes) : la scène est la même quel que soit l'ordre du jeu */
     voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'Tu frappes chez Odette… Pas de réponse. La porte n\'est pas fermée à clé.', questions:[
       {q:'Pousser la porte d\'Odette', donne:'info:odette', ok:'Odette a disparu : ça ne dit pas qui a rougi la rivière.',
-        a:'La porte grince… Un chat jaillit entre tes jambes et file dehors ! Dedans, personne. Le lit n\'est pas défait : Odette n\'a pas dormi chez elle. Le voisin passe la tête par sa fenêtre : « Odette ? Je ne l\'ai pas vue depuis hier soir… »',
+        a:'Un chat jaillit entre tes jambes ! Dedans, personne, et le lit n\'est pas défait. Le voisin, à sa fenêtre : « Odette ? Pas vue depuis hier soir… »',
         note:'Chez Odette : personne. Son lit n\'est pas défait, elle n\'a pas dormi chez elle. Un de ses chats s\'est sauvé.'}
     ]}
   },
   ecoutes:[
     /* mj:'trous' : une phrase à trous dans le Carnet (barde.js) ; on ne dit jamais si c'est juste. Pendant que le Barde attend la pièce du Pisteur. */
     {id:'ouvriers', role:'barde', lieu:'lavoir', moments:['nuit'], titre:'Des voix au lavoir', mj:'trous', ok:'Les ouvriers ne parlent pas de la rivière.',
-      intro:'Il fait nuit noire. Au lavoir, deux ouvriers se lavent les mains pleines de terre en chuchotant. Cache-toi derrière les draps qui sèchent, et tends l\'oreille !',
+      intro:'Au lavoir, deux ouvriers lavent leurs mains pleines de terre en chuchotant. Cache-toi derrière les draps !',
       entendu:'Avec le bruit de l\'eau, tu n\'as entendu que des morceaux…',
       params:{phrases:[
         {qui:'👷', texte:'Ouf ! On a tout [bouché] avant l\'[aube].'},
@@ -532,7 +539,7 @@ E[2] = {
      Utiles sans être indispensables : la boulangerie (la pièce d'or), l'atelier (le lavoir rose), la taverne (le tonneau). t : la bribe en entier (vérificateur). */
   bribes:[
     {id:'boulangerie', lieu:'boulangerie', moments:['matin', 'apresmidi'], titre:'Dans le fournil',
-      intro:'Tu entres sans bruit dans le fournil. Gaspard bavarde avec son apprenti, les mains dans la pâte…',
+      intro:'Dans le fournil, Gaspard bavarde avec son apprenti…',
       phrases:[
         {qui:'gaspard', texte:'Et devine quoi : Bastien m\'a payé son pain avec une [pièce] d\'or toute [neuve] !'},
         {qui:'🧑‍🍳', texte:'Bastien ? Lui qui n\'a jamais un [sou] ?'},
@@ -540,7 +547,7 @@ E[2] = {
       pieges:['brioche', 'vieille', 'cassée', 'ami', 'pain', 'drôle', 'normal'],
       t:'Gaspard : Bastien l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou. C\'est bizarre.'},
     {id:'atelier', lieu:'atelier', moments:['apresmidi'], titre:'Derrière la porte de l\'atelier',
-      intro:'Tu entres sur la pointe des pieds. Mélusine parle toute seule en rinçant un tissu…',
+      intro:'Mélusine parle toute seule en rinçant un tissu…',
       phrases:[
         {qui:'melusine', texte:'Encore ce tissu de [Fortuné] qui déteint dans mon seau…'},
         {qui:'melusine', texte:'Toute l\'eau du [lavoir] est devenue [rose] à cause de lui !'},
@@ -548,7 +555,7 @@ E[2] = {
       pieges:['Margot', 'pont', 'bleue', 'rouge', 'couds', 'lave'],
       t:'Mélusine : le tissu de Fortuné déteint ; c\'est lui qui a rendu le lavoir rose. Elle ne tisse plus elle-même.'},
     {id:'taverne', lieu:'taverne', moments:['apresmidi', 'nuit'], titre:'Au comptoir de la taverne',
-      intro:'Tu entres sans bruit. Au comptoir, Margot bavarde avec un client, sans te voir…',
+      intro:'Au comptoir, Margot bavarde avec un client…',
       phrases:[
         {qui:'margot', texte:'Le [tonneau] tombé dans la rivière la semaine dernière ? L\'eau n\'a même pas [rougi] !'},
         {qui:'🧔', texte:'Alors ce n\'est pas ton [vin] qui a fait ça.'},
@@ -561,29 +568,30 @@ E[2] = {
   /* 👂 Écouter aux portes (talent « Tendre l'oreille », Romain, 5 novembre, 12 h 31) : chacun a toujours quelque chose à dire, à chaque
      moment, là où il est (barde.js : B.porteIci). Ce qu'ils pensent de l'enquête, en rapport avec leur métier ; rien qui ne soit prévu
      ailleurs (les vrais indices restent dans les bribes ci-dessus, qui passent avant). Le Carnet le garde sur la page de chacun. */
+  /* (Romain, 7 novembre : le Barde lit trop, surtout avec ce talent) une seule phrase, 15 mots au plus (Bible §12.50) */
   portes:{
-    bastien:{matin:'Allez, hue, Cocotte ! Encore trois livraisons avant midi… Et avec cette rivière rouge, tu as peur de boire, hein ? Ne t\'inquiète pas, tu n\'as rien à craindre.',
-      apresmidi:'Tout le monde ne parle que de cette rivière rouge… Moi, je transporte, je ne pose pas de questions !',
-      nuit:'Bastien bâille dans sa cuisine : « Quelle journée… Mes roues grincent. Il faudra les graisser demain. »'},
-    tim:{apresmidi:'Tim parle tout bas à son chien : « Avec la rivière rouge, plus personne ne fait ramoner sa cheminée. Hein, Pirate ? »',
-      nuit:'Tim chuchote à Pirate : « Dors, mon chien. Demain, on ramonera chez Gaspard. »'},
-    victor:{matin:'Une lettre pour la mairie, deux pour la place… Ma sacoche n\'a jamais été aussi lourde : tout le monde écrit au maire à cause de la rivière !',
-      apresmidi:'Victor tamponne ses lettres : « Rouge, la rivière ! On n\'a jamais vu ça. Même les canards sont partis ! »'},
-    gaspard:{nuit:'Gaspard pétrit la pâte de demain : « Avec l\'eau de la rivière, je ferais du pain rose ! Heureusement que j\'ai mon puits. »'},
-    margot:{matin:'Margot essuie ses chopes : « Une rivière rouge, un chêne interdit… Ce village devient plus mystérieux que mes histoires ! »'},
-    melusine:{matin:'Mélusine frotte son linge dans le lavoir tout rose, en soupirant : « J\'aurais dû m\'en douter… Quel escroc ! »'},
-    fortune:{matin:'Fortuné chantonne en rangeant ses rubans : « Des couleurs du jamais-vu ! Cet après-midi, tout le monde voudra mes tissus ! »',
-      apresmidi:'Fortuné vante sa marchandise : « Approchez ! Moi, cette rivière rouge, je la trouve plutôt jolie… Mais ce n\'est pas moi, hein ! »'},
-    farinel:{matin:'Farinel chante en versant son grain : « Tourne, tourne, mon moulin… Même avec de l\'eau rouge, ma roue tourne toujours ! »',
-      apresmidi:'Farinel tousse dans un nuage de farine : « Que de monde dans ma cour aujourd\'hui ! Je ne sais plus où donner de la tête. »',
-      nuit:'Farinel ronfle si fort que les murs tremblent : « Rrrr… pas touche à mon grain… rrrr… »'},
-    iris:{matin:'Iris arrose ses plantes en grognant : « Grrr… L\'eau de la rivière est toute rouge : pas question d\'en donner à mes fleurs ! »',
-      apresmidi:'Iris trie ses herbes : « Lavande, menthe, ortie… Au moins, ici, personne ne touche à mes plantes. »'},
-    silas:{matin:'Silas fait les cent pas : « Ordre du maire : personne ne passe. Personne ! Même pas les écureuils. »',
-      apresmidi:'Silas bâille : « Garder un chemin toute la journée… Et si quelqu\'un passait derrière mon dos ? Bah, impossible ! »',
-      nuit:'Silas grelotte près de sa lanterne : « Pourquoi moi ? Toute la nuit dans le froid… et ce vieux chêne qui grince ! »'},
-    grosbec:{matin:'Le maire soupire derrière sa porte : « Une rivière rouge… Les gens ont peur. Voilà qui va les occuper : au moins, ils ont l\'esprit ailleurs. »',
-      apresmidi:'Le maire relit une lettre : « Encore une plainte pour la rivière… Au moins, Silas tient bon au Vieux Chêne. »'}
+    bastien:{matin:'Allez, bois, Cocotte ! Tu n\'as rien à craindre de cette eau rouge…',
+      apresmidi:'Tout le monde parle de cette rivière… Moi, je transporte, je ne pose pas de questions !',
+      nuit:'Bastien bâille : « Mes roues grincent… Il faudra les graisser demain. »'},
+    tim:{apresmidi:'Tim, à son chien : « Avec cette rivière rouge, plus personne ne fait ramoner, Pirate… »',
+      nuit:'Tim chuchote : « Dors, Pirate. Demain, on ramone chez Gaspard. »'},
+    victor:{matin:'Ma sacoche n\'a jamais été si lourde : tout le monde écrit au maire !',
+      apresmidi:'Victor tamponne ses lettres : « Une rivière rouge… Même les canards sont partis ! »'},
+    gaspard:{nuit:'Gaspard pétrit : « Avec l\'eau de la rivière, je ferais du pain rose ! »'},
+    margot:{matin:'Margot essuie ses chopes : « Ce village devient plus mystérieux que mes histoires ! »'},
+    melusine:{matin:'Mélusine frotte son linge tout rose : « J\'aurais dû m\'en douter… Quel escroc ! »'},
+    fortune:{matin:'Fortuné range ses rubans : « Cet après-midi, tout le monde voudra mes tissus ! »',
+      apresmidi:'Fortuné : « Moi, cette rivière rouge, je la trouve jolie… Mais ce n\'est pas moi ! »'},
+    farinel:{matin:'Farinel chante : « Tourne, mon moulin… Même dans l\'eau rouge, ma roue tourne ! »',
+      apresmidi:'Farinel tousse dans la farine : « Que de monde dans ma cour, aujourd\'hui ! »',
+      nuit:'Farinel ronfle si fort que les murs tremblent : « Rrrr… pas touche à mon grain… »'},
+    iris:{matin:'Iris grogne : « Pas une goutte de cette eau rouge pour mes fleurs ! »',
+      apresmidi:'Iris trie ses herbes : « Ici, au moins, personne ne touche à mes plantes. »'},
+    silas:{matin:'Silas fait les cent pas : « Personne ne passe. Même pas les écureuils ! »',
+      apresmidi:'Silas bâille : « Et si quelqu\'un passait derrière mon dos ? Bah, impossible ! »',
+      nuit:'Silas grelotte : « Toute la nuit dans le froid… et ce vieux chêne qui grince ! »'},
+    grosbec:{matin:'Le maire soupire : « Une rivière rouge… Au moins, les gens ont l\'esprit ailleurs. »',
+      apresmidi:'Le maire grogne : « Encore une plainte… Heureusement, Silas tient bon au Vieux Chêne. »'}
   },
   /* Hydromel des confidences (talent du niveau 6) : ce qu'un villageois confie pour innocenter un suspect (jamais le coupable) */
   alibis:{
@@ -694,6 +702,47 @@ E[2] = {
       {ic:'🪨', t:'La pierre gravée de Tim vient du fond du trou. Ses runes parlent d\'une « ville d\'avant ».'},
       {ic:'🧥', t:'Un homme en cape noire a payé Bastien, et acheté de la poudre noire à Fortuné.'},
       {ic:'🔴', t:'Devant la fumée rouge du Vieux Chêne, Silas a crié : « Vapeurs toxiques ! » Le maire a fait condamner la zone.'}
+    ]
+  },
+  /* Les archives du Grand Livre du Sage, à partir de l'enquête 3 (livre.js, Bible §12.28). Rien de plus que ce que toute équipe
+     apprend ou que la fin raconte : pas la crypte, pas le pot noir (Romain, 7 novembre). */
+  archive:{
+    resume:'Un matin, la rivière de Brumeval est devenue toute rouge. C\'est Bastien Roulebosse, le charretier, qui l\'avait teinte : un homme en cape noire l\'avait payé.',
+    parties:[
+      {ic:'📜', titre:'Ce qui s\'est passé', lignes:[
+        ['🌺', 'Avant l\'aube, quelqu\'un a rasé tout le champ de coquelicots d\'Iris, à la clairière aux lièvres, et emporté les fleurs en charrette.'],
+        ['⚗️', 'Dans une pièce cachée du moulin, des alambics en ont tiré un rouge qui part à l\'eau. La nuit, il a été versé dans la rivière.'],
+        ['🪙', 'C\'était Bastien, le charretier. Un homme en cape noire l\'a payé en pièces d\'or toutes neuves. Bastien n\'a jamais vu son visage.'],
+        ['⚖️', 'Le maire a mis Bastien en prison : « Payé ? Par qui ? Bah, peu importe : l\'affaire est close ! »'],
+        ['🐟', 'Le lendemain, la rivière est redevenue claire.']
+      ]},
+      {ic:'⭐', titre:'Les grands moments de l\'enquête', lignes:[
+        ['🍞', 'Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'],
+        ['🛒', 'Des traces de charrette allaient du champ rasé jusqu\'à la cour du moulin, puis se perdaient sur les pavés.'],
+        ['📐', 'Les vieux plans du moulin, donnés par Farinel et réparés par le Sage, montraient une petite pièce sans porte.'],
+        ['🩷', 'Le lavoir était rose pour une autre raison : les tissus pas chers que Fortuné vend en cachette à Mélusine déteignent.'],
+        ['🍷', 'Le tonneau de Margot, tombé dans la rivière la semaine d\'avant, n\'avait pas rougi l\'eau.'],
+        ['📣', 'La nuit, le Sage a emmené le village au Vieux Chêne. Une fumée rouge en est sortie ; Silas a crié « Vapeurs toxiques ! », et le maire a fait condamner la zone.']
+      ]},
+      {ic:'🔑', titre:'À retenir pour la suite', lignes:[
+        ['👵', 'Odette a disparu : elle n\'a pas dormi chez elle, et personne ne l\'a revue.'],
+        ['🦯', 'Sa canne aux sept chats était dans l\'herbe, près des rochers du Vieux Chêne. Odette ne sort jamais sans elle.'],
+        ['🪨', 'De gros rochers bouchent le trou du Vieux Chêne. Le chemin est fermé par ordre du maire, et Silas le garde.'],
+        ['🚪', 'Au fond du trou, Tim a vu une porte couverte de runes. Les runes de sa pierre gravée parlent d\'une « ville d\'avant ».'],
+        ['🧥', 'Un homme en cape noire, le visage toujours caché, a payé Bastien et acheté toute la poudre noire de Fortuné.'],
+        ['🐈', 'Un des chats d\'Odette attend devant les rochers du Vieux Chêne, et gratte la pierre.']
+      ]},
+      {ic:'👥', titre:'Ce qu\'on sait des habitants', lignes:[
+        ['🛒', 'Bastien Roulebosse, le charretier : il est en prison. Il déteste les farces.'],
+        ['👨‍🍳', 'Gaspard, le boulanger : Odette était sa toute première cliente, chaque matin.'],
+        ['🍺', 'Margot, la tavernière : elle adore les vieilles légendes, et elle connaît le signe de chaque menteur du village.'],
+        ['🧵', 'Mélusine, la couturière : elle achète en cachette des tissus pas chers à Fortuné, pour économiser.'],
+        ['🤠', 'Fortuné, le colporteur : il vend de tout… mais pas toujours de la bonne qualité.'],
+        ['🌾', 'Farinel, le meunier : il fait la sieste sur ses sacs de farine. Son apprenti, Léo, est toujours parti livrer.'],
+        ['🌿', 'Iris, l\'herboriste : c\'était son champ de coquelicots. Elle aime ses fleurs plus que tout.'],
+        ['💂', 'Silas, le garde champêtre : il obéit aux ordres du maire.'],
+        ['🎩', 'Monsieur Grosbec, le maire : il ne quitte jamais ses gants gris. Il a clos l\'affaire très vite.']
+      ]}
     ]
   },
   defaite:[

@@ -1,6 +1,15 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le matin du 6 novembre)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 7 novembre à 15 h)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 7 novembre (15 h)
+
+- **Les règles de lecture du Barde sont décidées et appliquées à l'E2** (Bible §12.50, −34 % de mots) : réponses de 2 phrases courtes au plus ; vérités de 25 à 30 mots ; aux portes, une phrase de 15 mots au plus ; **les signes des menteurs ne se lisent plus, ils s'épinglent** (« Je connais son truc : je te l'épingle », et l'étiquette du liège porte le nom) ; le salut n'est dit qu'à la première visite (`salutUneFois:true`) ; ne pas redire ce que la carte montre (les adresses). **Les dialogues de l'E3 (environ 3 100 mots) sont à réécrire avec ces règles avant de construire** : c'est une étape de la conception, à faire avec la fiche du donjon et le tableau « qui prouve quoi ».
+- **La canne d'Odette : décidée.** L'E3 la met d'office dans le sac du Barde : depuis que le Sage accuse quand il veut, une équipe peut finir l'E2 sans l'avoir trouvée. Il reste donc 5 propositions en attente de Romain (Livre d'or, coup d'œil au clocher, cueillettes, recette contre la rouille, page de la porte des Fondateurs).
+- **L'archive de l'E2 est écrite** (le Grand Livre du Sage l'affiche à partir de l'E3).
+- **La poursuite de Tim est à 4 au plus** (`mjNiveauMax`) : l'oie du festin, même moteur, se réglera à sa construction.
+- **Les joueurs de 10 ans et plus jouent en mode « adulte »** (« Qui va jouer ? » : moins de 10 ans / 10 ans et plus). Le public est de 11-12 ans (§12.49) : un peu de frayeur permise dans le donjon et la crypte, à décider avec la fiche du donjon.
+- **Romain a eu le point sur l'E3 le 7 novembre** : la suite proposée est (1) ses réponses aux 5 propositions, (2) la fiche du donjon, (3) le tableau « qui prouve quoi », (4) les talents du niveau 2, (5) la réécriture des dialogues du Barde.
 
 ## Nouveau depuis 2 h 15 (la nuit du 6 novembre)
 

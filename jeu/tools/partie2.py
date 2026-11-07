@@ -392,9 +392,10 @@ with sync_playwright() as p:
     fermer(B)
     # (Romain, 5 novembre, 21 h 46) le 🤥 seulement sous la dernière réponse : on démasque tout de suite, avant la question suivante
     parler(B, 'fortune', [(0, None)]); demasquer(B, 'fortune', 0)
-    for i in (1, 2): ev(B, 'question', {'p': 'fortune', 'i': str(i)}); B.wait_for_timeout(60)
-    verifier(B.evaluate("() => M.barde.derniere('fortune') === 2") and B.locator('#voile .bd-ment-p[data-act=bd-ment][data-i="0"], #voile .bd-ment-p[data-act=bd-ment][data-i="1"]').count() == 0, 'Barde : le 🤥 n\'est plus que sous la dernière réponse de Fortuné')
-    demasquer(B, 'fortune', 2); fermer(B)   # 2 : l'indice leurre sur Victor
+    # (7 novembre : plus de question 2, l'indice leurre sur Victor, retiré)
+    ev(B, 'question', {'p': 'fortune', 'i': '1'}); B.wait_for_timeout(60)
+    verifier(B.evaluate("() => M.barde.derniere('fortune') === 1 && M.E().pnj.fortune.questions.length === 2") and B.locator('#voile .bd-ment-p[data-act=bd-ment][data-i="0"]').count() == 0, 'Barde : le 🤥 n\'est plus que sous la dernière réponse de Fortuné')
+    fermer(B)
     parler(B, 'iris', [(1, 'bon'), (2, None)]); fermer(B)   # l'après-midi, Iris reparle (l'indice de Mélusine : un compliment sur ses fleurs)
     passer(2)
 

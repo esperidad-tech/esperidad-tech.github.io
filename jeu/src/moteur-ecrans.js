@@ -205,7 +205,9 @@ function vueCreation(){
     var h2 = Object.assign({}, c, {niveau:1, talents:[], equip:[]});
     s += '<div class="b-crea-grille"><div class="b-crea-apercu">' + portrait('pied', true, true, h2) + '<button class="btn second petit" data-act="crea-hasard">🎲 Au hasard</button></div><div class="b-crea-options">';
     if(C){
-      s += option('Qui va jouer ?', 'joueur', [{id:'enfant', nom:'🧒 Un enfant'}, {id:'adulte', nom:'🧑 Un adulte'}], c.joueur === 'enfant' ? 'enfant' : 'adulte', 'puce');   /* la difficulté des mini-jeux en dépend */
+      /* la difficulté des mini-jeux en dépend. (Romain, 7 novembre : les joueurs ont 11-12 ans ; le mode « enfant » a été réglé pour
+         des 8 ans → on le présente par l'âge, et les 10 ans et plus jouent comme les adultes) */
+      s += option('Qui va jouer ?', 'joueur', [{id:'enfant', nom:'🧒 Moins de 10 ans'}, {id:'adulte', nom:'🧑 10 ans et plus'}], c.joueur === 'enfant' ? 'enfant' : 'adulte', 'puce');
       s += option('Je suis', 'sexe', C.sexe.map(function(x){ return {id:x.id, nom:x.id === 'f' ? 'Une fille' : 'Un garçon'}; }), c.sexe, 'puce');
       s += option('Mon âge', 'age', C.age, c.age, 'puce');
       s += option('Ma peau', 'peau', C.peau, c.peau, 'couleur');
@@ -280,8 +282,8 @@ function vueReglages(){
     '<section class="b-carte-verre"><h3>' + (voix ? 'Son et voix' : 'Son') + '</h3>' +
     '<label class="b-interr"><input type="checkbox" data-act="opt" data-k="son"' + (o.son !== false ? ' checked' : '') + '> 🔔 Sons</label>' +
     M.voixHTML() + '</section>' +
-    (M.S.heros ? '<section class="b-carte-verre"><h3>Qui joue ce héros ?</h3><p class="doux petit">' + esc('Les mini-jeux sont plus faciles pour un enfant.') + '</p><div class="b-rangee">' +
-      [['enfant', '🧒 Un enfant'], ['adulte', '🧑 Un adulte']].map(function(x){ return '<button class="btn ' + (M.joueur() === x[0] ? '' : 'second ') + 'petit" data-act="joueur" data-v="' + x[0] + '" aria-pressed="' + (M.joueur() === x[0]) + '">' + x[1] + (M.joueur() === x[0] ? ' ✔' : '') + '</button>'; }).join('') + '</div></section>' : '') +
+    (M.S.heros ? '<section class="b-carte-verre"><h3>Qui joue ce héros ?</h3><p class="doux petit">' + esc('Les mini-jeux sont plus faciles pour les moins de 10 ans.') + '</p><div class="b-rangee">' +
+      [['enfant', '🧒 Moins de 10 ans'], ['adulte', '🧑 10 ans et plus']].map(function(x){ return '<button class="btn ' + (M.joueur() === x[0] ? '' : 'second ') + 'petit" data-act="joueur" data-v="' + x[0] + '" aria-pressed="' + (M.joueur() === x[0]) + '">' + x[1] + (M.joueur() === x[0] ? ' ✔' : '') + '</button>'; }).join('') + '</div></section>' : '') +
     (M.modeDev() && M.S.heros ? '<section class="b-carte-verre b-mode-test"><h3>Mode test</h3>' +
       '<div class="b-rangee">' + [1, 2, 3].map(function(i){ return '<button class="btn second petit" data-act="mode-test" data-i="' + i + '">Enquête ' + i + '</button>'; }).join('') + '</div></section>' : '') +
     (window.BRUMEVAL_VERSION ? '<p class="doux petit b-version">' + esc('Version du jeu : ' + M.versionTxt() + '. Toutes les tablettes doivent avoir la même, sinon les codes ne marchent pas.') + '</p>' : '') +

@@ -78,6 +78,8 @@ MJ.reglages = function(type, niveau, mods, opts){
   mods = Object.assign({}, mods || {});
   var brut = !!(opts && opts.brut), joueur = (opts && opts.joueur) || window.MJ_JOUEUR || 'adulte';
   var base = brut ? (niveau || 1) : MJ.niveauPour(type, niveau, joueur);
+  /* opts.max : jamais plus que ce niveau (la poursuite de Tim, enquête 2 : niveau 4 au plus, Romain, 7 novembre) */
+  if(opts && opts.max) base = Math.min(base, opts.max);
   var n = U.borne(base - (mods.facile || 0), 1, 12);
   var p = def && def.reglages ? def.reglages(n, mods) : {};
   if(MJ.APRES[type]) try{ MJ.APRES[type](p, mods, n); }catch(e){}
