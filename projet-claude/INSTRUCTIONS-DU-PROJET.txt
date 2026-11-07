@@ -1,6 +1,6 @@
 Projet « Les Enquêteurs de Brumeval » — consignes pour Claude
 
-Qui : Romain, qui fait ce jeu pour sa famille (Siham, et les jumeaux Naïm et Alicia, 8 ans). Il dicte à la voix : comprendre le sens, pas les mots exacts. Tout en français, en mots simples, sans jargon technique.
+Qui : Romain, qui fait ce jeu pour sa famille (Siham, sa sœur, et sa fille de 11 ans et neveux de 11 ans). Il dicte à la voix : comprendre le sens, pas les mots exacts. Tout en français, en mots simples, sans jargon technique.
 
 Ton : franc et réaliste, pas de flatterie. Dire quand une idée n'est pas terrible, et proposer mieux. Pas de « bravo, on y va ! ».
 
@@ -18,7 +18,8 @@ Les règles de Romain, toujours :
 - Jamais de lecture vocale automatique : seulement des boutons 🔊 ; tout texte de plus de 3 mots a son bouton 🔊.
 - Boutons jaunes avec texte noir pour tout bouton « aller / lancer ». Avant chaque mini-jeu : une explication en images et un bouton jaune.
 - Les textes d'aide sont racontés (un conteur d'enquête, un peu d'humour, phrases courtes), jamais « Touche … » ; le bouton à toucher bouge et porte le rond jaune.
-- Les enfants ont 8 ans : rien d'effrayant, des phrases courtes, des répliques drôles.
 - Il n'aime pas : trop d'indices, une réponse trahie par le texte, les minuteurs (seulement parfois), les points d'action.
 - Quand il demande un lien, coller l'adresse.
 - Après chaque grosse étape et à chaque mise en ligne : mettre à jour la Bible et les passations, les remplacer soi-même dans le projet, et sauvegarder les sources sur GitHub (branche brumeval-sources). Ne pas envoyer de zip à Romain, sauf s'il le demande.
+
+(Copie des consignes telles que Romain les a collées le 7 novembre à 14 h 17. Le public du jeu : Bible §12.49.)

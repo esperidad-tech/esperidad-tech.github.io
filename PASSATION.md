@@ -3,7 +3,7 @@
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
 ## Le projet en deux lignes
-Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) pour la famille de Romain : Romain, Siham, et les jumeaux Naïm et Alicia (8 ans). Tout est en français. Saison 1 = 10 enquêtes (E10 = un grand combat). E1 et E2 sont jouables, E3 est conçue mais pas construite.
+Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) pour la famille de Romain : **depuis le 7 novembre, pour sa fille et ses cousins (11 ans, bientôt 12), avec Romain, Siham et sa sœur** ; « à partir de 10 ans », mais « niveau 13 ans » : un peu de frayeur permise, pas obligé de faire enfantin (Bible §12.49 ; avant : les jumeaux Naïm et Alicia, 8 ans). Tout est en français. Saison 1 = 10 enquêtes (E10 = un grand combat). E1 et E2 sont jouables, E3 est conçue mais pas construite.
 - Le jeu en ligne : https://esperidad-tech.github.io/brumeval/ (dépôt `esperidad-tech/esperidad-tech.github.io`, branche `main`, dossier `brumeval/`)
 - La salle de test des mini-jeux : https://esperidad-tech.github.io/brumeval/salle.html (toujours à jour, mise en ligne avec le jeu). L'ancien artifact https://claude.ai/artifact/KeucSfHGP8bKy48mJo1nDX est en retard.
 - Le point sur les mini-jeux : https://esperidad-tech.github.io/brumeval/mini-jeux.html

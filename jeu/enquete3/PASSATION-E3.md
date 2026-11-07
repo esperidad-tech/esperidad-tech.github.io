@@ -9,7 +9,7 @@
 
 ## Le projet en deux lignes
 
-« Les Enquêteurs de Brumeval » : un jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage), pour Romain, Siham et les jumeaux Naïm et Alicia (8 ans). Tout est en français. La saison 1 compte 10 enquêtes (la 10e est un grand combat). Les enquêtes 1 et 2 sont jouables en ligne. **L'enquête 3 est conçue presque entièrement, et elle est maintenant dans la Bible (§13), mais rien n'est construit.**
+« Les Enquêteurs de Brumeval » : un jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage), **depuis le 7 novembre, pour la fille de Romain et ses cousins (11 ans, bientôt 12), avec Romain, Siham et sa sœur** (avant : les jumeaux Naïm et Alicia, 8 ans). Tout est en français. La saison 1 compte 10 enquêtes (la 10e est un grand combat). Les enquêtes 1 et 2 sont jouables en ligne. **L'enquête 3 est conçue presque entièrement, et elle est maintenant dans la Bible (§13), mais rien n'est construit.**
 
 ## Ce qui a été fait le 6 novembre à 2 h (dans la conversation qui construit)
 
@@ -87,7 +87,7 @@ Le document et la page s'ouvrent depuis une autre conversation du même compte (
 - Il aime : les dialogues à étapes où tous les choix sont plausibles et où il faut récolter les indices chez d'autres villageois ; que chaque rôle soit indispensable (personne ne résout l'enquête seul) ; que chacun ait sa tâche et doive passer ses infos aux autres.
 - Il n'aime pas : trop d'indices, une réponse trahie par le texte (une parenthèse, un choix évidemment faux), les minuteurs (seulement parfois), les points d'action, la lecture vocale automatique (seulement des boutons 🔊), les textes d'aide qui expliquent (« Touche … »), et la chanson d'Odette (supprimée).
 - Règles d'écran : boutons jaunes avec texte noir pour tout bouton « aller / lancer » ; avant chaque mini-jeu, une explication en images et un bouton jaune ; tout texte de plus de 3 mots a un bouton 🔊 ; le bouton à toucher bouge, avec le rond jaune animé ; les écrans et les mini-jeux d'action ne défilent pas.
-- Les enfants ont 8 ans : rien d'effrayant, des phrases courtes, des répliques drôles.
+- **Le public (Romain, 7 nov., 14 h 17)** : annoncé « à partir de 10 ans », mais fait « niveau 13 ans » ; pas trop effrayant, **un peu de frayeur permise**, pas obligé de faire enfantin (Bible §12.49). Ça remplace l'ancienne règle « 8 ans : rien d'effrayant, phrases courtes, répliques drôles » : l'E3 peut avoir plus de mystère et un peu de peur (à discuter avec Romain).
 - Quand il demande un lien, coller l'adresse.
 
 ## Les pièges connus
