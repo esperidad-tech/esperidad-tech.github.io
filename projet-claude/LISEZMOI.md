@@ -1,20 +1,10 @@
-# Le projet « Brumeval » dans Claude — où mettre quoi (6 novembre 2026, 2 h 15)
+# Le projet « Brumeval » dans Claude — où mettre quoi (mis à jour le 7 novembre 2026)
 
-1. **Instructions** : copier tout le texte de `INSTRUCTIONS-DU-PROJET.txt` et le coller dans la case « Instructions » du projet.
-2. **Contexte** : ajouter les 5 fichiers du dossier `contexte/` :
-   - `DESIGN-saison1.md` (la Bible),
-   - `PASSATION.md` (pour construire le jeu),
-   - `PASSATION-E3.md` (pour concevoir l'enquête 3),
-   - `E3-dialogues-et-trame.md`,
-   - `E3-actions-des-roles.md`.
-3. **Le zip des sources** (`brumeval-sources.zip`) ne va pas dans le projet : il change à chaque étape. Le joindre à chaque conversation qui construit le jeu (et, si on veut, à celle qui conçoit l'E3).
+1. **Instructions** : le texte de `INSTRUCTIONS-DU-PROJET.txt`, collé dans la case « Instructions » du projet (Romain le fait une fois ; à refaire seulement si ce fichier change).
+2. **Contexte** : les 5 fichiers (la Bible `DESIGN-saison1.md`, `PASSATION.md`, `PASSATION-E3.md`, `E3-dialogues-et-trame.md`, `E3-actions-des-roles.md`). **Claude les remplace lui-même** après chaque grosse étape (outil Projects). Romain n'a rien à faire.
+3. **Les sources du jeu** ne vont pas dans le projet : elles sont sur GitHub, branche `brumeval-sources` du dépôt `esperidad-tech/esperidad-tech.github.io`. Chaque conversation qui construit le jeu les récupère seule. Plus de zip à joindre.
 4. **Mémoire** et **Programmer** : rien à faire.
 
-## Pour commencer l'enquête 3
+## Pour commencer une grosse partie
 
-Dans le projet, nouvelle conversation, joindre `brumeval-sources.zip` et dire :
-« Lis `PASSATION-E3.md` en entier, puis on continue l'enquête 3. »
-
-## Après chaque grosse étape
-
-La conversation qui construit renvoie le zip et les fichiers qui ont changé (souvent la Bible et `PASSATION.md`). Les remplacer dans le Contexte du projet (supprimer l'ancien, ajouter le nouveau), sinon le projet garde une vieille copie.
+Dans le projet, nouvelle conversation, dire simplement ce qu'on veut faire (par exemple : « On continue l'enquête 3 », ou « Je te fais mon retour sur le tir à l'arc »).

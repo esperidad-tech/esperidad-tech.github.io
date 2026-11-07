@@ -3,3 +3,6 @@ d-*/
 final-*.html
 *.zip
 __pycache__/
+jeu/test/partie2-exiger/
+jeu/test/tuto/
+paquet/
