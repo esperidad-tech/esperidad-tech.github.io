@@ -206,6 +206,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
 .mj.mj-fixe{min-height:0}   /* plein écran verrouillé (MJ.PLEIN_ECRAN, mj-core.js) : il tient dans l'écran, même couché */
+/* iPhone / iPad (html.mj-ios, mj-core.js) : une bande vide de 44 px au-dessus du bord du bas (en plus de la barre de l'iPhone),
+   pour que glisser vers le bas (se baisser dans la course-poursuite, tirer l'arc…) ne déclenche pas « Accès facile ». */
+html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc(max(8px, env(safe-area-inset-bottom, 0px)) + 44px)}
 
 /* ==========================================================
    PERSOS — animations des héros et des villageois
@@ -3880,6 +3883,12 @@ W.MJT = {
 'use strict';
 var MJ = window.MJ = window.MJ || {};
 MJ.TYPES = MJ.TYPES || {};
+/* iPhone / iPad (Romain, 8 novembre) : glisser le doigt jusqu'en bas de l'écran déclenche « Accès facile » (tout l'écran descend),
+   et une page web ne peut pas l'empêcher. Classe html.mj-ios : les mini-jeux plein écran gardent une bande vide en bas
+   (mj-core.css), pour que le doigt n'arrive jamais au bord. */
+try{ var ua = navigator.userAgent || '';
+  if(/iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) document.documentElement.classList.add('mj-ios');
+}catch(e){}
 
 /* ---------- Outils partagés ---------- */
 var U = MJ.util = {
@@ -8667,6 +8676,9 @@ MJ.enregistrer('poursuite', {
       geste = null;
     });
     P.ecoute(svg, 'pointercancel', function(){ geste = null; });
+    /* iPhone : le navigateur ne doit rien faire du glissé (pas de défilement, pas de rebond) ; « Accès facile » est évité par la bande
+       vide du bas (html.mj-ios, mj-core.css) */
+    P.ecoute(terrain, 'touchmove', function(e){ if(e.cancelable) e.preventDefault(); }, {passive:false});
     P.ecoute(document, 'keydown', function(e){
       var kk = {ArrowLeft:'g', ArrowRight:'d', ArrowUp:'h', ArrowDown:'b'}[e.key];
       if(kk){ action(kk); e.preventDefault(); }
