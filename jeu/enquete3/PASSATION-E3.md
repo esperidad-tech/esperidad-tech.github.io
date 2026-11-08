@@ -1,9 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 8 novembre à 10 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 8 novembre à 11 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 ## Nouveau depuis le 8 novembre (10 h 30)
 
+- **Le donjon se conçoit d'abord en images** (Bible §12.51, fin ; Romain : « il faut qu'on travaille ce fameux donjon »). Romain a choisi la direction **façon Darkest Dungeon** (tablette couchée, les trois héros en file, vue de côté). Trois images d'un même combat faites le 8 novembre à 11 h 45 (`jeu/donjon/maquettes/combat-*.png`) : héros de trois quarts en position d'attaque, décor de crypte, vignettage, et une grande bande noire en bas (portrait, 3 gestes du héros, les 8 potions du sac de l'Alchimiste, les potions à lancer réservées à l'Alchimiste). **Les gestes et les potions sont une proposition à valider.** En attente de l'avis de Romain ; ensuite 3-4 images de plus, puis une salle cliquable, puis la fiche des règles.
 - **Romain a répondu à 4 des 6 propositions** (Bible §13.11) : le Livre d'or de la fête **oui** ; les cueillettes de l'Alchimiste **oui** ; la canne était déjà décidée ; la recette qui ronge la rouille **ira avec toutes les potions** (il faut créer toutes les potions du donjon). Restent : le coup d'œil du Pisteur au clocher (il ne voyait pas ce que c'était : réexpliqué le 8 novembre, avis de Claude toujours « non ») et la page de la porte des Fondateurs.
 - **Le chantier de conception suivant** (Bible §12.51) : refaire les talents et les objets du Pisteur, de l'Alchimiste et du Sage, sur le modèle du Barde (§13.9 : talents faits, 8 objets de 70 à 115 pièces et la clé rouillée à 320 ; pas encore construits dans le jeu) ; créer toutes les potions, donjon compris. C'est plus large que le point 4 de « Pas encore conçu » plus bas, qu'il remplace.
 
