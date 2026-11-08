@@ -1,6 +1,11 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 7 novembre à 15 h)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 8 novembre à 10 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 8 novembre (10 h 30)
+
+- **Romain a répondu à 4 des 6 propositions** (Bible §13.11) : le Livre d'or de la fête **oui** ; les cueillettes de l'Alchimiste **oui** ; la canne était déjà décidée ; la recette qui ronge la rouille **ira avec toutes les potions** (il faut créer toutes les potions du donjon). Restent : le coup d'œil du Pisteur au clocher (il ne voyait pas ce que c'était : réexpliqué le 8 novembre, avis de Claude toujours « non ») et la page de la porte des Fondateurs.
+- **Le chantier de conception suivant** (Bible §12.51) : refaire les talents du Pisteur, de l'Alchimiste et du Sage ; refaire les objets de la boutique des quatre rôles (le Barde a ses talents, pas ses objets : les siens sont les anciens) ; créer toutes les potions, donjon compris. C'est plus large que le point 4 de « Pas encore conçu » plus bas, qu'il remplace.
 
 ## Nouveau depuis le 7 novembre (15 h)
 

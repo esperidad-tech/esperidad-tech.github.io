@@ -1969,6 +1969,17 @@ Remplace ce que les §12.44 à §12.47 disaient du tir quand c'est contraire. Pa
 
 Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (exiger et tendre) sans échec, codes E1/E2/E3 identiques, un essai Playwright (le salut une seule fois, l'étiquette « 🤥 Margot », Tim au niveau 4, l'archive). Mis en ligne le 7 novembre à 14 h 57 (commit 9d58dd3, version 20261107-1357).
 
+### 12.51 iPhone : « Accès facile » dans la course-poursuite ; talents, objets et potions à refaire (Romain, 8 novembre, 10 h 06)
+**Le bug (construit, en ligne)** : sur iPhone, dans la course-poursuite, glisser le doigt vers le bas pour se baisser, jusqu'au bord de l'écran, déclenche « Accès facile » (tout l'écran descend à mi-hauteur) : on ne peut plus jouer. **Une page web ne peut pas désactiver cette fonction de l'iPhone.** Ce qui est fait : sur iPhone et iPad (`html.mj-ios`, mj-core.js), les mini-jeux en plein écran verrouillé gardent **une bande vide de 44 px au-dessus du bord du bas** (en plus de la barre de l'iPhone ; mj-core.css), pour que le doigt n'arrive jamais au bord ; la course-poursuite refuse aussi tout geste du navigateur pendant le glissé (`touchmove` avec `preventDefault`, mj-pisteur-alchi.js). Les autres appareils ne changent pas. **La solution sûre, sur l'iPhone lui-même** : Réglages → Accessibilité → Toucher → Accès facile, désactivé. Vérifié : rapide.sh vert, partie2.py sans échec, codes E1/E2/E3 identiques, la poursuite à la taille d'un iPhone 13 (bande en bas, se baisser marche) et d'un Android (inchangée). Mis en ligne le 8 novembre (commit 935b106, version 20261108-0916).
+
+**Les décisions de Romain sur l'enquête 3 (§13.11)** : le Livre d'or de la fête, **oui** ; les cueillettes de l'Alchimiste, **oui** ; le coup d'œil du Pisteur au clocher, il ne voyait pas ce que c'était (réexpliqué, en attente) ; la recette qui ronge la rouille, à faire **avec toutes les potions** ; la page de la porte des Fondateurs, pas encore de réponse.
+
+**Le prochain chantier de conception (Romain : « ça, c'est aussi un truc qu'on peut faire maintenant »)** :
+- **refaire tous les talents du Pisteur, de l'Alchimiste et du Sage** (ceux de `donnees.js` datent d'avant les décisions des 3-5 novembre : plusieurs parlent d'actions en plus, de la grille de déduction retirée, du Corbeau) ;
+- **refaire les objets de la boutique**. Romain pensait que le Barde était complet : **ses talents le sont (§12.5), pas ses objets**. Ses 20 objets sont les anciens (actions, ragots, mots perdus, mini-jeu du mensonge à part) ; vérifié le 8 novembre : presque aucun « accès » donné par un objet, tous rôles confondus, n'est utilisé par les enquêtes 1 et 2. Ce sont donc les objets **des quatre rôles** qui sont à refaire ;
+- **créer toutes les potions** de l'Alchimiste, celles du donjon de l'enquête 3 comprises (lumière, soin, fumigène, poudre éclairante, rapidité, invisibilité…) et celle qui ronge la rouille ; aujourd'hui, 10 recettes existent (`D.POTIONS`, `D.RECETTES`), aucune n'a d'effet dans un donjon.
+Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
+
 ## 13. Enquête 3 — La lettre d'Odette
 
 ### 13.1 L'histoire, pour nous (jamais montrée telle quelle aux joueurs)
@@ -2156,14 +2167,14 @@ Les autres talents (Charmeur, Physionomiste, Lancer une rumeur, Hydromel, Intuit
 
 - La fiche complète du donjon : les salles, les animaux, les pièges, les actions de chaque héros, le chemin court (3 salles, 8 à 10 minutes) et le long (6 salles en labyrinthe, environ 15 minutes), la porte aux quatre signes et Léo dans la dernière salle.
 - Le tableau « qui prouve quoi » : chaque preuve de QUI et de OÙ, qui la trouve, et le test (sans un des rôles, l'accusation n'est plus sûre).
-- Les talents du Pisteur, de l'Alchimiste et du Sage, sur le modèle de ceux du Barde.
+- Les talents du Pisteur, de l'Alchimiste et du Sage, sur le modèle de ceux du Barde. → **élargi le 8 novembre (§12.51)** : les talents de ces trois rôles, les objets de la boutique des quatre rôles, et toutes les potions (celles du donjon comprises).
 
 Propositions de Claude que Romain n'a pas encore validées (marquées « proposé, à valider » dans `E3-actions-des-roles.md`) :
-- le Livre d'or de la fête : le matin, tout le village écrit un mot pour Odette, ce qui donne d'un coup tous les échantillons d'écriture à l'Alchimiste ;
-- le coup d'œil du Pisteur au clocher, le matin (facultatif) ;
-- les cueillettes de l'Alchimiste pour la nuit ;
-- la recette qui ronge la rouille, trouvée par le Sage dans le Grand Livre ;
-- la page de la porte des Fondateurs dans les archives du Sage (les quatre signes = les quatre rôles, comme la légende des Cinq familles) ;
+- le Livre d'or de la fête : le matin, tout le village écrit un mot pour Odette, ce qui donne d'un coup tous les échantillons d'écriture à l'Alchimiste ; → **validé par Romain le 8 novembre (10 h 06)** ;
+- le coup d'œil du Pisteur au clocher, le matin (facultatif) ; → Romain (8 novembre) ne voyait pas ce que c'était : réexpliqué (avis de Claude : non) ; **en attente** ;
+- les cueillettes de l'Alchimiste pour la nuit ; → **validé le 8 novembre** ;
+- la recette qui ronge la rouille, trouvée par le Sage dans le Grand Livre ; → Romain (8 novembre) : **pas tranchée seule**, elle se fera avec **toutes les potions** (il faut créer toutes les potions du donjon : §12.51) ;
+- la page de la porte des Fondateurs dans les archives du Sage (les quatre signes = les quatre rôles, comme la légende des Cinq familles) ; → **en attente** (pas encore de réponse) ;
 - la canne d'Odette donnée au Barde dès le début de l'enquête 3, pour qu'il puisse la déposer chez elle. → **Décidé le 7 novembre (§12.50)** : l'E3 la met d'office dans le sac du Barde (une équipe peut finir l'E2 sans l'avoir trouvée).
 
 Points d'équilibre repérés :

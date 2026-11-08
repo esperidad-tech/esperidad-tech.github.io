@@ -1946,6 +1946,9 @@ MJ.enregistrer('poursuite', {
       geste = null;
     });
     P.ecoute(svg, 'pointercancel', function(){ geste = null; });
+    /* iPhone : le navigateur ne doit rien faire du glissé (pas de défilement, pas de rebond) ; « Accès facile » est évité par la bande
+       vide du bas (html.mj-ios, mj-core.css) */
+    P.ecoute(terrain, 'touchmove', function(e){ if(e.cancelable) e.preventDefault(); }, {passive:false});
     P.ecoute(document, 'keydown', function(e){
       var kk = {ArrowLeft:'g', ArrowRight:'d', ArrowUp:'h', ArrowDown:'b'}[e.key];
       if(kk){ action(kk); e.preventDefault(); }

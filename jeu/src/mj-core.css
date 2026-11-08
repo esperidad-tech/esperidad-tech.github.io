@@ -100,3 +100,6 @@
 @keyframes mj-decompte{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.mj-decompte b{animation:none}}
 .mj.mj-fixe{min-height:0}   /* plein écran verrouillé (MJ.PLEIN_ECRAN, mj-core.js) : il tient dans l'écran, même couché */
+/* iPhone / iPad (html.mj-ios, mj-core.js) : une bande vide de 44 px au-dessus du bord du bas (en plus de la barre de l'iPhone),
+   pour que glisser vers le bas (se baisser dans la course-poursuite, tirer l'arc…) ne déclenche pas « Accès facile ». */
+html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc(max(8px, env(safe-area-inset-bottom, 0px)) + 44px)}

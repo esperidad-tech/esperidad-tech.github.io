@@ -8,6 +8,12 @@
 'use strict';
 var MJ = window.MJ = window.MJ || {};
 MJ.TYPES = MJ.TYPES || {};
+/* iPhone / iPad (Romain, 8 novembre) : glisser le doigt jusqu'en bas de l'écran déclenche « Accès facile » (tout l'écran descend),
+   et une page web ne peut pas l'empêcher. Classe html.mj-ios : les mini-jeux plein écran gardent une bande vide en bas
+   (mj-core.css), pour que le doigt n'arrive jamais au bord. */
+try{ var ua = navigator.userAgent || '';
+  if(/iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) document.documentElement.classList.add('mj-ios');
+}catch(e){}
 
 /* ---------- Outils partagés ---------- */
 var U = MJ.util = {
