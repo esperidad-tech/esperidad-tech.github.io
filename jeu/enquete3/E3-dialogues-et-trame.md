@@ -35,7 +35,7 @@ Décidé avec Romain le 6 novembre vers minuit. Trois moments : le matin, on s'a
 
 ### Le donjon (fiche complète à écrire à part)
 
-- Façon Darkest Dungeon : vue de côté, les trois héros en file (Pisteur, Alchimiste, Sage), des salles reliées par des couloirs, une torche qui baisse, des combats au tour par tour, des animaux (rats géants, chauves-souris, araignée des caves, gros crapaud du puits) et des pièges.
+- Façon Darkest Dungeon : vue de côté, les trois héros en file (Pisteur, Alchimiste, Sage), des salles reliées par des couloirs, une torche qui baisse (retirée par Romain le 8 novembre : Bible §12.51), des combats au tour par tour, des animaux (rats géants, chauves-souris, araignée des caves, gros crapaud du puits) et des pièges.
 - Tout se joue sur la tablette du Pisteur : chacun touche l'écran à son tour (« À toi, Alchimiste ! »). Le plan reste sur la tablette du Sage. Aucun code pendant les combats.
 - Le sac de l'Alchimiste : un seul code, à 6 symboles, composé et tapé pendant le grand dialogue d'Anselme (sur l'écran « Descendre » du Pisteur), puis un écran qui montre le sac reçu pour vérifier.
 - Personne ne meurt : un héros tombé est « sonné ». Si les trois le sont, ils remontent à l'entrée et recommencent. L'enquête n'est jamais bloquée.
