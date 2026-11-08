@@ -125,10 +125,10 @@ function details(){
   var s = '', w = 1.7;
   Object.keys(V1C).forEach(function(k){ var o = S[k], v = V1C[k]; s += '<g transform="translate(' + o.x + ' ' + o.y + ') scale(1.2) translate(' + (-v[0]) + ' ' + (-v[1]) + ')">' + detailsV1(k) + '</g>'; });
   /* la grande galerie (le plan est vieux : il la montre intacte) */
-  s += colonne(1010, 736, 6, w) + colonne(1010, 774, 6, w) + colonne(946, 736, 6, w) + colonne(946, 774, 6, w) + colonne(882, 736, 6, w) + colonne(882, 774, 6, w);
+  s += colonne(1050, 736, 6, w) + colonne(1050, 774, 6, w) + colonne(990, 736, 6, w) + colonne(990, 774, 6, w) + colonne(930, 736, 6, w) + colonne(930, 774, 6, w);
   /* le puits d'aération : sa grille */
-  s += '<rect x="1180" y="502" width="40" height="40" fill="#9fb8c0" opacity=".25"/>';
-  for(var g = 0; g <= 40; g += 8) s += L('M' + (1180 + g) + ' 502 V542 M1180 ' + (502 + g) + ' H1220', ENC, w * .7);
+  s += '<rect x="1180" y="534" width="40" height="40" fill="#9fb8c0" opacity=".25"/>';
+  for(var g = 0; g <= 40; g += 8) s += L('M' + (1180 + g) + ' 534 V574 M1180 ' + (534 + g) + ' H1220', ENC, w * .7);
   /* la salle aux trois portes : le cercle au sol, les trois portes */
   s += C(2135, 700, 28, 'none', ' stroke="' + ENC + '" stroke-width="' + w + '"') + C(2135, 700, 20, 'none', ' stroke="' + ENC2 + '" stroke-width="' + w * .6 + '" stroke-dasharray="4 4"');
   [[2135, 641, 0], [2199, 700, 90], [2135, 759, 0]].forEach(function(p){ s += G(p[0], p[1], p[2], 1, '<rect x="-17" y="-4" width="34" height="8" fill="#a0784a" stroke="' + ENC + '" stroke-width="' + w + '"/>'); });
@@ -204,12 +204,12 @@ function plan(){
   p += '<g filter="url(#main)"><g transform="translate(' + OX + ' ' + OY + ') scale(' + SC + ') translate(' + (-X0) + ' ' + (-Y0) + ')">' + dj + '</g></g>';
 
   /* ======== les signes au lieu des noms ======== */
-  p += signe('etoile', ex(1200), ey(522), 17) + signe('lune', ex(1700), ey(925), 20) + signe('oeil', ex(2135), ey(905), 20) + signe('gueule', ex(2300), ey(712), 18);
+  p += signe('etoile', ex(1200), ey(554), 17) + signe('lune', ex(1700), ey(925), 20) + signe('oeil', ex(2135), ey(905), 20) + signe('gueule', ex(2300), ey(712), 18);
   /* et les mêmes signes gravés sur les trois portes */
   p += signe('lune', ex(2135), ey(626), 9) + signe('gueule', ex(2214), ey(700), 9) + signe('oeil', ex(2135), ey(774), 9);
   /* ======== les noms à la plume ======== */
   var T = 13.5;
-  p += texte(ex(1200), ey(838), ['Le fond du puits'], T) + texte(ex(930), ey(755), ['La grande galerie'], 11.5) + texte(ex(1440), ey(752), ['La salle', 'des rats'], T) +
+  p += texte(ex(1200), ey(838), ['Le fond du puits'], T) + texte(ex(990), ey(755), ['La grande', 'galerie'], 11) + texte(ex(1440), ey(752), ['La salle', 'des rats'], T) +
     texte(ex(1455), ey(610), ['La réserve'], 12) + texte(ex(1372), ey(905), ['Les canaux', 'de la ville', 'd’avant'], 11) + texte(ex(1000), ey(1100), ['La grotte de la', 'fleur de givre'], T) +
     texte(ex(1920), ey(700), ['L’atelier des', 'Fondateurs'], 12.5) + texte(ex(1920), ey(568), ['La bibliothèque', 'engloutie'], 11.5) + texte(ex(2135), ey(700), ['La salle aux', 'trois portes'], 10.5) +
     texte(ex(2135), ey(1080), ['Le feu', 'de camp'], 11) + texte(ex(1800), ey(1170), ['Le cul-de-sac éboulé'], 12.5);

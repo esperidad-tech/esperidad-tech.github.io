@@ -64,8 +64,8 @@ var SALLES = {}, ORDRE = [];
 function salle(id, o){ o.id = id; if(o.v1) o.d = modele(id, o.x, o.y); SALLES[id] = o; ORDRE.push(id); }
 /* signe : les salles que le plan du Sage marque d'un signe au lieu d'un nom (le Pisteur voit le même signe gravé au mur) */
 salle('puits',    {nom:'Le fond du puits', ic:'🪢', x:1200, y:750, v1:1});
-salle('aeration', {nom:'Le puits d’aération', ic:'🌬️', x:1200, y:528, d:cercle(1200, 528, 46), signe:'etoile'});
-salle('galerie',  {nom:'La galerie effondrée', ic:'🪨', x:930, y:755, d:rr(930, 755, 190, 64, 14)});
+salle('aeration', {nom:'Le puits d’aération', ic:'🌬️', x:1200, y:560, d:cercle(1200, 560, 46), signe:'etoile'});
+salle('galerie',  {nom:'La galerie effondrée', ic:'🪨', x:990, y:755, d:rr(990, 755, 150, 64, 14)});
 salle('rats',     {nom:'La salle des rats', ic:'🐀', x:1440, y:752, v1:1});
 salle('reserve',  {nom:'La réserve', ic:'📦', x:1455, y:610, v1:1});
 salle('canaux',   {nom:'Les canaux de la ville d’avant', ic:'💧', x:1440, y:925, v1:1});
@@ -87,8 +87,8 @@ salle('derniere', {nom:'La dernière salle', ic:'🏮', x:2290, y:1095, v1:1});
 var J = {x:1840, y:925, r:20};          /* l'embranchement, à la sortie est de la cave aux toiles */
 var COULOIRS = [
   {id:'cE', de:'puits', a:'rats', pts:[[1258, 750], [1310, 751], [1368, 752]]},
-  {id:'cO', de:'puits', a:'galerie', pts:[[1142, 751], [1085, 753], [1020, 755]]},
-  {id:'cN', de:'puits', a:'aeration', pts:[[1200, 694], [1200, 635], [1200, 570]]},
+  {id:'cO', de:'puits', a:'galerie', pts:[[1142, 751], [1102, 753], [1060, 755]]},
+  {id:'cN', de:'puits', a:'aeration', pts:[[1200, 694], [1200, 650], [1200, 602]]},
   {id:'c2', de:'rats', a:'reserve', pts:[[1455, 703], [1455, 648]]},
   {id:'c3', de:'rats', a:'canaux', pts:[[1405, 800], [1405, 862]]},
   {id:'c4', de:'canaux', a:'givre', pts:[[1342, 950], [1230, 958], [1140, 985], [1066, 1004]]},
@@ -109,8 +109,8 @@ COULOIRS.push({id:'dalles', de:'J', a:'atelier', pts:SALLES.dalles.pts, l:SALLES
 COULOIRS.push({id:'egouts', de:'canaux', a:'canaux', pts:SALLES.egouts.pts, l:SALLES.egouts.l, salle:'egouts'});
 /* le vieux passage : le plan du Sage le dessine de la galerie jusqu'à la grotte de givre ; aujourd'hui, il est bouché par un éboulement.
    Dans le donjon, il n'en reste qu'un bout, côté grotte, qui finit sur des éboulis. */
-var VIEUX = [[846, 762], [804, 800], [788, 878], [818, 952], [872, 992], [934, 1008]];
-COULOIRS.push({id:'vieux', de:'givre', a:null, pts:[[812, 930], [836, 968], [880, 995], [934, 1008]], bouche:true});
+var VIEUX = [[921, 762], [872, 790], [846, 860], [856, 935], [890, 985], [934, 1006]];
+COULOIRS.push({id:'vieux', de:'givre', a:null, pts:[[852, 912], [866, 960], [896, 990], [934, 1006]], bouche:true});
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];   /* du cul-de-sac éboulé au feu de camp : seule l'encre invisible du plan le montre */
 
 window.DONJON = {W:W, H:H, WW:WW, WH:WH, SALLES:SALLES, ORDRE:ORDRE, COULOIRS:COULOIRS, J:J, SECRET:SECRET, VIEUX:VIEUX};
@@ -385,7 +385,7 @@ function signe(type, x, y, s, plaque){
   e += G(x, y, 0, s, '<path d="' + g + '" fill="none" stroke="#4fe0ff" stroke-width="3.6" opacity=".5" filter="' + flou(1.8) + '" stroke-linejoin="round"/><path d="' + g + '" fill="none" stroke="#c8faff" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>');
   return {b:b, e:e, l:[x, y, 34, '#5fe8ff', .55]};
 }
-var SIGNES_MUR = {aeration:[1200, 480], cave:[1700, 990], crypte:[2354, 700], ossuaire:[2061, 905]};
+var SIGNES_MUR = {aeration:[1200, 512], cave:[1700, 990], crypte:[2354, 700], ossuaire:[2061, 905]};
 
 /* ================= le décor des salles ================= */
 function deco(id, etat){
@@ -412,34 +412,40 @@ function decoNeuf(id, etat){
   function add(o){ b += o.b || ''; e += o.e || ''; if(o.l) l.push(o.l); }
   switch(id){
   case 'galerie':
-    /* une longue galerie à colonnes ; au fond (à l'ouest), la voûte s'est effondrée et bouche tout */
-    b += colonne(1010, 736, 6.5) + colonne(1010, 774, 6.5) + colonne(958, 774, 6.5);
-    b += L('M1000 760 l-14 4 l-9 -6 l-12 5 M968 748 l-6 -8', '#0c0812', 1.2, ' opacity=".8"') + L('M944 786 l8 -7 l10 2', '#0c0812', 1, ' opacity=".7"');
-    /* l'éboulement : de gros blocs, puis des cailloux qui ont roulé */
+    /* une galerie à colonnes ; au fond (à l'ouest), la voûte s'est effondrée et bouche tout */
+    b += colonne(1050, 736, 6.5) + colonne(1050, 774, 6.5) + colonne(1008, 736, 6.5);
+    b += L('M1040 760 l-14 4 l-9 -6 l-12 5 M1010 790 l6 -9', '#0c0812', 1.2, ' opacity=".8"');
     var Rb = rng(215), blocs = '';
-    [[848, 742, 15], [846, 770, 14], [866, 756, 13], [860, 732, 9], [872, 778, 9], [884, 744, 8], [834, 756, 10], [888, 765, 6]].forEach(function(q){
+    [[930, 742, 15], [928, 770, 14], [948, 756, 13], [942, 732, 9], [954, 778, 9], [966, 744, 8], [916, 756, 10]].forEach(function(q){
       var pts = []; for(var k = 0; k < 7; k++){ var a2 = k / 7 * 6.283 + Rb(); pts.push([q[0] + Math.cos(a2) * q[2] * (.75 + Rb() * .35), q[1] + Math.sin(a2) * q[2] * (.75 + Rb() * .35)]); }
       blocs += F(poly(pts.map(function(p){ return [p[0] + 3, p[1] + 4]; })), '#000', ' opacity=".55"') + P(poly(pts), grad(mix('#6a6088', '#3e3550', Rb() * .5)), ' stroke-width="1.4"') + L('M' + f(q[0] - q[2] * .4) + ' ' + f(q[1] - q[2] * .1) + ' l' + f(q[2] * .5) + ' ' + f(q[2] * .3), '#2a2238', 1);
     });
-    b += eboulis(900, 752, 9, 203) + eboulis(906, 776, 6, 205) + eboulis(898, 734, 5, 207) + blocs;
-    b += G(898, 782, 12, 1, '<rect x="-14" y="-4" width="28" height="9" rx="4.5" fill="' + grad('#5e5478') + '" stroke="' + O + '" stroke-width="1.2"/>');
-    /* le tas d'os à fouiller */
-    var Ro = rng(211), to = ''; for(var k = 0; k < 10; k++) to += os(984 + (Ro() - .5) * 16, 744 + (Ro() - .5) * 8, Ro() * 180, 5 + Ro() * 4);
-    b += to + crane(982, 741, 20, 1.1) + crane(992, 748, -40, .9);
-    b += mousse(1016, 784, 7, 213) + racine([[856, 723], [860, 733], [855, 740]], 1.6);
-    add(torche(1004, 723, 90));
-    e += lum(866, 752, 26, '#bfe2ff', .6) + C(866, 750, 1.6, '#eef8ff', ' opacity=".8"'); l.push([866, 752, 64, '#9ac4ff', .8]);   /* un filet de lune passe entre les blocs */
+    b += eboulis(980, 750, 8, 203) + eboulis(978, 734, 4, 207) + blocs + os(984, 770, 30, 6) + os(990, 764, -50, 5);
+    /* la trouvaille : une bourse de pièces, tombée près des éboulis */
+    b += G(974, 774, -12, 1.4, '<ellipse cx="2" cy="3" rx="8" ry="6" fill="#000" opacity=".45"/><path d="M-7 1 C -8 -6 7 -7 7 0 C 8 7 -7 8 -7 1 Z" fill="' + grad('#9a6a38') + '" stroke="' + O + '" stroke-width="1.2"/>' +
+      L('M-3 -5 Q 0 -2 3 -5', '#e0b85a', 1.6) + '<path d="M-2 -6 L 0 -9 L 2 -6" fill="#7a4a28" stroke="' + O + '" stroke-width=".8"/>') +
+      piece(990, 784) + piece(996, 777) + piece(984, 790) + piece(1000, 787) + piece(962, 786);
+    e += lum(980, 778, 22, '#ffd36a', .8) + G(970, 766, 0, 1, '<path d="M0 -4 L 1 -1 L 4 0 L 1 1 L 0 4 L -1 1 L -4 0 L -1 -1 Z" fill="#fff6d0"/>') + C(996, 777, .9, '#fff6d0');
+    b += mousse(1054, 784, 6, 213) + racine([[934, 723], [938, 731], [933, 738]], 1.6);
+    add(torche(1036, 723, 90));
+    e += lum(944, 752, 26, '#bfe2ff', .6) + C(944, 750, 1.6, '#eef8ff', ' opacity=".8"'); l.push([944, 752, 64, '#9ac4ff', .8]);   /* un filet de lune passe entre les blocs */
     break;
   case 'aeration':
-    b += mousse(1172, 500, 9, 221) + mousse(1232, 556, 8, 223, '#355f40') + racine([[1186, 484], [1190, 496], [1184, 506]], 1.6) + racine([[1228, 490], [1222, 500], [1226, 510]], 1.4);
-    b += flaque(1178, 552, 7, 4, 20) + eboulis(1236, 518, 5, 225);
+    b += mousse(1172, 532, 9, 221) + mousse(1232, 588, 8, 223, '#355f40') + racine([[1186, 516], [1190, 528], [1184, 538]], 1.6) + racine([[1228, 522], [1222, 532], [1226, 542]], 1.4);
+    b += flaque(1176, 586, 7, 4, 20) + eboulis(1236, 552, 5, 225);
     /* la grille du puits d'aération : la lune tombe en carreaux */
-    var gr = ''; for(var gx = -22; gx <= 22; gx += 8.8) gr += L('M' + (1200 + gx) + ' 500 V544', '#0a0814', 2.4, ' opacity=".55"'); for(var gy = -22; gy <= 22; gy += 8.8) gr += L('M1178 ' + (522 + gy) + ' H1222', '#0a0814', 2.4, ' opacity=".55"');
-    e += '<g style="mix-blend-mode:screen"><circle cx="1200" cy="522" r="44" fill="' + halo('#bfe4ff') + '" opacity=".55"/><rect x="1178" y="500" width="44" height="44" rx="3" fill="#d8eeff" opacity=".2" filter="' + flou(1.5) + '"/></g>' + gr;
-    l.push([1200, 522, 78, '#a8d4ff', 1.2]);
-    /* la petite trouvaille : une bourse oubliée */
-    b += G(1222, 548, 15, 1, '<ellipse cx="1.5" cy="2" rx="5.5" ry="4.5" fill="#000" opacity=".4"/><path d="M-5 0 C -5 -5 5 -5 5 0 C 5 5 -5 5 -5 0 Z" fill="' + grad('#8a5a30') + '" stroke="' + O + '" stroke-width="1"/>' + L('M-2 -4 L 0 -2 L 2 -4', '#c9a35a', 1));
-    if(!vu) e += lum(1222, 548, 8, '#ffd36a', .7);
+    var gr = ''; for(var gx = -22; gx <= 22; gx += 8.8) gr += L('M' + (1200 + gx) + ' 532 V576', '#0a0814', 2.4, ' opacity=".55"'); for(var gy = -22; gy <= 22; gy += 8.8) gr += L('M1178 ' + (554 + gy) + ' H1222', '#0a0814', 2.4, ' opacity=".55"');
+    e += '<g style="mix-blend-mode:screen"><circle cx="1200" cy="554" r="44" fill="' + halo('#bfe4ff') + '" opacity=".55"/><rect x="1178" y="532" width="44" height="44" rx="3" fill="#d8eeff" opacity=".2" filter="' + flou(1.5) + '"/></g>' + gr;
+    l.push([1200, 554, 78, '#a8d4ff', 1.2]);
+    /* la trouvaille : des herbes qui luisent, nourries par la lune */
+    var Rh = rng(227), hb = '', he = '';
+    for(var k = 0; k < 9; k++){ var a3 = -Math.PI / 2 + (k - 4) * .32 + (Rh() - .5) * .2, lg = 9 + Rh() * 7, x0 = 1214 + (Rh() - .5) * 6, y0 = 584;
+      var x1 = x0 + Math.cos(a3) * lg, y1 = y0 + Math.sin(a3) * lg, cx = x0 + Math.cos(a3 + .5) * lg * .5, cy = y0 + Math.sin(a3 + .5) * lg * .5;
+      hb += L('M' + f(x0) + ' ' + f(y0) + ' Q' + f(cx) + ' ' + f(cy) + ' ' + f(x1) + ' ' + f(y1), O, 3.2) + L('M' + f(x0) + ' ' + f(y0) + ' Q' + f(cx) + ' ' + f(cy) + ' ' + f(x1) + ' ' + f(y1), '#3a9a6a', 1.8);
+      he += C(x1, y1, 1.9, '#9fffd8') + C(x1, y1, .8, '#f0fff8'); }
+    b += '<ellipse cx="1216" cy="586" rx="10" ry="4" fill="#000" opacity=".4"/>' + hb;
+    e += lum(1214, 576, 22, '#5fffc0', .8) + he;
+    l.push([1214, 578, 46, '#4fffb8', .7]);
     break;
   case 'portes':
     e += G(2135, 700, 0, 1, '<circle r="30" fill="none" stroke="#7ff0ff" stroke-width="1.1" opacity=".5"/><circle r="22" fill="none" stroke="#7ff0ff" stroke-width=".7" opacity=".35" stroke-dasharray="3 4"/>') + rune(2135, 700, .9, 4) + rune(2112, 688, .55, 2) + rune(2158, 712, .55, 6);
@@ -453,7 +459,8 @@ function decoNeuf(id, etat){
     b += G(2296, 700, 0, 1, '<rect x="-24" y="-11" width="48" height="22" rx="3" fill="#000" opacity=".5" transform="translate(2 3)"/><rect x="-24" y="-11" width="48" height="22" rx="3" fill="' + grad('#5a5272') + '" stroke="' + O + '" stroke-width="1.3"/><rect x="-20" y="-7" width="40" height="14" rx="2" fill="#0c0812"/>') +
       G(2302, 688, 14, 1, '<rect x="-24" y="-9" width="48" height="16" rx="3" fill="#000" opacity=".4" transform="translate(2 3)"/><rect x="-24" y="-9" width="48" height="16" rx="3" fill="' + grad('#6a6288') + '" stroke="' + O + '" stroke-width="1.3"/>' + L('M-18 -1 H18', '#3a3250', 1));
     b += toile(2252, 657, 22, 0, Math.PI / 2, false, 31) + toile(2348, 743, 20, Math.PI, Math.PI * 1.5, false, 33) + os(2268, 728, 30, 7) + os(2276, 734, -40, 6) + crane(2266, 736, 60, .9) + eboulis(2340, 664, 5, 235);
-    e += lum(2354, 700, 24, '#6fff9a', .35);
+    b += G(2283, 704, 0, 1, L('M-6 -4 Q 0 3 6 -4', '#c9a35a', 1.1) + '<path d="M0 -1 L 3.4 2.6 L 0 6.4 L -3.4 2.6 Z" fill="#d8303e" stroke="#5a3a1a" stroke-width="1.2"/>' + C(-1, 1.6, .9, '#ffd0d0'));
+    e += lum(2354, 700, 24, '#6fff9a', .35) + lum(2283, 706, 12, '#ff6a6a', .6) + lum(2283, 706, 6, '#ffd36a', .5);
     break;
   case 'egouts':
     var dE = lisse(SALLES.egouts.pts);
@@ -467,7 +474,7 @@ function decoNeuf(id, etat){
   return {b:b, e:e, l:l};
 }
 /* le bout du vieux passage, côté grotte de givre : il finit sur un éboulement */
-function decoVieux(){ return eboulis(816, 934, 17, 251, '#5e5478') + eboulis(828, 950, 9, 253); }
+function decoVieux(){ return eboulis(852, 910, 17, 251, '#5e5478') + eboulis(862, 928, 9, 253); }
 
 /* ================= les repères de sortie ================= */
 function sortie(c, t, inverse){
@@ -761,6 +768,17 @@ function volutes(seed){
 }
 
 /* ================= la petite main qui glisse (on peut faire glisser la carte) ================= */
+function roseEcran(x, y){   /* même dessin que la rose du plan du Sage ; le nord est en haut, comme sur le plan */
+  var ENC = '#3b2414', ROU = '#8e2e1c', s = '<circle r="28" fill="#000" opacity=".45" transform="translate(1 2)"/><circle r="28" fill="#e2cc9c" stroke="' + O + '" stroke-width="2.5"/><circle r="24.5" fill="none" stroke="#7a5a36" stroke-width=".8"/>';
+  for(var k = 0; k < 32; k++){ var a = k / 32 * 6.283; s += L('M' + f(Math.cos(a) * 21.5) + ' ' + f(Math.sin(a) * 21.5) + ' L' + f(Math.cos(a) * (k % 4 ? 23 : 24.5)) + ' ' + f(Math.sin(a) * (k % 4 ? 23 : 24.5)), ENC, .6); }
+  for(var k2 = 7; k2 >= 0; k2--){
+    var a2 = k2 / 8 * 6.283 - Math.PI / 2, lg = k2 % 2 ? 9 : (k2 === 0 ? 8 : 17), la = k2 % 2 ? 1.6 : 2.7;
+    var px = Math.cos(a2) * lg, py = Math.sin(a2) * lg + 4, gx = Math.cos(a2 - Math.PI / 2) * la, gy = Math.sin(a2 - Math.PI / 2) * la + 4, dx = Math.cos(a2 + Math.PI / 2) * la, dy = Math.sin(a2 + Math.PI / 2) * la + 4;
+    s += '<path d="M0 4 L' + f(gx) + ' ' + f(gy) + ' L' + f(px) + ' ' + f(py) + ' Z" fill="' + (k2 === 0 ? ROU : ENC) + '"/><path d="M0 4 L' + f(dx) + ' ' + f(dy) + ' L' + f(px) + ' ' + f(py) + ' Z" fill="#f2e4c0" stroke="' + ENC + '" stroke-width=".6"/>';
+  }
+  s += C(0, 4, 1.6, ENC) + '<text x="0" y="-12.5" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="700" style="font-family:Lora, Georgia, serif;paint-order:stroke" stroke="#e2cc9c" stroke-width="2.6" fill="' + ROU + '">N</text>';
+  return G(x, y, 0, 1, s);
+}
 function mainGlisse(x, y){
   var fl = 'M-22 -20 H22 M-16 -25 L -22 -20 L -16 -15 M16 -25 L 22 -20 L 16 -15';
   return G(x, y, 0, 1, '<circle r="31" fill="#0c0812" opacity=".6"/>' +
@@ -774,20 +792,20 @@ function mainGlisse(x, y){
 var PV = {pisteur:120, alchimiste:100, sage:90};
 var ETATS = {
   debut:{
-    ecran:[720, 480], vu:['puits'], couloirs:{cE:.56, cO:.56, cN:.56}, heros:[1200, 752, 0],
-    sorties:[['cE', .51], ['cO', .51], ['cN', .51]], main:true,
+    ecran:[720, 480], vu:['puits'], couloirs:{cE:.48, cO:.6, cN:.52}, heros:[1200, 752, 0],
+    sorties:[['cE', .42], ['cO', .52], ['cN', .45]], main:true,
     bulle:{t:'Trois passages s’enfoncent dans la brume… Par où aller ?', x:372, w:380},
     pv:{pisteur:120, alchimiste:100, sage:90}
   },
   impasse:{
-    ecran:[640, 480], vu:['puits', 'galerie'], couloirs:{cE:.56, cN:.56, cO:1}, heros:[944, 757, 180],
-    sorties:[['cE', .51], ['cN', .51]],
+    ecran:[690, 480], vu:['puits', 'galerie'], couloirs:{cE:.48, cN:.52, cO:1}, heros:[1046, 752, 180],
+    sorties:[['cE', .42], ['cN', .45]],
     bulle:{t:'Des éboulis, rien que des éboulis… Le Sage avait peut-être une idée ?', x:360, w:400},
     pv:{pisteur:120, alchimiste:100, sage:90}
   },
   milieu:{
     ecran:[1000, 505], vu:['puits', 'galerie', 'rats', 'reserve', 'canaux', 'cave'], J:true,
-    couloirs:{cE:1, cO:1, cN:.5, c2:1, c3:1, c5:1, c6:1, c4:.3, egouts:[[0, .1], [.9, 1]], pLune:[[.9, 1]], dalles:.46, c8:.5}, heros:[1793, 925, 0],
+    couloirs:{cE:1, cO:1, cN:.52, c2:1, c3:1, c5:1, c6:1, c4:.3, egouts:[[0, .1], [.9, 1]], pLune:[[.9, 1]], dalles:.46, c8:.5}, heros:[1793, 925, 0],
     sorties:[['cN', .45], ['c4', .25], ['pLune', .915, 1], ['dalles', .42], ['c8', .45]],
     bulle:{t:'Encore trois passages dans la brume… Le Sage sait peut-être lequel prendre.', x:560, w:384}, etiq:{galerie:[1093, 806]},
     pv:{pisteur:84, alchimiste:71, sage:58}
@@ -797,7 +815,7 @@ var ETATS = {
 COULOIRS.forEach(function(c){ ETATS.tout.couloirs[c.id] = 1; });
 /* où poser les étiquettes */
 var ETIQ = {
-  puits:[1200, 834], galerie:[1058, 708], aeration:[1200, 466], rats:[1492, 822], reserve:[1330, 612], canaux:[1232, 905], givre:[1000, 1090],
+  puits:[1200, 834], galerie:[1000, 706], aeration:[1200, 498], rats:[1492, 822], reserve:[1330, 612], canaux:[1232, 905], givre:[1000, 1090],
   cave:[1700, 1014], dalles:[1955, 862], egouts:[1440, 1252], eboule:[1835, 1160], atelier:[2008, 784], biblio:[1920, 494], portes:[2262, 778],
   crypte:[2300, 638], ossuaire:[2262, 905], feu:[2010, 1030], bassin:[2100, 1334], porte:[2290, 1336], derniere:[2290, 1008]
 };
@@ -831,7 +849,7 @@ function vue(nom){
   if(!E.tout){
     var dm = '<rect x="' + (Z.x - 160) + '" y="' + (Z.y - 160) + '" width="' + (Z.w + 320) + '" height="' + (Z.h + 320) + '" fill="#fff"/>';
     E.vu.forEach(function(k){ var r = SALLES[k]; dm += '<path d="' + r.d + '" fill="#000" stroke="#000" stroke-width="' + (2 * M + 34) + '" stroke-linejoin="round"/>'; });
-    COULOIRS.forEach(function(c){ var t = E.couloirs[c.id]; if(t) morceaux(t).forEach(function(m){ dm += '<path d="' + lisse(troncon(c.pts, m[0], m[1])) + '" fill="none" stroke="#000" stroke-width="' + ((c.l || SOL) + 2 * M + 26) + '" stroke-linecap="round" stroke-linejoin="round"/>'; }); });
+    COULOIRS.forEach(function(c){ var t = E.couloirs[c.id]; if(t) morceaux(t).forEach(function(m){ dm += '<path d="' + lisse(troncon(c.pts, m[0], m[1])) + '" fill="none" stroke="#000" stroke-width="' + ((c.l || SOL) + 2 * M + 26) + '" stroke-linecap="' + (m[1] - m[0] >= 1 ? 'round' : 'butt') + '" stroke-linejoin="round"/>'; }); });
     if(E.J) dm += '<circle cx="' + J.x + '" cy="' + J.y + '" r="' + (J.r + M + 18) + '" fill="#000"/>';
     DEFS.l.push('<mask id="mBrume" maskUnits="userSpaceOnUse" x="' + (Z.x - 160) + '" y="' + (Z.y - 160) + '" width="' + (Z.w + 320) + '" height="' + (Z.h + 320) + '"><g filter="url(#densite)">' + dm + '</g></mask>');
     corps += '<g mask="url(#mBrume)"><rect x="' + (Z.x - 150) + '" y="' + (Z.y - 150) + '" width="' + (Z.w + 300) + '" height="' + (Z.h + 300) + '" filter="url(#nuage)"/>' + volutes(7) + '</g>';
@@ -851,6 +869,7 @@ function vue(nom){
   DEFS.l.push('<linearGradient id="vigH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05030a" stop-opacity=".75"/><stop offset=".1" stop-color="#05030a" stop-opacity="0"/><stop offset=".88" stop-color="#05030a" stop-opacity="0"/><stop offset="1" stop-color="#05030a" stop-opacity=".7"/></linearGradient>');
   var ecran = '<rect width="' + W + '" height="' + H + '" fill="url(#vig)"/><rect width="' + W + '" height="' + H + '" fill="url(#vigH)"/>';
   if(E.main) ecran += mainGlisse(900, 418);
+  ecran += E.tout ? roseEcran(48, 48) : roseEcran(48, 86);
   corps += '<g transform="translate(' + VB[0] + ' ' + VB[1] + ') scale(' + f(VB[2] / W * 1000) / 1000 + ')">' + ecran + '</g>';
   var svg = '<svg viewBox="' + VB.join(' ') + '" width="' + W + '" height="' + H + '" style="position:absolute;inset:0;display:block"><defs>' + DEFS.l.join('') + '</defs>' + corps + '</svg>';
   return CSS + '<div class="ex">' + svg + (E.tout ? '<div class="ex-a" style="left:16px;bottom:10px"><span class="ex-titre">Tout le donjon</span> <span class="ex-sous">· sans la brume (contrôle)</span></div>' : hud(E)) + '</div>';
