@@ -6,8 +6,8 @@ SRC = '/home/claude/brumeval/brumeval-sources/jeu/donjon/maquettes/combat2.js'
 COMBAT = open(SRC).read().replace('window.COMBAT = {scene:scene};', 'window.COMBAT = {scene:scene, pisteur:pisteur, alchimiste:alchimiste, sage:sage, DEFAUT:DEFAUT};')
 JS = open(os.path.join(ICI, 'donjon.js')).read()
 PLAN = open(os.path.join(ICI, 'plan.js')).read() if os.path.exists(os.path.join(ICI, 'plan.js')) else ''
-NOMS = {'debut': 'explo-debut.png', 'milieu': 'explo-milieu.png', 'plan': 'plan-sage.png', 'tout': 'controle-tout.png'}
-quoi = sys.argv[1:] or ['debut', 'milieu', 'plan']
+NOMS = {'debut': 'explo-debut.png', 'impasse': 'explo-impasse.png', 'milieu': 'explo-milieu.png', 'plan': 'plan-sage.png', 'tout': 'controle-tout.png'}
+quoi = sys.argv[1:] or ['debut', 'impasse', 'milieu', 'plan', 'tout']
 HTML = '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}</style></head><body></body></html>'
 with sync_playwright() as p:
     b = p.chromium.launch()
