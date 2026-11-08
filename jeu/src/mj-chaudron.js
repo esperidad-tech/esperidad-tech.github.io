@@ -755,7 +755,8 @@ MJ.enregistrer('chaudron', {
       montrerOups(OUPS[raison] || OUPS.mauvais, btn || E.zoneF);
       if(S.vies <= 0){ echec(raison, ingr); return; }
       S.vies--; majVies(true);
-      if(S.vies === 0) apres(1500, function(){ U.plusDeCoeur(E.racine); });
+      /* « Plus de cœur » : à la même place que la phrase d'erreur (qui s'en va), en haut de la scène, jamais sur la recette ni les caisses */
+      if(S.vies === 0) apres(1500, function(){ if(E.oups) E.oups.hidden = true; U.plusDeCoeur(E.racine, {sous:E.racine.querySelector('.mjc-haut'), aGauche:E.scene.querySelector('.mjc-jauge')}); });
     }
     function ecranRouge(){
       var o = E.err; if(!o) return;
@@ -763,16 +764,24 @@ MJ.enregistrer('chaudron', {
       E.racine.classList.remove('mjc-tremble'); void E.racine.offsetWidth; E.racine.classList.add('mjc-tremble');
       clearTimeout(S.errT); S.errT = setTimeout(function(){ o.hidden = true; E.racine.classList.remove('mjc-tremble'); }, 900); timers.push(S.errT);
     }
-    /* la flèche qui montre la caisse touchée (ou la zone de la frise) avec la phrase, et son 🔊 */
+    /* la phrase de l'erreur, avec son 🔊. Toujours EN HAUT DE LA SCÈNE, sous les caisses, à gauche de la jauge (Romain, 8 novembre :
+       au niveau 10, « Trop tard ! » se posait sur la rangée des caisses et empêchait de verser le suivant). La flèche montre la caisse
+       touchée ; sans caisse (un carré oublié), pas de flèche. */
     function montrerOups(txt, cible, cls){
       var o = E.oups; if(!o) return;
       o.innerHTML = '<b>' + esc(txt) + '</b>';
       o.appendChild(MJ.boutonLire(txt));
       o.hidden = false; o.classList.remove('haut'); o.classList.toggle('doux', cls === 'doux');
-      var rr = E.racine.getBoundingClientRect(), rc = cible.getBoundingClientRect(), w = Math.min(rr.width - 16, 320);
-      var cx = rc.left + rc.width / 2 - rr.left, x = U.borne(cx - w / 2, 8, rr.width - w - 8);
-      o.style.width = w + 'px'; o.style.left = x + 'px'; o.style.top = (rc.bottom - rr.top + 12) + 'px';
-      o.style.setProperty('--ax', Math.round(cx - x) + 'px');
+      var caisse = cible && cible.closest && cible.closest('.mjc-boites') ? cible : null;
+      o.classList.toggle('sans-fleche', !caisse);
+      var rr = E.racine.getBoundingClientRect(), rs = E.scene.getBoundingClientRect();
+      var jg = E.scene.querySelector('.mjc-jauge'), rj = jg && jg.getBoundingClientRect();
+      var droite = rj && rj.width ? rj.left - rr.left - 4 : rr.width - 8;   /* jusqu'à la jauge, sans la cacher */
+      var w = Math.max(160, Math.min(droite - 8, 320));
+      var cx = caisse ? (function(rc){ return rc.left + rc.width / 2 - rr.left; })(caisse.getBoundingClientRect()) : droite / 2;
+      var x = U.borne(cx - w / 2, 8, Math.max(8, droite - w));
+      o.style.width = w + 'px'; o.style.left = x + 'px'; o.style.top = (rs.top - rr.top + (caisse ? 16 : 8)) + 'px';
+      o.style.setProperty('--ax', Math.round(U.borne(cx - x, 18, w - 18)) + 'px');
       o.style.animation = 'none'; void o.offsetWidth; o.style.animation = '';
       clearTimeout(S.oupsT); S.oupsT = setTimeout(function(){ o.hidden = true; }, 2600); timers.push(S.oupsT);
     }
@@ -849,7 +858,13 @@ MJ.enregistrer('chaudron', {
       S.fini = true; E.racine.classList.remove('mjc-bois-fleche');
       res.erreurs = S.erreurs;
       res.reste = stock;
-      apres2(ms, function(){ fin(res); });
+      apres2(ms, function(){
+        /* les messages d'erreur ne restent pas sous l'écran du résultat */
+        if(E.oups) E.oups.hidden = true;
+        var hote = E.racine.closest && (E.racine.closest('.mj-zone') || E.racine.closest('.mj')), pc = hote && hote.querySelector('.mj-plus-coeur');
+        if(pc && pc.parentNode) pc.parentNode.removeChild(pc);
+        fin(res);
+      });
     }
     function apres2(ms, f){ var x = setTimeout(f, ms); timers.push(x); }
     function echec(raison, ingr){

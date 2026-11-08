@@ -75,6 +75,7 @@
 .mjc-oups b{flex:1}
 .mjc-oups .mj-lire-mini{pointer-events:auto;margin:0;background:rgba(36,24,46,.12)}
 .mjc-oups::before{content:'';position:absolute;left:var(--ax, 50%);top:-19px;margin-left:-12px;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:16px solid #ff3a3a}
+.mjc-oups.sans-fleche::before{display:none}   /* un carré oublié : la phrase seule, en haut de la scène (mj-chaudron.js, montrerOups) */
 @keyframes mjc-oups{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* Trop chaud / trop froid : le badge d'alerte */

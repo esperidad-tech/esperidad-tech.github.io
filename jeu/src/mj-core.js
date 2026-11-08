@@ -146,7 +146,8 @@ U.coeurs = function(restants, total, casse){
   return '<span class="mj-coeurs' + (restants ? '' : ' mj-coeurs-vide') + '" role="img" aria-label="' + esc(lab) + '">' + s + '</span>';
 };
 /* Le dernier cœur vient de se briser : un bandeau bien visible dans le mini-jeu (🔊 à côté, jamais lu tout seul) */
-U.plusDeCoeur = function(el){
+/* opts.sous : l'élément sous lequel se poser (par défaut, la rangée des cœurs du jeu, [class*="-hud"]) */
+U.plusDeCoeur = function(el, opts){
   try{
     var hote = (el && el.closest && (el.closest('.mj-zone') || el.closest('.mj'))) || el;
     if(!hote || !hote.appendChild) return;
@@ -156,8 +157,11 @@ U.plusDeCoeur = function(el){
     hote.appendChild(b);
     /* juste sous la rangée des cœurs, en haut du jeu (Romain, 5 novembre, 19 h 31 : « ce message cache les obstacles ») */
     try{
-      var hud = hote.querySelector('[class*="-hud"]'), rh = hud && hud.getBoundingClientRect(), ro = hote.getBoundingClientRect();
+      var hud = (opts && opts.sous) || hote.querySelector('[class*="-hud"]'), rh = hud && hud.getBoundingClientRect(), ro = hote.getBoundingClientRect();
       b.style.top = Math.max(6, Math.round(rh && rh.height ? rh.bottom - ro.top + 6 : 8)) + 'px';
+      /* opts.aGauche : rester à gauche de cet élément (la jauge du chaudron), sans le cacher */
+      var rg = opts && opts.aGauche && opts.aGauche.getBoundingClientRect();
+      if(rg && rg.width){ var d = rg.left - ro.left - 6; if(d > 180){ b.style.width = Math.min(420, d - 8) + 'px'; b.style.left = Math.round((8 + d) / 2) + 'px'; } }
     }catch(e2){}
     U.vibrer([60, 50, 60]);
     setTimeout(function(){ b.classList.add('part'); setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 450); }, 3200);
