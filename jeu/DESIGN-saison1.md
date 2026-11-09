@@ -2175,7 +2175,7 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - les égouts tournants (flèches gravées qui se contredisent) ;
   - la fausse crypte (sarcophage, statues brisées).
 
-  Chaque décor existe en PNG et en WebP (environ 60 Ko, conseillé pour la tablette), avec une ambiance légère facultative (`decors/ambiance.js`). Il n'y a pas de torche. **Ils attendent l'avis de Romain.**
+  Chaque décor existe en PNG et en WebP (environ 60 Ko, conseillé pour la tablette), avec une ambiance légère facultative (`decors/ambiance.js`). Il n'y a pas de torche. **Validés par Romain à 15 h 29.**
 - **La fluidité de la salle des rats** (règles pour tout le donjon : `jeu/donjon/RAPIDITE.md`, outil `jeu/donjon/anim/cuire.js`) :
   - pendant l'écran du sac, héros et rats sont « cuits » en petites images que la carte graphique déplace ;
   - au repos, le processeur ne travaille presque plus.
