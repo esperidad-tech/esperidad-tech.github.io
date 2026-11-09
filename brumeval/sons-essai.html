@@ -49,6 +49,7 @@ main{max-width:1040px; margin:0 auto; padding:8px 16px 60px}
 @media (min-width:880px){ .cartes{grid-template-columns:1fr 1fr} .carte.large{grid-column:1 / -1} }
 .carte{background:var(--carte); border:1px solid var(--bord); border-radius:18px; padding:14px; display:flex; flex-direction:column; gap:10px; min-width:0}
 .carte h3{font-size:24px}
+.nouveau{display:inline-block; margin-left:10px; padding:2px 10px; border-radius:20px; background:var(--violet); color:#fff; font:700 13px/1.5 Andika, sans-serif; vertical-align:middle}
 .carte .quoi{margin:0}
 
 /* une version : le gros bouton jaune, ce qu'elle a de particulier, la case « je garde » */
@@ -140,7 +141,7 @@ main{max-width:1040px; margin:0 auto; padding:8px 16px 60px}
   </section>
 </main>
 <script>
-window.NIVEAUX = {"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.489,"boisA":2.84,"boisB":1.615,"boisC":2.491,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"combatA":1.217,"combatB":1.117,"donjon":0.609,"exploA":0.809,"exploB":0.783,"exploC":0.917,"fuiteA":1.519,"fuiteB":1.283,"metalA":1.807,"metalB":1.466,"metalC":1.397,"puits":1.137,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.644,"ratCritiqueB":0.486,"ratCritiqueC":0.604,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.052,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"swishA":2.101,"swishB":1.831,"swishC":1.79,"toiles":1.456,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.489,"boisA":2.84,"boisB":1.615,"boisC":2.491,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"combatA":1.217,"combatB":1.117,"donjon":0.609,"exploA":0.809,"exploB":0.783,"exploC":0.917,"fuiteA":1.519,"fuiteB":1.283,"metalA":1.807,"metalB":1.466,"metalC":1.397,"puits":1.137,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"swishA":2.101,"swishB":1.831,"swishC":1.79,"toiles":1.456,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 /* Atelier des sons de Brumeval — le moteur.
    Tout est fabriqué avec Web Audio, sans aucun fichier : oscillateurs, bruits filtrés, cordes pincées
    (Karplus-Strong calculé en JavaScript), craquements et crépitements calculés en JavaScript,
@@ -212,7 +213,8 @@ function Moteur(ctx, opt){
 
   /* ---------- la sortie : bruitages, musique, deux salles de réverbération, volume, compresseur ---------- */
   A.volume = ctx.createGain(); A.volume.gain.value = opt.volume == null ? .8 : opt.volume;
-  if(opt.brut) A.volume.connect(ctx.destination);
+  if(opt.sortie) A.volume.connect(opt.sortie);            /* branché dans la chaîne d'un autre (le jeu) */
+  else if(opt.brut) A.volume.connect(ctx.destination);
   else {
     var comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 5; comp.attack.value = .003; comp.release.value = .18;
@@ -389,7 +391,9 @@ function Moteur(ctx, opt){
     s.buffer = A[o.coul || 'blanc']; s.loop = true;
     if(o.vit) s.playbackRate.value = o.vit;
     A.env(amp.gain, t, env, o.g == null ? .3 : o.g);
-    var n = A.chaine(t, s, filtresRaccourcis(o));
+    var n0 = s;
+    if(o.sat){ var w0 = A.sature(o.sat), pg0 = g(o.pre || 1); s.connect(pg0); pg0.connect(w0); n0 = w0; }
+    var n = A.chaine(t, n0, filtresRaccourcis(o));
     if(o.trem){
       var tr = g(1 - o.trem[1] / 2), lfo = ctx.createOscillator(), lg = g(o.trem[1] / 2);
       lfo.frequency.value = o.trem[0]; lfo.connect(lg); lg.connect(tr.gain); lfo.start(t); lfo.stop(fin + .05);
@@ -493,9 +497,10 @@ function Moteur(ctx, opt){
     toux:     [[0, 1], [.3, .8], [1, .6]]
   };
   A.cri = function(t, o, dest){
-    var d = o.d || .15, f0 = (o.f || 2300) * (o.h || 1), pts = typeof o.forme === 'string' ? A.FORMES[o.forme] : (o.forme || A.FORMES.iik);
+    var V = A.voix || {};
+    var d = (o.d || .15) * (V.long || 1), f0 = (o.f || 2300) * (o.h || 1) * (V.h || 1), pts = typeof o.forme === 'string' ? A.FORMES[o.forme] : (o.forme || A.FORMES.iik);
     pts = pts.map(function(p, i){ return [p[0], p[1] * (i && !o.fixe ? hasard(.95, 1.05) : 1)]; });   /* jamais deux fois tout à fait le même */
-    var c = A.courbe(pts, d, f0), fm = f0 * .95, grain = o.grain == null ? .5 : o.grain, rauque = o.rauque || 0, gv = o.g == null ? .3 : o.g;
+    var c = A.courbe(pts, d, f0), fm = f0 * .95, grain = Math.min(1, (o.grain == null ? .5 : o.grain) + (V.grain || 0)), rauque = Math.min(1, (o.rauque || 0) + (V.rauque || 0)), gv = o.g == null ? .3 : o.g;
     var a = o.a || .012, fin = t + d;
     var env = o.env || [[0, 0], [a, 1], [d * .55, .78], [d, 0]];
     var x = ctx.createOscillator(); x.setPeriodicWave(vagueCri);
@@ -1139,7 +1144,7 @@ S.ratHuileA = function(A, P){
   A.choc(t + .72, {f:150, f2:55, d:.13, g:.6}, o);
   A.choc(t + .86, {f:170, f2:70, d:.07, g:.25}, o);
   A.joue(t + .95, A.griffes(.35, 22), {g:.35, hp:2500}, o);
-  return {duree:1.4};
+  return {duree:1.4, moment:.72};
 };
 S.ratHuileB = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.25, pan:.35, pan2:.6, pant:.7});
@@ -1147,7 +1152,7 @@ S.ratHuileB = function(A, P){
   A.cri(t + .42, {forme:[[0, .8], [.3, 1.35], [1, 1.2]], d:.18, h:1.15, g:.3}, o);
   A.choc(t + .75, {f:200, f2:60, d:.12, g:.6}, o);
   A.cri(t + 1.0, {forme:'plainte', d:.3, h:.8, g:.16, souffle:.4}, o);
-  return {duree:1.45};
+  return {duree:1.45, moment:.75};
 };
 S.ratHuileC = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.3, pan:.35, pan2:.6, pant:.9});
@@ -1156,7 +1161,7 @@ S.ratHuileC = function(A, P){
   A.ton(t + .58, {f:2400, f2:600, gl:.5, env:[[0, 0], [.03, 1], [.45, .7], [.5, 0]], g:.09, vib:[8, 30]}, o);   /* la chute qui siffle */
   A.choc(t + 1.1, {f:140, f2:45, d:.2, g:.75, sat:3}, o);
   A.bruit(t + 1.1, {coul:'rose', lp:1500, env:A.perc(.02, .35), g:.35}, o);   /* la poussière */
-  return {duree:1.8};
+  return {duree:1.8, moment:1.1};
 };
 /* — dans le nuage : trois quintes de toux — */
 S.ratNuageA = function(A, P){
@@ -1191,29 +1196,97 @@ S.ratNuageC = function(A, P){
   var t3 = t2 + x + .52; x = quinte(A, t3, 3, opt, o);
   return {duree:t3 + x + .35 - t};
 };
-/* — le coup critique : un gros cri et l'explosion — */
-S.ratCritiqueA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.45, pan:.4});
-  A.cri(t, {forme:'cri', d:.6, h:1.1, rauque:.75, grain:.9, g:.4, trille:[11, .035]}, o);
-  boum(A, t + .55, {}, o);
-  brume(A, t + .65, 1, o);
-  return {duree:2.8};
+/* — le coup critique (refait le 10 novembre : beaucoup plus violent) —
+   Chaque version a trois morceaux, pour que le jeu les cale sur l'image :
+   avant (pendant le ralenti, 0,42 s, facultatif), impact (l'image de choc), explosion (le rat qui éclate).
+   Écoutée seule : avant, puis l'impact, puis l'explosion 0,6 s plus tard. */
+function decale(P, t){ return {t:t, sec:P.sec, cave:P.cave, grotte:P.grotte}; }
+/* l'impact énorme et sec : un claquement écrêté, un coup de poing grave saturé, le corps qui craque */
+function claque(A, t, g, dest){
+  A.bruit(t, {hp:600, env:[[0, 0], [.0004, 1], [.01, .35], [.05, 0]], g:1.3 * g, sat:5, pre:2}, dest);
+  A.ton(t, {f:170, f2:36, gl:.3, env:[[0, 0], [.002, 1], [.07, .65], [.5, 0]], g:1.1 * g, sat:7, lp:2600}, dest);
+  A.bruit(t, {coul:'rose', bp:1300, bq:.8, env:A.perc(.001, .1), g:1.6 * g, sat:4}, dest);
+}
+/* la chute de grave (saturée : on l'entend aussi sur une tablette) */
+function chuteGrave(A, t, d, g, dest){
+  A.ton(t, {f:120, f2:26, gl:d, env:[[0, 0], [.006, 1], [d * .4, .55], [d, 0]], g:.85 * g, sat:4, lp:900}, dest);
+  A.ton(t, {type:'triangle', f:60, f2:24, gl:d, env:[[0, 0], [.006, 1], [d * .5, .5], [d, 0]], g:.5 * g}, dest);
+}
+/* un craquement saturé, qui grésille */
+function craque(A, t, d, g, dest){
+  A.joue(t, A.crepitement(d, 220, {forme:function(u){ return Math.pow(1 - u, 1.6); }}), {g:1.2 * g, sat:6, filtres:[{type:'highpass', f:350}, {type:'lowpass', f:7000}], env:[[0, 1], [d * .8, 1], [d, 0]]}, dest);
+}
+/* l'explosion, et son souffle qui traverse la salle de gauche à droite */
+function deflagre(A, P, t, g, dest, sourd){
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:6000, pts:[[1.6, 110]], q:.7}], env:[[0, 0], [.006, 1], [.35, .5], [2.2, 0]], g:2 * g, sat:2.5}, dest);
+  A.bruit(t + .03, {coul:'brun', lp:300, env:[[0, 0], [.06, 1], [2.8, 0]], g:1.8 * g, sat:2}, dest);
+  var vent = sourd || A.bus(decale(P, t), {rev:.4, pan:-.9, pan2:.9, pant:1.4});
+  A.bruit(t + .02, {coul:'rose', filtres:[{type:'bandpass', f:2400, pts:[[1.5, 260]], q:.9}], env:[[0, 0], [.08, 1], [.6, .5], [1.8, 0]], g:1.1 * g}, vent);
+}
+/* les débris qui retombent : des éclats et des cailloux, partout dans la salle */
+function debris(A, P, t, d, g, sourd){
+  for(var k = 0; k < 22; k++){
+    var tt = t + .1 + Math.pow(Math.random(), 1.7) * d, f = h(1400, 5200);
+    var o = sourd || A.bus(decale(P, tt), {rev:.35, pan:h(-.9, .9)});
+    A.modes(tt, f, [[1, 1, h(.03, .09)], [2.3, .5, .04], [3.7, .3, .03]], {g:h(.04, .12) * g}, o);
+    A.bruit(tt, {bp:f * .8, bq:2, env:A.perc(.0005, .01), g:h(.1, .3) * g}, o);
+  }
+  A.joue(t + .05, A.crepitement(d, 45, {forme:function(u){ return Math.pow(1 - u, 1.2); }}), {g:.5 * g, filtres:[{type:'highpass', f:1200}, {type:'lowpass', f:5000}]}, sourd || A.bus(decale(P, t), {rev:.3}));
+}
+/* le sifflement d'oreille qui retombe */
+function acouphene(A, t, d, f, g, dest){
+  [[1, 1], [1.004, .5]].forEach(function(p){
+    A.ton(t, {f:f * p[0], f2:f * .84 * p[0], gl:d, env:[[0, 0], [.12, 1], [d * .3, .7], [d, 0]], g:g * p[1]}, dest);
+  });
+}
+/* l'oreille assourdie qui revient peu à peu : un filtre presque fermé, qui se rouvre */
+function sourdine(A, t, d, dest){
+  var f = A.ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = .5;
+  f.frequency.setValueAtTime(380, t); f.frequency.setValueAtTime(380, t + d * .3); f.frequency.exponentialRampToValueAtTime(12000, t + d);
+  f.connect(dest);
+  return f;
+}
+var CRIT = {
+  /* A — Coup de tonnerre */
+  A:{impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1, o); chuteGrave(A, t, 1.4, 1, o); craque(A, t, .35, 1, o); },
+     explosion:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.6, grotte:.5, pan:.35}); deflagre(A, P, t, 1, o); debris(A, P, t + .1, 1.8, 1); acouphene(A, t + .08, 2.6, 4200, .05, A.bus(decale(P, t))); },
+     duree:3.6},
+  /* B — Assourdi : un cri coupé net par l'impact ; après, on n'entend plus que le sifflement… puis le bruit revient */
+  B:{avant:function(A, P, t){ A.cri(t + .12, {forme:'cri', d:.3, h:1.2, rauque:.7, grain:.9, g:.42, env:[[0, 0], [.02, 1], [.29, 1], [.3, 0]]}, A.bus(decale(P, t), {rev:.3, pan:.35})); },
+     impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1.2, o); chuteGrave(A, t, 1.6, 1, o); },
+     explosion:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.5, grotte:.6, pan:.35}), sd = sourdine(A, t, 3.2, o);
+       deflagre(A, P, t, 1.1, sd, sd); debris(A, P, t + .3, 2.4, 1.2, sd);
+       acouphene(A, t + .02, 3.2, 3600, .09, A.bus(decale(P, t)));
+     },
+     duree:4.6},
+  /* C — Déflagration : ça aspire, l'impact, un long craquement, deux explosions, le souffle, les débris */
+  C:{avant:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.3, pan:.35});
+       A.bruit(t, {filtres:[{type:'bandpass', f:300, pts:[[.42, 3200]], q:1.6}], env:[[0, 0], [.3, .35], [.41, 1], [.42, 0]], g:.9}, o);
+       A.ton(t, {f:80, f2:320, gl:.42, env:[[0, 0], [.35, .4], [.41, 1], [.42, 0]], g:.3, sat:3, lp:1200}, o);
+     },
+     impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1.3, o); craque(A, t, .6, 1.1, o); chuteGrave(A, t, 1.5, 1, o); },
+     explosion:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.6, grotte:.6, pan:.35});
+       deflagre(A, P, t, 1, o); deflagre(A, P, t + .13, .8, o); claque(A, t + .13, .6, o);
+       debris(A, P, t + .15, 2.2, 1.1); acouphene(A, t + .2, 1.6, 4800, .04, A.bus(decale(P, t)));
+     },
+     duree:4.2}
 };
-S.ratCritiqueB = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.35, grotte:.8, pan:.4});
-  A.cri(t, {forme:'cri', d:.32, h:1.15, rauque:.75, grain:.9, g:.4}, o);
-  boum(A, t + .26, {g:1.2}, o);
-  brume(A, t + .4, .8, o);
-  return {duree:3.2};
-};
-S.ratCritiqueC = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.5, pan:.4});
-  A.cri(t, {forme:'cri', d:.55, h:1.1, rauque:.6, grain:.8, g:.38}, o);
-  boum(A, t + .5, {g:.7}, o);
-  etincelles(A, t + .55, 1, o);
-  brume(A, t + .6, 1.1, o);
-  return {duree:2.6};
-};
+function critiqueEntier(v){
+  return function(A, P){
+    var V = CRIT[v], t = P.t, ti = t + (V.avant ? .42 : 0);
+    if(V.avant) V.avant(A, P, t);
+    V.impact(A, P, ti);
+    V.explosion(A, P, ti + .6);
+    return {duree:V.duree, moment:ti - t};
+  };
+}
+S.ratCritiqueA = critiqueEntier('A');
+S.ratCritiqueB = critiqueEntier('B');
+S.ratCritiqueC = critiqueEntier('C');
+S.CRITIQUE = CRIT;
 /* — la fuite : des couinements de peur qui s'éloignent — */
 S.ratFuiteA = function(A, P){
   var t = P.t, d = 1.5, lo = A.lointain(P, t, d, {pan1:.2, pan2:.95, fin:.08, lp2:1500});
@@ -1282,6 +1355,10 @@ S.fuiteB = function(A, P){
   return {duree:4.5};
 };
 
+/* l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation (le lâcher de la corde, la lame qui touche, la culbute) */
+[['arc', {A:.8, B:.5, C:1.12}], ['swish', {A:.2, B:.39, C:.25}], ['ratHuile', {A:.72, B:.75, C:1.1}]].forEach(function(m){
+  Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
+});
 G.BRUITAGES = S;
 })(window);
 
@@ -1696,10 +1773,10 @@ var CAT = [
       ['A', 'Une petite toux sèche, trois fois, avec un sifflement.'],
       ['B', 'Trois quintes, et ça finit par un éternuement.'],
       ['C', 'Une toux plus grasse et plus lente.']]},
-    {id:'ratCritique', titre:'Coup critique', quoi:'Un gros cri, et l’explosion.', v:[
-      ['A', 'Un gros cri, puis BOUM, et la brume noire qui s’échappe.'],
-      ['B', 'Le cri est coupé net par le BOUM, avec un long écho.'],
-      ['C', 'Le cri, un boum plus doux, et des étincelles magiques.']]},
+    {id:'ratCritique', nouveau:true, titre:'Coup critique', quoi:'Refait, beaucoup plus violent : l’impact, l’explosion, les débris.', v:[
+      ['A', 'Coup de tonnerre : un impact sec, le grave qui s’effondre, l’explosion, les débris, et l’oreille qui siffle.'],
+      ['B', 'Assourdi : le cri coupé net, on n’entend plus qu’un sifflement… puis le bruit revient.'],
+      ['C', 'Déflagration : ça aspire, ça craque, deux explosions, le souffle et les débris.']]},
     {id:'ratFuite', titre:'La fuite', quoi:'Des couinements de peur qui s’éloignent.', v:[
       ['A', 'Il file vite en couinant, avec ses griffes sur la pierre.'],
       ['B', 'Plus lent, avec l’écho du couloir.'],
@@ -1925,7 +2002,7 @@ function construire(){
     var grille = el('div', 'cartes');
     sec.cartes.forEach(function(carte){
       var c = el('article', 'carte' + (carte.salles ? ' large' : ''));
-      c.appendChild(el('h3', '', carte.titre));
+      var h3 = el('h3', '', carte.titre); if(carte.nouveau) h3.appendChild(el('span', 'nouveau', 'nouveau')); c.appendChild(h3);
       c.appendChild(texteAvecVoix('quoi', carte.quoi, carte.titre + '. ' + carte.quoi));
       if(carte.salles){
         var lanceur = el('button', 'jouer demo', '▶ Lancer la démo'); lanceur.type = 'button';
