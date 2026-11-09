@@ -2209,7 +2209,7 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - **Moustache**, un gros chat gris tigré à six doigts, qui gratte la porte aux quatre signes ;
   - **Léo**, aux cheveux de paille farinés, terrifié avec sa lanterne.
 
-  Les salles sont fluides avec le processeur ralenti ×6. **Elles attendent l'avis de Romain.**
+  Les salles sont fluides avec le processeur ralenti ×6. **Validées par Romain à 15 h 26 (« ça me paraît bien »).**
 - Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
 
 **En attente de Romain** :

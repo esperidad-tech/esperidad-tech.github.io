@@ -410,7 +410,10 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .crit-rayons{position:absolute;width:760px;height:760px;border-radius:50%;pointer-events:none;z-index:3;
   background:repeating-conic-gradient(from 0deg,rgba(255,214,90,0) 0deg 6deg,rgba(255,236,150,1) 8.5deg,rgba(255,214,90,0) 11deg 18deg);
   -webkit-mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%)}
-.crit-rayons.cuit, .crit-etoile.cuit{background:none;border-radius:0;-webkit-mask-image:none;mask-image:none;clip-path:none}
+.crit-rayons.cuit, .crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;-webkit-mask-image:none;mask-image:none;clip-path:none;max-width:none}
+/* (mémoire, iPhone) le halo sur son propre calque : sinon le calque de « CRITIQUE ! », agrandi ×3,4 à son arrivée, ferait
+   640 × 3,4 × 3 ≈ 4 700 px réels de large */
+.crit-halo.cuit{will-change:transform}
 .crit-eclair{position:absolute;z-index:3;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,240,180,.9) 30%,rgba(255,200,80,0))}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}

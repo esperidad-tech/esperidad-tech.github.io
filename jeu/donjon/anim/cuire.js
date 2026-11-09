@@ -162,8 +162,10 @@ function rendre(texte, W, H){
       try{
         var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
         cv.getContext('2d').drawImage(im, 0, 0, W, H);
-        if(cv.toBlob) cv.toBlob(function(b){ fin(b ? {url:URL.createObjectURL(b)} : {canvas:cv}); }, 'image/png');
-        else fin({url:cv.toDataURL('image/png')});
+        /* la toile est vidée dès que l'image est faite (largeur 0) : sur iPhone, Safari compte la mémoire de toutes les toiles
+           encore vivantes, même celles qui attendent d'être jetées (RAPIDITE.md, règle R9) */
+        if(cv.toBlob) cv.toBlob(function(b){ if(b){ fin({url:URL.createObjectURL(b)}); cv.width = cv.height = 0; } else fin({canvas:cv}); }, 'image/png');
+        else { fin({url:cv.toDataURL('image/png')}); cv.width = cv.height = 0; }
       }catch(e){ fin({canvas:null, erreur:e}); }   /* canvas « teinté » (vieux navigateur) : pas d'image, l'îlot de secours prendra le relais */
     };
     im.onerror = function(){ fin({erreur:'image'}); };

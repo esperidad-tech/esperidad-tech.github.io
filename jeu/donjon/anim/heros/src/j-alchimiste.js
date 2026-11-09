@@ -177,6 +177,7 @@ H.lancer = function(scene, to, couleur, opt){
   });
 };
 H._fioleVole = function(scene, a, to, c, opt){
+  if(opt._potion) return this._fioleVole2(scene, a, to, c, opt);     /* (givre, acide, huile, colle : sans filtre, voir m-armes.js) */
   var L = couche(scene), e = div(L, 'width:26px;height:31px;filter:drop-shadow(0 0 6px ' + c + ')', fioleSVG(c));
   var dist = Math.hypot(to.x - a.x, to.y - a.y), last = 0;
   return voler(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * 0.26, tourne:620, r0:-20, chaque:function(p){

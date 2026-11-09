@@ -25,6 +25,7 @@ body{margin:0;background:var(--fond);color:var(--texte);font:15px/1.35 system-ui
 button{font:700 14px/1 system-ui,sans-serif;color:#120c18;background:var(--jaune);border:2px solid var(--trait);border-radius:10px;padding:9px 12px;box-shadow:0 3px 0 #7a5a20;cursor:pointer}
 button:active{transform:translateY(2px);box-shadow:0 1px 0 #7a5a20}
 button.second{background:#3a2e46;color:#fff4e0;box-shadow:0 3px 0 #1a1220}
+select{font:700 14px/1 system-ui,sans-serif;padding:8px;border-radius:10px;border:2px solid var(--trait)}
 body.film #panneau{display:none}
 body.film #cadre{max-width:none}
 </style>
@@ -87,20 +88,42 @@ body.film #cadre{max-width:none}
     <button class="second" onclick="go('pisteur','touche')">Touché</button><button class="second" onclick="go('pisteur','tomber')">Tomber</button>
     <button class="second" onclick="go('pisteur','relever')">Relever</button><button class="second" onclick="go('pisteur','joie')">Joie</button>
     <button class="second" onclick="choix('pisteur')">Choisi</button><button class="second" onclick="go('pisteur','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Pisteur : nouvelles armes</h2><div>
+    <button onclick="go('pisteur','tirer','argent')">Flèche d'argent</button><button onclick="go('pisteur','tirer','lourde')">Flèche lourde (bois)</button>
+    <button onclick="go('pisteur','tirer','lourde',{metal:true})">Flèche lourde (métal)</button><button onclick="go('pisteur','tirer','givre')">Flèche de givre</button>
+    <button onclick="go('pisteur','tirer','acide')">Flèche d'acide</button><button onclick="go('pisteur','tirer','normale',{rebond:true})">Flèche qui rebondit</button>
+    <button onclick="go('pisteur','tirer','lourde',{rebond:true, metal:true})">Lourde qui rebondit</button>
+    <button class="second" onclick="equipe('pisteur','carquois-argent')">Carquois d'argent</button><button class="second" onclick="equipe('pisteur','carquois-lourd')">Carquois lourd</button></div></div>
   <div class="groupe"><h2>Alchimiste</h2><div>
     <button onclick="go('alchimiste','preparer','#5fd08a')">Préparer (vert)</button><button onclick="go('alchimiste','preparer','#c07aff')">Préparer (violet)</button>
     <button onclick="go('alchimiste','lancer')">Lancer</button><button onclick="go('alchimiste','louche')">Louche</button><button onclick="go('alchimiste','herbes')">Herbes (au Sage)</button>
     <button class="second" onclick="go('alchimiste','touche')">Touché</button><button class="second" onclick="go('alchimiste','tomber')">Tomber</button>
     <button class="second" onclick="go('alchimiste','relever')">Relever</button><button class="second" onclick="go('alchimiste','joie')">Joie</button>
     <button class="second" onclick="choix('alchimiste')">Choisi</button><button class="second" onclick="go('alchimiste','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Alchimiste : nouvelles potions</h2><div>
+    <button onclick="potion('givre')">Potion de givre</button><button onclick="potion('acide')">Potion d'acide</button>
+    <button onclick="potion('huile')">Potion d'huile</button><button onclick="potion('colle')">Potion de colle</button>
+    <button class="second" onclick="equipe('alchimiste','sacoche')">Sacoche</button></div></div>
   <div class="groupe"><h2>Sage</h2><div>
     <button onclick="go('sage','sort')">Sort</button><button onclick="go('sage','bouclier')">Bouclier (sur le Pisteur)</button>
     <button onclick="absorber()">Absorber 2</button><button onclick="retirer()">Retirer le bouclier</button><button onclick="go('sage','etudier')">Étudier</button>
     <button class="second" onclick="go('sage','touche')">Touché</button><button class="second" onclick="go('sage','tomber')">Tomber</button>
     <button class="second" onclick="go('sage','relever')">Relever</button><button class="second" onclick="go('sage','joie')">Joie</button>
     <button class="second" onclick="choix('sage')">Choisi</button><button class="second" onclick="go('sage','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Sage : objets</h2><div>
+    <button class="second" onclick="equipe('sage','cristal-lune')">Cristal de lune</button><button onclick="go('sage','eclair')">Éclair dans toute la salle</button>
+    <button class="second" onclick="equipe('sage','baton-chene')">Bâton de chêne</button><button onclick="go('sage','double')">Double bouclier</button>
+    <button onclick="absorber()">Absorber 2</button><button onclick="retirer()">Retirer</button></div></div>
+  <div class="groupe"><h2>Réactions (le héros choisi par le menu)</h2><div>
+    <select id="qui"><option value="pisteur">Pisteur</option><option value="alchimiste">Alchimiste</option><option value="sage">Sage</option></select>
+    <button class="second" onclick="equipe(qui(),'amulette')">Amulette</button><button onclick="relevAmulette(qui())">Relève dorée (amulette)</button>
+    <button onclick="go(qui(),'entoile',true)">Pris dans la toile</button><button onclick="go(qui(),'entoile',false)">Déchire la toile</button>
+    <button onclick="go(qui(),'avale')">Avalé par Bourbe</button><button onclick="go(qui(),'recrache')">Recraché</button>
+    <button onclick="go(qui(),'touche','froid')">Brûlure froide</button><button onclick="go(qui(),'touche','grouillement')">Grouillement</button>
+    <button onclick="go(qui(),'touche','poing')">Coup de poing</button></div></div>
 </div>
 
+<script src="../cuire.js"></script>
 <script src="heros-anime.js"></script>
 <script>
 var scene = document.getElementById('scene'), cible = document.getElementById('cible'), legende = document.getElementById('legende');
@@ -111,22 +134,39 @@ function ajuster(){
   scene.style.transform = 'scale(' + k + ')'; document.getElementById('cadre').style.height = (540 * k) + 'px';
 }
 addEventListener('resize', ajuster); ajuster();
+/* comme dans le jeu : les héros sont « cuits » en images avant d'être créés (RAPIDITE.md) ; ?svg : sans cuisson */
+var CUIT = !/svg/.test(location.search) && !!window.Cuire;
 function creer(){
-  ROLES.forEach(function(r){
-    if(h[r]) h[r].detruire();
-    h[r] = HerosAnime.creer(document.getElementById('s-' + r), r, autres ? HerosAnime.AUTRES[r] : null);
-    h[r].attendre();
-  });
+  var faire = function(){
+    ROLES.forEach(function(r){
+      if(h[r]) h[r].detruire();
+      h[r] = HerosAnime.creer(document.getElementById('s-' + r), r, autres ? HerosAnime.AUTRES[r] : null);
+      h[r].attendre();
+    });
+    window.PRET = true;
+  };
+  window.PRET = false;
+  if(CUIT) return HerosAnime.preparer(ROLES.map(function(r){ return {role:r, lk:autres ? HerosAnime.AUTRES[r] : null}; })).then(faire);
+  faire(); return Promise.resolve();
 }
 creer();
 /* le centre de la cible, et la cible qui vacille quand on la touche */
 var CIBLE = {x:790, y:252};
 function aie(){ cible.animate([{transform:'rotate(0deg)'}, {transform:'rotate(9deg) translateX(4px)', offset:.15}, {transform:'rotate(-6deg)', offset:.4}, {transform:'rotate(3deg)', offset:.65}, {transform:'rotate(0deg)'}], {duration:700, easing:'ease-out'}); }
 function centre(el){ var r = el.getBoundingClientRect(), R = scene.getBoundingClientRect(), k = R.width / 960; return {x:(r.left + r.width / 2 - R.left) / k, y:(r.top + r.height * 0.45 - R.top) / k}; }
-function go(r, m, a){
+var BOUCHE = {x:850, y:200};     /* (la gueule de Bourbe, pour le recrachat) */
+function qui(){ return document.getElementById('qui').value; }
+function go(r, m, a, b){
   var x = h[r], o = {onImpact:aie};
+  if(b) for(var k in b) o[k] = b[k];
   switch(m){
-    case 'tirer': return x.tirer(scene, CIBLE, a, o);
+    case 'tirer': return x.tirer(scene, b && b.metal ? {x:CIBLE.x, y:CIBLE.y, metal:true} : CIBLE, a, o);
+    case 'eclair': return x.eclairSalle(scene, {cibles:[CIBLE], onImpact:aie});
+    case 'double': if(bq) bq.retirer(); bq = x.bouclier(scene, [document.getElementById('s-pisteur'), document.getElementById('s-alchimiste')]); return bq;
+    case 'entoile': return x.entoile(a);
+    case 'avale': return x.avale();
+    case 'recrache': return x.recrache(scene, BOUCHE);
+    case 'touche': return x.touche(a);
     case 'dague': return x.dague(scene, {x:CIBLE.x - 16, y:CIBLE.y + 10}, o);
     case 'lancer': return x.lancer(scene, CIBLE, a, o);
     case 'preparer': return x.preparer(a);
@@ -138,6 +178,9 @@ function go(r, m, a){
     default: return x[m](a);
   }
 }
+function potion(n){ return h.alchimiste.preparer(n).then(function(){ return h.alchimiste.lancer(scene, CIBLE, n, {onImpact:aie}); }); }
+function equipe(r, o){ return h[r].equiper(o, !h[r].equipe(o)); }
+function relevAmulette(r){ var x = h[r]; if(!x.equipe('amulette')) x.equiper('amulette', true, {discret:true}); return (x.ko ? Promise.resolve() : x.tomber()).then(function(){ return new Promise(function(s){ setTimeout(s, 500); }); }).then(function(){ return x.relever({amulette:true}); }); }
 function absorber(){ return bq ? bq.absorber(2) : Promise.resolve(); }
 function retirer(){ var b = bq; bq = null; return b ? b.retirer() : Promise.resolve(); }
 function choix(r){
@@ -148,7 +191,8 @@ function choix(r){
 function tous(m){ ROLES.forEach(function(r, i){ if(m === 'entrer'){ h[r].boite.style.transform = 'translateX(-600px)'; setTimeout(function(){ h[r].entrer(400 + i * 30); }, (2 - i) * 280); } else if(m === 'attendre') h[r].attendre(); else if(m === 'arreter') h[r].arreter(); else h[r][m](); }); }
 function apparence(){ autres = !autres; creer(); }
 function dire(t){ legende.textContent = t; legende.classList.toggle('on', !!t); }
-window.DEMO = {h:h, go:go, absorber:absorber, retirer:retirer, choix:choix, tous:tous, dire:dire, scene:scene, creer:creer, apparence:function(v){ autres = v; creer(); }};
+window.DEMO = {h:h, go:go, absorber:absorber, retirer:retirer, choix:choix, tous:tous, dire:dire, scene:scene, creer:creer, apparence:function(v){ autres = v; return creer(); },
+  potion:potion, equipe:equipe, relevAmulette:relevAmulette, CIBLE:CIBLE, BOUCHE:BOUCHE};
 </script>
 </body>
 </html>

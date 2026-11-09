@@ -219,13 +219,19 @@ H._fin = function(){
 };
 H.attendre = function(){ this._veut = true; vivre(this); if(!this._occupe) this._idleOn(); return this; };
 H._idleOn = function(){
-  if(this._idle) return;
+  if(this._idle || this._avale) return;      /* (avalé par Bourbe : on ne le voit plus, rien ne bouge) */
   this._idle = true; this._calme = true;
   var me = this, A = this._ia = [];
   function boucle(nom, k1, dur, delay){ (me.elsI[nom] || []).forEach(function(el){ A.push(el.animate([{transform:'none'}, {transform:k1}], {duration:dur, delay:delay || 0, iterations:Infinity, direction:'alternate', easing:EZ.io})); }); }
   if(this.ko){
     boucle('torse', 'scale(1.025,1.035)', 1100);
     boucle('tete', 'rotate(4deg)', 1300, 200);
+  } else if(this._toile){
+    /* ligoté dans la toile : il force sans arrêt (de petits efforts rapides, joués par la carte graphique) */
+    boucle('torse', 'translate(1px,0px) rotate(2.4deg)', 520);
+    boucle('tete', 'rotate(-5deg)', 430, 90);
+    boucle('brasA', 'rotate(-4deg)', 380, 40); boucle('brasB', 'rotate(4deg)', 410, 60);
+    if(this.R0.idle) this.R0.idle.call(this, A, boucle);
   } else {
     boucle('torse', 'translate(0px,-1.6px) scale(1.014,1.025)', 1400);
     boucle('tete', 'translate(0px,-1.4px) rotate(-2.4deg)', 1400, 180);
@@ -258,8 +264,10 @@ H._gestes = function(){
     if(!me._idle || me._occupe) return;
     var tok = ++me._gTok; me._geste = true;
     if(!me.cuit) vivre(me);
-    Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
-  }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
+    /* ligoté : son petit geste, c'est de se débattre */
+    var geste = me._toile ? function(){ var l = me._pose_ligote(); return me.jouer(me._debat(l, 4).concat([{d:260, p:l, e:'io'}])); } : me.R0.geste;
+    Promise.resolve(geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
+  }, me._toile ? alea(1400, 2800) : alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
 /* Fluidité (RAPIDITE.md) : un héros cuit qui ne fait rien « s'endort » : plus aucune boucle à chaque image (le fil principal
    du téléphone se repose, la carte graphique joue seule la respiration, le clignement, le balancement des tissus). Il se
@@ -292,6 +300,7 @@ H._lueurs = function(on){
     [].forEach.call(lv.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); if(me.els[n]){ me.els[n].push(e); e.style.transform = tf(me.etat[n]); } });
     [].forEach.call(lv.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); if(me.elsI[n]) me.elsI[n].push(e); });
     this._lv = w;
+    if(this._reappliquer) this._reappliquer();   /* (la silhouette reprend l'équipement montré) */
   } else if(!on && this._lv){
     var w2 = this._lv, n;
     this._lv = null;

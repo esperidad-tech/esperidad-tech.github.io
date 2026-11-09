@@ -68,7 +68,7 @@ function alchimiste(lk, grain){
     '<g data-louche-ceinture>' + L('M160 150 L 168 186', O, 6.5) + L('M160 150 L 168 186', '#a8763e', 3) + P('M162 184 Q 168 200 178 186 Z', d.g('#b9c2d0'), ' stroke-width="2.4"') + '</g>' +
     J('marmite', L('M142 154 Q 150 146 158 154', O, 2.4) + P('M137 162 L 163 162 Q 167 182 150 186 Q 133 182 137 162 Z', d.g('#4a4458')) +
       E(150, 162, 14, 4, '#2a2436', ' stroke="' + O + '" stroke-width="2.6"') + L('M137 162 Q 150 168 163 162', '#c87a3a', 2.4) +
-      L('M141 168 Q 142 178 148 182', '#8a84a0', 1.6, ' opacity=".7"') + rep('marmite', 150, 174), [150, 152])) + sacoche(d) + amulette(d, 134, 112) + rep('amulette', 134, 112));
+      L('M141 168 Q 142 178 148 182', '#8a84a0', 1.6, ' opacity=".7"') + rep('marmite', 150, 174), [150, 152]) + sacoche(d) + amulette(d, 134, 112) + rep('amulette', 134, 112));
   /* devant : la main loin (fiole, louche, herbes), la tête, les lunettes d'alchimiste, le col */
   B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk) + meche(d, 124, 58, ch) + capuche(d, 124, 58, capu, or) +
       L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), O, 6) + L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), '#4a2e1c', 3.5) +

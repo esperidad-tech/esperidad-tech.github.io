@@ -16,9 +16,11 @@ function voler(el, a, b, o){
   });
 }
 function couche(scene){ var c = scene.querySelector(':scope > .ha-fxs'); if(!c){ c = document.createElement('div'); c.className = 'ha-fx ha-fxs'; c.style.zIndex = 5; scene.appendChild(c); } return c; }
+/* les sortes de flèches (une variante dessinée pour chacune, sauf la simple) */
+var TYPES_FL = ['feu', 'huile', 'colle', 'argent', 'lourde', 'givre', 'acide'];
 var FLECHE_SVG = function(type){
   return '<svg viewBox="-14 -16 150 32" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible">' +
-    flecheDessin().replace('data-feu style="display:none"', 'data-feu' + (type === 'feu' ? '' : ' style="display:none"')).replace('data-huile style="display:none"', 'data-huile' + (type === 'huile' ? '' : ' style="display:none"')).replace('data-colle style="display:none"', 'data-colle' + (type === 'colle' ? '' : ' style="display:none"')) + '</svg>';
+    flecheDessin().replace(/data-(\w+) style="display:none"/g, function(m, t){ return t === type ? 'data-' + t : m; }) + '</svg>';
 };
 
 ROLES.pisteur = {
@@ -82,9 +84,10 @@ ROLES.pisteur = {
 
 /* ---------- le tir à l'arc ---------- */
 H.tirer = function(scene, to, type, opt){
-  if(typeof type === 'object'){ opt = type; type = opt.type; }
+  if(type && typeof type === 'object'){ opt = type; type = opt.type; }
   type = type || 'normale'; opt = opt || {};
-  var me = this;
+  if(type === 'rebond'){ type = 'normale'; opt.rebond = true; }
+  var me = this, lourd = type === 'lourde', neuve = FL2[type] || opt.rebond;
   return this._file(function(sig){
     var c = this.corde, g = this.garde();
     var p0 = this.rep('poignee', scene), alpha = Math.max(-35, Math.min(30, Math.atan2(to.y - p0.y, to.x - p0.x) * DEG));
@@ -98,6 +101,13 @@ H.tirer = function(scene, to, type, opt){
     var tremble = P({torse:tor - 3.4, tete:-1.3 + al * 0.4, mA:[bras[0] - 0.6, bras[1] + 0.4], hA:al, mB:[118, 98], sB:1.14, cB:-1, hB:al - 10, arc:{sx:1.22, sy:0.945}});
     var lache = P({bassin:{x:-2, y:10, r:-3}, torse:tor - 7, tete:-3 + al * 0.4, mA:[bras[0] - 2, bras[1] - 1], hA:al - 4, mB:[86, 92], sB:1.1, cB:-1, hB:-150, arc:{sx:0.93, sy:1.02}});
     var suite = P({torse:tor - 5, tete:-2 + al * 0.4, mA:bras, hA:al, mB:[84, 96], cB:-1, hB:-160, arc:{sx:1.03, sy:0.99}});
+    if(lourd){
+      /* la flèche lourde : l'arc se bande plus fort (et plus lentement), le bras tremble, puis l'arc RECULE en lâchant */
+      bande = P({bassin:{y:12, r:-3}, torse:tor - 5, tete:al * 0.4, mA:bras, hA:al, mB:[112, 96], sB:1.16, cB:-1, hB:al - 10, arc:{sx:1.34, sy:0.9}});
+      tremble = P({bassin:{y:12, r:-3}, torse:tor - 5.6, tete:-0.6 + al * 0.4, mA:[bras[0] - 1.2, bras[1] + 0.8], hA:al + 1.5, mB:[110, 97], sB:1.18, cB:-1, hB:al - 10, arc:{sx:1.36, sy:0.89}});
+      lache = P({bassin:{x:-10, y:12, r:-7}, torse:tor - 14, tete:-8 + al * 0.4, mA:[bras[0] - 14, bras[1] - 12], hA:al - 16, mB:[78, 88], sB:1.1, cB:-1, hB:-150, arc:{sx:0.86, sy:1.05, r:-8}});
+      suite = P({bassin:{x:-6, y:11, r:-5}, torse:tor - 10, tete:-4 + al * 0.4, mA:[bras[0] - 6, bras[1] - 4], hA:al - 8, mB:[82, 94], cB:-1, hB:-160, arc:{sx:1.06, sy:0.98, r:3}});
+    }
     var suite2 = P({torse:tor - 5, tete:-2 + al * 0.4, mA:bras, hA:al, mB:[84, 98], cB:-1, hB:-160, arc:{}});
     this.expr('vise');
     var tween = function(ms, f){ var t0 = performance.now(); (function s(n){ var t = Math.min(1, (n - t0) / ms); f(t); if(t < 1) requestAnimationFrame(s); })(t0); };
@@ -106,20 +116,23 @@ H.tirer = function(scene, to, type, opt){
       {d:240, p:cherche, e:'io', f:function(){ c.fl = 1; c.blend = 0; me._typeFleche(type); }},
       {d:90, p:cherche, e:'lin'},
       {d:280, p:encoche, e:'io', f0:function(){ tween(240, function(t){ c.blend = t * t; }); }, f:function(){ c.mode = 'tire'; c.blend = 1; }},
-      {d:400, p:bande, e:'cubic-bezier(.5,0,.35,1)', f0:function(){ me.expr('effort'); }},
-      {d:110, p:tremble, e:'io'}, {d:110, p:bande, e:'io'}, {d:90, p:tremble, e:'io'},
+      {d:lourd ? 640 : 400, p:bande, e:'cubic-bezier(.5,0,.35,1)', f0:function(){ me.expr('effort'); }}].concat(lourd ?
+      [{d:90, p:tremble, e:'io'}, {d:90, p:bande, e:'io'}, {d:80, p:tremble, e:'io'}, {d:80, p:bande, e:'io'}, {d:70, p:tremble, e:'io'}] :
+      [{d:110, p:tremble, e:'io'}, {d:110, p:bande, e:'io'}, {d:90, p:tremble, e:'io'}], [
       {d:60, p:lache, e:'oo', f0:function(){
         var n = me.rep('flN', scene), t = me.rep('flP', scene);
-        c.mode = 'libre'; c.vib = 9; c.fl = 0;
-        vole = me._fleche(scene, n, t, to, type, opt).then(sig);
+        c.mode = 'libre'; c.vib = lourd ? 14 : 9; c.fl = 0;
+        vole = (neuve ? me._fleche2 : me._fleche).call(me, scene, n, t, to, type, opt).then(sig);
+        if(lourd) me._recul();
       }},
-      {d:120, p:suite, e:'o', f0:function(){ me.expr('cri'); }}, {d:200, p:suite2, e:'io'}, {d:120, p:suite2, e:'lin'},
+      {d:lourd ? 200 : 120, p:suite, e:'o', f0:function(){ me.expr('cri'); }}, {d:200, p:suite2, e:'io'}, {d:120, p:suite2, e:'lin'},
       {d:420, p:g, e:'b', f0:function(){ me.expr('garde'); }}
-    ]).then(function(){ return vole; });
+    ])).then(function(){ return vole; });
   });
 };
 H._typeFleche = function(type){
-  ['feu', 'huile', 'colle'].forEach(function(t){ var e = this.$('[data-fleche] [data-' + t + ']'); if(e) e.style.display = t === type ? '' : 'none'; }, this);
+  var sv = this.svg;
+  TYPES_FL.forEach(function(t){ [].forEach.call(sv.querySelectorAll('[data-fleche] [data-' + t + ']'), function(e){ e.style.display = t === type ? '' : 'none'; }); });
 };
 H._fleche = function(scene, n, t, to, type, opt){
   var L = couche(scene), len = Math.hypot(t.x - n.x, t.y - n.y), k = len / 124;
