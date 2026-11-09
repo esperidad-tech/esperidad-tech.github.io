@@ -348,30 +348,40 @@ function pointTete(i){
 }
 /* Fluidité (RAPIDITE.md) : on ne lit la position des rats QUE pendant qu'ils bougent (le module envoie « bete-bouge »
    à chaque action) ; au repos, la boucle s'arrête et les badges restent où ils sont. */
-var suiviId = 0, suiviFin = 0, suiviTourne = false, lisse = {};
-function suivreBadges(){ ++suiviId; lisse = {}; suiviTourne = false; relancerSuivi(1500); }
-function relancerSuivi(ms){
-  suiviFin = Math.max(suiviFin, performance.now() + (ms || 1200));
+var suiviId = 0, suiviFin = 0, suiviTourne = false, lisse = {}, suiviR = {};
+function suivreBadges(){ ++suiviId; lisse = {}; suiviR = {}; suiviTourne = false; relancerSuivi(1500); }
+/* i : le rat qui bouge (sinon, tous) — on ne lit que celui-là */
+function relancerSuivi(ms, i){
+  var fin = performance.now() + (ms || 1200);
+  if(i == null) suiviFin = Math.max(suiviFin, fin); else suiviR[i] = Math.max(suiviR[i] || 0, fin);
   if(suiviTourne) return;
   suiviTourne = true;
   var mon = suiviId;
+  function vif(r, t){ var a = A.r[r.i]; return !r.mort && (t < suiviFin + 250 || t < (suiviR[r.i] || 0) + 250 || !!(a && a._rat && a._rat.enAction)); }
   function pas(){
     if(mon !== suiviId || E.ecran !== 'combat'){ if(mon === suiviId) suiviTourne = false; return; }
+    /* d'abord TOUT lire, ensuite tout écrire : une lecture après une écriture forcerait le navigateur à tout recalculer */
+    var t = performance.now(), maj = [];
     E.r.forEach(function(r){
       var b = q('#badges-' + r.i);
-      if(!b || r.mort || !r.repos) return;
-      var p = pointTete(r.i); if(!p) return;
-      var l = lisse[r.i] || (lisse[r.i] = {x:0, y:0});
+      if(!b || !r.repos || !vif(r, t)) return;
+      var p = pointTete(r.i); if(p) maj.push([r, b, p]);
+    });
+    maj.forEach(function(m){
+      var r = m[0], p = m[2], l = lisse[r.i] || (lisse[r.i] = {x:0, y:0});
       l.x += (p.x - r.repos.x - l.x) * .5; l.y += (p.y - r.repos.y - l.y) * .5;
       var dy = Math.max(l.y, 92 - (rTop(r.i) - 40));                   /* jamais sous la bande du haut */
-      b.style.transform = 'translate(' + l.x.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) translateX(-50%)';
+      m[1].style.transform = 'translate(' + l.x.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) translateX(-50%)';
     });
-    var bouge = performance.now() < suiviFin + 250 || E.r.some(function(r){ var a = A.r[r.i]; return !r.mort && a && a._rat && a._rat.enAction; });
-    if(bouge) requestAnimationFrame(pas); else suiviTourne = false;
+    if(E.r.some(function(r){ return vif(r, t); })) requestAnimationFrame(pas); else suiviTourne = false;
   }
   requestAnimationFrame(pas);
 }
-document.addEventListener('bete-bouge', function(e){ if(E.ecran === 'combat') relancerSuivi(e.detail && e.detail.ms); });
+document.addEventListener('bete-bouge', function(e){
+  if(E.ecran !== 'combat') return;
+  var p = e.target && e.target.closest ? e.target.closest('.perso.rat') : null, m = p && /\br-(\d+)/.exec(p.className);
+  relancerSuivi(e.detail && e.detail.ms, m ? +m[1] : null);
+});
 
 /* ---------- la cuisson des acteurs (RAPIDITE.md) : faite pendant que l'Alchimiste remplit son sac ---------- */
 var cuisson = null;

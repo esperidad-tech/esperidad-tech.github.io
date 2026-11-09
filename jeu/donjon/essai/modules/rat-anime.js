@@ -316,6 +316,7 @@ function fusion(a, b){
 }
 function attendreMs(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 function fini(a){ return a && a.finished ? a.finished.then(function(){}, function(){}) : Promise.resolve(); }
+function enCours(a){ return a.playState === 'running' || a.playState === 'paused' || a.playState === 'pending'; }
 function hasard(a, b){ return a + Math.random() * (b - a); }
 function choisir(l){ return l[Math.floor(Math.random() * l.length)]; }
 /* une onde (pour la queue, les pattes qui gigotent…) : des clés échantillonnées sur un sinus */
@@ -431,7 +432,7 @@ R._figer = function(noms){
   (noms || Object.keys(this.J)).forEach(function(n){
     var v = self._lire(n), el = self.J[n];
     el.getAnimations().forEach(function(a){ a.cancel(); });
-    if(self.JA){ self.JA[n].getAnimations().forEach(function(a){ a.cancel(); }); self.JA[n].style.transform = ''; }
+    if(self.JA){ var ja = self.JA[n]; (ja._en || []).forEach(function(a){ a.cancel(); }); ja._en = []; ja.style.transform = ''; }
     el.style.transform = tf(v);
     self.v[n] = v;
   });
@@ -458,9 +459,11 @@ R._seq = function(cles, duree, o){
     if(!o.ajout && !o.boucle) self.v[n] = cur;
     /* cuit : un petit geste « qui s'ajoute » se joue sur la couche à part (en remplacement : la carte graphique sait le jouer),
        sauf s'il en chevauche un autre sur la même pièce */
-    var comp = o.ajout ? 'add' : 'replace';
-    if(o.ajout && self.JA){ el = self.JA[n]; comp = el.getAnimations().length ? 'add' : 'replace'; }
+    var comp = o.ajout ? 'add' : 'replace', ja = null;
+    /* (on tient soi-même la liste des gestes en cours : getAnimations() forcerait un recalcul des styles à chaque geste) */
+    if(o.ajout && self.JA){ el = ja = self.JA[n]; ja._en = (ja._en || []).filter(enCours); comp = ja._en.length ? 'add' : 'replace'; }
     var a = el.animate(frames, {duration: duree, iterations: o.boucle ? Infinity : 1, fill: o.ajout ? 'none' : 'forwards', composite: comp, delay: o.delai || 0});
+    if(ja) ja._en.push(a);
     a.playbackRate = (o.vitesse || 1);
     if(o.boucle) self.boucles.push(a);
     else if(!o.ajout) a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} }, function(){});
