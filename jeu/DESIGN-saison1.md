@@ -2194,6 +2194,14 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - La règle R9 sur la mémoire est ajoutée à `RAPIDITE.md` : aucun calque de plus de 4 096 px réels, effets plein écran à 1,5× au plus.
   - Les sons pré-calculés (environ 80 Mo en combat) sont en cours d'allègement.
   - À confirmer sur l'iPhone de Romain.
+- **Romain (16 h 37) : l'animation du critique est à refaire.** Elle est bizarre, prend tout l'écran (un énorme écran bicolore) et va trop vite. Elle doit **rester localisée** :
+  - un court tremblement d'écran ;
+  - de la **fumée noire** autour du monstre ;
+  - les **membres du rat qui éclatent sur les côtés, cachés par la fumée** (ça passe pour des enfants) ;
+  - un **gros « CRITIQUE ! »** écrit (il aime) ;
+  - plus rien de plein écran.
+
+  Refonte en cours dans la salle des rats. **Règle pour tous les monstres : le critique reste localisé autour de la bête.** Les explosions des autres modules seront alignées après la validation de Romain.
 - **Les codes du prototype sont fixés** dans `jeu/donjon/donjon-codes.js`, un seul tableau partagé par les trois pages :
   - 4 pages de sauvegarde ;
   - 2 plantes et 2 recettes ;
