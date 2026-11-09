@@ -997,36 +997,52 @@ function dessinNoeud(lache){
 }
 /* le tas : des dos de rats tassés dans l'ombre (fiche) */
 var TAS = 'M120 392 C 110 360 130 330 160 322 C 168 296 196 280 222 288 C 236 262 270 256 296 266 C 316 248 350 250 368 268 C 392 258 422 270 428 296 C 452 300 470 322 466 350 C 486 362 488 384 476 392 Z';
-/* la boule (piège de la lumière) : dix rats roulés en une boule serrée, poil hérissé, queues enroulées, la couronne dessus */
+/* la boule (piège de la lumière) : dix rats roulés en une boule serrée — des dos de rats serrés les uns contre les autres,
+   des museaux, des oreilles et des pattes qui dépassent, les queues enroulées autour, deux yeux qui guettent, la couronne dessus */
 function dessinBoule(D, G){
-  var cx = 298, cy = 296, rx = 128, ry = 98, R = rng(77), s = '', pts = [];
-  for(var i = 0; i < 46; i++){ var a = i / 46 * Math.PI * 2, f = i % 2 ? .97 : 1.09 + R() * .07; pts.push([cx + Math.cos(a) * rx * f, cy + Math.sin(a) * ry * f]); }
+  var cx = 298, cy = 300, s = '';
   s += El(cx, SOL, 150, 16, G.ombre);
-  s += Pw('M' + pts.map(pt).join(' L ') + ' Z', D.g('#3e3248', .9), 3);
-  s += El(cx, cy, rx * .95, ry * .95, D.rad([[0, '#7a6a86'], [.55, '#4a3e56'], [1, '#1e1628']], .64, .3, .8));
-  s += poils(cx, cy, rx * .86, ry * .82, 110, 19, 1.6, '#a898b8', '#140c1c');
-  /* les dos de rats roulés : des crêtes sombres qui s'enroulent */
-  s += L('M196 262 C 226 218 300 206 352 230 M188 318 C 228 352 300 362 362 342 M382 262 C 404 292 398 330 372 354 M214 288 C 240 308 282 312 304 296', '#140c1c', 3, so(.55));
-  /* les queues enroulées autour */
-  [['M178 300 C 172 250 230 196 300 198 C 360 200 404 236 412 270', '#e49aaa'], ['M200 360 C 250 392 352 388 404 340', '#dc94a2'], ['M412 300 C 432 320 420 352 396 362', '#e8a4b0']].forEach(function(q){
+  /* un museau rentré qui dépasse (sens : −1 à gauche, 1 à droite), avec ses moustaches et un œil fermé */
+  function museau(x, y, sens, a, col){
+    var t = '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ') scale(' + sens + ' 1)">';
+    t += Pw('M10 -12 C -6 -16 -26 -10 -38 -2 C -44 2 -42 8 -36 8 C -20 10 0 10 12 6 Z', D.g(col), 2.4);
+    t += El(-40, 2, 4.6, 4, '#e49aaa', ' stroke="' + O + '" stroke-width="1.8"') + C(-41, 0, 1.2, '#fff', fo(.8));
+    t += L('M-30 0 C -46 -8 -58 -10 -70 -8 M-30 3 C -46 3 -58 6 -70 10 M-28 5 C -40 12 -50 18 -58 26', '#e8e0ec', 1, so(.8));
+    t += L('M-20 -6 Q -14 -2 -8 -6', '#1a0a14', 2);
+    return t + '</g>';
+  }
+  function oreille(x, y, a, col){ return '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ')">' + Pw('M-12 6 C -18 -10 -8 -24 4 -22 C 14 -20 16 -6 10 6 Z', D.g(col), 2.4) + F('M-8 4 C -12 -8 -4 -18 4 -16 C 10 -14 10 -4 6 4 Z', '#d47a8e', fo(.8)) + '</g>'; }
+  function dosRat(x, y, rx, ry, a, col, seed, hirsute){
+    var t = '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ')">';
+    if(hirsute) t += crete([[-rx * .95, 4], [-rx * .6, -ry * 1.25], [rx * .6, -ry * 1.25], [rx * .95, 4]], .1, .9, 10, 12, D.g(sombre(col, .2)), 2.4);
+    t += Pw('M' + (-rx) + ' 0 C ' + (-rx) + ' ' + (-ry * 1.3) + ' ' + rx + ' ' + (-ry * 1.3) + ' ' + rx + ' 0 C ' + rx + ' ' + (ry * 1.2) + ' ' + (-rx) + ' ' + (ry * 1.2) + ' ' + (-rx) + ' 0 Z', D.g(col), 2.6);
+    t += poils(0, -ry * .2, rx * .8, ry * .7, Math.round(rx / 3), seed, 1.4, clair(col, .55), sombre(col, .5));
+    t += L('M' + f1(-rx * .6) + ' ' + f1(-ry * .8) + ' C ' + f1(-rx * .2) + ' ' + f1(-ry * 1.05) + ' ' + f1(rx * .3) + ' ' + f1(-ry * 1.05) + ' ' + f1(rx * .7) + ' ' + f1(-ry * .7), LUNE, 2, so(.45));
+    return t + '</g>';
+  }
+  /* les museaux et les oreilles du fond, sous les dos */
+  s += museau(178, 300, 1, 8, '#6e5a52') + museau(420, 296, -1, -8, '#6a6a7a') + museau(236, 372, 1, -24, '#7a6878');
+  s += oreille(214, 236, -34, '#6e5a52') + oreille(386, 236, 30, '#6a6a7a') + oreille(420, 340, 76, '#8a7a6a');
+  /* les dos serrés (le roi au milieu, en haut, grisonnant) */
+  s += dosRat(222, 304, 58, 50, -20, '#6e5a52', 21, true) + dosRat(376, 300, 60, 52, 18, '#6a6a7a', 22, true);
+  s += dosRat(300, 252, 92, 60, 0, '#5a4c64', 23, true) + poils(300, 230, 70, 18, 22, 91, 1.8, '#e6dcea', '#e6dcea');
+  s += dosRat(302, 322, 72, 44, 4, '#665a5e', 24) + dosRat(244, 352, 60, 36, -10, '#7a6878', 25) + dosRat(358, 354, 58, 34, 12, '#8a7a6a', 26);
+  /* les queues enroulées autour de la boule */
+  [['M176 336 C 168 278 214 214 300 206 C 364 202 412 236 420 274', '#e49aaa'], ['M196 366 C 250 398 350 396 410 344', '#dc94a2'], ['M244 230 C 270 300 340 330 400 318', '#e8a4b0']].forEach(function(q){
     s += L(q[0], O, 10.4) + L(q[0], q[1], 6) + L(q[0], clair(q[1], .6), 1.6, so(.6));
   });
-  /* des oreilles et des pattes qui dépassent */
-  [[226, 214, -30], [372, 222, 24], [420, 286, 70], [180, 284, -70]].forEach(function(o){
-    s += '<g transform="translate(' + o[0] + ' ' + o[1] + ') rotate(' + o[2] + ')">' + Pw('M-12 6 C -18 -10 -8 -24 4 -22 C 14 -20 16 -6 10 6 Z', D.g('#5a4c64'), 2.4) + F('M-8 4 C -12 -8 -4 -18 4 -16 C 10 -14 10 -4 6 4 Z', '#d47a8e', fo(.8)) + '</g>';
-  });
-  [[246, 386, 10], [330, 390, -8], [392, 370, -30]].forEach(function(o){
+  /* des pattes qui dépassent en bas */
+  [[246, 388, 10], [330, 392, -8], [392, 374, -30]].forEach(function(o){
     s += '<g transform="translate(' + o[0] + ' ' + o[1] + ') rotate(' + o[2] + ')">' + Pw('M-9 -4 C -10 4 -4 9 4 8 C 10 7 11 0 8 -5 Z', '#e49aaa', 2.2) + L('M-6 6 l -3 5 M0 8 l -1 6 M6 6 l 1 5', '#1a1220', 1.6) + '</g>';
   });
   /* des yeux fermés, serrés */
-  [[262, 262], [336, 270], [300, 330], [232, 322]].forEach(function(e){ s += L('M' + (e[0] - 7) + ' ' + e[1] + ' Q ' + e[0] + ' ' + (e[1] + 5) + ' ' + (e[0] + 7) + ' ' + e[1], '#1a0a14', 2.4); });
-  /* deux yeux qui guettent (ils clignent : pièces x-) */
-  [[372, 300, 'b1'], [214, 252, 'b2']].forEach(function(e){
+  [[262, 262], [340, 270], [300, 326], [226, 318], [372, 324]].forEach(function(e){ s += L('M' + (e[0] - 7) + ' ' + (e[1] + 2) + ' Q ' + e[0] + ' ' + (e[1] - 4) + ' ' + (e[0] + 7) + ' ' + (e[1] + 2), '#1a0a14', 2.4); });
+  /* deux yeux qui guettent (ils s'ouvrent de temps en temps : pièces x-) */
+  [[358, 292, 'b1'], [236, 286, 'b2']].forEach(function(e){
     s += xp(e[2], e[0], e[1], C(e[0], e[1], 14, G.haloJ, fo(.7)) + F('M' + (e[0] - 7) + ' ' + e[1] + ' q 7 -6 14 0 q -7 5 -14 0 Z', G.oeilJ, ' stroke="' + O + '" stroke-width="1.4"') + F('M' + e[0] + ' ' + (e[1] - 4) + ' q 1 4 0 8 q -1 -4 0 -8 Z', '#2a0408'));
   });
-  s += L('M330 206 C 380 214 420 248 426 290', LUNE, 2.6, so(.5));
   /* la couronne, posée dessus de travers */
-  s += '<g transform="translate(296 196) rotate(-10) scale(1.1) translate(66 52)">' + couronne(D, 1 / 1.1) + '</g>';
+  s += '<g transform="translate(300 206) rotate(-10) scale(1.1) translate(66 52)">' + couronne(D, 1 / 1.1) + '</g>';
   s += repere('hautB', 298, 150) + repere('pfB', 298, 296);
   return s;
 }
@@ -1664,7 +1680,7 @@ R._t_rebond = function(o){
   var self = this, j = this._debutAction(), T = 2600, r = RAT.r1;
   function t(ms){ return ms / T; }
   var cible = this._ou('r1', 30 * r.s, -30 * r.s), dep = [cible[0] - 260, cible[1] - 30];
-  var fl = this._fxEl('<g>' + L('M-40 0 L 0 0', O, 5.4) + L('M-40 0 L 0 0', '#a07848', 2.6) + Pw('M0 -5 L 12 0 L 0 5 Z', '#c8ccd8', 1.6) + Pw('M-44 -6 L -36 0 L -44 6 L -50 6 L -44 0 L -50 -6 Z', '#e8e0d0', 1.4) + '</g>');
+  var fl = this._fxEl('<g transform="scale(1.9)">' + L('M-40 0 L 0 0', O, 5.4) + L('M-40 0 L 0 0', '#a07848', 2.6) + Pw('M0 -5 L 12 0 L 0 5 Z', '#c8ccd8', 1.6) + Pw('M-44 -6 L -36 0 L -44 6 L -50 6 L -44 0 L -50 -6 Z', '#e8e0d0', 1.4) + '</g>');
   var ang = deg(Math.atan2(cible[1] - dep[1], cible[0] - dep[0]));
   var vol = fl.animate([{transform: 'translate(' + f1(dep[0]) + 'px,' + f1(dep[1]) + 'px) rotate(' + f1(ang) + 'deg)'}, {transform: 'translate(' + f1(cible[0]) + 'px,' + f1(cible[1]) + 'px) rotate(' + f1(ang) + 'deg)'}], {duration: 180, easing: 'linear', fill: 'forwards'});
   /* le rat se retourne, attrape la flèche, tire, l'arrache… et la crache au loin */
