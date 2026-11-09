@@ -725,13 +725,19 @@ function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
   CACHE_MAT = new Map();
   /* au repos (cuit), un héros « s'endort » : plus aucun calcul à chaque image (voir H._actif) */
-  var actifs = VIVANTS.filter(function(h){ return h._actif(t); });
+  var actifs = [], cordes = [];
+  VIVANTS.forEach(function(h){ var a = h._actif(t); if(a === 'corde') cordes.push(h); else if(a) actifs.push(h); });
   actifs.forEach(function(h){ try { h._lire(); } catch(e){} });
+  cordes.forEach(function(h){ try { h.R0.lire.call(h); } catch(e){} });
   actifs.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  cordes.forEach(function(h){ try { h.R0.pas.call(h, dt, t / 1000); } catch(e){} });
+  actifs = actifs.concat(cordes);
   CACHE_MAT = null;
   if(actifs.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); h._calmeDepuis = 0; if(h._dort) h._reveil(); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
+/* relancer la boucle sans réveiller le héros (une corde tirée pendant un petit geste d'attente) */
+function relancer(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
 
 /* ============ les effets : particules et projectiles (dans la scène ou autour du héros) ============ */
 function div(parent, css, html){
@@ -827,7 +833,8 @@ function css(){
     '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
     '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
     '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
-    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}' +
+    '.ha.ha-calme.ha-corde-vive .cu-ilot.ha-trait{visibility:visible}.ha.ha-calme.ha-corde-vive .ha-corde-fixe{display:none}' +
+    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}.ha.ha-bout .ha-bulle-boucle{animation-duration:.5s}' +
     '@keyframes haBulle{0%{transform:translate(0,0) scale(1);opacity:0}20%{transform:translate(1px,-6px) scale(1);opacity:1}80%{transform:translate(-2px,-18px) scale(1.1);opacity:.9}100%{transform:translate(0,-28px) scale(1.4);opacity:0}}' +
     '.ha .ha-etinc-boucle{animation:haEtinc .9s ease-out infinite}' +
     '@keyframes haEtinc{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(2px,-22px) scale(1);opacity:0}}' +
@@ -926,7 +933,8 @@ function preparerUn(role, lk, o){
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
-  M.promesse = Cu.cuire(svg, {ilot:ILOTS, anime:'.haJ', res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
+  /* (pas de will-change sur les pièces : seules celles qui bougent deviennent des calques) */
+  M.promesse = Cu.cuire(svg, {ilot:ILOTS, res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
     .then(function(m){ M.modele = m; h.remove(); return m; }, function(e){ h.remove(); delete MODELES[cle]; if(window.console) console.warn('HerosAnime.preparer', e); return null; });
   return M.promesse;
 }
@@ -1057,7 +1065,8 @@ H._gestes = function(){
   if(!this.R0.geste || this.ko) return;
   this._tGe = setTimeout(function(){
     if(!me._idle || me._occupe) return;
-    var tok = ++me._gTok; me._geste = true; vivre(me);
+    var tok = ++me._gTok; me._geste = true;
+    if(!me.cuit) vivre(me);
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
@@ -1066,15 +1075,22 @@ H._gestes = function(){
    réveille dès qu'il agit (action, petit geste, corde tirée, potion versée) et se rendort 1,2 s après (le tissu s'est posé). */
 H._actif = function(t){
   if(!this.cuit) return true;
-  var c = this.corde;
-  if(this._occupe || this._geste || this._verse || this._bouillon || (c && (c.mode !== 'libre' || c.fl || c.vib > .25))){ this._calmeDepuis = 0; if(this._dort) this._reveil(); return true; }
+  var c = this.corde, corde = c && (c.mode !== 'libre' || c.fl || c.vib > .25);
+  /* une vraie action : tout est recalculé (tissus compris) */
+  if(this._occupe || this._verse){ this._calmeDepuis = 0; this._corde(false); if(this._dort) this._reveil(); return true; }
+  /* les petits gestes d'attente ne bougent que les bras : ils se jouent sans réveiller les tissus ; seule la corde tirée
+     est recalculée (et rien d'autre) */
+  if(this._dort){ this._corde(corde); return corde ? 'corde' : false; }
+  if(corde){ this._calmeDepuis = 0; return true; }
   if(!this._calmeDepuis) this._calmeDepuis = t;
-  if(t - this._calmeDepuis < 1200) return true;
-  if(!this._dort) this._endormir();
+  if(t - this._calmeDepuis < 1200) return true;          /* (le tissu finit de se poser) */
+  this._endormir();
   return false;
 };
 H._endormir = function(){ this._dort = true; this.racine.classList.add('ha-calme'); };
-H._reveil = function(){ this._dort = false; this.racine.classList.remove('ha-calme'); };
+H._reveil = function(){ this._dort = false; this._corde(false); this.racine.classList.remove('ha-calme'); };
+/* endormi, la corde de l'arc peut quand même être tirée (petit geste) : on montre alors la corde calculée */
+H._corde = function(on){ if(!!this._cordeVive !== !!on){ this._cordeVive = !!on; this.racine.classList.toggle('ha-corde-vive', !!on); } };
 /* cuit : la silhouette lumineuse du héros choisi, ajoutée seulement quand il l'est (ses pièces reçoivent les mêmes animations) */
 H._lueurs = function(on){
   var me = this, M = MODELES[cleModele(this.role, this.lk)];
@@ -1306,7 +1322,7 @@ ROLES.pisteur = {
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
   /* cuit, au repos : la corde est un trait fixe dessiné dans l'arc (elle suit l'arc sans aucun calcul) */
-  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul'); },
+  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul ha-corde-fixe'); },
   /* (lu avant toute écriture de l'image : voir tick) */
   lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
@@ -1335,13 +1351,14 @@ ROLES.pisteur = {
   geste:function(ok){
     var me = this, g = this.garde(), c = this.corde;
     if(Math.random() < 0.7){
+      /* (il tire sa corde : seule la corde est recalculée à chaque image, et seulement pendant qu'elle bouge : relancer) */
       var tient = {}; for(var k in g) tient[k] = g[k];
       tient.mA = [196, 142]; tient.hA = 10; tient.tete = 6; tient.torse = 4;
       var pince = {}; for(k in tient) pince[k] = tient[k]; pince.mB = [166, 156]; pince.hB = -60; pince.sB = 1.06;
       var tire = {}; for(k in pince) tire[k] = pince[k]; tire.mB = [154, 154];
-      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()) c.mode = 'tire'; }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; } }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
+      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; relancer(me); }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; relancer(me); }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
     }
     var regarde = {}; for(var k2 in g) regarde[k2] = g[k2];
     regarde.tete = -14; regarde.torse = -2; regarde.mB = [96, 86]; regarde.hB = -150;
@@ -1542,13 +1559,15 @@ ROLES.alchimiste = {
   },
   geste:function(ok){
     var me = this, g = this.garde();
+    /* (cuit et endormi : la fiole bouillonne en CSS, classe ha-bout, sans réveiller la boucle) */
+    var bout = function(on){ me._bouillon = on ? 14 : 0; me.racine.classList.toggle('ha-bout', !!on); };
     var leve = {}; for(var k in g) leve[k] = g[k];
     leve.mB = [132, 108]; leve.tete = -12; leve.torse = 3;
     var s1 = {}; for(k in leve) s1[k] = leve[k]; s1.hB = -22;
     var s2 = {}; for(k in leve) s2[k] = leve[k]; s2.hB = 22;
-    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ me._bouillon = 14; me.expr('content'); } }},
+    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ bout(true); me.expr('content'); } }},
       {d:90, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:110, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:90, p:leve, e:'io', f:function(){ me._fumee(); }},
-      {d:500, p:leve, e:'lin', f:function(){ me._bouillon = 0; if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ me._bouillon = 0; });
+      {d:500, p:leve, e:'lin', f:function(){ bout(false); if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ bout(false); });
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }

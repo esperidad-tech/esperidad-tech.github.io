@@ -175,8 +175,7 @@ function ecranSac(){
   var phrase = !E.sacAvant ? 'Avant de descendre, l\'Alchimiste remplit son sac : trois recettes, pas une de plus.'
     : 'L\'Alchimiste vide son sac sur la table. Les mêmes recettes, ou d\'autres ? Trois, pas une de plus.';
   s.innerHTML = '<img class="fond" src="' + URL_IMG.decor + '" alt=""><div class="voile"></div>' +
-    '<h1>Le sac d\'alchimiste</h1>' +
-    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
+    '<h1>Le sac d\'alchimiste</h1>' + curseursVolume() +
     '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
     '<div class="alchi"><img src="' + URL_IMG['heros-alchimiste'] + '" alt=""></div>' +
     '<div class="sac-poche"><b>Dans le sac</b><div class="sac-cases"></div></div>' +
@@ -189,7 +188,7 @@ function ecranSac(){
     '<button class="aller" data-act="descendre" disabled>Descendre ⬇</button>';
   jeu.appendChild(s);
   bulleTxt = q('#sac .bulle .txt');
-  majBoutonSon();
+  brancherCurseurs(s);
   Son.musique('explo');        /* elle démarre au premier toucher (le navigateur l'exige) */
   conte(phrase);
   if(E.sacAvant) E.sac = E.sacAvant.slice();
@@ -272,16 +271,17 @@ function construireCombat(){
   jeu.innerHTML = '';
   A.h = {}; A.r = [];
   var c = el('div', 'ecran'); c.id = 'combat';
+  /* le haut de l'écran reste noir et discret (Romain, 9 novembre) : plus de bulle du conteur pendant le combat ;
+     le nom de la salle, les deux curseurs de volume et le bouton « Fuite ! » */
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + URL_IMG.decor + '" alt=""><div id="sol-fx"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>Salle des rats</b><span id="tour-nom"></span></div>' +
-    '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
-    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
+    curseursVolume() +
     '<button id="fuite" class="sombre" data-act="fuite">🏃 Fuite !</button></div>' +
     '<div id="bande"></div><div id="ecran-fx"></div><div id="fx-haut"></div>';
   jeu.appendChild(c);
-  monde = q('#monde'); secousse = q('#secousse'); fx = q('#fx'); fxHaut = q('#fx-haut'); bandeEl = q('#bande'); bulleTxt = q('#haut .bulle .txt'); hud = q('#hud');
+  monde = q('#monde'); secousse = q('#secousse'); fx = q('#fx'); fxHaut = q('#fx-haut'); bandeEl = q('#bande'); bulleTxt = null; hud = q('#hud');
   Fx.init({fx:fx, sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:monde, secousse:secousse});
-  majBoutonSon();
+  brancherCurseurs(c);
   var FH = window.HerosAnime || SALLE.HerosImage, FR = window.RatAnime || SALLE.RatImage;
   var p = q('#persos');
   ORDRE.forEach(function(h){
@@ -388,7 +388,51 @@ function cuire(){
 }
 SALLE.cuire = cuire;
 function slotR(r){ return q('.r-' + r.i); }
-function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }   /* coupe tout : bruitages et musique */
+
+/* ---------- les deux curseurs de volume (Romain, 9 novembre) : musique 🎵 et bruitages 💥 ----------
+   discrets et sombres : une petite barre jaune et un rond noir à liseré jaune, qu'on fait glisser au doigt (la zone de
+   toucher est bien plus grande que le dessin). À 0 : muet. Ils appellent Son.volume('musique' | 'bruitages', v). */
+var VOLUMES = [{id:'musique', ic:'🎵', nom:'Musique'}, {id:'bruitages', ic:'💥', nom:'Bruitages'}];
+function volumeDe(type){ try{ var v = Son.volume ? Son.volume(type) : 1; return v == null ? 1 : +v; }catch(e){ return 1; } }
+function curseursVolume(){
+  return '<div id="volumes">' + VOLUMES.map(function(V){
+    return '<div class="vol" data-vol="' + V.id + '"><span class="vol-ic" aria-hidden="true">' + V.ic + '</span>' +
+      '<div class="vol-piste" role="slider" tabindex="0" aria-label="' + V.nom + '" aria-valuemin="0" aria-valuemax="100">' +
+      '<span class="vol-rail"><i class="vol-barre"></i><i class="vol-plein"></i><i class="vol-rond"></i></span></div></div>';
+  }).join('') + '</div>';
+}
+function majCurseur(v, val){
+  var p = Math.round(val * 100);
+  q('.vol-plein', v).style.width = p + '%';
+  q('.vol-rond', v).style.left = p + '%';
+  var pi = q('.vol-piste', v); pi.setAttribute('aria-valuenow', p); pi.setAttribute('aria-valuetext', p ? p + ' %' : 'muet');
+  v.classList.toggle('muet', !p);
+}
+function reglerVolume(type, val){
+  val = Math.max(0, Math.min(1, val));
+  if(val < .04) val = 0;                    /* tout au bout à gauche : vraiment muet */
+  try{ if(Son.volume) Son.volume(type, val); }catch(e){}
+  qa('.vol[data-vol="' + type + '"]').forEach(function(v){ majCurseur(v, val); });
+}
+function brancherCurseurs(racine){
+  qa('.vol', racine).forEach(function(v){
+    var type = v.getAttribute('data-vol'), piste = q('.vol-piste', v), rail = q('.vol-rail', v), tient = false;
+    majCurseur(v, volumeDe(type));
+    function lire(ev){ var r = rail.getBoundingClientRect(); reglerVolume(type, (ev.clientX - r.left) / Math.max(1, r.width)); }
+    piste.addEventListener('pointerdown', function(ev){ Son.demarrer(); tient = true; v.classList.add('tient'); try{ piste.setPointerCapture(ev.pointerId); }catch(e){} lire(ev); ev.preventDefault(); });
+    piste.addEventListener('pointermove', function(ev){ if(tient) lire(ev); });
+    function lacher(){ tient = false; v.classList.remove('tient'); }
+    piste.addEventListener('pointerup', lacher); piste.addEventListener('pointercancel', lacher);
+    piste.addEventListener('keydown', function(ev){
+      var d = ev.key === 'ArrowRight' || ev.key === 'ArrowUp' ? .1 : ev.key === 'ArrowLeft' || ev.key === 'ArrowDown' ? -.1 : 0;
+      if(d){ ev.preventDefault(); reglerVolume(type, volumeDe(type) + d); }
+    });
+  });
+}
+/* l'ancien bouton 🎵/🔇 coupait tout : s'il était resté sur 🔇, on remet le son en marche et les deux curseurs à zéro */
+function reprendreAncienMuet(){
+  try{ if(Son.actif && !Son.actif() && Son.basculer && Son.volume){ Son.basculer(); Son.volume('musique', 0); Son.volume('bruitages', 0); } }catch(e){}
+}
 
 function majBarres(){
   ORDRE.forEach(function(h){
@@ -543,12 +587,14 @@ function choisirHeros(h){
 }
 function choisirGeste(g){
   var h = E.sel;
+  /* le petit son au toucher d'une icône d'arme ou de potion (Romain, 9 novembre) : « icone » de l'Atelier des sons
+     (silencieux tant qu'il ne l'a pas choisi : on garde alors l'ancien petit clic) */
+  bruit('icone', {}, ['clic']);
   if(g.indexOf('p:') === 0 && !recetteOk(h, g.slice(2))){
     var id = g.slice(2);
     conte(h === 'pisteur' ? 'Une flèche trempée dans ' + (id === 'baume' ? 'le Baume' : id === 'coeur' ? 'le Cœur vaillant' : 'le Fumigène') + ' ? Ça ne tiendrait pas sur la pointe.' : 'Personne n\'est au sol. Le Cœur vaillant attendra son heure.');
     return;
   }
-  son('clic');
   E.geste = g; E.mode = 'cible';
   var t = typeCible(g), qn = {rat:'Sur quel rat ?', devant:'Seul le rat de devant est à portée. On y va ?', heros:'Pour qui ?', sol:'Qui relever ?', salle:'Le nuage remplira toute la salle. On le lance sur la bande ?'};
   var txt = qn[t];
@@ -1062,7 +1108,6 @@ function toucher(ev){
   var a = b.getAttribute('data-act'), id = b.getAttribute('data-id');
   if(a === 'lire'){ ev.stopPropagation(); lire(b.getAttribute('data-t')); return; }
   if(a === 'lire-bulle'){ lire(E.texte); return; }
-  if(a === 'bruitages'){ Son.demarrer(); Son.basculer(); majBoutonSon(); return; }
   if(a === 'recette-sac') return toucherRecette(id, b);
   if(a === 'descendre'){ if(E.sac.length === 3){ taire(); debutCombat(); } return; }
   if(a === 'livre'){ son('page'); return grandLivre(); }
@@ -1080,6 +1125,7 @@ function toucher(ev){
 
 function demarrer(){
   jeu = q('#jeu');
+  reprendreAncienMuet();
   chargerImages();
   ajuster();
   window.addEventListener('resize', ajuster);

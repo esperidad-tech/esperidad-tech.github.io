@@ -35,7 +35,7 @@ ROLES.pisteur = {
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
   /* cuit, au repos : la corde est un trait fixe dessiné dans l'arc (elle suit l'arc sans aucun calcul) */
-  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul'); },
+  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul ha-corde-fixe'); },
   /* (lu avant toute écriture de l'image : voir tick) */
   lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
@@ -64,13 +64,14 @@ ROLES.pisteur = {
   geste:function(ok){
     var me = this, g = this.garde(), c = this.corde;
     if(Math.random() < 0.7){
+      /* (il tire sa corde : seule la corde est recalculée à chaque image, et seulement pendant qu'elle bouge : relancer) */
       var tient = {}; for(var k in g) tient[k] = g[k];
       tient.mA = [196, 142]; tient.hA = 10; tient.tete = 6; tient.torse = 4;
       var pince = {}; for(k in tient) pince[k] = tient[k]; pince.mB = [166, 156]; pince.hB = -60; pince.sB = 1.06;
       var tire = {}; for(k in pince) tire[k] = pince[k]; tire.mB = [154, 154];
-      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()) c.mode = 'tire'; }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; } }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
+      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; relancer(me); }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; relancer(me); }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
     }
     var regarde = {}; for(var k2 in g) regarde[k2] = g[k2];
     regarde.tete = -14; regarde.torse = -2; regarde.mB = [96, 86]; regarde.hB = -150;

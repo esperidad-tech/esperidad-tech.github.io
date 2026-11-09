@@ -351,7 +351,9 @@ function preparer(o){
     brumes.push(Cu.image('<svg viewBox="-52 -52 104 104"><defs><filter id="b" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.6"/></filter></defs><g filter="url(#b)">' +
       '<circle r="' + r + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g></svg>', 104, 104, Math.min(2, res * 1.6)));
   }
-  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, anime:'[data-j]', res:res}), Promise.all(brumes)])
+  /* (pas de will-change sur les pièces : seules celles qui bougent deviennent des calques, le navigateur s'en charge ;
+     trop de calques forcés coûtent à chaque image et peuvent dépasser la mémoire d'une vieille tablette) */
+  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, res:res}), Promise.all(brumes)])
     .then(function(r){ MODELE = r[0]; BRUME = r[1].filter(Boolean); h.remove(); return MODELE; }, function(e){ h.remove(); if(global.console) console.warn('RatAnime.preparer', e); return null; });
   return PREP;
 }
@@ -386,7 +388,7 @@ function Rat(conteneur){
     this.JA = {};
     Object.keys(this.J).forEach(function(n){
       var j = self.J[n], a = document.createElement('div');
-      a.className = 'cu cu-anime';
+      a.className = 'cu';
       while(j.firstChild) a.appendChild(j.firstChild);
       j.appendChild(a);
       self.JA[n] = a;

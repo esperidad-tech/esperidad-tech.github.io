@@ -114,7 +114,8 @@ def tablette(nav):
     P.capture('01-sac-vide')
     verifie(P.etat('window.__parle') == 0, 'aucune lecture vocale toute seule à l\'ouverture')
     verifie(P.etat('SALLE.Son.etat()') == 'pas encore', 'pas de son avant le premier toucher')
-    verifie(P.etat("document.querySelector('#sac #bruitages').textContent") == '🎵', 'le bouton 🎵 est aussi sur l\'écran du sac')
+    verifie(P.etat("document.querySelectorAll('#sac #volumes .vol').length") == 2 and P.etat("!document.querySelector('#bruitages')"),
+            'les deux curseurs de volume (🎵 musique, 💥 bruitages) sont sur l\'écran du sac, à la place du bouton 🎵/🔇')
     P.touche('#sac .bulle .lire')
     verifie(P.etat('window.__parle') == 1 and 'trois recettes' in P.etat('window.__dernier'), 'le 🔊 du conteur lit sa phrase')
     pg.wait_for_timeout(300)
@@ -129,6 +130,12 @@ def tablette(nav):
     verifie(m['nom'] == 'combat' and m['cles'][0] in ('combatA', 'combatB') and m['cles'][1] == 'puits', f'en combat : une musique de combat et la couleur « le puits » ({m["cles"]})')
     pg.wait_for_timeout(500)
     P.capture('05-qui-joue')
+    verifie(P.etat("!document.querySelector('#haut .bulle') && !document.querySelector('#combat .bulle')"), 'combat : plus de bandeau du conteur en haut, le haut reste sombre')
+    verifie(P.etat("document.querySelectorAll('#haut #volumes .vol').length") == 2 and P.etat("!!document.querySelector('#haut #fuite')"), 'combat : les deux curseurs de volume et « Fuite ! » en haut')
+    verifie(P.etat("Object.keys(SALLE.acteurs.h).every(h => SALLE.acteurs.h[h].cuit) && SALLE.acteurs.r.every(r => r.cuit)") or not P.etat('!!window.Cuire'),
+            'fluidité : les héros et les rats sont « cuits » (pièces en images, animées par la carte graphique)')
+    verifie(P.etat("document.querySelectorAll('.perso svg [data-j], .perso svg [filter]').length") == 0 or not P.etat('!!window.Cuire'),
+            'fluidité : plus aucun grand SVG ni filtre dans les personnages')
     verifie(P.etat("document.querySelectorAll('.badges .vise').length") == 3, 'chaque rat montre qui il vise')
     verifie(P.etat("[...document.querySelectorAll('.rat .a-img')].every(i => i.src === SALLE.img('rat-jaune'))") or P.etat('!!window.RatAnime'), 'les rats ont les yeux jaunes')
 
@@ -153,8 +160,9 @@ def tablette(nav):
     P.attend("SALLE.etat.mode === 'rats'")
     verifie(P.etat('SALLE.etat.r[0].mort'), 'le critique du Pisteur tue le rat net')
     s = P.etat('window.__sons')
-    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:avant', 'ratCritique:impact', 'ratCritique:explosion']) and not any(x.endswith('!') for x in s),
-            'les sons de l\'atelier jouent : huile, arc, flèche, critique en trois morceaux (' + ' '.join(s) + ')')
+    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:avant', 'ratCritique:impact', 'ratCritique:explosion']) and not any(x.endswith('!') for x in s if not x.startswith('icone')),
+            'les sons de l\'atelier jouent : huile, arc, flèche, critique en trois morceaux (' + ' '.join(x for x in s if not x.startswith('icone')) + ')')
+    verifie(s.count('icone!') + s.count('icone') >= 2, 'toucher une icône d\'arme ou de potion demande le petit son « icone » (silencieux tant que Romain ne l\'a pas choisi)')
     pg.wait_for_timeout(1250); P.capture('19-tour-des-rats')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.tour') == 2, 'un nouveau tour commence après les rats')
@@ -226,11 +234,26 @@ def tablette(nav):
     pg.wait_for_timeout(2300); P.capture('30-colle')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.r.some(r => r.colle)') and P.etat("window.RatAnime ? SALLE.etat.r.some(r => r.colle && SALLE.acteurs.r[r.i].etat().colle && !!SALLE.acteurs.r[r.i]._rat.fx.flaque_colle) : !!document.querySelector('.flaque-colle')"), 'la Colle : une flaque gluante, le rat collé')
-    P.touche('#bruitages'); pg.wait_for_timeout(100)
-    verifie(not P.etat('SALLE.Son.actif()') and P.etat("document.querySelector('#bruitages').textContent") == '🔇' and P.etat('SALLE.Son.musiqueEtat().nom') is None,
-            'le bouton 🔇 coupe les bruitages ET la musique')
-    P.touche('#bruitages'); pg.wait_for_timeout(100)
-    verifie(P.etat('SALLE.Son.musiqueEtat().nom') == 'combat', 'le bouton 🎵 remet la musique')
+    # les curseurs de volume, au doigt : glisser le rond tout à gauche = muet ; le remettre = la musique revient
+    def glisse(vol, frac):
+        r = P.etat(f"(function(){{ var e = document.querySelector('#haut .vol[data-vol=\"{vol}\"] .vol-rail').getBoundingClientRect(); return [e.left, e.top, e.width, e.height]; }})()")
+        x0, y = r[0] + r[2] * .6, r[1] + r[3] / 2
+        x1 = r[0] + r[2] * frac
+        pg.mouse.move(x0, y); pg.mouse.down(); pg.mouse.move((x0 + x1) / 2, y, steps=3); pg.mouse.move(x1, y, steps=3); pg.mouse.up(); pg.wait_for_timeout(150)
+    glisse('musique', -.2)
+    verifie(P.etat("SALLE.Son.volume ? SALLE.Son.volume('musique') : 0") == 0 and P.etat('SALLE.Son.musiqueEtat().nom') is None and P.etat("document.querySelector('#haut .vol[data-vol=\"musique\"]').classList.contains('muet')"),
+            'curseur 🎵 tout à gauche : la musique s\'arrête (volume 0)')
+    glisse('musique', .7)
+    v = P.etat("SALLE.Son.volume('musique')")
+    verifie(.6 < v < .8 and P.etat('SALLE.Son.musiqueEtat().nom') == 'combat', f'curseur 🎵 remis à 70 % : la musique de combat revient (volume {v:.2f})')
+    glisse('bruitages', -.2)
+    verifie(P.etat("SALLE.Son.volume('bruitages')") == 0 and P.etat("SALLE.Son.bruitage('arc') === null") and P.etat('SALLE.Son.musiqueEtat().nom') == 'combat',
+            'curseur 💥 à zéro : les bruitages se taisent, la musique continue')
+    glisse('bruitages', 1.2)
+    verifie(P.etat("SALLE.Son.volume('bruitages')") == 1, 'curseur 💥 remis au maximum')
+    verifie(P.etat("(function(){ var r = document.querySelector('#haut .vol .vol-piste').getBoundingClientRect(); return r.height >= 40 && r.width >= 90; })()"),
+            'les curseurs sont faciles à attraper au doigt (zone de 44 px de haut)')
+    P.capture('30b-curseurs')
     P.touche('#fuite'); pg.wait_for_timeout(300); P.capture('31-fuite-question')
     P.touche('[data-act="fuir"]')
     pg.wait_for_timeout(1500); P.capture('32-fuite-cri')

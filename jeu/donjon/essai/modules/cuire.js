@@ -58,7 +58,9 @@ function css(){
   if(document.getElementById('cuire-css')) return;
   var s = document.createElement('style'); s.id = 'cuire-css';
   s.textContent = '.cu-racine{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}' +
-    '.cu{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +
+    /* (1 px et pas 0 : Chrome garde sur le fil principal l'animation d'une boîte vide de taille nulle, par exemple une pièce
+       dont tout le contenu est caché ; elle réveillerait alors le fil principal à chaque image) */
+    '.cu{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0}' +
     '.cu-anime{will-change:transform}' +
     '.cu-img{position:absolute;display:block;max-width:none;pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}' +
     '.cu-ilot{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +

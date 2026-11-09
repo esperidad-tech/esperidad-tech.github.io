@@ -56,13 +56,19 @@ function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
   CACHE_MAT = new Map();
   /* au repos (cuit), un héros « s'endort » : plus aucun calcul à chaque image (voir H._actif) */
-  var actifs = VIVANTS.filter(function(h){ return h._actif(t); });
+  var actifs = [], cordes = [];
+  VIVANTS.forEach(function(h){ var a = h._actif(t); if(a === 'corde') cordes.push(h); else if(a) actifs.push(h); });
   actifs.forEach(function(h){ try { h._lire(); } catch(e){} });
+  cordes.forEach(function(h){ try { h.R0.lire.call(h); } catch(e){} });
   actifs.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  cordes.forEach(function(h){ try { h.R0.pas.call(h, dt, t / 1000); } catch(e){} });
+  actifs = actifs.concat(cordes);
   CACHE_MAT = null;
   if(actifs.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); h._calmeDepuis = 0; if(h._dort) h._reveil(); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
+/* relancer la boucle sans réveiller le héros (une corde tirée pendant un petit geste d'attente) */
+function relancer(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
 
 /* ============ les effets : particules et projectiles (dans la scène ou autour du héros) ============ */
 function div(parent, css, html){

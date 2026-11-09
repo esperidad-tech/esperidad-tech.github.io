@@ -1,0 +1,116 @@
+[
+ {
+  "ips": 60,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "attente"
+ },
+ {
+  "ips": 57,
+  "pire": 67,
+  "lentes": 2,
+  "nom": "entrée (réveil, deux pas)"
+ },
+ {
+  "ips": 56,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "attente après l’entrée"
+ },
+ {
+  "ips": 55,
+  "pire": 50,
+  "lentes": 2,
+  "nom": "poing"
+ },
+ {
+  "ips": 60,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "rebond (immunisé)"
+ },
+ {
+  "ips": 54,
+  "pire": 50,
+  "lentes": 1,
+  "nom": "flèche lourde (bosse)"
+ },
+ {
+  "ips": 57,
+  "pire": 50,
+  "lentes": 1,
+  "nom": "piège : lumière d’abord"
+ },
+ {
+  "ips": 58,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "attente enragé"
+ },
+ {
+  "ips": 56,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "poing enragé"
+ },
+ {
+  "ips": 59,
+  "pire": 50,
+  "lentes": 1,
+  "nom": "acide : la plaque tombe"
+ },
+ {
+  "ips": 55,
+  "pire": 50,
+  "lentes": 1,
+  "nom": "lumière : cœur ébloui"
+ },
+ {
+  "ips": 59,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "attente point faible ouvert"
+ },
+ {
+  "ips": 60,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "givre : la plaque éclate"
+ },
+ {
+  "ips": 60,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "huile"
+ },
+ {
+  "ips": 54,
+  "pire": 50,
+  "lentes": 3,
+  "nom": "toux"
+ },
+ {
+  "ips": 50,
+  "pire": 67,
+  "lentes": 3,
+  "nom": "feu (rougeoie) + brûlé"
+ },
+ {
+  "ips": 54,
+  "pire": 33,
+  "lentes": 0,
+  "nom": "attente rougeoie + brûlé"
+ },
+ {
+  "ips": 54,
+  "pire": 67,
+  "lentes": 5,
+  "nom": "mort (s’effondre)"
+ },
+ {
+  "ips": 53,
+  "pire": 150,
+  "lentes": 3,
+  "nom": "explosion"
+ }
+]

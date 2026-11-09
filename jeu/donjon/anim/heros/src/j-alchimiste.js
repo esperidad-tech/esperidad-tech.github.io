@@ -40,13 +40,15 @@ ROLES.alchimiste = {
   },
   geste:function(ok){
     var me = this, g = this.garde();
+    /* (cuit et endormi : la fiole bouillonne en CSS, classe ha-bout, sans réveiller la boucle) */
+    var bout = function(on){ me._bouillon = on ? 14 : 0; me.racine.classList.toggle('ha-bout', !!on); };
     var leve = {}; for(var k in g) leve[k] = g[k];
     leve.mB = [132, 108]; leve.tete = -12; leve.torse = 3;
     var s1 = {}; for(k in leve) s1[k] = leve[k]; s1.hB = -22;
     var s2 = {}; for(k in leve) s2[k] = leve[k]; s2.hB = 22;
-    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ me._bouillon = 14; me.expr('content'); } }},
+    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ bout(true); me.expr('content'); } }},
       {d:90, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:110, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:90, p:leve, e:'io', f:function(){ me._fumee(); }},
-      {d:500, p:leve, e:'lin', f:function(){ me._bouillon = 0; if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ me._bouillon = 0; });
+      {d:500, p:leve, e:'lin', f:function(){ bout(false); if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ bout(false); });
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }

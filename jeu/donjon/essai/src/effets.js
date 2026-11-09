@@ -16,34 +16,27 @@ function anime(e, images, o){
 }
 function plus(t){ return attendre(t); }
 
-/* ---------- les particules (gouttes, éclats de verre, étincelles, touffes) : une seule boucle ---------- */
-var parts = [], tourne = false;
-function boucle(t){
-  var vivantes = [];
-  for(var i = 0; i < parts.length; i++){
-    var p = parts[i];
-    if(p.t0 === null) p.t0 = t;
-    var dt = Math.min(.05, (t - (p.dernier || t)) / 1000) * (S.vitesse || 1); p.dernier = t;
-    var age = (t - p.t0) / 1000 * (S.vitesse || 1);
-    if(age < p.delai){ vivantes.push(p); continue; }
-    p.vy += p.g * dt; p.vx *= p.frein; p.vy *= p.frein; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
-    var k = (age - p.delai) / p.vie;
-    if(p.sol && p.y > p.sol){ p.y = p.sol; p.vy *= -.25; p.vx *= .6; }
-    var ang = p.oriente ? Math.atan2(p.vy, p.vx) * 180 / Math.PI : p.rot;
-    p.e.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) rotate(' + ang.toFixed(1) + 'deg) scale(' + (p.s0 + (p.s1 - p.s0) * Math.min(1, k)).toFixed(2) + ')';
-    p.e.style.opacity = k < .6 ? 1 : Math.max(0, 1 - (k - .6) / .4);
-    if(k >= 1) p.e.remove(); else vivantes.push(p);
-  }
-  parts = vivantes;
-  if(parts.length) requestAnimationFrame(boucle); else tourne = false;
-}
+/* ---------- les particules (gouttes, éclats de verre, étincelles, touffes) ----------
+   Fluidité (jeu/donjon/RAPIDITE.md) : la trajectoire (pesanteur, freinage, rebond au sol) est calculée UNE fois, à la
+   création, puis jouée comme une animation (transform / opacity) : la carte graphique la déroule seule, sans aucun calcul
+   sur le fil principal à chaque image. */
+var PAS = 1 / 60;
 function particule(e, o){
   e.style.position = 'absolute'; e.style.left = '0'; e.style.top = '0'; e.style.willChange = 'transform,opacity';
   (o.calque || L.fx).appendChild(e);
-  parts.push({e:e, x:o.x, y:o.y, vx:o.vx || 0, vy:o.vy || 0, g:o.g == null ? 900 : o.g, frein:o.frein || 1, vie:o.vie || .8, delai:o.delai || 0,
-    rot:o.rot || 0, vr:o.vr || 0, s0:o.s0 == null ? 1 : o.s0, s1:o.s1 == null ? 1 : o.s1, sol:o.sol, oriente:o.oriente, t0:null});
-  e.style.transform = 'translate(' + o.x + 'px,' + o.y + 'px)';
-  if(!tourne){ tourne = true; requestAnimationFrame(boucle); }
+  var x = o.x, y = o.y, vx = o.vx || 0, vy = o.vy || 0, g = o.g == null ? 900 : o.g, frein = o.frein || 1, vie = o.vie || .8, rot = o.rot || 0, vr = o.vr || 0;
+  var s0 = o.s0 == null ? 1 : o.s0, s1 = o.s1 == null ? 1 : o.s1, n = Math.max(6, Math.round(vie * 30)), cadence = Math.max(1, Math.round(vie / PAS / n));
+  var kf = [], pas = 0, total = Math.round(vie / PAS);
+  function cle(k, ang){ kf.push({offset:Math.min(1, k), transform:'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + ang.toFixed(1) + 'deg) scale(' + (s0 + (s1 - s0) * Math.min(1, k)).toFixed(2) + ')', opacity:k < .6 ? 1 : Math.max(0, 1 - (k - .6) / .4)}); }
+  cle(0, o.oriente ? Math.atan2(vy, vx) * 180 / Math.PI : rot);
+  for(pas = 1; pas <= total; pas++){
+    vy += g * PAS; vx *= frein; vy *= frein; x += vx * PAS; y += vy * PAS; rot += vr * PAS;
+    if(o.sol && y > o.sol){ y = o.sol; vy *= -.25; vx *= .6; }
+    if(pas % cadence === 0 || pas === total) cle(pas / total, o.oriente ? Math.atan2(vy, vx) * 180 / Math.PI : rot);
+  }
+  var v = S.vitesse || 1;
+  var a = e.animate(kf, {duration:vie * 1000 / v, delay:(o.delai || 0) * 1000 / v, easing:'linear', fill:'backwards'});
+  a.finished.then(function(){ e.remove(); }, function(){ e.remove(); });
 }
 
 /* ---------- petits effets ---------- */
@@ -167,6 +160,21 @@ function brumeNoire(x, y, nb){
   return Promise.all(fins);
 }
 
+/* la texture de la vignette (512 px, dessinée une seule fois) : transparente au centre, sombre au bord ; affichée sur 2 400 px,
+   son trou fait 150 px de rayon (0,45 r transparent, 0,6 à r, 0,93 à 1,9 r et au-delà, comme le dégradé d'avant) */
+var VIGNETTE = null;
+function texteVignette(){
+  if(VIGNETTE) return VIGNETTE;
+  try{
+    var T = 512, c = document.createElement('canvas'); c.width = c.height = T;
+    var g = c.getContext('2d'), k = T / 2400, r = 150 * k, gr = g.createRadialGradient(T / 2, T / 2, 0, T / 2, T / 2, T / 2);
+    var f = function(d){ return Math.min(1, d / (T / 2)); };
+    gr.addColorStop(0, 'rgba(5,2,10,0)'); gr.addColorStop(f(r * .45), 'rgba(5,2,10,0)'); gr.addColorStop(f(r), 'rgba(5,2,10,.6)'); gr.addColorStop(f(r * 1.9), 'rgba(5,2,10,.93)'); gr.addColorStop(1, 'rgba(5,2,10,.93)');
+    g.fillStyle = gr; g.fillRect(0, 0, T, T);
+    VIGNETTE = c.toDataURL('image/png');
+  }catch(e){ VIGNETTE = ''; }
+  return VIGNETTE;
+}
 /* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
@@ -178,13 +186,16 @@ function critique(x, y, n, exploser, son, o){
   var E = L.ecran, monde = L.monde;
   /* 1) ralenti, vignette qui se resserre, zoom lent vers le rat */
   son('aspire');
-  /* la vignette : un dégradé plein écran dont le trou se resserre sur le rat (pas de grand calque à redessiner) */
-  var vig = el('div', 'crit-vignette'); E.appendChild(vig);
-  function trou(r, a){ vig.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px,rgba(5,2,10,0) ' + (r * .45) + 'px,rgba(5,2,10,' + (.6 * a) + ') ' + r + 'px,rgba(5,2,10,' + (.93 * a) + ') ' + (r * 1.9) + 'px)'; }
+  /* la vignette : un trou sombre qui se resserre sur le rat. Fluidité (RAPIDITE.md) : c'est une image (un dégradé dessiné une
+     fois) qu'on rétrécit et qu'on fait apparaître (transform / opacity), au lieu d'un dégradé plein écran repeint à chaque image.
+     Taille de l'image affichée : 2 400 px pour un trou de 150 px (le rayon r du trou est proportionnel à l'échelle). */
+  var vig = el('div', 'crit-vignette'), D = 2400, R0 = 150;
+  var vimg = el('img'); vimg.src = texteVignette(); vimg.alt = '';
+  vimg.style.cssText = 'position:absolute;left:' + (x - D / 2) + 'px;top:' + (y - D / 2) + 'px;width:' + D + 'px;height:' + D + 'px;max-width:none;will-change:transform,opacity;opacity:0';
+  vig.appendChild(vimg); E.appendChild(vig);
   function serrer(r0, r1, a0, a1, ms){
-    return new Promise(function(ok){ var d = null; ms = ms / (S.vitesse || 1);
-      function pas(t){ if(d === null) d = t; var k = Math.min(1, (t - d) / ms), e = 1 - Math.pow(1 - k, 3); trou(r0 + (r1 - r0) * e, a0 + (a1 - a0) * e); if(k < 1) requestAnimationFrame(pas); else ok(); }
-      requestAnimationFrame(pas); });
+    vimg.style.transform = 'scale(' + (r1 / R0) + ')'; vimg.style.opacity = a1;
+    return anime(vimg, [{transform:'scale(' + (r0 / R0) + ')', opacity:a0}, {transform:'scale(' + (r1 / R0) + ')', opacity:a1}], {duration:ms / (S.vitesse || 1), easing:'cubic-bezier(.33,1,.68,1)'});
   }
   serrer(900, 150, 0, 1, 420);
   monde.style.transformOrigin = x + 'px ' + y + 'px';
@@ -192,7 +203,7 @@ function critique(x, y, n, exploser, son, o){
   var lents = [];
   try{ if(document.getAnimations) document.getAnimations().forEach(function(a){
     var t = a.effect && a.effect.target;
-    if(t && (t === vig || t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
+    if(t && (t === vimg || t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
     a.playbackRate = .22; lents.push(a);
   }); }catch(e){}
   return plus(420).then(function(){
@@ -232,24 +243,22 @@ function critique(x, y, n, exploser, son, o){
   });
 }
 
-/* la fiole, la flèche… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire */
+/* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
+   La courbe est échantillonnée une fois (24 points) puis jouée par la carte graphique (RAPIDITE.md). */
 function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   ms = ms / (S.vitesse || 1);
-  return new Promise(function(ok){
-    var d = null;
-    function pas(t){
-      if(d === null) d = t;
-      var k = Math.min(1, (t - d) / ms);
-      var x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k);
-      var a = oriente ? Math.atan2((y1 - y0) - h * 4 * (1 - 2 * k), x1 - x0) * 180 / Math.PI : tour * k;
-      e.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
-      if(k < 1) requestAnimationFrame(pas); else ok();
-    }
-    requestAnimationFrame(pas);
-  });
+  var kf = [], N = 24;
+  for(var i = 0; i <= N; i++){
+    var k = i / N, x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k);
+    var a = oriente ? Math.atan2((y1 - y0) - h * 4 * (1 - 2 * k), x1 - x0) * 180 / Math.PI : tour * k;
+    kf.push({transform:'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)'});
+  }
+  e.style.willChange = 'transform';
+  e.style.transform = kf[N].transform;
+  return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; texteVignette(); }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();

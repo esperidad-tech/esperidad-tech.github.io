@@ -109,7 +109,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 /* =============== LE COMBAT =============== */
 #monde{position:absolute;z-index:1;left:0;top:0;width:960px;height:372px;transform-origin:50% 50%;will-change:transform}
 #monde .decor{position:absolute;left:0;top:0;width:960px;height:372px}
-#secousse{position:absolute;left:0;top:0;width:960px;height:372px}
+/* (will-change : le décor reste dans son propre calque ; une secousse ne le fait pas repeindre) */
+#secousse{position:absolute;left:0;top:0;width:960px;height:372px;will-change:transform}
 #sol-fx, #fx, #fumee, #hud{position:absolute;left:0;top:0;width:960px;height:372px;pointer-events:none}
 #sol-fx{z-index:2}
 #persos{position:static}
@@ -120,8 +121,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #ecran-fx{position:absolute;left:0;top:0;width:960px;height:540px;z-index:60;pointer-events:none;overflow:hidden}
 /* la salle est vide au début : la bande, la bulle et les barres arrivent après l'entrée des héros et des rats */
 #combat:not(.ouvert) #hud{opacity:0}
-#combat:not(.ouvert) #haut .bulle, #combat:not(.ouvert) #fuite, #combat:not(.ouvert) #bruitages{opacity:0;pointer-events:none}
-#haut .bulle, #fuite, #bruitages{transition:opacity .5s .2s}
+#combat:not(.ouvert) #fuite, #combat:not(.ouvert) #volumes{opacity:0;pointer-events:none}
+#fuite, #combat #volumes{transition:opacity .5s .2s}
 #combat:not(.ouvert) #bande{transform:translateY(100%)}
 #bande{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
 
@@ -280,9 +281,20 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #salle-nom span{font-size:14px;color:#d8ccb4;text-shadow:0 1px 0 #000}
 #salle-nom i{font-style:normal;opacity:.6;margin:0 3px}
 .point h1 .lire{background:var(--creme);color:var(--encre)}
-#haut .bulle{position:absolute;left:226px;right:188px;top:8px}
-#bruitages{position:absolute;right:130px;top:14px;width:48px;min-width:48px;padding:0;font-size:20px}
-#sac #bruitages{right:24px;top:14px;z-index:3}
+/* les deux curseurs de volume (musique, bruitages) : discrets, sombres ; une petite barre jaune et un rond noir à liseré jaune.
+   La zone de toucher fait 44 px de haut et déborde de 14 px de chaque côté du rail. */
+#volumes{position:absolute;right:134px;top:12px;display:flex;gap:6px;align-items:center;z-index:3}
+#sac #volumes{right:20px;top:10px}
+.vol{display:flex;align-items:center;gap:0;height:44px;padding-left:4px;border-radius:22px;background:rgba(10,7,16,.55)}
+.vol-ic{font-size:15px;line-height:1;width:20px;text-align:center;opacity:.7;filter:saturate(.6)}
+.vol.muet .vol-ic{opacity:.35}
+.vol-piste{position:relative;width:104px;height:44px;padding:0 14px;touch-action:none;cursor:pointer;outline:none}
+.vol-rail{position:absolute;left:14px;right:14px;top:0;bottom:0}
+.vol-barre,.vol-plein{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:2px}
+.vol-barre{right:0;background:rgba(255,210,63,.22)}
+.vol-plein{background:#d9ad2c}
+.vol-rond{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#0b0810;border:2px solid #e6b833;box-shadow:0 1px 3px rgba(0,0,0,.6)}
+.vol.tient .vol-rond, .vol-piste:focus-visible .vol-rond{border-color:#ffd23f;transform:scale(1.15)}
 .point .livre-l.garde{font-style:normal;font-weight:700;color:#e8cf98}
 #fuite{position:absolute;right:14px;top:14px;min-width:108px}
 
@@ -551,7 +563,9 @@ function css(){
   if(document.getElementById('cuire-css')) return;
   var s = document.createElement('style'); s.id = 'cuire-css';
   s.textContent = '.cu-racine{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}' +
-    '.cu{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +
+    /* (1 px et pas 0 : Chrome garde sur le fil principal l'animation d'une boîte vide de taille nulle, par exemple une pièce
+       dont tout le contenu est caché ; elle réveillerait alors le fil principal à chaque image) */
+    '.cu{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0}' +
     '.cu-anime{will-change:transform}' +
     '.cu-img{position:absolute;display:block;max-width:none;pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}' +
     '.cu-ilot{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +
@@ -1297,7 +1311,9 @@ function preparer(o){
     brumes.push(Cu.image('<svg viewBox="-52 -52 104 104"><defs><filter id="b" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.6"/></filter></defs><g filter="url(#b)">' +
       '<circle r="' + r + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g></svg>', 104, 104, Math.min(2, res * 1.6)));
   }
-  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, anime:'[data-j]', res:res}), Promise.all(brumes)])
+  /* (pas de will-change sur les pièces : seules celles qui bougent deviennent des calques, le navigateur s'en charge ;
+     trop de calques forcés coûtent à chaque image et peuvent dépasser la mémoire d'une vieille tablette) */
+  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, res:res}), Promise.all(brumes)])
     .then(function(r){ MODELE = r[0]; BRUME = r[1].filter(Boolean); h.remove(); return MODELE; }, function(e){ h.remove(); if(global.console) console.warn('RatAnime.preparer', e); return null; });
   return PREP;
 }
@@ -1332,7 +1348,7 @@ function Rat(conteneur){
     this.JA = {};
     Object.keys(this.J).forEach(function(n){
       var j = self.J[n], a = document.createElement('div');
-      a.className = 'cu cu-anime';
+      a.className = 'cu';
       while(j.firstChild) a.appendChild(j.firstChild);
       j.appendChild(a);
       self.JA[n] = a;
@@ -3097,13 +3113,19 @@ function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
   CACHE_MAT = new Map();
   /* au repos (cuit), un héros « s'endort » : plus aucun calcul à chaque image (voir H._actif) */
-  var actifs = VIVANTS.filter(function(h){ return h._actif(t); });
+  var actifs = [], cordes = [];
+  VIVANTS.forEach(function(h){ var a = h._actif(t); if(a === 'corde') cordes.push(h); else if(a) actifs.push(h); });
   actifs.forEach(function(h){ try { h._lire(); } catch(e){} });
+  cordes.forEach(function(h){ try { h.R0.lire.call(h); } catch(e){} });
   actifs.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  cordes.forEach(function(h){ try { h.R0.pas.call(h, dt, t / 1000); } catch(e){} });
+  actifs = actifs.concat(cordes);
   CACHE_MAT = null;
   if(actifs.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); h._calmeDepuis = 0; if(h._dort) h._reveil(); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
+/* relancer la boucle sans réveiller le héros (une corde tirée pendant un petit geste d'attente) */
+function relancer(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
 
 /* ============ les effets : particules et projectiles (dans la scène ou autour du héros) ============ */
 function div(parent, css, html){
@@ -3199,7 +3221,8 @@ function css(){
     '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
     '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
     '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
-    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}' +
+    '.ha.ha-calme.ha-corde-vive .cu-ilot.ha-trait{visibility:visible}.ha.ha-calme.ha-corde-vive .ha-corde-fixe{display:none}' +
+    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}.ha.ha-bout .ha-bulle-boucle{animation-duration:.5s}' +
     '@keyframes haBulle{0%{transform:translate(0,0) scale(1);opacity:0}20%{transform:translate(1px,-6px) scale(1);opacity:1}80%{transform:translate(-2px,-18px) scale(1.1);opacity:.9}100%{transform:translate(0,-28px) scale(1.4);opacity:0}}' +
     '.ha .ha-etinc-boucle{animation:haEtinc .9s ease-out infinite}' +
     '@keyframes haEtinc{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(2px,-22px) scale(1);opacity:0}}' +
@@ -3298,7 +3321,8 @@ function preparerUn(role, lk, o){
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
-  M.promesse = Cu.cuire(svg, {ilot:ILOTS, anime:'.haJ', res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
+  /* (pas de will-change sur les pièces : seules celles qui bougent deviennent des calques) */
+  M.promesse = Cu.cuire(svg, {ilot:ILOTS, res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
     .then(function(m){ M.modele = m; h.remove(); return m; }, function(e){ h.remove(); delete MODELES[cle]; if(window.console) console.warn('HerosAnime.preparer', e); return null; });
   return M.promesse;
 }
@@ -3429,7 +3453,8 @@ H._gestes = function(){
   if(!this.R0.geste || this.ko) return;
   this._tGe = setTimeout(function(){
     if(!me._idle || me._occupe) return;
-    var tok = ++me._gTok; me._geste = true; vivre(me);
+    var tok = ++me._gTok; me._geste = true;
+    if(!me.cuit) vivre(me);
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
@@ -3438,15 +3463,22 @@ H._gestes = function(){
    réveille dès qu'il agit (action, petit geste, corde tirée, potion versée) et se rendort 1,2 s après (le tissu s'est posé). */
 H._actif = function(t){
   if(!this.cuit) return true;
-  var c = this.corde;
-  if(this._occupe || this._geste || this._verse || this._bouillon || (c && (c.mode !== 'libre' || c.fl || c.vib > .25))){ this._calmeDepuis = 0; if(this._dort) this._reveil(); return true; }
+  var c = this.corde, corde = c && (c.mode !== 'libre' || c.fl || c.vib > .25);
+  /* une vraie action : tout est recalculé (tissus compris) */
+  if(this._occupe || this._verse){ this._calmeDepuis = 0; this._corde(false); if(this._dort) this._reveil(); return true; }
+  /* les petits gestes d'attente ne bougent que les bras : ils se jouent sans réveiller les tissus ; seule la corde tirée
+     est recalculée (et rien d'autre) */
+  if(this._dort){ this._corde(corde); return corde ? 'corde' : false; }
+  if(corde){ this._calmeDepuis = 0; return true; }
   if(!this._calmeDepuis) this._calmeDepuis = t;
-  if(t - this._calmeDepuis < 1200) return true;
-  if(!this._dort) this._endormir();
+  if(t - this._calmeDepuis < 1200) return true;          /* (le tissu finit de se poser) */
+  this._endormir();
   return false;
 };
 H._endormir = function(){ this._dort = true; this.racine.classList.add('ha-calme'); };
-H._reveil = function(){ this._dort = false; this.racine.classList.remove('ha-calme'); };
+H._reveil = function(){ this._dort = false; this._corde(false); this.racine.classList.remove('ha-calme'); };
+/* endormi, la corde de l'arc peut quand même être tirée (petit geste) : on montre alors la corde calculée */
+H._corde = function(on){ if(!!this._cordeVive !== !!on){ this._cordeVive = !!on; this.racine.classList.toggle('ha-corde-vive', !!on); } };
 /* cuit : la silhouette lumineuse du héros choisi, ajoutée seulement quand il l'est (ses pièces reçoivent les mêmes animations) */
 H._lueurs = function(on){
   var me = this, M = MODELES[cleModele(this.role, this.lk)];
@@ -3678,7 +3710,7 @@ ROLES.pisteur = {
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
   /* cuit, au repos : la corde est un trait fixe dessiné dans l'arc (elle suit l'arc sans aucun calcul) */
-  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul'); },
+  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul ha-corde-fixe'); },
   /* (lu avant toute écriture de l'image : voir tick) */
   lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
@@ -3707,13 +3739,14 @@ ROLES.pisteur = {
   geste:function(ok){
     var me = this, g = this.garde(), c = this.corde;
     if(Math.random() < 0.7){
+      /* (il tire sa corde : seule la corde est recalculée à chaque image, et seulement pendant qu'elle bouge : relancer) */
       var tient = {}; for(var k in g) tient[k] = g[k];
       tient.mA = [196, 142]; tient.hA = 10; tient.tete = 6; tient.torse = 4;
       var pince = {}; for(k in tient) pince[k] = tient[k]; pince.mB = [166, 156]; pince.hB = -60; pince.sB = 1.06;
       var tire = {}; for(k in pince) tire[k] = pince[k]; tire.mB = [154, 154];
-      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()) c.mode = 'tire'; }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; } }},
-        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
+      return this.jouer([{d:380, p:tient, e:'io'}, {d:260, p:pince, e:'io'}, {d:160, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 5; relancer(me); }}, {d:420, p:pince, e:'lin'}, {d:200, p:tire, e:'io', f0:function(){ if(ok()){ c.mode = 'tire'; relancer(me); } }},
+        {d:60, p:pince, e:'oo', f0:function(){ c.mode = 'libre'; c.vib = 4; relancer(me); }}, {d:300, p:pince, e:'lin', f:function(){ if(ok()) me.cligner(); }}, {d:420, p:g, e:'io'}]).then(function(){ c.mode = 'libre'; });
     }
     var regarde = {}; for(var k2 in g) regarde[k2] = g[k2];
     regarde.tete = -14; regarde.torse = -2; regarde.mB = [96, 86]; regarde.hB = -150;
@@ -3914,13 +3947,15 @@ ROLES.alchimiste = {
   },
   geste:function(ok){
     var me = this, g = this.garde();
+    /* (cuit et endormi : la fiole bouillonne en CSS, classe ha-bout, sans réveiller la boucle) */
+    var bout = function(on){ me._bouillon = on ? 14 : 0; me.racine.classList.toggle('ha-bout', !!on); };
     var leve = {}; for(var k in g) leve[k] = g[k];
     leve.mB = [132, 108]; leve.tete = -12; leve.torse = 3;
     var s1 = {}; for(k in leve) s1[k] = leve[k]; s1.hB = -22;
     var s2 = {}; for(k in leve) s2[k] = leve[k]; s2.hB = 22;
-    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ me._bouillon = 14; me.expr('content'); } }},
+    return this.jouer([{d:360, p:leve, e:'io', f:function(){ if(ok()){ bout(true); me.expr('content'); } }},
       {d:90, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:110, p:s1, e:'io'}, {d:110, p:s2, e:'io'}, {d:90, p:leve, e:'io', f:function(){ me._fumee(); }},
-      {d:500, p:leve, e:'lin', f:function(){ me._bouillon = 0; if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ me._bouillon = 0; });
+      {d:500, p:leve, e:'lin', f:function(){ bout(false); if(ok()) me.expr('garde'); }}, {d:420, p:g, e:'io'}]).then(function(){ bout(false); });
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }
@@ -6626,34 +6661,27 @@ function anime(e, images, o){
 }
 function plus(t){ return attendre(t); }
 
-/* ---------- les particules (gouttes, éclats de verre, étincelles, touffes) : une seule boucle ---------- */
-var parts = [], tourne = false;
-function boucle(t){
-  var vivantes = [];
-  for(var i = 0; i < parts.length; i++){
-    var p = parts[i];
-    if(p.t0 === null) p.t0 = t;
-    var dt = Math.min(.05, (t - (p.dernier || t)) / 1000) * (S.vitesse || 1); p.dernier = t;
-    var age = (t - p.t0) / 1000 * (S.vitesse || 1);
-    if(age < p.delai){ vivantes.push(p); continue; }
-    p.vy += p.g * dt; p.vx *= p.frein; p.vy *= p.frein; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
-    var k = (age - p.delai) / p.vie;
-    if(p.sol && p.y > p.sol){ p.y = p.sol; p.vy *= -.25; p.vx *= .6; }
-    var ang = p.oriente ? Math.atan2(p.vy, p.vx) * 180 / Math.PI : p.rot;
-    p.e.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) rotate(' + ang.toFixed(1) + 'deg) scale(' + (p.s0 + (p.s1 - p.s0) * Math.min(1, k)).toFixed(2) + ')';
-    p.e.style.opacity = k < .6 ? 1 : Math.max(0, 1 - (k - .6) / .4);
-    if(k >= 1) p.e.remove(); else vivantes.push(p);
-  }
-  parts = vivantes;
-  if(parts.length) requestAnimationFrame(boucle); else tourne = false;
-}
+/* ---------- les particules (gouttes, éclats de verre, étincelles, touffes) ----------
+   Fluidité (jeu/donjon/RAPIDITE.md) : la trajectoire (pesanteur, freinage, rebond au sol) est calculée UNE fois, à la
+   création, puis jouée comme une animation (transform / opacity) : la carte graphique la déroule seule, sans aucun calcul
+   sur le fil principal à chaque image. */
+var PAS = 1 / 60;
 function particule(e, o){
   e.style.position = 'absolute'; e.style.left = '0'; e.style.top = '0'; e.style.willChange = 'transform,opacity';
   (o.calque || L.fx).appendChild(e);
-  parts.push({e:e, x:o.x, y:o.y, vx:o.vx || 0, vy:o.vy || 0, g:o.g == null ? 900 : o.g, frein:o.frein || 1, vie:o.vie || .8, delai:o.delai || 0,
-    rot:o.rot || 0, vr:o.vr || 0, s0:o.s0 == null ? 1 : o.s0, s1:o.s1 == null ? 1 : o.s1, sol:o.sol, oriente:o.oriente, t0:null});
-  e.style.transform = 'translate(' + o.x + 'px,' + o.y + 'px)';
-  if(!tourne){ tourne = true; requestAnimationFrame(boucle); }
+  var x = o.x, y = o.y, vx = o.vx || 0, vy = o.vy || 0, g = o.g == null ? 900 : o.g, frein = o.frein || 1, vie = o.vie || .8, rot = o.rot || 0, vr = o.vr || 0;
+  var s0 = o.s0 == null ? 1 : o.s0, s1 = o.s1 == null ? 1 : o.s1, n = Math.max(6, Math.round(vie * 30)), cadence = Math.max(1, Math.round(vie / PAS / n));
+  var kf = [], pas = 0, total = Math.round(vie / PAS);
+  function cle(k, ang){ kf.push({offset:Math.min(1, k), transform:'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + ang.toFixed(1) + 'deg) scale(' + (s0 + (s1 - s0) * Math.min(1, k)).toFixed(2) + ')', opacity:k < .6 ? 1 : Math.max(0, 1 - (k - .6) / .4)}); }
+  cle(0, o.oriente ? Math.atan2(vy, vx) * 180 / Math.PI : rot);
+  for(pas = 1; pas <= total; pas++){
+    vy += g * PAS; vx *= frein; vy *= frein; x += vx * PAS; y += vy * PAS; rot += vr * PAS;
+    if(o.sol && y > o.sol){ y = o.sol; vy *= -.25; vx *= .6; }
+    if(pas % cadence === 0 || pas === total) cle(pas / total, o.oriente ? Math.atan2(vy, vx) * 180 / Math.PI : rot);
+  }
+  var v = S.vitesse || 1;
+  var a = e.animate(kf, {duration:vie * 1000 / v, delay:(o.delai || 0) * 1000 / v, easing:'linear', fill:'backwards'});
+  a.finished.then(function(){ e.remove(); }, function(){ e.remove(); });
 }
 
 /* ---------- petits effets ---------- */
@@ -6777,6 +6805,21 @@ function brumeNoire(x, y, nb){
   return Promise.all(fins);
 }
 
+/* la texture de la vignette (512 px, dessinée une seule fois) : transparente au centre, sombre au bord ; affichée sur 2 400 px,
+   son trou fait 150 px de rayon (0,45 r transparent, 0,6 à r, 0,93 à 1,9 r et au-delà, comme le dégradé d'avant) */
+var VIGNETTE = null;
+function texteVignette(){
+  if(VIGNETTE) return VIGNETTE;
+  try{
+    var T = 512, c = document.createElement('canvas'); c.width = c.height = T;
+    var g = c.getContext('2d'), k = T / 2400, r = 150 * k, gr = g.createRadialGradient(T / 2, T / 2, 0, T / 2, T / 2, T / 2);
+    var f = function(d){ return Math.min(1, d / (T / 2)); };
+    gr.addColorStop(0, 'rgba(5,2,10,0)'); gr.addColorStop(f(r * .45), 'rgba(5,2,10,0)'); gr.addColorStop(f(r), 'rgba(5,2,10,.6)'); gr.addColorStop(f(r * 1.9), 'rgba(5,2,10,.93)'); gr.addColorStop(1, 'rgba(5,2,10,.93)');
+    g.fillStyle = gr; g.fillRect(0, 0, T, T);
+    VIGNETTE = c.toDataURL('image/png');
+  }catch(e){ VIGNETTE = ''; }
+  return VIGNETTE;
+}
 /* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
@@ -6788,13 +6831,16 @@ function critique(x, y, n, exploser, son, o){
   var E = L.ecran, monde = L.monde;
   /* 1) ralenti, vignette qui se resserre, zoom lent vers le rat */
   son('aspire');
-  /* la vignette : un dégradé plein écran dont le trou se resserre sur le rat (pas de grand calque à redessiner) */
-  var vig = el('div', 'crit-vignette'); E.appendChild(vig);
-  function trou(r, a){ vig.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px,rgba(5,2,10,0) ' + (r * .45) + 'px,rgba(5,2,10,' + (.6 * a) + ') ' + r + 'px,rgba(5,2,10,' + (.93 * a) + ') ' + (r * 1.9) + 'px)'; }
+  /* la vignette : un trou sombre qui se resserre sur le rat. Fluidité (RAPIDITE.md) : c'est une image (un dégradé dessiné une
+     fois) qu'on rétrécit et qu'on fait apparaître (transform / opacity), au lieu d'un dégradé plein écran repeint à chaque image.
+     Taille de l'image affichée : 2 400 px pour un trou de 150 px (le rayon r du trou est proportionnel à l'échelle). */
+  var vig = el('div', 'crit-vignette'), D = 2400, R0 = 150;
+  var vimg = el('img'); vimg.src = texteVignette(); vimg.alt = '';
+  vimg.style.cssText = 'position:absolute;left:' + (x - D / 2) + 'px;top:' + (y - D / 2) + 'px;width:' + D + 'px;height:' + D + 'px;max-width:none;will-change:transform,opacity;opacity:0';
+  vig.appendChild(vimg); E.appendChild(vig);
   function serrer(r0, r1, a0, a1, ms){
-    return new Promise(function(ok){ var d = null; ms = ms / (S.vitesse || 1);
-      function pas(t){ if(d === null) d = t; var k = Math.min(1, (t - d) / ms), e = 1 - Math.pow(1 - k, 3); trou(r0 + (r1 - r0) * e, a0 + (a1 - a0) * e); if(k < 1) requestAnimationFrame(pas); else ok(); }
-      requestAnimationFrame(pas); });
+    vimg.style.transform = 'scale(' + (r1 / R0) + ')'; vimg.style.opacity = a1;
+    return anime(vimg, [{transform:'scale(' + (r0 / R0) + ')', opacity:a0}, {transform:'scale(' + (r1 / R0) + ')', opacity:a1}], {duration:ms / (S.vitesse || 1), easing:'cubic-bezier(.33,1,.68,1)'});
   }
   serrer(900, 150, 0, 1, 420);
   monde.style.transformOrigin = x + 'px ' + y + 'px';
@@ -6802,7 +6848,7 @@ function critique(x, y, n, exploser, son, o){
   var lents = [];
   try{ if(document.getAnimations) document.getAnimations().forEach(function(a){
     var t = a.effect && a.effect.target;
-    if(t && (t === vig || t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
+    if(t && (t === vimg || t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
     a.playbackRate = .22; lents.push(a);
   }); }catch(e){}
   return plus(420).then(function(){
@@ -6842,24 +6888,22 @@ function critique(x, y, n, exploser, son, o){
   });
 }
 
-/* la fiole, la flèche… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire */
+/* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
+   La courbe est échantillonnée une fois (24 points) puis jouée par la carte graphique (RAPIDITE.md). */
 function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   ms = ms / (S.vitesse || 1);
-  return new Promise(function(ok){
-    var d = null;
-    function pas(t){
-      if(d === null) d = t;
-      var k = Math.min(1, (t - d) / ms);
-      var x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k);
-      var a = oriente ? Math.atan2((y1 - y0) - h * 4 * (1 - 2 * k), x1 - x0) * 180 / Math.PI : tour * k;
-      e.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
-      if(k < 1) requestAnimationFrame(pas); else ok();
-    }
-    requestAnimationFrame(pas);
-  });
+  var kf = [], N = 24;
+  for(var i = 0; i <= N; i++){
+    var k = i / N, x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k);
+    var a = oriente ? Math.atan2((y1 - y0) - h * 4 * (1 - 2 * k), x1 - x0) * 180 / Math.PI : tour * k;
+    kf.push({transform:'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)'});
+  }
+  e.style.willChange = 'transform';
+  e.style.transform = kf[N].transform;
+  return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; texteVignette(); }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();
@@ -7284,8 +7328,7 @@ function ecranSac(){
   var phrase = !E.sacAvant ? 'Avant de descendre, l\'Alchimiste remplit son sac : trois recettes, pas une de plus.'
     : 'L\'Alchimiste vide son sac sur la table. Les mêmes recettes, ou d\'autres ? Trois, pas une de plus.';
   s.innerHTML = '<img class="fond" src="' + URL_IMG.decor + '" alt=""><div class="voile"></div>' +
-    '<h1>Le sac d\'alchimiste</h1>' +
-    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
+    '<h1>Le sac d\'alchimiste</h1>' + curseursVolume() +
     '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
     '<div class="alchi"><img src="' + URL_IMG['heros-alchimiste'] + '" alt=""></div>' +
     '<div class="sac-poche"><b>Dans le sac</b><div class="sac-cases"></div></div>' +
@@ -7298,7 +7341,7 @@ function ecranSac(){
     '<button class="aller" data-act="descendre" disabled>Descendre ⬇</button>';
   jeu.appendChild(s);
   bulleTxt = q('#sac .bulle .txt');
-  majBoutonSon();
+  brancherCurseurs(s);
   Son.musique('explo');        /* elle démarre au premier toucher (le navigateur l'exige) */
   conte(phrase);
   if(E.sacAvant) E.sac = E.sacAvant.slice();
@@ -7381,16 +7424,17 @@ function construireCombat(){
   jeu.innerHTML = '';
   A.h = {}; A.r = [];
   var c = el('div', 'ecran'); c.id = 'combat';
+  /* le haut de l'écran reste noir et discret (Romain, 9 novembre) : plus de bulle du conteur pendant le combat ;
+     le nom de la salle, les deux curseurs de volume et le bouton « Fuite ! » */
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + URL_IMG.decor + '" alt=""><div id="sol-fx"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>Salle des rats</b><span id="tour-nom"></span></div>' +
-    '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
-    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
+    curseursVolume() +
     '<button id="fuite" class="sombre" data-act="fuite">🏃 Fuite !</button></div>' +
     '<div id="bande"></div><div id="ecran-fx"></div><div id="fx-haut"></div>';
   jeu.appendChild(c);
-  monde = q('#monde'); secousse = q('#secousse'); fx = q('#fx'); fxHaut = q('#fx-haut'); bandeEl = q('#bande'); bulleTxt = q('#haut .bulle .txt'); hud = q('#hud');
+  monde = q('#monde'); secousse = q('#secousse'); fx = q('#fx'); fxHaut = q('#fx-haut'); bandeEl = q('#bande'); bulleTxt = null; hud = q('#hud');
   Fx.init({fx:fx, sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:monde, secousse:secousse});
-  majBoutonSon();
+  brancherCurseurs(c);
   var FH = window.HerosAnime || SALLE.HerosImage, FR = window.RatAnime || SALLE.RatImage;
   var p = q('#persos');
   ORDRE.forEach(function(h){
@@ -7497,7 +7541,51 @@ function cuire(){
 }
 SALLE.cuire = cuire;
 function slotR(r){ return q('.r-' + r.i); }
-function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }   /* coupe tout : bruitages et musique */
+
+/* ---------- les deux curseurs de volume (Romain, 9 novembre) : musique 🎵 et bruitages 💥 ----------
+   discrets et sombres : une petite barre jaune et un rond noir à liseré jaune, qu'on fait glisser au doigt (la zone de
+   toucher est bien plus grande que le dessin). À 0 : muet. Ils appellent Son.volume('musique' | 'bruitages', v). */
+var VOLUMES = [{id:'musique', ic:'🎵', nom:'Musique'}, {id:'bruitages', ic:'💥', nom:'Bruitages'}];
+function volumeDe(type){ try{ var v = Son.volume ? Son.volume(type) : 1; return v == null ? 1 : +v; }catch(e){ return 1; } }
+function curseursVolume(){
+  return '<div id="volumes">' + VOLUMES.map(function(V){
+    return '<div class="vol" data-vol="' + V.id + '"><span class="vol-ic" aria-hidden="true">' + V.ic + '</span>' +
+      '<div class="vol-piste" role="slider" tabindex="0" aria-label="' + V.nom + '" aria-valuemin="0" aria-valuemax="100">' +
+      '<span class="vol-rail"><i class="vol-barre"></i><i class="vol-plein"></i><i class="vol-rond"></i></span></div></div>';
+  }).join('') + '</div>';
+}
+function majCurseur(v, val){
+  var p = Math.round(val * 100);
+  q('.vol-plein', v).style.width = p + '%';
+  q('.vol-rond', v).style.left = p + '%';
+  var pi = q('.vol-piste', v); pi.setAttribute('aria-valuenow', p); pi.setAttribute('aria-valuetext', p ? p + ' %' : 'muet');
+  v.classList.toggle('muet', !p);
+}
+function reglerVolume(type, val){
+  val = Math.max(0, Math.min(1, val));
+  if(val < .04) val = 0;                    /* tout au bout à gauche : vraiment muet */
+  try{ if(Son.volume) Son.volume(type, val); }catch(e){}
+  qa('.vol[data-vol="' + type + '"]').forEach(function(v){ majCurseur(v, val); });
+}
+function brancherCurseurs(racine){
+  qa('.vol', racine).forEach(function(v){
+    var type = v.getAttribute('data-vol'), piste = q('.vol-piste', v), rail = q('.vol-rail', v), tient = false;
+    majCurseur(v, volumeDe(type));
+    function lire(ev){ var r = rail.getBoundingClientRect(); reglerVolume(type, (ev.clientX - r.left) / Math.max(1, r.width)); }
+    piste.addEventListener('pointerdown', function(ev){ Son.demarrer(); tient = true; v.classList.add('tient'); try{ piste.setPointerCapture(ev.pointerId); }catch(e){} lire(ev); ev.preventDefault(); });
+    piste.addEventListener('pointermove', function(ev){ if(tient) lire(ev); });
+    function lacher(){ tient = false; v.classList.remove('tient'); }
+    piste.addEventListener('pointerup', lacher); piste.addEventListener('pointercancel', lacher);
+    piste.addEventListener('keydown', function(ev){
+      var d = ev.key === 'ArrowRight' || ev.key === 'ArrowUp' ? .1 : ev.key === 'ArrowLeft' || ev.key === 'ArrowDown' ? -.1 : 0;
+      if(d){ ev.preventDefault(); reglerVolume(type, volumeDe(type) + d); }
+    });
+  });
+}
+/* l'ancien bouton 🎵/🔇 coupait tout : s'il était resté sur 🔇, on remet le son en marche et les deux curseurs à zéro */
+function reprendreAncienMuet(){
+  try{ if(Son.actif && !Son.actif() && Son.basculer && Son.volume){ Son.basculer(); Son.volume('musique', 0); Son.volume('bruitages', 0); } }catch(e){}
+}
 
 function majBarres(){
   ORDRE.forEach(function(h){
@@ -7652,12 +7740,14 @@ function choisirHeros(h){
 }
 function choisirGeste(g){
   var h = E.sel;
+  /* le petit son au toucher d'une icône d'arme ou de potion (Romain, 9 novembre) : « icone » de l'Atelier des sons
+     (silencieux tant qu'il ne l'a pas choisi : on garde alors l'ancien petit clic) */
+  bruit('icone', {}, ['clic']);
   if(g.indexOf('p:') === 0 && !recetteOk(h, g.slice(2))){
     var id = g.slice(2);
     conte(h === 'pisteur' ? 'Une flèche trempée dans ' + (id === 'baume' ? 'le Baume' : id === 'coeur' ? 'le Cœur vaillant' : 'le Fumigène') + ' ? Ça ne tiendrait pas sur la pointe.' : 'Personne n\'est au sol. Le Cœur vaillant attendra son heure.');
     return;
   }
-  son('clic');
   E.geste = g; E.mode = 'cible';
   var t = typeCible(g), qn = {rat:'Sur quel rat ?', devant:'Seul le rat de devant est à portée. On y va ?', heros:'Pour qui ?', sol:'Qui relever ?', salle:'Le nuage remplira toute la salle. On le lance sur la bande ?'};
   var txt = qn[t];
@@ -8171,7 +8261,6 @@ function toucher(ev){
   var a = b.getAttribute('data-act'), id = b.getAttribute('data-id');
   if(a === 'lire'){ ev.stopPropagation(); lire(b.getAttribute('data-t')); return; }
   if(a === 'lire-bulle'){ lire(E.texte); return; }
-  if(a === 'bruitages'){ Son.demarrer(); Son.basculer(); majBoutonSon(); return; }
   if(a === 'recette-sac') return toucherRecette(id, b);
   if(a === 'descendre'){ if(E.sac.length === 3){ taire(); debutCombat(); } return; }
   if(a === 'livre'){ son('page'); return grandLivre(); }
@@ -8189,6 +8278,7 @@ function toucher(ev){
 
 function demarrer(){
   jeu = q('#jeu');
+  reprendreAncienMuet();
   chargerImages();
   ajuster();
   window.addEventListener('resize', ajuster);

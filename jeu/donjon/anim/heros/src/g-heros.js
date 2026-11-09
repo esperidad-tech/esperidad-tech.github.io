@@ -21,7 +21,8 @@ function css(){
     '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
     '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
     '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
-    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}' +
+    '.ha.ha-calme.ha-corde-vive .cu-ilot.ha-trait{visibility:visible}.ha.ha-calme.ha-corde-vive .ha-corde-fixe{display:none}' +
+    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}.ha.ha-bout .ha-bulle-boucle{animation-duration:.5s}' +
     '@keyframes haBulle{0%{transform:translate(0,0) scale(1);opacity:0}20%{transform:translate(1px,-6px) scale(1);opacity:1}80%{transform:translate(-2px,-18px) scale(1.1);opacity:.9}100%{transform:translate(0,-28px) scale(1.4);opacity:0}}' +
     '.ha .ha-etinc-boucle{animation:haEtinc .9s ease-out infinite}' +
     '@keyframes haEtinc{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(2px,-22px) scale(1);opacity:0}}' +
@@ -120,7 +121,8 @@ function preparerUn(role, lk, o){
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
-  M.promesse = Cu.cuire(svg, {ilot:ILOTS, anime:'.haJ', res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
+  /* (pas de will-change sur les pièces : seules celles qui bougent deviennent des calques) */
+  M.promesse = Cu.cuire(svg, {ilot:ILOTS, res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
     .then(function(m){ M.modele = m; h.remove(); return m; }, function(e){ h.remove(); delete MODELES[cle]; if(window.console) console.warn('HerosAnime.preparer', e); return null; });
   return M.promesse;
 }
@@ -251,7 +253,8 @@ H._gestes = function(){
   if(!this.R0.geste || this.ko) return;
   this._tGe = setTimeout(function(){
     if(!me._idle || me._occupe) return;
-    var tok = ++me._gTok; me._geste = true; vivre(me);
+    var tok = ++me._gTok; me._geste = true;
+    if(!me.cuit) vivre(me);
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
@@ -260,15 +263,22 @@ H._gestes = function(){
    réveille dès qu'il agit (action, petit geste, corde tirée, potion versée) et se rendort 1,2 s après (le tissu s'est posé). */
 H._actif = function(t){
   if(!this.cuit) return true;
-  var c = this.corde;
-  if(this._occupe || this._geste || this._verse || this._bouillon || (c && (c.mode !== 'libre' || c.fl || c.vib > .25))){ this._calmeDepuis = 0; if(this._dort) this._reveil(); return true; }
+  var c = this.corde, corde = c && (c.mode !== 'libre' || c.fl || c.vib > .25);
+  /* une vraie action : tout est recalculé (tissus compris) */
+  if(this._occupe || this._verse){ this._calmeDepuis = 0; this._corde(false); if(this._dort) this._reveil(); return true; }
+  /* les petits gestes d'attente ne bougent que les bras : ils se jouent sans réveiller les tissus ; seule la corde tirée
+     est recalculée (et rien d'autre) */
+  if(this._dort){ this._corde(corde); return corde ? 'corde' : false; }
+  if(corde){ this._calmeDepuis = 0; return true; }
   if(!this._calmeDepuis) this._calmeDepuis = t;
-  if(t - this._calmeDepuis < 1200) return true;
-  if(!this._dort) this._endormir();
+  if(t - this._calmeDepuis < 1200) return true;          /* (le tissu finit de se poser) */
+  this._endormir();
   return false;
 };
 H._endormir = function(){ this._dort = true; this.racine.classList.add('ha-calme'); };
-H._reveil = function(){ this._dort = false; this.racine.classList.remove('ha-calme'); };
+H._reveil = function(){ this._dort = false; this._corde(false); this.racine.classList.remove('ha-calme'); };
+/* endormi, la corde de l'arc peut quand même être tirée (petit geste) : on montre alors la corde calculée */
+H._corde = function(on){ if(!!this._cordeVive !== !!on){ this._cordeVive = !!on; this.racine.classList.toggle('ha-corde-vive', !!on); } };
 /* cuit : la silhouette lumineuse du héros choisi, ajoutée seulement quand il l'est (ses pièces reçoivent les mêmes animations) */
 H._lueurs = function(on){
   var me = this, M = MODELES[cleModele(this.role, this.lk)];
