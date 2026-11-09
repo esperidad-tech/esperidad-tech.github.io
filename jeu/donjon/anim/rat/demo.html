@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rat animé</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#06040a;color:#e8dcc0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #cadre{width:960px;margin:0 auto}
+  #scene{position:relative;width:960px;height:540px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 60% 70% at 62% 30%, rgba(90,76,130,.55), rgba(0,0,0,0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 3px, rgba(0,0,0,0) 3px 34px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.4) 0 3px, rgba(0,0,0,0) 3px 64px),
+      linear-gradient(#2a2238, #120e1a 70%);}
+  #scene::after{content:"";position:absolute;left:0;right:0;top:430px;bottom:0;background:linear-gradient(#1c1628,#0c0912);border-top:3px solid #2c2440}
+  #lumiere{position:absolute;left:520px;top:0;width:260px;height:440px;background:linear-gradient(rgba(207,232,255,.16),rgba(207,232,255,0));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none}
+  #heros{position:absolute;left:70px;top:330px;width:110px;height:100px;border-radius:50% 50% 10px 10px;background:linear-gradient(#3a5a7a,#1a2a3a);opacity:.5}
+  #heros::after{content:"les héros";position:absolute;left:0;right:0;top:40px;text-align:center;font-size:13px;color:#bcd}
+  #rat{position:absolute;z-index:2}
+  #etiquette{position:absolute;left:0;right:0;top:22px;text-align:center;font-size:30px;font-weight:700;letter-spacing:.04em;color:#ffe3a3;text-shadow:0 3px 0 #24182e,0 0 18px rgba(255,190,90,.35);z-index:10;pointer-events:none}
+  #etiquette small{display:block;font-size:16px;font-weight:500;color:#bfa77a;letter-spacing:.08em;margin-top:4px}
+  #boutons{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0}
+  #boutons button{background:#2a2238;color:#f3e7cb;border:1px solid #4e3f66;border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+  #boutons button:hover{background:#3a3050}
+  #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
+  .film #boutons{display:none}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <div id="scene"><div id="lumiere"></div><div id="heros"></div><div id="rat"></div><div id="etiquette"></div></div>
+  <div id="boutons"></div>
+</div>
+<script src="rat-anime.js"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+var TAILLE = +(Q.get('taille') || 180);
+if(Q.get('film')) document.body.classList.add('film');
+var scene = document.getElementById('scene'), boite = document.getElementById('rat'), r;
+/* le conteneur : 180 × 112 dans une scène de 960 × 540 ; le sol du rat tombe sur le sol de la scène */
+function placer(){
+  var w = TAILLE, h = Math.round(TAILLE * 112 / 180);
+  boite.style.width = w + 'px'; boite.style.height = h + 'px';
+  boite.style.left = (960 - w - 150 * TAILLE / 180 + 40) + 'px';
+  boite.style.top = (432 - h * 0.851) + 'px';
+}
+function nouveau(){ boite.innerHTML = ''; placer(); r = RatAnime.creer(boite); window.r = r; return r; }
+nouveau();
+function etiquette(t, s){ document.getElementById('etiquette').innerHTML = t ? t + (s ? '<small>' + s + '</small>' : '') : ''; }
+var ETAPES = {
+  'entrer': function(){ return r.entrer(520); },
+  'attendre': function(){ return r.attendre(); },
+  'mordre': function(){ return r.mordre({onImpact: function(){ scene.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:220}); }}); },
+  'touche': function(){ return r.touche(); },
+  'yeux jaunes': function(){ r.yeux('jaune'); },
+  'yeux rouges': function(){ r.yeux('rouge'); },
+  'enrager': function(){ r.enrager(); },
+  'ébloui on': function(){ return r.ebloui(true); },
+  'ébloui off': function(){ return r.ebloui(false); },
+  'retourner on': function(){ return r.retourner(true); },
+  'retourner off': function(){ return r.retourner(false); },
+  'brûler on': function(){ r.bruler(true); },
+  'brûler off': function(){ r.bruler(false); },
+  'tousser': function(){ return r.tousser(); },
+  'coller on': function(){ r.coller(true); },
+  'coller off': function(){ r.coller(false); },
+  'cible on': function(){ r.cible(true); },
+  'cible off': function(){ r.cible(false); },
+  'fuir': function(){ return r.fuir(); },
+  'exploser': function(){ return r.exploser(scene); },
+  'arrêter': function(){ r.arreter(); },
+  'nouveau rat': function(){ nouveau(); }
+};
+window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
+var zone = document.getElementById('boutons');
+Object.keys(ETAPES).forEach(function(nom){
+  var b = document.createElement('button');
+  b.textContent = nom;
+  if(nom === 'entrer' || nom === 'exploser') b.className = 'go';
+  b.onclick = function(){ etape(nom); };
+  zone.appendChild(b);
+});
+window.etiquette = etiquette;
+</script>
+</body>
+</html>
