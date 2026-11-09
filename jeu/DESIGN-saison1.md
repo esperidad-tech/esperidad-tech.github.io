@@ -2188,7 +2188,16 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   
   Le rendu est le même à l'œil. Seule différence : au repos, les capes ondulent par une animation simple.
 - **En ligne le 9 novembre vers 15 h 10** (même adresse ; tests 74 sur 74). **Le bandeau retiré** : les refus s'affichent maintenant en deux mots qui volent au-dessus de celui qu'on a touché (« Déjà joué », « Au sol ! », « Trop loin ! », « Encore debout », « Impossible ! »).
+- **Bug signalé par Romain (15 h 13)** : sur iPhone, c'est plus fluide, mais **un critique du Pisteur fait quitter le jeu**. Safari ferme l'onglet, très probablement par manque de mémoire (grandes images de l'effet de critique, canvas de cuisson, sons pré-calculés). Correction en cours.
+- **Les codes du prototype sont fixés** dans `jeu/donjon/donjon-codes.js`, un seul tableau partagé par les trois pages :
+  - 4 pages de sauvegarde ;
+  - 2 plantes et 2 recettes ;
+  - la page déchirée et la page blanche ;
+  - « Odette derrière la porte » ;
+  - « Léo attrapé ».
 - En cours :
+  - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html`) ;
+  - les nouvelles armes des héros ;
   - les salles sans combat (`jeu/donjon/scenes/`) : le puits, les culs-de-sac à trouvailles, la réserve, la grotte de givre, la bibliothèque, le tas d'os et le crâne secret, les dalles piégées, les trois portes, le sarcophage, le feu de camp, la porte aux quatre signes avec Moustache, et Léo avec sa lanterne.
 - Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
 
