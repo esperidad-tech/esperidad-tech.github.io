@@ -160,56 +160,11 @@ function brumeNoire(x, y, nb){
   return Promise.all(fins);
 }
 
-/* La vignette du critique : un trou sombre qui se resserre sur le rat (0,45 r transparent, 0,6 à r, 0,93 à 1,9 r et au-delà).
-   MÉMOIRE (iPhone, 9 novembre : « quand le Pisteur fait un critique, ça quitte le jeu ») : ce fut une image de 2 400 px
-   agrandie jusqu'à ×6 — en pixels réels (densité 3), un calque de 5 200 à 31 000 px de côté : Safari fermait l'onglet.
-   Maintenant : UNE toile à la taille de la scène (960 × 540), à 1,5 × de densité au plus (≈ 4,7 Mo), redessinée seulement
-   pendant que le trou bouge (0,4 s en se fermant, 0,65 s en s'ouvrant), puis vidée (largeur 0) et retirée. */
-function courbe(x1, y1, x2, y2){            /* cubic-bezier(x1, y1, x2, y2), comme en CSS */
-  function b(a, c, t){ return 3 * a * t * (1 - t) * (1 - t) + 3 * c * t * t * (1 - t) + t * t * t; }
-  return function(x){
-    if(x <= 0) return 0; if(x >= 1) return 1;
-    var lo = 0, hi = 1, t = x;
-    for(var i = 0; i < 24; i++){ t = (lo + hi) / 2; if(b(x1, x2, t) < x) lo = t; else hi = t; }
-    return b(y1, y2, t);
-  };
-}
-function vignette(parent, x, y){
-  var W = 960, H = 540, d = Math.min(1.5, window.devicePixelRatio || 1);
-  var c = el('canvas', 'crit-vignette'); c.width = Math.round(W * d); c.height = Math.round(H * d);
-  parent.appendChild(c);
-  var g = c.getContext('2d'), fin = false, ease = courbe(.33, 1, .68, 1);
-  function trou(r, a){
-    g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
-    if(a <= .001) return;
-    var gr = g.createRadialGradient(x, y, 0, x, y, r * 1.9);
-    gr.addColorStop(0, 'rgba(5,2,10,0)'); gr.addColorStop(.45 / 1.9, 'rgba(5,2,10,0)');
-    gr.addColorStop(1 / 1.9, 'rgba(5,2,10,' + (.6 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(5,2,10,' + (.93 * a).toFixed(3) + ')');
-    g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  }
-  trou(900, 0);
-  return {
-    serrer:function(r0, r1, a0, a1, ms){
-      ms = Math.max(1, ms / (S.vitesse || 1));
-      return new Promise(function(ok){
-        var t0 = performance.now();
-        (function pas(t){
-          if(fin) return ok();
-          var k = Math.min(1, (t - t0) / ms), e = ease(k);
-          trou(r0 + (r1 - r0) * e, a0 + (a1 - a0) * e);
-          if(k < 1) requestAnimationFrame(pas); else ok();
-        })(t0);
-      });
-    },
-    retirer:function(){ fin = true; c.width = c.height = 0; c.remove(); }
-  };
-}
-/* Les rayons dorés et l'étoile du critique, « cuits » en images une fois (pendant l'écran du sac) : en CSS, le dégradé
-   conique masqué (mask-image) et l'étoile découpée (clip-path) obligent la carte graphique à redessiner une surface
-   cachée + un masque à CHAQUE image pendant qu'ils tournent et grossissent. En image, elle les déplace seulement.
-   Même dessin : rayons tous les 18°, montée de 6° à 8,5°, descente jusqu'à 11°, couleur #ffeca0 ; fondu radial
-   (opaque jusqu'à 8 %, 0,85 à 35 %, transparent au bord). Sans canvas : la version CSS (la même, en plus lourd). */
-var RAYONS = null, ETOILE = null, HALO = null, CUITES = [];
+/* Le halo et l'étoile de « CRITIQUE ! », « cuits » en petites images une fois (pendant l'écran du sac) : un dégradé
+   repeint dans un calque qui arrive agrandi, ou une étoile découpée (clip-path), coûteraient à chaque image ; en image,
+   la carte graphique les déplace seulement. (Les rayons plein écran, la vignette et l'image de choc ont été retirés le
+   9 novembre à 16 h 37 : Romain veut un critique qui reste AUTOUR DU RAT.) */
+var ETOILE = null, HALO = null, CUITES = [];
 function garder(src){ var i = new Image(); i.src = src; if(i.decode) i.decode().catch(function(){}); CUITES.push(i); return src; }
 /* une toile -> une image ; la toile est vidée tout de suite (largeur 0) : sur iPhone, Safari compte la mémoire de TOUTES
    les toiles encore vivantes (limite totale de quelques centaines de Mo), même celles qui attendent d'être jetées */
@@ -221,10 +176,10 @@ function enImage(cv, ok){
   }catch(x){ vider(); }
 }
 function cuireCritique(){
-  if(RAYONS !== null) return;
-  RAYONS = ''; ETOILE = ''; HALO = '';
+  if(ETOILE !== null) return;
+  ETOILE = ''; HALO = '';
   try{
-    /* le halo doré derrière « CRITIQUE ! » (640 × 240, dégradé radial doux) : une petite image, sur son propre calque */
+    /* le halo doré derrière « CRITIQUE ! » (dégradé radial doux) : une petite image, sur son propre calque */
     var hc = document.createElement('canvas'); hc.width = 320; hc.height = 120;
     var hg = hc.getContext('2d'); hg.setTransform(160, 0, 0, 60, 160, 60);
     var hr = hg.createRadialGradient(0, 0, 0, 0, 0, 1); hr.addColorStop(0, 'rgba(255,200,60,.55)'); hr.addColorStop(1, 'rgba(255,200,60,0)');
@@ -232,35 +187,14 @@ function cuireCritique(){
     enImage(hc, function(u){ HALO = u; });
   }catch(x){ HALO = ''; }
   try{
-    var T = 1024, R = T / 2, c = document.createElement('canvas'); c.width = c.height = T;
-    var g = c.getContext('2d'), pas = .25;
-    g.translate(R, R);
-    if(g.createConicGradient){
-      var cg = g.createConicGradient(-Math.PI / 2, 0, 0), J = 'rgba(255,236,150,';   /* 0° = en haut, comme conic-gradient */
-      cg.addColorStop(0, J + '0)');
-      for(var k = 0; k < 20; k++){ var b = k * 18; cg.addColorStop((b + 6) / 360, J + '0)'); cg.addColorStop((b + 8.5) / 360, J + '1)'); cg.addColorStop((b + 11) / 360, J + '0)'); }
-      cg.addColorStop(1, J + '0)');
-      g.fillStyle = cg; g.fillRect(-R, -R, T, T);
-    } else for(var a = 0; a < 360; a += pas){
-      var m = a % 18, al = m < 6 ? 0 : m < 8.5 ? (m - 6) / 2.5 : m < 11 ? 1 - (m - 8.5) / 2.5 : 0;
-      if(al <= 0) continue;
-      var a0 = (a - 90) * Math.PI / 180, a1 = (a + pas - 90) * Math.PI / 180;
-      g.fillStyle = 'rgba(255,236,150,' + al.toFixed(3) + ')';
-      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fill();
-    }
-    g.globalCompositeOperation = 'destination-in';
-    var gr = g.createRadialGradient(0, 0, 0, 0, 0, R);
-    gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.08, 'rgba(0,0,0,1)'); gr.addColorStop(.35, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr; g.fillRect(-R, -R, T, T);
     var e = document.createElement('canvas'), N = 128, h = N / 2; e.width = e.height = N;
     var ge = e.getContext('2d'), ge2 = ge.createRadialGradient(h, h, 0, h, h, h);
     ge2.addColorStop(0, 'rgba(255,255,255,1)'); ge2.addColorStop(.7, 'rgba(255,255,255,0)');
     var P = [[50, 0], [58, 42], [100, 50], [58, 58], [50, 100], [42, 58], [0, 50], [42, 42]];
     ge.beginPath(); P.forEach(function(p, i){ ge[i ? 'lineTo' : 'moveTo'](p[0] * N / 100, p[1] * N / 100); }); ge.closePath();
     ge.fillStyle = ge2; ge.fill();
-    enImage(c, function(u){ RAYONS = u; });
     enImage(e, function(u){ ETOILE = u; });
-  }catch(x){ RAYONS = ''; ETOILE = ''; }
+  }catch(x){ ETOILE = ''; }
 }
 /* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */

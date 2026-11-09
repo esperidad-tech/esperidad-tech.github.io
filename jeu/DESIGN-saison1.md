@@ -2192,7 +2192,10 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - La cause : la vignette du critique devenait sur iPhone un calque de plus de 31 000 px de côté (environ 3,8 Go demandés au pic du critique ; 220 Mo après la correction).
   - Les toiles de cuisson sont maintenant vidées après usage.
   - La règle R9 sur la mémoire est ajoutée à `RAPIDITE.md` : aucun calque de plus de 4 096 px réels, effets plein écran à 1,5× au plus.
-  - Les sons pré-calculés (environ 80 Mo en combat) sont en cours d'allègement.
+  - **Les sons pré-calculés sont allégés et en ligne (16 h 50)** : de 44 à environ 10 Mo.
+    - Les musiques passent en mono 16 kHz, avec des boucles plus courtes et une seule version préparée à la fois (le tirage au hasard reste d'une fois sur l'autre).
+    - Les gros bruitages sont préparés pendant le combat, puis libérés.
+    - Romain doit réécouter les musiques (elles ne sont plus en stéréo).
   - À confirmer sur l'iPhone de Romain.
 - **Romain (16 h 37) : l'animation du critique est à refaire.** Elle est bizarre, prend tout l'écran (un énorme écran bicolore) et va trop vite. Elle doit **rester localisée** :
   - un court tremblement d'écran ;

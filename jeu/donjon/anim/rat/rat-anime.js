@@ -3,7 +3,8 @@
 
      var r = RatAnime.creer(conteneur);   // un rat en SVG qui remplit le conteneur, il regarde à gauche
 
-   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(), exploser(scene)
+   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(),
+     exploser(scene, {impact, eclat}) : le critique, autour du rat (fumée noire à « impact » ms, membres à « eclat » ms)
    États (se cumulent) : attendre(), enrager(), ebloui(on), retourner(on), bruler(on), coller(on), cible(on), yeux('jaune'|'rouge')
    arreter() : arrête toutes les boucles.
 
@@ -1298,84 +1299,114 @@ R.bruler = function(on){
 };
 
 /* =====================================================================
-   10. La mort par critique : il explose dans un nuage de brume noire
+   10. La mort par critique (Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ… de la FUMÉE NOIRE… les MEMBRES
+       éclatent sur le côté, la fumée cache, ça passe pour des enfants ; pas tout l'écran ; ça prend son temps »).
+       Tout se passe autour du rat :
+         0 ms      la flèche frappe : le temps se suspend sur lui (il se fige, gonfle, tremble), une petite lueur ;
+         o.impact  une bouffée de fumée noire dense l'enveloppe (il disparaît dedans) ;
+         o.eclat   ses membres — des silhouettes sombres (tête, queue, pattes, touffes de poil ; rien de gore) —
+                   jaillissent sur les côtés en tournoyant et retombent dans la fumée, qui les cache ;
+         ensuite   la fumée se dissipe lentement et laisse le tas de cendres et les os (≈ 2,5 s en tout).
+       Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
+       une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
-R.exploser = function(scene){
-  var self = this, j = this._debutAction();
+function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || '#2a2034') + '" stroke="#120c18" stroke-width="2.2" stroke-linejoin="round"/>'; }
+var MEMBRES = {
+  tete: SIL('M-22 2 C -24 -10 -12 -20 2 -19 C 14 -18 26 -10 32 0 C 34 4 30 7 26 7 C 12 9 -4 12 -14 10 C -20 9 -22 6 -22 2 Z') +
+    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="#4a3c5a"/>' +
+    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#d8cce6" stroke-width="1.8" stroke-linecap="round"/><circle cx="31" cy="1" r="2.4" fill="#4a3c5a"/>' +
+    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#4a3c5a" stroke-width="1"/>',
+  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#120c18', 8) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#2a2034', 5) +
+    L('M-16 -5 C -6 -9 6 -8 14 -1', '#4a3c5a', 1.4),
+  patteAv: SIL('M-4 -18 C 4 -20 8 -12 6 -4 L 4 8 C 10 9 15 12 13 16 C 9 18 2 17 -2 14 L -6 -2 C -9 -10 -10 -16 -4 -18 Z') +
+    L('M-3 -14 C 1 -15 4 -12 4 -6', '#4a3c5a', 1.4),
+  patteAr: SIL('M-12 -16 C 0 -22 12 -12 10 0 C 9 6 6 9 4 11 L 14 16 C 18 18 17 22 12 22 L -2 21 C -6 20 -6 16 -3 14 L -6 4 C -14 -2 -16 -12 -12 -16 Z') +
+    L('M-8 -12 C -2 -15 4 -12 6 -6', '#4a3c5a', 1.6),
+  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z'),
+  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', '#241a2e')
+};
+/* qui part de quel côté (le rat regarde à gauche : la tête part à gauche, la queue à droite) */
+var ECLATS = [['tete', -1], ['queue', 1], ['patteAv', -1], ['patteAr', 1], ['patteAv', 1], ['patteAr', -1], ['touffe', -1], ['touffe2', 1]];
+R.exploser = function(scene, o){
+  o = o || {};
+  var self = this, T1 = o.impact == null ? 420 : o.impact, T2 = o.eclat == null ? 1020 : o.eclat;
+  this._debutAction();
   scene = scene || this.c.parentNode || this.c;
   this.etat.feu && this.bruler(false);
   this._eteindreEtoiles();
   clearTimeout(this.fx.vapeur);
-  /* il enfle, tremble… */
+  /* la géométrie, lue une seule fois, avant qu'il bouge */
+  var cs = getComputedStyle(scene);
+  if(cs.position === 'static') scene.style.position = 'relative';
+  var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
+  var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
+  var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
+  var sol = (rr.top + rr.height * .9 - sr.top) * ech, u = taille / 180;
+  /* 1) le temps suspendu : il se fige (plus de boucles), gonfle un peu et tremble — un arrêt sur image, sur lui seul */
   var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .022, sy: 1 + i * .03, y: -i}, secousse: {x: i % 2 ? 3 : -3, a: i % 2 ? 2 : -2}, crete: {sy: 1 + i * .08}, oeil: {s: 1 + i * .04}, machoire: {a: -i * 3}, paupiere: {y: 0}}, e: 'linear'});
-  k.push({t: 1, p: {saut: {sx: 1.25, sy: 1.3, y: -10}}, e: 'ease-in'});
-  this.el.animate([{filter: 'brightness(1)'}, {filter: 'brightness(1.6) saturate(1.4)'}], {duration: 450, fill: 'forwards'});
-  return this._seq(k, 460).fini.then(function(){
-    /* BOUM */
-    var cs = getComputedStyle(scene);
-    if(cs.position === 'static') scene.style.position = 'relative';
-    var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
-    var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
-    var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
-    var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
-    if(self.cuit){
-      /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
-      self.defs.insertAdjacentHTML('beforeend', degrade);
-      ov = document.createElement('div'); ov.className = 'ra-scene-fx';
-      scene.appendChild(ov);
-      el = function(html){ return global.Cuire.ilot(ov, html); };
+  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .014, sy: 1 + i * .018, y: -i * .7}, secousse: {x: i % 2 ? 2.2 : -2.2, a: i % 2 ? 1.6 : -1.6}, crete: {sy: 1 + i * .07}, oeil: {s: 1 + i * .035}, machoire: {a: -i * 2.6}, paupiere: {y: 0}}, e: 'linear'});
+  k.push({t: 1, p: {saut: {sx: 1.13, sy: 1.17, y: -7}}, e: 'ease-in'});
+  this._seq(k, T1);
+  var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
+  if(self.cuit){
+    /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
+    self.defs.insertAdjacentHTML('beforeend', degrade);
+    ov = document.createElement('div'); ov.className = 'ra-scene-fx';
+    scene.appendChild(ov);
+    el = function(html){ return global.Cuire.ilot(ov, html); };
+  } else {
+    ov = document.createElementNS(NSs, 'svg');
+    ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    ov.innerHTML = '<defs><filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
+    scene.appendChild(ov);
+    el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+  }
+  function tf(x, y, s, a){ return 'translate(' + f1(x) + 'px,' + f1(y) + 'px)' + (a ? ' rotate(' + f1(a) + 'deg)' : '') + ' scale(' + (+s).toFixed(3) + ')'; }
+  /* la flèche frappe : une petite lueur et un petit cercle, sur lui seulement */
+  el('<circle cx="0" cy="0" r="' + f1(34 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .3), opacity: 1}, {transform: tf(cx, cy, 1.25), opacity: 0}], {duration: 340, easing: 'ease-out', fill: 'forwards'});
+  el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
+  /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
+  var brumes = [], NB = 12;
+  for(var n = 0; n < NB; n++){
+    var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.05, 1)), px = cx + Math.cos(a) * d * 62 * u, py = cy - 6 * u + Math.sin(a) * d * 30 * u;
+    var tt = hasard(84, 118) * u, g;
+    if(self.cuit && BRUME.length){
+      /* une volute déjà cuite (son flou est dans l'image) */
+      g = document.createElement('div'); g.className = 'cu-ilot';
+      var im = document.createElement('img');
+      im.src = BRUME[n % BRUME.length]; im.alt = '';
+      im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
+      g.appendChild(im); ov.appendChild(g);
     } else {
-      ov = document.createElementNS(NSs, 'svg');
-      ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-      ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
-        '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
-      scene.appendChild(ov);
-      el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+      var r = tt * .38, c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
+      g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
-    self.el.animate([{filter: 'brightness(1.6)', opacity: 1}, {filter: 'brightness(4)', opacity: 0}], {duration: 120, fill: 'forwards'});
-    var u = taille / 180;
-    /* l'éclair et l'onde de choc */
-    el('<circle cx="0" cy="0" r="' + f1(60 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1.6)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
-    el('<circle cx="0" cy="0" r="' + f1(50 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: .9}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(2.6)', opacity: 0}], {duration: 520, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
-    /* le gros nuage de brume noire, qui reste puis se dissipe lentement */
-    var brumes = [];
-    for(var n = 0; n < 30; n++){
-      var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(20, 42) * u, x = Math.cos(a) * d * 80 * u, y = Math.sin(a) * d * 40 * u - 10 * u;
-      var c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
-      var g;
-      if(self.cuit && BRUME.length){
-        /* une volute déjà cuite (son flou est dans l'image) */
-        g = document.createElement('div'); g.className = 'cu-ilot';
-        var im = document.createElement('img'), tt = r / 40 * 104;
-        im.src = BRUME[n % BRUME.length]; im.alt = '';
-        im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
-        g.appendChild(im); ov.appendChild(g);
-      } else g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
-      var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(16, 46) * u;
-      brumes.push(g.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
-        {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-24, 24) * u) + 'px,' + f1(cy + dy * 1.2 - 34 * u) + 'px) scale(2)', opacity: 0}],
-        {duration: hasard(4400, 5400), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+    var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
+    brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0}, {offset: .08, transform: tf(px, py, 1), opacity: .97},
+      {offset: .5, transform: tf(px + dx, py - mt, 1.18), opacity: .95}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.75), opacity: 0}],
+      {duration: hasard(1900, 2200), delay: T1 + n * 8, easing: 'cubic-bezier(.2,.6,.4,1)', fill: 'both'}));
+  }
+  /* il disparaît dans la fumée */
+  setTimeout(function(){
+    self._couperBoucles();
+    self.mort = true;
+    self.J.saut.style.visibility = 'hidden';
+    self.el.getAnimations().forEach(function(x){ x.cancel(); });
+  }, T1 + 170);
+  /* 3) l'explosion : les membres jaillissent sur les côtés en tournoyant (une parabole, échantillonnée une fois)
+        et retombent dans la fumée, qui les cache */
+  ECLATS.forEach(function(e, i){
+    var cote = e[1], m = el('<g transform="scale(' + f1(u) + ')">' + MEMBRES[e[0]] + '</g>');
+    var x0 = cx + cote * hasard(4, 18) * u, y0 = cy - hasard(0, 14) * u, x1 = cx + cote * hasard(62, 112) * u, y1 = sol - hasard(2, 10) * u;
+    var h = hasard(70, 115) * u, rot = cote * hasard(320, 720), N = 12, kf = [];
+    for(var q = 0; q <= N; q++){
+      var t = q / N, s = t < .15 ? .6 + .4 * t / .15 : 1;
+      kf.push({offset: t, transform: tf(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - h * 4 * t * (1 - t), s, rot * t), opacity: t < .06 ? t / .06 : t > .72 ? Math.max(0, 1 - (t - .72) / .28) : 1});
     }
-    /* étincelles */
-    for(var s = 0; s < 18; s++){
-      var as = Math.random() * Math.PI * 2, vs = hasard(60, 130) * u, ls = hasard(6, 12) * u;
-      var e = el(L('M0 0 L ' + f1(-Math.cos(as) * ls) + ' ' + f1(-Math.sin(as) * ls), choisir(['#fff4b0', '#ffd060', '#ffffff']), 2.2 * u));
-      e.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px)', opacity: 1}, {transform: 'translate(' + f1(cx + Math.cos(as) * vs) + 'px,' + f1(cy + Math.sin(as) * vs + 30 * u) + 'px)', opacity: 0}], {duration: hasard(450, 800), easing: 'cubic-bezier(.1,.7,.4,1)', fill: 'forwards'});
-    }
-    /* touffes de poils */
-    for(var t = 0; t < 12; t++){
-      var at = -Math.PI * hasard(.05, .95), vt = hasard(50, 110) * u, rt = hasard(-400, 400);
-      var tf2 = el('<path d="M0 0 Q ' + f1(4 * u) + ' ' + f1(-6 * u) + ' ' + f1(10 * u) + ' ' + f1(-8 * u) + ' Q ' + f1(5 * u) + ' ' + f1(-2 * u) + ' ' + f1(9 * u) + ' ' + f1(2 * u) + ' Q ' + f1(3 * u) + ' ' + f1(1 * u) + ' 0 0 Z" fill="' + choisir(['#74626a', '#5a4a52', '#a8949c']) + '" stroke="#24182e" stroke-width="' + f1(1 * u) + '"/>');
-      tf2.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(at) * vt) + 'px,' + f1(cy + Math.sin(at) * vt) + 'px) rotate(' + f1(rt * .5) + 'deg)', opacity: 1},
-        {transform: 'translate(' + f1(cx + Math.cos(at) * vt * 1.4) + 'px,' + f1(cy + Math.sin(at) * vt * .3 + 50 * u) + 'px) rotate(' + f1(rt) + 'deg)', opacity: 0}], {duration: hasard(1300, 1900), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'});
-    }
-    /* la queue qui s'envole en tournant */
-    var qd = 'M0 0 C ' + f1(14 * u) + ' ' + f1(-6 * u) + ' ' + f1(26 * u) + ' ' + f1(-2 * u) + ' ' + f1(34 * u) + ' ' + f1(8 * u) + ' C ' + f1(38 * u) + ' ' + f1(14 * u) + ' ' + f1(36 * u) + ' ' + f1(22 * u) + ' ' + f1(30 * u) + ' ' + f1(26 * u);
-    var qe = el(L(qd, '#24182e', 6 * u) + L(qd, '#c8848e', 3.6 * u) + L(qd, '#8a4a5c', 3.6 * u, ' stroke-dasharray="' + f1(1 * u) + ' ' + f1(3 * u) + '"'));
-    qe.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)'}, {offset: .5, transform: 'translate(' + f1(cx + 70 * u) + 'px,' + f1(cy - 110 * u) + 'px) rotate(540deg)'}, {transform: 'translate(' + f1(cx + 120 * u) + 'px,' + f1(cy + 30 * u) + 'px) rotate(1080deg)', opacity: 0}], {duration: 1700, easing: 'linear', fill: 'forwards'});
-    /* le petit tas de cendre et les os, à sa place */
-    var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
+    m.animate(kf, {duration: hasard(820, 1000), delay: T2 + i * 25, easing: 'linear', fill: 'both'});
+  });
+  /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
+  var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
       P('M160 393 C 170 368 208 346 244 346 C 280 346 312 368 322 393 Z', self._def(function(D){ return D.g('#8a8290'); })) +
       P('M188 393 C 196 378 222 366 246 368 C 268 370 288 380 294 393 Z', self._def(function(D){ return D.g('#a8a0ae'); }), ' stroke-width="1.6"') +
       [[196, 380], [222, 362], [256, 360], [284, 378], [238, 384], [210, 388], [300, 386], [176, 388]].map(function(q){ return C(q[0], q[1], 2.6, '#3a3440', ' opacity=".7"'); }).join('') +
@@ -1384,15 +1415,11 @@ R.exploser = function(scene){
       '<g transform="translate(262 372) rotate(-24)">' + P('M-26 -3 L 24 -3 C 30 -10 38 -6 34 0 C 38 6 30 10 24 3 L -26 3 C -32 10 -40 6 -36 0 C -40 -6 -32 -10 -26 -3 Z', '#efe6d0', ' stroke-width="2.4"') + L('M-22 -1 L 22 -1', '#ffffff', 1.4, ' opacity=".7"') + '</g>' +
       '<g transform="translate(216 380) rotate(18)">' + P('M-16 -2.5 L 14 -2.5 C 19 -8 26 -5 23 0 C 26 5 19 8 14 2.5 L -16 2.5 C -21 8 -28 5 -25 0 C -28 -5 -21 -8 -16 -2.5 Z', '#e6dcc4', ' stroke-width="2.2"') + '</g>' +
       '<g transform="translate(286 386) rotate(70)">' + P('M-9 -2 L 8 -2 C 12 -6 17 -4 15 0 C 17 4 12 6 8 2 L -9 2 C -13 6 -18 4 -16 0 C -18 -4 -13 -6 -9 -2 Z', '#efe6d0', ' stroke-width="2"') + '</g>');
-    tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {offset: .6, opacity: 0}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}], {duration: 1400, easing: 'ease-out', fill: 'forwards'});
-    (function fumet(n){ if(n <= 0) return; var p = [240 + hasard(-20, 20), 360]; self._bouffee(p, {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 420); })(8);
-    self._couperBoucles();
-    self.mort = true;
-    self.J.saut.style.visibility = 'hidden';
-    self.el.getAnimations().forEach(function(a){ a.cancel(); });
-    self.el.style.filter = '';
-    return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
-  });
+  tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}],
+    {duration: 900, delay: T2 + 250, easing: 'ease-out', fill: 'both'});
+  /* quelques filets de fumée montent encore du tas */
+  setTimeout(function fumet(){ var n = 5; (function un(){ if(n-- <= 0) return; self._bouffee([240 + hasard(-20, 20), 360], {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(un, 420); })(); }, T2 + 900);
+  return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
 };
 
 /* =====================================================================
@@ -1415,7 +1442,7 @@ global.RatAnime = {
       coller: function(on){ r.coller(on); return this; },
       cible: function(on){ r.cible(on); return this; },
       fuir: function(){ return r.fuir(); },
-      exploser: function(scene){ return r.exploser(scene); },
+      exploser: function(scene, o){ return r.exploser(scene, o); },
       arreter: function(){ r.arreter(); return this; },
       etat: function(){ var e = {}; for(var k in r.etat) e[k] = r.etat[k]; return e; },
       point: function(nom, x, y){ return r.point(nom, x, y); },
