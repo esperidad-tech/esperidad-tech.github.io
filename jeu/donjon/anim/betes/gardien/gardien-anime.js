@@ -245,6 +245,7 @@ function Gardien(conteneur, options){
     'plaque-ouverte': false, 'plaque-entrouverte': false, 'sans-plaque': false, rougeoie: false};
   this.attente = true;
   this.jeton = 0;
+  this.reprise = 0;
   this.enAction = false;
   this.boucles = [];
   this.minuteurs = [];
@@ -354,10 +355,11 @@ R._el = function(parent, html){
   parent.appendChild(g);
   return g;
 };
-/* une particule : au plus PARTICULES_MAX à la fois (au-delà, elle n'est pas dessinée) */
-R._fxEl = function(html, parent){
+/* une particule : au plus PARTICULES_MAX à la fois (au-delà, elle n'est pas dessinée) ; les particules d'ambiance
+   (vapeur des cheminées, braises, fumées des états) s'arrêtent plus tôt, pour laisser la place aux effets des coups */
+R._fxEl = function(html, parent, ambiant){
   parent = parent || this.S.monde;
-  if(this.S.monde.childElementCount + this.S.fixe.childElementCount >= PARTICULES_MAX) return document.createElementNS(NS, 'g');
+  if(this.S.monde.childElementCount + this.S.fixe.childElementCount >= (ambiant ? PARTICULES_MAX - 10 : PARTICULES_MAX)) return document.createElementNS(NS, 'g');
   return this._el(parent, html);
 };
 /* montrer / cacher des variantes (opacité seulement ; une variante invisible ne coûte rien à afficher) */
@@ -396,8 +398,12 @@ R._couperX = function(prefixe){
    ===================================================================== */
 R._debutAction = function(){
   this.jeton++;
+  this.reprise++;
   this.enAction = true;
   this._couperBoucles();
+  /* une action interrompue ne laisse rien de passager derrière elle : les yeux reviennent, les rouages aussi */
+  if(this.V && this.V.yeuxFort && +this.V.yeuxFort[0].getAttribute('opacity') > 0) this._fondu('yeuxFort', 0, 150);
+  if(this.rouages && !this.mort) this._rouages(this.etat.gele ? .04 : (this.etat.enrage ? 1.8 : 1));
   return this.jeton;
 };
 R._finAction = function(j, duree){
@@ -405,12 +411,15 @@ R._finAction = function(j, duree){
   this.enAction = false;
   return this._reprendre(duree);
 };
+/* revenir à la pose de base, puis relancer les boucles d'attente. Un jeton garantit qu'une reprise interrompue par une
+   autre ne lance pas ses boucles : jamais deux boucles sur la même pièce (sinon la carte graphique ne peut plus composer
+   les pièces et tout est redessiné à chaque image) */
 R._reprendre = function(duree){
-  var self = this;
+  var self = this, n = ++this.reprise;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
   return this._allerA(this._base(), duree == null ? 380 : duree, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
-    if(self.enAction || self.mort) return;
+    if(n !== self.reprise || self.enAction || self.mort) return;
     if(self.attente) self._lancerBoucles();
   });
 };
@@ -462,7 +471,7 @@ R.ancre = function(nom){
 /* une bouffée (vapeur, fumée, poussière, rouille) : une tache douce qui grossit et s'efface */
 R._bouffee = function(p, o){
   o = o || {};
-  var r = o.r || 8, g = this._fxEl('<circle r="' + f1(r) + '" fill="' + (o.grad || this.G.vapeur) + '"/>', o.parent);
+  var r = o.r || 8, g = this._fxEl('<circle r="' + f1(r) + '" fill="' + (o.grad || this.G.vapeur) + '"/>', o.parent, o.ambiant);
   var dx = o.dx == null ? hasard(-10, 10) : o.dx, dy = o.dy == null ? -30 : o.dy, d = o.duree || 900;
   var a = g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(' + (o.s0 || .3) + ')', opacity: 0}, {offset: .15, opacity: o.op || .8}, {transform: 'translate(' + f1(p[0] + dx) + 'px,' + f1(p[1] + dy) + 'px) scale(' + (o.s1 || 1.8) + ')', opacity: 0}], {duration: d, easing: 'cubic-bezier(.2,.7,.4,1)', delay: o.delai || 0, fill: 'both'});
   a.finished.then(oter(g), oter(g));
@@ -615,8 +624,8 @@ var PIV_PLAQUE = [r3((CHARN_H[0] + CHARN_B[0]) / 2), r3((CHARN_H[1] + CHARN_B[1]
 function dessinerGardien(D){
   var dg = function(c, f){ return D.g(c, f); };
   var CT = [];   /* les contours des plaques de la pièce en cours (pour les couches « chauffé au rouge » et « gelé ») */
-  var gelG = D.lin([[0, '#f6fdff', .78], [.45, '#cdeeff', .38], [1, '#74b4e4', .62]], 1, 0, 0, 1);
-  var chaudG = D.lin([[0, '#ffd27a', .12], [.4, '#ff8a2a', .38], [.75, '#e8401a', .72], [1, '#801a10', .85]], 1, 0, 0, 1);
+  var gelG = D.lin([[0, '#f6fdff', .7], [.45, '#cdeeff', .34], [1, '#74b4e4', .56]], 1, 0, 0, 1);
+  var chaudG = D.lin([[0, '#ffd27a', .1], [.4, '#ff8a2a', .34], [.75, '#e8401a', .64], [1, '#801a10', .78]], 1, 0, 0, 1);
   var acideG = D.lin([[0, '#f0ffa0'], [.5, '#a8e040'], [1, '#4a7a10']], 1, 0, 0, 1);
 
   /* ---------- une plaque de fer : dégradé, rouille, coulures, rayures, ombre intérieure, liseré de lune ---------- */
@@ -891,8 +900,8 @@ function dessinerGardien(D){
   b += rangee([200, 118], [334, 110], 7, 2.4);
   b += lueurV('col', 'M200 132 C 236 120 290 116 334 126', 1.1);
   /* le halo du cœur, la couronne de fer boulonnée */
-  b += vari('r-halo', '<circle cx="' + HX + '" cy="' + HY + '" r="100" fill="' + D.halo('#c8ffff', CYANF) + '" fill-opacity=".28"/>', 1) +
-    vari('rr-halo', '<circle cx="' + HX + '" cy="' + HY + '" r="104" fill="' + D.halo('#ffd8b8', ROUGE) + '" fill-opacity=".34"/>');
+  b += vari('r-halo', '<g data-j="x-battement"><circle cx="' + HX + '" cy="' + HY + '" r="100" fill="' + D.halo('#c8ffff', CYANF) + '" fill-opacity=".34"/></g>', 1) +
+    vari('rr-halo', '<g data-j="x-battement"><circle cx="' + HX + '" cy="' + HY + '" r="104" fill="' + D.halo('#ffd8b8', ROUGE) + '" fill-opacity=".4"/></g>');
   b += plaque(ell(HX, HY, 70, 74) + ' ' + ell(HX, HY, 55, 59), sombre(FER, .05), [HX - 72, HY - 76, HX + 72, HY + 76], {seed: 50, eo: true, r: 8, c: 4});
   var cr = [];
   for(var i = 0; i < 12; i++){ var a = i / 12 * Math.PI * 2 + .2; cr.push([HX + Math.cos(a) * 63, HY + Math.sin(a) * 67]); }
@@ -992,8 +1001,8 @@ function dessinerGardien(D){
   var rais = '';
   [[-40, 120], [-12, 140], [18, 120]].forEach(function(r){ var a3 = r[0] * Math.PI / 180, x0 = HX + 48, y0 = HY + r[0] * .3; rais += 'M' + f1(x0) + ' ' + f1(y0 - 3) + ' L ' + f1(x0 + Math.cos(a3) * r[1]) + ' ' + f1(y0 + Math.sin(a3) * r[1] - 9) + ' L ' + f1(x0 + Math.cos(a3) * r[1]) + ' ' + f1(y0 + Math.sin(a3) * r[1] + 9) + ' L ' + f1(x0) + ' ' + f1(y0 + 3) + ' Z '; });
   b2 += vari('fente', L(fente, '#0c0814', 3, so(.8)), 1) +
-    vari('r-fente', L(fente, CYANF, 16, so(.2)) + L(fente, CYANF, 7, so(.5)) + L(fente, '#e8ffff', 2.2, so(.95)) + F(rais, '#bff8ff', fo(.09)), 1) +
-    vari('rr-fente', L(fente, ROUGE, 16, so(.24)) + L(fente, ROUGE, 7, so(.55)) + L(fente, '#ffe0c8', 2.2, so(.95)) + F(rais, '#ffc0a0', fo(.1)));
+    vari('r-fente', '<g data-j="x-battement">' + L(fente, CYANF, 18, so(.22)) + L(fente, CYANF, 7, so(.55)) + F(rais, '#bff8ff', fo(.1)) + '</g>' + L(fente, '#e8ffff', 2.2, so(.95)), 1) +
+    vari('rr-fente', '<g data-j="x-battement">' + L(fente, ROUGE, 18, so(.26)) + L(fente, ROUGE, 7, so(.6)) + F(rais, '#ffc0a0', fo(.11)) + '</g>' + L(fente, '#ffe0c8', 2.2, so(.95)));
 
   /* ---------- la tête, enfoncée entre les épaules (la fiche l'agrandit de 1,1) ---------- */
   var t = '';
@@ -1171,7 +1180,7 @@ R._base = function(){
   else {
     if(e.enrage) mettre({tete: {a: -7, y: 3, x: -2}, buste: {a: -3}, brasF: {a: 7}, avbrasF: {a: -12}, poingF: {a: -10}, bras: {a: -5}, avbras: {a: -8}, poing: {a: -6}, machoire: {a: -3}});
     else if(e.cible) mettre({tete: {a: -4, y: 2}, saut: {sy: .99}, poingF: {a: -6}, brasF: {a: 3}, avbrasF: {a: -4}});
-    if(e.rougeoie){ var bu = fusion(Z, p.buste); bu.sy = 1.018; bu.y -= 2; p.buste = bu; p.epaule = {y: -3, a: -2}; }
+    if(e.rougeoie){ var bu = fusion(Z, p.buste); bu.sy = 1.018; bu.y -= 2.5; p.buste = bu; p.epaule = {y: -3, a: -2}; }
   }
   if(!e['sans-plaque']){
     if(e['plaque-ouverte']){ p.plaque = PLAQUE_PEND; p.loquet = {a: -40}; }
@@ -1182,6 +1191,9 @@ R._base = function(){
 /* les boucles d'attente : il respire (la poitrine monte), ses bras pèsent, sa chaîne et son fil se balancent */
 R._lancerBoucles = function(){
   var e = this.etat, b, EI = 'ease-in-out';
+  this.boucles.forEach(function(a){ a.cancel(); });
+  this.boucles = [];
+  this._couperMinuteurs();
   this.vitesse = e.enrage ? 1.5 : (e.ebloui ? 1.3 : 1);
   b = this._boucleur();
   var base = this._base();
@@ -1250,6 +1262,9 @@ R._lancerX = function(){
   this.rouages = [];
   ROUAGES.forEach(function(r){ self.rouages = self.rouages.concat(self._boucleX('eng-' + r[0], [{transform: 'rotate(0deg)'}, {transform: 'rotate(' + (360 * r[2]) + 'deg)'}], r[1])); });
   this._boucleX('pistons', [{transform: 'translate(0px,0px)'}, {transform: 'translate(0px,-5px)'}, {transform: 'translate(0px,0px)'}], 1400, {e: 'ease-in-out'});
+  /* la lueur du cœur bat derrière la plaque : boum… boum */
+  this._couperX('battement');
+  this._boucleX('battement', [{opacity: .45}, {offset: .14, opacity: 1}, {offset: .28, opacity: .6}, {offset: .42, opacity: .92}, {offset: .66, opacity: .45}, {opacity: .45}], 1400, {e: 'ease-in-out'});
   this.rouages = this.rouages.concat(this._boucleX('anneau', [{transform: 'rotate(0deg)'}, {transform: 'rotate(360deg)'}], 16000));
   this._boucleX('etincelle', [{opacity: 1, transform: 'scale(1)'}, {offset: .1, opacity: .25, transform: 'scale(.6)'}, {offset: .2, opacity: 1, transform: 'scale(1.2)'}, {offset: .35, opacity: .5, transform: 'scale(.8)'}, {offset: .5, opacity: .1, transform: 'scale(.5)'},
     {offset: .62, opacity: .9, transform: 'scale(1.1)'}, {offset: .8, opacity: .3, transform: 'scale(.7)'}, {opacity: 1, transform: 'scale(1)'}], 1100);
@@ -1266,7 +1281,7 @@ R._souffler = function(){
     if(self.mort || self.arrete) return;
     if(self.allume && !self.etat.gele){
       var c = self._pt(n % 2 ? 'chem2' : 'chem1'), rouge = self.etat.enrage;
-      self._bouffee(c, {r: hasard(6, 9), grad: rouge ? self.G.vapeurR : self.G.vapeur, op: .75, dx: hasard(6, 22), dy: hasard(-60, -40), duree: hasard(1300, 1700), s0: .4, s1: 2.6});
+      self._bouffee(c, {r: hasard(6, 9), grad: rouge ? self.G.vapeurR : self.G.vapeur, op: .75, dx: hasard(6, 22), dy: hasard(-60, -40), duree: hasard(1300, 1700), s0: .4, s1: 2.6, ambiant: true});
       if(n % 5 === 0 && Math.random() < .5) self._etincelles(self._pt('fil'), 3, {v: 26, grav: 30, ep: 1.6});
     }
     self.fx.vapeur = setTimeout(function(){ souffle(n + 1); }, hasard(520, 900) / (self.etat.enrage ? 1.5 : 1));
@@ -1379,8 +1394,8 @@ R._clignerYeux = function(){
 /* les yeux s'allument plus fort un moment */
 R._clignerFort = function(delai, duree){
   var self = this;
-  this._minuteur(function(){ self._fondu('yeuxFort', 1, 200); }, delai || 0);
-  this._minuteur(function(){ self._fondu('yeuxFort', 0, 400); }, (delai || 0) + (duree || 800));
+  setTimeout(function(){ if(!self.mort) self._fondu('yeuxFort', 1, 200); }, delai || 0);
+  setTimeout(function(){ self._fondu('yeuxFort', 0, 400); }, (delai || 0) + (duree || 800));
 };
 /* les runes clignotent (déréglé, explosion) */
 R._clignerRunes = function(ms){
@@ -1395,8 +1410,8 @@ R._miette = function(p){
   var x = p[0] + hasard(-12, 12);
   g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) rotate(0deg)', opacity: 1}, {offset: .85, opacity: 1}, {transform: 'translate(' + f1(x) + 'px,' + f1(SOL - 2) + 'px) rotate(' + f1(hasard(-400, 400)) + 'deg)', opacity: 0}], {duration: hasard(800, 1200), easing: 'cubic-bezier(.4,0,.9,.6)', fill: 'both'}).finished.then(oter(g), oter(g));
 };
-R._braise = function(p){
-  var b = this._fxEl('<circle r="4.5" fill="' + this.G.braise + '"/><circle r="1.8" fill="#fff0b0"/>');
+R._braise = function(p, ambiant){
+  var b = this._fxEl('<circle r="4.5" fill="' + this.G.braise + '"/><circle r="1.8" fill="#fff0b0"/>', null, ambiant);
   b.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px)', opacity: 1}, {transform: 'translate(' + f1(p[0] + hasard(-20, 30)) + 'px,' + f1(p[1] - hasard(50, 90)) + 'px)', opacity: 0}], {duration: hasard(800, 1200), easing: 'ease-out', fill: 'forwards'}).finished.then(oter(b), oter(b));
 };
 /* il tire sur son pied collé : la cheville se soulève, la colle (pré-dessinée) s'étire, le pied est ramené d'un coup */
@@ -1471,13 +1486,13 @@ R._e_sans_plaque = function(on){
 R._e_rougeoie = function(on){
   var self = this;
   this.etat.rougeoie = on;
-  this._fondu(this._varis('chaud-'), on ? .9 : 0, on ? 700 : 1000);
+  this._fondu(this._varis('chaud-'), on ? 1 : 0, on ? 700 : 1000);
   this._fondu('lueurRouge', on ? 1 : 0, 600);
   clearTimeout(this.fx.chaleur);
   if(on) (function chaleur(){
     if(!self.etat.rougeoie || self.mort) return;
-    self._braise(self._ouB(2, hasard(160, 390), hasard(100, 260)));
-    if(Math.random() < .35) self._bouffee(self._ouB(2, hasard(200, 360), 100), {r: 7, grad: self.G.fumee, op: .35, dx: hasard(0, 20), dy: -60, duree: 1400, s1: 2.4});
+    self._braise(self._ouB(2, hasard(160, 390), hasard(100, 260)), true);
+    if(Math.random() < .35) self._bouffee(self._ouB(2, hasard(200, 360), 100), {r: 7, grad: self.G.fumee, op: .35, dx: hasard(0, 20), dy: -60, duree: 1400, s1: 2.4, ambiant: true});
     self.fx.chaleur = setTimeout(chaleur, hasard(240, 400));
   })();
   return this._changerMode(500);
@@ -1497,8 +1512,8 @@ R._e_brule = function(on){
   if(on) (function fumee(){
     if(!self.etat.brule || self.mort) return;
     var p = self._pt(choisir(['feuTete', 'feuEpaule', 'feuBrasF']));
-    self._bouffee([p[0], p[1] - 20], {r: hasard(8, 13), grad: self.G.fumee, op: .5, dx: hasard(10, 40), dy: hasard(-80, -50), duree: hasard(1300, 1800), s1: 2.6});
-    if(Math.random() < .5) self._braise([p[0] + hasard(-10, 10), p[1] - 10]);
+    self._bouffee([p[0], p[1] - 20], {r: hasard(8, 13), grad: self.G.fumee, op: .5, dx: hasard(10, 40), dy: hasard(-80, -50), duree: hasard(1300, 1800), s1: 2.6, ambiant: true});
+    if(Math.random() < .5) self._braise([p[0] + hasard(-10, 10), p[1] - 10], true);
     self.fx.fumee = setTimeout(fumee, hasard(260, 420));
   })();
   if(!this.enAction && this.attente){ this._couperMinuteurs(); this._planifier(300); }
@@ -1532,7 +1547,7 @@ R._etoiles = function(on){
 R._e_gele = function(on){
   var self = this;
   this.etat.gele = on;
-  this._fondu(this._varis('gel-'), on ? .9 : 0, on ? 700 : 1200);
+  this._fondu(this._varis('gel-'), on ? 1 : 0, on ? 700 : 1200);
   this._rouages(on ? .04 : (this.etat.enrage ? 1.8 : 1));
   if(on) this._cristaux(this._pt('centre'), 10, {v: 70});
   else { var c = this._pt('centre'); for(var i = 0; i < 4; i++) this._goutteTombe([c[0] + hasard(-90, 90), c[1] + hasard(-60, 60)], {coul: '#b8e6ff'}); }
@@ -1621,7 +1636,7 @@ R.entrer = function(o){
     var k = [{t: 0, p: {}},
       {t: .16, p: {poingF: {a: N.poingF.a - 10}}, e: 'cubic-bezier(.1,.9,.2,1)'}, {t: .22, p: {poingF: {a: N.poingF.a}}},
       {t: .3, p: {tete: {a: N.tete.a + 6, y: N.tete.y, x: N.tete.x}}, e: 'cubic-bezier(.1,.9,.2,1)'}, {t: .36, p: {tete: N.tete}},
-      {t: .48, p: pose(.35), e: 'cubic-bezier(.2,.9,.3,1)'}, {t: .56, p: pose(.28), e: 'ease-in-out'},
+      {t: .42, p: pose(0)}, {t: .48, p: pose(.35), e: 'cubic-bezier(.2,.9,.3,1)'}, {t: .56, p: pose(.28), e: 'ease-in-out'},
       {t: .66, p: pose(.66), e: 'cubic-bezier(.2,.9,.3,1)'}, {t: .72, p: pose(.6), e: 'ease-in-out'},
       {t: .84, p: pose(1.06, {tete: {a: 4, y: -2}, machoire: {a: -6}}), e: 'cubic-bezier(.2,.9,.3,1)'},
       {t: 1, p: pose(1, {tete: {a: 0, y: 0}, machoire: {a: 0}})}];
@@ -1682,15 +1697,15 @@ R.attaquer = function(nom, o){
   var Lg = Math.max(36, Math.min(110, Sx - cible[0] - Math.sqrt(Math.max(0, portee * portee - dy * dy))));
   /* le poignet visé, dans le repère du buste penché en avant */
   var bA = -8, cl = rotP([cible[0] + Lg, cible[1]], -bA, ART.buste), dir = angle(ART.epauleF, cl), lp = Math.min(184, Math.max(120, Math.hypot(cl[0] - Sx, cl[1] - Sy) - 30));
-  dir = Math.max(.35, Math.min(2.2, dir));
+  dir = Math.max(.35, Math.min(2.95, dir));
   function W(l, dyy){ return [Sx + Math.cos(dir) * l, Sy + Math.sin(dir) * l + (dyy || 0)]; }
-  var armer = membre('F', [196, -40], -40), frappe = membre('F', W(lp), 10), retour = membre('F', W(lp - 30, -12), -6);
+  var dd = dir * 180 / Math.PI, armer = membre('F', [196, -40], -40), frappe = membre('F', W(lp), null, dd - 30), retour = membre('F', W(lp - 30, -5), null, dd - 16);
   var fin = this._toutesPieces(fus(armer, {pos: 1, buste: 1, saut: 1, tete: 1, machoire: 1, epaule: 1, chaineF: 1, bras: 1, avbras: 1, poing: 1, secousse: 1, capot1: 1, capot2: 1}, jambe('F', 0, 0), jambe('P', 0, 0)));
   var k = [{t: 0, p: {}},
     /* 1. il arme son bras au-dessus de la tête : lent, lourd */
-    {t: .34, p: fus(armer, {buste: {a: 7, y: 2}, saut: {y: 5, sy: .975}, tete: {a: -6, y: 3, x: 0}, machoire: {a: -5}, epaule: {a: -3, y: -2}, chaineF: {a: 40}, bras: {a: -9}, avbras: {a: 8}, poing: {a: -6}}, jambe('F', 0, -5), jambe('P', 0, -5)), e: 'cubic-bezier(.45,0,.35,1)'},
+    {t: .34, p: fus(armer, {pos: {x: 0}, buste: {a: 7, y: 2}, saut: {y: 5, sy: .975}, tete: {a: -6, y: 3, x: 0}, machoire: {a: -5}, epaule: {a: -3, y: -2}, chaineF: {a: 40}, bras: {a: -9}, avbras: {a: 8}, poing: {a: -6}}, jambe('F', 0, -5), jambe('P', 0, -5)), e: 'cubic-bezier(.45,0,.35,1)'},
     /* il tremble sous le poids, au sommet */
-    {t: .38, p: {secousse: {x: 1.4}}, e: 'linear'}, {t: .41, p: {secousse: {x: -1.4}}, e: 'linear'}, {t: .44, p: {secousse: {x: 1}}, e: 'linear'}, {t: .47, p: {secousse: {x: 0}}, e: 'linear'},
+    {t: .38, p: {secousse: {x: 1.4}}, e: 'linear'}, {t: .41, p: {secousse: {x: -1.4}}, e: 'linear'}, {t: .44, p: {secousse: {x: 1}}, e: 'linear'}, {t: .47, p: {secousse: {x: 0}, pos: {x: 0}}, e: 'linear'},
     /* 2. la frappe : il se jette en avant, le pied de devant frappe le sol */
     {t: .51, p: fus(jambe('F', -Lg * .25, -16, -8), {pos: {x: -Lg * .55}}), e: 'cubic-bezier(.6,0,1,.6)'},
     {t: .54, p: fus(frappe, {pos: {x: -Lg}, buste: {a: bA, y: 0}, saut: {y: 3, sy: 1.02}, tete: {a: -10, x: -4, y: 2}, machoire: {a: -12}, epaule: {a: 3, y: 0}, chaineF: {a: -50}, bras: {a: 12}, avbras: {a: -10}, poing: {a: 4}},
@@ -1757,8 +1772,8 @@ R._coeurNu = function(){ var e = this.etat; return e.ouvert || e['plaque-ouverte
 R._pointFer = function(){ var q = choisir([[hasard(166, 206), hasard(130, 240)], [hasard(296, 330), hasard(118, 240)], [hasard(206, 284), hasard(140, 228)]]); return this._ouB(2, q[0], q[1]); };
 /* « ting » sur le fer : un éclat blanc et des étincelles */
 R._ting = function(p, gros){
-  this._eclat(p, gros ? 30 : 18, '#ffffff', {anneau: '#fff4c0', duree: gros ? 520 : 380});
-  this._etincelles(p, gros ? 12 : 7, {v: gros ? 80 : 50, ouv: Math.PI * 1.8, ang: Math.PI * 1.2, coul: ['#fff6c0', '#ffd060', '#ffffff']});
+  this._eclat(p, gros ? 42 : 22, '#ffffff', {anneau: '#fff4c0', duree: gros ? 560 : 400, rot: 30});
+  this._etincelles(p, gros ? 12 : 8, {v: gros ? 100 : 60, taille: gros ? 1.3 : 1, ouv: Math.PI * 1.8, ang: Math.PI * 1.2, coul: ['#fff6c0', '#ffd060', '#ffffff']});
 };
 /* ce qui ricoche : une flèche, une dague ou une louche, qui tournoie et retombe */
 R._ricochet = function(p, arme){
@@ -1766,10 +1781,10 @@ R._ricochet = function(p, arme){
   if(arme === 'dague') h = P('M-4 -3 L 22 0 L -4 3 Z', '#dfe6f0', ' stroke-width="1.6"') + P('M-6 -7 L -3 -7 L -3 7 L -6 7 Z', '#8a6a3a', ' stroke-width="1.4"') + P('M-18 -2.5 L -6 -2.5 L -6 2.5 L -18 2.5 Z', '#5a3a22', ' stroke-width="1.4"');
   else if(arme === 'louche') h = P('M-30 -2 L 6 -2 L 6 2 L -30 2 Z', '#b0884a', ' stroke-width="1.4"') + P('M6 -9 C 24 -10 24 10 6 9 Z', '#c8cdd8', ' stroke-width="1.8"');
   else h = L('M-22 0 L 16 0', O, 5) + L('M-22 0 L 16 0', '#c8a070', 2.6) + P('M16 -4 L 26 0 L 16 4 Z', '#d8dce8', ' stroke-width="1.4"') + P('M-22 0 L -28 -5 L -18 0 L -28 5 Z', '#e8e0d0', ' stroke-width="1.2"');
-  var g = this._fxEl(h), x2 = p[0] - hasard(60, 110), y2 = SOL - 4, r = arme === 'louche' ? -400 : -560;
-  g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) rotate(0deg)'}, {offset: .4, transform: 'translate(' + f1(p[0] - 40) + 'px,' + f1(p[1] - 60) + 'px) rotate(' + (r * .45) + 'deg)'},
-    {offset: .85, transform: 'translate(' + f1(x2) + 'px,' + f1(y2) + 'px) rotate(' + r + 'deg)', opacity: 1}, {transform: 'translate(' + f1(x2 - 8) + 'px,' + f1(y2) + 'px) rotate(' + (r - 20) + 'deg)', opacity: 0}],
-    {duration: 950, easing: 'cubic-bezier(.3,.5,.6,1)', fill: 'forwards'}).finished.then(oter(g), oter(g));
+  var g = this._fxEl('<g transform="scale(1.5)">' + h + '</g>'), x2 = p[0] - hasard(70, 130), y2 = SOL - 6, r = arme === 'louche' ? -420 : -620;
+  g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) rotate(0deg)'}, {offset: .4, transform: 'translate(' + f1(p[0] - 45) + 'px,' + f1(p[1] - 100) + 'px) rotate(' + (r * .45) + 'deg)', easing: 'cubic-bezier(.5,0,.9,.6)'},
+    {offset: .82, transform: 'translate(' + f1(x2) + 'px,' + f1(y2) + 'px) rotate(' + r + 'deg)', opacity: 1}, {offset: .9, transform: 'translate(' + f1(x2 - 6) + 'px,' + f1(y2 - 8) + 'px) rotate(' + (r - 30) + 'deg)', opacity: 1}, {transform: 'translate(' + f1(x2 - 10) + 'px,' + f1(y2) + 'px) rotate(' + (r - 40) + 'deg)', opacity: 0}],
+    {duration: 1100, easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'}).finished.then(oter(g), oter(g));
 };
 /* la réaction de base à un coup (f : 0,4 petit sursaut ; 1,4 gros choc) : il bascule en arrière autour de la taille */
 R._recul = function(f, o){
@@ -1870,7 +1885,7 @@ R._t_feu = function(o){
   var self = this, j = this._debutAction(), c = this._pt('centre'), b;
   this._souffleFeu(c, 60);
   if(!this.etat.rougeoie) this._e_rougeoie(true);
-  else this._fondu(this._varis('chaud-'), .9, 200);
+  else this._fondu(this._varis('chaud-'), 1, 200);
   b = this._base();
   var k = [{t: 0, p: {}},
     {t: .14, p: {secousse: {x: 6, a: 1}, buste: {a: 4}, tete: {a: 8}, machoire: {a: -8}}, e: 'cubic-bezier(.1,.9,.3,1)'},
@@ -1908,7 +1923,7 @@ R._piege = function(o){
   var k = [{t: 0, p: {}},
     {t: .1, p: {buste: {a: 5}, tete: {a: 10, y: -2}, machoire: {a: -8}, secousse: {x: 6}}, e: 'cubic-bezier(.1,.9,.3,1)'},
     {t: .25, p: {secousse: {x: 0}}},
-    {t: .4, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .44, p: {secousse: {x: -1.6}}, e: 'linear'}, {t: .48, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .52, p: {secousse: {x: 0}}, e: 'linear'},
+    {t: .4, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .44, p: {secousse: {x: -1.6}}, e: 'linear'}, {t: .48, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .52, p: fus({secousse: {x: 0}}, this._toutesPieces({brasF: 1, avbrasF: 1, poingF: 1, bras: 1, avbras: 1, poing: 1, epaule: 1, saut: 1, hancheF: 1, tibiaF: 1, piedF: 1, cuisse: 1, tibia: 1, pied: 1})), e: 'linear'},
     /* il rugit, les deux bras levés */
     {t: .7, p: fus(membre('F', [150, 4], -40), membre('P', [470, 120], -40), {buste: {a: 6, y: -3}, tete: {a: 14, y: -3}, machoire: {a: -24}, saut: {y: -6, sy: 1.03}, epaule: {a: -10, y: -8}}, jambe('F', 0, 6), jambe('P', 0, 6)), e: 'cubic-bezier(.3,.7,.3,1)'},
     /* et frappe du pied */
@@ -2009,6 +2024,8 @@ R._t_bouclier = function(o){
 R._s_entrouvert = function(o){
   var self = this, e = this.etat;
   if(e['sans-plaque'] || e['plaque-ouverte']) return Promise.resolve();
+  /* déjà entrouverte (par exemple après touche('bouclier'), qui l'entrouvre déjà) : elle cliquette, sans ressauter */
+  if(e['plaque-entrouverte']){ this._etincelles(this._pt('plaqueBord'), 3, {v: 26}); return this._recul(.3, {flash: false}); }
   var j = this._debutAction(), T = 1300;
   e['plaque-entrouverte'] = true;
   var k = [{t: 0, p: {}},
@@ -2037,13 +2054,14 @@ R._s_plaque_tombe = function(o){
   (function gresille(){
     if(fin || self.mort) return;
     var p = self._ou(pl, HX - 6 + hasard(-34, 34), HY + hasard(-40, 40));
-    self._bulles(p, 2, {etendue: 1});
-    if(Math.random() < .5) self._bouffee(p, {r: 6, grad: self.D.doux('#c8e0a0', .9), op: .6, dx: hasard(-6, 14), dy: -40, duree: 900, s1: 2.2});
+    self._bulles(p, 2, {etendue: 1, taille: 1.5});
+    if(Math.random() < .55) self._bouffee(p, {r: 8, grad: self.D.doux('#c8e8a0', .9), op: .7, dx: hasard(-6, 14), dy: -46, duree: 900, s1: 2.4});
     self.fx.gresille = setTimeout(gresille, 170);
   })();
   var k = [{t: 0, p: {}}];
-  for(var t = 1; t <= 7; t++) k.push({t: t * .06, p: {secousse: {a: t % 2 ? 1.4 : -1.4, x: t % 2 ? 2 : -2}, tete: {a: t % 2 ? 5 : -4}, machoire: {a: -10}, buste: {a: t % 2 ? 1.5 : -1}}, e: 'ease-in-out'});
-  k.push({t: .5, p: {secousse: {a: 0, x: 0}, tete: {a: -6, y: 2}, buste: {a: 0}, machoire: {a: -4}}});
+  var plq0 = fusion(Z, this._base().plaque);
+  for(var t = 1; t <= 7; t++) k.push({t: t * .06, p: {secousse: {a: t % 2 ? 2.2 : -2.2, x: t % 2 ? 3 : -3}, tete: {a: t % 2 ? 9 : -7, y: 1}, machoire: {a: -14}, buste: {a: t % 2 ? 3 : -2.5}, brasF: {a: t % 2 ? -6 : 6}, avbrasF: {a: t % 2 ? -8 : 4}, bras: {a: t % 2 ? 8 : -6}, avbras: {a: t % 2 ? 10 : -4}, chaineF: {a: t % 2 ? 30 : -30}, plaque: plq0}, e: 'ease-in-out'});
+  k.push({t: .5, p: {secousse: {a: 0, x: 0}, tete: {a: -6, y: 2}, buste: {a: 0}, machoire: {a: -4}, brasF: {a: 0}, avbrasF: {a: 0}, bras: {a: 0}, avbras: {a: 0}, chaineF: {a: 0}, plaque: plq0}});
   k.push({t: .58, p: {plaque: plaquePend(24), tete: {a: -12, y: 3}}, e: 'ease-in'});
   k.push({t: .66, p: {plaque: plaquePend(150)}, e: 'cubic-bezier(.45,0,.7,1)'});
   k.push({t: .74, p: {plaque: plaquePend(104)}, e: 'ease-in-out'});
@@ -2052,6 +2070,7 @@ R._s_plaque_tombe = function(o){
   k.push({t: .95, p: {plaque: plaquePend(126), tete: {a: -12, y: 3}}, e: 'ease-in-out'});
   k.push({t: 1, p: {plaque: PLAQUE_PEND, tete: {a: 0, y: 0}, machoire: {a: 0}}});
   /* les rivets sautent un à un */
+  [.1, .24, .38].forEach(function(t, n){ self._minuteur(function(){ var jt = JOINTS[[0, 4, 2][n]]; self._jet(self._pt(jt[0]), jt[1], {n: 2}); }, T * t); });
   [.4, .45, .5].forEach(function(t, n){ self._minuteur(function(){ var p = self._ou(pl, HX + 30 - n * 22, HY - 50 + n * 4); self._etincelles(p, 3, {v: 30}); self._boulon(p, -1, false); }, T * t); });
   this._minuteur(function(){
     var p = self._pt('charnH');
@@ -2087,7 +2106,7 @@ R._s_plaque_eclate = function(o){
   var j = this._debutAction(), T = 3300, pl = this.J.plaque[0].firstElementChild, c = this._pt('plaqueC');
   this._cristaux(c, 8, {v: 60});
   for(var i = 0; i < 3; i++) this._bouffee([c[0] + hasard(-40, 40), c[1] + hasard(-30, 30)], {r: 10, op: .85, dx: hasard(-20, 20), dy: -20, duree: 700, delai: i * 40, s1: 2});
-  this._fondu('gelP', .95, 800);
+  this._fondu('gelP', 1, 800);
   var k = [{t: 0, p: {}}, {t: .12, p: {secousse: {x: 6}, tete: {a: 8}, machoire: {a: -10}, buste: {a: 3}}, e: 'cubic-bezier(.1,.9,.3,1)'}];
   for(var q = 0; q < 10; q++) k.push({t: .2 + q * .055, p: {secousse: {x: q % 2 ? 1.6 : -1.6}}, e: 'linear'});
   k.push({t: .76, p: {secousse: {x: 0}, tete: {a: -10, y: 2}, buste: {a: 0}}});
@@ -2195,10 +2214,10 @@ R.mourir = function(o){
     {t: t(3350), p: fus({buste: {a: -12, y: 4}, tete: {a: -24, y: 6}, saut: {y: 36, sy: .97}, epaule: {a: 5, y: 4}, chaineF: {a: 20}}, membre('F', [110, 248], 16), membre('P', [446, 300], 10), jambe('F', -4, -36, 4), jambe('P', 4, -36, 4)), e: 'cubic-bezier(.6,0,.9,.5)'},
     {t: t(3550), p: {saut: {y: 34, sy: 1}, buste: {a: -11}}, e: 'cubic-bezier(.3,.6,.4,1.4)'},
     {t: t(4500), p: {buste: {a: -15, y: 5}, tete: {a: -26}}, e: 'ease-in-out'},
-    {t: t(5200), p: fus({buste: {a: -84, y: 16}, saut: {y: 78, sy: 1}, chaineF: {a: 60}}, membre('F', [230, 290], 30), membre('P', [470, 240], 40), jambe('F', -20, -78, 30), jambe('P', 20, -78, -20)), e: 'cubic-bezier(.55,0,1,.6)'},
-    {t: t(5450), p: {buste: {a: -78, y: 12}, saut: {y: 74}}, e: 'cubic-bezier(.2,.7,.4,1)'},
-    {t: t(5700), p: {buste: {a: -82, y: 15}, saut: {y: 77}}, e: 'ease-in-out'},
-    {t: 1, p: {buste: {a: -82, y: 15}}}];
+    {t: t(5200), p: fus({buste: {a: -30, y: 14}, saut: {y: 62, sy: .96}, chaineF: {a: 50}, brasF: {a: -26}, avbrasF: {a: 46}, poingF: {a: 24}, bras: {a: 30}, avbras: {a: -36}, capot1: {a: -30, y: 4}, capot2: {a: 40, y: 2}}, jambe('F', -14, -62, 18), jambe('P', 14, -62, -12)), e: 'cubic-bezier(.55,0,1,.6)'},
+    {t: t(5450), p: {buste: {a: -25, y: 11}, saut: {y: 58, sy: 1.02}}, e: 'cubic-bezier(.2,.7,.4,1)'},
+    {t: t(5700), p: {buste: {a: -28, y: 13}, saut: {y: 61, sy: 1}}, e: 'ease-in-out'},
+    {t: 1, p: {buste: {a: -28, y: 13}}}];
   if(dos) k.splice(1, 0, {t: t(200), p: fus(jambe('F', 0, 0), jambe('P', 0, 0), {saut: {y: 0}, buste: {a: 0}})});
   this._minuteur(function(){
     var a = self._pt('jGenouF'), b2 = self._pt('jGenou');
@@ -2208,11 +2227,11 @@ R.mourir = function(o){
   /* le nuage de rouille, et les pièces qui se détachent et restent au sol */
   this._minuteur(function(){
     var c = self._pt('centre');
-    for(var n = 0; n < 9; n++) self._bouffee([c[0] + hasard(-110, 110), c[1] + hasard(-40, 90)], {r: hasard(16, 26), grad: n % 2 ? self.G.rouille : self.G.rouille2, op: .7, dx: hasard(-50, 50), dy: hasard(-60, -20), duree: hasard(1600, 2200), delai: n * 70, s0: .5, s1: 2.6});
+    for(var n = 0; n < 10; n++) self._bouffee([c[0] + hasard(-120, 120), c[1] + hasard(-50, 100)], {r: hasard(24, 34), grad: n % 2 ? self.G.rouille : self.G.rouille2, op: .9, dx: hasard(-60, 60), dy: hasard(-70, -20), duree: hasard(1800, 2400), delai: n * 60, s0: .5, s1: 2.4});
     for(var m = 0; m < 4; m++) self._miette([c[0] + hasard(-90, 90), c[1] + hasard(-60, 20)]);
   }, 4600);
   this._minuteur(function(){
-    var morceaux = [['tete', 'tete', -150, 30, -280, 22], ['epaule', 'epauleHaut', 110, 40, 200, 30], ['poing', 'poingC', 70, 20, 90, 14]];
+    var morceaux = [['tete', 'tete', -150, 30, -280, 22], ['epaule', 'epauleHaut', 110, 40, 200, 30], ['poing', 'poingC', 70, 20, 90, 14], ['capot1', 'chem1', 60, 50, 300, 4]];
     if(!self.etat['sans-plaque']) morceaux.push(['plaque', 'plaqueC', -60, 50, 160, 34]);
     morceaux.forEach(function(m, i){
       var d = self._detacher([m[0]], self.S.fixe, m[1]), x = d.c[0] + m[2];
@@ -2224,7 +2243,14 @@ R.mourir = function(o){
   }, 4750);
   this._minuteur(function(){ self._poussiere([200, SOL], 4, -1); self._poussiere([320, SOL], 3, 1); }, 5200);
   /* les fumées de la carcasse */
-  (function fumet(n){ if(n <= 0) return; self._bouffee([hasard(160, 300), SOL - 30], {r: 8, grad: self.G.fumee, op: .45, dx: hasard(-6, 14), dy: -60, duree: 1700, s1: 2.4}); self._minuteur(function(){ fumet(n - 1); }, 450); })(10);
+  setTimeout(function fumet(n){
+    n = n || 12;
+    if(n <= 1 || self.arrete) return;
+    var p = self._ouB(2, hasard(170, 360), hasard(120, 220));
+    self._bouffee(p, {r: 9, grad: self.G.fumee, op: .5, dx: hasard(-6, 14), dy: -60, duree: 1700, s1: 2.4, ambiant: true});
+    if(n % 4 === 0) self._etincelles(p, 2, {v: 20, grav: 30, ep: 1.4});
+    setTimeout(function(){ fumet(n - 1); }, 420);
+  }, 5300);
   var s = this._seq(k, T);
   return s.fini.then(function(){ return attendreMs(400); }).then(function(){
     self._couperBoucles();

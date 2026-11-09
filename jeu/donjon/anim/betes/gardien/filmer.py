@@ -54,8 +54,11 @@ def main():
         pg.wait_for_timeout(700)
         plan = pg.evaluate('PLAN')
         cadrage = pg.evaluate('window.CADRAGE || [400, 20, 560, 340]')
+        debut = time.time()
         for e in plan:
             nom, sous, etapes, duree, attendre, pose = e[:6]
+            if '--temps' in sys.argv:
+                print('%6.1f s  %s' % (time.time() - debut + .7, nom))
             pg.evaluate("([a, b]) => etiquette(a, b)", [nom, sous])
             pg.evaluate("""(etapes) => { window.__fini = false; etapes.reduce((p, e) => p.then(() => etape(e)), Promise.resolve()).then(() => { window.__fini = true; }, (e) => { console.error(e && e.stack || e); window.__fini = true; }); }""", etapes)
             t = 0

@@ -1,116 +1,116 @@
 [
  {
   "ips": 60,
-  "pire": 17,
+  "pire": 33,
   "lentes": 0,
   "nom": "attente"
  },
  {
-  "ips": 57,
+  "ips": 58,
   "pire": 67,
-  "lentes": 2,
+  "lentes": 1,
   "nom": "entrée (réveil, deux pas)"
  },
  {
-  "ips": 56,
+  "ips": 59,
   "pire": 33,
   "lentes": 0,
   "nom": "attente après l’entrée"
  },
  {
-  "ips": 55,
-  "pire": 50,
-  "lentes": 2,
+  "ips": 57,
+  "pire": 33,
+  "lentes": 0,
   "nom": "poing"
  },
  {
   "ips": 60,
-  "pire": 33,
+  "pire": 17,
   "lentes": 0,
   "nom": "rebond (immunisé)"
  },
  {
   "ips": 54,
   "pire": 50,
-  "lentes": 1,
+  "lentes": 2,
   "nom": "flèche lourde (bosse)"
  },
  {
   "ips": 57,
-  "pire": 50,
-  "lentes": 1,
+  "pire": 33,
+  "lentes": 0,
   "nom": "piège : lumière d’abord"
  },
  {
-  "ips": 58,
+  "ips": 59,
   "pire": 33,
   "lentes": 0,
   "nom": "attente enragé"
  },
  {
-  "ips": 56,
-  "pire": 33,
-  "lentes": 0,
+  "ips": 53,
+  "pire": 50,
+  "lentes": 1,
   "nom": "poing enragé"
  },
  {
-  "ips": 59,
+  "ips": 58,
   "pire": 50,
   "lentes": 1,
   "nom": "acide : la plaque tombe"
  },
  {
+  "ips": 50,
+  "pire": 83,
+  "lentes": 2,
+  "nom": "lumière : cœur ébloui"
+ },
+ {
+  "ips": 56,
+  "pire": 50,
+  "lentes": 3,
+  "nom": "attente point faible ouvert"
+ },
+ {
   "ips": 55,
   "pire": 50,
   "lentes": 1,
-  "nom": "lumière : cœur ébloui"
+  "nom": "givre : la plaque éclate"
  },
  {
   "ips": 59,
   "pire": 33,
   "lentes": 0,
-  "nom": "attente point faible ouvert"
- },
- {
-  "ips": 60,
-  "pire": 33,
-  "lentes": 0,
-  "nom": "givre : la plaque éclate"
- },
- {
-  "ips": 60,
-  "pire": 33,
-  "lentes": 0,
   "nom": "huile"
  },
  {
-  "ips": 54,
+  "ips": 56,
   "pire": 50,
-  "lentes": 3,
+  "lentes": 2,
   "nom": "toux"
  },
  {
-  "ips": 50,
-  "pire": 67,
-  "lentes": 3,
+  "ips": 55,
+  "pire": 33,
+  "lentes": 0,
   "nom": "feu (rougeoie) + brûlé"
  },
  {
-  "ips": 54,
-  "pire": 33,
+  "ips": 58,
+  "pire": 34,
   "lentes": 0,
   "nom": "attente rougeoie + brûlé"
  },
  {
-  "ips": 54,
+  "ips": 51,
   "pire": 67,
-  "lentes": 5,
+  "lentes": 3,
   "nom": "mort (s’effondre)"
  },
  {
-  "ips": 53,
-  "pire": 150,
-  "lentes": 3,
+  "ips": 55,
+  "pire": 50,
+  "lentes": 2,
   "nom": "explosion"
  }
 ]

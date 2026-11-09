@@ -1,11 +1,12 @@
 """Fluidité du Gardien sur une « vieille tablette » : page mobile 1024 × 768, device_scale_factor 2, processeur ralenti ×6 (CDP).
-    flock /tmp/brumeval-pw.lock python3 perf.py [ralenti, défaut 6]
+    flock /tmp/brumeval-pw.lock python3 perf.py [ralenti, défaut 6] [filtre : seulement les moments dont le nom contient ce texte]
 Mesure les images par seconde pendant chaque moment de window.PERF (demo.html) : [nom, étapes mesurées, durée (ms), préparation (non mesurée)].
 Objectif (CONTRAT.md §4 bis) : ≥ 50 ips à l'attente, ≥ 40 pendant les actions et l'explosion. Résultats dans perf.json."""
 import os, sys, json
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
 RALENTI = int(sys.argv[1]) if len(sys.argv) > 1 else 6
+FILTRE = sys.argv[2] if len(sys.argv) > 2 else None
 MESURE = """(ms) => new Promise(ok => { var t = [], d = performance.now(); function f(x){ t.push(x); if(x - d < ms) requestAnimationFrame(f); else {
   var dt = []; for(var i = 1; i < t.length; i++) dt.push(t[i] - t[i-1]); dt.sort((a,b)=>a-b);
   ok({ips: Math.round((t.length - 1) / ((t[t.length-1] - t[0]) / 1000)), pire: Math.round(dt[dt.length-1]), lentes: dt.filter(x => x > 34).length}); } } requestAnimationFrame(f); })"""
@@ -24,6 +25,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(500)
     for e in pg.evaluate('PERF'):
         nom, etapes, ms = e[:3]
+        if FILTRE and FILTRE not in nom:
+            continue
         if len(e) > 3 and e[3]:
             pg.evaluate(LANCER, e[3])
             pg.wait_for_function('window.__ok', timeout=60000)
@@ -37,4 +40,5 @@ with sync_playwright() as p:
         pg.wait_for_timeout(800)
     b.close()
 print('erreurs :', errs or 'aucune')
-json.dump(res, open(os.path.join(ICI, 'perf.json'), 'w'), ensure_ascii=False, indent=1)
+if not FILTRE:
+    json.dump(res, open(os.path.join(ICI, 'perf.json'), 'w'), ensure_ascii=False, indent=1)
