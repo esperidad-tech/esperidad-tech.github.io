@@ -95,3 +95,12 @@ details.sec details.sec details.sec .sec-titre{font-size:15px; color:var(--texte
   .plier .petit{flex:1}
 }
 @media (prefers-reduced-motion:reduce){ .jouer.joue, .jouer.en-cours{animation:none} .fl{transition:none} }
+/* « à refaire » devant A, B, C (Romain, 9 novembre, 12 h 03) */
+.son{flex-wrap:wrap}
+.refaire-b{width:44px; height:44px; padding:0; border-radius:10px; border:2px solid #5a5070; background:#2c2638; color:var(--texte); font-size:18px; line-height:1}
+.refaire-b[aria-pressed="true"]{background:#e8833a; border-color:#ffb27a; color:#000}
+.refaire-t{display:flex; align-items:center; justify-content:center; height:32px; font-size:10px; line-height:1; color:var(--doux); white-space:nowrap}
+.son.a-refaire{border-color:#e8833a; background:rgba(232,131,58,.09)}
+.son.a-refaire .refaire-t{color:#ffb27a; font-weight:700}
+.son .pourquoi{display:none; flex:1 1 100%; min-width:0; margin:2px 0 1px; padding:6px 8px; border-radius:8px; border:1px solid #6a5a48; background:#191523; color:var(--texte); font:14px Andika, sans-serif}
+.son.a-refaire .pourquoi{display:block}

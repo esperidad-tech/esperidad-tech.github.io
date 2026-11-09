@@ -135,6 +135,23 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(400)
     verif(pg.is_checked('.v[data-cle="bourbeCriB"] input') and not pg.is_checked('.v[data-cle="arcB"] input') and pg.is_checked('.v[data-cle="arcA"] input'), 'les choix restent après rechargement')
 
+    print('— « à refaire » devant A, B, C (Romain, 12 h 03)')
+    premier = pg.evaluate("[...document.querySelector('.son[data-id=bourbeCri] .vs').children].map(x => x.className)")
+    verif(premier and premier[0] == 'v refaire', 'le bouton 🔁 « à refaire » est devant A, B, C (%s)' % premier[:2])
+    neuf0 = pg.evaluate("document.querySelector('details[data-id=e-bourbe] > summary .neuf').textContent")
+    pg.evaluate("document.querySelector('.son[data-id=bourbeRot] .refaire-b').click()")
+    pg.evaluate("""(() => { const q = document.querySelector('.son[data-id=bourbeRot] .pourquoi'); q.value = 'trop long'; q.dispatchEvent(new Event('input')); })()""")
+    pg.evaluate("document.querySelector('.son[data-id=bourbeCri] .refaire-b').click()")
+    r = pg.evaluate('ATELIER.texteRecap()')
+    verif('🔁 À REFAIRE (trop long)' in r, 'le récapitulatif dit « à refaire » et pourquoi')
+    verif('- Coassement : 🔁 À REFAIRE — en attendant : B' in r, '… et ce qui reste coché en attendant')
+    neuf1 = pg.evaluate("document.querySelector('details[data-id=e-bourbe] > summary .neuf').textContent")
+    verif(int(neuf1.split()[0] or 0) == int(neuf0.split()[0]) - 1, 'un son « à refaire » ne compte plus comme 🆕 (%s → %s)' % (neuf0, neuf1))
+    pg.reload(); pg.wait_for_timeout(400)
+    verif(pg.evaluate("document.querySelector('.son[data-id=bourbeRot]').classList.contains('a-refaire') && document.querySelector('.son[data-id=bourbeRot] .pourquoi').value === 'trop long'"), '« à refaire » et le pourquoi restent après rechargement')
+    pg.evaluate("document.querySelector('.son[data-id=bourbeCri] .refaire-b').click()")
+    verif('Coassement : 🔁' not in pg.evaluate('ATELIER.texteRecap()'), 'un second toucher enlève « à refaire »')
+
     print('— les règles de la page')
     pg.click('#ouvrir-tout'); pg.wait_for_timeout(150)
     manque = pg.evaluate("""() => { const r = [], mots = t => t.split(/\\s+/).filter(w => /[\\wÀ-ÿ]/.test(w)).length;
@@ -145,7 +162,7 @@ with sync_playwright() as p:
     verif(not manque, 'tout texte de plus de 3 mots a son 🔊 (titres courts) : %s' % manque)
     pg.click('#accueil .voix'); pg.wait_for_timeout(100)
     verif(pg.evaluate('window.__parle') == 1 and 'petit carré' in pg.evaluate('window.__dernier'), 'le 🔊 de l’accueil lit la phrase')
-    petites = pg.evaluate("""() => [...document.querySelectorAll('.jouer, .petit:not([hidden]), .stop, .voix, details.sec > summary, label.garde')].filter(b => { const r = b.getBoundingClientRect();
+    petites = pg.evaluate("""() => [...document.querySelectorAll('.jouer, .refaire-b, .petit:not([hidden]), .stop, .voix, details.sec > summary, label.garde')].filter(b => { const r = b.getBoundingClientRect();
         const minL = b.matches('label.garde') ? 40 : 44, minH = b.matches('label.garde') ? 30 : 44; return r.width > 0 && (r.width < minL || r.height < minH); }).map(b => b.className + ' ' + b.textContent.slice(0, 15))""")
     verif(not petites, 'cibles assez grandes pour un doigt : %s' % petites[:5])
     jaunes = pg.evaluate("""() => [...document.querySelectorAll('.jouer')].filter(b => getComputedStyle(b).color !== 'rgb(0, 0, 0)' || !/255, 210, 63|241, 234, 211/.test(getComputedStyle(b).backgroundColor)).length""")

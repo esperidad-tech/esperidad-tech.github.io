@@ -6,7 +6,7 @@
   "nom": "attente"
  },
  {
-  "ips": 62,
+  "ips": 61,
   "pire": 17,
   "lentes": 0,
   "nom": "attaquer"
@@ -37,7 +37,7 @@
  },
  {
   "ips": 60,
-  "pire": 67,
+  "pire": 33,
   "lentes": 1,
   "nom": "explosion"
  }
