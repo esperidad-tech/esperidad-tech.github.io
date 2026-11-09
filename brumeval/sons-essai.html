@@ -106,6 +106,16 @@ details.sec details.sec details.sec .sec-titre{font-size:15px; color:var(--texte
   .plier .petit{flex:1}
 }
 @media (prefers-reduced-motion:reduce){ .jouer.joue, .jouer.en-cours{animation:none} .fl{transition:none} }
+/* « à refaire » devant A, B, C (Romain, 9 novembre, 12 h 03) */
+.son{flex-wrap:wrap}
+.refaire-b{width:44px; height:44px; padding:0; border-radius:10px; border:2px solid #5a5070; background:#2c2638; color:var(--texte); font-size:18px; line-height:1}
+.refaire-b[aria-pressed="true"]{background:#e8833a; border-color:#ffb27a; color:#000}
+.refaire-t{display:flex; align-items:center; justify-content:center; height:32px; font-size:10px; line-height:1; color:var(--doux); white-space:nowrap}
+.son.a-refaire{border-color:#e8833a; background:rgba(232,131,58,.09)}
+.son.a-refaire .refaire-t{color:#ffb27a; font-weight:700}
+.son .pourquoi{display:none; flex:1 1 100%; min-width:0; margin:2px 0 1px; padding:6px 8px; border-radius:8px; border:1px solid #6a5a48; background:#191523; color:var(--texte); font:14px Andika, sans-serif}
+.son.a-refaire .pourquoi{display:block}
+.vr{display:flex; flex-direction:column; align-items:center; margin-right:4px}
 
 </style>
 </head>
@@ -120,7 +130,7 @@ details.sec details.sec details.sec .sec-titre{font-size:15px; color:var(--texte
   </span>
 </header>
 <main>
-  <p class="accueil" id="accueil"><span>Touche <b>A</b>, <b>B</b> ou <b>C</b> pour écouter, puis coche le petit carré sous ce que tu valides. ✅&nbsp;déjà choisi, 🆕&nbsp;nouveau, 🎮&nbsp;déjà dans le jeu.</span></p>
+  <p class="accueil" id="accueil"><span>Touche <b>A</b>, <b>B</b> ou <b>C</b> pour écouter, puis coche le petit carré sous ce que tu valides. Aucune ne va&nbsp;? 🔁&nbsp;à refaire. ✅&nbsp;déjà choisi, 🆕&nbsp;nouveau, 🎮&nbsp;déjà dans le jeu.</span></p>
   <div id="atelier"></div>
 </main>
 <div class="pied">
@@ -3926,11 +3936,12 @@ var STATUT = {valide:['✅', 'validé par Romain'], nouveau:['🆕', 'nouveau, �
 (function aplatir(l, chemin){ l.forEach(function(sec){ var c = chemin.concat([sec.titre]); (sec.sons || []).forEach(function(s){ SONS.push({s:s, chemin:c}); }); aplatir(sec.sous || [], c); }); })(ARBRE, []);
 
 /* =================== la mémoire (dans ce navigateur seulement) =================== */
-var etat = {coches:{}, note:'', volume:80};
+var etat = {coches:{}, refaire:{}, pourquoi:{}, note:'', volume:80};   /* refaire[id] : aucune version ne va, son à refaire (Romain, 9 novembre, 12 h 03) */
 var lu = null;
 try{ lu = JSON.parse(localStorage.getItem(CLE) || 'null'); }catch(e){}
 if(lu && typeof lu === 'object'){
-  etat.coches = lu.coches || {}; etat.note = lu.note || ''; if(typeof lu.volume === 'number') etat.volume = lu.volume;
+  etat.coches = lu.coches || {}; etat.refaire = lu.refaire || {}; etat.pourquoi = lu.pourquoi || {};
+  etat.note = lu.note || ''; if(typeof lu.volume === 'number') etat.volume = lu.volume;
 } else {
   /* la première fois : les choix déjà faits par Romain (table CHOIX du jeu) sont précochés ; il peut changer d'avis */
   SONS.forEach(function(e){
@@ -4107,6 +4118,7 @@ function carteSon(s){
   ic.title = STATUT[st][1]; ic.setAttribute('aria-label', STATUT[st][1]);
   nom.appendChild(ic); nom.appendChild(el('span', 't', s.t)); c.appendChild(nom);
   var vs = el('div', 'vs');
+  vs.appendChild(caseRefaire(s, c));
   versions(s).forEach(function(v){
     var cle = cleDe(s, v), boite = el('div', 'v'), b = el('button', 'jouer' + (v[1].length > 2 ? ' mot' : ''), v[1]); b.type = 'button';
     boite.dataset.cle = cle;
@@ -4126,7 +4138,28 @@ function carteSon(s){
     vs.appendChild(boite);
   });
   c.appendChild(vs);
+  /* « à refaire » : une petite ligne pour dire pourquoi (facultatif) */
+  var pq = el('input', 'pourquoi'); pq.type = 'text'; pq.placeholder = 'Pourquoi ? (facultatif)'; pq.value = etat.pourquoi[s.id] || '';
+  pq.setAttribute('aria-label', 'Pourquoi refaire « ' + s.t + ' »');
+  pq.addEventListener('input', function(){ if(pq.value.trim()) etat.pourquoi[s.id] = pq.value; else delete etat.pourquoi[s.id]; sauver(); recap(); });
+  c.appendChild(pq);
+  c.classList.toggle('a-refaire', !!etat.refaire[s.id]);
   return c;
+}
+function caseRefaire(s, carte){
+  var boite = el('div', 'vr'), b = el('button', 'refaire-b', '🔁'); b.type = 'button';
+  b.setAttribute('aria-label', '« ' + s.t + ' » : à refaire');
+  b.setAttribute('aria-pressed', etat.refaire[s.id] ? 'true' : 'false');
+  b.addEventListener('click', function(){
+    var on = !etat.refaire[s.id];
+    if(on) etat.refaire[s.id] = true; else delete etat.refaire[s.id];
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    carte.classList.toggle('a-refaire', on);
+    if(on){ var q = carte.querySelector('.pourquoi'); if(q) setTimeout(function(){ try{ q.focus({preventScroll:true}); }catch(e){} }, 30); }
+    sauver(); recap(); compteurs();
+  });
+  boite.appendChild(b); boite.appendChild(el('span', 'refaire-t', 'à refaire'));
+  return boite;
 }
 function carteChaine(ch){
   var c = el('div', 'son chaine'), nom = el('div', 'nom'); nom.appendChild(el('span', 'st', '🔗')); nom.appendChild(el('span', 't', ch.t)); c.appendChild(nom);
@@ -4158,7 +4191,7 @@ function section(sec, profondeur, chemin){
 function compteurs(){
   SECTIONS.forEach(function(x){
     var cartes = x.d.querySelectorAll('.son:not(.chaine)'), n = 0, neufs = 0;
-    cartes.forEach(function(c){ n++; if(c.dataset.statut === 'nouveau' && !c.querySelector('input:checked')) neufs++; });
+    cartes.forEach(function(c){ n++; if(c.dataset.statut === 'nouveau' && !c.querySelector('input:checked') && !c.classList.contains('a-refaire')) neufs++; });
     x.nb.textContent = n + (n > 1 ? ' sons' : ' son');
     x.neuf.textContent = neufs ? neufs + ' 🆕' : '';
     x.neuf.hidden = !neufs;
@@ -4182,6 +4215,11 @@ function texteRecap(){
         var pris = [], rien = [];
         sec.sons.forEach(function(s){
           var vs = versions(s).filter(function(v){ return etat.coches[cleDe(s, v)]; });
+          if(etat.refaire[s.id]){
+            var pq = (etat.pourquoi[s.id] || '').trim();
+            pris.push('- ' + s.t + ' : 🔁 À REFAIRE' + (pq ? ' (' + pq + ')' : '') + (vs.length ? ' — en attendant : ' + vs.map(function(v){ return v[1]; }).join(' + ') : ''));
+            return;
+          }
           if(!vs.length){ rien.push(s.t); return; }
           pris.push('- ' + s.t + ' : ' + (s.x ? 'validé' : vs.map(function(v){ return v[1]; }).join(' + ')) + (statut(s) === 'nouveau' ? ' (nouveau)' : ''));
         });
@@ -4231,7 +4269,7 @@ function haut(){
     p.addEventListener('click', function(){ try{ navigator.share({title:'Mes choix de sons', text:texteRecap()}); }catch(e){} });
   }
   var acc = document.getElementById('accueil');
-  acc.appendChild(boutonVoix('Touche A, B ou C pour écouter, puis coche le petit carré sous ce que tu valides. Coche verte : déjà choisi. Nouveau : à écouter. Manette : le son est déjà dans le jeu. Tout en bas, copie tes choix et envoie-les.'));
+  acc.appendChild(boutonVoix('Touche A, B ou C pour écouter, puis coche le petit carré sous ce que tu valides. Si aucune version ne va, touche le bouton à refaire, devant, et dis pourquoi si tu veux. Coche verte : déjà choisi. Nouveau : à écouter. Manette : le son est déjà dans le jeu. Tout en bas, copie tes choix et envoie-les.'));
 }
 
 /* pour les tests et le banc d'essai */
