@@ -234,7 +234,7 @@ function carteSon(s){
   return c;
 }
 function caseRefaire(s, carte){
-  var boite = el('div', 'v refaire'), b = el('button', 'refaire-b', '🔁'); b.type = 'button';
+  var boite = el('div', 'vr'), b = el('button', 'refaire-b', '🔁'); b.type = 'button';
   b.setAttribute('aria-label', '« ' + s.t + ' » : à refaire');
   b.setAttribute('aria-pressed', etat.refaire[s.id] ? 'true' : 'false');
   b.addEventListener('click', function(){

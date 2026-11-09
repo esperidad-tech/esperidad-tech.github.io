@@ -560,10 +560,11 @@ B._flammes = function(cle, specs){
   if(!specs) return null;
   function flamme(h, w, r, n){
     var dl = (n * .13 % .4).toFixed(2), dur = (.3 + (n * .07 % .22)).toFixed(2);
-    return '<g transform="rotate(' + (r || 0) + ')">' +
-      '<path d="' + flammeD(h, w) + '" fill="' + G.feu1 + '" stroke="#5a1a08" stroke-width="2" class="' + PX + '-fl" style="animation-delay:-' + dl + 's;animation-duration:' + dur + 's"/>' +
-      '<path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e" class="' + PX + '-fl2" style="animation-delay:-' + dl + 's;animation-duration:' + (dur * .8).toFixed(2) + 's"/>' +
-      '<path d="' + flammeD(h * .42, w * .36) + '" fill="' + G.feu2 + '"/></g>';
+    /* une seule animation par flamme (le groupe entier ondule) */
+    return '<g transform="rotate(' + (r || 0) + ')"><g class="' + PX + '-fl" style="animation-delay:-' + dl + 's;animation-duration:' + dur + 's">' +
+      '<path d="' + flammeD(h, w) + '" fill="' + G.feu1 + '" stroke="#5a1a08" stroke-width="2"/>' +
+      '<path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e"/>' +
+      '<path d="' + flammeD(h * .42, w * .36) + '" fill="' + G.feu2 + '"/></g></g>';
   }
   var g = this._el(this.S.monde, ''), o = {g: g, specs: specs, raf: 0}, refs = [];
   specs.forEach(function(s, n){ s.g = self._el(g, (s.lueur ? '<ellipse cx="0" cy="' + f1(-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="' + G.lueurFeu + '"/>' : '') + (s.h ? flamme(s.h, s.w, s.r, n) : '')); if(refs.indexOf(s.ref) < 0) refs.push(s.ref); s.i = refs.indexOf(s.ref); });

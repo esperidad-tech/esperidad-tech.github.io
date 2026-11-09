@@ -104,3 +104,4 @@ details.sec details.sec details.sec .sec-titre{font-size:15px; color:var(--texte
 .son.a-refaire .refaire-t{color:#ffb27a; font-weight:700}
 .son .pourquoi{display:none; flex:1 1 100%; min-width:0; margin:2px 0 1px; padding:6px 8px; border-radius:8px; border:1px solid #6a5a48; background:#191523; color:var(--texte); font:14px Andika, sans-serif}
 .son.a-refaire .pourquoi{display:block}
+.vr{display:flex; flex-direction:column; align-items:center; margin-right:4px}

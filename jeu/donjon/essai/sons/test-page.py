@@ -137,7 +137,7 @@ with sync_playwright() as p:
 
     print('— « à refaire » devant A, B, C (Romain, 12 h 03)')
     premier = pg.evaluate("[...document.querySelector('.son[data-id=bourbeCri] .vs').children].map(x => x.className)")
-    verif(premier and premier[0] == 'v refaire', 'le bouton 🔁 « à refaire » est devant A, B, C (%s)' % premier[:2])
+    verif(premier and premier[0] == 'vr', 'le bouton 🔁 « à refaire » est devant A, B, C (%s)' % premier[:2])
     neuf0 = pg.evaluate("document.querySelector('details[data-id=e-bourbe] > summary .neuf').textContent")
     pg.evaluate("document.querySelector('.son[data-id=bourbeRot] .refaire-b').click()")
     pg.evaluate("""(() => { const q = document.querySelector('.son[data-id=bourbeRot] .pourquoi'); q.value = 'trop long'; q.dispatchEvent(new Event('input')); })()""")

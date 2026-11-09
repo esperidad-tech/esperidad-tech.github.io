@@ -575,10 +575,11 @@ B._flammes = function(cle, specs){
   if(!specs) return null;
   function flamme(h, w, r, n){
     var dl = (n * .13 % .4).toFixed(2), dur = (.3 + (n * .07 % .22)).toFixed(2);
-    return '<g transform="rotate(' + (r || 0) + ')">' +
-      '<path d="' + flammeD(h, w) + '" fill="' + G.feu1 + '" stroke="#5a1a08" stroke-width="2" class="' + PX + '-fl" style="animation-delay:-' + dl + 's;animation-duration:' + dur + 's"/>' +
-      '<path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e" class="' + PX + '-fl2" style="animation-delay:-' + dl + 's;animation-duration:' + (dur * .8).toFixed(2) + 's"/>' +
-      '<path d="' + flammeD(h * .42, w * .36) + '" fill="' + G.feu2 + '"/></g>';
+    /* une seule animation par flamme (le groupe entier ondule) */
+    return '<g transform="rotate(' + (r || 0) + ')"><g class="' + PX + '-fl" style="animation-delay:-' + dl + 's;animation-duration:' + dur + 's">' +
+      '<path d="' + flammeD(h, w) + '" fill="' + G.feu1 + '" stroke="#5a1a08" stroke-width="2"/>' +
+      '<path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e"/>' +
+      '<path d="' + flammeD(h * .42, w * .36) + '" fill="' + G.feu2 + '"/></g></g>';
   }
   var g = this._el(this.S.monde, ''), o = {g: g, specs: specs, raf: 0}, refs = [];
   specs.forEach(function(s, n){ s.g = self._el(g, (s.lueur ? '<ellipse cx="0" cy="' + f1(-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="' + G.lueurFeu + '"/>' : '') + (s.h ? flamme(s.h, s.w, s.r, n) : '')); if(refs.indexOf(s.ref) < 0) refs.push(s.ref); s.i = refs.indexOf(s.ref); });
@@ -1392,8 +1393,8 @@ R._evenement = function(){
 R._specsFeu = function(){
   var S = this.J.souffle.firstElementChild, T = this.J.tete.firstElementChild, Q = this.J.q2.firstElementChild, s = [];
   s.push({ref: S, x: 360, y: 150, lueur: [150, 90]});
-  [[262, 176, 46, 24, -12], [292, 156, 66, 30, -6], [322, 142, 84, 34, -2], [354, 132, 70, 30, 2], [386, 128, 96, 38, 0], [416, 134, 78, 32, 6], [446, 154, 88, 34, 10], [470, 190, 58, 26, 16], [484, 232, 42, 22, 22]].forEach(function(q){ s.push({ref: S, x: q[0], y: q[1], h: q[2], w: q[3], r: q[4]}); });
-  s.push({ref: T, x: 182, y: 200, h: 46, w: 22, r: -6}, {ref: T, x: 214, y: 214, h: 34, w: 18, r: 10});
+  [[268, 172, 52, 26, -12], [318, 144, 84, 36, -3], [362, 130, 74, 32, 2], [400, 128, 98, 40, 2], [446, 154, 88, 36, 10], [482, 222, 50, 24, 20]].forEach(function(q){ s.push({ref: S, x: q[0], y: q[1], h: q[2], w: q[3], r: q[4]}); });
+  s.push({ref: T, x: 190, y: 202, h: 46, w: 24, r: -6});
   s.push({ref: Q, x: 526, y: 274, h: 34, w: 18, r: 0, lueur: [34, 30]});
   return s;
 };
