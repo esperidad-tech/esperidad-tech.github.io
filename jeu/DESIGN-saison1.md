@@ -2154,7 +2154,15 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 - 4 pages de sauvegarde en tout ;
 - l'ordre de construction : monstres animés et décors, puis le moteur, puis l'équilibre par simulation et les tests.
 
-**En cours** : les monstres animés (contrat commun : `jeu/donjon/anim/betes/CONTRAT.md`).
+**En cours** : les monstres animés (contrat commun : `jeu/donjon/anim/betes/CONTRAT.md`). Chacun a un module dans `jeu/donjon/anim/betes/<id>/`, avec une démo, une vidéo et une planche de poses ; tous sont fluides avec le processeur ralenti ×6.
+- Faits le 9 novembre vers 12 h 30 :
+  - le rat cuirassé : la louche lui donne le tournis puis fait tomber le casque ; l'acide fait tomber l'armure, le givre la fait éclater ; le feu la fait rougeoyer ;
+  - l'araignée des caves : la toile qui reste, l'éclosion de 2 petites ;
+  - la petite araignée ;
+  - Bourbe : langue et avalé, saut, berge, sec, sur le dos, gonflé, plongeon, chatouille, gelé ;
+  - le têtard.
+- En cours : la chauve-souris, le feu follet et le Gardien de rouille.
+- Ensuite : le Roi des rats, les décors, et les nouvelles armes des héros.
 
 **En attente de Romain** :
 - le code par joueur ;
