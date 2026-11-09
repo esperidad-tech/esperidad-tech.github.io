@@ -1,4 +1,4 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 9 novembre à 9 h 55)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 9 novembre à 10 h)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
@@ -37,6 +37,7 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
 - Les agents ne modifient les fichiers partagés qu'avec l'outil Edit (pas de script Python ou sed qui réécrit une source).
 - Ce qui est en discussion ne se construit pas sans un « go » explicite de sa part.
 - Jamais de lecture vocale automatique : seulement des boutons 🔊.
+- **Sons et musiques : on travaille UNIQUEMENT avec l'Atelier des sons** (https://esperidad-tech.github.io/brumeval/sons-essai.html, sources `jeu/donjon/essai/sons/`). Dès qu'on parle de son ou de musique, on le met à jour (sans en refaire un autre), dans le bon onglet (Le jeu, Mini-jeux, Donjon, Bestiaire, Musiques…), et Romain écoute et valide là (Romain, 9 novembre, 9 h 55). Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
 - **Boutons jaunes avec texte noir** pour tout bouton « aller / lancer » (§12.16). Avant chaque mini-jeu : une explication + un bouton jaune (`M.lancerMJ`).
 - Quand il demande un lien, coller l'URL.
 - Talents et boutique : plus tard.
