@@ -12,17 +12,22 @@ function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
 /* les bruits de base et les réponses de salle, fabriqués une seule fois par fréquence d'échantillonnage :
    un tampon sert à tous les contextes (le jeu, et chaque pré-calcul hors ligne n'a plus à les refaire) */
 var DEJA = {};
+/* Moteur.oublier(sr) : libère ces tampons pour une fréquence (après un pré-calcul hors ligne, ils ne servent plus) */
+function oublier(sr){ delete DEJA[sr]; }
 function Moteur(ctx, opt){
   opt = opt || {};
   var sr = ctx.sampleRate, horsLigne = !!opt.horsLigne;
   var A = {ctx:ctx, sr:sr, hasard:hasard, choix:choix, midi:midi, horsLigne:horsLigne};
   var deja = DEJA[sr] = DEJA[sr] || {};
 
-  /* ---------- les bruits de base (3 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ---------- */
-  function tampon(sec, ncan, fn, nom){
+  /* ---------- les bruits de base (2 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ----------
+     (9 novembre, mémoire de l'iPhone : le bruit brun et le bruit lent, presque sans aigus, sont fabriqués à une fréquence
+     plus basse — 12 000 et 3 000 Hz — : le navigateur les remet à la bonne fréquence en les jouant, le son est le même) */
+  function tampon(sec, ncan, fn, nom, srb){
     if(nom && deja[nom]) return deja[nom];
-    var n = Math.floor(sr * sec), b = ctx.createBuffer(ncan || 1, n, sr);
-    for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c);
+    srb = srb || sr;
+    var n = Math.floor(srb * sec), b = ctx.createBuffer(ncan || 1, n, srb);
+    for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c, srb);
     if(nom) deja[nom] = b;
     return b;
   }
@@ -30,8 +35,8 @@ function Moteur(ctx, opt){
     var s = 0, i; for(i = 0; i < n; i++) s += d[i] * d[i];
     var k = cible / Math.sqrt(s / n || 1); for(i = 0; i < n; i++) d[i] *= k;
   }
-  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
-  A.rose = tampon(3, 1, function(d, n){
+  A.blanc = tampon(2, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
+  A.rose = tampon(2, 1, function(d, n){
     var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for(var i = 0; i < n; i++){
       var w = Math.random() * 2 - 1;
@@ -41,20 +46,20 @@ function Moteur(ctx, opt){
     }
     normaliseRms(d, n, .3);
   }, 'rose');
-  A.brun = tampon(3, 1, function(d, n){
-    var l = 0, i;
-    for(i = 0; i < n; i++){ l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l; }
+  A.brun = tampon(3, 1, function(d, n, c, srb){
+    var l = 0, i, k = .02 * 44100 / srb;                       /* la même pente qu'à 44 100 Hz */
+    for(i = 0; i < n; i++){ l = (l + k * (Math.random() * 2 - 1)) / (1 + k); d[i] = l; }
     var pente = (d[n - 1] - d[0]) / n;                         /* pour que la boucle ne claque pas */
     for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .3);
-  }, 'brun');
+  }, 'brun', Math.min(sr, 12000));
   /* un bruit très lent (sous 90 Hz) : sert à faire trembler une hauteur ou un volume, comme un vrai gosier */
-  A.lent = tampon(4, 1, function(d, n){
-    var a = 1 - Math.exp(-2 * Math.PI * 90 / sr), l1 = 0, l2 = 0, i;
+  A.lent = tampon(4, 1, function(d, n, c, srb){
+    var a = 1 - Math.exp(-2 * Math.PI * 90 / srb), l1 = 0, l2 = 0, i;
     for(i = 0; i < n; i++){ l1 += (Math.random() * 2 - 1 - l1) * a; l2 += (l1 - l2) * a; d[i] = l2; }
     var pente = (d[n - 1] - d[0]) / n; for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .5);
-  }, 'lent');
+  }, 'lent', Math.min(sr, 3000));
 
   /* ---------- la réverbération : une réponse fabriquée (premiers échos sur la pierre, puis une queue qui s'assombrit) ---------- */
   function reponse(duree, o, nom){
@@ -270,7 +275,7 @@ function Moteur(ctx, opt){
       n.connect(rg); n = rg;
     }
     n.connect(amp); amp.connect(dest);
-    s.start(t, hasard(0, 2.5)); s.stop(fin + .05); nettoie(s, amp);
+    s.start(t, hasard(0, s.buffer.duration * .9)); s.stop(fin + .05); nettoie(s, amp);
     return {src:s, gain:amp, fin:fin};
   };
 
@@ -556,6 +561,6 @@ function Moteur(ctx, opt){
   return A;
 }
 
-G.Moteur = Moteur;
+G.Moteur = Moteur; G.Moteur.oublier = oublier;
 G.Moteur.hasard = hasard; G.Moteur.choix = choix; G.Moteur.midi = midi;
 })(window);

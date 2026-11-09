@@ -112,7 +112,10 @@ function fusionLk(role, lk){
   return r;
 }
 function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
-var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles],' +
+  /* les objets du donjon et les flèches spéciales (a2-objets.js) : de petits îlots vectoriels, cachés au départ ; ils ne coûtent
+     ni image ni temps de cuisson, et ne sont peints qu'une fois, quand on les montre (mémoire de l'iPhone) */
+  '[data-eq],[data-argent],[data-lourde],[data-givre],[data-acide]';
 function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;

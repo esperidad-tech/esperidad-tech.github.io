@@ -73,7 +73,7 @@ p{margin:0}
   padding:18px 20px 18px;display:flex;flex-direction:column;gap:12px;animation:fen .3s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes fen{from{transform:translateY(16px) scale(.97);opacity:0}to{transform:none;opacity:1}}
 .fen h2{font-size:26px;text-shadow:0 2px 0 var(--encre)}
-.fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px}
+.fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px;min-height:48px}
 .fen .titre h2{flex:1}
 .fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
 .fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
@@ -85,7 +85,7 @@ p{margin:0}
 /* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
 .pave-fen{width:min(820px, 100%)}
 .pave-corps{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 22px;align-items:center}
-.pave-gauche{display:flex;flex-direction:column;align-items:center;gap:12px}
+.pave-gauche{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:300px}
 .saisie{display:flex;gap:10px}
 .case{width:clamp(56px, 11vh, 80px);height:clamp(56px, 11vh, 80px);border-radius:16px;border:3px dashed #5a4a6e;display:grid;place-items:center;font-size:clamp(30px, 6vh, 42px);background:rgba(0,0,0,.25)}
 .case.pleine{border-style:solid;border-color:var(--or);background:var(--creme);animation:pop .25s}
@@ -95,7 +95,7 @@ p{margin:0}
 .pave button:active{transform:scale(.94);background:#3a2e58}
 .pave-msg{min-height:56px}
 .pave-msg .bulle.ko{background:#ffe0d6;border-color:#6a1e14}
-@media (max-width:640px), (max-height:430px){ .pave-corps{grid-template-columns:auto minmax(0,1fr);gap:8px 14px} .pave{gap:6px} }
+@media (max-width:640px), (max-height:430px){ .pave-corps{grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:8px 14px} .pave-gauche{gap:8px} .pave{gap:6px} .pave-expl{font-size:14px} }
 
 /* ---------- le code en grand (pages du Sage, recettes de l'Alchimiste) ---------- */
 .code-grand{display:flex;gap:10px;justify-content:center}

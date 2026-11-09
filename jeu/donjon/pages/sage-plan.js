@@ -84,7 +84,7 @@ function detailsV1(id){
     [[714, 436], [770, 462], [736, 470], [790, 434]].forEach(function(q, i){ s += L('M' + q[0] + ' ' + q[1] + ' q5 -2 10 0 t10 0', '#2e5a6a', w * .7); });
     [[722, 436, 6], [796, 462, 5], [776, 428, 4.5]].forEach(function(q){ s += '<path d="M' + q[0] + ' ' + q[1] + ' l' + q[2] + ' -1.5 a' + q[2] + ' ' + q[2] + ' 0 1 1 0 3 Z" fill="#9fb48a" stroke="' + ENC + '" stroke-width="' + w * .6 + '"/>'; });
     /* deux yeux qui dépassent de l'eau */
-    s += '<ellipse cx="752" cy="452" rx="9" ry="5" fill="none" stroke="' + ENC + '" stroke-width="' + w * .8 + '"/>' + Ci(748, 450, 2.2, 'none', ' stroke="' + ENC + '" stroke-width="' + w * .7 + '"') + Ci(756, 450, 2.2, 'none', ' stroke="' + ENC + '" stroke-width="' + w * .7 + '"') + Ci(748, 450, .9, ENC) + Ci(756, 450, .9, ENC);
+    s += '<g transform="translate(-6 15)"><ellipse cx="752" cy="452" rx="9" ry="5" fill="none" stroke="' + ENC + '" stroke-width="' + w * .8 + '"/>' + Ci(748, 450, 2.2, 'none', ' stroke="' + ENC + '" stroke-width="' + w * .7 + '"') + Ci(756, 450, 2.2, 'none', ' stroke="' + ENC + '" stroke-width="' + w * .7 + '"') + Ci(748, 450, .9, ENC) + Ci(756, 450, .9, ENC) + '</g>';
     break;
   case 'porte4': s += Ci(905, 410, 20, 'none', ' stroke="' + ENC + '" stroke-width="' + w + '"') + Ci(905, 410, 15.5, 'none', ' stroke="' + ENC2 + '" stroke-width="' + w * .6 + '"') + L('M889 410 H921 M905 394 V426', ENC2, w * .5);
     s += '<g transform="translate(897 402) scale(.42)"><path d="' + C.SIGNES.oeil + '" fill="none" stroke="' + ENC + '" stroke-width="2.2"/></g>' +
@@ -304,7 +304,7 @@ function svg(){
     '<rect x="' + f(cad.x + 25) + '" y="' + f(cad.y + 24) + '" width="' + f(cad.w - 50) + '" height="' + f(cad.h - 48) + '" fill="none" stroke="' + ENC2 + '" stroke-width="1.3" opacity=".55"/>';
   q += '<g class="encre-plan">' + donjon('c', true) + '</g>';
   P.noms.forEach(function(n){ if(n.coin) q += texte(n.x, n.y, n.l, n.t); });
-  P.notes.forEach(function(n){ if(n.type === 'coin') q += texte(n.x, n.y, n.lignes, 21, ROUGE); });
+  P.notes.forEach(function(n){ if(n.type === 'coin') q += texte(n.x, n.y, n.lignes, 19, ROUGE); });
   /* le petit cœur d'Odette (quand le Sage a reçu « Odette est derrière la porte ») */
   q += '<g class="coeur-odette" style="display:none">' + G(2352, 1196, -8, 1, '<path d="M0 6 C -10 -2 -8 -10 -2 -9 C 0 -9 0 -7 0 -6 C 0 -7 0 -9 2 -9 C 8 -10 10 -2 0 6 Z" fill="#c0392b" opacity=".85" stroke="' + ENC + '" stroke-width="1.2"/>') +
     texte(2352, 1224, ['Odette'], 19, ROUGE) + '</g>';

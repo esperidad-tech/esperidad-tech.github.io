@@ -1,8 +1,9 @@
 /* ============ les objets du donjon (équipement visible) et les dessins des nouvelles réactions ============
    Deux sortes de dessins ici :
    - l'ÉQUIPEMENT (carquois d'argent ou lourd, cristal de lune, bâton de chêne, sacoche, amulette) et les FLÈCHES spéciales :
-     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">). Elles sont « cuites » en
-     images avec le reste (RAPIDITE.md R1) ; equiper() ne fait que les montrer ou les cacher ;
+     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">), à leur place dans l'ordre
+     du dessin. À la cuisson (RAPIDITE.md R1), elles restent de petits îlots vectoriels (contenu fixe, sans filtre) : aucune
+     image en plus en mémoire, aucun temps de cuisson en plus ; equiper() ne fait que les montrer ou les cacher ;
    - les calques des RÉACTIONS (givre, bave, toile) : de petits dessins SVG fixes, posés à la demande dans la pièce qu'ils
      suivent (cuit : un îlot, peint une fois, puis déplacé et estompé par la carte graphique). Ils ne changent jamais de forme. */
 

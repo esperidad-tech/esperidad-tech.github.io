@@ -86,7 +86,7 @@ p{margin:0}
   padding:18px 20px 18px;display:flex;flex-direction:column;gap:12px;animation:fen .3s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes fen{from{transform:translateY(16px) scale(.97);opacity:0}to{transform:none;opacity:1}}
 .fen h2{font-size:26px;text-shadow:0 2px 0 var(--encre)}
-.fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px}
+.fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px;min-height:48px}
 .fen .titre h2{flex:1}
 .fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
 .fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
@@ -98,7 +98,7 @@ p{margin:0}
 /* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
 .pave-fen{width:min(820px, 100%)}
 .pave-corps{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 22px;align-items:center}
-.pave-gauche{display:flex;flex-direction:column;align-items:center;gap:12px}
+.pave-gauche{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:300px}
 .saisie{display:flex;gap:10px}
 .case{width:clamp(56px, 11vh, 80px);height:clamp(56px, 11vh, 80px);border-radius:16px;border:3px dashed #5a4a6e;display:grid;place-items:center;font-size:clamp(30px, 6vh, 42px);background:rgba(0,0,0,.25)}
 .case.pleine{border-style:solid;border-color:var(--or);background:var(--creme);animation:pop .25s}
@@ -108,7 +108,7 @@ p{margin:0}
 .pave button:active{transform:scale(.94);background:#3a2e58}
 .pave-msg{min-height:56px}
 .pave-msg .bulle.ko{background:#ffe0d6;border-color:#6a1e14}
-@media (max-width:640px), (max-height:430px){ .pave-corps{grid-template-columns:auto minmax(0,1fr);gap:8px 14px} .pave{gap:6px} }
+@media (max-width:640px), (max-height:430px){ .pave-corps{grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:8px 14px} .pave-gauche{gap:8px} .pave{gap:6px} .pave-expl{font-size:14px} }
 
 /* ---------- le code en grand (pages du Sage, recettes de l'Alchimiste) ---------- */
 .code-grand{display:flex;gap:10px;justify-content:center}
@@ -789,8 +789,8 @@ var PLAN = {
     {lieu:'camp', x:2135, y:1080, l:['Le feu', 'de camp'], t:20},
     {lieu:'eboulis', x:1800, y:1170, l:['Le cul-de-sac éboulé'], t:22},
     /* sur le coin déchiré */
-    {lieu:'bassin', x:2100, y:1255, l:['Le grand', 'bassin'], t:22, coin:true},
-    {lieu:'leo', x:2290, y:1040, l:['La dernière', 'salle'], t:19, coin:true}
+    {lieu:'bassin', x:2100, y:1330, l:['Le grand bassin'], t:20, coin:true},
+    {lieu:'leo', x:2290, y:1077, l:['La dernière', 'salle'], t:17, coin:true}
   ],
   /* les signes au lieu des noms, et les mêmes sur les trois portes */
   signes:[
@@ -810,7 +810,7 @@ var PLAN = {
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
     {id:'dalles', type:'piege', x:px(718), y:py(236), lignes:['seulement les', 'dalles claires'], pres:'dalles', crane:{x:px(678), y:py(234)}},
-    {id:'bourbe', type:'coin', x:2105, y:1180, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
+    {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
   ],
   /* le passage bloqué : le vieux plan dessine la grande galerie intacte jusqu'à la grotte de givre ; dans le donjon, elle est
      effondrée (le Pisteur ne voit que des éboulis) : il faut se parler */
@@ -1544,7 +1544,7 @@ function peindreBrume(ctx, fs){
   var N = 96, nx = 160, ny = 100, a = bruit(N, [[3, .45], [6, .3], [12, .17], [24, .08]], 7), b = bruit(N, [[2, .5], [5, .35], [10, .15]], 33);
   var im = document.createElement('canvas'); im.width = nx; im.height = ny;
   var ix = im.getContext('2d'), d = ix.createImageData(nx, ny);
-  var bas = hx('#24203a'), mil = hx('#4e4870'), haut = hx('#756d9c'), banc = hx('#a49cc8');
+  var bas = hx('#1c1830'), mil = hx('#423c62'), haut = hx('#6a6290'), banc = hx('#9a92c0');
   for(var y = 0; y < ny; y++) for(var x = 0; x < nx; x++){
     var i = y * nx + x, u = a[(Math.floor(y / ny * N) % N) * N + Math.floor(x / nx * N) % N], v = b[(Math.floor(y / ny * N * .7) % N) * N + Math.floor(x / nx * N * .7) % N];
     u = Math.max(0, Math.min(1, (u - .5) * 2.2 + .5));
@@ -1922,6 +1922,13 @@ function vue(el, o){
   function deplacer(id, depuis, opt){
     opt = opt || {};
     var pts = trace(id, depuis, opt.t0, opt.t1); if(pts.length < 2) return Promise.resolve();
+    /* du centre du lieu jusqu'au début du couloir ; et, au bout, jusqu'au centre du lieu d'arrivée (opt.vers) */
+    if(opt.depuisPion !== false && Math.hypot(pts[0][0] - pion.x, pts[0][1] - pion.y) > 2) pts.unshift([pion.x, pion.y]);
+    if(opt.vers){
+      var V = typeof opt.vers === 'string' ? (LIEUX[opt.vers] || (opt.vers === 'J' ? J : null)) : opt.vers;
+      var estCouloir = typeof opt.vers === 'string' && LIEUX[opt.vers] && LIEUX[opt.vers].couloir;
+      if(V && !estCouloir) pts.push([V.x, V.y]);
+    }
     var m = mesure(pts), n = Math.max(2, Math.round(m.L / 18)), kf = [];
     for(var i = 0; i <= n; i++){ var q = aFraction(m, i / n); kf.push({transform:'translate3d(' + f(q.x * z) + 'px,' + f(q.y * z) + 'px,0)', offset:i / n}); }
     var fin = aFraction(m, 1), deb = aFraction(m, 0);
@@ -2294,7 +2301,7 @@ function carteRecette(id){
   var r = RECETTES[id], nouv = !!r.code;
   return '<div class="recette' + (nouv ? ' gagnee' : '') + '" data-recette="' + id + '">' + fiole(r.coul) +
     '<div class="r-txt"><b>' + esc(r.nom) + '</b>' + dit(r.long, 'r-dit') + '</div>' +
-    (nouv ? '<div class="r-code"><small>Code pour le Pisteur</small>' + PG.codeGrand(r.code) + '</div>' : '') + '</div>';
+    (nouv ? '<div class="r-code"><small>Pour le Pisteur</small>' + PG.codeGrand(r.code) + '</div>' : '') + '</div>';
 }
 function majLivre(){
   var ids = DEPART.concat(S.recettes);
@@ -2323,7 +2330,7 @@ function unCode(){
     recevoir:function(id){
       S.codes[id] = true; var k = PLANTE_DE_CODE[id]; if(k && !S.plantes[k]) S.plantes[k] = 'attend'; garder();
       var p = PLANTES[k];
-      var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + '<h3>' + esc(p.nom) + '</h3></div>' + dit(p.arrivee, 'arrivee-txt') +
+      var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + dit(p.nom, 'plante-nom', 'h3') + '</div>' + dit(p.arrivee, 'arrivee-txt') +
         '<div class="rangee"><button type="button" class="aller" data-fen-fermer>La poser près du chaudron</button></div>', {classe:'parch plante-fen', surFermer:majFoyer});
       PG.guider(w.el.querySelector('.aller'));
       PG.son('magie');
@@ -2338,7 +2345,7 @@ function cuisiner(k){
   var p = PLANTES[k], r = RECETTES[p.recette];
   var lay = el('div', 'cuisine'); lay.id = 'cuisine';
   /* 0. l'explication en images, puis le bouton jaune */
-  lay.innerHTML = '<div class="explication"><h2>🍲 ' + esc(r.nom) + ' : la recette</h2>' +
+  lay.innerHTML = '<div class="explication"><h2>🍲 ' + esc(r.nom) + '</h2>' +
     '<div class="trois">' +
       '<figure><div class="ex-img ex-verser" aria-hidden="true"><span class="ex-bocal">🫙</span><span class="ex-fleche">➜</span>' + petitChaudron() + '</div><figcaption>1. Verser</figcaption></figure>' +
       '<figure><div class="ex-img ex-touiller" aria-hidden="true">' + petitChaudron() + '<span class="ex-rond">↻</span></div><figcaption>2. Touiller</figcaption></figure>' +
@@ -2351,7 +2358,7 @@ function cuisiner(k){
   lay.querySelector('[data-go]').addEventListener('click', function(){ PG.son('ok'); jouer(k); });
 }
 function petitChaudron(){ return '<svg viewBox="0 0 60 50" class="ex-ch"><path d="M6 16 C 6 40 20 48 30 48 C 40 48 54 40 54 16 Z" fill="#2a2434" stroke="#24182e" stroke-width="3"/><ellipse cx="30" cy="16" rx="25" ry="8" fill="#7a7088" stroke="#24182e" stroke-width="3"/><ellipse cx="30" cy="17" rx="20" ry="5" fill="#7affc0"/></svg>'; }
-function quitter(){ var l = q('#cuisine'); if(l) l.remove(); C = null; PG.taire(); majFoyer(); }
+function quitter(){ var l = q('#cuisine'); if(l) l.remove(); C = null; PG.taire(); majLivre(); majFoyer(); }
 
 function jouer(k){
   var p = PLANTES[k], r = RECETTES[p.recette], lay = q('#cuisine');
@@ -2450,7 +2457,7 @@ function etape2(p, r){
       teinter(mixer(p.ingr[1].c, r.coul, n / 3), .4 + n * .2);
       if(n === 1) dire('Un tour ! Ça commence à briller…');
       if(n === 2) dire('Deux tours ! Encore un, le dernier…');
-      if(n === 3){ doigt = null; setTimeout(function(){ etape3(p, r); }, 500); }
+      if(n === 3 && !window.ALCHI.sansFin){ doigt = null; setTimeout(function(){ etape3(p, r); }, 500); }
     }
   }
   var zone = q('.centre');

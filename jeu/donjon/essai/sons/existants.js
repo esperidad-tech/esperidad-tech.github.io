@@ -62,7 +62,7 @@ X.r_fin = {chemin:'jeu', duree:.7, joue:function(J, S){ E.sageClac(J.ctx, functi
 var tampons = null;
 function salle(fn, duree){
   return {chemin:'salle', duree:duree, joue:function(J, S){
-    tampons = tampons || E.bruitsSalle(J.ctx);
+    tampons = tampons || E.bruitsSalle(J.ctx, J.A);
     var rev = J.ctx.createGain(); rev.connect(J.A.caveIn);
     var B = E.salle(J.ctx, J.A, S, rev, tampons.blanc, tampons.brun), l = [];
     fn(B, l);

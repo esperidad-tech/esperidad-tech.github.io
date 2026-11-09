@@ -15,6 +15,25 @@
    Sage       : h.sort(scene, to, {onImpact}) -> à l'impact ; h.etudier()
                 var b = h.bouclier(scene, cibleConteneur)   // Promise -> objet bouclier, quand le dôme est posé
                 b.absorber(2) ; b.retirer()                 // marchent aussi directement sur la Promise
+
+   Les objets du donjon et les nouvelles réactions (CONCEPTION-DONJON.md §6 et §10 ; sources a2-objets.js, l-reactions.js, m-armes.js) :
+     h.equiper(objet, on = true, {discret}) -> Promise   montre / cache l'objet sur le héros (variante dessinée d'avance, cuite)
+         'carquois-argent' | 'carquois-lourd' (Pisteur, un seul à la fois), 'cristal-lune' | 'baton-chene' (Sage),
+         'sacoche' (Alchimiste), 'amulette' (tous) ; h.equipe(objet) -> true / false
+     Pisteur    : h.tirer(scene, to, type, {onImpact, rebond, sol})   type : 'normale', 'feu', 'huile', 'colle', 'argent', 'lourde',
+                  'givre', 'acide', ou 'rebond' (= normale qui rebondit). to.metal = true : la lourde fait une gerbe d'étincelles
+                  (sinon un impact sourd). {rebond:true} (n'importe quel type) : la flèche ricoche et retombe au sol (sol : y du sol,
+                  par défaut to.y + 92). La lourde se bande plus lentement et l'arc recule.
+     Alchimiste : h.lancer(scene, to, 'givre' | 'acide' | 'huile' | 'colle', {onImpact}) (ou une couleur, comme avant) ;
+                  h.preparer('givre') accepte aussi les noms de potions.
+     Sage       : h.eclairSalle(scene, {cibles:[{x,y}], onImpact}) -> à l'éclair ; h.sort(...) devient cet éclair si le cristal
+                  de lune est équipé (ou avec {cristal:true} ; {cristal:false} pour la rune simple).
+                  h.bouclier(scene, [cible1, cible2]) -> Promise -> [dôme1, dôme2] (chacun absorber / retirer) ;
+                  b.absorber(n[, i]) et b.retirer([i]) marchent aussi sur la Promise et sur la paire (tous, ou le i-ème).
+     Tous       : h.touche('froid' | 'grouillement' | 'poing') ; h.relever({amulette:true}) (relève dorée, l'amulette se brise) ;
+                  h.entoile(true / false) (ligoté dans la toile, se débat ; false : il la déchire) ;
+                  h.avale() (happé vers la droite, il disparaît) ; h.recrache(scene, depuis {x, y} de la scène, {onAtterrit})
+                  ou h.recrache(depuisEcran) (il revient en volant, couvert de bave, et se secoue).
    Les actions passent dans une file : une à la fois, dans l'ordre d'appel.
    scene : l'élément de la scène (position relative, 960 × 540) ; to : {x, y} en pixels de la scène.
 
@@ -192,8 +211,9 @@ function rep(nom, x, y){ return '<circle data-r="' + nom + '" cx="' + x + '" cy=
 /* ============ les objets du donjon (équipement visible) et les dessins des nouvelles réactions ============
    Deux sortes de dessins ici :
    - l'ÉQUIPEMENT (carquois d'argent ou lourd, cristal de lune, bâton de chêne, sacoche, amulette) et les FLÈCHES spéciales :
-     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">). Elles sont « cuites » en
-     images avec le reste (RAPIDITE.md R1) ; equiper() ne fait que les montrer ou les cacher ;
+     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">), à leur place dans l'ordre
+     du dessin. À la cuisson (RAPIDITE.md R1), elles restent de petits îlots vectoriels (contenu fixe, sans filtre) : aucune
+     image en plus en mémoire, aucun temps de cuisson en plus ; equiper() ne fait que les montrer ou les cacher ;
    - les calques des RÉACTIONS (givre, bave, toile) : de petits dessins SVG fixes, posés à la demande dans la pièce qu'ils
      suivent (cuit : un îlot, peint une fois, puis déplacé et estompé par la carte graphique). Ils ne changent jamais de forme. */
 
@@ -1169,7 +1189,10 @@ function fusionLk(role, lk){
   return r;
 }
 function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
-var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles],' +
+  /* les objets du donjon et les flèches spéciales (a2-objets.js) : de petits îlots vectoriels, cachés au départ ; ils ne coûtent
+     ni image ni temps de cuisson, et ne sont peints qu'une fois, quand on les montre (mémoire de l'iPhone) */
+  '[data-eq],[data-argent],[data-lourde],[data-givre],[data-acide]';
 function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
@@ -2545,8 +2568,10 @@ H._froid = function(o){
     seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('garde'); me.cligner(); }});
     /* la buée qui sort de la bouche (deux petits nuages) */
     [380, 700].forEach(function(t){ lueurFx(F2, bou.x, bou.y, {c:'#ffffff', c2:'#dff4ff', w:24, s0:.4, s1:2.2, dx:18, dy:-12, d:800, retard:t, o0:.85}); });
-    /* le givre fond ensuite, doucement (sans bloquer le jeu) */
+    /* le givre fond ensuite, doucement (sans bloquer le jeu) ; un nouveau coup de froid repart de zéro */
+    var tok = this._givreTok = (this._givreTok || 0) + 1;
     this.plus(2600, function(){
+      if(tok !== me._givreTok) return;
       ['epaules', 'tete', 'bras'].forEach(function(q){ var e = C[q]; animer(e, [{opacity:1}, {opacity:0}], {duration:900, easing:'ease-in', fill:'forwards'}).then(function(){ if(e && !e._a) montrer(e, false); }); });
       var a = me._px(100, 112), b = me._px(150, 106);
       pluie(me.fx, a.x, a.y, {n:2, forme:'goutte', c:'#bfeaff', angle:90, ecart:10, v0:5, v1:20, g:300, t0:5, t1:6, d0:700, d1:900, etale:500});
@@ -2693,7 +2718,9 @@ H._toiles = function(){
 };
 H.entoile = function(on){
   on = on !== false;
-  if(on === !!this._toile) return Promise.resolve();
+  /* (l'état voulu est noté tout de suite : entoile(true) puis entoile(false) aussitôt font bien les deux, dans l'ordre) */
+  if(on === !!this._toileV) return Promise.resolve();
+  this._toileV = on;
   return on ? this._entoiler() : this._dechirer();
 };
 H._pose_ligote = function(){
@@ -2857,7 +2884,10 @@ H._fleche2 = function(scene, n, t, to, type, opt){
     } else if(type === 'acide'){
       if(u > .1) pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:['#7ae04a', '#a6f070'], angle:90, ecart:15, v0:10, v1:40, g:700, t0:5, t1:7, d0:400, d1:550});
       if(u > .3 && Math.random() < .35) lueurFx(L, bx, by - 4, {c:'#c8e8b0', c2:'#8ab878', w:16, s0:.6, s1:2.2, dy:-10, d:600, o0:.5});
-    } else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
+    } else if(type === 'feu') pluie(L, p.x - ca * 8, p.y - sa * 8, {n:2, forme:'lueur', c:['#ffd84a', '#ff8a2a'], angle:ang + 180, ecart:30, v0:20, v1:70, g:-160, t0:2.5, t1:4, d0:250, d1:450});
+    else if(type === 'huile') pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:'#3a3020', angle:90, ecart:20, v0:10, v1:40, g:700, t0:5, t1:6, d0:400, d1:550});
+    else if(type === 'colle') pluie(L, p.x, p.y, {n:1, c:'#f2f8e4', bord:true, angle:90, ecart:30, v0:10, v1:30, g:500, t0:3, t1:5, d0:400, d1:600});
+    else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
   }}).then(function(r){
     if(opt.rebond) me._rebondFleche(L, r, type, w, a, tr, k, opt, to);
     else me._impactFleche2(L, r, type, w, a, tr, k, to);
@@ -3152,7 +3182,7 @@ H.bouclier = function(scene, cible, opt){
     return Promise.all([tous, this.jouer([
       {d:300, p:leve, e:'io', f:function(){
         me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas');
-        onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800});
+        anneau(me.fx, q.x, q.y, {w:130, h:28, c:CYAN, s0:0.2, s1:1.4, d:800});
         me._runesMontent();
         if(me.equipe('baton-chene')){
           var c = me.rep('chene');
@@ -3210,6 +3240,8 @@ var HerosAnime = {
   /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
   preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
+  /* les objets (equiper), les sortes de flèches (tirer), les potions par leur nom (lancer, preparer), les réactions (touche) */
+  OBJETS:Object.keys(OBJETS), FLECHES:['normale', 'rebond'].concat(TYPES_FL), POTIONS:POTIONS, REACTIONS:['froid', 'grouillement', 'poing'],
   grain:true
 };
 window.HerosAnime = HerosAnime;

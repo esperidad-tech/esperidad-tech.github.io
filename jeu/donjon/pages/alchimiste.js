@@ -105,7 +105,7 @@ function carteRecette(id){
   var r = RECETTES[id], nouv = !!r.code;
   return '<div class="recette' + (nouv ? ' gagnee' : '') + '" data-recette="' + id + '">' + fiole(r.coul) +
     '<div class="r-txt"><b>' + esc(r.nom) + '</b>' + dit(r.long, 'r-dit') + '</div>' +
-    (nouv ? '<div class="r-code"><small>Code pour le Pisteur</small>' + PG.codeGrand(r.code) + '</div>' : '') + '</div>';
+    (nouv ? '<div class="r-code"><small>Pour le Pisteur</small>' + PG.codeGrand(r.code) + '</div>' : '') + '</div>';
 }
 function majLivre(){
   var ids = DEPART.concat(S.recettes);
@@ -134,7 +134,7 @@ function unCode(){
     recevoir:function(id){
       S.codes[id] = true; var k = PLANTE_DE_CODE[id]; if(k && !S.plantes[k]) S.plantes[k] = 'attend'; garder();
       var p = PLANTES[k];
-      var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + '<h3>' + esc(p.nom) + '</h3></div>' + dit(p.arrivee, 'arrivee-txt') +
+      var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + dit(p.nom, 'plante-nom', 'h3') + '</div>' + dit(p.arrivee, 'arrivee-txt') +
         '<div class="rangee"><button type="button" class="aller" data-fen-fermer>La poser près du chaudron</button></div>', {classe:'parch plante-fen', surFermer:majFoyer});
       PG.guider(w.el.querySelector('.aller'));
       PG.son('magie');
@@ -149,7 +149,7 @@ function cuisiner(k){
   var p = PLANTES[k], r = RECETTES[p.recette];
   var lay = el('div', 'cuisine'); lay.id = 'cuisine';
   /* 0. l'explication en images, puis le bouton jaune */
-  lay.innerHTML = '<div class="explication"><h2>🍲 ' + esc(r.nom) + ' : la recette</h2>' +
+  lay.innerHTML = '<div class="explication"><h2>🍲 ' + esc(r.nom) + '</h2>' +
     '<div class="trois">' +
       '<figure><div class="ex-img ex-verser" aria-hidden="true"><span class="ex-bocal">🫙</span><span class="ex-fleche">➜</span>' + petitChaudron() + '</div><figcaption>1. Verser</figcaption></figure>' +
       '<figure><div class="ex-img ex-touiller" aria-hidden="true">' + petitChaudron() + '<span class="ex-rond">↻</span></div><figcaption>2. Touiller</figcaption></figure>' +
@@ -162,7 +162,7 @@ function cuisiner(k){
   lay.querySelector('[data-go]').addEventListener('click', function(){ PG.son('ok'); jouer(k); });
 }
 function petitChaudron(){ return '<svg viewBox="0 0 60 50" class="ex-ch"><path d="M6 16 C 6 40 20 48 30 48 C 40 48 54 40 54 16 Z" fill="#2a2434" stroke="#24182e" stroke-width="3"/><ellipse cx="30" cy="16" rx="25" ry="8" fill="#7a7088" stroke="#24182e" stroke-width="3"/><ellipse cx="30" cy="17" rx="20" ry="5" fill="#7affc0"/></svg>'; }
-function quitter(){ var l = q('#cuisine'); if(l) l.remove(); C = null; PG.taire(); majFoyer(); }
+function quitter(){ var l = q('#cuisine'); if(l) l.remove(); C = null; PG.taire(); majLivre(); majFoyer(); }
 
 function jouer(k){
   var p = PLANTES[k], r = RECETTES[p.recette], lay = q('#cuisine');
@@ -261,7 +261,7 @@ function etape2(p, r){
       teinter(mixer(p.ingr[1].c, r.coul, n / 3), .4 + n * .2);
       if(n === 1) dire('Un tour ! Ça commence à briller…');
       if(n === 2) dire('Deux tours ! Encore un, le dernier…');
-      if(n === 3){ doigt = null; setTimeout(function(){ etape3(p, r); }, 500); }
+      if(n === 3 && !window.ALCHI.sansFin){ doigt = null; setTimeout(function(){ etape3(p, r); }, 500); }
     }
   }
   var zone = q('.centre');

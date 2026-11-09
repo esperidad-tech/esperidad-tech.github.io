@@ -2418,6 +2418,25 @@ global.RatAnime = {
    Sage       : h.sort(scene, to, {onImpact}) -> à l'impact ; h.etudier()
                 var b = h.bouclier(scene, cibleConteneur)   // Promise -> objet bouclier, quand le dôme est posé
                 b.absorber(2) ; b.retirer()                 // marchent aussi directement sur la Promise
+
+   Les objets du donjon et les nouvelles réactions (CONCEPTION-DONJON.md §6 et §10 ; sources a2-objets.js, l-reactions.js, m-armes.js) :
+     h.equiper(objet, on = true, {discret}) -> Promise   montre / cache l'objet sur le héros (variante dessinée d'avance, cuite)
+         'carquois-argent' | 'carquois-lourd' (Pisteur, un seul à la fois), 'cristal-lune' | 'baton-chene' (Sage),
+         'sacoche' (Alchimiste), 'amulette' (tous) ; h.equipe(objet) -> true / false
+     Pisteur    : h.tirer(scene, to, type, {onImpact, rebond, sol})   type : 'normale', 'feu', 'huile', 'colle', 'argent', 'lourde',
+                  'givre', 'acide', ou 'rebond' (= normale qui rebondit). to.metal = true : la lourde fait une gerbe d'étincelles
+                  (sinon un impact sourd). {rebond:true} (n'importe quel type) : la flèche ricoche et retombe au sol (sol : y du sol,
+                  par défaut to.y + 92). La lourde se bande plus lentement et l'arc recule.
+     Alchimiste : h.lancer(scene, to, 'givre' | 'acide' | 'huile' | 'colle', {onImpact}) (ou une couleur, comme avant) ;
+                  h.preparer('givre') accepte aussi les noms de potions.
+     Sage       : h.eclairSalle(scene, {cibles:[{x,y}], onImpact}) -> à l'éclair ; h.sort(...) devient cet éclair si le cristal
+                  de lune est équipé (ou avec {cristal:true} ; {cristal:false} pour la rune simple).
+                  h.bouclier(scene, [cible1, cible2]) -> Promise -> [dôme1, dôme2] (chacun absorber / retirer) ;
+                  b.absorber(n[, i]) et b.retirer([i]) marchent aussi sur la Promise et sur la paire (tous, ou le i-ème).
+     Tous       : h.touche('froid' | 'grouillement' | 'poing') ; h.relever({amulette:true}) (relève dorée, l'amulette se brise) ;
+                  h.entoile(true / false) (ligoté dans la toile, se débat ; false : il la déchire) ;
+                  h.avale() (happé vers la droite, il disparaît) ; h.recrache(scene, depuis {x, y} de la scène, {onAtterrit})
+                  ou h.recrache(depuisEcran) (il revient en volant, couvert de bave, et se secoue).
    Les actions passent dans une file : une à la fois, dans l'ordre d'appel.
    scene : l'élément de la scène (position relative, 960 × 540) ; to : {x, y} en pixels de la scène.
 
@@ -2595,8 +2614,9 @@ function rep(nom, x, y){ return '<circle data-r="' + nom + '" cx="' + x + '" cy=
 /* ============ les objets du donjon (équipement visible) et les dessins des nouvelles réactions ============
    Deux sortes de dessins ici :
    - l'ÉQUIPEMENT (carquois d'argent ou lourd, cristal de lune, bâton de chêne, sacoche, amulette) et les FLÈCHES spéciales :
-     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">). Elles sont « cuites » en
-     images avec le reste (RAPIDITE.md R1) ; equiper() ne fait que les montrer ou les cacher ;
+     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">), à leur place dans l'ordre
+     du dessin. À la cuisson (RAPIDITE.md R1), elles restent de petits îlots vectoriels (contenu fixe, sans filtre) : aucune
+     image en plus en mémoire, aucun temps de cuisson en plus ; equiper() ne fait que les montrer ou les cacher ;
    - les calques des RÉACTIONS (givre, bave, toile) : de petits dessins SVG fixes, posés à la demande dans la pièce qu'ils
      suivent (cuit : un îlot, peint une fois, puis déplacé et estompé par la carte graphique). Ils ne changent jamais de forme. */
 
@@ -3572,7 +3592,10 @@ function fusionLk(role, lk){
   return r;
 }
 function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
-var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles],' +
+  /* les objets du donjon et les flèches spéciales (a2-objets.js) : de petits îlots vectoriels, cachés au départ ; ils ne coûtent
+     ni image ni temps de cuisson, et ne sont peints qu'une fois, quand on les montre (mémoire de l'iPhone) */
+  '[data-eq],[data-argent],[data-lourde],[data-givre],[data-acide]';
 function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
@@ -4948,8 +4971,10 @@ H._froid = function(o){
     seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('garde'); me.cligner(); }});
     /* la buée qui sort de la bouche (deux petits nuages) */
     [380, 700].forEach(function(t){ lueurFx(F2, bou.x, bou.y, {c:'#ffffff', c2:'#dff4ff', w:24, s0:.4, s1:2.2, dx:18, dy:-12, d:800, retard:t, o0:.85}); });
-    /* le givre fond ensuite, doucement (sans bloquer le jeu) */
+    /* le givre fond ensuite, doucement (sans bloquer le jeu) ; un nouveau coup de froid repart de zéro */
+    var tok = this._givreTok = (this._givreTok || 0) + 1;
     this.plus(2600, function(){
+      if(tok !== me._givreTok) return;
       ['epaules', 'tete', 'bras'].forEach(function(q){ var e = C[q]; animer(e, [{opacity:1}, {opacity:0}], {duration:900, easing:'ease-in', fill:'forwards'}).then(function(){ if(e && !e._a) montrer(e, false); }); });
       var a = me._px(100, 112), b = me._px(150, 106);
       pluie(me.fx, a.x, a.y, {n:2, forme:'goutte', c:'#bfeaff', angle:90, ecart:10, v0:5, v1:20, g:300, t0:5, t1:6, d0:700, d1:900, etale:500});
@@ -5260,7 +5285,10 @@ H._fleche2 = function(scene, n, t, to, type, opt){
     } else if(type === 'acide'){
       if(u > .1) pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:['#7ae04a', '#a6f070'], angle:90, ecart:15, v0:10, v1:40, g:700, t0:5, t1:7, d0:400, d1:550});
       if(u > .3 && Math.random() < .35) lueurFx(L, bx, by - 4, {c:'#c8e8b0', c2:'#8ab878', w:16, s0:.6, s1:2.2, dy:-10, d:600, o0:.5});
-    } else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
+    } else if(type === 'feu') pluie(L, p.x - ca * 8, p.y - sa * 8, {n:2, forme:'lueur', c:['#ffd84a', '#ff8a2a'], angle:ang + 180, ecart:30, v0:20, v1:70, g:-160, t0:2.5, t1:4, d0:250, d1:450});
+    else if(type === 'huile') pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:'#3a3020', angle:90, ecart:20, v0:10, v1:40, g:700, t0:5, t1:6, d0:400, d1:550});
+    else if(type === 'colle') pluie(L, p.x, p.y, {n:1, c:'#f2f8e4', bord:true, angle:90, ecart:30, v0:10, v1:30, g:500, t0:3, t1:5, d0:400, d1:600});
+    else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
   }}).then(function(r){
     if(opt.rebond) me._rebondFleche(L, r, type, w, a, tr, k, opt, to);
     else me._impactFleche2(L, r, type, w, a, tr, k, to);
@@ -5555,7 +5583,7 @@ H.bouclier = function(scene, cible, opt){
     return Promise.all([tous, this.jouer([
       {d:300, p:leve, e:'io', f:function(){
         me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas');
-        onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800});
+        anneau(me.fx, q.x, q.y, {w:130, h:28, c:CYAN, s0:0.2, s1:1.4, d:800});
         me._runesMontent();
         if(me.equipe('baton-chene')){
           var c = me.rep('chene');
@@ -5613,6 +5641,8 @@ var HerosAnime = {
   /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
   preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
+  /* les objets (equiper), les sortes de flèches (tirer), les potions par leur nom (lancer, preparer), les réactions (touche) */
+  OBJETS:Object.keys(OBJETS), FLECHES:['normale', 'rebond'].concat(TYPES_FL), POTIONS:POTIONS, REACTIONS:['froid', 'grouillement', 'poing'],
   grain:true
 };
 window.HerosAnime = HerosAnime;
@@ -5637,17 +5667,22 @@ function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
 /* les bruits de base et les réponses de salle, fabriqués une seule fois par fréquence d'échantillonnage :
    un tampon sert à tous les contextes (le jeu, et chaque pré-calcul hors ligne n'a plus à les refaire) */
 var DEJA = {};
+/* Moteur.oublier(sr) : libère ces tampons pour une fréquence (après un pré-calcul hors ligne, ils ne servent plus) */
+function oublier(sr){ delete DEJA[sr]; }
 function Moteur(ctx, opt){
   opt = opt || {};
   var sr = ctx.sampleRate, horsLigne = !!opt.horsLigne;
   var A = {ctx:ctx, sr:sr, hasard:hasard, choix:choix, midi:midi, horsLigne:horsLigne};
   var deja = DEJA[sr] = DEJA[sr] || {};
 
-  /* ---------- les bruits de base (3 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ---------- */
-  function tampon(sec, ncan, fn, nom){
+  /* ---------- les bruits de base (2 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ----------
+     (9 novembre, mémoire de l'iPhone : le bruit brun et le bruit lent, presque sans aigus, sont fabriqués à une fréquence
+     plus basse — 12 000 et 3 000 Hz — : le navigateur les remet à la bonne fréquence en les jouant, le son est le même) */
+  function tampon(sec, ncan, fn, nom, srb){
     if(nom && deja[nom]) return deja[nom];
-    var n = Math.floor(sr * sec), b = ctx.createBuffer(ncan || 1, n, sr);
-    for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c);
+    srb = srb || sr;
+    var n = Math.floor(srb * sec), b = ctx.createBuffer(ncan || 1, n, srb);
+    for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c, srb);
     if(nom) deja[nom] = b;
     return b;
   }
@@ -5655,8 +5690,8 @@ function Moteur(ctx, opt){
     var s = 0, i; for(i = 0; i < n; i++) s += d[i] * d[i];
     var k = cible / Math.sqrt(s / n || 1); for(i = 0; i < n; i++) d[i] *= k;
   }
-  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
-  A.rose = tampon(3, 1, function(d, n){
+  A.blanc = tampon(2, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
+  A.rose = tampon(2, 1, function(d, n){
     var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for(var i = 0; i < n; i++){
       var w = Math.random() * 2 - 1;
@@ -5666,20 +5701,20 @@ function Moteur(ctx, opt){
     }
     normaliseRms(d, n, .3);
   }, 'rose');
-  A.brun = tampon(3, 1, function(d, n){
-    var l = 0, i;
-    for(i = 0; i < n; i++){ l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l; }
+  A.brun = tampon(3, 1, function(d, n, c, srb){
+    var l = 0, i, k = .02 * 44100 / srb;                       /* la même pente qu'à 44 100 Hz */
+    for(i = 0; i < n; i++){ l = (l + k * (Math.random() * 2 - 1)) / (1 + k); d[i] = l; }
     var pente = (d[n - 1] - d[0]) / n;                         /* pour que la boucle ne claque pas */
     for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .3);
-  }, 'brun');
+  }, 'brun', Math.min(sr, 12000));
   /* un bruit très lent (sous 90 Hz) : sert à faire trembler une hauteur ou un volume, comme un vrai gosier */
-  A.lent = tampon(4, 1, function(d, n){
-    var a = 1 - Math.exp(-2 * Math.PI * 90 / sr), l1 = 0, l2 = 0, i;
+  A.lent = tampon(4, 1, function(d, n, c, srb){
+    var a = 1 - Math.exp(-2 * Math.PI * 90 / srb), l1 = 0, l2 = 0, i;
     for(i = 0; i < n; i++){ l1 += (Math.random() * 2 - 1 - l1) * a; l2 += (l1 - l2) * a; d[i] = l2; }
     var pente = (d[n - 1] - d[0]) / n; for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .5);
-  }, 'lent');
+  }, 'lent', Math.min(sr, 3000));
 
   /* ---------- la réverbération : une réponse fabriquée (premiers échos sur la pierre, puis une queue qui s'assombrit) ---------- */
   function reponse(duree, o, nom){
@@ -5895,7 +5930,7 @@ function Moteur(ctx, opt){
       n.connect(rg); n = rg;
     }
     n.connect(amp); amp.connect(dest);
-    s.start(t, hasard(0, 2.5)); s.stop(fin + .05); nettoie(s, amp);
+    s.start(t, hasard(0, s.buffer.duration * .9)); s.stop(fin + .05); nettoie(s, amp);
     return {src:s, gain:amp, fin:fin};
   };
 
@@ -6181,7 +6216,7 @@ function Moteur(ctx, opt){
   return A;
 }
 
-G.Moteur = Moteur;
+G.Moteur = Moteur; G.Moteur.oublier = oublier;
 G.Moteur.hasard = hasard; G.Moteur.choix = choix; G.Moteur.midi = midi;
 })(window);
 
@@ -6941,7 +6976,7 @@ function souffle(I, o){
   var g = A.gain(0); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(o.g || .05, t + 3);
   var l2 = I.continu(ctx.createOscillator()), l2g = A.gain((o.g || .05) * .5); l2.frequency.value = o.lfo2 || .09; l2.connect(l2g); l2g.connect(g.gain);
   s.connect(f); f.connect(g); g.connect(o.dest);
-  s.start(t, h(0, 2)); l1.start(t); l2.start(t);
+  s.start(t, h(0, s.buffer.duration * .9)); l1.start(t); l2.start(t);
 }
 /* de l'eau qui coule : un tampon de petites bulles, lu deux fois à des vitesses différentes pour ne jamais se répéter pareil */
 function ruisseau(I, o){
@@ -7238,9 +7273,12 @@ function demarrer(){
     }
     else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); bruits.gain.value = .85 * VOL.bruitages; }
     var n = ctx.sampleRate * 2;
-    blanc = ctx.createBuffer(1, n, ctx.sampleRate); brun = ctx.createBuffer(1, n, ctx.sampleRate);
-    var db = blanc.getChannelData(0), dr = brun.getChannelData(0), l = 0;
-    for(var i = 0; i < n; i++){ var w = Math.random() * 2 - 1; db[i] = w; l = (l + .02 * w) / 1.02; dr[i] = l * 3.5; }
+    /* (mémoire de l'iPhone : le bruit blanc est celui du moteur ; le brun, presque sans aigus, est fabriqué à 12 000 Hz, avec la même pente et le même volume) */
+    var srb = Math.min(ctx.sampleRate, 12000), nb = srb * 2, rb = ctx.sampleRate / srb, kb = .02 * rb, l = 0;
+    blanc = A ? A.blanc : ctx.createBuffer(1, n, ctx.sampleRate); brun = ctx.createBuffer(1, nb, srb);
+    if(!A){ var db = blanc.getChannelData(0); for(var i = 0; i < n; i++) db[i] = Math.random() * 2 - 1; }
+    var dr = brun.getChannelData(0);
+    for(var j = 0; j < nb; j++){ l = (l + kb * (Math.random() * 2 - 1)) / (1 + kb); dr[j] = l * 3.5 / Math.sqrt(rb); }
     setInterval(programme, 150);
     document.addEventListener('visibilitychange', function(){ if(!document.hidden && ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} } });
   }
@@ -7272,6 +7310,7 @@ function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
 var critique = {v:null, quand:0};
 function versionDe(id, o){
   if(o.version) return o.version;
+  if(PRE.sfxV[id]) return PRE.sfxV[id];                          /* pendant un combat : la version fabriquée à l'avance pour ce combat */
   if(!o.partie) return tire(CHOIX[id]);
   var maintenant = Date.now();
   if(o.partie === 'avant' || !critique.v || maintenant - critique.quand > 5000) critique.v = tire(CHOIX[id]);
@@ -7285,13 +7324,15 @@ function bruitage(id, o){
   if(!fn) return null;
   if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
-  /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer) */
+  /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer), remis à sa place à gauche ou à droite */
   var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
   if(pre){
-    var src = ctx.createBufferSource(); src.buffer = pre; src.connect(sfxPre); src.start(t);
-    src.onended = function(){ try{ src.disconnect(); }catch(e){} };
+    var src = ctx.createBufferSource(), sortiePre = sfxPre, pan = null; src.buffer = pre.buf;
+    if(pre.pan && ctx.createStereoPanner){ pan = ctx.createStereoPanner(); pan.pan.value = pre.pan; pan.connect(sfxPre); sortiePre = pan; }
+    src.connect(sortiePre); src.start(t);
+    src.onended = function(){ try{ src.disconnect(); if(pan) pan.disconnect(); }catch(e){} };
     var C0 = o.partie && window.BRUITAGES.CRITIQUE[v];
-    return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.duration), moment:fn.moment, version:v, pre:true};
+    return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.buf.duration), moment:fn.moment, version:v, pre:true};
   }
   var P = A.prise(t, niveau(cle)), r = null;
   A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
@@ -7308,26 +7349,27 @@ function bruitage(id, o){
 /* =================== la musique : exploration (sac, fin), combat + la couleur « le puits » =================== */
 var MUS = {voulu:null, actuel:null};
 function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
+function famille(c){ return c.replace(/[A-C]$/, ''); }
 function appliquerMusique(){
   if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
   var v = actif && VOL.musique > 0 ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
   if(cur === v) return;
-  var now = ctx.currentTime;
+  var now = ctx.currentTime, avant = MUS.actuel ? MUS.actuel.cles.slice() : [];
   if(MUS.actuel){ MUS.actuel.arreter(now, 3); MUS.actuel = null; }
+  var cles = !v ? [] : v === 'combat' ? [PRE.cle('combat'), 'puits'] : [PRE.cle('explo')];
+  PRE.changement(avant, cles, v);
   if(!v) return;
-  var cles = v === 'combat' ? ['combat' + PRE.tirer('combat'), 'puits'] : ['explo' + PRE.tirer('explo')];
   var M = MUS.actuel = {nom:v, cles:cles, I:[], joueurs:[], fini:false};
   M.arreter = function(t, f){ M.fini = true; M.I.forEach(function(I){ I.arreter(t, f); }); M.joueurs.forEach(function(j){ j.arreter(t, f); }); };
-  cles.forEach(function(c, k){
+  cles.forEach(function(c){
     if(!PRE.possible){ M.I.push(musiqueEnDirect(c, now)); return; }
-    /* déjà fabriquée : on la joue tout de suite ; sinon une autre version déjà prête de la même musique, ou on attend la sienne */
-    var pret = PRE.mus[c] ? c : PRE.unePrete(c);
-    if(pret){ M.cles[k] = pret; M.joueurs.push(jouerBoucle(PRE.mus[pret])); }
-    else PRE.demander(c, true).then(function(){
+    var b = PRE.mus[famille(c)];
+    if(b && b.cle === c) M.joueurs.push(jouerBoucle(b));            /* déjà fabriquée : elle part tout de suite */
+    else PRE.demander(c, true).then(function(){                       /* sinon on attend la sienne (quelques secondes) */
       if(M.fini || MUS.actuel !== M) return;
-      if(PRE.mus[c]) M.joueurs.push(jouerBoucle(PRE.mus[c])); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
+      var b2 = PRE.mus[famille(c)];
+      if(b2 && b2.cle === c) M.joueurs.push(jouerBoucle(b2)); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
     });
-    if(!PRE.mus[c]) PRE.demander(c);                                   /* la version tirée sera prête pour la prochaine fois */
   });
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
@@ -7357,20 +7399,52 @@ function programme(){
 }
 
 /* =================== le pré-calcul : fabriquer à l'avance, hors ligne, par petits morceaux ===================
-   Les musiques : une boucle par version (fréquence 22 050 Hz : c'est une musique d'ambiance), longue d'un cycle entier
-   de ses accords, pour que la fin retombe pile sur le début ; les deux bouts sont fondus l'un dans l'autre.
-   Les bruitages les plus lourds (l'arc, le critique, la victoire, la fuite) : une prise chacun, à 32 000 Hz.
-   Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
+   9 novembre (le critique faisait fermer la page sur l'iPhone, faute de mémoire) : on garde le moins possible en mémoire.
+   - Les musiques : en MONO, à 16 000 Hz (rien au-dessus de 8 kHz : moins de −38 dB, on ne l'entend pas), une boucle d'un
+     cycle d'accords. UNE seule version gardée par musique (exploration, combat, le puits) ; quand une musique s'arrête,
+     on libère sa boucle et on fabrique la prochaine version tirée au hasard, pour la fois suivante.
+   - Les bruitages lourds (l'arc, le critique, la victoire, la fuite) : fabriqués seulement pendant le combat, une version
+     tirée pour tout le combat, en mono à 32 000 Hz et remis à leur place à gauche ou à droite en les jouant
+     (l'explosion C reste en stéréo : son souffle traverse la salle) ; libérés après le combat.
+   - Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
 var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, premiers:{}, fait:0};
-/* la longueur de chaque boucle (en secondes) : un cycle entier ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) */
-var BOUCLE = {exploA:{L:44}, exploB:{L:64}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:32 * 60 / 84, C:1.5, lin:true}, puits:{L:24}};
-var SFX_PRE = [['arcA'], ['arcB'], ['arcC'], ['ratCritiqueA', 'impact'], ['ratCritiqueA', 'explosion'], ['ratCritiqueC', 'avant'], ['ratCritiqueC', 'impact'], ['ratCritiqueC', 'explosion'],
-  ['victoireA'], ['victoireB'], ['fuiteA'], ['fuiteB']];
-/* la première version de chaque musique est tirée dès l'ouverture, pour être prête au premier toucher */
-PRE.tirer = function(fam){ var v = PRE.premiers[fam]; if(v){ delete PRE.premiers[fam]; return v; } return tire(CHOIX[fam]); };
-PRE.unePrete = function(c){ var fam = c.replace(/[A-C]$/, ''), l = Object.keys(PRE.mus).filter(function(k){ return k.replace(/[A-C]$/, '') === fam; }); return l.length ? tire(l) : null; };
-function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom){ PRE.taches = PRE.taches || {}; PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } } }
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
+var SR_MUS = 16000, SR_SFX = 32000;
+/* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
+   n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
+var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:16 * 60 / 84, C:1.5, lin:true}, puits:{L:12}};
+/* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
+var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
+var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
+/* la version d'une musique : celle qui est (ou sera) prête ; tirée au hasard la première fois */
+PRE.cle = function(fam){
+  if(fam === 'puits') return 'puits';
+  if(PRE.mus[fam]) return PRE.mus[fam].cle;
+  if(!PRE.prochain[fam]) PRE.prochain[fam] = tire(CHOIX[fam]);
+  return fam + PRE.prochain[fam];
+};
+/* quand la musique change : la musique qui s'arrête libère sa boucle et prépare sa prochaine version ;
+   en entrant en combat, on fabrique les bruitages lourds ; en sortant, on les libère */
+PRE.changement = function(avant, apres, nom){
+  if(!PRE.possible) return;
+  var fams = apres.map(famille);
+  avant.map(famille).forEach(function(f){
+    if(fams.indexOf(f) >= 0 || f === 'puits' || !CHOIX[f] || CHOIX[f].length < 2) return;
+    setTimeout(function(){                                             /* après le fondu de sortie */
+      if(MUS.actuel && MUS.actuel.cles.map(famille).indexOf(f) >= 0) return;
+      var ancienne = PRE.mus[f] && PRE.mus[f].cle.slice(-1), l = CHOIX[f].filter(function(x){ return x !== ancienne; });
+      delete PRE.mus[f];
+      PRE.prochain[f] = tire(l.length ? l : CHOIX[f]);
+      PRE.demander(f + PRE.prochain[f]);
+    }, 4000);
+  });
+  if(nom === 'combat') setTimeout(function(){ if(MUS.voulu === 'combat') PRE.demander('bruitages'); }, 2500);
+  else if(avant.length && famille(avant[0]) === 'combat') setTimeout(function(){
+    if(MUS.voulu === 'combat') return;
+    PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages;
+  }, 9000);
+};
+function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom) PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } }
 function rendre(off){
   return new Promise(function(ok, ko){
     off.oncomplete = function(e){ ok(e.renderedBuffer); };
@@ -7379,60 +7453,75 @@ function rendre(off){
 }
 /* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
 function rendreMusique(cle){
-  var B = BOUCLE[cle] || {L:30}, sr = 22050, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
-  var off = new OAC(2, Math.ceil(sr * duree), sr), Ao, I;
-  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus')); I.pas(pas + .5); }, 'debut-musique');
+  var B = BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  var off = new OAC(1, Math.ceil(sr * duree), sr), Ao, I;
+  chrono(function(){
+    Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus'));
+    if(B.n0 && I.gens && I.gens[0]) I.gens[0].n = B.n0;
+    I.pas(pas + .5);
+  }, 'debut-musique');
   if(off.suspend){
     for(var t = pas; t < duree; t += pas) (function(t){
       off.suspend(t).then(function(){ chrono(function(){ I.pas(Math.min(duree, t + pas + .5)); }, 'morceau-musique'); off.resume(); });
     })(t);
   } else chrono(function(){ I.pas(duree); });
   return rendre(off).then(function(x){
-    /* on joue la boucle directement dans le rendu (de F à F + L) : le début de la boucle reçoit, en fondu, ce qui suit sa fin */
+    /* on ne garde que la boucle (de F à F + L) ; son début reçoit, en fondu, ce qui suit sa fin */
     return chrono(function(){
-      var n = Math.round(L * sr), nc = Math.round(C * sr), f0 = Math.round(F * sr);
-      for(var c = 0; c < 2; c++){
-        var a = x.getChannelData(c);
-        for(var i = 0; i < nc; i++){
-          var u = i / nc, wi = B.lin ? u : Math.sin(u * Math.PI / 2), wo = B.lin ? 1 - u : Math.cos(u * Math.PI / 2);
-          a[f0 + i] = a[f0 + i] * wi + a[f0 + n + i] * wo;
-        }
+      var n = Math.round(L * sr), nc = Math.round(C * sr), f0 = Math.round(F * sr), a = x.getChannelData(0), y = off.createBuffer(1, n, sr), b = y.getChannelData(0);
+      b.set(a.subarray(f0, f0 + n));
+      for(var i = 0; i < nc; i++){
+        var u = i / nc, wi = B.lin ? u : Math.sin(u * Math.PI / 2), wo = B.lin ? 1 - u : Math.cos(u * Math.PI / 2);
+        b[i] = a[f0 + i] * wi + a[f0 + n + i] * wo;
       }
-      return {buf:x, debut:f0 / sr, fin:(f0 + n) / sr};
+      return {cle:cle, buf:y, debut:0, fin:n / sr};
     }, 'boucle');
   });
 }
-/* les bruitages lourds : tous dans un seul rendu (un seul moteur), chacun à sa place, puis découpés et coupés à la fin du son */
-function rendreBruitages(){
-  var sr = 32000, place = 10, n = SFX_PRE.length, off = new OAC(2, Math.ceil(sr * place * n), sr), Ao, t0s = [];
-  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); }, 'moteur-bruitages');
-  function un(k){
-    var e = SFX_PRE[k], cle = e[0], t = k * place + .02;
-    chrono(function(){
-      var P = Ao.prise(t, niveau(cle));
-      if(e[1]){ var C = window.BRUITAGES.CRITIQUE[cle.slice(-1)]; if(C && C[e[1]]) C[e[1]](Ao, P, t); }
-      else { var r = window.BRUITAGES[cle](Ao, P); if(r && r.duree) PRE.duree[cle] = r.duree; }
-    }, 'un-bruitage');
-  }
-  if(off.suspend){ un(0); for(var k = 1; k < n; k++) (function(k){ off.suspend(k * place - .5).then(function(){ un(k); off.resume(); }); })(k); }
-  else for(var k2 = 0; k2 < n; k2++) un(k2);
+/* un bruitage lourd, seul dans son petit rendu : mono (sans placement), sauf l'explosion C ; puis coupé à la fin du son */
+function rendreUnBruitage(id, v, partie, stereo){
+  var cle = id + v, sr = SR_SFX, d = SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
+  if(!stereo) try{ off.createStereoPanner = null; }catch(e){}            /* mono : la place gauche/droite est remise en le jouant */
+  chrono(function(){
+    Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1});
+    var P = Ao.prise(.02, niveau(cle));
+    if(partie){ var C = window.BRUITAGES.CRITIQUE[v]; if(C && C[partie]) C[partie](Ao, P, .02); }
+    else { var r = window.BRUITAGES[cle](Ao, P); if(r && r.duree) PRE.duree[cle] = r.duree; }
+  }, 'un-bruitage');
   return rendre(off).then(function(x){
-    chrono(function(){
-      var L = x.getChannelData(0), R = x.getChannelData(1);
-      SFX_PRE.forEach(function(e, k){
-        var a = Math.floor(k * place * sr), b = Math.floor((k + 1) * place * sr) - 1, fin = a;
-        for(var i = b; i > a; i -= 16){ if(L[i] > 2e-4 || L[i] < -2e-4 || R[i] > 2e-4 || R[i] < -2e-4){ fin = Math.min(b, i + 16); break; } }   /* la fin du son, à 16 échantillons près */
-        var m = Math.min(b - a, fin - a + Math.floor(sr * .05)), y = off.createBuffer(2, m, sr), fondu = Math.floor(sr * .03);
-        [L, R].forEach(function(src, c){ var d = y.getChannelData(c); for(var j = 0; j < m; j++) d[j] = src[a + j] * (j > m - fondu ? (m - j) / fondu : 1); });
-        PRE.sfx[e[0] + (e[1] ? ':' + e[1] : '')] = y;
-      });
+    return chrono(function(){
+      var ch = [], c, i, n = x.length, fin = 0;
+      for(c = 0; c < can; c++) ch.push(x.getChannelData(c));
+      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > 2e-4 || ch[c][i] < -2e-4){ fin = Math.min(n, i + 16); break; }
+      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * .05))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * .03);
+      for(c = 0; c < can; c++){ var dd = y.getChannelData(c), src = ch[c]; dd.set(src.subarray(0, m)); for(i = Math.max(0, m - fondu); i < m; i++) dd[i] *= (m - i) / fondu; }
+      return y;
     }, 'decoupe');
-    return true;
   });
+}
+/* les bruitages lourds de ce combat : une version tirée par son, l'un après l'autre */
+function rendreBruitages(){
+  var l = [];
+  Object.keys(SFX_PRE).forEach(function(id){
+    if(!CHOIX[id] || !CHOIX[id].length) return;
+    var v = PRE.sfxV[id] || (PRE.sfxV[id] = tire(CHOIX[id]));
+    SFX_PRE[id].forEach(function(e){
+      var C = e[0] && window.BRUITAGES.CRITIQUE[v];
+      if(e[0] && !(C && C[e[0]])) return;                                /* la A n'a pas de morceau « avant » */
+      l.push({id:id, v:v, partie:e[0], pan:e[1], stereo:id === 'ratCritique' && v === 'C' && e[0] === 'explosion'});
+    });
+  });
+  return l.reduce(function(p, e){
+    return p.then(function(){
+      if(MUS.voulu !== 'combat' && PRE.tout_ === undefined) return;      /* le combat est fini : on n'en fabrique pas plus */
+      return rendreUnBruitage(e.id, e.v, e.partie, e.stereo).then(function(y){ PRE.sfx[e.id + e.v + (e.partie ? ':' + e.partie : '')] = {buf:y, pan:e.stereo ? 0 : e.pan}; });
+    });
+  }, Promise.resolve()).then(function(){ return true; });
 }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
-  if(PRE.mus[cle]) return Promise.resolve(PRE.mus[cle]);
+  var f = famille(cle);
+  if(cle !== 'bruitages' && PRE.mus[f] && PRE.mus[f].cle === cle) return Promise.resolve(PRE.mus[f]);
   if(!PRE.attente[cle]){
     PRE.attente[cle] = new Promise(function(ok){ PRE.file[urgent ? 'unshift' : 'push']({cle:cle, ok:ok}); });
     setTimeout(suivant, 0);
@@ -7443,28 +7532,42 @@ PRE.demander = function(cle, urgent){
   return PRE.attente[cle];
 };
 function suivant(){
-  if(PRE.occupe || !PRE.file.length) return;
+  if(PRE.occupe) return;
+  if(!PRE.file.length){ window.Moteur.oublier(SR_MUS); window.Moteur.oublier(SR_SFX); return; }   /* plus rien à fabriquer : on libère les réserves */
   var j = PRE.file.shift(); PRE.occupe = true;
-  var p = j.cle === 'bruitages' ? rendreBruitages() : rendreMusique(j.cle).then(function(buf){ PRE.mus[j.cle] = buf; return buf; });
-  p.then(function(r){ PRE.fait++; return r; }, function(e){ if(window.console) console.warn('pré-calcul', j.cle, e); if(j.cle !== 'bruitages') PRE.echec = true; })
-   .then(function(r){ PRE.occupe = false; j.ok(r); setTimeout(suivant, 60); });
+  var p = j.cle === 'bruitages' ? rendreBruitages() : rendreMusique(j.cle).then(function(b){
+    var f = famille(j.cle);
+    if(PRE.prochain[f] && f + PRE.prochain[f] === j.cle) delete PRE.prochain[f];
+    var joue = MUS.actuel && MUS.actuel.cles.indexOf(j.cle) < 0 && MUS.actuel.cles.map(famille).indexOf(f) >= 0;
+    if(!joue) PRE.mus[f] = b;                                          /* (jamais à la place d'une version de la même musique en train de jouer) */
+    return b;
+  });
+  p.then(function(r){ PRE.fait++; return r; }, function(e){ if(window.console) console.warn('pré-calcul', j.cle, e); })
+   .then(function(r){ delete PRE.attente[j.cle]; PRE.occupe = false; j.ok(r); setTimeout(suivant, 60); });
 }
-/* au chargement : la musique d'exploration tirée, puis celle du combat et le puits, puis les bruitages lourds (les autres versions : quand on les tire) */
+/* au chargement : la musique d'exploration tirée, celle du combat et le puits (les bruitages lourds : au début du combat) */
 function lancerPrecalcul(){
   if(!PRE.possible) return;
-  PRE.premiers.explo = tire(CHOIX.explo); PRE.premiers.combat = tire(CHOIX.combat);
-  PRE.demander('explo' + PRE.premiers.explo); PRE.demander('combat' + PRE.premiers.combat); PRE.demander('puits'); PRE.demander('bruitages');
+  PRE.demander(PRE.cle('explo')); PRE.demander(PRE.cle('combat')); PRE.demander('puits');
 }
 if(document.readyState === 'complete') setTimeout(lancerPrecalcul, 600);
 else window.addEventListener('load', function(){ setTimeout(lancerPrecalcul, 600); });
-/* pour les mesures : tout fabriquer (toutes les versions) et dire quand c'est fini */
+/* la mémoire prise par ce qui est fabriqué à l'avance (en Mo) */
+PRE.memoire = function(){
+  var o = 0;
+  Object.keys(PRE.mus).forEach(function(k){ o += PRE.mus[k].buf.length * PRE.mus[k].buf.numberOfChannels * 4; });
+  Object.keys(PRE.sfx).forEach(function(k){ o += PRE.sfx[k].buf.length * PRE.sfx[k].buf.numberOfChannels * 4; });
+  return Math.round(o / 1e5) / 10;
+};
+/* pour les mesures : fabriquer les trois musiques et les bruitages lourds, et dire quand c'est fini */
 PRE.tout = function(){
   if(!PRE.possible) return Promise.resolve({possible:false});
-  var l = Object.keys(BOUCLE).map(function(c){ return PRE.demander(c); }); l.push(PRE.demander('bruitages'));
-  return Promise.all(l).then(function(){ return {pireTache:Math.round(PRE.pireTache), musiques:Object.keys(PRE.mus).length, bruitages:Object.keys(PRE.sfx).length,
-    memoire:Math.round((Object.keys(PRE.mus).reduce(function(s, k){ return s + PRE.mus[k].buf.length * 2 * 4; }, 0) + Object.keys(PRE.sfx).reduce(function(s, k){ return s + PRE.sfx[k].length * 2 * 4; }, 0)) / 1e6)}; });
+  PRE.tout_ = true;
+  var l = [PRE.demander(PRE.cle('explo')), PRE.demander(PRE.cle('combat')), PRE.demander('puits'), PRE.demander('bruitages')];
+  return Promise.all(l).then(function(){ delete PRE.tout_; return {pireTache:Math.round(PRE.pireTache), musiques:Object.keys(PRE.mus).length, bruitages:Object.keys(PRE.sfx).length, memoire:PRE.memoire()}; });
 };
-PRE.etat = function(){ return {taches:PRE.taches, possible:PRE.possible, musiques:Object.keys(PRE.mus), bruitages:Object.keys(PRE.sfx).length, file:PRE.file.map(function(j){ return j.cle; }), occupe:PRE.occupe}; };
+PRE.etat = function(){ return {taches:PRE.taches, possible:PRE.possible, musiques:Object.keys(PRE.mus).map(function(f){ return PRE.mus[f].cle; }), bruitages:Object.keys(PRE.sfx).length,
+  memoire:PRE.memoire(), file:PRE.file.map(function(j){ return j.cle; }), occupe:PRE.occupe}; };
 
 /* la musique baisse pendant une fanfare (sec : combien de temps), puis remonte */
 function baisser(sec){
@@ -7784,7 +7887,7 @@ S.Son = {
   bruitage:bruitage,
   musique:musique,
   volume:volume,
-  precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }},
+  precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
   musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
     joue:MUS.actuel ? MUS.actuel.I.length + MUS.actuel.joueurs.length : 0}; },

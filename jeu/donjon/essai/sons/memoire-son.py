@@ -2,7 +2,7 @@
 """La mémoire prise par les sons dans la salle des rats, comme sur l'iPhone de Romain (émulation iPhone, paysage) :
 la somme (longueur × canaux × 4 octets) de tous les AudioBuffer encore vivants (après un ramasse-miettes forcé),
 sur l'écran du sac (musique d'exploration), puis en combat (après les bruitages principaux, critique compris).
-   flock /tmp/brumeval-pw.lock python3 memoire-son.py"""
+   flock /tmp/brumeval-pw.lock python3 memoire-son.py [--48k]"""
 import os, sys
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
@@ -35,6 +35,8 @@ with sync_playwright() as p:
     err = []
     pg.on('pageerror', lambda e: err.append(str(e)))
     pg.route('**/fonts.g*/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
+    if '--48k' in sys.argv:                 # comme l'iPhone : le contexte audio à 48 000 Hz
+        pg.add_init_script("(function(){ var AC = window.AudioContext; window.AudioContext = window.webkitAudioContext = function(o){ return new AC(Object.assign({sampleRate:48000}, o || {})); }; window.AudioContext.prototype = AC.prototype; })();")
     pg.add_init_script(SUIVI)
     pg.goto(PAGE); pg.wait_for_timeout(1500)
     pg.tap('#sac .bulle .lire', force=True); pg.wait_for_timeout(500)           # le premier toucher : le son démarre

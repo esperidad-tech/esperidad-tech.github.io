@@ -397,8 +397,8 @@ def objets(nav):
       [['pisteur', ['carquois-argent', 'carquois-lourd', 'amulette']], ['alchimiste', ['sacoche', 'amulette']], ['sage', ['cristal-lune', 'baton-chene', 'amulette']]].forEach(function(x){
         x[1].forEach(function(o){ var l = h[x[0]].vue.querySelectorAll('[data-eq="' + o + '"]');
           if(!l.length) ok = false;
-          [].forEach.call(l, function(e){ if(!e.classList.contains('cu') || e.style.display !== 'none' || !e.querySelector('img')) ok = false; }); }); });
-      return ok; })()"""), 'objets : chaque objet est une variante cuite en images, cachée au départ')
+          [].forEach.call(l, function(e){ if(!e.closest('.cu-ilot') || e.style.display !== 'none') ok = false; }); }); });
+      return ok && !h.pisteur.vue.querySelector('[data-eq] img'); })()"""), 'objets : chaque objet est un petit îlot vectoriel caché au départ (aucune image en plus à la cuisson)')
     P.etat("""(() => { var h = SALLE.acteurs.h; h.pisteur.equiper('carquois-argent'); h.pisteur.equiper('carquois-lourd'); h.sage.equiper('cristal-lune');
       h.alchimiste.equiper('sacoche'); ['pisteur', 'alchimiste', 'sage'].forEach(function(r){ h[r].equiper('amulette', true, {discret:true}); }); return 1; })()""")
     P.pg.wait_for_timeout(600)
@@ -406,8 +406,9 @@ def objets(nav):
       return vu('[data-eq="carquois-lourd"]') && !vu('[data-eq="carquois-argent"]') && !vu('[data-carquois]') && vu('[data-eq="amulette"]'); })()"""),
             'objets : un seul carquois à la fois (le lourd remplace celui d\'argent), l\'amulette se voit')
     P.heros('sage')
-    verifie(P.etat("""(() => { var s = SALLE.acteurs.h.sage, l = s.svg.querySelector('.cu-lueur [data-eq="cristal-lune"]');
-      return !!l && l.style.display !== 'none'; })()"""), 'objets : le héros choisi garde son objet dans sa silhouette lumineuse')
+    verifie(P.etat("""(() => { var s = SALLE.acteurs.h.sage, l = s.vue.querySelectorAll('[data-eq="cristal-lune"]'), ok = l.length === 2;
+      [].forEach.call(l, function(e){ if(e.style.display === 'none' || !(e.getBoundingClientRect().width > 0)) ok = false; }); return ok && s._choisi; })()"""),
+            'objets : le Sage choisi garde son cristal de lune bien visible (halo derrière, croissant devant)')
     P.capture('01-objets')
     P.touche('.zone[data-type="heros"][data-id="sage"]'); P.pg.wait_for_timeout(300)
     P.etat("""(() => { var h = SALLE.acteurs.h; window.__fini = false;

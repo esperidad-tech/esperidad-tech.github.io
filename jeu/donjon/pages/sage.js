@@ -474,7 +474,7 @@ function demarrer(){
   PG.orientation();
   table = q('#table'); couche = q('#couche'); runeEl = q('#rune'); curseur = q('#curseur'); bulleEl = q('#bulle');
   q('#grille .cle').innerHTML = PS.cle();
-  window.SAGE = {etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit()}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
+  window.SAGE = {etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit(), pv:PV}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
   construirePlan();
   majGrille();
   mesurerBords();

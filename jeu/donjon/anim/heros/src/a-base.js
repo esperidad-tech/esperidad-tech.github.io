@@ -15,6 +15,25 @@
    Sage       : h.sort(scene, to, {onImpact}) -> à l'impact ; h.etudier()
                 var b = h.bouclier(scene, cibleConteneur)   // Promise -> objet bouclier, quand le dôme est posé
                 b.absorber(2) ; b.retirer()                 // marchent aussi directement sur la Promise
+
+   Les objets du donjon et les nouvelles réactions (CONCEPTION-DONJON.md §6 et §10 ; sources a2-objets.js, l-reactions.js, m-armes.js) :
+     h.equiper(objet, on = true, {discret}) -> Promise   montre / cache l'objet sur le héros (variante dessinée d'avance, cuite)
+         'carquois-argent' | 'carquois-lourd' (Pisteur, un seul à la fois), 'cristal-lune' | 'baton-chene' (Sage),
+         'sacoche' (Alchimiste), 'amulette' (tous) ; h.equipe(objet) -> true / false
+     Pisteur    : h.tirer(scene, to, type, {onImpact, rebond, sol})   type : 'normale', 'feu', 'huile', 'colle', 'argent', 'lourde',
+                  'givre', 'acide', ou 'rebond' (= normale qui rebondit). to.metal = true : la lourde fait une gerbe d'étincelles
+                  (sinon un impact sourd). {rebond:true} (n'importe quel type) : la flèche ricoche et retombe au sol (sol : y du sol,
+                  par défaut to.y + 92). La lourde se bande plus lentement et l'arc recule.
+     Alchimiste : h.lancer(scene, to, 'givre' | 'acide' | 'huile' | 'colle', {onImpact}) (ou une couleur, comme avant) ;
+                  h.preparer('givre') accepte aussi les noms de potions.
+     Sage       : h.eclairSalle(scene, {cibles:[{x,y}], onImpact}) -> à l'éclair ; h.sort(...) devient cet éclair si le cristal
+                  de lune est équipé (ou avec {cristal:true} ; {cristal:false} pour la rune simple).
+                  h.bouclier(scene, [cible1, cible2]) -> Promise -> [dôme1, dôme2] (chacun absorber / retirer) ;
+                  b.absorber(n[, i]) et b.retirer([i]) marchent aussi sur la Promise et sur la paire (tous, ou le i-ème).
+     Tous       : h.touche('froid' | 'grouillement' | 'poing') ; h.relever({amulette:true}) (relève dorée, l'amulette se brise) ;
+                  h.entoile(true / false) (ligoté dans la toile, se débat ; false : il la déchire) ;
+                  h.avale() (happé vers la droite, il disparaît) ; h.recrache(scene, depuis {x, y} de la scène, {onAtterrit})
+                  ou h.recrache(depuisEcran) (il revient en volant, couvert de bave, et se secoue).
    Les actions passent dans une file : une à la fois, dans l'ordre d'appel.
    scene : l'élément de la scène (position relative, 960 × 540) ; to : {x, y} en pixels de la scène.
 

@@ -34,7 +34,10 @@ H._fleche2 = function(scene, n, t, to, type, opt){
     } else if(type === 'acide'){
       if(u > .1) pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:['#7ae04a', '#a6f070'], angle:90, ecart:15, v0:10, v1:40, g:700, t0:5, t1:7, d0:400, d1:550});
       if(u > .3 && Math.random() < .35) lueurFx(L, bx, by - 4, {c:'#c8e8b0', c2:'#8ab878', w:16, s0:.6, s1:2.2, dy:-10, d:600, o0:.5});
-    } else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
+    } else if(type === 'feu') pluie(L, p.x - ca * 8, p.y - sa * 8, {n:2, forme:'lueur', c:['#ffd84a', '#ff8a2a'], angle:ang + 180, ecart:30, v0:20, v1:70, g:-160, t0:2.5, t1:4, d0:250, d1:450});
+    else if(type === 'huile') pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:'#3a3020', angle:90, ecart:20, v0:10, v1:40, g:700, t0:5, t1:6, d0:400, d1:550});
+    else if(type === 'colle') pluie(L, p.x, p.y, {n:1, c:'#f2f8e4', bord:true, angle:90, ecart:30, v0:10, v1:30, g:500, t0:3, t1:5, d0:400, d1:600});
+    else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
   }}).then(function(r){
     if(opt.rebond) me._rebondFleche(L, r, type, w, a, tr, k, opt, to);
     else me._impactFleche2(L, r, type, w, a, tr, k, to);
@@ -329,7 +332,7 @@ H.bouclier = function(scene, cible, opt){
     return Promise.all([tous, this.jouer([
       {d:300, p:leve, e:'io', f:function(){
         me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas');
-        onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800});
+        anneau(me.fx, q.x, q.y, {w:130, h:28, c:CYAN, s0:0.2, s1:1.4, d:800});
         me._runesMontent();
         if(me.equipe('baton-chene')){
           var c = me.rep('chene');

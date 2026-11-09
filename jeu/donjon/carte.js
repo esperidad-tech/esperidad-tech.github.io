@@ -407,8 +407,8 @@ var PLAN = {
     {lieu:'camp', x:2135, y:1080, l:['Le feu', 'de camp'], t:20},
     {lieu:'eboulis', x:1800, y:1170, l:['Le cul-de-sac éboulé'], t:22},
     /* sur le coin déchiré */
-    {lieu:'bassin', x:2100, y:1255, l:['Le grand', 'bassin'], t:22, coin:true},
-    {lieu:'leo', x:2290, y:1040, l:['La dernière', 'salle'], t:19, coin:true}
+    {lieu:'bassin', x:2100, y:1330, l:['Le grand bassin'], t:20, coin:true},
+    {lieu:'leo', x:2290, y:1077, l:['La dernière', 'salle'], t:17, coin:true}
   ],
   /* les signes au lieu des noms, et les mêmes sur les trois portes */
   signes:[
@@ -428,7 +428,7 @@ var PLAN = {
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
     {id:'dalles', type:'piege', x:px(718), y:py(236), lignes:['seulement les', 'dalles claires'], pres:'dalles', crane:{x:px(678), y:py(234)}},
-    {id:'bourbe', type:'coin', x:2105, y:1180, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
+    {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
   ],
   /* le passage bloqué : le vieux plan dessine la grande galerie intacte jusqu'à la grotte de givre ; dans le donjon, elle est
      effondrée (le Pisteur ne voit que des éboulis) : il faut se parler */
@@ -1162,7 +1162,7 @@ function peindreBrume(ctx, fs){
   var N = 96, nx = 160, ny = 100, a = bruit(N, [[3, .45], [6, .3], [12, .17], [24, .08]], 7), b = bruit(N, [[2, .5], [5, .35], [10, .15]], 33);
   var im = document.createElement('canvas'); im.width = nx; im.height = ny;
   var ix = im.getContext('2d'), d = ix.createImageData(nx, ny);
-  var bas = hx('#24203a'), mil = hx('#4e4870'), haut = hx('#756d9c'), banc = hx('#a49cc8');
+  var bas = hx('#1c1830'), mil = hx('#423c62'), haut = hx('#6a6290'), banc = hx('#9a92c0');
   for(var y = 0; y < ny; y++) for(var x = 0; x < nx; x++){
     var i = y * nx + x, u = a[(Math.floor(y / ny * N) % N) * N + Math.floor(x / nx * N) % N], v = b[(Math.floor(y / ny * N * .7) % N) * N + Math.floor(x / nx * N * .7) % N];
     u = Math.max(0, Math.min(1, (u - .5) * 2.2 + .5));
@@ -1540,6 +1540,13 @@ function vue(el, o){
   function deplacer(id, depuis, opt){
     opt = opt || {};
     var pts = trace(id, depuis, opt.t0, opt.t1); if(pts.length < 2) return Promise.resolve();
+    /* du centre du lieu jusqu'au début du couloir ; et, au bout, jusqu'au centre du lieu d'arrivée (opt.vers) */
+    if(opt.depuisPion !== false && Math.hypot(pts[0][0] - pion.x, pts[0][1] - pion.y) > 2) pts.unshift([pion.x, pion.y]);
+    if(opt.vers){
+      var V = typeof opt.vers === 'string' ? (LIEUX[opt.vers] || (opt.vers === 'J' ? J : null)) : opt.vers;
+      var estCouloir = typeof opt.vers === 'string' && LIEUX[opt.vers] && LIEUX[opt.vers].couloir;
+      if(V && !estCouloir) pts.push([V.x, V.y]);
+    }
     var m = mesure(pts), n = Math.max(2, Math.round(m.L / 18)), kf = [];
     for(var i = 0; i <= n; i++){ var q = aFraction(m, i / n); kf.push({transform:'translate3d(' + f(q.x * z) + 'px,' + f(q.y * z) + 'px,0)', offset:i / n}); }
     var fin = aFraction(m, 1), deb = aFraction(m, 0);

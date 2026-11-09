@@ -31,12 +31,12 @@ with sync_playwright() as p:
     precalcul = pg.evaluate("!!(SALLE.Son.precalcul)")
     if precalcul:
         r = pg.evaluate("""() => new Promise(ok => { var d = performance.now(); (function f(){ var e = SALLE.Son.precalcul.etat();
-            if(e.musiques.length >= 3 && e.bruitages > 0) ok({s: Math.round((performance.now() - d) / 100) / 10, e: e}); else setTimeout(f, 100); })(); })""")
-        print('— 0) le pré-calcul au chargement (x6) : exploration + combat + le puits + les bruitages lourds prêts en %.1f s' % r['s'])
+            if(e.musiques.length >= 3 && !e.occupe) ok({s: Math.round((performance.now() - d) / 100) / 10, e: e}); else setTimeout(f, 100); })(); })""")
+        print('— 0) le pré-calcul au chargement (x6) : exploration + combat + le puits prêts en %.1f s' % r['s'])
         m0 = metriques(cdp)
         r = pg.evaluate("""() => new Promise(ok => { var d = performance.now(); SALLE.Son.precalcul.tout().then(function(x){ ok({ms: Math.round(performance.now() - d), x: x}); }); })""")
         m1 = metriques(cdp)
-        print('  puis toutes les autres versions : %.1f s de plus, fil principal occupé %.0f ms ; plus longue tâche du pré-calcul %s ms ; mémoire %s Mo (%s musiques, %s bruitages)' % (
+        print('  puis les bruitages lourds du combat : %.1f s de plus, fil principal occupé %.0f ms ; plus longue tâche du pré-calcul %s ms ; mémoire %s Mo (%s musiques, %s bruitages)' % (
             r['ms'] / 1000, (m1['TaskDuration'] - m0['TaskDuration']) * 1000, r['x']['pireTache'], r['x']['memoire'], r['x']['musiques'], r['x']['bruitages']))
     else:
         pg.wait_for_timeout(800)

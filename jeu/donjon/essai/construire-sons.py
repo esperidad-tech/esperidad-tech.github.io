@@ -61,7 +61,7 @@ def extraits():
     aides = '\n'.join(re.search(p, ss).group(0) for p in [r'function hasard\(a, b\)\{[^\n]*\}', r'function tire\(l\)\{[^\n]*\}', r'var VOIX_ENRAGE = \{[^\n]*\};'])
     morceaux.append('salle:function(ctx, A, bruits, revIn, blanc, brun){\nfunction pret(){ return true; }\n' + aides + '\n' + b + '\nreturn B;\n}')
     tb = entre(ss, 'var n = ctx.sampleRate * 2;', '\n    setInterval(programme')
-    morceaux.append('bruitsSalle:function(ctx){\nvar blanc, brun;\n' + tb + '\nreturn {blanc:blanc, brun:brun};\n}')
+    morceaux.append('bruitsSalle:function(ctx, A){\nvar blanc, brun;\n' + tb + '\nreturn {blanc:blanc, brun:brun};\n}')
     choix = entre(ss, 'var CHOIX = S.CHOIX_SONS = {', '};', garder_fin=True)
     table = {k: re.findall(r"'([A-C])'", v) for k, v in re.findall(r'(\w+):\[([^\]]*)\]', choix)}
     return '/* ===== les sons déjà dans le jeu, copiés tels quels (construire-sons.py) ===== */\nwindow.EXTRAITS = {\n' + ',\n'.join(morceaux) + '\n};\n', table

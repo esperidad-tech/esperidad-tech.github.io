@@ -217,8 +217,10 @@ H._froid = function(o){
     seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('garde'); me.cligner(); }});
     /* la buée qui sort de la bouche (deux petits nuages) */
     [380, 700].forEach(function(t){ lueurFx(F2, bou.x, bou.y, {c:'#ffffff', c2:'#dff4ff', w:24, s0:.4, s1:2.2, dx:18, dy:-12, d:800, retard:t, o0:.85}); });
-    /* le givre fond ensuite, doucement (sans bloquer le jeu) */
+    /* le givre fond ensuite, doucement (sans bloquer le jeu) ; un nouveau coup de froid repart de zéro */
+    var tok = this._givreTok = (this._givreTok || 0) + 1;
     this.plus(2600, function(){
+      if(tok !== me._givreTok) return;
       ['epaules', 'tete', 'bras'].forEach(function(q){ var e = C[q]; animer(e, [{opacity:1}, {opacity:0}], {duration:900, easing:'ease-in', fill:'forwards'}).then(function(){ if(e && !e._a) montrer(e, false); }); });
       var a = me._px(100, 112), b = me._px(150, 106);
       pluie(me.fx, a.x, a.y, {n:2, forme:'goutte', c:'#bfeaff', angle:90, ecart:10, v0:5, v1:20, g:300, t0:5, t1:6, d0:700, d1:900, etale:500});
@@ -365,7 +367,9 @@ H._toiles = function(){
 };
 H.entoile = function(on){
   on = on !== false;
-  if(on === !!this._toile) return Promise.resolve();
+  /* (l'état voulu est noté tout de suite : entoile(true) puis entoile(false) aussitôt font bien les deux, dans l'ordre) */
+  if(on === !!this._toileV) return Promise.resolve();
+  this._toileV = on;
   return on ? this._entoiler() : this._dechirer();
 };
 H._pose_ligote = function(){

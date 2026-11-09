@@ -59,7 +59,7 @@ function souffle(I, o){
   var g = A.gain(0); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(o.g || .05, t + 3);
   var l2 = I.continu(ctx.createOscillator()), l2g = A.gain((o.g || .05) * .5); l2.frequency.value = o.lfo2 || .09; l2.connect(l2g); l2g.connect(g.gain);
   s.connect(f); f.connect(g); g.connect(o.dest);
-  s.start(t, h(0, 2)); l1.start(t); l2.start(t);
+  s.start(t, h(0, s.buffer.duration * .9)); l1.start(t); l2.start(t);
 }
 /* de l'eau qui coule : un tampon de petites bulles, lu deux fois à des vitesses différentes pour ne jamais se répéter pareil */
 function ruisseau(I, o){
