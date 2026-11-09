@@ -9,6 +9,8 @@
 - 9 novembre (fluidité, RAPIDITE.md) : plus de bandeau du conteur en haut pendant le combat ; à sa place, deux petites
   barres de volume (🎵 musique, 💥 bruitages ; 0 = coupé), aussi sur l'écran du sac ; un petit bruit au toucher des icônes
   d'armes et de potions ; les acteurs sont « cuits » (pièces en images, plus de grand SVG ni de filtre vivant) ;
+- les objets des héros (carquois, sacoche, cristal de lune, bâton de chêne, amulette) : cuits en images, cachés au départ,
+  montrés par equiper() (aussi dans la silhouette du héros choisi) ; les nouvelles réactions ne cassent rien ;
 - des captures dans captures/ aux moments clés."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -383,6 +385,40 @@ def cumul(nav):
     P.fin()
 
 
+def objets(nav):
+    """les nouveaux objets et réactions des héros (anim/heros : equiper, touche('froid'), entoile, avale / recrache) :
+    ils passent par la cuisson (des variantes en images, cachées au départ) et ne cassent rien dans la salle"""
+    print('— Les objets des héros (cuisson)')
+    P = Partie(nav, 'objets', 1024, 768, True)
+    P.descendre(['feu', 'huile', 'colle'])
+    if not P.etat('!!window.Cuire && SALLE.acteurs.h.sage.cuit'):
+        verifie(True, 'objets : pas de cuisson dans cette page (rien à vérifier)'); P.fin(); return
+    verifie(P.etat("""(() => { var h = SALLE.acteurs.h, ok = true;
+      [['pisteur', ['carquois-argent', 'carquois-lourd', 'amulette']], ['alchimiste', ['sacoche', 'amulette']], ['sage', ['cristal-lune', 'baton-chene', 'amulette']]].forEach(function(x){
+        x[1].forEach(function(o){ var l = h[x[0]].vue.querySelectorAll('[data-eq="' + o + '"]');
+          if(!l.length) ok = false;
+          [].forEach.call(l, function(e){ if(!e.classList.contains('cu') || e.style.display !== 'none' || !e.querySelector('img')) ok = false; }); }); });
+      return ok; })()"""), 'objets : chaque objet est une variante cuite en images, cachée au départ')
+    P.etat("""(() => { var h = SALLE.acteurs.h; h.pisteur.equiper('carquois-argent'); h.pisteur.equiper('carquois-lourd'); h.sage.equiper('cristal-lune');
+      h.alchimiste.equiper('sacoche'); ['pisteur', 'alchimiste', 'sage'].forEach(function(r){ h[r].equiper('amulette', true, {discret:true}); }); return 1; })()""")
+    P.pg.wait_for_timeout(600)
+    verifie(P.etat("""(() => { var p = SALLE.acteurs.h.pisteur.vue, vu = function(s){ var e = p.querySelector(s); return !!e && e.style.display !== 'none' && e.getBoundingClientRect().width > 0; };
+      return vu('[data-eq="carquois-lourd"]') && !vu('[data-eq="carquois-argent"]') && !vu('[data-carquois]') && vu('[data-eq="amulette"]'); })()"""),
+            'objets : un seul carquois à la fois (le lourd remplace celui d\'argent), l\'amulette se voit')
+    P.heros('sage')
+    verifie(P.etat("""(() => { var s = SALLE.acteurs.h.sage, l = s.svg.querySelector('.cu-lueur [data-eq="cristal-lune"]');
+      return !!l && l.style.display !== 'none'; })()"""), 'objets : le héros choisi garde son objet dans sa silhouette lumineuse')
+    P.capture('01-objets')
+    P.touche('.zone[data-type="heros"][data-id="sage"]'); P.pg.wait_for_timeout(300)
+    P.etat("""(() => { var h = SALLE.acteurs.h; window.__fini = false;
+      Promise.all([h.alchimiste.touche('froid'), h.pisteur.entoile(true).then(() => h.pisteur.entoile(false)),
+        h.sage.avale().then(() => h.sage.recrache({x: 900, y: 200}))]).then(() => { window.__fini = true; }); return 1; })()""")
+    P.pg.wait_for_timeout(900); P.capture('02-reactions')
+    verifie(P.attend('window.__fini', 15000) and P.etat("!SALLE.acteurs.h.pisteur._toile && !SALLE.acteurs.h.sage._avale && getComputedStyle(SALLE.acteurs.h.sage.boite).opacity === '1'"),
+            'objets : givre, toile (prise puis déchirée), avalé puis recraché : chacun revient à sa place')
+    P.fin()
+
+
 def debout(nav):
     print('— Tablette tenue debout')
     P = Partie(nav, 'debout', 768, 1024, True)
@@ -392,10 +428,10 @@ def debout(nav):
 
 
 if __name__ == '__main__':
-    quoi = sys.argv[1:] or ['tablette', 'ecran', 'cumul', 'debout']
+    quoi = sys.argv[1:] or ['tablette', 'ecran', 'cumul', 'objets', 'debout']
     with sync_playwright() as p:
         nav = p.chromium.launch()
-        for f in [tablette, ecran, cumul, debout]:
+        for f in [tablette, ecran, cumul, objets, debout]:
             if f.__name__ not in quoi:
                 continue
             try:

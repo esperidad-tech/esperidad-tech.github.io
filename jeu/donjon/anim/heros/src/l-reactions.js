@@ -232,8 +232,8 @@ H._froid = function(o){
 var RAT_SVG = '<svg viewBox="-34 -16 62 28" style="width:100%;height:100%;display:block;overflow:visible">' +
   '<path d="M-20 2 C -28 2 -32 -4 -34 -10" fill="none" stroke="#24182e" stroke-width="3.6" stroke-linecap="round"/><path d="M-20 2 C -28 2 -32 -4 -34 -10" fill="none" stroke="#d89a9a" stroke-width="1.8" stroke-linecap="round"/>' +
   '<path d="M-12 7 L -15 11 M-4 7 L -2 11 M6 6 L 4 10 M12 5 L 15 9" stroke="#24182e" stroke-width="2.6" stroke-linecap="round"/>' +
-  '<path d="M-22 1 C -22 -8 -10 -12 2 -10 C 10 -9 14 -6 18 -4 C 22 -3 27 -1 27 2 C 27 4 23 5 19 5 C 14 7 6 8 -2 8 C -14 8 -22 7 -22 1 Z" fill="#5e4c56" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
-  '<path d="M-16 -2 C -10 -8 2 -8 10 -5" fill="none" stroke="#8a7884" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>' +
+  '<path d="M-22 1 C -22 -8 -10 -12 2 -10 C 10 -9 14 -6 18 -4 C 22 -3 27 -1 27 2 C 27 4 23 5 19 5 C 14 7 6 8 -2 8 C -14 8 -22 7 -22 1 Z" fill="#8a7482" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+  '<path d="M-18 4 C -10 7 4 7 12 4 C 6 6 -8 7 -18 4 Z" fill="#c8b4be"/><path d="M-16 -3 C -10 -9 2 -9 10 -6" fill="none" stroke="#c0aab8" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>' +
   '<path d="M9 -7 C 8 -14 15 -15 15 -9 Z" fill="#c88a92" stroke="#24182e" stroke-width="1.6"/><circle cx="27" cy="1.6" r="2" fill="#ff9aa8" stroke="#24182e" stroke-width="1"/>' +
   '<circle cx="18" cy="-2.6" r="2" fill="#ffd21e"/><circle cx="18.6" cy="-3.2" r=".7" fill="#fff"/><path d="M26 3 L 33 1 M26 3.5 L 32 5" stroke="#24182e" stroke-width=".8"/></svg>';
 H._ratCourt = function(pts, delai, D){
@@ -247,7 +247,7 @@ H._ratCourt = function(pts, delai, D){
     var bond = i % 2 ? -2.4 * s : 0;
     kf.push({offset:i / (p.length - 1), transform:'translate(' + r1(p[i][0]) + 'px,' + r1(p[i][1] + bond) + 'px) translate(-50%,-80%) rotate(' + r1(an) + 'deg) scale(1,' + (gauche ? -1 : 1) + ')', opacity:i === 0 || i === p.length - 1 ? 0 : 1});
   }
-  var e = div(this.fx, 'width:' + r1(56 * s) + 'px;height:' + r1(25 * s) + 'px;z-index:4;transform-origin:50% 80%', RAT_SVG);
+  var e = div(this.fx, 'width:' + r1(68 * s) + 'px;height:' + r1(30 * s) + 'px;z-index:4;transform-origin:50% 80%', RAT_SVG);
   return jouerEl(e, kf, {duration:D, delay:delai, easing:'linear', fill:'backwards'});
 };
 H._grouillement = function(o){
@@ -255,9 +255,9 @@ H._grouillement = function(o){
     var me = this, g = this.garde();
     this._mesure();
     this.expr('surpris');
-    this._ratCourt([[262, 292], [196, 290], [164, 250], [156, 200], [146, 150], [134, 108], [128, 62], [120, 18], [92, 30], [78, 86], [70, 150], [58, 230], [36, 292], [-40, 294]], 0, 1150);
-    this._ratCourt([[270, 280], [206, 288], [176, 236], [178, 182], [152, 140], [104, 132], [74, 172], [52, 244], [20, 292], [-50, 294]], 200, 1000);
-    this._ratCourt([[256, 293], [186, 290], [158, 226], [146, 150], [136, 74], [146, 16], [196, -20], [244, 120], [270, 290], [330, 292]], 380, 1050);
+    this._ratCourt([[262, 292], [196, 290], [164, 250], [156, 200], [146, 150], [134, 108], [128, 62], [120, 18], [92, 30], [78, 86], [70, 150], [58, 230], [36, 292], [-40, 294]], 0, 1500);
+    this._ratCourt([[270, 280], [206, 288], [176, 236], [178, 182], [152, 140], [104, 132], [74, 172], [52, 244], [20, 292], [-50, 294]], 280, 1350);
+    this._ratCourt([[256, 293], [186, 290], [158, 226], [146, 150], [136, 74], [146, 16], [196, -20], [244, 120], [270, 290], [330, 292]], 560, 1400);
     var b0 = (g.bassin && g.bassin.y) || 0;
     var sur = {racine:{y:-18}, bassin:{y:b0}, torse:-10, tete:-14, mA:[186, 70], hA:-110, mB:[92, 64], hB:-160, cB:1, pA:[104, 256], fA:30, pB:[160, 272]};
     var bas = {racine:{y:0}, bassin:{y:b0 + 18, x:4}, torse:22, tete:12, mA:[168, 200], hA:40, mB:[150, 214], hB:60, pA:[98, 272], pB:[168, 260], fB:24};
@@ -266,6 +266,7 @@ H._grouillement = function(o){
     return this.jouer([
       {d:120, p:sur, e:'oo', f:function(){ me.expr('aie'); }}, {d:160, p:bas, e:'io'}, {d:150, p:tete, e:'o'}, {d:140, p:sur, e:'io'},
       {d:150, p:dos, e:'io', f0:function(){ me.expr('surpris'); }}, {d:150, p:bas, e:'io', f0:function(){ me.expr('aie'); }}, {d:140, p:tete, e:'o'}, {d:150, p:dos, e:'io'},
+      {d:150, p:sur, e:'io'}, {d:150, p:bas, e:'io'}, {d:140, p:tete, e:'o'},
       {d:200, p:copieP(g, {torse:(g.torse || 0) + 6, tete:-10}), e:'io', f0:function(){
         me.expr('colere');
         var a = me._px(124, 120), b = me._px(130, 40);

@@ -42,7 +42,7 @@ Ce qu'on a appris en chemin (à ne pas refaire) :
 | Petits gestes des rats | sur une couche à part, en `replace` (jouable par la carte graphique) ; `add` seulement s'ils se chevauchent. |
 | Badges au-dessus des rats | ne suivent un rat **que pendant qu'il bouge** (événement `bete-bouge` envoyé par le module), et seulement ce rat ; lecture de toutes les positions d'abord, écriture ensuite. |
 | Particules, vols (fiole, flèche) | trajectoire calculée **une fois** puis jouée en animation (`Fx.particule`, `vol`) : plus de boucle par image. |
-| Vignette du critique | une texture (image) mise à l'échelle, au lieu d'un dégradé repeint. |
+| Vignette du critique | une toile à la taille de la scène (1,5 × de densité au plus), redessinée 1 s en tout, puis vidée. (Essai raté : une image de 2 400 px agrandie ×6 — fluide, mais elle faisait fermer le jeu sur iPhone : voir R9.) |
 | Rayons et étoile du critique | **cuits en images** (canvas) pendant l'écran du sac, au lieu d'un dégradé conique masqué et d'un `clip-path` (identiques à l'œil). Grandes images d'effets décodées d'avance. |
 | Moments « figer » des rats / héros | lecture de toutes les pièces d'abord, puis tout couper / écrire (plus de recalcul par pièce). |
 | Bandeau du conteur en haut | retiré pendant le combat (demande de Romain) ; deux petites barres de volume à la place. |
@@ -93,6 +93,26 @@ Attention : sur la machine de test (sans carte graphique, 2 processeurs partagé
 processeur** et sature pendant les gros effets (nuage, critique) : le chiffre « écran » y est pessimiste. Un iPhone ou un
 iPad fait ce travail sur sa carte graphique.
 Objectifs : ≥ 55 images/s au repos et ≥ 45 pendant les actions au ralenti ×4 ; pas d'image > 50 ms hors chargement.
+
+**R9 — La mémoire (iPhone : un onglet qui dépasse est fermé net, « ça quitte le jeu »).** Romain, 9 novembre, 15 h 13 :
+le critique fermait le jeu. Cause : la vignette était une image de 2 400 px agrandie jusqu'à ×6 → un calque de
+31 000 × 31 000 px réels (densité 3). Règles :
+- **aucun calque de plus de 4 096 px de côté en pixels réels**, en comptant la densité de l'écran (3 sur iPhone) ET la plus
+  grande échelle de son animation et de celles de ses parents (un élément de 640 px dans un parent qui arrive à ×3,4 :
+  640 × 3,4 × 3 ≈ 6 500 px). Un effet plein écran ne s'agrandit pas : il se redessine (une toile à la taille de la scène)
+  ou il est fait de morceaux plus petits ;
+- **un effet plein écran = au plus la taille de la scène, à 1,5 × de densité au plus** (une toile de 960 × 540 à 1,5 ≈ 5 Mo) ;
+  une grande image (1 920 × 1 080) se pose en fond d'un cadre à la taille de la scène, pas en élément qui déborde ;
+- **toute toile (canvas) est vidée dès qu'elle a servi** (`cv.width = cv.height = 0`) : Safari compte toutes les toiles
+  vivantes, même celles qui attendent d'être jetées ;
+- une petite image de dégradé (halo) qui vit dans un parent agrandi : sur son propre calque (`will-change: transform`),
+  la carte graphique l'étire sans repeindre un grand calque ;
+- la vérification : Playwright en émulation iPhone (844 × 390, `device_scale_factor` 3, mobile, tactile), pendant le
+  critique : la liste des calques (CDP `LayerTree`, taille × échelle des parents × 3 : aucun > 4 096 px), les toiles
+  vivantes (somme largeur × hauteur × 4), les sons pré-calculés (somme des AudioBuffer).
+  Mesuré le 9 novembre : avant, un calque de 31 186 px de côté et 37 Mo de toiles jamais vidées ; après, le plus grand
+  calque fait 3 167 px (les rayons, une image de 1 024 px étirée), 0 toile vivante hors cuisson (18 Mo au plus pendant).
+  Les sons pré-calculés de `son.js` pèsent ~80 Mo en combat (70 AudioBuffer) : à surveiller par l'atelier des sons.
 
 ## 4. Les chiffres (salle d'essai, 9 novembre)
 

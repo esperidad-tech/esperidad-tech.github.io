@@ -27,8 +27,9 @@ function coeurD(x, y, r){
 function eclat4(x, y, r, c){ return F('M' + x + ' ' + (y - r) + ' Q ' + (x + r * .16) + ' ' + (y - r * .16) + ' ' + (x + r) + ' ' + y + ' Q ' + (x + r * .16) + ' ' + (y + r * .16) + ' ' + x + ' ' + (y + r) + ' Q ' + (x - r * .16) + ' ' + (y + r * .16) + ' ' + (x - r) + ' ' + y + ' Q ' + (x - r * .16) + ' ' + (y - r * .16) + ' ' + x + ' ' + (y - r) + ' Z', c); }
 
 /* ---------- l'amulette de vie (n'importe quel héros) : un médaillon d'or au cœur de rubis, sur la poitrine ---------- */
-function amulette(d, cx, cy){
-  var or = '#e8c062', ch = 'M' + (cx - 14) + ' ' + (cy - 19) + ' Q ' + (cx - 11) + ' ' + (cy - 6) + ' ' + cx + ' ' + (cy - 8) + ' Q ' + (cx + 11) + ' ' + (cy - 6) + ' ' + (cx + 14) + ' ' + (cy - 20);
+function amulette(d, cx, cy, ceinture){
+  var or = '#e8c062', ch = ceinture ? 'M' + (cx - 5) + ' ' + (cy - 16) + ' L ' + cx + ' ' + (cy - 8) + ' L ' + (cx + 5) + ' ' + (cy - 16)
+    : 'M' + (cx - 14) + ' ' + (cy - 19) + ' Q ' + (cx - 11) + ' ' + (cy - 6) + ' ' + cx + ' ' + (cy - 8) + ' Q ' + (cx + 11) + ' ' + (cy - 6) + ' ' + (cx + 14) + ' ' + (cy - 20);
   return V('amulette', '<circle cx="' + cx + '" cy="' + cy + '" r="13" fill="' + d.halo('#fff2b0', '#ffc850') + '" opacity=".55"/>' +
     L(ch, O, 3.4) + L(ch, or, 1.9, ' stroke-dasharray="2.4 1.5"') +
     '<circle cx="' + cx + '" cy="' + cy + '" r="8.4" fill="' + d.g('#f0c860') + '" stroke="' + O + '" stroke-width="2.4"/>' +
@@ -66,30 +67,27 @@ function flechesSpeciales(){
     '<g data-givre style="display:none">' + givre + '</g><g data-acide style="display:none">' + acide + '</g>';
 }
 
-/* ---------- le Pisteur : les deux carquois trouvés dans la réserve (derrière l'épaule) ---------- */
+/* ---------- le Pisteur : les deux carquois trouvés dans la réserve ----------
+   (le carquois est derrière la capuche : ce qu'on voit, ce sont les flèches qui dépassent en arrière, en haut à gauche) */
+function fleDos(a, b, fut, p1, p2, k){
+  var dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), u = [dx / l, dy / l], n = [-u[1], u[0]];
+  function q(t, m){ return r1(b[0] - u[0] * t * k + n[0] * m * k) + ' ' + r1(b[1] - u[1] * t * k + n[1] * m * k); }
+  var f = 'M' + r1(a[0]) + ' ' + r1(a[1]) + ' L ' + r1(b[0]) + ' ' + r1(b[1]);
+  return L(f, O, 2.2 * k + 2.2) + L(f, fut, 2.2 * k) +
+    Pw('M' + q(1, 0) + ' L ' + q(14, 6.5) + ' L ' + q(16, 1) + ' Z', p1, 1.8) + Pw('M' + q(1, 0) + ' L ' + q(14, -6.5) + ' L ' + q(16, -1) + ' Z', p2, 1.8) +
+    C(r1(b[0]), r1(b[1]), 1.6 * k, fut, ' stroke="' + O + '" stroke-width="1.2"');
+}
 function carquoisArgent(d){
   return V('carquois-argent',
-    /* deux bagues d'argent sur le carquois, et un croissant de lune gravé */
-    L('M71.5 74.5 L 96.5 65.5', O, 6.4) + L('M71.5 74.5 L 96.5 65.5', '#e6eef8', 3.6) + L('M72 73.2 L 96 64.6', '#ffffff', 1, ' opacity=".8"') +
-    L('M93.5 129.5 L 113.5 122', O, 6.4) + L('M93.5 129.5 L 113.5 122', '#e6eef8', 3.6) +
-    Pw(croissant(93, 99, 7.5, 3.5, -1.6, 6.4), '#eef4ff', 1.8) + eclat4(101, 92, 3, '#ffffff') +
-    /* trois flèches d'argent : fûts d'argent, plumes blanches */
-    L('M72 61 L 72 49 M82 59 L 81 45 M92 57 L 92 43', O, 4) + L('M72 61 L 72 49 M82 59 L 81 45 M92 57 L 92 43', '#dfe7f2', 2.2) +
-    Pw('M70 52 L 63 40 L 77 45 Z', '#f6f9ff', 2) + Pw('M80 48 L 75 34 L 87 41 Z', '#e2eaf6', 2) + Pw('M90 46 L 87 32 L 98 41 Z', '#f6f9ff', 2) +
-    L('M71 50 L 66 43 M81 46 L 78 38 M91 44 L 89 36', '#a8b4c8', 1) +
-    eclat4(64, 34, 4.4, '#ffffff') + eclat4(99, 30, 3.4, '#e8f6ff') + rep('carquois', 84, 46));
+    fleDos([80, 60], [47, 25], '#dfe7f2', '#f6f9ff', '#d2dcec', 1.2) + fleDos([84, 58], [57, 13], '#dfe7f2', '#e8eef8', '#f6f9ff', 1.2) + fleDos([76, 64], [39, 40], '#dfe7f2', '#f6f9ff', '#d2dcec', 1.2) +
+    L('M46 30 L 52 24 M55 19 L 60 13 M38 44 L 44 38', '#ffffff', 1.2, ' opacity=".9"') +
+    eclat4(38, 20, 5, '#ffffff') + eclat4(62, 4, 3.6, '#e8f6ff') + eclat4(30, 44, 3, '#ffffff') + rep('carquois', 50, 28));
 }
 function carquoisLourd(d){
   return V('carquois-lourd',
-    /* un carquois renforcé de fer : un gros cerclage au bord, des plaques rivetées */
-    L('M68.5 64.5 L 93.5 55.5', O, 8.5) + L('M68.5 64.5 L 93.5 55.5', '#56546a', 5.4) + L('M69 63 L 93 54.5', '#9a98ac', 1.3) +
-    rivets([[74, 62.4], [82, 59.6], [90, 56.8]], '#c8c6d8') +
-    L('M93 130 L 114 122', O, 8.5) + L('M93 130 L 114 122', '#56546a', 5.4) + rivets([[99, 127.8], [108, 124.4]], '#c8c6d8') +
-    Pw('M83 92 L 95 88 L 99 104 L 87 108 Z', '#4a4858', 2) + rivets([[86, 94], [94, 91.4], [89, 104.6], [96, 102]], '#c8c6d8') +
-    /* trois grosses flèches : fûts épais, plumes noires */
-    L('M72 62 L 71 47 M82 60 L 80 43 M92 58 L 92 41', O, 6) + L('M72 62 L 71 47 M82 60 L 80 43 M92 58 L 92 41', '#6a4a2e', 3.6) +
-    Pw('M70.5 51 L 61 37 L 78 43 Z', '#3a3444', 2.2) + Pw('M79.5 47 L 73 31 L 88 39 Z', '#2a2632', 2.2) + Pw('M91.5 45 L 87 28 L 100 39 Z', '#3a3444', 2.2) +
-    L('M70 49 L 64 41 M79 45 L 75 36 M91 43 L 88 33', '#6a6478', 1.1) + rep('carquois', 84, 46));
+    fleDos([80, 60], [45, 23], '#7a5636', '#56506a', '#3e3850', 1.5) + fleDos([84, 58], [56, 11], '#7a5636', '#3e3850', '#56506a', 1.5) + fleDos([76, 64], [37, 39], '#7a5636', '#56506a', '#3e3850', 1.5) +
+    L('M43 27 L 50 21 M53 15 L 58 9 M35 43 L 42 36', '#b8b2cc', 1.4) + C(45, 23, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') + C(56, 11, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') + C(37, 39, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') +
+    rep('carquois', 50, 28));
 }
 
 /* ---------- l'Alchimiste : la sacoche (une 4e place de recette), à la hanche, derrière ---------- */
@@ -111,14 +109,14 @@ function sacoche(d){
 }
 
 /* ---------- le Sage : le cristal de lune (sur la crosse) et le bâton de chêne ---------- */
-function cristalLune(d, x, y){
-  return V('cristal-lune', '<circle cx="' + x + '" cy="' + y + '" r="40" fill="' + d.halo('#ffffff', '#cfdcff') + '" opacity=".75"/>' +
-    /* le croissant de pierre de lune qui tient le cristal, serti d'argent */
-    Pw(croissant(x - 1, y, 24, 10, -1, 20), d.g('#eef2ff', 1.2), 2.8) +
-    L(croissant(x - 1, y, 24, 10, -1, 20).split(' A ')[0] + ' A 24 24 0 0 1 ' + r1(x - 21) + ' ' + r1(y + 10), '#ffffff', 1.6, ' opacity=".8"') +
-    F(croissant(x - 1, y, 19, 9, -1, 16.5), '#c8d0f8', ' opacity=".45"') +
-    C(x - 22, y + 2, 2.6, '#ffffff', ' stroke="' + O + '" stroke-width="1.2"') + C(x - 16, y + 15, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') + C(x - 16, y - 13, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') +
-    eclat4(x + 20, y - 22, 5, '#ffffff') + eclat4(x - 30, y - 18, 3.4, '#e8f0ff') + eclat4(x + 24, y + 16, 3, '#e8f0ff'));
+function cristalLune(d, x, y, devant){
+  if(!devant) return V('cristal-lune', '<circle cx="' + x + '" cy="' + y + '" r="40" fill="' + d.halo('#ffffff', '#cfdcff') + '" opacity=".7"/>');
+  /* le croissant de pierre de lune qui tient le cristal (devant lui), et ses étoiles */
+  var c = croissant(x - 3, y, 25, 13, -2, 21);
+  return V('cristal-lune', Pw(c, d.g('#f2f4ff', 1.2), 2.8) + F(croissant(x - 3, y, 20, 11, -2, 17.5), '#c8d0f8', ' opacity=".5"') +
+    L('M' + r1(x - 21) + ' ' + r1(y - 12) + ' Q ' + r1(x - 27) + ' ' + y + ' ' + r1(x - 20) + ' ' + r1(y + 13), '#ffffff', 2, ' opacity=".9"') +
+    C(x - 25, y + 1, 2.6, '#ffffff', ' stroke="' + O + '" stroke-width="1.2"') + C(x - 19, y + 16, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') + C(x - 19, y - 15, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') +
+    eclat4(x + 20, y - 24, 5.4, '#ffffff') + eclat4(x - 32, y - 20, 3.6, '#e8f0ff') + eclat4(x + 22, y + 18, 3.2, '#e8f0ff'));
 }
 function feuilleChene(x, y, a, k, c){
   return '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ') scale(' + k + ')">' +

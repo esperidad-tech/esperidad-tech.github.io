@@ -1,0 +1,111 @@
+/* commun.css — ce qui est commun aux pages du Sage et de l'Alchimiste (donjon de Brumeval).
+   Même style que la salle d'essai (essai/src/jeu.css) et que le jeu (src/base.css) : nuit sombre, crème, or, contour #24182e.
+   Rapidité (RAPIDITE.md) : tout ce qui bouge bouge en transform / opacity ; aucun filtre vivant. */
+:root{
+  --nuit:#07050b; --nuit-2:#120d1c; --nuit-3:#1c1530; --encre:#24182e; --or:#ffd23f; --or-pale:#ffe3a3; --creme:#f3e7cb; --brun:#5a4630;
+  --parchemin:#ecdcb4; --encre-plan:#3b2414; --rouge-plan:#8e2e1c; --cyan:#8ff3ff; --cyan-2:#3fd0ff;
+  --c-pisteur:#5fcf86; --c-alchimiste:#b48cff; --c-sage:#6cb6ff;
+  --f-titre:"Macondo", "Georgia", "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --bas:max(10px, env(safe-area-inset-bottom, 0px));
+  --gauche:max(12px, env(safe-area-inset-left, 0px));
+  --droite:max(12px, env(safe-area-inset-right, 0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--nuit);overscroll-behavior:none}
+body{font-family:var(--f-texte);font-size:17px;line-height:1.35;color:#fff4e0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;margin:0}
+img,svg{-webkit-user-drag:none}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--f-titre);font-weight:400;line-height:1.1;margin:0;color:var(--or-pale)}
+p{margin:0}
+@media (max-height:520px){ body{font-size:15px} }
+
+/* ---------- les boutons ---------- */
+/* la règle de Romain : un bouton pour ALLER / LANCER / VALIDER est JAUNE, texte NOIR ; les autres sont sombres */
+.aller{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;min-width:54px;padding:8px 26px;border-radius:999px;
+  background:linear-gradient(180deg,#ffe48a,#ffd23f 55%,#e8a93a);color:#111;font-weight:800;font-size:19px;border:3px solid var(--encre);
+  box-shadow:0 4px 0 #b07a1c, 0 8px 18px rgba(0,0,0,.45);position:relative;text-align:center;line-height:1.1}
+.aller:active{transform:translateY(3px);box-shadow:0 1px 0 #b07a1c, 0 4px 10px rgba(0,0,0,.35)}
+.aller:disabled{background:linear-gradient(180deg,#6a5e48,#4a4232);color:#2a2418;box-shadow:0 3px 0 #2a2418;cursor:default}
+.sombre{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;min-width:48px;padding:6px 18px;border-radius:999px;
+  background:rgba(16,11,24,.9);border:2px solid #6a5438;color:#efe2c4;font-weight:700;font-size:16px;line-height:1.1;text-align:center}
+.sombre:active{transform:translateY(2px)}
+.lire{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(36,24,46,.12);font-size:20px;flex:none;line-height:1}
+.lire:active{transform:scale(.92)}
+.sur-nuit .lire,.lire.clair{background:rgba(255,244,224,.1)}
+/* le rond jaune qui guide (comme le tutoriel du jeu), seulement en transform / opacity */
+.guide{animation:flotte 1.6s ease-in-out infinite}
+.guide::before{content:'';position:absolute;inset:-7px;border-radius:inherit;border:4px solid var(--or);pointer-events:none;
+  box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 16px 5px rgba(255,210,63,.7), inset 0 0 10px rgba(255,210,63,.45);animation:pulse 1.3s ease-in-out infinite}
+.guide::after{content:'';position:absolute;inset:-7px;border-radius:inherit;border:3px solid var(--or);opacity:0;pointer-events:none;animation:onde 1.3s ease-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes onde{0%{transform:scale(1);opacity:.85}100%{transform:scale(1.28,1.5);opacity:0}}
+@keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ---------- le texte raconté (toujours avec son 🔊) ---------- */
+.dit{display:flex;align-items:center;gap:8px}
+.dit>span{flex:1;min-width:0}
+.bulle{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 16px;border-radius:16px;background:rgba(243,231,203,.97);color:#35281b;
+  border:3px solid var(--encre);box-shadow:0 4px 0 rgba(0,0,0,.45);font-weight:700;font-size:16px;line-height:1.28;min-height:56px}
+.bulle>span{flex:1;min-width:0}
+.bulle.pop{animation:pop .28s ease-out}
+@keyframes pop{0%{transform:scale(.96);opacity:.4}100%{transform:none;opacity:1}}
+@media (max-height:520px){ .bulle{font-size:14.5px;min-height:50px;padding:4px 4px 4px 12px} }
+
+/* ---------- la tablette debout ---------- */
+#tourne{position:fixed;inset:0;z-index:200;background:#0b0810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center}
+#tourne p{font-family:var(--f-titre);font-size:28px;line-height:1.2;color:var(--or-pale);max-width:420px;margin:0;text-shadow:0 2px 0 var(--encre)}
+#tourne .dit{flex-direction:column}
+.tn-tablette{width:70px;height:104px;border:5px solid var(--or-pale);border-radius:12px;position:relative;animation:tn-tourne 2.4s ease-in-out infinite}
+.tn-tablette i{position:absolute;left:50%;bottom:6px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--or-pale)}
+@keyframes tn-tourne{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#tourne .lire{background:var(--creme);color:var(--encre)}
+
+/* ---------- les fenêtres ---------- */
+.voile{position:fixed;inset:0;z-index:100;background:rgba(5,3,9,.72);display:flex;align-items:center;justify-content:center;
+  padding:max(10px, env(safe-area-inset-top, 0px)) var(--droite) var(--bas) var(--gauche);animation:voile .2s ease-out}
+@keyframes voile{from{opacity:0}to{opacity:1}}
+.fen{position:relative;width:min(760px, 100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:22px;
+  background:linear-gradient(180deg,#221a30,#140f1e);border:3px solid #5a4630;box-shadow:0 0 0 2px var(--encre), 0 18px 50px rgba(0,0,0,.6);
+  padding:18px 20px 18px;display:flex;flex-direction:column;gap:12px;animation:fen .3s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes fen{from{transform:translateY(16px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.fen h2{font-size:26px;text-shadow:0 2px 0 var(--encre)}
+.fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px}
+.fen .titre h2{flex:1}
+.fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
+.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+.fen.parch{background:linear-gradient(180deg,#f3e7cb,#e3cf9f);color:#35281b;border-color:#8a6a3a}
+.fen.parch h2{color:#3b2414;text-shadow:none}
+.fen.parch .fermer{background:rgba(36,24,46,.08);border-color:#8a6a3a;color:#35281b}
+@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} }
+
+/* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
+.pave-fen{width:min(820px, 100%)}
+.pave-corps{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 22px;align-items:center}
+.pave-gauche{display:flex;flex-direction:column;align-items:center;gap:12px}
+.saisie{display:flex;gap:10px}
+.case{width:clamp(56px, 11vh, 80px);height:clamp(56px, 11vh, 80px);border-radius:16px;border:3px dashed #5a4a6e;display:grid;place-items:center;font-size:clamp(30px, 6vh, 42px);background:rgba(0,0,0,.25)}
+.case.pleine{border-style:solid;border-color:var(--or);background:var(--creme);animation:pop .25s}
+.pave{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px}
+.pave button{min-height:clamp(52px, 10vh, 76px);border-radius:16px;border:2px solid #4a3d64;background:linear-gradient(180deg,#2a2140,#1a1428);font-size:clamp(28px, 5.4vh, 38px);
+  display:grid;place-items:center;line-height:1;box-shadow:0 3px 0 rgba(0,0,0,.4)}
+.pave button:active{transform:scale(.94);background:#3a2e58}
+.pave-msg{min-height:56px}
+.pave-msg .bulle.ko{background:#ffe0d6;border-color:#6a1e14}
+@media (max-width:640px), (max-height:430px){ .pave-corps{grid-template-columns:auto minmax(0,1fr);gap:8px 14px} .pave{gap:6px} }
+
+/* ---------- le code en grand (pages du Sage, recettes de l'Alchimiste) ---------- */
+.code-grand{display:flex;gap:10px;justify-content:center}
+.code-grand b{width:clamp(58px, 12vh, 86px);height:clamp(58px, 12vh, 86px);border-radius:16px;display:grid;place-items:center;font-size:clamp(32px, 7vh, 48px);
+  background:#fffaf0;border:3px solid var(--encre);box-shadow:0 4px 0 rgba(0,0,0,.35);font-weight:400}
+
+/* ---------- les petits boutons discrets (recommencer) ---------- */
+.discret{min-width:48px;min-height:48px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:rgba(16,11,24,.6);border:2px solid rgba(106,84,56,.6);color:#cdbf9f;opacity:.75}
+
+/* ---------- les étincelles (transform / opacity seulement) ---------- */
+.etin{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,#bff9ff 35%,rgba(143,243,255,0) 70%)}
+.etin.or{background:radial-gradient(circle,#fff 0,#ffe08a 35%,rgba(255,210,63,0) 70%)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

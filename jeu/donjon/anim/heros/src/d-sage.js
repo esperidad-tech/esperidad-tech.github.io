@@ -68,7 +68,7 @@ function sage(lk, grain){
       P('M' + (xb + 2) + ' ' + (top - 20) + ' L ' + (xb + 11) + ' ' + (top - 4) + ' L ' + (xb + 2) + ' ' + (top + 12) + ' L ' + (xb - 7) + ' ' + (top - 4) + ' Z', d.g('#5fe0ff', 1.3)) +
       F('M' + (xb + 2) + ' ' + (top - 20) + ' L ' + (xb + 11) + ' ' + (top - 4) + ' L ' + (xb + 2) + ' ' + (top - 2) + ' Z', '#e8fdff', ' opacity=".75"') +
       L('M' + (xb - 1) + ' ' + (top - 8) + ' l 3 -5 l 3 5 M' + (xb + 2) + ' ' + (top - 13) + ' l 0 12', '#fff', 1.6) +
-      C(xb + 2, top - 2, 3, '#fff', ' opacity=".8"') + '</g>' + rep('cristal', xb + 2, top - 2) + rep('baton-bas', xb, bas);
+      C(xb + 2, top - 2, 3, '#fff', ' opacity=".8"') + '</g>' + cristalLune(d, xb + 2, top - 2, true) + rep('cristal', xb + 2, top - 2) + rep('baton-bas', xb, bas);
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 16, d.gh(bleu)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
     J('avantBrasB', P('M' + (xb - 8) + ' 142 L ' + (xb + 8) + ' 142 L ' + (xb + 12) + ' 178 Q ' + xb + ' 184 ' + (xb - 12) + ' 178 Z', d.gh(bleu)) + L('M' + (xb - 12) + ' 177 Q ' + xb + ' 183 ' + (xb + 12) + ' 177', or, 2.6) +
       J('mainB', baton + batonChene(d, xb, top, bas) + poing(d, xb, 188, 8, pe[1])))));
