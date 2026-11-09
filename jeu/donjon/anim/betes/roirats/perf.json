@@ -1,0 +1,182 @@
+{
+ "ralenti": 6,
+ "mesures": [
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 25,
+   "nom": "attente",
+   "objectif": 50
+  },
+  {
+   "ips": 57,
+   "pire": 100,
+   "lentes": 1,
+   "anims": 23,
+   "nom": "entrée (roule, le roi se dresse)",
+   "objectif": 40
+  },
+  {
+   "ips": 58,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 26,
+   "nom": "attente après l’entrée",
+   "objectif": 50
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 10,
+   "nom": "grouillement (sur les trois héros)",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 27,
+   "nom": "attente étalée",
+   "objectif": 50
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 13,
+   "nom": "sans potion : bruit (panique)",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 30,
+   "nom": "attente point faible ouvert",
+   "objectif": 50
+  },
+  {
+   "ips": 49,
+   "pire": 50,
+   "lentes": 1,
+   "anims": 39,
+   "nom": "coup sur le nœud ouvert",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 36,
+   "nom": "nœud refermé",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 37,
+   "nom": "rebond (immunisé)",
+   "objectif": 40
+  },
+  {
+   "ips": 58,
+   "pire": 50,
+   "lentes": 1,
+   "anims": 47,
+   "nom": "nuage : toux + nœud tendu",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 29,
+   "nom": "attente nœud tendu",
+   "objectif": 50
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 13,
+   "nom": "bruit : ils tirent, le roi tombe",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 5,
+   "nom": "piège : lumière (boule)",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "anims": 7,
+   "nom": "attente en boule",
+   "objectif": 50
+  },
+  {
+   "ips": 58,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 31,
+   "nom": "ils se déroulent",
+   "objectif": 40
+  },
+  {
+   "ips": 57,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 36,
+   "nom": "piège : bruit (charge)",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 45,
+   "nom": "feu (ils se roulent) + brûlé",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 46,
+   "nom": "attente brûlés + enragés",
+   "objectif": 50
+  },
+  {
+   "ips": 59,
+   "pire": 50,
+   "lentes": 1,
+   "anims": 35,
+   "nom": "huile",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 50,
+   "lentes": 1,
+   "anims": 24,
+   "nom": "fuite",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "anims": 18,
+   "nom": "explosion",
+   "objectif": 40
+  }
+ ],
+ "erreurs": []
+}

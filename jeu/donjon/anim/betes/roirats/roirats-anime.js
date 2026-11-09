@@ -357,7 +357,7 @@ function Roi(conteneur, options){
   var D = new Defs(PX + (++NUM) + '_');
   this.D = D;
   this.G = {flash: D.doux('#fff8e0', .85), lumiere: D.doux('#fff4b0', .9), vapeur: D.doux('#eef2f8', .9), fumee: D.doux('#6a6278', .9), poussiere: D.doux('#7a6e86', .8),
-    toux: D.doux('#c8d0a8', .85), braise: D.doux('#ffb040', 1), rose: D.doux('#ffb8c8', .9), givre: D.doux('#e8f8ff', .9), acide: D.doux('#c8f060', .85), noir: D.doux('#0c0812', .95),
+    toux: D.doux('#dfe6c4', 1), braise: D.doux('#ffb040', 1), rose: D.doux('#ffb8c8', .9), givre: D.doux('#e8f8ff', .9), acide: D.doux('#c8f060', .85), noir: D.doux('#0c0812', .95),
     feu1: D.lin([[0, '#ff4a10'], [.6, '#ff8a1a'], [1, '#ffc040', .8]], 0, 1, 0, 0), feu2: D.lin([[0, '#ffd040'], [1, '#fff8c0']], 0, 1, 0, 0),
     glace: D.lin([[0, '#f4fdff', .82], [.45, '#b8e6ff', .62], [1, '#5aa0d8', .75]], 1, 0, 0, 1),
     huile: D.lin([[0, '#1a1428'], [.3, '#3a2a5a'], [.45, '#2a5a6a'], [.6, '#5a6a2a'], [.75, '#6a3a5a'], [1, '#1a1428']], 0, 0, 1, 0)};
@@ -925,7 +925,7 @@ function dessinRat(D, G, r){
   t += L('M-122 4 C -146 -6 -166 -12 -190 -12 M-120 8 C -146 6 -168 10 -192 16 M-118 10 C -138 18 -154 28 -170 40 M-114 2 C -126 -16 -138 -26 -154 -34', sombre('#e8e0ec', dk * .6), 1.1 * k * .9, so(.85));
   /* l'œil jaune qui luit (rouge quand ils enragent : variante) */
   var rh = roi ? 30 : 24, AM = 'M-98 -10 C -92 -22 -74 -24 -68 -16 C -72 -6 -88 -2 -98 -10 Z';
-  t += C(-84, -12, rh, G.haloJ, fo(roi ? .8 : .7)) + vari('rage', C(-84, -12, rh * 1.2, G.haloR, fo(.9)));
+  t += C(-84, -12, rh, G.haloJ, fo(roi ? .8 : .7)) + vari('rage', C(-84, -12, rh * (roi ? .9 : 1.05), G.haloR, fo(roi ? .8 : .9)));
   t += F(AM, G.oeilJ) + vari('rage', F(AM, G.oeilR));
   t += F('M-83 -22 C -81 -18 -81 -8 -83 -4 C -85 -8 -85 -18 -83 -22 Z', '#2a0408') + F(rond(-89, -15, 2.6), '#fff') + F(rond(-75, -10, 1.2), '#fff', fo(.7));
   if(roi) t += '<g' + D.clip(AM) + '>' + piv('roiL', -83, -24, F('M-100 -24 L -66 -24 L -66 -3 C -78 -1 -90 -1 -100 -3 Z', g(sombre(poil, .12))) + L('M-100 -3 C -90 -1 -78 -1 -66 -3', O, 2)) + '</g>';
@@ -1071,7 +1071,7 @@ function dessinerRoi(D){
   /* le dixième rat, qui pointe le nez entre les autres */
   rats += dessinRat(D, G, RAT.r7);
   /* les queues, la lueur pâle sous le nœud, son ombre, le nœud (pièce « noeud ») */
-  rats += El(K[0], K[1] + 4, 78, 58, D.halo('#ffd8e0', '#ff8aa8'), fo(.3)) + El(K[0], K[1] + 42, 56, 10, '#000', fo(.45));
+  rats += vari('noeudFond', El(K[0], K[1] + 4, 78, 58, D.halo('#ffd8e0', '#ff8aa8'), fo(.3)) + El(K[0], K[1] + 42, 56, 10, '#000', fo(.45)), 1);
   QUEUES.forEach(function(id){ rats += dessinQueue(RAT[id]); });
   var tension = '';
   for(var i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2 + .2, ra = 58, rb = 72 + (i % 2) * 8; tension += 'M' + f1(K[0] + Math.cos(a) * ra) + ' ' + f1(K[1] + Math.sin(a) * ra * .78) + ' L ' + f1(K[0] + Math.cos(a) * rb) + ' ' + f1(K[1] + Math.sin(a) * rb * .78) + ' '; }
@@ -1852,7 +1852,7 @@ R._t_bouclier = function(o){
     {t: .6, p: {masse: {x: 10, sx: 1, sy: 1, a: 1}}, e: 'cubic-bezier(.3,.6,.4,1)'}, {t: 1, p: reunir(this._base(), {masse: {x: 0, a: 0}})}];
   setTimeout(function(){
     if(self.jeton !== j) return;
-    var p = [c[0] - 80, c[1] - 40];
+    var p = [c[0] - 58, c[1] - 40];
     var g = self._fxEl(L('M0 -90 Q -30 0 0 90', '#1ec8ff', 14, so(.35)) + L('M0 -90 Q -30 0 0 90', '#bff8ff', 4) + L('M-10 -40 l 6 8 l -6 8 M-14 10 l 8 0 M-10 40 l 6 -8', '#ffffff', 2));
     g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(.8)', opacity: 0}, {offset: .2, transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(1.1)', opacity: 1}, {transform: 'translate(' + f1(p[0] - 10) + 'px,' + f1(p[1]) + 'px) scale(1)', opacity: 0}], {duration: 700, fill: 'forwards'}).finished.then(oter(g), oter(g));
     self._etincelles([p[0] + 10, p[1]], 8, {v: 50, ang: 0, coul: ['#bff8ff', '#ffffff', '#5fe8ff']});
@@ -1874,7 +1874,7 @@ R.tousser = function(){
     k.push({t: (t0 + 520) / T, p: reunir(poseDehors(6, {tete: -16, bouche: -36, sy: .94, lean: 6}), {masse: {sy: .93, sx: 1.04, y: 2, x: 6}, roiT: {a: -14}, roiM: {a: -36}, roiL: {sy: 34}, roi: {a: 5}}), e: 'cubic-bezier(.1,.9,.3,1)'});
     k.push({t: (t0 + 900) / T, p: reunir(poseDehors(0, {tete: 0, bouche: -18, sy: 1}), {masse: {sy: 1, sx: 1, y: 0, x: 0}, roiT: {a: 0}, roiM: {a: -16}, roiL: {sy: 12}, roi: {a: 0}}), e: 'ease-out'});
     (function(m){ self._minuteur(function(){
-      ['roiB', 'r1B', 'r3B', 'r5B', 'r2B'].forEach(function(n, q){ var p = self._ou(n), f = n === 'r3B' ? 1 : -1; self._bouffee([p[0] + f * 6, p[1]], {r: n === 'roiB' ? 12 : 7, grad: self.G.toux, op: .8, dx: f * hasard(24, 44), dy: hasard(-14, 4), duree: 800, delai: q * 30, s1: 2.6}); });
+      ['roiB', 'r1B', 'r3B', 'r5B', 'r2B'].forEach(function(n, q){ var p = self._ou(n), f = n === 'r3B' ? 1 : -1, roi = n === 'roiB'; self._bouffee([p[0] + f * 8, p[1]], {r: roi ? 18 : 11, grad: self.G.toux, op: 1, dx: f * hasard(30, 54), dy: hasard(-16, 2), duree: 1000, delai: q * 30, s0: .5, s1: 2.4}); if(roi || n === 'r1B') self._cri(p, roi ? 1.3 : .9, f); });
     }, m * Q + 520); })(i);
   }
   k.push({t: 1, p: this._base()});
@@ -2078,8 +2078,11 @@ R._e_boule = function(on){
   var self = this, j = this._debutAction();
   this.etat.boule = on;
   if(on){
-    ['noeud', 'etale'].forEach(function(n){ self.etat[n] = false; });
+    ['noeud', 'etale', 'dos'].forEach(function(n){ self.etat[n] = false; });
     this._fondu('tension', 0, 200); this._tensionX(false);
+    /* (si le nœud était ouvert, il se referme : ils se roulent en boule tout de suite) */
+    if(this.etat.ouvert){ this.etat.ouvert = false; this._pulseX(false); this._fondu('lache', 0, 200); this._fondu('noeud', 1, 200); this._fondu('colleRoi', 0, 200); }
+    this._fondu('ombreRoi', 1, 200);
     var k = [{t: 0, p: {}}, {t: .3, p: reunir(poseDehors(6, {dy: -10, tete: -20, bouche: -36, sy: 1.04}), {roi: {y: -10}, roiT: {a: -14}, roiP: {a: 104, x: -12, y: -14}, roiM: {a: -36}}), e: 'cubic-bezier(.1,.9,.3,1)'},
       {t: .62, p: reunir(POSES.boule, {roiP: {a: 0, x: 0, y: 0}}), e: 'cubic-bezier(.5,0,.7,1)'}, {t: 1, p: POSES.boule}];
     ['roiB', 'r1B', 'r3B', 'r5B'].forEach(function(n, i){ self._minuteur(function(){ self._cri(self._ou(n), 1, n === 'r3B' ? 1 : -1); }, 60 + i * 70); });
@@ -2117,6 +2120,7 @@ R.fuir = function(){
   this._minuteur(function(){
     var p = self._ou('pf');
     self._fondu('noeud', 0, 200);
+    self._fondu('noeudFond', 0, 500);
     self._eclat(p, 30, '#ffe8f0', {anneau: '#ffd0dc', duree: 500});
     for(var i = 0; i < 5; i++) self._brin(p, -Math.PI * (.08 + i * .2), hasard(80, 130), i * 30);
     QUEUES.forEach(function(id){ self._opacite('q' + id, 0, 220); });
@@ -2161,8 +2165,8 @@ R.fuir = function(){
     self._minuteur(function(){ self._cri(self._ou('roiB'), 1.3, 1); }, 2100);
     /* la couronne tombe et reste au sol */
     self._minuteur(function(){
-      var d = self._detacher('roiC'), arr = [d.c[0] - 30, SOL - 22];
-      self._voler(d.g, d.c, arr, {haut: 40, rot: -70, duree: 900, rot0: 0, rebond: 10, glisse: -10, onSol: function(){ self._etincelles([arr[0], SOL - 6], 6, {v: 40, coul: ['#fff0c0', '#ffd060', '#e6ffd0']}); self._poussiere([arr[0], SOL], 2, 0, .7); }});
+      var d = self._detacher('roiC'), arr = [d.c[0] - 30, SOL - 38];
+      self._voler(d.g, d.c, arr, {haut: 40, rot: -90 - d.ang, duree: 900, rot0: 0, rebond: 10, glisse: -10, onSol: function(){ self._etincelles([arr[0], SOL - 6], 6, {v: 40, coul: ['#fff0c0', '#ffd060', '#e6ffd0']}); self._poussiere([arr[0], SOL], 2, 0, .7); }});
       couronneOk = true;
     }, 1700);
     self._opacite('roi', 0, 400, 3200);
@@ -2237,8 +2241,8 @@ R.exploser = function(scene){
     }
     /* la couronne tournoie très haut… et retombe, et reste */
     if(cour){
-      var arr = [cour.c[0] + 30, SOL - 22];
-      self._voler(cour.g, cour.c, arr, {haut: 300, rot: 760, rot0: cour.ang, duree: 2000, rebond: 14, glisse: 12, bascule: 12, onSol: function(){ self._etincelles([arr[0], SOL - 6], 8, {v: 46, coul: ['#fff0c0', '#ffd060', '#e6ffd0']}); self._poussiere([arr[0], SOL], 3, 0, .8); }});
+      var arr = [cour.c[0] + 30, SOL - 38];
+      self._voler(cour.g, cour.c, arr, {haut: 300, rot: 630 - cour.ang, rot0: 0, duree: 2000, rebond: 14, glisse: 12, bascule: 12, onSol: function(){ self._etincelles([arr[0], SOL - 6], 8, {v: 46, coul: ['#fff0c0', '#ffd060', '#e6ffd0']}); self._poussiere([arr[0], SOL], 3, 0, .8); }});
     }
     /* ce qui reste : un tas de cendres, des os, un bout de nœud (posé un peu après le BOUM) */
     setTimeout(function(){ self._restes(); }, 380);
