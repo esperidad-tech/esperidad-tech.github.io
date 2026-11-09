@@ -570,9 +570,12 @@ B._flammes = function(cle, specs){
   specs.forEach(function(s, n){ s.g = self._el(g, (s.lueur ? '<ellipse cx="0" cy="' + f1(-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="' + G.lueurFeu + '"/>' : '') + (s.h ? flamme(s.h, s.w, s.r, n) : '')); if(refs.indexOf(s.ref) < 0) refs.push(s.ref); s.i = refs.indexOf(s.ref); });
   g.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
   this.fx[k] = o;
-  /* chaque image : on lit seulement la position des quelques pièces porteuses ; les flammes restent droites */
+  /* on lit seulement la position des quelques pièces porteuses ; les flammes restent droites.
+     Lire une position force le navigateur à recalculer les styles : au repos (le corps bouge à peine), une image sur trois suffit. */
+  var compte = 0;
   (function suivre(){
     if(!g.isConnected || self.fx[k] !== o) return;
+    if(!self.enAction && (compte++ % 3)){ o.raf = requestAnimationFrame(suivre); return; }
     var w = self.S.monde.getCTM().inverse(), Ms = refs.map(function(r){ return w.multiply(r.getCTM()); });
     specs.forEach(function(s){
       var m = Ms[s.i], x = m.a * s.x + m.c * s.y + m.e, y = m.b * s.x + m.d * s.y + m.f, kk = Math.max(.3, Math.min(1, .3 + m.d * .9));

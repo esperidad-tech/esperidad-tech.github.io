@@ -55,12 +55,14 @@ var CACHE_MAT = null;
 function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
   CACHE_MAT = new Map();
-  VIVANTS.forEach(function(h){ try { h._lire(); } catch(e){} });
-  VIVANTS.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  /* au repos (cuit), un héros « s'endort » : plus aucun calcul à chaque image (voir H._actif) */
+  var actifs = VIVANTS.filter(function(h){ return h._actif(t); });
+  actifs.forEach(function(h){ try { h._lire(); } catch(e){} });
+  actifs.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
   CACHE_MAT = null;
-  if(VIVANTS.length) requestAnimationFrame(tick); else tickOn = false;
+  if(actifs.length) requestAnimationFrame(tick); else tickOn = false;
 }
-function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
+function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); h._calmeDepuis = 0; if(h._dort) h._reveil(); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
 
 /* ============ les effets : particules et projectiles (dans la scène ou autour du héros) ============ */
 function div(parent, css, html){

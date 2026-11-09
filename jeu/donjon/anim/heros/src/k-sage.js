@@ -15,6 +15,16 @@ ROLES.sage = {
     A.push(this.crHalo.animate([{opacity:.45, transform:'scale(.82)'}, {opacity:1, transform:'scale(1.18)'}], {duration:1100, iterations:Infinity, direction:'alternate', easing:'ease-in-out'}));
     A.push(this.cristal.animate([{transform:'scale(1)'}, {transform:'scale(1.08)'}], {duration:1100, iterations:Infinity, direction:'alternate', easing:'ease-in-out'}));
   },
+  /* cuit, au repos : trois étincelles qui montent du cristal en boucle (CSS), au lieu d'en fabriquer toutes les 0,28 s */
+  cuit:function(){
+    var r = this.reps.cristal, c = this.cristal;
+    if(!r || !c) return;
+    var x = +r.getAttribute('cx'), y = +r.getAttribute('cy');
+    [[-5, 2, 0, '#bff8ff'], [5, -3, -.3, '#e8fdff'], [0, 4, -.6, CYAN]].forEach(function(b){
+      var d = window.Cuire.ilot(c.parentNode, '<circle cx="' + (x + b[0]) + '" cy="' + (y + b[1]) + '" r="3.4" fill="' + b[3] + '" opacity=".35"/><circle cx="' + (x + b[0]) + '" cy="' + (y + b[1]) + '" r="1.5" fill="' + b[3] + '"/>', 'ha-calme-seul ha-etinc-boucle');
+      d.style.transformOrigin = (x + b[0]) + 'px ' + (y + b[1]) + 'px'; d.style.animationDelay = b[2] + 's';
+    });
+  },
   pas:function(dt){
     if(!this._idle || this.ko) return;
     this._sc = (this._sc || 0) + dt;

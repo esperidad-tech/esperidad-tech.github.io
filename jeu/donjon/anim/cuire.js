@@ -411,6 +411,8 @@ Cuire.cuire = function(svg, o){
     var G = gabarit(false), GL = o.lueur ? gabarit(true) : null;
     var modele = {
       vb:vb, par:par, nbImages:suites.filter(function(s){ return !s.vide; }).length, _images:garde,
+      /* la silhouette lumineuse seule (à mettre dans un .cu-lueur de la racine, au moment où on en a besoin) */
+      clonerLueur:function(){ return GL ? copier(GL) : null; },
       cloner:function(conteneur, oo){
         oo = oo || {};
         var racine = document.createElement('div'); racine.className = 'cu-racine';

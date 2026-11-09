@@ -17,6 +17,16 @@ ROLES.alchimiste = {
     var h = this._halo(this.$('[data-fiole-b] [data-halo]'));
     if(h){ h.style.transformBox = 'fill-box'; if(!this.cuit) h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
   },
+  /* cuit, au repos : trois bulles qui montent en boucle dans la fiole (CSS), au lieu d'en fabriquer à chaque instant */
+  cuit:function(){
+    var g = this.fioleB && this.fioleB.querySelector('[data-bulles]'), c = this.fioleB && this.fioleB.querySelector('[data-r$="c"]');
+    if(!g || !c || !g.ownerSVGElement) return;
+    var hote = g.ownerSVGElement.parentNode, cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy');
+    [[-4, 1.8, 0], [3, 2.2, -.45], [-1, 1.5, -.9]].forEach(function(b){
+      var d = window.Cuire.ilot(hote, '<circle cx="' + (cx + b[0]) + '" cy="' + (cy + 10) + '" r="' + b[1] + '" fill="#fff" fill-opacity=".55" stroke="#fff" stroke-width=".8"/>', 'ha-calme-seul ha-bulle-boucle');
+      d.style.transformOrigin = (cx + b[0]) + 'px ' + (cy + 10) + 'px'; d.style.animationDelay = b[2] + 's';
+    });
+  },
   lire:function(){ if(this._verse){ mat(this.filet); mat(this.reps[this.fioleA.getAttribute('data-fiole') + 'bec']); mat(this.reps[this.fioleB.getAttribute('data-fiole') + 'bec']); } },
   /* les bulles qui montent dans la fiole (tout le temps), plus fort quand il secoue */
   pas:function(dt){

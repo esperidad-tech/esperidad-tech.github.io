@@ -904,6 +904,8 @@ Cuire.cuire = function(svg, o){
     var G = gabarit(false), GL = o.lueur ? gabarit(true) : null;
     var modele = {
       vb:vb, par:par, nbImages:suites.filter(function(s){ return !s.vide; }).length, _images:garde,
+      /* la silhouette lumineuse seule (à mettre dans un .cu-lueur de la racine, au moment où on en a besoin) */
+      clonerLueur:function(){ return GL ? copier(GL) : null; },
       cloner:function(conteneur, oo){
         oo = oo || {};
         var racine = document.createElement('div'); racine.className = 'cu-racine';
@@ -3094,12 +3096,14 @@ var CACHE_MAT = null;
 function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
   CACHE_MAT = new Map();
-  VIVANTS.forEach(function(h){ try { h._lire(); } catch(e){} });
-  VIVANTS.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  /* au repos (cuit), un héros « s'endort » : plus aucun calcul à chaque image (voir H._actif) */
+  var actifs = VIVANTS.filter(function(h){ return h._actif(t); });
+  actifs.forEach(function(h){ try { h._lire(); } catch(e){} });
+  actifs.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
   CACHE_MAT = null;
-  if(VIVANTS.length) requestAnimationFrame(tick); else tickOn = false;
+  if(actifs.length) requestAnimationFrame(tick); else tickOn = false;
 }
-function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
+function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); h._calmeDepuis = 0; if(h._dort) h._reveil(); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
 
 /* ============ les effets : particules et projectiles (dans la scène ou autour du héros) ============ */
 function div(parent, css, html){
@@ -3189,6 +3193,16 @@ function css(){
        (il est de toute façon repeint à chaque image, le halo ne coûte qu'un petit flou sur sa surface) */
     '.ha .cu-ilot.ha-anime{will-change:transform}' +
     '.ha.ha-choisi .cu-ilot.ha-souple>svg{filter:drop-shadow(0 0 2px rgba(255,226,160,.85)) drop-shadow(0 0 6px rgba(255,190,90,.4))}' +
+    /* le repos (ha-calme) : balancement des tissus, corde fixe sur l'arc, bulles et étincelles en boucle (tout en CSS) */
+    '.ha.ha-calme .cu-ilot.ha-tissu{animation:haVent 2.8s ease-in-out infinite}' +
+    '.ha.ha-calme .cu-ilot.ha-meche,.ha.ha-calme .cu-ilot.ha-tresse{animation:haVent2 2.4s ease-in-out infinite}' +
+    '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
+    '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
+    '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
+    '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}' +
+    '@keyframes haBulle{0%{transform:translate(0,0) scale(1);opacity:0}20%{transform:translate(1px,-6px) scale(1);opacity:1}80%{transform:translate(-2px,-18px) scale(1.1);opacity:.9}100%{transform:translate(0,-28px) scale(1.4);opacity:0}}' +
+    '.ha .ha-etinc-boucle{animation:haEtinc .9s ease-out infinite}' +
+    '@keyframes haEtinc{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(2px,-22px) scale(1);opacity:0}}' +
     '@keyframes haChoisi{0%,100%{filter:drop-shadow(0 0 3px rgba(255,220,130,.7)) drop-shadow(0 0 10px rgba(255,190,90,.25))}50%{filter:drop-shadow(0 0 5px rgba(255,225,140,.95)) drop-shadow(0 0 18px rgba(255,190,90,.5))}}' +
     '@keyframes haTourne{to{transform:rotate(360deg)}}@keyframes haTourneR{to{transform:rotate(-360deg)}}' +
     '@keyframes haPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}' +
@@ -3218,7 +3232,7 @@ function Heros(cont, role, lk){
      anime sans rien repeindre ; sinon, le grand SVG d'origine */
   var M = MODELES[cleModele(role, this.lk)], spec;
   if(M && M.modele){
-    var cl = M.modele.cloner(this.boite);
+    var cl = M.modele.cloner(this.boite, {lueur:false});     /* (la silhouette lumineuse n'est ajoutée que quand il est choisi) */
     this.cuit = true; this.svg = cl.racine; this.vue = cl.vue;
     spec = {souples:M.souples};
   } else {
@@ -3235,15 +3249,28 @@ function Heros(cont, role, lk){
   [].forEach.call(this.vue.querySelectorAll('[data-r]'), function(e){ var n = e.getAttribute('data-r'); if(!me.reps[n]) me.reps[n] = e; });
   this.souples = spec.souples.map(function(s){ return new Souple(me, s); });
   /* cuit : les îlots redessinés à chaque image (tissus, corde, filet) ont chacun leur calque : on ne repeint qu'eux */
-  if(this.cuit) [].forEach.call(this.vue.querySelectorAll('[data-souple],[data-corde],[data-filet]'), function(g){
-    var il = g.ownerSVGElement && g.ownerSVGElement.parentNode;
-    if(il && il.classList.contains('cu-ilot')) il.classList.add('ha-anime', g.hasAttribute('data-souple') ? 'ha-souple' : 'ha-trait');
-  });
+  if(this.cuit){
+    [].forEach.call(this.vue.querySelectorAll('[data-souple],[data-corde],[data-filet]'), function(g){
+      var il = g.ownerSVGElement && g.ownerSVGElement.parentNode;
+      if(il && il.classList.contains('cu-ilot')) il.classList.add('ha-anime', g.hasAttribute('data-souple') ? 'ha-souple' : 'ha-trait');
+    });
+    /* au repos (le héros « dort », plus aucun calcul), chaque tissu suit son membre et se balance doucement (CSS, carte graphique),
+       pivot au point où il est attaché */
+    this.souples.forEach(function(so, k){
+      var il = so.g.ownerSVGElement && so.g.ownerSVGElement.parentNode, s = so.s;
+      if(!il) return;
+      var p = s.dos ? s.dos[0] : s.haut ? s.haut[0] : s.pts[0];
+      il.style.transformOrigin = p[0] + 'px ' + p[1] + 'px';
+      il.style.animationDuration = (2.6 + k * .37) + 's';
+      il.classList.add('ha-' + s.type);
+    });
+  }
   this.grainG = this.svg.querySelector('.ha-grain');
   this.file = Promise.resolve(); this._nf = 0; this._gTok = 0; this._timers = [];
   this.bouche0 = this.R0.bouche || 'neutre';
   this.expr('garde');
   if(this.R0.init) this.R0.init.call(this, spec);
+  if(this.cuit && this.R0.cuit) this.R0.cuit.call(this);
   this.poser(this.garde());
   vivre(this);
 }
@@ -3296,7 +3323,12 @@ H.jouer = function(seq){
   noms.forEach(function(n){
     var kfs = [{offset:0, transform:tf(me.etat[n]), easing:EZ[seq[0].e || 'io'] || seq[0].e}];
     etats.forEach(function(e, i){ var nx = seq[i + 1]; kfs.push({offset:T ? tps[i + 1] / T : 1, transform:tf(e[n]), easing:nx ? (EZ[nx.e || 'io'] || nx.e) : 'linear'}); });
-    me.els[n].forEach(function(el){ var old = el._a; el._a = el.animate(kfs, {duration:Math.max(T, 1), fill:'forwards'}); if(old) old.cancel(); });
+    me.els[n].forEach(function(el){
+      var old = el._a, a = el._a = el.animate(kfs, {duration:Math.max(T, 1), fill:'forwards'});
+      if(old) old.cancel();
+      /* une fois finie, la pose est écrite dans le style et l'animation enlevée (moins d'animations à tenir à jour) */
+      a.finished.then(function(){ if(el._a === a){ el.style.transform = kfs[kfs.length - 1].transform; a.cancel(); el._a = null; } }, function(){});
+    });
   });
   seq.forEach(function(st, i){ if(st.f) me.plus(tps[i + 1], st.f); if(st.f0) me.plus(tps[i], st.f0); });
   this.etat = etats[etats.length - 1];
@@ -3350,7 +3382,7 @@ H._file = function(fn){
   });
 };
 H._debut = function(){
-  this._occupe = true; this._idleOff(); this.avant('A', false);
+  this._occupe = true; vivre(this); this._idleOff(); this.avant('A', false);
   if(this._geste){ this._gTok++; this._geste = false; this.capturer(); }
 };
 H._fin = function(){
@@ -3397,9 +3429,43 @@ H._gestes = function(){
   if(!this.R0.geste || this.ko) return;
   this._tGe = setTimeout(function(){
     if(!me._idle || me._occupe) return;
-    var tok = ++me._gTok; me._geste = true;
+    var tok = ++me._gTok; me._geste = true; vivre(me);
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
+};
+/* Fluidité (RAPIDITE.md) : un héros cuit qui ne fait rien « s'endort » : plus aucune boucle à chaque image (le fil principal
+   du téléphone se repose, la carte graphique joue seule la respiration, le clignement, le balancement des tissus). Il se
+   réveille dès qu'il agit (action, petit geste, corde tirée, potion versée) et se rendort 1,2 s après (le tissu s'est posé). */
+H._actif = function(t){
+  if(!this.cuit) return true;
+  var c = this.corde;
+  if(this._occupe || this._geste || this._verse || this._bouillon || (c && (c.mode !== 'libre' || c.fl || c.vib > .25))){ this._calmeDepuis = 0; if(this._dort) this._reveil(); return true; }
+  if(!this._calmeDepuis) this._calmeDepuis = t;
+  if(t - this._calmeDepuis < 1200) return true;
+  if(!this._dort) this._endormir();
+  return false;
+};
+H._endormir = function(){ this._dort = true; this.racine.classList.add('ha-calme'); };
+H._reveil = function(){ this._dort = false; this.racine.classList.remove('ha-calme'); };
+/* cuit : la silhouette lumineuse du héros choisi, ajoutée seulement quand il l'est (ses pièces reçoivent les mêmes animations) */
+H._lueurs = function(on){
+  var me = this, M = MODELES[cleModele(this.role, this.lk)];
+  if(on && !this._lv && M && M.modele && M.modele.clonerLueur){
+    var lv = M.modele.clonerLueur(); if(!lv) return;
+    var w = document.createElement('div'); w.className = 'cu-lueur'; w.appendChild(lv);
+    this.svg.appendChild(w); window.Cuire.ajuster(this.svg);
+    [].forEach.call(lv.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); if(me.els[n]){ me.els[n].push(e); e.style.transform = tf(me.etat[n]); } });
+    [].forEach.call(lv.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); if(me.elsI[n]) me.elsI[n].push(e); });
+    this._lv = w;
+  } else if(!on && this._lv){
+    var w2 = this._lv, n;
+    this._lv = null;
+    var garder = function(e){ return !w2.contains(e); };
+    for(n in this.els) this.els[n] = this.els[n].filter(garder);
+    for(n in this.elsI) this.elsI[n] = this.elsI[n].filter(garder);
+    [].forEach.call(w2.querySelectorAll('*'), function(e){ if(e.getAnimations) e.getAnimations().forEach(function(a){ a.cancel(); }); });
+    w2.remove();
+  }
 };
 /* 1re phase de l'image : lire tout ce dont _pas aura besoin (les matrices sont gardées jusqu'à la fin de l'image) */
 H._lire = function(){
@@ -3560,6 +3626,7 @@ H.joie = function(){
 /* celui qui joue : plus droit, une lueur */
 H.choisi = function(on){
   on = on !== false;
+  if(this.cuit) this._lueurs(on);
   this.racine.classList.toggle('ha-choisi', on);
   if(!!this._choisi === on) return Promise.resolve();
   this._choisi = on;
@@ -3610,6 +3677,8 @@ ROLES.pisteur = {
     this.reps.flN = this.flI.querySelector('[data-r="flN"]'); this.reps.flP = this.flI.querySelector('[data-r="flP"]');
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
+  /* cuit, au repos : la corde est un trait fixe dessiné dans l'arc (elle suit l'arc sans aucun calcul) */
+  cuit:function(){ var a = this.vue.querySelector('[data-i="arc"]'); if(a) window.Cuire.ilot(a, '<path d="M126 103 L 126 267" fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>', 'ha-calme-seul'); },
   /* (lu avant toute écriture de l'image : voir tick) */
   lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
@@ -3821,6 +3890,16 @@ ROLES.alchimiste = {
   idle:function(A){
     var h = this._halo(this.$('[data-fiole-b] [data-halo]'));
     if(h){ h.style.transformBox = 'fill-box'; if(!this.cuit) h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
+  },
+  /* cuit, au repos : trois bulles qui montent en boucle dans la fiole (CSS), au lieu d'en fabriquer à chaque instant */
+  cuit:function(){
+    var g = this.fioleB && this.fioleB.querySelector('[data-bulles]'), c = this.fioleB && this.fioleB.querySelector('[data-r$="c"]');
+    if(!g || !c || !g.ownerSVGElement) return;
+    var hote = g.ownerSVGElement.parentNode, cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy');
+    [[-4, 1.8, 0], [3, 2.2, -.45], [-1, 1.5, -.9]].forEach(function(b){
+      var d = window.Cuire.ilot(hote, '<circle cx="' + (cx + b[0]) + '" cy="' + (cy + 10) + '" r="' + b[1] + '" fill="#fff" fill-opacity=".55" stroke="#fff" stroke-width=".8"/>', 'ha-calme-seul ha-bulle-boucle');
+      d.style.transformOrigin = (cx + b[0]) + 'px ' + (cy + 10) + 'px'; d.style.animationDelay = b[2] + 's';
+    });
   },
   lire:function(){ if(this._verse){ mat(this.filet); mat(this.reps[this.fioleA.getAttribute('data-fiole') + 'bec']); mat(this.reps[this.fioleB.getAttribute('data-fiole') + 'bec']); } },
   /* les bulles qui montent dans la fiole (tout le temps), plus fort quand il secoue */
@@ -4094,6 +4173,16 @@ ROLES.sage = {
   idle:function(A){
     A.push(this.crHalo.animate([{opacity:.45, transform:'scale(.82)'}, {opacity:1, transform:'scale(1.18)'}], {duration:1100, iterations:Infinity, direction:'alternate', easing:'ease-in-out'}));
     A.push(this.cristal.animate([{transform:'scale(1)'}, {transform:'scale(1.08)'}], {duration:1100, iterations:Infinity, direction:'alternate', easing:'ease-in-out'}));
+  },
+  /* cuit, au repos : trois étincelles qui montent du cristal en boucle (CSS), au lieu d'en fabriquer toutes les 0,28 s */
+  cuit:function(){
+    var r = this.reps.cristal, c = this.cristal;
+    if(!r || !c) return;
+    var x = +r.getAttribute('cx'), y = +r.getAttribute('cy');
+    [[-5, 2, 0, '#bff8ff'], [5, -3, -.3, '#e8fdff'], [0, 4, -.6, CYAN]].forEach(function(b){
+      var d = window.Cuire.ilot(c.parentNode, '<circle cx="' + (x + b[0]) + '" cy="' + (y + b[1]) + '" r="3.4" fill="' + b[3] + '" opacity=".35"/><circle cx="' + (x + b[0]) + '" cy="' + (y + b[1]) + '" r="1.5" fill="' + b[3] + '"/>', 'ha-calme-seul ha-etinc-boucle');
+      d.style.transformOrigin = (x + b[0]) + 'px ' + (y + b[1]) + 'px'; d.style.animationDelay = b[2] + 's';
+    });
   },
   pas:function(dt){
     if(!this._idle || this.ko) return;

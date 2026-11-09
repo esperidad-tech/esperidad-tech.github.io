@@ -142,6 +142,7 @@ H.joie = function(){
 /* celui qui joue : plus droit, une lueur */
 H.choisi = function(on){
   on = on !== false;
+  if(this.cuit) this._lueurs(on);
   this.racine.classList.toggle('ha-choisi', on);
   if(!!this._choisi === on) return Promise.resolve();
   this._choisi = on;

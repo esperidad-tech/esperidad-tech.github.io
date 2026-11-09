@@ -585,9 +585,12 @@ B._flammes = function(cle, specs){
   specs.forEach(function(s, n){ s.g = self._el(g, (s.lueur ? '<ellipse cx="0" cy="' + f1(-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="' + G.lueurFeu + '"/>' : '') + (s.h ? flamme(s.h, s.w, s.r, n) : '')); if(refs.indexOf(s.ref) < 0) refs.push(s.ref); s.i = refs.indexOf(s.ref); });
   g.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
   this.fx[k] = o;
-  /* chaque image : on lit seulement la position des quelques pièces porteuses ; les flammes restent droites */
+  /* on lit seulement la position des quelques pièces porteuses ; les flammes restent droites.
+     Lire une position force le navigateur à recalculer les styles : au repos (le corps bouge à peine), une image sur trois suffit. */
+  var compte = 0;
   (function suivre(){
     if(!g.isConnected || self.fx[k] !== o) return;
+    if(!self.enAction && (compte++ % 3)){ o.raf = requestAnimationFrame(suivre); return; }
     var w = self.S.monde.getCTM().inverse(), Ms = refs.map(function(r){ return w.multiply(r.getCTM()); });
     specs.forEach(function(s){
       var m = Ms[s.i], x = m.a * s.x + m.c * s.y + m.e, y = m.b * s.x + m.d * s.y + m.f, kk = Math.max(.3, Math.min(1, .3 + m.d * .9));
@@ -993,7 +996,7 @@ function dessinerRatcuir(D){
   [[4, 2, 22, 3], [3, 4, 30, 3], [2, 1, 14, 2.2], [2, 4, 24, 2.6], [1, 3, 18, 2.4], [0, 4, 12, 2]].forEach(function(c, m){ var p = lesBas[c[0]][c[1]]; corps += coulure(p[0], p[1] - 2, c[2], c[3], m + 1); });
   corps += gel(corpsD, D.cristaux(300, 150, -100, 3, 16, 30, 3) + D.cristaux(400, 128, -80, 3, 18, 30, 5) + D.cristaux(470, 200, -20, 2, 14, 10, 7));
   corps += variante('suie', '<ellipse cx="360" cy="170" rx="110" ry="34" fill="#140c10" opacity=".35"/>');
-  corps += repere('centre', 330, 272) + repere('pfDos', 412, 186) + repere('pfVentre', 300, 352) + repere('dos', 0, 0);
+  corps += repere('centre', 330, 272) + repere('pfDos', 412, 186) + repere('pfVentre', 300, 352) + repere('haut', 384, 116);
 
   /* ---- la sangle de cuir et sa boucle (elle tient l'armure) ---- */
   var sangleD = 'M306 236 C 314 280 320 320 318 366 L 344 368 C 346 320 340 278 332 234 Z', boucleD = 'M307 306 Q 324 300 341 302 L 343 330 Q 326 336 310 334 Z';
@@ -1233,7 +1236,7 @@ R._base = function(){
 R._ancreNom = function(nom){
   if(nom === 'pointfaible') return this._mode() === 'normal' ? 'pfDos' : 'pfVentre';
   if(nom === 'pieds') return 'orteils';
-  if(nom === 'haut') return this.etat['sans-casque'] || this._mode() !== 'normal' ? 'tete' : 'casqueHaut';
+  if(nom === 'haut') return this._mode() === 'ebloui' ? 'tete' : 'haut';
   return nom;
 };
 R._lancerBoucles = function(){
