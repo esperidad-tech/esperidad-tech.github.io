@@ -663,4 +663,8 @@ S.fuiteB = function(A, P){
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
 });
 G.BRUITAGES = S;
+/* les petits morceaux, prêtés aux nouveaux sons de l'atelier (bestiaire.js, donjon.js) — rien ne change ici */
+G.BRUITAGES_OUTILS = {clic:clic, grinceArc:grinceArc, lacherCorde:lacherCorde, sifflement:sifflement, toc:toc, vibreFleche:vibreFleche, swish:swish, chantLame:chantLame, tchac:tchac, tinc:tinc,
+  bong:bong, sifflementRat:sifflementRat, dents:dents, embrase:embrase, gresille:gresille, sploutch:sploutch, etire:etire, glisse:glisse, toux:toux, boum:boum, brume:brume,
+  etincelles:etincelles, cuivre:cuivre, timbale:timbale, claque:claque, chuteGrave:chuteGrave, craque:craque, acouphene:acouphene, decale:decale};
 })(window);

@@ -284,4 +284,6 @@ M.atelier = function(A, P){
 };
 
 G.MUSIQUES = M;
+/* les outils, prêtés aux nouvelles musiques de l'atelier (musiques-donjon.js) — rien ne change ici */
+G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisseau:ruisseau, tremolo:tremolo, boite:boite, flute:flute};
 })(window);
