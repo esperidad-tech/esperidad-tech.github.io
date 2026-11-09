@@ -2101,6 +2101,7 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - pour les héros : les nouvelles armes et potions, « ça rebondit », le point faible ouvert, et le son des icônes ;
   - les objets et les salles : ramasser, coffre, porte, piège, page de sauvegarde, code juste ou faux, pas, brume, feu de camp ;
   - les musiques : canaux, ossuaire, repos au feu de camp, thème de Bourbe, Léo retrouvé.
+- **Un bouton 🔁 « à refaire » devant A, B, C** (Romain, 12 h 03). La carte passe en orange, avec une petite ligne facultative pour dire pourquoi, et la copie des choix l'écrit « 🔁 À REFAIRE (raison) ».
 - **Les musiques déjà validées sont retouchées, sans aucun bruit de bête** (gouttes graves et rares, cave aux toiles refaite). Romain doit les réécouter.
 - **Dans la salle des rats** :
   - deux volumes séparés (`Son.volume('musique' | 'bruitages', v)`) ;
