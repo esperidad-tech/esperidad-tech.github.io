@@ -1,10 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 9 novembre à 12 h 05)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 9 novembre à 14 h 35)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 ## Nouveau depuis le 9 novembre (0 h 25)
 
-- **Les talents et les objets du Pisteur, de l'Alchimiste et du Sage sont en conception** (Bible §12.51, fin) dans la page de travail « Talents et objets de Brumeval » : https://claude.ai/artifact/LXGKahbDpg6BWvA7spT9PN (onglets des quatre rôles, tiroirs, avis à copier ; Claude ne voit les avis de Romain que s'il les colle). Romain trouve « plat » un niveau 2 en « un cœur de plus » : il veut des **talents vivants et fun, quitte à recoder beaucoup**. Le Pisteur est refait ainsi (le faucon ou le coureur des toits au niveau 2…), **en attente de son avis** ; l'Alchimiste et le Sage sont à refaire de la même façon ensuite. Rien n'est construit.
+- **Les talents et les objets du Pisteur, de l'Alchimiste et du Sage sont en conception** (Bible §12.51, fin) dans la page de travail « Talents et objets de Brumeval » : https://claude.ai/artifact/LXGKahbDpg6BWvA7spT9PN (onglets des quatre rôles, tiroirs, avis à copier ; Claude ne voit les avis de Romain que s'il les colle). Romain trouve « plat » un niveau 2 en « un cœur de plus » : il veut des **talents vivants et fun, quitte à recoder beaucoup**. **Romain (14 h 24) : seulement le niveau 2 pour l'instant**, les niveaux 4 à 10 sont des « ? » (le Barde garde les siens). Niveaux 2 proposés, **en attente de son avis** : Pisteur, le faucon ou le coureur des toits ; Alchimiste, le nez ou les expériences ; Sage, le constructeur ou le portrait-robot (Bible §12.51, fin). Rien n'est construit. La sauvegarde sur GitHub n'a pas pu se faire depuis cette conversation (dépôt non autorisé) : la Bible et la passation du projet sont plus récentes que celles de la branche brumeval-sources ; à recopier dans les sources à la prochaine conversation qui y a accès.
 
 ## Nouveau depuis le 8 novembre (10 h 30)
 
