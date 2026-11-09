@@ -397,11 +397,13 @@ R._base = function(){
   if(e.accroche){ p.corps = fusion(Z, {sx: 1.04, sy: .96}); }
   return p;
 };
+/* le jeton de reprise : une reprise interrompue par une autre (ou par une action) ne lance pas ses boucles,
+   sinon chaque pièce aurait deux boucles d'attente (la carte graphique ne compose plus, tout est redessiné à chaque image) */
 R._reprendre = function(duree){
-  var self = this;
+  var self = this, n = this.reprise = (this.reprise || 0) + 1;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
-  return this._allerA(this._base(), duree == null ? 300 : duree, null, true).then(function(){ if(!self.enAction && !self.mort && self.attente) self._lancerBoucles(); });
+  return this._allerA(this._base(), duree == null ? 300 : duree, null, true).then(function(){ if(n === self.reprise && !self.enAction && !self.mort && self.attente) self._lancerBoucles(); });
 };
 R._boucle = function(b, n, deltas, duree, o){
   o = o || {};
@@ -559,7 +561,7 @@ R._runes = function(on){
 /* =====================================================================
    7. Les actions
    ===================================================================== */
-R._debutAction = function(){ this.jeton++; this.enAction = true; this._couperBoucles(); return this.jeton; };
+R._debutAction = function(){ this.jeton++; this.reprise = (this.reprise || 0) + 1; this.enAction = true; this._couperBoucles(); return this.jeton; };
 R._finAction = function(j, d){ if(j !== this.jeton || this.mort) return Promise.resolve(); this.enAction = false; return this._reprendre(d); };
 function toutes(p){ var o = {}; LG.forEach(function(n){ o[n] = p; }); return o; }
 function melange(){ var o = {}; for(var i = 0; i < arguments.length; i++){ var a = arguments[i]; for(var n in a){ o[n] = o[n] || {}; for(var k in a[n]) o[n][k] = a[n][k]; } } return o; }

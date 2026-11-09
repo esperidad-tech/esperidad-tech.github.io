@@ -2163,8 +2163,13 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - le têtard ;
   - la chauve-souris : le bruit la fait tomber devant, sonnée ; la colle colle ses ailes ; la lumière la rend folle, et elle pique 2 fois ;
   - le feu follet : le nuage le rend visible ; le bouclier du Sage le retient ; la lumière le fait grandir ; la flèche d'argent le déchire ; il s'éteint en braise froide.
-- En cours : le Gardien de rouille et le Roi des rats.
-- Ensuite : les décors et les nouvelles armes des héros.
+  - le Gardien de rouille : à son entrée, ses runes s'allument une à une ; son poing est lent et lourd ; il est immunisé (les coups ricochent) ; l'acide puis la lumière ouvrent son cœur de runes ; la lumière en premier est un piège (il s'énerve) ; à la mort, il s'effondre en pièces ;
+  - le Roi des rats : ça grouille, et il déferle sur les trois héros ; le nuage puis le bruit défont le nœud ; la lumière les met en boule ; le bruit avant le nuage les fait charger l'Alchimiste ; sa couronne reste au sol. Ses yeux sont jaunes au repos, comme le rat d'égout (rouges sur la fiche), pour que la rage se voie.
+- **Tous les monstres du chemin long sont animés.** Un petit défaut, deux boucles d'attente sur une même pièce, faisait ramer certains modules dans un cas précis : il est en cours de correction partout.
+- En cours :
+  - les décors des 7 salles de combat (`jeu/donjon/decors/`) ;
+  - les salles sans combat (`jeu/donjon/scenes/`) : le puits, les culs-de-sac à trouvailles, la réserve, la grotte de givre, la bibliothèque, le tas d'os et le crâne secret, les dalles piégées, les trois portes, le sarcophage, le feu de camp, la porte aux quatre signes avec Moustache, et Léo avec sa lanterne.
+- Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
 
 **En attente de Romain** :
 - le code par joueur ;

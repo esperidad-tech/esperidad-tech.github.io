@@ -305,11 +305,13 @@ R._base = function(){
   if(this.etat.gele){ p.machoire = fusion(Z, {a: -4}); }
   return p;
 };
+/* le jeton de reprise : une reprise interrompue par une autre (ou par une action) ne lance pas ses boucles,
+   sinon chaque pièce aurait deux boucles d'attente (la carte graphique ne compose plus, tout est redessiné à chaque image) */
 R._reprendre = function(duree){
-  var self = this;
+  var self = this, n = this.reprise = (this.reprise || 0) + 1;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
-  return this._allerA(this._base(), duree == null ? 300 : duree, null, true).then(function(){ if(!self.enAction && !self.mort && self.attente) self._lancerBoucles(); });
+  return this._allerA(this._base(), duree == null ? 300 : duree, null, true).then(function(){ if(n === self.reprise && !self.enAction && !self.mort && self.attente) self._lancerBoucles(); });
 };
 R._lancerBoucles = function(){
   var self = this, b = this._base(), e = this.etat, V = e.enrage ? 1.6 : (e.gele ? .35 : 1);
@@ -389,7 +391,7 @@ R._feu = function(on){
 };
 
 /* ============ 7. Les actions ============ */
-R._debutAction = function(){ this.jeton++; this.enAction = true; this._couperBoucles(); return this.jeton; };
+R._debutAction = function(){ this.jeton++; this.reprise = (this.reprise || 0) + 1; this.enAction = true; this._couperBoucles(); return this.jeton; };
 R._finAction = function(j, d){ if(j !== this.jeton || this.mort) return Promise.resolve(); this.enAction = false; return this._reprendre(d); };
 /* il saute hors de l'eau du bassin (à droite, derrière) et atterrit en flaque */
 R.entrer = function(distance){

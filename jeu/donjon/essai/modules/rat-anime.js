@@ -429,12 +429,15 @@ R._lire = function(n){
 /* figer : on lit toutes les poses, on coupe les animations, on garde la pose */
 R._figer = function(noms){
   var self = this;
-  (noms || Object.keys(this.J)).forEach(function(n){
-    var v = self._lire(n), el = self.J[n];
-    el.getAnimations().forEach(function(a){ a.cancel(); });
+  /* d'abord tout lire (poses et animations), ensuite tout couper et écrire : une lecture après une écriture
+     forcerait le navigateur à recalculer les styles, une fois par pièce (RAPIDITE.md) */
+  var lu = (noms || Object.keys(this.J)).map(function(n){ return [n, self._lire(n), self.J[n].getAnimations()]; });
+  lu.forEach(function(l){
+    var n = l[0], el = self.J[n];
+    l[2].forEach(function(a){ a.cancel(); });
     if(self.JA){ var ja = self.JA[n]; (ja._en || []).forEach(function(a){ a.cancel(); }); ja._en = []; ja.style.transform = ''; }
-    el.style.transform = tf(v);
-    self.v[n] = v;
+    el.style.transform = tf(l[1]);
+    self.v[n] = l[1];
   });
 };
 /* jouer une suite de poses-clés.  cles = [{t:0..1, p:{piece:{x,y,a,sx,sy,s}}, e:'easing'}]

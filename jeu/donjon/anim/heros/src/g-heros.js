@@ -164,9 +164,11 @@ H.poser = function(pose){
 };
 /* fige la pose là où elle en est (pour interrompre un geste d'attente) */
 H.capturer = function(){
-  var me = this;
-  Object.keys(this.els).forEach(function(n){
-    var el = me.els[n][0], m = getComputedStyle(el).transform, s = J0();
+  var me = this, noms = Object.keys(this.els);
+  /* d'abord tout lire, ensuite tout écrire (une lecture après une écriture forcerait un recalcul des styles par pièce) */
+  var lu = noms.map(function(n){ return getComputedStyle(me.els[n][0]).transform; });
+  noms.forEach(function(n, i){
+    var m = lu[i], s = J0();
     if(m && m !== 'none'){
       var v = m.replace(/^matrix\(|\)$/g, '').split(',').map(Number), a = v[0], b = v[1], c = v[2], d = v[3];
       var r = Math.atan2(b, a), sx = Math.hypot(a, b), sy = -c * Math.sin(r) + d * Math.cos(r), tk = (c * Math.cos(r) + d * Math.sin(r)) / (sy || 1);
@@ -236,10 +238,11 @@ H._idleOn = function(){
 H._idleOff = function(){
   if(!this._idle) return;
   this._idle = false; this._calme = false;
-  (this._ia || []).forEach(function(a){
-    var el = a.effect && a.effect.target; if(!el){ a.cancel(); return; }
-    var m = getComputedStyle(el).transform; a.cancel();
-    if(m && m !== 'none') el.animate([{transform:m}, {transform:'none'}], {duration:160, easing:EZ.o});
+  /* d'abord tout lire, ensuite tout couper (RAPIDITE.md : lire après écrire = un recalcul des styles à chaque fois) */
+  var lu = (this._ia || []).map(function(a){ var el = a.effect && a.effect.target; return [a, el, el ? getComputedStyle(el).transform : null]; });
+  lu.forEach(function(l){
+    var a = l[0], el = l[1], m = l[2]; a.cancel();
+    if(el && m && m !== 'none') el.animate([{transform:m}, {transform:'none'}], {duration:160, easing:EZ.o});
   });
   this._ia = [];
   clearTimeout(this._tCl); clearTimeout(this._tGe);
