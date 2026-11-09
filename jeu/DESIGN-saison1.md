@@ -2065,7 +2065,53 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 
 En cours : les sons branchés dans la salle, la musique, un critique plus violent (3 nouvelles versions à écouter), l'icône de cible qui suit le rat, et la fuite qui recharge l'entrée (les trois rats reviennent).
 **Règle de Romain (9 novembre, 9 h 55) : l'Atelier des sons devient l'outil permanent pour TOUS les sons et toutes les musiques du jeu.** Dès qu'on parle de son ou de musique, on met à jour cette page (la même adresse, on n'en refait pas une autre), rangée en onglets (par exemple Le jeu, Mini-jeux, Donjon, Bestiaire, Musiques), avec aussi les sons déjà présents dans le jeu ; Romain écoute et valide là. En cours : la page passe en onglets.
-**En attente de Romain** : la salle avec les sons ; le choix du son de critique dans l'Atelier ; le code par joueur ; qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette). Ensuite, l'étape 2 (3-4 images : un couloir avec une curiosité, un piège, le plan sur la tablette du Sage, la porte aux quatre signes).
+**Go de Romain (9 novembre, 10 h 04) : le donjon complet (chemin long, boss compris).** Sa demande :
+- chaque salle a son décor ;
+- des découvertes, et des choix d'armes plus efficaces contre certains ennemis ;
+- beaucoup plus dur après la salle des rats (il faut réfléchir, sinon on meurt), faisable, mais **impossible sans les connaissances du Sage** ;
+- calibrer ce que fait un combo réussi ;
+- des salles avec seulement des objets à toucher, certains à passer à l'Alchimiste ou au Sage par code ;
+- de bonnes sauvegardes ;
+- des animations pour chaque ennemi et chaque nouvelle arme ;
+- « prends ton temps et fais ça bien ».
+
+**La conception complète est dans `jeu/donjon/CONCEPTION-DONJON.md`** (écrite à 10 h 10). Les choix principaux :
+- **les élites et le boss sont immunisés** tant que le point faible est fermé ;
+- un critique sur point faible ouvert affiche ses dégâts sans toujours tuer : 60 à la flèche sur un normal (75 à la dague), 110 / 140 sur un élite, 300 / 380 sur le boss ;
+- les monstres frappent plus fort après la salle 1 (le soin infini ne suffit plus) ;
+- **2 places d'objet par héros**, avec des coffres à choix :
+  - flèches d'argent (brume) OU flèches lourdes (armure) ;
+  - cristal de lune OU bâton de chêne ;
+  - sacoche, amulette de vie ;
+- **objets à passer par code** : fleur de givre et herbes lumineuses (Alchimiste) ; page déchirée et page blanche (Sage) ;
+- **17 lieux** dans l'ordre :
+  - le puits ;
+  - 2 culs-de-sac à trouvailles ;
+  - les rats ;
+  - la réserve ;
+  - les canaux ;
+  - les égouts tournants ;
+  - la grotte de givre ;
+  - la cave aux toiles ;
+  - le cul-de-sac éboulé et son passage secret ;
+  - le couloir aux dalles piégées ;
+  - l'atelier (Gardien) ;
+  - la bibliothèque ;
+  - les trois portes et la fausse crypte ;
+  - l'ossuaire (Roi des rats) ;
+  - le feu de camp ;
+  - le grand bassin (Bourbe) ;
+  - la porte aux quatre signes ;
+  - Léo ;
+- 4 pages de sauvegarde en tout ;
+- l'ordre de construction : monstres animés et décors, puis le moteur, puis l'équilibre par simulation et les tests.
+
+**En cours** : les monstres animés.
+
+**En attente de Romain** :
+- le choix du son de critique dans l'Atelier ;
+- le code par joueur ;
+- qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette).
 Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
 
 ## 13. Enquête 3 — La lettre d'Odette
