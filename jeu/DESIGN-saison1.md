@@ -2198,7 +2198,18 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 - En cours :
   - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html`) ;
   - les nouvelles armes des héros ;
-  - les salles sans combat (`jeu/donjon/scenes/`) : le puits, les culs-de-sac à trouvailles, la réserve, la grotte de givre, la bibliothèque, le tas d'os et le crâne secret, les dalles piégées, les trois portes, le sarcophage, le feu de camp, la porte aux quatre signes avec Moustache, et Léo avec sa lanterne.
+- **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :
+  - le coffre à deux carquois et le lutrin à choix ;
+  - le tas d'os à fouiller ;
+  - le crâne secret révélé par l'encre invisible ;
+  - les dalles piégées ;
+  - les trois portes ;
+  - le sarcophage et l'amulette ;
+  - le feu de camp ;
+  - **Moustache**, un gros chat gris tigré à six doigts, qui gratte la porte aux quatre signes ;
+  - **Léo**, aux cheveux de paille farinés, terrifié avec sa lanterne.
+
+  Les salles sont fluides avec le processeur ralenti ×6. **Elles attendent l'avis de Romain.**
 - Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
 
 **En attente de Romain** :
