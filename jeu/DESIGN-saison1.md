@@ -2086,6 +2086,27 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - Ce qui est en cours : la mesure (processeur ralenti ×4 et ×6) et l'optimisation.
   - Les règles qui en sortiront iront dans `jeu/donjon/RAPIDITE.md`.
   - Les monstres en cours de dessin suivent déjà ces règles : aucun filtre, des animations seulement en déplacement / rotation / transparence, et des états dessinés d'avance.
+
+**L'Atelier des sons refait (9 novembre, vers 12 h)** :
+- **La page** : elle est compacte, faite de sections rétractables, toutes fermées au départ. Chaque titre a un compteur de 🆕. Il y a « Tout ouvrir / Tout fermer », et une barre « Copier mes choix » en bas, qui donne le chemin de chaque choix.
+- **Le contenu** : 145 sons, 263 versions.
+  - **Donjon** : 96 sons.
+    - Héros : 32.
+    - Ennemis : 54, une sous-section par monstre (10 monstres).
+    - Objets et salles : 10.
+  - **Musiques** : 8.
+  - **Le jeu** : 17, et **Mini-jeux** : 24. Ce sont les sons déjà présents, copiés tels quels, et le jeu ne change pas.
+- **Les nouvelles propositions** :
+  - les cris et réactions de chaque monstre du chemin long, Bourbe compris (coassement, langue, gobage, rot, plongeon, saut, chatouille) ;
+  - pour les héros : les nouvelles armes et potions, « ça rebondit », le point faible ouvert, et le son des icônes ;
+  - les objets et les salles : ramasser, coffre, porte, piège, page de sauvegarde, code juste ou faux, pas, brume, feu de camp ;
+  - les musiques : canaux, ossuaire, repos au feu de camp, thème de Bourbe, Léo retrouvé.
+- **Les musiques déjà validées sont retouchées, sans aucun bruit de bête** (gouttes graves et rares, cave aux toiles refaite). Romain doit les réécouter.
+- **Dans la salle des rats** :
+  - deux volumes séparés (`Son.volume('musique' | 'bruitages', v)`) ;
+  - le critique A + C, une seule version tirée par coup ;
+  - le son des icônes est prêt, mais muet tant que Romain n'a pas choisi.
+- **Le son est pré-calculé** (musiques et gros bruitages) : le calcul audio passe d'environ 21 % d'un cœur à environ 2 %, avec le processeur ralenti ×6. En contrepartie, environ 8 s de préparation pendant l'écran du sac, avec le processeur ralenti ×6, et 30 à 60 Mo de mémoire.
 - **Les badges et l'icône de cible suivent le rat** quand il se dresse, bondit ou mord.
 - **La fuite ramène à l'entrée** : les trois rats reviennent en pleine forme, les héros aussi. Seul le Grand Livre garde ce qu'il a appris, et la question « Fuir la salle ? » le dit avant.
 - Tests : 66 sur 66 pour la salle, 27 sur 27 pour l'Atelier.
