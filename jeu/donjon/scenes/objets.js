@@ -153,13 +153,21 @@ Base.prototype.faireRond = function(z, parent){
   el('div', 'ob-anneau', r); el('div', 'ob-onde', r);
   return r;
 };
-Base.prototype.surToucher = function(fn){ var self = this; [].forEach.call(this.el.querySelectorAll('.ob-zone'), function(z){ z.addEventListener('click', function(ev){ fn(self, ev); }); }); return this; };
-Base.prototype.guider = function(on){ this.el.classList.toggle('ob-guide', !!on); return this; };
+/* pour un élément dont le cadre coupe (overflow caché) : la zone et le rond jaune vont dans une « sœur » posée au même endroit */
+Base.prototype.horsCadre = function(){
+  var d = this.def, so = boite(el('div', 'ob'), d.x, d.y, d.w, d.h); so.style.zIndex = (d.z || 5) + 1;
+  this.c.appendChild(so);
+  [].slice.call(this.el.querySelectorAll(':scope > .ob-zone, :scope > .ob-rond')).forEach(function(z){ so.appendChild(z); });
+  this.soeur = so; this.apres = (this.apres || []).concat([so]);
+};
+Base.prototype.cadreZones = function(){ return this.soeur || this.el; };
+Base.prototype.surToucher = function(fn){ var self = this; [].forEach.call(this.cadreZones().querySelectorAll('.ob-zone'), function(z){ z.addEventListener('click', function(ev){ fn(self, ev); }); }); return this; };
+Base.prototype.guider = function(on){ this.cadreZones().classList.toggle('ob-guide', !!on); return this; };
 Base.prototype.briller = function(on){ this.el.classList.toggle('ob-brille', !!on); return this; };
 Base.prototype.boucle = function(e, kf, o){ var a = e.animate(kf, Object.assign({iterations: Infinity, easing: 'ease-in-out'}, o)); this.boucles.push(a); return a; };
 Base.prototype.arreter = function(){ this.boucles.forEach(function(a){ a.cancel(); }); this.boucles = []; return this; };
 Base.prototype.detruire = function(){ this.arreter(); this.el.remove(); if(this.apres) this.apres.forEach(function(e){ e.remove(); }); };
-Base.prototype.actif = function(on){ [].forEach.call(this.el.querySelectorAll('.ob-zone'), function(z){ z.classList.toggle('ob-off', !on); }); return this; };
+Base.prototype.actif = function(on){ [].forEach.call(this.cadreZones().querySelectorAll('.ob-zone'), function(z){ z.classList.toggle('ob-off', !on); }); return this; };
 /* les pièces dessinées (def.pieces) : chacune un <div> à sa place, avec son pivot ; « dans » : la pièce qui la porte */
 Base.prototype.pieces = function(liste, parent){
   var self = this;
@@ -368,6 +376,7 @@ function Crane(c, def, opts){
     else if(d.secours){ var im = img(d.secours, q); q.insertBefore(im, q.firstChild); } }
   this.revele = false;
   this.faireZone();
+  this.horsCadre();
   if(d.revele) this.etat(true);
 }
 Crane.prototype = Object.create(Base.prototype);
@@ -449,17 +458,10 @@ function Porte(c, def, opts){
   this.el.style.overflow = 'hidden';
   this.pieces(def.pieces);            /* audela (la lueur derrière), battant, signe (dans le battant) */
   this.faireZone(def.zone);
-  /* la zone et le rond jaune ne doivent pas être coupés par le cadre : on les met dans une soeur sans overflow */
-  var soeur = boite(el('div', 'ob'), this.def.x, this.def.y, this.def.w, this.def.h); soeur.style.zIndex = (this.def.z || 5) + 1;
-  this.c.appendChild(soeur);
-  [].slice.call(this.el.querySelectorAll(':scope > .ob-zone, :scope > .ob-rond')).forEach(function(z){ soeur.appendChild(z); });
-  this.soeur = soeur; this.apres = [soeur];
+  this.horsCadre();       /* la zone et le rond jaune ne sont pas coupés par le cadre de la porte */
   if(this.p.signe) this.bS = this.boucle(this.p.signe, [{opacity: 0.35}, {opacity: 0.6}, {opacity: 0.35}], {duration: 2600, delay: -ALEA() * 2600});
 }
 Porte.prototype = Object.create(Base.prototype);
-Porte.prototype.guider = function(on){ this.soeur.classList.toggle('ob-guide', !!on); return this; };
-Porte.prototype.surToucher = function(fn){ var self = this; [].forEach.call(this.soeur.querySelectorAll('.ob-zone'), function(z){ z.addEventListener('click', function(ev){ fn(self, ev); }); }); return this; };
-Porte.prototype.actif = function(on){ [].forEach.call(this.soeur.querySelectorAll('.ob-zone'), function(z){ z.classList.toggle('ob-off', !on); }); return this; };
 Porte.prototype.toucher = function(){
   var p = this.p;
   if(this.bS){ this.bS.cancel(); this.bS = null; }
@@ -614,9 +616,10 @@ Leo.prototype.trembler = function(on){
 Leo.prototype.lever = function(){
   var p = this.p, self = this, T = 2200;
   this.balancer(false);
-  if(p.halo) p.halo.animate([{transform: 'translate(0,0)'}, {transform: 'translate(-30px,-44px) scale(1.12)', offset: 0.3}, {transform: 'translate(-30px,-44px) scale(1.12)', offset: 0.75}, {transform: 'translate(0,0)'}], {duration: T, easing: 'ease-in-out', composite: 'add'});
-  p.tete.animate([{transform: 'none'}, {transform: 'rotate(-6deg) translateY(-2px)', offset: 0.3}, {transform: 'rotate(-6deg) translateY(-2px)', offset: 0.75}, {transform: 'none'}], {duration: T, easing: 'ease-in-out'});
-  return fini(p.bras.animate([{transform: 'rotate(0deg)'}, {transform: 'rotate(-50deg)', offset: 0.3}, {transform: 'rotate(-45deg)', offset: 0.5}, {transform: 'rotate(-50deg)', offset: 0.75}, {transform: 'rotate(0deg)'}], {duration: T, easing: 'ease-in-out'}))
+  if(p.halo) p.halo.animate([{transform: 'translate(0,0)'}, {transform: 'translate(-24px,-54px) scale(1.12)', offset: 0.3}, {transform: 'translate(-22px,-50px) scale(1.1)', offset: 0.5}, {transform: 'translate(-24px,-54px) scale(1.12)', offset: 0.75}, {transform: 'translate(0,0)'}], {duration: T, easing: 'ease-in-out', composite: 'add'});
+  p.tete.animate([{transform: 'none'}, {transform: 'rotate(6deg) translateY(-2px)', offset: 0.3}, {transform: 'rotate(6deg) translateY(-2px)', offset: 0.75}, {transform: 'none'}], {duration: T, easing: 'ease-in-out'});
+  if(p.lanterne) p.lanterne.animate([{transform: 'rotate(0deg)'}, {transform: 'rotate(-42deg)', offset: 0.3}, {transform: 'rotate(-49deg)', offset: 0.5}, {transform: 'rotate(-44deg)', offset: 0.75}, {transform: 'rotate(0deg)'}], {duration: T, easing: 'ease-in-out'});
+  return fini(p.bras.animate([{transform: 'rotate(0deg)'}, {transform: 'rotate(50deg)', offset: 0.3}, {transform: 'rotate(45deg)', offset: 0.5}, {transform: 'rotate(50deg)', offset: 0.75}, {transform: 'rotate(0deg)'}], {duration: T, easing: 'ease-in-out'}))
     .then(function(){ self.balancer(true); });
 };
 /* il se recroqueville : il se tasse, ferme les yeux, cache son visage (o.rester : il reste ainsi) */
@@ -628,12 +631,13 @@ Leo.prototype.recroqueviller = function(o){
   if(this.recro && !r){ this.recro.forEach(function(x){ x.cancel(); }); }
   var l = [
     p.leo.animate(k({transform: 'none'}, {transform: 'translateY(10px) scale(1.04,.9)'}), {duration: T, easing: 'ease-in-out', fill: f}),
-    p.tete.animate(k({transform: 'none'}, {transform: 'translate(-2px,14px) rotate(16deg)'}), {duration: T, easing: 'ease-in-out', fill: f}),
-    p.bras.animate(k({transform: 'none'}, {transform: 'translate(4px,10px) rotate(14deg)'}), {duration: T, easing: 'ease-in-out', fill: f}),
-    p.bras2.animate(k({transform: 'none'}, {transform: 'translate(-4px,-6px) rotate(-62deg)'}), {duration: T, easing: 'ease-in-out', fill: f})
+    p.tete.animate(k({transform: 'none'}, {transform: 'translate(2px,12px) rotate(-14deg)'}), {duration: T, easing: 'ease-in-out', fill: f}),
+    p.bras.animate(k({transform: 'none'}, {transform: 'translate(4px,6px) rotate(-20deg)'}), {duration: T, easing: 'ease-in-out', fill: f}),
+    p.bras2.animate(k({transform: 'none'}, {transform: 'translate(-2px,-4px) rotate(78deg)'}), {duration: T, easing: 'ease-in-out', fill: f})
   ];
+  if(p.lanterne) l.push(p.lanterne.animate(k({transform: 'none'}, {transform: 'rotate(20deg)'}), {duration: T, easing: 'ease-in-out', fill: f}));
   if(p['tete-peur']){ p['tete-peur'].classList.remove('ob-cache'); p['tete-peur'].style.opacity = 0; l.push(p['tete-peur'].animate(k({opacity: 0}, {opacity: 1}), {duration: T, fill: f})); }
-  if(p.halo) l.push(p.halo.animate(k({transform: 'translate(0,0)'}, {transform: 'translate(10px,20px)'}), {duration: T, fill: f, composite: 'add'}));
+  if(p.halo) l.push(p.halo.animate(k({transform: 'translate(0,0)'}, {transform: 'translate(22px,30px)'}), {duration: T, fill: f, composite: 'add'}));
   this.recro = r ? l : null;
   return fini(l[0]).then(function(){ if(!r) self.balancer(true); });
 };

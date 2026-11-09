@@ -3,6 +3,9 @@
     flock /tmp/brumeval-pw.lock python3 rendre.py                 -> tous les fonds (png/<id>.png) + la planche (planche.png)
     flock /tmp/brumeval-pw.lock python3 rendre.py puits galerie   -> seulement ces fonds (et la planche)
     flock /tmp/brumeval-pw.lock python3 rendre.py --planche       -> seulement la planche (avec les PNG déjà faits)
+    flock /tmp/brumeval-pw.lock python3 rendre.py --fluidite [6]  -> mesure demo.html, processeur ralenti x6 (CDP), page mobile
+                                                                     1024 x 768 à l'échelle 2 : >= 50 ips au repos, >= 40 pendant les actions
+                                                                     (résultats : fluidite.json)
 
 Les fonds : SCENES.fond(id) (scenes.js), 960 x 372, photographiés à 2x (1920 x 744), en PNG opaque.
 Pour un poids raisonnable, l'image est réduite à une palette de 256 couleurs avec tramage (on ne voit pas la différence
@@ -85,8 +88,12 @@ def planche(pg, ids):
     if js:
         pg.add_script_tag(content=js)
         pg.evaluate("""(ids) => ids.forEach(id => { var s = SCENES.salle(id); if(!s) return; var c = document.getElementById('s-' + id);
-            (s.elements || []).forEach(e => { e.fond = c.querySelector('img.f').src; try { OBJETS.creer(c, e, {planche: true}); } catch(err) { console.error(id, e.id, err); } }); })""", ids)
-    pg.wait_for_timeout(1500)
+            (s.elements || []).forEach(e => { e.fond = c.querySelector('img.f').src; try { var o = OBJETS.creer(c, e, {planche: true});
+              /* la planche montre les états à vérifier : coffre ouvert, crâne révélé, sarcophage ouvert, un rond jaune par salle */
+              if(e.type === 'choix' && e.ferme) o.ouvrir(); if(e.type === 'crane') o.etat(true); if(e.type === 'sarcophage') o.ouvrir();
+              if(!window['g' + id] && ['objet', 'tas', 'porte', 'dalle', 'chat', 'leo'].indexOf(e.type) >= 0){ o.guider(true); window['g' + id] = 1; }
+            } catch(err) { console.error(id, e.id, err); } }); })""", ids)
+    pg.wait_for_timeout(3500)
     h = pg.evaluate("document.getElementById('p').scrollHeight")
     pg.set_viewport_size({'width': 1960, 'height': h + 40})
     pg.wait_for_timeout(400)
@@ -97,11 +104,89 @@ def planche(pg, ids):
     print('planche.png :', os.path.getsize(f) // 1024, 'Ko')
 
 
+MESURE = """(ms) => new Promise(ok => { var t = [], d = performance.now(); function f(x){ t.push(x); if(x - d < ms) requestAnimationFrame(f); else {
+  var dt = []; for(var i = 1; i < t.length; i++) dt.push(t[i] - t[i-1]); dt.sort((a,b)=>a-b);
+  ok({ips: Math.round((t.length - 1) / ((t[t.length-1] - t[0]) / 1000)), pire: Math.round(dt[dt.length-1]), lentes: dt.filter(x => x > 34).length}); } } requestAnimationFrame(f); })"""
+# chaque salle : (action à mesurer (index dans demo.html), durée mesurée en ms) ; None = seulement le repos
+PLAN = [('puits', None, 0), ('galerie', 0, 1600), ('aeration', 0, 2600), ('reserve', 0, 2600), ('givre', 0, 1600), ('bibliotheque', 1, 1600),
+        ('eboulis', 0, 3000), ('dalles', 1, 2000), ('portes', 0, 2200), ('crypte-sarco', 0, 3000), ('camp', 0, 1400), ('porte4', 0, 3000), ('leo', 0, 2200), ('leo', 1, 2400)]
+
+
+def fluidite(p, ralenti):
+    b = p.chromium.launch()
+    pg = b.new_page(viewport={'width': 1024, 'height': 768}, has_touch=True, is_mobile=True, device_scale_factor=2)
+    errs = []
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
+    pg.goto('file://' + os.path.join(ICI, 'demo.html'))
+    pg.wait_for_timeout(2500)
+    cdp = pg.context.new_cdp_session(pg)
+    cdp.send('Emulation.setCPUThrottlingRate', {'rate': ralenti})
+    res, vu = [], set()
+    for sid, act, ms in PLAN:
+        pg.evaluate('(id) => DEMO.montrer(id)', sid)
+        pg.wait_for_timeout(1500)
+        if sid not in vu:
+            vu.add(sid)
+            r = pg.evaluate(MESURE, 3000)
+            r.update(nom=sid + ' : au repos', objectif=50)
+            res.append(r)
+            print('CPU x%d  %-34s %3d ips   pire image %4d ms   images > 34 ms : %3d   %s' % (ralenti, r['nom'], r['ips'], r['pire'], r['lentes'], 'ok' if r['ips'] >= 50 else 'TROP LENT'), flush=True)
+        if act is None:
+            continue
+        pg.evaluate("([id, n]) => { window.__ok = false; DEMO.action(id, n).then(() => { window.__ok = true; }, (e) => { console.error(e && e.stack || e); window.__ok = true; }); }", [sid, act])
+        r = pg.evaluate(MESURE, ms)
+        pg.wait_for_function('window.__ok', timeout=90000)
+        nom = pg.evaluate('([id, n]) => document.querySelectorAll("#s-" + id + " .boutons button")[n].textContent', [sid, act])
+        r.update(nom=sid + ' : ' + nom, objectif=40)
+        res.append(r)
+        print('CPU x%d  %-34s %3d ips   pire image %4d ms   images > 34 ms : %3d   %s' % (ralenti, r['nom'][:34], r['ips'], r['pire'], r['lentes'], 'ok' if r['ips'] >= 40 else 'TROP LENT'), flush=True)
+        pg.evaluate('(id) => DEMO.refaire(id)', sid)
+    b.close()
+    print('erreurs :', errs or 'aucune')
+    json.dump({'ralenti': ralenti, 'page': '1024 x 768, mobile, echelle 2', 'mesures': res, 'erreurs': errs}, open(os.path.join(ICI, 'fluidite.json'), 'w'), ensure_ascii=False, indent=1)
+
+
+# des instants d'animation à photographier (vérification) : (salle, action, [moments en ms])
+INSTANTS = [('galerie', 0, [300, 700]), ('reserve', 0, [700, 1500, 2400]), ('eboulis', 0, [500, 1300, 2200]), ('eboulis', 1, [800]), ('eboulis', 3, [400, 900]), ('dalles', 1, [550, 900]),
+            ('portes', 1, [700, 1400]), ('crypte-sarco', 0, [1500, 2600]), ('porte4', 0, [400, 1800, 2600]), ('leo', 0, [800]), ('leo', 1, [1000]), ('camp', 0, [300])]
+
+
+def instants(p, dossier):
+    os.makedirs(dossier, exist_ok=True)
+    b = p.chromium.launch()
+    pg = b.new_page(viewport={'width': 1024, 'height': 768}, device_scale_factor=1)
+    errs = []
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
+    pg.goto('file://' + os.path.join(ICI, 'demo.html'))
+    pg.wait_for_timeout(1500)
+    for sid, act, moments in INSTANTS:
+        pg.evaluate('(id) => { DEMO.montrer(id); DEMO.refaire(id); }', sid)
+        pg.wait_for_timeout(800)
+        t = 0
+        pg.evaluate('([id, n]) => { DEMO.action(id, n); }', [sid, act])
+        for m in moments:
+            pg.wait_for_timeout(m - t)
+            t = m
+            box = pg.evaluate('(id) => { var r = DEMO.salles[id].cadre.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }', sid)
+            pg.screenshot(path=os.path.join(dossier, '%s-%d-%04d.png' % (sid, act, m)), clip={'x': box[0], 'y': box[1], 'width': box[2], 'height': box[3]})
+        pg.wait_for_timeout(1500)
+    b.close()
+    print('instants :', dossier, 'erreurs :', errs or 'aucune')
+
+
 def main():
     from playwright.sync_api import sync_playwright
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     exact = '--exact' in sys.argv
     with sync_playwright() as p:
+        if '--instants' in sys.argv:
+            instants(p, args[0])
+            return
+        if '--fluidite' in sys.argv:
+            fluidite(p, int(args[0]) if args else 6)
+            return
         b = p.chromium.launch()
         pg = b.new_page(viewport={'width': W, 'height': H}, device_scale_factor=2)
         errs = []

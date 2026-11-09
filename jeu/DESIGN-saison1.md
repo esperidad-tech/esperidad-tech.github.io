@@ -2187,7 +2187,7 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - le critique (33) et le nuage (31 à 41) restent un peu sous l'objectif, à vérifier sur l'iPhone de Romain.
   
   Le rendu est le même à l'œil. Seule différence : au repos, les capes ondulent par une animation simple.
-- **Le bandeau retiré** : les refus s'affichent maintenant en deux mots qui volent au-dessus de celui qu'on a touché (« Déjà joué », « Au sol ! », « Trop loin ! », « Encore debout », « Impossible ! »).
+- **En ligne le 9 novembre vers 15 h 10** (même adresse ; tests 74 sur 74). **Le bandeau retiré** : les refus s'affichent maintenant en deux mots qui volent au-dessus de celui qu'on a touché (« Déjà joué », « Au sol ! », « Trop loin ! », « Encore debout », « Impossible ! »).
 - En cours :
   - les salles sans combat (`jeu/donjon/scenes/`) : le puits, les culs-de-sac à trouvailles, la réserve, la grotte de givre, la bibliothèque, le tas d'os et le crâne secret, les dalles piégées, les trois portes, le sarcophage, le feu de camp, la porte aux quatre signes avec Moustache, et Léo avec sa lanterne.
 - Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.

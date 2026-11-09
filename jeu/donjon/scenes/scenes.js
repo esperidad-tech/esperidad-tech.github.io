@@ -1201,8 +1201,8 @@ function teteChatFace(d, bouche){
   s += L('M42 38 l -18 -4 M42 41 l -18 2 M42 44 l -16 7 M78 38 l 18 -4 M78 41 l 18 2 M78 44 l 16 7', '#ffffff', 1.2, op(0.85));
   return s;
 }
-A.chatTeteFace = function(){ return art('cf', 124, 120, function(d){ return '<g transform="translate(-2 0)">' + teteChatFace(d, false) + '</g>'; }); };
-A.chatTeteMiaou = function(){ return art('cm', 124, 120, function(d){ return '<g transform="translate(-2 0)">' + teteChatFace(d, true) + '</g>'; }); };
+A.chatTeteFace = function(){ return art('cf', 124, 120, function(d){ return '<g transform="translate(-2 4)">' + teteChatFace(d, false) + '</g>'; }); };
+A.chatTeteMiaou = function(){ return art('cm', 124, 120, function(d){ return '<g transform="translate(-2 4)">' + teteChatFace(d, true) + '</g>'; }); };
 A.chatOndes = function(){ return art('co', 40, 50, function(d){ return L('M30 10 Q 22 25 30 40', '#fff4c0', 3) + L('M20 4 Q 8 25 20 46', '#fff4c0', 3, op(0.75)) + L('M10 0 Q -4 25 10 50', '#fff4c0', 3, op(0.5)); }); };
 
 /* ---------- Léo Mouture, l'apprenti du meunier : coincé contre le mur, sa lanterne, terrifié ; de la farine sur sa cape ---------- */
@@ -1262,7 +1262,10 @@ A.leoBras = function(){ return art('la', 160, 244, function(d){
   /* le bras qui tient la lanterne (vers les héros) : l'épaule à (78, 92) */
   var s = P('M84 90 C 70 96 62 110 58 124 L 70 128 C 74 116 80 106 88 100 Z', d.g('#5a4636')) + P('M58 122 C 50 128 42 130 34 128 L 34 116 C 42 118 50 116 58 112 Z', d.g('#5a4636'));
   s += '<circle cx="32" cy="122" r="8" fill="' + d.g(PEAU[1]) + '" stroke="' + O + '" stroke-width="3"/>';
-  /* la lanterne : l'anse, le chapeau, la vitre, le pied */
+  return s; }); };
+/* la lanterne (elle pend de la main, à (32, 120) : elle reste droite quand il lève le bras) */
+A.leoLanterne = function(){ return art('ll', 160, 244, function(d){
+  var s = '';
   s += L('M24 122 Q 32 112 40 122', O, 4.4) + L('M24 122 Q 32 112 40 122', '#b8862e', 2.2);
   s += P('M20 132 L 44 132 L 40 124 L 24 124 Z', d.g('#c8962e')) + C(32, 122, 3, '#c8962e', ' stroke="' + O + '" stroke-width="1.6"');
   s += Rc(21, 132, 22, 28, d.rad([[0, '#fffbe0'], [0.5, '#ffd070', 0.9], [1, '#ff9a30', 0.7]]), ' stroke="' + O + '" stroke-width="2.4"');
@@ -1424,7 +1427,8 @@ SALLES.leo = function(){ var L0 = LEO; return {nom: 'La dernière salle', type: 
         {id: 'leo', x: 0, y: 0, w: 160, h: 244, ox: 90, oy: 234}, {id: 'tremble', dans: 'leo', x: 0, y: 0, w: 160, h: 244, ox: 90, oy: 234},
         {id: 'corps', dans: 'tremble', svg: A.leoCorps(), x: 0, y: 0, w: 160, h: 244}, {id: 'bras2', dans: 'tremble', svg: A.leoBras2(), x: 0, y: 0, w: 160, h: 244, ox: 104, oy: 94},
         {id: 'tete', dans: 'tremble', svg: A.leoTete(), x: 0, y: 0, w: 160, h: 244, ox: 88, oy: 76}, {id: 'tete-peur', dans: 'tete', svg: A.leoTetePeur(), x: 0, y: 0, w: 160, h: 244, cache: true},
-        {id: 'bras', dans: 'tremble', svg: A.leoBras(), x: 0, y: 0, w: 160, h: 244, ox: 80, oy: 94}, {id: 'flamme', dans: 'bras', svg: A.leoFlamme(), x: 26, y: 138, w: 12, h: 18, ox: 6, oy: 18},
+        {id: 'bras', dans: 'tremble', svg: A.leoBras(), x: 0, y: 0, w: 160, h: 244, ox: 80, oy: 94}, {id: 'lanterne', dans: 'bras', svg: A.leoLanterne(), x: 0, y: 0, w: 160, h: 244, ox: 32, oy: 120},
+        {id: 'flamme', dans: 'lanterne', svg: A.leoFlamme(), x: 26, y: 138, w: 12, h: 18, ox: 6, oy: 18},
         {id: 'panier', svg: A.panier(), x: -8, y: 196, w: 70, h: 50}],
       zone: {x: L0.x + 4, y: L0.y + 8, w: 150, h: 232}},
     poussiere(700, 120, 220, 200, 5, '#ffd8a0')
