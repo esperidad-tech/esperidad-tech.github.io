@@ -149,7 +149,7 @@ def fluidite(p, ralenti):
 
 # des instants d'animation à photographier (vérification) : (salle, action, [moments en ms])
 INSTANTS = [('galerie', 0, [300, 700]), ('reserve', 0, [700, 1500, 2400]), ('eboulis', 0, [500, 1300, 2200]), ('eboulis', 1, [800]), ('eboulis', 3, [900, 2200]), ('dalles', 1, [550, 900]),
-            ('portes', 1, [700, 1400]), ('crypte-sarco', 0, [1500, 2600]), ('porte4', 0, [400, 1800, 2600]), ('leo', 0, [800]), ('leo', 1, [1000]), ('camp', 0, [300])]
+            ('portes', 1, [700, 1400]), ('crypte-sarco', 0, [1500, 2600]), ('crypte-sarco', 2, [2400]), ('porte4', 0, [400, 1800, 2600]), ('leo', 0, [800]), ('leo', 1, [1000]), ('camp', 0, [300])]
 
 
 def instants(p, dossier):

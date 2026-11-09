@@ -35,7 +35,7 @@ function sage(lk, grain){
     '<g data-livre-ceinture>' + L('M146 152 L 150 160', '#5e3a1e', 2.4) + livreFerme(d, 152, 170, or) + '</g>' +
     P('M94 96 Q 122 86 152 96 L 158 128 Q 124 140 90 128 Z', d.g(bleu)) + L('M92 126 Q 124 138 156 126', or, 2.4) +
     couture('M96 120 Q 124 130 154 120', CYAN) + L('M152 98 L 157 126', LUNE, 2, ' opacity=".55"') +
-    C(124, 101, 4.5, or, ' stroke="' + O + '" stroke-width="2"') + C(124, 101, 1.8, CYAN));
+    C(124, 101, 4.5, or, ' stroke="' + O + '" stroke-width="2"') + C(124, 101, 1.8, CYAN) + amulette(d, 131, 117) + rep('amulette', 131, 117));
   /* devant : la main loin (le livre ouvert), la tête */
   var livre = '<g data-livre-main style="display:none"><g transform="translate(' + x + ' 186) scale(1.3) translate(' + (-x) + ' -186)">' +
     '<ellipse data-livre-halo cx="' + x + '" cy="170" rx="40" ry="26" fill="' + d.halo('#e8fdff', '#3fd0ff') + '" opacity="0"/>' +
@@ -62,6 +62,7 @@ function sage(lk, grain){
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb - 2) + ' ' + (top - 2) + ' ' + (xb - 18) + ' ' + (top - 8) + ' ' + (xb - 20) + ' ' + (top + 6) + ' C ' + (xb - 21) + ' ' + (top + 14) + ' ' + (xb - 12) + ' ' + (top + 16) + ' ' + (xb - 10) + ' ' + (top + 9), '#4a3020', 6) +
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb + 4) + ' ' + (top + 2) + ' ' + (xb + 14) + ' ' + (top - 2) + ' ' + (xb + 14) + ' ' + (top - 12), O, 8) +
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb + 4) + ' ' + (top + 2) + ' ' + (xb + 14) + ' ' + (top - 2) + ' ' + (xb + 14) + ' ' + (top - 12), '#4a3020', 4.5) +
+    cristalLune(d, xb + 2, top - 2) +
     '<g data-cristal class="haJ" style="transform-origin:' + (xb + 2) + 'px ' + (top - 2) + 'px">' +
       '<circle data-cr-halo cx="' + (xb + 2) + '" cy="' + (top - 2) + '" r="30" fill="' + d.halo('#e8fdff', '#3fd0ff') + '" opacity=".75"/>' +
       P('M' + (xb + 2) + ' ' + (top - 20) + ' L ' + (xb + 11) + ' ' + (top - 4) + ' L ' + (xb + 2) + ' ' + (top + 12) + ' L ' + (xb - 7) + ' ' + (top - 4) + ' Z', d.g('#5fe0ff', 1.3)) +
@@ -70,7 +71,7 @@ function sage(lk, grain){
       C(xb + 2, top - 2, 3, '#fff', ' opacity=".8"') + '</g>' + rep('cristal', xb + 2, top - 2) + rep('baton-bas', xb, bas);
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 16, d.gh(bleu)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
     J('avantBrasB', P('M' + (xb - 8) + ' 142 L ' + (xb + 8) + ' 142 L ' + (xb + 12) + ' 178 Q ' + xb + ' 184 ' + (xb - 12) + ' 178 Z', d.gh(bleu)) + L('M' + (xb - 12) + ' 177 Q ' + xb + ' 183 ' + (xb + 12) + ' 177', or, 2.6) +
-      J('mainB', baton + poing(d, xb, 188, 8, pe[1])))));
+      J('mainB', baton + batonChene(d, xb, top, bas) + poing(d, xb, 188, 8, pe[1])))));
   var corps = '<ellipse data-ombre cx="125" cy="293" rx="56" ry="8" fill="#000" opacity=".35"/>' + J('racine', J('bassin', B));
   var so = [
     {nom:'manteau', type:'tissu', dos:[[98, 100], [74, 192], [50, 286]], devant:[[114, 102], [104, 194], [96, 288]], k:46, c:2.8, g:420, vent:1, onde:3,

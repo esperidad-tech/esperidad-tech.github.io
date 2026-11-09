@@ -639,10 +639,10 @@ FONDS.eboulis = function(){
   s += ecran(E(680, 280, 280, 130, d.halo('#8af070', 0.18)) + E(860, 200, 140, 140, d.halo('#7ae070', 0.14)));
   /* le crâne gravé : à peine visible (il faut l'encre invisible du Sage pour le voir) — les traits en creux, très discrets */
   var CX = 852, CY = 196;
-  s += '<g opacity=".38">' + L(T('M-30 -6 C -30 -40 30 -40 30 -6 C 30 8 22 14 18 18 L 18 30 L -18 30 L -18 18 C -22 14 -30 8 -30 -6 Z', CX, CY), '#0c100e', 3) +
+  s += '<g opacity=".13">' + L(T('M-30 -6 C -30 -40 30 -40 30 -6 C 30 8 22 14 18 18 L 18 30 L -18 30 L -18 18 C -22 14 -30 8 -30 -6 Z', CX, CY), '#0c100e', 3) +
     L(T('M-29 -5 C -29 -38 29 -38 29 -5', CX, CY + 1.5), '#5a6a5c', 1.4) +
     L(T('M-16 -2 C -16 -10 -4 -10 -4 -2 C -4 4 -16 4 -16 -2 Z M4 -2 C 4 -10 16 -10 16 -2 C 16 4 4 4 4 -2 Z M-3 10 L 0 4 L 3 10 Z M-10 22 L -10 30 M-3 22 L -3 30 M4 22 L 4 30 M11 22 L 11 30', CX, CY), '#0c100e', 2.4) + '</g>';
-  s += L(T('M-46 -50 L 46 -50 L 46 144 L -46 144 Z', CX, CY), '#0a0e0c', 1.2, op(0.35));
+  s += L(T('M-46 -50 L 46 -50 L 46 144 L -46 144 Z', CX, CY), '#0a0e0c', 1.2, op(0.12));
   /* des niches avec de vieux os, des toiles */
   s += F('M420 150 V 126 C 420 104 470 104 470 126 V 150 Z', '#05080a', ' stroke="#3a443c" stroke-width="4"') + L('M430 146 L 460 142', '#d8d0b8', 3) + C(428, 146, 3, '#d8d0b8') + C(462, 142, 3, '#d8d0b8');
   s += toile(W, 0, 120, -1, '#c8d8c8') + toile(0, 0, 110, 1, '#c8d8c8') + toile(548, 70, 40, 1, '#c8d8c8');
@@ -1452,6 +1452,14 @@ var SCENES = {
     s.id = id; s.png = SCENES.base + 'png/' + id + '.png';
     (s.elements || []).forEach(function(e){ if(e.decoupe) e.fond = s.png; });
     return s;
+  },
+  /* le sarcophage posé pile sur celui du décor de combat de la fausse crypte (decors/png/crypte.png, au centre) : même dessin, à l'échelle 0,61 */
+  sarcophageSurCrypte: function(){
+    var e = SALLES['crypte-sarco']().elements[0], k = 0.61, x = 388, y = 222;
+    e.x = x; e.y = y; e.echelle = k;
+    e.zone = {x: x + 10, y: y + 40, w: SARCO.w - 20, h: SARCO.h - 34};     /* (dans le dessin non réduit : elle est réduite avec lui) */
+    e.amulette.x = 430; e.amulette.y = 196; e.amulette.zone = zoneDe(430, 196, 52, 66);
+    return e;
   },
   outils: {mix: mix, clair: clair, sombre: sombre, Defs: Defs, svgTexte: svgTexte}
 };

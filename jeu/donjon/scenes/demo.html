@@ -96,12 +96,23 @@ var ACTIONS = {
       l.forEach(function(x){ p = p.then(function(){ return x.marcher(); }).then(function(){ return new Promise(function(ok){ setTimeout(ok, 120); }); }); }); return p; }],
     ['Une dalle sombre !', function(D){ return D.o['dalle-7-0'].pieger({onPiege: function(){ mot(D.scene, '−15 à toute l\'équipe'); }}); }], ['Une autre', function(D){ return D.o['dalle-10-1'].pieger(); }], ['Guider', function(D){ D.o['dalle-6-0'].guider(true); }]],
   portes: [['Ouvrir l\'œil', function(D){ return D.o['porte-oeil'].ouvrir(); }], ['La gueule', function(D){ return D.o['porte-gueule'].ouvrir(); }], ['La lune', function(D){ return D.o['porte-lune'].ouvrir(); }], ['Guider', function(D){ ['oeil', 'gueule', 'lune'].forEach(function(k){ D.o['porte-' + k].guider(true); }); }]],
-  'crypte-sarco': [['Ouvrir, prendre l\'amulette', function(D){ return D.o.sarcophage.ouvrir().then(function(a){ return prendre(D.scene, a); }); }], ['Guider', function(D){ D.o.sarcophage.guider(true); }]],
+  'crypte-sarco': [['Ouvrir, prendre l\'amulette', function(D){ return D.o.sarcophage.ouvrir().then(function(a){ return prendre(D.scene, a); }); }], ['Guider', function(D){ D.o.sarcophage.guider(true); }],
+    ['Sur le décor de la crypte (decors/)', function(D){ return DEMO.surCrypte(); }]],
   camp: [['Attiser le feu', function(D){ return D.o.feu.attiser(); }]],
   porte4: [['La scène (gratte, se retourne, miaule)', function(D){ setTimeout(function(){ mot(D.scene, '« Moustache ? Mon gros gris, c\'est toi ? »'); }, 2700); return D.o.moustache.scene(); }], ['Gratter', function(D){ return D.o.moustache.gratter(4); }], ['Se retourner', function(D){ return D.o.moustache.seRetourner(); }], ['Miauler', function(D){ return D.o.moustache.miauler(); }], ['Revenir', function(D){ return D.o.moustache.revenir(); }]],
   leo: [['Il lève sa lanterne', function(D){ return D.o.leo.lever(); }], ['Il se recroqueville', function(D){ return D.o.leo.recroqueviller(); }], ['Recroquevillé (reste)', function(D){ return D.o.leo.recroqueviller({rester: true}); }], ['Il se redresse', function(D){ return D.o.leo.redresser(); }], ['Guider', function(D){ D.o.leo.guider(true); }]]
 };
 DEMO.action = function(id, n){ var D = DEMO.salles[id], a = ACTIONS[id][n || 0]; return Promise.resolve(a[1](D)); };
+/* le sarcophage posé sur le décor de combat de la fausse crypte (fait par l'autre chantier : ../decors/png/crypte.png) */
+DEMO.surCrypte = function(){
+  var D = DEMO.salles['crypte-sarco'], sc = D.scene;
+  Object.keys(D.o).forEach(function(k){ D.o[k].detruire(); });
+  sc.querySelector('img.fond').src = '../decors/png/crypte.png';
+  var x = OBJETS.creer(sc, SCENES.sarcophageSurCrypte());
+  D.o = {sarcophage: x};
+  x.surToucher(function(){ x.ouvrir().then(function(a){ a.guider(true); a.surToucher(function(){ prendre(sc, a); }); }); });
+  return x.ouvrir().then(function(a){ return prendre(sc, a); });
+};
 DEMO.refaire = function(id){ var D = DEMO.salles[id]; Object.keys(D.o).forEach(function(k){ D.o[k].detruire(); }); construire(id); };
 
 var racine = document.getElementById('salles');

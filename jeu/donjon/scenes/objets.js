@@ -137,6 +137,8 @@ function Base(c, def, opts){
   this.el = boite(el('div', 'ob ob-' + (def.type || 'objet'), c), def.x, def.y, def.w, def.h);
   this.el.setAttribute('data-ob', def.id || '');
   if(def.z != null) this.el.style.zIndex = def.z;
+  /* def.echelle : l'élément est dessiné plus petit (ou plus grand), à partir de son coin haut-gauche (les zones suivent) */
+  if(def.echelle && def.echelle !== 1){ this.el.style.transformOrigin = '0 0'; this.el.style.transform = 'scale(' + def.echelle + ')'; }
   this.zone = null;
 }
 Base.prototype.faireZone = function(z, parent){
@@ -495,7 +497,8 @@ Sarco.prototype.ouvrir = function(){
   var a = cv.animate([{transform: 'none'}, {transform: 'translateX(-3px)', offset: 0.06}, {transform: 'translateX(3px)', offset: 0.12}, {transform: 'translateX(-2px)', offset: 0.18}, {transform: 'translateX(0)', offset: 0.24},
     {transform: 'translateX(' + (d.glisse || 84) + 'px) rotate(2deg)', offset: 0.78}, {transform: 'translate(' + ((d.glisse || 84) + 12) + 'px,24px) rotate(11deg)', offset: 0.9}, {transform: 'translate(' + ((d.glisse || 84) + 12) + 'px,20px) rotate(9deg)'}], {duration: 2000, easing: 'ease-in-out', fill: 'forwards'});
   if(p.interieur){ p.interieur.classList.remove('ob-cache'); p.interieur.animate([{opacity: 0}, {opacity: 0, offset: 0.3}, {opacity: 1}], {duration: 2000, fill: 'forwards'}); }
-  setTimeout(function(){ for(var k = 0; k < 6; k++) particule(c, d.x + d.w * 0.85 + entre(-50, 50), d.y + d.h * 0.5, entre(36, 54), rond('#b0a8c0', 0.55), [{transform: 'scale(.3)', opacity: 0}, {transform: 'translateY(-8px) scale(1)', opacity: 0.8, offset: 0.3}, {transform: 'translate(' + entre(-30, 30).toFixed(0) + 'px,-30px) scale(1.7)', opacity: 0}], {duration: 1200, delay: k * 90}); }, 1800);
+  var e = d.echelle || 1;
+  setTimeout(function(){ for(var k = 0; k < 6; k++) particule(c, d.x + d.w * e * 0.85 + entre(-50, 50) * e, d.y + d.h * e * 0.5, entre(36, 54), rond('#b0a8c0', 0.55), [{transform: 'scale(.3)', opacity: 0}, {transform: 'translateY(-8px) scale(1)', opacity: 0.8, offset: 0.3}, {transform: 'translate(' + entre(-30, 30).toFixed(0) + 'px,-30px) scale(1.7)', opacity: 0}], {duration: 1200, delay: k * 90}); }, 1800);
   return fini(a).then(function(){
     var am = self.amulette; am.el.style.visibility = ''; am.actif(true);
     var b = am.el.animate([{opacity: 0, transform: 'translateY(36px) scale(.5)'}, {opacity: 1, transform: 'translateY(-10px) scale(1.15)', offset: 0.65}, {opacity: 1, transform: 'none'}], {duration: 900, easing: 'ease-out'});

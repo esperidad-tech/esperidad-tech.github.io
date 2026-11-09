@@ -16,7 +16,8 @@ function flecheDessin(){
     P('M125 0 L 110 -6.5 L 112 0 L 110 6.5 Z', '#c8d2e4', ' stroke-width="2.4"') + L('M113 -2 L 121 0', '#fff', 1.2) +
     P('M6 -1 L -7 -9 L -3 0 Z', '#e04a3a', ' stroke-width="2.2"') + P('M6 1 L -7 9 L -3 0 Z', '#e04a3a', ' stroke-width="2.2"') +
     '<g data-huile style="display:none">' + E(118, 3, 6, 4, '#2a2418', ' stroke="' + O + '" stroke-width="1.6"') + E(117, 9, 2.2, 3.4, '#3a3020') + C(116, 1, 1.4, '#c8b88a') + '</g>' +
-    '<g data-colle style="display:none">' + E(117, 0, 8, 6, '#f2f6e8', ' stroke="' + O + '" stroke-width="1.6"') + L('M112 5 Q 110 12 113 16 M120 5 Q 122 11 120 14', '#e8f0d8', 1.6) + C(119, -2, 1.6, '#fff') + '</g>';
+    '<g data-colle style="display:none">' + E(117, 0, 8, 6, '#f2f6e8', ' stroke="' + O + '" stroke-width="1.6"') + L('M112 5 Q 110 12 113 16 M120 5 Q 122 11 120 14', '#e8f0d8', 1.6) + C(119, -2, 1.6, '#fff') + '</g>' +
+    flechesSpeciales();
 }
 
 /* ============ le Pisteur ============ */
@@ -29,7 +30,7 @@ function pisteur(lk, grain){
     P('M70 64 L 92 56 L 116 138 L 94 146 Z', d.g('#7c4a28')) + L('M80 61 L 103 141', cuirF, 2) +
     L('M73 74 L 95 66 M95 128 L 112 122', '#c9a35a', 3) + couture('M76 70 L 98 140', '#d8aa76') +
     '<g data-carquois>' + P('M70 52 L 64 42 L 76 46 Z', '#e04a3a') + P('M80 48 L 76 36 L 86 42 Z', '#f3e7cb') + P('M90 46 L 88 34 L 97 42 Z', '#e04a3a') +
-    L('M72 60 L 72 50 M82 58 L 81 46 M92 56 L 92 44', '#7a5a3a', 2) + '</g>' +
+    L('M72 60 L 72 50 M82 58 L 81 46 M92 56 L 92 44', '#7a5a3a', 2) + '</g>' + carquoisArgent(d) + carquoisLourd(d) +
     J('tete', '<g data-souple="queue"></g>');
   B += J('torse', c0);
   /* jambe loin */
@@ -55,7 +56,7 @@ function pisteur(lk, grain){
     L('M96 146 Q 124 154 154 144', O, 9) + L('M96 146 Q 124 154 154 144', '#5a361f', 5.5) + P('M119 144 L 131 144 L 131 155 L 119 155 Z', '#d9b46a') + L('M122 149 L 129 149', O, 2) +
     P('M98 152 L 114 152 L 114 168 Q 106 172 98 168 Z', d.g('#7a4a28')) + C(106, 157, 2, '#d9b46a', ' stroke="' + O + '" stroke-width="1"') +
     P('M150 152 L 168 182 L 174 179 L 156 149 Z', d.g('#4e2e18')) +
-    '<g data-dague-ceinture>' + P('M144 147 L 150 137 L 155 140 L 149 150 Z', '#3a2a1a') + P('M141 148 L 156 146 L 157 151 L 142 153 Z', '#c9a35a') + '</g>');
+    '<g data-dague-ceinture>' + P('M144 147 L 150 137 L 155 140 L 149 150 Z', '#3a2a1a') + P('M141 148 L 156 146 L 157 151 L 142 153 Z', '#c9a35a') + '</g>' + amulette(d, 127, 115) + rep('amulette', 127, 115));
   /* devant : l'arc dans la main loin, la tête, le col */
   var arc = L('M126 103 Q 172 185 126 267', O, 11) + L('M126 103 Q 172 185 126 267', '#8a5a2e', 6) + L('M130 112 Q 166 185 130 258', '#d29a5a', 1.6) +
     P('M142 170 L 154 170 L 155 200 L 143 200 Z', d.g('#5a361f')) + L('M142 177 L 155 178 M142 185 L 155 186 M143 193 L 155 193', '#c9a35a', 1.3) +
