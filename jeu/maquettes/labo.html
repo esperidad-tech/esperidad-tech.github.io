@@ -1,0 +1,650 @@
+<title>Le labo de l'Alchimiste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Caveat:wght@500;700&family=Macondo&display=swap">
+<style>
+/* Mise en page : la paillasse (conteur, vue de l'outil, rangée d'outils) à gauche, la fiche d'analyse en parchemin à droite ;
+   une seule colonne sur téléphone. Une seule ambiance : la nuit de Brumeval du jeu (mêmes couleurs, polices et boutons jaunes). */
+:root{
+  --nuit:#131932; --nuit-2:#1c2447; --nuit-3:#28325e; --trait:#3b4679; --brume:#a6aed8; --lune:#eef0ff;
+  --parchemin:#f3e7cb; --parchemin-2:#e8d7ae; --encre:#35281b; --encre-2:#6b5434;
+  --or:#f5b945; --braise:#e8693c; --mousse:#7cc493; --alchi:#b48cff; --tampon:#c0392b; --contour:#24182e;
+  --bois:#3a2b45; --bois-2:#271d31;
+  --f-titre:"Macondo", Georgia, "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --f-main:"Caveat", "Segoe Script", "Comic Sans MS", cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--nuit); color:var(--lune); font-family:var(--f-texte); font-size:17px; line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:0 40px}
+.app{max-width:1120px; margin:0 auto}
+h1,h2,h3{font-family:var(--f-titre); font-weight:400; margin:0; line-height:1.15; text-wrap:balance}
+button{font:inherit; color:inherit}
+button:focus-visible, select:focus-visible{outline:3px solid var(--or); outline-offset:2px}
+
+header.tete{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:flex-end; justify-content:space-between; padding-block:18px 10px}
+.tete h1{font-size:clamp(28px, 6vw, 40px); color:var(--alchi)}
+.tete .sous{color:var(--brume); font-size:15px; margin-top:2px}
+.niveau{display:flex; gap:4px; background:var(--nuit-2); border:1px solid var(--trait); border-radius:999px; padding:4px}
+.niveau button{border:0; background:transparent; padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px; color:var(--brume)}
+.niveau button[aria-pressed="true"]{background:var(--nuit-3); color:var(--lune)}
+.maquette{font-size:14px; color:var(--brume); margin:0 0 12px}
+
+.labo{display:grid; grid-template-columns:minmax(0,1fr); gap:16px}
+@media (min-width:880px){ .labo{grid-template-columns:minmax(0,1fr) 340px} }
+
+/* La paillasse */
+.paillasse{background:linear-gradient(180deg, var(--bois), var(--bois-2)); border:2px solid var(--contour); border-radius:22px; padding:14px; display:grid; grid-template-columns:minmax(0,1fr); gap:12px; min-width:0; box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.conteur{display:flex; gap:10px; align-items:flex-start}
+.bulle{flex:1; min-width:0; background:var(--nuit-2); border:1px solid var(--trait); border-radius:16px; padding:10px 12px; display:flex; gap:10px; align-items:flex-start}
+.bulle p{margin:0; flex:1; min-width:0}
+.hp{flex:none; width:38px; height:38px; border-radius:50%; border:1px solid var(--trait); background:var(--nuit-3); cursor:pointer; font-size:17px}
+.mimi{flex:none; width:70px; position:relative; text-align:center}
+.mimi svg{width:64px; height:64px; display:block; margin:0 auto}
+.mimi .dit{position:absolute; bottom:100%; right:0; background:var(--parchemin); color:var(--encre); font-family:var(--f-main); font-size:20px; font-weight:700; padding:2px 10px; border-radius:12px; white-space:nowrap; opacity:0; transform:translateY(6px); transition:.2s; pointer-events:none}
+.mimi .dit.on{opacity:1; transform:none}
+.mimi.secoue svg{animation:secoue .5s}
+@keyframes secoue{0%,100%{transform:none} 20%{transform:rotate(-12deg)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-8deg)} 80%{transform:rotate(5deg)}}
+
+.scene{background:rgba(10,8,20,.35); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:12px; min-height:300px; display:grid; grid-template-columns:minmax(0,1fr); gap:12px; align-content:start; min-width:0}
+.tiroir{min-width:0}
+.outils{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px}
+.outil{border:2px solid var(--contour); background:var(--nuit-3); border-radius:16px; padding:10px 6px; cursor:pointer; display:grid; justify-items:center; gap:2px; min-width:0}
+.outil .ic{font-size:28px; line-height:1}
+.outil .nm{font-weight:700; font-size:15px; text-align:center}
+.outil .sb{font-size:12px; color:var(--brume); text-align:center}
+.outil[aria-current="true"]{background:var(--alchi); color:#160f24; border-color:#160f24}
+.outil[aria-current="true"] .sb{color:#2a1b45}
+.outil.fait .nm::after{content:" ✓"; color:var(--mousse)}
+.outil[aria-current="true"].fait .nm::after{color:#14532d}
+.outil.gris{opacity:.55}
+@media (max-width:460px){ .outil .sb{display:none} .outil .nm{font-size:13px} }
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:50px; padding:10px 22px; border-radius:999px; border:2px solid var(--contour);
+  background:linear-gradient(180deg,#ffe08a,#e8a93a); color:#111; font-weight:700; cursor:pointer; box-shadow:0 4px 0 #b07a1c, 0 8px 16px rgba(0,0,0,.35)}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 #b07a1c}
+.btn:disabled{filter:grayscale(.7); opacity:.5; cursor:not-allowed; transform:none}
+.btn.second{background:rgba(238,240,255,.06); color:var(--lune); border-color:var(--trait); box-shadow:none}
+.rond{position:relative; animation:rond 1.4s ease-in-out infinite}
+@keyframes rond{0%,100%{box-shadow:0 0 0 0 rgba(245,185,69,.85), 0 4px 0 #b07a1c} 50%{box-shadow:0 0 0 9px rgba(245,185,69,0), 0 4px 0 #b07a1c}}
+.outil.rond{animation:rondO 1.4s ease-in-out infinite}
+@keyframes rondO{0%,100%{box-shadow:0 0 0 0 rgba(245,185,69,.9)} 50%{box-shadow:0 0 0 8px rgba(245,185,69,0)}}
+
+/* Explication avant chaque outil */
+.intro{display:grid; gap:12px; justify-items:center; text-align:center; padding:8px}
+.intro h2{font-size:26px; color:var(--or)}
+.pictos{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; width:100%}
+.picto{background:var(--nuit-2); border:1px solid var(--trait); border-radius:14px; padding:10px; display:grid; gap:4px; justify-items:center; font-size:15px}
+.picto .e{font-size:30px}
+@media (max-width:520px){ .pictos{grid-template-columns:1fr} }
+
+/* La loupe */
+.ligne-haut{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+.coeurs{font-size:22px; letter-spacing:2px}
+.alerte{font-size:14px; color:var(--or)}
+.comparer{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.comparer figure{margin:0; background:#e9eef6; border:3px solid var(--contour); border-radius:14px; overflow:hidden; position:relative; min-width:0}
+.comparer figcaption{position:absolute; top:6px; left:8px; background:rgba(19,25,50,.85); color:var(--lune); font-size:13px; padding:2px 8px; border-radius:999px; z-index:1}
+.comparer canvas{display:block; width:100%; height:190px}
+.vide{position:absolute; inset:0; display:grid; place-items:center; color:#5b6280; font-size:15px; text-align:center; padding:20px}
+@media (max-width:520px){ .comparer{grid-template-columns:1fr} .comparer canvas{height:150px} }
+.tiroir{background:linear-gradient(180deg,#4a3526,#352517); border:2px solid var(--contour); border-radius:14px; padding:8px 8px 10px}
+.tiroir-tete{font-size:14px; color:#f1dcb7; margin:0 4px 6px; display:flex; justify-content:space-between; gap:8px}
+.rangee{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scroll-snap-type:x proximity}
+.ech{flex:none; width:128px; scroll-snap-align:start; border:2px solid #20160d; border-radius:10px; background:#f6efe0; padding:4px; cursor:pointer; display:grid; gap:2px; color:var(--encre)}
+.ech canvas{width:100%; height:62px; display:block; border-radius:6px}
+.ech .num{font-family:var(--f-main); font-size:17px; font-weight:700; line-height:1}
+.ech .nm{font-size:12.5px; line-height:1.1}
+.ech[aria-pressed="true"]{outline:3px solid var(--or); outline-offset:1px}
+.ech.barre{opacity:.4}
+.ech.barre .nm{text-decoration:line-through}
+.actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.retour{font-size:15px}
+.retour.non{color:#ffb4a6} .retour.oui{color:var(--mousse)}
+
+/* Le microscope */
+.micro{display:grid; gap:10px; justify-items:center}
+.zooms{display:flex; gap:6px}
+.zooms button{border:2px solid var(--contour); background:var(--nuit-3); color:var(--lune); border-radius:999px; padding:6px 14px; cursor:pointer; font-weight:700}
+.zooms button[aria-pressed="true"]{background:var(--or); color:#111}
+.lentille-cadre{width:min(100%, 420px); aspect-ratio:1; max-width:100%; border-radius:50%; padding:12px; background:radial-gradient(circle at 30% 30%, #e7c27a, #8a5f22 70%, #5a3c12); box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.lentille-cadre canvas{width:100%; height:100%; display:block; border-radius:50%; touch-action:none; cursor:grab; transition:filter .18s}
+.lentille-cadre canvas.flou{filter:blur(5px)}
+.compteur{font-size:15px; color:var(--brume)}
+.aide{margin:0; font-size:14px; color:var(--brume); text-align:center}
+
+/* Les gouttes */
+.gouttes{display:grid; gap:10px}
+.coupelle-cadre{background:#d9dde8; border:3px solid var(--contour); border-radius:16px; overflow:hidden}
+.coupelle-cadre canvas{display:block; width:100%; height:210px}
+.reactifs{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px}
+@media (max-width:520px){ .reactifs{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.reactif{border:2px solid var(--contour); background:var(--nuit-3); border-radius:14px; padding:8px; cursor:pointer; display:grid; justify-items:center; gap:2px}
+.reactif .e{font-size:26px}
+.reactif .nm{font-size:14px; font-weight:700}
+.reactif:disabled{opacity:.4; cursor:not-allowed}
+.reserve{font-size:20px}
+
+/* La fiche d'analyse */
+.fiche{background:var(--parchemin); color:var(--encre); border:2px solid var(--contour); border-radius:6px 18px 6px 18px; padding:16px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,.45); align-self:start; min-width:0;
+  background-image:repeating-linear-gradient(180deg, transparent 0 31px, rgba(107,84,52,.13) 31px 32px)}
+.fiche h2{font-size:24px}
+.fiche .ori{font-size:14px; color:var(--encre-2); margin:2px 0 10px}
+.fiche canvas{width:100%; height:70px; display:block; border:2px solid var(--encre-2); border-radius:8px}
+.fiche h3{font-size:18px; margin:14px 0 4px; color:var(--encre-2)}
+.obs{list-style:none; margin:0; padding:0; font-family:var(--f-main); font-size:21px; line-height:1.2; display:grid; gap:4px}
+.obs li.rien{color:var(--encre-2); opacity:.7}
+.obs li.nouveau{animation:ecrit .6s ease-out}
+@keyframes ecrit{from{opacity:0; transform:translateX(-8px)} to{opacity:1; transform:none}}
+.etiquette{display:grid; gap:8px; font-size:16px}
+.etiquette label{display:grid; gap:2px}
+.etiquette select{font:inherit; font-family:var(--f-main); font-size:21px; font-weight:700; color:var(--encre); background:var(--parchemin-2); border:2px solid var(--encre-2); border-radius:10px; padding:2px 8px; width:100%}
+.etiquette select:disabled{opacity:.55}
+.verrou{font-size:13px; color:var(--encre-2)}
+.fiche .btn{width:100%; margin-top:6px}
+.tampon{position:absolute; top:84px; right:14px; border:4px solid var(--tampon); color:var(--tampon); font-family:var(--f-titre); font-size:30px; padding:2px 12px; border-radius:8px; transform:rotate(-14deg); opacity:0; pointer-events:none; background:rgba(243,231,203,.6)}
+.tampon.on{animation:tamp .45s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes tamp{from{opacity:0; transform:rotate(-14deg) scale(2.2)} to{opacity:.92; transform:rotate(-14deg) scale(1)}}
+.patte{position:absolute; top:150px; right:30px; width:46px; opacity:0; transform:rotate(18deg)}
+.patte.on{opacity:.75; transition:opacity .3s .5s}
+.resultat{margin-top:12px; background:var(--nuit-2); color:var(--lune); border-radius:14px; padding:12px; display:grid; gap:8px}
+.code{display:flex; gap:8px; font-size:34px; justify-content:center}
+.code span{background:var(--nuit-3); border:2px solid var(--trait); border-radius:12px; width:58px; height:58px; display:grid; place-items:center}
+.petit{font-size:14px; color:var(--brume); margin:0}
+.msg-fiche{font-size:15px; color:#9b2d1f; margin:0}
+
+.plus-tard{margin-top:22px}
+.plus-tard h2{font-size:22px; color:var(--brume)}
+.cartes-tard{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+.cartes-tard span{border:1px dashed var(--trait); border-radius:999px; padding:6px 12px; font-size:14px; color:var(--brume)}
+@media (prefers-reduced-motion: reduce){ .rond, .outil.rond{animation:none; box-shadow:0 0 0 4px rgba(245,185,69,.8)} .tampon.on{animation:none; opacity:.92} .mimi.secoue svg{animation:none} }
+</style>
+
+<div class="app">
+  <header class="tete">
+    <div><h1>Le labo de l'Alchimiste</h1><div class="sous">Analyse n° 1 · enquête 1, La Lanterne d'Or</div></div>
+    <div class="niveau" role="group" aria-label="Difficulté">
+      <button type="button" id="nvF" aria-pressed="true">Enquête 1</button>
+      <button type="button" id="nvD" aria-pressed="false">Plus difficile</button>
+    </div>
+  </header>
+  <p class="maquette">Maquette cliquable : rien n'est construit dans le jeu. Une seule analyse, le fil rouge ; les autres utiliseront la même table et les mêmes outils.</p>
+
+  <div class="labo">
+    <section class="paillasse" aria-label="La paillasse">
+      <div class="conteur">
+        <div class="bulle"><p id="conteur"></p><button type="button" class="hp" id="hpConteur" aria-label="Écouter">🔊</button></div>
+        <div class="mimi" id="mimi" aria-hidden="true">
+          <span class="dit" id="mimiDit"></span>
+          <svg viewBox="0 0 64 64"><path d="M14 22 L18 6 L28 18 Z M50 22 L46 6 L36 18 Z" fill="#8e8aa6" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/><ellipse cx="32" cy="36" rx="22" ry="20" fill="#a8a3c2" stroke="#24182e" stroke-width="2"/><path d="M22 22 q4 3 0 6 M32 18 v7 M42 22 q-4 3 0 6" stroke="#7d7898" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="24" cy="36" rx="4" ry="5" fill="#f5e27a" stroke="#24182e" stroke-width="1.5"/><ellipse cx="40" cy="36" rx="4" ry="5" fill="#f5e27a" stroke="#24182e" stroke-width="1.5"/><ellipse cx="24" cy="37" rx="1.4" ry="3.4" fill="#24182e"/><ellipse cx="40" cy="37" rx="1.4" ry="3.4" fill="#24182e"/><path d="M29 44 h6 l-3 3 z" fill="#e88aa0" stroke="#24182e" stroke-width="1"/><path d="M32 47 q-3 4 -7 2 M32 47 q3 4 7 2" stroke="#24182e" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M8 42 l12 -1 M8 47 l12 -3 M56 42 l-12 -1 M56 47 l-12 -3" stroke="#24182e" stroke-width="1.2"/></svg>
+        </div>
+      </div>
+      <div class="scene" id="scene" aria-live="polite"></div>
+      <div class="outils" id="outils">
+        <button type="button" class="outil" data-outil="loupe"><span class="ic">🔍</span><span class="nm">La loupe</span><span class="sb">Comparer</span></button>
+        <button type="button" class="outil" data-outil="micro"><span class="ic">🔬</span><span class="nm">Microscope</span><span class="sb">Zoomer</span></button>
+        <button type="button" class="outil" data-outil="gouttes"><span class="ic">💧</span><span class="nm">Les gouttes</span><span class="sb">Tester</span></button>
+        <button type="button" class="outil gris" data-outil="couleurs"><span class="ic">🎨</span><span class="nm">Couleurs</span><span class="sb">Pour les liquides</span></button>
+      </div>
+    </section>
+
+    <aside class="fiche" aria-label="Fiche d'analyse">
+      <h2>Fiche d'analyse n° 1</h2>
+      <p class="ori">Un fil rouge, trouvé par le Pisteur, accroché au loquet de la fenêtre de la mairie.</p>
+      <canvas id="cvFiche"></canvas>
+      <div class="tampon" id="tampon">ANALYSÉ</div>
+      <svg class="patte" id="patte" viewBox="0 0 40 40" aria-hidden="true"><g fill="#6b5434"><ellipse cx="20" cy="26" rx="9" ry="8"/><ellipse cx="9" cy="15" rx="4" ry="5"/><ellipse cx="17" cy="9" rx="4" ry="5"/><ellipse cx="25" cy="9" rx="4" ry="5"/><ellipse cx="32" cy="15" rx="4" ry="5"/></g></svg>
+      <h3>Ce que j'ai vu</h3>
+      <ul class="obs" id="obs"></ul>
+      <h3>L'étiquette</h3>
+      <div class="etiquette">
+        <label>Un fil de…
+          <select id="selMat" disabled><option value="">?</option><option>laine tricotée</option><option>laine filée</option><option>coton</option><option>soie</option><option>crin de cheval</option><option>ficelle</option></select>
+          <span class="verrou" id="vMat">🔒 Regarde d'abord à la loupe.</span>
+        </label>
+        <label>…couvert de
+          <select id="selCouv" disabled><option value="">?</option><option>suie</option><option>farine</option><option>boue</option><option>poussière</option></select>
+          <span class="verrou" id="vCouv">🔒 Regarde d'abord au microscope.</span>
+        </label>
+        <button type="button" class="btn" id="bTampon" disabled>🖋️ Tamponner la fiche</button>
+        <p class="msg-fiche" id="msgFiche"></p>
+      </div>
+      <div id="resultat" hidden></div>
+    </aside>
+  </div>
+
+  <section class="plus-tard">
+    <h2>Plus tard, sur la même table</h2>
+    <div class="cartes-tard"><span>🐾 La touffe de poils</span><span>🪶 La grande plume noire</span><span>🌊 L'eau de la rivière</span><span>🧺 L'eau du lavoir</span><span>⚗️ Le reste de colorant</span><span>🏺 La poudre du pot noir</span><span>🪙 Les deux pièces d'or</span><span>… et tout le reste</span></div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(s){ return document.querySelector(s); };
+var reduit = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function dire(t){ try{ speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'fr-FR'; speechSynthesis.speak(u); }catch(e){} }
+
+/* ---------- Petits outils de dessin ---------- */
+function rng(seed){ var a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rgb(h){ h = h.replace('#',''); return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)]; }
+function mix(h1, h2, t){ var a = rgb(h1), b = rgb(h2); return 'rgb(' + a.map(function(v,i){ return Math.round(v + (b[i]-v)*t); }).join(',') + ')'; }
+function prep(cv){
+  var dpr = Math.min(window.devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
+  var w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
+  if(cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+  var ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx, w:w, h:h};
+}
+function blob(c, x, y, r, R, col){
+  c.fillStyle = col; c.beginPath();
+  for(var i=0;i<9;i++){ var a = i/9*Math.PI*2, rr = r*(.7 + R()*.5); var px = x + Math.cos(a)*rr, py = y + Math.sin(a)*rr; if(i) c.lineTo(px,py); else c.moveTo(px,py); }
+  c.closePath(); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(x - r*.3, y - r*.3, r*.25, 0, 6.283); c.fill();
+}
+function chemin(c, pts, off){ c.beginPath(); for(var i=0;i<pts.length;i++){ var q = pts[i], x = q.x + q.nx*off, y = q.y + q.ny*off; if(i) c.lineTo(x,y); else c.moveTo(x,y); } c.stroke(); }
+function normales(raw){
+  return raw.map(function(q,i){ var a = raw[Math.max(0,i-1)], b = raw[Math.min(raw.length-1,i+1)]; var dx = b[0]-a[0], dy = b[1]-a[1], L = Math.hypot(dx,dy) || 1;
+    return {x:q[0], y:q[1], nx:-dy/L, ny:dx/L, tx:dx/L, ty:dy/L}; });
+}
+
+/* Un fil vu à la loupe */
+function dessinerFil(ctx, w, h, p, o){
+  o = o || {}; var s = o.scale || 1, R = rng(o.seed || 1), t = p.thick*s;
+  ctx.fillStyle = o.fond || '#e9eef6'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = 'rgba(120,140,170,.18)'; ctx.lineWidth = 1;
+  for(var gx = 12; gx < w; gx += 24){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+  var amp = p.crimp*s, per = Math.max(22, p.thick*s*2.4), ph = R()*6.28, bend = (R()-.5)*h*.22, raw = [];
+  for(var x = -30; x <= w+30; x += 2){ raw.push([x, h/2 + amp*Math.sin(2*Math.PI*x/per + ph) + bend*Math.sin(Math.PI*(x+30)/(w+60))]); }
+  var pts = normales(raw); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  /* petits poils */
+  var nF = Math.round(p.fuzz * w * (s > 1.5 ? 1.5 : 1.1)); ctx.lineWidth = Math.max(.6, .45*s);
+  for(var i=0;i<nF;i++){
+    var q = pts[2 + Math.floor(R()*(pts.length-4))], sd = R() < .5 ? -1 : 1, x0 = q.x + q.nx*sd*t*.42, y0 = q.y + q.ny*sd*t*.42;
+    var len = (3 + R()*8) * s * (.6 + Math.min(p.fuzz,1.2)*.6), a = (R()-.5)*1.3, vx = q.nx*sd, vy = q.ny*sd;
+    var rx = vx*Math.cos(a) - vy*Math.sin(a), ry = vx*Math.sin(a) + vy*Math.cos(a);
+    ctx.strokeStyle = mix(p.base, '#ffffff', .22); ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(x0,y0);
+    ctx.quadraticCurveTo(x0 + rx*len*.5 + q.tx*len*.3*(R()-.5), y0 + ry*len*.5 + q.ty*len*.3*(R()-.5), x0 + rx*len, y0 + ry*len); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  if(p.strands){
+    for(var k=0;k<p.strands;k++){ var off = -t/2 + t*(k+.5)/p.strands; ctx.strokeStyle = p.base; ctx.lineWidth = t/p.strands*.82; chemin(ctx, pts, off);
+      ctx.strokeStyle = 'rgba(255,255,255,' + (.15 + p.sheen*.5) + ')'; ctx.lineWidth = Math.max(.8, t/p.strands*.18); chemin(ctx, pts, off - t/p.strands*.18); }
+  } else {
+    ctx.strokeStyle = p.base; ctx.lineWidth = t; chemin(ctx, pts, 0);
+    ctx.globalAlpha = .35; ctx.strokeStyle = mix(p.base, '#000000', .55); ctx.lineWidth = t*.32; chemin(ctx, pts, t*.3); ctx.globalAlpha = 1;
+    if(!p.single){
+      var pitch = Math.max(4, p.twist*s/p.plies), acc = 0; ctx.strokeStyle = mix(p.base, '#000000', .45); ctx.lineWidth = Math.max(1, 1.1*s); ctx.globalAlpha = p.twistAlpha == null ? .55 : p.twistAlpha;
+      for(var j=1;j<pts.length;j++){ acc += Math.hypot(pts[j].x - pts[j-1].x, pts[j].y - pts[j-1].y);
+        if(acc >= pitch){ acc = 0; var qq = pts[j], d = t*.45; ctx.beginPath(); ctx.moveTo(qq.x - qq.nx*t*.47 - qq.tx*d, qq.y - qq.ny*t*.47 - qq.ty*d);
+          ctx.quadraticCurveTo(qq.x - qq.tx*d*.15, qq.y - qq.ty*d*.15, qq.x + qq.nx*t*.47 + qq.tx*d, qq.y + qq.ny*t*.47 + qq.ty*d); ctx.stroke(); } }
+      ctx.globalAlpha = 1;
+    }
+    ctx.globalAlpha = .06 + p.sheen*.75; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, t*(.1 + p.sheen*.12)); chemin(ctx, pts, -t*.22); ctx.globalAlpha = 1;
+  }
+  if(o.suie){ for(var g=0; g<o.suie; g++){ var qs = pts[8 + Math.floor(R()*(pts.length-16))], of = (R()-.5)*t*.85; blob(ctx, qs.x + qs.nx*of, qs.y + qs.ny*of, (1.1 + R()*2.2)*s, R, '#17110f'); } }
+}
+function filSur(cv, p, o){ var r = prep(cv); dessinerFil(r.ctx, r.w, r.h, p, o); }
+
+/* ---------- L'analyse : une fiche de données (la même table servira pour tout) ---------- */
+var BASE = '#b3262f';
+var FILS = {
+  tricot:  {nom:'laine tricotée', p:{base:BASE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}},
+  filee:   {nom:'laine filée', p:{base:BASE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:0}, non:'Presque ! Mêmes petits poils, même torsion… mais il est tout droit. Le tien fait des vagues.'},
+  bordeaux:{nom:'laine tricotée bordeaux', p:{base:'#701a27', plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}, non:'Même fil, mêmes vagues… mais pas le même rouge : celui-ci est bordeaux, presque brun.'},
+  feutree: {nom:'laine feutrée', p:{base:BASE, plies:2, twist:16, thick:15, fuzz:1.6, sheen:0, crimp:2, twistAlpha:.1}, non:'Tellement de poils qu\'on ne voit plus les brins : c\'est de la laine feutrée.'},
+  coton:   {nom:'coton', p:{base:'#c22d38', plies:2, twist:9, thick:10, fuzz:.12, sheen:.12, crimp:0}, non:'Trop lisse : presque pas de petits poils. Le tien est tout duveteux.'},
+  soie:    {nom:'soie', p:{base:'#cc2a3c', plies:2, twist:22, thick:7, fuzz:0, sheen:1, crimp:0, twistAlpha:.25}, non:'Il brille comme un miroir : c\'est de la soie. Le tien est mat.'},
+  crin:    {nom:'crin de cheval', p:{base:'#931c26', single:true, thick:6, fuzz:0, sheen:.85, crimp:0}, non:'Un seul gros brin, sans torsion : c\'est du crin de cheval.'},
+  ficelle: {nom:'ficelle', p:{base:'#a3483d', plies:3, twist:30, thick:17, fuzz:.45, sheen:0, crimp:0}, non:'Trois brins épais et rêches : de la ficelle. Le tien est plus fin et plus doux.'},
+  broder:  {nom:'fil à broder', p:{base:'#d02f40', strands:6, thick:12, fuzz:0, sheen:.7, crimp:0}, non:'Six petits brins brillants côte à côte : du fil à broder.'}
+};
+var ANALYSE = {
+  bon:'tricot', tiroir:'Fils rouges',
+  liste:{facile:['tricot','coton','soie','crin','ficelle'], difficile:['tricot','filee','bordeaux','feutree','coton','soie','crin','ficelle','broder']},
+  grains:{facile:4, difficile:6}, poussieres:{facile:2, difficile:6},
+  bonne:['laine tricotée','suie']
+};
+var TXT = {
+  debut:'Le Pisteur t\'a confié un fil rouge, accroché au loquet de la mairie. Un fil… mais de quoi ? Fais-le parler avec tes outils.',
+  loupeIntro:'Ton tiroir est plein de fils rouges. Un seul est le jumeau du tien.',
+  loupe:'Mets un fil du tiroir à côté du tien. Regarde bien : la torsion, les petits poils, s\'il brille.',
+  loupeOk:'Même torsion, mêmes petits poils… et ces vagues, ce sont des mailles de tricot ! Ton fil vient d\'un tricot.',
+  plusCoeur:'Plus de cœur : attention, la prochaine erreur fait perdre !',
+  perdu:'Les fils se mélangent sous ta loupe… Raté ! Dans l\'enquête 1, on peut recommencer.',
+  microIntro:'Colle ton œil au microscope. Les petits secrets se cachent entre les fibres.',
+  micro:'Fais glisser pour te promener dans le fil. Des grains noirs se cachent partout : touche-les.',
+  grain:'Un grain noir et gras, qui tache les doigts…',
+  poussiere:'Ça, c\'est juste un grain de poussière. Rien à voir.',
+  microOk:'Noirs, gras, collés partout : comme ce qu\'on trouve dans les cheminées.',
+  x40:'Chaque poil de laine est couvert de minuscules écailles, comme un toit de tuiles. Le coton, lui, est tout lisse.',
+  x100:'Au plus près… Promène-toi : quelque chose bouge, là-bas, au bord ?',
+  mite:'Coucou ! Un minuscule acarien habitait dans ce fil. Il te fait signe de la patte.',
+  gouttesIntro:'Trois gouttes, pas une de plus. Choisis bien tes tests.',
+  couleurs:'Le jeu des couleurs sert pour les liquides et les taches : l\'eau de la rivière, l\'eau du lavoir… Pas pour un fil sec.',
+  etiquette:'Tu en sais assez. Écris l\'étiquette sur ta fiche, et tamponne-la !',
+  faux:'Hmm… ta fiche ne colle pas avec ce que tu as vu. Relis tes notes.',
+  fin:'Analysé ! Un fil de laine tricotée, couvert de suie, comme dans les cheminées : un morceau d\'écharpe, peut-être ?'
+};
+var GOUTTES = {
+  flamme:{e:'🔥', nm:'La flamme', txt:'Ça grésille, ça se recroqueville en petite boule noire… et ça sent le cheveu brûlé ! Une fibre qui vient d\'un animal.', obs:'🔥 Il sent le cheveu brûlé : une fibre d\'animal.'},
+  iode:{e:'🟠', nm:'L\'iode', txt:'La goutte reste orange. Rien ne change : pas de farine sur ce fil.', obs:'🟠 Iode : rien, pas de farine.'},
+  bicar:{e:'🧂', nm:'Bicarbonate', txt:'Le rouge ne bouge pas : ce n\'est pas une couleur de fleur.', obs:'🧂 Bicarbonate : le rouge tient.'},
+  eau:{e:'💧', nm:'L\'eau', txt:'La suie fait des traînées grises… mais le rouge ne coule pas : cette teinture tient bien.', obs:'💧 Eau : le rouge ne déteint pas.'}
+};
+
+/* ---------- État ---------- */
+var S;
+function neuf(niveau){
+  var R = rng(niveau === 'difficile' ? 41 : 17), l = ANALYSE.liste[niveau].slice();
+  for(var i = l.length-1; i > 0; i--){ var j = Math.floor(R()*(i+1)); var x = l[i]; l[i] = l[j]; l[j] = x; }
+  S = {niveau:niveau, vue:'debut', ordre:l, coeurs:3, choisi:null, barres:{}, loupeOk:false, microVu:false, microOk:false, x40:false, mite:false,
+       zoom:10, cx:500, cy:500, gouttes:3, tests:{}, derniere:null, obs:[], nouveaux:{}, fini:false};
+  genScenes();
+}
+
+/* ---------- Conteur et Mimi ---------- */
+function conteur(t){ $('#conteur').textContent = t; $('#hpConteur').dataset.t = t; }
+var mimiT;
+function mimi(t, secoue){
+  var d = $('#mimiDit'), m = $('#mimi'); d.textContent = t; d.classList.add('on');
+  if(secoue){ m.classList.remove('secoue'); void m.offsetWidth; m.classList.add('secoue'); }
+  clearTimeout(mimiT); mimiT = setTimeout(function(){ d.classList.remove('on'); }, 2200);
+}
+function noter(cle, t){ if(S.obs.some(function(o){ return o.k === cle; })) return; S.obs.push({k:cle, t:t}); S.nouveaux[cle] = true; rendFiche(); }
+
+/* ---------- La fiche ---------- */
+function rendFiche(){
+  var ul = $('#obs');
+  ul.innerHTML = S.obs.length ? S.obs.map(function(o){ return '<li' + (S.nouveaux[o.k] ? ' class="nouveau"' : '') + '>' + o.t + '</li>'; }).join('') : '<li class="rien">Rien encore…</li>';
+  S.nouveaux = {};
+  var sm = $('#selMat'), sc = $('#selCouv');
+  sm.disabled = !S.loupeOk || S.fini; $('#vMat').hidden = S.loupeOk;
+  sc.disabled = !S.microOk || S.fini; $('#vCouv').hidden = S.microOk;
+  $('#bTampon').disabled = S.fini || !sm.value || !sc.value;
+  var cv = $('#cvFiche'); filSur(cv, FILS.tricot.p, {scale:1, seed:7, suie:9, fond:'#efe2c2'});
+  majRond();
+}
+
+/* ---------- Le rond jaune ---------- */
+function majRond(){
+  document.querySelectorAll('.rond').forEach(function(e){ e.classList.remove('rond'); });
+  var cible = null;
+  if(S.fini) cible = null;
+  else if(S.vue.indexOf('Intro') > 0) cible = $('#bGo');
+  else if(!S.loupeOk) cible = S.vue === 'loupe' ? (S.choisi ? $('#bMeme') : null) : document.querySelector('[data-outil="loupe"]');
+  else if(!S.microOk) cible = S.vue === 'micro' ? null : document.querySelector('[data-outil="micro"]');
+  else if(!$('#selMat').value) cible = $('#selMat');
+  else if(!$('#selCouv').value) cible = $('#selCouv');
+  else cible = $('#bTampon');
+  if(cible) cible.classList.add('rond');
+}
+
+/* ---------- Les vues ---------- */
+function outilActif(o){ document.querySelectorAll('.outil').forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.outil === o)); }); }
+function marquerFaits(){
+  document.querySelector('[data-outil="loupe"]').classList.toggle('fait', S.loupeOk);
+  document.querySelector('[data-outil="micro"]').classList.toggle('fait', S.microOk);
+  document.querySelector('[data-outil="gouttes"]').classList.toggle('fait', S.gouttes < 3);
+}
+function intro(titre, pictos, txt, vue){
+  S.vue = vue; conteur(txt);
+  $('#scene').innerHTML = '<div class="intro"><h2>' + titre + '</h2><div class="pictos">' +
+    pictos.map(function(p){ return '<div class="picto"><span class="e">' + p[0] + '</span><span>' + p[1] + '</span></div>'; }).join('') +
+    '</div><button type="button" class="btn" id="bGo">C\'est parti !</button></div>';
+  majRond();
+}
+function vueDebut(){
+  S.vue = 'debut'; outilActif(''); conteur(TXT.debut);
+  $('#scene').innerHTML = '<div class="intro"><h2>Un fil rouge</h2><div class="comparer" style="grid-template-columns:1fr;width:100%"><figure><figcaption>Ton fil</figcaption><canvas id="cvDebut"></canvas></figure></div><p class="aide">Choisis un outil en bas pour commencer.</p></div>';
+  filSur($('#cvDebut'), FILS.tricot.p, {scale:2.2, seed:3, suie:12});
+  majRond();
+}
+
+/* La loupe */
+var PICT_LOUPE = [['🗄️','Prends un fil dans ton tiroir'],['🔍','Compare : torsion, petits poils, brillant'],['🧽','La saleté ne compte pas !']];
+function vueLoupe(){
+  if(!S.loupeOk && S.vue !== 'loupe' && !S.loupeVu){ S.loupeVu = true; outilActif('loupe'); return intro('🔍 La loupe', PICT_LOUPE, TXT.loupeIntro, 'loupeIntro'); }
+  S.vue = 'loupe'; outilActif('loupe'); conteur(S.loupeOk ? TXT.loupeOk : TXT.loupe);
+  var coeurs = '';
+  for(var i=0;i<3;i++) coeurs += i < S.coeurs ? '❤️' : '🖤';
+  $('#scene').innerHTML =
+    '<div class="ligne-haut"><span class="coeurs" aria-label="' + S.coeurs + ' cœurs">' + coeurs + '</span>' + (S.coeurs === 0 && !S.loupeOk ? '<span class="alerte">' + TXT.plusCoeur + '</span>' : '') + '</div>' +
+    '<div class="comparer"><figure><figcaption>Ton fil</figcaption><canvas id="cvPreuve"></canvas></figure>' +
+    '<figure><figcaption id="capEch">' + (S.choisi ? 'Échantillon : ' + FILS[S.choisi].nom : 'Échantillon') + '</figcaption><canvas id="cvEch"></canvas>' + (S.choisi ? '' : '<div class="vide">Choisis un fil dans le tiroir</div>') + '</figure></div>' +
+    '<div class="tiroir"><div class="tiroir-tete"><span>🗄️ Tiroir « ' + ANALYSE.tiroir + ' »</span><span>' + S.ordre.length + ' échantillons</span></div><div class="rangee" id="rangee">' +
+    S.ordre.map(function(id, n){ return '<button type="button" class="ech' + (S.barres[id] ? ' barre' : '') + '" data-ech="' + id + '" aria-pressed="' + (S.choisi === id) + '"' + (S.loupeOk ? ' disabled' : '') + '><canvas></canvas><span class="num">n° ' + (n+1) + '</span><span class="nm">' + FILS[id].nom + '</span></button>'; }).join('') +
+    '</div></div>' +
+    '<div class="actions">' + (S.loupeOk ? '<span class="retour oui">✅ Jumeau trouvé : l\'échantillon « laine tricotée ».</span>' : '<button type="button" class="btn" id="bMeme"' + (S.choisi ? '' : ' disabled') + '>C\'est le même !</button><span class="retour" id="retourLoupe"></span>') + '</div>';
+  requestAnimationFrame(function(){
+    filSur($('#cvPreuve'), FILS.tricot.p, {scale:2.2, seed:3, suie:12});
+    if(S.choisi) filSur($('#cvEch'), FILS[S.choisi].p, {scale:2.2, seed:11 + S.ordre.indexOf(S.choisi)}); else { var r = prep($('#cvEch')); r.ctx.fillStyle = '#e9eef6'; r.ctx.fillRect(0,0,r.w,r.h); }
+    document.querySelectorAll('.ech canvas').forEach(function(cv){ var id = cv.parentNode.dataset.ech; filSur(cv, FILS[id].p, {scale:.9, seed:31 + S.ordre.indexOf(id)}); });
+  });
+  majRond();
+}
+function choisirEch(id){ if(S.loupeOk) return; S.choisi = id; vueLoupe(); }
+function verifierLoupe(){
+  if(!S.choisi || S.loupeOk) return;
+  var r = $('#retourLoupe');
+  if(S.choisi === ANALYSE.bon){
+    S.loupeOk = true; noter('jumeau', '🔍 Son jumeau : l\'échantillon « laine tricotée ».'); noter('vagues', '🔍 Des vagues : des mailles de tricot.');
+    mimi('Mrrr !'); marquerFaits(); vueLoupe(); return;
+  }
+  if(S.coeurs === 0){ conteur(TXT.perdu); S.coeurs = 3; S.choisi = null; S.barres = {}; setTimeout(vueLoupe, 1600); r.className = 'retour non'; r.textContent = 'Raté…'; return; }
+  S.coeurs--; S.barres[S.choisi] = true; var non = FILS[S.choisi].non; S.choisi = null; vueLoupe();
+  var r2 = $('#retourLoupe'); r2.className = 'retour non'; r2.textContent = '✗ ' + non; conteur(non);
+}
+
+/* Le microscope */
+var MW = 1000, scenes = {}, SDPR = 1;
+function genScenes(){
+  SDPR = Math.min(window.devicePixelRatio || 1, 2); scenes = {};
+  [10,40,100].forEach(function(z){
+    var cv = document.createElement('canvas'); cv.width = MW*SDPR; cv.height = MW*SDPR; var c = cv.getContext('2d'); c.scale(SDPR, SDPR);
+    var R = rng(z*97 + (S.niveau === 'difficile' ? 7 : 3));
+    var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
+    var sc = {cv:cv, grains:[], poussieres:[]};
+    if(z === 10) scene10(c, R, sc); else if(z === 40) scene40(c, R, sc); else scene100(c, R, sc);
+    scenes[z] = sc;
+  });
+}
+function centre10(u){ return {x:40 + u*920, y:500 + 190*Math.sin(u*Math.PI*3) + 50*Math.sin(u*Math.PI*7)}; }
+function surFil10(u, off){ var p = centre10(u), q = centre10(Math.min(1, u + .004)); var dx = q.x - p.x, dy = q.y - p.y, L = Math.hypot(dx,dy) || 1; return {x:p.x - dy/L*off, y:p.y + dx/L*off}; }
+function scene10(c, R, sc){
+  var cols = ['#a3202a','#b8282f','#c4343a','#8f1b25','#cf4a4a'];
+  for(var i=0;i<80;i++){
+    var o = (R()-.5)*160, ph = R()*6.28, amp = 8 + R()*26; c.strokeStyle = cols[Math.floor(R()*5)]; c.lineWidth = 1.5 + R()*2.5; c.globalAlpha = .85; c.beginPath();
+    for(var k=0;k<=220;k++){ var u = k/220, p = surFil10(u, o + amp*Math.sin(u*42 + ph)); if(k) c.lineTo(p.x,p.y); else c.moveTo(p.x,p.y); } c.stroke();
+  }
+  c.globalAlpha = .55; c.lineWidth = 1.2; c.strokeStyle = '#c74a4a';
+  for(var j=0;j<110;j++){ var u2 = R(), base = surFil10(u2, (R() < .5 ? -1 : 1)*78), a = R()*6.28, len = 25 + R()*60;
+    c.beginPath(); c.moveTo(base.x, base.y); c.quadraticCurveTo(base.x + Math.cos(a)*len*.5 + (R()-.5)*20, base.y + Math.sin(a)*len*.5 + (R()-.5)*20, base.x + Math.cos(a)*len, base.y + Math.sin(a)*len); c.stroke(); }
+  c.globalAlpha = 1;
+  var n = ANALYSE.grains[S.niveau];
+  for(var g=0; g<n; g++){ var uu = .07 + .86*(g + .2 + R()*.6)/n, pp = surFil10(uu, (R()-.5)*120), r = 9 + R()*7; blob(c, pp.x, pp.y, r, R, '#15100e'); sc.grains.push({x:pp.x, y:pp.y, r:r, ok:false}); }
+  var m = ANALYSE.poussieres[S.niveau];
+  for(var d=0; d<m; d++){ var px = 70 + R()*860, py = 140 + R()*720, rr = 6 + R()*6; blob(c, px, py, rr, R, '#cdb98f'); sc.poussieres.push({x:px, y:py, r:rr}); }
+}
+function fibre(c, pt, w, col, pas){
+  var raw = []; for(var k=0;k<=160;k++) { var p = pt(k/160); raw.push([p.x, p.y]); } var pts = normales(raw);
+  c.lineCap = 'round'; c.strokeStyle = col; c.lineWidth = w; chemin(c, pts, 0);
+  c.strokeStyle = 'rgba(0,0,0,.2)'; c.lineWidth = w*.25; chemin(c, pts, w*.3);
+  c.strokeStyle = 'rgba(70,10,18,.5)'; c.lineWidth = Math.max(1.4, w*.05);
+  var acc = 0;
+  for(var i=1;i<pts.length;i++){ acc += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+    if(acc >= pas){ acc = 0; var q = pts[i], h = w*.47; c.beginPath(); c.moveTo(q.x + q.nx*h, q.y + q.ny*h); c.quadraticCurveTo(q.x + q.tx*w*.42, q.y + q.ty*w*.42, q.x - q.nx*h, q.y - q.ny*h); c.stroke(); } }
+  c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = w*.13; chemin(c, pts, -w*.24);
+}
+function scene40(c, R, sc){
+  var cols = ['#a3202a','#b8282f','#c4343a','#9a1d27'];
+  for(var i=0;i<9;i++){ (function(y0, a1, a2, w, col){ fibre(c, function(u){ return {x:-60 + u*1120, y:y0 + a1*Math.sin(u*Math.PI) + a2*Math.sin(u*Math.PI*2)}; }, w, col, 15); })(70 + i*105 + (R()-.5)*40, (R()-.5)*220, (R()-.5)*90, 22 + R()*14, cols[i%4]); }
+  for(var k=0;k<2;k++) blob(c, 260 + R()*480, 220 + R()*560, 30 + R()*14, R, '#15100e');
+}
+function scene100(c, R, sc){
+  fibre(c, function(u){ return {x:-80 + u*1160, y:330 + 120*Math.sin(u*Math.PI)}; }, 150, '#b8282f', 46);
+  fibre(c, function(u){ return {x:-80 + u*1160, y:720 - 90*Math.sin(u*Math.PI*1.3)}; }, 120, '#a3202a', 40);
+  fibre(c, function(u){ return {x:200 + u*500, y:-80 + u*1160}; }, 110, '#c4343a', 40);
+  blob(c, 640, 520, 60, R, '#15100e');
+  sc.mite = {x:880, y:130};
+}
+function dessinerMite(ctx, x, y, t){
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = '#6b4f3a'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  for(var i=0;i<4;i++){ var a = -0.9 + i*0.6, w = (i === 0) ? Math.sin(t/180)*0.5 : 0;
+    ctx.beginPath(); ctx.moveTo(-8, -4 + i*4); ctx.lineTo(-26 - i*2, -16 + i*10 + w*20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(8, -4 + i*4); ctx.lineTo(26 + i*2, -16 + i*10); ctx.stroke(); }
+  ctx.fillStyle = '#efd9bf'; ctx.strokeStyle = '#6b4f3a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 4, 15, 19, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, -16, 8, 7, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#24182e'; ctx.beginPath(); ctx.arc(-3, -17, 1.8, 0, 6.283); ctx.arc(3, -17, 1.8, 0, 6.283); ctx.fill();
+  ctx.restore();
+}
+var PICT_MICRO = [['🖐️','Fais glisser pour te promener'],['👆','Touche ce qui t\'intrigue'],['🔎','Trois crans : ×10, ×40, ×100']];
+var boucle = 0;
+function vueMicro(){
+  if(!S.microVu){ S.microVu = true; outilActif('micro'); return intro('🔬 Le microscope', PICT_MICRO, TXT.microIntro, 'microIntro'); }
+  S.vue = 'micro'; outilActif('micro');
+  if(!S.microOk) conteur(TXT.micro);
+  var n = ANALYSE.grains[S.niveau], trouves = scenes[10].grains.filter(function(g){ return g.ok; }).length;
+  $('#scene').innerHTML = '<div class="micro"><div class="zooms" role="group" aria-label="Zoom">' + [10,40,100].map(function(z){ return '<button type="button" data-zoom="' + z + '" aria-pressed="' + (S.zoom === z) + '">×' + z + '</button>'; }).join('') +
+    '</div><div class="lentille-cadre"><canvas id="lentille" aria-label="Vue au microscope"></canvas></div>' +
+    '<div class="compteur" id="cpt">Grains noirs : ' + trouves + ' / ' + n + (S.microOk ? ' ✅' : '') + '</div><p class="aide">Fais glisser pour te promener. Touche ce qui t\'intrigue.</p></div>';
+  brancherLentille(); requestAnimationFrame(rendLentille); majRond(); lancerBoucle();
+}
+function lancerBoucle(){ cancelAnimationFrame(boucle); if(S.vue === 'micro' && S.zoom === 100 && !reduit){ var f = function(){ rendLentille(); boucle = requestAnimationFrame(f); }; boucle = requestAnimationFrame(f); } }
+function rendLentille(){
+  var cv = $('#lentille'); if(!cv) return; var r = prep(cv), ctx = r.ctx, T = r.w, half = T/2, sc = scenes[S.zoom];
+  S.cx = Math.min(Math.max(S.cx, half), MW - half); S.cy = Math.min(Math.max(S.cy, half), MW - half);
+  var sx = S.cx - half, sy = S.cy - half;
+  ctx.clearRect(0,0,T,T); ctx.save(); ctx.beginPath(); ctx.arc(half, half, half, 0, 6.283); ctx.clip();
+  ctx.drawImage(sc.cv, sx*SDPR, sy*SDPR, T*SDPR, T*SDPR, 0, 0, T, T);
+  if(S.zoom === 10) sc.grains.forEach(function(g){ if(g.ok){ ctx.strokeStyle = '#f5b945'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(g.x - sx, g.y - sy, g.r + 10, 0, 6.283); ctx.stroke(); } });
+  if(S.zoom === 100) dessinerMite(ctx, sc.mite.x - sx, sc.mite.y - sy, performance.now());
+  var vg = ctx.createRadialGradient(half, half, half*.62, half, half, half); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.6)'); ctx.fillStyle = vg; ctx.fillRect(0,0,T,T);
+  ctx.restore();
+}
+function brancherLentille(){
+  var cv = $('#lentille'), glisse = null;
+  cv.addEventListener('pointerdown', function(e){ cv.setPointerCapture(e.pointerId); glisse = {x:e.clientX, y:e.clientY, cx:S.cx, cy:S.cy, bouge:false}; cv.style.cursor = 'grabbing'; });
+  cv.addEventListener('pointermove', function(e){ if(!glisse) return; var dx = e.clientX - glisse.x, dy = e.clientY - glisse.y; if(Math.hypot(dx,dy) > 7) glisse.bouge = true; S.cx = glisse.cx - dx; S.cy = glisse.cy - dy; rendLentille(); });
+  cv.addEventListener('pointerup', function(e){ if(glisse && !glisse.bouge){ var r = cv.getBoundingClientRect(); toucherLentille(e.clientX - r.left, e.clientY - r.top, r.width); } glisse = null; cv.style.cursor = 'grab'; });
+  cv.addEventListener('pointercancel', function(){ glisse = null; });
+}
+function toucherLentille(lx, ly, T){
+  var half = T/2; if(Math.hypot(lx - half, ly - half) > half) return;
+  var wx = S.cx - half + lx, wy = S.cy - half + ly, sc = scenes[S.zoom];
+  if(S.zoom === 10){
+    var g = sc.grains.filter(function(g){ return !g.ok && Math.hypot(g.x - wx, g.y - wy) < g.r + 16; })[0];
+    if(g){ g.ok = true; var n = sc.grains.filter(function(x){ return x.ok; }).length, tot = sc.grains.length;
+      $('#cpt').textContent = 'Grains noirs : ' + n + ' / ' + tot + (n === tot ? ' ✅' : '');
+      if(n === 1) noter('grains', '🔬 Des grains noirs et gras, collés au fil.');
+      if(n === tot && !S.microOk){ S.microOk = true; conteur(TXT.microOk); noter('cheminee', '🔬 Comme ce qu\'on trouve dans les cheminées.'); mimi('Miaou ?'); marquerFaits(); rendFiche(); setTimeout(function(){ if(!S.fini && S.vue === 'micro') conteur(TXT.etiquette); }, 3200); }
+      else conteur(TXT.grain);
+      rendLentille(); return; }
+    if(sc.poussieres.some(function(p){ return Math.hypot(p.x - wx, p.y - wy) < p.r + 12; })){ conteur(TXT.poussiere); return; }
+  }
+  if(S.zoom === 100 && Math.hypot(sc.mite.x - wx, sc.mite.y - wy) < 40 && !S.mite){ S.mite = true; conteur(TXT.mite); noter('mite', '🎉 Surprise : un acarien qui fait coucou !'); mimi('Miam ?'); }
+}
+function changerZoom(z){
+  if(z === S.zoom) return; var rx = S.cx/MW, ry = S.cy/MW; S.zoom = z; S.cx = rx*MW; S.cy = ry*MW;
+  document.querySelectorAll('[data-zoom]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.dataset.zoom === z)); });
+  var cv = $('#lentille'); if(cv && !reduit){ cv.classList.add('flou'); setTimeout(function(){ cv.classList.remove('flou'); }, 200); }
+  if(z === 40){ conteur(TXT.x40); if(!S.x40){ S.x40 = true; noter('ecailles', '🔬 ×40 : des écailles, comme un toit de tuiles.'); } }
+  if(z === 100 && !S.mite) conteur(TXT.x100);
+  if(z === 10) conteur(S.microOk ? TXT.microOk : TXT.micro);
+  rendLentille(); lancerBoucle();
+}
+
+/* Les gouttes */
+var PICT_GOUTTES = [['💧','Trois gouttes en tout'],['🧪','Chaque test dit quelque chose… ou rien'],['📝','Tout va sur ta fiche']];
+function vueGouttes(){
+  if(!S.gouttesVu){ S.gouttesVu = true; outilActif('gouttes'); return intro('💧 Les gouttes', PICT_GOUTTES, TXT.gouttesIntro, 'gouttesIntro'); }
+  S.vue = 'gouttes'; outilActif('gouttes'); conteur(S.derniere ? GOUTTES[S.derniere].txt : TXT.gouttesIntro);
+  var res = ''; for(var i=0;i<3;i++) res += i < S.gouttes ? '💧' : '◌';
+  $('#scene').innerHTML = '<div class="gouttes"><div class="reserve" aria-label="' + S.gouttes + ' gouttes">Gouttes : ' + res + '</div>' +
+    '<div class="coupelle-cadre"><canvas id="coupelle"></canvas></div><div class="reactifs">' +
+    Object.keys(GOUTTES).map(function(k){ var g = GOUTTES[k]; return '<button type="button" class="reactif" data-test="' + k + '"' + (S.tests[k] || !S.gouttes ? ' disabled' : '') + '><span class="e">' + g.e + '</span><span class="nm">' + g.nm + '</span></button>'; }).join('') + '</div></div>';
+  requestAnimationFrame(function(){ coupelle(S.derniere, 1); });
+  majRond();
+}
+function coupelle(test, p){
+  var cv = $('#coupelle'); if(!cv) return; var r = prep(cv), c = r.ctx, w = r.w, h = r.h;
+  c.fillStyle = '#d9dde8'; c.fillRect(0,0,w,h);
+  var cx = w/2, cy = h*.58, rx = Math.min(w*.4, 190), ry = rx*.42;
+  c.fillStyle = 'rgba(0,0,0,.15)'; c.beginPath(); c.ellipse(cx, cy + 10, rx + 6, ry + 6, 0, 0, 6.283); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.75)'; c.strokeStyle = '#8d97ae'; c.lineWidth = 3; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 6.283); c.fill(); c.stroke();
+  if(test && test !== 'flamme'){ var q = Math.max(0, (p - .3)/.7), col = {iode:'rgba(205,120,30,.4)', bicar:'rgba(255,255,255,.65)', eau:'rgba(130,190,255,.35)'}[test];
+    if(p < .3){ c.fillStyle = col.replace(/[\d.]+\)$/, '.9)'); c.beginPath(); c.arc(cx + 10, cy - 90 + p/.3*80, 7, 0, 6.283); c.fill(); }
+    else { c.fillStyle = col; c.beginPath(); c.ellipse(cx + 10, cy, rx*.55*q + 6, ry*.55*q + 3, 0, 0, 6.283); c.fill(); }
+    if(test === 'eau' && q > 0){ c.strokeStyle = 'rgba(60,60,70,.45)'; c.lineWidth = 2; for(var s=0;s<7;s++){ var a = s/7*6.283; c.beginPath(); c.moveTo(cx + 10, cy); c.lineTo(cx + 10 + Math.cos(a)*rx*.45*q, cy + Math.sin(a)*ry*.45*q); c.stroke(); } }
+  }
+  var lg = rx*1.1, x0 = cx - lg/2, x1 = cx + lg/2;
+  if(test === 'flamme') x1 = cx + lg/2 - lg*.38*p;
+  c.lineCap = 'round'; c.strokeStyle = BASE; c.lineWidth = 11; c.beginPath(); c.moveTo(x0, cy); c.bezierCurveTo(x0 + (x1-x0)*.3, cy - 14, x0 + (x1-x0)*.6, cy + 14, x1, cy); c.stroke();
+  c.strokeStyle = 'rgba(40,0,5,.45)'; c.lineWidth = 1.5; for(var t=x0+6; t<x1-4; t+=7){ c.beginPath(); c.moveTo(t - 3, cy + 5); c.lineTo(t + 3, cy - 5); c.stroke(); }
+  if(test === 'flamme'){
+    c.fillStyle = '#1a1210'; c.beginPath(); c.arc(x1 + 2, cy, 3 + 5*p, 0, 6.283); c.fill();
+    if(p < .9){ c.fillStyle = '#ffb02e'; c.beginPath(); c.moveTo(x1 + 6, cy - 4); c.quadraticCurveTo(x1 + 22, cy - 22, x1 + 10, cy - 40); c.quadraticCurveTo(x1 + 2, cy - 22, x1 + 6, cy - 4); c.fill();
+      c.fillStyle = '#fff1a8'; c.beginPath(); c.moveTo(x1 + 8, cy - 8); c.quadraticCurveTo(x1 + 15, cy - 18, x1 + 10, cy - 28); c.quadraticCurveTo(x1 + 6, cy - 18, x1 + 8, cy - 8); c.fill(); }
+    for(var f=0; f<5; f++){ var yy = cy - 30 - p*70 - f*16; c.fillStyle = 'rgba(110,110,120,' + Math.max(0, .45*(1 - p*.6) - f*.05) + ')'; c.beginPath(); c.arc(x1 + 8 + Math.sin(f + p*5)*8, yy, 8 + f*3, 0, 6.283); c.fill(); }
+  }
+}
+function tester(k){
+  if(S.tests[k] || !S.gouttes) return; S.tests[k] = true; S.gouttes--; S.derniere = k; vueGouttes();
+  document.querySelectorAll('.reactif').forEach(function(b){ b.disabled = true; });
+  var t0 = performance.now(), dur = reduit ? 1 : 1700;
+  (function f(now){ var p = Math.min(1, (now - t0)/dur); coupelle(k, p); if(p < 1) requestAnimationFrame(f); else fini(); })(t0);
+  if(k === 'flamme') setTimeout(function(){ mimi('Atchoum !', true); }, reduit ? 0 : 700);
+  function fini(){ conteur(GOUTTES[k].txt); noter('g-' + k, GOUTTES[k].obs); marquerFaits(); vueGouttes(); }
+}
+
+/* Les couleurs : pas pour ce fil */
+function vueCouleurs(){ conteur(TXT.couleurs); mimi('Mrr ?'); }
+
+/* ---------- La fiche : l'étiquette et le tampon ---------- */
+function tamponner(){
+  var m = $('#selMat').value, c = $('#selCouv').value;
+  if(m !== ANALYSE.bonne[0] || c !== ANALYSE.bonne[1]){ $('#msgFiche').textContent = TXT.faux; conteur(TXT.faux); return; }
+  S.fini = true; $('#msgFiche').textContent = ''; $('#tampon').classList.add('on'); setTimeout(function(){ $('#patte').classList.add('on'); }, reduit ? 0 : 500);
+  conteur(TXT.fin); mimi('Mrrraou !');
+  var res = $('#resultat'); res.hidden = false;
+  res.innerHTML = '<div class="resultat"><strong>Donne ce code au Barde 🎻</strong><div class="code" aria-label="Code : cloche, étoile, chat"><span>🔔</span><span>⭐</span><span>🐱</span></div>' +
+    '<p class="petit">Il le notera sur l\'habitant qui va avec. (Code d\'exemple : les vrais codes de l\'enquête 1 restent ceux du jeu.)</p>' +
+    '<p class="petit">🗄️ Ton fil rejoint ton armoire : tiroir « Fils rouges », ' + (S.ordre.length + 1) + ' échantillons. Il pourra servir de comparaison plus tard.</p>' +
+    '<button type="button" class="btn second" id="bRejouer">🔁 Rejouer la maquette</button></div>';
+  rendFiche();
+}
+
+/* ---------- Branchements ---------- */
+document.addEventListener('click', function(e){
+  var b;
+  if((b = e.target.closest('#hpConteur'))) return dire(b.dataset.t || '');
+  if((b = e.target.closest('[data-outil]'))){ var o = b.dataset.outil; if(o === 'loupe') vueLoupe(); else if(o === 'micro') vueMicro(); else if(o === 'gouttes') vueGouttes(); else vueCouleurs(); return; }
+  if((b = e.target.closest('#bGo'))){ if(S.vue === 'loupeIntro'){ S.vue = 'x'; vueLoupe(); } else if(S.vue === 'microIntro') vueMicro(); else if(S.vue === 'gouttesIntro') vueGouttes(); return; }
+  if((b = e.target.closest('[data-ech]'))) return choisirEch(b.dataset.ech);
+  if(e.target.closest('#bMeme')) return verifierLoupe();
+  if((b = e.target.closest('[data-zoom]'))) return changerZoom(+b.dataset.zoom);
+  if((b = e.target.closest('[data-test]'))) return tester(b.dataset.test);
+  if(e.target.closest('#bTampon')) return tamponner();
+  if(e.target.closest('#bRejouer')) return demarrer(S.niveau);
+  if((b = e.target.closest('#nvF, #nvD'))) return demarrer(b.id === 'nvF' ? 'facile' : 'difficile');
+});
+$('#selMat').addEventListener('change', function(){ $('#msgFiche').textContent = ''; rendFiche(); });
+$('#selCouv').addEventListener('change', function(){ $('#msgFiche').textContent = ''; rendFiche(); });
+var rz; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(function(){
+  if(S.vue === 'loupe') vueLoupe(); else if(S.vue === 'micro') rendLentille(); else if(S.vue === 'gouttes') coupelle(S.derniere, 1); else if(S.vue === 'debut') vueDebut(); rendFiche(); }, 150); });
+
+function demarrer(niveau){
+  neuf(niveau);
+  $('#nvF').setAttribute('aria-pressed', String(niveau === 'facile')); $('#nvD').setAttribute('aria-pressed', String(niveau === 'difficile'));
+  $('#selMat').value = ''; $('#selCouv').value = ''; $('#msgFiche').textContent = '';
+  $('#tampon').classList.remove('on'); $('#patte').classList.remove('on'); $('#resultat').hidden = true; $('#resultat').innerHTML = '';
+  document.querySelectorAll('.outil').forEach(function(b){ b.classList.remove('fait'); });
+  vueDebut(); rendFiche();
+}
+demarrer('facile');
+window.__labo = {etat:function(){ return S; }, scenes:function(){ return scenes; }, rendre:function(){ rendLentille(); }};
+})();
+</script>
