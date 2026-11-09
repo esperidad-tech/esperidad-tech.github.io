@@ -69,7 +69,8 @@ function Moteur(ctx, opt){
 
   /* ---------- la sortie : bruitages, musique, deux salles de réverbération, volume, compresseur ---------- */
   A.volume = ctx.createGain(); A.volume.gain.value = opt.volume == null ? .8 : opt.volume;
-  if(opt.brut) A.volume.connect(ctx.destination);
+  if(opt.sortie) A.volume.connect(opt.sortie);            /* branché dans la chaîne d'un autre (le jeu) */
+  else if(opt.brut) A.volume.connect(ctx.destination);
   else {
     var comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 5; comp.attack.value = .003; comp.release.value = .18;
@@ -246,7 +247,9 @@ function Moteur(ctx, opt){
     s.buffer = A[o.coul || 'blanc']; s.loop = true;
     if(o.vit) s.playbackRate.value = o.vit;
     A.env(amp.gain, t, env, o.g == null ? .3 : o.g);
-    var n = A.chaine(t, s, filtresRaccourcis(o));
+    var n0 = s;
+    if(o.sat){ var w0 = A.sature(o.sat), pg0 = g(o.pre || 1); s.connect(pg0); pg0.connect(w0); n0 = w0; }
+    var n = A.chaine(t, n0, filtresRaccourcis(o));
     if(o.trem){
       var tr = g(1 - o.trem[1] / 2), lfo = ctx.createOscillator(), lg = g(o.trem[1] / 2);
       lfo.frequency.value = o.trem[0]; lfo.connect(lg); lg.connect(tr.gain); lfo.start(t); lfo.stop(fin + .05);
@@ -350,9 +353,10 @@ function Moteur(ctx, opt){
     toux:     [[0, 1], [.3, .8], [1, .6]]
   };
   A.cri = function(t, o, dest){
-    var d = o.d || .15, f0 = (o.f || 2300) * (o.h || 1), pts = typeof o.forme === 'string' ? A.FORMES[o.forme] : (o.forme || A.FORMES.iik);
+    var V = A.voix || {};
+    var d = (o.d || .15) * (V.long || 1), f0 = (o.f || 2300) * (o.h || 1) * (V.h || 1), pts = typeof o.forme === 'string' ? A.FORMES[o.forme] : (o.forme || A.FORMES.iik);
     pts = pts.map(function(p, i){ return [p[0], p[1] * (i && !o.fixe ? hasard(.95, 1.05) : 1)]; });   /* jamais deux fois tout à fait le même */
-    var c = A.courbe(pts, d, f0), fm = f0 * .95, grain = o.grain == null ? .5 : o.grain, rauque = o.rauque || 0, gv = o.g == null ? .3 : o.g;
+    var c = A.courbe(pts, d, f0), fm = f0 * .95, grain = Math.min(1, (o.grain == null ? .5 : o.grain) + (V.grain || 0)), rauque = Math.min(1, (o.rauque || 0) + (V.rauque || 0)), gv = o.g == null ? .3 : o.g;
     var a = o.a || .012, fin = t + d;
     var env = o.env || [[0, 0], [a, 1], [d * .55, .78], [d, 0]];
     var x = ctx.createOscillator(); x.setPeriodicWave(vagueCri);

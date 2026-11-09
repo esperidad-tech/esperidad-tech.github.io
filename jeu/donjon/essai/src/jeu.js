@@ -13,6 +13,11 @@ function attendre(ms){ return new Promise(function(ok){ setTimeout(ok, ms / SALL
 function choix(t){ return t[Math.floor(R() * t.length) % t.length]; }
 var Son = SALLE.Son, Fx = SALLE.Fx;
 function son(){ Son.jouer.apply(null, arguments); }
+/* un son de l'atelier (une version tirée au hasard parmi celles que Romain a gardées) ; sinon, l'ancien petit bruit */
+function bruit(id, o, ancien){ var r = Son.bruitage ? Son.bruitage(id, o) : null; if(!r && ancien) son.apply(null, ancien); return r; }
+/* le Pisteur (module) lâche la corde 1,32 s après le début du tir ; sa lame touche 0,70 s après le début du coup ;
+   le rat qui glisse sur l'huile retombe sur le dos 1,54 s après le début */
+var LACHER = 1.32, LAME = .70, CULBUTE = 1.54;
 
 /* les apparences par défaut des héros (Persos.defaut du jeu), pour les modules d'animation */
 var PE = {p1:['#fff1e6', '#f7caa6', '#e8ad89', '#ff8f8f'], p4:['#eec899', '#c7935c', '#a77441', '#e4685a'], p5:['#d29d6f', '#a06840', '#80502d', '#d65a50']};
@@ -171,6 +176,7 @@ function ecranSac(){
     : 'L\'Alchimiste vide son sac sur la table. Les mêmes recettes, ou d\'autres ? Trois, pas une de plus.';
   s.innerHTML = '<img class="fond" src="' + URL_IMG.decor + '" alt=""><div class="voile"></div>' +
     '<h1>Le sac d\'alchimiste</h1>' +
+    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
     '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
     '<div class="alchi"><img src="' + URL_IMG['heros-alchimiste'] + '" alt=""></div>' +
     '<div class="sac-poche"><b>Dans le sac</b><div class="sac-cases"></div></div>' +
@@ -183,6 +189,8 @@ function ecranSac(){
     '<button class="aller" data-act="descendre" disabled>Descendre ⬇</button>';
   jeu.appendChild(s);
   bulleTxt = q('#sac .bulle .txt');
+  majBoutonSon();
+  Son.musique('explo');        /* elle démarre au premier toucher (le navigateur l'exige) */
   conte(phrase);
   if(E.sacAvant) E.sac = E.sacAvant.slice();
   majSac();
@@ -223,7 +231,9 @@ function dispo(){ return ORDRE.filter(function(h){ return !E.h[h].sol && !E.h[h]
 
 async function debutCombat(){
   E.sacAvant = E.sac.slice();
+  E.ratsVaincus = [false, false, false];     /* la sauvegarde, c'est l'entrée : les trois rats sont là, en pleine forme */
   E.tour = 0; E.mode = 'entree'; E.sel = null; E.geste = null; E.occupe = true;
+  Son.musique('combat');
   E.h = {};
   ORDRE.forEach(function(h){ E.h[h] = {pv:HER[h].pv, sol:false, joue:false, bouclier:false, dome:null}; });
   E.r = [0, 1, 2].map(function(i){ return {i:i, pv:RAT_PV, mort:E.ratsVaincus[i], ouvert:false, comment:'', enrage:false, brule:false, colle:false, vise:null, flaque:null}; });
@@ -242,6 +252,8 @@ async function debutCombat(){
     return attendre(k * 210).then(function(){ q('.r-' + r.i).style.visibility = 'visible'; return A.r[r.i].entrer(); })
       .then(function(){ return A.r[r.i].yeux('jaune'); }).then(function(){ return A.r[r.i].attendre(); });
   }));
+  await attendre(250);
+  v.forEach(function(r){ r.repos = pointTete(r.i); });     /* la tête au repos : les badges suivront ses mouvements à partir de là */
   son('couine', 0, .9, 1.4);
   await attendre(350);
   /* ensuite seulement : le conteur parle et la bande s'ouvre */
@@ -262,7 +274,7 @@ function construireCombat(){
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + URL_IMG.decor + '" alt=""><div id="sol-fx"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>Salle des rats</b><span id="tour-nom"></span></div>' +
     '<div class="bulle"><span class="txt"></span><button class="lire" data-act="lire-bulle" aria-label="Écouter">🔊</button></div>' +
-    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les bruitages"></button>' +
+    '<button id="bruitages" class="sombre rond" data-act="bruitages" aria-label="Couper ou remettre les sons et la musique"></button>' +
     '<button id="fuite" class="sombre" data-act="fuite">🏃 Fuite !</button></div>' +
     '<div id="bande"></div><div id="ecran-fx"></div><div id="fx-haut"></div>';
   jeu.appendChild(c);
@@ -317,10 +329,46 @@ function construireCombat(){
     hud.appendChild(pv);
   });
   majBarres();
+  suivreBadges();
 }
 function slotH(h){ return q('.h-' + h); }
+
+/* ---------- les badges suivent le rat (la cible, la flamme, la rage, la colle) ----------
+   Le module dessine le rat en pièces articulées : à chaque image, on lit où sont son dos et le haut de sa tête
+   (quand il se dresse, bondit pour mordre ou tombe sur le dos), et on déplace ses badges d'autant :
+   de côté comme le dos (sur le dos, la tête part de l'autre côté, vers le voisin), en hauteur comme la tête. */
+function pointSvg(rr, nom, x, y){   /* un point du dessin, en pixels de la boîte du rat (tous les mouvements compris, même le bond) */
+  var p = rr.svg.createSVGPoint(); p.x = x; p.y = y;
+  return p.matrixTransform(rr.A[nom].getCTM());
+}
+function pointTete(i){
+  var rr = A.r[i] && A.r[i]._rat;
+  if(!rr || !rr.svg || !rr.A || !rr.A.tete || !rr.A.dos) return null;
+  try{
+    var pd = pointSvg(rr, 'dos', 330, 300), pt = pointSvg(rr, 'tete', 150, 226), c = cadreModule(i);
+    return {x:c.x + pd.x, y:c.y + pt.y};
+  }catch(e){ return null; }
+}
+var suiviId = 0;
+function suivreBadges(){
+  var mon = ++suiviId, lisse = {};
+  function pas(){
+    if(mon !== suiviId || E.ecran !== 'combat') return;
+    E.r.forEach(function(r){
+      var b = q('#badges-' + r.i);
+      if(!b || r.mort || !r.repos) return;
+      var p = pointTete(r.i); if(!p) return;
+      var l = lisse[r.i] || (lisse[r.i] = {x:0, y:0});
+      l.x += (p.x - r.repos.x - l.x) * .5; l.y += (p.y - r.repos.y - l.y) * .5;
+      var dy = Math.max(l.y, 92 - (rTop(r.i) - 40));                   /* jamais sous la bande du haut */
+      b.style.transform = 'translate(' + l.x.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) translateX(-50%)';
+    });
+    requestAnimationFrame(pas);
+  }
+  requestAnimationFrame(pas);
+}
 function slotR(r){ return q('.r-' + r.i); }
-function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }
+function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }   /* coupe tout : bruitages et musique */
 
 function majBarres(){
   ORDRE.forEach(function(h){
@@ -582,7 +630,7 @@ async function rune(r){
   Fx.eclat(to.x, to.y, 260, 'radial-gradient(closest-side,#fff,rgba(191,248,255,.9) 30%,rgba(63,208,255,.4) 60%,rgba(63,208,255,0))', 600);
   Fx.etincelles(to.x, to.y, 14, ['#ffffff', '#bff8ff', '#8ff3ff']);
   son('magie', .05);
-  if(r.ouvert){ conte('Ce rat est déjà dressé, ébloui comme une chouette en plein midi.'); return attendre(600); }
+  if(r.ouvert){ son('couine', 0, 1.1, 1.4, r.enrage); conte('Ce rat est déjà dressé, ébloui comme une chouette en plein midi.'); return attendre(600); }
   await ouvrir(r, 'rune');
   conte('La rune éclate de lumière : le rat se dresse, le ventre à l\'air !');
   return attendre(550);
@@ -590,7 +638,8 @@ async function rune(r){
 async function ouvrir(r, comment){
   r.ouvert = true; r.comment = comment;
   majScene();
-  son('couine', 0, 1.3);
+  if(comment === 'huile') bruit('ratHuile', {cale:CULBUTE, enrage:r.enrage}, ['couine', 0, 1.3]);
+  else bruit('ratLumiere', {enrage:r.enrage}, ['couine', 0, 1.3]);
   Fx.mot(rCx(r.i) - 40, rTop(r.i) - 6, '!');
   if(comment === 'huile') await A.r[r.i].retourner(true); else await A.r[r.i].ebloui(true);
   await A.r[r.i].cible(true);
@@ -619,17 +668,17 @@ async function louche(){
      l'acteur « images » court frapper le rat et se résout au coup */
   var geste = A.h.alchimiste.louche(fx, to);
   await (HEROS_MODULE ? attendre(600) : geste);
-  son('bong');
+  bruit('ratLouche', {}, ['bong']);
   if(!HEROS_MODULE){
     Fx.mot(to.x, to.y - 30, 'BONG !');
     for(var k = 0; k < 3; k++) setTimeout(function(){ Fx.onde(to.x, to.y, '#fff1b8', 300, 900); }, k * 140);
   } else for(var k2 = 0; k2 < 2; k2++) setTimeout(function(){ Fx.onde(to.x, to.y, '#fff1b8', 260, 800); }, 150 + k2 * 160);   /* le bruit arrive jusqu'aux rats */
   Fx.tremble(9, 380);
   var n = r.ouvert ? 10 : 2;
-  await blesser(r, n, n > 5 ? '' : 'petit', true);
+  await blesser(r, n, n > 5 ? '' : 'petit', true, 'aucun');
   var v = vivants();
   await attendre(250);
-  son('rage');
+  if(!Son.bruitage) son('rage');
   v.forEach(function(x){ x.enrage = true; });
   majScene();
   await Promise.all(v.map(function(x){ return A.r[x.i].enrager(); }).concat([attendre(800)]));
@@ -668,25 +717,28 @@ async function fleche(r, potion){
   conte(potion ? 'Le Pisteur trempe sa flèche dans la potion…' : 'Le Pisteur bande son arc…');
   var surprise = !potion && !r.ouvert && R() < 1 / 8;
   var to = r.ouvert ? ventre(r.i) : pointRat(r);
-  son('arc');
+  bruit('arc', {cale:LACHER}, ['arc']);                 /* la corde lâche au bon moment du geste */
+  bruit('vol', {dt:LACHER});                            /* et la flèche siffle dès qu'elle part */
   await A.h.pisteur.tirer(fx, to, potion || 'normale');
+  bruit('chairF');                                      /* elle se plante */
   if(r.ouvert) return critique(r, 'Pile dans le ventre !');
   if(surprise) return critique(r, 'La flèche trouve la faille ! Coup de chance… ou de génie ?');
   if(potion){ son('verre'); Fx.eclabousse(to.x, to.y, RECETTES[potion].coul, true); return effetPotion(potion, r); }
-  await blesser(r, 3);
+  await blesser(r, 3, '', false, 'ratFleche');
   if(!r.mort) conte(choix(['La flèche rebondit sur le poil dur. Il ne sent presque rien.', 'Toc ! Le rat secoue la tête. Il ne sent presque rien.']));
   return attendre(300);
 }
 /* Le Pisteur : le coup de dague (le rat de devant) */
 async function dague(r){
   conte('Le Pisteur bondit, la dague en avant !');
-  son('dague');
+  bruit('swish', {cale:LAME}, ['dague']);
   var to = r.ouvert ? ventre(r.i) : pointRat(r);
   /* le module s'arrête 56 px avant le point visé : on vise l'avant du rat, la lame tombe sur lui */
   var vers = HEROS_MODULE ? {x:POS_R[r.i].x + POS_R[r.i].w * .3, y:to.y} : to;
   await A.h.pisteur.dague(fx, vers);
+  bruit('chairD');
   if(r.ouvert) return critique(r, 'En plein dans le mille !');
-  await blesser(r, 4);
+  await blesser(r, 4, '', false, 'ratDague');
   if(!r.mort) conte('Tchac ! Le rat grogne, mais il tient bon. Il ne sent presque rien.');
   return attendre(300);
 }
@@ -709,12 +761,12 @@ async function lancer(id, c){
 }
 async function effetPotion(id, r){
   if(id === 'feu'){
-    son('feu', 1.4);
+    bruit('ratFeu', {enrage:r.enrage}, ['feu', 1.4]);
     var dejaBrule = r.brule;
     r.brule = true; majScene();
     if(!dejaBrule) A.r[r.i].bruler(true);
-    if(r.ouvert){ await blesser(r, 30, 'gros'); if(!r.mort) conte('WOUF ! Le feu en plein ventre ! Et le poil continue de brûler.'); return attendre(300); }
-    await blesser(r, 5);
+    if(r.ouvert){ await blesser(r, 30, 'gros', false, 'aucun'); if(!r.mort) conte('WOUF ! Le feu en plein ventre ! Et le poil continue de brûler.'); return attendre(300); }
+    await blesser(r, 5, '', false, 'aucun');
     if(!r.mort) conte(dejaBrule ? 'Encore du feu ! Il ne sent presque rien… mais il brûle toujours.' : 'Pfff… le poil prend feu ! Il ne sent presque rien… pour l\'instant. Ça va brûler jusqu\'au bout.');
     return attendre(300);
   }
@@ -727,7 +779,7 @@ async function effetPotion(id, r){
     return attendre(550);
   }
   if(id === 'colle'){
-    son('splotch');
+    bruit('ratColle', {enrage:r.enrage}, ['splotch']);
     if(!r.flaque && !RAT_MODULE) r.flaque = Fx.flaque('colle', rCx(r.i) - 10, POS_R[r.i].pied - 8, POS_R[r.i].w * .78);
     r.colle = true; majScene();
     await A.r[r.i].coller(true);
@@ -745,7 +797,8 @@ async function fumigene(to){
   /* les rats toussent : une quinte de quatre toux chacun (tousser() dure 2,6 s), dans le nuage puis en en sortant */
   await Promise.all(vivants().map(function(r, j){
     return attendre(j * 160).then(function(){
-      [.14, .4, .62, .84].forEach(function(t){ setTimeout(function(){ son('toux', 0, 1.8 + j * .15); Fx.mot(rCx(r.i) - 34, rTop(r.i) + 6, 'kof', 'croc'); }, 2600 * t / SALLE.vitesse); });
+      var tousse = !!bruit('ratNuage', {enrage:r.enrage});
+      [.14, .4, .62, .84].forEach(function(t){ setTimeout(function(){ if(!tousse) son('toux', 0, 1.8 + j * .15); Fx.mot(rCx(r.i) - 34, rTop(r.i) + 6, 'kof', 'croc'); }, 2600 * t / SALLE.vitesse); });
       return A.r[r.i].tousser();
     });
   }));
@@ -754,10 +807,10 @@ async function fumigene(to){
 }
 
 /* ---------------- les coups, les dégâts, le critique, la fuite des rats ---------------- */
-async function blesser(r, n, cls, sansFuite){
+async function blesser(r, n, cls, sansFuite, cri){
   r.pv = Math.max(0, r.pv - n);
   Fx.chiffre(rCx(r.i), rTop(r.i) + 6, '−' + n, cls);
-  son('impact', n >= 20 ? 1.4 : .8);
+  if(cri !== 'aucun') bruit(cri || 'ratFleche', {dt:.02, enrage:r.enrage}, ['impact', n >= 20 ? 1.4 : .8]);
   majBarres();
   await A.r[r.i].touche();
   if(r.pv <= 0) return ratFuit(r);
@@ -767,8 +820,8 @@ async function ratFuit(r, phrase){
   r.mort = true; r.ouvert = false; r.colle = false;
   E.ratsVaincus[r.i] = true;
   majBadges(); majBarres();
-  conte(phrase || 'Le rat détale en couinant ! Il ne reviendra pas.');
-  son('fuiteRat');
+  conte(phrase || 'Le rat détale en couinant, la queue entre les pattes !');
+  bruit('ratFuite', {dt:.45}, ['fuiteRat']);
   await A.r[r.i].fuir();
   finRat(r);
 }
@@ -787,7 +840,16 @@ async function critique(r, phrase){
   var boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
   var mo = new MutationObserver(function(){ if(fx.querySelector('.ra-scene-fx')){ mo.disconnect(); boomOk(); } });
   mo.observe(fx, {childList:true});
-  await Fx.critique(c.x, c.y, n, function(){ majBarres(); var p = A.r[r.i].exploser(fx); if(p && p.boom) p.boom.then(boomOk); return p; }, son,
+  /* le son du critique en trois morceaux : ça aspire pendant le ralenti, l'impact sur l'image de choc, l'explosion quand le rat éclate */
+  var explose = false;
+  function sonExplosion(){ if(explose) return; explose = true; bruit('ratCritique', {partie:'explosion'}); }
+  function sonCritique(nom){
+    if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
+    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); else setTimeout(sonExplosion, 1200); return; }
+    son.apply(null, arguments);
+  }
+  boomP.then(sonExplosion);
+  await Fx.critique(c.x, c.y, n, function(){ majBarres(); var p = A.r[r.i].exploser(fx); if(p && p.boom) p.boom.then(boomOk); return p; }, sonCritique,
     {exclure:slotR(r), brume:RAT_MODULE ? 12 : 24, boom:boomP});
   mo.disconnect();
   finRat(r, true);
@@ -808,7 +870,7 @@ async function tourDesRats(){
     if(r.mort) continue;
     if(r.brule){ await brulure(r); if(r.mort) continue; }
     if(r.colle){
-      Fx.mot(rCx(r.i), rTop(r.i), 'rhââ !', 'croc'); son('couine', 0, .9, 1.4);
+      Fx.mot(rCx(r.i), rTop(r.i), 'rhââ !', 'croc'); son('couine', 0, .9, 1.4, r.enrage);
       conte('Le rat tire sur ses pattes collées… Raté !');
       await attendre(850);
       continue;
@@ -836,14 +898,14 @@ async function tourDesRats(){
 }
 /* la brûlure : −4 au tour des rats, jusqu'à la fin */
 async function brulure(r){
-  son('brule');
+  son('brule'); son('couine', .05, 1.1, 1, r.enrage);
   A.r[r.i].bruler(true);
   Fx.eclat(rCx(r.i), rCy(r.i) - 10, 150, 'radial-gradient(closest-side,rgba(255,170,60,.85),rgba(255,90,20,0))', 600);
   r.pv = Math.max(0, r.pv - BRULURE);
   Fx.chiffre(rCx(r.i), rTop(r.i) + 6, '−' + BRULURE + ' 🔥', 'feu');
   majBarres();
   await A.r[r.i].touche();
-  if(r.pv <= 0) return ratFuit(r, 'Le rat brûle, brûle… et détale en couinant ! Il ne reviendra pas.');
+  if(r.pv <= 0) return ratFuit(r, 'Le rat brûle, brûle… et détale en couinant !');
   conte('Le rat brûle encore : −' + BRULURE + ' !');
   return attendre(450);
 }
@@ -854,7 +916,7 @@ async function attaque(r){
   var n = r.enrage ? 2 : 1, total = 0, brut = 0;
   for(var k = 0; k < n; k++){
     if(E.h[victime].sol){ var autre = EXPOSES.filter(function(x){ return !E.h[x].sol; })[0]; if(!autre) break; victime = autre; }
-    son('couine', 0, 1.1);
+    son('couine', 0, r.enrage ? 1 : 1.1, r.enrage ? 1.3 : 1, r.enrage);
     /* mordre() se termine quand le rat est revenu ; onImpact arrive quand les mâchoires claquent */
     var fin = null;
     await new Promise(function(ok){ fin = A.r[r.i].mordre({onImpact:ok}); Promise.resolve(fin).then(ok); });
@@ -896,7 +958,9 @@ async function victoire(){
     : n <= 5 ? 'Trois rats en ' + tours + ' : du beau travail d\'équipe !'
     : 'Trois rats en ' + tours + '… C\'était long, mais la salle est propre !';
   conte('La salle est à vous !');
-  son('fanfare');
+  var fan = bruit('victoire', {}, ['fanfare']);
+  Son.baisser((fan && fan.duree || 3) + .2);
+  setTimeout(function(){ Son.musique('explo'); }, 2200);
   await Promise.all(debout().map(function(h, k){ return attendre(k * 120).then(function(){ return A.h[h].joie(); }); }));
   await attendre(300);
   var f = el('div'); f.id = 'fin';
@@ -909,7 +973,8 @@ async function victoire(){
 }
 function demanderFuite(){
   if(E.occupe || E.ecran !== 'combat') return;
-  ouvrirFenetre('<h2>Fuir la salle ?</h2><div class="ligne">On laisse les rats ici et on remonte l\'escalier ?' + lireBtn('On laisse les rats ici et on remonte l\'escalier ?') + '</div>' +
+  var t = 'On remonte l\'escalier… et tout est à refaire : les rats battus reviendront, en pleine forme. Seul le Grand Livre garde ce qu\'on a appris.';
+  ouvrirFenetre('<h2>Fuir la salle ?</h2><div class="ligne">' + t + lireBtn(t) + '</div>' +
     '<div class="boutons"><button class="sombre" data-act="fermer">Non, on reste</button><button class="aller" data-act="fuir">Oui, on fuit !</button></div>');
 }
 async function fuite(auto){
@@ -923,29 +988,37 @@ async function fuite(auto){
   } else conte('« Fuite ! » Les héros remontent l\'escalier quatre à quatre.');
   ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('crie'); }, k * 120); });
   await attendre(800);
-  son('pasHeros', 1, 3);
+  var fu = bruit('fuite', {}, ['pasHeros', 1, 3]);
+  Son.baisser((fu && fu.duree || 3) + .2);
   ORDRE.forEach(function(h, k){
     var s = slotH(h);
     setTimeout(function(){ s.classList.add('detale'); }, k * 90);
   });
   await attendre(1200);
+  /* la fuite recharge la dernière sauvegarde : l'entrée de la salle. Les rats et les héros reviennent en pleine forme ;
+     seul le Grand Livre garde ce qui a été appris. */
+  E.ratsVaincus = [false, false, false];
+  Son.musique('explo');
   pointFuite();
 }
 function pointFuite(){
-  var vaincus = E.ratsVaincus.filter(Boolean).length;
-  var l = E.livre ? LIVRE.slice(0, E.livre).map(function(t){ return '<div class="livre-l">« ' + t + ' »' + lireBtn(t) + '</div>'; }).join('')
-    : '<div class="livre-l">Le Grand Livre n\'a encore rien appris sur les rats.' + lireBtn('Le Grand Livre n\'a encore rien appris sur les rats.') + '</div>';
-  var rv = vaincus === 0 ? 'Aucun rat vaincu pour l\'instant.' : vaincus === 1 ? 'Un rat vaincu. Il ne reviendra pas !' : vaincus + ' rats vaincus. Ils ne reviendront pas !';
+  var garde = 'Lui, il n\'oublie rien.';
+  var l = E.livre ? '<div class="livre-l garde">' + garde + lireBtn(garde) + '</div>' + LIVRE.slice(0, E.livre).map(function(t){ return '<div class="livre-l">« ' + t + ' »' + lireBtn(t) + '</div>'; }).join('')
+    : '<div class="livre-l">' + VIDE + lireBtn(VIDE) + '</div>';
+  var rv = 'Les trois rats sont revenus, en pleine forme. Les héros aussi : tout est à refaire.';
   var f = el('div'); f.id = 'fin';
   f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point"><h1>On fait le point' + lireBtn('On fait le point.') + '</h1>' +
     '<div class="case"><h3>📖 Le Grand Livre</h3>' + l + '</div>' +
     '<div class="case"><h3>🎒 Le sac</h3><div class="sac-l">' + E.sac.map(function(id){ return '<div><img src="' + URL_IMG['potion-' + id] + '" alt="">' + RECETTES[id].nom + '</div>'; }).join('') + '</div>' +
-    '<div class="rats-l">' + [0, 1, 2].map(function(i){ return '<span class="rat-mini img-rat' + (E.ratsVaincus[i] ? ' vaincu' : '') + '"></span>'; }).join('') + '<span>' + rv + '</span>' + lireBtn(rv) + '</div></div>' +
-    '<div class="bulle"><span class="txt">Et si on essayait autrement ?</span>' + lireBtn('Et si on essayait autrement ?') + '</div>' +
+    '</div>' +
+    '<div class="case retour"><h3>🚪 Retour à l\'entrée</h3><div class="rats-l">' + [0, 1, 2].map(function(){ return '<span class="rat-mini img-rat"></span>'; }).join('') + '<span>' + rv + '</span>' + lireBtn(rv) + '</div></div>' +
+    '<div class="bulle"><span class="txt">' + CONTE_FUITE + '</span>' + lireBtn(CONTE_FUITE) + '</div>' +
     '<div class="bas"><button class="aller guide" data-act="reessayer">Réessayer ↻</button></div></div>';
   q('#combat').appendChild(f);
-  conte('Et si on essayait autrement ?');
+  conte(CONTE_FUITE);
 }
+var VIDE = 'Le Grand Livre est encore vide. Ce qu\'il apprendra, il ne l\'oubliera jamais.';
+var CONTE_FUITE = 'Les rats ont retrouvé toutes leurs forces… mais vous, vous en savez plus. Et si on essayait autrement ?';
 
 /* ---------------- les fenêtres ---------------- */
 function ouvrirFenetre(html){
@@ -963,6 +1036,7 @@ function grandLivre(){
 
 /* ================= les doigts et la souris ================= */
 function toucher(ev){
+  Son.demarrer();            /* le premier toucher, n'importe où : le son et la musique démarrent (le navigateur l'exige) */
   var b = ev.target.closest ? ev.target.closest('[data-act]') : null;
   if(!b) return;
   var a = b.getAttribute('data-act'), id = b.getAttribute('data-id');
@@ -970,7 +1044,7 @@ function toucher(ev){
   if(a === 'lire-bulle'){ lire(E.texte); return; }
   if(a === 'bruitages'){ Son.demarrer(); Son.basculer(); majBoutonSon(); return; }
   if(a === 'recette-sac') return toucherRecette(id, b);
-  if(a === 'descendre'){ if(E.sac.length === 3){ Son.demarrer(); taire(); debutCombat(); } return; }
+  if(a === 'descendre'){ if(E.sac.length === 3){ taire(); debutCombat(); } return; }
   if(a === 'livre'){ son('page'); return grandLivre(); }
   if(a === 'fermer') return fermerFenetre();
   if(a === 'fuite') return demanderFuite();

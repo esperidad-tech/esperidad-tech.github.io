@@ -151,6 +151,13 @@ def assembler(actifs):
                 print('module branché :', m)
             else:
                 print('MODULE ABSENT :', m)
+    # le moteur de l'atelier des sons (sons/) : les bruitages et les musiques choisis par Romain, avec leurs niveaux
+    if '--sans-sons' not in sys.argv:
+        niv = os.path.join(ICI, 'sons', 'niveaux.json')
+        code += '\n/* ===== les niveaux des sons (sons/niveaux.json) ===== */\nwindow.NIVEAUX = ' + (json.dumps({k: round(v, 3) for k, v in sorted(json.load(open(niv)).items())}, separators=(',', ':')) if os.path.exists(niv) else '{}') + ';\n'
+        for f in ['moteur.js', 'bruitages.js', 'musiques.js']:
+            code += '\n/* ===== sons/' + f + ' ===== */\n' + lire(os.path.join(ICI, 'sons', f)) + '\n'
+        print('sons de l\'atelier branchés')
     for f in JS:
         code += '\n/* ===== ' + f + ' ===== */\n' + lire(os.path.join(SRC, f)) + '\n'
     page = lire(os.path.join(SRC, 'page.html'))

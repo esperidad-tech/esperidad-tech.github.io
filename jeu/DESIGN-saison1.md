@@ -2063,7 +2063,18 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 - **Musiques** : exploration A + B + C ; combat A + B ; une couleur par salle (le puits, la cave, l'atelier), toutes gardées.
 - **Victoire** : A + B. **Fuite de l'équipe** : A + B.
 
-En cours : les sons branchés dans la salle, la musique, un critique plus violent (3 nouvelles versions à écouter), l'icône de cible qui suit le rat, et la fuite qui recharge l'entrée (les trois rats reviennent).
+**Fait et en ligne (9 novembre, 10 h 35)** à la même adresse (https://esperidad-tech.github.io/brumeval/donjon-essai.html) :
+- **Les sons choisis par Romain sont branchés.** À chaque coup, le jeu tire une version au hasard parmi celles qu'il a gardées : le son de l'arme, puis le cri du rat selon ce qui l'a frappé. Un rat enragé crie plus grave. Deux sons gardés attendent un usage (la flèche dans le bois, la dague sur le métal : pas de tir raté ni d'armure dans cette salle).
+- **La musique** :
+  - l'exploration (A, B ou C au hasard) joue sur l'écran du sac et démarre au premier toucher ;
+  - le combat (A ou B) joue avec la couleur « le puits » par-dessus, en fondu ;
+  - la fanfare de victoire et le son de fuite passent par-dessus ;
+  - un seul bouton 🎵/🔇 coupe tout (le 🔊 reste pour la lecture des textes).
+- **Le coup critique** : 3 nouvelles versions plus violentes sont dans l'Atelier, marquées « nouveau » (A « Coup de tonnerre », B « Assourdi », C « Déflagration »). En attendant le choix de Romain, le jeu joue la C, en trois morceaux calés sur l'image : l'aspiration pendant le ralenti, l'impact, l'explosion.
+- **Les badges et l'icône de cible suivent le rat** quand il se dresse, bondit ou mord.
+- **La fuite ramène à l'entrée** : les trois rats reviennent en pleine forme, les héros aussi. Seul le Grand Livre garde ce qu'il a appris, et la question « Fuir la salle ? » le dit avant.
+- Tests : 66 sur 66 pour la salle, 27 sur 27 pour l'Atelier.
+- À surveiller sur la tablette : deux musiques en même temps que les animations. Si ça saccade, on retire d'abord la piste « le puits ».
 **Règle de Romain (9 novembre, 9 h 55) : l'Atelier des sons devient l'outil permanent pour TOUS les sons et toutes les musiques du jeu.** Dès qu'on parle de son ou de musique, on met à jour cette page (la même adresse, on n'en refait pas une autre), rangée en onglets (par exemple Le jeu, Mini-jeux, Donjon, Bestiaire, Musiques), avec aussi les sons déjà présents dans le jeu ; Romain écoute et valide là. En cours : la page passe en onglets.
 **Go de Romain (9 novembre, 10 h 04) : le donjon complet (chemin long, boss compris).** Sa demande :
 - chaque salle a son décor ;
@@ -2106,7 +2117,7 @@ En cours : les sons branchés dans la salle, la musique, un critique plus violen
 - 4 pages de sauvegarde en tout ;
 - l'ordre de construction : monstres animés et décors, puis le moteur, puis l'équilibre par simulation et les tests.
 
-**En cours** : les monstres animés.
+**En cours** : les monstres animés (contrat commun : `jeu/donjon/anim/betes/CONTRAT.md`).
 
 **En attente de Romain** :
 - le choix du son de critique dans l'Atelier ;

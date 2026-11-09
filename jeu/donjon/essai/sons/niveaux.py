@@ -5,7 +5,7 @@ import json, os
 ICI = os.path.dirname(os.path.abspath(__file__))
 b = json.load(open(os.path.join(ICI, 'rendus/mesures-bruitages.json')))
 m = json.load(open(os.path.join(ICI, 'rendus/mesures-musiques.json')))
-CIBLE_SFX, PIC_SFX, PIC_CHOC = -15.0, 1.25, 1.7   # bruitages : sonie momentanée maximale
+CIBLE_SFX, PIC_SFX, PIC_CHOC, CIBLE_CRIT = -15.0, 1.25, 1.7, -11.0   # bruitages : sonie momentanée maximale
 CIBLE_MUS, PIC_MUS = -25.0, .8            # musiques : 90 % du temps sous cette sonie
 CIBLE_SALLE = -28.0                       # le fond du donjon et chaque couleur de salle (ensemble ≈ -25)
 import math, re
@@ -13,13 +13,14 @@ niv = {}
 # 1) ce que chaque version peut atteindre sans dépasser son pic
 atteint = {}
 for k, r in b.items():
-    plafond = PIC_CHOC if k.startswith(('arc', 'chairF', 'bois', 'chairD', 'fuiteA')) else PIC_SFX   # des chocs très brefs : le compresseur les rattrape
-    atteint[k] = min(CIBLE_SFX, r['sonie'] + 20 * math.log10(plafond / r['pic']))
+    plafond = PIC_CHOC if k.startswith(('arc', 'chairF', 'bois', 'chairD', 'fuiteA', 'ratCritique')) else PIC_SFX   # des chocs très brefs : le compresseur les rattrape
+    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else CIBLE_SFX                                        # le critique : plus fort que tout le reste
+    atteint[k] = min(cible_k, r['sonie'] + 20 * math.log10(plafond / r['pic']))
 # 2) dans une même carte, toutes les versions au même niveau (sinon la plus forte paraît meilleure)
 cartes = {}
 for k in b: cartes.setdefault(re.sub(r'[A-C]$', '', k), []).append(k)
 for c, ks in cartes.items():
-    cible = max(min(atteint[k] for k in ks), CIBLE_SFX - 6)
+    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith('ratCritique') else CIBLE_SFX - 6)
     for k in ks:
         r = b[k]; f = 10 ** ((min(cible, atteint[k]) - r['sonie']) / 20); niv[k] = f
         print('%-14s sonie %6.1f -> x%.2f  (%6.1f, pic %.2f)' % (k, r['sonie'], f, r['sonie'] + 20 * math.log10(f), r['pic'] * f))

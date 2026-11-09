@@ -1,13 +1,29 @@
-/* Les bruitages de la salle des rats : tout est fabriqué avec Web Audio, sans aucun fichier.
-   Ils démarrent au premier toucher (le bouton « Descendre ») ; un bouton les coupe. Ce n'est pas une voix :
-   la voix du conteur reste seulement sur les boutons 🔊. */
+/* Les sons de la salle des rats : tout est fabriqué avec Web Audio, sans aucun fichier.
+   Ils démarrent au premier toucher ; le bouton 🎵/🔇 coupe tout (bruitages et musique). Ce n'est pas une voix :
+   la voix du conteur reste seulement sur les boutons 🔊.
+   Depuis le 10 novembre : les bruitages et les musiques choisis par Romain dans l'atelier des sons (sons-essai.html)
+   viennent du moteur de l'atelier (Moteur, BRUITAGES, MUSIQUES) ; à chaque fois, on tire au hasard parmi les versions
+   qu'il a cochées. Les autres petits bruits (pas, page, bulles, dôme…) restent ceux d'ici. */
 (function(){
 'use strict';
 var S = window.SALLE = window.SALLE || {};
-var ctx = null, sortie, bruits, amb, revIn, blanc, brun, actif = true, ambianceLancee = false;
+var ctx = null, sortie, bruits, revIn, blanc, brun, actif = true, A = null;
 try{ actif = localStorage.getItem('salle-rats-son') !== 'non'; }catch(e){}
 
 function hasard(a, b){ return a + Math.random() * (b - a); }
+function tire(l){ return l[Math.floor(Math.random() * l.length)]; }
+
+/* les choix de Romain (10 novembre) : plusieurs versions cochées = on tire au hasard à chaque fois */
+var CHOIX = S.CHOIX_SONS = {
+  arc:['A', 'B', 'C'], vol:['A', 'B', 'C'], chairF:['A', 'B', 'C'], bois:['A', 'B', 'C'],
+  swish:['A', 'B', 'C'], chairD:['C'], metal:['B'],
+  ratFleche:['A', 'B', 'C'], ratDague:['A', 'B', 'C'], ratFeu:['A', 'B', 'C'], ratLumiere:['A', 'B', 'C'],
+  ratLouche:['B', 'C'], ratColle:['B', 'C'], ratHuile:['A', 'B'], ratNuage:['A', 'C'], ratFuite:['A'],
+  ratCritique:['C'],            /* refait le 10 novembre ; en attendant le choix de Romain : la « Déflagration », la plus violente */
+  explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B']
+};
+/* un rat enragé crie plus grave et plus rauque */
+var VOIX_ENRAGE = {h:.82, rauque:.38, grain:.2};
 
 /* ---------- le montage : bruitages + réverbération de souterrain + ambiance ---------- */
 function impulsion(duree, pente){
@@ -26,25 +42,80 @@ function demarrer(){
   var AC = window.AudioContext || window.webkitAudioContext;
   if(!AC) return;
   if(!ctx){
+    try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}   /* sur iPad : jouer même en mode silencieux */
     try{ ctx = new AC(); }catch(e){ ctx = null; return; }
     var comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .2;
     comp.connect(ctx.destination);
     sortie = ctx.createGain(); sortie.gain.value = actif ? 1 : 0; sortie.connect(comp);
     bruits = ctx.createGain(); bruits.gain.value = .85; bruits.connect(sortie);
-    var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6);
-    var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie);
-    revIn = ctx.createGain(); revIn.connect(rev);
-    amb = ctx.createGain(); amb.gain.value = 1; amb.connect(sortie);
+    /* le moteur de l'atelier des sons, branché dans la même sortie (le bouton 🔇 coupe tout) ; sa « cave » sert aussi aux petits bruits d'ici */
+    if(window.Moteur){ A = window.Moteur(ctx, {sortie:sortie, volume:1}); A.sfx.gain.value = .9; revIn = A.caveIn; }
+    else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); }
     var n = ctx.sampleRate * 2;
     blanc = ctx.createBuffer(1, n, ctx.sampleRate); brun = ctx.createBuffer(1, n, ctx.sampleRate);
     var db = blanc.getChannelData(0), dr = brun.getChannelData(0), l = 0;
     for(var i = 0; i < n; i++){ var w = Math.random() * 2 - 1; db[i] = w; l = (l + .02 * w) / 1.02; dr[i] = l * 3.5; }
+    setInterval(programme, 150);
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden && ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} } });
   }
-  if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
-  if(!ambianceLancee){ ambianceLancee = true; ambiance(); }
+  if(ctx.state === 'suspended' || ctx.state === 'interrupted'){ try{ ctx.resume(); }catch(e){} }
+  appliquerMusique();
 }
 function pret(){ return !!ctx && actif && ctx.state !== 'closed'; }
+
+/* =================== les bruitages de l'atelier (versions tirées au hasard) =================== */
+function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
+/* id : « arc », « ratFeu »… ; o.dt : retard en secondes ; o.voix : la voix du rat (o.enrage : la voix enragée) ;
+   o.partie : pour le critique, « avant », « impact » ou « explosion ». Rend {duree, moment} (ou null). */
+function bruitage(id, o){
+  o = o || {};
+  if(!pret() || !A || !window.BRUITAGES || !CHOIX[id]) return null;
+  var v = o.version || tire(CHOIX[id]), cle = id + v, fn = window.BRUITAGES[cle];
+  if(o.cale != null && fn && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
+  var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
+  var P = A.prise(t, niveau(cle)), r = null;
+  A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
+  try{
+    if(o.partie){ var C = window.BRUITAGES.CRITIQUE[v]; if(C && C[o.partie]) C[o.partie](A, P, t); r = {duree:C ? C.duree : 3}; }
+    else r = window.BRUITAGES[cle](A, P) || {duree:1};
+  }catch(e){ if(window.console) console.warn('son', cle, e); r = {duree:1}; }
+  A.voix = null;
+  r.version = v;
+  setTimeout(function(){ P.lacher(); }, ((t - ctx.currentTime) + (r.duree || 1) + 5) * 1000);
+  return r;
+}
+
+/* =================== la musique : exploration (sac, fin), combat + la couleur « le puits » =================== */
+var MUS = {voulu:null, actuel:null};
+function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
+function appliquerMusique(){
+  if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
+  var v = actif ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
+  if(cur === v) return;
+  var now = ctx.currentTime;
+  if(MUS.actuel){ MUS.actuel.I.forEach(function(I){ I.arreter(now, 3); }); MUS.actuel = null; }
+  if(!v) return;
+  var cles = v === 'combat' ? ['combat' + tire(CHOIX.combat), 'puits'] : ['explo' + tire(CHOIX.explo)];
+  MUS.actuel = {nom:v, cles:cles, I:cles.map(function(c){
+    var t = now + .05, P = A.prise(t, niveau(c), 'mus');
+    [P.sec, P.cave, P.grotte].forEach(function(g){ g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(P.niveau, t, 1.1); });   /* le fondu d'entrée */
+    var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
+    return I;
+  })};
+}
+function programme(){
+  if(!ctx || !MUS.actuel) return;
+  var j = ctx.currentTime + 1.2;
+  MUS.actuel.I.forEach(function(I){ I.pas(j); });
+}
+/* la musique baisse pendant une fanfare (sec : combien de temps), puis remonte */
+function baisser(sec){
+  if(!ctx || !A) return;
+  var g = A.mus.gain, now = ctx.currentTime;
+  g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+  g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
+}
 function t0(dt){ return ctx.currentTime + (dt || 0) + .01; }
 /* une sortie : sec vers les bruitages, et un peu (ou beaucoup) dans la réverbération */
 function bus(humide, vers){
@@ -120,9 +191,17 @@ B.pasRats = function(duree){
     if(Math.random() < .25) souffle(t + x, {type:'bandpass', f:900, q:2, d:.02, g:.04}, o);
   }
 };
-/* un couinement de rat (h : la hauteur) */
-B.couine = function(dt, h, long){
+/* un couinement de rat (h : la hauteur ; enrage : la voix enragée) — avec la voix de rat de l'atelier si elle est là */
+B.couine = function(dt, h, long, enrage){
   if(!pret()) return;
+  if(A){
+    var tc = t0(dt), P = A.prise(tc, 1);
+    A.voix = enrage ? VOIX_ENRAGE : null;
+    A.cri(tc, {forme:tire(['iik', 'aie', 'peur']), d:.15 * (long || 1), h:(h || 1) * hasard(.95, 1.05), grain:.6, g:.26}, A.bus(P, {rev:.3, pan:.45}));
+    A.voix = null;
+    setTimeout(function(){ P.lacher(); }, ((tc - ctx.currentTime) + 4) * 1000);
+    return;
+  }
   var o = bus(.35), t = t0(dt); h = h || 1; long = long || 1;
   var f = hasard(2100, 2700) * h;
   ton(t, {type:'sine', f:f * .8, pts:[[.04 * long, f * 1.18], [.13 * long, f * .92]], d:.16 * long, a:.012, g:.09, vib:[hasard(24, 34), f * .05]}, o);
@@ -335,28 +414,6 @@ B.clic = function(){
   ton(t0(), {f:1250, f2:900, d:.045, g:.035}, bus(.15));
 };
 
-/* =================== l'ambiance du souterrain : gouttes et souffle =================== */
-function ambiance(){
-  /* le souffle : un bruit sourd qui respire tout doucement */
-  var s = ctx.createBufferSource(); s.buffer = brun; s.loop = true;
-  var f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 340; f.Q.value = .6;
-  var g = ctx.createGain(); g.gain.value = .045;
-  var l1 = ctx.createOscillator(), l1g = ctx.createGain(); l1.frequency.value = .055; l1g.gain.value = 140; l1.connect(l1g); l1g.connect(f.frequency);
-  var l2 = ctx.createOscillator(), l2g = ctx.createGain(); l2.frequency.value = .09; l2g.gain.value = .022; l2.connect(l2g); l2g.connect(g.gain);
-  s.connect(f); f.connect(g); g.connect(amb);
-  s.start(); l1.start(); l2.start();
-  /* les gouttes qui tombent quelque part, loin */
-  function goutte(){
-    if(ctx && actif && ctx.state === 'running'){
-      var o = bus(.9, amb), t = t0(), fr = hasard(850, 1700);
-      ton(t, {f:fr, f2:fr * 2.3, gl:.025, d:.08, g:hasard(.02, .05)}, o);
-      if(Math.random() < .3) ton(t + .2, {f:fr * 1.2, f2:fr * 2.6, gl:.02, d:.06, g:.015}, o);
-    }
-    setTimeout(goutte, hasard(1300, 4600));
-  }
-  setTimeout(goutte, 1200);
-}
-
 S.Son = {
   demarrer:demarrer,
   actif:function(){ return actif; },
@@ -364,8 +421,13 @@ S.Son = {
     actif = !actif;
     try{ localStorage.setItem('salle-rats-son', actif ? 'oui' : 'non'); }catch(e){}
     if(ctx) sortie.gain.setTargetAtTime(actif ? 1 : 0, ctx.currentTime, .05);
+    appliquerMusique();          /* coupé : la musique s'arrête (la tablette souffle) ; remis : elle repart */
     return actif;
   },
+  bruitage:bruitage,
+  musique:musique,
+  baisser:baisser,
+  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null}; },
   jouer:function(nom){
     if(!pret() || !B[nom]) return;
     try{ B[nom].apply(null, Array.prototype.slice.call(arguments, 1)); }catch(e){ if(window.console) console.warn('son', nom, e); }

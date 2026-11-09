@@ -79,10 +79,10 @@ var CAT = [
       ['A', 'Une petite toux sèche, trois fois, avec un sifflement.'],
       ['B', 'Trois quintes, et ça finit par un éternuement.'],
       ['C', 'Une toux plus grasse et plus lente.']]},
-    {id:'ratCritique', titre:'Coup critique', quoi:'Un gros cri, et l’explosion.', v:[
-      ['A', 'Un gros cri, puis BOUM, et la brume noire qui s’échappe.'],
-      ['B', 'Le cri est coupé net par le BOUM, avec un long écho.'],
-      ['C', 'Le cri, un boum plus doux, et des étincelles magiques.']]},
+    {id:'ratCritique', nouveau:true, titre:'Coup critique', quoi:'Refait, beaucoup plus violent : l’impact, l’explosion, les débris.', v:[
+      ['A', 'Coup de tonnerre : un impact sec, le grave qui s’effondre, l’explosion, les débris, et l’oreille qui siffle.'],
+      ['B', 'Assourdi : le cri coupé net, on n’entend plus qu’un sifflement… puis le bruit revient.'],
+      ['C', 'Déflagration : ça aspire, ça craque, deux explosions, le souffle et les débris.']]},
     {id:'ratFuite', titre:'La fuite', quoi:'Des couinements de peur qui s’éloignent.', v:[
       ['A', 'Il file vite en couinant, avec ses griffes sur la pierre.'],
       ['B', 'Plus lent, avec l’écho du couloir.'],
@@ -308,7 +308,7 @@ function construire(){
     var grille = el('div', 'cartes');
     sec.cartes.forEach(function(carte){
       var c = el('article', 'carte' + (carte.salles ? ' large' : ''));
-      c.appendChild(el('h3', '', carte.titre));
+      var h3 = el('h3', '', carte.titre); if(carte.nouveau) h3.appendChild(el('span', 'nouveau', 'nouveau')); c.appendChild(h3);
       c.appendChild(texteAvecVoix('quoi', carte.quoi, carte.titre + '. ' + carte.quoi));
       if(carte.salles){
         var lanceur = el('button', 'jouer demo', '▶ Lancer la démo'); lanceur.type = 'button';

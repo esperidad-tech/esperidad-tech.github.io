@@ -3,7 +3,9 @@
 - écran 1280 x 800 à la souris : une partie gagnante, un rat qui s'enfuit de peur, la fuite automatique, le Cœur vaillant, les Herbes ;
 - tablette tenue debout : le message « Tourne ta tablette » ;
 - règles du 9 novembre : la rage reste jusqu'à la fin, la brûlure enlève 4 PV à chaque tour des rats, le bouclier montre ce qu'il absorbe ;
-- aucune erreur JavaScript, aucune lecture vocale sans bouton 🔊, le son démarre sur « Descendre » ;
+- aucune erreur JavaScript, aucune lecture vocale sans bouton 🔊, le son démarre au premier toucher ;
+- 10 novembre : les sons choisis par Romain (tirés au hasard parmi ses versions), la musique (exploration au sac, combat + le puits),
+  le bouton 🎵/🔇 qui coupe aussi la musique, les badges qui suivent le rat, et la fuite qui ramène les trois rats en pleine forme ;
 - des captures dans captures/ aux moments clés."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -37,6 +39,9 @@ class Partie:
         self.pg.goto(PAGE)
         self.pg.wait_for_timeout(700)
         self.pg.evaluate("""() => { var s = 7; SALLE.hasard = function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }""")
+        # on note chaque son de l'atelier joué (« ! » : il n'a pas pu jouer ; « + » : voix enragée)
+        self.pg.evaluate("""() => { window.__sons = []; var f = SALLE.Son.bruitage; SALLE.Son.bruitage = function(id, o){ var r = f(id, o);
+          window.__sons.push(id + (o && o.partie ? ':' + o.partie : '') + (o && o.enrage ? '+' : '') + (r ? '' : '!')); return r; }; }""")
 
     def capture(self, n):
         self.pg.screenshot(path=os.path.join(CAP, f'{self.nom}-{n}.png'))
@@ -108,14 +113,20 @@ def tablette(nav):
     pg = P.pg
     P.capture('01-sac-vide')
     verifie(P.etat('window.__parle') == 0, 'aucune lecture vocale toute seule à l\'ouverture')
-    verifie(P.etat('SALLE.Son.etat()') == 'pas encore', 'pas de son avant « Descendre »')
+    verifie(P.etat('SALLE.Son.etat()') == 'pas encore', 'pas de son avant le premier toucher')
+    verifie(P.etat("document.querySelector('#sac #bruitages').textContent") == '🎵', 'le bouton 🎵 est aussi sur l\'écran du sac')
     P.touche('#sac .bulle .lire')
     verifie(P.etat('window.__parle') == 1 and 'trois recettes' in P.etat('window.__dernier'), 'le 🔊 du conteur lit sa phrase')
+    pg.wait_for_timeout(300)
+    m = P.etat('SALLE.Son.musiqueEtat()')
+    verifie(P.etat('SALLE.Son.etat()') == 'running' and m['nom'] == 'explo' and m['cles'][0] in ('exploA', 'exploB', 'exploC'),
+            f'au premier toucher : le son démarre, avec une musique d\'exploration tirée au hasard ({m["cles"]})')
     for r in ['feu', 'huile', 'baume', 'colle']:
         P.touche(f'.recette[data-id="{r}"] b'); pg.wait_for_timeout(120)
     verifie(P.etat('SALLE.etat.sac.length') == 3, 'le sac refuse une 4e recette')
     P.descendre([], capture='02-sac-plein', entree=[('03-entree-heros', 1100), ('04-entree-rats', 1900)])
-    verifie(P.etat('SALLE.Son.etat()') == 'running', 'le son démarre sur « Descendre »')
+    m = P.etat('SALLE.Son.musiqueEtat()')
+    verifie(m['nom'] == 'combat' and m['cles'][0] in ('combatA', 'combatB') and m['cles'][1] == 'puits', f'en combat : une musique de combat et la couleur « le puits » ({m["cles"]})')
     pg.wait_for_timeout(500)
     P.capture('05-qui-joue')
     verifie(P.etat("document.querySelectorAll('.badges .vise').length") == 3, 'chaque rat montre qui il vise')
@@ -141,6 +152,9 @@ def tablette(nav):
         pg.wait_for_timeout(ms); P.capture(n)
     P.attend("SALLE.etat.mode === 'rats'")
     verifie(P.etat('SALLE.etat.r[0].mort'), 'le critique du Pisteur tue le rat net')
+    s = P.etat('window.__sons')
+    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:avant', 'ratCritique:impact', 'ratCritique:explosion']) and not any(x.endswith('!') for x in s),
+            'les sons de l\'atelier jouent : huile, arc, flèche, critique en trois morceaux (' + ' '.join(s) + ')')
     pg.wait_for_timeout(1250); P.capture('19-tour-des-rats')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.tour') == 2, 'un nouveau tour commence après les rats')
@@ -151,14 +165,18 @@ def tablette(nav):
     pg.wait_for_timeout(1700); P.capture('20-point-faible-ouvert')
     P.attend_libre()
     verifie(P.etat(f'SALLE.etat.r[{d}].ouvert'), 'la rune de lumière ouvre le point faible')
+    verifie('ratLumiere' in P.etat('window.__sons'), 'la rune : le rat gémit, ébloui')
     P.joue('pisteur', 'dague', d)
     verifie(P.etat(f'SALLE.etat.r[{d}].mort'), 'la dague sur un rat ouvert : critique')
+    s = P.etat('window.__sons')
+    verifie('swish' in s and 'chairD' in s, 'la dague : le swish, puis la lame dans la chair')
     autre = P.devant()
     P.joue('alchimiste', 'p:feu', autre, attendre=False)
     pg.wait_for_timeout(2200); P.capture('21-feu-qui-reste')
     P.attend("SALLE.etat.mode === 'rats'")
     pv_avant = P.etat(f'SALLE.etat.r[{autre}].pv')
     verifie(P.etat(f'SALLE.etat.r[{autre}].brule') and pv_avant == 35, 'la Fiole de feu : −5, et le rat brûle')
+    verifie('ratFeu' in P.etat('window.__sons'), 'le feu : le cri, et le grésillement qui continue')
     pg.wait_for_timeout(950); P.capture('22-brulure-tour-des-rats')
     P.attend_libre()
     verifie(P.etat(f'SALLE.etat.r[{autre}].pv') == 31 and P.etat(f'SALLE.etat.r[{autre}].brule'), 'la brûlure : −4 au tour des rats, et elle reste')
@@ -172,6 +190,7 @@ def tablette(nav):
     verifie(P.etat("!!document.querySelector('.victoire')"), 'victoire : « La salle est à vous ! »')
     verifie(P.etat('SALLE.etat.tour') == 3, f'partie gagnée en {P.etat("SALLE.etat.tour")} tours (attendu : 3)')
     verifie('3 tours' in P.etat("document.querySelector('.victoire .bulle .txt').textContent"), 'le message de victoire compte les tours (« 3 tours »)')
+    verifie('victoire' in P.etat('window.__sons'), 'la victoire : la fanfare (la musique baisse dessous)')
 
     # ===== Rejouer, puis le bouclier, la louche, le nuage, la colle, et la fuite =====
     P.touche('[data-act="rejouer"]'); pg.wait_for_timeout(500)
@@ -195,6 +214,8 @@ def tablette(nav):
     verifie('absorbés' in (P.etat("(document.querySelector('.fx-texte') || {}).textContent || ''")), 'à la morsure : « 16 → 8 (8 absorbés) »')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.r.filter(r => !r.mort).every(r => r.enrage)'), 'la rage reste au tour suivant')
+    s = P.etat('window.__sons')
+    verifie('ratLouche' in s and 'ratFleche+' in s and 'ratFuite' in s, 'la louche (BONG et fureur), le cri enragé, la fuite du rat battu (' + ' '.join(s[-6:]) + ')')
     P.joue('alchimiste', 'p:fumigene', P.devant(), attendre=False)
     pg.wait_for_timeout(1800); P.capture('28-nuage')
     pg.wait_for_timeout(1300); P.capture('29-nuage-toux')
@@ -206,18 +227,26 @@ def tablette(nav):
     P.attend_libre()
     verifie(P.etat('SALLE.etat.r.some(r => r.colle)') and P.etat("window.RatAnime ? SALLE.etat.r.some(r => r.colle && SALLE.acteurs.r[r.i].etat().colle && !!SALLE.acteurs.r[r.i]._rat.fx.flaque_colle) : !!document.querySelector('.flaque-colle')"), 'la Colle : une flaque gluante, le rat collé')
     P.touche('#bruitages'); pg.wait_for_timeout(100)
-    verifie(not P.etat('SALLE.Son.actif()') and P.etat("document.querySelector('#bruitages').textContent") == '🔇', 'le bouton coupe les bruitages')
-    P.touche('#bruitages')
+    verifie(not P.etat('SALLE.Son.actif()') and P.etat("document.querySelector('#bruitages').textContent") == '🔇' and P.etat('SALLE.Son.musiqueEtat().nom') is None,
+            'le bouton 🔇 coupe les bruitages ET la musique')
+    P.touche('#bruitages'); pg.wait_for_timeout(100)
+    verifie(P.etat('SALLE.Son.musiqueEtat().nom') == 'combat', 'le bouton 🎵 remet la musique')
     P.touche('#fuite'); pg.wait_for_timeout(300); P.capture('31-fuite-question')
     P.touche('[data-act="fuir"]')
     pg.wait_for_timeout(1500); P.capture('32-fuite-cri')
     P.attend("!!document.querySelector('.point')", 8000)
     pg.wait_for_timeout(400); P.capture('33-on-fait-le-point')
     verifie(P.etat("!!document.querySelector('.point')"), 'la fuite mène à « On fait le point »')
+    verifie('pleine forme' in P.etat("document.querySelector('.point .rats-l').textContent") and 'oubli' in P.etat("document.querySelector('.point').textContent"),
+            '« On fait le point » : les trois rats reviennent en pleine forme, le Grand Livre n\'oublie rien')
+    verifie('fuite' in P.etat('window.__sons') and P.etat('SALLE.Son.musiqueEtat().nom') == 'explo', 'la fuite : son de fuite, puis la musique d\'exploration')
+    livre = P.etat('SALLE.etat.livre')
     P.touche('[data-act="reessayer"]'); pg.wait_for_timeout(400)
     P.descendre([])
-    verifie(P.etat("document.querySelectorAll('.rat:not(.parti)').length") == P.etat('SALLE.etat.r.filter(r => !r.mort).length') and P.etat('SALLE.etat.r[0].mort'),
-            'les rats battus restent battus quand on réessaie')
+    verifie(P.etat("document.querySelectorAll('.rat:not(.parti)').length") == 3 and P.etat('SALLE.etat.r.every(r => !r.mort && r.pv === 40)')
+            and P.etat("['sage','alchimiste','pisteur'].every(h => SALLE.etat.h[h].pv === ({sage:90,alchimiste:100,pisteur:120})[h] && !SALLE.etat.h[h].sol)"),
+            'après la fuite : les TROIS rats reviennent en pleine forme (même celui qui avait fui), les héros aussi')
+    verifie(P.etat('SALLE.etat.livre') == livre, f'seul le Grand Livre garde ce qui a été appris ({livre} ligne)')
     P.capture('34-reessai')
     verifie(P.etat('window.__parle') == 1, 'jamais de lecture vocale sans bouton 🔊 (toute la partie)')
     P.fin()
@@ -298,10 +327,18 @@ def cumul(nav):
     e = P.etat("SALLE.etat.r[1]")
     verifie(e['enrage'] and e['brule'] and e['ouvert'], 'jeu : le rat 1 est enragé + brûlé + ouvert')
     if P.etat('!!window.RatAnime'):
+        y = P.etat("+(/translate\\([-\\d.]+px, ?([-\\d.]+)px/.exec(document.querySelector('#badges-1').style.transform) || [0, 0])[1]")
+        verifie(y < -20, f'les badges suivent le rat qui se dresse (ils montent de {-y:.0f} px)')
+    if P.etat('!!window.RatAnime'):
         m = P.etat("SALLE.acteurs.r[1].etat()")
         verifie(m['enrage'] and m['feu'] and m['ebloui'] and m['cible'] and m['yeux'] == 'rouge', 'module : enragé (yeux rouges) + flammes + ébloui + cible, en même temps')
     P.attend("SALLE.etat.mode === 'rats'", 15000)
+    if P.etat('!!window.RatAnime'):
+        P.etat("(window.__bx = [], window.__bt = setInterval(() => [0, 1, 2].forEach(i => { var b = document.querySelector('#badges-' + i); var m = b && /translate\\(([-\\d.]+)px/.exec(b.style.transform); if(m) window.__bx.push(+m[1]); }), 40), 0)")
     P.attend_libre()
+    if P.etat('!!window.RatAnime'):
+        bx = P.etat('(clearInterval(window.__bt), Math.min.apply(null, window.__bx.concat([0])))')
+        verifie(bx < -20, f'les badges suivent le rat qui bondit pour mordre (jusqu\'à {-bx:.0f} px vers la gauche)')
     e = P.etat("SALLE.etat.r[1]")
     verifie(e['enrage'] and e['brule'] and not e['ouvert'], 'après le tour des rats : toujours enragé et brûlé, le ventre refermé')
     P.joue('alchimiste', 'p:huile', 1, attendre=False)
@@ -310,6 +347,8 @@ def cumul(nav):
     if P.etat('!!window.RatAnime'):
         m = P.etat("SALLE.acteurs.r[1].etat()")
         verifie(m['enrage'] and m['feu'] and m['dos'] and m['cible'], 'module : enragé + flammes + sur le dos + cible, en même temps')
+        d = P.etat("(function(){ var a = document.querySelector('#badges-1').getBoundingClientRect(), b = document.querySelector('#badges-2').getBoundingClientRect(); return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)); })()")
+        verifie(d == 0, 'sur le dos, ses badges ne se posent pas sur ceux du voisin')
     P.attend_libre()
     P.joue('pisteur', 'fleche', 1, attendre=False)
     pg.wait_for_timeout(1500); P.capture('03-critique-cumul')
