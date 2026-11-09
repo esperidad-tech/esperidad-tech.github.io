@@ -41,12 +41,17 @@ function mix(a, b, t){ var A = hx(a), B = hx(b); return '#' + A.map(function(v, 
 function clair(c, t){ return mix(c, '#fff6e6', t); }
 function sombre(c, t){ return mix(c, '#120a1e', t); }
 function rng(s){ return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
-function P(d, f, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + O + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
-function L(d, c, w, x){ return '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + w + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
-function F(d, f, x){ return '<path d="' + d + '" fill="' + f + '"' + (x || '') + '/>'; }
-function C(x, y, r, f, x2){ return '<circle cx="' + r1(x) + '" cy="' + r1(y) + '" r="' + r1(r) + '" fill="' + f + '"' + (x2 || '') + '/>'; }
-function E(x, y, rx, ry, f, x2){ return '<ellipse cx="' + r1(x) + '" cy="' + r1(y) + '" rx="' + r1(rx) + '" ry="' + r1(ry) + '" fill="' + f + '"' + (x2 || '') + '/>'; }
-function Rc(x, y, w, h, f, x2){ return '<rect x="' + r1(x) + '" y="' + r1(y) + '" width="' + r1(w) + '" height="' + r1(h) + '" fill="' + f + '"' + (x2 || '') + '/>'; }
+/* les attributs : ceux d'origine, remplacés par ceux qu'on ajoute (x) — jamais deux fois le même (le SVG d'une <img> est lu en XML strict) */
+function at(base, x){
+  if(x){ var re = /([\w:-]+)="([^"]*)"/g, m; while((m = re.exec(x))) base[m[1]] = m[2]; }
+  var s = ''; for(var k in base) if(base[k] != null) s += ' ' + k + '="' + base[k] + '"'; return s;
+}
+function P(d, f, x){ return '<path' + at({d: d, fill: f, stroke: O, 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, x) + '/>'; }
+function L(d, c, w, x){ return '<path' + at({d: d, fill: 'none', stroke: c, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, x) + '/>'; }
+function F(d, f, x){ return '<path' + at({d: d, fill: f}, x) + '/>'; }
+function C(x, y, r, f, x2){ return '<circle' + at({cx: r1(x), cy: r1(y), r: r1(r), fill: f}, x2) + '/>'; }
+function E(x, y, rx, ry, f, x2){ return '<ellipse' + at({cx: r1(x), cy: r1(y), rx: r1(rx), ry: r1(ry), fill: f}, x2) + '/>'; }
+function Rc(x, y, w, h, f, x2){ return '<rect' + at({x: r1(x), y: r1(y), width: r1(w), height: r1(h), fill: f}, x2) + '/>'; }
 function op(v){ return ' opacity="' + r1(v * 100) / 100 + '"'; }
 /* un chemin écrit autour d'un centre (cx, cy) : chaque paire « x y » est décalée */
 function T(d, cx, cy){ return d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, function(m, a, b){ return r1(cx + +a) + ' ' + r1(cy + +b); }); }
@@ -676,7 +681,8 @@ FONDS.dalles = function(){
   s += Rc(0, 0, W, H, '#0a0a14');
   s += murBriques(d, {x0: -20, y0: -10, x1: W + 20, y1: Y0 + 6, bw: 40, bh: 20, c: '#262640', j: '#08081a', cl: '#34365a', fo: '#16162c', mousse: 0.06, seed: 59});
   /* la sortie du couloir, au bout (à droite) : une porte où il fait jour… pâle */
-  s += F('M884 ' + Y0 + ' L 884 124 Q 922 100 960 122 L 960 ' + Y0 + ' Z', d.rad([[0, '#b8c8f0'], [0.5, '#5a6aa8'], [1, '#1a2040']], 0.8, 0.55, 0.8));
+  s += F('M884 ' + Y0 + ' L 884 124 Q 922 100 960 122 L 960 ' + Y0 + ' Z', d.lin([[0, '#3a4470'], [0.6, '#2a3258'], [1, '#141a30']], 0, 0, 1, 0));
+  for(var m = 0; m < 4; m++) s += Rc(900 + m * 6, Y0 - 12 - m * 12, 70 - m * 6, 8, '#4a5480', ' stroke="#141a30" stroke-width="1.5" opacity="' + (0.9 - m * 0.18) + '"');
   s += L('M880 ' + Y0 + ' L 880 120 Q 920 96 960 120', '#4a4a70', 8);
   /* les pilastres gravés de runes (bleues) et la frise */
   s += Rc(0, 0, W, 34, d.lin([[0, '#1a1a30'], [1, '#2e2e4c']])) + L('M0 34 H ' + W, '#0a0a18', 3);
@@ -707,7 +713,7 @@ FONDS.dalles = function(){
   s += Rc(0, Y0 - 2, W, 6, '#05030a', op(0.6));
   s += E(930, Y0 + 30, 120, 20, '#cfe0ff', op(0.08));
   s += nuit(d, 0.55, [[120, 150, 60, 150, 0.6], [300, 150, 70, 150, 0.7], [520, 150, 80, 160, 0.8], [720, 150, 80, 160, 0.8], [930, 200, 150, 160, 0.9], [700, 320, 280, 80, 0.6]]);
-  s += ecran(E(930, 190, 150, 130, d.halo('#9ab8ff', 0.28)));
+  s += ecran(E(940, 200, 120, 110, d.halo('#9ab8ff', 0.2)));
   s += brumeSol(d, H - 20, '#8a90c0', 0.12);
   s += vignette(d, 640, 190, 1) + avantPlan();
   return svgTexte(d, W, H, s);
@@ -1121,7 +1127,7 @@ A.sarcoCouvercle = function(){ return art('sv', 300, 76, function(d){
     P('M70 56 C 70 46 96 44 110 46 C 150 42 200 42 236 48 C 244 50 244 58 236 60 C 200 62 150 62 110 60 C 96 62 70 64 70 56 Z', d.lin([[0, '#8a84a0'], [1, '#4a4460']]), ' stroke-width="2.2"') +
     E(84, 53, 12, 8, d.g('#8a84a0'), ' stroke="' + O + '" stroke-width="2"') + L('M150 46 C 150 52 160 54 166 50', '#3a3450', 1.6) + L('M110 50 L 230 50', '#a8a0c0', 1, op(0.5)); }); };
 A.sarcoLumiere = function(){ return art('sl', 300, 176, function(d){
-  return F('M40 66 L 260 66 L 230 -6 L 70 -6 Z', d.lin([[0, '#ffd070', 0], [1, '#ffd070', 0.45]])) + E(150, 64, 110, 14, d.halo('#ffe8a0', 0.9)) + E(150, 50, 70, 40, d.halo('#ffd060', 0.5)); }); };
+  return F('M36 66 L 190 66 L 166 -6 L 60 -6 Z', d.lin([[0, '#ffd070', 0], [1, '#ffd070', 0.45]])) + E(112, 64, 84, 13, d.halo('#ffe8a0', 0.9)) + E(112, 48, 60, 40, d.halo('#ffd060', 0.5)); }); };
 A.amulette = function(){ return art('am', 52, 66, function(d){
   return L('M12 4 Q 26 26 40 4', O, 4.4) + L('M12 4 Q 26 26 40 4', '#e8c062', 2.2) + C(26, 20, 3, '#e8c062', ' stroke="' + O + '" stroke-width="1.6"') +
     P('M10 34 C 2 30 2 22 8 24 C 12 26 14 30 16 32 Z', d.g('#ffe08a'), ' stroke-width="1.8"') + P('M42 34 C 50 30 50 22 44 24 C 40 26 38 30 36 32 Z', d.g('#ffe08a'), ' stroke-width="1.8"') +
@@ -1142,11 +1148,12 @@ A.flamme = function(w, h, c1, c2, c3, o){ return art('fl', w, h, function(d){
     ' C ' + r1(w * 0.96) + ' ' + r1(h * 0.42) + ' ' + w + ' ' + r1(h * 0.7) + ' ' + r1(w * 0.88) + ' ' + r1(h * 0.86) + ' C ' + r1(w * 0.8) + ' ' + r1(h * 0.96) + ' ' + r1(w * 0.66) + ' ' + h + ' ' + r1(w / 2) + ' ' + h + ' Z';
   return F(f, g, o ? ' stroke="#c83a10" stroke-width="2" stroke-opacity=".6"' : ''); }); };
 /* le ruban d'Odette, noué au clou */
-A.ruban = function(){ return art('ru', 44, 84, function(d){
+A.ruban = function(){ return art('ru', 60, 112, function(d){
   var g = d.lin([[0, '#ff6a6a'], [0.5, '#d03a3a'], [1, '#8a1a1a']], 1, 0, 0, 1);
-  return P('M22 8 C 26 30 18 50 24 80 L 30 78 C 26 50 32 30 26 8 Z', g, ' stroke-width="2.2"') + P('M20 8 C 14 28 10 46 4 66 L 10 68 C 16 48 20 30 24 10 Z', g, ' stroke-width="2.2"') +
-    P('M22 8 C 12 -2 4 2 6 10 C 8 16 16 14 22 10 Z', g, ' stroke-width="2.2"') + P('M24 8 C 32 -2 40 2 38 10 C 36 16 28 14 24 10 Z', g, ' stroke-width="2.2"') + C(23, 9, 4, '#b02a2a', ' stroke="' + O + '" stroke-width="2"') +
-    L('M24 20 C 22 40 26 56 26 74', '#ffb0b0', 1, op(0.6)); }); };
+  return P('M28 14 C 36 40 26 70 38 104 L 30 98 L 24 106 C 16 72 26 42 24 16 Z', g, ' stroke-width="2.4"') + P('M27 14 C 18 36 16 60 6 86 L 14 84 L 16 92 C 26 64 30 38 31 16 Z', g, ' stroke-width="2.4"') +
+    P('M28 14 C 14 -2 2 4 6 16 C 10 26 22 22 28 16 Z', g, ' stroke-width="2.4"') + P('M30 14 C 44 -2 58 4 54 16 C 50 26 38 22 30 16 Z', g, ' stroke-width="2.4"') +
+    E(29, 15, 6, 5, '#b02a2a', ' stroke="' + O + '" stroke-width="2.4"') + L('M12 10 Q 18 8 22 14 M48 10 Q 42 8 38 14', '#ffb0b0', 1.4, op(0.7)) +
+    L('M30 28 C 30 52 28 74 32 96 M24 30 C 22 50 18 66 12 82', '#ffb0b0', 1.2, op(0.55)); }); };
 /* des livres qui flottent */
 A.livre = function(c, ouvert){ return art('li', 60, 30, function(d){
   if(ouvert) return E(30, 24, 28, 5, '#0a2a2a', op(0.5)) + P('M4 20 Q 16 12 30 18 Q 44 12 56 20 L 56 24 Q 44 18 30 24 Q 16 18 4 24 Z', d.g(c), ' stroke-width="2"') + P('M8 18 Q 18 10 30 16 L 30 20 Q 18 14 8 22 Z', '#efe4c8', ' stroke-width="1.6"') + P('M52 18 Q 42 10 30 16 L 30 20 Q 42 14 52 22 Z', '#f6ecd6', ' stroke-width="1.6"');
@@ -1169,7 +1176,8 @@ A.chatCorps = function(){ return art('cb', 124, 120, function(d){
     /* le dos, rond comme une poire */
     P('M30 108 C 22 82 28 56 44 44 C 52 38 72 38 80 44 C 96 56 102 82 92 108 Z', g) +
     /* les rayures du chat tigré */
-    L('M40 60 Q 60 54 82 60 M34 74 Q 60 66 90 74 M32 88 Q 60 80 92 88 M36 100 Q 60 94 88 100', GRIS.s, 3, op(0.7)) + L('M62 42 L 62 104', clair(GRIS.c, 0.3), 2.4, op(0.4)) +
+    [54, 68, 82, 96].map(function(y, i){ var l = 22 + i * 3; return L('M58 ' + y + ' Q ' + (58 - l * 0.5) + ' ' + (y - 1) + ' ' + (58 - l) + ' ' + (y + 9), GRIS.s, 3.2, op(0.75)) + L('M66 ' + y + ' Q ' + (66 + l * 0.5) + ' ' + (y - 1) + ' ' + (66 + l) + ' ' + (y + 9), GRIS.s, 3.2, op(0.75)); }).join('') +
+    L('M62 44 L 62 106', GRIS.s, 4, op(0.5)) + L('M58 50 Q 46 62 40 84', clair(GRIS.c, 0.3), 2, op(0.35)) +
     /* la patte avant gauche, posée par terre (on la voit dépasser) */
     P('M36 92 C 30 100 30 108 34 112 L 46 112 C 46 104 44 98 40 92 Z', g, ' stroke-width="2.4"'); }); };
 A.chatPatte = function(){ return art('cp', 124, 120, function(d){
@@ -1389,10 +1397,10 @@ SALLES.portes = function(){
   return {nom: 'La salle aux trois portes', type: 'enigme', ambiance: 'un œil, une gueule, une lune', elements: el}; };
 SALLES['crypte-sarco'] = function(){ var S = SARCO; return {nom: 'La fausse crypte (le sarcophage)', type: 'objet-pose', ambiance: 'le sarcophage, à poser sur le décor de combat de la fausse crypte',
   elements: [
-    {id: 'sarcophage', type: 'sarcophage', nom: 'Le sarcophage', x: S.x, y: S.y, w: S.w, h: S.h, glisse: 120, z: 4,
+    {id: 'sarcophage', type: 'sarcophage', nom: 'Le sarcophage', x: S.x, y: S.y, w: S.w, h: S.h, glisse: 84, z: 4,
       pieces: [{id: 'cuve', svg: A.sarcoCuve(), x: 0, y: 0, w: S.w, h: S.h}, {id: 'interieur', svg: A.sarcoLumiere(), x: 0, y: -10, w: S.w, h: S.h, cache: true},
         {id: 'couvercle', svg: A.sarcoCouvercle(), x: 0, y: 6, w: S.w, h: 76, ox: 150, oy: 64}],
-      amulette: objet({id: 'amulette', nom: 'L\'amulette de vie', svg: A.amulette(), x: S.x + 124, y: S.y - 10, w: 52, h: 66, lueur: '#ffd06a', pour: 'tous'}),
+      amulette: objet({id: 'amulette', nom: 'L\'amulette de vie', svg: A.amulette(), x: S.x + 86, y: S.y - 10, w: 52, h: 66, lueur: '#ffd06a', pour: 'tous'}),
       zone: {x: S.x + 10, y: S.y + 40, w: S.w - 20, h: S.h - 34}},
     poussiere(540, 100, 380, 220, 6, '#c8b0ff', 'spores')
   ]}; };
@@ -1411,7 +1419,7 @@ SALLES.porte4 = function(){ var C0 = CHAT; return {nom: 'La porte aux quatre sig
   elements: [
     halo('lueur-sceau', 612, 60, 200, 200, '#7ff0ff', 0.3, 3200),
     halo('lueur-dessous', 600, SOL - 16, 224, 30, '#ffc070', 0.55, 1700),
-    {id: 'ruban', type: 'deco', nom: 'Le ruban d\'Odette', anim: 'balance', amplitude: 5, duree: 3800, svg: A.ruban(), x: 499, y: 183, w: 44, h: 84, pivot: [23, 8], z: 3},
+    {id: 'ruban', type: 'deco', nom: 'Le ruban d\'Odette', anim: 'balance', amplitude: 4, duree: 3800, svg: A.ruban(), x: 493, y: 178, w: 60, h: 112, pivot: [29, 14], z: 3},
     {id: 'moustache', type: 'chat', nom: 'Moustache', x: C0.x, y: C0.y, w: C0.w, h: C0.h, griffe: [0.78, 0.06], z: 5,
       pieces: [{id: 'queue', svg: A.chatQueue(), x: 0, y: 0, w: 124, h: 120, ox: 44, oy: 108}, {id: 'corps', svg: A.chatCorps(), x: 0, y: 0, w: 124, h: 120, ox: 62, oy: 114},
         {id: 'patte', svg: A.chatPatte(), x: 0, y: 0, w: 124, h: 120, ox: 78, oy: 56}, {id: 'tete-dos', svg: A.chatTeteDos(), x: 0, y: 0, w: 124, h: 120, ox: 62, oy: 48},

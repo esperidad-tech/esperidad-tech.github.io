@@ -594,6 +594,7 @@ R._calque = function(scene){
    ===================================================================== */
 R._debutAction = function(){
   this.jeton++;
+  this.reprise = (this.reprise || 0) + 1;
   this.enAction = true;
   this._couperBoucles();
   return this.jeton;
@@ -603,12 +604,14 @@ R._finAction = function(j, duree){
   this.enAction = false;
   return this._reprendre(duree);
 };
+/* le jeton de reprise : une reprise interrompue par une autre (ou par une action) ne lance pas ses boucles,
+   sinon chaque pièce aurait deux boucles d'attente (la carte graphique ne compose plus, tout est redessiné à chaque image) */
 R._reprendre = function(duree){
-  var self = this;
+  var self = this, n = this.reprise = (this.reprise || 0) + 1;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
   return this._allerA(this._base(), duree == null ? 380 : duree, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
-    if(self.enAction || self.mort) return;
+    if(n !== self.reprise || self.enAction || self.mort) return;
     if(self.attente) self._lancerBoucles();
   });
 };
