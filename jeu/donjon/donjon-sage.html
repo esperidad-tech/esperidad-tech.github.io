@@ -2630,16 +2630,18 @@ function majOdette(){ var g = coinEl && coinEl.querySelector('.coeur-odette'); i
    Glisser et zoomer (un seul transform sur la couche)
    ====================================================================== */
 var Z = {z:.5, tx:0, ty:0, zMin:.3, zMax:2.4};
-var BARRE = 96, BAS = 76;
+var BARRE = 96, BAS = 76, HAUT = 0;
 /* la place prise par la barre d'outils (à droite) et par la rune et le conteur (en bas) */
 function mesurerBords(){ var b = q('#barre'), r = b ? b.getBoundingClientRect() : null, ba = q('#bas'), rb = ba ? ba.getBoundingClientRect() : null;
-  if(r && r.width) BARRE = Math.max(0, window.innerWidth - r.left) + 6; if(rb && rb.height) BAS = Math.max(0, window.innerHeight - rb.top) + 4; }
+  if(r && r.width) BARRE = Math.max(0, window.innerWidth - r.left) + 6; if(rb && rb.height) BAS = Math.max(0, window.innerHeight - rb.top) + 4;
+  var g = q('#grille'); HAUT = g && !g.hidden ? g.getBoundingClientRect().bottom + 8 : 0; }
 function dims(){ var r = table.getBoundingClientRect(); return {w:r.width, h:r.height}; }
 function zoomFit(){ var d = dims(); return Math.min((d.w - BARRE - 8) / PV.w, d.h / PV.h); }
 function borner(){
   var d = dims(), cw = PV.w * Z.z, ch = PV.h * Z.z, aw = d.w - BARRE;
   if(cw <= aw) Z.tx = (aw - cw) / 2; else Z.tx = Math.max(aw - cw - 20, Math.min(20, Z.tx));
-  if(ch + BAS <= d.h) Z.ty = (d.h - BAS - ch) / 2;
+  if(ch + BAS + HAUT <= d.h) Z.ty = HAUT + (d.h - BAS - HAUT - ch) / 2;
+  else if(ch + BAS <= d.h) Z.ty = (d.h - BAS - ch) / 2;
   else if(ch <= d.h) Z.ty = Math.max(d.h - BAS - ch, Math.min((d.h - ch) / 2, Z.ty));
   else Z.ty = Math.max(d.h - BAS - ch - 10, Math.min(20, Z.ty));
 }
@@ -2988,13 +2990,14 @@ function demarrer(){
   q('#grille .cle').innerHTML = PS.cle();
   window.SAGE = {etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit()}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
   construirePlan();
+  majGrille();
   mesurerBords();
   Z.z = zoomFit(); borner(); poser();
   gestes(); rune();
   majBadge(); majGrille();
   q('#b-livre').addEventListener('click', function(){ PG.son('page'); livre(); });
   q('#b-code').addEventListener('click', function(){ PG.son('tic'); unCode(); });
-  q('#b-grille').addEventListener('click', function(){ PG.son('tic'); S.grille = !S.grille; garder(); majGrille(); });
+  q('#b-grille').addEventListener('click', function(){ PG.son('tic'); S.grille = !S.grille; garder(); majGrille(); mesurerBords(); borner(); poser(); });
   q('#b-plus').addEventListener('click', function(){ var d = dims(); zoomer(Z.z * 1.45, (d.w - BARRE) / 2, (d.h - BAS) / 2, true); });
   q('#b-moins').addEventListener('click', function(){ var d = dims(); zoomer(Z.z / 1.45, (d.w - BARRE) / 2, (d.h - BAS) / 2, true); });
   q('#b-nouveau').addEventListener('click', recommencer);
