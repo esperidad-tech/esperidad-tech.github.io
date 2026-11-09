@@ -37,7 +37,13 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
 - Les agents ne modifient les fichiers partagés qu'avec l'outil Edit (pas de script Python ou sed qui réécrit une source).
 - Ce qui est en discussion ne se construit pas sans un « go » explicite de sa part.
 - Jamais de lecture vocale automatique : seulement des boutons 🔊.
-- **Sons et musiques : on travaille UNIQUEMENT avec l'Atelier des sons** (https://esperidad-tech.github.io/brumeval/sons-essai.html, sources `jeu/donjon/essai/sons/`). Dès qu'on parle de son ou de musique, on le met à jour (sans en refaire un autre), et Romain écoute et valide là (Romain, 9 novembre, 9 h 55). La page est compacte, sans description des sons (« je valide au son ») : un titre court, des boutons A, B, C avec un petit carré « validé » dessous, plusieurs sons par rangée, rangés dans des **sections rétractables** (Donjon → Héros / Ennemis / Objets et salles ; Musiques ; Le jeu ; Mini-jeux), pour que tout soit accessible sans défiler à l'infini (Romain, 10 h 41). Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
+- **Sons et musiques : on travaille UNIQUEMENT avec l'Atelier des sons** (https://esperidad-tech.github.io/brumeval/sons-essai.html, sources `jeu/donjon/essai/sons/`). Dès qu'on parle de son ou de musique, on le met à jour (sans en refaire un autre), et Romain écoute et valide là (Romain, 9 novembre, 9 h 55). La page est compacte, sans description des sons (« je valide au son ») : un titre court, des boutons A, B, C avec un petit carré « validé » dessous, plusieurs sons par rangée, rangés dans des **sections rétractables** (Donjon → Héros / Ennemis / Objets et salles ; Musiques ; Le jeu ; Mini-jeux), pour que tout soit accessible sans défiler à l'infini (Romain, 10 h 41).
+- **Donjon : règles de Romain du 9 novembre (10 h 48), valables pour toutes les salles :**
+  - pas de bandeau de texte en haut, l'écran reste sombre ;
+  - deux curseurs de volume discrets (musique / bruitages), avec une barre jaune et un rond noir à liseré jaune ;
+  - des musiques d'ambiance sans aucun bruit qui ressemble à une bête ;
+  - un petit son au toucher des icônes ;
+  - **une fluidité parfaite, même sur une vieille tablette, sans perdre la qualité des animations**. Les règles techniques sont dans `jeu/donjon/RAPIDITE.md`, et tout nouveau module les suit. Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
 - **Boutons jaunes avec texte noir** pour tout bouton « aller / lancer » (§12.16). Avant chaque mini-jeu : une explication + un bouton jaune (`M.lancerMJ`).
 - Quand il demande un lien, coller l'URL.
 - Talents et boutique : plus tard.

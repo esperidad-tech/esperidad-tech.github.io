@@ -2076,6 +2076,16 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - tout en petit, plusieurs sons par rangée ;
   - des **sections rétractables** à la place des onglets à changer, par exemple Donjon → Héros / Ennemis (une sous-section par monstre) / Objets et salles, puis Musiques, Le jeu, Mini-jeux ;
   - tout doit être accessible sans faire défiler la page à l'infini.
+
+**Retour de Romain sur la salle des rats (9 novembre, 10 h 48), valable pour TOUT le donjon :**
+- **Plus de bandeau en haut** : le texte du conteur qui raconte les actions disparaît. C'est assez simple à comprendre, et le haut reste noir pour une ambiance sombre (le bandeau était clair).
+- **Deux curseurs de volume** en haut, l'un pour la musique (🎵), l'autre pour les bruitages. Ils sont discrets et sombres : une petite barre jaune, et un rond noir à liseré jaune qu'on fait glisser.
+- **Les musiques restent des ambiances** : aucun petit bruit strident ou animal qui ressemble aux bêtes (« on est un peu perdu »).
+- **Un petit son quand on touche une icône d'arme ou de potion.** Il est proposé dans l'Atelier, et il sera branché après le choix de Romain.
+- **La fluidité est obligatoire.** Ça rame même sur son iPhone : il faut que ce soit parfaitement fluide, aussi sur de vieilles tablettes, sans perdre la qualité des animations.
+  - Ce qui est en cours : la mesure (processeur ralenti ×4 et ×6) et l'optimisation.
+  - Les règles qui en sortiront iront dans `jeu/donjon/RAPIDITE.md`.
+  - Les monstres en cours de dessin suivent déjà ces règles : aucun filtre, des animations seulement en déplacement / rotation / transparence, et des états dessinés d'avance.
 - **Les badges et l'icône de cible suivent le rat** quand il se dresse, bondit ou mord.
 - **La fuite ramène à l'entrée** : les trois rats reviennent en pleine forme, les héros aussi. Seul le Grand Livre garde ce qu'il a appris, et la question « Fuir la salle ? » le dit avant.
 - Tests : 66 sur 66 pour la salle, 27 sur 27 pour l'Atelier.

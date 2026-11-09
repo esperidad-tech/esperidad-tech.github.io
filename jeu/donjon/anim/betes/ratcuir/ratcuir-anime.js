@@ -758,8 +758,9 @@ B._voler = function(g, depart, arrivee, o){
   var h = o.haut == null ? 60 : o.haut, rot = o.rot || 0, d = o.duree || 900, rebond = o.rebond == null ? 8 : o.rebond;
   var mx = (depart[0] + arrivee[0]) / 2, my = Math.min(depart[1], arrivee[1]) - h;
   function T(p, r, s){ return 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) rotate(' + f1(r) + 'deg) scale(' + (s || 1) + ')'; }
-  var cles = [{offset: 0, transform: T(depart, o.rot0 || 0, o.s0), easing: 'cubic-bezier(.2,.6,.5,1)'}, {offset: .45, transform: T([lerp(depart, arrivee, .5)[0], my], (o.rot0 || 0) + rot * .5), easing: 'cubic-bezier(.5,0,.9,.6)'},
-    {offset: .78, transform: T(arrivee, rot), easing: 'cubic-bezier(.2,.7,.4,1)'}, {offset: .9, transform: T([arrivee[0] + (o.glisse || 0) * .7, arrivee[1] - rebond], rot + (o.bascule || 6)), easing: 'cubic-bezier(.5,0,.9,.6)'}, {offset: 1, transform: T([arrivee[0] + (o.glisse || 0), arrivee[1]], rot)}];
+  var sy = o.sy || 1, ech = function(k){ return '1,' + f1(1 + (sy - 1) * k); };
+  var cles = [{offset: 0, transform: T(depart, o.rot0 || 0, o.s0 || '1,1'), easing: 'cubic-bezier(.2,.6,.5,1)'}, {offset: .45, transform: T([lerp(depart, arrivee, .5)[0], my], (o.rot0 || 0) + rot * .5, '1,1'), easing: 'cubic-bezier(.5,0,.9,.6)'},
+    {offset: .78, transform: T(arrivee, rot, ech(.8)), easing: 'cubic-bezier(.2,.7,.4,1)'}, {offset: .9, transform: T([arrivee[0] + (o.glisse || 0) * .7, arrivee[1] - rebond], rot + (o.bascule || 6), ech(.9)), easing: 'cubic-bezier(.5,0,.9,.6)'}, {offset: 1, transform: T([arrivee[0] + (o.glisse || 0), arrivee[1]], rot, ech(1))}];
   var a = g.animate(cles, {duration: d, delay: o.delai || 0, fill: 'both'});
   if(o.onSol) this._minuteur(o.onSol, (o.delai || 0) + d * .78);
   return a;
@@ -802,7 +803,7 @@ var SOL = 393;
 function dessinerRatcuir(D){
   var poil = '#5c4a57', ventre = '#8f7686', rose = '#d58a9a', fer = '#6c7584';
   var GR = D.grain(), GL = D.glace(), rivG = D.g('#9aa3ad');
-  var rougeG = D.lin([[0, '#ffe890', .95], [.35, '#ff9a30', .92], [.75, '#e8401a', .9], [1, '#9a1a10', .9]], 1, 0, 0, 1);
+  var rougeG = D.lin([[0, '#ffd070', .85], [.35, '#ff7a20', .8], [.75, '#d0301a', .8], [1, '#6a0e10', .85]], 1, 0, 0, 1);
   var acideG = D.lin([[0, '#f0ffa0', .85], [.5, '#a8e040', .75], [1, '#4a7a10', .85]], 1, 0, 0, 1);
   function gel(d){ return '<g data-gel opacity="0">' + F(d, GL) + L(d, '#ffffff', 1.6, ' opacity=".6"') + '</g>'; }
   /* touffes de poil qui dépassent d'un bord (fiche) */
@@ -829,7 +830,7 @@ function dessinerRatcuir(D){
     }
     return L(h, cH, 1.5, ' opacity="' + f1((op || .4) + .1) + '"') + L(b, cB, 1.5, ' opacity="' + f1((op || .4) + .1) + '"');
   }
-  function rivet(x, y, r){ r = r || 4; return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + rivG + '" stroke="' + O + '" stroke-width="1.8"/>' + C(f1(x + r * .3), f1(y - r * .35), f1(r * .35), '#eef6ff', ' opacity=".85"'); }
+  function rivet(x, y, r){ r = r || 4; x = +x; y = +y; return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + rivG + '" stroke="' + O + '" stroke-width="1.8"/>' + C(f1(x + r * .3), f1(y - r * .35), f1(r * .35), '#eef6ff', ' opacity=".85"'); }
   /* la rouille : des plaques orangées et des piqûres sombres, dessinées (pas de filtre) */
   function rouille(z, seed){
     var R = rng(seed), a = '', b = '', c = '', n = Math.max(6, Math.round(z[2] * z[3] / 40));
@@ -971,6 +972,16 @@ function dessinerRatcuir(D){
     plq += piv('plq' + j, f1(cx), f1(cy), s + repere('plq' + j + 'C', f1(cx), f1(cy)));
   });
 
+  /* ---- les lueurs du point faible ouvert (cachées) : la peau du dos, ou le ventre ---- */
+  var lumPF = D.doux('#fff4b0', .95), lumPF2 = D.doux('#ffd040', .8);
+  function lueurPF(nom, x, y, rx, ry, rot){
+    var sc = '';
+    for(var i = 0; i < 5; i++){ var a = i / 5 * Math.PI * 2 + .4; sc += '<g transform="translate(' + f1(x + Math.cos(a) * rx * .9) + ' ' + f1(y + Math.sin(a) * ry * .9) + ')"><path d="' + eclatD(9) + '" fill="#ffffff" class="' + PX + '-scint" style="animation-delay:' + (i * .2) + 's"/></g>'; }
+    return '<g data-pf="' + nom + '" opacity="0"><g transform="rotate(' + rot + ' ' + x + ' ' + y + ')"><ellipse cx="' + x + '" cy="' + y + '" rx="' + rx * 1.5 + '" ry="' + ry * 1.5 + '" fill="' + lumPF2 + '" class="' + PX + '-pulse"/>' +
+      '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + lumPF + '" class="' + PX + '-pulse"/>' + '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx * .8 + '" ry="' + ry * .8 + '" fill="none" stroke="#fff8d0" stroke-width="3" stroke-dasharray="6 7" class="' + PX + '-tourne"/></g>' + sc + '</g>';
+  }
+  var pf = lueurPF('dos', 412, 186, 52, 30, 22) + lueurPF('ventre', 300, 350, 78, 28, -4);
+
   /* ---- la patte arrière proche : la cuisse, sa cuissarde, le long pied ---- */
   var cuisseD = 'M352 286 C 380 248 446 252 468 300 C 482 334 462 372 420 380 C 392 384 366 374 356 352 C 344 330 342 304 352 286 Z';
   var hancheD = 'M382 270 C 410 254 448 262 462 290 C 446 300 420 306 392 302 C 380 292 378 280 382 270 Z';
@@ -1034,11 +1045,11 @@ function dessinerRatcuir(D){
   var email = D.lin([[0, '#f6d27a'], [.6, '#e0a24a'], [1, '#a8652a']], 0, 0, 1, 1);
   var machD = 'M70 318 C 86 344 118 360 154 354 C 172 350 182 340 180 330 C 176 340 160 346 140 346 C 110 346 88 336 70 318 Z';
   var bave = P('M152 344 C 153 356 149 366 151 376 C 153 380 158 380 158 375 C 158 366 156 356 157 344 Z', '#d8f0ff', ' stroke-width="1.6" opacity=".85"') + C(154.5, 373, 1.2, '#fff') + repere('baveBout', 154.5, 377);
-  var machoire = F('M44 292 L 190 300 L 186 338 C 168 352 130 362 100 354 C 72 346 54 326 44 304 Z', D.rad([[0, '#5a1a36'], [.6, '#3a0f22'], [1, '#14040c']], .3, .4, .9)) +
+  var machoire = F('M56 200 L 190 290 L 186 336 C 170 346 140 352 118 350 C 96 348 80 338 70 322 L 60 306 Z', D.rad([[0, '#5a1a36'], [.6, '#3a0f22'], [1, '#14040c']], .3, .4, .9)) +
     F('M88 322 C 110 338 140 342 162 334 C 140 330 112 328 88 322 Z', '#b8546e') + L('M96 326 C 116 334 138 336 156 332', '#e08aa0', 1, ' opacity=".6"') +
     P(machD, D.g(poil)) + P('M80 340 C 78 332 78 324 80 316 L 88 316 C 86 324 86 332 88 340 Z', email, ' stroke-width="2.2"') + L('M83 320 L 83 336', '#fff2c0', 1.2, ' opacity=".6"') +
     P('M101 340 L 104 332 L 108 341 Z M120 343 L 123 335 L 127 343 Z', '#efe2b0', ' stroke-width="1.6"') + gel(machD) + piv('bave', 154, 345, bave);
-  var sousLevre = D.clip('M-100 280 L 50 296 L 60 306 C 94 316 134 326 172 324 C 204 323 232 308 252 286 L 262 480 L -100 480 Z');
+  var sousLevre = D.clip('M56 260 L 56 302 L 60 306 C 94 316 134 326 172 324 C 204 323 232 308 252 286 L 262 480 L 56 480 Z');
   var tete = '<g' + sousLevre + '>' + piv('machoire', 178, 328, machoire) + '</g>';
   tete += frange([[100, 252], [124, 226], [150, 210], [178, 202], [206, 206], [232, 226]], 10, D.g(poil), 61, .4);
   tete += frange([[247, 276], [242, 294], [230, 308], [214, 318], [196, 323], [178, 325]], 9, D.g(clair(poil, .08)), 52, .5);
@@ -1088,13 +1099,18 @@ function dessinerRatcuir(D){
     C(142, 272, 2.6, '#fff') + C(158, 276, 1.2, '#fff', ' opacity=".7"') +
     '<g' + D.clip(irisD) + '>' + piv('paupiere', 149, 262, F('M124 232 L 174 232 L 174 262 C 160 258 140 258 126 266 Z', D.g(sombre(poil, .1))) + L('M126 266 C 140 258 160 258 174 262', O, 2.4)) + '</g>' +
     '<g data-visiere>' + F('M126 266 C 146 260 166 260 176 266 L 172 270 C 160 266 144 266 130 272 Z', '#0c0612', ' opacity=".6"') + '</g>' + repere('oeilC', 148, 275));
+  var patteYeux = tube([[214, 330], [184, 304], [160, 286]], [30, 24, 20]).d, paume = 'M168 300 C 146 300 128 288 124 272 C 122 262 132 258 140 262 C 150 268 160 276 172 280 Z';
+  var doigtsY = '';
+  [[128, 262, -2.4], [136, 256, -2.1], [146, 254, -1.8], [156, 258, -1.5]].forEach(function(d){ var ca = Math.cos(d[2]), sa = Math.sin(d[2]), b = [d[0], d[1]], t = [d[0] + ca * 14, d[1] + sa * 14];
+    doigtsY += P(tube([b, t], [8, 6.4]).d, D.g(rose), ' stroke-width="2"') + P('M' + f1(t[0] - 3) + ' ' + f1(t[1]) + ' Q ' + f1(t[0] + ca * 8 - sa * 3) + ' ' + f1(t[1] + sa * 8 + ca * 3) + ' ' + f1(t[0] + ca * 11 + sa * 2) + ' ' + f1(t[1] + sa * 11 - ca * 2) + ' Q ' + f1(t[0] + ca * 4) + ' ' + f1(t[1] + sa * 4) + ' ' + f1(t[0] + 3) + ' ' + f1(t[1]) + ' Z', '#231a29', ' stroke-width="1.4"'); });
+  tete += piv('patteYeux', 190, 310, '<g data-patte opacity="0">' + P(patteYeux, D.g(clair(poil, .1))) + '<g' + D.clip(patteYeux) + '>' + F(patteYeux, GR) + '</g>' + doigtsY + P(paume, D.g(rose), ' stroke-width="2.6"') + L('M132 270 C 144 278 156 284 168 288', '#ffd6de', 1.4, ' opacity=".6"') + '</g>');
   tete += slot('teteFx') + repere('tete', 160, 250) + repere('bouche', 92, 326) + repere('frappe', 112, 236);
   var teteP = piv('tete', 240, 264, tete);
 
   /* ---- l'assemblage : la queue et les pattes du fond, le corps et son armure, la cuisse, la gorgerette, le bras, l'épaulière, la tête ---- */
   return slot('fixeArr') + piv('pos', 300, SOL, slot('sol') + piv('ombre', 290, 392, ombre) + '<g data-lueur-rouge opacity="0"><ellipse cx="300" cy="380" rx="230" ry="40" fill="' + D.doux('#ff7a20', .55) + '"/></g>' +
     piv('saut', 300, SOL, piv('secousse', 300, 300, piv('posture', 300, 300, piv('corps', 330, 300,
-      queue + cuisseF + brasF + piv('souffle', 330, 368, corps + sangle + plq + slot('pf')) + cuisse + gorge + bras + ep3 + ep2 + ep1 + teteP)))) +
+      queue + cuisseF + brasF + piv('souffle', 330, 368, corps + sangle + plq + pf) + cuisse + gorge + bras + ep3 + ep2 + ep1 + teteP)))) +
     slot('monde')) + slot('fixe');
 }
 
@@ -1105,14 +1121,14 @@ var POSES = {
   normal: {},
   /* ébloui : il se dresse sur ses pattes arrière, une patte sur les yeux, le ventre offert */
   ebloui: (function(){
-    var p = {}, r = rotAutour(40, [392, 390], [300, 300]);
+    var p = {}, r = rotAutour(58, [392, 390], [300, 300]);
     p.posture = {a: r.a, x: r.x, y: r.y};
-    p.cuisse = {a: -16}; p.pied = {a: -24}; p.cuisseF = {a: -18}; p.piedF = {a: -22};
-    p.tete = {a: -24, x: 8, y: 4}; p.machoire = {a: -16}; p.oreille = {a: 20};
-    p.bras = {a: 64, x: -6, y: 4}; p.avbras = {a: 36}; p.main = {a: 30};
-    p.brasF = {a: 72}; p.avbrasF = {a: -50}; p.mainF = {a: -30};
-    p.q0 = {a: -28}; p.q1 = {a: -16}; p.q2 = {a: -8}; p.q3 = {a: 4}; p.q4 = {a: 6};
-    p.chaine = {a: -34};
+    p.cuisse = {a: -26}; p.pied = {a: -32}; p.cuisseF = {a: -28}; p.piedF = {a: -30};
+    p.tete = {a: -34, x: 12, y: 8}; p.machoire = {a: -18}; p.oreille = {a: 24};
+    p.bras = {a: 46, x: -4}; p.avbras = {a: 40}; p.main = {a: 30};
+    p.brasF = {a: 96}; p.avbrasF = {a: -40}; p.mainF = {a: -30};
+    p.q0 = {a: -40}; p.q1 = {a: -24}; p.q2 = {a: -14}; p.q3 = {a: -4}; p.q4 = {a: 4};
+    p.chaine = {a: -50};
     return p;
   })(),
   /* sur le dos : retourné, le ventre en l'air, les pattes en haut */
@@ -1164,7 +1180,7 @@ R._base = function(){
   var p = copie(POSES[this._mode()]), m = this._mode();
   if(this.etat.enrage && m === 'normal'){ p.sourcil = {a: -10, y: 5}; p.oreille = {a: 14}; p.tete = {a: -3, x: -3}; }
   if(this.etat.cible && m === 'normal'){ p.posture = {y: 3, x: 2}; p.tete = {a: -5, x: -2, y: 3}; p.oreille = {a: 18}; p.sourcil = {a: -6, y: 3}; p.saut = {sy: .97, sx: 1.02}; }
-  if(this.etat.tournis && !this.etat['sans-casque']) p.casque = {a: -15, x: 4, y: 8};
+  if(this.etat.tournis && !this.etat['sans-casque']) p.casque = {a: -22, x: -2, y: 12};
   if(this.etat.rougeoie && m === 'normal') p.machoire = {a: -6};
   return p;
 };
@@ -1349,6 +1365,12 @@ R._specsGivre = function(){
     {slot: 'tete', x: 150, y: 206, a: -100, n: 3, l: 14, etendue: 40, seed: 9}, {slot: 'cuisse', x: 440, y: 272, a: -40, n: 2, l: 12, seed: 11}, {slot: 'q3', x: 528, y: 262, a: 0, n: 2, l: 10, seed: 13}];
 };
 R._pfActif = function(){ return this._mode() === 'normal' ? 'dos' : 'ventre'; };
+R._e_ebloui = function(on){
+  this._fondu(this.svg.querySelector('[data-patte]'), on ? 1 : 0, 300);
+  var p = Bete.prototype._e_ebloui.call(this, on);
+  this._majPointFaible();
+  return p;
+};
 
 /* ---- les états propres : nu, sans-casque, rougeoie, tournis ; et enragé, retourné ---- */
 R._e_enrage = function(on){
@@ -1417,7 +1439,7 @@ R._rougir = function(on){
 };
 R._e_tournis = function(on){
   this.etat.tournis = on;
-  if(on) this._allumerEtoiles({slot: 'teteFx', cx: 170, cy: 170, rx: 60, ry: 16, r: 11, n: 4, duree: 2000, lueur: false, scint: false}, 'tournis');
+  if(on) this._allumerEtoiles({slot: 'teteFx', cx: 160, cy: 168, rx: 66, ry: 16, r: 13, n: 4, duree: 1800, lueur: false, scint: false}, 'tournis');
   else this._eteindreEtoiles('tournis');
   this._fondu(this.svg.querySelector('[data-spirale]'), on ? 1 : 0, 250);
   this._fondu(this.svg.querySelector('[data-pupille]'), on ? 0 : 1, 250);
@@ -1465,13 +1487,13 @@ R._detacher = function(noms, parent){
 /* faire tomber une pièce d'armure : elle glisse, tombe, rebondit, tinte, et reste au sol */
 R._tomber = function(nom, o){
   o = o || {};
-  var self = this, d = this._detacher(nom.split('+')), bb = d.bb, plat = Math.random() < .7;
-  var rot = (plat ? 0 : 180) - d.ang + hasard(-12, 12), basY = plat ? bb.y + bb.height : -bb.y;
-  var x = d.c[0] + (o.dx == null ? hasard(-40, 30) : o.dx), y = SOL - Math.max(4, basY * .8) + hasard(0, 3);
-  var dur = o.duree || hasard(700, 900);
-  var a = this._voler(d.g, d.c, [x, y], {haut: o.haut == null ? hasard(10, 30) : o.haut, rot: rot + (o.tours || 0) * 360, duree: dur, rebond: 6, bascule: hasard(-8, 8), glisse: hasard(-10, 10),
-    onSol: function(){ self._etincelles([x, SOL - 4], 5, {v: 30, grav: 10}); self._poussiere([x, SOL], 2, hasard(-1, 1) < 0 ? -1 : 1); if(o.onTinte) try{ o.onTinte(nom); }catch(e){} }});
-  a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} if(d.g.isConnected) self.S.fixeArr.appendChild(d.g); }, function(){});
+  var self = this, d = this._detacher(nom.split('+')), bb = d.bb, plat = Math.random() < .85, petit = /^ann/.test(nom);
+  var rot = (plat ? 0 : 180) - d.ang + hasard(-10, 10), basY = plat ? bb.y + bb.height : -bb.y, sy = petit ? 1 : .55;
+  var x = d.c[0] + (o.dx == null ? (d.c[0] < 330 ? -1 : 1) * hasard(30, 90) : o.dx), y = SOL - Math.max(3, basY * sy * .85) + hasard(0, 3);
+  var dur = o.duree || hasard(750, 950);
+  var a = this._voler(d.g, d.c, [x, y], {haut: o.haut == null ? hasard(16, 40) : o.haut, rot: rot + (o.tours || 0) * 360, duree: dur, rebond: 6, bascule: hasard(-8, 8), glisse: hasard(-12, 12), sy: sy,
+    onSol: function(){ self._etincelles([x, SOL - 4], 5, {v: 30, grav: 10}); self._poussiere([x, SOL], 2, x < 330 ? -1 : 1); if(o.onTinte) try{ o.onTinte(nom); }catch(e){} }});
+  a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} }, function(){});
   (this.fx.debrisArmure = this.fx.debrisArmure || []).push(d.g);
   return a;
 };
@@ -1792,7 +1814,7 @@ R._s_tournis = function(o){
   this.coupsLouche = 1;
   var k = [{t: 0, p: {}}, {t: .1, p: {saut: {sy: .84, sx: 1.08, y: 4}, tete: {a: -12, y: 10}, casque: {y: 6}, machoire: {a: -20}, paupiere: {y: 16}, oreille: {a: 34}}, e: 'cubic-bezier(.1,.9,.3,1)'}];
   for(var i = 0; i < 7; i++) k.push({t: .18 + i * .07, p: {casque: {a: (i % 2 ? 1 : -1) * (14 - i * 1.6), y: 4 - i * .4}, saut: {sy: 1, sx: 1, y: 0}}, e: 'ease-in-out'});
-  k.push({t: .72, p: {casque: {a: -15, x: 4, y: 8}, tete: {a: 6, y: 0}, posture: {a: 5, x: 6}, paupiere: {y: 6}}, e: 'ease-out'});
+  k.push({t: .72, p: {casque: {a: -22, x: -2, y: 12}, tete: {a: 6, y: 0}, posture: {a: 5, x: 6}, paupiere: {y: 6}}, e: 'ease-out'});
   k.push({t: 1, p: {posture: {a: -3, x: -3}, tete: {a: -4}, machoire: {a: -6}, paupiere: {y: 0}, oreille: {a: 0}}, e: 'ease-in-out'});
   this._minuteur(function(){ self._e_tournis(true); }, 450);
   return this._seq(k, 1400).fini.then(function(){ return self._finAction(j, 300); });
@@ -1810,9 +1832,9 @@ R._s_casque_tombe = function(o){
     self._eteindreEtoiles('tournis');
     self.etat.tournis = false;
     self._tous('[data-visiere]').forEach(function(e){ e.setAttribute('opacity', 0); });
-    var d = self._detacher(['casque', 'casqueAv']), x = d.c[0] - 110, y = SOL - 16;
+    var d = self._detacher(['casque', 'casqueAv']), x = d.c[0] - 150, y = SOL - 58;
     self.etat['sans-casque'] = true;
-    var a = self._voler(d.g, d.c, [x, y], {haut: 110, rot: -d.ang - 360 - 20, duree: 950, rebond: 14, bascule: 14, glisse: -10, onSol: function(){ self._etincelles([x, SOL - 4], 8, {v: 40}); self._poussiere([x, SOL], 3, -1); if(o.onTinte) try{ o.onTinte('casque'); }catch(e){} }});
+    var a = self._voler(d.g, d.c, [x, y], {haut: 120, rot: 180 - d.ang - 360, duree: 1000, rebond: 14, bascule: 14, glisse: -10, onSol: function(){ self._etincelles([x, SOL - 4], 8, {v: 40}); self._poussiere([x, SOL], 3, -1); if(o.onTinte) try{ o.onTinte('casque'); }catch(e){} }});
     (self.fx.debrisCasque = self.fx.debrisCasque || []).push(d.g);
     a.finished.then(function(){
       try{ a.commitStyles(); a.cancel(); }catch(e){}

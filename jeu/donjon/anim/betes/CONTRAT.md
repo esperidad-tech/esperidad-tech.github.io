@@ -85,6 +85,22 @@ Pour les ancres :
   - pas plus d'environ 80 éléments animés à la fois ;
   - toutes les boucles s'arrêtent avec `arreter()`.
 
+## 4 bis. La rapidité (exigence de Romain, 9 novembre, 10 h 48 : « ça rame même sur mon iPhone »)
+
+Ces règles sont strictes. Le détail, avec la mesure, viendra dans `jeu/donjon/RAPIDITE.md`.
+
+1. **Aucun filtre** sur la bête, ses pièces ou ses effets :
+   - pas de filtre SVG (feTurbulence, feGaussianBlur, feDropShadow…), ni CSS (filter, drop-shadow, blur) ;
+   - pas de mix-blend-mode, ni de box-shadow animée ;
+   - pas de grain ; les halos et les flous deviennent des dégradés radiaux.
+2. **Les animations ne touchent que `transform` et `opacity`.** Jamais de fill, stroke, d, points, r ou d'attributs SVG animés.
+3. **Les états visuels sont des variantes dessinées d'avance**, qu'on montre ou qu'on cache. On ne change pas de couleur à la volée.
+4. **Chaque pièce `<g data-j>` garde un contenu fixe**, pour qu'on puisse la « cuire » en image bitmap animée par la carte graphique.
+5. **Les particules** sont simples, sans filtre, au plus environ 25 à la fois, et retirées à la fin.
+6. **La mesure** se fait avec le processeur ralenti ×6 (CDP `Emulation.setCPUThrottlingRate`), sur une page mobile 1024 × 768 avec `device_scale_factor` 2 :
+   - au moins 50 images par seconde à l'attente ;
+   - au moins 40 pendant les actions.
+
 ## 5. La vérification
 
 - `demo.html` montre la bête à sa vraie taille, sur un fond sombre de 960 × 540, avec trois héros figés à gauche (un simple rectangle suffit). Il y a un bouton par méthode et par type de coup, et un bouton « Tout jouer ».

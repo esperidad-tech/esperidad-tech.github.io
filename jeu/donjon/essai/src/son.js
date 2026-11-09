@@ -19,7 +19,7 @@ var CHOIX = S.CHOIX_SONS = {
   swish:['A', 'B', 'C'], chairD:['C'], metal:['B'],
   ratFleche:['A', 'B', 'C'], ratDague:['A', 'B', 'C'], ratFeu:['A', 'B', 'C'], ratLumiere:['A', 'B', 'C'],
   ratLouche:['B', 'C'], ratColle:['B', 'C'], ratHuile:['A', 'B'], ratNuage:['A', 'C'], ratFuite:['A'],
-  ratCritique:['C'],            /* refait le 10 novembre ; en attendant le choix de Romain : la « Déflagration », la plus violente */
+  ratCritique:['A', 'C'],       /* refait le 10 novembre ; Romain garde A « Coup de tonnerre » et C « Déflagration » (9 novembre, 10 h 41) */
   explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B']
 };
 /* un rat enragé crie plus grave et plus rauque */
@@ -68,10 +68,22 @@ function pret(){ return !!ctx && actif && ctx.state !== 'closed'; }
 function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
 /* id : « arc », « ratFeu »… ; o.dt : retard en secondes ; o.voix : la voix du rat (o.enrage : la voix enragée) ;
    o.partie : pour le critique, « avant », « impact » ou « explosion ». Rend {duree, moment} (ou null). */
+/* le critique est joué en plusieurs morceaux (avant, impact, explosion) : on tire sa version UNE fois par coup,
+   au premier morceau, et les morceaux suivants (dans les 5 secondes) gardent la même. La A n'a pas de morceau « avant » :
+   son ralenti reste silencieux, comme dans la version que Romain a écoutée et gardée. */
+var critique = {v:null, quand:0};
+function versionDe(id, o){
+  if(o.version) return o.version;
+  if(!o.partie) return tire(CHOIX[id]);
+  var maintenant = Date.now();
+  if(o.partie === 'avant' || !critique.v || maintenant - critique.quand > 5000) critique.v = tire(CHOIX[id]);
+  critique.quand = maintenant;
+  return critique.v;
+}
 function bruitage(id, o){
   o = o || {};
   if(!pret() || !A || !window.BRUITAGES || !CHOIX[id]) return null;
-  var v = o.version || tire(CHOIX[id]), cle = id + v, fn = window.BRUITAGES[cle];
+  var v = versionDe(id, o), cle = id + v, fn = window.BRUITAGES[cle];
   if(o.cale != null && fn && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
   var P = A.prise(t, niveau(cle)), r = null;
