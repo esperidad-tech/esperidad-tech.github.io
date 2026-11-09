@@ -149,6 +149,9 @@ function lire(t){
 }
 function taire(){ try{ speechSynthesis.cancel(); }catch(e){} }
 
+/* un refus dit en deux mots, au-dessus de celui qu'on a touché (le bandeau du conteur est retiré : Romain, 9 novembre, 10 h 48) */
+function refus(x, t, y){ son('clic'); Fx.mot(x, y == null ? 96 : y, t, 'refus'); }
+
 /* ================= le conteur ================= */
 function conte(t){
   E.texte = t;
@@ -391,6 +394,7 @@ function cuire(){
   /* des images assez fines pour l'écran (et pour le zoom du critique), sans gaspiller la mémoire */
   function res(largeurPx, unites){ return Math.max(.8, Math.min(2.6, largeurPx / unites * s * dpr * 1.25)); }
   var l = [];
+  if(Fx.cuire) Fx.cuire();               /* les rayons et l'étoile du critique, en images */
   if(window.RatAnime && RatAnime.preparer) l.push(RatAnime.preparer({res:res(206, 540)}));
   if(window.HerosAnime && HerosAnime.preparer) l.push(HerosAnime.preparer(ORDRE.map(function(h){ return {role:h, lk:LOOK[h]}; }), {res:res(200, 250)}));
   cuisson = Promise.all(l).catch(function(e){ if(window.console) console.warn('cuisson', e); });
@@ -587,8 +591,8 @@ function viser(){
 }
 function choisirHeros(h){
   var s = E.h[h];
-  if(s.sol){ conte(HER[h].Le + ' est au sol, la tête qui tourne.'); return; }
-  if(s.joue){ conte(HER[h].Le + ' a déjà joué ce tour-ci. Chacun son tour !'); return; }
+  if(s.sol){ conte(HER[h].Le + ' est au sol, la tête qui tourne.'); refus(hCx(h), 'Au sol !'); return; }
+  if(s.joue){ conte(HER[h].Le + ' a déjà joué ce tour-ci. Chacun son tour !'); refus(hCx(h), 'Déjà joué'); return; }
   son('clic');
   E.sel = h; E.geste = null; E.mode = 'gestes';
   var p = {sage:'Le Sage remonte ses lunettes et réfléchit. Que faire ?', alchimiste:'L\'Alchimiste fouille dans son sac qui cliquette. Que faire ?', pisteur:'Le Pisteur tend l\'oreille, une flèche entre les doigts. Que faire ?'};
@@ -603,7 +607,7 @@ function choisirGeste(g){
   if(g.indexOf('p:') === 0 && !recetteOk(h, g.slice(2))){
     var id = g.slice(2);
     conte(h === 'pisteur' ? 'Une flèche trempée dans ' + (id === 'baume' ? 'le Baume' : id === 'coeur' ? 'le Cœur vaillant' : 'le Fumigène') + ' ? Ça ne tiendrait pas sur la pointe.' : 'Personne n\'est au sol. Le Cœur vaillant attendra son heure.');
-    return;
+    refus(hCx(h), h === 'pisteur' ? 'Impossible !' : 'Personne au sol'); return;
   }
   E.geste = g; E.mode = 'cible';
   var t = typeCible(g), qn = {rat:'Sur quel rat ?', devant:'Seul le rat de devant est à portée. On y va ?', heros:'Pour qui ?', sol:'Qui relever ?', salle:'Le nuage remplira toute la salle. On le lance sur la bande ?'};
@@ -626,13 +630,13 @@ function toucherPerso(type, id){
   var cb = ciblesValides();
   if(type === 'heros'){
     if(E.mode === 'cible' && cb.heros.indexOf(id) >= 0) return agir(E.sel, E.geste, {heros:id});
-    if(E.mode === 'cible' && typeCible(E.geste) === 'sol'){ conte(HER[id].Le + ' tient encore debout. Le Cœur vaillant, c\'est pour quelqu\'un qui est au sol.'); return; }
+    if(E.mode === 'cible' && typeCible(E.geste) === 'sol'){ conte(HER[id].Le + ' tient encore debout. Le Cœur vaillant, c\'est pour quelqu\'un qui est au sol.'); refus(hCx(id), 'Encore debout'); return; }
     if(E.mode === 'qui' || E.mode === 'gestes' || E.mode === 'cible'){ if(id !== E.sel || E.mode === 'qui') choisirHeros(id); }
     return;
   }
   var r = E.r[+id]; if(!r || r.mort) return;
   if(E.mode === 'cible' && cb.rats.indexOf(r.i) >= 0) return agir(E.sel, E.geste, {rat:r});
-  if(E.mode === 'cible' && typeCible(E.geste) === 'devant'){ conte('Trop loin ! Seul le rat de devant est à portée.'); return; }
+  if(E.mode === 'cible' && typeCible(E.geste) === 'devant'){ conte('Trop loin ! Seul le rat de devant est à portée.'); refus(rCx(r.i), 'Trop loin !', rTop(r.i) - 30); return; }
   if(E.mode === 'qui' || E.mode === 'gestes' || E.mode === 'cible'){
     var t = 'Ce rat a l\'œil sur ' + HER[r.vise].le + '.';
     if(r.ouvert) t = 'Ce rat est ventre à l\'air ! Il ne fait plus le malin.';

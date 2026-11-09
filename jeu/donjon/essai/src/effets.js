@@ -175,6 +175,51 @@ function texteVignette(){
   }catch(e){ VIGNETTE = ''; }
   return VIGNETTE;
 }
+/* Les rayons dorés et l'étoile du critique, « cuits » en images une fois (pendant l'écran du sac) : en CSS, le dégradé
+   conique masqué (mask-image) et l'étoile découpée (clip-path) obligent la carte graphique à redessiner une surface
+   cachée + un masque à CHAQUE image pendant qu'ils tournent et grossissent. En image, elle les déplace seulement.
+   Même dessin : rayons tous les 18°, montée de 6° à 8,5°, descente jusqu'à 11°, couleur #ffeca0 ; fondu radial
+   (opaque jusqu'à 8 %, 0,85 à 35 %, transparent au bord). Sans canvas : la version CSS (la même, en plus lourd). */
+var RAYONS = null, ETOILE = null, CUITES = [];
+function garder(src){ var i = new Image(); i.src = src; if(i.decode) i.decode().catch(function(){}); CUITES.push(i); return src; }
+function cuireCritique(){
+  if(RAYONS !== null) return;
+  RAYONS = ''; ETOILE = '';
+  /* et les grandes images des effets, décodées d'avance (sinon le premier critique ou le premier nuage hoquette) */
+  ['choc-a', 'choc-b', 'fumee-a', 'fumee-b', 'fumee-c', 'brume-a', 'brume-b'].forEach(function(n){ var s = img(n); if(s) garder(s); });
+  try{
+    var T = 1024, R = T / 2, c = document.createElement('canvas'); c.width = c.height = T;
+    var g = c.getContext('2d'), pas = .25;
+    g.translate(R, R);
+    if(g.createConicGradient){
+      var cg = g.createConicGradient(-Math.PI / 2, 0, 0), J = 'rgba(255,236,150,';   /* 0° = en haut, comme conic-gradient */
+      cg.addColorStop(0, J + '0)');
+      for(var k = 0; k < 20; k++){ var b = k * 18; cg.addColorStop((b + 6) / 360, J + '0)'); cg.addColorStop((b + 8.5) / 360, J + '1)'); cg.addColorStop((b + 11) / 360, J + '0)'); }
+      cg.addColorStop(1, J + '0)');
+      g.fillStyle = cg; g.fillRect(-R, -R, T, T);
+    } else for(var a = 0; a < 360; a += pas){
+      var m = a % 18, al = m < 6 ? 0 : m < 8.5 ? (m - 6) / 2.5 : m < 11 ? 1 - (m - 8.5) / 2.5 : 0;
+      if(al <= 0) continue;
+      var a0 = (a - 90) * Math.PI / 180, a1 = (a + pas - 90) * Math.PI / 180;
+      g.fillStyle = 'rgba(255,236,150,' + al.toFixed(3) + ')';
+      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fill();
+    }
+    g.globalCompositeOperation = 'destination-in';
+    var gr = g.createRadialGradient(0, 0, 0, 0, 0, R);
+    gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.08, 'rgba(0,0,0,1)'); gr.addColorStop(.35, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(-R, -R, T, T);
+    var e = document.createElement('canvas'), N = 128, h = N / 2; e.width = e.height = N;
+    var ge = e.getContext('2d'), ge2 = ge.createRadialGradient(h, h, 0, h, h, h);
+    ge2.addColorStop(0, 'rgba(255,255,255,1)'); ge2.addColorStop(.7, 'rgba(255,255,255,0)');
+    var P = [[50, 0], [58, 42], [100, 50], [58, 58], [50, 100], [42, 58], [0, 50], [42, 42]];
+    ge.beginPath(); P.forEach(function(p, i){ ge[i ? 'lineTo' : 'moveTo'](p[0] * N / 100, p[1] * N / 100); }); ge.closePath();
+    ge.fillStyle = ge2; ge.fill();
+    if(c.toBlob){
+      c.toBlob(function(b){ if(b) RAYONS = garder(URL.createObjectURL(b)); });
+      e.toBlob(function(b){ if(b) ETOILE = garder(URL.createObjectURL(b)); });
+    } else { RAYONS = garder(c.toDataURL('image/png')); ETOILE = garder(e.toDataURL('image/png')); }
+  }catch(x){ RAYONS = ''; ETOILE = ''; }
+}
 /* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
@@ -215,14 +260,16 @@ function critique(x, y, n, exploser, son, o){
     return plus(60).then(function(){ choc.src = img('choc-b'); return plus(60); }).then(function(){ choc.remove(); (S.mesures = S.mesures || []).push(Math.round(performance.now() - t0)); });
   }).then(function(){
     /* 3) onde de choc, rayons dorés, tremblement, étincelles, « CRITIQUE ! », le chiffre, le rat qui explose, la brume */
-    var rayons = el('div', 'crit-rayons'); rayons.style.left = x + 'px'; rayons.style.top = y + 'px'; L.fx.appendChild(rayons);
+    var rayons = RAYONS ? el('img', 'crit-rayons cuit') : el('div', 'crit-rayons'); if(RAYONS){ rayons.src = RAYONS; rayons.alt = ''; }
+    rayons.style.left = x + 'px'; rayons.style.top = y + 'px'; L.fx.appendChild(rayons);
     anime(rayons, [{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(1.3) rotate(12deg)', opacity:1, offset:.18}, {transform:'translate(-50%,-50%) scale(1.65) rotate(40deg)', opacity:0}], {duration:1300, easing:'ease-out'}).then(function(){ rayons.remove(); });
     onde(x, y, '#fff3b0', 420, 480); setTimeout(function(){ onde(x, y, '#ffb030', 640, 700); }, 90);
     tremble(16, 560);
     etincelles(x, y, 44, null, 1.2);
     var flash = el('div', 'crit-eclair'); flash.style.left = x + 'px'; flash.style.top = y + 'px'; L.fx.appendChild(flash);
     anime(flash, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.4)', opacity:0}], {duration:380, easing:'ease-out'}).then(function(){ flash.remove(); });
-    var t = el('div', 'crit-texte', '<i class="crit-halo"></i><b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b><i class="crit-etoile"></i>');
+    var t = el('div', 'crit-texte', '<i class="crit-halo"></i><b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
+      (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
     t.style.left = Math.max(310, Math.min(650, x)) + 'px'; t.style.top = Math.max(110, y - 120) + 'px';
     E.appendChild(t);
     anime(t, [{transform:'translate(-50%,-50%) scale(3.4) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.9) rotate(-3deg)', opacity:1, offset:.09},
@@ -258,7 +305,7 @@ function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; texteVignette(); }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; texteVignette(); }, cuire:cuireCritique, cuites:function(){ return {rayons:RAYONS, etoile:ETOILE}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();

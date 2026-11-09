@@ -3,21 +3,21 @@
  "mesures": [
   {
    "ips": 60,
-   "pire": 33,
+   "pire": 17,
    "lentes": 0,
    "nom": "attente (vol sur place)",
    "objectif": 50
   },
   {
-   "ips": 58,
-   "pire": 33,
+   "ips": 60,
+   "pire": 17,
    "lentes": 0,
    "nom": "piqué",
    "objectif": 40
   },
   {
-   "ips": 60,
-   "pire": 17,
+   "ips": 59,
+   "pire": 33,
    "lentes": 0,
    "nom": "flèche d'argent",
    "objectif": 40
@@ -58,22 +58,22 @@
    "objectif": 50
   },
   {
-   "ips": 59,
-   "pire": 33,
+   "ips": 60,
+   "pire": 17,
    "lentes": 0,
    "nom": "lumière : folle",
    "objectif": 40
   },
   {
    "ips": 60,
-   "pire": 33,
+   "pire": 17,
    "lentes": 0,
    "nom": "attente folle",
    "objectif": 50
   },
   {
-   "ips": 59,
-   "pire": 33,
+   "ips": 60,
+   "pire": 17,
    "lentes": 0,
    "nom": "deux piqués (folle)",
    "objectif": 40

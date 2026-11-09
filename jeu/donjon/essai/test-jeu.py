@@ -5,7 +5,10 @@
 - règles du 9 novembre : la rage reste jusqu'à la fin, la brûlure enlève 4 PV à chaque tour des rats, le bouclier montre ce qu'il absorbe ;
 - aucune erreur JavaScript, aucune lecture vocale sans bouton 🔊, le son démarre au premier toucher ;
 - 10 novembre : les sons choisis par Romain (tirés au hasard parmi ses versions), la musique (exploration au sac, combat + le puits),
-  le bouton 🎵/🔇 qui coupe aussi la musique, les badges qui suivent le rat, et la fuite qui ramène les trois rats en pleine forme ;
+  les badges qui suivent le rat, et la fuite qui ramène les trois rats en pleine forme ;
+- 9 novembre (fluidité, RAPIDITE.md) : plus de bandeau du conteur en haut pendant le combat ; à sa place, deux petites
+  barres de volume (🎵 musique, 💥 bruitages ; 0 = coupé), aussi sur l'écran du sac ; un petit bruit au toucher des icônes
+  d'armes et de potions ; les acteurs sont « cuits » (pièces en images, plus de grand SVG ni de filtre vivant) ;
 - des captures dans captures/ aux moments clés."""
 import os, sys
 from playwright.sync_api import sync_playwright
