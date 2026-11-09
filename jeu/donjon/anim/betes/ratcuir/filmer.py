@@ -24,9 +24,15 @@ def planche(poses, cadrage):
     d = ImageDraw.Draw(img)
     fg, fp = ImageFont.truetype(POLICE_G, 17), ImageFont.truetype(POLICE, 13)
     d.text((10, 14), ID + ' — poses clés (taille réelle, comme dans le jeu)', font=ImageFont.truetype(POLICE_G, 20), fill=(255, 227, 163))
-    for k, (nom, sous, png) in enumerate(poses):
+    for k, (nom, sous, png, propre) in enumerate(poses):
         cx, cy = 8 + (k % col) * (w + 8), 50 + 8 + (k // col) * (h + pied + 8)
-        im = Image.open(io.BytesIO(png)).crop((x, y, x + w, y + h))
+        if propre:
+            px, py, pw, ph = propre
+            im = Image.open(io.BytesIO(png)).crop((px, py, px + pw, py + ph))
+            im.thumbnail((w, h))
+            fond = Image.new('RGB', (w, h), (12, 9, 18)); fond.paste(im, ((w - im.width) // 2, (h - im.height) // 2)); im = fond
+        else:
+            im = Image.open(io.BytesIO(png)).crop((x, y, x + w, y + h))
         img.paste(im, (cx, cy))
         d.rectangle([cx, cy + h, cx + w, cy + h + pied], fill=(28, 22, 40))
         d.text((cx + 8, cy + h + 4), '%d. %s' % (k + 1, nom), font=fg, fill=(255, 227, 163))
@@ -54,13 +60,15 @@ def main():
         pg.wait_for_timeout(700)
         plan = pg.evaluate('PLAN')
         cadrage = pg.evaluate('window.CADRAGE || [400, 40, 520, 340]')
-        for k, (nom, sous, etapes, duree, attendre, pose) in enumerate(plan):
+        for k, e in enumerate(plan):
+            nom, sous, etapes, duree, attendre, pose = e[:6]
+            propre = e[6] if len(e) > 6 else None
             pg.evaluate("([a, b]) => etiquette(a, b)", [nom, sous])
             pg.evaluate("""(etapes) => { window.__fini = false; etapes.reduce((p, e) => p.then(() => etape(e)), Promise.resolve()).then(() => { window.__fini = true; }, (e) => { console.error(e && e.stack || e); window.__fini = true; }); }""", etapes)
             if pose is not None:
                 t = int(duree * pose)
                 pg.wait_for_timeout(t)
-                poses.append((nom, sous, pg.screenshot()))
+                poses.append((nom, sous, pg.screenshot(), propre))
                 pg.wait_for_timeout(duree - t)
             else:
                 pg.wait_for_timeout(duree)

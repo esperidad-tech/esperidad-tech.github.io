@@ -96,6 +96,8 @@ function boite(A, t, f, g, dest){
   A.bruit(t, {hp:5000, env:A.perc(.0005, .006), g:g * .5}, dest);
 }
 /* une flûte creuse (le puits qui chante) */
+/* une goutte d'eau grave dans une grande salle : basse et douce, pour ne jamais ressembler à un petit cri */
+function goutteGrave(A, t, g, dest){ A.goutte(t, {f:h(300, 480), monte:1.5, gl:.035, g:g}, dest); }
 function flute(A, t, f, d, g, dest){
   A.ton(t, {f:f, env:[[0, 0], [.25, 1], [d * .55, .7], [d, 0]], g:g, vib:[4.5, f * .006], vibRetard:.4}, dest);
   A.ton(t, {f:f * 2, env:[[0, 0], [.3, 1], [d * .5, .5], [d, 0]], g:g * .12}, dest);
@@ -111,8 +113,8 @@ M.exploA = function(A, P){
   souffle(I, {dest:proche, f:380, g:.05});
   var accords = [[62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 60, 64]];
   I.chaque(.5, 11, function(t, n){ A.nappe(t, accords[n % 4].map(m), 14, {a:4, r:4.5, lp:900, lp1:300, g:.028}, proche); });
-  I.chaque(1.2, function(){ return h(1.3, 4.5); }, function(t){ A.goutte(t, {f:h(900, 1900), g:h(.03, .08)}, Math.random() < .6 ? ech : loin); });
-  var penta = [74, 77, 79, 81, 84, 86, 89];
+  I.chaque(1.2, function(){ return h(3, 7); }, function(t){ goutteGrave(A, t, h(.03, .06), Math.random() < .6 ? ech : loin); });
+  var penta = [74, 77, 79, 81, 84, 86];
   I.chaque(3, function(){ return h(4, 9); }, function(t){
     var k = Math.floor(Math.random() * penta.length), nb = Math.random() < .35 ? 2 + Math.floor(Math.random() * 2) : 1, dir = Math.random() < .5 ? -1 : 1;
     for(var i = 0; i < nb; i++){
@@ -148,10 +150,10 @@ M.exploB = function(A, P){
     else if(n % 8 === 2) joue(t + .5, phrase2, 0);
     else if(Math.random() < .6){
       var notes = accords[n % 4];
-      boite(A, t + h(1, 5), m(notes[Math.floor(Math.random() * 3)] + 24), .045, ech);
+      boite(A, t + h(1, 5), m(notes[Math.floor(Math.random() * 3)] + 12), .045, ech);
     }
   });
-  I.chaque(4, function(){ return h(5, 10); }, function(t){ A.goutte(t, {f:h(1000, 1700), g:h(.03, .06)}, ech); });
+  I.chaque(4, function(){ return h(6, 11); }, function(t){ goutteGrave(A, t, h(.03, .05), ech); });
   return I;
 };
 /* C — Lanterne dans la brume (mi dorien, un peu d'espoir) : voix lointaines, harpe, vent */
@@ -195,7 +197,6 @@ M.combatA = function(A, P){
     A.ton(t, {type:'sawtooth', f:m(note), env:A.perc(.005, .16), g:fort ? .09 : .06, filtres:[{type:'lowpass', f:300, pts:[[.02, 1300], [.15, 300]], q:3}]}, proche);
     A.ton(t, {type:'square', f:m(note + 12), env:A.perc(.005, .1), g:fort ? .02 : .012, lp:900}, proche);
   });
-  I.chaque(.5 + 8 * b, 8 * b, function(t){ A.ton(t, {f:m(74), f2:m(75), gl:3, env:[[0, 0], [1.2, 1], [2.6, .7], [3.4, 0]], g:.025, vib:[5, 4]}, loin); });
   return I;
 };
 /* B — Tambours lointains (do mineur, 84 battements par minute) : tambours dans la grotte, violoncelle, pizzicati */
@@ -232,32 +233,21 @@ M.puits = function(A, P){
   var I = Instance(A, P);
   var proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.31, retour:.5, lp:2400, sortie:.7});
   ruisseau(I, {dest:proche, densite:60, g:.12});
-  I.chaque(.3, function(){ return h(.5, 1.8); }, function(t){ A.goutte(t, {f:h(800, 2000), g:h(.04, .09)}, Math.random() < .5 ? ech : proche); });
-  I.chaque(1.5, function(){ return h(2, 5); }, function(t){ A.ton(t, {f:280, f2:700, gl:.04, env:A.perc(.003, .05), g:.06}, proche); });
-  var notes = [62, 65, 69, 72, 74];
+  I.chaque(.6, function(){ return h(2.5, 5); }, function(t){ goutteGrave(A, t, h(.04, .07), Math.random() < .5 ? ech : proche); });
+  var notes = [55, 57, 60, 62, 65];
   I.chaque(2, function(){ return h(6, 10); }, function(t){ var f = m(notes[Math.floor(Math.random() * notes.length)]); flute(A, t, f, 2.4, .03, proche); flute(A, t, f, 2.4, .025, ech); });
   return I;
 };
-/* la cave aux toiles : des cordes qui grincent, des harmoniques qui glissent, de petits pas d'araignée */
+/* la cave aux toiles : des cordes graves qui tremblent (une seconde mineure, pour la tension), des notes de harpe qui descendent,
+   une cloche grave au loin, un souffle de vent. (Refaite le 9 novembre : plus de grincements, de sifflements aigus ni de petits pas.) */
 M.toiles = function(A, P){
   var I = Instance(A, P);
-  var proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7});
-  tremolo(I, [m(62), m(63), m(69)], {dest:loin, type:'triangle', g:.014, vit:9, lp:1800});
-  I.chaque(1, function(){ return h(3.5, 7); }, function(t){
-    var d = h(.6, 1.2), buf = A.grincement(d, {i0:.05, i1:.028, irr:.5});
-    var o = A.bus(P, {grotte:.6, pan:h(-.8, .8)});
-    [[260, 14, 1], [610, 16, .7], [1350, 12, .45]].forEach(function(r){ A.joue(t, buf, {filtres:[{type:'bandpass', f:r[0] * h(.9, 1.1), q:r[1]}], g:1.1 * r[2], env:[[0, 0], [.1, 1], [d - .1, 1], [d, 0]]}, o); });
-  });
-  var hautes = [81, 82, 86, 87, 93];
-  I.chaque(2.5, function(){ return h(5, 8); }, function(t){
-    var f = m(hautes[Math.floor(Math.random() * hautes.length)]), f2 = f * Math.pow(2, h(-1, 1) / 12);
-    A.ton(t, {f:f, f2:f2, gl:4, env:[[0, 0], [1.5, 1], [3, .7], [4.5, 0]], g:.018, vib:[5.5, f * .006]}, loin);
-    A.bruit(t, {bp:f * 2, bp2:f2 * 2, bpt:4, bq:20, env:[[0, 0], [1.5, 1], [3, .7], [4.5, 0]], g:.12}, loin);
-  });
-  I.chaque(4, function(){ return h(6, 12); }, function(t){
-    var nb = 4 + Math.floor(Math.random() * 4), o = A.bus(P, {grotte:.4, pan:h(-.7, .7)});
-    for(var k = 0; k < nb; k++) A.bruit(t + k * h(.07, .1), {bp:2600, bq:8, env:A.perc(.0005, .01), g:.5}, o);
-  });
+  var proche = A.bus(P, {grotte:.45}), loin = A.bus(P, {grotte:1, g:.7});
+  tremolo(I, [m(50), m(51), m(57)], {dest:loin, type:'triangle', g:.022, vit:5, lp:900});
+  var notes = [62, 61, 57, 55, 53, 50];
+  I.chaque(1.5, function(){ return h(4, 7); }, function(t){ var k = Math.floor(Math.random() * 4); for(var i = 0; i < 3; i++) A.harpe(t + i * .45, m(notes[k + i]), {t60:2.5, g:.13, lp:1800}, proche); });
+  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.cloche(t, m(50), {d:4, rapport:3.5, indice:.7, g:.035}, loin); });
+  I.chaque(3, function(){ return h(8, 14); }, function(t){ A.bruit(t, {coul:'brun', bp:300, bq:1.2, env:[[0, 0], [2.5, 1], [6, 0]], g:.2}, loin); });
   return I;
 };
 /* l'atelier : une horloge, une machine qui souffle, des cliquets, une enclume au loin, de la vapeur */
@@ -270,16 +260,12 @@ M.atelier = function(A, P){
   var pompe = A.gain(.5), lfo = I.continu(ctx.createOscillator()), lg = A.gain(.45); lfo.frequency.value = .7; lfo.connect(lg); lg.connect(pompe.gain);
   var amp = A.gain(0); amp.gain.setValueAtTime(0, t0); amp.gain.linearRampToValueAtTime(.06, t0 + 3);
   x.connect(lp); lp.connect(pompe); pompe.connect(amp); amp.connect(proche); x.start(t0); lfo.start(t0);
-  I.chaque(.2, 1, function(t, n){ A.bruit(t, {bp:n % 2 ? 1850 : 2400, bq:12, env:A.perc(.0005, .012), g:.9}, proche); });
-  I.chaque(3, function(){ return h(5, 9); }, function(t){
-    var nb = 8 + Math.floor(Math.random() * 7), o = A.bus(P, {grotte:.4, pan:h(-.6, .6)});
-    for(var k = 0; k < nb; k++) A.bruit(t + k / 22, {bp:3200, bq:6, env:A.perc(.0005, .008), g:.45}, o);
-  });
+  I.chaque(.2, 1, function(t, n){ A.bruit(t, {bp:n % 2 ? 700 : 900, bq:6, env:A.perc(.001, .03), g:.7}, proche); });   /* tic-tac de bois, grave */
   I.chaque(4, function(){ return h(7, 12); }, function(t){
-    A.modes(t, m([69, 74, 77][Math.floor(Math.random() * 3)]), [[1, 1, 1.6, 1], [2.76, .45, 1.1], [5.4, .25, .6], [8.9, .1, .3]], {g:.05}, loin);
+    A.modes(t, m([57, 62, 65][Math.floor(Math.random() * 3)]), [[1, 1, 1.6, 1], [2.76, .45, 1.1], [5.4, .2, .5]], {g:.045}, loin);
   });
-  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.bruit(t, {hp:3000, env:[[0, 0], [.3, 1], [1.2, .6], [1.8, 0]], g:.035}, loin); });
-  I.chaque(8, 16, function(t){ [74, 77, 76, 69].forEach(function(n, k){ A.cloche(t + k * .35, m(n), {d:2, rapport:2.76, indice:1, g:.03}, loin); }); });
+  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.bruit(t, {coul:'rose', bp:500, bq:1, env:[[0, 0], [.4, 1], [1.4, .6], [2, 0]], g:.12}, loin); });   /* la vapeur, grave */
+  I.chaque(8, 16, function(t){ [62, 65, 64, 57].forEach(function(n, k){ A.cloche(t + k * .35, m(n), {d:2, rapport:2.76, indice:1, g:.03}, loin); }); });
   return I;
 };
 

@@ -14,9 +14,10 @@ ROLES.alchimiste = {
     this._bul = 0;
   },
   idle:function(A){
-    var h = this.$('[data-fiole-b] [data-halo]');
-    if(h){ h.style.transformBox = 'fill-box'; h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
+    var h = this._halo(this.$('[data-fiole-b] [data-halo]'));
+    if(h){ h.style.transformBox = 'fill-box'; if(!this.cuit) h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
   },
+  lire:function(){ if(this._verse){ mat(this.filet); mat(this.reps[this.fioleA.getAttribute('data-fiole') + 'bec']); mat(this.reps[this.fioleB.getAttribute('data-fiole') + 'bec']); } },
   /* les bulles qui montent dans la fiole (tout le temps), plus fort quand il secoue */
   pas:function(dt){
     this._bul += dt * (this._bouillon || (this.ko ? 0 : 2.4));
@@ -39,6 +40,19 @@ ROLES.alchimiste = {
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }
+/* cuit : le halo de la fiole est un petit îlot ; on anime son <div> (pivot au centre du halo) : la carte graphique s'en charge */
+H._halo = function(h){
+  if(!h || !this.cuit) return h;
+  var d = h.ownerSVGElement && h.ownerSVGElement.parentNode;
+  if(!d) return h;
+  if(!d._pret){
+    d._pret = 1;
+    d.style.transformOrigin = h.getAttribute('cx') + 'px ' + h.getAttribute('cy') + 'px';
+    d.style.opacity = h.getAttribute('opacity') || 1; h.setAttribute('opacity', 1);
+    d.classList.add('ha-anime');
+  }
+  return d;
+};
 H._couleur = function(fiole, c){
   if(!fiole) return;
   fiole._c = c;
@@ -50,7 +64,9 @@ H._bulle = function(fiole, fort){
   var g = fiole.querySelector('[data-bulles]'), c = fiole.querySelector('[data-r$="c"]');
   if(!g || !c) return;
   var cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy'), r = alea(1.2, fort ? 3.2 : 2.4), x = cx + alea(-7, 7);
-  var b = nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
+  /* cuit : chaque bulle est son propre petit <div> (rien à repeindre pendant qu'elle monte) */
+  var b = this.cuit && g.ownerSVGElement ? window.Cuire.ilot(g.ownerSVGElement.parentNode, '<circle cx="' + r1(x) + '" cy="' + r1(cy + 10) + '" r="' + r1(r) + '" fill="#fff" fill-opacity=".55" stroke="#fff" stroke-width=".8"/>')
+    : nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
   b.animate([{transform:'translate(0px,0px)', opacity:0}, {transform:'translate(' + alea(-2, 2) + 'px,-6px)', opacity:1, offset:.2}, {transform:'translate(' + alea(-3, 3) + 'px,-' + alea(14, 22) + 'px)', opacity:.9, offset:.8}, {transform:'translate(0px,-' + alea(24, 34) + 'px) scale(1.4)', opacity:0}],
     {duration:alea(700, 1100), easing:'ease-out'}).finished.then(function(){ b.remove(); });
 };
@@ -105,7 +121,7 @@ H._eclatCouleur = function(c){
   onde(this.fx, p.x, p.y + 4, {css:'background:radial-gradient(circle,#fff 0,' + c + ' 35%,' + c + '00 70%)', w:40, s0:0.3, s1:1.5, d:480});
   gerbe(this.fx, p.x, p.y - 6, {n:12, c:[c, '#fff'], angle:-90, ecart:70, v0:40, v1:120, g:-40, t0:3, t1:5, d0:500, d1:800});
   scintille(this.fx, p.x, p.y - 10, {n:5, rx:20, ry:20, c:['#fff', c], etale:200});
-  var h = this.fioleB.querySelector('[data-halo]');
+  var h = this._halo(this.fioleB.querySelector('[data-halo]'));
   h.animate([{opacity:1, transform:'scale(1.35)'}, {opacity:.7, transform:'scale(1)'}], {duration:600, easing:'ease-out'});
 };
 /* une fiole (pour les projectiles) */

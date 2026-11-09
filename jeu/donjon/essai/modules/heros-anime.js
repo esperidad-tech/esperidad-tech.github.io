@@ -258,7 +258,7 @@ function pisteur(lk, grain){
         J('mainA', J('arc', arc, [148, 185]) + poing(d, x, 185, 8.5, pe[1])))));
   /* la corde et la flèche encochée (calculées à chaque image) */
   B += J('torse', '<path data-corde fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + '</g></g>');
+    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + rep('flN', 0, 0) + rep('flP', 124, 0) + '</g></g>');
   /* bras proche : brassard, coudière ; la dague cachée dans la main */
   var xb = SQ.brasB[0];
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 15, d.gh(vert)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
@@ -478,7 +478,15 @@ function sage(lk, grain){
 
 /* ============ les tissus et les cheveux souples (simulés à chaque image) ============ */
 /* chaque point a un ressort vers sa place « dessinée » (qui suit le corps), l'air le freine, la pesanteur le tire */
-function mat(el){ var m = el.getCTM(); return m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+/* la matrice d'un élément vers les pixels de la boîte du héros (cuit : calculée par cuire.js à travers les <div>) */
+function mat(el){
+  if(CACHE_MAT && CACHE_MAT.has(el)) return CACHE_MAT.get(el);
+  var r;
+  if(window.Cuire && el.closest && el.closest('.cu-vue')) r = window.Cuire.ctm(el);
+  else { var m = el.getCTM(); r = m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+  if(CACHE_MAT) CACHE_MAT.set(el, r);
+  return r;
+}
 function ap(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
 function inv(m){ var det = m[0] * m[3] - m[1] * m[2] || 1e-6; return [m[3] / det, -m[1] / det, -m[2] / det, m[0] / det, (m[2] * m[5] - m[3] * m[4]) / det, (m[1] * m[4] - m[0] * m[5]) / det]; }
 function lerp(a, b, t){ return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
@@ -532,6 +540,14 @@ function Souple(h, spec){
   this.ch.forEach(function(c){ for(var i = 1; i < c.length; i++) c[i].L = Math.hypot(c[i].r[0] - c[i - 1].r[0], c[i].r[1] - c[i - 1].r[1]); });
   this.init = false;
 }
+/* lire (avant toute écriture de l'image) les repères dont pas() aura besoin */
+Souple.prototype.lire = function(){
+  mat(this.g);
+  if(this.s.type === 'jupe'){
+    if(!this.jA){ this.jA = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'A"]'); this.jB = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'B"]'); }
+    mat(this.jA); mat(this.jB);
+  }
+};
 Souple.prototype.pas = function(dt, o, sol){
   var s = this.s, me = this, h = this.h;
   this.t += dt;
@@ -578,6 +594,14 @@ Souple.prototype.pas = function(dt, o, sol){
   this.init = true;
   /* retour dans le repère de la pièce, puis le dessin */
   var Mi = inv(M), loc = this.ch.map(function(c){ return c.map(function(p){ return ap(Mi, p.x - o[0], p.y - o[1]); }); });
+  /* on ne redessine (et donc on ne repeint) le tissu que s'il a bougé d'au moins 0,15 unité depuis le dernier dessin */
+  /* (l'ourlet d'un tissu ondule avec le temps : il est redessiné au moins 10 fois par seconde) */
+  var av = this._dessine, bouge = !av || (s.type === 'tissu' && this.t - (this._tDessin || 0) > .1);
+  for(var a = 0; av && !bouge && a < loc.length; a++) for(var b = 0; b < loc[a].length; b++){
+    if(Math.abs(loc[a][b][0] - av[a][b][0]) > .15 || Math.abs(loc[a][b][1] - av[a][b][1]) > .15){ bouge = true; break; }
+  }
+  if(!bouge) return;
+  this._dessine = loc; this._tDessin = this.t;
   this.dessiner(loc);
 };
 Souple.prototype.dessiner = function(loc){
@@ -694,9 +718,15 @@ function melange(a, b, t){ var o = {}; for(var k in a){ o[k] = {}; for(var f in 
 
 /* ============ le ticker commun : tissus, cordes, bulles… ============ */
 var VIVANTS = [], tickOn = false, tPrec = 0;
+/* Fluidité (RAPIDITE.md) : à chaque image, on LIT d'abord toutes les positions dont on aura besoin (pour tous les héros),
+   puis on écrit (tissus, corde…). Lire après avoir écrit forcerait le navigateur à tout recalculer, une fois par héros. */
+var CACHE_MAT = null;
 function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
+  CACHE_MAT = new Map();
+  VIVANTS.forEach(function(h){ try { h._lire(); } catch(e){} });
   VIVANTS.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  CACHE_MAT = null;
   if(VIVANTS.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
@@ -783,6 +813,12 @@ function css(){
     '.ha-p{position:absolute;left:0;top:0;pointer-events:none;will-change:transform,opacity}' +
     '.ha .haAv{display:none}.ha.ha-avA .haAv{display:inline}' +
     '.ha.ha-choisi .ha-boite>svg{animation:haChoisi 1.6s ease-in-out infinite}' +
+    /* cuit (RAPIDITE.md) : la lueur du héros choisi est une silhouette dorée cuite, derrière lui ; elle pulse en opacité (carte graphique) */
+    '.ha.ha-choisi .cu-lueur{display:block;animation:haLueur 1.6s ease-in-out infinite}@keyframes haLueur{0%,100%{opacity:.78}50%{opacity:1}}' +
+    /* les tissus simulés (îlots SVG redessinés à chaque image) : chacun dans son calque ; quand le héros est choisi, un halo doré
+       (il est de toute façon repeint à chaque image, le halo ne coûte qu'un petit flou sur sa surface) */
+    '.ha .cu-ilot.ha-anime{will-change:transform}' +
+    '.ha.ha-choisi .cu-ilot.ha-souple>svg{filter:drop-shadow(0 0 2px rgba(255,226,160,.85)) drop-shadow(0 0 6px rgba(255,190,90,.4))}' +
     '@keyframes haChoisi{0%,100%{filter:drop-shadow(0 0 3px rgba(255,220,130,.7)) drop-shadow(0 0 10px rgba(255,190,90,.25))}50%{filter:drop-shadow(0 0 5px rgba(255,225,140,.95)) drop-shadow(0 0 18px rgba(255,190,90,.5))}}' +
     '@keyframes haTourne{to{transform:rotate(360deg)}}@keyframes haTourneR{to{transform:rotate(-360deg)}}' +
     '@keyframes haPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}' +
@@ -801,25 +837,38 @@ function Heros(cont, role, lk){
   if(!ROLES[role]) throw new Error('HerosAnime : rôle inconnu « ' + role + ' »');
   this.cont = cont; this.role = role; this.R0 = ROLES[role];
   /* l'apparence : celle donnée ; ce qui manque (peau, cheveux, yeux) vient de l'apparence par défaut */
-  var k0, base = DEFAUT[role]; this.lk = {};
-  if(lk){ for(k0 in lk) this.lk[k0] = lk[k0]; ['pe', 'ch', 'ir'].forEach(function(c){ if(!this.lk[c]) this.lk[c] = base[c]; }, this); }
-  else for(k0 in base) this.lk[k0] = base[k0];
+  this.lk = fusionLk(role, lk);
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
-  var spec = this.R0.fab(this.lk, HerosAnime.grain);
   this.racine = document.createElement('div'); this.racine.className = 'ha ha-' + role;
   this.boite = document.createElement('div'); this.boite.className = 'ha-boite';
-  this.boite.innerHTML = spec.svg;
   this.fx = document.createElement('div'); this.fx.className = 'ha-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
-  this.svg = this.boite.querySelector('svg');
+  /* cuit (HerosAnime.preparer) : une copie de la version en images, dont les pièces sont des <div> que la carte graphique
+     anime sans rien repeindre ; sinon, le grand SVG d'origine */
+  var M = MODELES[cleModele(role, this.lk)], spec;
+  if(M && M.modele){
+    var cl = M.modele.cloner(this.boite);
+    this.cuit = true; this.svg = cl.racine; this.vue = cl.vue;
+    spec = {souples:M.souples};
+  } else {
+    spec = this.R0.fab(this.lk, HerosAnime.grain);
+    this.boite.innerHTML = spec.svg;
+    this.svg = this.vue = this.boite.querySelector('svg');
+  }
   var me = this;
   this.els = {}; this.elsI = {}; this.etat = {};
+  /* (cuit : la silhouette lumineuse est une seconde copie des pièces ; elle reçoit les mêmes animations) */
   [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); (me.els[n] = me.els[n] || []).push(e); me.etat[n] = J0(); });
   [].forEach.call(this.svg.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); (me.elsI[n] = me.elsI[n] || []).push(e); });
   this.reps = {};
-  [].forEach.call(this.svg.querySelectorAll('[data-r]'), function(e){ me.reps[e.getAttribute('data-r')] = e; });
+  [].forEach.call(this.vue.querySelectorAll('[data-r]'), function(e){ var n = e.getAttribute('data-r'); if(!me.reps[n]) me.reps[n] = e; });
   this.souples = spec.souples.map(function(s){ return new Souple(me, s); });
+  /* cuit : les îlots redessinés à chaque image (tissus, corde, filet) ont chacun leur calque : on ne repeint qu'eux */
+  if(this.cuit) [].forEach.call(this.vue.querySelectorAll('[data-souple],[data-corde],[data-filet]'), function(g){
+    var il = g.ownerSVGElement && g.ownerSVGElement.parentNode;
+    if(il && il.classList.contains('cu-ilot')) il.classList.add('ha-anime', g.hasAttribute('data-souple') ? 'ha-souple' : 'ha-trait');
+  });
   this.grainG = this.svg.querySelector('.ha-grain');
   this.file = Promise.resolve(); this._nf = 0; this._gTok = 0; this._timers = [];
   this.bouche0 = this.R0.bouche || 'neutre';
@@ -829,6 +878,42 @@ function Heros(cont, role, lk){
   vivre(this);
 }
 var H = Heros.prototype;
+
+/* ============ la cuisson (voir jeu/donjon/RAPIDITE.md et anim/cuire.js) ============
+   HerosAnime.preparer([{role, lk}], {res}) cuit une fois chaque héros (avec son apparence) en images ; ensuite, creer() en
+   fait une copie. Le dessin fixe (grain de papier et flous compris) devient des images ; ce qui change à chaque image
+   (tissus simulés, corde de l'arc, filet de potion, fioles qui changent de couleur, bulles) reste en petits îlots SVG. */
+var MODELES = {};
+/* l'apparence : celle donnée ; ce qui manque (peau, cheveux, yeux) vient de l'apparence par défaut */
+function fusionLk(role, lk){
+  var base = DEFAUT[role], r = {}, k;
+  if(lk){ for(k in lk) r[k] = lk[k]; ['pe', 'ch', 'ir'].forEach(function(c){ if(!r[c]) r[c] = base[c]; }); }
+  else for(k in base) r[k] = base[k];
+  return r;
+}
+function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+function preparerUn(role, lk, o){
+  var l = fusionLk(role, lk), cle = cleModele(role, l);
+  if(MODELES[cle]) return MODELES[cle].promesse;
+  var Cu = window.Cuire;
+  var spec = ROLES[role].fab(l, HerosAnime.grain), h = Cu.hote(250, 300);
+  h.innerHTML = spec.svg;
+  var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
+  var M = MODELES[cle] = {souples:spec.souples};
+  M.promesse = Cu.cuire(svg, {ilot:ILOTS, anime:'.haJ', res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
+    .then(function(m){ M.modele = m; h.remove(); return m; }, function(e){ h.remove(); delete MODELES[cle]; if(window.console) console.warn('HerosAnime.preparer', e); return null; });
+  return M.promesse;
+}
+function preparer(liste, o){
+  css();
+  o = o || {};
+  if(!window.Cuire || !window.Cuire.cuire) return Promise.resolve([]);
+  if(!liste) liste = Object.keys(ROLES).map(function(r){ return {role:r}; });
+  var res = o.res || Math.max(1, Math.min(3, (window.devicePixelRatio || 1) * 200 / 250 * 1.3));
+  /* un héros après l'autre (le téléphone garde la main entre deux) */
+  return liste.reduce(function(p, x){ return p.then(function(r){ return preparerUn(x.role, x.lk, {res:res}).then(function(m){ r.push(m); return r; }); }); }, Promise.resolve([]));
+}
 H.$ = function(sel){ return this.svg.querySelector(sel); };
 H.garde = function(){ return this._choisi && this.R0.gardeChoisi ? this.R0.gardeChoisi : this.R0.garde; };
 H.plus = function(ms, fn){ var me = this, id = setTimeout(function(){ me._timers.splice(me._timers.indexOf(id), 1); fn(); }, ms); this._timers.push(id); return id; };
@@ -946,8 +1031,16 @@ H._gestes = function(){
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
+/* 1re phase de l'image : lire tout ce dont _pas aura besoin (les matrices sont gardées jusqu'à la fin de l'image) */
+H._lire = function(){
+  this._bm = getComputedStyle(this.boite).transform;
+  mat(this.grainG);
+  this.souples.forEach(function(s){ s.lire(); });
+  if(this.R0.lire) this.R0.lire.call(this);
+};
 H._pas = function(dt, t){
-  var bm = getComputedStyle(this.boite).transform, o = [0, 0];
+  var bm = this._bm || getComputedStyle(this.boite).transform, o = [0, 0];
+  this._bm = null;
   if(bm && bm !== 'none'){ var v = bm.replace(/^matrix\(|\)$/g, '').split(','); o = [+v[4], +v[5]]; }
   var g = mat(this.grainG), sol = ap(g, 0, 294)[1];
   this.souples.forEach(function(s){ s.pas(dt, o, sol); });
@@ -1143,10 +1236,12 @@ ROLES.pisteur = {
   frein:function(p){ p.brasA = -96; p.avantBrasA = -10; p.mainA = 70; },
   init:function(){
     this.cordeEl = this.$('[data-corde]'); this.flG = this.$('[data-fleche]'); this.flI = this.$('[data-fl]');
-    this.flI.insertAdjacentHTML('beforeend', rep('flN', 0, 0) + rep('flP', 124, 0));
-    this.reps.flN = this.$('[data-r="flN"]'); this.reps.flP = this.$('[data-r="flP"]');
+    /* les repères de l'encoche et de la pointe sont dans le dessin de la flèche encochée */
+    this.reps.flN = this.flI.querySelector('[data-r="flN"]'); this.reps.flP = this.flI.querySelector('[data-r="flP"]');
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
+  /* (lu avant toute écriture de l'image : voir tick) */
+  lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
   pas:function(dt){
     var c = this.corde, Mi = inv(mat(this.cordeEl));
@@ -1165,7 +1260,8 @@ ROLES.pisteur = {
       var aMain = -100, aEnc = Math.atan2(g[1] - pi[1], g[0] - pi[0]) * DEG;
       var a = aMain + norm(aEnc - aMain) * c.blend;
       this.flG.style.display = '';
-      this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
+      if(this.cuit) this.flI.style.transform = 'translate(' + r1(pi[0]) + 'px,' + r1(pi[1]) + 'px) rotate(' + r1(a) + 'deg)';
+      else this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
     } else this.flG.style.display = 'none';
   },
   /* en attendant : il vérifie sa corde, ou jette un œil au carquois */
@@ -1353,9 +1449,10 @@ ROLES.alchimiste = {
     this._bul = 0;
   },
   idle:function(A){
-    var h = this.$('[data-fiole-b] [data-halo]');
-    if(h){ h.style.transformBox = 'fill-box'; h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
+    var h = this._halo(this.$('[data-fiole-b] [data-halo]'));
+    if(h){ h.style.transformBox = 'fill-box'; if(!this.cuit) h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
   },
+  lire:function(){ if(this._verse){ mat(this.filet); mat(this.reps[this.fioleA.getAttribute('data-fiole') + 'bec']); mat(this.reps[this.fioleB.getAttribute('data-fiole') + 'bec']); } },
   /* les bulles qui montent dans la fiole (tout le temps), plus fort quand il secoue */
   pas:function(dt){
     this._bul += dt * (this._bouillon || (this.ko ? 0 : 2.4));
@@ -1378,6 +1475,19 @@ ROLES.alchimiste = {
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }
+/* cuit : le halo de la fiole est un petit îlot ; on anime son <div> (pivot au centre du halo) : la carte graphique s'en charge */
+H._halo = function(h){
+  if(!h || !this.cuit) return h;
+  var d = h.ownerSVGElement && h.ownerSVGElement.parentNode;
+  if(!d) return h;
+  if(!d._pret){
+    d._pret = 1;
+    d.style.transformOrigin = h.getAttribute('cx') + 'px ' + h.getAttribute('cy') + 'px';
+    d.style.opacity = h.getAttribute('opacity') || 1; h.setAttribute('opacity', 1);
+    d.classList.add('ha-anime');
+  }
+  return d;
+};
 H._couleur = function(fiole, c){
   if(!fiole) return;
   fiole._c = c;
@@ -1389,7 +1499,9 @@ H._bulle = function(fiole, fort){
   var g = fiole.querySelector('[data-bulles]'), c = fiole.querySelector('[data-r$="c"]');
   if(!g || !c) return;
   var cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy'), r = alea(1.2, fort ? 3.2 : 2.4), x = cx + alea(-7, 7);
-  var b = nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
+  /* cuit : chaque bulle est son propre petit <div> (rien à repeindre pendant qu'elle monte) */
+  var b = this.cuit && g.ownerSVGElement ? window.Cuire.ilot(g.ownerSVGElement.parentNode, '<circle cx="' + r1(x) + '" cy="' + r1(cy + 10) + '" r="' + r1(r) + '" fill="#fff" fill-opacity=".55" stroke="#fff" stroke-width=".8"/>')
+    : nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
   b.animate([{transform:'translate(0px,0px)', opacity:0}, {transform:'translate(' + alea(-2, 2) + 'px,-6px)', opacity:1, offset:.2}, {transform:'translate(' + alea(-3, 3) + 'px,-' + alea(14, 22) + 'px)', opacity:.9, offset:.8}, {transform:'translate(0px,-' + alea(24, 34) + 'px) scale(1.4)', opacity:0}],
     {duration:alea(700, 1100), easing:'ease-out'}).finished.then(function(){ b.remove(); });
 };
@@ -1444,7 +1556,7 @@ H._eclatCouleur = function(c){
   onde(this.fx, p.x, p.y + 4, {css:'background:radial-gradient(circle,#fff 0,' + c + ' 35%,' + c + '00 70%)', w:40, s0:0.3, s1:1.5, d:480});
   gerbe(this.fx, p.x, p.y - 6, {n:12, c:[c, '#fff'], angle:-90, ecart:70, v0:40, v1:120, g:-40, t0:3, t1:5, d0:500, d1:800});
   scintille(this.fx, p.x, p.y - 10, {n:5, rx:20, ry:20, c:['#fff', c], etale:200});
-  var h = this.fioleB.querySelector('[data-halo]');
+  var h = this._halo(this.fioleB.querySelector('[data-halo]'));
   h.animate([{opacity:1, transform:'scale(1.35)'}, {opacity:.7, transform:'scale(1)'}], {duration:600, easing:'ease-out'});
 };
 /* une fiole (pour les projectiles) */
@@ -1736,6 +1848,11 @@ H._runesMontent = function(){
       {duration:alea(800, 1100), delay:k * 40, easing:'ease-out', fill:'backwards'});
   })(k);
 };
+/* la forme du dôme, en pixels de sa boîte (w × h) */
+function domeChemin(w, h){
+  function X(x){ return r1((x + 55) * w / 110); } function Y(y){ return r1(y * h / 104); }
+  return 'M' + X(-50) + ' ' + Y(100) + ' C ' + X(-50) + ' ' + Y(30) + ' ' + X(-28) + ' ' + Y(4) + ' ' + X(0) + ' ' + Y(4) + ' C ' + X(28) + ' ' + Y(4) + ' ' + X(50) + ' ' + Y(30) + ' ' + X(50) + ' ' + Y(100) + ' Z';
+}
 H._dome = function(L, scene, cible, opt){
   var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = cible.getBoundingClientRect();
   var w = r.width / k * 0.95, h = r.height / k * 0.92, x = (r.left - R.left) / k + r.width / k / 2, yb = (r.bottom - R.top) / k - 4;
@@ -1748,17 +1865,20 @@ H._dome = function(L, scene, cible, opt){
     '<defs><radialGradient id="' + id + '" cx=".5" cy=".95" r=".9"><stop offset="0" stop-color="#3fd0ff" stop-opacity=".05"/><stop offset=".7" stop-color="#8ff3ff" stop-opacity=".18"/><stop offset="1" stop-color="#e8fdff" stop-opacity=".55"/></radialGradient>' +
     '<pattern id="' + id + 'p" width="12" height="10.4" patternUnits="userSpaceOnUse"><path d="M3 0 L 9 0 L 12 5.2 L 9 10.4 L 3 10.4 L 0 5.2 Z" fill="none" stroke="#bff8ff" stroke-width=".5" opacity=".55"/></pattern></defs>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + ')"/>' +
-    '<path class="ha-hex" d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + 'p)" opacity=".7"/>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2" style="filter:drop-shadow(0 0 3px #8ff3ff)"/>' +
     '<path d="M-36 30 C -26 14 -14 9 -4 8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
     '<g opacity=".85">' + mot6 + '</g>' +
     '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4" style="filter:drop-shadow(0 0 4px #3fd0ff)"/></svg>' +
+    /* le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
+    '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
+    '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
+    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
     '<div class="ha-badge">🛡️ −50 % · 1 tour</div>';
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
   var vit = svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
-  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(-10.4px)'}], {duration:1600, iterations:Infinity});
+  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
   scintille(L, x, yb - h * 0.5, {n:12, rx:w * 0.45, ry:h * 0.45, c:['#e8fdff', CYAN], etale:400});
   onde(L, x, yb, {w:w * 1.1, h:20, c:CYAN, ep:3, s0:0.3, s1:1.3, d:700});
   var fini = false;
@@ -1840,6 +1960,8 @@ var AUTRES = {pisteur:{fille:false, pe:PE.p6, ch:CH.noir, ir:YX.marron}, alchimi
 
 var HerosAnime = {
   creer:function(conteneur, role, lk){ return new Heros(conteneur, role, lk); },
+  /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
+  preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
   grain:true
 };

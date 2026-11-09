@@ -123,7 +123,8 @@ function dessinerRat(D){
     '<feColorMatrix in="t" type="matrix" values="0 0 0 0 .16  0 0 0 0 .14  0 0 0 0 .1  5 0 0 0 -2.9"/><feComposite in2="SourceAlpha" operator="in"/></filter>');
   var CRASSE = ' filter="url(#' + cr + ')"';
   var poil = '#74626a', clairP = '#a8949c', sombreP = '#2a1e26', rose = '#dc94a4', vase = '#4e5a34';
-  function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
+  /* data-c : le contenu de la pièce (dans le repère du dessin) ; il reste un élément à part une fois cuit */
+  function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g data-c="' + nom + '" transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
   function slot(nom){ return '<g data-slot="' + nom + '"></g>'; }
   function ancre(nom){ return '<g data-a="' + nom + '"></g>'; }
   function griffe(x, y, lg, ang){
@@ -244,7 +245,7 @@ function dessinerRat(D){
   D.l.push('<radialGradient id="' + gR + '" cx=".45" cy=".45" r=".6"><stop offset="0" stop-color="#fff2a0"/><stop offset=".45" stop-color="#ff4a2a"/><stop offset="1" stop-color="#7a0a14"/></radialGradient>');
   var amande = 'M112 264 C 118 254 140 252 148 260 C 144 270 124 274 112 264 Z';
   var oeil = '<g data-halo="j"><circle cx="128" cy="262" r="30" fill="' + D.halo('#fff4b0', '#ffc020') + '" opacity=".7"/></g>' +
-    '<g data-halo="r" opacity="0"><circle cx="128" cy="262" r="34" fill="' + D.halo('#ffb0a0', '#ff2a2a') + '" opacity=".85"/></g>' +
+    '<g data-halo="r" opacity="0"><circle data-hc="r" cx="128" cy="262" r="34" fill="' + D.halo('#ffb0a0', '#ff2a2a') + '" opacity=".85"/></g>' +
     F('M108 264 C 116 252 140 248 152 258 C 148 272 124 278 108 264 Z', '#1a0a14', ' opacity=".7"') +
     P(amande, 'url(#' + gJ + ')', ' stroke-width="2.6"') + '<g data-iris="r" opacity="0">' + F(amande, 'url(#' + gR + ')') + '</g>' +
     F('M130 255 C 133 258 133 268 130 271 C 127 268 127 258 130 255 Z', '#1a0604') + C(123, 259, 2.8, '#fff') + C(140, 265, 1.2, '#fff', ' opacity=".7"') +
@@ -272,7 +273,7 @@ function dessinerRat(D){
   return piv('pos', 300, 390,
     slot('sol') + piv('ombre', 290, 392, ombre) +
     piv('saut', 300, 390, piv('secousse', 300, 300, piv('posture', 300, 300, piv('corps', 330, 320,
-      queue + phF + paF + tronc + ph + slot('cible') + tete + pa)))) +
+      queue + phF + paF + tronc + ph + slot('cible') + tete + pa + slot('feuHaut'))))) +
     slot('monde'));
 }
 
@@ -325,24 +326,72 @@ function onde(base, amp, n, canal){
   return cles;
 }
 
+/* ---------- la cuisson (voir jeu/donjon/RAPIDITE.md et anim/cuire.js) ----------
+   RatAnime.preparer({res}) cuit UNE fois le dessin du rat en images (pièces articulées = <div> HTML animés par la carte
+   graphique, sans rien repeindre) ; ensuite, chaque RatAnime.creer() en fait une copie. Sans préparation (ou sans cuire.js),
+   le rat reste le grand SVG d'origine, comme avant. */
+var SVGNS = 'http://www.w3.org/2000/svg', VB = '0 104 540 336';
+var MODELE = null, PREP = null, BRUME = [];
+var PIECES = ['data-j', 'data-c', 'data-slot', 'data-a', 'data-rage', 'data-halo', 'data-iris', 'data-hc'];
+function preparer(o){
+  if(PREP) return PREP;
+  var Cu = global.Cuire;
+  if(!Cu || !Cu.cuire || typeof document === 'undefined') return Promise.resolve(null);
+  o = o || {};
+  var res = o.res || Math.max(1, Math.min(3, (global.devicePixelRatio || 1) * 200 / 540 * 1.3));
+  injecterCSS();
+  var h = Cu.hote(540, 336), D = new Defs('ratP_');
+  var art = dessinerRat(D);
+  h.innerHTML = '<svg xmlns="' + SVGNS + '" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet" style="display:block;width:540px;height:336px"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
+  var svg = h.firstElementChild;
+  /* les volutes de brume noire de l'explosion : leur flou est cuit une fois (6 tirages de couleurs) */
+  var R0 = rng(91), brumes = [];
+  for(var k = 0; k < 6; k++){
+    var c = ['#120c18', '#1a1222', '#22182c', '#0c0812'][Math.floor(R0() * 4)], cl = ['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e'][k % 4], r = 40;
+    brumes.push(Cu.image('<svg viewBox="-52 -52 104 104"><defs><filter id="b" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.6"/></filter></defs><g filter="url(#b)">' +
+      '<circle r="' + r + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g></svg>', 104, 104, Math.min(2, res * 1.6)));
+  }
+  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, anime:'[data-j]', res:res}), Promise.all(brumes)])
+    .then(function(r){ MODELE = r[0]; BRUME = r[1].filter(Boolean); h.remove(); return MODELE; }, function(e){ h.remove(); if(global.console) console.warn('RatAnime.preparer', e); return null; });
+  return PREP;
+}
+
 function Rat(conteneur){
   injecterCSS();
   this.c = conteneur;
   var D = new Defs('ratA' + (++NUM) + '_');
   this.D = D;
-  var art = dessinerRat(D);
   var div = document.createElement('div');
   div.className = 'rat-anime';
-  div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 104 540 336" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
   conteneur.appendChild(div);
   this.el = div;
-  this.svg = div.querySelector('svg');
-  this.defs = this.svg.querySelector('defs');
+  if(MODELE){
+    /* la copie cuite : la même hiérarchie de pièces, en <div> qui portent des images */
+    var cl = MODELE.cloner(div);
+    this.cuit = true; this.svg = null; this.racine = cl.vue; this.defs = cl.defs;
+  } else {
+    var art = dessinerRat(D);     /* d'abord le dessin : il remplit D.l (les dégradés) */
+    div.innerHTML = '<svg xmlns="' + SVGNS + '" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
+    this.svg = this.racine = div.querySelector('svg');
+    this.defs = this.svg.querySelector('defs');
+  }
   var self = this;
   this.J = {}; this.S = {}; this.A = {};
-  [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){ self.J[e.getAttribute('data-j')] = e; });
-  [].forEach.call(this.svg.querySelectorAll('[data-slot]'), function(e){ self.S[e.getAttribute('data-slot')] = e; });
-  [].forEach.call(this.svg.querySelectorAll('[data-a]'), function(e){ self.A[e.getAttribute('data-a')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-j]'), function(e){ self.J[e.getAttribute('data-j')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-slot]'), function(e){ self.S[e.getAttribute('data-slot')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-a]'), function(e){ self.A[e.getAttribute('data-a')] = e; });
+  /* cuit : chaque pièce a une seconde couche pour les petits gestes qui s'ajoutent à l'attente (au lieu de composite: add,
+     que la carte graphique ne sait pas jouer) */
+  if(this.cuit){
+    this.JA = {};
+    Object.keys(this.J).forEach(function(n){
+      var j = self.J[n], a = document.createElement('div');
+      a.className = 'cu cu-anime';
+      while(j.firstChild) a.appendChild(j.firstChild);
+      j.appendChild(a);
+      self.JA[n] = a;
+    });
+  }
   this.v = {};
   this.etat = {enrage: false, ebloui: false, dos: false, feu: false, colle: false, cible: false, yeux: 'jaune'};
   this.attente = true;
@@ -358,12 +407,18 @@ function Rat(conteneur){
 var R = Rat.prototype;
 
 /* lire la pose actuelle d'une pièce (même au milieu d'une animation) */
-R._lire = function(n){
-  var el = this.J[n], ref = this.v[n] || Z, t = getComputedStyle(el).transform;
-  if(!t || t === 'none') return fusion(Z);
+function matrice(t){
+  if(!t || t === 'none') return [1, 0, 0, 1, 0, 0];
   var m = t.match(/matrix\(([^)]+)\)/);
-  if(!m) return fusion(ref);
-  var v = m[1].split(',').map(parseFloat), sx = Math.hypot(v[0], v[1]), ang = Math.atan2(v[1], v[0]) * 180 / Math.PI, sy = (v[0] * v[3] - v[1] * v[2]) / (sx || 1);
+  return m ? m[1].split(',').map(parseFloat) : null;
+}
+R._lire = function(n){
+  var el = this.J[n], ref = this.v[n] || Z, v = matrice(getComputedStyle(el).transform);
+  if(!v) return fusion(ref);
+  /* cuit : la couche des petits gestes s'ajoute à la pose */
+  if(this.JA){ var w = matrice(getComputedStyle(this.JA[n]).transform); if(w) v = [v[0] * w[0] + v[2] * w[1], v[1] * w[0] + v[3] * w[1], v[0] * w[2] + v[2] * w[3], v[1] * w[2] + v[3] * w[3], v[0] * w[4] + v[2] * w[5] + v[4], v[1] * w[4] + v[3] * w[5] + v[5]]; }
+  if(v[0] === 1 && v[1] === 0 && v[2] === 0 && v[3] === 1 && v[4] === 0 && v[5] === 0) return fusion(Z);
+  var sx = Math.hypot(v[0], v[1]), ang = Math.atan2(v[1], v[0]) * 180 / Math.PI, sy = (v[0] * v[3] - v[1] * v[2]) / (sx || 1);
   while(ang - ref.a > 180) ang -= 360;
   while(ang - ref.a < -180) ang += 360;
   return {x: v[4], y: v[5], a: ang, sx: sx, sy: sy};
@@ -374,6 +429,7 @@ R._figer = function(noms){
   (noms || Object.keys(this.J)).forEach(function(n){
     var v = self._lire(n), el = self.J[n];
     el.getAnimations().forEach(function(a){ a.cancel(); });
+    if(self.JA){ self.JA[n].getAnimations().forEach(function(a){ a.cancel(); }); self.JA[n].style.transform = ''; }
     el.style.transform = tf(v);
     self.v[n] = v;
   });
@@ -398,7 +454,11 @@ R._seq = function(cles, duree, o){
     if(frames[frames.length - 1].offset < 1) frames.push({offset: 1, transform: tf(cur)});
     frames.forEach(function(f){ if(!f.easing) f.easing = o.e || 'ease-in-out'; });
     if(!o.ajout && !o.boucle) self.v[n] = cur;
-    var a = el.animate(frames, {duration: duree, iterations: o.boucle ? Infinity : 1, fill: o.ajout ? 'none' : 'forwards', composite: o.ajout ? 'add' : 'replace', delay: o.delai || 0});
+    /* cuit : un petit geste « qui s'ajoute » se joue sur la couche à part (en remplacement : la carte graphique sait le jouer),
+       sauf s'il en chevauche un autre sur la même pièce */
+    var comp = o.ajout ? 'add' : 'replace';
+    if(o.ajout && self.JA){ el = self.JA[n]; comp = el.getAnimations().length ? 'add' : 'replace'; }
+    var a = el.animate(frames, {duration: duree, iterations: o.boucle ? Infinity : 1, fill: o.ajout ? 'none' : 'forwards', composite: comp, delay: o.delai || 0});
     a.playbackRate = (o.vitesse || 1);
     if(o.boucle) self.boucles.push(a);
     else if(!o.ajout) a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} }, function(){});
@@ -415,11 +475,25 @@ R._allerA = function(pose, duree, e, tout){
 };
 /* un point d'une pièce, ramené dans le repère « monde » (le sol, qui ne tourne pas) */
 R._ou = function(ancre, x, y){
-  var el = typeof ancre === 'string' ? (this.A[ancre] || this.J[ancre] || this.S[ancre]) : ancre, m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
+  var el = typeof ancre === 'string' ? (this.A[ancre] || this.J[ancre] || this.S[ancre]) : ancre;
+  if(this.cuit){ var Cu = global.Cuire, q = Cu.ap(Cu.ctm(el), x, y); return Cu.ap(Cu.inv(Cu.ctm(this.S.monde)), q[0], q[1]); }
+  var m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
   p.x = x; p.y = y;
   p = p.matrixTransform(m).matrixTransform(w.inverse());
   return [p.x, p.y];
 };
+/* le contenu d'une pièce (son repère est celui du dessin) */
+R._contenu = function(n){ return this.J[n].querySelector('[data-c]'); };
+/* un point du dessin, en pixels de la boîte du rat (tous les mouvements compris) */
+R.point = function(nom, x, y){
+  var el = this.A[nom] || this.J[nom] || this.S[nom];
+  if(this.cuit) return global.Cuire.point(el, x, y);
+  var p = this.svg.createSVGPoint(); p.x = x; p.y = y; p = p.matrixTransform(el.getCTM());
+  return {x: p.x, y: p.y};
+};
+/* signale au jeu que la bête bouge (pour que les badges la suivent pendant ce temps-là) */
+R._bouge = function(ms){ try{ this.c.dispatchEvent(new CustomEvent('bete-bouge', {bubbles: true, detail: {ms: ms || 1200}})); }catch(e){} };
+function opa(e, v){ if(e.namespaceURI === SVGNS) e.setAttribute('opacity', v); else e.style.opacity = v; }
 R._def = function(fn){ var n0 = this.D.l.length, r = fn(this.D); this.defs.insertAdjacentHTML('beforeend', this.D.l.slice(n0).join('')); return r; };
 R._minuteur = function(f, ms){ var self = this, id = setTimeout(function(){ self.minuteurs.splice(self.minuteurs.indexOf(id), 1); f(); }, ms); this.minuteurs.push(id); return id; };
 R._couperMinuteurs = function(){ this.minuteurs.forEach(clearTimeout); this.minuteurs = []; };
@@ -429,12 +503,17 @@ R._couperBoucles = function(){
   this.boucles = [];
 };
 /* un élément SVG créé à la volée */
-R._el = function(parent, html){
-  var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+R._el = function(parent, html, cls){
+  /* cuit : un petit îlot SVG dans un <div> (on anime le <div> : la carte graphique le déplace sans le repeindre) */
+  if(this.cuit) return global.Cuire.ilot(parent, html, cls);
+  var g = document.createElementNS(SVGNS, 'g');
   g.innerHTML = html;
+  if(cls) g.setAttribute('class', cls);
   parent.appendChild(g);
   return g;
 };
+/* cuit : un <div> vide placé en (x, y) dans le repère d'un emplacement (pour regrouper des effets) */
+R._place = function(parent, x, y, cls){ return global.Cuire.place(parent, x, y, cls); };
 
 /* =====================================================================
    5. Les poses de base de chaque mode
@@ -488,7 +567,10 @@ R._reprendre = function(duree){
   var self = this;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
-  return this._allerA(this._base(), duree == null ? 380 : duree, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
+  var d = duree == null ? 380 : duree;
+  this._bouge(d + 100);
+  this._contreFeu(d);
+  return this._allerA(this._base(), d, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
     if(self.enAction || self.mort) return;
     if(self.attente) self._lancerBoucles();
   });
@@ -716,8 +798,9 @@ R._tirerPatte = function(){
   var cc = {corps: {a: 0}, tete: {a: 0}, machoire: {a: 0}}, cf = {corps: choix.corps, tete: choix.tete, machoire: {a: -14}};
   this._seq([{t: 0, p: cc}, {t: .3, p: cf}, {t: .45, p: {corps: {a: 0}, tete: {a: 0}, machoire: {a: -4}}}, {t: .72, p: cf}, {t: .8, p: {corps: {a: -choix.corps.a * .8}, tete: {a: -choix.tete.a}, machoire: {a: -18}}, e: 'cubic-bezier(.7,0,1,.6)'}, {t: 1, p: cc}], T, {ajout: true});
   /* les fils : trois bandes gluantes, plus fines au milieu, qui suivent la patte à chaque image */
-  var sol = this._ou(this.J[choix.ref].firstElementChild, choix.pt[0], choix.pt[1]); sol[1] = 391;
-  var el = this.J[choix.ref].firstElementChild, g = this._fxEl('<g></g>', this.S.monde), t0 = performance.now();
+  var sol = this._ou(this._contenu(choix.ref), choix.pt[0], choix.pt[1]); sol[1] = 391;
+  var el = this._contenu(choix.ref), g0 = this._fxEl('<g></g>', this.S.monde), t0 = performance.now();
+  var g = g0.namespaceURI === SVGNS ? g0 : g0.querySelector('svg');
   var fils = [-12, 1, 12].map(function(dx, i){ return {dx: dx, w: [6, 7, 5][i], c: [.45, -.4, .25][i]}; });
   g.innerHTML = fils.map(function(){ return '<path fill="#d8e870" fill-opacity=".85" stroke="#5a6420" stroke-width="1.2"/><path fill="none" stroke="#fbffd0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>'; }).join('') + '<ellipse rx="14" ry="5" fill="#c8d84a" stroke="#5a6420" stroke-width="1.4"/>';
   var chemins = g.querySelectorAll('path'), goutte = g.querySelector('ellipse');
@@ -734,7 +817,7 @@ R._tirerPatte = function(){
       chemins[i * 2 + 1].setAttribute('d', 'M' + pt([a[0] - f.w * .3, a[1] - 1]) + ' Q ' + pt([m[0] - nx * w * .4, m[1] - ny * w * .4]) + ' ' + pt([b[0] - 1, b[1]]));
       chemins[i * 2].style.opacity = chemins[i * 2 + 1].style.opacity = d < 4 ? 0 : 1;
     });
-    if(performance.now() - t0 > T + 60){ g.remove(); return; }
+    if(performance.now() - t0 > T + 60){ g0.remove(); return; }
     requestAnimationFrame(maj);
   })();
 };
@@ -744,6 +827,7 @@ R._tirerPatte = function(){
 R._debutAction = function(){
   this.jeton++;
   this.enAction = true;
+  this._bouge(4000);
   this._couperBoucles();
   return this.jeton;
 };
@@ -932,8 +1016,8 @@ R.arreter = function(){
 };
 R.yeux = function(c){
   this.etat.yeux = c === 'rouge' ? 'rouge' : 'jaune';
-  var on = this.etat.yeux === 'rouge' ? 1 : 0, svg = this.svg;
-  function vers(e, v){ var de = parseFloat(getComputedStyle(e).opacity); e.getAnimations().forEach(function(a){ a.cancel(); }); e.setAttribute('opacity', v); e.animate([{opacity: de}, {opacity: v}], {duration: 400}); }
+  var on = this.etat.yeux === 'rouge' ? 1 : 0, svg = this.racine;
+  function vers(e, v){ var de = parseFloat(getComputedStyle(e).opacity); e.getAnimations().forEach(function(a){ a.cancel(); }); opa(e, v); e.animate([{opacity: de}, {opacity: v}], {duration: 400}); }
   [].forEach.call(svg.querySelectorAll('[data-iris="r"],[data-halo="r"]'), function(e){ vers(e, on); });
   [].forEach.call(svg.querySelectorAll('[data-halo="j"]'), function(e){ vers(e, 1 - on); });
   return this;
@@ -943,10 +1027,10 @@ R.enrager = function(){
   var self = this;
   this.etat.enrage = true;
   this.yeux('rouge');
-  var h = this.svg.querySelector('[data-halo="r"] circle');
+  var h = this.racine.querySelector('[data-halo="r"] [data-hc]');
   h.classList.add('ra-halo');
-  var rage = this.svg.querySelector('[data-rage]');
-  rage.animate([{opacity: 0}, {opacity: 1}], {duration: 500, fill: 'forwards'}); rage.setAttribute('opacity', 1);
+  var rage = this.racine.querySelector('[data-rage]');
+  rage.animate([{opacity: 0}, {opacity: 1}], {duration: 500, fill: 'forwards'}); opa(rage, 1);
   /* la vapeur qui sort des naseaux */
   (function vapeur(){
     if(self.mort) return;
@@ -972,18 +1056,35 @@ R._allumerEtoiles = function(){
   this._eteindreEtoiles();
   var lu = this.D.id();
   this.defs.insertAdjacentHTML('beforeend', '<radialGradient id="' + lu + '"><stop offset="0" stop-color="#fff6c0" stop-opacity=".55"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>');
+  if(this.cuit){
+    /* cuit : chaque chose qui bouge est son propre <div> (le halo qui pulse, les étoiles qui tournent, les éclats) */
+    var self = this, G = this._place(slot, 0, 0);
+    G.setAttribute('data-etoiles', '1');
+    this._el(this._place(G, 140, 250), '<ellipse rx="110" ry="80" fill="url(#' + lu + ')"/>', 'ra-pulse');
+    for(i = 0; i < 6; i++){
+      var e = this._place(G, 0, 0); e.setAttribute('data-etoile', i);
+      this._el(e, '<circle r="20" fill="url(#' + lu + ')"/>');
+      this._el(e, '<path d="' + etoileD(17 - (i % 2) * 4, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6"/><path d="' + etoileD(7 - (i % 2) * 2, 5, .45) + '" fill="#fffbe0"/>', 'ra-tourne');
+    }
+    for(i = 0; i < 8; i++){ var a0 = i / 8 * Math.PI * 2, sc = this._el(this._place(G, 140 + Math.cos(a0) * 96, 232 + Math.sin(a0) * 56), '<path d="' + eclatD(13) + '" fill="#ffffff"/>', 'ra-scint'); sc.style.animationDelay = (i * .14) + 's'; }
+    this.fx.etoiles = G;
+    [].forEach.call(G.querySelectorAll('[data-etoile]'), function(e, k){ self._orbite(e, k); });
+    return;
+  }
   html += '<ellipse cx="140" cy="250" rx="110" ry="80" fill="url(#' + lu + ')" class="ra-pulse"/>';
   for(i = 0; i < 6; i++) html += '<g data-etoile="' + i + '"><circle r="20" fill="url(#' + lu + ')"/><path d="' + etoileD(17 - (i % 2) * 4, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6" class="ra-tourne"/><path d="' + etoileD(7 - (i % 2) * 2, 5, .45) + '" fill="#fffbe0" class="ra-tourne"/></g>';
   for(i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2; html += '<g transform="translate(' + f1(140 + Math.cos(a) * 96) + ' ' + f1(232 + Math.sin(a) * 56) + ')"><path d="' + eclatD(13) + '" fill="#ffffff" class="ra-scint" style="animation-delay:' + (i * .14) + 's"/></g>'; }
   var g = this._el(slot, html);
   g.setAttribute('data-etoiles', '1');
   this.fx.etoiles = g;
-  var c = [140, 196], rx = 88, ry = 26, n = 24;
-  [].forEach.call(g.querySelectorAll('[data-etoile]'), function(e, k){
-    var frames = [];
-    for(var s = 0; s <= n; s++){ var a = s / n * Math.PI * 2 + k * Math.PI * 2 / 6, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
-    e.animate(frames, {duration: 1500, iterations: Infinity});
-  });
+  var self = this;
+  [].forEach.call(g.querySelectorAll('[data-etoile]'), function(e, k){ self._orbite(e, k); });
+};
+/* une étoile qui tourne autour de la tête (en ellipse, plus grosse quand elle passe devant) */
+R._orbite = function(e, k){
+  var c = [140, 196], rx = 88, ry = 26, n = 24, frames = [];
+  for(var s = 0; s <= n; s++){ var a = s / n * Math.PI * 2 + k * Math.PI * 2 / 6, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
+  e.animate(frames, {duration: 1500, iterations: Infinity});
 };
 R._eteindreEtoiles = function(){ if(this.fx.etoiles){ this.fx.etoiles.remove(); this.fx.etoiles = null; } };
 R.retourner = function(on){
@@ -991,6 +1092,7 @@ R.retourner = function(on){
   if(this.etat.dos === on) return Promise.resolve();
   var self = this, j = this._debutAction();
   this.etat.dos = on;
+  this._contreFeu(on ? 820 : 760, on ? 1000 : 0);
   if(on){
     this._flaque('huile');
     /* il glisse : les pattes patinent… puis il bascule sur le dos */
@@ -1031,10 +1133,18 @@ R._flaque = function(type){
     html = '<ellipse cx="290" cy="392" rx="240" ry="16" fill="url(#' + gid + ')" stroke="#0a0812" stroke-width="2" opacity=".95"/>' + L('M90 388 C 160 382 260 380 360 384 M140 396 C 220 392 300 392 400 396', '#c8e0ff', 1.6, ' opacity=".45"') + L('M200 386 C 240 383 280 383 320 385', '#ffe0a0', 1.2, ' opacity=".4"');
   } else {
     html = '<ellipse cx="270" cy="391" rx="230" ry="15" fill="#c8d84a" fill-opacity=".55" stroke="#5a6420" stroke-width="2"/>' + '<ellipse cx="270" cy="389" rx="200" ry="9" fill="#e8f0a0" opacity=".35"/>' +
-      L('M90 386 C 160 382 260 381 360 384', '#ffffd0', 1.8, ' opacity=".7"') +
-      [[120, 392, 4], [220, 395, 3], [300, 390, 5], [420, 393, 3.5]].map(function(b, i){ return '<g transform="translate(' + b[0] + ' ' + b[1] + ')"><circle r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1" class="ra-bulle" style="animation-delay:' + (i * .5) + 's"/></g>'; }).join('');
+      L('M90 386 C 160 382 260 381 360 384', '#ffffd0', 1.8, ' opacity=".7"');
+    var bulles = [[120, 392, 4], [220, 395, 3], [300, 390, 5], [420, 393, 3.5]];
+    if(!this.cuit) html += bulles.map(function(b, i){ return '<g transform="translate(' + b[0] + ' ' + b[1] + ')"><circle r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1" class="ra-bulle" style="animation-delay:' + (i * .5) + 's"/></g>'; }).join('');
   }
-  var g = this._el(this.S.sol, html);
+  var g;
+  if(this.cuit){
+    /* cuit : la flaque dans un <div>, et chaque bulle de colle dans le sien (elles respirent sans rien repeindre) */
+    g = this._place(this.S.sol, 0, 0);
+    this._el(g, html);
+    var self = this;
+    if(bulles) bulles.forEach(function(b, i){ var u = self._el(self._place(g, b[0], b[1] + b[2]), '<circle cy="' + (-b[2]) + '" r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1"/>', 'ra-bulle'); u.style.animationDelay = (i * .5) + 's'; });
+  } else g = this._el(this.S.sol, html);
   g.animate([{transform: 'translate(270px,391px) scale(.2,.4) translate(-270px,-391px)', opacity: 0}, {transform: 'translate(270px,391px) scale(1) translate(-270px,-391px)', opacity: 1}], {duration: 420, easing: 'cubic-bezier(.2,.8,.3,1.2)'});
   this.fx['flaque_' + type] = g;
 };
@@ -1052,7 +1162,7 @@ R.coller = function(on){
   if(this.fx.pates){ this.fx.pates.forEach(function(g){ g.remove(); }); this.fx.pates = null; }
   if(on){
     var self = this, pate = '<path d="M-16 3 C -16 -6 -8 -10 0 -9 C 8 -10 16 -6 16 3 Z" fill="#d0e05a" fill-opacity=".92" stroke="#5a6420" stroke-width="1.4"/><path d="M-10 -4 Q 0 -8 10 -4" fill="none" stroke="#fbffd0" stroke-width="1.4" opacity=".8"/>';
-    this.fx.pates = [['main', 192, 389], ['mainF', 132, 389], ['pied', 368, 391], ['piedF', 340, 391]].map(function(q){ return self._el(self.J[q[0]].firstElementChild, '<g transform="translate(' + q[1] + ' ' + q[2] + ')">' + pate + '</g>'); });
+    this.fx.pates = [['main', 192, 389], ['mainF', 132, 389], ['pied', 368, 391], ['piedF', 340, 391]].map(function(q){ return self._el(self._contenu(q[0]), '<g transform="translate(' + q[1] + ' ' + q[2] + ')">' + pate + '</g>'); });
   }
   if(!this.enAction) this._reprendre(300);
   return this;
@@ -1063,11 +1173,37 @@ R.cible = function(on){
   if(this.fx.cible){ this.fx.cible.remove(); this.fx.cible = null; }
   this.etat.cible = on;
   if(!on) return this;
+  if(this.cuit){
+    var G = this._place(slot, 288, 300);
+    this._el(G, '<circle r="34" fill="#ffe680" opacity=".35"/>', 'ra-pulse');
+    this._el(G, '<circle r="24" fill="none" stroke="#24182e" stroke-width="7"/><circle r="24" fill="none" stroke="#ffe066" stroke-width="4"/><circle r="12" fill="none" stroke="#24182e" stroke-width="6"/><circle r="12" fill="none" stroke="#fff6c0" stroke-width="3"/><circle r="4" fill="#ffffff"/>', 'ra-pulse');
+    this._el(G, L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#24182e', 6) + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#ffe066', 3), 'ra-tourne');
+    this.fx.cible = G;
+    return this;
+  }
   var html = '<g transform="translate(288 300)"><circle r="34" fill="#ffe680" opacity=".35" class="ra-pulse"/>' +
     '<g class="ra-pulse"><circle r="24" fill="none" stroke="#24182e" stroke-width="7"/><circle r="24" fill="none" stroke="#ffe066" stroke-width="4"/><circle r="12" fill="none" stroke="#24182e" stroke-width="6"/><circle r="12" fill="none" stroke="#fff6c0" stroke-width="3"/><circle r="4" fill="#ffffff"/></g>' +
     '<g class="ra-tourne">' + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#24182e', 6) + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#ffe066', 3) + '</g></g>';
   this.fx.cible = this._el(slot, html);
   return this;
+};
+/* cuit : la contre-rotation des flammes selon la pose de base (debout ébloui, sur le dos…), pour qu'elles restent droites ;
+   et plus petites quand le dos est tourné vers le bas (comme le calcul image par image d'avant) */
+R._contreFeu = function(duree, delai){
+  var G = this.fx && this.fx.feuG;
+  if(!G) return;
+  var m = POSES[this._mode()];
+  G.forEach(function(g){
+    var A = 0;
+    g.chaine.forEach(function(n){ if(m[n] && m[n].a) A += m[n].a; });
+    var k = Math.max(.3, Math.min(1, .3 + Math.cos(A * Math.PI / 180) * .9)), t = 'rotate(' + f1(-A) + 'deg) scale(' + k.toFixed(2) + ')';
+    if(g.t === t) return;
+    var de = g.t || 'none';
+    g.t = t;
+    g.c.getAnimations().forEach(function(a){ a.cancel(); });
+    g.c.style.transform = t;
+    if(duree > 1) g.c.animate([{transform: de}, {transform: t}], {duration: duree, delay: delai || 0, easing: 'ease-in-out', fill: 'backwards'});
+  });
 };
 R.bruler = function(on){
   on = on !== false;
@@ -1076,7 +1212,7 @@ R.bruler = function(on){
   this.etat.feu = on;
   if(!on){
     if(this.fx.feu) this.fx.feu.forEach(function(g){ g.animate([{opacity: 1}, {opacity: 0}], {duration: 400, fill: 'forwards'}).finished.then(function(){ g.remove(); }); });
-    this.fx.feu = null;
+    this.fx.feu = null; this.fx.feuG = null;
     clearTimeout(this.fx.fumee);
     return this;
   }
@@ -1100,7 +1236,31 @@ R.bruler = function(on){
     {ref: D, x: 358, y: 182, h: 104, w: 40, r: 0}, {ref: D, x: 384, y: 178, h: 84, w: 34, r: 5}, {ref: D, x: 408, y: 184, h: 96, w: 36, r: 8}, {ref: D, x: 430, y: 198, h: 64, w: 28, r: 14}, {ref: D, x: 446, y: 222, h: 44, w: 22, r: 22},
     {ref: D, x: 298, y: 204, h: 40, w: 18, r: -16}, {ref: D, x: 372, y: 182, h: 54, w: 20, r: -10}, {ref: D, x: 420, y: 190, h: 46, w: 18, r: 18}
   ];
-  [[2, .5, 48, 24], [4, .45, 54, 24], [6, .5, 38, 18], [7, .7, 26, 14]].forEach(function(q){ var m = lerp(QC[q[0]], QC[q[0] + 1], q[1]); specs.push({ref: S['feuQ' + q[0]], x: m[0], y: m[1], h: q[2], w: q[3], r: 0, lueur: [40, 34]}); });
+  [[2, .5, 48, 24], [4, .45, 54, 24], [6, .5, 38, 18], [7, .7, 26, 14]].forEach(function(q){ var m = lerp(QC[q[0]], QC[q[0] + 1], q[1]); specs.push({ref: S['feuQ' + q[0]], x: m[0], y: m[1], h: q[2], w: q[3], r: 0, lueur: [40, 34], q: q[0]}); });
+  if(this.cuit){
+    /* cuit : chaque flamme est accrochée à la pièce qu'elle suit (le dos, un bout de queue) : la carte graphique la déplace
+       avec elle, sans rien calculer à chaque image. Une contre-rotation (selon la pose : debout, sur le dos) la garde droite. */
+    var flammeDivs = function(c, h, w, r, k){
+      var dl = (k * .13 % .4).toFixed(2), dur = (.3 + (k * .07 % .22)), R = self._place(c, 0, 0);
+      if(r) R.style.transform = 'rotate(' + r + 'deg)';
+      [[flammeD(h, w), 'url(#' + gid + ')" stroke="#5a1a08" stroke-width="2', 'ra-fl', dl, dur], [flammeD(h * .7, w * .62), '#ffa21e', 'ra-fl2', dl, dur * .8],
+        [flammeD(h * .42, w * .36), 'url(#' + gid2 + ')', 'ra-fl', (dl * .5).toFixed(2), dur * .7]].forEach(function(f){
+        var e = self._el(R, '<path d="' + f[0] + '" fill="' + f[1] + '"/>', f[2]); e.style.animationDelay = '-' + f[3] + 's'; e.style.animationDuration = f[4].toFixed(2) + 's';
+      });
+    };
+    var groupes = specs.map(function(s, k){
+      var queue = s.q != null, p = self._place(queue ? s.ref : self.S.feuHaut, s.x, s.y), c = self._place(p, 0, 0);
+      if(s.lueur) self._el(c, '<ellipse cx="0" cy="' + (-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="url(#' + lueur + ')"/>');
+      if(s.h) flammeDivs(c, s.h, s.w, s.lueur ? 0 : s.r, k);
+      var chaine = ['posture', 'corps'];
+      if(queue) for(var i = 0; i <= s.q; i++) chaine.push('q' + i);
+      p.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
+      return {p: p, c: c, chaine: chaine};
+    });
+    this.fx.feuG = groupes;
+    this.fx.feu = [suie].concat(groupes.map(function(g){ return g.p; }));
+    this._contreFeu(1);
+  } else {
   var monde = this._el(this.S.monde, '');
   specs.forEach(function(s, k){ s.g = self._el(monde, s.lueur ? '<ellipse cx="0" cy="' + (-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="url(#' + lueur + ')"/>' + (s.h ? flamme(s.h, s.w, 0, k) : '') : flamme(s.h, s.w, s.r, k)); });
   monde.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
@@ -1113,6 +1273,7 @@ R.bruler = function(on){
     });
     self.fx.raf = requestAnimationFrame(suivre);
   })();
+  }
   /* fumée et braises */
   (function fumee(){
     if(!self.etat.feu || self.mort) return;
@@ -1146,18 +1307,25 @@ R.exploser = function(scene){
     /* BOUM */
     var cs = getComputedStyle(scene);
     if(cs.position === 'static') scene.style.position = 'relative';
-    var sr = scene.getBoundingClientRect(), rr = self.svg.getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
+    var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
     var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
     var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
-    var NSs = 'http://www.w3.org/2000/svg', ov = document.createElementNS(NSs, 'svg');
-    ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    var fl = 'raBoom' + (++NUM);
-    ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
-      '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' +
-      '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient></defs>';
-    scene.appendChild(ov);
+    var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
+    if(self.cuit){
+      /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
+      self.defs.insertAdjacentHTML('beforeend', degrade);
+      ov = document.createElement('div'); ov.className = 'ra-scene-fx';
+      scene.appendChild(ov);
+      el = function(html){ return global.Cuire.ilot(ov, html); };
+    } else {
+      ov = document.createElementNS(NSs, 'svg');
+      ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
+        '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
+      scene.appendChild(ov);
+      el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+    }
     self.el.animate([{filter: 'brightness(1.6)', opacity: 1}, {filter: 'brightness(4)', opacity: 0}], {duration: 120, fill: 'forwards'});
-    function el(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; }
     var u = taille / 180;
     /* l'éclair et l'onde de choc */
     el('<circle cx="0" cy="0" r="' + f1(60 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1.6)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
@@ -1167,7 +1335,15 @@ R.exploser = function(scene){
     for(var n = 0; n < 30; n++){
       var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(20, 42) * u, x = Math.cos(a) * d * 80 * u, y = Math.sin(a) * d * 40 * u - 10 * u;
       var c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
-      var g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
+      var g;
+      if(self.cuit && BRUME.length){
+        /* une volute déjà cuite (son flou est dans l'image) */
+        g = document.createElement('div'); g.className = 'cu-ilot';
+        var im = document.createElement('img'), tt = r / 40 * 104;
+        im.src = BRUME[n % BRUME.length]; im.alt = '';
+        im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
+        g.appendChild(im); ov.appendChild(g);
+      } else g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
       var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(16, 46) * u;
       brumes.push(g.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
         {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-24, 24) * u) + 'px,' + f1(cy + dy * 1.2 - 34 * u) + 'px) scale(2)', opacity: 0}],
@@ -1234,9 +1410,14 @@ global.RatAnime = {
       exploser: function(scene){ return r.exploser(scene); },
       arreter: function(){ r.arreter(); return this; },
       etat: function(){ var e = {}; for(var k in r.etat) e[k] = r.etat[k]; return e; },
+      point: function(nom, x, y){ return r.point(nom, x, y); },
+      cuit: !!r.cuit,
       _rat: r
     };
   },
+  /* cuire le dessin une fois (Promise) : ensuite, chaque rat créé est une copie cuite, fluide sur une vieille tablette */
+  preparer: preparer,
+  pret: function(){ return !!MODELE; },
   _interne: {POSES: POSES, COURSE: COURSE}
 };
 })(typeof window !== 'undefined' ? window : this);

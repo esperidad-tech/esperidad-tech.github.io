@@ -3,12 +3,19 @@
    la voix du conteur reste seulement sur les boutons 🔊.
    Depuis le 10 novembre : les bruitages et les musiques choisis par Romain dans l'atelier des sons (sons-essai.html)
    viennent du moteur de l'atelier (Moteur, BRUITAGES, MUSIQUES) ; à chaque fois, on tire au hasard parmi les versions
-   qu'il a cochées. Les autres petits bruits (pas, page, bulles, dôme…) restent ceux d'ici. */
+   qu'il a cochées. Les autres petits bruits (pas, page, bulles, dôme…) restent ceux d'ici.
+   9 novembre (retours de Romain) : deux volumes séparés (Son.volume('musique' | 'bruitages', v)), un petit son quand on
+   touche une icône (« icone », silencieux tant que Romain n'a pas choisi), et pour que le téléphone ne rame plus,
+   les musiques et les bruitages les plus lourds sont fabriqués À L'AVANCE (hors ligne, par petits morceaux) puis joués
+   comme des enregistrements, en boucle sans couture. Si le navigateur ne sait pas le faire, on les fabrique en direct comme avant. */
 (function(){
 'use strict';
 var S = window.SALLE = window.SALLE || {};
 var ctx = null, sortie, bruits, revIn, blanc, brun, actif = true, A = null;
 try{ actif = localStorage.getItem('salle-rats-son') !== 'non'; }catch(e){}
+/* deux volumes séparés, de 0 à 1 (0 = muet), mémorisés dans ce navigateur */
+var VOL = {musique:1, bruitages:1}, BUS = null;
+['musique', 'bruitages'].forEach(function(k){ try{ var x = parseFloat(localStorage.getItem('salle-rats-vol-' + k)); if(isFinite(x)) VOL[k] = Math.max(0, Math.min(1, x)); }catch(e){} });
 
 function hasard(a, b){ return a + Math.random() * (b - a); }
 function tire(l){ return l[Math.floor(Math.random() * l.length)]; }
@@ -20,7 +27,8 @@ var CHOIX = S.CHOIX_SONS = {
   ratFleche:['A', 'B', 'C'], ratDague:['A', 'B', 'C'], ratFeu:['A', 'B', 'C'], ratLumiere:['A', 'B', 'C'],
   ratLouche:['B', 'C'], ratColle:['B', 'C'], ratHuile:['A', 'B'], ratNuage:['A', 'C'], ratFuite:['A'],
   ratCritique:['A', 'C'],       /* refait le 10 novembre ; Romain garde A « Coup de tonnerre » et C « Déflagration » (9 novembre, 10 h 41) */
-  explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B']
+  explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B'],
+  icone:[]                      /* le petit son quand on touche une icône d'arme ou de potion : 3 propositions dans l'Atelier, en attente du choix de Romain */
 };
 /* un rat enragé crie plus grave et plus rauque */
 var VOIX_ENRAGE = {h:.82, rauque:.38, grain:.2};
@@ -50,8 +58,25 @@ function demarrer(){
     sortie = ctx.createGain(); sortie.gain.value = actif ? 1 : 0; sortie.connect(comp);
     bruits = ctx.createGain(); bruits.gain.value = .85; bruits.connect(sortie);
     /* le moteur de l'atelier des sons, branché dans la même sortie (le bouton 🔇 coupe tout) ; sa « cave » sert aussi aux petits bruits d'ici */
-    if(window.Moteur){ A = window.Moteur(ctx, {sortie:sortie, volume:1}); A.sfx.gain.value = .9; revIn = A.caveIn; }
-    else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); }
+    if(window.Moteur){
+      A = window.Moteur(ctx, {sortie:sortie, volume:1}); A.sfx.gain.value = .9;
+      /* deux bus : la musique et les bruitages, chacun avec sa propre part de réverbération (le volume de l'un ne touche pas l'autre) */
+      function gn(v){ var g = ctx.createGain(); g.gain.value = v; return g; }
+      BUS = {};
+      ['musique', 'bruitages'].forEach(function(k){ BUS[k] = {sec:gn(VOL[k]), cave:gn(VOL[k]), grotte:gn(VOL[k])}; BUS[k].sec.connect(A.volume); BUS[k].cave.connect(A.caveIn); BUS[k].grotte.connect(A.grotteIn); });
+      A.mus.disconnect(); A.mus.connect(BUS.musique.sec);
+      A.sfx.disconnect(); A.sfx.connect(BUS.bruitages.sec);
+      var prise0 = A.prise;
+      A.prise = function(t, niv, vers){
+        var P = prise0(t, niv, vers), b = vers === 'mus' ? BUS.musique : BUS.bruitages;
+        P.cave.disconnect(); P.grotte.disconnect(); P.cave.connect(b.cave); P.grotte.connect(b.grotte);
+        return P;
+      };
+      bruits.disconnect(); bruits.connect(BUS.bruitages.sec);
+      revIn = BUS.bruitages.cave;
+      sfxPre = gn(.95); sfxPre.connect(BUS.bruitages.sec);          /* les bruitages fabriqués à l'avance (leur écho est déjà dedans) */
+    }
+    else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); bruits.gain.value = .85 * VOL.bruitages; }
     var n = ctx.sampleRate * 2;
     blanc = ctx.createBuffer(1, n, ctx.sampleRate); brun = ctx.createBuffer(1, n, ctx.sampleRate);
     var db = blanc.getChannelData(0), dr = brun.getChannelData(0), l = 0;
@@ -63,6 +88,19 @@ function demarrer(){
   appliquerMusique();
 }
 function pret(){ return !!ctx && actif && ctx.state !== 'closed'; }
+function pretBruit(){ return pret() && VOL.bruitages > 0; }
+var sfxPre = null;
+/* Son.volume('musique' | 'bruitages', v) : règle (v de 0 à 1) et mémorise ; sans v, rend la valeur actuelle */
+function volume(type, v){
+  if(type !== 'musique' && type !== 'bruitages') return null;
+  if(v == null) return VOL[type];
+  v = Math.max(0, Math.min(1, +v || 0)); VOL[type] = v;
+  try{ localStorage.setItem('salle-rats-vol-' + type, String(v)); }catch(e){}
+  if(ctx && BUS){ var b = BUS[type], t = ctx.currentTime; [b.sec, b.cave, b.grotte].forEach(function(g){ g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(v, t, .05); }); }
+  else if(ctx && type === 'bruitages' && bruits) bruits.gain.setTargetAtTime(.85 * v, ctx.currentTime, .05);
+  if(type === 'musique') appliquerMusique();                          /* à zéro, la musique s'arrête vraiment (le téléphone souffle) */
+  return v;
+}
 
 /* =================== les bruitages de l'atelier (versions tirées au hasard) =================== */
 function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
@@ -82,10 +120,19 @@ function versionDe(id, o){
 }
 function bruitage(id, o){
   o = o || {};
-  if(!pret() || !A || !window.BRUITAGES || !CHOIX[id]) return null;
+  if(!pretBruit() || !A || !window.BRUITAGES || !CHOIX[id] || !CHOIX[id].length) return null;   /* rien de choisi (l'icône) : silence */
   var v = versionDe(id, o), cle = id + v, fn = window.BRUITAGES[cle];
-  if(o.cale != null && fn && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
+  if(!fn) return null;
+  if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
+  /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer) */
+  var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
+  if(pre){
+    var src = ctx.createBufferSource(); src.buffer = pre; src.connect(sfxPre); src.start(t);
+    src.onended = function(){ try{ src.disconnect(); }catch(e){} };
+    var C0 = o.partie && window.BRUITAGES.CRITIQUE[v];
+    return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.duration), moment:fn.moment, version:v, pre:true};
+  }
   var P = A.prise(t, niveau(cle)), r = null;
   A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
   try{
@@ -103,27 +150,165 @@ var MUS = {voulu:null, actuel:null};
 function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
 function appliquerMusique(){
   if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
-  var v = actif ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
+  var v = actif && VOL.musique > 0 ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
   if(cur === v) return;
   var now = ctx.currentTime;
-  if(MUS.actuel){ MUS.actuel.I.forEach(function(I){ I.arreter(now, 3); }); MUS.actuel = null; }
+  if(MUS.actuel){ MUS.actuel.arreter(now, 3); MUS.actuel = null; }
   if(!v) return;
-  var cles = v === 'combat' ? ['combat' + tire(CHOIX.combat), 'puits'] : ['explo' + tire(CHOIX.explo)];
-  MUS.actuel = {nom:v, cles:cles, I:cles.map(function(c){
-    var t = now + .05, P = A.prise(t, niveau(c), 'mus');
-    [P.sec, P.cave, P.grotte].forEach(function(g){ g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(P.niveau, t, 1.1); });   /* le fondu d'entrée */
-    var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
-    return I;
-  })};
+  var cles = v === 'combat' ? ['combat' + PRE.tirer('combat'), 'puits'] : ['explo' + PRE.tirer('explo')];
+  var M = MUS.actuel = {nom:v, cles:cles, I:[], joueurs:[], fini:false};
+  M.arreter = function(t, f){ M.fini = true; M.I.forEach(function(I){ I.arreter(t, f); }); M.joueurs.forEach(function(j){ j.arreter(t, f); }); };
+  cles.forEach(function(c, k){
+    if(!PRE.possible){ M.I.push(musiqueEnDirect(c, now)); return; }
+    /* déjà fabriquée : on la joue tout de suite ; sinon une autre version déjà prête de la même musique, ou on attend la sienne */
+    var pret = PRE.mus[c] ? c : PRE.unePrete(c);
+    if(pret){ M.cles[k] = pret; M.joueurs.push(jouerBoucle(PRE.mus[pret])); }
+    else PRE.demander(c, true).then(function(){
+      if(M.fini || MUS.actuel !== M) return;
+      if(PRE.mus[c]) M.joueurs.push(jouerBoucle(PRE.mus[c])); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
+    });
+    if(!PRE.mus[c]) PRE.demander(c);                                   /* la version tirée sera prête pour la prochaine fois */
+  });
+}
+/* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
+function musiqueEnDirect(c, now){
+  var t = now + .05, P = A.prise(t, niveau(c), 'mus');
+  [P.sec, P.cave, P.grotte].forEach(function(g){ g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(P.niveau, t, 1.1); });   /* le fondu d'entrée */
+  var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
+  return I;
+}
+/* une musique fabriquée à l'avance : elle tourne en boucle sans couture, à partir d'un endroit au hasard, avec un fondu d'entrée */
+function jouerBoucle(b){
+  var t = ctx.currentTime + .05, src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = b.buf; src.loop = true; src.loopStart = b.debut; src.loopEnd = b.fin;
+  g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(1, t, 1.1);
+  src.connect(g); g.connect(A.mus);
+  src.start(t, b.debut + Math.random() * (b.fin - b.debut));
+  return {arreter:function(t2, fondu){
+    g.gain.cancelScheduledValues(t2); g.gain.setValueAtTime(g.gain.value, t2); g.gain.setTargetAtTime(0, t2, (fondu || 1.5) / 4);
+    try{ src.stop(t2 + (fondu || 1.5) + .3); }catch(e){}
+    src.onended = function(){ try{ src.disconnect(); g.disconnect(); }catch(e){} };
+  }};
 }
 function programme(){
   if(!ctx || !MUS.actuel) return;
   var j = ctx.currentTime + 1.2;
   MUS.actuel.I.forEach(function(I){ I.pas(j); });
 }
+
+/* =================== le pré-calcul : fabriquer à l'avance, hors ligne, par petits morceaux ===================
+   Les musiques : une boucle par version (fréquence 22 050 Hz : c'est une musique d'ambiance), longue d'un cycle entier
+   de ses accords, pour que la fin retombe pile sur le début ; les deux bouts sont fondus l'un dans l'autre.
+   Les bruitages les plus lourds (l'arc, le critique, la victoire, la fuite) : une prise chacun, à 32 000 Hz.
+   Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
+var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, premiers:{}, fait:0};
+/* la longueur de chaque boucle (en secondes) : un cycle entier ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) */
+var BOUCLE = {exploA:{L:44}, exploB:{L:64}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:32 * 60 / 84, C:1.5, lin:true}, puits:{L:24}};
+var SFX_PRE = [['arcA'], ['arcB'], ['arcC'], ['ratCritiqueA', 'impact'], ['ratCritiqueA', 'explosion'], ['ratCritiqueC', 'avant'], ['ratCritiqueC', 'impact'], ['ratCritiqueC', 'explosion'],
+  ['victoireA'], ['victoireB'], ['fuiteA'], ['fuiteB']];
+/* la première version de chaque musique est tirée dès l'ouverture, pour être prête au premier toucher */
+PRE.tirer = function(fam){ var v = PRE.premiers[fam]; if(v){ delete PRE.premiers[fam]; return v; } return tire(CHOIX[fam]); };
+PRE.unePrete = function(c){ var fam = c.replace(/[A-C]$/, ''), l = Object.keys(PRE.mus).filter(function(k){ return k.replace(/[A-C]$/, '') === fam; }); return l.length ? tire(l) : null; };
+function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom){ PRE.taches = PRE.taches || {}; PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } } }
+function rendre(off){
+  return new Promise(function(ok, ko){
+    off.oncomplete = function(e){ ok(e.renderedBuffer); };
+    try{ var p = off.startRendering(); if(p && p.then) p.then(ok, ko); }catch(e){ ko(e); }
+  });
+}
+/* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
+function rendreMusique(cle){
+  var B = BOUCLE[cle] || {L:30}, sr = 22050, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  var off = new OAC(2, Math.ceil(sr * duree), sr), Ao, I;
+  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus')); I.pas(pas + .5); }, 'debut-musique');
+  if(off.suspend){
+    for(var t = pas; t < duree; t += pas) (function(t){
+      off.suspend(t).then(function(){ chrono(function(){ I.pas(Math.min(duree, t + pas + .5)); }, 'morceau-musique'); off.resume(); });
+    })(t);
+  } else chrono(function(){ I.pas(duree); });
+  return rendre(off).then(function(x){
+    /* on joue la boucle directement dans le rendu (de F à F + L) : le début de la boucle reçoit, en fondu, ce qui suit sa fin */
+    return chrono(function(){
+      var n = Math.round(L * sr), nc = Math.round(C * sr), f0 = Math.round(F * sr);
+      for(var c = 0; c < 2; c++){
+        var a = x.getChannelData(c);
+        for(var i = 0; i < nc; i++){
+          var u = i / nc, wi = B.lin ? u : Math.sin(u * Math.PI / 2), wo = B.lin ? 1 - u : Math.cos(u * Math.PI / 2);
+          a[f0 + i] = a[f0 + i] * wi + a[f0 + n + i] * wo;
+        }
+      }
+      return {buf:x, debut:f0 / sr, fin:(f0 + n) / sr};
+    }, 'boucle');
+  });
+}
+/* les bruitages lourds : tous dans un seul rendu (un seul moteur), chacun à sa place, puis découpés et coupés à la fin du son */
+function rendreBruitages(){
+  var sr = 32000, place = 10, n = SFX_PRE.length, off = new OAC(2, Math.ceil(sr * place * n), sr), Ao, t0s = [];
+  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); }, 'moteur-bruitages');
+  function un(k){
+    var e = SFX_PRE[k], cle = e[0], t = k * place + .02;
+    chrono(function(){
+      var P = Ao.prise(t, niveau(cle));
+      if(e[1]){ var C = window.BRUITAGES.CRITIQUE[cle.slice(-1)]; if(C && C[e[1]]) C[e[1]](Ao, P, t); }
+      else { var r = window.BRUITAGES[cle](Ao, P); if(r && r.duree) PRE.duree[cle] = r.duree; }
+    }, 'un-bruitage');
+  }
+  if(off.suspend){ un(0); for(var k = 1; k < n; k++) (function(k){ off.suspend(k * place - .5).then(function(){ un(k); off.resume(); }); })(k); }
+  else for(var k2 = 0; k2 < n; k2++) un(k2);
+  return rendre(off).then(function(x){
+    chrono(function(){
+      var L = x.getChannelData(0), R = x.getChannelData(1);
+      SFX_PRE.forEach(function(e, k){
+        var a = Math.floor(k * place * sr), b = Math.floor((k + 1) * place * sr) - 1, fin = a;
+        for(var i = b; i > a; i -= 16){ if(L[i] > 2e-4 || L[i] < -2e-4 || R[i] > 2e-4 || R[i] < -2e-4){ fin = Math.min(b, i + 16); break; } }   /* la fin du son, à 16 échantillons près */
+        var m = Math.min(b - a, fin - a + Math.floor(sr * .05)), y = off.createBuffer(2, m, sr), fondu = Math.floor(sr * .03);
+        [L, R].forEach(function(src, c){ var d = y.getChannelData(c); for(var j = 0; j < m; j++) d[j] = src[a + j] * (j > m - fondu ? (m - j) / fondu : 1); });
+        PRE.sfx[e[0] + (e[1] ? ':' + e[1] : '')] = y;
+      });
+    }, 'decoupe');
+    return true;
+  });
+}
+/* la file d'attente : une chose à la fois, la plus urgente d'abord */
+PRE.demander = function(cle, urgent){
+  if(PRE.mus[cle]) return Promise.resolve(PRE.mus[cle]);
+  if(!PRE.attente[cle]){
+    PRE.attente[cle] = new Promise(function(ok){ PRE.file[urgent ? 'unshift' : 'push']({cle:cle, ok:ok}); });
+    setTimeout(suivant, 0);
+  } else if(urgent){
+    var i = PRE.file.map(function(j){ return j.cle; }).indexOf(cle);
+    if(i > 0) PRE.file.unshift(PRE.file.splice(i, 1)[0]);
+  }
+  return PRE.attente[cle];
+};
+function suivant(){
+  if(PRE.occupe || !PRE.file.length) return;
+  var j = PRE.file.shift(); PRE.occupe = true;
+  var p = j.cle === 'bruitages' ? rendreBruitages() : rendreMusique(j.cle).then(function(buf){ PRE.mus[j.cle] = buf; return buf; });
+  p.then(function(r){ PRE.fait++; return r; }, function(e){ if(window.console) console.warn('pré-calcul', j.cle, e); if(j.cle !== 'bruitages') PRE.echec = true; })
+   .then(function(r){ PRE.occupe = false; j.ok(r); setTimeout(suivant, 60); });
+}
+/* au chargement : la musique d'exploration tirée, puis celle du combat et le puits, puis les bruitages lourds (les autres versions : quand on les tire) */
+function lancerPrecalcul(){
+  if(!PRE.possible) return;
+  PRE.premiers.explo = tire(CHOIX.explo); PRE.premiers.combat = tire(CHOIX.combat);
+  PRE.demander('explo' + PRE.premiers.explo); PRE.demander('combat' + PRE.premiers.combat); PRE.demander('puits'); PRE.demander('bruitages');
+}
+if(document.readyState === 'complete') setTimeout(lancerPrecalcul, 600);
+else window.addEventListener('load', function(){ setTimeout(lancerPrecalcul, 600); });
+/* pour les mesures : tout fabriquer (toutes les versions) et dire quand c'est fini */
+PRE.tout = function(){
+  if(!PRE.possible) return Promise.resolve({possible:false});
+  var l = Object.keys(BOUCLE).map(function(c){ return PRE.demander(c); }); l.push(PRE.demander('bruitages'));
+  return Promise.all(l).then(function(){ return {pireTache:Math.round(PRE.pireTache), musiques:Object.keys(PRE.mus).length, bruitages:Object.keys(PRE.sfx).length,
+    memoire:Math.round((Object.keys(PRE.mus).reduce(function(s, k){ return s + PRE.mus[k].buf.length * 2 * 4; }, 0) + Object.keys(PRE.sfx).reduce(function(s, k){ return s + PRE.sfx[k].length * 2 * 4; }, 0)) / 1e6)}; });
+};
+PRE.etat = function(){ return {taches:PRE.taches, possible:PRE.possible, musiques:Object.keys(PRE.mus), bruitages:Object.keys(PRE.sfx).length, file:PRE.file.map(function(j){ return j.cle; }), occupe:PRE.occupe}; };
+
 /* la musique baisse pendant une fanfare (sec : combien de temps), puis remonte */
 function baisser(sec){
-  if(!ctx || !A) return;
+  if(!ctx || !A) return;   /* (A.mus : toute la musique, écho compris quand elle est fabriquée à l'avance) */
   var g = A.mus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
   g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
@@ -438,10 +623,13 @@ S.Son = {
   },
   bruitage:bruitage,
   musique:musique,
+  volume:volume,
+  precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }},
   baisser:baisser,
-  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null}; },
+  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
+    joue:MUS.actuel ? MUS.actuel.I.length + MUS.actuel.joueurs.length : 0}; },
   jouer:function(nom){
-    if(!pret() || !B[nom]) return;
+    if(!pretBruit() || !B[nom]) return;
     try{ B[nom].apply(null, Array.prototype.slice.call(arguments, 1)); }catch(e){ if(window.console) console.warn('son', nom, e); }
   },
   liste:Object.keys(B),

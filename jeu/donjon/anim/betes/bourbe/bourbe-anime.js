@@ -27,7 +27,15 @@
 
    Le dessin est découpé en pièces articulées (<g data-j> au pivot ramené à (0,0)), animées avec la Web Animations API.
    Deux « chaînes » portent les mêmes transformations : la chaîne A (le corps, en partie sous l'eau) est dessinée
-   avant l'eau du devant, la chaîne B (les mains posées sur la margelle) après. */
+   avant l'eau du devant, la chaîne B (les mains posées sur la margelle) après.
+
+   Pour la fluidité sur tablette (exigence de Romain, 9 novembre) :
+   - aucun filtre (ni SVG, ni CSS), aucun mélange ; les flous et lueurs sont des dégradés radiaux ;
+   - chaque pièce <g data-j="nom"> a un contenu FIXE et n'est animée qu'en transform (pivot : transform-origin) ;
+   - les états sont des variantes pré-dessinées <g data-j="v-nom"> qu'on montre ou cache (opacité, puis visibility) ;
+   - les boucles autonomes (étoiles, flammes, pulsation du point faible) animent des pièces <g data-j="x-nom"> ;
+   - les petites formes n'ont ni opacity ni transform (fill-opacity / stroke-opacity, géométrie déjà tournée) ;
+   - au plus 24 particules en même temps, retirées du DOM à la fin. Mesure : perf.py (processeur ralenti ×6). */
 (function(global){
 'use strict';
 var O = '#24182e', LUNE = '#bfe8ff', NUM = 0;
@@ -108,7 +116,16 @@ function ondeP(x0, y0, dx, dy, amp, freq, ph, n){
 }
 function tache(cx, cy, rx, ry, R, k){ var p = []; k = k || 7; for(var i = 0; i < k; i++){ var a = i / k * Math.PI * 2 + R() * .4, r = .65 + R() * .5; p.push([cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r]); } return lisseQ(p, true); }
 /* reflet mouillé : un fin croissant, posé et tourné */
-function reflet(x, y, lg, ang, ep, op){ return '<path transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' + ang + ')" d="M' + (-lg / 2) + ' 0 Q 0 ' + (-ep) + ' ' + (lg / 2) + ' 0 Q 0 ' + f1(-ep * .3) + ' ' + (-lg / 2) + ' 0 Z" fill="#fbfff4" opacity="' + (op || .75) + '"/>'; }
+function rotP(p, ang, c){ var r = ang * Math.PI / 180, co = Math.cos(r), si = Math.sin(r), dx = p[0] - c[0], dy = p[1] - c[1]; return [c[0] + dx * co - dy * si, c[1] + dx * si + dy * co]; }
+function reflet(x, y, lg, ang, ep, op){
+  var q = [[-lg / 2, 0], [0, -ep], [lg / 2, 0], [0, -ep * .3], [-lg / 2, 0]].map(function(p){ return rotP([x + p[0], y + p[1]], ang, [x, y]); });
+  return '<path d="M' + pt(q[0]) + ' Q ' + pt(q[1]) + ' ' + pt(q[2]) + ' Q ' + pt(q[3]) + ' ' + pt(q[4]) + ' Z" fill="#fbfff4" fill-opacity="' + (op || .75) + '"/>';
+}
+/* une ellipse tournée, écrite directement en chemin */
+function ellR(cx, cy, rx, ry, ang){
+  var k = .5523, P0 = [[cx - rx, cy], [cx - rx, cy - ry * k], [cx - rx * k, cy - ry], [cx, cy - ry], [cx + rx * k, cy - ry], [cx + rx, cy - ry * k], [cx + rx, cy], [cx + rx, cy + ry * k], [cx + rx * k, cy + ry], [cx, cy + ry], [cx - rx * k, cy + ry], [cx - rx, cy + ry * k]].map(function(p){ return rotP(p, ang || 0, [cx, cy]); });
+  return 'M' + pt(P0[0]) + ' C ' + pt(P0[1]) + ' ' + pt(P0[2]) + ' ' + pt(P0[3]) + ' C ' + pt(P0[4]) + ' ' + pt(P0[5]) + ' ' + pt(P0[6]) + ' C ' + pt(P0[7]) + ' ' + pt(P0[8]) + ' ' + pt(P0[9]) + ' C ' + pt(P0[10]) + ' ' + pt(P0[11]) + ' ' + pt(P0[0]) + ' Z';
+}
 function ell(cx, cy, rx, ry){ var k = .5523; return 'M' + f1(cx - rx) + ' ' + f1(cy) + ' C ' + f1(cx - rx) + ' ' + f1(cy - ry * k) + ' ' + f1(cx - rx * k) + ' ' + f1(cy - ry) + ' ' + f1(cx) + ' ' + f1(cy - ry) + ' C ' + f1(cx + rx * k) + ' ' + f1(cy - ry) + ' ' + f1(cx + rx) + ' ' + f1(cy - ry * k) + ' ' + f1(cx + rx) + ' ' + f1(cy) + ' C ' + f1(cx + rx) + ' ' + f1(cy + ry * k) + ' ' + f1(cx + rx * k) + ' ' + f1(cy + ry) + ' ' + f1(cx) + ' ' + f1(cy + ry) + ' C ' + f1(cx - rx * k) + ' ' + f1(cy + ry) + ' ' + f1(cx - rx) + ' ' + f1(cy + ry * k) + ' ' + f1(cx - rx) + ' ' + f1(cy) + ' Z'; }
 function goutteD(x, y, r){ return 'M' + f1(x) + ' ' + f1(y - r * 2.6) + ' C ' + f1(x + r * .3) + ' ' + f1(y - r * 1.5) + ' ' + f1(x + r) + ' ' + f1(y - r * .8) + ' ' + f1(x + r) + ' ' + f1(y) + ' A ' + r + ' ' + r + ' 0 0 1 ' + f1(x - r) + ' ' + f1(y) + ' C ' + f1(x - r) + ' ' + f1(y - r * .8) + ' ' + f1(x - r * .3) + ' ' + f1(y - r * 1.5) + ' ' + f1(x) + ' ' + f1(y - r * 2.6) + ' Z'; }
 function goutte(x, y, r, fill){ return Pw(goutteD(x, y, r), fill, 1.5, ' opacity=".95"') + C(f1(x + r * .35), f1(y - r * .25), f1(r * .32), '#fff', ' opacity=".95"'); }
@@ -149,10 +166,22 @@ Defs.prototype.clip = function(chemins){ var id = this.id(); this.l.push('<clipP
 /* un « flou précalculé » : une tache douce faite d'un dégradé (aucun filtre, bon pour la tablette) */
 Defs.prototype.doux = function(c, op){
   var k = c + '|' + (op == null ? 1 : op);
-  if(!this.cache[k]){ var id = this.id(); this.l.push('<radialGradient id="' + id + '"><stop offset="0" stop-color="' + c + '" stop-opacity="' + (op == null ? 1 : op) + '"/><stop offset=".5" stop-color="' + c + '" stop-opacity="' + f1((op == null ? 1 : op) * .55) + '"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>'); this.cache[k] = 'url(#' + id + ')'; }
+  if(!this.cache[k]){ var id = this.id(), h = '<radialGradient id="' + id + '"><stop offset="0" stop-color="' + c + '" stop-opacity="' + (op == null ? 1 : op) + '"/><stop offset=".5" stop-color="' + c + '" stop-opacity="' + f1((op == null ? 1 : op) * .55) + '"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>'; this.l.push(h); if(this.vivant) this.vivant.insertAdjacentHTML('beforeend', h); this.cache[k] = 'url(#' + id + ')'; }
   return this.cache[k];
 };
-function douce(D, cx, cy, rx, ry, c, op, rot){ return '<ellipse cx="' + f1(cx) + '" cy="' + f1(cy) + '" rx="' + f1(rx) + '" ry="' + f1(ry) + '" fill="' + D.doux(c) + '" opacity="' + (op == null ? 1 : op) + '"' + (rot ? ' transform="rotate(' + rot + ' ' + f1(cx) + ' ' + f1(cy) + ')"' : '') + '/>'; }
+function douce(D, cx, cy, rx, ry, c, op){ return '<ellipse cx="' + f1(cx) + '" cy="' + f1(cy) + '" rx="' + f1(rx) + '" ry="' + f1(ry) + '" fill="' + D.doux(c) + '"' + (op == null || op == 1 ? '' : ' fill-opacity="' + op + '"') + '/>'; }
+/* les opacités des petites formes deviennent fill-opacity / stroke-opacity : pas de calque d'effet par forme (bien plus léger à afficher) */
+function sansOpacite(h){
+  return h.replace(/<(path|circle|ellipse|rect)\b([^>]*?)(\/?)>/g, function(m, tag, at, fin){
+    var mm = at.match(/(^|\s)opacity="([^"]+)"/);
+    if(!mm) return m;
+    var v = parseFloat(mm[2]);
+    at = at.replace(/(^|\s)opacity="[^"]+"/, '');
+    if(/fill-opacity="/.test(at)) at = at.replace(/fill-opacity="([^"]+)"/, function(x, f){ return 'fill-opacity="' + (parseFloat(f) * v).toFixed(3) + '"'; }); else at += ' fill-opacity="' + v + '"';
+    if(/stroke-opacity="/.test(at)) at = at.replace(/stroke-opacity="([^"]+)"/, function(x, f){ return 'stroke-opacity="' + (parseFloat(f) * v).toFixed(3) + '"'; }); else at += ' stroke-opacity="' + v + '"';
+    return '<' + tag + at + fin + '>';
+  });
+}
 
 /* =====================================================================
    2. Le dessin de Bourbe (mêmes coordonnées que la fiche du bestiaire, 540 × 430)
@@ -169,7 +198,7 @@ var JAMBE_D = 'M384 350 C 404 336 474 340 508 354 C 520 362 518 376 504 382 C 47
 var LIGNE_EAU = 'M116 358 Q 320 392 534 352';
 var DESSOUS_EAU = 'M-90 352 L 116 358 Q 320 392 534 352 L 690 352 L 690 540 L -90 540 Z';
 var DESSUS_EAU = 'M-90 352 L 116 358 Q 320 392 534 352 L 690 352 L 690 150 L -90 150 Z';
-var BASSIN = ell(290, 378, 345, 72);
+var BASSIN = ell(290, 384, 345, 88);
 
 function dessinerBourbe(D){
   var R = rng(17), peau = PEAU, brun = BRUN;
@@ -183,14 +212,15 @@ function dessinerBourbe(D){
   var gOmbre = D.radU(400, 140, 340, [[0, '#ffffff', .14], [.45, '#ffffff', 0], [.75, '#0a0612', .2], [1, '#0a0612', .65]]);
   var ombreV = sombre(peau, .6);
   function verrue(x, y, r, Rv, brune){
-    var rx = r * (.88 + Rv() * .28), ry = r * (.74 + Rv() * .22), a = Math.round(Rv() * 60 - 30), tr = ' transform="rotate(' + a + ' ' + f1(x) + ' ' + f1(y) + ')"', v = '';
-    v += '<ellipse cx="' + f1(x - r * .2) + '" cy="' + f1(y + r * .25) + '" rx="' + f1(rx * 1.06) + '" ry="' + f1(ry * 1.04) + '" fill="' + ombreV + '" opacity=".6"' + tr + '/>';
-    v += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(rx) + '" ry="' + f1(ry) + '" fill="' + (brune ? gVerrueB : gVerrue) + '"' + tr + (r > 4.5 ? ' stroke="' + O + '" stroke-width="1.3" stroke-opacity=".5"' : '') + '/>';
+    var rx = r * (.88 + Rv() * .28), ry = r * (.74 + Rv() * .22), a = Math.round(Rv() * 60 - 30), v = '';
+    v += F(ellR(x - r * .2, y + r * .25, rx * 1.06, ry * 1.04, a), ombreV, ' opacity=".6"');
+    v += '<path d="' + ellR(x, y, rx, ry, a) + '" fill="' + (brune ? gVerrueB : gVerrue) + '"' + (r > 4.5 ? ' stroke="' + O + '" stroke-width="1.3" stroke-opacity=".5"' : '') + '/>';
     if(r > 6) v += '<ellipse cx="' + f1(x - r * .08) + '" cy="' + f1(y + r * .05) + '" rx="' + f1(r * .34) + '" ry="' + f1(r * .26) + '" fill="' + sombre(brun, .3) + '" opacity=".7"/>';
     if(r > 2.2) v += C(f1(x + rx * .38), f1(y - ry * .42), f1(Math.max(.7, r * .2)), '#fffff0', ' opacity="' + (r > 3 ? .9 : .6) + '"');
     return v;
   }
-  function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
+  /* une pièce : un seul groupe, son pivot donné par transform-origin (le contenu reste dans le repère du dessin) */
+  function piv(nom, x, y, c){ return '<g data-j="' + nom + '" style="transform-origin:' + x + 'px ' + y + 'px">' + c + '</g>'; }
   function slot(nom){ return '<g data-slot="' + nom + '"></g>'; }
   function ancre(nom, x, y){ return '<circle data-a="' + nom + '" cx="' + x + '" cy="' + y + '" r=".6" fill="none"/>'; }
   /* des craquelures (peau sèche) : des lignes brisées qui se ramifient */
@@ -202,11 +232,16 @@ function dessinerBourbe(D){
         a += (Rc() - .5) * 1.1; var l = 7 + Rc() * 9; x += Math.cos(a) * l; y += Math.sin(a) * l; d += ' L ' + f1(x) + ' ' + f1(y);
         if(Rc() < .45){ var b = a + (Rc() < .5 ? 1 : -1) * (.7 + Rc() * .6), bx = x + Math.cos(b) * (6 + Rc() * 8), by = y + Math.sin(b) * (6 + Rc() * 8); br += 'M' + f1(x) + ' ' + f1(y) + ' L ' + f1(bx) + ' ' + f1(by) + ' l ' + f1(Math.cos(b + .5) * 5) + ' ' + f1(Math.sin(b + .5) * 5) + ' '; }
       }
-      s += L(d + ' ' + br, '#e8dcb0', 1.4, ' opacity=".55" transform="translate(1 1)"') + L(d + ' ' + br, '#24160c', 2.2, ' opacity=".85"');
+      s += L(d + ' ' + br, '#e8dcb0', 4, ' opacity=".4"') + L(d + ' ' + br, '#24160c', 2.2, ' opacity=".85"');
     });
     return s;
   }
-  function douceP(cx, cy, rx, ry, c, op, rot){ return douce(D, cx, cy, rx, ry, c, op, rot); }
+  function douceP(cx, cy, rx, ry, c, op){ return douce(D, cx, cy, rx, ry, c, op); }
+  /* une variante pré-dessinée : une pièce au contenu fixe qu'on montre ou qu'on cache (opacité seule) */
+  function vari(nom, c, op){ return '<g data-j="v-' + nom + '" opacity="' + (op == null ? 0 : op) + '"' + (op ? '' : ' visibility="hidden"') + '>' + c + '</g>'; }
+  /* les flashs (blanc d'un coup, bleu du givre, orange du feu) : la silhouette, pré-dessinée en trois couleurs */
+  function flashs(d){ return vari('flash', F(d, '#ffffff')) + vari('flashG', F(d, '#d8f0ff')) + vari('flashO', F(d, '#ffc070')); }
+  out.vari = vari;
 
   /* ======== A1. le bras du fond (derrière le corps) ======== */
   var gLoin = D.linU(140, 320, 60, 410, [[0, sombre(peau, .45)], [1, sombre(peau, .74)]]);
@@ -242,7 +277,7 @@ function dessinerBourbe(D){
   });
   t += douceP(420, 180, 100, 68, brun, .3) + douceP(160, 190, 80, 30, brun, .26);
   var R3 = rng(23);
-  for(var k = 0; k < 200; k++){ var x = 40 + R3() * 480, y = 90 + R3() * 320; t += C(f1(x), f1(y), f1(.7 + R3() * 1.4), R3() < .55 ? sombre(peau, .55) : clair(peau, .45), ' opacity="' + f1(.2 + R3() * .35) + '"'); }
+  for(var k = 0; k < 70; k++){ var x = 40 + R3() * 480, y = 90 + R3() * 320; t += C(f1(x), f1(y), f1(.7 + R3() * 1.4), R3() < .55 ? sombre(peau, .55) : clair(peau, .45), ' opacity="' + f1(.2 + R3() * .35) + '"'); }
   t += F('M352 150 C 404 160 450 186 486 236 C 452 200 410 178 352 164 Z', clair(peau, .25), ' opacity=".5"') + L('M352 164 C 410 178 452 202 486 238', sombre(peau, .6), 2.2, ' opacity=".7"');
   var vv = [], R9 = rng(29);
   function boucheY(x){ return 222 + (x - 36) * .12; }
@@ -256,16 +291,16 @@ function dessinerBourbe(D){
   /* la peau qui sèche (feu sur la bave) : terne, craquelée */
   var sec = F(corpsD, '#9a9060', ' opacity=".42"') + douceP(330, 170, 160, 70, '#d8c890', .35) +
     craquelures([[300, 120, .3, 7], [380, 100, .6, 8], [440, 140, 1.2, 7], [470, 210, 1.6, 6], [500, 270, 1.8, 5], [230, 150, .8, 6], [150, 160, .5, 5], [90, 190, .4, 4], [340, 210, .2, 7], [410, 260, 1.4, 6], [260, 210, 2.6, 5], [190, 130, .2, 4]], 3);
-  t += '<g data-sec="1" opacity="0">' + sec + '</g>';
+  t += vari('sec', sec);
   corps += G(clipCorps, t);
   /* le dos mouillé : grands reflets nets (ils pâlissent quand la peau sèche) */
-  var mouille = douceP(420, 132, 64, 24, '#ffffff', .22, 18);
+  var mouille = douceP(420, 132, 64, 24, '#ffffff', .22);
   mouille += reflet(404, 100, 64, 12, 6, .6) + reflet(478, 148, 44, 58, 5, .5) + reflet(336, 92, 30, -14, 4, .55) + reflet(512, 250, 40, 84, 4, .45);
   mouille += reflet(150, 196, 26, -10, 3, .5) + reflet(196, 214, 18, -6, 2.6, .45) + reflet(300, 214, 30, 14, 3.5, .45) + reflet(232, 194, 12, 0, 2.4, .5) + reflet(470, 300, 24, 70, 3, .4) + reflet(380, 230, 22, 20, 3, .4);
-  corps += '<g data-mouille="1">' + mouille + '</g>';
+  corps += vari('mouille', mouille, 1);
   corps += L('M300 100 C 340 82 410 82 452 100 C 476 112 494 140 504 180', LUNE, 2.6, ' opacity=".55"') + L('M508 196 C 520 230 526 270 524 300', LUNE, 2, ' opacity=".4"');
   /* gonflé : la peau tendue brille */
-  corps += '<g data-tendu="1" opacity="0">' + douceP(380, 140, 120, 50, '#ffffff', .35, 12) + reflet(380, 110, 120, 10, 9, .7) + reflet(470, 180, 70, 60, 7, .6) + reflet(220, 160, 50, -8, 5, .55) + '</g>';
+  corps += vari('tendu', douceP(380, 140, 120, 50, '#ffffff', .35) + reflet(380, 110, 120, 10, 9, .7) + reflet(470, 180, 70, 60, 7, .6) + reflet(220, 160, 50, -8, 5, .55));
 
   /* ======== A5. le ventre pâle et mou (le point faible) ======== */
   var gVentre = D.radU(236, 300, 176, [[0, '#fbf5d8'], [.45, VENTRE], [.82, '#c4b27c'], [1, '#8a7a4e']]);
@@ -273,7 +308,7 @@ function dessinerBourbe(D){
   var tv = '<ellipse cx="210" cy="366" rx="156" ry="100" fill="' + gVentre + '"/>';
   var R4 = rng(41);
   for(var k3 = 0; k3 < 30; k3++){ var a = Math.PI * (1.0 + R4() * 1.0), rk = .92 + R4() * .14, exx = 210 + Math.cos(a) * 156 * rk, eyy = 366 + Math.sin(a) * 96 * rk; tv += F(tache(exx, eyy, 5 + R4() * 8, 3 + R4() * 5, R4, 6), R4() < .5 ? sombre(peau, .25) : mix(peau, brun, .5), ' opacity="' + f1(.55 + R4() * .4) + '"'); }
-  for(var k4 = 0; k4 < 80; k4++){ var gx2 = 70 + R4() * 290, gy2 = 274 + R4() * 130; tv += C(f1(gx2), f1(gy2), f1(.7 + R4() * 1.3), R4() < .5 ? '#fffbe8' : '#b8a670', ' opacity=".5"'); }
+  for(var k4 = 0; k4 < 30; k4++){ var gx2 = 70 + R4() * 290, gy2 = 274 + R4() * 130; tv += C(f1(gx2), f1(gy2), f1(.7 + R4() * 1.3), R4() < .5 ? '#fffbe8' : '#b8a670', ' opacity=".5"'); }
   tv += F('M60 262 C 120 280 200 284 270 262 L 290 304 C 220 300 130 296 60 294 Z', D.linU(0, 268, 0, 304, [[0, '#3a2a14', .5], [1, '#3a2a14', 0]]));
   [[330, 0], [366, 1]].forEach(function(b){
     var y = b[0];
@@ -283,12 +318,15 @@ function dessinerBourbe(D){
   });
   tv += douceP(248, 318, 56, 20, '#ffffff', .4) + reflet(256, 312, 44, -8, 5, .6) + reflet(276, 348, 22, -4, 3, .45);
   tv += douceP(190, 400, 100, 34, '#ffd27a', .24);
-  tv += '<g data-sec="1" opacity="0">' + F('M0 250 L 400 250 L 400 430 L 0 430 Z', '#b0a070', ' opacity=".3"') + craquelures([[150, 330, .2, 6], [230, 360, -.3, 6], [180, 390, .1, 5]], 9) + '</g>';
+  tv += vari('sec', F('M0 250 L 400 250 L 400 430 L 0 430 Z', '#b0a070', ' opacity=".3"') + craquelures([[150, 330, .2, 6], [230, 360, -.3, 6], [180, 390, .1, 5]], 9));
   /* le point faible ouvert : il brille et palpite */
-  var gPF = D.rad([[0, '#fff8d0', .95], [.35, '#ffd27a', .7], [.7, '#ff9a5a', .3], [1, '#ff7a4a', 0]], .5, .5, .5);
-  var ouvertV = '<g data-ouvert="1" opacity="0"><g class="bt-bourbe-pulse"><ellipse cx="200" cy="340" rx="120" ry="72" fill="' + gPF + '"/></g>' +
-    '<g class="bt-bourbe-pulse2"><ellipse cx="200" cy="340" rx="96" ry="56" fill="none" stroke="#fff4c0" stroke-width="4" opacity=".8"/></g></g>';
-  var ventre = piv('ventre', 210, 300, G(clipCorps, tv + slot('bosse')) + ouvertV + ancre('pointfaible', 200, 336));
+  var gPF = D.rad([[0, '#fff4c0', 1], [.3, '#ffc040', .85], [.65, '#ff7a3a', .45], [1, '#ff5a3a', 0]], .5, .5, .5);
+  var ouvertV = vari('ouvert', piv('x-pulseA', 200, 340, '<ellipse cx="200" cy="340" rx="150" ry="92" fill="' + gPF + '"/>') +
+    piv('x-pulseB', 200, 340, '<ellipse cx="200" cy="340" rx="110" ry="66" fill="none" stroke="#ffe066" stroke-width="7"/><ellipse cx="200" cy="340" rx="110" ry="66" fill="none" stroke="' + O + '" stroke-width="2" stroke-opacity=".5"/>'));
+  /* la bosse du héros avalé : dessinée autour de (0,0), elle se promène dans le ventre */
+  var bosse = vari('bosse', piv('bosse', 0, 0, douceP(0, 6, 34, 26, '#3a2a14', .35) + '<ellipse cx="0" cy="0" rx="26" ry="20" fill="' + gVentre + '"/>' +
+    '<path d="M-24 6 C -20 18 18 22 26 4" fill="none" stroke="#7a6838" stroke-width="2.4" opacity=".7"/>' + reflet(-2, -10, 28, -10, 4, .7) + L('M-30 -4 l -8 -3 M-28 8 l -9 2 M28 -6 l 8 -4', '#a8925c', 1.4, ' opacity=".6"')));
+  var ventre = piv('ventre', 210, 300, G(clipCorps, tv + bosse) + ouvertV + ancre('pointfaible', 200, 336));
 
   /* ======== A6. la gorge (le sac qui gonfle sous le menton) ======== */
   var sacD = 'M100 288 C 108 308 146 322 182 322 C 220 322 250 306 260 284 C 238 280 212 278 182 280 C 150 282 122 286 100 288 Z';
@@ -303,7 +341,7 @@ function dessinerBourbe(D){
   var R5 = rng(61);
   [[420, 282, 16, 10], [482, 304, 14, 18], [446, 330, 12, 8]].forEach(function(q){ tc += F(tache(q[0], q[1], q[2], q[3], R5, 7), mix(peau, brun, .7), ' opacity=".55"'); });
   for(var k5 = 0; k5 < 26; k5++){ tc += verrue(386 + R5() * 126, 262 + R5() * 100, 1.6 + R5() * R5() * 6.5, R5, k5 % 5 === 0); }
-  tc += '<g data-sec="1" opacity="0">' + F(CUISSE_D, '#9a9060', ' opacity=".42"') + craquelures([[420, 270, .4, 6], [480, 300, 1.8, 5]], 13) + '</g>';
+  tc += vari('sec', F(CUISSE_D, '#9a9060', ' opacity=".42"') + craquelures([[420, 270, .4, 6], [480, 300, 1.8, 5]], 13));
   cu += G(D.clip(CUISSE_D), tc);
   cu += L('M400 268 C 428 252 470 248 500 266 C 512 276 518 292 520 306', LUNE, 2.4, ' opacity=".6"') + reflet(462, 262, 36, 8, 5, .6);
   /* le pied palmé (sous la jambe ; on le voit quand il saute ou se met sur le dos) */
@@ -314,7 +352,7 @@ function dessinerBourbe(D){
   orteils.forEach(function(o){ pied += Pw(ruban(o, 13, 8), gPied, 2.2) + C(f1(o[2][0] - 1), f1(o[2][1] + 1), 5, '#3a2a14', ' stroke="' + O + '" stroke-width="1.6"') + C(f1(o[2][0] + .5), f1(o[2][1] - 1), 1.5, '#fff', ' opacity=".7"'); });
   var jambe = Pw(JAMBE_D, D.linU(500, 340, 390, 384, [[0, clair(peau, .1)], [1, sombre(peau, .45)]]), 2.8);
   jambe += G(D.clip(JAMBE_D), verrue(420, 356, 4, R5) + verrue(452, 352, 5, R5, true) + verrue(486, 360, 4, R5) + verrue(404, 364, 3, R5)) + L('M392 352 C 420 342 470 344 502 354', LUNE, 1.6, ' opacity=".45"');
-  var cuisse = piv('cuisse', 466, 300, cu + piv('jambe', 506, 366, piv('pied', 392, 372, pied) + jambe) + '<g data-flash="1" opacity="0">' + F(CUISSE_D, '#fff') + '</g>');
+  var cuisse = piv('cuisse', 466, 300, cu + piv('jambe', 506, 366, piv('pied', 392, 372, pied) + jambe) + flashs(CUISSE_D));
 
   /* ======== A8. mousse et algues accrochées au dos ======== */
   function mousse(cx, cy, rx, ry, n, seed){
@@ -365,7 +403,7 @@ function dessinerBourbe(D){
   [[266, 126, 3.6], [287, 116, 4], [309, 108, 4.2], [331, 100, 3.8], [352, 94, 3]].forEach(function(b){
     cour += '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="' + b[2] + '" fill="' + D.radU(b[0] + 1.4, b[1] - 1.4, b[2] * 1.6, [[0, '#fff6c8'], [.45, '#f0b838'], [1, '#7a4a10']]) + '" stroke="' + O + '" stroke-width="1.4"/>' + C(f1(b[0] + 1.2), f1(b[1] - 1.3), 1, '#fff');
   });
-  cour += '<g data-rage="1" opacity="0">' + douceP(300, 100, 80, 40, '#ff4a2a', .45) + '</g>';
+  cour += vari('rage', douceP(300, 100, 80, 40, '#ff4a2a', .45));
   var couronne = piv('couronne', 300, 122, cour + ancre('haut', 300, 64));
 
   /* ======== A10. la glande en relief derrière l'œil, le tympan ======== */
@@ -375,10 +413,10 @@ function dessinerBourbe(D){
   var R6 = rng(77), tg = '';
   for(var k6 = 0; k6 < 26; k6++){ var px = 210 + R6() * 84, py = 150 + R6() * 40; tg += '<ellipse cx="' + f1(px) + '" cy="' + f1(py) + '" rx="2.4" ry="1.7" fill="' + sombre(brun, .45) + '" opacity=".85"/>' + C(f1(px + .9), f1(py - .9), .7, '#fff', ' opacity=".55"'); }
   tg += F('M206 176 C 222 190 262 194 292 182 C 270 198 226 198 206 176 Z', '#0a0612', ' opacity=".3"');
-  tg += '<g data-sec="1" opacity="0">' + F(glandeD, '#b8a070', ' opacity=".45"') + craquelures([[220, 160, .2, 5], [250, 182, -.2, 5]], 21) + '</g>';
-  gl += G(D.clip(glandeD), tg) + '<g data-mouille="1">' + reflet(264, 152, 46, 2, 5.5, .7) + reflet(232, 150, 14, -6, 2.6, .55) + '</g>' + L('M208 158 C 224 146 262 142 290 156', LUNE, 1.8, ' opacity=".55"');
+  tg += vari('sec', F(glandeD, '#b8a070', ' opacity=".45"') + craquelures([[220, 160, .2, 5], [250, 182, -.2, 5]], 21));
+  gl += G(D.clip(glandeD), tg) + vari('mouille', reflet(264, 152, 46, 2, 5.5, .7) + reflet(232, 150, 14, -6, 2.6, .55), 1) + L('M208 158 C 224 146 262 142 290 156', LUNE, 1.8, ' opacity=".55"');
   /* la glande grésille quand la peau sèche */
-  gl += '<g data-grille="1" opacity="0">' + douceP(250, 170, 60, 30, '#ff9a3a', .5) + '</g>';
+  gl += vari('grille', douceP(250, 170, 60, 30, '#ff9a3a', .6));
   var glande = piv('glande', 250, 170, '<g transform="rotate(16 250 170)">' + gl + ancre('glandeC', 250, 160) + '</g>');
   var tympan = C(218, 212, 11, sombre(peau, .55), ' opacity=".45"') + '<circle cx="216" cy="209" r="9.5" fill="' + D.radU(219, 206, 11, [[0, clair(peau, .3)], [.7, sombre(peau, .2)], [1, sombre(peau, .45)]]) + '" stroke="' + O + '" stroke-width="1.8" stroke-opacity=".85"/>' +
     '<circle cx="216" cy="209" r="5.5" fill="none" stroke="' + sombre(peau, .5) + '" stroke-width="1.1" opacity=".6"/>' + C(219, 205, 1.4, '#fff', ' opacity=".8"');
@@ -391,10 +429,10 @@ function dessinerBourbe(D){
   var orbite = ell(ex + 1, ey + 2, 34, 31), globe = ell(ex, ey, 25.5, 24);
   var gOr = D.radU(ex + 7, ey - 8, 30, [[0, '#fffbd0'], [.28, '#ffd84a'], [.72, '#e08a12'], [1, '#6a3006']]);
   var gRouge = D.radU(ex + 7, ey - 8, 30, [[0, '#fff2a0'], [.28, '#ff7a3a'], [.72, '#d81a14'], [1, '#5a0408']]);
-  var oe = '<g data-halo="j"><circle cx="' + ex + '" cy="' + ey + '" r="58" fill="' + haloOr + '" opacity=".5"/></g>' + '<g data-halo="r" opacity="0"><circle cx="' + ex + '" cy="' + ey + '" r="62" fill="' + haloRouge + '" opacity=".8"/></g>';
+  var oe = vari('haloJ', '<circle cx="' + ex + '" cy="' + ey + '" r="58" fill="' + haloOr + '" opacity=".5"/>', 1) + vari('haloR', '<circle cx="' + ex + '" cy="' + ey + '" r="66" fill="' + haloRouge + '" opacity=".85"/>');
   oe += Pw(orbite, D.radU(ex + 16, ey - 16, 50, [[0, clair(peau, .5)], [.5, clair(peau, .08)], [1, sombre(peau, .5)]]), 3);
   oe += L('M' + (ex - 22) + ' ' + (ey - 24) + ' C ' + (ex - 6) + ' ' + (ey - 32) + ' ' + (ex + 20) + ' ' + (ey - 30) + ' ' + (ex + 32) + ' ' + (ey - 12), LUNE, 2, ' opacity=".55"');
-  oe += Pw(globe, gOr, 2.6) + '<g data-iris="r" opacity="0">' + F(globe, gRouge) + '</g>';
+  oe += Pw(globe, gOr, 2.6) + vari('irisR', F(globe, gRouge));
   var gi = '';
   for(var i = 0; i < 26; i++){ var aa = i / 26 * Math.PI * 2; gi += 'M' + f1(ex + Math.cos(aa) * 9) + ' ' + f1(ey + 1 + Math.sin(aa) * 6) + ' L ' + f1(ex + Math.cos(aa) * 23) + ' ' + f1(ey + Math.sin(aa) * 22) + ' '; }
   gi = L(gi, '#9a5208', .9, ' opacity=".45"');
@@ -403,7 +441,7 @@ function dessinerBourbe(D){
   var pup = Pw('M' + (ex - 15) + ' ' + (ey + 1) + ' C ' + (ex - 7) + ' ' + (ey - 5) + ' ' + (ex + 7) + ' ' + (ey - 5) + ' ' + (ex + 15) + ' ' + (ey + 1) + ' C ' + (ex + 7) + ' ' + (ey + 6) + ' ' + (ex - 7) + ' ' + (ey + 6) + ' ' + (ex - 15) + ' ' + (ey + 1) + ' Z', '#120810', 1.4) + '<ellipse cx="' + ex + '" cy="' + (ey + 1) + '" rx="19" ry="8.5" fill="none" stroke="#7a3a08" stroke-width="2" opacity=".45"/>';
   gi += piv('pupille', ex, ey + 1, pup);
   /* les reflets du globe (sous la paupière, qui les couvre quand il cligne) */
-  gi += '<ellipse cx="' + (ex + 6) + '" cy="' + (ey - 10) + '" rx="14" ry="7" fill="#fffbe8" opacity=".28" transform="rotate(20 ' + (ex + 6) + ' ' + (ey - 10) + ')"/>' + C(ex + 10, ey - 10, 4.6, '#fff') + C(ex + 15, ey - 3, 1.6, '#fff', ' opacity=".85"') + C(ex - 12, ey + 11, 2, '#fff', ' opacity=".75"');
+  gi += F(ellR(ex + 6, ey - 10, 14, 7, 20), '#fffbe8', ' opacity=".28"') + C(ex + 10, ey - 10, 4.6, '#fff') + C(ex + 15, ey - 3, 1.6, '#fff', ' opacity=".85"') + C(ex - 12, ey + 11, 2, '#fff', ' opacity=".75"');
   gi += L('M' + (ex + 6) + ' ' + (ey - 21) + ' C ' + (ex + 18) + ' ' + (ey - 18) + ' ' + (ex + 24) + ' ' + (ey - 8) + ' ' + (ex + 24) + ' ' + (ey + 2), '#fffbe0', 1.6, ' opacity=".55"');
   /* la paupière du haut : au repos, un fin liseré (l'œil reste grand ouvert) ; elle descend pour cligner */
   var bordH = 'M' + (ex - 26) + ' ' + (ey - 9) + ' C ' + (ex - 14) + ' ' + (ey - 19) + ' ' + (ex + 12) + ' ' + (ey - 20) + ' ' + (ex + 26) + ' ' + (ey - 9);
@@ -415,7 +453,7 @@ function dessinerBourbe(D){
   var paupBD = 'M' + (ex - 27) + ' ' + (ey + 8) + ' C ' + (ex - 22) + ' ' + (ey + 23) + ' ' + (ex + 20) + ' ' + (ey + 26) + ' ' + (ex + 27) + ' ' + (ey + 8) + ' C ' + (ex + 34) + ' ' + (ey + 34) + ' ' + (ex - 30) + ' ' + (ey + 38) + ' ' + (ex - 27) + ' ' + (ey + 8) + ' Z';
   var pb = Pw(paupBD, D.linU(ex + 30, ey + 6, ex - 28, ey + 32, [[0, clair(peau, .35)], [1, sombre(peau, .35)]]), 2.4);
   [[-22, 21, 3], [-13, 27, 3.8], [-2, 30, 3.4], [9, 29, 4], [19, 25, 3.2], [26, 17, 2.8]].forEach(function(v){ pb += verrue(ex + v[0], ey + v[1], v[2], R, v[2] > 3.3); });
-  oe += piv('paupB', ex, ey + 24, pb) + slot('larmes');
+  oe += piv('paupB', ex, ey + 24, pb);
   var oeil = piv('oeil', ex, ey, oe + ancre('tete', ex, ey - 30) + ancre('oeilC', ex, ey));
   var autourOeil = '';
   [[150, 150, 3], [206, 154, 3.4], [140, 196, 3.6], [204, 196, 3], [120, 176, 2.6]].forEach(function(v){ autourOeil += verrue(v[0], v[1], v[2], R); });
@@ -431,14 +469,14 @@ function dessinerBourbe(D){
   interieur += L('M70 236 C 74 214 80 194 86 176 M128 248 C 130 228 134 212 140 196', '#e8f4ff', 1.6, ' opacity=".5"');
   var mach = interieur;
   mach += F(MACHOIRE_D, gPeau) + G(D.clip(MACHOIRE_D), '<rect x="0" y="180" width="300" height="140" fill="' + gOmbre + '"/>' + douceP(150, 300, 120, 20, '#3a2a14', .3) +
-    (function(){ var Rj = rng(7), s2 = ''; for(var q = 0; q < 30; q++){ s2 += C(f1(40 + Rj() * 230), f1(230 + Rj() * 60), f1(.7 + Rj() * 1.2), Rj() < .55 ? sombre(peau, .55) : clair(peau, .45), ' opacity=".35"'); } return s2; })() +
-    '<g data-sec="1" opacity="0">' + F(MACHOIRE_D, '#9a9060', ' opacity=".42"') + craquelures([[70, 254, .3, 4], [150, 266, .1, 5]], 31) + '</g>');
+    (function(){ var Rj = rng(7), s2 = ''; for(var q = 0; q < 12; q++){ s2 += C(f1(40 + Rj() * 230), f1(230 + Rj() * 60), f1(.7 + Rj() * 1.2), Rj() < .55 ? sombre(peau, .55) : clair(peau, .45), ' opacity=".35"'); } return s2; })() +
+    vari('sec', F(MACHOIRE_D, '#9a9060', ' opacity=".42"') + craquelures([[70, 254, .3, 4], [150, 266, .1, 5]], 31)));
   mach += L('M102 276 C 64 268 32 244 34 212', O, 3.4) + L('M101 290 C 120 284 140 278 162 275 C 200 270 240 272 270 280', sombre(peau, .6), 1.6, ' opacity=".5"');
   mach += L(LEVRE_D, O, 3) + L('M46 232 C 96 256 170 266 230 263 C 244 263 254 268 260 276', sombre(peau, .55), 2, ' opacity=".6"');
   mach += Pw('M38 222 C 62 242 102 256 142 258 C 108 270 64 262 46 240 Z', '#2c0b24', 2.4);
   mach += F('M52 236 C 74 250 104 256 128 258 C 102 264 70 256 52 236 Z', '#6a2048', ' opacity=".8"');
   mach += L('M58 238 C 58 246 60 252 58 258 M118 258 C 116 262 118 266 116 270', '#e8f4ff', 1.2, ' opacity=".55"');
-  mach += '<g data-flash="1" opacity="0">' + F(MACHOIRE_D, '#fff') + '</g>';
+  mach += flashs(MACHOIRE_D);
   /* la langue qui pend, gluante, avec son bout collant et sa goutte */
   var gLangue = D.linU(112, 244, 50, 352, [[0, '#f4bccb'], [.45, LANGUE], [1, '#86365c']]);
   out.gLangue = gLangue;
@@ -452,7 +490,7 @@ function dessinerBourbe(D){
 
   /* ======== A13. le museau, la fente de la bouche (lèvre du haut) ======== */
   var museau = L('M44 188 C 58 170 86 152 118 144', LUNE, 2.2, ' opacity=".5"') + reflet(80, 164, 36, -30, 4.5, .7) + reflet(104, 152, 14, -20, 2.6, .55);
-  museau += '<ellipse cx="48" cy="194" rx="3.6" ry="2.1" transform="rotate(-30 48 194)" fill="#1a0e18"/><ellipse cx="61" cy="186" rx="3.2" ry="1.9" transform="rotate(-30 61 186)" fill="#1a0e18"/>' + ancre('narine', 50, 192);
+  museau += F(ellR(48, 194, 3.6, 2.1, -30), '#1a0e18') + F(ellR(61, 186, 3.2, 1.9, -30), '#1a0e18') + ancre('narine', 50, 192);
   museau += L('M44 190 q 4 -6 10 -6 M58 182 q 4 -5 9 -5', clair(peau, .4), 1.2, ' opacity=".6"');
   var levre = L('M42 216 C 90 242 170 252 230 250 C 246 250 258 256 266 266', clair(peau, .4), 1.6, ' opacity=".45"') + L(LEVRE_D, O, 6) +
     L('M268 274 C 274 282 274 292 270 300', O, 2.2, ' opacity=".7"') + L('M262 280 C 266 288 266 296 262 302', sombre(peau, .6), 1.6, ' opacity=".5"');
@@ -510,27 +548,60 @@ function dessinerBourbe(D){
   main += doigts([[[[266, 408], [265, 425], [251, 432]], 15], [[[250, 404], [239, 423], [218, 427]], 15.5], [[[240, 394], [215, 390], [196, 404]], 15]], false);
   main += L('M244 380 C 262 374 286 382 296 394', LUNE, 2, ' opacity=".6"') + reflet(270, 386, 26, 8, 3.5, .65) + ancre('main', 250, 410);
 
+  /* ======== les variantes pré-dessinées des états ======== */
+  /* la colle : des paquets gluants */
+  var pate = '<path d="M-20 4 C -20 -8 -10 -12 0 -11 C 10 -12 20 -8 20 4 C 12 10 -12 10 -20 4 Z" fill="#d0e05a" fill-opacity=".92" stroke="#5a6420" stroke-width="1.6"/><path d="M-12 -4 Q 0 -9 12 -4" fill="none" stroke="#fbffd0" stroke-width="1.6" opacity=".8"/>';
+  main += vari('colle', '<g transform="translate(250 420)">' + pate + '</g>');
+  mainF += vari('colle', '<g transform="translate(100 418) scale(.8)">' + pate + '</g>');
+  var colleCorps = vari('colle', '<g transform="translate(420 340) scale(1.3)">' + pate + '</g><g transform="translate(200 236) rotate(-10)">' + pate + '</g>');
+  /* les flammes qui restent sur le dos (brûlé) : chaque flamme est une pièce qui vacille */
+  var gF1 = D.lin([[0, '#ff4a10'], [.6, '#ff8a1a'], [1, '#ffc040', .8]], 0, 1, 0, 0), gF2 = D.lin([[0, '#ffd040'], [1, '#fff8c0']], 0, 1, 0, 0);
+  function flamme(h, w){ return '<path d="' + flammeD(h, w) + '" fill="' + gF1 + '" stroke="#5a1a08" stroke-width="2"/><path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e"/><path d="' + flammeD(h * .42, w * .36) + '" fill="' + gF2 + '"/>'; }
+  var feu = douceP(380, 120, 140, 40, '#140c10', .7) + douceP(380, 80, 180, 80, '#ff8a20', .45);
+  [[300, 112, 66, 30], [336, 98, 90, 38], [372, 88, 112, 44], [410, 92, 96, 40], [446, 108, 84, 34], [478, 140, 64, 28], [500, 190, 46, 22], [250, 132, 44, 22], [356, 92, 56, 22], [430, 98, 50, 20]].forEach(function(f, k){
+    feu += '<g transform="translate(' + f[0] + ' ' + f[1] + ')">' + piv('x-fl' + k, 0, 0, flamme(f[2] * .7, f[3] * .85)) + '</g>';
+  });
+  /* les étoiles de l'éblouissement, qui tourneront autour de la tête */
+  var etoiles = '';
+  for(var ie = 0; ie < 6; ie++){ var re2 = 17 - (ie % 2) * 4; etoiles += piv('x-et' + ie, 0, 0, '<circle r="22" fill="' + D.doux('#fff6c0', .6) + '"/><path d="' + etoileD(re2, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6"/><path d="' + etoileD(re2 * .42, 5, .45) + '" fill="#fffbe0"/>'); }
+  /* la flaque sous lui, sur la berge */
+  var flaque = vari('flaque', '<ellipse cx="300" cy="420" rx="230" ry="12" fill="#2a4c58" opacity=".55"/><ellipse cx="300" cy="418" rx="190" ry="6" fill="' + LUNE + '" opacity=".18"/>' + L('M150 418 C 240 412 360 412 460 418', LUNE, 1.6, ' opacity=".5"'));
+
   /* ======== l'assemblage des deux chaînes ======== */
-  function chaine(contenu){
-    return piv('pos', 283, 400, slot('sol') + piv('saut', 283, 400, piv('secousse', 283, 260, piv('posture', 283, 230, piv('corps', 283, 404, contenu)))));
+  function chaine(contenu, sol){
+    return piv('pos', 283, 400, (sol || '') + piv('saut', 283, 400, piv('secousse', 283, 260, piv('posture', 283, 230, piv('corps', 283, 404, contenu)))));
   }
   var A = piv('brasF', 132, 334, avbrasF) + piv('couronneF', 300, 122, couronneF) + piv('oeilF', 134, 140, oeilF) +
     corps + surDos + ventre + gorgeP + cuisse + algues + couronne + glande + tympan + teteFond + autourOeil + oeil +
-    '<g' + sousLevre + '>' + machoire + '</g>' + museau + levre +
-    '<g data-flash="1" opacity="0">' + F(corpsD, '#fff') + '</g>' +
-    slot('feuDos') + slot('colleA') + slot('teteFx') + ancre('centre', 290, 250) + ancre('pieds', 300, 404) + ancre('dos', 380, 110);
+    '<g' + sousLevre + '>' + machoire + '</g>' + museau + levre + flashs(corpsD) + colleCorps + vari('feu', feu) + vari('etoiles', etoiles) +
+    ancre('centre', 290, 250) + ancre('pieds', 300, 404) + ancre('dos', 380, 110);
   var B = piv('brasF', 132, 334, piv('mainF', 112, 392, mainF + ancre('mainF', 96, 404))) +
-    piv('bras', 318, 262, brasH + piv('avbras', 352, 346, avb + piv('main', 284, 390, main))) + slot('colleB');
-  out.A = chaine(A);
+    piv('bras', 318, 262, brasH + piv('avbras', 352, 346, avb + piv('main', 284, 390, main)));
+  out.A = chaine(A, flaque);
   out.B = chaine(B);
+
+  /* ======== la langue qui jaillit (pièces pré-dessinées, posées dans le monde) ========
+     langueTir : une langue droite de 100 unités le long de x, qu'on tourne vers la cible et qu'on étire (scaleX) ;
+     langueBout : le bout collant, puis le « paquet » (le héros attrapé : deux bottes qui gigotent, une main) */
+  var gLT = D.lin([[0, '#f8c8d6'], [.45, LANGUE], [1, '#8a3a5e']], 0, 0, 0, 1);
+  var NS2 = ' vector-effect="non-scaling-stroke"';
+  var tir = '<path d="M-4 -13 C 30 -12 70 -9.5 100 -7.5 L 100 7.5 C 70 9.5 30 12 -4 13 Z" fill="' + gLT + '" stroke="' + O + '" stroke-width="2.6" stroke-linejoin="round"' + NS2 + '/>' +
+    L('M0 2 C 40 2 70 1.5 100 1', '#9a4a6c', 2, ' opacity=".7"' + NS2) + L('M2 -7 C 40 -6.5 70 -5 98 -4', '#fbe0ea', 2.2, ' opacity=".75"' + NS2);
+  function botte(bx, by, c){ return Pw(T2('M-4 0 L -4 12 L 8 12 Q 12 12 11 8 L 4 6 L 4 0 Z', bx, by), c, 2) + L(T2('M-4 11 L 10 11', bx, by), '#2a1810', 2.4); }
+  var simple = '<circle r="15" fill="' + LANGUE + '" stroke="' + O + '" stroke-width="2.6"/><ellipse cx="-4" cy="-5" rx="5" ry="3" fill="#fbe0ea" opacity=".8"/>';
+  var paquet = piv('x-botte0', -6, 12, botte(-6, 12, '#5a3a22')) + piv('x-botte1', 8, 10, botte(8, 10, '#6a4428')) +
+    piv('x-mainH', -12, -14, L(T2('M0 0 L -3 -10 M0 0 L 2 -11 M0 0 L 6 -8', -12, -14), O, 3.4) + L(T2('M0 0 L -3 -10 M0 0 L 2 -11 M0 0 L 6 -8', -12, -14), '#e8b890', 2) + C(-12, -14, 4, '#e8b890', ' stroke="' + O + '" stroke-width="1.6"')) +
+    '<circle r="19" fill="' + LANGUE + '" stroke="' + O + '" stroke-width="2.6"/>' + L('M-14 -4 Q 0 -12 14 -2 M-12 6 Q 0 -2 14 8', '#9a4a6c', 1.6, ' opacity=".7"') + '<ellipse cx="-5" cy="-8" rx="6" ry="3" fill="#fbe0ea" opacity=".8"/>';
+  out.langue = vari('langue', piv('langueTir', 0, 0, tir) + piv('langueBout', 0, 0, vari('boutSimple', simple, 1) + vari('paquet', paquet)));
   return out;
 }
 
 /* l'eau autour de Bourbe : le bassin (une tache d'eau noire qui s'efface sur les bords), coupé en deux le long
    de la ligne d'eau : le fond (derrière lui) et le devant (par-dessus ce qui est immergé) */
+function vari(nom, c, op){ return '<g data-j="v-' + nom + '" opacity="' + (op == null ? 0 : op) + '"' + (op ? '' : ' visibility="hidden"') + '>' + c + '</g>'; }
 function dessinerEau(D){
   var o = {};
-  var gB = D.radU(290, 360, 345, [[0, '#2c5462', .62], [.32, '#1a3a46', .8], [.62, '#0e222a', .92], [.86, '#081218', .72], [1, '#081218', 0]], 290, 330, 'translate(290 360) scale(1 .23) translate(-290 -360)');
+  var gB = D.radU(290, 384, 345, [[0, '#2c5462', .66], [.3, '#1a3a46', .84], [.6, '#0e222a', .95], [.84, '#081218', .8], [1, '#081218', 0]], 290, 350, 'translate(290 384) scale(1 .255) translate(-290 -384)');
   var clipH = D.clip(DESSUS_EAU), clipB = D.clip(DESSOUS_EAU);
   var reflets = '';
   var Rr = rng(45);
@@ -543,6 +614,8 @@ function dessinerEau(D){
     L('M60 372 Q 210 394 300 396', LUNE, 1.4, ' opacity=".3"') + L('M380 388 Q 470 376 560 362', LUNE, 1.4, ' opacity=".35"') + L('M372 400 Q 470 388 580 372', LUNE, 1, ' opacity=".2"') +
     '<g data-brille="1">' + douce(D, 182, 402, 34, 9, '#fff0b0', .55) + C(182, 402, 2.4, '#fffbe0') + L('M174 402 h 16 M182 397 v 10', '#fffbe0', 1.2, ' opacity=".8"') + C(195, 398, 1.2, '#fffbe0', ' opacity=".7"') + '</g>' +
     '<g data-reflets="1">' + reflets + '</g></g>';
+  dev += vari('colleEau', '<ellipse cx="300" cy="384" rx="250" ry="14" fill="#c8d84a" fill-opacity=".45" stroke="#5a6420" stroke-width="2"/>' + L('M100 380 C 200 374 360 374 480 380', '#ffffd0', 1.8, ' opacity=".7"') +
+    [[140, 388, 4], [240, 392, 3], [360, 386, 5], [470, 390, 3.5]].map(function(b){ return '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1"/>'; }).join(''));
   o.devant = dev;
   /* la ligne d'eau sur le corps : un trait clair, de l'écume, des bulles collées */
   var ligne = L(LIGNE_EAU, '#0a1218', 5, ' opacity=".5"') + L('M116 354 Q 320 388 534 348', clair(PEAU, .35), 2, ' opacity=".4"') + L('M112 360 Q 320 394 538 354', LUNE, 2.2, ' opacity=".6"');
@@ -551,15 +624,15 @@ function dessinerEau(D){
   [[150, 362, 3.2], [162, 366, 2], [508, 356, 2.6], [372, 380, 2.2]].forEach(function(b){ ligne += C(b[0], b[1], b[2], 'none', ' stroke="' + LUNE + '" stroke-width="1.2" opacity=".7"') + C(f1(b[0] + b[2] * .35), f1(b[1] - b[2] * .4), f1(b[2] * .3), '#fff', ' opacity=".8"'); });
   o.ligne = ligne;
   /* la glace (givre sur le bassin) : une plaque claire et fêlée, et un col de glace autour de lui */
-  var gG = D.radU(290, 360, 345, [[0, '#e8f6ff', .9], [.5, '#bfe2f4', .88], [.8, '#8ab8d4', .8], [1, '#8ab8d4', 0]], 290, 340, 'translate(290 360) scale(1 .23) translate(-290 -360)');
+  var gG = D.radU(290, 384, 345, [[0, '#e8f6ff', .9], [.5, '#bfe2f4', .88], [.8, '#8ab8d4', .8], [1, '#8ab8d4', 0]], 290, 350, 'translate(290 384) scale(1 .255) translate(-290 -384)');
   var fel = L('M40 380 L 90 372 L 120 388 M470 372 L 520 384 L 560 376 M200 404 L 240 396 L 280 410 L 330 400 M600 368 L 560 360 M-10 366 L 30 372', '#5a8aa8', 1.6, ' opacity=".7"') + L('M42 378 L 90 370 L 120 386 M470 370 L 520 382 M200 402 L 240 394 L 280 408', '#ffffff', 1, ' opacity=".8"');
   var eclats = '';
-  for(var ke = 0; ke < 10; ke++){ var ax = -20 + ke * 64 + Rf() * 30, ay = 366 + Rf() * 36; eclats += '<g transform="translate(' + f1(ax) + ' ' + f1(ay) + ')"><path d="' + eclatD(5 + Rf() * 4) + '" fill="#ffffff" class="bt-bourbe-scint" style="animation-delay:' + f1(ke * .23) + 's"/></g>'; }
-  o.glaceFond = '<g data-glace="1" opacity="0"><g' + clipH + '>' + F(BASSIN, gG) + L('M-40 336 C 100 322 480 322 620 336', '#ffffff', 2, ' opacity=".6"') + '</g></g>';
+  for(var ke = 0; ke < 10; ke++){ var ax = -20 + ke * 64 + Rf() * 30, ay = 366 + Rf() * 36; eclats += '<g transform="translate(' + f1(ax) + ' ' + f1(ay) + ')"><path d="' + eclatD(4 + Rf() * 4) + '" fill="#ffffff" opacity=".9"/></g>'; }
+  o.glaceFond = vari('glace', '<g' + clipH + '>' + F(BASSIN, gG) + L('M-40 336 C 100 322 480 322 620 336', '#ffffff', 2, ' opacity=".6"') + '</g>');
   var col = '';
   for(var kc = 0; kc <= 18; kc++){ var tc = kc / 18, xc = (1 - tc) * (1 - tc) * 112 + 2 * tc * (1 - tc) * 320 + tc * tc * 536, yc = (1 - tc) * (1 - tc) * 358 + 2 * tc * (1 - tc) * 392 + tc * tc * 352; col += (kc ? ' L ' : 'M') + f1(xc) + ' ' + f1(yc - 4 - (kc % 2) * 7); }
   for(var kc2 = 18; kc2 >= 0; kc2--){ var tc2 = kc2 / 18, xc2 = (1 - tc2) * (1 - tc2) * 112 + 2 * tc2 * (1 - tc2) * 320 + tc2 * tc2 * 536, yc2 = (1 - tc2) * (1 - tc2) * 358 + 2 * tc2 * (1 - tc2) * 392 + tc2 * tc2 * 352; col += ' L ' + f1(xc2) + ' ' + f1(yc2 + 6); }
-  o.glaceDevant = '<g data-glace="1" opacity="0"><g' + clipB + '>' + F(BASSIN, gG) + fel + eclats + '</g>' + Pw(col + ' Z', '#f4fbff', 1.6, ' opacity=".92"') + L(LIGNE_EAU, '#ffffff', 2, ' opacity=".9"') + '</g>';
+  o.glaceDevant = vari('glace', '<g' + clipB + '>' + F(BASSIN, gG) + fel + eclats + '</g>' + Pw(col + ' Z', '#f4fbff', 1.6, ' opacity=".92"') + L(LIGNE_EAU, '#ffffff', 2, ' opacity=".9"'));
   return o;
 }
 
@@ -569,22 +642,6 @@ function dessinerEau(D){
 var CSS = '.bt-bourbe{position:relative;width:100%;height:100%;transform-origin:50% 100%}' +
   '.bt-bourbe>svg{width:100%;height:100%;overflow:visible;display:block}' +
   '.bt-bourbe [data-j]{transform-box:view-box;transform-origin:0 0}' +
-  '.bt-bourbe .bt-bourbe-fl{transform-box:fill-box;transform-origin:50% 100%;animation:bt-bourbe-flamme .42s ease-in-out infinite alternate}' +
-  '.bt-bourbe .bt-bourbe-fl2{transform-box:fill-box;transform-origin:50% 100%;animation:bt-bourbe-flamme2 .3s ease-in-out infinite alternate}' +
-  '@keyframes bt-bourbe-flamme{0%{transform:scale(1,1) skewX(0deg)}35%{transform:scale(.88,1.18) skewX(-7deg)}70%{transform:scale(1.06,.9) skewX(5deg)}100%{transform:scale(.94,1.12) skewX(-3deg)}}' +
-  '@keyframes bt-bourbe-flamme2{0%{transform:scale(1,.9) skewX(4deg)}100%{transform:scale(.85,1.2) skewX(-6deg)}}' +
-  '.bt-bourbe .bt-bourbe-pulse{transform-box:fill-box;transform-origin:50% 50%;animation:bt-bourbe-pulse .9s ease-in-out infinite}' +
-  '@keyframes bt-bourbe-pulse{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.1);opacity:1}}' +
-  '.bt-bourbe .bt-bourbe-pulse2{transform-box:fill-box;transform-origin:50% 50%;animation:bt-bourbe-pulse2 .9s ease-out infinite}' +
-  '@keyframes bt-bourbe-pulse2{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.35);opacity:0}}' +
-  '.bt-bourbe .bt-bourbe-tourne{transform-box:fill-box;transform-origin:50% 50%;animation:bt-bourbe-tourne 3s linear infinite}' +
-  '@keyframes bt-bourbe-tourne{to{transform:rotate(360deg)}}' +
-  '.bt-bourbe .bt-bourbe-scint{transform-box:fill-box;transform-origin:50% 50%;animation:bt-bourbe-scint 1.3s ease-in-out infinite}' +
-  '@keyframes bt-bourbe-scint{0%,100%{transform:scale(0) rotate(0deg);opacity:0}45%{transform:scale(1.15) rotate(45deg);opacity:1}60%{transform:scale(.8) rotate(60deg);opacity:.9}}' +
-  '.bt-bourbe .bt-bourbe-halo{transform-box:fill-box;transform-origin:50% 50%;animation:bt-bourbe-halo .7s ease-in-out infinite alternate}' +
-  '@keyframes bt-bourbe-halo{from{transform:scale(.85);opacity:.6}to{transform:scale(1.25);opacity:1}}' +
-  '.bt-bourbe .bt-bourbe-bulle{transform-box:fill-box;transform-origin:50% 100%;animation:bt-bourbe-bulle 2.4s ease-in-out infinite}' +
-  '@keyframes bt-bourbe-bulle{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.25,.85);opacity:1}}' +
   '.bt-bourbe-scene-fx{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:6}';
 function injecterCSS(){
   if(document.getElementById('bt-bourbe-css')) return;
@@ -623,30 +680,36 @@ function Bourbe(conteneur, options){
   this.D = D;
   var art = dessinerBourbe(D), eau = dessinerEau(D);
   this.formes = art;
-  var clipMonde = D.clip('M-600 -900 L 1200 -900 L 1200 448 L -600 448 Z');
+  var clipMonde = D.clip('M-600 -900 L 1200 -900 L 1200 440 L -600 440 Z');
   var div = document.createElement('div');
   div.className = 'bt-bourbe';
   div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + VB.x + ' ' + VB.y + ' ' + VB.w + ' ' + VB.h + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' +
-    '<g data-slot="eauFond">' + eau.fond + eau.glaceFond + '</g>' +
-    '<g' + clipMonde + '><g data-plonge="A">' + art.A + '</g></g>' +
-    '<g data-slot="eauDevant">' + eau.devant + '</g>' +
-    '<g data-slot="ligne">' + eau.ligne + '</g>' +
-    eau.glaceDevant +
+    sansOpacite(eau.fond + eau.glaceFond +
+    '<g' + clipMonde + '>' + vari('plongeA', art.A, 1) + '</g>' +
+    eau.devant + vari('ligne', eau.ligne, 1) + eau.glaceDevant +
     '<g data-slot="restes"></g><g data-slot="ondes"></g>' +
-    '<g data-plonge="B">' + art.B + '</g>' +
+    vari('plongeB', art.B, 1) + art.langue) +
     '<g data-slot="monde"></g></svg>';
   conteneur.appendChild(div);
   this.el = div;
   this.svg = div.querySelector('svg');
   this.defs = this.svg.querySelector('defs');
+  D.vivant = this.defs;
   var self = this;
-  this.J = {}; this.S = {}; this.A = {};
-  [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); (self.J[n] = self.J[n] || []).push(e); });
+  /* trois sortes de pièces : J (animées en transform par les poses), V (variantes : opacité seule), K (boucles autonomes) */
+  this.J = {}; this.V = {}; this.K = {}; this.S = {}; this.A = {};
+  [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){
+    var n = e.getAttribute('data-j'), r = n.indexOf('v-') === 0 ? self.V : (n.indexOf('x-') === 0 ? self.K : self.J);
+    if(r !== self.J) n = n.slice(2);
+    (r[n] = r[n] || []).push(e);
+  });
   [].forEach.call(this.svg.querySelectorAll('[data-slot]'), function(e){ var n = e.getAttribute('data-slot'); if(!self.S[n]) self.S[n] = e; });
   [].forEach.call(this.svg.querySelectorAll('[data-a]'), function(e){ var n = e.getAttribute('data-a'); if(!self.A[n]) self.A[n] = e; });
-  this.plongeA = this.svg.querySelector('[data-plonge="A"]');
-  this.plongeB = this.svg.querySelector('[data-plonge="B"]');
-  this.grp = function(attr){ return [].slice.call(self.svg.querySelectorAll('[' + attr + ']')); };
+  this.plongeA = this.V.plongeA[0];
+  this.plongeB = this.V.plongeB[0];
+  this.S.ligne = this.V.ligne[0];
+  this.boucX = {};
+  this.nbP = 0;
   this.v = {};
   this.etat = {enrage: false, brule: false, colle: false, ebloui: false, gele: false, ouvert: false, dos: false, cible: false,
     berge: false, sec: false, gonfle: false, avale: false, sous: false};
@@ -753,14 +816,32 @@ R._el = function(parent, html){
 };
 /* une opacité qui change doucement (pour des groupes entiers) */
 R._fondu = function(els, vers, ms, delai){
+  var self = this;
+  if(typeof els === 'string') els = this.V[els] || [];
   [].concat(els).forEach(function(e){
     if(!e) return;
     var de = parseFloat(getComputedStyle(e).opacity);
     e.getAnimations().forEach(function(a){ a.cancel(); });
+    if(e.getAttribute('visibility') === 'hidden') de = 0;
     e.setAttribute('opacity', vers);
     e.style.opacity = '';
-    if(ms) e.animate([{opacity: de}, {opacity: vers}], {duration: ms, delay: delai || 0, fill: 'backwards', easing: 'ease-in-out'});
+    /* une variante invisible est vraiment cachée : elle ne coûte rien à afficher */
+    if(vers > 0) e.removeAttribute('visibility');
+    if(ms){ var an = e.animate([{opacity: de}, {opacity: vers}], {duration: ms, delay: delai || 0, fill: 'backwards', easing: 'ease-in-out'}); if(vers <= 0) an.finished.then(function(){ if(+e.getAttribute('opacity') <= 0) e.setAttribute('visibility', 'hidden'); }, function(){}); }
+    else if(vers <= 0) e.setAttribute('visibility', 'hidden');
   });
+};
+/* les boucles autonomes (pièces x-…) : elles ne dépendent pas des poses */
+R._boucleX = function(nom, frames, duree, o){
+  o = o || {};
+  var self = this, l = [];
+  (this.K[nom] || []).forEach(function(e){ l.push(e.animate(frames, {duration: duree, iterations: Infinity, delay: o.delai || 0, easing: o.e || 'linear', direction: o.dir || 'normal'})); });
+  (this.boucX[nom] = this.boucX[nom] || []).push.apply(this.boucX[nom], l);
+  return l;
+};
+R._couperX = function(prefixe){
+  var self = this;
+  Object.keys(this.boucX).forEach(function(n){ if(n.indexOf(prefixe) === 0){ self.boucX[n].forEach(function(a){ a.cancel(); }); delete self.boucX[n]; } });
 };
 /* un calque par-dessus la scène (langue, onde de choc, explosion), en pixels de la scène */
 R._calque = function(scene){
@@ -796,7 +877,7 @@ var POSES = {
   /* sur la berge : sorti de l'eau, posé sur le bord, en entier */
   berge: {pos: {x: BERGE.x, y: BERGE.y}, bras: {a: 4}, avbras: {a: -6}, main: {a: 8}, mainF: {a: 6}},
   /* sur le dos : retourné, le ventre pâle en l'air, les pattes qui gigotent */
-  dos: {posture: {a: 180, y: 14}, cuisse: {a: -26}, jambe: {a: -40}, pied: {a: 30}, bras: {a: -30}, avbras: {a: 40}, main: {a: 20}, brasF: {a: -24}, mainF: {a: 20},
+  dos: {posture: {a: 180, y: 66}, cuisse: {a: -26}, jambe: {a: -40}, pied: {a: 30}, bras: {a: -30}, avbras: {a: 40}, main: {a: 20}, brasF: {a: -24}, mainF: {a: 20},
     machoire: {a: -9}, langue: {a: 30}, algues: {a: 10}, brins: {a: 14}, couronne: {a: -6}},
   /* sous l'eau : on ne le voit plus */
   sous: {pos: {y: 330}}
@@ -807,7 +888,7 @@ R._mode = function(){ return this.etat.sous ? 'sous' : (this.etat.dos ? 'dos' : 
 R._base = function(){
   var p = {}, m = POSES[this._mode()], n, e = this.etat;
   for(n in m) p[n] = fusion(Z, m[n]);
-  if(e.dos && e.berge){ p.pos = fusion(Z, {x: BERGE.x, y: BERGE.y + 6}); }
+  if(e.dos && e.berge){ p.pos = fusion(Z, {x: BERGE.x, y: BERGE.y + 6}); p.posture = fusion(Z, {a: 180, y: 52}); }
   if(e.gonfle){
     p.corps = fusion(Z, {sx: 1.15, sy: 1.2});
     p.ventre = fusion(Z, {s: 1.08});
@@ -817,6 +898,7 @@ R._base = function(){
   if(e.ebloui && !e.dos && !e.sous){ for(n in MAIN_OEIL) p[n] = fusion(Z, MAIN_OEIL[n]); p.paupiere = fusion(Z, {y: 14}); p.paupB = fusion(Z, {y: -6}); p.pupille = fusion(Z, {sx: .55, sy: .7}); }
   if(e.enrage){ for(var i = 0; i < 5; i++) p['pointe' + i] = fusion(Z, {sy: 1.18}); p.pupille = fusion(p.pupille || Z, {sx: .7}); }
   if(e.cible && !e.enrage){ for(var j = 0; j < 5; j++) p['pointe' + j] = fusion(Z, {sy: 1.07}); }
+  if(e.avale) p.bosse = fusion(Z, {x: 200, y: 345});
   return p;
 };
 
@@ -880,7 +962,7 @@ R._lancerBoucles = function(){
     boucle('brins', [[0, {a: 0}], [.5, {a: 10}], [1, {a: 0}]], 600, EI);
     boucle('pupille', [[0, {x: 0, y: 0}], [.25, {x: -3, y: 2}], [.5, {x: 0, y: 3}], [.75, {x: 3, y: 1}], [1, {x: 0, y: 0}]], 1400, 'linear');
   }
-  if(e.avale) this._bosseBoucle(true);
+  if(e.avale && mode !== 'sous') boucle('bosse', [[0, {x: 0, y: 0, sx: 1, sy: 1}], [.17, {x: -50, y: 15, sx: 1.12, sy: .9}], [.33, {x: 30, y: 27, sx: .95, sy: 1.05}], [.5, {x: 70, y: -1, sx: .92, sy: 1.08}], [.67, {x: -10, y: -27, sx: 1.1, sy: .92}], [.83, {x: -70, y: -9, sx: .96, sy: 1.04}], [1, {x: 0, y: 0, sx: 1, sy: 1}]], 4200, EI);
   if(mode !== 'sous' && !e.gele && !e.berge) this._ridesBoucle(true);
   this._planifier(500);
 };
@@ -1037,7 +1119,17 @@ R._niveau = function(x){
   if(t > 0 && t < 1) return (1 - t) * (1 - t) * 362 + 2 * t * (1 - t) * 394 + t * t * 356 + 2;
   return 362;
 };
-R._fxEl = function(html, parent){ return this._el(parent || this.S.monde, html); };
+/* une particule : forme simple, retirée du DOM à la fin ; au-delà de 24 en même temps, elle n'est pas affichée */
+R._fxEl = function(html, parent){
+  var self = this, g = document.createElementNS(NS, 'g');
+  g.innerHTML = html;
+  if(this.nbP < 24){
+    (parent || this.S.monde).appendChild(g);
+    this.nbP++;
+    g.remove = function(){ if(g.parentNode){ self.nbP--; Element.prototype.remove.call(g); } };
+  }
+  return g;
+};
 R._bouffee = function(p, o){
   o = o || {};
   var r = o.r || 8, coul = o.coul || '#c8c0d8', g = this._fxEl('<circle cx="0" cy="0" r="' + r + '" fill="' + coul + '" opacity="' + (o.op || .7) + '"/>' + (o.liser ? '<circle cx="' + f1(-r * .3) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .45) + '" fill="#ffffff" opacity=".35"/>' : ''), o.parent);
@@ -1113,13 +1205,13 @@ R._gerbe = function(x, y, force, o){
   var self = this, k = force || 1, coul = o.coul || '#2a4c58', clairC = o.clair || '#cfe6ee', parent = o.parent || this.S.monde;
   /* le voile en couronne */
   var vd = 'M-60 0 C -58 -20 -52 -40 -40 -62 C -36 -40 -30 -26 -22 -16 C -22 -44 -16 -70 -6 -92 C 0 -66 4 -42 8 -18 C 14 -40 22 -60 34 -74 C 36 -50 38 -30 42 -14 C 48 -30 54 -44 62 -52 C 62 -30 62 -12 60 0 Z';
-  var v = this._el(parent, Pw(vd, coul, 2.2, ' fill-opacity=".85"') + L('M-40 -58 C -38 -40 -32 -26 -24 -16 M-6 -88 C -2 -60 2 -40 6 -20 M34 -70 C 34 -48 36 -30 40 -16', clairC, 2, ' opacity=".8"'));
+  var v = this._fxEl(Pw(vd, coul, 2.2, ' fill-opacity=".85"') + L('M-40 -58 C -38 -40 -32 -26 -24 -16 M-6 -88 C -2 -60 2 -40 6 -20 M34 -70 C 34 -48 36 -30 40 -16', clairC, 2, ' opacity=".8"'), parent);
   v.animate([{transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.5 * k) + ',.1)', opacity: 1}, {offset: .35, transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(1.3 * k) + ',' + f1(1.1 * k) + ')', opacity: 1}, {transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(1.7 * k) + ',.2)', opacity: 0}], {duration: 900 + 200 * k, easing: 'cubic-bezier(.2,.7,.5,1)', fill: 'forwards'}).finished.then(function(){ v.remove(); });
   /* les gouttes */
   var n = Math.round((o.n || 14) * Math.min(1.6, k));
   for(var i = 0; i < n; i++){
     var a = -Math.PI * hasard(.1, .9), vit = hasard(50, 150) * k, r = hasard(2.5, 6) * Math.sqrt(k), dx = Math.cos(a) * vit * (o.large || 1.4), h = -Math.sin(a) * vit;
-    var gt = this._el(parent, '<circle r="' + f1(r) + '" fill="' + coul + '" stroke="' + O + '" stroke-width="1.2"/><circle cx="' + f1(-r * .3) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .35) + '" fill="' + clairC + '"/>');
+    var gt = this._fxEl('<circle r="' + f1(r) + '" fill="' + coul + '" stroke="' + O + '" stroke-width="1.2"/><circle cx="' + f1(-r * .3) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .35) + '" fill="' + clairC + '"/>', parent);
     var dur = hasard(600, 950) * Math.sqrt(k);
     gt.animate([{transform: 'translate(' + f1(x + hasard(-20, 20) * k) + 'px,' + f1(y - 10) + 'px)'}, {offset: .45, transform: 'translate(' + f1(x + dx * .55) + 'px,' + f1(y - h) + 'px)', easing: 'ease-in'}, {transform: 'translate(' + f1(x + dx) + 'px,' + f1(y + 8) + 'px)', opacity: .2}], {duration: dur, easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'}).finished.then((function(g2, xx){ return function(){ g2.remove(); if(!o.sansRides) self._rides(xx, 1, .5); }; })(gt, x + dx), function(){});
   }
@@ -1170,8 +1262,8 @@ R._toc = function(){
 };
 /* la peau sèche grésille : la glande rougeoie, de petites fumées, des étincelles */
 R._grille = function(){
-  var self = this, gl = this.svg.querySelectorAll('[data-grille]');
-  [].forEach.call(gl, function(g){ g.animate([{opacity: 0}, {opacity: 1, offset: .3}, {opacity: 0}], {duration: 700}); });
+  var self = this;
+  (this.V.grille || []).forEach(function(g){ g.removeAttribute('visibility'); g.animate([{opacity: 0}, {opacity: 1, offset: .3}, {opacity: 0}], {duration: 700}).finished.then(function(){ g.setAttribute('visibility', 'hidden'); }, function(){}); });
   var p = this._ou('glandeC');
   for(var i = 0; i < 4; i++) this._bouffee([p[0] + hasard(-30, 30), p[1] - 6], {r: hasard(5, 8), coul: '#e8e4ee', op: .6, dx: hasard(-10, 20), dy: hasard(-60, -40), duree: hasard(900, 1300), delai: i * 90, s1: 2.4});
   for(var j = 0; j < 5; j++){
@@ -1187,43 +1279,50 @@ R._baveGoutte = function(){
   this._seq([{t: 0, p: {baveL: {sy: 1}}}, {t: .75, p: {baveL: {sy: 2.2, sx: .8}}, e: 'ease-in'}, {t: .82, p: {baveL: {sy: .5, sx: 1}}, e: 'cubic-bezier(.2,1.6,.5,1)'}, {t: 1, p: {baveL: {sy: 1, sx: 1}}}], 1600, {ajout: true});
   this._minuteur(function(){ if(!self.mort) self._goutte(self._ou('baveBout'), {coul: '#ead8f2'}); }, 1600 * .76);
 };
-/* la bosse du héros avalé, qui se promène dans le ventre */
-R._bosseBoucle = function(on){
-  var slot = this.S.bosse;
-  if(this.fx.bosse){ this.fx.bosse.remove(); this.fx.bosse = null; }
-  if(!on) return;
-  var g = this._el(slot, '<g>' + douce(this.D, 0, 6, 34, 26, '#3a2a14', .35) + '<ellipse cx="0" cy="0" rx="26" ry="20" fill="' + this.formes.gVentre + '"/>' +
-    '<path d="M-24 6 C -20 18 18 22 26 4" fill="none" stroke="#7a6838" stroke-width="2.4" opacity=".7"/>' + reflet(-2, -10, 28, -10, 4, .7) +
-    L('M-30 -4 l -8 -3 M-28 8 l -9 2 M28 -6 l 8 -4', '#a8925c', 1.4, ' opacity=".6"') + '</g>');
-  this.fx.bosse = g;
-  /* un trajet au hasard dans le ventre (repère de la pièce « ventre ») */
-  var pts = [[200, 340], [150, 360], [230, 372], [270, 344], [190, 318], [130, 336], [200, 340]], frames = [];
-  pts.forEach(function(p, i){ frames.push({offset: i / (pts.length - 1), transform: 'translate(' + p[0] + 'px,' + p[1] + 'px) scale(' + (i % 2 ? 1.12 : .92) + ',' + (i % 2 ? .9 : 1.08) + ')'}); });
-  g.firstChild.animate(frames, {duration: 4200, iterations: Infinity, easing: 'ease-in-out'});
-};
+/* la bosse du héros avalé : on la montre ou on la cache (elle se promène grâce à la boucle d'attente) */
+R._bosseBoucle = function(on){ this._fondu('bosse', on ? 1 : 0, 300); };
 /* sous l'eau : on ne voit que la lueur de son œil d'or, qui rôde */
 R._oeilSous = function(){
   var x = hasard(140, 440), y = 384;
   var g = this._fxEl(douce(this.D, 0, 0, 30, 9, '#ffcc40', .7) + '<ellipse cx="0" cy="0" rx="8" ry="3.4" fill="#ffe680" opacity=".9"/><ellipse cx="0" cy="0" rx="5" ry="1.2" fill="#2a1408"/>', this.S.ondes);
   g.animate([{transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px)', opacity: 0}, {offset: .25, opacity: .9}, {offset: .75, opacity: .9}, {transform: 'translate(' + f1(x - 60) + 'px,' + f1(y + 4) + 'px)', opacity: 0}], {duration: 2200, easing: 'ease-in-out', fill: 'both'}).finished.then(function(){ g.remove(); });
 };
-/* une langue : un tube rose qui s'affine, du point a (base) au point b (bout), et un bout collant */
-function langueD(a, b, w0, w1, courbe, ondu){
-  var dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l, pts = [], ws = [];
-  for(var i = 0; i <= 10; i++){
-    var t = i / 10, s = Math.sin(t * Math.PI) * (courbe || 0) + Math.sin(t * Math.PI * 3) * (ondu || 0) * Math.sin(t * Math.PI);
-    pts.push([a[0] + dx * t + nx * s, a[1] + dy * t + ny * s]);
-    ws.push(w0 + (w1 - w0) * t);
-  }
-  return tube(pts, ws);
-}
+/* LA LANGUE (pièces pré-dessinées langueTir et langueBout, posées dans le monde) : elle part de base, va jusqu'à cible,
+   tient, puis revient. o.sortie, o.tenue, o.retour (ms), o.largeur. Renvoie la fin. */
+R._tirLangue = function(base, cible, o){
+  o = o || {};
+  var self = this, dx = cible[0] - base[0], dy = cible[1] - base[1], L0 = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) * 180 / Math.PI, k = L0 / 100, w = o.largeur || 1;
+  var T = o.sortie + o.tenue + o.retour, t1 = o.sortie / T, t2 = (o.sortie + o.tenue) / T;
+  function tir(p, sy){ return {x: base[0], y: base[1], a: ang, sx: Math.max(.02, k * p), sy: w * (sy || 1)}; }
+  function bout(p, s){ return {x: base[0] + dx * p, y: base[1] + dy * p, a: 0, sx: w * (s || 1), sy: w * (s || 1)}; }
+  this._fondu('boutSimple', 1, 0); this._fondu('paquet', 0, 0);
+  var s = this._seq([
+    {t: 0, p: {langueTir: tir(0), langueBout: bout(0, .6)}},
+    {t: t1 * .8, p: {langueTir: tir(1.06, .82), langueBout: bout(1.06, 1)}, e: 'cubic-bezier(.1,.8,.3,1)'},
+    {t: t1, p: {langueTir: tir(1, .9), langueBout: bout(1, 1.18)}, e: 'ease-out'},
+    {t: t1 + (t2 - t1) * .5, p: {langueTir: tir(.97, 1.1), langueBout: bout(.97, 1)}},
+    {t: t2, p: {langueTir: tir(1, 1), langueBout: bout(1, 1)}},
+    {t: t2 + (1 - t2) * .5, p: {langueTir: tir(.55, 1.15), langueBout: bout(.55, 1)}, e: 'ease-in'},
+    {t: 1, p: {langueTir: tir(.02, 1.2), langueBout: bout(.02, .7)}, e: 'cubic-bezier(.6,0,1,.6)'}
+  ], T);
+  /* on ne la montre qu'une fois posée au départ */
+  requestAnimationFrame(function(){ self._fondu('langue', 1, 0); });
+  return s.fini.then(function(){ self._fondu('langue', 0, 0); self._couperX('botte'); self._couperX('mainH'); });
+};
+/* le héros attrapé au bout de la langue : bottes qui gigotent, main qui s'agite */
+R._paquet = function(){
+  this._fondu('boutSimple', 0, 0); this._fondu('paquet', 1, 0);
+  this._boucleX('botte0', [{transform: 'rotate(-25deg)'}, {transform: 'rotate(25deg)'}], 130, {dir: 'alternate'});
+  this._boucleX('botte1', [{transform: 'rotate(25deg)'}, {transform: 'rotate(-25deg)'}], 130, {dir: 'alternate', delai: 60});
+  this._boucleX('mainH', [{transform: 'rotate(-30deg)'}, {transform: 'rotate(30deg)'}], 160, {dir: 'alternate'});
+};
 /* la mouche : elle tourne autour de sa tête, il la suit de l'œil… et CLAP, la langue */
 R._mouche = function(force){
   var self = this, o = this._ou('oeilC'), c = [o[0] - 110, o[1] - 20];
-  var m = this._fxEl('<g><ellipse cx="0" cy="0" rx="4.5" ry="3.4" fill="#1a1420"/><circle cx="-3" cy="-1" r="1.4" fill="#c83030"/>' +
-    '<ellipse cx="1" cy="-4" rx="4" ry="2.2" fill="#e8f4ff" opacity=".7" class="bt-bourbe-aile"/><ellipse cx="3" cy="-3.6" rx="3.6" ry="2" fill="#e8f4ff" opacity=".55"/></g>');
+  var m = this._fxEl('<g><g transform="scale(2.4)"><ellipse cx="0" cy="0" rx="4.5" ry="3.4" fill="#1a1420"/><circle cx="-3" cy="-1" r="1.6" fill="#e04040"/>' +
+    '<ellipse cx="1" cy="-4" rx="4.4" ry="2.4" fill="#e8f4ff" fill-opacity=".75" stroke="#24182e" stroke-width=".5"/><ellipse cx="3.4" cy="-3.6" rx="4" ry="2.2" fill="#e8f4ff" fill-opacity=".6" stroke="#24182e" stroke-width=".5"/></g></g>');
   var ail = m.querySelectorAll('ellipse');
-  [ail[2], ail[3]].forEach(function(e, i){ e.animate([{transform: 'scaleY(1)'}, {transform: 'scaleY(.2)'}], {duration: 50, iterations: Infinity, direction: 'alternate', delay: i * 25}); e.style.transformBox = 'fill-box'; e.style.transformOrigin = '50% 100%'; });
+  [ail[1], ail[2]].forEach(function(e, i){ e.animate([{transform: 'scaleY(1)'}, {transform: 'scaleY(.2)'}], {duration: 50, iterations: Infinity, direction: 'alternate', delay: i * 25}); e.style.transformBox = 'fill-box'; e.style.transformOrigin = '50% 100%'; });
   /* un vol en zigzag (8 points), puis la mouche se pose un instant devant lui */
   var pts = [[c[0] - 80, c[1] - 70], [c[0] - 20, c[1] - 40], [c[0] - 70, c[1] - 10], [c[0] - 10, c[1] + 10], [c[0] - 60, c[1] + 30], [c[0] + 10, c[1] - 6], [c[0] - 30, c[1] + 4]], frames = [], T = 2200;
   pts.forEach(function(p, i){ frames.push({offset: i / (pts.length - 1), transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px)'}); });
@@ -1235,22 +1334,11 @@ R._mouche = function(force){
   this._seq(suit, T + 600, {ajout: true});
   this._minuteur(function(){
     if((self.enAction && !force) || self.mort){ m.remove(); return; }
-    /* CLAP : la langue part de la gueule, attrape la mouche, revient */
+    /* CLAP : la gueule s'ouvre, la langue attrape la mouche, revient */
     var cible = pts[pts.length - 1];
-    self._seq([{t: 0, p: {machoire: {a: 0}, langue: {sy: 1}, secousse: {x: 0}}}, {t: .12, p: {machoire: {a: -12}, langue: {sy: .1}, secousse: {x: -6}}, e: 'cubic-bezier(.1,.9,.3,1)'}, {t: .5, p: {machoire: {a: -12}, langue: {sy: .1}}}, {t: .62, p: {machoire: {a: 1}, secousse: {x: 0}}, e: 'cubic-bezier(.6,0,.9,.5)'}, {t: .7, p: {machoire: {a: 0}}}, {t: 1, p: {langue: {sy: 1}}}], 900, {ajout: true});
-    var g = self._fxEl('<path fill="' + LANGUE + '" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"/><circle r="9" fill="' + LANGUE + '" stroke="' + O + '" stroke-width="2.4"/>');
-    var tubeEl = g.firstChild, bout = g.lastChild, t0 = performance.now(), prise = false;
-    (function maj(){
-      if(!g.isConnected) return;
-      var t = (performance.now() - t0) / 420, base = self._ou('langueBase');
-      var k = t < .35 ? Math.sin(t / .35 * Math.PI / 2) : Math.max(0, 1 - (t - .45) / .55);
-      if(t > .35 && !prise){ prise = true; m.remove(); }
-      var tip = lerp(base, cible, k);
-      tubeEl.setAttribute('d', langueD(base, tip, 12, 7, 6 * k).d);
-      bout.setAttribute('cx', f1(tip[0])); bout.setAttribute('cy', f1(tip[1])); bout.setAttribute('r', f1(4 + 5 * k));
-      if(t >= 1){ g.remove(); return; }
-      requestAnimationFrame(maj);
-    })();
+    self._seq([{t: 0, p: {machoire: {a: 0}, langue: {sy: 1}, secousse: {x: 0}}}, {t: .12, p: {machoire: {a: -12}, langue: {sy: .1}, secousse: {x: -6}}, e: 'cubic-bezier(.1,.9,.3,1)'}, {t: .55, p: {machoire: {a: -12}, langue: {sy: .1}}}, {t: .66, p: {machoire: {a: 1}, secousse: {x: 0}}, e: 'cubic-bezier(.6,0,.9,.5)'}, {t: .74, p: {machoire: {a: 0}}}, {t: 1, p: {langue: {sy: 1}}}], 900, {ajout: true});
+    setTimeout(function(){ self._tirLangue(self._ou('bouche'), cible, {sortie: 110, tenue: 50, retour: 230, largeur: .5}); }, 90);
+    setTimeout(function(){ m.remove(); }, 260);
     self._minuteur(function(){ self._seq([{t: 0, p: {gorge: {sx: 1, sy: 1}}}, {t: .3, p: {gorge: {sx: 1.2, sy: 1.4}}}, {t: 1, p: {gorge: {sx: 1, sy: 1}}}], 600, {ajout: true}); self._joue('cligne'); }, 520);
   }, T);
 };
@@ -1259,20 +1347,12 @@ R._tireColle = function(){
   var self = this, T = 1400;
   this._seq([{t: 0, p: {bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}}, {t: .3, p: {bras: {a: -8}, avbras: {a: -14}, main: {a: -10}}, e: 'cubic-bezier(.3,.6,.5,1)'}, {t: .45, p: {bras: {a: -5}, avbras: {a: -9}}}, {t: .6, p: {bras: {a: -10}, avbras: {a: -18}, main: {a: -14}}}, {t: .72, p: {bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'cubic-bezier(.7,0,1,.6)'}, {t: 1, p: {bras: {a: 0}}}], T, {ajout: true});
   this._seq([{t: 0, p: {secousse: {a: 0}, machoire: {a: 0}}}, {t: .3, p: {secousse: {a: 1.5}, machoire: {a: -6}}}, {t: .6, p: {secousse: {a: 2}, machoire: {a: -8}}}, {t: .75, p: {secousse: {a: -1}, machoire: {a: 0}}}, {t: 1, p: {secousse: {a: 0}}}], T, {ajout: true});
-  var main = this.A.main, g = this._fxEl('<path fill="#d8e870" fill-opacity=".85" stroke="#5a6420" stroke-width="1.2"/><path fill="#d8e870" fill-opacity=".85" stroke="#5a6420" stroke-width="1.2"/>'), sol = this._ou(main), t0 = performance.now();
-  sol[1] += 6;
-  var ch = g.querySelectorAll('path');
-  (function maj(){
-    if(!g.isConnected) return;
-    var p = self._ou(main), d = Math.hypot(p[0] - sol[0], p[1] - sol[1]);
-    [-10, 10].forEach(function(dx, i){
-      var a = [sol[0] + dx, sol[1]], b = [p[0] + dx * .4, p[1]], m = lerp(a, b, .5), w = Math.max(1, 6 - d / 6);
-      ch[i].setAttribute('d', 'M' + pt([a[0] - 6, a[1]]) + ' Q ' + pt([m[0] - w, m[1]]) + ' ' + pt([b[0] - 2, b[1]]) + ' L ' + pt([b[0] + 2, b[1]]) + ' Q ' + pt([m[0] + w, m[1]]) + ' ' + pt([a[0] + 6, a[1]]) + ' Z');
-      ch[i].style.opacity = d < 3 ? 0 : 1;
-    });
-    if(performance.now() - t0 > T + 60){ g.remove(); return; }
-    requestAnimationFrame(maj);
-  })();
+  var p = this._ou('main');
+  var brin = '<path d="M-7 0 C -4 -10 -2 -20 -3 -30 L 3 -30 C 2 -20 4 -10 7 0 Z" fill="#d8e870" fill-opacity=".85" stroke="#5a6420" stroke-width="1.2"/>';
+  var g = this._fxEl('<g transform="translate(-12 0)">' + brin + '</g><g transform="translate(12 0)">' + brin + '</g>');
+  var sol = [p[0], p[1] + 12];
+  g.animate([{transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(1,.1)', opacity: 0}, {offset: .3, transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(.8,.75)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(.85,.55)'},
+    {offset: .6, transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(.6,1)'}, {offset: .72, transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(.4,1.2)', opacity: 1}, {offset: .8, transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(1,.08)', opacity: .6}, {transform: 'translate(' + f1(sol[0]) + 'px,' + f1(sol[1]) + 'px) scale(1,.05)', opacity: 0}], {duration: T, fill: 'forwards'}).finished.then(function(){ g.remove(); });
 };
 
 /* =====================================================================
@@ -1292,14 +1372,15 @@ R._finAction = function(j, duree){
 };
 /* une pose de base pour une pièce (pour revenir exactement à la base à la fin d'une séquence) */
 R._b = function(n){ return fusion(Z, this._base()[n]); };
-/* le flash : le corps devient blanc un instant (un seul chemin par pièce, pas de filtre) */
-R._flash = function(coul, op, ms){
-  var self = this, els = this.grp('data-flash');
-  els.forEach(function(e){
-    var p = e.firstChild; if(coul) p.setAttribute('fill', coul);
-    var base = self.etat.gele ? .22 : 0;
+/* le flash : la silhouette pré-dessinée (blanche, bleue ou orange) apparaît un instant (opacité seule) */
+R._flash = function(type, op, ms){
+  var self = this, base = (type === 'flashG' && this.etat.gele) ? .22 : 0;
+  (this.V[type || 'flash'] || []).forEach(function(e){
     e.getAnimations().forEach(function(a){ a.cancel(); });
-    e.animate([{opacity: op || .75}, {opacity: base}], {duration: ms || 320, easing: 'ease-out'}).finished.then(function(){ if(self.etat.gele){ p.setAttribute('fill', '#d8f0ff'); } else p.setAttribute('fill', '#ffffff'); }, function(){});
+    e.setAttribute('opacity', base);
+    e.removeAttribute('visibility');
+    /* en trois paliers : moins d'images à repeindre qu'un fondu continu (le flash est grand) */
+    e.animate([{opacity: op || .75}, {opacity: base}], {duration: ms || 320, easing: 'steps(3, end)'}).finished.then(function(){ if(+e.getAttribute('opacity') <= 0) e.setAttribute('visibility', 'hidden'); }, function(){});
   });
 };
 /* l'éclat d'un coup (étoile blanche, étincelles) en un point du monde */
@@ -1373,9 +1454,7 @@ R.attaquer = function(nom, o){
 /* LA LANGUE : elle jaillit jusqu'au héros, l'attrape, revient… et il avale */
 R._langue = function(o){
   var self = this, j = this._debutAction(), T = 2800;
-  var cq = this._calque(o.scene), u = cq.u();
-  var dep = cq.ancre('langueBase'), vers = o.vers ? cq.pt(o.vers) : [dep[0] - 430 * u, dep[1] + 40 * u];
-  function t(ms){ return ms / T; }
+    function t(ms){ return ms / T; }
   var pt5 = {}, pt5b = {};
   for(var i = 0; i < 5; i++){ pt5['pointe' + i] = {sy: 1.14}; pt5b['pointe' + i] = {sy: 1}; }
   var anticip = {saut: {y: 6, sy: .96, sx: 1.02}, secousse: {x: 12, a: 1.6}, langue: {sy: .06}, gorge: {sx: 1.3, sy: 1.6}, pupille: {sx: .42, x: -4}, paupB: {y: -5}, machoire: {a: 1.5}};
@@ -1386,11 +1465,11 @@ R._langue = function(o){
     {t: t(520), p: anticip, e: 'cubic-bezier(.3,.6,.4,1)'},
     /* CLAC : la gueule s'ouvre en grand, il se jette en avant */
     {t: t(600), p: {machoire: {a: -27}, secousse: {x: -22, a: -3}, saut: {y: -4, sy: 1.03, sx: .99}, gorge: {sx: .9, sy: .9}, oeil: {s: 1.06}, pupille: {sx: .38, x: -5}}, e: 'cubic-bezier(.1,.9,.3,1)'},
-    {t: t(1250), p: {machoire: {a: -24}, secousse: {x: -14, a: -2}}},
+    {t: t(1250), p: {machoire: {a: -25}, secousse: {x: -20, a: -3}, paupiere: {y: 0}, paupF: {y: 0}, ventre: {sx: 1, sy: 1}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}},
     /* GLOUP : la gueule claque, l'œil se ferme, la gorge se bombe */
     {t: t(1340), p: {machoire: {a: 2}, saut: {y: 5, sy: .92, sx: 1.05}, secousse: {x: 0, a: 1.5}, paupiere: {y: 46}, paupF: {y: 15}, gorge: {sx: 1.5, sy: 2.1}, oeil: {s: 1}, pupille: {sx: 1, x: 0}}, e: 'cubic-bezier(.7,0,1,.6)'},
     {t: t(1560), p: {gorge: {sx: 1.2, sy: 1.4}, ventre: {sx: 1.07, sy: 1.1}, saut: {y: -7, sy: 1.04, sx: .98}, machoire: {a: 0}}, e: 'cubic-bezier(.3,.6,.4,1)'},
-    {t: t(1760), p: {gorge: {sx: 1, sy: 1}, ventre: {sx: 1.02, sy: 1.03}, saut: {y: 0, sy: 1, sx: 1}, paupiere: {y: 0}, paupF: {y: 0}, secousse: {a: 0}}, e: 'ease-out'},
+    {t: t(1760), p: {gorge: {sx: 1, sy: 1}, ventre: {sx: 1.02, sy: 1.03}, saut: {y: 0, sy: 1, sx: 1}, paupiere: {y: 0}, paupF: {y: 0}, secousse: {a: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-out'},
     /* repu : il se tapote le ventre, l'œil brillant */
     {t: t(1950), p: {bras: {a: 14}, avbras: {a: 22}, main: {a: 14}, pupille: {sx: 1.3, sy: 1.2}, paupB: {y: -3}}, e: 'ease-out'},
     {t: t(2080), p: {bras: {a: 10}, avbras: {a: 12}, main: {a: 6}, ventre: {sx: 1.05, sy: 1}}, e: 'ease-in'},
@@ -1399,69 +1478,35 @@ R._langue = function(o){
     {t: t(2600), p: {bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, langue: {sy: 1}, ventre: {sx: 1, sy: 1}, pupille: {sx: 1, sy: 1}, paupB: {y: 0}}},
     {t: 1, p: pt5b}
   ], T);
-  /* la langue dans le calque de la scène, redessinée à chaque image */
-  var g = cq.g('<g><path fill="' + LANGUE + '" stroke="' + O + '" stroke-width="' + f1(2.6 * u) + '" stroke-linejoin="round"/>' +
-    '<path fill="none" stroke="#9a4a6c" stroke-width="' + f1(2 * u) + '" opacity=".7"/><path fill="none" stroke="#fbe0ea" stroke-width="' + f1(2.2 * u) + '" opacity=".75" stroke-linecap="round"/></g><g></g>');
-  var ch = g.querySelectorAll('path'), boutG = g.lastChild, t0 = performance.now(), prise = false, impactFait = false, avaleFait = false;
-  var T0 = 560, T1 = 720, T2 = 840, T3 = 1320;
-  boutG.innerHTML = '<g data-bout="1"><circle r="' + f1(15 * u) + '" fill="' + LANGUE + '" stroke="' + O + '" stroke-width="' + f1(2.6 * u) + '"/><ellipse cx="' + f1(-4 * u) + '" cy="' + f1(-5 * u) + '" rx="' + f1(5 * u) + '" ry="' + f1(3 * u) + '" fill="#fbe0ea" opacity=".8"/></g>';
-  function paquet(){
-    /* le héros attrapé : enroulé dans le bout de la langue, deux bottes qui gigotent, une main qui s'agite */
-    var b = '<g data-botte="0" transform="translate(' + f1(-6 * u) + ' ' + f1(12 * u) + ')"><g>' + Pw('M-4 0 L -4 ' + f1(12 * u) + ' L ' + f1(8 * u) + ' ' + f1(12 * u) + ' Q ' + f1(12 * u) + ' ' + f1(12 * u) + ' ' + f1(11 * u) + ' ' + f1(8 * u) + ' L ' + f1(4 * u) + ' ' + f1(6 * u) + ' L ' + f1(4 * u) + ' 0 Z', '#5a3a22', 2 * u) + L('M-4 ' + f1(11 * u) + ' L ' + f1(10 * u) + ' ' + f1(11 * u), '#2a1810', 2.4 * u) + '</g></g>';
-    b += '<g data-botte="1" transform="translate(' + f1(8 * u) + ' ' + f1(10 * u) + ')"><g>' + Pw('M-4 0 L -4 ' + f1(12 * u) + ' L ' + f1(8 * u) + ' ' + f1(12 * u) + ' Q ' + f1(12 * u) + ' ' + f1(12 * u) + ' ' + f1(11 * u) + ' ' + f1(8 * u) + ' L ' + f1(4 * u) + ' ' + f1(6 * u) + ' L ' + f1(4 * u) + ' 0 Z', '#6a4428', 2 * u) + L('M-4 ' + f1(11 * u) + ' L ' + f1(10 * u) + ' ' + f1(11 * u), '#2a1810', 2.4 * u) + '</g></g>';
-    b += '<g data-mainH="1" transform="translate(' + f1(-12 * u) + ' ' + f1(-14 * u) + ')"><g>' + Pw('M0 0 L ' + f1(-3 * u) + ' ' + f1(-10 * u) + ' M0 0 L ' + f1(2 * u) + ' ' + f1(-11 * u) + ' M0 0 L ' + f1(6 * u) + ' ' + f1(-8 * u), 'none', 3.4 * u) + L('M0 0 L ' + f1(-3 * u) + ' ' + f1(-10 * u) + ' M0 0 L ' + f1(2 * u) + ' ' + f1(-11 * u) + ' M0 0 L ' + f1(6 * u) + ' ' + f1(-8 * u), '#e8b890', 2 * u) + C(0, 0, f1(4 * u), '#e8b890', ' stroke="' + O + '" stroke-width="' + f1(1.6 * u) + '"') + '</g></g>';
-    b += '<circle r="' + f1(19 * u) + '" fill="' + LANGUE + '" stroke="' + O + '" stroke-width="' + f1(2.6 * u) + '"/>' + L('M' + f1(-14 * u) + ' ' + f1(-4 * u) + ' Q 0 ' + f1(-12 * u) + ' ' + f1(14 * u) + ' ' + f1(-2 * u) + ' M' + f1(-12 * u) + ' ' + f1(6 * u) + ' Q 0 ' + f1(-2 * u) + ' ' + f1(14 * u) + ' ' + f1(8 * u), '#9a4a6c', 1.6 * u, ' opacity=".7"') + '<ellipse cx="' + f1(-5 * u) + '" cy="' + f1(-8 * u) + '" rx="' + f1(6 * u) + '" ry="' + f1(3 * u) + '" fill="#fbe0ea" opacity=".8"/>';
-    boutG.innerHTML = '<g data-bout="1">' + b + '</g>';
-    [].forEach.call(boutG.querySelectorAll('[data-botte] > g'), function(e, i){ e.animate([{transform: 'rotate(-25deg)'}, {transform: 'rotate(25deg)'}], {duration: 130, iterations: Infinity, direction: 'alternate', delay: i * 65}); });
-    var mh = boutG.querySelector('[data-mainH] > g'); mh.animate([{transform: 'rotate(-30deg)'}, {transform: 'rotate(30deg)'}], {duration: 160, iterations: Infinity, direction: 'alternate'});
-  }
-  var fin = new Promise(function(ok){
-    (function maj(){
-      var ms = performance.now() - t0, base = cq.ancre('langueBase'), k = 0, ondu = 0, courbe = 0;
-      if(ms < T0){ g.style.display = 'none'; requestAnimationFrame(maj); return; }
-      g.style.display = '';
-      if(ms < T1){ var q = (ms - T0) / (T1 - T0); k = 1 - Math.pow(1 - q, 3); courbe = 22 * u * (1 - q); ondu = 4 * u * (1 - q); }
-      else if(ms < T2){ k = 1; var q2 = (ms - T1) / (T2 - T1); ondu = Math.sin(q2 * Math.PI * 3) * 6 * u * (1 - q2); }
-      else if(ms < T3){ var q3 = (ms - T2) / (T3 - T2); k = 1 - q3 * q3 * (3 - 2 * q3); courbe = -16 * u * Math.sin(q3 * Math.PI); ondu = Math.sin(q3 * Math.PI * 4) * 5 * u; }
-      else { g.remove(); ok(); return; }
-      var tip = [base[0] + (vers[0] - base[0]) * k, base[1] + (vers[1] - base[1]) * k];
-      var l = Math.hypot(tip[0] - base[0], tip[1] - base[1]), w0 = Math.max(10 * u, 26 * u - l * .012), w1 = Math.max(8 * u, 15 * u - l * .012);
-      var tb = langueD(base, tip, w0, w1, courbe, ondu);
-      ch[0].setAttribute('d', tb.d);
-      ch[1].setAttribute('d', lisseC(tb.g.map(function(p, i){ return lerp(p, tb.dr[i], .5); })));
-      ch[2].setAttribute('d', lisseC(tb.dr.slice(0, 9).map(function(p, i){ return lerp(p, tb.g[i], .22); })));
-      boutG.setAttribute('transform', 'translate(' + f1(tip[0]) + ' ' + f1(tip[1]) + ')');
-      if(ms >= T1 && !prise){
-        prise = true;
-        /* SPLATCH : il colle, il attrape */
-        var s = cq.g('');
-        for(var i = 0; i < 10; i++){
-          var a = Math.random() * Math.PI * 2, v = hasard(20, 50) * u, e = cq.g('<circle r="' + f1(hasard(2, 4.5) * u) + '" fill="' + choisir([LANGUE, '#f4bccb', '#e8f4ff']) + '" stroke="' + O + '" stroke-width="' + f1(1 * u) + '"/>');
-          e.animate([{transform: 'translate(' + f1(tip[0]) + 'px,' + f1(tip[1]) + 'px)', opacity: 1}, {transform: 'translate(' + f1(tip[0] + Math.cos(a) * v) + 'px,' + f1(tip[1] + Math.sin(a) * v + 20 * u) + 'px)', opacity: 0}], {duration: 520, easing: 'ease-out', fill: 'forwards'});
-        }
-        var et = cq.g('<path d="' + etoileD(34 * u, 8, .42) + '" fill="#fff6c0" stroke="' + O + '" stroke-width="' + f1(2.4 * u) + '"/><path d="' + etoileD(16 * u, 8, .5) + '" fill="#fff"/>');
-        et.animate([{transform: 'translate(' + f1(tip[0]) + 'px,' + f1(tip[1]) + 'px) scale(.3)', opacity: 1}, {transform: 'translate(' + f1(tip[0]) + 'px,' + f1(tip[1]) + 'px) scale(1.2)', opacity: 0}], {duration: 360, fill: 'forwards'});
-        paquet();
-      }
-      if(ms >= T1 + 30 && !impactFait){ impactFait = true; if(o.onImpact) try{ o.onImpact(); }catch(er){} }
-      requestAnimationFrame(maj);
-    })();
+  /* la langue part quand la gueule est grande ouverte (la tête ne bouge plus pendant qu'elle est dehors) */
+  var T0 = 610, sortie = 150, tenue = 110, retour = 470;
+  var fin = attendreMs(T0).then(function(){
+    var base = self._ou('bouche'), cible = o.vers ? self._versMonde(o.vers) : [base[0] - 520, base[1] + 50];
+    setTimeout(function(){
+      /* SPLATCH : elle colle, elle attrape */
+      self._eclat(cible, 1.2);
+      self._giclee(cible, 8, LANGUE);
+      self._giclee(cible, 4, '#e8f4ff');
+      self._paquet();
+    }, sortie);
+    setTimeout(function(){ if(o.onImpact) try{ o.onImpact(); }catch(er){} }, sortie + 30);
+    return self._tirLangue(base, cible, {sortie: sortie, tenue: tenue, retour: retour, largeur: 1.6});
   });
   setTimeout(function(){
-    avaleFait = true;
     if(o.onAvale) try{ o.onAvale(); }catch(er){}
     self.etat.avale = true;
     self._bosseBoucle(true);
+    self._seq([{t: 0, p: {bosse: {x: 140, y: 290, sx: .6, sy: .6}}}, {t: .5, p: {bosse: {x: 170, y: 330, sx: 1.1, sy: 1}}}, {t: 1, p: {bosse: {x: 200, y: 345, sx: 1, sy: 1}}}], 700);
   }, 1360);
   setTimeout(function(){ self._rides(self._ou('centre')[0] - 100, 2, 1); }, 1400);
   setTimeout(function(){ if(!self.mort) self._rot(.6); }, 2650);
-  return Promise.all([corpsSeq.fini, fin]).then(function(){ return attendreMs(500); }).then(function(){ cq.retirer(); return self._finAction(j, 300); });
+  return Promise.all([corpsSeq.fini, fin]).then(function(){ return attendreMs(500); }).then(function(){ return self._finAction(j, 300); });
 };
 
 /* LE SAUT : il bondit hors de l'eau et retombe de tout son poids */
 R._saut = function(o){
   var self = this, j = this._debutAction(), gros = this.etat.gonfle, berge = this.etat.berge, gele = this.etat.gele;
-  var H = gros ? 150 : 100, T = gros ? 3200 : 2600, X = berge ? 0 : -24;
+  var H = gros ? 120 : 70, T = gros ? 3200 : 2600, X = berge ? 0 : -24;
   function t(ms){ return ms / T; }
   var ta = gros ? 700 : 520, tb = ta + (gros ? 560 : 440), tc = tb + (gros ? 380 : 220), td = tc + (gros ? 300 : 230);
   var pt5 = {}, pt0 = {};
@@ -1473,7 +1518,7 @@ R._saut = function(o){
     {t: t(ta), p: coil, e: 'cubic-bezier(.3,.6,.4,1)'},
     /* il s'arrache de l'eau, les jambes se déplient */
     {t: t(tb), p: {saut: {y: -H, x: X, sy: 1.12, sx: .92}, cuisse: {a: -24}, jambe: {a: -66}, pied: {a: 40}, bras: {a: -34}, avbras: {a: 22}, main: {a: 34}, brasF: {a: -22}, mainF: {a: 26}, algues: {a: -10}, brins: {a: -22}, couronne: {a: 5}, langue: {a: 30}, gorge: {sx: .9, sy: .8}, machoire: {a: -7}, oeil: {s: 1.1}, pupille: {sx: 1.2}, paupB: {y: 0}}, e: 'cubic-bezier(.15,.8,.35,1)'},
-    {t: t(tc), p: {saut: {y: -H * .92, x: X, sy: 1.04, sx: .97}, cuisse: {a: -16}, jambe: {a: -50}, bras: {a: -44}, avbras: {a: 6}, langue: {a: -10}, brins: {a: 10}, algues: {a: 4}}, e: 'ease-in-out'},
+    {t: t(tc), p: {saut: {y: -H * .92, x: X, sy: 1.04, sx: .97}, cuisse: {a: -16}, jambe: {a: -50}, bras: {a: -44}, avbras: {a: 6}, langue: {a: -10}, brins: {a: 10}, algues: {a: 4}, paupiere: {y: 0}, machoire: {a: -7}, gorge: {sx: .9, sy: .8}}, e: 'ease-in-out'},
     /* il retombe de tout son poids */
     {t: t(td), p: {saut: {y: 12, x: X * .3, sy: .76, sx: 1.2}, cuisse: {a: 6}, jambe: {a: 4}, pied: {a: 0}, bras: {a: 12}, avbras: {a: 10}, main: {a: 4}, brasF: {a: 8}, mainF: {a: 6}, langue: {a: -26}, brins: {a: 28}, algues: {a: 10}, couronne: {a: -4}, machoire: {a: 2}, paupiere: {y: 32}, gorge: {sx: 1.35, sy: .8}, oeil: {s: 1}}, e: 'cubic-bezier(.6,0,.95,.6)'},
     {t: t(td + 260), p: {saut: {y: -14, x: 0, sy: 1.06, sx: .96}, langue: {a: 16}, brins: {a: -10}, algues: {a: -4}, couronne: {a: 2}, paupiere: {y: 0}, gorge: {sx: 1, sy: 1}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, cuisse: {a: 0}, jambe: {a: 0}}, e: 'cubic-bezier(.3,.6,.4,1)'},
@@ -1485,10 +1530,10 @@ R._saut = function(o){
   var c0 = this._ou('pieds');
   /* l'envol : l'eau gicle, la ligne d'eau s'efface */
   setTimeout(function(){
-    if(!berge && !gele){ self._gerbe(c0[0] - 60, 372, gros ? 1.3 : 1, {n: 12}); self._fondu(self.S.ligne, 0, 200); }
+    if(!berge && !gele){ self._gerbe(c0[0] - 60, 372, gros ? 1.3 : 1, {n: 8}); self._fondu(self.S.ligne, 0, 200); }
     else if(gele) self._etincelles([c0[0] - 60, 368], 10, ['#ffffff', '#cfeaff']);
     /* l'eau qui ruisselle de son ventre pendant qu'il monte */
-    for(var k = 0; k < 8; k++) (function(q){ setTimeout(function(){ var p = self._ou('pieds'); self._goutte([p[0] + hasard(-200, 160), p[1] - hasard(0, 30)], {coul: '#cdeeff'}); }, q * 60); })(k);
+    for(var k = 0; k < 5; k++) (function(q){ setTimeout(function(){ var p = self._ou('pieds'); self._goutte([p[0] + hasard(-200, 160), p[1] - hasard(0, 30)], {coul: '#cdeeff'}); }, q * 60); })(k);
   }, ta);
   /* le contact : BOUM, la gerbe, l'onde de choc vers les héros */
   var impactP = new Promise(function(ok){
@@ -1496,7 +1541,7 @@ R._saut = function(o){
       var p = self._ou('pieds'), xC = p[0] - 40;
       if(berge){ self._eclabousse([xC, p[1]], '#8a9a6a', 3); self._gerbe(xC, p[1], gros ? 1.1 : .8, {coul: '#5a5a3a', clair: '#a8a878', n: 10, sansRides: true}); }
       else if(gele){ self._glaceFele(); self._etincelles([xC, 370], 22, ['#ffffff', '#cfeaff', '#9ad0f0'], 1.8); }
-      else { self._gerbe(xC, 374, gros ? 2.6 : 2, {n: 22, large: 2}); self._gerbe(xC - 140, 380, gros ? 1.2 : .9, {n: 8}); self._gerbe(xC + 160, 376, gros ? 1.2 : .9, {n: 8}); }
+      else { self._gerbe(xC, 374, gros ? 2.4 : 2, {n: 10, large: 2}); self._gerbe(xC - 140, 380, gros ? 1.2 : .9, {n: 4, sansRides: true}); self._gerbe(xC + 160, 376, gros ? 1.2 : .9, {n: 4, sansRides: true}); }
       self._fondu(self.S.ligne, berge ? 0 : 1, 400, 300);
       self._ondeChoc(o, gros);
       if(o.onImpact) try{ o.onImpact(); }catch(er){}
@@ -1519,10 +1564,9 @@ R._ondeChoc = function(o, gros){
   });
   /* la vague qui file vers la gauche */
   var vd = 'M-50 0 C -46 -14 -34 -30 -14 -36 C 0 -40 14 -34 18 -24 C 8 -28 0 -24 -2 -16 C 10 -12 28 -6 50 0 Z';
-  var vg = cq.g(Pw(vd, '#24464f', 2.4) + L('M-44 -6 C -38 -22 -22 -34 -6 -36 C 6 -36 14 -30 18 -24', '#cfe6ee', 2.4, ' opacity=".8"'));
-  vg.firstChild.setAttribute('transform', 'scale(' + f1(u * 1.6 * k) + ')');
+  var vg = cq.g('<g transform="scale(' + f1(u * 1.6 * k) + ')">' + Pw(vd, '#24464f', 2.4) + L('M-44 -6 C -38 -22 -22 -34 -6 -36 C 6 -36 14 -30 18 -24', '#cfe6ee', 2.4, ' opacity=".8"') + '</g>');
   vg.animate([{transform: 'translate(' + f1(p[0] - 80 * u) + 'px,' + f1(sol) + 'px) scale(.3)', opacity: 0}, {offset: .15, opacity: 1, transform: 'translate(' + f1(p[0] - 160 * u) + 'px,' + f1(sol) + 'px) scale(1)'}, {offset: .8, opacity: 1}, {transform: 'translate(' + f1(cible[0] - 40 * u) + 'px,' + f1(sol) + 'px) scale(1.15,.6)', opacity: 0}], {duration: 900, easing: 'cubic-bezier(.3,.5,.5,1)', fill: 'both'}).finished.then(function(){ vg.remove(); });
-  for(var i = 0; i < 14; i++){
+  for(var i = 0; i < 7; i++){
     var x = p[0] - hasard(60, dist) , gt = cq.g('<circle r="' + f1(hasard(2.5, 5) * u) + '" fill="#2a4c58" stroke="' + O + '" stroke-width="' + f1(u) + '"/>');
     gt.animate([{transform: 'translate(' + f1(x) + 'px,' + f1(sol) + 'px)', opacity: 0}, {offset: .1, opacity: 1}, {offset: .5, transform: 'translate(' + f1(x - 20 * u) + 'px,' + f1(sol - hasard(30, 70) * u * k) + 'px)'}, {transform: 'translate(' + f1(x - 40 * u) + 'px,' + f1(sol + 6 * u) + 'px)', opacity: 0}], {duration: 700, delay: (p[0] - x) / dist * 600, easing: 'ease-out', fill: 'both'});
   }
@@ -1599,11 +1643,11 @@ R._rebond = function(o){
 /* blessé (le point faible est ouvert) : chaque arme a son éclat */
 R._blesse = function(type){
   var self = this, p = this._pointCoup(), A = {ajout: true}, lourd = type === 'fleche-lourde', T = lourd ? 1400 : 1100, k = lourd ? 1.5 : 1;
-  this._flash('#ffffff', lourd ? .85 : .7);
-  if(type === 'fleche-argent'){ this._eclat(p, 1, '#e8f4ff'); this._etincelles(p, 14, ['#ffffff', '#cfe8ff', '#bfe8ff']); var sc = ''; for(var i = 0; i < 6; i++){ var a = i / 6 * Math.PI * 2; sc += '<g transform="translate(' + f1(Math.cos(a) * 34) + ' ' + f1(Math.sin(a) * 34) + ')"><path d="' + eclatD(9) + '" fill="#ffffff" class="bt-bourbe-scint" style="animation-delay:' + f1(i * .08) + 's"/></g>'; } var g = this._fxEl('<g transform="translate(' + f1(p[0]) + ' ' + f1(p[1]) + ')">' + sc + '</g>'); setTimeout(function(){ g.remove(); }, 1300); }
+  this._flash('flash', lourd ? .85 : .7);
+  if(type === 'fleche-argent'){ this._eclat(p, 1, '#e8f4ff'); this._etincelles(p, 10, ['#ffffff', '#cfe8ff', '#bfe8ff']); var sc = ''; for(var i = 0; i < 6; i++){ var a = i / 6 * Math.PI * 2; sc += '<g transform="translate(' + f1(Math.cos(a) * 34) + ' ' + f1(Math.sin(a) * 34) + ')"><path d="' + eclatD(9) + '" fill="#ffffff"/></g>'; } var g = this._fxEl(sc); g.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(.3) rotate(0deg)', opacity: 1}, {offset: .4, transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(1.1) rotate(30deg)', opacity: 1}, {transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(1.4) rotate(60deg)', opacity: 0}], {duration: 900, fill: 'forwards'}).finished.then(function(){ g.remove(); }); }
   else if(type === 'dague'){ var x = L('M-30 -26 L 30 26 M30 -26 L -30 26', O, 8) + L('M-30 -26 L 30 26 M30 -26 L -30 26', '#ffffff', 4); var dg = this._fxEl(x); dg.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(.2)', opacity: 1}, {offset: .3, transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(1)', opacity: 1}, {transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px) scale(1.1)', opacity: 0}], {duration: 520, fill: 'forwards'}).finished.then(function(){ dg.remove(); }); this._etincelles(p, 6); }
-  else { this._eclat(p, k); this._etincelles(p, lourd ? 18 : 8, null, k); if(lourd){ this._giclee(p, 10); } }
-  this._giclee(p, 4);
+  else { this._eclat(p, k); this._etincelles(p, lourd ? 7 : 5, null, k); if(lourd){ this._giclee(p, 3); } }
+  this._giclee(p, 2);
   this._cri(this._ou('bouche'), lourd ? 1.3 : 1.05);
   var dos = this.etat.dos;
   var pt0 = {}, ptH = {};
@@ -1613,13 +1657,13 @@ R._blesse = function(type){
   var rep = {secousse: {x: 0, y: 0, a: 0}, saut: {sx: 1, sy: 1}, paupiere: {y: 0}, paupF: {y: 0}, paupB: {y: 0}, machoire: {a: 0}, langue: {a: 0}, gorge: {sx: 1, sy: 1}, cuisse: {a: 0}, jambe: {a: 0}, bras: {a: 0}};
   for(var q2 in pt0) rep[q2] = pt0[q2];
   this._seq([{t: 0, p: rep}, {t: .1, p: choc, e: 'cubic-bezier(.1,.9,.3,1)'}, {t: .35, p: {secousse: {x: 8 * k, a: -2}, saut: {sx: 1.04, sy: .96}, machoire: {a: -8}, langue: {a: -12}}, e: 'ease-in-out'}, {t: .55, p: {secousse: {x: 3, a: 1}, paupiere: {y: 20}, langue: {a: 6}}}, {t: 1, p: rep, e: 'cubic-bezier(.4,0,.3,1.2)'}], T, A);
-  if(this._mode() === 'eau') this._rides(p[0], 2, 1);
+  if(this._mode() === 'eau') this._rides(p[0], 1, 1);
   return attendreMs(T);
 };
 /* le feu : des flammes jaillissent sur son dos, sa bave s'évapore (pschhh), il sursaute */
 R._toucheFeu = function(){
   var self = this, A = {ajout: true}, T = 1700;
-  this._flash('#ffc070', .55, 400);
+  this._flash('flashO', .6, 420);
   this._flammesBreves(1100);
   for(var i = 0; i < 14; i++) (function(k){ setTimeout(function(){ var p = self._ou('dos'); self._bouffee([p[0] + hasard(-200, 120), p[1] + hasard(-10, 70)], {r: hasard(10, 16), coul: '#f2f0f6', op: .8, dx: hasard(-20, 30), dy: hasard(-110, -70), duree: hasard(1100, 1500), s1: 2.6, liser: true}); }, 200 + k * 70); })(i);
   this._seq([{t: 0, p: {saut: {y: 0, sy: 1}, paupiere: {y: 0}, machoire: {a: 0}, langue: {a: 0, sy: 1}, secousse: {x: 0}}}, {t: .12, p: {saut: {y: 4, sy: .94}}},
@@ -1631,33 +1675,19 @@ R._toucheFeu = function(){
   if(this._mode() === 'eau') setTimeout(function(){ self._gerbe(self._ou('pieds')[0] - 40, 374, .8, {n: 8}); }, T * .5);
   return attendreMs(T);
 };
-/* des flammes qui jaillissent puis s'éteignent (sans rester) */
+/* des flammes qui jaillissent puis s'éteignent (la variante « feu », montrée un moment) */
 R._flammesBreves = function(ms){
-  var self = this, specs = [[300, 112, 70, 32], [340, 96, 90, 38], [380, 92, 104, 42], [420, 104, 84, 36], [460, 130, 70, 30], [490, 176, 54, 26], [250, 136, 50, 24]];
-  var gid = this._grads();
-  var g = this._fxEl('');
-  specs.forEach(function(s, k){
-    var p = self._ou(self.J.corps[0], s[0], s[1]);
-    var f = self._el(g, '<g transform="translate(' + f1(p[0]) + ' ' + f1(p[1]) + ')">' + self._flamme(s[2], s[3], k, gid) + '</g>');
-    f.animate([{transform: 'scale(.1)', opacity: 0}, {offset: .2, transform: 'scale(1.1)', opacity: 1}, {offset: .7, transform: 'scale(1)', opacity: 1}, {transform: 'scale(.3)', opacity: 0}], {duration: ms, delay: k * 40, fill: 'both'});
-    f.style.transformBox = 'fill-box'; f.style.transformOrigin = '50% 100%';
-  });
-  setTimeout(function(){ g.remove(); }, ms + 400);
+  var self = this;
+  if(this.etat.brule) return;
+  this._allumerFeu(true);
+  setTimeout(function(){ if(!self.etat.brule) self._allumerFeu(false); }, ms);
 };
-R._grads = function(){
-  if(this.fx.grads) return this.fx.grads;
-  var gid = this.D.id(), gid2 = this.D.id(), lueur = this.D.id();
-  this._def('<linearGradient id="' + gid + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff4a10"/><stop offset=".6" stop-color="#ff8a1a"/><stop offset="1" stop-color="#ffc040" stop-opacity=".8"/></linearGradient>' +
-    '<linearGradient id="' + gid2 + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd040"/><stop offset="1" stop-color="#fff8c0"/></linearGradient>' +
-    '<radialGradient id="' + lueur + '"><stop offset="0" stop-color="#ffb040" stop-opacity=".55"/><stop offset="1" stop-color="#ff6a10" stop-opacity="0"/></radialGradient>');
-  this.fx.grads = [gid, gid2, lueur];
-  return this.fx.grads;
-};
-R._flamme = function(h, w, k, gid){
-  var dl = (k * .13 % .4).toFixed(2), dur = (.3 + (k * .07 % .22)).toFixed(2);
-  return '<path d="' + flammeD(h, w) + '" fill="url(#' + gid[0] + ')" stroke="#5a1a08" stroke-width="2" class="bt-bourbe-fl" style="animation-delay:-' + dl + 's;animation-duration:' + dur + 's"/>' +
-    '<path d="' + flammeD(h * .7, w * .62) + '" fill="#ffa21e" class="bt-bourbe-fl2" style="animation-delay:-' + dl + 's;animation-duration:' + (dur * .8).toFixed(2) + 's"/>' +
-    '<path d="' + flammeD(h * .42, w * .36) + '" fill="url(#' + gid[1] + ')" class="bt-bourbe-fl" style="animation-delay:-' + (dl * .5).toFixed(2) + 's;animation-duration:' + (dur * .7).toFixed(2) + 's"/>';
+R._allumerFeu = function(on){
+  this._couperX('fl');
+  if(on){
+    this._fondu('feu', 1, 250);
+    for(var k = 0; k < 10; k++) this._boucleX('fl' + k, [{transform: 'scale(1,1) skewX(0deg)'}, {offset: .35, transform: 'scale(.88,1.18) skewX(-7deg)'}, {offset: .7, transform: 'scale(1.06,.9) skewX(5deg)'}, {transform: 'scale(.94,1.12) skewX(-3deg)'}], 300 + (k * 70 % 220), {dir: 'alternate', e: 'ease-in-out', delai: -k * 90});
+  } else this._fondu('feu', 0, 400);
 };
 /* la lumière : ce qui brille au fond de l'eau s'allume ; il cligne, gêné, la main sur l'œil */
 R._toucheLumiere = function(){
@@ -1685,27 +1715,30 @@ R._toucheLumiere = function(){
   return attendreMs(T);
 };
 /* des étoiles qui tournent un moment autour de sa tête */
-R._etoilesBreves = function(ms, n){
-  var self = this, g = this._etoiles(n || 5, .8);
-  setTimeout(function(){ g.animate([{opacity: 1}, {opacity: 0}], {duration: 300, fill: 'forwards'}).finished.then(function(){ g.remove(); }); }, ms - 300);
+R._etoilesBreves = function(ms){
+  var self = this;
+  if(this.etat.ebloui) return;
+  this._etoiles(true);
+  setTimeout(function(){ if(!self.etat.ebloui) self._etoiles(false); }, ms);
 };
-R._etoiles = function(n, k){
-  var self = this, html = '', i;
-  for(i = 0; i < n; i++) html += '<g data-etoile="' + i + '"><circle r="' + f1(20 * k) + '" fill="' + this.D.doux('#fff6c0', .6) + '"/><path d="' + etoileD((17 - (i % 2) * 4) * k, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6" class="bt-bourbe-tourne"/><path d="' + etoileD((7 - (i % 2) * 2) * k, 5, .45) + '" fill="#fffbe0" class="bt-bourbe-tourne"/></g>';
-  var g = this._el(this.S.teteFx, html), c = [178, 106], rx = 96, ry = 24, m = 24;
-  [].forEach.call(g.querySelectorAll('[data-etoile]'), function(e, kk){
+/* les six étoiles pré-dessinées tournent sur une ellipse au-dessus de la tête */
+R._etoiles = function(on){
+  this._couperX('et');
+  if(!on){ this._fondu('etoiles', 0, 250); return; }
+  this._fondu('etoiles', 1, 200);
+  var c = [178, 106], rx = 96, ry = 24, m = 16;
+  for(var k = 0; k < 6; k++){
     var frames = [];
-    for(var s = 0; s <= m; s++){ var a = s / m * Math.PI * 2 + kk * Math.PI * 2 / n, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
-    e.animate(frames, {duration: 1500, iterations: Infinity});
-  });
-  return g;
+    for(var s = 0; s <= m; s++){ var a = s / m * Math.PI * 2 + k * Math.PI / 3, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) rotate(' + f1(s / m * 360) + 'deg) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
+    this._boucleX('et' + k, frames, 1500);
+  }
 };
 /* la louche : BONG sur la tête, la couronne s'écrase, l'œil tourne */
 R._toucheLouche = function(){
   var self = this, A = {ajout: true}, T = 1500, p = this._ou('haut');
   this._eclat([p[0], p[1] + 10], 1.1);
   this._etincelles([p[0], p[1] + 10], 8);
-  this._etoilesBreves(T, 3);
+  this._etoilesBreves(T);
   var pt = {}, pt0 = {};
   for(var i = 0; i < 5; i++){ pt['pointe' + i] = {sy: .7}; pt0['pointe' + i] = {sy: 1}; }
   var k1 = {couronne: {sy: .8, sx: 1.08}, saut: {sy: .92, sx: 1.05, y: 6}, paupiere: {y: 30}, machoire: {a: -8}, pupille: {x: -5}};
@@ -1731,8 +1764,8 @@ R._toucheColle = function(){
 /* l'huile : il glisse, bat des bras, manque de se retourner ; une tache irisée sur l'eau */
 R._toucheHuile = function(){
   var self = this, A = {ajout: true}, T = 1800, c = this._ou('pieds');
-  var gid = this.D.id();
-  this._def('<linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a1428" stop-opacity="0"/><stop offset=".2" stop-color="#3a2a5a"/><stop offset=".4" stop-color="#2a6a7a"/><stop offset=".55" stop-color="#6a7a2a"/><stop offset=".75" stop-color="#7a3a6a"/><stop offset="1" stop-color="#1a1428" stop-opacity="0"/></linearGradient>');
+  var gid = this.fx.gHuile || (this.fx.gHuile = this.D.id());
+  if(!this.svg.getElementById(gid)) this._def('<linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a1428" stop-opacity="0"/><stop offset=".2" stop-color="#3a2a5a"/><stop offset=".4" stop-color="#2a6a7a"/><stop offset=".55" stop-color="#6a7a2a"/><stop offset=".75" stop-color="#7a3a6a"/><stop offset="1" stop-color="#1a1428" stop-opacity="0"/></linearGradient>');
   var sl = this._fxEl('<ellipse cx="0" cy="0" rx="230" ry="16" fill="url(#' + gid + ')" opacity=".85"/>' + L('M-160 -4 C -80 -10 60 -10 160 -4', '#c8e0ff', 1.6, ' opacity=".5"') + L('M-60 4 C 0 1 60 1 110 4', '#ffe0a0', 1.2, ' opacity=".45"'), this.S.ondes);
   sl.animate([{transform: 'translate(' + f1(c[0] - 40) + 'px,' + f1(this._niveau(c[0]) + 6) + 'px) scale(.2,.5)', opacity: 0}, {offset: .15, transform: 'translate(' + f1(c[0] - 40) + 'px,' + f1(this._niveau(c[0]) + 6) + 'px) scale(1)', opacity: 1}, {offset: .8, opacity: 1}, {transform: 'translate(' + f1(c[0] - 40) + 'px,' + f1(this._niveau(c[0]) + 6) + 'px) scale(1.15)', opacity: 0}], {duration: 3200, fill: 'forwards'}).finished.then(function(){ sl.remove(); });
   var k = [{t: 0, p: {pos: {x: 0}, secousse: {a: 0, x: 0}, bras: {a: 0}, avbras: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, oeil: {s: 1}, machoire: {a: 0}, cuisse: {a: 0}}}];
@@ -1745,7 +1778,7 @@ R._toucheHuile = function(){
 /* le givre : des éclats de glace, il grelotte, son souffle fume */
 R._toucheGivre = function(){
   var self = this, p = this._pointCoup(), A = {ajout: true}, T = 1700;
-  this._flash('#cfeaff', .7, 600);
+  this._flash('flashG', .75, 600);
   this._etincelles(p, 16, ['#ffffff', '#cfeaff', '#9ad0f0'], 1.4);
   for(var i = 0; i < 7; i++){
     var a = Math.random() * Math.PI * 2, v = hasard(30, 70), e = this._fxEl('<path d="M0 -10 L 4 0 L 0 10 L -4 0 Z" fill="#e8f8ff" stroke="#4a7a98" stroke-width="1.4"/>');
@@ -1800,7 +1833,7 @@ R._toucheBouclier = function(){
   var g = this._fxEl(cercle);
   g.animate([{transform: 'translate(' + f1(p[0] - 30) + 'px,' + f1(p[1]) + 'px) scale(.4)', opacity: 0}, {offset: .15, transform: 'translate(' + f1(p[0] - 30) + 'px,' + f1(p[1]) + 'px) scale(1.1)', opacity: 1}, {transform: 'translate(' + f1(p[0] - 30) + 'px,' + f1(p[1]) + 'px) scale(1.4)', opacity: 0}], {duration: 700, fill: 'forwards'}).finished.then(function(){ g.remove(); });
   this._etincelles([p[0] - 20, p[1]], 16, ['#8ff3ff', '#e8ffff', '#bfe8ff'], 1.3);
-  this._etoilesBreves(T, 3);
+  this._etoilesBreves(T);
   this._seq([{t: 0, p: {secousse: {x: 0, a: 0}, langue: {a: 0}, machoire: {a: 0}, paupiere: {y: 0}, pupille: {x: 0}}}, {t: .1, p: {secousse: {x: 26, a: 5}, machoire: {a: -10}, paupiere: {y: 36}, langue: {a: 20}}, e: 'cubic-bezier(.1,.9,.3,1)'},
     {t: .2, p: {langue: {a: -14}}}, {t: .28, p: {langue: {a: 12}}}, {t: .36, p: {langue: {a: -8}}}, {t: .5, p: {secousse: {x: 10, a: -3}, paupiere: {y: 10}, pupille: {x: 4}}}, {t: .62, p: {secousse: {x: 8, a: 3}, pupille: {x: -4}}}, {t: .74, p: {secousse: {x: 4, a: -2}, pupille: {x: 3}}},
     {t: 1, p: {secousse: {x: 0, a: 0}, langue: {a: 0}, machoire: {a: 0}, paupiere: {y: 0}, pupille: {x: 0}}}], T, A);
@@ -1852,7 +1885,9 @@ R.special = function(nom, o){
 /* il recrache le héros avalé (o.onImpact : le héros sort, au point ancre('bouche')) */
 R._recracheSeq = function(o){
   var self = this, A = {ajout: true}, T = 2300;
-  this._bosseBoucle(false);
+  /* la bosse remonte vers la gorge, puis disparaît */
+  this._seq([{t: 0, p: {bosse: {sx: 1, sy: 1}}}, {t: .2, p: {bosse: {x: 150, y: 300, sx: 1.2, sy: .9}}}, {t: .3, p: {bosse: {x: 120, y: 280, sx: .6, sy: .6}}}], T);
+  setTimeout(function(){ self._bosseBoucle(false); }, T * .28);
   this.etat.avale = false;
   function t(ms){ return ms / T; }
   this._seq([
@@ -1863,7 +1898,7 @@ R._recracheSeq = function(o){
     {t: t(620), p: {ventre: {sx: .93, sy: .88}, gorge: {sx: 1.6, sy: 2.3}, secousse: {y: 6, a: -3}, oeil: {s: 1.18}, paupB: {y: -6}}, e: 'ease-out'},
     /* PTOU ! */
     {t: t(760), p: {machoire: {a: -30}, secousse: {x: -26, y: -2, a: -4}, gorge: {sx: .8, sy: .7}, ventre: {sx: 1, sy: 1}, saut: {y: -6, sy: 1.04}, oeil: {s: 1.05}}, e: 'cubic-bezier(.1,.9,.3,1)'},
-    {t: t(1050), p: {machoire: {a: -6}, secousse: {x: -4, y: 0, a: 0}, gorge: {sx: 1, sy: 1}, saut: {y: 0, sy: 1}, oeil: {s: 1}}, e: 'ease-out'},
+    {t: t(1050), p: {machoire: {a: -6}, secousse: {x: -4, y: 0, a: 0}, gorge: {sx: 1, sy: 1}, saut: {y: 0, sy: 1}, oeil: {s: 1}, paupiere: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-out'},
     /* beurk : il s'essuie la bouche d'un revers de main, secoue la tête */
     {t: t(1300), p: {machoire: {a: 0}, paupiere: {y: 20}, paupB: {y: -6}, bras: {a: 40}, avbras: {a: 58}, main: {a: 24}}, e: 'ease-out'},
     {t: t(1500), p: {bras: {a: 28}, avbras: {a: 40}, main: {a: 8}, secousse: {a: 2}}, e: 'ease-in-out'},
@@ -1892,7 +1927,10 @@ R._chatouille = function(o){
   var self = this, j = this._debutAction(), A = {ajout: true}, T = 2800;
   /* la bosse s'agite dans tous les sens */
   this._bosseBoucle(true);
-  if(this.fx.bosse) this.fx.bosse.firstChild.getAnimations().forEach(function(a){ a.playbackRate = 4; });
+  var bz = [{t: 0, p: {bosse: {x: 200, y: 345, sx: 1, sy: 1}}}];
+  for(var b = 1; b < 16; b++) bz.push({t: b / 16, p: {bosse: {x: 200 + hasard(-80, 70), y: 345 + hasard(-35, 30), sx: hasard(.85, 1.2), sy: hasard(.85, 1.2)}}});
+  bz.push({t: 1, p: {bosse: {x: 200, y: 345, sx: 1, sy: 1}}});
+  this._seq(bz, T);
   var k = [{t: 0, p: {saut: {y: 0}, secousse: {a: 0, x: 0}, machoire: {a: 0}, paupiere: {y: 0}, paupB: {y: 0}, langue: {a: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, cuisse: {a: 0}, gorge: {sx: 1, sy: 1}}}];
   k.push({t: .08, p: {paupiere: {y: 32}, paupB: {y: -8}, bras: {a: 18}, avbras: {a: 30}, main: {a: 18}}, e: 'ease-out'});
   for(var i = 0; i < 12; i++){
@@ -1934,7 +1972,7 @@ R._plonger = function(){
       {t: 0, p: {}},
       {t: t(300), p: {pupille: {x: -5}, secousse: {a: 1}}}, {t: t(480), p: {pupille: {x: 5}, secousse: {a: -1}}},
       {t: t(700), p: {gorge: {sx: 1.5, sy: 2}, saut: {y: 8, sy: .9, sx: 1.05}, paupB: {y: -4}, pupille: {x: 0}, secousse: {a: 0}}, e: 'ease-out'},
-      {t: t(950), p: {saut: {y: -50, sy: 1.08, sx: .95}, posture: {a: -14}, gorge: {sx: 1.2, sy: 1.3}, langue: {sy: .1}, cuisse: {a: -20}, jambe: {a: -50}, bras: {a: -30}}, e: 'cubic-bezier(.2,.8,.4,1)'},
+      {t: t(950), p: {saut: {y: -50, sy: 1.08, sx: .95}, posture: {a: -14}, gorge: {sx: 1.2, sy: 1.3}, langue: {sy: .1}, cuisse: {a: -20}, jambe: {a: -50}, bras: {a: -30}, paupiere: {y: 0}, paupF: {y: 0}}, e: 'cubic-bezier(.2,.8,.4,1)'},
       {t: t(1500), p: {pos: {y: 330, x: 30}, saut: {y: 0, sy: 1.04, sx: .98}, posture: {a: -22}, paupiere: {y: 46}, paupF: {y: 15}}, e: 'cubic-bezier(.6,0,.9,.6)'},
       {t: 1, p: {pos: {y: 340, x: 30}}}
     ], T);
@@ -1994,7 +2032,7 @@ R._retourner = function(on, j){
     for(var n in fin) p3[n] = fin[n];
     p3.saut = {y: 0, sy: .86, sx: 1.1};
     p3.oeil = {s: 1};
-    if(this.etat.berge) p3.pos = {x: BERGE.x, y: BERGE.y + 6};
+    if(this.etat.berge){ p3.pos = {x: BERGE.x, y: BERGE.y + 6}; p3.posture = {a: 180, y: 52}; }
     k.push({t: .74, p: p3, e: 'cubic-bezier(.5,0,1,.8)'});
     k.push({t: 1, p: {saut: {y: 0, sy: 1, sx: 1}}, e: 'cubic-bezier(.3,.6,.4,1.4)'});
     setTimeout(function(){ var c = self._ou('centre'); if(dans){ self._gerbe(c[0], 372, 1.6, {n: 16}); } else { self._eclabousse([c[0] - 60, self._ou('pieds')[1]], '#cdeeff', 2.4); self._eclabousse([c[0] + 80, self._ou('pieds')[1]], '#cdeeff', 2); } }, T * .74);
@@ -2014,6 +2052,7 @@ R._retourner = function(on, j){
 /* ---------------- la mort sans critique : il se dégonfle, rote, coule ventre en l'air ---------------- */
 R.mourir = function(){
   var self = this, j = this._debutAction(), T = 6200;
+  if(this.etat.gonfle) this._fondu('tendu', 0, 1500);
   ['ebloui', 'brule', 'colle', 'ouvert', 'cible', 'enrage', 'gonfle'].forEach(function(n){ if(self.etat[n]) self._etatVisuel(n, false); self.etat[n] = false; });
   this._bosseBoucle(false);
   var dos = this.etat.dos, berge = this.etat.berge;
@@ -2036,7 +2075,7 @@ R.mourir = function(){
     {t: t(3100), p: {machoire: {a: -4}, saut: {y: 0}, paupiere: {y: 46}, paupF: {y: 15}}}
   ];
   /* il roule ventre en l'air (s'il n'y est pas déjà), et revient dans l'eau */
-  var dosP = {posture: {a: 180, y: 14}, cuisse: {a: -40}, jambe: {a: -60}, pied: {a: 20}, bras: {a: -50}, avbras: {a: 10}, main: {a: 0}, brasF: {a: -40}, mainF: {a: 0}, pos: {x: 0, y: 0}, langue: {a: 40, sy: 1.25}};
+  var dosP = {posture: {a: 180, y: 66}, cuisse: {a: -40}, jambe: {a: -60}, pied: {a: 20}, bras: {a: -50}, avbras: {a: 10}, main: {a: 0}, brasF: {a: -40}, mainF: {a: 0}, pos: {x: 0, y: 0}, langue: {a: 40, sy: 1.25}};
   if(!dos) k.push({t: t(3500), p: {posture: {a: 60, y: -20}, pos: {x: berge ? BERGE.x * .5 : 0, y: berge ? BERGE.y * .5 : 0}}, e: 'ease-in'});
   k.push({t: t(4200), p: dosP, e: 'cubic-bezier(.4,0,.6,1)'});
   /* il coule, lentement */
@@ -2082,30 +2121,24 @@ R.exploser = function(scene){
   var k = [{t: 0, p: {}}];
   for(var i = 1; i <= 10; i++) k.push({t: i / 11, p: {corps: {sx: 1 + i * .022, sy: 1 + i * .028}, secousse: {x: i % 2 ? 5 : -5, a: i % 2 ? 1.6 : -1.6}, oeil: {s: 1 + i * .035}, gorge: {sx: 1 + i * .08, sy: 1 + i * .12}, machoire: {a: -i * 1.6}, paupiere: {y: 0}, ventre: {sx: 1 + i * .02, sy: 1 + i * .02}}, e: 'linear'});
   k.push({t: 1, p: {corps: {sx: 1.28, sy: 1.34}}, e: 'ease-in'});
-  this.grp('data-flash').forEach(function(e){ e.firstChild.setAttribute('fill', '#fff2c0'); e.getAnimations().forEach(function(a){ a.cancel(); }); e.animate([{opacity: 0}, {opacity: .3, offset: .3}, {opacity: .1, offset: .5}, {opacity: .55, offset: .8}, {opacity: .9}], {duration: 640, fill: 'forwards'}); });
+  (this.V.flashO || []).forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); e.removeAttribute('visibility'); e.animate([{opacity: 0}, {opacity: .3, offset: .3}, {opacity: .1, offset: .5}, {opacity: .55, offset: .8}, {opacity: .9}], {duration: 640, fill: 'forwards'}); });
   var p = this._seq(k, 640).fini.then(function(){
     var cq = self._calque(scene), u = cq.u(), c = cq.ancre('centre'), W = cq.W, H = cq.H;
     cq.el.classList.add('ra-scene-fx');
     var cx = c[0], cy = c[1] + 10 * u;
+    var sol = cq.ancre('pieds')[1];
     cq.defs('<radialGradient id="bbBoom' + NUM + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".85"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="bbBoom' + NUM + 'b"><stop offset="0" stop-color="#0c0812"/><stop offset=".55" stop-color="#1a1222" stop-opacity=".95"/><stop offset="1" stop-color="#22182c" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="bbBoom' + NUM + 'c"><stop offset="0" stop-color="#6a5a80" stop-opacity=".7"/><stop offset="1" stop-color="#4a3e5a" stop-opacity="0"/></radialGradient>');
     var gB = 'url(#bbBoom' + NUM + 'g)', gN = 'url(#bbBoom' + NUM + 'b)', gC = 'url(#bbBoom' + NUM + 'c)';
     /* il disparaît d'un coup */
     self._fondu([self.plongeA, self.plongeB, self.S.ligne], 0, 0);
-    self.grp('data-flash').forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); });
+    (self.V.flashO || []).forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); });
     boomOk();
-    /* l'éclair et les ondes de choc */
-    cq.g('<circle r="' + f1(150 * u) + '" fill="' + gB + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.8)', opacity: 0}], {duration: 520, easing: 'ease-out', fill: 'forwards'});
-    [0, 140].forEach(function(dl, n){
-      cq.g('<circle r="' + f1(120 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1((9 - n * 3) * u) + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: .95}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(' + (3 + n) + ')', opacity: 0}], {duration: 700, delay: dl, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'both'});
-    });
-    var sol = cq.ancre('pieds')[1];
-    cq.g('<ellipse rx="' + f1(120 * u) + '" ry="' + f1(16 * u) + '" fill="none" stroke="' + LUNE + '" stroke-width="' + f1(6 * u) + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.3)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(4.5,2)', opacity: 0}], {duration: 1100, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'forwards'});
     /* le gros nuage de brume noire, qui reste puis se dissipe lentement */
     var brumes = [];
-    for(var n = 0; n < 34; n++){
-      var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(50, 90) * u, x = Math.cos(a) * d * 190 * u, y = Math.sin(a) * d * 90 * u - 20 * u;
+    for(var n = 0; n < 10; n++){
+      var a = n / 10 * Math.PI * 2 + hasard(-.3, .3), d = .35 + Math.random() * .65, r = hasard(80, 125) * u, x = Math.cos(a) * d * 190 * u, y = Math.sin(a) * d * 90 * u - 20 * u;
       var g = cq.g('<circle r="' + f1(r) + '" fill="' + gN + '"/><circle cx="' + f1(-r * .25) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .6) + '" fill="' + gC + '"/>');
       var dx = x * 1.6 + hasard(-20, 20) * u, dy = y * 1.3 - hasard(30, 80) * u;
       brumes.push(g.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
@@ -2113,32 +2146,41 @@ R.exploser = function(scene){
         {duration: hasard(4600, 5800), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
     }
     /* la gerbe d'eau noire : une colonne, puis des gouttes partout */
-    var col = cq.g(Pw('M-40 0 C -36 -60 -20 -140 -10 -200 C -4 -230 4 -230 10 -200 C 20 -140 36 -60 40 0 Z', '#1e3a44', 2.4 / 1) + L('M-20 -20 C -14 -80 -6 -150 -2 -196', '#cfe6ee', 3, ' opacity=".7"'));
-    col.firstChild.setAttribute('transform', 'scale(' + f1(u * 1.4) + ')'); col.lastChild.setAttribute('transform', 'scale(' + f1(u * 1.4) + ')');
-    col.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.6,.05)', opacity: 1}, {offset: .35, transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.1,1.2)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(2.2,.1)', opacity: 0}], {duration: 1400, easing: 'cubic-bezier(.2,.7,.5,1)', fill: 'forwards'});
-    for(var w = 0; w < 30; w++){
-      var aw = -Math.PI * hasard(.05, .95), vw = hasard(120, 320) * u, rw = hasard(4, 10) * u, gw = cq.g('<circle r="' + f1(rw) + '" fill="#1e3a44" stroke="' + O + '" stroke-width="' + f1(1.4 * u) + '"/><circle cx="' + f1(-rw * .3) + '" cy="' + f1(-rw * .3) + '" r="' + f1(rw * .35) + '" fill="#cfe6ee"/>');
-      gw.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px)'}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(aw) * vw * .6) + 'px,' + f1(sol + Math.sin(aw) * vw) + 'px)', easing: 'ease-in'}, {transform: 'translate(' + f1(cx + Math.cos(aw) * vw * 1.1) + 'px,' + f1(sol + 10 * u) + 'px)', opacity: .3}], {duration: hasard(1100, 1700), easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'});
+    var vd = 'M-60 0 C -58 -20 -52 -40 -40 -62 C -36 -40 -30 -26 -22 -16 C -22 -44 -16 -70 -6 -92 C 0 -66 4 -42 8 -18 C 14 -40 22 -60 34 -74 C 36 -50 38 -30 42 -14 C 48 -30 54 -44 62 -52 C 62 -30 62 -12 60 0 Z';
+    var col = cq.g('<g transform="scale(' + f1(u * 2.6) + ',' + f1(u * 2.2) + ')">' + Pw(vd, '#24464f', 1.6, ' fill-opacity=".92"') + L('M-40 -58 C -38 -40 -32 -26 -24 -16 M-6 -88 C -2 -60 2 -40 6 -20 M34 -70 C 34 -48 36 -30 40 -16', '#cfe6ee', 2, ' stroke-opacity=".8"') + '</g>');
+    col.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.4,.05)', opacity: 1}, {offset: .3, transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.1,1.15)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.6,.1)', opacity: 0}], {duration: 1500, easing: 'cubic-bezier(.2,.7,.5,1)', fill: 'forwards'}).finished.then(function(){ col.remove(); });
+    for(var w = 0; w < 5; w++){
+      var aw = -Math.PI * (.12 + w * .19), vw = hasard(180, 320) * u, rw = hasard(8, 13) * u, gw = cq.g('<circle r="' + f1(rw) + '" fill="#1e3a44" stroke="' + O + '" stroke-width="' + f1(1.4 * u) + '"/><circle cx="' + f1(-rw * .3) + '" cy="' + f1(-rw * .3) + '" r="' + f1(rw * .35) + '" fill="#cfe6ee"/>');
+      gw.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px)'}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(aw) * vw * .6) + 'px,' + f1(sol + Math.sin(aw) * vw) + 'px)', easing: 'ease-in'}, {transform: 'translate(' + f1(cx + Math.cos(aw) * vw * 1.1) + 'px,' + f1(sol + 10 * u) + 'px)', opacity: .3}], {duration: hasard(1100, 1700), easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(gw));
     }
     /* les éclats : des morceaux de peau verruqueuse, des pointes d'or, des brins d'algue */
-    for(var e = 0; e < 14; e++){
-      var ae = -Math.PI * hasard(.05, .95), ve = hasard(110, 260) * u, re = hasard(-600, 600), html;
-      if(e < 5) html = '<path transform="scale(' + f1(u * .9) + ')" d="M-8 8 C -8 -6 -4 -18 0 -22 C 4 -18 8 -6 8 8 Z" fill="#e0a83a" stroke="' + O + '" stroke-width="2.2"/>';
-      else if(e < 8) html = '<path transform="scale(' + f1(u) + ')" d="M0 0 C 6 10 -4 20 2 34" fill="none" stroke="#4a7a30" stroke-width="5" stroke-linecap="round"/>';
+    for(var e = 0; e < 6; e++){
+      var ae = -Math.PI * (.1 + e * .16), ve = hasard(150, 280) * u, re = hasard(-600, 600), html;
+      if(e < 3) html = '<path transform="scale(' + f1(u * .9) + ')" d="M-8 8 C -8 -6 -4 -18 0 -22 C 4 -18 8 -6 8 8 Z" fill="#e0a83a" stroke="' + O + '" stroke-width="2.2"/>';
+      else if(e < 4) html = '<path transform="scale(' + f1(u) + ')" d="M0 0 C 6 10 -4 20 2 34" fill="none" stroke="#4a7a30" stroke-width="5" stroke-linecap="round"/>';
       else html = '<path transform="scale(' + f1(u * (1 + Math.random())) + ')" d="M-12 -6 C -4 -14 10 -12 14 -2 C 16 8 2 14 -8 10 C -14 6 -16 0 -12 -6 Z" fill="#66703a" stroke="' + O + '" stroke-width="2"/><circle transform="scale(' + f1(u) + ')" cx="2" cy="-2" r="3.6" fill="#8a9a5a"/>';
-      cq.g('<g>' + html + '</g>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(ae) * ve) + 'px,' + f1(cy + Math.sin(ae) * ve) + 'px) rotate(' + f1(re * .5) + 'deg)', opacity: 1},
-        {transform: 'translate(' + f1(cx + Math.cos(ae) * ve * 1.5) + 'px,' + f1(sol + 20 * u) + 'px) rotate(' + f1(re) + 'deg)', opacity: 0}], {duration: hasard(1400, 2000), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'});
+      var ec = cq.g('<g>' + html + '</g>');
+      ec.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(ae) * ve) + 'px,' + f1(cy + Math.sin(ae) * ve) + 'px) rotate(' + f1(re * .5) + 'deg)', opacity: 1},
+        {transform: 'translate(' + f1(cx + Math.cos(ae) * ve * 1.5) + 'px,' + f1(sol + 20 * u) + 'px) rotate(' + f1(re) + 'deg)', opacity: 0}], {duration: hasard(1400, 2000), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(ec));
     }
     /* étincelles */
-    for(var s = 0; s < 22; s++){
+    for(var s = 0; s < 0; s++){
       var as = Math.random() * Math.PI * 2, vs = hasard(90, 220) * u, ls = hasard(8, 16) * u;
       cq.g(L('M0 0 L ' + f1(-Math.cos(as) * ls) + ' ' + f1(-Math.sin(as) * ls), choisir(['#fff4b0', '#ffd060', '#ffffff']), 3 * u)).animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px)', opacity: 1}, {transform: 'translate(' + f1(cx + Math.cos(as) * vs) + 'px,' + f1(cy + Math.sin(as) * vs + 40 * u) + 'px)', opacity: 0}], {duration: hasard(500, 900), easing: 'cubic-bezier(.1,.7,.4,1)', fill: 'forwards'});
     }
-    /* ce qui reste : un tas de vase, des os, la couronne tombée */
-    self._restes();
+    /* BOUM : une grande étoile de feu, l'éclair, les ondes de choc, par-dessus tout */
+    var et = cq.g('<path d="' + etoileD(150 * u, 12, .55) + '" fill="#ffd060" stroke="' + O + '" stroke-width="' + f1(4 * u) + '"/><path d="' + etoileD(95 * u, 12, .55) + '" fill="#fff4c0"/>');
+    et.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.15) rotate(0deg)', opacity: 1}, {offset: .35, transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1) rotate(12deg)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.15) rotate(20deg)', opacity: 0}], {duration: 520, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(function(){ et.remove(); });
+    /* l'éclair et les ondes de choc */
+    cq.g('<circle r="' + f1(150 * u) + '" fill="' + gB + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.8)', opacity: 0}], {duration: 520, easing: 'ease-out', fill: 'forwards'});
+    var rond = cq.g('<circle r="' + f1(120 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(9 * u) + '"/>');
+    rond.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: .95}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(3.4)', opacity: 0}], {duration: 760, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'both'}).finished.then(function(){ rond.remove(); });
+    var anneau = cq.g('<ellipse rx="' + f1(120 * u) + '" ry="' + f1(16 * u) + '" fill="none" stroke="' + LUNE + '" stroke-width="' + f1(6 * u) + '"/>');
+    anneau.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.3)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(4.5,2)', opacity: 0}], {duration: 1100, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'forwards'}).finished.then(function(){ anneau.remove(); });
+    /* ce qui reste : un tas de vase, des os, la couronne tombée (posé un peu après le BOUM, pour ne pas alourdir l'image du choc) */
+    setTimeout(function(){ self._restes(); }, 380);
     self._couperBoucles();
     self.mort = true;
-    self.J.saut.forEach(function(e2){ e2.style.visibility = 'hidden'; });
     return Promise.all(brumes.map(fini)).then(function(){ cq.retirer(); });
   });
   p.boom = boomP;
@@ -2175,12 +2217,28 @@ R._restes = function(){
 /* =====================================================================
    9. Les états (se cumulent ; etat(nom, on) renvoie une Promise)
    ===================================================================== */
-R.attendre = function(){ this.attente = true; if(!this.enAction && !this.mort) return this._reprendre(300); return Promise.resolve(); };
+R.attendre = function(){
+  this.attente = true;
+  if(this.arrete){ this.arrete = false; this._relancerX(); }
+  if(!this.enAction && !this.mort) return this._reprendre(300);
+  return Promise.resolve();
+};
+/* arreter() coupe tout : l'attente, les boucles des états (étoiles, flammes, pulsation), les fumées */
 R.arreter = function(){
   this.attente = false;
-  clearTimeout(this.fx.rides);
+  this.arrete = true;
+  clearTimeout(this.fx.rides); clearTimeout(this.fx.vapeur); clearTimeout(this.fx.fumee);
+  if(this.fx.haloR){ this.fx.haloR.cancel(); this.fx.haloR = null; }
+  this._couperX('');
   this._couperBoucles();
   return this;
+};
+R._relancerX = function(){
+  var e = this.etat;
+  if(e.ebloui) this._etoiles(true);
+  if(e.brule) this._bruler(true);
+  if(e.ouvert) this._etatVisuel('ouvert', true);
+  if(e.enrage) this._etatVisuel('enrage', true);
 };
 R.ancre = function(nom){
   var el = this.A[nom] || this.A.centre, r = el.getBoundingClientRect();
@@ -2215,16 +2273,15 @@ R.changerEtat = function(nom, on){
   if(!this.enAction && this.attente && !this.mort){ this._couperMinuteurs(); this._planifier(300); }
   return attendreMs(nom === 'sec' || nom === 'gele' ? 1000 : 300);
 };
-/* ce qui se voit de chaque état (sans la pose, gérée par _base) */
+/* ce qui se voit de chaque état (sans la pose, gérée par _base) : on montre ou on cache des variantes pré-dessinées */
 R._etatVisuel = function(nom, on){
   var self = this;
   switch(nom){
     case 'enrage':
-      var svg = this.svg;
-      [].forEach.call(svg.querySelectorAll('[data-iris="r"],[data-halo="r"],[data-rage]'), function(e){ self._fondu(e, on ? 1 : 0, 400); });
-      [].forEach.call(svg.querySelectorAll('[data-halo="j"]'), function(e){ self._fondu(e, on ? 0 : 1, 400); });
-      var h = svg.querySelector('[data-halo="r"] circle');
-      if(on) h.classList.add('bt-bourbe-halo'); else h.classList.remove('bt-bourbe-halo');
+      this._fondu(['irisR', 'haloR', 'rage'].reduce(function(l, n){ return l.concat(self.V[n] || []); }, []), on ? 1 : 0, 400);
+      this._fondu('haloJ', on ? 0 : 1, 400);
+      if(this.fx.haloR){ this.fx.haloR.cancel(); this.fx.haloR = null; }
+      if(on) setTimeout(function(){ if(self.etat.enrage) self.fx.haloR = self.V.haloR[0].animate([{opacity: .55}, {opacity: 1}], {duration: 700, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out'}); }, 420);
       clearTimeout(this.fx.vapeur);
       if(on) (function vapeur(){
         if(self.mort || !self.etat.enrage) return;
@@ -2233,32 +2290,37 @@ R._etatVisuel = function(nom, on){
       })();
       break;
     case 'ebloui':
-      if(this.fx.etoiles){ this.fx.etoiles.remove(); this.fx.etoiles = null; }
-      if(on) this.fx.etoiles = this._etoiles(6, 1);
+      this._etoiles(on);
       break;
     case 'ouvert':
-      this.grp('data-ouvert').forEach(function(e){ self._fondu(e, on ? 1 : 0, 400); });
+      this._couperX('pulse');
+      this._fondu('ouvert', on ? 1 : 0, 400);
+      if(on){
+        this._boucleX('pulseA', [{transform: 'scale(.9)', opacity: .7}, {offset: .5, transform: 'scale(1.1)', opacity: 1}, {transform: 'scale(.9)', opacity: .7}], 900, {e: 'ease-in-out'});
+        this._boucleX('pulseB', [{transform: 'scale(.7)', opacity: .9}, {transform: 'scale(1.35)', opacity: 0}], 900, {e: 'ease-out'});
+      }
       break;
     case 'sec':
-      this.grp('data-sec').forEach(function(e){ self._fondu(e, on ? 1 : 0, on ? 1400 : 900); });
-      this.grp('data-mouille').forEach(function(e){ self._fondu(e, on ? .18 : 1, 1200); });
+      this._fondu('sec', on ? 1 : 0, on ? 1400 : 900);
+      this._fondu('mouille', on ? .18 : 1, 1200);
       if(on){
-        for(var i = 0; i < 12; i++) (function(k){ setTimeout(function(){ var p = self._ou('dos'); self._bouffee([p[0] + hasard(-220, 120), p[1] + hasard(-10, 90)], {r: hasard(10, 16), coul: '#eeeaf2', op: .7, dx: hasard(-10, 30), dy: hasard(-100, -60), duree: 1400, s1: 2.4, liser: true}); }, k * 90); })(i);
+        for(var i = 0; i < 10; i++) (function(k){ setTimeout(function(){ var p = self._ou('dos'); self._bouffee([p[0] + hasard(-220, 120), p[1] + hasard(-10, 90)], {r: hasard(10, 16), coul: '#eeeaf2', op: .7, dx: hasard(-10, 30), dy: hasard(-100, -60), duree: 1400, s1: 2.4, liser: true}); }, k * 100); })(i);
         setTimeout(function(){ self._grille(); }, 600);
       }
       break;
     case 'gele':
-      this.grp('data-glace').forEach(function(e){ self._fondu(e, on ? 1 : 0, on ? 900 : 1400); });
+      this._fondu('glace', on ? 1 : 0, on ? 900 : 1400);
       this._fondu(this.S.ligne, on ? 0 : (this.etat.berge || this.etat.sous ? 0 : 1), 600);
-      this.grp('data-flash').forEach(function(e){ e.firstChild.setAttribute('fill', on ? '#d8f0ff' : '#ffffff'); self._fondu(e, on ? .22 : 0, 900); });
+      /* le givre sur sa peau : la silhouette bleue pré-dessinée, à peine visible */
+      this._fondu('flashG', on ? .22 : 0, 900);
       if(!on){ [].forEach.call(this.svg.querySelectorAll('[data-fele]'), function(e){ e.remove(); }); for(var d = 0; d < 6; d++) (function(k){ setTimeout(function(){ var p = self._ou('pieds'); self._goutte([p[0] + hasard(-200, 160), p[1] - hasard(10, 60)], {coul: '#cdeeff'}); }, k * 150); })(d); }
-      else { var c = this._ou('pieds'); this._etincelles([c[0] - 60, 372], 18, ['#ffffff', '#cfeaff'], 1.6); this._joue('buee'); }
+      else { var c = this._ou('pieds'); this._etincelles([c[0] - 60, 372], 14, ['#ffffff', '#cfeaff'], 1.6); this._joue('buee'); }
       break;
     case 'brule':
       this._bruler(on);
       break;
     case 'colle':
-      this._coller(on);
+      this._fondu(['colle', 'colleEau'].reduce(function(l, n){ return l.concat(self.V[n] || []); }, []), on ? 1 : 0, 400);
       break;
   }
 };
@@ -2285,24 +2347,14 @@ R._versBerge = function(){
   ], T);
   return p.fini;
 };
-/* la flaque sous lui, sur la berge (elle suit ses pieds) */
-R._flaque = function(){
-  this._enleverFlaque();
-  var g = this._el(this.S.sol, '<g transform="translate(300 418)"><g><ellipse rx="230" ry="12" fill="#2a4c58" opacity=".55"/><ellipse rx="190" ry="6" cy="-2" fill="' + LUNE + '" opacity=".18"/>' + L('M-150 -2 C -60 -8 60 -8 160 -2', LUNE, 1.6, ' opacity=".5"') + '</g></g>');
-  g.firstChild.firstChild.animate([{transform: 'scale(.2,.4)', opacity: 0}, {transform: 'scale(1)', opacity: 1}], {duration: 600, easing: 'cubic-bezier(.2,.8,.3,1.2)'});
-  this.fx.flaque = g;
-};
-R._enleverFlaque = function(){
-  var g = this.fx.flaque;
-  if(!g) return;
-  this.fx.flaque = null;
-  g.animate([{opacity: 1}, {opacity: 0}], {duration: 500, fill: 'forwards'}).finished.then(function(){ g.remove(); });
-};
+/* la flaque sous lui, sur la berge (variante pré-dessinée, elle suit ses pieds) */
+R._flaque = function(){ this._fondu('flaque', 1, 500); this.fx.flaque = true; };
+R._enleverFlaque = function(){ if(!this.fx.flaque) return; this.fx.flaque = false; this._fondu('flaque', 0, 500); };
 /* il gonfle (nuage avant feu) : trois grandes goulées d'air ; ou il se dégonfle, pfffff */
 R._gonfler = function(on){
   var self = this, T;
   this.etat.gonfle = on;
-  var tendu = this.grp('data-tendu');
+  var tendu = this.V.tendu || [];
   if(on){
     T = 2000;
     this._fondu(tendu, 1, 1600);
@@ -2321,57 +2373,25 @@ R._gonfler = function(on){
   k.push({t: 1, p: {corps: {sx: 1, sy: 1}, secousse: {a: 0, x: 0}, machoire: {a: 0}, ventre: {s: 1}, gorge: {sx: 1, sy: 1}}, e: 'cubic-bezier(.4,0,.3,1.3)'});
   return this._seq(k, T).fini;
 };
-/* les flammes qui restent sur son dos */
+/* les flammes qui restent sur son dos (la variante « feu », qui vacille), de la fumée et des braises */
 R._bruler = function(on){
   var self = this;
-  if(!on){
-    if(this.fx.feu) this.fx.feu.forEach(function(g){ g.animate([{opacity: 1}, {opacity: 0}], {duration: 400, fill: 'forwards'}).finished.then(function(){ g.remove(); }); });
-    this.fx.feu = null;
-    clearTimeout(this.fx.fumee);
-    return;
-  }
-  var gid = this._grads(), corps = this.J.corps[0];
-  var suie = this._el(this.S.feuDos, '<ellipse cx="380" cy="120" rx="130" ry="34" fill="' + this.D.doux('#140c10') + '" opacity=".7"/>');
-  var specs = [{x: 380, y: 96, lueur: [190, 100]}, {x: 300, y: 112, h: 66, w: 30}, {x: 336, y: 98, h: 90, w: 38}, {x: 372, y: 88, h: 112, w: 44}, {x: 410, y: 92, h: 96, w: 40}, {x: 446, y: 108, h: 84, w: 34}, {x: 478, y: 140, h: 64, w: 28}, {x: 500, y: 190, h: 46, w: 22}, {x: 250, y: 132, h: 44, w: 22}, {x: 356, y: 92, h: 56, w: 22}, {x: 430, y: 98, h: 50, w: 20}];
-  var monde = this._el(this.S.monde, '');
-  specs.forEach(function(s, k){ s.g = self._el(monde, s.lueur ? '<ellipse cx="0" cy="' + f1(-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="url(#' + gid[2] + ')"/>' : self._flamme(s.h, s.w, k, gid)); });
-  monde.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
-  this.fx.feu = [suie, monde];
-  (function suivre(){
-    if(!monde.isConnected) return;
-    specs.forEach(function(s){
-      var p = self._ou(corps, s.x, s.y), h = self._ou(corps, s.x, s.y - 20), haut = (p[1] - h[1]) / 20, k = Math.max(.25, Math.min(1, .3 + haut * .9));
-      s.g.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ') scale(' + k.toFixed(2) + ')');
-      s.g.style.visibility = self.etat.sous ? 'hidden' : '';
-    });
-    requestAnimationFrame(suivre);
-  })();
+  clearTimeout(this.fx.fumee);
+  this._allumerFeu(on);
+  if(!on) return;
+  var corps = this.J.corps[0];
   (function fumee(){
     if(!self.etat.brule || self.mort) return;
-    var p = self._ou(corps, hasard(300, 480), hasard(80, 110));
-    self._bouffee([p[0], p[1] - 40], {r: hasard(12, 18), coul: choisir(['#8a8098', '#6a6278', '#9a92a8']), op: .5, dx: hasard(10, 40), dy: hasard(-100, -70), duree: hasard(1400, 2000), s1: 2.8});
-    if(Math.random() < .7){
-      var b = self._fxEl('<circle r="2.6" fill="#ffd060"/>'), q = self._ou(corps, hasard(300, 480), 100);
-      b.animate([{transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 20) + 'px)', opacity: 1}, {transform: 'translate(' + f1(q[0] + hasard(-20, 30)) + 'px,' + f1(q[1] - hasard(70, 120)) + 'px)', opacity: 0}], {duration: 900, easing: 'ease-out', fill: 'forwards'}).finished.then(function(){ b.remove(); });
+    if(!self.etat.sous){
+      var p = self._ou(corps, hasard(300, 480), hasard(60, 90));
+      self._bouffee([p[0], p[1] - 40], {r: hasard(12, 18), coul: choisir(['#8a8098', '#6a6278', '#9a92a8']), op: .5, dx: hasard(10, 40), dy: hasard(-100, -70), duree: hasard(1400, 2000), s1: 2.8});
+      if(Math.random() < .6){
+        var q = self._ou(corps, hasard(300, 480), 80), b = self._fxEl('<circle r="2.6" fill="#ffd060"/>');
+        b.animate([{transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 20) + 'px)', opacity: 1}, {transform: 'translate(' + f1(q[0] + hasard(-20, 30)) + 'px,' + f1(q[1] - hasard(70, 120)) + 'px)', opacity: 0}], {duration: 900, easing: 'ease-out', fill: 'forwards'}).finished.then(function(){ b.remove(); });
+      }
     }
-    self.fx.fumee = setTimeout(fumee, hasard(160, 280));
+    self.fx.fumee = setTimeout(fumee, hasard(220, 360));
   })();
-};
-/* la colle : des paquets gluants sur ses mains et sur l'eau autour de lui */
-R._coller = function(on){
-  var self = this;
-  if(this.fx.colle){ this.fx.colle.forEach(function(g){ g.remove(); }); this.fx.colle = null; }
-  if(!on) return;
-  var pate = '<path d="M-20 4 C -20 -8 -10 -12 0 -11 C 10 -12 20 -8 20 4 C 12 10 -12 10 -20 4 Z" fill="#d0e05a" fill-opacity=".92" stroke="#5a6420" stroke-width="1.6"/><path d="M-12 -4 Q 0 -9 12 -4" fill="none" stroke="#fbffd0" stroke-width="1.6" opacity=".8"/>';
-  var l = [];
-  l.push(this._el(this.J.main[0].firstElementChild, '<g transform="translate(250 418)">' + pate + '</g>'));
-  l.push(this._el(this.J.mainF[0].firstElementChild, '<g transform="translate(100 416) scale(.8)">' + pate + '</g>'));
-  l.push(this._el(this.S.colleA, '<g transform="translate(420 340) scale(1.3)">' + pate + '</g><g transform="translate(200 230) rotate(-10)">' + pate + '</g>'));
-  var film = this._el(this.S.ondes, '<ellipse cx="300" cy="380" rx="250" ry="14" fill="#c8d84a" fill-opacity=".45" stroke="#5a6420" stroke-width="2"/>' + L('M100 376 C 200 370 360 370 480 376', '#ffffd0', 1.8, ' opacity=".7"') +
-    [[140, 384, 4], [240, 388, 3], [360, 382, 5], [470, 386, 3.5]].map(function(b, i){ return '<g transform="translate(' + b[0] + ' ' + b[1] + ')"><circle r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1" class="bt-bourbe-bulle" style="animation-delay:' + (i * .5) + 's"/></g>'; }).join(''));
-  film.animate([{opacity: 0}, {opacity: 1}], {duration: 400});
-  l.push(film);
-  this.fx.colle = l;
 };
 
 /* =====================================================================

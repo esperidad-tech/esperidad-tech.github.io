@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atelier des sons</title>
-<meta name="description" content="Les Enquêteurs de Brumeval : écouter et choisir les bruitages et les musiques.">
+<meta name="description" content="Les Enquêteurs de Brumeval : écouter, comparer et valider tous les sons et toutes les musiques du jeu.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap" rel="stylesheet">
@@ -14,30 +14,31 @@
 </head>
 <body>
 <header class="barre">
-  <div class="titre">
-    <h1>Atelier des sons</h1>
-    <p class="sous">Brumeval</p>
-  </div>
-  <label class="volume"><span>Volume</span><input id="volume" type="range" min="0" max="100" step="1" aria-label="Volume général"></label>
+  <h1>Atelier des sons</h1>
+  <label class="volume"><span aria-hidden="true">🔈</span><input id="volume" type="range" min="0" max="100" step="1" aria-label="Volume général"></label>
   <button id="stop" class="stop" type="button">■ Tout arrêter</button>
+  <span class="plier">
+    <button id="ouvrir-tout" class="petit" type="button" aria-label="Ouvrir toutes les sections">▾ Tout ouvrir</button>
+    <button id="fermer-tout" class="petit" type="button" aria-label="Fermer toutes les sections">▸ Tout fermer</button>
+  </span>
 </header>
 <main>
-  <section class="accueil">
-    <p data-dire="Bienvenue dans l’atelier. Écoute chaque version avec le gros bouton jaune, puis coche « je garde » sous celle qui te plaît. Si tu hésites, tu peux en garder deux. Tout en bas, un bouton copie tes choix pour les envoyer."><span>Bienvenue dans l’atelier ! Écoute chaque version avec le gros bouton jaune, puis coche <b>«&nbsp;je garde&nbsp;»</b> sous celle qui te plaît. Si tu hésites, tu peux en garder deux. Tout en bas, un bouton copie tes choix pour les envoyer.</span></p>
-    <p class="petit" data-dire="Monte le son de la tablette et enlève le mode silencieux. Les sons sont fabriqués en direct : chaque écoute est un tout petit peu différente, comme un vrai rat."><span>Monte le son de la tablette et enlève le mode silencieux. Les sons sont fabriqués en direct&nbsp;: chaque écoute est un tout petit peu différente, comme un vrai rat.</span></p>
-  </section>
+  <p class="accueil" id="accueil"><span>Touche <b>A</b>, <b>B</b> ou <b>C</b> pour écouter, puis coche le petit carré sous ce que tu valides. ✅&nbsp;déjà choisi, 🆕&nbsp;nouveau, 🎮&nbsp;déjà dans le jeu.</span></p>
   <div id="atelier"></div>
-  <section class="partie fin">
-    <h2>Tes choix</h2>
-    <p class="intro" id="recap-voix"><span>Voici ce que tu as coché. Copie-le, puis colle-le dans un message.</span></p>
-    <textarea id="recap" readonly rows="14" aria-label="Récapitulatif de tes choix"></textarea>
-    <div class="actions">
-      <button id="copier" class="jouer large" type="button">📋 Copier mes choix</button>
-      <button id="partager" class="jouer large" type="button" hidden>↗ Partager</button>
-    </div>
-    <p id="copie-ok" class="ok" role="status"></p>
-  </section>
 </main>
+<div class="pied">
+  <div id="panneau" class="panneau" hidden>
+    <textarea id="recap" readonly rows="10" aria-label="Tes choix, à copier"></textarea>
+    <textarea id="note" rows="2" placeholder="Une remarque ? (facultatif)" aria-label="Une remarque"></textarea>
+  </div>
+  <div class="ligne-pied">
+    <button id="copier" class="jouer copier" type="button">📋 Copier mes choix</button>
+    <span id="compte" class="compte"></span>
+    <span id="copie-ok" class="ok" role="status"></span>
+    <button id="partager" class="petit" type="button" hidden aria-label="Partager mes choix">↗</button>
+    <button id="voir" class="petit" type="button" aria-expanded="false">Voir</button>
+  </div>
+</div>
 <script>
 /*JS*/
 </script>

@@ -30,10 +30,12 @@ ROLES.pisteur = {
   frein:function(p){ p.brasA = -96; p.avantBrasA = -10; p.mainA = 70; },
   init:function(){
     this.cordeEl = this.$('[data-corde]'); this.flG = this.$('[data-fleche]'); this.flI = this.$('[data-fl]');
-    this.flI.insertAdjacentHTML('beforeend', rep('flN', 0, 0) + rep('flP', 124, 0));
-    this.reps.flN = this.$('[data-r="flN"]'); this.reps.flP = this.$('[data-r="flP"]');
+    /* les repères de l'encoche et de la pointe sont dans le dessin de la flèche encochée */
+    this.reps.flN = this.flI.querySelector('[data-r="flN"]'); this.reps.flP = this.flI.querySelector('[data-r="flP"]');
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
+  /* (lu avant toute écriture de l'image : voir tick) */
+  lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
   pas:function(dt){
     var c = this.corde, Mi = inv(mat(this.cordeEl));
@@ -52,7 +54,8 @@ ROLES.pisteur = {
       var aMain = -100, aEnc = Math.atan2(g[1] - pi[1], g[0] - pi[0]) * DEG;
       var a = aMain + norm(aEnc - aMain) * c.blend;
       this.flG.style.display = '';
-      this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
+      if(this.cuit) this.flI.style.transform = 'translate(' + r1(pi[0]) + 'px,' + r1(pi[1]) + 'px) rotate(' + r1(a) + 'deg)';
+      else this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
     } else this.flG.style.display = 'none';
   },
   /* en attendant : il vérifie sa corde, ou jette un œil au carquois */

@@ -130,9 +130,10 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .heros{width:280px;height:320px;top:64px}
 .heros .anneau{left:79px;width:120px;top:262px}
 .heros .ombre{left:74px;top:262px;width:130px;height:24px}
-.heros.joue .acteur{filter:grayscale(.92) brightness(.72)}
-.heros.sol .acteur{filter:grayscale(1) brightness(.6)}
-.heros .acteur{transition:filter .35s}
+/* le héros qui a joué est grisé : le filtre est posé sur chaque image (peinte une seule fois), jamais sur le héros entier
+   dont les pièces bougent (sinon tout est refiltré à chaque image : voir jeu/donjon/RAPIDITE.md) */
+.heros.joue .acteur img, .heros.joue .acteur svg{filter:grayscale(.92) brightness(.72)}
+.heros.sol .acteur img, .heros.sol .acteur svg{filter:grayscale(1) brightness(.6)}
 .check{position:absolute;left:113px;top:22px;width:52px;height:52px;border-radius:50%;background:#2a2238;border:3px solid #9a8aa8;color:#e8f8ec;
   font-size:30px;font-weight:800;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.6,1)}
 .heros.joue .check{opacity:1;transform:none}

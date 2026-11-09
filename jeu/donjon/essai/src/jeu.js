@@ -237,6 +237,7 @@ async function debutCombat(){
   E.h = {};
   ORDRE.forEach(function(h){ E.h[h] = {pv:HER[h].pv, sol:false, joue:false, bouclier:false, dome:null}; });
   E.r = [0, 1, 2].map(function(i){ return {i:i, pv:RAT_PV, mort:E.ratsVaincus[i], ouvert:false, comment:'', enrage:false, brule:false, colle:false, vise:null, flaque:null}; });
+  await cuire();          /* d'habitude déjà faite pendant le sac ; sinon on l'attend (la salle est encore vide) */
   construireCombat();
   /* la salle est vide ; les héros entrent en courant par la gauche (celui de devant d'abord) */
   await attendre(450);
@@ -337,23 +338,25 @@ function slotH(h){ return q('.h-' + h); }
    Le module dessine le rat en pièces articulées : à chaque image, on lit où sont son dos et le haut de sa tête
    (quand il se dresse, bondit pour mordre ou tombe sur le dos), et on déplace ses badges d'autant :
    de côté comme le dos (sur le dos, la tête part de l'autre côté, vers le voisin), en hauteur comme la tête. */
-function pointSvg(rr, nom, x, y){   /* un point du dessin, en pixels de la boîte du rat (tous les mouvements compris, même le bond) */
-  var p = rr.svg.createSVGPoint(); p.x = x; p.y = y;
-  return p.matrixTransform(rr.A[nom].getCTM());
-}
 function pointTete(i){
-  var rr = A.r[i] && A.r[i]._rat;
-  if(!rr || !rr.svg || !rr.A || !rr.A.tete || !rr.A.dos) return null;
+  var a = A.r[i];
+  if(!a || !a.point) return null;
   try{
-    var pd = pointSvg(rr, 'dos', 330, 300), pt = pointSvg(rr, 'tete', 150, 226), c = cadreModule(i);
+    var pd = a.point('dos', 330, 300), pt = a.point('tete', 150, 226), c = cadreModule(i);
     return {x:c.x + pd.x, y:c.y + pt.y};
   }catch(e){ return null; }
 }
-var suiviId = 0;
-function suivreBadges(){
-  var mon = ++suiviId, lisse = {};
+/* Fluidité (RAPIDITE.md) : on ne lit la position des rats QUE pendant qu'ils bougent (le module envoie « bete-bouge »
+   à chaque action) ; au repos, la boucle s'arrête et les badges restent où ils sont. */
+var suiviId = 0, suiviFin = 0, suiviTourne = false, lisse = {};
+function suivreBadges(){ ++suiviId; lisse = {}; suiviTourne = false; relancerSuivi(1500); }
+function relancerSuivi(ms){
+  suiviFin = Math.max(suiviFin, performance.now() + (ms || 1200));
+  if(suiviTourne) return;
+  suiviTourne = true;
+  var mon = suiviId;
   function pas(){
-    if(mon !== suiviId || E.ecran !== 'combat') return;
+    if(mon !== suiviId || E.ecran !== 'combat'){ if(mon === suiviId) suiviTourne = false; return; }
     E.r.forEach(function(r){
       var b = q('#badges-' + r.i);
       if(!b || r.mort || !r.repos) return;
@@ -363,10 +366,27 @@ function suivreBadges(){
       var dy = Math.max(l.y, 92 - (rTop(r.i) - 40));                   /* jamais sous la bande du haut */
       b.style.transform = 'translate(' + l.x.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) translateX(-50%)';
     });
-    requestAnimationFrame(pas);
+    var bouge = performance.now() < suiviFin + 250 || E.r.some(function(r){ var a = A.r[r.i]; return !r.mort && a && a._rat && a._rat.enAction; });
+    if(bouge) requestAnimationFrame(pas); else suiviTourne = false;
   }
   requestAnimationFrame(pas);
 }
+document.addEventListener('bete-bouge', function(e){ if(E.ecran === 'combat') relancerSuivi(e.detail && e.detail.ms); });
+
+/* ---------- la cuisson des acteurs (RAPIDITE.md) : faite pendant que l'Alchimiste remplit son sac ---------- */
+var cuisson = null;
+function cuire(){
+  if(cuisson) return cuisson;
+  var s = Math.min(window.innerWidth / 960, window.innerHeight / 540), dpr = window.devicePixelRatio || 1;
+  /* des images assez fines pour l'écran (et pour le zoom du critique), sans gaspiller la mémoire */
+  function res(largeurPx, unites){ return Math.max(.8, Math.min(2.6, largeurPx / unites * s * dpr * 1.25)); }
+  var l = [];
+  if(window.RatAnime && RatAnime.preparer) l.push(RatAnime.preparer({res:res(206, 540)}));
+  if(window.HerosAnime && HerosAnime.preparer) l.push(HerosAnime.preparer(ORDRE.map(function(h){ return {role:h, lk:LOOK[h]}; }), {res:res(200, 250)}));
+  cuisson = Promise.all(l).catch(function(e){ if(window.console) console.warn('cuisson', e); });
+  return cuisson;
+}
+SALLE.cuire = cuire;
 function slotR(r){ return q('.r-' + r.i); }
 function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }   /* coupe tout : bruitages et musique */
 
@@ -1068,6 +1088,7 @@ function demarrer(){
   ['#cadre', '#jeu'].forEach(function(s){ var e = q(s); e.addEventListener('scroll', function(){ e.scrollTop = 0; e.scrollLeft = 0; }); });
   window.addEventListener('scroll', function(){ window.scrollTo(0, 0); });
   ecranSac();
+  setTimeout(cuire, 60);    /* la cuisson des acteurs se fait pendant que l'écran du sac est affiché */
 }
 SALLE.demarrer = demarrer;
 SALLE.maj = function(){ bande(); majScene(); majBarres(); };   /* pour les tests */

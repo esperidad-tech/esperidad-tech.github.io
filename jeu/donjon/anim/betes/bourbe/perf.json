@@ -1,0 +1,86 @@
+[
+ {
+  "ips": 57,
+  "pire": 33,
+  "lentes": 13,
+  "nom": "attente (dans l'eau)"
+ },
+ {
+  "ips": 57,
+  "pire": 50,
+  "lentes": 8,
+  "nom": "langue (attrape, avale)"
+ },
+ {
+  "ips": 55,
+  "pire": 33,
+  "lentes": 18,
+  "nom": "attente (avalé, bosse)"
+ },
+ {
+  "ips": 42,
+  "pire": 67,
+  "lentes": 63,
+  "nom": "chatouille + dos"
+ },
+ {
+  "ips": 59,
+  "pire": 33,
+  "lentes": 5,
+  "nom": "attente (sur le dos, point faible)"
+ },
+ {
+  "ips": 42,
+  "pire": 67,
+  "lentes": 19,
+  "nom": "coup fleche-lourde"
+ },
+ {
+  "ips": 57,
+  "pire": 50,
+  "lentes": 6,
+  "nom": "remis à l'endroit"
+ },
+ {
+  "ips": 60,
+  "pire": 33,
+  "lentes": 2,
+  "nom": "saut"
+ },
+ {
+  "ips": 47,
+  "pire": 50,
+  "lentes": 23,
+  "nom": "rebond (immunisé, nargue)"
+ },
+ {
+  "ips": 60,
+  "pire": 34,
+  "lentes": 1,
+  "nom": "berge + sec + gonfle"
+ },
+ {
+  "ips": 59,
+  "pire": 33,
+  "lentes": 5,
+  "nom": "saut gonflé"
+ },
+ {
+  "ips": 43,
+  "pire": 67,
+  "lentes": 24,
+  "nom": "retour à l'eau"
+ },
+ {
+  "ips": 59,
+  "pire": 33,
+  "lentes": 6,
+  "nom": "brûlé + enragé (attente)"
+ },
+ {
+  "ips": 60,
+  "pire": 50,
+  "lentes": 3,
+  "nom": "explosion"
+ }
+]

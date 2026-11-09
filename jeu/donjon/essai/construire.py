@@ -17,7 +17,8 @@ SRC = os.path.join(ICI, 'src')
 BESTIAIRE = '/home/claude/brumeval/brumeval-sources/jeu/donjon/bestiaire'
 ANIM = os.path.join(os.path.dirname(ICI), 'anim')
 # les modules d'animation (livrés à part) : ils remplacent les images fixes des acteurs quand on les branche
-MODULES = {'rat': os.path.join(ICI, 'modules', 'rat-anime.js'), 'heros': os.path.join(ICI, 'modules', 'heros-anime.js')}
+# cuire.js (copie de jeu/donjon/anim/cuire.js) : la « cuisson » des acteurs en images, pour la fluidité (jeu/donjon/RAPIDITE.md)
+MODULES = {'cuire': os.path.join(ICI, 'modules', 'cuire.js'), 'rat': os.path.join(ICI, 'modules', 'rat-anime.js'), 'heros': os.path.join(ICI, 'modules', 'heros-anime.js')}
 JS = ['son.js', 'effets.js', 'acteurs.js', 'jeu.js']   # dans cet ordre
 
 W, Y, SOL = 960, 372, 340          # la scène : 960 de large, le décor s'arrête à la bande (372), le sol à 340
@@ -175,5 +176,5 @@ if __name__ == '__main__':
         print('Images :')
         images()
     if os.path.exists(os.path.join(SRC, 'page.html')):
-        actifs = [] if '--sans-modules' in sys.argv else ['rat', 'heros']
+        actifs = [] if '--sans-modules' in sys.argv else (['rat', 'heros'] if '--sans-cuisson' in sys.argv else ['cuire', 'rat', 'heros'])
         assembler(actifs)

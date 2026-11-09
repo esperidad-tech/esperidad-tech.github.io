@@ -1,0 +1,44 @@
+[
+ {
+  "ips": 60,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "attente"
+ },
+ {
+  "ips": 62,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "attaquer"
+ },
+ {
+  "ips": 63,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "coup"
+ },
+ {
+  "ips": 60,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "toux"
+ },
+ {
+  "ips": 60,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "brûlé + enragé (attente)"
+ },
+ {
+  "ips": 61,
+  "pire": 17,
+  "lentes": 0,
+  "nom": "sur le dos"
+ },
+ {
+  "ips": 60,
+  "pire": 67,
+  "lentes": 1,
+  "nom": "explosion"
+ }
+]

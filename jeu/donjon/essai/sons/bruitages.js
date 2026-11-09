@@ -658,6 +658,26 @@ S.fuiteB = function(A, P){
   return {duree:4.5};
 };
 
+/* =================== 7. LE PETIT SON QUAND ON TOUCHE UNE ICÔNE (arme, potion) — proposé le 9 novembre =================== */
+S.iconeA = function(A, P){                                                                   /* un « tic » de bois */
+  var t = P.t, o = A.bus(P, {rev:.08});
+  clic(A, t, 2400, .22, o);
+  A.modes(t, 760, [[1, 1, .06], [2.31, .45, .035], [3.93, .2, .02]], {g:.13}, o);
+  return {duree:.2};
+};
+S.iconeB = function(A, P){                                                                   /* une petite note de verre, douce */
+  var t = P.t, o = A.bus(P, {rev:.15});
+  A.ton(t, {f:1175, env:[[0, 0], [.004, 1], [.08, .35], [.45, 0]], g:.07}, o);
+  A.ton(t, {f:1175 * 2.76, env:[[0, 0], [.002, 1], [.12, 0]], g:.012}, o);
+  return {duree:.5};
+};
+S.iconeC = function(A, P){                                                                   /* un clic de cuir */
+  var t = P.t, o = A.bus(P, {rev:.06});
+  A.bruit(t, {coul:'rose', bp:1300, bq:.8, env:A.perc(.002, .035), g:.5}, o);
+  A.ton(t, {f:190, f2:120, gl:.05, env:A.perc(.002, .06), g:.12, sat:1.3}, o);
+  return {duree:.2};
+};
+
 /* l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation (le lâcher de la corde, la lame qui touche, la culbute) */
 [['arc', {A:.8, B:.5, C:1.12}], ['swish', {A:.2, B:.39, C:.25}], ['ratHuile', {A:.72, B:.75, C:1.1}]].forEach(function(m){
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });

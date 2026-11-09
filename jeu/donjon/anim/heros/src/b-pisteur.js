@@ -67,7 +67,7 @@ function pisteur(lk, grain){
         J('mainA', J('arc', arc, [148, 185]) + poing(d, x, 185, 8.5, pe[1])))));
   /* la corde et la flèche encochée (calculées à chaque image) */
   B += J('torse', '<path data-corde fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + '</g></g>');
+    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + rep('flN', 0, 0) + rep('flP', 124, 0) + '</g></g>');
   /* bras proche : brassard, coudière ; la dague cachée dans la main */
   var xb = SQ.brasB[0];
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 15, d.gh(vert)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +

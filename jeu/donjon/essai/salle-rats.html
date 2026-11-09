@@ -143,9 +143,10 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .heros{width:280px;height:320px;top:64px}
 .heros .anneau{left:79px;width:120px;top:262px}
 .heros .ombre{left:74px;top:262px;width:130px;height:24px}
-.heros.joue .acteur{filter:grayscale(.92) brightness(.72)}
-.heros.sol .acteur{filter:grayscale(1) brightness(.6)}
-.heros .acteur{transition:filter .35s}
+/* le héros qui a joué est grisé : le filtre est posé sur chaque image (peinte une seule fois), jamais sur le héros entier
+   dont les pièces bougent (sinon tout est refiltré à chaque image : voir jeu/donjon/RAPIDITE.md) */
+.heros.joue .acteur img, .heros.joue .acteur svg{filter:grayscale(.92) brightness(.72)}
+.heros.sol .acteur img, .heros.sol .acteur svg{filter:grayscale(1) brightness(.6)}
 .check{position:absolute;left:113px;top:22px;width:52px;height:52px;border-radius:50%;background:#2a2238;border:3px solid #9a8aa8;color:#e8f8ec;
   font-size:30px;font-weight:800;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.6,1)}
 .heros.joue .check{opacity:1;transform:none}
@@ -489,6 +490,457 @@ window.IMAGES = {"brume-a": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAA
 </script>
 <script>
 
+/* ===== module : cuire.js ===== */
+/* cuire.js — la « cuisson » des bêtes animées du donjon (Les Enquêteurs de Brumeval).
+   Module autonome, sans dépendance. Règles et explications : jeu/donjon/RAPIDITE.md.
+
+   POURQUOI. Une bête dessinée en un seul grand SVG, dont on anime les <g> (pièces articulées), est REPEINTE en entier à
+   chaque image, sur le fil principal (Chrome comme Safari) : style, mise en page SVG, peinture, filtres (grain, flous).
+   Une transformation sur un élément HTML, elle, est composée par la carte graphique sans rien repeindre.
+   La cuisson transforme donc, UNE fois au chargement, le SVG d'une bête en un arbre de <div> HTML :
+     - chaque pièce vivante (pièce articulée, variante qu'on montre / cache, repère, emplacement d'effets) devient un <div>,
+       avec la même hiérarchie, le même pivot (transform-origin), le même ordre d'empilement et les mêmes attributs data-*
+       et class : les querySelector du module et ses appels animate() marchent tels quels ;
+     - le dessin fixe entre deux pièces devient une petite image (PNG rendu à la bonne résolution, filtres compris :
+       le grain et les flous sont « cuits » dedans, une seule fois) ;
+     - ce qui doit rester du dessin vectoriel modifiable (un tissu simulé, une corde, une fiole qui change de couleur)
+       reste un petit îlot SVG, à sa place dans l'arbre.
+
+     Cuire.cuire(svg, o) -> Promise<modele>   le svg doit être dans la page, affiché, toutes ses pièces au repos.
+         o.piece(el)  : true si l'élément doit devenir un <div> (par défaut : il a un attribut data-*, une class ou un style)
+         o.ilot       : sélecteur CSS des éléments qui restent en SVG (îlots vectoriels)
+         o.anime      : sélecteur CSS des <div> qui seront animés (ils reçoivent will-change: transform)
+         o.res        : résolution des images, en pixels d'écran par unité du dessin (par défaut 2)
+         o.lueur      : {couleur, flou} : cuit aussi une silhouette lumineuse (voir modele.cloner)
+     modele.cloner(conteneur, {lueur}) -> {racine, vue, defs}   une copie toute prête (les images sont partagées)
+         racine : le <div> à mettre dans le conteneur (il le remplit, comme le SVG d'origine) ;
+         vue    : le <div> qui porte le repère du dessin (l'équivalent du <svg>) : on y cherche les pièces ;
+         defs   : un <defs> (dans un petit <svg> caché) pour les dégradés des îlots et des effets ajoutés ensuite.
+     Cuire.ajuster(racine)        recalcule le cadrage (viewBox + preserveAspectRatio) si le conteneur change de taille.
+     Cuire.ctm(el)                la matrice [a,b,c,d,e,f] d'un élément cuit (div ou élément SVG d'un îlot) vers les pixels
+                                  du conteneur : l'équivalent de el.getCTM() (marche aussi sur un SVG normal).
+     Cuire.point(el, x, y)        un point du repère de el, en pixels du conteneur.
+     Cuire.ilot(parent, html)     un petit îlot SVG créé à la volée dans un <div> cuit (pour les effets) : rend le <div>,
+                                  qu'on anime en transform / opacity (repère : celui du parent, transform-origin 0 0).
+     Cuire.image(svgTexte, w, h, res) -> Promise<url>   cuire un petit dessin (avec ses filtres) en image PNG.
+
+   Le module garde toujours la voie d'origine (le SVG) quand la cuisson n'a pas été faite : les pages de démonstration et
+   les anciens appels marchent sans rien changer. */
+(function(global){
+'use strict';
+var NS = 'http://www.w3.org/2000/svg';
+var Cuire = global.Cuire = global.Cuire || {};
+if(Cuire.cuire) return;
+
+/* ---------------- les matrices [a, b, c, d, e, f] ---------------- */
+var ID = [1, 0, 0, 1, 0, 0];
+function mul(A, B){ return [A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1], A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3], A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5]]; }
+function inv(m){ var d = m[0] * m[3] - m[1] * m[2] || 1e-9; return [m[3] / d, -m[1] / d, -m[2] / d, m[0] / d, (m[2] * m[5] - m[3] * m[4]) / d, (m[1] * m[4] - m[0] * m[5]) / d]; }
+function ap(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
+function deSvg(m){ return m ? [m.a, m.b, m.c, m.d, m.e, m.f] : ID.slice(); }
+function lireMatrice(t){
+  if(!t || t === 'none') return null;
+  var v = t.replace(/^matrix(3d)?\(|\)$/g, '').split(',').map(parseFloat);
+  if(v.length === 16) return [v[0], v[1], v[4], v[5], v[12], v[13]];
+  return v.length === 6 ? v : null;
+}
+Cuire.mul = mul; Cuire.inv = inv; Cuire.ap = ap;
+
+/* ---------------- le CSS (une seule fois) ---------------- */
+function css(){
+  if(document.getElementById('cuire-css')) return;
+  var s = document.createElement('style'); s.id = 'cuire-css';
+  s.textContent = '.cu-racine{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}' +
+    '.cu{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +
+    '.cu-anime{will-change:transform}' +
+    '.cu-img{position:absolute;display:block;max-width:none;pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}' +
+    '.cu-ilot{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}' +
+    '.cu-ilot>svg{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;display:block}' +
+    '.cu-defs{position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;visibility:hidden}' +
+    '.cu-lueur{position:absolute;left:0;top:0;width:100%;height:100%;display:none;z-index:-1}';
+  (document.head || document.documentElement).appendChild(s);
+}
+
+/* ---------------- le cadrage d'un viewBox (comme le fait le <svg>) ---------------- */
+function cadrage(vb, par, W, H){
+  var p = (par || 'xMidYMid meet').split(/\s+/), al = p[0], meet = p[1] !== 'slice';
+  if(al === 'none') return [W / vb[2], 0, 0, H / vb[3], -vb[0] * W / vb[2], -vb[1] * H / vb[3]];
+  var s = meet ? Math.min(W / vb[2], H / vb[3]) : Math.max(W / vb[2], H / vb[3]);
+  var dx = W - vb[2] * s, dy = H - vb[3] * s;
+  var fx = /xMin/.test(al) ? 0 : /xMax/.test(al) ? 1 : .5, fy = /YMin/.test(al) ? 0 : /YMax/.test(al) ? 1 : .5;
+  return [s, 0, 0, s, dx * fx - vb[0] * s, dy * fy - vb[1] * s];
+}
+Cuire.ajuster = function(racine, W, H){
+  var vue = racine.querySelector(':scope > .cu-vue') || racine;
+  var vb = (racine.getAttribute('data-cu-vb') || '0 0 100 100').split(' ').map(Number);
+  W = W || racine.clientWidth || (racine.parentNode && racine.parentNode.clientWidth) || vb[2];
+  H = H || racine.clientHeight || (racine.parentNode && racine.parentNode.clientHeight) || vb[3];
+  var m = cadrage(vb, racine.getAttribute('data-cu-par'), W, H);
+  vue.style.transform = 'matrix(' + m.join(',') + ')';
+  [].forEach.call(racine.querySelectorAll(':scope > .cu-lueur > .cu-vue'), function(v){ v.style.transform = vue.style.transform; });
+  return m;
+};
+
+/* ---------------- la matrice d'un élément cuit, vers les pixels du conteneur ---------------- */
+/* les matrices lues sont gardées le temps d'un calcul (plusieurs points d'une même bête lus d'un coup ne relisent pas
+   deux fois les mêmes pièces) ; on oublie tout à la micro-tâche suivante */
+var memo = null;
+function matDiv(e){
+  if(memo && memo.has(e)) return memo.get(e);
+  /* un <div> cuit : translate(left, top) · T(origine) · transform · T(−origine) */
+  var cs = getComputedStyle(e), l = parseFloat(e.style.left) || 0, t = parseFloat(e.style.top) || 0, M = lireMatrice(cs.transform), r;
+  if(!M) r = [1, 0, 0, 1, l, t];
+  else { var o = cs.transformOrigin.split(' ').map(parseFloat); r = mul([1, 0, 0, 1, l + o[0], t + o[1]], mul(M, [1, 0, 0, 1, -o[0], -o[1]])); }
+  if(!memo){ memo = new Map(); Promise.resolve().then(function(){ memo = null; }); }
+  memo.set(e, r);
+  return r;
+}
+function chaine(d){
+  var m = ID.slice();
+  for(var e = d; e && e.nodeType === 1; e = e.parentNode){
+    m = mul(matDiv(e), m);
+    if(e.classList.contains('cu-vue')) break;
+  }
+  return m;
+}
+/* le repère propre d'une pièce cuite : celui du dessin (ses enfants sont posés par rapport à son coin left / top) */
+function ctmDiv(d){
+  var l = parseFloat(d.style.left) || 0, t = parseFloat(d.style.top) || 0, m = chaine(d);
+  return (l || t) && !d.classList.contains('cu-ilot') ? mul(m, [1, 0, 0, 1, -l, -t]) : m;
+}
+Cuire.ctm = function(el){
+  if(!el) return ID.slice();
+  if(el.namespaceURI === NS){
+    var s = el.tagName === 'svg' ? el : el.ownerSVGElement;
+    if(!s || !s.parentNode || !s.parentNode.classList || !s.parentNode.classList.contains('cu-ilot')) return deSvg(el.getCTM());
+    return mul(chaine(s.parentNode), el === s ? ID.slice() : deSvg(el.getCTM()));
+  }
+  return ctmDiv(el);
+};
+Cuire.point = function(el, x, y){ var p = ap(Cuire.ctm(el), x, y); return {x:p[0], y:p[1]}; };
+Cuire.estCuit = function(el){ return !!(el && el.closest && el.closest('.cu-vue')); };
+
+/* ---------------- un îlot SVG à la volée (effets) ---------------- */
+Cuire.ilot = function(parent, html, cls){
+  css();
+  var d = document.createElement('div');
+  d.className = 'cu-ilot' + (cls ? ' ' + cls : '');
+  d.innerHTML = '<svg xmlns="' + NS + '" width="1" height="1">' + (html || '') + '</svg>';
+  /* dans une pièce dont la boîte est décalée, l'îlot se remet dans le repère du dessin */
+  var l = parent.style ? parseFloat(parent.style.left) || 0 : 0, t = parent.style ? parseFloat(parent.style.top) || 0 : 0;
+  if((l || t) && parent.classList && parent.classList.contains('cu')){ d.style.left = (-l) + 'px'; d.style.top = (-t) + 'px'; }
+  parent.appendChild(d);
+  return d;
+};
+/* un simple <div> placé en (x, y) dans le repère d'une pièce cuite (pour regrouper des effets) */
+Cuire.place = function(parent, x, y, cls){
+  css();
+  var d = document.createElement('div');
+  d.className = 'cu-ilot' + (cls ? ' ' + cls : '');
+  var l = parent.style ? parseFloat(parent.style.left) || 0 : 0, t = parent.style ? parseFloat(parent.style.top) || 0 : 0;
+  if(!(parent.classList && parent.classList.contains('cu'))){ l = 0; t = 0; }
+  d.style.left = ((x || 0) - l) + 'px'; d.style.top = ((y || 0) - t) + 'px';
+  parent.appendChild(d);
+  return d;
+};
+
+/* ---------------- rendre un dessin SVG en image (PNG) ---------------- */
+function rendre(texte, W, H){
+  return new Promise(function(ok){
+    var u = URL.createObjectURL(new Blob([texte], {type:'image/svg+xml'})), im = new Image();
+    function fin(r){ URL.revokeObjectURL(u); ok(r); }
+    im.onload = function(){
+      try{
+        var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+        cv.getContext('2d').drawImage(im, 0, 0, W, H);
+        if(cv.toBlob) cv.toBlob(function(b){ fin(b ? {url:URL.createObjectURL(b)} : {canvas:cv}); }, 'image/png');
+        else fin({url:cv.toDataURL('image/png')});
+      }catch(e){ fin({canvas:null, erreur:e}); }   /* canvas « teinté » (vieux navigateur) : pas d'image, l'îlot de secours prendra le relais */
+    };
+    im.onerror = function(){ fin({erreur:'image'}); };
+    im.src = u;
+  });
+}
+Cuire.image = function(texte, w, h, res){
+  res = res || 2;
+  var W = Math.max(1, Math.ceil(w * res)), H = Math.max(1, Math.ceil(h * res));
+  texte = texte.replace(/^<svg\b/, '<svg width="' + W + '" height="' + H + '"');
+  if(!/xmlns=/.test(texte.slice(0, 200))) texte = texte.replace(/^<svg\b/, '<svg xmlns="' + NS + '"');
+  return rendre(texte, W, H).then(function(r){ return r.url || null; });
+};
+
+/* ---------------- la cuisson ---------------- */
+var IGNORE = {defs:1, title:1, desc:1, style:1, script:1, metadata:1, clipPath:1, mask:1, linearGradient:1, radialGradient:1, filter:1, pattern:1, symbol:1, marker:1};
+function pieceParDefaut(e){
+  if(e.hasAttribute('class') || e.hasAttribute('style')) return true;
+  for(var i = 0; i < e.attributes.length; i++) if(e.attributes[i].name.indexOf('data-') === 0) return true;
+  return false;
+}
+function refs(texte){ var r = [], m, re = /url\(\s*['"]?#([^)'"\s]+)['"]?\s*\)|href="#([^"]+)"/g; while((m = re.exec(texte))) r.push(m[1] || m[2]); return r; }
+
+Cuire.cuire = function(svg, o){
+  o = o || {};
+  css();
+  var estPiece = o.piece || pieceParDefaut, ilotSel = o.ilot || null, animeSel = o.anime || null, RES = o.res || 2;
+  var ser = new XMLSerializer();
+  var vbA = svg.viewBox && svg.viewBox.baseVal, vb = vbA && vbA.width ? [vbA.x, vbA.y, vbA.width, vbA.height] : [0, 0, svg.clientWidth || 100, svg.clientHeight || 100];
+  var par = svg.getAttribute('preserveAspectRatio') || 'xMidYMid meet';
+  var VB = cadrage(vb, par, svg.clientWidth || vb[2], svg.clientHeight || vb[3]), VBi = inv(VB);
+  function user(e){ return mul(VBi, deSvg(e.getCTM())); }        /* de l'élément vers le repère du dessin */
+  var parId = {};
+  [].forEach.call(svg.querySelectorAll('[id]'), function(e){ parId[e.id] = e; });
+
+  /* 1) tout montrer (pour mesurer), en notant l'état d'origine */
+  var styles = [], caches = new Map();
+  [].forEach.call(svg.querySelectorAll('*'), function(e){
+    if(e.style && e.style.display === 'none'){ caches.set(e, true); styles.push([e, e.getAttribute('style')]); e.style.display = ''; }
+    else if(e.getAttribute && e.getAttribute('display') === 'none'){ caches.set(e, true); e.setAttribute('data-cu-display', '1'); e.removeAttribute('display'); }
+  });
+  function estIlot(e){ return !!(ilotSel && e.matches && e.matches(ilotSel)); }
+  var vivantMemo = new Map();
+  function vivant(e){ return estIlot(e) || estPiece(e); }
+  function contientVivant(e){
+    if(vivantMemo.has(e)) return vivantMemo.get(e);
+    var r = false;
+    for(var c = e.firstElementChild; c && !r; c = c.nextElementSibling){ if(IGNORE[c.tagName]) continue; if(vivant(c) || contientVivant(c)) r = true; }
+    vivantMemo.set(e, r);
+    return r;
+  }
+  function bbox(e){ try{ var b = e.getBBox(); return {x:b.x, y:b.y, w:b.width, h:b.height}; }catch(x){ return {x:0, y:0, w:0, h:0}; } }
+  function traitMax(e){
+    var m = 0;
+    function lit(x){ var v = parseFloat(x.getAttribute('stroke-width')); if(x.getAttribute('stroke') && x.getAttribute('stroke') !== 'none') m = Math.max(m, isFinite(v) ? v : 1); else if(isFinite(v)) m = Math.max(m, v); }
+    lit(e); [].forEach.call(e.querySelectorAll('[stroke],[stroke-width]'), lit);
+    return m;
+  }
+  function flouMax(texte){
+    var m = 0;
+    refs(texte).forEach(function(id){ var f = parId[id]; if(f && f.tagName === 'filter') [].forEach.call(f.querySelectorAll('feGaussianBlur'), function(b){ m = Math.max(m, parseFloat(b.getAttribute('stdDeviation')) || 0); }); });
+    return m;
+  }
+
+  /* 2) le plan : des <div>, des suites de dessin fixe (à cuire en images) et des îlots */
+  var suites = [];
+  function traiter(F, filtres){
+    var kids = [], suite = [];
+    function vider(){ if(suite.length){ var s = {type:'suite', noeuds:suite, cadre:F, filtres:filtres.slice()}; suites.push(s); kids.push(s); suite = []; } }
+    for(var c = F.firstElementChild; c; c = c.nextElementSibling){
+      if(IGNORE[c.tagName]) continue;
+      if(estIlot(c)){ vider(); kids.push({type:'ilot', el:c}); continue; }
+      if(vivant(c) || contientVivant(c)){ vider(); kids.push(planDiv(c, filtres)); continue; }
+      suite.push(c);
+    }
+    vider();
+    return kids;
+  }
+  function planDiv(E, filtres){
+    var feuille = !contientVivant(E), cs = getComputedStyle(E), fb = bbox(E);
+    var boite = feuille ? fb : {x:0, y:0, w:0, h:0};
+    var or = (cs.transformOrigin || '0 0').split(' ').map(parseFloat), ox = or[0] || 0, oy = or[1] || 0;
+    if(cs.transformBox === 'fill-box'){ ox += fb.x; oy += fb.y; }
+    /* la transformation fixe : celle de l'attribut SVG (autour de 0 0), sinon celle du style */
+    var tf = cs.transform, tl = E.transform && E.transform.baseVal;
+    if(tl && tl.numberOfItems){ var c1 = tl.consolidate(); if(c1){ tf = 'matrix(' + deSvg(c1.matrix).join(',') + ')'; ox = 0; oy = 0; } }
+    /* l'origine n'est écrite que si elle compte : une transformation fixe, une origine écrite dans le style, ou une origine
+       non nulle donnée par une règle CSS (sinon, les classes du module, comme « pulse autour du centre », gardent la main) */
+    var ecrire = (tf && tf !== 'none') || !!(E.style && E.style.transformOrigin) || (!feuille && (ox || oy));
+    var n = {type:'div', el:E, boite:boite, origine:ecrire ? [ox - boite.x, oy - boite.y] : null, transform:tf, opacite:parseFloat(cs.opacity),
+      cache:caches.has(E), visibilite:(E.getAttribute('visibility') || (E.style && E.style.visibility) || ''), clip:null};
+    var f = E.getAttribute('filter');
+    /* une forme seule (un chemin, un cercle…) qui est vivante : elle se dessine elle-même, dans son propre repère */
+    if(!/^(g|svg|a|switch)$/.test(E.tagName)){
+      /* (un repère invisible, sans remplissage ni trait, ne fait pas d'image) */
+      var invisible = (E.getAttribute('fill') === 'none' || cs.fill === 'none') && (!E.getAttribute('stroke') || E.getAttribute('stroke') === 'none') && cs.stroke === 'none';
+      var s0 = {type:'suite', noeuds:[E], cadre:E, filtres:filtres.slice(), soi:true, vide:invisible};
+      if(!invisible) suites.push(s0);
+      n.kids = [s0];
+      return n;
+    }
+    var cp = E.getAttribute('clip-path');
+    if(cp){
+      var m = /url\(\s*['"]?#([^)'"\s]+)/.exec(cp), cpEl = m && parId[m[1]];
+      if(cpEl && cpEl.children.length === 1 && cpEl.firstElementChild.tagName === 'path' && !cpEl.firstElementChild.getAttribute('transform') && (cpEl.getAttribute('clipPathUnits') || 'userSpaceOnUse') === 'userSpaceOnUse'){
+        var d = cpEl.firstElementChild.getAttribute('d');
+        if(boite.x || boite.y) d = d.replace(/(-?\d*\.?\d+(?:e-?\d+)?)[ ,]+(-?\d*\.?\d+(?:e-?\d+)?)/g, function(t, a, b){ return (+a - boite.x) + ' ' + (+b - boite.y); });
+        n.clip = d;
+      } else n.clipUrl = cp;
+    }
+    n.kids = traiter(E, f ? filtres.concat([f]) : filtres);
+    return n;
+  }
+  var plan = traiter(svg, []);
+
+  /* 3) mesurer chaque suite dans le repère de son cadre */
+  var marq = [];
+  suites.forEach(function(s){
+    var MF = inv(user(s.cadre)), x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    var ech = Math.sqrt(Math.abs(MF[0] * MF[3] - MF[1] * MF[2])) || 1;   /* pour que l'image reste nette si le cadre est réduit au repos */
+    s.noeuds.forEach(function(N){
+      var b = bbox(N); if(!b.w && !b.h) return;
+      var M = mul(MF, user(N)), pad = 2 + traitMax(N) * 1.3;
+      [[b.x - pad, b.y - pad], [b.x + b.w + pad, b.y - pad], [b.x - pad, b.y + b.h + pad], [b.x + b.w + pad, b.y + b.h + pad]].forEach(function(p){
+        var q = ap(M, p[0], p[1]); x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]);
+      });
+    });
+    if(!isFinite(x0)){ s.vide = true; return; }
+    s.res = RES / ech;
+    s.boite = [x0, y0, x1, y1];
+  });
+  /* 4) remettre l'état d'origine, puis écrire chaque suite en SVG autonome */
+  styles.forEach(function(p){ if(p[1] == null) p[0].removeAttribute('style'); else p[0].setAttribute('style', p[1]); });
+  [].forEach.call(svg.querySelectorAll('[data-cu-display]'), function(e){ e.setAttribute('display', 'none'); e.removeAttribute('data-cu-display'); });
+  function defsPour(texte){
+    var vus = {}, out = [], pile = refs(texte);
+    while(pile.length){ var id = pile.pop(); if(vus[id]) continue; vus[id] = 1; var e = parId[id]; if(!e) continue; var t = ser.serializeToString(e); out.push(t); pile = pile.concat(refs(t)); }
+    return out.join('');
+  }
+  function sansAttributs(N){
+    var c = N.cloneNode(true);
+    ['transform', 'opacity', 'style', 'class', 'id', 'display'].forEach(function(a){ c.removeAttribute(a); });
+    [].slice.call(c.attributes).forEach(function(a){ if(a.name.indexOf('data-') === 0) c.removeAttribute(a.name); });
+    return c;
+  }
+  var margeLueur = o.lueur ? (o.lueur.epais || 1.2) + 3 * Math.max(o.lueur.flou || 2, o.lueur.large || 6) : 0;
+  function cadrer(s, marge){
+    var b = s.boite, x0 = b[0] - marge, y0 = b[1] - marge, x1 = b[2] + marge, y1 = b[3] + marge;
+    /* au pixel près (dans l'image), pour que les bords ne bavent pas */
+    x0 = Math.floor(x0 * s.res) / s.res; y0 = Math.floor(y0 * s.res) / s.res; x1 = Math.ceil(x1 * s.res) / s.res; y1 = Math.ceil(y1 * s.res) / s.res;
+    return {c:[x0, y0, x1 - x0, y1 - y0], W:Math.max(1, Math.round((x1 - x0) * s.res)), H:Math.max(1, Math.round((y1 - y0) * s.res))};
+  }
+  function texteSvg(k, defs, corps){
+    return '<svg xmlns="' + NS + '" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + k.W + '" height="' + k.H + '" viewBox="' + k.c.join(' ') + '" preserveAspectRatio="none"><defs>' + defs + '</defs>' + corps + '</svg>';
+  }
+  suites.forEach(function(s){
+    if(s.vide) return;
+    var corps = s.noeuds.map(function(N){ return ser.serializeToString(s.soi ? sansAttributs(N) : N); }).join('');
+    s.filtres.slice().reverse().forEach(function(f){ corps = '<g filter="' + f + '">' + corps + '</g>'; });
+    var fl = flouMax(corps) * 3, k = cadrer(s, fl), defs = defsPour(corps);
+    s.cadreImg = k.c; s.W = k.W; s.H = k.H;
+    s.texte = texteSvg(k, defs, corps);
+    if(o.lueur){ var kl = cadrer(s, fl + margeLueur); s.cadreImgL = kl.c; s.WL = kl.W; s.HL = kl.H; s.texteL0 = texteSvg(kl, defs, corps); }
+    /* la silhouette lumineuse (comme un drop-shadow doré : un liseré net + un halo large), cuite elle aussi */
+    if(o.lueur) s.texteL = s.texteL0.replace(/<\/defs>/,'<filter id="cuLueur" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">' +
+      '<feMorphology in="SourceAlpha" operator="dilate" radius="' + (o.lueur.epais || 1.2) + '" result="d"/>' +
+      '<feGaussianBlur in="d" stdDeviation="' + (o.lueur.flou || 2) + '" result="b1"/><feGaussianBlur in="d" stdDeviation="' + (o.lueur.large || 6) + '" result="b2"/>' +
+      '<feFlood flood-color="' + (o.lueur.couleur || '#ffd88a') + '"/><feComposite in2="b1" operator="in" result="c1"/>' +
+      '<feFlood flood-color="' + (o.lueur.couleur2 || '#ffbe5a') + '" flood-opacity=".8"/><feComposite in2="b2" operator="in" result="c2"/>' +
+      '<feMerge><feMergeNode in="c2"/><feMergeNode in="c1"/></feMerge></filter></defs><g filter="url(#cuLueur)">').replace(/<\/svg>$/, '</g></svg>');
+  });
+  var ilots = [];
+  (function chercher(l){ l.forEach(function(k){ if(k.type === 'ilot'){ k.texte = ser.serializeToString(k.el); ilots.push(k); } else if(k.kids) chercher(k.kids); }); })(plan);
+  var tousDefs = [].map.call(svg.querySelectorAll('defs'), function(d){ return d.innerHTML; }).join('');
+
+  /* 5) cuire les images (en parallèle), puis monter le gabarit */
+  var travaux = [];
+  suites.forEach(function(s){
+    if(s.vide) return;
+    travaux.push(rendre(s.texte, s.W, s.H).then(function(r){ s.img = r; }));
+    if(s.texteL) travaux.push(rendre(s.texteL, s.WL, s.HL).then(function(r){ s.imgL = r; }));
+  });
+  var garde = [];
+  return Promise.all(travaux).then(function(){
+    /* les images sont décodées tout de suite (sinon, la première apparition de la bête hoqueterait) */
+    var u = [];
+    suites.forEach(function(s){ [s.img, s.imgL].forEach(function(r){ if(r && r.url) u.push(r.url); }); });
+    return Promise.all(u.map(function(x){ var im = new Image(); im.src = x; garde.push(im); return im.decode ? im.decode().catch(function(){}) : null; }));
+  }).then(function(){
+    function monter(l, parent, lueur){
+      l.forEach(function(k){
+        if(k.type === 'suite'){
+          var r = lueur ? k.imgL : k.img; if(k.vide || !r) return;
+          var src = r.url, e, ci = lueur ? k.cadreImgL : k.cadreImg, B = parent._cuBoite || [0, 0];
+          if(src){ e = document.createElement('img'); e.src = src; e.alt = ''; e.draggable = false; }
+          else if(r.canvas){ e = document.createElement('canvas'); e.width = lueur ? k.WL : k.W; e.height = lueur ? k.HL : k.H; e._source = r.canvas; }
+          else { /* secours : le dessin reste en SVG (si le navigateur refuse l'image) */
+            if(lueur) return;
+            e = document.createElement('div'); e.className = 'cu-ilot'; e.innerHTML = k.texte.replace(/ width="\d+" height="\d+"/, ' width="' + ci[2] + '" height="' + ci[3] + '"');
+            e.firstElementChild.style.cssText = 'position:absolute;left:' + r4(ci[0] - B[0]) + 'px;top:' + r4(ci[1] - B[1]) + 'px;width:' + ci[2] + 'px;height:' + ci[3] + 'px';
+            parent.appendChild(e); return;
+          }
+          e.className = 'cu-img';
+          e.style.cssText = 'left:' + r4(ci[0] - B[0]) + 'px;top:' + r4(ci[1] - B[1]) + 'px;width:' + r4(ci[2]) + 'px;height:' + r4(ci[3]) + 'px';
+          parent.appendChild(e);
+          return;
+        }
+        if(k.type === 'ilot'){
+          if(lueur) return;
+          var il = document.createElement('div'); il.className = 'cu-ilot';
+          il.innerHTML = '<svg xmlns="' + NS + '" width="1" height="1">' + k.texte + '</svg>';
+          var B2 = parent._cuBoite || [0, 0];
+          if(B2[0] || B2[1]) il.style.cssText = 'left:' + (-B2[0]) + 'px;top:' + (-B2[1]) + 'px';
+          parent.appendChild(il);
+          return;
+        }
+        /* un <div> */
+        var E = k.el, d = document.createElement('div');
+        for(var i = 0; i < E.attributes.length; i++){
+          var a = E.attributes[i];
+          if(/^(style|transform|filter|clip-path|opacity|display|fill|stroke|stroke-width|d|points|mask|id)$/.test(a.name)) continue;
+          try{ d.setAttribute(a.name, a.value); }catch(x){}
+        }
+        d.className = 'cu' + (E.getAttribute('class') ? ' ' + E.getAttribute('class') : '') + (animeSel && E.matches(animeSel) ? ' cu-anime' : '');
+        var b = k.boite, B3 = parent._cuBoite || [0, 0], st = '';
+        if(b.x - B3[0] || b.y - B3[1]) st += 'left:' + r4(b.x - B3[0]) + 'px;top:' + r4(b.y - B3[1]) + 'px;';
+        if(b.w || b.h) st += 'width:' + r4(b.w) + 'px;height:' + r4(b.h) + 'px;';
+        if(k.origine) st += 'transform-origin:' + r4(k.origine[0]) + 'px ' + r4(k.origine[1]) + 'px;';
+        if(k.transform && k.transform !== 'none') st += 'transform:' + k.transform + ';';
+        if(k.opacite < 1) st += 'opacity:' + k.opacite + ';';
+        if(k.cache) st += 'display:none;';
+        if(k.visibilite === 'hidden') st += 'visibility:hidden;';
+        if(k.clip) st += 'clip-path:path("' + k.clip + '");-webkit-clip-path:path("' + k.clip + '");';
+        else if(k.clipUrl) st += 'clip-path:' + k.clipUrl + ';';
+        d.style.cssText = st;
+        d._cuBoite = [b.x, b.y];
+        parent.appendChild(d);
+        monter(k.kids, d, lueur);
+        delete d._cuBoite;
+      });
+    }
+    function gabarit(lueur){
+      var vue = document.createElement('div'); vue.className = 'cu-vue cu';
+      monter(plan, vue, lueur);
+      return vue;
+    }
+    var G = gabarit(false), GL = o.lueur ? gabarit(true) : null;
+    var modele = {
+      vb:vb, par:par, nbImages:suites.filter(function(s){ return !s.vide; }).length, _images:garde,
+      cloner:function(conteneur, oo){
+        oo = oo || {};
+        var racine = document.createElement('div'); racine.className = 'cu-racine';
+        racine.setAttribute('data-cu-vb', vb.join(' ')); racine.setAttribute('data-cu-par', par);
+        var ds = document.createElementNS(NS, 'svg'); ds.setAttribute('class', 'cu-defs'); ds.setAttribute('width', '0'); ds.setAttribute('height', '0');
+        ds.innerHTML = '<defs>' + tousDefs + '</defs>';
+        racine.appendChild(ds);
+        /* la vue d'abord (les querySelector du module trouvent ses pièces en premier), la lueur ensuite, dessinée derrière */
+        var vue = copier(G);
+        racine.appendChild(vue);
+        var lueurRacine = null;
+        if(GL && oo.lueur !== false){ lueurRacine = document.createElement('div'); lueurRacine.className = 'cu-lueur'; lueurRacine.appendChild(copier(GL)); racine.appendChild(lueurRacine); }
+        if(conteneur){ conteneur.appendChild(racine); Cuire.ajuster(racine); }
+        return {racine:racine, vue:vue, defs:ds.firstElementChild, lueur:lueurRacine ? lueurRacine.firstElementChild : null};
+      }
+    };
+    function copier(g){
+      var c = g.cloneNode(true);
+      var src = g.querySelectorAll('canvas'), dst = c.querySelectorAll('canvas');
+      for(var i = 0; i < src.length; i++) if(src[i]._source) dst[i].getContext('2d').drawImage(src[i]._source, 0, 0);
+      return c;
+    }
+    return modele;
+  });
+};
+function r4(v){ return Math.round(v * 1000) / 1000; }
+
+/* ---------------- un hôte caché pour cuire un dessin qui n'est pas encore dans la page ---------------- */
+Cuire.hote = function(w, h){
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;left:-20000px;top:0;width:' + w + 'px;height:' + h + 'px;overflow:hidden;visibility:hidden;pointer-events:none';
+  (document.body || document.documentElement).appendChild(d);
+  return d;
+};
+})(typeof window !== 'undefined' ? window : this);
+
+
 /* ===== module : rat-anime.js ===== */
 /* rat-anime.js — le rat d'égout animé (Les Enquêteurs de Brumeval)
    Module autonome, sans dépendance. Il injecte son propre CSS.
@@ -615,7 +1067,8 @@ function dessinerRat(D){
     '<feColorMatrix in="t" type="matrix" values="0 0 0 0 .16  0 0 0 0 .14  0 0 0 0 .1  5 0 0 0 -2.9"/><feComposite in2="SourceAlpha" operator="in"/></filter>');
   var CRASSE = ' filter="url(#' + cr + ')"';
   var poil = '#74626a', clairP = '#a8949c', sombreP = '#2a1e26', rose = '#dc94a4', vase = '#4e5a34';
-  function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
+  /* data-c : le contenu de la pièce (dans le repère du dessin) ; il reste un élément à part une fois cuit */
+  function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g data-c="' + nom + '" transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
   function slot(nom){ return '<g data-slot="' + nom + '"></g>'; }
   function ancre(nom){ return '<g data-a="' + nom + '"></g>'; }
   function griffe(x, y, lg, ang){
@@ -736,7 +1189,7 @@ function dessinerRat(D){
   D.l.push('<radialGradient id="' + gR + '" cx=".45" cy=".45" r=".6"><stop offset="0" stop-color="#fff2a0"/><stop offset=".45" stop-color="#ff4a2a"/><stop offset="1" stop-color="#7a0a14"/></radialGradient>');
   var amande = 'M112 264 C 118 254 140 252 148 260 C 144 270 124 274 112 264 Z';
   var oeil = '<g data-halo="j"><circle cx="128" cy="262" r="30" fill="' + D.halo('#fff4b0', '#ffc020') + '" opacity=".7"/></g>' +
-    '<g data-halo="r" opacity="0"><circle cx="128" cy="262" r="34" fill="' + D.halo('#ffb0a0', '#ff2a2a') + '" opacity=".85"/></g>' +
+    '<g data-halo="r" opacity="0"><circle data-hc="r" cx="128" cy="262" r="34" fill="' + D.halo('#ffb0a0', '#ff2a2a') + '" opacity=".85"/></g>' +
     F('M108 264 C 116 252 140 248 152 258 C 148 272 124 278 108 264 Z', '#1a0a14', ' opacity=".7"') +
     P(amande, 'url(#' + gJ + ')', ' stroke-width="2.6"') + '<g data-iris="r" opacity="0">' + F(amande, 'url(#' + gR + ')') + '</g>' +
     F('M130 255 C 133 258 133 268 130 271 C 127 268 127 258 130 255 Z', '#1a0604') + C(123, 259, 2.8, '#fff') + C(140, 265, 1.2, '#fff', ' opacity=".7"') +
@@ -764,7 +1217,7 @@ function dessinerRat(D){
   return piv('pos', 300, 390,
     slot('sol') + piv('ombre', 290, 392, ombre) +
     piv('saut', 300, 390, piv('secousse', 300, 300, piv('posture', 300, 300, piv('corps', 330, 320,
-      queue + phF + paF + tronc + ph + slot('cible') + tete + pa)))) +
+      queue + phF + paF + tronc + ph + slot('cible') + tete + pa + slot('feuHaut'))))) +
     slot('monde'));
 }
 
@@ -817,24 +1270,72 @@ function onde(base, amp, n, canal){
   return cles;
 }
 
+/* ---------- la cuisson (voir jeu/donjon/RAPIDITE.md et anim/cuire.js) ----------
+   RatAnime.preparer({res}) cuit UNE fois le dessin du rat en images (pièces articulées = <div> HTML animés par la carte
+   graphique, sans rien repeindre) ; ensuite, chaque RatAnime.creer() en fait une copie. Sans préparation (ou sans cuire.js),
+   le rat reste le grand SVG d'origine, comme avant. */
+var SVGNS = 'http://www.w3.org/2000/svg', VB = '0 104 540 336';
+var MODELE = null, PREP = null, BRUME = [];
+var PIECES = ['data-j', 'data-c', 'data-slot', 'data-a', 'data-rage', 'data-halo', 'data-iris', 'data-hc'];
+function preparer(o){
+  if(PREP) return PREP;
+  var Cu = global.Cuire;
+  if(!Cu || !Cu.cuire || typeof document === 'undefined') return Promise.resolve(null);
+  o = o || {};
+  var res = o.res || Math.max(1, Math.min(3, (global.devicePixelRatio || 1) * 200 / 540 * 1.3));
+  injecterCSS();
+  var h = Cu.hote(540, 336), D = new Defs('ratP_');
+  var art = dessinerRat(D);
+  h.innerHTML = '<svg xmlns="' + SVGNS + '" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet" style="display:block;width:540px;height:336px"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
+  var svg = h.firstElementChild;
+  /* les volutes de brume noire de l'explosion : leur flou est cuit une fois (6 tirages de couleurs) */
+  var R0 = rng(91), brumes = [];
+  for(var k = 0; k < 6; k++){
+    var c = ['#120c18', '#1a1222', '#22182c', '#0c0812'][Math.floor(R0() * 4)], cl = ['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e'][k % 4], r = 40;
+    brumes.push(Cu.image('<svg viewBox="-52 -52 104 104"><defs><filter id="b" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.6"/></filter></defs><g filter="url(#b)">' +
+      '<circle r="' + r + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g></svg>', 104, 104, Math.min(2, res * 1.6)));
+  }
+  PREP = Promise.all([Cu.cuire(svg, {piece:function(e){ for(var i = 0; i < PIECES.length; i++) if(e.hasAttribute(PIECES[i])) return true; return false; }, anime:'[data-j]', res:res}), Promise.all(brumes)])
+    .then(function(r){ MODELE = r[0]; BRUME = r[1].filter(Boolean); h.remove(); return MODELE; }, function(e){ h.remove(); if(global.console) console.warn('RatAnime.preparer', e); return null; });
+  return PREP;
+}
+
 function Rat(conteneur){
   injecterCSS();
   this.c = conteneur;
   var D = new Defs('ratA' + (++NUM) + '_');
   this.D = D;
-  var art = dessinerRat(D);
   var div = document.createElement('div');
   div.className = 'rat-anime';
-  div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 104 540 336" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
   conteneur.appendChild(div);
   this.el = div;
-  this.svg = div.querySelector('svg');
-  this.defs = this.svg.querySelector('defs');
+  if(MODELE){
+    /* la copie cuite : la même hiérarchie de pièces, en <div> qui portent des images */
+    var cl = MODELE.cloner(div);
+    this.cuit = true; this.svg = null; this.racine = cl.vue; this.defs = cl.defs;
+  } else {
+    var art = dessinerRat(D);     /* d'abord le dessin : il remplit D.l (les dégradés) */
+    div.innerHTML = '<svg xmlns="' + SVGNS + '" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art + '</svg>';
+    this.svg = this.racine = div.querySelector('svg');
+    this.defs = this.svg.querySelector('defs');
+  }
   var self = this;
   this.J = {}; this.S = {}; this.A = {};
-  [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){ self.J[e.getAttribute('data-j')] = e; });
-  [].forEach.call(this.svg.querySelectorAll('[data-slot]'), function(e){ self.S[e.getAttribute('data-slot')] = e; });
-  [].forEach.call(this.svg.querySelectorAll('[data-a]'), function(e){ self.A[e.getAttribute('data-a')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-j]'), function(e){ self.J[e.getAttribute('data-j')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-slot]'), function(e){ self.S[e.getAttribute('data-slot')] = e; });
+  [].forEach.call(this.racine.querySelectorAll('[data-a]'), function(e){ self.A[e.getAttribute('data-a')] = e; });
+  /* cuit : chaque pièce a une seconde couche pour les petits gestes qui s'ajoutent à l'attente (au lieu de composite: add,
+     que la carte graphique ne sait pas jouer) */
+  if(this.cuit){
+    this.JA = {};
+    Object.keys(this.J).forEach(function(n){
+      var j = self.J[n], a = document.createElement('div');
+      a.className = 'cu cu-anime';
+      while(j.firstChild) a.appendChild(j.firstChild);
+      j.appendChild(a);
+      self.JA[n] = a;
+    });
+  }
   this.v = {};
   this.etat = {enrage: false, ebloui: false, dos: false, feu: false, colle: false, cible: false, yeux: 'jaune'};
   this.attente = true;
@@ -850,12 +1351,18 @@ function Rat(conteneur){
 var R = Rat.prototype;
 
 /* lire la pose actuelle d'une pièce (même au milieu d'une animation) */
-R._lire = function(n){
-  var el = this.J[n], ref = this.v[n] || Z, t = getComputedStyle(el).transform;
-  if(!t || t === 'none') return fusion(Z);
+function matrice(t){
+  if(!t || t === 'none') return [1, 0, 0, 1, 0, 0];
   var m = t.match(/matrix\(([^)]+)\)/);
-  if(!m) return fusion(ref);
-  var v = m[1].split(',').map(parseFloat), sx = Math.hypot(v[0], v[1]), ang = Math.atan2(v[1], v[0]) * 180 / Math.PI, sy = (v[0] * v[3] - v[1] * v[2]) / (sx || 1);
+  return m ? m[1].split(',').map(parseFloat) : null;
+}
+R._lire = function(n){
+  var el = this.J[n], ref = this.v[n] || Z, v = matrice(getComputedStyle(el).transform);
+  if(!v) return fusion(ref);
+  /* cuit : la couche des petits gestes s'ajoute à la pose */
+  if(this.JA){ var w = matrice(getComputedStyle(this.JA[n]).transform); if(w) v = [v[0] * w[0] + v[2] * w[1], v[1] * w[0] + v[3] * w[1], v[0] * w[2] + v[2] * w[3], v[1] * w[2] + v[3] * w[3], v[0] * w[4] + v[2] * w[5] + v[4], v[1] * w[4] + v[3] * w[5] + v[5]]; }
+  if(v[0] === 1 && v[1] === 0 && v[2] === 0 && v[3] === 1 && v[4] === 0 && v[5] === 0) return fusion(Z);
+  var sx = Math.hypot(v[0], v[1]), ang = Math.atan2(v[1], v[0]) * 180 / Math.PI, sy = (v[0] * v[3] - v[1] * v[2]) / (sx || 1);
   while(ang - ref.a > 180) ang -= 360;
   while(ang - ref.a < -180) ang += 360;
   return {x: v[4], y: v[5], a: ang, sx: sx, sy: sy};
@@ -866,6 +1373,7 @@ R._figer = function(noms){
   (noms || Object.keys(this.J)).forEach(function(n){
     var v = self._lire(n), el = self.J[n];
     el.getAnimations().forEach(function(a){ a.cancel(); });
+    if(self.JA){ self.JA[n].getAnimations().forEach(function(a){ a.cancel(); }); self.JA[n].style.transform = ''; }
     el.style.transform = tf(v);
     self.v[n] = v;
   });
@@ -890,7 +1398,11 @@ R._seq = function(cles, duree, o){
     if(frames[frames.length - 1].offset < 1) frames.push({offset: 1, transform: tf(cur)});
     frames.forEach(function(f){ if(!f.easing) f.easing = o.e || 'ease-in-out'; });
     if(!o.ajout && !o.boucle) self.v[n] = cur;
-    var a = el.animate(frames, {duration: duree, iterations: o.boucle ? Infinity : 1, fill: o.ajout ? 'none' : 'forwards', composite: o.ajout ? 'add' : 'replace', delay: o.delai || 0});
+    /* cuit : un petit geste « qui s'ajoute » se joue sur la couche à part (en remplacement : la carte graphique sait le jouer),
+       sauf s'il en chevauche un autre sur la même pièce */
+    var comp = o.ajout ? 'add' : 'replace';
+    if(o.ajout && self.JA){ el = self.JA[n]; comp = el.getAnimations().length ? 'add' : 'replace'; }
+    var a = el.animate(frames, {duration: duree, iterations: o.boucle ? Infinity : 1, fill: o.ajout ? 'none' : 'forwards', composite: comp, delay: o.delai || 0});
     a.playbackRate = (o.vitesse || 1);
     if(o.boucle) self.boucles.push(a);
     else if(!o.ajout) a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} }, function(){});
@@ -907,11 +1419,25 @@ R._allerA = function(pose, duree, e, tout){
 };
 /* un point d'une pièce, ramené dans le repère « monde » (le sol, qui ne tourne pas) */
 R._ou = function(ancre, x, y){
-  var el = typeof ancre === 'string' ? (this.A[ancre] || this.J[ancre] || this.S[ancre]) : ancre, m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
+  var el = typeof ancre === 'string' ? (this.A[ancre] || this.J[ancre] || this.S[ancre]) : ancre;
+  if(this.cuit){ var Cu = global.Cuire, q = Cu.ap(Cu.ctm(el), x, y); return Cu.ap(Cu.inv(Cu.ctm(this.S.monde)), q[0], q[1]); }
+  var m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
   p.x = x; p.y = y;
   p = p.matrixTransform(m).matrixTransform(w.inverse());
   return [p.x, p.y];
 };
+/* le contenu d'une pièce (son repère est celui du dessin) */
+R._contenu = function(n){ return this.J[n].querySelector('[data-c]'); };
+/* un point du dessin, en pixels de la boîte du rat (tous les mouvements compris) */
+R.point = function(nom, x, y){
+  var el = this.A[nom] || this.J[nom] || this.S[nom];
+  if(this.cuit) return global.Cuire.point(el, x, y);
+  var p = this.svg.createSVGPoint(); p.x = x; p.y = y; p = p.matrixTransform(el.getCTM());
+  return {x: p.x, y: p.y};
+};
+/* signale au jeu que la bête bouge (pour que les badges la suivent pendant ce temps-là) */
+R._bouge = function(ms){ try{ this.c.dispatchEvent(new CustomEvent('bete-bouge', {bubbles: true, detail: {ms: ms || 1200}})); }catch(e){} };
+function opa(e, v){ if(e.namespaceURI === SVGNS) e.setAttribute('opacity', v); else e.style.opacity = v; }
 R._def = function(fn){ var n0 = this.D.l.length, r = fn(this.D); this.defs.insertAdjacentHTML('beforeend', this.D.l.slice(n0).join('')); return r; };
 R._minuteur = function(f, ms){ var self = this, id = setTimeout(function(){ self.minuteurs.splice(self.minuteurs.indexOf(id), 1); f(); }, ms); this.minuteurs.push(id); return id; };
 R._couperMinuteurs = function(){ this.minuteurs.forEach(clearTimeout); this.minuteurs = []; };
@@ -921,12 +1447,17 @@ R._couperBoucles = function(){
   this.boucles = [];
 };
 /* un élément SVG créé à la volée */
-R._el = function(parent, html){
-  var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+R._el = function(parent, html, cls){
+  /* cuit : un petit îlot SVG dans un <div> (on anime le <div> : la carte graphique le déplace sans le repeindre) */
+  if(this.cuit) return global.Cuire.ilot(parent, html, cls);
+  var g = document.createElementNS(SVGNS, 'g');
   g.innerHTML = html;
+  if(cls) g.setAttribute('class', cls);
   parent.appendChild(g);
   return g;
 };
+/* cuit : un <div> vide placé en (x, y) dans le repère d'un emplacement (pour regrouper des effets) */
+R._place = function(parent, x, y, cls){ return global.Cuire.place(parent, x, y, cls); };
 
 /* =====================================================================
    5. Les poses de base de chaque mode
@@ -980,7 +1511,10 @@ R._reprendre = function(duree){
   var self = this;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
-  return this._allerA(this._base(), duree == null ? 380 : duree, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
+  var d = duree == null ? 380 : duree;
+  this._bouge(d + 100);
+  this._contreFeu(d);
+  return this._allerA(this._base(), d, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
     if(self.enAction || self.mort) return;
     if(self.attente) self._lancerBoucles();
   });
@@ -1208,8 +1742,9 @@ R._tirerPatte = function(){
   var cc = {corps: {a: 0}, tete: {a: 0}, machoire: {a: 0}}, cf = {corps: choix.corps, tete: choix.tete, machoire: {a: -14}};
   this._seq([{t: 0, p: cc}, {t: .3, p: cf}, {t: .45, p: {corps: {a: 0}, tete: {a: 0}, machoire: {a: -4}}}, {t: .72, p: cf}, {t: .8, p: {corps: {a: -choix.corps.a * .8}, tete: {a: -choix.tete.a}, machoire: {a: -18}}, e: 'cubic-bezier(.7,0,1,.6)'}, {t: 1, p: cc}], T, {ajout: true});
   /* les fils : trois bandes gluantes, plus fines au milieu, qui suivent la patte à chaque image */
-  var sol = this._ou(this.J[choix.ref].firstElementChild, choix.pt[0], choix.pt[1]); sol[1] = 391;
-  var el = this.J[choix.ref].firstElementChild, g = this._fxEl('<g></g>', this.S.monde), t0 = performance.now();
+  var sol = this._ou(this._contenu(choix.ref), choix.pt[0], choix.pt[1]); sol[1] = 391;
+  var el = this._contenu(choix.ref), g0 = this._fxEl('<g></g>', this.S.monde), t0 = performance.now();
+  var g = g0.namespaceURI === SVGNS ? g0 : g0.querySelector('svg');
   var fils = [-12, 1, 12].map(function(dx, i){ return {dx: dx, w: [6, 7, 5][i], c: [.45, -.4, .25][i]}; });
   g.innerHTML = fils.map(function(){ return '<path fill="#d8e870" fill-opacity=".85" stroke="#5a6420" stroke-width="1.2"/><path fill="none" stroke="#fbffd0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>'; }).join('') + '<ellipse rx="14" ry="5" fill="#c8d84a" stroke="#5a6420" stroke-width="1.4"/>';
   var chemins = g.querySelectorAll('path'), goutte = g.querySelector('ellipse');
@@ -1226,7 +1761,7 @@ R._tirerPatte = function(){
       chemins[i * 2 + 1].setAttribute('d', 'M' + pt([a[0] - f.w * .3, a[1] - 1]) + ' Q ' + pt([m[0] - nx * w * .4, m[1] - ny * w * .4]) + ' ' + pt([b[0] - 1, b[1]]));
       chemins[i * 2].style.opacity = chemins[i * 2 + 1].style.opacity = d < 4 ? 0 : 1;
     });
-    if(performance.now() - t0 > T + 60){ g.remove(); return; }
+    if(performance.now() - t0 > T + 60){ g0.remove(); return; }
     requestAnimationFrame(maj);
   })();
 };
@@ -1236,6 +1771,7 @@ R._tirerPatte = function(){
 R._debutAction = function(){
   this.jeton++;
   this.enAction = true;
+  this._bouge(4000);
   this._couperBoucles();
   return this.jeton;
 };
@@ -1424,8 +1960,8 @@ R.arreter = function(){
 };
 R.yeux = function(c){
   this.etat.yeux = c === 'rouge' ? 'rouge' : 'jaune';
-  var on = this.etat.yeux === 'rouge' ? 1 : 0, svg = this.svg;
-  function vers(e, v){ var de = parseFloat(getComputedStyle(e).opacity); e.getAnimations().forEach(function(a){ a.cancel(); }); e.setAttribute('opacity', v); e.animate([{opacity: de}, {opacity: v}], {duration: 400}); }
+  var on = this.etat.yeux === 'rouge' ? 1 : 0, svg = this.racine;
+  function vers(e, v){ var de = parseFloat(getComputedStyle(e).opacity); e.getAnimations().forEach(function(a){ a.cancel(); }); opa(e, v); e.animate([{opacity: de}, {opacity: v}], {duration: 400}); }
   [].forEach.call(svg.querySelectorAll('[data-iris="r"],[data-halo="r"]'), function(e){ vers(e, on); });
   [].forEach.call(svg.querySelectorAll('[data-halo="j"]'), function(e){ vers(e, 1 - on); });
   return this;
@@ -1435,10 +1971,10 @@ R.enrager = function(){
   var self = this;
   this.etat.enrage = true;
   this.yeux('rouge');
-  var h = this.svg.querySelector('[data-halo="r"] circle');
+  var h = this.racine.querySelector('[data-halo="r"] [data-hc]');
   h.classList.add('ra-halo');
-  var rage = this.svg.querySelector('[data-rage]');
-  rage.animate([{opacity: 0}, {opacity: 1}], {duration: 500, fill: 'forwards'}); rage.setAttribute('opacity', 1);
+  var rage = this.racine.querySelector('[data-rage]');
+  rage.animate([{opacity: 0}, {opacity: 1}], {duration: 500, fill: 'forwards'}); opa(rage, 1);
   /* la vapeur qui sort des naseaux */
   (function vapeur(){
     if(self.mort) return;
@@ -1464,18 +2000,35 @@ R._allumerEtoiles = function(){
   this._eteindreEtoiles();
   var lu = this.D.id();
   this.defs.insertAdjacentHTML('beforeend', '<radialGradient id="' + lu + '"><stop offset="0" stop-color="#fff6c0" stop-opacity=".55"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>');
+  if(this.cuit){
+    /* cuit : chaque chose qui bouge est son propre <div> (le halo qui pulse, les étoiles qui tournent, les éclats) */
+    var self = this, G = this._place(slot, 0, 0);
+    G.setAttribute('data-etoiles', '1');
+    this._el(this._place(G, 140, 250), '<ellipse rx="110" ry="80" fill="url(#' + lu + ')"/>', 'ra-pulse');
+    for(i = 0; i < 6; i++){
+      var e = this._place(G, 0, 0); e.setAttribute('data-etoile', i);
+      this._el(e, '<circle r="20" fill="url(#' + lu + ')"/>');
+      this._el(e, '<path d="' + etoileD(17 - (i % 2) * 4, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6"/><path d="' + etoileD(7 - (i % 2) * 2, 5, .45) + '" fill="#fffbe0"/>', 'ra-tourne');
+    }
+    for(i = 0; i < 8; i++){ var a0 = i / 8 * Math.PI * 2, sc = this._el(this._place(G, 140 + Math.cos(a0) * 96, 232 + Math.sin(a0) * 56), '<path d="' + eclatD(13) + '" fill="#ffffff"/>', 'ra-scint'); sc.style.animationDelay = (i * .14) + 's'; }
+    this.fx.etoiles = G;
+    [].forEach.call(G.querySelectorAll('[data-etoile]'), function(e, k){ self._orbite(e, k); });
+    return;
+  }
   html += '<ellipse cx="140" cy="250" rx="110" ry="80" fill="url(#' + lu + ')" class="ra-pulse"/>';
   for(i = 0; i < 6; i++) html += '<g data-etoile="' + i + '"><circle r="20" fill="url(#' + lu + ')"/><path d="' + etoileD(17 - (i % 2) * 4, 5, .45) + '" fill="#ffe466" stroke="' + O + '" stroke-width="2.6" class="ra-tourne"/><path d="' + etoileD(7 - (i % 2) * 2, 5, .45) + '" fill="#fffbe0" class="ra-tourne"/></g>';
   for(i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2; html += '<g transform="translate(' + f1(140 + Math.cos(a) * 96) + ' ' + f1(232 + Math.sin(a) * 56) + ')"><path d="' + eclatD(13) + '" fill="#ffffff" class="ra-scint" style="animation-delay:' + (i * .14) + 's"/></g>'; }
   var g = this._el(slot, html);
   g.setAttribute('data-etoiles', '1');
   this.fx.etoiles = g;
-  var c = [140, 196], rx = 88, ry = 26, n = 24;
-  [].forEach.call(g.querySelectorAll('[data-etoile]'), function(e, k){
-    var frames = [];
-    for(var s = 0; s <= n; s++){ var a = s / n * Math.PI * 2 + k * Math.PI * 2 / 6, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
-    e.animate(frames, {duration: 1500, iterations: Infinity});
-  });
+  var self = this;
+  [].forEach.call(g.querySelectorAll('[data-etoile]'), function(e, k){ self._orbite(e, k); });
+};
+/* une étoile qui tourne autour de la tête (en ellipse, plus grosse quand elle passe devant) */
+R._orbite = function(e, k){
+  var c = [140, 196], rx = 88, ry = 26, n = 24, frames = [];
+  for(var s = 0; s <= n; s++){ var a = s / n * Math.PI * 2 + k * Math.PI * 2 / 6, x = c[0] + Math.cos(a) * rx, y = c[1] + Math.sin(a) * ry, devant = Math.sin(a); frames.push({transform: 'translate(' + f1(x) + 'px,' + f1(y) + 'px) scale(' + f1(.75 + devant * .3) + ')', opacity: f1(.55 + devant * .45)}); }
+  e.animate(frames, {duration: 1500, iterations: Infinity});
 };
 R._eteindreEtoiles = function(){ if(this.fx.etoiles){ this.fx.etoiles.remove(); this.fx.etoiles = null; } };
 R.retourner = function(on){
@@ -1483,6 +2036,7 @@ R.retourner = function(on){
   if(this.etat.dos === on) return Promise.resolve();
   var self = this, j = this._debutAction();
   this.etat.dos = on;
+  this._contreFeu(on ? 820 : 760, on ? 1000 : 0);
   if(on){
     this._flaque('huile');
     /* il glisse : les pattes patinent… puis il bascule sur le dos */
@@ -1523,10 +2077,18 @@ R._flaque = function(type){
     html = '<ellipse cx="290" cy="392" rx="240" ry="16" fill="url(#' + gid + ')" stroke="#0a0812" stroke-width="2" opacity=".95"/>' + L('M90 388 C 160 382 260 380 360 384 M140 396 C 220 392 300 392 400 396', '#c8e0ff', 1.6, ' opacity=".45"') + L('M200 386 C 240 383 280 383 320 385', '#ffe0a0', 1.2, ' opacity=".4"');
   } else {
     html = '<ellipse cx="270" cy="391" rx="230" ry="15" fill="#c8d84a" fill-opacity=".55" stroke="#5a6420" stroke-width="2"/>' + '<ellipse cx="270" cy="389" rx="200" ry="9" fill="#e8f0a0" opacity=".35"/>' +
-      L('M90 386 C 160 382 260 381 360 384', '#ffffd0', 1.8, ' opacity=".7"') +
-      [[120, 392, 4], [220, 395, 3], [300, 390, 5], [420, 393, 3.5]].map(function(b, i){ return '<g transform="translate(' + b[0] + ' ' + b[1] + ')"><circle r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1" class="ra-bulle" style="animation-delay:' + (i * .5) + 's"/></g>'; }).join('');
+      L('M90 386 C 160 382 260 381 360 384', '#ffffd0', 1.8, ' opacity=".7"');
+    var bulles = [[120, 392, 4], [220, 395, 3], [300, 390, 5], [420, 393, 3.5]];
+    if(!this.cuit) html += bulles.map(function(b, i){ return '<g transform="translate(' + b[0] + ' ' + b[1] + ')"><circle r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1" class="ra-bulle" style="animation-delay:' + (i * .5) + 's"/></g>'; }).join('');
   }
-  var g = this._el(this.S.sol, html);
+  var g;
+  if(this.cuit){
+    /* cuit : la flaque dans un <div>, et chaque bulle de colle dans le sien (elles respirent sans rien repeindre) */
+    g = this._place(this.S.sol, 0, 0);
+    this._el(g, html);
+    var self = this;
+    if(bulles) bulles.forEach(function(b, i){ var u = self._el(self._place(g, b[0], b[1] + b[2]), '<circle cy="' + (-b[2]) + '" r="' + b[2] + '" fill="#e8f0a0" stroke="#5a6420" stroke-width="1"/>', 'ra-bulle'); u.style.animationDelay = (i * .5) + 's'; });
+  } else g = this._el(this.S.sol, html);
   g.animate([{transform: 'translate(270px,391px) scale(.2,.4) translate(-270px,-391px)', opacity: 0}, {transform: 'translate(270px,391px) scale(1) translate(-270px,-391px)', opacity: 1}], {duration: 420, easing: 'cubic-bezier(.2,.8,.3,1.2)'});
   this.fx['flaque_' + type] = g;
 };
@@ -1544,7 +2106,7 @@ R.coller = function(on){
   if(this.fx.pates){ this.fx.pates.forEach(function(g){ g.remove(); }); this.fx.pates = null; }
   if(on){
     var self = this, pate = '<path d="M-16 3 C -16 -6 -8 -10 0 -9 C 8 -10 16 -6 16 3 Z" fill="#d0e05a" fill-opacity=".92" stroke="#5a6420" stroke-width="1.4"/><path d="M-10 -4 Q 0 -8 10 -4" fill="none" stroke="#fbffd0" stroke-width="1.4" opacity=".8"/>';
-    this.fx.pates = [['main', 192, 389], ['mainF', 132, 389], ['pied', 368, 391], ['piedF', 340, 391]].map(function(q){ return self._el(self.J[q[0]].firstElementChild, '<g transform="translate(' + q[1] + ' ' + q[2] + ')">' + pate + '</g>'); });
+    this.fx.pates = [['main', 192, 389], ['mainF', 132, 389], ['pied', 368, 391], ['piedF', 340, 391]].map(function(q){ return self._el(self._contenu(q[0]), '<g transform="translate(' + q[1] + ' ' + q[2] + ')">' + pate + '</g>'); });
   }
   if(!this.enAction) this._reprendre(300);
   return this;
@@ -1555,11 +2117,37 @@ R.cible = function(on){
   if(this.fx.cible){ this.fx.cible.remove(); this.fx.cible = null; }
   this.etat.cible = on;
   if(!on) return this;
+  if(this.cuit){
+    var G = this._place(slot, 288, 300);
+    this._el(G, '<circle r="34" fill="#ffe680" opacity=".35"/>', 'ra-pulse');
+    this._el(G, '<circle r="24" fill="none" stroke="#24182e" stroke-width="7"/><circle r="24" fill="none" stroke="#ffe066" stroke-width="4"/><circle r="12" fill="none" stroke="#24182e" stroke-width="6"/><circle r="12" fill="none" stroke="#fff6c0" stroke-width="3"/><circle r="4" fill="#ffffff"/>', 'ra-pulse');
+    this._el(G, L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#24182e', 6) + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#ffe066', 3), 'ra-tourne');
+    this.fx.cible = G;
+    return this;
+  }
   var html = '<g transform="translate(288 300)"><circle r="34" fill="#ffe680" opacity=".35" class="ra-pulse"/>' +
     '<g class="ra-pulse"><circle r="24" fill="none" stroke="#24182e" stroke-width="7"/><circle r="24" fill="none" stroke="#ffe066" stroke-width="4"/><circle r="12" fill="none" stroke="#24182e" stroke-width="6"/><circle r="12" fill="none" stroke="#fff6c0" stroke-width="3"/><circle r="4" fill="#ffffff"/></g>' +
     '<g class="ra-tourne">' + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#24182e', 6) + L('M0 -38 L 0 -28 M0 28 L 0 38 M-38 0 L -28 0 M28 0 L 38 0', '#ffe066', 3) + '</g></g>';
   this.fx.cible = this._el(slot, html);
   return this;
+};
+/* cuit : la contre-rotation des flammes selon la pose de base (debout ébloui, sur le dos…), pour qu'elles restent droites ;
+   et plus petites quand le dos est tourné vers le bas (comme le calcul image par image d'avant) */
+R._contreFeu = function(duree, delai){
+  var G = this.fx && this.fx.feuG;
+  if(!G) return;
+  var m = POSES[this._mode()];
+  G.forEach(function(g){
+    var A = 0;
+    g.chaine.forEach(function(n){ if(m[n] && m[n].a) A += m[n].a; });
+    var k = Math.max(.3, Math.min(1, .3 + Math.cos(A * Math.PI / 180) * .9)), t = 'rotate(' + f1(-A) + 'deg) scale(' + k.toFixed(2) + ')';
+    if(g.t === t) return;
+    var de = g.t || 'none';
+    g.t = t;
+    g.c.getAnimations().forEach(function(a){ a.cancel(); });
+    g.c.style.transform = t;
+    if(duree > 1) g.c.animate([{transform: de}, {transform: t}], {duration: duree, delay: delai || 0, easing: 'ease-in-out', fill: 'backwards'});
+  });
 };
 R.bruler = function(on){
   on = on !== false;
@@ -1568,7 +2156,7 @@ R.bruler = function(on){
   this.etat.feu = on;
   if(!on){
     if(this.fx.feu) this.fx.feu.forEach(function(g){ g.animate([{opacity: 1}, {opacity: 0}], {duration: 400, fill: 'forwards'}).finished.then(function(){ g.remove(); }); });
-    this.fx.feu = null;
+    this.fx.feu = null; this.fx.feuG = null;
     clearTimeout(this.fx.fumee);
     return this;
   }
@@ -1592,7 +2180,31 @@ R.bruler = function(on){
     {ref: D, x: 358, y: 182, h: 104, w: 40, r: 0}, {ref: D, x: 384, y: 178, h: 84, w: 34, r: 5}, {ref: D, x: 408, y: 184, h: 96, w: 36, r: 8}, {ref: D, x: 430, y: 198, h: 64, w: 28, r: 14}, {ref: D, x: 446, y: 222, h: 44, w: 22, r: 22},
     {ref: D, x: 298, y: 204, h: 40, w: 18, r: -16}, {ref: D, x: 372, y: 182, h: 54, w: 20, r: -10}, {ref: D, x: 420, y: 190, h: 46, w: 18, r: 18}
   ];
-  [[2, .5, 48, 24], [4, .45, 54, 24], [6, .5, 38, 18], [7, .7, 26, 14]].forEach(function(q){ var m = lerp(QC[q[0]], QC[q[0] + 1], q[1]); specs.push({ref: S['feuQ' + q[0]], x: m[0], y: m[1], h: q[2], w: q[3], r: 0, lueur: [40, 34]}); });
+  [[2, .5, 48, 24], [4, .45, 54, 24], [6, .5, 38, 18], [7, .7, 26, 14]].forEach(function(q){ var m = lerp(QC[q[0]], QC[q[0] + 1], q[1]); specs.push({ref: S['feuQ' + q[0]], x: m[0], y: m[1], h: q[2], w: q[3], r: 0, lueur: [40, 34], q: q[0]}); });
+  if(this.cuit){
+    /* cuit : chaque flamme est accrochée à la pièce qu'elle suit (le dos, un bout de queue) : la carte graphique la déplace
+       avec elle, sans rien calculer à chaque image. Une contre-rotation (selon la pose : debout, sur le dos) la garde droite. */
+    var flammeDivs = function(c, h, w, r, k){
+      var dl = (k * .13 % .4).toFixed(2), dur = (.3 + (k * .07 % .22)), R = self._place(c, 0, 0);
+      if(r) R.style.transform = 'rotate(' + r + 'deg)';
+      [[flammeD(h, w), 'url(#' + gid + ')" stroke="#5a1a08" stroke-width="2', 'ra-fl', dl, dur], [flammeD(h * .7, w * .62), '#ffa21e', 'ra-fl2', dl, dur * .8],
+        [flammeD(h * .42, w * .36), 'url(#' + gid2 + ')', 'ra-fl', (dl * .5).toFixed(2), dur * .7]].forEach(function(f){
+        var e = self._el(R, '<path d="' + f[0] + '" fill="' + f[1] + '"/>', f[2]); e.style.animationDelay = '-' + f[3] + 's'; e.style.animationDuration = f[4].toFixed(2) + 's';
+      });
+    };
+    var groupes = specs.map(function(s, k){
+      var queue = s.q != null, p = self._place(queue ? s.ref : self.S.feuHaut, s.x, s.y), c = self._place(p, 0, 0);
+      if(s.lueur) self._el(c, '<ellipse cx="0" cy="' + (-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="url(#' + lueur + ')"/>');
+      if(s.h) flammeDivs(c, s.h, s.w, s.lueur ? 0 : s.r, k);
+      var chaine = ['posture', 'corps'];
+      if(queue) for(var i = 0; i <= s.q; i++) chaine.push('q' + i);
+      p.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
+      return {p: p, c: c, chaine: chaine};
+    });
+    this.fx.feuG = groupes;
+    this.fx.feu = [suie].concat(groupes.map(function(g){ return g.p; }));
+    this._contreFeu(1);
+  } else {
   var monde = this._el(this.S.monde, '');
   specs.forEach(function(s, k){ s.g = self._el(monde, s.lueur ? '<ellipse cx="0" cy="' + (-s.lueur[1] * .4) + '" rx="' + s.lueur[0] + '" ry="' + s.lueur[1] + '" fill="url(#' + lueur + ')"/>' + (s.h ? flamme(s.h, s.w, 0, k) : '') : flamme(s.h, s.w, s.r, k)); });
   monde.animate([{opacity: 0}, {opacity: 1}], {duration: 300});
@@ -1605,6 +2217,7 @@ R.bruler = function(on){
     });
     self.fx.raf = requestAnimationFrame(suivre);
   })();
+  }
   /* fumée et braises */
   (function fumee(){
     if(!self.etat.feu || self.mort) return;
@@ -1638,18 +2251,25 @@ R.exploser = function(scene){
     /* BOUM */
     var cs = getComputedStyle(scene);
     if(cs.position === 'static') scene.style.position = 'relative';
-    var sr = scene.getBoundingClientRect(), rr = self.svg.getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
+    var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
     var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
     var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
-    var NSs = 'http://www.w3.org/2000/svg', ov = document.createElementNS(NSs, 'svg');
-    ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    var fl = 'raBoom' + (++NUM);
-    ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
-      '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' +
-      '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient></defs>';
-    scene.appendChild(ov);
+    var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
+    if(self.cuit){
+      /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
+      self.defs.insertAdjacentHTML('beforeend', degrade);
+      ov = document.createElement('div'); ov.className = 'ra-scene-fx';
+      scene.appendChild(ov);
+      el = function(html){ return global.Cuire.ilot(ov, html); };
+    } else {
+      ov = document.createElementNS(NSs, 'svg');
+      ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
+        '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
+      scene.appendChild(ov);
+      el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+    }
     self.el.animate([{filter: 'brightness(1.6)', opacity: 1}, {filter: 'brightness(4)', opacity: 0}], {duration: 120, fill: 'forwards'});
-    function el(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; }
     var u = taille / 180;
     /* l'éclair et l'onde de choc */
     el('<circle cx="0" cy="0" r="' + f1(60 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1.6)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
@@ -1659,7 +2279,15 @@ R.exploser = function(scene){
     for(var n = 0; n < 30; n++){
       var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(20, 42) * u, x = Math.cos(a) * d * 80 * u, y = Math.sin(a) * d * 40 * u - 10 * u;
       var c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
-      var g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
+      var g;
+      if(self.cuit && BRUME.length){
+        /* une volute déjà cuite (son flou est dans l'image) */
+        g = document.createElement('div'); g.className = 'cu-ilot';
+        var im = document.createElement('img'), tt = r / 40 * 104;
+        im.src = BRUME[n % BRUME.length]; im.alt = '';
+        im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
+        g.appendChild(im); ov.appendChild(g);
+      } else g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
       var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(16, 46) * u;
       brumes.push(g.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
         {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-24, 24) * u) + 'px,' + f1(cy + dy * 1.2 - 34 * u) + 'px) scale(2)', opacity: 0}],
@@ -1726,9 +2354,14 @@ global.RatAnime = {
       exploser: function(scene){ return r.exploser(scene); },
       arreter: function(){ r.arreter(); return this; },
       etat: function(){ var e = {}; for(var k in r.etat) e[k] = r.etat[k]; return e; },
+      point: function(nom, x, y){ return r.point(nom, x, y); },
+      cuit: !!r.cuit,
       _rat: r
     };
   },
+  /* cuire le dessin une fois (Promise) : ensuite, chaque rat créé est une copie cuite, fluide sur une vieille tablette */
+  preparer: preparer,
+  pret: function(){ return !!MODELE; },
   _interne: {POSES: POSES, COURSE: COURSE}
 };
 })(typeof window !== 'undefined' ? window : this);
@@ -1995,7 +2628,7 @@ function pisteur(lk, grain){
         J('mainA', J('arc', arc, [148, 185]) + poing(d, x, 185, 8.5, pe[1])))));
   /* la corde et la flèche encochée (calculées à chaque image) */
   B += J('torse', '<path data-corde fill="none" stroke="#f3e7cb" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + '</g></g>');
+    '<g data-fleche style="display:none"><g data-fl>' + flecheDessin() + rep('flN', 0, 0) + rep('flP', 124, 0) + '</g></g>');
   /* bras proche : brassard, coudière ; la dague cachée dans la main */
   var xb = SQ.brasB[0];
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 15, d.gh(vert)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
@@ -2215,7 +2848,15 @@ function sage(lk, grain){
 
 /* ============ les tissus et les cheveux souples (simulés à chaque image) ============ */
 /* chaque point a un ressort vers sa place « dessinée » (qui suit le corps), l'air le freine, la pesanteur le tire */
-function mat(el){ var m = el.getCTM(); return m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+/* la matrice d'un élément vers les pixels de la boîte du héros (cuit : calculée par cuire.js à travers les <div>) */
+function mat(el){
+  if(CACHE_MAT && CACHE_MAT.has(el)) return CACHE_MAT.get(el);
+  var r;
+  if(window.Cuire && el.closest && el.closest('.cu-vue')) r = window.Cuire.ctm(el);
+  else { var m = el.getCTM(); r = m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+  if(CACHE_MAT) CACHE_MAT.set(el, r);
+  return r;
+}
 function ap(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
 function inv(m){ var det = m[0] * m[3] - m[1] * m[2] || 1e-6; return [m[3] / det, -m[1] / det, -m[2] / det, m[0] / det, (m[2] * m[5] - m[3] * m[4]) / det, (m[1] * m[4] - m[0] * m[5]) / det]; }
 function lerp(a, b, t){ return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
@@ -2269,6 +2910,14 @@ function Souple(h, spec){
   this.ch.forEach(function(c){ for(var i = 1; i < c.length; i++) c[i].L = Math.hypot(c[i].r[0] - c[i - 1].r[0], c[i].r[1] - c[i - 1].r[1]); });
   this.init = false;
 }
+/* lire (avant toute écriture de l'image) les repères dont pas() aura besoin */
+Souple.prototype.lire = function(){
+  mat(this.g);
+  if(this.s.type === 'jupe'){
+    if(!this.jA){ this.jA = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'A"]'); this.jB = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'B"]'); }
+    mat(this.jA); mat(this.jB);
+  }
+};
 Souple.prototype.pas = function(dt, o, sol){
   var s = this.s, me = this, h = this.h;
   this.t += dt;
@@ -2315,6 +2964,14 @@ Souple.prototype.pas = function(dt, o, sol){
   this.init = true;
   /* retour dans le repère de la pièce, puis le dessin */
   var Mi = inv(M), loc = this.ch.map(function(c){ return c.map(function(p){ return ap(Mi, p.x - o[0], p.y - o[1]); }); });
+  /* on ne redessine (et donc on ne repeint) le tissu que s'il a bougé d'au moins 0,15 unité depuis le dernier dessin */
+  /* (l'ourlet d'un tissu ondule avec le temps : il est redessiné au moins 10 fois par seconde) */
+  var av = this._dessine, bouge = !av || (s.type === 'tissu' && this.t - (this._tDessin || 0) > .1);
+  for(var a = 0; av && !bouge && a < loc.length; a++) for(var b = 0; b < loc[a].length; b++){
+    if(Math.abs(loc[a][b][0] - av[a][b][0]) > .15 || Math.abs(loc[a][b][1] - av[a][b][1]) > .15){ bouge = true; break; }
+  }
+  if(!bouge) return;
+  this._dessine = loc; this._tDessin = this.t;
   this.dessiner(loc);
 };
 Souple.prototype.dessiner = function(loc){
@@ -2431,9 +3088,15 @@ function melange(a, b, t){ var o = {}; for(var k in a){ o[k] = {}; for(var f in 
 
 /* ============ le ticker commun : tissus, cordes, bulles… ============ */
 var VIVANTS = [], tickOn = false, tPrec = 0;
+/* Fluidité (RAPIDITE.md) : à chaque image, on LIT d'abord toutes les positions dont on aura besoin (pour tous les héros),
+   puis on écrit (tissus, corde…). Lire après avoir écrit forcerait le navigateur à tout recalculer, une fois par héros. */
+var CACHE_MAT = null;
 function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
+  CACHE_MAT = new Map();
+  VIVANTS.forEach(function(h){ try { h._lire(); } catch(e){} });
   VIVANTS.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  CACHE_MAT = null;
   if(VIVANTS.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
@@ -2520,6 +3183,12 @@ function css(){
     '.ha-p{position:absolute;left:0;top:0;pointer-events:none;will-change:transform,opacity}' +
     '.ha .haAv{display:none}.ha.ha-avA .haAv{display:inline}' +
     '.ha.ha-choisi .ha-boite>svg{animation:haChoisi 1.6s ease-in-out infinite}' +
+    /* cuit (RAPIDITE.md) : la lueur du héros choisi est une silhouette dorée cuite, derrière lui ; elle pulse en opacité (carte graphique) */
+    '.ha.ha-choisi .cu-lueur{display:block;animation:haLueur 1.6s ease-in-out infinite}@keyframes haLueur{0%,100%{opacity:.78}50%{opacity:1}}' +
+    /* les tissus simulés (îlots SVG redessinés à chaque image) : chacun dans son calque ; quand le héros est choisi, un halo doré
+       (il est de toute façon repeint à chaque image, le halo ne coûte qu'un petit flou sur sa surface) */
+    '.ha .cu-ilot.ha-anime{will-change:transform}' +
+    '.ha.ha-choisi .cu-ilot.ha-souple>svg{filter:drop-shadow(0 0 2px rgba(255,226,160,.85)) drop-shadow(0 0 6px rgba(255,190,90,.4))}' +
     '@keyframes haChoisi{0%,100%{filter:drop-shadow(0 0 3px rgba(255,220,130,.7)) drop-shadow(0 0 10px rgba(255,190,90,.25))}50%{filter:drop-shadow(0 0 5px rgba(255,225,140,.95)) drop-shadow(0 0 18px rgba(255,190,90,.5))}}' +
     '@keyframes haTourne{to{transform:rotate(360deg)}}@keyframes haTourneR{to{transform:rotate(-360deg)}}' +
     '@keyframes haPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}' +
@@ -2538,25 +3207,38 @@ function Heros(cont, role, lk){
   if(!ROLES[role]) throw new Error('HerosAnime : rôle inconnu « ' + role + ' »');
   this.cont = cont; this.role = role; this.R0 = ROLES[role];
   /* l'apparence : celle donnée ; ce qui manque (peau, cheveux, yeux) vient de l'apparence par défaut */
-  var k0, base = DEFAUT[role]; this.lk = {};
-  if(lk){ for(k0 in lk) this.lk[k0] = lk[k0]; ['pe', 'ch', 'ir'].forEach(function(c){ if(!this.lk[c]) this.lk[c] = base[c]; }, this); }
-  else for(k0 in base) this.lk[k0] = base[k0];
+  this.lk = fusionLk(role, lk);
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
-  var spec = this.R0.fab(this.lk, HerosAnime.grain);
   this.racine = document.createElement('div'); this.racine.className = 'ha ha-' + role;
   this.boite = document.createElement('div'); this.boite.className = 'ha-boite';
-  this.boite.innerHTML = spec.svg;
   this.fx = document.createElement('div'); this.fx.className = 'ha-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
-  this.svg = this.boite.querySelector('svg');
+  /* cuit (HerosAnime.preparer) : une copie de la version en images, dont les pièces sont des <div> que la carte graphique
+     anime sans rien repeindre ; sinon, le grand SVG d'origine */
+  var M = MODELES[cleModele(role, this.lk)], spec;
+  if(M && M.modele){
+    var cl = M.modele.cloner(this.boite);
+    this.cuit = true; this.svg = cl.racine; this.vue = cl.vue;
+    spec = {souples:M.souples};
+  } else {
+    spec = this.R0.fab(this.lk, HerosAnime.grain);
+    this.boite.innerHTML = spec.svg;
+    this.svg = this.vue = this.boite.querySelector('svg');
+  }
   var me = this;
   this.els = {}; this.elsI = {}; this.etat = {};
+  /* (cuit : la silhouette lumineuse est une seconde copie des pièces ; elle reçoit les mêmes animations) */
   [].forEach.call(this.svg.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); (me.els[n] = me.els[n] || []).push(e); me.etat[n] = J0(); });
   [].forEach.call(this.svg.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); (me.elsI[n] = me.elsI[n] || []).push(e); });
   this.reps = {};
-  [].forEach.call(this.svg.querySelectorAll('[data-r]'), function(e){ me.reps[e.getAttribute('data-r')] = e; });
+  [].forEach.call(this.vue.querySelectorAll('[data-r]'), function(e){ var n = e.getAttribute('data-r'); if(!me.reps[n]) me.reps[n] = e; });
   this.souples = spec.souples.map(function(s){ return new Souple(me, s); });
+  /* cuit : les îlots redessinés à chaque image (tissus, corde, filet) ont chacun leur calque : on ne repeint qu'eux */
+  if(this.cuit) [].forEach.call(this.vue.querySelectorAll('[data-souple],[data-corde],[data-filet]'), function(g){
+    var il = g.ownerSVGElement && g.ownerSVGElement.parentNode;
+    if(il && il.classList.contains('cu-ilot')) il.classList.add('ha-anime', g.hasAttribute('data-souple') ? 'ha-souple' : 'ha-trait');
+  });
   this.grainG = this.svg.querySelector('.ha-grain');
   this.file = Promise.resolve(); this._nf = 0; this._gTok = 0; this._timers = [];
   this.bouche0 = this.R0.bouche || 'neutre';
@@ -2566,6 +3248,42 @@ function Heros(cont, role, lk){
   vivre(this);
 }
 var H = Heros.prototype;
+
+/* ============ la cuisson (voir jeu/donjon/RAPIDITE.md et anim/cuire.js) ============
+   HerosAnime.preparer([{role, lk}], {res}) cuit une fois chaque héros (avec son apparence) en images ; ensuite, creer() en
+   fait une copie. Le dessin fixe (grain de papier et flous compris) devient des images ; ce qui change à chaque image
+   (tissus simulés, corde de l'arc, filet de potion, fioles qui changent de couleur, bulles) reste en petits îlots SVG. */
+var MODELES = {};
+/* l'apparence : celle donnée ; ce qui manque (peau, cheveux, yeux) vient de l'apparence par défaut */
+function fusionLk(role, lk){
+  var base = DEFAUT[role], r = {}, k;
+  if(lk){ for(k in lk) r[k] = lk[k]; ['pe', 'ch', 'ir'].forEach(function(c){ if(!r[c]) r[c] = base[c]; }); }
+  else for(k in base) r[k] = base[k];
+  return r;
+}
+function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+function preparerUn(role, lk, o){
+  var l = fusionLk(role, lk), cle = cleModele(role, l);
+  if(MODELES[cle]) return MODELES[cle].promesse;
+  var Cu = window.Cuire;
+  var spec = ROLES[role].fab(l, HerosAnime.grain), h = Cu.hote(250, 300);
+  h.innerHTML = spec.svg;
+  var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
+  var M = MODELES[cle] = {souples:spec.souples};
+  M.promesse = Cu.cuire(svg, {ilot:ILOTS, anime:'.haJ', res:o.res || 2, lueur:{couleur:'#ffe2a0', couleur2:'#ffbe5a', epais:1.4, flou:2.6, large:7}})
+    .then(function(m){ M.modele = m; h.remove(); return m; }, function(e){ h.remove(); delete MODELES[cle]; if(window.console) console.warn('HerosAnime.preparer', e); return null; });
+  return M.promesse;
+}
+function preparer(liste, o){
+  css();
+  o = o || {};
+  if(!window.Cuire || !window.Cuire.cuire) return Promise.resolve([]);
+  if(!liste) liste = Object.keys(ROLES).map(function(r){ return {role:r}; });
+  var res = o.res || Math.max(1, Math.min(3, (window.devicePixelRatio || 1) * 200 / 250 * 1.3));
+  /* un héros après l'autre (le téléphone garde la main entre deux) */
+  return liste.reduce(function(p, x){ return p.then(function(r){ return preparerUn(x.role, x.lk, {res:res}).then(function(m){ r.push(m); return r; }); }); }, Promise.resolve([]));
+}
 H.$ = function(sel){ return this.svg.querySelector(sel); };
 H.garde = function(){ return this._choisi && this.R0.gardeChoisi ? this.R0.gardeChoisi : this.R0.garde; };
 H.plus = function(ms, fn){ var me = this, id = setTimeout(function(){ me._timers.splice(me._timers.indexOf(id), 1); fn(); }, ms); this._timers.push(id); return id; };
@@ -2683,8 +3401,16 @@ H._gestes = function(){
     Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
   }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
+/* 1re phase de l'image : lire tout ce dont _pas aura besoin (les matrices sont gardées jusqu'à la fin de l'image) */
+H._lire = function(){
+  this._bm = getComputedStyle(this.boite).transform;
+  mat(this.grainG);
+  this.souples.forEach(function(s){ s.lire(); });
+  if(this.R0.lire) this.R0.lire.call(this);
+};
 H._pas = function(dt, t){
-  var bm = getComputedStyle(this.boite).transform, o = [0, 0];
+  var bm = this._bm || getComputedStyle(this.boite).transform, o = [0, 0];
+  this._bm = null;
   if(bm && bm !== 'none'){ var v = bm.replace(/^matrix\(|\)$/g, '').split(','); o = [+v[4], +v[5]]; }
   var g = mat(this.grainG), sol = ap(g, 0, 294)[1];
   this.souples.forEach(function(s){ s.pas(dt, o, sol); });
@@ -2880,10 +3606,12 @@ ROLES.pisteur = {
   frein:function(p){ p.brasA = -96; p.avantBrasA = -10; p.mainA = 70; },
   init:function(){
     this.cordeEl = this.$('[data-corde]'); this.flG = this.$('[data-fleche]'); this.flI = this.$('[data-fl]');
-    this.flI.insertAdjacentHTML('beforeend', rep('flN', 0, 0) + rep('flP', 124, 0));
-    this.reps.flN = this.$('[data-r="flN"]'); this.reps.flP = this.$('[data-r="flP"]');
+    /* les repères de l'encoche et de la pointe sont dans le dessin de la flèche encochée */
+    this.reps.flN = this.flI.querySelector('[data-r="flN"]'); this.reps.flP = this.flI.querySelector('[data-r="flP"]');
     this.corde = {mode:'libre', vib:0, ph:0, fl:0, blend:0};
   },
+  /* (lu avant toute écriture de l'image : voir tick) */
+  lire:function(){ var R = this.reps; [this.cordeEl, R.arcH, R.arcB, R.pince].forEach(mat); if(this.corde.fl) mat(R.poignee); },
   /* la corde et la flèche encochée, recalculées à chaque image */
   pas:function(dt){
     var c = this.corde, Mi = inv(mat(this.cordeEl));
@@ -2902,7 +3630,8 @@ ROLES.pisteur = {
       var aMain = -100, aEnc = Math.atan2(g[1] - pi[1], g[0] - pi[0]) * DEG;
       var a = aMain + norm(aEnc - aMain) * c.blend;
       this.flG.style.display = '';
-      this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
+      if(this.cuit) this.flI.style.transform = 'translate(' + r1(pi[0]) + 'px,' + r1(pi[1]) + 'px) rotate(' + r1(a) + 'deg)';
+      else this.flI.setAttribute('transform', 'translate(' + r1(pi[0]) + ' ' + r1(pi[1]) + ') rotate(' + r1(a) + ')');
     } else this.flG.style.display = 'none';
   },
   /* en attendant : il vérifie sa corde, ou jette un œil au carquois */
@@ -3090,9 +3819,10 @@ ROLES.alchimiste = {
     this._bul = 0;
   },
   idle:function(A){
-    var h = this.$('[data-fiole-b] [data-halo]');
-    if(h){ h.style.transformBox = 'fill-box'; h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
+    var h = this._halo(this.$('[data-fiole-b] [data-halo]'));
+    if(h){ h.style.transformBox = 'fill-box'; if(!this.cuit) h.style.transformOrigin = '50% 50%'; A.push(h.animate([{opacity:.45, transform:'scale(.9)'}, {opacity:.85, transform:'scale(1.08)'}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'})); }
   },
+  lire:function(){ if(this._verse){ mat(this.filet); mat(this.reps[this.fioleA.getAttribute('data-fiole') + 'bec']); mat(this.reps[this.fioleB.getAttribute('data-fiole') + 'bec']); } },
   /* les bulles qui montent dans la fiole (tout le temps), plus fort quand il secoue */
   pas:function(dt){
     this._bul += dt * (this._bouillon || (this.ko ? 0 : 2.4));
@@ -3115,6 +3845,19 @@ ROLES.alchimiste = {
   }
 };
 function ou2(r, Mi){ var m = mat(r), p = ap(m, +r.getAttribute('cx'), +r.getAttribute('cy')); return ap(Mi, p[0], p[1]); }
+/* cuit : le halo de la fiole est un petit îlot ; on anime son <div> (pivot au centre du halo) : la carte graphique s'en charge */
+H._halo = function(h){
+  if(!h || !this.cuit) return h;
+  var d = h.ownerSVGElement && h.ownerSVGElement.parentNode;
+  if(!d) return h;
+  if(!d._pret){
+    d._pret = 1;
+    d.style.transformOrigin = h.getAttribute('cx') + 'px ' + h.getAttribute('cy') + 'px';
+    d.style.opacity = h.getAttribute('opacity') || 1; h.setAttribute('opacity', 1);
+    d.classList.add('ha-anime');
+  }
+  return d;
+};
 H._couleur = function(fiole, c){
   if(!fiole) return;
   fiole._c = c;
@@ -3126,7 +3869,9 @@ H._bulle = function(fiole, fort){
   var g = fiole.querySelector('[data-bulles]'), c = fiole.querySelector('[data-r$="c"]');
   if(!g || !c) return;
   var cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy'), r = alea(1.2, fort ? 3.2 : 2.4), x = cx + alea(-7, 7);
-  var b = nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
+  /* cuit : chaque bulle est son propre petit <div> (rien à repeindre pendant qu'elle monte) */
+  var b = this.cuit && g.ownerSVGElement ? window.Cuire.ilot(g.ownerSVGElement.parentNode, '<circle cx="' + r1(x) + '" cy="' + r1(cy + 10) + '" r="' + r1(r) + '" fill="#fff" fill-opacity=".55" stroke="#fff" stroke-width=".8"/>')
+    : nouveau(g, 'circle', {cx:x, cy:cy + 10, r:r, fill:'#fff', 'fill-opacity':.55, stroke:'#fff', 'stroke-width':.8});
   b.animate([{transform:'translate(0px,0px)', opacity:0}, {transform:'translate(' + alea(-2, 2) + 'px,-6px)', opacity:1, offset:.2}, {transform:'translate(' + alea(-3, 3) + 'px,-' + alea(14, 22) + 'px)', opacity:.9, offset:.8}, {transform:'translate(0px,-' + alea(24, 34) + 'px) scale(1.4)', opacity:0}],
     {duration:alea(700, 1100), easing:'ease-out'}).finished.then(function(){ b.remove(); });
 };
@@ -3181,7 +3926,7 @@ H._eclatCouleur = function(c){
   onde(this.fx, p.x, p.y + 4, {css:'background:radial-gradient(circle,#fff 0,' + c + ' 35%,' + c + '00 70%)', w:40, s0:0.3, s1:1.5, d:480});
   gerbe(this.fx, p.x, p.y - 6, {n:12, c:[c, '#fff'], angle:-90, ecart:70, v0:40, v1:120, g:-40, t0:3, t1:5, d0:500, d1:800});
   scintille(this.fx, p.x, p.y - 10, {n:5, rx:20, ry:20, c:['#fff', c], etale:200});
-  var h = this.fioleB.querySelector('[data-halo]');
+  var h = this._halo(this.fioleB.querySelector('[data-halo]'));
   h.animate([{opacity:1, transform:'scale(1.35)'}, {opacity:.7, transform:'scale(1)'}], {duration:600, easing:'ease-out'});
 };
 /* une fiole (pour les projectiles) */
@@ -3473,6 +4218,11 @@ H._runesMontent = function(){
       {duration:alea(800, 1100), delay:k * 40, easing:'ease-out', fill:'backwards'});
   })(k);
 };
+/* la forme du dôme, en pixels de sa boîte (w × h) */
+function domeChemin(w, h){
+  function X(x){ return r1((x + 55) * w / 110); } function Y(y){ return r1(y * h / 104); }
+  return 'M' + X(-50) + ' ' + Y(100) + ' C ' + X(-50) + ' ' + Y(30) + ' ' + X(-28) + ' ' + Y(4) + ' ' + X(0) + ' ' + Y(4) + ' C ' + X(28) + ' ' + Y(4) + ' ' + X(50) + ' ' + Y(30) + ' ' + X(50) + ' ' + Y(100) + ' Z';
+}
 H._dome = function(L, scene, cible, opt){
   var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = cible.getBoundingClientRect();
   var w = r.width / k * 0.95, h = r.height / k * 0.92, x = (r.left - R.left) / k + r.width / k / 2, yb = (r.bottom - R.top) / k - 4;
@@ -3485,17 +4235,20 @@ H._dome = function(L, scene, cible, opt){
     '<defs><radialGradient id="' + id + '" cx=".5" cy=".95" r=".9"><stop offset="0" stop-color="#3fd0ff" stop-opacity=".05"/><stop offset=".7" stop-color="#8ff3ff" stop-opacity=".18"/><stop offset="1" stop-color="#e8fdff" stop-opacity=".55"/></radialGradient>' +
     '<pattern id="' + id + 'p" width="12" height="10.4" patternUnits="userSpaceOnUse"><path d="M3 0 L 9 0 L 12 5.2 L 9 10.4 L 3 10.4 L 0 5.2 Z" fill="none" stroke="#bff8ff" stroke-width=".5" opacity=".55"/></pattern></defs>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + ')"/>' +
-    '<path class="ha-hex" d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + 'p)" opacity=".7"/>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2" style="filter:drop-shadow(0 0 3px #8ff3ff)"/>' +
     '<path d="M-36 30 C -26 14 -14 9 -4 8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
     '<g opacity=".85">' + mot6 + '</g>' +
     '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4" style="filter:drop-shadow(0 0 4px #3fd0ff)"/></svg>' +
+    /* le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
+    '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
+    '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
+    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
     '<div class="ha-badge">🛡️ −50 % · 1 tour</div>';
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
   var vit = svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
-  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(-10.4px)'}], {duration:1600, iterations:Infinity});
+  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
   scintille(L, x, yb - h * 0.5, {n:12, rx:w * 0.45, ry:h * 0.45, c:['#e8fdff', CYAN], etale:400});
   onde(L, x, yb, {w:w * 1.1, h:20, c:CYAN, ep:3, s0:0.3, s1:1.3, d:700});
   var fini = false;
@@ -3577,6 +4330,8 @@ var AUTRES = {pisteur:{fille:false, pe:PE.p6, ch:CH.noir, ir:YX.marron}, alchimi
 
 var HerosAnime = {
   creer:function(conteneur, role, lk){ return new Heros(conteneur, role, lk); },
+  /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
+  preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
   grain:true
 };
@@ -3585,7 +4340,7 @@ window.HerosAnime = HerosAnime;
 
 
 /* ===== les niveaux des sons (sons/niveaux.json) ===== */
-window.NIVEAUX = {"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.489,"boisA":2.84,"boisB":1.615,"boisC":2.491,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"combatA":1.217,"combatB":1.117,"donjon":0.609,"exploA":0.809,"exploB":0.783,"exploC":0.917,"fuiteA":1.519,"fuiteB":1.283,"metalA":1.807,"metalB":1.466,"metalC":1.397,"puits":1.137,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"swishA":2.101,"swishB":1.831,"swishC":1.79,"toiles":1.456,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.529,"bossB":1.313,"bossC":1.653,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":5.352,"pasCouloirB":6.182,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -3599,22 +4354,28 @@ function hasard(a, b){ return a + Math.random() * (b - a); }
 function choix(l){ return l[Math.floor(Math.random() * l.length)]; }
 function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
 
+/* les bruits de base et les réponses de salle, fabriqués une seule fois par fréquence d'échantillonnage :
+   un tampon sert à tous les contextes (le jeu, et chaque pré-calcul hors ligne n'a plus à les refaire) */
+var DEJA = {};
 function Moteur(ctx, opt){
   opt = opt || {};
   var sr = ctx.sampleRate, horsLigne = !!opt.horsLigne;
   var A = {ctx:ctx, sr:sr, hasard:hasard, choix:choix, midi:midi, horsLigne:horsLigne};
+  var deja = DEJA[sr] = DEJA[sr] || {};
 
   /* ---------- les bruits de base (3 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ---------- */
-  function tampon(sec, ncan, fn){
+  function tampon(sec, ncan, fn, nom){
+    if(nom && deja[nom]) return deja[nom];
     var n = Math.floor(sr * sec), b = ctx.createBuffer(ncan || 1, n, sr);
     for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c);
+    if(nom) deja[nom] = b;
     return b;
   }
   function normaliseRms(d, n, cible){
     var s = 0, i; for(i = 0; i < n; i++) s += d[i] * d[i];
     var k = cible / Math.sqrt(s / n || 1); for(i = 0; i < n; i++) d[i] *= k;
   }
-  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; });
+  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
   A.rose = tampon(3, 1, function(d, n){
     var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for(var i = 0; i < n; i++){
@@ -3624,37 +4385,40 @@ function Moteur(ctx, opt){
       d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926;
     }
     normaliseRms(d, n, .3);
-  });
+  }, 'rose');
   A.brun = tampon(3, 1, function(d, n){
     var l = 0, i;
     for(i = 0; i < n; i++){ l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l; }
     var pente = (d[n - 1] - d[0]) / n;                         /* pour que la boucle ne claque pas */
     for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .3);
-  });
+  }, 'brun');
   /* un bruit très lent (sous 90 Hz) : sert à faire trembler une hauteur ou un volume, comme un vrai gosier */
   A.lent = tampon(4, 1, function(d, n){
     var a = 1 - Math.exp(-2 * Math.PI * 90 / sr), l1 = 0, l2 = 0, i;
     for(i = 0; i < n; i++){ l1 += (Math.random() * 2 - 1 - l1) * a; l2 += (l1 - l2) * a; d[i] = l2; }
     var pente = (d[n - 1] - d[0]) / n; for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .5);
-  });
+  }, 'lent');
 
   /* ---------- la réverbération : une réponse fabriquée (premiers échos sur la pierre, puis une queue qui s'assombrit) ---------- */
-  function reponse(duree, o){
+  function reponse(duree, o, nom){
     return tampon(duree, 2, function(d, n, c){
-      var pre = Math.floor(sr * (o.pre || .012)), lp = 0, i;
+      /* (la même formule qu'avant, calculée pas à pas : la décroissance multipliée à chaque échantillon,
+         la couleur recalculée tous les 32 échantillons — beaucoup moins de calcul au chargement, le même son) */
+      var pre = Math.floor(sr * (o.pre || .012)), lp = 0, i, k = o.clair, env = 1, pas = Math.pow(10, -3 / (sr * duree));
       for(i = 0; i < n; i++){
-        var u = i / n, k = o.clair - (o.clair - o.sombre) * Math.pow(u, .6);
+        if((i & 31) === 0) k = o.clair - (o.clair - o.sombre) * Math.pow(i / n, .6);
         lp += (Math.random() * 2 - 1 - lp) * k;
-        var env = Math.pow(10, -3 * (i / sr) / duree), mont = i < pre ? 0 : Math.min(1, (i - pre) / (sr * .006));
+        var mont = i < pre ? 0 : Math.min(1, (i - pre) / (sr * .006));
         d[i] = lp * env * mont;
+        env *= pas;
       }
       for(var e = 0; e < (o.echos || 0); e++){                /* les premiers rebonds, différents à gauche et à droite */
         var p = Math.floor(sr * hasard(.006, o.ecart || .07)), amp = hasard(.25, .7) * (1 - e / (o.echos + 2)), sg = Math.random() < .5 ? -1 : 1;
         for(var j = 0; j < 24 && p + j < n; j++) d[p + j] += sg * amp * Math.exp(-j / 4) * (j % 2 ? -.4 : 1);
       }
-    });
+    }, nom);
   }
 
   /* ---------- la sortie : bruitages, musique, deux salles de réverbération, volume, compresseur ---------- */
@@ -3672,10 +4436,10 @@ function Moteur(ctx, opt){
   }
   A.sfx = ctx.createGain(); A.sfx.connect(A.volume);
   A.mus = ctx.createGain(); A.mus.connect(A.volume);
-  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01});
+  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01}, 'cave');
   var caveRet = ctx.createGain(); caveRet.gain.value = .7; cave.connect(caveRet); caveRet.connect(A.volume);
   A.caveIn = ctx.createGain(); A.caveIn.connect(cave);
-  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03});
+  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03}, 'grotte');
   var grotteRet = ctx.createGain(); grotteRet.gain.value = .8; grotte.connect(grotteRet); grotteRet.connect(A.volume);
   A.grotteIn = ctx.createGain(); A.grotteIn.connect(grotte);
 
@@ -4803,6 +5567,26 @@ S.fuiteB = function(A, P){
   return {duree:4.5};
 };
 
+/* =================== 7. LE PETIT SON QUAND ON TOUCHE UNE ICÔNE (arme, potion) — proposé le 9 novembre =================== */
+S.iconeA = function(A, P){                                                                   /* un « tic » de bois */
+  var t = P.t, o = A.bus(P, {rev:.08});
+  clic(A, t, 2400, .22, o);
+  A.modes(t, 760, [[1, 1, .06], [2.31, .45, .035], [3.93, .2, .02]], {g:.13}, o);
+  return {duree:.2};
+};
+S.iconeB = function(A, P){                                                                   /* une petite note de verre, douce */
+  var t = P.t, o = A.bus(P, {rev:.15});
+  A.ton(t, {f:1175, env:[[0, 0], [.004, 1], [.08, .35], [.45, 0]], g:.07}, o);
+  A.ton(t, {f:1175 * 2.76, env:[[0, 0], [.002, 1], [.12, 0]], g:.012}, o);
+  return {duree:.5};
+};
+S.iconeC = function(A, P){                                                                   /* un clic de cuir */
+  var t = P.t, o = A.bus(P, {rev:.06});
+  A.bruit(t, {coul:'rose', bp:1300, bq:.8, env:A.perc(.002, .035), g:.5}, o);
+  A.ton(t, {f:190, f2:120, gl:.05, env:A.perc(.002, .06), g:.12, sat:1.3}, o);
+  return {duree:.2};
+};
+
 /* l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation (le lâcher de la corde, la lame qui touche, la culbute) */
 [['arc', {A:.8, B:.5, C:1.12}], ['swish', {A:.2, B:.39, C:.25}], ['ratHuile', {A:.72, B:.75, C:1.1}]].forEach(function(m){
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
@@ -4914,6 +5698,8 @@ function boite(A, t, f, g, dest){
   A.bruit(t, {hp:5000, env:A.perc(.0005, .006), g:g * .5}, dest);
 }
 /* une flûte creuse (le puits qui chante) */
+/* une goutte d'eau grave dans une grande salle : basse et douce, pour ne jamais ressembler à un petit cri */
+function goutteGrave(A, t, g, dest){ A.goutte(t, {f:h(300, 480), monte:1.5, gl:.035, g:g}, dest); }
 function flute(A, t, f, d, g, dest){
   A.ton(t, {f:f, env:[[0, 0], [.25, 1], [d * .55, .7], [d, 0]], g:g, vib:[4.5, f * .006], vibRetard:.4}, dest);
   A.ton(t, {f:f * 2, env:[[0, 0], [.3, 1], [d * .5, .5], [d, 0]], g:g * .12}, dest);
@@ -4929,8 +5715,8 @@ M.exploA = function(A, P){
   souffle(I, {dest:proche, f:380, g:.05});
   var accords = [[62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 60, 64]];
   I.chaque(.5, 11, function(t, n){ A.nappe(t, accords[n % 4].map(m), 14, {a:4, r:4.5, lp:900, lp1:300, g:.028}, proche); });
-  I.chaque(1.2, function(){ return h(1.3, 4.5); }, function(t){ A.goutte(t, {f:h(900, 1900), g:h(.03, .08)}, Math.random() < .6 ? ech : loin); });
-  var penta = [74, 77, 79, 81, 84, 86, 89];
+  I.chaque(1.2, function(){ return h(3, 7); }, function(t){ goutteGrave(A, t, h(.03, .06), Math.random() < .6 ? ech : loin); });
+  var penta = [74, 77, 79, 81, 84, 86];
   I.chaque(3, function(){ return h(4, 9); }, function(t){
     var k = Math.floor(Math.random() * penta.length), nb = Math.random() < .35 ? 2 + Math.floor(Math.random() * 2) : 1, dir = Math.random() < .5 ? -1 : 1;
     for(var i = 0; i < nb; i++){
@@ -4966,10 +5752,10 @@ M.exploB = function(A, P){
     else if(n % 8 === 2) joue(t + .5, phrase2, 0);
     else if(Math.random() < .6){
       var notes = accords[n % 4];
-      boite(A, t + h(1, 5), m(notes[Math.floor(Math.random() * 3)] + 24), .045, ech);
+      boite(A, t + h(1, 5), m(notes[Math.floor(Math.random() * 3)] + 12), .045, ech);
     }
   });
-  I.chaque(4, function(){ return h(5, 10); }, function(t){ A.goutte(t, {f:h(1000, 1700), g:h(.03, .06)}, ech); });
+  I.chaque(4, function(){ return h(6, 11); }, function(t){ goutteGrave(A, t, h(.03, .05), ech); });
   return I;
 };
 /* C — Lanterne dans la brume (mi dorien, un peu d'espoir) : voix lointaines, harpe, vent */
@@ -5013,7 +5799,6 @@ M.combatA = function(A, P){
     A.ton(t, {type:'sawtooth', f:m(note), env:A.perc(.005, .16), g:fort ? .09 : .06, filtres:[{type:'lowpass', f:300, pts:[[.02, 1300], [.15, 300]], q:3}]}, proche);
     A.ton(t, {type:'square', f:m(note + 12), env:A.perc(.005, .1), g:fort ? .02 : .012, lp:900}, proche);
   });
-  I.chaque(.5 + 8 * b, 8 * b, function(t){ A.ton(t, {f:m(74), f2:m(75), gl:3, env:[[0, 0], [1.2, 1], [2.6, .7], [3.4, 0]], g:.025, vib:[5, 4]}, loin); });
   return I;
 };
 /* B — Tambours lointains (do mineur, 84 battements par minute) : tambours dans la grotte, violoncelle, pizzicati */
@@ -5050,32 +5835,21 @@ M.puits = function(A, P){
   var I = Instance(A, P);
   var proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.31, retour:.5, lp:2400, sortie:.7});
   ruisseau(I, {dest:proche, densite:60, g:.12});
-  I.chaque(.3, function(){ return h(.5, 1.8); }, function(t){ A.goutte(t, {f:h(800, 2000), g:h(.04, .09)}, Math.random() < .5 ? ech : proche); });
-  I.chaque(1.5, function(){ return h(2, 5); }, function(t){ A.ton(t, {f:280, f2:700, gl:.04, env:A.perc(.003, .05), g:.06}, proche); });
-  var notes = [62, 65, 69, 72, 74];
+  I.chaque(.6, function(){ return h(2.5, 5); }, function(t){ goutteGrave(A, t, h(.04, .07), Math.random() < .5 ? ech : proche); });
+  var notes = [55, 57, 60, 62, 65];
   I.chaque(2, function(){ return h(6, 10); }, function(t){ var f = m(notes[Math.floor(Math.random() * notes.length)]); flute(A, t, f, 2.4, .03, proche); flute(A, t, f, 2.4, .025, ech); });
   return I;
 };
-/* la cave aux toiles : des cordes qui grincent, des harmoniques qui glissent, de petits pas d'araignée */
+/* la cave aux toiles : des cordes graves qui tremblent (une seconde mineure, pour la tension), des notes de harpe qui descendent,
+   une cloche grave au loin, un souffle de vent. (Refaite le 9 novembre : plus de grincements, de sifflements aigus ni de petits pas.) */
 M.toiles = function(A, P){
   var I = Instance(A, P);
-  var proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7});
-  tremolo(I, [m(62), m(63), m(69)], {dest:loin, type:'triangle', g:.014, vit:9, lp:1800});
-  I.chaque(1, function(){ return h(3.5, 7); }, function(t){
-    var d = h(.6, 1.2), buf = A.grincement(d, {i0:.05, i1:.028, irr:.5});
-    var o = A.bus(P, {grotte:.6, pan:h(-.8, .8)});
-    [[260, 14, 1], [610, 16, .7], [1350, 12, .45]].forEach(function(r){ A.joue(t, buf, {filtres:[{type:'bandpass', f:r[0] * h(.9, 1.1), q:r[1]}], g:1.1 * r[2], env:[[0, 0], [.1, 1], [d - .1, 1], [d, 0]]}, o); });
-  });
-  var hautes = [81, 82, 86, 87, 93];
-  I.chaque(2.5, function(){ return h(5, 8); }, function(t){
-    var f = m(hautes[Math.floor(Math.random() * hautes.length)]), f2 = f * Math.pow(2, h(-1, 1) / 12);
-    A.ton(t, {f:f, f2:f2, gl:4, env:[[0, 0], [1.5, 1], [3, .7], [4.5, 0]], g:.018, vib:[5.5, f * .006]}, loin);
-    A.bruit(t, {bp:f * 2, bp2:f2 * 2, bpt:4, bq:20, env:[[0, 0], [1.5, 1], [3, .7], [4.5, 0]], g:.12}, loin);
-  });
-  I.chaque(4, function(){ return h(6, 12); }, function(t){
-    var nb = 4 + Math.floor(Math.random() * 4), o = A.bus(P, {grotte:.4, pan:h(-.7, .7)});
-    for(var k = 0; k < nb; k++) A.bruit(t + k * h(.07, .1), {bp:2600, bq:8, env:A.perc(.0005, .01), g:.5}, o);
-  });
+  var proche = A.bus(P, {grotte:.45}), loin = A.bus(P, {grotte:1, g:.7});
+  tremolo(I, [m(50), m(51), m(57)], {dest:loin, type:'triangle', g:.022, vit:5, lp:900});
+  var notes = [62, 61, 57, 55, 53, 50];
+  I.chaque(1.5, function(){ return h(4, 7); }, function(t){ var k = Math.floor(Math.random() * 4); for(var i = 0; i < 3; i++) A.harpe(t + i * .45, m(notes[k + i]), {t60:2.5, g:.13, lp:1800}, proche); });
+  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.cloche(t, m(50), {d:4, rapport:3.5, indice:.7, g:.035}, loin); });
+  I.chaque(3, function(){ return h(8, 14); }, function(t){ A.bruit(t, {coul:'brun', bp:300, bq:1.2, env:[[0, 0], [2.5, 1], [6, 0]], g:.2}, loin); });
   return I;
 };
 /* l'atelier : une horloge, une machine qui souffle, des cliquets, une enclume au loin, de la vapeur */
@@ -5088,16 +5862,12 @@ M.atelier = function(A, P){
   var pompe = A.gain(.5), lfo = I.continu(ctx.createOscillator()), lg = A.gain(.45); lfo.frequency.value = .7; lfo.connect(lg); lg.connect(pompe.gain);
   var amp = A.gain(0); amp.gain.setValueAtTime(0, t0); amp.gain.linearRampToValueAtTime(.06, t0 + 3);
   x.connect(lp); lp.connect(pompe); pompe.connect(amp); amp.connect(proche); x.start(t0); lfo.start(t0);
-  I.chaque(.2, 1, function(t, n){ A.bruit(t, {bp:n % 2 ? 1850 : 2400, bq:12, env:A.perc(.0005, .012), g:.9}, proche); });
-  I.chaque(3, function(){ return h(5, 9); }, function(t){
-    var nb = 8 + Math.floor(Math.random() * 7), o = A.bus(P, {grotte:.4, pan:h(-.6, .6)});
-    for(var k = 0; k < nb; k++) A.bruit(t + k / 22, {bp:3200, bq:6, env:A.perc(.0005, .008), g:.45}, o);
-  });
+  I.chaque(.2, 1, function(t, n){ A.bruit(t, {bp:n % 2 ? 700 : 900, bq:6, env:A.perc(.001, .03), g:.7}, proche); });   /* tic-tac de bois, grave */
   I.chaque(4, function(){ return h(7, 12); }, function(t){
-    A.modes(t, m([69, 74, 77][Math.floor(Math.random() * 3)]), [[1, 1, 1.6, 1], [2.76, .45, 1.1], [5.4, .25, .6], [8.9, .1, .3]], {g:.05}, loin);
+    A.modes(t, m([57, 62, 65][Math.floor(Math.random() * 3)]), [[1, 1, 1.6, 1], [2.76, .45, 1.1], [5.4, .2, .5]], {g:.045}, loin);
   });
-  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.bruit(t, {hp:3000, env:[[0, 0], [.3, 1], [1.2, .6], [1.8, 0]], g:.035}, loin); });
-  I.chaque(8, 16, function(t){ [74, 77, 76, 69].forEach(function(n, k){ A.cloche(t + k * .35, m(n), {d:2, rapport:2.76, indice:1, g:.03}, loin); }); });
+  I.chaque(6, function(){ return h(10, 16); }, function(t){ A.bruit(t, {coul:'rose', bp:500, bq:1, env:[[0, 0], [.4, 1], [1.4, .6], [2, 0]], g:.12}, loin); });   /* la vapeur, grave */
+  I.chaque(8, 16, function(t){ [62, 65, 64, 57].forEach(function(n, k){ A.cloche(t + k * .35, m(n), {d:2, rapport:2.76, indice:1, g:.03}, loin); }); });
   return I;
 };
 
@@ -5113,12 +5883,19 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
    la voix du conteur reste seulement sur les boutons 🔊.
    Depuis le 10 novembre : les bruitages et les musiques choisis par Romain dans l'atelier des sons (sons-essai.html)
    viennent du moteur de l'atelier (Moteur, BRUITAGES, MUSIQUES) ; à chaque fois, on tire au hasard parmi les versions
-   qu'il a cochées. Les autres petits bruits (pas, page, bulles, dôme…) restent ceux d'ici. */
+   qu'il a cochées. Les autres petits bruits (pas, page, bulles, dôme…) restent ceux d'ici.
+   9 novembre (retours de Romain) : deux volumes séparés (Son.volume('musique' | 'bruitages', v)), un petit son quand on
+   touche une icône (« icone », silencieux tant que Romain n'a pas choisi), et pour que le téléphone ne rame plus,
+   les musiques et les bruitages les plus lourds sont fabriqués À L'AVANCE (hors ligne, par petits morceaux) puis joués
+   comme des enregistrements, en boucle sans couture. Si le navigateur ne sait pas le faire, on les fabrique en direct comme avant. */
 (function(){
 'use strict';
 var S = window.SALLE = window.SALLE || {};
 var ctx = null, sortie, bruits, revIn, blanc, brun, actif = true, A = null;
 try{ actif = localStorage.getItem('salle-rats-son') !== 'non'; }catch(e){}
+/* deux volumes séparés, de 0 à 1 (0 = muet), mémorisés dans ce navigateur */
+var VOL = {musique:1, bruitages:1}, BUS = null;
+['musique', 'bruitages'].forEach(function(k){ try{ var x = parseFloat(localStorage.getItem('salle-rats-vol-' + k)); if(isFinite(x)) VOL[k] = Math.max(0, Math.min(1, x)); }catch(e){} });
 
 function hasard(a, b){ return a + Math.random() * (b - a); }
 function tire(l){ return l[Math.floor(Math.random() * l.length)]; }
@@ -5130,7 +5907,8 @@ var CHOIX = S.CHOIX_SONS = {
   ratFleche:['A', 'B', 'C'], ratDague:['A', 'B', 'C'], ratFeu:['A', 'B', 'C'], ratLumiere:['A', 'B', 'C'],
   ratLouche:['B', 'C'], ratColle:['B', 'C'], ratHuile:['A', 'B'], ratNuage:['A', 'C'], ratFuite:['A'],
   ratCritique:['A', 'C'],       /* refait le 10 novembre ; Romain garde A « Coup de tonnerre » et C « Déflagration » (9 novembre, 10 h 41) */
-  explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B']
+  explo:['A', 'B', 'C'], combat:['A', 'B'], victoire:['A', 'B'], fuite:['A', 'B'],
+  icone:[]                      /* le petit son quand on touche une icône d'arme ou de potion : 3 propositions dans l'Atelier, en attente du choix de Romain */
 };
 /* un rat enragé crie plus grave et plus rauque */
 var VOIX_ENRAGE = {h:.82, rauque:.38, grain:.2};
@@ -5160,8 +5938,25 @@ function demarrer(){
     sortie = ctx.createGain(); sortie.gain.value = actif ? 1 : 0; sortie.connect(comp);
     bruits = ctx.createGain(); bruits.gain.value = .85; bruits.connect(sortie);
     /* le moteur de l'atelier des sons, branché dans la même sortie (le bouton 🔇 coupe tout) ; sa « cave » sert aussi aux petits bruits d'ici */
-    if(window.Moteur){ A = window.Moteur(ctx, {sortie:sortie, volume:1}); A.sfx.gain.value = .9; revIn = A.caveIn; }
-    else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); }
+    if(window.Moteur){
+      A = window.Moteur(ctx, {sortie:sortie, volume:1}); A.sfx.gain.value = .9;
+      /* deux bus : la musique et les bruitages, chacun avec sa propre part de réverbération (le volume de l'un ne touche pas l'autre) */
+      function gn(v){ var g = ctx.createGain(); g.gain.value = v; return g; }
+      BUS = {};
+      ['musique', 'bruitages'].forEach(function(k){ BUS[k] = {sec:gn(VOL[k]), cave:gn(VOL[k]), grotte:gn(VOL[k])}; BUS[k].sec.connect(A.volume); BUS[k].cave.connect(A.caveIn); BUS[k].grotte.connect(A.grotteIn); });
+      A.mus.disconnect(); A.mus.connect(BUS.musique.sec);
+      A.sfx.disconnect(); A.sfx.connect(BUS.bruitages.sec);
+      var prise0 = A.prise;
+      A.prise = function(t, niv, vers){
+        var P = prise0(t, niv, vers), b = vers === 'mus' ? BUS.musique : BUS.bruitages;
+        P.cave.disconnect(); P.grotte.disconnect(); P.cave.connect(b.cave); P.grotte.connect(b.grotte);
+        return P;
+      };
+      bruits.disconnect(); bruits.connect(BUS.bruitages.sec);
+      revIn = BUS.bruitages.cave;
+      sfxPre = gn(.95); sfxPre.connect(BUS.bruitages.sec);          /* les bruitages fabriqués à l'avance (leur écho est déjà dedans) */
+    }
+    else { var rev = ctx.createConvolver(); rev.buffer = impulsion(2.8, 2.6); var revG = ctx.createGain(); revG.gain.value = .55; rev.connect(revG); revG.connect(sortie); revIn = ctx.createGain(); revIn.connect(rev); bruits.gain.value = .85 * VOL.bruitages; }
     var n = ctx.sampleRate * 2;
     blanc = ctx.createBuffer(1, n, ctx.sampleRate); brun = ctx.createBuffer(1, n, ctx.sampleRate);
     var db = blanc.getChannelData(0), dr = brun.getChannelData(0), l = 0;
@@ -5173,6 +5968,19 @@ function demarrer(){
   appliquerMusique();
 }
 function pret(){ return !!ctx && actif && ctx.state !== 'closed'; }
+function pretBruit(){ return pret() && VOL.bruitages > 0; }
+var sfxPre = null;
+/* Son.volume('musique' | 'bruitages', v) : règle (v de 0 à 1) et mémorise ; sans v, rend la valeur actuelle */
+function volume(type, v){
+  if(type !== 'musique' && type !== 'bruitages') return null;
+  if(v == null) return VOL[type];
+  v = Math.max(0, Math.min(1, +v || 0)); VOL[type] = v;
+  try{ localStorage.setItem('salle-rats-vol-' + type, String(v)); }catch(e){}
+  if(ctx && BUS){ var b = BUS[type], t = ctx.currentTime; [b.sec, b.cave, b.grotte].forEach(function(g){ g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(v, t, .05); }); }
+  else if(ctx && type === 'bruitages' && bruits) bruits.gain.setTargetAtTime(.85 * v, ctx.currentTime, .05);
+  if(type === 'musique') appliquerMusique();                          /* à zéro, la musique s'arrête vraiment (le téléphone souffle) */
+  return v;
+}
 
 /* =================== les bruitages de l'atelier (versions tirées au hasard) =================== */
 function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
@@ -5192,10 +6000,19 @@ function versionDe(id, o){
 }
 function bruitage(id, o){
   o = o || {};
-  if(!pret() || !A || !window.BRUITAGES || !CHOIX[id]) return null;
+  if(!pretBruit() || !A || !window.BRUITAGES || !CHOIX[id] || !CHOIX[id].length) return null;   /* rien de choisi (l'icône) : silence */
   var v = versionDe(id, o), cle = id + v, fn = window.BRUITAGES[cle];
-  if(o.cale != null && fn && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
+  if(!fn) return null;
+  if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
+  /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer) */
+  var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
+  if(pre){
+    var src = ctx.createBufferSource(); src.buffer = pre; src.connect(sfxPre); src.start(t);
+    src.onended = function(){ try{ src.disconnect(); }catch(e){} };
+    var C0 = o.partie && window.BRUITAGES.CRITIQUE[v];
+    return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.duration), moment:fn.moment, version:v, pre:true};
+  }
   var P = A.prise(t, niveau(cle)), r = null;
   A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
   try{
@@ -5213,27 +6030,165 @@ var MUS = {voulu:null, actuel:null};
 function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
 function appliquerMusique(){
   if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
-  var v = actif ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
+  var v = actif && VOL.musique > 0 ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
   if(cur === v) return;
   var now = ctx.currentTime;
-  if(MUS.actuel){ MUS.actuel.I.forEach(function(I){ I.arreter(now, 3); }); MUS.actuel = null; }
+  if(MUS.actuel){ MUS.actuel.arreter(now, 3); MUS.actuel = null; }
   if(!v) return;
-  var cles = v === 'combat' ? ['combat' + tire(CHOIX.combat), 'puits'] : ['explo' + tire(CHOIX.explo)];
-  MUS.actuel = {nom:v, cles:cles, I:cles.map(function(c){
-    var t = now + .05, P = A.prise(t, niveau(c), 'mus');
-    [P.sec, P.cave, P.grotte].forEach(function(g){ g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(P.niveau, t, 1.1); });   /* le fondu d'entrée */
-    var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
-    return I;
-  })};
+  var cles = v === 'combat' ? ['combat' + PRE.tirer('combat'), 'puits'] : ['explo' + PRE.tirer('explo')];
+  var M = MUS.actuel = {nom:v, cles:cles, I:[], joueurs:[], fini:false};
+  M.arreter = function(t, f){ M.fini = true; M.I.forEach(function(I){ I.arreter(t, f); }); M.joueurs.forEach(function(j){ j.arreter(t, f); }); };
+  cles.forEach(function(c, k){
+    if(!PRE.possible){ M.I.push(musiqueEnDirect(c, now)); return; }
+    /* déjà fabriquée : on la joue tout de suite ; sinon une autre version déjà prête de la même musique, ou on attend la sienne */
+    var pret = PRE.mus[c] ? c : PRE.unePrete(c);
+    if(pret){ M.cles[k] = pret; M.joueurs.push(jouerBoucle(PRE.mus[pret])); }
+    else PRE.demander(c, true).then(function(){
+      if(M.fini || MUS.actuel !== M) return;
+      if(PRE.mus[c]) M.joueurs.push(jouerBoucle(PRE.mus[c])); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
+    });
+    if(!PRE.mus[c]) PRE.demander(c);                                   /* la version tirée sera prête pour la prochaine fois */
+  });
+}
+/* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
+function musiqueEnDirect(c, now){
+  var t = now + .05, P = A.prise(t, niveau(c), 'mus');
+  [P.sec, P.cave, P.grotte].forEach(function(g){ g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(P.niveau, t, 1.1); });   /* le fondu d'entrée */
+  var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
+  return I;
+}
+/* une musique fabriquée à l'avance : elle tourne en boucle sans couture, à partir d'un endroit au hasard, avec un fondu d'entrée */
+function jouerBoucle(b){
+  var t = ctx.currentTime + .05, src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = b.buf; src.loop = true; src.loopStart = b.debut; src.loopEnd = b.fin;
+  g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(1, t, 1.1);
+  src.connect(g); g.connect(A.mus);
+  src.start(t, b.debut + Math.random() * (b.fin - b.debut));
+  return {arreter:function(t2, fondu){
+    g.gain.cancelScheduledValues(t2); g.gain.setValueAtTime(g.gain.value, t2); g.gain.setTargetAtTime(0, t2, (fondu || 1.5) / 4);
+    try{ src.stop(t2 + (fondu || 1.5) + .3); }catch(e){}
+    src.onended = function(){ try{ src.disconnect(); g.disconnect(); }catch(e){} };
+  }};
 }
 function programme(){
   if(!ctx || !MUS.actuel) return;
   var j = ctx.currentTime + 1.2;
   MUS.actuel.I.forEach(function(I){ I.pas(j); });
 }
+
+/* =================== le pré-calcul : fabriquer à l'avance, hors ligne, par petits morceaux ===================
+   Les musiques : une boucle par version (fréquence 22 050 Hz : c'est une musique d'ambiance), longue d'un cycle entier
+   de ses accords, pour que la fin retombe pile sur le début ; les deux bouts sont fondus l'un dans l'autre.
+   Les bruitages les plus lourds (l'arc, le critique, la victoire, la fuite) : une prise chacun, à 32 000 Hz.
+   Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
+var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, premiers:{}, fait:0};
+/* la longueur de chaque boucle (en secondes) : un cycle entier ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) */
+var BOUCLE = {exploA:{L:44}, exploB:{L:64}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:32 * 60 / 84, C:1.5, lin:true}, puits:{L:24}};
+var SFX_PRE = [['arcA'], ['arcB'], ['arcC'], ['ratCritiqueA', 'impact'], ['ratCritiqueA', 'explosion'], ['ratCritiqueC', 'avant'], ['ratCritiqueC', 'impact'], ['ratCritiqueC', 'explosion'],
+  ['victoireA'], ['victoireB'], ['fuiteA'], ['fuiteB']];
+/* la première version de chaque musique est tirée dès l'ouverture, pour être prête au premier toucher */
+PRE.tirer = function(fam){ var v = PRE.premiers[fam]; if(v){ delete PRE.premiers[fam]; return v; } return tire(CHOIX[fam]); };
+PRE.unePrete = function(c){ var fam = c.replace(/[A-C]$/, ''), l = Object.keys(PRE.mus).filter(function(k){ return k.replace(/[A-C]$/, '') === fam; }); return l.length ? tire(l) : null; };
+function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom){ PRE.taches = PRE.taches || {}; PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } } }
+function rendre(off){
+  return new Promise(function(ok, ko){
+    off.oncomplete = function(e){ ok(e.renderedBuffer); };
+    try{ var p = off.startRendering(); if(p && p.then) p.then(ok, ko); }catch(e){ ko(e); }
+  });
+}
+/* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
+function rendreMusique(cle){
+  var B = BOUCLE[cle] || {L:30}, sr = 22050, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  var off = new OAC(2, Math.ceil(sr * duree), sr), Ao, I;
+  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus')); I.pas(pas + .5); }, 'debut-musique');
+  if(off.suspend){
+    for(var t = pas; t < duree; t += pas) (function(t){
+      off.suspend(t).then(function(){ chrono(function(){ I.pas(Math.min(duree, t + pas + .5)); }, 'morceau-musique'); off.resume(); });
+    })(t);
+  } else chrono(function(){ I.pas(duree); });
+  return rendre(off).then(function(x){
+    /* on joue la boucle directement dans le rendu (de F à F + L) : le début de la boucle reçoit, en fondu, ce qui suit sa fin */
+    return chrono(function(){
+      var n = Math.round(L * sr), nc = Math.round(C * sr), f0 = Math.round(F * sr);
+      for(var c = 0; c < 2; c++){
+        var a = x.getChannelData(c);
+        for(var i = 0; i < nc; i++){
+          var u = i / nc, wi = B.lin ? u : Math.sin(u * Math.PI / 2), wo = B.lin ? 1 - u : Math.cos(u * Math.PI / 2);
+          a[f0 + i] = a[f0 + i] * wi + a[f0 + n + i] * wo;
+        }
+      }
+      return {buf:x, debut:f0 / sr, fin:(f0 + n) / sr};
+    }, 'boucle');
+  });
+}
+/* les bruitages lourds : tous dans un seul rendu (un seul moteur), chacun à sa place, puis découpés et coupés à la fin du son */
+function rendreBruitages(){
+  var sr = 32000, place = 10, n = SFX_PRE.length, off = new OAC(2, Math.ceil(sr * place * n), sr), Ao, t0s = [];
+  chrono(function(){ Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); }, 'moteur-bruitages');
+  function un(k){
+    var e = SFX_PRE[k], cle = e[0], t = k * place + .02;
+    chrono(function(){
+      var P = Ao.prise(t, niveau(cle));
+      if(e[1]){ var C = window.BRUITAGES.CRITIQUE[cle.slice(-1)]; if(C && C[e[1]]) C[e[1]](Ao, P, t); }
+      else { var r = window.BRUITAGES[cle](Ao, P); if(r && r.duree) PRE.duree[cle] = r.duree; }
+    }, 'un-bruitage');
+  }
+  if(off.suspend){ un(0); for(var k = 1; k < n; k++) (function(k){ off.suspend(k * place - .5).then(function(){ un(k); off.resume(); }); })(k); }
+  else for(var k2 = 0; k2 < n; k2++) un(k2);
+  return rendre(off).then(function(x){
+    chrono(function(){
+      var L = x.getChannelData(0), R = x.getChannelData(1);
+      SFX_PRE.forEach(function(e, k){
+        var a = Math.floor(k * place * sr), b = Math.floor((k + 1) * place * sr) - 1, fin = a;
+        for(var i = b; i > a; i -= 16){ if(L[i] > 2e-4 || L[i] < -2e-4 || R[i] > 2e-4 || R[i] < -2e-4){ fin = Math.min(b, i + 16); break; } }   /* la fin du son, à 16 échantillons près */
+        var m = Math.min(b - a, fin - a + Math.floor(sr * .05)), y = off.createBuffer(2, m, sr), fondu = Math.floor(sr * .03);
+        [L, R].forEach(function(src, c){ var d = y.getChannelData(c); for(var j = 0; j < m; j++) d[j] = src[a + j] * (j > m - fondu ? (m - j) / fondu : 1); });
+        PRE.sfx[e[0] + (e[1] ? ':' + e[1] : '')] = y;
+      });
+    }, 'decoupe');
+    return true;
+  });
+}
+/* la file d'attente : une chose à la fois, la plus urgente d'abord */
+PRE.demander = function(cle, urgent){
+  if(PRE.mus[cle]) return Promise.resolve(PRE.mus[cle]);
+  if(!PRE.attente[cle]){
+    PRE.attente[cle] = new Promise(function(ok){ PRE.file[urgent ? 'unshift' : 'push']({cle:cle, ok:ok}); });
+    setTimeout(suivant, 0);
+  } else if(urgent){
+    var i = PRE.file.map(function(j){ return j.cle; }).indexOf(cle);
+    if(i > 0) PRE.file.unshift(PRE.file.splice(i, 1)[0]);
+  }
+  return PRE.attente[cle];
+};
+function suivant(){
+  if(PRE.occupe || !PRE.file.length) return;
+  var j = PRE.file.shift(); PRE.occupe = true;
+  var p = j.cle === 'bruitages' ? rendreBruitages() : rendreMusique(j.cle).then(function(buf){ PRE.mus[j.cle] = buf; return buf; });
+  p.then(function(r){ PRE.fait++; return r; }, function(e){ if(window.console) console.warn('pré-calcul', j.cle, e); if(j.cle !== 'bruitages') PRE.echec = true; })
+   .then(function(r){ PRE.occupe = false; j.ok(r); setTimeout(suivant, 60); });
+}
+/* au chargement : la musique d'exploration tirée, puis celle du combat et le puits, puis les bruitages lourds (les autres versions : quand on les tire) */
+function lancerPrecalcul(){
+  if(!PRE.possible) return;
+  PRE.premiers.explo = tire(CHOIX.explo); PRE.premiers.combat = tire(CHOIX.combat);
+  PRE.demander('explo' + PRE.premiers.explo); PRE.demander('combat' + PRE.premiers.combat); PRE.demander('puits'); PRE.demander('bruitages');
+}
+if(document.readyState === 'complete') setTimeout(lancerPrecalcul, 600);
+else window.addEventListener('load', function(){ setTimeout(lancerPrecalcul, 600); });
+/* pour les mesures : tout fabriquer (toutes les versions) et dire quand c'est fini */
+PRE.tout = function(){
+  if(!PRE.possible) return Promise.resolve({possible:false});
+  var l = Object.keys(BOUCLE).map(function(c){ return PRE.demander(c); }); l.push(PRE.demander('bruitages'));
+  return Promise.all(l).then(function(){ return {pireTache:Math.round(PRE.pireTache), musiques:Object.keys(PRE.mus).length, bruitages:Object.keys(PRE.sfx).length,
+    memoire:Math.round((Object.keys(PRE.mus).reduce(function(s, k){ return s + PRE.mus[k].buf.length * 2 * 4; }, 0) + Object.keys(PRE.sfx).reduce(function(s, k){ return s + PRE.sfx[k].length * 2 * 4; }, 0)) / 1e6)}; });
+};
+PRE.etat = function(){ return {taches:PRE.taches, possible:PRE.possible, musiques:Object.keys(PRE.mus), bruitages:Object.keys(PRE.sfx).length, file:PRE.file.map(function(j){ return j.cle; }), occupe:PRE.occupe}; };
+
 /* la musique baisse pendant une fanfare (sec : combien de temps), puis remonte */
 function baisser(sec){
-  if(!ctx || !A) return;
+  if(!ctx || !A) return;   /* (A.mus : toute la musique, écho compris quand elle est fabriquée à l'avance) */
   var g = A.mus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
   g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
@@ -5548,10 +6503,13 @@ S.Son = {
   },
   bruitage:bruitage,
   musique:musique,
+  volume:volume,
+  precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }},
   baisser:baisser,
-  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null}; },
+  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
+    joue:MUS.actuel ? MUS.actuel.I.length + MUS.actuel.joueurs.length : 0}; },
   jouer:function(nom){
-    if(!pret() || !B[nom]) return;
+    if(!pretBruit() || !B[nom]) return;
     try{ B[nom].apply(null, Array.prototype.slice.call(arguments, 1)); }catch(e){ if(window.console) console.warn('son', nom, e); }
   },
   liste:Object.keys(B),
@@ -6299,6 +7257,7 @@ async function debutCombat(){
   E.h = {};
   ORDRE.forEach(function(h){ E.h[h] = {pv:HER[h].pv, sol:false, joue:false, bouclier:false, dome:null}; });
   E.r = [0, 1, 2].map(function(i){ return {i:i, pv:RAT_PV, mort:E.ratsVaincus[i], ouvert:false, comment:'', enrage:false, brule:false, colle:false, vise:null, flaque:null}; });
+  await cuire();          /* d'habitude déjà faite pendant le sac ; sinon on l'attend (la salle est encore vide) */
   construireCombat();
   /* la salle est vide ; les héros entrent en courant par la gauche (celui de devant d'abord) */
   await attendre(450);
@@ -6399,23 +7358,25 @@ function slotH(h){ return q('.h-' + h); }
    Le module dessine le rat en pièces articulées : à chaque image, on lit où sont son dos et le haut de sa tête
    (quand il se dresse, bondit pour mordre ou tombe sur le dos), et on déplace ses badges d'autant :
    de côté comme le dos (sur le dos, la tête part de l'autre côté, vers le voisin), en hauteur comme la tête. */
-function pointSvg(rr, nom, x, y){   /* un point du dessin, en pixels de la boîte du rat (tous les mouvements compris, même le bond) */
-  var p = rr.svg.createSVGPoint(); p.x = x; p.y = y;
-  return p.matrixTransform(rr.A[nom].getCTM());
-}
 function pointTete(i){
-  var rr = A.r[i] && A.r[i]._rat;
-  if(!rr || !rr.svg || !rr.A || !rr.A.tete || !rr.A.dos) return null;
+  var a = A.r[i];
+  if(!a || !a.point) return null;
   try{
-    var pd = pointSvg(rr, 'dos', 330, 300), pt = pointSvg(rr, 'tete', 150, 226), c = cadreModule(i);
+    var pd = a.point('dos', 330, 300), pt = a.point('tete', 150, 226), c = cadreModule(i);
     return {x:c.x + pd.x, y:c.y + pt.y};
   }catch(e){ return null; }
 }
-var suiviId = 0;
-function suivreBadges(){
-  var mon = ++suiviId, lisse = {};
+/* Fluidité (RAPIDITE.md) : on ne lit la position des rats QUE pendant qu'ils bougent (le module envoie « bete-bouge »
+   à chaque action) ; au repos, la boucle s'arrête et les badges restent où ils sont. */
+var suiviId = 0, suiviFin = 0, suiviTourne = false, lisse = {};
+function suivreBadges(){ ++suiviId; lisse = {}; suiviTourne = false; relancerSuivi(1500); }
+function relancerSuivi(ms){
+  suiviFin = Math.max(suiviFin, performance.now() + (ms || 1200));
+  if(suiviTourne) return;
+  suiviTourne = true;
+  var mon = suiviId;
   function pas(){
-    if(mon !== suiviId || E.ecran !== 'combat') return;
+    if(mon !== suiviId || E.ecran !== 'combat'){ if(mon === suiviId) suiviTourne = false; return; }
     E.r.forEach(function(r){
       var b = q('#badges-' + r.i);
       if(!b || r.mort || !r.repos) return;
@@ -6425,10 +7386,27 @@ function suivreBadges(){
       var dy = Math.max(l.y, 92 - (rTop(r.i) - 40));                   /* jamais sous la bande du haut */
       b.style.transform = 'translate(' + l.x.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) translateX(-50%)';
     });
-    requestAnimationFrame(pas);
+    var bouge = performance.now() < suiviFin + 250 || E.r.some(function(r){ var a = A.r[r.i]; return !r.mort && a && a._rat && a._rat.enAction; });
+    if(bouge) requestAnimationFrame(pas); else suiviTourne = false;
   }
   requestAnimationFrame(pas);
 }
+document.addEventListener('bete-bouge', function(e){ if(E.ecran === 'combat') relancerSuivi(e.detail && e.detail.ms); });
+
+/* ---------- la cuisson des acteurs (RAPIDITE.md) : faite pendant que l'Alchimiste remplit son sac ---------- */
+var cuisson = null;
+function cuire(){
+  if(cuisson) return cuisson;
+  var s = Math.min(window.innerWidth / 960, window.innerHeight / 540), dpr = window.devicePixelRatio || 1;
+  /* des images assez fines pour l'écran (et pour le zoom du critique), sans gaspiller la mémoire */
+  function res(largeurPx, unites){ return Math.max(.8, Math.min(2.6, largeurPx / unites * s * dpr * 1.25)); }
+  var l = [];
+  if(window.RatAnime && RatAnime.preparer) l.push(RatAnime.preparer({res:res(206, 540)}));
+  if(window.HerosAnime && HerosAnime.preparer) l.push(HerosAnime.preparer(ORDRE.map(function(h){ return {role:h, lk:LOOK[h]}; }), {res:res(200, 250)}));
+  cuisson = Promise.all(l).catch(function(e){ if(window.console) console.warn('cuisson', e); });
+  return cuisson;
+}
+SALLE.cuire = cuire;
 function slotR(r){ return q('.r-' + r.i); }
 function majBoutonSon(){ var b = q('#bruitages'); if(b) b.textContent = Son.actif() ? '🎵' : '🔇'; }   /* coupe tout : bruitages et musique */
 
@@ -7130,6 +8108,7 @@ function demarrer(){
   ['#cadre', '#jeu'].forEach(function(s){ var e = q(s); e.addEventListener('scroll', function(){ e.scrollTop = 0; e.scrollLeft = 0; }); });
   window.addEventListener('scroll', function(){ window.scrollTo(0, 0); });
   ecranSac();
+  setTimeout(cuire, 60);    /* la cuisson des acteurs se fait pendant que l'écran du sac est affiché */
 }
 SALLE.demarrer = demarrer;
 SALLE.maj = function(){ bande(); majScene(); majBarres(); };   /* pour les tests */

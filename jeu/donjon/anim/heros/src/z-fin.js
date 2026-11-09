@@ -9,6 +9,8 @@ var AUTRES = {pisteur:{fille:false, pe:PE.p6, ch:CH.noir, ir:YX.marron}, alchimi
 
 var HerosAnime = {
   creer:function(conteneur, role, lk){ return new Heros(conteneur, role, lk); },
+  /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
+  preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
   grain:true
 };

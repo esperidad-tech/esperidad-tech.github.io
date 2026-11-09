@@ -7,6 +7,7 @@ et dessine des spectrogrammes pour les regarder.
   python3 verifier.py arcA volB       -> seulement ceux-là
   python3 verifier.py --musiques      -> les musiques (40 s chacune)
   python3 verifier.py --page FICHIER  -> utilise la page construite au lieu des sources
+  --sans-planche                      -> seulement les mesures (plus rapide), sans dessiner les spectrogrammes
 """
 import sys, os, json, base64, wave, math
 import numpy as np
@@ -19,7 +20,7 @@ os.makedirs(SORTIE, exist_ok=True)
 
 def page_banc():
     p = os.path.join(SORTIE, '_banc.html')
-    scripts = ''.join('<script src="file://%s"></script>' % os.path.join(ICI, f) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'banc.js'])
+    scripts = ''.join('<script src="file://%s"></script>' % os.path.join(ICI, f) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'musiques-donjon.js', 'banc.js'])
     open(p, 'w').write('<!doctype html><meta charset="utf-8"><body>' + scripts)
     return 'file://' + p
 
@@ -87,6 +88,7 @@ def planche(res, fichier, fmax=12000):
 def main():
     args = [a for a in sys.argv[1:]]
     musiques = '--musiques' in args
+    dessiner = '--sans-planche' not in args
     url = None
     duree_mus = 40
     if '--duree' in args:
@@ -105,7 +107,7 @@ def main():
         if musiques:
             noms = args or ['M:' + k for k in pg.evaluate('Object.keys(MUSIQUES)')]
         else:
-            noms = args or pg.evaluate('Object.keys(BRUITAGES)')
+            noms = args or pg.evaluate("Object.keys(BRUITAGES).filter(k => typeof BRUITAGES[k] === 'function')")
         res = []
         for nom in noms:
             if nom.startswith('M:'):
@@ -121,7 +123,7 @@ def main():
         nav.close()
     # les planches
     k = 0
-    for i in range(0, len(res), 8):
+    for i in (range(0, len(res), 8) if dessiner else []):
         planche(res[i:i + 8], os.path.join(SORTIE, 'planche-%s%d.png' % ('mus-' if musiques else '', k)), fmax=8000 if musiques else 12000); k += 1
     fj = os.path.join(SORTIE, 'mesures-%s.json' % ('musiques' if musiques else 'bruitages'))
     tout = json.load(open(fj)) if os.path.exists(fj) and url is None else {}

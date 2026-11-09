@@ -33,6 +33,7 @@
   #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
   #boutons button.on{background:#4e7a3a;border-color:#8fd06a}
   .film #boutons{display:none}
+  #ips{position:absolute;right:8px;top:6px;z-index:50;font:600 13px/1 system-ui,sans-serif;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -45,6 +46,7 @@
     <div id="boss"></div>
     <div id="fx"></div>
     <div id="etiquette"></div>
+    <div id="ips">— ips</div>
   </div>
   <div id="boutons"></div>
 </div>
@@ -82,7 +84,7 @@ function ressortir(){
   var h = avale || document.getElementById('h1'); avale = null;
   var bo = b.ancre('bouche'), r = h.getBoundingClientRect(), dx = bo.x - (r.left + r.width / 2), dy = bo.y - (r.top + r.height / 2);
   h.style.visibility = '';
-  h.animate([{transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.3) rotate(-200deg)', filter: 'hue-rotate(60deg)'}, {offset: .6, transform: 'translate(' + dx * .3 + 'px,' + (dy * .3 - 60) + 'px) scale(.9) rotate(-40deg)'}, {transform: 'translate(0,0) scale(1) rotate(0deg)'}], {duration: 700, easing: 'ease-out'});
+  h.animate([{transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.3) rotate(-200deg)'}, {offset: .6, transform: 'translate(' + dx * .3 + 'px,' + (dy * .3 - 60) + 'px) scale(.9) rotate(-40deg)'}, {transform: 'translate(0,0) scale(1) rotate(0deg)'}], {duration: 700, easing: 'ease-out'});
 }
 var COUPS = ['rebond', 'fleche', 'fleche-argent', 'fleche-lourde', 'dague', 'feu', 'lumiere', 'louche', 'colle', 'huile', 'nuage', 'givre', 'acide', 'bruit', 'bouclier'];
 COUPS.forEach(function(c){ ETAPES['touche ' + c] = function(){ return b.touche(c); }; });
@@ -90,6 +92,11 @@ var ETATS = ['enrage', 'brule', 'colle', 'ebloui', 'gele', 'ouvert', 'dos', 'cib
 ETATS.forEach(function(e){ ETAPES[e + ' on'] = function(){ return b.etat(e, true); }; ETAPES[e + ' off'] = function(){ return b.etat(e, false); }; });
 window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
 window.etiquette = etiquette;
+/* le compteur d'images par seconde (et la pire image de la dernière seconde) */
+(function(){
+  var el = document.getElementById('ips'), n = 0, t0 = performance.now(), prec = t0, pire = 0;
+  (function f(t){ n++; pire = Math.max(pire, t - prec); prec = t; if(t - t0 >= 1000){ el.textContent = Math.round(n * 1000 / (t - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = t; pire = 0; } requestAnimationFrame(f); })(t0);
+})();
 /* tout jouer : un vrai combat, du début à l'explosion */
 var TOUT = [['entrer', 'il émerge de l\'eau noire'], ['attendre', ''], ['touche rebond', 'immunisé : ça rebondit, il nargue'], ['langue', 'la langue : il avale un héros'], ['chatouille', 'chatouillé de l\'intérieur'], ['dos off', ''],
   ['touche lumiere', 'la lumière dans l\'eau'], ['berge on', 'il monte sur la berge'], ['touche feu', 'le feu sur la bave'], ['sec on', 'sa peau sèche et craque'], ['touche nuage', 'le nuage : il tousse'], ['dos on', 'il roule sur le dos'], ['ouvert on', 'le point faible palpite'],

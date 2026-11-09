@@ -29,13 +29,14 @@
   #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
   #boutons button.on{background:#5a4a20;border-color:#ffd23a}
   .film #boutons{display:none}
+  #ips{position:absolute;right:8px;top:6px;z-index:20;font:600 12px/1 ui-monospace,monospace;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="cadre">
   <div id="scene"><div id="sol"></div><div id="lumiere"></div>
     <div class="heros" style="left:60px"><span>Pisteur</span></div><div class="heros" style="left:170px"><span>Sage</span></div><div class="heros" style="left:280px"><span>Alchimiste</span></div>
-    <div id="bete"></div><div id="etiquette"></div></div>
+    <div id="bete"></div><div id="etiquette"></div><div id="ips">— ips</div></div>
   <div id="boutons"></div>
 </div>
 <script src="ratcuir-anime.js"></script>
@@ -76,13 +77,30 @@ INFO.etats.forEach(function(e){
   ETAPES[e + ' off'] = function(){ return r.etat(e, false); };
 });
 window.CADRAGE = [430, 50, 480, 330];
+/* le compteur d'images par seconde (moyenne sur une demi-seconde, et la pire image) */
+(function(){ var el = document.getElementById('ips'), n = 0, t0 = performance.now(), dern = t0, pire = 0;
+  function f(t){ n++; pire = Math.max(pire, t - dern); dern = t; if(t - t0 >= 500){ el.textContent = Math.round(n * 1000 / (t - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = t; pire = 0; } requestAnimationFrame(f); }
+  requestAnimationFrame(f); })();
+/* la mesure ralentie (perf.py) : [nom, étapes mesurées, durée de la mesure en ms, préparation non mesurée] */
+window.PERF = [
+  ['attente', ['attendre'], 3000],
+  ['coup de tête', ['coup de tête'], 1500],
+  ['feu (l’armure rougeoie)', ['touche feu'], 2000],
+  ['coup de tête brûlant', ['coup de tête'], 1500],
+  ['louche (tournis)', ['touche louche'], 1500],
+  ['louche (le casque tombe)', ['touche louche'], 2500],
+  ['acide (l’armure tombe)', ['touche acide'], 3500, ['rougeoie off']],
+  ['brûlé', ['brule on'], 2000],
+  ['givre (l’armure éclate)', ['touche givre'], 3000, ['nouveau + entrer']],
+  ['explosion', ['exploser'], 3000, ['nouveau + entrer']]
+];
 window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
 window.etiquette = etiquette;
 /* le film : [étiquette, sous-titre, étapes, durée de la prise (ms), attendre la fin ?, pose pour la planche (fraction de la prise) ou null] */
 window.PLAN = [
   ['entrer', 'il arrive au galop, freine, fait sonner son armure', ['entrer'], 3400, true, .45],
   ['attendre', 'il respire, claque des dents, bave, gratte le sol', ['attendre'], 6000, false, .5],
-  ['coup de tête', 'élan, charge, BAM, recul', ['coup de tête'], 1800, true, .64],
+  ['coup de tête', 'élan, charge, BAM, recul', ['coup de tête'], 1800, true, .48],
   ['flèche', '« ting » : elle rebondit sur l’armure', ['touche fleche'], 1200, true, .15],
   ['flèche lourde', 'grosses étincelles, la plaque se cabosse', ['touche fleche-lourde'], 1300, true, .15],
   ['dague', 'ça raye l’armure', ['touche dague'], 1100, true, null],
@@ -95,7 +113,7 @@ window.PLAN = [
   ['lumière sans casque', 'ébloui : il se dresse, ventre offert', ['touche lumiere', 'ouvert on'], 4200, false, .7],
   ['ébloui : fin', '', ['ouvert off', 'ebloui off'], 1200, false, null],
   ['feu', 'son armure rougeoie : le feu le renforce', ['touche feu'], 3800, false, .8],
-  ['coup de tête brûlant', 'ses coups brûlent', ['coup de tête'], 1800, true, .64],
+  ['coup de tête brûlant', 'ses coups brûlent', ['coup de tête'], 1800, true, .5],
   ['rougeoie : fin', '', ['rougeoie off'], 1200, false, null],
   ['acide', 'l’armure fume, grésille, tombe plaque par plaque', ['touche acide'], 5600, true, .45],
   ['sans armure', 'la peau nue du dos : le point faible', ['ouvert on'], 3000, false, .7],

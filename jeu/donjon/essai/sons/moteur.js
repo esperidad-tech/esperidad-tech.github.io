@@ -9,22 +9,28 @@ function hasard(a, b){ return a + Math.random() * (b - a); }
 function choix(l){ return l[Math.floor(Math.random() * l.length)]; }
 function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
 
+/* les bruits de base et les réponses de salle, fabriqués une seule fois par fréquence d'échantillonnage :
+   un tampon sert à tous les contextes (le jeu, et chaque pré-calcul hors ligne n'a plus à les refaire) */
+var DEJA = {};
 function Moteur(ctx, opt){
   opt = opt || {};
   var sr = ctx.sampleRate, horsLigne = !!opt.horsLigne;
   var A = {ctx:ctx, sr:sr, hasard:hasard, choix:choix, midi:midi, horsLigne:horsLigne};
+  var deja = DEJA[sr] = DEJA[sr] || {};
 
   /* ---------- les bruits de base (3 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ---------- */
-  function tampon(sec, ncan, fn){
+  function tampon(sec, ncan, fn, nom){
+    if(nom && deja[nom]) return deja[nom];
     var n = Math.floor(sr * sec), b = ctx.createBuffer(ncan || 1, n, sr);
     for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c);
+    if(nom) deja[nom] = b;
     return b;
   }
   function normaliseRms(d, n, cible){
     var s = 0, i; for(i = 0; i < n; i++) s += d[i] * d[i];
     var k = cible / Math.sqrt(s / n || 1); for(i = 0; i < n; i++) d[i] *= k;
   }
-  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; });
+  A.blanc = tampon(3, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
   A.rose = tampon(3, 1, function(d, n){
     var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for(var i = 0; i < n; i++){
@@ -34,37 +40,40 @@ function Moteur(ctx, opt){
       d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926;
     }
     normaliseRms(d, n, .3);
-  });
+  }, 'rose');
   A.brun = tampon(3, 1, function(d, n){
     var l = 0, i;
     for(i = 0; i < n; i++){ l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l; }
     var pente = (d[n - 1] - d[0]) / n;                         /* pour que la boucle ne claque pas */
     for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .3);
-  });
+  }, 'brun');
   /* un bruit très lent (sous 90 Hz) : sert à faire trembler une hauteur ou un volume, comme un vrai gosier */
   A.lent = tampon(4, 1, function(d, n){
     var a = 1 - Math.exp(-2 * Math.PI * 90 / sr), l1 = 0, l2 = 0, i;
     for(i = 0; i < n; i++){ l1 += (Math.random() * 2 - 1 - l1) * a; l2 += (l1 - l2) * a; d[i] = l2; }
     var pente = (d[n - 1] - d[0]) / n; for(i = 0; i < n; i++) d[i] -= pente * i;
     normaliseRms(d, n, .5);
-  });
+  }, 'lent');
 
   /* ---------- la réverbération : une réponse fabriquée (premiers échos sur la pierre, puis une queue qui s'assombrit) ---------- */
-  function reponse(duree, o){
+  function reponse(duree, o, nom){
     return tampon(duree, 2, function(d, n, c){
-      var pre = Math.floor(sr * (o.pre || .012)), lp = 0, i;
+      /* (la même formule qu'avant, calculée pas à pas : la décroissance multipliée à chaque échantillon,
+         la couleur recalculée tous les 32 échantillons — beaucoup moins de calcul au chargement, le même son) */
+      var pre = Math.floor(sr * (o.pre || .012)), lp = 0, i, k = o.clair, env = 1, pas = Math.pow(10, -3 / (sr * duree));
       for(i = 0; i < n; i++){
-        var u = i / n, k = o.clair - (o.clair - o.sombre) * Math.pow(u, .6);
+        if((i & 31) === 0) k = o.clair - (o.clair - o.sombre) * Math.pow(i / n, .6);
         lp += (Math.random() * 2 - 1 - lp) * k;
-        var env = Math.pow(10, -3 * (i / sr) / duree), mont = i < pre ? 0 : Math.min(1, (i - pre) / (sr * .006));
+        var mont = i < pre ? 0 : Math.min(1, (i - pre) / (sr * .006));
         d[i] = lp * env * mont;
+        env *= pas;
       }
       for(var e = 0; e < (o.echos || 0); e++){                /* les premiers rebonds, différents à gauche et à droite */
         var p = Math.floor(sr * hasard(.006, o.ecart || .07)), amp = hasard(.25, .7) * (1 - e / (o.echos + 2)), sg = Math.random() < .5 ? -1 : 1;
         for(var j = 0; j < 24 && p + j < n; j++) d[p + j] += sg * amp * Math.exp(-j / 4) * (j % 2 ? -.4 : 1);
       }
-    });
+    }, nom);
   }
 
   /* ---------- la sortie : bruitages, musique, deux salles de réverbération, volume, compresseur ---------- */
@@ -82,10 +91,10 @@ function Moteur(ctx, opt){
   }
   A.sfx = ctx.createGain(); A.sfx.connect(A.volume);
   A.mus = ctx.createGain(); A.mus.connect(A.volume);
-  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01});
+  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01}, 'cave');
   var caveRet = ctx.createGain(); caveRet.gain.value = .7; cave.connect(caveRet); caveRet.connect(A.volume);
   A.caveIn = ctx.createGain(); A.caveIn.connect(cave);
-  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03});
+  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03}, 'grotte');
   var grotteRet = ctx.createGain(); grotteRet.gain.value = .8; grotte.connect(grotteRet); grotteRet.connect(A.volume);
   A.grotteIn = ctx.createGain(); A.grotteIn.connect(grotte);
 

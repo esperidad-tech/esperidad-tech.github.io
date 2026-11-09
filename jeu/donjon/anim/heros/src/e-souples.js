@@ -1,7 +1,15 @@
 
 /* ============ les tissus et les cheveux souples (simulés à chaque image) ============ */
 /* chaque point a un ressort vers sa place « dessinée » (qui suit le corps), l'air le freine, la pesanteur le tire */
-function mat(el){ var m = el.getCTM(); return m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+/* la matrice d'un élément vers les pixels de la boîte du héros (cuit : calculée par cuire.js à travers les <div>) */
+function mat(el){
+  if(CACHE_MAT && CACHE_MAT.has(el)) return CACHE_MAT.get(el);
+  var r;
+  if(window.Cuire && el.closest && el.closest('.cu-vue')) r = window.Cuire.ctm(el);
+  else { var m = el.getCTM(); r = m ? [m.a, m.b, m.c, m.d, m.e, m.f] : [1, 0, 0, 1, 0, 0]; }
+  if(CACHE_MAT) CACHE_MAT.set(el, r);
+  return r;
+}
 function ap(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
 function inv(m){ var det = m[0] * m[3] - m[1] * m[2] || 1e-6; return [m[3] / det, -m[1] / det, -m[2] / det, m[0] / det, (m[2] * m[5] - m[3] * m[4]) / det, (m[1] * m[4] - m[0] * m[5]) / det]; }
 function lerp(a, b, t){ return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
@@ -55,6 +63,14 @@ function Souple(h, spec){
   this.ch.forEach(function(c){ for(var i = 1; i < c.length; i++) c[i].L = Math.hypot(c[i].r[0] - c[i - 1].r[0], c[i].r[1] - c[i - 1].r[1]); });
   this.init = false;
 }
+/* lire (avant toute écriture de l'image) les repères dont pas() aura besoin */
+Souple.prototype.lire = function(){
+  mat(this.g);
+  if(this.s.type === 'jupe'){
+    if(!this.jA){ this.jA = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'A"]'); this.jB = this.h.svg.querySelector('[data-i="' + this.s.jambe + 'B"]'); }
+    mat(this.jA); mat(this.jB);
+  }
+};
 Souple.prototype.pas = function(dt, o, sol){
   var s = this.s, me = this, h = this.h;
   this.t += dt;
@@ -101,6 +117,14 @@ Souple.prototype.pas = function(dt, o, sol){
   this.init = true;
   /* retour dans le repère de la pièce, puis le dessin */
   var Mi = inv(M), loc = this.ch.map(function(c){ return c.map(function(p){ return ap(Mi, p.x - o[0], p.y - o[1]); }); });
+  /* on ne redessine (et donc on ne repeint) le tissu que s'il a bougé d'au moins 0,15 unité depuis le dernier dessin */
+  /* (l'ourlet d'un tissu ondule avec le temps : il est redessiné au moins 10 fois par seconde) */
+  var av = this._dessine, bouge = !av || (s.type === 'tissu' && this.t - (this._tDessin || 0) > .1);
+  for(var a = 0; av && !bouge && a < loc.length; a++) for(var b = 0; b < loc[a].length; b++){
+    if(Math.abs(loc[a][b][0] - av[a][b][0]) > .15 || Math.abs(loc[a][b][1] - av[a][b][1]) > .15){ bouge = true; break; }
+  }
+  if(!bouge) return;
+  this._dessine = loc; this._tDessin = this.t;
   this.dessiner(loc);
 };
 Souple.prototype.dessiner = function(loc){

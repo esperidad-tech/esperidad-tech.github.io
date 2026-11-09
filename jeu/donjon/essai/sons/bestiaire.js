@@ -571,14 +571,13 @@ S.roiFinB = function(A, P){
 /* =================== LE GARDIEN DE ROUILLE (élite) =================== */
 S.gardienPasA = function(A, P){
   var t = P.t;
-  [0, .85].forEach(function(x, k){ var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1}); rouille(A, t + x - .3, .3, {g:1.8}, o); pasFer(A, t + x, 1, o); });
-  return {duree:1.8};
+  [0, .85].forEach(function(x, k){ var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1}); rouille(A, t + x, .3, {g:1.8}, o); pasFer(A, t + x + .3, 1, o); });   /* l'articulation grince, puis le pied retombe */
+  return {duree:2.1};
 };
 S.gardienPasB = function(A, P){
   var t = P.t;
   [0, .7].forEach(function(x, k){
     var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1});
-    A.choc(t + x, {f:80, f2:38, d:.4, g:.8, sat:3.5, corpsF:250, corps:1.5});
     A.choc(t + x, {f:80, f2:38, d:.4, g:.8, sat:3.5, corpsF:250, corps:1.5}, o);
     for(var j = 0; j < 7; j++) tinte(A, t + x + .03 + j * h(.03, .06), .9 - j * .1, o);                 /* la chaîne qui tinte */
   });

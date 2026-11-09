@@ -138,6 +138,11 @@ H._runesMontent = function(){
       {duration:alea(800, 1100), delay:k * 40, easing:'ease-out', fill:'backwards'});
   })(k);
 };
+/* la forme du dôme, en pixels de sa boîte (w × h) */
+function domeChemin(w, h){
+  function X(x){ return r1((x + 55) * w / 110); } function Y(y){ return r1(y * h / 104); }
+  return 'M' + X(-50) + ' ' + Y(100) + ' C ' + X(-50) + ' ' + Y(30) + ' ' + X(-28) + ' ' + Y(4) + ' ' + X(0) + ' ' + Y(4) + ' C ' + X(28) + ' ' + Y(4) + ' ' + X(50) + ' ' + Y(30) + ' ' + X(50) + ' ' + Y(100) + ' Z';
+}
 H._dome = function(L, scene, cible, opt){
   var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = cible.getBoundingClientRect();
   var w = r.width / k * 0.95, h = r.height / k * 0.92, x = (r.left - R.left) / k + r.width / k / 2, yb = (r.bottom - R.top) / k - 4;
@@ -150,17 +155,20 @@ H._dome = function(L, scene, cible, opt){
     '<defs><radialGradient id="' + id + '" cx=".5" cy=".95" r=".9"><stop offset="0" stop-color="#3fd0ff" stop-opacity=".05"/><stop offset=".7" stop-color="#8ff3ff" stop-opacity=".18"/><stop offset="1" stop-color="#e8fdff" stop-opacity=".55"/></radialGradient>' +
     '<pattern id="' + id + 'p" width="12" height="10.4" patternUnits="userSpaceOnUse"><path d="M3 0 L 9 0 L 12 5.2 L 9 10.4 L 3 10.4 L 0 5.2 Z" fill="none" stroke="#bff8ff" stroke-width=".5" opacity=".55"/></pattern></defs>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + ')"/>' +
-    '<path class="ha-hex" d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + 'p)" opacity=".7"/>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2" style="filter:drop-shadow(0 0 3px #8ff3ff)"/>' +
     '<path d="M-36 30 C -26 14 -14 9 -4 8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
     '<g opacity=".85">' + mot6 + '</g>' +
     '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4" style="filter:drop-shadow(0 0 4px #3fd0ff)"/></svg>' +
+    /* le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
+    '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
+    '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
+    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
     '<div class="ha-badge">🛡️ −50 % · 1 tour</div>';
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
   var vit = svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
-  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(-10.4px)'}], {duration:1600, iterations:Infinity});
+  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
   scintille(L, x, yb - h * 0.5, {n:12, rx:w * 0.45, ry:h * 0.45, c:['#e8fdff', CYAN], etale:400});
   onde(L, x, yb, {w:w * 1.1, h:20, c:CYAN, ep:3, s0:0.3, s1:1.3, d:700});
   var fini = false;

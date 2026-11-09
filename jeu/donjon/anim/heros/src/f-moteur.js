@@ -49,9 +49,15 @@ function melange(a, b, t){ var o = {}; for(var k in a){ o[k] = {}; for(var f in 
 
 /* ============ le ticker commun : tissus, cordes, bulles… ============ */
 var VIVANTS = [], tickOn = false, tPrec = 0;
+/* Fluidité (RAPIDITE.md) : à chaque image, on LIT d'abord toutes les positions dont on aura besoin (pour tous les héros),
+   puis on écrit (tissus, corde…). Lire après avoir écrit forcerait le navigateur à tout recalculer, une fois par héros. */
+var CACHE_MAT = null;
 function tick(t){
   var dt = Math.min(1 / 30, Math.max(1 / 240, (t - (tPrec || t)) / 1000 || 1 / 60)); tPrec = t;
+  CACHE_MAT = new Map();
+  VIVANTS.forEach(function(h){ try { h._lire(); } catch(e){} });
   VIVANTS.forEach(function(h){ try { h._pas(dt, t / 1000); } catch(e){ if(!h._err){ h._err = 1; console.error(e); } } });
+  CACHE_MAT = null;
   if(VIVANTS.length) requestAnimationFrame(tick); else tickOn = false;
 }
 function vivre(h){ if(VIVANTS.indexOf(h) < 0) VIVANTS.push(h); if(!tickOn){ tickOn = true; tPrec = 0; requestAnimationFrame(tick); } }
