@@ -16,9 +16,9 @@
    "objectif": 40
   },
   {
-   "ips": 59,
-   "pire": 33,
-   "lentes": 0,
+   "ips": 58,
+   "pire": 50,
+   "lentes": 2,
    "nom": "brûlure froide (2 héros)",
    "objectif": 40
   },
@@ -30,7 +30,7 @@
    "objectif": 40
   },
   {
-   "ips": 60,
+   "ips": 59,
    "pire": 33,
    "lentes": 0,
    "nom": "nuage : toux, visible",
@@ -58,8 +58,8 @@
    "objectif": 50
   },
   {
-   "ips": 60,
-   "pire": 17,
+   "ips": 59,
+   "pire": 33,
    "lentes": 0,
    "nom": "lumière : il grandit",
    "objectif": 40
@@ -73,7 +73,7 @@
   },
   {
    "ips": 60,
-   "pire": 17,
+   "pire": 33,
    "lentes": 0,
    "nom": "brûlé + enragé (attente)",
    "objectif": 40
@@ -93,9 +93,9 @@
    "objectif": 40
   },
   {
-   "ips": 59,
-   "pire": 50,
-   "lentes": 1,
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
    "nom": "explosion",
    "objectif": 40
   }

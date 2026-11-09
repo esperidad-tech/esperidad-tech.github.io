@@ -2166,8 +2166,29 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - le Gardien de rouille : à son entrée, ses runes s'allument une à une ; son poing est lent et lourd ; il est immunisé (les coups ricochent) ; l'acide puis la lumière ouvrent son cœur de runes ; la lumière en premier est un piège (il s'énerve) ; à la mort, il s'effondre en pièces ;
   - le Roi des rats : ça grouille, et il déferle sur les trois héros ; le nuage puis le bruit défont le nœud ; la lumière les met en boule ; le bruit avant le nuage les fait charger l'Alchimiste ; sa couronne reste au sol. Ses yeux sont jaunes au repos, comme le rat d'égout (rouges sur la fiche), pour que la rage se voie.
 - **Tous les monstres du chemin long sont animés.** Un petit défaut, deux boucles d'attente sur une même pièce, faisait ramer certains modules dans un cas précis : il est en cours de correction partout.
+- **Les décors des 7 salles de combat sont faits** (`jeu/donjon/decors/`, planche `decors/planche.png`, envoyée à Romain). Ce sont :
+  - les canaux (bleu-vert, ville engloutie, petit pont) ;
+  - la cave aux toiles (gris et violet, cocons, œufs) ;
+  - l'atelier (rouille et cuivre, engrenages, runes) ;
+  - l'ossuaire (ivoire, niches à crânes, rien de gore) ;
+  - le grand bassin (eau noire, la margelle de Bourbe, lotus, ville engloutie) ;
+  - les égouts tournants (flèches gravées qui se contredisent) ;
+  - la fausse crypte (sarcophage, statues brisées).
+
+  Chaque décor existe en PNG et en WebP (environ 60 Ko, conseillé pour la tablette), avec une ambiance légère facultative (`decors/ambiance.js`). Il n'y a pas de torche. **Ils attendent l'avis de Romain.**
+- **La fluidité de la salle des rats** (règles pour tout le donjon : `jeu/donjon/RAPIDITE.md`, outil `jeu/donjon/anim/cuire.js`) :
+  - pendant l'écran du sac, héros et rats sont « cuits » en petites images que la carte graphique déplace ;
+  - au repos, le processeur ne travaille presque plus.
+  
+  Les mesures, au processeur ralenti ×4 :
+  - au repos : de 14 à 52 images par seconde ;
+  - pendant une potion : de 12 à 50 ;
+  - pendant le tour des rats : de 17 à 59 ;
+  - le critique (33) et le nuage (31 à 41) restent un peu sous l'objectif, à vérifier sur l'iPhone de Romain.
+  
+  Le rendu est le même à l'œil. Seule différence : au repos, les capes ondulent par une animation simple.
+- **Le bandeau retiré** : les refus s'affichent maintenant en deux mots qui volent au-dessus de celui qu'on a touché (« Déjà joué », « Au sol ! », « Trop loin ! », « Encore debout », « Impossible ! »).
 - En cours :
-  - les décors des 7 salles de combat (`jeu/donjon/decors/`) ;
   - les salles sans combat (`jeu/donjon/scenes/`) : le puits, les culs-de-sac à trouvailles, la réserve, la grotte de givre, la bibliothèque, le tas d'os et le crâne secret, les dalles piégées, les trois portes, le sarcophage, le feu de camp, la porte aux quatre signes avec Moustache, et Léo avec sa lanterne.
 - Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
 

@@ -43,7 +43,18 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
   - deux curseurs de volume discrets (musique / bruitages), avec une barre jaune et un rond noir à liseré jaune ;
   - des musiques d'ambiance sans aucun bruit qui ressemble à une bête ;
   - un petit son au toucher des icônes ;
-  - **une fluidité parfaite, même sur une vieille tablette, sans perdre la qualité des animations**. Les règles techniques sont dans `jeu/donjon/RAPIDITE.md`, et tout nouveau module les suit. Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
+  - **une fluidité parfaite, même sur une vieille tablette, sans perdre la qualité des animations**. Les règles techniques sont dans `jeu/donjon/RAPIDITE.md`, et tout nouveau module les suit. Ce qu'il faut retenir :
+    - on « cuit » les personnages en petites images avec `jeu/donjon/anim/cuire.js`, pendant un écran calme ;
+    - on n'anime que transform et opacity ;
+    - au repos, aucune boucle par image ;
+    - on lit avant d'écrire ;
+    - la mesure se fait avec `essai/perf-tablette.py`.
+- **Le donjon, où en sont les pièces** (Bible §12.51) :
+  - la conception : `jeu/donjon/CONCEPTION-DONJON.md` ;
+  - les monstres animés : `jeu/donjon/anim/betes/<id>/` (contrat : `CONTRAT.md`) ;
+  - les décors de combat : `jeu/donjon/decors/` ;
+  - les salles sans combat : `jeu/donjon/scenes/` ;
+  - la salle d'essai : `jeu/donjon/essai/`. Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
 - **Boutons jaunes avec texte noir** pour tout bouton « aller / lancer » (§12.16). Avant chaque mini-jeu : une explication + un bouton jaune (`M.lancerMJ`).
 - Quand il demande un lien, coller l'URL.
 - Talents et boutique : plus tard.

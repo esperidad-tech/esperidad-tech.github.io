@@ -87,7 +87,7 @@ Pour les ancres :
 
 ## 4 bis. La rapidité (exigence de Romain, 9 novembre, 10 h 48 : « ça rame même sur mon iPhone »)
 
-Ces règles sont strictes. Le détail, avec la mesure, viendra dans `jeu/donjon/RAPIDITE.md`.
+Ces règles sont strictes. Le détail, avec la mesure, est dans **`jeu/donjon/RAPIDITE.md`** (à lire) ; le moteur cuira chaque bête en images avec `jeu/donjon/anim/cuire.js`.
 
 1. **Aucun filtre** sur la bête, ses pièces ou ses effets :
    - pas de filtre SVG (feTurbulence, feGaussianBlur, feDropShadow…), ni CSS (filter, drop-shadow, blur) ;
