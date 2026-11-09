@@ -2070,7 +2070,12 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - le combat (A ou B) joue avec la couleur « le puits » par-dessus, en fondu ;
   - la fanfare de victoire et le son de fuite passent par-dessus ;
   - un seul bouton 🎵/🔇 coupe tout (le 🔊 reste pour la lecture des textes).
-- **Le coup critique** : 3 nouvelles versions plus violentes sont dans l'Atelier, marquées « nouveau » (A « Coup de tonnerre », B « Assourdi », C « Déflagration »). En attendant le choix de Romain, le jeu joue la C, en trois morceaux calés sur l'image : l'aspiration pendant le ralenti, l'impact, l'explosion.
+- **Le coup critique** : 3 nouvelles versions plus violentes sont dans l'Atelier, marquées « nouveau » (A « Coup de tonnerre », B « Assourdi », C « Déflagration »). En attendant le choix de Romain, le jeu joue la C, en trois morceaux calés sur l'image : l'aspiration pendant le ralenti, l'impact, l'explosion. **Romain (10 h 41) garde A + C** (tirage au hasard, la A calée sur l'image comme la C).
+- **L'Atelier, la mise en page voulue par Romain (10 h 41)** :
+  - pas de description des sons (« je valide au son ») : un titre court, les boutons A, B, C, et un petit carré « validé » sous chacun ;
+  - tout en petit, plusieurs sons par rangée ;
+  - des **sections rétractables** à la place des onglets à changer, par exemple Donjon → Héros / Ennemis (une sous-section par monstre) / Objets et salles, puis Musiques, Le jeu, Mini-jeux ;
+  - tout doit être accessible sans faire défiler la page à l'infini.
 - **Les badges et l'icône de cible suivent le rat** quand il se dresse, bondit ou mord.
 - **La fuite ramène à l'entrée** : les trois rats reviennent en pleine forme, les héros aussi. Seul le Grand Livre garde ce qu'il a appris, et la question « Fuir la salle ? » le dit avant.
 - Tests : 66 sur 66 pour la salle, 27 sur 27 pour l'Atelier.
@@ -2120,7 +2125,6 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 **En cours** : les monstres animés (contrat commun : `jeu/donjon/anim/betes/CONTRAT.md`).
 
 **En attente de Romain** :
-- le choix du son de critique dans l'Atelier ;
 - le code par joueur ;
 - qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette).
 Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
