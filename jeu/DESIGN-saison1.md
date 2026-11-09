@@ -2160,9 +2160,11 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - l'araignée des caves : la toile qui reste, l'éclosion de 2 petites ;
   - la petite araignée ;
   - Bourbe : langue et avalé, saut, berge, sec, sur le dos, gonflé, plongeon, chatouille, gelé ;
-  - le têtard.
-- En cours : la chauve-souris, le feu follet et le Gardien de rouille.
-- Ensuite : le Roi des rats, les décors, et les nouvelles armes des héros.
+  - le têtard ;
+  - la chauve-souris : le bruit la fait tomber devant, sonnée ; la colle colle ses ailes ; la lumière la rend folle, et elle pique 2 fois ;
+  - le feu follet : le nuage le rend visible ; le bouclier du Sage le retient ; la lumière le fait grandir ; la flèche d'argent le déchire ; il s'éteint en braise froide.
+- En cours : le Gardien de rouille et le Roi des rats.
+- Ensuite : les décors et les nouvelles armes des héros.
 
 **En attente de Romain** :
 - le code par joueur ;
