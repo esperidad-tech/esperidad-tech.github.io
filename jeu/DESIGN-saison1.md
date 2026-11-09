@@ -2045,7 +2045,26 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - Les codes sont calculés par le jeu : la tablette du Pisteur sait lesquels sont bons (3 symboles sur 12, impossible de tomber dessus par hasard).
 - **Le rôle de chacun pendant le donjon** : le Pisteur a l'action (le donjon se joue sur sa tablette) ; **le Sage a le plan et les sauvegardes** ; **l'Alchimiste a le sac et les nouvelles recettes** (validé par Romain) : une plante rare trouvée dans le donjon donne un code ; il la cuisine au chaudron sur sa tablette et obtient une nouvelle recette, à mettre dans le sac au prochain feu de camp.
 - Entre deux salles, les héros ne récupèrent pas leurs points de vie.
-**En attente de Romain** : ses choix sur la page d'écoute des sons et des musiques ; le code par joueur ; qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette). Ensuite, l'étape 2 (3-4 images : un couloir avec une curiosité, un piège, le plan sur la tablette du Sage, la porte aux quatre signes).
+**Les sons choisis par Romain (9 novembre, 9 h 52, sur https://esperidad-tech.github.io/brumeval/sons-essai.html ; sources `jeu/donjon/essai/sons/`)** : quand il garde plusieurs versions, le jeu en tire une au hasard à chaque fois.
+- **Arc** : A + B + C.
+- **Flèche** : en vol A + B + C ; dans la chair A + B + C ; dans le bois A + B + C.
+- **Dague** : swish A + B + C ; chair C ; métal B.
+- **Rats touchés** :
+  - flèche A + B + C ;
+  - dague A + B + C ;
+  - feu A + B + C ;
+  - lumière A + B + C ;
+  - louche B + C ;
+  - colle B + C ;
+  - huile A + B ;
+  - nuage A + C ;
+  - fuite A.
+- **Coup critique** : aucun ne va, « il faut que ce soit plus violent » (à refaire).
+- **Musiques** : exploration A + B + C ; combat A + B ; une couleur par salle (le puits, la cave, l'atelier), toutes gardées.
+- **Victoire** : A + B. **Fuite de l'équipe** : A + B.
+
+En cours : les sons branchés dans la salle, la musique, un critique plus violent (3 nouvelles versions à écouter), l'icône de cible qui suit le rat, et la fuite qui recharge l'entrée (les trois rats reviennent).
+**En attente de Romain** : la salle avec les sons ; le choix du son de critique ; le code par joueur ; qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette). Ensuite, l'étape 2 (3-4 images : un couloir avec une curiosité, un piège, le plan sur la tablette du Sage, la porte aux quatre signes).
 Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
 
 ## 13. Enquête 3 — La lettre d'Odette
