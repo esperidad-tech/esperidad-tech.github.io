@@ -53,7 +53,10 @@ body:not(.choisi) .objet .rond{opacity:.9; animation:rond 1.4s ease-in-out infin
 [data-outil].non{filter:grayscale(1) brightness(.72); opacity:.6; cursor:not-allowed}
 /* dans un gros plan, seuls brillent ce qu'on peut toucher là : les tiroirs sous la loupe, la molette du microscope */
 body.ouvert .rond{opacity:0!important; animation:none!important}
-body.m-loupe [data-outil="tiroir"]:not(.tire) .rond, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
+body.m-loupe [data-act="tiroir"]:not(.tire) .rond, body.m-loupe .rond-casier, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
+.rond-casier{stroke-width:3}
+#gArdoise.pret .rond{opacity:1; animation:rond 1.4s ease-in-out infinite}
+#gArdoise:not(.pret){cursor:default}
 body.m-micro .toujours-micro{stroke-width:2.5}
 body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 @keyframes rond{0%,100%{opacity:.3} 50%{opacity:1}}
@@ -63,7 +66,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 @keyframes vapeur{0%{opacity:0; transform:translateY(8px)} 40%{opacity:.75} 100%{opacity:0; transform:translateY(-22px)}}
 .secoue-svg{animation:secoueV .45s; transform-box:fill-box}
 @keyframes secoueV{0%,100%{transform:none} 20%{transform:translateX(-10px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)}}
-#ardoise .chiffres{animation:craie 1.6s ease-in-out infinite alternate}
+#ardoise .formes{animation:craie 1.6s ease-in-out infinite alternate}
 @keyframes craie{from{opacity:.75} to{opacity:1}}
 .obj{opacity:.55; transition:opacity .3s} .obj.actif{opacity:1}
 .num.actif text{fill:#b3262f}
@@ -74,15 +77,13 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .bulle-o::after{content:""; position:absolute; left:50%; bottom:-11px; width:16px; height:16px; background:var(--parchemin); border-right:3px solid var(--K); border-bottom:3px solid var(--K); transform:translateX(-50%) rotate(45deg)}
 @keyframes pop{from{opacity:0; transform:translate(-50%, calc(-100% - 2px)) scale(.8)} to{opacity:1}}
 
-/* Mimi (le dessin du jeu) : il guette au bord de la paillasse et saute dessus quand on l'appelle */
-.mimi{position:absolute; width:15.5%; pointer-events:auto; cursor:pointer; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
+/* Mimi (le dessin du jeu) : il guette au bord de la paillasse ; parfois il saute dessus et s'assoit sur l'échantillon (on le chasse ou on le porte) */
+.mimi{position:absolute; width:calc(15.5%*var(--taille, 1)); pointer-events:auto; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
+.mimi.porte{cursor:grabbing; z-index:6; filter:drop-shadow(0 calc(14*var(--u)) calc(8*var(--u)) rgba(0,0,0,.35))}
 .mimi svg{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 100%}
 .cadre.ouvert .mimi{display:none}
 .mimi.elan svg{scale:1.06 .84}
-.mimi.saut .at-ombre, .mimi:not(.saut):not(.renifle) .at-ombre{opacity:0}
-.mimi.renifle .at-c-tete{transform-origin:50% 100%; animation:renifle .26s ease-in-out infinite alternate}
-@keyframes renifle{from{transform:rotate(8deg) translateY(1px)} to{transform:rotate(15deg) translateY(5px)}}
-.mimi.pret::after{content:""; position:absolute; left:50%; top:2%; width:74%; height:48%; transform:translateX(-50%); border:3px solid #ffd36a; border-radius:50%; box-shadow:0 0 8px rgba(255,211,106,.85); animation:rond 1.2s ease-in-out infinite; pointer-events:none}
+.mimi .at-ombre{opacity:0}
 .mimi .dit{position:absolute; bottom:104%; left:50%; transform:translateX(-50%); background:var(--parchemin); color:var(--encre); border:2px solid var(--K); font-family:var(--f-main); font-size:max(15px, calc(24*var(--u))); font-weight:700; padding:0 10px; border-radius:12px; white-space:nowrap; opacity:0; transition:opacity .2s; pointer-events:none; z-index:2}
 .mimi .dit.on{opacity:1}
 .coeur-v{position:absolute; left:50%; top:0; font-size:20px; animation:coeurV 1.2s ease-out forwards; pointer-events:none}
@@ -147,7 +148,8 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .verre-hud.faux .anneau{stroke:rgba(240,84,84,.95)}
 .verre-hud.faux canvas, .bande-hud.faux canvas{animation:secoueV .45s}
 /* Dans le tiroir ouvert : les trois casiers, puis les échantillons */
-.onglets{display:flex; gap:calc(10*var(--u)); align-items:stretch}
+.onglets{display:flex; gap:calc(10*var(--u)); align-items:stretch; pointer-events:none}
+.onglets > *{pointer-events:auto}
 .onglet{display:flex; align-items:center; gap:calc(7*var(--u)); padding:0 calc(18*var(--u)); border:calc(3*var(--u)) solid var(--K); border-radius:calc(11*var(--u)); background:#fff6d8; color:var(--encre); font-family:var(--f-main); font-weight:700; font-size:calc(27*var(--u)); line-height:1; cursor:pointer; box-shadow:0 calc(3*var(--u)) 0 rgba(0,0,0,.35)}
 .onglet svg{width:calc(38*var(--u)); height:calc(32*var(--u)); flex:none}
 .onglet[aria-pressed="true"]{background:var(--or)}
@@ -197,7 +199,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .tourne span{font-size:74px; animation:tourne 2.4s ease-in-out infinite}
 @keyframes tourne{0%,30%{rotate:0deg} 60%,100%{rotate:-90deg}}
 @media (orientation:portrait) and (max-width:620px){ .tourne{display:grid} }
-@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .chiffres,.zoom-plaque,.tourne span{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
+@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .formes,.zoom-plaque,.tourne span{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
 </style>
 
 <div class="app">
@@ -205,7 +207,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
     <h1 class="sr">Le labo de l'Alchimiste</h1>
     <button type="button" id="bReglages" aria-label="Les réglages de la maquette">Maquette ⚙️</button>
     <div class="reglages" id="reglages" hidden>
-      <div class="ligne"><button type="button" id="nvF" aria-pressed="true">Enquête 1</button><button type="button" id="nvD" aria-pressed="false">Plus difficile</button><button type="button" id="bRecommencer" aria-label="Recommencer">🔁</button><button type="button" id="bPlein" aria-label="Plein écran" hidden>⛶</button></div>
+      <div class="ligne"><button type="button" id="nvF" aria-pressed="true">Enquête 1</button><button type="button" id="nvD" aria-pressed="false">Plus difficile</button><button type="button" id="bRecommencer" aria-label="Recommencer">🔁</button><button type="button" id="bPlein" aria-label="Plein écran" hidden>⛶</button><button type="button" id="bSon" aria-pressed="true" aria-label="Les sons">🔈 Sons</button></div>
       <div class="ligne"><span>Paillasse</span><button type="button" data-style="paF" id="stPaF">établi de bois</button><button type="button" data-style="paT" id="stPaT">naturel</button></div>
       <div class="ligne"><span>Mur</span><button type="button" data-style="murF" id="stMurF">pierres</button><button type="button" data-style="murT" id="stMurT">naturel</button></div>
     </div>
@@ -259,6 +261,7 @@ function rad(id, st, cx, cy, r){ return '<radialGradient id="g-' + id + '" cx="'
    Le plateau va du bord avant (y = YF, à l'échelle 1) au fond (y = YB). Tout ce qui s'éloigne fuit vers le même point (600, VY),
    très haut au-dessus de l'image. Un objet posé à la hauteur d'écran y est dessiné à l'échelle kY(y). */
 var VW = 1200, VH = 640, VY = -620, YF = 478, YB = 236, EL = .485;
+var YBOC = 188;   /* la hauteur d'écran où sont posés les bocaux, sur leur petite étagère surélevée */
 function kY(y){ return (y - VY)/(YF - VY); }
 function xP(X, y){ return 600 + X*kY(y); }
 function yT(t){ return VY + (YF - VY)/(1 + t*.2827); }
@@ -278,7 +281,8 @@ function paletteBois(){
 function palettePlateau(){
   var c = THEMES[ST.paT].c, b = paletteBois(), t = ST.paT;
   if(ST.paF === 1) return {g:[t ? melange('#c9c4dc', c, .3) : '#c4bfd8', t ? melange('#a6a0bd', c, .3) : '#a6a0bd', t ? melange('#8d87a6', c, .3) : '#8d87a6'], sorte:'pierre', joint:'rgba(40,30,70,.35)'};
-  if(ST.paF === 2) return {g:[t ? melange('#fbf9fd', c, .16) : '#fbf9fd', t ? melange('#efeaf6', c, .16) : '#efeaf6', t ? melange('#d9d3ea', c, .16) : '#d9d3ea'], sorte:'marbre', joint:'rgba(120,110,160,.5)'};
+  /* le marbre prend la couleur choisie : un marbre rose, vert, bleu… avec ses veines plus foncées (blanc veiné de gris en « naturel ») */
+  if(ST.paF === 2) return {g:[t ? melange('#fbf9fd', c, .3) : '#fbf9fd', t ? melange('#efeaf6', c, .42) : '#efeaf6', t ? melange('#d9d3ea', c, .52) : '#d9d3ea'], sorte:'marbre', joint:t ? sombre(c, .18) : '#8f88b0', veine2:t ? clair(c, .7) : '#ffffff'};
   return {g:b.H, sorte:ST.paF === 4 ? 'planches' : 'bois', joint:b.joint};
 }
 function couleursMur(){ var c = THEMES[ST.murT].c; return ST.murT ? [melange(c, '#3a2c5a', .2), melange(c, '#3a2c5a', .34), melange(c, '#3a2c5a', .48)] : ['#5a4c7c', '#4a3d68', '#3d3158']; }
@@ -293,9 +297,9 @@ function defs(){
     lin('boisH', [['#e9bb80',0],['#d9a066',.45],['#c48850',1]], 1) + lin('boisS', [['#94603a',0],['#62381d',1]], 1) +
     /* la paillasse choisie : son plateau, son chant, son tablier, ses tiroirs */
     v3('pPlateau', p.g) + (p.sorte === 'bois' || p.sorte === 'planches' ? lin('pChant', [[b.S[0],0],[b.S[1],1]], 1) : lin('pChant', [[sombre(p.g[2], .08),0],[sombre(p.g[2], .3),1]], 1)) +
-    (or ? lin('pTablier', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) : v3('pTablier', b.V)) + (or ? lin('pTiroir', [['#fdfbff',0],['#efeaf6',.6],['#d6d0e8',1]], 1) : v3('pTiroir', b.C)) + v3('pFonce', b.F) + v3('pInterieur', [b.F[0], b.F[1], b.F[2]]) +
+    (or ? lin('pTablier', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) : v3('pTablier', b.V)) + (or ? lin('pTiroir', [[melange('#fdfbff', THEMES[ST.paT].c, ST.paT ? .2 : 0),0],[melange('#efeaf6', THEMES[ST.paT].c, ST.paT ? .34 : 0),.6],[melange('#d6d0e8', THEMES[ST.paT].c, ST.paT ? .46 : 0),1]], 1) : v3('pTiroir', b.C)) + v3('pFonce', b.F) + v3('pInterieur', [b.F[0], b.F[1], b.F[2]]) +
     lin('laiton', [['#9a6516',0],['#f5c45a',.32],['#fff1b8',.45],['#e0a23a',.62],['#8a5a12',1]]) + lin('laitonV', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) +
-    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + lin('cuir', [['#d8b78f',0],['#c9a377',.6],['#b88e60',1]], 1) +
+    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + lin('cuir', [['#dcbb92',0],['#cda77a',.55],['#b98d5e',1]], 1) +
     lin('ardoise', [['#39414c',0],['#252b34',1]], 1) + lin('feutre', [['#35584f',0],['#24403a',1]], 1) + lin('cire', [['#fffaf0',0],['#f1e6c8',.6],['#d9c89c',1]]) + lin('parchemin', [['#f6ecd2',0],['#e4d2a6',1]], 1) +
     '<linearGradient id="g-mur" gradientUnits="userSpaceOnUse" x1="0" y1="-200" x2="0" y2="470"><stop offset="0" stop-color="' + m[0] + '"/><stop offset=".6" stop-color="' + m[1] + '"/><stop offset="1" stop-color="' + m[2] + '"/></linearGradient>' +
     lin('piedMur', [['#0a0614',0,.5],['#0a0614',1,0]], 1) + lin('dessous', [['#0a0614',0,.55],['#0a0614',1,0]], 1) +
@@ -323,6 +327,95 @@ function picto(k, x, y, t){
   else s += P('M-16,8 L-10,-4 L0,-6 L4,6 L-6,13 Z', '#8a84a0', ' stroke-width="3"') + P('M2,-2 L10,-12 L18,-4 L15,8 L5,8 Z', '#b08a5a', ' stroke-width="3"') + '<circle cx="-2" cy="-13" r="4" fill="#1a1514" stroke="' + K + '" stroke-width="2"/>';
   return s + '</g>';
 }
+
+/* ============ Les sons du labo : de petits sons discrets, fabriqués par le programme (comme ceux du jeu) ============
+   Mêmes briques que moteur-base.js (note, tendre, bruit) : chaque son se recopie tel quel dans le jeu.
+   Rien ne joue avant le premier toucher (les navigateurs l'interdisent), et le bouton 🔈 des réglages coupe tout. */
+var SON = {actif:true, ctx:null};
+try { if(localStorage.getItem('brumeval-labo-son') === 'non') SON.actif = false; } catch(e){}
+function audio(){
+  if(!SON.ctx){ try { SON.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ SON.ctx = null; } }
+  if(SON.ctx && SON.ctx.state === 'suspended') try { SON.ctx.resume(); } catch(e){}
+  return SON.ctx;
+}
+function note(f, t0, duree, type, vol, glisse){
+  var a = audio(); if(!a) return; var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0;
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.1, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + duree + 0.05);
+}
+/* Une note douce : attaque arrondie, fin en fondu ; un triangle passe par un filtre (son chaud, sans aigus durs) */
+function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+  var a = audio(); if(!a) return; var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+  if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+  g.connect(a.destination); o.start(t); o.stop(t + duree + 0.03);
+}
+/* Un souffle : du bruit filtré dont la hauteur glisse de f0 à f1 (un tiroir qui coulisse, une loupe qui passe, une allumette) */
+function souffle(t0, duree, vol, f0, f1, q, type){
+  var a = audio(); if(!a) return; var t = a.currentTime + t0, n = Math.floor(a.sampleRate*duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+  for(var i = 0; i < n; i++) d[i] = Math.random()*2 - 1;
+  var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+  f.type = type || 'bandpass'; f.Q.value = q || 0.8; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.06, duree*.3)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+  s.connect(f); f.connect(g); g.connect(a.destination); s.start(t); s.stop(t + duree + .02);
+}
+/* De tout petits grains secs (la craie, la poudre, le feu qui crépite) */
+function grains(t0, duree, vol, nb, passeHaut){
+  var a = audio(); if(!a) return; var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr*duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+  for(var k = 0; k < nb; k++){ var c = Math.floor(n*Math.random()*.9), l = Math.floor(sr*(.001 + Math.random()*.004)), v = .4 + Math.random()*.6; for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random()*2 - 1)*v*(1 - j/l); }
+  var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
+  s.connect(f); f.connect(g); g.connect(a.destination); s.start(t); s.stop(t + duree + .02);
+}
+var SONS = {
+  /* toucher */
+  clic:function(){ tendre(523, 0, .055, .04, 440, .005); },                                                   /* un « toc » tout doux */
+  choisir:function(){ tendre(587, 0, .07, .04, 660, .006); tendre(880, .05, .1, .022, null, .008); },          /* on choisit ce qu'on analyse */
+  non:function(){ tendre(300, 0, .09, .045, 262, .01, 'triangle', 900); tendre(262, .09, .12, .04, 233, .01, 'triangle', 800); },   /* cet outil ne sert pas ici */
+  recule:function(){ souffle(0, .16, .02, 900, 420, .7); },                                                     /* on revient d'un pas */
+  /* la loupe */
+  loupe:function(){ souffle(0, .5, .022, 500, 1500, .7); tendre(1568, .56, .22, .022, null, .004); tendre(2349, .57, .16, .008, null, .004); },   /* elle s'envole, puis le verre tinte en se posant */
+  zoom:function(){ souffle(0, .45, .018, 380, 1100, .6); },
+  dezoom:function(){ souffle(0, .4, .018, 1100, 380, .6); },
+  /* les tiroirs */
+  tiroirOuvre:function(){ souffle(0, .38, .05, 260, 520, 1.1, 'lowpass'); tendre(150, .36, .09, .06, 110, .004, 'triangle', 600); grains(.02, .32, .012, 14, 1800); },
+  tiroirFerme:function(){ souffle(0, .3, .045, 520, 240, 1.1, 'lowpass'); tendre(130, .28, .11, .075, 90, .004, 'triangle', 500); },
+  casier:function(){ tendre(330, 0, .07, .05, 262, .005, 'triangle', 1000); grains(0, .08, .014, 6, 2600); },   /* on fouille un casier */
+  carte:function(){ souffle(0, .1, .03, 2400, 3600, .8); tendre(740, .03, .05, .014, null, .004); },             /* un échantillon glisse sous la loupe */
+  compare:function(){ tendre(660, 0, .7, .012, 1320, .2); tendre(990, .1, .6, .006, 1980, .2); },                /* le rai de lumière passe */
+  bon:function(){ tendre(660, 0, .12, .07, null, .01, 'triangle', 2600); tendre(990, .09, .2, .07, null, .01, 'triangle', 2800); tendre(1320, .2, .28, .03, null, .012); },
+  faux:function(){ tendre(330, 0, .13, .055, 294, .01, 'triangle', 1100); tendre(247, .1, .2, .05, 220, .01, 'triangle', 900); },
+  /* les bocaux, les gouttes, la poudre */
+  pipette:function(){ tendre(520, 0, .09, .03, 880, .01); },                                                     /* la pipette aspire */
+  goutte:function(){ tendre(1500, 0, .05, .05, 760, .003); tendre(620, .045, .12, .035, 300, .004); },          /* ploc */
+  chaud:function(){ souffle(0, .5, .016, 5200, 3000, .6, 'highpass'); },                                         /* pschh, l'eau chaude */
+  poudre:function(){ grains(0, .3, .03, 30, 3200); },
+  bulles:function(){ for(var i = 0; i < 7; i++){ var f = 700 + Math.random()*900; tendre(f, i*.09 + Math.random()*.04, .06, .022, f*1.5, .005); } },
+  taches:function(){ tendre(392, 0, .3, .02, 330, .05); },                                                       /* la tache s'étale */
+  /* la bougie */
+  pince:function(){ tendre(2200, 0, .03, .014, null, .002); tendre(2600, .05, .03, .012, null, .002); },        /* tic-tic de la pince */
+  flamme:function(){ souffle(0, .5, .03, 300, 900, .5, 'lowpass'); grains(.1, 1, .018, 22, 1600); },             /* le feu grossit et crépite */
+  /* le microscope */
+  molette:function(){ [0, .06, .12].forEach(function(t, i){ tendre(1400 - i*90, t, .03, .028, null, .002, 'triangle', 3000); }); souffle(.02, .2, .01, 800, 1700, .8); },
+  tropPetit:function(){ tendre(392, 0, .1, .04, 349, .01, 'triangle', 1200); },
+  prise:function(){ tendre(2200, 0, .03, .016, null, .002); tendre(1175, .04, .08, .02, 1568, .006); },         /* la pince attrape un grain */
+  coupelle:function(){ tendre(2093, 0, .16, .03, null, .003); tendre(3136, .005, .1, .012, null, .003); },      /* le grain tinte dans le verre */
+  acarien:function(){ [0, .05, .1, .15].forEach(function(t, i){ tendre(1200 + i*150, t, .03, .014, null, .003); }); },
+  /* le test des couleurs */
+  monte:function(){ tendre(294, 0, 2.6, .012, 587, .4); for(var i = 0; i < 9; i++){ var f = 500 + i*70 + Math.random()*60; tendre(f, .2 + i*.28, .07, .012, f*1.3, .006); } },   /* l'alcool grimpe dans le papier */
+  papier:function(){ souffle(0, .12, .028, 1800, 3000, .8); },
+  /* l'ardoise */
+  craie:function(){ [0, .16, .34].forEach(function(t){ souffle(t, .12, .022, 3200, 2600, 1.4); grains(t, .12, .014, 10, 3000); }); },
+  /* Mimi */
+  miaou:function(){ var a = audio(); if(!a) return; tendre(620, 0, .34, .035, 940, .05, 'triangle', 2400); tendre(940, .16, .3, .03, 560, .05, 'triangle', 2200); },
+  ronron:function(){ for(var i = 0; i < 14; i++) tendre(58 + (i % 2)*4, i*.055, .05, .05, null, .012, 'triangle', 300); },
+  saut:function(){ souffle(0, .22, .02, 500, 1300, .7); },
+  pose:function(){ tendre(140, 0, .08, .05, 100, .005, 'triangle', 500); },
+  /* les trois bulles de l'atelier (le même « pop » que les pastilles de la carte du jeu) */
+  pastilles:function(n){ var gamme = [523, 587, 659, 784, 880, 1047]; for(var i = 0; i < Math.min(Math.max(n || 1, 1), 6); i++){ var f = gamme[i], t = .07*i + .05; tendre(f*.72, t, .085, .03, f*1.18, .005, 'sine', 2600); tendre(f*2, t + .012, .05, .006, null, .003); } }
+};
+function son(nom, x){ if(!SON.actif) return; try { (SONS[nom] || SONS.clic)(x); } catch(e){} }
 
 /* ============ Mimi : le dessin du jeu (atelier.js), assis, qui marche, qui dort ============ */
 var CHAT = ['#f2a65a', '#d9783c', '#ffe0bf'];
@@ -361,51 +454,80 @@ function svgChat(){
 }
 
 /* Mimi, dans la vue de près : il guette au bord de la paillasse (on voit sa tête dépasser en bas à gauche).
-   Quand on l'appelle, il saute sur le plateau, renifle ce qu'on a choisi, puis redescend. */
-var GUET = {x:64, y:704}, mimi = {el:null, x:0, y:0, enRoute:false, t:0, ditT:0};
+   De temps en temps (rarement), il saute sur le plateau et s'assoit en plein sur l'échantillon : il gêne !
+   On le touche : il s'en va. On peut aussi le prendre avec le doigt et le poser ailleurs. */
+var GUET = {x:64, y:704}, SIEGE = {x:612, y:466}, mimi = {el:null, x:0, y:0, enRoute:false, pose:false, sur:false, porte:false, geste:null, t:0, tv:0, tp:0, ditT:0, taille:1};
 function tweenLin(dur, f, fin){ var t0 = performance.now(); if(reduit) dur = 1; (function pas(now){ var p = Math.min(1, (now - t0)/dur); f(p); if(p < 1) requestAnimationFrame(pas); else if(fin) fin(); })(t0); }
 function mimiPlace(p){ mimi.x = p.x; mimi.y = p.y; var e = mimi.el; e.style.left = (p.x/12) + '%'; e.style.top = (p.y/6.4) + '%'; }
+function mimiTaille(k){ mimi.taille = k; mimi.el.style.setProperty('--taille', k.toFixed(3)); }
 function mimiPose(p, el){ el = el || mimi.el; ['assis','marche','dort','lave','salut'].forEach(function(c){ el.classList.remove('at-c-' + c); }); el.classList.add('at-c-' + p); }
-function mimiSaut(vers, fin){
-  var de = {x:mimi.x, y:mimi.y}, haut = 40 + Math.abs(vers.y - de.y)*.3, sens = vers.x < de.x ? -1 : 1, e = mimi.el;
+function mimiSaut(vers, fin, taille){
+  var de = {x:mimi.x, y:mimi.y}, t0 = mimi.taille, t1 = taille || t0, haut = 40 + Math.abs(vers.y - de.y)*.3, sens = vers.x < de.x ? -1 : 1, e = mimi.el;
   e.classList.toggle('at-c-gauche', sens < 0); mimiPose('assis'); e.classList.add('elan');
   attendre(200, function(){
-    e.classList.remove('elan'); mimiPose('marche'); e.classList.add('saut');
-    tweenLin(520, function(q){ mimiPlace({x:de.x + (vers.x - de.x)*q, y:de.y + (vers.y - de.y)*q - Math.sin(Math.PI*q)*haut}); e.style.setProperty('--tangage', (sens*(q - .5)*44).toFixed(1) + 'deg'); },
-      function(){ e.classList.remove('saut'); e.style.removeProperty('--tangage'); mimiPose('assis'); if(fin) fin(); });
+    e.classList.remove('elan'); mimiPose('marche'); e.classList.add('saut'); son('saut');
+    tweenLin(520, function(q){ mimiPlace({x:de.x + (vers.x - de.x)*q, y:de.y + (vers.y - de.y)*q - Math.sin(Math.PI*q)*haut}); mimiTaille(t0 + (t1 - t0)*q); e.style.setProperty('--tangage', (sens*(q - .5)*44).toFixed(1) + 'deg'); },
+      function(){ e.classList.remove('saut'); e.classList.remove('at-c-gauche'); e.style.removeProperty('--tangage'); mimiPose('assis'); son('pose'); if(fin) fin(); });
   });
 }
 function mimiPlanifie(){ clearTimeout(mimi.t); mimi.t = setTimeout(function(){
-  if(!S.mode && !reduit && !mimi.enRoute && !S.occupe){ mimiPose('lave'); setTimeout(function(){ if(!mimi.enRoute) mimiPose('assis'); }, 3200); }
+  if(!S.mode && !reduit && !mimi.enRoute && !mimi.porte && !S.occupe){ mimiPose('lave'); setTimeout(function(){ if(!mimi.enRoute && !mimi.porte) mimiPose('assis'); }, 3200); }
   mimiPlanifie(); }, 9000 + Math.random()*8000); }
 function mimiDit(t, saute){
   var m = mimi.el; if(!m) return; var d = m.querySelector('.dit'); d.textContent = t; d.classList.add('on'); clearTimeout(mimi.ditT); mimi.ditT = setTimeout(function(){ d.classList.remove('on'); }, 2200);
   if(saute && !mimi.enRoute){ m.classList.remove('sursaut'); void m.offsetWidth; m.classList.add('sursaut'); }
 }
 function mimiCaresse(){
-  var m = mimi.el; mimiDit('Mrrr…'); var h = document.createElement('span'); h.className = 'coeur-v'; h.textContent = '❤️'; m.appendChild(h); setTimeout(function(){ h.remove(); }, 1300);
+  var m = mimi.el; mimiDit('Mrrr…'); son('ronron'); var h = document.createElement('span'); h.className = 'coeur-v'; h.textContent = '❤️'; m.appendChild(h); setTimeout(function(){ h.remove(); }, 1300);
 }
-/* L'utilité de Mimi (le tour « renifler » du talent « Mimi, chat de labo ») : il renifle ce qu'on a choisi
-   et écarte la moitié des mauvaises réponses, jamais celles qui ressemblent le plus à la bonne. Une fois par objet. */
-function mimiPeutFlairer(){ return !!(S.sel && !S.trouves[S.sel] && !S.flair[S.sel] && !mimi.enRoute && !S.occupe && !S.mode); }
-function mimiFlaire(){
-  var t = S.sel, c = posCible(), haut = {x:Math.max(150, c.x - 118), y:c.y + 56};
-  mimi.enRoute = true; S.occupe = true; mimi.el.classList.remove('pret');
-  mimiSaut(haut, function(){
-    mimi.el.classList.remove('at-c-gauche'); mimi.el.classList.add('renifle'); mimiDit('snif, snif…');
-    attendre(1500, function(){
-      mimi.el.classList.remove('renifle'); S.flair[t] = flairer(t); mimiDit('Mrraou !');
-      attendre(800, function(){ mimiSaut(GUET, function(){ mimi.el.classList.remove('at-c-gauche'); mimi.enRoute = false; S.occupe = false; majOutils(); }); });
-    });
-  });
+/* Où est-il ? Sur le plateau ? Assis sur l'échantillon ? */
+function surPlateau(p){ return p.y > YB + 16 && p.y < YF + 4 && Math.abs(p.x - 600) < 556*kY(Math.min(p.y, YF)); }
+function surEchantillon(p){ return Math.abs(p.x - 605) < 84 && p.y > 404 && p.y < 520; }
+function versScene(cx, cy){ var r = $('#decor').getBoundingClientRect(); return {x:(cx - r.left)/r.width*1200, y:(cy - r.top)/r.height*640}; }
+/* Il vient : un bond sur le plateau, et il s'installe sur le carré de cuir en ronronnant */
+function mimiVisite(ms){ clearTimeout(mimi.tv); mimi.tv = setTimeout(mimiVient, ms == null ? 15000 + Math.random()*8000 : ms); }
+function mimiVient(){
+  if(mimi.calme) return;
+  if(S.mode || S.occupe || mimi.enRoute || mimi.pose || mimi.porte || document.hidden) return mimiVisite(6000);
+  mimi.enRoute = true;
+  mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; mimiDit('Mrrr…'); son('ronron'); majOutils(); }, .84);
 }
+/* Il s'en va : on l'a touché, ou il en a assez d'être posé là */
+function mimiPart(muet){
+  if(mimi.enRoute || mimi.porte) return; clearTimeout(mimi.tp); mimi.enRoute = true; mimi.sur = false; mimi.pose = false; majOutils();
+  if(!muet){ mimiDit('Mraou !'); son('miaou'); }
+  attendre(muet ? 0 : 260, function(){ mimiSaut(GUET, function(){ mimi.enRoute = false; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1); });
+}
+/* Il est assis dessus : tant qu'il n'a pas bougé, on ne peut rien faire de l'échantillon */
+function mimiGene(){ if(!mimi.sur) return false; mimiDit('Mrrr ?', true); son('ronron'); return true; }
+/* On le prend avec le doigt… */
+function mimiPrend(){
+  clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); son('miaou'); majOutils();
+}
+/* … et on le repose : sur le plateau, il s'assoit là (et s'il est encore sur l'échantillon, il gêne toujours) ; ailleurs, il retourne à son coin */
+function mimiLache(p){
+  var e = mimi.el; mimi.porte = false; e.classList.remove('porte'); e.classList.remove('saut'); mimiPose('assis');
+  if(surPlateau(p)){ mimi.pose = true; mimi.sur = surEchantillon(p); mimiTaille(.84); son('pose'); majOutils(); if(mimi.sur) mimiDit('Mrrr…'); else mimi.tp = setTimeout(function(){ mimiPart(true); }, 7000); }
+  else { mimi.pose = false; mimi.enRoute = true; mimiSaut(GUET, function(){ mimi.enRoute = false; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1); }
+}
+/* Quand on revient d'un gros plan, ou qu'on recommence : il reprend sa petite vie */
+function mimiReveil(){ if(mimi.el && !mimi.pose && !mimi.enRoute) mimiVisite(20000 + Math.random()*15000); }
+function mimiRetour(){ clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.enRoute = false; mimi.pose = false; mimi.sur = false; mimi.porte = false; mimi.geste = null; mimi.el.classList.remove('porte', 'saut', 'elan', 'at-c-gauche'); mimiTaille(1); mimiPlace(GUET); mimiPose('assis'); mimiVisite(); }
 function poserMimi(){
   var e = document.createElement('div'); e.className = 'mimi at-t-chat at-c-assis'; e.innerHTML = '<span class="dit"></span>' + svgChat();
   e.setAttribute('role', 'button'); e.setAttribute('aria-label', 'Mimi, le chat'); e.tabIndex = 0; mimi.el = e;
   $('#calque').appendChild(e); mimiPlace(GUET);
-  var touche = function(){ if(mimiPeutFlairer()) mimiFlaire(); else if(!mimi.enRoute) mimiCaresse(); };
-  e.addEventListener('click', touche); e.addEventListener('keydown', function(ev){ if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); touche(); } });
-  mimiPlanifie();
+  var touche = function(){ if(mimi.enRoute || mimi.porte) return; if(mimi.pose) mimiPart(); else mimiCaresse(); };
+  e.addEventListener('pointerdown', function(ev){ if(mimi.enRoute || S.mode || S.occupe) return; mimi.geste = {id:ev.pointerId, x:ev.clientX, y:ev.clientY, bouge:false}; try { e.setPointerCapture(ev.pointerId); } catch(err){} });
+  e.addEventListener('pointermove', function(ev){
+    var g = mimi.geste; if(!g || g.id !== ev.pointerId) return;
+    if(!g.bouge && Math.hypot(ev.clientX - g.x, ev.clientY - g.y) > 12){ g.bouge = true; mimiPrend(); }
+    if(g.bouge){ var p = versScene(ev.clientX, ev.clientY); mimiPlace({x:p.x, y:p.y + 62*mimi.taille}); }
+  });
+  var fin = function(ev){ var g = mimi.geste; mimi.geste = null; if(!g || !g.bouge) return; mimi.avale = true; setTimeout(function(){ mimi.avale = false; }, 60); mimiLache({x:mimi.x, y:mimi.y}); };
+  e.addEventListener('pointerup', fin); e.addEventListener('pointercancel', fin);
+  e.addEventListener('click', function(){ if(mimi.avale) return; touche(); }); e.addEventListener('keydown', function(ev){ if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); touche(); } });
+  mimiPlanifie(); mimiVisite();
 }
 
 /* ============ Les données de l'analyse : une fiche de données, la même table servira pour tout ============ */
@@ -541,7 +663,7 @@ var BOCAUX = [
   {k:'vinaigre', x:680, nom:['Vinaigre'], liq:'#efe1a0', a:.8},
   {k:'bicar', x:760, nom:['Bicar-','bonate'], poudre:true}
 ];
-BOCAUX.forEach(function(b){ b.y = 232; });
+BOCAUX.forEach(function(b){ b.y = YBOC; });
 var TACHE = {eau:'rgba(140,200,255,.55)', chaude:'rgba(140,200,255,.55)', iode:'rgba(205,115,30,.65)', vinaigre:'rgba(240,225,150,.6)', bicar:'rgba(255,255,255,.8)'};
 var RIEN = {t:'Rien à signaler.'};
 function rea(o){ var r = {eau:RIEN, chaude:RIEN, iode:RIEN, vinaigre:RIEN, bicar:RIEN, flamme:RIEN}; for(var k in o) r[k] = o[k]; return r; }
@@ -559,18 +681,21 @@ var REA = {
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
    Chaque teinture a ses bandes à elle (y : la hauteur où la bande s'arrête, de 0 en bas à 1 en haut ; h : son épaisseur). */
 var TEINTES = [
-  {k:'garance', nom:'racine de garance', c:'#c8503c', b:[{c:'#f0c060', y:.88, h:.05, a:.55}, {c:'#e2553a', y:.66, h:.11}, {c:'#d43a6a', y:.4, h:.09}]},
-  {k:'coquelicot', nom:'coquelicot', c:'#e8343c', b:[{c:'#e8343c', y:.56, h:.14}, {c:'#8a3a9a', y:.3, h:.07}]},
-  {k:'betterave', nom:'betterave', c:'#9c2257', b:[{c:'#f0c838', y:.8, h:.08}, {c:'#b0206a', y:.5, h:.15}]},
-  {k:'cochenille', nom:'cochenille', c:'#c9306a', b:[{c:'#c9306a', y:.27, h:.17}]},
-  {k:'mure', nom:'mûres', c:'#4a2a5c', b:[{c:'#7a3aa0', y:.62, h:.1}, {c:'#3a2a6a', y:.38, h:.12}]},
-  {k:'oignon', nom:'pelure d\'oignon', c:'#d98a2c', b:[{c:'#e8b830', y:.74, h:.12}, {c:'#a8642a', y:.15, h:.08}]},
-  {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.84, h:.14}]},
-  {k:'noix', nom:'brou de noix', c:'#6a4a2c', b:[{c:'#c8a040', y:.7, h:.07}, {c:'#6a4a2c', y:.17, h:.14}]}
+  {k:'garance', nom:'racine de garance', c:'#c8503c', b:[{c:'#f0c060', y:.90, h:.05, a:.6}, {c:'#e2553a', y:.70, h:.09}, {c:'#d43a6a', y:.42, h:.08}]},
+  {k:'coquelicot', nom:'coquelicot', c:'#e8343c', b:[{c:'#e8343c', y:.56, h:.09}, {c:'#8a3a9a', y:.26, h:.07}]},
+  {k:'betterave', nom:'betterave', c:'#9c2257', b:[{c:'#f0c838', y:.78, h:.06}, {c:'#b0206a', y:.50, h:.10}]},
+  {k:'cochenille', nom:'cochenille', c:'#c9306a', b:[{c:'#c9306a', y:.33, h:.13}]},
+  {k:'mure', nom:'mûres', c:'#4a2a5c', b:[{c:'#7a3aa0', y:.62, h:.08}, {c:'#3a2a6a', y:.18, h:.09}]},
+  {k:'oignon', nom:'pelure d\'oignon', c:'#d98a2c', b:[{c:'#e8b830', y:.80, h:.07}, {c:'#a8642a', y:.14, h:.07}]},
+  {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.86, h:.11}]},
+  {k:'noix', nom:'brou de noix', c:'#6a4a2c', b:[{c:'#c8a040', y:.66, h:.07}, {c:'#6a4a2c', y:.20, h:.11}]}
 ];
 function teinte(k){ return TEINTES.filter(function(t){ return t.k === k; })[0]; }
-var CIBLES = {facile:['garance'], difficile:['garance','cochenille']};
-var TXT = {trop:'Trop petit : zoome !', pris:'Dans la coupelle !', mite:'L\'acarien file se cacher entre les fibres !', code:'482'};
+/* Une teinture est souvent un mélange : la bandelette montre alors les bandes de tous ses ingrédients, et chaque bande doit trouver le sien */
+var CIBLES = {facile:['garance','coquelicot'], difficile:['garance','coquelicot','oignon']};
+/* Les bandes de la bandelette à analyser, du haut vers le bas, avec l'ingrédient qui les explique */
+function bandesMelange(){ var l = []; CIBLES[S.niveau].forEach(function(k){ teinte(k).b.forEach(function(b){ l.push({k:k, y:b.y, h:b.h, c:b.c}); }); }); return l.sort(function(a, b){ return b.y - a.y; }); }
+var TXT = {trop:'Trop petit : zoome !', pris:'Dans la coupelle !', mite:'L\'acarien file se cacher entre les fibres !', code:['🍄','🎩','🔑']};
 
 /* ============ État ============ */
 var S;
@@ -581,15 +706,6 @@ function neuf(niveau){
 }
 function couleurDe(liste){ var acc = [0,0,0]; liste.forEach(function(k){ var c = hexRgb(teinte(k).c); for(var j=0;j<3;j++) acc[j] += c[j]; }); return rgbHex(acc.map(function(v){ return v/liste.length; })); }
 function couleurRouge(){ return couleurDe(CIBLES[S.niveau]); }
-/* Ce que Mimi écarte en reniflant : la moitié des mauvaises réponses, jamais celles qui ressemblent le plus à la bonne */
-function flairer(t){
-  var o = OBJETS[t], Rn = rng(t.length*31 + 7), faux, m = {}, v = o.voisins || [], pref = o.liquide ? '' : o.tiroir + ':';
-  if(o.liquide) faux = TEINTES.map(function(i){ return i.k; }).filter(function(k){ return CIBLES[S.niveau].indexOf(k) < 0; });
-  else faux = contenuCasier(o.tiroir).filter(function(k){ return k !== o.bon; });
-  var loin = faux.filter(function(k){ return v.indexOf(k) < 0; }).map(function(k){ return [Rn(), k]; }).sort(function(a, b){ return a[0] - b[0]; });
-  loin.slice(0, Math.floor(faux.length/2)).forEach(function(q){ m[pref + q[1]] = true; });
-  return m;
-}
 
 /* ============ Les dessins agrandis des échantillons (loupe et cartes des casiers) ============
    Tout est dessiné par le programme, autour du centre de la toile, à l'échelle s : la même fonction sert pour la petite carte et pour la loupe. */
@@ -795,7 +911,9 @@ function dessinerBandelette(c, x, y, w, h, liste, p, o){
    On est penché sur la paillasse de l'atelier : le plateau remplit l'écran, le mur de l'atelier est derrière, les deux tiroirs dessous.
    Tout ce qui sert est posé dessus, et tout reste à sa place quand on zoome (loupe, microscope, bandelette). */
 var LOUPE = {x:214, y:442}, TESTP = {x:152, y:374};
-var COUPES = [[800,386],[884,386],[968,386],[842,444],[926,444]];
+var COUPES = [[834,386],[918,386],[1002,386],[876,444],[960,444]];
+var CUIR = {X:178, y0:322, y1:472};          /* le grand carré de cuir : demi-largeur sur le plateau, bord du fond, bord de devant */
+var ARD = {x:246, y:158, w:140, h:106};       /* l'ardoise du code */
 var BOUGIE = {x:216, y:262, e:1.1};
 var MICRO = {x:930, y:304, e:1.05};
 var TIR = {g:106, d:620, w:474, y:506, h:112};
@@ -849,8 +967,10 @@ function plateau(){
     for(i = 0; i < 260; i++){ y = YB + Rn()*(YF - YB); s += '<circle cx="' + f1(xP((Rn() - .5)*1140, y)) + '" cy="' + f1(y) + '" r="' + f1(1 + Rn()*2.6) + '" fill="' + (Rn() < .5 ? 'rgba(30,24,60,.22)' : 'rgba(255,255,255,.3)') + '"/>'; }
     s += T('M250,250 l40,22 l-14,30 l52,34 M980,470 l-46,-28 l10,-20', 'rgba(40,30,70,.35)', 2.4);
   } else {
-    s += T('M120,300 C260,320 300,270 440,300 S640,360 760,330 S980,290 1090,330 M200,440 C340,420 420,470 560,440 S820,420 1000,460 M520,250 C580,270 640,250 720,268', p.joint, 3, ' opacity=".55"') +
-      T('M150,376 C240,360 300,392 380,372 M700,400 C780,384 860,412 960,392', p.joint, 1.8, ' opacity=".45"');
+    s += T('M120,300 C260,320 300,270 440,300 S640,360 760,330 S980,290 1090,330 M200,440 C340,420 420,470 560,440 S820,420 1000,460 M520,250 C580,270 640,250 720,268', p.joint, 3.2, ' opacity=".6"') +
+      T('M150,376 C240,360 300,392 380,372 M700,400 C780,384 860,412 960,392 M300,300 C330,330 320,360 352,392 M860,340 C850,380 880,410 872,450', p.joint, 1.8, ' opacity=".5"') +
+      T('M124,306 C262,326 302,276 442,306 S642,366 762,336 S982,296 1092,336 M204,446 C342,426 422,476 562,446 S822,426 1002,466', p.veine2, 2, ' opacity=".55"');
+    for(i = 0; i < 90; i++){ y = YB + Rn()*(YF - YB); s += '<circle cx="' + f1(xP((Rn() - .5)*1140, y)) + '" cy="' + f1(y) + '" r="' + f1(.8 + Rn()*1.8) + '" fill="' + (Rn() < .5 ? p.joint : p.veine2) + '" opacity=".3"/>'; }
   }
   s += '<path d="M30,478 L1170,478 L1166,456 L34,456 Z" fill="#fff" opacity=".07"/></g>';
   s += R(30, 478, 1140, 18, 3, G('pChant')) + reflet('M40,482 H1160', 2.5, .35);
@@ -865,21 +985,38 @@ function facadeTiroir(t){
     R(w/2 - 50, 72, 100, 26, 9, G('laitonV'), ' stroke-width="3.5"') + T('M' + (w/2 - 30) + ',85 q30,28 60,0', K, 10) + T('M' + (w/2 - 30) + ',85 q30,28 60,0', '#f5b945', 5) + Cir(w/2 - 30, 85, 3.5, '#8a5a12') + Cir(w/2 + 30, 85, 3.5, '#8a5a12');
   return s;
 }
-/* Un tiroir, fermé ou tiré vers nous (p de 0 à 1) : on voit alors l'intérieur, ses parois, ses trois casiers */
+/* Un tiroir, fermé ou tiré vers nous (p de 0 à 1) : on voit alors l'intérieur, ses parois, ses trois casiers.
+   Dans chaque casier, son dessin est couché sur la feutrine (il suit la perspective du tiroir) : on le touche pour sortir ses échantillons. */
 function dessinerTiroir(t){
   var g = $('#tir-' + t); if(!g) return; var p = S.tirP[t], x0 = TIR[t], w = TIR.w, kf = 1 + .22*p, px = 600 + (x0 - 600)*kf, py = TIR.y + 170*p, pw = w*kf, s = '';
+  var yb = TIR.y + 3, yf = py + 5, xb0 = x0 + 4, xb1 = x0 + w - 4, xf0 = px + 9*kf, xf1 = px + pw - 9*kf;
+  function pt(q, m){ return [xb0 + (xb1 - xb0)*q + ((xf0 + (xf1 - xf0)*q) - (xb0 + (xb1 - xb0)*q))*m, yb + (yf - yb)*m]; }
   if(p > 0.01){
     s += F('M' + x0 + ',' + TIR.y + ' L' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + f1(px + 9*kf) + ',' + f1(py + 5) + ' L' + f1(px) + ',' + f1(py) + ' Z', G('pFonce'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"') +
       F('M' + (x0 + w) + ',' + TIR.y + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(px + pw - 9*kf) + ',' + f1(py + 5) + ' L' + f1(px + pw) + ',' + f1(py) + ' Z', G('pFonce'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"') +
       F('M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(px + pw - 9*kf) + ',' + f1(py + 5) + ' L' + f1(px + 9*kf) + ',' + f1(py + 5) + ' Z', G('feutre'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"');
-    [1/3, 2/3].forEach(function(q){ var d = 'M' + f1(x0 + w*q) + ',' + (TIR.y + 3) + ' L' + f1(px + pw*q) + ',' + f1(py + 5); s += T(d, K, 7) + T(d, paletteBois().V[1], 3.5); });
-    s += '<path d="M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(x0 + w - 4 + (px + pw - 9*kf - x0 - w + 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' L' + f1(x0 + 4 + (px + 9*kf - x0 - 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' Z" fill="rgba(8,4,16,.42)"/>';
+    /* le dessin de chaque casier, couché au fond, avec sa petite étiquette de papier */
+    TIROIRS[t].forEach(function(k, n){
+      var c = pt((n + .5)/3, .44), e = pt((n + .5)/3, .84), ek = (.78 + .22*.44*p)*p, a = pt(n/3, 0), b = pt((n + 1)/3, 0), c2 = pt((n + 1)/3, 1), d2 = pt(n/3, 1), choisi = S.casier === k && S.tiroir === t;
+      if(p > .5 && !S.casier) s += '<ellipse class="rond rond-casier" cx="' + f1(c[0]) + '" cy="' + f1(c[1] + 2) + '" rx="' + f1(62*ek) + '" ry="' + f1(40*ek) + '"/>';
+      s += '<ellipse cx="' + f1(c[0] + 4) + '" cy="' + f1(c[1] + 16*ek) + '" rx="' + f1(46*ek) + '" ry="' + f1(13*ek) + '" fill="rgba(6,14,12,.5)" filter="url(#flou2)"/>' +
+        '<g transform="translate(' + f1(c[0]) + ',' + f1(c[1]) + ') scale(' + ek.toFixed(3) + ',' + (ek*.84).toFixed(3) + ')">' + picto(k, 0, 0, 104) + '</g>' +
+        '<g transform="translate(' + f1(e[0]) + ',' + f1(e[1]) + ') scale(' + (ek*1.06).toFixed(3) + ',' + (ek*.9).toFixed(3) + ') rotate(' + [-3, 2, -2][n] + ')">' + R(-44, -15, 88, 30, 3, choisi ? '#f5b945' : '#fff6d8', ' stroke-width="2.6"') + txt(0, 0.5, 23, CASIERS[k]) + '</g>' +
+        '<path data-casier="' + k + '" d="M' + f1(a[0]) + ',' + f1(a[1]) + ' L' + f1(b[0]) + ',' + f1(b[1]) + ' L' + f1(c2[0]) + ',' + f1(c2[1]) + ' L' + f1(d2[0]) + ',' + f1(d2[1]) + ' Z" fill="transparent"/>';
+    });
+    [1/3, 2/3].forEach(function(q){ var d = 'M' + f1(x0 + w*q) + ',' + (TIR.y + 3) + ' L' + f1(px + pw*q) + ',' + f1(py + 5); s += T(d, K, 7, ' pointer-events="none"') + T(d, paletteBois().V[1], 3.5, ' pointer-events="none"'); });
+    s += '<path pointer-events="none" d="M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(x0 + w - 4 + (px + pw - 9*kf - x0 - w + 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' L' + f1(x0 + 4 + (px + 9*kf - x0 - 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' Z" fill="rgba(8,4,16,.42)"/>';
   }
-  s += '<g transform="translate(' + f1(px) + ',' + f1(py) + ') scale(' + kf.toFixed(3) + ')">' + (p < .01 ? '<rect class="rond" x="-6" y="-6" width="' + (w + 12) + '" height="' + (TIR.h + 12) + '" rx="10"/>' : '') + facadeTiroir(t) + '</g>';
+  s += '<g class="facade" transform="translate(' + f1(px) + ',' + f1(py) + ') scale(' + kf.toFixed(3) + ')">' + (p < .01 ? '<rect class="rond" x="-6" y="-6" width="' + (w + 12) + '" height="' + (TIR.h + 12) + '" rx="10"/>' : '') + facadeTiroir(t) + '</g>';
   g.innerHTML = s; g.classList.toggle('tire', p > .01);
 }
+/* La petite étagère de la paillasse : surélevée sur ses pieds, pour profiter de la hauteur de l'écran */
 function etagere(){
-  var s = ombre(600, 262, 230, 8, .4) + P('M388,244 L812,244 L806,218 L394,218 Z', G('boisH'), ' stroke-width="3.5"') + R(388, 244, 424, 16, 3, G('boisS'), ' stroke-width="3.5"') + reflet('M394,247 H806', 2, .3) + R(400, 258, 22, 8, 2, G('boisS'), ' stroke-width="3"') + R(778, 258, 22, 8, 2, G('boisS'), ' stroke-width="3"');
+  var y = YBOC, s = ombre(600, 266, 232, 8, .38), pied = function(x, y0, y1, l, f){ return R(x, y0, l, y1 - y0, 3, f, ' stroke-width="3"') + reflet('M' + (x + 3) + ',' + (y0 + 5) + ' V' + (y1 - 5), 1.6, .25); };
+  /* les pieds du fond, puis la planche, puis les pieds de devant */
+  s += pied(410, y + 6, 250, 10, G('boisS')) + pied(780, y + 6, 250, 10, G('boisS')) + T('M414,' + (y + 44) + ' H786', K, 7) + T('M414,' + (y + 44) + ' H786', '#94603a', 3.5);
+  s += P('M388,' + (y + 12) + ' L812,' + (y + 12) + ' L806,' + (y - 14) + ' L394,' + (y - 14) + ' Z', G('boisH'), ' stroke-width="3.5"') + R(388, y + 12, 424, 16, 3, G('boisS'), ' stroke-width="3.5"') + reflet('M394,' + (y + 15) + ' H806', 2, .3);
+  s += pied(396, y + 26, 264, 13, G('boisV')) + pied(593.5, y + 26, 264, 13, G('boisV')) + pied(791, y + 26, 264, 13, G('boisV'));
   BOCAUX.forEach(function(b){ s += bocal(b); });
   return s;
 }
@@ -909,15 +1046,25 @@ function bougieScene(){
     '<circle cx="' + x + '" cy="' + (y - 78) + '" r="52" fill="' + G('halo') + '" opacity=".6"/><g transform="translate(' + x + ',' + y + ') scale(' + BOUGIE.e + ')">' + artBougie() + '</g>' +
     '<rect x="' + (x-40) + '" y="' + (y-112) + '" width="84" height="130" fill="transparent"/></g>';
 }
-/* L'ardoise posée contre le mur, au fond du plateau : c'est là que s'écrit le code à transmettre */
+/* L'ardoise posée contre le mur, au fond du plateau : c'est là que s'écrit le code à transmettre (trois formes, comme tous les codes du jeu).
+   Quand le code est écrit, on peut la toucher pour le voir en grand. */
 function ardoiseScene(){
-  return '<g transform="translate(-22,0)">' + ombre(334, 268, 46, 6, .4) + '<g transform="rotate(-2 331 262)">' + R(290, 150, 82, 114, 4, G('boisS')) + '<rect x="297" y="157" width="68" height="100" rx="2" fill="' + G('ardoise') + '" stroke="' + K + '" stroke-width="2.5"/>' +
-    '<path d="M300,172 q20,-10 62,-4 M302,240 q30,8 60,-2" stroke="#fff" stroke-width="5" opacity=".05" fill="none"/><g id="ardoise"></g></g></g>';
+  var A = ARD, cx = A.x + A.w/2;
+  return '<g id="gArdoise" data-act="ardoise" tabindex="0" role="button" aria-label="L\'ardoise du code"><rect class="rond" x="' + (A.x - 7) + '" y="' + (A.y - 7) + '" width="' + (A.w + 14) + '" height="' + (A.h + 14) + '" rx="12"/>' + ombre(cx + 4, A.y + A.h + 5, A.w*.56, 6, .4) +
+    '<g transform="rotate(-1.6 ' + cx + ' ' + (A.y + A.h) + ')">' + R(A.x, A.y, A.w, A.h, 5, G('boisS')) + grainBois(A.x + 3, A.y + 3, A.w - 6, A.h - 6, 5, 61, '#3a2010', .35) +
+    '<rect x="' + (A.x + 9) + '" y="' + (A.y + 9) + '" width="' + (A.w - 18) + '" height="' + (A.h - 18) + '" rx="2" fill="' + G('ardoise') + '" stroke="' + K + '" stroke-width="2.5"/>' +
+    '<path d="M' + (A.x + 14) + ',' + (A.y + 26) + ' q40,-12 ' + (A.w - 30) + ',-4 M' + (A.x + 16) + ',' + (A.y + A.h - 22) + ' q50,9 ' + (A.w - 34) + ',-3" stroke="#fff" stroke-width="6" opacity=".05" fill="none"/>' +
+    Cir(A.x + 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') + Cir(A.x + A.w - 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') +
+    '<g id="ardoise"></g></g><rect x="' + A.x + '" y="' + A.y + '" width="' + A.w + '" height="' + A.h + '" fill="transparent"/></g>';
 }
+function codePret(){ return !!(S.trouves.fil && S.trouves.noir); }
 function majArdoise(){
-  var g = $('#ardoise'); if(!g) return; var pret = S.trouves.fil && S.trouves.noir, craie = ' font-family="Caveat, cursive" font-weight="700" text-anchor="middle" fill="#f4f1ea"';
-  if(!pret){ g.innerHTML = '<path d="M323,200 l0,-14 l-5,0 l0,-5 l26,0 l0,5 l-5,0 l0,14 l11,20 q2,7 -6,7 l-26,0 q-8,0 -6,-7 Z" fill="none" stroke="#f4f1ea" stroke-width="2" opacity=".5" stroke-linejoin="round"/><path d="M316,216 h30" stroke="#f4f1ea" stroke-width="2" opacity=".35"/>'; return; }
-  g.innerHTML = '<text x="331" y="176" font-size="13"' + craie + '>pour le</text><text x="331" y="190" font-size="15"' + craie + '>Barde</text><text class="chiffres" x="331" y="224" font-size="32"' + craie.replace('#f4f1ea', '#ffe9a3') + '>' + TXT.code + '</text><path d="M308,238 q23,7 46,-1" stroke="#f4f1ea" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+  var g = $('#ardoise'); if(!g) return; var A = ARD, cx = A.x + A.w/2, cy = A.y + A.h/2, pret = codePret(), craie = ' font-family="Caveat, cursive" font-weight="700" text-anchor="middle" fill="#f4f1ea"';
+  $('#gArdoise').classList.toggle('pret', pret);
+  if(!pret){ g.innerHTML = '<g transform="translate(' + (cx - 331) + ',' + (cy - 207) + ')"><path d="M323,200 l0,-14 l-5,0 l0,-5 l26,0 l0,5 l-5,0 l0,14 l11,20 q2,7 -6,7 l-26,0 q-8,0 -6,-7 Z" fill="none" stroke="#f4f1ea" stroke-width="2" opacity=".5" stroke-linejoin="round"/><path d="M316,216 h30" stroke="#f4f1ea" stroke-width="2" opacity=".35"/></g>'; return; }
+  g.innerHTML = '<text x="' + cx + '" y="' + (A.y + 30) + '" font-size="17"' + craie + '>pour le Barde</text>' +
+    '<g class="formes">' + TXT.code.map(function(e, n){ return '<text x="' + (cx - 37 + n*37) + '" y="' + (cy + 9) + '" font-size="29" text-anchor="middle" dominant-baseline="central">' + e + '</text>'; }).join('') + '</g>' +
+    '<path d="M' + (cx - 48) + ',' + (A.y + A.h - 21) + ' q48,8 96,-1" stroke="#f4f1ea" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/>';
 }
 /* Le microscope de laiton, avec sa grosse molette ×10, ×40, ×100 */
 function microscopeScene(){
@@ -965,18 +1112,36 @@ function loupeScene(){
     reflet('M' + (x - 34) + ',' + (y - 8) + ' Q' + (x - 18) + ',' + (y - 17) + ' ' + (x + 4) + ',' + (y - 17), 3.5, .85) + '</g>' +
     '<rect x="' + (x - 64) + '" y="' + (y - 34) + '" width="200" height="74" fill="transparent"/></g>';
 }
-/* Le carré de cuir où sont posés les échantillons : une étiquette « n° 1 » et un tout petit bout de fil */
+/* Le grand carré de cuir où l'on pose ce qu'on analyse : une peau épaisse, avec son grain, ses plis, ses coutures et ses rivets.
+   Dessus : une étiquette « n° 1 » et un tout petit bout de fil. */
+function quadPlat(X, a, b, r){ return 'M' + f1(xP(-X, b)) + ',' + b + ' L' + f1(xP(X, b)) + ',' + b + ' L' + f1(xP(X, a)) + ',' + a + ' L' + f1(xP(-X, a)) + ',' + a + ' Z'; }
 function cuirScene(){
-  var q = 'M' + f1(xP(-118, 456)) + ',456 L' + f1(xP(118, 456)) + ',456 L' + f1(xP(118, 368)) + ',368 L' + f1(xP(-118, 368)) + ',368 Z', q2 = 'M' + f1(xP(-108, 449)) + ',449 L' + f1(xP(108, 449)) + ',449 L' + f1(xP(108, 375)) + ',375 L' + f1(xP(-108, 375)) + ',375 Z';
-  return '<g id="gLame" class="objet" data-act="lame" tabindex="0" role="button" aria-label="L\'échantillon numéro 1, sur le carré de cuir"><ellipse class="rond" cx="600" cy="412" rx="132" ry="56"/>' + ombre(604, 420, 122, 44, .3) +
-    P(q, G('cuir'), ' stroke-width="3.5"') + '<path d="' + q2 + '" fill="none" stroke="#6e4226" stroke-width="1.8" stroke-dasharray="6 5" opacity=".75"/><path d="' + q2 + '" fill="#fff" opacity=".06"/>' +
-    '<g transform="rotate(-6 536 392)">' + R(514, 382, 44, 20, 3, '#fff6d8', ' stroke-width="2.2"') + txt(536, 392.5, 12, 'n° 1') + '</g><g id="filLame"></g>' +
-    '<rect x="470" y="358" width="260" height="106" fill="transparent"/></g>';
+  var C = CUIR, q = quadPlat(C.X, C.y0, C.y1), q2 = quadPlat(C.X - 13, C.y0 + 9, C.y1 - 10), Rn = rng(77), i, x, y, d = '', d2 = '';
+  var s = '<g id="gLame" class="objet" data-act="lame" tabindex="0" role="button" aria-label="L\'échantillon numéro 1, sur le carré de cuir"><path class="rond" d="' + quadPlat(C.X + 12, C.y0 - 8, C.y1 + 12) + '" stroke-linejoin="round"/>' + ombre(606, 404, 194, 76, .34);
+  /* l'épaisseur de la peau, puis le dessus */
+  s += '<path d="' + quadPlat(C.X + .5, C.y0 + 6, C.y1 + 6) + '" fill="#7a5232" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/><clipPath id="clipCuir"><path d="' + q + '"/></clipPath>' + P(q, G('cuir'), ' stroke-width="3.5"') + '<g clip-path="url(#clipCuir)" pointer-events="none">';
+  /* les marbrures de la peau */
+  for(i = 0; i < 30; i++){ y = C.y0 + Rn()*(C.y1 - C.y0); x = xP((Rn()*2 - 1)*C.X, y); s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(16 + Rn()*34) + '" ry="' + f1(5 + Rn()*11) + '" fill="' + (Rn() < .55 ? '#8a5a30' : '#f6e0ba') + '" opacity="' + (.05 + Rn()*.08).toFixed(2) + '"/>'; }
+  /* le grain : de tout petits pores, des griffures */
+  for(i = 0; i < 420; i++){ y = C.y0 + Rn()*(C.y1 - C.y0); x = xP((Rn()*2 - 1)*C.X, y); if(i % 3) d += 'M' + f1(x) + ',' + f1(y) + 'h.1 '; else d2 += 'M' + f1(x) + ',' + f1(y) + 'h.1 '; }
+  s += '<path d="' + d + '" stroke="#6e4226" stroke-width="1.5" stroke-linecap="round" opacity=".34" fill="none"/><path d="' + d2 + '" stroke="#fff3d6" stroke-width="1.3" stroke-linecap="round" opacity=".3" fill="none"/>';
+  s += T('M452,352 q40,10 76,-2 M680,340 q26,16 60,8 M470,446 q54,-12 104,2 M640,452 q40,-8 96,4 M556,372 q8,20 -6,44 M700,388 q-10,22 6,40', '#7a4a28', 1.5, ' opacity=".3"') +
+    T('M453,354 q40,10 76,-2 M681,342 q26,16 60,8 M471,448 q54,-12 104,2 M641,454 q40,-8 96,4', '#fff3d6', 1.2, ' opacity=".28"') +
+    T('M520,430 l22,-9 M664,364 l16,7 l-4,6 M742,420 l-18,10', '#5a3418', 1.1, ' opacity=".35"');
+  /* les bords patinés, un reflet doux */
+  s += '<path d="' + q + '" fill="none" stroke="#7a4a28" stroke-width="20" opacity=".16"/><path d="' + q + '" fill="none" stroke="#5a3418" stroke-width="7" opacity=".14"/><ellipse cx="560" cy="372" rx="120" ry="30" fill="#fff" opacity=".06"/></g>';
+  /* la couture (le fil, et son ombre claire), les quatre rivets, la marque au fer */
+  s += '<path d="' + q2 + '" fill="none" stroke="#f6e3c0" stroke-width="2.2" stroke-dasharray="8 6" stroke-dashoffset="7" stroke-linecap="round" opacity=".4"/><path d="' + q2 + '" fill="none" stroke="#5a3418" stroke-width="2.2" stroke-dasharray="8 6" stroke-linecap="round" opacity=".85"/>';
+  [[-1, C.y0 + 9], [1, C.y0 + 9], [1, C.y1 - 10], [-1, C.y1 - 10]].forEach(function(c){ var rx = xP(c[0]*(C.X - 13), c[1]); s += Cir(rx, c[1], 4.6, G('laitonV'), ' stroke-width="2"') + '<circle cx="' + f1(rx - 1.2) + '" cy="' + (c[1] - 1.4) + '" r="1.3" fill="#fff" opacity=".7"/>'; });
+  s += '<g transform="translate(727,440) scale(.62)" opacity=".42" pointer-events="none"><path d="M-6,-16 l0,-12 l-4,0 l0,-4 l20,0 l0,4 l-4,0 l0,12 l10,18 q2,6 -5,6 l-22,0 q-7,0 -5,-6 Z" fill="none" stroke="#5a3418" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="-6" r="23" fill="none" stroke="#5a3418" stroke-width="2.4"/></g>';
+  s += '<g transform="rotate(-6 506 352)">' + '<rect x="481" y="341" width="54" height="26" rx="3" fill="rgba(40,20,8,.3)"/>' + R(479, 338, 54, 26, 3, '#fff6d8', ' stroke-width="2.4"') + txt(506, 351.5, 16, 'n° 1') + Cir(484.5, 351, 2, '#b3262f', ' stroke-width="1"') + '</g><g id="filLame"></g>' +
+    '<rect x="424" y="318" width="352" height="160" fill="transparent"/></g>';
+  return s;
 }
 function dessinerLame(){
   /* de loin, l'échantillon n'est qu'un tout petit trait : c'est la loupe qui montre ce que c'est */
-  var d = 'M592,416 q5,-4 10,0 t10,0 t9,-1', s = T(d, K, 4.6) + T(d, ROUGE, 2.2);
-  if(S.trouves.fil) s += '<text x="676" y="380" font-size="20" text-anchor="middle" dominant-baseline="central">✅</text>';
+  var d = 'M590,408 q5,-4 10,0 t10,0 t9,-1', s = '<ellipse cx="605" cy="411" rx="18" ry="3.5" fill="rgba(40,20,8,.28)"/>' + T(d, K, 4.6) + T(d, ROUGE, 2.2);
+  if(S.trouves.fil) s += '<text x="716" y="350" font-size="24" text-anchor="middle" dominant-baseline="central">✅</text>';
   var g = $('#filLame'); if(g) g.innerHTML = s;
 }
 /* Une coupelle de verre posée en (x, y) : la paroi, le fond, ce qu'il y a dedans, le bord épais, les reflets */
@@ -1007,14 +1172,15 @@ function dessinerCoupes(){
     if(c){ g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button'); g.setAttribute('aria-label', 'Coupelle : ' + OBJETS[c.t].nom); } else { g.removeAttribute('tabindex'); g.removeAttribute('role'); g.removeAttribute('aria-label'); }
   });
 }
-function posCible(){ if(S.sel === 'fil' || !S.sel) return {x:606, y:414}; var i = S.coupes.findIndex(function(c){ return c && c.t === S.sel; }); return {x:COUPES[i][0], y:COUPES[i][1] - 9}; }
+function posCible(){ if(S.sel === 'fil' || !S.sel) return {x:605, y:408}; var i = S.coupes.findIndex(function(c){ return c && c.t === S.sel; }); return {x:COUPES[i][0], y:COUPES[i][1] - 9}; }
 function dessinerScene(){
   var s = defs() + mur() + plateau();
-  s += '<g id="tir-g" data-act="tiroir" data-outil="tiroir" data-t="g" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.g.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>' +
-       '<g id="tir-d" data-act="tiroir" data-outil="tiroir" data-t="d" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.d.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>';
+  s += '<g id="tir-g" data-act="tiroir" data-t="g" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.g.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>' +
+       '<g id="tir-d" data-act="tiroir" data-t="d" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.d.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>';
   /* sur le plateau, du fond vers le devant */
-  s += bougieScene() + ardoiseScene() + etagere() + microscopeScene() + testScene() + cuirScene() + loupeScene();
+  s += bougieScene() + etagere() + ardoiseScene() + microscopeScene() + testScene() + cuirScene();
   COUPES.forEach(function(q, i){ s += '<g data-act="coupe" data-i="' + i + '" id="coupe' + i + '"></g>'; });
+  s += loupeScene();     /* en dernier : quand elle s'envole, la loupe passe par-dessus tout, coupelles comprises */
   /* la pipette et la pince (cachées : elles servent aux expériences) */
   s += '<g id="pipette" style="display:none">' + R(-6, -84, 12, 72, 5, 'rgba(220,245,255,.85)', ' stroke-width="3"') + P('M-11,-110 C-11,-127 11,-127 11,-110 L8,-84 L-8,-84 Z', '#d9603a', ' stroke-width="3"') + '<rect id="pipLiq" x="-3.5" y="-40" width="7" height="26" fill="#9fd8ff"/></g>';
   s += '<g id="goutte" style="display:none"><path d="M0,-10 C6,-1 7,5 0,10 C-7,5 -6,-1 0,-10 Z" stroke="' + K + '" stroke-width="2"/></g>';
@@ -1036,18 +1202,21 @@ function camera(cx, cy, z){
 }
 function ouvrirMode(nom, html){
   var vieille = $('#calque .bulle-o'); if(vieille) vieille.remove();
-  S.mode = nom; $('#hudBoite').innerHTML = html; $('#modeHaut').hidden = false; $('#cadre').classList.add('ouvert'); document.body.classList.add('ouvert');
+  S.mode = nom; son('zoom'); $('#hudBoite').innerHTML = html; $('#modeHaut').hidden = false; $('#cadre').classList.add('ouvert'); document.body.classList.add('ouvert');
   document.body.className = document.body.className.replace(/\bm-\w+/g, '').trim() + ' m-' + nom;
 }
 function fermerMode(){
-  if(S.occupe) return;
+  if(S.occupe || !S.mode) return;
   var t = S.vientDeTrouver;
-  S.mode = null; S.essai = null; S.balaie = null; S.tiroir = null; S.casier = null; S.tirP = {g:0, d:0}; $('#hudBoite').innerHTML = ''; $('#modeHaut').hidden = true;
+  son('dezoom'); S.mode = null; S.essai = null; S.balaie = null; S.tiroir = null; S.casier = null; S.tirP = {g:0, d:0}; $('#hudBoite').innerHTML = ''; $('#modeHaut').hidden = true;
   $('#cadre').classList.remove('ouvert'); document.body.classList.remove('ouvert'); document.body.className = document.body.className.replace(/\bm-\w+/g, '').trim(); cancelAnimationFrame(boucle);
   camera(600, 320, 1);
   var lm = $('#loupeMobile'); if(lm) lm.removeAttribute('transform');
   dessinerTiroir('g'); dessinerTiroir('d'); dessinerLame(); dessinerCoupes(); majArdoise(); majBandeScene(); majOutils();
-  if(t){ S.vientDeTrouver = null; mimiDit('Mrrraou !', true); if(S.sel === t){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  if(t){ S.vientDeTrouver = null; if(S.sel === t){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  /* le code vient de s'écrire sur l'ardoise : un petit bruit de craie */
+  if(codePret() && !S.codeEcrit){ S.codeEcrit = true; attendre(500, function(){ son('craie'); }); }
+  mimiReveil();
 }
 function nomTrouve(t){ var o = OBJETS[t]; return o.liquide ? CIBLES[S.niveau].map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
 /* Un petit dessin qui vole d'un endroit à un autre (la carte vers la loupe, le témoin vers la bandelette) */
@@ -1071,7 +1240,7 @@ function svgVerre(){
     '<circle class="anneau" cx="50" cy="50" r="46.5" fill="none" stroke-width="6"/><path d="M19,34 C25,21 37,13 50,11.5" fill="none" stroke="#fff" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></svg>';
 }
 function ouvrirLoupe(tir){
-  if(S.occupe) return; var p = posCible(), g = $('#loupeMobile'), dx = p.x - LOUPE.x, dy = p.y - 18 - LOUPE.y; S.occupe = true;
+  if(S.occupe) return; var p = posCible(), g = $('#loupeMobile'), dx = p.x - LOUPE.x, dy = p.y - 14 - LOUPE.y; S.occupe = true; son('loupe');
   /* la loupe se soulève et vient se poser juste au-dessus de ce qu'on a choisi (le cuir ou une coupelle), puis on se rapproche */
   tween(640, function(q){ g.setAttribute('transform', 'translate(' + f1(dx*q) + ',' + f1(dy*q - Math.sin(q*Math.PI)*48) + ')'); }, function(){
     attendre(180, function(){
@@ -1083,29 +1252,29 @@ function ouvrirLoupe(tir){
   });
 }
 function vueLoupe(){ var c = posCible(); camera(borne(c.x, 520, 690), 410.5, 1.45); }
-/* Le grand verre : au-dessus de ce qu'on regarde ; dans un coin quand un tiroir est ouvert (pour laisser la place aux échantillons) */
+/* Le grand verre : toujours posé sur ce qu'on regarde. Quand un tiroir est ouvert, il rapetisse et remonte, mais il reste du côté
+   de l'objet (au-dessus de la coupelle si on la voit encore, sinon contre le bord le plus proche d'elle). */
 function placerVerre(){
-  var h = $('#verreHud'); if(!h) return; var c = posCible(), r, x, y;
-  if(S.tiroir){ r = 116; x = S.tiroir === 'g' ? 1200 - r - 20 : r + 20; y = r + 16; }
-  else { r = 162; x = borne(600 + (c.x - CAM.cx)*CAM.z, r + 16, 1200 - r - 16); y = borne(320 + (c.y - CAM.cy)*CAM.z - 98, r + 10, 640 - r - 10); }
+  var h = $('#verreHud'); if(!h) return; var c = posCible(), r, x, y, sx = 600 + (c.x - CAM.cx)*CAM.z, sy = 320 + (c.y - CAM.cy)*CAM.z;
+  if(S.tiroir){ r = 116; x = borne(sx, r + 20, 1200 - r - 20); y = r + 16; }
+  else { r = 162; x = borne(sx, r + 16, 1200 - r - 16); y = borne(sy - 58, r + 10, 640 - r - 10); }
   h.style.cssText = pos(x - r, y - r, 2*r, 2*r); S.verre = {x:x, y:y, r:r};
-  var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(600*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(y + r + 6) + '*var(--u))';
+  var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(' + f1(borne(x, 300, 900)) + '*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(Math.min(y + r + 6, 582)) + '*var(--u))';
   setTimeout(rendVerre, reduit ? 0 : 470);
 }
-/* Sous le grand verre : les deux tiroirs de la paillasse. On en tire un vers soi, on choisit un casier, on touche un échantillon. */
+/* Sous le grand verre : les deux tiroirs de la paillasse. On en tire un vers soi : ses trois casiers montrent leur dessin, rangé dedans.
+   On touche un casier : ses échantillons s'étalent. Toucher à côté fait revenir d'un pas. */
 function majBas(){
-  var z = $('#zoneTiroir'); if(!z) return; var t = S.sel, o = OBJETS[t], fait = !!S.trouves[t], barres = S.barres[t] || {}, flair = S.flair[t] || {}, h = '';
+  var z = $('#zoneTiroir'); if(!z) return; var t = S.sel, o = OBJETS[t], fait = !!S.trouves[t], barres = S.barres[t] || {}, h = '';
   $('#verreHud').classList.toggle('bon', fait);
   var rb = $('#ruban'); rb.hidden = !fait; if(fait) rb.textContent = '✅ ' + nomTrouve(t);
   if(!S.tiroir || S.tirP[S.tiroir] < 1){ z.innerHTML = ''; return; }
-  h += '<div class="onglets pose" style="' + pos(44, 258, 1112, 46) + '">' + TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="onglet" data-casier="' + k + '" aria-pressed="' + (S.casier === k) + '">' + svgPicto(k) + '<span>' + CASIERS[k] + '</span></button>'; }).join('') +
+  h += '<div class="onglets pose" style="' + pos(44, 258, 1112, 46) + '">' + (S.casier ? TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="onglet" data-casier="' + k + '" aria-pressed="' + (S.casier === k) + '">' + svgPicto(k) + '<span>' + CASIERS[k] + '</span></button>'; }).join('') : '') +
     '<button type="button" class="onglet refermer" id="bRefermer"><span class="poignee-o"></span>Refermer</button></div>';
-  if(!S.casier){
-    h += '<div class="casiers pose" style="' + pos(60, 318, 1080, 268) + '">' + TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="casier" data-casier="' + k + '">' + svgPicto(k) + '<span class="plaque">' + CASIERS[k] + '</span><span class="nb">' + contenuCasier(k).length + '</span></button>'; }).join('') + '</div>';
-  } else {
+  if(S.casier){
     var l = contenuCasier(S.casier), cols = Math.max(6, Math.ceil(l.length/2));
     h += '<div class="rangee pose" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && r === o.bon;
-      return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (flair[id] ? ' flair' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] || flair[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (flair[id] ? '<span class="marque">🐾</span>' : (barres[id] ? '<span class="marque">❌</span>' : ''))) + '</button>'; }).join('') + '</div>';
+      return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (barres[id] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('') + '</div>';
   }
   z.innerHTML = h;
   requestAnimationFrame(function(){ $$('.ech canvas').forEach(function(cv){ var rr = prep(cv), id = cv.parentNode.dataset.ech.split(':'); fondCuir(rr.ctx, rr.w, rr.h); dessinerRef(rr.ctx, rr.w, rr.h, id[0], id[1], 31 + id[1].length, rr.h/66*({fils:.9, grains:.74, poils:.85, petales:.8}[id[0]] || 1)); }); });
@@ -1127,31 +1296,32 @@ function rendVerre(a){
 function ouvrirTiroir(t){
   if(S.occupe || S.mode !== 'loupe' || S.tiroir === t) return;
   var suite = function(){
-    S.occupe = true; S.tiroir = t; S.casier = null; camera(t === 'g' ? 286.5 : 913.5, 537, 1.94); placerVerre();
+    S.occupe = true; S.tiroir = t; S.casier = null; son('tiroirOuvre'); camera(t === 'g' ? 286.5 : 913.5, 537, 1.94); placerVerre();
     tween(440, function(p){ S.tirP[t] = p; dessinerTiroir(t); }, function(){ S.tirP[t] = 1; S.occupe = false; majBas(); });
   };
   if(S.tiroir) fermerTiroir(suite); else suite();
 }
 function fermerTiroir(fin){
-  var t = S.tiroir; if(!t || S.occupe) return; S.occupe = true; $('#zoneTiroir').innerHTML = ''; S.tiroir = null; S.casier = null; vueLoupe(); placerVerre();
+  var t = S.tiroir; if(!t || S.occupe) return; S.occupe = true; son('tiroirFerme'); $('#zoneTiroir').innerHTML = ''; S.tiroir = null; S.casier = null; vueLoupe(); placerVerre();
   tween(340, function(p){ S.tirP[t] = 1 - p; dessinerTiroir(t); }, function(){ S.tirP[t] = 0; dessinerTiroir(t); S.occupe = false; majBas(); if(typeof fin === 'function') fin(); });
 }
-function ouvrirCasier(k){ if(S.occupe) return; S.casier = k; majBas(); }
+function ouvrirCasier(k){ if(S.occupe || !S.tiroir || S.casier === k) return; S.casier = k; son('casier'); dessinerTiroir(S.tiroir); majBas(); }
+function fermerCasier(){ if(S.occupe || !S.casier) return; S.casier = null; son('recule'); dessinerTiroir(S.tiroir); majBas(); }
 /* On touche un échantillon : il vient se poser sous la loupe à côté de l'objet, l'ordinateur compare et le dit clairement */
 function essayer(id, bouton){
-  var t = S.sel, o = OBJETS[t]; if(S.trouves[t] || S.occupe || (S.barres[t] || {})[id] || (S.flair[t] || {})[id]) return;
-  S.occupe = true; $$('.ech').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.ech === id)); });
+  var t = S.sel, o = OBJETS[t]; if(S.trouves[t] || S.occupe || (S.barres[t] || {})[id]) return;
+  S.occupe = true; son('carte'); $$('.ech').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.ech === id)); });
   volVers(bouton, $('#cvVerre'), function(){
     S.essai = id;
     tween(380, function(p){ rendVerre(p); }, function(){
-      tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id === o.tiroir + ':' + o.bon); });
+      son('compare'); tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id === o.tiroir + ':' + o.bon); });
     });
   });
 }
 function verdict(id, bon){
   var t = S.sel, v = $('#verreHud');
-  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; tampon('✅'); majBas(); rendVerre(1); return; }
-  v.classList.add('faux'); tampon('❌');
+  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; son('bon'); tampon('✅'); majBas(); rendVerre(1); return; }
+  v.classList.add('faux'); son('faux'); tampon('❌');
   attendre(950, function(){
     v.classList.remove('faux'); S.barres[t] = S.barres[t] || {}; S.barres[t][id] = true;
     tween(300, function(p){ rendVerre(1 - p); }, function(){ S.essai = null; S.occupe = false; rendVerre(); majBas(); });
@@ -1235,25 +1405,29 @@ function majMolette(){
 }
 function ouvrirMicro(){
   if(S.occupe) return; S.zoom = 10; S.cx = 500; S.cy = 500;
-  ouvrirMode('micro', '<div class="oculaire-hud" id="ocuHud" style="' + pos(42, 70, 500, 500) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
-    '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(24, 12, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
-  camera(783, 283, 1.749); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
+  ouvrirMode('micro', '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
+    '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(14, 8, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
+  camera(819, 287, 1.62); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
 }
 function lancerBoucle(){ cancelAnimationFrame(boucle); if(S.mode === 'micro' && !reduit){ var f = function(){ rendLentille(); boucle = requestAnimationFrame(f); }; boucle = requestAnimationFrame(f); } }
+/* Sur un grand écran, l'image du microscope grossit avec l'oculaire (sur un téléphone ou une tablette : un point = un point) */
+function echL(T0){ return Math.max(1, T0/560); }
 function rendLentille(){
-  var cv = $('#lentille'); if(!cv) return; var r = prep(cv), c = r.ctx, T0 = r.w, half = T0/2, now = performance.now();
+  var cv = $('#lentille'); if(!cv) return; var r = prep(cv), c = r.ctx, T0 = r.w, k = echL(T0), vis = T0/k, half = vis/2, now = performance.now();
   S.cx = Math.min(Math.max(S.cx, half), MW - half); S.cy = Math.min(Math.max(S.cy, half), MW - half); var sx = S.cx - half, sy = S.cy - half;
-  c.clearRect(0,0,T0,T0); c.save(); c.beginPath(); c.arc(half, half, half, 0, 6.283); c.clip();
-  c.drawImage(scenes[S.zoom], sx*SDPR, sy*SDPR, T0*SDPR, T0*SDPR, 0, 0, T0, T0);
+  c.clearRect(0,0,T0,T0); c.save(); c.beginPath(); c.arc(T0/2, T0/2, T0/2, 0, 6.283); c.clip();
+  c.save(); c.scale(k, k);
+  c.drawImage(scenes[S.zoom], sx*SDPR, sy*SDPR, vis*SDPR, vis*SDPR, 0, 0, vis, vis);
   S.items[S.zoom].forEach(function(it){ if(!it.pris) dessinerItem(c, it, it.x - sx, it.y - sy, now); });
   if(S.zoom === 100) dessinerMite(c, S.mite.x - sx, S.mite.y - sy, now);
-  var vg = c.createRadialGradient(half, half, half*.7, half, half, half); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.55)'); c.fillStyle = vg; c.fillRect(0,0,T0,T0); c.restore();
+  c.restore();
+  var vg = c.createRadialGradient(T0/2, T0/2, T0*.35, T0/2, T0/2, T0/2); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.55)'); c.fillStyle = vg; c.fillRect(0,0,T0,T0); c.restore();
 }
 function brancherLentille(){
   var cv = $('#lentille'), pc = $('#pinceC'), boite = $('#hudBoite'), gl = null;
   var suivre = function(e){ var v = boite.getBoundingClientRect(); pc.hidden = false; pc.style.left = (e.clientX - v.left) + 'px'; pc.style.top = (e.clientY - v.top) + 'px'; };
   cv.addEventListener('pointerdown', function(e){ cv.setPointerCapture(e.pointerId); gl = {x:e.clientX, y:e.clientY, cx:S.cx, cy:S.cy, bouge:false}; suivre(e); });
-  cv.addEventListener('pointermove', function(e){ suivre(e); if(!gl) return; var dx = e.clientX - gl.x, dy = e.clientY - gl.y; if(Math.hypot(dx,dy) > 9) gl.bouge = true; if(gl.bouge){ S.cx = gl.cx - dx; S.cy = gl.cy - dy; rendLentille(); } });
+  cv.addEventListener('pointermove', function(e){ suivre(e); if(!gl) return; var dx = e.clientX - gl.x, dy = e.clientY - gl.y; if(Math.hypot(dx,dy) > 9) gl.bouge = true; if(gl.bouge){ var k = echL(cv.getBoundingClientRect().width); S.cx = gl.cx - dx/k; S.cy = gl.cy - dy/k; rendLentille(); } });
   cv.addEventListener('pointerup', function(e){ if(gl && !gl.bouge){ var r = cv.getBoundingClientRect(); toucherLentille(e.clientX - r.left, e.clientY - r.top, r.width, e.clientX, e.clientY); } gl = null; if(e.pointerType !== 'mouse') setTimeout(function(){ pc.hidden = true; }, 500); });
   cv.addEventListener('pointerleave', function(){ if(!gl) pc.hidden = true; });
   cv.addEventListener('pointercancel', function(){ gl = null; pc.hidden = true; });
@@ -1263,19 +1437,19 @@ function bulleLentille(gx, gy, t){
   b.style.left = (gx - r.left) + 'px'; b.style.top = (gy - r.top) + 'px'; v.appendChild(b); setTimeout(function(){ b.remove(); }, 1700);
 }
 function toucherLentille(lx, ly, T0, gx, gy){
-  var half = T0/2; if(Math.hypot(lx - half, ly - half) > half) return;
-  var wx0 = S.cx - half + lx, wy0 = S.cy - half + ly, marge = Math.max(16, T0*.045);
-  if(S.zoom === 100 && Math.hypot(S.mite.x - wx0, S.mite.y - wy0) < 42){ S.mite = {x:150 + Math.random()*700, y:150 + Math.random()*700}; bulleLentille(gx, gy, TXT.mite); return; }
+  var half = T0/2, k = echL(T0); if(Math.hypot(lx - half, ly - half) > half) return;
+  var wx0 = S.cx + (lx - half)/k, wy0 = S.cy + (ly - half)/k, marge = Math.max(16, T0*.045)/k;
+  if(S.zoom === 100 && Math.hypot(S.mite.x - wx0, S.mite.y - wy0) < 42){ S.mite = {x:150 + Math.random()*700, y:150 + Math.random()*700}; son('acarien'); bulleLentille(gx, gy, TXT.mite); return; }
   var it = S.items[S.zoom].filter(function(i){ return !i.pris && Math.hypot(i.x - wx0, i.y - wy0) < i.r + marge; })[0];
   if(!it) return;
-  if(it.min && it.min > S.zoom){ bulleLentille(gx, gy, TXT.trop); var pc = $('#pinceC'); pc.classList.remove('non'); void pc.offsetWidth; pc.classList.add('non'); secouer($('#moletteG')); return; }
+  if(it.min && it.min > S.zoom){ son('tropPetit'); bulleLentille(gx, gy, TXT.trop); var pc = $('#pinceC'); pc.classList.remove('non'); void pc.offsetWidth; pc.classList.add('non'); secouer($('#moletteG')); return; }
   it.pris = true; if(it.id) [10, 40].forEach(function(z){ S.items[z].forEach(function(i){ if(i.ref === it.id) i.pris = true; }); });
-  var idx = ajouterCoupe(it.t); rendLentille(); bulleLentille(gx, gy, TXT.pris); envoler(it.t, gx, gy, idx);
+  var idx = ajouterCoupe(it.t); son('prise'); rendLentille(); bulleLentille(gx, gy, TXT.pris); envoler(it.t, gx, gy, idx);
 }
 function ajouterCoupe(t){ var i = S.coupes.findIndex(function(c){ return c && c.t === t; }); if(i >= 0){ S.coupes[i].n++; return i; } for(i = 0; i < COUPES.length - 1 && S.coupes[i]; i++){} S.coupes[i] = {t:t, n:1}; return i; }
 /* La pince attrape le grain et le porte jusqu'à sa coupelle, qui est restée à sa place sur la paillasse */
 function envoler(t, gx, gy, idx){
-  var cible = $('#coupe' + idx), fin = function(){ dessinerCoupes(); dessinerLame(); };
+  var cible = $('#coupe' + idx), fin = function(){ son('coupelle'); dessinerCoupes(); dessinerLame(); };
   if(!cible || reduit){ fin(); return; }
   var pc = $('#pinceC'); if(pc) pc.hidden = true;
   var v = document.createElement('div'); v.className = 'vol pince-vol'; v.innerHTML = svgPince('<g transform="translate(6,74)">' + contenuCoupe(t, 0, 0, 1, 26) + '</g>'); document.body.appendChild(v);
@@ -1284,14 +1458,16 @@ function envoler(t, gx, gy, idx){
   setTimeout(function(){ v.remove(); fin(); }, 760);
 }
 function changerZoom(z){
-  if(z === S.zoom || S.mode !== 'micro') return; var rx = S.cx/MW, ry = S.cy/MW; S.zoom = z; S.cx = rx*MW; S.cy = ry*MW; majMolette();
+  if(z === S.zoom || S.mode !== 'micro') return; var rx = S.cx/MW, ry = S.cy/MW; S.zoom = z; S.cx = rx*MW; S.cy = ry*MW; son('molette'); majMolette();
   var cv = $('#lentille'); if(cv && !reduit){ cv.classList.add('flou'); setTimeout(function(){ cv.classList.remove('flou'); }, 240); }
   rendLentille(); lancerBoucle();
 }
 
 /* ============ Le test des couleurs : la bandelette de papier buvard (une vraie chromatographie) ============
    Une goutte du liquide sur la bandelette, le pied dans l'alcool : les couleurs montent et se séparent en bandes.
-   On compare avec les bandelettes témoins du carnet de teintures : celle qui a les mêmes bandes donne l'ingrédient. */
+   On compare avec les bandelettes témoins du carnet de teintures : celle qui a les mêmes bandes donne l'ingrédient.
+   Une teinture est souvent un mélange : chaque bande porte un « ? » tant qu'aucun ingrédient ne l'explique. Tant qu'il reste un « ? »,
+   il reste un ingrédient à trouver. */
 function svgIngr(k){
   var s = '<svg viewBox="0 0 60 60" aria-hidden="true">';
   if(k === 'garance'){ var r = 'M30,20 C25,32 19,40 12,53 M30,20 C30,34 28,44 29,57 M30,20 C36,32 42,40 49,51 M22,36 l-7,1 M37,34 l8,2 M29,44 l6,3';
@@ -1317,44 +1493,54 @@ function ouvrirTest(){
   if(S.occupe) return;
   if(S.bande){ montrerTest(); return; }
   /* la pipette prend une goutte dans la coupelle et la dépose sur la bandelette */
-  var de = posCible(), pip = $('#pipette'), x1 = TESTP.x, y1 = TESTP.y - 84; S.occupe = true; pip.style.display = ''; $('#pipLiq').setAttribute('fill', couleurRouge());
+  var de = posCible(), pip = $('#pipette'), x1 = TESTP.x, y1 = TESTP.y - 84; S.occupe = true; son('pipette'); pip.style.display = ''; $('#pipLiq').setAttribute('fill', couleurRouge());
   tween(700, function(p){ pip.setAttribute('transform', 'translate(' + f1(de.x + (x1 - de.x)*p) + ',' + f1(de.y - 20 + (y1 - de.y + 20)*p - Math.sin(p*Math.PI)*70) + ')'); }, function(){
-    attendre(260, function(){ pip.style.display = 'none'; S.occupe = false; S.bande = .001; montrerTest(); });
+    son('goutte'); attendre(260, function(){ pip.style.display = 'none'; S.occupe = false; S.bande = .001; montrerTest(); });
   });
 }
 function montrerTest(){
-  ouvrirMode('test', '<div class="bande-hud pose" id="bandeHud" style="' + pos(96, 26, 250, 590) + '"><canvas id="cvBande" aria-label="La bandelette"></canvas><div class="tampon" id="tampon" aria-hidden="true"></div></div>' +
+  ouvrirMode('test', '<div class="bande-hud pose" id="bandeHud" style="' + pos(34, 26, 340, 590) + '"><canvas id="cvBande" aria-label="La bandelette"></canvas><div class="tampon" id="tampon" aria-hidden="true"></div></div>' +
     '<div class="ruban" id="ruban" style="left:calc(785*var(--u));top:calc(34*var(--u))" hidden></div><div class="temoins pose" id="temoins" role="group" aria-label="Le carnet de teintures" style="' + pos(392, 96, 786, 520) + '"></div>');
   camera(270, 340, 2); majTemoins();
-  if(S.bande < 1){ S.occupe = true; tweenLin(reduit ? 1 : 2800, function(p){ S.bande = Math.max(.001, p); rendBande(); }, function(){ S.bande = 1; S.occupe = false; majBandeScene(); majTemoins(); rendBande(); }); }
+  if(S.bande < 1){ S.occupe = true; son('monte'); tweenLin(reduit ? 1 : 2800, function(p){ S.bande = Math.max(.001, p); rendBande(); }, function(){ S.bande = 1; S.occupe = false; majBandeScene(); majTemoins(); rendBande(); }); }
   requestAnimationFrame(rendBande);
 }
-/* La bandelette vue de près (à gauche) ; le témoin qu'on essaie vient se poser juste à côté */
+/* La bandelette vue de près (à gauche), avec une pastille par bande : « ? » tant qu'on ne sait pas d'où elle vient, « ✓ » ensuite.
+   Le témoin qu'on essaie vient se poser juste à côté. */
 function rendBande(){
-  var cv = $('#cvBande'); if(!cv) return; var r = prep(cv), c = r.ctx, w = r.w, h = r.h, e = S.essai, lw = w*.3;
+  var cv = $('#cvBande'); if(!cv) return; var r = prep(cv), c = r.ctx, w = r.w, h = r.h, e = S.essai, lw = w*.23, xb = w*.36, u = w/340;
   c.clearRect(0, 0, w, h);
-  c.lineCap = 'round'; c.strokeStyle = '#24182e'; c.lineWidth = h*.03; c.beginPath(); c.moveTo(w*.04, h*.045); c.lineTo(w*.96, h*.045); c.stroke(); c.strokeStyle = '#c98450'; c.lineWidth = h*.017; c.stroke();
-  dessinerBandelette(c, e ? w*.16 : w*.35, h*.05, lw, h*.9, CIBLES[S.niveau], S.bande, {seed:3});
-  if(e) dessinerBandelette(c, w*.54, h*.05, lw, h*.9, [e], 1, {seed:9});
-  if(S.balaie != null){ var by = h*(.95 - .9*S.balaie), g = c.createLinearGradient(0, by - 26, 0, by + 26); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, by - 26, w, 52); }
+  c.lineCap = 'round'; c.strokeStyle = '#24182e'; c.lineWidth = h*.03; c.beginPath(); c.moveTo(w*.28, h*.045); c.lineTo(w*.97, h*.045); c.stroke(); c.strokeStyle = '#c98450'; c.lineWidth = h*.017; c.stroke();
+  dessinerBandelette(c, xb, h*.05, lw, h*.9, CIBLES[S.niveau], S.bande, {seed:3});
+  if(e) dessinerBandelette(c, w*.69, h*.05, lw, h*.9, [e], 1, {seed:9});
+  if(S.bande >= 1){
+    var y0 = h*.86, course = h*.72, cx = w*.15, rr = Math.min(w*.085, h*.036);
+    bandesMelange().forEach(function(b){
+      var yb = y0 - course*b.y, ok = S.mix.indexOf(b.k) >= 0;
+      c.strokeStyle = 'rgba(36,24,46,.75)'; c.lineWidth = Math.max(1.5, 2.4*u); c.beginPath(); c.moveTo(xb - 3*u, yb); c.lineTo(cx + rr, yb); c.stroke();
+      c.fillStyle = ok ? '#7fe08a' : '#fff6d8'; c.strokeStyle = '#24182e'; c.lineWidth = Math.max(2, 3.2*u); c.beginPath(); c.arc(cx, yb, rr, 0, 6.283); c.fill(); c.stroke();
+      c.fillStyle = '#24182e'; c.font = '700 ' + f1(rr*1.4) + 'px Andika, "Trebuchet MS", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(ok ? '✓' : '?', cx, yb + rr*.08);
+    });
+  }
+  if(S.balaie != null){ var by = h*(.95 - .9*S.balaie), g = c.createLinearGradient(0, by - 26, 0, by + 26); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(w*.3, by - 26, w*.7, 52); }
 }
 function majTemoins(){
-  var m = $('#temoins'); if(!m) return; var fait = !!S.trouves.rouge, faux = S.barres.rouge || {}, flair = S.flair.rouge || {}, pret = S.bande >= 1;
+  var m = $('#temoins'); if(!m) return; var fait = !!S.trouves.rouge, faux = S.barres.rouge || {}, pret = S.bande >= 1;
   $('#bandeHud').classList.toggle('bon', fait); var rb = $('#ruban'); rb.hidden = !fait; if(fait) rb.textContent = '✅ ' + nomTrouve('rouge');
   m.innerHTML = TEINTES.map(function(i){ var ok = S.mix.indexOf(i.k) >= 0;
-    return '<button type="button" class="temoin' + (ok ? ' ok' : '') + (faux[i.k] ? ' barre' : '') + (flair[i.k] ? ' flair' : '') + '" data-temoin="' + i.k + '"' + (!pret || fait || ok || faux[i.k] || flair[i.k] ? ' disabled' : '') + '><canvas></canvas><span class="dessin">' + svgIngr(i.k) + '</span><span class="nm">' + i.nom + '</span>' +
-      (ok ? '<span class="marque">✅</span>' : (faux[i.k] ? '<span class="marque">❌</span>' : (flair[i.k] ? '<span class="marque">🐾</span>' : ''))) + '</button>'; }).join('');
+    return '<button type="button" class="temoin' + (ok ? ' ok' : '') + (faux[i.k] ? ' barre' : '') + '" data-temoin="' + i.k + '"' + (!pret || fait || ok || faux[i.k] ? ' disabled' : '') + '><canvas></canvas><span class="dessin">' + svgIngr(i.k) + '</span><span class="nm">' + i.nom + '</span>' +
+      (ok ? '<span class="marque">✅</span>' : (faux[i.k] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('');
   requestAnimationFrame(function(){ $$('.temoin canvas').forEach(function(cv){ var rr = prep(cv); rr.ctx.clearRect(0, 0, rr.w, rr.h); dessinerBandelette(rr.ctx, rr.w*.12, rr.h*.02, rr.w*.76, rr.h*.96, [cv.parentNode.dataset.temoin], 1, {seed:9}); }); });
 }
 /* On touche un témoin : il vient à côté de la bandelette, l'ordinateur compare les bandes et le dit clairement */
 function essayerTemoin(k, bouton){
-  if(S.occupe || S.trouves.rouge || S.mode !== 'test' || S.bande < 1) return; S.occupe = true;
+  if(S.occupe || S.trouves.rouge || S.mode !== 'test' || S.bande < 1) return; S.occupe = true; son('papier');
   volVers(bouton.querySelector('canvas'), $('#cvBande'), function(){
-    S.essai = k; rendBande();
+    S.essai = k; rendBande(); son('compare');
     tweenLin(reduit ? 1 : 800, function(p){ S.balaie = p; rendBande(); }, function(){
       S.balaie = null; var bon = CIBLES[S.niveau].indexOf(k) >= 0, v = $('#bandeHud');
-      if(bon){ S.mix.push(k); if(S.mix.length === CIBLES[S.niveau].length){ S.trouves.rouge = true; S.vientDeTrouver = 'rouge'; } tampon('✅'); attendre(900, function(){ S.essai = null; S.occupe = false; rendBande(); majTemoins(); }); return; }
-      v.classList.add('faux'); tampon('❌');
+      if(bon){ S.mix.push(k); if(S.mix.length === CIBLES[S.niveau].length){ S.trouves.rouge = true; S.vientDeTrouver = 'rouge'; } son('bon'); tampon('✅'); attendre(900, function(){ S.essai = null; S.occupe = false; rendBande(); majTemoins(); }); return; }
+      v.classList.add('faux'); son('faux'); tampon('❌');
       attendre(950, function(){ v.classList.remove('faux'); S.barres.rouge = S.barres.rouge || {}; S.barres.rouge[k] = true; S.essai = null; S.occupe = false; rendBande(); majTemoins(); });
     });
   }, .5);
@@ -1367,12 +1553,12 @@ function bulle(x, y, t, ms){
   b = document.createElement('div'); b.className = 'bulle-o'; b.textContent = t; b.style.left = Math.max(12, Math.min(88, x/12)) + '%'; b.style.top = (y/6.4) + '%'; c.appendChild(b);
   clearTimeout(bulleT); bulleT = setTimeout(function(){ b.remove(); }, ms || 4200);
 }
-function secouer(g){ if(!g) return; g.classList.remove('secoue-svg'); void g.getBoundingClientRect(); g.classList.add('secoue-svg'); setTimeout(function(){ g.classList.remove('secoue-svg'); }, 500); }
+function secouer(g){ if(!g) return; son('non'); g.classList.remove('secoue-svg'); void g.getBoundingClientRect(); g.classList.add('secoue-svg'); setTimeout(function(){ g.classList.remove('secoue-svg'); }, 500); }
 
 /* ============ Choisir ce qu'on analyse : les outils qui peuvent servir s'allument, les autres s'éteignent ============ */
 function utilisable(outil){
   var o = S.sel && OBJETS[S.sel]; if(!o) return null;
-  if(outil === 'loupe' || outil === 'tiroir') return !o.liquide;
+  if(outil === 'loupe') return !o.liquide;
   if(outil === 'micro') return S.sel === 'fil';
   if(outil === 'test') return !!o.liquide;
   return true;
@@ -1381,22 +1567,21 @@ function majOutils(){
   $$('#scene [data-outil]').forEach(function(g){ var u = utilisable(g.dataset.outil); g.classList.toggle('ok', u === true); g.classList.toggle('non', u === false); });
   document.body.classList.toggle('choisi', !!S.sel);
   var l = $('#gLame'); if(l) l.classList.toggle('sel', S.sel === 'fil');
-  if(mimi.el) mimi.el.classList.toggle('pret', mimiPeutFlairer());
 }
 function selectionner(t){
-  if(S.mode || S.occupe) return; S.sel = t; dessinerLame(); dessinerCoupes(); majOutils();
+  if(S.mode || S.occupe) return; if(t === 'fil' && mimiGene()) return; S.sel = t; son('choisir'); dessinerLame(); dessinerCoupes(); majOutils();
   var p = posCible(); bulle(p.x, p.y - 18, S.trouves[t] ? '✅ ' + nomTrouve(t) : OBJETS[t].nom, 1900);
 }
 
 /* ============ Les gouttes et la flamme ============ */
 function goutte(k){
   if(S.occupe || S.mode) return; var b = BOCAUX.filter(function(x){ return x.k === k; })[0], cible = posCible(), pip = $('#pipette'), gt = $('#goutte');
-  S.occupe = true; pip.style.display = ''; $('#pipLiq').setAttribute('fill', b.poudre ? '#f6f6f2' : b.liq);
+  S.occupe = true; son(b.poudre ? 'poudre' : 'pipette'); pip.style.display = ''; $('#pipLiq').setAttribute('fill', b.poudre ? '#f6f6f2' : b.liq);
   var x0 = b.x, y0 = b.y - 96, x1 = cible.x, y1 = cible.y - 52;
   tween(560, function(p){ pip.setAttribute('transform', 'translate(' + f1(x0 + (x1 - x0)*p) + ',' + f1(y0 + (y1 - y0)*p - Math.sin(p*Math.PI)*30) + ')'); }, function(){
     gt.style.display = ''; gt.querySelector('path').setAttribute('fill', TACHE[k].replace(/[\d.]+\)$/, '1)'));
     tween(320, function(p){ gt.setAttribute('transform', 'translate(' + x1 + ',' + f1(y1 + 12 + p*36) + ')'); }, function(){
-      gt.style.display = 'none'; effetTache(cible, k); reaction(k, cible);
+      gt.style.display = 'none'; son(b.poudre ? 'poudre' : 'goutte'); if(b.vapeur) son('chaud'); effetTache(cible, k); reaction(k, cible);
       tween(440, function(p){ pip.setAttribute('transform', 'translate(' + f1(x1 + (x0 - x1)*p) + ',' + f1(y1 + (y0 - y1)*p - Math.sin(p*Math.PI)*30) + ')'); }, function(){ pip.style.display = 'none'; S.occupe = false; majOutils(); });
     });
   });
@@ -1421,39 +1606,60 @@ function reaction(k, cible){
   bulle(cible.x, cible.y - 20, r.t, 5200);
   if(r.cree && !S.coupes.some(function(c){ return c && c.t === r.cree; })) nuageRouge(cible, function(){ ajouterCoupe(r.cree); dessinerCoupes(); });
   if(r.fx === 'violet' || r.fx === 'orange'){ S.teinte = r.fx === 'violet' ? '#8a4f9e' : '#e08a50'; dessinerCoupes(); setTimeout(function(){ S.teinte = null; dessinerCoupes(); }, 2600); }
-  if(r.fx === 'bulles') petitesBulles(cible);
+  if(r.fx === 'bulles'){ petitesBulles(cible); son('bulles'); }
+  if(r.cree || r.fx === 'violet' || r.fx === 'orange' || r.fx === 'pali') son('taches');
 }
 function flamme(){
   if(S.occupe || S.mode) return; var cible = posCible(), pince = $('#pince'), bout = $('#pinceBout'), r = REA[S.sel].flamme, o = OBJETS[S.sel], fil = S.sel === 'fil';
-  S.occupe = true; pince.style.display = ''; bout.setAttribute('fill', fil ? ROUGE : (o.coul || couleurRouge()));
+  S.occupe = true; son('pince'); pince.style.display = ''; bout.setAttribute('fill', fil ? ROUGE : (o.coul || couleurRouge()));
   var x0 = cible.x, y0 = cible.y, x1 = BOUGIE.x, y1 = BOUGIE.y - 86*BOUGIE.e;
   tween(680, function(p){ pince.setAttribute('transform', 'translate(' + f1(x0 + (x1 - x0)*p) + ',' + f1(y0 + (y1 - y0)*p - Math.sin(p*Math.PI)*46) + ')'); }, function(){
-    var f = $('#gLampe .flamme'); f.style.transform = 'scale(1.45)';
+    var f = $('#gLampe .flamme'); f.style.transform = 'scale(1.45)'; son('flamme');
     var fumee = ''; for(var i=0;i<4;i++) fumee += '<circle cx="' + (x1 + i*4) + '" cy="' + (y1 - 14) + '" r="' + (5 + i*2.5) + '" fill="rgba(120,120,130,.45)"/>';
     $('#effets').insertAdjacentHTML('beforeend', '<g id="fumee">' + fumee + '</g>');
     var cs = document.querySelectorAll('#fumee circle'); tween(1300, function(p){ cs.forEach(function(c, i){ c.setAttribute('cy', y1 - 14 - p*(60 + i*18)); c.setAttribute('opacity', 1 - p); }); });
     if(fil) bout.setAttribute('fill', '#1a1210'); if(S.sel === 'noir') bout.setAttribute('fill', '#ff6a2a');
     attendre(1300, function(){ f.style.transform = ''; var g = $('#fumee'); if(g) g.remove(); bulle(x1 + 60, y1 - 6, r.t, 5600);
-      if(fil) mimiDit('Atchoum !', true);
       tween(520, function(p){ pince.setAttribute('transform', 'translate(' + f1(x1 + (x0 - x1)*p) + ',' + f1(y1 + (y0 - y1)*p) + ')'); }, function(){ pince.style.display = 'none'; S.occupe = false; majOutils(); });
     });
   });
 }
 
-/* ============ Branchements ============ */
+/* ============ L'ardoise : quand le code est écrit, on la touche pour le voir en grand ============ */
+function ouvrirArdoise(){ if(S.occupe || !codePret()) return; ouvrirMode('ardoise', ''); camera(ARD.x + ARD.w/2, ARD.y + ARD.h/2 + 2, 3.4); }
+
+/* ============ Branchements ============
+   Un toucher « à côté », dans un gros plan, fait revenir d'un pas : les échantillons se rangent, puis le tiroir se referme,
+   puis on quitte le gros plan. (La croix en haut à droite quitte d'un seul coup.) */
+var clic = {pris:false, mode:null, occupe:false};
+document.addEventListener('click', function(){ clic.pris = false; clic.mode = S.mode; clic.occupe = S.occupe; }, true);
+function dansVerre(e){ var v = S.verre, b = $('#hudBoite').getBoundingClientRect(), u = b.width/1200; return !!v && Math.hypot((e.clientX - b.left)/u - v.x, (e.clientY - b.top)/u - v.y) < v.r; }
+function reculer(e){
+  if(S.occupe) return;
+  if(S.mode === 'loupe'){ if(dansVerre(e)) return; if(S.casier) fermerCasier(); else if(S.tiroir) fermerTiroir(); else fermerMode(); }
+  else if(S.mode === 'micro'){ if(e.target.closest('#gMicro, [data-act="coupe"]')) return; fermerMode(); }
+  else fermerMode();
+}
 $('#scene').addEventListener('click', function(e){
-  var g = e.target.closest('[data-act]'); if(!g || S.occupe) return; var a = g.dataset.act, z;
-  /* dans un gros plan, l'image reste vivante : les tiroirs sous la loupe, la molette du microscope */
-  if(S.mode === 'loupe'){ if(a === 'tiroir'){ if(S.tiroir === g.dataset.t) fermerTiroir(); else ouvrirTiroir(g.dataset.t); } return; }
-  if(S.mode === 'micro'){ if((z = e.target.closest('[data-zoom]'))) changerZoom(+z.dataset.zoom); else if(a === 'molette' || a === 'micro') changerZoom(({10:40, 40:100, 100:10})[S.zoom]); return; }
+  var g = e.target.closest('[data-act]'); if(!g || S.occupe) return; var a = g.dataset.act, z, k;
+  /* dans un gros plan, l'image reste vivante : les tiroirs et leurs casiers sous la loupe, la molette du microscope */
+  if(S.mode === 'loupe'){
+    if(a !== 'tiroir') return; clic.pris = true;
+    if(S.tiroir !== g.dataset.t) ouvrirTiroir(g.dataset.t); else if((k = e.target.closest('[data-casier]'))) ouvrirCasier(k.dataset.casier); else fermerTiroir();
+    return; }
+  if(S.mode === 'micro'){ if((z = e.target.closest('[data-zoom]'))){ clic.pris = true; changerZoom(+z.dataset.zoom); } else if(a === 'molette' || a === 'micro'){ clic.pris = true; changerZoom(({10:40, 40:100, 100:10})[S.zoom]); } return; }
   if(S.mode) return;
+  clic.pris = true;
   if(a === 'molette') g = $('#gMicro'), a = 'micro';
+  if(a === 'ardoise'){ if(codePret()) ouvrirArdoise(); else son('clic'); return; }
   if(a === 'lame') return selectionner('fil');
   if(a === 'coupe'){ var c = S.coupes[+g.dataset.i]; if(c) selectionner(c.t); return; }
   /* un outil : il faut d'abord avoir choisi quelque chose à analyser, et que l'outil puisse servir */
   if(!S.sel){ $$('#scene .objet').forEach(secouer); return; }
+  if(a === 'tiroir'){ if(OBJETS[S.sel].liquide){ secouer(g); return; } if(S.sel === 'fil' && mimiGene()) return; return ouvrirLoupe(g.dataset.t); }
   if(utilisable(g.dataset.outil) === false){ secouer(g); return; }
-  if(a === 'loupe') ouvrirLoupe(); else if(a === 'tiroir') ouvrirLoupe(g.dataset.t); else if(a === 'micro') ouvrirMicro();
+  if(S.sel === 'fil' && mimiGene()) return;
+  if(a === 'loupe') ouvrirLoupe(); else if(a === 'micro') ouvrirMicro();
   else if(a === 'goutte') goutte(g.dataset.k); else if(a === 'flamme') flamme(); else if(a === 'test') ouvrirTest();
 });
 document.addEventListener('keydown', function(e){
@@ -1462,20 +1668,25 @@ document.addEventListener('keydown', function(e){
 });
 document.addEventListener('click', function(e){
   var b;
+  if(clic.pris) return;
   if(e.target.closest('#bFermer')) return fermerMode();
   if(e.target.closest('#bRefermer')) return fermerTiroir();
   if((b = e.target.closest('[data-ech]'))) return essayer(b.dataset.ech, b);
   if((b = e.target.closest('[data-temoin]'))) return essayerTemoin(b.dataset.temoin, b);
   if((b = e.target.closest('[data-casier]'))) return ouvrirCasier(b.dataset.casier);
   if(e.target.closest('#zoomTxt')) return changerZoom(({10:40, 40:100, 100:10})[S.zoom]);
-  if(e.target.closest('#bReglages')){ var pn = $('#reglages'); pn.hidden = !pn.hidden; return; }
+  if(e.target.closest('#bReglages')){ var pn = $('#reglages'); pn.hidden = !pn.hidden; son('clic'); return; }
   if(e.target.closest('#bRecommencer')) return demarrer(S.niveau);
   if(e.target.closest('#bPlein')) return pleinEcran();
-  if((b = e.target.closest('[data-style]'))){ var cle = b.dataset.style; ST[cle] = (ST[cle] + 1) % (cle.slice(-1) === 'F' ? 5 : THEMES.length); gardeStyle(); majStyles(); dessinerScene(); majOutils(); return; }
+  if(e.target.closest('#bSon')){ SON.actif = !SON.actif; try { localStorage.setItem('brumeval-labo-son', SON.actif ? 'oui' : 'non'); } catch(err){} majStyles(); son('clic'); return; }
+  if((b = e.target.closest('[data-style]'))){ var cle = b.dataset.style; ST[cle] = (ST[cle] + 1) % (cle.slice(-1) === 'F' ? 5 : THEMES.length); gardeStyle(); majStyles(); dessinerScene(); majOutils(); son('clic'); return; }
   if((b = e.target.closest('#nvF, #nvD'))) return demarrer(b.id === 'nvF' ? 'facile' : 'difficile');
+  /* rien de tout ça : dans un gros plan, c'est un toucher « à côté » */
+  if(clic.mode && clic.mode === S.mode && !clic.occupe && !e.target.closest('#hudBoite, #modeHaut, .barre-haut, .mimi')) reculer(e);
 });
 /* Les réglages de la maquette : la paillasse et le mur choisis dans l'atelier (dans le jeu, ils viendront de la sauvegarde) */
 function majStyles(){
+  $('#bSon').textContent = SON.actif ? '🔈 Sons' : '🔇 Sons'; $('#bSon').setAttribute('aria-pressed', String(SON.actif));
   $('#stPaF').textContent = FORMES_PA[ST.paF]; $('#stPaT').textContent = THEMES[ST.paT].nom; $('#stMurF').textContent = FORMES_MUR[ST.murF]; $('#stMurT').textContent = THEMES[ST.murT].nom;
 }
 /* Tout se mesure avec la même unité : --u = la taille d'un point du dessin à l'écran */
@@ -1496,10 +1707,10 @@ function demarrer(niveau){
   neuf(niveau);
   $('#nvF').setAttribute('aria-pressed', String(niveau === 'facile')); $('#nvD').setAttribute('aria-pressed', String(niveau === 'difficile'));
   mesure(); majStyles(); dessinerScene();
-  if(!mimi.el) poserMimi(); else { mimi.enRoute = false; mimiPlace(GUET); mimiPose('assis'); }
+  if(!mimi.el) poserMimi(); else mimiRetour();
   majOutils();
 }
 demarrer('facile');
-window.__labo = {etat:function(){ return S; }, rendre:function(){ rendLentille(); }, mimi:mimi, style:ST};
+window.__labo = {etat:function(){ return S; }, rendre:function(){ rendLentille(); }, mimi:mimi, mimiVient:mimiVient, style:ST, son:SON, sons:SONS};
 })();
 </script>

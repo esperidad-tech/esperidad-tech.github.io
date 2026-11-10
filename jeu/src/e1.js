@@ -306,7 +306,7 @@ E[1] = {
     basile:{ou:{matin:'potager', apresmidi:'potager', soir:'taverne'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'Dans mon lit ! Mais hier après-midi, j\'ai planté des fleurs devant la mairie. Mes grosses bottes ont dû laisser des traces.', note:'Basile a planté des fleurs devant la mairie hier après-midi, avec ses grosses bottes.'},
       {q:'Avez-vous vu quelque chose ?', a:'Quand je suis parti, à six heures du soir, la fenêtre de la mairie était bien fermée.', note:'Basile : à 6 heures du soir, la fenêtre de la mairie était fermée.'},
-      {q:'Vous connaissez la forêt ?', a:'La forêt ? Elle est si grande qu\'on s\'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan.', note:'Basile : on se perd dans la forêt. Le Grand Livre du Sage cacherait un vieux plan.'}
+      {q:'Vous connaissez la forêt ?', a:'La forêt ? Elle est si grande qu\'on s\'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan. Demande-lui !', note:'Basile : on se perd dans la forêt. Le Grand Livre du Sage cacherait un vieux plan : demande au Sage !'}
     ]},
     odette:{ou:{matin:'L2', apresmidi:'place', soir:'L2'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'À ma fenêtre, comme toutes les nuits : je ne dors jamais ! La lumière de la boulangerie est restée allumée jusqu\'au matin.', note:'Odette : la lumière de la boulangerie est restée allumée toute la nuit.'},

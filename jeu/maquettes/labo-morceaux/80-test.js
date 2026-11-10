@@ -1,7 +1,9 @@
 
 /* ============ Le test des couleurs : la bandelette de papier buvard (une vraie chromatographie) ============
    Une goutte du liquide sur la bandelette, le pied dans l'alcool : les couleurs montent et se séparent en bandes.
-   On compare avec les bandelettes témoins du carnet de teintures : celle qui a les mêmes bandes donne l'ingrédient. */
+   On compare avec les bandelettes témoins du carnet de teintures : celle qui a les mêmes bandes donne l'ingrédient.
+   Une teinture est souvent un mélange : chaque bande porte un « ? » tant qu'aucun ingrédient ne l'explique. Tant qu'il reste un « ? »,
+   il reste un ingrédient à trouver. */
 function svgIngr(k){
   var s = '<svg viewBox="0 0 60 60" aria-hidden="true">';
   if(k === 'garance'){ var r = 'M30,20 C25,32 19,40 12,53 M30,20 C30,34 28,44 29,57 M30,20 C36,32 42,40 49,51 M22,36 l-7,1 M37,34 l8,2 M29,44 l6,3';
@@ -27,44 +29,54 @@ function ouvrirTest(){
   if(S.occupe) return;
   if(S.bande){ montrerTest(); return; }
   /* la pipette prend une goutte dans la coupelle et la dépose sur la bandelette */
-  var de = posCible(), pip = $('#pipette'), x1 = TESTP.x, y1 = TESTP.y - 84; S.occupe = true; pip.style.display = ''; $('#pipLiq').setAttribute('fill', couleurRouge());
+  var de = posCible(), pip = $('#pipette'), x1 = TESTP.x, y1 = TESTP.y - 84; S.occupe = true; son('pipette'); pip.style.display = ''; $('#pipLiq').setAttribute('fill', couleurRouge());
   tween(700, function(p){ pip.setAttribute('transform', 'translate(' + f1(de.x + (x1 - de.x)*p) + ',' + f1(de.y - 20 + (y1 - de.y + 20)*p - Math.sin(p*Math.PI)*70) + ')'); }, function(){
-    attendre(260, function(){ pip.style.display = 'none'; S.occupe = false; S.bande = .001; montrerTest(); });
+    son('goutte'); attendre(260, function(){ pip.style.display = 'none'; S.occupe = false; S.bande = .001; montrerTest(); });
   });
 }
 function montrerTest(){
-  ouvrirMode('test', '<div class="bande-hud pose" id="bandeHud" style="' + pos(96, 26, 250, 590) + '"><canvas id="cvBande" aria-label="La bandelette"></canvas><div class="tampon" id="tampon" aria-hidden="true"></div></div>' +
+  ouvrirMode('test', '<div class="bande-hud pose" id="bandeHud" style="' + pos(34, 26, 340, 590) + '"><canvas id="cvBande" aria-label="La bandelette"></canvas><div class="tampon" id="tampon" aria-hidden="true"></div></div>' +
     '<div class="ruban" id="ruban" style="left:calc(785*var(--u));top:calc(34*var(--u))" hidden></div><div class="temoins pose" id="temoins" role="group" aria-label="Le carnet de teintures" style="' + pos(392, 96, 786, 520) + '"></div>');
   camera(270, 340, 2); majTemoins();
-  if(S.bande < 1){ S.occupe = true; tweenLin(reduit ? 1 : 2800, function(p){ S.bande = Math.max(.001, p); rendBande(); }, function(){ S.bande = 1; S.occupe = false; majBandeScene(); majTemoins(); rendBande(); }); }
+  if(S.bande < 1){ S.occupe = true; son('monte'); tweenLin(reduit ? 1 : 2800, function(p){ S.bande = Math.max(.001, p); rendBande(); }, function(){ S.bande = 1; S.occupe = false; majBandeScene(); majTemoins(); rendBande(); }); }
   requestAnimationFrame(rendBande);
 }
-/* La bandelette vue de près (à gauche) ; le témoin qu'on essaie vient se poser juste à côté */
+/* La bandelette vue de près (à gauche), avec une pastille par bande : « ? » tant qu'on ne sait pas d'où elle vient, « ✓ » ensuite.
+   Le témoin qu'on essaie vient se poser juste à côté. */
 function rendBande(){
-  var cv = $('#cvBande'); if(!cv) return; var r = prep(cv), c = r.ctx, w = r.w, h = r.h, e = S.essai, lw = w*.3;
+  var cv = $('#cvBande'); if(!cv) return; var r = prep(cv), c = r.ctx, w = r.w, h = r.h, e = S.essai, lw = w*.23, xb = w*.36, u = w/340;
   c.clearRect(0, 0, w, h);
-  c.lineCap = 'round'; c.strokeStyle = '#24182e'; c.lineWidth = h*.03; c.beginPath(); c.moveTo(w*.04, h*.045); c.lineTo(w*.96, h*.045); c.stroke(); c.strokeStyle = '#c98450'; c.lineWidth = h*.017; c.stroke();
-  dessinerBandelette(c, e ? w*.16 : w*.35, h*.05, lw, h*.9, CIBLES[S.niveau], S.bande, {seed:3});
-  if(e) dessinerBandelette(c, w*.54, h*.05, lw, h*.9, [e], 1, {seed:9});
-  if(S.balaie != null){ var by = h*(.95 - .9*S.balaie), g = c.createLinearGradient(0, by - 26, 0, by + 26); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, by - 26, w, 52); }
+  c.lineCap = 'round'; c.strokeStyle = '#24182e'; c.lineWidth = h*.03; c.beginPath(); c.moveTo(w*.28, h*.045); c.lineTo(w*.97, h*.045); c.stroke(); c.strokeStyle = '#c98450'; c.lineWidth = h*.017; c.stroke();
+  dessinerBandelette(c, xb, h*.05, lw, h*.9, CIBLES[S.niveau], S.bande, {seed:3});
+  if(e) dessinerBandelette(c, w*.69, h*.05, lw, h*.9, [e], 1, {seed:9});
+  if(S.bande >= 1){
+    var y0 = h*.86, course = h*.72, cx = w*.15, rr = Math.min(w*.085, h*.036);
+    bandesMelange().forEach(function(b){
+      var yb = y0 - course*b.y, ok = S.mix.indexOf(b.k) >= 0;
+      c.strokeStyle = 'rgba(36,24,46,.75)'; c.lineWidth = Math.max(1.5, 2.4*u); c.beginPath(); c.moveTo(xb - 3*u, yb); c.lineTo(cx + rr, yb); c.stroke();
+      c.fillStyle = ok ? '#7fe08a' : '#fff6d8'; c.strokeStyle = '#24182e'; c.lineWidth = Math.max(2, 3.2*u); c.beginPath(); c.arc(cx, yb, rr, 0, 6.283); c.fill(); c.stroke();
+      c.fillStyle = '#24182e'; c.font = '700 ' + f1(rr*1.4) + 'px Andika, "Trebuchet MS", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(ok ? '✓' : '?', cx, yb + rr*.08);
+    });
+  }
+  if(S.balaie != null){ var by = h*(.95 - .9*S.balaie), g = c.createLinearGradient(0, by - 26, 0, by + 26); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(w*.3, by - 26, w*.7, 52); }
 }
 function majTemoins(){
-  var m = $('#temoins'); if(!m) return; var fait = !!S.trouves.rouge, faux = S.barres.rouge || {}, flair = S.flair.rouge || {}, pret = S.bande >= 1;
+  var m = $('#temoins'); if(!m) return; var fait = !!S.trouves.rouge, faux = S.barres.rouge || {}, pret = S.bande >= 1;
   $('#bandeHud').classList.toggle('bon', fait); var rb = $('#ruban'); rb.hidden = !fait; if(fait) rb.textContent = '✅ ' + nomTrouve('rouge');
   m.innerHTML = TEINTES.map(function(i){ var ok = S.mix.indexOf(i.k) >= 0;
-    return '<button type="button" class="temoin' + (ok ? ' ok' : '') + (faux[i.k] ? ' barre' : '') + (flair[i.k] ? ' flair' : '') + '" data-temoin="' + i.k + '"' + (!pret || fait || ok || faux[i.k] || flair[i.k] ? ' disabled' : '') + '><canvas></canvas><span class="dessin">' + svgIngr(i.k) + '</span><span class="nm">' + i.nom + '</span>' +
-      (ok ? '<span class="marque">✅</span>' : (faux[i.k] ? '<span class="marque">❌</span>' : (flair[i.k] ? '<span class="marque">🐾</span>' : ''))) + '</button>'; }).join('');
+    return '<button type="button" class="temoin' + (ok ? ' ok' : '') + (faux[i.k] ? ' barre' : '') + '" data-temoin="' + i.k + '"' + (!pret || fait || ok || faux[i.k] ? ' disabled' : '') + '><canvas></canvas><span class="dessin">' + svgIngr(i.k) + '</span><span class="nm">' + i.nom + '</span>' +
+      (ok ? '<span class="marque">✅</span>' : (faux[i.k] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('');
   requestAnimationFrame(function(){ $$('.temoin canvas').forEach(function(cv){ var rr = prep(cv); rr.ctx.clearRect(0, 0, rr.w, rr.h); dessinerBandelette(rr.ctx, rr.w*.12, rr.h*.02, rr.w*.76, rr.h*.96, [cv.parentNode.dataset.temoin], 1, {seed:9}); }); });
 }
 /* On touche un témoin : il vient à côté de la bandelette, l'ordinateur compare les bandes et le dit clairement */
 function essayerTemoin(k, bouton){
-  if(S.occupe || S.trouves.rouge || S.mode !== 'test' || S.bande < 1) return; S.occupe = true;
+  if(S.occupe || S.trouves.rouge || S.mode !== 'test' || S.bande < 1) return; S.occupe = true; son('papier');
   volVers(bouton.querySelector('canvas'), $('#cvBande'), function(){
-    S.essai = k; rendBande();
+    S.essai = k; rendBande(); son('compare');
     tweenLin(reduit ? 1 : 800, function(p){ S.balaie = p; rendBande(); }, function(){
       S.balaie = null; var bon = CIBLES[S.niveau].indexOf(k) >= 0, v = $('#bandeHud');
-      if(bon){ S.mix.push(k); if(S.mix.length === CIBLES[S.niveau].length){ S.trouves.rouge = true; S.vientDeTrouver = 'rouge'; } tampon('✅'); attendre(900, function(){ S.essai = null; S.occupe = false; rendBande(); majTemoins(); }); return; }
-      v.classList.add('faux'); tampon('❌');
+      if(bon){ S.mix.push(k); if(S.mix.length === CIBLES[S.niveau].length){ S.trouves.rouge = true; S.vientDeTrouver = 'rouge'; } son('bon'); tampon('✅'); attendre(900, function(){ S.essai = null; S.occupe = false; rendBande(); majTemoins(); }); return; }
+      v.classList.add('faux'); son('faux'); tampon('❌');
       attendre(950, function(){ v.classList.remove('faux'); S.barres.rouge = S.barres.rouge || {}; S.barres.rouge[k] = true; S.essai = null; S.occupe = false; rendBande(); majTemoins(); });
     });
   }, .5);

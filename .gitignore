@@ -12,3 +12,6 @@ jeu/test/partie2-tendre/
 jeu/donjon/moteur/sortie/
 jeu/donjon/moteur/captures/
 jeu/donjon/essai/captures/critique/
+
+# les captures du test des bulles de la paillasse (refaites à chaque fois)
+jeu/test/paillasse/

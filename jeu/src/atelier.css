@@ -779,6 +779,18 @@
 .at-t-lutrin.at-livre-appel .at-lu-halo{opacity:1;animation:at-appel .5s ease-in-out infinite alternate}
 .at-t-lutrin.at-livre-appel > svg{animation:at-hop 1.4s ease-in-out infinite;transform-origin:50% 100%}
 /* un toucher sur la décoration : de petites étincelles */
+/* Les trois bulles de la paillasse (Romain, 10 novembre) : les mêmes petites pastilles que sur la carte (le bleu du jeu, un contour foncé,
+   toutes rondes, elles arrivent l'une après l'autre en rebondissant) ; « Analyser » lance quelque chose : jaune, texte noir. */
+.at-bulles-pa{position:absolute;z-index:6;transform:translate(-50%,-100%);display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding-bottom:6px;width:max-content;max-width:min(470px,96vw);pointer-events:none}
+.at-bulle-pa{pointer-events:auto;display:flex;align-items:center;gap:5px;margin:0;background:var(--nuit-2,#1c2447);color:var(--lune,#eef0ff);border:2px solid #0b1030;border-radius:999px;padding:4px 12px;min-height:40px;
+  font:inherit;font-size:.86rem;font-weight:700;line-height:1.2;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
+  animation:at-bulle-pa .5s cubic-bezier(.3,1.65,.5,1) both;animation-delay:calc(var(--i,0) * 70ms)}
+.at-bulle-pa span{font-size:1.15em;line-height:1}
+.at-bulle-pa svg{width:22px;height:17px;flex:none}
+.at-bulle-pa.at-bulle-go{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;font-weight:800}
+.at-bulle-pa:active{transform:scale(.94)}
+@keyframes at-bulle-pa{0%{opacity:0;transform:translateY(10px) scale(.4)}55%{opacity:1;transform:translateY(-3px) scale(1.1)}78%{transform:translateY(1px) scale(.96)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.at-bulle-pa{animation:none}}
 .at-etinc{position:absolute;width:0;height:0;pointer-events:none;z-index:5}
 .at-etinc i{position:absolute;left:0;top:0;font-style:normal;font-size:calc(12px + 14px * var(--k));color:#fff3a8;text-shadow:0 0 6px #ffd36a;animation:at-etinc .65s ease-out forwards}
 .at-etinc i:nth-child(1){--ex:-38px;--ey:-30px}.at-etinc i:nth-child(2){--ex:36px;--ey:-34px}.at-etinc i:nth-child(3){--ex:-26px;--ey:22px}.at-etinc i:nth-child(4){--ex:30px;--ey:18px}

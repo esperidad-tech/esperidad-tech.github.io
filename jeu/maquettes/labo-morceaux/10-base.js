@@ -36,6 +36,7 @@ function rad(id, st, cx, cy, r){ return '<radialGradient id="g-' + id + '" cx="'
    Le plateau va du bord avant (y = YF, à l'échelle 1) au fond (y = YB). Tout ce qui s'éloigne fuit vers le même point (600, VY),
    très haut au-dessus de l'image. Un objet posé à la hauteur d'écran y est dessiné à l'échelle kY(y). */
 var VW = 1200, VH = 640, VY = -620, YF = 478, YB = 236, EL = .485;
+var YBOC = 188;   /* la hauteur d'écran où sont posés les bocaux, sur leur petite étagère surélevée */
 function kY(y){ return (y - VY)/(YF - VY); }
 function xP(X, y){ return 600 + X*kY(y); }
 function yT(t){ return VY + (YF - VY)/(1 + t*.2827); }
@@ -55,7 +56,8 @@ function paletteBois(){
 function palettePlateau(){
   var c = THEMES[ST.paT].c, b = paletteBois(), t = ST.paT;
   if(ST.paF === 1) return {g:[t ? melange('#c9c4dc', c, .3) : '#c4bfd8', t ? melange('#a6a0bd', c, .3) : '#a6a0bd', t ? melange('#8d87a6', c, .3) : '#8d87a6'], sorte:'pierre', joint:'rgba(40,30,70,.35)'};
-  if(ST.paF === 2) return {g:[t ? melange('#fbf9fd', c, .16) : '#fbf9fd', t ? melange('#efeaf6', c, .16) : '#efeaf6', t ? melange('#d9d3ea', c, .16) : '#d9d3ea'], sorte:'marbre', joint:'rgba(120,110,160,.5)'};
+  /* le marbre prend la couleur choisie : un marbre rose, vert, bleu… avec ses veines plus foncées (blanc veiné de gris en « naturel ») */
+  if(ST.paF === 2) return {g:[t ? melange('#fbf9fd', c, .3) : '#fbf9fd', t ? melange('#efeaf6', c, .42) : '#efeaf6', t ? melange('#d9d3ea', c, .52) : '#d9d3ea'], sorte:'marbre', joint:t ? sombre(c, .18) : '#8f88b0', veine2:t ? clair(c, .7) : '#ffffff'};
   return {g:b.H, sorte:ST.paF === 4 ? 'planches' : 'bois', joint:b.joint};
 }
 function couleursMur(){ var c = THEMES[ST.murT].c; return ST.murT ? [melange(c, '#3a2c5a', .2), melange(c, '#3a2c5a', .34), melange(c, '#3a2c5a', .48)] : ['#5a4c7c', '#4a3d68', '#3d3158']; }
@@ -70,9 +72,9 @@ function defs(){
     lin('boisH', [['#e9bb80',0],['#d9a066',.45],['#c48850',1]], 1) + lin('boisS', [['#94603a',0],['#62381d',1]], 1) +
     /* la paillasse choisie : son plateau, son chant, son tablier, ses tiroirs */
     v3('pPlateau', p.g) + (p.sorte === 'bois' || p.sorte === 'planches' ? lin('pChant', [[b.S[0],0],[b.S[1],1]], 1) : lin('pChant', [[sombre(p.g[2], .08),0],[sombre(p.g[2], .3),1]], 1)) +
-    (or ? lin('pTablier', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) : v3('pTablier', b.V)) + (or ? lin('pTiroir', [['#fdfbff',0],['#efeaf6',.6],['#d6d0e8',1]], 1) : v3('pTiroir', b.C)) + v3('pFonce', b.F) + v3('pInterieur', [b.F[0], b.F[1], b.F[2]]) +
+    (or ? lin('pTablier', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) : v3('pTablier', b.V)) + (or ? lin('pTiroir', [[melange('#fdfbff', THEMES[ST.paT].c, ST.paT ? .2 : 0),0],[melange('#efeaf6', THEMES[ST.paT].c, ST.paT ? .34 : 0),.6],[melange('#d6d0e8', THEMES[ST.paT].c, ST.paT ? .46 : 0),1]], 1) : v3('pTiroir', b.C)) + v3('pFonce', b.F) + v3('pInterieur', [b.F[0], b.F[1], b.F[2]]) +
     lin('laiton', [['#9a6516',0],['#f5c45a',.32],['#fff1b8',.45],['#e0a23a',.62],['#8a5a12',1]]) + lin('laitonV', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) +
-    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + lin('cuir', [['#d8b78f',0],['#c9a377',.6],['#b88e60',1]], 1) +
+    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + lin('cuir', [['#dcbb92',0],['#cda77a',.55],['#b98d5e',1]], 1) +
     lin('ardoise', [['#39414c',0],['#252b34',1]], 1) + lin('feutre', [['#35584f',0],['#24403a',1]], 1) + lin('cire', [['#fffaf0',0],['#f1e6c8',.6],['#d9c89c',1]]) + lin('parchemin', [['#f6ecd2',0],['#e4d2a6',1]], 1) +
     '<linearGradient id="g-mur" gradientUnits="userSpaceOnUse" x1="0" y1="-200" x2="0" y2="470"><stop offset="0" stop-color="' + m[0] + '"/><stop offset=".6" stop-color="' + m[1] + '"/><stop offset="1" stop-color="' + m[2] + '"/></linearGradient>' +
     lin('piedMur', [['#0a0614',0,.5],['#0a0614',1,0]], 1) + lin('dessous', [['#0a0614',0,.55],['#0a0614',1,0]], 1) +

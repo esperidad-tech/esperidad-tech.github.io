@@ -11,18 +11,21 @@ function camera(cx, cy, z){
 }
 function ouvrirMode(nom, html){
   var vieille = $('#calque .bulle-o'); if(vieille) vieille.remove();
-  S.mode = nom; $('#hudBoite').innerHTML = html; $('#modeHaut').hidden = false; $('#cadre').classList.add('ouvert'); document.body.classList.add('ouvert');
+  S.mode = nom; son('zoom'); $('#hudBoite').innerHTML = html; $('#modeHaut').hidden = false; $('#cadre').classList.add('ouvert'); document.body.classList.add('ouvert');
   document.body.className = document.body.className.replace(/\bm-\w+/g, '').trim() + ' m-' + nom;
 }
 function fermerMode(){
-  if(S.occupe) return;
+  if(S.occupe || !S.mode) return;
   var t = S.vientDeTrouver;
-  S.mode = null; S.essai = null; S.balaie = null; S.tiroir = null; S.casier = null; S.tirP = {g:0, d:0}; $('#hudBoite').innerHTML = ''; $('#modeHaut').hidden = true;
+  son('dezoom'); S.mode = null; S.essai = null; S.balaie = null; S.tiroir = null; S.casier = null; S.tirP = {g:0, d:0}; $('#hudBoite').innerHTML = ''; $('#modeHaut').hidden = true;
   $('#cadre').classList.remove('ouvert'); document.body.classList.remove('ouvert'); document.body.className = document.body.className.replace(/\bm-\w+/g, '').trim(); cancelAnimationFrame(boucle);
   camera(600, 320, 1);
   var lm = $('#loupeMobile'); if(lm) lm.removeAttribute('transform');
   dessinerTiroir('g'); dessinerTiroir('d'); dessinerLame(); dessinerCoupes(); majArdoise(); majBandeScene(); majOutils();
-  if(t){ S.vientDeTrouver = null; mimiDit('Mrrraou !', true); if(S.sel === t){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  if(t){ S.vientDeTrouver = null; if(S.sel === t){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  /* le code vient de s'écrire sur l'ardoise : un petit bruit de craie */
+  if(codePret() && !S.codeEcrit){ S.codeEcrit = true; attendre(500, function(){ son('craie'); }); }
+  mimiReveil();
 }
 function nomTrouve(t){ var o = OBJETS[t]; return o.liquide ? CIBLES[S.niveau].map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
 /* Un petit dessin qui vole d'un endroit à un autre (la carte vers la loupe, le témoin vers la bandelette) */
@@ -46,7 +49,7 @@ function svgVerre(){
     '<circle class="anneau" cx="50" cy="50" r="46.5" fill="none" stroke-width="6"/><path d="M19,34 C25,21 37,13 50,11.5" fill="none" stroke="#fff" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></svg>';
 }
 function ouvrirLoupe(tir){
-  if(S.occupe) return; var p = posCible(), g = $('#loupeMobile'), dx = p.x - LOUPE.x, dy = p.y - 18 - LOUPE.y; S.occupe = true;
+  if(S.occupe) return; var p = posCible(), g = $('#loupeMobile'), dx = p.x - LOUPE.x, dy = p.y - 14 - LOUPE.y; S.occupe = true; son('loupe');
   /* la loupe se soulève et vient se poser juste au-dessus de ce qu'on a choisi (le cuir ou une coupelle), puis on se rapproche */
   tween(640, function(q){ g.setAttribute('transform', 'translate(' + f1(dx*q) + ',' + f1(dy*q - Math.sin(q*Math.PI)*48) + ')'); }, function(){
     attendre(180, function(){
@@ -58,29 +61,29 @@ function ouvrirLoupe(tir){
   });
 }
 function vueLoupe(){ var c = posCible(); camera(borne(c.x, 520, 690), 410.5, 1.45); }
-/* Le grand verre : au-dessus de ce qu'on regarde ; dans un coin quand un tiroir est ouvert (pour laisser la place aux échantillons) */
+/* Le grand verre : toujours posé sur ce qu'on regarde. Quand un tiroir est ouvert, il rapetisse et remonte, mais il reste du côté
+   de l'objet (au-dessus de la coupelle si on la voit encore, sinon contre le bord le plus proche d'elle). */
 function placerVerre(){
-  var h = $('#verreHud'); if(!h) return; var c = posCible(), r, x, y;
-  if(S.tiroir){ r = 116; x = S.tiroir === 'g' ? 1200 - r - 20 : r + 20; y = r + 16; }
-  else { r = 162; x = borne(600 + (c.x - CAM.cx)*CAM.z, r + 16, 1200 - r - 16); y = borne(320 + (c.y - CAM.cy)*CAM.z - 98, r + 10, 640 - r - 10); }
+  var h = $('#verreHud'); if(!h) return; var c = posCible(), r, x, y, sx = 600 + (c.x - CAM.cx)*CAM.z, sy = 320 + (c.y - CAM.cy)*CAM.z;
+  if(S.tiroir){ r = 116; x = borne(sx, r + 20, 1200 - r - 20); y = r + 16; }
+  else { r = 162; x = borne(sx, r + 16, 1200 - r - 16); y = borne(sy - 58, r + 10, 640 - r - 10); }
   h.style.cssText = pos(x - r, y - r, 2*r, 2*r); S.verre = {x:x, y:y, r:r};
-  var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(600*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(y + r + 6) + '*var(--u))';
+  var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(' + f1(borne(x, 300, 900)) + '*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(Math.min(y + r + 6, 582)) + '*var(--u))';
   setTimeout(rendVerre, reduit ? 0 : 470);
 }
-/* Sous le grand verre : les deux tiroirs de la paillasse. On en tire un vers soi, on choisit un casier, on touche un échantillon. */
+/* Sous le grand verre : les deux tiroirs de la paillasse. On en tire un vers soi : ses trois casiers montrent leur dessin, rangé dedans.
+   On touche un casier : ses échantillons s'étalent. Toucher à côté fait revenir d'un pas. */
 function majBas(){
-  var z = $('#zoneTiroir'); if(!z) return; var t = S.sel, o = OBJETS[t], fait = !!S.trouves[t], barres = S.barres[t] || {}, flair = S.flair[t] || {}, h = '';
+  var z = $('#zoneTiroir'); if(!z) return; var t = S.sel, o = OBJETS[t], fait = !!S.trouves[t], barres = S.barres[t] || {}, h = '';
   $('#verreHud').classList.toggle('bon', fait);
   var rb = $('#ruban'); rb.hidden = !fait; if(fait) rb.textContent = '✅ ' + nomTrouve(t);
   if(!S.tiroir || S.tirP[S.tiroir] < 1){ z.innerHTML = ''; return; }
-  h += '<div class="onglets pose" style="' + pos(44, 258, 1112, 46) + '">' + TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="onglet" data-casier="' + k + '" aria-pressed="' + (S.casier === k) + '">' + svgPicto(k) + '<span>' + CASIERS[k] + '</span></button>'; }).join('') +
+  h += '<div class="onglets pose" style="' + pos(44, 258, 1112, 46) + '">' + (S.casier ? TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="onglet" data-casier="' + k + '" aria-pressed="' + (S.casier === k) + '">' + svgPicto(k) + '<span>' + CASIERS[k] + '</span></button>'; }).join('') : '') +
     '<button type="button" class="onglet refermer" id="bRefermer"><span class="poignee-o"></span>Refermer</button></div>';
-  if(!S.casier){
-    h += '<div class="casiers pose" style="' + pos(60, 318, 1080, 268) + '">' + TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="casier" data-casier="' + k + '">' + svgPicto(k) + '<span class="plaque">' + CASIERS[k] + '</span><span class="nb">' + contenuCasier(k).length + '</span></button>'; }).join('') + '</div>';
-  } else {
+  if(S.casier){
     var l = contenuCasier(S.casier), cols = Math.max(6, Math.ceil(l.length/2));
     h += '<div class="rangee pose" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && r === o.bon;
-      return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (flair[id] ? ' flair' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] || flair[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (flair[id] ? '<span class="marque">🐾</span>' : (barres[id] ? '<span class="marque">❌</span>' : ''))) + '</button>'; }).join('') + '</div>';
+      return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (barres[id] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('') + '</div>';
   }
   z.innerHTML = h;
   requestAnimationFrame(function(){ $$('.ech canvas').forEach(function(cv){ var rr = prep(cv), id = cv.parentNode.dataset.ech.split(':'); fondCuir(rr.ctx, rr.w, rr.h); dessinerRef(rr.ctx, rr.w, rr.h, id[0], id[1], 31 + id[1].length, rr.h/66*({fils:.9, grains:.74, poils:.85, petales:.8}[id[0]] || 1)); }); });
@@ -102,31 +105,32 @@ function rendVerre(a){
 function ouvrirTiroir(t){
   if(S.occupe || S.mode !== 'loupe' || S.tiroir === t) return;
   var suite = function(){
-    S.occupe = true; S.tiroir = t; S.casier = null; camera(t === 'g' ? 286.5 : 913.5, 537, 1.94); placerVerre();
+    S.occupe = true; S.tiroir = t; S.casier = null; son('tiroirOuvre'); camera(t === 'g' ? 286.5 : 913.5, 537, 1.94); placerVerre();
     tween(440, function(p){ S.tirP[t] = p; dessinerTiroir(t); }, function(){ S.tirP[t] = 1; S.occupe = false; majBas(); });
   };
   if(S.tiroir) fermerTiroir(suite); else suite();
 }
 function fermerTiroir(fin){
-  var t = S.tiroir; if(!t || S.occupe) return; S.occupe = true; $('#zoneTiroir').innerHTML = ''; S.tiroir = null; S.casier = null; vueLoupe(); placerVerre();
+  var t = S.tiroir; if(!t || S.occupe) return; S.occupe = true; son('tiroirFerme'); $('#zoneTiroir').innerHTML = ''; S.tiroir = null; S.casier = null; vueLoupe(); placerVerre();
   tween(340, function(p){ S.tirP[t] = 1 - p; dessinerTiroir(t); }, function(){ S.tirP[t] = 0; dessinerTiroir(t); S.occupe = false; majBas(); if(typeof fin === 'function') fin(); });
 }
-function ouvrirCasier(k){ if(S.occupe) return; S.casier = k; majBas(); }
+function ouvrirCasier(k){ if(S.occupe || !S.tiroir || S.casier === k) return; S.casier = k; son('casier'); dessinerTiroir(S.tiroir); majBas(); }
+function fermerCasier(){ if(S.occupe || !S.casier) return; S.casier = null; son('recule'); dessinerTiroir(S.tiroir); majBas(); }
 /* On touche un échantillon : il vient se poser sous la loupe à côté de l'objet, l'ordinateur compare et le dit clairement */
 function essayer(id, bouton){
-  var t = S.sel, o = OBJETS[t]; if(S.trouves[t] || S.occupe || (S.barres[t] || {})[id] || (S.flair[t] || {})[id]) return;
-  S.occupe = true; $$('.ech').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.ech === id)); });
+  var t = S.sel, o = OBJETS[t]; if(S.trouves[t] || S.occupe || (S.barres[t] || {})[id]) return;
+  S.occupe = true; son('carte'); $$('.ech').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.ech === id)); });
   volVers(bouton, $('#cvVerre'), function(){
     S.essai = id;
     tween(380, function(p){ rendVerre(p); }, function(){
-      tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id === o.tiroir + ':' + o.bon); });
+      son('compare'); tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id === o.tiroir + ':' + o.bon); });
     });
   });
 }
 function verdict(id, bon){
   var t = S.sel, v = $('#verreHud');
-  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; tampon('✅'); majBas(); rendVerre(1); return; }
-  v.classList.add('faux'); tampon('❌');
+  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; son('bon'); tampon('✅'); majBas(); rendVerre(1); return; }
+  v.classList.add('faux'); son('faux'); tampon('❌');
   attendre(950, function(){
     v.classList.remove('faux'); S.barres[t] = S.barres[t] || {}; S.barres[t][id] = true;
     tween(300, function(p){ rendVerre(1 - p); }, function(){ S.essai = null; S.occupe = false; rendVerre(); majBas(); });

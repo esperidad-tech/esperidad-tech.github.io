@@ -62,6 +62,11 @@ def extraits():
     morceaux.append('salle:function(ctx, A, bruits, revIn, blanc, brun){\nfunction pret(){ return true; }\n' + aides + '\n' + b + '\nreturn B;\n}')
     tb = entre(ss, 'var n = ctx.sampleRate * 2;', '\n    setInterval(programme')
     morceaux.append('bruitsSalle:function(ctx, A){\nvar blanc, brun;\n' + tb + '\nreturn {blanc:blanc, brun:brun};\n}')
+    # 7) le labo d'analyses de l'Alchimiste (la maquette : jeu/maquettes/labo-morceaux/15-sons.js) : ses briques et sa table SONS
+    ml = lire(os.path.join(ICI, '..', '..', 'maquettes', 'labo-morceaux', '15-sons.js'))
+    b = entre(ml, 'function note(f, t0, duree, type, vol, glisse){', 'function son(nom, x){')
+    b = remplace(b, 'a.destination', 'SORTIE', 4)
+    morceaux.append('labo:function(audio, SORTIE){\n' + b + '\nreturn SONS;\n}')
     choix = entre(ss, 'var CHOIX = S.CHOIX_SONS = {', '};', garder_fin=True)
     table = {k: re.findall(r"'([A-C])'", v) for k, v in re.findall(r'(\w+):\[([^\]]*)\]', choix)}
     return '/* ===== les sons déjà dans le jeu, copiés tels quels (construire-sons.py) ===== */\nwindow.EXTRAITS = {\n' + ',\n'.join(morceaux) + '\n};\n', table
@@ -75,7 +80,7 @@ ext, choix = extraits()
 js = 'window.NIVEAUX = ' + json.dumps({k: round(v, 3) for k, v in sorted(niveaux.items())}, separators=(',', ':')) + ';\n'
 js += '/* les choix de Romain, d\'après la table CHOIX de essai/src/son.js */\nwindow.CHOIX_ROMAIN = ' + json.dumps(choix, separators=(',', ':')) + ';\n'
 js += ext
-js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'page.js'])
+js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'labo.js', 'page.js'])
 assert '</script' not in js.lower()
 html = html.replace('/*CSS*/', lire(os.path.join(S, 'page.css'))).replace('/*JS*/', js)
 sortie = os.path.join(ICI, 'sons-essai.html')
