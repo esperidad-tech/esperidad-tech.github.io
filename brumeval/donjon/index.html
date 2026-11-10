@@ -606,6 +606,29 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .point.court .rats-l{font-size:18px}
 #fenetre .ligne.version{margin-top:10px;text-align:center;font-size:12px;opacity:.55;border:0}
 
+/* ---------- l'équipement d'un héros dans une salle : deux cases au-dessus de sa tête (Romain, 10 novembre) ---------- */
+.plaque{position:absolute;top:4px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:25;pointer-events:auto}
+.plaque.pop{animation:plaque-pop .3s cubic-bezier(.3,1.5,.6,1)}
+@keyframes plaque-pop{from{transform:translateX(-50%) scale(.5);opacity:0}to{transform:translateX(-50%);opacity:1}}
+.plaque.secoue{animation:plaque-secoue .36s}
+@keyframes plaque-secoue{0%,100%{transform:translateX(-50%)}25%{transform:translateX(calc(-50% - 6px))}55%{transform:translateX(calc(-50% + 6px))}80%{transform:translateX(calc(-50% - 3px))}}
+.pl-cases{display:flex;gap:6px;padding:5px;border-radius:14px;background:rgba(20,14,30,.9);border:2px solid #6a5a48;box-shadow:0 3px 0 rgba(0,0,0,.45)}
+.pl-case{position:relative;width:58px;height:58px;border-radius:10px;background:#221a2e;border:2px dashed #5a4a68;display:grid;place-items:center;padding:0;margin:0;font:inherit;color:#f3e7cb;-webkit-tap-highlight-color:transparent}
+.pl-case.pleine{border:2px solid #c9a35a;background:radial-gradient(circle at 50% 40%,#5a4a72,#3a2f48);cursor:pointer}
+.pl-case img{display:block;max-width:50px;max-height:52px;pointer-events:none}
+.pl-case span{font-size:10px;line-height:1.05;text-align:center}
+.plaque.complet .pl-cases{border-color:#ffd23f}
+.pl-etat{font-size:13px;font-weight:800;line-height:1;color:#24182e;background:#ffd23f;border:2px solid #24182e;border-radius:10px;padding:3px 10px}
+/* les mains pleines : les deux cases bougent et portent le rond jaune — on touche celle qu'on repose */
+.plaque.choisir .pl-case.pleine{animation:pl-bouge .9s ease-in-out infinite;box-shadow:0 0 0 3px #ffd23f,0 0 14px 4px rgba(255,210,63,.6)}
+.plaque.choisir .pl-case.pleine:nth-child(2){animation-delay:-.45s}
+@keyframes pl-bouge{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.08)}}
+/* le nom d'un objet, juste au-dessus de lui */
+.nom-objet{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:5px 12px;border-radius:14px;background:#fffaf0;color:#24182e;border:3px solid #24182e;font-weight:800;font-size:17px;z-index:40;pointer-events:none;
+  animation:nom-pop .26s cubic-bezier(.3,1.6,.6,1)}
+@keyframes nom-pop{from{transform:translate(-50%,-70%) scale(.4);opacity:0}to{transform:translate(-50%,-100%);opacity:1}}
+.nom-objet.part{transition:opacity .25s;opacity:0}
+
 </style>
 </head>
 <body>
@@ -617,7 +640,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 </div>
 <script>
 /* les niveaux des sons (essai/sons/niveaux.json) */
-window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.529,"bossB":1.313,"bossC":1.653,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":5.352,"pasCouloirB":6.182,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.529,"bossB":1.313,"bossC":1.653,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":3.918,"pasCouloirD":2.849,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== essai/sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -3045,6 +3068,26 @@ S.pasCouloirB = function(A, P){
     if(Math.random() < .35) A.modes(t + x + .02, h(2600, 4200), [[1, 1, .08], [2.7, .4, .05]], {g:.025}, lo);       /* le sac qui tinte */
   }
   return {duree:d + .6};
+};
+/* Romain, 10 novembre (16 h 33) : « le bruit de course est affreux : un petit bruit plus discret, plus sympathique ».
+   C — de petits pas feutrés : on marche, on ne court pas ; pas d'écho de caverne, presque rien dans les aigus */
+S.pasCouloirC = function(A, P){
+  var t = P.t, d = 1.7, lo = A.bus(P, {rev:.12, pan:-.3, pan2:.3, pant:d});
+  for(var x = 0, k = 0; x < d; x += h(.29, .33), k++){
+    var g = Math.sin(Math.PI * Math.min(1, (x + .3) / (d + .3))), pied = k % 2 ? 1 : .88;
+    A.ton(t + x, {f:150 * pied, f2:72, gl:.06, env:A.perc(.004, .085), g:.3 * g, lp:520}, lo);                                        /* le talon, tout doux */
+    A.bruit(t + x + .004, {coul:'rose', filtres:[{type:'bandpass', f:h(650, 950), q:.8}, {type:'lowpass', f:1700}], env:A.perc(.004, .055), g:.2 * g}, lo);   /* la semelle sur la pierre */
+  }
+  return {duree:d + .35};
+};
+/* D — un petit trottinement de bois, léger : « tap-tap, tap-tap, tap » (deux notes qui se répondent, comme une comptine) */
+S.pasCouloirD = function(A, P){
+  var t = P.t, lo = A.bus(P, {rev:.18, pan:-.25, pan2:.25, pant:1.5});
+  [[0, 392, 1], [.14, 494, .7], [.44, 392, .9], [.58, 523, .7], [.9, 440, .85], [1.04, 587, .65], [1.36, 523, .8]].forEach(function(n){
+    A.modes(t + n[0], n[1], [[1, .8, .11], [2.76, .25, .05], [5.4, .08, .03]], {g:.16 * n[2]}, lo);              /* la lame de bois */
+    A.ton(t + n[0], {f:n[1] * .5, f2:n[1] * .42, gl:.05, env:A.perc(.003, .06), g:.08 * n[2], lp:700}, lo);        /* le petit choc du pied */
+  });
+  return {duree:1.75};
 };
 /* la brume qui se dissipe sur la carte */
 S.brumeCarteA = function(A, P){
@@ -8350,7 +8393,7 @@ var D = {};
 D.HEROS = {
   sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['etudier', 'rune', 'bouclier'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
-  pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche'}
+  pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
 D.ORDRE = ['sage', 'alchimiste', 'pisteur'];           /* de gauche à droite à l'écran */
 D.EXPOSES = ['pisteur', 'alchimiste', 'sage'];         /* du plus exposé (devant) au moins exposé */
@@ -8412,10 +8455,14 @@ D.CHIFFRES = {
    pour : qui le porte ('tous' : on choisit). code : c'est un objet à passer par code (il ne prend pas de place).
    equipe : le nom pour HerosAnime.equiper(nom). */
 D.OBJETS = {
-  'fleches-argent':{nom:'Flèches d\'argent', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
+  /* Romain, 10 novembre : « flèches de lune » et « flèches transperçantes » (les identifiants ne changent pas : 'fleches-argent',
+     'fleches-lourdes'). Le Pisteur part avec ses flèches normales, qui prennent une de ses deux places : dans la réserve,
+     il en prend un, il est complet ; pour prendre l'autre, il repose quelque chose (ses flèches normales, par exemple). */
+  'fleches-normales':{nom:'Flèches normales', pour:'pisteur', equipe:null, d:'Les flèches de tous les jours.'},
+  'fleches-argent':{nom:'Flèches de lune', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
     contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5,
     d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort.'},
-  'fleches-lourdes':{nom:'Flèches lourdes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
+  'fleches-lourdes':{nom:'Flèches transperçantes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
     contre:['ratcuir', 'gardien'], ferme:12, critique:1.5,
     d:'Contre l\'armure : le critique frappe une fois et demie plus fort. Sur le rat cuirassé, elles touchent même fermé.'},
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
@@ -8665,7 +8712,7 @@ D.LIEUX = {
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
   rats:{nom:'La salle des rats', combat:'rats'},
-  reserve:{nom:'La réserve', coffre:['fleches-argent', 'fleches-lourdes']},
+  reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
   canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux'},
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
@@ -8719,7 +8766,7 @@ D.LIVRE = {
   feufollet:[
     'On ne le voit qu\'à moitié. Dans un nuage, tout prend forme.',
     'Il boit la lumière comme du petit-lait. Une gorgée, et il grandit.',
-    'L\'argent des vieilles flèches traverse la brume. Lui aussi.',
+    'Une flèche de lune traverse la brume. Lui aussi.',
     'Rien dans le sac ? Il adore les runes. Qu\'il s\'accroche à un bouclier, et le voilà pris : on le voit enfin tout entier.'
   ],
   araignee:[
@@ -8936,7 +8983,7 @@ function nouvellePartie(graine){
     fuites:{},
     sauvegarde:null
   };
-  D.EXPOSES.forEach(function(h){ p.heros[h] = {pv:D.HEROS[h].pv, pvMax:D.HEROS[h].pv, sol:false, objets:[]}; });
+  D.EXPOSES.forEach(function(h){ p.heros[h] = {pv:D.HEROS[h].pv, pvMax:D.HEROS[h].pv, sol:false, objets:(D.HEROS[h].objets || []).slice()}; });
   sauvegarder(p);                    /* la sauvegarde de départ, au fond du puits */
   return p;
 }
@@ -9058,10 +9105,15 @@ P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblable
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
 P.porte = function(h, objet){ return this.h[h].objets.indexOf(objet) >= 0; };
-P._carquois = function(){
-  var o = this.h.pisteur.objets;
-  for(var i = 0; i < o.length; i++) if(D.OBJETS[o[i]] && D.OBJETS[o[i]].fleche) return D.OBJETS[o[i]];
-  return null;
+/* le carquois qui sert contre cette bête : avec deux carquois spéciaux, le Pisteur tire la flèche faite pour elle */
+P._carquois = function(m){
+  var o = this.h.pisteur.objets, premier = null;
+  for(var i = 0; i < o.length; i++){
+    var O = D.OBJETS[o[i]]; if(!O || !O.fleche) continue;
+    if(m && O.contre.indexOf(m.type) >= 0) return O;
+    premier = premier || O;
+  }
+  return premier;
 };
 
 /* ---------- les gestes permis ---------- */
@@ -9336,7 +9388,7 @@ P._soin = function(ev, h, n, par){
 };
 /* la flèche du Pisteur (potion : la recette où elle a trempé, ou null) */
 P._fleche = function(ev, m, potion){
-  var q = this._carquois(), bonus = q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche';
+  var q = this._carquois(m), bonus = q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche';
   /* le critique surprise : une flèche simple, sur un monstre normal au point faible fermé */
   var surprise = !potion && m.ouvert === 0 && m.def.rang === 'normal' && this.R() < C.surprise;
   var blinde = this._un(m, m.def.blinde);
@@ -9596,7 +9648,7 @@ function contenu(p, lieu){
   var gagne = L.combat ? !!f['combat:' + L.combat] : true;
   if(L.combat){ o.combat = L.combat; o.gagne = gagne; }
   o.objets = [];
-  if(gagne || !L.apresCombat) (L.objets || []).forEach(function(id){ if(!f['objet:' + id]) o.objets.push(id); });
+  if(gagne || !L.apresCombat) (L.objets || []).forEach(function(id){ if(!f['objet:' + id] && !f['pose:' + id]) o.objets.push(id); });
   Object.keys(f).forEach(function(k){ if(k.indexOf('pose:') === 0 && f[k] === lieu) o.objets.push(k.slice(5)); });
   if(L.coffre) o.coffre = {options:L.coffre.slice(), pris:f['coffre:' + lieu] || null};
   if(L.tas) o.tas = {fouilles:f.os || 0, reste:(f.os || 0) < 2};
@@ -12343,6 +12395,19 @@ FONDS.leo = function(){
    ====================================================================== */
 function art(p, w, h, f){ var d = new Defs(p); return svgTexte(d, w, h, f(d)); }
 var A = {};
+/* le carquois de tous les jours du Pisteur : cuir clair, trois flèches à empennage rouge et crème (comme sur son dos) */
+A.carquoisNormal = function(){ return art('cn', 56, 116, function(d){
+  var s = '';
+  [[16, 8, -8, '#e04a3a'], [28, 3, 0, '#f3e7cb'], [40, 8, 9, '#e04a3a']].forEach(function(f){
+    var x = f[0], y = f[1], a = f[2];
+    s += '<g transform="rotate(' + a + ' ' + x + ' 60)">' + L('M' + x + ' 60 L ' + x + ' ' + (y + 16), O, 5.4) + L('M' + x + ' 60 L ' + x + ' ' + (y + 16), '#a07a48', 2.8) +
+      P('M' + x + ' ' + (y + 2) + ' L ' + (x + 7) + ' ' + (y + 8) + ' L ' + (x + 7) + ' ' + (y + 22) + ' L ' + x + ' ' + (y + 17) + ' L ' + (x - 7) + ' ' + (y + 22) + ' L ' + (x - 7) + ' ' + (y + 8) + ' Z', f[3], ' stroke-width="2.2"') +
+      L('M' + x + ' ' + (y + 4) + ' L ' + x + ' ' + (y + 17), O, 1.4) + '</g>';
+  });
+  s += P('M10 46 L 46 46 L 43 110 Q 28 115 13 110 Z', d.g('#8a5a32')) + F('M10 46 L 20 46 L 18 112 Q 15 111 13 110 Z', '#000', op(0.22)) +
+    P('M8 42 L 48 42 L 47 52 L 9 52 Z', d.g('#c89a5a'), ' stroke-width="2.4"') + P('M12 92 L 45 92 L 44 100 L 13 100 Z', d.g('#c89a5a'), ' stroke-width="2.4"') +
+    L('M15 56 L 14 88 M41 56 L 42 88', '#d8b070', 1.2, ' stroke-dasharray="3 3"');
+  return s + L('M42 50 Q 46 76 41 104', '#ffffff', 2, op(0.22)); }); };
 /* la corde qui pend du haut du puits (24 de large) */
 A.corde = function(h){ return art('co', 24, h, function(d){
   var c = 'M12 0 C 10 ' + r1(h * 0.33) + ' 15 ' + r1(h * 0.66) + ' 12 ' + h, s = L(c, O, 8) + L(c, '#a8864e', 5);
@@ -12384,7 +12449,7 @@ A.herbes = function(){ return art('he', 76, 78, function(d){
   });
   return s; }); };
 /* les deux carquois de la réserve */
-A.carquois = function(sorte){ return art('cq', 56, 116, function(d){
+A.carquois = function(sorte){ if(sorte === 'normal') return A.carquoisNormal(); return art('cq', 56, 116, function(d){
   var arg = sorte === 'argent', s = '';
   var fut = arg ? '#d8c8a8' : '#5a3a22', tete = arg ? d.lin([[0, '#ffffff'], [0.5, '#c8d8f0'], [1, '#7a8aa8']], 1, 0, 0, 1) : d.lin([[0, '#6a6a78'], [0.5, '#2e2e38'], [1, '#121218']], 1, 0, 0, 1);
   var fl = arg ? [[13, 6, -10], [22, 2, -3], [32, 4, 6], [41, 8, 12]] : [[16, 6, -8], [28, 1, 0], [40, 6, 9]];
@@ -12731,8 +12796,8 @@ SALLES.aeration = function(){ return {nom: 'Le puits d\'aération', type: 'cul-d
 SALLES.reserve = function(){
   var C0 = COFFRE, qy = C0.y - 14;
   var opt = [
-    objet({id: 'fleches-argent', nom: 'Les flèches d\'argent', svg: A.carquois('argent'), x: C0.x + 30, y: qy, w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur', zone: {x: C0.x + 24, y: qy - 4, w: 68, h: 104}}),
-    objet({id: 'fleches-lourdes', nom: 'Les flèches lourdes', svg: A.carquois('lourd'), x: C0.x + 98, y: qy, w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur', zone: {x: C0.x + 92, y: qy - 4, w: 68, h: 104}})
+    objet({id: 'fleches-argent', nom: 'Les flèches de lune', svg: A.carquois('argent'), x: C0.x + 30, y: qy, w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur', zone: {x: C0.x + 24, y: qy - 4, w: 68, h: 104}}),
+    objet({id: 'fleches-lourdes', nom: 'Les flèches transperçantes', svg: A.carquois('lourd'), x: C0.x + 98, y: qy, w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur', zone: {x: C0.x + 92, y: qy - 4, w: 68, h: 104}})
   ];
   return {nom: 'La réserve', type: 'objets-choix', ambiance: 'des étagères, des tonneaux ; des bocaux de lucioles',
   elements: [
@@ -12849,7 +12914,26 @@ SALLES.leo = function(){ var L0 = LEO; return {nom: 'La dernière salle', type: 
     poussiere(700, 120, 220, 200, 5, '#ffd8a0')
   ]}; };
 
+/* Les objets qu'un héros porte (2 places par héros) : leur dessin, pour les reposer au sol de n'importe quelle salle
+   (Romain, 10 novembre : on repose un objet pour en prendre un autre). */
+var PORTABLES = {
+  'fleches-normales': function(){ return {nom: 'Les flèches normales', svg: A.carquois('normal'), w: 56, h: 116, lueur: '#ffe08a', pour: 'pisteur'}; },
+  'fleches-argent': function(){ return {nom: 'Les flèches de lune', svg: A.carquois('argent'), w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur'}; },
+  'fleches-lourdes': function(){ return {nom: 'Les flèches transperçantes', svg: A.carquois('lourd'), w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur'}; },
+  'cristal-lune': function(){ return {nom: 'Le cristal de lune', svg: A.cristalLune(), w: 50, h: 88, lueur: '#c8c8ff', pour: 'sage'}; },
+  'baton-chene': function(){ return {nom: 'Le bâton de chêne', svg: A.baton(), w: 46, h: 178, lueur: '#b8f070', pour: 'sage'}; },
+  'sacoche': function(){ return {nom: 'La sacoche', svg: A.sacoche(), w: 88, h: 72, lueur: '#ffd36a', pour: 'alchimiste'}; },
+  'amulette': function(){ return {nom: 'L\'amulette de vie', svg: A.amulette(), w: 52, h: 66, lueur: '#ffd06a', pour: 'tous'}; }
+};
 var SCENES = {
+  /* le dessin d'un objet porté (pour une case d'équipement), ou sa fiche posée au sol en x (le bas de l'objet sur le sol) */
+  portable: function(id, x){
+    var f = PORTABLES[id]; if(!f) return null;
+    var d = f(); d.id = id; d.type = 'objet'; d.sol = true;
+    if(x == null) return d;
+    d.x = Math.round(x - d.w / 2); d.y = SOL - d.h + 2; d.z = 6; d.zone = zoneDe(d.x, d.y, d.w, d.h);
+    return d;
+  },
   W: W, H: H, SOL: SOL, HEROS: {x0: 0, x1: 476}, base: '',
   ordre: ORDRE.slice(),
   fond: function(id){ return FONDS[id] ? FONDS[id]() : ''; },
@@ -13144,6 +13228,18 @@ Objet.prototype.prendre = function(vers, o){
     if(o.onArrivee) o.onArrivee(self);
     return pause(80);
   });
+};
+
+/* l'objet revient à sa place : on l'avait pris, on le repose (Romain, 10 novembre : on peut changer d'avis) */
+Objet.prototype.remettre = function(){
+  var e = this.el, z = this.def.z;
+  this.pris = false;
+  try{ (this.corps.getAnimations ? this.corps.getAnimations() : []).forEach(function(a){ a.cancel(); }); }catch(x){}
+  this.corps.classList.remove('ob-terne');
+  e.style.zIndex = z != null ? z : '';
+  if(this.ombre) this.ombre.style.opacity = '';
+  this.briller(true);
+  return this.montrer();
 };
 
 /* ================= le coffre (ou le lutrin) à deux objets : on n'en prend qu'un ================= */
@@ -13879,6 +13975,7 @@ DJ.musique = function(nom){ var S = SALLE.Son; if(S && S.musique) S.musique(nom)
 /* Les sons que Romain n'a pas encore validés dans l'Atelier jouent leur version A, provisoire (MOTEUR-DONJON.md §5).
    SALLE.CHOIX_SONS est la table des versions validées (son.js) : on ne touche pas à ce qui y est déjà. */
 DJ.PROVISOIRE = {};
+var REFAITS = {pasCouloir:'C'};
 DJ.sonsProvisoires = function(){
   var C = SALLE.CHOIX_SONS, B = window.BRUITAGES;
   if(!C || !B) return;
@@ -13887,7 +13984,9 @@ DJ.sonsProvisoires = function(){
     if(!m || typeof B[cle] !== 'function') return;
     var id = m[1];
     if(C[id] && C[id].length) return;
-    C[id] = ['A']; DJ.PROVISOIRE[id] = 1;
+    /* (les pas sur la carte : Romain a refusé les versions A et B le 10 novembre — on joue la C, feutrée, en attendant son choix) */
+    var l = REFAITS[id] && typeof B[id + REFAITS[id]] === 'function' ? REFAITS[id] : 'A';
+    C[id] = [l]; DJ.PROVISOIRE[id] = 1;
   });
 };
 
@@ -13896,19 +13995,21 @@ DJ.sonsProvisoires = function(){
    On pose un témoin au début du critique et on l'enlève à la fin. S'il est encore là au démarrage, c'est que la page
    s'est fermée en plein critique : on le compte, et sur cet appareil les critiques suivants sont allégés
    (moins de fumée et de morceaux), pour qu'on ne reste jamais coincé. Le compteur se lit en bas de « 🎒 Objets ». */
-var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages';
-DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, String(Date.now())); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
+var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages', CLE_OU = 'brumeval-donjon-plantage-ou';
+/* on : false (le critique est fini), ou le moment où l'on en est ('debut', 'impact', 'explosion', 'fumee', 'bete') */
+DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, (on === true ? 'debut' : on) + '|' + Date.now()); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
 DJ.plantages = function(){ try{ return +localStorage.getItem(CLE_PLANTAGES) || 0; }catch(e){ return 0; } };
+DJ.plantageOu = function(){ try{ return localStorage.getItem(CLE_OU) || ''; }catch(e){ return ''; } };
 DJ.verifierTemoin = function(){
   try{
-    var t = +localStorage.getItem(CLE_TEMOIN) || 0;
-    if(t && Date.now() - t < 600000) localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1));
+    var v = (localStorage.getItem(CLE_TEMOIN) || '').split('|'), t = +v[1] || 0;
+    if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
   }catch(e){}
   if(DJ.plantages() > 0) SALLE.critLeger = true;
   return DJ.plantages();
 };
-DJ.VERSION = '10/11 à 16 h 48';
+DJ.VERSION = '10/11 à 17 h 26';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -15065,14 +15166,27 @@ async function critique(l, i, ctx){
   if(meurt && a.rat){
     /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
-    DJ.temoinCritique(true);
+    if(DJ.plantages() >= 2){
+      /* la page s'est déjà fermée DEUX fois en plein critique sur cet appareil : le critique le plus simple possible
+         (le gros texte, le chiffre, des étincelles), pour qu'on puisse au moins continuer à jouer */
+      sonCritique('boum'); Fx.tremble(7, 300);
+      if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
+      Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
+      a.el.style.visibility = 'hidden'; a.mort = true;
+      await attendre(1200);
+      return i + 1;
+    }
+    /* le témoin : il dit où en était le critique si la page se ferme (lu au redémarrage, affiché en bas de « Objets ») */
+    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('impact'); }, 420 / vt), setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt), setTimeout(function(){ DJ.temoinCritique('fumee'); }, 1500 / vt)];
+    DJ.temoinCritique('debut');
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
-    DJ.temoinCritique(false);
+    tm.forEach(clearTimeout); DJ.temoinCritique(false);
     return i + 1;
   }
   sonCritique('aspire');
   if(meurt){
     retirerHud(a.id); liberer(a);
+    DJ.temoinCritique('bete');
     var p = a.acteur.exploser(fx), boom = p && p.boom ? Promise.resolve(p.boom) : attendre(420);
     a.mort = true;
     await Promise.race([boom, attendre(1400)]);
@@ -15081,6 +15195,7 @@ async function critique(l, i, ctx){
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');
     setTimeout(function(){ sonCritique('explosion'); Fx.tremble(5, 240); }, 600 / (SALLE.vitesse || 1));
     await Promise.race([Promise.resolve(p).catch(function(){}), attendre(4200)]);
+    DJ.temoinCritique(false);
     a.el.classList.add('restes');
     return i + 1;
   }
@@ -15408,6 +15523,7 @@ function garder(){ var p = X.partie; if(X.V){ try{ p.vus['@brume'] = X.V.etat().
 function conte(t){
   X.texte = t; DJ.conte(t);
   var b = q('#conteur'); if(!b) return;
+  if(S && S.sansTexte){ b.style.visibility = 'hidden'; return; }      /* la réserve : pas de petit texte en bas, les objets parlent d'eux-mêmes */
   b.innerHTML = '<span class="txt">' + t + '</span>' + DJ.lireBtn(t);
   DJ.relancer(b, 'pop');
 }
@@ -15590,9 +15706,14 @@ function aScene(lieu){
   return !!PHRASES[lieu] && !D.LIEUX[lieu].combat;
 }
 /* y a-t-il encore quelque chose à faire ici ? (le crâne secret ne compte pas : c'est un secret) */
+function aPlace(id){
+  var O = D.OBJETS[id], p = X.partie; if(!O) return false;
+  if(O.code || O.or) return true;
+  return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && p.heros[h].objets.length < D.CHIFFRES.places; });
+}
 function aFaire(lieu){
   var c = Regles.contenu(X.partie, lieu);
-  return !!((c.objets && c.objets.length) || (c.coffre && !c.coffre.pris) || (c.tas && c.tas.reste) || (c.dalles && !c.dalles.passe) || c.portes || (c.repos && c.repos.permis) || (c.code && !X.partie.faits['code:' + c.code.id]) || c.fin);
+  return !!((c.objets && c.objets.some(aPlace)) || (c.coffre && !c.coffre.pris) || (c.tas && c.tas.reste) || (c.dalles && !c.dalles.passe) || c.portes || (c.repos && c.repos.permis) || (c.code && !X.partie.faits['code:' + c.code.id]) || c.fin);
 }
 function arriver(lieu, o){
   o = o || {};
@@ -15655,7 +15776,7 @@ function construireScene(lieu, ev, premier){
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
   SALLE.Fx.init({fx:q('#fx'), sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
-  S = {lieu:lieu, o:{}, heros:{}, defs:{}, pas:(cont.dalles && cont.dalles.pas) || 0, pret:false};
+  S = {lieu:lieu, o:{}, heros:{}, defs:{}, pas:(cont.dalles && cont.dalles.pas) || 0, pret:false, sansTexte:lieu === 'reserve', plaques:{}};
   /* les trois héros, à gauche, comme en combat */
   var persos = q('#persos'), hud = q('#hud');
   ORDRE.forEach(function(h){
@@ -15680,8 +15801,99 @@ function construireScene(lieu, ev, premier){
     S.o[d.id] = e; S.defs[d.id] = d;
     brancher(e, d, cont);
   });
+  /* les objets qu'on a reposés ici (ils ne font pas partie du décor de cette salle) : au sol, à droite des héros */
+  cont.objets.forEach(function(id){ if(!S.o[id] && p.faits['pose:' + id] === lieu && !dansUnCoffre(def, id)) poserAuSol(id, false); });
+  /* l'équipement des héros concernés par les objets d'ici : deux cases au-dessus de leur tête */
+  plaquesDuLieu(cont).forEach(function(h){ majPlaque(h); });
   DJ.musique(lieu === 'camp' ? 'explo' : 'explo');
   preparerLieu(lieu, cont, ev, premier);
+}
+function dansUnCoffre(def, id){ return (def.elements || []).some(function(d){ return d.type === 'choix' && (d.options || []).some(function(o){ return o.id === id; }); }); }
+
+/* ---------- l'équipement d'un héros : ses deux places, au-dessus de sa tête (Romain, 10 novembre) ----------
+   On y voit ce qu'il porte ; « Complet » quand les deux places sont prises. Pour prendre un objet de plus, on touche
+   d'abord cet objet (les cases se mettent à bouger, avec le rond jaune), puis la case de l'objet qu'on repose. */
+function urlSvg(svg){ return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+function iconeObjet(id){ var d = window.SCENES.portable ? window.SCENES.portable(id) : null; return d ? '<img alt="" draggable="false" src="' + urlSvg(d.svg) + '">' : '<span>' + esc((D.OBJETS[id] || {}).nom || id) + '</span>'; }
+function plaquesDuLieu(cont){
+  var hs = {};
+  (cont.objets || []).concat(cont.coffre ? cont.coffre.options : []).forEach(function(id){ var O = D.OBJETS[id]; if(!O || O.code || O.or) return; (O.pour === 'tous' ? ORDRE : [O.pour]).forEach(function(h){ hs[h] = 1; }); });
+  return ORDRE.filter(function(h){ return hs[h]; });
+}
+function majPlaque(h){
+  if(!S) return;
+  var p = X.partie, l = p.heros[h].objets, n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
+  if(!e){ e = el('div', 'plaque'); e.id = 'plaque-' + h; e.style.left = hCx(h) + 'px'; q('#hud').appendChild(e); S.plaques[h] = e; DJ.relancer(e, 'pop'); }
+  var cases = '';
+  for(var k = 0; k < n; k++){
+    var id = l[k];
+    cases += id ? '<button class="pl-case pleine" data-act="plaque-objet" data-id="' + id + '" data-heros="' + h + '" aria-label="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</button>' : '<div class="pl-case"></div>';
+  }
+  e.className = 'plaque' + (l.length >= n ? ' complet' : '') + (ech ? ' choisir' : '');
+  e.innerHTML = '<div class="pl-cases">' + cases + '</div>' + (l.length >= n ? '<div class="pl-etat">Complet</div>' : '');
+  /* le nom de la salle est juste là, en haut à gauche : on le cache quand la plaque du Sage est sortie */
+  var t = q('#scene #salle-nom'); if(t && h === 'sage') t.style.visibility = 'hidden';
+}
+/* le nom d'un objet, juste au-dessus de lui (Romain : « quand on appuie sur les carquois, qu'il y ait marqué flèches de lune ») */
+function etiquette(texte, x, y){
+  var a = q('#hud .nom-objet'); if(a) a.remove();
+  var e = el('div', 'nom-objet', esc(texte)); e.style.left = Math.max(70, Math.min(890, x)) + 'px'; e.style.top = Math.max(14, y) + 'px';
+  q('#hud').appendChild(e);
+  setTimeout(function(){ if(e.parentNode){ e.classList.add('part'); setTimeout(function(){ e.remove(); }, 260); } }, 1900);
+}
+function etiquetteObjet(id){
+  var O = D.OBJETS[id], d = S && S.defs[id]; if(!O || !d || O.code || O.or) return;
+  var z = d.zone || d; etiquette(O.nom, z.x + z.w / 2, z.y - 30);
+}
+/* un objet reposé dans la salle : à sa place d'origine s'il vient d'ici, sinon au sol, là où il y a de la place */
+function poserAuSol(id, anime){
+  var prises = Object.keys(S.defs).map(function(k){ var z = S.defs[k].zone || S.defs[k]; return [z.x, z.x + z.w]; });
+  var x = null, places = [540, 610, 680, 750, 820, 890, 500];
+  for(var k = 0; k < places.length && x === null; k++){ var a = places[k] - 32, b = places[k] + 32; if(!prises.some(function(r){ return r[0] < b && r[1] > a; })) x = places[k]; }
+  if(x === null) x = 540;
+  var d = window.SCENES.portable && window.SCENES.portable(id, x); if(!d) return null;
+  if(anime) d.cache = true;
+  var e;
+  try{ e = window.OBJETS.creer(q('#objets'), d, {fond:fondDe(S.lieu)}); }catch(er){ if(window.console) console.warn('objet posé', id, er); return null; }
+  S.o[id] = e; S.defs[id] = d;
+  e.surToucher(function(){ prendre(id); });
+  if(anime){ e.el.style.visibility = ''; e.montrer(); }
+  e.briller(true); e.guider(aPlace(id));
+  return e;
+}
+function reposer(id, heros){
+  var A = S.heros[heros], n = D.OBJETS[id] && D.OBJETS[id].equipe;
+  try{ if(n && A && A.equiper) A.equiper(n, false); }catch(er){}
+  bruit('pose', {}, ['clic']);
+  var e = S.o[id];
+  if(e && e.remettre){ e.remettre(); e.guider(false); return e; }
+  return poserAuSol(id, true);
+}
+/* les ronds jaunes : seulement sur ce qu'on peut prendre tout de suite (quelqu'un a une place) */
+function majGuides(){
+  if(!S) return;
+  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) try{ e.guider(aPlace(id)); }catch(er){} });
+}
+/* les mains pleines : on a touché un objet de plus. Les cases du héros bougent (rond jaune) : on touche celle qu'on repose. */
+function echange(x){
+  X.echange = x; X.occupe = false;
+  majPlaque(x.heros);
+  bruit('complet', {}, ['clic']);
+  var e = S.o[x.objet]; try{ if(e && e.el) e.el.animate([{transform:'translateX(0)'}, {transform:'translateX(-5px)'}, {transform:'translateX(5px)'}, {transform:'translateX(-3px)'}, {transform:'none'}], {duration:320}); }catch(er){}
+  var pl = S.plaques[x.heros]; if(pl) DJ.relancer(pl, 'secoue');
+}
+function finEchange(){ if(!X.echange) return; var h = X.echange.heros; X.echange = null; if(S) majPlaque(h); }
+function toucherPlaque(id, heros){
+  if(!S || X.occupe) return;
+  var x = X.echange;
+  if(x && x.heros === heros){
+    X.echange = null;
+    var O = D.OBJETS[x.objet], ev = Regles.prendre(X.partie, x.objet, O.pour === 'tous' ? heros : null, id);
+    majPlaque(heros);
+    return jouerHors(ev, S.o[x.objet], x.objet);
+  }
+  finEchange();
+  son('clic'); etiquette(D.OBJETS[id].nom, hCx(heros) + 150, 62);          /* son nom, à droite de la plaque */
 }
 function majPV(){
   var p = X.partie;
@@ -15700,6 +15912,7 @@ function brancher(e, d, cont){
   /* (le feu, le chat et Léo n'ont pas fait leur zone à toucher eux-mêmes) */
   if(d.zone && !e.zone && e.faireZone && /^(feu|chat|leo)$/.test(d.type)){ try{ e.faireZone(); }catch(x){} }
   if(d.type === 'objet'){ e.briller && e.briller(true); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  else if(d.type === 'choix' && !cont.coffre){ coffreLibre(e, d); }
   else if(d.type === 'choix'){
     var pris = cont.coffre && cont.coffre.pris;
     if(pris){ try{ e.ouvrir && e.ouvrir(); (e.options || []).forEach(function(o){ if(o.def && o.def.id === pris) o.cacher && o.cacher(); else o.eteindre && o.eteindre(); }); }catch(x){} return; }
@@ -15715,6 +15928,32 @@ function brancher(e, d, cont){
   else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) e.guider(true); }
   else if(d.type === 'chat'){ e.surToucher(function(){ if(!X.occupe) sceneChat(e, true); }); }
   else if(d.type === 'leo'){ e.surToucher(function(){ if(!X.occupe) codeDuLieu(); }); }
+}
+/* la réserve : le coffre s'ouvre, les deux carquois se prennent comme des objets ordinaires (2 places par héros) */
+function coffreLibre(e, d){
+  var p = X.partie, cle = '@ouvert:' + S.lieu;
+  function ici(id){ return Regles.contenu(p, S.lieu).objets.indexOf(id) >= 0; }
+  function armer(){
+    (e.options || []).forEach(function(o){
+      var id = o.def.id; S.o[id] = o; S.defs[id] = o.def;
+      if(!o._arme){ o._arme = true; o.surToucher(function(){ prendre(id); }); }
+      if(ici(id)){ o.briller(true); o.guider(aPlace(id)); } else { o.pris = true; o.cacher(true); }
+    });
+  }
+  if(p.vus[cle]){
+    /* déjà ouvert : il reste ouvert, avec ce qu'il y a encore dedans */
+    var toutes = e.options;
+    e.options = toutes.filter(function(o){ return ici(o.def.id); });
+    toutes.forEach(function(o){ if(e.options.indexOf(o) < 0){ o.pris = true; o.cacher(true); } });
+    Promise.resolve(e.ouvrir()).then(function(){ e.options = toutes; if(S && S.o) armer(); });
+    return;
+  }
+  e.guider(true);
+  e.surToucher(function(){
+    if(p.vus[cle] || X.occupe) return;
+    p.vus[cle] = 1; garder(); e.guider(false); bruit('coffre', {}, ['clic']);
+    Promise.resolve(e.ouvrir()).then(function(){ if(S) armer(); });
+  });
 }
 function armerChoix(e, d){
   (e.options || []).forEach(function(o, i){
@@ -15757,8 +15996,11 @@ function versHeros(h){ return {x:hCx(h), y:200}; }
 function prendre(id, heros, laisser){
   if(X.occupe) return;
   var p = X.partie, O = D.OBJETS[id] || {}, e = S.o[id];
+  finEchange();
+  if(!heros) etiquetteObjet(id);
   if(id === 'amulette' && !heros){ return fenetreQui(id); }
   var ev = Regles.prendre(p, id, heros, laisser);
+  if(ev[0] && ev[0].t === 'plein' && !laisser) return echange(ev[0]);       /* les mains pleines : on choisit sur la plaque ce qu'on repose */
   return jouerHors(ev, e, id);
 }
 /* jouer les évènements d'une action hors combat */
@@ -15766,17 +16008,18 @@ function jouerHors(ev, e, id){
   var p = X.partie, k = 0;
   X.occupe = true;
   function suite(){
-    if(k >= ev.length){ X.occupe = false; garder(); if(S){ majPV(); majRepartir(); } return Promise.resolve(); }
+    if(k >= ev.length){ X.occupe = false; garder(); if(S){ majPV(); majRepartir(); majGuides(); } return Promise.resolve(); }
     var x = ev[k++], pr = Promise.resolve();
     if(x.t === 'refus'){ SALLE.Fx.mot(e && S.defs[id] ? pointDe(S.defs[id]).x : 480, 120, x.mot, 'refus'); son('clic'); }
-    else if(x.t === 'plein'){ X.occupe = false; fenetrePlein(x); return Promise.resolve(); }
-    else if(x.t === 'laisse'){ conte(D.OBJETS[x.objet].nom + ' reste ici. On pourra revenir le chercher.'); }
+    else if(x.t === 'plein'){ X.occupe = false; echange(x); return Promise.resolve(); }
+    else if(x.t === 'laisse'){ reposer(x.objet, x.heros); majPlaque(x.heros); conte(D.OBJETS[x.objet].nom + ' reste ici. On pourra revenir le chercher.'); pr = DJ.attendre(380); }
     else if(x.t === 'objet'){
       var O = D.OBJETS[x.objet] || {nom:x.objet};
       bruit('ramasse', {}, ['clic']);
       pr = Promise.resolve(e && e.prendre ? e.prendre(versHeros(x.heros)) : null).then(function(){
         try{ if(x.equipe && S.heros[x.heros].equiper) S.heros[x.heros].equiper(x.equipe, true); }catch(er){}
         try{ S.heros[x.heros].joie && S.heros[x.heros].joie(); }catch(er){}
+        majPlaque(x.heros);
         conte(O.nom + ' ! ' + (O.d || '') + ' C\'est ' + D.HEROS[x.heros].le + ' qui s\'en charge.');
       });
     }
@@ -15984,7 +16227,7 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
-  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + ')' : '') + '</div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
@@ -16045,7 +16288,8 @@ DJ.toucher(function(a, id, b){
   if(a === 'symbole'){ symbole(id); return true; }
   if(a === 'pave-efface'){ X.pave = []; majPave(); return true; }
   if(a === 'entrer'){ if(!X.occupe && aScene(X.ici)){ son('clic'); arriver(X.ici, {entrer:true}); } return true; }
-  if(a === 'repartir'){ son('clic'); repartir(); return true; }
+  if(a === 'repartir'){ son('clic'); X.echange = null; repartir(); return true; }
+  if(a === 'plaque-objet'){ toucherPlaque(id, b.getAttribute('data-heros')); return true; }
   if(a === 'dalles-go'){ DJ.fermer(); if(S){ S.pret = true; colonneDalles(); conte('Première rangée. Laquelle des deux ?'); } return true; }
   if(a === 'qui-porte'){ DJ.fermer(); prendre(b.getAttribute('data-objet'), id); return true; }
   if(a === 'laisser'){
