@@ -22,7 +22,7 @@ E[1] = {
   signature:'Monsieur Grosbec, maire de Brumeval',
   missions:{
     pisteur:'Va voir la mairie, la place, la boulangerie. Trouve des traces et des objets : un objet trouvé a un code, donne-le à la bonne personne ! La forêt est fermée tant que tu n\'as pas de plan : le Sage pourra peut-être t\'en trouver un. Tes missions, en haut de ton Carnet, te disent où aller.',
-    alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Il te manque des baies de sureau : elles poussent à la lisière de la forêt. Analyse aussi les objets que l\'équipe te confie : compare-les avec les échantillons de ton atelier et trouve vite le signe pareil !',
+    alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Il te manque des baies de sureau : elles poussent à la lisière de la forêt. Analyse aussi les objets que l\'équipe te confie : sur ta paillasse, ta loupe, ton microscope et tes bocaux vont les faire parler !',
     barde:'Va parler aux habitants. Sur la carte, chaque maison montre le visage de celui qui y habite : pour parler à quelqu\'un chez lui, touche sa maison.',
     sage:'Lis le Grand Livre à l\'équipe : les habitants (qui fait quoi, et la taille de leurs pieds), la recette de l\'encre révélatrice, et une page toute blanche qui cache peut-être quelque chose. Tu donnes le code de chaque moment, et c\'est toi qui accuses à la fin.'
   },
@@ -67,14 +67,14 @@ E[1] = {
       {ic:'📦', m:0, atelier:'installer', t:'Installe ton atelier : ouvre tes cartons et installe un meuble pour ranger tes ingrédients.', court:'Atelier : ouvre un carton, puis installe un meuble.', histoire:'Bienvenue dans ton atelier ! Il sent encore la poussière… Déballe tes trésors.', fait:[{rangement:1}]},
       {ic:'🫐', m:0, action:true, lieu:'lisiere', cueillir:true, t:'Va à la lisière de la forêt et rapporte 3 baies de sureau.', court:'Lisière de la forêt : cueille 3 baies de sureau.', histoire:'L\'encre a besoin de 3 baies de sureau : elles poussent à la lisière.', fait:[{ingr:{baies:3}}, {potion:'revelatrice'}]},
       {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice et donne-la au Sage : il a la recette dans son Grand Livre !', court:'Prépare l\'encre avec le Sage, puis donne-la-lui.', histoire:'Le Sage connaît la recette de l\'encre révélatrice : prépare-la avec lui !', fait:[{donne:'pot:revelatrice'}]},
-      {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.', histoire:'Un fil de laine rouge, trouvé à la mairie… Sous ta loupe, il va parler !',
-        attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]},
-      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Des poils de chien ! Analyse-les, puis raconte tout au Pisteur.',
-        attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}, {fini:'alchimiste:analyse:poils'}]},
+      {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.', histoire:'Un fil rouge, trouvé à la mairie… Sous ta loupe, il va parler !',
+        attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}]},        /* (au labo, une analyse ne se rate plus : plus de « fini ») */
+      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Une touffe de poils, accrochée aux épines… Que cache-t-elle ? Analyse-la, puis raconte tout au Pisteur.',
+        attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}]},
       {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.', histoire:'Une grande plume noire… À qui peut-elle bien appartenir ?',
         attend:[{code:'obj:plume'}], attendT:'Le Barde rend visite à Odette… Elle lui confiera peut-être un indice.', fait:[{analyse:'plume'}]},
       {ic:'📜', m:2, t:'Raconte au Sage ce que tes analyses ont montré.', court:'Raconte au Sage ce que tes analyses ont montré.', histoire:'Le Sage t\'attend : raconte-lui ce que tes analyses ont révélé !', manuel:true},
-      {piste:true, t:'Pour analyser, compare l\'objet avec les échantillons de ton atelier et trouve vite le signe pareil.'},
+      {piste:true, t:'Pour analyser : choisis un échantillon sur ta paillasse, puis sers-toi de ta loupe, de ton microscope et de tes bocaux.'},
       {libre:true, ic:'🔍', t:'Ensuite, analyse ce que l\'équipe te confie, et aide-la à trouver QUI a pris la Lanterne, et OÙ elle est !'}
     ],
     barde:[
@@ -186,7 +186,8 @@ E[1] = {
     tim:{maison:'L7', note:'Petit ramoneur de 10 ans : il grimpe sur les toits pour nettoyer les cheminées. Toujours plein de suie !'}
   },
   objets:{
-    fil:{nom:'Fil de laine rouge', ic:'🧶', pour:'alchimiste'},
+    /* (des noms neutres : c'est l'Alchimiste qui découvre ce que c'est, au labo ; Romain, 9 novembre) */
+    fil:{nom:'Fil rouge', ic:'🧶', pour:'alchimiste'},
     poils:{nom:'Touffe de poils', ic:'🐾', pour:'alchimiste'},
     plume:{nom:'Grande plume noire', ic:'🪶', pour:'alchimiste'},
     affiche:{nom:'Affiche du chien perdu', ic:'🐶', pour:'barde'}
@@ -210,8 +211,8 @@ E[1] = {
           rateNote:'Mairie : des petites traces fraîches de cette nuit, bien plus petites que des bottes d\'homme.', partiel:true,   /* clé : ce partiel innocente encore les grands pieds */
           ferme:'Les traces sont effacées pour de bon… Il te reste ce que tu as vu.'},
         {id:'fenetre', ic:'🪟', nom:'La fenêtre', obj:'fil',
-          t:'La fenêtre a été ouverte depuis dehors. Accroché à la poignée : un fil de laine rouge !',
-          note:'Mairie : un fil de laine rouge accroché à la fenêtre.'},
+          t:'La fenêtre a été ouverte depuis dehors. Accroché à la poignée : un fil rouge !',
+          note:'Mairie : un fil rouge accroché à la fenêtre.'},
         {id:'gouttiere', ic:'🏠', nom:'La gouttière',
           t:'La gouttière est tordue : quelqu\'un est descendu du toit en s\'y accrochant. Quelqu\'un de léger et agile, sinon elle aurait cassé !',
           note:'Mairie : quelqu\'un de léger et agile est descendu du toit par la gouttière.'}
@@ -329,19 +330,31 @@ E[1] = {
       {q:'Quelles nouvelles ?', a:'Tout le village ne parle que de la Lanterne ! Et cette nuit, Gaspard a encore fait du pain : ça sentait bon jusqu\'ici.', note:'Margot : cette nuit, Gaspard faisait du pain.'}
     ]}
   },
+  /* Les trois analyses se font au labo (labo.js ; les fiches du labo : src/labo/30-donnees.js). Plus de mini-jeu « Le double », plus d'échec :
+     on cherche avec la loupe, le microscope, les bocaux, et l'analyse est faite quand l'essentiel est reconnu
+     (le fil : laine tricotée + suie ; les poils : chien + feuille de chêne ; la plume : plume d'oie + pollen de lavande). */
+  labo:['fil', 'poils', 'plume'],
+  /* les trouvailles en plus (pas obligatoires) : une petite note au Carnet, la première fois */
+  laboNotes:{
+    brun:'Sur le fil : un peu de terre de jardin.',
+    orange:'Sur le fil : un éclat de tuile.',
+    or:'Sur le fil : une paillette de feuille d\'or, comme sur la Lanterne !',
+    rouge:'Le fil a été teint avec de la garance et de la pelure d\'oignon.',
+    bardane:'Dans les poils : des graines de bardane, qui s\'accrochent à tout ce qui passe.',
+    encre:'Le noir de la plume : des mûres et du brou de noix.'
+  },
   analyses:{
-    fil:{mj:'double', donne:'info:echarpe', rate:'C\'est un bout de laine rouge, tricotée à la main comme une écharpe… couverte d\'une poussière noire. Laquelle ? Tu n\'as pas eu le temps de comparer.',
-      rateNote:'Analyse du fil (pas finie) : un bout de laine rouge tricotée main, comme une écharpe, couverte d\'une poussière noire.', partiel:true,
+    fil:{donne:'info:echarpe',
       t:'C\'est de la laine rouge tricotée à la main : un morceau d\'écharpe ! Elle est couverte de SUIE noire, comme dans les cheminées.',
       note:'Analyse du fil : un bout d\'écharpe rouge tricotée main, plein de suie de cheminée.',
       detail:{t:'La suie est toute fraîche : elle date de cette nuit.', note:'Détail : la suie du fil est toute fraîche.'}},
-    poils:{mj:'double', rate:'Des poils de chien, noirs et blancs, avec un petit bout de feuille coincé dedans. Quel arbre ? Tu n\'as pas eu le temps de comparer.',
-      rateNote:'Analyse des poils (pas finie) : des poils de chien noirs et blancs, avec un bout de feuille.',
+    poils:{
       t:'Des poils de chien, noirs et blancs. Coincée dedans : une petite feuille de CHÊNE !',
       note:'Analyse des poils : chien noir et blanc, avec une feuille de chêne.',
       detail:{t:'Les poils sont encore humides : le chien est passé ce matin, très tôt.', note:'Détail : le chien est passé ce matin très tôt.'}},
-    plume:{t:'Une grande plume noire, toute douce. Elle sent… la lavande ! D\'où peut-elle venir ? Mystère… Rien à voir avec la lanterne. Garde-la bien : elle servira peut-être un jour.',
-      note:'Analyse de la plume : une grande plume noire qui sent la lavande. Mystère…'}
+    /* (une plume d'oie teinte en noir, avec du pollen de lavande : décidé par Romain le 9 novembre, mystère pour plus tard) */
+    plume:{t:'Une plume d\'oie, teinte en noir ! Elle sent la lavande : dessus, il y a du pollen de LAVANDE. D\'où peut-elle venir ? Mystère… Rien à voir avec la Lanterne. Garde-la bien : elle servira peut-être un jour.',
+      note:'Analyse de la plume : une plume d\'oie teinte en noir, avec du pollen de lavande. Mystère…'}
   },
   recettes:['revelatrice'],
   pages:[

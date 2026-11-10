@@ -541,7 +541,14 @@ document.addEventListener('click', function(ev){
 
 /* Les actions refusent aussi ce qui sort de la trame (un clic au clavier, un ancien bouton, un essai à la main) */
 function refuser(t){ M.son('ko'); var g = M.tutoGuide(); M.toast(t || ('Pas maintenant ! ' + ((g && (g.dire || g.but)) || ''))); }
+/* (le labo d'analyses, labo.js, demande avant d'ouvrir : cette analyse est-elle dans la trame maintenant ? M.tutoPermet('analyser', {id:'fil'})) */
+var GARDES = {};
+M.tutoPermet = function(nom, x){
+  if(!actif() || !GARDES[nom]) return true;
+  try{ return GARDES[nom](x || {}) === true; }catch(e){ return true; }
+};
 function garder(nom, ok){
+  GARDES[nom] = ok;
   var f = A[nom]; if(typeof f !== 'function') return;
   A[nom] = function(el){
     if(actif()){

@@ -1,6 +1,6 @@
 /* Atelier des sons de Brumeval — les sons du labo d'analyses de l'Alchimiste (la paillasse vue de près).
-   Leur code vient tel quel de la maquette du labo (jeu/maquettes/labo-morceaux/15-sons.js, recopié par construire-sons.py
-   dans EXTRAITS.labo) : ce qu'on entend ici est ce qu'on entend dans la maquette, et ce qu'on entendra dans le jeu.
+   Leur code vient tel quel du labo du jeu (jeu/src/labo/15-sons.js, recopié par construire-sons.py
+   dans EXTRAITS.labo) : ce qu'on entend ici est ce qu'on entend dans le jeu (enquête 1) et dans la maquette.
    Romain les a validés d'avance (10 novembre, 15 h 44 : « je te valide automatiquement les sons ; s'il y en a que je veux que
    tu refasses, j'irai te les cocher ») : ils sont marqués ✅, et il touche 🔁 « à refaire » sur ceux qu'il veut changer. */
 (function(G){

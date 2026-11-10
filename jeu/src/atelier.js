@@ -4823,6 +4823,10 @@ function dessinerPotions(V){
 /* ---------- La table d'analyse : les objets reçus ---------- */
 function ouvrirAnalyses(V){
   fermerBullesPa(V);
+  /* le labo (10 novembre, Bible §12.51) : quand l'enquête a sa fiche de labo, « Analyser » ouvre le labo en plein écran (options.labo,
+     donné par le moteur : labo.js). Sinon : le panneau d'analyse d'avant. */
+  /* (rien de reçu encore : le panneau d'avant, qui explique comment un objet arrive sur la paillasse) */
+  if(typeof V.o.labo === 'function' && (V.o.analyses || []).length){ son(V, 'clic'); V.o.labo(); return; }
   ouvrirCalque(V, 'at-cal-analyses', feuille('at-f-analyses', '<span class="at-f-ic">🔍</span><h3>La paillasse d\'analyse</h3><span class="at-f-apercu" aria-hidden="true">' + apercuPanneau(V, 'pa') + '</span>', corpsAnalyses(V)));
   son(V, 'clic');
 }

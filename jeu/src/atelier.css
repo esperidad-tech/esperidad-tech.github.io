@@ -987,3 +987,10 @@
   font-size:calc(22px * var(--k, 1) * 1.6)}
 .at-voyage span{line-height:1}
 .at-voyage b{font-size:.6em;color:#24182e;font-weight:900}
+
+/* ---------- Le labo d'analyses (labo.js) : une page à part, dans un cadre, en plein écran par-dessus l'atelier ----------
+   (sur un téléphone à encoche tenu couché : le cadre reste entre les bords sûrs, et sa couleur de fond remplit les côtés) */
+.labo-cadre{position:fixed;top:0;bottom:0;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);
+  width:calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));height:100%;border:0;margin:0;padding:0;display:block;
+  z-index:2147483000;background:#1b1430;box-shadow:0 0 0 100vmax #1b1430}
+html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
