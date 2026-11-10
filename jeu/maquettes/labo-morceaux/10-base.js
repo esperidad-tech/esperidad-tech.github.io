@@ -32,38 +32,52 @@ function txt(x, y, s, t, xx){ return '<text x="' + f1(x) + '" y="' + f1(y) + '" 
 function lin(id, st, vert){ return '<linearGradient id="g-' + id + '" x1="0" y1="0" x2="' + (vert ? 0 : 1) + '" y2="' + (vert ? 1 : 0) + '">' + st.map(function(s){ return '<stop offset="' + s[1] + '" stop-color="' + s[0] + '"' + (s[2] !== undefined ? ' stop-opacity="' + s[2] + '"' : '') + '/>'; }).join('') + '</linearGradient>'; }
 function rad(id, st, cx, cy, r){ return '<radialGradient id="g-' + id + '" cx="' + (cx || .5) + '" cy="' + (cy || .5) + '" r="' + (r || .5) + '">' + st.map(function(s){ return '<stop offset="' + s[1] + '" stop-color="' + s[0] + '"' + (s[2] !== undefined ? ' stop-opacity="' + s[2] + '"' : '') + '/>'; }).join('') + '</radialGradient>'; }
 
-/* ============ La perspective : une seule caméra pour toute la pièce ============
-   L'œil est à 2,30 m du sol, face au mur du fond (à 4 m). Tout ce qui est dessiné passe par pr(X, Y, Z) :
-   X = à gauche (−) ou à droite (+) du milieu, Y = hauteur au-dessus du sol, Z = distance à l'œil, en mètres.
-   Toutes les lignes qui s'éloignent fuient donc vers le même point (500, 110). */
-var CAM = {x:500, y:110, f:640, h:2.3};
-function kz(Z){ return CAM.f/Z; }
-function pr(X, Y, Z){ var k = CAM.f/Z; return [CAM.x + k*X, CAM.y + k*(CAM.h - Y)]; }
-function d3(a, ouvert){ return 'M' + a.map(function(p){ var q = pr(p[0], p[1], p[2]); return f1(q[0]) + ',' + f1(q[1]); }).join(' L') + (ouvert ? '' : ' Z'); }
-function Q3(a, f, xx){ return P(d3(a), f, xx); }
-function disque(X, Y, Z, r){ var k = kz(Z), c = pr(X, Y, Z); return {cx:c[0], cy:c[1], rx:k*r, ry:k*r*(CAM.h - Y)/Z, k:k}; }
+/* ============ La vue : on est penché sur la paillasse, comme dans l'atelier du jeu (l'œil est haut : on voit le dessus des pots) ============
+   Le plateau va du bord avant (y = YF, à l'échelle 1) au fond (y = YB). Tout ce qui s'éloigne fuit vers le même point (600, VY),
+   très haut au-dessus de l'image. Un objet posé à la hauteur d'écran y est dessiné à l'échelle kY(y). */
+var VW = 1200, VH = 640, VY = -620, YF = 478, YB = 236, EL = .485;
+function kY(y){ return (y - VY)/(YF - VY); }
+function xP(X, y){ return 600 + X*kY(y); }
+function yT(t){ return VY + (YF - VY)/(1 + t*.2827); }
+
+/* ============ Les styles de l'atelier : ce que le joueur a choisi dans le jeu (ici, deux boutons 🎨 pour essayer) ============
+   La paillasse : 5 formes × 8 couleurs, comme dans le jeu. Le mur du fond : 5 motifs × 8 couleurs, comme dans le jeu. */
+var THEMES = [{nom:'naturel', c:'#c98450'}, {nom:'violet', c:'#8d5cf0'}, {nom:'jaune', c:'#f2c230'}, {nom:'rose', c:'#f06eaa'}, {nom:'vert', c:'#4cbb5c'}, {nom:'bleu', c:'#3d8ef0'}, {nom:'rouge', c:'#e0443a'}, {nom:'orange', c:'#f58a2a'}];
+var FORMES_PA = ['établi de bois', 'comptoir de pierre', 'marbre et or', 'meuble à tiroirs', 'tréteaux'], FORMES_MUR = ['pierres', 'rayures', 'étoiles', 'boiseries', 'fleurs'];
+var ST = {paF:0, paT:0, murF:0, murT:0};
+try { var stS = JSON.parse(localStorage.getItem('brumeval-labo-style') || 'null'); if(stS) for(var cleS in ST) if(typeof stS[cleS] === 'number') ST[cleS] = stS[cleS]; } catch(e){}
+function gardeStyle(){ try { localStorage.setItem('brumeval-labo-style', JSON.stringify(ST)); } catch(e){} }
+function paletteBois(){
+  var c = THEMES[ST.paT].c;
+  if(!ST.paT) return {H:['#e9bb80','#d9a066','#c48850'], C:['#ecb882','#c98450','#9a5c31'], V:['#c98450','#a5653a','#7d4626'], S:['#94603a','#62381d'], F:['#8a5530','#6b3d1f','#4f2a14'], veine:'#8a5530', joint:'#a5653a'};
+  return {H:[clair(c,.5), clair(c,.3), clair(c,.12)], C:[clair(c,.42), clair(c,.05), sombre(c,.22)], V:[clair(c,.08), sombre(c,.12), sombre(c,.32)], S:[sombre(c,.22), sombre(c,.5)], F:[sombre(c,.28), sombre(c,.42), sombre(c,.58)], veine:sombre(c,.38), joint:sombre(c,.25)};
+}
+function palettePlateau(){
+  var c = THEMES[ST.paT].c, b = paletteBois(), t = ST.paT;
+  if(ST.paF === 1) return {g:[t ? melange('#c9c4dc', c, .3) : '#c4bfd8', t ? melange('#a6a0bd', c, .3) : '#a6a0bd', t ? melange('#8d87a6', c, .3) : '#8d87a6'], sorte:'pierre', joint:'rgba(40,30,70,.35)'};
+  if(ST.paF === 2) return {g:[t ? melange('#fbf9fd', c, .16) : '#fbf9fd', t ? melange('#efeaf6', c, .16) : '#efeaf6', t ? melange('#d9d3ea', c, .16) : '#d9d3ea'], sorte:'marbre', joint:'rgba(120,110,160,.5)'};
+  return {g:b.H, sorte:ST.paF === 4 ? 'planches' : 'bois', joint:b.joint};
+}
+function couleursMur(){ var c = THEMES[ST.murT].c; return ST.murT ? [melange(c, '#3a2c5a', .2), melange(c, '#3a2c5a', .34), melange(c, '#3a2c5a', .48)] : ['#5a4c7c', '#4a3d68', '#3d3158']; }
 
 function defs(){
+  var b = paletteBois(), p = palettePlateau(), m = couleursMur(), or = ST.paF === 2;
+  function v3(id, a){ return lin(id, [[a[0],0],[a[1],.5],[a[2] || a[1],1]], 1); }
   return '<defs><filter id="flou" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter><filter id="flou2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>' +
     '<filter id="flou9" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>' +
+    /* le bois (des outils : toujours naturel) */
     lin('bois', [['#d99a5e',0],['#b06f3e',.55],['#7d4626',1]]) + lin('boisV', [['#c98450',0],['#a5653a',.5],['#7d4626',1]], 1) + lin('boisC', [['#ecb882',0],['#c98450',.6],['#9a5c31',1]], 1) +
-    lin('boisH', [['#e9bb80',0],['#d9a066',.45],['#c48850',1]], 1) + lin('boisS', [['#94603a',0],['#62381d',1]], 1) + lin('boisF', [['#8a5530',0],['#6b3d1f',.6],['#4f2a14',1]], 1) +
+    lin('boisH', [['#e9bb80',0],['#d9a066',.45],['#c48850',1]], 1) + lin('boisS', [['#94603a',0],['#62381d',1]], 1) +
+    /* la paillasse choisie : son plateau, son chant, son tablier, ses tiroirs */
+    v3('pPlateau', p.g) + (p.sorte === 'bois' || p.sorte === 'planches' ? lin('pChant', [[b.S[0],0],[b.S[1],1]], 1) : lin('pChant', [[sombre(p.g[2], .08),0],[sombre(p.g[2], .3),1]], 1)) +
+    (or ? lin('pTablier', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) : v3('pTablier', b.V)) + (or ? lin('pTiroir', [['#fdfbff',0],['#efeaf6',.6],['#d6d0e8',1]], 1) : v3('pTiroir', b.C)) + v3('pFonce', b.F) + v3('pInterieur', [b.F[0], b.F[1], b.F[2]]) +
     lin('laiton', [['#9a6516',0],['#f5c45a',.32],['#fff1b8',.45],['#e0a23a',.62],['#8a5a12',1]]) + lin('laitonV', [['#fff1b8',0],['#f5b945',.5],['#b07a1c',1]], 1) +
-    lin('cuivre', [['#7a3418',0],['#e08a52',.3],['#ffd2a6',.44],['#c96a36',.64],['#6a2810',1]]) +
-    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + rad('fonte', [['#6d6688',0],['#3c3654',.45],['#1a1626',1]], .32, .3, .8) +
-    lin('pierre', [['#8f86ad',0],['#756c96',.55],['#5b5379',1]], 1) + lin('pierreS', [['#655c84',0],['#453d60',1]], 1) + lin('pierreL', [['#a9a6cf',0],['#7f7aa8',1]], 1) +
-    lin('verre', [['#ffffff',0,.35],['#bff3ff',.45,.12],['#ffffff',1,.25]]) + lin('ciel', [['#070b24',0],['#172258',.6],['#3b3f80',1]], 1) +
-    lin('ardoise', [['#39414c',0],['#252b34',1]], 1) + lin('tapis', [['#a9b4c8',0],['#8c98ae',1]], 1) + lin('feutre', [['#35584f',0],['#24403a',1]], 1) +
-    lin('cire', [['#fffaf0',0],['#f1e6c8',.6],['#d9c89c',1]]) + lin('parchemin', [['#f6ecd2',0],['#e4d2a6',1]], 1) +
-    lin('murOmbre', [['#0a0614',0,.5],['#0a0614',.25,0],['#0a0614',.78,0],['#0a0614',1,.42]], 1) + lin('piedMur', [['#0a0614',0,.55],['#0a0614',1,0]], 1) +
-    rad('lueur', [['#ffd88a',0,.34],['#ffb85a',.5,.1],['#ffd88a',1,0]]) + rad('feu', [['#ffb050',0,.55],['#ff7a2a',.45,.2],['#ff7a2a',1,0]]) +
-    rad('atre', [['#ff9a3a',0,.75],['#c8421a',.45,.35],['#1a0e14',1,0]]) + rad('lunaire', [['#bcd0ff',0,.2],['#9ab4ff',1,0]]) +
-    rad('flamme', [['#fff7c2',0],['#ffc24a',.5],['#ff7a2a',1]], .5, .7, .6) + rad('halo', [['#ffe9a3',0,.6],['#ffd36a',1,0]]) + rad('lune', [['#fff8d0',0,.9],['#fff3b0',.3,.35],['#fff3b0',1,0]]) +
-    '<radialGradient id="g-vignette" gradientUnits="userSpaceOnUse" cx="500" cy="330" r="780" gradientTransform="translate(500 330) scale(1 .72) translate(-500 -330)"><stop offset="0" stop-color="#0a0614" stop-opacity="0"/><stop offset=".55" stop-color="#0a0614" stop-opacity="0"/><stop offset=".86" stop-color="#0a0614" stop-opacity=".42"/><stop offset="1" stop-color="#0a0614" stop-opacity=".8"/></radialGradient>' +
-    '<pattern id="g-briques" patternUnits="userSpaceOnUse" x="0" y="-2" width="200" height="80">' +
-      '<rect x="2" y="2" width="96" height="36" rx="7" fill="#4a3d66"/><rect x="102" y="2" width="96" height="36" rx="7" fill="#51446e"/>' +
-      '<rect x="-48" y="42" width="96" height="36" rx="7" fill="#483b63"/><rect x="52" y="42" width="96" height="36" rx="7" fill="#453960"/><rect x="152" y="42" width="96" height="36" rx="7" fill="#483b63"/>' +
-      '<path d="M9,6 H91 M109,6 H191 M59,46 H141" stroke="rgba(255,255,255,.08)" stroke-width="2.5" stroke-linecap="round"/><path d="M9,36 H91 M109,36 H191 M59,76 H141" stroke="rgba(0,0,0,.28)" stroke-width="2.5" stroke-linecap="round"/></pattern>' +
+    lin('fer', [['#2a2538',0],['#5f5872',.35],['#3a3450',.6],['#1c1828',1]]) + lin('cuir', [['#d8b78f',0],['#c9a377',.6],['#b88e60',1]], 1) +
+    lin('ardoise', [['#39414c',0],['#252b34',1]], 1) + lin('feutre', [['#35584f',0],['#24403a',1]], 1) + lin('cire', [['#fffaf0',0],['#f1e6c8',.6],['#d9c89c',1]]) + lin('parchemin', [['#f6ecd2',0],['#e4d2a6',1]], 1) +
+    '<linearGradient id="g-mur" gradientUnits="userSpaceOnUse" x1="0" y1="-200" x2="0" y2="470"><stop offset="0" stop-color="' + m[0] + '"/><stop offset=".6" stop-color="' + m[1] + '"/><stop offset="1" stop-color="' + m[2] + '"/></linearGradient>' +
+    lin('piedMur', [['#0a0614',0,.5],['#0a0614',1,0]], 1) + lin('dessous', [['#0a0614',0,.55],['#0a0614',1,0]], 1) +
+    rad('lueur', [['#ffd88a',0,.3],['#ffb85a',.5,.1],['#ffd88a',1,0]]) + rad('flamme', [['#fff7c2',0],['#ffc24a',.5],['#ff7a2a',1]], .5, .7, .6) + rad('halo', [['#ffe9a3',0,.6],['#ffd36a',1,0]]) +
+    '<radialGradient id="g-vignette" gradientUnits="userSpaceOnUse" cx="600" cy="330" r="900" gradientTransform="translate(600 330) scale(1 .66) translate(-600 -330)"><stop offset="0" stop-color="#0a0614" stop-opacity="0"/><stop offset=".6" stop-color="#0a0614" stop-opacity="0"/><stop offset="1" stop-color="#0a0614" stop-opacity=".5"/></radialGradient>' +
     '</defs>';
 }
 /* Les veines du bois : des lignes un peu tremblées */
@@ -74,15 +88,7 @@ function grainBois(x, y, w, h, n, seed, col, a){
     s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (.8 + R0()*1.2).toFixed(1) + '" opacity="' + (a || .3) + '"/>'; }
   return s;
 }
-function noeud(x, y, r, ap){ ap = ap || .42; return '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + r + '" ry="' + f1(r*ap) + '" fill="none" stroke="#7d4626" stroke-width="1.6" opacity=".55"/><ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(r*.42) + '" ry="' + f1(r*ap*.42) + '" fill="#7d4626" opacity=".45"/>'; }
-/* Les veines sur une surface posée à plat (le plateau) : elles suivent la perspective */
-function veines3(X0, X1, Y, Z0, Z1, n, seed, col, a){
-  var R0 = rng(seed), s = '';
-  for(var i=0;i<n;i++){ var z = Z0 + (i + .2 + R0()*.6)*(Z1 - Z0)/n, ph = R0()*6, am = .004 + R0()*.01, pts = [];
-    for(var X = X0; X <= X1 + .001; X += .09) pts.push([X, Y, z + Math.sin(X*4.3 + ph)*am]);
-    s += '<path d="' + d3(pts, true) + '" fill="none" stroke="' + col + '" stroke-width="' + (.8 + R0()*1).toFixed(1) + '" opacity="' + (a || .3) + '"/>'; }
-  return s;
-}
+function noeud(x, y, r, ap){ ap = ap || .42; return '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + r + '" ry="' + f1(r*ap) + '" fill="none" stroke="rgba(60,30,10,.5)" stroke-width="1.6"/><ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(r*.42) + '" ry="' + f1(r*ap*.42) + '" fill="rgba(60,30,10,.4)"/>'; }
 /* Petits pictogrammes des six sortes d'échantillons (plaques des tiroirs) */
 function picto(k, x, y, t){
   var s = '<g transform="translate(' + f1(x) + ',' + f1(y) + ') scale(' + (t/40) + ')">';

@@ -5,24 +5,24 @@ function chemin(c, pts, off){ c.beginPath(); for(var i=0;i<pts.length;i++){ var 
 function normales(raw){ return raw.map(function(q,i){ var a = raw[Math.max(0,i-1)], b = raw[Math.min(raw.length-1,i+1)]; var dx = b[0]-a[0], dy = b[1]-a[1], L = Math.hypot(dx,dy) || 1; return {x:q[0], y:q[1], nx:-dy/L, ny:dx/L, tx:dx/L, ty:dy/L}; }); }
 function blob(c, x, y, r, Rn, col, pts){ c.fillStyle = col; c.beginPath(); var n = pts || 9; for(var i=0;i<n;i++){ var a = i/n*Math.PI*2, rr = r*(.7 + Rn()*.5); var px = x + Math.cos(a)*rr, py = y + Math.sin(a)*rr; if(i) c.lineTo(px,py); else c.moveTo(px,py); } c.closePath(); c.fill(); }
 function rond(c, x, y, r){ c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); }
-/* Le drap d'examen gris-bleu : ni clair ni foncé, pour bien voir un fil blanc comme un grain noir */
-function fondTapis(c, w, h){
-  var g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#a9b4c8'); g.addColorStop(1, '#8c98ae'); c.fillStyle = g; c.fillRect(0,0,w,h);
-  c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.1)'; var p;
-  for(p = 5; p < w; p += 10){ c.beginPath(); c.moveTo(p,0); c.lineTo(p,h); c.stroke(); }
-  c.strokeStyle = 'rgba(30,30,60,.07)'; for(p = 5; p < h; p += 10){ c.beginPath(); c.moveTo(0,p); c.lineTo(w,p); c.stroke(); }
+/* Le carré de cuir clair où l'on pose les échantillons : le même fond sous la loupe et sur les cartes des tiroirs */
+function fondCuir(c, w, h){
+  var g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#d6b48c'); g.addColorStop(1, '#c29a6e'); c.fillStyle = g; c.fillRect(0, 0, w, h);
+  var Rn = rng(5), n = Math.round(w*h/260); c.fillStyle = 'rgba(110,66,38,.13)';
+  for(var i = 0; i < n; i++){ c.beginPath(); c.arc(Rn()*w, Rn()*h, .6 + Rn()*1.1, 0, 6.283); c.fill(); }
 }
 function dessinerFil(c, w, h, p, o){
   o = o || {}; var s = o.scale || 1, Rn = rng(o.seed || 1), t = p.thick*s;
   var amp = p.crimp*s, per = Math.max(22, p.thick*s*2.4), ph = Rn()*6.28, bend = (Rn()-.5)*30*s, raw = [];
   for(var x = -30; x <= w+30; x += 2) raw.push([x, h/2 + amp*Math.sin(2*Math.PI*x/per + ph) + bend*Math.sin(Math.PI*(x+30)/(w+60))]);
   var pts = normales(raw); c.lineCap = 'round'; c.lineJoin = 'round';
-  c.globalAlpha = .25; c.strokeStyle = '#1a1430'; c.lineWidth = t*1.05; chemin(c, pts, t*.35 + 1.5*s); c.globalAlpha = 1;
+  var bord = Math.max(.8, Math.min(1.5*s, t*.2));
+  c.globalAlpha = .22; c.strokeStyle = '#3a2414'; c.lineWidth = t; chemin(c, pts, t*.3 + 2*s); c.globalAlpha = 1;
   var nF = Math.round(p.fuzz*w*(s > 1.5 ? 1.5 : 1.1)); c.lineWidth = Math.max(.6, .45*s);
   for(var i=0;i<nF;i++){ var q = pts[2 + Math.floor(Rn()*(pts.length-4))], sd = Rn() < .5 ? -1 : 1, x0 = q.x + q.nx*sd*t*.42, y0 = q.y + q.ny*sd*t*.42;
     var len = (3 + Rn()*8)*s*(.6 + Math.min(p.fuzz,1.2)*.6)*(p.poil || 1), a = (Rn()-.5)*1.3, vx = q.nx*sd, vy = q.ny*sd, rx = vx*Math.cos(a) - vy*Math.sin(a), ry = vx*Math.sin(a) + vy*Math.cos(a);
-    c.strokeStyle = clair(p.base, .22); c.globalAlpha = .65; c.beginPath(); c.moveTo(x0,y0); c.quadraticCurveTo(x0 + rx*len*.5, y0 + ry*len*.5 + (p.poil > 1 ? len*.15 : 0), x0 + rx*len, y0 + ry*len); c.stroke(); }
-  c.globalAlpha = 1;
+    c.strokeStyle = clair(p.base, .15); c.globalAlpha = .9; c.beginPath(); c.moveTo(x0,y0); c.quadraticCurveTo(x0 + rx*len*.5, y0 + ry*len*.5 + (p.poil > 1 ? len*.15 : 0), x0 + rx*len, y0 + ry*len); c.stroke(); }
+  c.globalAlpha = 1; c.strokeStyle = '#24182e'; c.lineWidth = t + 2*bord; chemin(c, pts, 0);
   if(p.strands){ for(var k=0;k<p.strands;k++){ var off = -t/2 + t*(k+.5)/p.strands; c.strokeStyle = k % 2 ? sombre(p.base, .08) : p.base; c.lineWidth = t/p.strands*.82; chemin(c, pts, off); c.strokeStyle = 'rgba(255,255,255,' + (.15 + p.sheen*.5) + ')'; c.lineWidth = Math.max(.8, t/p.strands*.18); chemin(c, pts, off - t/p.strands*.18); } }
   else {
     c.strokeStyle = p.base; c.lineWidth = t; chemin(c, pts, 0); c.globalAlpha = .35; c.strokeStyle = sombre(p.base, .55); c.lineWidth = t*.32; chemin(c, pts, t*.3); c.globalAlpha = 1;
@@ -176,4 +176,25 @@ function dessinerPreuve(c, w, h, s){
   var o = OBJETS[S.sel];
   if(S.sel === 'fil') dessinerFil(c, w, h, {base:ROUGE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}, {scale:s, seed:3, suie:S.items[10].filter(function(i){ return i.t === 'noir' && !i.pris; }).length*3 + 2});
   else dessinerGrain(c, w, h, o.bon, 77, s);
+}
+
+/* La bandelette de papier buvard : la goutte part du trait de crayon, en bas ; l'alcool monte (p de 0 à 1) et sépare les couleurs en bandes */
+function dessinerBandelette(c, x, y, w, h, liste, p, o){
+  o = o || {}; var Rn = rng(o.seed || 3), y0 = y + h*.9, course = h*.8, i;
+  c.save(); c.fillStyle = 'rgba(40,24,10,.25)'; c.fillRect(x + w*.07, y + h*.012, w, h);
+  var g = c.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#f3ecd9'); g.addColorStop(.5, '#fffaf0'); g.addColorStop(1, '#ece3cc'); c.fillStyle = g; c.fillRect(x, y, w, h);
+  c.beginPath(); c.rect(x, y, w, h); c.clip();
+  /* le papier mouillé, jusqu'où l'alcool est monté */
+  if(p > 0){ c.fillStyle = 'rgba(150,130,90,.16)'; c.fillRect(x, y0 - course*p*1.08, w, h); }
+  c.fillStyle = 'rgba(120,100,70,.12)'; for(i = 0; i < w*h/90; i++) c.fillRect(x + Rn()*w, y + Rn()*h, 1, 1 + Rn()*3);
+  /* le trait de crayon et ce qu'il reste de la goutte */
+  c.strokeStyle = 'rgba(70,70,80,.55)'; c.lineWidth = Math.max(1, w*.02); c.beginPath(); c.moveTo(x, y0); c.lineTo(x + w, y0); c.stroke();
+  if(liste.length){ c.fillStyle = couleurDe(liste); c.globalAlpha = p > 0 ? Math.max(.12, .9 - p) : .9; c.beginPath(); c.ellipse(x + w/2, y0, w*.2, w*.13, 0, 0, 6.283); c.fill(); c.globalAlpha = 1; }
+  /* les bandes */
+  liste.forEach(function(k){ teinte(k).b.forEach(function(b){
+    var yb = y0 - course*b.y*p, hb = Math.max(2, course*b.h*(.25 + .75*p)), a = (b.a || .92)*Math.min(1, p*3);
+    var gb = c.createLinearGradient(0, yb - hb/2, 0, yb + hb/2); var rgb = hexRgb(b.c).join(',');
+    gb.addColorStop(0, 'rgba(' + rgb + ',0)'); gb.addColorStop(.3, 'rgba(' + rgb + ',' + a + ')'); gb.addColorStop(.7, 'rgba(' + rgb + ',' + a + ')'); gb.addColorStop(1, 'rgba(' + rgb + ',0)');
+    c.fillStyle = gb; c.fillRect(x + w*.08, yb - hb/2, w*.84, hb); }); });
+  c.restore(); c.strokeStyle = '#24182e'; c.lineWidth = Math.max(1.5, w*.035); c.strokeRect(x, y, w, h);
 }
