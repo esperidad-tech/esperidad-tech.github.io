@@ -404,26 +404,19 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 @keyframes etincelle{0%{transform:translate(-50%,0) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
 .page-vol{position:absolute;left:0;top:0;font-size:34px;width:40px;height:40px;margin:-20px 0 0 -20px;text-align:center;line-height:40px}
 
-/* ---------- LE CRITIQUE ---------- */
-.crit-vignette{position:absolute;left:0;top:0;width:960px;height:540px;pointer-events:none}
-.crit-choc{position:absolute;width:1920px;height:1080px}
-.crit-rayons{position:absolute;width:760px;height:760px;border-radius:50%;pointer-events:none;z-index:3;
-  background:repeating-conic-gradient(from 0deg,rgba(255,214,90,0) 0deg 6deg,rgba(255,236,150,1) 8.5deg,rgba(255,214,90,0) 11deg 18deg);
-  -webkit-mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%)}
-.crit-rayons.cuit, .crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;-webkit-mask-image:none;mask-image:none;clip-path:none;max-width:none}
-/* (mémoire, iPhone) le halo sur son propre calque : sinon le calque de « CRITIQUE ! », agrandi ×3,4 à son arrivée, ferait
-   640 × 3,4 × 3 ≈ 4 700 px réels de large */
+/* ---------- LE CRITIQUE (autour du rat seulement : rien de plein écran) ---------- */
+.crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;clip-path:none;max-width:none}
+/* (mémoire, iPhone) le halo sur son propre calque : la carte graphique étire la petite image, sans repeindre un grand calque */
 .crit-halo.cuit{will-change:transform}
-.crit-eclair{position:absolute;z-index:3;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,240,180,.9) 30%,rgba(255,200,80,0))}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
 .crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
-.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:96px;line-height:1;letter-spacing:.02em;white-space:nowrap}
+.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
 /* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
 .crit-ombre{position:relative;color:#24182e;-webkit-text-stroke:9px #24182e;text-shadow:0 7px 0 #7a4a10,0 9px 0 #24182e}
 .crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:260% 100%;background-position:100% 0;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:crit-eclat .9s .18s ease-out forwards}
-.crit-halo{position:absolute;left:50%;top:50%;width:640px;height:240px;margin:-120px 0 0 -320px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
+.crit-halo{position:absolute;left:50%;top:50%;width:540px;height:200px;margin:-100px 0 0 -270px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
 @keyframes crit-eclat{0%{background-position:100% 0}100%{background-position:0 0}}
 @keyframes crit-tremble{0%{transform:translate(0,0) rotate(-1deg)}25%{transform:translate(2px,-2px) rotate(.5deg)}50%{transform:translate(-2px,1px) rotate(-.5deg)}75%{transform:translate(1px,2px) rotate(1deg)}}
 .crit-etoile{position:absolute;right:-8px;top:-14px;width:60px;height:60px;opacity:0;animation:etoile .6s .2s ease-out forwards;

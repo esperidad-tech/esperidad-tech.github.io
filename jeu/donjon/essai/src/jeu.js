@@ -916,22 +916,16 @@ async function critique(r, phrase){
   r.pv = 0; r.mort = true; r.ouvert = false;
   E.ratsVaincus[r.i] = true;
   majBadges();
-  /* le moment où le rat éclate : le module ajoute son calque d'explosion (.ra-scene-fx) ; l'acteur « images » donne .boom */
-  var boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
-  var mo = new MutationObserver(function(){ if(fx.querySelector('.ra-scene-fx')){ mo.disconnect(); boomOk(); } });
-  mo.observe(fx, {childList:true});
-  /* le son du critique en trois morceaux : ça aspire pendant le ralenti, l'impact sur l'image de choc, l'explosion quand le rat éclate */
-  var explose = false;
-  function sonExplosion(){ if(explose) return; explose = true; bruit('ratCritique', {partie:'explosion'}); }
+  /* le son du critique en trois morceaux, calés sur l'image (effets.js, critique) : l'aspiration pendant le temps
+     suspendu, l'impact quand la fumée noire l'enveloppe, l'explosion quand ses membres jaillissent */
   function sonCritique(nom){
     if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
-    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); else setTimeout(sonExplosion, 1200); return; }
+    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); return; }
+    if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion'}); return; }
     son.apply(null, arguments);
   }
-  boomP.then(sonExplosion);
-  await Fx.critique(c.x, c.y, n, function(){ majBarres(); var p = A.r[r.i].exploser(fx); if(p && p.boom) p.boom.then(boomOk); return p; }, sonCritique,
-    {exclure:slotR(r), brume:RAT_MODULE ? 12 : 24, boom:boomP});
-  mo.disconnect();
+  /* le module du rat fait tout autour de lui (fumée, membres, cendres) ; sans lui, les effets font une fumée noire */
+  await Fx.critique(c.x, c.y, n, function(o){ majBarres(); return A.r[r.i].exploser(fx, o); }, sonCritique, {brume:RAT_MODULE ? 0 : 14});
   finRat(r, true);
   conte(phrase || 'En plein dans le mille !');
   return attendre(350);

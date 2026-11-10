@@ -196,69 +196,46 @@ function cuireCritique(){
     enImage(e, function(u){ ETOILE = u; });
   }catch(x){ ETOILE = ''; }
 }
-/* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
+/* ---------- LE CRITIQUE : autour du rat seulement ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
   son = son || function(){};
   o = o || {};
-  /* l'ordre : ralenti → image de choc → « CRITIQUE ! » et le rat qui gonfle sous le choc → il éclate (o.boom) et la brume part.
-     L'éclatement du module est lourd à dessiner : il doit venir APRÈS l'image de choc, sinon elle resterait figée à l'écran. */
-  var boom = null;
-  var E = L.ecran, monde = L.monde;
-  /* 1) ralenti, vignette qui se resserre, zoom lent vers le rat */
+  /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
+     les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Donc rien ne couvre
+     l'écran (ni voile sombre, ni image de choc, ni rayons, ni ralenti général) ; tout se passe autour du rat :
+       0 ms        la flèche frappe : le temps se suspend sur LUI (il se fige, gonfle, tremble) — le son « aspire » ;
+       CRIT_IMPACT la fumée noire l'enveloppe — l'impact, un petit tremblement, le gros « CRITIQUE ! », le chiffre ;
+       CRIT_ECLAT  ses membres jaillissent sur les côtés et retombent dans la fumée — l'explosion, un dernier petit tremblement ;
+       puis        la fumée se dissipe lentement et laisse les cendres et les os (≈ 2,5 s en tout).
+     Les instants des sons sont ceux de l'atelier des sons (l'impact 0,42 s après l'aspiration, l'explosion 0,6 s après). */
+  var v = S.vitesse || 1;
   son('aspire');
-  /* la vignette : un trou sombre qui se resserre sur le rat (une toile à la taille de la scène : voir vignette()) */
-  var vig = vignette(E, x, y);
-  vig.serrer(900, 150, 0, 1, 420);
-  monde.style.transformOrigin = x + 'px ' + y + 'px';
-  var zoom = anime(monde, [{transform:'scale(1)'}, {transform:'scale(1.17)'}], {duration:440, easing:'cubic-bezier(.2,.8,.3,1)', fill:'forwards'});
-  var lents = [];
-  try{ if(document.getAnimations) document.getAnimations().forEach(function(a){
-    var t = a.effect && a.effect.target;
-    if(t && (t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
-    a.playbackRate = .22; lents.push(a);
-  }); }catch(e){}
-  return plus(420).then(function(){
-    /* 2) l'image de choc : deux images très brèves, noir et blanc */
+  /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
+  var fin = Promise.resolve(exploser ? exploser({impact:CRIT_IMPACT / v, eclat:CRIT_ECLAT / v}) : null);
+  return plus(CRIT_IMPACT).then(function(){
     son('boum');
-    lents.forEach(function(a){ try{ a.playbackRate = 1; }catch(e){} });
-    /* (mémoire, iPhone) l'image de 1 920 × 1 080 est posée en fond d'un cadre à la taille de la scène : le calque ne
-       dépasse jamais la scène (960 × 540), au lieu de 4 170 × 2 340 px réels pour l'image entière à densité 3 */
-    var choc = el('div', 'crit-choc');
-    choc.style.cssText = 'left:0;top:0;width:960px;height:540px;background:url(' + img('choc-a') + ') ' + (x - 960) + 'px ' + (y - 540) + 'px / 1920px 1080px no-repeat';
-    E.appendChild(choc);
-    var t0 = performance.now();
-    return plus(60).then(function(){ choc.style.backgroundImage = 'url(' + img('choc-b') + ')'; return plus(60); }).then(function(){ choc.remove(); (S.mesures = S.mesures || []).push(Math.round(performance.now() - t0)); });
-  }).then(function(){
-    /* 3) onde de choc, rayons dorés, tremblement, étincelles, « CRITIQUE ! », le chiffre, le rat qui explose, la brume */
-    var rayons = RAYONS ? el('img', 'crit-rayons cuit') : el('div', 'crit-rayons'); if(RAYONS){ rayons.src = RAYONS; rayons.alt = ''; }
-    rayons.style.left = x + 'px'; rayons.style.top = y + 'px'; L.fx.appendChild(rayons);
-    anime(rayons, [{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(1.3) rotate(12deg)', opacity:1, offset:.18}, {transform:'translate(-50%,-50%) scale(1.65) rotate(40deg)', opacity:0}], {duration:1300, easing:'ease-out'}).then(function(){ rayons.remove(); });
-    onde(x, y, '#fff3b0', 420, 480); setTimeout(function(){ onde(x, y, '#ffb030', 640, 700); }, 90);
-    tremble(16, 560);
-    etincelles(x, y, 44, null, 1.2);
-    var flash = el('div', 'crit-eclair'); flash.style.left = x + 'px'; flash.style.top = y + 'px'; L.fx.appendChild(flash);
-    anime(flash, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.4)', opacity:0}], {duration:380, easing:'ease-out'}).then(function(){ flash.remove(); });
-    var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
-      (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-    t.style.left = Math.max(310, Math.min(650, x)) + 'px'; t.style.top = Math.max(110, y - 120) + 'px';
-    E.appendChild(t);
-    anime(t, [{transform:'translate(-50%,-50%) scale(3.4) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.9) rotate(-3deg)', opacity:1, offset:.09},
-      {transform:'translate(-50%,-50%) scale(1.06) rotate(-4deg)', opacity:1, offset:.16}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.75},
-      {transform:'translate(-50%,-62%) scale(1.04) rotate(-4deg)', opacity:0}], {duration:1700, easing:'ease-out'}).then(function(){ t.remove(); });
+    tremble(7, 300);
+    texteCritique(x, y);
     chiffre(x, y - 50, '−' + n, 'crit');
-    /* le rat gonfle maintenant, puis éclate : la brume noire part avec lui */
-    boom = Promise.resolve(exploser ? exploser() : null);
-    Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ brumeNoire(x, y, o.brume); onde(x, y, '#d8c8f0', 360, 600); tremble(10, 380); });
-    return Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ return plus(900); });
+    if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
+    return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
-    /* 4) on relâche : la vignette s'ouvre, la caméra recule */
-    vig.serrer(150, 900, 1, 0, 650).then(function(){ vig.retirer(); });
-    return anime(monde, [{transform:'scale(1.17)'}, {transform:'scale(1)'}], {duration:600, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards'});
-  }).then(function(){
-    try{ monde.getAnimations().forEach(function(a){ a.cancel(); }); }catch(e){}
-    monde.style.transform = '';
+    son('explosion');
+    tremble(5, 240);
+    return Promise.race([fin, plus(2000)]);
   });
+}
+var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole */
+function texteCritique(x, y){
+  var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
+    (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
+  t.style.left = '720px'; t.style.top = Math.max(105, y - 135) + 'px';      /* au milieu de la moitié droite (il y tient en entier) */
+  L.ecran.appendChild(t);
+  return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
+    {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2100, easing:'ease-out'}).then(function(){ t.remove(); });
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
@@ -276,7 +253,7 @@ function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {rayons:RAYONS, etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();

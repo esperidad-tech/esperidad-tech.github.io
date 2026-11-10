@@ -2718,7 +2718,9 @@ H._toiles = function(){
 };
 H.entoile = function(on){
   on = on !== false;
-  if(on === !!this._toile) return Promise.resolve();
+  /* (l'état voulu est noté tout de suite : entoile(true) puis entoile(false) aussitôt font bien les deux, dans l'ordre) */
+  if(on === !!this._toileV) return Promise.resolve();
+  this._toileV = on;
   return on ? this._entoiler() : this._dechirer();
 };
 H._pose_ligote = function(){

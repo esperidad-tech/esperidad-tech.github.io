@@ -417,26 +417,19 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 @keyframes etincelle{0%{transform:translate(-50%,0) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
 .page-vol{position:absolute;left:0;top:0;font-size:34px;width:40px;height:40px;margin:-20px 0 0 -20px;text-align:center;line-height:40px}
 
-/* ---------- LE CRITIQUE ---------- */
-.crit-vignette{position:absolute;left:0;top:0;width:960px;height:540px;pointer-events:none}
-.crit-choc{position:absolute;width:1920px;height:1080px}
-.crit-rayons{position:absolute;width:760px;height:760px;border-radius:50%;pointer-events:none;z-index:3;
-  background:repeating-conic-gradient(from 0deg,rgba(255,214,90,0) 0deg 6deg,rgba(255,236,150,1) 8.5deg,rgba(255,214,90,0) 11deg 18deg);
-  -webkit-mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%)}
-.crit-rayons.cuit, .crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;-webkit-mask-image:none;mask-image:none;clip-path:none;max-width:none}
-/* (mémoire, iPhone) le halo sur son propre calque : sinon le calque de « CRITIQUE ! », agrandi ×3,4 à son arrivée, ferait
-   640 × 3,4 × 3 ≈ 4 700 px réels de large */
+/* ---------- LE CRITIQUE (autour du rat seulement : rien de plein écran) ---------- */
+.crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;clip-path:none;max-width:none}
+/* (mémoire, iPhone) le halo sur son propre calque : la carte graphique étire la petite image, sans repeindre un grand calque */
 .crit-halo.cuit{will-change:transform}
-.crit-eclair{position:absolute;z-index:3;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,240,180,.9) 30%,rgba(255,200,80,0))}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
 .crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
-.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:96px;line-height:1;letter-spacing:.02em;white-space:nowrap}
+.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
 /* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
 .crit-ombre{position:relative;color:#24182e;-webkit-text-stroke:9px #24182e;text-shadow:0 7px 0 #7a4a10,0 9px 0 #24182e}
 .crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:260% 100%;background-position:100% 0;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:crit-eclat .9s .18s ease-out forwards}
-.crit-halo{position:absolute;left:50%;top:50%;width:640px;height:240px;margin:-120px 0 0 -320px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
+.crit-halo{position:absolute;left:50%;top:50%;width:540px;height:200px;margin:-100px 0 0 -270px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
 @keyframes crit-eclat{0%{background-position:100% 0}100%{background-position:0 0}}
 @keyframes crit-tremble{0%{transform:translate(0,0) rotate(-1deg)}25%{transform:translate(2px,-2px) rotate(.5deg)}50%{transform:translate(-2px,1px) rotate(-.5deg)}75%{transform:translate(1px,2px) rotate(1deg)}}
 .crit-etoile{position:absolute;right:-8px;top:-14px;width:60px;height:60px;opacity:0;animation:etoile .6s .2s ease-out forwards;
@@ -972,7 +965,8 @@ Cuire.hote = function(w, h){
 
      var r = RatAnime.creer(conteneur);   // un rat en SVG qui remplit le conteneur, il regarde à gauche
 
-   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(), exploser(scene)
+   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(),
+     exploser(scene, {impact, eclat}) : le critique, autour du rat (fumée noire à « impact » ms, membres à « eclat » ms)
    États (se cumulent) : attendre(), enrager(), ebloui(on), retourner(on), bruler(on), coller(on), cible(on), yeux('jaune'|'rouge')
    arreter() : arrête toutes les boucles.
 
@@ -2267,84 +2261,114 @@ R.bruler = function(on){
 };
 
 /* =====================================================================
-   10. La mort par critique : il explose dans un nuage de brume noire
+   10. La mort par critique (Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ… de la FUMÉE NOIRE… les MEMBRES
+       éclatent sur le côté, la fumée cache, ça passe pour des enfants ; pas tout l'écran ; ça prend son temps »).
+       Tout se passe autour du rat :
+         0 ms      la flèche frappe : le temps se suspend sur lui (il se fige, gonfle, tremble), une petite lueur ;
+         o.impact  une bouffée de fumée noire dense l'enveloppe (il disparaît dedans) ;
+         o.eclat   ses membres — des silhouettes sombres (tête, queue, pattes, touffes de poil ; rien de gore) —
+                   jaillissent sur les côtés en tournoyant et retombent dans la fumée, qui les cache ;
+         ensuite   la fumée se dissipe lentement et laisse le tas de cendres et les os (≈ 2,5 s en tout).
+       Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
+       une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
-R.exploser = function(scene){
-  var self = this, j = this._debutAction();
+function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || '#2a2034') + '" stroke="#120c18" stroke-width="2.2" stroke-linejoin="round"/>'; }
+var MEMBRES = {
+  tete: SIL('M-22 2 C -24 -10 -12 -20 2 -19 C 14 -18 26 -10 32 0 C 34 4 30 7 26 7 C 12 9 -4 12 -14 10 C -20 9 -22 6 -22 2 Z') +
+    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="#4a3c5a"/>' +
+    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#d8cce6" stroke-width="1.8" stroke-linecap="round"/><circle cx="31" cy="1" r="2.4" fill="#4a3c5a"/>' +
+    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#4a3c5a" stroke-width="1"/>',
+  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#120c18', 8) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#2a2034', 5) +
+    L('M-16 -5 C -6 -9 6 -8 14 -1', '#4a3c5a', 1.4),
+  patteAv: SIL('M-4 -18 C 4 -20 8 -12 6 -4 L 4 8 C 10 9 15 12 13 16 C 9 18 2 17 -2 14 L -6 -2 C -9 -10 -10 -16 -4 -18 Z') +
+    L('M-3 -14 C 1 -15 4 -12 4 -6', '#4a3c5a', 1.4),
+  patteAr: SIL('M-12 -16 C 0 -22 12 -12 10 0 C 9 6 6 9 4 11 L 14 16 C 18 18 17 22 12 22 L -2 21 C -6 20 -6 16 -3 14 L -6 4 C -14 -2 -16 -12 -12 -16 Z') +
+    L('M-8 -12 C -2 -15 4 -12 6 -6', '#4a3c5a', 1.6),
+  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z'),
+  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', '#241a2e')
+};
+/* qui part de quel côté (le rat regarde à gauche : la tête part à gauche, la queue à droite) */
+var ECLATS = [['tete', -1], ['queue', 1], ['patteAv', -1], ['patteAr', 1], ['patteAv', 1], ['patteAr', -1], ['touffe', -1], ['touffe2', 1]];
+R.exploser = function(scene, o){
+  o = o || {};
+  var self = this, T1 = o.impact == null ? 420 : o.impact, T2 = o.eclat == null ? 1020 : o.eclat;
+  this._debutAction();
   scene = scene || this.c.parentNode || this.c;
   this.etat.feu && this.bruler(false);
   this._eteindreEtoiles();
   clearTimeout(this.fx.vapeur);
-  /* il enfle, tremble… */
+  /* la géométrie, lue une seule fois, avant qu'il bouge */
+  var cs = getComputedStyle(scene);
+  if(cs.position === 'static') scene.style.position = 'relative';
+  var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
+  var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
+  var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
+  var sol = (rr.top + rr.height * .9 - sr.top) * ech, u = taille / 180;
+  /* 1) le temps suspendu : il se fige (plus de boucles), gonfle un peu et tremble — un arrêt sur image, sur lui seul */
   var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .022, sy: 1 + i * .03, y: -i}, secousse: {x: i % 2 ? 3 : -3, a: i % 2 ? 2 : -2}, crete: {sy: 1 + i * .08}, oeil: {s: 1 + i * .04}, machoire: {a: -i * 3}, paupiere: {y: 0}}, e: 'linear'});
-  k.push({t: 1, p: {saut: {sx: 1.25, sy: 1.3, y: -10}}, e: 'ease-in'});
-  this.el.animate([{filter: 'brightness(1)'}, {filter: 'brightness(1.6) saturate(1.4)'}], {duration: 450, fill: 'forwards'});
-  return this._seq(k, 460).fini.then(function(){
-    /* BOUM */
-    var cs = getComputedStyle(scene);
-    if(cs.position === 'static') scene.style.position = 'relative';
-    var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
-    var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
-    var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
-    var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
-    if(self.cuit){
-      /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
-      self.defs.insertAdjacentHTML('beforeend', degrade);
-      ov = document.createElement('div'); ov.className = 'ra-scene-fx';
-      scene.appendChild(ov);
-      el = function(html){ return global.Cuire.ilot(ov, html); };
+  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .014, sy: 1 + i * .018, y: -i * .7}, secousse: {x: i % 2 ? 2.2 : -2.2, a: i % 2 ? 1.6 : -1.6}, crete: {sy: 1 + i * .07}, oeil: {s: 1 + i * .035}, machoire: {a: -i * 2.6}, paupiere: {y: 0}}, e: 'linear'});
+  k.push({t: 1, p: {saut: {sx: 1.13, sy: 1.17, y: -7}}, e: 'ease-in'});
+  this._seq(k, T1);
+  var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
+  if(self.cuit){
+    /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
+    self.defs.insertAdjacentHTML('beforeend', degrade);
+    ov = document.createElement('div'); ov.className = 'ra-scene-fx';
+    scene.appendChild(ov);
+    el = function(html){ return global.Cuire.ilot(ov, html); };
+  } else {
+    ov = document.createElementNS(NSs, 'svg');
+    ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    ov.innerHTML = '<defs><filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
+    scene.appendChild(ov);
+    el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+  }
+  function tf(x, y, s, a){ return 'translate(' + f1(x) + 'px,' + f1(y) + 'px)' + (a ? ' rotate(' + f1(a) + 'deg)' : '') + ' scale(' + (+s).toFixed(3) + ')'; }
+  /* la flèche frappe : une petite lueur et un petit cercle, sur lui seulement */
+  el('<circle cx="0" cy="0" r="' + f1(34 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .3), opacity: 1}, {transform: tf(cx, cy, 1.25), opacity: 0}], {duration: 340, easing: 'ease-out', fill: 'forwards'});
+  el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
+  /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
+  var brumes = [], NB = 12;
+  for(var n = 0; n < NB; n++){
+    var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.05, 1)), px = cx + Math.cos(a) * d * 62 * u, py = cy - 6 * u + Math.sin(a) * d * 30 * u;
+    var tt = hasard(84, 118) * u, g;
+    if(self.cuit && BRUME.length){
+      /* une volute déjà cuite (son flou est dans l'image) */
+      g = document.createElement('div'); g.className = 'cu-ilot';
+      var im = document.createElement('img');
+      im.src = BRUME[n % BRUME.length]; im.alt = '';
+      im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
+      g.appendChild(im); ov.appendChild(g);
     } else {
-      ov = document.createElementNS(NSs, 'svg');
-      ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-      ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
-        '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
-      scene.appendChild(ov);
-      el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+      var r = tt * .38, c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
+      g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
-    self.el.animate([{filter: 'brightness(1.6)', opacity: 1}, {filter: 'brightness(4)', opacity: 0}], {duration: 120, fill: 'forwards'});
-    var u = taille / 180;
-    /* l'éclair et l'onde de choc */
-    el('<circle cx="0" cy="0" r="' + f1(60 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1.6)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
-    el('<circle cx="0" cy="0" r="' + f1(50 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: .9}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(2.6)', opacity: 0}], {duration: 520, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
-    /* le gros nuage de brume noire, qui reste puis se dissipe lentement */
-    var brumes = [];
-    for(var n = 0; n < 30; n++){
-      var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(20, 42) * u, x = Math.cos(a) * d * 80 * u, y = Math.sin(a) * d * 40 * u - 10 * u;
-      var c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
-      var g;
-      if(self.cuit && BRUME.length){
-        /* une volute déjà cuite (son flou est dans l'image) */
-        g = document.createElement('div'); g.className = 'cu-ilot';
-        var im = document.createElement('img'), tt = r / 40 * 104;
-        im.src = BRUME[n % BRUME.length]; im.alt = '';
-        im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
-        g.appendChild(im); ov.appendChild(g);
-      } else g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
-      var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(16, 46) * u;
-      brumes.push(g.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
-        {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-24, 24) * u) + 'px,' + f1(cy + dy * 1.2 - 34 * u) + 'px) scale(2)', opacity: 0}],
-        {duration: hasard(4400, 5400), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+    var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
+    brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0}, {offset: .08, transform: tf(px, py, 1), opacity: .97},
+      {offset: .5, transform: tf(px + dx, py - mt, 1.18), opacity: .95}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.75), opacity: 0}],
+      {duration: hasard(1900, 2200), delay: T1 + n * 8, easing: 'cubic-bezier(.2,.6,.4,1)', fill: 'both'}));
+  }
+  /* il disparaît dans la fumée */
+  setTimeout(function(){
+    self._couperBoucles();
+    self.mort = true;
+    self.J.saut.style.visibility = 'hidden';
+    self.el.getAnimations().forEach(function(x){ x.cancel(); });
+  }, T1 + 170);
+  /* 3) l'explosion : les membres jaillissent sur les côtés en tournoyant (une parabole, échantillonnée une fois)
+        et retombent dans la fumée, qui les cache */
+  ECLATS.forEach(function(e, i){
+    var cote = e[1], m = el('<g transform="scale(' + f1(u) + ')">' + MEMBRES[e[0]] + '</g>');
+    var x0 = cx + cote * hasard(4, 18) * u, y0 = cy - hasard(0, 14) * u, x1 = cx + cote * hasard(62, 112) * u, y1 = sol - hasard(2, 10) * u;
+    var h = hasard(70, 115) * u, rot = cote * hasard(320, 720), N = 12, kf = [];
+    for(var q = 0; q <= N; q++){
+      var t = q / N, s = t < .15 ? .6 + .4 * t / .15 : 1;
+      kf.push({offset: t, transform: tf(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - h * 4 * t * (1 - t), s, rot * t), opacity: t < .06 ? t / .06 : t > .72 ? Math.max(0, 1 - (t - .72) / .28) : 1});
     }
-    /* étincelles */
-    for(var s = 0; s < 18; s++){
-      var as = Math.random() * Math.PI * 2, vs = hasard(60, 130) * u, ls = hasard(6, 12) * u;
-      var e = el(L('M0 0 L ' + f1(-Math.cos(as) * ls) + ' ' + f1(-Math.sin(as) * ls), choisir(['#fff4b0', '#ffd060', '#ffffff']), 2.2 * u));
-      e.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px)', opacity: 1}, {transform: 'translate(' + f1(cx + Math.cos(as) * vs) + 'px,' + f1(cy + Math.sin(as) * vs + 30 * u) + 'px)', opacity: 0}], {duration: hasard(450, 800), easing: 'cubic-bezier(.1,.7,.4,1)', fill: 'forwards'});
-    }
-    /* touffes de poils */
-    for(var t = 0; t < 12; t++){
-      var at = -Math.PI * hasard(.05, .95), vt = hasard(50, 110) * u, rt = hasard(-400, 400);
-      var tf2 = el('<path d="M0 0 Q ' + f1(4 * u) + ' ' + f1(-6 * u) + ' ' + f1(10 * u) + ' ' + f1(-8 * u) + ' Q ' + f1(5 * u) + ' ' + f1(-2 * u) + ' ' + f1(9 * u) + ' ' + f1(2 * u) + ' Q ' + f1(3 * u) + ' ' + f1(1 * u) + ' 0 0 Z" fill="' + choisir(['#74626a', '#5a4a52', '#a8949c']) + '" stroke="#24182e" stroke-width="' + f1(1 * u) + '"/>');
-      tf2.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(at) * vt) + 'px,' + f1(cy + Math.sin(at) * vt) + 'px) rotate(' + f1(rt * .5) + 'deg)', opacity: 1},
-        {transform: 'translate(' + f1(cx + Math.cos(at) * vt * 1.4) + 'px,' + f1(cy + Math.sin(at) * vt * .3 + 50 * u) + 'px) rotate(' + f1(rt) + 'deg)', opacity: 0}], {duration: hasard(1300, 1900), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'});
-    }
-    /* la queue qui s'envole en tournant */
-    var qd = 'M0 0 C ' + f1(14 * u) + ' ' + f1(-6 * u) + ' ' + f1(26 * u) + ' ' + f1(-2 * u) + ' ' + f1(34 * u) + ' ' + f1(8 * u) + ' C ' + f1(38 * u) + ' ' + f1(14 * u) + ' ' + f1(36 * u) + ' ' + f1(22 * u) + ' ' + f1(30 * u) + ' ' + f1(26 * u);
-    var qe = el(L(qd, '#24182e', 6 * u) + L(qd, '#c8848e', 3.6 * u) + L(qd, '#8a4a5c', 3.6 * u, ' stroke-dasharray="' + f1(1 * u) + ' ' + f1(3 * u) + '"'));
-    qe.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)'}, {offset: .5, transform: 'translate(' + f1(cx + 70 * u) + 'px,' + f1(cy - 110 * u) + 'px) rotate(540deg)'}, {transform: 'translate(' + f1(cx + 120 * u) + 'px,' + f1(cy + 30 * u) + 'px) rotate(1080deg)', opacity: 0}], {duration: 1700, easing: 'linear', fill: 'forwards'});
-    /* le petit tas de cendre et les os, à sa place */
-    var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
+    m.animate(kf, {duration: hasard(820, 1000), delay: T2 + i * 25, easing: 'linear', fill: 'both'});
+  });
+  /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
+  var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
       P('M160 393 C 170 368 208 346 244 346 C 280 346 312 368 322 393 Z', self._def(function(D){ return D.g('#8a8290'); })) +
       P('M188 393 C 196 378 222 366 246 368 C 268 370 288 380 294 393 Z', self._def(function(D){ return D.g('#a8a0ae'); }), ' stroke-width="1.6"') +
       [[196, 380], [222, 362], [256, 360], [284, 378], [238, 384], [210, 388], [300, 386], [176, 388]].map(function(q){ return C(q[0], q[1], 2.6, '#3a3440', ' opacity=".7"'); }).join('') +
@@ -2353,15 +2377,11 @@ R.exploser = function(scene){
       '<g transform="translate(262 372) rotate(-24)">' + P('M-26 -3 L 24 -3 C 30 -10 38 -6 34 0 C 38 6 30 10 24 3 L -26 3 C -32 10 -40 6 -36 0 C -40 -6 -32 -10 -26 -3 Z', '#efe6d0', ' stroke-width="2.4"') + L('M-22 -1 L 22 -1', '#ffffff', 1.4, ' opacity=".7"') + '</g>' +
       '<g transform="translate(216 380) rotate(18)">' + P('M-16 -2.5 L 14 -2.5 C 19 -8 26 -5 23 0 C 26 5 19 8 14 2.5 L -16 2.5 C -21 8 -28 5 -25 0 C -28 -5 -21 -8 -16 -2.5 Z', '#e6dcc4', ' stroke-width="2.2"') + '</g>' +
       '<g transform="translate(286 386) rotate(70)">' + P('M-9 -2 L 8 -2 C 12 -6 17 -4 15 0 C 17 4 12 6 8 2 L -9 2 C -13 6 -18 4 -16 0 C -18 -4 -13 -6 -9 -2 Z', '#efe6d0', ' stroke-width="2"') + '</g>');
-    tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {offset: .6, opacity: 0}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}], {duration: 1400, easing: 'ease-out', fill: 'forwards'});
-    (function fumet(n){ if(n <= 0) return; var p = [240 + hasard(-20, 20), 360]; self._bouffee(p, {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 420); })(8);
-    self._couperBoucles();
-    self.mort = true;
-    self.J.saut.style.visibility = 'hidden';
-    self.el.getAnimations().forEach(function(a){ a.cancel(); });
-    self.el.style.filter = '';
-    return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
-  });
+  tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}],
+    {duration: 900, delay: T2 + 250, easing: 'ease-out', fill: 'both'});
+  /* quelques filets de fumée montent encore du tas */
+  setTimeout(function fumet(){ var n = 5; (function un(){ if(n-- <= 0) return; self._bouffee([240 + hasard(-20, 20), 360], {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(un, 420); })(); }, T2 + 900);
+  return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
 };
 
 /* =====================================================================
@@ -2384,7 +2404,7 @@ global.RatAnime = {
       coller: function(on){ r.coller(on); return this; },
       cible: function(on){ r.cible(on); return this; },
       fuir: function(){ return r.fuir(); },
-      exploser: function(scene){ return r.exploser(scene); },
+      exploser: function(scene, o){ return r.exploser(scene, o); },
       arreter: function(){ r.arreter(); return this; },
       etat: function(){ var e = {}; for(var k in r.etat) e[k] = r.etat[k]; return e; },
       point: function(nom, x, y){ return r.point(nom, x, y); },
@@ -5121,7 +5141,9 @@ H._toiles = function(){
 };
 H.entoile = function(on){
   on = on !== false;
-  if(on === !!this._toile) return Promise.resolve();
+  /* (l'état voulu est noté tout de suite : entoile(true) puis entoile(false) aussitôt font bien les deux, dans l'ordre) */
+  if(on === !!this._toileV) return Promise.resolve();
+  this._toileV = on;
   return on ? this._entoiler() : this._dechirer();
 };
 H._pose_ligote = function(){
@@ -8064,56 +8086,11 @@ function brumeNoire(x, y, nb){
   return Promise.all(fins);
 }
 
-/* La vignette du critique : un trou sombre qui se resserre sur le rat (0,45 r transparent, 0,6 à r, 0,93 à 1,9 r et au-delà).
-   MÉMOIRE (iPhone, 9 novembre : « quand le Pisteur fait un critique, ça quitte le jeu ») : ce fut une image de 2 400 px
-   agrandie jusqu'à ×6 — en pixels réels (densité 3), un calque de 5 200 à 31 000 px de côté : Safari fermait l'onglet.
-   Maintenant : UNE toile à la taille de la scène (960 × 540), à 1,5 × de densité au plus (≈ 4,7 Mo), redessinée seulement
-   pendant que le trou bouge (0,4 s en se fermant, 0,65 s en s'ouvrant), puis vidée (largeur 0) et retirée. */
-function courbe(x1, y1, x2, y2){            /* cubic-bezier(x1, y1, x2, y2), comme en CSS */
-  function b(a, c, t){ return 3 * a * t * (1 - t) * (1 - t) + 3 * c * t * t * (1 - t) + t * t * t; }
-  return function(x){
-    if(x <= 0) return 0; if(x >= 1) return 1;
-    var lo = 0, hi = 1, t = x;
-    for(var i = 0; i < 24; i++){ t = (lo + hi) / 2; if(b(x1, x2, t) < x) lo = t; else hi = t; }
-    return b(y1, y2, t);
-  };
-}
-function vignette(parent, x, y){
-  var W = 960, H = 540, d = Math.min(1.5, window.devicePixelRatio || 1);
-  var c = el('canvas', 'crit-vignette'); c.width = Math.round(W * d); c.height = Math.round(H * d);
-  parent.appendChild(c);
-  var g = c.getContext('2d'), fin = false, ease = courbe(.33, 1, .68, 1);
-  function trou(r, a){
-    g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
-    if(a <= .001) return;
-    var gr = g.createRadialGradient(x, y, 0, x, y, r * 1.9);
-    gr.addColorStop(0, 'rgba(5,2,10,0)'); gr.addColorStop(.45 / 1.9, 'rgba(5,2,10,0)');
-    gr.addColorStop(1 / 1.9, 'rgba(5,2,10,' + (.6 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(5,2,10,' + (.93 * a).toFixed(3) + ')');
-    g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  }
-  trou(900, 0);
-  return {
-    serrer:function(r0, r1, a0, a1, ms){
-      ms = Math.max(1, ms / (S.vitesse || 1));
-      return new Promise(function(ok){
-        var t0 = performance.now();
-        (function pas(t){
-          if(fin) return ok();
-          var k = Math.min(1, (t - t0) / ms), e = ease(k);
-          trou(r0 + (r1 - r0) * e, a0 + (a1 - a0) * e);
-          if(k < 1) requestAnimationFrame(pas); else ok();
-        })(t0);
-      });
-    },
-    retirer:function(){ fin = true; c.width = c.height = 0; c.remove(); }
-  };
-}
-/* Les rayons dorés et l'étoile du critique, « cuits » en images une fois (pendant l'écran du sac) : en CSS, le dégradé
-   conique masqué (mask-image) et l'étoile découpée (clip-path) obligent la carte graphique à redessiner une surface
-   cachée + un masque à CHAQUE image pendant qu'ils tournent et grossissent. En image, elle les déplace seulement.
-   Même dessin : rayons tous les 18°, montée de 6° à 8,5°, descente jusqu'à 11°, couleur #ffeca0 ; fondu radial
-   (opaque jusqu'à 8 %, 0,85 à 35 %, transparent au bord). Sans canvas : la version CSS (la même, en plus lourd). */
-var RAYONS = null, ETOILE = null, HALO = null, CUITES = [];
+/* Le halo et l'étoile de « CRITIQUE ! », « cuits » en petites images une fois (pendant l'écran du sac) : un dégradé
+   repeint dans un calque qui arrive agrandi, ou une étoile découpée (clip-path), coûteraient à chaque image ; en image,
+   la carte graphique les déplace seulement. (Les rayons plein écran, la vignette et l'image de choc ont été retirés le
+   9 novembre à 16 h 37 : Romain veut un critique qui reste AUTOUR DU RAT.) */
+var ETOILE = null, HALO = null, CUITES = [];
 function garder(src){ var i = new Image(); i.src = src; if(i.decode) i.decode().catch(function(){}); CUITES.push(i); return src; }
 /* une toile -> une image ; la toile est vidée tout de suite (largeur 0) : sur iPhone, Safari compte la mémoire de TOUTES
    les toiles encore vivantes (limite totale de quelques centaines de Mo), même celles qui attendent d'être jetées */
@@ -8125,10 +8102,10 @@ function enImage(cv, ok){
   }catch(x){ vider(); }
 }
 function cuireCritique(){
-  if(RAYONS !== null) return;
-  RAYONS = ''; ETOILE = ''; HALO = '';
+  if(ETOILE !== null) return;
+  ETOILE = ''; HALO = '';
   try{
-    /* le halo doré derrière « CRITIQUE ! » (640 × 240, dégradé radial doux) : une petite image, sur son propre calque */
+    /* le halo doré derrière « CRITIQUE ! » (dégradé radial doux) : une petite image, sur son propre calque */
     var hc = document.createElement('canvas'); hc.width = 320; hc.height = 120;
     var hg = hc.getContext('2d'); hg.setTransform(160, 0, 0, 60, 160, 60);
     var hr = hg.createRadialGradient(0, 0, 0, 0, 0, 1); hr.addColorStop(0, 'rgba(255,200,60,.55)'); hr.addColorStop(1, 'rgba(255,200,60,0)');
@@ -8136,99 +8113,55 @@ function cuireCritique(){
     enImage(hc, function(u){ HALO = u; });
   }catch(x){ HALO = ''; }
   try{
-    var T = 1024, R = T / 2, c = document.createElement('canvas'); c.width = c.height = T;
-    var g = c.getContext('2d'), pas = .25;
-    g.translate(R, R);
-    if(g.createConicGradient){
-      var cg = g.createConicGradient(-Math.PI / 2, 0, 0), J = 'rgba(255,236,150,';   /* 0° = en haut, comme conic-gradient */
-      cg.addColorStop(0, J + '0)');
-      for(var k = 0; k < 20; k++){ var b = k * 18; cg.addColorStop((b + 6) / 360, J + '0)'); cg.addColorStop((b + 8.5) / 360, J + '1)'); cg.addColorStop((b + 11) / 360, J + '0)'); }
-      cg.addColorStop(1, J + '0)');
-      g.fillStyle = cg; g.fillRect(-R, -R, T, T);
-    } else for(var a = 0; a < 360; a += pas){
-      var m = a % 18, al = m < 6 ? 0 : m < 8.5 ? (m - 6) / 2.5 : m < 11 ? 1 - (m - 8.5) / 2.5 : 0;
-      if(al <= 0) continue;
-      var a0 = (a - 90) * Math.PI / 180, a1 = (a + pas - 90) * Math.PI / 180;
-      g.fillStyle = 'rgba(255,236,150,' + al.toFixed(3) + ')';
-      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fill();
-    }
-    g.globalCompositeOperation = 'destination-in';
-    var gr = g.createRadialGradient(0, 0, 0, 0, 0, R);
-    gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.08, 'rgba(0,0,0,1)'); gr.addColorStop(.35, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr; g.fillRect(-R, -R, T, T);
     var e = document.createElement('canvas'), N = 128, h = N / 2; e.width = e.height = N;
     var ge = e.getContext('2d'), ge2 = ge.createRadialGradient(h, h, 0, h, h, h);
     ge2.addColorStop(0, 'rgba(255,255,255,1)'); ge2.addColorStop(.7, 'rgba(255,255,255,0)');
     var P = [[50, 0], [58, 42], [100, 50], [58, 58], [50, 100], [42, 58], [0, 50], [42, 42]];
     ge.beginPath(); P.forEach(function(p, i){ ge[i ? 'lineTo' : 'moveTo'](p[0] * N / 100, p[1] * N / 100); }); ge.closePath();
     ge.fillStyle = ge2; ge.fill();
-    enImage(c, function(u){ RAYONS = u; });
     enImage(e, function(u){ ETOILE = u; });
-  }catch(x){ RAYONS = ''; ETOILE = ''; }
+  }catch(x){ ETOILE = ''; }
 }
-/* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
+/* ---------- LE CRITIQUE : autour du rat seulement ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
   son = son || function(){};
   o = o || {};
-  /* l'ordre : ralenti → image de choc → « CRITIQUE ! » et le rat qui gonfle sous le choc → il éclate (o.boom) et la brume part.
-     L'éclatement du module est lourd à dessiner : il doit venir APRÈS l'image de choc, sinon elle resterait figée à l'écran. */
-  var boom = null;
-  var E = L.ecran, monde = L.monde;
-  /* 1) ralenti, vignette qui se resserre, zoom lent vers le rat */
+  /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
+     les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Donc rien ne couvre
+     l'écran (ni voile sombre, ni image de choc, ni rayons, ni ralenti général) ; tout se passe autour du rat :
+       0 ms        la flèche frappe : le temps se suspend sur LUI (il se fige, gonfle, tremble) — le son « aspire » ;
+       CRIT_IMPACT la fumée noire l'enveloppe — l'impact, un petit tremblement, le gros « CRITIQUE ! », le chiffre ;
+       CRIT_ECLAT  ses membres jaillissent sur les côtés et retombent dans la fumée — l'explosion, un dernier petit tremblement ;
+       puis        la fumée se dissipe lentement et laisse les cendres et les os (≈ 2,5 s en tout).
+     Les instants des sons sont ceux de l'atelier des sons (l'impact 0,42 s après l'aspiration, l'explosion 0,6 s après). */
+  var v = S.vitesse || 1;
   son('aspire');
-  /* la vignette : un trou sombre qui se resserre sur le rat (une toile à la taille de la scène : voir vignette()) */
-  var vig = vignette(E, x, y);
-  vig.serrer(900, 150, 0, 1, 420);
-  monde.style.transformOrigin = x + 'px ' + y + 'px';
-  var zoom = anime(monde, [{transform:'scale(1)'}, {transform:'scale(1.17)'}], {duration:440, easing:'cubic-bezier(.2,.8,.3,1)', fill:'forwards'});
-  var lents = [];
-  try{ if(document.getAnimations) document.getAnimations().forEach(function(a){
-    var t = a.effect && a.effect.target;
-    if(t && (t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
-    a.playbackRate = .22; lents.push(a);
-  }); }catch(e){}
-  return plus(420).then(function(){
-    /* 2) l'image de choc : deux images très brèves, noir et blanc */
+  /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
+  var fin = Promise.resolve(exploser ? exploser({impact:CRIT_IMPACT / v, eclat:CRIT_ECLAT / v}) : null);
+  return plus(CRIT_IMPACT).then(function(){
     son('boum');
-    lents.forEach(function(a){ try{ a.playbackRate = 1; }catch(e){} });
-    /* (mémoire, iPhone) l'image de 1 920 × 1 080 est posée en fond d'un cadre à la taille de la scène : le calque ne
-       dépasse jamais la scène (960 × 540), au lieu de 4 170 × 2 340 px réels pour l'image entière à densité 3 */
-    var choc = el('div', 'crit-choc');
-    choc.style.cssText = 'left:0;top:0;width:960px;height:540px;background:url(' + img('choc-a') + ') ' + (x - 960) + 'px ' + (y - 540) + 'px / 1920px 1080px no-repeat';
-    E.appendChild(choc);
-    var t0 = performance.now();
-    return plus(60).then(function(){ choc.style.backgroundImage = 'url(' + img('choc-b') + ')'; return plus(60); }).then(function(){ choc.remove(); (S.mesures = S.mesures || []).push(Math.round(performance.now() - t0)); });
-  }).then(function(){
-    /* 3) onde de choc, rayons dorés, tremblement, étincelles, « CRITIQUE ! », le chiffre, le rat qui explose, la brume */
-    var rayons = RAYONS ? el('img', 'crit-rayons cuit') : el('div', 'crit-rayons'); if(RAYONS){ rayons.src = RAYONS; rayons.alt = ''; }
-    rayons.style.left = x + 'px'; rayons.style.top = y + 'px'; L.fx.appendChild(rayons);
-    anime(rayons, [{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(1.3) rotate(12deg)', opacity:1, offset:.18}, {transform:'translate(-50%,-50%) scale(1.65) rotate(40deg)', opacity:0}], {duration:1300, easing:'ease-out'}).then(function(){ rayons.remove(); });
-    onde(x, y, '#fff3b0', 420, 480); setTimeout(function(){ onde(x, y, '#ffb030', 640, 700); }, 90);
-    tremble(16, 560);
-    etincelles(x, y, 44, null, 1.2);
-    var flash = el('div', 'crit-eclair'); flash.style.left = x + 'px'; flash.style.top = y + 'px'; L.fx.appendChild(flash);
-    anime(flash, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.4)', opacity:0}], {duration:380, easing:'ease-out'}).then(function(){ flash.remove(); });
-    var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
-      (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-    t.style.left = Math.max(310, Math.min(650, x)) + 'px'; t.style.top = Math.max(110, y - 120) + 'px';
-    E.appendChild(t);
-    anime(t, [{transform:'translate(-50%,-50%) scale(3.4) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.9) rotate(-3deg)', opacity:1, offset:.09},
-      {transform:'translate(-50%,-50%) scale(1.06) rotate(-4deg)', opacity:1, offset:.16}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.75},
-      {transform:'translate(-50%,-62%) scale(1.04) rotate(-4deg)', opacity:0}], {duration:1700, easing:'ease-out'}).then(function(){ t.remove(); });
+    tremble(7, 300);
+    texteCritique(x, y);
     chiffre(x, y - 50, '−' + n, 'crit');
-    /* le rat gonfle maintenant, puis éclate : la brume noire part avec lui */
-    boom = Promise.resolve(exploser ? exploser() : null);
-    Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ brumeNoire(x, y, o.brume); onde(x, y, '#d8c8f0', 360, 600); tremble(10, 380); });
-    return Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ return plus(900); });
+    if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
+    return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
-    /* 4) on relâche : la vignette s'ouvre, la caméra recule */
-    vig.serrer(150, 900, 1, 0, 650).then(function(){ vig.retirer(); });
-    return anime(monde, [{transform:'scale(1.17)'}, {transform:'scale(1)'}], {duration:600, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards'});
-  }).then(function(){
-    try{ monde.getAnimations().forEach(function(a){ a.cancel(); }); }catch(e){}
-    monde.style.transform = '';
+    son('explosion');
+    tremble(5, 240);
+    return Promise.race([fin, plus(2000)]);
   });
+}
+var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole */
+function texteCritique(x, y){
+  var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
+    (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
+  t.style.left = '720px'; t.style.top = Math.max(105, y - 135) + 'px';      /* au milieu de la moitié droite (il y tient en entier) */
+  L.ecran.appendChild(t);
+  return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
+    {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2100, easing:'ease-out'}).then(function(){ t.remove(); });
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
@@ -8246,7 +8179,7 @@ function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {rayons:RAYONS, etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();
@@ -9412,22 +9345,16 @@ async function critique(r, phrase){
   r.pv = 0; r.mort = true; r.ouvert = false;
   E.ratsVaincus[r.i] = true;
   majBadges();
-  /* le moment où le rat éclate : le module ajoute son calque d'explosion (.ra-scene-fx) ; l'acteur « images » donne .boom */
-  var boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
-  var mo = new MutationObserver(function(){ if(fx.querySelector('.ra-scene-fx')){ mo.disconnect(); boomOk(); } });
-  mo.observe(fx, {childList:true});
-  /* le son du critique en trois morceaux : ça aspire pendant le ralenti, l'impact sur l'image de choc, l'explosion quand le rat éclate */
-  var explose = false;
-  function sonExplosion(){ if(explose) return; explose = true; bruit('ratCritique', {partie:'explosion'}); }
+  /* le son du critique en trois morceaux, calés sur l'image (effets.js, critique) : l'aspiration pendant le temps
+     suspendu, l'impact quand la fumée noire l'enveloppe, l'explosion quand ses membres jaillissent */
   function sonCritique(nom){
     if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
-    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); else setTimeout(sonExplosion, 1200); return; }
+    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); return; }
+    if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion'}); return; }
     son.apply(null, arguments);
   }
-  boomP.then(sonExplosion);
-  await Fx.critique(c.x, c.y, n, function(){ majBarres(); var p = A.r[r.i].exploser(fx); if(p && p.boom) p.boom.then(boomOk); return p; }, sonCritique,
-    {exclure:slotR(r), brume:RAT_MODULE ? 12 : 24, boom:boomP});
-  mo.disconnect();
+  /* le module du rat fait tout autour de lui (fumée, membres, cendres) ; sans lui, les effets font une fumée noire */
+  await Fx.critique(c.x, c.y, n, function(o){ majBarres(); return A.r[r.i].exploser(fx, o); }, sonCritique, {brume:RAT_MODULE ? 0 : 14});
   finRat(r, true);
   conte(phrase || 'En plein dans le mille !');
   return attendre(350);
