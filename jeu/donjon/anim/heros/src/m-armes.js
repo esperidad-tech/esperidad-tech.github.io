@@ -194,8 +194,8 @@ H._eclatPotion = function(L, to, nom, c){
 };
 
 /* ---------- le Sage : le cristal de lune (un éclair qui illumine TOUTE la salle) ---------- */
-/* les images de lumière : de petits dégradés (256 px) faits une fois, que la carte graphique agrandit et estompe ;
-   (iPhone : pas d'image plein écran ; le canvas est libéré tout de suite) */
+/* les images de lumière : de petits dégradés (256 px) faits une fois, que la carte graphique agrandit (jamais au-delà de
+   4 096 px réels, R9) et estompe ; les toiles qui les dessinent sont vidées tout de suite */
 var LUMIERE = {garde:[]};
 function imagesLumiere(){
   if(LUMIERE.pret) return LUMIERE.pret;
@@ -263,7 +263,7 @@ H.eclairSalle = function(scene, opt){
   imagesLumiere();
   var me = this;
   return this._file(function(sig){
-    var g = this.garde(), base = {pA:[100, 272], pB:[156, 272]}, lc = this._luneCharge();
+    var g = this.garde(), base = {pA:[100, 272], pB:[156, 272]}, lc = this._luneCharge(), fond = null;
     var leve = copie(g, copie(base, {bassin:{y:4}, torse:-4, tete:-12, mB:[150, 80], hB:0, mA:[178, 70], hA:-150}));
     var haut = copie(leve, {bassin:{y:-2}, torse:-9, tete:-18, mB:[146, 40], hB:-6, mA:[186, 56], hA:-160, sB:1.06});
     var flash = copie(haut, {torse:-12, tete:-20, mB:[146, 34]});
@@ -271,6 +271,7 @@ H.eclairSalle = function(scene, opt){
     return this.jouer([
       {d:300, p:leve, e:'io', f:function(){
         me.cristalFlash(true); me.expr('cri');
+        var q0 = me.rep('cristal', scene); fond = me._fondLune(scene, {x:q0.x - 4, y:q0.y - 30});
         if(lc){ montrer(lc, true); animer(lc, [{opacity:0, transform:'scale(.2)'}, {opacity:1, transform:'scale(1)', offset:.8}, {opacity:1, transform:'scale(1.25)'}], {duration:480, easing:'ease-in', fill:'forwards'}); }
         var p = me.rep('cristal');
         for(var i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2, d = 70, e = div(me.fx, 'width:14px;height:14px', FORMES.etoile(i % 2 ? '#e8f0ff' : '#ffffff', 14));
@@ -279,37 +280,54 @@ H.eclairSalle = function(scene, opt){
       {d:340, p:haut, e:'b'},
       {d:140, p:flash, e:'o', f:function(){
         if(lc) animer(lc, [{opacity:1, transform:'scale(1.25)'}, {opacity:0, transform:'scale(2.2)'}], {duration:500, easing:'ease-out', fill:'forwards'}).then(function(){ montrer(lc, false); });
-        sig(me._eclairSalle(scene, opt));
+        sig(me._eclairSalle(scene, opt, fond));
       }},
       {d:600, p:flash, e:'lin', f0:function(){ me.expr('savoir'); }},
       {d:440, p:g, e:'io', f:function(){ me.expr('garde'); }}
     ]);
   });
 };
-H._eclairSalle = function(scene, opt){
+/* la lumière dans TOUTE la salle (RAPIDITE.md R9, mémoire de l'iPhone) : une toile à la taille de la scène, à 1,5 × de
+   densité au plus, dessinée UNE fois (pendant que le Sage lève son bâton), qu'on montre et qu'on estompe en opacité (rien
+   n'est agrandi), puis vidée tout de suite après */
+H._fondLune = function(scene, c){
+  try {
+    var W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540, k = Math.min(1.5, window.devicePixelRatio || 1);
+    var cv = document.createElement('canvas'); cv.width = Math.round(W * k); cv.height = Math.round(Hs * k);
+    cv.className = 'ha-p'; cv.style.cssText = 'width:' + W + 'px;height:' + Hs + 'px;opacity:0;transform:none';
+    var g = cv.getContext('2d'), R = Math.hypot(Math.max(c.x, W - c.x), Math.max(c.y, Hs - c.y)) * k * 1.06, gr = g.createRadialGradient(c.x * k, c.y * k, 0, c.x * k, c.y * k, R);
+    [[0, 'rgba(255,255,255,1)'], [.08, 'rgba(250,253,255,.96)'], [.25, 'rgba(230,244,255,.82)'], [.55, 'rgba(200,226,255,.55)'], [.85, 'rgba(176,208,255,.32)'], [1, 'rgba(170,205,255,.2)']].forEach(function(t){ gr.addColorStop(t[0], t[1]); });
+    g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+    couche(scene).appendChild(cv);
+    return cv;
+  } catch(e){ return null; }
+};
+H._eclairSalle = function(scene, opt, fond){
   var L = couche(scene), c = this.rep('cristal', scene), W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540;
-  var S = Math.max(W, Hs) * 2.3 / 256;
-  /* 1) la grande lumière (une image de 256 px que la carte graphique agrandit) */
+  /* 1) toute la salle s'illumine (la toile préparée), puis la toile est vidée */
+  fond = fond || this._fondLune(scene, c);
+  if(fond) jouerEl(fond, [{opacity:0}, {opacity:1, offset:.06}, {opacity:.88, offset:.3}, {opacity:0}], {duration:1500, easing:'ease-out'}).then(function(){ fond.width = fond.height = 0; });
+  /* 2) le cœur de la lumière autour du cristal (une image de 256 px, agrandie au plus × 4,8 : 256 × 4,8 × 3 < 4 096 px réels) */
   if(LUMIERE.grand){
     var im = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.grand + '" alt="" style="width:100%;height:100%;display:block">');
-    jouerEl(im, [{transform:place(c.x, c.y, 0, S * .12), opacity:0}, {transform:place(c.x, c.y, 0, S * .85), opacity:1, offset:.06}, {transform:place(c.x, c.y, 0, S), opacity:.9, offset:.3}, {transform:place(c.x, c.y, 0, S * 1.04), opacity:0}], {duration:1500, easing:'ease-out'});
+    jouerEl(im, [{transform:place(c.x, c.y, 0, .4), opacity:0}, {transform:place(c.x, c.y, 0, 3.6), opacity:1, offset:.1}, {transform:place(c.x, c.y, 0, 4.8), opacity:0}], {duration:1000, easing:'ease-out'});
   }
-  /* 2) les rayons qui tournent un peu */
+  /* 3) les rayons qui tournent un peu (256 × 4,4 × 3 < 4 096) */
   if(LUMIERE.rayons){
     var ry = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.rayons + '" alt="" style="width:100%;height:100%;display:block">');
     jouerEl(ry, [{transform:place(c.x, c.y, 0, .5), opacity:0}, {transform:place(c.x, c.y, 6, 2.6), opacity:1, offset:.15}, {transform:place(c.x, c.y, 22, 4.4), opacity:0}], {duration:1100, easing:'ease-out'});
   }
-  /* 3) le croissant de lune qui jaillit du cristal, l'onde qui traverse la salle */
+  /* 4) le croissant de lune qui jaillit du cristal, l'onde qui traverse la salle (400 × 3,3 × 3 < 4 096) */
   surgit(L, c.x, c.y, 130, 130, lunePopSvg(), {d:800, s1:1.8});
-  anneau(L, c.x, c.y, {c:'#e8f6ff', w:320, s0:.15, s1:5.5, d:1000});
+  anneau(L, c.x, c.y, {c:'#e8f6ff', w:400, s0:.12, s1:3.3, d:1000});
   anneau(L, c.x, c.y, {c:'#ffffff', w:320, s0:.1, s1:3.6, d:800, retard:120});
-  /* 4) des éclats de lune partout dans la salle */
+  /* 5) des éclats de lune partout dans la salle */
   var n = 16;
   for(var i = 0; i < n; i++){
     var x = W * (.06 + .88 * (i / n)) + alea(-20, 20), y = Hs * alea(.12, .68), t = alea(12, 22), e = div(L, 'width:' + r1(t) + 'px;height:' + r1(t) + 'px', FORMES.etoile(i % 3 ? '#ffffff' : '#dfe8ff', t));
     jouerEl(e, [{transform:place(x, y, 0, 0), opacity:0}, {transform:place(x, y - 4, 45, 1.3), opacity:1, offset:.35}, {transform:place(x, y - 12, 90, 0), opacity:0}], {duration:alea(600, 900), delay:100 + i * 28, easing:'ease-out', fill:'backwards'});
   }
-  /* 5) sur chaque cible : un éclat */
+  /* 6) sur chaque cible : un éclat */
   (opt.cibles || []).forEach(function(q, k){
     lueurFx(L, q.x, q.y, {c:'#ffffff', c2:'#cfe8ff', w:120, s0:.3, s1:1.6, d:600, retard:120 + k * 60});
     pluie(L, q.x, q.y, {n:6, forme:'etoile', c:['#ffffff', '#e8f0ff'], v0:60, v1:140, g:60, t0:10, t1:15, d0:500, d1:800, retard:120 + k * 60});

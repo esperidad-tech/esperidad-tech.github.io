@@ -231,7 +231,7 @@ var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
 function texteCritique(x, y){
   var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
     (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-  t.style.left = '720px'; t.style.top = Math.max(105, y - 135) + 'px';      /* au milieu de la moitié droite (il y tient en entier) */
+  t.style.left = '720px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
