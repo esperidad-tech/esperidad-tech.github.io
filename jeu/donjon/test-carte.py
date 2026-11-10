@@ -24,7 +24,9 @@ def geometrie(pg):
     print('\n=== la géométrie ===')
     G = pg.evaluate("""() => { var C = CARTE_DONJON, o = {};
       o.ordre = C.ORDRE.slice(); o.lieux = {}; C.ORDRE.forEach(function(k){ var L = C.LIEUX[k]; o.lieux[k] = {type:L.type, decor:L.decor || null, scene:L.scene || null, d:!!L.d, poly:L.poly.length, signe:L.signe || null, codes:L.codes || []}; });
-      o.chemin = C.chemin('puits', 'leo'); o.secret = C.chemin('puits', 'leo', {secret:true});
+      C.ouvrirSecrets([]); o.ferme = C.chemin('puits', 'leo'); o.canauxFerme = C.voisins('canaux').map(function(v){ return v.lieu; });
+      C.ouvrirSecrets(['c5']); o.chemin = C.chemin('puits', 'leo'); o.secret = C.chemin('puits', 'leo', {secret:true});
+      o.c5 = C.LIEN.c5.secret;
       o.lune = C.voisins('toiles').filter(function(v){ return v.porte === 'lune'; })[0] || null;
       o.portes = C.voisins('portes').map(function(v){ return v.lieu + ':' + (v.porte || ''); });
       o.puits = C.voisins('puits').map(function(v){ return v.lieu; });
@@ -45,14 +47,15 @@ def geometrie(pg):
     b.ok(all(G['lieux'][k]['scene'] in SCENES for k in sans), 'chaque lieu sans combat a sa scène (scenes/scenes.js)')
     b.ok(G['lieux']['crypte']['scene'] == 'crypte-sarco', 'la fausse crypte : décor de combat + le sarcophage (scène)')
     b.ok(all(G['lieux'][k]['d'] and G['lieux'][k]['poly'] > 6 for k in G['ordre']), 'chaque lieu a sa forme (chemin SVG et contour)')
-    b.ok(G['chemin'] == ['puits', 'rats', 'canaux', 'toiles', 'dalles', 'atelier', 'portes', 'ossuaire', 'camp', 'bassin', 'porte4', 'leo'], 'le bon chemin : ' + ' › '.join(G['chemin']))
+    b.ok(G['ferme'] is None and 'toiles' not in G['canauxFerme'] and G['c5'] == 'passage:canaux', 'le passage des canaux à la cave aux toiles est secret : tant qu’il est fermé, aucun chemin ne mène à Léo')
+    b.ok(G['chemin'] == ['puits', 'rats', 'canaux', 'toiles', 'dalles', 'atelier', 'portes', 'ossuaire', 'camp', 'bassin', 'porte4', 'leo'], 'une fois ouvert, le bon chemin : ' + ' › '.join(G['chemin'] or []))
     b.ok(G['secret'] == ['puits', 'rats', 'canaux', 'toiles', 'eboulis', 'camp', 'bassin', 'porte4', 'leo'] and G['secretLien'] == 'eboulis>camp', 'le passage secret (cul-de-sac éboulé → feu de camp)')
     b.ok(sorted(G['portes']) == sorted(['atelier:', 'ossuaire:oeil', 'crypte:gueule', 'toiles:lune']), 'les trois portes : œil → ossuaire, gueule → fausse crypte, lune → la cave')
     b.ok(G['lune'] and G['lune']['fermee'], 'la porte de la lune ne s’ouvre pas depuis la cave')
     b.ok(sorted(G['puits']) == ['aeration', 'galerie', 'rats'] and G['egouts'] == ['canaux'], 'trois couloirs au fond du puits ; les égouts tournent et ramènent aux canaux')
     b.ok(G['lieuEn'] == ['puits', 'dalles', None], 'lieuEn trouve le lieu sous un point')
-    b.ok(sorted(G['notes']) == sorted(['code:est', 'code:oeil', 'code:rond', 'encre:crane', 'encre:fleur', 'piege:dalles', 'coin:bourbe']) and G['passages'] == ['vieux:true'] and G['signes'] == 7,
-         'les notes du plan : 3 codées, 2 à l’encre invisible, le piège, Bourbe ; le passage bloqué ; 7 signes')
+    b.ok(sorted(G['notes']) == sorted(['code:rune', 'code:oeil', 'code:dalles', 'encre:roue', 'encre:crane', 'encre:fleur', 'coin:bourbe']) and G['passages'] == ['vieux:true'] and G['signes'] == 7,
+         'les notes du plan : 3 codées (la rune, l’œil, les dalles), 3 à l’encre invisible (la roue, le crâne, la fleur), Bourbe ; le passage bloqué ; 7 signes')
     tous = set()
     for k in G['ordre']:
         tous.update(G['lieux'][k]['codes'])

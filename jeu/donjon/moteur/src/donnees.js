@@ -119,7 +119,10 @@ D.OBJETS = {
   'fleur-givre':{nom:'Fleur de givre', pour:'alchimiste', code:'plante:givre', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
   'herbes':{nom:'Herbes lumineuses', pour:'alchimiste', code:'plante:lumiere', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
   'page-dechiree':{nom:'Page déchirée', pour:'sage', code:'page:dechiree', d:'Le morceau qui manque au plan du Sage.'},
-  'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'}
+  'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'},
+  /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
+     discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
+  'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
 /* ===================================================================== 6. LES MONSTRES
@@ -353,12 +356,12 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true},
+  puits:{nom:'Le fond du puits', depart:true, objets:['rune']},
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
-  canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux'},
+  canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux', roue:true},      /* la roue qui lève la grille du passage secret (D.ROUE) */
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
   toiles:{nom:'La cave aux toiles', combat:'toiles'},
@@ -378,6 +381,16 @@ D.LIEUX = {
 /* le couloir aux dalles : 6 pas ; à chaque pas, deux dalles (celle du fond, celle de devant) ; une seule est claire.
    Les éléments de scenes.js s'appellent « dalle-<6 + pas>-<0 : fond | 1 : devant> ». Rien à l'écran ne dit laquelle est sûre. */
 D.DALLES = {pas:6, sures:['fond', 'devant', 'fond', 'devant', 'fond', 'devant'], degats:15};
+/* Romain, 10 novembre : « pas forcément que les dalles claires, sinon c'est trop facile ; sur le plan, une sorte de code :
+   noir, blanc, blanc… ». Le chemin sûr est donc une suite de couleurs, notée en code sur le plan du Sage (« N B B, N B N »).
+   Au pas n° k, la dalle du fond est blanche (claire) si k est pair, noire (sombre) sinon : regles.js en tire la rangée sûre. */
+D.DALLES.code = ['noir', 'blanc', 'blanc', 'noir', 'blanc', 'noir'];
+
+/* la roue des canaux : elle lève la grille du passage secret vers la cave aux toiles. Il faut la tourner dans le bon ordre
+   ('d' : un cran à droite, 'g' : un cran à gauche). Rien ne se passe avant le dernier cran : si l'ordre est faux, la roue
+   revient toute seule (on ne peut pas deviner cran par cran). L'ordre est sur le plan du Sage, à l'encre invisible :
+   « la roue : 3 à droite, 1 à gauche, 2 à droite ». */
+D.ROUE = {lieu:'canaux', suite:['d', 'd', 'd', 'g', 'd', 'd'], ouvre:'passage:canaux', vers:'toiles'};
 
 /* ===================================================================== 9. LES CODES tapés sur la tablette du Pisteur
    (les ids de donjon-codes.js ; les symboles restent là-bas). Chaque code ne marche qu'une fois. */

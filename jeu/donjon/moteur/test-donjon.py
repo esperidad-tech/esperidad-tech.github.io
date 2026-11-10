@@ -79,6 +79,12 @@ class Jeu:
     def objet(self, id, option=None):
         self.pg.evaluate("([id, o]) => { var S = DJ.Explo._S(), e = S.o[id]; (o == null ? e : e.options[o]).zone.click(); }", [id, option]); self.pg.wait_for_timeout(400)
 
+    def roue(self, crans):
+        """tourner la roue des canaux : 'd' touche sa moitié droite, 'g' sa moitié gauche"""
+        for c in crans:
+            b = self.js("(function(){ var r = DJ.Explo._S().o.roue.zone.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+            self.pg.touchscreen.tap(b[0] + b[2] * (.25 if c == 'g' else .75), b[1] + b[3] / 2); self.pg.wait_for_timeout(500); self.libre()
+
     def repartir(self):
         self.libre(); self.tap('#b-repartir'); return self.carte()
 
@@ -117,7 +123,12 @@ def visite(nav):
     J.cap('sac'); J.tap('[data-act="sac-pret"]')
     verifie(J.scene('puits'), 'on arrive au fond du puits (une salle vue de côté, les trois héros à gauche)')
     verifie(J.js("document.querySelectorAll('#scene .perso.heros').length") == 3 and J.js("!!document.querySelector('#b-repartir.guide')"), 'le puits : rien à prendre, « Repartir » porte le rond jaune')
-    J.cap('puits'); J.repartir()
+    # Romain, 10 novembre : plus de ronds jaunes dans les salles ; la pierre de rune du Sage est là, sans rien pour la montrer
+    verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0 and J.js("!DJ.Explo._S().o.rune.el.classList.contains('ob-brille')"), 'le puits : aucun rond jaune dans la salle, et la pierre de rune ne brille pas')
+    J.cap('puits'); J.objet('rune'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
+    verifie(J.code_montre() == noms_code(pg, 'rune:lumiere') and 'le Sage' in J.js("document.querySelector('#fenetre .ligne').textContent"), f'la pierre de rune : un code pour le Sage ({J.code_montre()})')
+    verifie(not J.sans_lire(), 'la fenêtre du code de la rune : chaque texte a son 🔊')
+    J.cap('rune'); J.clic('#fenetre .aller'); J.repartir()
     e = J.etat()
     verifie(e['ecran'] == 'carte' and sorted(e['sorties']) == ['aeration', 'galerie', 'rats'], f'la carte : trois passages partent du puits ({e["sorties"]})')
     verifie(J.js("DJ.Explo._X().V.brume.estVu('puits') && !DJ.Explo._X().V.brume.estVu('rats')"), 'la brume cache tout sauf le puits')
@@ -160,7 +171,15 @@ def visite(nav):
     verifie(J.etat()['ecran'] == 'carte', 'la réserve ne se rouvre pas toute seule : il n\'y a plus rien à prendre sans reposer')
     J.tap('[data-act="entrer"]'); J.scene('reserve'); pg.wait_for_timeout(1200)
     verifie(J.js("!!DJ.Explo._S().o['fleches-normales']") and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 2, 'en revenant : les flèches normales sont toujours là, au sol')
-    J.repartir(); J.chemin('rats', 'canaux')
+    J.repartir(); J.chemin('rats')
+    # les canaux : après le combat, on voit la salle au calme (la grille et la roue y sont, sans rien dire)
+    J.va('canaux'); 
+    verifie(J.scene('canaux'), 'les canaux, monstres partis : on voit la salle au calme, une fois')
+    verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0 and J.js("!!DJ.Explo._S().o.roue && !!DJ.Explo._S().o.grille && !DJ.Explo._S().o.grille.ouverte") and J.js("!!document.querySelector('#b-repartir.guide')"),
+            'la grille et la roue sont là, sans rond jaune ; rien ne dit qu\'il reste quelque chose à faire')
+    verifie('roue' not in J.etat()['texte'].lower() and 'grille' not in J.etat()['texte'].lower(), f'le conteur ne vend pas la mèche ({J.etat()["texte"]})')
+    J.cap('canaux'); J.repartir()
+    verifie(sorted(J.etat()['sorties']) == ['egouts', 'givre', 'rats'], f'la carte : aucun passage vers la cave aux toiles ({J.etat()["sorties"]})')
     # les égouts tournants
     J.va('egouts'); J.attends("DJ.Explo.etat().ici === 'canaux' && !DJ.Explo.etat().occupe && DJ.Explo._X().partie.faits['combat:egouts']", 30000); J.carte()
     verifie(J.etat()['ici'] == 'canaux', 'les égouts tournants ramènent aux canaux')
@@ -171,7 +190,24 @@ def visite(nav):
     # la grotte de givre
     J.va('givre'); J.scene('givre'); J.objet('fleur-givre'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'plante:givre'), f'la fleur de givre montre son code ({J.code_montre()})')
-    J.clic('#fenetre .aller'); J.repartir(); J.chemin('canaux', 'toiles', 'J')
+    J.clic('#fenetre .aller'); J.repartir(); J.chemin('canaux')
+    # le passage secret : la roue des canaux, dans l'ordre du plan du Sage (3 à droite, 1 à gauche, 2 à droite)
+    verifie(J.js("!!document.querySelector('[data-act=\"entrer\"]:not([hidden])') && !document.querySelector('[data-act=\"entrer\"].guide')"), 'aux canaux : on peut entrer dans la salle, mais le bouton n\'a pas le rond jaune')
+    J.tap('[data-act="entrer"]'); J.scene('canaux')
+    J.objet('grille'); pg.wait_for_timeout(500)
+    verifie('grille' in J.etat()['texte'].lower() and not J.partie()['faits'].get('passage:canaux'), f'la grille : elle ne bouge pas ({J.etat()["texte"]})')
+    J.roue('d')
+    verifie(J.partie()['faits'].get('roue') == 'd' and J.js("DJ.Explo._S().o.roue.angle") == 45, 'toucher la moitié droite de la roue : un cran à droite')
+    J.roue('g')
+    verifie(J.partie()['faits'].get('roue') == 'dg' and J.js("DJ.Explo._S().o.roue.angle") == 0, 'toucher la moitié gauche : un cran à gauche')
+    J.roue('gggg'); pg.wait_for_timeout(1200); J.libre()
+    verifie(not J.partie()['faits'].get('roue') and not J.partie()['faits'].get('passage:canaux') and 'bon ordre' in J.etat()['texte'], f'six crans dans le mauvais ordre : la roue revient toute seule ({J.etat()["texte"]})')
+    verifie(not J.sans_lire(), 'la roue : la bulle du conteur a son 🔊')
+    J.roue('dddgdd'); pg.wait_for_timeout(2600); J.libre()
+    verifie(J.partie()['faits'].get('passage:canaux') == 1 and J.js("DJ.Explo._S().o.grille.ouverte"), 'trois à droite, un à gauche, deux à droite : la grille se lève')
+    J.cap('canaux-ouvert'); J.repartir()
+    verifie('toiles' in J.etat()['sorties'], f'la carte montre maintenant le passage vers la cave aux toiles ({J.etat()["sorties"]})')
+    J.chemin('toiles', 'J')
     verifie(sorted(J.etat()['sorties']) == ['dalles', 'eboulis', 'toiles'], f'l\'embranchement : deux chemins (et le retour) ({J.etat()["sorties"]})')
     # le cul-de-sac : le tas d'os (une morsure, puis la page blanche), le crâne secret
     J.va('eboulis'); J.scene('eboulis'); pv = J.partie()['heros']['pisteur']['pv']
@@ -191,10 +227,14 @@ def visite(nav):
     verifie(not J.sans_lire(), 'l\'explication des dalles : chaque texte a son 🔊')
     J.cap('dalles-explication'); J.clic('[data-act="dalles-go"]')
     pv = [J.partie()['heros'][h]['pv'] for h in ('sage', 'alchimiste', 'pisteur')]
-    J.objet('dalle-6-1'); pg.wait_for_timeout(2200); J.libre()
+    verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0, 'les dalles : aucun rond jaune')
+    # le code du plan du Sage : N B B, N B N. Au premier pas, la dalle CLAIRE (au fond) est piégée : il faut la noire.
+    J.objet('dalle-6-0'); pg.wait_for_timeout(2200); J.libre()
     pv2 = [J.partie()['heros'][h]['pv'] for h in ('sage', 'alchimiste', 'pisteur')]
-    verifie(all(a - b == 15 for a, b in zip(pv, pv2)) and J.partie()['faits'].get('dalles', 0) == 0, f'une dalle sombre : −15 à chacun, et on ne passe pas ({pv} → {pv2})')
-    for d in ['dalle-6-0', 'dalle-7-1', 'dalle-8-0', 'dalle-9-1', 'dalle-10-0', 'dalle-11-1']:
+    verifie(all(a - b == 15 for a, b in zip(pv, pv2)) and J.partie()['faits'].get('dalles', 0) == 0, f'la dalle claire du premier pas est piégée : −15 à chacun, et on ne passe pas ({pv} → {pv2})')
+    J.objet('dalle-8-0'); pg.wait_for_timeout(500)
+    verifie(J.partie()['faits'].get('dalles', 0) == 0 and [J.partie()['heros'][h]['pv'] for h in ('sage', 'alchimiste', 'pisteur')] == pv2, 'une dalle plus loin : « Trop loin ! », rien ne se passe')
+    for d in ['dalle-6-1', 'dalle-7-1', 'dalle-8-0', 'dalle-9-0', 'dalle-10-0', 'dalle-11-0']:
         J.objet(d); pg.wait_for_timeout(1200); J.libre()
     verifie(bool(J.partie()['faits'].get('piege:dalles')), 'les six bonnes dalles : le couloir est passé pour toujours')
     J.cap('dalles'); J.repartir()
@@ -304,6 +344,7 @@ def combat(nav):
     J.tap('[data-act="sac-pret"]'); J.carte()
     p = J.partie()
     verifie(J.etat()['ici'] == 'puits' and 'combat:rats' not in p['faits'] and p.get('fuites', {}).get('canaux') == 1, 'la fuite ramène au fond du puits : les rats sont revenus, la fuite est comptée')
+    verifie(p['vus'].get('rats') == 1 and p['vus'].get('canaux') == 1, 'après la fuite, la brume levée est gardée (seuls les monstres reviennent)')
     J.fin()
 
 

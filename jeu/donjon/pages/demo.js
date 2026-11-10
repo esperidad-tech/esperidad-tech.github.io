@@ -30,6 +30,7 @@ var PHRASES = {
   leo:'Une lanterne qui bouge, tout au fond…'
 };
 var V, ici = 'puits', occupe = false, etape = 0;
+C.ouvrirSecrets(['c5']);      /* (dans cette page d'essai de la carte, le passage secret des canaux est ouvert : on visite tout) */
 function conte(t){ var b = q('#bulle'); b.innerHTML = '<span>' + esc(t) + '</span>' + PG.lireBtn(t); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
 /* les déplacements d'un lieu à un lieu voisin (en passant par l'embranchement si besoin) */
 function pas(de, vers){

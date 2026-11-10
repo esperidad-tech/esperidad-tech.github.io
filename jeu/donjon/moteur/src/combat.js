@@ -86,6 +86,17 @@ function construire(){
   fx = q('#fx'); fxHaut = q('#fx-haut'); hud = q('#hud'); bandeEl = q('#bande');
   Fx.init({fx:fx, sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
   DJ.brancherCurseurs(c);
+  /* ce qui se pose par-dessus le décor (la grille des canaux, tant que le passage secret est fermé) */
+  try{
+    var faits = (E.partie && E.partie.faits) || {}, plus = window.SCENES && window.SCENES.surDecor ? window.SCENES.surDecor(E.salle, {ouvert:!!faits['passage:canaux']}) : [];
+    plus.forEach(function(o){
+      var b = el('div', 'sur-decor'), w = (o.boite || o).w, h = (o.boite || o).h;
+      b.style.cssText = 'position:absolute;left:' + o.x + 'px;top:' + o.y + 'px;width:' + w + 'px;height:' + h + 'px;overflow:hidden;pointer-events:none';
+      if(o.arche) b.style.clipPath = b.style.webkitClipPath = 'path("' + o.arche + '")';
+      b.innerHTML = '<img alt="" draggable="false" style="position:absolute;left:0;top:0;width:' + o.w + 'px;height:' + o.h + 'px" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(o.svg) + '">';
+      q('#secousse').insertBefore(b, q('#ambiance'));
+    });
+  }catch(e){ if(window.console) console.warn('sur-decor', e); }
   try{ if(window.AMBIANCE && window.AMBIANCE[E.salle]) E.ambiance = window.AMBIANCE[E.salle](q('#ambiance')); }catch(e){}
   var p = q('#persos');
   ORDRE.forEach(function(h){
@@ -955,7 +966,7 @@ async function victoire(){
 }
 function demanderFuite(){
   if(!E || E.occupe || E.fini) return;
-  var t = 'On repart à la dernière page de sauvegarde. Les monstres battus depuis reviendront, en pleine forme. Seul le Grand Livre garde ce qu\'on a appris.';
+  var t = 'On repart de la dernière page de sauvegarde. Les monstres battus depuis reviendront, en pleine forme. Mais tout ce que vous avez trouvé reste à vous.';
   DJ.fenetre('<h2>Fuir la salle ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' +
     '<div class="boutons"><button class="sombre" data-act="fermer">Non, on reste</button><button class="aller" data-act="fuir">Oui, on fuit !</button></div>');
 }
@@ -993,7 +1004,7 @@ function pointFuite(ev, auto){
   var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
   var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
-  var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Tout ce qui a été fait depuis est à refaire.';
+  var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Les monstres battus depuis sont revenus. Vos trouvailles, elles, sont toujours là.';
   var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
   if(neuf) conte = 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';

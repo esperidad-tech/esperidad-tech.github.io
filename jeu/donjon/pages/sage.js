@@ -110,6 +110,12 @@ function majCoin(anim){
   }
 }
 function majTraductions(){ qa('[data-trad]', planEl).forEach(function(g){ g.style.display = S.lues[g.getAttribute('data-trad')] ? '' : 'none'; }); }
+/* la rune de lumière : le Pisteur la trouve au fond du puits (Romain, 10 novembre) ; tant que son code n'est pas arrivé, pas de rune */
+function majRune(anim){
+  var ok = !!S.codes['rune:lumiere'];
+  runeEl.hidden = !ok;
+  if(ok && anim && runeEl.animate) runeEl.animate([{transform:'translateY(60px) scale(.5)', opacity:0}, {transform:'translateY(-8px) scale(1.12)', opacity:1, offset:.7}, {transform:'none', opacity:1}], {duration:700, easing:'ease-out'});
+}
 function majOdette(){ var g = coinEl && coinEl.querySelector('.coeur-odette'); if(g) g.style.display = S.codes['porte:odette'] ? '' : 'none'; }
 
 /* ======================================================================
@@ -225,7 +231,6 @@ function toucherPlan(p){
       var t = 12 * PS.K1, lw = Math.max.apply(null, n.lignes.map(function(m){ return PS.largeurCode(m, t); })) + 40, hh = (n.lignes.length - 1) * t * 1.45 + t + 40;
       if(dans(p, n.x, n.y, Math.max(lw, 110), Math.max(hh, 90))){ PG.son('page'); loupe(n); return; }
     } else if(n.type === 'encre' && S.encreFinie[n.id] && dans(p, n.x, n.y, 300, 80)){ conte('L’encre invisible dit : « ' + n.lignes.join(' ') + ' ».'); return; }
-    else if(n.type === 'piege' && (dans(p, n.x, n.y, 220, 70) || dans(p, n.crane.x, n.crane.y, 50, 50))){ conte('Une note à l’encre rouge : « ' + n.lignes.join(' ') + ' ».'); return; }
     else if(n.type === 'coin' && coinOk && dans(p, n.x, n.y, 300, 70)){ conte('Une note à l’encre rouge : « ' + n.lignes.join(' ') + ' »'); return; }
   }
   if(dans(p, P.titre.x, P.titre.y + 15, 380, 110)){ conte('« ' + P.titre.t + ' », ' + P.titre.sous + '.'); return; }
@@ -240,8 +245,8 @@ function toucherPlan(p){
     if(nom){ conte('C’est écrit : « ' + nom.l.join(' ').replace(/\s+/g, ' ') + ' ».'); return; }
     var sg2 = P.signes.filter(function(m){ return m.lieu === id && !m.porte; })[0];
     if(sg2){ conte('Pas de nom ici, juste un signe : ' + NOMS_SIGNES[sg2.s] + '.'); return; }
-    if(id === 'egouts'){ conte('Un couloir qui tourne en rond… Il y a une note codée à côté.'); return; }
-    if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Une note à l’encre rouge en parle.'); return; }
+    if(id === 'egouts'){ conte('Un couloir qui tourne, qui tourne… Les Fondateurs aimaient les détours.'); return; }
+    if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Un petit crâne rouge… et une note codée, juste à côté.'); return; }
     if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.' + (S.codes['porte:odette'] ? ' Odette est juste derrière.' : '')); return; }
   }
 }
@@ -271,7 +276,7 @@ function rune(){
     res = reveler(p.x, p.y, wr) || res;
     dernier = p;
     if(res){
-      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.passage ? ' Et un passage en pointillés part du crâne…' : ''));
+      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'crane' ? ' Et un passage en pointillés part du crâne…' : res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
       else if(res.debut) conte('Oh ! De l’encre apparaît sous la rune… Continue, doucement.');
     }
   }
@@ -395,7 +400,15 @@ function unCode(){
     recevoir:function(id){ S.codes[id] = true; garder(); scene(id); }});
 }
 function scene(id){
-  if(id === 'page:dechiree'){
+  if(id === 'rune:lumiere'){
+    var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
+      dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
+      '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Prendre la rune</button></div>', {classe:'scene parch', surFermer:function(){
+        majRune(true); mesurerBords(); PG.guider(runeEl);
+        conte('Ta rune de lumière est là, en bas. Promène-la doucement sur le vieux papier…');
+      }});
+    PG.guider(wr.el.querySelector('.aller'));
+  } else if(id === 'page:dechiree'){
     var w = PG.fenetre('<div class="titre"><h2>📜 La page déchirée</h2></div>' + '<div class="scene-img dechiree" aria-hidden="true"><i></i></div>' +
       dit('Le Pisteur a trouvé le morceau perdu de ton plan, dans la bibliothèque engloutie. Les bords se recollent tout seuls…', 'scene-txt') +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Recoller le morceau</button></div>', {classe:'scene parch', surFermer:function(){
@@ -479,7 +492,7 @@ function demarrer(){
   majGrille();
   mesurerBords();
   Z.z = zoomFit(); borner(); poser();
-  gestes(); rune();
+  gestes(); rune(); majRune(false);
   majBadge(); majGrille();
   q('#b-livre').addEventListener('click', function(){ PG.son('page'); livre(); });
   q('#b-code').addEventListener('click', function(){ PG.son('tic'); unCode(); });
@@ -489,7 +502,7 @@ function demarrer(){
   q('#b-nouveau').addEventListener('click', recommencer);
   window.addEventListener('resize', function(){ mesurerBords(); var f0 = zoomFit(); if(Z.z < f0) Z.z = f0; Z.zMin = Math.min(.3, f0); borner(); poser(); });
   Z.zMin = Math.min(.3, zoomFit());
-  if(S.debut){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ta rune de lumière, en bas, réveille l’encre cachée…'); PG.guider(runeEl); }
+  if(S.debut && !S.codes['rune:lumiere']){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
   else conte('Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();

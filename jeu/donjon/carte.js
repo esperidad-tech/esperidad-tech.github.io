@@ -252,7 +252,10 @@ var LIENS = [
   {id:'c2', de:'rats', a:'reserve', pts:[[1455, 703], [1455, 648]]},
   {id:'c3', de:'rats', a:'canaux', pts:[[1405, 800], [1405, 862]]},
   {id:'c4', de:'canaux', a:'givre', pts:[[1342, 950], [1230, 958], [1140, 985], [1066, 1004]]},
-  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]]},
+  /* Romain, 10 novembre : le passage des canaux à la cave aux toiles (la salle au signe de la lune) est SECRET. Rien ne le
+     montre dans le donjon : une grille ferme l'arche, et c'est la vieille roue des canaux qui la lève, tournée dans le bon
+     ordre. L'ordre est écrit à l'encre invisible sur le plan du Sage. secret : le « fait » de la partie qui l'ouvre. */
+  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]], secret:'passage:canaux'},
   {id:'c6', de:'toiles', a:'J', pts:[[1770, 925], [1840, 925]], court:true},
   {id:'c8', de:'J', a:'eboulis', pts:[[1840, 940], [1842, 1000], [1836, 1056]]},
   {id:'c9', de:'atelier', a:'bibliotheque', pts:[[1920, 644], [1920, 598]]},
@@ -275,7 +278,7 @@ LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:true, l:20});
+LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -314,12 +317,21 @@ var EMPREINTE = (function(){
    3. Le graphe
    ====================================================================== */
 function liens(id){ return LIENS.filter(function(c){ return c.de === id || c.a === id; }); }
+/* les passages secrets déjà ouverts dans cette partie (leurs ids) : ils comptent alors comme des couloirs ordinaires,
+   sur la carte (murs, sol, brume) et dans le graphe. À appeler avant de créer une vue. */
+var OUVERTS = {};
+function ouvrirSecrets(ids){
+  var neuf = {}; (ids || []).forEach(function(k){ if(LIEN[k] && LIEN[k].secret) neuf[k] = 1; });
+  if(Object.keys(neuf).sort().join() !== Object.keys(OUVERTS).sort().join()){ OUVERTS = neuf; STRUCT = null; }
+  return Object.keys(OUVERTS);
+}
+function ferme(c){ return !!c.secret && !OUVERTS[c.id]; }
 function autreBout(c, id){ return c.de === id ? c.a : c.de; }
 function voisins(id, o){
   o = o || {};
   var out = [];
   liens(id).forEach(function(c){
-    if(c.secret && !o.secret) return;
+    if(ferme(c) && !o.secret) return;
     if(c.bouche) return;
     if(c.boucle){ out.push({lieu:c.salle, lien:c.id, porte:null}); return; }
     /* une porte qui ne s'ouvre que d'un côté (la lune : de la salle aux trois portes vers la cave, pas l'inverse) */
@@ -419,15 +431,24 @@ var PLAN = {
   /* LES NOTES. type : 'code' (alphabet secret : les grilles des fondateurs), 'encre' (encre invisible : la rune de lumière du Sage
      la révèle), 'piege' (à l'encre rouge), 'coin' (sur la page déchirée, complétée par le code page:dechiree).
      x, y : le centre ; lignes : le texte (en MAJUSCULES pour les notes codées : les espaces restent des espaces) */
+  /* Romain, 10 novembre : « les mots à décoder doivent servir à débloquer les aventuriers ». Chaque note sert donc :
+       rune    (codée)  où trouver la rune de lumière du Sage : sans elle, pas d'encre invisible ;
+       oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
+       dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
+       roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
+       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       fleur   (encre)  la fleur de givre (pour l'Alchimiste).
+     passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    {id:'est', type:'code', x:px(178), y:py(128), lignes:['VA A L EST'], pres:'puits', dit:'Va à l’est'},
+    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'AU PUITS'], pres:'puits', dit:'La rune dort au puits'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
-    {id:'rond', type:'code', x:px(270), y:py(428), lignes:['ON TOURNE', 'EN ROND'], pres:'egouts', dit:'On tourne en rond'},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:true,
+    {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
+    {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
+      boite:{x:1470, y:862, w:320, h:240}},
+    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
       boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
-    {id:'dalles', type:'piege', x:px(718), y:py(236), lignes:['seulement les', 'dalles claires'], pres:'dalles', crane:{x:px(678), y:py(234)}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
   ],
   /* le passage bloqué : le vieux plan dessine la grande galerie intacte jusqu'à la grotte de givre ; dans le donjon, elle est
@@ -1012,7 +1033,7 @@ var STRUCT = null;
 function structure(){
   if(STRUCT) return STRUCT;
   var salles = ORDRE.filter(function(k){ return !LIEUX[k].couloir; }).map(function(k){ return LIEUX[k]; });
-  var cou = LIENS.filter(function(c){ return !c.secret; });
+  var cou = LIENS.filter(function(c){ return !ferme(c); });
   var sol = salles.map(function(r){ return r.d; }).concat(cou.map(function(c){ return polyD(c.poly); })).concat([cercleD(J.x, J.y, J.r)]).join(' ');
   /* les pierres des murs : le long des salles (vers l'extérieur) et des deux côtés des couloirs */
   var R = rng(23), teintes = ['#4e4466', '#574c72', '#463d5c', '#5f547c', '#4a4060', '#3f3752'], pierres = [];
@@ -1281,7 +1302,7 @@ function brume(canvas, o){
     if(!etat.lieux[id]){ etat.lieux[id] = true; out.push({type:'lieu', id:id}); }
     if(L.couloir){ var f4 = ajouterLien(id, 0, 1); if(f4) out.push(f4); }
     liens(id).forEach(function(c2){
-      if(c2.secret || c2.salle === id) return;
+      if(ferme(c2) || c2.salle === id) return;
       var tout = c2.court || c2.bouche || (c2.de === id ? etat.lieux[c2.a] : etat.lieux[c2.de]);
       if(c2.boucle){ [ajouterLien(c2.id, 0, .1), ajouterLien(c2.id, .9, 1)].forEach(function(f5){ if(f5) out.push(f5); }); return; }
       var f6 = c2.de === id ? ajouterLien(c2.id, 0, tout ? 1 : .45) : ajouterLien(c2.id, tout ? 0 : .55, 1);
@@ -1610,7 +1631,7 @@ function vue(el, o){
 
 global.CARTE_DONJON = {
   W:W, H:H, MUR:MUR, SOL:SOL,
-  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
+  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, ouvrirSecrets:ouvrirSecrets, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
   EMPREINTE:EMPREINTE, PLAN:PLAN, PIGPEN:PIGPEN, ROLES:ROLES,
   liens:liens, voisins:voisins, chemin:chemin, lieuEn:lieuEn, trace:trace, pointSur:pointSur,
   longueur:function(id){ return LIEN[id] ? LIEN[id].m.L : 0; },

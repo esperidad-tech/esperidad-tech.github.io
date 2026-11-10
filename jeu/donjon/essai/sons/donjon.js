@@ -274,6 +274,34 @@ S.portePierreB = function(A, P){
   return {duree:3.2};
 };
 /* le piège des dalles : sur les dalles sombres, −15 à toute l'équipe */
+/* la vieille roue des canaux : un cran (le fer rouillé grince, puis le cliquet retombe). Romain, 10 novembre : le passage
+   secret des canaux à la cave aux toiles s'ouvre en tournant cette roue dans le bon ordre. */
+S.roueCanauxA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4, grotte:.2, pan:.3});
+  O.grinceArc(A, t, .26, {res:[420, 880, 1650], q:12, g:2.2, i0:.06, i1:.03}, o);
+  O.clic(A, t + .27, 1900, .5, o); A.choc(t + .27, {f:170, f2:90, d:.07, g:.35, corpsF:320}, o);
+  return {duree:.7};
+};
+/* B : plus grave, plus lourd (une grosse roue de fonte), avec le petit tintement du cliquet */
+S.roueCanauxB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, grotte:.25, pan:.3});
+  O.grinceArc(A, t, .32, {res:[260, 610, 1180], q:10, g:2.4, i0:.05, i1:.025}, o);
+  A.choc(t + .33, {f:120, f2:60, d:.1, g:.5, corpsF:240}, o);
+  A.modes(t + .34, 740, [[1, 1, .3], [2.76, .45, .18], [5.4, .2, .09]], {g:.05}, o);
+  return {duree:.8};
+};
+/* la grille qui se lève : une chaîne tire, par à-coups (six, comme l'image), le fer frotte la pierre, puis le verrou claque en haut */
+S.grilleCanauxA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.35, pan:.35});
+  for(var k = 0; k < 6; k++){
+    var tk = t + k * .35;
+    O.clic(A, tk, 1400 + k * 60, .45, o); A.choc(tk, {f:150, f2:80, d:.08, g:.3, corpsF:280}, o);
+    A.modes(tk + .02, 600 + k * 14, [[1, 1, .25], [2.76, .5, .16], [5.4, .25, .08]], {g:.045}, o);
+    frotte(A, tk + .04, .26, .3, o);
+  }
+  A.choc(t + 2.12, {f:90, f2:40, d:.3, g:.7, sat:3, corpsF:240, corps:1.2}, o);
+  return {duree:2.9};
+};
 S.dallesA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.45, pan:0});
   O.toc(A, t, 650, {long:.8, fc:220, gc:.3, clicF:3000}, o);                                                           /* clic… */

@@ -26,6 +26,8 @@ var CODES = {
   /* les recettes sorties du chaudron : l'Alchimiste les affiche, le Pisteur les tape au feu de camp (ou hors combat) */
   'recette:givre':  {code:['champi','coeur','cle'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Givre'},
   'recette:baumelum':{code:['chat','arbre','lune'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Baume lumineux'},
+  /* la rune de lumière du Sage : le Pisteur la trouve au fond du puits (sans elle, pas d'encre invisible sur le plan) */
+  'rune:lumiere':   {code:['flamme','etoile','cle'],     de:'pisteur',    a:'sage',       nom:'La rune de lumière'},
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
