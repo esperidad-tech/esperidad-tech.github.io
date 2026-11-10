@@ -1,0 +1,220 @@
+<title>Le labo de l'Alchimiste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Caveat:wght@500;700&family=Macondo&display=swap">
+<style>
+/* Mise en page : le labo dessiné remplit tout l'écran, bord à bord ; la loupe, le microscope et le chaudron sont trois autres
+   images en plein écran. Une seule ambiance : la nuit de Brumeval du jeu, contour épais #24182e, laiton, bois, pierre.
+   Une seule perspective pour toute la pièce (voir CAM dans le script). Tout se mesure avec --u (un point du dessin). */
+:root{
+  --nuit:#131932; --nuit-2:#1c2447; --nuit-3:#28325e; --trait:#3b4679; --brume:#a6aed8; --lune:#eef0ff;
+  --parchemin:#f3e7cb; --parchemin-2:#e8d7ae; --encre:#35281b; --encre-2:#6b5434;
+  --or:#f5b945; --mousse:#7cc493; --alchi:#b48cff; --K:#24182e;
+  --f-titre:"Macondo", Georgia, "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --f-main:"Caveat", "Segoe Script", "Comic Sans MS", cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0; height:100%; overflow:hidden}
+body{background:#1b1430; color:var(--lune); font-family:var(--f-texte); font-size:17px; line-height:1.45; overscroll-behavior:none}
+.app{position:fixed; inset:0}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+button{font:inherit; color:inherit}
+button:focus-visible, .mimi:focus-visible{outline:3px solid var(--or); outline-offset:2px}
+svg [role="button"]{outline:none}
+svg [role="button"]:focus-visible .rond{opacity:1; stroke:#fff}
+.barre-haut{position:absolute; z-index:8; top:max(8px, env(safe-area-inset-top, 0px)); right:max(8px, env(safe-area-inset-right, 0px)); display:flex; align-items:center; gap:6px}
+body.ouvert .barre-haut{display:none}
+.barre-haut .maquette{font-size:12px; color:var(--brume); background:rgba(19,25,50,.7); border-radius:999px; padding:2px 10px}
+.niveau{display:flex; gap:4px; background:rgba(28,36,71,.82); border:1px solid var(--trait); border-radius:999px; padding:4px}
+.niveau button{border:0; background:transparent; padding:4px 10px; border-radius:999px; cursor:pointer; font-size:13px; color:var(--brume)}
+.niveau button[aria-pressed="true"]{background:var(--nuit-3); color:var(--lune)}
+
+/* Le labo */
+.cadre{position:absolute; inset:0; overflow:hidden; background:#1b1430; --u:1px}
+.decor, .vue{position:absolute; inset:0; margin:auto; width:calc(1000*var(--u)); height:calc(640*var(--u))}
+#scene, .vue > svg{display:block; position:absolute; inset:0; width:100%; height:100%; overflow:visible; user-select:none; -webkit-user-select:none}
+.vue > svg.devant{pointer-events:none}
+.pose{position:absolute}
+#scene [data-act]{cursor:pointer}
+.calque{position:absolute; inset:0; pointer-events:none}
+/* Le rond jaune : ce qu'on peut toucher maintenant */
+.rond{fill:none; stroke:#ffd36a; stroke-width:4; opacity:0; pointer-events:none; filter:drop-shadow(0 0 5px rgba(255,211,106,.95))}
+body:not(.choisi) .objet .rond, .rond.toujours{opacity:.9; animation:rond 1.4s ease-in-out infinite}
+.objet.sel .rond{opacity:1; stroke-width:5.5}
+[data-outil].ok .rond{opacity:1; animation:rond 1.2s ease-in-out infinite}
+[data-outil].non{filter:grayscale(1) brightness(.5); cursor:not-allowed}
+@keyframes rond{0%,100%{opacity:.3} 50%{opacity:1}}
+.flamme{transform-box:fill-box; transform-origin:50% 100%; animation:flamme .9s ease-in-out infinite alternate; transition:transform .3s}
+.flamme.f2{animation-duration:.7s; animation-delay:-.3s} .flamme.f3{animation-duration:1.1s; animation-delay:-.6s}
+@keyframes flamme{from{transform:scaleY(1) skewX(-3deg)} to{transform:scaleY(1.14) skewX(4deg)}}
+.vapeur{animation:vapeur 2.8s ease-in-out infinite} .vapeur.v2{animation-delay:-1.4s} .vapeur.v3{animation-delay:-.7s}
+@keyframes vapeur{0%{opacity:0; transform:translateY(8px)} 40%{opacity:.75} 100%{opacity:0; transform:translateY(-22px)}}
+.bul{animation:bul 2.2s ease-in infinite; transform-box:fill-box; transform-origin:50% 50%}
+@keyframes bul{0%{transform:scale(.2); opacity:0} 30%{opacity:1} 90%{transform:scale(1); opacity:1} 100%{transform:scale(1.3); opacity:0}}
+.braise{animation:braise 1.6s ease-in-out infinite alternate}
+@keyframes braise{from{opacity:.6} to{opacity:1}}
+.etoile{animation:braise 2.4s ease-in-out infinite alternate}
+.secoue-svg{animation:secoueV .45s; transform-box:fill-box}
+@keyframes secoueV{0%,100%{transform:none} 20%{transform:translateX(-10px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)}}
+#ardoise .chiffres{animation:craie 1.6s ease-in-out infinite alternate}
+@keyframes craie{from{opacity:.75} to{opacity:1}}
+
+/* Bulles posées sur la paillasse */
+.bulle-o{position:absolute; transform:translate(-50%, calc(-100% - 12px)); background:var(--parchemin); color:var(--encre); border:3px solid var(--K); border-radius:14px; padding:6px 10px; font-family:var(--f-main); font-size:clamp(15px, calc(21*var(--u)), 26px); font-weight:700; line-height:1.15; width:max-content; max-width:min(300px, 60%); text-align:center; pointer-events:none; animation:pop .25s ease-out; z-index:5}
+.bulle-o::after{content:""; position:absolute; left:50%; bottom:-11px; width:16px; height:16px; background:var(--parchemin); border-right:3px solid var(--K); border-bottom:3px solid var(--K); transform:translateX(-50%) rotate(45deg)}
+@keyframes pop{from{opacity:0; transform:translate(-50%, calc(-100% - 2px)) scale(.8)} to{opacity:1}}
+
+/* Mimi (le dessin du jeu) : il marche sur le sol et saute, sa taille suit la perspective */
+.mimi{position:absolute; pointer-events:auto; cursor:pointer; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
+.mimi svg{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 100%}
+.cadre.ouvert .mimi{display:none}
+.mimi.elan svg{scale:1.06 .84}
+.mimi.saut .at-ombre{opacity:0}
+.mimi.renifle .at-c-tete{transform-origin:50% 100%; animation:renifle .26s ease-in-out infinite alternate}
+@keyframes renifle{from{transform:rotate(8deg) translateY(1px)} to{transform:rotate(15deg) translateY(5px)}}
+.mimi.pret::after{content:""; position:absolute; left:50%; bottom:-3%; width:88%; height:24%; transform:translateX(-50%); border:3px solid #ffd36a; border-radius:50%; box-shadow:0 0 8px rgba(255,211,106,.85); animation:rond 1.2s ease-in-out infinite; pointer-events:none}
+.mimi .dit{position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:var(--parchemin); color:var(--encre); border:2px solid var(--K); font-family:var(--f-main); font-size:19px; font-weight:700; padding:0 10px; border-radius:12px; white-space:nowrap; opacity:0; transition:opacity .2s; pointer-events:none; z-index:2}
+.mimi .dit.on{opacity:1}
+.coeur-v{position:absolute; left:50%; top:10%; font-size:20px; animation:coeurV 1.2s ease-out forwards; pointer-events:none}
+@keyframes coeurV{from{opacity:1; transform:translate(-50%,0) scale(.6)} to{opacity:0; transform:translate(-50%,-60px) scale(1.2)}}
+.at-t-chat .at-c-g-dort,.at-t-chat .at-c-g-assis,.at-t-chat .at-c-g-debout,.at-t-chat .at-zzz,.at-t-chat .at-c-ferme{display:none}
+.at-t-chat.at-c-dort .at-c-g-dort,.at-t-chat.at-c-dort .at-zzz{display:inline}
+.at-t-chat.at-c-assis .at-c-g-assis,.at-t-chat.at-c-lave .at-c-g-assis,.at-t-chat.at-c-salut .at-c-g-assis{display:inline}
+.at-t-chat.at-c-marche .at-c-g-debout{display:inline}
+.at-t-chat.at-c-gauche:not(.at-c-dort) svg{transform:scaleX(-1)}
+.at-c-j,.at-c-patte,.at-c-patte-b,.at-c-queue,.at-c-tete,.at-c-corps,.at-respire{transform-box:fill-box}
+.at-c-j{transform-origin:50% 0}
+.at-c-marche .at-c-j1,.at-c-marche .at-c-j4{animation:at-pas .32s ease-in-out infinite alternate}
+.at-c-marche .at-c-j2,.at-c-marche .at-c-j3{animation:at-pas .32s ease-in-out infinite alternate-reverse}
+.at-c-marche .at-c-corps{animation:at-trot .16s ease-in-out infinite alternate}
+.saut.at-c-marche .at-c-j1,.saut.at-c-marche .at-c-j2{animation:none; transform:rotate(38deg)}
+.saut.at-c-marche .at-c-j3,.saut.at-c-marche .at-c-j4{animation:none; transform:rotate(-38deg)}
+.saut.at-c-marche .at-c-corps{animation:none}
+.at-c-queue{transform-origin:100% 100%; animation:at-queue 2.6s ease-in-out infinite}
+.at-c-marche .at-c-queue{animation-duration:.8s}
+.at-c-patte{transform-origin:50% 6%}
+.at-c-lave .at-c-patte{animation:at-lave .6s ease-in-out infinite alternate}
+.at-c-lave .at-c-tete{transform-origin:50% 100%; transform:rotate(-7deg)}
+.at-c-lave .at-c-yeux{display:none}
+.at-c-lave .at-c-ferme{display:inline}
+.at-c-salut .at-c-patte{animation:at-salut .42s ease-in-out infinite alternate}
+.at-c-assis .at-c-tete{transform-origin:50% 100%; animation:at-regard 5s ease-in-out infinite}
+.at-respire{transform-origin:50% 100%; animation:at-respire 3s ease-in-out infinite}
+.at-zzz{animation:at-zzz 3s linear infinite} .at-zzz.z2{animation-delay:-1.5s}
+.sursaut svg{animation:sursaut .5s ease-out}
+@keyframes sursaut{0%,100%{translate:0 0} 40%{translate:0 -18%}}
+@keyframes at-pas{from{transform:rotate(-24deg)} to{transform:rotate(24deg)}}
+@keyframes at-trot{to{transform:translateY(-2.5px)}}
+@keyframes at-queue{0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(9deg)}}
+@keyframes at-lave{from{transform:rotate(-158deg)} to{transform:rotate(-170deg)}}
+@keyframes at-salut{from{transform:rotate(-96deg)} to{transform:rotate(-142deg)}}
+@keyframes at-regard{0%,40%,100%{transform:rotate(0)} 50%,85%{transform:rotate(-6deg)}}
+@keyframes at-respire{0%,100%{transform:scale(1,1)} 50%{transform:scale(1.015,1.055)}}
+@keyframes at-zzz{0%{opacity:0; transform:translate(0,6px) scale(.6)} 30%{opacity:1} 100%{opacity:0; transform:translate(10px,-16px) scale(1.15)}}
+
+/* Les trois gros plans */
+.mode{position:absolute; inset:0; z-index:6; overflow:hidden; background:#1b1430}
+.vue{animation:plonge .4s ease-out}
+@keyframes plonge{from{transform:scale(.5); opacity:0} to{transform:none; opacity:1}}
+.mode-haut{position:absolute; z-index:9; top:max(8px, env(safe-area-inset-top, 0px)); left:max(10px, env(safe-area-inset-left, 0px)); right:max(10px, env(safe-area-inset-right, 0px)); display:flex; justify-content:space-between; align-items:center; gap:10px; pointer-events:none}
+.mode-haut > *{pointer-events:auto}
+.fermer{width:48px; height:48px; border-radius:50%; border:3px solid var(--K); background:var(--nuit-3); color:var(--lune); font-size:20px; cursor:pointer; flex:none; box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.coeurs{font-size:24px; letter-spacing:2px; background:rgba(19,25,50,.65); border-radius:999px; padding:2px 12px}
+.alerte{font-size:14px; color:var(--or); flex:1; text-align:center; text-shadow:0 1px 3px #000, 0 0 8px #000}
+.vol{position:fixed; z-index:80; pointer-events:none; margin:0; transition:left .38s ease-in, top .38s ease-in, transform .38s, opacity .38s}
+.tampon{display:grid; place-items:center; font-size:calc(92*var(--u)); line-height:1; opacity:0; pointer-events:none; z-index:5}
+.tampon.pop{animation:tampon 1.15s ease-out forwards}
+@keyframes tampon{0%{opacity:0; transform:scale(2.3) rotate(-14deg)} 18%{opacity:1; transform:scale(1) rotate(-6deg)} 76%{opacity:1; transform:scale(1) rotate(-6deg)} 100%{opacity:0; transform:scale(1.05) rotate(-6deg)}}
+.ruban{left:calc(500*var(--u)); top:calc(322*var(--u)); transform:translateX(-50%); display:grid; place-items:center; height:calc(46*var(--u)); padding:0 calc(20*var(--u)); background:var(--parchemin); color:var(--encre); border:calc(3.5*var(--u)) solid var(--K); border-radius:calc(12*var(--u)); font-family:var(--f-main); font-weight:700; font-size:calc(31*var(--u)); white-space:nowrap; box-shadow:0 calc(5*var(--u)) 0 rgba(0,0,0,.35), 0 0 calc(18*var(--u)) rgba(127,224,138,.7); z-index:5; animation:pop2 .4s ease-out}
+@keyframes pop2{from{opacity:0; transform:translateX(-50%) scale(.6)} to{opacity:1; transform:translateX(-50%)}}
+.anneau{stroke:transparent; transition:stroke .2s}
+.vue.bon .anneau{stroke:rgba(127,224,138,.9); filter:drop-shadow(0 0 9px #7fe08a)}
+.vue.faux .anneau{stroke:rgba(240,84,84,.9)}
+
+/* La loupe et les tiroirs de la paillasse */
+#cvVerre{border-radius:50%}
+.vue.faux #cvVerre{animation:secoueV .45s}
+.tir-svg{cursor:pointer}
+.onglets{display:flex; gap:calc(8*var(--u)); align-items:stretch}
+.onglet{display:flex; align-items:center; gap:calc(6*var(--u)); padding:0 calc(14*var(--u)); border:calc(3*var(--u)) solid var(--K); border-radius:calc(9*var(--u)) calc(9*var(--u)) 0 0; background:#fff6d8; color:var(--encre); font-family:var(--f-main); font-weight:700; font-size:calc(23*var(--u)); line-height:1; cursor:pointer}
+.onglet svg{width:calc(32*var(--u)); height:calc(27*var(--u)); flex:none}
+.onglet[aria-pressed="true"]{background:var(--or); transform:translateY(calc(-3*var(--u)))}
+.onglet.autre{margin-left:auto; background:linear-gradient(180deg,#ecb882,#c98450); gap:calc(2*var(--u))}
+.onglet.autre svg{width:calc(26*var(--u)); height:calc(22*var(--u))}
+.poignee-o{width:calc(34*var(--u)); height:calc(12*var(--u)); border-radius:999px; background:linear-gradient(180deg,#fff1b8,#f5b945 50%,#b07a1c); border:calc(2.5*var(--u)) solid var(--K); margin-right:calc(6*var(--u))}
+.casiers{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:calc(14*var(--u))}
+.casier{position:relative; min-width:0; border:calc(4*var(--u)) solid var(--K); border-radius:calc(10*var(--u)); background:linear-gradient(180deg,#3d6258,#2a463f); cursor:pointer; display:grid; justify-items:center; align-content:center; gap:calc(6*var(--u)); box-shadow:inset 0 calc(10*var(--u)) calc(14*var(--u)) rgba(0,0,0,.35)}
+.casier svg{width:calc(112*var(--u)); height:calc(94*var(--u))}
+.casier .plaque{background:#fff6d8; border:calc(2.5*var(--u)) solid var(--K); border-radius:calc(5*var(--u)); padding:0 calc(14*var(--u)); font-family:var(--f-main); font-weight:700; font-size:calc(27*var(--u)); color:var(--encre); line-height:1.2}
+.casier .nb{position:absolute; top:calc(6*var(--u)); right:calc(10*var(--u)); font-family:var(--f-main); font-size:calc(21*var(--u)); color:#cfe6dc}
+.rangee{display:grid; gap:calc(7*var(--u)); grid-auto-rows:minmax(0, 1fr)}
+.ech{position:relative; min-width:0; min-height:0; border:calc(3*var(--u)) solid var(--K); border-radius:calc(8*var(--u)); background:#f6efe0; padding:calc(3*var(--u)); cursor:pointer; display:grid; grid-template-rows:minmax(0, 1fr) auto; gap:calc(1*var(--u)); color:var(--encre); box-shadow:0 calc(3*var(--u)) 0 rgba(0,0,0,.35)}
+.ech canvas{width:100%; height:100%; min-height:0; display:block; border-radius:calc(5*var(--u))}
+.ech .nm{font-family:var(--f-main); font-size:calc(15*var(--u)); font-weight:700; line-height:.98; min-height:calc(29*var(--u)); display:grid; place-items:center; text-align:center}
+.ech[aria-pressed="true"]{outline:calc(4*var(--u)) solid var(--or)}
+.ech.barre, .ech.flair{opacity:.45} .ech.barre .nm{text-decoration:line-through}
+.ech.ok{outline:calc(5*var(--u)) solid #7fe08a; background:#eaffea}
+.ech:disabled{cursor:default}
+.ech .marque{position:absolute; top:calc(2*var(--u)); right:calc(4*var(--u)); font-size:calc(18*var(--u))}
+
+/* Le microscope */
+#lentille{border-radius:50%; touch-action:none; cursor:none; transition:filter .2s}
+#lentille.flou{filter:blur(6px)}
+.zoom-plaque{display:grid; place-items:center; background:linear-gradient(180deg,#fff1b8,#f5b945 55%,#b07a1c); border:calc(3.5*var(--u)) solid var(--K); border-radius:calc(10*var(--u)); font-weight:700; font-size:calc(34*var(--u)); color:#35281b; box-shadow:0 calc(4*var(--u)) 0 rgba(0,0,0,.35)}
+.pince-c{position:absolute; width:calc(78*var(--u)); height:calc(78*var(--u)); translate:-7.5% -92.5%; pointer-events:none; z-index:7}
+.pince-c svg, .pince-vol svg{display:block; width:100%; height:100%; overflow:visible}
+.pince-c.non{animation:secoueV .4s}
+.pince-vol{width:64px; height:64px; translate:-7.5% -92.5%; transition:left .72s cubic-bezier(.5,0,.5,1), top .72s cubic-bezier(.5,-.4,.6,1)}
+.bulle-l{position:absolute; transform:translate(-50%, calc(-100% - 16px)); background:var(--parchemin); color:var(--encre); border:3px solid var(--K); border-radius:12px; padding:3px 10px; font-family:var(--f-main); font-size:clamp(15px, calc(21*var(--u)), 26px); font-weight:700; white-space:nowrap; pointer-events:none; animation:pop .2s ease-out; z-index:8}
+.obj{opacity:.5; transition:opacity .3s} .obj.actif{opacity:1}
+.num.actif text{fill:#b3262f}
+#molette{transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+#moletteG, .num{cursor:pointer}
+
+/* Le chaudron et le meuble à ingrédients */
+.m-chaudron .ruban{top:calc(118*var(--u))}
+.meuble-i{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-rows:minmax(0, 1fr); gap:calc(8*var(--u))}
+.ingr{position:relative; min-width:0; min-height:0; border:calc(3.5*var(--u)) solid var(--K); border-radius:calc(8*var(--u)); background:linear-gradient(180deg,#ecb882,#c98450 60%,#a5653a); cursor:pointer; display:grid; justify-items:center; align-content:start; gap:calc(1*var(--u)); padding:calc(3*var(--u)) calc(3*var(--u)) calc(12*var(--u)); color:var(--encre); box-shadow:inset 0 calc(2*var(--u)) 0 rgba(255,255,255,.35), 0 calc(3*var(--u)) 0 rgba(0,0,0,.35); transition:transform .2s}
+.dessin{width:calc(46*var(--u)); height:calc(46*var(--u)); display:block}
+.dessin svg{display:block; width:100%; height:100%; overflow:visible}
+.ingr .plaque{background:#fff6d8; border:calc(2*var(--u)) solid var(--K); border-radius:calc(4*var(--u)); padding:0 calc(5*var(--u)); font-family:var(--f-main); font-weight:700; font-size:calc(14.5*var(--u)); line-height:.98; text-align:center; max-width:100%}
+.ingr .teinte{position:absolute; top:calc(8*var(--u)); right:calc(9*var(--u)); width:calc(21*var(--u)); height:calc(21*var(--u)); border-radius:0 50% 50% 50%; rotate:45deg; border:calc(2.5*var(--u)) solid var(--K); box-shadow:inset calc(-3*var(--u)) calc(-3*var(--u)) 0 rgba(0,0,0,.18)}
+.ingr::after{content:""; position:absolute; bottom:calc(2.5*var(--u)); left:50%; width:calc(22*var(--u)); height:calc(6*var(--u)); margin-left:calc(-11*var(--u)); border-radius:999px; background:linear-gradient(180deg,#fff1b8,#f5b945 50%,#b07a1c); border:calc(2*var(--u)) solid var(--K)}
+.ingr.ouvre{transform:translateY(calc(5*var(--u))) scale(1.06); z-index:2}
+.ingr.ok{outline:calc(4*var(--u)) solid #7fe08a}
+.ingr.non, .ingr.flair{filter:grayscale(.75) brightness(.6)}
+.ingr:disabled{cursor:default}
+.ingr .marque{position:absolute; top:calc(2*var(--u)); left:calc(5*var(--u)); font-size:calc(20*var(--u))}
+#cuillere{transform-box:view-box; transform-origin:392px 300px}
+#cuillere.touille{animation:touille .42s ease-in-out infinite alternate}
+@keyframes touille{from{transform:translateX(-26px) rotate(-9deg)} to{transform:translateX(26px) rotate(9deg)}}
+.pouf{animation:pouf .9s ease-out forwards; transform-box:fill-box; transform-origin:50% 50%}
+@keyframes pouf{from{opacity:.9; transform:translateY(0) scale(.5)} to{opacity:0; transform:translateY(-70px) scale(1.6)}}
+@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.bul,.braise,.etoile,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,.vue,#ardoise .chiffres{animation:none} .rond{animation:none!important} #molette{transition:none} }
+</style>
+
+<div class="app">
+  <div class="barre-haut">
+    <h1 class="sr">Le labo de l'Alchimiste</h1>
+    <span class="maquette">Maquette</span>
+    <div class="niveau" role="group" aria-label="Difficulté">
+      <button type="button" id="nvF" aria-pressed="true">Enquête 1</button>
+      <button type="button" id="nvD" aria-pressed="false">Plus difficile</button>
+      <button type="button" id="bRecommencer" aria-label="Recommencer">🔁</button>
+      <button type="button" id="bPlein" aria-label="Plein écran" hidden>⛶</button>
+    </div>
+  </div>
+  <div class="cadre" id="cadre">
+    <div class="decor">
+      <svg id="scene" viewBox="0 0 1000 640" role="group" aria-label="Le labo de l'Alchimiste"></svg>
+      <div class="calque" id="calque"></div>
+    </div>
+    <div class="mode" id="mode" hidden></div>
+  </div>
+</div>
+
+<script>
