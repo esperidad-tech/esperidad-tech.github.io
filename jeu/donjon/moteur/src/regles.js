@@ -20,7 +20,7 @@
    c.fini()                             null | 'victoire' | 'defaite'
    c.etat()                             une photo du combat, pour l'afficher ou le réafficher
    c.fuir()                             la fuite : pareil que Regles.fuir(partie, salle)
-   Regles.fuir(partie[, salle])         recharge la dernière sauvegarde ; le Grand Livre garde tout (Regles.recharger : le même)
+   Regles.fuir(partie[, salle])         on repart de la dernière sauvegarde : les monstres battus depuis reviennent, tout le reste est gardé (Regles.recharger : le même)
 
    HORS COMBAT (chaque action rend une liste d'évènements ; un refus : [{t:'refus', mot}])
    Regles.entrer(partie, lieu)          on arrive dans un lieu : ce qui s'y passe
@@ -118,7 +118,7 @@
    {t:'sac', sac:['feu', 'fumigene', 'baume'], places:3, plein:true}
    {t:'recette', id:'givre', nom:'Givre'}           une recette de plus est connue
    {t:'sauvegarde', code:'sauve:1', lieu:'toiles'}
-   {t:'recharge', lieu:'puits', salle:'canaux', fuites:1}             après une fuite ou une défaite (suivi d'un {t:'livre', cause:'fuites'} à la 2e fuite au même endroit)
+   {t:'recharge', lieu:'puits', salle:'canaux', fuites:1, revenus:['rats']}   après une fuite ou une défaite ; revenus : les salles dont les monstres sont revenus (suivi d'un {t:'livre', cause:'fuites'} à la 2e fuite au même endroit)
    {t:'fin-donjon'}
    ================================================================================================================= */
 (function(global){
@@ -204,12 +204,17 @@ function apprendre(p, type, cause){
   return {t:'livre', monstre:cle, ligne:n, texte:lignes[n], sujet:D.LIVRE_SUJETS[n], total:n + 1, sur:lignes.length, cause:cause || 'etude'};
 }
 
-/* ======================================================================= la fuite : on recharge la dernière sauvegarde */
+/* ======================================================================= la fuite, la défaite
+   Romain, 10 novembre (17 h 47 et 17 h 56) : « quand on doit refaire le donjon, c'est juste les ennemis qu'on doit refaire,
+   pas la recherche d'objets. Il n'y a que les monstres qui reviennent en vie, comme à la sauvegarde. »
+   On repart donc de l'endroit de la dernière sauvegarde, avec les points de vie de ce moment-là, et les monstres battus
+   DEPUIS sont revenus. Tout le reste est gardé : les objets, les coffres, l'or, les pièges passés, les passages ouverts,
+   la brume levée, les codes, les recettes, le journal. */
 function fuir(p, salle){
   var c = p._combat, ev = [];
   if(!salle && c) salle = c.salle;
   if(c){ c.resultat = c.resultat || 'fuite'; poserCombat(p, null); }
-  var livre = p.livre, fuites = p.fuites || {}, s = p.sauvegarde, g = p.graine;
+  var livre = p.livre, fuites = p.fuites = p.fuites || {}, s = p.sauvegarde, g = p.graine, revenus = [];
   if(salle){
     fuites[salle] = (fuites[salle] || 0) + 1;
     /* après 2 fuites au même endroit, le Grand Livre offre une ligne sur la bête la plus forte de la salle */
@@ -221,13 +226,26 @@ function fuir(p, salle){
       }
     }
   }
-  Object.keys(p).forEach(function(k){ delete p[k]; });
-  var r = copie(s);
-  Object.keys(r).forEach(function(k){ p[k] = r[k]; });
-  p.livre = livre; p.fuites = fuites; p.sauvegarde = s;
+  /* les monstres battus depuis la sauvegarde reviennent */
+  Object.keys(p.faits).forEach(function(k){
+    if(k.indexOf('combat:') === 0 && !s.faits[k]){ delete p.faits[k]; revenus.push(k.slice(7)); }
+  });
+  /* l'amulette qui a servi dans un de ces combats-là est rendue à celui qui la portait (s'il a encore une place, sinon elle l'attend ici) */
+  var am = p.faits['amulette:utilisee'];
+  if(am && !s.faits['amulette:utilisee']){
+    delete p.faits['amulette:utilisee'];
+    var qui = String(am).split('|')[1], H = p.heros[qui];
+    if(H && H.objets.length < C.places && H.objets.indexOf('amulette') < 0) H.objets.push('amulette');
+    else { delete p.faits['objet:amulette']; p.faits['pose:amulette'] = s.lieu; }
+  }
+  /* on repart de l'endroit de la sauvegarde, avec les points de vie de ce moment-là */
+  p.lieu = s.lieu; p.vus[s.lieu] = 1;
+  if(s.vus && s.vus['@de'] !== undefined) p.vus['@de'] = s.vus['@de']; else delete p.vus['@de'];
+  D.EXPOSES.forEach(function(h){ var a = s.heros[h], b = p.heros[h]; if(a && b){ b.pv = a.pv; b.pvMax = a.pvMax; b.sol = !!a.sol; } });
+  p.repos = !!s.repos;
   p.graine = (Math.imul(g ^ 0x9E3779B9, 0x85EBCA6B) >>> 0) || 1;    /* le hasard ne se répète pas d'un essai à l'autre */
   p.faits['sac:ouvert'] = 1;                                        /* après une fuite, on refait le sac sans code */
-  ev.unshift({t:'recharge', lieu:p.lieu, salle:salle || null, fuites:salle ? fuites[salle] : 0});
+  ev.unshift({t:'recharge', lieu:p.lieu, salle:salle || null, fuites:salle ? fuites[salle] : 0, revenus:revenus});
   return ev;
 }
 
@@ -593,7 +611,7 @@ P._frappe = function(ev, h, brut, m, nom, A){
     ev.push(e);
     if(S.pv <= 0){
       if(S.objets.indexOf('amulette') >= 0){
-        S.objets.splice(S.objets.indexOf('amulette'), 1); this.amulette = true;
+        S.objets.splice(S.objets.indexOf('amulette'), 1); this.amulette = h;
         S.pv = C.amulette; ev.push({t:'releve', heros:h, pv:S.pv, par:'amulette'});
       } else { S.sol = true; S.entoile = false; ev.push({t:'tombe', heros:h}); }
     }
@@ -794,7 +812,7 @@ P._fin = function(ev, res){
       H.pv = S.sol || S.pv <= 0 ? 1 : S.pv; H.sol = false; H.objets = S.objets.slice();
       o[h] = {pv:H.pv, sol:S.sol};
     });
-    if(this.amulette) p.faits['amulette:utilisee'] = 1;
+    if(this.amulette) p.faits['amulette:utilisee'] = this.salle + '|' + this.amulette;     /* (dans quel combat, et qui la portait) */
     p.faits['combat:' + this.salle] = 1;
     p.repos = false;
     delete p.faits['sac:ouvert'];

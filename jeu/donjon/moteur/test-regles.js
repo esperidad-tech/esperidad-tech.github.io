@@ -782,7 +782,7 @@ section('Les objets et leurs bonus');
   ev = tourSuivant(c);
   ok(c.h.pisteur.sol, 'l\'amulette ne sert qu\'une fois');
   c.b.forEach(function(m){ m.mort = true; }); c._bilan([]);
-  ok(t.p.faits['amulette:utilisee'] === 1 && t.p.heros.pisteur.objets.indexOf('amulette') < 0, 'après la victoire, la partie sait que l\'amulette a servi');
+  ok(/\|pisteur$/.test(t.p.faits['amulette:utilisee']) && t.p.heros.pisteur.objets.indexOf('amulette') < 0, 'après la victoire, la partie sait que l\'amulette a servi (dans quel combat, et à qui)');
 
   /* la sacoche et le sac */
   var p = R.nouvellePartie(3);
@@ -886,9 +886,11 @@ section('Les sauvegardes, la fuite, les codes');
   ok(R.importer('{pas du json') === null && R.importer('{"v":2}') === null, 'un texte abîmé ou d\'une autre version n\'est pas chargé');
   /* la fuite */
   ev = c.fuir();
-  ok(trouve(ev, 'recharge').lieu === 'rats' && p.lieu === 'rats', 'fuir : on recharge la dernière sauvegarde (la salle des rats)');
-  ok(p.heros.pisteur.pv === pvApres && p.heros.pisteur.objets.join() === 'fleches-normales' && !p.faits['objet:fleches-lourdes'] && !p.faits['combat:canaux'], 'tout ce qui a été fait depuis est à refaire (les flèches transperçantes sont de nouveau dans le coffre)');
-  ok(p.recettes.indexOf('givre') < 0 && !p.codes['recette:givre'] && p.codes['sauve:1'] === 1, 'la recette tapée après la sauvegarde est oubliée (son code peut être retapé) ; le code de sauvegarde reste usé');
+  ok(trouve(ev, 'recharge').lieu === 'rats' && p.lieu === 'rats', 'fuir : on repart de la dernière sauvegarde (la salle des rats)');
+  /* Romain, 10 novembre : « il n'y a que les monstres qui reviennent en vie, comme à la sauvegarde » */
+  ok(p.heros.pisteur.pv === pvApres && !p.faits['combat:canaux'] && p.faits['combat:rats'] === 1, 'les points de vie sont ceux de la sauvegarde ; les rats battus AVANT la sauvegarde restent battus');
+  ok(p.heros.pisteur.objets.join() === 'fleches-normales,fleches-lourdes' && p.faits['objet:fleches-lourdes'] === 1 && R.contenu(p, 'reserve').objets.join() === 'fleches-argent', 'les objets trouvés depuis sont gardés (les flèches transperçantes restent au Pisteur, la réserve ne les a plus)');
+  ok(p.recettes.indexOf('givre') >= 0 && p.codes['recette:givre'] === 1 && p.codes['sauve:1'] === 1 && p.vus.reserve === 1 && p.vus.canaux === 1, 'la recette tapée depuis, les codes et la brume levée sont gardés aussi');
   ok(p.livre.chauvesouris === 1 && p.livre.rat === 1, 'le Grand Livre garde ce qu\'il a appris');
   ok(R.sacPermis(p) && !R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, on refait le sac sans code');
   egal(p.fuites.canaux, 1, 'la fuite est comptée pour cette salle');
@@ -907,6 +909,30 @@ section('Les sauvegardes, la fuite, les codes');
   ok(p.lieu === 'rats' && p.heros.pisteur.pv === pvApres && p.fuites.canaux === 3, 'la défaite recharge aussi la dernière sauvegarde');
   var g1 = p.graine; R.entrer(p, 'canaux'); R.combat(p, 'canaux'); R.fuir(p);
   ok(p.graine !== g1, 'le hasard ne se répète pas d\'un essai à l\'autre');
+  /* un combat gagné APRÈS la sauvegarde, puis une défaite plus loin : ses monstres reviennent, le reste est gardé */
+  (function(){
+    var q = R.nouvellePartie(5), k;
+    q.sac = ['feu', 'huile', 'baume'];
+    R.entrer(q, 'rats'); k = R.combat(q, 'rats', {alea:ecrit()}); k.b.forEach(function(m){ m.pv = 0; m.mort = true; }); k._bilan([]);
+    ok(q.faits['combat:rats'] === 1, '(les rats sont battus, sans sauvegarde depuis le fond du puits)');
+    R.entrer(q, 'reserve'); R.prendre(q, 'fleches-argent');
+    R.entrer(q, 'galerie'); R.prendre(q, 'bourse');
+    q.faits['piege:dalles'] = 1; q.faits.secret = 1; q.heros.pisteur.pv = 33;
+    R.entrer(q, 'canaux'); k = R.combat(q, 'canaux', {alea:ecrit()});
+    var e2 = R.fuir(q), r = trouve(e2, 'recharge');
+    ok(r.lieu === 'puits' && q.lieu === 'puits' && r.revenus.join() === 'rats' && !q.faits['combat:rats'] && R.bloque(q, 'rats') === 'combat', 'défaite sans sauvegarde : retour au fond du puits, les rats sont revenus (il faut les rebattre pour passer)');
+    ok(q.heros.pisteur.pv === 120 && q.or === D.CHIFFRES.bourse && q.heros.pisteur.objets.indexOf('fleches-argent') >= 0, 'les points de vie sont ceux du départ ; l\'or et les flèches de lune sont gardés');
+    ok(q.faits['piege:dalles'] === 1 && q.faits.secret === 1 && q.vus.reserve === 1 && q.vus.galerie === 1, 'les pièges passés, les passages ouverts et la brume levée sont gardés');
+    /* l'amulette qui a servi dans un combat annulé est rendue */
+    var z = R.nouvellePartie(6); z.sac = ['feu', 'huile', 'baume'];
+    z.heros.sage.objets.push('amulette'); z.faits['objet:amulette'] = 1; R.sauvegarder(z);
+    R.entrer(z, 'rats'); k = R.combat(z, 'rats', {alea:ecrit()});
+    k.h.sage.objets.splice(k.h.sage.objets.indexOf('amulette'), 1); k.amulette = 'sage';
+    k.b.forEach(function(m){ m.pv = 0; m.mort = true; }); k._bilan([]);
+    ok(z.faits['amulette:utilisee'] === 'rats|sage' && z.heros.sage.objets.indexOf('amulette') < 0, '(l\'amulette a servi au Sage pendant les rats)');
+    R.entrer(z, 'canaux'); R.combat(z, 'canaux', {alea:ecrit()}); R.fuir(z);
+    ok(!z.faits['amulette:utilisee'] && z.heros.sage.objets.indexOf('amulette') >= 0, 'les rats sont revenus : l\'amulette qui avait servi contre eux est rendue au Sage');
+  })();
   /* le hasard à graine */
   function partieEntiere(graine){
     var q = R.nouvellePartie(graine); q.sac = ['feu', 'huile', 'baume'];

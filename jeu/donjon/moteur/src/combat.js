@@ -955,7 +955,7 @@ async function victoire(){
 }
 function demanderFuite(){
   if(!E || E.occupe || E.fini) return;
-  var t = 'On repart à la dernière page de sauvegarde. Les monstres battus depuis reviendront, en pleine forme. Seul le Grand Livre garde ce qu\'on a appris.';
+  var t = 'On repart de la dernière page de sauvegarde. Les monstres battus depuis reviendront, en pleine forme. Mais tout ce que vous avez trouvé reste à vous.';
   DJ.fenetre('<h2>Fuir la salle ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' +
     '<div class="boutons"><button class="sombre" data-act="fermer">Non, on reste</button><button class="aller" data-act="fuir">Oui, on fuit !</button></div>');
 }
@@ -993,7 +993,7 @@ function pointFuite(ev, auto){
   var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
   var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
-  var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Tout ce qui a été fait depuis est à refaire.';
+  var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Les monstres battus depuis sont revenus. Vos trouvailles, elles, sont toujours là.';
   var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
   if(neuf) conte = 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';

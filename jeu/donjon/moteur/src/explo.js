@@ -261,8 +261,9 @@ function lancerCombat(salle){
   return DJ.passage(D.COMBATS[salle].nom, function(){ return DJ.Combat.preparer(salle); }).then(function(){ return DJ.Combat.lancer(p, salle); }).then(function(res){
     garder();
     if(res === 'victoire') return arriver(p.lieu, {apresCombat:true});
-    /* fuite ou défaite : la dernière sauvegarde est rechargée (lieu, brume, objets…) ; on refait le sac et on repart de là */
-    return ecranSac({}).then(function(){ carte({texte:'Retour ' + articleLieu(p.lieu) + '. Le Grand Livre, lui, n\'a rien oublié.'}); });
+    /* fuite ou défaite : on repart de l'endroit de la dernière sauvegarde ; les monstres battus depuis sont revenus, tout
+       le reste est gardé (objets, brume, pièges passés, passages ouverts, codes) ; on refait le sac et on repart de là */
+    return ecranSac({}).then(function(){ carte({texte:'Retour ' + articleLieu(p.lieu) + '. Les monstres sont revenus… mais vos poches, elles, sont toujours pleines.'}); });
   });
 }
 function articleLieu(l){ var n = nomLieu(l); return /^L[ae'’]/.test(n) ? 'à ' + n.charAt(0).toLowerCase() + n.slice(1) : n; }

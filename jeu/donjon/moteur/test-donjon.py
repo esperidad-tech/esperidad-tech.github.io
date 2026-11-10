@@ -304,6 +304,7 @@ def combat(nav):
     J.tap('[data-act="sac-pret"]'); J.carte()
     p = J.partie()
     verifie(J.etat()['ici'] == 'puits' and 'combat:rats' not in p['faits'] and p.get('fuites', {}).get('canaux') == 1, 'la fuite ramène au fond du puits : les rats sont revenus, la fuite est comptée')
+    verifie(p['vus'].get('rats') == 1 and p['vus'].get('canaux') == 1, 'après la fuite, la brume levée est gardée (seuls les monstres reviennent)')
     J.fin()
 
 
