@@ -175,7 +175,8 @@ function dessinerRef(c, w, h, tk, r, seed, s){
 function dessinerPreuve(c, w, h, s){
   var o = OBJETS[S.sel];
   if(S.sel === 'fil') dessinerFil(c, w, h, {base:ROUGE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}, {scale:s, seed:3, suie:S.items[10].filter(function(i){ return i.t === 'noir' && !i.pris; }).length*3 + 2});
-  else dessinerGrain(c, w, h, o.bon, 77, s);
+  else if(o.tiroir === 'grains') dessinerGrain(c, w, h, o.bon, 77, s);
+  else dessinerRef(c, w, h, o.tiroir, o.bon, 77, s*({plumes:.8, poils:.74, feuilles:.8, petales:.76}[o.tiroir] || .8));
 }
 
 /* La bandelette de papier buvard : la goutte part du trait de crayon, en bas ; l'alcool monte (p de 0 à 1) et sépare les couleurs en bandes */

@@ -49,11 +49,13 @@ body.ouvert .barre-haut{display:none}
 .rond{fill:none; stroke:#ffd36a; stroke-width:4; opacity:0; pointer-events:none; filter:drop-shadow(0 0 5px rgba(255,211,106,.95))}
 body:not(.choisi) .objet .rond{opacity:.9; animation:rond 1.4s ease-in-out infinite}
 .objet.sel .rond{opacity:1; stroke-width:5.5}
+/* reconnu : c'est fini pour lui, il ne clignote plus */
+body:not(.choisi) .objet.fait .rond{opacity:0; animation:none}
 [data-outil].ok .rond{opacity:1; animation:rond 1.2s ease-in-out infinite}
 [data-outil].non{filter:grayscale(1) brightness(.72); opacity:.6; cursor:not-allowed}
 /* dans un gros plan, seuls brillent ce qu'on peut toucher là : les tiroirs sous la loupe, la molette du microscope */
 body.ouvert .rond{opacity:0!important; animation:none!important}
-body.m-loupe [data-act="tiroir"]:not(.tire) .rond, body.m-loupe .rond-casier, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
+body.m-loupe:not(.fait) [data-act="tiroir"]:not(.tire) .rond, body.m-loupe .rond-casier, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
 .rond-casier{stroke-width:3}
 #gArdoise.pret .rond{opacity:1; animation:rond 1.4s ease-in-out infinite}
 #gArdoise:not(.pret){cursor:default}
@@ -77,7 +79,8 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .bulle-o::after{content:""; position:absolute; left:50%; bottom:-11px; width:16px; height:16px; background:var(--parchemin); border-right:3px solid var(--K); border-bottom:3px solid var(--K); transform:translateX(-50%) rotate(45deg)}
 @keyframes pop{from{opacity:0; transform:translate(-50%, calc(-100% - 2px)) scale(.8)} to{opacity:1}}
 
-/* Mimi (le dessin du jeu) : il guette au bord de la paillasse ; parfois il saute dessus et s'assoit sur l'échantillon (on le chasse ou on le porte) */
+/* Mimi (le dessin du jeu) : on ne le voit pas ; parfois il bondit sur la paillasse et s'assoit sur les échantillons (on le chasse ou on le porte), puis il sort de l'écran */
+.mimi[hidden]{display:none!important}
 .mimi{position:absolute; width:calc(15.5%*var(--taille, 1)); pointer-events:auto; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
 .mimi.porte{cursor:grabbing; z-index:6; filter:drop-shadow(0 calc(14*var(--u)) calc(8*var(--u)) rgba(0,0,0,.35))}
 .mimi svg{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 100%}
@@ -127,7 +130,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 /* Ce qui se pose par-dessus dans un gros plan */
 #hud{position:absolute; inset:0; z-index:6; pointer-events:none}
 .hud-boite > *{pointer-events:auto}
-.hud-boite > .verre-hud, .hud-boite > .pince-c, .hud-boite > .bulle-l, .hud-boite > .ruban{pointer-events:none}
+.hud-boite > .verre-hud, .hud-boite > .pince-c, .hud-boite > .bulle-l, .hud-boite > .ruban, .hud-boite > .cone-hud{pointer-events:none}
 .mode-haut{position:absolute; z-index:9; top:max(8px, env(safe-area-inset-top, 0px)); right:max(10px, env(safe-area-inset-right, 0px)); pointer-events:auto}
 .fermer{width:50px; height:50px; border-radius:50%; border:3px solid var(--K); background:var(--nuit-3); color:var(--lune); font-size:21px; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.35)}
 .vol{position:fixed; z-index:80; pointer-events:none; margin:0; transition:left .38s ease-in, top .38s ease-in, transform .38s, opacity .38s}
@@ -147,6 +150,14 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .verre-hud.bon .anneau{stroke:rgba(127,224,138,.95)}
 .verre-hud.faux .anneau{stroke:rgba(240,84,84,.95)}
 .verre-hud.faux canvas, .bande-hud.faux canvas{animation:secoueV .45s}
+/* Les deux flèches jaunes de la loupe : l'échantillon d'avant, l'échantillon d'après */
+.fleche-l{display:grid; place-items:center; padding:0; border-radius:50%; border:calc(3.5*var(--u)) solid var(--K); background:linear-gradient(180deg,#ffe08a,#e8a93a); color:#111; font-size:calc(26*var(--u)); line-height:1; cursor:pointer; box-shadow:0 calc(4*var(--u)) 0 rgba(0,0,0,.35); transition:left .45s, top .45s; z-index:6}
+.fleche-l.bat{animation:battre 1.3s ease-in-out infinite}
+/* Le cône de lumière du microscope */
+.cone-hud{animation:cone .6s ease-out both}
+.cone-point{animation:flammeP 1.6s ease-in-out infinite alternate}
+@keyframes cone{from{opacity:0} to{opacity:1}}
+@keyframes flammeP{from{opacity:.65} to{opacity:1}}
 /* Dans le tiroir ouvert : les trois casiers, puis les échantillons */
 .onglets{display:flex; gap:calc(10*var(--u)); align-items:stretch; pointer-events:none}
 .onglets > *{pointer-events:auto}
@@ -169,6 +180,9 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .ech.ok, .temoin.ok{outline:calc(5*var(--u)) solid #7fe08a; background:#eaffea}
 .ech:disabled, .temoin:disabled{cursor:default}
 .marque{position:absolute; top:calc(2*var(--u)); right:calc(5*var(--u)); font-size:calc(24*var(--u))}
+/* reconnu : un grand ✅ en plein sur la bonne carte, et les autres s'éteignent : il n'y a plus rien à chercher ici */
+.ech.ok .marque, .temoin.ok .marque{top:42%; left:50%; right:auto; transform:translate(-50%,-50%); font-size:calc(60*var(--u)); line-height:1; filter:drop-shadow(0 calc(3*var(--u)) calc(3*var(--u)) rgba(0,0,0,.35))}
+.rangee.fini .ech:not(.ok), .temoins.fini .temoin:not(.ok){opacity:1; filter:grayscale(1) brightness(.5) contrast(.8)}
 
 /* Le microscope : l'oculaire en très grand, la plaque du grossissement, la pince */
 .oculaire-hud{animation:grossit .4s ease-out; filter:drop-shadow(0 calc(8*var(--u)) calc(12*var(--u)) rgba(0,0,0,.5))}
@@ -199,7 +213,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .tourne span{font-size:74px; animation:tourne 2.4s ease-in-out infinite}
 @keyframes tourne{0%,30%{rotate:0deg} 60%,100%{rotate:-90deg}}
 @media (orientation:portrait) and (max-width:620px){ .tourne{display:grid} }
-@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .formes,.zoom-plaque,.tourne span{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
+@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .formes,.zoom-plaque,.tourne span,.fleche-l.bat,.cone-point{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
 </style>
 
 <div class="app">

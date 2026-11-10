@@ -74,9 +74,22 @@ function majMolette(){
   $$('.obj').forEach(function(o){ o.classList.toggle('actif', +o.dataset.obj === S.zoom); }); $$('.num').forEach(function(n){ n.classList.toggle('actif', +n.dataset.zoom === S.zoom); });
   var z = $('#zoomTxt'); if(z) z.textContent = '×' + S.zoom;
 }
+/* Le cône de lumière : il part de la lame, sous l'objectif du microscope, et s'ouvre jusqu'au grand rond.
+   On comprend d'un coup d'œil que ce qu'on voit en grand, c'est ce qu'il y a au bout du microscope. */
+function svgCone(camX, camY, z){
+  var ax = 600 + (MICRO.x - 6*MICRO.e - camX)*z, ay = 320 + (MICRO.y - 66*MICRO.e - camY)*z, cx = 306, cy = 320, R0 = 290;
+  var d = Math.hypot(ax - cx, ay - cy), phi = Math.atan2(ay - cy, ax - cx), al = Math.acos(Math.min(1, R0/d));
+  var t1 = [cx + R0*Math.cos(phi + al), cy + R0*Math.sin(phi + al)], t2 = [cx + R0*Math.cos(phi - al), cy + R0*Math.sin(phi - al)];
+  return '<svg class="cone-hud pose" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true" style="' + pos(0, 0, 1200, 640) + '"><defs>' +
+    '<linearGradient id="gCone" gradientUnits="userSpaceOnUse" x1="' + f1(ax) + '" y1="' + f1(ay) + '" x2="' + f1(cx + R0*.55*Math.cos(phi)) + '" y2="' + f1(cy + R0*.55*Math.sin(phi)) + '"><stop offset="0" stop-color="#fffbe0" stop-opacity=".95"/><stop offset=".3" stop-color="#ffe9a3" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a3" stop-opacity=".22"/></linearGradient>' +
+    '<radialGradient id="gConeP"><stop offset="0" stop-color="#fffbe0" stop-opacity="1"/><stop offset="1" stop-color="#ffe9a3" stop-opacity="0"/></radialGradient></defs>' +
+    '<path class="cone" d="M' + f1(ax) + ',' + f1(ay) + ' L' + f1(t1[0]) + ',' + f1(t1[1]) + ' L' + f1(t2[0]) + ',' + f1(t2[1]) + ' Z" fill="url(#gCone)"/>' +
+    '<path d="M' + f1(ax) + ',' + f1(ay) + ' L' + f1(t1[0]) + ',' + f1(t1[1]) + ' M' + f1(ax) + ',' + f1(ay) + ' L' + f1(t2[0]) + ',' + f1(t2[1]) + '" stroke="#fff7d0" stroke-width="2.5" stroke-opacity=".8" fill="none"/>' +
+    '<circle class="cone-point" cx="' + f1(ax) + '" cy="' + f1(ay) + '" r="30" fill="url(#gConeP)"/></svg>';
+}
 function ouvrirMicro(){
   if(S.occupe) return; S.zoom = 10; S.cx = 500; S.cy = 500;
-  ouvrirMode('micro', '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
+  ouvrirMode('micro', svgCone(819, 287, 1.62) + '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
     '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(14, 8, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
   camera(819, 287, 1.62); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
 }

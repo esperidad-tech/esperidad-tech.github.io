@@ -36,6 +36,7 @@ function rad(id, st, cx, cy, r){ return '<radialGradient id="g-' + id + '" cx="'
    Le plateau va du bord avant (y = YF, à l'échelle 1) au fond (y = YB). Tout ce qui s'éloigne fuit vers le même point (600, VY),
    très haut au-dessus de l'image. Un objet posé à la hauteur d'écran y est dessiné à l'échelle kY(y). */
 var VW = 1200, VH = 640, VY = -620, YF = 478, YB = 236, EL = .485;
+var LARG = 690;    /* la demi-largeur du plateau, au bord avant : la paillasse est longue, comme dans l'atelier (elle peut sortir de l'écran) */
 var YBOC = 188;   /* la hauteur d'écran où sont posés les bocaux, sur leur petite étagère surélevée */
 function kY(y){ return (y - VY)/(YF - VY); }
 function xP(X, y){ return 600 + X*kY(y); }

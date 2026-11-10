@@ -6,23 +6,26 @@ function bulle(x, y, t, ms){
   b = document.createElement('div'); b.className = 'bulle-o'; b.textContent = t; b.style.left = Math.max(12, Math.min(88, x/12)) + '%'; b.style.top = (y/6.4) + '%'; c.appendChild(b);
   clearTimeout(bulleT); bulleT = setTimeout(function(){ b.remove(); }, ms || 4200);
 }
-function secouer(g){ if(!g) return; son('non'); g.classList.remove('secoue-svg'); void g.getBoundingClientRect(); g.classList.add('secoue-svg'); setTimeout(function(){ g.classList.remove('secoue-svg'); }, 500); }
+function secouer(g){ if(!g) return; if(!secouer.t || Date.now() - secouer.t > 120){ secouer.t = Date.now(); son('non'); } g.classList.remove('secoue-svg'); void g.getBoundingClientRect(); g.classList.add('secoue-svg'); setTimeout(function(){ g.classList.remove('secoue-svg'); }, 500); }
 
 /* ============ Choisir ce qu'on analyse : les outils qui peuvent servir s'allument, les autres s'éteignent ============ */
+function microReste(){ return [10, 40, 100].some(function(z){ return S.items[z].some(function(i){ return !i.pris && !i.min; }); }); }
+/* Un outil s'allume seulement s'il peut encore apprendre quelque chose sur ce qu'on a choisi.
+   Un échantillon reconnu : la loupe s'éteint pour lui ; s'il n'y a plus rien à en tirer, tout s'éteint. */
 function utilisable(outil){
-  var o = S.sel && OBJETS[S.sel]; if(!o) return null;
-  if(outil === 'loupe') return !o.liquide;
-  if(outil === 'micro') return S.sel === 'fil';
-  if(outil === 'test') return !!o.liquide;
-  return true;
+  var t = S.sel, o = t && OBJETS[t]; if(!o) return null; var fait = !!S.trouves[t];
+  if(outil === 'loupe') return !o.liquide && !fait;
+  if(outil === 'micro') return t === 'fil' && microReste();
+  if(outil === 'test') return !!o.liquide && !fait;
+  return !fait || t === 'fil';       /* les bocaux, la bougie : tant qu'on cherche (le fil garde l'eau chaude, qui le fait déteindre) */
 }
 function majOutils(){
   $$('#scene [data-outil]').forEach(function(g){ var u = utilisable(g.dataset.outil); g.classList.toggle('ok', u === true); g.classList.toggle('non', u === false); });
   document.body.classList.toggle('choisi', !!S.sel);
-  var l = $('#gLame'); if(l) l.classList.toggle('sel', S.sel === 'fil');
+  CUIRS.forEach(function(t){ var l = $('#ech-' + t); if(l) l.classList.toggle('sel', S.sel === t); });
 }
 function selectionner(t){
-  if(S.mode || S.occupe) return; if(t === 'fil' && mimiGene()) return; S.sel = t; son('choisir'); dessinerLame(); dessinerCoupes(); majOutils();
+  if(S.mode || S.occupe) return; if(surCuir(t) && mimiGene()) return; S.sel = t; son('choisir'); dessinerLame(); dessinerCoupes(); majOutils();
   var p = posCible(); bulle(p.x, p.y - 18, S.trouves[t] ? '✅ ' + nomTrouve(t) : OBJETS[t].nom, 1900);
 }
 
@@ -97,6 +100,8 @@ $('#scene').addEventListener('click', function(e){
   var g = e.target.closest('[data-act]'); if(!g || S.occupe) return; var a = g.dataset.act, z, k;
   /* dans un gros plan, l'image reste vivante : les tiroirs et leurs casiers sous la loupe, la molette du microscope */
   if(S.mode === 'loupe'){
+    /* un autre échantillon, visible à côté du verre : la loupe y va directement */
+    if((a === 'lame' || a === 'coupe') && !dansVerre(e)){ var autre = a === 'lame' ? g.dataset.t : (S.coupes[+g.dataset.i] || {}).t; if(autre && !OBJETS[autre].liquide && autre !== S.sel){ clic.pris = true; changerCible(autre); } return; }
     if(a !== 'tiroir') return; clic.pris = true;
     if(S.tiroir !== g.dataset.t) ouvrirTiroir(g.dataset.t); else if((k = e.target.closest('[data-casier]'))) ouvrirCasier(k.dataset.casier); else fermerTiroir();
     return; }
@@ -105,13 +110,14 @@ $('#scene').addEventListener('click', function(e){
   clic.pris = true;
   if(a === 'molette') g = $('#gMicro'), a = 'micro';
   if(a === 'ardoise'){ if(codePret()) ouvrirArdoise(); else son('clic'); return; }
-  if(a === 'lame') return selectionner('fil');
+  if(a === 'lame') return selectionner(g.dataset.t);
   if(a === 'coupe'){ var c = S.coupes[+g.dataset.i]; if(c) selectionner(c.t); return; }
   /* un outil : il faut d'abord avoir choisi quelque chose à analyser, et que l'outil puisse servir */
-  if(!S.sel){ $$('#scene .objet').forEach(secouer); return; }
-  if(a === 'tiroir'){ if(OBJETS[S.sel].liquide){ secouer(g); return; } if(S.sel === 'fil' && mimiGene()) return; return ouvrirLoupe(g.dataset.t); }
+  if(!S.sel){ if(a === 'tiroir') secouer(g); else $$('#scene .objet:not(.fait)').forEach(secouer); return; }
+  /* les tiroirs ne s'ouvrent pas d'ici : il faut d'abord poser la loupe sur un échantillon (Romain, 10 novembre) */
+  if(a === 'tiroir'){ secouer(g); return; }
   if(utilisable(g.dataset.outil) === false){ secouer(g); return; }
-  if(S.sel === 'fil' && mimiGene()) return;
+  if(surCuir(S.sel) && mimiGene()) return;
   if(a === 'loupe') ouvrirLoupe(); else if(a === 'micro') ouvrirMicro();
   else if(a === 'goutte') goutte(g.dataset.k); else if(a === 'flamme') flamme(); else if(a === 'test') ouvrirTest();
 });
@@ -124,6 +130,8 @@ document.addEventListener('click', function(e){
   if(clic.pris) return;
   if(e.target.closest('#bFermer')) return fermerMode();
   if(e.target.closest('#bRefermer')) return fermerTiroir();
+  if(e.target.closest('#bPrec')) return cibleVoisine(-1);
+  if(e.target.closest('#bSuiv')) return cibleVoisine(1);
   if((b = e.target.closest('[data-ech]'))) return essayer(b.dataset.ech, b);
   if((b = e.target.closest('[data-temoin]'))) return essayerTemoin(b.dataset.temoin, b);
   if((b = e.target.closest('[data-casier]'))) return ouvrirCasier(b.dataset.casier);

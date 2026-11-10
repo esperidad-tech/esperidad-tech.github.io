@@ -117,13 +117,19 @@ var LISTES = {
 };
 function contenuCasier(k){ return LISTES[S.niveau][k]; }
 var OBJETS = {
-  fil:{nom:'l\'échantillon n° 1', tiroir:'fils', bon:'tricot', voisins:['filee','feutree','cardee','mohair']},
+  fil:{nom:'l\'échantillon n° 1', cuir:0, tiroir:'fils', bon:'tricot'},
+  plume:{nom:'l\'échantillon n° 2', cuir:1, tiroir:'plumes', bon:'pie', coul:'#16161c'},
+  poil:{nom:'l\'échantillon n° 3', cuir:2, tiroir:'poils', bon:'chien', coul:'#2a2a2e'},
+  feuille:{nom:'l\'échantillon n° 4', cuir:3, tiroir:'feuilles', bon:'lierre', coul:'#2f5a34'},
   noir:{nom:'les grains noirs', tiroir:'grains', bon:'suie', coul:'#17110f', voisins:['charbon','poudre','poivre','pavot']},
   brun:{nom:'le grain brun', tiroir:'grains', bon:'terre', coul:'#7a5230', voisins:['argile','rouille','sciure','cannelle']},
   orange:{nom:'l\'éclat orange', tiroir:'grains', bon:'tuile', coul:'#d9772f', voisins:['brique','argile','rouille']},
   or:{nom:'la paillette dorée', tiroir:'grains', bon:'or', coul:'#f2c040', voisins:['laiton','mica','sable']},
   rouge:{nom:'l\'eau rougie', liquide:true, voisins:['coquelicot','cochenille','betterave']}
 };
+/* Ce que l'Alchimiste a reçu : plusieurs échantillons, chacun à sa place numérotée sur le carré de cuir */
+var CUIRS = ['fil', 'plume', 'poil', 'feuille'];
+function surCuir(t){ return !!t && OBJETS[t] && OBJETS[t].cuir != null; }
 /* Les cinq bocaux, posés sur la petite étagère de la paillasse */
 var BOCAUX = [
   {k:'eau', x:440, nom:['Eau'], liq:'#a9dcff', a:.55},
@@ -139,6 +145,9 @@ function rea(o){ var r = {eau:RIEN, chaude:RIEN, iode:RIEN, vinaigre:RIEN, bicar
 /* De vraies réactions : « Rien à signaler » quand il ne se passe rien */
 var REA = {
   fil:rea({chaude:{t:'L\'eau chaude fait déteindre le fil : de l\'eau rougie !', cree:'rouge'}, flamme:{t:'Le fil se recroqueville et sent le cheveu brûlé.'}}),
+  plume:rea({eau:{t:'L\'eau roule dessus en perles.'}, chaude:{t:'L\'eau roule dessus en perles.'}, flamme:{t:'Elle se recroqueville et sent le cheveu brûlé.'}}),
+  poil:rea({flamme:{t:'Ils grésillent et sentent le cheveu brûlé.'}}),
+  feuille:rea({flamme:{t:'Elle noircit, se tord et fume.'}}),
   noir:rea({eau:{t:'Les grains flottent : ils n\'aiment pas l\'eau.'}, chaude:{t:'Les grains flottent : ils n\'aiment pas l\'eau.'},
     iode:{t:'L\'orange de l\'iode pâlit autour des grains : ils l\'avalent !', fx:'pali'}, flamme:{t:'Les grains rougeoient tout doucement, sans flamme et sans crépiter.'}}),
   brun:rea({eau:{t:'Ça fait de la boue.'}, chaude:{t:'Ça fait de la boue.'}, vinaigre:{t:'De toutes petites bulles : il y a du calcaire là-dedans.', fx:'bulles'}}),

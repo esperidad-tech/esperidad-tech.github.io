@@ -35,71 +35,71 @@ function svgChat(){
     '<text class="at-zzz" x="46" y="34" font-size="17" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text><text class="at-zzz z2" x="56" y="26" font-size="13" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text></svg>';
 }
 
-/* Mimi, dans la vue de près : il guette au bord de la paillasse (on voit sa tête dépasser en bas à gauche).
-   De temps en temps (rarement), il saute sur le plateau et s'assoit en plein sur l'échantillon : il gêne !
-   On le touche : il s'en va. On peut aussi le prendre avec le doigt et le poser ailleurs. */
-var GUET = {x:64, y:704}, SIEGE = {x:612, y:466}, mimi = {el:null, x:0, y:0, enRoute:false, pose:false, sur:false, porte:false, geste:null, t:0, tv:0, tp:0, ditT:0, taille:1};
+/* Mimi, dans la vue de près : on ne le voit pas. De temps en temps (rarement), il bondit d'en bas de l'écran sur le plateau
+   et s'assoit en plein sur les échantillons : il gêne ! On le touche : il s'en va, et il sort de l'écran pour de bon.
+   On peut aussi le prendre avec le doigt et le poser ailleurs. */
+var SIEGE = {x:600, y:466}, mimi = {el:null, x:0, y:0, enRoute:false, pose:false, sur:false, porte:false, geste:null, tv:0, tp:0, ditT:0, taille:1};
 function tweenLin(dur, f, fin){ var t0 = performance.now(); if(reduit) dur = 1; (function pas(now){ var p = Math.min(1, (now - t0)/dur); f(p); if(p < 1) requestAnimationFrame(pas); else if(fin) fin(); })(t0); }
+/* Un point hors de l'écran, sous le bord du bas (quelle que soit la taille de l'écran) */
+function horsEcran(x){ var c = $('#cadre').getBoundingClientRect(), d = $('#decor').getBoundingClientRect(), u = d.width/1200 || 1; return {x:x == null ? 560 : x, y:640 + Math.max(0, c.bottom - d.bottom)/u + 230}; }
 function mimiPlace(p){ mimi.x = p.x; mimi.y = p.y; var e = mimi.el; e.style.left = (p.x/12) + '%'; e.style.top = (p.y/6.4) + '%'; }
 function mimiTaille(k){ mimi.taille = k; mimi.el.style.setProperty('--taille', k.toFixed(3)); }
 function mimiPose(p, el){ el = el || mimi.el; ['assis','marche','dort','lave','salut'].forEach(function(c){ el.classList.remove('at-c-' + c); }); el.classList.add('at-c-' + p); }
-function mimiSaut(vers, fin, taille){
+function mimiSaut(vers, fin, taille, sansElan){
   var de = {x:mimi.x, y:mimi.y}, t0 = mimi.taille, t1 = taille || t0, haut = 40 + Math.abs(vers.y - de.y)*.3, sens = vers.x < de.x ? -1 : 1, e = mimi.el;
-  e.classList.toggle('at-c-gauche', sens < 0); mimiPose('assis'); e.classList.add('elan');
-  attendre(200, function(){
+  e.classList.toggle('at-c-gauche', sens < 0); mimiPose('assis'); if(!sansElan) e.classList.add('elan');
+  attendre(sansElan ? 0 : 200, function(){
     e.classList.remove('elan'); mimiPose('marche'); e.classList.add('saut'); son('saut');
-    tweenLin(520, function(q){ mimiPlace({x:de.x + (vers.x - de.x)*q, y:de.y + (vers.y - de.y)*q - Math.sin(Math.PI*q)*haut}); mimiTaille(t0 + (t1 - t0)*q); e.style.setProperty('--tangage', (sens*(q - .5)*44).toFixed(1) + 'deg'); },
-      function(){ e.classList.remove('saut'); e.classList.remove('at-c-gauche'); e.style.removeProperty('--tangage'); mimiPose('assis'); son('pose'); if(fin) fin(); });
+    tweenLin(560, function(q){ mimiPlace({x:de.x + (vers.x - de.x)*q, y:de.y + (vers.y - de.y)*q - Math.sin(Math.PI*q)*haut}); mimiTaille(t0 + (t1 - t0)*q); e.style.setProperty('--tangage', (sens*(q - .5)*44).toFixed(1) + 'deg'); },
+      function(){ e.classList.remove('saut'); e.classList.remove('at-c-gauche'); e.style.removeProperty('--tangage'); mimiPose('assis'); if(fin) fin(); });
   });
 }
-function mimiPlanifie(){ clearTimeout(mimi.t); mimi.t = setTimeout(function(){
-  if(!S.mode && !reduit && !mimi.enRoute && !mimi.porte && !S.occupe){ mimiPose('lave'); setTimeout(function(){ if(!mimi.enRoute && !mimi.porte) mimiPose('assis'); }, 3200); }
-  mimiPlanifie(); }, 9000 + Math.random()*8000); }
 function mimiDit(t, saute){
   var m = mimi.el; if(!m) return; var d = m.querySelector('.dit'); d.textContent = t; d.classList.add('on'); clearTimeout(mimi.ditT); mimi.ditT = setTimeout(function(){ d.classList.remove('on'); }, 2200);
   if(saute && !mimi.enRoute){ m.classList.remove('sursaut'); void m.offsetWidth; m.classList.add('sursaut'); }
 }
-function mimiCaresse(){
-  var m = mimi.el; mimiDit('Mrrr…'); son('ronron'); var h = document.createElement('span'); h.className = 'coeur-v'; h.textContent = '❤️'; m.appendChild(h); setTimeout(function(){ h.remove(); }, 1300);
-}
-/* Où est-il ? Sur le plateau ? Assis sur l'échantillon ? */
-function surPlateau(p){ return p.y > YB + 16 && p.y < YF + 4 && Math.abs(p.x - 600) < 556*kY(Math.min(p.y, YF)); }
-function surEchantillon(p){ return Math.abs(p.x - 605) < 84 && p.y > 404 && p.y < 520; }
+/* Où est-il ? Sur le plateau ? Assis sur les échantillons ? */
+function surPlateau(p){ return p.y > YB + 16 && p.y < YF + 4 && Math.abs(p.x - 600) < (LARG - 14)*kY(Math.min(p.y, YF)); }
+function surEchantillon(p){ return Math.abs(p.x - 600) < 196 && p.y > 404 && p.y < 520; }
 function versScene(cx, cy){ var r = $('#decor').getBoundingClientRect(); return {x:(cx - r.left)/r.width*1200, y:(cy - r.top)/r.height*640}; }
-/* Il vient : un bond sur le plateau, et il s'installe sur le carré de cuir en ronronnant */
+/* Il vient : un bond depuis le bas de l'écran, et il s'installe sur le carré de cuir en ronronnant */
 function mimiVisite(ms){ clearTimeout(mimi.tv); mimi.tv = setTimeout(mimiVient, ms == null ? 15000 + Math.random()*8000 : ms); }
 function mimiVient(){
   if(mimi.calme) return;
   if(S.mode || S.occupe || mimi.enRoute || mimi.pose || mimi.porte || document.hidden) return mimiVisite(6000);
-  mimi.enRoute = true;
-  mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; mimiDit('Mrrr…'); son('ronron'); majOutils(); }, .84);
+  mimi.enRoute = true; mimi.el.hidden = false; mimiTaille(1); mimiPlace(horsEcran(540));
+  mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; son('pose'); mimiDit('Mrrr…'); son('ronron'); majOutils(); }, .84, true);
 }
-/* Il s'en va : on l'a touché, ou il en a assez d'être posé là */
+/* Il s'en va : il saute par-dessus le bord de la paillasse et sort de l'écran. On ne le voit plus. */
+function mimiSort(depuis){
+  mimi.enRoute = true; mimi.sur = false; mimi.pose = false; majOutils();
+  mimiSaut(horsEcran(mimi.x + (mimi.x < 600 ? -60 : 60)), function(){ mimi.enRoute = false; mimi.el.hidden = true; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1, depuis === 'main');
+}
 function mimiPart(muet){
-  if(mimi.enRoute || mimi.porte) return; clearTimeout(mimi.tp); mimi.enRoute = true; mimi.sur = false; mimi.pose = false; majOutils();
+  if(mimi.enRoute || mimi.porte) return; clearTimeout(mimi.tp);
   if(!muet){ mimiDit('Mraou !'); son('miaou'); }
-  attendre(muet ? 0 : 260, function(){ mimiSaut(GUET, function(){ mimi.enRoute = false; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1); });
+  mimi.enRoute = true; attendre(muet ? 0 : 260, function(){ mimi.enRoute = false; mimiSort(); });
 }
-/* Il est assis dessus : tant qu'il n'a pas bougé, on ne peut rien faire de l'échantillon */
+/* Il est assis dessus : tant qu'il n'a pas bougé, on ne peut rien faire des échantillons du cuir */
 function mimiGene(){ if(!mimi.sur) return false; mimiDit('Mrrr ?', true); son('ronron'); return true; }
 /* On le prend avec le doigt… */
 function mimiPrend(){
   clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); son('miaou'); majOutils();
 }
-/* … et on le repose : sur le plateau, il s'assoit là (et s'il est encore sur l'échantillon, il gêne toujours) ; ailleurs, il retourne à son coin */
+/* … et on le repose : sur le plateau, il s'assoit là (et s'il est encore sur les échantillons, il gêne toujours) ; ailleurs, il sort de l'écran */
 function mimiLache(p){
   var e = mimi.el; mimi.porte = false; e.classList.remove('porte'); e.classList.remove('saut'); mimiPose('assis');
   if(surPlateau(p)){ mimi.pose = true; mimi.sur = surEchantillon(p); mimiTaille(.84); son('pose'); majOutils(); if(mimi.sur) mimiDit('Mrrr…'); else mimi.tp = setTimeout(function(){ mimiPart(true); }, 7000); }
-  else { mimi.pose = false; mimi.enRoute = true; mimiSaut(GUET, function(){ mimi.enRoute = false; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1); }
+  else mimiSort('main');
 }
 /* Quand on revient d'un gros plan, ou qu'on recommence : il reprend sa petite vie */
 function mimiReveil(){ if(mimi.el && !mimi.pose && !mimi.enRoute) mimiVisite(20000 + Math.random()*15000); }
-function mimiRetour(){ clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.enRoute = false; mimi.pose = false; mimi.sur = false; mimi.porte = false; mimi.geste = null; mimi.el.classList.remove('porte', 'saut', 'elan', 'at-c-gauche'); mimiTaille(1); mimiPlace(GUET); mimiPose('assis'); mimiVisite(); }
+function mimiRetour(){ clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.enRoute = false; mimi.pose = false; mimi.sur = false; mimi.porte = false; mimi.geste = null; mimi.el.classList.remove('porte', 'saut', 'elan', 'at-c-gauche'); mimiTaille(1); mimi.el.hidden = true; mimiPose('assis'); mimiVisite(); }
 function poserMimi(){
   var e = document.createElement('div'); e.className = 'mimi at-t-chat at-c-assis'; e.innerHTML = '<span class="dit"></span>' + svgChat();
-  e.setAttribute('role', 'button'); e.setAttribute('aria-label', 'Mimi, le chat'); e.tabIndex = 0; mimi.el = e;
-  $('#calque').appendChild(e); mimiPlace(GUET);
-  var touche = function(){ if(mimi.enRoute || mimi.porte) return; if(mimi.pose) mimiPart(); else mimiCaresse(); };
+  e.setAttribute('role', 'button'); e.setAttribute('aria-label', 'Mimi, le chat'); e.tabIndex = 0; e.hidden = true; mimi.el = e;
+  $('#calque').appendChild(e);
+  var touche = function(){ if(mimi.enRoute || mimi.porte) return; if(mimi.pose) mimiPart(); };
   e.addEventListener('pointerdown', function(ev){ if(mimi.enRoute || S.mode || S.occupe) return; mimi.geste = {id:ev.pointerId, x:ev.clientX, y:ev.clientY, bouge:false}; try { e.setPointerCapture(ev.pointerId); } catch(err){} });
   e.addEventListener('pointermove', function(ev){
     var g = mimi.geste; if(!g || g.id !== ev.pointerId) return;
@@ -109,5 +109,5 @@ function poserMimi(){
   var fin = function(ev){ var g = mimi.geste; mimi.geste = null; if(!g || !g.bouge) return; mimi.avale = true; setTimeout(function(){ mimi.avale = false; }, 60); mimiLache({x:mimi.x, y:mimi.y}); };
   e.addEventListener('pointerup', fin); e.addEventListener('pointercancel', fin);
   e.addEventListener('click', function(){ if(mimi.avale) return; touche(); }); e.addEventListener('keydown', function(ev){ if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); touche(); } });
-  mimiPlanifie(); mimiVisite();
+  mimiVisite();
 }

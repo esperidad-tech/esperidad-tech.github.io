@@ -22,7 +22,8 @@ function fermerMode(){
   camera(600, 320, 1);
   var lm = $('#loupeMobile'); if(lm) lm.removeAttribute('transform');
   dessinerTiroir('g'); dessinerTiroir('d'); dessinerLame(); dessinerCoupes(); majArdoise(); majBandeScene(); majOutils();
-  if(t){ S.vientDeTrouver = null; if(S.sel === t){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  if(t){ S.vientDeTrouver = null; if(S.sel === t && !surCuir(t)){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
+  document.body.classList.remove('fait');
   /* le code vient de s'écrire sur l'ardoise : un petit bruit de craie */
   if(codePret() && !S.codeEcrit){ S.codeEcrit = true; attendre(500, function(){ son('craie'); }); }
   mimiReveil();
@@ -54,35 +55,49 @@ function ouvrirLoupe(tir){
   tween(640, function(q){ g.setAttribute('transform', 'translate(' + f1(dx*q) + ',' + f1(dy*q - Math.sin(q*Math.PI)*48) + ')'); }, function(){
     attendre(180, function(){
       S.occupe = false; S.tiroir = null; S.casier = null; S.essai = null;
-      ouvrirMode('loupe', '<div class="verre-hud" id="verreHud"><canvas id="cvVerre" aria-label="Sous la loupe : ' + OBJETS[S.sel].nom + '"></canvas>' + svgVerre() + '<div class="tampon" id="tampon" aria-hidden="true"></div></div><div class="ruban" id="ruban" hidden></div><div id="zoneTiroir"></div>');
+      ouvrirMode('loupe', '<div class="verre-hud" id="verreHud"><canvas id="cvVerre" aria-label="Sous la loupe"></canvas>' + svgVerre() + '<div class="tampon" id="tampon" aria-hidden="true"></div></div><div class="ruban" id="ruban" hidden></div>' +
+        '<button type="button" class="fleche-l pose" id="bPrec" aria-label="L\'échantillon d\'avant">◀</button><button type="button" class="fleche-l pose" id="bSuiv" aria-label="L\'échantillon d\'après">▶</button><div id="zoneTiroir"></div>');
       vueLoupe(); placerVerre(); majBas(); requestAnimationFrame(function(){ rendVerre(); });
-      if(tir) attendre(650, function(){ ouvrirTiroir(tir); });
     });
   });
 }
 function vueLoupe(){ var c = posCible(); camera(borne(c.x, 520, 690), 410.5, 1.45); }
 /* Le grand verre : toujours posé sur ce qu'on regarde. Quand un tiroir est ouvert, il rapetisse et remonte, mais il reste du côté
-   de l'objet (au-dessus de la coupelle si on la voit encore, sinon contre le bord le plus proche d'elle). */
+   de l'objet (au-dessus de la coupelle si on la voit encore, sinon contre le bord le plus proche d'elle).
+   De chaque côté du verre, une flèche jaune : on passe à l'échantillon d'avant ou d'après sans reposer la loupe. */
 function placerVerre(){
   var h = $('#verreHud'); if(!h) return; var c = posCible(), r, x, y, sx = 600 + (c.x - CAM.cx)*CAM.z, sy = 320 + (c.y - CAM.cy)*CAM.z;
-  if(S.tiroir){ r = 116; x = borne(sx, r + 20, 1200 - r - 20); y = r + 16; }
-  else { r = 162; x = borne(sx, r + 16, 1200 - r - 16); y = borne(sy - 58, r + 10, 640 - r - 10); }
+  if(S.tiroir){ r = 116; x = borne(sx, r + 78, 1200 - r - 78); y = r + 16; }
+  else { r = 162; x = borne(sx, r + 78, 1200 - r - 78); y = borne(sy - 58, r + 10, 640 - r - 10); }
   h.style.cssText = pos(x - r, y - r, 2*r, 2*r); S.verre = {x:x, y:y, r:r};
   var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(' + f1(borne(x, 300, 900)) + '*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(Math.min(y + r + 6, 582)) + '*var(--u))';
+  var a = $('#bPrec'), b = $('#bSuiv'), plusieurs = ciblesLoupe().length > 1;
+  if(a){ a.style.cssText = pos(x - r - 70, y - 30, 60, 60); b.style.cssText = pos(x + r + 10, y - 30, 60, 60); a.hidden = b.hidden = !plusieurs; }
   setTimeout(rendVerre, reduit ? 0 : 470);
 }
+/* Tout ce que la loupe peut regarder, dans l'ordre : les échantillons du cuir, puis les coupelles pleines (sauf les liquides) */
+function ciblesLoupe(){ return CUIRS.concat(S.coupes.filter(function(c){ return c && !OBJETS[c.t].liquide; }).map(function(c){ return c.t; })); }
+/* On passe à un autre échantillon sans quitter la loupe : le tiroir se referme, la loupe glisse jusqu'à lui */
+function changerCible(t){
+  if(S.occupe || S.mode !== 'loupe' || !t || t === S.sel) return;
+  var aller = function(){ S.sel = t; S.essai = null; S.casier = null; son('zoom'); dessinerLame(); dessinerCoupes(); vueLoupe(); placerVerre(); majBas(); rendVerre(); };
+  if(S.tiroir) fermerTiroir(aller); else aller();
+}
+function cibleVoisine(d){ var l = ciblesLoupe(), i = l.indexOf(S.sel); changerCible(l[(i + d + l.length) % l.length]); }
 /* Sous le grand verre : les deux tiroirs de la paillasse. On en tire un vers soi : ses trois casiers montrent leur dessin, rangé dedans.
    On touche un casier : ses échantillons s'étalent. Toucher à côté fait revenir d'un pas. */
 function majBas(){
   var z = $('#zoneTiroir'); if(!z) return; var t = S.sel, o = OBJETS[t], fait = !!S.trouves[t], barres = S.barres[t] || {}, h = '';
-  $('#verreHud').classList.toggle('bon', fait);
+  $('#verreHud').classList.toggle('bon', fait); document.body.classList.toggle('fait', fait);
   var rb = $('#ruban'); rb.hidden = !fait; if(fait) rb.textContent = '✅ ' + nomTrouve(t);
+  /* reconnu : la flèche « suivant » bat, s'il reste quelque chose à reconnaître */
+  var bs = $('#bSuiv'); if(bs) bs.classList.toggle('bat', fait && ciblesLoupe().some(function(k){ return !S.trouves[k]; }));
   if(!S.tiroir || S.tirP[S.tiroir] < 1){ z.innerHTML = ''; return; }
   h += '<div class="onglets pose" style="' + pos(44, 258, 1112, 46) + '">' + (S.casier ? TIROIRS[S.tiroir].map(function(k){ return '<button type="button" class="onglet" data-casier="' + k + '" aria-pressed="' + (S.casier === k) + '">' + svgPicto(k) + '<span>' + CASIERS[k] + '</span></button>'; }).join('') : '') +
     '<button type="button" class="onglet refermer" id="bRefermer"><span class="poignee-o"></span>Refermer</button></div>';
   if(S.casier){
     var l = contenuCasier(S.casier), cols = Math.max(6, Math.ceil(l.length/2));
-    h += '<div class="rangee pose" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && r === o.bon;
+    h += '<div class="rangee pose' + (fait ? ' fini' : '') + '" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && r === o.bon;
       return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (barres[id] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('') + '</div>';
   }
   z.innerHTML = h;
@@ -104,8 +119,10 @@ function rendVerre(a){
 /* Un tiroir s'ouvre pour de vrai : il glisse vers nous, on se rapproche pour voir dedans. On peut le refermer pour ouvrir l'autre. */
 function ouvrirTiroir(t){
   if(S.occupe || S.mode !== 'loupe' || S.tiroir === t) return;
+  /* déjà reconnu : il n'y a plus rien à chercher dans les tiroirs pour cet échantillon */
+  if(S.trouves[S.sel]){ secouer($('#tir-' + t)); return; }
   var suite = function(){
-    S.occupe = true; S.tiroir = t; S.casier = null; son('tiroirOuvre'); camera(t === 'g' ? 286.5 : 913.5, 537, 1.94); placerVerre();
+    S.occupe = true; S.tiroir = t; S.casier = null; son('tiroirOuvre'); camera(600 + (TIR[t] + TIR.w/2 - 600)*1.22, 537, Math.min(1.94, 1200/(TIR.w*1.22 + 22))); placerVerre();
     tween(440, function(p){ S.tirP[t] = p; dessinerTiroir(t); }, function(){ S.tirP[t] = 1; S.occupe = false; majBas(); });
   };
   if(S.tiroir) fermerTiroir(suite); else suite();
@@ -129,7 +146,10 @@ function essayer(id, bouton){
 }
 function verdict(id, bon){
   var t = S.sel, v = $('#verreHud');
-  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; son('bon'); tampon('✅'); majBas(); rendVerre(1); return; }
+  if(bon){ S.trouves[t] = true; S.vientDeTrouver = t; S.occupe = false; S.essai = null; son('bon'); tampon('✅'); majBas(); rendVerre(1); dessinerLame(); dessinerCoupes();
+    /* c'est fini pour cet échantillon, et ça se voit : le tiroir se referme tout seul, il ne reste que le résultat sous le verre */
+    attendre(1500, function(){ if(S.mode === 'loupe' && S.sel === t && S.tiroir && !S.occupe) fermerTiroir(); });
+    return; }
   v.classList.add('faux'); son('faux'); tampon('❌');
   attendre(950, function(){
     v.classList.remove('faux'); S.barres[t] = S.barres[t] || {}; S.barres[t][id] = true;
