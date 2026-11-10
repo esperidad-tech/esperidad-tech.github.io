@@ -290,13 +290,15 @@ function soin(c, h, urgent){
 }
 /* le Pisteur choisit sa cible et son arme : d'abord ce qu'il abat d'un coup (le plus dangereux), sinon ce qui fait le plus mal */
 function tirer(c, cibles){
-  var q = c._carquois(), portee = c.aPortee(), best = null;
+  /* depuis le 10 novembre, le Pisteur porte tous ses carquois et choisit sa flèche : la maligne prend celle qui est faite
+     pour la bête, jamais celle qui rebondit ou qui passe à travers */
+  var carq = c._carquoisPortes().map(function(o){ return {id:o, O:D.OBJETS[o]}; }), portee = c.aPortee(), best = null;
   cibles.forEach(function(m){
     if(c._un(m, m.def.blinde)) return;
-    var bonus = q && q.contre.indexOf(m.type) >= 0, imm = m.def.rang !== 'normal' && m.ouvert === 0;
-    var fl = m.ouvert !== 0 ? Math.round(C.critique[m.def.rang].fleche * (bonus ? q.critique : 1)) : bonus ? q.ferme : imm ? 0 : c._ferm(m, 'fleche');
+    var q = carq.filter(function(x){ return x.O.contre.indexOf(m.type) >= 0; })[0], bonus = !!q, imm = m.def.rang !== 'normal' && m.ouvert === 0;
+    var fl = m.ouvert !== 0 ? Math.round(C.critique[m.def.rang].fleche * (bonus ? q.O.critique : 1)) : (bonus && m.def.rang === 'normal') ? q.O.ferme : imm ? 0 : c._ferm(m, 'fleche');
     var dg = portee.indexOf(m) < 0 ? -1 : m.ouvert !== 0 ? C.critique[m.def.rang].dague : imm ? 0 : c._ferm(m, 'dague');
-    var arme = dg > fl ? 'dague' : 'fleche', d = Math.max(fl, dg), tue = d >= m.pv;
+    var arme = dg > fl ? 'dague' : (q ? 'f:' + q.id : 'fleche'), d = Math.max(fl, dg), tue = d >= m.pv;
     var note = (tue ? 1000 + danger(m) : 0) + Math.min(d, m.pv) + danger(m) / 100;
     if(!best || note > best.note) best = {note:note, m:m, arme:arme};
   });
@@ -365,19 +367,23 @@ var LU_AVANT = {
   bassin:{rat:1, chauvesouris:1, araignee:1, feufollet:1, gardien:1, ratcuir:1, roirats:1}
 };
 var TOUT_LU = {}; Object.keys(D.LIVRE).forEach(function(k){ TOUT_LU[k] = D.LIVRE[k].length; });
+/* depuis le 10 novembre, une étude donne toute la page du monstre d'un coup (un code pour le Sage) : « déjà lu » = tout lu */
+Object.keys(LU_AVANT).forEach(function(sa){ Object.keys(LU_AVANT[sa]).forEach(function(k){ LU_AVANT[sa][k] = TOUT_LU[k]; }); });
 /* le sac et les objets raisonnables de l'équipe maligne, salle par salle */
 var SAC_AVANT_CAMP = ['fumigene', 'acide', 'baume'], SAC_BOSS = ['feu', 'fumigene', 'baume'];
 function tenue(p, o){
   o = o || {};
-  p.sac = (o.sac || SAC_AVANT_CAMP).slice();
-  p.heros.pisteur.objets = o.pisteur ? [o.pisteur] : [];
+  /* depuis le 10 novembre : plus de sac à choisir. o.sac, quand il est donné, veut dire « l'Alchimiste n'a su créer que
+     ces potions-là » (les essais « avec un mauvais sac ») ; sinon il les a toutes. */
+  if(o.sac) p.recettes = o.sac.slice();
+  p.heros.pisteur.objets = ['fleches-normales'].concat(o.pisteur ? [o.pisteur] : []);
   p.heros.sage.objets = o.sage ? [o.sage] : [];
-  p.heros.alchimiste.objets = o.sacoche ? ['sacoche'] : [];
+  p.heros.alchimiste.objets = [];
   if(o.recettes) o.recettes.forEach(function(r){ if(p.recettes.indexOf(r) < 0) p.recettes.push(r); });
 }
 function tenueDe(salle, variante){
   var apres = ['atelier', 'crypte', 'ossuaire', 'bassin'].indexOf(salle) >= 0;
-  var o = {sac:salle === 'bassin' ? SAC_BOSS : SAC_AVANT_CAMP, pisteur:salle === 'rats' ? null : 'fleches-lourdes', sage:['ossuaire', 'bassin', 'crypte'].indexOf(salle) >= 0 ? 'baton-chene' : null};
+  var o = {pisteur:salle === 'rats' ? null : 'fleches-lourdes', sage:['ossuaire', 'bassin', 'crypte'].indexOf(salle) >= 0 ? 'baton-chene' : null};
   if(variante) for(var k in variante) o[k] = variante[k];
   return o;
 }
@@ -421,7 +427,7 @@ function chemin(o){
 function descente(graine, idEquipe, o){
   var eq = EQUIPES[idEquipe], rnd = R.alea(graine * 104729 + 17), p = R.nouvellePartie(graine), mem = {vu:{}};
   var route = chemin(o), i = 0, iSauve = 0, defaites = 0, journal = {}, chaud = false, tombes = 0, mortA = null, garde = 0;
-  R.refaireSac(p, o.sac || SAC_AVANT_CAMP);
+  if(o.sac) p.recettes = o.sac.slice();                     /* (un essai où l'Alchimiste n'a pas toutes ses potions) */
   while(i < route.length && garde++ < 400){
     var pas = route[i];
     if(typeof pas === 'object'){ if(o.sauve !== false && !p.codes[pas.sauve]){ R.code(p, pas.sauve); iSauve = i; } i++; continue; }
@@ -437,15 +443,13 @@ function descente(graine, idEquipe, o){
         defaites++; mortA = mortA || cb.salle;
         if(o.sauve === false || defaites > (o.essaisMax == null ? 6 : o.essaisMax)){ return {gagne:false, defaites:defaites, mortA:cb.salle, premiereChute:mortA, journal:journal, chaud:chaud, tombes:tombes}; }
         R.fuir(p, cb.salle); i = iSauve;
-        /* après une fuite, elle refait son sac (le même, ou celui du boss si elle repart du feu de camp) */
-        R.refaireSac(p, p.lieu === 'camp' ? (o.sacBoss || SAC_BOSS) : (o.sac || SAC_AVANT_CAMP));
         continue;
       }
       j.victoire = true; j.tours = r.tours; j.pvApres = r.pv;
       R.entrer(p, pas);
     }
     /* ce qu'on fait dans les salles sans combat */
-    if(pas === 'aeration'){ R.prendre(p, 'sacoche'); R.prendre(p, 'herbes'); if(o.sac4) R.refaireSac(p, o.sac4); }
+    if(pas === 'aeration'){ R.prendre(p, 'herbes'); }
     if(pas === 'reserve' && o.pisteur) R.prendre(p, o.pisteur);
     if(pas === 'givre') R.prendre(p, 'fleur-givre');
     if(pas === 'eboulis' && !p.faits.secret){ R.fouiller(p); R.fouiller(p); R.crane(p); }
@@ -453,7 +457,6 @@ function descente(graine, idEquipe, o){
       R.repos(p);
       if(p.faits['combat:ossuaire']){
         if(o.givre) R.code(p, 'recette:givre');
-        R.refaireSac(p, o.sacBoss || SAC_BOSS);
       }
     }
     if(pas === 'dalles' && !p.faits['piege:dalles']){
@@ -466,7 +469,7 @@ function descente(graine, idEquipe, o){
       }
     }
     if(pas === 'bibliotheque'){ R.prendre(p, 'page-dechiree'); if(o.sage) R.choisir(p, o.sage); }
-    if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur', 'fleches-normales');
+    if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur');
     i++;
   }
   return {gagne:!!p.faits.fin, defaites:defaites, mortA:null, premiereChute:mortA, journal:journal, chaud:chaud, tombes:tombes, pv:D.EXPOSES.map(function(h){ return p.heros[h].pv; })};
@@ -587,7 +590,7 @@ dire('L\'équipe maligne, le Grand Livre déjà lu en entier (elle est déjà ve
 dire();
 var MAUVAIS = {}, lignesM = [];
 ['toiles', 'atelier', 'ossuaire', 'bassin'].forEach(function(s){
-  var bon = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{sac:s === 'bassin' ? SAC_BOSS : SAC_AVANT_CAMP}});
+  var bon = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{}});      /* toutes ses potions */
   var m1 = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{sac:['huile', 'colle', 'coeur']}});
   var m2 = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{sac:['baume', 'coeur', 'huile']}});
   MAUVAIS[s] = {bon:bon, m1:m1, m2:m2};

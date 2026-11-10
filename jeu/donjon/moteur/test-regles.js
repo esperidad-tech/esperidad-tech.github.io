@@ -21,7 +21,7 @@ function prep(salle, o){
   o = o || {};
   var p = R.nouvellePartie(o.graine || 5);
   if(o.recettes) p.recettes = o.recettes.slice();
-  p.sac = (o.sac || ['feu', 'fumigene', 'baume']).slice();
+  p.recettes = (o.sac || ['feu', 'fumigene', 'baume']).slice();     /* les potions que l'Alchimiste a su créer (depuis le 10 novembre : plus de sac à choisir) */
   if(o.objets) for(var h in o.objets) p.heros[h].objets = o.objets[h].slice();
   if(o.pv) for(var h2 in o.pv) p.heros[h2].pv = o.pv[h2];
   if(o.livre) p.livre = o.livre;
@@ -93,7 +93,7 @@ function Essai(Rnd, sac){
   }
   function faire(h, g, c){
     var r = c.rat, cible = c.heros;
-    if(g === 'etudier'){ if(E.livre < 2) E.livre++; return; }
+    if(g === 'etudier'){ E.livre = 1; return; }                 /* 10 novembre : une seule étude (elle donne le code du rat pour le Sage) */
     if(g === 'rune'){ if(!r.ouvert) r.ouvert = true; return; }
     if(g === 'bouclier'){ E.h[cible].bouclier = true; return; }
     if(g === 'louche'){ var d = devant(); blesser(d, d.ouvert ? 10 : 2); vivants().forEach(function(x){ x.enrage = true; }); return; }
@@ -136,7 +136,7 @@ function Essai(Rnd, sac){
   }
   this.recetteOk = function(h, id){ if(h === 'pisteur') return REC[id].fleche; if(id === 'coeur') return ORDRE.some(function(x){ return E.h[x].sol; }); return true; };
   this.typeCible = function(g){ return g.indexOf('p:') === 0 ? REC[g.slice(2)].cible : GES[g]; };
-  this.gestesDe = function(h){ var l = HER[h].gestes.slice(), self = this; if(h !== 'sage') sac.forEach(function(id){ if(self.recetteOk(h, id)) l.push('p:' + id); }); return l; };
+  this.gestesDe = function(h){ var l = HER[h].gestes.filter(function(g){ return g !== 'etudier' || !E.livre; }), self = this; if(h !== 'sage') sac.forEach(function(id){ if(self.recetteOk(h, id)) l.push('p:' + id); }); return l; };
   this.vivants = vivants; this.devant = devant; this.debout = debout; this.dispo = dispo;
   this.auSol = function(){ return ORDRE.filter(function(h){ return E.h[h].sol; }); };
   this.agir = function(h, g, c){
@@ -160,12 +160,12 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
   function photoRegles(c, p){
     return JSON.stringify({h:D.ORDRE.map(function(h){ var S = c.h[h]; return [S.pv, S.sol, S.joue, S.bouclier]; }),
       r:c.b.map(function(m){ return m.mort ? [0, true] : [m.pv, m.mort, m.ouvert !== 0, c.a(m, 'enrage'), c.a(m, 'brule'), c.a(m, 'colle'), m.plan && !c.fini() ? m.plan.cibles[0] : null]; }),
-      fin:c.fini(), livre:Math.min(2, p.livre.rat || 0), tour:c.fini() ? 0 : c.tour});
+      fin:c.fini(), livre:(p.livre.rat || 0) > 0 ? 1 : 0, tour:c.fini() ? 0 : c.tour});
   }
   for(var graine = 1; graine <= 3000; graine++){
     var sac = SACS[graine % SACS.length], choix = R.alea(graine * 7 + 1);
     var es = new Essai(R.alea(graine), sac);
-    var p = R.nouvellePartie(1); p.sac = sac.slice();
+    var p = R.nouvellePartie(1); p.recettes = sac.slice();
     var c = R.combat(p, 'rats', {alea:R.alea(graine)});
     var n = 0;
     while(!es.E.fin && n < 400){
@@ -174,7 +174,7 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
         var peut = es.dispo().indexOf(hh) >= 0, base = {sage:['etudier', 'rune', 'bouclier'], alchimiste:['louche', 'herbes'], pisteur:['fleche', 'dague']}[hh];
         var tous = base.concat(hh === 'sage' ? [] : sac.map(function(x){ return 'p:' + x; }));
         tous.forEach(function(g2){
-          var t2 = es.typeCible(g2), okG = peut && (g2.indexOf('p:') !== 0 || es.recetteOk(hh, g2.slice(2)));
+          var t2 = es.typeCible(g2), okG = peut && (g2.indexOf('p:') !== 0 || es.recetteOk(hh, g2.slice(2))) && (g2 !== 'etudier' || !es.E.livre);
           var cands = t2 === 'heros' || t2 === 'sol' ? D.ORDRE : ['b1', 'b2', 'b3'];
           if(g2 === 'louche' || g2 === 'p:fumigene') cands = [null];
           cands.forEach(function(x){
@@ -275,12 +275,12 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ok(!c.h.sage.sol && c.h.sage.pv === 40 && trouve(ev, 'releve').par === 'coeur', 'le Cœur vaillant relève avec 40 PV');
   c.h.pisteur.pv = 50;
   ev = c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
-  egal(trouve(ev, 'livre').texte, D.LIVRE.rat[0], 'Étudier : la première ligne du Grand Livre sur le rat');
+  ok(trouve(ev, 'livre').code === 'etude:rat' && t.p.livre.rat === D.LIVRE.rat.length, 'Étudier : le code du rat entre dans le journal (pour la tablette du Sage)');
   tourSuivant(c);
   ev = jouer(c, 'alchimiste', 'herbes', 'pisteur');
   egal(trouve(ev, 'soin').n, 20, 'les Herbes rendent 20');
-  ev = c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
-  egal(trouve(ev, 'livre').texte, D.LIVRE.rat[1], 'Étudier encore : la deuxième ligne');
+  egal(c.refus('sage', 'etudier', c.b[1].id), 'Déjà étudié', 'Étudier encore : refusé, il n\'y a plus de nouveau monstre (« Déjà étudié »)');
+  ok(c.gestes('sage').filter(function(g){ return g.geste === 'etudier'; })[0].permis === false, 'le geste Étudier est éteint tant qu\'il n\'y a pas de nouveau monstre');
   tourSuivant(c);
   var avant = c.h.pisteur.pv;
   ev = jouer(c, 'alchimiste', 'p:baume', 'pisteur');
@@ -733,32 +733,50 @@ section('Bourbe, le crapaud du puits');
 section('Les objets et leurs bonus');
 (function(){
   var t = prep('toiles', {objets:{pisteur:['fleches-argent']}, hasard:[0.3]}), c = t.c, f = bete(c, 'feufollet'), ar = bete(c, 'araignee'), ev;   /* la toile ira sur l'Alchimiste */
-  ev = jouer(c, 'pisteur', 'fleche', f);
+  ev = jouer(c, 'pisteur', 'f:fleches-argent', f);
   ok(trouve(ev, 'tir').fleche === 'argent' && trouve(ev, 'touche').coup === 'fleche-argent' && trouve(ev, 'degats').n === 10, 'flèches d\'argent : elles touchent le feu follet même fermé (10)');
   tourSuivant(c);
-  ev = jouer(c, 'pisteur', 'fleche', ar);
+  ev = jouer(c, 'pisteur', 'f:fleches-argent', ar);
   egal(trouve(ev, 'degats').n, 3, 'sur une autre bête, l\'argent ne change rien (3)');
   tourSuivant(c);
   jouer(c, 'alchimiste', 'p:fumigene');
   var f2 = bete(c, 'feufollet', 1);
-  ev = jouer(c, 'pisteur', 'fleche', f2);
+  ev = jouer(c, 'pisteur', 'f:fleches-argent', f2);
   egal(trouve(ev, 'degats').n, 90, 'flèches d\'argent : le critique est une fois et demie plus fort (60 → 90)');
 
   t = prep('atelier', {objets:{pisteur:['fleches-lourdes']}, sac:['acide', 'feu', 'baume']}); c = t.c;
   var g = bete(c, 'gardien'), rc = bete(c, 'ratcuir');
-  ev = jouer(c, 'pisteur', 'fleche', rc);
+  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', rc);
   ok(trouve(ev, 'tir').fleche === 'lourde' && trouve(ev, 'touche').coup === 'fleche-lourde' && trouve(ev, 'degats').n === 12, 'flèches lourdes : 12 sur le rat cuirassé, même fermé (au lieu de 1)');
   rc.pv = 70;
   jouer(c, 'alchimiste', 'p:acide', g); tourSuivant(c);
-  ev = jouer(c, 'pisteur', 'fleche', g);
+  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', g);
   ok(trouve(ev, 'tir').fleche === 'lourde' && trouve(ev, 'rebond') && g.pv === 280, 'flèches lourdes : le Gardien fermé reste immunisé (un élite ne se grignote pas)');
   tourSuivant(c); c.h.pisteur.pv = 120; c.h.pisteur.sol = false;
   jouer(c, 'sage', 'rune', g);
-  ev = jouer(c, 'pisteur', 'fleche', g);
+  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', g);
   egal(trouve(ev, 'degats').n, 165, 'flèches lourdes : le critique sur le Gardien passe de 110 à 165');
   jouer(c, 'alchimiste', 'p:acide', rc); tourSuivant(c);
-  ev = jouer(c, 'pisteur', 'fleche', rc);
+  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', rc);
   ok(trouve(ev, 'degats').n === 90 && rc.mort, 'flèches lourdes : 90 sur le rat cuirassé sans armure, il est battu d\'un coup');
+
+  /* Romain, 10 novembre : le Pisteur porte tous ses carquois et CHOISIT sa flèche ; chaque sorte a son défaut */
+  t = prep('toiles', {objets:{pisteur:['fleches-normales', 'fleches-argent', 'fleches-lourdes']}, sac:['fumigene', 'feu', 'baume'], hasard:[0.3]}); c = t.c; f = bete(c, 'feufollet');
+  egal(c.gestes('pisteur').filter(function(x){ return x.geste === 'fleche' || x.geste.indexOf('f:') === 0; }).map(function(x){ return x.geste; }), ['fleche', 'f:fleches-argent', 'f:fleches-lourdes'], 'trois cartes de flèche : la normale, celle de lune, la transperçante');
+  ev = jouer(c, 'pisteur', 'fleche', f);
+  ok(trouve(ev, 'tir').fleche === 'normale' && trouve(ev, 'degats').n === 1, 'la flèche normale, même avec les carquois sur le dos : pas de bonus (1 sur le feu follet fermé)');
+  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = 90; c.h[h].entoile = false; });
+  jouer(c, 'alchimiste', 'p:fumigene');
+  var pvF = f.pv;
+  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', f);
+  ok(f.ouvert !== 0 && trouve(ev, 'tir').defaut === 'traverse' && trouve(ev, 'mot').texte === 'À travers !' && !trouve(ev, 'degats') && f.pv === pvF, 'la flèche transperçante passe à travers une bête de brume, même ouverte : le tour est perdu');
+  t = prep('atelier', {objets:{pisteur:['fleches-normales', 'fleches-argent']}, sac:['acide', 'feu', 'baume']}); c = t.c; rc = bete(c, 'ratcuir');
+  jouer(c, 'alchimiste', 'p:acide', rc);
+  ev = jouer(c, 'pisteur', 'f:fleches-argent', rc);
+  ok(rc.ouvert !== 0 && trouve(ev, 'tir').defaut === 'rebondit' && trouve(ev, 'rebond') && !trouve(ev, 'degats') && rc.pv === 70, 'la flèche de lune rebondit sur le rat cuirassé, même ouvert');
+  egal(c.refus('pisteur', 'f:fleches-lourdes', rc.id), 'Déjà joué', '(le Pisteur a joué)');
+  t = prep('atelier', {sac:['acide', 'feu', 'baume']}); c = t.c;
+  egal(c.refus('pisteur', 'f:fleches-lourdes', bete(c, 'ratcuir').id), 'Pas emporté', 'sans le carquois, pas de flèche transperçante (« Pas emporté »)');
 
   t = prep('canaux', {objets:{sage:['cristal-lune']}}); c = t.c;
   egal(c.gestes('sage').filter(function(x){ return x.geste === 'rune'; })[0].vise, 'salle', 'cristal de lune : la rune ne se vise plus, elle éclaire toute la salle');
@@ -784,15 +802,14 @@ section('Les objets et leurs bonus');
   c.b.forEach(function(m){ m.mort = true; }); c._bilan([]);
   ok(/\|pisteur$/.test(t.p.faits['amulette:utilisee']) && t.p.heros.pisteur.objets.indexOf('amulette') < 0, 'après la victoire, la partie sait que l\'amulette a servi (dans quel combat, et à qui)');
 
-  /* la sacoche et le sac */
+  /* les potions (Romain, 10 novembre) : plus de sac à choisir, plus de sacoche ; l'Alchimiste a toutes celles qu'il a créées */
   var p = R.nouvellePartie(3);
-  egal(R.refaireSac(p, ['feu', 'huile', 'baume', 'colle'])[0].mot, 'Sac trop plein', 'le sac : trois recettes, pas quatre');
-  R.entrer(p, 'aeration');
-  ev = R.prendre(p, 'sacoche');
-  ok(trouve(ev, 'objet').heros === 'alchimiste' && R.placesSac(p) === 4, 'la sacoche va à l\'Alchimiste : une quatrième place');
-  ok(trouve(R.refaireSac(p, ['feu', 'huile', 'baume', 'colle']), 'sac').plein, 'avec la sacoche : quatre recettes');
-  egal(R.refaireSac(p, ['feu', 'feu'])[0].mot, 'Recette inconnue', 'pas deux fois la même recette');
-  egal(R.refaireSac(p, ['givre'])[0].mot, 'Recette inconnue', 'le givre n\'est pas connu au départ');
+  ok(!('sac' in p) && !R.refaireSac && !R.sacPermis && !D.OBJETS.sacoche && D.LIEUX.aeration.objets.join() === 'herbes', 'plus de sac à remplir, plus de sacoche dans le puits d\'aération');
+  egal(R.potions(p), D.RECETTES_DEPART, 'l\'Alchimiste part avec ses sept potions');
+  p.lieu = 'rats'; var cp = R.combat(p, 'rats', {alea:ecrit()});
+  egal(cp.gestes('alchimiste').filter(function(x){ return x.geste.indexOf('p:') === 0; }).map(function(x){ return x.geste.slice(2); }), D.RECETTES_DEPART, 'en combat, il les a toutes sous la main');
+  egal(cp.refus('alchimiste', 'p:givre', 'b1'), 'Pas emporté', 'le givre n\'est pas connu au départ (« Pas emporté »)');
+  R.fuir(p); p = R.nouvellePartie(3);
   egal(p.recettes, ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'], 'sept recettes connues au départ (avec l\'acide)');
 })();
 
@@ -828,14 +845,21 @@ section('La fin d\'un combat');
   egal(c.tourMonstres()[0].mot, 'Pas encore !', 'tourMonstres tant qu\'un héros peut jouer : « Pas encore ! »');
 })();
 
+function codeEtude(id){ return !!(CODES.CODES[id] && CODES.CODES[id].a === 'sage' && CODES.CODES[id].de === 'pisteur'); }
 section('Le Grand Livre');
 (function(){
   var t = prep('atelier'), c = t.c, p = t.p, g = bete(c, 'gardien'), ev, lus = [];
-  for(var i = 0; i < 5; i++){ ev = c.jouer('sage', {geste:'etudier', cible:g.id}); lus.push(trouve(ev, 'livre')); tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = 90; }); }
-  egal(lus.slice(0, 4).map(function(l){ return l.sujet; }), ['ouvre', 'piege', 'autre', 'sans-potion'], 'l\'ordre des lignes : ce qui l\'ouvre, le piège, l\'autre chemin, le chemin sans potion');
-  ok(lus[4].rien && p.livre.gardien === 4, 'quand tout est lu, le Grand Livre n\'en dit pas plus');
+  ev = c.jouer('sage', {geste:'etudier', cible:g.id}); lus.push(trouve(ev, 'livre'));
+  ok(lus[0] && lus[0].code === 'etude:gardien' && lus[0].nom === D.MONSTRES.gardien.nom && p.livre.gardien === 4, 'étudier le Gardien : son code entre dans le journal (toute sa page d\'un coup, sur la tablette du Sage)');
+  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = 90; });
+  egal(c.refus('sage', 'etudier', g.id), 'Déjà étudié', 'le Gardien une deuxième fois : « Déjà étudié »');
+  var ge = c.gestes('sage').filter(function(x){ return x.geste === 'etudier'; })[0];
+  ok(ge.permis && ge.cibles.length === 1 && c.bete(ge.cibles[0]).type === 'ratcuir', 'il reste un nouveau monstre : seul le rat cuirassé peut être étudié');
+  ok(R.etudie(p, 'gardien') && !R.etudie(p, 'ratcuir'), 'Regles.etudie dit quels monstres ont leur code');
+  egal(D.LIVRE_TITRES.length, 4, 'quatre sortes d\'énigmes : le point faible, le piège, l\'autre chemin, sans la bonne potion');
+  ok(Object.keys(D.LIVRE).every(function(k){ return codeEtude('etude:' + k); }), 'chaque monstre du Grand Livre a son code d\'étude (donjon-codes.js), pour la tablette du Sage');
   var gl = R.grandLivre(p);
-  egal(gl.map(function(x){ return [x.monstre, x.lignes.length, x.sur]; }), [['ratcuir', 0, 4], ['gardien', 4, 4]], 'le Grand Livre à afficher : une page par monstre rencontré (blanche pour le rat cuirassé, pleine pour le Gardien)');
+  egal(gl.map(function(x){ return [x.monstre, x.etudie, x.code]; }), [['ratcuir', false, null], ['gardien', true, 'etude:gardien']], 'le journal à afficher : une ligne par monstre rencontré (pas encore étudié pour le rat cuirassé, un code pour le Gardien)');
   var mots = /\b(acide|givre|rune|louche|fumigène|fumigene|colle|huile)\b/i;
   var fautes = [];
   Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(l, i){
@@ -844,17 +868,18 @@ section('Le Grand Livre');
   }); });
   ok(fautes.length === 0, 'aucune ligne ne dit « Touche… » ni ne nomme la potion à utiliser' + (fautes.length ? ' — ' + fautes.join(' ; ') : ''));
   ok(Object.keys(D.MONSTRES).every(function(k){ var cle = D.MONSTRES[k].livre || k; return D.LIVRE[cle] && D.LIVRE[cle].length >= 2; }), 'chaque monstre a sa page');
-  egal(D.LIVRE.rat.slice(0, 2), ['Les rats vivent dans le noir. Ce qui brille leur fait peur : ils se dressent, le ventre à l\'air.', 'Un grand bruit les rend enragés jusqu\'au bout : ils mordent deux fois.'], 'les deux lignes du rat sont celles de l\'essai, mot pour mot');
+  var INTERDITS = ['lumière', 'louche', 'fumigène', 'fumée', 'nuage', 'fiole', 'huile', 'colle', 'acide', 'givre', 'bouclier', 'rune de', 'chatouill', 'bruit', 'vacarme'];
+  var trahies = []; Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(t, i){ INTERDITS.forEach(function(w){ if(t.toLowerCase().indexOf(w) >= 0) trahies.push(k + ' ' + i + ' : « ' + w + ' »'); }); }); });
+  egal(trahies, [], 'les énigmes ne nomment jamais le pouvoir à trouver (Romain : « pas écrit clairement, qu\'il faille réfléchir »)');
 })();
 
 section('Les sauvegardes, la fuite, les codes');
 (function(){
   var p = R.nouvellePartie(11), ev;
   ok(p.sauvegarde && p.sauvegarde.lieu === 'puits' && !('livre' in p.sauvegarde), 'la sauvegarde de départ est créée au fond du puits (sans le Grand Livre)');
-  egal(Object.keys(p).sort(), ['codes', 'faits', 'fuites', 'graine', 'heros', 'lieu', 'livre', 'or', 'recettes', 'repos', 'sac', 'sauvegarde', 'v', 'vus'].sort(), 'l\'état de la partie : les champs du cahier des charges (plus « fuites »)');
-  R.refaireSac(p, ['feu', 'huile', 'baume']);
+  egal(Object.keys(p).sort(), ['codes', 'faits', 'fuites', 'graine', 'heros', 'lieu', 'livre', 'or', 'recettes', 'repos', 'sauvegarde', 'v', 'vus'].sort(), 'l\'état de la partie : les champs du cahier des charges (plus « fuites », sans « sac »)');
   ev = R.entrer(p, 'rats');
-  ok(trouve(ev, 'combat').salle === 'rats' && !R.sacPermis(p), 'entrer dans la salle des rats : un combat à lancer ; le sac ne se refait plus');
+  ok(trouve(ev, 'combat').salle === 'rats', 'entrer dans la salle des rats : un combat à lancer');
   var c = R.combat(p, 'rats', {alea:ecrit()});
   egal(R.code(p, 'sauve:1')[0].mot, 'Pas en combat !', 'pas de sauvegarde en combat');
   c.jouer('sage', {geste:'etudier', cible:'b1'});
@@ -879,9 +904,9 @@ section('Les sauvegardes, la fuite, les codes');
   c.jouer('alchimiste', {geste:'p:feu', cible:c.b[0].id});
   c.jouer('pisteur', {geste:'fleche', cible:c.b[0].id});
   c.tourMonstres();
-  ok(p.livre.chauvesouris === 1 && p.livre.rat === 1, 'le Grand Livre s\'écrit tout de suite, même en plein combat');
+  ok(p.livre.chauvesouris === 3 && p.livre.rat === 3, 'le journal s\'écrit tout de suite, même en plein combat (la chauve-souris vient d\'être étudiée, le rat l\'était déjà)');
   var texte = R.exporter(p), p2 = R.importer(texte);
-  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres && p2.livre.chauvesouris === 1, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
+  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres && p2.livre.chauvesouris === 3, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
   ok(!R.enCombat(p2) && trouve(R.entrer(p2, 'canaux'), 'combat'), 'et le combat est à relancer');
   ok(R.importer('{pas du json') === null && R.importer('{"v":2}') === null, 'un texte abîmé ou d\'une autre version n\'est pas chargé');
   /* la fuite */
@@ -891,14 +916,15 @@ section('Les sauvegardes, la fuite, les codes');
   ok(p.heros.pisteur.pv === pvApres && !p.faits['combat:canaux'] && p.faits['combat:rats'] === 1, 'les points de vie sont ceux de la sauvegarde ; les rats battus AVANT la sauvegarde restent battus');
   ok(p.heros.pisteur.objets.join() === 'fleches-normales,fleches-lourdes' && p.faits['objet:fleches-lourdes'] === 1 && R.contenu(p, 'reserve').objets.join() === 'fleches-argent', 'les objets trouvés depuis sont gardés (les flèches transperçantes restent au Pisteur, la réserve ne les a plus)');
   ok(p.recettes.indexOf('givre') >= 0 && p.codes['recette:givre'] === 1 && p.codes['sauve:1'] === 1 && p.vus.reserve === 1 && p.vus.canaux === 1, 'la recette tapée depuis, les codes et la brume levée sont gardés aussi');
-  ok(p.livre.chauvesouris === 1 && p.livre.rat === 1, 'le Grand Livre garde ce qu\'il a appris');
-  ok(R.sacPermis(p) && !R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, on refait le sac sans code');
+  ok(p.livre.chauvesouris === 3 && R.etudie(p, 'chauvesouris'), 'le journal garde ce qu\'il a appris');
+  ok(!R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, le combat est fini (défaite)');
   egal(p.fuites.canaux, 1, 'la fuite est comptée pour cette salle');
   /* deux fuites au même endroit : une ligne de plus */
   R.entrer(p, 'canaux'); c = R.combat(p, 'canaux', {alea:ecrit()});
+  p.livre.rat = 0;                                      /* (comme si le Sage n'avait pas étudié le rat) */
   ev = R.fuir(p);
   var l = trouve(ev, 'livre');
-  ok(l && l.cause === 'fuites' && p.fuites.canaux === 2 && (p.livre.rat === 2 || p.livre.chauvesouris === 2), 'après 2 fuites dans la même salle, le Grand Livre offre une ligne de plus (' + (l ? l.monstre : '?') + ')');
+  ok(l && l.cause === 'fuites' && l.code === 'etude:rat' && p.fuites.canaux === 2 && R.etudie(p, 'rat'), 'après 2 fuites dans la même salle, le journal offre le code d\'un monstre pas encore étudié (' + (l ? l.monstre : '?') + ')');
   /* la défaite */
   R.entrer(p, 'canaux'); c = R.combat(p, 'canaux', {alea:ecrit()});
   D.ORDRE.forEach(function(h){ c.h[h].pv = 1; });
@@ -912,7 +938,7 @@ section('Les sauvegardes, la fuite, les codes');
   /* un combat gagné APRÈS la sauvegarde, puis une défaite plus loin : ses monstres reviennent, le reste est gardé */
   (function(){
     var q = R.nouvellePartie(5), k;
-    q.sac = ['feu', 'huile', 'baume'];
+    q.recettes = ['feu', 'huile', 'baume'];
     R.entrer(q, 'rats'); k = R.combat(q, 'rats', {alea:ecrit()}); k.b.forEach(function(m){ m.pv = 0; m.mort = true; }); k._bilan([]);
     ok(q.faits['combat:rats'] === 1, '(les rats sont battus, sans sauvegarde depuis le fond du puits)');
     R.entrer(q, 'reserve'); R.prendre(q, 'fleches-argent');
@@ -924,7 +950,7 @@ section('Les sauvegardes, la fuite, les codes');
     ok(q.heros.pisteur.pv === 120 && q.or === D.CHIFFRES.bourse && q.heros.pisteur.objets.indexOf('fleches-argent') >= 0, 'les points de vie sont ceux du départ ; l\'or et les flèches de lune sont gardés');
     ok(q.faits['piege:dalles'] === 1 && q.faits.secret === 1 && q.vus.reserve === 1 && q.vus.galerie === 1, 'les pièges passés, les passages ouverts et la brume levée sont gardés');
     /* l'amulette qui a servi dans un combat annulé est rendue */
-    var z = R.nouvellePartie(6); z.sac = ['feu', 'huile', 'baume'];
+    var z = R.nouvellePartie(6); z.recettes = ['feu', 'huile', 'baume'];
     z.heros.sage.objets.push('amulette'); z.faits['objet:amulette'] = 1; R.sauvegarder(z);
     R.entrer(z, 'rats'); k = R.combat(z, 'rats', {alea:ecrit()});
     k.h.sage.objets.splice(k.h.sage.objets.indexOf('amulette'), 1); k.amulette = 'sage';
@@ -935,7 +961,7 @@ section('Les sauvegardes, la fuite, les codes');
   })();
   /* le hasard à graine */
   function partieEntiere(graine){
-    var q = R.nouvellePartie(graine); q.sac = ['feu', 'huile', 'baume'];
+    var q = R.nouvellePartie(graine); q.recettes = ['feu', 'huile', 'baume'];
     var k = R.combat(q, 'rats'), ch = R.alea(99), trace = [];
     while(!k.fini()){
       var hs = k.aJouer();
@@ -962,22 +988,16 @@ section('Les salles sans combat');
   ok(R.objets(p).codes.some(function(x){ return x.code === 'plante:lumiere'; }), 'le code reste consultable dans « Objets »');
   egal(R.prendre(p, 'amulette', 'sage')[0].mot, 'Pas ici !', 'un objet qui n\'est pas dans ce lieu : « Pas ici ! »');
   R.entrer(p, 'reserve');
-  /* la réserve (Romain, 10 novembre) : le Pisteur a 2 places, dont une prise par ses flèches normales */
-  egal(R.nouvellePartie(5).heros.pisteur.objets, ['fleches-normales'], 'le Pisteur part avec ses flèches normales (une de ses deux places)');
+  /* la réserve (Romain, 10 novembre, 17 h 56) : « qu'on puisse prendre toutes les flèches » — un carquois ne prend pas de place */
+  egal(R.nouvellePartie(5).heros.pisteur.objets, ['fleches-normales'], 'le Pisteur part avec ses flèches normales');
   egal(R.contenu(p).objets, ['fleches-argent', 'fleches-lourdes'], 'la réserve : deux carquois à prendre');
   ev = R.prendre(p, 'fleches-argent');
-  ok(trouve(ev, 'objet').heros === 'pisteur' && trouve(ev, 'objet').equipe === 'carquois-argent' && p.heros.pisteur.objets.length === 2, 'on en prend un : il va au Pisteur, qui est complet');
+  ok(trouve(ev, 'objet').heros === 'pisteur' && trouve(ev, 'objet').equipe === 'carquois-argent', 'on en prend un : il va au Pisteur');
   ev = R.prendre(p, 'fleches-lourdes');
-  ok(ev[0].t === 'plein' && ev[0].heros === 'pisteur' && ev[0].objets.join() === 'fleches-normales,fleches-argent' && p.heros.pisteur.objets.length === 2, 'l\'autre : les mains sont pleines, il faut reposer quelque chose');
-  ev = R.prendre(p, 'fleches-lourdes', null, 'fleches-normales');
-  ok(trouve(ev, 'laisse').objet === 'fleches-normales' && p.heros.pisteur.objets.join() === 'fleches-argent,fleches-lourdes', 'on repose les flèches normales : le Pisteur a les deux carquois');
-  egal(R.contenu(p).objets, ['fleches-normales'], 'les flèches normales restent dans la réserve');
-  ev = R.prendre(p, 'fleches-normales', null, 'fleches-argent');
-  ok(p.heros.pisteur.objets.join() === 'fleches-lourdes,fleches-normales' && R.contenu(p).objets.join() === 'fleches-argent', 'on peut changer d\'avis : reprendre les normales et reposer les flèches de lune (elles retournent dans la réserve, une seule fois)');
-  R.prendre(p, 'fleches-argent', null, 'fleches-normales');
+  ok(trouve(ev, 'objet') && p.heros.pisteur.objets.join() === 'fleches-normales,fleches-argent,fleches-lourdes' && R.enMains(p.heros.pisteur.objets).length === 0, 'et l\'autre aussi : les carquois ne prennent pas de place, ses deux mains restent libres');
+  egal(R.contenu(p).objets, [], 'la réserve est vide');
   var cq = R.combat(R.importer(R.exporter(p)), 'toiles');
-  ok(cq._carquois({type:'feufollet'}).fleche === 'argent' && cq._carquois({type:'gardien'}).fleche === 'lourde', 'avec les deux carquois, le Pisteur tire la flèche faite pour la bête');
-  R.prendre(p, 'fleches-normales', null, 'fleches-lourdes');      /* (la suite du test se joue avec les flèches de lune) */
+  egal(cq._carquoisPortes(), ['fleches-argent', 'fleches-lourdes'], 'en combat, il a ses deux carquois spéciaux (et toujours ses flèches normales)');
   R.entrer(p, 'givre');
   egal(trouve(R.prendre(p, 'fleur-givre'), 'code-objet').code, 'plante:givre', 'la fleur de givre : le code plante:givre');
   /* le tas d'os, le crâne */
@@ -1065,7 +1085,6 @@ section('Les salles sans combat');
   /* le feu de camp */
   R.entrer(p, 'camp');
   p.heros.pisteur.pv = 20; p.heros.alchimiste.pv = 90; p.heros.sage.pv = 1;
-  ok(R.sacPermis(p), 'au feu de camp, on refait le sac');
   ev = R.repos(p);
   egal(D.EXPOSES.map(function(h){ return p.heros[h].pv; }), [80, 100, 46], 'le feu de camp rend la moitié des PV max à chacun (sans dépasser le maximum)');
   egal(R.repos(p)[0].mot, 'Déjà reposés', 'une seule fois entre deux combats');
@@ -1145,7 +1164,7 @@ section('Dans la page comme dans Node');
   vm.runInContext(fs.readFileSync(path.join(__dirname, 'src', 'donnees.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(__dirname, 'src', 'regles.js'), 'utf8'), ctx);
   ok(fen.DonjonDonnees && fen.Regles && typeof fen.Regles.combat === 'function', 'sans « module » (comme dans une page) : window.DonjonDonnees et window.Regles sont là');
-  var p = fen.Regles.nouvellePartie(9); p.sac = ['feu', 'huile', 'baume'];
+  var p = fen.Regles.nouvellePartie(9); p.recettes = ['feu', 'huile', 'baume'];
   var c = fen.Regles.combat(p, 'rats'), ev = c.jouer('sage', {geste:'rune', cible:'b1'});
   ok(ev.length === 4 && ev[3].t === 'ouvert' && c.jouer('pisteur', {geste:'fleche', cible:'b1'}).pop().mode === 'explose', 'un combat s\'y joue pareil');
   var src = fs.readFileSync(path.join(__dirname, 'src', 'regles.js'), 'utf8') + fs.readFileSync(path.join(__dirname, 'src', 'donnees.js'), 'utf8');
@@ -1177,10 +1196,9 @@ section('Le contrat des évènements');
       var p = R.nouvellePartie(g * 13 + salle.length);
       p.recettes = D.ORDRE_RECETTES.slice();
       var rec = D.ORDRE_RECETTES.slice().sort(function(){ return ch() - 0.5; });
-      p.sac = rec.slice(0, 4);
-      var carq = ch(); p.heros.pisteur.objets = (carq < 0.33 ? [] : [carq < 0.66 ? 'fleches-argent' : 'fleches-lourdes']).concat(['amulette']);
+      p.recettes = rec.slice(0, 5);
+      var carq = ch(); p.heros.pisteur.objets = ['fleches-normales'].concat(carq < 0.33 ? [] : carq < 0.66 ? ['fleches-argent'] : ['fleches-argent', 'fleches-lourdes']).concat(['amulette']);
       p.heros.sage.objets = [ch() < 0.5 ? 'cristal-lune' : 'baton-chene'];
-      p.heros.alchimiste.objets = ['sacoche'];
       var c = R.combat(p, salle), n = 0;
       noter(c.entree(), c); combats++;
       while(!c.fini() && n++ < 300){
@@ -1198,7 +1216,7 @@ section('Le contrat des évènements');
   });
   /* et hors combat */
   var q = R.nouvellePartie(4);
-  [R.refaireSac(q, ['feu', 'huile', 'baume']), R.entrer(q, 'galerie'), R.prendre(q, 'bourse'), R.entrer(q, 'aeration'), R.prendre(q, 'sacoche'), R.prendre(q, 'herbes'),
+  [R.entrer(q, 'galerie'), R.prendre(q, 'bourse'), R.entrer(q, 'aeration'), R.prendre(q, 'herbes'),
    R.entrer(q, 'reserve'), R.prendre(q, 'fleches-argent'), R.entrer(q, 'bibliotheque'), R.choisir(q, 'cristal-lune'), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'fond'),
    R.dalle(q, 'devant'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
    R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });

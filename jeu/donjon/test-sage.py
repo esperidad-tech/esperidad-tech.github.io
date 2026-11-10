@@ -11,7 +11,8 @@ from outils_test import Bilan, contexte, page, capture, regles, muet, mesurer_gl
 
 VITE = '--vite' in sys.argv
 CODES = {'rune:lumiere': ['flamme', 'etoile', 'cle'], 'page:dechiree': ['cle', 'flamme', 'poisson'], 'page:blanche': ['cloche', 'chat', 'soleil'], 'porte:odette': ['chapeau', 'lune', 'coeur'],
-         'faux': ['lune', 'lune', 'lune'], 'recette:givre': ['champi', 'coeur', 'cle']}
+         'faux': ['lune', 'lune', 'lune'], 'recette:givre': ['champi', 'coeur', 'cle'],
+         'etude:gardien': ['cloche', 'cle', 'soleil'], 'etude:rat': ['chat', 'champi', 'etoile']}
 b = Bilan('Sage')
 
 
@@ -170,6 +171,35 @@ def parcours(nav, appareil):
     taper(pg, 'page:dechiree')
     b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'page:dechiree ne marche qu’une fois')
     clic(pg, '.pave-fen .fermer')
+    # --- l'étude d'un monstre (Romain, 10 novembre) : le code du journal du Pisteur ouvre la page du monstre, avec ses énigmes ---
+    clic(pg, '#b-livre'); pg.wait_for_timeout(300)
+    b.ok(pg.locator('.livre .bete-vignette').count() == 0 and 'Aucun pour l’instant' in pg.inner_text('.livre-betes'), 'Grand Livre : aucun monstre étudié pour l’instant (c’est dit)')
+    clic(pg, '.livre .fermer'); pg.wait_for_timeout(200)
+    taper(pg, 'etude:gardien'); pg.wait_for_timeout(900)
+    b.ok(pg.is_visible('.bete-fen') and 'Gardien de rouille' in pg.inner_text('.bete-fen h2'), 'le code d’étude du Gardien ouvre sa page')
+    b.ok(pg.evaluate('(() => { var i = document.querySelector(".bete-fen .bete-img img"); return i.complete && i.naturalWidth > 0; })()'), 'on voit l’image du monstre')
+    b.ok(pg.locator('.bete-fen .enigme').count() == 4 and pg.locator('.bete-fen .enigme .lire').count() == 4, 'quatre énigmes (point faible, piège, autre chemin, sans la bonne potion), chacune avec son 🔊')
+    txt = pg.inner_text('.bete-fen .bete-enigmes').lower()
+    b.ok(not any(m in txt for m in ['lumière', 'acide', 'givre', 'bouclier', 'fiole', 'louche']), 'les énigmes ne nomment pas le pouvoir à trouver')
+    b.ok(pg.is_visible('.bete-fen .aller.guide'), 'le rond jaune est sur « C’est noté »')
+    regles(b, pg, 'page du monstre')
+    capture(pg, 'sage-monstre-' + t)
+    clic(pg, '.bete-fen .aller'); pg.wait_for_timeout(300)
+    b.ok('Gardien' in pg.inner_text('#bulle'), 'le conteur dit que la page est dans le Grand Livre')
+    taper(pg, 'etude:gardien')
+    b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'un code d’étude ne marche qu’une fois')
+    clic(pg, '.pave-fen .fermer')
+    taper(pg, 'etude:rat'); pg.wait_for_timeout(700)
+    b.ok(pg.locator('.bete-fen .enigme').count() == 3, 'le rat d’égout : trois énigmes')
+    clic(pg, '.bete-fen .aller'); pg.wait_for_timeout(300)
+    clic(pg, '#b-livre'); pg.wait_for_timeout(400)
+    b.ok(pg.locator('.livre .bete-vignette').count() == 2, 'le Grand Livre garde les deux monstres étudiés')
+    capture(pg, 'sage-livre-monstres-' + t)
+    clic(pg, '.livre [data-bete="gardien"]'); pg.wait_for_timeout(500)
+    b.ok(pg.is_visible('.bete-fen') and pg.locator('.bete-fen .bete-intro').count() == 0, 'on rouvre la page du Gardien depuis le Grand Livre')
+    clic(pg, '.bete-fen .aller'); pg.wait_for_timeout(400)
+    b.ok(pg.is_visible('.livre'), 'en refermant la page, on revient au Grand Livre')
+    clic(pg, '.livre .fermer'); pg.wait_for_timeout(200)
     muet(b, pg, 'tout le parcours')
     # --- la mémoire ---
     pg.reload(); pg.wait_for_timeout(1200)
@@ -180,6 +210,7 @@ def parcours(nav, appareil):
     b.ok(vu2 > 200 and S['lues'].get('rune') and S['codes'].get('rune:lumiere') and pg.is_visible('#rune'), 'après rechargement : l’encre révélée, la note déchiffrée et la rune restent')
     clic(pg, '#b-livre'); pg.wait_for_timeout(300)
     b.ok(pg.get_attribute('.livre [data-voir="2"] .code-grand', 'data-code') == 'sauve:2' and 'Odette' in pg.inner_text('.livre'), 'après rechargement : le Grand Livre garde la page écrite et la note d’Odette')
+    b.ok(pg.locator('.livre .bete-vignette').count() == 2, 'après rechargement : les deux monstres étudiés sont toujours dans le Grand Livre')
     clic(pg, '.livre .fermer')
     capture(pg, 'sage-recharge-' + t)
     # --- un 🔊 parle quand on le touche ---

@@ -108,6 +108,31 @@
 .clavier .eff{background:#6a2a1a}
 .loupe-msg{min-height:0}
 
+/* ---------- les monstres étudiés : le portrait et les énigmes ---------- */
+.livre-betes{border-top:2px dashed rgba(107,84,52,.45);padding-top:8px;display:flex;flex-direction:column;gap:8px}
+.livre-betes h3{font-family:var(--f-titre);font-weight:400;font-size:20px;color:#3b2414}
+.betes{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.bete-vignette{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 6px 8px;border-radius:12px;background:#1a1426;border:2px solid #8a6a3a;box-shadow:0 4px 0 rgba(0,0,0,.25);color:#ffe9c4}
+.bete-vignette img{display:block;width:100%;height:auto;aspect-ratio:560/502;object-fit:cover;border-radius:8px}
+.bete-vignette b{font-family:var(--f-titre);font-weight:400;font-size:15px;line-height:1.1;text-align:center}
+.bete-vignette:active{transform:translateY(2px)}
+.bete-fen{width:min(980px,100%)}
+.bete-page{display:flex;gap:16px;align-items:flex-start}
+.bete-img{flex:none;width:min(38%,340px);display:flex;flex-direction:column;align-items:center;gap:4px;position:sticky;top:0}
+.bete-img img{display:block;width:100%;height:auto;border-radius:14px;border:3px solid #8a6a3a;box-shadow:0 6px 16px rgba(0,0,0,.35);background:#0e0a16}
+.bete-img small{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b5434}
+.bete-enigmes{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.bete-intro{font-style:italic}
+.enigme{border-radius:12px;background:rgba(255,250,240,.55);border:2px solid rgba(138,106,58,.55);padding:8px 10px}
+.enigme h3{font-family:var(--f-titre);font-weight:400;font-size:17px;color:#8e2e1c;margin-bottom:2px}
+.enigme .dit{font-size:17px;line-height:1.35;align-items:flex-start}
+.enigme .dit .lire{flex:none}
+@media (max-height:520px), (max-width:700px){
+  .bete-img{width:30%}
+  .enigme .dit{font-size:15px}
+  .betes{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+}
+
 /* ---------- les petites scènes ---------- */
 .scene .scene-img{height:150px;display:grid;place-items:center}
 .scene-img i{display:block;width:120px;height:120px;background:linear-gradient(160deg,#f3e2b8,#d8be86);border:2px solid #8a6a3a;box-shadow:0 8px 18px rgba(0,0,0,.35);animation:flotte-page 3s ease-in-out infinite}

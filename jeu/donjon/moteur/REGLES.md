@@ -372,3 +372,34 @@ Là où la conception était floue ou se contredisait, tranché au plus simple p
 - Avec les deux carquois, `_carquois(bete)` prend celui qui est fait pour la bête visée.
 - Le lutrin de la bibliothèque reste un coffre à choix (`Regles.choisir`), en attendant la décision de Romain.
 - À venir (en discussion) : l'étude du Sage sort du combat et va sur la tablette du Sage.
+
+## 11. Ce qui a changé le 10 novembre au soir (à lire AVANT le reste : ces lignes remplacent ce qui est écrit plus haut)
+
+Décisions de Romain du 10 novembre (17 h 47 et 17 h 56, Bible §12.51).
+
+**L'étude des monstres : un code, plus de texte dans le donjon**
+
+- `etudier` : seulement sur un monstre d'une sorte **pas encore étudiée** (`Regles.etudie(partie, type)`). Sinon le geste est éteint (« Déjà étudié »). Une seule étude par sorte suffit.
+- L'évènement qui suit `etudie` : `{t:'livre', monstre, code:'etude:<monstre>', nom, cause:'etude' | 'fuites'}` (ou `{t:'livre', monstre, rien:true}`). Plus de `ligne`, `texte`, `sujet`, `total`, `sur`.
+- `partie.livre[monstre]` : absent = jamais rencontré ; `0` = rencontré ; plus de `0` = étudié (c'est le nombre d'énigmes de sa page, pour la simulation).
+- `Regles.grandLivre(partie)` → `[{monstre, nom, rang, etudie, code}]` : c'est **le journal** du donjon (les codes à montrer au Sage).
+- Après 2 fuites dans la même salle : le journal offre le code de la bête la plus forte **pas encore étudiée** (rien si tout l'est).
+- Les codes `etude:<monstre>` sont dans `donjon-codes.js` (affichés par le Pisteur, tapés par le Sage). Les énigmes sont dans `D.LIVRE` (quatre par monstre au plus : `D.LIVRE_TITRES`), lues par la tablette du Sage. **Aucune énigme ne nomme le pouvoir à trouver** (`test-regles.js` le vérifie).
+
+**Les potions : plus de sac**
+
+- Plus de `partie.sac`, plus de `Regles.refaireSac`, `sacPermis`, `placesSac`, plus de fait `sac:ouvert`, plus d'évènement `sac`, plus de sacoche (objet retiré, le puits d'aération n'a plus que les herbes).
+- En combat, l'Alchimiste a **toutes les potions de `partie.recettes`** (`Regles.potions(partie)`, dans l'ordre de `D.ORDRE_RECETTES`). Les 7 de `D.RECETTES_DEPART` au départ ; `givre` et `baumelum` par code.
+- Une potion qui manque : `refus` rend « Pas emporté ». Pour essayer : `?combat=<salle>&potions=feu,huile` ou `?nouveau=1&potions=…` (`&potions=toutes` : les 9 ; l'ancien `&sac=` veut dire la même chose).
+- `Regles.importer` nettoie une partie gardée d'avant (sac, sacoche, flèches normales reposées).
+
+**Les flèches : le Pisteur les porte toutes et choisit**
+
+- Un carquois (`carquois:true` dans `D.OBJETS`) **ne prend pas de place** : `Regles.enMains([objets])` donne ce qui compte pour les 2 places. `plein` ne liste que ce qu'on a en mains.
+- Gestes du Pisteur : `fleche` (la normale : ni bonus, ni défaut), et un geste `f:<objet>` par carquois spécial porté (`f:fleches-argent`, `f:fleches-lourdes`). Une flèche trempée (`p:<recette>`) est toujours une flèche normale.
+- Les bonus n'ont pas changé (flèches de lune : feu follet et chauve-souris ; transperçantes : rat cuirassé et Gardien).
+- **Les défauts** (`rebondit`, `traverse` dans `D.OBJETS`) : la flèche de lune rebondit sur le rat cuirassé et le Gardien ; la transperçante passe à travers le feu follet et la chauve-souris. Même point faible ouvert : aucun dégât, le geste est joué. Évènements : `tir {…, defaut:'rebondit', rebond:true}` puis `rebond` ; `tir {…, defaut:'traverse'}` puis `mot {texte:'À travers !'}`.
+- `_carquois(bete)` n'existe plus (plus de choix automatique) ; `_carquoisPortes()` liste les carquois spéciaux.
+
+**Pas encore fait** : les armes du Sage se choisissent toujours au lutrin (`Regles.choisir`, une seule des deux).
+

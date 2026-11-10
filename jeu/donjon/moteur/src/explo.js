@@ -21,7 +21,7 @@ var jeu;
 var PHRASES = {
   puits:'Le fond du puits. Trois passages s\'enfoncent dans la brume… Par où aller ?',
   galerie:'Des éboulis, rien que des éboulis… Et quelque chose qui brille !',
-  aeration:'Un rayon de lune tombe par une grille. Des herbes y poussent, et quelqu\'un a oublié sa sacoche.',
+  aeration:'Un rayon de lune tombe par une grille. Des herbes y poussent, là où rien ne devrait pousser.',
   reserve:'Une vieille réserve. Un coffre attend là, depuis bien longtemps.',
   givre:'Brrr ! Il fait froid ici. Une fleur de givre brille au fond.',
   bibliotheque:'Des livres qui flottent sur l\'eau qui luit. Les Fondateurs lisaient beaucoup.',
@@ -52,61 +52,34 @@ function conte(t){
 }
 
 /* ====================================================================== 2. LE SAC DE L'ALCHIMISTE */
-function ecranSac(o){
-  o = o || {};
-  var p = X.partie, places = Regles.placesSac(p), connues = D.ORDRE_RECETTES.filter(function(r){ return p.recettes.indexOf(r) >= 0; });
-  var choix = ((p.sac && p.sac.length ? p.sac : DJ.dernierSac) || []).filter(function(r){ return connues.indexOf(r) >= 0; }).slice(0, places);
+/* Romain, 10 novembre (17 h 47 et 17 h 56) : plus de sac de 3 recettes à choisir (« un peu trop compliqué »), plus de sacoche.
+   L'Alchimiste descend avec TOUTES les potions qu'il a su créer. Cet écran ne sert plus qu'au départ : il les montre, et son
+   bouton jaune lance la descente (c'est aussi le premier toucher, celui qui réveille le son). */
+function ecranDepart(){
+  var p = X.partie, connues = Regles.potions(p);
   quitterCarte();
   X.ecran = 'sac'; DJ.taire(); DJ.fermer();
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
-  var s = el('div', 'ecran'); s.id = 'sac'; s.className = 'ecran n' + connues.length;
-  var phrase = o.premier ? 'Avant de descendre, l\'Alchimiste remplit son sac : ' + nb(places) + ' recettes, pas une de plus.'
-    : 'L\'Alchimiste vide son sac. Les mêmes recettes, ou d\'autres ? ' + nb(places, true) + ', pas une de plus.';
+  var s = el('div', 'ecran'); s.id = 'sac'; s.className = 'ecran depart n' + connues.length;
+  var phrase = 'L\'Alchimiste descend avec toutes ses potions : ' + nb(connues.length) + ' fioles, prêtes à servir. Plus besoin de choisir !';
   s.innerHTML = '<img class="fond" src="' + DJ.charger.decor('rats') + '" alt=""><div class="voile"></div>' +
-    '<h1>Le sac d\'alchimiste</h1>' + DJ.curseursVolume() +
+    '<h1>Les potions de l\'Alchimiste</h1>' + DJ.curseursVolume() +
     '<div class="bulle" id="conteur"></div>' +
     '<div class="alchi"><img src="' + DJ.img('heros-alchimiste.png') + '" alt=""></div>' +
-    '<div class="sac-poche"><b>Dans le sac</b><div class="sac-cases"></div></div>' +
     '<div class="recettes">' + connues.map(function(id){
       var r = D.RECETTES[id];
-      return '<div class="recette" role="button" data-act="recette-sac" data-id="' + id + '"><span class="coche">✓</span>' + DJ.potion(id) +
-        '<b>' + r.nom + '</b><small>' + r.long + '</small>' + DJ.lireBtn(r.nom + '. ' + r.long) + '</div>';
+      return '<div class="recette" data-id="' + id + '">' + DJ.potion(id) + '<b>' + r.nom + '</b><small>' + r.long + '</small>' + DJ.lireBtn(r.nom + '. ' + r.long) + '</div>';
     }).join('') + '</div>' +
-    '<div class="compte"></div>' +
-    '<button class="aller" data-act="sac-pret" disabled>' + (o.premier ? 'Descendre ⬇' : 'C\'est prêt ➜') + '</button>';
+    '<button class="aller guide" data-act="sac-pret">Descendre ⬇</button>';
   jeu.appendChild(s);
   DJ.brancherCurseurs(s);
   DJ.musiqueLieu((X.partie && X.partie.lieu) || 'puits');
   conte(phrase);
-  function maj(neuve){
-    qa('#sac .recette').forEach(function(b){ var c = choix.indexOf(b.getAttribute('data-id')) >= 0; b.classList.toggle('choisie', c); b.classList.toggle('guide', !c && choix.length < places); });
-    var cases = ''; for(var k = 0; k < places; k++){ var id = choix[k]; cases += id ? '<div class="sac-case pleine"' + (id === neuve ? '' : ' style="animation:none"') + '>' + DJ.potion(id) + '</div>' : '<div class="sac-case"></div>'; }
-    q('#sac .sac-cases').innerHTML = cases;
-    q('#sac .sac-cases').classList.toggle('quatre', places > 3);
-    var b = q('#sac .aller'); b.disabled = choix.length < places; b.classList.toggle('guide', choix.length === places);
-    q('#sac .compte').innerHTML = '🎒 <b>' + choix.length + '</b> / <b>' + places + '</b>';
-  }
-  maj();
   return new Promise(function(fin){
-    X.sac = {
-      toucher:function(id, bouton){
-        var k = choix.indexOf(id);
-        son('clic');
-        if(k >= 0){ choix.splice(k, 1); maj(); conte(D.RECETTES[id].nom + ' retourne sur l\'étagère.'); return; }
-        if(choix.length >= places){ DJ.relancer(bouton, 'non'); conte('Le sac est plein à craquer ! Pour celle-ci, il faudrait en reposer une.'); return; }
-        choix.push(id); maj(id);
-        conte(D.RECETTES[id].nom + ' : ' + D.RECETTES[id].long + (choix.length === places ? ' Le sac est prêt !' : ''));
-      },
-      pret:function(){
-        if(choix.length < places) return;
-        var ev = Regles.refaireSac(p, choix.slice());
-        if(ev[0] && ev[0].t === 'refus'){ conte(ev[0].mot); return; }
-        X.sac = null; DJ.taire(); garder(); fin();
-      }
-    };
+    X.sac = {pret:function(){ X.sac = null; DJ.taire(); garder(); fin(); }};
   });
 }
-function nb(n, maj){ var t = ['zéro', 'une', 'deux', 'trois', 'quatre'][n] || n; return maj ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
+function nb(n, maj){ var t = ['zéro', 'une', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'][n] || String(n); return maj ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
 
 /* ====================================================================== 3. LA CARTE */
 function elCarte(){
@@ -132,7 +105,7 @@ function carte(o){
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
       '<button class="aller" id="b-entrer" data-act="entrer" hidden>Entrer ➜</button>' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button></div>';
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
   DJ.musiqueLieu(X.ici);
@@ -239,7 +212,8 @@ function aPlace(id){
   var O = D.OBJETS[id], p = X.partie; if(!O) return false;
   if(O.discret) return false;                 /* (la pierre de rune : rien ne dit qu'il reste quelque chose à trouver) */
   if(O.code || O.or) return true;
-  return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && p.heros[h].objets.length < D.CHIFFRES.places; });
+  if(O.carquois) return true;                 /* (un carquois ne prend pas de place : le Pisteur les porte tous) */
+  return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && Regles.enMains(p.heros[h].objets).length < D.CHIFFRES.places; });
 }
 function aFaire(lieu){
   var c = Regles.contenu(X.partie, lieu);
@@ -270,8 +244,8 @@ function lancerCombat(salle){
     garder();
     if(res === 'victoire') return arriver(p.lieu, {apresCombat:true});
     /* fuite ou défaite : on repart de l'endroit de la dernière sauvegarde ; les monstres battus depuis sont revenus, tout
-       le reste est gardé (objets, brume, pièges passés, passages ouverts, codes) ; on refait le sac et on repart de là */
-    return ecranSac({}).then(function(){ carte({texte:'Retour ' + articleLieu(p.lieu) + '. Les monstres sont revenus… mais vos poches, elles, sont toujours pleines.'}); });
+       le reste est gardé (objets, brume, pièges passés, passages ouverts, codes) ; on repart de là, sans rien refaire */
+    carte({texte:'Retour ' + articleLieu(p.lieu) + '. Les monstres sont revenus… mais vos poches, elles, sont toujours pleines.'});
   });
 }
 function articleLieu(l){ var n = nomLieu(l); return /^L[ae'’]/.test(n) ? 'à ' + n.charAt(0).toLowerCase() + n.slice(1) : n; }
@@ -305,8 +279,7 @@ function construireScene(lieu, ev, premier){
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + fondDe(lieu) + '" alt=""><div id="sol-fx"></div><div id="objets"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>' + esc(nomLieu(lieu)) + '</b></div>' + DJ.curseursVolume() + '</div>' +
     '<div id="bas-scene"><div class="bulle" id="conteur"></div><div class="b-outils">' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button>' +
-      (cont.repos ? '<button class="sombre" data-act="refaire-sac">🧪 Refaire le sac</button>' : '') +
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button>' +
       '<button class="aller" id="b-repartir" data-act="repartir">Continuer ➜</button></div></div><div id="ecran-fx"></div>';
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
@@ -357,9 +330,11 @@ function plaquesDuLieu(cont){
 }
 function majPlaque(h){
   if(!S) return;
-  var p = X.partie, l = p.heros[h].objets, n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
+  var p = X.partie, tous = p.heros[h].objets, l = Regles.enMains(tous), n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
+  /* les carquois spéciaux du Pisteur : il les porte tous, sans prendre de place (Romain, 10 novembre) ; ils sont montrés à part */
+  var carq = tous.filter(function(o){ return D.OBJETS[o] && D.OBJETS[o].fleche; });
   if(!e){ e = el('div', 'plaque'); e.id = 'plaque-' + h; e.style.left = hCx(h) + 'px'; q('#hud').appendChild(e); S.plaques[h] = e; DJ.relancer(e, 'pop'); }
-  var cases = '';
+  var cases = carq.map(function(id){ return '<div class="pl-case pleine carq" title="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</div>'; }).join('');
   for(var k = 0; k < n; k++){
     var id = l[k];
     cases += id ? '<button class="pl-case pleine" data-act="plaque-objet" data-id="' + id + '" data-heros="' + h + '" aria-label="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</button>' : '<div class="pl-case"></div>';
@@ -800,8 +775,8 @@ function fenetreObjets(){
     o.codes.forEach(function(c){ var O = D.OBJETS[c.objet] || {nom:(CODES.CODES[c.code] || {}).nom || 'Un code'}, t = O.nom + ', pour ' + POUR[c.pour] + ' : ' + (CODES.code(c.code) || []).map(function(k){ return CODES.SYM[k].n; }).join(', ') + '.';
       s += '<div class="ligne">' + esc(O.nom) + ' → ' + POUR[c.pour] + ' : <span class="code-ligne">' + CODES.emojis(c.code) + '</span>' + DJ.lireBtn(t) + '</div>'; });
   }
-  var sac = 'Le sac : ' + ((o.sac || []).map(function(r){ return D.RECETTES[r].nom; }).join(', ') || 'vide') + '.';
-  s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
+  var sac = 'Les potions de l\'Alchimiste : ' + ((o.recettes || []).map(function(r){ return D.RECETTES[r].nom; }).join(', ') || 'aucune') + '.';
+  s += '<div class="sous">Les potions de l\'Alchimiste · ' + (o.recettes || []).length + '</div><div class="ligne">' + (o.recettes || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
   s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') +
@@ -837,19 +812,19 @@ function symbole(k){
       DJ.fenetre('<h2>Page de sauvegarde</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="code-gros"><span>📖<small>sauvegardé</small></span></div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
     } else if(x.t === 'recette'){
       bruit('codeOk', {}, ['magie']);
-      var R = D.RECETTES[x.id], t2 = 'Nouvelle recette : ' + R.nom + ' ! ' + R.long + ' Pour la mettre dans le sac, il faut un feu de camp.';
+      var R = D.RECETTES[x.id], t2 = 'Nouvelle recette : ' + R.nom + ' ! ' + R.long + ' L\'Alchimiste l\'a tout de suite avec lui.';
       DJ.fenetre('<h2>Nouvelle recette</h2><div class="ligne">' + t2 + DJ.lireBtn(t2) + '</div><div class="code-gros">' + DJ.potion(x.id) + '</div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
     } else DJ.fermer();
   }, 350);
 }
 function finDonjon(){
-  var p = X.partie, n = 0; Object.keys(p.livre || {}).forEach(function(k){ n += p.livre[k] || 0; });
+  var p = X.partie, n = 0; Object.keys(p.livre || {}).forEach(function(k){ if(p.livre[k] > 0) n++; });
   fermerScene(); quitterCarte(); X.ecran = 'fin';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
   var t = 'Léo est retrouvé, tout au fond du donjon ! Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !';
   var e = el('div', 'ecran'); e.id = 'fin-donjon';
   e.innerHTML = '<div class="pa-nom">Vous avez retrouvé Léo !</div><div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
-    '<div class="bilan"><div><b>' + n + '</b>📖 pages</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
+    '<div class="bilan"><div><b>' + n + '</b>🔍 monstres étudiés</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
     '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
   jeu.appendChild(e);
   var fan = bruit('victoire', {}, ['fanfare']);
@@ -859,7 +834,6 @@ function finDonjon(){
 /* ====================================================================== 7. LES DOIGTS */
 DJ.toucher(function(a, id, b){
   if(!X.partie) return false;
-  if(a === 'recette-sac'){ if(X.sac) X.sac.toucher(id, b); return true; }
   if(a === 'sac-pret'){ if(X.sac) X.sac.pret(); return true; }
   if(a === 'livre-carte'){ son('page'); DJ.grandLivre(X.partie); return true; }
   if(a === 'objets'){ son('clic'); fenetreObjets(); return true; }
@@ -877,15 +851,8 @@ DJ.toucher(function(a, id, b){
     if(X.pleinChoix){ var pc = X.pleinChoix; X.pleinChoix = null; choisir(pc.e, pc.d, pc.i, id); return true; }
     prendre(x.objet, x.heros, id); return true;
   }
-  if(a === 'refaire-sac'){
-    if(X.occupe) return true;
-    if(!Regles.sacPermis(X.partie)){ conte('Le sac est bien fermé. On le refait au feu de camp, ou après une fuite.'); return true; }
-    var lieu = S ? S.lieu : X.ici; fermerScene();
-    ecranSac({}).then(function(){ arriver(lieu, {entrer:true}); });
-    return true;
-  }
   if(a === 'recommencer'){
-    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée, le Grand Livre aussi.';
+    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée, le journal aussi.';
     DJ.fenetre('<h2>Recommencer ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="fermer">Non, on continue</button><button class="aller" data-act="recommencer-oui">Oui, on recommence</button></div>');
     return true;
   }
@@ -902,8 +869,10 @@ function demarrer(P){
   var p = P.nouveau ? null : DJ.relire();
   if(!p){
     p = X.partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 2147483646) + 1);
+    /* pour les essais : ?nouveau=1&potions=feu,huile,baume — un Alchimiste qui n'a pas su créer toutes ses potions */
+    if(P.potions){ var lp = P.potions === 'toutes' ? D.ORDRE_RECETTES.slice() : P.potions.split(',').filter(function(r){ return D.RECETTES[r]; }); if(lp.length) p.recettes = lp; }
     DJ.garder(p);
-    return DJ.Combat.cuireHeros(), ecranSac({premier:true}).then(function(){ return ouvrirScene('puits', [], true); });
+    return DJ.Combat.cuireHeros(), ecranDepart().then(function(){ return ouvrirScene('puits', [], true); });
   }
   X.partie = p;
   DJ.Combat.cuireHeros();

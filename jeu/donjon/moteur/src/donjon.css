@@ -138,3 +138,26 @@
   animation:nom-pop .26s cubic-bezier(.3,1.6,.6,1)}
 @keyframes nom-pop{from{transform:translate(-50%,-70%) scale(.4);opacity:0}to{transform:translate(-50%,-100%);opacity:1}}
 .nom-objet.part{transition:opacity .25s;opacity:0}
+
+/* le journal : un code de plus pour le Sage, le bouton bat doucement jusqu'à ce qu'on l'ouvre */
+.b-livre.a-lire{animation:pulse 1.2s ease-in-out infinite;border-color:#ffd54a}
+.b-livre.a-lire .nb{background:#ffd54a}
+.ligne.etude .code-ligne{font-size:1.5em;letter-spacing:.12em;margin-left:.3em}
+
+/* ---------- les petites cartes : toutes les potions de l'Alchimiste, les flèches spéciales et trempées du Pisteur ----------
+   (Romain, 10 novembre : plus de sac à choisir.) L'image d'abord, le nom à côté ; deux rangées de cinq au plus. */
+.b-petites{display:grid;grid-template-columns:repeat(5,84px);grid-auto-rows:59px;gap:6px}
+.b-petites.n1,.b-petites.n2,.b-petites.n3,.b-petites.n4{grid-template-columns:repeat(2,108px)}
+.carte.mini{width:auto;height:59px;padding:1px 2px 2px;border-radius:11px;justify-content:center}
+.carte.mini .c-ic{position:relative;height:33px;line-height:33px;font-size:24px}
+.carte.mini .c-ic .fiole{width:24px;height:33px;margin:0 auto}
+.carte.mini .c-ic .fl{position:absolute;left:-15px;bottom:-1px;font-size:12px;font-style:normal;line-height:1}
+.carte.mini b{margin:1px 0 0;font-size:13px;line-height:1.05;white-space:nowrap}
+.carte.mini.long b{font-size:10.5px;letter-spacing:-.02em}
+.b-lbl.dit{color:#ffd36a}
+/* l'équipement : les carquois spéciaux du Pisteur, montrés à part (ils ne prennent pas de place) */
+.pl-case.carq{width:44px;height:44px;align-self:center;border-style:dashed;background:rgba(20,14,28,.72)}
+.pl-case.carq img{width:34px;height:34px;object-fit:contain}
+/* l'écran de départ : les potions de l'Alchimiste, sans rien à choisir */
+#sac.depart .recette{cursor:default}
+.plaque.choisir .pl-case.carq{animation:none;box-shadow:none}

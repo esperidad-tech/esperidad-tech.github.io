@@ -3,12 +3,13 @@
      secret) ; l'encre invisible (la rune qu'on promène : l'encre apparaît là où elle passe, et reste) ; le coin déchiré,
      complété par le code page:dechiree.
    - Le Grand Livre et ses pages blanches de sauvegarde (3, +1 avec page:blanche) : chaque page donne un code sauve:N.
-   - Le bouton « 📥 Un code » : page:dechiree, page:blanche, porte:odette (chacun une seule fois).
+   - Le bouton « 📥 Un code » : page:dechiree, page:blanche, porte:odette, rune:lumiere (chacun une seule fois), et les
+     codes d'étude des monstres (etude:<monstre>) : le Grand Livre montre le monstre et ses énigmes (donnees.js, D.LIVRE).
    Tout est gardé dans localStorage ('brumeval-donjon-sage'). Rapidité : glisser / zoomer = un seul transform ;
    la rune ne peint que la petite toile de l'encre qu'elle touche ; au repos, rien ne tourne. */
 (function(){
 'use strict';
-var C = window.CARTE_DONJON, P = C.PLAN, U = C.util, DC = window.DONJON_CODES, PS = window.PLAN_SAGE, PG = window.PAGE;
+var C = window.CARTE_DONJON, P = C.PLAN, U = C.util, DC = window.DONJON_CODES, PS = window.PLAN_SAGE, PG = window.PAGE, DD = window.DonjonDonnees;
 var q = PG.q, qa = PG.qa, esc = PG.esc, el = PG.el, dit = PG.dit;
 var PV = P.vue, RES = 2.6;     /* l'encre invisible : px par unité */
 var mem = PG.memoire('brumeval-donjon-sage');
@@ -362,6 +363,11 @@ function livre(guide){
     else html += '<button type="button" class="page blanche" data-page="' + i + '"><b>Page blanche</b><small>' + nom + '</small><i aria-hidden="true">✦</i></button>';
   }
   html += '</div>';
+  /* les monstres étudiés : une page chacun (le portrait et les énigmes) */
+  var betes = monstresEtudies();
+  html += '<div class="livre-betes"><h3>🔍 Les monstres étudiés</h3>' +
+    (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
+      : dit('Aucun pour l’instant. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code.')) + '</div>';
   if(S.codes['porte:odette']) html += '<div class="livre-note">' + dit('Noté de ta main : Odette est vivante, derrière la porte aux quatre signes.') + '</div>';
   var w = PG.fenetre(html, {classe:'livre parch'}), f = w.el;
   if(guide) PG.guider(f.querySelector('[data-page="' + guide + '"]'));
@@ -369,7 +375,31 @@ function livre(guide){
     var b = e.target.closest('button'); if(!b) return;
     if(b.hasAttribute('data-page')){ PG.son('page'); var n = +b.getAttribute('data-page'); w.fermer(); utiliser(n); }
     else if(b.hasAttribute('data-voir')){ PG.son('page'); var n2 = +b.getAttribute('data-voir'); w.fermer(); voirPage(n2, false); }
+    else if(b.hasAttribute('data-bete')){ PG.son('page'); var m = b.getAttribute('data-bete'); w.fermer(); pageMonstre(m, false); }
   });
+}
+
+/* ======================================================================
+   Les monstres étudiés (Romain, 10 novembre) : « le code, il le tape sur sa tablette, et là il voit apparaître l'image de
+   l'ennemi. Ensuite, toutes les propositions pour le battre, mais sous la forme d'énigmes : qu'il faille un peu réfléchir. »
+   Les énigmes sont dans moteur/src/donnees.js (D.LIVRE) ; les portraits viennent des fiches du bestiaire.
+   ====================================================================== */
+var PORTRAITS = /donjon-sage\.html/.test(location.pathname) ? 'pages/portraits/' : 'i/portrait-';
+var ICONES_ENIGMES = ['🗝️', '⚠️', '🔀', '🎒'];
+function monstresEtudies(){ return Object.keys(DD.LIVRE).filter(function(m){ return !!S.codes['etude:' + m]; }); }
+function pageMonstre(m, nouveau){
+  var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [], T = (DD.LIVRE_TITRES_DE && DD.LIVRE_TITRES_DE[m]) || DD.LIVRE_TITRES;
+  var rang = M.rang === 'boss' ? 'Le maître du donjon' : M.rang === 'elite' ? 'Un monstre d’élite' : 'Un monstre du donjon';
+  var html = '<div class="titre"><h2>' + esc(M.nom) + '</h2>' + PG.lireBtn(M.nom) + '</div>' +
+    '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt="" width="560" height="502"><small>' + esc(rang) + '</small></div>' +
+    '<div class="bete-enigmes">' +
+      (nouveau ? dit('Ton Grand Livre s’ouvre tout seul à sa page. Les Fondateurs n’écrivaient jamais rien clairement : à toi de deviner, et de le dire aux autres.', 'bete-intro') : '') +
+      L.map(function(t, i){ return '<div class="enigme"><h3>' + (ICONES_ENIGMES[i] || '•') + ' ' + esc(T[i] || '') + '</h3>' + dit(t) + '</div>'; }).join('') +
+    '</div></div>' +
+    '<div class="rangee"><button type="button" class="aller" data-fen-fermer>' + (nouveau ? 'C’est noté' : 'Refermer la page') + '</button></div>';
+  var w = PG.fenetre(html, {classe:'bete-fen parch', surFermer:nouveau ? null : function(){ livre(); }});
+  if(nouveau){ PG.son('magie'); var r = w.el.getBoundingClientRect(); PG.etincelles(w.el, r.width * .25, r.height * .4, 22, {dist:130, duree:1100}); PG.guider(w.el.querySelector('.aller')); }
+  return w;
 }
 function utiliser(n){
   PG.confirmer({titre:'Utiliser cette page ?', texte:'Le sort ne s’écrit qu’une fois. Le Pisteur tapera son code quand l’équipe sera hors combat.', oui:'Oui, j’écris le sort', non:'Non'}).then(function(oui){
@@ -395,12 +425,16 @@ function voirPage(n, ecrire){
    Les codes (pour le Sage) et leurs petites scènes
    ====================================================================== */
 function unCode(){
-  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi ? Tape les trois symboles qu’il te montre.',
+  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi, ou ton héros a étudié un monstre ? Tape les trois symboles qu’il te montre.',
     deja:function(id){ return !!S.codes[id]; },
     recevoir:function(id){ S.codes[id] = true; garder(); scene(id); }});
 }
 function scene(id){
-  if(id === 'rune:lumiere'){
+  if(id.indexOf('etude:') === 0){
+    var m = id.slice(6);
+    pageMonstre(m, true);
+    conte('Une page de plus dans ton Grand Livre : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras là-bas, avec ses énigmes.');
+  } else if(id === 'rune:lumiere'){
     var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
       dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Prendre la rune</button></div>', {classe:'scene parch', surFermer:function(){
@@ -487,7 +521,7 @@ function demarrer(){
   PG.orientation();
   table = q('#table'); couche = q('#couche'); runeEl = q('#rune'); curseur = q('#curseur'); bulleEl = q('#bulle');
   q('#grille .cle').innerHTML = PS.cle();
-  window.SAGE = {etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit(), pv:PV}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
+  window.SAGE = {monstre:pageMonstre, etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit(), pv:PV}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
   construirePlan();
   majGrille();
   mesurerBords();

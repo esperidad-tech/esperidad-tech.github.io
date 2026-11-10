@@ -47,7 +47,7 @@ D.VISEE = {pisteur:6, alchimiste:2.5, sage:1.5};       /* les monstres visent pl
 /* ===================================================================== 2. LES GESTES
    vise : 'bete' (un monstre), 'devant' (les bêtes à portée de main), 'heros' (un ami debout), 'salle' (pas de cible) */
 D.GESTES = {
-  etudier:{ic:'🔍', nom:'Étudier', d:'observe un monstre', vise:'bete'},
+  etudier:{ic:'🔍', nom:'Étudier', d:'un code pour le Sage', vise:'bete'},
   rune:{ic:'✨', nom:'Rune de lumière', d:'une vive lumière', vise:'bete'},
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
   louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
@@ -57,27 +57,29 @@ D.GESTES = {
   chatouiller:{ic:'🪶', nom:'Chatouiller', d:'guili-guili !', vise:'salle'}
 };
 
-/* ===================================================================== 3. LES RECETTES (le sac de l'Alchimiste)
+/* ===================================================================== 3. LES RECETTES (les potions de l'Alchimiste)
+   Romain, 10 novembre (17 h 47 et 17 h 56) : plus de sac de 3 recettes à choisir (« un peu trop compliqué »). L'Alchimiste a
+   TOUTES les potions qu'il a réussi à créer pendant ses missions (partie.recettes). S'il lui en manque une, il reste un
+   chemin plus long, en deux étapes, écrit en énigme dans le Grand Livre du Sage (D.LIVRE, la dernière ligne).
    vise : 'bete', 'salle', 'heros' (un ami debout), 'sol' (un ami au sol), 'equipe' (tout le monde, pas de cible)
    fleche : le Pisteur peut y tremper une flèche. pouvoir : le nom du coup que reçoit le monstre. */
 D.RECETTES = {
-  feu:{nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
+  feu:{petit:'Feu', nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
   fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:false, pouvoir:'nuage', coul:'#aab4d2'},
   huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse…', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630'},
   colle:{nom:'Colle', d:'pattes collées', long:'Les pattes restent collées au sol.', vise:'bete', fleche:true, pouvoir:'colle', coul:'#ece4d0'},
   acide:{nom:'Acide', d:'ronge le fer', long:'Il ronge le fer et la rouille.', vise:'bete', fleche:true, pouvoir:'acide', coul:'#9be04a'},
   baume:{nom:'Baume', d:'soigne beaucoup', long:'Il soigne beaucoup un ami.', vise:'heros', fleche:false, soin:40, coul:'#5fd08a'},
-  coeur:{nom:'Cœur vaillant', d:'relève un ami', long:'Il relève un ami tombé au sol.', vise:'sol', fleche:false, releve:40, coul:'#ff5a7a'},
+  coeur:{petit:'Cœur', nom:'Cœur vaillant', d:'relève un ami', long:'Il relève un ami tombé au sol.', vise:'sol', fleche:false, releve:40, coul:'#ff5a7a'},
   /* celles qu'on gagne au chaudron de l'Alchimiste (codes recette:givre et recette:baumelum) */
   givre:{nom:'Givre', d:'gèle tout', long:'Un froid qui gèle tout ce qu\'il touche.', vise:'bete', fleche:true, pouvoir:'givre', coul:'#bff4ff', gagnee:true},
-  baumelum:{nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:15, coul:'#7affc0', gagnee:true}
+  baumelum:{petit:'Lumineux', nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:15, coul:'#7affc0', gagnee:true}
 };
 D.RECETTES_DEPART = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
 D.ORDRE_RECETTES = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur', 'givre', 'baumelum'];
 
 /* ===================================================================== 4. LES CHIFFRES COMMUNS */
 D.CHIFFRES = {
-  sac:3,                                   /* places de recettes (4 avec la sacoche) */
   places:2,                                /* places d'objet par héros */
   /* le critique du Pisteur sur un point faible ouvert, selon le rang de la bête */
   critique:{normal:{fleche:60, dague:75}, elite:{fleche:110, dague:140}, boss:{fleche:300, dague:380}},
@@ -101,18 +103,19 @@ D.CHIFFRES = {
    equipe : le nom pour HerosAnime.equiper(nom). */
 D.OBJETS = {
   /* Romain, 10 novembre : « flèches de lune » et « flèches transperçantes » (les identifiants ne changent pas : 'fleches-argent',
-     'fleches-lourdes'). Le Pisteur part avec ses flèches normales, qui prennent une de ses deux places : dans la réserve,
-     il en prend un, il est complet ; pour prendre l'autre, il repose quelque chose (ses flèches normales, par exemple). */
-  'fleches-normales':{nom:'Flèches normales', pour:'pisteur', equipe:null, d:'Les flèches de tous les jours.'},
-  'fleches-argent':{nom:'Flèches de lune', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
-    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5,
-    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort.'},
-  'fleches-lourdes':{nom:'Flèches transperçantes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
-    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5,
-    d:'Contre l\'armure : le critique frappe une fois et demie plus fort. Sur le rat cuirassé, elles touchent même fermé.'},
+     'fleches-lourdes'). À 17 h 56 : « fais en sorte qu'on puisse prendre toutes les flèches, et c'est juste qu'on peut choisir
+     le type de flèche » en combat. Un carquois (carquois:true) ne prend donc plus de place dans les mains.
+     Chaque sorte a son défaut (accepté par Romain) : les flèches de lune rebondissent sur l'armure (rebondit), les
+     transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
+  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Ni bonus, ni mauvaise surprise.'},
+  'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
+    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume',
+    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
+  'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
+    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure',
+    d:'Contre l\'armure : le critique frappe une fois et demie plus fort, et sur le rat cuirassé elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
   'baton-chene':{nom:'Bâton de chêne', pour:'sage', equipe:'baton-chene', d:'Le bouclier de runes protège deux amis à la fois.'},
-  'sacoche':{nom:'Sacoche', pour:'alchimiste', equipe:'sacoche', d:'Une quatrième recette dans le sac.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -358,7 +361,7 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 D.LIEUX = {
   puits:{nom:'Le fond du puits', depart:true, objets:['rune']},
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
-  aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
+  aeration:{nom:'Le puits d\'aération', objets:['herbes']},            /* (la sacoche est retirée : plus de sac à remplir, Romain, 10 novembre) */
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
   canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux', roue:true},      /* la roue qui lève la grille du passage secret (D.ROUE) */
@@ -400,66 +403,80 @@ D.CODES = {
 };
 
 /* ===================================================================== 10. LE GRAND LIVRE
-   Par monstre, dans l'ordre où le Sage les apprend : ce qui l'ouvre ; le piège à éviter ; l'autre chemin ; le chemin
-   sans potion. Un conteur parle : phrases courtes, un peu d'humour, des indices plutôt que la réponse.
-   La première ligne reprend la phrase de la fiche du bestiaire (validée par Romain). Les deux lignes du rat d'égout
-   sont celles de l'essai, mot pour mot. */
+   Romain, 10 novembre (17 h 47) : l'étude d'un monstre ne donne plus une ligne dans le donjon, mais UN CODE (dans le
+   journal). Le Sage le tape sur sa tablette : il voit l'image du monstre et « toutes les propositions pour le battre, mais
+   sous la forme d'énigmes. Pas écrit clairement "la lumière leur fait mal" : qu'il faille un petit peu réfléchir ».
+   Par monstre, dans l'ordre : ce qui l'ouvre ; le piège à éviter ; l'autre chemin ; le chemin sans la bonne potion
+   (deux étapes au lieu d'une). Chaque pouvoir est une devinette (« Qui suis-je ? ») : jamais son nom.
+     la lumière   : elle entre partout sans ouvrir de porte ; elle chasse le noir ; on lui doit toutes les ombres…
+     le bruit     : il sort du chaudron sans être de la soupe (le coup de louche) ; on l'entend sans le voir
+     la fumée     : la fille du feu, la grise, qui monte sans échelle
+     le feu       : il mange tout et meurt s'il boit ; il danse sans jambes
+     l'huile      : elle ne se mélange jamais avec l'eau ; dorée comme le miel
+     la colle     : ce qu'elle attrape, elle ne le lâche plus
+     l'acide      : il grignote le fer sans avoir de dents
+     le givre     : il dessine des fleurs sur les vitres ; il change l'eau en caillou
+     le bouclier  : un mur sans pierres, tracé en l'air par un vieux savant
+     la chatouille : ce qui fait rire et crier « arrête ! » à la fois */
 D.LIVRE = {
   rat:[
-    'Les rats vivent dans le noir. Ce qui brille leur fait peur : ils se dressent, le ventre à l\'air.',
-    'Un grand bruit les rend enragés jusqu\'au bout : ils mordent deux fois.',
-    'Un rat qui court sur un sol bien gras finit les quatre pattes en l\'air.'
+    'J\'entre partout sans ouvrir de porte, et le noir s\'enfuit devant moi. Quand il me voit, le rat se dresse, le ventre à l\'air. Qui suis-je ?',
+    'Je sors d\'un chaudron, mais je ne suis pas de la soupe. On m\'entend sans me voir. Avec moi, les rats deviennent enragés : ils mordent deux fois. Qui suis-je ?',
+    'L\'eau et moi, on ne se mélange jamais. Un rat qui me court dessus finit les quatre pattes en l\'air. Qui suis-je ?'
   ],
   ratcuir:[
-    'Sa cuirasse rouille depuis mille ans. Il suffit de l\'aider un peu : ce qui ronge le fer s\'en chargera.',
-    'Surtout, ne le chauffez pas ! Une armure rougie cogne plus fort, et elle brûle.',
-    'Le grand froid rend le vieux fer cassant comme du verre.',
-    'Rien dans le sac ? Un casque, ça sonne creux. Deux bons coups de cuisine, et il roule par terre. Ensuite, ce qui brille fait le reste.'
+    'Je n\'ai pas de dents, et pourtant je grignote le fer. Avec moi, sa vieille cuirasse tombe en morceaux. Qui suis-je ?',
+    'Je danse sans jambes et je mords sans dents. Si je touche son armure, elle rougit : il cogne plus fort, et il brûle. Qui suis-je ?',
+    'L\'hiver, je dessine des fleurs sur les vitres. Sous moi, le vieux fer casse comme du verre. Qui suis-je ?',
+    'Rien de tout ça dans le sac ? Un casque, c\'est une cloche. Qui la fait sonner une fois lui donne le tournis. Deux fois, et le casque roule par terre. Alors seulement, celle qui chasse le noir fait le reste.'
   ],
   chauvesouris:[
-    'Elles volent sans rien voir, à l\'oreille. Un bon vacarme, et elles perdent le nord.',
-    'Ne leur montrez rien qui brille. Elles n\'y voient pas, mais ça les rend folles : une folle pique deux fois.',
-    'Des ailes pleines de glu ne battent plus.'
+    'Je n\'ai pas de jambes, et je traverse la salle d\'un seul coup. Elles, qui volent à l\'oreille, en perdent le nord et tombent. Qui suis-je ?',
+    'On me doit toutes les ombres, et je n\'en ai aucune. Elles ne me voient pas, mais je les rends folles : une folle pique deux fois. Qui suis-je ?',
+    'Ce que j\'attrape, je ne le lâche plus. Des ailes prises dans mes bras ne battent plus. Qui suis-je ?'
   ],
   feufollet:[
-    'On ne le voit qu\'à moitié. Dans un nuage, tout prend forme.',
-    'Il boit la lumière comme du petit-lait. Une gorgée, et il grandit.',
-    'Une flèche de lune traverse la brume. Lui aussi.',
-    'Rien dans le sac ? Il adore les runes. Qu\'il s\'accroche à un bouclier, et le voilà pris : on le voit enfin tout entier.'
+    'Je suis la fille du feu, mais plus légère que lui. Je monte sans échelle et je cache tout. Pourtant, dans mes bras, celui qu\'on voit à moitié prend forme. Qui suis-je ?',
+    'Le matin me ramène, le soir m\'emporte. Lui, il me boit comme du petit-lait : une gorgée, et il grandit. Qui suis-je ?',
+    'Nous dormons serrées dans un carquois, et nous brillons comme la nuit quand elle est ronde. La brume ne nous arrête pas. Lui non plus. Qui sommes-nous ?',
+    'Rien de tout ça ? Il adore les signes qu\'un vieux savant trace en l\'air pour protéger ses amis. Qu\'il vienne s\'y cogner : il s\'y accroche, et on le voit enfin tout entier.'
   ],
   araignee:[
-    'Pendue à son fil, elle fuit ce qui brille. Si fort qu\'elle en lâche prise.',
-    'Laissez ses œufs tranquilles : la chaleur les fait éclore. Et dans la fumée, elle remonte se cacher.',
-    'Un fil bien gras, et plus rien ne tient. Même pas elle.'
+    'Je n\'ai ni poids ni odeur, et sans moi vous ne verriez rien. Pendue à son fil, elle me fuit si fort qu\'elle en lâche prise. Qui suis-je ?',
+    'Deux pièges. Celui qui mange tout et qui meurt s\'il boit : à sa chaleur, ses œufs éclosent. Et sa fille, la grise, qui monte sans échelle : l\'araignée remonte s\'y cacher.',
+    'Je suis dorée comme le miel, mais personne ne tient debout sur moi. Un fil qui me touche ne tient plus rien. Même pas elle. Qui suis-je ?'
   ],
   tetard:[
-    'Petit, gluant et toujours affamé. Un seul coup suffit.',
+    'Petit, gluant et toujours affamé. Pas d\'énigme ici : un seul coup suffit.',
     'Ils arrivent par deux, chaque fois que leur gros papa plonge.'
   ],
   roirats:[
-    'Dix rats, une seule queue. Qu\'ils paniquent d\'abord : dans la fumée, chacun tire de son côté. Qu\'ils sursautent ensuite, et le nœud se montre.',
-    'Jamais de lumière : ils se roulent en boule, et plus rien ne passe. Et pas de vacarme trop tôt : ils chargent celui qui a tapé.',
-    'Quand le nœud est tendu, un roi aux pattes collées ne commande plus personne.',
-    'Pas de fumée ? Juste après leur assaut, ils sont étalés partout. Un grand bruit à ce moment-là, avant toute autre chose, et c\'est la panique.'
+    'Dix rats, une seule queue. Il faut deux sœurs, dans l\'ordre. D\'abord la grise, la fille du feu, qui cache tout : ils paniquent, chacun tire de son côté. Ensuite celle qu\'on entend sans la voir : ils sursautent, et le nœud se montre.',
+    'Jamais celle qui chasse le noir : ils se roulent en boule, et plus rien ne passe. Et celle qui sort du chaudron, pas trop tôt : ils chargent celui qui a tapé.',
+    'Ce que j\'attrape, je ne le lâche plus. Quand le nœud est tendu, un roi pris dans mes bras ne commande plus personne. Qui suis-je ?',
+    'Pas de grise dans le sac ? Juste après leur assaut, ils sont étalés partout. C\'est le moment de faire parler le chaudron, avant tout autre geste : c\'est la panique.'
   ],
   gardien:[
-    'D\'abord la plaque, ensuite le cœur. La rouille de l\'une craint ce qui ronge. Les runes de l\'autre craignent ce qui brille.',
-    'Dans le mauvais ordre, ses runes s\'affolent : il frappe double. Et ne le chauffez pas, il cogne encore plus fort.',
-    'Le grand froid fait éclater le vieux bronze. Ensuite, visez le cœur.',
-    'Rien dans le sac ? Qu\'il cogne sur un bouclier de runes : sa plaque s\'entrouvre un instant. C\'est le moment de faire briller son cœur.'
+    'D\'abord la plaque, ensuite le cœur. Pour la plaque : celle qui n\'a pas de dents et qui grignote le fer. Pour le cœur : celle qui chasse le noir.',
+    'Dans le mauvais ordre, ses runes s\'affolent : il frappe double. Et gardez loin de lui celui qui danse sans jambes : chauffé au rouge, il cogne encore plus fort.',
+    'Je change l\'eau en caillou sans la toucher. Sous moi, le vieux bronze éclate. Ensuite, visez le cœur. Qui suis-je ?',
+    'Rien de tout ça ? Qu\'il cogne sur un mur sans pierres, tracé en l\'air par un vieux savant : sa plaque s\'entrouvre un instant. C\'est le moment de montrer à son cœur celle qui chasse le noir.'
   ],
   bourbe:[
-    'Dans l\'eau, rien ne l\'atteint. Mais il craint ce qui brille au fond. Sur la berge, sa bave le protège : il faut la sécher. Et un crapaud tout sec ne supporte pas la fumée : il en tombe à la renverse.',
-    'Pas de fumée tant qu\'il est mouillé : il gonfle, et il saute deux fois plus fort. Et pas de vacarme : il plonge chercher ses petits.',
-    'Un bassin gelé, et le voilà coincé dehors, sans pouvoir plonger.',
-    'Pas de feu ? Deux tours au sec, et sa bave sèche toute seule. Pas de fumée ? Celui qu\'il a avalé n\'a qu\'à le chatouiller, une fois sa peau bien sèche : il rit, il recrache, il roule sur le dos.'
+    'Trois clés, dans l\'ordre. Dans l\'eau, rien ne l\'atteint : celle qui entre partout sans ouvrir de porte le fait sortir. Sur la berge, sa bave le protège : celui qui meurt s\'il boit la sèche. Et un crapaud tout sec ne supporte pas la fille du feu : il en tombe à la renverse.',
+    'La grise trop tôt, sur un crapaud encore mouillé : il gonfle, et il saute deux fois plus fort. Et celle qui sort du chaudron : il plonge chercher ses petits.',
+    'L\'hiver, je dessine des fleurs sur les vitres. Avec moi, le bassin devient dur comme la pierre : le voilà coincé dehors, sans pouvoir plonger. Qui suis-je ?',
+    'Il manque une clé ? Sans celui qui meurt s\'il boit : deux tours au sec, et sa bave sèche toute seule. Sans la grise : celui qu\'il a avalé connaît ce qui fait rire et crier « arrête ! » à la fois. Une fois sa peau bien sèche, il rit, il recrache, il roule sur le dos.'
   ]
 };
+/* le titre de chaque énigme sur la tablette du Sage */
+D.LIVRE_TITRES = ['Son point faible', 'Le piège', 'Un autre chemin', 'Sans la potion'];     /* (3 mots au plus : pas besoin de 🔊) */
+D.LIVRE_TITRES_DE = {tetard:['Ce qu\'il faut savoir', 'D\'où ils viennent']};
 /* ce que chaque ligne apprend (pour la simulation et les tests) */
 D.LIVRE_SUJETS = ['ouvre', 'piege', 'autre', 'sans-potion'];
-D.LIVRE_VIDE = 'Le Grand Livre est encore vide. Ce qu\'il apprendra, il ne l\'oubliera jamais.';
-D.LIVRE_COMPLET = 'Le Sage relit tout. Le Grand Livre n\'en dit pas plus.';
-/* après 2 fuites (ou défaites) dans la même salle, le Grand Livre offre une ligne de plus sur la bête la plus forte de la salle */
+D.LIVRE_VIDE = 'Le journal est encore vide. Pendant un combat, le Sage peut étudier un monstre.';
+D.LIVRE_COMPLET = 'Le Sage a déjà étudié ce monstre.';
+/* après 2 fuites (ou défaites) dans la même salle, le journal offre le code de la bête la plus forte de la salle que le Sage n'a pas étudiée */
 D.FUITES_POUR_UNE_LIGNE = 2;
 
 /* ===================================================================== 11. LES REFUS, en deux mots */
@@ -467,9 +484,9 @@ D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
   personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !',
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
-  combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', sacFerme:'Sac fermé', tropPlein:'Sac trop plein',
+  combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', etudie:'Déjà étudié'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;
