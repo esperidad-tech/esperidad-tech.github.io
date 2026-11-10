@@ -2244,10 +2244,39 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
     - deux fuites dans la même salle offrent une ligne du Grand Livre (décision du 8 novembre) ;
   - restent ouverts : les textes du Grand Livre à faire relire par Romain ; le soin sans fin devant un dernier monstre faible (rien ne l'interdit pour l'instant).
 - **Les aides coupées le 10 à 12 h 06.** Quand Romain a changé de modèle, les trois chantiers repris à midi (critique, armes des héros, carte et tablettes) ont été arrêtés et ne peuvent pas être relancés tels quels. Leur travail est sauvegardé. Le critique a été fini à la main (ci-dessus). Les deux autres sont repris un par un.
-- En cours :
-  - les nouvelles armes des héros (`anim/heros/` : le module est fait et passe les 82 tests de la salle ; reste la mesure de mémoire sur iPhone) ;
-  - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html` : les trois pages existent ; restent l'allègement de la carte pour l'iPhone et ses tests) ;
-  - ensuite : le combat à l'écran et l'exploration (`MOTEUR-DONJON.md` §3.2 et §3.3).
+- **Repris à la main, un par un, après la coupure des aides** (10 novembre, après-midi) :
+  - les nouvelles armes des héros (`anim/heros/`) : finies, mémoire vérifiée sur iPhone (plus grand calque : 3 960 px, pour le double bouclier) ;
+  - la carte unique et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html`) : finies et testées (carte 71 vérifications, Sage 146, Alchimiste 156) ;
+  - le combat à l'écran et l'exploration (`moteur/src/combat.js`, `explo.js`) : faits (ci-dessous).
+- **Le critique recalé (10 novembre, 14 h 28)**, après l'avis de Romain de 14 h 14. Les éléments lui vont, mais la fumée était animée bizarrement et arrivait trop tard. Ce qu'il veut : la fumée naît **au moment où le rat explose**, avec les morceaux ; elle est petite, grossit très vite pendant que les membres s'éparpillent, puis se disperse vite ; le tout plus fluide, et **calé sur le son**. Fait et en ligne dans la salle d'essai, en attente de son avis :
+  - le rat gonfle d'un seul mouvement (0,4 s, puis 0,6 s en tremblant) ;
+  - à l'explosion, tout part ensemble : un éclair, la fumée (de petite à grande en un quart de seconde), les morceaux qui jaillissent de derrière elle, le chiffre des dégâts ; la fumée s'efface en une seconde ;
+  - l'image et les trois sons (« aspire », « boum », « explosion ») sont programmés d'un seul coup, sur la même horloge ;
+  - quand Romain valide, on aligne le critique des 9 autres monstres sur celui-ci.
+- **Le donjon complet est jouable et en ligne (10 novembre, 15 h 43, commit du site e8d4703)** :
+  - les adresses : le Pisteur https://esperidad-tech.github.io/brumeval/donjon/ ; le Sage https://esperidad-tech.github.io/brumeval/donjon/sage.html ; l'Alchimiste https://esperidad-tech.github.io/brumeval/donjon/alchimiste.html. La salle d'essai (`donjon-essai.html`) reste en ligne ;
+  - ce qu'on y fait, sur la tablette du Pisteur :
+    - le sac (7 recettes, 3 places ; 4 avec la sacoche) ;
+    - **la carte en plein écran, avec sa brume** : on touche un départ de couloir ; aux embranchements, rien ne dit où ça mène (c'est le plan du Sage qui aide) ;
+    - **les 8 salles de combat** : les rats ; les canaux (un rat, deux chauves-souris) ; les égouts tournants (un rat errant) ; la cave aux toiles (l'araignée, deux feux follets) ; l'atelier (le rat cuirassé, le Gardien de rouille) ; la fausse crypte (deux chauves-souris) ; l'ossuaire (le Roi des rats, deux feux follets) ; le grand bassin (Bourbe et ses têtards) ;
+    - **toutes les salles sans combat** : la galerie (la bourse), l'aération (la sacoche, les herbes lumineuses), la réserve (un carquois à choisir), la grotte de givre, le cul-de-sac (le tas d'os, le crâne secret), le couloir aux dalles (une explication puis un bouton jaune), la bibliothèque (la page déchirée, le lutrin à choix), les trois portes, le sarcophage et l'amulette, le feu de camp (repos, sac refait), Moustache devant la porte aux quatre signes, Léo ;
+    - les codes à donner (plantes, pages, porte, Léo), « 📜 Un code » (pages de sauvegarde, recettes), « 🎒 Objets », le Grand Livre, l'écran de fin ;
+  - la partie est gardée sur la tablette : on peut fermer et reprendre. Recharger en plein combat ramène à l'entrée de la salle. « Recommencer la descente » est dans « 🎒 Objets » ;
+  - fuir, ou tomber tous les trois, ramène à la dernière page de sauvegarde, avec le sac à refaire ; le Grand Livre garde tout ;
+  - la tablette de l'Alchimiste montre maintenant les 7 recettes de départ (l'Acide manquait) ;
+  - **les tests** (`jeu/donjon/moteur/`) : les règles (324 vérifications) ; les 8 combats joués au hasard par l'écran (71) ; la visite de toutes les salles, les codes, la page rechargée, un vrai combat, la fuite (58) ; les pages du Sage et de l'Alchimiste ;
+  - **la vraie descente** (`test-descente.py`) : un robot joue tout le donjon par l'écran, avec les choix de l'équipe « maligne » de la simulation. Joué deux fois, avec deux tirages de dés : il gagne les 7 combats du premier coup (rats 4 tours, canaux 3, toiles 4, atelier 4 ou 5, crypte 2, ossuaire 4 ou 6, bassin 7), en 80 gestes environ ; après chaque geste l'écran dit ce que disent les règles ; aucune erreur ;
+  - **la fluidité** (`perf.py`, processeur ralenti ×4) : toutes les salles sont au niveau de la salle des rats que Romain a validée ; **l'ossuaire est un peu plus lourd** (c'est la première salle à alléger si une tablette rame). Les 9 nouveaux monstres ne sont pas « cuits » : pas nécessaire d'après ces mesures. Mémoire, en émulation iPhone : aucun calque de plus de 2 080 px, aucune toile gardée ;
+  - **ce qui est provisoire** :
+    - une seule musique d'exploration et une seule de combat (les musiques par salle attendent le choix de Romain dans l'Atelier des sons) ;
+    - les sons pas encore validés jouent leur version A ;
+    - le critique des 9 autres monstres n'est pas encore aligné sur celui du rat ;
+    - l'explication des dalles est en émojis ;
+    - aucun contrôle par une aide « neuve » (les aides sont coupées depuis le 10 à 12 h 06) : la vraie descente du robot le remplace en partie ;
+  - **à régler avec Romain à l'essai** :
+    - la difficulté : une équipe qui ne se trompe jamais gagne tout du premier coup ; ce sont les erreurs qui font la difficulté (les dégâts des monstres sont dans `moteur/src/donnees.js`) ;
+    - les textes du Grand Livre ;
+    - les écarts de règles listés plus haut (flèches lourdes, Baume lumineux, Bourbe…).
 - **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :
   - le coffre à deux carquois et le lutrin à choix ;
   - le tas d'os à fouiller ;

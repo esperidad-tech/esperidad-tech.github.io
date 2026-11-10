@@ -53,11 +53,18 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
   - la conception : `jeu/donjon/CONCEPTION-DONJON.md` ;
   - **le cahier des charges du moteur : `jeu/donjon/MOTEUR-DONJON.md`** (c'est la feuille de route pour assembler le donjon jouable : les règles sans affichage et la simulation de difficulté, le combat à l'écran, l'exploration, les sauvegardes, les tests) ;
   - **les règles de tous les combats : `jeu/donjon/moteur/`** (`src/donnees.js`, `src/regles.js`, sans affichage ; mode d'emploi `REGLES.md` ; `node test-regles.js` ; la difficulté : `node equilibre.js`, rapport `equilibre.md`). L'affichage ne décide jamais d'un résultat : il joue la liste d'évènements que rendent les règles ;
+  - **le donjon jouable (en ligne depuis le 10 novembre, 15 h 43, commit du site e8d4703)** : https://esperidad-tech.github.io/brumeval/donjon/ (le Pisteur), https://esperidad-tech.github.io/brumeval/donjon/sage.html, https://esperidad-tech.github.io/brumeval/donjon/alchimiste.html. Tout est dans `jeu/donjon/moteur/` :
+    - `src/noyau.js` (outils), `betes.js` (les 10 monstres), `combat.js` (le combat à l'écran), `explo.js` (sac, carte, salles, codes, sauvegardes, fin), `demarrage.js` ;
+    - `python3 construire.py` fabrique `moteur/sortie/` (`index.html`, `sage.html`, `alchimiste.html`, `a/`, `i/`). **Mettre en ligne = copier `sortie/` tel quel dans `brumeval/donjon/` du dépôt du site, puis pousser.** `sortie/` n'est pas dans Git ;
+    - si on touche à `pages/` (Sage, Alchimiste) : `python3 pages/assembler.py` (depuis `jeu/donjon/`) avant `construire.py` ;
+    - avant une mise en ligne : `node test-regles.js`, puis, toujours sous le verrou, `test-combat.py`, `test-donjon.py` et **`test-descente.py`** (un robot joue toute la descente par l'écran, chaque combat pour de vrai) ;
+    - l'état du moteur, les adresses d'essai (`?nouveau=1`, `?sanscombat=1`, `?combat=<salle>`), les mesures et **ce qui est provisoire** : `MOTEUR-DONJON.md` §9 ;
+    - **en attente de Romain** : son avis sur le critique recalé (puis aligner les 9 autres monstres), son essai du donjon (difficulté, textes du Grand Livre, écarts de règles), ses choix dans l'Atelier des sons (les musiques par salle ne sont pas branchées), et s'il veut « relancer les aides » ;
   - les codes : `jeu/donjon/donjon-codes.js` ; la carte : `jeu/donjon/carte.js` ; les tablettes du Sage et de l'Alchimiste : `jeu/donjon/donjon-sage.html`, `donjon-alchimiste.html` (sources `jeu/donjon/pages/`) ;
   - les monstres animés : `jeu/donjon/anim/betes/<id>/` (contrat : `CONTRAT.md`) ;
   - les décors de combat : `jeu/donjon/decors/` ;
   - les salles sans combat : `jeu/donjon/scenes/` ;
-  - la salle d'essai : `jeu/donjon/essai/` (le critique localisé du rat y est le modèle pour tous les monstres : `anim/rat/rat-anime.js` → `exploser`, `essai/src/effets.js` → `critique` ; outils : `essai/filmer-critique.py`, `essai/memoire-critique.py`). Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
+  - la salle d'essai : `jeu/donjon/essai/` (elle reste en ligne : https://esperidad-tech.github.io/brumeval/donjon-essai.html ; le critique localisé du rat, recalé le 10 novembre à 14 h 28, y est le modèle pour tous les monstres : `anim/rat/rat-anime.js` → `exploser`, `essai/src/effets.js` → `critique` ; outils : `essai/filmer-critique.py`, `essai/memoire-critique.py`). Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
 - **Boutons jaunes avec texte noir** pour tout bouton « aller / lancer » (§12.16). Avant chaque mini-jeu : une explication + un bouton jaune (`M.lancerMJ`).
 - Quand il demande un lien, coller l'URL.
 - Talents et boutique : plus tard.

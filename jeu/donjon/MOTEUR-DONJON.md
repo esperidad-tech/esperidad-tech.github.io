@@ -177,3 +177,68 @@ partie = {
 2. En même temps, une fois les héros, le critique et la carte terminés : **le combat à l'écran** (3.2) et **l'exploration** (3.3, 3.4).
 3. **L'assemblage** : `construire.py`, le chargement à la demande, les tests, les mesures, les sons provisoires.
 4. **Le contrôle par un agent neuf**, les corrections, la mise en ligne, la Bible et les passations.
+
+## 9. Ce qui est construit (en ligne depuis le 10 novembre, 15 h 43)
+
+Le donjon se joue du sac de départ jusqu'à Léo. Tout est dans `moteur/`.
+
+### 9.1 Les fichiers
+
+| Fichier | Rôle |
+|---|---|
+| `src/donnees.js`, `src/regles.js` | Les règles, sans affichage (§3.1). Mode d'emploi : `REGLES.md`. |
+| `src/noyau.js` | `DJ` : les petits outils communs (voix par bouton 🔊, sons, musique, images, chargement à la demande, cadre 960 × 540, fenêtres, un seul écouteur de touches, curseurs de volume, fioles des 9 recettes, la partie gardée dans `localStorage`). |
+| `src/betes.js` | `DJ.Betes` : l'adaptateur des 10 monstres (le rat d'avant le contrat et les 9 `BETES[id]`) : places dans la salle, sons, `touche`, `special`, `attaquer`, `exploser`, `accorder` (retire de l'écran un état que les règles n'ont plus). |
+| `src/combat.js` | `DJ.Combat.lancer(partie, salle)` → `'victoire'`, `'fuite'` ou `'defaite'`. L'écran de la salle d'essai, qui **joue les listes d'évènements** des règles et se recale sur `c.etat()` après chaque liste. |
+| `src/explo.js` | `DJ.Explo` : le sac, la carte et sa brume, les salles sans combat, les codes, les sauvegardes, le feu de camp, la fin. |
+| `src/demarrage.js` | Le départ (reprise de la partie gardée) et les adresses d'essai. |
+| `src/donjon.css`, `src/page.html` | L'habillage propre au donjon ; la page. |
+| `construire.py` | Fabrique `sortie/` : `index.html` (1,1 Mo), `sage.html`, `alchimiste.html`, `a/` (un script par monstre, chargé à l'entrée de sa salle), `i/` (30 images). 5 Mo en tout. `sortie/` n'est pas dans Git. |
+
+### 9.2 Les adresses d'essai
+
+- `index.html?nouveau=1` : une partie neuve (sinon on reprend la partie gardée).
+- `index.html?sanscombat=1` : les combats sont tenus pour gagnés ; pour visiter toutes les salles.
+- `index.html?combat=<salle>&sac=feu,huile,baume&objets=pisteur:fleches-argent,sage:cristal-lune&graine=7&livre=3` : un combat tout seul (`rats`, `canaux`, `egouts`, `toiles`, `atelier`, `crypte`, `ossuaire`, `bassin`), avec le Grand Livre déjà lu jusqu'à la ligne 3.
+- `&vitesse=3` : tout va trois fois plus vite (pour les tests).
+
+### 9.3 Les tests
+
+Playwright toujours sous le verrou : `flock /tmp/brumeval-pw.lock python3 …`. Refaire `python3 construire.py` avant.
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| `node test-regles.js` | Les règles : 324 vérifications. |
+| `test-combat.py` | Les 8 salles de combat, jouées au hasard par l'écran pendant 3 tours : l'écran dit ce que disent les règles, la fuite, « On fait le point », les 🔊. 71 vérifications. |
+| `test-donjon.py` | La visite de toutes les salles sans combat (objets, codes, coffres, tas d'os, crâne, dalles, portes, amulette, feu de camp, sac refait, Moustache, Léo, écran de fin), la page rechargée en route et en plein combat, un vrai combat depuis la carte, la fuite. 58 vérifications. |
+| `test-descente.py` | **La vraie descente par l'écran** : l'équipe « maligne » de la simulation (ses choix sont collés dans la page) joue tout le donjon, chaque combat geste après geste, avec les salles, les codes et les sauvegardes ; si elle tombe, elle repart de sa sauvegarde. C'est le test le plus proche d'une vraie partie. Le 10 novembre (graine 7) : les 7 combats gagnés du premier coup (rats 4 tours, canaux 3, toiles 4, atelier 4, crypte 2, ossuaire 6, bassin 7), 82 gestes, l'écran d'accord avec les règles après chaque geste ; pareil avec la graine 11 (79 gestes). `--graine N` change les dés, `--vitesse N` la vitesse. |
+| `../test-sage.py`, `../test-alchimiste.py`, `../test-carte.py` | Les pages du Sage (146 vérifications) et de l'Alchimiste (156), la carte (71). |
+| `perf.py` | Images par seconde, processeur ralenti ×4, dans chaque salle (repos, gestes, tour des monstres) ; mémoire en émulation iPhone. |
+
+**Les mesures du 10 novembre** (`perf.py`, processeur ralenti ×4, images par seconde à l'écran). La machine de test était lente ce jour-là : la salle d'essai validée par Romain (`essai/perf-tablette.py`), mesurée juste après, sert de repère. Les objectifs de `RAPIDITE.md` (55 au repos, 45 en action) ne sont donc pas lisibles sur ces chiffres : ce qui compte, c'est l'écart avec le repère.
+
+| Salle | Repos (début / tour 2) | Gestes des héros | Tour des monstres |
+|---|---|---|---|
+| *Repère : la salle d'essai (rats)* | *32 / 36* | *30 à 33 (nuage : 26)* | *46 à 51* |
+| rats | 34 / 50 | 32 à 40 | 49 |
+| canaux | 33 / 39 | 29 à 32 | 36 |
+| toiles | 35 / 39 | 31 à 33 (nuage : 26) | 39 |
+| atelier | 34 / 34 | 30 à 33 | 40 |
+| crypte | 41 / 51 | 36 à 40 | 48 |
+| ossuaire | 30 / 32 | 24 à 27 | 32 |
+| bassin | 32 / 38 | 30 à 34 | 38 |
+
+- Toutes les salles sont au niveau de la salle des rats, sauf **l'ossuaire, un peu plus lourd** (le Roi des rats et deux feux follets) : c'est la première salle à alléger si une vraie tablette rame (cuire le Roi des rats).
+- Au repos, le fil principal travaille encore un peu dans toutes les salles (recalcul de style, calques), salle d'essai comprise : c'est une piste d'allègement commune.
+- **Mémoire, en émulation iPhone** (844 × 390, densité 3), pendant les mêmes gestes : le plus grand calque animé fait 2 080 px dans toutes les salles (limite : 4 096), aucune toile (canvas) gardée.
+
+### 9.4 Les écarts avec ce cahier des charges
+
+- **Les 9 monstres ne sont pas « cuits »** (§3.2) : leurs modules tournent tels quels. À cuire seulement si une salle rame sur une vraie tablette.
+- **La carte est en plein écran** (elle déborde du cadre 960 × 540), avec ses boutons posés dessus.
+- **La musique** : une seule musique d'exploration et une seule de combat pour tout le donjon. Les musiques par salle (canaux, ossuaire, boss, feu de camp, fin) existent dans l'Atelier des sons, mais Romain n'a pas encore choisi : elles ne sont pas branchées.
+- **Les sons pas encore validés** jouent leur version A (`DJ.sonsProvisoires`).
+- **Le critique des 9 monstres** n'est pas encore aligné sur celui du rat (on attend l'avis de Romain sur le critique recalé).
+- **Pas de contrôle par un agent neuf** (§7) : les aides ont été coupées le 10 à 12 h 06. `test-descente.py` le remplace en partie.
+- **Un objet reposé** (mains pleines) n'est pas redessiné dans la salle. Le cas ne peut pas arriver dans ce prototype : aucun héros ne peut tenir plus de 2 objets. À faire si on ajoute des objets.
+- **L'explication des dalles** est faite avec des émojis, pas avec des dessins.

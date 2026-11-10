@@ -92,7 +92,7 @@ def parcours(nav, appareil):
     pg, err = page(ctx, 'donjon-alchimiste.html')
     pg.wait_for_timeout(700)
     ids = pg.eval_on_selector_all('#recettes .recette', 'l => l.map(r => r.dataset.recette)')
-    b.ok(ids == ['feu', 'fumigene', 'huile', 'colle', 'baume', 'coeur'], 'les 6 recettes du départ (comme la salle d’essai) : ' + ', '.join(ids))
+    b.ok(ids == ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'], 'les 7 recettes du départ (comme le sac du Pisteur) : ' + ', '.join(ids))
     regles(b, pg, 'départ'); muet(b, pg, 'départ')
     capture(pg, 'alchi-depart-' + t)
     taper(pg, 'faux')
@@ -138,7 +138,7 @@ def parcours(nav, appareil):
     b.ok('Recommencer' in pg.inner_text('.question'), 'recommencer demande confirmation')
     clic(pg, '.question [data-oui]'); pg.wait_for_timeout(1200)
     S = pg.evaluate('ALCHI.etat()')
-    b.ok(not S['recettes'] and not S['codes'] and pg.locator('#recettes .recette').count() == 6, 'après « Oui, on recommence » : retour aux 6 recettes du départ')
+    b.ok(not S['recettes'] and not S['codes'] and pg.locator('#recettes .recette').count() == 7, 'après « Oui, on recommence » : retour aux 7 recettes du départ')
     b.ok(not err, 'aucune erreur JavaScript' + ('' if not err else ' : ' + ' | '.join(err[:3])))
     # --- la fluidité : touiller au doigt, processeur ×6 ---
     if not VITE:

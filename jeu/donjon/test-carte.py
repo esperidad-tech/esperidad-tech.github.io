@@ -51,7 +51,7 @@ def geometrie(pg):
     b.ok(G['lune'] and G['lune']['fermee'], 'la porte de la lune ne s’ouvre pas depuis la cave')
     b.ok(sorted(G['puits']) == ['aeration', 'galerie', 'rats'] and G['egouts'] == ['canaux'], 'trois couloirs au fond du puits ; les égouts tournent et ramènent aux canaux')
     b.ok(G['lieuEn'] == ['puits', 'dalles', None], 'lieuEn trouve le lieu sous un point')
-    b.ok(sorted(G['notes']) == sorted(['code:est', 'code:oeil', 'code:rond', 'encre:crane', 'encre:fleur', 'piege:dalles', 'coin:bourbe']) and G['passages'] == ['vieux:True'] and G['signes'] == 7,
+    b.ok(sorted(G['notes']) == sorted(['code:est', 'code:oeil', 'code:rond', 'encre:crane', 'encre:fleur', 'piege:dalles', 'coin:bourbe']) and G['passages'] == ['vieux:true'] and G['signes'] == 7,
          'les notes du plan : 3 codées, 2 à l’encre invisible, le piège, Bourbe ; le passage bloqué ; 7 signes')
     tous = set()
     for k in G['ordre']:

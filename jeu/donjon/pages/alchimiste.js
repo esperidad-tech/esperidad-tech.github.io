@@ -15,19 +15,20 @@ var S;
 function neuf(){ return {v:1, codes:{}, plantes:{}, recettes:[], vues:{}}; }
 function garder(){ mem.ecrire(S); }
 
-/* les recettes du départ : les mêmes que la salle d'essai (essai/src/jeu.js) */
+/* les recettes du départ : les mêmes que le sac du Pisteur (moteur/src/donnees.js : 7 recettes, l'Acide compris — MOTEUR-DONJON.md) */
 var RECETTES = {
   feu:{nom:'Fiole de feu', long:'Elle brûle un monstre.', coul:'#ff7a2a'},
   fumigene:{nom:'Fumigène', long:'Un gros nuage, dans toute la salle.', coul:'#aab4d2'},
   huile:{nom:'Huile', long:'Ça glisse, ça glisse…', coul:'#f2b630'},
   colle:{nom:'Colle', long:'Les pattes restent collées au sol.', coul:'#ece4d0'},
+  acide:{nom:'Acide', long:'Il ronge le fer et la rouille.', coul:'#9be04a'},
   baume:{nom:'Baume', long:'Il soigne beaucoup un ami.', coul:'#5fd08a'},
   coeur:{nom:'Cœur vaillant', long:'Il relève un ami tombé au sol.', coul:'#ff5a7a'},
   /* gagnées au chaudron */
   givre:{nom:'Givre', long:'Un froid magique : il gèle tout, même l’eau.', coul:'#9fe6ff', code:'recette:givre', plante:'givre'},
   baumelum:{nom:'Baume lumineux', long:'Il soigne toute l’équipe d’un coup.', coul:'#8fffc8', code:'recette:baumelum', plante:'lumiere'}
 };
-var DEPART = ['feu', 'fumigene', 'huile', 'colle', 'baume', 'coeur'];
+var DEPART = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
 var PLANTES = {
   givre:{code:'plante:givre', nom:'La fleur de givre', court:'la fleur de givre', recette:'givre',
     arrivee:'Le Pisteur t’envoie la fleur de givre. Elle ne fond jamais… Elle sera parfaite dans ton chaudron.',

@@ -21,8 +21,8 @@ var SOL = 340;
 
 /* où se tiennent les bêtes, salle par salle : la gauche de leur cadre (dans l'ordre de la file ; 0 = devant) */
 var PLACES = {
-  rats:[498, 624, 750], canaux:[498, 588, 728], egouts:[560], toiles:[478, 612, 742], atelier:[478, 640],
-  crypte:[520, 700], ossuaire:[486, 694, 792], bassin:[446, 538, 470]
+  rats:[498, 624, 750], canaux:[498, 600, 730], egouts:[560], toiles:[478, 612, 742], atelier:[478, 640],
+  crypte:[520, 700], ossuaire:[452, 648, 756], bassin:[446, 538, 470]
 };
 /* les petites qui arrivent en plein combat se glissent devant, sans pousser les grosses */
 var AVANT = {petitearaignee:[452, 522, 592, 662], tetard:[446, 538, 630, 722]};

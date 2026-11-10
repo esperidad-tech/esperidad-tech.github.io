@@ -911,7 +911,11 @@ async function finCombat(){
 }
 async function victoire(){
   var n = E.c.etat().tour, tours = n + ' tour' + (n > 1 ? 's' : '');
-  var t = n <= 3 ? 'En ' + tours + ' seulement ! Les murs du donjon vont parler de vous.' : n <= 6 ? 'En ' + tours + ' : du beau travail d\'équipe !' : 'En ' + tours + '… C\'était long, mais la salle est propre !';
+  /* les grosses salles (le Gardien, le Roi des rats, Bourbe) durent plus longtemps : on ne dit pas « c'était long » pour 7 tours */
+  var CB = D.COMBATS[E.salle] || {}, gros = CB.elite || CB.boss, vite = gros ? 5 : 3, bien = gros ? 9 : 6;
+  var t = n <= vite ? 'En ' + tours + ' seulement ! Les murs du donjon vont parler de vous.' : n <= bien ? 'En ' + tours + ' : du beau travail d\'équipe !' : 'En ' + tours + '… C\'était long, mais la salle est propre !';
+  var titre = CB.boss ? 'Bourbe est battu !' : 'La salle est à vous !';
+  if(CB.boss) t = 'En ' + tours + ' ! Le gros crapaud du puits ne fera plus peur à personne.';
   var fan = bruit('victoire', {}, ['fanfare']);
   if(Son.baisser) Son.baisser((fan && fan.duree || 3) + .2);
   setTimeout(function(){ DJ.musique('explo'); }, 2200);
@@ -919,7 +923,7 @@ async function victoire(){
   await attendre(300);
   var f = el('div'); f.id = 'fin';
   f.innerHTML = '<div class="voile"></div><div class="victoire"><div class="rayons"></div>' +
-    '<h1>La salle est à vous !' + DJ.lireBtn('La salle est à vous !') + '</h1>' +
+    '<h1>' + titre + DJ.lireBtn(titre) + '</h1>' +
     '<div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
     '<div class="bilan"><div><b>' + n + '</b>tour' + (n > 1 ? 's' : '') + '</div><div><b>' + nbLivre() + '</b>📖 page' + (nbLivre() > 1 ? 's' : '') + '</div></div>' +
     '<button class="aller guide" data-act="combat-fin">Continuer ➜</button></div>';

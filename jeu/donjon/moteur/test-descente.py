@@ -94,7 +94,7 @@ class Descente:
         self.pg.add_init_script("window.__parle = 0; try{ speechSynthesis.speak = function(u){ window.__parle++; }; }catch(e){}")
         self.pg.goto(PAGE + '?nouveau=1&graine=%d&vitesse=%d' % (GRAINE, VITESSE)); self.pg.wait_for_timeout(800)
         self.pg.evaluate(POLITIQUE)
-        self.journal = {}; self.chutes = 0; self.gestes = 0; self.ecarts = []; self.salle = None; self.vu_fin = False
+        self.entrees = {}; self.journal = {}; self.chutes = 0; self.gestes = 0; self.ecarts = []; self.salle = None; self.vu_fin = False
 
     # ----- les petits outils -----
     def js(self, code):
@@ -359,6 +359,8 @@ class Descente:
                     verifie(self.taper_code(s) and self.partie()['sauvegarde'].get('lieu') == ici, 'la page de sauvegarde %s est écrite (%s)' % (s[-1], ici)); continue
                 but = self.but(p)
                 if but == ici:                                   # on y est : on entre dans la salle
+                    self.entrees[ici] = self.entrees.get(ici, 0) + 1
+                    if self.entrees[ici] > 12: raise RuntimeError('on tourne en rond à %s (plus rien à y faire, et pourtant le but reste là)' % ici)
                     if self.a('[data-act="entrer"]'): self.tap('[data-act="entrer"]'); pg.wait_for_timeout(700); continue
                     raise RuntimeError('arrivé à %s, mais rien à y faire' % ici)
                 pas = self.pas_vers(ici, but, p)
