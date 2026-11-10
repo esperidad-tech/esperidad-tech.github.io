@@ -596,6 +596,16 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #fin-donjon .bilan b{display:block;font-family:var(--f-titre);font-size:40px;color:var(--or-pale)}
 .point .sac-l .fiole{display:block;margin:0 auto 2px;width:40px;height:55px}
 
+/* ---------- retours de Romain du 10 novembre (16 h 33) ---------- */
+/* un héros au sol est SONNÉ, pas mort : il garde ses couleurs (plus de gris), ses étoiles tournent au-dessus de sa tête */
+.heros.sol .acteur img, .heros.sol .acteur svg{filter:none}
+.heros.sol .etoiles{display:none}                 /* le module dessine déjà les étoiles qui tournent autour de la tête */
+/* « On fait le point », version courte : plus de Grand Livre ni de sac, tout tient toujours dans l'écran */
+.point.court{align-content:center;row-gap:18px}
+.point.court .case.retour{padding:14px 18px}
+.point.court .rats-l{font-size:18px}
+#fenetre .ligne.version{margin-top:10px;text-align:center;font-size:12px;opacity:.55;border:0}
+
 </style>
 </head>
 <body>
@@ -6648,7 +6658,37 @@ H._poing = function(o){
 var releverBase = H.relever;
 H.relever = function(opt){
   if(opt && opt.amulette) return this._releverAmulette(opt);
+  if(opt && opt.sonne) return this._releverSonne(opt);
   return releverBase.call(this, opt);
+};
+/* se relever après la défaite : difficilement, encore tout sonné. Pas de lumière dorée (ce n'est pas un soin) ;
+   on s'assoit, on retombe un peu, un genou à terre, puis debout en titubant, les étoiles au-dessus de la tête
+   (Romain, 10 novembre : « ils se relèvent difficilement, ils sont tous sonnés, ils disent fuite et ils s'en vont »).
+   opt.retard : ms avant de commencer (pour que les trois héros ne bougent pas comme un seul). */
+H._releverSonne = function(o){
+  o = o || {};
+  return this._file(function(){
+    var me = this, g = this.garde();
+    this._etoiles(false);
+    this.expr('ko');
+    var assis = {racine:{x:70, y:-10, r:-30}, bassin:{x:0, y:30, r:0}, torse:10, tete:14, cuisseA:-80, tibiaA:110, piedA:-30, cuisseB:-60, tibiaB:120, piedB:-60, brasA:-20, avantBrasA:-20, brasB:30, avantBrasB:-30, mainA:0, mainB:0};
+    var retombe = {racine:{x:94, y:-16, r:-54}, torse:2, tete:22};
+    var assis2 = {racine:{x:64, y:-10, r:-24}, torse:18, tete:20};
+    var genou = {racine:{x:0, y:0, r:0}, bassin:{x:0, y:48, r:0}, torse:28, tete:18, pA:[92, 272], fA:40, pB:[160, 272], brasA:-30, avantBrasA:-50, brasB:20, avantBrasB:-40};
+    var gauche = {racine:{x:-12, y:0, r:-6}, bassin:{x:0, y:16, r:0}, torse:16, tete:16, pA:[100, 272], fA:0, pB:[156, 272]};
+    var droite = {racine:{x:12, y:0, r:6}, bassin:{x:0, y:12, r:0}, torse:4, tete:-10, pA:[106, 272], pB:[160, 272]};
+    var gauche2 = {racine:{x:-7, y:0, r:-4}, bassin:{x:0, y:8, r:0}, torse:10, tete:10, pA:[104, 272], pB:[154, 272]};
+    var seq = [];
+    if(o.retard) seq.push({d:o.retard});
+    seq.push({d:560, p:assis, e:'io'}, {d:220, p:assis, e:'lin'},
+      {d:380, p:retombe, e:'io'}, {d:160, p:retombe, e:'lin'},
+      {d:520, p:assis2, e:'io', f:function(){ me.expr('aie'); }}, {d:160, p:assis2, e:'lin'},
+      {d:560, p:genou, e:'io'}, {d:240, p:genou, e:'lin'},
+      {d:520, p:gauche, e:'io', f:function(){ me.ko = false; me.expr('ko'); me._etoiles(true); }},
+      {d:460, p:droite, e:'io'}, {d:420, p:gauche2, e:'io'},
+      {d:380, p:g, e:'io', f:function(){ me.expr('aie'); }});
+    return this.jouer(seq).then(function(){ me.ko = false; });
+  });
 };
 H._releverAmulette = function(o){
   return this._file(function(){
@@ -8172,7 +8212,7 @@ function critique(x, y, n, exploser, son, o){
   var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
   son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
-  var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2}) : null);
+  var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2, leger:!!S.critLeger}) : null);
   texteCritique(x, y, t1);
   tremble(5, 240, t1);
   tremble(8, 320, t2);
@@ -10776,6 +10816,12 @@ function structure(){
 function solDe(id){ return id === 'reserve' ? 'planches' : (id === 'puits' || id === 'aeration') ? 'paves' : (id === 'eboulis' || id === 'givre') ? 'terre' : 'dalle'; }
 function coupe(b, z, m){ m = m || 0; return b.x - m < z.x + z.w && b.x + b.w + m > z.x && b.y - m < z.y + z.h && b.y + b.h + m > z.y; }
 
+/* Les toiles (canvas) d'une vue de la carte. Sur iPhone, une toile seulement RETIRÉE de la page garde sa mémoire
+   (jusqu'à 29 Mo pour la carte) tant que le navigateur ne l'a pas ramassée : en quittant la carte il faut les VIDER
+   (largeur et hauteur à 0), sinon la page est fermée par Safari au premier gros effet (RAPIDITE.md R9). */
+var TOILES = [];
+function toile(){ var c = document.createElement('canvas'); TOILES.push(c); return c; }
+function viderToile(c){ try{ c.width = 0; c.height = 0; }catch(e){} }
 /* les toiles de travail (une seule fois chacune) */
 var TRAV = {};
 function travail(nom, w, h){ var c = TRAV[nom]; if(!c){ c = TRAV[nom] = document.createElement('canvas'); } if(c.width !== w || c.height !== h){ c.width = w; c.height = h; } return c; }
@@ -10952,7 +10998,7 @@ function brume(canvas, o){
   var fs = o.echelle || .5, cw = Math.round(W * fs), ch = Math.round(H * fs);
   canvas.width = cw; canvas.height = ch;
   var ctx = canvas.getContext('2d');
-  var vierge = document.createElement('canvas'); vierge.width = cw; vierge.height = ch;
+  var vierge = toile(); vierge.width = cw; vierge.height = ch;
   peindreBrume(vierge.getContext('2d'), fs);
   ctx.drawImage(vierge, 0, 0);
   var etat = {lieux:{}, liens:{}, j:false};
@@ -11035,7 +11081,7 @@ function brume(canvas, o){
     if(opt.anim){
       /* deux copies de la zone, AVANT : entière, et à moitié ouverte */
       var px0 = Math.max(0, Math.floor(zone.x * fs)), py0 = Math.max(0, Math.floor(zone.y * fs)), pw = Math.min(cw - px0, Math.ceil(zone.w * fs)), ph = Math.min(ch - py0, Math.ceil(zone.h * fs));
-      var A = document.createElement('canvas'), B = document.createElement('canvas');
+      var A = toile(), B = toile();
       A.width = B.width = pw; A.height = B.height = ph;
       A.getContext('2d').drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
       var bx = B.getContext('2d'); bx.drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
@@ -11155,8 +11201,9 @@ function vue(el, o){
   var E = EMPREINTE;
   el.classList.add('cd-vue'); el.innerHTML = '';
   var couche = document.createElement('div'); couche.className = 'cd-couche'; el.appendChild(couche);
-  var carte = document.createElement('canvas'); carte.className = 'cd-carte'; couche.appendChild(carte);
-  var brumeC = document.createElement('canvas'); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
+  var mesToiles = TOILES = [];          /* toutes les toiles de cette vue (vidées par detruire) */
+  var carte = toile(); carte.className = 'cd-carte'; couche.appendChild(carte);
+  var brumeC = toile(); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
   var patchs = document.createElement('div'); couche.appendChild(patchs);
   var etiqs = document.createElement('div'); couche.appendChild(etiqs);
   var sortiesEl = document.createElement('div'); couche.appendChild(sortiesEl);
@@ -11265,11 +11312,11 @@ function vue(el, o){
     if(!r || !r.avant) return Promise.resolve(r);
     var P = r.px, cA = r.avant[0], cB = r.avant[1];
     [cB, cA].forEach(function(c){ c.className = 'cd-patch'; c.style.left = P.x * z + 'px'; c.style.top = P.y * z + 'px'; c.style.width = P.w * z + 'px'; c.style.height = P.h * z + 'px'; patchs.appendChild(c); });
-    if(!cA.animate){ cA.remove(); cB.remove(); return Promise.resolve(r); }
+    if(!cA.animate){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); return Promise.resolve(r); }
     var d = opt.duree || 1500;
     var a1 = cA.animate([{opacity:1}, {opacity:0}], {duration:d * .45, easing:'ease-in', fill:'forwards'});
     var a2 = cB.animate([{opacity:1, transform:'scale(1)'}, {opacity:0, transform:'scale(1.04)'}], {duration:d * .7, delay:d * .3, easing:'ease-out', fill:'forwards'});
-    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); ok(r); }; });
+    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); ok(r); }; });
   }
   /* --- le pion --- */
   var pion = {x:depart.x, y:depart.y, dir:0};
@@ -11333,7 +11380,12 @@ function vue(el, o){
     redessiner:function(id, nouveauxEtats){ if(nouveauxEtats) etats = nouveauxEtats; var D = deco(id, etats[id] === 'vu'); rd.redessiner(D.boite, etats); },
     position:function(){ return {tx:tx, ty:ty, z:z}; },
     etat:function(){ return {brume:B.etat(), pion:{x:pion.x, y:pion.y, dir:dirPion}}; },
-    detruire:function(){ rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim); el.innerHTML = ''; el.classList.remove('cd-vue'); }
+    detruire:function(){
+      rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim);
+      mesToiles.forEach(viderToile); mesToiles.length = 0;
+      Object.keys(TRAV).forEach(function(k){ viderToile(TRAV[k]); });       /* les toiles de travail se retaillent toutes seules au prochain dessin */
+      el.innerHTML = ''; el.classList.remove('cd-vue');
+    }
   };
 }
 
@@ -13839,6 +13891,25 @@ DJ.sonsProvisoires = function(){
   });
 };
 
+/* ================= le filet de sécurité du critique =================
+   Sur un iPhone à court de mémoire, Safari ferme la page (et la recharge) au plus gros effet : le critique.
+   On pose un témoin au début du critique et on l'enlève à la fin. S'il est encore là au démarrage, c'est que la page
+   s'est fermée en plein critique : on le compte, et sur cet appareil les critiques suivants sont allégés
+   (moins de fumée et de morceaux), pour qu'on ne reste jamais coincé. Le compteur se lit en bas de « 🎒 Objets ». */
+var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages';
+DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, String(Date.now())); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
+DJ.plantages = function(){ try{ return +localStorage.getItem(CLE_PLANTAGES) || 0; }catch(e){ return 0; } };
+DJ.verifierTemoin = function(){
+  try{
+    var t = +localStorage.getItem(CLE_TEMOIN) || 0;
+    if(t && Date.now() - t < 600000) localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1));
+    localStorage.removeItem(CLE_TEMOIN);
+  }catch(e){}
+  if(DJ.plantages() > 0) SALLE.critLeger = true;
+  return DJ.plantages();
+};
+DJ.VERSION = '10/11 à 16 h 48';
+
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
 DJ.img = function(nom){ return (CH.img ? CH.img(nom) : 'i/' + nom); };
@@ -14642,6 +14713,9 @@ async function apres(){
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
+  /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
+     (sans cette ligne, le tir, la dague, la potion, la rune et l'étude étaient rangés avec la bête, et le héros ne bougeait plus) */
+  if(GESTES_HEROS[ev.t]) return 's:' + ev.t;
   if(typeof ev.bete === 'string') return 'b:' + ev.bete;
   if(ev.heros && COTE_HEROS[ev.t]) return null;      /* reste dans le bloc en cours (les suites d'une attaque) */
   return 's:' + ev.t;
@@ -14991,7 +15065,9 @@ async function critique(l, i, ctx){
   if(meurt && a.rat){
     /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
+    DJ.temoinCritique(true);
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
+    DJ.temoinCritique(false);
     return i + 1;
   }
   sonCritique('aspire');
@@ -15199,14 +15275,21 @@ async function fuite(auto){
   DJ.fermer();
   bande(); majScene();
   if(auto){
-    await attendre(500);
-    await Promise.all(ORDRE.map(function(h){ slotH(h).classList.remove('sol', 'avale'); return Promise.resolve(E.A.h[h].relever()).catch(function(){}); }));
+    /* les trois héros sont au sol, sonnés (pas morts) : ils se relèvent difficilement, l'un après l'autre, en titubant
+       (Romain, 10 novembre), puis ils crient « Fuite ! » et détalent */
+    await attendre(1100);
+    await Promise.all(ORDRE.map(function(h, k){
+      var A = E.A.h[h]; slotH(h).classList.remove('sol', 'avale');
+      if(!A.ko) return attendre(k * 280);
+      return Promise.resolve(A.relever({sonne:true, retard:k * 280})).catch(function(){});
+    }));
+    await attendre(350);
   }
   ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('crie'); }, k * 120); });
-  await attendre(800);
+  await attendre(auto ? 1000 : 800);
   var fu = bruit('fuite', {}, ['pasHeros', 1, 3]);
   if(Son.baisser) Son.baisser((fu && fu.duree || 3) + .2);
-  ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('detale'); }, k * 90); });
+  ORDRE.forEach(function(h, k){ setTimeout(function(){ try{ E.A.h[h]._etoiles(false); }catch(e){} slotH(h).classList.add('detale'); }, k * 90); });
   await attendre(1200);
   DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
@@ -15215,27 +15298,20 @@ async function fuite(auto){
   E.resultat = auto ? 'defaite' : 'fuite';
   pointFuite(ev, auto);
 }
-/* « On fait le point » : ce que le Grand Livre sait des bêtes de cette salle, le sac, et où l'on repart */
+/* « On fait le point » : où l'on repart, et c'est tout (Romain, 10 novembre : plus de Grand Livre ni de sac ici — l'écran
+   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Le Grand Livre reste dans son bouton. */
 function pointFuite(ev, auto){
-  var types = [], nomLieu = '';
-  (D.COMBATS[E.salle].monstres || []).forEach(function(t){ var cle = D.MONSTRES[t].livre || t; if(types.indexOf(cle) < 0) types.push(cle); });
+  var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
-  var pages = Regles.grandLivre(E.partie).filter(function(p){ return types.indexOf(p.monstre) >= 0 && p.lignes.length; });
-  var garde = 'Lui, il n\'oublie rien.';
-  var l = pages.length ? '<div class="livre-l garde">' + garde + DJ.lireBtn(garde) + '</div>' + pages.map(function(p){
-      return '<div class="livre-t">' + esc(p.nom) + '</div>' + p.lignes.map(function(t){ return '<div class="livre-l">« ' + t + ' »' + DJ.lireBtn(t) + '</div>'; }).join(''); }).join('')
-    : '<div class="livre-l">' + D.LIVRE_VIDE + DJ.lireBtn(D.LIVRE_VIDE) + '</div>';
   var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
-  var cadeau = neuf ? 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus.' : '';
   var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Tout ce qui a été fait depuis est à refaire.';
-  var conte = auto ? 'Les trois héros sont tombés… Ils se relèvent tant bien que mal et filent. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
+  var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
+  if(neuf) conte = 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';
-  f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
-    '<div class="case"><h3>📖 Le Grand Livre</h3>' + l + (cadeau ? '<div class="livre-l garde">' + cadeau + DJ.lireBtn(cadeau) + '</div>' : '') + '</div>' +
-    '<div class="case"><h3>🎒 Le sac</h3><div class="sac-l">' + (DJ.dernierSac || E.partie.sac || []).map(function(id){ return '<div>' + DJ.potion(id) + D.RECETTES[id].nom + '</div>'; }).join('') + '</div></div>' +
+  f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point court"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
     '<div class="case retour"><h3>🚪 On repart</h3><div class="rats-l"><span>' + rv + '</span>' + DJ.lireBtn(rv) + '</div></div>' +
     '<div class="bulle"><span class="txt">' + conte + '</span>' + DJ.lireBtn(conte) + '</div>' +
-    '<div class="bas"><button class="aller guide" data-act="combat-fin">Repartir ↻</button></div></div>';
+    '<div class="bas"><button class="aller guide" data-act="combat-fin">Continuer ➜</button></div></div>';
   q('#combat').appendChild(f);
 }
 function terminer(){
@@ -15575,7 +15651,7 @@ function construireScene(lieu, ev, premier){
     '<div id="bas-scene"><div class="bulle" id="conteur"></div><div class="b-outils">' +
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button>' +
       (cont.repos ? '<button class="sombre" data-act="refaire-sac">🧪 Refaire le sac</button>' : '') +
-      '<button class="aller" id="b-repartir" data-act="repartir">Repartir ➜</button></div></div><div id="ecran-fx"></div>';
+      '<button class="aller" id="b-repartir" data-act="repartir">Continuer ➜</button></div></div><div id="ecran-fx"></div>';
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
   SALLE.Fx.init({fx:q('#fx'), sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
@@ -15908,6 +15984,7 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + ')' : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
@@ -16070,6 +16147,7 @@ function essaiCombat(P){
 
 function demarrer(){
   DJ.brancher();
+  DJ.verifierTemoin();
   DJ.sonsProvisoires();
   DJ.cssHeros();
   var P = parametres();
