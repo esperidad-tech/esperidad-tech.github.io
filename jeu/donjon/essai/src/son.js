@@ -151,31 +151,75 @@ function bruitage(id, o){
   return r;
 }
 
-/* =================== la musique : exploration (sac, fin), combat + la couleur « le puits » =================== */
-var MUS = {voulu:null, actuel:null};
-function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
+/* =================== la musique ===================
+   La salle d'essai : 'explo' (le sac, la fin) et 'combat' (+ la couleur « le puits »).
+   Le donjon complet (Romain, 10 novembre : « la musique est très redondante, la boucle est trop petite ») :
+     'salle:<zone>'   l'ambiance d'une zone : le fond du donjon + la couleur de la zone (puits, canaux, toiles, atelier,
+                      ossuaire) — sur la carte, dans les salles et pendant les combats ordinaires (plus de musique de combat) ;
+     'grand:<nom>'    la longue musique d'un grand combat (gardien, roi, boss) ;
+     'repos'          le feu de camp (sa musique + le feu qui crépite) ;   'fin' : Léo retrouvé.
+   D'une zone à l'autre, ce qui joue déjà (le fond du donjon) n'est pas coupé. */
+var MUS = {voulu:null, actuel:null, combat:false};
+function musique(nom){ MUS.attendue = null; MUS.voulu = nom || null; appliquerMusique(); }
+/* passer à une musique seulement quand elle est fabriquée : en attendant, celle d'avant continue (pas de trou de silence
+   au début d'un grand combat, même sur une vieille tablette qui met du temps à fabriquer une longue musique) */
+function musiqueDesQuePrete(nom){
+  var cles;
+  if(!PRE.possible || !ctx){ musique(nom); return; }
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ musique(nom); return; }
+  MUS.attendue = nom;
+  Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
+}
 function famille(c){ return c.replace(/[A-C]$/, ''); }
+/* la clé d'une musique : son nom s'il n'y en a qu'une (le puits, le fond du donjon), sinon la version choisie */
+function cleMus(f){ return window.MUSIQUES[f] ? f : PRE.cle(f); }
+function clesDe(v){
+  if(!v) return [];
+  if(v === 'combat') return [PRE.cle('combat'), 'puits'];
+  if(v === 'explo') return [PRE.cle('explo')];
+  if(v === 'repos') return [cleMus('repos'), cleMus('feuCamp')];
+  if(v === 'fin') return [cleMus('finDonjon')];
+  var k = v.split(':');
+  if(k[0] === 'salle') return ['donjon', cleMus(k[1])];
+  if(k[0] === 'grand') return [cleMus(k[1])];
+  return [cleMus(v)];
+}
 function appliquerMusique(){
   if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
   var v = actif && VOL.musique > 0 ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
   if(cur === v) return;
-  var now = ctx.currentTime, avant = MUS.actuel ? MUS.actuel.cles.slice() : [];
-  if(MUS.actuel){ MUS.actuel.arreter(now, 3); MUS.actuel = null; }
-  var cles = !v ? [] : v === 'combat' ? [PRE.cle('combat'), 'puits'] : [PRE.cle('explo')];
+  var now = ctx.currentTime, ancien = MUS.actuel, avant = ancien ? ancien.cles.slice() : [], cles, garde = {};
+  try{ cles = clesDe(v).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ if(window.console) console.warn('musique', v, e); cles = []; }
+  if(ancien){
+    ancien.fini = true; MUS.actuel = null;
+    ancien.cles.forEach(function(c){ var l = ancien.par[c] || []; if(cles.indexOf(c) >= 0 && l.length) garde[c] = l; else l.forEach(function(j){ j.arreter(now, 3); }); });
+  }
   PRE.changement(avant, cles, v);
   if(!v) return;
-  var M = MUS.actuel = {nom:v, cles:cles, I:[], joueurs:[], fini:false};
-  M.arreter = function(t, f){ M.fini = true; M.I.forEach(function(I){ I.arreter(t, f); }); M.joueurs.forEach(function(j){ j.arreter(t, f); }); };
+  var M = MUS.actuel = {nom:v, cles:cles, par:{}, fini:false};
+  M.arreter = function(t, f){ M.fini = true; Object.keys(M.par).forEach(function(c){ M.par[c].forEach(function(j){ j.arreter(t, f); }); }); };
   cles.forEach(function(c){
-    if(!PRE.possible){ M.I.push(musiqueEnDirect(c, now)); return; }
+    if(garde[c]){ M.par[c] = garde[c]; return; }                       /* elle joue déjà : on ne la coupe pas */
+    var l = M.par[c] = [];
+    if(!PRE.possible){ l.push(musiqueEnDirect(c, now)); return; }
     var b = PRE.mus[famille(c)];
-    if(b && b.cle === c) M.joueurs.push(jouerBoucle(b));            /* déjà fabriquée : elle part tout de suite */
-    else PRE.demander(c, true).then(function(){                       /* sinon on attend la sienne (quelques secondes) */
-      if(M.fini || MUS.actuel !== M) return;
+    if(b && b.cle === c) l.push(jouerBoucle(b));                       /* déjà fabriquée : elle part tout de suite */
+    else PRE.demander(c, true).then(function(){                        /* sinon on attend la sienne (quelques secondes) */
+      if(MUS.actuel !== M && !(MUS.actuel && MUS.actuel.par[c] === l)) return;
       var b2 = PRE.mus[famille(c)];
-      if(b2 && b2.cle === c) M.joueurs.push(jouerBoucle(b2)); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
+      l.push(b2 && b2.cle === c ? jouerBoucle(b2) : musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
     });
   });
+}
+/* le combat commence ou finit : les bruitages lourds (l'arc, le critique, la victoire, la fuite) sont fabriqués pour ce
+   combat, puis libérés. (Dans la salle d'essai, c'est la musique 'combat' qui le dit.) */
+function enCombat(on){
+  on = !!on;
+  if(MUS.combat === on) return;
+  MUS.combat = on;
+  if(!PRE.possible) return;
+  if(on) setTimeout(function(){ if(MUS.combat) PRE.demander('bruitages'); }, 2500);
+  else setTimeout(function(){ if(MUS.combat) return; PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages; }, 9000);
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
 function musiqueEnDirect(c, now){
@@ -199,8 +243,8 @@ function jouerBoucle(b){
 }
 function programme(){
   if(!ctx || !MUS.actuel) return;
-  var j = ctx.currentTime + 1.2;
-  MUS.actuel.I.forEach(function(I){ I.pas(j); });
+  var j = ctx.currentTime + 1.2, M = MUS.actuel;
+  Object.keys(M.par).forEach(function(c){ M.par[c].forEach(function(I){ if(I.pas) I.pas(j); }); });
 }
 
 /* =================== le pré-calcul : fabriquer à l'avance, hors ligne, par petits morceaux ===================
@@ -217,7 +261,12 @@ var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{},
 var SR_MUS = 16000, SR_SFX = 32000;
 /* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
    n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
-var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:16 * 60 / 84, C:1.5, lin:true}, puits:{L:12}};
+var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:16 * 60 / 84, C:1.5, lin:true}, puits:{L:12},
+  /* le donjon complet : des boucles longues (48 à 116 s), pour qu'on n'entende pas la musique « tourner » */
+  donjon:{L:56}, toiles:{L:48}, atelier:{L:48}, canauxA:{L:60}, canauxB:{L:60}, ossuaireA:{L:60}, ossuaireB:{L:60},
+  reposA:{L:64}, reposB:{L:70.4}, feuCampA:{L:40}, feuCampB:{L:40}, finDonjonA:{L:64}, finDonjonB:{L:64},
+  gardienA:{L:128 * 60 / 66, C:1.5, lin:true}, roiA:{L:128 * 60 / 84, C:1.5, lin:true},
+  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
 var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
@@ -230,25 +279,39 @@ PRE.cle = function(fam){
 };
 /* quand la musique change : la musique qui s'arrête libère sa boucle et prépare sa prochaine version ;
    en entrant en combat, on fabrique les bruitages lourds ; en sortant, on les libère */
+/* les musiques qu'on garde prêtes même quand elles ne jouent pas. La salle d'essai : l'exploration, le combat, le puits.
+   Le donjon complet : seulement son fond commun ; les autres sont libérées en sortant, et refabriquées à la demande. */
+function gardees(){ return window.DJ_MUSIQUES_GARDEES || ['explo', 'combat', 'puits']; }
 PRE.changement = function(avant, apres, nom){
   if(!PRE.possible) return;
   var fams = apres.map(famille);
   avant.map(famille).forEach(function(f){
-    if(fams.indexOf(f) >= 0 || f === 'puits' || !CHOIX[f] || CHOIX[f].length < 2) return;
-    setTimeout(function(){                                             /* après le fondu de sortie */
+    if(fams.indexOf(f) >= 0) return;
+    var plusieurs = CHOIX[f] && CHOIX[f].length >= 2, garder = gardees().indexOf(f) >= 0;
+    if(!plusieurs && garder) return;                                   /* une seule version, et on la rejoue souvent : on la garde */
+    setTimeout(function(){                                             /* (après le fondu de sortie) */
       if(MUS.actuel && MUS.actuel.cles.map(famille).indexOf(f) >= 0) return;
-      var ancienne = PRE.mus[f] && PRE.mus[f].cle.slice(-1), l = CHOIX[f].filter(function(x){ return x !== ancienne; });
-      delete PRE.mus[f];
-      PRE.prochain[f] = tire(l.length ? l : CHOIX[f]);
-      PRE.demander(f + PRE.prochain[f]);
+      var ancienne = PRE.mus[f] && PRE.mus[f].cle.slice(-1);
+      delete PRE.mus[f];                                               /* sa boucle est libérée */
+      if(!plusieurs) return;
+      var l = CHOIX[f].filter(function(x){ return x !== ancienne; });
+      PRE.prochain[f] = tire(l.length ? l : CHOIX[f]);                 /* la prochaine version, tirée au hasard… */
+      if(garder) PRE.demander(f + PRE.prochain[f]);                    /* … et fabriquée tout de suite, pour la fois suivante */
     }, 4000);
   });
-  if(nom === 'combat') setTimeout(function(){ if(MUS.voulu === 'combat') PRE.demander('bruitages'); }, 2500);
-  else if(avant.length && famille(avant[0]) === 'combat') setTimeout(function(){
-    if(MUS.voulu === 'combat') return;
-    PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages;
-  }, 9000);
+  /* la salle d'essai : la musique 'combat' dit qu'on est en combat */
+  if(nom === 'combat') enCombat(true);
+  else if(avant.length && famille(avant[0]) === 'combat') enCombat(false);
 };
+/* fabriquer une musique à l'avance, sans la jouer (le donjon : la longue musique d'un grand combat, quand on s'en approche).
+   Ce qui était prêt et ne joue pas est libéré : jamais plus d'une musique « d'avance » en mémoire. */
+function preparer(nom){
+  if(!PRE.possible || !window.MUSIQUES) return;
+  var cles; try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ return; }
+  var fams = cles.map(famille), joue = MUS.actuel ? MUS.actuel.cles.map(famille) : [];
+  Object.keys(PRE.mus).forEach(function(f){ if(fams.indexOf(f) < 0 && joue.indexOf(f) < 0 && gardees().indexOf(f) < 0) delete PRE.mus[f]; });
+  cles.forEach(function(c){ PRE.demander(c); });
+}
 function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom) PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } }
 function rendre(off){
   return new Promise(function(ok, ko){
@@ -258,7 +321,7 @@ function rendre(off){
 }
 /* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
 function rendreMusique(cle){
-  var B = BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  var B = (window.DJ_BOUCLES && window.DJ_BOUCLES[cle]) || BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
   var off = new OAC(1, Math.ceil(sr * duree), sr), Ao, I;
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus'));
@@ -318,7 +381,7 @@ function rendreBruitages(){
   });
   return l.reduce(function(p, e){
     return p.then(function(){
-      if(MUS.voulu !== 'combat' && PRE.tout_ === undefined) return;      /* le combat est fini : on n'en fabrique pas plus */
+      if(!MUS.combat && PRE.tout_ === undefined) return;                 /* le combat est fini : on n'en fabrique pas plus */
       return rendreUnBruitage(e.id, e.v, e.partie, e.stereo).then(function(y){ PRE.sfx[e.id + e.v + (e.partie ? ':' + e.partie : '')] = {buf:y, pan:e.stereo ? 0 : e.pan}; });
     });
   }, Promise.resolve()).then(function(){ return true; });
@@ -353,6 +416,7 @@ function suivant(){
 /* au chargement : la musique d'exploration tirée, celle du combat et le puits (les bruitages lourds : au début du combat) */
 function lancerPrecalcul(){
   if(!PRE.possible) return;
+  if(window.DJ_MUSIQUES_DEPART){ window.DJ_MUSIQUES_DEPART.forEach(function(f){ try{ PRE.demander(cleMus(f)); }catch(e){} }); return; }   /* le donjon complet dit lesquelles */
   PRE.demander(PRE.cle('explo')); PRE.demander(PRE.cle('combat')); PRE.demander('puits');
 }
 if(document.readyState === 'complete') setTimeout(lancerPrecalcul, 600);
@@ -691,11 +755,14 @@ S.Son = {
   },
   bruitage:bruitage,
   musique:musique,
+  musiqueDesQuePrete:musiqueDesQuePrete,
+  combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
+  preparer:preparer,
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
-  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
-    joue:MUS.actuel ? MUS.actuel.I.length + MUS.actuel.joueurs.length : 0}; },
+  musiqueEtat:function(){ return {voulu:MUS.voulu, attendue:MUS.attendue || null, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
+    joue:MUS.actuel ? Object.keys(MUS.actuel.par).reduce(function(n, c){ return n + MUS.actuel.par[c].length; }, 0) : 0, combat:MUS.combat}; },
   jouer:function(nom){
     if(!pretBruit() || !B[nom]) return;
     try{ B[nom].apply(null, Array.prototype.slice.call(arguments, 1)); }catch(e){ if(window.console) console.warn('son', nom, e); }

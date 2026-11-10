@@ -84,7 +84,7 @@ window.CATALOGUE = [
     {id:'explo', t:'Exploration', v:'ABC', m:1}, {id:'combat', t:'Combat', v:'AB', m:1},
     {id:'salles', t:'Couleurs des salles', salles:1, v:[['puits', 'Puits'], ['toiles', 'Toiles'], ['atelier', 'Atelier']]},
     {id:'canaux', t:'Les canaux', v:'AB', c:1}, {id:'ossuaire', t:'L’ossuaire', v:'AB', c:1},
-    {id:'repos', t:'Repos (feu)', v:'AB', m:1}, {id:'boss', t:'Bourbe (boss)', v:'ABC', m:1}, {id:'finDonjon', t:'Léo retrouvé', v:'AB', m:1}
+    {id:'repos', t:'Repos (feu)', v:'AB', m:1}, {id:'gardien', t:'Le Gardien', v:'A', m:1}, {id:'roi', t:'Roi des rats', v:'A', m:1}, {id:'boss', t:'Bourbe', v:'ABC', m:1}, {id:'finDonjon', t:'Léo retrouvé', v:'AB', m:1}
   ]},
   {id:'jeu', titre:'Le jeu', sons:[
     {id:'j_clic', t:'Bouton touché', x:1}, {id:'j_tic', t:'Petit tic', x:1}, {id:'j_ok', t:'Bonne réponse', x:1}, {id:'j_ko', t:'Erreur', x:1},

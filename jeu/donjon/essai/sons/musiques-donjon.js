@@ -110,46 +110,123 @@ M.reposB = function(A, P){
   return I;
 };
 
-/* =================== BOURBE, LE BOSS (lourd, un peu drôle, et gluant) =================== */
-/* A — La marche du crapaud : un tuba qui fait « oum-pa », des tambours, un basson qui descend en se dandinant */
-M.bossA = function(A, P){
-  var I = Instance(A, P), b = 60 / 92, proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.7, g:.85}), loin = A.bus(P, {grotte:1, g:.7});
-  var racines = [38, 34, 31, 33], accords = [[50, 53, 57], [46, 50, 53], [43, 46, 50], [45, 49, 52]];
-  I.chaque(.3, 4 * b, function(t, n){
-    var r = racines[n % 4], a = accords[n % 4];
-    tuba(A, t, m(r), b * .9, .12, proche); tuba(A, t + 2 * b, m(r + 7), b * .9, .1, proche);                          /* oum… */
-    [1, 3].forEach(function(x){ a.forEach(function(nn){ A.ton(t + x * b, {type:'square', f:m(nn), env:A.perc(.008, .14), g:.016, lp:1100}, proche); }); });   /* …pa */
-    A.tambour(t, {f:80, d:.7, g:.32}, tamb); A.tambour(t + 2 * b, {f:90, d:.6, g:.22}, tamb);
-    [1, 3].forEach(function(x){ A.bruit(t + x * b, {coul:'rose', bp:1400, bq:.8, env:A.perc(.002, .07), g:.12}, tamb); });
-    if(n % 2 === 1) bloup(A, t + 3.5 * b, .06, proche);                                                               /* le marais qui fait « bloup » */
+/* =================== LES GRANDS COMBATS : de longues musiques ===================
+   Romain, 10 novembre : « la musique est très redondante, la boucle est trop petite ». Décidé avec lui : dans les salles
+   normales, plus de musique de combat (seulement l'ambiance de la zone) ; les trois grands combats (le Gardien, le Roi des
+   rats, Bourbe) gardent une vraie musique, écrite en PARTIES de 16 temps qui s'enchaînent — on ajoute, on enlève, on
+   change l'air — pour ne revenir au début qu'après 75 à 115 secondes. Les longueurs sont dans BOUCLE (essai/src/son.js). */
+function partie(n, pas, nb){ return Math.floor(n / pas) % nb; }
+
+/* LE GARDIEN DE ROUILLE (l'atelier) — sur le battement de cœur et la basse de « Combat A » (ré mineur, 66 à la minute) ;
+   huit parties : on s'installe, la basse entière, l'octave, un autre dessin, le calme, puis ça repart plus haut */
+M.gardienA = function(A, P){
+  var I = Instance(A, P), b = 60 / 66;
+  var proche = A.bus(P, {grotte:.25}), coeur = A.bus(P, {grotte:.2}), loin = A.bus(P, {grotte:1, g:.7});
+  bourdon(I, [m(38)], {dest:proche, lp:260, g:.05, lfo:.05, lfoAmp:60, a:2});
+  tremolo(I, [m(50), m(57), m(63)], {dest:loin, g:.02, vit:6.5, lp:1500, houle:1 / (16 * b)});
+  I.chaque(.5, b, function(t, n){                                                                                      /* le cœur : toujours là, plus léger dans la partie calme */
+    var k = partie(n, 16, 8) === 4 ? .6 : 1;
+    A.choc(t, {f:90, f2:50, d:.17, g:.4 * k, sat:3, lp:600, bruit:.25, corpsF:220, corps:.8}, coeur);
+    A.choc(t + .2, {f:82, f2:48, d:.14, g:.25 * k, sat:3, lp:600, bruit:.25, corpsF:220, corps:.8}, coeur);
   });
-  var air = [[0, 62], [.5, 61], [1, 60], [2, 57], [3, 58], [3.5, 57], [4, 53], [6, 50], [7, 52], [7.5, 53]];
-  I.chaque(.3 + 16 * b, 16 * b, function(t, n){ if(n % 2 === 0) air.forEach(function(p){ basson(A, t + p[0] * b, m(p[1] - 12), b * .7, .035, loin); }); });
+  var motifs = [[0, 0, 0, 1, 0, 0, 3, 1], [0, 0, 3, 1, 0, 0, 5, 3], [0, -2, 0, 1, 0, 3, 1, 0]], dessin = [0, 0, 0, 1, 0, 2, 1, 0], trans = [0, -4, -2, 0, 0, 3, -2, 0];
+  I.chaque(.5, b / 2, function(t, n){                                                                                  /* la basse : trois dessins, une hauteur par partie */
+    var s = partie(n, 32, 8), i = n % 8, fort = i === 0;
+    if(s === 0 && i % 2) return;                                                                                       /* partie 0 : une note sur deux */
+    if(s === 4 && !fort && i !== 4) return;                                                                            /* partie 4 : presque rien */
+    var note = 38 + trans[s] + motifs[dessin[s]][i];
+    A.ton(t, {type:'sawtooth', f:m(note), env:A.perc(.005, .16), g:fort ? .09 : .06, filtres:[{type:'lowpass', f:300, pts:[[.02, 1300], [.15, 300]], q:3}]}, proche);
+    if(s === 2 || s === 3 || s >= 6) A.ton(t, {type:'square', f:m(note + 12), env:A.perc(.005, .1), g:fort ? .02 : .012, lp:900}, proche);
+  });
+  I.chaque(.5, 4 * b, function(t, n){                                                                                  /* son enclume, très loin et très grave (parties 3 à 7) */
+    var s = partie(n, 4, 8);
+    if(s >= 3) A.modes(t, 196, [[1, 1, .9], [2.76, .35, .5], [5.4, .12, .25]], {g:s === 4 ? .035 : .022, a:.004}, loin);
+  });
   return I;
 };
-/* B — Le bassin qui gronde : plus lent, de gros tambours, un violoncelle qui insiste, des cuivres graves qui gonflent */
+
+/* LE ROI DES RATS (l'ossuaire) — sur les tambours lointains de « Combat B » (do mineur, 84 à la minute) ; huit parties :
+   les tambours seuls, le violoncelle, les pizzicati, un rythme plus serré, le calme, puis d'autres airs */
+M.roiA = function(A, P){
+  var I = Instance(A, P), b = 60 / 84;
+  var proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.9, g:.8}), loin = A.bus(P, {grotte:1, g:.7});
+  bourdon(I, [m(36), m(43)], {dest:proche, lp:240, g:.05, lfo:.04, lfoAmp:60, a:2});
+  var R1 = [[0, 1], [1.5, .6], [2, .8], [4, 1], [5.5, .6], [6, .8], [6.5, .5]], R2 = [[0, 1], [1, .5], [1.5, .6], [2, .8], [3.5, .5], [4, 1], [5.5, .6], [6, .8], [7, .6], [7.5, .45]], R0 = [[0, .9], [4, .5]];
+  var rythmes = [R1, R1, R1, R2, R0, R1, R2, R1];
+  I.chaque(.4, 8 * b, function(t, n){ rythmes[partie(n, 2, 8)].forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .9 ? 80 : 95, d:.7, g:.32 * p[1]}, tamb); }); });
+  var B1 = [48, 48, 44, 43], B2 = [48, 46, 44, 43], B3 = [41, 41, 43, 43], basses = [null, B1, B1, B2, B3, B1, B2, B3];
+  I.chaque(.4, 2 * b, function(t, n){ var l = basses[partie(n, 8, 8)]; if(l) A.archet(t, m(l[n % 4]), 2 * b + .1, {a:.18, r:.25, g:.04}, proche); });
+  var P1 = [60, 67, 63, 67, 60, 67, 62, 67], P2 = [63, 67, 60, 67, 65, 67, 62, 67], P3 = [72, 70, 67, 63, 67, 63, 62, 60], pizz = [null, null, P1, P2, P3, P1, P3, P2];
+  I.chaque(.4, b / 2, function(t, n){
+    var s = partie(n, 32, 8), l = pizz[s];
+    if(!l) return;
+    if(s === 4 ? n % 4 !== 0 : n % 16 >= 12) return;                                                                   /* partie 4 : une note tous les deux temps ; ailleurs : trois mesures jouées, une de silence */
+    A.harpe(t, m(l[n % 8]), {t60:.35, eclat:.6, g:s === 4 ? .1 : .12}, proche);
+  });
+  I.chaque(.4 + 8 * b, 16 * b, function(t, n){                                                                         /* les cordes graves qui gonflent, une partie sur deux */
+    if(partie(n, 1, 8) % 2 === 0) return;
+    [44, 51].forEach(function(nn){ [-5, 5].forEach(function(det){
+      A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2.5, 1], [4, .6], [5.5, 0]], g:.03, filtres:[{type:'lowpass', f:300, pts:[[2.5, 1400], [5.5, 300]], q:1}]}, loin);
+    }); });
+  });
+  return I;
+};
+
+/* =================== BOURBE, LE BOSS (lourd, un peu drôle, et gluant) =================== */
+/* A — La marche du crapaud : un tuba qui fait « oum-pa », des tambours, un basson qui se dandine. Huit parties (≈ 83 s) :
+   le tuba seul, puis les « pa », l'air du basson, un deuxième air, d'autres accords au milieu */
+M.bossA = function(A, P){
+  var I = Instance(A, P), b = 60 / 92, proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.7, g:.85}), loin = A.bus(P, {grotte:1, g:.7});
+  var R = [[38, 34, 31, 33], [38, 36, 33, 34]], AC = [[[50, 53, 57], [46, 50, 53], [43, 46, 50], [45, 49, 52]], [[50, 53, 57], [48, 52, 55], [45, 48, 52], [46, 50, 53]]], suite = [0, 0, 0, 0, 1, 1, 0, 0];
+  I.chaque(.3, 4 * b, function(t, n){
+    var s = partie(n, 4, 8), r = R[suite[s]][n % 4], a = AC[suite[s]][n % 4], plein = s !== 0 && s !== 4;
+    tuba(A, t, m(r), b * .9, .12, proche); tuba(A, t + 2 * b, m(r + 7), b * .9, .1, proche);                          /* oum… */
+    if(plein) [1, 3].forEach(function(x){ a.forEach(function(nn){ A.ton(t + x * b, {type:'square', f:m(nn), env:A.perc(.008, .14), g:.016, lp:1100}, proche); }); });   /* …pa */
+    A.tambour(t, {f:80, d:.7, g:plein ? .32 : .22}, tamb); A.tambour(t + 2 * b, {f:90, d:.6, g:plein ? .22 : .15}, tamb);
+    if(plein) [1, 3].forEach(function(x){ A.bruit(t + x * b, {coul:'rose', bp:1400, bq:.8, env:A.perc(.002, .07), g:.12}, tamb); });
+    if(n % 2 === 1) bloup(A, t + 3.5 * b, .06, proche);                                                               /* le marais qui fait « bloup » */
+  });
+  var AIR1 = [[0, 62], [.5, 61], [1, 60], [2, 57], [3, 58], [3.5, 57], [4, 53], [6, 50], [7, 52], [7.5, 53]], AIR2 = [[0, 57], [1, 58], [2, 60], [3, 62], [4, 60], [5, 58], [6, 57], [7, 53], [8, 55], [10, 57]];
+  I.chaque(.3, 16 * b, function(t, n){
+    var s = partie(n, 1, 8), air = (s === 1 || s === 7) ? AIR1 : (s === 3 || s === 5) ? AIR2 : null;
+    if(air) air.forEach(function(p){ basson(A, t + p[0] * b, m(p[1] - 12), b * .7, .035, loin); });
+  });
+  return I;
+};
+/* B — Le bassin qui gronde : plus lent, de gros tambours, un violoncelle qui insiste, des cuivres graves qui gonflent.
+   Six parties (≈ 76 s) : les tambours seuls, le violoncelle, un rythme plus serré, le calme, une autre ligne, tout ensemble */
 M.bossB = function(A, P){
   var I = Instance(A, P), b = 60 / 76, proche = A.bus(P, {grotte:.35}), tamb = A.bus(P, {grotte:.9, g:.8}), loin = A.bus(P, {grotte:1, g:.7});
   bourdon(I, [m(38)], {dest:proche, lp:240, g:.05, lfo:.05, lfoAmp:60, a:2});
-  var rythme = [[0, 1], [1.5, .6], [2, .9], [3, .5]];
-  I.chaque(.3, 4 * b, function(t){ rythme.forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .8 ? 75 : 90, d:.75, g:.34 * p[1]}, tamb); }); });
-  var cello = [50, 50, 51, 50, 50, 50, 46, 48];                                                                      /* ré, ré, mi bémol, ré… : ça insiste */
-  I.chaque(.3, b, function(t, n){ A.archet(t, m(cello[n % 8]), b * .95, {a:.06, r:.15, g:.04}, proche); });
-  I.chaque(.3 + 8 * b, 16 * b, function(t){ [38, 45].forEach(function(nn){ [-6, 6].forEach(function(det){ A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2, 1], [3.5, .6], [5, 0]], g:.03, filtres:[{type:'lowpass', f:250, pts:[[2, 1300], [5, 250]], q:1.2}]}, loin); }); }); });
+  var R1 = [[0, 1], [1.5, .6], [2, .9], [3, .5]], R2 = [[0, 1], [.5, .5], [1.5, .6], [2, .9], [3, .5], [3.5, .5]], R0 = [[0, .9]], rythmes = [R1, R1, R2, R0, R1, R2];
+  I.chaque(.3, 4 * b, function(t, n){ rythmes[partie(n, 4, 6)].forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .8 ? 75 : 90, d:.75, g:.34 * p[1]}, tamb); }); });
+  var C1 = [50, 50, 51, 50, 50, 50, 46, 48], C2 = [50, 50, 53, 51, 50, 50, 46, 45], C3 = [50, 0, 48, 0, 46, 0, 45, 0], cello = [null, C1, C1, C3, C2, C1];   /* ré, ré, mi bémol, ré… : ça insiste */
+  I.chaque(.3, b, function(t, n){
+    var s = partie(n, 16, 6), l = cello[s]; if(!l || !l[n % 8]) return;
+    A.archet(t, m(l[n % 8]), (s === 3 ? 2 : 1) * b * .95, {a:.06, r:.15, g:.04}, proche);
+  });
+  I.chaque(.3 + 8 * b, 16 * b, function(t, n){
+    var s = partie(n, 1, 6); if(s === 0 || s === 3) return;
+    (s === 4 ? [36, 43] : [38, 45]).forEach(function(nn){ [-6, 6].forEach(function(det){
+      A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2, 1], [3.5, .6], [5, 0]], g:.03, filtres:[{type:'lowpass', f:250, pts:[[2, 1300], [5, 250]], q:1}]}, loin);
+    }); });
+  });
   I.chaque(2, function(){ return h(3, 6); }, function(t){ bloup(A, t, .05, proche); });
   return I;
 };
-/* C — Le marais qui swingue : une basse pincée qui se balance, des « splotch » en guise de claquements de mains, des cuivres graves */
+/* C — Le marais qui swingue : une basse pincée qui se balance, des « splotch » en guise de claquements de mains, des cuivres
+   graves. Huit parties (≈ 77 s) : la basse seule, les splotch, les cuivres, une autre marche, le calme, puis on mélange */
 M.bossC = function(A, P){
   var I = Instance(A, P), b = 60 / 100, proche = A.bus(P, {grotte:.3}), loin = A.bus(P, {grotte:.9, g:.7});
-  var marche = [38, 41, 43, 44, 45, 43, 41, 40, 38, 36, 34, 33, 34, 36, 37, 38];                                       /* une basse qui marche, en se dandinant */
+  var M1 = [38, 41, 43, 44, 45, 43, 41, 40, 38, 36, 34, 33, 34, 36, 37, 38], M2 = [38, 41, 43, 45, 46, 45, 43, 41, 38, 36, 34, 36, 38, 40, 41, 40], marches = [M1, M1, M1, M2, M1, M2, M1, M2];
   I.chaque(.3, b, function(t, n){
-    var sw = n % 2 ? b * .16 : 0;                                                                                    /* le balancement */
-    A.harpe(t + sw, m(marche[n % 16]), {t60:.5, eclat:.3, g:.25, lp:1200}, proche);
-    if(n % 2 === 1){ A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:1500, pts:[[.1, 400]], q:4}], env:A.perc(.003, .12), g:.35}, proche); A.choc(t, {f:150, f2:80, d:.08, g:.12, bruit:0, corps:.5}, proche); }   /* splotch */
-    if(n % 8 === 7) [50, 53, 57].forEach(function(nn){ O.cuivre(A, t + b * .5, m(nn), b * .6, .025, loin); });       /* des cuivres graves */
+    var s = partie(n, 16, 8), sw = n % 2 ? b * .16 : 0;                                                                /* le balancement */
+    if(s === 4 && n % 2) return;                                                                                       /* le calme : une note sur deux, sans splotch */
+    A.harpe(t + sw, m(marches[s][n % 16]), {t60:.5, eclat:.3, g:.25, lp:1200}, proche);
+    if(n % 2 === 1 && s !== 0){ A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:1500, pts:[[.1, 400]], q:4}], env:A.perc(.003, .12), g:.35}, proche); A.choc(t, {f:150, f2:80, d:.08, g:.12, bruit:0, corps:.5}, proche); }   /* splotch */
+    if(n % 8 === 7 && (s === 2 || s === 3 || s >= 5)) (s === 5 || s === 6 ? [48, 52, 55] : [50, 53, 57]).forEach(function(nn){ O.cuivre(A, t + b * .5, m(nn), b * .6, .025, loin); });   /* des cuivres graves */
   });
-  I.chaque(.3, 4 * b, function(t){ A.tambour(t, {f:85, d:.5, g:.25}, proche); });
+  I.chaque(.3, 4 * b, function(t, n){ A.tambour(t, {f:85, d:.5, g:partie(n, 4, 8) === 4 ? .15 : .25}, proche); });
   return I;
 };
 

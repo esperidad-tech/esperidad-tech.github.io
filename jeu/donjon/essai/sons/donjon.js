@@ -349,25 +349,37 @@ S.pasCouloirB = function(A, P){
   }
   return {duree:d + .6};
 };
-/* Romain, 10 novembre (16 h 33) : « le bruit de course est affreux : un petit bruit plus discret, plus sympathique ».
-   C — de petits pas feutrés : on marche, on ne court pas ; pas d'écho de caverne, presque rien dans les aigus */
+/* Les pas sur la carte. Romain, 10 novembre : à 16 h 33, « le bruit de course est affreux » (A et B) ; à 17 h 47, les deux
+   premiers essais feutrés ne vont pas non plus : « des petits sons légers et multiples — ils ont six pieds en tout —,
+   plein de petits sons, mais agréables à entendre ; que ça résonne, mais pas trop ».
+   C — trois marcheurs, six petits pieds : chacun sa hauteur (pied gauche, pied droit), chacun son allure, un peu décalés ;
+       de petits « tip » ronds et doux, avec une résonance courte */
 S.pasCouloirC = function(A, P){
-  var t = P.t, d = 1.7, lo = A.bus(P, {rev:.12, pan:-.3, pan2:.3, pant:d});
-  for(var x = 0, k = 0; x < d; x += h(.29, .33), k++){
-    var g = Math.sin(Math.PI * Math.min(1, (x + .3) / (d + .3))), pied = k % 2 ? 1 : .88;
-    A.ton(t + x, {f:150 * pied, f2:72, gl:.06, env:A.perc(.004, .085), g:.3 * g, lp:520}, lo);                                        /* le talon, tout doux */
-    A.bruit(t + x + .004, {coul:'rose', filtres:[{type:'bandpass', f:h(650, 950), q:.8}, {type:'lowpass', f:1700}], env:A.perc(.004, .055), g:.2 * g}, lo);   /* la semelle sur la pierre */
-  }
-  return {duree:d + .35};
-};
-/* D — un petit trottinement de bois, léger : « tap-tap, tap-tap, tap » (deux notes qui se répondent, comme une comptine) */
-S.pasCouloirD = function(A, P){
-  var t = P.t, lo = A.bus(P, {rev:.18, pan:-.25, pan2:.25, pant:1.5});
-  [[0, 392, 1], [.14, 494, .7], [.44, 392, .9], [.58, 523, .7], [.9, 440, .85], [1.04, 587, .65], [1.36, 523, .8]].forEach(function(n){
-    A.modes(t + n[0], n[1], [[1, .8, .11], [2.76, .25, .05], [5.4, .08, .03]], {g:.16 * n[2]}, lo);              /* la lame de bois */
-    A.ton(t + n[0], {f:n[1] * .5, f2:n[1] * .42, gl:.05, env:A.perc(.003, .06), g:.08 * n[2], lp:700}, lo);        /* le petit choc du pied */
+  var t = P.t, d = 2.1;
+  [{f:440, iv:.30, d0:0, pan:-.4}, {f:554, iv:.26, d0:.08, pan:0}, {f:370, iv:.33, d0:.16, pan:.4}].forEach(function(hh){
+    var lo = A.bus(P, {rev:.32, grotte:.12, pan:hh.pan - .12, pan2:hh.pan + .12, pant:d});
+    for(var x = hh.d0, k = 0; x < d; x += hh.iv * h(.93, 1.07), k++){
+      var g = Math.sin(Math.PI * Math.min(1, (x + .3) / (d + .3))), f = hh.f * (k % 2 ? 1 : .84) * h(.975, 1.025);
+      A.ton(t + x, {type:'sine', f:f, f2:f * .7, gl:.05, env:A.perc(.003, .075), g:.15 * g}, lo);                                   /* le petit « tip » rond du pied */
+      A.bruit(t + x, {coul:'rose', filtres:[{type:'bandpass', f:h(1300, 1900), q:1.2}], env:A.perc(.002, .028), g:.06 * g}, lo);   /* le grain de la pierre */
+    }
   });
-  return {duree:1.75};
+  return {duree:d + .6};
+};
+/* D — la même petite troupe, sur une pierre plus mate : des « pat » plus graves et plus feutrés, et de temps en temps un
+       minuscule caillou qui roule */
+S.pasCouloirD = function(A, P){
+  var t = P.t, d = 2.1;
+  [{f:262, iv:.31, d0:0, pan:-.4}, {f:330, iv:.27, d0:.1, pan:0}, {f:220, iv:.34, d0:.19, pan:.4}].forEach(function(hh){
+    var lo = A.bus(P, {rev:.28, grotte:.1, pan:hh.pan - .12, pan2:hh.pan + .12, pant:d});
+    for(var x = hh.d0, k = 0; x < d; x += hh.iv * h(.93, 1.07), k++){
+      var g = Math.sin(Math.PI * Math.min(1, (x + .3) / (d + .3))), f = hh.f * (k % 2 ? 1 : .86) * h(.97, 1.03);
+      A.ton(t + x, {type:'triangle', f:f, f2:f * .62, gl:.06, env:A.perc(.004, .09), g:.13 * g, lp:900}, lo);                        /* le « pat » du pied */
+      A.bruit(t + x + .003, {coul:'rose', filtres:[{type:'bandpass', f:h(600, 900), q:.9}, {type:'lowpass', f:1600}], env:A.perc(.003, .05), g:.09 * g}, lo);
+      if(Math.random() < .18) A.modes(t + x + h(.04, .1), h(1900, 2600), [[1, 1, .05], [2.4, .4, .03]], {g:.018}, lo);              /* un petit caillou */
+    }
+  });
+  return {duree:d + .6};
 };
 /* la brume qui se dissipe sur la carte */
 S.brumeCarteA = function(A, P){

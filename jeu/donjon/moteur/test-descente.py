@@ -95,6 +95,18 @@ class Descente:
         self.pg.goto(PAGE + '?nouveau=1&graine=%d&vitesse=%d' % (GRAINE, VITESSE)); self.pg.wait_for_timeout(800)
         self.pg.evaluate(POLITIQUE)
         self.entrees = {}; self.journal = {}; self.chutes = 0; self.gestes = 0; self.ecarts = []; self.salle = None; self.vu_fin = False
+        self.musiques = []; self.entendu = set()
+
+    # la musique demandée est-elle celle de l'endroit ? (10 novembre : une ambiance par zone, une longue musique par grand combat)
+    def musique(self):
+        r = self.js("""(function(){ var e = DJ.Explo.etat(), m = SALLE.Son.musiqueEtat(), v = m.attendue || m.voulu;
+          var lieu = e.ecran === 'scene' ? e.scene : e.ecran === 'combat' ? DJ.Explo._X().partie.lieu : e.ici;
+          var G = {atelier:'grand:gardien', ossuaire:'grand:roi', bassin:'grand:boss'};
+          var att = e.ecran === 'combat' ? (G[lieu] || 'salle:' + DJ.zone(lieu)) : lieu === 'camp' ? 'repos' : 'salle:' + DJ.zone(lieu);
+          return [v, v === att ? null : e.ecran + ' ' + lieu + ' : « ' + v + ' » au lieu de « ' + att + ' »']; })()""")
+        self.entendu.add(r[0])
+        if r[1] and r[1] not in self.musiques:
+            self.musiques.append(r[1])
 
     # ----- les petits outils -----
     def js(self, code):
@@ -345,6 +357,7 @@ class Descente:
                 self.salle = self.partie()['lieu']
                 if self.a('#fin [data-act="combat-fin"]'): self.fin_combat()
                 elif ce and ce['mode'] == 'qui' and not ce['occupe']:
+                    self.musique()
                     if ce['tour'] == 1 and not self.journal.get(self.salle, {}).get('vu'):
                         self.journal.setdefault(self.salle, {'essais': 0, 'gagne': False})['vu'] = True; self.cap(self.salle)
                     self.geste()
@@ -353,9 +366,10 @@ class Descente:
             if e['occupe']:
                 pg.wait_for_timeout(250); continue
             if e['ecran'] == 'scene':
-                self.salle_calme(e['scene']); continue
+                self.musique(); self.salle_calme(e['scene']); continue
             if e['ecran'] == 'carte':
                 p = self.partie(); ici = e['ici']
+                self.musique()
                 s = self.sauver_ici(p, ici)
                 if s:
                     verifie(self.taper_code(s) and self.partie()['sauvegarde'].get('lieu') == ici, 'la page de sauvegarde %s est écrite (%s)' % (s[-1], ici)); continue
@@ -392,6 +406,9 @@ with sync_playwright() as pw:
         j = D.journal.get(s, {})
         verifie(bool(j.get('gagne')), '%s : gagné%s' % (s, ' en %d tours au %de essai, vies %s' % (j.get('tours', 0), j.get('essais', 0), j.get('pv')) if j.get('gagne') else ' ? non (%d essai(s))' % j.get('essais', 0)))
     verifie(not D.ecarts, 'après chaque geste, l\'écran dit ce que disent les règles' + (' — %d écart(s) : %s' % (len(D.ecarts), ' || '.join(D.ecarts[:4])) if D.ecarts else ''))
+    verifie(not D.musiques, 'la musique demandée est toujours celle de l\'endroit (ambiance de la zone, repos au feu de camp, longue musique des grands combats)' + (' — ' + ' | '.join(D.musiques[:5]) if D.musiques else ''))
+    attendues = {'salle:puits', 'salle:canaux', 'salle:toiles', 'salle:atelier', 'salle:ossuaire', 'repos', 'grand:gardien', 'grand:roi', 'grand:boss'}
+    verifie(attendues <= D.entendu, 'toutes les musiques du donjon ont été demandées pendant la descente' + (' — manquent : ' + ', '.join(sorted(attendues - D.entendu)) if not attendues <= D.entendu else ''))
     refus = D.pg.evaluate('() => window.__REFUS || []')
     print('   gestes de la politique refusés par les règles (remplacés par un geste permis) : %d %s' % (len(refus), refus[:5]))
     errs = [x for x in D.errs if 'fonts.g' not in x and 'ERR_' not in x]
