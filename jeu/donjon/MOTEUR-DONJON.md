@@ -240,5 +240,18 @@ Playwright toujours sous le verrou : `flock /tmp/brumeval-pw.lock python3 …`. 
 - **Les sons pas encore validés** jouent leur version A (`DJ.sonsProvisoires`).
 - **Le critique des 9 monstres** n'est pas encore aligné sur celui du rat (on attend l'avis de Romain sur le critique recalé).
 - **Pas de contrôle par un agent neuf** (§7) : les aides ont été coupées le 10 à 12 h 06. `test-descente.py` le remplace en partie.
-- **Un objet reposé** (mains pleines) n'est pas redessiné dans la salle. Le cas ne peut pas arriver dans ce prototype : aucun héros ne peut tenir plus de 2 objets. À faire si on ajoute des objets.
+- (Fait le 10 novembre au soir : un objet reposé reste dans la salle, voir §9.5.)
 - **L'explication des dalles** est faite avec des émojis, pas avec des dessins.
+
+### 9.5 Après le premier essai de Romain (10 novembre, 16 h 33)
+
+Le détail de ses retours est dans la Bible §12.51. Ce que ça change dans le moteur :
+
+- **`combat.js`, `cleDe`** : le geste d'un héros ouvre toujours son propre bloc d'évènements, même quand il vise une bête. Sans ça, le héros ne s'anime pas. `test-combat.py` le vérifie (« le héros s'anime à chaque geste »).
+- **`carte.js`** : toutes les toiles d'une vue passent par `toile()` et sont vidées par `detruire()` (36 Mo par passage sur la carte restaient en mémoire). Les mesures de `perf.py` ne voyaient pas cette fuite : elles lancent un combat tout seul, sans passer par la carte. **À faire : mesurer aussi la mémoire après un trajet carte → salle → carte → combat.**
+- **Le filet de sécurité du critique** (`noyau.js`) : `DJ.temoinCritique('debut' | 'impact' | 'explosion' | 'fumee' | 'bete' | false)`, `DJ.verifierTemoin()` au démarrage, `DJ.plantages()`, `SALLE.critLeger`. La version du jeu (`DJ.VERSION`, l'heure de fabrication) et le compteur sont en bas de « 🎒 Objets ».
+- **La défaite** : `fuite(auto)` attend, fait se relever les trois héros avec `relever({sonne:true, retard})`, puis « Fuite ! ». « On fait le point » est réduit à « où l'on repart ».
+- **L'équipement** (`explo.js`) : `majPlaque(h)` (deux cases au-dessus du héros), `etiquetteObjet(id)` (le nom au toucher), `echange(x)` et `toucherPlaque(id, heros)` (mains pleines : on touche la case qu'on repose), `reposer(id, heros)` et `poserAuSol(id)` (l'objet reposé reste dans la salle ; `SCENES.portable(id, x)` donne son dessin), `coffreLibre(e, d)` (le coffre de la réserve : deux objets ordinaires), `aPlace(id)` (rond jaune seulement si quelqu'un a une place).
+- **Les règles** : le Pisteur part avec `fleches-normales` (une de ses deux places) ; la réserve a deux objets ordinaires (plus de « coffre à choix ») ; `_carquois(m)` choisit le carquois fait pour la bête ; un objet reposé ailleurs ne réapparaît plus dans sa salle d'origine. `test-regles.js` : 329 vérifications. Le lutrin de la bibliothèque est encore un coffre à choix.
+- **Les sons** : `pasCouloir` C et D dans l'Atelier, niveau des pas à −27 (`niveaux.py`, `CIBLE_PAS`) ; `REFAITS` dans `noyau.js` dit quelle version provisoire jouer quand Romain a refusé les premières.
+

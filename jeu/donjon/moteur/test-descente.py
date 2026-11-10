@@ -223,7 +223,7 @@ class Descente:
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
         if not fait('objet:sacoche') or not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
-        if not fait('coffre:reserve'): return 'reserve'
+        if not fait('objet:fleches-lourdes'): return 'reserve'
         if not fait('combat:canaux'): return 'canaux'
         if not fait('objet:fleur-givre'): return 'givre'
         if not fait('combat:toiles'): return 'toiles'
@@ -274,9 +274,11 @@ class Descente:
         if lieu == 'aeration':
             if not f.get('objet:sacoche'): self.objet('sacoche'); pg.wait_for_timeout(1500); self.libre()
             if not f.get('objet:herbes'): self.objet('herbes'); self.fenetre_code()
-        elif lieu == 'reserve' and not f.get('coffre:reserve'):
-            self.objet('coffre'); pg.wait_for_timeout(2400); self.libre()
-            self.objet('coffre', 1); pg.wait_for_timeout(2600); self.libre()
+        elif lieu == 'reserve' and not f.get('objet:fleches-lourdes'):
+            # le Pisteur a ses flèches normales : il lui reste une place, pour les flèches transperçantes
+            if self.js("!DJ.Explo._S().o['fleches-lourdes']"):
+                self.objet('coffre'); pg.wait_for_timeout(2400); self.libre()
+            self.objet('fleches-lourdes'); pg.wait_for_timeout(2600); self.libre()
         elif lieu == 'givre' and not f.get('objet:fleur-givre'):
             self.objet('fleur-givre'); self.fenetre_code()
         elif lieu == 'eboulis':
@@ -298,7 +300,7 @@ class Descente:
         elif lieu == 'crypte' and f.get('combat:crypte') and not f.get('objet:amulette'):
             self.objet('sarcophage'); pg.wait_for_timeout(2800); self.libre()
             self.objet('amulette'); pg.wait_for_selector('#fenetre [data-act="qui-porte"]', timeout=15000)
-            self.clic('[data-act="qui-porte"][data-id="pisteur"]'); pg.wait_for_timeout(2600); self.libre()
+            self.clic('[data-act="qui-porte"][data-id="alchimiste"]'); pg.wait_for_timeout(2600); self.libre()      # (le Pisteur et ses deux places sont déjà pris)
         elif lieu == 'camp':
             if not p.get('repos'): self.objet('feu'); pg.wait_for_timeout(2600); self.libre()
             p = self.partie(); f = p['faits']

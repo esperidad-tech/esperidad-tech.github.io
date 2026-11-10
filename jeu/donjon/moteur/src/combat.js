@@ -736,14 +736,27 @@ async function critique(l, i, ctx){
   if(meurt && a.rat){
     /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
-    DJ.temoinCritique(true);
+    if(DJ.plantages() >= 2){
+      /* la page s'est déjà fermée DEUX fois en plein critique sur cet appareil : le critique le plus simple possible
+         (le gros texte, le chiffre, des étincelles), pour qu'on puisse au moins continuer à jouer */
+      sonCritique('boum'); Fx.tremble(7, 300);
+      if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
+      Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
+      a.el.style.visibility = 'hidden'; a.mort = true;
+      await attendre(1200);
+      return i + 1;
+    }
+    /* le témoin : il dit où en était le critique si la page se ferme (lu au redémarrage, affiché en bas de « Objets ») */
+    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('impact'); }, 420 / vt), setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt), setTimeout(function(){ DJ.temoinCritique('fumee'); }, 1500 / vt)];
+    DJ.temoinCritique('debut');
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
-    DJ.temoinCritique(false);
+    tm.forEach(clearTimeout); DJ.temoinCritique(false);
     return i + 1;
   }
   sonCritique('aspire');
   if(meurt){
     retirerHud(a.id); liberer(a);
+    DJ.temoinCritique('bete');
     var p = a.acteur.exploser(fx), boom = p && p.boom ? Promise.resolve(p.boom) : attendre(420);
     a.mort = true;
     await Promise.race([boom, attendre(1400)]);
@@ -752,6 +765,7 @@ async function critique(l, i, ctx){
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');
     setTimeout(function(){ sonCritique('explosion'); Fx.tremble(5, 240); }, 600 / (SALLE.vitesse || 1));
     await Promise.race([Promise.resolve(p).catch(function(){}), attendre(4200)]);
+    DJ.temoinCritique(false);
     a.el.classList.add('restes');
     return i + 1;
   }

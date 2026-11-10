@@ -2277,6 +2277,26 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
     - la difficulté : une équipe qui ne se trompe jamais gagne tout du premier coup ; ce sont les erreurs qui font la difficulté (les dégâts des monstres sont dans `moteur/src/donnees.js`) ;
     - les textes du Grand Livre ;
     - les écarts de règles listés plus haut (flèches lourdes, Baume lumineux, Bourbe…).
+- **Premier essai du donjon par Romain (10 novembre, 16 h 33, sur son iPhone 16 Pro) : ses retours, et ce qui est fait.**
+  - **« Tu as enlevé les animations des héros quand ils lancent des sorts. »** Une erreur du nouveau moteur : dès qu'un geste visait une bête (flèche, dague, potion, rune, étude), l'évènement était rangé avec la bête et le héros restait figé (`cleDe`, `moteur/src/combat.js`). Corrigé. `test-combat.py` vérifie maintenant que le héros s'anime à chaque geste.
+  - **« À chaque critique, la salle recommence. »** La page est fermée puis rechargée par Safari en plein critique. Pas reproduit hors de l'iPhone. Ce qui est fait :
+    - une vraie fuite de mémoire corrigée : chaque passage sur la carte gardait 36 Mo de toiles (canvas) seulement retirées de la page, jamais vidées (`carte.js` : `toile()`, `viderToile()`, `detruire()`). **Règle : une toile qu'on n'utilise plus se vide (largeur et hauteur à 0), on ne se contente pas de l'enlever** (RAPIDITE.md R9) ;
+    - un filet de sécurité (`noyau.js` : `DJ.temoinCritique`, `DJ.verifierTemoin`) : un témoin est posé pendant le critique ; s'il est encore là au démarrage, la page s'est fermée en plein critique. Au premier plantage, les critiques suivants sont allégés sur cet appareil (6 volutes et 4 morceaux au lieu de 11 et 8) ; au deuxième, le critique devient minimal (le gros texte, le chiffre, des étincelles). Le compteur et le moment du plantage se lisent tout en bas de « 🎒 Objets », à côté de la **version du jeu** ;
+    - **pas encore sûr que ce soit réglé** : un iPhone 16 Pro a beaucoup de mémoire. Romain doit refaire un critique dans le donjon, et un dans la salle d'essai (même critique recalé), pour savoir si le problème vient du critique lui-même.
+  - **Les héros au sol** ne sont plus gris : ils gardent leurs couleurs, les étoiles tournent au-dessus de leur tête (« on voit qu'ils ne sont pas morts, juste sonnés »). **Quand les trois sont tombés**, ils se relèvent difficilement, l'un après l'autre (assis, on retombe, un genou à terre, debout en titubant : `HerosAnime.relever({sonne:true})`), crient « Fuite ! » et détalent.
+  - **« On fait le point »** : plus de Grand Livre ni de sac sur cet écran (il débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Il reste : où l'on repart, une phrase, le bouton jaune.
+  - **« Repartir » devient « Continuer »** (salles sans combat et « On fait le point »).
+  - **La réserve et l'équipement** (`moteur/src/explo.js`, `donnees.js`, `regles.js`, `scenes/scenes.js`) :
+    - plus de petit texte en bas dans la réserve ;
+    - les carquois s'appellent **« Flèches de lune »** (avant : d'argent) et **« Flèches transperçantes »** (avant : lourdes) ; quand on en touche un, son nom s'affiche au-dessus de lui ;
+    - **l'équipement du héros s'affiche au-dessus de sa tête** : deux cases ; « Complet » quand elles sont prises. Le Pisteur part avec ses **flèches normales**, qui prennent une case ;
+    - mains pleines : l'objet touché ne part pas, les deux cases bougent avec le rond jaune, et on touche celle de l'objet qu'on repose. On peut donc reposer les flèches normales et avoir **les deux carquois** ; avec les deux, le Pisteur tire la flèche faite pour la bête visée ;
+    - un objet reposé reste dans la salle (dans le coffre s'il en vient, sinon au sol) et on peut revenir le chercher ;
+    - l'équipement s'affiche aussi dans les autres salles à objets (la sacoche, le lutrin, l'amulette). **Le lutrin du Sage reste « un seul des deux »** : à trancher avec Romain (même règle que le Pisteur ?).
+  - **Le bruit de pas sur la carte** (« affreux ») : deux nouvelles versions dans l'Atelier, C (petits pas feutrés) et D (petit trottinement de bois), et tous les pas baissés de 12 dB. Le jeu joue la C en attendant le choix de Romain.
+  - **La musique** (« très redondante, la boucle est trop courte, affreuse ») : pas encore traité. Les boucles font 11 à 48 secondes (choix du 9 novembre pour la mémoire de l'iPhone). À décider avec Romain dans l'Atelier.
+  - **L'étude du Sage** : Romain veut la sortir du combat et la mettre sur la tablette du Sage (« il aura quelque chose à faire »). **En discussion** : rien n'est construit, une proposition lui est faite.
+  - **En ligne** : à 16 h 59 (commit du site 59b3c2b : animations, mémoire de la carte, défaite, « Continuer »), puis à 17 h 29 (commit 94c4885, version « 10/11 à 17 h 26 » : la réserve et l'équipement, les pas, le filet de sécurité). Tests : règles 329, combats 79, visite 68, vraie descente 15 (les 7 combats gagnés, avec la nouvelle réserve), Atelier des sons 59.
 - **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :
   - le coffre à deux carquois et le lutrin à choix ;
   - le tas d'os à fouiller ;

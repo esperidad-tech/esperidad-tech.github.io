@@ -936,6 +936,19 @@ FONDS.leo = function(){
    ====================================================================== */
 function art(p, w, h, f){ var d = new Defs(p); return svgTexte(d, w, h, f(d)); }
 var A = {};
+/* le carquois de tous les jours du Pisteur : cuir clair, trois flèches à empennage rouge et crème (comme sur son dos) */
+A.carquoisNormal = function(){ return art('cn', 56, 116, function(d){
+  var s = '';
+  [[16, 8, -8, '#e04a3a'], [28, 3, 0, '#f3e7cb'], [40, 8, 9, '#e04a3a']].forEach(function(f){
+    var x = f[0], y = f[1], a = f[2];
+    s += '<g transform="rotate(' + a + ' ' + x + ' 60)">' + L('M' + x + ' 60 L ' + x + ' ' + (y + 16), O, 5.4) + L('M' + x + ' 60 L ' + x + ' ' + (y + 16), '#a07a48', 2.8) +
+      P('M' + x + ' ' + (y + 2) + ' L ' + (x + 7) + ' ' + (y + 8) + ' L ' + (x + 7) + ' ' + (y + 22) + ' L ' + x + ' ' + (y + 17) + ' L ' + (x - 7) + ' ' + (y + 22) + ' L ' + (x - 7) + ' ' + (y + 8) + ' Z', f[3], ' stroke-width="2.2"') +
+      L('M' + x + ' ' + (y + 4) + ' L ' + x + ' ' + (y + 17), O, 1.4) + '</g>';
+  });
+  s += P('M10 46 L 46 46 L 43 110 Q 28 115 13 110 Z', d.g('#8a5a32')) + F('M10 46 L 20 46 L 18 112 Q 15 111 13 110 Z', '#000', op(0.22)) +
+    P('M8 42 L 48 42 L 47 52 L 9 52 Z', d.g('#c89a5a'), ' stroke-width="2.4"') + P('M12 92 L 45 92 L 44 100 L 13 100 Z', d.g('#c89a5a'), ' stroke-width="2.4"') +
+    L('M15 56 L 14 88 M41 56 L 42 88', '#d8b070', 1.2, ' stroke-dasharray="3 3"');
+  return s + L('M42 50 Q 46 76 41 104', '#ffffff', 2, op(0.22)); }); };
 /* la corde qui pend du haut du puits (24 de large) */
 A.corde = function(h){ return art('co', 24, h, function(d){
   var c = 'M12 0 C 10 ' + r1(h * 0.33) + ' 15 ' + r1(h * 0.66) + ' 12 ' + h, s = L(c, O, 8) + L(c, '#a8864e', 5);
@@ -977,7 +990,7 @@ A.herbes = function(){ return art('he', 76, 78, function(d){
   });
   return s; }); };
 /* les deux carquois de la réserve */
-A.carquois = function(sorte){ return art('cq', 56, 116, function(d){
+A.carquois = function(sorte){ if(sorte === 'normal') return A.carquoisNormal(); return art('cq', 56, 116, function(d){
   var arg = sorte === 'argent', s = '';
   var fut = arg ? '#d8c8a8' : '#5a3a22', tete = arg ? d.lin([[0, '#ffffff'], [0.5, '#c8d8f0'], [1, '#7a8aa8']], 1, 0, 0, 1) : d.lin([[0, '#6a6a78'], [0.5, '#2e2e38'], [1, '#121218']], 1, 0, 0, 1);
   var fl = arg ? [[13, 6, -10], [22, 2, -3], [32, 4, 6], [41, 8, 12]] : [[16, 6, -8], [28, 1, 0], [40, 6, 9]];
@@ -1324,8 +1337,8 @@ SALLES.aeration = function(){ return {nom: 'Le puits d\'aération', type: 'cul-d
 SALLES.reserve = function(){
   var C0 = COFFRE, qy = C0.y - 14;
   var opt = [
-    objet({id: 'fleches-argent', nom: 'Les flèches d\'argent', svg: A.carquois('argent'), x: C0.x + 30, y: qy, w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur', zone: {x: C0.x + 24, y: qy - 4, w: 68, h: 104}}),
-    objet({id: 'fleches-lourdes', nom: 'Les flèches lourdes', svg: A.carquois('lourd'), x: C0.x + 98, y: qy, w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur', zone: {x: C0.x + 92, y: qy - 4, w: 68, h: 104}})
+    objet({id: 'fleches-argent', nom: 'Les flèches de lune', svg: A.carquois('argent'), x: C0.x + 30, y: qy, w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur', zone: {x: C0.x + 24, y: qy - 4, w: 68, h: 104}}),
+    objet({id: 'fleches-lourdes', nom: 'Les flèches transperçantes', svg: A.carquois('lourd'), x: C0.x + 98, y: qy, w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur', zone: {x: C0.x + 92, y: qy - 4, w: 68, h: 104}})
   ];
   return {nom: 'La réserve', type: 'objets-choix', ambiance: 'des étagères, des tonneaux ; des bocaux de lucioles',
   elements: [
@@ -1442,7 +1455,26 @@ SALLES.leo = function(){ var L0 = LEO; return {nom: 'La dernière salle', type: 
     poussiere(700, 120, 220, 200, 5, '#ffd8a0')
   ]}; };
 
+/* Les objets qu'un héros porte (2 places par héros) : leur dessin, pour les reposer au sol de n'importe quelle salle
+   (Romain, 10 novembre : on repose un objet pour en prendre un autre). */
+var PORTABLES = {
+  'fleches-normales': function(){ return {nom: 'Les flèches normales', svg: A.carquois('normal'), w: 56, h: 116, lueur: '#ffe08a', pour: 'pisteur'}; },
+  'fleches-argent': function(){ return {nom: 'Les flèches de lune', svg: A.carquois('argent'), w: 56, h: 116, lueur: '#cfe4ff', pour: 'pisteur'}; },
+  'fleches-lourdes': function(){ return {nom: 'Les flèches transperçantes', svg: A.carquois('lourd'), w: 56, h: 116, lueur: '#ff9a50', pour: 'pisteur'}; },
+  'cristal-lune': function(){ return {nom: 'Le cristal de lune', svg: A.cristalLune(), w: 50, h: 88, lueur: '#c8c8ff', pour: 'sage'}; },
+  'baton-chene': function(){ return {nom: 'Le bâton de chêne', svg: A.baton(), w: 46, h: 178, lueur: '#b8f070', pour: 'sage'}; },
+  'sacoche': function(){ return {nom: 'La sacoche', svg: A.sacoche(), w: 88, h: 72, lueur: '#ffd36a', pour: 'alchimiste'}; },
+  'amulette': function(){ return {nom: 'L\'amulette de vie', svg: A.amulette(), w: 52, h: 66, lueur: '#ffd06a', pour: 'tous'}; }
+};
 var SCENES = {
+  /* le dessin d'un objet porté (pour une case d'équipement), ou sa fiche posée au sol en x (le bas de l'objet sur le sol) */
+  portable: function(id, x){
+    var f = PORTABLES[id]; if(!f) return null;
+    var d = f(); d.id = id; d.type = 'objet'; d.sol = true;
+    if(x == null) return d;
+    d.x = Math.round(x - d.w / 2); d.y = SOL - d.h + 2; d.z = 6; d.zone = zoneDe(d.x, d.y, d.w, d.h);
+    return d;
+  },
   W: W, H: H, SOL: SOL, HEROS: {x0: 0, x1: 476}, base: '',
   ordre: ORDRE.slice(),
   fond: function(id){ return FONDS[id] ? FONDS[id]() : ''; },

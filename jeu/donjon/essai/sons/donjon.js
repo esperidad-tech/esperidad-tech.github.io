@@ -349,6 +349,26 @@ S.pasCouloirB = function(A, P){
   }
   return {duree:d + .6};
 };
+/* Romain, 10 novembre (16 h 33) : « le bruit de course est affreux : un petit bruit plus discret, plus sympathique ».
+   C — de petits pas feutrés : on marche, on ne court pas ; pas d'écho de caverne, presque rien dans les aigus */
+S.pasCouloirC = function(A, P){
+  var t = P.t, d = 1.7, lo = A.bus(P, {rev:.12, pan:-.3, pan2:.3, pant:d});
+  for(var x = 0, k = 0; x < d; x += h(.29, .33), k++){
+    var g = Math.sin(Math.PI * Math.min(1, (x + .3) / (d + .3))), pied = k % 2 ? 1 : .88;
+    A.ton(t + x, {f:150 * pied, f2:72, gl:.06, env:A.perc(.004, .085), g:.3 * g, lp:520}, lo);                                        /* le talon, tout doux */
+    A.bruit(t + x + .004, {coul:'rose', filtres:[{type:'bandpass', f:h(650, 950), q:.8}, {type:'lowpass', f:1700}], env:A.perc(.004, .055), g:.2 * g}, lo);   /* la semelle sur la pierre */
+  }
+  return {duree:d + .35};
+};
+/* D — un petit trottinement de bois, léger : « tap-tap, tap-tap, tap » (deux notes qui se répondent, comme une comptine) */
+S.pasCouloirD = function(A, P){
+  var t = P.t, lo = A.bus(P, {rev:.18, pan:-.25, pan2:.25, pant:1.5});
+  [[0, 392, 1], [.14, 494, .7], [.44, 392, .9], [.58, 523, .7], [.9, 440, .85], [1.04, 587, .65], [1.36, 523, .8]].forEach(function(n){
+    A.modes(t + n[0], n[1], [[1, .8, .11], [2.76, .25, .05], [5.4, .08, .03]], {g:.16 * n[2]}, lo);              /* la lame de bois */
+    A.ton(t + n[0], {f:n[1] * .5, f2:n[1] * .42, gl:.05, env:A.perc(.003, .06), g:.08 * n[2], lp:700}, lo);        /* le petit choc du pied */
+  });
+  return {duree:1.75};
+};
 /* la brume qui se dissipe sur la carte */
 S.brumeCarteA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.6, grotte:.4, pan:-.3, pan2:.3, pant:1.6});
