@@ -467,7 +467,7 @@ Les enquêtes 4 et 5 sont prévues (chapitre 8), pas encore écrites.
 
 | Moment | Pisteur | Alchimiste | Barde | Sage | Le plus chargé |
 |---|---|---|---|---|---|
-| Matin | mairie : traces, fenêtre, gouttière ; place | cueillir les baies ; encre (chaudron), avec la recette lue par le Sage | Basile (le chemin de la forêt) ; Odette | registre ; recettes | le Pisteur ou l'Alchimiste, environ 5 min |
+| Matin | mairie : traces, fenêtre, gouttière ; place | cueillir les baies ; encre (chaudron), avec la recette lue par le Sage | Basile (ses grosses bottes) ; Odette | registre ; recettes | le Pisteur ou l'Alchimiste, environ 5 min |
 | Après-midi | forêt : le chien (poursuite), les chemins ; Vieux Chêne | analyse du fil (double) ; racine rare (facultatif) | Gaspard (l'affiche) ; Mélusine | page blanche (avec l'encre) ; bonus horloge | l'Alchimiste, environ 6 min |
 | Soir | bonus du ballon | analyse des poils (double) ; bonus des fournées | Victor ; bonus | accusation | l'Alchimiste, environ 6 min |
 
@@ -495,7 +495,7 @@ Le calcul donne environ 41 minutes. Avec les ratés et les bonus, on arrive à 4
 - **Place, le panneau** : « PERDU : PIRATE, petit chien noir et blanc. Prévenez Tim, 7, rue des Lanternes. » Code de l'affiche pour le Barde.
 - **Boulangerie, le sol** : Gaspard a de très grands pieds.
 - **Boulangerie, le four** : de la suie autour du four. *Fausse piste.*
-- **Forêt.** Elle est fermée tant que le Pisteur n'a pas un plan : celui que le Sage révèle, ou le chemin dessiné par Basile.
+- **Forêt.** Elle est fermée tant que le Pisteur n'a pas le plan que le Sage révèle (depuis le 10 novembre, lui seul : Basile ne dessine plus le chemin, § 12.52).
   - **Le carrefour** : trois chemins, vers le moulin, le puits et le Vieux Chêne.
   - **Le chemin du moulin** : « La boue est toute lisse : personne n'est passé. » *Prouve* : pas au moulin.
   - **Le chemin du puits** : « De grosses traces de sabots : un sanglier ! Aucune trace d'enfant. » *Prouve* : pas au puits.
@@ -519,7 +519,7 @@ Le calcul donne environ 41 minutes. Avec les ratés et les bonus, on arrive à 4
 
 - **Gaspard** : « Dans mon fournil, toute la nuit ! » Si on lui montre l'affiche du chien : « Hier soir, Tim cherchait Pirate en pleurant. Je lui ai dit : les chiens perdus filent souvent dans la forêt. »
 - **Mélusine** : « Je dormais. » « J'ai tricoté des écharpes rouges pour la moitié du village. » « Mon écharpe ? Pas un trou, pas un fil qui dépasse ! » *Ce dernier point prouve, avec le fil :* ce n'est pas Mélusine.
-- **Basile** : a planté des fleurs devant la mairie hier avec ses grosses bottes ; à 6 heures du soir, la fenêtre était fermée ; il **dessine le chemin de la forêt**, avec un code pour le Pisteur.
+- **Basile** : a planté des fleurs devant la mairie hier avec ses grosses bottes ; à 6 heures du soir, la fenêtre était fermée. ~~Il dessine le chemin de la forêt~~ : depuis le 10 novembre (§ 12.52), « on s'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan », sans code.
 - **Odette** :
   - la lumière de la boulangerie est restée allumée ;
   - « À minuit, une petite silhouette a sauté de toit en toit, avec une lumière dorée, vers la forêt » (*prouve* : la Lanterne n'est pas restée sur les toits) ;
@@ -1389,11 +1389,11 @@ Tout est dans `src/barde.js` et `src/barde.css` (plus quelques petits crochets d
 
 | Moment | 🏹 Pisteur | ⚗️ Alchimiste | 🎻 Barde | 📖 Sage |
 |---|---|---|---|---|
-| **Matin** | 🏛️ Mairie (1 action) : 🎮 *Suivre la piste* au massif ; la fenêtre → 🔢 fil **→ Alchimiste** ; la gouttière · ⛲ Place (1 action) : la fontaine ; le panneau → 🔢 affiche **→ Barde** | 📦 l'atelier (ouvrir un carton, installer un meuble : gratuit) · 🫐 Lisière : 3 baies (1 action) · 🧪 🎮 *Le chaudron* : l'encre, avec la recette que lit le Sage (1 action) → 🔢 encre **→ Sage** · 🧶 ⏳ le fil du Pisteur, 🎮 *Le double* (1 action) → 🔢 écharpe **→ Barde** | ⏳ le registre du Sage → 🏠 noter la maison d'Odette (gratuit) · 👵 Odette, au 2, rue des Lanternes (1 action) → 🔢 plume **→ Alchimiste** · 🥕 Basile, au potager (1 action) → 🔢 chemin de la forêt **→ Pisteur** | 👥 lit « Les habitants » → 🔢 registre **→ Barde** · 🧪 lit la recette de l'encre à l'Alchimiste · 🔭 Mairie : le balcon (1 action) · ✨ bonus : l'horloge (runes, 1 action) · passe à l'après-midi |
-| **Après-midi** | 🍞 Boulangerie (1 action) : le sol → 🔢 grands pieds **→ Barde** ; le four · 🌲 Forêt (⏳ le plan : Basile ou le Sage ; 1 action) : le carrefour, les trois chemins, 🐕 🎮 *Course-poursuite* → 🔢 poils **→ Alchimiste** | ⏳ les poils du Pisteur ; en attendant ✨ bonus : les fournées (bulles, 1 action) · 🐾 🎮 *Le double* : les poils (1 action) → « une feuille de chêne », à dire au Pisteur | 🧵 Mélusine, sur la place (1 action) · 🐶 ⏳ l'affiche du Pisteur → Gaspard, à la boulangerie (1 action) | ❔ ⏳ l'encre de l'Alchimiste → la page blanche, 🎮 *Les runes* → 🔢 plan de la forêt **→ Pisteur** · passe au soir |
+| **Matin** | 🏛️ Mairie (1 action) : 🎮 *Suivre la piste* au massif ; la fenêtre → 🔢 fil **→ Alchimiste** ; la gouttière · ⛲ Place (1 action) : la fontaine ; le panneau → 🔢 affiche **→ Barde** | 📦 l'atelier (ouvrir un carton, installer un meuble : gratuit) · 🫐 Lisière : 3 baies (1 action) · 🧪 🎮 *Le chaudron* : l'encre, avec la recette que lit le Sage (1 action) → 🔢 encre **→ Sage** · 🧶 ⏳ le fil du Pisteur, 🎮 *Le double* (1 action) → 🔢 écharpe **→ Barde** | ⏳ le registre du Sage → 🏠 noter la maison d'Odette (gratuit) · 👵 Odette, au 2, rue des Lanternes (1 action) → 🔢 plume **→ Alchimiste** · 🥕 Basile, au potager (1 action) : où était-il cette nuit ? (ses grosses bottes ; depuis le 10 novembre, plus de chemin de la forêt, §12.52) | 👥 lit « Les habitants » → 🔢 registre **→ Barde** · 🧪 lit la recette de l'encre à l'Alchimiste · 🔭 Mairie : le balcon (1 action) · ✨ bonus : l'horloge (runes, 1 action) · passe à l'après-midi |
+| **Après-midi** | 🍞 Boulangerie (1 action) : le sol → 🔢 grands pieds **→ Barde** ; le four · 🌲 Forêt (⏳ le plan du Sage, lui seul depuis le 10 novembre ; 1 action) : le carrefour, les trois chemins, 🐕 🎮 *Course-poursuite* → 🔢 poils **→ Alchimiste** | ⏳ les poils du Pisteur ; en attendant ✨ bonus : les fournées (bulles, 1 action) · 🐾 🎮 *Le double* : les poils (1 action) → « une feuille de chêne », à dire au Pisteur | 🧵 Mélusine, sur la place (1 action) · 🐶 ⏳ l'affiche du Pisteur → Gaspard, à la boulangerie (1 action) | ❔ ⏳ l'encre de l'Alchimiste → la page blanche, 🎮 *Les runes* → 🔢 plan de la forêt **→ Pisteur** · passe au soir |
 | **Soir** | 🌳 le Vieux Chêne (1 action) : les racines · 📜 raconte tout au Sage · ✨ bonus : le ballon (tir, 1 action) | 🪶 ⏳ la plume du Barde : l'analyse (1 action) · 📜 raconte au Sage · (✨ les fournées, si pas faites) | 🧔 Victor, à la taverne (1 action) · 📜 raconte au Sage · ✨ bonus : la chanson (1 action) | 📋 écoute l'équipe, barre les innocents dans le tableau · ⚖️ accuse (sans aide) |
 
-**Qui attend qui** (jamais tout un moment) : le Barde attend le registre du Sage (une minute, au tout début) ; l'Alchimiste attend le fil (le Pisteur le trouve à sa première action) ; le Sage attend l'encre (il a l'horloge pendant ce temps) ; le Pisteur attend le plan (Basile le donne dès le matin) ; le Barde attend l'affiche (trouvée le matin) ; l'Alchimiste attend les poils (elle a les fournées pendant ce temps) ; la plume, trouvée le matin, sert le soir. Le bot du tutoriel (`tools/tuto.py`) vérifie que chaque rôle fait au moins une étape à chaque moment.
+**Qui attend qui** (jamais tout un moment) : le Barde attend le registre du Sage (une minute, au tout début) ; l'Alchimiste attend le fil (le Pisteur le trouve à sa première action) ; le Sage attend l'encre (il a l'horloge pendant ce temps) ; le Pisteur attend le plan du Sage (depuis le 10 novembre ; il a la boulangerie, puis le ballon en bonus, pendant ce temps) ; le Barde attend l'affiche (trouvée le matin) ; l'Alchimiste attend les poils (elle a les fournées pendant ce temps) ; la plume, trouvée le matin, sert le soir. Le bot du tutoriel (`tools/tuto.py`) vérifie que chaque rôle fait au moins une étape à chaque moment.
 
 **Le Sage et les runes** : quand l'encre arrive, toucher la page blanche lance *Les runes* (la carte à reconstituer, niveau 1). Réussi : le plan de la forêt apparaît, avec son code. Raté une fois : la dernière chance tout de suite. Raté deux fois : le dessin reste à moitié effacé, mais assez pour entrer dans la forêt, et le code est donné quand même (l'indice partiel suffit).
 
@@ -2266,6 +2266,28 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 - le code par joueur ;
 - qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette).
 Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
+
+### 12.52 Enquête 1 : le Sage ouvre la forêt, lui seul (Romain, 10 novembre, 14 h 47 → 14 h 56) — construit et testé, en attente de mise en ligne
+
+**Le principe de Romain : les quatre doivent être utiles.** « S'il n'y a que le Barde et le Pisteur qui sont utiles, c'est nul. » Dans le tutoriel, on ne cherche que deux choses, et chacun a sa part :
+- le **QUI** est au **Barde** (les habitants) ;
+- le **OÙ** est au **Pisteur** (les traces, les chemins) ;
+- l'**Alchimiste** analyse, et **débloque** : son encre ouvre la page blanche du Sage ;
+- le **Sage**, c'est **la connaissance** : il connaît la taille des pieds (les habitants) et il a le plan de la forêt.
+Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les rôles.
+
+**Ce qui a changé (constat de 14 h 47 : Basile donnait le chemin de la forêt dès le matin, le plan du Sage arrivait après coup et son seul mini-jeu ne servait presque jamais) :**
+- **Seul le plan du Sage ouvre la forêt** (`FORET = [{code:'info:carte'}]`, e1.js). La chaîne du OÙ passe par trois rôles : l'Alchimiste fait l'encre → le Sage fait parler la page blanche (Les runes) → le Pisteur entre dans la forêt et trouve le Vieux Chêne.
+- **Basile ne dessine plus le chemin.** À « Vous connaissez la forêt ? » : « La forêt ? Elle est si grande qu'on s'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan. » Pas de code. Le code `info:chemin` reste dans les tables gelées (rien n'a bougé), il n'est plus donné.
+- **L'étape du Barde chez Basile** devient « où était-il cette nuit ? » (ses grosses bottes : elles expliquent les grosses traces devant la mairie, utile pour le QUI).
+- **L'attente du Pisteur** : « Les traces filent vers la forêt… mais sans plan, on s'y perd. Le Sage fouille son Grand Livre ! » Il a la boulangerie, puis le ballon en bonus, pendant ce temps.
+- **L'étape du Sage** dit que le Pisteur compte sur lui (« sans lui, personne n'entre dans la forêt »).
+- **Plus de bouton « ⏭️ Passer » au tutoriel** (la page blanche du Sage, les poils de l'Alchimiste) : à l'enquête 1, tout se refait à l'infini, chacun réussit forcément ses petites missions (Romain, 14 h 56). Le mécanisme `passer` reste dans tuto.js, aucune étape ne s'en sert.
+- Missions du Pisteur, texte de la forêt fermée et archive de l'enquête 1 mis à jour ; `tools/partie1.py` tape le plan au lieu du chemin.
+
+**Vérifié** : `verif.js` (avec toute l'équipe : Tim au Vieux Chêne ; sans le Sage : 12 réponses possibles ; sans le Barde : 4 ; sans l'Alchimiste : 6 ; sans le Pisteur : 18), `tools/tuto.py` (partie complète à 4 tablettes, sans échec), `partie2.py`, codes E1/E2/E3 identiques.
+
+**Laissé de côté (proposé à Romain, pas validé)** : le OÙ est presque donné par le texte du soir (« va au bout du chemin du Vieux Chêne », et « une lueur dorée tout au fond » sous les racines) ; au balcon, le Sage pourrait chercher dans « Les habitants » qui laisse de la poussière noire (Tim, plein de suie), mais c'est un indice de plus sur le QUI.
 
 ## 13. Enquête 3 — La lettre d'Odette
 

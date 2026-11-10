@@ -5,8 +5,10 @@
 (function(){
 'use strict';
 var E = window.ENQUETES = window.ENQUETES || {};
-var FORET = [{code:'info:carte'}, {code:'info:chemin'}];
-var ALT_FORET = 'La forêt est immense et toute sombre. Sans plan, tu vas te perdre ! Le Grand Livre du Sage cache peut-être un plan… ou quelqu\'un du village connaît le chemin.';
+/* Seul le plan du Sage ouvre la forêt (Romain, 10 novembre, 14 h 56 : « c'est le Sage qui ouvre la forêt, et lui seul ; son rôle, c'est la connaissance ») :
+   l'Alchimiste fait l'encre → le Sage révèle la page blanche → le Pisteur entre. Basile ne dessine plus le chemin (le code info:chemin reste gelé, plus donné). */
+var FORET = [{code:'info:carte'}];
+var ALT_FORET = 'La forêt est immense et toute sombre. Sans plan, tu vas te perdre ! Le Grand Livre du Sage cache peut-être un plan…';
 
 E[1] = {
   id:1, titre:'La Lanterne d\'Or', niveau:1,
@@ -19,7 +21,7 @@ E[1] = {
   lettre:'Chers enquêteurs, c\'est une catastrophe ! Cette nuit, quelqu\'un a pris la Lanterne d\'Or dans mon bureau, à la mairie. Ce soir, c\'est la Fête des Lanternes : sans elle, aucune lanterne du village ne pourra s\'allumer ! Trouvez QUI l\'a prise, et OÙ elle se trouve, avant ce soir.',
   signature:'Monsieur Grosbec, maire de Brumeval',
   missions:{
-    pisteur:'Va voir la mairie, la place, la boulangerie. Trouve des traces et des objets : un objet trouvé a un code, donne-le à la bonne personne ! La forêt est fermée tant que tu n\'as pas de plan : le Sage ou un habitant pourra peut-être t\'en donner un. Tes missions, en haut de ton Carnet, te disent où aller.',
+    pisteur:'Va voir la mairie, la place, la boulangerie. Trouve des traces et des objets : un objet trouvé a un code, donne-le à la bonne personne ! La forêt est fermée tant que tu n\'as pas de plan : le Sage pourra peut-être t\'en trouver un. Tes missions, en haut de ton Carnet, te disent où aller.',
     alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Il te manque des baies de sureau : elles poussent à la lisière de la forêt. Analyse aussi les objets que l\'équipe te confie : compare-les avec les échantillons de ton atelier et trouve vite le signe pareil !',
     barde:'Va parler aux habitants. Sur la carte, chaque maison montre le visage de celui qui y habite : pour parler à quelqu\'un chez lui, touche sa maison.',
     sage:'Lis le Grand Livre à l\'équipe : les habitants (qui fait quoi, et la taille de leurs pieds), la recette de l\'encre révélatrice, et une page toute blanche qui cache peut-être quelque chose. Tu donnes le code de chaque moment, et c\'est toi qui accuses à la fin.'
@@ -49,9 +51,9 @@ E[1] = {
       {ic:'⛲', m:0, action:true, lieu:'place', points:['fontaine', 'affiche'], t:'Place : la fontaine et le panneau → donne le code de l\'affiche au Barde.', court:'Place : la fontaine, puis le panneau (pour le Barde).', histoire:'Sur la place, des empreintes de chien… et une affiche sur le panneau !',
         fait:[{et:[{vu:'pisteur:place:fontaine'}, {vu:'pisteur:place:affiche'}]}]},
       {ic:'🍞', m:1, action:true, lieu:'boulangerie', points:['sol', 'four'], t:'Boulangerie : regarde le sol et le four → donne le code du sol au Barde.', court:'Boulangerie : le sol (pour le Barde), puis le four.', histoire:'Ça sent le bon pain chaud… Les traces mènent-elles chez Gaspard ?', fait:[{et:[{vu:'pisteur:boulangerie:sol'}, {vu:'pisteur:boulangerie:four'}]}]},
-      {ic:'🗺️', m:1, lieu:'foret', t:'Entre dans la forêt : le Barde peut demander le chemin à Basile, ou le Sage peut trouver un plan → tape leur code dans ton onglet Code 🔢.', court:'Entre dans la forêt avec le plan !', histoire:'Le plan de la forêt ! En route, sous les grands arbres…',
-        attend:[{code:'info:carte'}, {code:'info:chemin'}], attendT:'Les traces filent vers la forêt… Le Barde ou le Sage va t\'en trouver le plan.',
-        fait:[{code:'info:carte'}, {code:'info:chemin'}]},
+      {ic:'🗺️', m:1, lieu:'foret', t:'Entre dans la forêt : le Sage va trouver un plan dans son Grand Livre → tape son code dans ton onglet Code 🔢.', court:'Entre dans la forêt avec le plan !', histoire:'Le plan de la forêt ! En route, sous les grands arbres…',
+        attend:[{code:'info:carte'}], attendT:'Les traces filent vers la forêt… mais sans plan, on s\'y perd. Le Sage fouille son Grand Livre !',
+        fait:[{code:'info:carte'}]},
       {ic:'🔀', m:1, action:true, lieu:'foret', points:['carrefour', 'ch_moulin', 'ch_puits', 'ch_chene'], t:'Forêt : le carrefour et les trois chemins (Moulin, Puits, Vieux Chêne).', court:'Forêt : le carrefour, puis les trois chemins.',
         fait:[{et:[{vu:'pisteur:foret:carrefour'}, {vu:'pisteur:foret:ch_moulin'}, {vu:'pisteur:foret:ch_puits'}, {vu:'pisteur:foret:ch_chene'}]}]},
       {ic:'🐕', m:1, action:true, lieu:'foret', points:['buisson'], t:'Forêt : attrape le petit chien (course-poursuite) → donne le code des poils à l\'Alchimiste.', court:'Forêt : attrape le chien ! Ses poils : pour l\'Alchimiste.', fait:[{vu:'pisteur:foret:buisson'}, {fini:'pisteur:foret:buisson'}]},
@@ -67,7 +69,7 @@ E[1] = {
       {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice et donne-la au Sage : il a la recette dans son Grand Livre !', court:'Prépare l\'encre avec le Sage, puis donne-la-lui.', histoire:'Le Sage connaît la recette de l\'encre révélatrice : prépare-la avec lui !', fait:[{donne:'pot:revelatrice'}]},
       {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.', histoire:'Un fil de laine rouge, trouvé à la mairie… Sous ta loupe, il va parler !',
         attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]},
-      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', passer:true, t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Des poils de chien ! Analyse-les, puis raconte tout au Pisteur.',
+      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Des poils de chien ! Analyse-les, puis raconte tout au Pisteur.',
         attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}, {fini:'alchimiste:analyse:poils'}]},
       {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.', histoire:'Une grande plume noire… À qui peut-elle bien appartenir ?',
         attend:[{code:'obj:plume'}], attendT:'Le Barde rend visite à Odette… Elle lui confiera peut-être un indice.', fait:[{analyse:'plume'}]},
@@ -81,7 +83,8 @@ E[1] = {
       {piste:true, t:'Sur la carte, chaque maison montre le visage de celui qui y habite : touche-la pour frapper à sa porte.'},
       {ic:'👵', m:0, action:true, pnj:'odette', t:'Frappe chez Odette : touche sa maison sur la carte (son visage est dessus), et pose-lui toutes tes questions. Si elle te donne quelque chose, donne son code à l\'Alchimiste.', court:'Chez Odette : pose tes questions. Son cadeau : pour l\'Alchimiste.', histoire:'Odette, la grand-mère aux sept chats, a peut-être vu quelque chose…',
         fait:[{et:[{vu:'barde:odette:1'}, {vu:'barde:odette:2'}, {vu:'barde:odette:3'}]}]},
-      {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui s\'il connaît la forêt → dis son code au Pisteur.', court:'Basile, au potager : le chemin de la forêt (pour le Pisteur).', histoire:'Basile connaît la forêt comme sa poche : demande-lui le chemin !', fait:[{vu:'barde:basile:2'}]},
+      /* (Romain, 10 novembre : le plan de la forêt est au Sage seul ; Basile sert au QUI, ses grosses bottes expliquent les grosses traces de la mairie) */
+      {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui où il était cette nuit.', court:'Basile, au potager : où était-il cette nuit ?', histoire:'Basile, le jardinier, bêche son potager du matin au soir… A-t-il remarqué quelque chose ?', fait:[{vu:'barde:basile:0'}]},
       {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.', histoire:'Mélusine tricote des écharpes… Une écharpe rouge, ça lui dit quelque chose ?',
         fait:[{et:[{vu:'barde:melusine:1'}, {vu:'barde:melusine:2'}]}]},
       {ic:'🐶', m:1, action:true, pnj:'gaspard', t:'Quand le Pisteur te donne l\'affiche du chien, montre-la à Gaspard, à la boulangerie.', court:'Boulangerie : montre l\'affiche du chien à Gaspard.', histoire:'L\'affiche du chien perdu ! Gaspard connaît tout le monde : montre-la-lui.',
@@ -96,7 +99,8 @@ E[1] = {
       {ic:'👥', m:0, livre:'habitants', t:'Lis à voix haute « Les habitants » à toute l\'équipe : qui fait quoi, où chacun habite, et la taille de leurs pieds.', court:'Lis « Les habitants » à l\'équipe (la taille des pieds !).', histoire:'Ton Grand Livre connaît tout Brumeval : lis « Les habitants » à l\'équipe !', manuel:true},
       {ic:'🧪', m:0, livre:'recettes', t:'Lis à l\'Alchimiste la recette de l\'encre révélatrice (page « Les recettes »).', court:'Lis la recette de l\'encre à l\'Alchimiste.', histoire:'L\'Alchimiste a besoin de toi : lis-lui la recette de l\'encre révélatrice.', fait:[{lu:'recettes'}]},
       {ic:'🔭', m:0, action:true, lieu:'mairie', points:['balcon'], t:'Mairie : monte au balcon et regarde les toits.', court:'Mairie : monte au balcon et regarde les toits.', histoire:'Du balcon de la mairie, on voit tous les toits… Va jeter un œil !', fait:[{vu:'sage:mairie:balcon'}]},
-      {ic:'❔', m:1, livre:'mystere', passer:true, t:'Quand l\'Alchimiste t\'apporte l\'encre, fais parler la page blanche de ton Grand Livre → donne le code du plan au Pisteur.', court:'Page blanche : reconstitue le plan (pour le Pisteur).', histoire:'L\'encre est là ! La page blanche de ton livre cache un secret…',
+      /* (Romain, 10 novembre : plus de « Passer » au tutoriel : tout se refait à l'infini, chacun réussit forcément ses missions ; sans ce plan, personne n'entre dans la forêt) */
+      {ic:'❔', m:1, livre:'mystere', t:'Quand l\'Alchimiste t\'apporte l\'encre, fais parler la page blanche de ton Grand Livre → donne le code du plan au Pisteur : sans lui, personne n\'entre dans la forêt !', court:'Page blanche : reconstitue le plan (pour le Pisteur).', histoire:'L\'encre est là ! La page blanche de ton livre cache un secret… et le Pisteur compte sur toi.',
         attend:[{code:'pot:revelatrice'}], attendT:'L\'Alchimiste prépare l\'encre… Ça bouillonne, ça fume, patience !', fait:[{page:'mystere'}]},
       {ic:'📋', m:2, livre:'tableau', t:'Écoute ce que chacun a trouvé, et barre les innocents dans ton tableau d\'enquête (la première page du Grand Livre).', court:'Écoute chacun, et barre les innocents dans ton tableau.', histoire:'Chacun te raconte ses trouvailles : barre les innocents dans ton tableau !', manuel:true},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments, dans ton Grand Livre).'},
@@ -145,7 +149,7 @@ E[1] = {
         ['👣', 'Les grosses traces devant la mairie : les bottes de Basile, qui avait planté des fleurs l\'après-midi.'],
         ['📜', 'Sur la place, l\'affiche du chien perdu : « Prévenez Tim, 7, rue des Lanternes. »'],
         ['🐾', 'Dans un buisson de la forêt, des poils de chien noirs et blancs, avec une petite feuille de chêne.'],
-        ['🗺️', 'Basile a dessiné le chemin de la forêt, et la page blanche du Grand Livre cachait le plan de la forêt.'],
+        ['🗺️', 'La page blanche du Grand Livre cachait le plan de la forêt : sans lui, personne ne pouvait y entrer.'],
         ['🌲', 'Sur les chemins du moulin et du puits, aucune trace d\'enfant : la Lanterne n\'y était pas.']
       ]},
       {ic:'🔑', titre:'À retenir pour la suite', lignes:[
@@ -189,6 +193,7 @@ E[1] = {
   },
   infos:{
     carte:{nom:'Plan de la forêt', ic:'🗺️', pour:'pisteur', t:'Le plan de la forêt du Grand Livre. Tu peux entrer dans la forêt sans te perdre.'},
+    /* plus donné depuis le 10 novembre (le plan du Sage est le seul chemin) ; gardé pour que les codes gelés ne bougent pas */
     chemin:{nom:'Chemin dessiné par Basile', ic:'✏️', pour:'pisteur', t:'Basile a dessiné le chemin de la forêt pour toute l\'équipe. Tu peux y entrer sans te perdre.'},
     /* Renseignements sur un habitant, pour le Barde (carnet.js) : 2 codes dans l'enquête 1
        (plus de code du registre, Romain, 5 novembre, 01 h 20 : le Sage lit le registre à tout le monde ; le code gelé reste dans codes-fixes.js, inutilisé) */
@@ -301,7 +306,7 @@ E[1] = {
     basile:{ou:{matin:'potager', apresmidi:'potager', soir:'taverne'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'Dans mon lit ! Mais hier après-midi, j\'ai planté des fleurs devant la mairie. Mes grosses bottes ont dû laisser des traces.', note:'Basile a planté des fleurs devant la mairie hier après-midi, avec ses grosses bottes.'},
       {q:'Avez-vous vu quelque chose ?', a:'Quand je suis parti, à six heures du soir, la fenêtre de la mairie était bien fermée.', note:'Basile : à 6 heures du soir, la fenêtre de la mairie était fermée.'},
-      {q:'Vous connaissez la forêt ?', a:'Comme ma poche ! Pour aller au Vieux Chêne, au Puits ou au Moulin, il faut passer par le carrefour. Tiens, je vous dessine le chemin, pour toute ton équipe.', note:'Basile a dessiné le chemin de la forêt : un code pour toute l\'équipe, chacun peut le taper.', donne:'info:chemin'}
+      {q:'Vous connaissez la forêt ?', a:'La forêt ? Elle est si grande qu\'on s\'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan.', note:'Basile : on se perd dans la forêt. Le Grand Livre du Sage cacherait un vieux plan.'}
     ]},
     odette:{ou:{matin:'L2', apresmidi:'place', soir:'L2'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'À ma fenêtre, comme toutes les nuits : je ne dors jamais ! La lumière de la boulangerie est restée allumée jusqu\'au matin.', note:'Odette : la lumière de la boulangerie est restée allumée toute la nuit.'},
