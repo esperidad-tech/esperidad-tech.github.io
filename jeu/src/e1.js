@@ -208,13 +208,14 @@ E[1] = {
     mairie:{
       pisteur:{intro:'C\'est ici que dormait la Lanterne d\'Or. La fenêtre du bureau du maire est grande ouverte.', points:[
         /* la ville vue du ciel (Romain, 6 novembre, 2 h 34) ; un mini-jeu fait pour ce lieu (Romain, 10 novembre, 16 h 56) : au départ, les grosses
-           bottes du jardinier et les petites traces s'entremêlent, puis chacune part de son côté ; les petites mènent à une gouttière, du côté
-           de la forêt, où elles s'arrêtent net (quelqu'un est remonté sur les toits : ça colle avec Odette et avec la gouttière de la mairie) */
+           bottes du jardinier et les petites traces s'entremêlent, puis chacune part de son côté. Les petites traces finissent dans la forêt :
+           la ville s'arrête, on voit le début de la forêt (Romain, 10 novembre, 20 h 44 : « la gouttière, ça n'a rien à voir » ; avant, de
+           16 h 56 à 20 h 44, elles s'arrêtaient au pied d'une gouttière). Ensuite, il faut le plan du Sage pour entrer dans la forêt. */
         {id:'massif', ic:'👣', nom:'Le massif de fleurs', mj:'traces',
-          params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'gouttiere', arriveeTxt:'Plus de traces !', compagnonTxt:'Les bottes du jardinier…',
+          params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
             departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'},
-          t:'Dans le massif, deux sortes de traces se mêlent. De grosses bottes, sèches et craquelées : elles datent d\'hier. Et des petites, toutes fraîches, de 3 carreaux : elles datent de cette nuit ! Les petites t\'ont mené au pied d\'une gouttière, du côté de la forêt… et là, plus rien. Quelqu\'un est remonté sur les toits !',
-          note:'Mairie : traces fraîches de cette nuit, 3 carreaux. Elles mènent au pied d\'une gouttière, côté forêt : quelqu\'un est remonté sur les toits. Les grosses bottes sèches datent d\'hier.',
+          t:'Dans le massif, deux sortes de traces se mêlent. De grosses bottes, sèches et craquelées : elles datent d\'hier. Et des petites, toutes fraîches, de 3 carreaux : elles datent de cette nuit ! Les petites t\'ont mené jusqu\'à la forêt… Là-dedans, il y a plein de chemins : sans plan, on s\'y perd !',
+          note:'Mairie : traces fraîches de cette nuit, 3 carreaux. Elles entrent dans la forêt : plein de chemins, sans plan on s\'y perd. Les grosses bottes sèches datent d\'hier.',
           rate:'Les traces se brouillent… Tu as juste vu des petites traces fraîches, bien plus petites que des bottes d\'homme.',
           rateNote:'Mairie : des petites traces fraîches de cette nuit, bien plus petites que des bottes d\'homme.', partiel:true,   /* clé : ce partiel innocente encore les grands pieds */
           ferme:'Les traces sont effacées pour de bon… Il te reste ce que tu as vu.'},

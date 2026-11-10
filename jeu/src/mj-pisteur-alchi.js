@@ -515,6 +515,11 @@ function genererMonde(p){
   });
   vire(d + 60, borne(xA(d + 60), U.rand(-p.ampli, p.ampli) * 0.6));
   var L = d + FIN;   /* l'arrivée, après le dernier obstacle (300 avant le 4 nov.) */
+  /* params.arrivee = 'foret' (enquête 1, le massif — Romain, 10 novembre, 20 h 44 : « il faut que les traces finissent dans la forêt,
+     on voit le début d'une forêt ») : la ville s'arrête, la forêt commence sur toute la largeur de la carte. La lisière tombe sur un bord
+     de tuile du décor (240), l'arrivée est 80 plus loin, sous les premiers arbres ; aucune autre piste n'entre dans la forêt (D_MAX). */
+  var LIS = p.decor === 'ville' && !!(p.arrivee && ARRIVEES_LISIERE[p.arrivee]), lisiere = null, D_MAX = null;
+  if(LIS){ lisiere = Math.ceil((d + 220) / 240) * 240; L = lisiere + 80; D_MAX = L - 150; }
   /* garde-fou : si la piste frôle un bord, on recommence la carte */
   for(var dd0 = 0; dd0 < L; dd0 += 40){ var xx0 = (function(dd){ var k = 0; while(k < noeuds.length - 1 && noeuds[k + 1].d <= dd) k++; return noeuds[k].x + noeuds[k].m * (dd - noeuds[k].d); })(dd0); if(xx0 < W * 0.06 || xx0 > W * 0.94){ if((p._essaiCarte = (p._essaiCarte || 0) + 1) < 25) return genererMonde(p); break; } }
   p._essaiCarte = 0;
@@ -527,6 +532,19 @@ function genererMonde(p){
   var arrivees = [{x:cible.x(L), d:L, trace:cible, cible:true}];
   function placeLibre(x, dd){ if(x < 50 || x > W - 50) return false; if(dansZone(dd, 30)) return false; if(dd < L + 40 && Math.abs(x - cible.x(dd)) < 64) return false; return arrivees.every(function(a){ return Math.abs(a.d - dd) > 560 || Math.abs(a.x - x) > 420; }); }
   var leurres = [];
+  /* avec une lisière : où finit une fausse piste partie de dS — toujours en ville, avant la forêt. D'abord une place vraiment libre ;
+     sinon la place la plus loin des autres arrivées, jamais collée à la bonne piste. */
+  function finEnVille(tr, dS){
+    var a = Math.max(dS + 120, Math.min(dS + 650, D_MAX - 230)), mieux = null, loin = -1;
+    for(var e = 0; e < 60; e++){
+      var dF = U.rand(a, D_MAX), x = tr.x(dF);
+      if(placeLibre(x, dF)) return dF;
+      if(x < 50 || x > W - 50 || dansZone(dF, 30) || Math.abs(x - cible.x(dF)) < 64) continue;
+      var ecart = arrivees.reduce(function(m, q){ return Math.min(m, Math.abs(q.d - dF) + Math.abs(q.x - x)); }, 1e9);
+      if(ecart > loin){ loin = ecart; mieux = dF; }
+    }
+    return mieux !== null ? mieux : D_MAX;
+  }
   /* l'empreinte d'une fausse piste (variante charrette : un autre véhicule, ou d'autres pieds) */
   function faux(groupe){ return p.vehicule === 'charrette' && p.empreinte.roues ? varianteCharrette(p.empreinte, p.niveau, groupe) : variante(p.empreinte, p.niveau, groupe); }
   function ajoute(tr, f, dS, dFin){
@@ -549,6 +567,7 @@ function genererMonde(p){
     }
     nds.push({d:L + 1200, m:0});
     var tr = Trace(nds);
+    if(LIS) return ajoute(tr, faux(groupe), dS, finEnVille(tr, dS));
     for(var e = 0; e < 40; e++){
       var dFin = U.rand(dS + 650, L + 650), x = tr.x(dFin);
       if(placeLibre(x, dFin)) return ajoute(tr, faux(groupe), dS, dFin);
@@ -558,7 +577,7 @@ function genererMonde(p){
   /* fausse piste courte : diverge peu, finit vite dans une arrivée (cul-de-sac) */
   function courte(dS, xS, mS, groupe){
     var lg = U.rand(170, 230), dFin = dS + lg, tr = Trace([{d:dS - 1, x:xS - mS, m:mS}, {d:dFin + 100, m:mS}]);
-    if(!placeLibre(tr.x(dFin), dFin)) return -1;
+    if(!placeLibre(tr.x(dFin), dFin) || (LIS && dFin > D_MAX)) return -1;
     return ajoute(tr, faux(groupe), dS, dFin);
   }
   /* params.arrivee / arriveeTxt : l'arrivée de la bonne piste a un dessin et un mot à elle (un mini-jeu fait pour un lieu de l'histoire) */
@@ -585,6 +604,7 @@ function genererMonde(p){
     }
     ndC.push({d:L + 1200, m:0});
     var trC = Trace(ndC), dFinC = null;
+    if(LIS) dFinC = finEnVille(trC, D0 - 150);   /* (les bottes aussi s'arrêtent en ville : le potager n'est pas dans la forêt) */
     for(var eC = 0; eC < 40 && dFinC === null; eC++){ var cand = U.rand(D0 + 500, L + 650); if(placeLibre(trC.x(cand), cand)) dFinC = cand; }
     if(dFinC === null) dFinC = L + 1100 + U.rand(0, 400);
     var iC = ajoute(trC, Object.assign({}, EMP_PRESETS[p.compagnon]), 0, dFinC);
@@ -613,7 +633,7 @@ function genererMonde(p){
     if(z.type === 'dalles'){ for(var dd = z.d0 + 14; dd < z.d1 - 8; dd += U.rand(30, 40)) dalles.push({d:dd, x:cible.x(dd) + U.rand(-9, 9), r:U.rand(17, 26), a:U.rand(0, 6)}); for(var k = 0; k < 6; k++){ var dr = U.rand(z.d0, z.d1), xr = cible.x(dr) + (Math.random() < 0.5 ? -1 : 1) * U.rand(60, 170); rochers.push({d:dr, x:xr, r:U.rand(14, 22)}); } }
     if(z.type === 'eau'){ for(var k2 = 0; k2 < 3; k2++){ var dq = z.d1 + U.rand(20, 130), xq = cible.x(dq) + (Math.random() < 0.5 ? -1 : 1) * U.rand(45, 140); flaques.push({d:dq, x:xq, rx:U.rand(16, 26), ry:U.rand(9, 14)}); } }
   });
-  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers};
+  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers, lisiere:lisiere};
 }
 var ARRIVEES_ART = {
   buisson:'<path d="M-17,8 C-22,-4 -12,-16 -2,-13 C4,-20 18,-14 16,-4 C24,0 20,12 10,12 C2,17 -10,16 -13,11 C-20,12 -21,8 -17,8 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="-5" cy="-3" r="2.3" fill="#e5484d"/><circle cx="7" cy="3" r="2.3" fill="#e5484d"/><ellipse cx="0" cy="9" rx="7" ry="4" fill="#14111f"/>',
@@ -648,7 +668,10 @@ function villeDefs(id){
   var ag = '<linearGradient id="' + id + 'ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1a10" stop-opacity=".32"/></linearGradient>';
   var lu = '<radialGradient id="' + id + 'lu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe7a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe7a8" stop-opacity="0"/></radialGradient>';
   var fe = '<radialGradient id="' + id + 'fe" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#7fc46a"/><stop offset=".6" stop-color="#4f9a4a"/><stop offset="1" stop-color="#2f6a38"/></radialGradient>';
-  return pv + tu + ar + gv + pc + mu + aw + ag + lu + fe;
+  /* la forêt au bout de la ville (params.arrivee = 'foret') : l'herbe du sous-bois, et l'ombre qui grandit sous les arbres */
+  var hf = '<pattern id="' + id + 'hf" width="44" height="40" patternUnits="userSpaceOnUse"><rect width="44" height="40" fill="#5f8a48"/><path d="M6,12 l-2,-7 M6,12 l1,-8 M6,12 l4,-6 M28,31 l-2,-7 M28,31 l1,-8 M28,31 l4,-6" stroke="#7fae5c" stroke-width="2" stroke-linecap="round"/><ellipse cx="33" cy="9" rx="6" ry="3.5" fill="#527c40"/><ellipse cx="13" cy="28" rx="7" ry="4" fill="#55803f"/><circle cx="21" cy="17" r="1.6" fill="#8fbf6a"/></pattern>';
+  var fs = '<radialGradient id="' + id + 'fs" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#5fa85a"/><stop offset=".6" stop-color="#3a7d3f"/><stop offset="1" stop-color="#235230"/></radialGradient>';
+  return pv + tu + ar + gv + pc + mu + aw + ag + lu + fe + hf + fs;
 }
 /* Un toit vu du ciel : son ombre portée (la lumière vient d'en haut à gauche), deux pans de part et d'autre du faîtage
    (l'un dans l'ombre), une cheminée qui fume, parfois une lucarne. sorte : 'tu' (tuiles) ou 'ar' (ardoises). */
@@ -815,8 +838,57 @@ function bordVille(id, bx, sens, da){
   }
   return s;
 }
+/* ---- La forêt au bout de la ville (M.lisiere : là où la ville s'arrête ; l'arrivée de la bonne piste est 80 plus loin) ---- */
+/* Un arbre de la forêt, vu du ciel : le même feuillage que les arbres de la ville, en plus léger (il y en a beaucoup) */
+function arbreF(id, x, y, r, sombre){
+  var f = 'url(#' + id + (sombre ? 'fs' : 'fe') + ')';
+  var s = '<ellipse cx="' + f0(x + r * 0.35) + '" cy="' + f0(y + r * 0.45) + '" rx="' + f0(r) + '" ry="' + f0(r * 0.9) + '" fill="#16261a" opacity=".3"/>';
+  s += '<circle cx="' + f0(x) + '" cy="' + f0(y) + '" r="' + f0(r * 0.66) + '" fill="' + f + '" stroke="' + CONTOUR + '" stroke-width="3"/>';
+  for(var i = 0, a0 = rngV(0, 6.283); i < 4; i++){ var a = a0 + i * 1.571 + rngV(-0.3, 0.3); s += '<circle cx="' + f0(x + Math.cos(a) * r * 0.55) + '" cy="' + f0(y + Math.sin(a) * r * 0.55) + '" r="' + f0(r * rngV(0.44, 0.54)) + '" fill="' + f + '" stroke="' + CONTOUR + '" stroke-width="3"/>'; }
+  return s + '<circle cx="' + f0(x - r * 0.2) + '" cy="' + f0(y - r * 0.22) + '" r="' + f0(r * 0.3) + '" fill="#9ad67a" opacity="' + (sombre ? '.25' : '.4') + '"/>';
+}
+/* L'ombre de la forêt, posée une fois par-dessus les arbres (et sous les traces) : plus on s'enfonce, plus il fait sombre */
+function ombreForet(id, M, W){
+  return '<defs><linearGradient id="' + id + 'of" gradientUnits="userSpaceOnUse" x1="0" y1="' + f0(-(M.lisiere + 110)) + '" x2="0" y2="' + f0(-(M.lisiere + 620)) + '"><stop offset="0" stop-color="#0b2014" stop-opacity="0"/><stop offset="1" stop-color="#0b2014" stop-opacity=".5"/></linearGradient></defs>' +
+    '<rect x="-720" y="' + f0(-(M.L + 3200)) + '" width="' + f0(W + 1440) + '" height="' + f0(M.L + 3200 - M.lisiere - 100) + '" fill="url(#' + id + 'of)"/>';
+}
+/* Le sol de la forêt, posé une fois sous le décor : l'herbe sur toute la largeur (son bord en festons mord un peu sur les pavés),
+   et le sentier de terre où entrent les traces ; plus loin, il disparaît sous les arbres */
+function solForet(id, M, W){
+  var x0 = -720, x1 = W + 720, y0 = -M.lisiere, c = M.cible, bord = 'M' + x0 + ',' + f0(y0), pts = [], x, d;
+  for(x = x0; x < x1; x += 30) bord += ' q15,' + f0(rngV(9, 17)) + ' 30,0';
+  for(d = M.lisiere - 30; d <= M.L + 250; d += 20) pts.push(f0(c.x(d)) + ',' + f0(-d));
+  var s = '<path d="' + bord + ' V' + f0(-(M.L + 3200)) + ' H' + x0 + ' Z" fill="url(#' + id + 'hf)" stroke="#3f6a34" stroke-width="3" stroke-linejoin="round"/>';
+  s += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#7d6a45" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="#b09868" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>';
+  for(d = M.lisiere - 10; d < M.L + 170; d += rngV(26, 44)){ x = c.x(d) + rngV(-15, 15); s += '<ellipse cx="' + f0(x) + '" cy="' + f0(-d) + '" rx="' + f0(rngV(3, 6)) + '" ry="' + f0(rngV(2, 4)) + '" fill="#8f7b55" opacity=".8"/>'; }
+  return s;
+}
+/* Une tuile de forêt (360 × 240) : d'abord une bande d'herbe et quelques buissons, puis des arbres serrés ; le sentier reste libre
+   jusqu'un peu après l'arrivée. Plus on s'enfonce, plus il fait sombre. */
+function tuileForet(id, M, W, xa, da){
+  var s = '', rang = Math.round((da - M.lisiere) / 240), L = M.L, c = M.cible, arbres = [], pas = 56, gx, gd, k;
+  function sentier(x, d, marge){ return d < L + 175 && Math.abs(x - c.x(d)) < marge; }
+  if(rang === 0) for(k = 0; k < 9; k++){
+    var bx = xa + rngV(10, 350), bd = da + rngV(6, 52);
+    if(sentier(bx, bd, 44)) continue;
+    if(k % 3 === 0) s += '<circle cx="' + f0(bx) + '" cy="' + f0(-bd) + '" r="9" fill="#4f9a4a" stroke="' + CONTOUR + '" stroke-width="2.4"/><circle cx="' + f0(bx + 10) + '" cy="' + f0(-bd + 3) + '" r="7" fill="#4f9a4a" stroke="' + CONTOUR + '" stroke-width="2.4"/><circle cx="' + f0(bx - 2) + '" cy="' + f0(-bd - 3) + '" r="3" fill="#9ad67a" opacity=".5"/>';
+    else s += '<path d="M' + f0(bx) + ',' + f0(-bd) + ' l-4,-10 M' + f0(bx) + ',' + f0(-bd) + ' l1,-12 M' + f0(bx) + ',' + f0(-bd) + ' l6,-9" stroke="#8fbf6a" stroke-width="2.4" stroke-linecap="round"/>';
+  }
+  for(gx = xa + pas / 2; gx < xa + 360; gx += pas) for(gd = da + pas / 2; gd < da + 240; gd += pas){
+    var x = gx + rngV(-15, 15), d = gd + rngV(-15, 15), r = rngV(28, 39), h = d - M.lisiere;
+    if(h < 46 || (h < 100 && Math.random() < 0.4)) continue;   /* la lisière : de l'herbe, puis les premiers arbres, clairsemés */
+    if(sentier(x, d, r + 30)) continue;
+    if(Math.abs(x - c.x(L)) < r + 34 && Math.abs(d - L) < r + 34) continue;
+    arbres.push([x, d, r, h]);
+  }
+  arbres.sort(function(a, b){ return b[1] - a[1]; });
+  /* les premiers arbres sont dessinés en détail (comme ceux de la ville) ; derrière, plus légers, un sur trois plus sombre */
+  arbres.forEach(function(q){ s += q[3] < 150 ? arbreV(id, q[0], -q[1], q[2]) : arbreF(id, q[0], -q[1], q[2], Math.random() < 0.36); });
+  return s;
+}
 /* Une tuile de la ville (360 × 240) : le sol, puis des pâtés de maisons, des arbres et des objets là où aucune piste ne passe */
 function tuileVille(id, M, W, xa, da){
+  if(M.lisiere !== null && M.lisiere !== undefined && da >= M.lisiere) return tuileForet(id, M, W, xa, da);
   var s = '', i, pistes = [M.cible].concat(M.leurres), occ = [];
   for(i = 0; i < 7; i++) s += solV(xa + rngV(0, 360), -(da + rngV(0, 240)));
   function libre(x0, x1, d0, d1, marge){
@@ -870,10 +942,15 @@ var ARRIVEES_VILLE = {
 };
 /* Les arrivées « de l'histoire » (params.arrivee, params.compagnonArrivee) : jamais tirées au hasard pour les autres pistes */
 function cabouV(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.8" fill="#6cbf55" stroke="' + CONTOUR + '" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="#b4e69a"/>'; }
+var ARRIVEES_LISIERE = {foret:1};   /* les arrivées au bord de la carte : la ville s'y arrête (voir genererMonde, tuileForet) */
 var ARRIVEES_HISTOIRE = {
   /* le pied d'une maison et sa gouttière : la piste s'arrête net, quelqu'un est remonté sur les toits (enquête 1) */
   gouttiere:'<rect x="-18" y="-16" width="30" height="28" rx="2" fill="#b4553a" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-18,-7 H12 M-18,2 H12" stroke="#8f3f2a" stroke-width="2"/>' +
     '<rect x="11" y="-15" width="7" height="31" rx="3" fill="#9aa3b5" stroke="' + CONTOUR + '" stroke-width="2.4"/><path d="M10,17 H22" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linecap="round"/>',
+  /* l'entrée de la forêt : un trou sombre sous une arche de feuillage (enquête 1, les petites traces du massif — Romain, 10 novembre, 20 h 44).
+     Avec cette arrivée, la ville s'arrête et la forêt commence sur toute la largeur de la carte (ARRIVEES_LISIERE, genererMonde). */
+  foret:'<path d="M-10,14 V-2 C-10,-13 10,-13 10,-2 V14 Z" fill="#12241a" stroke="' + CONTOUR + '" stroke-width="2.4"/>' +
+    [[-15, 5, 8], [15, 5, 8], [-13, -7, 8.5], [13, -7, 8.5], [-5, -15, 8], [5, -15, 8]].map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#4f9a4a" stroke="' + CONTOUR + '" stroke-width="2.4"/><circle cx="' + (q[0] - 2) + '" cy="' + (q[1] - 2.5) + '" r="3" fill="#9ad67a" opacity=".55"/>'; }).join(''),
   /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
   potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6)
 };
@@ -1043,7 +1120,7 @@ MJ.enregistrer('traces', {
         '<pattern id="' + id + 'g" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#9a907c"/><circle cx="3" cy="4" r="2.2" fill="#b8ad96"/><circle cx="11" cy="3" r="1.8" fill="#7d7462"/><circle cx="7" cy="11" r="2.4" fill="#ada28a"/><circle cx="14" cy="12" r="1.6" fill="#857b68"/><circle cx="2" cy="13" r="1.3" fill="#c4b9a2"/></pattern>' +
         '<linearGradient id="' + id + 'w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e6f9a"/><stop offset=".5" stop-color="#3f8fc0"/><stop offset="1" stop-color="#2a5f86"/></linearGradient>' + (VILLE ? villeDefs(id) : '') + '</defs>' +
       '<rect x="' + DEC.x + '" y="' + DEC.y + '" width="' + DEC.w + '" height="' + DEC.h + '" fill="' + (VILLE ? '#8c8173' : '#5b5236') + '"/>' +
-      '<g class="mja-monde">' + (VILLE ? '<rect x="-720" y="' + Math.round(-(L + 3200)) + '" width="' + Math.round(W + 1440) + '" height="' + Math.round(L + 4200) + '" fill="url(#' + id + 'pv)"/>' : '') + '<g class="mja-deco"></g><g class="mja-sol-z"></g><g class="mja-flous"></g><g class="mja-marques"></g><g class="mja-haut-z"></g><g class="mja-arr"></g></g>' +
+      '<g class="mja-monde">' + (VILLE ? '<rect x="-720" y="' + Math.round(-(L + 3200)) + '" width="' + Math.round(W + 1440) + '" height="' + Math.round(L + 4200) + '" fill="url(#' + id + 'pv)"/>' + (M.lisiere !== null ? solForet(id, M, W) : '') : '') + '<g class="mja-deco"></g>' + (VILLE && M.lisiere !== null ? ombreForet(id, M, W) : '') + '<g class="mja-sol-z"></g><g class="mja-flous"></g><g class="mja-marques"></g><g class="mja-haut-z"></g><g class="mja-arr"></g></g>' +
       '<circle class="mja-vision-sol" r="30"/>' +
       '<g class="mja-pisteur-g"><ellipse cx="0" cy="6" rx="12" ry="5" fill="#000" opacity=".35"/>' +
         '<g class="mja-pisteur-corps" transform="scale(.72)"><path d="M-15,4 C-17,18 -8,28 0,30 C8,28 17,18 15,4 Z" fill="#245e3c" stroke="' + CONTOUR + '" stroke-width="4" stroke-linejoin="round"/>' +
@@ -1245,16 +1322,35 @@ MJ.enregistrer('traces', {
       M.arrivees[0].g.classList.add('bonne', 'revelee');
       P.finir({reussi:false, score:fixe(pd / L, 0, 1) * 0.5, erreurs:p.essais - essais + 1, detail:detail}, 1700);
     }
+    /* Arrivé à la lisière (params.arrivee = 'foret') : la vue remonte doucement, le Pisteur reste à l'entrée, et on voit le début de la
+       forêt avant l'écran de résultat (Romain, 10 novembre, 20 h 44). La boucle du jeu est finie : celle-ci ne bouge plus que la vue. */
+    function montrerForet(){
+      var de = cam, vers = Math.max(cam, L + (vue.y + vue.h * 0.62) - YB), tF = 0;
+      cercle.style.opacity = '0'; cercleHalo.style.opacity = '0'; cercleSol.style.opacity = '0';
+      P.boucle(function(dt){
+        tF += dt;
+        var k = Math.min(1, tF / 1.4); k = k * k * (3 - 2 * k);
+        cam = de + (vers - de) * k;
+        decor();
+        var tr = 'translate(' + (180 - camX).toFixed(1) + ',' + (YB + cam).toFixed(1) + ')';
+        gMonde.setAttribute('transform', tr);
+        if(VILLE) gCouv.setAttribute('transform', tr);
+        gJ.setAttribute('transform', 'translate(' + ecranX(px).toFixed(1) + ',' + ecranY(pd).toFixed(1) + ')');
+        return tF < 1.4;
+      });
+    }
     function entrer(a){
       if(a.essaye) return;
       a.essaye = true;
       var q = pctDans(svg, terrain, ecranX(a.x), ecranY(a.d) - 34);
       if(a.cible){
+        var foret = typeof M.lisiere === 'number';
         phase = 'fin'; fini = true;
         a.g.classList.add('bonne');
         U.son('victoire'); U.vibrer(40);
         flotter(terrain, q.x, q.y, ch ? 'C\'est la charrette !' : (a.txt || 'C\'est lui !'), 'ok');
-        P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, 1500);
+        if(foret) montrerForet();
+        P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, foret ? 2700 : 1500);
         return;
       }
       essais--; hud.perdVie(essais, p.essais);

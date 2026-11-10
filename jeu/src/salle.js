@@ -23,7 +23,10 @@ var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1, ragots:1};   /* ragots
 var VARIANTES = {
   poursuite:[{id:'chien', ic:'🐕', nom:'Course-poursuite : le petit chien', d:'Variante forêt (enquête 1)', params:{fuyard:'chien', decor:'foret'}}],
   /* Romain, 6 novembre, 2 h 34 : des variantes de décor */
-  traces:[{id:'ville', ic:'🏘️', nom:'Suivre la piste : en ville', d:'Depuis le massif de la mairie, vu du ciel (enquête 1)', params:{decor:'ville'}}],
+  /* (10 novembre, 20 h 44 : la même partie que dans l'enquête 1 — les bottes du jardinier au départ, les petites traces jusqu'à la forêt) */
+  traces:[{id:'ville', ic:'🏘️', nom:'Suivre la piste : le massif de la mairie', d:'Les petites traces vont jusqu\'à la forêt (enquête 1)',
+    params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
+      departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}}],
   tir:[{id:'cerfvolant', ic:'🪁', nom:'Tir à l\'arc : le cerf-volant', d:'Coincé en haut du clocher (enquête 2)', params:{decor:'cerfvolant'}},
