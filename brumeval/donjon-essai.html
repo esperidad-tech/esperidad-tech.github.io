@@ -417,26 +417,19 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 @keyframes etincelle{0%{transform:translate(-50%,0) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
 .page-vol{position:absolute;left:0;top:0;font-size:34px;width:40px;height:40px;margin:-20px 0 0 -20px;text-align:center;line-height:40px}
 
-/* ---------- LE CRITIQUE ---------- */
-.crit-vignette{position:absolute;left:0;top:0;width:960px;height:540px;pointer-events:none}
-.crit-choc{position:absolute;width:1920px;height:1080px}
-.crit-rayons{position:absolute;width:760px;height:760px;border-radius:50%;pointer-events:none;z-index:3;
-  background:repeating-conic-gradient(from 0deg,rgba(255,214,90,0) 0deg 6deg,rgba(255,236,150,1) 8.5deg,rgba(255,214,90,0) 11deg 18deg);
-  -webkit-mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 8%,rgba(0,0,0,.85) 35%,rgba(0,0,0,0) 100%)}
-.crit-rayons.cuit, .crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;-webkit-mask-image:none;mask-image:none;clip-path:none;max-width:none}
-/* (mémoire, iPhone) le halo sur son propre calque : sinon le calque de « CRITIQUE ! », agrandi ×3,4 à son arrivée, ferait
-   640 × 3,4 × 3 ≈ 4 700 px réels de large */
+/* ---------- LE CRITIQUE (autour du rat seulement : rien de plein écran) ---------- */
+.crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;clip-path:none;max-width:none}
+/* (mémoire, iPhone) le halo sur son propre calque : la carte graphique étire la petite image, sans repeindre un grand calque */
 .crit-halo.cuit{will-change:transform}
-.crit-eclair{position:absolute;z-index:3;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,240,180,.9) 30%,rgba(255,200,80,0))}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
 .crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
-.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:96px;line-height:1;letter-spacing:.02em;white-space:nowrap}
+.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
 /* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
 .crit-ombre{position:relative;color:#24182e;-webkit-text-stroke:9px #24182e;text-shadow:0 7px 0 #7a4a10,0 9px 0 #24182e}
 .crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:260% 100%;background-position:100% 0;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:crit-eclat .9s .18s ease-out forwards}
-.crit-halo{position:absolute;left:50%;top:50%;width:640px;height:240px;margin:-120px 0 0 -320px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
+.crit-halo{position:absolute;left:50%;top:50%;width:540px;height:200px;margin:-100px 0 0 -270px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
 @keyframes crit-eclat{0%{background-position:100% 0}100%{background-position:0 0}}
 @keyframes crit-tremble{0%{transform:translate(0,0) rotate(-1deg)}25%{transform:translate(2px,-2px) rotate(.5deg)}50%{transform:translate(-2px,1px) rotate(-.5deg)}75%{transform:translate(1px,2px) rotate(1deg)}}
 .crit-etoile{position:absolute;right:-8px;top:-14px;width:60px;height:60px;opacity:0;animation:etoile .6s .2s ease-out forwards;
@@ -972,7 +965,8 @@ Cuire.hote = function(w, h){
 
      var r = RatAnime.creer(conteneur);   // un rat en SVG qui remplit le conteneur, il regarde à gauche
 
-   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(), exploser(scene)
+   Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(),
+     exploser(scene, {impact, eclat}) : le critique, autour du rat (fumée noire à « impact » ms, membres à « eclat » ms)
    États (se cumulent) : attendre(), enrager(), ebloui(on), retourner(on), bruler(on), coller(on), cible(on), yeux('jaune'|'rouge')
    arreter() : arrête toutes les boucles.
 
@@ -2267,84 +2261,125 @@ R.bruler = function(on){
 };
 
 /* =====================================================================
-   10. La mort par critique : il explose dans un nuage de brume noire
+   10. La mort par critique (Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ… de la FUMÉE NOIRE… les MEMBRES
+       éclatent sur le côté, la fumée cache, ça passe pour des enfants ; pas tout l'écran ; ça prend son temps »).
+       Tout se passe autour du rat :
+         0 ms      la flèche frappe : le temps se suspend sur lui (il se fige, gonfle, tremble), une petite lueur ;
+         o.impact  une bouffée de fumée noire dense l'enveloppe (il disparaît dedans) ;
+         o.eclat   ses membres — des silhouettes sombres (tête, queue, pattes, touffes de poil ; rien de gore) —
+                   jaillissent sur les côtés en tournoyant et retombent dans la fumée, qui les cache ;
+         ensuite   la fumée se dissipe lentement et laisse le tas de cendres et les os (≈ 2,5 s en tout).
+       Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
+       une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
-R.exploser = function(scene){
-  var self = this, j = this._debutAction();
+/* les morceaux ont les couleurs du rat (son poil gris, sa queue et ses oreilles roses), dessinés comme lui (contour sombre) :
+   on reconnaît un rat de dessin animé qui vole en éclats — des yeux en croix, pas une goutte de sang */
+var M_POIL = '#74626a', M_CLAIR = '#a8949c', M_SOMBRE = '#5a4a54', M_ROSE = '#dc94a4';
+function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || M_POIL) + '" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"/>'; }
+var MEMBRES = {
+  tete: SIL('M-22 2 C -24 -10 -12 -20 2 -19 C 14 -18 26 -10 32 0 C 34 4 30 7 26 7 C 12 9 -4 12 -14 10 C -20 9 -22 6 -22 2 Z') +
+    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="' + M_ROSE + '"/>' +
+    L('M-16 0 C -8 -8 6 -12 18 -8', M_CLAIR, 1.6, ' opacity=".7"') +
+    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#fff8e8" stroke-width="2" stroke-linecap="round"/><circle cx="31" cy="1" r="3" fill="' + M_ROSE + '" stroke="' + O + '" stroke-width="1.4"/>' +
+    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#ece4f0" stroke-width="1"/>',
+  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', O, 9) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', M_ROSE, 5) +
+    L('M-16 -5 C -6 -9 6 -8 14 -1', '#ffd6de', 1.4, ' opacity=".8"'),
+  patteAv: SIL('M-4 -18 C 4 -20 8 -12 6 -4 L 4 8 C 10 9 15 12 13 16 C 9 18 2 17 -2 14 L -6 -2 C -9 -10 -10 -16 -4 -18 Z') +
+    L('M-3 -14 C 1 -15 4 -12 4 -6', M_CLAIR, 1.4) + '<path d="M3 9 C 9 10 14 12 12 16 C 8 17 3 16 0 14 Z" fill="' + M_ROSE + '"/>',
+  patteAr: SIL('M-12 -16 C 0 -22 12 -12 10 0 C 9 6 6 9 4 11 L 14 16 C 18 18 17 22 12 22 L -2 21 C -6 20 -6 16 -3 14 L -6 4 C -14 -2 -16 -12 -12 -16 Z') +
+    L('M-8 -12 C -2 -15 4 -12 6 -6', M_CLAIR, 1.6) + '<path d="M4 13 L 13 17 C 16 18 15 21 12 21 L 0 20 C -3 19 -2 16 0 15 Z" fill="' + M_ROSE + '"/>',
+  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z') + L('M-10 0 C -6 -6 2 -8 8 -5', M_CLAIR, 1.4, ' opacity=".7"'),
+  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', M_SOMBRE)
+};
+/* qui part de quel côté (le rat regarde à gauche : la tête part à gauche, la queue à droite) */
+var ECLATS = [['tete', -1], ['queue', 1], ['patteAv', -1], ['patteAr', 1], ['patteAv', 1], ['patteAr', -1], ['touffe', -1], ['touffe2', 1]];
+R.exploser = function(scene, o){
+  o = o || {};
+  var self = this, T1 = o.impact == null ? 420 : o.impact, T2 = o.eclat == null ? 1020 : o.eclat;
+  this._debutAction();
   scene = scene || this.c.parentNode || this.c;
   this.etat.feu && this.bruler(false);
   this._eteindreEtoiles();
   clearTimeout(this.fx.vapeur);
-  /* il enfle, tremble… */
+  /* la géométrie, lue une seule fois, avant qu'il bouge */
+  var cs = getComputedStyle(scene);
+  if(cs.position === 'static') scene.style.position = 'relative';
+  var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
+  var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
+  var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
+  var sol = (rr.top + rr.height * .9 - sr.top) * ech, u = taille / 180;
+  /* 1) le temps suspendu : il se fige (plus de boucles), gonfle un peu et tremble — un arrêt sur image, sur lui seul */
   var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .022, sy: 1 + i * .03, y: -i}, secousse: {x: i % 2 ? 3 : -3, a: i % 2 ? 2 : -2}, crete: {sy: 1 + i * .08}, oeil: {s: 1 + i * .04}, machoire: {a: -i * 3}, paupiere: {y: 0}}, e: 'linear'});
-  k.push({t: 1, p: {saut: {sx: 1.25, sy: 1.3, y: -10}}, e: 'ease-in'});
-  this.el.animate([{filter: 'brightness(1)'}, {filter: 'brightness(1.6) saturate(1.4)'}], {duration: 450, fill: 'forwards'});
-  return this._seq(k, 460).fini.then(function(){
-    /* BOUM */
-    var cs = getComputedStyle(scene);
-    if(cs.position === 'static') scene.style.position = 'relative';
-    var sr = scene.getBoundingClientRect(), rr = (self.svg || self.el).getBoundingClientRect(), ech = (scene.offsetWidth || sr.width) / (sr.width || 1);
-    var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
-    var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
-    var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
-    if(self.cuit){
-      /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
-      self.defs.insertAdjacentHTML('beforeend', degrade);
-      ov = document.createElement('div'); ov.className = 'ra-scene-fx';
-      scene.appendChild(ov);
-      el = function(html){ return global.Cuire.ilot(ov, html); };
+  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .014, sy: 1 + i * .018, y: -i * .7}, secousse: {x: i % 2 ? 2.2 : -2.2, a: i % 2 ? 1.6 : -1.6}, crete: {sy: 1 + i * .07}, oeil: {s: 1 + i * .035}, machoire: {a: -i * 2.6}, paupiere: {y: 0}}, e: 'linear'});
+  k.push({t: 1, p: {saut: {sx: 1.13, sy: 1.17, y: -7}}, e: 'ease-in'});
+  this._seq(k, T1);
+  var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
+  if(self.cuit){
+    /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
+    self.defs.insertAdjacentHTML('beforeend', degrade);
+    ov = document.createElement('div'); ov.className = 'ra-scene-fx';
+    scene.appendChild(ov);
+    el = function(html){ return global.Cuire.ilot(ov, html); };
+  } else {
+    ov = document.createElementNS(NSs, 'svg');
+    ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    ov.innerHTML = '<defs><filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
+    scene.appendChild(ov);
+    el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+  }
+  function tf(x, y, s, a){ return 'translate(' + f1(x) + 'px,' + f1(y) + 'px)' + (a ? ' rotate(' + f1(a) + 'deg)' : '') + ' scale(' + (+s).toFixed(3) + ')'; }
+  /* la flèche frappe : une petite lueur et un petit cercle, sur lui seulement */
+  el('<circle cx="0" cy="0" r="' + f1(34 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .3), opacity: 1}, {transform: tf(cx, cy, 1.25), opacity: 0}], {duration: 340, easing: 'ease-out', fill: 'forwards'});
+  el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
+  /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
+  /* (elle reste dense jusqu'à ce que les membres y soient retombés, puis se dissipe lentement) */
+  var brumes = [], NB = 14, premiereVolute = null;
+  for(var n = 0; n < NB; n++){
+    var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.1, 1)), px = cx + Math.cos(a) * d * 80 * u, py = cy - 4 * u + Math.sin(a) * d * 30 * u;
+    var tt = hasard(92, 124) * u, g;
+    if(self.cuit && BRUME.length){
+      /* une volute déjà cuite (son flou est dans l'image) */
+      g = document.createElement('div'); g.className = 'cu-ilot';
+      var im = document.createElement('img');
+      im.src = BRUME[n % BRUME.length]; im.alt = '';
+      im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
+      g.appendChild(im); ov.appendChild(g);
     } else {
-      ov = document.createElementNS(NSs, 'svg');
-      ov.setAttribute('class', 'ra-scene-fx'); ov.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-      ov.innerHTML = '<defs><filter id="' + fl + '" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .045) + '"/></filter>' +
-        '<filter id="' + fl + 'p" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="' + f1(taille * .012) + '"/></filter>' + degrade + '</defs>';
-      scene.appendChild(ov);
-      el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
+      var r = tt * .38, c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
+      g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
-    self.el.animate([{filter: 'brightness(1.6)', opacity: 1}, {filter: 'brightness(4)', opacity: 0}], {duration: 120, fill: 'forwards'});
-    var u = taille / 180;
-    /* l'éclair et l'onde de choc */
-    el('<circle cx="0" cy="0" r="' + f1(60 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1.6)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
-    el('<circle cx="0" cy="0" r="' + f1(50 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>').animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.2)', opacity: .9}, {transform: 'translate(' + cx + 'px,' + cy + 'px) scale(2.6)', opacity: 0}], {duration: 520, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
-    /* le gros nuage de brume noire, qui reste puis se dissipe lentement */
-    var brumes = [];
-    for(var n = 0; n < 30; n++){
-      var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()), r = hasard(20, 42) * u, x = Math.cos(a) * d * 80 * u, y = Math.sin(a) * d * 40 * u - 10 * u;
-      var c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
-      var g;
-      if(self.cuit && BRUME.length){
-        /* une volute déjà cuite (son flou est dans l'image) */
-        g = document.createElement('div'); g.className = 'cu-ilot';
-        var im = document.createElement('img'), tt = r / 40 * 104;
-        im.src = BRUME[n % BRUME.length]; im.alt = '';
-        im.style.cssText = 'position:absolute;display:block;max-width:none;left:' + f1(-tt / 2) + 'px;top:' + f1(-tt / 2) + 'px;width:' + f1(tt) + 'px;height:' + f1(tt) + 'px';
-        g.appendChild(im); ov.appendChild(g);
-      } else g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
-      var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(16, 46) * u;
-      brumes.push(g.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
-        {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-24, 24) * u) + 'px,' + f1(cy + dy * 1.2 - 34 * u) + 'px) scale(2)', opacity: 0}],
-        {duration: hasard(4400, 5400), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+    if(!premiereVolute) premiereVolute = g;
+    var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
+    brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)'}, {offset: .08, transform: tf(px, py, 1), opacity: .97, easing: 'ease-in-out'},
+      {offset: .62, transform: tf(px + dx, py - mt, 1.2), opacity: .95, easing: 'ease-in-out'}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.7), opacity: 0}],
+      {duration: hasard(2200, 2400), delay: T1 + n * 8, easing: 'linear', fill: 'both'}));
+  }
+  /* il disparaît dans la fumée */
+  setTimeout(function(){
+    self._couperBoucles();
+    self.mort = true;
+    self.J.saut.style.visibility = 'hidden';
+    self.el.getAnimations().forEach(function(x){ x.cancel(); });
+  }, T1 + 170);
+  /* 3) l'explosion : les membres jaillissent DE DERRIÈRE la fumée, sur les côtés (Romain : « tu les fais éclater sur le
+        côté, la fumée noire cache »), en tournoyant : une parabole jusqu'au sol (échantillonnée une fois), un petit
+        rebond, puis ils s'effacent. Ils sont rangés SOUS les volutes : on ne voit pas d'où ils partent. */
+  ECLATS.forEach(function(e, i){
+    var cote = e[1], m = el('<g transform="scale(' + f1(u * 1.3) + ')">' + MEMBRES[e[0]] + '</g>');
+    if(premiereVolute && premiereVolute.parentNode === ov) ov.insertBefore(m, premiereVolute);
+    var x0 = cx + cote * hasard(6, 20) * u, y0 = cy - hasard(0, 12) * u;
+    var x1 = cx + cote * (cote < 0 ? hasard(116, 150) : hasard(128, 188)) * u, y1 = sol - hasard(2, 10) * u;
+    var h = hasard(78, 128) * u, rot = cote * hasard(300, 620), N = 14, T = .76, kf = [];
+    for(var q = 0; q <= N; q++){
+      var t = q / N, x, y, a, op = q ? 1 : 0, k;
+      if(t <= T){ k = t / T; x = x0 + (x1 - x0) * k; y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k); a = rot * k; }
+      else { k = (t - T) / (1 - T); x = x1 + cote * 16 * u * k; y = y1 - 13 * u * 4 * k * (1 - k); a = rot + cote * 50 * k; op = 1 - k * k; }
+      kf.push({offset: t, transform: tf(x, y, 1, a), opacity: op});
     }
-    /* étincelles */
-    for(var s = 0; s < 18; s++){
-      var as = Math.random() * Math.PI * 2, vs = hasard(60, 130) * u, ls = hasard(6, 12) * u;
-      var e = el(L('M0 0 L ' + f1(-Math.cos(as) * ls) + ' ' + f1(-Math.sin(as) * ls), choisir(['#fff4b0', '#ffd060', '#ffffff']), 2.2 * u));
-      e.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px)', opacity: 1}, {transform: 'translate(' + f1(cx + Math.cos(as) * vs) + 'px,' + f1(cy + Math.sin(as) * vs + 30 * u) + 'px)', opacity: 0}], {duration: hasard(450, 800), easing: 'cubic-bezier(.1,.7,.4,1)', fill: 'forwards'});
-    }
-    /* touffes de poils */
-    for(var t = 0; t < 12; t++){
-      var at = -Math.PI * hasard(.05, .95), vt = hasard(50, 110) * u, rt = hasard(-400, 400);
-      var tf2 = el('<path d="M0 0 Q ' + f1(4 * u) + ' ' + f1(-6 * u) + ' ' + f1(10 * u) + ' ' + f1(-8 * u) + ' Q ' + f1(5 * u) + ' ' + f1(-2 * u) + ' ' + f1(9 * u) + ' ' + f1(2 * u) + ' Q ' + f1(3 * u) + ' ' + f1(1 * u) + ' 0 0 Z" fill="' + choisir(['#74626a', '#5a4a52', '#a8949c']) + '" stroke="#24182e" stroke-width="' + f1(1 * u) + '"/>');
-      tf2.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(at) * vt) + 'px,' + f1(cy + Math.sin(at) * vt) + 'px) rotate(' + f1(rt * .5) + 'deg)', opacity: 1},
-        {transform: 'translate(' + f1(cx + Math.cos(at) * vt * 1.4) + 'px,' + f1(cy + Math.sin(at) * vt * .3 + 50 * u) + 'px) rotate(' + f1(rt) + 'deg)', opacity: 0}], {duration: hasard(1300, 1900), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'});
-    }
-    /* la queue qui s'envole en tournant */
-    var qd = 'M0 0 C ' + f1(14 * u) + ' ' + f1(-6 * u) + ' ' + f1(26 * u) + ' ' + f1(-2 * u) + ' ' + f1(34 * u) + ' ' + f1(8 * u) + ' C ' + f1(38 * u) + ' ' + f1(14 * u) + ' ' + f1(36 * u) + ' ' + f1(22 * u) + ' ' + f1(30 * u) + ' ' + f1(26 * u);
-    var qe = el(L(qd, '#24182e', 6 * u) + L(qd, '#c8848e', 3.6 * u) + L(qd, '#8a4a5c', 3.6 * u, ' stroke-dasharray="' + f1(1 * u) + ' ' + f1(3 * u) + '"'));
-    qe.animate([{transform: 'translate(' + cx + 'px,' + cy + 'px) rotate(0deg)'}, {offset: .5, transform: 'translate(' + f1(cx + 70 * u) + 'px,' + f1(cy - 110 * u) + 'px) rotate(540deg)'}, {transform: 'translate(' + f1(cx + 120 * u) + 'px,' + f1(cy + 30 * u) + 'px) rotate(1080deg)', opacity: 0}], {duration: 1700, easing: 'linear', fill: 'forwards'});
-    /* le petit tas de cendre et les os, à sa place */
-    var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
+    m.animate(kf, {duration: hasard(950, 1150), delay: T2 + i * 22, easing: 'linear', fill: 'both'});
+  });
+  /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
+  var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
       P('M160 393 C 170 368 208 346 244 346 C 280 346 312 368 322 393 Z', self._def(function(D){ return D.g('#8a8290'); })) +
       P('M188 393 C 196 378 222 366 246 368 C 268 370 288 380 294 393 Z', self._def(function(D){ return D.g('#a8a0ae'); }), ' stroke-width="1.6"') +
       [[196, 380], [222, 362], [256, 360], [284, 378], [238, 384], [210, 388], [300, 386], [176, 388]].map(function(q){ return C(q[0], q[1], 2.6, '#3a3440', ' opacity=".7"'); }).join('') +
@@ -2353,15 +2388,11 @@ R.exploser = function(scene){
       '<g transform="translate(262 372) rotate(-24)">' + P('M-26 -3 L 24 -3 C 30 -10 38 -6 34 0 C 38 6 30 10 24 3 L -26 3 C -32 10 -40 6 -36 0 C -40 -6 -32 -10 -26 -3 Z', '#efe6d0', ' stroke-width="2.4"') + L('M-22 -1 L 22 -1', '#ffffff', 1.4, ' opacity=".7"') + '</g>' +
       '<g transform="translate(216 380) rotate(18)">' + P('M-16 -2.5 L 14 -2.5 C 19 -8 26 -5 23 0 C 26 5 19 8 14 2.5 L -16 2.5 C -21 8 -28 5 -25 0 C -28 -5 -21 -8 -16 -2.5 Z', '#e6dcc4', ' stroke-width="2.2"') + '</g>' +
       '<g transform="translate(286 386) rotate(70)">' + P('M-9 -2 L 8 -2 C 12 -6 17 -4 15 0 C 17 4 12 6 8 2 L -9 2 C -13 6 -18 4 -16 0 C -18 -4 -13 -6 -9 -2 Z', '#efe6d0', ' stroke-width="2"') + '</g>');
-    tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {offset: .6, opacity: 0}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}], {duration: 1400, easing: 'ease-out', fill: 'forwards'});
-    (function fumet(n){ if(n <= 0) return; var p = [240 + hasard(-20, 20), 360]; self._bouffee(p, {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 420); })(8);
-    self._couperBoucles();
-    self.mort = true;
-    self.J.saut.style.visibility = 'hidden';
-    self.el.getAnimations().forEach(function(a){ a.cancel(); });
-    self.el.style.filter = '';
-    return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
-  });
+  tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}],
+    {duration: 900, delay: T2 + 250, easing: 'ease-out', fill: 'both'});
+  /* quelques filets de fumée montent encore du tas */
+  setTimeout(function fumet(){ var n = 5; (function un(){ if(n-- <= 0) return; self._bouffee([240 + hasard(-20, 20), 360], {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(un, 420); })(); }, T2 + 900);
+  return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
 };
 
 /* =====================================================================
@@ -2384,7 +2415,7 @@ global.RatAnime = {
       coller: function(on){ r.coller(on); return this; },
       cible: function(on){ r.cible(on); return this; },
       fuir: function(){ return r.fuir(); },
-      exploser: function(scene){ return r.exploser(scene); },
+      exploser: function(scene, o){ return r.exploser(scene, o); },
       arreter: function(){ r.arreter(); return this; },
       etat: function(){ var e = {}; for(var k in r.etat) e[k] = r.etat[k]; return e; },
       point: function(nom, x, y){ return r.point(nom, x, y); },
@@ -2418,6 +2449,25 @@ global.RatAnime = {
    Sage       : h.sort(scene, to, {onImpact}) -> à l'impact ; h.etudier()
                 var b = h.bouclier(scene, cibleConteneur)   // Promise -> objet bouclier, quand le dôme est posé
                 b.absorber(2) ; b.retirer()                 // marchent aussi directement sur la Promise
+
+   Les objets du donjon et les nouvelles réactions (CONCEPTION-DONJON.md §6 et §10 ; sources a2-objets.js, l-reactions.js, m-armes.js) :
+     h.equiper(objet, on = true, {discret}) -> Promise   montre / cache l'objet sur le héros (variante dessinée d'avance, cuite)
+         'carquois-argent' | 'carquois-lourd' (Pisteur, un seul à la fois), 'cristal-lune' | 'baton-chene' (Sage),
+         'sacoche' (Alchimiste), 'amulette' (tous) ; h.equipe(objet) -> true / false
+     Pisteur    : h.tirer(scene, to, type, {onImpact, rebond, sol})   type : 'normale', 'feu', 'huile', 'colle', 'argent', 'lourde',
+                  'givre', 'acide', ou 'rebond' (= normale qui rebondit). to.metal = true : la lourde fait une gerbe d'étincelles
+                  (sinon un impact sourd). {rebond:true} (n'importe quel type) : la flèche ricoche et retombe au sol (sol : y du sol,
+                  par défaut to.y + 92). La lourde se bande plus lentement et l'arc recule.
+     Alchimiste : h.lancer(scene, to, 'givre' | 'acide' | 'huile' | 'colle', {onImpact}) (ou une couleur, comme avant) ;
+                  h.preparer('givre') accepte aussi les noms de potions.
+     Sage       : h.eclairSalle(scene, {cibles:[{x,y}], onImpact}) -> à l'éclair ; h.sort(...) devient cet éclair si le cristal
+                  de lune est équipé (ou avec {cristal:true} ; {cristal:false} pour la rune simple).
+                  h.bouclier(scene, [cible1, cible2]) -> Promise -> [dôme1, dôme2] (chacun absorber / retirer) ;
+                  b.absorber(n[, i]) et b.retirer([i]) marchent aussi sur la Promise et sur la paire (tous, ou le i-ème).
+     Tous       : h.touche('froid' | 'grouillement' | 'poing') ; h.relever({amulette:true}) (relève dorée, l'amulette se brise) ;
+                  h.entoile(true / false) (ligoté dans la toile, se débat ; false : il la déchire) ;
+                  h.avale() (happé vers la droite, il disparaît) ; h.recrache(scene, depuis {x, y} de la scène, {onAtterrit})
+                  ou h.recrache(depuisEcran) (il revient en volant, couvert de bave, et se secoue).
    Les actions passent dans une file : une à la fois, dans l'ordre d'appel.
    scene : l'élément de la scène (position relative, 960 × 540) ; to : {x, y} en pixels de la scène.
 
@@ -2592,6 +2642,250 @@ function col(d, cx, cy, c){
 }
 /* un repère invisible (pour savoir où est une main, une pointe, le cristal…) */
 function rep(nom, x, y){ return '<circle data-r="' + nom + '" cx="' + x + '" cy="' + y + '" r="0.6" fill="none"/>'; }
+/* ============ les objets du donjon (équipement visible) et les dessins des nouvelles réactions ============
+   Deux sortes de dessins ici :
+   - l'ÉQUIPEMENT (carquois d'argent ou lourd, cristal de lune, bâton de chêne, sacoche, amulette) et les FLÈCHES spéciales :
+     des variantes cachées, dessinées d'avance dans le héros (<g data-eq="…" style="display:none">), à leur place dans l'ordre
+     du dessin. À la cuisson (RAPIDITE.md R1), elles restent de petits îlots vectoriels (contenu fixe, sans filtre) : aucune
+     image en plus en mémoire, aucun temps de cuisson en plus ; equiper() ne fait que les montrer ou les cacher ;
+   - les calques des RÉACTIONS (givre, bave, toile) : de petits dessins SVG fixes, posés à la demande dans la pièce qu'ils
+     suivent (cuit : un îlot, peint une fois, puis déplacé et estompé par la carte graphique). Ils ne changent jamais de forme. */
+
+/* un chemin avec un contour d'épaisseur choisie (P() garde toujours 3) */
+function Pw(d, f, w, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + O + '" stroke-width="' + w + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
+/* une variante d'équipement, cachée au départ */
+function V(nom, contenu){ return '<g data-eq="' + nom + '" style="display:none">' + contenu + '</g>'; }
+/* un petit hasard qui donne toujours la même suite (les dessins restent les mêmes d'une fois sur l'autre) */
+function graine(s){ return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+/* un croissant de lune : le disque (cx, cy, R) moins le disque (cx + ox, cy + oy, r) */
+function croissant(cx, cy, R, ox, oy, r){
+  var d = Math.hypot(ox, oy) || 1, a = (R * R - r * r + d * d) / (2 * d), h = Math.sqrt(Math.max(0, R * R - a * a));
+  var ux = ox / d, uy = oy / d, px = cx + a * ux, py = cy + a * uy;
+  var i1 = [px - h * uy, py + h * ux], i2 = [px + h * uy, py - h * ux];
+  return 'M' + r1(i1[0]) + ' ' + r1(i1[1]) + ' A ' + R + ' ' + R + ' 0 1 1 ' + r1(i2[0]) + ' ' + r1(i2[1]) + ' A ' + r + ' ' + r + ' 0 ' + (d < a ? 1 : 0) + ' 0 ' + r1(i1[0]) + ' ' + r1(i1[1]) + ' Z';
+}
+function coeurD(x, y, r){
+  return 'M' + r1(x) + ' ' + r1(y + r) + ' C ' + r1(x - r * 1.7) + ' ' + r1(y - r * .1) + ' ' + r1(x - r * .95) + ' ' + r1(y - r * 1.45) + ' ' + r1(x) + ' ' + r1(y - r * .45) +
+    ' C ' + r1(x + r * .95) + ' ' + r1(y - r * 1.45) + ' ' + r1(x + r * 1.7) + ' ' + r1(y - r * .1) + ' ' + r1(x) + ' ' + r1(y + r) + ' Z';
+}
+/* une étoile à 4 branches (scintillement fixe, dessiné) */
+function eclat4(x, y, r, c){ return F('M' + x + ' ' + (y - r) + ' Q ' + (x + r * .16) + ' ' + (y - r * .16) + ' ' + (x + r) + ' ' + y + ' Q ' + (x + r * .16) + ' ' + (y + r * .16) + ' ' + x + ' ' + (y + r) + ' Q ' + (x - r * .16) + ' ' + (y + r * .16) + ' ' + (x - r) + ' ' + y + ' Q ' + (x - r * .16) + ' ' + (y - r * .16) + ' ' + x + ' ' + (y - r) + ' Z', c); }
+
+/* ---------- l'amulette de vie (n'importe quel héros) : un médaillon d'or au cœur de rubis, sur la poitrine ---------- */
+function amulette(d, cx, cy, ceinture){
+  var or = '#e8c062', ch = ceinture ? 'M' + (cx - 5) + ' ' + (cy - 16) + ' L ' + cx + ' ' + (cy - 8) + ' L ' + (cx + 5) + ' ' + (cy - 16)
+    : 'M' + (cx - 14) + ' ' + (cy - 19) + ' Q ' + (cx - 11) + ' ' + (cy - 6) + ' ' + cx + ' ' + (cy - 8) + ' Q ' + (cx + 11) + ' ' + (cy - 6) + ' ' + (cx + 14) + ' ' + (cy - 20);
+  return V('amulette', '<circle cx="' + cx + '" cy="' + cy + '" r="13" fill="' + d.halo('#fff2b0', '#ffc850') + '" opacity=".55"/>' +
+    L(ch, O, 3.4) + L(ch, or, 1.9, ' stroke-dasharray="2.4 1.5"') +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="8.4" fill="' + d.g('#f0c860') + '" stroke="' + O + '" stroke-width="2.4"/>' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="none" stroke="#fff4c0" stroke-width="1" opacity=".75"/>' +
+    Pw(coeurD(cx, cy + .6, 4.4), d.g('#ff4a6a'), 1.5) + C(cx - 1.7, cy - 1.2, 1.3, '#fff', ' opacity=".9"') +
+    C(cx, cy - 9.4, 2.2, or, ' stroke="' + O + '" stroke-width="1.3"') + eclat4(cx + 7, cy - 7, 3.4, '#fff8d0'));
+}
+
+/* ---------- les flèches spéciales (dessinées de l'encoche (0, 0) à la pointe (124, 0)), par-dessus la flèche simple ---------- */
+function flechesSpeciales(){
+  /* d'argent : fût et pointe d'argent, plumes blanches, deux bagues */
+  var argent = L('M0 0 L 112 0', O, 6.4) + L('M0 0 L 112 0', '#dfe7f2', 3) + L('M8 -0.8 L 104 -0.8', '#ffffff', 1.1) +
+    L('M90 -3 L 90 3 M96 -3 L 96 3', '#a8b4c8', 1.6) +
+    Pw('M129 0 L 109 -7.5 L 112.5 0 L 109 7.5 Z', '#eef3fb', 2.4) + L('M113 -2.4 L 124 -0.4', '#ffffff', 1.4) + F('M112.5 0 L 129 0 L 109 7.5 Z', '#b8c4d8', ' opacity=".55"') +
+    Pw('M6 -1 L -8 -10 L -3 0 Z', '#f6f9ff', 2) + Pw('M6 1 L -8 10 L -3 0 Z', '#e2eaf6', 2) + L('M4 -1.5 L -5 -7 M4 1.5 L -5 7', '#a8b4c8', 1) +
+    eclat4(131, -6, 4.2, '#ffffff');
+  /* lourde : fût épais, grosse pointe de fer noir, plumes sombres */
+  var lourde = L('M-2 0 L 108 0', O, 9.5) + L('M-2 0 L 108 0', '#6a4a2e', 6) + L('M6 -1.6 L 100 -1.6', '#a07a4a', 1.4) +
+    Pw('M102 -5.2 L 111 -5.2 L 111 5.2 L 102 5.2 Z', '#3a3844', 2.2) + C(106.5, 0, 1.4, '#8a8898') +
+    Pw('M134 0 L 107 -11 L 113 0 L 107 11 Z', '#2e2c36', 2.6) + F('M113 0 L 134 0 L 107 -11 Z', '#4e4c5c') + L('M116 -2.2 L 130 -0.4', '#b8b6c8', 1.4) +
+    Pw('M8 -1.4 L -11 -13 L -4 0 Z', '#3a3444', 2.2) + Pw('M8 1.4 L -11 13 L -4 0 Z', '#2a2632', 2.2) + L('M5 -2 L -6 -9 M5 2 L -6 9', '#6a6478', 1.1);
+  /* trempée dans le givre : la pointe gelée, des cristaux qui la hérissent, du givre sur le fût */
+  var gl = '';
+  [[114, -6, -60, 7], [119, -5, -35, 6], [123, 4, 40, 6], [116, 6, 70, 7], [126, -1, 0, 6], [108, -4, -100, 5]].forEach(function(c){
+    var a = c[2] / DEG, l = c[3], x2 = c[0] + Math.cos(a) * l, y2 = c[1] + Math.sin(a) * l, nx = -Math.sin(a) * 1.6, ny = Math.cos(a) * 1.6;
+    gl += Pw('M' + r1(c[0] + nx) + ' ' + r1(c[1] + ny) + ' L ' + r1(x2) + ' ' + r1(y2) + ' L ' + r1(c[0] - nx) + ' ' + r1(c[1] - ny) + ' Z', '#eaf8ff', 1.2);
+  });
+  var givre = Pw('M127 0 L 110 -7.5 L 112.5 0 L 110 7.5 Z', '#bfeaff', 2.2) + gl + C(117, -1, 2.2, '#ffffff', ' opacity=".9"') +
+    L('M84 -2.6 L 88 -1 M92 2.4 L 96 0.8 M99 -2.6 L 103 -1 M88 2.6 L 91 1', '#e8f8ff', 1.6) + eclat4(128, -8, 3.6, '#ffffff');
+  /* trempée dans l'acide : une goutte verte qui coule de la pointe, des bulles */
+  var acide = Pw('M110 -5.5 C 116 -9 124 -6 126 0 C 124 5 120 7 116 7 C 112 7 109 3 110 -5.5 Z', '#7ae04a', 1.8) +
+    Pw('M114 6 C 113 11 113 15 115.5 17.5 C 118 15 117.5 11 117 6 Z', '#7ae04a', 1.4) + Pw('M121 5 C 121 8 121 10 122.5 11.5 C 124 10 124 8 123.5 5 Z', '#62c83a', 1.2) +
+    C(117, -2.2, 2, '#eaffd0', ' opacity=".95"') + C(123, 0, 1.2, '#c8ff9a') + C(112.5, 1.5, 1.1, '#c8ff9a') + C(115, 15, 1.1, '#eaffd0', ' opacity=".8"');
+  return '<g data-argent style="display:none">' + argent + '</g><g data-lourde style="display:none">' + lourde + '</g>' +
+    '<g data-givre style="display:none">' + givre + '</g><g data-acide style="display:none">' + acide + '</g>';
+}
+
+/* ---------- le Pisteur : les deux carquois trouvés dans la réserve ----------
+   (le carquois est derrière la capuche : ce qu'on voit, ce sont les flèches qui dépassent en arrière, en haut à gauche) */
+function fleDos(a, b, fut, p1, p2, k){
+  var dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), u = [dx / l, dy / l], n = [-u[1], u[0]];
+  function q(t, m){ return r1(b[0] - u[0] * t * k + n[0] * m * k) + ' ' + r1(b[1] - u[1] * t * k + n[1] * m * k); }
+  var f = 'M' + r1(a[0]) + ' ' + r1(a[1]) + ' L ' + r1(b[0]) + ' ' + r1(b[1]);
+  return L(f, O, 2.2 * k + 2.2) + L(f, fut, 2.2 * k) +
+    Pw('M' + q(1, 0) + ' L ' + q(14, 6.5) + ' L ' + q(16, 1) + ' Z', p1, 1.8) + Pw('M' + q(1, 0) + ' L ' + q(14, -6.5) + ' L ' + q(16, -1) + ' Z', p2, 1.8) +
+    C(r1(b[0]), r1(b[1]), 1.6 * k, fut, ' stroke="' + O + '" stroke-width="1.2"');
+}
+function carquoisArgent(d){
+  return V('carquois-argent',
+    fleDos([80, 60], [47, 25], '#dfe7f2', '#f6f9ff', '#d2dcec', 1.2) + fleDos([84, 58], [57, 13], '#dfe7f2', '#e8eef8', '#f6f9ff', 1.2) + fleDos([76, 64], [39, 40], '#dfe7f2', '#f6f9ff', '#d2dcec', 1.2) +
+    L('M46 30 L 52 24 M55 19 L 60 13 M38 44 L 44 38', '#ffffff', 1.2, ' opacity=".9"') +
+    eclat4(38, 20, 5, '#ffffff') + eclat4(62, 4, 3.6, '#e8f6ff') + eclat4(30, 44, 3, '#ffffff') + rep('carquois', 50, 28));
+}
+function carquoisLourd(d){
+  return V('carquois-lourd',
+    fleDos([80, 60], [45, 23], '#7a5636', '#56506a', '#3e3850', 1.5) + fleDos([84, 58], [56, 11], '#7a5636', '#3e3850', '#56506a', 1.5) + fleDos([76, 64], [37, 39], '#7a5636', '#56506a', '#3e3850', 1.5) +
+    L('M43 27 L 50 21 M53 15 L 58 9 M35 43 L 42 36', '#b8b2cc', 1.4) + C(45, 23, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') + C(56, 11, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') + C(37, 39, 2.4, '#b8b6c8', ' stroke="' + O + '" stroke-width="1.2"') +
+    rep('carquois', 50, 28));
+}
+
+/* ---------- l'Alchimiste : la sacoche (une 4e place de recette), à la hanche, derrière ---------- */
+function sacoche(d){
+  return V('sacoche',
+    /* deux courroies accrochées à la ceinture */
+    L('M98 153 L 92 162 M104 155 L 101 163', O, 4.4) + L('M98 153 L 92 162 M104 155 L 101 163', '#5a361f', 2.4) +
+    /* ce qui dépasse : un rouleau de recettes, un brin d'herbe, le bouchon d'une fiole */
+    Pw('M77 150 L 83 148 L 86 164 L 80 166 Z', '#f6ecd2', 2) + L('M78.5 153 L 83.5 151.5', '#c8a870', 1.2) + E(80, 149, 3.2, 1.8, '#e8dcc0', ' stroke="' + O + '" stroke-width="1.4"') +
+    L('M93 162 Q 92 152 97 146', '#3e7a2a', 2.2) + Pw('M97 146 Q 103 144 102 150 Q 99 151 97 146 Z', '#6ac85a', 1.4) + Pw('M94 152 Q 89 148 90 144 Q 95 146 94 152 Z', '#5ab84a', 1.4) +
+    Pw('M86 156 L 92 156 L 92 162 L 86 162 Z', '#9a6a3a', 1.6) + C(89, 155, 2.4, '#ff8a3a', ' stroke="' + O + '" stroke-width="1.2"') +
+    /* le sac, cousu */
+    Pw('M71 162 Q 88 157 104 162 L 102 194 Q 87 200 73 194 Z', d.g('#9a6a3a'), 2.8) +
+    couture('M75 168 L 75 190 M99 167 L 98 190', '#e0b484') + L('M74 194 Q 88 199 101 194', '#5e3a1e', 1.6) +
+    /* le rabat, la boucle d'or */
+    Pw('M70 160 Q 88 154 105 161 L 103 177 Q 87 184 72 176 Z', d.g('#7a4a26'), 2.8) + couture('M74 172 Q 88 178 100 172', '#e0b484') +
+    Pw('M84 174 L 92 174 L 92 182 L 84 182 Z', '#e8c062', 2) + L('M88 174 L 88 182', O, 1.4) +
+    rep('sacoche', 88, 180));
+}
+
+/* ---------- le Sage : le cristal de lune (sur la crosse) et le bâton de chêne ---------- */
+function cristalLune(d, x, y, devant){
+  if(!devant) return V('cristal-lune', '<circle cx="' + x + '" cy="' + y + '" r="40" fill="' + d.halo('#ffffff', '#cfdcff') + '" opacity=".7"/>');
+  /* le croissant de pierre de lune qui tient le cristal (devant lui), et ses étoiles */
+  var c = croissant(x - 3, y, 25, 13, -2, 21);
+  return V('cristal-lune', Pw(c, d.g('#f2f4ff', 1.2), 2.8) + F(croissant(x - 3, y, 20, 11, -2, 17.5), '#c8d0f8', ' opacity=".5"') +
+    L('M' + r1(x - 21) + ' ' + r1(y - 12) + ' Q ' + r1(x - 27) + ' ' + y + ' ' + r1(x - 20) + ' ' + r1(y + 13), '#ffffff', 2, ' opacity=".9"') +
+    C(x - 25, y + 1, 2.6, '#ffffff', ' stroke="' + O + '" stroke-width="1.2"') + C(x - 19, y + 16, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') + C(x - 19, y - 15, 2, '#e8ecff', ' stroke="' + O + '" stroke-width="1"') +
+    eclat4(x + 20, y - 24, 5.4, '#ffffff') + eclat4(x - 32, y - 20, 3.6, '#e8f0ff') + eclat4(x + 22, y + 18, 3.2, '#e8f0ff'));
+}
+function feuilleChene(x, y, a, k, c){
+  return '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ') scale(' + k + ')">' +
+    Pw('M0 0 C 2 -3 4 -5 6 -4 C 6 -8 10 -9 11 -6 C 12 -10 16 -10 16 -6 C 19 -8 21 -5 20 -3 C 23 -2 23 0 23 0 C 23 0 23 2 20 3 C 21 5 19 8 16 6 C 16 10 12 10 11 6 C 10 9 6 8 6 4 C 4 5 2 3 0 0 Z', c || '#5aa04a', 1.6) +
+    L('M0 0 L 21 0 M8 0 L 11 -4 M8 0 L 11 4 M14 0 L 16 -4 M14 0 L 16 4', '#2e6a26', 1) + '</g>';
+}
+function gland(x, y, a){
+  return '<g transform="translate(' + x + ' ' + y + ') rotate(' + (a || 0) + ')">' + L('M0 -7 L 0 -3', '#5e3a1c', 1.6) +
+    Pw('M-4.6 7 C -5 13 -2 16 0 16 C 2 16 5 13 4.6 7 Z', '#c88a3a', 1.6) + C(-1.4, 10, 1.2, '#fff0c0', ' opacity=".7"') +
+    Pw('M-5.5 7.5 C -6 3 -3 -2 0 -2 C 3 -2 6 3 5.5 7.5 Z', '#7a5230', 1.6) + L('M-4 3 L 4 6 M-4 6 L 3 1 M-1 0 L 4 4', '#4e321a', .9) + '</g>';
+}
+function batonChene(d, xb, top, bas){
+  var x = xb, t = function(k){ return r1(top + k); };
+  var tronc = 'M' + x + ' ' + t(14) + ' C ' + (x - 3.5) + ' ' + t(60) + ' ' + (x + 3.5) + ' ' + t(100) + ' ' + (x - 1) + ' ' + t(140) + ' C ' + (x - 4.5) + ' ' + t(180) + ' ' + (x + 3.5) + ' ' + t(214) + ' ' + x + ' ' + r1(bas - 10);
+  var ecorce = '';
+  [[22, -1], [40, 1.5], [58, -1.5], [78, 1], [96, 2], [118, -1], [150, 1.2], [168, -2], [196, 1.6], [214, -1], [232, 1.4]].forEach(function(e){
+    var y = top + e[0]; ecorce += 'M' + r1(x + e[1] - 2) + ' ' + r1(y) + ' q 1.6 4 0 8 ';
+  });
+  return V('baton-chene', L(tronc, O, 13) + L(tronc, '#8a5a2e', 8.4) + L(tronc.replace(/M(\d+)/, function(m, v){ return 'M' + (+v + 2.2); }), '#b88048', 1.6, ' opacity=".75"') +
+    L(ecorce, '#4e321a', 1.4) +
+    E(x - 1, top + 70, 3, 4.6, '#5e3a1c', ' stroke="' + O + '" stroke-width="1.4"') + E(x + 1, top + 182, 2.6, 4, '#5e3a1c', ' stroke="' + O + '" stroke-width="1.4"') +
+    /* une branche de lierre qui s'enroule, des feuilles de chêne sous la crosse et un gland */
+    L('M' + (x - 5) + ' ' + t(24) + ' C ' + (x + 8) + ' ' + t(36) + ' ' + (x - 8) + ' ' + t(52) + ' ' + (x + 6) + ' ' + t(66) + ' C ' + (x + 9) + ' ' + t(70) + ' ' + (x - 7) + ' ' + t(84) + ' ' + (x + 5) + ' ' + t(98), '#3e7a2a', 2.2) +
+    feuilleChene(x + 2, top + 30, -20, .62, '#6ab85a') + feuilleChene(x - 2, top + 58, 200, .55, '#5aa04a') + feuilleChene(x + 4, top + 88, -10, .5, '#6ab85a') +
+    feuilleChene(x - 2, top + 16, 205, .8) + feuilleChene(x + 3, top + 18, -40, .78, '#6ab85a') + gland(x + 13, top + 26, -10) + gland(x + 4, top + 32, 12) +
+    rep('chene', x, top + 40));
+}
+
+/* ============ les calques des réactions (posés à la demande dans une pièce) ============ */
+/* les normales d'une ligne de points (vers le « haut » quand la ligne va de gauche à droite) */
+function normales(p){
+  return p.map(function(q, i){ var a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [dy / l, -dx / l]; });
+}
+/* une ligne de points plus serrée (chaque segment coupé en n) */
+function affiner(p, n){ var r = []; for(var i = 0; i < p.length - 1; i++) for(var k = 0; k < n; k++) r.push(lerp(p[i], p[i + 1], k / n)); r.push(p[p.length - 1]); return r; }
+/* une croûte de givre posée sur une ligne : piquants dessus, glaçons dessous */
+function croute(pts, ep, s){
+  var R = graine(s || 7), p = affiner(pts, 3), n = normales(p), haut = [], bas = [], glac = '', i;
+  for(i = 0; i < p.length; i++){
+    var pic = i % 2 ? ep * (.5 + R() * .5) : ep * (.05 + R() * .15);
+    haut.push([p[i][0] + n[i][0] * (ep * .45 + pic), p[i][1] + n[i][1] * (ep * .45 + pic)]);
+    bas.unshift([p[i][0] - n[i][0] * ep * (.5 + R() * .2), p[i][1] - n[i][1] * ep * (.5 + R() * .2)]);
+  }
+  for(i = 1; i < p.length - 1; i += 2 + (R() < .5 ? 1 : 0)){
+    var l = ep * (.9 + R() * 1.3), b0 = [p[i][0] - n[i][0] * ep * .5, p[i][1] - n[i][1] * ep * .5];
+    glac += 'M' + r1(b0[0] - 2.2) + ' ' + r1(b0[1]) + ' L ' + r1(b0[0] - n[i][0] * l) + ' ' + r1(b0[1] - n[i][1] * l) + ' L ' + r1(b0[0] + 2.2) + ' ' + r1(b0[1]) + ' Z ';
+  }
+  var forme = 'M' + haut.concat(bas).map(function(q){ return r1(q[0]) + ' ' + r1(q[1]); }).join(' L ') + ' Z';
+  var reflet = 'M' + haut.slice(1, -1).map(function(q, k){ var j = k + 1; return r1(q[0] - n[j][0] * ep * .45) + ' ' + r1(q[1] - n[j][1] * ep * .45); }).join(' L ');
+  return Pw(glac, '#dff6ff', 1.4) + Pw(forme, '#e8f8ff', 1.8) + F(forme, '#bfe8ff', ' opacity=".35"') + L(reflet, '#ffffff', 1.4, ' opacity=".9"');
+}
+/* le givre d'un héros (calques : épaules, capuche, bras proche), en unités du dessin */
+function givreDessin(role){
+  var ep = role === 'sage' ? [[90, 99], [102, 93.5], [116, 90], [130, 89.5], [143, 91.5], [154, 97.5], [160, 104]] : [[78, 101], [90, 106], [104, 110], [120, 111], [135, 108.5], [149, 103.5], [162, 97]];
+  var tete = [[92, 8], [101, 4], [113, -1], [126, -1.5], [139, 1.5], [150, 9], [157, 21], [161, 34]];
+  var s = croute(ep, 7, 11) + eclat4(ep[1][0], ep[1][1] - 12, 4, '#ffffff') + eclat4(ep[5][0] + 2, ep[5][1] - 11, 3.4, '#ffffff');
+  return {epaules:s + '<circle cx="' + ep[3][0] + '" cy="' + (ep[3][1] - 2) + '" r="3" fill="#ffffff" opacity=".8"/>',
+    tete:croute(tete, 6.5, 23) + eclat4(118, -10, 4.6, '#ffffff') + eclat4(152, 4, 3.2, '#e8f8ff'),
+    bras:croute([[97, 112], [101, 105.5], [108, 102.5], [115, 104.5], [119, 110.5]], 6, 31)};
+}
+/* une coulée de bave gluante sur une ligne : bourrelets dessus, gouttes qui pendent dessous ; renvoie aussi le bout des gouttes */
+function coulee(pts, ep, s, nGouttes){
+  var R = graine(s || 5), p = affiner(pts, 2), n = normales(p), haut = [], bas = [], gouttes = [], i;
+  for(i = 0; i < p.length; i++){
+    var b = ep * (.35 + R() * .45);
+    haut.push([p[i][0] + n[i][0] * b, p[i][1] + n[i][1] * b]);
+    bas.push([p[i][0] - n[i][0] * ep * (.45 + R() * .25), p[i][1] - n[i][1] * ep * (.45 + R() * .25)]);
+  }
+  /* des gouttes qui pendent : on les insère dans le bord du dessous */
+  var bord = [], pas = Math.max(2, Math.floor(p.length / (nGouttes || 3)));
+  for(i = 0; i < bas.length; i++){
+    bord.push(bas[i]);
+    if(i > 0 && i < bas.length - 1 && i % pas === 1){
+      var l = ep * (1.4 + R() * 1.8), q = bas[i], m = [q[0] - n[i][0] * l, q[1] - n[i][1] * l], nx = n[i][1], ny = -n[i][0], w = 3 + R() * 1.6;
+      bord.push([q[0] + nx * w, q[1] + ny * w], [m[0] + nx * w * .7, m[1] + ny * w * .7], [m[0] - n[i][0] * w, m[1] - n[i][1] * w], [m[0] - nx * w * .7, m[1] - ny * w * .7], [q[0] - nx * w, q[1] - ny * w]);
+      gouttes.push([m[0] - n[i][0] * w, m[1] - n[i][1] * w]);
+    }
+  }
+  var forme = lisse(haut.concat(bord.reverse()), true);
+  var reflet = lisse(haut.slice(1, -1).map(function(q, k){ var j = k + 1; return [q[0] - n[j][0] * ep * .3, q[1] - n[j][1] * ep * .3]; }), false);
+  return {svg:Pw(forme, '#a6e07a', 2.2, ' fill-opacity=".9"') + F(forme, '#5ab83a', ' opacity=".25"') + L(reflet, '#eaffd0', 2, ' opacity=".9"') +
+    gouttes.map(function(g){ return C(g[0] - 1, g[1] - 2.5, 1.3, '#ffffff', ' opacity=".8"'); }).join(''), gouttes:gouttes};
+}
+function baveDessin(role){
+  var ep = role === 'sage' ? [[92, 99], [106, 92.5], [122, 89.5], [138, 90.5], [152, 96.5], [160, 104]] : [[80, 101], [94, 107], [110, 111], [126, 110.5], [142, 105.5], [158, 98]];
+  var a = coulee(ep, 7.5, 17, 4), b = coulee([[94, 8], [106, 1], [120, -2], [134, -.5], [147, 6], [156, 18], [161, 32]], 8.5, 29, 4), c = coulee([[97, 111], [102, 104.5], [110, 102], [118, 106], [121, 113]], 6.5, 41, 2);
+  /* une grosse goutte sur le front, qui pend devant l'œil */
+  var front = Pw('M137 20 C 141 19 144 22 143 27 C 142.5 31 143.5 36 141 39 C 138.5 41 136 39 136.5 35 C 137 31 135 24 137 20 Z', '#a6e07a', 1.8, ' fill-opacity=".92"') + C(139, 24, 1.3, '#ffffff', ' opacity=".85"');
+  return {epaules:a.svg, tete:b.svg + front, bras:c.svg, gouttes:{epaules:a.gouttes, tete:b.gouttes.concat([[140, 40]]), bras:c.gouttes}};
+}
+/* la toile d'araignée qui ligote un héros : des fils qui l'entourent, ancrés au sol et en haut ; en deux moitiés (pour la déchirer) */
+function toileDessin(){
+  var R = graine(53), G = ['', ''], X = 126;
+  function fil(a, m, b, w){
+    /* coupé en deux au milieu (de Casteljau) : chaque moitié va dans son camp */
+    var p01 = lerp(a, m, .5), p12 = lerp(m, b, .5), mid = lerp(p01, p12, .5);
+    var d1 = 'M' + r1(a[0]) + ' ' + r1(a[1]) + ' Q ' + r1(p01[0]) + ' ' + r1(p01[1]) + ' ' + r1(mid[0]) + ' ' + r1(mid[1]);
+    var d2 = 'M' + r1(mid[0]) + ' ' + r1(mid[1]) + ' Q ' + r1(p12[0]) + ' ' + r1(p12[1]) + ' ' + r1(b[0]) + ' ' + r1(b[1]);
+    var gA = a[0] < b[0] ? 0 : 1;
+    G[gA] += L(d1, O, (w || 1.8) + 1.8, ' opacity=".5"') + L(d1, '#f4f8ff', w || 1.8);
+    G[1 - gA] += L(d2, O, (w || 1.8) + 1.8, ' opacity=".5"') + L(d2, '#f4f8ff', w || 1.8);
+  }
+  /* les fils qui le ligotent (en travers du corps, des bras, des jambes) */
+  [[[74, 106], [124, 132], [176, 116]], [[76, 144], [122, 118], [174, 154]], [[80, 172], [126, 196], [172, 168]], [[84, 202], [124, 180], [168, 214]],
+   [[88, 236], [128, 252], [166, 230]], [[92, 262], [126, 248], [162, 266]], [[86, 86], [124, 108], [166, 84]], [[90, 54], [124, 76], [160, 52]]].forEach(function(f, i){ fil(f[0], f[1], f[2], i % 3 ? 1.7 : 2.3); });
+  /* les amarres : vers le sol et vers le haut (d'où vient la toile) */
+  fil([86, 250], [72, 274], [56, 294], 1.6); fil([168, 252], [182, 276], [198, 294], 1.6); fil([90, 60], [70, 20], [50, -30], 1.4); fil([162, 56], [184, 16], [206, -30], 1.4);
+  /* une petite toile ronde collée sur la poitrine */
+  var cx = 128, cy = 150, ray = [];
+  for(var k = 0; k < 10; k++){ var an = k / 10 * Math.PI * 2 + (R() - .5) * .25, lg = 34 + R() * 12; ray.push([an, lg]);
+    var b = [cx + Math.cos(an) * lg, cy + Math.sin(an) * lg], dd = 'M' + cx + ' ' + cy + ' L ' + r1(b[0]) + ' ' + r1(b[1]), g = b[0] < X ? 0 : 1;
+    G[g] += L(dd, O, 3, ' opacity=".45"') + L(dd, '#f4f8ff', 1.3); }
+  [.35, .6, .85].forEach(function(f){ for(var k2 = 0; k2 < ray.length; k2++){
+    var r0 = ray[k2], q = ray[(k2 + 1) % ray.length], p0 = [cx + Math.cos(r0[0]) * r0[1] * f, cy + Math.sin(r0[0]) * r0[1] * f], p1 = [cx + Math.cos(q[0]) * q[1] * f, cy + Math.sin(q[0]) * q[1] * f], mm = lerp(lerp(p0, p1, .5), [cx, cy], .12);
+    var dd = 'M' + r1(p0[0]) + ' ' + r1(p0[1]) + ' Q ' + r1(mm[0]) + ' ' + r1(mm[1]) + ' ' + r1(p1[0]) + ' ' + r1(p1[1]), g = mm[0] < X ? 0 : 1;
+    G[g] += L(dd, O, 2.8, ' opacity=".4"') + L(dd, '#e8f0ff', 1.2);
+    if(R() < .3) G[g] += C(r1(mm[0]), r1(mm[1] + 1.4), 1.8, '#f8ffe8', ' opacity=".9"');
+  } });
+  /* un voile de soie, des gouttes de colle */
+  G[0] = '<path d="M80 92 C 70 160 76 230 92 268 L 126 262 L 126 84 Z" fill="#e8f0ff" opacity=".13"/>' + G[0];
+  G[1] = '<path d="M126 84 L 126 262 L 160 268 C 176 230 182 160 172 92 Z" fill="#e8f0ff" opacity=".13"/>' + G[1];
+  [[96, 120, 0], [150, 128, 1], [104, 190, 0], [146, 205, 1], [112, 246, 0], [138, 240, 1], [100, 62, 0], [152, 70, 1]].forEach(function(g){ G[g[2]] += C(g[0], g[1], 2.2, '#f8ffe8', ' stroke="' + O + '" stroke-width=".8" opacity=".95"'); });
+  return G;
+}
 
 /* ---------- des morceaux communs aux trois héros ---------- */
 function jambe(d, c, pant, bt, deco){
@@ -2610,7 +2904,8 @@ function flecheDessin(){
     P('M125 0 L 110 -6.5 L 112 0 L 110 6.5 Z', '#c8d2e4', ' stroke-width="2.4"') + L('M113 -2 L 121 0', '#fff', 1.2) +
     P('M6 -1 L -7 -9 L -3 0 Z', '#e04a3a', ' stroke-width="2.2"') + P('M6 1 L -7 9 L -3 0 Z', '#e04a3a', ' stroke-width="2.2"') +
     '<g data-huile style="display:none">' + E(118, 3, 6, 4, '#2a2418', ' stroke="' + O + '" stroke-width="1.6"') + E(117, 9, 2.2, 3.4, '#3a3020') + C(116, 1, 1.4, '#c8b88a') + '</g>' +
-    '<g data-colle style="display:none">' + E(117, 0, 8, 6, '#f2f6e8', ' stroke="' + O + '" stroke-width="1.6"') + L('M112 5 Q 110 12 113 16 M120 5 Q 122 11 120 14', '#e8f0d8', 1.6) + C(119, -2, 1.6, '#fff') + '</g>';
+    '<g data-colle style="display:none">' + E(117, 0, 8, 6, '#f2f6e8', ' stroke="' + O + '" stroke-width="1.6"') + L('M112 5 Q 110 12 113 16 M120 5 Q 122 11 120 14', '#e8f0d8', 1.6) + C(119, -2, 1.6, '#fff') + '</g>' +
+    flechesSpeciales();
 }
 
 /* ============ le Pisteur ============ */
@@ -2623,7 +2918,7 @@ function pisteur(lk, grain){
     P('M70 64 L 92 56 L 116 138 L 94 146 Z', d.g('#7c4a28')) + L('M80 61 L 103 141', cuirF, 2) +
     L('M73 74 L 95 66 M95 128 L 112 122', '#c9a35a', 3) + couture('M76 70 L 98 140', '#d8aa76') +
     '<g data-carquois>' + P('M70 52 L 64 42 L 76 46 Z', '#e04a3a') + P('M80 48 L 76 36 L 86 42 Z', '#f3e7cb') + P('M90 46 L 88 34 L 97 42 Z', '#e04a3a') +
-    L('M72 60 L 72 50 M82 58 L 81 46 M92 56 L 92 44', '#7a5a3a', 2) + '</g>' +
+    L('M72 60 L 72 50 M82 58 L 81 46 M92 56 L 92 44', '#7a5a3a', 2) + '</g>' + carquoisArgent(d) + carquoisLourd(d) +
     J('tete', '<g data-souple="queue"></g>');
   B += J('torse', c0);
   /* jambe loin */
@@ -2649,7 +2944,7 @@ function pisteur(lk, grain){
     L('M96 146 Q 124 154 154 144', O, 9) + L('M96 146 Q 124 154 154 144', '#5a361f', 5.5) + P('M119 144 L 131 144 L 131 155 L 119 155 Z', '#d9b46a') + L('M122 149 L 129 149', O, 2) +
     P('M98 152 L 114 152 L 114 168 Q 106 172 98 168 Z', d.g('#7a4a28')) + C(106, 157, 2, '#d9b46a', ' stroke="' + O + '" stroke-width="1"') +
     P('M150 152 L 168 182 L 174 179 L 156 149 Z', d.g('#4e2e18')) +
-    '<g data-dague-ceinture>' + P('M144 147 L 150 137 L 155 140 L 149 150 Z', '#3a2a1a') + P('M141 148 L 156 146 L 157 151 L 142 153 Z', '#c9a35a') + '</g>');
+    '<g data-dague-ceinture>' + P('M144 147 L 150 137 L 155 140 L 149 150 Z', '#3a2a1a') + P('M141 148 L 156 146 L 157 151 L 142 153 Z', '#c9a35a') + '</g>' + amulette(d, 127, 115) + rep('amulette', 127, 115));
   /* devant : l'arc dans la main loin, la tête, le col */
   var arc = L('M126 103 Q 172 185 126 267', O, 11) + L('M126 103 Q 172 185 126 267', '#8a5a2e', 6) + L('M130 112 Q 166 185 130 258', '#d29a5a', 1.6) +
     P('M142 170 L 154 170 L 155 200 L 143 200 Z', d.g('#5a361f')) + L('M142 177 L 155 178 M142 185 L 155 186 M143 193 L 155 193', '#c9a35a', 1.3) +
@@ -2757,7 +3052,7 @@ function alchimiste(lk, grain){
     '<g data-louche-ceinture>' + L('M160 150 L 168 186', O, 6.5) + L('M160 150 L 168 186', '#a8763e', 3) + P('M162 184 Q 168 200 178 186 Z', d.g('#b9c2d0'), ' stroke-width="2.4"') + '</g>' +
     J('marmite', L('M142 154 Q 150 146 158 154', O, 2.4) + P('M137 162 L 163 162 Q 167 182 150 186 Q 133 182 137 162 Z', d.g('#4a4458')) +
       E(150, 162, 14, 4, '#2a2436', ' stroke="' + O + '" stroke-width="2.6"') + L('M137 162 Q 150 168 163 162', '#c87a3a', 2.4) +
-      L('M141 168 Q 142 178 148 182', '#8a84a0', 1.6, ' opacity=".7"') + rep('marmite', 150, 174), [150, 152]));
+      L('M141 168 Q 142 178 148 182', '#8a84a0', 1.6, ' opacity=".7"') + rep('marmite', 150, 174), [150, 152]) + sacoche(d) + amulette(d, 127, 174, true) + rep('amulette', 127, 174));
   /* devant : la main loin (fiole, louche, herbes), la tête, les lunettes d'alchimiste, le col */
   B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk) + meche(d, 124, 58, ch) + capuche(d, 124, 58, capu, or) +
       L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), O, 6) + L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), '#4a2e1c', 3.5) +
@@ -2825,7 +3120,7 @@ function sage(lk, grain){
     '<g data-livre-ceinture>' + L('M146 152 L 150 160', '#5e3a1e', 2.4) + livreFerme(d, 152, 170, or) + '</g>' +
     P('M94 96 Q 122 86 152 96 L 158 128 Q 124 140 90 128 Z', d.g(bleu)) + L('M92 126 Q 124 138 156 126', or, 2.4) +
     couture('M96 120 Q 124 130 154 120', CYAN) + L('M152 98 L 157 126', LUNE, 2, ' opacity=".55"') +
-    C(124, 101, 4.5, or, ' stroke="' + O + '" stroke-width="2"') + C(124, 101, 1.8, CYAN));
+    C(124, 101, 4.5, or, ' stroke="' + O + '" stroke-width="2"') + C(124, 101, 1.8, CYAN) + amulette(d, 131, 117) + rep('amulette', 131, 117));
   /* devant : la main loin (le livre ouvert), la tête */
   var livre = '<g data-livre-main style="display:none"><g transform="translate(' + x + ' 186) scale(1.3) translate(' + (-x) + ' -186)">' +
     '<ellipse data-livre-halo cx="' + x + '" cy="170" rx="40" ry="26" fill="' + d.halo('#e8fdff', '#3fd0ff') + '" opacity="0"/>' +
@@ -2852,15 +3147,16 @@ function sage(lk, grain){
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb - 2) + ' ' + (top - 2) + ' ' + (xb - 18) + ' ' + (top - 8) + ' ' + (xb - 20) + ' ' + (top + 6) + ' C ' + (xb - 21) + ' ' + (top + 14) + ' ' + (xb - 12) + ' ' + (top + 16) + ' ' + (xb - 10) + ' ' + (top + 9), '#4a3020', 6) +
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb + 4) + ' ' + (top + 2) + ' ' + (xb + 14) + ' ' + (top - 2) + ' ' + (xb + 14) + ' ' + (top - 12), O, 8) +
     L('M' + xb + ' ' + (top + 18) + ' C ' + (xb + 4) + ' ' + (top + 2) + ' ' + (xb + 14) + ' ' + (top - 2) + ' ' + (xb + 14) + ' ' + (top - 12), '#4a3020', 4.5) +
+    cristalLune(d, xb + 2, top - 2) +
     '<g data-cristal class="haJ" style="transform-origin:' + (xb + 2) + 'px ' + (top - 2) + 'px">' +
       '<circle data-cr-halo cx="' + (xb + 2) + '" cy="' + (top - 2) + '" r="30" fill="' + d.halo('#e8fdff', '#3fd0ff') + '" opacity=".75"/>' +
       P('M' + (xb + 2) + ' ' + (top - 20) + ' L ' + (xb + 11) + ' ' + (top - 4) + ' L ' + (xb + 2) + ' ' + (top + 12) + ' L ' + (xb - 7) + ' ' + (top - 4) + ' Z', d.g('#5fe0ff', 1.3)) +
       F('M' + (xb + 2) + ' ' + (top - 20) + ' L ' + (xb + 11) + ' ' + (top - 4) + ' L ' + (xb + 2) + ' ' + (top - 2) + ' Z', '#e8fdff', ' opacity=".75"') +
       L('M' + (xb - 1) + ' ' + (top - 8) + ' l 3 -5 l 3 5 M' + (xb + 2) + ' ' + (top - 13) + ' l 0 12', '#fff', 1.6) +
-      C(xb + 2, top - 2, 3, '#fff', ' opacity=".8"') + '</g>' + rep('cristal', xb + 2, top - 2) + rep('baton-bas', xb, bas);
+      C(xb + 2, top - 2, 3, '#fff', ' opacity=".8"') + '</g>' + cristalLune(d, xb + 2, top - 2, true) + rep('cristal', xb + 2, top - 2) + rep('baton-bas', xb, bas);
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 16, d.gh(bleu)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
     J('avantBrasB', P('M' + (xb - 8) + ' 142 L ' + (xb + 8) + ' 142 L ' + (xb + 12) + ' 178 Q ' + xb + ' 184 ' + (xb - 12) + ' 178 Z', d.gh(bleu)) + L('M' + (xb - 12) + ' 177 Q ' + xb + ' 183 ' + (xb + 12) + ' 177', or, 2.6) +
-      J('mainB', baton + poing(d, xb, 188, 8, pe[1])))));
+      J('mainB', baton + batonChene(d, xb, top, bas) + poing(d, xb, 188, 8, pe[1])))));
   var corps = '<ellipse data-ombre cx="125" cy="293" rx="56" ry="8" fill="#000" opacity=".35"/>' + J('racine', J('bassin', B));
   var so = [
     {nom:'manteau', type:'tissu', dos:[[98, 100], [74, 192], [50, 286]], devant:[[114, 102], [104, 194], [96, 288]], k:46, c:2.8, g:420, vent:1, onde:3,
@@ -3327,7 +3623,10 @@ function fusionLk(role, lk){
   return r;
 }
 function cleModele(role, lk){ return role + '|' + JSON.stringify(lk) + '|' + (HerosAnime.grain ? 1 : 0); }
-var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles]';
+var ILOTS = '[data-souple],[data-corde],[data-filet],[data-coul],[data-halo],[data-bulles],' +
+  /* les objets du donjon et les flèches spéciales (a2-objets.js) : de petits îlots vectoriels, cachés au départ ; ils ne coûtent
+     ni image ni temps de cuisson, et ne sont peints qu'une fois, quand on les montre (mémoire de l'iPhone) */
+  '[data-eq],[data-argent],[data-lourde],[data-givre],[data-acide]';
 function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
@@ -3434,13 +3733,19 @@ H._fin = function(){
 };
 H.attendre = function(){ this._veut = true; vivre(this); if(!this._occupe) this._idleOn(); return this; };
 H._idleOn = function(){
-  if(this._idle) return;
+  if(this._idle || this._avale) return;      /* (avalé par Bourbe : on ne le voit plus, rien ne bouge) */
   this._idle = true; this._calme = true;
   var me = this, A = this._ia = [];
   function boucle(nom, k1, dur, delay){ (me.elsI[nom] || []).forEach(function(el){ A.push(el.animate([{transform:'none'}, {transform:k1}], {duration:dur, delay:delay || 0, iterations:Infinity, direction:'alternate', easing:EZ.io})); }); }
   if(this.ko){
     boucle('torse', 'scale(1.025,1.035)', 1100);
     boucle('tete', 'rotate(4deg)', 1300, 200);
+  } else if(this._toile){
+    /* ligoté dans la toile : il force sans arrêt (de petits efforts rapides, joués par la carte graphique) */
+    boucle('torse', 'translate(1px,0px) rotate(2.4deg)', 520);
+    boucle('tete', 'rotate(-5deg)', 430, 90);
+    boucle('brasA', 'rotate(-4deg)', 380, 40); boucle('brasB', 'rotate(4deg)', 410, 60);
+    if(this.R0.idle) this.R0.idle.call(this, A, boucle);
   } else {
     boucle('torse', 'translate(0px,-1.6px) scale(1.014,1.025)', 1400);
     boucle('tete', 'translate(0px,-1.4px) rotate(-2.4deg)', 1400, 180);
@@ -3473,8 +3778,10 @@ H._gestes = function(){
     if(!me._idle || me._occupe) return;
     var tok = ++me._gTok; me._geste = true;
     if(!me.cuit) vivre(me);
-    Promise.resolve(me.R0.geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
-  }, alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
+    /* ligoté : son petit geste, c'est de se débattre */
+    var geste = me._toile ? function(){ var l = me._pose_ligote(); return me.jouer(me._debat(l, 4).concat([{d:260, p:l, e:'io'}])); } : me.R0.geste;
+    Promise.resolve(geste.call(me, function(){ return tok === me._gTok; })).then(function(){ if(tok === me._gTok) me._geste = false; if(me._idle) me._gestes(); });
+  }, me._toile ? alea(1400, 2800) : alea(me._gestesVite ? 1500 : 3200, me._gestesVite ? 2600 : 6200));
 };
 /* Fluidité (RAPIDITE.md) : un héros cuit qui ne fait rien « s'endort » : plus aucune boucle à chaque image (le fil principal
    du téléphone se repose, la carte graphique joue seule la respiration, le clignement, le balancement des tissus). Il se
@@ -3507,6 +3814,7 @@ H._lueurs = function(on){
     [].forEach.call(lv.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); if(me.els[n]){ me.els[n].push(e); e.style.transform = tf(me.etat[n]); } });
     [].forEach.call(lv.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); if(me.elsI[n]) me.elsI[n].push(e); });
     this._lv = w;
+    if(this._reappliquer) this._reappliquer();   /* (la silhouette reprend l'équipement montré) */
   } else if(!on && this._lv){
     var w2 = this._lv, n;
     this._lv = null;
@@ -3709,9 +4017,11 @@ function voler(el, a, b, o){
   });
 }
 function couche(scene){ var c = scene.querySelector(':scope > .ha-fxs'); if(!c){ c = document.createElement('div'); c.className = 'ha-fx ha-fxs'; c.style.zIndex = 5; scene.appendChild(c); } return c; }
+/* les sortes de flèches (une variante dessinée pour chacune, sauf la simple) */
+var TYPES_FL = ['feu', 'huile', 'colle', 'argent', 'lourde', 'givre', 'acide'];
 var FLECHE_SVG = function(type){
   return '<svg viewBox="-14 -16 150 32" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible">' +
-    flecheDessin().replace('data-feu style="display:none"', 'data-feu' + (type === 'feu' ? '' : ' style="display:none"')).replace('data-huile style="display:none"', 'data-huile' + (type === 'huile' ? '' : ' style="display:none"')).replace('data-colle style="display:none"', 'data-colle' + (type === 'colle' ? '' : ' style="display:none"')) + '</svg>';
+    flecheDessin().replace(/data-(\w+) style="display:none"/g, function(m, t){ return t === type ? 'data-' + t : m; }) + '</svg>';
 };
 
 ROLES.pisteur = {
@@ -3775,9 +4085,10 @@ ROLES.pisteur = {
 
 /* ---------- le tir à l'arc ---------- */
 H.tirer = function(scene, to, type, opt){
-  if(typeof type === 'object'){ opt = type; type = opt.type; }
+  if(type && typeof type === 'object'){ opt = type; type = opt.type; }
   type = type || 'normale'; opt = opt || {};
-  var me = this;
+  if(type === 'rebond'){ type = 'normale'; opt.rebond = true; }
+  var me = this, lourd = type === 'lourde', neuve = FL2[type] || opt.rebond;
   return this._file(function(sig){
     var c = this.corde, g = this.garde();
     var p0 = this.rep('poignee', scene), alpha = Math.max(-35, Math.min(30, Math.atan2(to.y - p0.y, to.x - p0.x) * DEG));
@@ -3791,6 +4102,13 @@ H.tirer = function(scene, to, type, opt){
     var tremble = P({torse:tor - 3.4, tete:-1.3 + al * 0.4, mA:[bras[0] - 0.6, bras[1] + 0.4], hA:al, mB:[118, 98], sB:1.14, cB:-1, hB:al - 10, arc:{sx:1.22, sy:0.945}});
     var lache = P({bassin:{x:-2, y:10, r:-3}, torse:tor - 7, tete:-3 + al * 0.4, mA:[bras[0] - 2, bras[1] - 1], hA:al - 4, mB:[86, 92], sB:1.1, cB:-1, hB:-150, arc:{sx:0.93, sy:1.02}});
     var suite = P({torse:tor - 5, tete:-2 + al * 0.4, mA:bras, hA:al, mB:[84, 96], cB:-1, hB:-160, arc:{sx:1.03, sy:0.99}});
+    if(lourd){
+      /* la flèche lourde : l'arc se bande plus fort (et plus lentement), le bras tremble, puis l'arc RECULE en lâchant */
+      bande = P({bassin:{y:12, r:-3}, torse:tor - 5, tete:al * 0.4, mA:bras, hA:al, mB:[112, 96], sB:1.16, cB:-1, hB:al - 10, arc:{sx:1.34, sy:0.9}});
+      tremble = P({bassin:{y:12, r:-3}, torse:tor - 5.6, tete:-0.6 + al * 0.4, mA:[bras[0] - 1.2, bras[1] + 0.8], hA:al + 1.5, mB:[110, 97], sB:1.18, cB:-1, hB:al - 10, arc:{sx:1.36, sy:0.89}});
+      lache = P({bassin:{x:-10, y:12, r:-7}, torse:tor - 14, tete:-8 + al * 0.4, mA:[bras[0] - 14, bras[1] - 12], hA:al - 16, mB:[78, 88], sB:1.1, cB:-1, hB:-150, arc:{sx:0.86, sy:1.05, r:-8}});
+      suite = P({bassin:{x:-6, y:11, r:-5}, torse:tor - 10, tete:-4 + al * 0.4, mA:[bras[0] - 6, bras[1] - 4], hA:al - 8, mB:[82, 94], cB:-1, hB:-160, arc:{sx:1.06, sy:0.98, r:3}});
+    }
     var suite2 = P({torse:tor - 5, tete:-2 + al * 0.4, mA:bras, hA:al, mB:[84, 98], cB:-1, hB:-160, arc:{}});
     this.expr('vise');
     var tween = function(ms, f){ var t0 = performance.now(); (function s(n){ var t = Math.min(1, (n - t0) / ms); f(t); if(t < 1) requestAnimationFrame(s); })(t0); };
@@ -3799,20 +4117,23 @@ H.tirer = function(scene, to, type, opt){
       {d:240, p:cherche, e:'io', f:function(){ c.fl = 1; c.blend = 0; me._typeFleche(type); }},
       {d:90, p:cherche, e:'lin'},
       {d:280, p:encoche, e:'io', f0:function(){ tween(240, function(t){ c.blend = t * t; }); }, f:function(){ c.mode = 'tire'; c.blend = 1; }},
-      {d:400, p:bande, e:'cubic-bezier(.5,0,.35,1)', f0:function(){ me.expr('effort'); }},
-      {d:110, p:tremble, e:'io'}, {d:110, p:bande, e:'io'}, {d:90, p:tremble, e:'io'},
+      {d:lourd ? 640 : 400, p:bande, e:'cubic-bezier(.5,0,.35,1)', f0:function(){ me.expr('effort'); }}].concat(lourd ?
+      [{d:90, p:tremble, e:'io'}, {d:90, p:bande, e:'io'}, {d:80, p:tremble, e:'io'}, {d:80, p:bande, e:'io'}, {d:70, p:tremble, e:'io'}] :
+      [{d:110, p:tremble, e:'io'}, {d:110, p:bande, e:'io'}, {d:90, p:tremble, e:'io'}], [
       {d:60, p:lache, e:'oo', f0:function(){
         var n = me.rep('flN', scene), t = me.rep('flP', scene);
-        c.mode = 'libre'; c.vib = 9; c.fl = 0;
-        vole = me._fleche(scene, n, t, to, type, opt).then(sig);
+        c.mode = 'libre'; c.vib = lourd ? 14 : 9; c.fl = 0;
+        vole = (neuve ? me._fleche2 : me._fleche).call(me, scene, n, t, to, type, opt).then(sig);
+        if(lourd) me._recul();
       }},
-      {d:120, p:suite, e:'o', f0:function(){ me.expr('cri'); }}, {d:200, p:suite2, e:'io'}, {d:120, p:suite2, e:'lin'},
+      {d:lourd ? 200 : 120, p:suite, e:'o', f0:function(){ me.expr('cri'); }}, {d:200, p:suite2, e:'io'}, {d:120, p:suite2, e:'lin'},
       {d:420, p:g, e:'b', f0:function(){ me.expr('garde'); }}
-    ]).then(function(){ return vole; });
+    ])).then(function(){ return vole; });
   });
 };
 H._typeFleche = function(type){
-  ['feu', 'huile', 'colle'].forEach(function(t){ var e = this.$('[data-fleche] [data-' + t + ']'); if(e) e.style.display = t === type ? '' : 'none'; }, this);
+  var sv = this.svg;
+  TYPES_FL.forEach(function(t){ [].forEach.call(sv.querySelectorAll('[data-fleche] [data-' + t + ']'), function(e){ e.style.display = t === type ? '' : 'none'; }); });
 };
 H._fleche = function(scene, n, t, to, type, opt){
   var L = couche(scene), len = Math.hypot(t.x - n.x, t.y - n.y), k = len / 124;
@@ -4102,6 +4423,7 @@ H.lancer = function(scene, to, couleur, opt){
   });
 };
 H._fioleVole = function(scene, a, to, c, opt){
+  if(opt._potion) return this._fioleVole2(scene, a, to, c, opt);     /* (givre, acide, huile, colle : sans filtre, voir m-armes.js) */
   var L = couche(scene), e = div(L, 'width:26px;height:31px;filter:drop-shadow(0 0 6px ' + c + ')', fioleSVG(c));
   var dist = Math.hypot(to.x - a.x, to.y - a.y), last = 0;
   return voler(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * 0.26, tourne:620, r0:-20, chaque:function(p){
@@ -4461,6 +4783,901 @@ H._idee = function(){
   return jouerEl(e, [{transform:place(p.x + 4, p.y - 26, -20, 0), opacity:0}, {transform:place(p.x + 4, p.y - 52, 8, 1.25), opacity:1, offset:.25}, {transform:place(p.x + 4, p.y - 48, -4, 1), opacity:1, offset:.4},
     {transform:place(p.x + 4, p.y - 54, 2, 1), opacity:1, offset:.8}, {transform:place(p.x + 4, p.y - 64, 0, .8), opacity:0}], {duration:1300, easing:'ease-out'});
 };
+/* ============ des effets sans aucun filtre (RAPIDITE.md R2 et R7) ============
+   Chaque particule est un petit <div> (un dégradé ou un petit dessin SVG, peint une fois) dont la trajectoire est calculée
+   d'avance et jouée par la carte graphique (transform et opacity). Pas de box-shadow, pas de drop-shadow. */
+function transp(c){ return 'rgba(' + hx(c).join(',') + ',0)'; }
+function tache(c, c2){ return 'border-radius:50%;background:radial-gradient(closest-side,' + c + ' 0,' + (c2 || c) + ' 42%,' + transp(c2 || c) + ' 100%)'; }
+var FORMES = {
+  etoile:function(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + r1(t) + 'px;height:' + r1(t) + 'px;display:block;overflow:visible"><circle r="7.5" fill="' + c + '" opacity=".3"/><path d="M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; },
+  goutte:function(c, t){ return '<svg viewBox="-6 -9 12 15" style="width:' + r1(t) + 'px;height:' + r1(t * 1.25) + 'px;display:block;overflow:visible"><path d="M0 -8 C 3 -3 5 0 5 2.5 C 5 5.5 2.6 6.5 0 6.5 C -2.6 6.5 -5 5.5 -5 2.5 C -5 0 -3 -3 0 -8 Z" fill="' + c + '" stroke="#24182e" stroke-width="1.3"/><circle cx="-1.6" cy="2" r="1.3" fill="#fff" opacity=".75"/></svg>'; },
+  eclat:function(c, t){ return '<svg viewBox="-6 -8 12 16" style="width:' + r1(t * .75) + 'px;height:' + r1(t) + 'px;display:block;overflow:visible"><path d="M0 -8 L 5 3 L -1 8 L -5 1 Z" fill="' + c + '" stroke="#24182e" stroke-width="1.1" stroke-linejoin="round"/><path d="M-1 -4 L 1.5 2" stroke="#fff" stroke-width="1.2" opacity=".8"/></svg>'; },
+  flocon:function(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + r1(t) + 'px;height:' + r1(t) + 'px;display:block;overflow:visible"><path d="M0 -9 L 0 9 M-7.8 -4.5 L 7.8 4.5 M-7.8 4.5 L 7.8 -4.5 M-2.5 -7 L 0 -5 L 2.5 -7 M-2.5 7 L 0 5 L 2.5 7" stroke="#24182e" stroke-width="3.4" stroke-linecap="round" fill="none" opacity=".55"/><path d="M0 -9 L 0 9 M-7.8 -4.5 L 7.8 4.5 M-7.8 4.5 L 7.8 -4.5 M-2.5 -7 L 0 -5 L 2.5 -7 M-2.5 7 L 0 5 L 2.5 7" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>'; },
+  paillette:function(c, t){ return '<svg viewBox="-6 -6 12 12" style="width:' + r1(t) + 'px;height:' + r1(t) + 'px;display:block;overflow:visible"><path d="M0 -6 L 3.4 0 L 0 6 L -3.4 0 Z" fill="' + c + '" stroke="#7a5418" stroke-width=".9"/><path d="M0 -6 L 3.4 0 L 0 0 Z" fill="#fff" opacity=".55"/></svg>'; },
+  feuille:function(c, t){ return '<svg viewBox="-2 -10 26 20" style="width:' + r1(t) + 'px;height:' + r1(t * .8) + 'px;display:block;overflow:visible">' + feuilleChene(0, 0, 0, 1, c) + '</svg>'; }
+};
+/* une gerbe de particules : n, c (couleur ou liste), forme (rond, lueur, trait, etoile, goutte, eclat, flocon, paillette, feuille),
+   angle et ecart (degrés), v0 / v1 (vitesse), g (pesanteur), t0 / t1 (taille), d0 / d1 (durée), retard, etale */
+function pluie(layer, x, y, o){
+  o = o || {};
+  var n = o.n || 10, ps = [];
+  for(var i = 0; i < n; i++){
+    var an = (o.angle || 0) + (o.ecart !== undefined ? alea(-o.ecart, o.ecart) : alea(-180, 180));
+    var v = alea(o.v0 || 60, o.v1 || 160), vx = Math.cos(an / DEG) * v, vy = Math.sin(an / DEG) * v, g = o.g === undefined ? 300 : o.g;
+    var dur = alea(o.d0 || 400, o.d1 || 800), sz = alea(o.t0 || 3, o.t1 || 6), c = o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffffff');
+    var f = o.forme || 'rond', css = 'width:' + r1(sz) + 'px;height:' + r1(sz) + 'px;', html = '';
+    if(f === 'trait') css = 'width:' + r1(sz) + 'px;height:' + r1(Math.max(1.6, sz * .26)) + 'px;border-radius:2px;background:' + c;
+    else if(f === 'lueur') css = 'width:' + r1(sz * 2.4) + 'px;height:' + r1(sz * 2.4) + 'px;' + tache('#ffffff', c);
+    else if(f === 'rond') css += 'border-radius:50%;background:' + c + (o.bord ? ';border:1px solid #24182e' : '');
+    else html = FORMES[f](c, sz);
+    var e = div(layer, css, html), k = [], rot0 = alea(-180, 180), rotv = o.tourne === undefined ? alea(-540, 540) : o.tourne;
+    for(var s = 0; s <= 6; s++){
+      var tt = s / 6 * dur / 1000, px = x + vx * tt, py = y + vy * tt + 0.5 * g * tt * tt;
+      var rr = f === 'trait' ? Math.atan2(vy + g * tt, vx) * DEG : f === 'goutte' ? Math.atan2(vy + g * tt, vx) * DEG - 90 : rot0 + rotv * tt;
+      k.push({transform:place(px, py, rr, o.s1 === undefined ? 1 : 1 + (o.s1 - 1) * s / 6), opacity:s === 0 ? 0 : Math.pow(1 - s / 6, o.fondu || 0.8) * (o.o0 || 1)});
+    }
+    k[1].opacity = Math.max(k[1].opacity, .9 * (o.o0 || 1));
+    ps.push(jouerEl(e, k, {duration:dur, delay:(o.retard || 0) + alea(0, o.etale || 0), easing:'linear', fill:'backwards'}));
+  }
+  return Promise.all(ps);
+}
+/* une tache de lumière (un dégradé) qui grandit et s'efface */
+function lueurFx(layer, x, y, o){
+  o = o || {};
+  var w = o.w || 60, h = o.h || w, e = div(layer, 'width:' + w + 'px;height:' + h + 'px;' + tache(o.c || '#ffffff', o.c2 || o.c || '#ffffff'));
+  var k = o.k || [{transform:place(x, y, 0, o.s0 || .3), opacity:o.o0 === undefined ? 1 : o.o0}, {transform:place(x + (o.dx || 0), y + (o.dy || 0), 0, o.s1 || 1.6), opacity:0}];
+  return jouerEl(e, k, {duration:o.d || 500, delay:o.retard || 0, easing:o.e || 'cubic-bezier(.1,.7,.3,1)', fill:'backwards'});
+}
+/* un anneau (un dégradé en couronne, peint une fois) qui s'élargit */
+function anneau(layer, x, y, o){
+  o = o || {};
+  var w = o.w || 60, h = o.h || w, c = o.c || '#ffffff';
+  var e = div(layer, 'width:' + w + 'px;height:' + h + 'px;border-radius:50%;background:radial-gradient(closest-side,' + transp(c) + ' 62%,' + c + ' 80%,' + transp(c) + ' 100%)');
+  return jouerEl(e, [{transform:place(x, y, 0, o.s0 || .2), opacity:o.o0 === undefined ? 1 : o.o0}, {transform:place(x, y, 0, o.s1 || 2.2), opacity:0}], {duration:o.d || 600, delay:o.retard || 0, easing:'cubic-bezier(.1,.7,.3,1)', fill:'backwards'});
+}
+/* un dessin (SVG) qui surgit et s'efface : o.k = images clés, sinon un « pop » */
+function surgit(layer, x, y, w, h, svg, o){
+  o = o || {};
+  var e = div(layer, 'width:' + w + 'px;height:' + h + 'px', svg), r = o.r || 0;
+  return jouerEl(e, o.k || [{transform:place(x, y, r - 20, .2), opacity:0}, {transform:place(x, y, r, 1.15), opacity:1, offset:.25}, {transform:place(x, y, r + 6, 1), opacity:1, offset:.6}, {transform:place(x, y, r + 14, o.s1 || 1.25), opacity:0}],
+    {duration:o.d || 600, delay:o.retard || 0, easing:o.e || 'ease-out', fill:'backwards'});
+}
+/* une étoile de choc de bande dessinée */
+function chocSvg(c1, c2, n){
+  n = n || 10;
+  var p = '', q = '';
+  for(var i = 0; i < n * 2; i++){ var a = i / (n * 2) * Math.PI * 2 - Math.PI / 2, r = i % 2 ? 22 : 48 - (i % 4 ? 8 : 0), r2 = i % 2 ? 12 : 30 - (i % 4 ? 5 : 0);
+    p += (i ? ' L ' : 'M') + r1(Math.cos(a) * r) + ' ' + r1(Math.sin(a) * r); q += (i ? ' L ' : 'M') + r1(Math.cos(a) * r2) + ' ' + r1(Math.sin(a) * r2); }
+  return '<svg viewBox="-50 -50 100 100" style="width:100%;height:100%;display:block;overflow:visible"><path d="' + p + ' Z" fill="' + c1 + '" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/><path d="' + q + ' Z" fill="' + c2 + '"/></svg>';
+}
+/* un vol calculé d'avance (en cloche si haut > 0) : joué par la carte graphique ; o.chaque(p, angle, u) est appelé tous les
+   o.pas ms (pour semer une traînée), sans boucle à chaque image */
+function vol2(el, a, b, o){
+  var D = o.d, cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2 - (o.haut || 0), N = o.n || 18, kf = [];
+  function pos(t){ var u = 1 - t; return {x:u * u * a.x + 2 * u * t * cx + t * t * b.x, y:u * u * a.y + 2 * u * t * cy + t * t * b.y}; }
+  function etat(t){ var te = o.ease ? o.ease(t) : t, p = pos(te), q = pos(Math.min(1, te + .01)), r = pos(Math.max(0, te - .01)); p.ang = Math.atan2(q.y - r.y, q.x - r.x) * DEG; p.r = o.tourne !== undefined ? (o.r0 || 0) + o.tourne * t : p.ang; return p; }
+  for(var i = 0; i <= N; i++){ var p = etat(i / N); kf.push({offset:i / N, transform:place(p.x, p.y, p.r, o.s), opacity:1}); }
+  if(o.apparait) kf[0].opacity = 0;
+  var anim = el.animate(kf, {duration:D, delay:o.retard || 0, easing:'linear', fill:'both'});
+  if(o.chaque){ var t0 = performance.now() + (o.retard || 0), pas = o.pas || 45;
+    (function tic(){ var u = (performance.now() - t0) / D; if(u >= 1) return; if(u >= 0){ var q = etat(u); o.chaque(q, q.ang, u); } setTimeout(tic, pas); })(); }
+  function fin(){ var q = etat(1); return {x:q.x, y:q.y, ang:q.ang}; }
+  return anim.finished.then(fin, fin);
+}
+/* une suite de points (unités de la boîte) passée en courbe douce (Catmull-Rom), échantillonnée en n points */
+function courbe(p, n){
+  var r = [], seg = p.length - 1;
+  for(var i = 0; i <= n; i++){
+    var t = i / n * seg, k = Math.min(seg - 1, Math.floor(t)), u = t - k, p0 = p[Math.max(0, k - 1)], p1 = p[k], p2 = p[k + 1], p3 = p[Math.min(p.length - 1, k + 2)], u2 = u * u, u3 = u2 * u;
+    r.push([0, 1].map(function(j){ return 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * u + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * u2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * u3); }));
+  }
+  return r;
+}
+
+/* ============ la place des choses dans la boîte du héros ============ */
+/* (une seule lecture au début de chaque geste) les unités du dessin (250 × 300, pieds en bas) vers les pixels de la boîte */
+H._mesure = function(){ this._W = this.fx.offsetWidth || 200; this._H = this.fx.offsetHeight || 240; };
+H._px = function(x, y){
+  if(!this._W) this._mesure();
+  var s = Math.min(this._W / 250, this._H / 300);
+  return {x:(this._W - 250 * s) / 2 + x * s, y:this._H - 300 * s + y * s, s:s};
+};
+/* un point {x, y} de la scène (ou de l'écran si pas de scène) vers les pixels de la boîte du héros */
+H._versBoite = function(scene, p){
+  var R = this.boite.getBoundingClientRect(), k = (R.width / (this.boite.offsetWidth || R.width)) || 1, cx = p.x, cy = p.y;
+  if(scene){ var S = scene.getBoundingClientRect(), ks = (S.width / (scene.offsetWidth || S.width)) || 1; cx = S.left + p.x * ks; cy = S.top + p.y * ks; }
+  return {x:(cx - R.left) / k, y:(cy - R.top) / k};
+};
+
+/* ============ l'équipement visible : h.equiper(objet, on) ============ */
+var OBJETS = {'carquois-argent':'pisteur', 'carquois-lourd':'pisteur', 'cristal-lune':'sage', 'baton-chene':'sage', 'sacoche':'alchimiste', 'amulette':null};
+var ALIAS_OBJ = {argent:'carquois-argent', 'fleches-argent':'carquois-argent', lourd:'carquois-lourd', lourde:'carquois-lourd', 'fleches-lourdes':'carquois-lourd',
+  cristal:'cristal-lune', lune:'cristal-lune', chene:'baton-chene', 'baton':'baton-chene'};
+H.equiper = function(objet, on, opt){
+  if(on && typeof on === 'object'){ opt = on; on = true; }
+  objet = ALIAS_OBJ[objet] || objet; on = on !== false; opt = opt || {};
+  this.eq = this.eq || {};
+  if(!(objet in OBJETS) || (OBJETS[objet] && OBJETS[objet] !== this.role)){ if(window.console) console.warn('HerosAnime.equiper : « ' + objet + ' » ne va pas au ' + this.role); return Promise.resolve(false); }
+  /* un seul carquois à la fois */
+  if(on && objet === 'carquois-argent' && this.eq['carquois-lourd']) this._eq('carquois-lourd', false);
+  if(on && objet === 'carquois-lourd' && this.eq['carquois-argent']) this._eq('carquois-argent', false);
+  var avant = !!this.eq[objet];
+  this._eq(objet, on);
+  if(on && !avant && !opt.discret) this._eclatObjet(objet);
+  return Promise.resolve(true);
+};
+H.equipe = function(objet){ return !!(this.eq && this.eq[ALIAS_OBJ[objet] || objet]); };
+/* montrer / cacher la variante dessinée (dans la vue ET dans la silhouette lumineuse du héros choisi) */
+H._eq = function(objet, on){
+  this.eq = this.eq || {};
+  this.eq[objet] = !!on;
+  [].forEach.call(this.svg.querySelectorAll('[data-eq="' + objet + '"]'), function(e){ e.style.display = on ? '' : 'none'; });
+  if(objet.indexOf('carquois') === 0){
+    var normal = !this.eq['carquois-argent'] && !this.eq['carquois-lourd'];
+    [].forEach.call(this.svg.querySelectorAll('[data-carquois]'), function(e){ e.style.display = normal ? '' : 'none'; });
+  }
+};
+/* (après l'ajout de la silhouette lumineuse : elle reprend l'équipement) */
+H._reappliquer = function(){ for(var k in (this.eq || {})) if(this.eq[k]) this._eq(k, true); };
+H._eclatObjet = function(objet){
+  var r = this.vue.querySelector('[data-eq="' + objet + '"] [data-r]') || this.reps[{'cristal-lune':'cristal', amulette:'amulette'}[objet]] || this.reps.teteC;
+  var p = ou(r, this.fx), c = {'carquois-argent':['#ffffff', '#dfe7f2', '#bfd4ff'], 'cristal-lune':['#ffffff', '#e8eeff', '#bfe8ff'], 'baton-chene':['#c8ff9a', '#6ab85a', '#fff6c0']}[objet] || ['#fff6c0', '#ffd36a', '#ffffff'];
+  lueurFx(this.fx, p.x, p.y, {c:'#ffffff', c2:c[1], w:56, s0:.3, s1:1.4, d:460});
+  anneau(this.fx, p.x, p.y, {c:c[1], w:44, s0:.3, s1:2, d:560});
+  pluie(this.fx, p.x, p.y, {n:7, forme:'etoile', c:c, v0:20, v1:70, g:-30, t0:8, t1:14, d0:500, d1:800, etale:200});
+};
+
+/* ============ les calques des réactions (givre, bave, toile) ============ */
+/* la pièce qui porte un calque : « epaules » (le torse de la tête), « tete », « bras » (le bras proche), sinon la vue entière */
+H._piece = function(quoi){
+  var v = this.vue, y = v.querySelector('[data-y="ouverts"]');
+  if(quoi === 'epaules') return y && y.closest('[data-i="torse"]');
+  if(quoi === 'tete') return y && y.closest('[data-i="tete"]');
+  if(quoi === 'bras') return v.querySelector('[data-i="brasB"]');
+  return v;
+};
+/* un calque fixe (unités du dessin) : cuit, un îlot (un petit SVG peint une fois, qui suit la pièce) ; sinon un <g> */
+H._calque = function(quoi, html, origine){
+  var p = this._piece(quoi), e;
+  if(!p) return null;
+  if(this.cuit && window.Cuire){ e = window.Cuire.ilot(p, html, 'ha-calque'); e.style.width = e.style.height = '1px'; }   /* (1 px : RAPIDITE.md R5) */
+  else { e = document.createElementNS(SVGNS, 'g'); e.setAttribute('class', 'haJ ha-calque'); e.innerHTML = html; p.appendChild(e); }
+  e.style.display = 'none';
+  if(origine) e.style.transformOrigin = origine[0] + 'px ' + origine[1] + 'px';
+  return e;
+};
+var ORIG = {epaules:[120, 104], tete:[128, 14], bras:[108, 108]};
+H._calques = function(type){
+  this._cq = this._cq || {};
+  if(this._cq[type]) return this._cq[type];
+  var D = type === 'givre' ? givreDessin(this.role) : baveDessin(this.role), me = this, r = {gouttes:D.gouttes || {}};
+  ['epaules', 'tete', 'bras'].forEach(function(q){ r[q] = me._calque(q, D[q], ORIG[q]); });
+  return (this._cq[type] = r);
+};
+function montrer(el, on){ if(el){ if(el._a){ el._a.cancel(); el._a = null; } el.style.display = on ? '' : 'none'; el.style.opacity = ''; } }
+function animer(el, kf, o){ if(!el) return Promise.resolve(); if(el._a) el._a.cancel(); var a = el._a = el.animate(kf, o); return a.finished.then(function(){ if(el._a === a) el._a = null; }, function(){}); }
+
+/* ============ h.touche(type) : les nouvelles réactions ============ */
+var toucheBase = H.touche;
+H.touche = function(type, opt){
+  if(type === 'froid') return this._froid(opt || {});
+  if(type === 'grouillement') return this._grouillement(opt || {});
+  if(type === 'poing') return this._poing(opt || {});
+  return toucheBase.call(this, type, opt);
+};
+function copieP(g, o){ var p = {}, k; for(k in g) p[k] = g[k]; for(k in o) p[k] = o[k]; return p; }
+/* une flamme (pour la brûlure froide, bleue) */
+function flammeSvg(c1, c2, c3){
+  var d = 'M0 -40 C 8 -24 22 -16 22 2 C 22 16 12 24 0 24 C -12 24 -22 16 -22 2 C -22 -10 -12 -14 -10 -26 C -6 -18 -4 -14 -2 -12 C 2 -22 2 -30 0 -40 Z';
+  return '<svg viewBox="-30 -44 60 72" style="width:100%;height:100%;display:block;overflow:visible"><path d="' + d + '" fill="' + c1 + '" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<path d="M0 -14 C 6 -4 12 2 12 10 C 12 18 6 21 0 21 C -6 21 -12 18 -12 10 C -12 2 -4 -2 0 -14 Z" fill="' + c2 + '"/><path d="M0 2 C 3 7 6 10 6 14 C 6 18 3 19 0 19 C -3 19 -6 18 -6 14 C -6 10 -2 8 0 2 Z" fill="' + c3 + '"/></svg>';
+}
+
+/* ---------- la brûlure froide (feu follet) : éclat bleu, il se recroqueville et grelotte, du givre sur les épaules ---------- */
+H._froid = function(o){
+  return this._file(function(){
+    this._mesure();
+    var me = this, g = this.garde(), C = this._calques('givre');
+    var poi = this._px(136, 146), bou = this._px(150, 84), F2 = this.fx;
+    this.expr('surpris');
+    /* l'éclat : une tache blanche et bleue, une flamme bleue qui lèche, des éclats de glace */
+    lueurFx(F2, poi.x, poi.y, {c:'#ffffff', c2:'#5fc8ff', w:120, s0:.3, s1:1.5, d:520});
+    anneau(F2, poi.x, poi.y, {c:'#9ad8ff', w:90, s0:.3, s1:2.1, d:620});
+    surgit(F2, poi.x + 10, poi.y - 6, 48, 58, flammeSvg('#5fc8ff', '#bff0ff', '#ffffff'), {d:640, k:[{transform:place(poi.x + 10, poi.y + 4, 0, .3), opacity:0}, {transform:place(poi.x + 10, poi.y - 6, -8, 1.15), opacity:1, offset:.2}, {transform:place(poi.x + 6, poi.y - 10, 6, .95), opacity:1, offset:.5}, {transform:place(poi.x + 2, poi.y - 22, -4, .5), opacity:0}]});
+    pluie(F2, poi.x, poi.y, {n:10, forme:'eclat', c:['#eaf8ff', '#bfeaff', '#7fd8ff'], angle:-120, ecart:80, v0:80, v1:200, g:520, t0:6, t1:10, d0:420, d1:700});
+    pluie(F2, poi.x, poi.y - 20, {n:5, forme:'flocon', c:['#ffffff', '#cfefff'], v0:20, v1:60, g:40, t0:10, t1:15, d0:800, d1:1200, etale:300});
+    this.boite.animate([{transform:'translateX(0px)'}, {transform:'translateX(-16px)', offset:.12, easing:'cubic-bezier(.2,.8,.4,1)'}, {transform:'translateX(-10px)', offset:.3},
+      {transform:'translateX(-12.5px)', offset:.36}, {transform:'translateX(-7.5px)', offset:.42}, {transform:'translateX(-12px)', offset:.48}, {transform:'translateX(-8px)', offset:.54},
+      {transform:'translateX(-11px)', offset:.6}, {transform:'translateX(-8.5px)', offset:.66}, {transform:'translateX(-10.5px)', offset:.72}, {transform:'translateX(-9px)', offset:.78}, {transform:'translateX(0px)'}], {duration:1500, easing:'linear'});
+    /* il se recroqueville, les bras serrés autour du corps, et grelotte */
+    var b0 = (g.bassin && g.bassin.y) || 0;
+    var hit = {bassin:{x:-6, y:b0 + 6}, torse:-12, tete:-14, mA:[188, 120], hA:-40, mB:[78, 116], hB:-140, pA:g.pA, pB:g.pB};
+    var brr = {bassin:{y:b0 + 12}, torse:12, tete:12, mA:[124, 134], mB:[150, 130], cB:1, pA:[112, 272], pB:[146, 272]};
+    var brr2 = copieP(brr, {torse:15, tete:9, mA:[126, 132], mB:[148, 133]});
+    var seq = [{d:70, p:hit, e:'oo'}, {d:110, p:hit, e:'lin'}, {d:220, p:brr, e:'o', f0:function(){
+      me.expr('aie');
+      ['epaules', 'tete', 'bras'].forEach(function(q, i){ var e = C[q]; montrer(e, true); animer(e, [{opacity:0, transform:'scale(.6)'}, {opacity:1, transform:'scale(1.08)', offset:.6}, {opacity:1, transform:'scale(1)'}], {duration:300, delay:i * 60, easing:'ease-out', fill:'backwards'}); });
+    }}];
+    for(var i = 0; i < 7; i++) seq.push({d:80, p:i % 2 ? brr : brr2, e:'io'});
+    seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('garde'); me.cligner(); }});
+    /* la buée qui sort de la bouche (deux petits nuages) */
+    [380, 700].forEach(function(t){ lueurFx(F2, bou.x, bou.y, {c:'#ffffff', c2:'#dff4ff', w:24, s0:.4, s1:2.2, dx:18, dy:-12, d:800, retard:t, o0:.85}); });
+    /* le givre fond ensuite, doucement (sans bloquer le jeu) ; un nouveau coup de froid repart de zéro */
+    var tok = this._givreTok = (this._givreTok || 0) + 1;
+    this.plus(2600, function(){
+      if(tok !== me._givreTok) return;
+      ['epaules', 'tete', 'bras'].forEach(function(q){ var e = C[q]; animer(e, [{opacity:1}, {opacity:0}], {duration:900, easing:'ease-in', fill:'forwards'}).then(function(){ if(e && !e._a) montrer(e, false); }); });
+      var a = me._px(100, 112), b = me._px(150, 106);
+      pluie(me.fx, a.x, a.y, {n:2, forme:'goutte', c:'#bfeaff', angle:90, ecart:10, v0:5, v1:20, g:300, t0:5, t1:6, d0:700, d1:900, etale:500});
+      pluie(me.fx, b.x, b.y, {n:2, forme:'goutte', c:'#bfeaff', angle:90, ecart:10, v0:5, v1:20, g:300, t0:5, t1:6, d0:700, d1:900, etale:500, retard:200});
+    });
+    return this.jouer(seq);
+  });
+};
+
+/* ---------- le grouillement (Roi des rats) : trois rats lui courent dessus, il saute, il se débat ---------- */
+var RAT_SVG = '<svg viewBox="-34 -16 62 28" style="width:100%;height:100%;display:block;overflow:visible">' +
+  '<path d="M-20 2 C -28 2 -32 -4 -34 -10" fill="none" stroke="#24182e" stroke-width="3.6" stroke-linecap="round"/><path d="M-20 2 C -28 2 -32 -4 -34 -10" fill="none" stroke="#d89a9a" stroke-width="1.8" stroke-linecap="round"/>' +
+  '<path d="M-12 7 L -15 11 M-4 7 L -2 11 M6 6 L 4 10 M12 5 L 15 9" stroke="#24182e" stroke-width="2.6" stroke-linecap="round"/>' +
+  '<path d="M-22 1 C -22 -8 -10 -12 2 -10 C 10 -9 14 -6 18 -4 C 22 -3 27 -1 27 2 C 27 4 23 5 19 5 C 14 7 6 8 -2 8 C -14 8 -22 7 -22 1 Z" fill="#8a7482" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+  '<path d="M-18 4 C -10 7 4 7 12 4 C 6 6 -8 7 -18 4 Z" fill="#c8b4be"/><path d="M-16 -3 C -10 -9 2 -9 10 -6" fill="none" stroke="#c0aab8" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>' +
+  '<path d="M9 -7 C 8 -14 15 -15 15 -9 Z" fill="#c88a92" stroke="#24182e" stroke-width="1.6"/><circle cx="27" cy="1.6" r="2" fill="#ff9aa8" stroke="#24182e" stroke-width="1"/>' +
+  '<circle cx="18" cy="-2.6" r="2" fill="#ffd21e"/><circle cx="18.6" cy="-3.2" r=".7" fill="#fff"/><path d="M26 3 L 33 1 M26 3.5 L 32 5" stroke="#24182e" stroke-width=".8"/></svg>';
+H._ratCourt = function(pts, delai, D){
+  var me = this, s = this._px(0, 0).s;
+  var p = courbe(pts.map(function(q){ var r = me._px(q[0], q[1]); return [r.x, r.y]; }), 26), kf = [], ang0 = null;
+  for(var i = 0; i < p.length; i++){
+    var a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)], an = Math.atan2(b[1] - a[1], b[0] - a[0]) * DEG, gauche = b[0] - a[0] < 0;
+    if(ang0 !== null){ while(an - ang0 > 180) an -= 360; while(an - ang0 < -180) an += 360; }
+    ang0 = an;
+    /* il trottine (petits bonds) ; quand il court vers la gauche, il est retourné (le ventre reste contre le héros) */
+    var bond = i % 2 ? -2.4 * s : 0;
+    kf.push({offset:i / (p.length - 1), transform:'translate(' + r1(p[i][0]) + 'px,' + r1(p[i][1] + bond) + 'px) translate(-50%,-80%) rotate(' + r1(an) + 'deg) scale(1,' + (gauche ? -1 : 1) + ')', opacity:i === 0 || i === p.length - 1 ? 0 : 1});
+  }
+  var e = div(this.fx, 'width:' + r1(68 * s) + 'px;height:' + r1(30 * s) + 'px;z-index:4;transform-origin:50% 80%', RAT_SVG);
+  return jouerEl(e, kf, {duration:D, delay:delai, easing:'linear', fill:'backwards'});
+};
+H._grouillement = function(o){
+  return this._file(function(){
+    var me = this, g = this.garde();
+    this._mesure();
+    this.expr('surpris');
+    this._ratCourt([[262, 292], [196, 290], [164, 250], [156, 200], [146, 150], [134, 108], [128, 62], [120, 18], [92, 30], [78, 86], [70, 150], [58, 230], [36, 292], [-40, 294]], 0, 1500);
+    this._ratCourt([[270, 280], [206, 288], [176, 236], [178, 182], [152, 140], [104, 132], [74, 172], [52, 244], [20, 292], [-50, 294]], 280, 1350);
+    this._ratCourt([[256, 293], [186, 290], [158, 226], [146, 150], [136, 74], [146, 16], [196, -20], [244, 120], [270, 290], [330, 292]], 560, 1400);
+    var b0 = (g.bassin && g.bassin.y) || 0;
+    var sur = {racine:{y:-18}, bassin:{y:b0}, torse:-10, tete:-14, mA:[186, 70], hA:-110, mB:[92, 64], hB:-160, cB:1, pA:[104, 256], fA:30, pB:[160, 272]};
+    var bas = {racine:{y:0}, bassin:{y:b0 + 18, x:4}, torse:22, tete:12, mA:[168, 200], hA:40, mB:[150, 214], hB:60, pA:[98, 272], pB:[168, 260], fB:24};
+    var tete = {racine:{y:-12}, bassin:{y:b0 + 4}, torse:-6, tete:18, mA:[160, 40], hA:-150, mB:[104, 30], hB:-120, cB:1, pA:[110, 272], pB:[150, 262], fB:16};
+    var dos = {racine:{y:0}, bassin:{y:b0 + 10, x:-4}, torse:-16, tete:-20, mA:[120, 120], hA:-150, mB:[70, 120], hB:-170, cB:1, pA:[96, 272], pB:[160, 272]};
+    return this.jouer([
+      {d:120, p:sur, e:'oo', f:function(){ me.expr('aie'); }}, {d:160, p:bas, e:'io'}, {d:150, p:tete, e:'o'}, {d:140, p:sur, e:'io'},
+      {d:150, p:dos, e:'io', f0:function(){ me.expr('surpris'); }}, {d:150, p:bas, e:'io', f0:function(){ me.expr('aie'); }}, {d:140, p:tete, e:'o'}, {d:150, p:dos, e:'io'},
+      {d:150, p:sur, e:'io'}, {d:150, p:bas, e:'io'}, {d:140, p:tete, e:'o'},
+      {d:200, p:copieP(g, {torse:(g.torse || 0) + 6, tete:-10}), e:'io', f0:function(){
+        me.expr('colere');
+        var a = me._px(124, 120), b = me._px(130, 40);
+        pluie(me.fx, a.x, a.y, {n:6, c:['#5e4c56', '#8a7884'], v0:40, v1:110, g:200, t0:3, t1:5, d0:500, d1:800});
+        pluie(me.fx, b.x, b.y, {n:4, c:['#5e4c56', '#8a7884'], v0:40, v1:100, g:200, t0:3, t1:5, d0:500, d1:800});
+      }},
+      {d:360, p:g, e:'b', f:function(){ me.expr('garde'); me.cligner(); }}
+    ]);
+  });
+};
+
+/* ---------- le poing du Gardien : un gros coup, il recule en glissant, puis revient ---------- */
+H._poing = function(o){
+  return this._file(function(){
+    var me = this, g = this.garde(), F2 = this.fx;
+    this._mesure();
+    var poi = this._px(150, 140), s = this._px(0, 0).s, D = 1700;
+    this.expr('aie');
+    surgit(F2, poi.x + 8, poi.y, 110, 110, chocSvg('#fff2a0', '#ffffff'), {d:420, r:12, s1:1.4});
+    lueurFx(F2, poi.x, poi.y, {c:'#ffffff', c2:'#ffb0a0', w:130, s0:.3, s1:1.4, d:380});
+    pluie(F2, poi.x, poi.y, {n:12, forme:'trait', c:['#ffffff', '#ffe08a'], angle:180, ecart:55, v0:180, v1:320, g:200, t0:10, t1:18, d0:240, d1:420});
+    /* il est projeté en arrière et glisse sur le sol (la boîte recule ; la poussière reste où elle naît) */
+    var X1 = -64, X2 = -90;
+    this.boite.animate([{transform:'translateX(0px)'}, {transform:'translateX(' + X1 + 'px)', offset:.1, easing:'cubic-bezier(.15,.6,.4,1)'}, {transform:'translateX(' + X2 + 'px)', offset:.32, easing:'ease-out'},
+      {transform:'translateX(' + X2 + 'px)', offset:.56}, {transform:'translateX(0px)', offset:.9, easing:'cubic-bezier(.45,0,.3,1)'}, {transform:'translateX(0px)'}], {duration:D});
+    var pied = this._px(150, 292);
+    [[.06, X1 * .6], [.12, X1], [.2, (X1 + X2) / 2], [.28, X2 + 4]].forEach(function(q, i){
+      lueurFx(F2, pied.x + q[1] + 6, pied.y - 4, {c:'#d8d0e4', c2:'#a89cb8', w:36, h:22, s0:.4, s1:2.2, dx:18, dy:-8, d:700, retard:q[0] * D, o0:.8});
+      pluie(F2, pied.x + q[1], pied.y - 2, {n:3, c:['#8a8098', '#b8aec8'], angle:-30, ecart:30, v0:40, v1:110, g:300, t0:2, t1:4, d0:300, d1:500, retard:q[0] * D});
+    });
+    var b0 = (g.bassin && g.bassin.y) || 0;
+    var plie = {racine:{y:0}, bassin:{x:-8, y:b0 + 16, r:-4}, torse:26, tete:16, mA:[204, 150], hA:10, mB:[176, 176], hB:20, pA:[82, 272], pB:[170, 272], fB:-6};
+    var glisse = copieP(plie, {torse:20, tete:8, bassin:{x:-4, y:b0 + 20, r:-6}, mA:[196, 170], mB:[60, 140], hB:-150, cB:-1, pA:[84, 272], pB:[176, 272], fB:-14});
+    var sonne = {racine:{y:0}, bassin:{y:b0 + 6}, torse:6, tete:-12, mA:[176, 150], mB:[120, 150], pA:[100, 272], pB:[158, 272]};
+    var sonne2 = copieP(sonne, {tete:12, torse:2});
+    var pas1 = copieP(g, {racine:{y:-6}, pA:[110, 262], fA:16}), pas2 = copieP(g, {racine:{y:-6}, pB:[150, 262], fB:16});
+    return this.jouer([
+      {d:80, p:plie, e:'oo'}, {d:340, p:glisse, e:'o'}, {d:160, p:glisse, e:'lin'},
+      {d:220, p:sonne, e:'io', f0:function(){ me.expr('ko'); }}, {d:150, p:sonne2, e:'io'}, {d:140, p:sonne, e:'io', f:function(){ me.expr('colere'); }},
+      {d:150, p:pas1, e:'io'}, {d:150, p:pas2, e:'io'}, {d:140, p:pas1, e:'io'},
+      {d:300, p:g, e:'b', f:function(){ me.expr('garde'); me.cligner(); }}
+    ]);
+  });
+};
+
+/* ============ h.relever({amulette:true}) : l'amulette de vie le relève (éclat d'or, elle se brise en paillettes) ============ */
+var releverBase = H.relever;
+H.relever = function(opt){
+  if(opt && opt.amulette) return this._releverAmulette(opt);
+  return releverBase.call(this, opt);
+};
+H._releverAmulette = function(o){
+  return this._file(function(){
+    var me = this, g = this.garde(), F2 = this.fx;
+    this._mesure();
+    this._etoiles(false);
+    if(!this.equipe('amulette')) this._eq('amulette', true);   /* (on la voit même si le moteur ne l'avait pas montrée) */
+    var A = ou(this.reps.amulette, F2), W = this._W, Hh = this._H, cx = W / 2, sol = this._px(0, 293).y;
+    /* deux battements de cœur dorés sur l'amulette */
+    lueurFx(F2, A.x, A.y, {c:'#fff6c0', c2:'#ffc850', w:90, d:760, k:[{transform:place(A.x, A.y, 0, .2), opacity:0}, {transform:place(A.x, A.y, 0, .9), opacity:1, offset:.18}, {transform:place(A.x, A.y, 0, .55), opacity:.7, offset:.38},
+      {transform:place(A.x, A.y, 0, 1.15), opacity:1, offset:.6}, {transform:place(A.x, A.y, 0, .7), opacity:.8, offset:.85}, {transform:place(A.x, A.y, 0, 1.4), opacity:1}]});
+    var coeur = '<svg viewBox="-12 -12 24 24" style="width:100%;height:100%;display:block;overflow:visible"><path d="' + coeurD(0, 1, 8) + '" fill="#ff4a6a" stroke="#24182e" stroke-width="2"/><circle cx="-3" cy="-2" r="2" fill="#fff" opacity=".8"/></svg>';
+    [0, 330].forEach(function(t){ surgit(F2, A.x + 2, A.y - 26, 22, 22, coeur, {d:420, retard:t, k:[{transform:place(A.x + 2, A.y - 14, 0, .3), opacity:0}, {transform:place(A.x + 2, A.y - 26, 0, 1.2), opacity:1, offset:.35}, {transform:place(A.x + 2, A.y - 36, 0, 1), opacity:0}]}); });
+    /* l'éclat d'or : l'amulette se brise en paillettes */
+    this.plus(720, function(){
+      me._eq('amulette', false);
+      lueurFx(F2, A.x, A.y, {c:'#ffffff', c2:'#ffd36a', w:220, s0:.2, s1:1.5, d:700});
+      surgit(F2, A.x, A.y, 150, 150, chocSvg('#ffe680', '#fff8d8', 12), {d:640, s1:1.5});
+      anneau(F2, A.x, A.y, {c:'#ffd36a', w:90, s0:.2, s1:2.6, d:700});
+      anneau(F2, A.x, A.y, {c:'#fff2b0', w:90, s0:.2, s1:3.2, d:900, retard:140});
+      pluie(F2, A.x, A.y, {n:14, forme:'paillette', c:['#ffe680', '#ffd36a', '#fff6c0'], v0:80, v1:220, g:260, t0:5, t1:9, d0:700, d1:1200});
+      pluie(F2, A.x, A.y, {n:6, forme:'eclat', c:['#f0c860', '#ffe08a'], v0:100, v1:200, g:600, t0:6, t1:9, d0:500, d1:800});
+      me.expr('surpris');
+    });
+    /* la colonne de lumière dorée (un dégradé, sans flou ni mélange) et des étoiles qui montent */
+    var col = div(F2, 'width:150px;height:260px;border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,rgba(255,240,170,.85),rgba(255,205,100,.38) 40%,rgba(255,190,80,0) 70%)');
+    jouerEl(col, [{transform:place(cx, sol - 110, 0, .2), opacity:0}, {transform:place(cx, sol - 120, 0, 1), opacity:1, offset:.35}, {transform:place(cx, sol - 124, 0, 1.06), opacity:.9, offset:.7}, {transform:place(cx, sol - 134, 0, 1.2), opacity:0}], {duration:1500, delay:700, easing:'ease-out', fill:'backwards'});
+    anneau(F2, cx, sol, {c:'#ffd36a', w:150, h:34, s0:.2, s1:1.3, d:900, retard:760});
+    pluie(F2, cx, sol - 20, {n:12, forme:'etoile', c:['#fff6c0', '#ffe680', '#ffffff'], angle:-90, ecart:40, v0:60, v1:170, g:-40, t0:8, t1:14, d0:800, d1:1200, etale:700, retard:760});
+    var assis = {racine:{x:70, y:-10, r:-30}, bassin:{x:0, y:30, r:0}, torse:10, tete:0, cuisseA:-80, tibiaA:110, piedA:-30, cuisseB:-60, tibiaB:120, piedB:-60, brasA:-20, avantBrasA:-20, brasB:30, avantBrasB:-30, mainA:0, mainB:0};
+    var genou = {racine:{x:0, y:0, r:0}, bassin:{x:0, y:48, r:0}, torse:22, tete:-10, pA:[92, 272], fA:40, pB:[160, 272], brasA:-30, avantBrasA:-50, brasB:20, avantBrasB:-40};
+    var saut = {racine:{x:0, y:-34, r:0}, bassin:{y:-4}, torse:-8, tete:-14, pA:[108, 258], fA:20, pB:[150, 262], fB:14, brasA:-160, avantBrasA:-8, brasB:-150, avantBrasB:-10};
+    var fier = copieP(g, {racine:{y:0}, torse:-4, tete:-10});
+    if(this.R0.releve) this.R0.releve(saut);
+    return this.jouer([{d:700, p:{}, e:'lin'}, {d:220, p:assis, e:'io'}, {d:200, p:genou, e:'io', f:function(){ me.expr('joie'); }},
+      {d:220, p:saut, e:'o'}, {d:160, p:saut, e:'lin'}, {d:260, p:fier, e:'i', f0:function(){ me.ko = false; }, f:function(){ me._poussiere(); }}, {d:300, p:fier, e:'lin'},
+      {d:300, p:g, e:'b'}]).then(function(){ me.ko = false; me.expr('garde'); });
+  });
+};
+
+/* ============ h.entoile(on) : pris dans la toile d'araignée (il se débat) ; entoile(false) la déchire ============ */
+H._toiles = function(){
+  if(this._tl) return this._tl;
+  var G = toileDessin();
+  return (this._tl = [this._calque('toile', G[0], [86, 170]), this._calque('toile', G[1], [166, 170])]);
+};
+H.entoile = function(on){
+  on = on !== false;
+  /* (l'état voulu est noté tout de suite : entoile(true) puis entoile(false) aussitôt font bien les deux, dans l'ordre) */
+  if(on === !!this._toileV) return Promise.resolve();
+  this._toileV = on;
+  return on ? this._entoiler() : this._dechirer();
+};
+H._pose_ligote = function(){
+  var g = this.garde(), b0 = (g.bassin && g.bassin.y) || 0;
+  return copieP(g, {bassin:{y:b0 + 6}, torse:(g.torse || 0) + 6, tete:-8, mA:[154, 150], mB:[110, 156], cB:1, pA:[114, 272], pB:[144, 272]});
+};
+H._entoiler = function(){
+  return this._file(function(){
+    var me = this, T = this._toiles(), lig = this._pose_ligote();
+    this._toile = true;
+    this.expr('surpris');
+    T.forEach(function(e, i){ montrer(e, true); animer(e, [{opacity:0, transform:'scale(.4) rotate(' + (i ? 20 : -20) + 'deg)'}, {opacity:1, transform:'scale(1.06)', offset:.6}, {opacity:1, transform:'scale(1)'}], {duration:360, delay:i * 70, easing:'cubic-bezier(.2,.8,.3,1)', fill:'backwards'}); });
+    var c = this._px(126, 160);
+    pluie(this.fx, c.x, c.y, {n:8, c:'#f4f8ff', bord:true, v0:60, v1:140, g:300, t0:3, t1:5, d0:400, d1:600});
+    return this.jouer([{d:240, p:lig, e:'oo'}].concat(this._debat(lig, 3), [{d:240, p:lig, e:'io', f:function(){ me.expr('effort'); }}]));
+  });
+};
+/* il se débat dans la toile (n secousses) ; la toile tire avec lui */
+H._debat = function(lig, n){
+  var me = this, seq = [], T = this._tl || [];
+  for(var i = 0; i < n; i++){
+    var s = i % 2 ? 1 : -1;
+    seq.push({d:120, p:copieP(lig, {torse:lig.torse + 7 * s, tete:lig.tete - 10 * s, bassin:{x:3 * s, y:lig.bassin.y}, mA:[158 + 4 * s, 146], mB:[106 - 4 * s, 150]}), e:'io', f0:i ? null : function(){
+      T.forEach(function(e, k){ animer(e, [{transform:'scale(1)'}, {transform:'scale(1.04,.98) rotate(' + (k ? 2 : -2) + 'deg)'}, {transform:'scale(.99,1.02) rotate(' + (k ? -1 : 1) + 'deg)'}, {transform:'scale(1)'}], {duration:120 * n, easing:'ease-in-out'}); });
+    }});
+  }
+  return seq;
+};
+H._dechirer = function(){
+  return this._file(function(){
+    var me = this, T = this._toiles(), g = this.garde(), lig = this._pose_ligote(), b0 = (g.bassin && g.bassin.y) || 0;
+    this.expr('effort');
+    var tasse = copieP(lig, {bassin:{y:b0 + 18}, torse:lig.torse + 8, tete:4, mA:[150, 156], mB:[114, 160]});
+    var force = copieP(tasse, {torse:lig.torse + 10});
+    var ouvre = copieP(g, {racine:{y:-14}, bassin:{y:b0}, torse:-8, tete:-12, mA:[200, 90], hA:-60, mB:[60, 92], hB:-160, cB:-1, pA:[92, 266], pB:[168, 266]});
+    return this.jouer([{d:220, p:tasse, e:'io'}, {d:70, p:force, e:'io'}, {d:70, p:tasse, e:'io'}, {d:70, p:force, e:'io'},
+      {d:120, p:ouvre, e:'oo', f0:function(){
+        me.expr('cri');
+        T.forEach(function(e, i){ var s = i ? 1 : -1;
+          animer(e, [{opacity:1, transform:'translate(0px,0px) rotate(0deg) scale(1)'}, {opacity:1, transform:'translate(' + (26 * s) + 'px,-10px) rotate(' + (18 * s) + 'deg) scale(1.02)', offset:.3}, {opacity:0, transform:'translate(' + (70 * s) + 'px,-24px) rotate(' + (42 * s) + 'deg) scale(.86)'}],
+            {duration:520, easing:'cubic-bezier(.2,.7,.4,1)', fill:'forwards'}).then(function(){ montrer(e, false); e.style.transform = ''; }); });
+        var c = me._px(126, 160);
+        pluie(me.fx, c.x, c.y, {n:12, forme:'trait', c:['#f4f8ff', '#e8f0ff'], v0:140, v1:300, g:400, t0:12, t1:22, d0:400, d1:700});
+        pluie(me.fx, c.x, c.y - 20, {n:6, c:'#f8ffe8', bord:true, v0:80, v1:200, g:500, t0:3, t1:5, d0:500, d1:800});
+        anneau(me.fx, c.x, c.y, {c:'#f4f8ff', w:120, s0:.3, s1:1.8, d:500});
+      }},
+      {d:300, p:ouvre, e:'lin', f0:function(){ me._toile = false; }}, {d:380, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); }}]).then(function(){ me._toile = false; });
+  });
+};
+
+/* ============ Bourbe : h.avale() (happé par la langue) et h.recrache(scene, depuis) (il revient couvert de bave) ============ */
+H.avale = function(opt){
+  opt = opt || {};
+  return this._file(function(){
+    var me = this, g = this.garde();
+    this._mesure();
+    this._etoiles(false);
+    var p = this._px(146, 150), D = opt.d || 460, dx = opt.dx || 170;
+    this.expr('surpris');
+    /* le bout de la langue colle à la poitrine (dans la boîte : il part avec lui) */
+    var gl = div(this.boite, 'width:46px;height:40px;z-index:5', '<svg viewBox="-24 -20 48 40" style="width:100%;height:100%;display:block;overflow:visible"><path d="M-14 -6 C -18 -16 -2 -20 8 -16 C 20 -14 24 -2 18 8 C 12 18 -6 18 -12 10 C -18 4 -16 0 -14 -6 Z" fill="#d98aa4" stroke="#24182e" stroke-width="2.4"/><ellipse cx="-2" cy="-8" rx="7" ry="3.5" fill="#fff" opacity=".7"/><path d="M-6 14 C -7 20 -5 24 -3 25 C -1 23 -1 19 -2 14 Z" fill="#d98aa4" stroke="#24182e" stroke-width="1.6"/></svg>');
+    jouerEl(gl, [{transform:place(p.x, p.y, 0, .3), opacity:0}, {transform:place(p.x, p.y, 0, 1.1), opacity:1, offset:.2}, {transform:place(p.x, p.y, 0, 1), opacity:1}], {duration:D, easing:'ease-out'});
+    pluie(this.fx, p.x, p.y, {n:6, forme:'goutte', c:['#d98aa4', '#e8f4ff'], angle:-90, ecart:70, v0:60, v1:140, g:600, t0:5, t1:7, d0:400, d1:600});
+    var tire = copieP(g, {racine:{y:-6}, bassin:{x:10}, torse:24, tete:16, mA:[120, 120], hA:-150, mB:[60, 100], hB:-170, cB:-1, pA:[96, 262], fA:30, pB:[150, 272]});
+    var happe = {racine:{y:-30}, bassin:{x:16, y:10}, torse:30, tete:24, mA:[100, 90], hA:-160, mB:[50, 80], hB:-170, cB:-1, pA:[80, 240], fA:50, pB:[110, 250], fB:40};
+    var a = this.boite.animate([{transform:'translate(0px,0px)', opacity:1}, {transform:'translate(14px,-4px) rotate(4deg)', opacity:1, offset:.22, easing:'cubic-bezier(.6,0,.9,.4)'},
+      {transform:'translate(' + dx + 'px,-46px) rotate(30deg) scale(.42)', opacity:0}], {duration:D, fill:'forwards'});
+    this.jouer([{d:D * .22, p:tire, e:'oo'}, {d:D * .78, p:happe, e:'i'}]);
+    return a.finished.then(function(){
+      me._avale = true;
+      me.boite.style.opacity = '0'; me.boite.style.transform = ''; a.cancel();
+      me._idleOff();
+      me.poser(g);
+    });
+  });
+};
+H.recrache = function(scene, depuis, opt){
+  /* recrache(point) : point en pixels de l'écran (comme bete.ancre('bouche')) ; recrache(scene, point) : en pixels de la scène */
+  if(scene && scene.x !== undefined){ opt = depuis; depuis = scene; scene = null; }
+  opt = opt || {};
+  return this._file(function(){
+    this._mesure();
+    var me = this, g = this.garde(), F2 = this.fx, c0 = this._px(125, 160), dep = depuis ? this._versBoite(scene, depuis) : {x:c0.x + 360, y:c0.y - 60};
+    var C = this._calques('bave');
+    var ox = dep.x - c0.x, oy = dep.y - c0.y, D = opt.d || 720, N = 16, kf = [], hautV = Math.max(70, Math.abs(ox) * .28);
+    /* le vol : une cloche, il tourne en boule */
+    for(var i = 0; i <= N; i++){
+      var t = i / N, u = 1 - t, mx = ox / 2, my = Math.min(oy, 0) / 2 - hautV, x = u * u * ox + 2 * u * t * mx, y = u * u * oy + 2 * u * t * my;
+      kf.push({offset:t, transform:'translate(' + r1(x) + 'px,' + r1(y) + 'px) rotate(' + r1(-540 * u) + 'deg) scale(' + (.62 + .38 * t).toFixed(3) + ')', opacity:1});
+    }
+    this.boite.style.opacity = ''; this._avale = false;
+    var b0 = (g.bassin && g.bassin.y) || 0;
+    var boule = {racine:{y:-30}, bassin:{y:b0 + 30}, torse:34, tete:24, pA:[118, 226], fA:40, pB:[150, 222], fB:40, mA:[160, 204], hA:60, mB:[136, 206], hB:60, cB:1};
+    var splat = {racine:{y:0}, bassin:{y:b0 + 34, x:-4}, torse:22, tete:14, pA:[88, 272], pB:[172, 272], mA:[200, 176], hA:20, mB:[58, 180], hB:-160, cB:-1};
+    var beurk = copieP(g, {bassin:{y:b0 + 10}, torse:10, tete:14, mA:[176, 168], mB:[96, 170]});
+    var se1 = copieP(beurk, {torse:-6, tete:-22, bassin:{y:b0 + 8, r:-4}, mA:[196, 130], mB:[70, 120], cB:-1}), se2 = copieP(beurk, {torse:20, tete:24, bassin:{y:b0 + 8, r:4}, mA:[160, 120], mB:[110, 110], cB:1});
+    this.poser(boule);
+    this.boite.animate(kf, {duration:D, easing:'linear'});
+    var pied = this._px(126, 292), atterrit = function(){
+      me.expr('aie');
+      ['epaules', 'tete', 'bras'].forEach(function(q, k){ montrer(C[q], true); animer(C[q], [{opacity:0, transform:'scale(.5)'}, {opacity:1, transform:'scale(1.12)', offset:.5}, {opacity:1, transform:'scale(1)'}], {duration:280, delay:k * 40, easing:'ease-out', fill:'backwards'}); });
+      /* la flaque de bave sous ses pieds, des éclaboussures */
+      surgit(F2, pied.x, pied.y + 2, 150, 26, '<svg viewBox="-75 -13 150 26" style="width:100%;height:100%;display:block;overflow:visible"><path d="M-66 2 C -70 -8 -40 -11 -10 -10 C 20 -12 64 -9 68 0 C 70 8 40 11 0 10 C -36 11 -62 10 -66 2 Z" fill="#a6e07a" fill-opacity=".85" stroke="#3e7a2a" stroke-width="2"/><ellipse cx="-20" cy="-4" rx="18" ry="3" fill="#eaffd0" opacity=".8"/></svg>',
+        {d:2200, k:[{transform:place(pied.x, pied.y + 2, 0, .2) + ' scaleY(.5)', opacity:0}, {transform:place(pied.x, pied.y + 2, 0, 1.05), opacity:1, offset:.08}, {transform:place(pied.x, pied.y + 2, 0, 1), opacity:1, offset:.7}, {transform:place(pied.x, pied.y + 2, 0, 1.1), opacity:0}]});
+      pluie(F2, pied.x, pied.y - 6, {n:14, forme:'goutte', c:['#a6e07a', '#c8f0a0', '#7ac85a'], angle:-90, ecart:75, v0:90, v1:220, g:700, t0:6, t1:9, d0:500, d1:800});
+      if(opt.onAtterrit) try { opt.onAtterrit(); } catch(e){ console.error(e); }
+    };
+    var goutter = function(){
+      /* la bave dégouline (on lit les points d'abord, on crée les gouttes ensuite) */
+      var pts = [];
+      ['tete', 'epaules', 'bras'].forEach(function(q){ (C.gouttes[q] || []).slice(0, 2).forEach(function(p){ var r = me._px(p[0], p[1]); pts.push(r); }); });
+      pts.forEach(function(r, k){ pluie(F2, r.x, r.y, {n:1, forme:'goutte', c:'#a6e07a', angle:90, ecart:5, v0:5, v1:20, g:420, t0:6, t1:7, d0:700, d1:900, retard:k * 70}); });
+    };
+    var secoue = function(){
+      ['epaules', 'tete', 'bras'].forEach(function(q){ animer(C[q], [{opacity:1, transform:'scale(1) rotate(0deg)'}, {opacity:.9, transform:'scale(1.03) rotate(-3deg)', offset:.2}, {opacity:.75, transform:'scale(.98) rotate(3deg)', offset:.45}, {opacity:0, transform:'scale(.9) rotate(0deg)'}],
+        {duration:620, easing:'ease-in', fill:'forwards'}).then(function(){ if(!C[q]._a) montrer(C[q], false); }); });
+      var a = me._px(126, 20), b = me._px(124, 106);
+      pluie(F2, a.x, a.y, {n:9, forme:'goutte', c:['#a6e07a', '#c8f0a0'], angle:-90, ecart:85, v0:140, v1:260, g:800, t0:6, t1:9, d0:550, d1:850, etale:300});
+      pluie(F2, b.x, b.y, {n:8, forme:'goutte', c:['#a6e07a', '#7ac85a'], angle:-90, ecart:85, v0:120, v1:240, g:800, t0:5, t1:8, d0:550, d1:850, etale:300});
+    };
+    var seq = [{d:D, p:boule, e:'lin'}, {d:110, p:splat, e:'oo', f0:atterrit}, {d:240, p:splat, e:'lin'}, {d:260, p:beurk, e:'io', f0:function(){ me.expr('surpris'); goutter(); }},
+      {d:300, p:beurk, e:'lin', f0:function(){ me.expr('aie'); }}];
+    for(var k = 0; k < 6; k++) seq.push({d:95, p:k % 2 ? se2 : se1, e:'io', f0:k ? null : secoue});
+    seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); me.cligner(); }});
+    return this.jouer(seq);
+  });
+};
+/* ============ les nouvelles armes (CONCEPTION-DONJON.md §6 et §10) ============
+   Tout est sans filtre ; les vols sont calculés d'avance et joués par la carte graphique (vol2), la traînée est semée
+   toutes les 40 ms (pas à chaque image) ; au plus une vingtaine de particules à la fois. */
+
+/* ---------- le Pisteur : flèches d'argent, lourdes, de givre, d'acide, et la flèche qui rebondit ---------- */
+var FL2 = {argent:1, lourde:1, givre:1, acide:1};
+/* le recul de l'arc (flèche lourde) : tout le corps est repoussé, un souffle d'air part de l'arc */
+H._recul = function(){
+  this.boite.animate([{transform:'translateX(0px)'}, {transform:'translateX(-12px)', offset:.18, easing:'cubic-bezier(.2,.8,.4,1)'}, {transform:'translateX(0px)'}], {duration:520, easing:'ease-out'});
+  var p = this.rep('poignee'), F2 = this.fx;
+  lueurFx(F2, p.x + 6, p.y, {c:'#ffffff', c2:'#e8e0d0', w:60, s0:.3, s1:1.6, d:320, o0:.8});
+  pluie(F2, p.x + 10, p.y, {n:6, forme:'trait', c:['#ffffff', '#e8e0d0'], angle:0, ecart:40, v0:120, v1:240, g:0, t0:10, t1:18, d0:200, d1:320});
+};
+H._fleche2 = function(scene, n, t, to, type, opt){
+  var L = couche(scene), len = Math.hypot(t.x - n.x, t.y - n.y), k = len / 124, me = this, lourd = type === 'lourde';
+  var w = div(L, 'width:1px;height:1px;z-index:3');
+  var coul = {argent:'rgba(225,238,255,.9)', lourde:'rgba(210,200,190,.55)', givre:'rgba(190,236,255,.85)', acide:'rgba(140,230,90,.7)', feu:'rgba(255,150,50,.75)', huile:'rgba(90,70,40,.5)', colle:'rgba(230,245,210,.7)'}[type] || 'rgba(255,250,220,.6)';
+  var ep = (lourd ? 8 : 5) * k;
+  var tr = div(w, 'left:' + r1(-len - 70 * k) + 'px;top:' + r1(-ep / 2) + 'px;width:' + r1(len * .9) + 'px;height:' + r1(ep) + 'px;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,0),' + coul + ')');
+  tr.style.transform = 'none';
+  var a = div(w, 'left:' + r1(-len - 14 * k) + 'px;top:' + r1(-16 * k) + 'px;width:' + r1(150 * k) + 'px;height:' + r1(32 * k) + 'px', FLECHE_SVG(type));
+  a.style.transform = 'none';
+  var dist = Math.hypot(to.x - t.x, to.y - t.y), D = Math.max(220, Math.min(560, dist / 1.5)) * (lourd ? 1.18 : 1);
+  return vol2(w, t, to, {d:D, haut:dist * (lourd ? .035 : .06), pas:40, chaque:function(p, ang, u){
+    var ca = Math.cos(ang / DEG), sa = Math.sin(ang / DEG), bx = p.x - ca * len * .5, by = p.y - sa * len * .5;
+    if(type === 'argent'){
+      pluie(L, bx + alea(-6, 6), by + alea(-4, 4), {n:1, forme:'etoile', c:['#ffffff', '#dfe7f2', '#bfd4ff'], angle:ang + 180, ecart:30, v0:5, v1:30, g:20, t0:9, t1:14, d0:380, d1:560});
+      if(u > .2) pluie(L, p.x - ca * 20, p.y - sa * 20, {n:1, forme:'lueur', c:'#dfe7f2', angle:ang + 180, ecart:40, v0:10, v1:40, g:0, t0:2, t1:3, d0:260, d1:380});
+    } else if(type === 'lourde'){
+      pluie(L, bx, by + alea(-5, 5), {n:1, forme:'trait', c:['#ffffff', '#e8e0d0'], angle:ang + 180, ecart:6, v0:30, v1:70, g:0, t0:14, t1:24, d0:200, d1:300, o0:.8});
+    } else if(type === 'givre'){
+      pluie(L, bx + alea(-8, 8), by, {n:1, forme:'flocon', c:['#ffffff', '#cfefff'], angle:90, ecart:30, v0:10, v1:30, g:60, t0:8, t1:12, d0:500, d1:700});
+      if(u > .15) pluie(L, p.x - ca * 10, p.y - sa * 10, {n:1, forme:'lueur', c:'#bfeaff', angle:ang + 180, ecart:30, v0:10, v1:30, g:0, t0:2, t1:3, d0:260, d1:380});
+    } else if(type === 'acide'){
+      if(u > .1) pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:['#7ae04a', '#a6f070'], angle:90, ecart:15, v0:10, v1:40, g:700, t0:5, t1:7, d0:400, d1:550});
+      if(u > .3 && Math.random() < .35) lueurFx(L, bx, by - 4, {c:'#c8e8b0', c2:'#8ab878', w:16, s0:.6, s1:2.2, dy:-10, d:600, o0:.5});
+    } else if(type === 'feu') pluie(L, p.x - ca * 8, p.y - sa * 8, {n:2, forme:'lueur', c:['#ffd84a', '#ff8a2a'], angle:ang + 180, ecart:30, v0:20, v1:70, g:-160, t0:2.5, t1:4, d0:250, d1:450});
+    else if(type === 'huile') pluie(L, p.x - ca * 6, p.y + 4, {n:1, forme:'goutte', c:'#3a3020', angle:90, ecart:20, v0:10, v1:40, g:700, t0:5, t1:6, d0:400, d1:550});
+    else if(type === 'colle') pluie(L, p.x, p.y, {n:1, c:'#f2f8e4', bord:true, angle:90, ecart:30, v0:10, v1:30, g:500, t0:3, t1:5, d0:400, d1:600});
+    else if(u > .05 && Math.random() < .6) pluie(L, bx, by, {n:1, c:'#fff6d0', angle:ang + 180, ecart:20, v0:10, v1:40, g:0, t0:2, t1:3, d0:200, d1:350});
+  }}).then(function(r){
+    if(opt.rebond) me._rebondFleche(L, r, type, w, a, tr, k, opt, to);
+    else me._impactFleche2(L, r, type, w, a, tr, k, to);
+    if(opt.onImpact) try { opt.onImpact(r); } catch(e){ console.error(e); }
+    return r;
+  });
+};
+/* la flèche plantée qui vibre (plus fort, plus longtemps et plus profond pour la lourde) */
+function planter(w, tr, r, lourd, k){
+  tr.animate([{opacity:1}, {opacity:0}], {duration:120, fill:'forwards'});
+  var ang = r.ang, ca = Math.cos(ang / DEG), sa = Math.sin(ang / DEG), x = r.x + (lourd ? ca * 10 * k : 0), y = r.y + (lourd ? sa * 10 * k : 0), A = lourd ? 1.8 : 1;
+  w.animate([{transform:place(r.x, r.y, ang)}, {transform:place(x + 2, y, ang - 6 * A)}, {transform:place(x + 1, y, ang + 4 * A)}, {transform:place(x + 1, y, ang - 2.5 * A)}, {transform:place(x + 1, y, ang + 1.2 * A)}, {transform:place(x + 1, y, ang)}], {duration:lourd ? 520 : 360, fill:'forwards'});
+  w.animate([{opacity:1}, {opacity:1, offset:.78}, {opacity:0}], {duration:lourd ? 1300 : 900, fill:'forwards'}).finished.then(function(){ w.remove(); });
+}
+/* un flocon de neige géant / un cristal de glace / une étoile d'argent (dessins d'impact) */
+function floconSvg(c){
+  var b = '';
+  for(var i = 0; i < 6; i++) b += '<g transform="rotate(' + (i * 60) + ')"><path d="M0 0 L 0 -40 M0 -16 L -9 -25 M0 -16 L 9 -25 M0 -28 L -6 -34 M0 -28 L 6 -34" stroke="#24182e" stroke-width="6" stroke-linecap="round" opacity=".5"/><path d="M0 0 L 0 -40 M0 -16 L -9 -25 M0 -16 L 9 -25 M0 -28 L -6 -34 M0 -28 L 6 -34" stroke="' + c + '" stroke-width="3.2" stroke-linecap="round"/></g>';
+  return '<svg viewBox="-46 -46 92 92" style="width:100%;height:100%;display:block;overflow:visible"><circle r="30" fill="#bfeaff" opacity=".35"/>' + b + '<circle r="6" fill="#ffffff"/></svg>';
+}
+function cristauxSvg(){
+  var s = '';
+  [[-30, 34, 9], [-12, 44, 11], [8, 40, 10], [26, 30, 8], [-48, 22, 7], [44, 20, 7]].forEach(function(c){
+    s += '<g transform="rotate(' + c[0] + ')"><path d="M' + (-c[2] / 2) + ' 0 L 0 ' + (-c[1]) + ' L ' + (c[2] / 2) + ' 0 Z" fill="#e8f8ff" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/><path d="M0 ' + (-c[1] + 4) + ' L ' + (c[2] / 4) + ' -2" stroke="#ffffff" stroke-width="1.6"/><path d="M0 ' + (-c[1]) + ' L ' + (c[2] / 2) + ' 0 L 0 0 Z" fill="#9ad8ff" opacity=".45"/></g>';
+  });
+  return '<svg viewBox="-60 -60 120 70" style="width:100%;height:100%;display:block;overflow:visible">' + s + '</svg>';
+}
+function etoileArgentSvg(){
+  return '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;display:block;overflow:visible"><circle r="26" fill="#eef4ff" opacity=".35"/>' +
+    '<path d="M0 -58 L 8 -8 L 58 0 L 8 8 L 0 58 L -8 8 L -58 0 L -8 -8 Z" fill="#f4f8ff" stroke="#8a9ab8" stroke-width="2"/><path d="M0 -30 L 5 -5 L 30 0 L 5 5 L 0 30 L -5 5 L -30 0 L -5 -5 Z" fill="#ffffff" transform="rotate(45)"/><circle r="8" fill="#ffffff"/></svg>';
+}
+H._impactFleche2 = function(L, r, type, w, a, tr, k, to){
+  var x = r.x, y = r.y, ang = r.ang, lourd = type === 'lourde';
+  planter(w, tr, r, lourd, k);
+  if(type === 'argent'){
+    surgit(L, x, y, 120, 120, etoileArgentSvg(), {d:560, s1:1.5});
+    lueurFx(L, x, y, {c:'#ffffff', c2:'#dfe7f2', w:90, s0:.3, s1:1.5, d:420});
+    anneau(L, x, y, {c:'#e6eef8', w:60, s0:.3, s1:2.4, d:560});
+    pluie(L, x, y, {n:10, forme:'etoile', c:['#ffffff', '#dfe7f2', '#bfd4ff'], v0:60, v1:180, g:120, t0:8, t1:14, d0:500, d1:850});
+    pluie(L, x, y, {n:8, forme:'trait', c:['#ffffff', '#e6eef8'], angle:ang + 180, ecart:70, v0:120, v1:260, g:200, t0:8, t1:14, d0:220, d1:400});
+  } else if(lourd && to && to.metal){
+    /* sur du métal : une gerbe d'étincelles, CLANG ! */
+    lueurFx(L, x, y, {c:'#ffffff', c2:'#ffe08a', w:100, s0:.3, s1:1.4, d:300});
+    surgit(L, x, y, 90, 90, chocSvg('#fff2a0', '#ffffff'), {d:360, r:10, s1:1.3});
+    pluie(L, x, y, {n:16, forme:'trait', c:['#ffffff', '#fff6c0', '#ffd36a', '#ff9a3a'], angle:ang + 180, ecart:75, v0:160, v1:380, g:700, t0:10, t1:18, d0:300, d1:600});
+    pluie(L, x, y, {n:5, forme:'lueur', c:'#ffb040', angle:ang + 180, ecart:60, v0:80, v1:180, g:600, t0:2.5, t1:3.5, d0:500, d1:800});
+    anneau(L, x, y, {c:'#fff6c0', w:56, s0:.3, s1:2.2, d:420});
+    mot(L, x + 20, y - 40, 'CLANG !', {t:28, r:-8, c:'#e8eef8', lueur:'rgba(255,220,140,.7)', monte:26, d:950});
+  } else if(lourd){
+    /* sur de la chair, du bois, de la pierre : un impact sourd, de la poussière, des éclats */
+    surgit(L, x, y, 70, 70, chocSvg('#e8dcc8', '#fff8ec', 8), {d:340, r:6, s1:1.2});
+    for(var i = 0; i < 3; i++) lueurFx(L, x + alea(-10, 10), y + alea(-8, 8), {c:'#d8ccbc', c2:'#a89888', w:alea(36, 50), s0:.4, s1:2.2, dx:alea(-24, 4), dy:-10, d:alea(600, 800), retard:i * 40, o0:.85});
+    pluie(L, x, y, {n:9, forme:'eclat', c:['#8a7a6a', '#b8a898', '#5a4a3e'], angle:ang + 180, ecart:70, v0:90, v1:200, g:700, t0:5, t1:8, d0:400, d1:650});
+    anneau(L, x, y, {c:'#e8dccc', w:60, s0:.3, s1:1.8, d:420});
+  } else if(type === 'givre'){
+    surgit(L, x, y, 84, 84, floconSvg('#e8f8ff'), {d:640, s1:1.4});
+    lueurFx(L, x, y, {c:'#ffffff', c2:'#9ad8ff', w:100, s0:.3, s1:1.5, d:480});
+    anneau(L, x, y, {c:'#bfeaff', w:60, s0:.3, s1:2.4, d:600});
+    pluie(L, x, y, {n:12, forme:'eclat', c:['#eaf8ff', '#bfeaff', '#7fd8ff'], v0:80, v1:220, g:500, t0:6, t1:10, d0:450, d1:750});
+    pluie(L, x, y - 10, {n:5, forme:'flocon', c:['#ffffff', '#cfefff'], v0:20, v1:60, g:40, t0:10, t1:15, d0:800, d1:1200, etale:200});
+    surgit(L, x, y + 8, 56, 32, cristauxSvg(), {d:1100, k:[{transform:place(x, y + 4, 0, .2), opacity:0}, {transform:place(x, y + 4, 0, 1.05), opacity:1, offset:.15}, {transform:place(x, y + 4, 0, 1), opacity:1, offset:.75}, {transform:place(x, y + 8, 0, .9), opacity:0}]});
+  } else if(type === 'acide'){
+    lueurFx(L, x, y, {c:'#eaffd0', c2:'#7ae04a', w:80, h:64, s0:.3, s1:1.5, d:520});
+    pluie(L, x, y, {n:12, forme:'goutte', c:['#7ae04a', '#a6f070', '#5ac83a'], angle:-90, ecart:85, v0:80, v1:200, g:700, t0:5, t1:8, d0:450, d1:750});
+    for(var j = 0; j < 4; j++) lueurFx(L, x + alea(-14, 14), y - 8 - j * 6, {c:'#d8ecc8', c2:'#9ab88a', w:28, s0:.5, s1:2.6, dx:alea(-10, 10), dy:-40, d:1100, retard:120 + j * 110, o0:.7});
+    pluie(L, x, y, {n:5, c:'#c8ff9a', bord:true, angle:-90, ecart:40, v0:20, v1:60, g:-60, t0:3, t1:5, d0:700, d1:1000, etale:400});
+  }
+};
+/* la flèche qui REBONDIT (ennemi immunisé) : TING, elle ricoche, tournoie, retombe au sol devant lui et y reste un instant */
+H._rebondFleche = function(L, r, type, w, a, tr, k, opt, to){
+  tr.animate([{opacity:1}, {opacity:0}], {duration:100, fill:'forwards'});
+  var metal = to && to.metal, len = 124 * k, ca = Math.cos(r.ang / DEG), sa = Math.sin(r.ang / DEG);
+  lueurFx(L, r.x, r.y, {c:'#ffffff', c2:metal ? '#ffe08a' : '#fff6d0', w:60, s0:.3, s1:1.4, d:280});
+  pluie(L, r.x, r.y, {n:metal ? 12 : 8, forme:'trait', c:['#ffffff', '#fff6c0', '#ffd36a'], angle:r.ang + 180, ecart:70, v0:140, v1:300, g:500, t0:8, t1:14, d0:220, d1:420});
+  mot(L, r.x + 6, r.y - 34, 'TING !', {t:20, r:-10, c:'#fff6c0', monte:20, d:800});
+  /* la flèche, recentrée sur son milieu, rebondit vers l'arrière (trajectoire calculée d'avance) */
+  a.style.left = r1(-len / 2 - 14 * k) + 'px';
+  var x = r.x - ca * len / 2, y = r.y - sa * len / 2, sol = opt.sol !== undefined ? opt.sol : r.y + 92;
+  var vx = -alea(130, 190), vy = -alea(240, 300), ang = r.ang, va = -alea(820, 1080), dt = 1 / 60, t = 0, kf = [], rebonds = 0;
+  kf.push({t:0, x:x, y:y, a:ang});
+  while(t < 2.2 && rebonds < 2){
+    t += dt; vy += 1100 * dt; x += vx * dt; y += vy * dt; ang += va * dt;
+    if(y > sol - 3){ y = sol - 3; rebonds++; vy = -vy * .28; vx *= .45; va *= .25; if(rebonds === 2){ var cible = Math.round((ang - 180) / 180) * 180 + 180; ang = cible - 5; } }
+    if(Math.round(t / dt) % 3 === 0 || rebonds === 2) kf.push({t:t, x:x, y:y, a:ang});
+  }
+  var T = t * 1000;
+  w.animate(kf.map(function(q){ return {offset:Math.min(1, q.t / t), transform:place(q.x, q.y, q.a)}; }), {duration:T, easing:'linear', fill:'forwards'});
+  pluie(L, x, sol - 2, {n:4, c:['#8a8098', '#b8aec8'], angle:-90, ecart:60, v0:30, v1:80, g:300, t0:2, t1:4, d0:300, d1:500, retard:T * .8});
+  w.animate([{opacity:1}, {opacity:1, offset:.7}, {opacity:0}], {duration:T + 900, fill:'forwards'}).finished.then(function(){ w.remove(); });
+};
+
+/* ---------- l'Alchimiste : potions de givre, d'acide, d'huile et de colle (lancer(scene, to, 'givre')) ---------- */
+var POTIONS = {feu:'#ff7a2a', fumigene:'#aab4d2', huile:'#f2b630', colle:'#ece4d0', baume:'#5fd08a', coeur:'#ff5a7a', givre:'#7fd8ff', acide:'#7ae04a'};
+var POT2 = {givre:1, acide:1, huile:1, colle:1};
+var lancerBase = H.lancer, preparerBase = H.preparer;
+H.lancer = function(scene, to, couleur, opt){
+  if(couleur && typeof couleur === 'object'){ opt = couleur; couleur = opt.potion; }
+  opt = opt || {};
+  var nom = POTIONS[couleur] ? couleur : opt.potion;
+  if(!nom || !POT2[nom]) return lancerBase.call(this, scene, to, POTIONS[couleur] || couleur, opt);
+  var o2 = {}; for(var k in opt) o2[k] = opt[k]; o2._potion = nom;
+  return lancerBase.call(this, scene, to, opt.couleur || POTIONS[nom], o2);
+};
+H.preparer = function(couleur){ return preparerBase.call(this, POTIONS[couleur] || couleur); };
+/* une fiole qui vole sans filtre (sa lueur est un dégradé), en tournant ; la traînée dépend de la potion */
+H._fioleVole2 = function(scene, a, to, c, opt){
+  var L = couche(scene), nom = opt._potion, me = this;
+  var e = div(L, 'width:58px;height:58px', '<div style="position:absolute;inset:0;' + tache('#ffffff', c) + ';opacity:.55"></div><div style="position:absolute;left:16px;top:13px;width:26px;height:31px">' + fioleSVG(c) + '</div>');
+  var dist = Math.hypot(to.x - a.x, to.y - a.y);
+  return vol2(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * .26, tourne:620, r0:-20, pas:50, chaque:function(p){
+    if(nom === 'givre') pluie(L, p.x, p.y, {n:1, forme:'flocon', c:['#ffffff', '#cfefff'], angle:90, ecart:40, v0:10, v1:30, g:60, t0:8, t1:11, d0:450, d1:650});
+    else if(nom === 'acide'){ pluie(L, p.x, p.y + 8, {n:1, forme:'goutte', c:['#7ae04a', '#a6f070'], angle:90, ecart:20, v0:10, v1:30, g:700, t0:5, t1:7, d0:400, d1:550}); if(Math.random() < .3) lueurFx(L, p.x, p.y - 6, {c:'#d8ecc8', c2:'#9ab88a', w:16, s0:.6, s1:2, dy:-12, d:600, o0:.5}); }
+    else if(nom === 'huile') pluie(L, p.x, p.y + 8, {n:1, forme:'goutte', c:['#f2b630', '#ffd870'], angle:90, ecart:20, v0:10, v1:30, g:800, t0:5, t1:7, d0:400, d1:550});
+    else pluie(L, p.x, p.y, {n:1, c:'#f4f8ea', bord:true, angle:90, ecart:30, v0:10, v1:30, g:300, t0:3, t1:5, d0:400, d1:600});
+  }}).then(function(r){
+    e.remove();
+    me._eclatPotion(L, to, nom, c);
+    if(opt.onImpact) try { opt.onImpact(r); } catch(err){ console.error(err); }
+    return r;
+  });
+};
+H._eclatPotion = function(L, to, nom, c){
+  var x = to.x, y = to.y;
+  /* le verre qui se brise (toutes les potions) */
+  pluie(L, x, y, {n:7, forme:'eclat', c:['#e8f8ff', '#bfe0f0', '#ffffff'], v0:120, v1:260, g:600, t0:6, t1:10, d0:450, d1:700});
+  if(nom === 'givre'){
+    lueurFx(L, x, y, {c:'#ffffff', c2:'#7fd8ff', w:130, h:110, s0:.2, s1:1.6, d:620});
+    surgit(L, x, y, 110, 110, floconSvg('#e8f8ff'), {d:760, s1:1.5});
+    anneau(L, x, y, {c:'#bfeaff', w:80, s0:.3, s1:2.6, d:650});
+    pluie(L, x, y, {n:10, forme:'eclat', c:['#eaf8ff', '#bfeaff', '#7fd8ff'], v0:90, v1:240, g:500, t0:7, t1:11, d0:500, d1:800});
+    surgit(L, x, y + 10, 80, 46, cristauxSvg(), {d:1300, k:[{transform:place(x, y + 6, 0, .2), opacity:0}, {transform:place(x, y + 6, 0, 1.08), opacity:1, offset:.14}, {transform:place(x, y + 6, 0, 1), opacity:1, offset:.78}, {transform:place(x, y + 10, 0, .9), opacity:0}]});
+    for(var i = 0; i < 3; i++) lueurFx(L, x + alea(-20, 20), y - 6 - i * 8, {c:'#ffffff', c2:'#dff4ff', w:40, s0:.5, s1:2.4, dy:-20, d:1100, retard:150 + i * 120, o0:.75});
+  } else if(nom === 'acide'){
+    lueurFx(L, x, y, {c:'#eaffd0', c2:'#7ae04a', w:110, h:84, s0:.2, s1:1.6, d:620});
+    anneau(L, x, y, {c:'#9af060', w:70, s0:.3, s1:2.4, d:560});
+    pluie(L, x, y, {n:14, forme:'goutte', c:['#7ae04a', '#a6f070', '#5ac83a'], angle:-90, ecart:90, v0:90, v1:230, g:700, t0:6, t1:9, d0:500, d1:800});
+    for(var j = 0; j < 4; j++) lueurFx(L, x + alea(-20, 20), y - 6 - j * 6, {c:'#d8ecc8', c2:'#9ab88a', w:36, s0:.5, s1:2.6, dx:alea(-12, 12), dy:-50, d:1300, retard:160 + j * 140, o0:.75});
+    pluie(L, x, y, {n:5, c:'#c8ff9a', bord:true, angle:-90, ecart:40, v0:20, v1:60, g:-60, t0:3, t1:5, d0:700, d1:1000, etale:500});
+  } else if(nom === 'huile'){
+    lueurFx(L, x, y, {c:'#fff6c0', c2:'#f2b630', w:100, h:80, s0:.2, s1:1.5, d:640});
+    anneau(L, x, y, {c:'#ffd870', w:60, s0:.3, s1:2.2, d:560});
+    pluie(L, x, y, {n:14, forme:'goutte', c:['#f2b630', '#ffd870', '#d89a20'], angle:-90, ecart:85, v0:80, v1:210, g:900, t0:6, t1:9, d0:500, d1:800});
+    pluie(L, x, y + 6, {n:3, forme:'goutte', c:'#f2b630', angle:90, ecart:10, v0:5, v1:15, g:160, t0:7, t1:9, d0:1000, d1:1300, etale:300, retard:200});
+    pluie(L, x, y, {n:4, forme:'etoile', c:'#fff6c0', v0:10, v1:40, g:0, t0:8, t1:12, d0:500, d1:700, etale:300});
+  } else {
+    lueurFx(L, x, y, {c:'#ffffff', c2:'#ece4d0', w:100, s0:.2, s1:1.4, d:800});
+    for(var f = 0; f < 7; f++){
+      var an = alea(0, 360), ln = alea(26, 46), fil = div(L, 'width:' + r1(ln) + 'px;height:3px;border-radius:3px;background:#f4f8ea;transform-origin:0 50%');
+      jouerEl(fil, [{transform:'translate(' + x + 'px,' + y + 'px) rotate(' + an + 'deg) scaleX(0)', opacity:1}, {transform:'translate(' + x + 'px,' + y + 'px) rotate(' + (an + 8) + 'deg) scaleX(1)', opacity:1, offset:.3},
+        {transform:'translate(' + x + 'px,' + (y + 12) + 'px) rotate(' + (an + 20) + 'deg) scaleX(.9)', opacity:0}], {duration:alea(900, 1200), easing:'ease-out'});
+    }
+    pluie(L, x, y, {n:9, c:'#f4f8ea', bord:true, v0:40, v1:130, g:260, t0:4, t1:7, d0:700, d1:1000});
+  }
+};
+
+/* ---------- le Sage : le cristal de lune (un éclair qui illumine TOUTE la salle) ---------- */
+/* les images de lumière : de petits dégradés (256 px) faits une fois, que la carte graphique agrandit (jamais au-delà de
+   4 096 px réels, R9) et estompe ; les toiles qui les dessinent sont vidées tout de suite */
+var LUMIERE = {garde:[]};
+function imagesLumiere(){
+  if(LUMIERE.pret) return LUMIERE.pret;
+  function faire(dessin){
+    var c = document.createElement('canvas'); c.width = c.height = 256;
+    var g = c.getContext('2d'); dessin(g); var u = c.toDataURL('image/png'); c.width = c.height = 0; return u;
+  }
+  try {
+    LUMIERE.grand = faire(function(g){
+      var r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+      [[0, 'rgba(255,255,255,1)'], [.1, 'rgba(250,253,255,.96)'], [.28, 'rgba(226,242,255,.82)'], [.55, 'rgba(196,224,255,.55)'], [.8, 'rgba(170,205,255,.28)'], [1, 'rgba(160,200,255,0)']].forEach(function(s){ r.addColorStop(s[0], s[1]); });
+      g.fillStyle = r; g.fillRect(0, 0, 256, 256);
+    });
+    LUMIERE.rayons = faire(function(g){
+      g.translate(128, 128);
+      for(var i = 0; i < 18; i++){
+        var a = i / 18 * Math.PI * 2 + (i % 2 ? .08 : -.05), l = i % 2 ? 92 : 126, w = i % 2 ? .05 : .085;
+        for(var p = 0; p < 3; p++){
+          var ww = w * (1 - p * .3), r = g.createRadialGradient(0, 0, 0, 0, 0, l);
+          r.addColorStop(0, 'rgba(255,255,255,.55)'); r.addColorStop(.5, 'rgba(225,240,255,.3)'); r.addColorStop(1, 'rgba(200,225,255,0)');
+          g.fillStyle = r; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a - ww) * l, Math.sin(a - ww) * l); g.lineTo(Math.cos(a + ww) * l, Math.sin(a + ww) * l); g.closePath(); g.fill();
+        }
+      }
+    });
+  } catch(e){ LUMIERE.grand = LUMIERE.rayons = null; }
+  LUMIERE.pret = Promise.all([LUMIERE.grand, LUMIERE.rayons].filter(Boolean).map(function(u){ var im = new Image(); im.src = u; LUMIERE.garde.push(im); return im.decode ? im.decode().catch(function(){}) : null; }));
+  return LUMIERE.pret;
+}
+/* les images de lumière sont faites pendant la cuisson (un écran calme) */
+preparer = (function(base){ return function(liste, o){ return base(liste, o).then(function(r){ return imagesLumiere().then(function(){ return r; }); }); }; })(preparer);
+function lunePopSvg(){
+  return '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;display:block;overflow:visible"><circle r="44" fill="#ffffff" opacity=".22"/>' +
+    '<path d="' + croissant(-4, 0, 40, 18, -4, 34) + '" fill="#f4f8ff" stroke="#8aa8d8" stroke-width="3"/><path d="M0 -58 L 4 -4 L 58 0 L 4 4 L 0 58 L -4 4 L -58 0 L -4 -4 Z" fill="#ffffff" opacity=".9"/></svg>';
+}
+var sortBase = H.sort;
+H.sort = function(scene, to, opt){
+  opt = opt || {};
+  if(opt.cristal || (opt.cristal !== false && this.equipe('cristal-lune'))){
+    var o = {}; for(var k in opt) o[k] = opt[k];
+    if(to && !o.cibles) o.cibles = [to];
+    return this.eclairSalle(scene, o);
+  }
+  return sortBase.call(this, scene, to, opt);
+};
+/* le calque de lune qui grossit autour du cristal pendant qu'il se charge (il suit le bâton) */
+H._luneCharge = function(){
+  if(this._lc !== undefined) return this._lc;
+  var r = this.reps.cristal, x = +r.getAttribute('cx'), y = +r.getAttribute('cy'), id = 'hlc' + (++uid);
+  var e = this._lc = this._calqueDans(this.cristal && this.cristal.parentNode, '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#eef6ff" stop-opacity=".85"/><stop offset="1" stop-color="#bfd8ff" stop-opacity="0"/></radialGradient></defs>' +
+    '<circle cx="' + x + '" cy="' + y + '" r="46" fill="url(#' + id + ')"/>', [x, y]);
+  return e;
+};
+/* (un calque dans une pièce précise) */
+H._calqueDans = function(p, html, origine){
+  if(!p) return null;
+  var e;
+  if(this.cuit && window.Cuire){ e = window.Cuire.ilot(p, html, 'ha-calque'); e.style.width = e.style.height = '1px'; }
+  else { e = document.createElementNS(SVGNS, 'g'); e.setAttribute('class', 'haJ ha-calque'); e.innerHTML = html; p.appendChild(e); }
+  e.style.display = 'none';
+  if(origine) e.style.transformOrigin = origine[0] + 'px ' + origine[1] + 'px';
+  return e;
+};
+H.eclairSalle = function(scene, opt){
+  opt = opt || {};
+  imagesLumiere();
+  var me = this;
+  return this._file(function(sig){
+    var g = this.garde(), base = {pA:[100, 272], pB:[156, 272]}, lc = this._luneCharge(), fond = null;
+    var leve = copie(g, copie(base, {bassin:{y:4}, torse:-4, tete:-12, mB:[150, 80], hB:0, mA:[178, 70], hA:-150}));
+    var haut = copie(leve, {bassin:{y:-2}, torse:-9, tete:-18, mB:[146, 40], hB:-6, mA:[186, 56], hA:-160, sB:1.06});
+    var flash = copie(haut, {torse:-12, tete:-20, mB:[146, 34]});
+    this.expr('colere');
+    return this.jouer([
+      {d:300, p:leve, e:'io', f:function(){
+        me.cristalFlash(true); me.expr('cri');
+        var q0 = me.rep('cristal', scene); fond = me._fondLune(scene, {x:q0.x - 4, y:q0.y - 30});
+        if(lc){ montrer(lc, true); animer(lc, [{opacity:0, transform:'scale(.2)'}, {opacity:1, transform:'scale(1)', offset:.8}, {opacity:1, transform:'scale(1.25)'}], {duration:480, easing:'ease-in', fill:'forwards'}); }
+        var p = me.rep('cristal');
+        for(var i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2, d = 70, e = div(me.fx, 'width:14px;height:14px', FORMES.etoile(i % 2 ? '#e8f0ff' : '#ffffff', 14));
+          jouerEl(e, [{transform:place(p.x + Math.cos(a) * d, p.y - 30 + Math.sin(a) * d, 0, .5), opacity:0}, {transform:place(p.x + Math.cos(a) * d * .6, p.y - 30 + Math.sin(a) * d * .6, 90, 1), opacity:1, offset:.4}, {transform:place(p.x, p.y - 40, 180, .3), opacity:0}], {duration:420, delay:i * 25, easing:'ease-in', fill:'backwards'}); }
+      }},
+      {d:340, p:haut, e:'b'},
+      {d:140, p:flash, e:'o', f:function(){
+        if(lc) animer(lc, [{opacity:1, transform:'scale(1.25)'}, {opacity:0, transform:'scale(2.2)'}], {duration:500, easing:'ease-out', fill:'forwards'}).then(function(){ montrer(lc, false); });
+        sig(me._eclairSalle(scene, opt, fond));
+      }},
+      {d:600, p:flash, e:'lin', f0:function(){ me.expr('savoir'); }},
+      {d:440, p:g, e:'io', f:function(){ me.expr('garde'); }}
+    ]);
+  });
+};
+/* la lumière dans TOUTE la salle (RAPIDITE.md R9, mémoire de l'iPhone) : une toile à la taille de la scène, à 1,5 × de
+   densité au plus, dessinée UNE fois (pendant que le Sage lève son bâton), qu'on montre et qu'on estompe en opacité (rien
+   n'est agrandi), puis vidée tout de suite après */
+H._fondLune = function(scene, c){
+  try {
+    var W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540, k = Math.min(1.5, window.devicePixelRatio || 1);
+    var cv = document.createElement('canvas'); cv.width = Math.round(W * k); cv.height = Math.round(Hs * k);
+    cv.className = 'ha-p'; cv.style.cssText = 'width:' + W + 'px;height:' + Hs + 'px;opacity:0;transform:none';
+    var g = cv.getContext('2d'), R = Math.hypot(Math.max(c.x, W - c.x), Math.max(c.y, Hs - c.y)) * k * 1.06, gr = g.createRadialGradient(c.x * k, c.y * k, 0, c.x * k, c.y * k, R);
+    [[0, 'rgba(255,255,255,1)'], [.08, 'rgba(250,253,255,.96)'], [.25, 'rgba(230,244,255,.82)'], [.55, 'rgba(200,226,255,.55)'], [.85, 'rgba(176,208,255,.32)'], [1, 'rgba(170,205,255,.2)']].forEach(function(t){ gr.addColorStop(t[0], t[1]); });
+    g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+    couche(scene).appendChild(cv);
+    return cv;
+  } catch(e){ return null; }
+};
+H._eclairSalle = function(scene, opt, fond){
+  var L = couche(scene), c = this.rep('cristal', scene), W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540;
+  /* 1) toute la salle s'illumine (la toile préparée), puis la toile est vidée */
+  fond = fond || this._fondLune(scene, c);
+  if(fond) jouerEl(fond, [{opacity:0}, {opacity:1, offset:.06}, {opacity:.88, offset:.3}, {opacity:0}], {duration:1500, easing:'ease-out'}).then(function(){ fond.width = fond.height = 0; });
+  /* 2) le cœur de la lumière autour du cristal (une image de 256 px, agrandie au plus × 4,8 : 256 × 4,8 × 3 < 4 096 px réels) */
+  if(LUMIERE.grand){
+    var im = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.grand + '" alt="" style="width:100%;height:100%;display:block">');
+    jouerEl(im, [{transform:place(c.x, c.y, 0, .4), opacity:0}, {transform:place(c.x, c.y, 0, 3.6), opacity:1, offset:.1}, {transform:place(c.x, c.y, 0, 4.8), opacity:0}], {duration:1000, easing:'ease-out'});
+  }
+  /* 3) les rayons qui tournent un peu (256 × 4,4 × 3 < 4 096) */
+  if(LUMIERE.rayons){
+    var ry = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.rayons + '" alt="" style="width:100%;height:100%;display:block">');
+    jouerEl(ry, [{transform:place(c.x, c.y, 0, .5), opacity:0}, {transform:place(c.x, c.y, 6, 2.6), opacity:1, offset:.15}, {transform:place(c.x, c.y, 22, 4.4), opacity:0}], {duration:1100, easing:'ease-out'});
+  }
+  /* 4) le croissant de lune qui jaillit du cristal, l'onde qui traverse la salle (400 × 3,3 × 3 < 4 096) */
+  surgit(L, c.x, c.y, 130, 130, lunePopSvg(), {d:800, s1:1.8});
+  anneau(L, c.x, c.y, {c:'#e8f6ff', w:400, s0:.12, s1:3.3, d:1000});
+  anneau(L, c.x, c.y, {c:'#ffffff', w:320, s0:.1, s1:3.6, d:800, retard:120});
+  /* 5) des éclats de lune partout dans la salle */
+  var n = 16;
+  for(var i = 0; i < n; i++){
+    var x = W * (.06 + .88 * (i / n)) + alea(-20, 20), y = Hs * alea(.12, .68), t = alea(12, 22), e = div(L, 'width:' + r1(t) + 'px;height:' + r1(t) + 'px', FORMES.etoile(i % 3 ? '#ffffff' : '#dfe8ff', t));
+    jouerEl(e, [{transform:place(x, y, 0, 0), opacity:0}, {transform:place(x, y - 4, 45, 1.3), opacity:1, offset:.35}, {transform:place(x, y - 12, 90, 0), opacity:0}], {duration:alea(600, 900), delay:100 + i * 28, easing:'ease-out', fill:'backwards'});
+  }
+  /* 6) sur chaque cible : un éclat */
+  (opt.cibles || []).forEach(function(q, k){
+    lueurFx(L, q.x, q.y, {c:'#ffffff', c2:'#cfe8ff', w:120, s0:.3, s1:1.6, d:600, retard:120 + k * 60});
+    pluie(L, q.x, q.y, {n:6, forme:'etoile', c:['#ffffff', '#e8f0ff'], v0:60, v1:140, g:60, t0:10, t1:15, d0:500, d1:800, retard:120 + k * 60});
+  });
+  if(opt.onImpact) try { opt.onImpact(c); } catch(e){ console.error(e); }
+  return c;
+};
+
+/* ---------- le Sage : le bâton de chêne (le bouclier protège deux héros : bouclier(scene, [cible1, cible2])) ---------- */
+var bouclierBase = H.bouclier;
+H.bouclier = function(scene, cible, opt){
+  if(!(cible instanceof Array) || cible.length < 2) return bouclierBase.call(this, scene, cible instanceof Array ? cible[0] : cible, opt);
+  opt = opt || {};
+  var me = this, L = couche(scene), domes = [], pret;
+  var p = this._file(function(sig){
+    var g = this.garde(), base = {pA:[102, 272], pB:[156, 272]}, fin, tous = new Promise(function(r){ fin = r; });
+    var leve = copie(g, copie(base, {bassin:{y:2}, torse:-4, tete:-12, mB:[150, 74], hB:0, mA:[178, 66], hA:-160}));
+    var haut = copie(leve, {bassin:{y:-2}, torse:-6, tete:-14, mB:[150, 62], mA:[184, 56]});
+    this.expr('colere');
+    return Promise.all([tous, this.jouer([
+      {d:300, p:leve, e:'io', f:function(){
+        me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas');
+        anneau(me.fx, q.x, q.y, {w:130, h:28, c:CYAN, s0:0.2, s1:1.4, d:800});
+        me._runesMontent();
+        if(me.equipe('baton-chene')){
+          var c = me.rep('chene');
+          anneau(me.fx, q.x, q.y, {c:'#8ae07a', w:150, h:32, s0:.2, s1:1.5, d:900});
+          pluie(me.fx, c.x, c.y, {n:8, forme:'feuille', c:['#6ab85a', '#5aa04a', '#8ad07a'], v0:60, v1:150, g:60, t0:16, t1:22, d0:800, d1:1200, etale:200});
+        }
+      }},
+      {d:220, p:haut, e:'b'},
+      {d:260, p:haut, e:'lin', f:function(){
+        var a = me.rep('cristal', scene);
+        cible.forEach(function(el, i){
+          me._fil(L, scene, a, el, i).then(function(){
+            domes[i] = me._dome(L, scene, el, opt);
+            if(domes.filter(Boolean).length === cible.length){ var gr = groupeDomes(domes); sig(gr); fin(gr); }
+          });
+        });
+      }},
+      {d:420, p:g, e:'io', f:function(){ me.expr('content'); }},
+      {d:300, p:g, e:'lin', f:function(){ me.expr('garde'); }}
+    ])]).then(function(r){ return r[0]; });
+  });
+  pret = p;
+  p.absorber = function(n, i){ return pret.then(function(b){ return b.absorber(n, i); }); };
+  p.retirer = function(i){ return pret.then(function(b){ return b.retirer(i); }); };
+  return p;
+};
+/* deux dômes : b[0], b[1] (chacun avec absorber / retirer), et b.absorber(n[, i]) / b.retirer([i]) pour tous */
+function groupeDomes(liste){
+  var g = liste.slice();
+  function choix(i){ return i === undefined ? liste : [liste[i]]; }
+  g.absorber = function(n, i){ return Promise.all(choix(i).map(function(b){ return b.absorber(n); })); };
+  g.retirer = function(i){ return Promise.all(choix(i).map(function(b){ return b.retirer(); })); };
+  return g;
+}
+/* une boule de runes qui file du cristal jusqu'au héros protégé (avant que son dôme ne se pose) */
+H._fil = function(L, scene, a, el, i){
+  var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = el.getBoundingClientRect();
+  var b = {x:(r.left - R.left) / k + r.width / k / 2, y:(r.top - R.top) / k + r.height / k * .2};
+  var e = div(L, 'width:30px;height:30px;' + tache('#ffffff', '#8ff3ff'));
+  return vol2(e, a, b, {d:340, haut:90 + i * 30, retard:i * 90, apparait:true, pas:40, chaque:function(p){
+    pluie(L, p.x, p.y, {n:1, forme:'etoile', c:['#e8fdff', CYAN], v0:5, v1:30, g:20, t0:8, t1:12, d0:300, d1:450});
+  }}).then(function(q){ e.remove(); lueurFx(L, q.x, q.y + 20, {c:'#ffffff', c2:CYAN, w:90, s0:.3, s1:1.6, d:420}); return q; });
+};
 
 /* ============ les apparences (Persos.defaut du jeu) ============ */
 var PE = {p1:['#fff1e6', '#f7caa6', '#e8ad89', '#ff8f8f'], p2:['#ffe7d2', '#efb88e', '#d9976d', '#ff877a'], p3:['#f8d8b0', '#dea575', '#c48652', '#f2786a'],
@@ -4475,6 +5692,8 @@ var HerosAnime = {
   /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
   preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
+  /* les objets (equiper), les sortes de flèches (tirer), les potions par leur nom (lancer, preparer), les réactions (touche) */
+  OBJETS:Object.keys(OBJETS), FLECHES:['normale', 'rebond'].concat(TYPES_FL), POTIONS:POTIONS, REACTIONS:['froid', 'grouillement', 'poing'],
   grain:true
 };
 window.HerosAnime = HerosAnime;
@@ -6896,56 +8115,11 @@ function brumeNoire(x, y, nb){
   return Promise.all(fins);
 }
 
-/* La vignette du critique : un trou sombre qui se resserre sur le rat (0,45 r transparent, 0,6 à r, 0,93 à 1,9 r et au-delà).
-   MÉMOIRE (iPhone, 9 novembre : « quand le Pisteur fait un critique, ça quitte le jeu ») : ce fut une image de 2 400 px
-   agrandie jusqu'à ×6 — en pixels réels (densité 3), un calque de 5 200 à 31 000 px de côté : Safari fermait l'onglet.
-   Maintenant : UNE toile à la taille de la scène (960 × 540), à 1,5 × de densité au plus (≈ 4,7 Mo), redessinée seulement
-   pendant que le trou bouge (0,4 s en se fermant, 0,65 s en s'ouvrant), puis vidée (largeur 0) et retirée. */
-function courbe(x1, y1, x2, y2){            /* cubic-bezier(x1, y1, x2, y2), comme en CSS */
-  function b(a, c, t){ return 3 * a * t * (1 - t) * (1 - t) + 3 * c * t * t * (1 - t) + t * t * t; }
-  return function(x){
-    if(x <= 0) return 0; if(x >= 1) return 1;
-    var lo = 0, hi = 1, t = x;
-    for(var i = 0; i < 24; i++){ t = (lo + hi) / 2; if(b(x1, x2, t) < x) lo = t; else hi = t; }
-    return b(y1, y2, t);
-  };
-}
-function vignette(parent, x, y){
-  var W = 960, H = 540, d = Math.min(1.5, window.devicePixelRatio || 1);
-  var c = el('canvas', 'crit-vignette'); c.width = Math.round(W * d); c.height = Math.round(H * d);
-  parent.appendChild(c);
-  var g = c.getContext('2d'), fin = false, ease = courbe(.33, 1, .68, 1);
-  function trou(r, a){
-    g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
-    if(a <= .001) return;
-    var gr = g.createRadialGradient(x, y, 0, x, y, r * 1.9);
-    gr.addColorStop(0, 'rgba(5,2,10,0)'); gr.addColorStop(.45 / 1.9, 'rgba(5,2,10,0)');
-    gr.addColorStop(1 / 1.9, 'rgba(5,2,10,' + (.6 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(5,2,10,' + (.93 * a).toFixed(3) + ')');
-    g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  }
-  trou(900, 0);
-  return {
-    serrer:function(r0, r1, a0, a1, ms){
-      ms = Math.max(1, ms / (S.vitesse || 1));
-      return new Promise(function(ok){
-        var t0 = performance.now();
-        (function pas(t){
-          if(fin) return ok();
-          var k = Math.min(1, (t - t0) / ms), e = ease(k);
-          trou(r0 + (r1 - r0) * e, a0 + (a1 - a0) * e);
-          if(k < 1) requestAnimationFrame(pas); else ok();
-        })(t0);
-      });
-    },
-    retirer:function(){ fin = true; c.width = c.height = 0; c.remove(); }
-  };
-}
-/* Les rayons dorés et l'étoile du critique, « cuits » en images une fois (pendant l'écran du sac) : en CSS, le dégradé
-   conique masqué (mask-image) et l'étoile découpée (clip-path) obligent la carte graphique à redessiner une surface
-   cachée + un masque à CHAQUE image pendant qu'ils tournent et grossissent. En image, elle les déplace seulement.
-   Même dessin : rayons tous les 18°, montée de 6° à 8,5°, descente jusqu'à 11°, couleur #ffeca0 ; fondu radial
-   (opaque jusqu'à 8 %, 0,85 à 35 %, transparent au bord). Sans canvas : la version CSS (la même, en plus lourd). */
-var RAYONS = null, ETOILE = null, HALO = null, CUITES = [];
+/* Le halo et l'étoile de « CRITIQUE ! », « cuits » en petites images une fois (pendant l'écran du sac) : un dégradé
+   repeint dans un calque qui arrive agrandi, ou une étoile découpée (clip-path), coûteraient à chaque image ; en image,
+   la carte graphique les déplace seulement. (Les rayons plein écran, la vignette et l'image de choc ont été retirés le
+   9 novembre à 16 h 37 : Romain veut un critique qui reste AUTOUR DU RAT.) */
+var ETOILE = null, HALO = null, CUITES = [];
 function garder(src){ var i = new Image(); i.src = src; if(i.decode) i.decode().catch(function(){}); CUITES.push(i); return src; }
 /* une toile -> une image ; la toile est vidée tout de suite (largeur 0) : sur iPhone, Safari compte la mémoire de TOUTES
    les toiles encore vivantes (limite totale de quelques centaines de Mo), même celles qui attendent d'être jetées */
@@ -6957,10 +8131,10 @@ function enImage(cv, ok){
   }catch(x){ vider(); }
 }
 function cuireCritique(){
-  if(RAYONS !== null) return;
-  RAYONS = ''; ETOILE = ''; HALO = '';
+  if(ETOILE !== null) return;
+  ETOILE = ''; HALO = '';
   try{
-    /* le halo doré derrière « CRITIQUE ! » (640 × 240, dégradé radial doux) : une petite image, sur son propre calque */
+    /* le halo doré derrière « CRITIQUE ! » (dégradé radial doux) : une petite image, sur son propre calque */
     var hc = document.createElement('canvas'); hc.width = 320; hc.height = 120;
     var hg = hc.getContext('2d'); hg.setTransform(160, 0, 0, 60, 160, 60);
     var hr = hg.createRadialGradient(0, 0, 0, 0, 0, 1); hr.addColorStop(0, 'rgba(255,200,60,.55)'); hr.addColorStop(1, 'rgba(255,200,60,0)');
@@ -6968,99 +8142,55 @@ function cuireCritique(){
     enImage(hc, function(u){ HALO = u; });
   }catch(x){ HALO = ''; }
   try{
-    var T = 1024, R = T / 2, c = document.createElement('canvas'); c.width = c.height = T;
-    var g = c.getContext('2d'), pas = .25;
-    g.translate(R, R);
-    if(g.createConicGradient){
-      var cg = g.createConicGradient(-Math.PI / 2, 0, 0), J = 'rgba(255,236,150,';   /* 0° = en haut, comme conic-gradient */
-      cg.addColorStop(0, J + '0)');
-      for(var k = 0; k < 20; k++){ var b = k * 18; cg.addColorStop((b + 6) / 360, J + '0)'); cg.addColorStop((b + 8.5) / 360, J + '1)'); cg.addColorStop((b + 11) / 360, J + '0)'); }
-      cg.addColorStop(1, J + '0)');
-      g.fillStyle = cg; g.fillRect(-R, -R, T, T);
-    } else for(var a = 0; a < 360; a += pas){
-      var m = a % 18, al = m < 6 ? 0 : m < 8.5 ? (m - 6) / 2.5 : m < 11 ? 1 - (m - 8.5) / 2.5 : 0;
-      if(al <= 0) continue;
-      var a0 = (a - 90) * Math.PI / 180, a1 = (a + pas - 90) * Math.PI / 180;
-      g.fillStyle = 'rgba(255,236,150,' + al.toFixed(3) + ')';
-      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fill();
-    }
-    g.globalCompositeOperation = 'destination-in';
-    var gr = g.createRadialGradient(0, 0, 0, 0, 0, R);
-    gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.08, 'rgba(0,0,0,1)'); gr.addColorStop(.35, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr; g.fillRect(-R, -R, T, T);
     var e = document.createElement('canvas'), N = 128, h = N / 2; e.width = e.height = N;
     var ge = e.getContext('2d'), ge2 = ge.createRadialGradient(h, h, 0, h, h, h);
     ge2.addColorStop(0, 'rgba(255,255,255,1)'); ge2.addColorStop(.7, 'rgba(255,255,255,0)');
     var P = [[50, 0], [58, 42], [100, 50], [58, 58], [50, 100], [42, 58], [0, 50], [42, 42]];
     ge.beginPath(); P.forEach(function(p, i){ ge[i ? 'lineTo' : 'moveTo'](p[0] * N / 100, p[1] * N / 100); }); ge.closePath();
     ge.fillStyle = ge2; ge.fill();
-    enImage(c, function(u){ RAYONS = u; });
     enImage(e, function(u){ ETOILE = u; });
-  }catch(x){ RAYONS = ''; ETOILE = ''; }
+  }catch(x){ ETOILE = ''; }
 }
-/* ---------- LE CRITIQUE : tout l'effet d'écran autour de l'explosion du rat ----------
+/* ---------- LE CRITIQUE : autour du rat seulement ----------
    x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
 function critique(x, y, n, exploser, son, o){
   son = son || function(){};
   o = o || {};
-  /* l'ordre : ralenti → image de choc → « CRITIQUE ! » et le rat qui gonfle sous le choc → il éclate (o.boom) et la brume part.
-     L'éclatement du module est lourd à dessiner : il doit venir APRÈS l'image de choc, sinon elle resterait figée à l'écran. */
-  var boom = null;
-  var E = L.ecran, monde = L.monde;
-  /* 1) ralenti, vignette qui se resserre, zoom lent vers le rat */
+  /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
+     les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Donc rien ne couvre
+     l'écran (ni voile sombre, ni image de choc, ni rayons, ni ralenti général) ; tout se passe autour du rat :
+       0 ms        la flèche frappe : le temps se suspend sur LUI (il se fige, gonfle, tremble) — le son « aspire » ;
+       CRIT_IMPACT la fumée noire l'enveloppe — l'impact, un petit tremblement, le gros « CRITIQUE ! », le chiffre ;
+       CRIT_ECLAT  ses membres jaillissent sur les côtés et retombent dans la fumée — l'explosion, un dernier petit tremblement ;
+       puis        la fumée se dissipe lentement et laisse les cendres et les os (≈ 2,5 s en tout).
+     Les instants des sons sont ceux de l'atelier des sons (l'impact 0,42 s après l'aspiration, l'explosion 0,6 s après). */
+  var v = S.vitesse || 1;
   son('aspire');
-  /* la vignette : un trou sombre qui se resserre sur le rat (une toile à la taille de la scène : voir vignette()) */
-  var vig = vignette(E, x, y);
-  vig.serrer(900, 150, 0, 1, 420);
-  monde.style.transformOrigin = x + 'px ' + y + 'px';
-  var zoom = anime(monde, [{transform:'scale(1)'}, {transform:'scale(1.17)'}], {duration:440, easing:'cubic-bezier(.2,.8,.3,1)', fill:'forwards'});
-  var lents = [];
-  try{ if(document.getAnimations) document.getAnimations().forEach(function(a){
-    var t = a.effect && a.effect.target;
-    if(t && (t === monde || (o.exclure && o.exclure.contains(t)))) return;   /* le rat qui gonfle n'est pas ralenti */
-    a.playbackRate = .22; lents.push(a);
-  }); }catch(e){}
-  return plus(420).then(function(){
-    /* 2) l'image de choc : deux images très brèves, noir et blanc */
+  /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
+  var fin = Promise.resolve(exploser ? exploser({impact:CRIT_IMPACT / v, eclat:CRIT_ECLAT / v}) : null);
+  return plus(CRIT_IMPACT).then(function(){
     son('boum');
-    lents.forEach(function(a){ try{ a.playbackRate = 1; }catch(e){} });
-    /* (mémoire, iPhone) l'image de 1 920 × 1 080 est posée en fond d'un cadre à la taille de la scène : le calque ne
-       dépasse jamais la scène (960 × 540), au lieu de 4 170 × 2 340 px réels pour l'image entière à densité 3 */
-    var choc = el('div', 'crit-choc');
-    choc.style.cssText = 'left:0;top:0;width:960px;height:540px;background:url(' + img('choc-a') + ') ' + (x - 960) + 'px ' + (y - 540) + 'px / 1920px 1080px no-repeat';
-    E.appendChild(choc);
-    var t0 = performance.now();
-    return plus(60).then(function(){ choc.style.backgroundImage = 'url(' + img('choc-b') + ')'; return plus(60); }).then(function(){ choc.remove(); (S.mesures = S.mesures || []).push(Math.round(performance.now() - t0)); });
+    tremble(7, 300);
+    texteCritique(x, y);
+    chiffre(x + 6, y + 40, '−' + n, 'crit');        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
+    if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
+    return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
-    /* 3) onde de choc, rayons dorés, tremblement, étincelles, « CRITIQUE ! », le chiffre, le rat qui explose, la brume */
-    var rayons = RAYONS ? el('img', 'crit-rayons cuit') : el('div', 'crit-rayons'); if(RAYONS){ rayons.src = RAYONS; rayons.alt = ''; }
-    rayons.style.left = x + 'px'; rayons.style.top = y + 'px'; L.fx.appendChild(rayons);
-    anime(rayons, [{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(1.3) rotate(12deg)', opacity:1, offset:.18}, {transform:'translate(-50%,-50%) scale(1.65) rotate(40deg)', opacity:0}], {duration:1300, easing:'ease-out'}).then(function(){ rayons.remove(); });
-    onde(x, y, '#fff3b0', 420, 480); setTimeout(function(){ onde(x, y, '#ffb030', 640, 700); }, 90);
-    tremble(16, 560);
-    etincelles(x, y, 44, null, 1.2);
-    var flash = el('div', 'crit-eclair'); flash.style.left = x + 'px'; flash.style.top = y + 'px'; L.fx.appendChild(flash);
-    anime(flash, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.4)', opacity:0}], {duration:380, easing:'ease-out'}).then(function(){ flash.remove(); });
-    var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
-      (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-    t.style.left = Math.max(310, Math.min(650, x)) + 'px'; t.style.top = Math.max(110, y - 120) + 'px';
-    E.appendChild(t);
-    anime(t, [{transform:'translate(-50%,-50%) scale(3.4) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.9) rotate(-3deg)', opacity:1, offset:.09},
-      {transform:'translate(-50%,-50%) scale(1.06) rotate(-4deg)', opacity:1, offset:.16}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.75},
-      {transform:'translate(-50%,-62%) scale(1.04) rotate(-4deg)', opacity:0}], {duration:1700, easing:'ease-out'}).then(function(){ t.remove(); });
-    chiffre(x, y - 50, '−' + n, 'crit');
-    /* le rat gonfle maintenant, puis éclate : la brume noire part avec lui */
-    boom = Promise.resolve(exploser ? exploser() : null);
-    Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ brumeNoire(x, y, o.brume); onde(x, y, '#d8c8f0', 360, 600); tremble(10, 380); });
-    return Promise.race([o.boom || plus(450), plus(1200)]).then(function(){ return plus(900); });
-  }).then(function(){
-    /* 4) on relâche : la vignette s'ouvre, la caméra recule */
-    vig.serrer(150, 900, 1, 0, 650).then(function(){ vig.retirer(); });
-    return anime(monde, [{transform:'scale(1.17)'}, {transform:'scale(1)'}], {duration:600, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards'});
-  }).then(function(){
-    try{ monde.getAnimations().forEach(function(a){ a.cancel(); }); }catch(e){}
-    monde.style.transform = '';
+    son('explosion');
+    tremble(5, 240);
+    return Promise.race([fin, plus(2000)]);
   });
+}
+var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole */
+function texteCritique(x, y){
+  var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
+    (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
+  t.style.left = '700px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
+  L.ecran.appendChild(t);
+  return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
+    {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2100, easing:'ease-out'}).then(function(){ t.remove(); });
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
@@ -7078,7 +8208,7 @@ function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
   return anime(e, kf, {duration:Math.max(1, ms), easing:'linear'});
 }
 
-S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {rayons:RAYONS, etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
+S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
   eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
 })();
@@ -8244,22 +9374,16 @@ async function critique(r, phrase){
   r.pv = 0; r.mort = true; r.ouvert = false;
   E.ratsVaincus[r.i] = true;
   majBadges();
-  /* le moment où le rat éclate : le module ajoute son calque d'explosion (.ra-scene-fx) ; l'acteur « images » donne .boom */
-  var boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
-  var mo = new MutationObserver(function(){ if(fx.querySelector('.ra-scene-fx')){ mo.disconnect(); boomOk(); } });
-  mo.observe(fx, {childList:true});
-  /* le son du critique en trois morceaux : ça aspire pendant le ralenti, l'impact sur l'image de choc, l'explosion quand le rat éclate */
-  var explose = false;
-  function sonExplosion(){ if(explose) return; explose = true; bruit('ratCritique', {partie:'explosion'}); }
+  /* le son du critique en trois morceaux, calés sur l'image (effets.js, critique) : l'aspiration pendant le temps
+     suspendu, l'impact quand la fumée noire l'enveloppe, l'explosion quand ses membres jaillissent */
   function sonCritique(nom){
     if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
-    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); else setTimeout(sonExplosion, 1200); return; }
+    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); return; }
+    if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion'}); return; }
     son.apply(null, arguments);
   }
-  boomP.then(sonExplosion);
-  await Fx.critique(c.x, c.y, n, function(){ majBarres(); var p = A.r[r.i].exploser(fx); if(p && p.boom) p.boom.then(boomOk); return p; }, sonCritique,
-    {exclure:slotR(r), brume:RAT_MODULE ? 12 : 24, boom:boomP});
-  mo.disconnect();
+  /* le module du rat fait tout autour de lui (fumée, membres, cendres) ; sans lui, les effets font une fumée noire */
+  await Fx.critique(c.x, c.y, n, function(o){ majBarres(); return A.r[r.i].exploser(fx, o); }, sonCritique, {brume:RAT_MODULE ? 0 : 14});
   finRat(r, true);
   conte(phrase || 'En plein dans le mille !');
   return attendre(350);
