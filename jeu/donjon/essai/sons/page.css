@@ -1,0 +1,107 @@
+:root{
+  --fond:#15121d; --carte:#211c2d; --carte2:#1b1726; --ligne:#2a2439; --bord:rgba(255,255,255,.09);
+  --texte:#f3eee2; --doux:#bdb4cc; --jaune:#ffd23f; --jaune-ombre:#a67f0e; --violet:#8f7bd6; --vert:#7fd18b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%; scroll-padding-top:64px; scroll-padding-bottom:76px}   /* les barres fixes ne cachent jamais ce qu'on vient d'atteindre */
+[hidden]{display:none !important}
+body{margin:0; background:var(--fond); color:var(--texte); font:15px/1.35 Andika, 'Trebuchet MS', system-ui, sans-serif; overflow-x:hidden}
+button{font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation}
+h1{font-family:Macondo, Georgia, serif; font-weight:400; margin:0}
+
+/* l'en-tête : une seule ligne, toujours visible */
+.barre{position:sticky; top:0; z-index:10; display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px;
+  padding:6px max(12px, env(safe-area-inset-right)) 6px max(12px, env(safe-area-inset-left));
+  background:rgba(21,18,29,.96); border-bottom:1px solid var(--bord); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px)}
+.barre h1{font-size:22px; color:var(--jaune); white-space:nowrap}
+.volume{display:flex; align-items:center; gap:6px; flex:1 1 140px; min-width:120px; color:var(--doux)}
+.volume input{flex:1; min-width:80px; height:44px; accent-color:var(--jaune)}
+.stop, .petit{min-height:44px; padding:0 12px; border-radius:12px; border:2px solid #5a5070; background:#2c2638; color:var(--texte); font-weight:700; font-size:14px; white-space:nowrap}
+.stop:active, .petit:active{transform:translateY(1px)}
+.plier{display:flex; gap:6px}
+
+main{max-width:1280px; margin:0 auto; padding:6px 12px 90px}
+.accueil{display:flex; gap:8px; align-items:center; margin:4px 0 8px; color:var(--doux); font-size:14px}
+.accueil > span{flex:1}
+
+/* les sections qu'on ouvre et qu'on ferme */
+details.sec{margin:0 0 6px; border-radius:12px; background:var(--carte2); border:1px solid var(--bord)}
+details.sec details.sec{margin:0; background:rgba(255,255,255,.025)}
+/* les sous-sections fermées se rangent en tuiles côte à côte ; celle qu'on ouvre prend toute la largeur */
+.sous{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); grid-auto-flow:row dense; gap:6px; margin-top:6px}
+.sous > details[open]{grid-column:1 / -1}
+.grille + .sous{margin-top:8px}
+details.sec > summary{list-style:none; display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 10px; cursor:pointer; user-select:none; -webkit-user-select:none; border-radius:12px}
+details.sec > summary::-webkit-details-marker{display:none}
+details.sec > summary:focus-visible{outline:3px solid var(--violet); outline-offset:-3px}
+.fl{display:inline-block; width:14px; color:var(--jaune); transition:transform .15s}
+details[open] > summary .fl{transform:rotate(90deg)}
+.sec-titre{font-family:Macondo, Georgia, serif; font-size:20px; color:var(--jaune)}
+details.sec details.sec .sec-titre{font-size:17px; color:#ffe58a}
+details.sec details.sec details.sec .sec-titre{font-size:15px; color:var(--texte); font-family:Andika, sans-serif; font-weight:700}
+.nb{flex:none; white-space:nowrap; color:var(--doux); font-size:13px}
+.sec-titre{min-width:0}
+.neuf{flex:none; white-space:nowrap; padding:1px 8px; border-radius:20px; background:var(--violet); color:#fff; font-weight:700; font-size:13px}
+.sec-corps{padding:0 8px 8px}
+
+/* la grille des sons : de 1 à 4 colonnes selon la largeur */
+.grille{display:grid; grid-template-columns:1fr; gap:6px}
+@media (min-width:500px){ .grille{grid-template-columns:repeat(2, minmax(0, 1fr))} }
+@media (min-width:760px){ .grille{grid-template-columns:repeat(3, minmax(0, 1fr))} }
+@media (min-width:1100px){ .grille{grid-template-columns:repeat(4, minmax(0, 1fr))} }
+.son{display:flex; align-items:center; gap:6px; padding:5px 6px 5px 8px; border-radius:10px; background:var(--carte); border:1px solid var(--bord); min-width:0}
+.son.large{grid-column:span 2}
+@media (max-width:499px){ .son.large{grid-column:auto} }
+.nom{flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:5px; font-size:14px; line-height:1.15}
+.st{flex:none; font-size:13px}
+.vs{flex:none; display:flex; gap:4px}
+.v{display:flex; flex-direction:column; align-items:center}
+
+.jouer{min-width:44px; min-height:44px; padding:0 6px; border:none; border-radius:10px; background:var(--jaune); color:#000; font-weight:700; font-size:18px;
+  box-shadow:0 3px 0 var(--jaune-ombre); white-space:nowrap}
+.jouer.mot{font-size:14px; padding:0 8px}
+.jouer:active{transform:translateY(2px); box-shadow:0 1px 0 var(--jaune-ombre)}
+.jouer.joue{animation:pouls .5s ease-in-out infinite alternate}
+.jouer.en-cours{background:#f1ead3; box-shadow:0 0 0 3px var(--jaune), 0 3px 0 var(--jaune-ombre); animation:pouls 1.1s ease-in-out infinite alternate}
+@keyframes pouls{ from{filter:brightness(1)} to{filter:brightness(1.18); transform:scale(1.04)} }
+
+/* la petite case « validé par moi », sous chaque bouton */
+.garde{display:flex; align-items:center; justify-content:center; width:44px; height:32px; cursor:pointer}
+.garde input{-webkit-appearance:none; appearance:none; width:24px; height:24px; margin:0; border:2px solid #9d93b3; border-radius:6px; background:#191523 center/17px no-repeat; cursor:pointer}
+.garde input:checked{border-color:var(--jaune); background-color:var(--jaune);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12.5l5 5L20 6.5' fill='none' stroke='%23000' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.garde input:focus-visible{outline:3px solid var(--violet); outline-offset:2px}
+.son.chaine{background:rgba(255,210,63,.06); border-style:dashed; border-color:rgba(255,210,63,.35)}
+.son.chaine .nom{color:var(--doux)}
+
+.voix{flex:none; width:44px; height:44px; border-radius:50%; border:1px solid var(--bord); background:#352e48; color:var(--texte); font-size:18px; line-height:1; padding:0}
+.voix:active{background:#4a4064}
+
+/* la petite barre collée en bas : copier ses choix */
+.pied{position:fixed; left:0; right:0; bottom:0; z-index:20; background:rgba(21,18,29,.97); border-top:1px solid var(--bord);
+  padding:6px max(12px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left))}
+.ligne-pied{max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:10px}
+.copier{font-size:16px; padding:0 14px}
+.compte{color:var(--doux); font-size:14px}
+.ok{flex:1; color:var(--vert); font-weight:700; font-size:14px}
+.panneau{max-width:1280px; margin:0 auto 6px; display:grid; gap:6px}
+.panneau textarea{width:100%; padding:8px; border-radius:10px; border:1px solid #4a4260; background:#191523; color:var(--texte); font:13px/1.4 ui-monospace, Menlo, Consolas, monospace; resize:vertical; max-height:45vh}
+.panneau #note{font:14px/1.4 Andika, sans-serif}
+
+@media (max-width:620px){
+  .barre h1{font-size:19px}
+  .plier{order:5; width:100%}
+  .plier .petit{flex:1}
+}
+@media (prefers-reduced-motion:reduce){ .jouer.joue, .jouer.en-cours{animation:none} .fl{transition:none} }
+/* « à refaire » devant A, B, C (Romain, 9 novembre, 12 h 03) */
+.son{flex-wrap:wrap}
+.refaire-b{width:44px; height:44px; padding:0; border-radius:10px; border:2px solid #5a5070; background:#2c2638; color:var(--texte); font-size:18px; line-height:1}
+.refaire-b[aria-pressed="true"]{background:#e8833a; border-color:#ffb27a; color:#000}
+.refaire-t{display:flex; align-items:center; justify-content:center; height:32px; font-size:10px; line-height:1; color:var(--doux); white-space:nowrap}
+.son.a-refaire{border-color:#e8833a; background:rgba(232,131,58,.09)}
+.son.a-refaire .refaire-t{color:#ffb27a; font-weight:700}
+.son .pourquoi{display:none; flex:1 1 100%; min-width:0; margin:2px 0 1px; padding:6px 8px; border-radius:8px; border:1px solid #6a5a48; background:#191523; color:var(--texte); font:14px Andika, sans-serif}
+.son.a-refaire .pourquoi{display:block}
+.vr{display:flex; flex-direction:column; align-items:center; margin-right:4px}

@@ -94,19 +94,30 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #sac .compte b{color:#ffe3a3;font-size:20px}
 
 /* =============== LE COMBAT =============== */
-#monde{position:absolute;z-index:1;left:0;top:0;width:960px;height:372px;transform-origin:50% 50%;will-change:transform;transition:transform .3s ease-out}
-#monde.zoom{transition:transform .1s ease-out}
+#monde{position:absolute;z-index:1;left:0;top:0;width:960px;height:372px;transform-origin:50% 50%;will-change:transform}
 #monde .decor{position:absolute;left:0;top:0;width:960px;height:372px}
-#secousse{position:absolute;left:0;top:0;width:960px;height:372px}
-#secousse.secoue{animation:monde-secoue .35s}
-@keyframes monde-secoue{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}}
+/* (will-change : le décor reste dans son propre calque ; une secousse ne le fait pas repeindre) */
+#secousse{position:absolute;left:0;top:0;width:960px;height:372px;will-change:transform}
+#sol-fx, #fx, #fumee, #hud{position:absolute;left:0;top:0;width:960px;height:372px;pointer-events:none}
+#sol-fx{z-index:2}
+#persos{position:static}
+#fx{z-index:40}
+#fumee{z-index:45;overflow:hidden}
+#hud{z-index:50;transition:opacity .5s}
+#hud .zone{pointer-events:auto}
+#ecran-fx{position:absolute;left:0;top:0;width:960px;height:540px;z-index:60;pointer-events:none;overflow:hidden}
+/* la salle est vide au début : la bande, la bulle et les barres arrivent après l'entrée des héros et des rats */
+#combat:not(.ouvert) #hud{opacity:0}
+#combat:not(.ouvert) #fuite, #combat:not(.ouvert) #volumes{opacity:0;pointer-events:none}
+#fuite, #combat #volumes{transition:opacity .5s .2s}
+#combat:not(.ouvert) #bande{transform:translateY(100%)}
+#bande{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
 
-/* les personnages : des couches qui bougent chacune de leur côté */
+/* les places des personnages (le jeu) et leurs acteurs (images ou modules d'animation) */
 .perso{position:absolute}
-.perso > .flotte, .perso .bouge, .perso .pose, .perso .tremble{position:absolute;inset:0}
-.perso img{position:absolute;left:0;top:0;width:100%;height:100%}
+.acteur{position:absolute;left:0;top:0;width:100%;height:100%}
 .ombre{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0))}
-.perso.dispo > .flotte{animation:flotte 1.5s ease-in-out infinite}
+.perso.dispo > .acteur{animation:flotte 1.5s ease-in-out infinite}
 .anneau{position:absolute;height:26px;border-radius:50%;border:4px solid var(--or);box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 16px 4px rgba(255,190,60,.75),inset 0 0 10px rgba(255,190,60,.55);
   opacity:0;transition:opacity .2s;pointer-events:none}
 .anneau i{position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--or);opacity:0}
@@ -114,71 +125,53 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .perso.dispo .anneau i{animation:onde 1.3s ease-out infinite}
 .perso.actif .anneau{opacity:1;animation:none;border-color:#fff1b8}
 .zone{position:absolute;z-index:30;border-radius:18px}
+.perso.parti{display:none}
 
 /* les héros */
 .heros{width:280px;height:320px;top:64px}
-.heros .tourne{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:139px 50%}
-.heros .pose{transform-origin:139px 274px;transition:transform .45s cubic-bezier(.5,-.2,.7,1.4)}
-.heros .gris{display:none}
-.heros.joue .gris, .heros.sol .gris{display:block}
-.heros.joue .clair, .heros.sol .clair{display:none}
-.heros.joue .gris{opacity:.9}
-.heros.sol .pose{transform:translate(70px,10px) rotate(-82deg) scale(.72)}
 .heros .anneau{left:79px;width:120px;top:262px}
 .heros .ombre{left:74px;top:262px;width:130px;height:24px}
+/* le héros qui a joué est grisé : le filtre est posé sur chaque image (peinte une seule fois), jamais sur le héros entier
+   dont les pièces bougent (sinon tout est refiltré à chaque image : voir jeu/donjon/RAPIDITE.md) */
+.heros.joue .acteur img, .heros.joue .acteur svg{filter:grayscale(.92) brightness(.72)}
+.heros.sol .acteur img, .heros.sol .acteur svg{filter:grayscale(1) brightness(.6)}
 .check{position:absolute;left:113px;top:22px;width:52px;height:52px;border-radius:50%;background:#2a2238;border:3px solid #9a8aa8;color:#e8f8ec;
   font-size:30px;font-weight:800;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.6,1)}
 .heros.joue .check{opacity:1;transform:none}
 .etoiles{position:absolute;left:46px;top:216px;font-size:26px;opacity:0;transition:opacity .3s}
 .heros.sol .etoiles{opacity:1;animation:tourne-lent 2.4s linear infinite}
 @keyframes tourne-lent{to{transform:rotate(360deg)}}
-.bouclier{position:absolute;left:52px;top:84px;width:176px;height:200px;border-radius:50%;opacity:0;transform:scale(.6);transition:opacity .3s,transform .35s cubic-bezier(.3,1.5,.6,1);pointer-events:none;
-  background:radial-gradient(closest-side,rgba(143,243,255,0),rgba(143,243,255,0) 72%,rgba(143,243,255,.35) 92%,rgba(143,243,255,0))}
-.bouclier i{position:absolute;inset:6px;border-radius:50%;border:3px dashed #8ff3ff;animation:tourne-lent 6s linear infinite;opacity:.85}
-.heros.protege .bouclier{opacity:1;transform:none}
-.cri{position:absolute;left:150px;top:4px;padding:6px 14px;border-radius:16px;background:#fffaf0;color:#24182e;border:3px solid var(--encre);font-weight:800;font-size:22px;
+.badge-bouclier{position:absolute;left:139px;top:252px;transform:translateX(-50%) scale(.4);opacity:0;white-space:nowrap;padding:3px 10px;border-radius:12px;background:#0e2a3a;border:2px solid #8ff3ff;color:#dffcff;
+  font-weight:800;font-size:14px;box-shadow:0 0 12px rgba(143,243,255,.55),0 2px 0 rgba(0,0,0,.6);transition:opacity .25s,transform .3s cubic-bezier(.3,1.6,.6,1);z-index:3}
+.heros.protege .badge-bouclier{opacity:1;transform:translateX(-50%)}
+.heros.module .badge-bouclier{display:none}          /* le dôme du module porte déjà ce badge */
+.cri{position:absolute;left:150px;top:4px;padding:6px 14px;border-radius:16px;background:#fffaf0;color:#24182e;border:3px solid var(--encre);font-weight:800;font-size:22px;z-index:2;
   transform:scale(0) rotate(-6deg);transform-origin:0 100%;transition:transform .25s cubic-bezier(.3,1.6,.6,1);white-space:nowrap}
 .cri::after{content:'';position:absolute;left:10px;bottom:-12px;border:8px solid transparent;border-top-color:var(--encre)}
 .heros.crie .cri{transform:rotate(-6deg)}
-.cri{z-index:2}
+/* la fuite des héros : ils se retournent et détalent à gauche */
+.heros.detale{animation:detale 1s ease-in forwards}
+.heros.detale .acteur{transform:scaleX(-1);transform-origin:139px 50%}
+@keyframes detale{0%{transform:none}10%{transform:translate(-20px,-10px)}20%{transform:translate(-60px,0)}30%{transform:translate(-110px,-10px)}40%{transform:translate(-170px,0)}50%{transform:translate(-240px,-10px)}60%{transform:translate(-320px,0)}70%{transform:translate(-400px,-10px)}100%{transform:translate(-640px,0)}}
 
 /* les rats */
-.rat .pose{transform-origin:72.9% 93.6%;transition:transform .32s cubic-bezier(.3,1.5,.6,1)}
-.rat.dresse, .rat.dos{z-index:8!important}
-.rat.dresse .pose{transform:rotate(27deg) translateY(-6px)}
-.rat.dos .pose{transform-origin:50% 55.7%;animation:glisse .7s ease-out forwards}
-.rat.releve .pose{transform-origin:50% 55.7%;animation:releve .45s ease-out}
-@keyframes releve{0%{transform:translateY(4px) scaleY(-1)}50%{transform:translateY(-22px) rotate(-60deg) scaleY(.4)}100%{transform:none}}
-@keyframes glisse{0%{transform:none}30%{transform:translateX(-18px) rotate(-14deg)}55%{transform:translateX(-8px) translateY(-26px) rotate(90deg) scaleY(1)}100%{transform:translateY(4px) scaleY(-1)}}
-.rat .tremble{transform-origin:50% 90%}
-.rat.affole .tremble{animation:affole .22s steps(2) infinite}
-@keyframes affole{0%{transform:translate(-1.5px,0) rotate(-1deg)}50%{transform:translate(1.5px,-1px) rotate(1deg)}}
-.rat .rage{position:absolute;left:4%;top:18%;width:42%;height:60%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,40,50,.55),rgba(255,40,50,0));opacity:0;transition:opacity .3s}
-.rat.affole .rage{opacity:1;animation:lueur .5s ease-in-out infinite alternate}
-@keyframes lueur{from{opacity:.45}to{opacity:1}}
-.ventre{position:absolute;left:60.6%;top:67.9%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;opacity:0;transform:scale(.2);transition:opacity .25s,transform .3s cubic-bezier(.3,1.6,.6,1);
-  background:radial-gradient(closest-side,rgba(255,250,200,.95),rgba(255,226,120,.75) 35%,rgba(255,200,60,0) 100%)}
-.ventre::before,.ventre::after{content:'';position:absolute;border-radius:50%;border:3px solid #fff3a8}
-.ventre::before{inset:-6px;animation:pulse 1s ease-in-out infinite}
-.ventre::after{inset:8px;border-width:2px;border-color:#ff9a3a}
-.rat.dresse .ventre, .rat.dos .ventre{opacity:1;transform:none;transition-delay:.25s}
-.rat .anneau{width:130px;top:auto}
-.rat .colle{position:absolute;left:8%;width:78%;height:22px;border-radius:50%;background:radial-gradient(closest-side,#fffaf0,#e8dcc0 60%,rgba(232,220,192,0));opacity:0;transform:scale(.3);transition:opacity .3s,transform .3s}
-.rat.colle .colle{opacity:.9;transform:none}
-.rat.colle .tremble{animation:colle-tire .9s ease-in-out infinite}
-@keyframes colle-tire{0%,100%{transform:none}50%{transform:translateY(-3px) scaleY(1.04)}}
-.rat.brume .pose{transition:transform .5s ease-out,opacity .5s ease-out;transform:scale(1.35);opacity:0}
-.rat.brume .ombre, .rat.brume .colle{opacity:0;transition:opacity .3s}
+.rat .anneau{width:130px}
+.rat.module > .ombre{display:none}                 /* le module dessine sa propre ombre */
+.rat.cendre .anneau, .rat.cendre .ombre{display:none}
+.rat.cendre{z-index:1!important}
+.rat.ouvert{z-index:8!important}
 .badges{position:absolute;display:flex;gap:4px;align-items:center;transform:translateX(-50%);transition:opacity .25s;pointer-events:none}
 .vise{position:relative;width:38px;height:38px;border-radius:50%;border:3px solid;background:#1a1222;box-shadow:0 2px 0 rgba(0,0,0,.6);overflow:hidden}
 .vise i{position:absolute;inset:0;background-repeat:no-repeat}
 .vise-fleche{width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:11px solid;margin-right:-2px}
 .vise-bloc{display:flex;align-items:center}
 .vise-bloc.mord{animation:pulse .3s ease-in-out 2}
-.etat{height:30px;min-width:30px;padding:0 6px;border-radius:15px;background:#1a1222;border:2px solid #ff5a5a;color:#ffd0d0;font-weight:800;font-size:14px;display:flex;align-items:center;gap:2px;box-shadow:0 2px 0 rgba(0,0,0,.6)}
+.badges{align-items:flex-end}
+.etats{display:flex;flex-direction:column-reverse;gap:2px;margin-bottom:1px}
+.etat{height:22px;min-width:22px;padding:0 6px;border-radius:11px;background:#1a1222;border:2px solid #ff5a5a;color:#ffd0d0;font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:2px;box-shadow:0 2px 0 rgba(0,0,0,.6);white-space:nowrap}
 .etat.e-colle{border-color:#ece4d0;color:#fff}
-.etat img{width:18px;height:25px}
-.rat.mort{display:none}
+.etat.e-feu{border-color:#ffa040;color:#ffe0b0}
+.etat img{width:13px;height:18px}
 
 /* les barres de vie, toutes sur une ligne sous les pieds */
 .pv{position:absolute;top:352px;height:18px;display:flex;align-items:center;gap:5px;transform:translateX(-50%);z-index:20;pointer-events:none;transition:opacity .3s}
@@ -188,8 +181,84 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .pv .barre i.bas{background:linear-gradient(#ff9a8a,#d8303e)}
 .pv.monstre .barre i{background:linear-gradient(#ff7a7a,#b8202e)}
 .pv b{font-size:14px;min-width:26px;color:#fff4e0;text-shadow:0 1px 0 #000,0 0 4px #000}
-.pv .bouc{font-size:14px;display:none}
-.pv.protege .bouc{display:inline}
+
+/* ===== les acteurs « images fixes » (en attendant les modules) ===== */
+.acteur .a-corps, .acteur .a-bouge, .acteur .a-pose, .acteur .a-tremble, .acteur .a-tourne{position:absolute;left:0;top:0;width:100%;height:100%}
+.acteur .a-img{position:absolute;left:0;top:0;width:100%;height:100%}
+.a-img.blanchit{animation:blanchit .32s ease-out}
+@keyframes blanchit{0%{filter:brightness(2.4) saturate(.4)}100%{filter:none}}
+.a-bouge.secoue{animation:secoue .38s}
+@keyframes secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+/* héros */
+.heros .a-pose{transform-origin:139px 274px;transition:transform .45s cubic-bezier(.5,-.2,.7,1.4)}
+.heros .a-tourne{transform-origin:139px 50%}
+.heros .respire .a-pose, .heros .acteur.respire .a-pose{animation:respire 3.2s ease-in-out infinite}
+@keyframes respire{0%,100%{transform:none}50%{transform:scaleY(1.012) translateY(-1px)}}
+.heros .acteur.court .a-bouge{animation:course .2s ease-in-out infinite}
+@keyframes course{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(3deg)}}
+.heros .a-bouge.arrive{animation:arrive .3s ease-out}
+@keyframes arrive{0%{transform:translateY(0) scaleY(.94)}40%{transform:translateY(-4px) scaleY(1.03)}100%{transform:none}}
+.heros .acteur.au-sol .a-pose{transform:translate(70px,10px) rotate(-82deg) scale(.72);animation:none}
+.heros .a-bouge.saute{animation:saute .5s ease-out 2}
+@keyframes saute{0%,100%{transform:none}40%{transform:translateY(-38px) rotate(-4deg)}70%{transform:translateY(-8px)}}
+.heros .a-bouge.pret{animation:pret .3s ease-out}
+@keyframes pret{0%{transform:none}50%{transform:translateY(-8px)}100%{transform:none}}
+.heros .a-bouge.lit{animation:lit .6s ease-in-out}
+@keyframes lit{0%,100%{transform:none}40%,70%{transform:translateY(4px) rotate(2deg)}}
+.heros .a-pose.frappe{animation:frappe .32s ease-out}
+@keyframes frappe{0%{transform:rotate(0)}35%{transform:rotate(8deg) translateY(-6px)}100%{transform:none}}
+/* rats */
+.rat .a-pose{transform-origin:72.9% 93.6%;transition:transform .32s cubic-bezier(.3,1.5,.6,1)}
+.rat .a-tremble{transform-origin:50% 90%}
+.rat .acteur.respire .a-tremble{animation:renifle 1.6s ease-in-out infinite}
+@keyframes renifle{0%,100%{transform:none}30%{transform:scaleY(1.02) translateX(-1px)}55%{transform:scaleY(.99)}}
+.rat .acteur.trotte .a-bouge{animation:trotte .13s linear infinite}
+@keyframes trotte{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-3deg)}}
+.rat .acteur.dresse .a-pose{transform:rotate(27deg) translateY(-6px)}
+.rat .acteur.dos .a-pose{transform-origin:50% 55.7%;animation:glisse .7s ease-out forwards}
+.rat .a-pose.releve{transform-origin:50% 55.7%;animation:releve .45s ease-out}
+@keyframes releve{0%{transform:translateY(4px) scaleY(-1)}50%{transform:translateY(-22px) rotate(-60deg) scaleY(.4)}100%{transform:none}}
+@keyframes glisse{0%{transform:none}30%{transform:translateX(-18px) rotate(-14deg)}55%{transform:translateX(-8px) translateY(-26px) rotate(90deg) scaleY(1)}100%{transform:translateY(4px) scaleY(-1)}}
+.rat .acteur.enrage .a-tremble{animation:enrage .2s steps(2) infinite}
+@keyframes enrage{0%{transform:translate(-1.6px,0) rotate(-1deg)}50%{transform:translate(1.6px,-1px) rotate(1deg)}}
+.rat .a-pose.cabre-rage{animation:cabre-rage .7s ease-out}
+@keyframes cabre-rage{0%{transform:none}25%{transform:rotate(14deg) translateY(-8px) scale(1.06)}35%{transform:rotate(10deg) translate(-3px,-6px) scale(1.08)}45%{transform:rotate(14deg) translate(3px,-8px) scale(1.08)}55%{transform:rotate(10deg) translate(-3px,-6px) scale(1.08)}100%{transform:none}}
+.rat .a-rage{position:absolute;left:4%;top:18%;width:42%;height:60%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,40,50,.6),rgba(255,40,50,0));opacity:0;transition:opacity .3s}
+.rat .acteur.enrage .a-rage{opacity:1;animation:lueur .5s ease-in-out infinite alternate}
+@keyframes lueur{from{opacity:.45}to{opacity:1}}
+.rat .a-ventre{position:absolute;left:60.6%;top:67.9%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;opacity:0;transform:scale(.2);transition:opacity .25s,transform .3s cubic-bezier(.3,1.6,.6,1);
+  background:radial-gradient(closest-side,rgba(255,250,200,.95),rgba(255,226,120,.75) 35%,rgba(255,200,60,0) 100%)}
+.rat .a-ventre::before,.rat .a-ventre::after{content:'';position:absolute;border-radius:50%;border:3px solid #fff3a8}
+.rat .a-ventre::before{inset:-6px;animation:pulse 1s ease-in-out infinite}
+.rat .a-ventre::after{inset:8px;border-width:2px;border-color:#ff9a3a}
+.rat .acteur.vise-ventre .a-ventre{opacity:1;transform:none}
+.rat .acteur.colle .a-tremble{animation:colle-tire .9s ease-in-out infinite}
+@keyframes colle-tire{0%,100%{transform:none}50%{transform:translateY(-4px) scaleY(1.05)}}
+.rat .a-tremble.tousse{animation:tousse .4s ease-out}
+@keyframes tousse{0%{transform:none}25%{transform:translateX(-7px) rotate(-5deg) scaleY(.92)}50%{transform:translateX(2px) rotate(2deg)}100%{transform:none}}
+.rat .acteur.peur .a-tourne, .rat .acteur.peur .a-pose{transform:scaleX(-1) translateY(-10px);transition:transform .2s}
+.rat .a-pose.gonfle{animation:gonfle .43s ease-in forwards}
+@keyframes gonfle{0%{transform:none}20%{transform:scale(1.05,.95) translateX(-3px)}40%{transform:scale(1.08,1.05) translateX(3px)}60%{transform:scale(1.12,1.04) translateX(-3px)}80%{transform:scale(1.16,1.12) translateX(3px)}100%{transform:scale(1.22)}}
+.rat .a-pose.eclate{animation:eclate .35s ease-out forwards}
+@keyframes eclate{0%{transform:scale(1.22);opacity:1;filter:brightness(1)}30%{transform:scale(1.45);opacity:1;filter:brightness(3)}100%{transform:scale(1.9);opacity:0;filter:brightness(.2)}}
+.a-flammes{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.rat .acteur.brule .a-flammes::before{content:'';position:absolute;left:22%;top:0;width:66%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,150,40,.5),rgba(255,90,20,0));animation:lueur .35s ease-in-out infinite alternate}
+.flamme{position:absolute;width:30px;height:48px;margin:-40px 0 0 -15px;transform-origin:50% 90%;animation:flamme .32s ease-in-out infinite alternate,flamme2 .9s ease-in-out infinite}
+@keyframes flamme{0%{transform:scale(calc(var(--t) * .92),calc(var(--t) * .85)) rotate(-4deg)}100%{transform:scale(calc(var(--t) * 1.05),calc(var(--t) * 1.18)) rotate(5deg)}}
+@keyframes flamme2{0%,100%{opacity:.95}50%{opacity:.75}}
+.vapeur{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:.7}
+/* le dôme du bouclier (version images) */
+.dome{position:absolute;width:180px;height:230px;margin:-128px 0 0 -90px;border-radius:50% 50% 46% 46%;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at 50% 40%,rgba(143,243,255,.05),rgba(143,243,255,.08) 55%,rgba(143,243,255,.38) 82%,rgba(191,248,255,.0) 100%);
+  box-shadow:inset 0 0 26px rgba(143,243,255,.45),0 0 22px rgba(63,208,255,.35);border:2px solid rgba(191,248,255,.65)}
+.dome.nait{animation:dome-nait .6s cubic-bezier(.3,1.5,.6,1) forwards}
+@keyframes dome-nait{0%{opacity:0;transform:scale(.2,.05) translateY(120px)}60%{opacity:1;transform:scale(1.06,1.02)}100%{opacity:1;transform:none}}
+.dome.encaisse{animation:dome-encaisse .3s ease-out;opacity:1}
+@keyframes dome-encaisse{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(.94,.97);filter:brightness(2.2)}100%{transform:none;filter:none}}
+.dome.part{animation:dome-part .5s ease-in forwards}
+@keyframes dome-part{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.25)}}
+.dome-anneau{position:absolute;left:8%;top:6%;width:84%;height:88%;border-radius:50%;border:3px dashed rgba(191,248,255,.9);animation:tourne-lent 7s linear infinite}
+.dome-runes{position:absolute;left:-6%;bottom:-4%;width:112%;height:22%;border-radius:50%;border:3px solid #8ff3ff;box-shadow:0 0 14px #8ff3ff;opacity:.8}
 
 /* ---------- le haut de l'écran ---------- */
 #haut{position:absolute;z-index:20;left:0;top:0;width:960px;height:80px;pointer-events:none}
@@ -199,7 +268,21 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #salle-nom span{font-size:14px;color:#d8ccb4;text-shadow:0 1px 0 #000}
 #salle-nom i{font-style:normal;opacity:.6;margin:0 3px}
 .point h1 .lire{background:var(--creme);color:var(--encre)}
-#haut .bulle{position:absolute;left:232px;right:132px;top:8px}
+/* les deux curseurs de volume (musique, bruitages) : discrets, sombres ; une petite barre jaune et un rond noir à liseré jaune.
+   La zone de toucher fait 44 px de haut et déborde de 14 px de chaque côté du rail. */
+#volumes{position:absolute;right:134px;top:12px;display:flex;gap:6px;align-items:center;z-index:3}
+#sac #volumes{right:20px;top:10px}
+.vol{display:flex;align-items:center;gap:0;height:44px;padding-left:4px;border-radius:22px;background:rgba(10,7,16,.55)}
+.vol-ic{font-size:15px;line-height:1;width:20px;text-align:center;opacity:.7;filter:saturate(.6)}
+.vol.muet .vol-ic{opacity:.35}
+.vol-piste{position:relative;width:104px;height:44px;padding:0 14px;touch-action:none;cursor:pointer;outline:none}
+.vol-rail{position:absolute;left:14px;right:14px;top:0;bottom:0}
+.vol-barre,.vol-plein{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:2px}
+.vol-barre{right:0;background:rgba(255,210,63,.22)}
+.vol-plein{background:#d9ad2c}
+.vol-rond{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#0b0810;border:2px solid #e6b833;box-shadow:0 1px 3px rgba(0,0,0,.6)}
+.vol.tient .vol-rond, .vol-piste:focus-visible .vol-rond{border-color:#ffd23f;transform:scale(1.15)}
+.point .livre-l.garde{font-style:normal;font-weight:700;color:#e8cf98}
 #fuite{position:absolute;right:14px;top:14px;min-width:108px}
 
 /* ---------- la bande du bas ---------- */
@@ -260,62 +343,87 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .b-heros em{position:absolute;left:10px;right:8px;bottom:6px;font-style:normal;font-size:14px;color:#cfc2aa}
 .b-heros.joue, .b-heros.sol{opacity:.5}
 .b-heros.joue .portrait, .b-heros.sol .portrait{opacity:.6}
+.b-heros .bouc-b{position:absolute;right:8px;top:8px;font-size:20px}
 .b-heros .ok{position:absolute;left:62px;top:62px;width:30px;height:30px;border-radius:50%;background:#2a2238;border:2px solid #9a8aa8;display:grid;place-items:center;font-weight:800;font-size:17px}
 .b-rats{display:flex;align-items:center;gap:16px;margin-top:22px;font-size:18px;color:#ffd0d0}
 .b-rats b{font-family:var(--f-titre);font-weight:400;font-size:36px;color:#ff9a8a;text-shadow:0 2px 0 var(--encre)}
 
 /* ---------- effets ---------- */
-#fx, #fx-haut{position:absolute;left:0;top:0;width:0;height:0;z-index:40;pointer-events:none}
-#fx-haut{z-index:80}
-.fx{position:absolute;left:0;top:0;will-change:transform}
+#fx-haut{position:absolute;left:0;top:0;width:0;height:0;z-index:80;pointer-events:none}
 .chiffre{position:absolute;font-weight:800;font-size:30px;color:#fff4e0;white-space:nowrap;text-shadow:0 3px 0 var(--encre),2px 0 0 var(--encre),-2px 0 0 var(--encre),0 -2px 0 var(--encre),0 0 10px rgba(0,0,0,.6);
-  transform:translate(-50%,-50%);animation:monte .95s ease-out forwards}
+  transform:translate(-50%,-50%);animation:monte 1.2s ease-out forwards;z-index:5}
 .chiffre.soin{color:#9cffb8}
 .chiffre.gros{font-size:42px;color:#ffb060}
-.chiffre.crit{font-size:52px;color:#ffe36a}
+.chiffre.crit{font-size:60px;color:#ffe36a;animation-duration:1.3s}
 .chiffre.petit{font-size:24px;color:#d8ccb4}
 .chiffre.bleu{color:#bff8ff}
-@keyframes monte{0%{transform:translate(-50%,-30%) scale(.5);opacity:0}18%{transform:translate(-50%,-70%) scale(1.15);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-190%) scale(1);opacity:0}}
-.bouge.secoue{animation:secoue .38s}
-@keyframes secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
-.mot{position:absolute;font-family:var(--f-titre);font-weight:400;font-size:44px;color:#fff1b8;white-space:nowrap;
-  text-shadow:0 4px 0 var(--encre),3px 0 0 var(--encre),-3px 0 0 var(--encre),0 -3px 0 var(--encre);animation:mot .8s ease-out forwards}
+.chiffre.feu{color:#ffb060;font-size:28px}
+@keyframes monte{0%{transform:translate(-50%,-30%) scale(.5);opacity:0}15%{transform:translate(-50%,-70%) scale(1.2);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-200%) scale(1);opacity:0}}
+.mot{position:absolute;font-family:var(--f-titre);font-weight:400;font-size:44px;color:#fff1b8;white-space:nowrap;z-index:4;
+  text-shadow:0 4px 0 var(--encre),3px 0 0 var(--encre),-3px 0 0 var(--encre),0 -3px 0 var(--encre);animation:mot .85s ease-out forwards}
 .mot.croc{font-size:30px;color:#fff;font-family:var(--f-texte);font-weight:800}
 @keyframes mot{0%{transform:translate(-50%,-50%) scale(.3) rotate(-10deg);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15) rotate(-6deg);opacity:1}75%{opacity:1}100%{transform:translate(-50%,-90%) scale(1) rotate(-6deg);opacity:0}}
-.eclat{position:absolute;border-radius:50%;transform:translate(-50%,-50%) scale(.2);opacity:1;animation:eclat .5s ease-out forwards}
-@keyframes eclat{0%{transform:translate(-50%,-50%) scale(.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
-.onde-son{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:5px solid #fff1b8;opacity:0;animation:onde-son .9s ease-out forwards}
-@keyframes onde-son{0%{transform:scale(.3);opacity:.9}100%{transform:scale(6);opacity:0}}
-.nuage{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(226,229,244,1),rgba(186,192,218,.9) 55%,rgba(170,176,204,0));animation:nuage 1.7s ease-out forwards}
-@keyframes nuage{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) scale(1);opacity:1}70%{opacity:.9}100%{transform:translate(-50%,-60%) scale(1.4);opacity:0}}
-.bulle-air{position:absolute;width:13px;height:13px;border-radius:50%;border:2.5px solid rgba(255,255,255,.9);background:rgba(255,255,255,.15);animation:bulle-air .45s ease-out forwards}
+.fx-texte{position:absolute;white-space:nowrap;padding:6px 14px;border-radius:14px;background:rgba(10,30,44,.92);border:2px solid #8ff3ff;color:#e8fdff;font-weight:800;font-size:20px;z-index:6;
+  box-shadow:0 0 16px rgba(143,243,255,.5),0 3px 0 rgba(0,0,0,.6)}
+.fx-texte small{font-size:15px;color:#bff8ff;font-weight:700}
+.eclat{position:absolute;border-radius:50%;pointer-events:none}
+.onde-fx{position:absolute;border-radius:50%;border:8px solid;opacity:0}
+.etincelle-fx{width:20px;height:5px;border-radius:3px}
+.goutte-fx{border-radius:50% 50% 50% 50%;border:1.5px solid rgba(36,24,46,.6)}
+.verre-fx{width:9px;height:12px;background:linear-gradient(135deg,#ffffff,#cfe8ff 60%,rgba(200,230,255,.4));clip-path:polygon(50% 0,100% 70%,20% 100%);box-shadow:0 0 6px #fff}
+.anneau-gouttes{position:absolute;width:150px;height:150px;border-radius:50%;border:6px solid}
+.touffe-fx{border-radius:50% 60% 40% 55%;background:radial-gradient(circle at 35% 35%,#5a4a5a,#241a2a 70%);border:1.5px solid #120a16}
+.volute{position:absolute;left:0;top:0;will-change:transform,opacity;pointer-events:none}
+.volute.noire{z-index:2}
+.brume-salle{position:absolute;left:0;top:0;width:960px;height:372px;background:linear-gradient(90deg,rgba(150,162,198,.15),rgba(160,172,206,.55) 55%,rgba(150,162,198,.65));pointer-events:none}
+.flaque{position:absolute;height:24px;margin-top:-12px;border-radius:50%;transform-origin:50% 50%}
+.flaque-huile{background:radial-gradient(ellipse at 45% 40%,rgba(255,236,150,.95),rgba(232,172,40,.92) 40%,rgba(150,96,10,.85) 70%,rgba(120,70,0,0) 100%);box-shadow:0 0 18px rgba(255,200,60,.35)}
+.flaque-huile .reflet{position:absolute;top:32%;height:4px;border-radius:3px;background:rgba(255,255,240,.85)}
+.flaque-colle{height:30px;margin-top:-15px;background:radial-gradient(ellipse at 45% 38%,#ffffff,#f6efd8 40%,#e2d6b2 66%,rgba(210,196,160,.85) 82%,rgba(200,188,160,0) 100%);border-radius:46% 54% 50% 50%;
+  box-shadow:0 0 0 2px rgba(120,100,60,.35),0 0 14px rgba(255,250,230,.45)}
+.flaque-colle .fil{position:absolute;bottom:40%;width:6px;height:40px;margin-left:-3px;border-radius:3px;transform-origin:50% 100%;
+  background:linear-gradient(rgba(255,252,240,.15),rgba(255,252,240,.95) 60%,#f2ead2);box-shadow:0 0 3px rgba(120,100,60,.5);animation:fil 1.1s ease-in-out infinite}
+@keyframes fil{0%,100%{transform:scaleY(.55) scaleX(1.3)}50%{transform:scaleY(1.2) scaleX(.8)}}
+.flaque-colle b{position:absolute;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#e8dcc0);border:1.5px solid rgba(140,120,80,.7);animation:bulle-colle 1.6s ease-in-out infinite}
+@keyframes bulle-colle{0%,100%{transform:scale(.6)}50%{transform:scale(1.15)}}
+.bulle-air{position:absolute;width:13px;height:13px;border-radius:50%;border:2.5px solid rgba(255,255,255,.9);background:rgba(255,255,255,.15);animation:bulle-air .5s ease-out forwards}
 @keyframes bulle-air{0%{transform:translate(0,0) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(var(--bx,0),-42px) scale(1.1);opacity:0}}
-.fiole-vol{width:52px;height:72px;margin:-36px 0 0 -26px}
-.fiole-vol img{width:100%;height:100%}
-.fiole-vol.prepare img{animation:prepare .42s ease-out}
+.fiole-vol{position:absolute;left:0;top:0;width:52px;height:68px;margin:-34px 0 0 -26px;will-change:transform}
+.fiole-forme{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.fiole-vol.prepare .fiole-forme{animation:prepare .42s ease-out}
 @keyframes prepare{0%{transform:scale(.2) rotate(-20deg);opacity:0}40%{transform:scale(1.2) rotate(8deg);opacity:1}70%{transform:scale(.95) rotate(-4deg)}100%{transform:none}}
-.lueur-prep{position:absolute;left:-34px;top:-24px;width:120px;height:120px;border-radius:50%;opacity:.8}
-.orbe{width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:radial-gradient(closest-side,#fff,#bff8ff 40%,rgba(63,208,255,.6) 70%,rgba(63,208,255,0))}
-.fleche{width:62px;height:14px;margin:-7px 0 0 -54px}
-.fleche svg{display:block;width:100%;height:100%;overflow:visible}
+.lueur-prep{position:absolute;left:-34px;top:-26px;width:120px;height:120px;border-radius:50%;opacity:.85;animation:lueur .3s ease-in-out infinite alternate}
+.orbe{position:absolute;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(closest-side,#fff,#bff8ff 40%,rgba(63,208,255,.6) 70%,rgba(63,208,255,0));box-shadow:0 0 24px #8ff3ff}
+.fleche-vol{position:absolute;left:0;top:0;width:62px;height:14px;margin:-7px 0 0 -54px}
+.fleche-vol svg{display:block;width:100%;height:100%;overflow:visible}
+.fleche-vol.trempee{filter:drop-shadow(0 0 6px #ffb030)}
+.feuille-vol{position:absolute;left:0;top:0;font-size:24px;width:30px;height:30px;margin:-15px 0 0 -15px}
 .entaille{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border-top:6px solid #fff;border-right:3px solid rgba(255,255,255,.6);animation:entaille .3s ease-out forwards}
 @keyframes entaille{0%{transform:rotate(-80deg) scale(.6);opacity:1}100%{transform:rotate(40deg) scale(1.1);opacity:0}}
 .etincelle{position:absolute;font-size:22px;animation:etincelle .9s ease-out forwards}
 @keyframes etincelle{0%{transform:translate(-50%,0) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
-.tache{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:radial-gradient(closest-side,rgba(18,8,26,.98),rgba(40,20,56,.85) 50%,rgba(40,20,56,0));
-  transition:transform .65s cubic-bezier(.15,.7,.3,1),opacity .65s ease-in}
-.page-vol{font-size:34px;width:40px;height:40px;margin:-20px 0 0 -20px;text-align:center;line-height:40px}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:60}
-#flash.on{opacity:.9}
-#flash.off{opacity:0;transition:opacity .35s ease-out}
-#critique{position:absolute;left:0;width:660px;top:118px;text-align:center;z-index:70;pointer-events:none;opacity:0}
-#critique b{display:inline-block;font-family:var(--f-titre);font-weight:400;font-size:84px;line-height:1;color:#ffd23f;letter-spacing:.02em;
-  text-shadow:0 5px 0 #7a4a10,4px 4px 0 var(--encre),-3px -3px 0 var(--encre),3px -3px 0 var(--encre),-3px 4px 0 var(--encre);position:relative}
-#critique::before{content:'';position:absolute;left:50%;top:50%;width:560px;height:200px;margin:-100px 0 0 -280px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
-#critique.on{opacity:1;animation:crit-arrive .9s ease-out forwards}
-#critique.on b{animation:crit-tremble .07s linear infinite}
-@keyframes crit-arrive{0%{transform:scale(2.4);opacity:0}14%{transform:scale(.92);opacity:1}24%{transform:scale(1.04)}32%{transform:scale(1)}80%{opacity:1}100%{transform:scale(1.05);opacity:0}}
-@keyframes crit-tremble{0%{transform:translate(0,0) rotate(-2deg)}25%{transform:translate(2px,-2px) rotate(1deg)}50%{transform:translate(-2px,1px) rotate(-1deg)}75%{transform:translate(1px,2px) rotate(2deg)}}
+.page-vol{position:absolute;left:0;top:0;font-size:34px;width:40px;height:40px;margin:-20px 0 0 -20px;text-align:center;line-height:40px}
+
+/* ---------- LE CRITIQUE (autour du rat seulement : rien de plein écran) ---------- */
+.crit-etoile.cuit, .crit-halo.cuit{background:none;border-radius:0;clip-path:none;max-width:none}
+/* (mémoire, iPhone) le halo sur son propre calque : la carte graphique étire la petite image, sans repeindre un grand calque */
+.crit-halo.cuit{will-change:transform}
+.crit-texte{position:absolute;white-space:nowrap;z-index:5}
+.crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
+.crit-texte.differe .crit-or{animation-delay:calc(var(--crit-delai) + .18s),0s}
+.crit-texte.differe .crit-etoile{animation-delay:calc(var(--crit-delai) + .2s)}
+.crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
+.crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
+/* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
+.crit-ombre{position:relative;color:#24182e;-webkit-text-stroke:9px #24182e;text-shadow:0 7px 0 #7a4a10,0 9px 0 #24182e}
+.crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:260% 100%;background-position:100% 0;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:crit-eclat .9s .18s ease-out forwards}
+.crit-halo{position:absolute;left:50%;top:50%;width:540px;height:200px;margin:-100px 0 0 -270px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
+@keyframes crit-eclat{0%{background-position:100% 0}100%{background-position:0 0}}
+@keyframes crit-tremble{0%{transform:translate(0,0) rotate(-1deg)}25%{transform:translate(2px,-2px) rotate(.5deg)}50%{transform:translate(-2px,1px) rotate(-.5deg)}75%{transform:translate(1px,2px) rotate(1deg)}}
+.crit-etoile{position:absolute;right:-8px;top:-14px;width:60px;height:60px;opacity:0;animation:etoile .6s .2s ease-out forwards;
+  background:radial-gradient(closest-side,#fff,rgba(255,255,255,0) 70%);clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%)}
+@keyframes etoile{0%{opacity:0;transform:scale(.2) rotate(0)}40%{opacity:1;transform:scale(1.3) rotate(45deg)}100%{opacity:0;transform:scale(.6) rotate(90deg)}}
 
 /* ---------- les fenêtres (Grand Livre, fuite) ---------- */
 #fenetre{position:absolute;inset:0;z-index:90;background:rgba(5,3,10,.72);display:flex;align-items:center;justify-content:center}
@@ -353,7 +461,9 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .point .sac-l{display:flex;gap:10px}
 .point .sac-l div{flex:1;text-align:center;font-size:14px;font-weight:700;line-height:1.15}
 .point .sac-l img{display:block;margin:0 auto 2px;width:40px;height:55px}
-.point .rats-l{display:flex;align-items:center;gap:10px;font-size:15px;color:#e8dcc0;margin-top:10px}
+.point .rats-l{display:flex;align-items:center;gap:10px;font-size:15px;color:#e8dcc0}
+.point .case.retour{grid-column:1/3;padding:8px 16px}
+.point .case.retour .rats-l > span:not(.rat-mini){flex:1}
 .point .bulle{grid-column:1/3}
 .point .bas{grid-column:1/3;display:flex;justify-content:center}
 .rat-mini{width:60px;height:30px;background-size:100% 100%;position:relative}
@@ -363,3 +473,6 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 @media (prefers-reduced-motion: reduce){
   .guide, .perso.dispo > .flotte{animation:none}
 }
+
+/* refus en deux mots au-dessus du personnage touché (remplace le bandeau du conteur) */
+.mot.refus{font-family:var(--f-texte);font-weight:800;font-size:26px;color:#ffd23f;transform:translateX(-50%);text-shadow:0 2px 0 #000,0 0 6px #000}

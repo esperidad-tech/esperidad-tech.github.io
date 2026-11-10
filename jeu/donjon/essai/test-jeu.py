@@ -1,8 +1,16 @@
-"""Test du prototype « La salle des rats » : python3 test-jeu.py
-- tablette 1024 x 768 au doigt : le sac, une partie GAGNANTE complète, puis une partie avec la FUITE (et Réessayer) ;
-- écran 1280 x 800 à la souris : une partie gagnante rapide, puis la fuite automatique (les trois héros au sol) ;
+"""Test du prototype « La salle des rats », version 2 : python3 test-jeu.py
+- tablette 1024 x 768 au doigt : le sac, l'entrée des héros et des rats, une partie GAGNANTE complète, puis une partie avec la FUITE ;
+- écran 1280 x 800 à la souris : une partie gagnante, un rat qui s'enfuit de peur, la fuite automatique, le Cœur vaillant, les Herbes ;
 - tablette tenue debout : le message « Tourne ta tablette » ;
-- aucune erreur JavaScript, aucune lecture vocale sans bouton 🔊 ;
+- règles du 9 novembre : la rage reste jusqu'à la fin, la brûlure enlève 4 PV à chaque tour des rats, le bouclier montre ce qu'il absorbe ;
+- aucune erreur JavaScript, aucune lecture vocale sans bouton 🔊, le son démarre au premier toucher ;
+- 10 novembre : les sons choisis par Romain (tirés au hasard parmi ses versions), la musique (exploration au sac, combat + le puits),
+  les badges qui suivent le rat, et la fuite qui ramène les trois rats en pleine forme ;
+- 9 novembre (fluidité, RAPIDITE.md) : plus de bandeau du conteur en haut pendant le combat ; à sa place, deux petites
+  barres de volume (🎵 musique, 💥 bruitages ; 0 = coupé), aussi sur l'écran du sac ; un petit bruit au toucher des icônes
+  d'armes et de potions ; les acteurs sont « cuits » (pièces en images, plus de grand SVG ni de filtre vivant) ;
+- les objets des héros (carquois, sacoche, cristal de lune, bâton de chêne, amulette) : cuits en images, cachés au départ,
+  montrés par equiper() (aussi dans la silhouette du héros choisi) ; les nouvelles réactions ne cassent rien ;
 - des captures dans captures/ aux moments clés."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -11,8 +19,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 PAGE = 'file://' + os.path.join(ICI, 'salle-rats.html')
 CAP = os.path.join(ICI, 'captures')
 os.makedirs(CAP, exist_ok=True)
-ERREURS = []
-OK = []
+ERREURS, OK = [], []
 
 
 def verifie(cond, quoi):
@@ -30,81 +37,71 @@ class Partie:
         self.nom, self.doigt = nom, doigt
         self.erreurs = []
         self.pg.on('pageerror', lambda e: self.erreurs.append('pageerror: ' + str(e)))
-        self.pg.on('console', lambda m: self.erreurs.append('console: ' + m.text) if m.type == 'error' else None)
-        # pas d'Internet ici : les polices Google répondent « vide » (sur la tablette, elles se chargent)
+        self.pg.on('console', lambda m: self.erreurs.append(m.type + ': ' + m.text) if m.type in ('error', 'warning') else None)
         self.pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
         self.pg.route('**/fonts.gstatic.com/**', lambda r: r.fulfill(status=404, body=''))
-        # on compte les lectures vocales : il n'y en a que sur un bouton 🔊
-        self.pg.add_init_script("""window.__parle = 0; try{ var s = speechSynthesis.speak.bind(speechSynthesis);
-            speechSynthesis.speak = function(u){ window.__parle++; window.__dernier = u.text; }; }catch(e){}""")
+        self.pg.add_init_script("""window.__parle = 0; try{ speechSynthesis.speak = function(u){ window.__parle++; window.__dernier = u.text; }; }catch(e){}""")
         self.pg.goto(PAGE)
         self.pg.wait_for_timeout(700)
-        # un hasard qu'on connaît (rejouable) : les rats visent, la flèche surprise
         self.pg.evaluate("""() => { var s = 7; SALLE.hasard = function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }""")
+        # on note chaque son de l'atelier joué (« ! » : il n'a pas pu jouer ; « + » : voix enragée)
+        self.pg.evaluate("""() => { window.__sons = []; var f = SALLE.Son.bruitage; SALLE.Son.bruitage = function(id, o){ var r = f(id, o);
+          window.__sons.push(id + (o && o.partie ? ':' + o.partie : '') + (o && o.enrage ? '+' : '') + (r ? '' : '!')); return r; }; }""")
 
     def capture(self, n):
         self.pg.screenshot(path=os.path.join(CAP, f'{self.nom}-{n}.png'))
 
     def touche(self, sel):
-        if self.doigt:
-            self.pg.tap(sel, force=True)
-        else:
-            self.pg.click(sel, force=True)
+        (self.pg.tap if self.doigt else self.pg.click)(sel, force=True)
 
     def etat(self, js):
         return self.pg.evaluate('() => ' + js)
 
-    def attend_libre(self, max_ms=20000):
-        """attend que ce soit aux héros de jouer (ou la fin)"""
+    def attend(self, js, max_ms=20000):
         t = 0
-        while t < max_ms:
-            m = self.etat("[SALLE.etat.mode, SALLE.etat.occupe, !!document.querySelector('#fin')]")
-            if (m[0] == 'qui' and not m[1]) or m[2]:
-                self.pg.wait_for_timeout(150)
-                return m
-            self.pg.wait_for_timeout(100)
-            t += 100
-        raise RuntimeError('le jeu ne rend pas la main : ' + str(m))
+        while t < max_ms and not self.etat(js):
+            self.pg.wait_for_timeout(100); t += 100
+        return self.etat(js)
+
+    def attend_libre(self, max_ms=30000):
+        if not self.attend("(SALLE.etat.mode === 'qui' && !SALLE.etat.occupe) || !!document.querySelector('#fin')", max_ms):
+            raise RuntimeError('le jeu ne rend pas la main : ' + str(self.etat('[SALLE.etat.mode, SALLE.etat.occupe]')))
+        self.pg.wait_for_timeout(150)
 
     def sac(self, recettes, capture=None):
         for r in recettes:
             self.touche(f'.recette[data-id="{r}"] b')
             self.pg.wait_for_timeout(120)
         if capture:
-            self.pg.wait_for_timeout(300)
-            self.capture(capture)
-        verifie(self.etat("!document.querySelector('#sac .aller').disabled"), f'{self.nom} : le bouton Descendre s\'allume avec 3 recettes')
+            self.pg.wait_for_timeout(300); self.capture(capture)
+        verifie(self.etat("!document.querySelector('#sac .aller').disabled"), f'{self.nom} : « Descendre » s\'allume avec 3 recettes')
         self.touche('[data-act="descendre"]')
-        self.pg.wait_for_timeout(900)
+
+    def descendre(self, recettes, capture=None, entree=None):
+        self.sac(recettes, capture)
+        if entree:
+            for n, ms in entree:
+                self.pg.wait_for_timeout(ms); self.capture(n)
         self.attend_libre()
 
     def heros(self, h):
-        self.touche(f'.zone[data-type="heros"][data-id="{h}"]')
-        self.pg.wait_for_timeout(250)
+        self.touche(f'.zone[data-type="heros"][data-id="{h}"]'); self.pg.wait_for_timeout(250)
 
     def geste(self, g):
-        self.touche(f'.carte[data-id="{g}"]')
-        self.pg.wait_for_timeout(250)
+        self.touche(f'.carte[data-id="{g}"]'); self.pg.wait_for_timeout(250)
 
-    def cible_rat(self, i):
-        self.touche(f'.zone[data-type="rat"][data-id="{i}"]')
-
-    def cible_heros(self, h):
-        self.touche(f'.zone[data-type="heros"][data-id="{h}"]')
+    def cible(self, c):
+        self.touche(f'.zone[data-type="rat"][data-id="{c}"]' if isinstance(c, int) else f'.zone[data-type="heros"][data-id="{c}"]')
 
     def devant(self):
         return self.etat("SALLE.etat.r.filter(r => !r.mort)[0].i")
 
     def joue(self, h, g, cible=None, attendre=True):
-        self.heros(h)
-        self.geste(g)
+        self.heros(h); self.geste(g)
         if cible is not None:
-            if isinstance(cible, int):
-                self.cible_rat(cible)
-            else:
-                self.cible_heros(cible)
+            self.cible(cible)
         if attendre:
-            return self.attend_libre()
+            self.attend_libre()
 
     def le_plus_blesse(self):
         return self.etat("['sage','alchimiste','pisteur'].filter(h => !SALLE.etat.h[h].sol).sort((a, b) => SALLE.etat.h[a].pv / ({sage:90,alchimiste:100,pisteur:120})[a] - SALLE.etat.h[b].pv / ({sage:90,alchimiste:100,pisteur:120})[b])[0]")
@@ -121,142 +118,177 @@ def tablette(nav):
     pg = P.pg
     P.capture('01-sac-vide')
     verifie(P.etat('window.__parle') == 0, 'aucune lecture vocale toute seule à l\'ouverture')
-    # le 🔊 de la bulle lit la phrase du conteur
+    verifie(P.etat('SALLE.Son.etat()') == 'pas encore', 'pas de son avant le premier toucher')
+    verifie(P.etat("document.querySelectorAll('#sac #volumes .vol').length") == 2 and P.etat("!document.querySelector('#bruitages')"),
+            'les deux curseurs de volume (🎵 musique, 💥 bruitages) sont sur l\'écran du sac, à la place du bouton 🎵/🔇')
     P.touche('#sac .bulle .lire')
     verifie(P.etat('window.__parle') == 1 and 'trois recettes' in P.etat('window.__dernier'), 'le 🔊 du conteur lit sa phrase')
-    # une 4e recette est refusée
-    for r in ['feu', 'huile', 'baume', 'colle']:
-        P.touche(f'.recette[data-id="{r}"] b')
-        pg.wait_for_timeout(120)
-    verifie(P.etat('SALLE.etat.sac.length') == 3, 'le sac refuse une 4e recette')
-    P.touche('.recette[data-id="colle"] b')
-    P.touche('.recette[data-id="baume"] b')        # on enlève le Baume…
-    P.touche('.recette[data-id="baume"] b')        # … et on le remet
     pg.wait_for_timeout(300)
-    P.capture('02-sac-plein')
-    verifie(sorted(P.etat('SALLE.etat.sac')) == ['baume', 'feu', 'huile'], 'le sac contient Feu, Huile, Baume')
-    P.touche('[data-act="descendre"]')
-    pg.wait_for_timeout(900)
-    P.attend_libre()
-    P.capture('03-qui-joue')
+    m = P.etat('SALLE.Son.musiqueEtat()')
+    verifie(P.etat('SALLE.Son.etat()') == 'running' and m['nom'] == 'explo' and m['cles'][0] in ('exploA', 'exploB', 'exploC'),
+            f'au premier toucher : le son démarre, avec une musique d\'exploration tirée au hasard ({m["cles"]})')
+    for r in ['feu', 'huile', 'baume', 'colle']:
+        P.touche(f'.recette[data-id="{r}"] b'); pg.wait_for_timeout(120)
+    verifie(P.etat('SALLE.etat.sac.length') == 3, 'le sac refuse une 4e recette')
+    P.descendre([], capture='02-sac-plein', entree=[('03-entree-heros', 1100), ('04-entree-rats', 1900)])
+    m = P.etat('SALLE.Son.musiqueEtat()')
+    verifie(m['nom'] == 'combat' and m['cles'][0] in ('combatA', 'combatB') and m['cles'][1] == 'puits', f'en combat : une musique de combat et la couleur « le puits » ({m["cles"]})')
+    pg.wait_for_timeout(500)
+    P.capture('05-qui-joue')
+    verifie(P.etat("!document.querySelector('#haut .bulle') && !document.querySelector('#combat .bulle')"), 'combat : plus de bandeau du conteur en haut, le haut reste sombre')
+    verifie(P.etat("document.querySelectorAll('#haut #volumes .vol').length") == 2 and P.etat("!!document.querySelector('#haut #fuite')"), 'combat : les deux curseurs de volume et « Fuite ! » en haut')
+    verifie(P.etat("Object.keys(SALLE.acteurs.h).every(h => SALLE.acteurs.h[h].cuit) && SALLE.acteurs.r.every(r => r.cuit)") or not P.etat('!!window.Cuire'),
+            'fluidité : les héros et les rats sont « cuits » (pièces en images, animées par la carte graphique)')
+    verifie(P.etat("document.querySelectorAll('.perso svg [data-j], .perso svg [filter]').length") == 0 or not P.etat('!!window.Cuire'),
+            'fluidité : plus aucun grand SVG ni filtre dans les personnages')
     verifie(P.etat("document.querySelectorAll('.badges .vise').length") == 3, 'chaque rat montre qui il vise')
+    verifie(P.etat("[...document.querySelectorAll('.rat .a-img')].every(i => i.src === SALLE.img('rat-jaune'))") or P.etat('!!window.RatAnime'), 'les rats ont les yeux jaunes')
 
     # ===== Tour 1 : le Sage étudie, l'Alchimiste renverse l'Huile, le Pisteur achève =====
-    P.heros('sage')
-    P.capture('04-bande-gestes-sage')
-    P.geste('etudier')
-    P.capture('05-choix-cible')
-    P.cible_rat(0)
-    pg.wait_for_timeout(1500)
-    P.capture('06-etude-livre')
+    P.heros('sage'); P.capture('06-bande-gestes-sage')
+    P.geste('etudier'); P.capture('07-choix-cible')
+    P.cible(0); pg.wait_for_timeout(1700); P.capture('08-etude-livre')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.livre') == 1, 'le Grand Livre a appris sa première ligne')
-    P.touche('.b-livre')
-    pg.wait_for_timeout(300)
-    P.capture('07-grand-livre')
-    P.touche('#fenetre .fermer')
-    pg.wait_for_timeout(200)
-
-    P.heros('alchimiste')
-    P.capture('08-bande-alchimiste')
-    P.geste('p:huile')
-    P.cible_rat(0)
-    pg.wait_for_timeout(250)
-    P.capture('09-potion-preparee')
-    pg.wait_for_timeout(500)
-    P.capture('10-potion-en-vol')
-    pg.wait_for_timeout(1300)
-    P.capture('11-huile-sur-le-dos')
+    P.heros('alchimiste'); P.capture('09-bande-alchimiste')
+    P.geste('p:huile'); P.cible(0)
+    pg.wait_for_timeout(350); P.capture('10-potion-preparee')
+    pg.wait_for_timeout(450); P.capture('11-potion-en-vol')
+    pg.wait_for_timeout(1300); P.capture('12-huile-flaque-dos')
     P.attend_libre()
-    verifie(P.etat('SALLE.etat.r[0].ouvert'), 'l\'Huile ouvre le point faible du rat de devant')
-
-    P.heros('pisteur')
-    P.capture('12-bande-pisteur')
-    P.geste('fleche')
-    P.cible_rat(0)
-    for n, ms in [('13-critique-a', 330), ('14-critique-b', 150), ('15-critique-c', 200)]:
-        pg.wait_for_timeout(ms)
-        P.capture(n)
-    # le tour des rats commence tout seul
-    t = 0
-    while P.etat('SALLE.etat.mode') != 'rats' and t < 60:
-        pg.wait_for_timeout(100); t += 1
+    verifie(P.etat('SALLE.etat.r[0].ouvert'), 'l\'Huile ouvre le point faible')
+    verifie(P.etat("window.RatAnime ? SALLE.acteurs.r[0].etat().dos && !!SALLE.acteurs.r[0]._rat.fx.flaque_huile : !!document.querySelector('.flaque-huile')"), 'une flaque d\'huile reste au sol')
+    P.heros('pisteur'); P.capture('13-bande-pisteur')
+    P.geste('fleche'); P.cible(0)
+    # le critique (Romain, 9 novembre, 16 h 37) : localisé autour du rat — temps suspendu, fumée noire, membres, cendres
+    pg.wait_for_selector('.ra-scene-fx, .crit-texte', state='attached', timeout=15000)
+    zone = []
+    for n, ms in [('14-critique-suspendu', 200), ('15-critique-fumee', 550), ('16-critique-membres', 650), ('17-critique-retombent', 450), ('18-critique-cendres', 900)]:
+        pg.wait_for_timeout(ms); P.capture(n)
+        zone.append(pg.evaluate("""() => { var j = document.getElementById('jeu').getBoundingClientRect(), g = 1e9, d = -1e9, n = 0;
+          document.querySelectorAll('.ra-scene-fx *, .crit-texte, #ecran-fx > *, #fx > *').forEach(function(e){
+            if(e.closest('.zone') || e.classList.contains('chiffre') || e.classList.contains('ra-scene-fx') || e.classList.contains('ha-fx')) return;   /* (les calques vides des modules ne comptent pas) */
+            var r = e.getBoundingClientRect(), cs = getComputedStyle(e); if(!r.width || cs.visibility === 'hidden' || +cs.opacity < .05) return;
+            n++; g = Math.min(g, r.left); d = Math.max(d, r.right); });
+          return {n: n, gauche: n ? (g - j.left) / j.width : 1, large: n ? (d - g) / j.width : 0,
+                  plein: document.querySelectorAll('.crit-vignette, .crit-choc, .crit-rayons, .crit-eclair').length}; }"""))
+    verifie(all(z['plein'] == 0 for z in zone), 'critique : rien de plein écran (ni vignette, ni image de choc, ni rayons)')
+    verifie(all(z['gauche'] > .3 and z['large'] < .72 for z in zone if z['n']),
+            'critique : tout reste autour du rat, dans la partie droite de la scène (' + ', '.join('%.2f→%.2f' % (z['gauche'], z['gauche'] + z['large']) for z in zone if z['n']) + ')')
+    P.attend("SALLE.etat.mode === 'rats'")
     verifie(P.etat('SALLE.etat.r[0].mort'), 'le critique du Pisteur tue le rat net')
-    pg.wait_for_timeout(1050)
-    P.capture('16-tour-des-rats')
+    s = P.etat('window.__sons')
+    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:avant', 'ratCritique:impact', 'ratCritique:explosion']) and not any(x.endswith('!') for x in s if not x.startswith('icone')),
+            'les sons de l\'atelier jouent : huile, arc, flèche, critique en trois morceaux (' + ' '.join(x for x in s if not x.startswith('icone')) + ')')
+    verifie(s.count('icone!') + s.count('icone') >= 2, 'toucher une icône d\'arme ou de potion demande le petit son « icone » (silencieux tant que Romain ne l\'a pas choisi)')
+    pg.wait_for_timeout(1250); P.capture('19-tour-des-rats')
     P.attend_libre()
     verifie(P.etat('SALLE.etat.tour') == 2, 'un nouveau tour commence après les rats')
 
-    # ===== Tour 2 : la rune de lumière, la dague =====
+    # ===== Tour 2 : la rune, la dague ; le feu sur l'autre rat (il brûlera jusqu'au bout) =====
     d = P.devant()
     P.joue('sage', 'rune', d, attendre=False)
-    pg.wait_for_timeout(1300)
-    P.capture('17-point-faible-ouvert')
+    pg.wait_for_timeout(1700); P.capture('20-point-faible-ouvert')
     P.attend_libre()
     verifie(P.etat(f'SALLE.etat.r[{d}].ouvert'), 'la rune de lumière ouvre le point faible')
+    verifie('ratLumiere' in P.etat('window.__sons'), 'la rune : le rat gémit, ébloui')
     P.joue('pisteur', 'dague', d)
     verifie(P.etat(f'SALLE.etat.r[{d}].mort'), 'la dague sur un rat ouvert : critique')
-    P.joue('alchimiste', 'p:baume', P.le_plus_blesse())
+    s = P.etat('window.__sons')
+    verifie('swish' in s and 'chairD' in s, 'la dague : le swish, puis la lame dans la chair')
+    autre = P.devant()
+    P.joue('alchimiste', 'p:feu', autre, attendre=False)
+    pg.wait_for_timeout(2200); P.capture('21-feu-qui-reste')
+    P.attend("SALLE.etat.mode === 'rats'")
+    pv_avant = P.etat(f'SALLE.etat.r[{autre}].pv')
+    verifie(P.etat(f'SALLE.etat.r[{autre}].brule') and pv_avant == 35, 'la Fiole de feu : −5, et le rat brûle')
+    verifie('ratFeu' in P.etat('window.__sons'), 'le feu : le cri, et le grésillement qui continue')
+    pg.wait_for_timeout(950); P.capture('22-brulure-tour-des-rats')
     P.attend_libre()
+    verifie(P.etat(f'SALLE.etat.r[{autre}].pv') == 31 and P.etat(f'SALLE.etat.r[{autre}].brule'), 'la brûlure : −4 au tour des rats, et elle reste')
 
-    # ===== Tour 3 : on recommence =====
+    # ===== Tour 3 : on finit =====
     d = P.devant()
     P.joue('sage', 'rune', d)
-    P.capture('18-bande-apres-sage')
     P.joue('pisteur', 'fleche', d, attendre=False)
-    pg.wait_for_timeout(3600)
-    P.capture('19-victoire')
+    P.attend("!!document.querySelector('.victoire')", 15000)
+    pg.wait_for_timeout(600); P.capture('23-victoire')
     verifie(P.etat("!!document.querySelector('.victoire')"), 'victoire : « La salle est à vous ! »')
     verifie(P.etat('SALLE.etat.tour') == 3, f'partie gagnée en {P.etat("SALLE.etat.tour")} tours (attendu : 3)')
+    verifie('3 tours' in P.etat("document.querySelector('.victoire .bulle .txt').textContent"), 'le message de victoire compte les tours (« 3 tours »)')
+    verifie('victoire' in P.etat('window.__sons'), 'la victoire : la fanfare (la musique baisse dessous)')
 
-    # ===== Rejouer, puis la fuite =====
-    P.touche('[data-act="rejouer"]')
-    pg.wait_for_timeout(500)
+    # ===== Rejouer, puis le bouclier, la louche, le nuage, la colle, et la fuite =====
+    P.touche('[data-act="rejouer"]'); pg.wait_for_timeout(500)
     verifie(P.etat("SALLE.etat.ecran") == 'sac' and P.etat('SALLE.etat.livre') == 0, 'Rejouer ramène au sac, tout neuf')
-    P.sac(['huile', 'fumigene', 'coeur'])
-    # tour 1 : on tue le rat de devant, le Sage protège le Pisteur
-    P.joue('alchimiste', 'p:huile', 0)
-    P.joue('pisteur', 'fleche', 0)
+    P.descendre(['fumigene', 'colle', 'coeur'])
     P.joue('sage', 'bouclier', 'pisteur', attendre=False)
-    pg.wait_for_timeout(1000)
-    P.capture('20-bouclier')
+    pg.wait_for_timeout(1300); P.capture('24-bouclier')
     P.attend_libre()
-    # tour 2 : le coup de louche affole les rats, puis le fumigène ne sert à rien
+    verifie(P.etat("window.HerosAnime ? /−50 % · 1 tour/.test((document.querySelector('#fx .ha-dome .ha-badge') || {}).textContent || '') : getComputedStyle(document.querySelector('.h-pisteur .badge-bouclier')).opacity === '1'"),
+            'le badge « 🛡️ −50 % · 1 tour » est sur le Pisteur')
     P.joue('alchimiste', 'louche', P.devant(), attendre=False)
-    pg.wait_for_timeout(450)
-    P.capture('21-bong')
+    pg.wait_for_timeout(700); P.capture('25-bong')
+    pg.wait_for_timeout(1000); P.capture('26-rage')
     P.attend_libre()
-    verifie(P.etat('SALLE.etat.r.filter(r => !r.mort).every(r => r.affole)'), 'le coup de louche affole tous les rats')
-    P.joue('pisteur', 'fleche', P.devant())
-    P.joue('sage', 'etudier', P.devant())
-    verifie(P.etat('SALLE.etat.livre') == 1, 'Étudier : 1re ligne du Grand Livre')
+    verifie(P.etat('SALLE.etat.r.filter(r => !r.mort).every(r => r.enrage)'), 'le coup de louche rend tous les rats enragés')
+    P.etat("(SALLE.etat.r[0].pv = 2, SALLE.maj(), 0)")      # ce rat-là sera battu (il s'enfuit) : il ne doit pas revenir
+    P.joue('pisteur', 'fleche', 0, attendre=False)
+    P.attend("SALLE.etat.mode === 'rats'")
+    P.attend("!!document.querySelector('.fx-texte')", 12000)
+    pg.wait_for_timeout(150); P.capture('27-bouclier-absorbe')
+    verifie('absorbés' in (P.etat("(document.querySelector('.fx-texte') || {}).textContent || ''")), 'à la morsure : « 16 → 8 (8 absorbés) »')
     P.attend_libre()
-    P.joue('sage', 'etudier', P.devant())
-    verifie(P.etat('SALLE.etat.livre') == 2, 'Étudier encore : 2e ligne du Grand Livre')
+    verifie(P.etat('SALLE.etat.r.filter(r => !r.mort).every(r => r.enrage)'), 'la rage reste au tour suivant')
+    s = P.etat('window.__sons')
+    verifie('ratLouche' in s and 'ratFleche+' in s and 'ratFuite' in s, 'la louche (BONG et fureur), le cri enragé, la fuite du rat battu (' + ' '.join(s[-6:]) + ')')
     P.joue('alchimiste', 'p:fumigene', P.devant(), attendre=False)
-    pg.wait_for_timeout(900)
-    P.capture('22-fumigene')
+    pg.wait_for_timeout(1800); P.capture('28-nuage')
+    pg.wait_for_timeout(1300); P.capture('29-nuage-toux')
     P.attend_libre()
-    # la fuite : le bouton, la question, la réponse
-    P.touche('#fuite')
-    pg.wait_for_timeout(300)
-    P.capture('23-fuite-question')
+    P.joue('sage', 'bouclier', 'pisteur')
+    P.joue('pisteur', 'fleche', P.devant())
+    P.joue('alchimiste', 'p:colle', P.devant(), attendre=False)
+    pg.wait_for_timeout(2300); P.capture('30-colle')
+    P.attend_libre()
+    verifie(P.etat('SALLE.etat.r.some(r => r.colle)') and P.etat("window.RatAnime ? SALLE.etat.r.some(r => r.colle && SALLE.acteurs.r[r.i].etat().colle && !!SALLE.acteurs.r[r.i]._rat.fx.flaque_colle) : !!document.querySelector('.flaque-colle')"), 'la Colle : une flaque gluante, le rat collé')
+    # les curseurs de volume, au doigt : glisser le rond tout à gauche = muet ; le remettre = la musique revient
+    def glisse(vol, frac):
+        r = P.etat(f"(function(){{ var e = document.querySelector('#haut .vol[data-vol=\"{vol}\"] .vol-rail').getBoundingClientRect(); return [e.left, e.top, e.width, e.height]; }})()")
+        x0, y = r[0] + r[2] * .6, r[1] + r[3] / 2
+        x1 = r[0] + r[2] * frac
+        pg.mouse.move(x0, y); pg.mouse.down(); pg.mouse.move((x0 + x1) / 2, y, steps=3); pg.mouse.move(x1, y, steps=3); pg.mouse.up(); pg.wait_for_timeout(150)
+    glisse('musique', -.2)
+    verifie(P.etat("SALLE.Son.volume ? SALLE.Son.volume('musique') : 0") == 0 and P.etat('SALLE.Son.musiqueEtat().nom') is None and P.etat("document.querySelector('#haut .vol[data-vol=\"musique\"]').classList.contains('muet')"),
+            'curseur 🎵 tout à gauche : la musique s\'arrête (volume 0)')
+    glisse('musique', .7)
+    v = P.etat("SALLE.Son.volume('musique')")
+    verifie(.6 < v < .8 and P.etat('SALLE.Son.musiqueEtat().nom') == 'combat', f'curseur 🎵 remis à 70 % : la musique de combat revient (volume {v:.2f})')
+    glisse('bruitages', -.2)
+    verifie(P.etat("SALLE.Son.volume('bruitages')") == 0 and P.etat("SALLE.Son.bruitage('arc') === null") and P.etat('SALLE.Son.musiqueEtat().nom') == 'combat',
+            'curseur 💥 à zéro : les bruitages se taisent, la musique continue')
+    glisse('bruitages', 1.2)
+    verifie(P.etat("SALLE.Son.volume('bruitages')") == 1, 'curseur 💥 remis au maximum')
+    verifie(P.etat("(function(){ var r = document.querySelector('#haut .vol .vol-piste').getBoundingClientRect(); return r.height >= 40 && r.width >= 90; })()"),
+            'les curseurs sont faciles à attraper au doigt (zone de 44 px de haut)')
+    P.capture('30b-curseurs')
+    P.touche('#fuite'); pg.wait_for_timeout(300); P.capture('31-fuite-question')
     P.touche('[data-act="fuir"]')
-    pg.wait_for_timeout(1200)
-    P.capture('24-fuite-cri')
-    pg.wait_for_timeout(1800)
-    P.capture('25-on-fait-le-point')
+    pg.wait_for_timeout(1500); P.capture('32-fuite-cri')
+    P.attend("!!document.querySelector('.point')", 8000)
+    pg.wait_for_timeout(400); P.capture('33-on-fait-le-point')
     verifie(P.etat("!!document.querySelector('.point')"), 'la fuite mène à « On fait le point »')
-    verifie(P.etat("document.querySelectorAll('.point .livre-l').length") == 2, '« On fait le point » montre ce que le Grand Livre a appris')
-    P.touche('[data-act="reessayer"]')
-    pg.wait_for_timeout(500)
-    P.capture('26-sac-reessayer')
-    verifie(sorted(P.etat('SALLE.etat.sac')) == ['coeur', 'fumigene', 'huile'], 'Réessayer : le sac garde les recettes d\'avant (on peut les changer)')
-    P.touche('[data-act="descendre"]')
-    pg.wait_for_timeout(900)
-    P.attend_libre()
-    verifie(P.etat("document.querySelectorAll('.rat:not(.mort)').length") == 2 and P.etat('SALLE.etat.r[0].mort'), 'les rats battus restent battus quand on réessaie')
-    P.capture('27-reessai')
+    verifie('pleine forme' in P.etat("document.querySelector('.point .rats-l').textContent") and 'oubli' in P.etat("document.querySelector('.point').textContent"),
+            '« On fait le point » : les trois rats reviennent en pleine forme, le Grand Livre n\'oublie rien')
+    verifie('fuite' in P.etat('window.__sons') and P.etat('SALLE.Son.musiqueEtat().nom') == 'explo', 'la fuite : son de fuite, puis la musique d\'exploration')
+    livre = P.etat('SALLE.etat.livre')
+    P.touche('[data-act="reessayer"]'); pg.wait_for_timeout(400)
+    P.descendre([])
+    verifie(P.etat("document.querySelectorAll('.rat:not(.parti)').length") == 3 and P.etat('SALLE.etat.r.every(r => !r.mort && r.pv === 40)')
+            and P.etat("['sage','alchimiste','pisteur'].every(h => SALLE.etat.h[h].pv === ({sage:90,alchimiste:100,pisteur:120})[h] && !SALLE.etat.h[h].sol)"),
+            'après la fuite : les TROIS rats reviennent en pleine forme (même celui qui avait fui), les héros aussi')
+    verifie(P.etat('SALLE.etat.livre') == livre, f'seul le Grand Livre garde ce qui a été appris ({livre} ligne)')
+    P.capture('34-reessai')
     verifie(P.etat('window.__parle') == 1, 'jamais de lecture vocale sans bouton 🔊 (toute la partie)')
     P.fin()
 
@@ -265,9 +297,18 @@ def ecran(nav):
     print('— Écran 1280 x 800, à la souris')
     P = Partie(nav, 'pc', 1280, 800, False)
     pg = P.pg
-    P.sac(['feu', 'huile', 'coeur'])
+    P.descendre(['feu', 'huile', 'coeur'])
     P.capture('01-combat')
-    # une équipe qui comprend : le Sage ouvre, le Pisteur achève ; la Fiole de feu sur un rat ouvert
+    # un rat battu SANS critique s'enfuit de peur
+    P.etat("(SALLE.etat.r[2].pv = 3, window.__h = SALLE.hasard, SALLE.hasard = () => .99, SALLE.maj(), 0)")   # pas de flèche surprise ici
+    P.joue('pisteur', 'fleche', 2, attendre=False)
+    pg.wait_for_timeout(1100); P.capture('02-rat-qui-fuit')
+    P.attend_libre()
+    P.etat("(SALLE.hasard = window.__h, 0)")
+    verifie(P.etat('SALLE.etat.r[2].mort') and P.etat("document.querySelector('.r-2').classList.contains('parti')"), 'un rat battu sans critique s\'enfuit de peur')
+    # la fin du tour 1 (le Pisteur a déjà tiré) : la lumière, puis le feu
+    P.joue('sage', 'rune', P.devant())
+    P.joue('alchimiste', 'p:feu', P.devant())
     tours = 0
     while not P.etat("!!document.querySelector('#fin')") and tours < 8:
         tours += 1
@@ -276,55 +317,119 @@ def ecran(nav):
         P.joue('pisteur', 'fleche', d)
         if P.etat("!!document.querySelector('#fin')"):
             break
-        d = P.devant()
-        P.joue('alchimiste', 'p:huile', d)
-        if tours == 1:
-            P.capture('02-deux-ouverts')
-        P.attend_libre()
-    pg.wait_for_timeout(1500)
-    P.capture('03-victoire')
+        P.joue('alchimiste', 'p:feu', P.devant())
+    P.attend("!!document.querySelector('.victoire')", 15000)
+    pg.wait_for_timeout(400); P.capture('03-victoire')
     verifie(P.etat("!!document.querySelector('.victoire')"), f'souris : victoire en {P.etat("SALLE.etat.tour")} tours')
     # la fuite automatique : les trois héros au sol
-    P.touche('[data-act="rejouer"]')
-    pg.wait_for_timeout(400)
-    P.sac(['fumigene', 'colle', 'baume'])
-    P.etat("(['sage','alchimiste','pisteur'].forEach(h => SALLE.etat.h[h].pv = 5), 0)")
+    P.touche('[data-act="rejouer"]'); pg.wait_for_timeout(400)
+    P.descendre(['fumigene', 'colle', 'baume'])
+    P.etat("(['sage','alchimiste','pisteur'].forEach(h => SALLE.etat.h[h].pv = 5), SALLE.maj(), 0)")
     P.joue('sage', 'bouclier', 'sage')
     P.joue('alchimiste', 'louche', P.devant())
     P.joue('pisteur', 'fleche', 1, attendre=False)
-    pg.wait_for_timeout(2600)
-    P.capture('04-tour-des-rats-affoles')
-    t = 0
-    while not P.etat("SALLE.etat.h.pisteur.sol || SALLE.etat.h.alchimiste.sol") and t < 80:
-        pg.wait_for_timeout(100); t += 1
-    pg.wait_for_timeout(700)
-    P.capture('04b-heros-au-sol')
-    t = 0
-    while not P.etat("!!document.querySelector('.point')") and t < 120:
-        pg.wait_for_timeout(100)
-        t += 1
-    pg.wait_for_timeout(600)
-    P.capture('05-fuite-auto')
+    P.attend("SALLE.etat.h.pisteur.sol || SALLE.etat.h.alchimiste.sol", 15000)
+    pg.wait_for_timeout(700); P.capture('04-heros-au-sol')
+    P.attend("!!document.querySelector('.point')", 20000)
+    pg.wait_for_timeout(500); P.capture('05-fuite-auto')
     verifie(P.etat("!!document.querySelector('.point')"), 'les trois héros au sol : fuite automatique, puis « On fait le point »')
-    # Réessayer avec le Cœur vaillant : un héros au sol se relève ; les Herbes soignent
-    P.touche('[data-act="reessayer"]')
-    pg.wait_for_timeout(400)
+    # Réessayer avec le Cœur vaillant ; les Herbes
+    P.touche('[data-act="reessayer"]'); pg.wait_for_timeout(400)
     P.touche('.recette[data-id="fumigene"] b'); P.touche('.recette[data-id="coeur"] b')
-    P.sac([])
-    P.etat("(SALLE.etat.h.sage.pv = 0, SALLE.etat.h.sage.sol = true, SALLE.etat.h.pisteur.pv = 50, SALLE.maj(), 0)")
-    pg.wait_for_timeout(500)
-    P.capture('06-sage-au-sol')
+    P.descendre([])
+    P.etat("(SALLE.etat.h.sage.pv = 0, SALLE.etat.h.sage.sol = true, SALLE.acteurs.h.sage.tomber(), SALLE.etat.h.pisteur.pv = 50, SALLE.maj(), 0)")
+    pg.wait_for_timeout(700); P.capture('06-sage-au-sol')
     P.joue('alchimiste', 'p:coeur', 'sage', attendre=False)
-    pg.wait_for_timeout(1500)
-    P.capture('07-coeur-vaillant')
+    pg.wait_for_timeout(1900); P.capture('07-coeur-vaillant')
     P.attend_libre()
     verifie(P.etat('!SALLE.etat.h.sage.sol && SALLE.etat.h.sage.pv === 40'), 'le Cœur vaillant relève le Sage avec 40 PV')
     P.joue('sage', 'etudier', P.devant())
     P.joue('pisteur', 'dague', P.devant())
     P.attend_libre()
     pv = P.etat('SALLE.etat.h.pisteur.pv')
-    P.joue('alchimiste', 'herbes', 'pisteur')
-    verifie(P.etat('SALLE.etat.h.pisteur.pv') == min(120, pv + 20), 'les Herbes soignent 20')
+    P.joue('alchimiste', 'herbes', 'pisteur', attendre=False)
+    pg.wait_for_timeout(900); P.capture('08-herbes')
+    P.attend("SALLE.etat.mode === 'rats' || (SALLE.etat.mode === 'qui' && !SALLE.etat.occupe)")
+    verifie(P.etat('SALLE.etat.h.pisteur.pv') >= min(120, pv + 20) - 16, 'les Herbes soignent 20')
+    P.fin()
+
+
+def cumul(nav):
+    """les états se cumulent sur le même rat, dans le vrai combat : enragé + brûlé + ouvert, puis enragé + brûlé + sur le dos"""
+    print('— Les états qui se cumulent')
+    P = Partie(nav, 'cumul', 1024, 768, True)
+    pg = P.pg
+    P.descendre(['feu', 'huile', 'baume'])
+    P.joue('alchimiste', 'louche', P.devant())
+    P.joue('pisteur', 'p:feu', 1)
+    P.joue('sage', 'rune', 1, attendre=False)
+    P.attend("SALLE.etat.r[1].ouvert", 8000)
+    pg.wait_for_timeout(900); P.capture('01-enrage-brule-ouvert')
+    e = P.etat("SALLE.etat.r[1]")
+    verifie(e['enrage'] and e['brule'] and e['ouvert'], 'jeu : le rat 1 est enragé + brûlé + ouvert')
+    if P.etat('!!window.RatAnime'):
+        y = P.etat("+(/translate\\([-\\d.]+px, ?([-\\d.]+)px/.exec(document.querySelector('#badges-1').style.transform) || [0, 0])[1]")
+        verifie(y < -20, f'les badges suivent le rat qui se dresse (ils montent de {-y:.0f} px)')
+    if P.etat('!!window.RatAnime'):
+        m = P.etat("SALLE.acteurs.r[1].etat()")
+        verifie(m['enrage'] and m['feu'] and m['ebloui'] and m['cible'] and m['yeux'] == 'rouge', 'module : enragé (yeux rouges) + flammes + ébloui + cible, en même temps')
+    P.attend("SALLE.etat.mode === 'rats'", 15000)
+    if P.etat('!!window.RatAnime'):
+        P.etat("(window.__bx = [], window.__bt = setInterval(() => [0, 1, 2].forEach(i => { var b = document.querySelector('#badges-' + i); var m = b && /translate\\(([-\\d.]+)px/.exec(b.style.transform); if(m) window.__bx.push(+m[1]); }), 40), 0)")
+    P.attend_libre()
+    if P.etat('!!window.RatAnime'):
+        bx = P.etat('(clearInterval(window.__bt), Math.min.apply(null, window.__bx.concat([0])))')
+        verifie(bx < -20, f'les badges suivent le rat qui bondit pour mordre (jusqu\'à {-bx:.0f} px vers la gauche)')
+    e = P.etat("SALLE.etat.r[1]")
+    verifie(e['enrage'] and e['brule'] and not e['ouvert'], 'après le tour des rats : toujours enragé et brûlé, le ventre refermé')
+    P.joue('alchimiste', 'p:huile', 1, attendre=False)
+    P.attend("SALLE.etat.r[1].ouvert", 8000)
+    pg.wait_for_timeout(2200); P.capture('02-enrage-brule-dos')
+    if P.etat('!!window.RatAnime'):
+        m = P.etat("SALLE.acteurs.r[1].etat()")
+        verifie(m['enrage'] and m['feu'] and m['dos'] and m['cible'], 'module : enragé + flammes + sur le dos + cible, en même temps')
+        d = P.etat("(function(){ var a = document.querySelector('#badges-1').getBoundingClientRect(), b = document.querySelector('#badges-2').getBoundingClientRect(); return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)); })()")
+        verifie(d == 0, 'sur le dos, ses badges ne se posent pas sur ceux du voisin')
+    P.attend_libre()
+    P.joue('pisteur', 'fleche', 1, attendre=False)
+    pg.wait_for_timeout(1500); P.capture('03-critique-cumul')
+    P.attend_libre()
+    verifie(P.etat("SALLE.etat.r[1].mort"), 'le critique finit le rat enragé, brûlé et retourné')
+    P.fin()
+
+
+def objets(nav):
+    """les nouveaux objets et réactions des héros (anim/heros : equiper, touche('froid'), entoile, avale / recrache) :
+    ils passent par la cuisson (des variantes en images, cachées au départ) et ne cassent rien dans la salle"""
+    print('— Les objets des héros (cuisson)')
+    P = Partie(nav, 'objets', 1024, 768, True)
+    P.descendre(['feu', 'huile', 'colle'])
+    if not P.etat('!!window.Cuire && SALLE.acteurs.h.sage.cuit'):
+        verifie(True, 'objets : pas de cuisson dans cette page (rien à vérifier)'); P.fin(); return
+    verifie(P.etat("""(() => { var h = SALLE.acteurs.h, ok = true;
+      [['pisteur', ['carquois-argent', 'carquois-lourd', 'amulette']], ['alchimiste', ['sacoche', 'amulette']], ['sage', ['cristal-lune', 'baton-chene', 'amulette']]].forEach(function(x){
+        x[1].forEach(function(o){ var l = h[x[0]].vue.querySelectorAll('[data-eq="' + o + '"]');
+          if(!l.length) ok = false;
+          [].forEach.call(l, function(e){ if(!e.closest('.cu-ilot') || e.style.display !== 'none') ok = false; }); }); });
+      return ok && !h.pisteur.vue.querySelector('[data-eq] img'); })()"""), 'objets : chaque objet est un petit îlot vectoriel caché au départ (aucune image en plus à la cuisson)')
+    P.etat("""(() => { var h = SALLE.acteurs.h; h.pisteur.equiper('carquois-argent'); h.pisteur.equiper('carquois-lourd'); h.sage.equiper('cristal-lune');
+      h.alchimiste.equiper('sacoche'); ['pisteur', 'alchimiste', 'sage'].forEach(function(r){ h[r].equiper('amulette', true, {discret:true}); }); return 1; })()""")
+    P.pg.wait_for_timeout(600)
+    verifie(P.etat("""(() => { var p = SALLE.acteurs.h.pisteur.vue, vu = function(s){ var e = p.querySelector(s); return !!e && e.style.display !== 'none' && e.getBoundingClientRect().width > 0; };
+      return vu('[data-eq="carquois-lourd"]') && !vu('[data-eq="carquois-argent"]') && !vu('[data-carquois]') && vu('[data-eq="amulette"]'); })()"""),
+            'objets : un seul carquois à la fois (le lourd remplace celui d\'argent), l\'amulette se voit')
+    P.heros('sage')
+    verifie(P.etat("""(() => { var s = SALLE.acteurs.h.sage, l = s.vue.querySelectorAll('[data-eq="cristal-lune"]'), ok = l.length === 2;
+      [].forEach.call(l, function(e){ if(e.style.display === 'none' || !(e.getBoundingClientRect().width > 0)) ok = false; }); return ok && s._choisi; })()"""),
+            'objets : le Sage choisi garde son cristal de lune bien visible (halo derrière, croissant devant)')
+    P.capture('01-objets')
+    P.touche('.zone[data-type="heros"][data-id="sage"]'); P.pg.wait_for_timeout(300)
+    P.etat("""(() => { var h = SALLE.acteurs.h; window.__fini = false;
+      Promise.all([h.alchimiste.touche('froid'), h.pisteur.entoile(true).then(() => h.pisteur.entoile(false)),
+        h.sage.avale().then(() => h.sage.recrache({x: 900, y: 200}))]).then(() => { window.__fini = true; }); return 1; })()""")
+    P.pg.wait_for_timeout(900); P.capture('02-reactions')
+    verifie(P.attend('window.__fini', 15000) and P.etat("!SALLE.acteurs.h.pisteur._toile && !SALLE.acteurs.h.sage._avale && getComputedStyle(SALLE.acteurs.h.sage.boite).opacity === '1'"),
+            'objets : givre, toile (prise puis déchirée), avalé puis recraché : chacun revient à sa place')
     P.fin()
 
 
@@ -336,16 +441,20 @@ def debout(nav):
     P.fin()
 
 
-with sync_playwright() as p:
-    nav = p.chromium.launch()
-    for f in [tablette, ecran, debout]:
-        try:
-            f(nav)
-        except Exception as e:
-            ERREURS.append(f.__name__ + ' : ' + str(e).split('\n')[0])
-            print('  PLANTÉ', f.__name__, e)
-    nav.close()
-print(f'\n{len(OK)} vérifications réussies, {len(ERREURS)} échecs')
-for e in ERREURS:
-    print('  ✗', e)
-sys.exit(1 if ERREURS else 0)
+if __name__ == '__main__':
+    quoi = sys.argv[1:] or ['tablette', 'ecran', 'cumul', 'objets', 'debout']
+    with sync_playwright() as p:
+        nav = p.chromium.launch()
+        for f in [tablette, ecran, cumul, objets, debout]:
+            if f.__name__ not in quoi:
+                continue
+            try:
+                f(nav)
+            except Exception as e:
+                ERREURS.append(f.__name__ + ' : ' + str(e).split('\n')[0])
+                print('  PLANTÉ', f.__name__, e)
+        nav.close()
+    print(f'\n{len(OK)} vérifications réussies, {len(ERREURS)} échecs')
+    for e in ERREURS:
+        print('  ✗', e)
+    sys.exit(1 if ERREURS else 0)

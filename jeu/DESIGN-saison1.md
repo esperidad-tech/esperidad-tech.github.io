@@ -467,7 +467,7 @@ Les enquêtes 4 et 5 sont prévues (chapitre 8), pas encore écrites.
 
 | Moment | Pisteur | Alchimiste | Barde | Sage | Le plus chargé |
 |---|---|---|---|---|---|
-| Matin | mairie : traces, fenêtre, gouttière ; place | cueillir les baies ; encre (chaudron), avec la recette lue par le Sage | Basile (le chemin de la forêt) ; Odette | registre ; recettes | le Pisteur ou l'Alchimiste, environ 5 min |
+| Matin | mairie : traces, fenêtre, gouttière ; place | cueillir les baies ; encre (chaudron), avec la recette lue par le Sage | Basile (ses grosses bottes) ; Odette | registre ; recettes | le Pisteur ou l'Alchimiste, environ 5 min |
 | Après-midi | forêt : le chien (poursuite), les chemins ; Vieux Chêne | analyse du fil (double) ; racine rare (facultatif) | Gaspard (l'affiche) ; Mélusine | page blanche (avec l'encre) ; bonus horloge | l'Alchimiste, environ 6 min |
 | Soir | bonus du ballon | analyse des poils (double) ; bonus des fournées | Victor ; bonus | accusation | l'Alchimiste, environ 6 min |
 
@@ -495,7 +495,7 @@ Le calcul donne environ 41 minutes. Avec les ratés et les bonus, on arrive à 4
 - **Place, le panneau** : « PERDU : PIRATE, petit chien noir et blanc. Prévenez Tim, 7, rue des Lanternes. » Code de l'affiche pour le Barde.
 - **Boulangerie, le sol** : Gaspard a de très grands pieds.
 - **Boulangerie, le four** : de la suie autour du four. *Fausse piste.*
-- **Forêt.** Elle est fermée tant que le Pisteur n'a pas un plan : celui que le Sage révèle, ou le chemin dessiné par Basile.
+- **Forêt.** Elle est fermée tant que le Pisteur n'a pas le plan que le Sage révèle (depuis le 10 novembre, lui seul : Basile ne dessine plus le chemin, § 12.52).
   - **Le carrefour** : trois chemins, vers le moulin, le puits et le Vieux Chêne.
   - **Le chemin du moulin** : « La boue est toute lisse : personne n'est passé. » *Prouve* : pas au moulin.
   - **Le chemin du puits** : « De grosses traces de sabots : un sanglier ! Aucune trace d'enfant. » *Prouve* : pas au puits.
@@ -519,7 +519,7 @@ Le calcul donne environ 41 minutes. Avec les ratés et les bonus, on arrive à 4
 
 - **Gaspard** : « Dans mon fournil, toute la nuit ! » Si on lui montre l'affiche du chien : « Hier soir, Tim cherchait Pirate en pleurant. Je lui ai dit : les chiens perdus filent souvent dans la forêt. »
 - **Mélusine** : « Je dormais. » « J'ai tricoté des écharpes rouges pour la moitié du village. » « Mon écharpe ? Pas un trou, pas un fil qui dépasse ! » *Ce dernier point prouve, avec le fil :* ce n'est pas Mélusine.
-- **Basile** : a planté des fleurs devant la mairie hier avec ses grosses bottes ; à 6 heures du soir, la fenêtre était fermée ; il **dessine le chemin de la forêt**, avec un code pour le Pisteur.
+- **Basile** : a planté des fleurs devant la mairie hier avec ses grosses bottes ; à 6 heures du soir, la fenêtre était fermée. ~~Il dessine le chemin de la forêt~~ : depuis le 10 novembre (§ 12.52), « on s'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan », sans code.
 - **Odette** :
   - la lumière de la boulangerie est restée allumée ;
   - « À minuit, une petite silhouette a sauté de toit en toit, avec une lumière dorée, vers la forêt » (*prouve* : la Lanterne n'est pas restée sur les toits) ;
@@ -1389,11 +1389,11 @@ Tout est dans `src/barde.js` et `src/barde.css` (plus quelques petits crochets d
 
 | Moment | 🏹 Pisteur | ⚗️ Alchimiste | 🎻 Barde | 📖 Sage |
 |---|---|---|---|---|
-| **Matin** | 🏛️ Mairie (1 action) : 🎮 *Suivre la piste* au massif ; la fenêtre → 🔢 fil **→ Alchimiste** ; la gouttière · ⛲ Place (1 action) : la fontaine ; le panneau → 🔢 affiche **→ Barde** | 📦 l'atelier (ouvrir un carton, installer un meuble : gratuit) · 🫐 Lisière : 3 baies (1 action) · 🧪 🎮 *Le chaudron* : l'encre, avec la recette que lit le Sage (1 action) → 🔢 encre **→ Sage** · 🧶 ⏳ le fil du Pisteur, 🎮 *Le double* (1 action) → 🔢 écharpe **→ Barde** | ⏳ le registre du Sage → 🏠 noter la maison d'Odette (gratuit) · 👵 Odette, au 2, rue des Lanternes (1 action) → 🔢 plume **→ Alchimiste** · 🥕 Basile, au potager (1 action) → 🔢 chemin de la forêt **→ Pisteur** | 👥 lit « Les habitants » → 🔢 registre **→ Barde** · 🧪 lit la recette de l'encre à l'Alchimiste · 🔭 Mairie : le balcon (1 action) · ✨ bonus : l'horloge (runes, 1 action) · passe à l'après-midi |
-| **Après-midi** | 🍞 Boulangerie (1 action) : le sol → 🔢 grands pieds **→ Barde** ; le four · 🌲 Forêt (⏳ le plan : Basile ou le Sage ; 1 action) : le carrefour, les trois chemins, 🐕 🎮 *Course-poursuite* → 🔢 poils **→ Alchimiste** | ⏳ les poils du Pisteur ; en attendant ✨ bonus : les fournées (bulles, 1 action) · 🐾 🎮 *Le double* : les poils (1 action) → « une feuille de chêne », à dire au Pisteur | 🧵 Mélusine, sur la place (1 action) · 🐶 ⏳ l'affiche du Pisteur → Gaspard, à la boulangerie (1 action) | ❔ ⏳ l'encre de l'Alchimiste → la page blanche, 🎮 *Les runes* → 🔢 plan de la forêt **→ Pisteur** · passe au soir |
+| **Matin** | 🏛️ Mairie (1 action) : 🎮 *Suivre la piste* au massif ; la fenêtre → 🔢 fil **→ Alchimiste** ; la gouttière · ⛲ Place (1 action) : la fontaine ; le panneau → 🔢 affiche **→ Barde** | 📦 l'atelier (ouvrir un carton, installer un meuble : gratuit) · 🫐 Lisière : 3 baies (1 action) · 🧪 🎮 *Le chaudron* : l'encre, avec la recette que lit le Sage (1 action) → 🔢 encre **→ Sage** · 🧶 ⏳ le fil du Pisteur, 🎮 *Le double* (1 action) → 🔢 écharpe **→ Barde** | ⏳ le registre du Sage → 🏠 noter la maison d'Odette (gratuit) · 👵 Odette, au 2, rue des Lanternes (1 action) → 🔢 plume **→ Alchimiste** · 🥕 Basile, au potager (1 action) : où était-il cette nuit ? (ses grosses bottes ; depuis le 10 novembre, plus de chemin de la forêt, §12.52) | 👥 lit « Les habitants » → 🔢 registre **→ Barde** · 🧪 lit la recette de l'encre à l'Alchimiste · 🔭 Mairie : le balcon (1 action) · ✨ bonus : l'horloge (runes, 1 action) · passe à l'après-midi |
+| **Après-midi** | 🍞 Boulangerie (1 action) : le sol → 🔢 grands pieds **→ Barde** ; le four · 🌲 Forêt (⏳ le plan du Sage, lui seul depuis le 10 novembre ; 1 action) : le carrefour, les trois chemins, 🐕 🎮 *Course-poursuite* → 🔢 poils **→ Alchimiste** | ⏳ les poils du Pisteur ; en attendant ✨ bonus : les fournées (bulles, 1 action) · 🐾 🎮 *Le double* : les poils (1 action) → « une feuille de chêne », à dire au Pisteur | 🧵 Mélusine, sur la place (1 action) · 🐶 ⏳ l'affiche du Pisteur → Gaspard, à la boulangerie (1 action) | ❔ ⏳ l'encre de l'Alchimiste → la page blanche, 🎮 *Les runes* → 🔢 plan de la forêt **→ Pisteur** · passe au soir |
 | **Soir** | 🌳 le Vieux Chêne (1 action) : les racines · 📜 raconte tout au Sage · ✨ bonus : le ballon (tir, 1 action) | 🪶 ⏳ la plume du Barde : l'analyse (1 action) · 📜 raconte au Sage · (✨ les fournées, si pas faites) | 🧔 Victor, à la taverne (1 action) · 📜 raconte au Sage · ✨ bonus : la chanson (1 action) | 📋 écoute l'équipe, barre les innocents dans le tableau · ⚖️ accuse (sans aide) |
 
-**Qui attend qui** (jamais tout un moment) : le Barde attend le registre du Sage (une minute, au tout début) ; l'Alchimiste attend le fil (le Pisteur le trouve à sa première action) ; le Sage attend l'encre (il a l'horloge pendant ce temps) ; le Pisteur attend le plan (Basile le donne dès le matin) ; le Barde attend l'affiche (trouvée le matin) ; l'Alchimiste attend les poils (elle a les fournées pendant ce temps) ; la plume, trouvée le matin, sert le soir. Le bot du tutoriel (`tools/tuto.py`) vérifie que chaque rôle fait au moins une étape à chaque moment.
+**Qui attend qui** (jamais tout un moment) : le Barde attend le registre du Sage (une minute, au tout début) ; l'Alchimiste attend le fil (le Pisteur le trouve à sa première action) ; le Sage attend l'encre (il a l'horloge pendant ce temps) ; le Pisteur attend le plan du Sage (depuis le 10 novembre ; il a la boulangerie, puis le ballon en bonus, pendant ce temps) ; le Barde attend l'affiche (trouvée le matin) ; l'Alchimiste attend les poils (elle a les fournées pendant ce temps) ; la plume, trouvée le matin, sert le soir. Le bot du tutoriel (`tools/tuto.py`) vérifie que chaque rôle fait au moins une étape à chaque moment.
 
 **Le Sage et les runes** : quand l'encre arrive, toucher la page blanche lance *Les runes* (la carte à reconstituer, niveau 1). Réussi : le plan de la forêt apparaît, avec son code. Raté une fois : la dernière chance tout de suite. Raté deux fois : le dessin reste à moitié effacé, mais assez pour entrer dans la forêt, et le code est donné quand même (l'indice partiel suffit).
 
@@ -2027,8 +2027,244 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
 - **Les animations à faire** (« fais-toi plaisir, vas-y franco ; pour l'instant on ne regarde pas si c'est gourmand ») : les héros entrent en courant par la gauche et se placent, les rats entrent par la droite en courant sur leurs petites pattes ; les rats attendent en menaçant (gueule, bave qui tombe) ; l'huile : une vraie animation (ils glissent, tombent sur le dos et montrent leur ventre), pas une rotation en 3D ; la lumière : éblouis, des étoiles qui scintillent autour de la tête, une patte devant les yeux ; le feu : ils ont mal, et le feu reste sur eux ; le nuage : un vrai nuage clair, qui se dissipe moins vite, et ils toussent au moins 3 fois ; la colle : ils essaient de lever les pattes, la colle les retient ; les héros : bien voir la flèche qui part, l'Alchimiste qui prépare la potion dans ses mains puis la lance, le Sage qui met son bâton en avant avec de la lumière ; le bouclier doit dire clairement combien il absorbe et combien de temps il dure.
 - **Le critique** : le flash blanc et la petite fumée ne vont pas, la bête qui disparaît trop vite non plus : il veut une mort plus explosive. Pour les morts, il laisse Claude choisir (laisser les corps, ou les faire fuir de peur, sans sang).
 - *Choix de Claude* : un rat battu sans critique **s'enfuit de peur** (il ne meurt pas vraiment) ; un rat battu par un **critique explose en brume noire**, avec des touffes de poils et des étincelles, et laisse **un petit tas de cendre et d'os** ; le Sage reçoit **un bâton de runes** (Romain l'imagine ainsi ; le livre passe à la ceinture et s'ouvre pour Étudier) ; les sons sont fabriqués par la tablette (Web Audio), sans fichiers.
-- *En cours* : les rats et les héros sont redessinés **en pièces articulées** (tête, mâchoire, pattes, queue, bras, armes) pour être animés ; puis tout est assemblé dans la salle des rats, avec les sons et le nouveau critique, et une vidéo de démonstration.
-**En attente de Romain** : la nouvelle version animée de la salle des rats ; le code par joueur ; qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette). Ensuite, l'étape 2 (3-4 images : un couloir avec une curiosité, un piège, le plan sur la tablette du Sage, la porte aux quatre signes).
+- **Fait dans la nuit du 9 novembre (mis en ligne vers 2 h 10)**, à la même adresse : https://esperidad-tech.github.io/brumeval/donjon-essai.html (4 Mo).
+  - Le rat et les trois héros sont en **pièces articulées** animées : `jeu/donjon/anim/rat/rat-anime.js` (RatAnime : entrer, attendre, mordre, touche, yeux, enrager, ebloui, retourner, bruler, tousser, coller, cible, fuir, exploser) et `jeu/donjon/anim/heros/heros-anime.js` (HerosAnime : entrer, attendre, touche, tomber, relever, joie, choisi ; le Pisteur tirer et dague ; l'Alchimiste preparer, lancer, louche et herbes ; le Sage sort, bouclier et etudier ; sources dans `src/`, `build.sh`). Chaque module a sa `demo.html` et son `filmer.py`.
+  - La salle (`jeu/donjon/essai/`, `python3 construire.py`, 51 tests dans `test-jeu.py`) ajoute : les nouvelles règles (rage jusqu'au bout, brûlure de −4 à chaque tour), l'entrée en scène (salle vide, héros puis rats en courant), le critique refait (vignette qui se resserre, ralenti, images de choc, onde de choc, rayons, étincelles, gros nuage de brume noire), le vrai nuage du fumigène (4 toux, il se dissipe en 4 s), les flaques d'huile et de colle, un bouclier lisible (« 🛡️ −50 % · 1 tour », « 16 → 8 (8 absorbés) »), et **le son en Web Audio** (pas de fichiers ; bouton 🎵/🔇 pour couper les bruitages, distinct du 🔊 qui lit les textes).
+  - Équilibre après ces règles : l'équipe maligne gagne en 3 ou 4 tours ; au hasard, 69 % de victoires ; l'équipe qui tape sans réfléchir gagne encore (en environ 9 tours) ; abuser de la louche fait perdre.
+  - Limites : les bras des héros animés sont plus simples que les dessins fixes ; personne n'a encore ÉCOUTÉ les sons (il faut les essayer sur la tablette) ; le demi-tour du rat qui fuit et sa chute sur le dos sont simplifiés ; la page pèse 4 Mo (on optimisera plus tard).
+**Essai de Romain (9 novembre, 8 h 59)** : « dans l'ensemble, c'est cool ». Ses décisions et remarques :
+- **La fuite renvoie à un point de sauvegarde.** Au début, c'est l'entrée. Plus tard, des objets permettront de sauvegarder à certains endroits du donjon, par exemple avant le boss, « pour ne pas tout refaire, mais pour qu'il reste un peu de difficulté ». La salle qu'on a fuie redevient pleine, avec des monstres en pleine forme. **Entre deux salles, les héros ne récupèrent pas leurs points de vie.** Il trouve trop facile de revenir en pleine forme après une fuite quand il ne reste que 3 PV à un seul héros. Pour la première salle, ce n'est « pas très grave » qu'on ne puisse pas mourir : on augmentera la difficulté ensuite.
+- **L'icône de la cible** (la tête du héros visé) doit suivre le rat quand il se dresse, ébloui.
+- **Les sons** : celui de l'arc « n'est pas terrible ». La flèche doit siffler puis se planter. La dague doit faire un « swish », puis un bruit de chair ou de métal. Les rats doivent crier quand on les frappe, selon ce qui les frappe. Il faut **une musique d'ambiance sombre, fabriquée, qui change peut-être selon les salles**. **Avant de lancer quoi que ce soit, il veut valider des propositions de sons et de musiques.** En cours : une page d'écoute avec 2 ou 3 versions de chaque son et plusieurs musiques, à cocher.
+**La fuite et les sauvegardes (décidé par Romain, 9 novembre, 9 h 04 à 9 h 14)** :
+- **La fuite recharge la dernière sauvegarde.** On revient comme on était au moment de sauvegarder (les points de vie aussi), et **tout ce qui a été fait depuis est à refaire** : les salles battues depuis la sauvegarde sont de nouveau pleines. Ce qui reste après une fuite : **ce que le Sage a appris dans le Grand Livre**, la récompense de l'échec.
+- **C'est le Sage qui sauvegarde, sur SA tablette, avec les pages blanches de son Grand Livre.** Au premier donjon, il en a 3 ; on en trouve d'autres en fouillant.
+  - Le Sage touche une page, confirme (« Utiliser une page blanche ? ») : la page affiche un code. Le Pisteur tape ce code sur sa tablette, et la sauvegarde se fait. La page n'est plus blanche, mais son code reste lisible pour le relire. Chaque code ne marche qu'une fois.
+  - **Pas de sauvegarde en combat** : la tablette du Pisteur refuse le code (« Le Grand Livre ne peut pas écrire pendant la bataille ! »). On sauvegarde dans les couloirs et les salles vidées.
+  - **Une page trouvée dans le donjon** (sur la tablette du Pisteur) donne un code que le Sage tape pour gagner une page blanche.
+  - Les codes sont calculés par le jeu : la tablette du Pisteur sait lesquels sont bons (3 symboles sur 12, impossible de tomber dessus par hasard).
+- **Le rôle de chacun pendant le donjon** : le Pisteur a l'action (le donjon se joue sur sa tablette) ; **le Sage a le plan et les sauvegardes** ; **l'Alchimiste a le sac et les nouvelles recettes** (validé par Romain) : une plante rare trouvée dans le donjon donne un code ; il la cuisine au chaudron sur sa tablette et obtient une nouvelle recette, à mettre dans le sac au prochain feu de camp.
+- Entre deux salles, les héros ne récupèrent pas leurs points de vie.
+**Les sons choisis par Romain (9 novembre, 9 h 52, sur https://esperidad-tech.github.io/brumeval/sons-essai.html ; sources `jeu/donjon/essai/sons/`)** : quand il garde plusieurs versions, le jeu en tire une au hasard à chaque fois.
+- **Arc** : A + B + C.
+- **Flèche** : en vol A + B + C ; dans la chair A + B + C ; dans le bois A + B + C.
+- **Dague** : swish A + B + C ; chair C ; métal B.
+- **Rats touchés** :
+  - flèche A + B + C ;
+  - dague A + B + C ;
+  - feu A + B + C ;
+  - lumière A + B + C ;
+  - louche B + C ;
+  - colle B + C ;
+  - huile A + B ;
+  - nuage A + C ;
+  - fuite A.
+- **Coup critique** : aucun ne va, « il faut que ce soit plus violent » (à refaire).
+- **Musiques** : exploration A + B + C ; combat A + B ; une couleur par salle (le puits, la cave, l'atelier), toutes gardées.
+- **Victoire** : A + B. **Fuite de l'équipe** : A + B.
+
+**Fait et en ligne (9 novembre, 10 h 35)** à la même adresse (https://esperidad-tech.github.io/brumeval/donjon-essai.html) :
+- **Les sons choisis par Romain sont branchés.** À chaque coup, le jeu tire une version au hasard parmi celles qu'il a gardées : le son de l'arme, puis le cri du rat selon ce qui l'a frappé. Un rat enragé crie plus grave. Deux sons gardés attendent un usage (la flèche dans le bois, la dague sur le métal : pas de tir raté ni d'armure dans cette salle).
+- **La musique** :
+  - l'exploration (A, B ou C au hasard) joue sur l'écran du sac et démarre au premier toucher ;
+  - le combat (A ou B) joue avec la couleur « le puits » par-dessus, en fondu ;
+  - la fanfare de victoire et le son de fuite passent par-dessus ;
+  - un seul bouton 🎵/🔇 coupe tout (le 🔊 reste pour la lecture des textes).
+- **Le coup critique** : 3 nouvelles versions plus violentes sont dans l'Atelier, marquées « nouveau » (A « Coup de tonnerre », B « Assourdi », C « Déflagration »). En attendant le choix de Romain, le jeu joue la C, en trois morceaux calés sur l'image : l'aspiration pendant le ralenti, l'impact, l'explosion. **Romain (10 h 41) garde A + C** (tirage au hasard, la A calée sur l'image comme la C).
+- **L'Atelier, la mise en page voulue par Romain (10 h 41)** :
+  - pas de description des sons (« je valide au son ») : un titre court, les boutons A, B, C, et un petit carré « validé » sous chacun ;
+  - tout en petit, plusieurs sons par rangée ;
+  - des **sections rétractables** à la place des onglets à changer, par exemple Donjon → Héros / Ennemis (une sous-section par monstre) / Objets et salles, puis Musiques, Le jeu, Mini-jeux ;
+  - tout doit être accessible sans faire défiler la page à l'infini.
+
+**Retour de Romain sur la salle des rats (9 novembre, 10 h 48), valable pour TOUT le donjon :**
+- **Plus de bandeau en haut** : le texte du conteur qui raconte les actions disparaît. C'est assez simple à comprendre, et le haut reste noir pour une ambiance sombre (le bandeau était clair).
+- **Deux curseurs de volume** en haut, l'un pour la musique (🎵), l'autre pour les bruitages. Ils sont discrets et sombres : une petite barre jaune, et un rond noir à liseré jaune qu'on fait glisser.
+- **Les musiques restent des ambiances** : aucun petit bruit strident ou animal qui ressemble aux bêtes (« on est un peu perdu »).
+- **Un petit son quand on touche une icône d'arme ou de potion.** Il est proposé dans l'Atelier, et il sera branché après le choix de Romain.
+- **La fluidité est obligatoire.** Ça rame même sur son iPhone : il faut que ce soit parfaitement fluide, aussi sur de vieilles tablettes, sans perdre la qualité des animations.
+  - Ce qui est en cours : la mesure (processeur ralenti ×4 et ×6) et l'optimisation.
+  - Les règles qui en sortiront iront dans `jeu/donjon/RAPIDITE.md`.
+  - Les monstres en cours de dessin suivent déjà ces règles : aucun filtre, des animations seulement en déplacement / rotation / transparence, et des états dessinés d'avance.
+
+**L'Atelier des sons refait (9 novembre, vers 12 h)** :
+- **La page** : elle est compacte, faite de sections rétractables, toutes fermées au départ. Chaque titre a un compteur de 🆕. Il y a « Tout ouvrir / Tout fermer », et une barre « Copier mes choix » en bas, qui donne le chemin de chaque choix.
+- **Le contenu** : 145 sons, 263 versions.
+  - **Donjon** : 96 sons.
+    - Héros : 32.
+    - Ennemis : 54, une sous-section par monstre (10 monstres).
+    - Objets et salles : 10.
+  - **Musiques** : 8.
+  - **Le jeu** : 17, et **Mini-jeux** : 24. Ce sont les sons déjà présents, copiés tels quels, et le jeu ne change pas.
+- **Les nouvelles propositions** :
+  - les cris et réactions de chaque monstre du chemin long, Bourbe compris (coassement, langue, gobage, rot, plongeon, saut, chatouille) ;
+  - pour les héros : les nouvelles armes et potions, « ça rebondit », le point faible ouvert, et le son des icônes ;
+  - les objets et les salles : ramasser, coffre, porte, piège, page de sauvegarde, code juste ou faux, pas, brume, feu de camp ;
+  - les musiques : canaux, ossuaire, repos au feu de camp, thème de Bourbe, Léo retrouvé.
+- **Un bouton 🔁 « à refaire » devant A, B, C** (Romain, 12 h 03). La carte passe en orange, avec une petite ligne facultative pour dire pourquoi, et la copie des choix l'écrit « 🔁 À REFAIRE (raison) ».
+- **Les musiques déjà validées sont retouchées, sans aucun bruit de bête** (gouttes graves et rares, cave aux toiles refaite). Romain doit les réécouter.
+- **Dans la salle des rats** :
+  - deux volumes séparés (`Son.volume('musique' | 'bruitages', v)`) ;
+  - le critique A + C, une seule version tirée par coup ;
+  - le son des icônes est prêt, mais muet tant que Romain n'a pas choisi.
+- **Le son est pré-calculé** (musiques et gros bruitages) : le calcul audio passe d'environ 21 % d'un cœur à environ 2 %, avec le processeur ralenti ×6. En contrepartie, environ 8 s de préparation pendant l'écran du sac, avec le processeur ralenti ×6, et 30 à 60 Mo de mémoire.
+- **Les badges et l'icône de cible suivent le rat** quand il se dresse, bondit ou mord.
+- **La fuite ramène à l'entrée** : les trois rats reviennent en pleine forme, les héros aussi. Seul le Grand Livre garde ce qu'il a appris, et la question « Fuir la salle ? » le dit avant.
+- Tests : 66 sur 66 pour la salle, 27 sur 27 pour l'Atelier.
+- À surveiller sur la tablette : deux musiques en même temps que les animations. Si ça saccade, on retire d'abord la piste « le puits ».
+**Règle de Romain (9 novembre, 9 h 55) : l'Atelier des sons devient l'outil permanent pour TOUS les sons et toutes les musiques du jeu.** Dès qu'on parle de son ou de musique, on met à jour cette page (la même adresse, on n'en refait pas une autre), rangée en onglets (par exemple Le jeu, Mini-jeux, Donjon, Bestiaire, Musiques), avec aussi les sons déjà présents dans le jeu ; Romain écoute et valide là. En cours : la page passe en onglets.
+**Go de Romain (9 novembre, 10 h 04) : le donjon complet (chemin long, boss compris).** Sa demande :
+- chaque salle a son décor ;
+- des découvertes, et des choix d'armes plus efficaces contre certains ennemis ;
+- beaucoup plus dur après la salle des rats (il faut réfléchir, sinon on meurt), faisable, mais **impossible sans les connaissances du Sage** ;
+- calibrer ce que fait un combo réussi ;
+- des salles avec seulement des objets à toucher, certains à passer à l'Alchimiste ou au Sage par code ;
+- de bonnes sauvegardes ;
+- des animations pour chaque ennemi et chaque nouvelle arme ;
+- « prends ton temps et fais ça bien ».
+
+**La conception complète est dans `jeu/donjon/CONCEPTION-DONJON.md`** (écrite à 10 h 10). Les choix principaux :
+- **les élites et le boss sont immunisés** tant que le point faible est fermé ;
+- un critique sur point faible ouvert affiche ses dégâts sans toujours tuer : 60 à la flèche sur un normal (75 à la dague), 110 / 140 sur un élite, 300 / 380 sur le boss ;
+- les monstres frappent plus fort après la salle 1 (le soin infini ne suffit plus) ;
+- **2 places d'objet par héros**, avec des coffres à choix :
+  - flèches d'argent (brume) OU flèches lourdes (armure) ;
+  - cristal de lune OU bâton de chêne ;
+  - sacoche, amulette de vie ;
+- **objets à passer par code** : fleur de givre et herbes lumineuses (Alchimiste) ; page déchirée et page blanche (Sage) ;
+- **17 lieux** dans l'ordre :
+  - le puits ;
+  - 2 culs-de-sac à trouvailles ;
+  - les rats ;
+  - la réserve ;
+  - les canaux ;
+  - les égouts tournants ;
+  - la grotte de givre ;
+  - la cave aux toiles ;
+  - le cul-de-sac éboulé et son passage secret ;
+  - le couloir aux dalles piégées ;
+  - l'atelier (Gardien) ;
+  - la bibliothèque ;
+  - les trois portes et la fausse crypte ;
+  - l'ossuaire (Roi des rats) ;
+  - le feu de camp ;
+  - le grand bassin (Bourbe) ;
+  - la porte aux quatre signes ;
+  - Léo ;
+- 4 pages de sauvegarde en tout ;
+- l'ordre de construction : monstres animés et décors, puis le moteur, puis l'équilibre par simulation et les tests.
+
+**En cours** : les monstres animés (contrat commun : `jeu/donjon/anim/betes/CONTRAT.md`). Chacun a un module dans `jeu/donjon/anim/betes/<id>/`, avec une démo, une vidéo et une planche de poses ; tous sont fluides avec le processeur ralenti ×6.
+- Faits le 9 novembre vers 12 h 30 :
+  - le rat cuirassé : la louche lui donne le tournis puis fait tomber le casque ; l'acide fait tomber l'armure, le givre la fait éclater ; le feu la fait rougeoyer ;
+  - l'araignée des caves : la toile qui reste, l'éclosion de 2 petites ;
+  - la petite araignée ;
+  - Bourbe : langue et avalé, saut, berge, sec, sur le dos, gonflé, plongeon, chatouille, gelé ;
+  - le têtard ;
+  - la chauve-souris : le bruit la fait tomber devant, sonnée ; la colle colle ses ailes ; la lumière la rend folle, et elle pique 2 fois ;
+  - le feu follet : le nuage le rend visible ; le bouclier du Sage le retient ; la lumière le fait grandir ; la flèche d'argent le déchire ; il s'éteint en braise froide.
+  - le Gardien de rouille : à son entrée, ses runes s'allument une à une ; son poing est lent et lourd ; il est immunisé (les coups ricochent) ; l'acide puis la lumière ouvrent son cœur de runes ; la lumière en premier est un piège (il s'énerve) ; à la mort, il s'effondre en pièces ;
+  - le Roi des rats : ça grouille, et il déferle sur les trois héros ; le nuage puis le bruit défont le nœud ; la lumière les met en boule ; le bruit avant le nuage les fait charger l'Alchimiste ; sa couronne reste au sol. Ses yeux sont jaunes au repos, comme le rat d'égout (rouges sur la fiche), pour que la rage se voie.
+- **Tous les monstres du chemin long sont animés.** Un petit défaut, deux boucles d'attente sur une même pièce, faisait ramer certains modules dans un cas précis : il est en cours de correction partout.
+- **Les décors des 7 salles de combat sont faits** (`jeu/donjon/decors/`, planche `decors/planche.png`, envoyée à Romain). Ce sont :
+  - les canaux (bleu-vert, ville engloutie, petit pont) ;
+  - la cave aux toiles (gris et violet, cocons, œufs) ;
+  - l'atelier (rouille et cuivre, engrenages, runes) ;
+  - l'ossuaire (ivoire, niches à crânes, rien de gore) ;
+  - le grand bassin (eau noire, la margelle de Bourbe, lotus, ville engloutie) ;
+  - les égouts tournants (flèches gravées qui se contredisent) ;
+  - la fausse crypte (sarcophage, statues brisées).
+
+  Chaque décor existe en PNG et en WebP (environ 60 Ko, conseillé pour la tablette), avec une ambiance légère facultative (`decors/ambiance.js`). Il n'y a pas de torche. **Validés par Romain à 15 h 29.**
+- **La fluidité de la salle des rats** (règles pour tout le donjon : `jeu/donjon/RAPIDITE.md`, outil `jeu/donjon/anim/cuire.js`) :
+  - pendant l'écran du sac, héros et rats sont « cuits » en petites images que la carte graphique déplace ;
+  - au repos, le processeur ne travaille presque plus.
+  
+  Les mesures, au processeur ralenti ×4 :
+  - au repos : de 14 à 52 images par seconde ;
+  - pendant une potion : de 12 à 50 ;
+  - pendant le tour des rats : de 17 à 59 ;
+  - le critique (33) et le nuage (31 à 41) restent un peu sous l'objectif, à vérifier sur l'iPhone de Romain.
+  
+  Le rendu est le même à l'œil. Seule différence : au repos, les capes ondulent par une animation simple.
+- **En ligne le 9 novembre vers 15 h 10** (même adresse ; tests 74 sur 74). **Le bandeau retiré** : les refus s'affichent maintenant en deux mots qui volent au-dessus de celui qu'on a touché (« Déjà joué », « Au sol ! », « Trop loin ! », « Encore debout », « Impossible ! »).
+- **Bug signalé par Romain (15 h 13)** : sur iPhone, c'est plus fluide, mais **un critique du Pisteur fait quitter le jeu**. Safari ferme l'onglet, très probablement par manque de mémoire (grandes images de l'effet de critique, canvas de cuisson, sons pré-calculés). **Corrigé et en ligne à 15 h 50.**
+  - La cause : la vignette du critique devenait sur iPhone un calque de plus de 31 000 px de côté (environ 3,8 Go demandés au pic du critique ; 220 Mo après la correction).
+  - Les toiles de cuisson sont maintenant vidées après usage.
+  - La règle R9 sur la mémoire est ajoutée à `RAPIDITE.md` : aucun calque de plus de 4 096 px réels, effets plein écran à 1,5× au plus.
+  - **Les sons pré-calculés sont allégés et en ligne (16 h 50)** : de 44 à environ 10 Mo.
+    - Les musiques passent en mono 16 kHz, avec des boucles plus courtes et une seule version préparée à la fois (le tirage au hasard reste d'une fois sur l'autre).
+    - Les gros bruitages sont préparés pendant le combat, puis libérés.
+    - Romain doit réécouter les musiques (elles ne sont plus en stéréo).
+  - À confirmer sur l'iPhone de Romain.
+- **Romain (16 h 37) : l'animation du critique est à refaire.** Elle est bizarre, prend tout l'écran (un énorme écran bicolore) et va trop vite. Elle doit **rester localisée** :
+  - un court tremblement d'écran ;
+  - de la **fumée noire** autour du monstre ;
+  - les **membres du rat qui éclatent sur les côtés, cachés par la fumée** (ça passe pour des enfants) ;
+  - un **gros « CRITIQUE ! »** écrit (il aime) ;
+  - plus rien de plein écran.
+
+  **Refait et en ligne le 10 novembre à 13 h 42** (https://esperidad-tech.github.io/brumeval/donjon-essai.html), en attente de l'avis de Romain :
+  - la flèche frappe, le rat se fige et gonfle un court instant (0,4 s), sur lui seul ;
+  - une fumée noire dense l'enveloppe ; le chiffre des dégâts s'affiche en jaune sur la fumée ;
+  - ses morceaux (tête aux yeux en croix, queue, pattes, touffes de poil, **aux couleurs du rat**, sans sang) jaillissent **de derrière la fumée, sur les côtés**, tournoient, retombent au sol et s'effacent ;
+  - le gros « CRITIQUE ! » doré claque au-dessus, dans la moitié droite de l'écran ;
+  - deux petits tremblements d'écran ; la fumée se dissipe et laisse les cendres et les os ; environ 2,5 s en tout ;
+  - plus rien de plein écran (ni voile, ni rayons, ni image de choc) ; sur iPhone : aucun calque de plus de 2 080 px, aucune toile gardée (`essai/memoire-critique.py`).
+
+  **Règle pour tous les monstres : le critique reste localisé autour de la bête.** Les explosions des autres modules seront alignées après la validation de Romain.
+- **Les codes du prototype sont fixés** dans `jeu/donjon/donjon-codes.js`, un seul tableau partagé par les trois pages :
+  - 4 pages de sauvegarde ;
+  - 2 plantes et 2 recettes ;
+  - la page déchirée et la page blanche ;
+  - « Odette derrière la porte » ;
+  - « Léo attrapé ».
+- **10 novembre.** Le travail s'est arrêté le 9 vers 17 h (limite d'usage atteinte), et a repris le 10 à midi. Romain passe sur le modèle Fable 5.2 (il a des réinitialisations de limite pour ce modèle).
+- **Le cahier des charges du moteur est écrit : `jeu/donjon/MOTEUR-DONJON.md`** (10 novembre, 12 h 20). Les choix :
+  - trois pages dans un dossier (`brumeval/donjon/`), avec un chargement à la demande salle par salle, pour la mémoire de l'iPhone ;
+  - les règles séparées de l'affichage (`regles.js`), pour simuler des milliers de combats et régler la difficulté ;
+  - la recette Acide connue dès le départ (7 recettes, 3 dans le sac) ;
+  - ce qui est cassé reste cassé jusqu'à la fin du combat (casque, armure, plaque) ;
+  - Bourbe reste sur le dos jusqu'à la fin du tour suivant ;
+  - la page blanche à trouver est dans le tas d'os (première fouille : un rat mord ; deuxième : la page) ;
+  - recharger la page n'est pas une fuite ;
+  - les sons pas encore validés jouent leur version A, provisoire.
+- **Les règles de tous les combats sont écrites, et la difficulté est réglée par simulation** (10 novembre, 13 h 25 ; `jeu/donjon/moteur/`) :
+  - `src/donnees.js` (les tableaux) et `src/regles.js` (le calcul, sans affichage) ; le mode d'emploi pour l'affichage est `moteur/REGLES.md` ; `node test-regles.js` : 324 vérifications ; `node equilibre.js` : la simulation, rapport dans `equilibre.md` ;
+  - la salle des rats est restée la même (3 000 parties comparées geste à geste avec l'essai) ;
+  - à pleins points de vie, par salle : l'équipe maligne gagne 100 % ; **sans le Sage : 0 % contre le Gardien, le Roi des rats et Bourbe** ; l'équipe qui tape sans réfléchir ne passe pas la deuxième salle (0,1 %) ; au hasard : 0 % après la deuxième salle ;
+  - une équipe maligne qui se trompe une fois sur dix : 69 % d'une traite ; une fois sur quatre : 14 %. La vraie difficulté dépendra donc des étourderies : à régler à l'essai (les dégâts des monstres dans `donnees.js`) ;
+  - les chiffres retenus : chauve-souris 30, feu follet 18 sur 2 héros, araignée 18 et la toile en alternance, rat cuirassé 18, Gardien 40, Roi des rats 16 par héros, Bourbe langue 30 et saut 28, têtard 8 ;
+  - ce qui s'écarte de la conception (les 24 décisions sont dans `REGLES.md` §8), à faire valider par Romain à l'essai :
+    - les flèches lourdes ne percent pas le Gardien fermé (sinon on le battait sans le Sage) ; leur bonus contre lui est un critique plus fort ;
+    - le Baume lumineux soigne 15 à chacun au lieu de 30 ;
+    - Bourbe chatouillé recrache toujours, mais ne roule sur le dos que s'il est sec ; quand il a plongé, il remonte à la fin du tour avec ses têtards et retombe sur tout le monde ;
+    - un monstre ouvert attaque quand même (comme le rat) ; la colle et le givre ne retiennent ni les élites ni le boss ;
+    - après une victoire, un héros au sol se relève avec 1 point de vie ; hors combat, un piège laisse toujours 1 point de vie ;
+    - deux fuites dans la même salle offrent une ligne du Grand Livre (décision du 8 novembre) ;
+  - restent ouverts : les textes du Grand Livre à faire relire par Romain ; le soin sans fin devant un dernier monstre faible (rien ne l'interdit pour l'instant).
+- **Les aides coupées le 10 à 12 h 06.** Quand Romain a changé de modèle, les trois chantiers repris à midi (critique, armes des héros, carte et tablettes) ont été arrêtés et ne peuvent pas être relancés tels quels. Leur travail est sauvegardé. Le critique a été fini à la main (ci-dessus). Les deux autres sont repris un par un.
+- En cours :
+  - les nouvelles armes des héros (`anim/heros/` : le module est fait et passe les 82 tests de la salle ; reste la mesure de mémoire sur iPhone) ;
+  - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html` : les trois pages existent ; restent l'allègement de la carte pour l'iPhone et ses tests) ;
+  - ensuite : le combat à l'écran et l'exploration (`MOTEUR-DONJON.md` §3.2 et §3.3).
+- **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :
+  - le coffre à deux carquois et le lutrin à choix ;
+  - le tas d'os à fouiller ;
+  - le crâne secret révélé par l'encre invisible ;
+  - les dalles piégées ;
+  - les trois portes ;
+  - le sarcophage et l'amulette ;
+  - le feu de camp ;
+  - **Moustache**, un gros chat gris tigré à six doigts, qui gratte la porte aux quatre signes ;
+  - **Léo**, aux cheveux de paille farinés, terrifié avec sa lanterne.
+
+  Les salles sont fluides avec le processeur ralenti ×6. **Validées par Romain à 15 h 26 (« ça me paraît bien »).**
+- Ensuite : les nouvelles armes des héros, une fois la salle des rats rendue fluide, puisque le module des héros est en train d'être optimisé.
+
+**En attente de Romain** :
+- le code par joueur ;
+- qui choisit les 2 objets de chacun (proposé : l'Alchimiste répartit ses potions sur sa tablette).
 Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 10, deux choix à chaque fois, chacun utile plusieurs fois par mission, aucun ne dépendant d'un choix précédent ; une vingtaine d'objets par rôle (chacun ne voit que les siens), certains très puissants et chers, 4 ou 5 achetables sur toute l'aventure, des combinaisons objets / talents à découvrir ; équipement visible sur le héros ; épreuve finale (E10) où tous utilisent talents et objets. **Rien n'est conçu ni construit avant le go de Romain.**
 
 **Talents et objets du Pisteur, de l'Alchimiste et du Sage (9 novembre, 0 h 25 → 12 h) — en discussion, rien de construit.**
@@ -2112,6 +2348,28 @@ Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 1
 - **Dans le code de la maquette** : une seule image (`viewBox 0 0 1200 640`), la caméra est `camera(cx, cy, z)` (un simple zoom de cette image) ; ce qu'on voit dans l'outil est posé par-dessus (`#hud`). Morceaux dans `jeu/maquettes/labo-morceaux/`, assemblés par `build.sh`.
 - **À faire dans le jeu, pas commencé, autre chantier, il faut le « go » de Romain** : redessiner les 5 modèles de paillasse de l'atelier (× 8 couleurs) avec toujours les deux tiroirs en haut, l'étagère des bocaux, la bougie, l'ardoise, le microscope, la loupe, le carré de cuir, les coupelles, le bocal à bandelettes et le carnet ; ouvrir les analyses comme un zoom sur cette paillasse, avec le mur de l'atelier derrière ; les bulles de plus de 3 mots avec leur bouton 🔊.
 - **Toujours à trancher** : l'utilité de Mimi ; l'ardoise pour le code (dans la maquette, il s'y écrit quand le fil et les grains noirs sont trouvés) ; la grande plume noire comme deuxième analyse ; le niveau 2 du Pisteur (faucon ou coureur des toits).
+
+### 12.52 Enquête 1 : le Sage ouvre la forêt, lui seul (Romain, 10 novembre, 14 h 47 → 14 h 56) — construit et testé, en attente de mise en ligne
+
+**Le principe de Romain : les quatre doivent être utiles.** « S'il n'y a que le Barde et le Pisteur qui sont utiles, c'est nul. » Dans le tutoriel, on ne cherche que deux choses, et chacun a sa part :
+- le **QUI** est au **Barde** (les habitants) ;
+- le **OÙ** est au **Pisteur** (les traces, les chemins) ;
+- l'**Alchimiste** analyse, et **débloque** : son encre ouvre la page blanche du Sage ;
+- le **Sage**, c'est **la connaissance** : il connaît la taille des pieds (les habitants) et il a le plan de la forêt.
+Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les rôles.
+
+**Ce qui a changé (constat de 14 h 47 : Basile donnait le chemin de la forêt dès le matin, le plan du Sage arrivait après coup et son seul mini-jeu ne servait presque jamais) :**
+- **Seul le plan du Sage ouvre la forêt** (`FORET = [{code:'info:carte'}]`, e1.js). La chaîne du OÙ passe par trois rôles : l'Alchimiste fait l'encre → le Sage fait parler la page blanche (Les runes) → le Pisteur entre dans la forêt et trouve le Vieux Chêne.
+- **Basile ne dessine plus le chemin.** À « Vous connaissez la forêt ? » : « La forêt ? Elle est si grande qu'on s'y perd, même moi ! Il paraît que le Grand Livre du Sage cache un vieux plan. » Pas de code. Le code `info:chemin` reste dans les tables gelées (rien n'a bougé), il n'est plus donné.
+- **L'étape du Barde chez Basile** devient « où était-il cette nuit ? » (ses grosses bottes : elles expliquent les grosses traces devant la mairie, utile pour le QUI).
+- **L'attente du Pisteur** : « Les traces filent vers la forêt… mais sans plan, on s'y perd. Le Sage fouille son Grand Livre ! » Il a la boulangerie, puis le ballon en bonus, pendant ce temps.
+- **L'étape du Sage** dit que le Pisteur compte sur lui (« sans lui, personne n'entre dans la forêt »).
+- **Plus de bouton « ⏭️ Passer » au tutoriel** (la page blanche du Sage, les poils de l'Alchimiste) : à l'enquête 1, tout se refait à l'infini, chacun réussit forcément ses petites missions (Romain, 14 h 56). Le mécanisme `passer` reste dans tuto.js, aucune étape ne s'en sert.
+- Missions du Pisteur, texte de la forêt fermée et archive de l'enquête 1 mis à jour ; `tools/partie1.py` tape le plan au lieu du chemin.
+
+**Vérifié** : `verif.js` (avec toute l'équipe : Tim au Vieux Chêne ; sans le Sage : 12 réponses possibles ; sans le Barde : 4 ; sans l'Alchimiste : 6 ; sans le Pisteur : 18), `tools/tuto.py` (partie complète à 4 tablettes, sans échec), `partie2.py`, codes E1/E2/E3 identiques.
+
+**Laissé de côté (proposé à Romain, pas validé)** : le OÙ est presque donné par le texte du soir (« va au bout du chemin du Vieux Chêne », et « une lueur dorée tout au fond » sous les racines) ; au balcon, le Sage pourrait chercher dans « Les habitants » qui laisse de la poussière noire (Tim, plein de suie), mais c'est un indice de plus sur le QUI.
 
 ## 13. Enquête 3 — La lettre d'Odette
 

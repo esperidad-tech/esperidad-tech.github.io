@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Araignée des caves animée</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#06040a;color:#e8dcc0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #cadre{width:960px;margin:0 auto}
+  #scene{position:relative;width:960px;height:540px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(90,76,130,.5), rgba(0,0,0,0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0 3px, rgba(0,0,0,0) 3px 34px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.35) 0 3px, rgba(0,0,0,0) 3px 64px),
+      linear-gradient(#2a2238, #120e1a 70%);}
+  #sol{position:absolute;left:0;right:0;top:340px;bottom:0;background:linear-gradient(#1c1628,#0c0912 40%);border-top:3px solid #2c2440}
+  #lumiere{position:absolute;left:590px;top:0;width:260px;height:340px;background:linear-gradient(rgba(207,232,255,.14),rgba(207,232,255,0));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none}
+  .heros{position:absolute;top:220px;width:70px;height:120px;border-radius:30px 30px 8px 8px;background:linear-gradient(#3a5a7a,#1a2a3a);opacity:.55}
+  .heros span{position:absolute;left:0;right:0;top:48px;text-align:center;font-size:12px;color:#bcd}
+  #bete{position:absolute;z-index:2}
+  .petite{position:absolute;z-index:3}
+  #etiquette{position:absolute;left:0;right:0;top:400px;text-align:center;font-size:28px;font-weight:700;letter-spacing:.03em;color:#ffe3a3;text-shadow:0 3px 0 #24182e,0 0 18px rgba(255,190,90,.35);z-index:10;pointer-events:none}
+  #etiquette small{display:block;font-size:16px;font-weight:500;color:#bfa77a;letter-spacing:.06em;margin-top:6px}
+  #boutons{padding:10px 0 30px}
+  #boutons h3{margin:12px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#bfa77a}
+  #boutons div{display:flex;flex-wrap:wrap;gap:6px}
+  #boutons button{background:#2a2238;color:#f3e7cb;border:1px solid #4e3f66;border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer}
+  #boutons button:hover{background:#3a3050}
+  #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
+  #boutons button.on{background:#5a4a20;border-color:#ffd23a}
+  .film #boutons{display:none}
+  #ips{position:absolute;right:8px;top:6px;z-index:20;font:600 12px/1 ui-monospace,monospace;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <div id="scene"><div id="sol"></div><div id="lumiere"></div>
+    <div class="heros" id="pisteur" style="left:60px"><span>Pisteur</span></div><div class="heros" style="left:170px"><span>Sage</span></div><div class="heros" style="left:280px"><span>Alchimiste</span></div>
+    <div id="bete"></div><div id="etiquette"></div><div id="ips">— ips</div></div>
+  <div id="boutons"></div>
+</div>
+<script src="araignee-anime.js"></script>
+<script src="../petitearaignee/petitearaignee-anime.js" onerror="void 0"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+if(Q.get('film')) document.body.classList.add('film');
+var scene = document.getElementById('scene'), boite = document.getElementById('bete'), r, petites = [], retirer = null;
+var INFO = BETES.araignee.info;
+/* la place du milieu des monstres (x 620, 210 px), le sol de la scène à y = 340 ; le cadre est haut : le fil monte jusqu'en haut */
+function placer(){
+  var w = INFO.cadre.w, h = INFO.cadre.h;
+  boite.style.width = w + 'px'; boite.style.height = h + 'px';
+  boite.style.left = (620 + 105 - w / 2) + 'px';
+  boite.style.top = (340 - h * INFO.sol) + 'px';
+}
+function viderPetites(){ petites.forEach(function(p){ p.a.arreter(); p.d.remove(); }); petites = []; }
+function nouveau(){ if(r){ r.arreter(); r.retirerToile(); } viderPetites(); boite.innerHTML = ''; scene.querySelectorAll('.bt-araignee-scene-fx').forEach(function(e){ e.remove(); }); placer(); r = BETES.araignee.creer(boite); window.r = r; return r; }
+nouveau();
+function etiquette(t, s){ document.getElementById('etiquette').innerHTML = t ? t + (s ? '<small>' + s + '</small>' : '') : ''; }
+function secouer(){ scene.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:240}); }
+function centre(el){ var b = el.getBoundingClientRect(); return {x: b.left + b.width / 2, y: b.top + b.height * .42}; }
+/* l'éclosion : deux œufs tombent sur les places libres (x 520 et 880 de la scène) ; on y crée deux petites araignées */
+function eclore(){
+  var s = scene.getBoundingClientRect(), k = s.width / 960, vers = [{x: s.left + 545 * k, y: s.top + 330 * k}, {x: s.left + 880 * k, y: s.top + 330 * k}];
+  return r.special('eclosion', {vers: vers}).then(function(points){
+    if(!window.BETES.petitearaignee) return;
+    var P = BETES.petitearaignee.info;
+    return Promise.all(points.map(function(q){
+      var d = document.createElement('div'); d.className = 'petite';
+      d.style.width = P.cadre.w + 'px'; d.style.height = P.cadre.h + 'px';
+      d.style.left = ((q.x - s.left) / k - P.cadre.w * P.oeuf[0]) + 'px'; d.style.top = ((q.y - s.top) / k - P.cadre.h * P.oeuf[1]) + 'px';
+      scene.appendChild(d);
+      var a = BETES.petitearaignee.creer(d); petites.push({a: a, d: d});
+      return a.entrer();
+    }));
+  });
+}
+var ETAPES = {
+  'entrer': function(){ return r.entrer(); },
+  'attendre': function(){ return r.attendre(); },
+  'morsure': function(){ return r.attaquer('morsure', {onImpact: secouer}); },
+  'toile': function(){ return r.attaquer('toile', {scene: scene, vers: centre(document.getElementById('pisteur')), onImpact: secouer}).then(function(f){ retirer = f; }); },
+  'retirer la toile': function(){ return r.retirerToile(); },
+  'éclosion': eclore,
+  'tousser': function(){ return r.tousser(); },
+  'fuir': function(){ return r.fuir(); },
+  'exploser': function(){ return r.exploser(scene); },
+  'arrêter': function(){ r.arreter(); },
+  'nouvelle araignée': function(){ nouveau(); },
+  'nouvelle + entrer': function(){ nouveau(); return r.entrer(); }
+};
+['coup', 'fleche', 'fleche-argent', 'fleche-lourde', 'dague', 'feu', 'brulure', 'lumiere', 'louche', 'colle', 'huile', 'nuage', 'givre', 'acide', 'bruit', 'bouclier', 'rebond'].forEach(function(t){
+  ETAPES['touche ' + t] = function(){ return r.touche(t); };
+});
+INFO.etats.forEach(function(e){
+  ETAPES[e + ' on'] = function(){ return r.etat(e, true); };
+  ETAPES[e + ' off'] = function(){ return r.etat(e, false); };
+});
+window.CADRAGE = [400, 10, 520, 350];
+/* le compteur d'images par seconde (moyenne sur une demi-seconde, et la pire image) */
+(function(){ var el = document.getElementById('ips'), n = 0, t0 = performance.now(), dern = t0, pire = 0;
+  function f(t){ n++; pire = Math.max(pire, t - dern); dern = t; if(t - t0 >= 500){ el.textContent = Math.round(n * 1000 / (t - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = t; pire = 0; } requestAnimationFrame(f); }
+  requestAnimationFrame(f); })();
+/* la mesure ralentie (perf.py) : [nom, étapes mesurées, durée de la mesure en ms, préparation non mesurée] */
+window.PERF = [
+  ['attente', ['attendre'], 3000],
+  ['morsure', ['morsure'], 1500],
+  ['toile', ['toile'], 2200],
+  ['feu (le cocon brûle)', ['touche feu'], 2000, ['retirer la toile']],
+  ['éclosion', ['éclosion'], 3000],
+  ['lumière (elle tombe)', ['touche lumiere'], 2600],
+  ['huile (elle glisse)', ['touche huile'], 2800, ['dos off']],
+  ['explosion', ['exploser'], 3000, ['nouvelle + entrer']]
+];
+window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
+window.etiquette = etiquette;
+/* le film : [étiquette, sous-titre, étapes, durée de la prise (ms), attendre la fin ?, pose pour la planche (fraction) ou null, cadrage propre] */
+window.PLAN = [
+  ['entrer', 'elle descend du plafond le long de son fil', ['entrer'], 2800, true, .3],
+  ['attendre', 'elle se balance, ses pattes frémissent, les œufs palpitent', ['attendre'], 6000, false, .5],
+  ['morsure', 'elle se laisse tomber, mord, remonte', ['morsure'], 1800, true, .4],
+  ['toile', 'elle projette une toile sur un héros', ['toile'], 2600, true, .62, [0, 0, 960, 372]],
+  ['toile : fin', 'la toile se retire', ['retirer la toile'], 800, true, null],
+  ['flèche', 'elle part en arrière sur son fil', ['touche fleche'], 1300, true, .14],
+  ['dague', '', ['touche dague'], 1200, true, null],
+  ['louche', 'elle tournoie sur son fil', ['touche louche'], 1900, true, .3],
+  ['bruit', 'elle replie ses pattes d’un coup', ['touche bruit'], 1300, true, .2],
+  ['rebond', 'immunisée : elle nargue', ['touche rebond'], 1700, true, .5],
+  ['bouclier', 'elle mord un bouclier de runes', ['touche bouclier'], 1400, true, null],
+  ['acide', '', ['touche acide'], 1200, true, null],
+  ['lumière', 'panique : le fil lâche, elle culbute…', ['touche lumiere'], 2600, true, .55],
+  ['sur le dos', 'ventre offert, pattes qui gigotent', ['ouvert on'], 3200, false, .6],
+  ['elle se relève', 'et remonte sur un nouveau fil', ['ouvert off', 'dos off'], 2200, true, .3],
+  ['huile sur le fil', 'elle glisse, glisse… et tombe', ['touche huile'], 3000, true, .4],
+  ['huile : sur le dos', 'le fil huilé pend encore', [], 2000, false, .5],
+  ['elle se relève', '', ['dos off'], 2000, true, null],
+  ['nuage', 'elle tousse trois fois…', ['touche nuage'], 4000, true, .3],
+  ['là-haut', '… et remonte hors d’atteinte', [], 2000, false, .5],
+  ['elle redescend', '', ['haut off'], 1600, true, null],
+  ['colle', 'elle se débat', ['touche colle'], 4000, false, .7],
+  ['colle : fin', '', ['colle off'], 600, false, null],
+  ['givre', 'elle gèle', ['touche givre'], 3000, false, .8],
+  ['gel : fin', '', ['gele off'], 1200, false, null],
+  ['enragée', 'ses yeux flamboient', ['enrage on'], 3200, false, .6],
+  ['enragée : fin', '', ['enrage off'], 600, false, null],
+  ['éblouie', 'des étoiles, les pattes devant les yeux', ['ebloui on'], 3000, false, .6],
+  ['éblouie : fin', '', ['ebloui off'], 800, false, null],
+  ['brûlée', 'les flammes restent', ['brule on'], 3000, false, .6],
+  ['brûlée : fin', '', ['brule off'], 700, false, null],
+  ['feu', 'son cocon prend feu…', ['touche feu'], 3000, true, .8],
+  ['éclosion', '… les œufs tombent, deux petites araignées en sortent', ['éclosion'], 4600, true, .82, [380, 10, 580, 370]],
+  ['fuir', 'elle remonte son fil à toute vitesse', ['fuir'], 3000, true, .3],
+  ['une autre araignée', '', ['nouvelle + entrer'], 2800, true, null],
+  ['exploser', 'le coup critique : brume noire', ['exploser'], 4600, true, .22],
+  ['ce qui reste', 'la carcasse aux pattes repliées, le fil cassé', [], 1500, false, .5]
+];
+window.toutJouer = function(){
+  return PLAN.reduce(function(p, e){ return p.then(function(){ etiquette(e[0], e[1]); var f = e[2].reduce(function(q, n){ return q.then(function(){ return etape(n); }); }, Promise.resolve()); return Promise.all([e[4] ? f : null, new Promise(function(ok){ setTimeout(ok, e[3]); })]); }); }, Promise.resolve(nouveau())).then(function(){ etiquette('', ''); });
+};
+var zone = document.getElementById('boutons');
+function groupe(titre, noms){
+  var h = document.createElement('h3'); h.textContent = titre; zone.appendChild(h);
+  var d = document.createElement('div'); zone.appendChild(d);
+  noms.forEach(function(nom){
+    var b = document.createElement('button');
+    b.textContent = nom.replace(/^touche /, '');
+    if(nom === 'entrer' || nom === 'exploser' || nom === 'Tout jouer') b.className = 'go';
+    b.onclick = function(){ if(nom === 'Tout jouer') return toutJouer(); etape(nom); };
+    d.appendChild(b);
+  });
+}
+groupe('Actions', ['Tout jouer', 'entrer', 'attendre', 'morsure', 'toile', 'retirer la toile', 'éclosion', 'tousser', 'fuir', 'exploser', 'arrêter', 'nouvelle araignée']);
+groupe('touche(type)', Object.keys(ETAPES).filter(function(n){ return /^touche /.test(n); }));
+groupe('etat(nom, on / off)', Object.keys(ETAPES).filter(function(n){ return / (on|off)$/.test(n); }));
+</script>
+</body>
+</html>

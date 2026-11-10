@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bourbe animé</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#06040a;color:#e8dcc0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #cadre{width:960px;margin:0 auto}
+  #scene{position:relative;width:960px;height:540px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(90,76,130,.5), rgba(0,0,0,0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 3px, rgba(0,0,0,0) 3px 34px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.4) 0 3px, rgba(0,0,0,0) 3px 64px),
+      linear-gradient(#2a2238, #120e1a 70%);}
+  /* un bassin et sa margelle, comme dans le décor du grand bassin */
+  #bassin{position:absolute;left:430px;right:-20px;top:300px;height:70px;border-radius:50%/40%;background:radial-gradient(ellipse at 50% 40%, #1d3a44, #0a161c 70%, rgba(8,18,24,0) 100%)}
+  #sol{position:absolute;left:0;right:0;top:340px;height:32px;background:linear-gradient(#1c1628,#0c0912);border-top:3px solid #2c2440}
+  #margelle{position:absolute;left:440px;right:-10px;top:352px;height:40px;background:linear-gradient(#5d566e,#2e2a3a);border-top:3px solid #24182e;border-radius:6px 6px 0 0}
+  #bas{position:absolute;left:0;right:0;top:372px;bottom:0;background:linear-gradient(#141020,#0a0810);border-top:2px solid #2c2440}
+  #lumiere{position:absolute;left:560px;top:0;width:260px;height:372px;background:linear-gradient(rgba(207,232,255,.14),rgba(207,232,255,0));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none}
+  .heros{position:absolute;top:226px;width:84px;height:114px;border-radius:42px 42px 10px 10px;background:linear-gradient(#3a5a7a,#1a2a3a);opacity:.6;border:2px solid #4a6a8a}
+  .heros span{position:absolute;left:0;right:0;top:46px;text-align:center;font-size:12px;color:#cde}
+  #boss{position:absolute;left:470px;top:36px;width:490px;height:340px;z-index:2}
+  #etiquette{position:absolute;left:0;right:0;top:400px;text-align:center;font-size:30px;font-weight:700;letter-spacing:.04em;color:#ffe3a3;text-shadow:0 3px 0 #24182e,0 0 18px rgba(255,190,90,.35);z-index:10;pointer-events:none}
+  #etiquette small{display:block;font-size:17px;font-weight:500;color:#bfa77a;letter-spacing:.06em;margin-top:6px}
+  #fx{position:absolute;left:0;top:0;width:960px;height:372px;pointer-events:none;z-index:40}
+  #boutons{padding:12px 0}
+  #boutons h3{margin:10px 0 4px;font-size:13px;color:#bfa77a;letter-spacing:.08em;text-transform:uppercase}
+  #boutons button{background:#2a2238;color:#f3e7cb;border:1px solid #4e3f66;border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer;margin:0 6px 6px 0}
+  #boutons button:hover{background:#3a3050}
+  #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
+  #boutons button.on{background:#4e7a3a;border-color:#8fd06a}
+  .film #boutons{display:none}
+  #ips{position:absolute;right:8px;top:6px;z-index:50;font:600 13px/1 system-ui,sans-serif;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <div id="scene">
+    <div id="lumiere"></div><div id="bassin"></div><div id="sol"></div><div id="margelle"></div><div id="bas"></div>
+    <div class="heros" id="h0" style="left:70px"><span>Pisteur</span></div>
+    <div class="heros" id="h1" style="left:190px"><span>Alchimiste</span></div>
+    <div class="heros" id="h2" style="left:310px"><span>Sage</span></div>
+    <div id="boss"></div>
+    <div id="fx"></div>
+    <div id="etiquette"></div>
+    <div id="ips">— ips</div>
+  </div>
+  <div id="boutons"></div>
+</div>
+<script src="bourbe-anime.js"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+if(Q.get('film')) document.body.classList.add('film');
+var scene = document.getElementById('scene'), fx = document.getElementById('fx'), boite = document.getElementById('boss'), b;
+function nouveau(){ boite.innerHTML = ''; boite.style.visibility = ''; b = BETES.bourbe.creer(boite); window.b = b; [0, 1, 2].forEach(function(i){ var h = document.getElementById('h' + i); h.style.visibility = ''; h.getAnimations().forEach(function(a){ a.cancel(); }); }); return b; }
+nouveau();
+function etiquette(t, s){ document.getElementById('etiquette').innerHTML = t ? t + (s ? '<small>' + s + '</small>' : '') : ''; }
+function secouer(k){ scene.animate([{transform: 'translate(0,0)'}, {transform: 'translate(-' + (8 * k) + 'px,' + (5 * k) + 'px)'}, {transform: 'translate(' + (7 * k) + 'px,-' + (4 * k) + 'px)'}, {transform: 'translate(-' + (4 * k) + 'px,' + (2 * k) + 'px)'}, {transform: 'translate(0,0)'}], {duration: 360}); }
+/* le point visé : le milieu d'un héros (coordonnées écran) */
+function heros(i){ var r = document.getElementById('h' + i).getBoundingClientRect(); return {x: r.left + r.width / 2, y: r.top + r.height * .45}; }
+var avale = null;
+var ETAPES = {
+  'entrer': function(){ return b.entrer(); },
+  'attendre': function(){ return b.attendre(); },
+  'langue': function(){ return b.attaquer('langue', {scene: fx, vers: heros(1), onImpact: function(){ avale = document.getElementById('h1'); avale.style.visibility = 'hidden'; }}); },
+  'saut': function(){ return b.attaquer('saut', {scene: fx, vers: heros(0), onImpact: function(){ secouer(b.etatCourant().gonfle ? 1.6 : 1); [0, 1, 2].forEach(function(i){ var h = document.getElementById('h' + i); h.animate([{transform: 'translateY(0)'}, {transform: 'translateY(-14px)'}, {transform: 'translateY(0)'}], {duration: 300, delay: (2 - i) * 60}); }); }}); },
+  'recrache': function(){ return b.special('recrache', {onImpact: function(){ ressortir(); }}); },
+  'chatouille': function(){ return b.special('chatouille', {onImpact: function(){ ressortir(); }}); },
+  'plonger': function(){ return b.special('plonger'); },
+  'remonter': function(){ return b.special('remonter'); },
+  'mouche': function(){ return b.special('mouche'); },
+  'rot': function(){ return b.special('rot'); },
+  'tousser': function(){ return b.tousser(); },
+  'mourir': function(){ return b.mourir(); },
+  'exploser': function(){ return b.exploser(fx); },
+  'arrêter': function(){ b.arreter(); },
+  'nouveau': function(){ nouveau(); }
+};
+/* le héros recraché ressort de la bouche et retourne à sa place */
+function ressortir(){
+  var h = avale || document.getElementById('h1'); avale = null;
+  var bo = b.ancre('bouche'), r = h.getBoundingClientRect(), dx = bo.x - (r.left + r.width / 2), dy = bo.y - (r.top + r.height / 2);
+  h.style.visibility = '';
+  h.animate([{transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.3) rotate(-200deg)'}, {offset: .6, transform: 'translate(' + dx * .3 + 'px,' + (dy * .3 - 60) + 'px) scale(.9) rotate(-40deg)'}, {transform: 'translate(0,0) scale(1) rotate(0deg)'}], {duration: 700, easing: 'ease-out'});
+}
+var COUPS = ['rebond', 'fleche', 'fleche-argent', 'fleche-lourde', 'dague', 'feu', 'lumiere', 'louche', 'colle', 'huile', 'nuage', 'givre', 'acide', 'bruit', 'bouclier'];
+COUPS.forEach(function(c){ ETAPES['touche ' + c] = function(){ return b.touche(c); }; });
+var ETATS = ['enrage', 'brule', 'colle', 'ebloui', 'gele', 'ouvert', 'dos', 'cible', 'berge', 'sec', 'gonfle', 'avale', 'sous'];
+ETATS.forEach(function(e){ ETAPES[e + ' on'] = function(){ return b.etat(e, true); }; ETAPES[e + ' off'] = function(){ return b.etat(e, false); }; });
+window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
+window.etiquette = etiquette;
+/* le compteur d'images par seconde (et la pire image de la dernière seconde) */
+(function(){
+  var el = document.getElementById('ips'), n = 0, t0 = performance.now(), prec = t0, pire = 0;
+  (function f(t){ n++; pire = Math.max(pire, t - prec); prec = t; if(t - t0 >= 1000){ el.textContent = Math.round(n * 1000 / (t - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = t; pire = 0; } requestAnimationFrame(f); })(t0);
+})();
+/* tout jouer : un vrai combat, du début à l'explosion */
+var TOUT = [['entrer', 'il émerge de l\'eau noire'], ['attendre', ''], ['touche rebond', 'immunisé : ça rebondit, il nargue'], ['langue', 'la langue : il avale un héros'], ['chatouille', 'chatouillé de l\'intérieur'], ['dos off', ''],
+  ['touche lumiere', 'la lumière dans l\'eau'], ['berge on', 'il monte sur la berge'], ['touche feu', 'le feu sur la bave'], ['sec on', 'sa peau sèche et craque'], ['touche nuage', 'le nuage : il tousse'], ['dos on', 'il roule sur le dos'], ['ouvert on', 'le point faible palpite'],
+  ['touche fleche', 'ouille !'], ['ouvert off', ''], ['dos off', ''], ['sec off', ''], ['berge off', ''], ['gonfle on', 'nuage avant feu : il gonfle'], ['saut', 'le saut double'], ['gonfle off', ''], ['touche bruit', 'le bruit'], ['plonger', 'il plonge'], ['remonter', 'il remonte'],
+  ['gele on', 'le givre sur le bassin'], ['saut', 'il retombe sur la glace'], ['gele off', ''], ['exploser', 'le coup critique']];
+ETAPES['Tout jouer'] = function(){ return TOUT.reduce(function(p, e){ return p.then(function(){ etiquette(e[0], e[1]); return etape(e[0]); }).then(function(){ return new Promise(function(r){ setTimeout(r, 900); }); }); }, Promise.resolve()).then(function(){ etiquette('', ''); }); };
+var zone = document.getElementById('boutons');
+function groupe(titre, noms){
+  var h = document.createElement('h3'); h.textContent = titre; zone.appendChild(h);
+  noms.forEach(function(nom){
+    var bt = document.createElement('button');
+    bt.textContent = nom;
+    if(nom === 'entrer' || nom === 'exploser' || nom === 'Tout jouer') bt.className = 'go';
+    bt.onclick = function(){ etape(nom); };
+    zone.appendChild(bt);
+  });
+}
+groupe('Tout', ['Tout jouer', 'nouveau', 'arrêter']);
+groupe('Actions', ['entrer', 'attendre', 'langue', 'saut', 'tousser', 'mourir', 'exploser']);
+groupe('Spéciaux', ['recrache', 'chatouille', 'plonger', 'remonter', 'mouche', 'rot']);
+groupe('Coups', COUPS.map(function(c){ return 'touche ' + c; }));
+groupe('États', [].concat.apply([], ETATS.map(function(e){ return [e + ' on', e + ' off']; })));
+</script>
+</body>
+</html>

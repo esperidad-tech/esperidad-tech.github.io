@@ -1,0 +1,189 @@
+{
+ "ralenti": 6,
+ "page": "1024 x 768, mobile, echelle 2",
+ "mesures": [
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "puits : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "galerie : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "galerie : Prendre la bourse",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "aeration : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "nom": "aeration : Prendre les deux",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "reserve : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "reserve : Ouvrir, puis les flèches d'argent",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 83,
+   "lentes": 1,
+   "nom": "givre : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "givre : Prendre la fleur",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "bibliotheque : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "bibliotheque : Le bâton de chêne",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "eboulis : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "eboulis : Fouiller, révéler, ouvrir",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "dalles : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "dalles : Une dalle sombre !",
+   "objectif": 40
+  },
+  {
+   "ips": 58,
+   "pire": 117,
+   "lentes": 1,
+   "nom": "portes : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "portes : Ouvrir l'œil",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "crypte-sarco : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "crypte-sarco : Ouvrir, prendre l'amulette",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "camp : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "camp : Attiser le feu",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "porte4 : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "porte4 : La scène (gratte, se retourne, miaule)",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "leo : au repos",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "leo : Il lève sa lanterne",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "leo : Il se recroqueville",
+   "objectif": 40
+  }
+ ],
+ "erreurs": []
+}

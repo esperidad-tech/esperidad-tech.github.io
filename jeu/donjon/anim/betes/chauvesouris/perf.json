@@ -1,0 +1,111 @@
+{
+ "ralenti": 6,
+ "mesures": [
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "attente (vol sur place)",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "piqué",
+   "objectif": 40
+  },
+  {
+   "ips": 59,
+   "pire": 33,
+   "lentes": 0,
+   "nom": "flèche d'argent",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "nom": "bruit : BONG, chute",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "attente au sol (sonnée)",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "envol",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "colle : chute",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "attente collée",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "lumière : folle",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "attente folle",
+   "objectif": 50
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "deux piqués (folle)",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "brûlée + enragée (attente)",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "toux",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 17,
+   "lentes": 0,
+   "nom": "fuite",
+   "objectif": 40
+  },
+  {
+   "ips": 60,
+   "pire": 33,
+   "lentes": 0,
+   "nom": "explosion",
+   "objectif": 40
+  }
+ ],
+ "erreurs": []
+}

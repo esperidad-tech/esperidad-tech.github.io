@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feu follet animé</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#06040a;color:#e8dcc0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #cadre{width:960px;margin:0 auto}
+  #scene{position:relative;width:960px;height:540px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(90,76,130,.5), rgba(0,0,0,0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 3px, rgba(0,0,0,0) 3px 34px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.4) 0 3px, rgba(0,0,0,0) 3px 64px),
+      linear-gradient(#2a2238, #120e1a 70%);}
+  #lumiere{position:absolute;left:590px;top:0;width:260px;height:340px;background:linear-gradient(rgba(207,232,255,.12),rgba(207,232,255,0));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none}
+  #sol{position:absolute;left:0;right:0;top:340px;height:32px;background:linear-gradient(#1c1628,#0c0912);border-top:3px solid #2c2440}
+  #bas{position:absolute;left:0;right:0;top:372px;bottom:0;background:linear-gradient(#141020,#0a0810);border-top:2px solid #2c2440}
+  .heros{position:absolute;top:226px;width:84px;height:114px;border-radius:42px 42px 10px 10px;background:linear-gradient(#3a5a7a,#1a2a3a);opacity:.6;border:2px solid #4a6a8a}
+  .heros span{position:absolute;left:0;right:0;top:46px;text-align:center;font-size:12px;color:#cde}
+  #bete{position:absolute;z-index:2}
+  #etiquette{position:absolute;left:0;right:0;top:400px;text-align:center;font-size:30px;font-weight:700;letter-spacing:.04em;color:#ffe3a3;text-shadow:0 3px 0 #24182e,0 0 18px rgba(255,190,90,.35);z-index:10;pointer-events:none}
+  #etiquette small{display:block;font-size:17px;font-weight:500;color:#bfa77a;letter-spacing:.06em;margin-top:6px}
+  #ips{position:absolute;right:8px;top:6px;z-index:50;font:600 13px/1 system-ui,sans-serif;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
+  #boutons{padding:12px 0 30px}
+  #boutons h3{margin:10px 0 4px;font-size:13px;color:#bfa77a;letter-spacing:.08em;text-transform:uppercase}
+  #boutons button{background:#2a2238;color:#f3e7cb;border:1px solid #4e3f66;border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer;margin:0 6px 6px 0}
+  #boutons button:hover{background:#3a3050}
+  #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
+  .film #boutons{display:none}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <div id="scene">
+    <div id="lumiere"></div><div id="sol"></div><div id="bas"></div>
+    <div class="heros" id="h0" style="left:70px"><span>Pisteur</span></div>
+    <div class="heros" id="h1" style="left:190px"><span>Alchimiste</span></div>
+    <div class="heros" id="h2" style="left:310px"><span>Sage</span></div>
+    <div id="bete"></div>
+    <div id="etiquette"></div>
+    <div id="ips">— ips</div>
+  </div>
+  <div id="boutons"></div>
+</div>
+<script src="feufollet-anime.js"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+if(Q.get('film')) document.body.classList.add('film');
+var scene = document.getElementById('scene'), boite = document.getElementById('bete'), t;
+var INFO = BETES.feufollet.info;
+/* la place du milieu des monstres (x 620, 210 px) ; le sol de la scène à y = 340 : la ligne « sol » du cadre s'y pose */
+function placer(){
+  var w = INFO.cadre.w, h = INFO.cadre.h;
+  boite.style.width = w + 'px'; boite.style.height = h + 'px';
+  boite.style.left = (620 + 105 - w / 2) + 'px';
+  boite.style.top = (340 - h * INFO.sol) + 'px';
+}
+function nouveau(){ if(t) t.arreter(); boite.innerHTML = ''; scene.querySelectorAll('.bt-feufollet-scene-fx').forEach(function(e){ e.remove(); }); placer(); t = BETES.feufollet.creer(boite); window.t = t; return t; }
+nouveau();
+function etiquette(a, b){ document.getElementById('etiquette').innerHTML = a ? a + (b ? '<small>' + b + '</small>' : '') : ''; }
+function secouer(){ scene.animate([{transform: 'translate(0,0)'}, {transform: 'translate(-5px,3px)'}, {transform: 'translate(4px,-2px)'}, {transform: 'translate(0,0)'}], {duration: 220}); }
+/* le point visé : la poitrine d'un héros, en coordonnées écran */
+function poitrine(id){ var r = document.getElementById(id).getBoundingClientRect(); return {x: r.left + r.width / 2, y: r.top + r.height * .35}; }
+function aie(id){ return function(){ secouer(); document.getElementById(id).animate([{transform: 'translateX(0)'}, {transform: 'translateX(-10px)'}, {transform: 'translateX(0)'}], {duration: 260}); }; }
+var ETAPES = {
+  'entrer': function(){ return t.entrer(); },
+  'attendre': function(){ return t.attendre(); },
+  'attaquer': function(){ return t.attaquer('brulure', {scene: scene, vers: [poitrine('h1'), poitrine('h2')], onImpact: function(i){ aie(i ? 'h2' : 'h1')(); }}); },
+  'tousser': function(){ return t.tousser(); },
+  'appel': function(){ return t.special('appel'); },
+  'rire': function(){ return t.special('rire'); },
+  'grandit': function(){ return t.special('grandit'); },
+  'accroche': function(){ return t.special('accroche', {vers: poitrine('h2')}); },
+  'fuir': function(){ return t.fuir(); },
+  'mourir': function(){ return t.mourir(); },
+  'exploser': function(){ return t.exploser(scene); },
+  'arrêter': function(){ t.arreter(); },
+  'nouveau': function(){ nouveau(); }
+};
+var COUPS = ['nuage', 'lumiere', 'bouclier', 'fleche-argent', 'fleche', 'fleche-lourde', 'dague', 'feu', 'louche', 'colle', 'huile', 'givre', 'acide', 'bruit', 'rebond'];
+COUPS.forEach(function(c){ ETAPES['touche ' + c] = function(){ return t.touche(c); }; });
+INFO.etats.forEach(function(e){ ETAPES[e + ' on'] = function(){ return t.etat(e, true); }; ETAPES[e + ' off'] = function(){ return t.etat(e, false); }; });
+window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
+window.etiquette = etiquette;
+(function(){
+  var el = document.getElementById('ips'), n = 0, t0 = performance.now(), prec = t0, pire = 0;
+  (function f(x){ n++; pire = Math.max(pire, x - prec); prec = x; if(x - t0 >= 1000){ el.textContent = Math.round(n * 1000 / (x - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = x; pire = 0; } requestAnimationFrame(f); })(t0);
+})();
+var TOUT = [['entrer', 'il apparaît'], ['attendre', 'la flamme ondule, il appelle du doigt'], ['attaquer', 'la brûlure froide, sur deux héros'], ['touche fleche-argent', 'elle le déchire, il se recoud'],
+  ['touche nuage', 'il tousse, sa silhouette se dessine'], ['visible off', ''], ['touche bouclier', 'il s\'accroche aux runes'], ['accroche off', ''], ['visible off', ''],
+  ['touche lumiere', 'il boit la lumière et grandit'], ['grand off', ''], ['touche rebond', 'non, non…'], ['mourir', 'il s\'éteint'], ['nouveau', ''], ['entrer', ''], ['exploser', 'le critique']];
+ETAPES['Tout jouer'] = function(){ return TOUT.reduce(function(p, e){ return p.then(function(){ etiquette(e[0], e[1]); return etape(e[0]); }).then(function(){ return new Promise(function(r){ setTimeout(r, 900); }); }); }, Promise.resolve()).then(function(){ etiquette('', ''); }); };
+/* les moments mesurés par perf.py : [nom, étapes mesurées, durée (ms), préparation (non mesurée)] */
+window.PERF = [
+  ['attente (flamme qui ondule)', ['attendre'], 3000],
+  ['entrée', ['entrer'], 1600, ['nouveau']],
+  ['brûlure froide (2 héros)', ['attaquer'], 2100],
+  ['flèche d\'argent (déchiré)', ['touche fleche-argent'], 1700],
+  ['nuage : toux, visible', ['touche nuage'], 2700],
+  ['attente visible (fumée)', ['attendre'], 2500],
+  ['bouclier : accroche', ['touche bouclier'], 2300, ['visible off']],
+  ['attente accroché (runes)', ['attendre'], 2000],
+  ['lumière : il grandit', ['touche lumiere'], 1900, ['accroche off', 'visible off']],
+  ['attente grand', ['attendre'], 2500],
+  ['brûlé + enragé (attente)', ['attendre'], 2500, ['grand off', 'brule on', 'enrage on']],
+  ['huile (il s\'embrase)', ['touche huile'], 1300, ['brule off', 'enrage off']],
+  ['il s\'éteint', ['mourir'], 3200],
+  ['explosion', ['exploser'], 2400, ['nouveau', 'entrer']]
+];
+var zone = document.getElementById('boutons');
+function groupe(titre, noms){
+  var h = document.createElement('h3'); h.textContent = titre; zone.appendChild(h);
+  noms.forEach(function(nom){ var bt = document.createElement('button'); bt.textContent = nom; if(nom === 'entrer' || nom === 'exploser' || nom === 'Tout jouer') bt.className = 'go'; bt.onclick = function(){ etape(nom); }; zone.appendChild(bt); });
+}
+groupe('Tout', ['Tout jouer', 'nouveau', 'arrêter']);
+groupe('Actions', ['entrer', 'attendre', 'attaquer', 'tousser', 'appel', 'rire', 'grandit', 'accroche', 'fuir', 'mourir', 'exploser']);
+groupe('Coups', COUPS.map(function(c){ return 'touche ' + c; }));
+groupe('États', [].concat.apply([], INFO.etats.map(function(e){ return [e + ' on', e + ' off']; })));
+</script>
+</body>
+</html>

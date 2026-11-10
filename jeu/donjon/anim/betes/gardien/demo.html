@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gardien de rouille animé</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#06040a;color:#e8dcc0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #cadre{width:960px;margin:0 auto}
+  #scene{position:relative;width:960px;height:540px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(90,76,130,.5), rgba(0,0,0,0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0 3px, rgba(0,0,0,0) 3px 34px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.35) 0 3px, rgba(0,0,0,0) 3px 64px),
+      linear-gradient(#2a2238, #120e1a 70%);}
+  #sol{position:absolute;left:0;right:0;top:340px;bottom:0;background:linear-gradient(#1c1628,#0c0912 40%);border-top:3px solid #2c2440}
+  #lumiere{position:absolute;left:620px;top:0;width:280px;height:340px;background:linear-gradient(rgba(207,232,255,.14),rgba(207,232,255,0));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none}
+  .heros{position:absolute;top:220px;width:70px;height:120px;border-radius:30px 30px 8px 8px;background:linear-gradient(#3a5a7a,#1a2a3a);opacity:.55}
+  .heros span{position:absolute;left:0;right:0;top:48px;text-align:center;font-size:12px;color:#bcd}
+  #bete{position:absolute;z-index:2}
+  #etiquette{position:absolute;left:0;right:0;top:404px;text-align:center;font-size:28px;font-weight:700;letter-spacing:.03em;color:#ffe3a3;text-shadow:0 3px 0 #24182e,0 0 18px rgba(255,190,90,.35);z-index:10;pointer-events:none}
+  #etiquette small{display:block;font-size:16px;font-weight:500;color:#bfa77a;letter-spacing:.06em;margin-top:6px}
+  #boutons{padding:10px 0 30px}
+  #boutons h3{margin:12px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#bfa77a}
+  #boutons div{display:flex;flex-wrap:wrap;gap:6px}
+  #boutons button{background:#2a2238;color:#f3e7cb;border:1px solid #4e3f66;border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer}
+  #boutons button:hover{background:#3a3050}
+  #boutons button.go{background:#ffd23a;color:#111;border-color:#ffd23a;font-weight:700}
+  .film #boutons{display:none}
+  #ips{position:absolute;right:8px;top:6px;z-index:20;font:600 12px/1 ui-monospace,monospace;color:#9fe0a0;background:rgba(0,0,0,.45);padding:4px 7px;border-radius:6px;pointer-events:none}
+  #tinte{position:absolute;left:0;right:0;top:12px;text-align:center;font:700 15px/1 system-ui;color:#ffd9a0;opacity:0;z-index:20;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <div id="scene"><div id="sol"></div><div id="lumiere"></div>
+    <div class="heros" style="left:60px"><span>Pisteur</span></div><div class="heros" style="left:170px"><span>Sage</span></div><div class="heros" id="devant" style="left:280px"><span>Alchimiste</span></div>
+    <div id="bete"></div><div id="etiquette"></div><div id="ips">— ips</div><div id="tinte"></div></div>
+  <div id="boutons"></div>
+</div>
+<script src="gardien-anime.js"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+if(Q.get('film')) document.body.classList.add('film');
+var scene = document.getElementById('scene'), boite = document.getElementById('bete'), g;
+var INFO = BETES.gardien.info;
+/* la place de l'élite (deux places de monstre, environ 320 px), le sol de la scène à y = 340 */
+function placer(){
+  var w = INFO.cadre.w, h = INFO.cadre.h;
+  boite.style.width = w + 'px'; boite.style.height = h + 'px';
+  boite.style.left = '520px';
+  boite.style.top = (340 - h * INFO.sol) + 'px';
+}
+function nouveau(){ if(g) g.arreter(); boite.innerHTML = ''; placer(); g = BETES.gardien.creer(boite); window.g = g; return g; }
+nouveau();
+function etiquette(t, s){ document.getElementById('etiquette').innerHTML = t ? t + (s ? '<small>' + s + '</small>' : '') : ''; }
+/* ce que ferait le moteur : secouer la scène, faire réagir le héros touché */
+function secouer(f){ f = f || 1; scene.animate([{transform:'translate(0,0)'},{transform:'translate(' + (-6 * f) + 'px,' + (3 * f) + 'px)'},{transform:'translate(' + (5 * f) + 'px,' + (-2 * f) + 'px)'},{transform:'translate(0,0)'}],{duration:260}); }
+function heros(){ var h = document.getElementById('devant'); h.animate([{transform:'translateX(0)', filter:'brightness(1)'},{transform:'translateX(-14px)', filter:'brightness(2.6)'},{transform:'translateX(0)', filter:'brightness(1)'}],{duration:360}); secouer(1.3); }
+function tinte(m){ var t = document.getElementById('tinte'); t.textContent = 'clang (' + m + ')'; t.animate([{opacity:1},{opacity:0}],{duration:700}); secouer(.4); }
+function vers(){ var r = document.getElementById('devant').getBoundingClientRect(); return {x: r.left + r.width / 2, y: r.top + r.height * .45}; }
+var ETAPES = {
+  'entrer': function(){ return g.entrer({onPas: function(){ secouer(1); }}); },
+  'attendre': function(){ return g.attendre(); },
+  'poing': function(){ return g.attaquer('poing', {onImpact: heros, vers: vers(), scene: scene}); },
+  'tousser': function(){ return g.tousser(); },
+  'mourir': function(){ return g.mourir({onTinte: tinte}); },
+  'exploser': function(){ return g.exploser(scene); },
+  'arrêter': function(){ g.arreter(); },
+  'nouveau': function(){ nouveau(); },
+  'nouveau + entrer': function(){ nouveau(); return ETAPES.entrer(); }
+};
+['coup', 'fleche', 'fleche-argent', 'fleche-lourde', 'dague', 'feu', 'brulure', 'lumiere', 'louche', 'colle', 'huile', 'nuage', 'givre', 'acide', 'bruit', 'bouclier', 'rebond'].forEach(function(t){
+  ETAPES['touche ' + t] = function(){ return g.touche(t, {onTinte: tinte, onImpact: function(){ secouer(.6); }}); };
+});
+ETAPES['touche rebond (dague)'] = function(){ return g.touche('rebond', {arme: 'dague'}); };
+ETAPES['touche rebond (louche)'] = function(){ return g.touche('rebond', {arme: 'louche'}); };
+INFO.specials.forEach(function(s){ ETAPES['special ' + s] = function(){ return g.special(s, {onTinte: tinte}); }; });
+INFO.etats.forEach(function(e){
+  ETAPES[e + ' on'] = function(){ return g.etat(e, true); };
+  ETAPES[e + ' off'] = function(){ return g.etat(e, false); };
+});
+/* les combos du Grand Livre */
+function suite(l){ return function(){ return l.reduce(function(p, n){ return p.then(function(){ return etape(n); }); }, Promise.resolve()); }; }
+ETAPES['combo : acide puis lumière'] = suite(['touche acide', 'touche lumiere', 'ouvert on']);
+ETAPES['combo : givre puis lumière'] = suite(['touche givre', 'touche lumiere', 'ouvert on']);
+ETAPES['combo : bouclier puis lumière'] = suite(['touche bouclier', 'touche lumiere', 'ouvert on']);
+ETAPES['piège : lumière d’abord'] = suite(['touche lumiere']);
+window.CADRAGE = [400, 20, 560, 340];
+/* le compteur d'images par seconde (moyenne sur une demi-seconde, et la pire image) */
+(function(){ var el = document.getElementById('ips'), n = 0, t0 = performance.now(), dern = t0, pire = 0;
+  function f(t){ n++; pire = Math.max(pire, t - dern); dern = t; if(t - t0 >= 500){ el.textContent = Math.round(n * 1000 / (t - t0)) + ' ips · pire ' + Math.round(pire) + ' ms'; n = 0; t0 = t; pire = 0; } requestAnimationFrame(f); }
+  requestAnimationFrame(f); })();
+/* la mesure ralentie (perf.py) : [nom, étapes mesurées, durée de la mesure en ms, préparation non mesurée] */
+window.PERF = [
+  ['attente', ['attendre'], 3000],
+  ['entrée (réveil, deux pas)', ['nouveau + entrer'], 7000],
+  ['attente après l’entrée', [], 2500],
+  ['poing', ['poing'], 2600],
+  ['rebond (immunisé)', ['touche rebond'], 2700],
+  ['flèche lourde (bosse)', ['touche fleche-lourde'], 1800],
+  ['piège : lumière d’abord', ['touche lumiere'], 2500],
+  ['attente enragé', [], 2500],
+  ['poing enragé', ['poing'], 1800],
+  ['acide : la plaque tombe', ['touche acide'], 3900, ['enrage off']],
+  ['lumière : cœur ébloui', ['touche lumiere', 'ouvert on'], 2600],
+  ['attente point faible ouvert', [], 3000],
+  ['givre : la plaque éclate', ['touche givre'], 3400, ['nouveau']],
+  ['huile', ['touche huile'], 2000],
+  ['toux', ['tousser'], 2800],
+  ['feu (rougeoie) + brûlé', ['touche feu', 'brule on'], 3000],
+  ['attente rougeoie + brûlé', [], 2500],
+  ['mort (s’effondre)', ['mourir'], 7200, ['nouveau']],
+  ['explosion', ['exploser'], 3600, ['nouveau']]
+];
+window.etape = function(nom){ return Promise.resolve(ETAPES[nom]()); };
+window.etiquette = etiquette;
+/* le film : [étiquette, sous-titre, étapes, durée de la prise (ms), attendre la fin ?, poses pour la planche (fractions de la prise) ou null] */
+window.PLAN = [
+  ['entrer', 'il se réveille : ses runes s’allument une à une', ['entrer'], 7600, true, [.2, .42, .8]],
+  ['attendre', 'vapeur, engrenages, cœur qui bat, tics de la tête', ['attendre'], 4600, false, null],
+  ['poing', 'il arme son bras, lent et lourd… BAM ! puis un gros recul de vapeur', ['poing'], 2900, true, [.33, .55, .68]],
+  ['rebond (immunisé)', 'ça ricoche ; il tourne lentement la tête vers le tireur', ['touche rebond'], 2900, true, [.6]],
+  ['rebond (louche)', 'la louche ricoche aussi', ['touche rebond (louche)'], 2900, true, null],
+  ['flèche lourde', 'grosses étincelles, une bosse dans le fer', ['touche fleche-lourde'], 2500, true, [.12]],
+  ['dague', 'ça raye le fer', ['touche dague'], 1300, true, null],
+  ['louche', 'BONG : sa tête sonne comme une cloche', ['touche louche'], 1700, true, null],
+  ['bruit', 'il sursaute, ses plaques claquent', ['touche bruit'], 1400, true, null],
+  ['nuage', 'il tousse de la vapeur, trois fois', ['touche nuage'], 3100, true, [.5]],
+  ['colle', 'le pied de devant est collé : il tire dessus', ['touche colle'], 4400, false, [.75]],
+  ['colle : fin', '', ['colle off'], 700, false, null],
+  ['huile', 'il glisse, mouline des bras… et se rattrape', ['touche huile'], 2300, true, [.45]],
+  ['feu', 'il chauffe au rouge : le feu le renforce', ['touche feu'], 3200, false, [.75]],
+  ['rougeoie : fin', '', ['rougeoie off'], 1200, false, null],
+  ['brûlé', 'la mousse prend feu', ['brule on'], 2600, false, null],
+  ['brûlé : fin', '', ['brule off'], 800, false, null],
+  ['PIÈGE : la lumière d’abord', 'ses runes s’enflamment en rouge : il s’énerve', ['touche lumiere'], 3000, true, [.82]],
+  ['enragé', 'ses coups sont doublés : il frappe plus vite', ['poing'], 2200, true, [.4]],
+  ['enragé : fin', '', ['enrage off'], 900, false, null],
+  ['1. ACIDE', 'la rouille de la plaque fond, grésille… la plaque pend', ['touche acide'], 4400, true, [.25, .95]],
+  ['2. LUMIÈRE', 'son cœur de runes est ébloui : il s’emballe, se dérègle', ['touche lumiere', 'ouvert on'], 3000, false, [.8]],
+  ['point faible ouvert', 'le cœur de runes à nu brille et palpite', [], 1800, false, [.5]],
+  ['flèche dans le cœur', '', ['touche fleche'], 1300, true, null],
+  ['fin du combo', '', ['ouvert off', 'ebloui off'], 900, false, null],
+  ['un autre Gardien', '', ['nouveau'], 600, false, null],
+  ['1. GIVRE', 'la plaque gèle, se fend… et éclate', ['touche givre'], 3900, true, [.6, .9]],
+  ['2. LUMIÈRE', 'le cœur à nu est ébloui', ['touche lumiere', 'ouvert on'], 3000, false, null],
+  ['fin du combo', '', ['ouvert off', 'ebloui off'], 900, false, null],
+  ['un autre Gardien', '', ['nouveau'], 600, false, null],
+  ['1. BOUCLIER (sans potion)', 'il frappe le bouclier, son bras rebondit… la plaque s’entrouvre', ['touche bouclier'], 3200, true, [.17, .9]],
+  ['2. LUMIÈRE', 'le cœur est ébloui', ['touche lumiere', 'ouvert on'], 3000, false, null],
+  ['fin du combo', '', ['ouvert off', 'ebloui off'], 900, false, null],
+  ['un autre Gardien', '', ['nouveau'], 600, false, null],
+  ['gelé', 'le givre le recouvre, ses rouages s’arrêtent', ['gele on'], 2200, false, [.7]],
+  ['gelé : fin', '', ['gele off'], 1300, false, null],
+  ['renversé', '', ['dos on'], 2400, false, [.7]],
+  ['renversé : fin', '', ['dos off'], 1700, false, null],
+  ['mourir', 'il ralentit, ses runes s’éteignent, il s’agenouille… et s’effondre', ['mourir'], 7900, true, [.3, .5, .95]],
+  ['ce qui reste', 'les pièces restent au sol', [], 1200, false, null],
+  ['un autre Gardien', '', ['nouveau'], 600, false, null],
+  ['exploser', 'le coup critique : il s’emballe… BOUM', ['exploser'], 4200, true, [.17, .27, .55]],
+  ['ce qui reste', 'engrenages, boulons et la carcasse fumante', [], 2000, false, [.6]]
+];
+window.toutJouer = function(){
+  return PLAN.reduce(function(p, e){ return p.then(function(){ etiquette(e[0], e[1]); var f = e[2].reduce(function(q, n){ return q.then(function(){ return etape(n); }); }, Promise.resolve()); return Promise.all([e[4] ? f : null, new Promise(function(ok){ setTimeout(ok, e[3]); })]); }); }, Promise.resolve(nouveau())).then(function(){ etiquette('', ''); });
+};
+var zone = document.getElementById('boutons');
+function groupe(titre, noms){
+  var h = document.createElement('h3'); h.textContent = titre; zone.appendChild(h);
+  var d = document.createElement('div'); zone.appendChild(d);
+  noms.forEach(function(nom){
+    var b = document.createElement('button');
+    b.textContent = nom.replace(/^touche |^special /, '');
+    if(nom === 'entrer' || nom === 'exploser' || nom === 'Tout jouer' || nom === 'poing') b.className = 'go';
+    b.onclick = function(){ if(nom === 'Tout jouer') return toutJouer(); etape(nom); };
+    d.appendChild(b);
+  });
+}
+groupe('Actions', ['Tout jouer', 'entrer', 'attendre', 'poing', 'tousser', 'mourir', 'exploser', 'arrêter', 'nouveau', 'nouveau + entrer']);
+groupe('Combos du Grand Livre', Object.keys(ETAPES).filter(function(n){ return /^combo|^piège/.test(n); }));
+groupe('touche(type)', Object.keys(ETAPES).filter(function(n){ return /^touche /.test(n); }));
+groupe('special(nom)', Object.keys(ETAPES).filter(function(n){ return /^special /.test(n); }));
+groupe('etat(nom, on / off)', Object.keys(ETAPES).filter(function(n){ return / (on|off)$/.test(n); }));
+</script>
+</body>
+</html>

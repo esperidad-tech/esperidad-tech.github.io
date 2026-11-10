@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Héros animés</title>
+<style>
+:root{--fond:#0b0810;--texte:#fff4e0;--jaune:#ffd36a;--trait:#24182e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--texte);font:15px/1.35 system-ui,"Segoe UI",sans-serif}
+#cadre{position:relative;width:100%;max-width:960px;margin:0 auto;overflow:hidden}
+#scene{position:relative;width:960px;height:540px;overflow:hidden;transform-origin:0 0;background:#120e1c}
+#decor{position:absolute;inset:0}
+.slot{position:absolute;width:200px;height:240px;top:104px}
+.anneau{position:absolute;height:22px;border-radius:50%;border:3px solid var(--jaune);box-shadow:0 0 16px #ffb040,inset 0 0 10px #ffb040;opacity:0;transition:opacity .3s}
+.anneau.on{opacity:1}
+#cible{position:absolute;left:730px;top:150px;width:120px;height:196px;transform-origin:50% 100%}
+#legende{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:6px 16px;border-radius:999px;background:rgba(10,6,16,.78);border:2px solid #5a4630;
+  font:700 18px/1.2 system-ui,sans-serif;color:#ffe3a3;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:20}
+#legende.on{opacity:1}
+#panneau{max-width:960px;margin:12px auto 40px;padding:0 16px;display:grid;gap:12px}
+.groupe{background:#17111f;border:2px solid #3a2e46;border-radius:12px;padding:10px 12px}
+.groupe h2{margin:0 0 8px;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#bfa77a}
+.groupe div{display:flex;flex-wrap:wrap;gap:6px}
+button{font:700 14px/1 system-ui,sans-serif;color:#120c18;background:var(--jaune);border:2px solid var(--trait);border-radius:10px;padding:9px 12px;box-shadow:0 3px 0 #7a5a20;cursor:pointer}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 #7a5a20}
+button.second{background:#3a2e46;color:#fff4e0;box-shadow:0 3px 0 #1a1220}
+select{font:700 14px/1 system-ui,sans-serif;padding:8px;border-radius:10px;border:2px solid var(--trait)}
+body.film #panneau{display:none}
+body.film #cadre{max-width:none}
+</style>
+</head>
+<body>
+<div id="cadre"><div id="scene">
+  <svg id="decor" viewBox="0 0 960 540" width="960" height="540">
+    <defs>
+      <linearGradient id="mur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17132a"/><stop offset=".7" stop-color="#2a2340"/><stop offset="1" stop-color="#231c34"/></linearGradient>
+      <pattern id="pierre" width="64" height="34" patternUnits="userSpaceOnUse"><path d="M0 0 h64 M0 17 h64 M0 0 v17 M32 0 v17 M16 17 v17 M48 17 v17" stroke="#100c1a" stroke-width="3" fill="none"/><path d="M3 3 h20 M36 21 h9" stroke="#4a3e60" stroke-width="1.6" opacity=".5"/></pattern>
+      <linearGradient id="sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3e3550"/><stop offset="1" stop-color="#120e1c"/></linearGradient>
+      <linearGradient id="lune" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8ff" stop-opacity=".3"/><stop offset="1" stop-color="#a8c8ff" stop-opacity=".03"/></linearGradient>
+      <radialGradient id="trou" cx=".5" cy=".75" r=".75"><stop offset="0" stop-color="#1c1830"/><stop offset=".6" stop-color="#08060e"/></radialGradient>
+      <radialGradient id="vig" cx="480" cy="300" r="600" gradientUnits="userSpaceOnUse"><stop offset=".45" stop-color="#05030a" stop-opacity="0"/><stop offset="1" stop-color="#05030a" stop-opacity=".9"/></radialGradient>
+      <radialGradient id="bleu"><stop offset="0" stop-color="#7ff0ff" stop-opacity=".5"/><stop offset="1" stop-color="#7ff0ff" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="960" height="340" fill="url(#mur)"/><rect width="960" height="340" fill="url(#pierre)"/>
+    <path d="M110 340 V 150 C 110 60 250 60 250 150 V 340 Z" fill="url(#trou)" stroke="#4a3e62" stroke-width="10"/>
+    <path d="M400 340 V 150 C 400 60 560 60 560 150 V 340 Z" fill="url(#trou)" stroke="#4a3e62" stroke-width="10"/>
+    <path d="M740 340 V 150 C 740 60 900 60 900 150 V 340 Z" fill="url(#trou)" stroke="#4a3e62" stroke-width="10"/>
+    <path d="M526 0 L 574 0 L 664 340 L 444 340 Z" fill="url(#lune)"/>
+    <ellipse cx="830" cy="196" rx="14" ry="6" fill="#ff2a3a" opacity=".35"/><circle cx="824" cy="196" r="2.4" fill="#ff5a5a"/><circle cx="836" cy="196" r="2.4" fill="#ff5a5a"/>
+    <g fill="#5fe0f0" stroke="#24182e" stroke-width="1.6"><ellipse cx="30" cy="330" rx="26" ry="16" fill="url(#bleu)" stroke="none"/><path d="M22 338 v-10 M30 338 v-16" stroke="#bfe8e8" stroke-width="2.4"/><path d="M15 328 q 7 -10 14 0 Z M22 322 q 8 -12 16 0 Z"/>
+      <ellipse cx="930" cy="330" rx="26" ry="16" fill="url(#bleu)" stroke="none"/><path d="M930 338 v-14" stroke="#bfe8e8" stroke-width="2.4"/><path d="M921 324 q 9 -12 18 0 Z"/></g>
+    <path d="M0 340 H 960 V 540 H 0 Z" fill="url(#sol)"/>
+    <path d="M0 366 H 960 M0 398 H 960 M90 340 L 50 540 M280 340 L 262 540 M480 340 L 486 540 M680 340 L 708 540 M860 340 L 910 540" stroke="#120e1c" stroke-width="3"/>
+    <ellipse cx="554" cy="346" rx="110" ry="9" fill="#cfe8ff" opacity=".12"/>
+    <rect width="960" height="540" fill="url(#vig)"/>
+  </svg>
+  <div class="anneau" id="a-sage" style="left:70px;top:330px;width:140px"></div>
+  <div class="anneau" id="a-alchimiste" style="left:220px;top:330px;width:140px"></div>
+  <div class="anneau" id="a-pisteur" style="left:370px;top:330px;width:140px"></div>
+  <div class="slot" id="s-sage" style="left:40px"></div>
+  <div class="slot" id="s-alchimiste" style="left:190px"></div>
+  <div class="slot" id="s-pisteur" style="left:340px"></div>
+  <div id="cible">
+    <svg viewBox="0 0 120 196" width="120" height="196" style="overflow:visible">
+      <ellipse cx="60" cy="192" rx="44" ry="7" fill="#000" opacity=".4"/>
+      <path d="M57 120 L 63 120 L 64 192 L 56 192 Z" fill="#6a4a2e" stroke="#24182e" stroke-width="3"/>
+      <path d="M30 76 L 90 76 L 84 130 Q 60 138 36 130 Z" fill="#c8a860" stroke="#24182e" stroke-width="3"/>
+      <path d="M14 84 L 106 84" stroke="#24182e" stroke-width="10" stroke-linecap="round"/><path d="M14 84 L 106 84" stroke="#b89850" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="60" cy="46" r="26" fill="#d8b870" stroke="#24182e" stroke-width="3"/>
+      <path d="M44 30 l 6 4 M70 30 l 6 -4 M40 58 q 20 12 40 0" stroke="#7a5a2a" stroke-width="2" fill="none"/>
+      <circle cx="60" cy="102" r="20" fill="#f3e7cb" stroke="#24182e" stroke-width="3"/><circle cx="60" cy="102" r="13" fill="#e04a3a"/><circle cx="60" cy="102" r="7" fill="#f3e7cb"/><circle cx="60" cy="102" r="3" fill="#e04a3a"/>
+      <path d="M36 70 l -6 -10 M84 70 l 6 -10 M48 18 l -2 -10 M70 18 l 4 -10" stroke="#e8d08a" stroke-width="2"/>
+    </svg>
+  </div>
+  <div id="legende"></div>
+</div></div>
+
+<div id="panneau">
+  <div class="groupe"><h2>Tous</h2><div>
+    <button onclick="tous('entrer')">Entrer en courant</button><button onclick="tous('joie')">Victoire</button>
+    <button class="second" onclick="tous('attendre')">Attendre</button><button class="second" onclick="tous('arreter')">Arrêter</button>
+    <button class="second" onclick="apparence()">Autres apparences</button></div></div>
+  <div class="groupe"><h2>Pisteur</h2><div>
+    <button onclick="go('pisteur','tirer','normale')">Flèche</button><button onclick="go('pisteur','tirer','feu')">Flèche de feu</button>
+    <button onclick="go('pisteur','tirer','huile')">Flèche d'huile</button><button onclick="go('pisteur','tirer','colle')">Flèche de colle</button>
+    <button onclick="go('pisteur','dague')">Dague</button>
+    <button class="second" onclick="go('pisteur','touche')">Touché</button><button class="second" onclick="go('pisteur','tomber')">Tomber</button>
+    <button class="second" onclick="go('pisteur','relever')">Relever</button><button class="second" onclick="go('pisteur','joie')">Joie</button>
+    <button class="second" onclick="choix('pisteur')">Choisi</button><button class="second" onclick="go('pisteur','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Pisteur : nouvelles armes</h2><div>
+    <button onclick="go('pisteur','tirer','argent')">Flèche d'argent</button><button onclick="go('pisteur','tirer','lourde')">Flèche lourde (bois)</button>
+    <button onclick="go('pisteur','tirer','lourde',{metal:true})">Flèche lourde (métal)</button><button onclick="go('pisteur','tirer','givre')">Flèche de givre</button>
+    <button onclick="go('pisteur','tirer','acide')">Flèche d'acide</button><button onclick="go('pisteur','tirer','normale',{rebond:true})">Flèche qui rebondit</button>
+    <button onclick="go('pisteur','tirer','lourde',{rebond:true, metal:true})">Lourde qui rebondit</button>
+    <button class="second" onclick="equipe('pisteur','carquois-argent')">Carquois d'argent</button><button class="second" onclick="equipe('pisteur','carquois-lourd')">Carquois lourd</button></div></div>
+  <div class="groupe"><h2>Alchimiste</h2><div>
+    <button onclick="go('alchimiste','preparer','#5fd08a')">Préparer (vert)</button><button onclick="go('alchimiste','preparer','#c07aff')">Préparer (violet)</button>
+    <button onclick="go('alchimiste','lancer')">Lancer</button><button onclick="go('alchimiste','louche')">Louche</button><button onclick="go('alchimiste','herbes')">Herbes (au Sage)</button>
+    <button class="second" onclick="go('alchimiste','touche')">Touché</button><button class="second" onclick="go('alchimiste','tomber')">Tomber</button>
+    <button class="second" onclick="go('alchimiste','relever')">Relever</button><button class="second" onclick="go('alchimiste','joie')">Joie</button>
+    <button class="second" onclick="choix('alchimiste')">Choisi</button><button class="second" onclick="go('alchimiste','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Alchimiste : nouvelles potions</h2><div>
+    <button onclick="potion('givre')">Potion de givre</button><button onclick="potion('acide')">Potion d'acide</button>
+    <button onclick="potion('huile')">Potion d'huile</button><button onclick="potion('colle')">Potion de colle</button>
+    <button class="second" onclick="equipe('alchimiste','sacoche')">Sacoche</button></div></div>
+  <div class="groupe"><h2>Sage</h2><div>
+    <button onclick="go('sage','sort')">Sort</button><button onclick="go('sage','bouclier')">Bouclier (sur le Pisteur)</button>
+    <button onclick="absorber()">Absorber 2</button><button onclick="retirer()">Retirer le bouclier</button><button onclick="go('sage','etudier')">Étudier</button>
+    <button class="second" onclick="go('sage','touche')">Touché</button><button class="second" onclick="go('sage','tomber')">Tomber</button>
+    <button class="second" onclick="go('sage','relever')">Relever</button><button class="second" onclick="go('sage','joie')">Joie</button>
+    <button class="second" onclick="choix('sage')">Choisi</button><button class="second" onclick="go('sage','entrer')">Entrer</button></div></div>
+  <div class="groupe"><h2>Sage : objets</h2><div>
+    <button class="second" onclick="equipe('sage','cristal-lune')">Cristal de lune</button><button onclick="go('sage','eclair')">Éclair dans toute la salle</button>
+    <button class="second" onclick="equipe('sage','baton-chene')">Bâton de chêne</button><button onclick="go('sage','double')">Double bouclier</button>
+    <button onclick="absorber()">Absorber 2</button><button onclick="retirer()">Retirer</button></div></div>
+  <div class="groupe"><h2>Réactions (le héros choisi par le menu)</h2><div>
+    <select id="qui"><option value="pisteur">Pisteur</option><option value="alchimiste">Alchimiste</option><option value="sage">Sage</option></select>
+    <button class="second" onclick="equipe(qui(),'amulette')">Amulette</button><button onclick="relevAmulette(qui())">Relève dorée (amulette)</button>
+    <button onclick="go(qui(),'entoile',true)">Pris dans la toile</button><button onclick="go(qui(),'entoile',false)">Déchire la toile</button>
+    <button onclick="go(qui(),'avale')">Avalé par Bourbe</button><button onclick="go(qui(),'recrache')">Recraché</button>
+    <button onclick="go(qui(),'touche','froid')">Brûlure froide</button><button onclick="go(qui(),'touche','grouillement')">Grouillement</button>
+    <button onclick="go(qui(),'touche','poing')">Coup de poing</button></div></div>
+</div>
+
+<script src="../cuire.js"></script>
+<script src="heros-anime.js"></script>
+<script>
+var scene = document.getElementById('scene'), cible = document.getElementById('cible'), legende = document.getElementById('legende');
+var ROLES = ['sage', 'alchimiste', 'pisteur'], h = {}, autres = false, bq = null;
+if(location.search.indexOf('film') >= 0) document.body.classList.add('film');
+function ajuster(){
+  var k = document.body.classList.contains('film') ? 1 : Math.min(1, document.getElementById('cadre').clientWidth / 960);
+  scene.style.transform = 'scale(' + k + ')'; document.getElementById('cadre').style.height = (540 * k) + 'px';
+}
+addEventListener('resize', ajuster); ajuster();
+/* comme dans le jeu : les héros sont « cuits » en images avant d'être créés (RAPIDITE.md) ; ?svg : sans cuisson */
+var CUIT = !/svg/.test(location.search) && !!window.Cuire;
+function creer(){
+  var faire = function(){
+    ROLES.forEach(function(r){
+      if(h[r]) h[r].detruire();
+      h[r] = HerosAnime.creer(document.getElementById('s-' + r), r, autres ? HerosAnime.AUTRES[r] : null);
+      h[r].attendre();
+    });
+    window.PRET = true;
+  };
+  window.PRET = false;
+  if(CUIT) return HerosAnime.preparer(ROLES.map(function(r){ return {role:r, lk:autres ? HerosAnime.AUTRES[r] : null}; })).then(faire);
+  faire(); return Promise.resolve();
+}
+creer();
+/* le centre de la cible, et la cible qui vacille quand on la touche */
+var CIBLE = {x:790, y:252};
+function aie(){ cible.animate([{transform:'rotate(0deg)'}, {transform:'rotate(9deg) translateX(4px)', offset:.15}, {transform:'rotate(-6deg)', offset:.4}, {transform:'rotate(3deg)', offset:.65}, {transform:'rotate(0deg)'}], {duration:700, easing:'ease-out'}); }
+function centre(el){ var r = el.getBoundingClientRect(), R = scene.getBoundingClientRect(), k = R.width / 960; return {x:(r.left + r.width / 2 - R.left) / k, y:(r.top + r.height * 0.45 - R.top) / k}; }
+var BOUCHE = {x:850, y:200};     /* (la gueule de Bourbe, pour le recrachat) */
+function qui(){ return document.getElementById('qui').value; }
+function go(r, m, a, b){
+  var x = h[r], o = {onImpact:aie};
+  if(b) for(var k in b) o[k] = b[k];
+  switch(m){
+    case 'tirer': return x.tirer(scene, b && b.metal ? {x:CIBLE.x, y:CIBLE.y, metal:true} : CIBLE, a, o);
+    case 'eclair': return x.eclairSalle(scene, {cibles:[CIBLE], onImpact:aie});
+    case 'double': if(bq) bq.retirer(); bq = x.bouclier(scene, [document.getElementById('s-pisteur'), document.getElementById('s-alchimiste')]); return bq;
+    case 'entoile': return x.entoile(a);
+    case 'avale': return x.avale();
+    case 'recrache': return x.recrache(scene, BOUCHE);
+    case 'touche': return x.touche(a);
+    case 'dague': return x.dague(scene, {x:CIBLE.x - 16, y:CIBLE.y + 10}, o);
+    case 'lancer': return x.lancer(scene, CIBLE, a, o);
+    case 'preparer': return x.preparer(a);
+    case 'louche': return x.louche(scene);
+    case 'herbes': return x.herbes(scene, centre(document.getElementById('s-sage')));
+    case 'sort': return x.sort(scene, CIBLE, o);
+    case 'bouclier': if(bq) bq.retirer(); bq = x.bouclier(scene, document.getElementById('s-pisteur')); return bq;
+    case 'entrer': return x.entrer(a || 380);
+    default: return x[m](a);
+  }
+}
+function potion(n){ return h.alchimiste.preparer(n).then(function(){ return h.alchimiste.lancer(scene, CIBLE, n, {onImpact:aie}); }); }
+function equipe(r, o){ return h[r].equiper(o, !h[r].equipe(o)); }
+function relevAmulette(r){ var x = h[r]; if(!x.equipe('amulette')) x.equiper('amulette', true, {discret:true}); return (x.ko ? Promise.resolve() : x.tomber()).then(function(){ return new Promise(function(s){ setTimeout(s, 500); }); }).then(function(){ return x.relever({amulette:true}); }); }
+function absorber(){ return bq ? bq.absorber(2) : Promise.resolve(); }
+function retirer(){ var b = bq; bq = null; return b ? b.retirer() : Promise.resolve(); }
+function choix(r){
+  var on = !h[r]._choisi;
+  ROLES.forEach(function(q){ if(q !== r && h[q]._choisi){ h[q].choisi(false); document.getElementById('a-' + q).classList.remove('on'); } });
+  h[r].choisi(on); document.getElementById('a-' + r).classList.toggle('on', on);
+}
+function tous(m){ ROLES.forEach(function(r, i){ if(m === 'entrer'){ h[r].boite.style.transform = 'translateX(-600px)'; setTimeout(function(){ h[r].entrer(400 + i * 30); }, (2 - i) * 280); } else if(m === 'attendre') h[r].attendre(); else if(m === 'arreter') h[r].arreter(); else h[r][m](); }); }
+function apparence(){ autres = !autres; creer(); }
+function dire(t){ legende.textContent = t; legende.classList.toggle('on', !!t); }
+window.DEMO = {h:h, go:go, absorber:absorber, retirer:retirer, choix:choix, tous:tous, dire:dire, scene:scene, creer:creer, apparence:function(v){ autres = v; return creer(); },
+  potion:potion, equipe:equipe, relevAmulette:relevAmulette, CIBLE:CIBLE, BOUCHE:BOUCHE};
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+/* donjon.css — ce que le donjon complet ajoute à la feuille de la salle d'essai (essai/src/jeu.css, reprise telle quelle). */
+
+/* ---------- les bêtes (tous les modules) ---------- */
+.bete .anneau{height:26px}
+.bete.module > .ombre{display:none}
+.bete.restes .anneau, .bete.cendre .anneau, .bete.cendre .ombre{display:none}
+.bete.restes, .bete.cendre{z-index:1!important}
+.bete.ouvert:not(.t-bourbe){z-index:8!important}
+.bete.gele::after{content:'❄️';position:absolute;left:44%;top:8%;font-size:30px;animation:pulse 1.6s ease-in-out infinite}
+.vise.petit{width:30px;height:30px;margin-left:-7px}
+.vise-fleche + .vise.petit{margin-left:0}
+.vise-ic{font-size:19px;margin-left:2px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+.pv.elite .barre{width:112px}
+/* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
+.pv.boss{top:20px;left:400px;height:22px;gap:8px;z-index:25}
+.pv.boss .barre{width:200px;height:14px;border-radius:8px}
+.pv.boss em{font-style:normal;font-family:var(--f-titre);font-size:20px;color:var(--or-pale);text-shadow:0 2px 0 var(--encre),0 0 8px #000}
+.pv.boss b{font-size:16px}
+.mot.refus.long{font-size:28px}
+.heros.avale .anneau, .heros.avale .ombre, .heros.avale .check, .heros.avale .etoiles{display:none}
+
+/* ---------- les fioles (dessin vectoriel, sans photo) ---------- */
+.fiole{display:block;width:34px;height:47px;overflow:visible}
+.carte .c-ic .fiole{margin:-3px auto 0}
+.b-cartes.serre{gap:6px}
+.b-cartes.serre .carte{width:97px}
+.recette .fiole{width:52px;height:72px;margin-top:-2px}
+.sac-case .fiole{width:46px;height:63px}
+.sac-l .fiole{width:24px;height:33px;display:inline-block;vertical-align:middle;margin-right:6px}
+.livre-t{font-family:var(--f-titre);font-size:19px;color:#e8cf98;margin:8px 0 2px}
+
+/* ---------- l'écran de passage (court, sombre) ---------- */
+#passage, #essai-fin{background:#07050b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;z-index:90}
+.pa-nom{font-family:var(--f-titre);font-size:44px;color:var(--or-pale);text-shadow:0 3px 0 var(--encre),0 0 22px rgba(255,190,90,.25);text-align:center;padding:0 40px}
+.pa-points{display:flex;gap:12px}
+.pa-points i{width:12px;height:12px;border-radius:50%;background:var(--or);opacity:.25;animation:pa-point 1.2s ease-in-out infinite}
+.pa-points i:nth-child(2){animation-delay:.2s}
+.pa-points i:nth-child(3){animation-delay:.4s}
+@keyframes pa-point{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+
+/* ---------- le sac avec plus de six recettes (l'Acide dès le départ, puis le Givre et le Baume lumineux) ---------- */
+#sac.n7 .recette, #sac.n8 .recette{width:157px;height:142px}
+#sac.n7 .recette b, #sac.n8 .recette b{font-size:16px}
+#sac.n7 .recette small, #sac.n8 .recette small{font-size:12.5px}
+#sac.n9 .recettes{gap:10px}
+#sac.n9 .recette{width:125px;height:142px;padding:6px 4px}
+#sac.n9 .recette b{font-size:14px}
+#sac.n9 .recette small{font-size:11.5px}
+#sac.n7 .recette .fiole, #sac.n8 .recette .fiole, #sac.n9 .recette .fiole{width:44px;height:60px}
+.sac-cases.quatre .sac-case{width:50px}
+.sac-cases.quatre .sac-case .fiole{width:38px;height:52px}
+
+/* ---------- la carte : elle remplit tout l'écran, sous le jeu ; les boutons flottent par-dessus ---------- */
+#carte-donjon{position:fixed;inset:0;z-index:0;background:#07050b}
+#jeu.sur-carte{background:transparent;pointer-events:none;z-index:1}
+#jeu.sur-carte .hud-c > *, #jeu.sur-carte #fenetre{pointer-events:auto}
+.titre-carte{position:absolute;left:16px;top:8px;pointer-events:none!important}
+.titre-carte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:26px;line-height:1.05;color:var(--or-pale);text-shadow:0 2px 0 var(--encre),0 0 12px rgba(0,0,0,.9)}
+.titre-carte span{font-size:15px;color:#e8dcc0;text-shadow:0 1px 0 #000,0 0 8px #000}
+#rose{position:absolute;left:16px;top:66px;width:66px;height:66px;pointer-events:none!important}
+#explo #volumes{right:16px;top:10px}
+#explo #conteur{position:absolute;left:14px;bottom:12px;width:430px;min-height:54px;font-size:15.5px}
+.boutons-carte{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:480px}
+.boutons-carte .aller{min-height:50px;font-size:20px;padding:8px 24px}
+
+/* ---------- une salle sans combat : la scène en haut, le conteur et les boutons dans la bande du bas ---------- */
+#scene #objets{position:absolute;left:0;top:0;width:960px;height:372px;z-index:3}
+#scene #persos{position:static}
+#scene #hud{pointer-events:none}
+#bas-scene{position:absolute;z-index:10;left:0;top:372px;width:960px;height:168px;background:linear-gradient(#0f0b17,#07050b);border-top:3px solid var(--brun);
+  box-shadow:0 -6px 18px rgba(0,0,0,.8),inset 0 2px 0 #2a2030;display:flex;align-items:flex-start;gap:14px;padding:14px 14px 0}
+#bas-scene #conteur{flex:1;min-height:76px;font-size:16.5px}
+.b-outils{width:430px;flex:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-content:flex-start}
+.b-outils .sombre{min-height:44px;font-size:14px;padding:6px 11px;white-space:nowrap}
+.b-outils .aller{min-height:52px;font-size:21px;padding:8px 26px;margin-top:2px;white-space:nowrap}
+
+/* ---------- les fenêtres du donjon ---------- */
+.parchemin.code, .parchemin.large{text-align:center}
+.code-gros{display:flex;gap:18px;justify-content:center;align-items:center;margin:12px 0 8px}
+.code-gros span{display:flex;flex-direction:column;align-items:center;font-size:58px;line-height:1.1;min-width:92px;padding:8px 6px 4px;border-radius:16px;background:rgba(36,24,46,.08);border:3px solid rgba(36,24,46,.35)}
+.code-gros small{font-size:14px;font-weight:700;color:#5a4630}
+.code-gros .fiole{width:70px;height:96px}
+.ligne.petit{font-size:13.5px;opacity:.8}
+.code-ligne{font-size:22px;letter-spacing:4px;white-space:nowrap}
+.qui{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0 4px}
+.qui .b-heros{width:176px;height:104px}
+.sombre.gros{min-height:52px;font-size:16px;padding:8px 18px}
+.sombre.discret{opacity:.75;font-size:13px;min-height:40px}
+.pave{display:grid;grid-template-columns:repeat(6,58px);gap:8px;justify-content:center;margin:10px 0}
+.pave button{width:58px;height:58px;border-radius:14px;font-size:32px;background:rgba(36,24,46,.1);border:3px solid rgba(36,24,46,.4);display:grid;place-items:center}
+.pave button:active{transform:scale(.92);background:rgba(255,210,63,.5)}
+.pave-cases{display:flex;gap:12px;justify-content:center;margin:8px 0 4px}
+.pave-cases i{width:62px;height:62px;border-radius:14px;border:3px dashed rgba(36,24,46,.45);display:grid;place-items:center;font-size:36px;font-style:normal}
+.pave-cases i.plein{border-style:solid;background:rgba(255,210,63,.35)}
+.pave-cases.non{animation:non .4s}
+.expli{display:flex;gap:12px;margin:10px 0}
+.expli > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:14px;background:rgba(36,24,46,.07);border:2px solid rgba(36,24,46,.25)}
+.expli .ex-img{font-size:40px;line-height:1.2;white-space:nowrap}
+.expli p{margin:0;font-size:15px;line-height:1.25;font-weight:700}
+.sr{position:absolute;left:-9999px}
+#fin-donjon{background:radial-gradient(circle at 50% 40%,#2a2038,#07050b);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:90;padding:0 80px}
+#fin-donjon .bulle{max-width:640px}
+#fin-donjon .bilan{display:flex;gap:30px;font-size:16px;color:#d8ccb4;text-align:center}
+#fin-donjon .bilan b{display:block;font-family:var(--f-titre);font-size:40px;color:var(--or-pale)}
+.point .sac-l .fiole{display:block;margin:0 auto 2px;width:40px;height:55px}

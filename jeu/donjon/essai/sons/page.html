@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atelier des sons</title>
+<meta name="description" content="Les Enquêteurs de Brumeval : écouter, comparer et valider tous les sons et toutes les musiques du jeu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap" rel="stylesheet">
+<style>
+/*CSS*/
+</style>
+</head>
+<body>
+<header class="barre">
+  <h1>Atelier des sons</h1>
+  <label class="volume"><span aria-hidden="true">🔈</span><input id="volume" type="range" min="0" max="100" step="1" aria-label="Volume général"></label>
+  <button id="stop" class="stop" type="button">■ Tout arrêter</button>
+  <span class="plier">
+    <button id="ouvrir-tout" class="petit" type="button" aria-label="Ouvrir toutes les sections">▾ Tout ouvrir</button>
+    <button id="fermer-tout" class="petit" type="button" aria-label="Fermer toutes les sections">▸ Tout fermer</button>
+  </span>
+</header>
+<main>
+  <p class="accueil" id="accueil"><span>Touche <b>A</b>, <b>B</b> ou <b>C</b> pour écouter, puis coche le petit carré sous ce que tu valides. Aucune ne va&nbsp;? 🔁&nbsp;à refaire. ✅&nbsp;déjà choisi, 🆕&nbsp;nouveau, 🎮&nbsp;déjà dans le jeu.</span></p>
+  <div id="atelier"></div>
+</main>
+<div class="pied">
+  <div id="panneau" class="panneau" hidden>
+    <textarea id="recap" readonly rows="10" aria-label="Tes choix, à copier"></textarea>
+    <textarea id="note" rows="2" placeholder="Une remarque ? (facultatif)" aria-label="Une remarque"></textarea>
+  </div>
+  <div class="ligne-pied">
+    <button id="copier" class="jouer copier" type="button">📋 Copier mes choix</button>
+    <span id="compte" class="compte"></span>
+    <span id="copie-ok" class="ok" role="status"></span>
+    <button id="partager" class="petit" type="button" hidden aria-label="Partager mes choix">↗</button>
+    <button id="voir" class="petit" type="button" aria-expanded="false">Voir</button>
+  </div>
+</div>
+<script>
+/*JS*/
+</script>
+</body>
+</html>
