@@ -434,6 +434,11 @@ async function jouer(evs, avant){
     k++;
   }
   if(E.gesteEnCours){ var g0 = E.gesteEnCours; E.gesteEnCours = null; await Promise.race([g0, attendre(2500)]); }
+  /* les règles font foi : un état qu'un module a posé tout seul sans qu'elles l'annoncent s'enlève */
+  try{
+    var ph = E.c.etat();
+    await Promise.race([Promise.all(ph.betes.map(function(b){ var a = B(b.id); return a && !b.mort ? a.accorder(b.etats, b.ouvert) : null; })), attendre(1500)]);
+  }catch(e){}
   suivre(false);
 }
 async function bloc(bl, ctx){
@@ -713,10 +718,12 @@ async function livre(ev){
 }
 
 /* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ---------- */
-function sonCritique(nom){
-  if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
-  if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); return; }
-  if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion'}); return; }
+/* dt : dans combien de secondes (programmé d'avance sur l'horloge du son, pour rester calé sur l'image) */
+function sonCritique(nom, dt){
+  var plusTard = function(n){ setTimeout(function(){ son(n); }, (dt || 0) * 1000); };
+  if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant', dt:dt})) plusTard('aspire'); return; }
+  if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact', dt:dt})) plusTard('boum'); return; }
+  if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion', dt:dt}); return; }
 }
 async function critique(l, i, ctx){
   var ev = l[i], a = B(ev.bete), meurt = l[i + 1] && l[i + 1].t === 'mort' && l[i + 1].bete === ev.bete && l[i + 1].mode === 'explose';
@@ -939,6 +946,7 @@ async function fuite(auto){
   if(Son.baisser) Son.baisser((fu && fu.duree || 3) + .2);
   ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('detale'); }, k * 90); });
   await attendre(1200);
+  DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
   DJ.garder(E.partie);
   DJ.musique('explo');
@@ -962,7 +970,7 @@ function pointFuite(ev, auto){
   var f = el('div'); f.id = 'fin';
   f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
     '<div class="case"><h3>📖 Le Grand Livre</h3>' + l + (cadeau ? '<div class="livre-l garde">' + cadeau + DJ.lireBtn(cadeau) + '</div>' : '') + '</div>' +
-    '<div class="case"><h3>🎒 Le sac</h3><div class="sac-l">' + (E.partie.sac || []).map(function(id){ return '<div>' + DJ.potion(id) + D.RECETTES[id].nom + '</div>'; }).join('') + '</div></div>' +
+    '<div class="case"><h3>🎒 Le sac</h3><div class="sac-l">' + (DJ.dernierSac || E.partie.sac || []).map(function(id){ return '<div>' + DJ.potion(id) + D.RECETTES[id].nom + '</div>'; }).join('') + '</div></div>' +
     '<div class="case retour"><h3>🚪 On repart</h3><div class="rats-l"><span>' + rv + '</span>' + DJ.lireBtn(rv) + '</div></div>' +
     '<div class="bulle"><span class="txt">' + conte + '</span>' + DJ.lireBtn(conte) + '</div>' +
     '<div class="bas"><button class="aller guide" data-act="combat-fin">Repartir ↻</button></div></div>';
@@ -1006,7 +1014,7 @@ DJ.toucher(function(a, id, b){
 });
 
 DJ.Combat = {
-  preparer:preparer, lancer:lancer,
+  preparer:preparer, lancer:lancer, cuireHeros:cuireHeros,
   etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
   /* pour les tests : le combat des règles, les adaptateurs */
   _E:function(){ return E; }

@@ -61,10 +61,10 @@ function eclat(x, y, taille, fond, ms){
   L.fx.appendChild(c);
   anime(c, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.6)', opacity:0}], {duration:ms || 500, easing:'ease-out'}).then(function(){ c.remove(); });
 }
-function tremble(force, ms){
+function tremble(force, ms, delai){
   var s = L.secousse, n = Math.round((ms || 400) / 40), images = [];
   for(var k = 0; k <= n; k++){ var f = force * (1 - k / n); images.push({transform:k === n ? 'none' : 'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
-  return anime(s, images, {duration:ms || 400});
+  return anime(s, images, {duration:ms || 400, delay:delai || 0});
 }
 function onde(x, y, coul, taille, ms){
   var o = el('div', 'onde-fx'); o.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + taille + 'px;height:' + taille + 'px;margin:' + (-taille / 2) + 'px 0 0 ' + (-taille / 2) + 'px;border-color:' + coul + ';box-shadow:0 0 18px ' + coul + ',inset 0 0 18px ' + coul;
@@ -197,45 +197,46 @@ function cuireCritique(){
   }catch(x){ ETOILE = ''; }
 }
 /* ---------- LE CRITIQUE : autour du rat seulement ----------
-   x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise */
+   x, y : le rat ; n : les dégâts ; exploser : une fonction qui fait éclater le rat (le module du rat) et renvoie une Promise ;
+   son(nom, dt) : joue un morceau du son du critique, dt secondes plus tard (sur l'horloge du son) */
 function critique(x, y, n, exploser, son, o){
   son = son || function(){};
   o = o || {};
   /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
-     les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Donc rien ne couvre
-     l'écran (ni voile sombre, ni image de choc, ni rayons, ni ralenti général) ; tout se passe autour du rat :
-       0 ms        la flèche frappe : le temps se suspend sur LUI (il se fige, gonfle, tremble) — le son « aspire » ;
-       CRIT_IMPACT la fumée noire l'enveloppe — l'impact, un petit tremblement, le gros « CRITIQUE ! », le chiffre ;
-       CRIT_ECLAT  ses membres jaillissent sur les côtés et retombent dans la fumée — l'explosion, un dernier petit tremblement ;
-       puis        la fumée se dissipe lentement et laisse les cendres et les os (≈ 2,5 s en tout).
-     Les instants des sons sont ceux de l'atelier des sons (l'impact 0,42 s après l'aspiration, l'explosion 0,6 s après). */
-  var v = S.vitesse || 1;
-  son('aspire');
+     les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Et le 10, 14 h 14 :
+     « la fumée doit sortir AU MOMENT OÙ IL EXPLOSE, avec les morceaux ; elle grossit très vite, puis se disperse vite ;
+     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran, et tout suit les trois temps du son :
+       0 ms        la flèche frappe : le temps se suspend sur LUI — l'aspiration ;
+       CRIT_IMPACT le coup claque : le gros « CRITIQUE ! », un petit tremblement ; il gonfle de plus en plus ;
+       CRIT_ECLAT  l'explosion : la fumée noire et ses membres jaillissent ENSEMBLE, le chiffre, un tremblement ;
+       puis        la fumée se disperse vite et laisse les cendres et les os (≈ 2,2 s en tout).
+     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les trois
+     morceaux du son sur l'horloge du son, les images en animations à retardement (la carte graphique les joue seule). */
+  var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
+  son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
-  var fin = Promise.resolve(exploser ? exploser({impact:CRIT_IMPACT / v, eclat:CRIT_ECLAT / v}) : null);
-  return plus(CRIT_IMPACT).then(function(){
-    son('boum');
-    tremble(7, 300);
-    texteCritique(x, y);
-    chiffre(x + 6, y + 40, '−' + n, 'crit');        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
-    if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
-    return plus(CRIT_ECLAT - CRIT_IMPACT);
-  }).then(function(){
-    son('explosion');
-    tremble(5, 240);
-    return Promise.race([fin, plus(2000)]);
-  });
+  var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2}) : null);
+  texteCritique(x, y, t1);
+  tremble(5, 240, t1);
+  tremble(8, 320, t2);
+  var c = el('div', 'chiffre crit', '−' + n);        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
+  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px'; c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both';
+  L.fx.appendChild(c); setTimeout(function(){ c.remove(); }, t2 + 1400);
+  if(o.brume) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2);          /* sans le module du rat (images fixes) : sa fumée à lui */
+  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(2000)]); });
 }
 var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
-/* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole */
-function texteCritique(x, y){
+/* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole.
+   delai (ms) : il attend son moment sans rien montrer (programmé d'avance, pour tomber pile sur le son) */
+function texteCritique(x, y, delai){
   var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
     (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
   t.style.left = '700px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
+  if(delai){ t.style.setProperty('--crit-delai', delai + 'ms'); t.classList.add('differe'); }
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
-    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2100, easing:'ease-out'}).then(function(){ t.remove(); });
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2000, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.

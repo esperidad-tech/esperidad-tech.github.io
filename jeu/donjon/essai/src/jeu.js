@@ -918,11 +918,12 @@ async function critique(r, phrase){
   majBadges();
   /* le son du critique en trois morceaux, calés sur l'image (effets.js, critique) : l'aspiration pendant le temps
      suspendu, l'impact quand la fumée noire l'enveloppe, l'explosion quand ses membres jaillissent */
-  function sonCritique(nom){
-    if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant'})) son('aspire'); return; }
-    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact'})) son('boum'); return; }
-    if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion'}); return; }
-    son.apply(null, arguments);
+  /* dt : dans combien de secondes (programmé d'avance sur l'horloge du son, pour rester calé sur l'image) */
+  function sonCritique(nom, dt){
+    var plusTard = function(n){ setTimeout(function(){ son(n); }, (dt || 0) * 1000); };
+    if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant', dt:dt})) plusTard('aspire'); return; }
+    if(nom === 'boum'){ if(!bruit('ratCritique', {partie:'impact', dt:dt})) plusTard('boum'); return; }
+    if(nom === 'explosion'){ bruit('ratCritique', {partie:'explosion', dt:dt}); return; }
   }
   /* le module du rat fait tout autour de lui (fumée, membres, cendres) ; sans lui, les effets font une fumée noire */
   await Fx.critique(c.x, c.y, n, function(o){ majBarres(); return A.r[r.i].exploser(fx, o); }, sonCritique, {brume:RAT_MODULE ? 0 : 14});

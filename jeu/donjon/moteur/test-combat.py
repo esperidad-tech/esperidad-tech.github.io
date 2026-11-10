@@ -60,7 +60,9 @@ def salle(nav, s, graine):
             if(b.mort){ if(z) pb.push(b.id + ' morte mais encore touchable'); return; }
             if(!e || +e.textContent !== b.pv) pb.push(b.id + ' ' + (e && e.textContent) + '≠' + b.pv);
             if(!z) pb.push(b.id + ' sans zone'); else { var r = z.getBoundingClientRect(); if(r.width < 40 || r.height < 40) pb.push(b.id + ' zone trop petite'); }
-            var a = E.A.b[b.id]; if(a && !a.rat && a.acteur.etatCourant){ var cur = a.acteur.etatCourant(); Object.keys(b.etats).forEach(function(n){ if(n in cur && !cur[n]) pb.push(b.id + ' état ' + n + ' pas montré'); }); }
+            var a = E.A.b[b.id]; if(a && !a.rat && a.acteur.etatCourant){ var cur = a.acteur.etatCourant();
+              Object.keys(cur).forEach(function(n){ if(cur[n] && n !== 'cible' && n !== 'ouvert' && n !== 'avale' && !(n in b.etats)) pb.push(b.id + ' montre un état en trop : ' + n); });
+              if(!!cur.ouvert !== !!b.ouvert) pb.push(b.id + ' point faible : écran ' + !!cur.ouvert + ', règles ' + !!b.ouvert); }
           });
           return pb; }""")
 

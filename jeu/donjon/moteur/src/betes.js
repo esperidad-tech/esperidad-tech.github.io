@@ -158,14 +158,14 @@ A.ouvert = function(on){
   if(this.rat) return pr(this.acteur.cible(on));
   return this.etat('ouvert', on);
 };
-/* les règles font foi : un état que le module a posé tout seul sans qu'elles l'annoncent s'enlève ; un état annoncé se pose */
+/* les règles font foi : un état que le module a posé tout seul sans qu'elles l'annoncent s'enlève */
 var LIBRES = {cible:1, ouvert:1, avale:1};
 A.accorder = function(etats, ouvert){
   var a = this.acteur, self = this, l = [];
   if(this.mort || this.rat || !a.etatCourant) return Promise.resolve();
   var cur = {}; try{ cur = a.etatCourant() || {}; }catch(e){}
+  /* (on n'ajoute rien : un état que le module a éteint de lui-même, comme le cocon qui a fini de brûler, reste éteint) */
   Object.keys(cur).forEach(function(n){ if(cur[n] && !LIBRES[n] && !(n in etats)) l.push(self.etat(n, false)); });
-  Object.keys(etats).forEach(function(n){ if(!cur[n] && !LIBRES[n]) l.push(self.etat(n, true)); });
   if(!!cur.ouvert !== !!ouvert) l.push(this.etat('ouvert', !!ouvert));
   return Promise.all(l);
 };

@@ -151,7 +151,12 @@ Base.prototype.faireZone = function(z, parent){
 };
 Base.prototype.faireRond = function(z, parent){
   var d = this.def, m = 6, w = Math.max(z.w, z.h * 0.8) + m * 2, h = Math.max(z.h, z.w * 0.6) + m * 2;
+  /* une zone très allongée (une porte, une dalle) : le rond suit la zone, en « gélule », au lieu d'un grand ovale
+     qui déborde sur ses voisines (trois portes côte à côte, deux dalles l'une sous l'autre) */
+  var allonge = Math.max(z.w, z.h) / Math.max(1, Math.min(z.w, z.h)) >= 1.6;
+  if(allonge){ w = z.w + m * 2; h = z.h + m * 2; }
   var r = boite(el('div', 'ob-rond', parent || this.el), z.x - d.x + z.w / 2 - w / 2, z.y - d.y + z.h / 2 - h / 2, w, h);
+  if(allonge) r.style.borderRadius = (Math.min(w, h) / 2) + 'px';
   el('div', 'ob-anneau', r); el('div', 'ob-onde', r);
   return r;
 };

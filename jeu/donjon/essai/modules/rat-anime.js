@@ -4,7 +4,7 @@
      var r = RatAnime.creer(conteneur);   // un rat en SVG qui remplit le conteneur, il regarde à gauche
 
    Méthodes ponctuelles (renvoient une Promise) : entrer(px), mordre({onImpact}), touche(), tousser(), fuir(),
-     exploser(scene, {impact, eclat}) : le critique, autour du rat (fumée noire à « impact » ms, membres à « eclat » ms)
+     exploser(scene, {impact, eclat}) : le critique, autour du rat (il gonfle à partir de « impact » ms ; à « eclat » ms il explose : fumée noire et membres ensemble)
    États (se cumulent) : attendre(), enrager(), ebloui(on), retourner(on), bruler(on), coller(on), cible(on), yeux('jaune'|'rouge')
    arreter() : arrête toutes les boucles.
 
@@ -1300,15 +1300,19 @@ R.bruler = function(on){
 
 /* =====================================================================
    10. La mort par critique (Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ… de la FUMÉE NOIRE… les MEMBRES
-       éclatent sur le côté, la fumée cache, ça passe pour des enfants ; pas tout l'écran ; ça prend son temps »).
-       Tout se passe autour du rat :
-         0 ms      la flèche frappe : le temps se suspend sur lui (il se fige, gonfle, tremble), une petite lueur ;
-         o.impact  une bouffée de fumée noire dense l'enveloppe (il disparaît dedans) ;
-         o.eclat   ses membres — des silhouettes sombres (tête, queue, pattes, touffes de poil ; rien de gore) —
-                   jaillissent sur les côtés en tournoyant et retombent dans la fumée, qui les cache ;
-         ensuite   la fumée se dissipe lentement et laisse le tas de cendres et les os (≈ 2,5 s en tout).
-       Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
-       une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
+       éclatent sur le côté, la fumée cache, ça passe pour des enfants ; pas tout l'écran » ; et le 10 novembre, 14 h 14 :
+       « la fumée arrive à un timing bizarre : c'est AU MOMENT OÙ IL EXPLOSE, avec les morceaux, qu'elle doit sortir ;
+       d'abord petite, elle grossit TRÈS VITE pendant que les membres s'éparpillent, puis elle se disperse vite ; plus
+       fluide ; calé sur le son »).
+       Tout se passe autour du rat, sur les trois temps du son (aspiration, impact, explosion) :
+         0 ms      la flèche frappe : il se fige (le temps suspendu), une petite lueur ;
+         o.impact  le coup claque : un anneau de lumière, et il GONFLE de plus en plus fort en tremblant ;
+         o.eclat   il EXPLOSE : un éclair bref, la fumée noire jaillit (petite, puis énorme en un quart de seconde) et
+                   ses membres — tête aux yeux en croix, queue, pattes, touffes de poil, aux couleurs du rat, sans sang —
+                   s'éparpillent sur les côtés EN MÊME TEMPS, de derrière la fumée ;
+         ensuite   la fumée s'élargit et se disperse vite (≈ 1 s) ; restent le tas de cendres et les os (≈ 2,2 s en tout).
+       Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity) que la carte
+       graphique joue seule, aucun filtre, une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
 /* les morceaux ont les couleurs du rat (son poil gris, sa queue et ses oreilles roses), dessinés comme lui (contour sombre) :
    on reconnaît un rat de dessin animé qui vole en éclats — des yeux en croix, pas une goutte de sang */
@@ -1346,11 +1350,15 @@ R.exploser = function(scene, o){
   var W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height;
   var cx = (rr.left + rr.width * .48 - sr.left) * ech, cy = (rr.top + rr.height * .58 - sr.top) * ech, taille = rr.width * ech;
   var sol = (rr.top + rr.height * .9 - sr.top) * ech, u = taille / 180;
-  /* 1) le temps suspendu : il se fige (plus de boucles), gonfle un peu et tremble — un arrêt sur image, sur lui seul */
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: {saut: {sx: 1 + i * .014, sy: 1 + i * .018, y: -i * .7}, secousse: {x: i % 2 ? 2.2 : -2.2, a: i % 2 ? 1.6 : -1.6}, crete: {sy: 1 + i * .07}, oeil: {s: 1 + i * .035}, machoire: {a: -i * 2.6}, paupiere: {y: 0}}, e: 'linear'});
-  k.push({t: 1, p: {saut: {sx: 1.13, sy: 1.17, y: -7}}, e: 'ease-in'});
-  this._seq(k, T1);
+  /* 1) le temps suspendu, puis il gonfle : presque rien avant l'impact, de plus en plus fort ensuite, jusqu'à l'explosion
+        (une seule animation continue de 0 à T2 : pas d'à-coup entre les deux temps) */
+  var k = [{t: 0, p: {}}], N1 = 16;
+  for(var i = 1; i <= N1; i++){
+    var fr = i / N1, ti = fr * T2, ap = ti > T1 ? (ti - T1) / Math.max(1, T2 - T1) : 0;
+    var g = ti <= T1 ? .04 * (ti / Math.max(1, T1)) : .04 + .24 * ap * ap, amp = .8 + 3 * ap, sg = i % 2 ? 1 : -1;
+    k.push({t: fr, p: {saut: {sx: 1 + g, sy: 1 + g * 1.15, y: -g * 30}, secousse: {x: sg * amp, a: sg * amp * .55}, crete: {sy: 1 + g * 2.4}, oeil: {s: 1 + g * 1.5}, machoire: {a: -g * 78}, paupiere: {y: 0}}, e: 'linear'});
+  }
+  this._seq(k, T2);
   var NSs = SVGNS, ov, el, fl = 'raBoom' + (++NUM), degrade = '<radialGradient id="' + fl + 'g"><stop offset="0" stop-color="#fff8d0"/><stop offset=".4" stop-color="#ffd060" stop-opacity=".8"/><stop offset="1" stop-color="#ff8020" stop-opacity="0"/></radialGradient>';
   if(self.cuit){
     /* cuit : un calque HTML ; chaque morceau est un <div> que la carte graphique déplace (aucun flou calculé en direct) */
@@ -1366,15 +1374,17 @@ R.exploser = function(scene, o){
     el = function(html){ var g = document.createElementNS(NSs, 'g'); g.innerHTML = html; ov.appendChild(g); return g; };
   }
   function tf(x, y, s, a){ return 'translate(' + f1(x) + 'px,' + f1(y) + 'px)' + (a ? ' rotate(' + f1(a) + 'deg)' : '') + ' scale(' + (+s).toFixed(3) + ')'; }
-  /* la flèche frappe : une petite lueur et un petit cercle, sur lui seulement */
-  el('<circle cx="0" cy="0" r="' + f1(34 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .3), opacity: 1}, {transform: tf(cx, cy, 1.25), opacity: 0}], {duration: 340, easing: 'ease-out', fill: 'forwards'});
-  el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
-  /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
-  /* (elle reste dense jusqu'à ce que les membres y soient retombés, puis se dissipe lentement) */
-  var brumes = [], NB = 14, premiereVolute = null;
+  /* la flèche frappe : une petite lueur, sur lui seulement */
+  el('<circle cx="0" cy="0" r="' + f1(30 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .3), opacity: 1}, {transform: tf(cx, cy, 1.15), opacity: 0}], {duration: 300, easing: 'ease-out', fill: 'forwards'});
+  /* à l'impact (le coup qui claque dans le son) : un anneau de lumière */
+  el('<circle cx="0" cy="0" r="' + f1(28 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3.4 * u) + '"/>').animate([{transform: tf(cx, cy, .25), opacity: 0}, {offset: .08, opacity: .95}, {transform: tf(cx, cy, 1.7), opacity: 0}], {duration: 380, delay: T1, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'both'});
+  /* 2) l'explosion (T2) : un éclair bref au cœur, et la fumée noire qui jaillit — petite, puis énorme en un quart de
+        seconde — et continue de s'élargir en se dispersant (≈ 1 s) : un seul mouvement, sans palier */
+  el('<circle cx="0" cy="0" r="' + f1(72 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .25), opacity: .012}, {offset: .16, transform: tf(cx, cy, .95), opacity: 1}, {transform: tf(cx, cy, 1.8), opacity: 0}], {duration: 300, delay: T2 - 40, easing: 'ease-out', fill: 'both'});
+  var brumes = [], NB = 11, premiereVolute = null;
   for(var n = 0; n < NB; n++){
-    var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.1, 1)), px = cx + Math.cos(a) * d * 80 * u, py = cy - 4 * u + Math.sin(a) * d * 30 * u;
-    var tt = hasard(92, 124) * u, g;
+    var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = n === 0 ? 0 : Math.sqrt(hasard(.2, 1)), px = cx + Math.cos(a) * d * 78 * u, py = cy - 6 * u + Math.sin(a) * d * 34 * u;
+    var tt = hasard(104, 136) * u, g;
     if(self.cuit && BRUME.length){
       /* une volute déjà cuite (son flou est dans l'image) */
       g = document.createElement('div'); g.className = 'cu-ilot';
@@ -1387,19 +1397,26 @@ R.exploser = function(scene, o){
       g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
     if(!premiereVolute) premiereVolute = g;
-    var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
-    brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)'}, {offset: .08, transform: tf(px, py, 1), opacity: .97, easing: 'ease-in-out'},
-      {offset: .62, transform: tf(px + dx, py - mt, 1.2), opacity: .95, easing: 'ease-in-out'}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.7), opacity: 0}],
-      {duration: hasard(2200, 2400), delay: T1 + n * 8, easing: 'linear', fill: 'both'}));
+    /* elle continue sur sa lancée (vers l'extérieur et vers le haut) pendant qu'elle se disperse */
+    var ex = px + (px - cx) * .55 + hasard(-10, 10) * u, ey = py + (py - cy) * .4 - hasard(22, 40) * u, rot = hasard(-50, 50);
+    brumes.push(g.animate([
+      {transform: tf(cx, cy - 4 * u, .16), opacity: .012, easing: 'cubic-bezier(.1,.75,.25,1)'},
+      {offset: .04, opacity: 1},
+      {offset: .24, transform: tf(px, py, 1.12, rot * .25), opacity: .97, easing: 'cubic-bezier(.3,.2,.6,1)'},
+      {offset: .55, transform: tf((px + ex) / 2, (py + ey) / 2, 1.34, rot * .6), opacity: .8, easing: 'linear'},
+      {transform: tf(ex, ey, 1.62, rot), opacity: 0}],
+      {duration: hasard(1020, 1150), delay: Math.max(0, T2 - 30) + n * 4, fill: 'both'}));
   }
-  /* il disparaît dans la fumée */
+  /* il éclate : il s'efface en un clin d'œil, pile à l'explosion (programmé d'avance, comme la fumée : ils restent
+     ensemble même si la tablette peine) ; le ménage se fait un peu après, sous la fumée */
+  try{ self.J.saut.animate([{opacity: 1}, {opacity: 0}], {duration: 80, delay: T2 + 10, easing: 'ease-in', fill: 'forwards'}); }catch(e){}
   setTimeout(function(){
     self._couperBoucles();
     self.mort = true;
     self.J.saut.style.visibility = 'hidden';
     self.el.getAnimations().forEach(function(x){ x.cancel(); });
-  }, T1 + 170);
-  /* 3) l'explosion : les membres jaillissent DE DERRIÈRE la fumée, sur les côtés (Romain : « tu les fais éclater sur le
+  }, T2 + 260);
+  /* 3) EN MÊME TEMPS : les membres jaillissent de derrière la fumée, sur les côtés (Romain : « tu les fais éclater sur le
         côté, la fumée noire cache »), en tournoyant : une parabole jusqu'au sol (échantillonnée une fois), un petit
         rebond, puis ils s'effacent. Ils sont rangés SOUS les volutes : on ne voit pas d'où ils partent. */
   ECLATS.forEach(function(e, i){
@@ -1409,12 +1426,12 @@ R.exploser = function(scene, o){
     var x1 = cx + cote * (cote < 0 ? hasard(116, 150) : hasard(128, 188)) * u, y1 = sol - hasard(2, 10) * u;
     var h = hasard(78, 128) * u, rot = cote * hasard(300, 620), N = 14, T = .76, kf = [];
     for(var q = 0; q <= N; q++){
-      var t = q / N, x, y, a, op = q ? 1 : 0, k;
+      var t = q / N, x, y, a, op = q ? 1 : .012, k;
       if(t <= T){ k = t / T; x = x0 + (x1 - x0) * k; y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k); a = rot * k; }
       else { k = (t - T) / (1 - T); x = x1 + cote * 16 * u * k; y = y1 - 13 * u * 4 * k * (1 - k); a = rot + cote * 50 * k; op = 1 - k * k; }
       kf.push({offset: t, transform: tf(x, y, 1, a), opacity: op});
     }
-    m.animate(kf, {duration: hasard(950, 1150), delay: T2 + i * 22, easing: 'linear', fill: 'both'});
+    m.animate(kf, {duration: hasard(900, 1060), delay: T2 + i * 10, easing: 'linear', fill: 'both'});
   });
   /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
   var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
@@ -1427,9 +1444,9 @@ R.exploser = function(scene, o){
       '<g transform="translate(216 380) rotate(18)">' + P('M-16 -2.5 L 14 -2.5 C 19 -8 26 -5 23 0 C 26 5 19 8 14 2.5 L -16 2.5 C -21 8 -28 5 -25 0 C -28 -5 -21 -8 -16 -2.5 Z', '#e6dcc4', ' stroke-width="2.2"') + '</g>' +
       '<g transform="translate(286 386) rotate(70)">' + P('M-9 -2 L 8 -2 C 12 -6 17 -4 15 0 C 17 4 12 6 8 2 L -9 2 C -13 6 -18 4 -16 0 C -18 -4 -13 -6 -9 -2 Z', '#efe6d0', ' stroke-width="2"') + '</g>');
   tas.animate([{opacity: 0, transform: 'translate(240px,392px) scale(.3) translate(-240px,-392px)'}, {opacity: 1, transform: 'translate(240px,392px) scale(1) translate(-240px,-392px)'}],
-    {duration: 900, delay: T2 + 250, easing: 'ease-out', fill: 'both'});
+    {duration: 520, delay: T2 + 140, easing: 'ease-out', fill: 'both'});
   /* quelques filets de fumée montent encore du tas */
-  setTimeout(function fumet(){ var n = 5; (function un(){ if(n-- <= 0) return; self._bouffee([240 + hasard(-20, 20), 360], {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(un, 420); })(); }, T2 + 900);
+  setTimeout(function fumet(){ var n = 5; (function un(){ if(n-- <= 0) return; self._bouffee([240 + hasard(-20, 20), 360], {r: 6, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -50, duree: 1600, s1: 2.4}); setTimeout(un, 420); })(); }, T2 + 760);
   return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
 };
 

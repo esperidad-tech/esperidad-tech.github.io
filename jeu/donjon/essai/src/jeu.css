@@ -410,6 +410,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .crit-halo.cuit{will-change:transform}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
+.crit-texte.differe .crit-or{animation-delay:calc(var(--crit-delai) + .18s),0s}
+.crit-texte.differe .crit-etoile{animation-delay:calc(var(--crit-delai) + .2s)}
 .crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
 .crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
 /* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
