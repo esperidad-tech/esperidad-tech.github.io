@@ -76,7 +76,7 @@ with sync_playwright() as p:
         r['cadre_apres'] = pg.locator('#labo-cadre').count(); r['modal'] = pg.evaluate("() => M.UI.modal && M.UI.modal.type"); r['titre'] = pg.evaluate("() => M.UI.modal && M.UI.modal.titre")
         r['code_fiche'] = pg.evaluate("() => { var c = document.querySelector('#voile .b-code'); return c ? [].map.call(c.querySelectorAll('.b-sym span'), function(s){ return s.textContent; }).join('') : null; }")
         r['code_attendu'] = pg.evaluate("() => M.code('info:echarpe').map(function(s){ return DONNEES.SYM[s].e; }).join('')")
-        r['notes'] = pg.evaluate("() => M.P().carnet.map(function(n){ return n.t; }).filter(function(t){ return /fil|Analyse/.test(t); })")
+        r['notes'] = pg.evaluate("() => M.P().carnet.map(function(n){ return n.t; }).filter(function(t){ return /Analyse|laine|terre/.test(t); })")
         r['sauve'] = pg.evaluate("() => { var L = M.P().labo; return L ? {finis:Object.keys(L.finis), coupes:L.dos.fil.coupes.map(function(c){ return c && c.t; })} : null; }")
         pg.screenshot(path=f'{ICI}/{nom}-05-fiche.png')
         pg.evaluate("() => M.fermer()"); pg.wait_for_timeout(600)
@@ -111,7 +111,7 @@ with sync_playwright() as p:
     def bon(r):
         return (r['cadre'] == 1 and r['panneau'] == 0 and r['cuirs'] == ['fil'] and r['jeu'] and not r['reglages'] and r['quitter'] and r['fil'] and r['suie'] and r['fini'] and r['analyse_notee'] >= 1
                 and r['terre'] and 'aller' in r['bouton'] and r['cadre_apres'] == 0 and r['modal'] == 'decouverte' and r['code_fiche'] and r['code_fiche'] == r['code_attendu'] and r['code_attendu'] in r['ardoise'].replace(' ', '')
-                and any('Analyse du fil' in t for t in r['notes']) and any('terre' in t for t in r['notes']) and r['sauve'] and 'fil' in r['sauve']['finis'] and 'noir' in r['sauve']['coupes']
+                and any('Analyse des poils de la fenêtre' in t for t in r['notes']) and any('terre' in t for t in r['notes']) and r['sauve'] and 'fil' in r['sauve']['finis'] and 'noir' in r['sauve']['coupes']
                 and r['cuirs2'] == ['fil', 'poils', 'plume'] and r['fil_garde'] and r['dc2'] == 'poils' and 'noir' in r['coupes_gardees'] and r['poils'] and r['fiche2'] and r['fiche3']
                 and 'plume' in r['plus_tard'] and r['plume_refusee'] and 'Plus tard' in r['bulle_attente'] and r['rien_de_neuf'] is None
                 and all(k in r['analyses'] for k in ('fil', 'poils', 'plume')) and r['ancien_bouton'])
