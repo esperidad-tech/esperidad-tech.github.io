@@ -965,6 +965,33 @@ A.bourse = function(){ return art('bo', 72, 58, function(d){
     L('M26 19 Q 35 24 44 18', O, 5.5) + L('M26 19 Q 35 24 44 18', '#e8c062', 2.6) +
     L('M43 18 q 8 -3 10 -12 M43 18 q 2 -8 -2 -14', '#e8c062', 2) + C(53, 6, 2.2, '#e8c062', ' stroke="' + O + '" stroke-width="1.2"') +
     L('M42 27 q 8 5 8 14', '#ffffff', 2, op(0.35)) + C(31, 34, 5, 'none', ' stroke="#e8c062" stroke-width="1.6" opacity=".8"') + L('M29 34 h 4 M31 32 v 4', '#e8c062', 1.4); }); };
+/* la pierre de rune du Sage, au fond du puits : une pierre parmi les pierres, à peine gravée (rien ne la signale) */
+A.pierreRune = function(){ return art('pr', 60, 40, function(d){
+  return E(30, 37, 26, 3.4, '#000', op(0.4)) +
+    P('M6 34 C 2 24 8 10 22 7 C 36 3 52 9 55 21 C 57 30 52 35 44 36 L 14 36 Z', d.g('#4e5274')) +
+    F('M6 34 C 4 26 8 16 16 11 C 13 20 14 30 20 36 L 14 36 Z', '#15132a', op(0.5)) +
+    L('M24 14 L 30 26 L 37 13 M30 26 L 30 31 M23 31 q 7 3 14 0', '#9fe6f2', 1.7, op(0.42)) +
+    L('M40 12 q 8 2 10 9', '#ffffff', 1.3, op(0.2)); }); };
+/* les canaux : la vieille roue du mur (elle recouvre pile celle du décor) et la grille de l'arche de droite */
+var ROUE = {x: 688, y: 28, w: 72, h: 72}, GRILLE = {x: 770, y: 82, w: 152, h: 256};
+A.roueCanaux = function(){ return art('rc', ROUE.w, ROUE.h, function(d){
+  var c = 36, s = C(c, c, 34, '#0b1716') + C(c, c, 28, 'none', ' stroke="#060d0d" stroke-width="11"') + C(c, c, 28, 'none', ' stroke="' + d.g('#55766e') + '" stroke-width="7"');
+  for(var k = 0; k < 4; k++){ var a = k * Math.PI / 4, x = Math.cos(a) * 25, y = Math.sin(a) * 25;
+    s += L('M' + r1(c - x) + ' ' + r1(c - y) + ' L ' + r1(c + x) + ' ' + r1(c + y), '#060d0d', 6) + L('M' + r1(c - x) + ' ' + r1(c - y) + ' L ' + r1(c + x) + ' ' + r1(c + y), '#46625c', 3.2); }
+  /* une poignée sur la jante : c'est elle qui montre de combien la roue a tourné */
+  return s + C(c, c, 7.5, d.g('#3a5450'), ' stroke="#060d0d" stroke-width="2.4"') + C(c, c, 2.6, '#0b1716') +
+    C(c, c - 28, 6.6, d.g('#9cc8b6'), ' stroke="#060d0d" stroke-width="2.4"') + C(c - 1.6, c - 29.6, 2, '#eafff6', op(0.8)); }); };
+A.grilleCanaux = function(){ return art('gc', GRILLE.w, GRILLE.h + 8, function(d){
+  var s = '', fer = d.lin([[0, '#31494a'], [0.5, '#1a2a2c'], [1, '#0c1516']], 0, 0, 1, 0);
+  for(var k = 0; k < 8; k++){ var x = 9.5 + k * 19; s += Rc(x - 3.4, -4, 6.8, GRILLE.h + 2, fer, ' stroke="#050a0a" stroke-width="1.6"') + P('M' + r1(x - 4.4) + ' ' + (GRILLE.h - 3) + ' L ' + r1(x) + ' ' + (GRILLE.h + 7) + ' L ' + r1(x + 4.4) + ' ' + (GRILLE.h - 3) + ' Z', '#22393a', ' stroke-width="1.6"') +
+    L('M' + r1(x - 1.6) + ' 2 V ' + (GRILLE.h - 6), '#5f8582', 1, op(0.35)); }
+  [96, 176].forEach(function(y){ s += Rc(-2, y, GRILLE.w + 4, 8, fer, ' stroke="#050a0a" stroke-width="1.6"');
+    for(var k = 0; k < 8; k++) s += C(9.5 + k * 19, y + 4, 2.4, '#6f9792', ' stroke="#050a0a" stroke-width="1"'); });
+  return s; }); };
+/* ce qu'on voit derrière la grille levée : le noir d'un couloir, et une lueur au fond */
+A.passageCanaux = function(){ return art('pc', GRILLE.w, GRILLE.h, function(d){
+  return Rc(0, 0, GRILLE.w, GRILLE.h, d.lin([[0, '#020607'], [1, '#07171a']])) + E(GRILLE.w / 2, GRILLE.h - 56, 40, 70, d.halo('#7fe0ff', 0.7)) +
+    P('M' + (GRILLE.w / 2 - 34) + ' ' + GRILLE.h + ' L ' + (GRILLE.w / 2 - 14) + ' ' + (GRILLE.h - 120) + ' L ' + (GRILLE.w / 2 + 14) + ' ' + (GRILLE.h - 120) + ' L ' + (GRILLE.w / 2 + 34) + ' ' + GRILLE.h + ' Z', '#0d2a30', ' stroke-width="1.4" opacity=".7"'); }); };
 /* la sacoche de l'Alchimiste (une place de recette en plus) */
 A.sacoche = function(){ return art('sa', 88, 72, function(d){
   return E(44, 68, 36, 4, '#000', op(0.35)) +
@@ -1318,6 +1345,8 @@ SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambi
   sorties: {ouest: {x: 46, y: 250}, nord: {x: 600, y: 250}, est: {x: 858, y: 250}},
   elements: [
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},
+    /* la pierre de rune du Sage : posée là comme une pierre ordinaire, sans lueur ni étoiles (il faut chercher) */
+    objet({id: 'rune', nom: 'Une pierre gravée', svg: A.pierreRune(), x: 846, y: SOL - 31, w: 60, h: 40, sol: true, brille: false, discret: true, lueur: '#9ff6ff', pour: 'sage', code: 'rune'}),
     poussiere(530, 40, 170, 250, 8, '#eef4ff'),
     poussiere(700, 30, 220, 300, 3, '#bfe0ff', 'gouttes')
   ]}; };
@@ -1392,12 +1421,12 @@ SALLES.dalles = function(){
     var co = dalleCoins(c, r), x0 = Math.floor(Math.min(co[0][0], co[3][0])), x1 = Math.ceil(Math.max(co[1][0], co[2][0])), y0 = Math.floor(co[0][1]), y1 = Math.ceil(co[2][1]);
     var w = x1 - x0, h = y1 - y0, loc = co.map(function(q){ return [q[0] - x0, q[1] - y0]; }), cl = dalleClaire(c, r), cy = (loc[0][1] + loc[2][1]) / 2;
     var pc = [{id: 'trou', svg: A.dalleTrou(loc, w, h), x: 0, y: 0, w: w, h: h}];
-    if(!cl) pc.push({id: 'pointes', svg: A.pointes(Math.round(w * 0.7)), x: Math.round(w * 0.15), y: Math.round(cy - 44), w: Math.round(w * 0.7), h: 48, ox: Math.round(w * 0.35), oy: 48, cache: true});
+    pc.push({id: 'pointes', svg: A.pointes(Math.round(w * 0.7)), x: Math.round(w * 0.15), y: Math.round(cy - 44), w: Math.round(w * 0.7), h: 48, ox: Math.round(w * 0.35), oy: 48, cache: true});
     el.push({id: 'dalle-' + c + '-' + r, type: 'dalle', nom: cl ? 'Une dalle claire' : 'Une dalle sombre', clair: cl, piege: !cl, colonne: c - 6, rangee: r === 0 ? 'fond' : 'devant',
       coins: co, x: x0, y: y0, w: w, h: h, decoupe: true, pieces: pc, zone: {x: x0 + 2, y: y0, w: w - 4, h: Math.max(44, h)}, z: 2 + r});
   }
   el.push(poussiere(820, 120, 140, 140, 5, '#cfe0ff'));
-  return {nom: 'Le couloir aux dalles', type: 'piege', ambiance: 'un damier : les dalles sombres sont piégées (le plan du Sage : « seulement les dalles claires »)', elements: el}; };
+  return {nom: 'Le couloir aux dalles', type: 'piege', ambiance: 'un damier : à chaque pas une dalle claire et une sombre, une seule est sûre (le code du plan du Sage : N B B, N B N)', elements: el}; };
 SALLES.portes = function(){
   var noms = {oeil: 'La porte de l\'œil', gueule: 'La porte de la gueule', lune: 'La porte de la lune'}, vers = {oeil: 'ossuaire', gueule: 'fausse-crypte', lune: 'cave-aux-toiles'};
   var el = PORTES.map(function(p){ var h = SOL - PORTE.haut + 4;
@@ -1484,6 +1513,24 @@ var SCENES = {
     s.id = id; s.png = SCENES.base + 'png/' + id + '.png';
     (s.elements || []).forEach(function(e){ if(e.decoupe) e.fond = s.png; });
     return s;
+  },
+  /* les canaux, une fois les monstres partis : la roue du mur et la grille de l'arche de droite, posées sur le décor de
+     combat (decors/png/canaux.png). ouvert : la grille est déjà levée. */
+  surCanaux: function(ouvert){
+    return [
+      {id: 'grille', type: 'grille', nom: 'La grille', x: GRILLE.x, y: GRILLE.y, w: GRILLE.w, h: GRILLE.h, z: 2, ouvert: !!ouvert,
+        arche: 'M0 ' + GRILLE.h + ' V 78 A 76 78 0 0 1 ' + GRILLE.w + ' 78 V ' + GRILLE.h + ' Z',
+        pieces: [{id: 'passage', svg: A.passageCanaux(), x: 0, y: 0, w: GRILLE.w, h: GRILLE.h, cache: true}, {id: 'barres', svg: A.grilleCanaux(), x: 0, y: 0, w: GRILLE.w, h: GRILLE.h + 8}],
+        zone: {x: GRILLE.x + 8, y: GRILLE.y + 70, w: GRILLE.w - 16, h: GRILLE.h - 76}},
+      {id: 'roue', type: 'roue', nom: 'La vieille roue', x: ROUE.x, y: ROUE.y, w: ROUE.w, h: ROUE.h, z: 3,
+        pieces: [{id: 'roue', svg: A.roueCanaux(), x: 0, y: 0, w: ROUE.w, h: ROUE.h}],
+        zone: {x: ROUE.x - 6, y: ROUE.y - 6, w: ROUE.w + 12, h: ROUE.h + 12}}
+    ];
+  },
+  /* ce qu'il faut poser par-dessus un décor de combat (la grille des canaux, tant qu'elle est fermée) : [{svg, x, y, w, h}] */
+  surDecor: function(salle, o){
+    if(salle === 'canaux' && !(o && o.ouvert)) return [{svg: A.grilleCanaux(), x: GRILLE.x, y: GRILLE.y, w: GRILLE.w, h: GRILLE.h + 8, arche: 'M0 ' + GRILLE.h + ' V 78 A 76 78 0 0 1 ' + GRILLE.w + ' 78 V ' + GRILLE.h + ' Z', boite: {w: GRILLE.w, h: GRILLE.h}}];
+    return [];
   },
   /* le sarcophage posé pile sur celui du décor de combat de la fausse crypte (decors/png/crypte.png, au centre) : même dessin, à l'échelle 0,61 */
   sarcophageSurCrypte: function(){

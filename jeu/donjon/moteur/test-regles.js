@@ -995,18 +995,50 @@ section('Les salles sans combat');
   /* les dalles */
   R.entrer(p, 'dalles');
   var pv0 = D.EXPOSES.map(function(h){ return p.heros[h].pv; });
+  /* Romain, 10 novembre : le chemin n'est plus « seulement les dalles claires » ; c'est le code du plan du Sage :
+     noir, blanc, blanc, noir, blanc, noir. Au premier pas, la dalle du fond est claire (blanche) : il faut la NOIRE, devant. */
+  egal(D.DALLES.code, ['noir', 'blanc', 'blanc', 'noir', 'blanc', 'noir'], 'le code des dalles : noir, blanc, blanc, noir, blanc, noir (« N B B, N B N » sur le plan du Sage)');
+  var cotes = [0, 1, 2, 3, 4, 5].map(R.dalleSure);
+  egal(cotes, ['devant', 'devant', 'fond', 'fond', 'fond', 'fond'], 'la rangée sûre à chaque pas suit le code (la dalle du fond est claire aux pas pairs)');
+  ok(cotes.join() !== D.DALLES.sures.join(), 'ce n\'est plus le chemin des seules dalles claires');
+  ev = R.dalle(p, 'devant');
+  ok(trouve(ev, 'dalle').sure && trouve(ev, 'dalle').element === 'dalle-6-1' && p.faits.dalles === 1, 'premier pas sur la dalle noire (celle de devant) : on avance');
   ev = R.dalle(p, 'fond');
-  ok(trouve(ev, 'dalle').sure && trouve(ev, 'dalle').element === 'dalle-6-0' && p.faits.dalles === 1, 'premier pas sur la dalle claire (celle du fond) : on avance');
-  ev = R.dalle(p, 'fond');
-  ok(!trouve(ev, 'dalle').sure && trouve(ev, 'piege').degats === 15 && tous(ev, 'degats').length === 3 && trouve(ev, 'recule').pas === 0, 'une dalle sombre : le piège, −15 à toute l\'équipe, et on recule d\'une rangée');
+  ok(!trouve(ev, 'dalle').sure && trouve(ev, 'piege').degats === 15 && tous(ev, 'degats').length === 3 && trouve(ev, 'recule').pas === 0, 'la mauvaise dalle : le piège, −15 à toute l\'équipe, et on recule d\'une rangée');
   egal(D.EXPOSES.map(function(h){ return p.heros[h].pv; }), pv0.map(function(x){ return x - 15; }), 'les trois héros ont perdu 15');
-  var cotes = D.DALLES.sures;
   for(var i = 0; i < cotes.length; i++) ev = R.dalle(p, cotes[i]);
   ok(trouve(ev, 'traverse') && p.faits['piege:dalles'] === 1, 'les six bonnes dalles : le couloir est passé');
   ok(R.dalle(p, 'fond')[0].libre, 'ensuite on le traverse librement');
   var q = R.nouvellePartie(2); q.lieu = 'dalles'; D.EXPOSES.forEach(function(h){ q.heros[h].pv = 10; });
-  R.dalle(q, 'devant');
+  R.dalle(q, 'fond');
   egal(D.EXPOSES.map(function(h){ return q.heros[h].pv; }), [1, 1, 1], 'hors combat, un piège ne fait jamais tomber : il reste 1 PV');
+  /* la roue des canaux : le passage secret vers la cave aux toiles (la salle de la lune) */
+  (function(){
+    var z = R.nouvellePartie(3);
+    egal(R.roue(z, 'd')[0].mot, 'Pas ici !', 'la roue : seulement aux canaux');
+    z.lieu = 'canaux';
+    egal(R.roue(z, 'd')[0].mot, 'Pas ici !', 'la roue ne tourne pas tant que les monstres des canaux sont là');
+    ok(!R.contenu(z, 'canaux').roue, '(et la salle ne la propose pas encore)');
+    z.faits['combat:canaux'] = 1;
+    egal(R.contenu(z, 'canaux').roue, {ouvert:false, crans:0, sur:6}, 'les canaux gagnés : la roue est là, la grille est fermée');
+    var e1 = R.roue(z, 'g');
+    ok(e1.length === 1 && e1[0].t === 'roue' && e1[0].cran === 1 && z.faits.roue === 'g', 'un cran : la roue tourne, et rien d\'autre ne se passe (aucun indice cran par cran)');
+    var der = null; ['g', 'g', 'g', 'g', 'g'].forEach(function(x){ der = R.roue(z, x); });
+    ok(trouve(der, 'roue-retour') && !z.faits.roue && !z.faits['passage:canaux'], 'six crans dans le mauvais ordre : la roue revient toute seule, la grille reste fermée');
+    D.ROUE.suite.forEach(function(x){ der = R.roue(z, x); });
+    ok(trouve(der, 'passage').vers === 'toiles' && z.faits['passage:canaux'] === 1 && R.contenu(z, 'canaux').roue.ouvert, 'trois à droite, un à gauche, deux à droite : la grille se lève, le passage vers la cave aux toiles est ouvert');
+    ok(R.roue(z, 'd')[0].libre, 'ensuite la roue tourne dans le vide');
+    egal(D.ROUE.suite.join(''), 'dddgdd', 'l\'ordre de la roue est celui du plan du Sage (3 à droite, 1 à gauche, 2 à droite)');
+    /* la rune de lumière du Sage, au fond du puits */
+    var y = R.nouvellePartie(8);
+    egal(R.contenu(y, 'puits').objets, ['rune'], 'au fond du puits : la pierre de rune');
+    var er = R.prendre(y, 'rune');
+    ok(trouve(er, 'code-objet').code === 'rune:lumiere' && trouve(er, 'code-objet').pour === 'sage' && R.objets(y).codes.some(function(c){ return c.code === 'rune:lumiere'; }), 'la prendre donne un code pour le Sage (il reste dans les objets)');
+    ok(CODES.CODES['rune:lumiere'] && CODES.CODES['rune:lumiere'].a === 'sage' && D.OBJETS.rune.discret, 'le code rune:lumiere se tape sur la tablette du Sage ; rien ne signale la pierre dans la salle');
+    /* une vieille partie déjà passée par la cave aux toiles : son passage est ouvert */
+    var v = R.nouvellePartie(9); v.vus.toiles = 1;
+    ok(R.importer(R.exporter(v)).faits['passage:canaux'] === 1, 'une partie d\'avant le passage secret, déjà allée à la cave aux toiles, le trouve ouvert');
+  })();
   /* les trois portes */
   R.entrer(p, 'portes');
   egal([R.porte(p, 'oeil')[0].vers, R.porte(p, 'gueule')[0].vers, R.porte(p, 'lune')[0].vers], ['ossuaire', 'crypte', 'toiles'], 'les trois portes : l\'œil vers l\'ossuaire, la gueule vers la fausse crypte, la lune vers la cave aux toiles');
@@ -1167,10 +1199,11 @@ section('Le contrat des évènements');
   /* et hors combat */
   var q = R.nouvellePartie(4);
   [R.refaireSac(q, ['feu', 'huile', 'baume']), R.entrer(q, 'galerie'), R.prendre(q, 'bourse'), R.entrer(q, 'aeration'), R.prendre(q, 'sacoche'), R.prendre(q, 'herbes'),
-   R.entrer(q, 'reserve'), R.prendre(q, 'fleches-argent'), R.entrer(q, 'bibliotheque'), R.choisir(q, 'cristal-lune'), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'devant'),
-   R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
+   R.entrer(q, 'reserve'), R.prendre(q, 'fleches-argent'), R.entrer(q, 'bibliotheque'), R.choisir(q, 'cristal-lune'), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'fond'),
+   R.dalle(q, 'devant'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
    R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });
   q.faits['combat:egouts'] = 1; noter(R.entrer(q, 'egouts'), null);
+  q.lieu = 'canaux'; q.faits['combat:canaux'] = 1; ['g', 'g', 'g', 'g', 'g', 'g'].forEach(function(x){ noter(R.roue(q, x), null); });
   q.lieu = 'crypte'; q.faits['combat:crypte'] = 1; q.heros.sage.objets = ['cristal-lune', 'baton-chene'];
   noter(R.prendre(q, 'amulette', 'sage'), null); noter(R.prendre(q, 'amulette', 'sage', 'baton-chene'), null);
   var pasEcrits = Object.keys(vus).filter(function(t){ return !ecrits[t]; }), jamais = Object.keys(ecrits).filter(function(t){ return !vus[t]; });

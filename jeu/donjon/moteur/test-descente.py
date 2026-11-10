@@ -233,11 +233,13 @@ class Descente:
         def fait(k):
             return bool(f.get(k))
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
+        if not fait('objet:rune'): return 'puits'                       # la pierre de rune du Sage, au fond du puits
         if not fait('objet:sacoche') or not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
         if not fait('objet:fleches-lourdes'): return 'reserve'
         if not fait('combat:canaux'): return 'canaux'
         if not fait('objet:fleur-givre'): return 'givre'
+        if not fait('passage:canaux'): return 'canaux'                  # le passage secret : la roue des canaux
         if not fait('combat:toiles'): return 'toiles'
         if not fait('secret'): return 'eboulis'
         if not fait('combat:ossuaire') and not p.get('repos') and abime and not fait('combat:atelier') and not fait('piege:dalles'): return 'camp'
@@ -265,6 +267,7 @@ class Descente:
             for y in GRAPHE.get(x, []):
                 if x == 'eboulis' and y == 'camp' and not f.get('secret'): continue
                 if x == 'camp' and y == 'eboulis' and not f.get('secret'): continue
+                if {x, y} == {'canaux', 'toiles'} and not f.get('passage:canaux'): continue
                 if y not in vus:
                     vus[y] = x; q.append(y)
         if but not in vus: return None
@@ -283,7 +286,19 @@ class Descente:
     # ----- ce qu'on fait dans une salle sans combat -----
     def salle_calme(self, lieu):
         pg = self.pg; self.libre(); p = self.partie(); f = p['faits']; but = self.but(p)
-        if lieu == 'aeration':
+        if lieu == 'puits' and not f.get('objet:rune'):
+            self.cap('puits'); self.objet('rune'); self.fenetre_code()
+            verifie(bool(self.partie()['faits'].get('objet:rune')), 'au fond du puits : la pierre de rune est trouvée (un code pour le Sage)')
+        elif lieu == 'canaux' and not f.get('passage:canaux'):
+            # l'ordre du plan du Sage : 3 à droite, 1 à gauche, 2 à droite
+            self.cap('canaux-calme')
+            for c in 'dddgdd':
+                b = self.js("(function(){ var r = DJ.Explo._S().o.roue.zone.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+                pg.touchscreen.tap(b[0] + b[2] * (.25 if c == 'g' else .75), b[1] + b[3] / 2); pg.wait_for_timeout(500); self.libre()
+            pg.wait_for_timeout(2600); self.libre()
+            verifie(self.partie()['faits'].get('passage:canaux') == 1, 'aux canaux : la roue tournée dans l\'ordre du plan du Sage lève la grille')
+            self.cap('canaux-ouvert')
+        elif lieu == 'aeration':
             if not f.get('objet:sacoche'): self.objet('sacoche'); pg.wait_for_timeout(1500); self.libre()
             if not f.get('objet:herbes'): self.objet('herbes'); self.fenetre_code()
         elif lieu == 'reserve' and not f.get('objet:fleches-lourdes'):
@@ -300,7 +315,7 @@ class Descente:
         elif lieu == 'dalles' and not f.get('piege:dalles'):
             if self.a('#fenetre [data-act="dalles-go"]'): self.clic('[data-act="dalles-go"]')
             for k in range(self.partie()['faits'].get('dalles', 0) or 0, 6):
-                self.objet('dalle-%d-%d' % (6 + k, k % 2)); pg.wait_for_timeout(1200); self.libre()
+                self.objet('dalle-%d-%d' % (6 + k, [1, 1, 0, 0, 0, 0][k])); pg.wait_for_timeout(1200); self.libre()      # N B B, N B N
         elif lieu == 'bibliotheque':
             if not f.get('objet:page-dechiree'): self.objet('page-dechiree'); self.fenetre_code()
             if not f.get('coffre:bibliotheque'): self.objet('lutrin', 1); pg.wait_for_timeout(2800); self.libre()

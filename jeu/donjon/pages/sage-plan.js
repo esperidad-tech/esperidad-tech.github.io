@@ -273,8 +273,7 @@ function svg(){
         L('M' + f(n.x - lw / 2 + 5) + ' ' + f(n.y + hh / 2 + 5) + ' q' + f(lw / 2) + ' 7 ' + f(lw - 10) + ' 0', ENC2, 1.4, ' opacity=".7"') + code(n.x, n.y, n.lignes, t, ROUGE) + '</g>';
       /* la traduction au crayon (apparaît quand le Sage l'a déchiffrée) */
       p += '<g class="traduction" data-trad="' + n.id + '" style="display:none">' + texte(n.x, n.y + hh / 2 + 22, [n.dit], 22, CRAYON, ' font-style="italic"') + '</g>';
-    } else if(n.type === 'piege'){
-      p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE) + texte(n.x, n.y, n.lignes, 11.5 * K1, ROUGE);
+      if(n.crane) p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE);          /* un danger : le petit crâne rouge à côté de la note */
     }
   });
   /* la rose des vents, le titre */
@@ -332,18 +331,36 @@ function encre(ctx, n, res){
       ctx.fillStyle = INV; ctx.fillText(l, x, yy); });
   }
   if(n.passage){
-    var d = new Path2D(U.lisse(C.SECRET));
+    /* le passage secret, en pointillés (n.passage : l'id du couloir dans la carte) */
+    var pts = C.LIEN[n.passage].pts, d = new Path2D(U.lisse(pts));
     ctx.strokeStyle = 'rgba(127,240,255,.45)'; ctx.lineWidth = 9; ctx.stroke(d);
     ctx.setLineDash([.1, 11]); ctx.strokeStyle = INV; ctx.lineWidth = 4; ctx.stroke(d); ctx.setLineDash([]);
-    /* le crâne gravé, au départ du passage */
-    ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
-    var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
-    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
-    ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
-    ctx.restore();
+    if(n.id === 'crane'){
+      /* le crâne gravé, au départ du passage */
+      ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
+      var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
+      ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
+      ctx.restore();
+    }
+    if(n.id === 'roue'){
+      /* la roue des canaux, au départ du passage : un cercle, ses rayons, et un trait qui la relie à sa note */
+      var r0 = pts[0], rx = r0[0] - 6, ry = r0[1] - 46;
+      ctx.save(); ctx.translate(rx, ry);
+      [[4.6, 'rgba(159,246,255,.6)'], [2, INV]].forEach(function(q){
+        ctx.lineWidth = q[0]; ctx.strokeStyle = q[1];
+        ctx.beginPath(); ctx.arc(0, 0, 15, 0, 6.29); ctx.stroke();
+        ctx.beginPath(); for(var k = 0; k < 4; k++){ var a = k * Math.PI / 4; ctx.moveTo(Math.cos(a) * 15, Math.sin(a) * 15); ctx.lineTo(-Math.cos(a) * 15, -Math.sin(a) * 15); } ctx.stroke();
+      });
+      ctx.restore();
+      ctx.strokeStyle = INV; ctx.lineWidth = 1.8; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(rx + 6, ry + 18); ctx.quadraticCurveTo(rx + 20, n.y - 60, n.x - 40, n.y - 30); ctx.stroke(); ctx.setLineDash([]);
+    }
     /* une petite flèche au bout */
-    var fin = C.SECRET[C.SECRET.length - 1];
-    ctx.strokeStyle = INV; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(fin[0] - 14, fin[1] - 9); ctx.lineTo(fin[0], fin[1]); ctx.lineTo(fin[0] - 14, fin[1] + 9); ctx.stroke();
+    var fin = pts[pts.length - 1], av = pts[pts.length - 2], ang = Math.atan2(fin[1] - av[1], fin[0] - av[0]);
+    ctx.save(); ctx.translate(fin[0], fin[1]); ctx.rotate(ang);
+    ctx.strokeStyle = INV; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-14, -9); ctx.lineTo(0, 0); ctx.lineTo(-14, 9); ctx.stroke();
+    ctx.restore();
   }
   if(n.id === 'fleur'){
     /* une petite fleur de givre, dessinée à côté */

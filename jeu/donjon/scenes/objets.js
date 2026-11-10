@@ -444,6 +444,13 @@ function Dalle(c, def, opts){
 }
 Dalle.prototype = Object.create(Base.prototype);
 Dalle.prototype.briller = function(on){ var lu = this.p.eclat; lu.classList.toggle('ob-cache', !on); if(on) this.bB = this.boucle(lu, [{opacity: 0.15}, {opacity: 0.5}, {opacity: 0.15}], {duration: 1600}); else if(this.bB){ this.bB.cancel(); this.bB = null; } return this; };
+Dalle.prototype.marquer = function(on){
+  var lu = this.p.eclat;
+  if(this.aM){ this.aM.cancel(); this.aM = null; }
+  lu.classList.toggle('ob-cache', !on);
+  if(on) this.aM = lu.animate([{opacity: 0.3}, {opacity: 0.3}], {duration: 1000, fill: 'forwards'});
+  return this;
+};
 Dalle.prototype.marcher = function(){
   var p = this.p; this.guider(false);
   p.eclat.classList.remove('ob-cache');
@@ -710,7 +717,55 @@ Particules.prototype = Object.create(Base.prototype);
 Particules.prototype.detruire = function(){ this.arreter(); this.el.remove(); };
 
 /* ================= l'entrée ================= */
-var TYPES = {objet: Objet, choix: Choix, tas: Tas, crane: Crane, dalle: Dalle, porte: Porte, sarcophage: Sarco, feu: Feu, chat: Chat, leo: Leo, deco: Deco, particules: Particules};
+/* ================= la roue des canaux (un cran à droite ou à gauche) et la grille qu'elle lève ================= */
+function Roue(c, def, opts){
+  Base.call(this, c, def, opts);
+  this.pieces(def.pieces);
+  this.angle = 0;
+  this.faireZone();
+}
+Roue.prototype = Object.create(Base.prototype);
+/* de quel côté de la roue a-t-on touché ? ('g' : la moitié gauche, 'd' : la moitié droite) */
+Roue.prototype.cote = function(ev){ var r = this.zone.getBoundingClientRect(); return ev && ev.clientX < r.left + r.width / 2 ? 'g' : 'd'; };
+Roue.prototype.tourner = function(sens){
+  var a0 = this.angle, a1 = a0 + (sens === 'g' ? -45 : 45); this.angle = a1;
+  return fini(this.p.roue.animate([{transform: 'rotate(' + a0 + 'deg)'}, {transform: 'rotate(' + (a1 + (sens === 'g' ? -7 : 7)) + 'deg)', offset: 0.7}, {transform: 'rotate(' + a1 + 'deg)'}], {duration: 340, easing: 'ease-out', fill: 'forwards'}));
+};
+/* l'ordre était faux : elle revient toute seule à son point de départ, en ronflant */
+Roue.prototype.retour = function(){
+  var a0 = this.angle; this.angle = 0;
+  return fini(this.p.roue.animate([{transform: 'rotate(' + a0 + 'deg)'}, {transform: 'rotate(' + (a0 > 0 ? -12 : 12) + 'deg)', offset: 0.8}, {transform: 'rotate(0deg)'}], {duration: 900, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards'}));
+};
+function Grille(c, def, opts){
+  Base.call(this, c, def, opts);
+  var e = this.el;
+  e.style.overflow = 'hidden';
+  if(def.arche){ e.style.clipPath = e.style.webkitClipPath = 'path("' + def.arche + '")'; }
+  this.pieces(def.pieces);            /* passage (ce qu'on voit derrière), barres */
+  this.faireZone(def.zone);
+  this.horsCadre();
+  if(def.ouvert) this.etat(true);
+}
+Grille.prototype = Object.create(Base.prototype);
+Grille.prototype.etat = function(ouvert){
+  this.ouverte = !!ouvert;
+  this.p.passage.classList.toggle('ob-cache', !ouvert);
+  this.p.barres.style.transform = ouvert ? 'translateY(' + (-(this.def.h - 34)) + 'px)' : '';
+  return this;
+};
+/* on la secoue : elle ne bouge pas */
+Grille.prototype.secouer = function(){ return fini(this.p.barres.animate([{transform: 'none'}, {transform: 'translateX(-2px)'}, {transform: 'translateX(2px)'}, {transform: 'translateX(-1px)'}, {transform: 'none'}], {duration: 260})); };
+/* elle se lève, par à-coups, comme tirée par une vieille chaîne */
+Grille.prototype.lever = function(){
+  var h = this.def.h - 34, p = this.p; this.ouverte = true;
+  p.passage.classList.remove('ob-cache');
+  p.passage.animate([{opacity: 0}, {opacity: 1}], {duration: 1500, fill: 'both'});
+  var kf = [{transform: 'translateY(0)'}], n = 6;
+  for(var k = 1; k <= n; k++){ kf.push({transform: 'translateY(' + (-h * (k - 0.25) / n).toFixed(1) + 'px)', offset: (k - 0.35) / n, easing: 'ease-out'}); kf.push({transform: 'translateY(' + (-h * k / n).toFixed(1) + 'px)', offset: k / n}); }
+  return fini(p.barres.animate(kf, {duration: 2100, fill: 'forwards'}));
+};
+
+var TYPES = {roue: Roue, grille: Grille, objet: Objet, choix: Choix, tas: Tas, crane: Crane, dalle: Dalle, porte: Porte, sarcophage: Sarco, feu: Feu, chat: Chat, leo: Leo, deco: Deco, particules: Particules};
 OBJETS.TYPES = TYPES;
 OBJETS.creer = function(conteneur, def, opts){ var T = TYPES[def.type || 'objet'] || Objet; return new T(conteneur, def, opts || {}); };
 /* poser toute une salle : renvoie {id: élément} */

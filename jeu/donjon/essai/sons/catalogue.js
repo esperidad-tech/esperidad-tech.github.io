@@ -75,7 +75,7 @@ window.CATALOGUE = [
       ]}
     ]},
     {id:'objets', titre:'Objets et salles', sons:[
-      {id:'ramasse', t:'Ramasser', v:'AB'}, {id:'coffre', t:'Un coffre', v:'AB'}, {id:'portePierre', t:'Porte de pierre', v:'AB'}, {id:'dalles', t:'Piège des dalles', v:'AB'},
+      {id:'ramasse', t:'Ramasser', v:'AB'}, {id:'coffre', t:'Un coffre', v:'AB'}, {id:'portePierre', t:'Porte de pierre', v:'AB'}, {id:'roueCanaux', t:'Roue des canaux', v:'AB'}, {id:'grilleCanaux', t:'La grille', v:'A'}, {id:'dalles', t:'Piège des dalles', v:'AB'},
       {id:'pageSauve', t:'Page de sauvegarde', v:'AB'}, {id:'codeOk', t:'Code accepté', v:'AB'}, {id:'codeNon', t:'Code refusé', v:'AB'},
       {id:'pasCouloir', t:'Pas (couloir)', v:'ABCD'}, {id:'brumeCarte', t:'Brume (carte)', v:'AB'}, {id:'feuCamp', t:'Feu de camp', v:'AB', m:1}
     ]}

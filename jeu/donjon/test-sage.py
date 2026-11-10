@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 from outils_test import Bilan, contexte, page, capture, regles, muet, mesurer_glisse
 
 VITE = '--vite' in sys.argv
-CODES = {'page:dechiree': ['cle', 'flamme', 'poisson'], 'page:blanche': ['cloche', 'chat', 'soleil'], 'porte:odette': ['chapeau', 'lune', 'coeur'],
+CODES = {'rune:lumiere': ['flamme', 'etoile', 'cle'], 'page:dechiree': ['cle', 'flamme', 'poisson'], 'page:blanche': ['cloche', 'chat', 'soleil'], 'porte:odette': ['chapeau', 'lune', 'coeur'],
          'faux': ['lune', 'lune', 'lune'], 'recette:givre': ['champi', 'coeur', 'cle']}
 b = Bilan('Sage')
 
@@ -40,7 +40,8 @@ def parcours(nav, appareil):
     pg.wait_for_timeout(900)
     b.ok(pg.evaluate('!!document.querySelector(".plan-svg")'), 'le plan des Fondateurs est dessiné')
     b.ok(pg.evaluate('document.querySelector(".coin").hidden'), 'le coin déchiré manque au départ')
-    b.ok(pg.is_visible('#rune.guide'), 'le rond jaune guide vers la rune')
+    # Romain, 10 novembre : la rune se trouve dans le donjon (au fond du puits) ; au départ, le Sage ne l'a pas
+    b.ok(not pg.is_visible('#rune') and 'rune' not in pg.inner_text('#bulle').lower(), 'au départ : pas de rune sur la table (le Pisteur doit la trouver), et le conteur n’en parle pas')
     regles(b, pg, 'départ'); muet(b, pg, 'départ')
     capture(pg, 'sage-depart-' + t)
     # --- glisser et zoomer ---
@@ -89,6 +90,13 @@ def parcours(nav, appareil):
     taper(pg, 'page:blanche')
     b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'un code ne marche qu’une fois (page:blanche)')
     clic(pg, '.pave-fen .fermer')
+    # --- la rune de lumière arrive par son code ---
+    taper(pg, 'rune:lumiere')
+    b.ok(pg.is_visible('.scene') and 'puits' in pg.inner_text('.scene'), 'rune:lumiere : la petite scène s’ouvre (la pierre trouvée au fond du puits)')
+    regles(b, pg, 'scène de la rune')
+    capture(pg, 'sage-rune-' + t)
+    clic(pg, '.scene [data-fen-fermer].aller'); pg.wait_for_timeout(900)
+    b.ok(pg.is_visible('#rune.guide'), 'la rune est posée en bas, et le rond jaune la montre')
     # --- l'encre invisible : la vraie rune, promenée au doigt (souris) sur le cul-de-sac éboulé ---
     vide = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=crane]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
     b.ok(vide == 0, 'l’encre est invisible au départ')
@@ -108,22 +116,39 @@ def parcours(nav, appareil):
     b.ok('crâne' in pg.inner_text('#bulle'), 'le conteur dit ce que l’encre révèle')
     capture(pg, 'sage-encre-' + t)
     # l'autre note à l'encre : la rune ne l'a pas touchée
-    b.ok(not S['encreFinie'].get('fleur'), 'la note de la grotte de givre reste cachée tant que la rune n’y passe pas')
+    b.ok(not S['encreFinie'].get('fleur') and not S['encreFinie'].get('roue'), 'les autres notes à l’encre (la fleur, la roue) restent cachées tant que la rune n’y passe pas')
+    # la roue des canaux : le passage secret vers la salle de la lune, et l'ordre pour la tourner
+    r3 = pg.evaluate('(() => { var n = SAGE.notes.filter(function(x){ return x.id === "roue"; })[0], b = n.boite, pts = []; for(var y = b.y + 10; y < b.y + b.h; y += 22) for(var x = b.x + 10; x < b.x + b.w; x += 26) pts.push([x, y]); var r = SAGE.promener(pts, 40); return {fini:!!SAGE.etat().encreFinie.roue, lignes:n.lignes.join(" "), passage:n.passage}; })()')
+    b.ok(r3['fini'] and r3['passage'] == 'c5' and '3 à droite' in r3['lignes'] and '1 à gauche' in r3['lignes'] and '2 à droite' in r3['lignes'], 'la rune passée sur les canaux réveille l’ordre de la roue (« %s ») et le passage secret' % r3['lignes'])
+    pg.evaluate('SAGE.centrerSur(1620, 1000, 1)'); pg.wait_for_timeout(900)
+    capture(pg, 'sage-roue-' + t)
     # --- une note codée : la loupe, la grille, écrire les lettres ---
     pg.evaluate('SAGE.centrerSur(1020, 620, 0.9)'); pg.wait_for_timeout(900)
     sx, sy = ecran(pg, 1019.5, 619.6)
     pg.mouse.click(sx, sy); pg.wait_for_timeout(500)
     b.ok(pg.is_visible('.loupe'), 'toucher une note codée ouvre la loupe (signes en grand + grille)')
-    b.ok(pg.locator('.loupe .loupe-l').count() == 7 and pg.is_visible('.loupe .cle-svg'), 'la loupe montre les 7 signes et la grille de l’alphabet secret')
+    b.ok(pg.locator('.loupe .loupe-l').count() == 17 and pg.is_visible('.loupe .cle-svg'), 'la loupe montre les 17 signes et la grille de l’alphabet secret')
     regles(b, pg, 'loupe')
-    for l in 'VAALESX':
+    for l in 'LARUNEDORTAUPUITX':
         clic(pg, '.loupe [data-l="%s"]' % l)
     b.ok('rien dire' in pg.inner_text('.loupe-msg'), 'une mauvaise lettre : « ça ne veut rien dire »')
-    clic(pg, '.loupe .loupe-l[data-i="6"]'); clic(pg, '.loupe [data-l="T"]'); pg.wait_for_timeout(200)
-    b.ok(pg.evaluate('SAGE.etat().lues.est'), 'les bonnes lettres déchiffrent la note « VA A L EST »')
+    clic(pg, '.loupe .loupe-l[data-i="16"]'); clic(pg, '.loupe [data-l="S"]'); pg.wait_for_timeout(200)
+    b.ok(pg.evaluate('SAGE.etat().lues.rune'), 'les bonnes lettres déchiffrent la note « LA RUNE DORT AU PUITS »')
     capture(pg, 'sage-loupe-' + t)
     clic(pg, '.loupe .fermer'); pg.wait_for_timeout(200)
-    b.ok(pg.evaluate('document.querySelector("[data-trad=est]").style.display') == '', 'la traduction est notée au crayon sur le plan')
+    b.ok(pg.evaluate('document.querySelector("[data-trad=rune]").style.display') == '', 'la traduction est notée au crayon sur le plan')
+    # la note du couloir aux dalles : six signes, deux formes seulement (N et B), à côté du petit crâne rouge
+    nd = pg.evaluate('(() => { var n = CARTE_DONJON.PLAN.notes.filter(function(x){ return x.id === "dalles"; })[0]; return {x:n.x, y:n.y, l:n.lignes.join("|"), crane:!!n.crane, dit:n.dit}; })()')
+    pg.evaluate('SAGE.centrerSur(%f, %f, 0.9)' % (nd['x'], nd['y'])); pg.wait_for_timeout(900)
+    sx, sy = ecran(pg, nd['x'], nd['y'])
+    pg.mouse.click(sx, sy); pg.wait_for_timeout(500)
+    b.ok(pg.is_visible('.loupe') and pg.locator('.loupe .loupe-l').count() == 6 and nd['crane'], 'la note des dalles : six signes dans la loupe, un crâne rouge à côté sur le plan')
+    for l in 'NBBNBN':
+        clic(pg, '.loupe [data-l="%s"]' % l)
+    pg.wait_for_timeout(200)
+    b.ok(pg.evaluate('SAGE.etat().lues.dalles') and 'N B B' in pg.inner_text('.loupe-msg'), 'N B B, N B N : le code du couloir aux dalles est déchiffré (noire, blanche, blanche…)')
+    capture(pg, 'sage-dalles-' + t)
+    clic(pg, '.loupe .fermer'); pg.wait_for_timeout(200)
     # --- le coin déchiré ---
     taper(pg, 'page:dechiree')
     regles(b, pg, 'scène page déchirée')
@@ -152,7 +177,7 @@ def parcours(nav, appareil):
     b.ok(S['pages'].get('2') and S['codes'].get('page:blanche') and S['codes'].get('page:dechiree') and S['codes'].get('porte:odette'), 'après rechargement : pages et codes gardés')
     b.ok(not pg.evaluate('document.querySelector(".coin").hidden') and pg.inner_text('#b-livre .badge') == '3', 'après rechargement : le coin est là, 3 pages blanches restent')
     vu2 = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=crane]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
-    b.ok(vu2 > 200 and S['lues'].get('est'), 'après rechargement : l’encre révélée et la note déchiffrée restent')
+    b.ok(vu2 > 200 and S['lues'].get('rune') and S['codes'].get('rune:lumiere') and pg.is_visible('#rune'), 'après rechargement : l’encre révélée, la note déchiffrée et la rune restent')
     clic(pg, '#b-livre'); pg.wait_for_timeout(300)
     b.ok(pg.get_attribute('.livre [data-voir="2"] .code-grand', 'data-code') == 'sauve:2' and 'Odette' in pg.inner_text('.livre'), 'après rechargement : le Grand Livre garde la page écrite et la note d’Odette')
     clic(pg, '.livre .fermer')

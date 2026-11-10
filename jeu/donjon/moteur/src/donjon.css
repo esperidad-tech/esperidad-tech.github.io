@@ -59,6 +59,8 @@
 .titre-carte span{font-size:15px;color:#e8dcc0;text-shadow:0 1px 0 #000,0 0 8px #000}
 #rose{position:absolute;left:16px;top:66px;width:66px;height:66px;pointer-events:none!important}
 #explo #volumes{right:16px;top:10px}
+/* les canaux, au calme : la vieille roue est en haut à droite du mur ; les curseurs de volume lui laissent la place */
+#scene.lieu-canaux #volumes{right:auto;left:232px}
 #explo #conteur{position:absolute;left:14px;bottom:12px;width:430px;min-height:54px;font-size:15.5px}
 .boutons-carte{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:480px}
 .boutons-carte .aller{min-height:50px;font-size:20px;padding:8px 24px}

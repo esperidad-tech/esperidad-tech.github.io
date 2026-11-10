@@ -86,6 +86,17 @@ function construire(){
   fx = q('#fx'); fxHaut = q('#fx-haut'); hud = q('#hud'); bandeEl = q('#bande');
   Fx.init({fx:fx, sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
   DJ.brancherCurseurs(c);
+  /* ce qui se pose par-dessus le décor (la grille des canaux, tant que le passage secret est fermé) */
+  try{
+    var faits = (E.partie && E.partie.faits) || {}, plus = window.SCENES && window.SCENES.surDecor ? window.SCENES.surDecor(E.salle, {ouvert:!!faits['passage:canaux']}) : [];
+    plus.forEach(function(o){
+      var b = el('div', 'sur-decor'), w = (o.boite || o).w, h = (o.boite || o).h;
+      b.style.cssText = 'position:absolute;left:' + o.x + 'px;top:' + o.y + 'px;width:' + w + 'px;height:' + h + 'px;overflow:hidden;pointer-events:none';
+      if(o.arche) b.style.clipPath = b.style.webkitClipPath = 'path("' + o.arche + '")';
+      b.innerHTML = '<img alt="" draggable="false" style="position:absolute;left:0;top:0;width:' + o.w + 'px;height:' + o.h + 'px" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(o.svg) + '">';
+      q('#secousse').insertBefore(b, q('#ambiance'));
+    });
+  }catch(e){ if(window.console) console.warn('sur-decor', e); }
   try{ if(window.AMBIANCE && window.AMBIANCE[E.salle]) E.ambiance = window.AMBIANCE[E.salle](q('#ambiance')); }catch(e){}
   var p = q('#persos');
   ORDRE.forEach(function(h){

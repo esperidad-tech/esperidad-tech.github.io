@@ -30,6 +30,7 @@
    Regles.choisir(partie, objet[, laisser])             choisir un des deux objets d'un coffre
    Regles.fouiller(partie)              le tas d'os
    Regles.crane(partie)                 le crâne secret (le passage vers le feu de camp)
+   Regles.roue(partie, 'd' | 'g')       la roue des canaux, un cran à droite ou à gauche (le passage secret vers la cave aux toiles)
    Regles.dalle(partie, 'fond' | 'devant')              un pas dans le couloir aux dalles
    Regles.porte(partie, 'oeil' | 'gueule' | 'lune')     la salle aux trois portes
    Regles.repos(partie)                 le feu de camp
@@ -109,6 +110,8 @@
    {t:'coffre', lieu:'reserve', pris:'fleches-lourdes', reste:'fleches-argent'}
    {t:'fouille', n:1, trouve:'morsure' | 'page' | null}
    {t:'passage', de:'eboulis', vers:'camp', deja:false}               le passage secret s'ouvre
+   {t:'roue', sens:'d', cran:2, sur:6}                                 la roue des canaux tourne d'un cran (libre:true : la grille est déjà levée)
+   {t:'roue-retour', crans:6}                                          le dernier cran, et l'ordre était faux : la roue revient toute seule
    {t:'dalle', pas:0, cote:'fond', sure:true, element:'dalle-6-0'}    element : l'id de la dalle dans scenes.js
    {t:'piege', quoi:'dalles', degats:15}            suivi d'un {t:'degats'} par héros
    {t:'recule', pas:0}                              on recule d'une rangée (pas : où on se retrouve)
@@ -181,6 +184,8 @@ function importer(txt){
     if(!p || p.v !== 1 || !p.heros || !p.heros.pisteur) return null;
     if(!p.fuites) p.fuites = {};
     if(!p.livre) p.livre = {};
+    /* une partie d'avant le passage secret des canaux, déjà allée plus loin : son passage est ouvert */
+    if(p.vus && (p.vus.toiles || p.faits['combat:toiles'])) p.faits[D.ROUE.ouvre] = 1;
     if(!p.sauvegarde) sauvegarder(p);
     return p;
   }catch(e){ return null; }
@@ -850,6 +855,7 @@ function contenu(p, lieu){
   if(L.tas) o.tas = {fouilles:f.os || 0, reste:(f.os || 0) < 2};
   if(L.crane) o.crane = {ouvert:!!f.secret};
   if(L.piege === 'dalles') o.dalles = {pas:f.dalles || 0, sur:D.DALLES.pas, passe:!!f['piege:dalles']};
+  if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
   if(L.repos) o.repos = {permis:!p.repos, sac:true};
   if(L.donne) o.code = {id:L.donne, pour:L.pour};
@@ -945,13 +951,33 @@ function crane(p){
   p.faits.secret = 1; p.vus.camp = p.vus.camp || 1;
   return [{t:'passage', de:p.lieu, vers:'camp', deja:deja}];
 }
+/* la rangée sûre au pas n° k, d'après le code des couleurs (la dalle du fond est claire aux pas pairs) */
+function dalleSure(k){
+  var T = D.DALLES;
+  if(!T.code) return T.sures[k];
+  return (T.code[k] === 'blanc') === (k % 2 === 0) ? 'fond' : 'devant';
+}
+/* la roue des canaux : un cran à droite ('d') ou à gauche ('g') ; au dernier cran, la grille se lève… ou la roue revient */
+function roue(p, sens){
+  var L = D.LIEUX[p.lieu], T = D.ROUE;
+  if(enCombat(p)) return refus(MOTS.combat);
+  if(!L || !L.roue || (L.combat && !p.faits['combat:' + L.combat])) return refus(MOTS.pasIci);
+  if(sens !== 'd' && sens !== 'g') return refus(MOTS.cible);
+  if(p.faits[T.ouvre]) return [{t:'roue', sens:sens, libre:true}];
+  var s = (p.faits.roue || '') + sens, ev = [{t:'roue', sens:sens, cran:s.length, sur:T.suite.length}];
+  if(s.length < T.suite.length){ p.faits.roue = s; return ev; }
+  delete p.faits.roue;
+  if(s === T.suite.join('')){ p.faits[T.ouvre] = 1; ev.push({t:'passage', de:p.lieu, vers:T.vers}); }
+  else ev.push({t:'roue-retour', crans:s.length});
+  return ev;
+}
 function dalle(p, cote){
   var L = D.LIEUX[p.lieu], T = D.DALLES, ev = [];
   if(enCombat(p)) return refus(MOTS.combat);
   if(!L || L.piege !== 'dalles') return refus(MOTS.pasIci);
   if(cote !== 'fond' && cote !== 'devant') return refus(MOTS.cible);
   if(p.faits['piege:dalles']) return [{t:'traverse', lieu:p.lieu, libre:true}];
-  var pas = p.faits.dalles || 0, sure = T.sures[pas] === cote;
+  var pas = p.faits.dalles || 0, sure = dalleSure(pas) === cote;
   ev.push({t:'dalle', pas:pas, cote:cote, sure:sure, element:'dalle-' + (6 + pas) + '-' + (cote === 'fond' ? 0 : 1)});
   if(sure){
     pas++;
@@ -1018,7 +1044,7 @@ function objets(p){
 var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
-  entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, porte:porte,
+  entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
   repos:repos, code:code, refaireSac:refaireSac, sacPermis:sacPermis, placesSac:placesSac,
   sauvegarder:sauvegarder, objets:objets, grandLivre:grandLivre, exporter:exporter, importer:importer
 };

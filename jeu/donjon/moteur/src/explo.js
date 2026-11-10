@@ -27,6 +27,7 @@ var PHRASES = {
   bibliotheque:'Des livres qui flottent sur l\'eau qui luit. Les Fondateurs lisaient beaucoup.',
   eboulis:'Un cul-de-sac. Un tas d\'os… et un mur qui a l\'air de garder un secret.',
   dalles:'Des dalles claires, des dalles sombres… Attention où l\'on met les pieds !',
+  canaux:'Les canaux sont tranquilles. L\'eau coule sous le petit pont.',
   portes:'Trois portes : un œil, une gueule, une lune. Laquelle pousser ?',
   crypte:'La crypte est calme, maintenant. Reste ce gros sarcophage…',
   camp:'Un feu de camp ! On souffle un peu.',
@@ -140,6 +141,7 @@ function carte(o){
   var dpr = window.devicePixelRatio || 1, large = elCarte().clientWidth || window.innerWidth, z = Math.max(.7, Math.min(1.4, large / 960));
   /* la carte est peinte une fois, à une finesse qui ne dépasse jamais 4 096 px de côté (RAPIDITE.md R9, mémoire de l'iPhone) */
   var ech = Math.max(1, Math.min(2, Math.round(z * dpr * 4) / 4, 4096 / C.EMPREINTE.w));
+  C.ouvrirSecrets(secretsOuverts());      /* un passage secret ouvert devient un couloir comme les autres (murs, sol, brume) */
   X.V = C.vue(elCarte(), {brume:p.vus['@brume'] || null, etats:etats, centre:{x:pt.x, y:pt.y}, echelle:ech, surToucher:function(x, y, id){
     if(X.occupe) return;
     if(id && X.V.brume.estVu(id)) conte(nomLieu(id) + '.');
@@ -148,7 +150,7 @@ function carte(o){
   /* la brume levée : celle qu'on avait gardée, sinon tous les lieux déjà vus */
   if(!p.vus['@brume']) Object.keys(p.vus).forEach(function(l){ if(l.charAt(0) !== '@' && C.LIEUX[l]) X.V.decouvrir(l, {anim:false}); });
   if(C.LIEUX[X.ici]) X.V.decouvrir(X.ici, {anim:false});
-  if(p.faits.secret) try{ X.V.decouvrirLien('secret', 0, 1); }catch(e){}
+  secretsOuverts().forEach(function(k){ try{ X.V.decouvrirLien(k, 0, 1); }catch(e){} });
   if(X.ici === 'J') X.V.pion(C.J.x, C.J.y); else X.V.pion(X.ici);
   X.V.centrer(pt);
   majCarte(o.texte);
@@ -162,6 +164,8 @@ function majCarte(texte){
   /* un grand combat est au bout d'un de ces couloirs : sa longue musique se fabrique d'avance (quelques secondes) */
   (X.sorties || []).forEach(function(s){ if(D.LIEUX[s.vers] && D.LIEUX[s.vers].combat && !p.faits['combat:' + D.LIEUX[s.vers].combat]) DJ.preparerGrand(D.LIEUX[s.vers].combat); });
 }
+/* les passages secrets que cette partie a ouverts (les ids de leurs couloirs) */
+function secretsOuverts(){ var p = X.partie; return C.LIENS.filter(function(c){ return c.secret && p.faits[c.secret]; }).map(function(c){ return c.id; }); }
 /* où mènent les couloirs d'ici : [{lien, vers}] (vers : un lieu, ou 'J' l'embranchement) */
 function sortiesDe(ici){
   var p = X.partie, out = [], L = C.LIEUX[ici];
@@ -172,7 +176,7 @@ function sortiesDe(ici){
   }
   C.liens(ici).forEach(function(c){
     if(c.bouche) return;
-    if(c.secret && !p.faits.secret) return;
+    if(c.secret && !p.faits[c.secret]) return;
     if(c.boucle){ out.push({lien:c.id, vers:c.salle, boucle:true}); return; }
     if(c.sensUnique && c.a === ici) return;                 /* la porte de la lune ne s'ouvre que d'un côté */
     var vers = (c.salle && c.salle !== ici) ? c.salle : (c.de === ici ? c.a : c.de);
@@ -227,12 +231,13 @@ function aller(vers, lien){
 /* ====================================================================== 4. ARRIVER QUELQUE PART */
 function aScene(lieu){
   if(!D.LIEUX[lieu]) return false;
-  if(lieu === 'crypte') return !!X.partie.faits['combat:crypte'];
+  if(lieu === 'crypte' || lieu === 'canaux') return !!X.partie.faits['combat:' + lieu];
   return !!PHRASES[lieu] && !D.LIEUX[lieu].combat;
 }
 /* y a-t-il encore quelque chose à faire ici ? (le crâne secret ne compte pas : c'est un secret) */
 function aPlace(id){
   var O = D.OBJETS[id], p = X.partie; if(!O) return false;
+  if(O.discret) return false;                 /* (la pierre de rune : rien ne dit qu'il reste quelque chose à trouver) */
   if(O.code || O.or) return true;
   return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && p.heros[h].objets.length < D.CHIFFRES.places; });
 }
@@ -248,7 +253,10 @@ function arriver(lieu, o){
   var combat = ev.filter(function(e){ return e.t === 'combat'; })[0], boucle = ev.filter(function(e){ return e.t === 'boucle'; })[0];
   if(combat) return lancerCombat(combat.salle);
   if(boucle) return finBoucle(boucle.vers);
-  if(aScene(lieu) && (premier || aFaire(lieu) || o.entrer)) return ouvrirScene(lieu, ev, premier);
+  /* (les canaux : après le combat, on voit une fois la salle au calme — la grille et la roue y sont, sans rien dire) */
+  var calme = lieu === 'canaux' && o.apresCombat && !p.vus['@calme:canaux'];
+  if(calme) p.vus['@calme:canaux'] = 1;
+  if(aScene(lieu) && (premier || calme || aFaire(lieu) || o.entrer)) return ouvrirScene(lieu, ev, premier);
   if(X.ecran !== 'carte' || !X.V) carte(); else { X.occupe = false; majCarte(); }
   return Promise.resolve();
 }
@@ -281,7 +289,7 @@ function finBoucle(vers){
 
 /* ====================================================================== 5. LES SALLES SANS COMBAT */
 var S = null;          /* la salle ouverte : {lieu, objets:{id: élément}, heros:{}, …} */
-function fondDe(lieu){ return lieu === 'crypte' ? DJ.charger.decor('crypte') : DJ.charger.scene(lieu); }
+function fondDe(lieu){ return lieu === 'crypte' || lieu === 'canaux' ? DJ.charger.decor(lieu) : DJ.charger.scene(lieu); }
 function ouvrirScene(lieu, ev, premier){
   var p = X.partie;
   quitterCarte(); X.ecran = 'passage';
@@ -289,7 +297,8 @@ function ouvrirScene(lieu, ev, premier){
   return DJ.passage(nomLieu(lieu), function(){ return Promise.all([DJ.charger.image(fondDe(lieu)), DJ.Combat.cuireHeros()]); }).then(function(){ construireScene(lieu, ev || [], premier); });
 }
 function construireScene(lieu, ev, premier){
-  var p = X.partie, def = lieu === 'crypte' ? {elements:[window.SCENES.sarcophageSurCrypte()]} : window.SCENES.salle(lieu), cont = Regles.contenu(p, lieu);
+  var p = X.partie, cont = Regles.contenu(p, lieu);
+  var def = lieu === 'crypte' ? {elements:[window.SCENES.sarcophageSurCrypte()]} : lieu === 'canaux' ? {elements:window.SCENES.surCanaux(cont.roue && cont.roue.ouvert)} : window.SCENES.salle(lieu);
   X.ecran = 'scene'; X.occupe = false;
   jeu.innerHTML = '';
   var c = el('div', 'ecran'); c.id = 'scene'; c.className = 'ecran lieu-' + lieu;
@@ -384,7 +393,7 @@ function poserAuSol(id, anime){
   S.o[id] = e; S.defs[id] = d;
   e.surToucher(function(){ prendre(id); });
   if(anime){ e.el.style.visibility = ''; e.montrer(); }
-  e.briller(true); e.guider(aPlace(id));
+  e.briller(true); rond(e, aPlace(id));
   return e;
 }
 function reposer(id, heros){
@@ -398,7 +407,7 @@ function reposer(id, heros){
 /* les ronds jaunes : seulement sur ce qu'on peut prendre tout de suite (quelqu'un a une place) */
 function majGuides(){
   if(!S) return;
-  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) try{ e.guider(aPlace(id)); }catch(er){} });
+  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) rond(e, aPlace(id)); });
 }
 /* les mains pleines : on a touché un objet de plus. Les cases du héros bougent (rond jaune) : on touche celle qu'on repose. */
 function echange(x){
@@ -430,28 +439,36 @@ function majPV(){
     q('b', e).textContent = s.pv;
   });
 }
-function guider(id, on){ var e = S && S.o[id]; try{ if(e && e.guider) e.guider(on !== false); }catch(x){} }
+/* Romain, 10 novembre : « tu enlèves les ronds jaunes dans les salles, qu'on doive cliquer un peu partout ».
+     Dans une salle, plus rien ne porte le rond jaune : ni les objets, ni les coffres, ni le tas d'os, ni les portes, ni les
+     dalles. Les objets gardent leur petite lueur (ils font partie du décor) ; les secrets (la pierre de rune, le crâne, la
+     roue) n'en ont pas. Le rond reste sur « Continuer » quand il n'y a plus rien à faire, et sur les cases d'un échange. */
+var RONDS = false;
+function rond(e, on){ try{ if(e && e.guider) e.guider(RONDS && on !== false); }catch(x){} }
+function guider(id, on){ rond(S && S.o[id], on); }
 function pointDe(d){ var z = d.zone || d; return {x:z.x + z.w / 2, y:z.y + z.h / 2}; }
 /* brancher ce qu'on touche, selon son type */
 function brancher(e, d, cont){
   if(!e.surToucher) return;
   /* (le feu, le chat et Léo n'ont pas fait leur zone à toucher eux-mêmes) */
   if(d.zone && !e.zone && e.faireZone && /^(feu|chat|leo)$/.test(d.type)){ try{ e.faireZone(); }catch(x){} }
-  if(d.type === 'objet'){ e.briller && e.briller(true); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  if(d.type === 'objet'){ if(e.briller) e.briller(!d.discret); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  else if(d.type === 'roue'){ e.surToucher(function(o, ev){ tournerRoue(e, ev); }); }
+  else if(d.type === 'grille'){ e.surToucher(function(){ toucherGrille(e); }); }
   else if(d.type === 'choix' && !cont.coffre){ coffreLibre(e, d); }
   else if(d.type === 'choix'){
     var pris = cont.coffre && cont.coffre.pris;
     if(pris){ try{ e.ouvrir && e.ouvrir(); (e.options || []).forEach(function(o){ if(o.def && o.def.id === pris) o.cacher && o.cacher(); else o.eteindre && o.eteindre(); }); }catch(x){} return; }
     var ouvert = !d.ferme;
-    if(!ouvert){ e.guider && e.guider(true); e.surToucher(function(){ if(ouvert || X.occupe) return; ouvert = true; e.guider(false); bruit('coffre', {}, ['clic']); Promise.resolve(e.ouvrir()).then(function(){ conte('Deux trouvailles… mais on ne peut en emporter qu\'une. Laquelle ?'); armerChoix(e, d); }); }); }
+    if(!ouvert){ rond(e, true); e.surToucher(function(){ if(ouvert || X.occupe) return; ouvert = true; rond(e, false); bruit('coffre', {}, ['clic']); Promise.resolve(e.ouvrir()).then(function(){ conte('Deux trouvailles… mais on ne peut en emporter qu\'une. Laquelle ?'); armerChoix(e, d); }); }); }
     else armerChoix(e, d);
   }
-  else if(d.type === 'tas'){ if(cont.tas && cont.tas.reste) e.guider(true); e.surToucher(function(){ fouiller(e); }); }
+  else if(d.type === 'tas'){ if(cont.tas && cont.tas.reste) rond(e, true); e.surToucher(function(){ fouiller(e); }); }
   else if(d.type === 'crane'){ if(cont.crane && cont.crane.ouvert){ try{ e.etat && e.etat(true); e.ouvrir && e.ouvrir(); }catch(x){} } else e.surToucher(function(){ crane(e); }); }
   else if(d.type === 'dalle'){ e.surToucher(function(){ dalle(e, d); }); }
-  else if(d.type === 'porte'){ e.guider(true); e.surToucher(function(){ porte(e, d); }); }
-  else if(d.type === 'sarcophage'){ if(cont.objets.indexOf('amulette') >= 0){ e.guider(true); e.surToucher(function(){ sarcophage(e); }); } else { try{ e.ouvrir().then(function(a){ a && a.cacher && a.cacher(); }); }catch(x){} } }
-  else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) e.guider(true); }
+  else if(d.type === 'porte'){ rond(e, true); e.surToucher(function(){ porte(e, d); }); }
+  else if(d.type === 'sarcophage'){ if(cont.objets.indexOf('amulette') >= 0){ rond(e, true); e.surToucher(function(){ sarcophage(e); }); } else { try{ e.ouvrir().then(function(a){ a && a.cacher && a.cacher(); }); }catch(x){} } }
+  else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) rond(e, true); }
   else if(d.type === 'chat'){ e.surToucher(function(){ if(!X.occupe) sceneChat(e, true); }); }
   else if(d.type === 'leo'){ e.surToucher(function(){ if(!X.occupe) codeDuLieu(); }); }
 }
@@ -463,7 +480,7 @@ function coffreLibre(e, d){
     (e.options || []).forEach(function(o){
       var id = o.def.id; S.o[id] = o; S.defs[id] = o.def;
       if(!o._arme){ o._arme = true; o.surToucher(function(){ prendre(id); }); }
-      if(ici(id)){ o.briller(true); o.guider(aPlace(id)); } else { o.pris = true; o.cacher(true); }
+      if(ici(id)){ o.briller(true); rond(o, aPlace(id)); } else { o.pris = true; o.cacher(true); }
     });
   }
   if(p.vus[cle]){
@@ -474,16 +491,16 @@ function coffreLibre(e, d){
     Promise.resolve(e.ouvrir()).then(function(){ e.options = toutes; if(S && S.o) armer(); });
     return;
   }
-  e.guider(true);
+  rond(e, true);
   e.surToucher(function(){
     if(p.vus[cle] || X.occupe) return;
-    p.vus[cle] = 1; garder(); e.guider(false); bruit('coffre', {}, ['clic']);
+    p.vus[cle] = 1; garder(); rond(e, false); bruit('coffre', {}, ['clic']);
     Promise.resolve(e.ouvrir()).then(function(){ if(S) armer(); });
   });
 }
 function armerChoix(e, d){
   (e.options || []).forEach(function(o, i){
-    o.briller && o.briller(true); o.guider && o.guider(true);
+    o.briller && o.briller(true); rond(o, true);
     o.surToucher && o.surToucher(function(){ choisir(e, d, i); });
   });
 }
@@ -572,7 +589,7 @@ function choisir(e, d, i, laisser){
   X.occupe = true;
   var ob = ev.filter(function(x){ return x.t === 'objet'; })[0], O = D.OBJETS[id] || {nom:id};
   bruit('ramasse', {}, ['clic']);
-  (e.options || []).forEach(function(o){ o.guider && o.guider(false); });
+  (e.options || []).forEach(function(o){ rond(o, false); });
   Promise.resolve(e.choisir(i, versHeros(ob ? ob.heros : 'pisteur'))).then(function(){
     if(ob){ try{ if(ob.equipe && S.heros[ob.heros].equiper) S.heros[ob.heros].equiper(ob.equipe, true); S.heros[ob.heros].joie && S.heros[ob.heros].joie(); }catch(er){} }
     conte(O.nom + ' ! ' + (O.d || '') + ' L\'autre reste là, pour toujours.');
@@ -584,14 +601,14 @@ function fouiller(e){
   if(X.occupe) return;
   var p = X.partie, ev = Regles.fouiller(p), f = ev.filter(function(x){ return x.t === 'fouille'; })[0];
   if(!f){ conte('Plus rien là-dedans. Que des os, et encore des os.'); return; }
-  X.occupe = true; e.guider(false);
+  X.occupe = true; rond(e, false);
   var code = ev.filter(function(x){ return x.t === 'code-objet'; })[0], deg = ev.filter(function(x){ return x.t === 'degats'; });
   conte('On fouille… Ça remue là-dessous !');
   Promise.resolve(e.fouiller({trouve:f.trouve === 'morsure' ? 'morsure' : 'page', onMorsure:function(){ son('couine', 0, 1.2); son('morsure'); }})).then(function(objet){
     if(f.trouve === 'morsure'){
       deg.forEach(function(x){ SALLE.Fx.chiffre(hCx(x.heros), 140, '−' + x.n, ''); try{ S.heros[x.heros].touche(); }catch(er){} });
       majPV(); conte('Aïe ! Un rat dormait là-dedans. Il mord le Pisteur et file. Il reste peut-être autre chose, dessous…');
-      e.guider(true);
+      rond(e, true);
     } else if(f.trouve === 'page'){
       var fin = function(){ if(code) fenetreCode(code); };
       if(objet && objet.prendre) Promise.resolve(objet.prendre(versHeros('pisteur'))).then(fin); else fin();
@@ -612,9 +629,43 @@ function crane(e){
     X.occupe = false; garder(); majRepartir();
   });
 }
+/* ---------- les canaux : la vieille roue et la grille (le passage secret vers la cave aux toiles) ----------
+   Rien ne les montre. La roue tourne d'un cran quand on la touche (à gauche : vers la gauche ; à droite : vers la droite).
+   Au sixième cran, si l'ordre est le bon (il est sur le plan du Sage, à l'encre invisible), la grille se lève. */
+var ROUE_DIT = ['La vieille roue grince… et tourne d\'un cran.', 'Clac. Encore un cran.', 'Elle tourne. Quelque chose cliquette, loin dans le mur.', 'Un cran de plus. Ça grince là-dedans.', 'Clac… La roue résiste un peu.'];
+function tournerRoue(e, ev){
+  if(X.occupe) return;
+  var sens = e.cote ? e.cote(ev) : 'd', r = Regles.roue(X.partie, sens), x = r[0] || {};
+  if(x.t !== 'roue') return;
+  X.occupe = true;
+  bruit('roueCanaux', {}, ['clic']);
+  var passage = r.filter(function(y){ return y.t === 'passage'; })[0], retour = r.filter(function(y){ return y.t === 'roue-retour'; })[0];
+  Promise.resolve(e.tourner ? e.tourner(sens) : null).then(function(){
+    if(x.libre){ conte('La roue tourne dans le vide. La grille est déjà levée.'); return null; }
+    if(passage){
+      var g = S.o.grille;
+      bruit('grilleCanaux', {}, ['dome']); SALLE.Fx.tremble(4, 300);
+      conte('Clac… clac… CLAC ! Une chaîne se tend dans le mur, et la grille de l\'arche se lève. Un passage, derrière !');
+      return Promise.resolve(g && g.lever ? g.lever() : null);
+    }
+    if(retour){
+      bruit('codeNon', {}, ['clic']);
+      conte('Clonk ! La roue se débloque et revient toute seule à sa place. Ce n\'était pas le bon ordre…');
+      return Promise.resolve(e.retour ? e.retour() : null);
+    }
+    conte(ROUE_DIT[(x.cran - 1) % ROUE_DIT.length]);
+    return null;
+  }).then(function(){ X.occupe = false; garder(); majRepartir(); });
+}
+function toucherGrille(e){
+  if(X.occupe) return;
+  if(e.ouverte){ conte('La grille est levée. Derrière, un couloir file vers une lueur.'); return; }
+  son('clic'); if(e.secouer) e.secouer();
+  conte('Une grille de fer. Elle ne bouge pas d\'un poil.');
+}
 /* ---------- le couloir aux dalles ---------- */
 function explicationDalles(){
-  var t1 = 'À chaque pas, deux dalles : une claire, une sombre. Une seule est sûre.', t2 = 'Une mauvaise dalle, et le piège part : tout le monde prend un coup, et on recule d\'un pas.', t3 = 'Laquelle est sûre ? Le plan du Sage le sait peut-être…';
+  var t1 = 'À chaque pas, deux dalles : une claire, une sombre. Une seule est sûre.', t2 = 'Une mauvaise dalle, et le piège part : tout le monde prend un coup, et on recule d\'un pas.', t3 = 'Claire ou sombre ? Ça change à chaque pas. Les Fondateurs ont noté le chemin quelque part…';
   DJ.fenetre('<h2>Le couloir aux dalles</h2>' +
     '<div class="expli"><div><span class="ex-img">◻️ ◼️</span><p>' + t1 + '</p>' + DJ.lireBtn(t1) + '</div>' +
     '<div><span class="ex-img">💥 ↩️</span><p>' + t2 + '</p>' + DJ.lireBtn(t2) + '</div>' +
@@ -626,8 +677,8 @@ function colonneDalles(){
   var cont = Regles.contenu(X.partie, 'dalles'), pas = cont.dalles.pas, fini = cont.dalles.passe;
   Object.keys(S.o).forEach(function(id){
     var m = /^dalle-(\d+)-(\d)$/.exec(id); if(!m) return;
-    var on = !fini && (+m[1] - 6) === pas;
-    try{ S.o[id].guider(on); }catch(e){}
+    var k = +m[1] - 6, sure = Regles.dalleSure(k) === (m[2] === '0' ? 'fond' : 'devant');
+    try{ rond(S.o[id], !fini && k === pas); if(S.o[id].marquer) S.o[id].marquer(sure && (fini || k < pas)); }catch(e){}
   });
   S.pas = pas;
 }
@@ -635,7 +686,7 @@ function dalle(e, d){
   if(X.occupe || !S.pret) return;
   var m = /^dalle-(\d+)-(\d)$/.exec(d.id), cont = Regles.contenu(X.partie, 'dalles');
   if(cont.dalles.passe){ conte('Le chemin est connu. On passe sans y penser.'); return; }
-  if(!m || (+m[1] - 6) !== cont.dalles.pas){ SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, 'Pas celle-là', 'refus'); son('clic'); return; }
+  if(!m || (+m[1] - 6) !== cont.dalles.pas){ SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, m && (+m[1] - 6) < cont.dalles.pas ? 'Déjà passée' : 'Trop loin !', 'refus'); son('clic'); return; }
   var ev = Regles.dalle(X.partie, m[2] === '0' ? 'fond' : 'devant'), da = ev.filter(function(x){ return x.t === 'dalle'; })[0];
   if(!da){ if(ev[0] && ev[0].t === 'refus') SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, ev[0].mot, 'refus'); return; }
   X.occupe = true;
@@ -669,14 +720,14 @@ function porte(e, d){
 /* ---------- le sarcophage de la fausse crypte ---------- */
 function sarcophage(e){
   if(X.occupe || S.sarcoOuvert) return;
-  X.occupe = true; S.sarcoOuvert = true; e.guider(false);
+  X.occupe = true; S.sarcoOuvert = true; rond(e, false);
   bruit('portePierre', {}, ['dome']);
   Promise.resolve(e.ouvrir()).then(function(am){
     S.o.amulette = am || e.amulette; S.defs.amulette = {zone:{x:430, y:196, w:52, h:66}};
     conte('Le couvercle glisse… Une amulette brille tout au fond !');
     X.occupe = false;
     var a = S.o.amulette;
-    if(a){ a.briller && a.briller(true); a.guider && a.guider(true); a.surToucher && a.surToucher(function(){ prendre('amulette'); }); }
+    if(a){ a.briller && a.briller(true); rond(a, true); a.surToucher && a.surToucher(function(){ prendre('amulette'); }); }
   });
 }
 /* ---------- le feu de camp ---------- */
@@ -684,7 +735,7 @@ function repos(e){
   if(X.occupe) return;
   var ev = Regles.repos(X.partie);
   if(ev[0] && ev[0].t === 'refus'){ SALLE.Fx.mot(660, 190, ev[0].mot, 'refus'); son('clic'); conte('Vous êtes déjà reposés. Le feu ne peut rien de plus… jusqu\'au prochain combat.'); return; }
-  X.occupe = true; e.guider(false);
+  X.occupe = true; rond(e, false);
   bruit('feuCamp', {}, ['soin']);
   Promise.resolve(e.attiser ? e.attiser() : null).then(function(){
     ev.forEach(function(x){ if(x.t === 'soin'){ SALLE.Fx.chiffre(hCx(x.heros), 150, '+' + x.n, 'soin'); try{ S.heros[x.heros].joie(); }catch(er){} } });
