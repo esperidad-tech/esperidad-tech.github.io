@@ -916,6 +916,12 @@ function geoLieux(o, niveau){
     var e = entree ? ENTREES[id] : ETIQ[id], nom = (entree && COURT_ENTREE[id]) || L.court;
     var g = {id:id, entree:entree, e:e, nom:nom, lw:largeurEtiquette(nom, taille, L.ic), lh:taille + 16, rect:null};
     if(e && o.etiquettes !== false) g.rect = [e[0] - g.lw / 2, e[1] - g.lh / 2, e[0] + g.lw / 2 + (verrous.indexOf(id) >= 0 ? 32 * ks : 0), e[1] + g.lh / 2];
+    /* un lieu qui vient d'apparaître porte « ✨ Nouveau ! » au-dessus de son nom : ses marqueurs (une mission bonus…) ne vont pas se cacher dessous
+       (Romain, 10 novembre : le Sage ne voyait pas son bonus, caché sous le « Nouveau ! » de la mairie) */
+    if(g.rect && !entree && (o.apparus || []).indexOf(id) >= 0){
+      var tn = Math.round(20 * ks), wn = largeurEtiquette('Nouveau !', tn, '✨'), yn = e[1] - g.lh / 2 - 22 * ks, hn = tn + 16;
+      g.rect = [Math.min(g.rect[0], e[0] - wn / 2), Math.min(g.rect[1], yn - hn / 2), Math.max(g.rect[2], e[0] + wn / 2), g.rect[3]];
+    }
     liste.push(g); parId[id] = g;
   });
   return {liste:liste, parId:parId};

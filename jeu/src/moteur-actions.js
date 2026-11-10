@@ -53,6 +53,8 @@ function monterAtelier(){
     vendre:!!(P && M.acces('etal') && (P.usages.etal || 0) < 2), actions:P ? (M.sansActions() ? M.actionsMax() : P.actions) : 0,
     sansActions:M.sansActions(),   /* enquête sans points d'action : l'atelier n'écrit plus « · 1 action » */
     analyses:M.analysesAtelier ? M.analysesAtelier() : [],
+    /* le labo d'analyses (labo.js) : quand l'enquête a sa fiche, la bulle « 🔬 Analyser » de la paillasse l'ouvre en plein écran */
+    labo:(M.laboDispo && M.laboDispo()) ? function(){ M.ouvrirLabo(); } : null,
     recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; }),
     niveau:(E ? E.niveau : 1) + M.decalage(), mods:mm.mods, aides:mm.aides,
     /* enquête 1 (le tutoriel) : au chaudron, un essai raté rend les ingrédients et on peut recommencer sans fin */

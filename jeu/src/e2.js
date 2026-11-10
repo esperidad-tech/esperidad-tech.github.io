@@ -69,10 +69,10 @@ E[2] = {
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     alchimiste:[
-      {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}, {fini:'alchimiste:analyse:eau_riviere'}]},
-      {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}, {fini:'alchimiste:analyse:eau_lavoir'}]},
+      {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}]},
+      {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}]},
       {ic:'💬', t:'Prépare la potion de vérité pour le Barde (la recette est dans ton grimoire). Une seule par enquête : ne la rate pas !', fait:[{potion:'verite'}]},
-      {ic:'⚗️', t:'Analyse ce que le Pisteur te rapportera de ses fouilles.', fait:[{analyse:'colorant'}, {fini:'alchimiste:analyse:colorant'}]},
+      {ic:'⚗️', t:'Analyse ce que le Pisteur te rapportera de ses fouilles.', fait:[{analyse:'colorant'}]},
       {piste:true, t:'En cueillant, ouvre bien les yeux : certains coins du village ont changé.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
@@ -600,36 +600,27 @@ E[2] = {
     iris:'Iris ? C\'est son champ qu\'on a rasé ! Elle pleure ses coquelicots depuis deux jours.',
     farinel:'Farinel ? Il dort comme une souche, la nuit. Il ronfle si fort qu\'on l\'entend du pont !'
   },
+  /* (Romain, 10 novembre, 17 h 50 : plus aucun mini-jeu d'analyse, dans aucune enquête ; le résultat tombe tout de suite dans le labo,
+     en attendant le nouveau laboratoire d'analyse, construit dans une autre conversation. Le chaudron reste.) */
   analyses:{
-    eau_riviere:{mj:'double', partiel:true,
-      avant:'Tu poses une goutte d\'eau de la rivière sous ta loupe… Qu\'est-ce qui la rend si rouge ? Regarde bien !',
-      t:'Dans l\'eau de la rivière, il y a un colorant rouge… un colorant qui part à l\'eau : il ne tient sur rien, il ne fait que colorer l\'eau. Et il arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
-      note:'Analyse de la rivière : un colorant rouge qui part à l\'eau (il ne tient sur rien). Il arrive d\'en haut : on ne l\'a pas versé au pont.',
-      rate:'Tu n\'as pas eu le temps de tout comparer… Mais une chose est sûre : ce rouge part à l\'eau, et il arrive d\'en haut de la rivière, pas du pont.',
-      rateNote:'Analyse de la rivière (pas finie) : un rouge qui part à l\'eau, qui arrive d\'en haut de la rivière (pas du pont).'},
-    eau_lavoir:{mj:'differences', donne:'info:lavoir_rose', partiel:true,
-      avant:'Tu poses une goutte d\'eau du lavoir sous ta loupe… Ce rose, est-ce le même que le rouge de la rivière ?',
-      t:'L\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois !',
-      note:'Analyse du lavoir : ce rose vient d\'un tissu qui déteint. Rien à voir avec le rouge de la rivière.',
-      rate:'Tu n\'as pas eu le temps de tout voir… mais ce rose n\'est pas le rouge de la rivière, ça, c\'est sûr.',
-      rateNote:'Analyse du lavoir (pas finie) : ce rose n\'est pas le rouge de la rivière.'},
-    colorant:{mj:'melange', params:{recette:{coquelicot:2, myrtille:1}},
-      avant:'Est-ce bien le rouge de la rivière ? Pour le savoir, essaie de refaire exactement la même couleur !', bouton:'🎨 Refaire la couleur',
-      t:'Tu as retrouvé la couleur exacte : c\'est le même rouge que la rivière ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
-      note:'Analyse du colorant : c\'est le même rouge que la rivière. Il a été fabriqué dans la pièce cachée du moulin.',
-      rate:'Tu n\'as pas réussi à refaire cette couleur…'},
+    eau_riviere:{
+      t:'Sous ta loupe, dans l\'eau de la rivière : un colorant rouge… un colorant qui part à l\'eau : il ne tient sur rien, il ne fait que colorer l\'eau. Et il arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
+      note:'Analyse de la rivière : un colorant rouge qui part à l\'eau (il ne tient sur rien). Il arrive d\'en haut : on ne l\'a pas versé au pont.'},
+    eau_lavoir:{donne:'info:lavoir_rose',
+      t:'Sous ta loupe, l\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois !',
+      note:'Analyse du lavoir : ce rose vient d\'un tissu qui déteint. Rien à voir avec le rouge de la rivière.'},
+    colorant:{
+      t:'Sous ta loupe, le reste de l\'alambic a exactement la même couleur que la rivière : c\'est le même rouge ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
+      note:'Analyse du colorant : c\'est le même rouge que la rivière. Il a été fabriqué dans la pièce cachée du moulin.'},
     /* la poudre du pot noir (Romain, 23 h 14) : avant le rassemblement, elle fera une fumée rouge ; après, c'est elle qui l'a faite :
        un fumigène, pas des vapeurs toxiques (variantes : moteur-actions.js, M.texteAnalyse, relu à chaque fois) */
-    poudre:{mj:'double', partiel:true,
-      avant:'Tu verses la pincée de poudre sous ta loupe… Regarde bien chaque grain !',
-      t:'De la poudre noire, comme celle des feux d\'artifice… mélangée à un colorant rouge ! Si on l\'allume, ça fera une grosse fumée toute rouge. Mais pour quoi faire ?',
+    poudre:{
+      t:'Sous ta loupe : de la poudre noire, comme celle des feux d\'artifice… mélangée à un colorant rouge ! Si on l\'allume, ça fera une grosse fumée toute rouge. Mais pour quoi faire ?',
       note:'Analyse de la poudre du pot noir : de la poudre noire mélangée à un colorant rouge. De quoi faire une fumée rouge !',
       variantes:[
         {si:[{code:'info:rassemblement'}], t:'De la poudre noire mélangée à un colorant rouge : c\'est un fumigène ! C\'est lui qui a fait la fumée rouge du rassemblement. Ce n\'étaient pas des vapeurs toxiques : quelqu\'un a voulu vous faire peur !',
           note:'Analyse de la poudre du pot noir : un fumigène (poudre noire et colorant rouge). La fumée rouge du rassemblement, ce n\'étaient pas des vapeurs toxiques.'}
-      ],
-      rate:'Tu n\'as pas eu le temps de tout regarder… Mais tu as vu de la poudre noire, avec de tout petits grains rouges.',
-      rateNote:'Analyse de la poudre du pot noir (pas finie) : de la poudre noire, avec de tout petits grains rouges.'}
+      ]}
   },
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},   /* (plus de code pour le Barde : Romain, 5 novembre, 01 h 20) */

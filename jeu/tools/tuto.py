@@ -129,6 +129,22 @@ def atelier_a_la_main(pg, gd):
             return True
     return False
 
+def labo(pg):
+    """Le labo d'analyses (enquête 1 : un cadre par-dessus l'atelier, src/labo.js). Le robot ne joue pas l'analyse (un autre essai le fait,
+    tools/labo-jeu.py) : il boucle le premier dossier pas fini, puis revient à l'atelier, où la fiche de la découverte s'ouvre."""
+    if not pg.locator('#labo-cadre').count(): return False
+    f = next((x for x in pg.frames if x.parent_frame is not None), None)
+    try:
+        f.wait_for_function('() => !!window.__labo', timeout=6000)
+        # (le premier dossier pas fini dont c'est le tour : pendant le tutoriel, les autres attendent sur le cuir, « Plus tard ! »)
+        d = f.evaluate("() => { var L = window.__labo, a = L.attente(), d = L.cuirs().filter(function(x){ return !L.etat().finis[x] && !a[x]; })[0]; if(d) L.finir(d); L.quitter(); return d || null; }")
+        journal.append(f'labo : dossier bouclé = {d}')
+    except Exception as ex:
+        echecs.append('labo : ' + str(ex)[:200])
+        pg.evaluate("() => M.fermerLabo && M.fermerLabo()")
+    pg.wait_for_timeout(500)
+    return True
+
 essais_carton = [0]
 def atelier(pg, gd):
     """L'atelier : on suit SON rond (Atelier.guider) ; le chaudron ouvert, c'est le mini-jeu (préparé à la main) ; sans l'API, le repli."""
@@ -206,6 +222,8 @@ with sync_playwright() as p:
                 pret = all((a is None) or a['etat'] in ('moment', 'action', 'fini') or (a['etat'] == 'attend' and not a['but2']) for a in autres) and not any(dits[x] for x in ROLES if x != 'sage')
                 if gd['cible'].get('k') == 'accuser' or gd['cible'].get('id') == 'accusation': pret = pret and all(a is None or a['etat'] == 'fini' for a in autres)
                 if not pret: continue
+            # le labo ouvert par-dessus l'atelier (enquête 1) : on y boucle l'analyse qui attend, puis on revient
+            if labo(pg): agi = True; pas_total += 1; journal.append(f'{r} : au labo, une analyse bouclée, puis retour à l\'atelier'); continue
             # 2. une fenêtre ouverte : on la finit d'abord ; sinon, les codes qu'on nous a dits
             if e['modal'] is None and dits[r] and e['ecran'] == 'enquete':
                 seq = dits[r].pop(0); taper(pg, seq); agi = True; pas_total += 1; continue

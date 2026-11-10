@@ -62,8 +62,8 @@ def extraits():
     morceaux.append('salle:function(ctx, A, bruits, revIn, blanc, brun){\nfunction pret(){ return true; }\n' + aides + '\n' + b + '\nreturn B;\n}')
     tb = entre(ss, 'var n = ctx.sampleRate * 2;', '\n    setInterval(programme')
     morceaux.append('bruitsSalle:function(ctx, A){\nvar blanc, brun;\n' + tb + '\nreturn {blanc:blanc, brun:brun};\n}')
-    # 7) le labo d'analyses de l'Alchimiste (la maquette : jeu/maquettes/labo-morceaux/15-sons.js) : ses briques et sa table SONS
-    ml = lire(os.path.join(ICI, '..', '..', 'maquettes', 'labo-morceaux', '15-sons.js'))
+    # 7) le labo d'analyses de l'Alchimiste (le labo du jeu : jeu/src/labo/15-sons.js) : ses briques et sa table SONS
+    ml = lire(os.path.join(ICI, '..', '..', 'src', 'labo', '15-sons.js'))
     b = entre(ml, 'function note(f, t0, duree, type, vol, glisse){', 'function son(nom, x){')
     b = remplace(b, 'a.destination', 'SORTIE', 4)
     morceaux.append('labo:function(audio, SORTIE){\n' + b + '\nreturn SONS;\n}')

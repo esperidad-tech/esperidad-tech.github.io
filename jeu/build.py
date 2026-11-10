@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Assemble Brumeval v2 en un seul fichier HTML : dist/index.html"""
-import os, sys, datetime
+import os, sys, datetime, json
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ICI, 'src')
 DIST = os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, 'dist'))  # BRUMEVAL_DIST=/chemin : construit ailleurs (agents en parallèle)
 CSS = ['base.css', 'mj-core.css', 'persos.css', 'carte.css', 'mj-pisteur-alchi.css', 'mj-observation.css', 'mj-melange.css', 'mj-bulles.css', 'mj-chaudron.css', 'mj-barde-sage.css', 'mj-sage-plans.css', 'mj-mots.css', 'mj-ragots.css', 'mj-depositions.css', 'mj-sage-codes.css', 'mj-regles.css', 'mj-cachette.css', 'mj-tir.css', 'revision.css', 'atelier.css', 'moteur.css', 'mission.css', 'tableau.css', 'liege.css', 'carnet.css', 'barde.css', 'illus-fin.css', 'livre.css', 'cabane.css', 'heros.css', 'tuto.css']
 JS = ['sans-zoom.js', 'donnees.js', 'mj-temps.js', 'mj-core.js', 'persos.js', 'garderobe.js', 'carte.js', 'mj-pisteur-alchi.js', 'mj-observation.js', 'mj-melange.js', 'mj-bulles.js', 'mj-chaudron.js', 'mj-barde-sage.js', 'mj-sage-plans.js', 'mj-mots.js', 'ragots.js', 'mj-ragots.js', 'mj-depositions.js', 'mj-sage-codes.js', 'mj-regles.js', 'mj-cachette.js', 'mj-tir.js', 'revision.js', 'repliques.js', 'voix.js', 'atelier.js',
-      'e1.js', 'e2.js', 'e3.js', 'codes-fixes.js', 'souterrains.js', 'moteur-base.js', 'moteur-ecrans.js', 'moteur-roles.js', 'moteur-actions.js', 'mission.js', 'tableau.js', 'liege.js', 'carnet.js', 'essais.js', 'barde.js', 'livre.js', 'regles.js', 'illus-fin.js', 'carte-jeu.js', 'cabane.js', 'heros.js', 'tuto.js']
+      'e1.js', 'e2.js', 'e3.js', 'codes-fixes.js', 'souterrains.js', 'moteur-base.js', 'moteur-ecrans.js', 'moteur-roles.js', 'moteur-actions.js', 'mission.js', 'tableau.js', 'liege.js', 'carnet.js', 'essais.js', 'labo.js', 'barde.js', 'livre.js', 'regles.js', 'illus-fin.js', 'carte-jeu.js', 'cabane.js', 'heros.js', 'tuto.js']
 
 # BRUMEVAL_SANS="mj-bulles,mj-chaudron" : laisse de côté des fichiers encore en chantier
 FIGE = set(x.strip() for x in os.environ.get('BRUMEVAL_FIGE', '').split(',') if x.strip())
@@ -38,10 +38,30 @@ def lire_js(nom):
         return t
     return (';(function(' + ', '.join(ENVELOPPE) + '){\n' + t + '\n}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);')
 
+# Le labo d'analyses de l'Alchimiste (10 novembre) : une page à part, faite des morceaux de src/labo/ (les mêmes que la maquette).
+# Le jeu la garde dans window.LABO_HTML et l'ouvre dans un cadre, par-dessus l'atelier (src/labo.js).
+# dist/labo.html : la même page, toute seule (la maquette, pour l'essayer hors du jeu).
+LABO = ['00-head.html', '10-base.js', '15-sons.js', '20-chat.js', '30-donnees.js', '40-dessins.js', '50-scene.js', '60-loupe.js', '70-micro.js', '80-test.js', '90-main.js', '99-foot.html']
+def labo_html():
+    d = os.path.join(SRC, 'labo')
+    if not os.path.isdir(d):
+        print('  (absent) src/labo', file=sys.stderr)
+        return ''
+    t = ''
+    for n in LABO:
+        with open(os.path.join(d, n), encoding='utf-8') as f:
+            t += f.read()
+    return t
+
 def main():
     os.makedirs(DIST, exist_ok=True)
     css = '\n'.join(lire(n) for n in CSS)
     js = '\n'.join('/* ===== ' + n + ' ===== */\n' + lire_js(n) for n in JS)
+    labo = labo_html()
+    if labo:
+        js = '/* ===== le labo d\'analyses (src/labo/) ===== */\nwindow.LABO_HTML = ' + json.dumps(labo, ensure_ascii=False) + ';\n' + js
+        with open(os.path.join(DIST, 'labo.html'), 'w', encoding='utf-8') as f:
+            f.write(labo)
     js = js.replace('</script', '<\\/script')
     date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     html = f'''<!doctype html>
