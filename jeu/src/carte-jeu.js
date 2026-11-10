@@ -298,7 +298,8 @@ function contenu(ou, w, h){
         if(mq.lieu && (caches.indexOf(mq.lieu) >= 0 || (T && T.ouverts.indexOf(mq.lieu) < 0) || (guide && actifs.indexOf(mq.lieu) < 0 && verrous.indexOf(mq.lieu) < 0))) mq.act = null;
         if(mq.maison && T && (T.maisons || []).indexOf(mq.maison) < 0) mq.act = null;
       });
-      marqueurs = (aides ? marqueurs.filter(function(mq){ return mq.classe !== 'pnj'; }) : marqueurs.filter(function(mq){ return mq.classe === 'ingr'; })).concat(PR.marqueurs);
+      /* les missions bonus gardent leur icône dans toutes les enquêtes (Romain, 10 novembre, 16 h 56 : sinon on touche les lieux au hasard pour les trouver) */
+      marqueurs = (aides ? marqueurs.filter(function(mq){ return mq.classe !== 'pnj'; }) : marqueurs.filter(function(mq){ return mq.classe === 'ingr' || mq.classe === 'bonus'; })).concat(PR.marqueurs);
       M.cle(hab).forEach(function(k){ if(hab[k].id) vis[hab[k].id] = visage(hab[k].id); });
       marqueurs.forEach(function(mq){ if(mq.visage) vis[mq.visage] = visage(mq.visage); });
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */

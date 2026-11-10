@@ -561,6 +561,36 @@ function genererMonde(p){
     if(!placeLibre(tr.x(dFin), dFin)) return -1;
     return ajoute(tr, faux(groupe), dS, dFin);
   }
+  /* params.arrivee / arriveeTxt : l'arrivée de la bonne piste a un dessin et un mot à elle (un mini-jeu fait pour un lieu de l'histoire) */
+  if(p.arrivee){ arrivees[0].art = p.arrivee; arrivees[0].txt = p.arriveeTxt || null; }
+  /* params.compagnon (enquête 1, le massif de la mairie — Romain, 10 novembre, 16 h 56) : une autre piste (les grosses bottes du jardinier)
+     part du même endroit que la bonne, la croise et la recroise sur la ligne droite du départ, puis s'en va de son côté jusqu'à son arrivée
+     (params.compagnonArrivee, le potager par défaut). La bonne piste reste toute droite jusqu'au premier virage (après D0). */
+  if(p.compagnon && EMP_PRESETS[p.compagnon]){
+    var sgC = Math.random() < 0.5 ? 1 : -1, AC = 20, mC = 0.7, demi = 2 * AC / mC;
+    var ndC = [{d:-1, x:X0 - sgC * AC, m:sgC * mC}], dC = ndC[0], kC = 0;
+    var xc = function(dd){ return dC.x + dC.m * (dd - dC.d); };
+    for(var dz = demi - 1; dz < D0 - 10; dz += demi, kC++){ dC = {d:dz, x:xc(dz), m:(kC % 2 ? 1 : -1) * sgC * mC}; ndC.push(dC); }
+    /* chacun part de son côté : les bottes s'éloignent franchement, puis filent loin, comme une fausse piste longue */
+    var sens = dC.m >= 0 ? 1 : -1, dS2 = D0 - 4;
+    dC = {d:dS2, x:xc(dS2), m:sens * 0.95}; ndC.push(dC);
+    var ddC = dS2 + U.rand(240, 320);
+    while(ddC < L + 700){
+      ddC = libre(ddC);
+      var xLc = xc(ddC), sepC = xLc - cible.x(ddC), sgS = sepC >= 0 ? 1 : -1;
+      var mmC = Math.abs(sepC) < 300 ? sgS * U.rand(0.55, 0.95) : sgS * U.rand(-0.15, 0.7);
+      if(xLc + mmC * 260 < 70 || xLc + mmC * 260 > W - 70) mmC = (xLc < W / 2 ? 1 : -1) * U.rand(0, 0.25);
+      dC = {d:ddC, x:xc(ddC), m:mmC}; ndC.push(dC);
+      ddC += U.rand(170, 260);
+    }
+    ndC.push({d:L + 1200, m:0});
+    var trC = Trace(ndC), dFinC = null;
+    for(var eC = 0; eC < 40 && dFinC === null; eC++){ var cand = U.rand(D0 + 500, L + 650); if(placeLibre(trC.x(cand), cand)) dFinC = cand; }
+    if(dFinC === null) dFinC = L + 1100 + U.rand(0, 400);
+    var iC = ajoute(trC, Object.assign({}, EMP_PRESETS[p.compagnon]), 0, dFinC);
+    leurres[iC].debut = 6; leurres[iC].compagnon = true;
+    leurres[iC].arrivee.art = p.compagnonArrivee || 'potager'; leurres[iC].arrivee.txt = p.compagnonTxt || null;
+  }
   fourches.forEach(function(f){ var g = []; f.leurres = f.pentes.map(function(m){ return longue(f.d + 2, f.x, m, g); }); });
   zones.forEach(function(z){
     z.leurres = []; z.court = -1; var groupe = [];
@@ -838,9 +868,19 @@ var ARRIVEES_VILLE = {
   paille:'<rect x="-17" y="-12" width="34" height="24" rx="5" fill="#e6c25a" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-12,-6 H12 M-12,0 H12 M-12,6 H12" stroke="#b08a2a" stroke-width="2"/><ellipse cx="0" cy="6" rx="7" ry="5" fill="#14111f"/>',
   porche:'<rect x="-16" y="-14" width="32" height="26" rx="3" fill="#9d9282" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-9,12 L-9,-2 C-9,-12 9,-12 9,-2 L9,12 Z" fill="#14111f" stroke="' + CONTOUR + '" stroke-width="2.4"/>'
 };
+/* Les arrivées « de l'histoire » (params.arrivee, params.compagnonArrivee) : jamais tirées au hasard pour les autres pistes */
+function cabouV(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.8" fill="#6cbf55" stroke="' + CONTOUR + '" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="#b4e69a"/>'; }
+var ARRIVEES_HISTOIRE = {
+  /* le pied d'une maison et sa gouttière : la piste s'arrête net, quelqu'un est remonté sur les toits (enquête 1) */
+  gouttiere:'<rect x="-18" y="-16" width="30" height="28" rx="2" fill="#b4553a" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-18,-7 H12 M-18,2 H12" stroke="#8f3f2a" stroke-width="2"/>' +
+    '<rect x="11" y="-15" width="7" height="31" rx="3" fill="#9aa3b5" stroke="' + CONTOUR + '" stroke-width="2.4"/><path d="M10,17 H22" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linecap="round"/>',
+  /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
+  potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6)
+};
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:function(p){ return p && p.vehicule === 'charrette' ? 'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
+  consigne:function(p){ if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
+    return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
     'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },
   ROUES:ROUES,
   minuteur:false,
@@ -920,8 +960,10 @@ MJ.enregistrer('traces', {
   demo: function(el, prm){
     /* variante charrette : la bonne piste a deux traits de roues, la fausse (une brouette) un seul */
     var ch = !!(prm && prm.vehicule === 'charrette');
-    var f = ch ? charretteCible() : EMP_PRESETS.enfant, g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : variante(EMP_PRESETS.enfant, 9);
-    if(!ch){ g.L = 17.5; g.foulee = 23; }
+    /* params.compagnon (le massif de la mairie) : les grosses bottes partent avec les petites traces, les croisent, puis s'en vont */
+    var comp = !ch && prm && prm.compagnon && EMP_PRESETS[prm.compagnon] ? EMP_PRESETS[prm.compagnon] : null;
+    var f = ch ? charretteCible() : EMP_PRESETS.enfant, g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : comp ? Object.assign({}, comp) : variante(EMP_PRESETS.enfant, 9);
+    if(!ch && !comp){ g.L = 17.5; g.foulee = 23; }
     var VL = !!(prm && prm.decor === 'ville'), idv = nid('dtv');
     el.innerHTML = '<svg class="mja-demo-svg mja-traces" viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice">' + (VL ? '<defs>' + villeDefs(idv) + '</defs>' : '') + '<rect x="-200" y="-20" width="700" height="210" fill="' + (VL ? '#8c8173' : '#5b5236') + '"/>' +
       '<g class="dm"></g><circle class="dv" r="30" fill="#fff4d6" fill-opacity=".14" stroke="#8ff3ff" stroke-width="1.6" stroke-dasharray="4 4"/>' +
@@ -941,6 +983,7 @@ MJ.enregistrer('traces', {
       if(ch){ var ab = y > 40 ? 0 : -47.7; roue(xb(y), y, -17, ab); roue(xb(y), y, 17, ab); if(y < 36) roue(xl(y), y, 0, 47.7); }
       prints.push({x:xb(y) + (i % 2 ? 4 : -4), y:y, s:s1, sx:i % 2 ? -1 : 1});
       if(y < 36) prints.push({x:xl(y) + (i % 2 ? 4 : -4), y:y, s:s2, sx:i % 2 ? -1 : 1});
+      else if(comp && y < 230) prints.push({x:150 + 13 * Math.sin((y - 36) / 24) + (i % 2 ? 5 : -5), y:y + 9, s:s2, sx:i % 2 ? -1 : 1});   /* les bottes croisent les petites traces */
     }
     gm.innerHTML = (VL ? '<rect x="-300" y="-700" width="900" height="1300" fill="url(#' + idv + 'pv)"/>' : '') + prints.map(function(q){
       if(q.roue) return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y.toFixed(1) + ') rotate(' + q.a + ')"><rect class="e-roue" x="-2.6" y="' + (-q.h / 2).toFixed(1) + '" width="5.2" height="' + q.h.toFixed(1) + '" rx="2.6"/></g>';
@@ -1059,9 +1102,9 @@ MJ.enregistrer('traces', {
     /* arrivées : une par piste, éparpillées */
     var ARTS = VILLE ? ARRIVEES_VILLE : ARRIVEES_ART, types = Object.keys(ARTS);
     M.arrivees.forEach(function(a){
-      a.type = U.choix(types);
+      a.type = a.art && ARRIVEES_HISTOIRE[a.art] ? a.art : U.choix(types);
       a.g = svgNoeud('g', {'class':'mja-arrivee', transform:'translate(' + a.x.toFixed(1) + ',' + (-a.d).toFixed(1) + ') scale(1.25)'}, gArr);
-      a.g.innerHTML = '<circle class="mja-arr-halo" r="21"/>' + ARTS[a.type] + '<text class="mja-arr-x" y="6" text-anchor="middle">✗</text>';
+      a.g.innerHTML = '<circle class="mja-arr-halo" r="21"/>' + (ARTS[a.type] || ARRIVEES_HISTOIRE[a.type]) + '<text class="mja-arr-x" y="6" text-anchor="middle">✗</text>';
     });
     /* ---- Zones sans empreintes, zones mouillées ---- */
     function sansTrace(x, d){
@@ -1188,7 +1231,7 @@ MJ.enregistrer('traces', {
     function esc2(x){ return String(x).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
     var carteD = ch && cibleF.roues ?
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien ces traces</span>' + traceCarte(cibleF, 110) + '<b>' + esc2(cibleF.nom) + '</b><span class="mja-depart-pt">Deux traits de roues, et ses pas au milieu. Attention : pas la brouette (une seule roue), ni la carriole de Fortuné (plus large) !</span></div></div>') :
-      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien cette empreinte</span>' + empreinteCarte(cibleF, 96) + '<b>' + esc2(cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !</span></div></div>');
+      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">' + esc2(p.departTitre || 'Retiens bien cette empreinte') + '</span>' + empreinteCarte(cibleF, 96) + '<b>' + esc2(p.departNom || cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">' + esc2(p.departTxt || 'Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !') + '</span></div></div>');
     terrain.appendChild(carteD);
     P.apres(2800, function(){
       carteD.classList.add('part');
@@ -1210,14 +1253,14 @@ MJ.enregistrer('traces', {
         phase = 'fin'; fini = true;
         a.g.classList.add('bonne');
         U.son('victoire'); U.vibrer(40);
-        flotter(terrain, q.x, q.y, ch ? 'C\'est la charrette !' : 'C\'est lui !', 'ok');
+        flotter(terrain, q.x, q.y, ch ? 'C\'est la charrette !' : (a.txt || 'C\'est lui !'), 'ok');
         P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, 1500);
         return;
       }
       essais--; hud.perdVie(essais, p.essais);
       a.g.classList.add('fausse');
       erreurSensorielle(terrain);
-      flotter(terrain, q.x, q.y, ch ? (a.trace && a.trace.f && a.trace.f.sorte === 'brouette' ? 'Une brouette…' : a.trace && a.trace.f && a.trace.f.sorte === 'carriole' ? 'La carriole de Fortuné…' : 'Pas ces pieds-là…') : 'Ce n\'est pas lui…', 'ko');
+      flotter(terrain, q.x, q.y, a.txt ? a.txt : ch ? (a.trace && a.trace.f && a.trace.f.sorte === 'brouette' ? 'Une brouette…' : a.trace && a.trace.f && a.trace.f.sorte === 'carriole' ? 'La carriole de Fortuné…' : 'Pas ces pieds-là…') : 'Ce n\'est pas lui…', 'ko');
       if(essais <= 0) perdre('Tu as suivi la piste de quelqu\'un d\'autre…');
     }
     function cibleVisible(xMin, xMax, dTop){

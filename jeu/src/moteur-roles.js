@@ -32,6 +32,16 @@ M.bonusIci = function(lieu){
   var E = M.E(), P = M.P(), role = M.role();
   return (E.bonus || []).filter(function(b){ return b.role === role && b.lieu === lieu && M.momentOk(b.moments) && !P.bonus[b.id]; });
 };
+/* L'icône d'une mission bonus sur la carte (Romain, 10 novembre, 16 h 56 : « dès qu'il y a des petits mini-jeux, il faut qu'on le voie
+   avec un petit icône », pour tous les rôles et toutes les enquêtes) : celle de son mini-jeu (🎯, 🫧, 🧩…), 🎵 pour une chanson */
+var IC_BONUS = {runes:'🧩'};   /* (le losange bleu des runes ne dit rien sur une carte) */
+M.icBonus = function(b){
+  if(b.ic) return b.ic;
+  if(b.trous) return '🎵';
+  if(IC_BONUS[b.mj]) return IC_BONUS[b.mj];
+  var T = window.MJ && MJ.TYPES && MJ.TYPES[b.mj];
+  return (T && T.ic) || '✨';
+};
 M.ecoutesIci = function(lieu){
   var E = M.E(), P = M.P();
   return (E.ecoutes || []).filter(function(x){ return x.lieu === lieu && M.momentOk(x.moments) && x.role === M.role() && !P.vus['ecoute:' + x.id]; });
@@ -104,7 +114,7 @@ M.infosCarte = function(){
   });
   /* (plus de marqueurs « qui est là » pour le Barde : depuis le 5 novembre, 8 h 59, la carte montre à tout le monde où est chacun, carte-jeu.js) */
   (E.bonus || []).forEach(function(b){
-    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:'✨', label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
   });
   if(role === 'alchimiste'){
     M.cle(P.notesIngr || {}).forEach(function(id){

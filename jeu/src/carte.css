@@ -24,6 +24,8 @@
 /* La présence d'un villageois (dès l'enquête 2) : son petit visage là où il est en ce moment ; un bleu clair (pas le jaune des aides), immobile */
 /* la position d'un villageois (Romain, 5 novembre, 8 h 59) : cerclée de jaune comme le rond de sa maison ; seul le petit triangle au-dessus flotte */
 .ca-marqueur.presence{--ca-m:#f3d27a}
+/* une mission bonus (Romain, 10 novembre) : l'icône de son mini-jeu dans un rond d'or vif, qui flotte, dans toutes les enquêtes */
+.ca-marqueur.bonus{--ca-m:#ffc61a}
 .ca-marqueur.presence .ca-flotte{animation:none}
 .ca-fleche{transform-box:fill-box;transform-origin:center;animation:ca-fleche 1.2s ease-in-out infinite alternate}
 @keyframes ca-fleche{from{transform:translateY(-7px)}to{transform:translateY(1px)}}

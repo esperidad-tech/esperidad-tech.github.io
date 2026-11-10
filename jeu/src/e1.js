@@ -22,7 +22,7 @@ E[1] = {
   signature:'Monsieur Grosbec, maire de Brumeval',
   missions:{
     pisteur:'Va voir la mairie, la place, la boulangerie. Trouve des traces et des objets : un objet trouvé a un code, donne-le à la bonne personne ! La forêt est fermée tant que tu n\'as pas de plan : le Sage pourra peut-être t\'en trouver un. Tes missions, en haut de ton Carnet, te disent où aller.',
-    alchimiste:'Tu as de l\'eau et du miel dans ton atelier. Le Sage a une recette secrète dans son Grand Livre : l\'encre révélatrice. Fabrique-la et donne-la au Sage. Il te manque des baies de sureau : elles poussent à la lisière de la forêt. Analyse aussi les objets que l\'équipe te confie : compare-les avec les échantillons de ton atelier et trouve vite le signe pareil !',
+    alchimiste:'Le Sage a besoin d\'une encre révélatrice. Cherche-la dans ton grimoire : c\'est une recette secrète, le Sage te la dictera. Ensuite, va cueillir ce qui te manque, et prépare-la au chaudron. Analyse aussi les objets que l\'équipe te confie, sur ta table d\'analyse : ta loupe fera le reste !',
     barde:'Va parler aux habitants. Sur la carte, chaque maison montre le visage de celui qui y habite : pour parler à quelqu\'un chez lui, touche sa maison.',
     sage:'Lis le Grand Livre à l\'équipe : les habitants (qui fait quoi, et la taille de leurs pieds), la recette de l\'encre révélatrice, et une page toute blanche qui cache peut-être quelque chose. Tu donnes le code de chaque moment, et c\'est toi qui accuses à la fin.'
   },
@@ -46,13 +46,13 @@ E[1] = {
   etapes:{
     pisteur:[
       {ic:'👣', m:0, action:true, lieu:'mairie', points:['massif'], t:'Mairie : le massif de fleurs. Suis les traces !', court:'Mairie : suis les traces du massif de fleurs !', histoire:'Des traces de pas toutes fraîches, au pied de la mairie… Suis-les, enquêteur !', fait:[{essaye:'pisteur:mairie:massif'}]},
-      {ic:'🪟', m:0, action:true, lieu:'mairie', points:['fenetre'], t:'Mairie : la fenêtre. Tu y trouves un fil → donne son code à l\'Alchimiste.', court:'Mairie : la fenêtre. Ta trouvaille, c\'est pour l\'Alchimiste !', histoire:'Un détail cloche, à la fenêtre de la mairie… Approche, et ouvre l\'œil !', fait:[{vu:'pisteur:mairie:fenetre'}]},
+      {ic:'🪟', m:0, action:true, lieu:'mairie', points:['fenetre'], t:'Mairie : la fenêtre. Tu y trouves des poils → donne leur code à l\'Alchimiste.', court:'Mairie : la fenêtre. Ta trouvaille, c\'est pour l\'Alchimiste !', histoire:'Un détail cloche, à la fenêtre de la mairie… Approche, et ouvre l\'œil !', fait:[{vu:'pisteur:mairie:fenetre'}]},
       {ic:'🏠', m:0, action:true, lieu:'mairie', points:['gouttiere'], t:'Mairie : la gouttière.', court:'Mairie : regarde la gouttière.', histoire:'Cette gouttière est toute tordue… Et si le voleur était passé par là ?', fait:[{vu:'pisteur:mairie:gouttiere'}]},
       {ic:'⛲', m:0, action:true, lieu:'place', points:['fontaine', 'affiche'], t:'Place : la fontaine et le panneau → donne le code de l\'affiche au Barde.', court:'Place : la fontaine, puis le panneau (pour le Barde).', histoire:'Sur la place, des empreintes de chien… et une affiche sur le panneau !',
         fait:[{et:[{vu:'pisteur:place:fontaine'}, {vu:'pisteur:place:affiche'}]}]},
-      {ic:'🍞', m:1, action:true, lieu:'boulangerie', points:['sol', 'four'], t:'Boulangerie : regarde le sol et le four → donne le code du sol au Barde.', court:'Boulangerie : le sol (pour le Barde), puis le four.', histoire:'Ça sent le bon pain chaud… Les traces mènent-elles chez Gaspard ?', fait:[{et:[{vu:'pisteur:boulangerie:sol'}, {vu:'pisteur:boulangerie:four'}]}]},
+      {ic:'🍞', m:1, action:true, lieu:'boulangerie', points:['sol', 'four'], t:'Boulangerie : regarde le sol et le four → donne le code du sol au Barde.', court:'Boulangerie : le sol (pour le Barde), puis le four.', histoire:'Ça sent le bon pain chaud… Va donc fouiner chez Gaspard, enquêteur !', fait:[{et:[{vu:'pisteur:boulangerie:sol'}, {vu:'pisteur:boulangerie:four'}]}]},
       {ic:'🗺️', m:1, lieu:'foret', t:'Entre dans la forêt : le Sage va trouver un plan dans son Grand Livre → tape son code dans ton onglet Code 🔢.', court:'Entre dans la forêt avec le plan !', histoire:'Le plan de la forêt ! En route, sous les grands arbres…',
-        attend:[{code:'info:carte'}], attendT:'Les traces filent vers la forêt… mais sans plan, on s\'y perd. Le Sage fouille son Grand Livre !',
+        attend:[{code:'info:carte'}], attendT:'La forêt est immense… sans plan, on s\'y perd. Le Sage fouille son Grand Livre !',
         fait:[{code:'info:carte'}]},
       {ic:'🔀', m:1, action:true, lieu:'foret', points:['carrefour', 'ch_moulin', 'ch_puits', 'ch_chene'], t:'Forêt : le carrefour et les trois chemins (Moulin, Puits, Vieux Chêne).', court:'Forêt : le carrefour, puis les trois chemins.',
         fait:[{et:[{vu:'pisteur:foret:carrefour'}, {vu:'pisteur:foret:ch_moulin'}, {vu:'pisteur:foret:ch_puits'}, {vu:'pisteur:foret:ch_chene'}]}]},
@@ -65,16 +65,18 @@ E[1] = {
     ],
     alchimiste:[
       {ic:'📦', m:0, atelier:'installer', t:'Installe ton atelier : ouvre tes cartons et installe un meuble pour ranger tes ingrédients.', court:'Atelier : ouvre un carton, puis installe un meuble.', histoire:'Bienvenue dans ton atelier ! Il sent encore la poussière… Déballe tes trésors.', fait:[{rangement:1}]},
-      {ic:'🫐', m:0, action:true, lieu:'lisiere', cueillir:true, t:'Va à la lisière de la forêt et rapporte 3 baies de sureau.', court:'Lisière de la forêt : cueille 3 baies de sureau.', histoire:'L\'encre a besoin de 3 baies de sureau : elles poussent à la lisière.', fait:[{ingr:{baies:3}}, {potion:'revelatrice'}]},
-      {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice et donne-la au Sage : il a la recette dans son Grand Livre !', court:'Prépare l\'encre avec le Sage, puis donne-la-lui.', histoire:'Le Sage connaît la recette de l\'encre révélatrice : prépare-la avec lui !', fait:[{donne:'pot:revelatrice'}]},
-      {ic:'🧶', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code d\'un fil trouvé à la mairie : tape-le, analyse le fil, puis donne son code au Barde.', court:'Analyse le fil rouge, puis donne son code au Barde.', histoire:'Un fil de laine rouge, trouvé à la mairie… Sous ta loupe, il va parler !',
-        attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]},
-      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera des poils dans la forêt : analyse-les aussi.', court:'Analyse les poils, puis raconte au Pisteur.', histoire:'Des poils de chien ! Analyse-les, puis raconte tout au Pisteur.',
-        attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}, {fini:'alchimiste:analyse:poils'}]},
+      /* (Romain, 10 novembre, 16 h 56 : d'abord le grimoire, ensuite la cueillette — « pourquoi irait-il cueillir des baies s'il ne sait pas encore quelle recette ? ») */
+      {ic:'📖', m:0, atelier:'grimoire', t:'Ouvre ton grimoire et cherche l\'encre révélatrice : c\'est une recette secrète, le Sage va te la dicter.', court:'Grimoire : le Sage te dicte la recette de l\'encre.', histoire:'Une encre qui fait parler les pages blanches ? Ton grimoire en parle… mais la recette est secrète. Le Sage, lui, la connaît !', fait:[{dictee:'revelatrice'}, {potion:'revelatrice'}]},
+      {ic:'🫐', m:0, action:true, lieu:'lisiere', cueillir:true, t:'Va à la lisière de la forêt et rapporte 3 baies de sureau.', court:'Lisière de la forêt : cueille 3 baies de sureau.', histoire:'La recette veut 3 baies de sureau… et ton atelier n\'en a pas une ! Elles poussent à la lisière de la forêt.', fait:[{ingr:{baies:3}}, {potion:'revelatrice'}]},
+      {ic:'🧪', m:0, action:true, atelier:'encre', t:'Prépare l\'encre révélatrice au chaudron, puis donne-la au Sage.', court:'Prépare l\'encre au chaudron, puis donne-la au Sage.', histoire:'Tout est là : la recette, et les baies ! Au chaudron, alchimiste… puis cours porter l\'encre au Sage.', fait:[{donne:'pot:revelatrice'}]},
+      {ic:'🔍', m:0, action:true, atelier:'analyse', objet:'fil', t:'Le Pisteur va te donner le code de poils trouvés à la mairie : tape-le, analyse-les, puis donne leur code au Barde.', court:'Analyse les poils de la fenêtre, puis donne leur code au Barde.', histoire:'Des poils accrochés à la fenêtre de la mairie… Sous ta loupe, ils vont parler !',
+        attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}]},
+      {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera une touffe de poils dans la forêt : analyse-la aussi.', court:'Analyse la touffe de poils, puis raconte au Pisteur.', histoire:'Une touffe de poils, trouvée dans la forêt ! Analyse-la, puis raconte tout au Pisteur.',
+        attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}]},
       {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.', histoire:'Une grande plume noire… À qui peut-elle bien appartenir ?',
         attend:[{code:'obj:plume'}], attendT:'Le Barde rend visite à Odette… Elle lui confiera peut-être un indice.', fait:[{analyse:'plume'}]},
       {ic:'📜', m:2, t:'Raconte au Sage ce que tes analyses ont montré.', court:'Raconte au Sage ce que tes analyses ont montré.', histoire:'Le Sage t\'attend : raconte-lui ce que tes analyses ont révélé !', manuel:true},
-      {piste:true, t:'Pour analyser, compare l\'objet avec les échantillons de ton atelier et trouve vite le signe pareil.'},
+      {piste:true, t:'Pour analyser, pose l\'objet sur ta table d\'analyse : ta loupe fait le reste.'},   /* (Romain, 10 novembre : plus de mini-jeu pour les analyses, tout se passe dans le labo) */
       {libre:true, ic:'🔍', t:'Ensuite, analyse ce que l\'équipe te confie, et aide-la à trouver QUI a pris la Lanterne, et OÙ elle est !'}
     ],
     barde:[
@@ -85,7 +87,7 @@ E[1] = {
         fait:[{et:[{vu:'barde:odette:1'}, {vu:'barde:odette:2'}, {vu:'barde:odette:3'}]}]},
       /* (Romain, 10 novembre : le plan de la forêt est au Sage seul ; Basile sert au QUI, ses grosses bottes expliquent les grosses traces de la mairie) */
       {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui où il était cette nuit.', court:'Basile, au potager : où était-il cette nuit ?', histoire:'Basile, le jardinier, bêche son potager du matin au soir… A-t-il remarqué quelque chose ?', fait:[{vu:'barde:basile:0'}]},
-      {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.', histoire:'Mélusine tricote des écharpes… Une écharpe rouge, ça lui dit quelque chose ?',
+      {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.', histoire:'Mélusine tricote des écharpes pour tout le village… Va donc lui en parler !',
         fait:[{et:[{vu:'barde:melusine:1'}, {vu:'barde:melusine:2'}]}]},
       {ic:'🐶', m:1, action:true, pnj:'gaspard', t:'Quand le Pisteur te donne l\'affiche du chien, montre-la à Gaspard, à la boulangerie.', court:'Boulangerie : montre l\'affiche du chien à Gaspard.', histoire:'L\'affiche du chien perdu ! Gaspard connaît tout le monde : montre-la-lui.',
         attend:[{code:'obj:affiche'}], attendT:'Le Pisteur a repéré une affiche sur la place… Il va te l\'apporter !', fait:[{vu:'barde:gaspard:1'}]},
@@ -144,13 +146,13 @@ E[1] = {
         ['🎉', 'Le soir, la Lanterne d\'Or a allumé toutes les lanternes de Brumeval : la fête était sauvée.']
       ]},
       {ic:'⭐', titre:'Les grands moments de l\'enquête', lignes:[
-        ['🧶', 'À la fenêtre de la mairie, un fil de laine rouge : un bout d\'écharpe tricotée par Mélusine, couvert de suie de cheminée.'],
+        ['🧶', 'À la fenêtre de la mairie, des poils accrochés à la poignée : en fait, des brins de laine, un bout d\'écharpe tricotée à la main, couvert de suie de cheminée.'],
         ['🧣', 'L\'écharpe de Mélusine n\'avait pas un trou : ce n\'était pas elle.'],
         ['👣', 'Les grosses traces devant la mairie : les bottes de Basile, qui avait planté des fleurs l\'après-midi.'],
         ['📜', 'Sur la place, l\'affiche du chien perdu : « Prévenez Tim, 7, rue des Lanternes. »'],
         ['🐾', 'Dans un buisson de la forêt, des poils de chien noirs et blancs, avec une petite feuille de chêne.'],
         ['🗺️', 'La page blanche du Grand Livre cachait le plan de la forêt : sans lui, personne ne pouvait y entrer.'],
-        ['🌲', 'Sur les chemins du moulin et du puits, aucune trace d\'enfant : la Lanterne n\'y était pas.']
+        ['🌲', 'Sur le chemin du moulin, personne n\'était passé ; sur celui du puits, seulement un sanglier : la Lanterne n\'y était pas.']
       ]},
       {ic:'🔑', titre:'À retenir pour la suite', lignes:[
         ['🕳️', 'Un énorme trou sous le Vieux Chêne : personne au village ne sait d\'où il vient.'],
@@ -167,7 +169,7 @@ E[1] = {
         ['👵', 'Odette, la grand-mère aux sept chats : elle ne dort presque jamais et voit tout ce qui se passe au village. Avec sa canne, elle ne grimpe plus.'],
         ['👨‍🍳', 'Gaspard, le boulanger : il fait son pain toute la nuit. Il a de très grands pieds, et il est fort comme un bœuf.'],
         ['👩‍🦰', 'Mélusine, la couturière : elle a tricoté des écharpes en laine rouge pour la moitié du village.'],
-        ['👨‍🌾', 'Basile, le jardinier : il connaît la forêt comme sa poche.'],
+        ['👨‍🌾', 'Basile, le jardinier : il bêche son potager du matin au soir, avec ses grosses bottes.'],
         ['🧔', 'Victor, le facteur : il se lève à 5 heures pour trier le courrier.'],
         ['👩‍🍳', 'Margot, la tavernière : à la taverne, tout le village vient bavarder.'],
         ['🎩', 'Monsieur Grosbec, le maire : « J\'aurai d\'autres missions pour vous. »']
@@ -186,8 +188,10 @@ E[1] = {
     tim:{maison:'L7', note:'Petit ramoneur de 10 ans : il grimpe sur les toits pour nettoyer les cheminées. Toujours plein de suie !'}
   },
   objets:{
-    fil:{nom:'Fil de laine rouge', ic:'🧶', pour:'alchimiste'},
-    poils:{nom:'Touffe de poils', ic:'🐾', pour:'alchimiste'},
+    /* (Romain, 10 novembre : le Pisteur trouve « des poils », ni un fil ni rouge ; c'est l'analyse qui montre que c'est de la laine.
+       L'identifiant « fil » reste : son code est gelé) */
+    fil:{nom:'Poils de la fenêtre', ic:'〰️', pour:'alchimiste'},
+    poils:{nom:'Touffe de poils de la forêt', ic:'🐾', pour:'alchimiste'},
     plume:{nom:'Grande plume noire', ic:'🪶', pour:'alchimiste'},
     affiche:{nom:'Affiche du chien perdu', ic:'🐶', pour:'barde'}
   },
@@ -197,21 +201,26 @@ E[1] = {
     chemin:{nom:'Chemin dessiné par Basile', ic:'✏️', pour:'pisteur', t:'Basile a dessiné le chemin de la forêt pour toute l\'équipe. Tu peux y entrer sans te perdre.'},
     /* Renseignements sur un habitant, pour le Barde (carnet.js) : 2 codes dans l'enquête 1
        (plus de code du registre, Romain, 5 novembre, 01 h 20 : le Sage lit le registre à tout le monde ; le code gelé reste dans codes-fixes.js, inutilisé) */
-    echarpe:{nom:'Le fil de la fenêtre', ic:'🧶', pour:'barde', de:'alchimiste', pnj:'melusine', t:'Le fil rouge de la fenêtre de la mairie est un bout d\'écharpe tricotée à la main.'},
+    echarpe:{nom:'Les poils de la fenêtre', ic:'🧶', pour:'barde', de:'alchimiste', pnj:'melusine', t:'Les poils de la fenêtre de la mairie sont des brins de laine : un bout d\'écharpe tricotée à la main.'},
     grands_pieds:{nom:'Les traces de la boulangerie', ic:'👣', pour:'barde', de:'pisteur', pnj:'gaspard', t:'À la boulangerie, la farine montre que Gaspard a de très grands pieds.'}
   },
   lieux:{
     mairie:{
       pisteur:{intro:'C\'est ici que dormait la Lanterne d\'Or. La fenêtre du bureau du maire est grande ouverte.', points:[
-        {id:'massif', ic:'👣', nom:'Le massif de fleurs', mj:'traces', params:{decor:'ville'},   /* la ville vue du ciel (Romain, 6 novembre, 2 h 34) */
-          t:'Il y a deux sortes de traces. Des grosses, sèches et craquelées : elles datent d\'hier. Et des petites, toutes fraîches : elles datent de cette nuit ! Les petites mesurent 3 carreaux.',
-          note:'Mairie : traces fraîches de cette nuit, 3 carreaux. Les grosses traces sèches datent d\'hier.',
+        /* la ville vue du ciel (Romain, 6 novembre, 2 h 34) ; un mini-jeu fait pour ce lieu (Romain, 10 novembre, 16 h 56) : au départ, les grosses
+           bottes du jardinier et les petites traces s'entremêlent, puis chacune part de son côté ; les petites mènent à une gouttière, du côté
+           de la forêt, où elles s'arrêtent net (quelqu'un est remonté sur les toits : ça colle avec Odette et avec la gouttière de la mairie) */
+        {id:'massif', ic:'👣', nom:'Le massif de fleurs', mj:'traces',
+          params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'gouttiere', arriveeTxt:'Plus de traces !', compagnonTxt:'Les bottes du jardinier…',
+            departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'},
+          t:'Dans le massif, deux sortes de traces se mêlent. De grosses bottes, sèches et craquelées : elles datent d\'hier. Et des petites, toutes fraîches, de 3 carreaux : elles datent de cette nuit ! Les petites t\'ont mené au pied d\'une gouttière, du côté de la forêt… et là, plus rien. Quelqu\'un est remonté sur les toits !',
+          note:'Mairie : traces fraîches de cette nuit, 3 carreaux. Elles mènent au pied d\'une gouttière, côté forêt : quelqu\'un est remonté sur les toits. Les grosses bottes sèches datent d\'hier.',
           rate:'Les traces se brouillent… Tu as juste vu des petites traces fraîches, bien plus petites que des bottes d\'homme.',
           rateNote:'Mairie : des petites traces fraîches de cette nuit, bien plus petites que des bottes d\'homme.', partiel:true,   /* clé : ce partiel innocente encore les grands pieds */
           ferme:'Les traces sont effacées pour de bon… Il te reste ce que tu as vu.'},
         {id:'fenetre', ic:'🪟', nom:'La fenêtre', obj:'fil',
-          t:'La fenêtre a été ouverte depuis dehors. Accroché à la poignée : un fil de laine rouge !',
-          note:'Mairie : un fil de laine rouge accroché à la fenêtre.'},
+          t:'La fenêtre a été ouverte depuis dehors. Accrochés à la poignée : des poils ! Qui a bien pu laisser ça ?',
+          note:'Mairie : des poils accrochés à la poignée de la fenêtre.'},
         {id:'gouttiere', ic:'🏠', nom:'La gouttière',
           t:'La gouttière est tordue : quelqu\'un est descendu du toit en s\'y accrochant. Quelqu\'un de léger et agile, sinon elle aurait cassé !',
           note:'Mairie : quelqu\'un de léger et agile est descendu du toit par la gouttière.'}
@@ -254,7 +263,7 @@ E[1] = {
           t:'Sur le chemin du Moulin, la boue est toute lisse : personne n\'est passé.',
           note:'Chemin du Moulin : personne n\'est passé.'},
         {id:'ch_puits', ic:'🐗', nom:'Chemin du Puits',
-          t:'Sur le chemin du Puits, de grosses traces de sabots : un sanglier ! Aucune trace d\'enfant.',
+          t:'Sur le chemin du Puits, rien que de grosses traces de sabots : un sanglier est passé par là, c\'est tout.',   /* (Romain, 10 novembre : plus de « aucune trace d'enfant », ça donnait la réponse) */
           note:'Chemin du Puits : seulement un sanglier.'},
         {id:'ch_chene', ic:'🌳', nom:'Chemin du Vieux Chêne',
           t:'Sur le chemin du Vieux Chêne, il fait bien trop noir pour voir des traces…',
@@ -330,14 +339,14 @@ E[1] = {
     ]}
   },
   analyses:{
-    fil:{mj:'double', donne:'info:echarpe', rate:'C\'est un bout de laine rouge, tricotée à la main comme une écharpe… couverte d\'une poussière noire. Laquelle ? Tu n\'as pas eu le temps de comparer.',
-      rateNote:'Analyse du fil (pas finie) : un bout de laine rouge tricotée main, comme une écharpe, couverte d\'une poussière noire.', partiel:true,
-      t:'C\'est de la laine rouge tricotée à la main : un morceau d\'écharpe ! Elle est couverte de SUIE noire, comme dans les cheminées.',
-      note:'Analyse du fil : un bout d\'écharpe rouge tricotée main, plein de suie de cheminée.',
-      detail:{t:'La suie est toute fraîche : elle date de cette nuit.', note:'Détail : la suie du fil est toute fraîche.'}},
-    poils:{mj:'double', rate:'Des poils de chien, noirs et blancs, avec un petit bout de feuille coincé dedans. Quel arbre ? Tu n\'as pas eu le temps de comparer.',
-      rateNote:'Analyse des poils (pas finie) : des poils de chien noirs et blancs, avec un bout de feuille.',
-      t:'Des poils de chien, noirs et blancs. Coincée dedans : une petite feuille de CHÊNE !',
+    /* (Romain, 10 novembre, 16 h 56 : plus de mini-jeu pour les analyses de l'Alchimiste ; tout se passe dans son labo, le résultat tombe tout de suite.
+       Les poils de la fenêtre : ni « fil » ni « rouge » pour le Pisteur ; c'est la loupe de l'Alchimiste qui montre que c'est de la laine) */
+    fil:{donne:'info:echarpe',
+      t:'Sous ta loupe, surprise : ce ne sont pas des poils de bête ! Ce sont des brins de laine tricotée à la main… un morceau d\'écharpe. Ils sont couverts de SUIE noire, comme dans les cheminées.',
+      note:'Analyse des poils de la fenêtre : des brins de laine tricotée main, un bout d\'écharpe, plein de suie de cheminée.',
+      detail:{t:'La suie est toute fraîche : elle date de cette nuit.', note:'Détail : la suie de la laine est toute fraîche.'}},
+    poils:{
+      t:'Sous ta loupe : des poils de chien, noirs et blancs. Coincée dedans : une petite feuille de CHÊNE !',
       note:'Analyse des poils : chien noir et blanc, avec une feuille de chêne.',
       detail:{t:'Les poils sont encore humides : le chien est passé ce matin, très tôt.', note:'Détail : le chien est passé ce matin très tôt.'}},
     plume:{t:'Une grande plume noire, toute douce. Elle sent… la lavande ! D\'où peut-elle venir ? Mystère… Rien à voir avec la lanterne. Garde-la bien : elle servira peut-être un jour.',
