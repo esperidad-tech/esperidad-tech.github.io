@@ -3,7 +3,9 @@
 set -e
 S=$(cd "$(dirname "$0")/.." && pwd)
 REPO=${REPO:-/home/claude/esperidad-tech.github.io}
-# Nouvelle session : remplacer la ligne Claude-Session du commit par celle de la session en cours.
+# Nouvelle session : donner ses lignes d'attribution sans toucher à ce fichier :
+#   BRUMEVAL_COAUTEUR="Claude … <noreply@anthropic.com>" BRUMEVAL_SESSION="https://claude.ai/code/session_…" bash deploy/deployer.sh …
+# (sans ces variables : les lignes écrites plus bas, à remplacer par celles de la session en cours).
 D=$REPO/brumeval
 V=$(date -u +%Y%m%d-%H%M)
 cp "$1" $D/index.html
@@ -14,8 +16,8 @@ cd $REPO
 git add brumeval/index.html brumeval/salle.html brumeval/sw.js brumeval/manifest.webmanifest brumeval/favicon.svg brumeval/icon-192.png brumeval/icon-512.png brumeval/apple-touch-icon.png
 git commit -q -m "$3
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_014tBbPMCeTaHG7Zn5Kx8hhW"
+Co-Authored-By: ${BRUMEVAL_COAUTEUR:-Claude Opus 5.5 <noreply@anthropic.com>}
+Claude-Session: ${BRUMEVAL_SESSION:-https://claude.ai/code/session_014tBbPMCeTaHG7Zn5Kx8hhW}"
 git push -q origin HEAD:main
 git log --oneline -1
 echo "version $V"

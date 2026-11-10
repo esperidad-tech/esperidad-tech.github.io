@@ -1004,49 +1004,85 @@ def('lutrin', {w:170, h:226, p:80, z:'sol', special:'grimoire', nf:3, nom:'Lutri
     return [N(s + '</g>')];
   }});
 
-/* La paillasse d'analyse : un grand plan de travail avec les outils de l'alchimiste (fioles, mortier, balance, pince, loupe)
-   et, au milieu, les objets reçus (ceux qui attendent brillent). Cinq styles de table (🎨 dans le panneau d'analyse). */
+/* La paillasse d'analyse (refaite le 10 novembre, d'après la maquette du labo, Bible §12.51) : cinq formes de table, et sur chacune
+   TOUJOURS deux tiroirs en haut (fils, poils, plumes à gauche ; pétales, feuilles, grains à droite) et les mêmes outils aux mêmes places :
+   au fond, la bougie, l'ardoise du code, la petite étagère surélevée des cinq bocaux, le microscope ; devant, le bocal à bandelettes,
+   le carnet de teintures, la loupe, le carré de cuir (les objets reçus sont posés dessus : ceux qui attendent brillent), les cinq coupelles.
+   Le bout gauche du plateau reste libre (surf) : on peut y poser quelque chose. Les outils gardent leurs couleurs ; la table prend le thème
+   (le marbre aussi : marbre rose, vert… ; son or reste or). On la touche : trois bulles (y aller, changer la forme, changer la couleur). */
 def('paillasse', {w:480, h:212, p:130, z:'sol', special:'analyses', profil:true, nf:5, nom:'Paillasse d\'analyse', ic:'🔬', surf:[{x0:-226, x1:-150, y:-122, z:64}],
   d:function(c){
-    var f = c.fo, s = '<g class="at-pupitre-p" data-at="analyses">', P2 = c.p;
-    /* la table */
-    if(f === 0){        /* établi de bois à tiroirs */
-      s += pieds(c, 24, 456, 140, 212, 8, P2 - 8, 20) + c.boite(30, 184, 450, 194, 16, P2 - 16, UNI(G('boisH'))) + c.boite(14, 110, 466, 144, 4, P2 - 4, BOIS());
-      var tir = '';
-      for(var i = 0; i < 3; i++) tir += R(34 + i * 146, 116, 120, 22, 4, G('boisC'), ' stroke-width="3.5"') + Cir(94 + i * 146, 127, 4, G('or'));
-      s += c.sur(tir, 4) + c.boite(4, 90, 476, 112, 0, P2, UNI(G('boisH'), G('boisH'), G('boisS')));
-    } else if(f === 1){ /* comptoir de pierre sur un meuble */
-      s += c.boite(18, 110, 462, 210, 4, P2 - 4, BOIS()) + c.sur(R(34, 122, 196, 76, 6, G('boisC'), ' stroke-width="3.5"') + R(250, 122, 196, 76, 6, G('boisC'), ' stroke-width="3.5"') + Cir(220, 160, 5, G('or')) + Cir(260, 160, 5, G('or')), 4) +
-        c.boite(2, 88, 478, 112, -4, P2, UNI(G('pierre'))) + c.sur(reflet('M14,96 H466', 3), -4);
+    var f = c.fo, s = '<g class="at-pupitre-p" data-at="analyses">', P2 = c.p, mc = c.ti ? THEMES[c.ti].c : null, Y = 90, k;
+    var B2 = ' stroke-width="2"', B25 = ' stroke-width="2.5"', B3 = ' stroke-width="3"', B35 = ' stroke-width="3.5"';
+    var OR = UNI('#f5b945', '#ffe08a', '#b8862e');
+    var MARBRE = UNI(mc ? melange('#efeaf6', mc, 0.42) : '#efeaf6', mc ? melange('#fbf9fd', mc, 0.3) : '#f7f4fb', mc ? melange('#d9d3ea', mc, 0.52) : '#d6d0e8'), veine = mc ? sombre(mc, 0.18) : '#c9c2dc';
+    /* --- le bas du meuble : ce qui change d'une forme à l'autre --- */
+    if(f === 0){        /* établi de bois : quatre pieds et une tablette basse */
+      s += pieds(c, 24, 456, 146, 212, 8, P2 - 8, 20) + c.boite(30, 186, 450, 196, 16, P2 - 16, UNI(G('boisH')));
+    } else if(f === 1){ /* comptoir de pierre sur un meuble à deux portes */
+      s += c.boite(20, 146, 460, 210, 6, P2 - 6, BOIS()) + c.sur(R(34, 152, 198, 52, 5, G('boisC'), B35) + R(248, 152, 198, 52, 5, G('boisC'), B35) + Cir(222, 178, 5, '#f5b945') + Cir(258, 178, 5, '#f5b945'), 6);
     } else if(f === 2){ /* marbre et pieds dorés */
-      [10, P2 - 12].forEach(function(z){ [40, 160, 320, 440].forEach(function(x, j){ s += c.ligne([[x, 110, z], [x + (j < 2 ? -6 : 6), 160, z], [x, 210, z]], K, 11) + c.ligne([[x, 110, z], [x + (j < 2 ? -6 : 6), 160, z], [x, 210, z]], '#f5b945', 5); }); });
-      s += c.boite(16, 104, 464, 114, 6, P2 - 6, UNI(G('or'))) + c.boite(4, 88, 476, 106, 0, P2, UNI('#efeaf6', '#f7f4fb', '#d6d0e8')) + c.sur(T('M60,94 C120,102 160,90 230,98 M300,92 C350,100 400,92 450,98', '#c9c2dc', 2.5), 0);
-    } else if(f === 3){ /* meuble à petits tiroirs */
-      s += c.boite(12, 108, 468, 210, 4, P2 - 4, BOIS());
+      [10, P2 - 12].forEach(function(z){ [40, 160, 320, 440].forEach(function(x, j){ var l = [[x, 146, z], [x + (j < 2 ? -6 : 6), 180, z], [x, 210, z]]; s += c.ligne(l, K, 11) + c.ligne(l, '#f5b945', 5); }); });
+    } else if(f === 3){ /* meuble à petits tiroirs (sous les deux grands) */
       var t3 = '';
-      for(var j = 0; j < 8; j++){ var x3 = 22 + (j % 4) * 110, y3 = 116 + Math.floor(j / 4) * 44; t3 += R(x3, y3, 102, 38, 5, G('boisC'), ' stroke-width="3.5"') + Cir(x3 + 51, y3 + 19, 4, G('or')); }
-      s += c.sur(t3, 4) + c.boite(4, 90, 476, 110, 0, P2, UNI(G('boisH'), G('boisH'), G('boisS')));
+      for(k = 0; k < 8; k++){ var x3 = 24 + (k % 4) * 109, y3 = 151 + Math.floor(k / 4) * 29; t3 += R(x3, y3, 103, 25, 4, G('boisC'), B3) + Cir(x3 + 51.5, y3 + 12.5, 3.5, '#f5b945'); }
+      s += c.boite(14, 146, 466, 210, 6, P2 - 6, BOIS()) + c.sur(t3, 6);
     } else {            /* tréteaux */
-      [12, P2 - 12].forEach(function(z){ s += c.ligne([[40, 112, z], [112, 210, z]], K, 12) + c.ligne([[112, 112, z], [40, 210, z]], K, 12) + c.ligne([[368, 112, z], [440, 210, z]], K, 12) + c.ligne([[440, 112, z], [368, 210, z]], K, 12) +
-        c.ligne([[40, 112, z], [112, 210, z]], '#b06f3e', 6) + c.ligne([[112, 112, z], [40, 210, z]], '#b06f3e', 6) + c.ligne([[368, 112, z], [440, 210, z]], '#b06f3e', 6) + c.ligne([[440, 112, z], [368, 210, z]], '#b06f3e', 6); });
-      s += c.boite(76, 156, 404, 164, P2 / 2 - 4, P2 / 2 + 4, UNI('#d29a5e')) + c.boite(4, 92, 476, 112, 0, P2, BOIS());
+      [12, P2 - 12].forEach(function(z){ [[40, 112], [112, 40], [368, 440], [440, 368]].forEach(function(q){ var l = [[q[0], 146, z], [q[1], 210, z]]; s += c.ligne(l, K, 12) + c.ligne(l, '#b06f3e', 6); }); });
+      s += c.boite(76, 176, 404, 184, P2 / 2 - 4, P2 / 2 + 4, UNI('#d29a5e'));
     }
-    /* les outils, posés sur le plateau (au milieu de sa profondeur) */
-    var outils = R(102, 56, 98, 10, 3, G('boisH'), ' stroke-width="3.5"') + fiolePetite(120, 92, '#7cf09a') + fiolePetite(151, 92, '#ff8fb3') + fiolePetite(182, 92, '#8ff3ff') +
-      T('M226,70 L250,40', K, 10) + T('M226,70 L250,40', '#d6d0ee', 5) + P('M204,66 L256,66 C254,86 244,94 230,94 C216,94 206,86 204,66 Z', G('pierre')) + Ell(230, 66, 26, 6, '#4a4668');
-    /* les objets reçus (au plus 3 dessinés) : ceux qui attendent brillent */
-    (DESSIN.analyses || []).slice(0, 3).forEach(function(o, k){
-      var x = 288 + k * 48;
-      outils += (o.fait ? '' : '<circle class="at-halo at-a-analyser" cx="' + x + '" cy="66" r="26" fill="' + G('halo') + '"/>') +
-        Ell(x, 88, 20, 6, o.fait ? '#cbbf9c' : '#fff6d8', ' stroke-width="3"') + emo(x, 66, 30, o.ic || '❔') + (o.fait ? emo(x + 15, 52, 14, '✅') : '');
+    /* --- la ceinture : toujours deux tiroirs en haut, chacun avec sa plaque (trois petits dessins) et sa poignée --- */
+    var tir = '';
+    [0, 1].forEach(function(n){
+      var x = 22 + n * 222, pg = 'M' + (x + 92) + ',134 q15,8 30,0';
+      tir += R(x, 113, 214, 29, 4, f === 2 ? MARBRE.face : G('boisC'), B35) + R(x + 72, 116, 70, 12, 2, '#fff6d8', B2) +
+        [0, 1, 2].map(function(j){ return '<circle cx="' + (x + 86 + j * 21) + '" cy="122" r="3.2" fill="' + [['#b9a67c', '#6b4a2a', '#4a6aa8'], ['#e8343c', '#6fae5a', '#8a84a0']][n][j] + '"/>'; }).join('') +
+        T(pg, K, 6) + T(pg, '#f5b945', 3);
     });
-    /* la balance, la pince, la loupe sur son pied */
-    outils += R(410, 50, 6, 38, 2, G('or'), ' stroke-width="3"') + T('M392,52 L434,52', K, 6) + T('M392,52 L434,52', '#f5b945', 3) +
-      P('M384,70 Q392,78 400,70 Z', G('or'), ' stroke-width="3"') + P('M426,70 Q434,78 442,70 Z', G('or'), ' stroke-width="3"') + T('M392,52 L386,70 M392,52 L398,70 M434,52 L428,70 M434,52 L440,70', '#b8862e', 1.5) +
-      T('M446,88 L466,58 M452,88 L462,58', K, 5) + T('M446,88 L466,58 M452,88 L462,58', '#a8a2c8', 2) +
-      T('M468,86 L468,20', K, 9) + T('M468,86 L468,20', '#b8862e', 4) + Ell(468, 88, 14, 4, G('or'), ' stroke-width="3"') +
-      Cir(444, 4, 24, G('or')) + Cir(444, 4, 17, 'rgba(191,243,255,.55)', ' stroke-width="3"') + T('M432,-4 C436,-10 444,-12 450,-10', '#fff', 3, ' opacity=".8"') + T('M468,20 L460,22', K, 6);
-    s += c.sur(outils, P2 / 2);
+    s += c.boite(12, 108, 468, 146, 3, P2 - 3, f === 2 ? OR : BOIS()) + c.sur(tir, 3);
+    /* --- le plateau --- */
+    if(f === 1) s += c.boite(2, Y, 478, 109, -3, P2 + 1, UNI(G('pierre'))) + c.sur(reflet('M14,97 H466', 3), -3);
+    else if(f === 2) s += c.boite(4, Y, 476, 108, 0, P2, MARBRE) + c.sur(T('M60,96 C120,103 160,92 230,99 M300,94 C350,101 400,94 450,99', veine, 2.5), 0) +
+      c.dessus(T('M30,-34 C120,-56 200,-22 300,-48 S420,-30 462,-66 M80,-100 C170,-82 240,-108 330,-90', veine, 2.5, ' opacity=".7"'), Y, 0);
+    else s += c.boite(4, Y, 476, 109, 0, P2, f === 4 ? BOIS() : UNI(G('boisH'), G('boisH'), G('boisS')));
+    /* --- au fond du plateau, de gauche à droite : le bocal à bandelettes, la bougie, l'ardoise, l'étagère des cinq bocaux, le microscope --- */
+    var bt = 'M91,' + (Y - 42) + ' h26';
+    var fond = R(94, Y - 41, 20, 40, 6, 'rgba(220,245,255,.35)', B25) + '<rect x="96" y="' + (Y - 13) + '" width="16" height="10" rx="3" fill="#cfeaf6" opacity=".8"/>' +
+      '<rect x="101.5" y="' + (Y - 41) + '" width="5" height="31" fill="#fffaf0" stroke="' + K + '" stroke-width=".8"/><rect x="102" y="' + (Y - 29) + '" width="4" height="3" fill="#e2553a"/><rect x="102" y="' + (Y - 22) + '" width="4" height="3" fill="#8a3a9a"/>' +
+      T(bt, K, 5) + T(bt, '#c98450', 2.5);
+    fond += Ell(127, Y - 2, 9, 3.2, '#e0a23a', B25) + R(122.5, Y - 28, 9, 25, 2, '#fffaf0', ' stroke-width="1.8"') +
+      '<path d="M127,' + (Y - 29) + ' c-5,-6 -3,-12 0,-17 c3,5 5,11 0,17 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.5"/>';
+    fond += '<g transform="rotate(-3 161 ' + Y + ')">' + R(140, Y - 38, 44, 37, 3, '#7a4a28', B3) + '<rect x="144.5" y="' + (Y - 33.5) + '" width="35" height="28" rx="1" fill="#2c333d"/>' +
+      T('M152,' + (Y - 19) + ' h4 M160,' + (Y - 19) + ' h4 M168,' + (Y - 19) + ' h4', '#f4f1ea', 2.2, ' opacity=".65"') + '</g>';
+    fond += R(197, Y - 22, 5, 21, 1, '#94603a', B2) + R(266.5, Y - 22, 5, 21, 1, '#94603a', B2) + R(336, Y - 22, 5, 21, 1, '#94603a', B2) + R(192, Y - 28, 154, 7, 2, '#c98450', B3);
+    [['#a9dcff', 0.6], ['#a9dcff', 0.6], ['#9a4f12', 0.9], ['#efe1a0', 0.85], ['#f6f4ee', 1]].forEach(function(b, i){
+      var x = 207 + i * 31, y = Y - 28;
+      fond += '<rect x="' + (x - 8) + '" y="' + (y - 15) + '" width="16" height="14" rx="3" fill="' + b[0] + '" opacity="' + b[1] + '"/>' +
+        R(x - 10, y - 26, 20, 26, 5, 'rgba(220,245,255,.35)', B25) + R(x - 6, y - 32, 12, 7, 2, '#e8b47e', B2) +
+        '<rect x="' + (x - 7) + '" y="' + (y - 17) + '" width="14" height="8" rx="1" fill="#fff6d8" stroke="' + K + '" stroke-width="1"/>' +
+        (i === 1 ? T('M' + (x - 2) + ',' + (y - 35) + ' q-3,-4 0,-8 q3,-4 0,-8', '#dff6ff', 2, ' opacity=".7"') : '');
+    });
+    var arc = 'M427,' + (Y - 38) + ' C406,' + (Y - 48) + ' 408,' + (Y - 76) + ' 432,' + (Y - 76);
+    fond += Ell(436, Y - 3, 22, 6, '#3a3450', B3) + R(424, Y - 40, 6, 37, 2, '#e0a23a', B25) + R(417, Y - 30, 32, 5, 1, '#3a3450', B2) + T(arc, K, 9) + T(arc, '#e0a23a', 4.5) +
+      '<g transform="rotate(16 432 ' + (Y - 58) + ')">' + R(427, Y - 82, 11, 46, 3, '#f5c45a', B25) + R(428, Y - 91, 9, 10, 2, '#3a3450', B2) + '</g>' +
+      Cir(407, Y - 60, 9, '#f7cd6a', B25) + '<circle cx="407" cy="' + (Y - 60) + '" r="2.6" fill="#3a3450"/>';
+    s += c.sur(fond, 110);
+    /* --- à plat sur le plateau : le carnet de teintures, le carré de cuir --- */
+    s += c.dessus(R(152, -62, 40, 28, 2, '#7a3a4a', B3) + '<rect x="155" y="-60" width="16" height="24" fill="#f6ecd2"/><rect x="173" y="-60" width="16" height="24" fill="#f6ecd2"/>' + T('M172,-62 V-34', K, 2) +
+      R(200, -92, 136, 78, 3, '#cda77a', B35) + '<rect x="206" y="-86" width="124" height="66" rx="2" fill="none" stroke="#5a3418" stroke-width="2" stroke-dasharray="6 5"/>', Y, 0);
+    /* --- les coupelles du fond, puis les objets reçus (au plus 3), posés sur le cuir : ceux qui attendent brillent --- */
+    var coupe = function(x){ return '<path d="M' + (x - 12) + ',' + (Y - 6) + ' Q' + x + ',' + (Y + 5) + ' ' + (x + 12) + ',' + (Y - 6) + ' Z" fill="rgba(226,246,255,.75)" stroke="' + K + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<ellipse cx="' + x + '" cy="' + (Y - 6) + '" rx="12" ry="3.4" fill="#f4fbff" stroke="' + K + '" stroke-width="1.8"/><ellipse cx="' + x + '" cy="' + (Y - 5.6) + '" rx="8" ry="1.9" fill="rgba(160,205,230,.7)"/>'; };
+    s += c.sur(coupe(358) + coupe(391) + coupe(424), 68);
+    var recus = '';
+    (DESSIN.analyses || []).slice(0, 3).forEach(function(o, n){
+      var x = 232 + n * 36;
+      recus += (o.fait ? '' : '<circle class="at-halo at-a-analyser" cx="' + x + '" cy="' + (Y - 20) + '" r="23" fill="' + G('halo') + '"/>') + emo(x, Y - 19, 27, o.ic || '❔') + (o.fait ? emo(x + 13, Y - 32, 13, '✅') : '');
+    });
+    s += c.sur(recus, 50);
+    /* --- devant : deux coupelles, et la loupe couchée --- */
+    var manche = 'M122,' + (Y - 3) + ' L144,' + (Y - 1);
+    s += c.sur(coupe(374) + coupe(408) + T(manche, K, 7) + T(manche, '#b06f3e', 3.5) + Ell(110, Y - 4, 14, 5.5, '#f5c45a', B25) + '<ellipse cx="110" cy="' + (Y - 4.5) + '" rx="9.5" ry="3.2" fill="rgba(205,240,255,.8)" stroke="' + K + '" stroke-width="1.2"/>', 26);
     return [N(s + '</g>')];
   }});
 
@@ -3345,6 +3381,7 @@ function changerSalle(V, s, opts){
   if(V.arrete || V.mode !== 'ranger') return;
   s = s ? 1 : 0;
   if(V.salle === s){ if(opts.centre) allerVers(V, opts.centre.x, opts.centre.y); return; }
+  fermerBullesPa(V);
   if(V.ouvert) fermerOuvert(V);
   if(V.grim && !V.grim.hidden) fermerGrimoire(V);
   var de = V.salle;
@@ -3627,11 +3664,14 @@ function brancher(V){
     V.dernierPointeur = Date.now(); V.enGeste = true;
     var t = e.target;
     if(t.closest('.at-repere') || t.closest('.at-tient')) return;
-    var obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), fixe = t.closest('[data-at]'), surf = t.closest('[data-surf]');
+    var obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), fixe = t.closest('[data-at]'), surf = t.closest('[data-surf]'), bul = t.closest('.at-bulle-pa');
     e.preventDefault();
+    /* les bulles de la paillasse : on touche ailleurs (ni une bulle, ni la paillasse), elles s'en vont */
+    if(V.bullesPa && !bul && !(obj && obj.getAttribute('data-obj') === V.bullesPa) && !(GUIDE && GUIDE.cible === 'paillasse')) fermerBullesPa(V);
     /* le guidage du tutoriel : seulement ce qui brille (ailleurs : « Pas maintenant », la pièce peut glisser) */
     if(GUIDE && V.mode === 'ranger' && !guideAutorise(V, t)){ gesteOuDefile(V, e, function(){ pasMaintenant(V); }); return; }
     if(V.mode !== 'ranger'){ gesteOuDefile(V, e, null); return; }
+    if(bul){ gesteOuDefile(V, e, function(){ bullePaillasse(V, bul.getAttribute('data-bulle')); }); return; }
     if(tas){ glisserTas(V, e, tas.getAttribute('data-tas'), tas); return; }
     if(carton){ gesteOuDefile(V, e, function(){ ouvrirCarton(V, carton.getAttribute('data-carton')); }); return; }
     /* la bulle du chat (ce qu'il demande) : un toucher dit quoi faire */
@@ -3660,7 +3700,8 @@ function brancher(V){
     if(b && b.classList.contains('at-tient-x')){ lacher(V); return; }
     if(Date.now() - (V.dernierPointeur || 0) < 700 || V.mode !== 'ranger') return;
     if(GUIDE && !guideAutorise(V, t)){ pasMaintenant(V); return; }
-    var fixe = t.closest('[data-at]'), obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), surf = t.closest('[data-surf]');
+    var fixe = t.closest('[data-at]'), obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), surf = t.closest('[data-surf]'), bul = t.closest('.at-bulle-pa');
+    if(bul){ bullePaillasse(V, bul.getAttribute('data-bulle')); return; }
     if(tas){ ouvrirArrivage(V, tas.getAttribute('data-tas')); return; }
     if(carton){ ouvrirCarton(V, carton.getAttribute('data-carton')); return; }
     if(obj && t.closest('.at-bulle')){ var oc = V.parId[obj.getAttribute('data-obj')]; if(oc) bulleChat(V, oc); return; }
@@ -3712,7 +3753,9 @@ function brancher(V){
   /* --- les grands panneaux : la cueillette, le grimoire, le chaudron, les potions, les analyses, le carton du coin --- */
   ecoute(V, V.grim, 'click', function(e){
     var b = e.target.closest('button');
-    if(e.target === V.grim){ fermerGrimoire(V); return; }
+    /* toucher le fond ferme le panneau ; mais pas le « clic » du doigt qui vient de l'ouvrir : au doigt, il arrive juste après,
+       au même endroit, donc sur le fond si le panneau s'est ouvert par une bulle posée hors de la feuille (10 novembre) */
+    if(e.target === V.grim){ if(Date.now() - (V.grimA || 0) > 450) fermerGrimoire(V); return; }
     if(!b) return;
     if(b.classList.contains('at-fermer')){ fermerGrimoire(V); son(V, 'clic'); return; }
     if(b.hasAttribute('data-peindre')){ peindrePanneau(V, b.getAttribute('data-peindre')); return; }
@@ -3771,7 +3814,7 @@ function toucherObjet(V, o, ev){
   if(o.t === 'chat'){ chatToucher(V, o); return; }
   if(c.special === 'chaudron'){ ouvrirChaudron(V); return; }
   if(c.special === 'grimoire'){ ouvrirLivre(V); return; }
-  if(c.special === 'analyses'){ ouvrirAnalyses(V); return; }
+  if(c.special === 'analyses'){ bullesPaillasse(V, o); return; }
   if(c.cases){ ouvrir(V, o); return; }
   if(o.t === 'lampe'){ o.on = o.on === 0 ? 1 : 0; redessiner(V, o); son(V, 'clic'); changer(V); majLumiere(V); rebond(d); return; }
   /* les affaires du chat : d'abord leur action (remplir la gamelle) ; le tabouret renversé se relève */
@@ -3784,9 +3827,9 @@ function toucherObjet(V, o, ev){
 }
 function rebond(d){ if(d) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + d._s * 1.08 + ',' + d._s * 0.92 + ')', offset:0.35}, {transform:'scale(' + d._s + ')'}], {duration:320, easing:'ease-out'}); }
 /* Le style suivant (forme et couleur) d'un objet ; un petit « pouf » d'étoiles */
-function restyler(V, o){
+function restyler(V, o, st){
   var c = catDe(o), d = V.elO[o.id];
-  o.st = ((o.st || 0) + 1) % nStyles(c);
+  o.st = st === undefined ? ((o.st || 0) + 1) % nStyles(c) : st;
   o.neuf = 0;
   redessiner(V, o);
   if(d) anim(d, [{transform:'scale(' + d._s + ')', filter:'brightness(1.6)'}, {transform:'scale(' + d._s * 1.12 + ',' + d._s * 0.9 + ')', filter:'brightness(1.25)', offset:0.35}, {transform:'scale(' + d._s + ')', filter:'none'}], {duration:360, easing:'ease-out'});
@@ -3804,6 +3847,52 @@ function etincelles(V, o){
   V.calque.appendChild(e);
   apres(V, 700, function(){ e.remove(); });
 }
+/* ---------- La paillasse : trois bulles (Romain, 10 novembre, 15 h 36) ----------
+   On touche la paillasse : on n'entre pas tout de suite. Trois petites bulles se posent au-dessus d'elle, comme celles de la carte
+   (même rebond, même petit bruit) : « 🔬 Analyser » (jaune : c'est elle qui lance), « Forme » et « 🎨 Couleur », qui changent
+   la table tout de suite, une forme ou une couleur à la fois. On touche ailleurs : elles s'en vont. */
+function fermerBullesPa(V){
+  var b = V.calque && V.calque.querySelector('.at-bulles-pa');
+  if(b) b.remove();
+  if(V.bullesT){ clearTimeout(V.bullesT); V.bullesT = 0; }
+  if(!V.bullesPa) return;
+  V.bullesPa = null;
+  if(GUIDE && GUIDE.cible === 'paillasse') guidePlacer(V);
+}
+function placerBullesPa(V){
+  var b = V.calque && V.calque.querySelector('.at-bulles-pa'), F = V.bullesPa && cadreObjet(V, V.bullesPa);
+  if(!b || !F) return;
+  b.style.left = pX(V, F.x); b.style.top = pY(V, F.y - F.h * 0.86); b.style.marginLeft = '0px'; b.style.marginTop = '0px';
+  /* jamais coupées par le bord de la pièce : sur un téléphone couché, la paillasse touche le haut de l'écran, les bulles se posent alors sur elle */
+  var r = b.getBoundingClientRect(), R0 = (V.piece || V.root).getBoundingClientRect(), dx = 0, dy = 0;
+  if(r.left < R0.left + 6) dx = R0.left + 6 - r.left; else if(r.right > R0.right - 6) dx = R0.right - 6 - r.right;
+  if(r.top < R0.top + 6) dy = R0.top + 6 - r.top;
+  if(dx) b.style.marginLeft = dx.toFixed(1) + 'px';
+  if(dy) b.style.marginTop = dy.toFixed(1) + 'px';
+}
+function veilleBullesPa(V){ if(V.bullesT) clearTimeout(V.bullesT); V.bullesT = apres(V, 9000, function(){ V.bullesT = 0; if(!(GUIDE && GUIDE.cible === 'paillasse')) fermerBullesPa(V); }); }
+function bullesPaillasse(V, o){
+  if(V.bullesPa){ fermerBullesPa(V); son(V, 'clic'); return; }
+  var b = document.createElement('div');
+  b.className = 'at-bulles-pa';
+  b.innerHTML = '<button type="button" class="at-bulle-pa at-bulle-go" data-bulle="aller" style="--i:0"><span aria-hidden="true">🔬</span>Analyser</button>' +
+    '<button type="button" class="at-bulle-pa" data-bulle="forme" style="--i:1" aria-label="Changer la forme"><svg viewBox="0 0 24 18" aria-hidden="true"><path d="M2,4 H22 V8 H2 Z M5,8 V16 M19,8 V16 M9,8 V11 H15 V8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>Forme</button>' +
+    '<button type="button" class="at-bulle-pa" data-bulle="couleur" style="--i:2" aria-label="Changer la couleur"><span aria-hidden="true">🎨</span>Couleur</button>';
+  V.calque.appendChild(b); V.bullesPa = o.id;
+  placerBullesPa(V); veilleBullesPa(V);
+  try{ if(window.Brume && Brume.son) Brume.son('pastilles', 3); else son(V, 'clic'); }catch(e){}
+  rebond(V.elO[o.id]);
+  /* (le tutoriel : son rond passe de la paillasse à la bulle jaune, une fois qu'elle a fini de rebondir) */
+  if(GUIDE && GUIDE.cible === 'paillasse'){ guidePlacer(V); apres(V, 620, function(){ if(V.bullesPa) guidePlacer(V); }); }
+}
+function bullePaillasse(V, quoi){
+  var o = V.parId[V.bullesPa || 'pa'];
+  if(!o) return;
+  if(quoi === 'aller'){ fermerBullesPa(V); ouvrirAnalyses(V); return; }
+  var nf = nfDe(catDe(o)), fo = formeDe(o), th = themeDe(o);
+  restyler(V, o, quoi === 'forme' ? styleAvec(nf, (fo + 1) % nf, th) : styleAvec(nf, fo, (th + 1) % NT));
+  placerBullesPa(V); veilleBullesPa(V);
+}
 /* Toucher un mur ou le plancher : un autre motif, une autre couleur */
 function restylerSurface(V, cle){
   if(!DECO_NF[cle] || V.mode !== 'ranger') return;
@@ -3813,7 +3902,8 @@ function restylerSurface(V, cle){
   changer(V);
 }
 function majFond(V){ V.fondEl.innerHTML = svgFond(V) + fondAnime(V); }
-/* 🎨 dans un panneau : le lutrin, la paillasse ou le chaudron change de style (et la petite image du panneau aussi) */
+/* 🎨 dans un panneau : le lutrin ou le chaudron change de style (et la petite image du panneau aussi).
+   (La paillasse n'a plus de 🎨 dans son panneau : sa forme et sa couleur se changent par ses bulles, bullesPaillasse.) */
 function peindrePanneau(V, cle){
   if(V.parId[cle]) restyler(V, V.parId[cle]);
   var im = V.grim.querySelector('.at-f-apercu');
@@ -4519,6 +4609,7 @@ function ouvrirCalque(V, cls, html){
   V.grim.className = 'at-grim ' + cls;
   V.grim.innerHTML = html;
   V.grim.hidden = false;
+  V.grimA = Date.now();       /* (l'heure d'ouverture : voir le clic sur le fond, dans brancher) */
   majTient(V);
   anim(V.grim.firstChild, [{transform:'translateY(30px) scale(.94)', opacity:0}, {transform:'none', opacity:1}], {duration:300, easing:'cubic-bezier(.3,1.3,.5,1)'});
 }
@@ -4694,7 +4785,8 @@ function dessinerPotions(V){
 
 /* ---------- La table d'analyse : les objets reçus ---------- */
 function ouvrirAnalyses(V){
-  ouvrirCalque(V, 'at-cal-analyses', feuille('at-f-analyses', '<span class="at-f-ic">🔍</span><h3>La paillasse d\'analyse</h3>' + boutonPeindre(V, 'pa'), corpsAnalyses(V)));
+  fermerBullesPa(V);
+  ouvrirCalque(V, 'at-cal-analyses', feuille('at-f-analyses', '<span class="at-f-ic">🔍</span><h3>La paillasse d\'analyse</h3><span class="at-f-apercu" aria-hidden="true">' + apercuPanneau(V, 'pa') + '</span>', corpsAnalyses(V)));
   son(V, 'clic');
 }
 function corpsAnalyses(V){
@@ -6379,7 +6471,7 @@ function guideElements(V){
   else if(c === 'rangement'){ var m = meubleGuide(V); if(m && V.elO[m.id]) l = [V.elO[m.id]]; }
   else if(c === 'grimoire'){ if(V.elO.lu && !grimoireOuvert(V)) l = [V.elO.lu]; }   /* (le grimoire ouvert : le rond est sur ses « ? », pas sur le lutrin caché dessous) */
   else if(c === 'chaudron'){ if(V.elO.ch) l = [V.elO.ch]; }
-  else if(c === 'paillasse'){ if(V.elO.pa) l = [V.elO.pa]; }
+  else if(c === 'paillasse'){ var bg = V.bullesPa && V.calque && V.calque.querySelector('.at-bulle-go'); if(bg) l = [bg]; else if(V.elO.pa) l = [V.elO.pa]; }   /* (les bulles ouvertes : le rond est sur « Analyser ») */
   else if(c === 'carton'){ var ks = cartonsIci(V); if(!guideReserve(V) && ks.length && V.elK[ks[0].id]) l = [V.elK[ks[0].id]]; }
   else if(c === 'potion') l = (V.elFl || []).slice();
   return l.filter(Boolean);
@@ -6390,6 +6482,7 @@ function guideAutorise(V, t){
   if(t.closest('.at-repere') || t.closest('.at-tient')) return true;
   var c = GUIDE.cible, els = guideElements(V);
   if(els.some(function(e){ return e.contains(t); })) return true;
+  if(c === 'paillasse' && V.bullesPa && V.elO.pa && V.elO.pa.contains(t)) return true;   /* (retoucher la paillasse referme ses bulles) */
   if(c === 'rangement'){                   /* ranger : la cueillette (on la prend) et tous les rangements (on la pose) */
     if(t.closest('.at-tas')) return true;
     var ob = t.closest('.at-o'), o = ob && V.parId[ob.getAttribute('data-obj')];
