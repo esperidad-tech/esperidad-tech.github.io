@@ -2435,7 +2435,7 @@ Ce qui est déjà décidé et s'applique : 5 talents aux niveaux 2, 4, 6, 8 et 1
 - **Vérifié** : `rapide.sh` (verif.js « Tout est bon », tuto.py sans échec : la partie complète de l'enquête 1 à 4 tablettes passe par la paillasse et sa bulle), `partie2.py`, codes des enquêtes 1 à 3 identiques, et `jeu/tools/bulles-paillasse.py` (les trois bulles au doigt sur un ordinateur, un téléphone couché, un téléphone debout). `jeu/tools/photos-paillasse.py` photographie la paillasse dans le style qu'on veut.
 - **Proposé, pas fait** : les mêmes bulles « Forme » et « Couleur » sur le chaudron et le lutrin (ils ont encore leur 🎨 qui change les deux d'un coup).
 
-### 12.52 Enquête 1 : le Sage ouvre la forêt, lui seul (Romain, 10 novembre, 14 h 47 → 14 h 56) — construit et testé, en attente de mise en ligne
+### 12.52 Enquête 1 : le Sage ouvre la forêt, lui seul (Romain, 10 novembre, 14 h 47 → 14 h 56) — en ligne le 10 novembre à 17 h 52 (version 20261110-1652)
 
 **Le principe de Romain : les quatre doivent être utiles.** « S'il n'y a que le Barde et le Pisteur qui sont utiles, c'est nul. » Dans le tutoriel, on ne cherche que deux choses, et chacun a sa part :
 - le **QUI** est au **Barde** (les habitants) ;
@@ -2461,7 +2461,7 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **Laissé de côté (proposé à Romain, pas validé)** : le OÙ est presque donné par le texte du soir (« va au bout du chemin du Vieux Chêne », et « une lueur dorée tout au fond » sous les racines) ; au balcon, le Sage pourrait chercher dans « Les habitants » qui laisse de la poussière noire (Tim, plein de suie), mais c'est un indice de plus sur le QUI.
 
-### 12.53 Enquête 1 : le massif fait exprès, des poils à la fenêtre, le grimoire d'abord, plus de mini-jeu d'analyse, les icônes des bonus (Romain, 10 novembre, 16 h 56) — construit et testé, en attente de mise en ligne
+### 12.53 Enquête 1 : le massif fait exprès, des poils à la fenêtre, le grimoire d'abord, plus de mini-jeu d'analyse, les icônes des bonus (Romain, 10 novembre, 16 h 56) — en ligne le 10 novembre à 17 h 52 (version 20261110-1652)
 
 **Un principe pour la suite (Romain)** : « on va créer des mini-jeux exprès pour chaque zone à chaque fois ». On garde le principe d'un mini-jeu, mais on l'habille pour le lieu de l'histoire, et il doit mener quelque part de logique.
 
@@ -2477,7 +2477,14 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **L'Alchimiste, dans le bon ordre** : 1) l'atelier ; 2) **le grimoire** : elle y cherche l'encre révélatrice, le Sage lui dicte la recette secrète (nouvelle condition de mission `dictee`, mission.js) ; 3) **la cueillette** des 3 baies, parce que la recette les demande (le grimoire le dit, en racontant : « La recette est complète ! Mais ton atelier n'a pas tout : il te manque 3 baies de sureau. En route pour la cueillette ! ») ; 4) **l'encre au chaudron**, puis au Sage. Le tutoriel suit cet ordre (tuto.js : étape `atelier:'grimoire'` ; à l'étape de l'encre, plus de détour par le grimoire si la recette est déjà dictée). Les textes des étapes sont réécrits comme une histoire racontée.
 
-**L'Alchimiste n'a plus de mini-jeu pour ses analyses** (Romain : « tout ce qui est analyse, ce sera directement dans son labo ») : les poils de la fenêtre et la touffe de la forêt se règlent sur la table d'analyse, le résultat tombe tout de suite. Le chaudron reste (c'est une potion, pas une analyse). **À confirmer avec Romain** : est-ce aussi pour les enquêtes 2 et suivantes (l'eau de la rivière, le bon mélange de l'alambic…), et voulait-il aussi enlever le chaudron ?
+**L'Alchimiste n'a plus de mini-jeu pour ses analyses** (Romain : « tout ce qui est analyse, ce sera directement dans son labo ») : les poils de la fenêtre et la touffe de la forêt se règlent sur la table d'analyse, le résultat tombe tout de suite. Le chaudron reste (c'est une potion, pas une analyse).
+
+**Décidé par Romain (10 novembre, 17 h 50) : plus aucun mini-jeu d'analyse, dans aucune enquête.** Ce qu'il prépare dans une autre conversation : un **laboratoire d'analyse**. Au lieu d'un mini-jeu, l'Alchimiste ira dans ce labo, résoudra l'analyse sur place, et le code s'affichera dans le labo. **Le chaudron reste pour l'instant** (« après, on verra »). En attendant le labo :
+- enquête 1 : les deux analyses donnent leur résultat tout de suite (ci-dessus) ;
+- **enquête 2 (fait et testé à 17 h 55, pas encore en ligne)** : les quatre analyses n'ont plus de mini-jeu (l'eau de la rivière, l'eau du lavoir, le colorant de l'alambic, la poudre du pot noir) ; leurs textes commencent par « Sous ta loupe » ; le colorant ne parle plus de « refaire la couleur » ; plus d'indice partiel ni de « raté » pour elles (elles ne se ratent plus) ; `tools/partie2.py` vérifie que la poudre donne son résultat sans écran d'explication ;
+- enquête 3 (pas construite) : ses analyses (le fil vert au bon mélange, la poussière aux bulles, l'écriture de la lettre…) passeront par le labo, sans mini-jeu : à reprendre dans sa conception (`jeu/enquete3/`) ;
+- les missions bonus de l'Alchimiste restent des mini-jeux (les fournées, les brioches) : ce ne sont pas des analyses ;
+- à revoir avec la boutique : les talents et objets qui facilitaient les mini-jeux d'analyse (la Loupe dorée, Savante…) ne servent plus à ça.
 
 **Les missions bonus ont une icône sur la carte, pour tous les rôles et dans toutes les enquêtes** (Romain : « le Sage ne voit rien sur la carte, il faut qu'il clique au pif ») : un rond d'or vif qui flotte, avec l'icône de son mini-jeu (🏹 tir, 🫧 bulles, 🎨 mélange, 🧩 runes, 🎵 chanson), `M.icBonus` (moteur-roles.js). Dans l'enquête 1, elle apparaît quand le tutoriel propose la mission (pendant une attente) ; dès l'enquête 2, tant que la mission est possible à ce moment. Elle ne se cache plus sous le « ✨ Nouveau ! » d'un lieu qui vient d'apparaître (`geoLieux`, carte.js : c'est ce qui cachait le bonus du Sage à la mairie). Ça revient sur le § 12.19 (plus de marqueurs ✨ des bonus dès l'enquête 2).
 
