@@ -2512,7 +2512,9 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **Vérifié** : `verif.js` « Tout est bon », `tools/tuto.py` (partie complète à 4 tablettes, sans échec, l'Alchimiste fait bien grimoire → baies → chaudron), `partie2.py` sans échec, codes E1/E2/E3 identiques, le massif joué par un robot (`tools/massif.py`, 4 parties gagnées, la gouttière et le potager bien posés), les icônes des bonus de l'enquête 2 sur la carte du Sage (🧩 mairie), du Pisteur (🏹 clocher) et de l'Alchimiste (🎨 boulangerie).
 
-### 12.54 Le labo d'analyses dans le jeu : l'enquête 1 (Romain, 10 novembre, 17 h 18) — construit
+### 12.54 Le labo d'analyses dans le jeu : l'enquête 1 (Romain, 10 novembre, 17 h 18) — en ligne
+
+**En ligne depuis le 10 novembre à 19 h** (commit f20a6f0 du site, **version 20261110-1756**), fusionné avec les changements de l'autre conversation (§12.53) et avec la mise à jour du donjon partie à 18 h 56. Tous les essais ont été refaits sur le jeu fusionné avant l'envoi.
 
 **Ce que Romain a demandé (17 h 18).** « Oui, tu peux mettre en ligne. » « Les bulles forme et couleur, je les veux aussi sur le chaudron et le lutrin. » « Il faut brancher ce nouveau labo dans les enquêtes. » « Il me faut toujours le microscope. Il faut que les analyses soient intéressantes. Tu essaies de chercher par rapport à ce qui existe dans la réalité : il faut vraiment que ce soit réaliste et intéressant. » « Le cône de lumière, je veux qu'il parte du haut, de la lentille en haut du microscope. » « Tu crées tous les éléments de l'enquête 1, et tu fais des analyses intéressantes pour apprendre des choses, et intéressantes pour l'enquête. »
 
