@@ -422,17 +422,16 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 /* (mémoire, iPhone) le halo sur son propre calque : la carte graphique étire la petite image, sans repeindre un grand calque */
 .crit-halo.cuit{will-change:transform}
 .crit-texte{position:absolute;white-space:nowrap;z-index:5}
+/* (10 novembre : le reflet qui glissait sur les lettres est retiré — il faisait repeindre ce gros texte à chaque image,
+   pile pendant l'explosion ; le texte ne fait plus que trembler, ce que la carte graphique fait seule) */
 .crit-texte .crit-ombre, .crit-texte .crit-or{animation:crit-tremble .07s linear infinite}
-.crit-texte.differe .crit-or{animation-delay:calc(var(--crit-delai) + .18s),0s}
 .crit-texte.differe .crit-etoile{animation-delay:calc(var(--crit-delai) + .2s)}
-.crit-texte .crit-or{animation:crit-eclat .9s .18s ease-out forwards,crit-tremble .07s linear infinite}
 .crit-texte b{display:block;font-family:var(--f-titre);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;white-space:nowrap}
 /* l'ombre et le contour : un calque à part, sans filtre (un filtre recalculé à chaque image fait hoqueter le critique) */
 .crit-ombre{position:relative;color:#24182e;-webkit-text-stroke:9px #24182e;text-shadow:0 7px 0 #7a4a10,0 9px 0 #24182e}
-.crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:260% 100%;background-position:100% 0;
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:crit-eclat .9s .18s ease-out forwards}
+.crit-or{position:absolute;left:0;top:0;color:#ffd23f;background:linear-gradient(105deg,#ffb020 0%,#ffe36a 30%,#ffffff 44%,#ffe36a 52%,#ffb020 100%);background-size:100% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .crit-halo{position:absolute;left:50%;top:50%;width:540px;height:200px;margin:-100px 0 0 -270px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,60,.55),rgba(255,200,60,0))}
-@keyframes crit-eclat{0%{background-position:100% 0}100%{background-position:0 0}}
 @keyframes crit-tremble{0%{transform:translate(0,0) rotate(-1deg)}25%{transform:translate(2px,-2px) rotate(.5deg)}50%{transform:translate(-2px,1px) rotate(-.5deg)}75%{transform:translate(1px,2px) rotate(1deg)}}
 .crit-etoile{position:absolute;right:-8px;top:-14px;width:60px;height:60px;opacity:0;animation:etoile .6s .2s ease-out forwards;
   background:radial-gradient(closest-side,#fff,rgba(255,255,255,0) 70%);clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%)}
@@ -640,7 +639,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 </div>
 <script>
 /* les niveaux des sons (essai/sons/niveaux.json) */
-window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.529,"bossB":1.313,"bossC":1.653,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== essai/sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -3509,46 +3508,123 @@ M.reposB = function(A, P){
   return I;
 };
 
-/* =================== BOURBE, LE BOSS (lourd, un peu drôle, et gluant) =================== */
-/* A — La marche du crapaud : un tuba qui fait « oum-pa », des tambours, un basson qui descend en se dandinant */
-M.bossA = function(A, P){
-  var I = Instance(A, P), b = 60 / 92, proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.7, g:.85}), loin = A.bus(P, {grotte:1, g:.7});
-  var racines = [38, 34, 31, 33], accords = [[50, 53, 57], [46, 50, 53], [43, 46, 50], [45, 49, 52]];
-  I.chaque(.3, 4 * b, function(t, n){
-    var r = racines[n % 4], a = accords[n % 4];
-    tuba(A, t, m(r), b * .9, .12, proche); tuba(A, t + 2 * b, m(r + 7), b * .9, .1, proche);                          /* oum… */
-    [1, 3].forEach(function(x){ a.forEach(function(nn){ A.ton(t + x * b, {type:'square', f:m(nn), env:A.perc(.008, .14), g:.016, lp:1100}, proche); }); });   /* …pa */
-    A.tambour(t, {f:80, d:.7, g:.32}, tamb); A.tambour(t + 2 * b, {f:90, d:.6, g:.22}, tamb);
-    [1, 3].forEach(function(x){ A.bruit(t + x * b, {coul:'rose', bp:1400, bq:.8, env:A.perc(.002, .07), g:.12}, tamb); });
-    if(n % 2 === 1) bloup(A, t + 3.5 * b, .06, proche);                                                               /* le marais qui fait « bloup » */
+/* =================== LES GRANDS COMBATS : de longues musiques ===================
+   Romain, 10 novembre : « la musique est très redondante, la boucle est trop petite ». Décidé avec lui : dans les salles
+   normales, plus de musique de combat (seulement l'ambiance de la zone) ; les trois grands combats (le Gardien, le Roi des
+   rats, Bourbe) gardent une vraie musique, écrite en PARTIES de 16 temps qui s'enchaînent — on ajoute, on enlève, on
+   change l'air — pour ne revenir au début qu'après 75 à 115 secondes. Les longueurs sont dans BOUCLE (essai/src/son.js). */
+function partie(n, pas, nb){ return Math.floor(n / pas) % nb; }
+
+/* LE GARDIEN DE ROUILLE (l'atelier) — sur le battement de cœur et la basse de « Combat A » (ré mineur, 66 à la minute) ;
+   huit parties : on s'installe, la basse entière, l'octave, un autre dessin, le calme, puis ça repart plus haut */
+M.gardienA = function(A, P){
+  var I = Instance(A, P), b = 60 / 66;
+  var proche = A.bus(P, {grotte:.25}), coeur = A.bus(P, {grotte:.2}), loin = A.bus(P, {grotte:1, g:.7});
+  bourdon(I, [m(38)], {dest:proche, lp:260, g:.05, lfo:.05, lfoAmp:60, a:2});
+  tremolo(I, [m(50), m(57), m(63)], {dest:loin, g:.02, vit:6.5, lp:1500, houle:1 / (16 * b)});
+  I.chaque(.5, b, function(t, n){                                                                                      /* le cœur : toujours là, plus léger dans la partie calme */
+    var k = partie(n, 16, 8) === 4 ? .6 : 1;
+    A.choc(t, {f:90, f2:50, d:.17, g:.4 * k, sat:3, lp:600, bruit:.25, corpsF:220, corps:.8}, coeur);
+    A.choc(t + .2, {f:82, f2:48, d:.14, g:.25 * k, sat:3, lp:600, bruit:.25, corpsF:220, corps:.8}, coeur);
   });
-  var air = [[0, 62], [.5, 61], [1, 60], [2, 57], [3, 58], [3.5, 57], [4, 53], [6, 50], [7, 52], [7.5, 53]];
-  I.chaque(.3 + 16 * b, 16 * b, function(t, n){ if(n % 2 === 0) air.forEach(function(p){ basson(A, t + p[0] * b, m(p[1] - 12), b * .7, .035, loin); }); });
+  var motifs = [[0, 0, 0, 1, 0, 0, 3, 1], [0, 0, 3, 1, 0, 0, 5, 3], [0, -2, 0, 1, 0, 3, 1, 0]], dessin = [0, 0, 0, 1, 0, 2, 1, 0], trans = [0, -4, -2, 0, 0, 3, -2, 0];
+  I.chaque(.5, b / 2, function(t, n){                                                                                  /* la basse : trois dessins, une hauteur par partie */
+    var s = partie(n, 32, 8), i = n % 8, fort = i === 0;
+    if(s === 0 && i % 2) return;                                                                                       /* partie 0 : une note sur deux */
+    if(s === 4 && !fort && i !== 4) return;                                                                            /* partie 4 : presque rien */
+    var note = 38 + trans[s] + motifs[dessin[s]][i];
+    A.ton(t, {type:'sawtooth', f:m(note), env:A.perc(.005, .16), g:fort ? .09 : .06, filtres:[{type:'lowpass', f:300, pts:[[.02, 1300], [.15, 300]], q:3}]}, proche);
+    if(s === 2 || s === 3 || s >= 6) A.ton(t, {type:'square', f:m(note + 12), env:A.perc(.005, .1), g:fort ? .02 : .012, lp:900}, proche);
+  });
+  I.chaque(.5, 4 * b, function(t, n){                                                                                  /* son enclume, très loin et très grave (parties 3 à 7) */
+    var s = partie(n, 4, 8);
+    if(s >= 3) A.modes(t, 196, [[1, 1, .9], [2.76, .35, .5], [5.4, .12, .25]], {g:s === 4 ? .035 : .022, a:.004}, loin);
+  });
   return I;
 };
-/* B — Le bassin qui gronde : plus lent, de gros tambours, un violoncelle qui insiste, des cuivres graves qui gonflent */
+
+/* LE ROI DES RATS (l'ossuaire) — sur les tambours lointains de « Combat B » (do mineur, 84 à la minute) ; huit parties :
+   les tambours seuls, le violoncelle, les pizzicati, un rythme plus serré, le calme, puis d'autres airs */
+M.roiA = function(A, P){
+  var I = Instance(A, P), b = 60 / 84;
+  var proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.9, g:.8}), loin = A.bus(P, {grotte:1, g:.7});
+  bourdon(I, [m(36), m(43)], {dest:proche, lp:240, g:.05, lfo:.04, lfoAmp:60, a:2});
+  var R1 = [[0, 1], [1.5, .6], [2, .8], [4, 1], [5.5, .6], [6, .8], [6.5, .5]], R2 = [[0, 1], [1, .5], [1.5, .6], [2, .8], [3.5, .5], [4, 1], [5.5, .6], [6, .8], [7, .6], [7.5, .45]], R0 = [[0, .9], [4, .5]];
+  var rythmes = [R1, R1, R1, R2, R0, R1, R2, R1];
+  I.chaque(.4, 8 * b, function(t, n){ rythmes[partie(n, 2, 8)].forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .9 ? 80 : 95, d:.7, g:.32 * p[1]}, tamb); }); });
+  var B1 = [48, 48, 44, 43], B2 = [48, 46, 44, 43], B3 = [41, 41, 43, 43], basses = [null, B1, B1, B2, B3, B1, B2, B3];
+  I.chaque(.4, 2 * b, function(t, n){ var l = basses[partie(n, 8, 8)]; if(l) A.archet(t, m(l[n % 4]), 2 * b + .1, {a:.18, r:.25, g:.04}, proche); });
+  var P1 = [60, 67, 63, 67, 60, 67, 62, 67], P2 = [63, 67, 60, 67, 65, 67, 62, 67], P3 = [72, 70, 67, 63, 67, 63, 62, 60], pizz = [null, null, P1, P2, P3, P1, P3, P2];
+  I.chaque(.4, b / 2, function(t, n){
+    var s = partie(n, 32, 8), l = pizz[s];
+    if(!l) return;
+    if(s === 4 ? n % 4 !== 0 : n % 16 >= 12) return;                                                                   /* partie 4 : une note tous les deux temps ; ailleurs : trois mesures jouées, une de silence */
+    A.harpe(t, m(l[n % 8]), {t60:.35, eclat:.6, g:s === 4 ? .1 : .12}, proche);
+  });
+  I.chaque(.4 + 8 * b, 16 * b, function(t, n){                                                                         /* les cordes graves qui gonflent, une partie sur deux */
+    if(partie(n, 1, 8) % 2 === 0) return;
+    [44, 51].forEach(function(nn){ [-5, 5].forEach(function(det){
+      A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2.5, 1], [4, .6], [5.5, 0]], g:.03, filtres:[{type:'lowpass', f:300, pts:[[2.5, 1400], [5.5, 300]], q:1}]}, loin);
+    }); });
+  });
+  return I;
+};
+
+/* =================== BOURBE, LE BOSS (lourd, un peu drôle, et gluant) =================== */
+/* A — La marche du crapaud : un tuba qui fait « oum-pa », des tambours, un basson qui se dandine. Huit parties (≈ 83 s) :
+   le tuba seul, puis les « pa », l'air du basson, un deuxième air, d'autres accords au milieu */
+M.bossA = function(A, P){
+  var I = Instance(A, P), b = 60 / 92, proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.7, g:.85}), loin = A.bus(P, {grotte:1, g:.7});
+  var R = [[38, 34, 31, 33], [38, 36, 33, 34]], AC = [[[50, 53, 57], [46, 50, 53], [43, 46, 50], [45, 49, 52]], [[50, 53, 57], [48, 52, 55], [45, 48, 52], [46, 50, 53]]], suite = [0, 0, 0, 0, 1, 1, 0, 0];
+  I.chaque(.3, 4 * b, function(t, n){
+    var s = partie(n, 4, 8), r = R[suite[s]][n % 4], a = AC[suite[s]][n % 4], plein = s !== 0 && s !== 4;
+    tuba(A, t, m(r), b * .9, .12, proche); tuba(A, t + 2 * b, m(r + 7), b * .9, .1, proche);                          /* oum… */
+    if(plein) [1, 3].forEach(function(x){ a.forEach(function(nn){ A.ton(t + x * b, {type:'square', f:m(nn), env:A.perc(.008, .14), g:.016, lp:1100}, proche); }); });   /* …pa */
+    A.tambour(t, {f:80, d:.7, g:plein ? .32 : .22}, tamb); A.tambour(t + 2 * b, {f:90, d:.6, g:plein ? .22 : .15}, tamb);
+    if(plein) [1, 3].forEach(function(x){ A.bruit(t + x * b, {coul:'rose', bp:1400, bq:.8, env:A.perc(.002, .07), g:.12}, tamb); });
+    if(n % 2 === 1) bloup(A, t + 3.5 * b, .06, proche);                                                               /* le marais qui fait « bloup » */
+  });
+  var AIR1 = [[0, 62], [.5, 61], [1, 60], [2, 57], [3, 58], [3.5, 57], [4, 53], [6, 50], [7, 52], [7.5, 53]], AIR2 = [[0, 57], [1, 58], [2, 60], [3, 62], [4, 60], [5, 58], [6, 57], [7, 53], [8, 55], [10, 57]];
+  I.chaque(.3, 16 * b, function(t, n){
+    var s = partie(n, 1, 8), air = (s === 1 || s === 7) ? AIR1 : (s === 3 || s === 5) ? AIR2 : null;
+    if(air) air.forEach(function(p){ basson(A, t + p[0] * b, m(p[1] - 12), b * .7, .035, loin); });
+  });
+  return I;
+};
+/* B — Le bassin qui gronde : plus lent, de gros tambours, un violoncelle qui insiste, des cuivres graves qui gonflent.
+   Six parties (≈ 76 s) : les tambours seuls, le violoncelle, un rythme plus serré, le calme, une autre ligne, tout ensemble */
 M.bossB = function(A, P){
   var I = Instance(A, P), b = 60 / 76, proche = A.bus(P, {grotte:.35}), tamb = A.bus(P, {grotte:.9, g:.8}), loin = A.bus(P, {grotte:1, g:.7});
   bourdon(I, [m(38)], {dest:proche, lp:240, g:.05, lfo:.05, lfoAmp:60, a:2});
-  var rythme = [[0, 1], [1.5, .6], [2, .9], [3, .5]];
-  I.chaque(.3, 4 * b, function(t){ rythme.forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .8 ? 75 : 90, d:.75, g:.34 * p[1]}, tamb); }); });
-  var cello = [50, 50, 51, 50, 50, 50, 46, 48];                                                                      /* ré, ré, mi bémol, ré… : ça insiste */
-  I.chaque(.3, b, function(t, n){ A.archet(t, m(cello[n % 8]), b * .95, {a:.06, r:.15, g:.04}, proche); });
-  I.chaque(.3 + 8 * b, 16 * b, function(t){ [38, 45].forEach(function(nn){ [-6, 6].forEach(function(det){ A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2, 1], [3.5, .6], [5, 0]], g:.03, filtres:[{type:'lowpass', f:250, pts:[[2, 1300], [5, 250]], q:1.2}]}, loin); }); }); });
+  var R1 = [[0, 1], [1.5, .6], [2, .9], [3, .5]], R2 = [[0, 1], [.5, .5], [1.5, .6], [2, .9], [3, .5], [3.5, .5]], R0 = [[0, .9]], rythmes = [R1, R1, R2, R0, R1, R2];
+  I.chaque(.3, 4 * b, function(t, n){ rythmes[partie(n, 4, 6)].forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .8 ? 75 : 90, d:.75, g:.34 * p[1]}, tamb); }); });
+  var C1 = [50, 50, 51, 50, 50, 50, 46, 48], C2 = [50, 50, 53, 51, 50, 50, 46, 45], C3 = [50, 0, 48, 0, 46, 0, 45, 0], cello = [null, C1, C1, C3, C2, C1];   /* ré, ré, mi bémol, ré… : ça insiste */
+  I.chaque(.3, b, function(t, n){
+    var s = partie(n, 16, 6), l = cello[s]; if(!l || !l[n % 8]) return;
+    A.archet(t, m(l[n % 8]), (s === 3 ? 2 : 1) * b * .95, {a:.06, r:.15, g:.04}, proche);
+  });
+  I.chaque(.3 + 8 * b, 16 * b, function(t, n){
+    var s = partie(n, 1, 6); if(s === 0 || s === 3) return;
+    (s === 4 ? [36, 43] : [38, 45]).forEach(function(nn){ [-6, 6].forEach(function(det){
+      A.ton(t, {type:'sawtooth', f:m(nn), det:det, env:[[0, 0], [2, 1], [3.5, .6], [5, 0]], g:.03, filtres:[{type:'lowpass', f:250, pts:[[2, 1300], [5, 250]], q:1}]}, loin);
+    }); });
+  });
   I.chaque(2, function(){ return h(3, 6); }, function(t){ bloup(A, t, .05, proche); });
   return I;
 };
-/* C — Le marais qui swingue : une basse pincée qui se balance, des « splotch » en guise de claquements de mains, des cuivres graves */
+/* C — Le marais qui swingue : une basse pincée qui se balance, des « splotch » en guise de claquements de mains, des cuivres
+   graves. Huit parties (≈ 77 s) : la basse seule, les splotch, les cuivres, une autre marche, le calme, puis on mélange */
 M.bossC = function(A, P){
   var I = Instance(A, P), b = 60 / 100, proche = A.bus(P, {grotte:.3}), loin = A.bus(P, {grotte:.9, g:.7});
-  var marche = [38, 41, 43, 44, 45, 43, 41, 40, 38, 36, 34, 33, 34, 36, 37, 38];                                       /* une basse qui marche, en se dandinant */
+  var M1 = [38, 41, 43, 44, 45, 43, 41, 40, 38, 36, 34, 33, 34, 36, 37, 38], M2 = [38, 41, 43, 45, 46, 45, 43, 41, 38, 36, 34, 36, 38, 40, 41, 40], marches = [M1, M1, M1, M2, M1, M2, M1, M2];
   I.chaque(.3, b, function(t, n){
-    var sw = n % 2 ? b * .16 : 0;                                                                                    /* le balancement */
-    A.harpe(t + sw, m(marche[n % 16]), {t60:.5, eclat:.3, g:.25, lp:1200}, proche);
-    if(n % 2 === 1){ A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:1500, pts:[[.1, 400]], q:4}], env:A.perc(.003, .12), g:.35}, proche); A.choc(t, {f:150, f2:80, d:.08, g:.12, bruit:0, corps:.5}, proche); }   /* splotch */
-    if(n % 8 === 7) [50, 53, 57].forEach(function(nn){ O.cuivre(A, t + b * .5, m(nn), b * .6, .025, loin); });       /* des cuivres graves */
+    var s = partie(n, 16, 8), sw = n % 2 ? b * .16 : 0;                                                                /* le balancement */
+    if(s === 4 && n % 2) return;                                                                                       /* le calme : une note sur deux, sans splotch */
+    A.harpe(t + sw, m(marches[s][n % 16]), {t60:.5, eclat:.3, g:.25, lp:1200}, proche);
+    if(n % 2 === 1 && s !== 0){ A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:1500, pts:[[.1, 400]], q:4}], env:A.perc(.003, .12), g:.35}, proche); A.choc(t, {f:150, f2:80, d:.08, g:.12, bruit:0, corps:.5}, proche); }   /* splotch */
+    if(n % 8 === 7 && (s === 2 || s === 3 || s >= 5)) (s === 5 || s === 6 ? [48, 52, 55] : [50, 53, 57]).forEach(function(nn){ O.cuivre(A, t + b * .5, m(nn), b * .6, .025, loin); });   /* des cuivres graves */
   });
-  I.chaque(.3, 4 * b, function(t){ A.tambour(t, {f:85, d:.5, g:.25}, proche); });
+  I.chaque(.3, 4 * b, function(t, n){ A.tambour(t, {f:85, d:.5, g:partie(n, 4, 8) === 4 ? .15 : .25}, proche); });
   return I;
 };
 
@@ -7494,31 +7570,75 @@ function bruitage(id, o){
   return r;
 }
 
-/* =================== la musique : exploration (sac, fin), combat + la couleur « le puits » =================== */
-var MUS = {voulu:null, actuel:null};
-function musique(nom){ MUS.voulu = nom || null; appliquerMusique(); }
+/* =================== la musique ===================
+   La salle d'essai : 'explo' (le sac, la fin) et 'combat' (+ la couleur « le puits »).
+   Le donjon complet (Romain, 10 novembre : « la musique est très redondante, la boucle est trop petite ») :
+     'salle:<zone>'   l'ambiance d'une zone : le fond du donjon + la couleur de la zone (puits, canaux, toiles, atelier,
+                      ossuaire) — sur la carte, dans les salles et pendant les combats ordinaires (plus de musique de combat) ;
+     'grand:<nom>'    la longue musique d'un grand combat (gardien, roi, boss) ;
+     'repos'          le feu de camp (sa musique + le feu qui crépite) ;   'fin' : Léo retrouvé.
+   D'une zone à l'autre, ce qui joue déjà (le fond du donjon) n'est pas coupé. */
+var MUS = {voulu:null, actuel:null, combat:false};
+function musique(nom){ MUS.attendue = null; MUS.voulu = nom || null; appliquerMusique(); }
+/* passer à une musique seulement quand elle est fabriquée : en attendant, celle d'avant continue (pas de trou de silence
+   au début d'un grand combat, même sur une vieille tablette qui met du temps à fabriquer une longue musique) */
+function musiqueDesQuePrete(nom){
+  var cles;
+  if(!PRE.possible || !ctx){ musique(nom); return; }
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ musique(nom); return; }
+  MUS.attendue = nom;
+  Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
+}
 function famille(c){ return c.replace(/[A-C]$/, ''); }
+/* la clé d'une musique : son nom s'il n'y en a qu'une (le puits, le fond du donjon), sinon la version choisie */
+function cleMus(f){ return window.MUSIQUES[f] ? f : PRE.cle(f); }
+function clesDe(v){
+  if(!v) return [];
+  if(v === 'combat') return [PRE.cle('combat'), 'puits'];
+  if(v === 'explo') return [PRE.cle('explo')];
+  if(v === 'repos') return [cleMus('repos'), cleMus('feuCamp')];
+  if(v === 'fin') return [cleMus('finDonjon')];
+  var k = v.split(':');
+  if(k[0] === 'salle') return ['donjon', cleMus(k[1])];
+  if(k[0] === 'grand') return [cleMus(k[1])];
+  return [cleMus(v)];
+}
 function appliquerMusique(){
   if(!ctx || !A || !window.MUSIQUES || ctx.state === 'closed') return;
   var v = actif && VOL.musique > 0 ? MUS.voulu : null, cur = MUS.actuel ? MUS.actuel.nom : null;
   if(cur === v) return;
-  var now = ctx.currentTime, avant = MUS.actuel ? MUS.actuel.cles.slice() : [];
-  if(MUS.actuel){ MUS.actuel.arreter(now, 3); MUS.actuel = null; }
-  var cles = !v ? [] : v === 'combat' ? [PRE.cle('combat'), 'puits'] : [PRE.cle('explo')];
+  var now = ctx.currentTime, ancien = MUS.actuel, avant = ancien ? ancien.cles.slice() : [], cles, garde = {};
+  try{ cles = clesDe(v).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ if(window.console) console.warn('musique', v, e); cles = []; }
+  if(ancien){
+    ancien.fini = true; MUS.actuel = null;
+    ancien.cles.forEach(function(c){ var l = ancien.par[c] || []; if(cles.indexOf(c) >= 0 && l.length) garde[c] = l; else l.forEach(function(j){ j.arreter(now, 3); }); });
+  }
   PRE.changement(avant, cles, v);
   if(!v) return;
-  var M = MUS.actuel = {nom:v, cles:cles, I:[], joueurs:[], fini:false};
-  M.arreter = function(t, f){ M.fini = true; M.I.forEach(function(I){ I.arreter(t, f); }); M.joueurs.forEach(function(j){ j.arreter(t, f); }); };
+  var M = MUS.actuel = {nom:v, cles:cles, par:{}, fini:false};
+  M.arreter = function(t, f){ M.fini = true; Object.keys(M.par).forEach(function(c){ M.par[c].forEach(function(j){ j.arreter(t, f); }); }); };
   cles.forEach(function(c){
-    if(!PRE.possible){ M.I.push(musiqueEnDirect(c, now)); return; }
+    if(garde[c]){ M.par[c] = garde[c]; return; }                       /* elle joue déjà : on ne la coupe pas */
+    var l = M.par[c] = [];
+    if(!PRE.possible){ l.push(musiqueEnDirect(c, now)); return; }
     var b = PRE.mus[famille(c)];
-    if(b && b.cle === c) M.joueurs.push(jouerBoucle(b));            /* déjà fabriquée : elle part tout de suite */
-    else PRE.demander(c, true).then(function(){                       /* sinon on attend la sienne (quelques secondes) */
-      if(M.fini || MUS.actuel !== M) return;
+    if(b && b.cle === c) l.push(jouerBoucle(b));                       /* déjà fabriquée : elle part tout de suite */
+    else PRE.demander(c, true).then(function(){                        /* sinon on attend la sienne (quelques secondes) */
+      if(MUS.actuel !== M && !(MUS.actuel && MUS.actuel.par[c] === l)) return;
       var b2 = PRE.mus[famille(c)];
-      if(b2 && b2.cle === c) M.joueurs.push(jouerBoucle(b2)); else M.I.push(musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
+      l.push(b2 && b2.cle === c ? jouerBoucle(b2) : musiqueEnDirect(c, ctx.currentTime));   /* raté : en direct, comme avant */
     });
   });
+}
+/* le combat commence ou finit : les bruitages lourds (l'arc, le critique, la victoire, la fuite) sont fabriqués pour ce
+   combat, puis libérés. (Dans la salle d'essai, c'est la musique 'combat' qui le dit.) */
+function enCombat(on){
+  on = !!on;
+  if(MUS.combat === on) return;
+  MUS.combat = on;
+  if(!PRE.possible) return;
+  if(on) setTimeout(function(){ if(MUS.combat) PRE.demander('bruitages'); }, 2500);
+  else setTimeout(function(){ if(MUS.combat) return; PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages; }, 9000);
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
 function musiqueEnDirect(c, now){
@@ -7542,8 +7662,8 @@ function jouerBoucle(b){
 }
 function programme(){
   if(!ctx || !MUS.actuel) return;
-  var j = ctx.currentTime + 1.2;
-  MUS.actuel.I.forEach(function(I){ I.pas(j); });
+  var j = ctx.currentTime + 1.2, M = MUS.actuel;
+  Object.keys(M.par).forEach(function(c){ M.par[c].forEach(function(I){ if(I.pas) I.pas(j); }); });
 }
 
 /* =================== le pré-calcul : fabriquer à l'avance, hors ligne, par petits morceaux ===================
@@ -7560,7 +7680,12 @@ var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{},
 var SR_MUS = 16000, SR_SFX = 32000;
 /* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
    n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
-var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:16 * 60 / 84, C:1.5, lin:true}, puits:{L:12}};
+var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 * 60 / 66, C:1.5, lin:true}, combatB:{L:16 * 60 / 84, C:1.5, lin:true}, puits:{L:12},
+  /* le donjon complet : des boucles longues (48 à 116 s), pour qu'on n'entende pas la musique « tourner » */
+  donjon:{L:56}, toiles:{L:48}, atelier:{L:48}, canauxA:{L:60}, canauxB:{L:60}, ossuaireA:{L:60}, ossuaireB:{L:60},
+  reposA:{L:64}, reposB:{L:70.4}, feuCampA:{L:40}, feuCampB:{L:40}, finDonjonA:{L:64}, finDonjonB:{L:64},
+  gardienA:{L:128 * 60 / 66, C:1.5, lin:true}, roiA:{L:128 * 60 / 84, C:1.5, lin:true},
+  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
 var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
@@ -7573,25 +7698,39 @@ PRE.cle = function(fam){
 };
 /* quand la musique change : la musique qui s'arrête libère sa boucle et prépare sa prochaine version ;
    en entrant en combat, on fabrique les bruitages lourds ; en sortant, on les libère */
+/* les musiques qu'on garde prêtes même quand elles ne jouent pas. La salle d'essai : l'exploration, le combat, le puits.
+   Le donjon complet : seulement son fond commun ; les autres sont libérées en sortant, et refabriquées à la demande. */
+function gardees(){ return window.DJ_MUSIQUES_GARDEES || ['explo', 'combat', 'puits']; }
 PRE.changement = function(avant, apres, nom){
   if(!PRE.possible) return;
   var fams = apres.map(famille);
   avant.map(famille).forEach(function(f){
-    if(fams.indexOf(f) >= 0 || f === 'puits' || !CHOIX[f] || CHOIX[f].length < 2) return;
-    setTimeout(function(){                                             /* après le fondu de sortie */
+    if(fams.indexOf(f) >= 0) return;
+    var plusieurs = CHOIX[f] && CHOIX[f].length >= 2, garder = gardees().indexOf(f) >= 0;
+    if(!plusieurs && garder) return;                                   /* une seule version, et on la rejoue souvent : on la garde */
+    setTimeout(function(){                                             /* (après le fondu de sortie) */
       if(MUS.actuel && MUS.actuel.cles.map(famille).indexOf(f) >= 0) return;
-      var ancienne = PRE.mus[f] && PRE.mus[f].cle.slice(-1), l = CHOIX[f].filter(function(x){ return x !== ancienne; });
-      delete PRE.mus[f];
-      PRE.prochain[f] = tire(l.length ? l : CHOIX[f]);
-      PRE.demander(f + PRE.prochain[f]);
+      var ancienne = PRE.mus[f] && PRE.mus[f].cle.slice(-1);
+      delete PRE.mus[f];                                               /* sa boucle est libérée */
+      if(!plusieurs) return;
+      var l = CHOIX[f].filter(function(x){ return x !== ancienne; });
+      PRE.prochain[f] = tire(l.length ? l : CHOIX[f]);                 /* la prochaine version, tirée au hasard… */
+      if(garder) PRE.demander(f + PRE.prochain[f]);                    /* … et fabriquée tout de suite, pour la fois suivante */
     }, 4000);
   });
-  if(nom === 'combat') setTimeout(function(){ if(MUS.voulu === 'combat') PRE.demander('bruitages'); }, 2500);
-  else if(avant.length && famille(avant[0]) === 'combat') setTimeout(function(){
-    if(MUS.voulu === 'combat') return;
-    PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages;
-  }, 9000);
+  /* la salle d'essai : la musique 'combat' dit qu'on est en combat */
+  if(nom === 'combat') enCombat(true);
+  else if(avant.length && famille(avant[0]) === 'combat') enCombat(false);
 };
+/* fabriquer une musique à l'avance, sans la jouer (le donjon : la longue musique d'un grand combat, quand on s'en approche).
+   Ce qui était prêt et ne joue pas est libéré : jamais plus d'une musique « d'avance » en mémoire. */
+function preparer(nom){
+  if(!PRE.possible || !window.MUSIQUES) return;
+  var cles; try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ return; }
+  var fams = cles.map(famille), joue = MUS.actuel ? MUS.actuel.cles.map(famille) : [];
+  Object.keys(PRE.mus).forEach(function(f){ if(fams.indexOf(f) < 0 && joue.indexOf(f) < 0 && gardees().indexOf(f) < 0) delete PRE.mus[f]; });
+  cles.forEach(function(c){ PRE.demander(c); });
+}
 function chrono(fn, nom){ var d = performance.now(); try{ return fn(); } finally { var ms = performance.now() - d; PRE.pireTache = Math.max(PRE.pireTache, ms); if(nom) PRE.taches[nom] = Math.max(PRE.taches[nom] || 0, Math.round(ms)); } }
 function rendre(off){
   return new Promise(function(ok, ko){
@@ -7601,7 +7740,7 @@ function rendre(off){
 }
 /* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
 function rendreMusique(cle){
-  var B = BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  var B = (window.DJ_BOUCLES && window.DJ_BOUCLES[cle]) || BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
   var off = new OAC(1, Math.ceil(sr * duree), sr), Ao, I;
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus'));
@@ -7661,7 +7800,7 @@ function rendreBruitages(){
   });
   return l.reduce(function(p, e){
     return p.then(function(){
-      if(MUS.voulu !== 'combat' && PRE.tout_ === undefined) return;      /* le combat est fini : on n'en fabrique pas plus */
+      if(!MUS.combat && PRE.tout_ === undefined) return;                 /* le combat est fini : on n'en fabrique pas plus */
       return rendreUnBruitage(e.id, e.v, e.partie, e.stereo).then(function(y){ PRE.sfx[e.id + e.v + (e.partie ? ':' + e.partie : '')] = {buf:y, pan:e.stereo ? 0 : e.pan}; });
     });
   }, Promise.resolve()).then(function(){ return true; });
@@ -7696,6 +7835,7 @@ function suivant(){
 /* au chargement : la musique d'exploration tirée, celle du combat et le puits (les bruitages lourds : au début du combat) */
 function lancerPrecalcul(){
   if(!PRE.possible) return;
+  if(window.DJ_MUSIQUES_DEPART){ window.DJ_MUSIQUES_DEPART.forEach(function(f){ try{ PRE.demander(cleMus(f)); }catch(e){} }); return; }   /* le donjon complet dit lesquelles */
   PRE.demander(PRE.cle('explo')); PRE.demander(PRE.cle('combat')); PRE.demander('puits');
 }
 if(document.readyState === 'complete') setTimeout(lancerPrecalcul, 600);
@@ -8034,11 +8174,14 @@ S.Son = {
   },
   bruitage:bruitage,
   musique:musique,
+  musiqueDesQuePrete:musiqueDesQuePrete,
+  combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
+  preparer:preparer,
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
-  musiqueEtat:function(){ return {voulu:MUS.voulu, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
-    joue:MUS.actuel ? MUS.actuel.I.length + MUS.actuel.joueurs.length : 0}; },
+  musiqueEtat:function(){ return {voulu:MUS.voulu, attendue:MUS.attendue || null, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
+    joue:MUS.actuel ? Object.keys(MUS.actuel.par).reduce(function(n, c){ return n + MUS.actuel.par[c].length; }, 0) : 0, combat:MUS.combat}; },
   jouer:function(nom){
     if(!pretBruit() || !B[nom]) return;
     try{ B[nom].apply(null, Array.prototype.slice.call(arguments, 1)); }catch(e){ if(window.console) console.warn('son', nom, e); }
@@ -13984,10 +14127,48 @@ DJ.bruit = function(id, o, ancien){
   return r;
 };
 DJ.musique = function(nom){ var S = SALLE.Son; if(S && S.musique) S.musique(nom); };
+/* La musique du donjon (Romain, 10 novembre : « la boucle est trop petite, la musique est très redondante ») :
+   - une ambiance calme par zone (le fond du donjon + la couleur de la zone), sur la carte, dans les salles ET pendant les
+     combats ordinaires : plus de musique de combat qui tourne en rond ;
+   - une longue musique (plus d'une minute avant de reprendre) pour les trois grands combats ;
+   - le feu de camp a la sienne, et la fin aussi.
+   Ces réglages sont lus par le moteur de son (essai/src/son.js). */
+window.DJ_BOUCLES = {puits:{L:48}};                    /* (dans la salle d'essai, la couleur du puits ne dure que 12 s) */
+window.DJ_MUSIQUES_GARDEES = ['donjon'];               /* le fond commun reste prêt ; le reste est libéré en quittant la zone */
+window.DJ_MUSIQUES_DEPART = ['donjon'];                 /* (la couleur de la zone est fabriquée en y entrant : 2 à 3 secondes) */
+var ZONES = {puits:'puits', galerie:'puits', aeration:'puits', rats:'puits', reserve:'puits',
+  canaux:'canaux', egouts:'canaux', givre:'canaux',
+  toiles:'toiles', J:'toiles', eboulis:'toiles', dalles:'toiles',
+  atelier:'atelier', bibliotheque:'atelier', portes:'atelier',
+  crypte:'ossuaire', ossuaire:'ossuaire', bassin:'ossuaire', porte4:'ossuaire', leo:'ossuaire'};
+var GRANDS = {atelier:'gardien', ossuaire:'roi', bassin:'boss'};
+DJ.zone = function(lieu){ return ZONES[lieu] || 'puits'; };
+/* la musique d'un endroit (sur la carte ou dans la salle) ; on prépare d'avance la longue musique du grand combat d'à côté */
+DJ.musiqueLieu = function(lieu){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(lieu === 'camp'){ S.musique('repos'); return; }
+  S.musique('salle:' + DJ.zone(lieu));
+};
+DJ.preparerGrand = function(salle){ var S = SALLE.Son; if(GRANDS[salle] && S && S.preparer) S.preparer('grand:' + GRANDS[salle]); };
+/* un combat commence : la salle garde son ambiance, sauf les trois grands combats */
+DJ.musiqueCombat = function(salle){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(GRANDS[salle]) (S.musiqueDesQuePrete || S.musique)('grand:' + GRANDS[salle]);      /* (l'ambiance continue tant que la longue musique n'est pas prête) */
+  else S.musique('salle:' + DJ.zone(salle));
+  if(S.combat) S.combat(true);
+};
+DJ.musiqueApresCombat = function(salle, sansMusique){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(!sansMusique) S.musique('salle:' + DJ.zone(salle));
+  if(S.combat) S.combat(false);
+};
 /* Les sons que Romain n'a pas encore validés dans l'Atelier jouent leur version A, provisoire (MOTEUR-DONJON.md §5).
    SALLE.CHOIX_SONS est la table des versions validées (son.js) : on ne touche pas à ce qui y est déjà. */
 DJ.PROVISOIRE = {};
-var REFAITS = {pasCouloir:'C'};
+var REFAITS = {pasCouloir:['C', 'D']};
 DJ.sonsProvisoires = function(){
   var C = SALLE.CHOIX_SONS, B = window.BRUITAGES;
   if(!C || !B) return;
@@ -13996,9 +14177,17 @@ DJ.sonsProvisoires = function(){
     if(!m || typeof B[cle] !== 'function') return;
     var id = m[1];
     if(C[id] && C[id].length) return;
-    /* (les pas sur la carte : Romain a refusé les versions A et B le 10 novembre — on joue la C, feutrée, en attendant son choix) */
-    var l = REFAITS[id] && typeof B[id + REFAITS[id]] === 'function' ? REFAITS[id] : 'A';
+    /* (les pas sur la carte : Romain a refusé les versions A et B, puis les premières C et D ; refaites le 10 novembre
+       à 17 h 51 — « plein de petits pas légers », il aime la C et la D : on tire au hasard entre les deux) */
+    if(REFAITS[id]){ var l2 = REFAITS[id].filter(function(v){ return typeof B[id + v] === 'function'; }); if(l2.length){ C[id] = l2; return; } }
+    var l = 'A';
     C[id] = [l]; DJ.PROVISOIRE[id] = 1;
+  });
+  /* les musiques du donjon (les canaux, l'ossuaire, le repos, les trois grands combats, la fin) : la A, en attendant son choix */
+  Object.keys(window.MUSIQUES || {}).forEach(function(cle){
+    var m = /^([A-Za-z_0-9]+?)A$/.exec(cle);
+    if(!m || typeof window.MUSIQUES[cle] !== 'function' || (C[m[1]] && C[m[1]].length)) return;
+    C[m[1]] = ['A']; DJ.PROVISOIRE[m[1]] = 1;
   });
 };
 
@@ -14018,10 +14207,37 @@ DJ.verifierTemoin = function(){
     if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
   }catch(e){}
-  if(DJ.plantages() > 0) SALLE.critLeger = true;
+  if(DJ.plantages() > 0 || DJ.critLent()) SALLE.critLeger = true;
   return DJ.plantages();
 };
-DJ.VERSION = '10/11 à 17 h 51';
+/* La fluidité du critique, mesurée sur l'appareil lui-même (Romain, 10 novembre, iPhone 16 Pro : « il a l'air de marcher,
+   mais je sens un ralentissement à chaque fois ; si c'est compliqué, tu simplifies »). On ne peut pas essayer Safari ici :
+   pendant chaque critique, on compte donc les images en retard. Si le critique rame sur cet appareil, les suivants sont
+   allégés (moins de fumée et de morceaux) : il se simplifie tout seul, là où il faut. La mesure se lit en bas de « 🎒 Objets ». */
+var CLE_LENT = 'brumeval-donjon-critique-lent', CLE_MESURE = 'brumeval-donjon-critique-mesure';
+DJ.critLent = function(){ try{ return +localStorage.getItem(CLE_LENT) || 0; }catch(e){ return 0; } };
+DJ.critMesure = function(){ try{ return localStorage.getItem(CLE_MESURE) || ''; }catch(e){ return ''; } };
+DJ.mesurerCritique = function(){
+  var dernier = 0, pire = 0, lentes = 0, n = 0, fini = false, raf = window.requestAnimationFrame;
+  if(!raf) return {fin:function(){}};
+  function image(t){
+    if(fini) return;
+    if(dernier){ var d = t - dernier; n++; if(d > pire) pire = d; if(d > 40) lentes++; }
+    dernier = t; raf(image);
+  }
+  raf(image);
+  return {fin:function(){
+    fini = true;
+    if(n < 20 || (SALLE.vitesse || 1) > 1) return;                      /* (page cachée, ou un essai accéléré : la mesure ne vaut rien) */
+    var lent = lentes >= 4 || pire >= 120;
+    try{
+      localStorage.setItem(CLE_MESURE, Math.round(pire) + ' ms, ' + lentes + ' sur ' + n + (SALLE.critLeger ? ', allégé' : ''));
+      if(lent && !SALLE.critLeger) localStorage.setItem(CLE_LENT, String(DJ.critLent() + 1));
+    }catch(e){}
+    if(lent) SALLE.critLeger = true;
+  }};
+};
+DJ.VERSION = '10/11 à 18 h 56';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -14544,7 +14760,7 @@ function construire(){
     pv.innerHTML = '<div class="barre"><i></i></div><b></b>';
     hud.appendChild(pv);
   });
-  Son.musique('combat');
+  DJ.musiqueCombat(E.salle);
 }
 function slotH(h){ return q('.h-' + h); }
 function B(id){ return E.A.b[id]; }
@@ -15188,10 +15404,13 @@ async function critique(l, i, ctx){
       await attendre(1200);
       return i + 1;
     }
-    /* le témoin : il dit où en était le critique si la page se ferme (lu au redémarrage, affiché en bas de « Objets ») */
-    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('impact'); }, 420 / vt), setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt), setTimeout(function(){ DJ.temoinCritique('fumee'); }, 1500 / vt)];
+    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») ;
+       et on compte les images en retard : si le critique rame sur cet appareil, les suivants sont allégés */
+    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt)];
     DJ.temoinCritique('debut');
+    var mesure = DJ.mesurerCritique();
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
+    mesure.fin();
     tm.forEach(clearTimeout); DJ.temoinCritique(false);
     return i + 1;
   }
@@ -15379,7 +15598,8 @@ async function victoire(){
   if(CB.boss) t = 'En ' + tours + ' ! Le gros crapaud du puits ne fera plus peur à personne.';
   var fan = bruit('victoire', {}, ['fanfare']);
   if(Son.baisser) Son.baisser((fan && fan.duree || 3) + .2);
-  setTimeout(function(){ DJ.musique('explo'); }, 2200);
+  var ce = E;                       /* (si on a déjà quitté l'écran de victoire, la carte a mis sa musique : on n'y touche pas) */
+  setTimeout(function(){ DJ.musiqueApresCombat(ce.salle, E !== ce); }, 2200);
   await Promise.all(ORDRE.filter(function(h){ return !E.ph.heros[h].sol; }).map(function(h, k){ return attendre(k * 120).then(function(){ return E.A.h[h].joie(); }); }));
   await attendre(300);
   var f = el('div'); f.id = 'fin';
@@ -15421,7 +15641,7 @@ async function fuite(auto){
   DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
   DJ.garder(E.partie);
-  DJ.musique('explo');
+  DJ.musiqueApresCombat(E.salle);
   E.resultat = auto ? 'defaite' : 'fuite';
   pointFuite(ev, auto);
 }
@@ -15565,7 +15785,7 @@ function ecranSac(o){
     '<button class="aller" data-act="sac-pret" disabled>' + (o.premier ? 'Descendre ⬇' : 'C\'est prêt ➜') + '</button>';
   jeu.appendChild(s);
   DJ.brancherCurseurs(s);
-  DJ.musique('explo');
+  DJ.musiqueLieu((X.partie && X.partie.lieu) || 'puits');
   conte(phrase);
   function maj(neuve){
     qa('#sac .recette').forEach(function(b){ var c = choix.indexOf(b.getAttribute('data-id')) >= 0; b.classList.toggle('choisie', c); b.classList.toggle('guide', !c && choix.length < places); });
@@ -15624,7 +15844,7 @@ function carte(o){
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
-  DJ.musique('explo');
+  DJ.musiqueLieu(X.ici);
   var etats = {}; Object.keys(p.faits).forEach(function(k){ if(k.indexOf('combat:') === 0){ var s = k.slice(7); Object.keys(D.LIEUX).forEach(function(l){ if(D.LIEUX[l].combat === s) etats[l] = 'vu'; }); } });
   var pt = X.ici === 'J' ? C.J : C.LIEUX[X.ici];
   var dpr = window.devicePixelRatio || 1, large = elCarte().clientWidth || window.innerWidth, z = Math.max(.7, Math.min(1.4, large / 960));
@@ -15648,6 +15868,9 @@ function majCarte(texte){
   var b = q('#b-entrer'); if(b){ var e = aScene(X.ici); b.hidden = !e; b.classList.toggle('guide', !!e && aFaire(X.ici)); }
   conte(texte || SUR_CARTE[X.ici] || (PHRASES[X.ici] && (aFaire(X.ici) || X.ici === 'puits') ? PHRASES[X.ici] : nomLieu(X.ici) + '. Plus rien à trouver ici.'));
   montrerSorties();
+  DJ.musiqueLieu(X.ici);                                    /* l'ambiance de la zone où l'on est */
+  /* un grand combat est au bout d'un de ces couloirs : sa longue musique se fabrique d'avance (quelques secondes) */
+  (X.sorties || []).forEach(function(s){ if(D.LIEUX[s.vers] && D.LIEUX[s.vers].combat && !p.faits['combat:' + D.LIEUX[s.vers].combat]) DJ.preparerGrand(D.LIEUX[s.vers].combat); });
 }
 /* où mènent les couloirs d'ici : [{lien, vers}] (vers : un lieu, ou 'J' l'embranchement) */
 function sortiesDe(ici){
@@ -15817,7 +16040,7 @@ function construireScene(lieu, ev, premier){
   cont.objets.forEach(function(id){ if(!S.o[id] && p.faits['pose:' + id] === lieu && !dansUnCoffre(def, id)) poserAuSol(id, false); });
   /* l'équipement des héros concernés par les objets d'ici : deux cases au-dessus de leur tête */
   plaquesDuLieu(cont).forEach(function(h){ majPlaque(h); });
-  DJ.musique(lieu === 'camp' ? 'explo' : 'explo');
+  DJ.musiqueLieu(lieu);
   preparerLieu(lieu, cont, ev, premier);
 }
 function dansUnCoffre(def, id){ return (def.elements || []).some(function(d){ return d.type === 'choix' && (d.options || []).some(function(o){ return o.id === id; }); }); }
@@ -16239,7 +16462,8 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
-  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') + '</div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') +
+    (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
@@ -16286,7 +16510,8 @@ function finDonjon(){
     '<div class="bilan"><div><b>' + n + '</b>📖 pages</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
     '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
   jeu.appendChild(e);
-  bruit('victoire', {}, ['fanfare']);
+  var fan = bruit('victoire', {}, ['fanfare']);
+  setTimeout(function(){ DJ.musique('fin'); }, ((fan && fan.duree) || 3) * 1000);
 }
 
 /* ====================================================================== 7. LES DOIGTS */
