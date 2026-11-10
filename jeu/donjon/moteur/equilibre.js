@@ -446,7 +446,7 @@ function descente(graine, idEquipe, o){
     }
     /* ce qu'on fait dans les salles sans combat */
     if(pas === 'aeration'){ R.prendre(p, 'sacoche'); R.prendre(p, 'herbes'); if(o.sac4) R.refaireSac(p, o.sac4); }
-    if(pas === 'reserve' && o.pisteur) R.choisir(p, o.pisteur);
+    if(pas === 'reserve' && o.pisteur) R.prendre(p, o.pisteur);
     if(pas === 'givre') R.prendre(p, 'fleur-givre');
     if(pas === 'eboulis' && !p.faits.secret){ R.fouiller(p); R.fouiller(p); R.crane(p); }
     if(pas === 'camp'){
@@ -466,7 +466,7 @@ function descente(graine, idEquipe, o){
       }
     }
     if(pas === 'bibliotheque'){ R.prendre(p, 'page-dechiree'); if(o.sage) R.choisir(p, o.sage); }
-    if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur');
+    if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur', 'fleches-normales');
     i++;
   }
   return {gagne:!!p.faits.fin, defaites:defaites, mortA:null, premiereChute:mortA, journal:journal, chaud:chaud, tombes:tombes, pv:D.EXPOSES.map(function(h){ return p.heros[h].pv; })};

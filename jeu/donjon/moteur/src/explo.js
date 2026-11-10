@@ -45,6 +45,7 @@ function garder(){ var p = X.partie; if(X.V){ try{ p.vus['@brume'] = X.V.etat().
 function conte(t){
   X.texte = t; DJ.conte(t);
   var b = q('#conteur'); if(!b) return;
+  if(S && S.sansTexte){ b.style.visibility = 'hidden'; return; }      /* la réserve : pas de petit texte en bas, les objets parlent d'eux-mêmes */
   b.innerHTML = '<span class="txt">' + t + '</span>' + DJ.lireBtn(t);
   DJ.relancer(b, 'pop');
 }
@@ -227,9 +228,14 @@ function aScene(lieu){
   return !!PHRASES[lieu] && !D.LIEUX[lieu].combat;
 }
 /* y a-t-il encore quelque chose à faire ici ? (le crâne secret ne compte pas : c'est un secret) */
+function aPlace(id){
+  var O = D.OBJETS[id], p = X.partie; if(!O) return false;
+  if(O.code || O.or) return true;
+  return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && p.heros[h].objets.length < D.CHIFFRES.places; });
+}
 function aFaire(lieu){
   var c = Regles.contenu(X.partie, lieu);
-  return !!((c.objets && c.objets.length) || (c.coffre && !c.coffre.pris) || (c.tas && c.tas.reste) || (c.dalles && !c.dalles.passe) || c.portes || (c.repos && c.repos.permis) || (c.code && !X.partie.faits['code:' + c.code.id]) || c.fin);
+  return !!((c.objets && c.objets.some(aPlace)) || (c.coffre && !c.coffre.pris) || (c.tas && c.tas.reste) || (c.dalles && !c.dalles.passe) || c.portes || (c.repos && c.repos.permis) || (c.code && !X.partie.faits['code:' + c.code.id]) || c.fin);
 }
 function arriver(lieu, o){
   o = o || {};
@@ -292,7 +298,7 @@ function construireScene(lieu, ev, premier){
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
   SALLE.Fx.init({fx:q('#fx'), sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
-  S = {lieu:lieu, o:{}, heros:{}, defs:{}, pas:(cont.dalles && cont.dalles.pas) || 0, pret:false};
+  S = {lieu:lieu, o:{}, heros:{}, defs:{}, pas:(cont.dalles && cont.dalles.pas) || 0, pret:false, sansTexte:lieu === 'reserve', plaques:{}};
   /* les trois héros, à gauche, comme en combat */
   var persos = q('#persos'), hud = q('#hud');
   ORDRE.forEach(function(h){
@@ -317,8 +323,99 @@ function construireScene(lieu, ev, premier){
     S.o[d.id] = e; S.defs[d.id] = d;
     brancher(e, d, cont);
   });
+  /* les objets qu'on a reposés ici (ils ne font pas partie du décor de cette salle) : au sol, à droite des héros */
+  cont.objets.forEach(function(id){ if(!S.o[id] && p.faits['pose:' + id] === lieu && !dansUnCoffre(def, id)) poserAuSol(id, false); });
+  /* l'équipement des héros concernés par les objets d'ici : deux cases au-dessus de leur tête */
+  plaquesDuLieu(cont).forEach(function(h){ majPlaque(h); });
   DJ.musique(lieu === 'camp' ? 'explo' : 'explo');
   preparerLieu(lieu, cont, ev, premier);
+}
+function dansUnCoffre(def, id){ return (def.elements || []).some(function(d){ return d.type === 'choix' && (d.options || []).some(function(o){ return o.id === id; }); }); }
+
+/* ---------- l'équipement d'un héros : ses deux places, au-dessus de sa tête (Romain, 10 novembre) ----------
+   On y voit ce qu'il porte ; « Complet » quand les deux places sont prises. Pour prendre un objet de plus, on touche
+   d'abord cet objet (les cases se mettent à bouger, avec le rond jaune), puis la case de l'objet qu'on repose. */
+function urlSvg(svg){ return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+function iconeObjet(id){ var d = window.SCENES.portable ? window.SCENES.portable(id) : null; return d ? '<img alt="" draggable="false" src="' + urlSvg(d.svg) + '">' : '<span>' + esc((D.OBJETS[id] || {}).nom || id) + '</span>'; }
+function plaquesDuLieu(cont){
+  var hs = {};
+  (cont.objets || []).concat(cont.coffre ? cont.coffre.options : []).forEach(function(id){ var O = D.OBJETS[id]; if(!O || O.code || O.or) return; (O.pour === 'tous' ? ORDRE : [O.pour]).forEach(function(h){ hs[h] = 1; }); });
+  return ORDRE.filter(function(h){ return hs[h]; });
+}
+function majPlaque(h){
+  if(!S) return;
+  var p = X.partie, l = p.heros[h].objets, n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
+  if(!e){ e = el('div', 'plaque'); e.id = 'plaque-' + h; e.style.left = hCx(h) + 'px'; q('#hud').appendChild(e); S.plaques[h] = e; DJ.relancer(e, 'pop'); }
+  var cases = '';
+  for(var k = 0; k < n; k++){
+    var id = l[k];
+    cases += id ? '<button class="pl-case pleine" data-act="plaque-objet" data-id="' + id + '" data-heros="' + h + '" aria-label="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</button>' : '<div class="pl-case"></div>';
+  }
+  e.className = 'plaque' + (l.length >= n ? ' complet' : '') + (ech ? ' choisir' : '');
+  e.innerHTML = '<div class="pl-cases">' + cases + '</div>' + (l.length >= n ? '<div class="pl-etat">Complet</div>' : '');
+  /* le nom de la salle est juste là, en haut à gauche : on le cache quand la plaque du Sage est sortie */
+  var t = q('#scene #salle-nom'); if(t && h === 'sage') t.style.visibility = 'hidden';
+}
+/* le nom d'un objet, juste au-dessus de lui (Romain : « quand on appuie sur les carquois, qu'il y ait marqué flèches de lune ») */
+function etiquette(texte, x, y){
+  var a = q('#hud .nom-objet'); if(a) a.remove();
+  var e = el('div', 'nom-objet', esc(texte)); e.style.left = Math.max(70, Math.min(890, x)) + 'px'; e.style.top = Math.max(14, y) + 'px';
+  q('#hud').appendChild(e);
+  setTimeout(function(){ if(e.parentNode){ e.classList.add('part'); setTimeout(function(){ e.remove(); }, 260); } }, 1900);
+}
+function etiquetteObjet(id){
+  var O = D.OBJETS[id], d = S && S.defs[id]; if(!O || !d || O.code || O.or) return;
+  var z = d.zone || d; etiquette(O.nom, z.x + z.w / 2, z.y - 30);
+}
+/* un objet reposé dans la salle : à sa place d'origine s'il vient d'ici, sinon au sol, là où il y a de la place */
+function poserAuSol(id, anime){
+  var prises = Object.keys(S.defs).map(function(k){ var z = S.defs[k].zone || S.defs[k]; return [z.x, z.x + z.w]; });
+  var x = null, places = [540, 610, 680, 750, 820, 890, 500];
+  for(var k = 0; k < places.length && x === null; k++){ var a = places[k] - 32, b = places[k] + 32; if(!prises.some(function(r){ return r[0] < b && r[1] > a; })) x = places[k]; }
+  if(x === null) x = 540;
+  var d = window.SCENES.portable && window.SCENES.portable(id, x); if(!d) return null;
+  if(anime) d.cache = true;
+  var e;
+  try{ e = window.OBJETS.creer(q('#objets'), d, {fond:fondDe(S.lieu)}); }catch(er){ if(window.console) console.warn('objet posé', id, er); return null; }
+  S.o[id] = e; S.defs[id] = d;
+  e.surToucher(function(){ prendre(id); });
+  if(anime){ e.el.style.visibility = ''; e.montrer(); }
+  e.briller(true); e.guider(aPlace(id));
+  return e;
+}
+function reposer(id, heros){
+  var A = S.heros[heros], n = D.OBJETS[id] && D.OBJETS[id].equipe;
+  try{ if(n && A && A.equiper) A.equiper(n, false); }catch(er){}
+  bruit('pose', {}, ['clic']);
+  var e = S.o[id];
+  if(e && e.remettre){ e.remettre(); e.guider(false); return e; }
+  return poserAuSol(id, true);
+}
+/* les ronds jaunes : seulement sur ce qu'on peut prendre tout de suite (quelqu'un a une place) */
+function majGuides(){
+  if(!S) return;
+  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) try{ e.guider(aPlace(id)); }catch(er){} });
+}
+/* les mains pleines : on a touché un objet de plus. Les cases du héros bougent (rond jaune) : on touche celle qu'on repose. */
+function echange(x){
+  X.echange = x; X.occupe = false;
+  majPlaque(x.heros);
+  bruit('complet', {}, ['clic']);
+  var e = S.o[x.objet]; try{ if(e && e.el) e.el.animate([{transform:'translateX(0)'}, {transform:'translateX(-5px)'}, {transform:'translateX(5px)'}, {transform:'translateX(-3px)'}, {transform:'none'}], {duration:320}); }catch(er){}
+  var pl = S.plaques[x.heros]; if(pl) DJ.relancer(pl, 'secoue');
+}
+function finEchange(){ if(!X.echange) return; var h = X.echange.heros; X.echange = null; if(S) majPlaque(h); }
+function toucherPlaque(id, heros){
+  if(!S || X.occupe) return;
+  var x = X.echange;
+  if(x && x.heros === heros){
+    X.echange = null;
+    var O = D.OBJETS[x.objet], ev = Regles.prendre(X.partie, x.objet, O.pour === 'tous' ? heros : null, id);
+    majPlaque(heros);
+    return jouerHors(ev, S.o[x.objet], x.objet);
+  }
+  finEchange();
+  son('clic'); etiquette(D.OBJETS[id].nom, hCx(heros) + 150, 62);          /* son nom, à droite de la plaque */
 }
 function majPV(){
   var p = X.partie;
@@ -337,6 +434,7 @@ function brancher(e, d, cont){
   /* (le feu, le chat et Léo n'ont pas fait leur zone à toucher eux-mêmes) */
   if(d.zone && !e.zone && e.faireZone && /^(feu|chat|leo)$/.test(d.type)){ try{ e.faireZone(); }catch(x){} }
   if(d.type === 'objet'){ e.briller && e.briller(true); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  else if(d.type === 'choix' && !cont.coffre){ coffreLibre(e, d); }
   else if(d.type === 'choix'){
     var pris = cont.coffre && cont.coffre.pris;
     if(pris){ try{ e.ouvrir && e.ouvrir(); (e.options || []).forEach(function(o){ if(o.def && o.def.id === pris) o.cacher && o.cacher(); else o.eteindre && o.eteindre(); }); }catch(x){} return; }
@@ -352,6 +450,32 @@ function brancher(e, d, cont){
   else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) e.guider(true); }
   else if(d.type === 'chat'){ e.surToucher(function(){ if(!X.occupe) sceneChat(e, true); }); }
   else if(d.type === 'leo'){ e.surToucher(function(){ if(!X.occupe) codeDuLieu(); }); }
+}
+/* la réserve : le coffre s'ouvre, les deux carquois se prennent comme des objets ordinaires (2 places par héros) */
+function coffreLibre(e, d){
+  var p = X.partie, cle = '@ouvert:' + S.lieu;
+  function ici(id){ return Regles.contenu(p, S.lieu).objets.indexOf(id) >= 0; }
+  function armer(){
+    (e.options || []).forEach(function(o){
+      var id = o.def.id; S.o[id] = o; S.defs[id] = o.def;
+      if(!o._arme){ o._arme = true; o.surToucher(function(){ prendre(id); }); }
+      if(ici(id)){ o.briller(true); o.guider(aPlace(id)); } else { o.pris = true; o.cacher(true); }
+    });
+  }
+  if(p.vus[cle]){
+    /* déjà ouvert : il reste ouvert, avec ce qu'il y a encore dedans */
+    var toutes = e.options;
+    e.options = toutes.filter(function(o){ return ici(o.def.id); });
+    toutes.forEach(function(o){ if(e.options.indexOf(o) < 0){ o.pris = true; o.cacher(true); } });
+    Promise.resolve(e.ouvrir()).then(function(){ e.options = toutes; if(S && S.o) armer(); });
+    return;
+  }
+  e.guider(true);
+  e.surToucher(function(){
+    if(p.vus[cle] || X.occupe) return;
+    p.vus[cle] = 1; garder(); e.guider(false); bruit('coffre', {}, ['clic']);
+    Promise.resolve(e.ouvrir()).then(function(){ if(S) armer(); });
+  });
 }
 function armerChoix(e, d){
   (e.options || []).forEach(function(o, i){
@@ -394,8 +518,11 @@ function versHeros(h){ return {x:hCx(h), y:200}; }
 function prendre(id, heros, laisser){
   if(X.occupe) return;
   var p = X.partie, O = D.OBJETS[id] || {}, e = S.o[id];
+  finEchange();
+  if(!heros) etiquetteObjet(id);
   if(id === 'amulette' && !heros){ return fenetreQui(id); }
   var ev = Regles.prendre(p, id, heros, laisser);
+  if(ev[0] && ev[0].t === 'plein' && !laisser) return echange(ev[0]);       /* les mains pleines : on choisit sur la plaque ce qu'on repose */
   return jouerHors(ev, e, id);
 }
 /* jouer les évènements d'une action hors combat */
@@ -403,17 +530,18 @@ function jouerHors(ev, e, id){
   var p = X.partie, k = 0;
   X.occupe = true;
   function suite(){
-    if(k >= ev.length){ X.occupe = false; garder(); if(S){ majPV(); majRepartir(); } return Promise.resolve(); }
+    if(k >= ev.length){ X.occupe = false; garder(); if(S){ majPV(); majRepartir(); majGuides(); } return Promise.resolve(); }
     var x = ev[k++], pr = Promise.resolve();
     if(x.t === 'refus'){ SALLE.Fx.mot(e && S.defs[id] ? pointDe(S.defs[id]).x : 480, 120, x.mot, 'refus'); son('clic'); }
-    else if(x.t === 'plein'){ X.occupe = false; fenetrePlein(x); return Promise.resolve(); }
-    else if(x.t === 'laisse'){ conte(D.OBJETS[x.objet].nom + ' reste ici. On pourra revenir le chercher.'); }
+    else if(x.t === 'plein'){ X.occupe = false; echange(x); return Promise.resolve(); }
+    else if(x.t === 'laisse'){ reposer(x.objet, x.heros); majPlaque(x.heros); conte(D.OBJETS[x.objet].nom + ' reste ici. On pourra revenir le chercher.'); pr = DJ.attendre(380); }
     else if(x.t === 'objet'){
       var O = D.OBJETS[x.objet] || {nom:x.objet};
       bruit('ramasse', {}, ['clic']);
       pr = Promise.resolve(e && e.prendre ? e.prendre(versHeros(x.heros)) : null).then(function(){
         try{ if(x.equipe && S.heros[x.heros].equiper) S.heros[x.heros].equiper(x.equipe, true); }catch(er){}
         try{ S.heros[x.heros].joie && S.heros[x.heros].joie(); }catch(er){}
+        majPlaque(x.heros);
         conte(O.nom + ' ! ' + (O.d || '') + ' C\'est ' + D.HEROS[x.heros].le + ' qui s\'en charge.');
       });
     }
@@ -621,7 +749,7 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
-  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + ')' : '') + '</div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
@@ -682,7 +810,8 @@ DJ.toucher(function(a, id, b){
   if(a === 'symbole'){ symbole(id); return true; }
   if(a === 'pave-efface'){ X.pave = []; majPave(); return true; }
   if(a === 'entrer'){ if(!X.occupe && aScene(X.ici)){ son('clic'); arriver(X.ici, {entrer:true}); } return true; }
-  if(a === 'repartir'){ son('clic'); repartir(); return true; }
+  if(a === 'repartir'){ son('clic'); X.echange = null; repartir(); return true; }
+  if(a === 'plaque-objet'){ toucherPlaque(id, b.getAttribute('data-heros')); return true; }
   if(a === 'dalles-go'){ DJ.fermer(); if(S){ S.pret = true; colonneDalles(); conte('Première rangée. Laquelle des deux ?'); } return true; }
   if(a === 'qui-porte'){ DJ.fermer(); prendre(b.getAttribute('data-objet'), id); return true; }
   if(a === 'laisser'){

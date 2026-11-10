@@ -269,6 +269,18 @@ Objet.prototype.prendre = function(vers, o){
   });
 };
 
+/* l'objet revient à sa place : on l'avait pris, on le repose (Romain, 10 novembre : on peut changer d'avis) */
+Objet.prototype.remettre = function(){
+  var e = this.el, z = this.def.z;
+  this.pris = false;
+  try{ (this.corps.getAnimations ? this.corps.getAnimations() : []).forEach(function(a){ a.cancel(); }); }catch(x){}
+  this.corps.classList.remove('ob-terne');
+  e.style.zIndex = z != null ? z : '';
+  if(this.ombre) this.ombre.style.opacity = '';
+  this.briller(true);
+  return this.montrer();
+};
+
 /* ================= le coffre (ou le lutrin) à deux objets : on n'en prend qu'un ================= */
 function Choix(c, def, opts){
   Base.call(this, c, def, opts);

@@ -74,6 +74,7 @@ DJ.musique = function(nom){ var S = SALLE.Son; if(S && S.musique) S.musique(nom)
 /* Les sons que Romain n'a pas encore validés dans l'Atelier jouent leur version A, provisoire (MOTEUR-DONJON.md §5).
    SALLE.CHOIX_SONS est la table des versions validées (son.js) : on ne touche pas à ce qui y est déjà. */
 DJ.PROVISOIRE = {};
+var REFAITS = {pasCouloir:'C'};
 DJ.sonsProvisoires = function(){
   var C = SALLE.CHOIX_SONS, B = window.BRUITAGES;
   if(!C || !B) return;
@@ -82,7 +83,9 @@ DJ.sonsProvisoires = function(){
     if(!m || typeof B[cle] !== 'function') return;
     var id = m[1];
     if(C[id] && C[id].length) return;
-    C[id] = ['A']; DJ.PROVISOIRE[id] = 1;
+    /* (les pas sur la carte : Romain a refusé les versions A et B le 10 novembre — on joue la C, feutrée, en attendant son choix) */
+    var l = REFAITS[id] && typeof B[id + REFAITS[id]] === 'function' ? REFAITS[id] : 'A';
+    C[id] = [l]; DJ.PROVISOIRE[id] = 1;
   });
 };
 
@@ -91,13 +94,15 @@ DJ.sonsProvisoires = function(){
    On pose un témoin au début du critique et on l'enlève à la fin. S'il est encore là au démarrage, c'est que la page
    s'est fermée en plein critique : on le compte, et sur cet appareil les critiques suivants sont allégés
    (moins de fumée et de morceaux), pour qu'on ne reste jamais coincé. Le compteur se lit en bas de « 🎒 Objets ». */
-var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages';
-DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, String(Date.now())); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
+var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages', CLE_OU = 'brumeval-donjon-plantage-ou';
+/* on : false (le critique est fini), ou le moment où l'on en est ('debut', 'impact', 'explosion', 'fumee', 'bete') */
+DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, (on === true ? 'debut' : on) + '|' + Date.now()); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
 DJ.plantages = function(){ try{ return +localStorage.getItem(CLE_PLANTAGES) || 0; }catch(e){ return 0; } };
+DJ.plantageOu = function(){ try{ return localStorage.getItem(CLE_OU) || ''; }catch(e){ return ''; } };
 DJ.verifierTemoin = function(){
   try{
-    var t = +localStorage.getItem(CLE_TEMOIN) || 0;
-    if(t && Date.now() - t < 600000) localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1));
+    var v = (localStorage.getItem(CLE_TEMOIN) || '').split('|'), t = +v[1] || 0;
+    if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
   }catch(e){}
   if(DJ.plantages() > 0) SALLE.critLeger = true;

@@ -9,6 +9,7 @@ CIBLE_SFX, PIC_SFX, PIC_CHOC, CIBLE_CRIT = -15.0, 1.25, 1.7, -11.0   # bruitages
 CIBLE_MUS, PIC_MUS = -25.0, .8            # musiques : 90 % du temps sous cette sonie
 CIBLE_SALLE = -28.0                       # le fond du donjon et chaque couleur de salle (ensemble ≈ -25)
 CIBLE_ICONE = -26.0                       # le petit son quand on touche une icône : doux, on l'entend souvent
+CIBLE_PAS = -27.0                         # les pas sur la carte : discrets, on les entend à chaque déplacement (Romain, 10 novembre)
 CIBLE_FEU = -27.0                         # l'ambiance du feu de camp (en boucle, sous la musique du repos)
 CHOCS = ('arc', 'chairF', 'bois', 'chairD', 'fuiteA', 'ratCritique',                  # des chocs très brefs : le compresseur les rattrape
          'flecheLourde', 'gardienPoing', 'gardienFin', 'bourbeSaut', 'portePierre', 'cuirCasque', 'bourbeLangue', 'roiAttaque', 'potColle', 'coffre')
@@ -19,13 +20,13 @@ niv = {}
 atteint = {}
 for k, r in b.items():
     plafond = PIC_CHOC if k.startswith(CHOCS) else PIC_SFX
-    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith('icone') else CIBLE_SFX)   # le critique : plus fort que tout le reste
+    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith('icone') else (CIBLE_PAS if k.startswith('pasCouloir') else CIBLE_SFX))   # le critique : plus fort que tout le reste
     atteint[k] = min(cible_k, r['sonie'] + 20 * math.log10(plafond / r['pic']))
 # 2) dans une même carte, toutes les versions au même niveau (sinon la plus forte paraît meilleure)
 cartes = {}
-for k in b: cartes.setdefault(re.sub(r'[A-C]$', '', k), []).append(k)
+for k in b: cartes.setdefault(re.sub(r'[A-D]$', '', k), []).append(k)
 for c, ks in cartes.items():
-    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone')) else CIBLE_SFX - 6)
+    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone', 'pasCouloir')) else CIBLE_SFX - 6)
     for k in ks:
         r = b[k]; f = 10 ** ((min(cible, atteint[k]) - r['sonie']) / 20); niv[k] = f
         print('%-14s sonie %6.1f -> x%.2f  (%6.1f, pic %.2f)' % (k, r['sonie'], f, r['sonie'] + 20 * math.log10(f), r['pic'] * f))

@@ -38,7 +38,7 @@ var D = {};
 D.HEROS = {
   sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['etudier', 'rune', 'bouclier'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
-  pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche'}
+  pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
 D.ORDRE = ['sage', 'alchimiste', 'pisteur'];           /* de gauche à droite à l'écran */
 D.EXPOSES = ['pisteur', 'alchimiste', 'sage'];         /* du plus exposé (devant) au moins exposé */
@@ -100,10 +100,14 @@ D.CHIFFRES = {
    pour : qui le porte ('tous' : on choisit). code : c'est un objet à passer par code (il ne prend pas de place).
    equipe : le nom pour HerosAnime.equiper(nom). */
 D.OBJETS = {
-  'fleches-argent':{nom:'Flèches d\'argent', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
+  /* Romain, 10 novembre : « flèches de lune » et « flèches transperçantes » (les identifiants ne changent pas : 'fleches-argent',
+     'fleches-lourdes'). Le Pisteur part avec ses flèches normales, qui prennent une de ses deux places : dans la réserve,
+     il en prend un, il est complet ; pour prendre l'autre, il repose quelque chose (ses flèches normales, par exemple). */
+  'fleches-normales':{nom:'Flèches normales', pour:'pisteur', equipe:null, d:'Les flèches de tous les jours.'},
+  'fleches-argent':{nom:'Flèches de lune', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
     contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5,
     d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort.'},
-  'fleches-lourdes':{nom:'Flèches lourdes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
+  'fleches-lourdes':{nom:'Flèches transperçantes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
     contre:['ratcuir', 'gardien'], ferme:12, critique:1.5,
     d:'Contre l\'armure : le critique frappe une fois et demie plus fort. Sur le rat cuirassé, elles touchent même fermé.'},
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
@@ -353,7 +357,7 @@ D.LIEUX = {
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
   rats:{nom:'La salle des rats', combat:'rats'},
-  reserve:{nom:'La réserve', coffre:['fleches-argent', 'fleches-lourdes']},
+  reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
   canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux'},
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
@@ -407,7 +411,7 @@ D.LIVRE = {
   feufollet:[
     'On ne le voit qu\'à moitié. Dans un nuage, tout prend forme.',
     'Il boit la lumière comme du petit-lait. Une gorgée, et il grandit.',
-    'L\'argent des vieilles flèches traverse la brume. Lui aussi.',
+    'Une flèche de lune traverse la brume. Lui aussi.',
     'Rien dans le sac ? Il adore les runes. Qu\'il s\'accroche à un bouclier, et le voilà pris : on le voit enfin tout entier.'
   ],
   araignee:[

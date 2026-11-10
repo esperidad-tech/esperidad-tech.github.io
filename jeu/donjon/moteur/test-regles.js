@@ -872,7 +872,7 @@ section('Les sauvegardes, la fuite, les codes');
   egal(CODES.lire(CODES.code('sauve:2'), 'pisteur'), 'sauve:2', 'donjon-codes.js : les trois symboles tapés donnent l\'id du code');
   ev = R.code(p, 'recette:givre');
   ok(trouve(ev, 'recette').id === 'givre' && p.recettes.indexOf('givre') >= 0, 'le code recette:givre apprend la recette Givre');
-  R.entrer(p, 'reserve'); R.choisir(p, 'fleches-lourdes');
+  R.entrer(p, 'reserve'); R.prendre(p, 'fleches-lourdes');
   R.entrer(p, 'canaux');
   c = R.combat(p, 'canaux', {alea:ecrit()});
   c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
@@ -887,7 +887,7 @@ section('Les sauvegardes, la fuite, les codes');
   /* la fuite */
   ev = c.fuir();
   ok(trouve(ev, 'recharge').lieu === 'rats' && p.lieu === 'rats', 'fuir : on recharge la dernière sauvegarde (la salle des rats)');
-  ok(p.heros.pisteur.pv === pvApres && p.heros.pisteur.objets.length === 0 && !p.faits['coffre:reserve'] && !p.faits['combat:canaux'], 'tout ce qui a été fait depuis est à refaire (les flèches lourdes sont de nouveau dans le coffre)');
+  ok(p.heros.pisteur.pv === pvApres && p.heros.pisteur.objets.join() === 'fleches-normales' && !p.faits['objet:fleches-lourdes'] && !p.faits['combat:canaux'], 'tout ce qui a été fait depuis est à refaire (les flèches transperçantes sont de nouveau dans le coffre)');
   ok(p.recettes.indexOf('givre') < 0 && !p.codes['recette:givre'] && p.codes['sauve:1'] === 1, 'la recette tapée après la sauvegarde est oubliée (son code peut être retapé) ; le code de sauvegarde reste usé');
   ok(p.livre.chauvesouris === 1 && p.livre.rat === 1, 'le Grand Livre garde ce qu\'il a appris');
   ok(R.sacPermis(p) && !R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, on refait le sac sans code');
@@ -928,7 +928,7 @@ section('Les salles sans combat');
   ev = R.entrer(p, 'galerie');
   egal(trouve(ev, 'scene').contenu.objets, ['bourse'], 'la galerie effondrée : une bourse');
   ev = R.prendre(p, 'bourse');
-  ok(trouve(ev, 'or').n === D.CHIFFRES.bourse && p.or === D.CHIFFRES.bourse && p.heros.pisteur.objets.length === 0, 'la bourse donne de l\'or et ne prend pas de place');
+  ok(trouve(ev, 'or').n === D.CHIFFRES.bourse && p.or === D.CHIFFRES.bourse && p.heros.pisteur.objets.length === 1, 'la bourse donne de l\'or et ne prend pas de place');
   egal(R.prendre(p, 'bourse')[0].mot, 'Déjà pris', 'on ne la prend pas deux fois');
   R.entrer(p, 'aeration');
   ev = R.prendre(p, 'herbes');
@@ -936,10 +936,22 @@ section('Les salles sans combat');
   ok(R.objets(p).codes.some(function(x){ return x.code === 'plante:lumiere'; }), 'le code reste consultable dans « Objets »');
   egal(R.prendre(p, 'amulette', 'sage')[0].mot, 'Pas ici !', 'un objet qui n\'est pas dans ce lieu : « Pas ici ! »');
   R.entrer(p, 'reserve');
-  egal(R.contenu(p).coffre, {options:['fleches-argent', 'fleches-lourdes'], pris:null}, 'la réserve : un coffre, deux carquois');
-  ev = R.choisir(p, 'fleches-argent');
-  ok(trouve(ev, 'objet').heros === 'pisteur' && trouve(ev, 'objet').equipe === 'carquois-argent' && trouve(ev, 'coffre').reste === 'fleches-lourdes', 'on en prend un : il va au Pisteur');
-  egal(R.choisir(p, 'fleches-lourdes')[0].mot, 'Déjà pris', 'l\'autre reste là pour toujours');
+  /* la réserve (Romain, 10 novembre) : le Pisteur a 2 places, dont une prise par ses flèches normales */
+  egal(R.nouvellePartie(5).heros.pisteur.objets, ['fleches-normales'], 'le Pisteur part avec ses flèches normales (une de ses deux places)');
+  egal(R.contenu(p).objets, ['fleches-argent', 'fleches-lourdes'], 'la réserve : deux carquois à prendre');
+  ev = R.prendre(p, 'fleches-argent');
+  ok(trouve(ev, 'objet').heros === 'pisteur' && trouve(ev, 'objet').equipe === 'carquois-argent' && p.heros.pisteur.objets.length === 2, 'on en prend un : il va au Pisteur, qui est complet');
+  ev = R.prendre(p, 'fleches-lourdes');
+  ok(ev[0].t === 'plein' && ev[0].heros === 'pisteur' && ev[0].objets.join() === 'fleches-normales,fleches-argent' && p.heros.pisteur.objets.length === 2, 'l\'autre : les mains sont pleines, il faut reposer quelque chose');
+  ev = R.prendre(p, 'fleches-lourdes', null, 'fleches-normales');
+  ok(trouve(ev, 'laisse').objet === 'fleches-normales' && p.heros.pisteur.objets.join() === 'fleches-argent,fleches-lourdes', 'on repose les flèches normales : le Pisteur a les deux carquois');
+  egal(R.contenu(p).objets, ['fleches-normales'], 'les flèches normales restent dans la réserve');
+  ev = R.prendre(p, 'fleches-normales', null, 'fleches-argent');
+  ok(p.heros.pisteur.objets.join() === 'fleches-lourdes,fleches-normales' && R.contenu(p).objets.join() === 'fleches-argent', 'on peut changer d\'avis : reprendre les normales et reposer les flèches de lune (elles retournent dans la réserve, une seule fois)');
+  R.prendre(p, 'fleches-argent', null, 'fleches-normales');
+  var cq = R.combat(R.importer(R.exporter(p)), 'toiles');
+  ok(cq._carquois({type:'feufollet'}).fleche === 'argent' && cq._carquois({type:'gardien'}).fleche === 'lourde', 'avec les deux carquois, le Pisteur tire la flèche faite pour la bête');
+  R.prendre(p, 'fleches-normales', null, 'fleches-lourdes');      /* (la suite du test se joue avec les flèches de lune) */
   R.entrer(p, 'givre');
   egal(trouve(R.prendre(p, 'fleur-givre'), 'code-objet').code, 'plante:givre', 'la fleur de givre : le code plante:givre');
   /* le tas d'os, le crâne */
@@ -1129,7 +1141,7 @@ section('Le contrat des évènements');
   /* et hors combat */
   var q = R.nouvellePartie(4);
   [R.refaireSac(q, ['feu', 'huile', 'baume']), R.entrer(q, 'galerie'), R.prendre(q, 'bourse'), R.entrer(q, 'aeration'), R.prendre(q, 'sacoche'), R.prendre(q, 'herbes'),
-   R.entrer(q, 'reserve'), R.choisir(q, 'fleches-argent'), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'devant'),
+   R.entrer(q, 'reserve'), R.prendre(q, 'fleches-argent'), R.entrer(q, 'bibliotheque'), R.choisir(q, 'cristal-lune'), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'devant'),
    R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'devant'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
    R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });
   q.faits['combat:egouts'] = 1; noter(R.entrer(q, 'egouts'), null);

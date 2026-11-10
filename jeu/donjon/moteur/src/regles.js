@@ -161,7 +161,7 @@ function nouvellePartie(graine){
     fuites:{},
     sauvegarde:null
   };
-  D.EXPOSES.forEach(function(h){ p.heros[h] = {pv:D.HEROS[h].pv, pvMax:D.HEROS[h].pv, sol:false, objets:[]}; });
+  D.EXPOSES.forEach(function(h){ p.heros[h] = {pv:D.HEROS[h].pv, pvMax:D.HEROS[h].pv, sol:false, objets:(D.HEROS[h].objets || []).slice()}; });
   sauvegarder(p);                    /* la sauvegarde de départ, au fond du puits */
   return p;
 }
@@ -283,10 +283,15 @@ P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblable
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
 P.porte = function(h, objet){ return this.h[h].objets.indexOf(objet) >= 0; };
-P._carquois = function(){
-  var o = this.h.pisteur.objets;
-  for(var i = 0; i < o.length; i++) if(D.OBJETS[o[i]] && D.OBJETS[o[i]].fleche) return D.OBJETS[o[i]];
-  return null;
+/* le carquois qui sert contre cette bête : avec deux carquois spéciaux, le Pisteur tire la flèche faite pour elle */
+P._carquois = function(m){
+  var o = this.h.pisteur.objets, premier = null;
+  for(var i = 0; i < o.length; i++){
+    var O = D.OBJETS[o[i]]; if(!O || !O.fleche) continue;
+    if(m && O.contre.indexOf(m.type) >= 0) return O;
+    premier = premier || O;
+  }
+  return premier;
 };
 
 /* ---------- les gestes permis ---------- */
@@ -561,7 +566,7 @@ P._soin = function(ev, h, n, par){
 };
 /* la flèche du Pisteur (potion : la recette où elle a trempé, ou null) */
 P._fleche = function(ev, m, potion){
-  var q = this._carquois(), bonus = q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche';
+  var q = this._carquois(m), bonus = q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche';
   /* le critique surprise : une flèche simple, sur un monstre normal au point faible fermé */
   var surprise = !potion && m.ouvert === 0 && m.def.rang === 'normal' && this.R() < C.surprise;
   var blinde = this._un(m, m.def.blinde);
@@ -821,7 +826,7 @@ function contenu(p, lieu){
   var gagne = L.combat ? !!f['combat:' + L.combat] : true;
   if(L.combat){ o.combat = L.combat; o.gagne = gagne; }
   o.objets = [];
-  if(gagne || !L.apresCombat) (L.objets || []).forEach(function(id){ if(!f['objet:' + id]) o.objets.push(id); });
+  if(gagne || !L.apresCombat) (L.objets || []).forEach(function(id){ if(!f['objet:' + id] && !f['pose:' + id]) o.objets.push(id); });
   Object.keys(f).forEach(function(k){ if(k.indexOf('pose:') === 0 && f[k] === lieu) o.objets.push(k.slice(5)); });
   if(L.coffre) o.coffre = {options:L.coffre.slice(), pris:f['coffre:' + lieu] || null};
   if(L.tas) o.tas = {fouilles:f.os || 0, reste:(f.os || 0) < 2};

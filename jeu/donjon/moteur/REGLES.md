@@ -363,3 +363,12 @@ Là où la conception était floue ou se contredisait, tranché au plus simple p
 - **La difficulté réelle** dépend des étourderies : voir `equilibre.md` §4 et §6. Les chiffres à bouger d'abord sont les dégâts des attaques dans `donnees.js`.
 - **Les textes du Grand Livre** sont à faire relire par Romain (ton, niveau d'indice).
 - Les règles ne connaissent pas la géométrie : si un lieu change d'id dans `carte.js`, le changer aussi dans `D.LIEUX` (un test compare les deux listes).
+
+## 9. Changements du 10 novembre au soir (premier essai de Romain)
+
+- Les carquois s'appellent « Flèches de lune » (`fleches-argent`) et « Flèches transperçantes » (`fleches-lourdes`). Les identifiants n'ont pas changé.
+- Le Pisteur part avec `fleches-normales`, qui prennent une de ses deux places.
+- La réserve n'est plus un coffre à choix : ses deux carquois sont des objets ordinaires (`Regles.prendre`). Mains pleines : `prendre` rend `[{t:'plein', heros, objets, objet}]` ; on rappelle `prendre(p, objet, heros, laisser)` avec l'objet à reposer, qui reste dans le lieu (`faits['pose:<id>'] = lieu`) et peut être repris.
+- Avec les deux carquois, `_carquois(bete)` prend celui qui est fait pour la bête visée.
+- Le lutrin de la bibliothèque reste un coffre à choix (`Regles.choisir`), en attendant la décision de Romain.
+- À venir (en discussion) : l'étude du Sage sort du combat et va sur la tablette du Sage.

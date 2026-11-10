@@ -137,11 +137,30 @@ def visite(nav):
     # la salle des rats (tenue pour gagnée), la réserve et son coffre à choix
     J.va('rats'); J.carte()
     verifie(J.etat()['ici'] == 'rats' and 'combat:rats' in J.partie()['faits'], 'la salle des rats est passée')
-    J.va('reserve'); J.scene('reserve'); J.objet('coffre'); pg.wait_for_timeout(2400); J.libre()
-    J.objet('coffre', 1); pg.wait_for_timeout(2600); J.libre()
+    # la réserve (Romain, 10 novembre) : pas de texte en bas, l'équipement du Pisteur au-dessus de sa tête, deux places
+    J.va('reserve'); J.scene('reserve')
+    verifie(J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden' and J.js("document.querySelector('#b-repartir').textContent").startswith('Continuer'), 'la réserve : pas de petit texte en bas ; le bouton dit « Continuer »')
+    verifie(J.js("document.querySelectorAll('#plaque-pisteur .pl-case').length") == 2 and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 1 and J.partie()['heros']['pisteur']['objets'] == ['fleches-normales'],
+            'l\'équipement du Pisteur s\'affiche : deux places, ses flèches normales dans la première')
+    J.objet('coffre'); pg.wait_for_timeout(2400); J.libre()
+    J.objet('fleches-argent'); pg.wait_for_timeout(400)
+    verifie(J.js("(document.querySelector('#hud .nom-objet') || {}).textContent") == 'Flèches de lune', 'on touche un carquois : son nom s\'affiche (« Flèches de lune »)')
+    pg.wait_for_timeout(2400); J.libre()
+    verifie(J.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-argent'] and J.js("document.querySelector('#plaque-pisteur').classList.contains('complet')") and 'Complet' in J.js("document.querySelector('#plaque-pisteur').textContent"),
+            'il le prend : l\'équipement est « Complet »')
+    verifie(J.js("!document.querySelector('#scene [data-ob=\"fleches-lourdes\"].ob-guide, #scene [data-ob=\"fleches-lourdes\"] .ob-guide')") and J.js("document.querySelector('#b-repartir').classList.contains('guide')"), 'plus de rond jaune sur l\'autre carquois (plus de place) : c\'est « Continuer » qui le porte')
+    J.objet('fleches-lourdes'); pg.wait_for_timeout(600)
+    verifie(J.js("(document.querySelector('#hud .nom-objet') || {}).textContent") == 'Flèches transperçantes' and J.js("document.querySelector('#plaque-pisteur').classList.contains('choisir')") and len(J.partie()['heros']['pisteur']['objets']) == 2,
+            'l\'autre carquois : les mains sont pleines, les deux cases bougent (il faut en reposer un)')
+    J.tap('#plaque-pisteur [data-id="fleches-normales"]'); pg.wait_for_timeout(3000); J.libre()
     p = J.partie()
-    verifie(p['faits'].get('coffre:reserve') == 'fleches-lourdes' and 'fleches-lourdes' in p['heros']['pisteur']['objets'], 'la réserve : on prend un carquois, l\'autre reste')
-    J.cap('reserve'); J.repartir(); J.chemin('rats', 'canaux')
+    verifie(p['heros']['pisteur']['objets'] == ['fleches-argent', 'fleches-lourdes'] and J.js("Regles.contenu(DJ.Explo._X().partie, 'reserve').objets") == ['fleches-normales'] and J.js("!!DJ.Explo._S().o['fleches-normales']"),
+            'on repose les flèches normales (elles restent au sol de la réserve) : le Pisteur a les deux carquois')
+    J.cap('reserve'); J.repartir()
+    verifie(J.etat()['ecran'] == 'carte', 'la réserve ne se rouvre pas toute seule : il n\'y a plus rien à prendre sans reposer')
+    J.tap('[data-act="entrer"]'); J.scene('reserve'); pg.wait_for_timeout(1200)
+    verifie(J.js("!!DJ.Explo._S().o['fleches-normales']") and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 2, 'en revenant : les flèches normales sont toujours là, au sol')
+    J.repartir(); J.chemin('rats', 'canaux')
     # les égouts tournants
     J.va('egouts'); J.attends("DJ.Explo.etat().ici === 'canaux' && !DJ.Explo.etat().occupe && DJ.Explo._X().partie.faits['combat:egouts']", 30000); J.carte()
     verifie(J.etat()['ici'] == 'canaux', 'les égouts tournants ramènent aux canaux')
@@ -197,6 +216,11 @@ def visite(nav):
     J.objet('sarcophage'); pg.wait_for_timeout(2800); J.libre()
     J.objet('amulette'); pg.wait_for_selector('#fenetre [data-act="qui-porte"]', timeout=10000)
     verifie(J.js("document.querySelectorAll('#fenetre [data-act=\"qui-porte\"]').length") == 3, 'l\'amulette : on choisit qui la porte')
+    # le Pisteur a déjà ses deux carquois : lui donner l'amulette, c'est reposer quelque chose (on change d'avis, elle ira à l'Alchimiste)
+    J.clic('[data-act="qui-porte"][data-id="pisteur"]'); pg.wait_for_timeout(700)
+    verifie(J.js("!!document.querySelector('#plaque-pisteur.choisir')") and 'amulette' not in J.partie()['heros']['pisteur']['objets'], 'l\'amulette pour le Pisteur : ses mains sont pleines, ses cases bougent')
+    J.objet('amulette'); pg.wait_for_selector('#fenetre [data-act="qui-porte"]', timeout=10000)
+    verifie(J.js("!document.querySelector('#plaque-pisteur.choisir')"), 'on touche autre chose : l\'échange est annulé')
     J.clic('[data-act="qui-porte"][data-id="alchimiste"]'); pg.wait_for_timeout(2600); J.libre()
     verifie('amulette' in J.partie()['heros']['alchimiste']['objets'], 'l\'amulette de vie est portée par l\'Alchimiste')
     J.cap('crypte'); J.repartir(); J.chemin('portes'); J.scene('portes')
