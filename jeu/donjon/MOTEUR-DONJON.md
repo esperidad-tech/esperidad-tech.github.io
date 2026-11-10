@@ -271,3 +271,16 @@ Romain : « la musique est très redondante, la boucle est trop petite ». Ce qu
 - **`test-descente.py`** vérifie à chaque écran que la musique demandée est celle de l'endroit, et que toutes ont été demandées.
 - **Le critique** : `DJ.mesurerCritique()` (dans `combat.js`, autour de `Fx.critique`) compte les images en retard ; `DJ.critLent()`, `DJ.critMesure()` ; clés `brumeval-donjon-critique-lent` et `-mesure`. `SALLE.critLeger` est mis si la page s'est fermée en plein critique **ou** si un critique a ramé. Le reflet animé du mot « CRITIQUE ! » est retiré (`essai/src/jeu.css`).
 
+### 9.7 Le soir du 10 novembre : exploration sans ronds jaunes, étude par code, toutes les potions, choix des flèches
+
+Les décisions de Romain sont dans la Bible §12.51 (« Deuxième série de retours »). Le détail des règles : `moteur/REGLES.md` §11. Ce que ça change dans le moteur :
+
+- **L'étude** : `Regles.grandLivre` rend le journal (`{monstre, nom, rang, etudie, code}`) ; `combat.js` : `boutonLivre()` (« Journal », classe `a-lire` tant qu'un code n'a pas été vu), `grandLivre(partie)` (la fenêtre : un code par monstre étudié, `.ligne.etude[data-etude]`). Plus aucune énigme dans le donjon.
+- **La tablette du Sage** (`pages/sage.js`) : `scene('etude:<m>')` → `pageMonstre(m, nouveau)` (portrait + énigmes de `D.LIVRE`, titres `D.LIVRE_TITRES`) ; la liste « Les monstres étudiés » dans le Grand Livre. `pages/assembler.py` ajoute `moteur/src/donnees.js` à la page. Les portraits : `pages/portraits/<id>.webp` (le haut des fiches du bestiaire), copiés par `construire.py` dans `sortie/i/portrait-<id>.webp`.
+- **Les potions** : `explo.js` : `ecranDepart()` remplace l'écran du sac (il ne sert plus qu'au départ : les potions, le bouton jaune) ; plus de « Refaire le sac » au feu de camp, plus d'écran après une fuite. `demarrage.js` : `&potions=` (ou l'ancien `&sac=`).
+- **La bande du combat** (`combat.js`, `bande()`) : `carte(g)` pour les gestes de toujours ; `petite(g)` pour les potions et les carquois (`.carte.mini`, noms courts `petit` dans `donnees.js`), dans `.b-petites` (5 colonnes de 84 px). Le titre de la section devient ce que fait la carte choisie (`.b-lbl.dit`). `test-combat.py` vérifie que tout tient dans la bande.
+- **L'équipement** (`explo.js`, `majPlaque`) : les carquois spéciaux en petites cases à part (`.pl-case.carq`), puis les deux places.
+- **Adresses d'essai** : `?combat=toiles&potions=toutes&objets=pisteur:fleches-argent,pisteur:fleches-lourdes` (toutes les potions, les deux carquois) ; `?nouveau=1&potions=feu,huile,baume` (un Alchimiste à qui il manque des potions).
+- **Tests** : `test-regles.js` 359 ; `test-combat.py` 95 (les 8 salles avec toutes les potions et les deux carquois, plus « l'étude » et « les potions et les flèches ») ; `test-donjon.py` et `test-descente.py` : voir la Bible ; `../test-sage.py --vite` 194.
+- **Pas remis d'aplomb** : `equilibre.js` tourne (le sac y veut dire « les potions que l'Alchimiste a su créer »), mais `equilibre.md` n'est pas réécrit et 2 cibles sont manquées. Les §3 à §8 de ce cahier des charges parlent encore du sac de 3 recettes : c'est l'ancien dessin.
+

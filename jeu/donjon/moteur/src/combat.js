@@ -260,10 +260,11 @@ function pvB(h){
   var s = E.ph.heros[h], k = Math.max(0, s.pv / s.pvMax);
   return '<span class="pv-b"><span class="barre"><i class="' + (k <= .25 ? 'bas' : k <= .5 ? 'moyen' : '') + '" style="width:' + (k * 100) + '%"></i></span><b>' + s.pv + '</b></span>';
 }
-function nbLivre(){ var n = 0, l = E.partie.livre || {}; Object.keys(l).forEach(function(k){ n += l[k] || 0; }); return n; }
+/* le journal : le nombre de monstres étudiés (autant de codes à montrer au Sage) */
+function nbLivre(){ var n = 0, l = E.partie.livre || {}; Object.keys(l).forEach(function(k){ if(l[k] > 0) n++; }); return n; }
 function boutonLivre(){
   var n = nbLivre();
-  return '<button class="b-livre" data-act="livre"><span>📖</span><small>Grand<br>Livre</small>' + (n ? '<i class="nb">' + n + '</i>' : '') + '</button>';
+  return '<button class="b-livre' + (E.journalNeuf ? ' a-lire' : '') + '" data-act="livre"><span>📖</span><small>Journal</small>' + (n ? '<i class="nb">' + n + '</i>' : '') + '</button>';
 }
 function bande(){
   if(!bandeEl) return;
@@ -284,22 +285,40 @@ function bande(){
     bandeEl.innerHTML = s;
     return;
   }
-  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h), base = gestes.filter(function(g){ return g.geste.indexOf('p:') !== 0; }), sac = gestes.filter(function(g){ return g.geste.indexOf('p:') === 0; });
+  /* Romain, 10 novembre : plus de sac de 3 recettes, l'Alchimiste a TOUTES ses potions ; le Pisteur porte tous ses carquois
+     et choisit sa flèche. Les gestes de toujours restent de grandes cartes ; les potions et les flèches spéciales sont de
+     petites cartes (l'image d'abord, le nom dessous), toutes visibles d'un coup : un seul toucher, comme avant. */
+  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h);
+  var base = gestes.filter(function(g){ return g.geste.indexOf('p:') !== 0 && g.geste.indexOf('f:') !== 0; });
+  var petites = gestes.filter(function(g){ return g.geste.indexOf('f:') === 0; }).concat(gestes.filter(function(g){ return g.geste.indexOf('p:') === 0 && (h !== 'pisteur' || D.RECETTES[g.geste.slice(2)].fleche); }));
   E.gestes = gestes;
   s += '<div class="b-moi"><span class="portrait img-' + h + '" style="' + DJ.tete(h, 86, 116, 10) + '"></span>' +
     '<button class="b-retour" data-act="retour" aria-label="Changer de héros">↩</button>' +
     '<b class="b-nom">' + H.nom + '</b>' + pvB(h) + '</div>';
-  s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl">Ses gestes</div><div class="b-cartes">' + base.map(carte).join('') + '</div></div>';
-  if(sac.length) s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl">' + (h === 'pisteur' ? 'Flèche trempée' : 'Lancer une potion') + '</div><div class="b-cartes' + (sac.length > 3 ? ' serre' : '') + '">' + sac.map(carte).join('') + '</div></div>';
+  s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl">Ses gestes</div><div class="b-cartes' + (petites.length > 4 || base.length > 3 ? ' serre' : '') + '">' + base.map(carte).join('') + '</div></div>';
+  if(petites.length){
+    /* la petite carte choisie dit ce qu'elle fait, en trois mots, à la place du titre */
+    var ch = E.geste && petites.filter(function(g){ return g.geste === E.geste.geste; })[0], lbl = h === 'pisteur' ? 'Ses autres flèches' : 'Ses potions';
+    if(ch) lbl = ch.geste.indexOf('p:') === 0 ? D.RECETTES[ch.geste.slice(2)].d : (D.OBJETS[ch.geste.slice(2)].dg || lbl);
+    s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lbl) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
+  }
   s += boutonLivre();
   bandeEl.innerHTML = s;
 }
 function carte(g){
-  var id = g.geste, potion = id.indexOf('p:') === 0, R = potion ? D.RECETTES[id.slice(2)] : D.GESTES[id];
+  var id = g.geste, R = D.GESTES[id];
   var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : (E.mode === 'gestes' ? ' guide' : '');
   var d = g.permis ? R.d : g.mot;
-  return '<button class="carte' + cls + '" data-act="geste" data-id="' + id + '">' + (potion && E.sel === 'pisteur' && g.permis ? '<span class="fl">🏹</span>' : '') + (potion ? '<span class="inf">∞</span>' : '') +
-    '<span class="c-ic">' + (potion ? DJ.potion(id.slice(2)) : R.ic) + '</span><b>' + esc(g.nom || R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
+  return '<button class="carte' + cls + '" data-act="geste" data-id="' + id + '">' +
+    '<span class="c-ic">' + R.ic + '</span><b>' + esc(g.nom || R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
+}
+/* une petite carte : une potion (pour le Pisteur : la flèche trempée dedans) ou un carquois spécial */
+function petite(g){
+  var id = g.geste, potion = id.indexOf('p:') === 0, R = potion ? D.RECETTES[id.slice(2)] : D.OBJETS[id.slice(2)];
+  var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : '';
+  var nom = R.petit || R.nom;                                   /* le nom court, sous l'image */
+  return '<button class="carte mini' + cls + (nom.length > 10 ? ' long' : '') + '" data-act="geste" data-id="' + id + '" aria-label="' + esc(g.nom || R.nom) + '">' +
+    '<span class="c-ic">' + (potion ? DJ.potion(id.slice(2)) : (R.ic || '🏹')) + (potion && E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : '') + '</span><b>' + esc(nom) + '</b></button>';
 }
 function refus(x, mot, y){ son('clic'); Fx.mot(x, y == null ? 96 : y, mot, 'refus'); }
 
@@ -645,7 +664,8 @@ async function geste(ev, evs){
       bruit('arc', {cale:LACHER}, ['arc']); bruit('vol', {dt:LACHER});
       if(ev.fleche === 'argent') bruit('flecheArgent', {dt:LACHER}); if(ev.fleche === 'lourde') bruit('flecheLourde', {dt:LACHER});
       await H.pisteur.tirer(fx, to, ev.fleche, {rebond:!!ev.rebond, sol:DJ.Betes.SOL + 6});
-      if(ev.rebond) bruit(a.module === 'gardien' || a.module === 'ratcuir' ? 'metal' : 'bois'); else bruit('chairF');
+      if(ev.defaut === 'traverse'){ /* la flèche transperçante passe à travers la bête de brume : aucun choc */ }
+      else if(ev.rebond) bruit(a.module === 'gardien' || a.module === 'ratcuir' ? 'metal' : 'bois'); else bruit('chairF');
       R = D.RECETTES[ev.fleche];
       if(R && !ev.rebond){ son('verre'); Fx.eclabousse(to.x, to.y, R.coul, true); if(SON_POTION[ev.fleche]) bruit(SON_POTION[ev.fleche]); }
       return false;
@@ -721,6 +741,7 @@ async function geste(ev, evs){
 async function livre(ev){
   if(ev.rien){ var s = E.pointEtude || {x:480, y:200}; Fx.mot(s.x, s.y - 60, 'Rien de neuf', 'refus'); return attendre(600); }
   son('page'); son('magie', .2);
+  E.journalNeuf = true;                      /* un code de plus pour le Sage : le bouton du journal bat jusqu'à ce qu'on l'ouvre */
   var b = q('.b-livre'), bx = 905, by = 462, dep = E.pointEtude || {x:480, y:200};
   if(b){ var rb = b.getBoundingClientRect(), p = DJ.versScene({x:rb.left + rb.width / 2, y:rb.top + rb.height / 2}); bx = p.x; by = p.y; }
   var page = el('div', 'page-vol', '📜'); fxHaut.appendChild(page);
@@ -991,7 +1012,6 @@ async function fuite(auto){
   if(Son.baisser) Son.baisser((fu && fu.duree || 3) + .2);
   ORDRE.forEach(function(h, k){ setTimeout(function(){ try{ E.A.h[h]._etoiles(false); }catch(e){} slotH(h).classList.add('detale'); }, k * 90); });
   await attendre(1200);
-  DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
   DJ.garder(E.partie);
   DJ.musiqueApresCombat(E.salle);
@@ -999,14 +1019,14 @@ async function fuite(auto){
   pointFuite(ev, auto);
 }
 /* « On fait le point » : où l'on repart, et c'est tout (Romain, 10 novembre : plus de Grand Livre ni de sac ici — l'écran
-   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Le Grand Livre reste dans son bouton. */
+   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Le journal reste dans son bouton. */
 function pointFuite(ev, auto){
   var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
   var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
   var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Les monstres battus depuis sont revenus. Vos trouvailles, elles, sont toujours là.';
   var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
-  if(neuf) conte = 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus. Et si on essayait autrement ?';
+  if(neuf) conte = 'À force de fuir, on finit par apprendre : le journal a noté un code de plus pour le Sage. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';
   f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point court"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
     '<div class="case retour"><h3>🚪 On repart</h3><div class="rats-l"><span>' + rv + '</span>' + DJ.lireBtn(rv) + '</div></div>' +
@@ -1022,16 +1042,21 @@ function terminer(){
   fin(r);
 }
 
-/* ====================================================================== 8. LE GRAND LIVRE (son bouton marche aussi en plein combat) */
+/* ====================================================================== 8. LE JOURNAL (son bouton marche aussi en plein combat)
+   Romain, 10 novembre : « dans le petit icône journal, il y a un code. Le Sage le tape sur sa tablette, et là il voit
+   l'image de l'ennemi et les propositions pour le battre, sous la forme d'énigmes. » Ici, donc : seulement les codes. */
 function grandLivre(partie){
-  var pages = Regles.grandLivre(partie);
-  var s = '<h2>Le Grand Livre</h2>';
+  var pages = Regles.grandLivre(partie), K = window.DONJON_CODES;
+  var s = '<h2>Le journal</h2>';
   if(!pages.length) s += '<div class="ligne vide">' + D.LIVRE_VIDE + DJ.lireBtn(D.LIVRE_VIDE) + '</div>';
+  else { var intro = 'Chaque monstre étudié a son code. Le Sage le tape sur sa tablette : son Grand Livre lui montre le monstre, et ses énigmes.'; s += '<div class="ligne">' + intro + DJ.lireBtn(intro) + '</div>'; }
   pages.forEach(function(p){
-    s += '<div class="sous">' + esc(p.nom) + ' · ' + p.lignes.length + ' / ' + p.sur + '</div>';
-    if(!p.lignes.length){ var v = 'La page est encore blanche. Le Sage n\'a encore rien noté.'; s += '<div class="ligne vide">' + v + DJ.lireBtn(v) + '</div>'; }
-    p.lignes.forEach(function(t){ s += '<div class="ligne">« ' + t + ' »' + DJ.lireBtn(t) + '</div>'; });
+    s += '<div class="sous">' + esc(p.nom) + '</div>';
+    if(!p.etudie){ var v = 'Pas encore étudié. Pendant un combat, le Sage peut l\'observer.'; s += '<div class="ligne vide">' + v + DJ.lireBtn(v) + '</div>'; return; }
+    var t = p.nom + ', le code pour le Sage : ' + (K.code(p.code) || []).map(function(k){ return K.SYM[k].n; }).join(', ') + '.';
+    s += '<div class="ligne etude" data-etude="' + p.monstre + '">Pour le Sage : <span class="code-ligne">' + K.emojis(p.code) + '</span>' + DJ.lireBtn(t) + '</div>';
   });
+  if(E && E.journalNeuf){ E.journalNeuf = false; var b = q('.b-livre'); if(b) b.classList.remove('a-lire'); }
   DJ.fenetre(s, 'livre');
 }
 DJ.grandLivre = grandLivre;

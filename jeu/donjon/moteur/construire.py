@@ -62,6 +62,11 @@ def images():
     # les photos des héros (portraits), les textures de fumée
     for f in ['heros-sage.png', 'heros-alchimiste.png', 'heros-pisteur.png', 'fumee-a.png', 'fumee-b.png', 'fumee-c.png', 'brume-a.png', 'brume-b.png', 'flamme.png']:
         copier(os.path.join(ESSAI, 'img', f), os.path.join(d, f))
+    # les portraits des monstres, pour la tablette du Sage (pages/portraits/, tirés des fiches du bestiaire)
+    pp = os.path.join(DONJON, 'pages', 'portraits')
+    for f in sorted(os.listdir(pp)) if os.path.isdir(pp) else []:
+        if f.endswith('.webp'):
+            copier(os.path.join(pp, f), os.path.join(d, 'portrait-' + f))
 
 
 def scripts():

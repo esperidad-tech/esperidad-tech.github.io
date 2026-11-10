@@ -16,7 +16,8 @@ def lire(*p):
 
 SORTIES = {
     'donjon-sage.html': {'titre': 'Le plan du Sage', 'corps': 'sage-corps.html', 'css': ['commun.css', 'sage.css'],
-                         'js': [('donjon-codes.js', DONJON), ('carte.js', DONJON), ('commun.js', PAGES), ('sage-plan.js', PAGES), ('sage.js', PAGES)]},
+                         # donnees.js : les noms des monstres et leurs énigmes (D.LIVRE), pour les pages des monstres étudiés
+                         'js': [('donjon-codes.js', DONJON), (os.path.join('moteur', 'src', 'donnees.js'), DONJON), ('carte.js', DONJON), ('commun.js', PAGES), ('sage-plan.js', PAGES), ('sage.js', PAGES)]},
     'donjon-alchimiste.html': {'titre': 'Le chaudron de l’Alchimiste', 'corps': 'alchimiste-corps.html', 'css': ['commun.css', 'alchimiste.css'],
                                'js': [('donjon-codes.js', DONJON), ('carte.js', DONJON), ('commun.js', PAGES), ('alchimiste.js', PAGES)]},
     'carte-demo.html': {'titre': 'La carte du donjon', 'corps': 'demo-corps.html', 'css': ['commun.css', 'demo.css'],

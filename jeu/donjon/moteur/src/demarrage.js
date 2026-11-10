@@ -1,5 +1,5 @@
 /* demarrage.js — le départ du donjon : reprendre la partie gardée ou en commencer une, puis l'exploration.
-   Pour les essais et les tests : index.html?combat=<salle>&sac=feu,huile,baume&objets=pisteur:fleches-argent,sage:cristal-lune&graine=7
+   Pour les essais et les tests : index.html?combat=<salle>&potions=feu,huile,baume&objets=pisteur:fleches-argent,sage:cristal-lune&graine=7
    lance directement un combat (sans carte), et recommence quand il est fini. */
 (function(){
 'use strict';
@@ -26,9 +26,11 @@ DJ.passage = function(nom, travail){
 /* un combat tout seul, pour les essais */
 function essaiCombat(P){
   var salle = P.combat, partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 1e9));
-  if(P.sac) partie.sac = P.sac.split(',').filter(function(r){ return D.RECETTES[r]; });
-  else partie.sac = ['feu', 'huile', 'baume'];
-  partie.sac.forEach(function(r){ if(partie.recettes.indexOf(r) < 0) partie.recettes.push(r); });
+  /* &sac=… (ou &potions=…) : les potions que l'Alchimiste a su créer, pour cet essai ; « toutes » : les 9 ; rien : les 7 du départ
+     (depuis le 10 novembre, il n'y a plus de sac de 3 recettes : il a toutes ses potions) */
+  var liste = P.potions || P.sac;
+  if(liste === 'toutes') partie.recettes = D.ORDRE_RECETTES.slice();
+  else if(liste) partie.recettes = liste.split(',').filter(function(r){ return D.RECETTES[r]; });
   (P.objets || '').split(',').forEach(function(x){ var k = x.split(':'); if(k.length === 2 && partie.heros[k[0]] && D.OBJETS[k[1]]) partie.heros[k[0]].objets.push(k[1]); });
   if(P.livre) Object.keys(D.MONSTRES).forEach(function(m){ partie.livre[m] = +P.livre; });
   partie.lieu = (Object.keys(D.LIEUX).filter(function(l){ return D.LIEUX[l].combat === salle; })[0]) || partie.lieu;

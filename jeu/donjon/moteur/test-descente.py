@@ -160,25 +160,8 @@ class Descente:
             self.clic('#fenetre .fermer')
         return ok
 
-    # ----- le sac -----
+    # ----- le départ : les potions de l'Alchimiste (plus de sac à choisir depuis le 10 novembre) : le bouton jaune -----
     def sac(self):
-        p = self.partie(); places = self.js("document.querySelectorAll('#sac .sac-case').length")
-        if places >= 4:
-            veut = SAC_BOSS if p['faits'].get('combat:ossuaire') else SAC4
-        else:
-            veut = SAC3
-        connues = self.js("[].map.call(document.querySelectorAll('#sac .recette'), function(r){ return r.getAttribute('data-id'); })")
-        veut = [r for r in veut if r in connues][:places]
-        for r in connues:                                   # compléter si une recette manque
-            if len(veut) < places and r not in veut:
-                veut.append(r)
-        pris = self.js("[].map.call(document.querySelectorAll('#sac .recette.choisie'), function(r){ return r.getAttribute('data-id'); })")
-        for r in pris:
-            if r not in veut:
-                self.tap('.recette[data-id="%s"]' % r)
-        for r in veut:
-            if r not in pris:
-                self.tap('.recette[data-id="%s"]' % r)
         self.tap('[data-act="sac-pret"]'); self.pg.wait_for_timeout(500)
 
     # ----- un geste de combat -----
@@ -234,9 +217,9 @@ class Descente:
             return bool(f.get(k))
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
         if not fait('objet:rune'): return 'puits'                       # la pierre de rune du Sage, au fond du puits
-        if not fait('objet:sacoche') or not fait('objet:herbes'): return 'aeration'
+        if not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
-        if not fait('objet:fleches-lourdes'): return 'reserve'
+        if not fait('objet:fleches-lourdes') or not fait('objet:fleches-argent'): return 'reserve'
         if not fait('combat:canaux'): return 'canaux'
         if not fait('objet:fleur-givre'): return 'givre'
         if not fait('passage:canaux'): return 'canaux'                  # le passage secret : la roue des canaux
@@ -249,7 +232,7 @@ class Descente:
         if not fait('combat:crypte') or not fait('objet:amulette'): return 'crypte'
         if not fait('combat:ossuaire'): return 'ossuaire'
         if not fait('combat:bassin'):
-            if not p['codes'].get('sauve:3') or not p.get('repos') or not all(r in p['sac'] for r in SAC_BOSS if r in p['recettes']): return 'camp'
+            if not p['codes'].get('sauve:3') or not p.get('repos'): return 'camp'
             return 'bassin'
         if not fait('code:porte:odette'): return 'porte4'
         return 'leo'
@@ -299,13 +282,15 @@ class Descente:
             verifie(self.partie()['faits'].get('passage:canaux') == 1, 'aux canaux : la roue tournée dans l\'ordre du plan du Sage lève la grille')
             self.cap('canaux-ouvert')
         elif lieu == 'aeration':
-            if not f.get('objet:sacoche'): self.objet('sacoche'); pg.wait_for_timeout(1500); self.libre()
             if not f.get('objet:herbes'): self.objet('herbes'); self.fenetre_code()
-        elif lieu == 'reserve' and not f.get('objet:fleches-lourdes'):
-            # le Pisteur a ses flèches normales : il lui reste une place, pour les flèches transperçantes
-            if self.js("!DJ.Explo._S().o['fleches-lourdes']"):
+        elif lieu == 'reserve' and (not f.get('objet:fleches-lourdes') or not f.get('objet:fleches-argent')):
+            # le Pisteur prend les deux carquois : ils ne prennent pas de place, il choisira sa flèche en combat
+            if self.js("!DJ.Explo._S().o['fleches-lourdes'] && !DJ.Explo._S().o['fleches-argent']"):
                 self.objet('coffre'); pg.wait_for_timeout(2400); self.libre()
-            self.objet('fleches-lourdes'); pg.wait_for_timeout(2600); self.libre()
+            for q in ('fleches-lourdes', 'fleches-argent'):
+                if not self.partie()['faits'].get('objet:' + q):
+                    self.objet(q); pg.wait_for_timeout(2800); self.libre()
+            verifie(self.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-lourdes', 'fleches-argent'], 'à la réserve : le Pisteur prend les deux carquois (il les porte tous)')
         elif lieu == 'givre' and not f.get('objet:fleur-givre'):
             self.objet('fleur-givre'); self.fenetre_code()
         elif lieu == 'eboulis':
@@ -335,11 +320,6 @@ class Descente:
                 verifie(self.taper_code('recette:givre') and 'givre' in self.partie()['recettes'], 'au feu de camp : le code de l\'Alchimiste apprend le Givre')
             if f.get('combat:ossuaire') and not p['codes'].get('sauve:3'):
                 verifie(self.taper_code('sauve:3'), 'au feu de camp : la page de sauvegarde n° 3, avant le grand bassin')
-            p = self.partie()
-            veut = [r for r in (SAC_BOSS if p['faits'].get('combat:ossuaire') else SAC4) if r in p['recettes']]
-            if not all(r in p['sac'] for r in veut) and self.a('[data-act="refaire-sac"]'):
-                self.tap('[data-act="refaire-sac"]'); pg.wait_for_selector('#sac', timeout=10000); pg.wait_for_timeout(400)
-                self.cap('sac-camp'); self.sac(); self.attends("DJ.Explo.etat().ecran === 'scene' && !DJ.Explo.etat().occupe"); return
         elif lieu in ('porte4', 'leo'):
             try:
                 pg.wait_for_selector('#fenetre .code-gros', timeout=30000); pg.wait_for_timeout(300)

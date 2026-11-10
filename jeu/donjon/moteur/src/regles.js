@@ -35,8 +35,8 @@
    Regles.porte(partie, 'oeil' | 'gueule' | 'lune')     la salle aux trois portes
    Regles.repos(partie)                 le feu de camp
    Regles.code(partie, id)              un code tapé (sauve:1…4, recette:givre, recette:baumelum)
-   Regles.refaireSac(partie, [recettes])                3 recettes (4 avec la sacoche), au départ, au feu de camp, après une fuite
-   Regles.sacPermis(partie), Regles.placesSac(partie)
+   Regles.potions(partie)                               les potions de l'Alchimiste (toutes celles qu'il a créées : plus de sac à choisir)
+   Regles.enMains([objets])                             les objets qui prennent une place (pas les carquois)
    Regles.sauvegarder(partie)           (appelée par le code sauve:N) ;  Regles.objets(partie) : ce que portent les héros
    Regles.grandLivre(partie)            par monstre rencontré : {monstre, nom, rang, lignes:[…], sur}
    Regles.exporter(partie) / Regles.importer(texte)     pour le localStorage (recharger la page n'est pas une fuite)
@@ -95,14 +95,14 @@
    {t:'releve', heros:'pisteur', pv:40, par:'coeur' | 'amulette'}
    {t:'soin', heros:'pisteur', n:20, pv:80, par:'herbes' | 'baume' | 'baumelum' | 'repos'}
    --- le Grand Livre ---
-   {t:'livre', monstre:'rat', ligne:0, texte:'Les rats vivent dans le noir…', sujet:'ouvre', total:1, sur:3, cause:'etude' | 'fuites'}
-   {t:'livre', monstre:'rat', rien:true}            le Sage relit tout : rien de neuf
+   {t:'livre', monstre:'rat', code:'etude:rat', nom:'Rat d\'égout', cause:'etude' | 'fuites'}   le code du monstre entre dans le journal
+   {t:'livre', monstre:'rat', rien:true}            déjà étudié : rien de neuf
    --- hors combat ---
    {t:'lieu', id:'reserve', nom:'La réserve'}
    {t:'combat', salle:'canaux'}                     il faut lancer ce combat : Regles.combat(partie, 'canaux')
    {t:'scene', lieu:'reserve', contenu:{…}}         ce qu'il y a à faire ici (le même objet que Regles.contenu)
    {t:'boucle', vers:'canaux'}                      les égouts tournants ramènent aux canaux
-   {t:'objet', objet:'sacoche', heros:'alchimiste', equipe:'sacoche'}          il s'envole vers ce héros (equipe : le nom pour HerosAnime.equiper)
+   {t:'objet', objet:'amulette', heros:'alchimiste', equipe:'amulette'}        il s'envole vers ce héros (equipe : le nom pour HerosAnime.equiper)
    {t:'or', n:25, total:25}
    {t:'code-objet', objet:'fleur-givre', code:'plante:givre', pour:'alchimiste'}   un code à montrer, pour un autre joueur (objet:null : la porte, Léo)
    {t:'plein', heros:'sage', objets:['cristal-lune', 'baton-chene'], objet:'amulette'}   ses deux places sont prises : rappeler avec « laisser »
@@ -118,7 +118,6 @@
    {t:'traverse', lieu:'dalles'}                    le couloir est passé (pour toujours ; libre:true : il l'était déjà)
    {t:'porte', signe:'oeil', vers:'ossuaire'}
    {t:'repos'}                                      le feu de camp : suivi d'un {t:'soin', par:'repos'} par héros
-   {t:'sac', sac:['feu', 'fumigene', 'baume'], places:3, plein:true}
    {t:'recette', id:'givre', nom:'Givre'}           une recette de plus est connue
    {t:'sauvegarde', code:'sauve:1', lieu:'toiles'}
    {t:'recharge', lieu:'puits', salle:'canaux', fuites:1, revenus:['rats']}   après une fuite ou une défaite ; revenus : les salles dont les monstres sont revenus (suivi d'un {t:'livre', cause:'fuites'} à la 2e fuite au même endroit)
@@ -154,10 +153,9 @@ function nouvellePartie(graine){
   var p = {
     v:1, graine:(graine >>> 0) || 12345,
     lieu:'puits', vus:{puits:1},
-    faits:{'sac:ouvert':1},
+    faits:{},
     heros:{},
-    recettes:D.RECETTES_DEPART.slice(),
-    sac:[],
+    recettes:D.RECETTES_DEPART.slice(),          /* les potions que l'Alchimiste a su créer : il les a toutes avec lui */
     livre:{},
     codes:{},
     or:0, repos:false,
@@ -186,27 +184,41 @@ function importer(txt){
     if(!p.livre) p.livre = {};
     /* une partie d'avant le passage secret des canaux, déjà allée plus loin : son passage est ouvert */
     if(p.vus && (p.vus.toiles || p.faits['combat:toiles'])) p.faits[D.ROUE.ouvre] = 1;
+    /* une partie d'avant le 10 novembre au soir : plus de sac ni de sacoche, et le Pisteur porte tous ses carquois */
+    delete p.sac; delete p.faits['sac:ouvert']; delete p.faits['pose:fleches-normales'];
+    D.EXPOSES.forEach(function(h){ if(p.heros[h]) p.heros[h].objets = (p.heros[h].objets || []).filter(function(o){ return !!D.OBJETS[o]; }); });
+    if(p.heros.pisteur.objets.indexOf('fleches-normales') < 0) p.heros.pisteur.objets.unshift('fleches-normales');
+    if(!p.recettes || !p.recettes.length) p.recettes = D.RECETTES_DEPART.slice();
     if(!p.sauvegarde) sauvegarder(p);
+    else if(p.sauvegarde.heros) D.EXPOSES.forEach(function(h){ var a = p.sauvegarde.heros[h]; if(a && a.objets) a.objets = a.objets.filter(function(o){ return !!D.OBJETS[o]; }); });
     return p;
   }catch(e){ return null; }
 }
-function placesSac(p){ return C.sac + (p.heros.alchimiste.objets.indexOf('sacoche') >= 0 ? 1 : 0); }
-function sacPermis(p){ return !enCombat(p) && (p.lieu === 'camp' || !!p.faits['sac:ouvert']); }
+/* les potions de l'Alchimiste, dans l'ordre de l'étagère */
+function potions(p){ return D.ORDRE_RECETTES.filter(function(r){ return (p.recettes || []).indexOf(r) >= 0; }); }
+/* les objets qui prennent une place dans les mains (les carquois n'en prennent pas : le Pisteur les porte tous) */
+function enMains(l){ return (l || []).filter(function(o){ return !(D.OBJETS[o] && D.OBJETS[o].carquois); }); }
 
 /* le Grand Livre : un monstre rencontré y a sa page (blanche tant que le Sage ne l'a pas étudié) */
 function rencontrer(p, type){ var cle = (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; if(p.livre[cle] === undefined) p.livre[cle] = 0; }
-/* le Grand Livre à afficher : par monstre rencontré, les lignes apprises */
+/* Romain, 10 novembre : l'étude d'un monstre donne UN CODE (« etude:<monstre> », donjon-codes.js) à montrer au Sage, qui le
+   tape sur sa tablette : c'est là qu'il voit le monstre et lit ses énigmes. Une seule étude par sorte de monstre.
+   p.livre[monstre] : absent = jamais rencontré ; 0 = rencontré ; plus de 0 = étudié (le nombre d'énigmes de sa page). */
+function cleLivre(type){ return (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; }
+function etudie(p, type){ return (p.livre[cleLivre(type)] || 0) > 0; }
+/* le journal à afficher : par monstre rencontré, étudié ou pas, et son code pour le Sage */
 function grandLivre(p){
   return Object.keys(D.LIVRE).filter(function(k){ return p.livre[k] !== undefined; }).map(function(k){
-    return {monstre:k, nom:D.MONSTRES[k].nom, rang:D.MONSTRES[k].rang, lignes:D.LIVRE[k].slice(0, p.livre[k]), sur:D.LIVRE[k].length};
+    var ok = p.livre[k] > 0;
+    return {monstre:k, nom:D.MONSTRES[k].nom, rang:D.MONSTRES[k].rang, etudie:ok, code:ok ? 'etude:' + k : null};
   });
 }
-/* le Grand Livre : une ligne de plus sur ce monstre (ou rien s'il sait déjà tout) */
+/* l'étude d'un monstre : son code entre dans le journal (ou rien s'il est déjà étudié) */
 function apprendre(p, type, cause){
-  var cle = (D.MONSTRES[type] && D.MONSTRES[type].livre) || type, lignes = D.LIVRE[cle] || [], n = p.livre[cle] || 0;
-  if(n >= lignes.length) return {t:'livre', monstre:cle, rien:true};
-  p.livre[cle] = n + 1;
-  return {t:'livre', monstre:cle, ligne:n, texte:lignes[n], sujet:D.LIVRE_SUJETS[n], total:n + 1, sur:lignes.length, cause:cause || 'etude'};
+  var cle = cleLivre(type);
+  if(etudie(p, cle)) return {t:'livre', monstre:cle, rien:true};
+  p.livre[cle] = (D.LIVRE[cle] || []).length || 1;
+  return {t:'livre', monstre:cle, code:'etude:' + cle, nom:D.MONSTRES[cle].nom, cause:cause || 'etude'};
 }
 
 /* ======================================================================= la fuite, la défaite
@@ -222,12 +234,11 @@ function fuir(p, salle){
   var livre = p.livre, fuites = p.fuites = p.fuites || {}, s = p.sauvegarde, g = p.graine, revenus = [];
   if(salle){
     fuites[salle] = (fuites[salle] || 0) + 1;
-    /* après 2 fuites au même endroit, le Grand Livre offre une ligne sur la bête la plus forte de la salle */
+    /* après 2 fuites au même endroit, le journal offre le code de la bête la plus forte de la salle qui n'est pas étudiée */
     if(fuites[salle] % D.FUITES_POUR_UNE_LIGNE === 0 && D.COMBATS[salle]){
       var rangs = {boss:3, elite:2, normal:1}, types = D.COMBATS[salle].monstres.slice().sort(function(a, b){ return rangs[D.MONSTRES[b].rang] - rangs[D.MONSTRES[a].rang]; });
       for(var i = 0; i < types.length; i++){
-        var cle = D.MONSTRES[types[i]].livre || types[i];
-        if((livre[cle] || 0) < (D.LIVRE[cle] || []).length){ ev.push(apprendre({livre:livre}, types[i], 'fuites')); break; }
+        if(!etudie({livre:livre}, types[i])){ ev.push(apprendre({livre:livre}, types[i], 'fuites')); break; }
       }
     }
   }
@@ -240,7 +251,7 @@ function fuir(p, salle){
   if(am && !s.faits['amulette:utilisee']){
     delete p.faits['amulette:utilisee'];
     var qui = String(am).split('|')[1], H = p.heros[qui];
-    if(H && H.objets.length < C.places && H.objets.indexOf('amulette') < 0) H.objets.push('amulette');
+    if(H && enMains(H.objets).length < C.places && H.objets.indexOf('amulette') < 0) H.objets.push('amulette');
     else { delete p.faits['objet:amulette']; p.faits['pose:amulette'] = s.lieu; }
   }
   /* on repart de l'endroit de la sauvegarde, avec les points de vie de ce moment-là */
@@ -249,7 +260,6 @@ function fuir(p, salle){
   D.EXPOSES.forEach(function(h){ var a = s.heros[h], b = p.heros[h]; if(a && b){ b.pv = a.pv; b.pvMax = a.pvMax; b.sol = !!a.sol; } });
   p.repos = !!s.repos;
   p.graine = (Math.imul(g ^ 0x9E3779B9, 0x85EBCA6B) >>> 0) || 1;    /* le hasard ne se répète pas d'un essai à l'autre */
-  p.faits['sac:ouvert'] = 1;                                        /* après une fuite, on refait le sac sans code */
   ev.unshift({t:'recharge', lieu:p.lieu, salle:salle || null, fuites:salle ? fuites[salle] : 0, revenus:revenus});
   return ev;
 }
@@ -263,7 +273,7 @@ function Combat(p, salle, o){
   this._graineDeLaPartie = !o.alea;
   this.R = o.alea || alea(p.graine);
   this.tour = 0; this.resultat = null; this.num = 0;
-  this.sac = p.sac.slice();
+  this.sac = potions(p);                     /* toutes les potions créées (plus de sac à choisir) */
   this.h = {};
   D.EXPOSES.forEach(function(h){
     var H = p.heros[h];
@@ -306,18 +316,8 @@ P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblable
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
 P.porte = function(h, objet){ return this.h[h].objets.indexOf(objet) >= 0; };
-/* le carquois qui sert contre cette bête : avec deux carquois spéciaux, le Pisteur tire la flèche faite pour elle */
-P._carquois = function(m){
-  var o = this.h.pisteur.objets, premier = null;
-  for(var i = 0; i < o.length; i++){
-    var O = D.OBJETS[o[i]]; if(!O || !O.fleche) continue;
-    if(m && O.contre.indexOf(m.type) >= 0) return O;
-    premier = premier || O;
-  }
-  return premier;
-};
-
-/* ---------- les gestes permis ---------- */
+/* les carquois spéciaux du Pisteur (ses flèches normales, il les a toujours) */
+P._carquoisPortes = function(){ return this.h.pisteur.objets.filter(function(o){ return D.OBJETS[o] && D.OBJETS[o].fleche; }); };
 function ids(l){ return l.map(function(m){ return m.id; }); }
 P.gestes = function(h){
   var self = this, H = this.h[h], l = [];
@@ -327,9 +327,16 @@ P.gestes = function(h){
   function g(geste, nom, vise, cibles, permis, mot, max){ l.push({geste:geste, nom:nom, vise:vise, permis:permis, mot:permis ? null : mot, cibles:cibles, max:max == null ? (vise === 'salle' || vise === 'equipe' ? 0 : 1) : max}); }
   D.HEROS[h].gestes.forEach(function(id){
     var G = D.GESTES[id];
-    if(id === 'fleche') g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+    if(id === 'fleche'){
+      g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+      /* une carte par carquois spécial : le Pisteur choisit la flèche qu'il tire (« f:<objet> ») */
+      if(h === 'pisteur') self._carquoisPortes().forEach(function(o){ g('f:' + o, D.OBJETS[o].court || D.OBJETS[o].nom, 'bete', cib, cib.length > 0, self._motCache()); });
+    }
     else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motCache()); }
-    else if(id === 'etudier'){ var v = ids(self.vivants()); g(id, G.nom, 'bete', v, v.length > 0, MOTS.fini); }
+    else if(id === 'etudier'){      /* seulement les monstres que le Sage n'a pas encore étudiés (« quand il y a des nouveaux ennemis ») */
+      var v = ids(self.vivants().filter(function(m){ return !etudie(self.p, m.type); }));
+      g(id, G.nom, 'bete', v, v.length > 0, self.vivants().length ? MOTS.etudie : MOTS.fini);
+    }
     else if(id === 'rune'){
       if(self.porte('sage', 'cristal-lune')) g(id, G.nom, 'salle', [], true, null);
       else g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
@@ -371,7 +378,7 @@ P.refus = function(h, geste, cible){
   if(H.avale && geste !== 'chatouiller') return MOTS.avale;
   var l = this.gestes(h), g = null;
   for(var i = 0; i < l.length; i++) if(l[i].geste === geste) g = l[i];
-  if(!g) return geste && geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : MOTS.impossible;
+  if(!g) return geste && (geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] || geste.indexOf('f:') === 0 && D.OBJETS[geste.slice(2)]) ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : MOTS.impossible;
   if(!g.permis) return g.mot;
   if(g.vise === 'salle' || g.vise === 'equipe') return null;
   var c = Array.isArray(cible) ? cible : [cible];
@@ -384,6 +391,7 @@ P.refus = function(h, geste, cible){
     if(g.vise === 'sol') return MOTS.debout;
     var m = this.bete(c[k]);
     if(!m || m.mort) return MOTS.fini;
+    if(geste === 'etudier') return MOTS.etudie;                 /* cette sorte de monstre a déjà son code dans le journal */
     if(this.cache(m)) return m.e.sous !== undefined ? MOTS.eau : MOTS.haut;
     return MOTS.loin;
   }
@@ -542,7 +550,8 @@ P.jouer = function(h, a){
     ev.push({t:'herbes', heros:h, heros2:cibles[0]});
     this._soin(ev, cibles[0], C.herbes, 'herbes');
   }
-  else if(geste === 'fleche') this._fleche(ev, m, null);
+  else if(geste === 'fleche') this._fleche(ev, m, null, null);
+  else if(geste.indexOf('f:') === 0) this._fleche(ev, m, null, D.OBJETS[geste.slice(2)]);
   else if(geste === 'dague'){
     ev.push({t:'dague', heros:h, bete:m.id});
     if(this._un(m, m.def.blinde)) ev.push({t:'rebond', bete:m.id, coup:'dague'});
@@ -558,7 +567,7 @@ P.jouer = function(h, a){
   }
   else {                                   /* une recette du sac */
     var rid = geste.slice(2), rec = D.RECETTES[rid];
-    if(h === 'pisteur') this._fleche(ev, m, rid);
+    if(h === 'pisteur') this._fleche(ev, m, rid, null);
     else if(rec.soin){ ev.push({t:'potion', heros:h, recette:rid, heros2:cibles[0]}); this._soin(ev, cibles[0], rec.soin, rid); }
     else if(rec.releve){
       var S = this.h[cibles[0]];
@@ -587,16 +596,27 @@ P._soin = function(ev, h, n, par){
   S.pv = Math.min(S.pvMax, S.pv + n);
   ev.push({t:'soin', heros:h, n:S.pv - avant, pv:S.pv, par:par});
 };
-/* la flèche du Pisteur (potion : la recette où elle a trempé, ou null) */
-P._fleche = function(ev, m, potion){
-  var q = this._carquois(m), bonus = q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche';
+/* la flèche du Pisteur. potion : la recette où elle a trempé (ou null). q : le carquois spécial choisi (D.OBJETS[...], ou
+   null pour les flèches normales ; une flèche trempée est toujours une flèche normale).
+   Romain, 10 novembre : le Pisteur CHOISIT sa flèche, et chaque sorte a son défaut : la flèche de lune rebondit sur l'armure,
+   la transperçante passe à travers les bêtes de brume (même point faible ouvert : le tour est perdu). */
+P._fleche = function(ev, m, potion, q){
+  var bonus = !!q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche', nom = potion || (q ? q.fleche : 'normale');
+  if(q && q.rebondit && q.rebondit.indexOf(m.type) >= 0){
+    ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:true, defaut:'rebondit'});
+    ev.push({t:'rebond', bete:m.id, coup:coup}); return;
+  }
+  if(q && q.traverse && q.traverse.indexOf(m.type) >= 0){
+    ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:false, defaut:'traverse'});
+    ev.push({t:'mot', bete:m.id, texte:MOTS.traverse}); return;
+  }
   /* le critique surprise : une flèche simple, sur un monstre normal au point faible fermé */
   var surprise = !potion && m.ouvert === 0 && m.def.rang === 'normal' && this.R() < C.surprise;
   var blinde = this._un(m, m.def.blinde);
   /* les flèches spéciales touchent « même fermé » les monstres normaux ; un élite reste immunisé (leur bonus, c'est le critique) */
   var perce = bonus && m.def.rang === 'normal';
   var rebond = !blinde && m.ouvert === 0 && !surprise && !potion && this._immunise(m);
-  ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:potion || (q ? q.fleche : 'normale'), rebond:rebond || blinde});
+  ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:rebond || blinde});
   if(blinde){ ev.push({t:'rebond', bete:m.id, coup:coup}); return; }
   if(m.ouvert !== 0) return this._critique(ev, m, 'fleche', coup, bonus ? q.critique : 0, false);
   if(surprise) return this._critique(ev, m, 'fleche', coup, bonus ? q.critique : 0, true);
@@ -820,7 +840,6 @@ P._fin = function(ev, res){
     if(this.amulette) p.faits['amulette:utilisee'] = this.salle + '|' + this.amulette;     /* (dans quel combat, et qui la portait) */
     p.faits['combat:' + this.salle] = 1;
     p.repos = false;
-    delete p.faits['sac:ouvert'];
   } else D.EXPOSES.forEach(function(h){ o[h] = {pv:self.h[h].pv, sol:self.h[h].sol}; });
   ev.push({t:'fin', resultat:res, tours:this.tour, heros:o});
   if(res === 'victoire') poserCombat(p, null);
@@ -857,7 +876,7 @@ function contenu(p, lieu){
   if(L.piege === 'dalles') o.dalles = {pas:f.dalles || 0, sur:D.DALLES.pas, passe:!!f['piege:dalles']};
   if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
-  if(L.repos) o.repos = {permis:!p.repos, sac:true};
+  if(L.repos) o.repos = {permis:!p.repos};
   if(L.donne) o.code = {id:L.donne, pour:L.pour};
   if(L.boucle) o.boucle = L.boucle;
   if(L.fin) o.fin = true;
@@ -879,7 +898,6 @@ function entrer(p, lieu){
   p.lieu = lieu; p.vus[lieu] = 1;
   var ev = [{t:'lieu', id:lieu, nom:L.nom}];
   if(L.combat && !p.faits['combat:' + L.combat]){
-    delete p.faits['sac:ouvert'];                 /* une fois devant les monstres, le sac ne se refait plus */
     ev.push({t:'combat', salle:L.combat});
     return ev;
   }
@@ -893,12 +911,11 @@ function entrer(p, lieu){
 function donner(p, ev, id, heros, laisser){
   var O = D.OBJETS[id], h = O.pour === 'tous' ? heros : O.pour, H = p.heros[h];
   if(!H) return refus(MOTS.pourQui, {objet:id});
-  if(H.objets.length >= C.places){
-    if(!laisser || H.objets.indexOf(laisser) < 0) return [{t:'plein', heros:h, objets:H.objets.slice(), objet:id}];
+  if(!O.carquois && enMains(H.objets).length >= C.places){      /* (un carquois ne prend pas de place) */
+    if(!laisser || H.objets.indexOf(laisser) < 0 || (D.OBJETS[laisser] && D.OBJETS[laisser].carquois)) return [{t:'plein', heros:h, objets:enMains(H.objets), objet:id}];
     H.objets.splice(H.objets.indexOf(laisser), 1);
     delete p.faits['objet:' + laisser]; p.faits['pose:' + laisser] = p.lieu;
     ev.push({t:'laisse', objet:laisser, heros:h, lieu:p.lieu});
-    if(laisser === 'sacoche' && p.sac.length > C.sac){ p.sac = p.sac.slice(0, C.sac); ev.push({t:'sac', sac:p.sac.slice(), places:C.sac, plein:true}); }
   }
   H.objets.push(id);
   ev.push({t:'objet', objet:id, heros:h, equipe:O.equipe || null});
@@ -1020,21 +1037,8 @@ function code(p, id){
   if(p.recettes.indexOf(def.recette) < 0) p.recettes.push(def.recette);
   return [{t:'recette', id:def.recette, nom:D.RECETTES[def.recette].nom}];
 }
-function refaireSac(p, liste){
-  if(enCombat(p)) return refus(MOTS.combat);
-  if(!sacPermis(p)) return refus(MOTS.sacFerme);
-  liste = (liste || []).slice();
-  var places = placesSac(p), vu = {};
-  if(liste.length > places) return refus(MOTS.tropPlein);
-  for(var i = 0; i < liste.length; i++){
-    if(p.recettes.indexOf(liste[i]) < 0 || vu[liste[i]]) return refus(MOTS.recette, {recette:liste[i]});
-    vu[liste[i]] = 1;
-  }
-  p.sac = liste;
-  return [{t:'sac', sac:liste.slice(), places:places, plein:liste.length === places}];
-}
 function objets(p){
-  var o = {heros:{}, codes:[], or:p.or, recettes:p.recettes.slice(), sac:p.sac.slice(), places:placesSac(p)};
+  var o = {heros:{}, codes:[], or:p.or, recettes:potions(p)};
   D.EXPOSES.forEach(function(h){ o.heros[h] = p.heros[h].objets.slice(); });
   Object.keys(D.OBJETS).forEach(function(id){ if(D.OBJETS[id].code && p.faits['objet:' + id]) o.codes.push({objet:id, code:D.OBJETS[id].code, pour:D.OBJETS[id].pour}); });
   Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l]; if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour}); });
@@ -1045,8 +1049,8 @@ var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
   entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
-  repos:repos, code:code, refaireSac:refaireSac, sacPermis:sacPermis, placesSac:placesSac,
-  sauvegarder:sauvegarder, objets:objets, grandLivre:grandLivre, exporter:exporter, importer:importer
+  repos:repos, code:code, potions:potions, enMains:enMains,
+  sauvegarder:sauvegarder, objets:objets, grandLivre:grandLivre, etudie:etudie, exporter:exporter, importer:importer
 };
 if(NODE) module.exports = Regles; else global.Regles = Regles;
 })(typeof window !== 'undefined' ? window : this);

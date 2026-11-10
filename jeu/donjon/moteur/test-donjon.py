@@ -113,13 +113,11 @@ def noms_code(pg, id):
 def visite(nav):
     print('— La visite (combats tenus pour gagnés)')
     J = Jeu(nav, PAGE + '?nouveau=1&graine=7&sanscombat=1', 'visite'); pg = J.pg
-    # le sac
-    verifie(J.js("document.querySelectorAll('#sac .recette').length") == 7, 'le sac propose 7 recettes au départ (dont l\'Acide)')
-    verifie(J.js("document.querySelector('#sac .aller').disabled"), '« Descendre » attend trois recettes')
-    for r in ['feu', 'huile', 'baume', 'colle']:
-        J.tap('.recette[data-id="%s"]' % r)
-    verifie(J.js("document.querySelectorAll('#sac .recette.choisie').length") == 3, 'le sac refuse une 4e recette')
-    verifie(not J.sans_lire(), 'le sac : la bulle du conteur a son 🔊')
+    # le départ (Romain, 10 novembre) : plus de sac de 3 recettes à choisir, l'Alchimiste a toutes ses potions
+    verifie(J.js("document.querySelectorAll('#sac .recette').length") == 7, 'le départ montre les 7 potions de l\'Alchimiste (dont l\'Acide)')
+    verifie(J.js("!document.querySelector('#sac .aller').disabled") and J.js("document.querySelector('#sac .aller').classList.contains('guide')") and J.js("!document.querySelector('#sac .sac-poche, #sac .recette[data-act]')"),
+            'rien à choisir : « Descendre » est prêt tout de suite, avec le rond jaune')
+    verifie(not J.sans_lire(), 'le départ : chaque texte a son 🔊 ' + str(J.sans_lire()))
     J.cap('sac'); J.tap('[data-act="sac-pret"]')
     verifie(J.scene('puits'), 'on arrive au fond du puits (une salle vue de côté, les trois héros à gauche)')
     verifie(J.js("document.querySelectorAll('#scene .perso.heros').length") == 3 and J.js("!!document.querySelector('#b-repartir.guide')"), 'le puits : rien à prendre, « Repartir » porte le rond jaune')
@@ -138,9 +136,9 @@ def visite(nav):
     J.va('galerie'); J.scene('galerie'); J.objet('bourse'); J.libre(); pg.wait_for_timeout(300)
     verifie(J.partie()['or'] > 0, f'la galerie : la bourse donne de l\'or ({J.partie()["or"]})')
     J.repartir(); J.chemin('puits')
-    # l'aération : la sacoche (un objet porté) et les herbes (un objet à code)
-    J.va('aeration'); J.scene('aeration'); J.objet('sacoche'); J.libre(); pg.wait_for_timeout(300)
-    verifie('sacoche' in J.partie()['heros']['alchimiste']['objets'], 'l\'aération : la sacoche va à l\'Alchimiste')
+    # l'aération : les herbes (un objet à code) ; la sacoche a disparu avec le sac
+    J.va('aeration'); J.scene('aeration'); pg.wait_for_timeout(300)
+    verifie(J.js("!DJ.Explo._S().o['sacoche']") and J.js("Regles.contenu(DJ.Explo._X().partie, 'aeration').objets") == ['herbes'], 'l\'aération : plus de sacoche, seulement les herbes')
     J.objet('herbes'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'plante:lumiere'), f'les herbes lumineuses montrent leur code pour l\'Alchimiste ({J.code_montre()})')
     verifie(not J.sans_lire(), 'la fenêtre du code : chaque texte a son 🔊 ' + str(J.sans_lire()))
@@ -151,26 +149,22 @@ def visite(nav):
     # la réserve (Romain, 10 novembre) : pas de texte en bas, l'équipement du Pisteur au-dessus de sa tête, deux places
     J.va('reserve'); J.scene('reserve')
     verifie(J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden' and J.js("document.querySelector('#b-repartir').textContent").startswith('Continuer'), 'la réserve : pas de petit texte en bas ; le bouton dit « Continuer »')
-    verifie(J.js("document.querySelectorAll('#plaque-pisteur .pl-case').length") == 2 and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 1 and J.partie()['heros']['pisteur']['objets'] == ['fleches-normales'],
-            'l\'équipement du Pisteur s\'affiche : deux places, ses flèches normales dans la première')
+    verifie(J.js("document.querySelectorAll('#plaque-pisteur .pl-case:not(.carq)').length") == 2 and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 0 and J.partie()['heros']['pisteur']['objets'] == ['fleches-normales'],
+            'l\'équipement du Pisteur s\'affiche : deux places libres (ses flèches normales n\'en prennent pas)')
     J.objet('coffre'); pg.wait_for_timeout(2400); J.libre()
     J.objet('fleches-argent'); pg.wait_for_timeout(400)
     verifie(J.js("(document.querySelector('#hud .nom-objet') || {}).textContent") == 'Flèches de lune', 'on touche un carquois : son nom s\'affiche (« Flèches de lune »)')
     pg.wait_for_timeout(2400); J.libre()
-    verifie(J.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-argent'] and J.js("document.querySelector('#plaque-pisteur').classList.contains('complet')") and 'Complet' in J.js("document.querySelector('#plaque-pisteur').textContent"),
-            'il le prend : l\'équipement est « Complet »')
-    verifie(J.js("!document.querySelector('#scene [data-ob=\"fleches-lourdes\"].ob-guide, #scene [data-ob=\"fleches-lourdes\"] .ob-guide')") and J.js("document.querySelector('#b-repartir').classList.contains('guide')"), 'plus de rond jaune sur l\'autre carquois (plus de place) : c\'est « Continuer » qui le porte')
-    J.objet('fleches-lourdes'); pg.wait_for_timeout(600)
-    verifie(J.js("(document.querySelector('#hud .nom-objet') || {}).textContent") == 'Flèches transperçantes' and J.js("document.querySelector('#plaque-pisteur').classList.contains('choisir')") and len(J.partie()['heros']['pisteur']['objets']) == 2,
-            'l\'autre carquois : les mains sont pleines, les deux cases bougent (il faut en reposer un)')
-    J.tap('#plaque-pisteur [data-id="fleches-normales"]'); pg.wait_for_timeout(3000); J.libre()
-    p = J.partie()
-    verifie(p['heros']['pisteur']['objets'] == ['fleches-argent', 'fleches-lourdes'] and J.js("Regles.contenu(DJ.Explo._X().partie, 'reserve').objets") == ['fleches-normales'] and J.js("!!DJ.Explo._S().o['fleches-normales']"),
-            'on repose les flèches normales (elles restent au sol de la réserve) : le Pisteur a les deux carquois')
+    verifie(J.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-argent'] and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.carq').length") == 1 and not J.js("document.querySelector('#plaque-pisteur').classList.contains('complet')"),
+            'il le prend : le carquois s\'ajoute à son équipement, sans prendre de place')
+    J.objet('fleches-lourdes'); pg.wait_for_timeout(3000); J.libre()
+    verifie(J.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-argent', 'fleches-lourdes'] and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.carq').length") == 2 and J.js("!document.querySelector('#plaque-pisteur.choisir')"),
+            'et l\'autre aussi, sans rien reposer (Romain : « qu\'on puisse prendre toutes les flèches »)')
     J.cap('reserve'); J.repartir()
-    verifie(J.etat()['ecran'] == 'carte', 'la réserve ne se rouvre pas toute seule : il n\'y a plus rien à prendre sans reposer')
+    verifie(J.etat()['ecran'] == 'carte', 'la réserve ne se rouvre pas toute seule : il n\'y a plus rien à prendre')
     J.tap('[data-act="entrer"]'); J.scene('reserve'); pg.wait_for_timeout(1200)
-    verifie(J.js("!!DJ.Explo._S().o['fleches-normales']") and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 2, 'en revenant : les flèches normales sont toujours là, au sol')
+    verifie(J.partie()['heros']['pisteur']['objets'] == ['fleches-normales', 'fleches-argent', 'fleches-lourdes'] and J.js("Regles.contenu(DJ.Explo._X().partie, 'reserve').objets.length") == 0 and J.js("['fleches-argent', 'fleches-lourdes'].every(function(id){ var o = DJ.Explo._S().o[id]; return !o || o.pris; })"),
+            'en revenant : le Pisteur a toujours ses deux carquois, la réserve est vide')
     J.repartir(); J.chemin('rats')
     # les canaux : après le combat, on voit la salle au calme (la grille et la roue y sont, sans rien dire)
     J.va('canaux'); 
@@ -256,11 +250,6 @@ def visite(nav):
     J.objet('sarcophage'); pg.wait_for_timeout(2800); J.libre()
     J.objet('amulette'); pg.wait_for_selector('#fenetre [data-act="qui-porte"]', timeout=10000)
     verifie(J.js("document.querySelectorAll('#fenetre [data-act=\"qui-porte\"]').length") == 3, 'l\'amulette : on choisit qui la porte')
-    # le Pisteur a déjà ses deux carquois : lui donner l'amulette, c'est reposer quelque chose (on change d'avis, elle ira à l'Alchimiste)
-    J.clic('[data-act="qui-porte"][data-id="pisteur"]'); pg.wait_for_timeout(700)
-    verifie(J.js("!!document.querySelector('#plaque-pisteur.choisir')") and 'amulette' not in J.partie()['heros']['pisteur']['objets'], 'l\'amulette pour le Pisteur : ses mains sont pleines, ses cases bougent')
-    J.objet('amulette'); pg.wait_for_selector('#fenetre [data-act="qui-porte"]', timeout=10000)
-    verifie(J.js("!document.querySelector('#plaque-pisteur.choisir')"), 'on touche autre chose : l\'échange est annulé')
     J.clic('[data-act="qui-porte"][data-id="alchimiste"]'); pg.wait_for_timeout(2600); J.libre()
     verifie('amulette' in J.partie()['heros']['alchimiste']['objets'], 'l\'amulette de vie est portée par l\'Alchimiste')
     J.cap('crypte'); J.repartir(); J.chemin('portes'); J.scene('portes')
@@ -290,12 +279,10 @@ def visite(nav):
     pg.wait_for_timeout(900)
     verifie('givre' in J.partie()['recettes'], 'le code de l\'Alchimiste apprend la recette du Givre')
     J.clic('#fenetre .aller')
-    J.tap('[data-act="refaire-sac"]'); pg.wait_for_selector('#sac', timeout=10000); pg.wait_for_timeout(400)
-    verifie(J.js("document.querySelectorAll('#sac .recette').length") == 8 and J.js("document.querySelectorAll('#sac .sac-case').length") == 4, 'au feu de camp, on refait le sac : 8 recettes, 4 places avec la sacoche')
-    J.tap('.recette[data-id="givre"]'); J.cap('sac-camp'); J.tap('[data-act="sac-pret"]'); J.scene('camp')
-    verifie(len(J.partie()['sac']) == 4 and 'givre' in J.partie()['sac'], f'le nouveau sac est pris ({J.partie()["sac"]})')
+    verifie(J.js("!document.querySelector('[data-act=\"refaire-sac\"]')") and 'sac' not in J.partie(), 'au feu de camp : plus de sac à refaire (l\'Alchimiste a déjà tout)')
     J.tap('[data-act="objets"]')
-    verifie(J.js("document.querySelectorAll('#fenetre .code-ligne').length") >= 4 and not J.sans_lire(), '« Objets » : les objets portés, les codes à donner, le sac, chacun avec son 🔊')
+    verifie(J.js("document.querySelectorAll('#fenetre .code-ligne').length") >= 4 and not J.sans_lire(), '« Objets » : les objets portés, les codes à donner, les potions, chacun avec son 🔊')
+    verifie(J.js("document.querySelectorAll('#fenetre .fiole').length") == 8, '« Objets » montre les 8 potions de l\'Alchimiste (les 7 du départ et le Givre)')
     J.cap('objets'); J.clic('#fenetre .fermer'); J.repartir()
     # la fin : le bassin (tenu pour gagné), la porte aux quatre signes, Léo
     J.chemin('bassin'); J.va('porte4'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300)
@@ -312,8 +299,6 @@ def visite(nav):
 def combat(nav):
     print('— Un vrai combat depuis la carte')
     J = Jeu(nav, PAGE + '?nouveau=1&graine=7&vitesse=2', 'combat'); pg = J.pg
-    for r in ['feu', 'huile', 'baume']:
-        J.tap('.recette[data-id="%s"]' % r)
     J.tap('[data-act="sac-pret"]'); J.scene('puits'); J.repartir()
     J.va('rats')
 
@@ -339,9 +324,8 @@ def combat(nav):
     J.va('canaux'); libre()
     J.tap('#fuite'); J.clic('#fenetre [data-act="fuir"]'); pg.wait_for_selector('#fin [data-act="combat-fin"]', timeout=40000); pg.wait_for_timeout(400)
     verifie(J.js("!!document.querySelector('#fin .point')") and 'Le fond du puits' in J.js("document.querySelector('#fin .retour').textContent"), '« On fait le point » dit où l\'on repart')
-    J.cap('point'); J.tap('#fin [data-act="combat-fin"]'); pg.wait_for_selector('#sac', timeout=10000); pg.wait_for_timeout(400)
-    verifie(J.js("document.querySelectorAll('#sac .recette.choisie').length") == 3, 'après la fuite : le sac d\'avant est reproposé (on peut le changer)')
-    J.tap('[data-act="sac-pret"]'); J.carte()
+    J.cap('point'); J.tap('#fin [data-act="combat-fin"]'); J.carte()
+    verifie(J.js("!document.querySelector('#sac')"), 'après la fuite : retour direct à la carte, rien à refaire')
     p = J.partie()
     verifie(J.etat()['ici'] == 'puits' and 'combat:rats' not in p['faits'] and p.get('fuites', {}).get('canaux') == 1, 'la fuite ramène au fond du puits : les rats sont revenus, la fuite est comptée')
     verifie(p['vus'].get('rats') == 1 and p['vus'].get('canaux') == 1, 'après la fuite, la brume levée est gardée (seuls les monstres reviennent)')
