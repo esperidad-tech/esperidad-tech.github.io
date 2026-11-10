@@ -51,6 +51,8 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
     - la mesure se fait avec `essai/perf-tablette.py`.
 - **Le donjon, où en sont les pièces** (Bible §12.51) :
   - la conception : `jeu/donjon/CONCEPTION-DONJON.md` ;
+  - **le cahier des charges du moteur : `jeu/donjon/MOTEUR-DONJON.md`** (c'est la feuille de route pour assembler le donjon jouable : les règles sans affichage et la simulation de difficulté, le combat à l'écran, l'exploration, les sauvegardes, les tests) ;
+  - les codes : `jeu/donjon/donjon-codes.js` ; la carte : `jeu/donjon/carte.js` ; les tablettes du Sage et de l'Alchimiste : `jeu/donjon/donjon-sage.html`, `donjon-alchimiste.html` (sources `jeu/donjon/pages/`) ;
   - les monstres animés : `jeu/donjon/anim/betes/<id>/` (contrat : `CONTRAT.md`) ;
   - les décors de combat : `jeu/donjon/decors/` ;
   - les salles sans combat : `jeu/donjon/scenes/` ;

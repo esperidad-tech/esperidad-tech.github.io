@@ -160,8 +160,21 @@ def tablette(nav):
     verifie(P.etat("window.RatAnime ? SALLE.acteurs.r[0].etat().dos && !!SALLE.acteurs.r[0]._rat.fx.flaque_huile : !!document.querySelector('.flaque-huile')"), 'une flaque d\'huile reste au sol')
     P.heros('pisteur'); P.capture('13-bande-pisteur')
     P.geste('fleche'); P.cible(0)
-    for n, ms in [('14-critique-ralenti', 520), ('15-critique-choc', 200), ('16-critique-rayons', 180), ('17-critique-texte', 300), ('18-critique-brume', 700)]:
+    # le critique (Romain, 9 novembre, 16 h 37) : localisé autour du rat — temps suspendu, fumée noire, membres, cendres
+    pg.wait_for_selector('.ra-scene-fx, .crit-texte', state='attached', timeout=15000)
+    zone = []
+    for n, ms in [('14-critique-suspendu', 200), ('15-critique-fumee', 550), ('16-critique-membres', 650), ('17-critique-retombent', 450), ('18-critique-cendres', 900)]:
         pg.wait_for_timeout(ms); P.capture(n)
+        zone.append(pg.evaluate("""() => { var j = document.getElementById('jeu').getBoundingClientRect(), g = 1e9, d = -1e9, n = 0;
+          document.querySelectorAll('.ra-scene-fx *, .crit-texte, #ecran-fx > *, #fx > *').forEach(function(e){
+            if(e.closest('.zone') || e.classList.contains('chiffre') || e.classList.contains('ra-scene-fx')) return;
+            var r = e.getBoundingClientRect(), cs = getComputedStyle(e); if(!r.width || cs.visibility === 'hidden' || +cs.opacity < .05) return;
+            n++; g = Math.min(g, r.left); d = Math.max(d, r.right); });
+          return {n: n, gauche: n ? (g - j.left) / j.width : 1, large: n ? (d - g) / j.width : 0,
+                  plein: document.querySelectorAll('.crit-vignette, .crit-choc, .crit-rayons, .crit-eclair').length}; }"""))
+    verifie(all(z['plein'] == 0 for z in zone), 'critique : rien de plein écran (ni vignette, ni image de choc, ni rayons)')
+    verifie(all(z['gauche'] > .3 and z['large'] < .72 for z in zone if z['n']),
+            'critique : tout reste autour du rat, dans la partie droite de la scène (' + ', '.join('%.2f→%.2f' % (z['gauche'], z['gauche'] + z['large']) for z in zone if z['n']) + ')')
     P.attend("SALLE.etat.mode === 'rats'")
     verifie(P.etat('SALLE.etat.r[0].mort'), 'le critique du Pisteur tue le rat net')
     s = P.etat('window.__sons')

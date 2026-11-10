@@ -23,7 +23,7 @@
 
 - Les héros jouent dans l'ordre qu'ils choisissent, puis les monstres jouent, de devant à derrière. Les monstres montrent qui ils visent.
 - **Les points de vie ne reviennent pas entre les salles.** On se soigne avec les Herbes (20), le Baume (40, s'il est dans le sac) et le feu de camp (la moitié des PV max).
-- Les potions sont infinies, et le sac a 3 recettes (4 avec la Sacoche).
+- Les potions sont infinies, et le sac a 3 recettes (4 avec la Sacoche). Sept recettes sont connues au départ : feu, fumigène (le nuage), huile, colle, acide, baume, cœur vaillant. Le givre et le baume lumineux se gagnent au chaudron.
 - **Le point faible fermé** :
   - les monstres normaux prennent 1 à 5 de dégâts ;
   - **les élites et le boss sont IMMUNISÉS** (0 de dégâts, « ça rebondit ! ») tant que le point faible est fermé.
@@ -88,7 +88,7 @@ Chaque héros a **2 places d'objet**. Trouver un objet quand c'est plein oblige 
 - la fleur de givre (grotte de givre) va à l'Alchimiste, qui la cuisine au chaudron et obtient la recette Givre ;
 - les herbes lumineuses (puits d'aération) vont à l'Alchimiste, pour la recette Baume lumineux (soigne 30 toute l'équipe) ;
 - la page déchirée (bibliothèque) va au Sage, et complète le plan : le coin du bassin, avec une note sur Bourbe ;
-- une page blanche (bibliothèque) va au Sage, et lui donne une sauvegarde de plus.
+- une page blanche (le tas d'os du cul-de-sac éboulé) va au Sage, et lui donne une sauvegarde de plus.
 
 ## 7. Les salles, dans l'ordre du chemin
 
@@ -105,10 +105,10 @@ Chaque salle a son décor (§10).
 | — | Les égouts tournants | boucle | un rat errant (combat court), puis on ressort aux canaux |
 | — | La grotte de la fleur de givre | objets | la fleur de givre (code Alchimiste) |
 | 3 | La cave aux toiles | combat | 1 araignée et 2 feux follets |
-| — | Le cul-de-sac éboulé | curiosité | un tas d'os à fouiller (une page blanche, ou une morsure) ; le crâne du passage secret (visible avec l'encre invisible du Sage) mène au feu de camp |
+| — | Le cul-de-sac éboulé | curiosité | un tas d'os à fouiller : la première fouille réveille un rat qui mord (−10), la deuxième donne la page blanche (code Sage) ; le crâne du passage secret (visible avec l'encre invisible du Sage) mène au feu de camp |
 | — | Le couloir aux dalles | piège | un damier : sur les dalles sombres, −15 à toute l'équipe ; le plan du Sage dit « seulement les dalles claires » |
 | 4 | L'atelier des Fondateurs | combat, élite | le Gardien de rouille et 1 rat cuirassé |
-| — | La bibliothèque engloutie | objets, choix | la page déchirée et une page blanche (codes Sage) ; cristal de lune OU bâton de chêne |
+| — | La bibliothèque engloutie | objets, choix | la page déchirée (code Sage) ; cristal de lune OU bâton de chêne |
 | — | La salle aux trois portes | énigme | œil (vers l'ossuaire), gueule (vers la fausse crypte), lune (retour à la cave) |
 | — | La fausse crypte | cul-de-sac | l'amulette de vie dans le sarcophage, et 2 chauves-souris (combat) |
 | 5 | L'ossuaire | combat, élite | le Roi des rats et 2 feux follets |
@@ -120,7 +120,7 @@ Chaque salle a son décor (§10).
 ## 8. Les sauvegardes et la fuite
 
 - **La sauvegarde de départ** est au fond du puits.
-- Le Sage a 3 pages blanches sur sa tablette, et on en trouve une de plus (le cul-de-sac éboulé, ou la bibliothèque). Une page donne un code. Le Pisteur le tape hors combat (bouton « 📜 Un code » sur la carte). La sauvegarde garde tout : la position, les PV, les objets, le sac et les salles battues.
+- Le Sage a 3 pages blanches sur sa tablette, et on en trouve une de plus (le tas d'os du cul-de-sac éboulé). Une page donne un code. Le Pisteur le tape hors combat (bouton « 📜 Un code » sur la carte). La sauvegarde garde tout : la position, les PV, les objets, le sac et les salles battues.
 - **Fuir recharge la dernière sauvegarde** : tout ce qui a été fait depuis est à refaire. Le Grand Livre garde ce qu'il a appris.
 - Le conseil du conteur (raconté) : « Une page blanche avant une grande porte, ça ne se refuse pas… »
 
@@ -169,6 +169,8 @@ Chaque salle a son décor (§10).
   - le geste « Chatouiller » (dans le ventre de Bourbe) ;
   - l'amulette (relève dorée).
 - **Les sons** de tout ça sont proposés dans l'Atelier des sons (onglets Bestiaire et Donjon), et Romain les valide là.
+
+> **La suite, pour construire le moteur : `MOTEUR-DONJON.md`** (découpage, contrat entre les règles et l'affichage, sauvegardes, tests, difficulté).
 
 ## 11. L'ordre de construction
 

@@ -2211,7 +2211,18 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - la page déchirée et la page blanche ;
   - « Odette derrière la porte » ;
   - « Léo attrapé ».
+- **10 novembre.** Le travail s'est arrêté le 9 vers 17 h (limite d'usage atteinte), et a repris le 10 à midi. Romain passe sur le modèle Fable 5.2 (il a des réinitialisations de limite pour ce modèle).
+- **Le cahier des charges du moteur est écrit : `jeu/donjon/MOTEUR-DONJON.md`** (10 novembre, 12 h 20). Les choix :
+  - trois pages dans un dossier (`brumeval/donjon/`), avec un chargement à la demande salle par salle, pour la mémoire de l'iPhone ;
+  - les règles séparées de l'affichage (`regles.js`), pour simuler des milliers de combats et régler la difficulté ;
+  - la recette Acide connue dès le départ (7 recettes, 3 dans le sac) ;
+  - ce qui est cassé reste cassé jusqu'à la fin du combat (casque, armure, plaque) ;
+  - Bourbe reste sur le dos jusqu'à la fin du tour suivant ;
+  - la page blanche à trouver est dans le tas d'os (première fouille : un rat mord ; deuxième : la page) ;
+  - recharger la page n'est pas une fuite ;
+  - les sons pas encore validés jouent leur version A, provisoire.
 - En cours :
+  - les règles du donjon et la simulation de difficulté ;
   - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html`) ;
   - les nouvelles armes des héros ;
 - **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :

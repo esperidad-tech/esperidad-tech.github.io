@@ -8145,7 +8145,7 @@ function critique(x, y, n, exploser, son, o){
     son('boum');
     tremble(7, 300);
     texteCritique(x, y);
-    chiffre(x, y - 50, '−' + n, 'crit');
+    chiffre(x - 140, y, '−' + n, 'crit');           /* à côté de la fumée, sous « CRITIQUE ! » (il monte sans le toucher) */
     if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
     return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
