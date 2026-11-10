@@ -550,6 +550,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .titre-carte span{font-size:15px;color:#e8dcc0;text-shadow:0 1px 0 #000,0 0 8px #000}
 #rose{position:absolute;left:16px;top:66px;width:66px;height:66px;pointer-events:none!important}
 #explo #volumes{right:16px;top:10px}
+/* les canaux, au calme : la vieille roue est en haut à droite du mur ; les curseurs de volume lui laissent la place */
+#scene.lieu-canaux #volumes{right:auto;left:232px}
 #explo #conteur{position:absolute;left:14px;bottom:12px;width:430px;min-height:54px;font-size:15.5px}
 .boutons-carte{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:480px}
 .boutons-carte .aller{min-height:50px;font-size:20px;padding:8px 24px}
@@ -639,7 +641,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 </div>
 <script>
 /* les niveaux des sons (essai/sons/niveaux.json) */
-window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"grilleCanauxA":1.589,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"roueCanauxA":3.776,"roueCanauxB":3.126,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== essai/sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -2993,6 +2995,34 @@ S.portePierreB = function(A, P){
   return {duree:3.2};
 };
 /* le piège des dalles : sur les dalles sombres, −15 à toute l'équipe */
+/* la vieille roue des canaux : un cran (le fer rouillé grince, puis le cliquet retombe). Romain, 10 novembre : le passage
+   secret des canaux à la cave aux toiles s'ouvre en tournant cette roue dans le bon ordre. */
+S.roueCanauxA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4, grotte:.2, pan:.3});
+  O.grinceArc(A, t, .26, {res:[420, 880, 1650], q:12, g:2.2, i0:.06, i1:.03}, o);
+  O.clic(A, t + .27, 1900, .5, o); A.choc(t + .27, {f:170, f2:90, d:.07, g:.35, corpsF:320}, o);
+  return {duree:.7};
+};
+/* B : plus grave, plus lourd (une grosse roue de fonte), avec le petit tintement du cliquet */
+S.roueCanauxB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, grotte:.25, pan:.3});
+  O.grinceArc(A, t, .32, {res:[260, 610, 1180], q:10, g:2.4, i0:.05, i1:.025}, o);
+  A.choc(t + .33, {f:120, f2:60, d:.1, g:.5, corpsF:240}, o);
+  A.modes(t + .34, 740, [[1, 1, .3], [2.76, .45, .18], [5.4, .2, .09]], {g:.05}, o);
+  return {duree:.8};
+};
+/* la grille qui se lève : une chaîne tire, par à-coups (six, comme l'image), le fer frotte la pierre, puis le verrou claque en haut */
+S.grilleCanauxA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.35, pan:.35});
+  for(var k = 0; k < 6; k++){
+    var tk = t + k * .35;
+    O.clic(A, tk, 1400 + k * 60, .45, o); A.choc(tk, {f:150, f2:80, d:.08, g:.3, corpsF:280}, o);
+    A.modes(tk + .02, 600 + k * 14, [[1, 1, .25], [2.76, .5, .16], [5.4, .25, .08]], {g:.045}, o);
+    frotte(A, tk + .04, .26, .3, o);
+  }
+  A.choc(t + 2.12, {f:90, f2:40, d:.3, g:.7, sat:3, corpsF:240, corps:1.2}, o);
+  return {duree:2.9};
+};
 S.dallesA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.45, pan:0});
   O.toc(A, t, 650, {long:.8, fc:220, gc:.3, clicF:3000}, o);                                                           /* clic… */
@@ -8484,6 +8514,8 @@ var CODES = {
   /* les recettes sorties du chaudron : l'Alchimiste les affiche, le Pisteur les tape au feu de camp (ou hors combat) */
   'recette:givre':  {code:['champi','coeur','cle'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Givre'},
   'recette:baumelum':{code:['chat','arbre','lune'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Baume lumineux'},
+  /* la rune de lumière du Sage : le Pisteur la trouve au fond du puits (sans elle, pas d'encre invisible sur le plan) */
+  'rune:lumiere':   {code:['flamme','etoile','cle'],     de:'pisteur',    a:'sage',       nom:'La rune de lumière'},
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
@@ -8629,7 +8661,10 @@ D.OBJETS = {
   'fleur-givre':{nom:'Fleur de givre', pour:'alchimiste', code:'plante:givre', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
   'herbes':{nom:'Herbes lumineuses', pour:'alchimiste', code:'plante:lumiere', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
   'page-dechiree':{nom:'Page déchirée', pour:'sage', code:'page:dechiree', d:'Le morceau qui manque au plan du Sage.'},
-  'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'}
+  'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'},
+  /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
+     discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
+  'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
 /* ===================================================================== 6. LES MONSTRES
@@ -8863,12 +8898,12 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true},
+  puits:{nom:'Le fond du puits', depart:true, objets:['rune']},
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
-  canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux'},
+  canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux', roue:true},      /* la roue qui lève la grille du passage secret (D.ROUE) */
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
   toiles:{nom:'La cave aux toiles', combat:'toiles'},
@@ -8888,6 +8923,16 @@ D.LIEUX = {
 /* le couloir aux dalles : 6 pas ; à chaque pas, deux dalles (celle du fond, celle de devant) ; une seule est claire.
    Les éléments de scenes.js s'appellent « dalle-<6 + pas>-<0 : fond | 1 : devant> ». Rien à l'écran ne dit laquelle est sûre. */
 D.DALLES = {pas:6, sures:['fond', 'devant', 'fond', 'devant', 'fond', 'devant'], degats:15};
+/* Romain, 10 novembre : « pas forcément que les dalles claires, sinon c'est trop facile ; sur le plan, une sorte de code :
+   noir, blanc, blanc… ». Le chemin sûr est donc une suite de couleurs, notée en code sur le plan du Sage (« N B B, N B N »).
+   Au pas n° k, la dalle du fond est blanche (claire) si k est pair, noire (sombre) sinon : regles.js en tire la rangée sûre. */
+D.DALLES.code = ['noir', 'blanc', 'blanc', 'noir', 'blanc', 'noir'];
+
+/* la roue des canaux : elle lève la grille du passage secret vers la cave aux toiles. Il faut la tourner dans le bon ordre
+   ('d' : un cran à droite, 'g' : un cran à gauche). Rien ne se passe avant le dernier cran : si l'ordre est faux, la roue
+   revient toute seule (on ne peut pas deviner cran par cran). L'ordre est sur le plan du Sage, à l'encre invisible :
+   « la roue : 3 à droite, 1 à gauche, 2 à droite ». */
+D.ROUE = {lieu:'canaux', suite:['d', 'd', 'd', 'g', 'd', 'd'], ouvre:'passage:canaux', vers:'toiles'};
 
 /* ===================================================================== 9. LES CODES tapés sur la tablette du Pisteur
    (les ids de donjon-codes.js ; les symboles restent là-bas). Chaque code ne marche qu'une fois. */
@@ -9007,6 +9052,7 @@ else global.DonjonDonnees = D;
    Regles.choisir(partie, objet[, laisser])             choisir un des deux objets d'un coffre
    Regles.fouiller(partie)              le tas d'os
    Regles.crane(partie)                 le crâne secret (le passage vers le feu de camp)
+   Regles.roue(partie, 'd' | 'g')       la roue des canaux, un cran à droite ou à gauche (le passage secret vers la cave aux toiles)
    Regles.dalle(partie, 'fond' | 'devant')              un pas dans le couloir aux dalles
    Regles.porte(partie, 'oeil' | 'gueule' | 'lune')     la salle aux trois portes
    Regles.repos(partie)                 le feu de camp
@@ -9086,6 +9132,8 @@ else global.DonjonDonnees = D;
    {t:'coffre', lieu:'reserve', pris:'fleches-lourdes', reste:'fleches-argent'}
    {t:'fouille', n:1, trouve:'morsure' | 'page' | null}
    {t:'passage', de:'eboulis', vers:'camp', deja:false}               le passage secret s'ouvre
+   {t:'roue', sens:'d', cran:2, sur:6}                                 la roue des canaux tourne d'un cran (libre:true : la grille est déjà levée)
+   {t:'roue-retour', crans:6}                                          le dernier cran, et l'ordre était faux : la roue revient toute seule
    {t:'dalle', pas:0, cote:'fond', sure:true, element:'dalle-6-0'}    element : l'id de la dalle dans scenes.js
    {t:'piege', quoi:'dalles', degats:15}            suivi d'un {t:'degats'} par héros
    {t:'recule', pas:0}                              on recule d'une rangée (pas : où on se retrouve)
@@ -9158,6 +9206,8 @@ function importer(txt){
     if(!p || p.v !== 1 || !p.heros || !p.heros.pisteur) return null;
     if(!p.fuites) p.fuites = {};
     if(!p.livre) p.livre = {};
+    /* une partie d'avant le passage secret des canaux, déjà allée plus loin : son passage est ouvert */
+    if(p.vus && (p.vus.toiles || p.faits['combat:toiles'])) p.faits[D.ROUE.ouvre] = 1;
     if(!p.sauvegarde) sauvegarder(p);
     return p;
   }catch(e){ return null; }
@@ -9827,6 +9877,7 @@ function contenu(p, lieu){
   if(L.tas) o.tas = {fouilles:f.os || 0, reste:(f.os || 0) < 2};
   if(L.crane) o.crane = {ouvert:!!f.secret};
   if(L.piege === 'dalles') o.dalles = {pas:f.dalles || 0, sur:D.DALLES.pas, passe:!!f['piege:dalles']};
+  if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
   if(L.repos) o.repos = {permis:!p.repos, sac:true};
   if(L.donne) o.code = {id:L.donne, pour:L.pour};
@@ -9922,13 +9973,33 @@ function crane(p){
   p.faits.secret = 1; p.vus.camp = p.vus.camp || 1;
   return [{t:'passage', de:p.lieu, vers:'camp', deja:deja}];
 }
+/* la rangée sûre au pas n° k, d'après le code des couleurs (la dalle du fond est claire aux pas pairs) */
+function dalleSure(k){
+  var T = D.DALLES;
+  if(!T.code) return T.sures[k];
+  return (T.code[k] === 'blanc') === (k % 2 === 0) ? 'fond' : 'devant';
+}
+/* la roue des canaux : un cran à droite ('d') ou à gauche ('g') ; au dernier cran, la grille se lève… ou la roue revient */
+function roue(p, sens){
+  var L = D.LIEUX[p.lieu], T = D.ROUE;
+  if(enCombat(p)) return refus(MOTS.combat);
+  if(!L || !L.roue || (L.combat && !p.faits['combat:' + L.combat])) return refus(MOTS.pasIci);
+  if(sens !== 'd' && sens !== 'g') return refus(MOTS.cible);
+  if(p.faits[T.ouvre]) return [{t:'roue', sens:sens, libre:true}];
+  var s = (p.faits.roue || '') + sens, ev = [{t:'roue', sens:sens, cran:s.length, sur:T.suite.length}];
+  if(s.length < T.suite.length){ p.faits.roue = s; return ev; }
+  delete p.faits.roue;
+  if(s === T.suite.join('')){ p.faits[T.ouvre] = 1; ev.push({t:'passage', de:p.lieu, vers:T.vers}); }
+  else ev.push({t:'roue-retour', crans:s.length});
+  return ev;
+}
 function dalle(p, cote){
   var L = D.LIEUX[p.lieu], T = D.DALLES, ev = [];
   if(enCombat(p)) return refus(MOTS.combat);
   if(!L || L.piege !== 'dalles') return refus(MOTS.pasIci);
   if(cote !== 'fond' && cote !== 'devant') return refus(MOTS.cible);
   if(p.faits['piege:dalles']) return [{t:'traverse', lieu:p.lieu, libre:true}];
-  var pas = p.faits.dalles || 0, sure = T.sures[pas] === cote;
+  var pas = p.faits.dalles || 0, sure = dalleSure(pas) === cote;
   ev.push({t:'dalle', pas:pas, cote:cote, sure:sure, element:'dalle-' + (6 + pas) + '-' + (cote === 'fond' ? 0 : 1)});
   if(sure){
     pas++;
@@ -9995,7 +10066,7 @@ function objets(p){
 var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
-  entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, porte:porte,
+  entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
   repos:repos, code:code, refaireSac:refaireSac, sacPermis:sacPermis, placesSac:placesSac,
   sauvegarder:sauvegarder, objets:objets, grandLivre:grandLivre, exporter:exporter, importer:importer
 };
@@ -10258,7 +10329,10 @@ var LIENS = [
   {id:'c2', de:'rats', a:'reserve', pts:[[1455, 703], [1455, 648]]},
   {id:'c3', de:'rats', a:'canaux', pts:[[1405, 800], [1405, 862]]},
   {id:'c4', de:'canaux', a:'givre', pts:[[1342, 950], [1230, 958], [1140, 985], [1066, 1004]]},
-  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]]},
+  /* Romain, 10 novembre : le passage des canaux à la cave aux toiles (la salle au signe de la lune) est SECRET. Rien ne le
+     montre dans le donjon : une grille ferme l'arche, et c'est la vieille roue des canaux qui la lève, tournée dans le bon
+     ordre. L'ordre est écrit à l'encre invisible sur le plan du Sage. secret : le « fait » de la partie qui l'ouvre. */
+  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]], secret:'passage:canaux'},
   {id:'c6', de:'toiles', a:'J', pts:[[1770, 925], [1840, 925]], court:true},
   {id:'c8', de:'J', a:'eboulis', pts:[[1840, 940], [1842, 1000], [1836, 1056]]},
   {id:'c9', de:'atelier', a:'bibliotheque', pts:[[1920, 644], [1920, 598]]},
@@ -10281,7 +10355,7 @@ LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:true, l:20});
+LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -10320,12 +10394,21 @@ var EMPREINTE = (function(){
    3. Le graphe
    ====================================================================== */
 function liens(id){ return LIENS.filter(function(c){ return c.de === id || c.a === id; }); }
+/* les passages secrets déjà ouverts dans cette partie (leurs ids) : ils comptent alors comme des couloirs ordinaires,
+   sur la carte (murs, sol, brume) et dans le graphe. À appeler avant de créer une vue. */
+var OUVERTS = {};
+function ouvrirSecrets(ids){
+  var neuf = {}; (ids || []).forEach(function(k){ if(LIEN[k] && LIEN[k].secret) neuf[k] = 1; });
+  if(Object.keys(neuf).sort().join() !== Object.keys(OUVERTS).sort().join()){ OUVERTS = neuf; STRUCT = null; }
+  return Object.keys(OUVERTS);
+}
+function ferme(c){ return !!c.secret && !OUVERTS[c.id]; }
 function autreBout(c, id){ return c.de === id ? c.a : c.de; }
 function voisins(id, o){
   o = o || {};
   var out = [];
   liens(id).forEach(function(c){
-    if(c.secret && !o.secret) return;
+    if(ferme(c) && !o.secret) return;
     if(c.bouche) return;
     if(c.boucle){ out.push({lieu:c.salle, lien:c.id, porte:null}); return; }
     /* une porte qui ne s'ouvre que d'un côté (la lune : de la salle aux trois portes vers la cave, pas l'inverse) */
@@ -10425,15 +10508,24 @@ var PLAN = {
   /* LES NOTES. type : 'code' (alphabet secret : les grilles des fondateurs), 'encre' (encre invisible : la rune de lumière du Sage
      la révèle), 'piege' (à l'encre rouge), 'coin' (sur la page déchirée, complétée par le code page:dechiree).
      x, y : le centre ; lignes : le texte (en MAJUSCULES pour les notes codées : les espaces restent des espaces) */
+  /* Romain, 10 novembre : « les mots à décoder doivent servir à débloquer les aventuriers ». Chaque note sert donc :
+       rune    (codée)  où trouver la rune de lumière du Sage : sans elle, pas d'encre invisible ;
+       oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
+       dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
+       roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
+       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       fleur   (encre)  la fleur de givre (pour l'Alchimiste).
+     passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    {id:'est', type:'code', x:px(178), y:py(128), lignes:['VA A L EST'], pres:'puits', dit:'Va à l’est'},
+    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'AU PUITS'], pres:'puits', dit:'La rune dort au puits'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
-    {id:'rond', type:'code', x:px(270), y:py(428), lignes:['ON TOURNE', 'EN ROND'], pres:'egouts', dit:'On tourne en rond'},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:true,
+    {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
+    {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
+      boite:{x:1470, y:862, w:320, h:240}},
+    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
       boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
-    {id:'dalles', type:'piege', x:px(718), y:py(236), lignes:['seulement les', 'dalles claires'], pres:'dalles', crane:{x:px(678), y:py(234)}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
   ],
   /* le passage bloqué : le vieux plan dessine la grande galerie intacte jusqu'à la grotte de givre ; dans le donjon, elle est
@@ -11018,7 +11110,7 @@ var STRUCT = null;
 function structure(){
   if(STRUCT) return STRUCT;
   var salles = ORDRE.filter(function(k){ return !LIEUX[k].couloir; }).map(function(k){ return LIEUX[k]; });
-  var cou = LIENS.filter(function(c){ return !c.secret; });
+  var cou = LIENS.filter(function(c){ return !ferme(c); });
   var sol = salles.map(function(r){ return r.d; }).concat(cou.map(function(c){ return polyD(c.poly); })).concat([cercleD(J.x, J.y, J.r)]).join(' ');
   /* les pierres des murs : le long des salles (vers l'extérieur) et des deux côtés des couloirs */
   var R = rng(23), teintes = ['#4e4466', '#574c72', '#463d5c', '#5f547c', '#4a4060', '#3f3752'], pierres = [];
@@ -11287,7 +11379,7 @@ function brume(canvas, o){
     if(!etat.lieux[id]){ etat.lieux[id] = true; out.push({type:'lieu', id:id}); }
     if(L.couloir){ var f4 = ajouterLien(id, 0, 1); if(f4) out.push(f4); }
     liens(id).forEach(function(c2){
-      if(c2.secret || c2.salle === id) return;
+      if(ferme(c2) || c2.salle === id) return;
       var tout = c2.court || c2.bouche || (c2.de === id ? etat.lieux[c2.a] : etat.lieux[c2.de]);
       if(c2.boucle){ [ajouterLien(c2.id, 0, .1), ajouterLien(c2.id, .9, 1)].forEach(function(f5){ if(f5) out.push(f5); }); return; }
       var f6 = c2.de === id ? ajouterLien(c2.id, 0, tout ? 1 : .45) : ajouterLien(c2.id, tout ? 0 : .55, 1);
@@ -11616,7 +11708,7 @@ function vue(el, o){
 
 global.CARTE_DONJON = {
   W:W, H:H, MUR:MUR, SOL:SOL,
-  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
+  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, ouvrirSecrets:ouvrirSecrets, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
   EMPREINTE:EMPREINTE, PLAN:PLAN, PIGPEN:PIGPEN, ROLES:ROLES,
   liens:liens, voisins:voisins, chemin:chemin, lieuEn:lieuEn, trace:trace, pointSur:pointSur,
   longueur:function(id){ return LIEN[id] ? LIEN[id].m.L : 0; },
@@ -12597,6 +12689,33 @@ A.bourse = function(){ return art('bo', 72, 58, function(d){
     L('M26 19 Q 35 24 44 18', O, 5.5) + L('M26 19 Q 35 24 44 18', '#e8c062', 2.6) +
     L('M43 18 q 8 -3 10 -12 M43 18 q 2 -8 -2 -14', '#e8c062', 2) + C(53, 6, 2.2, '#e8c062', ' stroke="' + O + '" stroke-width="1.2"') +
     L('M42 27 q 8 5 8 14', '#ffffff', 2, op(0.35)) + C(31, 34, 5, 'none', ' stroke="#e8c062" stroke-width="1.6" opacity=".8"') + L('M29 34 h 4 M31 32 v 4', '#e8c062', 1.4); }); };
+/* la pierre de rune du Sage, au fond du puits : une pierre parmi les pierres, à peine gravée (rien ne la signale) */
+A.pierreRune = function(){ return art('pr', 60, 40, function(d){
+  return E(30, 37, 26, 3.4, '#000', op(0.4)) +
+    P('M6 34 C 2 24 8 10 22 7 C 36 3 52 9 55 21 C 57 30 52 35 44 36 L 14 36 Z', d.g('#4e5274')) +
+    F('M6 34 C 4 26 8 16 16 11 C 13 20 14 30 20 36 L 14 36 Z', '#15132a', op(0.5)) +
+    L('M24 14 L 30 26 L 37 13 M30 26 L 30 31 M23 31 q 7 3 14 0', '#9fe6f2', 1.7, op(0.42)) +
+    L('M40 12 q 8 2 10 9', '#ffffff', 1.3, op(0.2)); }); };
+/* les canaux : la vieille roue du mur (elle recouvre pile celle du décor) et la grille de l'arche de droite */
+var ROUE = {x: 688, y: 28, w: 72, h: 72}, GRILLE = {x: 770, y: 82, w: 152, h: 256};
+A.roueCanaux = function(){ return art('rc', ROUE.w, ROUE.h, function(d){
+  var c = 36, s = C(c, c, 34, '#0b1716') + C(c, c, 28, 'none', ' stroke="#060d0d" stroke-width="11"') + C(c, c, 28, 'none', ' stroke="' + d.g('#55766e') + '" stroke-width="7"');
+  for(var k = 0; k < 4; k++){ var a = k * Math.PI / 4, x = Math.cos(a) * 25, y = Math.sin(a) * 25;
+    s += L('M' + r1(c - x) + ' ' + r1(c - y) + ' L ' + r1(c + x) + ' ' + r1(c + y), '#060d0d', 6) + L('M' + r1(c - x) + ' ' + r1(c - y) + ' L ' + r1(c + x) + ' ' + r1(c + y), '#46625c', 3.2); }
+  /* une poignée sur la jante : c'est elle qui montre de combien la roue a tourné */
+  return s + C(c, c, 7.5, d.g('#3a5450'), ' stroke="#060d0d" stroke-width="2.4"') + C(c, c, 2.6, '#0b1716') +
+    C(c, c - 28, 6.6, d.g('#9cc8b6'), ' stroke="#060d0d" stroke-width="2.4"') + C(c - 1.6, c - 29.6, 2, '#eafff6', op(0.8)); }); };
+A.grilleCanaux = function(){ return art('gc', GRILLE.w, GRILLE.h + 8, function(d){
+  var s = '', fer = d.lin([[0, '#31494a'], [0.5, '#1a2a2c'], [1, '#0c1516']], 0, 0, 1, 0);
+  for(var k = 0; k < 8; k++){ var x = 9.5 + k * 19; s += Rc(x - 3.4, -4, 6.8, GRILLE.h + 2, fer, ' stroke="#050a0a" stroke-width="1.6"') + P('M' + r1(x - 4.4) + ' ' + (GRILLE.h - 3) + ' L ' + r1(x) + ' ' + (GRILLE.h + 7) + ' L ' + r1(x + 4.4) + ' ' + (GRILLE.h - 3) + ' Z', '#22393a', ' stroke-width="1.6"') +
+    L('M' + r1(x - 1.6) + ' 2 V ' + (GRILLE.h - 6), '#5f8582', 1, op(0.35)); }
+  [96, 176].forEach(function(y){ s += Rc(-2, y, GRILLE.w + 4, 8, fer, ' stroke="#050a0a" stroke-width="1.6"');
+    for(var k = 0; k < 8; k++) s += C(9.5 + k * 19, y + 4, 2.4, '#6f9792', ' stroke="#050a0a" stroke-width="1"'); });
+  return s; }); };
+/* ce qu'on voit derrière la grille levée : le noir d'un couloir, et une lueur au fond */
+A.passageCanaux = function(){ return art('pc', GRILLE.w, GRILLE.h, function(d){
+  return Rc(0, 0, GRILLE.w, GRILLE.h, d.lin([[0, '#020607'], [1, '#07171a']])) + E(GRILLE.w / 2, GRILLE.h - 56, 40, 70, d.halo('#7fe0ff', 0.7)) +
+    P('M' + (GRILLE.w / 2 - 34) + ' ' + GRILLE.h + ' L ' + (GRILLE.w / 2 - 14) + ' ' + (GRILLE.h - 120) + ' L ' + (GRILLE.w / 2 + 14) + ' ' + (GRILLE.h - 120) + ' L ' + (GRILLE.w / 2 + 34) + ' ' + GRILLE.h + ' Z', '#0d2a30', ' stroke-width="1.4" opacity=".7"'); }); };
 /* la sacoche de l'Alchimiste (une place de recette en plus) */
 A.sacoche = function(){ return art('sa', 88, 72, function(d){
   return E(44, 68, 36, 4, '#000', op(0.35)) +
@@ -12950,6 +13069,8 @@ SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambi
   sorties: {ouest: {x: 46, y: 250}, nord: {x: 600, y: 250}, est: {x: 858, y: 250}},
   elements: [
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},
+    /* la pierre de rune du Sage : posée là comme une pierre ordinaire, sans lueur ni étoiles (il faut chercher) */
+    objet({id: 'rune', nom: 'Une pierre gravée', svg: A.pierreRune(), x: 846, y: SOL - 31, w: 60, h: 40, sol: true, brille: false, discret: true, lueur: '#9ff6ff', pour: 'sage', code: 'rune'}),
     poussiere(530, 40, 170, 250, 8, '#eef4ff'),
     poussiere(700, 30, 220, 300, 3, '#bfe0ff', 'gouttes')
   ]}; };
@@ -13024,12 +13145,12 @@ SALLES.dalles = function(){
     var co = dalleCoins(c, r), x0 = Math.floor(Math.min(co[0][0], co[3][0])), x1 = Math.ceil(Math.max(co[1][0], co[2][0])), y0 = Math.floor(co[0][1]), y1 = Math.ceil(co[2][1]);
     var w = x1 - x0, h = y1 - y0, loc = co.map(function(q){ return [q[0] - x0, q[1] - y0]; }), cl = dalleClaire(c, r), cy = (loc[0][1] + loc[2][1]) / 2;
     var pc = [{id: 'trou', svg: A.dalleTrou(loc, w, h), x: 0, y: 0, w: w, h: h}];
-    if(!cl) pc.push({id: 'pointes', svg: A.pointes(Math.round(w * 0.7)), x: Math.round(w * 0.15), y: Math.round(cy - 44), w: Math.round(w * 0.7), h: 48, ox: Math.round(w * 0.35), oy: 48, cache: true});
+    pc.push({id: 'pointes', svg: A.pointes(Math.round(w * 0.7)), x: Math.round(w * 0.15), y: Math.round(cy - 44), w: Math.round(w * 0.7), h: 48, ox: Math.round(w * 0.35), oy: 48, cache: true});
     el.push({id: 'dalle-' + c + '-' + r, type: 'dalle', nom: cl ? 'Une dalle claire' : 'Une dalle sombre', clair: cl, piege: !cl, colonne: c - 6, rangee: r === 0 ? 'fond' : 'devant',
       coins: co, x: x0, y: y0, w: w, h: h, decoupe: true, pieces: pc, zone: {x: x0 + 2, y: y0, w: w - 4, h: Math.max(44, h)}, z: 2 + r});
   }
   el.push(poussiere(820, 120, 140, 140, 5, '#cfe0ff'));
-  return {nom: 'Le couloir aux dalles', type: 'piege', ambiance: 'un damier : les dalles sombres sont piégées (le plan du Sage : « seulement les dalles claires »)', elements: el}; };
+  return {nom: 'Le couloir aux dalles', type: 'piege', ambiance: 'un damier : à chaque pas une dalle claire et une sombre, une seule est sûre (le code du plan du Sage : N B B, N B N)', elements: el}; };
 SALLES.portes = function(){
   var noms = {oeil: 'La porte de l\'œil', gueule: 'La porte de la gueule', lune: 'La porte de la lune'}, vers = {oeil: 'ossuaire', gueule: 'fausse-crypte', lune: 'cave-aux-toiles'};
   var el = PORTES.map(function(p){ var h = SOL - PORTE.haut + 4;
@@ -13116,6 +13237,24 @@ var SCENES = {
     s.id = id; s.png = SCENES.base + 'png/' + id + '.png';
     (s.elements || []).forEach(function(e){ if(e.decoupe) e.fond = s.png; });
     return s;
+  },
+  /* les canaux, une fois les monstres partis : la roue du mur et la grille de l'arche de droite, posées sur le décor de
+     combat (decors/png/canaux.png). ouvert : la grille est déjà levée. */
+  surCanaux: function(ouvert){
+    return [
+      {id: 'grille', type: 'grille', nom: 'La grille', x: GRILLE.x, y: GRILLE.y, w: GRILLE.w, h: GRILLE.h, z: 2, ouvert: !!ouvert,
+        arche: 'M0 ' + GRILLE.h + ' V 78 A 76 78 0 0 1 ' + GRILLE.w + ' 78 V ' + GRILLE.h + ' Z',
+        pieces: [{id: 'passage', svg: A.passageCanaux(), x: 0, y: 0, w: GRILLE.w, h: GRILLE.h, cache: true}, {id: 'barres', svg: A.grilleCanaux(), x: 0, y: 0, w: GRILLE.w, h: GRILLE.h + 8}],
+        zone: {x: GRILLE.x + 8, y: GRILLE.y + 70, w: GRILLE.w - 16, h: GRILLE.h - 76}},
+      {id: 'roue', type: 'roue', nom: 'La vieille roue', x: ROUE.x, y: ROUE.y, w: ROUE.w, h: ROUE.h, z: 3,
+        pieces: [{id: 'roue', svg: A.roueCanaux(), x: 0, y: 0, w: ROUE.w, h: ROUE.h}],
+        zone: {x: ROUE.x - 6, y: ROUE.y - 6, w: ROUE.w + 12, h: ROUE.h + 12}}
+    ];
+  },
+  /* ce qu'il faut poser par-dessus un décor de combat (la grille des canaux, tant qu'elle est fermée) : [{svg, x, y, w, h}] */
+  surDecor: function(salle, o){
+    if(salle === 'canaux' && !(o && o.ouvert)) return [{svg: A.grilleCanaux(), x: GRILLE.x, y: GRILLE.y, w: GRILLE.w, h: GRILLE.h + 8, arche: 'M0 ' + GRILLE.h + ' V 78 A 76 78 0 0 1 ' + GRILLE.w + ' 78 V ' + GRILLE.h + ' Z', boite: {w: GRILLE.w, h: GRILLE.h}}];
+    return [];
   },
   /* le sarcophage posé pile sur celui du décor de combat de la fausse crypte (decors/png/crypte.png, au centre) : même dessin, à l'échelle 0,61 */
   sarcophageSurCrypte: function(){
@@ -13578,6 +13717,13 @@ function Dalle(c, def, opts){
 }
 Dalle.prototype = Object.create(Base.prototype);
 Dalle.prototype.briller = function(on){ var lu = this.p.eclat; lu.classList.toggle('ob-cache', !on); if(on) this.bB = this.boucle(lu, [{opacity: 0.15}, {opacity: 0.5}, {opacity: 0.15}], {duration: 1600}); else if(this.bB){ this.bB.cancel(); this.bB = null; } return this; };
+Dalle.prototype.marquer = function(on){
+  var lu = this.p.eclat;
+  if(this.aM){ this.aM.cancel(); this.aM = null; }
+  lu.classList.toggle('ob-cache', !on);
+  if(on) this.aM = lu.animate([{opacity: 0.3}, {opacity: 0.3}], {duration: 1000, fill: 'forwards'});
+  return this;
+};
 Dalle.prototype.marcher = function(){
   var p = this.p; this.guider(false);
   p.eclat.classList.remove('ob-cache');
@@ -13844,7 +13990,55 @@ Particules.prototype = Object.create(Base.prototype);
 Particules.prototype.detruire = function(){ this.arreter(); this.el.remove(); };
 
 /* ================= l'entrée ================= */
-var TYPES = {objet: Objet, choix: Choix, tas: Tas, crane: Crane, dalle: Dalle, porte: Porte, sarcophage: Sarco, feu: Feu, chat: Chat, leo: Leo, deco: Deco, particules: Particules};
+/* ================= la roue des canaux (un cran à droite ou à gauche) et la grille qu'elle lève ================= */
+function Roue(c, def, opts){
+  Base.call(this, c, def, opts);
+  this.pieces(def.pieces);
+  this.angle = 0;
+  this.faireZone();
+}
+Roue.prototype = Object.create(Base.prototype);
+/* de quel côté de la roue a-t-on touché ? ('g' : la moitié gauche, 'd' : la moitié droite) */
+Roue.prototype.cote = function(ev){ var r = this.zone.getBoundingClientRect(); return ev && ev.clientX < r.left + r.width / 2 ? 'g' : 'd'; };
+Roue.prototype.tourner = function(sens){
+  var a0 = this.angle, a1 = a0 + (sens === 'g' ? -45 : 45); this.angle = a1;
+  return fini(this.p.roue.animate([{transform: 'rotate(' + a0 + 'deg)'}, {transform: 'rotate(' + (a1 + (sens === 'g' ? -7 : 7)) + 'deg)', offset: 0.7}, {transform: 'rotate(' + a1 + 'deg)'}], {duration: 340, easing: 'ease-out', fill: 'forwards'}));
+};
+/* l'ordre était faux : elle revient toute seule à son point de départ, en ronflant */
+Roue.prototype.retour = function(){
+  var a0 = this.angle; this.angle = 0;
+  return fini(this.p.roue.animate([{transform: 'rotate(' + a0 + 'deg)'}, {transform: 'rotate(' + (a0 > 0 ? -12 : 12) + 'deg)', offset: 0.8}, {transform: 'rotate(0deg)'}], {duration: 900, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards'}));
+};
+function Grille(c, def, opts){
+  Base.call(this, c, def, opts);
+  var e = this.el;
+  e.style.overflow = 'hidden';
+  if(def.arche){ e.style.clipPath = e.style.webkitClipPath = 'path("' + def.arche + '")'; }
+  this.pieces(def.pieces);            /* passage (ce qu'on voit derrière), barres */
+  this.faireZone(def.zone);
+  this.horsCadre();
+  if(def.ouvert) this.etat(true);
+}
+Grille.prototype = Object.create(Base.prototype);
+Grille.prototype.etat = function(ouvert){
+  this.ouverte = !!ouvert;
+  this.p.passage.classList.toggle('ob-cache', !ouvert);
+  this.p.barres.style.transform = ouvert ? 'translateY(' + (-(this.def.h - 34)) + 'px)' : '';
+  return this;
+};
+/* on la secoue : elle ne bouge pas */
+Grille.prototype.secouer = function(){ return fini(this.p.barres.animate([{transform: 'none'}, {transform: 'translateX(-2px)'}, {transform: 'translateX(2px)'}, {transform: 'translateX(-1px)'}, {transform: 'none'}], {duration: 260})); };
+/* elle se lève, par à-coups, comme tirée par une vieille chaîne */
+Grille.prototype.lever = function(){
+  var h = this.def.h - 34, p = this.p; this.ouverte = true;
+  p.passage.classList.remove('ob-cache');
+  p.passage.animate([{opacity: 0}, {opacity: 1}], {duration: 1500, fill: 'both'});
+  var kf = [{transform: 'translateY(0)'}], n = 6;
+  for(var k = 1; k <= n; k++){ kf.push({transform: 'translateY(' + (-h * (k - 0.25) / n).toFixed(1) + 'px)', offset: (k - 0.35) / n, easing: 'ease-out'}); kf.push({transform: 'translateY(' + (-h * k / n).toFixed(1) + 'px)', offset: k / n}); }
+  return fini(p.barres.animate(kf, {duration: 2100, fill: 'forwards'}));
+};
+
+var TYPES = {roue: Roue, grille: Grille, objet: Objet, choix: Choix, tas: Tas, crane: Crane, dalle: Dalle, porte: Porte, sarcophage: Sarco, feu: Feu, chat: Chat, leo: Leo, deco: Deco, particules: Particules};
 OBJETS.TYPES = TYPES;
 OBJETS.creer = function(conteneur, def, opts){ var T = TYPES[def.type || 'objet'] || Objet; return new T(conteneur, def, opts || {}); };
 /* poser toute une salle : renvoie {id: élément} */
@@ -14255,7 +14449,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '10/11 à 19 h 00';
+DJ.VERSION = '10/11 à 19 h 48';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -14762,6 +14956,17 @@ function construire(){
   fx = q('#fx'); fxHaut = q('#fx-haut'); hud = q('#hud'); bandeEl = q('#bande');
   Fx.init({fx:fx, sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
   DJ.brancherCurseurs(c);
+  /* ce qui se pose par-dessus le décor (la grille des canaux, tant que le passage secret est fermé) */
+  try{
+    var faits = (E.partie && E.partie.faits) || {}, plus = window.SCENES && window.SCENES.surDecor ? window.SCENES.surDecor(E.salle, {ouvert:!!faits['passage:canaux']}) : [];
+    plus.forEach(function(o){
+      var b = el('div', 'sur-decor'), w = (o.boite || o).w, h = (o.boite || o).h;
+      b.style.cssText = 'position:absolute;left:' + o.x + 'px;top:' + o.y + 'px;width:' + w + 'px;height:' + h + 'px;overflow:hidden;pointer-events:none';
+      if(o.arche) b.style.clipPath = b.style.webkitClipPath = 'path("' + o.arche + '")';
+      b.innerHTML = '<img alt="" draggable="false" style="position:absolute;left:0;top:0;width:' + o.w + 'px;height:' + o.h + 'px" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(o.svg) + '">';
+      q('#secousse').insertBefore(b, q('#ambiance'));
+    });
+  }catch(e){ if(window.console) console.warn('sur-decor', e); }
   try{ if(window.AMBIANCE && window.AMBIANCE[E.salle]) E.ambiance = window.AMBIANCE[E.salle](q('#ambiance')); }catch(e){}
   var p = q('#persos');
   ORDRE.forEach(function(h){
@@ -15755,6 +15960,7 @@ var PHRASES = {
   bibliotheque:'Des livres qui flottent sur l\'eau qui luit. Les Fondateurs lisaient beaucoup.',
   eboulis:'Un cul-de-sac. Un tas d\'os… et un mur qui a l\'air de garder un secret.',
   dalles:'Des dalles claires, des dalles sombres… Attention où l\'on met les pieds !',
+  canaux:'Les canaux sont tranquilles. L\'eau coule sous le petit pont.',
   portes:'Trois portes : un œil, une gueule, une lune. Laquelle pousser ?',
   crypte:'La crypte est calme, maintenant. Reste ce gros sarcophage…',
   camp:'Un feu de camp ! On souffle un peu.',
@@ -15868,6 +16074,7 @@ function carte(o){
   var dpr = window.devicePixelRatio || 1, large = elCarte().clientWidth || window.innerWidth, z = Math.max(.7, Math.min(1.4, large / 960));
   /* la carte est peinte une fois, à une finesse qui ne dépasse jamais 4 096 px de côté (RAPIDITE.md R9, mémoire de l'iPhone) */
   var ech = Math.max(1, Math.min(2, Math.round(z * dpr * 4) / 4, 4096 / C.EMPREINTE.w));
+  C.ouvrirSecrets(secretsOuverts());      /* un passage secret ouvert devient un couloir comme les autres (murs, sol, brume) */
   X.V = C.vue(elCarte(), {brume:p.vus['@brume'] || null, etats:etats, centre:{x:pt.x, y:pt.y}, echelle:ech, surToucher:function(x, y, id){
     if(X.occupe) return;
     if(id && X.V.brume.estVu(id)) conte(nomLieu(id) + '.');
@@ -15876,7 +16083,7 @@ function carte(o){
   /* la brume levée : celle qu'on avait gardée, sinon tous les lieux déjà vus */
   if(!p.vus['@brume']) Object.keys(p.vus).forEach(function(l){ if(l.charAt(0) !== '@' && C.LIEUX[l]) X.V.decouvrir(l, {anim:false}); });
   if(C.LIEUX[X.ici]) X.V.decouvrir(X.ici, {anim:false});
-  if(p.faits.secret) try{ X.V.decouvrirLien('secret', 0, 1); }catch(e){}
+  secretsOuverts().forEach(function(k){ try{ X.V.decouvrirLien(k, 0, 1); }catch(e){} });
   if(X.ici === 'J') X.V.pion(C.J.x, C.J.y); else X.V.pion(X.ici);
   X.V.centrer(pt);
   majCarte(o.texte);
@@ -15890,6 +16097,8 @@ function majCarte(texte){
   /* un grand combat est au bout d'un de ces couloirs : sa longue musique se fabrique d'avance (quelques secondes) */
   (X.sorties || []).forEach(function(s){ if(D.LIEUX[s.vers] && D.LIEUX[s.vers].combat && !p.faits['combat:' + D.LIEUX[s.vers].combat]) DJ.preparerGrand(D.LIEUX[s.vers].combat); });
 }
+/* les passages secrets que cette partie a ouverts (les ids de leurs couloirs) */
+function secretsOuverts(){ var p = X.partie; return C.LIENS.filter(function(c){ return c.secret && p.faits[c.secret]; }).map(function(c){ return c.id; }); }
 /* où mènent les couloirs d'ici : [{lien, vers}] (vers : un lieu, ou 'J' l'embranchement) */
 function sortiesDe(ici){
   var p = X.partie, out = [], L = C.LIEUX[ici];
@@ -15900,7 +16109,7 @@ function sortiesDe(ici){
   }
   C.liens(ici).forEach(function(c){
     if(c.bouche) return;
-    if(c.secret && !p.faits.secret) return;
+    if(c.secret && !p.faits[c.secret]) return;
     if(c.boucle){ out.push({lien:c.id, vers:c.salle, boucle:true}); return; }
     if(c.sensUnique && c.a === ici) return;                 /* la porte de la lune ne s'ouvre que d'un côté */
     var vers = (c.salle && c.salle !== ici) ? c.salle : (c.de === ici ? c.a : c.de);
@@ -15955,12 +16164,13 @@ function aller(vers, lien){
 /* ====================================================================== 4. ARRIVER QUELQUE PART */
 function aScene(lieu){
   if(!D.LIEUX[lieu]) return false;
-  if(lieu === 'crypte') return !!X.partie.faits['combat:crypte'];
+  if(lieu === 'crypte' || lieu === 'canaux') return !!X.partie.faits['combat:' + lieu];
   return !!PHRASES[lieu] && !D.LIEUX[lieu].combat;
 }
 /* y a-t-il encore quelque chose à faire ici ? (le crâne secret ne compte pas : c'est un secret) */
 function aPlace(id){
   var O = D.OBJETS[id], p = X.partie; if(!O) return false;
+  if(O.discret) return false;                 /* (la pierre de rune : rien ne dit qu'il reste quelque chose à trouver) */
   if(O.code || O.or) return true;
   return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && p.heros[h].objets.length < D.CHIFFRES.places; });
 }
@@ -15976,7 +16186,10 @@ function arriver(lieu, o){
   var combat = ev.filter(function(e){ return e.t === 'combat'; })[0], boucle = ev.filter(function(e){ return e.t === 'boucle'; })[0];
   if(combat) return lancerCombat(combat.salle);
   if(boucle) return finBoucle(boucle.vers);
-  if(aScene(lieu) && (premier || aFaire(lieu) || o.entrer)) return ouvrirScene(lieu, ev, premier);
+  /* (les canaux : après le combat, on voit une fois la salle au calme — la grille et la roue y sont, sans rien dire) */
+  var calme = lieu === 'canaux' && o.apresCombat && !p.vus['@calme:canaux'];
+  if(calme) p.vus['@calme:canaux'] = 1;
+  if(aScene(lieu) && (premier || calme || aFaire(lieu) || o.entrer)) return ouvrirScene(lieu, ev, premier);
   if(X.ecran !== 'carte' || !X.V) carte(); else { X.occupe = false; majCarte(); }
   return Promise.resolve();
 }
@@ -16009,7 +16222,7 @@ function finBoucle(vers){
 
 /* ====================================================================== 5. LES SALLES SANS COMBAT */
 var S = null;          /* la salle ouverte : {lieu, objets:{id: élément}, heros:{}, …} */
-function fondDe(lieu){ return lieu === 'crypte' ? DJ.charger.decor('crypte') : DJ.charger.scene(lieu); }
+function fondDe(lieu){ return lieu === 'crypte' || lieu === 'canaux' ? DJ.charger.decor(lieu) : DJ.charger.scene(lieu); }
 function ouvrirScene(lieu, ev, premier){
   var p = X.partie;
   quitterCarte(); X.ecran = 'passage';
@@ -16017,7 +16230,8 @@ function ouvrirScene(lieu, ev, premier){
   return DJ.passage(nomLieu(lieu), function(){ return Promise.all([DJ.charger.image(fondDe(lieu)), DJ.Combat.cuireHeros()]); }).then(function(){ construireScene(lieu, ev || [], premier); });
 }
 function construireScene(lieu, ev, premier){
-  var p = X.partie, def = lieu === 'crypte' ? {elements:[window.SCENES.sarcophageSurCrypte()]} : window.SCENES.salle(lieu), cont = Regles.contenu(p, lieu);
+  var p = X.partie, cont = Regles.contenu(p, lieu);
+  var def = lieu === 'crypte' ? {elements:[window.SCENES.sarcophageSurCrypte()]} : lieu === 'canaux' ? {elements:window.SCENES.surCanaux(cont.roue && cont.roue.ouvert)} : window.SCENES.salle(lieu);
   X.ecran = 'scene'; X.occupe = false;
   jeu.innerHTML = '';
   var c = el('div', 'ecran'); c.id = 'scene'; c.className = 'ecran lieu-' + lieu;
@@ -16112,7 +16326,7 @@ function poserAuSol(id, anime){
   S.o[id] = e; S.defs[id] = d;
   e.surToucher(function(){ prendre(id); });
   if(anime){ e.el.style.visibility = ''; e.montrer(); }
-  e.briller(true); e.guider(aPlace(id));
+  e.briller(true); rond(e, aPlace(id));
   return e;
 }
 function reposer(id, heros){
@@ -16126,7 +16340,7 @@ function reposer(id, heros){
 /* les ronds jaunes : seulement sur ce qu'on peut prendre tout de suite (quelqu'un a une place) */
 function majGuides(){
   if(!S) return;
-  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) try{ e.guider(aPlace(id)); }catch(er){} });
+  Object.keys(S.o).forEach(function(id){ var e = S.o[id], d = S.defs[id]; if(!e || !d || d.type !== 'objet' || e.pris) return; var O = D.OBJETS[id]; if(O && !O.code && !O.or) rond(e, aPlace(id)); });
 }
 /* les mains pleines : on a touché un objet de plus. Les cases du héros bougent (rond jaune) : on touche celle qu'on repose. */
 function echange(x){
@@ -16158,28 +16372,36 @@ function majPV(){
     q('b', e).textContent = s.pv;
   });
 }
-function guider(id, on){ var e = S && S.o[id]; try{ if(e && e.guider) e.guider(on !== false); }catch(x){} }
+/* Romain, 10 novembre : « tu enlèves les ronds jaunes dans les salles, qu'on doive cliquer un peu partout ».
+     Dans une salle, plus rien ne porte le rond jaune : ni les objets, ni les coffres, ni le tas d'os, ni les portes, ni les
+     dalles. Les objets gardent leur petite lueur (ils font partie du décor) ; les secrets (la pierre de rune, le crâne, la
+     roue) n'en ont pas. Le rond reste sur « Continuer » quand il n'y a plus rien à faire, et sur les cases d'un échange. */
+var RONDS = false;
+function rond(e, on){ try{ if(e && e.guider) e.guider(RONDS && on !== false); }catch(x){} }
+function guider(id, on){ rond(S && S.o[id], on); }
 function pointDe(d){ var z = d.zone || d; return {x:z.x + z.w / 2, y:z.y + z.h / 2}; }
 /* brancher ce qu'on touche, selon son type */
 function brancher(e, d, cont){
   if(!e.surToucher) return;
   /* (le feu, le chat et Léo n'ont pas fait leur zone à toucher eux-mêmes) */
   if(d.zone && !e.zone && e.faireZone && /^(feu|chat|leo)$/.test(d.type)){ try{ e.faireZone(); }catch(x){} }
-  if(d.type === 'objet'){ e.briller && e.briller(true); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  if(d.type === 'objet'){ if(e.briller) e.briller(!d.discret); guider(d.id); e.surToucher(function(){ prendre(d.id); }); }
+  else if(d.type === 'roue'){ e.surToucher(function(o, ev){ tournerRoue(e, ev); }); }
+  else if(d.type === 'grille'){ e.surToucher(function(){ toucherGrille(e); }); }
   else if(d.type === 'choix' && !cont.coffre){ coffreLibre(e, d); }
   else if(d.type === 'choix'){
     var pris = cont.coffre && cont.coffre.pris;
     if(pris){ try{ e.ouvrir && e.ouvrir(); (e.options || []).forEach(function(o){ if(o.def && o.def.id === pris) o.cacher && o.cacher(); else o.eteindre && o.eteindre(); }); }catch(x){} return; }
     var ouvert = !d.ferme;
-    if(!ouvert){ e.guider && e.guider(true); e.surToucher(function(){ if(ouvert || X.occupe) return; ouvert = true; e.guider(false); bruit('coffre', {}, ['clic']); Promise.resolve(e.ouvrir()).then(function(){ conte('Deux trouvailles… mais on ne peut en emporter qu\'une. Laquelle ?'); armerChoix(e, d); }); }); }
+    if(!ouvert){ rond(e, true); e.surToucher(function(){ if(ouvert || X.occupe) return; ouvert = true; rond(e, false); bruit('coffre', {}, ['clic']); Promise.resolve(e.ouvrir()).then(function(){ conte('Deux trouvailles… mais on ne peut en emporter qu\'une. Laquelle ?'); armerChoix(e, d); }); }); }
     else armerChoix(e, d);
   }
-  else if(d.type === 'tas'){ if(cont.tas && cont.tas.reste) e.guider(true); e.surToucher(function(){ fouiller(e); }); }
+  else if(d.type === 'tas'){ if(cont.tas && cont.tas.reste) rond(e, true); e.surToucher(function(){ fouiller(e); }); }
   else if(d.type === 'crane'){ if(cont.crane && cont.crane.ouvert){ try{ e.etat && e.etat(true); e.ouvrir && e.ouvrir(); }catch(x){} } else e.surToucher(function(){ crane(e); }); }
   else if(d.type === 'dalle'){ e.surToucher(function(){ dalle(e, d); }); }
-  else if(d.type === 'porte'){ e.guider(true); e.surToucher(function(){ porte(e, d); }); }
-  else if(d.type === 'sarcophage'){ if(cont.objets.indexOf('amulette') >= 0){ e.guider(true); e.surToucher(function(){ sarcophage(e); }); } else { try{ e.ouvrir().then(function(a){ a && a.cacher && a.cacher(); }); }catch(x){} } }
-  else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) e.guider(true); }
+  else if(d.type === 'porte'){ rond(e, true); e.surToucher(function(){ porte(e, d); }); }
+  else if(d.type === 'sarcophage'){ if(cont.objets.indexOf('amulette') >= 0){ rond(e, true); e.surToucher(function(){ sarcophage(e); }); } else { try{ e.ouvrir().then(function(a){ a && a.cacher && a.cacher(); }); }catch(x){} } }
+  else if(d.type === 'feu'){ e.surToucher(function(){ repos(e); }); if(cont.repos && cont.repos.permis) rond(e, true); }
   else if(d.type === 'chat'){ e.surToucher(function(){ if(!X.occupe) sceneChat(e, true); }); }
   else if(d.type === 'leo'){ e.surToucher(function(){ if(!X.occupe) codeDuLieu(); }); }
 }
@@ -16191,7 +16413,7 @@ function coffreLibre(e, d){
     (e.options || []).forEach(function(o){
       var id = o.def.id; S.o[id] = o; S.defs[id] = o.def;
       if(!o._arme){ o._arme = true; o.surToucher(function(){ prendre(id); }); }
-      if(ici(id)){ o.briller(true); o.guider(aPlace(id)); } else { o.pris = true; o.cacher(true); }
+      if(ici(id)){ o.briller(true); rond(o, aPlace(id)); } else { o.pris = true; o.cacher(true); }
     });
   }
   if(p.vus[cle]){
@@ -16202,16 +16424,16 @@ function coffreLibre(e, d){
     Promise.resolve(e.ouvrir()).then(function(){ e.options = toutes; if(S && S.o) armer(); });
     return;
   }
-  e.guider(true);
+  rond(e, true);
   e.surToucher(function(){
     if(p.vus[cle] || X.occupe) return;
-    p.vus[cle] = 1; garder(); e.guider(false); bruit('coffre', {}, ['clic']);
+    p.vus[cle] = 1; garder(); rond(e, false); bruit('coffre', {}, ['clic']);
     Promise.resolve(e.ouvrir()).then(function(){ if(S) armer(); });
   });
 }
 function armerChoix(e, d){
   (e.options || []).forEach(function(o, i){
-    o.briller && o.briller(true); o.guider && o.guider(true);
+    o.briller && o.briller(true); rond(o, true);
     o.surToucher && o.surToucher(function(){ choisir(e, d, i); });
   });
 }
@@ -16300,7 +16522,7 @@ function choisir(e, d, i, laisser){
   X.occupe = true;
   var ob = ev.filter(function(x){ return x.t === 'objet'; })[0], O = D.OBJETS[id] || {nom:id};
   bruit('ramasse', {}, ['clic']);
-  (e.options || []).forEach(function(o){ o.guider && o.guider(false); });
+  (e.options || []).forEach(function(o){ rond(o, false); });
   Promise.resolve(e.choisir(i, versHeros(ob ? ob.heros : 'pisteur'))).then(function(){
     if(ob){ try{ if(ob.equipe && S.heros[ob.heros].equiper) S.heros[ob.heros].equiper(ob.equipe, true); S.heros[ob.heros].joie && S.heros[ob.heros].joie(); }catch(er){} }
     conte(O.nom + ' ! ' + (O.d || '') + ' L\'autre reste là, pour toujours.');
@@ -16312,14 +16534,14 @@ function fouiller(e){
   if(X.occupe) return;
   var p = X.partie, ev = Regles.fouiller(p), f = ev.filter(function(x){ return x.t === 'fouille'; })[0];
   if(!f){ conte('Plus rien là-dedans. Que des os, et encore des os.'); return; }
-  X.occupe = true; e.guider(false);
+  X.occupe = true; rond(e, false);
   var code = ev.filter(function(x){ return x.t === 'code-objet'; })[0], deg = ev.filter(function(x){ return x.t === 'degats'; });
   conte('On fouille… Ça remue là-dessous !');
   Promise.resolve(e.fouiller({trouve:f.trouve === 'morsure' ? 'morsure' : 'page', onMorsure:function(){ son('couine', 0, 1.2); son('morsure'); }})).then(function(objet){
     if(f.trouve === 'morsure'){
       deg.forEach(function(x){ SALLE.Fx.chiffre(hCx(x.heros), 140, '−' + x.n, ''); try{ S.heros[x.heros].touche(); }catch(er){} });
       majPV(); conte('Aïe ! Un rat dormait là-dedans. Il mord le Pisteur et file. Il reste peut-être autre chose, dessous…');
-      e.guider(true);
+      rond(e, true);
     } else if(f.trouve === 'page'){
       var fin = function(){ if(code) fenetreCode(code); };
       if(objet && objet.prendre) Promise.resolve(objet.prendre(versHeros('pisteur'))).then(fin); else fin();
@@ -16340,9 +16562,43 @@ function crane(e){
     X.occupe = false; garder(); majRepartir();
   });
 }
+/* ---------- les canaux : la vieille roue et la grille (le passage secret vers la cave aux toiles) ----------
+   Rien ne les montre. La roue tourne d'un cran quand on la touche (à gauche : vers la gauche ; à droite : vers la droite).
+   Au sixième cran, si l'ordre est le bon (il est sur le plan du Sage, à l'encre invisible), la grille se lève. */
+var ROUE_DIT = ['La vieille roue grince… et tourne d\'un cran.', 'Clac. Encore un cran.', 'Elle tourne. Quelque chose cliquette, loin dans le mur.', 'Un cran de plus. Ça grince là-dedans.', 'Clac… La roue résiste un peu.'];
+function tournerRoue(e, ev){
+  if(X.occupe) return;
+  var sens = e.cote ? e.cote(ev) : 'd', r = Regles.roue(X.partie, sens), x = r[0] || {};
+  if(x.t !== 'roue') return;
+  X.occupe = true;
+  bruit('roueCanaux', {}, ['clic']);
+  var passage = r.filter(function(y){ return y.t === 'passage'; })[0], retour = r.filter(function(y){ return y.t === 'roue-retour'; })[0];
+  Promise.resolve(e.tourner ? e.tourner(sens) : null).then(function(){
+    if(x.libre){ conte('La roue tourne dans le vide. La grille est déjà levée.'); return null; }
+    if(passage){
+      var g = S.o.grille;
+      bruit('grilleCanaux', {}, ['dome']); SALLE.Fx.tremble(4, 300);
+      conte('Clac… clac… CLAC ! Une chaîne se tend dans le mur, et la grille de l\'arche se lève. Un passage, derrière !');
+      return Promise.resolve(g && g.lever ? g.lever() : null);
+    }
+    if(retour){
+      bruit('codeNon', {}, ['clic']);
+      conte('Clonk ! La roue se débloque et revient toute seule à sa place. Ce n\'était pas le bon ordre…');
+      return Promise.resolve(e.retour ? e.retour() : null);
+    }
+    conte(ROUE_DIT[(x.cran - 1) % ROUE_DIT.length]);
+    return null;
+  }).then(function(){ X.occupe = false; garder(); majRepartir(); });
+}
+function toucherGrille(e){
+  if(X.occupe) return;
+  if(e.ouverte){ conte('La grille est levée. Derrière, un couloir file vers une lueur.'); return; }
+  son('clic'); if(e.secouer) e.secouer();
+  conte('Une grille de fer. Elle ne bouge pas d\'un poil.');
+}
 /* ---------- le couloir aux dalles ---------- */
 function explicationDalles(){
-  var t1 = 'À chaque pas, deux dalles : une claire, une sombre. Une seule est sûre.', t2 = 'Une mauvaise dalle, et le piège part : tout le monde prend un coup, et on recule d\'un pas.', t3 = 'Laquelle est sûre ? Le plan du Sage le sait peut-être…';
+  var t1 = 'À chaque pas, deux dalles : une claire, une sombre. Une seule est sûre.', t2 = 'Une mauvaise dalle, et le piège part : tout le monde prend un coup, et on recule d\'un pas.', t3 = 'Claire ou sombre ? Ça change à chaque pas. Les Fondateurs ont noté le chemin quelque part…';
   DJ.fenetre('<h2>Le couloir aux dalles</h2>' +
     '<div class="expli"><div><span class="ex-img">◻️ ◼️</span><p>' + t1 + '</p>' + DJ.lireBtn(t1) + '</div>' +
     '<div><span class="ex-img">💥 ↩️</span><p>' + t2 + '</p>' + DJ.lireBtn(t2) + '</div>' +
@@ -16354,8 +16610,8 @@ function colonneDalles(){
   var cont = Regles.contenu(X.partie, 'dalles'), pas = cont.dalles.pas, fini = cont.dalles.passe;
   Object.keys(S.o).forEach(function(id){
     var m = /^dalle-(\d+)-(\d)$/.exec(id); if(!m) return;
-    var on = !fini && (+m[1] - 6) === pas;
-    try{ S.o[id].guider(on); }catch(e){}
+    var k = +m[1] - 6, sure = Regles.dalleSure(k) === (m[2] === '0' ? 'fond' : 'devant');
+    try{ rond(S.o[id], !fini && k === pas); if(S.o[id].marquer) S.o[id].marquer(sure && (fini || k < pas)); }catch(e){}
   });
   S.pas = pas;
 }
@@ -16363,7 +16619,7 @@ function dalle(e, d){
   if(X.occupe || !S.pret) return;
   var m = /^dalle-(\d+)-(\d)$/.exec(d.id), cont = Regles.contenu(X.partie, 'dalles');
   if(cont.dalles.passe){ conte('Le chemin est connu. On passe sans y penser.'); return; }
-  if(!m || (+m[1] - 6) !== cont.dalles.pas){ SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, 'Pas celle-là', 'refus'); son('clic'); return; }
+  if(!m || (+m[1] - 6) !== cont.dalles.pas){ SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, m && (+m[1] - 6) < cont.dalles.pas ? 'Déjà passée' : 'Trop loin !', 'refus'); son('clic'); return; }
   var ev = Regles.dalle(X.partie, m[2] === '0' ? 'fond' : 'devant'), da = ev.filter(function(x){ return x.t === 'dalle'; })[0];
   if(!da){ if(ev[0] && ev[0].t === 'refus') SALLE.Fx.mot(pointDe(d).x, pointDe(d).y - 30, ev[0].mot, 'refus'); return; }
   X.occupe = true;
@@ -16397,14 +16653,14 @@ function porte(e, d){
 /* ---------- le sarcophage de la fausse crypte ---------- */
 function sarcophage(e){
   if(X.occupe || S.sarcoOuvert) return;
-  X.occupe = true; S.sarcoOuvert = true; e.guider(false);
+  X.occupe = true; S.sarcoOuvert = true; rond(e, false);
   bruit('portePierre', {}, ['dome']);
   Promise.resolve(e.ouvrir()).then(function(am){
     S.o.amulette = am || e.amulette; S.defs.amulette = {zone:{x:430, y:196, w:52, h:66}};
     conte('Le couvercle glisse… Une amulette brille tout au fond !');
     X.occupe = false;
     var a = S.o.amulette;
-    if(a){ a.briller && a.briller(true); a.guider && a.guider(true); a.surToucher && a.surToucher(function(){ prendre('amulette'); }); }
+    if(a){ a.briller && a.briller(true); rond(a, true); a.surToucher && a.surToucher(function(){ prendre('amulette'); }); }
   });
 }
 /* ---------- le feu de camp ---------- */
@@ -16412,7 +16668,7 @@ function repos(e){
   if(X.occupe) return;
   var ev = Regles.repos(X.partie);
   if(ev[0] && ev[0].t === 'refus'){ SALLE.Fx.mot(660, 190, ev[0].mot, 'refus'); son('clic'); conte('Vous êtes déjà reposés. Le feu ne peut rien de plus… jusqu\'au prochain combat.'); return; }
-  X.occupe = true; e.guider(false);
+  X.occupe = true; rond(e, false);
   bruit('feuCamp', {}, ['soin']);
   Promise.resolve(e.attiser ? e.attiser() : null).then(function(){
     ev.forEach(function(x){ if(x.t === 'soin'){ SALLE.Fx.chiffre(hCx(x.heros), 150, '+' + x.n, 'soin'); try{ S.heros[x.heros].joie(); }catch(er){} } });

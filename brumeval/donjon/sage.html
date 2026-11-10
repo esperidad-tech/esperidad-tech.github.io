@@ -175,6 +175,9 @@ p{margin:0}
 #rune{position:relative;flex:none;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:32px;touch-action:none;
   background:radial-gradient(circle at 50% 40%,#3a8aa0,#123040 70%);border:3px solid var(--encre);box-shadow:0 0 0 2px #9ff4ff,0 0 18px rgba(95,232,255,.6),0 6px 14px rgba(0,0,0,.5)}
 #rune.prise{opacity:.35}
+#rune[hidden]{display:none}
+.scene-img.rune-img i{width:96px;height:96px;border-radius:38% 46% 42% 50%;background:radial-gradient(circle at 40% 35%,#8fa6c0,#3a4a66 70%);border:2px solid #24304a;box-shadow:0 0 34px rgba(127,240,255,.85);
+  display:grid;place-items:center;font-style:normal;font-size:52px;color:#bff9ff;text-shadow:0 0 12px #7ff0ff}
 #rune small{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#bff9ff;text-shadow:0 1px 0 #000;white-space:nowrap}
 #bulle{max-width:640px}
 
@@ -321,6 +324,8 @@ var CODES = {
   /* les recettes sorties du chaudron : l'Alchimiste les affiche, le Pisteur les tape au feu de camp (ou hors combat) */
   'recette:givre':  {code:['champi','coeur','cle'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Givre'},
   'recette:baumelum':{code:['chat','arbre','lune'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Baume lumineux'},
+  /* la rune de lumière du Sage : le Pisteur la trouve au fond du puits (sans elle, pas d'encre invisible sur le plan) */
+  'rune:lumiere':   {code:['flamme','etoile','cle'],     de:'pisteur',    a:'sage',       nom:'La rune de lumière'},
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
@@ -598,7 +603,10 @@ var LIENS = [
   {id:'c2', de:'rats', a:'reserve', pts:[[1455, 703], [1455, 648]]},
   {id:'c3', de:'rats', a:'canaux', pts:[[1405, 800], [1405, 862]]},
   {id:'c4', de:'canaux', a:'givre', pts:[[1342, 950], [1230, 958], [1140, 985], [1066, 1004]]},
-  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]]},
+  /* Romain, 10 novembre : le passage des canaux à la cave aux toiles (la salle au signe de la lune) est SECRET. Rien ne le
+     montre dans le donjon : une grille ferme l'arche, et c'est la vieille roue des canaux qui la lève, tournée dans le bon
+     ordre. L'ordre est écrit à l'encre invisible sur le plan du Sage. secret : le « fait » de la partie qui l'ouvre. */
+  {id:'c5', de:'canaux', a:'toiles', pts:[[1538, 940], [1585, 935], [1630, 930]], secret:'passage:canaux'},
   {id:'c6', de:'toiles', a:'J', pts:[[1770, 925], [1840, 925]], court:true},
   {id:'c8', de:'J', a:'eboulis', pts:[[1840, 940], [1842, 1000], [1836, 1056]]},
   {id:'c9', de:'atelier', a:'bibliotheque', pts:[[1920, 644], [1920, 598]]},
@@ -621,7 +629,7 @@ LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:true, l:20});
+LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -660,12 +668,21 @@ var EMPREINTE = (function(){
    3. Le graphe
    ====================================================================== */
 function liens(id){ return LIENS.filter(function(c){ return c.de === id || c.a === id; }); }
+/* les passages secrets déjà ouverts dans cette partie (leurs ids) : ils comptent alors comme des couloirs ordinaires,
+   sur la carte (murs, sol, brume) et dans le graphe. À appeler avant de créer une vue. */
+var OUVERTS = {};
+function ouvrirSecrets(ids){
+  var neuf = {}; (ids || []).forEach(function(k){ if(LIEN[k] && LIEN[k].secret) neuf[k] = 1; });
+  if(Object.keys(neuf).sort().join() !== Object.keys(OUVERTS).sort().join()){ OUVERTS = neuf; STRUCT = null; }
+  return Object.keys(OUVERTS);
+}
+function ferme(c){ return !!c.secret && !OUVERTS[c.id]; }
 function autreBout(c, id){ return c.de === id ? c.a : c.de; }
 function voisins(id, o){
   o = o || {};
   var out = [];
   liens(id).forEach(function(c){
-    if(c.secret && !o.secret) return;
+    if(ferme(c) && !o.secret) return;
     if(c.bouche) return;
     if(c.boucle){ out.push({lieu:c.salle, lien:c.id, porte:null}); return; }
     /* une porte qui ne s'ouvre que d'un côté (la lune : de la salle aux trois portes vers la cave, pas l'inverse) */
@@ -765,15 +782,24 @@ var PLAN = {
   /* LES NOTES. type : 'code' (alphabet secret : les grilles des fondateurs), 'encre' (encre invisible : la rune de lumière du Sage
      la révèle), 'piege' (à l'encre rouge), 'coin' (sur la page déchirée, complétée par le code page:dechiree).
      x, y : le centre ; lignes : le texte (en MAJUSCULES pour les notes codées : les espaces restent des espaces) */
+  /* Romain, 10 novembre : « les mots à décoder doivent servir à débloquer les aventuriers ». Chaque note sert donc :
+       rune    (codée)  où trouver la rune de lumière du Sage : sans elle, pas d'encre invisible ;
+       oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
+       dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
+       roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
+       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       fleur   (encre)  la fleur de givre (pour l'Alchimiste).
+     passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    {id:'est', type:'code', x:px(178), y:py(128), lignes:['VA A L EST'], pres:'puits', dit:'Va à l’est'},
+    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'AU PUITS'], pres:'puits', dit:'La rune dort au puits'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
-    {id:'rond', type:'code', x:px(270), y:py(428), lignes:['ON TOURNE', 'EN ROND'], pres:'egouts', dit:'On tourne en rond'},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:true,
+    {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
+    {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
+      boite:{x:1470, y:862, w:320, h:240}},
+    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
       boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
-    {id:'dalles', type:'piege', x:px(718), y:py(236), lignes:['seulement les', 'dalles claires'], pres:'dalles', crane:{x:px(678), y:py(234)}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
   ],
   /* le passage bloqué : le vieux plan dessine la grande galerie intacte jusqu'à la grotte de givre ; dans le donjon, elle est
@@ -1358,7 +1384,7 @@ var STRUCT = null;
 function structure(){
   if(STRUCT) return STRUCT;
   var salles = ORDRE.filter(function(k){ return !LIEUX[k].couloir; }).map(function(k){ return LIEUX[k]; });
-  var cou = LIENS.filter(function(c){ return !c.secret; });
+  var cou = LIENS.filter(function(c){ return !ferme(c); });
   var sol = salles.map(function(r){ return r.d; }).concat(cou.map(function(c){ return polyD(c.poly); })).concat([cercleD(J.x, J.y, J.r)]).join(' ');
   /* les pierres des murs : le long des salles (vers l'extérieur) et des deux côtés des couloirs */
   var R = rng(23), teintes = ['#4e4466', '#574c72', '#463d5c', '#5f547c', '#4a4060', '#3f3752'], pierres = [];
@@ -1381,6 +1407,12 @@ function structure(){
 function solDe(id){ return id === 'reserve' ? 'planches' : (id === 'puits' || id === 'aeration') ? 'paves' : (id === 'eboulis' || id === 'givre') ? 'terre' : 'dalle'; }
 function coupe(b, z, m){ m = m || 0; return b.x - m < z.x + z.w && b.x + b.w + m > z.x && b.y - m < z.y + z.h && b.y + b.h + m > z.y; }
 
+/* Les toiles (canvas) d'une vue de la carte. Sur iPhone, une toile seulement RETIRÉE de la page garde sa mémoire
+   (jusqu'à 29 Mo pour la carte) tant que le navigateur ne l'a pas ramassée : en quittant la carte il faut les VIDER
+   (largeur et hauteur à 0), sinon la page est fermée par Safari au premier gros effet (RAPIDITE.md R9). */
+var TOILES = [];
+function toile(){ var c = document.createElement('canvas'); TOILES.push(c); return c; }
+function viderToile(c){ try{ c.width = 0; c.height = 0; }catch(e){} }
 /* les toiles de travail (une seule fois chacune) */
 var TRAV = {};
 function travail(nom, w, h){ var c = TRAV[nom]; if(!c){ c = TRAV[nom] = document.createElement('canvas'); } if(c.width !== w || c.height !== h){ c.width = w; c.height = h; } return c; }
@@ -1557,7 +1589,7 @@ function brume(canvas, o){
   var fs = o.echelle || .5, cw = Math.round(W * fs), ch = Math.round(H * fs);
   canvas.width = cw; canvas.height = ch;
   var ctx = canvas.getContext('2d');
-  var vierge = document.createElement('canvas'); vierge.width = cw; vierge.height = ch;
+  var vierge = toile(); vierge.width = cw; vierge.height = ch;
   peindreBrume(vierge.getContext('2d'), fs);
   ctx.drawImage(vierge, 0, 0);
   var etat = {lieux:{}, liens:{}, j:false};
@@ -1621,7 +1653,7 @@ function brume(canvas, o){
     if(!etat.lieux[id]){ etat.lieux[id] = true; out.push({type:'lieu', id:id}); }
     if(L.couloir){ var f4 = ajouterLien(id, 0, 1); if(f4) out.push(f4); }
     liens(id).forEach(function(c2){
-      if(c2.secret || c2.salle === id) return;
+      if(ferme(c2) || c2.salle === id) return;
       var tout = c2.court || c2.bouche || (c2.de === id ? etat.lieux[c2.a] : etat.lieux[c2.de]);
       if(c2.boucle){ [ajouterLien(c2.id, 0, .1), ajouterLien(c2.id, .9, 1)].forEach(function(f5){ if(f5) out.push(f5); }); return; }
       var f6 = c2.de === id ? ajouterLien(c2.id, 0, tout ? 1 : .45) : ajouterLien(c2.id, tout ? 0 : .55, 1);
@@ -1640,7 +1672,7 @@ function brume(canvas, o){
     if(opt.anim){
       /* deux copies de la zone, AVANT : entière, et à moitié ouverte */
       var px0 = Math.max(0, Math.floor(zone.x * fs)), py0 = Math.max(0, Math.floor(zone.y * fs)), pw = Math.min(cw - px0, Math.ceil(zone.w * fs)), ph = Math.min(ch - py0, Math.ceil(zone.h * fs));
-      var A = document.createElement('canvas'), B = document.createElement('canvas');
+      var A = toile(), B = toile();
       A.width = B.width = pw; A.height = B.height = ph;
       A.getContext('2d').drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
       var bx = B.getContext('2d'); bx.drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
@@ -1760,8 +1792,9 @@ function vue(el, o){
   var E = EMPREINTE;
   el.classList.add('cd-vue'); el.innerHTML = '';
   var couche = document.createElement('div'); couche.className = 'cd-couche'; el.appendChild(couche);
-  var carte = document.createElement('canvas'); carte.className = 'cd-carte'; couche.appendChild(carte);
-  var brumeC = document.createElement('canvas'); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
+  var mesToiles = TOILES = [];          /* toutes les toiles de cette vue (vidées par detruire) */
+  var carte = toile(); carte.className = 'cd-carte'; couche.appendChild(carte);
+  var brumeC = toile(); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
   var patchs = document.createElement('div'); couche.appendChild(patchs);
   var etiqs = document.createElement('div'); couche.appendChild(etiqs);
   var sortiesEl = document.createElement('div'); couche.appendChild(sortiesEl);
@@ -1870,11 +1903,11 @@ function vue(el, o){
     if(!r || !r.avant) return Promise.resolve(r);
     var P = r.px, cA = r.avant[0], cB = r.avant[1];
     [cB, cA].forEach(function(c){ c.className = 'cd-patch'; c.style.left = P.x * z + 'px'; c.style.top = P.y * z + 'px'; c.style.width = P.w * z + 'px'; c.style.height = P.h * z + 'px'; patchs.appendChild(c); });
-    if(!cA.animate){ cA.remove(); cB.remove(); return Promise.resolve(r); }
+    if(!cA.animate){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); return Promise.resolve(r); }
     var d = opt.duree || 1500;
     var a1 = cA.animate([{opacity:1}, {opacity:0}], {duration:d * .45, easing:'ease-in', fill:'forwards'});
     var a2 = cB.animate([{opacity:1, transform:'scale(1)'}, {opacity:0, transform:'scale(1.04)'}], {duration:d * .7, delay:d * .3, easing:'ease-out', fill:'forwards'});
-    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); ok(r); }; });
+    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); ok(r); }; });
   }
   /* --- le pion --- */
   var pion = {x:depart.x, y:depart.y, dir:0};
@@ -1938,13 +1971,18 @@ function vue(el, o){
     redessiner:function(id, nouveauxEtats){ if(nouveauxEtats) etats = nouveauxEtats; var D = deco(id, etats[id] === 'vu'); rd.redessiner(D.boite, etats); },
     position:function(){ return {tx:tx, ty:ty, z:z}; },
     etat:function(){ return {brume:B.etat(), pion:{x:pion.x, y:pion.y, dir:dirPion}}; },
-    detruire:function(){ rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim); el.innerHTML = ''; el.classList.remove('cd-vue'); }
+    detruire:function(){
+      rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim);
+      mesToiles.forEach(viderToile); mesToiles.length = 0;
+      Object.keys(TRAV).forEach(function(k){ viderToile(TRAV[k]); });       /* les toiles de travail se retaillent toutes seules au prochain dessin */
+      el.innerHTML = ''; el.classList.remove('cd-vue');
+    }
   };
 }
 
 global.CARTE_DONJON = {
   W:W, H:H, MUR:MUR, SOL:SOL,
-  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
+  LIEUX:LIEUX, ORDRE:ORDRE, LIENS:LIENS, LIEN:LIEN, J:J, SECRET:SECRET, ouvrirSecrets:ouvrirSecrets, VIEUX:VIEUX, ETIQ:ETIQ, SIGNES:SIGNES, SIGNES_MUR:SIGNES_MUR,
   EMPREINTE:EMPREINTE, PLAN:PLAN, PIGPEN:PIGPEN, ROLES:ROLES,
   liens:liens, voisins:voisins, chemin:chemin, lieuEn:lieuEn, trace:trace, pointSur:pointSur,
   longueur:function(id){ return LIEN[id] ? LIEN[id].m.L : 0; },
@@ -2433,8 +2471,7 @@ function svg(){
         L('M' + f(n.x - lw / 2 + 5) + ' ' + f(n.y + hh / 2 + 5) + ' q' + f(lw / 2) + ' 7 ' + f(lw - 10) + ' 0', ENC2, 1.4, ' opacity=".7"') + code(n.x, n.y, n.lignes, t, ROUGE) + '</g>';
       /* la traduction au crayon (apparaît quand le Sage l'a déchiffrée) */
       p += '<g class="traduction" data-trad="' + n.id + '" style="display:none">' + texte(n.x, n.y + hh / 2 + 22, [n.dit], 22, CRAYON, ' font-style="italic"') + '</g>';
-    } else if(n.type === 'piege'){
-      p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE) + texte(n.x, n.y, n.lignes, 11.5 * K1, ROUGE);
+      if(n.crane) p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE);          /* un danger : le petit crâne rouge à côté de la note */
     }
   });
   /* la rose des vents, le titre */
@@ -2492,18 +2529,36 @@ function encre(ctx, n, res){
       ctx.fillStyle = INV; ctx.fillText(l, x, yy); });
   }
   if(n.passage){
-    var d = new Path2D(U.lisse(C.SECRET));
+    /* le passage secret, en pointillés (n.passage : l'id du couloir dans la carte) */
+    var pts = C.LIEN[n.passage].pts, d = new Path2D(U.lisse(pts));
     ctx.strokeStyle = 'rgba(127,240,255,.45)'; ctx.lineWidth = 9; ctx.stroke(d);
     ctx.setLineDash([.1, 11]); ctx.strokeStyle = INV; ctx.lineWidth = 4; ctx.stroke(d); ctx.setLineDash([]);
-    /* le crâne gravé, au départ du passage */
-    ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
-    var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
-    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
-    ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
-    ctx.restore();
+    if(n.id === 'crane'){
+      /* le crâne gravé, au départ du passage */
+      ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
+      var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
+      ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
+      ctx.restore();
+    }
+    if(n.id === 'roue'){
+      /* la roue des canaux, au départ du passage : un cercle, ses rayons, et un trait qui la relie à sa note */
+      var r0 = pts[0], rx = r0[0] - 6, ry = r0[1] - 46;
+      ctx.save(); ctx.translate(rx, ry);
+      [[4.6, 'rgba(159,246,255,.6)'], [2, INV]].forEach(function(q){
+        ctx.lineWidth = q[0]; ctx.strokeStyle = q[1];
+        ctx.beginPath(); ctx.arc(0, 0, 15, 0, 6.29); ctx.stroke();
+        ctx.beginPath(); for(var k = 0; k < 4; k++){ var a = k * Math.PI / 4; ctx.moveTo(Math.cos(a) * 15, Math.sin(a) * 15); ctx.lineTo(-Math.cos(a) * 15, -Math.sin(a) * 15); } ctx.stroke();
+      });
+      ctx.restore();
+      ctx.strokeStyle = INV; ctx.lineWidth = 1.8; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(rx + 6, ry + 18); ctx.quadraticCurveTo(rx + 20, n.y - 60, n.x - 40, n.y - 30); ctx.stroke(); ctx.setLineDash([]);
+    }
     /* une petite flèche au bout */
-    var fin = C.SECRET[C.SECRET.length - 1];
-    ctx.strokeStyle = INV; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(fin[0] - 14, fin[1] - 9); ctx.lineTo(fin[0], fin[1]); ctx.lineTo(fin[0] - 14, fin[1] + 9); ctx.stroke();
+    var fin = pts[pts.length - 1], av = pts[pts.length - 2], ang = Math.atan2(fin[1] - av[1], fin[0] - av[0]);
+    ctx.save(); ctx.translate(fin[0], fin[1]); ctx.rotate(ang);
+    ctx.strokeStyle = INV; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-14, -9); ctx.lineTo(0, 0); ctx.lineTo(-14, 9); ctx.stroke();
+    ctx.restore();
   }
   if(n.id === 'fleur'){
     /* une petite fleur de givre, dessinée à côté */
@@ -2631,6 +2686,12 @@ function majCoin(anim){
   }
 }
 function majTraductions(){ qa('[data-trad]', planEl).forEach(function(g){ g.style.display = S.lues[g.getAttribute('data-trad')] ? '' : 'none'; }); }
+/* la rune de lumière : le Pisteur la trouve au fond du puits (Romain, 10 novembre) ; tant que son code n'est pas arrivé, pas de rune */
+function majRune(anim){
+  var ok = !!S.codes['rune:lumiere'];
+  runeEl.hidden = !ok;
+  if(ok && anim && runeEl.animate) runeEl.animate([{transform:'translateY(60px) scale(.5)', opacity:0}, {transform:'translateY(-8px) scale(1.12)', opacity:1, offset:.7}, {transform:'none', opacity:1}], {duration:700, easing:'ease-out'});
+}
 function majOdette(){ var g = coinEl && coinEl.querySelector('.coeur-odette'); if(g) g.style.display = S.codes['porte:odette'] ? '' : 'none'; }
 
 /* ======================================================================
@@ -2746,7 +2807,6 @@ function toucherPlan(p){
       var t = 12 * PS.K1, lw = Math.max.apply(null, n.lignes.map(function(m){ return PS.largeurCode(m, t); })) + 40, hh = (n.lignes.length - 1) * t * 1.45 + t + 40;
       if(dans(p, n.x, n.y, Math.max(lw, 110), Math.max(hh, 90))){ PG.son('page'); loupe(n); return; }
     } else if(n.type === 'encre' && S.encreFinie[n.id] && dans(p, n.x, n.y, 300, 80)){ conte('L’encre invisible dit : « ' + n.lignes.join(' ') + ' ».'); return; }
-    else if(n.type === 'piege' && (dans(p, n.x, n.y, 220, 70) || dans(p, n.crane.x, n.crane.y, 50, 50))){ conte('Une note à l’encre rouge : « ' + n.lignes.join(' ') + ' ».'); return; }
     else if(n.type === 'coin' && coinOk && dans(p, n.x, n.y, 300, 70)){ conte('Une note à l’encre rouge : « ' + n.lignes.join(' ') + ' »'); return; }
   }
   if(dans(p, P.titre.x, P.titre.y + 15, 380, 110)){ conte('« ' + P.titre.t + ' », ' + P.titre.sous + '.'); return; }
@@ -2761,8 +2821,8 @@ function toucherPlan(p){
     if(nom){ conte('C’est écrit : « ' + nom.l.join(' ').replace(/\s+/g, ' ') + ' ».'); return; }
     var sg2 = P.signes.filter(function(m){ return m.lieu === id && !m.porte; })[0];
     if(sg2){ conte('Pas de nom ici, juste un signe : ' + NOMS_SIGNES[sg2.s] + '.'); return; }
-    if(id === 'egouts'){ conte('Un couloir qui tourne en rond… Il y a une note codée à côté.'); return; }
-    if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Une note à l’encre rouge en parle.'); return; }
+    if(id === 'egouts'){ conte('Un couloir qui tourne, qui tourne… Les Fondateurs aimaient les détours.'); return; }
+    if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Un petit crâne rouge… et une note codée, juste à côté.'); return; }
     if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.' + (S.codes['porte:odette'] ? ' Odette est juste derrière.' : '')); return; }
   }
 }
@@ -2792,7 +2852,7 @@ function rune(){
     res = reveler(p.x, p.y, wr) || res;
     dernier = p;
     if(res){
-      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.passage ? ' Et un passage en pointillés part du crâne…' : ''));
+      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'crane' ? ' Et un passage en pointillés part du crâne…' : res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
       else if(res.debut) conte('Oh ! De l’encre apparaît sous la rune… Continue, doucement.');
     }
   }
@@ -2916,7 +2976,15 @@ function unCode(){
     recevoir:function(id){ S.codes[id] = true; garder(); scene(id); }});
 }
 function scene(id){
-  if(id === 'page:dechiree'){
+  if(id === 'rune:lumiere'){
+    var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
+      dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
+      '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Prendre la rune</button></div>', {classe:'scene parch', surFermer:function(){
+        majRune(true); mesurerBords(); PG.guider(runeEl);
+        conte('Ta rune de lumière est là, en bas. Promène-la doucement sur le vieux papier…');
+      }});
+    PG.guider(wr.el.querySelector('.aller'));
+  } else if(id === 'page:dechiree'){
     var w = PG.fenetre('<div class="titre"><h2>📜 La page déchirée</h2></div>' + '<div class="scene-img dechiree" aria-hidden="true"><i></i></div>' +
       dit('Le Pisteur a trouvé le morceau perdu de ton plan, dans la bibliothèque engloutie. Les bords se recollent tout seuls…', 'scene-txt') +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Recoller le morceau</button></div>', {classe:'scene parch', surFermer:function(){
@@ -3000,7 +3068,7 @@ function demarrer(){
   majGrille();
   mesurerBords();
   Z.z = zoomFit(); borner(); poser();
-  gestes(); rune();
+  gestes(); rune(); majRune(false);
   majBadge(); majGrille();
   q('#b-livre').addEventListener('click', function(){ PG.son('page'); livre(); });
   q('#b-code').addEventListener('click', function(){ PG.son('tic'); unCode(); });
@@ -3010,7 +3078,7 @@ function demarrer(){
   q('#b-nouveau').addEventListener('click', recommencer);
   window.addEventListener('resize', function(){ mesurerBords(); var f0 = zoomFit(); if(Z.z < f0) Z.z = f0; Z.zMin = Math.min(.3, f0); borner(); poser(); });
   Z.zMin = Math.min(.3, zoomFit());
-  if(S.debut){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ta rune de lumière, en bas, réveille l’encre cachée…'); PG.guider(runeEl); }
+  if(S.debut && !S.codes['rune:lumiere']){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
   else conte('Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
