@@ -25,7 +25,7 @@
 - **Les points de vie ne reviennent pas entre les salles.** On se soigne avec les Herbes (20), le Baume (40, s'il est dans le sac) et le feu de camp (la moitié des PV max).
 - Les potions sont infinies, et le sac a 3 recettes (4 avec la Sacoche). Sept recettes sont connues au départ : feu, fumigène (le nuage), huile, colle, acide, baume, cœur vaillant. Le givre et le baume lumineux se gagnent au chaudron.
 - **Le point faible fermé** :
-  - les monstres normaux prennent 1 à 5 de dégâts ;
+  - les monstres normaux prennent 1 à 5 de dégâts (flèche 3, dague 4, louche 2, feu 5, acide 5 ; presque rien sur l'armure du rat cuirassé ni sur le feu follet) ;
   - **les élites et le boss sont IMMUNISÉS** (0 de dégâts, « ça rebondit ! ») tant que le point faible est fermé.
 - **Le point faible ouvert** dure jusqu'à la fin du tour des monstres du même tour : il faut l'ouvrir PUIS frapper, dans le même tour.
 - **Le critique du Pisteur sur un point faible ouvert** affiche toujours ses dégâts, mais ne tue pas toujours (réponse à la question de Romain) :
@@ -36,37 +36,38 @@
 | Élite | 110 | 140 |
 | Boss | 300 | 380 |
 
-  Les autres coups sur un point faible ouvert font 15 à 30. Les armes trouvées ajoutent des bonus contre certains ennemis (§6).
+  Les autres coups sur un point faible ouvert font 10 à 30 (louche 10, acide 25, feu 30). Une flèche trempée sur un point faible ouvert fait le critique (sa potion ne s'applique pas). Les armes trouvées ajoutent des bonus contre certains ennemis (§6).
 - **Une chance sur 8 de critique surprise** à la flèche, seulement sur un monstre normal, même fermé.
-- La rage dure jusqu'à la fin du combat. La brûlure fait −4 par tour jusqu'à la fin.
+- La rage dure jusqu'à la fin du combat. La brûlure fait −4 par tour jusqu'à la fin (un élite ou le boss ne prend feu que s'il est ouvert).
+- **Précisions du 10 novembre** (réglées avec la simulation ; le détail est dans `moteur/REGLES.md` §8) : un monstre ouvert attaque quand même (sauf Bourbe sur le dos) ; la colle et le givre font passer leur tour aux monstres normaux, pas aux élites ni au boss ; la dague atteint aussi une bête tombée devant ; le coup de louche touche la bête de devant, et son bruit toute la salle ; le bouclier de runes arrête la toile et la langue.
 - **Toujours une sortie** : avec la bonne potion, le combo est facile. Sans elle, il existe un chemin plus difficile (§5). Mais les élites et le boss ne se battent pas sans au moins une lecture du Grand Livre : leurs combos ont plusieurs étapes dans un ordre précis, et une erreur les renforce.
 
 ## 4. La difficulté (cible de l'équilibre)
 
 - **La salle des rats** est l'apprentissage : elle reste facile.
-- **Ensuite**, les monstres font assez de dégâts pour qu'une équipe qui tape sans réfléchir tombe en 5 ou 6 tours. Une équipe qui étudie et ouvre les points faibles gagne en 3 ou 4 tours. On le vérifie par simulation (`equilibre.py`) :
+- **Ensuite**, les monstres font assez de dégâts pour qu'une équipe qui tape sans réfléchir tombe en 6 ou 7 tours (mesuré aux canaux, à pleins PV). Une équipe qui étudie et ouvre les points faibles gagne en 3 ou 4 tours. On le vérifie par simulation (`moteur/equilibre.js` ; les résultats sont dans `moteur/equilibre.md`) :
   - « malin » : il gagne ;
   - « au hasard » : il perd souvent ;
   - « tape sans réfléchir » : il PERD dès la salle 2 ;
   - « sans le Grand Livre » : il perd contre les élites et le boss.
-- **Le soin infini** (Baume, Herbes) ne doit pas suffire : à partir de la salle 2, les dégâts des monstres par tour dépassent ce qu'un soin rend par tour.
+- **Le soin infini** (Baume, Herbes) ne doit pas suffire : à partir de la salle 2, les dégâts des monstres par tour dépassent ce qu'un soin rend par tour. Mesuré : le plus gros soin rend 45 PV en un geste ; les salles enlèvent 68 (canaux), 81 (cave), 58 (atelier), 120 (ossuaire) et 73 (bassin) par tour.
 - **Se perdre coûte cher.** Les fausses pistes ont parfois un monstre errant (les égouts tournants) ou un piège (le couloir aux dalles sans le plan).
 
 ## 5. Les monstres du chemin long
 
-Les points de vie et attaques sont ajustés pour la difficulté. Les combos viennent du bestiaire.
+Les points de vie sont ceux des fiches du bestiaire. Les attaques ont été réglées par la simulation du 10 novembre (`moteur/equilibre.md`) ; les chiffres du rat d'égout sont ceux de la salle d'essai. Les combos viennent du bestiaire.
 
 | Monstre | PV | Attaque | S'ouvre avec | Autre chemin | Sans potion | Le renforce |
 |---|---|---|---|---|---|---|
 | Rat d'égout | 40 | morsure 8 (16 enragé) | lumière | huile | — | bruit (rage) |
-| Rat cuirassé | 70 | coup de tête 14 | acide (armure tombe) | givre | 2 coups de louche sur le casque (il a le tournis, le casque tombe), puis lumière | feu (ses coups brûlent +5) |
-| Chauve-souris | 25 | piqué 10, frappe 2 fois si folle | bruit (tombe devant) | colle | — (le bruit est un geste) | lumière (folle) |
-| Feu follet | 30 | brûlure froide 12 à 2 héros | nuage | encre (plus tard) | Bouclier sur sa cible : il s'y accroche, il se voit | lumière (+30 PV) |
-| Araignée des caves | 60 | morsure 12 + toile (un héros passe son tour) | lumière (tombe sur le dos devant) | huile sur le fil | — | feu (2 petites de 15 PV) ; nuage (remonte) |
-| Têtard | 15 | morsure 5 | pas de point faible | — | — | — |
-| **Le Roi des rats** (élite) | 220 | grouillement 10 sur chaque héros | nuage PUIS bruit (le nœud) | nuage puis colle sur le roi | bruit juste après leur attaque | lumière (boule 2 tours) ; bruit avant nuage (24 sur l'Alchimiste) |
-| **Le Gardien de rouille** (élite) | 280 | poing 30 sur celui de devant | acide (plaque) PUIS lumière (cœur) | givre puis lumière | Bouclier : il frappe le bouclier, s'arrête, sa plaque s'entrouvre, puis lumière | lumière avant acide (coups doublés 2 tours) ; feu |
-| **Bourbe** (boss) | 1 000 | langue (avale un héros) ; saut 15 sur tous | lumière dans l'eau PUIS feu sur la bave PUIS nuage (sur le dos) | givre sur le bassin (il ne plonge plus) ; miel, sel, piment (plus tard) | sans feu : 2 tours sur la berge ; sans nuage : « Chatouiller » le héros avalé | nuage avant feu (gonfle, saut double) ; bruit (plonge, +2 têtards) |
+| Rat cuirassé | 70 | coup de tête 18 | acide (armure tombe : il reste ouvert jusqu'à la fin) | givre | 2 coups de louche sur le casque (il a le tournis et ne frappe pas, le casque tombe), puis lumière | feu (ses coups brûlent +6) |
+| Chauve-souris | 25 | piqué 30, frappe 2 fois si folle | bruit (tombe devant) | colle | — (le bruit est un geste) | lumière (folle) |
+| Feu follet | 30 | brûlure froide 18 à 2 héros | nuage | encre (plus tard) | Bouclier sur sa cible : il s'y accroche, il se voit jusqu'à la fin du tour suivant | lumière (+30 PV, une seule fois) |
+| Araignée des caves | 60 | toile (un héros passe son tour), puis morsure 18, en alternance | lumière (tombe sur le dos devant) | huile sur le fil | — | feu (2 petites de 15 PV, morsure 6, une seule fois) ; nuage (remonte, hors d'atteinte un tour) |
+| Têtard | 15 | morsure 8 | pas de point faible : un seul coup suffit | — | — | — |
+| **Le Roi des rats** (élite) | 220 | grouillement 16 sur chaque héros | nuage (le nœud se tend jusqu'à la fin du tour suivant, ils n'attaquent pas) PUIS bruit | nuage puis colle sur le roi (ouvert jusqu'à la fin du tour suivant) | bruit juste après leur attaque : en premier geste du tour suivant | lumière (boule 2 tours) ; bruit avant nuage (30 sur l'Alchimiste) |
+| **Le Gardien de rouille** (élite) | 280 | poing 40 sur celui de devant | acide (plaque, elle reste tombée) PUIS lumière (cœur, à chaque tour) | givre puis lumière | Bouclier : il frappe le bouclier, s'arrête, sa plaque s'entrouvre jusqu'à la fin du tour suivant, puis lumière | lumière avant acide (coups doublés 2 tours) ; feu (+10 par coup jusqu'à la fin) |
+| **Bourbe** (boss) | 1 000 | langue 30 (avale un héros) ; saut 28 sur tous ; en alternance | lumière dans l'eau (sur la berge 2 tours) PUIS feu sur la bave PUIS nuage (sur le dos jusqu'à la fin du tour suivant) | givre sur le bassin (3 tours : il ne plonge plus) ; miel, sel, piment (plus tard) | sans feu : 2 tours sur la berge ; sans nuage : « Chatouiller » le héros avalé, une fois Bourbe sec | nuage avant feu (gonfle, saut double) ; bruit (plonge, remonte avec 2 têtards et retombe sur tout le monde) |
 
 Chaque monstre a ses animations : entrée, attente, attaque, réactions à chaque pouvoir, point faible ouvert, fuite ou mort, et explosion au critique mortel (§10).
 
@@ -76,17 +77,17 @@ Chaque héros a **2 places d'objet**. Trouver un objet quand c'est plein oblige 
 
 | Objet | Pour | Effet | Où |
 |---|---|---|---|
-| Flèches d'argent | Pisteur | Contre les créatures de brume (feu follet, chauve-souris) : elles touchent même fermé (10), et le critique ×1,5 | La réserve, au choix avec les flèches lourdes |
-| Flèches lourdes | Pisteur | Contre l'armure (rat cuirassé, Gardien) : 12 même fermé, et le critique ×1,5 | La réserve, au choix avec les flèches d'argent |
+| Flèches d'argent | Pisteur | Contre les créatures de brume (feu follet, chauve-souris) : elles touchent même fermé (10), et le critique ×1,5 (90) | La réserve, au choix avec les flèches lourdes |
+| Flèches lourdes | Pisteur | Contre l'armure : 12 même fermé sur le rat cuirassé ; le critique ×1,5 sur le rat cuirassé (90) et le Gardien (165). Le Gardien fermé reste immunisé (sinon on le grignote sans le Sage) | La réserve, au choix avec les flèches d'argent |
 | Cristal de lune | Sage | Sa rune de lumière éclaire TOUTE la salle (puissant, mais dangereux avec les chauves-souris et les feux follets) | La bibliothèque engloutie, au choix avec le bâton de chêne |
 | Bâton de chêne | Sage | Son bouclier protège deux héros | La bibliothèque engloutie, au choix avec le cristal |
 | Sacoche | Alchimiste | Une 4e place de recette | Le puits d'aération |
 | Amulette de vie | n'importe qui | Une fois par donjon : le héros qui tombe se relève tout seul avec 30 | La fausse crypte |
-| Bourse de pièces | — | De l'or pour la boutique | La galerie effondrée |
+| Bourse de pièces | — | De l'or pour la boutique (25 pièces) | La galerie effondrée |
 
 **Les objets à passer par code :**
 - la fleur de givre (grotte de givre) va à l'Alchimiste, qui la cuisine au chaudron et obtient la recette Givre ;
-- les herbes lumineuses (puits d'aération) vont à l'Alchimiste, pour la recette Baume lumineux (soigne 30 toute l'équipe) ;
+- les herbes lumineuses (puits d'aération) vont à l'Alchimiste, pour la recette Baume lumineux (soigne 15 à chacun des trois héros : à 30, le soin dépassait les dégâts des salles) ;
 - la page déchirée (bibliothèque) va au Sage, et complète le plan : le coin du bassin, avec une note sur Bourbe ;
 - une page blanche (le tas d'os du cul-de-sac éboulé) va au Sage, et lui donne une sauvegarde de plus.
 
