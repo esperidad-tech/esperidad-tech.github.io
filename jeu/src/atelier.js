@@ -264,6 +264,8 @@ function normaliser(e){
     if(!l.length) e.objets.push({id:S.id, t:t, x:S.x, y:S.y, f:0, v:0, st:0, sur:null});
     else if(l.length > 1) e.objets = e.objets.filter(function(o){ return o.t !== t || o === l[0]; });
   });
+  /* le chaudron a maintenant trois formes (10 novembre) : une ancienne sauvegarde garde son chaudron rond, et sa couleur */
+  if(!e.chFormes){ e.chFormes = 1; e.objets.forEach(function(o){ if(o.t === 'chaudron') o.st = styleAvec(3, 0, (o.st || 0) % 8); }); }
   if(avant3 && typeof CAT !== 'undefined') reglerVerre(e);
   /* plein de rangements : une seule fois, un carton de beaux rangements pour les anciennes sauvegardes */
   if(!e.cadeauRangements){
@@ -955,16 +957,31 @@ def('suspendus', {w:204, h:180, p:64, z:'mur', verre:true, nom:'Bocaux suspendus
    le grand chaudron, le lutrin du grimoire, la paillasse d'analyse
    ========================================================== */
 var DESSIN = {analyses:[], pret:false, cuivre:false};   /* ce que la vue sait (objets reçus, potion possible), pour dessiner */
-def('chaudron', {w:260, h:214, p:230, z:'sol', special:'chaudron', cls:'at-chp', nom:'Grand chaudron', ic:'🍲', surf:null,
+/* Trois formes de chaudron (10 novembre, 17 h 18 : il a ses bulles « Forme » et « Couleur », comme la paillasse) : le chaudron rond de toujours,
+   la marmite droite cerclée de fer, la bassine large et basse. Le bord, le liquide, les anses et les pieds ne changent pas de place
+   (tout ce qui s'y accroche reste juste) : seule la panse change. */
+var PANSES = [
+  [[94, 110], [112, 116], [140, 112], [168, 96], [188, 70], [198, 40]],
+  [[94, 110], [104, 115], [150, 115], [184, 110], [198, 96], [204, 62]],
+  [[94, 110], [106, 124], [126, 130], [148, 122], [168, 100], [180, 62]]
+];
+def('chaudron', {w:260, h:214, p:230, z:'sol', special:'chaudron', cls:'at-chp', nf:3, nom:'Grand chaudron', ic:'🍲', surf:null,
   d:function(c){
-    var cuivre = DESSIN.cuivre, cz = 116, s = '<g class="at-ch-p" data-at="chaudron">';
+    var cuivre = DESSIN.cuivre, cz = 116, fo = c.fo || 0, s = '<g class="at-ch-p" data-at="chaudron">';
+    var cercleFer = function(y, r){          /* un cercle de fer : seulement sa moitié de devant */
+      var l = [], a;
+      for(a = 0; a <= 12; a++) l.push([130 - r * Math.cos(Math.PI * a / 12), y, cz - r * Math.sin(Math.PI * a / 12)]);
+      return c.ligne(l, K, 8) + c.ligne(l, cuivre ? '#e0a070' : '#8a80aa', 3);
+    };
     /* le feu dessous, les trois pieds */
     s += c.tube([70, 204, cz + 26], [190, 204, cz - 26], 8, G('boisS'), null, G('boisH')) + c.tube([70, 204, cz - 26], [190, 204, cz + 26], 8, G('bois'), G('boisH'), G('boisH'));
     s += c.sur('<g class="at-feu-p">' + flammesSVG(130, 204, 0) + '</g>', cz);
     s += c.ligne([[90, 170, cz + 80], [80, 212, cz + 96]], K, 10) + c.ligne([[170, 170, cz + 80], [180, 212, cz + 96]], K, 10);
     var corps = [];
-    [[94, 110], [112, 116], [140, 112], [168, 96], [188, 70], [198, 40]].forEach(function(q){ corps = corps.concat(c.cercle(130, cz, q[1], q[0], 32)); });
-    s += P(lisse(enveloppe(corps), true, 0.5), G(cuivre ? 'cuivre' : 'metal')) + c.sur(reflet('M46,112 C48,140 66,166 90,178', 6), 8);
+    (PANSES[fo] || PANSES[0]).forEach(function(q){ corps = corps.concat(c.cercle(130, cz, q[1], q[0], 32)); });
+    s += P(lisse(enveloppe(corps), true, 0.5), G(cuivre ? 'cuivre' : 'metal')) + c.sur(reflet(fo === 2 ? 'M36,118 C40,140 58,158 84,168' : 'M46,112 C48,140 66,166 90,178', 6), 8);
+    if(fo === 1) s += cercleFer(126, 116) + cercleFer(176, 113);
+    if(fo === 2) s += cercleFer(112, 128);
     s += c.ligne([[60, 170, cz - 80], [42, 212, cz - 96]], K, 10) + c.ligne([[60, 170, cz - 80], [42, 212, cz - 96]], '#5a5078', 4) +
       c.ligne([[200, 170, cz - 80], [218, 212, cz - 96]], K, 10) + c.ligne([[200, 170, cz - 80], [218, 212, cz - 96]], '#5a5078', 4);
     /* les anses */
@@ -3667,7 +3684,7 @@ function brancher(V){
     var obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), fixe = t.closest('[data-at]'), surf = t.closest('[data-surf]'), bul = t.closest('.at-bulle-pa');
     e.preventDefault();
     /* les bulles de la paillasse : on touche ailleurs (ni une bulle, ni la paillasse), elles s'en vont */
-    if(V.bullesPa && !bul && !(obj && obj.getAttribute('data-obj') === V.bullesPa) && !(GUIDE && GUIDE.cible === 'paillasse')) fermerBullesPa(V);
+    if(V.bullesPa && !bul && !(obj && obj.getAttribute('data-obj') === V.bullesPa) && !guideBulles(V)) fermerBullesPa(V);
     /* le guidage du tutoriel : seulement ce qui brille (ailleurs : « Pas maintenant », la pièce peut glisser) */
     if(GUIDE && V.mode === 'ranger' && !guideAutorise(V, t)){ gesteOuDefile(V, e, function(){ pasMaintenant(V); }); return; }
     if(V.mode !== 'ranger'){ gesteOuDefile(V, e, null); return; }
@@ -3812,9 +3829,7 @@ function toucherObjet(V, o, ev){
   var c = catDe(o), d = V.elO[o.id];
   if(V.mode !== 'ranger') return;
   if(o.t === 'chat'){ chatToucher(V, o); return; }
-  if(c.special === 'chaudron'){ ouvrirChaudron(V); return; }
-  if(c.special === 'grimoire'){ ouvrirLivre(V); return; }
-  if(c.special === 'analyses'){ bullesPaillasse(V, o); return; }
+  if(BULLES_DE[c.special]){ bullesPaillasse(V, o); return; }      /* le chaudron, le lutrin, la paillasse : leurs trois bulles */
   if(c.cases){ ouvrir(V, o); return; }
   if(o.t === 'lampe'){ o.on = o.on === 0 ? 1 : 0; redessiner(V, o); son(V, 'clic'); changer(V); majLumiere(V); rebond(d); return; }
   /* les affaires du chat : d'abord leur action (remplir la gamelle) ; le tabouret renversé se relève */
@@ -3851,13 +3866,27 @@ function etincelles(V, o){
    On touche la paillasse : on n'entre pas tout de suite. Trois petites bulles se posent au-dessus d'elle, comme celles de la carte
    (même rebond, même petit bruit) : « 🔬 Analyser » (jaune : c'est elle qui lance), « Forme » et « 🎨 Couleur », qui changent
    la table tout de suite, une forme ou une couleur à la fois. On touche ailleurs : elles s'en vont. */
+/* (10 novembre, 17 h 18, Romain : « les bulles forme et couleur, je les veux aussi sur le chaudron et le lutrin ».) Les trois meubles
+   spéciaux ont donc les mêmes bulles : celle qui lance, jaune (« 🔬 Analyser », « 🍲 Préparer », « 📖 Lire »), puis « Forme » et « 🎨 Couleur ».
+   BULLES_DE : pour chaque meuble spécial, la cible du tutoriel qui va avec, et sa bulle jaune. */
+var BULLES_DE = {
+  analyses:{cible:'paillasse', ic:'🔬', mot:'Analyser'},
+  chaudron:{cible:'chaudron', ic:'🍲', mot:'Préparer'},
+  grimoire:{cible:'grimoire', ic:'📖', mot:'Lire'}
+};
+/* Le tutoriel montre-t-il le meuble dont les bulles sont ouvertes (ou le meuble id) ? Alors ses bulles restent, et le rond va sur la jaune. */
+function guideBulles(V, id){
+  var o = V.parId[id || V.bullesPa], B = o && BULLES_DE[catDe(o).special];
+  return !!(GUIDE && B && B.cible === GUIDE.cible);
+}
 function fermerBullesPa(V){
   var b = V.calque && V.calque.querySelector('.at-bulles-pa');
   if(b) b.remove();
   if(V.bullesT){ clearTimeout(V.bullesT); V.bullesT = 0; }
   if(!V.bullesPa) return;
+  var g = guideBulles(V);
   V.bullesPa = null;
-  if(GUIDE && GUIDE.cible === 'paillasse') guidePlacer(V);
+  if(g) guidePlacer(V);
 }
 function placerBullesPa(V){
   var b = V.calque && V.calque.querySelector('.at-bulles-pa'), F = V.bullesPa && cadreObjet(V, V.bullesPa);
@@ -3870,25 +3899,31 @@ function placerBullesPa(V){
   if(dx) b.style.marginLeft = dx.toFixed(1) + 'px';
   if(dy) b.style.marginTop = dy.toFixed(1) + 'px';
 }
-function veilleBullesPa(V){ if(V.bullesT) clearTimeout(V.bullesT); V.bullesT = apres(V, 9000, function(){ V.bullesT = 0; if(!(GUIDE && GUIDE.cible === 'paillasse')) fermerBullesPa(V); }); }
+function veilleBullesPa(V){ if(V.bullesT) clearTimeout(V.bullesT); V.bullesT = apres(V, 9000, function(){ V.bullesT = 0; if(!guideBulles(V)) fermerBullesPa(V); }); }
 function bullesPaillasse(V, o){
-  if(V.bullesPa){ fermerBullesPa(V); son(V, 'clic'); return; }
+  var memes = V.bullesPa === o.id, B = BULLES_DE[catDe(o).special] || BULLES_DE.analyses;
+  if(V.bullesPa){ fermerBullesPa(V); if(memes){ son(V, 'clic'); return; } }      /* (retoucher le même meuble : ses bulles s'en vont) */
   var b = document.createElement('div');
   b.className = 'at-bulles-pa';
-  b.innerHTML = '<button type="button" class="at-bulle-pa at-bulle-go" data-bulle="aller" style="--i:0"><span aria-hidden="true">🔬</span>Analyser</button>' +
+  b.innerHTML = '<button type="button" class="at-bulle-pa at-bulle-go" data-bulle="aller" style="--i:0"><span aria-hidden="true">' + B.ic + '</span>' + B.mot + '</button>' +
     '<button type="button" class="at-bulle-pa" data-bulle="forme" style="--i:1" aria-label="Changer la forme"><svg viewBox="0 0 24 18" aria-hidden="true"><path d="M2,4 H22 V8 H2 Z M5,8 V16 M19,8 V16 M9,8 V11 H15 V8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>Forme</button>' +
     '<button type="button" class="at-bulle-pa" data-bulle="couleur" style="--i:2" aria-label="Changer la couleur"><span aria-hidden="true">🎨</span>Couleur</button>';
   V.calque.appendChild(b); V.bullesPa = o.id;
   placerBullesPa(V); veilleBullesPa(V);
   try{ if(window.Brume && Brume.son) Brume.son('pastilles', 3); else son(V, 'clic'); }catch(e){}
   rebond(V.elO[o.id]);
-  /* (le tutoriel : son rond passe de la paillasse à la bulle jaune, une fois qu'elle a fini de rebondir) */
-  if(GUIDE && GUIDE.cible === 'paillasse'){ guidePlacer(V); apres(V, 620, function(){ if(V.bullesPa) guidePlacer(V); }); }
+  /* (le tutoriel : son rond passe du meuble à la bulle jaune, une fois qu'elle a fini de rebondir) */
+  if(guideBulles(V)){ guidePlacer(V); apres(V, 620, function(){ if(V.bullesPa) guidePlacer(V); }); }
 }
 function bullePaillasse(V, quoi){
   var o = V.parId[V.bullesPa || 'pa'];
   if(!o) return;
-  if(quoi === 'aller'){ fermerBullesPa(V); ouvrirAnalyses(V); return; }
+  if(quoi === 'aller'){
+    var sp = catDe(o).special;
+    fermerBullesPa(V);
+    if(sp === 'chaudron') ouvrirChaudron(V); else if(sp === 'grimoire') ouvrirLivre(V); else ouvrirAnalyses(V);
+    return;
+  }
   var nf = nfDe(catDe(o)), fo = formeDe(o), th = themeDe(o);
   restyler(V, o, quoi === 'forme' ? styleAvec(nf, (fo + 1) % nf, th) : styleAvec(nf, fo, (th + 1) % NT));
   placerBullesPa(V); veilleBullesPa(V);
@@ -3913,8 +3948,10 @@ function apercuPanneau(V, cle){
   var o = V.parId[cle];
   return o ? svgObjet({t:o.t, st:o.st, v:o.v}) : '';
 }
+/* (Plus de 🎨 dans les panneaux du lutrin et du chaudron, 10 novembre : la forme et la couleur se changent par les bulles du meuble.
+   Il reste la petite image du meuble, dans l'en-tête.) */
 function boutonPeindre(V, cle){
-  return '<span class="at-f-apercu" aria-hidden="true">' + apercuPanneau(V, cle) + '</span><button type="button" class="at-rond at-peindre" data-peindre="' + cle + '" aria-label="Changer la couleur">🎨</button>';
+  return '<span class="at-f-apercu" aria-hidden="true">' + apercuPanneau(V, cle) + '</span>';
 }
 
 /* ---------- Déplacer un meuble : appuyer, garder le doigt, puis glisser ----------
@@ -4841,6 +4878,7 @@ function pucesRecette(r){
 function utilePotion(id){ var p = (DD().POTIONS || {})[id] || {}; return p.utile || p.d || ''; }
 function ouvrirLivre(V){
   if(V.mode !== 'ranger') return;
+  fermerBullesPa(V);
   if(!recettesDe(V).length) return;
   ouvrirCalque(V, 'at-cal-livre', '<div class="at-livre"></div>');
   dessinerLivre(V);
@@ -4948,13 +4986,14 @@ function etatRecette(V, id){
 }
 function ouvrirChaudron(V){
   if(V.mode !== 'ranger') return;
+  fermerBullesPa(V);
   var prets = recettesDe(V).filter(function(r){ return etatRecette(V, r.id).pret; });
   if(!prets.length){
     son(V, 'bulle');
     var ch = V.elO.ch;
     if(ch){ ch.classList.remove('at-bouillonne'); void ch.offsetWidth; ch.classList.add('at-bouillonne'); apres(V, 1700, function(){ ch.classList.remove('at-bouillonne'); }); }
     var t = 'Il te manque des ingrédients : regarde le grimoire 📖';
-    toast(V, esc(t), 5200, 'Il te manque des ingrédients : regarde le grimoire.', '<button type="button" class="at-rond at-toast-peindre" aria-label="Changer la couleur du chaudron">🎨</button>');
+    toast(V, esc(t), 5200, 'Il te manque des ingrédients : regarde le grimoire.');
     var lu = V.elO.lu;
     if(lu){ lu.classList.add('at-livre-appel'); apres(V, 5200, function(){ if(V.elO.lu) V.elO.lu.classList.remove('at-livre-appel'); majReperes(V); }); majReperes(V); }
     return;
@@ -6469,9 +6508,14 @@ function guideElements(V){
   var c = GUIDE.cible, l = [];
   if(c === 'cueillette') l = (V.elTas || []).slice();
   else if(c === 'rangement'){ var m = meubleGuide(V); if(m && V.elO[m.id]) l = [V.elO[m.id]]; }
-  else if(c === 'grimoire'){ if(V.elO.lu && !grimoireOuvert(V)) l = [V.elO.lu]; }   /* (le grimoire ouvert : le rond est sur ses « ? », pas sur le lutrin caché dessous) */
-  else if(c === 'chaudron'){ if(V.elO.ch) l = [V.elO.ch]; }
-  else if(c === 'paillasse'){ var bg = V.bullesPa && V.calque && V.calque.querySelector('.at-bulle-go'); if(bg) l = [bg]; else if(V.elO.pa) l = [V.elO.pa]; }   /* (les bulles ouvertes : le rond est sur « Analyser ») */
+  else if(c === 'grimoire' || c === 'chaudron' || c === 'paillasse'){
+    /* le meuble ; ses bulles ouvertes : le rond est sur la jaune (« Lire », « Préparer », « Analyser ») ;
+       (le grimoire ouvert : le rond est sur ses « ? », pas sur le lutrin caché dessous) */
+    var idm = c === 'grimoire' ? 'lu' : c === 'chaudron' ? 'ch' : 'pa', bg = V.bullesPa === idm && V.calque && V.calque.querySelector('.at-bulle-go');
+    if(c === 'grimoire' && grimoireOuvert(V)) l = [];
+    else if(bg) l = [bg];
+    else if(V.elO[idm]) l = [V.elO[idm]];
+  }
   else if(c === 'carton'){ var ks = cartonsIci(V); if(!guideReserve(V) && ks.length && V.elK[ks[0].id]) l = [V.elK[ks[0].id]]; }
   else if(c === 'potion') l = (V.elFl || []).slice();
   return l.filter(Boolean);
@@ -6482,7 +6526,7 @@ function guideAutorise(V, t){
   if(t.closest('.at-repere') || t.closest('.at-tient')) return true;
   var c = GUIDE.cible, els = guideElements(V);
   if(els.some(function(e){ return e.contains(t); })) return true;
-  if(c === 'paillasse' && V.bullesPa && V.elO.pa && V.elO.pa.contains(t)) return true;   /* (retoucher la paillasse referme ses bulles) */
+  if(V.bullesPa && guideBulles(V) && V.elO[V.bullesPa] && V.elO[V.bullesPa].contains(t)) return true;   /* (retoucher le meuble referme ses bulles) */
   if(c === 'rangement'){                   /* ranger : la cueillette (on la prend) et tous les rangements (on la pose) */
     if(t.closest('.at-tas')) return true;
     var ob = t.closest('.at-o'), o = ob && V.parId[ob.getAttribute('data-obj')];

@@ -1,8 +1,11 @@
-"""Photos de la paillasse dans l'atelier du jeu, pour regarder ses formes et ses couleurs (style = un nombre de 0 à 39 :
-forme = style % 5, couleur = style % 8).   python3 tools/photos-paillasse.py <dossier de build> <préfixe des images> [styles...]"""
+"""Photos d'un meuble spécial dans l'atelier du jeu, pour regarder ses formes et ses couleurs (style = un nombre :
+forme = style % (nombre de formes), couleur = style % 8 ; paillasse 5 formes, chaudron 3, lutrin 3).
+   python3 tools/photos-paillasse.py <dossier de build> <préfixe des images> [styles...]
+   MEUBLE=ch (ou lu, pa par défaut) python3 tools/photos-paillasse.py …"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
 D, PREF = sys.argv[1], sys.argv[2]
+ID = os.environ.get('MEUBLE', 'pa'); AT = {'pa':'analyses', 'ch':'chaudron', 'lu':'grimoire'}[ID]
 STYLES = [int(x) for x in sys.argv[3:]] or [0]
 URL = 'file://' + os.path.join(D, 'index.html')
 err = []
@@ -19,8 +22,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(700)
     print('objets:', pg.evaluate("() => JSON.stringify((M.S.atelier.objets||[]).filter(o => ['pa','ch','lu'].includes(o.id)))"))
     for st in STYLES:
-        pg.evaluate("st => { var o = M.S.atelier.objets.filter(o => o.id === 'pa')[0]; o.st = st; M.render(); }", st); pg.wait_for_timeout(500)
-        el = pg.locator('#atelier-ici [data-at=analyses]').first
+        pg.evaluate("a => { var o = M.S.atelier.objets.filter(o => o.id === a[0])[0]; o.st = a[1]; M.render(); }", [ID, st]); pg.wait_for_timeout(500)
+        el = pg.locator(f'#atelier-ici [data-at={AT}]').first
         bb = el.bounding_box()
         m = 60
         pg.screenshot(path=f'{PREF}-{st}.png', clip={'x':max(0,bb['x']-m), 'y':max(0,bb['y']-m), 'width':bb['width']+2*m, 'height':bb['height']+2*m})

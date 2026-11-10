@@ -1475,10 +1475,12 @@ function majMolette(){
   $$('.obj').forEach(function(o){ o.classList.toggle('actif', +o.dataset.obj === S.zoom); }); $$('.num').forEach(function(n){ n.classList.toggle('actif', +n.dataset.zoom === S.zoom); });
   var z = $('#zoomTxt'); if(z) z.textContent = '×' + S.zoom;
 }
-/* Le cône de lumière : il part de la lame, sous l'objectif du microscope, et s'ouvre jusqu'au grand rond.
-   On comprend d'un coup d'œil que ce qu'on voit en grand, c'est ce qu'il y a au bout du microscope. */
+/* Le cône de lumière : il part de la lentille du haut du microscope (l'oculaire, là où on met l'œil) et s'ouvre jusqu'au grand rond
+   (Romain, 10 novembre, 17 h 18 ; avant, il partait de la lame). On comprend d'un coup d'œil que le grand rond, c'est ce qu'on voit
+   en regardant dans le microscope. (L'oculaire : la lentille bleue en haut du tube, lui-même penché de 16°.) */
+var CAM_MICRO = {x:819, y:276, z:1.62};          /* le gros plan du microscope : un peu plus haut qu'avant, pour bien voir l'oculaire */
 function svgCone(camX, camY, z){
-  var ax = 600 + (MICRO.x - 6*MICRO.e - camX)*z, ay = 320 + (MICRO.y - 66*MICRO.e - camY)*z, cx = 306, cy = 320, R0 = 290;
+  var ax = 600 + (MICRO.x + 13.4*MICRO.e - camX)*z, ay = 320 + (MICRO.y - 186.9*MICRO.e - camY)*z, cx = 306, cy = 320, R0 = 290;
   var d = Math.hypot(ax - cx, ay - cy), phi = Math.atan2(ay - cy, ax - cx), al = Math.acos(Math.min(1, R0/d));
   var t1 = [cx + R0*Math.cos(phi + al), cy + R0*Math.sin(phi + al)], t2 = [cx + R0*Math.cos(phi - al), cy + R0*Math.sin(phi - al)];
   return '<svg class="cone-hud pose" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true" style="' + pos(0, 0, 1200, 640) + '"><defs>' +
@@ -1490,9 +1492,9 @@ function svgCone(camX, camY, z){
 }
 function ouvrirMicro(){
   if(S.occupe) return; S.zoom = 10; S.cx = 500; S.cy = 500;
-  ouvrirMode('micro', svgCone(819, 287, 1.62) + '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
+  ouvrirMode('micro', svgCone(CAM_MICRO.x, CAM_MICRO.y, CAM_MICRO.z) + '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
     '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(14, 8, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
-  camera(819, 287, 1.62); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
+  camera(CAM_MICRO.x, CAM_MICRO.y, CAM_MICRO.z); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
 }
 function lancerBoucle(){ cancelAnimationFrame(boucle); if(S.mode === 'micro' && !reduit){ var f = function(){ rendLentille(); boucle = requestAnimationFrame(f); }; boucle = requestAnimationFrame(f); } }
 /* Sur un grand écran, l'image du microscope grossit avec l'oculaire (sur un téléphone ou une tablette : un point = un point) */
