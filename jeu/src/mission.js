@@ -13,7 +13,7 @@
      essaye (mini-jeu tenté, réussi ou raté), analyse, potion (fabriquée ou donnée), donne (code donné),
      ingr {baies:3}, rangement (une caisse ou un sac sorti des cartons), apres (n° de moment atteint),
      bavard (habitants interrogés), demasque (aveux obtenus),
-     lu (page du Grand Livre ouverte), ou [une des conditions].
+     lu (page du Grand Livre ouverte), dictee (recette secrète complète dans le grimoire), ou [une des conditions].
    Une mission validée le reste (on ne recule jamais).
    ========================================================== */
 (function(){
@@ -42,6 +42,13 @@ function un(b){
   }
   if(b.apres !== undefined) return (P.moment || 0) >= b.apres;
   if(b.lu) return !!P.vus['page:' + b.lu];
+  /* dictee : la recette secrète est complète dans le grimoire de l'Alchimiste (le Sage la lui a dictée ; atelier.js, S.atelier.dictees) */
+  if(b.dictee){
+    var Rd = ((D && D.RECETTES) || {})[b.dictee], dd = S.atelier && S.atelier.dictees && S.atelier.dictees[b.dictee], sortes = {};
+    if(!Rd || !Array.isArray(dd)) return false;
+    (Rd.ingr || []).forEach(function(x){ sortes[x[0]] = 1; });
+    return dd.length > 0 && dd.length >= M.cle(sortes).length;
+  }
   if(b.bavard){ var gens = {}; M.cle(P.vus).forEach(function(k){ var p = k.split(':'); if(p[0] === 'barde' && p.length === 3 && P.vus[k] === 'ok' && /^\d+$/.test(p[2])) gens[p[1]] = 1; }); return M.cle(gens).length >= b.bavard; }
   if(b.demasque) return M.cle(P.vus).filter(function(k){ return k.indexOf('verite:') === 0; }).length >= b.demasque;
   return M.uneCondition(b);

@@ -16,3 +16,6 @@ jeu/donjon/essai/captures/critique/
 # les captures du test des bulles de la paillasse (refaites à chaque fois)
 jeu/test/paillasse/
 jeu/test/labo/
+
+# les captures du robot du massif de l'enquête 1, tools/massif.py (refaites à chaque fois)
+jeu/test/massif/

@@ -125,7 +125,8 @@ function contenuCasier(k){ return LISTES[S.niveau][k]; }
    « savoir » : une phrase vraie, dite une fois la chose reconnue (jamais avant : elle ne doit pas souffler la réponse).
    La fiche ci-dessous est celle de l'enquête 1. */
 var OBJETS = {
-  /* le fil rouge de la fenêtre de la mairie */
+  /* les « poils » de la fenêtre de la mairie (l'identifiant du jeu reste « fil » : son code est gelé). Le Pisteur a trouvé « des poils » :
+     c'est la loupe qui montre un fil rouge tricoté, à chercher dans le casier des fils, pas dans celui des poils. */
   fil:{tiroir:'fils', bon:'tricot', scene:'fibres', requis:['fil', 'noir'], bete:'acarien', savoir:'Tricotée : le fil fait des boucles, comme dans un pull.'},
   noir:{de:'fil', nom:'les grains noirs', tiroir:'grains', bon:'suie', coul:'#17110f', voisins:['charbon','poudre','poivre','pavot'], savoir:'La suie : la poussière noire que le feu laisse dans les cheminées.'},
   brun:{de:'fil', nom:'le grain brun', tiroir:'grains', bon:'terre', coul:'#7a5230', voisins:['argile','rouille','sciure','cannelle']},
@@ -166,7 +167,7 @@ var RIEN = {t:'Rien à signaler.'};
 function rea(o){ var r = {eau:RIEN, chaude:RIEN, iode:RIEN, vinaigre:RIEN, bicar:RIEN, flamme:RIEN}; for(var k in o) r[k] = o[k]; return r; }
 /* De vraies réactions : « Rien à signaler » quand il ne se passe rien */
 var REA = {
-  fil:rea({chaude:{t:'L\'eau chaude fait déteindre le fil : de l\'eau rougie !', cree:'rouge'}, flamme:{t:'Le fil se recroqueville et sent le cheveu brûlé.'}}),
+  fil:rea({chaude:{t:'L\'eau chaude le fait déteindre : de l\'eau rougie !', cree:'rouge'}, flamme:{t:'Ça se recroqueville et ça sent le cheveu brûlé.'}}),
   noir:rea({eau:{t:'Les grains flottent : ils n\'aiment pas l\'eau.'}, chaude:{t:'Les grains flottent : ils n\'aiment pas l\'eau.'},
     iode:{t:'L\'orange de l\'iode pâlit autour des grains : ils l\'avalent !', fx:'pali'}, flamme:{t:'Les grains rougeoient tout doucement, sans flamme et sans crépiter.', braise:true}}),
   brun:rea({eau:{t:'Ça fait de la boue.'}, chaude:{t:'Ça fait de la boue.'}, vinaigre:{t:'De toutes petites bulles : il y a du calcaire là-dedans.', fx:'bulles'}}),

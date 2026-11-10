@@ -172,7 +172,7 @@ M.tutoCarte = function(){
   }
   T.bonus.forEach(function(b){
     if(ouverts.indexOf(b.lieu) < 0) ouverts.push(b.lieu);
-    mq.push({lieu:b.lieu, ic:'✨', label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+    mq.push({lieu:b.lieu, ic:M.icBonus ? M.icBonus(b) : '✨', label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
   });
   var vis = {};
   M.cle(vu).forEach(function(id){ if(id !== '*') vis[id] = 1; });
@@ -200,6 +200,8 @@ function boutonAtelier(e){
 function cibleAtelier(e){
   var S = M.S, at = S.atelier || {}, fait = UI.tutoAt || {};
   if(e.atelier === 'analyse') return boutonAtelier(e) ? 'bouton' : 'paillasse';
+  /* (Romain, 10 novembre : d'abord le grimoire, où le Sage dicte la recette ; ensuite la cueillette, puis le chaudron) */
+  if(e.atelier === 'grimoire') return 'grimoire';
   if(e.atelier === 'encre'){
     if((S.potions.revelatrice || 0) > 0) return boutonAtelier(e) ? 'bouton' : 'potion';
     /* les ingrédients voyagent jusqu'à leurs rangements, puis « Tout est rangé ! » : rien ne brille pendant ce temps (Romain, 15 h 58) */
@@ -207,7 +209,7 @@ function cibleAtelier(e){
     var pan = at.panier || {};
     if(M.cle(pan).some(function(k){ return pan[k] > 0 && /^(baies|eau|miel)$/.test(k); })) return fait.cueillette ? 'rangement' : 'cueillette';   /* toucher un ingrédient devant la porte, puis le ranger */
     if(q('#atelier-ici .at-grim:not([hidden]) .at-livre-ch')) return 'brasser';   /* le chaudron est ouvert : on prépare l'encre dedans (pas de rond : c'est le mini-jeu) */
-    if(!UI.tutoGrimoire) return 'grimoire';
+    if(!UI.tutoGrimoire && !(M.condMission && M.condMission({dictee:'revelatrice'}))) return 'grimoire';   /* (la recette est déjà dictée : on va droit au chaudron) */
     return 'chaudron';
   }
   return 'carton';

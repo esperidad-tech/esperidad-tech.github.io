@@ -238,7 +238,9 @@ function cuirScene(){
 }
 /* De loin, un échantillon n'est qu'un tout petit bout de quelque chose : c'est la loupe qui montre ce que c'est */
 function petitEch(t, x, y){
-  if(t === 'fil'){ var d = 'M' + (x - 14) + ',' + y + ' q5,-4 10,0 t10,0 t9,-1'; return T(d, K, 4.6) + T(d, ROUGE, 2.2); }
+  /* les « poils » de la fenêtre (Romain, 10 novembre, 16 h 56 : pour le Pisteur, ni un fil ni rouge) : de loin, une pincée de brins sombres,
+     noircis de poussière ; c'est sous la loupe qu'on voit le fil rouge tricoté */
+  if(t === 'fil') return [[-12, 2, 3], [-7, -3, -2], [-2, 3, 4], [3, -2, -3], [8, 2, 2]].map(function(q){ var d = 'M' + (x + q[0] - 5) + ',' + (y + q[1] + 3) + ' q' + (5 + q[2]) + ',-8 12,-5'; return T(d, '#1c1214', 2.6) + T(d, '#4a1a20', 1.2); }).join('');
   if(t === 'plume') return '<g transform="translate(' + x + ',' + y + ') rotate(-24)"><path d="M-16,0 C-8,-8 6,-8 16,0 C6,8 -8,8 -16,0 Z" fill="#16161c" stroke="' + K + '" stroke-width="1.6"/><path d="M-16,0 C-13,-3.4 -10,-5 -8,-5.6 L-8,5.6 C-10,5 -13,3.4 -16,0 Z" fill="#d6d0c0"/><path d="M-21,0 H16" stroke="#b8b2a2" stroke-width="1.3" fill="none"/></g>';
   if(t === 'poils') return [[-9, -3, 4], [-4, 2, -3], [1, -2, 5], [6, 3, -2], [10, -1, 3]].map(function(q){ var d = 'M' + (x + q[0] - 6) + ',' + (y + q[1] + 4) + ' q' + (5 + q[2]) + ',-9 13,-7'; return T(d, '#1a1a1e', 2.2) + T('M' + (x + q[0] + 4) + ',' + (y + q[1] - 2.4) + ' l3,-.6', '#f2f2f2', 2.2); }).join('');
   return '<g transform="translate(' + x + ',' + y + ') rotate(18)"><path d="M0,-11 C5,-9 7,-5 12,-6 C12,0 8,3 9,8 C5,7 2,9 0,13 C-2,9 -5,7 -9,8 C-8,3 -12,0 -12,-6 C-7,-5 -5,-9 0,-11 Z" fill="#2f5a34" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M0,-8 V11 M0,0 L-7,-3 M0,0 L7,-3" stroke="#cfe0b0" stroke-width="1" fill="none" opacity=".8"/></g>';

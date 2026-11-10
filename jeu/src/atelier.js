@@ -4930,7 +4930,10 @@ function choisirDictee(V, rid, j, k, b){
   son(V, 'ok');
   dessinerLivre(V);
   if(d.length >= g.length){
-    var tf = 'La recette est complète ! Ferme le grimoire et va au grand chaudron.';
+    /* (Romain, 10 novembre : le grimoire d'abord, la cueillette ensuite) s'il manque des ingrédients, on le dit, en racontant */
+    var st = stockRange(V), pan = V.etat.panier || {}, manque = g.filter(function(x){ return (st[x[0]] || 0) + (pan[x[0]] || 0) < x[1]; });
+    var tf = manque.length ? 'La recette est complète ! Mais ton atelier n\'a pas tout : il te manque ' + manque.map(function(x){ return ((x[1] - (st[x[0]] || 0) - (pan[x[0]] || 0)) + ' ' + nomIngr(x[0]).toLowerCase()); }).join(' et ') + '. En route pour la cueillette !' :
+      'La recette est complète ! Ferme le grimoire et va au grand chaudron.';
     toast(V, '<b>📜 ✔</b> ' + esc(tf), 4200, tf);
     V.rangeFin = Date.now() + 4200; V.attenteDit = 'recette';   /* (le tutoriel attend la fin du message pour montrer la suite) */
     try{ guideFait(V, 'grimoire'); }catch(e){}
