@@ -2204,7 +2204,15 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - un **gros « CRITIQUE ! »** écrit (il aime) ;
   - plus rien de plein écran.
 
-  Refonte en cours dans la salle des rats. **Règle pour tous les monstres : le critique reste localisé autour de la bête.** Les explosions des autres modules seront alignées après la validation de Romain.
+  **Refait et en ligne le 10 novembre à 13 h 42** (https://esperidad-tech.github.io/brumeval/donjon-essai.html), en attente de l'avis de Romain :
+  - la flèche frappe, le rat se fige et gonfle un court instant (0,4 s), sur lui seul ;
+  - une fumée noire dense l'enveloppe ; le chiffre des dégâts s'affiche en jaune sur la fumée ;
+  - ses morceaux (tête aux yeux en croix, queue, pattes, touffes de poil, **aux couleurs du rat**, sans sang) jaillissent **de derrière la fumée, sur les côtés**, tournoient, retombent au sol et s'effacent ;
+  - le gros « CRITIQUE ! » doré claque au-dessus, dans la moitié droite de l'écran ;
+  - deux petits tremblements d'écran ; la fumée se dissipe et laisse les cendres et les os ; environ 2,5 s en tout ;
+  - plus rien de plein écran (ni voile, ni rayons, ni image de choc) ; sur iPhone : aucun calque de plus de 2 080 px, aucune toile gardée (`essai/memoire-critique.py`).
+
+  **Règle pour tous les monstres : le critique reste localisé autour de la bête.** Les explosions des autres modules seront alignées après la validation de Romain.
 - **Les codes du prototype sont fixés** dans `jeu/donjon/donjon-codes.js`, un seul tableau partagé par les trois pages :
   - 4 pages de sauvegarde ;
   - 2 plantes et 2 recettes ;
@@ -2221,10 +2229,25 @@ Vérifié : `verif.js` « Tout est bon », `tuto.py` sans échec, `partie2.py` (
   - la page blanche à trouver est dans le tas d'os (première fouille : un rat mord ; deuxième : la page) ;
   - recharger la page n'est pas une fuite ;
   - les sons pas encore validés jouent leur version A, provisoire.
+- **Les règles de tous les combats sont écrites, et la difficulté est réglée par simulation** (10 novembre, 13 h 25 ; `jeu/donjon/moteur/`) :
+  - `src/donnees.js` (les tableaux) et `src/regles.js` (le calcul, sans affichage) ; le mode d'emploi pour l'affichage est `moteur/REGLES.md` ; `node test-regles.js` : 324 vérifications ; `node equilibre.js` : la simulation, rapport dans `equilibre.md` ;
+  - la salle des rats est restée la même (3 000 parties comparées geste à geste avec l'essai) ;
+  - à pleins points de vie, par salle : l'équipe maligne gagne 100 % ; **sans le Sage : 0 % contre le Gardien, le Roi des rats et Bourbe** ; l'équipe qui tape sans réfléchir ne passe pas la deuxième salle (0,1 %) ; au hasard : 0 % après la deuxième salle ;
+  - une équipe maligne qui se trompe une fois sur dix : 69 % d'une traite ; une fois sur quatre : 14 %. La vraie difficulté dépendra donc des étourderies : à régler à l'essai (les dégâts des monstres dans `donnees.js`) ;
+  - les chiffres retenus : chauve-souris 30, feu follet 18 sur 2 héros, araignée 18 et la toile en alternance, rat cuirassé 18, Gardien 40, Roi des rats 16 par héros, Bourbe langue 30 et saut 28, têtard 8 ;
+  - ce qui s'écarte de la conception (les 24 décisions sont dans `REGLES.md` §8), à faire valider par Romain à l'essai :
+    - les flèches lourdes ne percent pas le Gardien fermé (sinon on le battait sans le Sage) ; leur bonus contre lui est un critique plus fort ;
+    - le Baume lumineux soigne 15 à chacun au lieu de 30 ;
+    - Bourbe chatouillé recrache toujours, mais ne roule sur le dos que s'il est sec ; quand il a plongé, il remonte à la fin du tour avec ses têtards et retombe sur tout le monde ;
+    - un monstre ouvert attaque quand même (comme le rat) ; la colle et le givre ne retiennent ni les élites ni le boss ;
+    - après une victoire, un héros au sol se relève avec 1 point de vie ; hors combat, un piège laisse toujours 1 point de vie ;
+    - deux fuites dans la même salle offrent une ligne du Grand Livre (décision du 8 novembre) ;
+  - restent ouverts : les textes du Grand Livre à faire relire par Romain ; le soin sans fin devant un dernier monstre faible (rien ne l'interdit pour l'instant).
+- **Les aides coupées le 10 à 12 h 06.** Quand Romain a changé de modèle, les trois chantiers repris à midi (critique, armes des héros, carte et tablettes) ont été arrêtés et ne peuvent pas être relancés tels quels. Leur travail est sauvegardé. Le critique a été fini à la main (ci-dessus). Les deux autres sont repris un par un.
 - En cours :
-  - les règles du donjon et la simulation de difficulté ;
-  - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html`) ;
-  - les nouvelles armes des héros ;
+  - les nouvelles armes des héros (`anim/heros/` : le module est fait et passe les 82 tests de la salle ; reste la mesure de mémoire sur iPhone) ;
+  - la carte unique du donjon et les pages du Sage et de l'Alchimiste (`carte.js`, `donjon-sage.html`, `donjon-alchimiste.html` : les trois pages existent ; restent l'allègement de la carte pour l'iPhone et ses tests) ;
+  - ensuite : le combat à l'écran et l'exploration (`MOTEUR-DONJON.md` §3.2 et §3.3).
 - **Les 13 salles sans combat sont faites** (`jeu/donjon/scenes/`, planche `scenes/planche.png`, envoyée à Romain). Ce sont des fonds en images, avec des objets à toucher qui brillent puis s'envolent vers le sac (`OBJETS`) :
   - le coffre à deux carquois et le lutrin à choix ;
   - le tas d'os à fouiller ;

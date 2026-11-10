@@ -167,7 +167,7 @@ def tablette(nav):
         pg.wait_for_timeout(ms); P.capture(n)
         zone.append(pg.evaluate("""() => { var j = document.getElementById('jeu').getBoundingClientRect(), g = 1e9, d = -1e9, n = 0;
           document.querySelectorAll('.ra-scene-fx *, .crit-texte, #ecran-fx > *, #fx > *').forEach(function(e){
-            if(e.closest('.zone') || e.classList.contains('chiffre') || e.classList.contains('ra-scene-fx')) return;
+            if(e.closest('.zone') || e.classList.contains('chiffre') || e.classList.contains('ra-scene-fx') || e.classList.contains('ha-fx')) return;   /* (les calques vides des modules ne comptent pas) */
             var r = e.getBoundingClientRect(), cs = getComputedStyle(e); if(!r.width || cs.visibility === 'hidden' || +cs.opacity < .05) return;
             n++; g = Math.min(g, r.left); d = Math.max(d, r.right); });
           return {n: n, gauche: n ? (g - j.left) / j.width : 1, large: n ? (d - g) / j.width : 0,

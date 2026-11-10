@@ -52,11 +52,12 @@ Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) po
 - **Le donjon, où en sont les pièces** (Bible §12.51) :
   - la conception : `jeu/donjon/CONCEPTION-DONJON.md` ;
   - **le cahier des charges du moteur : `jeu/donjon/MOTEUR-DONJON.md`** (c'est la feuille de route pour assembler le donjon jouable : les règles sans affichage et la simulation de difficulté, le combat à l'écran, l'exploration, les sauvegardes, les tests) ;
+  - **les règles de tous les combats : `jeu/donjon/moteur/`** (`src/donnees.js`, `src/regles.js`, sans affichage ; mode d'emploi `REGLES.md` ; `node test-regles.js` ; la difficulté : `node equilibre.js`, rapport `equilibre.md`). L'affichage ne décide jamais d'un résultat : il joue la liste d'évènements que rendent les règles ;
   - les codes : `jeu/donjon/donjon-codes.js` ; la carte : `jeu/donjon/carte.js` ; les tablettes du Sage et de l'Alchimiste : `jeu/donjon/donjon-sage.html`, `donjon-alchimiste.html` (sources `jeu/donjon/pages/`) ;
   - les monstres animés : `jeu/donjon/anim/betes/<id>/` (contrat : `CONTRAT.md`) ;
   - les décors de combat : `jeu/donjon/decors/` ;
   - les salles sans combat : `jeu/donjon/scenes/` ;
-  - la salle d'essai : `jeu/donjon/essai/`. Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
+  - la salle d'essai : `jeu/donjon/essai/` (le critique localisé du rat y est le modèle pour tous les monstres : `anim/rat/rat-anime.js` → `exploser`, `essai/src/effets.js` → `critique` ; outils : `essai/filmer-critique.py`, `essai/memoire-critique.py`). Quand il garde plusieurs versions, le jeu tire au hasard parmi elles.
 - **Boutons jaunes avec texte noir** pour tout bouton « aller / lancer » (§12.16). Avant chaque mini-jeu : une explication + un bouton jaune (`M.lancerMJ`).
 - Quand il demande un lien, coller l'URL.
 - Talents et boutique : plus tard.

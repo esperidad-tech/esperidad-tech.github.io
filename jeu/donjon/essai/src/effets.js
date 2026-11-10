@@ -217,7 +217,7 @@ function critique(x, y, n, exploser, son, o){
     son('boum');
     tremble(7, 300);
     texteCritique(x, y);
-    chiffre(x - 140, y, '−' + n, 'crit');           /* à côté de la fumée, sous « CRITIQUE ! » (il monte sans le toucher) */
+    chiffre(x + 6, y + 40, '−' + n, 'crit');        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
     if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
     return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
@@ -231,7 +231,7 @@ var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
 function texteCritique(x, y){
   var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
     (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-  t.style.left = '720px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
+  t.style.left = '700px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},

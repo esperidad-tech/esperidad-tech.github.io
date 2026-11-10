@@ -2272,21 +2272,24 @@ R.bruler = function(on){
        Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
        une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
-/* (un contour clair, comme un reflet de lune : sombres, mais lisibles sur le mur sombre) */
-function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || '#2e2438') + '" stroke="#8a78a0" stroke-width="2" stroke-linejoin="round"/>'; }
+/* les morceaux ont les couleurs du rat (son poil gris, sa queue et ses oreilles roses), dessinés comme lui (contour sombre) :
+   on reconnaît un rat de dessin animé qui vole en éclats — des yeux en croix, pas une goutte de sang */
+var M_POIL = '#74626a', M_CLAIR = '#a8949c', M_SOMBRE = '#5a4a54', M_ROSE = '#dc94a4';
+function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || M_POIL) + '" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"/>'; }
 var MEMBRES = {
   tete: SIL('M-22 2 C -24 -10 -12 -20 2 -19 C 14 -18 26 -10 32 0 C 34 4 30 7 26 7 C 12 9 -4 12 -14 10 C -20 9 -22 6 -22 2 Z') +
-    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="#4a3c5a"/>' +
-    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#d8cce6" stroke-width="1.8" stroke-linecap="round"/><circle cx="31" cy="1" r="2.4" fill="#4a3c5a"/>' +
-    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#4a3c5a" stroke-width="1"/>',
-  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#8a78a0', 8.5) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#2e2438', 5) +
-    L('M-16 -5 C -6 -9 6 -8 14 -1', '#4a3c5a', 1.4),
+    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="' + M_ROSE + '"/>' +
+    L('M-16 0 C -8 -8 6 -12 18 -8', M_CLAIR, 1.6, ' opacity=".7"') +
+    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#fff8e8" stroke-width="2" stroke-linecap="round"/><circle cx="31" cy="1" r="3" fill="' + M_ROSE + '" stroke="' + O + '" stroke-width="1.4"/>' +
+    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#ece4f0" stroke-width="1"/>',
+  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', O, 9) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', M_ROSE, 5) +
+    L('M-16 -5 C -6 -9 6 -8 14 -1', '#ffd6de', 1.4, ' opacity=".8"'),
   patteAv: SIL('M-4 -18 C 4 -20 8 -12 6 -4 L 4 8 C 10 9 15 12 13 16 C 9 18 2 17 -2 14 L -6 -2 C -9 -10 -10 -16 -4 -18 Z') +
-    L('M-3 -14 C 1 -15 4 -12 4 -6', '#4a3c5a', 1.4),
+    L('M-3 -14 C 1 -15 4 -12 4 -6', M_CLAIR, 1.4) + '<path d="M3 9 C 9 10 14 12 12 16 C 8 17 3 16 0 14 Z" fill="' + M_ROSE + '"/>',
   patteAr: SIL('M-12 -16 C 0 -22 12 -12 10 0 C 9 6 6 9 4 11 L 14 16 C 18 18 17 22 12 22 L -2 21 C -6 20 -6 16 -3 14 L -6 4 C -14 -2 -16 -12 -12 -16 Z') +
-    L('M-8 -12 C -2 -15 4 -12 6 -6', '#4a3c5a', 1.6),
-  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z'),
-  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', '#241a2e')
+    L('M-8 -12 C -2 -15 4 -12 6 -6', M_CLAIR, 1.6) + '<path d="M4 13 L 13 17 C 16 18 15 21 12 21 L 0 20 C -3 19 -2 16 0 15 Z" fill="' + M_ROSE + '"/>',
+  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z') + L('M-10 0 C -6 -6 2 -8 8 -5', M_CLAIR, 1.4, ' opacity=".7"'),
+  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', M_SOMBRE)
 };
 /* qui part de quel côté (le rat regarde à gauche : la tête part à gauche, la queue à droite) */
 var ECLATS = [['tete', -1], ['queue', 1], ['patteAv', -1], ['patteAr', 1], ['patteAv', 1], ['patteAr', -1], ['touffe', -1], ['touffe2', 1]];
@@ -2330,7 +2333,7 @@ R.exploser = function(scene, o){
   el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
   /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
   /* (elle reste dense jusqu'à ce que les membres y soient retombés, puis se dissipe lentement) */
-  var brumes = [], NB = 14;
+  var brumes = [], NB = 14, premiereVolute = null;
   for(var n = 0; n < NB; n++){
     var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.1, 1)), px = cx + Math.cos(a) * d * 80 * u, py = cy - 4 * u + Math.sin(a) * d * 30 * u;
     var tt = hasard(92, 124) * u, g;
@@ -2345,6 +2348,7 @@ R.exploser = function(scene, o){
       var r = tt * .38, c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
       g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
+    if(!premiereVolute) premiereVolute = g;
     var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
     brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)'}, {offset: .08, transform: tf(px, py, 1), opacity: .97, easing: 'ease-in-out'},
       {offset: .62, transform: tf(px + dx, py - mt, 1.2), opacity: .95, easing: 'ease-in-out'}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.7), opacity: 0}],
@@ -2357,17 +2361,22 @@ R.exploser = function(scene, o){
     self.J.saut.style.visibility = 'hidden';
     self.el.getAnimations().forEach(function(x){ x.cancel(); });
   }, T1 + 170);
-  /* 3) l'explosion : les membres jaillissent sur les côtés en tournoyant (une parabole, échantillonnée une fois)
-        et retombent dans la fumée, qui les cache */
+  /* 3) l'explosion : les membres jaillissent DE DERRIÈRE la fumée, sur les côtés (Romain : « tu les fais éclater sur le
+        côté, la fumée noire cache »), en tournoyant : une parabole jusqu'au sol (échantillonnée une fois), un petit
+        rebond, puis ils s'effacent. Ils sont rangés SOUS les volutes : on ne voit pas d'où ils partent. */
   ECLATS.forEach(function(e, i){
     var cote = e[1], m = el('<g transform="scale(' + f1(u * 1.3) + ')">' + MEMBRES[e[0]] + '</g>');
-    var x0 = cx + cote * hasard(4, 18) * u, y0 = cy - hasard(0, 14) * u, x1 = cx + cote * hasard(50, 92) * u, y1 = sol - hasard(4, 14) * u;
-    var h = hasard(80, 125) * u, rot = cote * hasard(320, 720), N = 12, kf = [];
+    if(premiereVolute && premiereVolute.parentNode === ov) ov.insertBefore(m, premiereVolute);
+    var x0 = cx + cote * hasard(6, 20) * u, y0 = cy - hasard(0, 12) * u;
+    var x1 = cx + cote * (cote < 0 ? hasard(116, 150) : hasard(128, 188)) * u, y1 = sol - hasard(2, 10) * u;
+    var h = hasard(78, 128) * u, rot = cote * hasard(300, 620), N = 14, T = .76, kf = [];
     for(var q = 0; q <= N; q++){
-      var t = q / N, s = t < .15 ? .6 + .4 * t / .15 : 1;
-      kf.push({offset: t, transform: tf(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - h * 4 * t * (1 - t), s, rot * t), opacity: t < .06 ? t / .06 : t > .72 ? Math.max(0, 1 - (t - .72) / .28) : 1});
+      var t = q / N, x, y, a, op = q ? 1 : 0, k;
+      if(t <= T){ k = t / T; x = x0 + (x1 - x0) * k; y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k); a = rot * k; }
+      else { k = (t - T) / (1 - T); x = x1 + cote * 16 * u * k; y = y1 - 13 * u * 4 * k * (1 - k); a = rot + cote * 50 * k; op = 1 - k * k; }
+      kf.push({offset: t, transform: tf(x, y, 1, a), opacity: op});
     }
-    m.animate(kf, {duration: hasard(760, 900), delay: T2 + i * 25, easing: 'linear', fill: 'both'});
+    m.animate(kf, {duration: hasard(950, 1150), delay: T2 + i * 22, easing: 'linear', fill: 'both'});
   });
   /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
   var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
@@ -5469,8 +5478,8 @@ H._eclatPotion = function(L, to, nom, c){
 };
 
 /* ---------- le Sage : le cristal de lune (un éclair qui illumine TOUTE la salle) ---------- */
-/* les images de lumière : de petits dégradés (256 px) faits une fois, que la carte graphique agrandit et estompe ;
-   (iPhone : pas d'image plein écran ; le canvas est libéré tout de suite) */
+/* les images de lumière : de petits dégradés (256 px) faits une fois, que la carte graphique agrandit (jamais au-delà de
+   4 096 px réels, R9) et estompe ; les toiles qui les dessinent sont vidées tout de suite */
 var LUMIERE = {garde:[]};
 function imagesLumiere(){
   if(LUMIERE.pret) return LUMIERE.pret;
@@ -5538,7 +5547,7 @@ H.eclairSalle = function(scene, opt){
   imagesLumiere();
   var me = this;
   return this._file(function(sig){
-    var g = this.garde(), base = {pA:[100, 272], pB:[156, 272]}, lc = this._luneCharge();
+    var g = this.garde(), base = {pA:[100, 272], pB:[156, 272]}, lc = this._luneCharge(), fond = null;
     var leve = copie(g, copie(base, {bassin:{y:4}, torse:-4, tete:-12, mB:[150, 80], hB:0, mA:[178, 70], hA:-150}));
     var haut = copie(leve, {bassin:{y:-2}, torse:-9, tete:-18, mB:[146, 40], hB:-6, mA:[186, 56], hA:-160, sB:1.06});
     var flash = copie(haut, {torse:-12, tete:-20, mB:[146, 34]});
@@ -5546,6 +5555,7 @@ H.eclairSalle = function(scene, opt){
     return this.jouer([
       {d:300, p:leve, e:'io', f:function(){
         me.cristalFlash(true); me.expr('cri');
+        var q0 = me.rep('cristal', scene); fond = me._fondLune(scene, {x:q0.x - 4, y:q0.y - 30});
         if(lc){ montrer(lc, true); animer(lc, [{opacity:0, transform:'scale(.2)'}, {opacity:1, transform:'scale(1)', offset:.8}, {opacity:1, transform:'scale(1.25)'}], {duration:480, easing:'ease-in', fill:'forwards'}); }
         var p = me.rep('cristal');
         for(var i = 0; i < 8; i++){ var a = i / 8 * Math.PI * 2, d = 70, e = div(me.fx, 'width:14px;height:14px', FORMES.etoile(i % 2 ? '#e8f0ff' : '#ffffff', 14));
@@ -5554,37 +5564,54 @@ H.eclairSalle = function(scene, opt){
       {d:340, p:haut, e:'b'},
       {d:140, p:flash, e:'o', f:function(){
         if(lc) animer(lc, [{opacity:1, transform:'scale(1.25)'}, {opacity:0, transform:'scale(2.2)'}], {duration:500, easing:'ease-out', fill:'forwards'}).then(function(){ montrer(lc, false); });
-        sig(me._eclairSalle(scene, opt));
+        sig(me._eclairSalle(scene, opt, fond));
       }},
       {d:600, p:flash, e:'lin', f0:function(){ me.expr('savoir'); }},
       {d:440, p:g, e:'io', f:function(){ me.expr('garde'); }}
     ]);
   });
 };
-H._eclairSalle = function(scene, opt){
+/* la lumière dans TOUTE la salle (RAPIDITE.md R9, mémoire de l'iPhone) : une toile à la taille de la scène, à 1,5 × de
+   densité au plus, dessinée UNE fois (pendant que le Sage lève son bâton), qu'on montre et qu'on estompe en opacité (rien
+   n'est agrandi), puis vidée tout de suite après */
+H._fondLune = function(scene, c){
+  try {
+    var W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540, k = Math.min(1.5, window.devicePixelRatio || 1);
+    var cv = document.createElement('canvas'); cv.width = Math.round(W * k); cv.height = Math.round(Hs * k);
+    cv.className = 'ha-p'; cv.style.cssText = 'width:' + W + 'px;height:' + Hs + 'px;opacity:0;transform:none';
+    var g = cv.getContext('2d'), R = Math.hypot(Math.max(c.x, W - c.x), Math.max(c.y, Hs - c.y)) * k * 1.06, gr = g.createRadialGradient(c.x * k, c.y * k, 0, c.x * k, c.y * k, R);
+    [[0, 'rgba(255,255,255,1)'], [.08, 'rgba(250,253,255,.96)'], [.25, 'rgba(230,244,255,.82)'], [.55, 'rgba(200,226,255,.55)'], [.85, 'rgba(176,208,255,.32)'], [1, 'rgba(170,205,255,.2)']].forEach(function(t){ gr.addColorStop(t[0], t[1]); });
+    g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+    couche(scene).appendChild(cv);
+    return cv;
+  } catch(e){ return null; }
+};
+H._eclairSalle = function(scene, opt, fond){
   var L = couche(scene), c = this.rep('cristal', scene), W = scene.offsetWidth || 960, Hs = scene.offsetHeight || 540;
-  var S = Math.max(W, Hs) * 2.3 / 256;
-  /* 1) la grande lumière (une image de 256 px que la carte graphique agrandit) */
+  /* 1) toute la salle s'illumine (la toile préparée), puis la toile est vidée */
+  fond = fond || this._fondLune(scene, c);
+  if(fond) jouerEl(fond, [{opacity:0}, {opacity:1, offset:.06}, {opacity:.88, offset:.3}, {opacity:0}], {duration:1500, easing:'ease-out'}).then(function(){ fond.width = fond.height = 0; });
+  /* 2) le cœur de la lumière autour du cristal (une image de 256 px, agrandie au plus × 4,8 : 256 × 4,8 × 3 < 4 096 px réels) */
   if(LUMIERE.grand){
     var im = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.grand + '" alt="" style="width:100%;height:100%;display:block">');
-    jouerEl(im, [{transform:place(c.x, c.y, 0, S * .12), opacity:0}, {transform:place(c.x, c.y, 0, S * .85), opacity:1, offset:.06}, {transform:place(c.x, c.y, 0, S), opacity:.9, offset:.3}, {transform:place(c.x, c.y, 0, S * 1.04), opacity:0}], {duration:1500, easing:'ease-out'});
+    jouerEl(im, [{transform:place(c.x, c.y, 0, .4), opacity:0}, {transform:place(c.x, c.y, 0, 3.6), opacity:1, offset:.1}, {transform:place(c.x, c.y, 0, 4.8), opacity:0}], {duration:1000, easing:'ease-out'});
   }
-  /* 2) les rayons qui tournent un peu */
+  /* 3) les rayons qui tournent un peu (256 × 4,4 × 3 < 4 096) */
   if(LUMIERE.rayons){
     var ry = div(L, 'width:256px;height:256px', '<img src="' + LUMIERE.rayons + '" alt="" style="width:100%;height:100%;display:block">');
     jouerEl(ry, [{transform:place(c.x, c.y, 0, .5), opacity:0}, {transform:place(c.x, c.y, 6, 2.6), opacity:1, offset:.15}, {transform:place(c.x, c.y, 22, 4.4), opacity:0}], {duration:1100, easing:'ease-out'});
   }
-  /* 3) le croissant de lune qui jaillit du cristal, l'onde qui traverse la salle */
+  /* 4) le croissant de lune qui jaillit du cristal, l'onde qui traverse la salle (400 × 3,3 × 3 < 4 096) */
   surgit(L, c.x, c.y, 130, 130, lunePopSvg(), {d:800, s1:1.8});
-  anneau(L, c.x, c.y, {c:'#e8f6ff', w:320, s0:.15, s1:5.5, d:1000});
+  anneau(L, c.x, c.y, {c:'#e8f6ff', w:400, s0:.12, s1:3.3, d:1000});
   anneau(L, c.x, c.y, {c:'#ffffff', w:320, s0:.1, s1:3.6, d:800, retard:120});
-  /* 4) des éclats de lune partout dans la salle */
+  /* 5) des éclats de lune partout dans la salle */
   var n = 16;
   for(var i = 0; i < n; i++){
     var x = W * (.06 + .88 * (i / n)) + alea(-20, 20), y = Hs * alea(.12, .68), t = alea(12, 22), e = div(L, 'width:' + r1(t) + 'px;height:' + r1(t) + 'px', FORMES.etoile(i % 3 ? '#ffffff' : '#dfe8ff', t));
     jouerEl(e, [{transform:place(x, y, 0, 0), opacity:0}, {transform:place(x, y - 4, 45, 1.3), opacity:1, offset:.35}, {transform:place(x, y - 12, 90, 0), opacity:0}], {duration:alea(600, 900), delay:100 + i * 28, easing:'ease-out', fill:'backwards'});
   }
-  /* 5) sur chaque cible : un éclat */
+  /* 6) sur chaque cible : un éclat */
   (opt.cibles || []).forEach(function(q, k){
     lueurFx(L, q.x, q.y, {c:'#ffffff', c2:'#cfe8ff', w:120, s0:.3, s1:1.6, d:600, retard:120 + k * 60});
     pluie(L, q.x, q.y, {n:6, forme:'etoile', c:['#ffffff', '#e8f0ff'], v0:60, v1:140, g:60, t0:10, t1:15, d0:500, d1:800, retard:120 + k * 60});
@@ -8145,7 +8172,7 @@ function critique(x, y, n, exploser, son, o){
     son('boum');
     tremble(7, 300);
     texteCritique(x, y);
-    chiffre(x - 140, y, '−' + n, 'crit');           /* à côté de la fumée, sous « CRITIQUE ! » (il monte sans le toucher) */
+    chiffre(x + 6, y + 40, '−' + n, 'crit');        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
     if(o.brume) brumeNoire(x, y, o.brume);          /* sans le module du rat (images fixes) : sa fumée à lui */
     return plus(CRIT_ECLAT - CRIT_IMPACT);
   }).then(function(){
@@ -8159,7 +8186,7 @@ var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
 function texteCritique(x, y){
   var t = el('div', 'crit-texte', (HALO ? '<img class="crit-halo cuit" alt="" src="' + HALO + '">' : '<i class="crit-halo"></i>') + '<b class="crit-ombre">CRITIQUE !</b><b class="crit-or">CRITIQUE !</b>' +
     (ETOILE ? '<img class="crit-etoile cuit" alt="" src="' + ETOILE + '">' : '<i class="crit-etoile"></i>'));
-  t.style.left = '720px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
+  t.style.left = '700px'; t.style.top = Math.max(88, y - 190) + 'px';      /* au milieu de la moitié droite (il y tient en entier), au-dessus du chiffre */
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},

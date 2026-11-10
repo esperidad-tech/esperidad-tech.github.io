@@ -1310,21 +1310,24 @@ R.bruler = function(on){
        Fluidité / mémoire (RAPIDITE.md) : tout est réglé d'avance en animations (transform / opacity), aucun filtre,
        une vingtaine de morceaux au plus, aucun calque plus grand que la scène.
    ===================================================================== */
-/* (un contour clair, comme un reflet de lune : sombres, mais lisibles sur le mur sombre) */
-function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || '#2e2438') + '" stroke="#8a78a0" stroke-width="2" stroke-linejoin="round"/>'; }
+/* les morceaux ont les couleurs du rat (son poil gris, sa queue et ses oreilles roses), dessinés comme lui (contour sombre) :
+   on reconnaît un rat de dessin animé qui vole en éclats — des yeux en croix, pas une goutte de sang */
+var M_POIL = '#74626a', M_CLAIR = '#a8949c', M_SOMBRE = '#5a4a54', M_ROSE = '#dc94a4';
+function SIL(d, f){ return '<path d="' + d + '" fill="' + (f || M_POIL) + '" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"/>'; }
 var MEMBRES = {
   tete: SIL('M-22 2 C -24 -10 -12 -20 2 -19 C 14 -18 26 -10 32 0 C 34 4 30 7 26 7 C 12 9 -4 12 -14 10 C -20 9 -22 6 -22 2 Z') +
-    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="#4a3c5a"/>' +
-    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#d8cce6" stroke-width="1.8" stroke-linecap="round"/><circle cx="31" cy="1" r="2.4" fill="#4a3c5a"/>' +
-    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#4a3c5a" stroke-width="1"/>',
-  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#8a78a0', 8.5) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', '#2e2438', 5) +
-    L('M-16 -5 C -6 -9 6 -8 14 -1', '#4a3c5a', 1.4),
+    SIL('M-10 -15 C -16 -30 0 -34 4 -19 Z') + '<path d="M-8 -18 C -11 -25 -3 -27 0 -20 Z" fill="' + M_ROSE + '"/>' +
+    L('M-16 0 C -8 -8 6 -12 18 -8', M_CLAIR, 1.6, ' opacity=".7"') +
+    '<path d="M3 -9 L 9 -3 M 9 -9 L 3 -3" stroke="#fff8e8" stroke-width="2" stroke-linecap="round"/><circle cx="31" cy="1" r="3" fill="' + M_ROSE + '" stroke="' + O + '" stroke-width="1.4"/>' +
+    '<path d="M24 3 L 40 -1 M 24 5 L 40 6" stroke="#ece4f0" stroke-width="1"/>',
+  queue: L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', O, 9) + L('M-18 -4 C -6 -10 8 -8 16 0 C 22 6 22 14 16 20', M_ROSE, 5) +
+    L('M-16 -5 C -6 -9 6 -8 14 -1', '#ffd6de', 1.4, ' opacity=".8"'),
   patteAv: SIL('M-4 -18 C 4 -20 8 -12 6 -4 L 4 8 C 10 9 15 12 13 16 C 9 18 2 17 -2 14 L -6 -2 C -9 -10 -10 -16 -4 -18 Z') +
-    L('M-3 -14 C 1 -15 4 -12 4 -6', '#4a3c5a', 1.4),
+    L('M-3 -14 C 1 -15 4 -12 4 -6', M_CLAIR, 1.4) + '<path d="M3 9 C 9 10 14 12 12 16 C 8 17 3 16 0 14 Z" fill="' + M_ROSE + '"/>',
   patteAr: SIL('M-12 -16 C 0 -22 12 -12 10 0 C 9 6 6 9 4 11 L 14 16 C 18 18 17 22 12 22 L -2 21 C -6 20 -6 16 -3 14 L -6 4 C -14 -2 -16 -12 -12 -16 Z') +
-    L('M-8 -12 C -2 -15 4 -12 6 -6', '#4a3c5a', 1.6),
-  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z'),
-  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', '#241a2e')
+    L('M-8 -12 C -2 -15 4 -12 6 -6', M_CLAIR, 1.6) + '<path d="M4 13 L 13 17 C 16 18 15 21 12 21 L 0 20 C -3 19 -2 16 0 15 Z" fill="' + M_ROSE + '"/>',
+  touffe: SIL('M-16 4 C -18 -6 -8 -14 2 -12 L 6 -18 L 9 -10 L 15 -14 L 14 -5 C 20 -1 18 8 10 11 C 0 14 -12 12 -16 4 Z') + L('M-10 0 C -6 -6 2 -8 8 -5', M_CLAIR, 1.4, ' opacity=".7"'),
+  touffe2: SIL('M-12 -6 L -16 -14 L -6 -10 C -2 -16 8 -16 12 -8 L 20 -10 L 15 -2 C 18 6 10 12 0 11 C -10 10 -16 4 -12 -6 Z', M_SOMBRE)
 };
 /* qui part de quel côté (le rat regarde à gauche : la tête part à gauche, la queue à droite) */
 var ECLATS = [['tete', -1], ['queue', 1], ['patteAv', -1], ['patteAr', 1], ['patteAv', 1], ['patteAr', -1], ['touffe', -1], ['touffe2', 1]];
@@ -1368,7 +1371,7 @@ R.exploser = function(scene, o){
   el('<circle cx="0" cy="0" r="' + f1(26 * u) + '" fill="none" stroke="#fff4c0" stroke-width="' + f1(3 * u) + '"/>').animate([{transform: tf(cx, cy, .3), opacity: .9}, {transform: tf(cx, cy, 1.5), opacity: 0}], {duration: 380, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'});
   /* 2) à l'impact, la fumée noire l'enveloppe : des volutes denses qui gonflent sur lui, restent, puis se dissipent lentement */
   /* (elle reste dense jusqu'à ce que les membres y soient retombés, puis se dissipe lentement) */
-  var brumes = [], NB = 14;
+  var brumes = [], NB = 14, premiereVolute = null;
   for(var n = 0; n < NB; n++){
     var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = Math.sqrt(hasard(.1, 1)), px = cx + Math.cos(a) * d * 80 * u, py = cy - 4 * u + Math.sin(a) * d * 30 * u;
     var tt = hasard(92, 124) * u, g;
@@ -1383,6 +1386,7 @@ R.exploser = function(scene, o){
       var r = tt * .38, c = choisir(['#120c18', '#1a1222', '#22182c', '#0c0812']), cl = choisir(['#5a4c6c', '#6a5a80', '#4a3e5a', '#7a6a8e']);
       g = el('<g filter="url(#' + fl + 'p)"><circle cx="0" cy="0" r="' + f1(r) + '" fill="' + c + '"/><circle cx="' + f1(-r * .28) + '" cy="' + f1(-r * .32) + '" r="' + f1(r * .62) + '" fill="' + cl + '" opacity=".55"/><circle cx="' + f1(r * .12) + '" cy="' + f1(r * .2) + '" r="' + f1(r * .7) + '" fill="' + c + '" opacity=".8"/></g>');
     }
+    if(!premiereVolute) premiereVolute = g;
     var dx = hasard(-14, 14) * u, mt = hasard(6, 16) * u;
     brumes.push(g.animate([{transform: tf(cx, cy - 4 * u, .15), opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)'}, {offset: .08, transform: tf(px, py, 1), opacity: .97, easing: 'ease-in-out'},
       {offset: .62, transform: tf(px + dx, py - mt, 1.2), opacity: .95, easing: 'ease-in-out'}, {transform: tf(px + dx * 1.6, py - mt - hasard(30, 50) * u, 1.7), opacity: 0}],
@@ -1395,17 +1399,22 @@ R.exploser = function(scene, o){
     self.J.saut.style.visibility = 'hidden';
     self.el.getAnimations().forEach(function(x){ x.cancel(); });
   }, T1 + 170);
-  /* 3) l'explosion : les membres jaillissent sur les côtés en tournoyant (une parabole, échantillonnée une fois)
-        et retombent dans la fumée, qui les cache */
+  /* 3) l'explosion : les membres jaillissent DE DERRIÈRE la fumée, sur les côtés (Romain : « tu les fais éclater sur le
+        côté, la fumée noire cache »), en tournoyant : une parabole jusqu'au sol (échantillonnée une fois), un petit
+        rebond, puis ils s'effacent. Ils sont rangés SOUS les volutes : on ne voit pas d'où ils partent. */
   ECLATS.forEach(function(e, i){
     var cote = e[1], m = el('<g transform="scale(' + f1(u * 1.3) + ')">' + MEMBRES[e[0]] + '</g>');
-    var x0 = cx + cote * hasard(4, 18) * u, y0 = cy - hasard(0, 14) * u, x1 = cx + cote * hasard(50, 92) * u, y1 = sol - hasard(4, 14) * u;
-    var h = hasard(80, 125) * u, rot = cote * hasard(320, 720), N = 12, kf = [];
+    if(premiereVolute && premiereVolute.parentNode === ov) ov.insertBefore(m, premiereVolute);
+    var x0 = cx + cote * hasard(6, 20) * u, y0 = cy - hasard(0, 12) * u;
+    var x1 = cx + cote * (cote < 0 ? hasard(116, 150) : hasard(128, 188)) * u, y1 = sol - hasard(2, 10) * u;
+    var h = hasard(78, 128) * u, rot = cote * hasard(300, 620), N = 14, T = .76, kf = [];
     for(var q = 0; q <= N; q++){
-      var t = q / N, s = t < .15 ? .6 + .4 * t / .15 : 1;
-      kf.push({offset: t, transform: tf(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - h * 4 * t * (1 - t), s, rot * t), opacity: t < .06 ? t / .06 : t > .72 ? Math.max(0, 1 - (t - .72) / .28) : 1});
+      var t = q / N, x, y, a, op = q ? 1 : 0, k;
+      if(t <= T){ k = t / T; x = x0 + (x1 - x0) * k; y = y0 + (y1 - y0) * k - h * 4 * k * (1 - k); a = rot * k; }
+      else { k = (t - T) / (1 - T); x = x1 + cote * 16 * u * k; y = y1 - 13 * u * 4 * k * (1 - k); a = rot + cote * 50 * k; op = 1 - k * k; }
+      kf.push({offset: t, transform: tf(x, y, 1, a), opacity: op});
     }
-    m.animate(kf, {duration: hasard(760, 900), delay: T2 + i * 25, easing: 'linear', fill: 'both'});
+    m.animate(kf, {duration: hasard(950, 1150), delay: T2 + i * 22, easing: 'linear', fill: 'both'});
   });
   /* 4) sous la fumée qui se dissipe : le petit tas de cendre et les os, à sa place */
   var tas = self._el(self.S.sol, '<ellipse cx="240" cy="392" rx="70" ry="10" fill="#000" opacity=".35"/>' +
