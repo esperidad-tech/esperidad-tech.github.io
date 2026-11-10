@@ -236,7 +236,7 @@ Playwright toujours sous le verrou : `flock /tmp/brumeval-pw.lock python3 …`. 
 
 - **Les 9 monstres ne sont pas « cuits »** (§3.2) : leurs modules tournent tels quels. À cuire seulement si une salle rame sur une vraie tablette.
 - **La carte est en plein écran** (elle déborde du cadre 960 × 540), avec ses boutons posés dessus.
-- **La musique** : une seule musique d'exploration et une seule de combat pour tout le donjon. Les musiques par salle (canaux, ossuaire, boss, feu de camp, fin) existent dans l'Atelier des sons, mais Romain n'a pas encore choisi : elles ne sont pas branchées.
+- (Fait le 10 novembre au soir : la musique par zone et les longues musiques des grands combats, voir §9.6.)
 - **Les sons pas encore validés** jouent leur version A (`DJ.sonsProvisoires`).
 - **Le critique des 9 monstres** n'est pas encore aligné sur celui du rat (on attend l'avis de Romain sur le critique recalé).
 - **Pas de contrôle par un agent neuf** (§7) : les aides ont été coupées le 10 à 12 h 06. `test-descente.py` le remplace en partie.
@@ -254,4 +254,20 @@ Le détail de ses retours est dans la Bible §12.51. Ce que ça change dans le m
 - **L'équipement** (`explo.js`) : `majPlaque(h)` (deux cases au-dessus du héros), `etiquetteObjet(id)` (le nom au toucher), `echange(x)` et `toucherPlaque(id, heros)` (mains pleines : on touche la case qu'on repose), `reposer(id, heros)` et `poserAuSol(id)` (l'objet reposé reste dans la salle ; `SCENES.portable(id, x)` donne son dessin), `coffreLibre(e, d)` (le coffre de la réserve : deux objets ordinaires), `aPlace(id)` (rond jaune seulement si quelqu'un a une place).
 - **Les règles** : le Pisteur part avec `fleches-normales` (une de ses deux places) ; la réserve a deux objets ordinaires (plus de « coffre à choix ») ; `_carquois(m)` choisit le carquois fait pour la bête ; un objet reposé ailleurs ne réapparaît plus dans sa salle d'origine. `test-regles.js` : 329 vérifications. Le lutrin de la bibliothèque est encore un coffre à choix.
 - **Les sons** : `pasCouloir` C et D dans l'Atelier, niveau des pas à −27 (`niveaux.py`, `CIBLE_PAS`) ; `REFAITS` dans `noyau.js` dit quelle version provisoire jouer quand Romain a refusé les premières.
+
+### 9.6 La musique du donjon et le critique mesuré (10 novembre, 18 h 57)
+
+Romain : « la musique est très redondante, la boucle est trop petite ». Ce qui a changé :
+
+- **`essai/src/son.js`** (partagé avec la salle d'essai, qui garde `'explo'` et `'combat'`) :
+  - `Son.musique('salle:<zone>')` : le fond commun `donjon` + la couleur de la zone (`puits`, `canaux`, `toiles`, `atelier`, `ossuaire`) ; `'grand:<gardien|roi|boss>'` : une longue musique ; `'repos'` (musique du repos + feu qui crépite) ; `'fin'` ;
+  - d'une musique à l'autre, **ce qui joue déjà n'est pas coupé** (le fond `donjon` ne s'arrête jamais entre deux zones) ;
+  - `Son.musiqueDesQuePrete(nom)` : on ne change que lorsque la nouvelle musique est fabriquée (l'ambiance continue en attendant) ; `Son.preparer(nom)` : fabriquer d'avance, sans jouer ;
+  - `Son.combat(true | false)` : dit qu'un combat commence ou finit (les bruitages lourds sont fabriqués, puis libérés). Avant, c'était la musique `'combat'` qui le disait ;
+  - `BOUCLE` : la longueur de chaque boucle. Réglages lus dans la page : `window.DJ_BOUCLES` (le puits dure 48 s dans le donjon, 12 s dans la salle d'essai), `DJ_MUSIQUES_GARDEES` (ce qu'on garde en mémoire : seulement `donjon`), `DJ_MUSIQUES_DEPART`. Une musique qui s'arrête est libérée 4 s après.
+- **`moteur/src/noyau.js`** : `DJ.zone(lieu)`, `DJ.musiqueLieu(lieu)` (carte et salles), `DJ.preparerGrand(salle)` (appelé par la carte quand un grand combat est au bout d'un couloir), `DJ.musiqueCombat(salle)`, `DJ.musiqueApresCombat(salle)`. `DJ.sonsProvisoires()` donne la version A aux musiques que Romain n'a pas encore choisies.
+- **Les longues musiques** : `essai/sons/musiques-donjon.js` (`partie(n, pas, nb)` découpe en parties ; `gardienA` 116 s, `roiA` 91 s, `bossA` 83 s, `bossB` 76 s, `bossC` 77 s). Les mesurer sur toute leur durée : `verifier.py M:gardienA --musiques --sans-planche --duree 120`.
+- **Mémoire du son** : 7 Mo dans une salle ordinaire (fond + couleur), 9 à 11 Mo dans un grand combat, plus 2 à 6 Mo de bruitages lourds pendant un combat. Fabrication d'une longue musique : 4 à 8 s sur la machine de mesure.
+- **`test-descente.py`** vérifie à chaque écran que la musique demandée est celle de l'endroit, et que toutes ont été demandées.
+- **Le critique** : `DJ.mesurerCritique()` (dans `combat.js`, autour de `Fx.critique`) compte les images en retard ; `DJ.critLent()`, `DJ.critMesure()` ; clés `brumeval-donjon-critique-lent` et `-mesure`. `SALLE.critLeger` est mis si la page s'est fermée en plein critique **ou** si un critique a ramé. Le reflet animé du mot « CRITIQUE ! » est retiré (`essai/src/jeu.css`).
 

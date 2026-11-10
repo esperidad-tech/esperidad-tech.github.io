@@ -75,7 +75,7 @@ function ecranSac(o){
     '<button class="aller" data-act="sac-pret" disabled>' + (o.premier ? 'Descendre ⬇' : 'C\'est prêt ➜') + '</button>';
   jeu.appendChild(s);
   DJ.brancherCurseurs(s);
-  DJ.musique('explo');
+  DJ.musiqueLieu((X.partie && X.partie.lieu) || 'puits');
   conte(phrase);
   function maj(neuve){
     qa('#sac .recette').forEach(function(b){ var c = choix.indexOf(b.getAttribute('data-id')) >= 0; b.classList.toggle('choisie', c); b.classList.toggle('guide', !c && choix.length < places); });
@@ -134,7 +134,7 @@ function carte(o){
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
-  DJ.musique('explo');
+  DJ.musiqueLieu(X.ici);
   var etats = {}; Object.keys(p.faits).forEach(function(k){ if(k.indexOf('combat:') === 0){ var s = k.slice(7); Object.keys(D.LIEUX).forEach(function(l){ if(D.LIEUX[l].combat === s) etats[l] = 'vu'; }); } });
   var pt = X.ici === 'J' ? C.J : C.LIEUX[X.ici];
   var dpr = window.devicePixelRatio || 1, large = elCarte().clientWidth || window.innerWidth, z = Math.max(.7, Math.min(1.4, large / 960));
@@ -158,6 +158,9 @@ function majCarte(texte){
   var b = q('#b-entrer'); if(b){ var e = aScene(X.ici); b.hidden = !e; b.classList.toggle('guide', !!e && aFaire(X.ici)); }
   conte(texte || SUR_CARTE[X.ici] || (PHRASES[X.ici] && (aFaire(X.ici) || X.ici === 'puits') ? PHRASES[X.ici] : nomLieu(X.ici) + '. Plus rien à trouver ici.'));
   montrerSorties();
+  DJ.musiqueLieu(X.ici);                                    /* l'ambiance de la zone où l'on est */
+  /* un grand combat est au bout d'un de ces couloirs : sa longue musique se fabrique d'avance (quelques secondes) */
+  (X.sorties || []).forEach(function(s){ if(D.LIEUX[s.vers] && D.LIEUX[s.vers].combat && !p.faits['combat:' + D.LIEUX[s.vers].combat]) DJ.preparerGrand(D.LIEUX[s.vers].combat); });
 }
 /* où mènent les couloirs d'ici : [{lien, vers}] (vers : un lieu, ou 'J' l'embranchement) */
 function sortiesDe(ici){
@@ -327,7 +330,7 @@ function construireScene(lieu, ev, premier){
   cont.objets.forEach(function(id){ if(!S.o[id] && p.faits['pose:' + id] === lieu && !dansUnCoffre(def, id)) poserAuSol(id, false); });
   /* l'équipement des héros concernés par les objets d'ici : deux cases au-dessus de leur tête */
   plaquesDuLieu(cont).forEach(function(h){ majPlaque(h); });
-  DJ.musique(lieu === 'camp' ? 'explo' : 'explo');
+  DJ.musiqueLieu(lieu);
   preparerLieu(lieu, cont, ev, premier);
 }
 function dansUnCoffre(def, id){ return (def.elements || []).some(function(d){ return d.type === 'choix' && (d.options || []).some(function(o){ return o.id === id; }); }); }
@@ -749,7 +752,8 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
-  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') + '</div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') +
+    (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
@@ -796,7 +800,8 @@ function finDonjon(){
     '<div class="bilan"><div><b>' + n + '</b>📖 pages</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
     '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
   jeu.appendChild(e);
-  bruit('victoire', {}, ['fanfare']);
+  var fan = bruit('victoire', {}, ['fanfare']);
+  setTimeout(function(){ DJ.musique('fin'); }, ((fan && fan.duree) || 3) * 1000);
 }
 
 /* ====================================================================== 7. LES DOIGTS */

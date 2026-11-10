@@ -102,7 +102,7 @@ function construire(){
     pv.innerHTML = '<div class="barre"><i></i></div><b></b>';
     hud.appendChild(pv);
   });
-  Son.musique('combat');
+  DJ.musiqueCombat(E.salle);
 }
 function slotH(h){ return q('.h-' + h); }
 function B(id){ return E.A.b[id]; }
@@ -746,10 +746,13 @@ async function critique(l, i, ctx){
       await attendre(1200);
       return i + 1;
     }
-    /* le témoin : il dit où en était le critique si la page se ferme (lu au redémarrage, affiché en bas de « Objets ») */
-    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('impact'); }, 420 / vt), setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt), setTimeout(function(){ DJ.temoinCritique('fumee'); }, 1500 / vt)];
+    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») ;
+       et on compte les images en retard : si le critique rame sur cet appareil, les suivants sont allégés */
+    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt)];
     DJ.temoinCritique('debut');
+    var mesure = DJ.mesurerCritique();
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
+    mesure.fin();
     tm.forEach(clearTimeout); DJ.temoinCritique(false);
     return i + 1;
   }
@@ -937,7 +940,8 @@ async function victoire(){
   if(CB.boss) t = 'En ' + tours + ' ! Le gros crapaud du puits ne fera plus peur à personne.';
   var fan = bruit('victoire', {}, ['fanfare']);
   if(Son.baisser) Son.baisser((fan && fan.duree || 3) + .2);
-  setTimeout(function(){ DJ.musique('explo'); }, 2200);
+  var ce = E;                       /* (si on a déjà quitté l'écran de victoire, la carte a mis sa musique : on n'y touche pas) */
+  setTimeout(function(){ DJ.musiqueApresCombat(ce.salle, E !== ce); }, 2200);
   await Promise.all(ORDRE.filter(function(h){ return !E.ph.heros[h].sol; }).map(function(h, k){ return attendre(k * 120).then(function(){ return E.A.h[h].joie(); }); }));
   await attendre(300);
   var f = el('div'); f.id = 'fin';
@@ -979,7 +983,7 @@ async function fuite(auto){
   DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
   DJ.garder(E.partie);
-  DJ.musique('explo');
+  DJ.musiqueApresCombat(E.salle);
   E.resultat = auto ? 'defaite' : 'fuite';
   pointFuite(ev, auto);
 }

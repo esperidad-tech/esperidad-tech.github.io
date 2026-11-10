@@ -71,10 +71,48 @@ DJ.bruit = function(id, o, ancien){
   return r;
 };
 DJ.musique = function(nom){ var S = SALLE.Son; if(S && S.musique) S.musique(nom); };
+/* La musique du donjon (Romain, 10 novembre : « la boucle est trop petite, la musique est très redondante ») :
+   - une ambiance calme par zone (le fond du donjon + la couleur de la zone), sur la carte, dans les salles ET pendant les
+     combats ordinaires : plus de musique de combat qui tourne en rond ;
+   - une longue musique (plus d'une minute avant de reprendre) pour les trois grands combats ;
+   - le feu de camp a la sienne, et la fin aussi.
+   Ces réglages sont lus par le moteur de son (essai/src/son.js). */
+window.DJ_BOUCLES = {puits:{L:48}};                    /* (dans la salle d'essai, la couleur du puits ne dure que 12 s) */
+window.DJ_MUSIQUES_GARDEES = ['donjon'];               /* le fond commun reste prêt ; le reste est libéré en quittant la zone */
+window.DJ_MUSIQUES_DEPART = ['donjon'];                 /* (la couleur de la zone est fabriquée en y entrant : 2 à 3 secondes) */
+var ZONES = {puits:'puits', galerie:'puits', aeration:'puits', rats:'puits', reserve:'puits',
+  canaux:'canaux', egouts:'canaux', givre:'canaux',
+  toiles:'toiles', J:'toiles', eboulis:'toiles', dalles:'toiles',
+  atelier:'atelier', bibliotheque:'atelier', portes:'atelier',
+  crypte:'ossuaire', ossuaire:'ossuaire', bassin:'ossuaire', porte4:'ossuaire', leo:'ossuaire'};
+var GRANDS = {atelier:'gardien', ossuaire:'roi', bassin:'boss'};
+DJ.zone = function(lieu){ return ZONES[lieu] || 'puits'; };
+/* la musique d'un endroit (sur la carte ou dans la salle) ; on prépare d'avance la longue musique du grand combat d'à côté */
+DJ.musiqueLieu = function(lieu){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(lieu === 'camp'){ S.musique('repos'); return; }
+  S.musique('salle:' + DJ.zone(lieu));
+};
+DJ.preparerGrand = function(salle){ var S = SALLE.Son; if(GRANDS[salle] && S && S.preparer) S.preparer('grand:' + GRANDS[salle]); };
+/* un combat commence : la salle garde son ambiance, sauf les trois grands combats */
+DJ.musiqueCombat = function(salle){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(GRANDS[salle]) (S.musiqueDesQuePrete || S.musique)('grand:' + GRANDS[salle]);      /* (l'ambiance continue tant que la longue musique n'est pas prête) */
+  else S.musique('salle:' + DJ.zone(salle));
+  if(S.combat) S.combat(true);
+};
+DJ.musiqueApresCombat = function(salle, sansMusique){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  if(!sansMusique) S.musique('salle:' + DJ.zone(salle));
+  if(S.combat) S.combat(false);
+};
 /* Les sons que Romain n'a pas encore validés dans l'Atelier jouent leur version A, provisoire (MOTEUR-DONJON.md §5).
    SALLE.CHOIX_SONS est la table des versions validées (son.js) : on ne touche pas à ce qui y est déjà. */
 DJ.PROVISOIRE = {};
-var REFAITS = {pasCouloir:'C'};
+var REFAITS = {pasCouloir:['C', 'D']};
 DJ.sonsProvisoires = function(){
   var C = SALLE.CHOIX_SONS, B = window.BRUITAGES;
   if(!C || !B) return;
@@ -83,9 +121,17 @@ DJ.sonsProvisoires = function(){
     if(!m || typeof B[cle] !== 'function') return;
     var id = m[1];
     if(C[id] && C[id].length) return;
-    /* (les pas sur la carte : Romain a refusé les versions A et B le 10 novembre — on joue la C, feutrée, en attendant son choix) */
-    var l = REFAITS[id] && typeof B[id + REFAITS[id]] === 'function' ? REFAITS[id] : 'A';
+    /* (les pas sur la carte : Romain a refusé les versions A et B, puis les premières C et D ; refaites le 10 novembre
+       à 17 h 51 — « plein de petits pas légers », il aime la C et la D : on tire au hasard entre les deux) */
+    if(REFAITS[id]){ var l2 = REFAITS[id].filter(function(v){ return typeof B[id + v] === 'function'; }); if(l2.length){ C[id] = l2; return; } }
+    var l = 'A';
     C[id] = [l]; DJ.PROVISOIRE[id] = 1;
+  });
+  /* les musiques du donjon (les canaux, l'ossuaire, le repos, les trois grands combats, la fin) : la A, en attendant son choix */
+  Object.keys(window.MUSIQUES || {}).forEach(function(cle){
+    var m = /^([A-Za-z_0-9]+?)A$/.exec(cle);
+    if(!m || typeof window.MUSIQUES[cle] !== 'function' || (C[m[1]] && C[m[1]].length)) return;
+    C[m[1]] = ['A']; DJ.PROVISOIRE[m[1]] = 1;
   });
 };
 
@@ -105,8 +151,35 @@ DJ.verifierTemoin = function(){
     if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
   }catch(e){}
-  if(DJ.plantages() > 0) SALLE.critLeger = true;
+  if(DJ.plantages() > 0 || DJ.critLent()) SALLE.critLeger = true;
   return DJ.plantages();
+};
+/* La fluidité du critique, mesurée sur l'appareil lui-même (Romain, 10 novembre, iPhone 16 Pro : « il a l'air de marcher,
+   mais je sens un ralentissement à chaque fois ; si c'est compliqué, tu simplifies »). On ne peut pas essayer Safari ici :
+   pendant chaque critique, on compte donc les images en retard. Si le critique rame sur cet appareil, les suivants sont
+   allégés (moins de fumée et de morceaux) : il se simplifie tout seul, là où il faut. La mesure se lit en bas de « 🎒 Objets ». */
+var CLE_LENT = 'brumeval-donjon-critique-lent', CLE_MESURE = 'brumeval-donjon-critique-mesure';
+DJ.critLent = function(){ try{ return +localStorage.getItem(CLE_LENT) || 0; }catch(e){ return 0; } };
+DJ.critMesure = function(){ try{ return localStorage.getItem(CLE_MESURE) || ''; }catch(e){ return ''; } };
+DJ.mesurerCritique = function(){
+  var dernier = 0, pire = 0, lentes = 0, n = 0, fini = false, raf = window.requestAnimationFrame;
+  if(!raf) return {fin:function(){}};
+  function image(t){
+    if(fini) return;
+    if(dernier){ var d = t - dernier; n++; if(d > pire) pire = d; if(d > 40) lentes++; }
+    dernier = t; raf(image);
+  }
+  raf(image);
+  return {fin:function(){
+    fini = true;
+    if(n < 20 || (SALLE.vitesse || 1) > 1) return;                      /* (page cachée, ou un essai accéléré : la mesure ne vaut rien) */
+    var lent = lentes >= 4 || pire >= 120;
+    try{
+      localStorage.setItem(CLE_MESURE, Math.round(pire) + ' ms, ' + lentes + ' sur ' + n + (SALLE.critLeger ? ', allégé' : ''));
+      if(lent && !SALLE.critLeger) localStorage.setItem(CLE_LENT, String(DJ.critLent() + 1));
+    }catch(e){}
+    if(lent) SALLE.critLeger = true;
+  }};
 };
 DJ.VERSION = '/*VERSION*/';
 
