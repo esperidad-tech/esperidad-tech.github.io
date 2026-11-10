@@ -7,3 +7,8 @@ jeu/test/partie2-exiger/
 jeu/test/tuto/
 paquet/
 jeu/test/partie2-tendre/
+
+# le donjon complet : le dossier assemblé et les captures des tests (refaits à chaque fois)
+jeu/donjon/moteur/sortie/
+jeu/donjon/moteur/captures/
+jeu/donjon/essai/captures/critique/

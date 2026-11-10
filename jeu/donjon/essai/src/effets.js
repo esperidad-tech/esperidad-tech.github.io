@@ -255,5 +255,5 @@ function vol(e, x0, y0, x1, y1, h, ms, tour, oriente){
 
 S.Fx = {init:function(l){ L = l; }, cuire:cuireCritique, cuites:function(){ return {etoile:ETOILE, halo:HALO}; }, calques:function(){ return L; }, attendre:attendre, anime:anime, particule:particule,
   chiffre:chiffre, mot:mot, bulleTexte:bulleTexte, eclat:eclat, tremble:tremble, onde:onde, etincelles:etincelles,
-  eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, vol:vol};
+  eclabousse:eclabousse, flaque:flaque, nuage:nuage, brumeNoire:brumeNoire, critique:critique, texteCritique:texteCritique, vol:vol};
 })();

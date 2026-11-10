@@ -86,6 +86,9 @@ with sync_playwright() as p:
         if apres:
             pg.wait_for_timeout(apres)
         fin = pg.evaluate(RELEVE, DPR)['toiles']
+        if fin:      # une toile qui finit de s'estomper (l'éclair de lune : 1,5 s) : on lui laisse le temps d'être vidée
+            pg.wait_for_timeout(1800)
+            fin = pg.evaluate(RELEVE, DPR)['toiles']
         if not nom.startswith('_'):
             res.append((nom, pire, toiles, fin))
             print('%-26s  plus grand calque réel : %5d px  (%s)%s   toiles : %.1f Mo pendant, %.1f Mo après' % (nom, pire['px'], pire['quoi'], '  <-- plus de 4 096' if pire['px'] > 4096 else '', toiles / 1e6, fin / 1e6), flush=True)

@@ -1,0 +1,39 @@
+/* donjon.css — ce que le donjon complet ajoute à la feuille de la salle d'essai (essai/src/jeu.css, reprise telle quelle). */
+
+/* ---------- les bêtes (tous les modules) ---------- */
+.bete .anneau{height:26px}
+.bete.module > .ombre{display:none}
+.bete.restes .anneau, .bete.cendre .anneau, .bete.cendre .ombre{display:none}
+.bete.restes, .bete.cendre{z-index:1!important}
+.bete.ouvert:not(.t-bourbe){z-index:8!important}
+.bete.gele::after{content:'❄️';position:absolute;left:44%;top:8%;font-size:30px;animation:pulse 1.6s ease-in-out infinite}
+.vise.petit{width:30px;height:30px;margin-left:-7px}
+.vise-fleche + .vise.petit{margin-left:0}
+.vise-ic{font-size:19px;margin-left:2px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+.pv.elite .barre{width:112px}
+/* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
+.pv.boss{top:20px;left:400px;height:22px;gap:8px;z-index:25}
+.pv.boss .barre{width:200px;height:14px;border-radius:8px}
+.pv.boss em{font-style:normal;font-family:var(--f-titre);font-size:20px;color:var(--or-pale);text-shadow:0 2px 0 var(--encre),0 0 8px #000}
+.pv.boss b{font-size:16px}
+.mot.refus.long{font-size:28px}
+.heros.avale .anneau, .heros.avale .ombre, .heros.avale .check, .heros.avale .etoiles{display:none}
+
+/* ---------- les fioles (dessin vectoriel, sans photo) ---------- */
+.fiole{display:block;width:34px;height:47px;overflow:visible}
+.carte .c-ic .fiole{margin:-3px auto 0}
+.b-cartes.serre{gap:6px}
+.b-cartes.serre .carte{width:97px}
+.recette .fiole{width:52px;height:72px;margin-top:-2px}
+.sac-case .fiole{width:46px;height:63px}
+.sac-l .fiole{width:24px;height:33px;display:inline-block;vertical-align:middle;margin-right:6px}
+.livre-t{font-family:var(--f-titre);font-size:19px;color:#e8cf98;margin:8px 0 2px}
+
+/* ---------- l'écran de passage (court, sombre) ---------- */
+#passage, #essai-fin{background:#07050b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;z-index:90}
+.pa-nom{font-family:var(--f-titre);font-size:44px;color:var(--or-pale);text-shadow:0 3px 0 var(--encre),0 0 22px rgba(255,190,90,.25);text-align:center;padding:0 40px}
+.pa-points{display:flex;gap:12px}
+.pa-points i{width:12px;height:12px;border-radius:50%;background:var(--or);opacity:.25;animation:pa-point 1.2s ease-in-out infinite}
+.pa-points i:nth-child(2){animation-delay:.2s}
+.pa-points i:nth-child(3){animation-delay:.4s}
+@keyframes pa-point{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}

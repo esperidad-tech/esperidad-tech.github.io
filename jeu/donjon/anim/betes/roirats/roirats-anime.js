@@ -620,7 +620,7 @@ R._changerMode = function(ms){ if(!this.enAction && !this.mort) return this._rep
 R._boucleur = function(){
   var self = this, b = this._base(), V = this.vitesse;
   function base(n){ return fusion(self._zero(n), b[n]); }
-  function autour(n, d){ var v = base(n), o = {}; for(var k in d) o[k] = (k === 'sx' || k === 'sy') ? v[k] * d[k] : v[k] + d[k]; return o; }
+  function autour(n, d){ var v = base(n), o = {}; for(var k in d){ if(k === 's'){ o.sx = v.sx * d.s; o.sy = v.sy * d.s; } else o[k] = (k === 'sx' || k === 'sy') ? v[k] * d[k] : v[k] + d[k]; } return o; }
   return function(n, deltas, duree, e, delai){
     if(!self.J[n]) return null;
     var cles = deltas.map(function(d){ var o = {}; o[n] = autour(n, d[1]); return {t: d[0], p: o, e: e}; });
