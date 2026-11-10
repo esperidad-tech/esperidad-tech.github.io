@@ -215,7 +215,7 @@ function critique(x, y, n, exploser, son, o){
   var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
   son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
-  var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2}) : null);
+  var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2, leger:!!S.critLeger}) : null);
   texteCritique(x, y, t1);
   tremble(5, 240, t1);
   tremble(8, 320, t2);

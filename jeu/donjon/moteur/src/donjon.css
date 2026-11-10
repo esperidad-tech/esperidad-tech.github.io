@@ -103,3 +103,13 @@
 #fin-donjon .bilan{display:flex;gap:30px;font-size:16px;color:#d8ccb4;text-align:center}
 #fin-donjon .bilan b{display:block;font-family:var(--f-titre);font-size:40px;color:var(--or-pale)}
 .point .sac-l .fiole{display:block;margin:0 auto 2px;width:40px;height:55px}
+
+/* ---------- retours de Romain du 10 novembre (16 h 33) ---------- */
+/* un héros au sol est SONNÉ, pas mort : il garde ses couleurs (plus de gris), ses étoiles tournent au-dessus de sa tête */
+.heros.sol .acteur img, .heros.sol .acteur svg{filter:none}
+.heros.sol .etoiles{display:none}                 /* le module dessine déjà les étoiles qui tournent autour de la tête */
+/* « On fait le point », version courte : plus de Grand Livre ni de sac, tout tient toujours dans l'écran */
+.point.court{align-content:center;row-gap:18px}
+.point.court .case.retour{padding:14px 18px}
+.point.court .rats-l{font-size:18px}
+#fenetre .ligne.version{margin-top:10px;text-align:center;font-size:12px;opacity:.55;border:0}

@@ -48,6 +48,7 @@ function essaiCombat(P){
 
 function demarrer(){
   DJ.brancher();
+  DJ.verifierTemoin();
   DJ.sonsProvisoires();
   DJ.cssHeros();
   var P = parametres();

@@ -1381,7 +1381,7 @@ R.exploser = function(scene, o){
   /* 2) l'explosion (T2) : un éclair bref au cœur, et la fumée noire qui jaillit — petite, puis énorme en un quart de
         seconde — et continue de s'élargir en se dispersant (≈ 1 s) : un seul mouvement, sans palier */
   el('<circle cx="0" cy="0" r="' + f1(72 * u) + '" fill="url(#' + fl + 'g)"/>').animate([{transform: tf(cx, cy, .25), opacity: .012}, {offset: .16, transform: tf(cx, cy, .95), opacity: 1}, {transform: tf(cx, cy, 1.8), opacity: 0}], {duration: 300, delay: T2 - 40, easing: 'ease-out', fill: 'both'});
-  var brumes = [], NB = 11, premiereVolute = null;
+  var brumes = [], NB = o.leger ? 6 : 11, premiereVolute = null;      /* o.leger : moins de pièces (un appareil à court de mémoire) */
   for(var n = 0; n < NB; n++){
     var a = (n / NB) * Math.PI * 2 + hasard(-.3, .3), d = n === 0 ? 0 : Math.sqrt(hasard(.2, 1)), px = cx + Math.cos(a) * d * 78 * u, py = cy - 6 * u + Math.sin(a) * d * 34 * u;
     var tt = hasard(104, 136) * u, g;
@@ -1420,6 +1420,7 @@ R.exploser = function(scene, o){
         côté, la fumée noire cache »), en tournoyant : une parabole jusqu'au sol (échantillonnée une fois), un petit
         rebond, puis ils s'effacent. Ils sont rangés SOUS les volutes : on ne voit pas d'où ils partent. */
   ECLATS.forEach(function(e, i){
+    if(o.leger && i > 3) return;
     var cote = e[1], m = el('<g transform="scale(' + f1(u * 1.3) + ')">' + MEMBRES[e[0]] + '</g>');
     if(premiereVolute && premiereVolute.parentNode === ov) ov.insertBefore(m, premiereVolute);
     var x0 = cx + cote * hasard(6, 20) * u, y0 = cy - hasard(0, 12) * u;

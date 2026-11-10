@@ -86,6 +86,25 @@ DJ.sonsProvisoires = function(){
   });
 };
 
+/* ================= le filet de sécurité du critique =================
+   Sur un iPhone à court de mémoire, Safari ferme la page (et la recharge) au plus gros effet : le critique.
+   On pose un témoin au début du critique et on l'enlève à la fin. S'il est encore là au démarrage, c'est que la page
+   s'est fermée en plein critique : on le compte, et sur cet appareil les critiques suivants sont allégés
+   (moins de fumée et de morceaux), pour qu'on ne reste jamais coincé. Le compteur se lit en bas de « 🎒 Objets ». */
+var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-plantages';
+DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, String(Date.now())); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
+DJ.plantages = function(){ try{ return +localStorage.getItem(CLE_PLANTAGES) || 0; }catch(e){ return 0; } };
+DJ.verifierTemoin = function(){
+  try{
+    var t = +localStorage.getItem(CLE_TEMOIN) || 0;
+    if(t && Date.now() - t < 600000) localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1));
+    localStorage.removeItem(CLE_TEMOIN);
+  }catch(e){}
+  if(DJ.plantages() > 0) SALLE.critLeger = true;
+  return DJ.plantages();
+};
+DJ.VERSION = '/*VERSION*/';
+
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
 DJ.img = function(nom){ return (CH.img ? CH.img(nom) : 'i/' + nom); };

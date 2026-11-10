@@ -1035,6 +1035,12 @@ function structure(){
 function solDe(id){ return id === 'reserve' ? 'planches' : (id === 'puits' || id === 'aeration') ? 'paves' : (id === 'eboulis' || id === 'givre') ? 'terre' : 'dalle'; }
 function coupe(b, z, m){ m = m || 0; return b.x - m < z.x + z.w && b.x + b.w + m > z.x && b.y - m < z.y + z.h && b.y + b.h + m > z.y; }
 
+/* Les toiles (canvas) d'une vue de la carte. Sur iPhone, une toile seulement RETIRÉE de la page garde sa mémoire
+   (jusqu'à 29 Mo pour la carte) tant que le navigateur ne l'a pas ramassée : en quittant la carte il faut les VIDER
+   (largeur et hauteur à 0), sinon la page est fermée par Safari au premier gros effet (RAPIDITE.md R9). */
+var TOILES = [];
+function toile(){ var c = document.createElement('canvas'); TOILES.push(c); return c; }
+function viderToile(c){ try{ c.width = 0; c.height = 0; }catch(e){} }
 /* les toiles de travail (une seule fois chacune) */
 var TRAV = {};
 function travail(nom, w, h){ var c = TRAV[nom]; if(!c){ c = TRAV[nom] = document.createElement('canvas'); } if(c.width !== w || c.height !== h){ c.width = w; c.height = h; } return c; }
@@ -1211,7 +1217,7 @@ function brume(canvas, o){
   var fs = o.echelle || .5, cw = Math.round(W * fs), ch = Math.round(H * fs);
   canvas.width = cw; canvas.height = ch;
   var ctx = canvas.getContext('2d');
-  var vierge = document.createElement('canvas'); vierge.width = cw; vierge.height = ch;
+  var vierge = toile(); vierge.width = cw; vierge.height = ch;
   peindreBrume(vierge.getContext('2d'), fs);
   ctx.drawImage(vierge, 0, 0);
   var etat = {lieux:{}, liens:{}, j:false};
@@ -1294,7 +1300,7 @@ function brume(canvas, o){
     if(opt.anim){
       /* deux copies de la zone, AVANT : entière, et à moitié ouverte */
       var px0 = Math.max(0, Math.floor(zone.x * fs)), py0 = Math.max(0, Math.floor(zone.y * fs)), pw = Math.min(cw - px0, Math.ceil(zone.w * fs)), ph = Math.min(ch - py0, Math.ceil(zone.h * fs));
-      var A = document.createElement('canvas'), B = document.createElement('canvas');
+      var A = toile(), B = toile();
       A.width = B.width = pw; A.height = B.height = ph;
       A.getContext('2d').drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
       var bx = B.getContext('2d'); bx.drawImage(canvas, px0, py0, pw, ph, 0, 0, pw, ph);
@@ -1414,8 +1420,9 @@ function vue(el, o){
   var E = EMPREINTE;
   el.classList.add('cd-vue'); el.innerHTML = '';
   var couche = document.createElement('div'); couche.className = 'cd-couche'; el.appendChild(couche);
-  var carte = document.createElement('canvas'); carte.className = 'cd-carte'; couche.appendChild(carte);
-  var brumeC = document.createElement('canvas'); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
+  var mesToiles = TOILES = [];          /* toutes les toiles de cette vue (vidées par detruire) */
+  var carte = toile(); carte.className = 'cd-carte'; couche.appendChild(carte);
+  var brumeC = toile(); brumeC.className = 'cd-brume'; couche.appendChild(brumeC);
   var patchs = document.createElement('div'); couche.appendChild(patchs);
   var etiqs = document.createElement('div'); couche.appendChild(etiqs);
   var sortiesEl = document.createElement('div'); couche.appendChild(sortiesEl);
@@ -1524,11 +1531,11 @@ function vue(el, o){
     if(!r || !r.avant) return Promise.resolve(r);
     var P = r.px, cA = r.avant[0], cB = r.avant[1];
     [cB, cA].forEach(function(c){ c.className = 'cd-patch'; c.style.left = P.x * z + 'px'; c.style.top = P.y * z + 'px'; c.style.width = P.w * z + 'px'; c.style.height = P.h * z + 'px'; patchs.appendChild(c); });
-    if(!cA.animate){ cA.remove(); cB.remove(); return Promise.resolve(r); }
+    if(!cA.animate){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); return Promise.resolve(r); }
     var d = opt.duree || 1500;
     var a1 = cA.animate([{opacity:1}, {opacity:0}], {duration:d * .45, easing:'ease-in', fill:'forwards'});
     var a2 = cB.animate([{opacity:1, transform:'scale(1)'}, {opacity:0, transform:'scale(1.04)'}], {duration:d * .7, delay:d * .3, easing:'ease-out', fill:'forwards'});
-    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); ok(r); }; });
+    return new Promise(function(ok){ a2.onfinish = function(){ cA.remove(); cB.remove(); viderToile(cA); viderToile(cB); ok(r); }; });
   }
   /* --- le pion --- */
   var pion = {x:depart.x, y:depart.y, dir:0};
@@ -1592,7 +1599,12 @@ function vue(el, o){
     redessiner:function(id, nouveauxEtats){ if(nouveauxEtats) etats = nouveauxEtats; var D = deco(id, etats[id] === 'vu'); rd.redessiner(D.boite, etats); },
     position:function(){ return {tx:tx, ty:ty, z:z}; },
     etat:function(){ return {brume:B.etat(), pion:{x:pion.x, y:pion.y, dir:dirPion}}; },
-    detruire:function(){ rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim); el.innerHTML = ''; el.classList.remove('cd-vue'); }
+    detruire:function(){
+      rd.arreter(); arreterAnim(); window.removeEventListener('resize', aRedim);
+      mesToiles.forEach(viderToile); mesToiles.length = 0;
+      Object.keys(TRAV).forEach(function(k){ viderToile(TRAV[k]); });       /* les toiles de travail se retaillent toutes seules au prochain dessin */
+      el.innerHTML = ''; el.classList.remove('cd-vue');
+    }
   };
 }
 

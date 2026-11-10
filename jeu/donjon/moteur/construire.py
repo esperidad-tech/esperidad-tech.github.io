@@ -81,6 +81,13 @@ def page():
             code += '\n/* ===== ' + os.path.relpath(f, DONJON) + ' ===== */\n' + lire(f) + '\n'
     p = lire(os.path.join(SRC, 'page.html'))
     p = p.replace('/*CSS*/', '\n'.join(lire(c) for c in CSS if os.path.exists(c)))
+    import datetime
+    try:
+        from zoneinfo import ZoneInfo
+        quand = datetime.datetime.now(ZoneInfo('Europe/Paris'))
+    except Exception:
+        quand = datetime.datetime.now()
+    code = code.replace("'/*VERSION*/'", "'%d/%d à %d h %02d'" % (quand.day, quand.month, quand.hour, quand.minute))   # la version, lisible en bas de « Objets »
     p = p.replace('/*JEU*/', code.replace('</script', '<\\/script'))
     with open(os.path.join(SORTIE, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(p)

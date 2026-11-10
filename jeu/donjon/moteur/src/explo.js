@@ -288,7 +288,7 @@ function construireScene(lieu, ev, premier){
     '<div id="bas-scene"><div class="bulle" id="conteur"></div><div class="b-outils">' +
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Grand Livre</button>' +
       (cont.repos ? '<button class="sombre" data-act="refaire-sac">🧪 Refaire le sac</button>' : '') +
-      '<button class="aller" id="b-repartir" data-act="repartir">Repartir ➜</button></div></div><div id="ecran-fx"></div>';
+      '<button class="aller" id="b-repartir" data-act="repartir">Continuer ➜</button></div></div><div id="ecran-fx"></div>';
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
   SALLE.Fx.init({fx:q('#fx'), sol:q('#sol-fx'), fumee:q('#fumee'), ecran:q('#ecran-fx'), monde:q('#monde'), secousse:q('#secousse')});
@@ -621,6 +621,7 @@ function fenetreObjets(){
   s += '<div class="sous">Le sac de l\'Alchimiste · ' + (o.sac || []).length + ' / ' + o.places + '</div><div class="ligne">' + (o.sac || []).map(function(r){ return DJ.potion(r); }).join('') + '<span class="sr">' + sac + '</span>' + DJ.lireBtn(sac) + '</div>';
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
+  s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + ')' : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */

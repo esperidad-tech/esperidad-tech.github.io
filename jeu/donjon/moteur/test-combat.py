@@ -67,6 +67,12 @@ def salle(nav, s, graine):
           return pb; }""")
 
     verifie(not accord(), f'{s} : au départ, l\'écran montre ce que disent les règles ' + str(accord()))
+    # (10 novembre : les héros ne s'animaient plus quand leur geste visait une bête — on compte les gestes animés)
+    pg.evaluate("""() => { var E = DJ.Combat._E(); window.__anim = {};
+      ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var a = E.A.h[h];
+        ['tirer', 'dague', 'preparer', 'lancer', 'louche', 'herbes', 'sort', 'eclairSalle', 'bouclier', 'etudier'].forEach(function(m){ var f = a[m]; if(typeof f !== 'function') return;
+          a[m] = function(){ window.__anim[h] = (window.__anim[h] || 0) + 1; return f.apply(a, arguments); }; }); }); }""")
+    immobiles = []
     tours = 0
     while True:
         e = etat()
@@ -79,6 +85,7 @@ def salle(nav, s, graine):
         if not choix:
             pg.wait_for_timeout(500); libre(); continue
         c = rnd.choice(choix)
+        pg.evaluate("(h) => { window.__anim[h] = 0; }", c['h'])
         pg.tap(f'.b-heros[data-id="{c["h"]}"]', force=True); pg.wait_for_timeout(200)
         pg.tap(f'.carte[data-id="{c["g"]}"]', force=True); pg.wait_for_timeout(200)
         if c['vise'] in ('salle', 'equipe'):
@@ -94,11 +101,14 @@ def salle(nav, s, graine):
                 pg.wait_for_timeout(150)
         pg.wait_for_timeout(300)
         e2 = libre()
+        if c['g'] != 'chatouiller' and not pg.evaluate("(h) => window.__anim[h] || 0", c['h']):
+            immobiles.append(c['h'] + ' ' + c['g'])
         pb = accord()
         if pb:
             verifie(False, f'{s} : après {c["h"]} {c["g"]}, l\'écran et les règles ne disent pas pareil : {pb}')
         tours = e2['tour'] if e2 else tours
     verifie(True, f'{s} : {tours} tours joués au hasard sans blocage')
+    verifie(not immobiles, f'{s} : le héros s\'anime à chaque geste' + (' — immobile pour : ' + ', '.join(immobiles[:5]) if immobiles else ''))
     pg.screenshot(path=os.path.join(CAP, f'combat-{s}-2.png'))
     e = etat()
     if e and e['mode'] != 'fin':

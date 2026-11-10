@@ -384,6 +384,9 @@ async function apres(){
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
+  /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
+     (sans cette ligne, le tir, la dague, la potion, la rune et l'étude étaient rangés avec la bête, et le héros ne bougeait plus) */
+  if(GESTES_HEROS[ev.t]) return 's:' + ev.t;
   if(typeof ev.bete === 'string') return 'b:' + ev.bete;
   if(ev.heros && COTE_HEROS[ev.t]) return null;      /* reste dans le bloc en cours (les suites d'une attaque) */
   return 's:' + ev.t;
@@ -733,7 +736,9 @@ async function critique(l, i, ctx){
   if(meurt && a.rat){
     /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
+    DJ.temoinCritique(true);
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
+    DJ.temoinCritique(false);
     return i + 1;
   }
   sonCritique('aspire');
@@ -941,14 +946,21 @@ async function fuite(auto){
   DJ.fermer();
   bande(); majScene();
   if(auto){
-    await attendre(500);
-    await Promise.all(ORDRE.map(function(h){ slotH(h).classList.remove('sol', 'avale'); return Promise.resolve(E.A.h[h].relever()).catch(function(){}); }));
+    /* les trois héros sont au sol, sonnés (pas morts) : ils se relèvent difficilement, l'un après l'autre, en titubant
+       (Romain, 10 novembre), puis ils crient « Fuite ! » et détalent */
+    await attendre(1100);
+    await Promise.all(ORDRE.map(function(h, k){
+      var A = E.A.h[h]; slotH(h).classList.remove('sol', 'avale');
+      if(!A.ko) return attendre(k * 280);
+      return Promise.resolve(A.relever({sonne:true, retard:k * 280})).catch(function(){});
+    }));
+    await attendre(350);
   }
   ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('crie'); }, k * 120); });
-  await attendre(800);
+  await attendre(auto ? 1000 : 800);
   var fu = bruit('fuite', {}, ['pasHeros', 1, 3]);
   if(Son.baisser) Son.baisser((fu && fu.duree || 3) + .2);
-  ORDRE.forEach(function(h, k){ setTimeout(function(){ slotH(h).classList.add('detale'); }, k * 90); });
+  ORDRE.forEach(function(h, k){ setTimeout(function(){ try{ E.A.h[h]._etoiles(false); }catch(e){} slotH(h).classList.add('detale'); }, k * 90); });
   await attendre(1200);
   DJ.dernierSac = (E.partie.sac || []).slice();        /* la sauvegarde rend son sac d'alors : on se souvient de celui-ci pour le reproposer */
   var ev = Regles.fuir(E.partie, E.salle);
@@ -957,27 +969,20 @@ async function fuite(auto){
   E.resultat = auto ? 'defaite' : 'fuite';
   pointFuite(ev, auto);
 }
-/* « On fait le point » : ce que le Grand Livre sait des bêtes de cette salle, le sac, et où l'on repart */
+/* « On fait le point » : où l'on repart, et c'est tout (Romain, 10 novembre : plus de Grand Livre ni de sac ici — l'écran
+   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Le Grand Livre reste dans son bouton. */
 function pointFuite(ev, auto){
-  var types = [], nomLieu = '';
-  (D.COMBATS[E.salle].monstres || []).forEach(function(t){ var cle = D.MONSTRES[t].livre || t; if(types.indexOf(cle) < 0) types.push(cle); });
+  var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
-  var pages = Regles.grandLivre(E.partie).filter(function(p){ return types.indexOf(p.monstre) >= 0 && p.lignes.length; });
-  var garde = 'Lui, il n\'oublie rien.';
-  var l = pages.length ? '<div class="livre-l garde">' + garde + DJ.lireBtn(garde) + '</div>' + pages.map(function(p){
-      return '<div class="livre-t">' + esc(p.nom) + '</div>' + p.lignes.map(function(t){ return '<div class="livre-l">« ' + t + ' »' + DJ.lireBtn(t) + '</div>'; }).join(''); }).join('')
-    : '<div class="livre-l">' + D.LIVRE_VIDE + DJ.lireBtn(D.LIVRE_VIDE) + '</div>';
   var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
-  var cadeau = neuf ? 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus.' : '';
   var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Tout ce qui a été fait depuis est à refaire.';
-  var conte = auto ? 'Les trois héros sont tombés… Ils se relèvent tant bien que mal et filent. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
+  var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
+  if(neuf) conte = 'À force de fuir, on finit par apprendre : le Grand Livre a noté une ligne de plus. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';
-  f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
-    '<div class="case"><h3>📖 Le Grand Livre</h3>' + l + (cadeau ? '<div class="livre-l garde">' + cadeau + DJ.lireBtn(cadeau) + '</div>' : '') + '</div>' +
-    '<div class="case"><h3>🎒 Le sac</h3><div class="sac-l">' + (DJ.dernierSac || E.partie.sac || []).map(function(id){ return '<div>' + DJ.potion(id) + D.RECETTES[id].nom + '</div>'; }).join('') + '</div></div>' +
+  f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point court"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
     '<div class="case retour"><h3>🚪 On repart</h3><div class="rats-l"><span>' + rv + '</span>' + DJ.lireBtn(rv) + '</div></div>' +
     '<div class="bulle"><span class="txt">' + conte + '</span>' + DJ.lireBtn(conte) + '</div>' +
-    '<div class="bas"><button class="aller guide" data-act="combat-fin">Repartir ↻</button></div></div>';
+    '<div class="bas"><button class="aller guide" data-act="combat-fin">Continuer ➜</button></div></div>';
   q('#combat').appendChild(f);
 }
 function terminer(){
