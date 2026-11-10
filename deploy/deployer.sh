@@ -15,7 +15,7 @@ git add brumeval/index.html brumeval/salle.html brumeval/sw.js brumeval/manifest
 git commit -q -m "$3
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_014tBbPJtKqYNLRAPgA5SpCV"
+Claude-Session: https://claude.ai/code/session_014tBbPMCeTaHG7Zn5Kx8hhW"
 git push -q origin HEAD:main
 git log --oneline -1
 echo "version $V"

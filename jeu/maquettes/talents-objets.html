@@ -1,0 +1,548 @@
+<title>Talents et objets de Brumeval</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+<style>
+/* Mise en page : une colonne de carnet, onglets des rôles collés en haut, tout le reste en tiroirs qu'on ouvre et ferme.
+   Nuit de Brumeval (sombre d'abord), brume claire en version jour. */
+:root{
+  --bg:#0e1320; --surface:#161d2d; --surface2:#1e2740; --line:#2b3653;
+  --fg:#ebe7dc; --muted:#9ba4ba; --gold:#e8b93c; --gold-ink:#17120a;
+  --pisteur:#69bd74; --alchimiste:#b08af5; --barde:#ef86ad; --sage:#72a9ff; --trancher:#e8b93c;
+  --ok:#55c487; --wait:#e8b93c; --no:#ec7272;
+  --f-titre:"IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --f-texte:"Alegreya Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:12px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#e9edf3; --surface:#ffffff; --surface2:#dfe5ef; --line:#c7d0df;
+    --fg:#1a2131; --muted:#556079; --gold:#e8b93c; --gold-ink:#17120a;
+    --pisteur:#2d7a3a; --alchimiste:#6c3fc0; --barde:#b03068; --sage:#2a5fc0; --trancher:#9a6c00;
+    --ok:#1f8a4f; --wait:#9a6c00; --no:#c23b3b;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#e9edf3; --surface:#ffffff; --surface2:#dfe5ef; --line:#c7d0df;
+  --fg:#1a2131; --muted:#556079; --gold:#e8b93c; --gold-ink:#17120a;
+  --pisteur:#2d7a3a; --alchimiste:#6c3fc0; --barde:#b03068; --sage:#2a5fc0; --trancher:#9a6c00;
+  --ok:#1f8a4f; --wait:#9a6c00; --no:#c23b3b;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--fg); font-family:var(--f-texte); font-size:16px; line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0 48px;}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg)}
+.page{max-width:760px; margin:0 auto}
+
+header.tete{padding-block:22px 14px; display:grid; gap:6px}
+.sur{font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-titre); font-weight:400; font-size:clamp(30px, 7vw, 42px); line-height:1.05; margin:0; text-wrap:balance}
+.sous{margin:0; color:var(--muted); max-width:60ch}
+
+/* Onglets des rôles */
+nav.onglets{position:sticky; top:env(safe-area-inset-top, 0px); z-index:5; background:var(--bg);
+  display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:6px; padding-block:8px 10px; border-bottom:1px solid var(--line)}
+.onglet{--c:var(--muted); appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--fg);
+  border-radius:10px; padding:8px 4px 7px; display:grid; justify-items:center; gap:2px; cursor:pointer; font:inherit; min-width:0}
+.onglet .e{font-size:22px; line-height:1}
+.onglet .n{font-size:13px; font-weight:500; overflow-wrap:anywhere; text-align:center; line-height:1.15}
+.onglet[aria-selected="true"]{border-color:var(--c); background:color-mix(in srgb, var(--c) 16%, var(--surface)); box-shadow:inset 0 -3px 0 var(--c)}
+.onglet[data-role="pisteur"]{--c:var(--pisteur)} .onglet[data-role="alchimiste"]{--c:var(--alchimiste)}
+.onglet[data-role="barde"]{--c:var(--barde)}
+.onglet[data-role="sage"]{--c:var(--sage)} .onglet[data-role="trancher"]{--c:var(--trancher)}
+.onglet:focus-visible, button:focus-visible, summary:focus-visible, textarea:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+
+/* Panneau d'un rôle */
+.panneau{--c:var(--muted); padding-top:16px; display:grid; gap:14px}
+.panneau[data-role="pisteur"]{--c:var(--pisteur)} .panneau[data-role="alchimiste"]{--c:var(--alchimiste)}
+.panneau[data-role="barde"]{--c:var(--barde)}
+.panneau[data-role="sage"]{--c:var(--sage)} .panneau[data-role="trancher"]{--c:var(--trancher)}
+.role-tete{display:flex; gap:14px; align-items:center}
+.role-tete .grand{width:58px; height:58px; flex:none; border-radius:50%; display:grid; place-items:center; font-size:30px;
+  background:color-mix(in srgb, var(--c) 22%, var(--surface)); border:2px solid var(--c)}
+.role-tete h2{font-family:var(--f-titre); font-weight:400; font-size:28px; margin:0; color:var(--c); line-height:1.1}
+.role-tete p{margin:2px 0 0; color:var(--muted); font-size:15px}
+.role-tete div{min-width:0}
+
+/* Grands tiroirs : Talents / Objets */
+details.tiroir{border:1px solid var(--line); border-radius:var(--r); background:var(--surface)}
+details.tiroir > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:12px; padding:14px 14px;
+  border-radius:var(--r)}
+details.tiroir > summary::-webkit-details-marker, details.niv > summary::-webkit-details-marker, details.obj > summary::-webkit-details-marker{display:none}
+details.tiroir[open] > summary{border-bottom:1px solid var(--line); border-radius:var(--r) var(--r) 0 0;
+  background:color-mix(in srgb, var(--c) 10%, var(--surface))}
+.tiroir-titre{font-family:var(--f-titre); font-size:22px; line-height:1; flex:1; min-width:0}
+.compte{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+.chev{width:22px; height:22px; flex:none; transition:transform .2s; color:var(--muted)}
+details[open] > summary .chev{transform:rotate(90deg)}
+.tiroir-corps{padding:12px; display:grid; gap:10px}
+
+/* Niveaux de talents */
+details.niv{border:1px solid var(--line); border-radius:10px; background:var(--bg)}
+details.niv > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:11px 12px}
+.pastille-niv{flex:none; min-width:46px; text-align:center; font-weight:700; font-size:14px; padding:4px 8px; border-radius:999px;
+  background:var(--c); color:var(--bg)}
+.niv-noms{flex:1; min-width:0; font-weight:500}
+.niv-noms small{display:block; color:var(--muted); font-weight:400; font-size:13px}
+.niv-corps{padding:4px 12px 12px; display:grid; gap:10px}
+.choix{display:grid; grid-template-columns:1fr; gap:10px; align-items:stretch}
+@media (min-width:600px){ .choix{grid-template-columns:1fr auto 1fr} }
+.ou{align-self:center; justify-self:center; font-family:var(--f-titre); color:var(--muted); font-size:18px}
+.carte{border:1px solid var(--line); border-radius:10px; background:var(--surface); padding:12px; display:grid; gap:8px; align-content:start; min-width:0}
+.carte-tete{display:flex; gap:10px; align-items:center}
+.badge{width:40px; height:40px; flex:none; border-radius:50%; display:grid; place-items:center; font-size:21px;
+  background:color-mix(in srgb, var(--c) 18%, var(--surface2)); border:1px solid color-mix(in srgb, var(--c) 55%, transparent)}
+.carte-nom{font-weight:700; font-size:17px; line-height:1.2}
+.face{display:grid; gap:2px}
+.face .lab{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.face p{margin:0}
+.face.donjon{border-top:1px dashed var(--line); padding-top:8px}
+.face.donjon b{color:var(--c)}
+.face.voit p{font-style:italic}
+.niv.plus-tard{display:flex; align-items:center; gap:10px; padding:9px 12px; border-style:dashed; background:transparent; color:var(--muted)}
+.niv.plus-tard .pastille-niv{background:var(--surface2); color:var(--muted)}
+.niv.plus-tard .niv-noms{font-family:var(--f-titre); font-size:20px; color:var(--muted)}
+.niv.plus-tard .badge{width:30px; height:30px; font-size:16px; font-weight:700; color:var(--muted); background:transparent; border-style:dashed}
+.face.ex{background:var(--surface2); border-radius:8px; padding:8px 10px}
+.face.code p{font-size:14px; color:var(--muted)}
+.bandeau{margin:0; padding:10px 12px; border-radius:10px; border:1px solid var(--c); background:color-mix(in srgb, var(--c) 12%, var(--surface)); font-size:15px}
+.bandeau.vieux{border-style:dashed; background:var(--surface); color:var(--muted)}
+.note{font-size:14px; color:var(--muted); margin:0; padding:8px 10px; border-radius:8px; background:var(--surface2)}
+.etiq{display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:2px 8px; border-radius:999px;
+  border:1px solid var(--line); color:var(--muted); background:var(--surface2); white-space:nowrap}
+
+/* Objets */
+details.obj{border:1px solid var(--line); border-radius:10px; background:var(--bg)}
+details.obj > summary{list-style:none; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 12px}
+.obj-nom{font-weight:700; line-height:1.2}
+.obj-nom small{display:block; font-weight:400; color:var(--muted); font-size:13px}
+.prix{font-variant-numeric:tabular-nums; font-weight:700; font-size:15px; white-space:nowrap; display:flex; align-items:center; gap:5px}
+.piece{width:16px; height:16px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #ffe08a, #c99412 70%); border:1px solid #8a6508; flex:none}
+.obj-corps{padding:2px 12px 12px; display:grid; gap:8px}
+.obj-corps p{margin:0}
+.boutique{font-style:italic; color:var(--muted); border-left:2px solid var(--line); padding-left:10px}
+details.obj.rare{border-color:color-mix(in srgb, var(--gold) 70%, transparent); background:color-mix(in srgb, var(--gold) 8%, var(--bg))}
+.rare .badge{border-color:var(--gold); background:color-mix(in srgb, var(--gold) 22%, var(--surface2))}
+.etiq.or{border-color:var(--gold); color:var(--gold)}
+.mark-point{width:9px; height:9px; border-radius:50%; flex:none; background:transparent; border:1px solid var(--line)}
+.mark-point[data-v="oui"]{background:var(--ok); border-color:var(--ok)}
+.mark-point[data-v="revoir"]{background:var(--wait); border-color:var(--wait)}
+.mark-point[data-v="non"]{background:var(--no); border-color:var(--no)}
+
+/* Mon avis */
+.avis{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.avis .lab{font-size:12px; color:var(--muted); margin-right:2px}
+.avis button{appearance:none; font:inherit; font-size:13px; padding:5px 10px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--line); background:var(--surface2); color:var(--fg)}
+.avis button[data-v="oui"][aria-pressed="true"]{background:var(--ok); border-color:var(--ok); color:var(--bg)}
+.avis button[data-v="revoir"][aria-pressed="true"]{background:var(--wait); border-color:var(--wait); color:var(--bg)}
+.avis button[data-v="non"][aria-pressed="true"]{background:var(--no); border-color:var(--no); color:var(--bg)}
+
+/* À trancher */
+ul.liste{margin:0; padding-left:20px; display:grid; gap:6px}
+.question{border:1px solid var(--line); border-radius:10px; background:var(--bg); padding:12px; display:grid; gap:8px}
+.question p{margin:0}
+.question .num{font-family:var(--f-titre); color:var(--c); font-size:20px; margin-right:6px}
+textarea{width:100%; min-height:110px; font:inherit; color:var(--fg); background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px; resize:vertical}
+.actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.b-or{appearance:none; font:inherit; font-weight:700; background:var(--gold); color:var(--gold-ink); border:0; border-radius:10px; padding:11px 16px; cursor:pointer}
+.b-sec{appearance:none; font:inherit; background:var(--surface2); color:var(--fg); border:1px solid var(--line); border-radius:10px; padding:10px 14px; cursor:pointer}
+.b-sec.danger{border-color:var(--no); color:var(--no)}
+.retour-texte{white-space:pre-wrap; font-size:13px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px; margin:0; overflow-x:auto}
+.msg{font-size:14px; color:var(--ok)}
+footer{margin-top:22px; color:var(--muted); font-size:14px}
+footer a{color:var(--fg)}
+@media (prefers-reduced-motion: reduce){ .chev{transition:none} }
+</style>
+
+<div class="page">
+  <header class="tete">
+    <div class="sur">Les Enquêteurs de Brumeval · proposition du 9 novembre</div>
+    <h1>Talents et objets</h1>
+    <p class="sous">Pisteur, Alchimiste et Sage, sur le modèle du Barde. Rien n'est construit. Touche Garder, À revoir ou Non sur chaque chose, puis copie tes retours depuis l'onglet À trancher.</p>
+  </header>
+
+  <nav class="onglets" role="tablist" aria-label="Les rôles" id="onglets"></nav>
+  <main id="contenu"></main>
+
+  <footer>Le Barde est déjà fait (Bible §12.5 et §13.9). Cette page remplace le document du 9 novembre au matin.</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Le contenu ---------- */
+var QUAND = {2:'au début de l\'enquête 2', 4:'vers l\'enquête 4', 6:'vers l\'enquête 6', 8:'vers l\'enquête 8', 10:'vers l\'enquête 10'};
+
+var ROLES = [
+{id:'pisteur', nom:'Pisteur', ic:'🏹',
+ metier:'L\'action, la carte et les chemins secrets. Dans le donjon, c\'est le finisseur.',
+ bandeau:'Version vivante (9 novembre) : chaque talent est un nouveau geste, avec quelque chose qui bouge à l\'écran. Pour l\'instant, seulement le niveau 2 : les autres niveaux sont des « ? », on les inventera au fil des enquêtes. Une règle pour tous : un talent ouvre un autre chemin, plus amusant, vers ce qu\'on peut déjà trouver ; jamais un indice de plus.',
+ talents:[
+  {niv:2, choix:[
+    {id:'p2-faucon', ic:'🦅', nom:'Le faucon',
+     fais:'Tu as un faucon, et tu lui donnes un nom. Sur la carte, tu le lances sur n\'importe quel lieu, même un lieu gardé. Il revient et te dit ce qu\'il a vu d\'en haut.',
+     voit:'Il quitte ton bras, son ombre glisse sur la carte, il tourne au-dessus du lieu en criant, puis revient se poser. Dans la cabane, il dort sur son perchoir ; tu le nourris, il gonfle ses plumes.',
+     combien:'Une fois par moment.',
+     ex:['Dans l\'enquête 2', 'Lancé sur le Vieux Chêne, le matin : « Des hommes roulent de gros rochers… et dans l\'herbe, une canne. » Sur la clairière : « Deux traits de roues partent du champ rasé, vers le moulin. »'],
+     donj:['Éclaireur et Serres', 'avant chaque salle, il vole devant : la brume se lève, on voit les monstres, et l\'équipe frappe la première. En combat, il fond sur un monstre, qui rate son prochain coup.'],
+     code:'Le faucon (dessin, vol, perchoir dans la cabane) ; une phrase par lieu et par moment dans chaque enquête, comme les portes du Barde.'},
+    {id:'p2-toits', ic:'🧗', nom:'Coureur des toits',
+     fais:'Tu grimpes partout. Sur la carte, des chemins de toits et d\'arbres s\'allument : tu passes au-dessus des gardes et tu arrives par en haut, là où personne ne t\'attend.',
+     voit:'Ton grappin s\'accroche à une gouttière et tu montes. La première fois, le chemin se court (cheminées, linge qui sèche, un chat qui feule) ; ensuite il est à toi, sur ton tableau des chemins secrets.',
+     combien:'Autant que tu veux. Si tu tombes pendant la course, tu atterris dans le tas de fumier de Basile, et tu retentes au moment suivant.',
+     ex:['Dans l\'enquête 2', 'Par les arbres, tu passes au-dessus de Silas jusqu\'au Vieux Chêne (une troisième façon, à côté du chemin des bûcherons et de Se cacher). La nuit, sur le toit du moulin, par la lucarne : une lueur rouge là où il n\'y a aucune pièce.'],
+     donj:['Saut périlleux', 'il bondit par-dessus les monstres de devant et frappe celui du fond, le plus fragile.'],
+     code:'Une couche « toits » sur la carte ; une course des toits (le moteur de la course-poursuite, un décor nouveau, sans fuyard) ; 2 ou 3 chemins à écrire par enquête.'}],
+   note:'À l\'enquête 3, le faucon suit Moustache de toit en toit et survole le vieux puits ; le coureur des toits entre dans la mairie par la lucarne pour prendre la lettre (un troisième chemin, à côté du Barde et de Se cacher).'},
+  {niv:4, plusTard:true},
+  {niv:6, plusTard:true},
+  {niv:8, plusTard:true},
+  {niv:10, plusTard:true}
+ ],
+ objets:[
+  {id:'o-sifflet', ic:'🐕', nom:'Sifflet de Pirate', prix:115, fois:'1 fois par enquête', fait:'Pirate, le chien de Tim, se faufile là où le Pisteur ne passe pas (un trou, une grille) et rapporte ce qu\'il trouve.', boutique:'Tim te prête son chien : Pirate passe partout.', ecrire:true},
+  {id:'o-trefle', ic:'🍀', nom:'Trèfle à quatre feuilles', prix:100, fois:'1 fois par enquête', fait:'Un mini-jeu raté se rejoue tout de suite.', boutique:'Un brin de chance, et on recommence.', note:'Il ramène un deuxième essai, supprimé le 5 novembre : une seule fois par enquête, et contre 100 pièces.'},
+  {id:'o-bottes', ic:'👢', nom:'Bottes de vent', prix:95, fois:'Toujours', fait:'Course-poursuite : une étape de moins.', boutique:'Tu cours plus vite que tout le monde.'},
+  {id:'o-cape', ic:'🧥', nom:'Cape de rôdeur', prix:90, fois:'Toujours', fait:'Se cacher : la lumière des lanternes est plus petite autour de lui. La cape se voit sur le héros.', boutique:'Couleur de nuit : on te voit moins.'},
+  {id:'o-carquois', ic:'🏹', nom:'Carquois de chasseur', prix:85, fois:'Toujours', fait:'Tir à l\'arc : deux flèches de plus.', boutique:'Deux flèches de plus, deux chances de plus.'},
+  {id:'o-gants', ic:'🧤', nom:'Gants de pisteur', prix:80, fois:'Toujours', fait:'Suivre la piste : après chaque obstacle, les pas suivants s\'allument un instant.', boutique:'Tes doigts sentent les traces fraîches.'},
+  {id:'o-lanterne', ic:'🏮', nom:'Lanterne sourde', prix:75, fois:'Toujours', fait:'Voir dans les lieux sombres sans potion (les tunnels de l\'enquête 4).', boutique:'Une lanterne à volet : tu éclaires sans être vu.'},
+  {id:'o-craie', ic:'🖍️', nom:'Craie de pisteur', prix:70, fois:'Toujours', fait:'Sur la carte, un lieu où il a tout trouvé pour ce moment se marque d\'une croix.', boutique:'Une croix, et tu ne repasses plus pour rien.'},
+  {id:'o-longuevue', ic:'🔭', nom:'La longue-vue des Fondateurs', prix:320, fois:'Toujours', rare:true, fait:'Proposé : dans le donjon, elle montre à travers la brume la direction d\'une salle secrète à trésor, jamais le bon chemin. Le plan du Sage reste indispensable.', boutique:'Elle ne voit pas au loin… elle voit à travers la brume.'}
+ ]},
+
+{id:'alchimiste', nom:'Alchimiste', ic:'⚗️',
+ metier:'Les potions et les analyses, dans son atelier avec Mimi. Dans le donjon, c\'est elle qui prépare.',
+ bandeau:'Niveau 2 en version vivante. Les expériences te plaisent (14 h 47) ; le nez est remplacé par Mimi, chat de labo. Les niveaux suivants sont des « ? ».',
+ talents:[
+  {niv:2, choix:[
+    {id:'a2-mimi', ic:'🐈', nom:'Mimi, chat de labo',
+     fais:'Mimi devient un vrai assistant. Plus tu t\'occupes de lui (le nourrir, jouer, le brosser), plus vous êtes complices, et il apprend des tours qui servent vraiment au labo.',
+     voit:'Une jauge de complicité en pattes de chat. À chaque nouveau tour, une petite scène : Mimi revient par la chatière avec une plante dans la gueule, bondit sur un cloporte, renifle un fil et fait « Pfft ! ».',
+     combien:'Tout le temps. S\'il est oublié pendant tout un moment, il boude et ne fait rien jusqu\'au moment suivant.',
+     ex:['Ses trois tours', '1. Rapporter : à chaque moment, il revient avec un ingrédient, parfois un rare. 2. Chasser : dans le grand ménage, il bondit sur les bestioles avec toi. 3. Renifler : au labo, il crache sur un faux échantillon du tiroir.'],
+     donj:['Mimi fouille', 'il descend dans la crypte avec toi ; après chaque combat, il fouille la salle et rapporte une trouvaille de plus (une plante rare, une fiole).'],
+     code:'Des soins plus riches (repas, brosse, jouets) et une jauge de complicité ; trois tours avec leur animation ; Mimi dans le grand ménage et au labo. Rien à écrire par enquête.'},
+    {id:'a2-experiences', ic:'🧪', nom:'Les expériences',
+     fais:'Dans son atelier, un nouveau bouton : « Expérience ». Elle jette trois ingrédients dans le chaudron, sans recette. Ça bouillonne… et il en sort une surprise.',
+     voit:'Le chaudron fume, change de couleur, et pof ! Une potion qui donne des cheveux bleus à son héros, qui fait flotter Mimi au plafond, qui donne le hoquet… ou, parfois, une vraie recette découverte, rangée dans son grimoire.',
+     combien:'Une expérience par moment (les trois ingrédients sont dépensés).',
+     ex:['Dans l\'enquête 3', 'Avant d\'entrer dans le donjon, elle peut découvrir elle-même des potions du donjon (l\'huile, la colle, le givre…) et arriver avec un sac plus riche.'],
+     donj:['Mélange improvisé', 'en plein combat, elle mélange deux potions du sac : le résultat est une surprise, souvent plus fort, parfois rigolo (le monstre a le hoquet et rate son tour).'],
+     code:'Un mode « expérience » au chaudron (trois ingrédients, l\'animation, pas de mini-jeu) ; une table des mélanges : une vingtaine d\'effets rigolos et les vraies recettes cachées. Rien à écrire par enquête.'}],
+   note:'Sans le talent, Mimi reste le petit compagnon d\'aujourd\'hui (Bible §12.3). Les expériences touchent une règle décidée (Bible §3.5 : les nouvelles recettes viennent toujours d\'un autre rôle) : elles ne découvrent que des potions rigolotes et des potions du donjon, jamais une recette dont l\'enquête a besoin.'},
+  {niv:4, plusTard:true},
+  {niv:6, plusTard:true},
+  {niv:8, plusTard:true},
+  {niv:10, plusTard:true}
+ ],
+ objets:[
+  {id:'o-alambic', ic:'⚗️', nom:'Alambic de verre', prix:115, fois:'1 fois par enquête', fait:'Une potion se prépare toute seule, sans mini-jeu, pendant qu\'elle fait autre chose.', boutique:'Il distille pendant que tu cours ailleurs.'},
+  {id:'o-loupe', ic:'🔍', nom:'Loupe dorée', prix:100, fois:'Toujours', fait:'Le double et les ressemblances : un signe commun est entouré, une fois par partie.', boutique:'Elle voit ce que tes yeux ratent.'},
+  {id:'o-herbier', ic:'📗', nom:'Herbier illustré', prix:95, fois:'Toujours', fait:'Sur la carte, chaque coin de cueillette montre ce qui y pousse, et à quel moment.', boutique:'Toutes les plantes du village, et leurs heures.'},
+  {id:'o-thermo', ic:'🌡️', nom:'Thermomètre de cuivre', prix:90, fois:'Toujours', fait:'Au chaudron, une aiguille montre la température exacte, et la zone verte est plus large.', boutique:'Tu sais toujours où en est ton chaudron.'},
+  {id:'o-coussin', ic:'🐈', nom:'Coussin de Mimi', prix:85, fois:'Toujours', fait:'La barre de bonheur de Mimi ne descend plus : il sort à chaque moment et rapporte un ingrédient, parfois un rare. Le coussin se pose près de la chatière.', boutique:'Un chat heureux est un chat qui rapporte.'},
+  {id:'o-fioles', ic:'🧴', nom:'Fioles renforcées', prix:80, fois:'Toujours', fait:'Une potion ratée rend tous ses ingrédients.', boutique:'Ratée ? Rien n\'est perdu.'},
+  {id:'o-sac', ic:'👜', nom:'Sac d\'herboriste', prix:75, fois:'Toujours', fait:'Chaque cueillette rapporte un ingrédient de plus.', boutique:'Un sac plus grand, des cueillettes plus grosses.'},
+  {id:'o-mortier', ic:'🥣', nom:'Mortier de pierre', prix:70, fois:'Toujours', fait:'Elle broie les ingrédients durs : racines, écorces, plantes rares du donjon.', boutique:'Pour les racines trop dures pour le couteau.'},
+  {id:'o-fiole4', ic:'🧪', nom:'La fiole aux quatre signes', prix:320, fois:'Toujours', rare:true, fait:'Proposé : dans le donjon, une quatrième place de recette dans le sac.', boutique:'Une fiole d\'argent gravée de quatre signes. Personne ne sait ce qu\'on y mettait.'}
+ ],
+ noteObjets:'Chaque objet acheté se voit dans l\'atelier (l\'alambic sur la table, le thermomètre au mur, le coussin près de la chatière) : une raison de plus d\'aménager.'},
+
+{id:'barde', nom:'Barde', ic:'🎻',
+ metier:'L\'informateur des habitants : il parle, il écoute, il démasque les menteurs.',
+ bandeau:'Déjà décidé (Bible §12.5 et §13.9), ici pour comparer. Ses talents sont dans le jeu ; ses objets ne sont pas encore construits. Le Barde ne descend pas dans le donjon de l\'enquête 3 : pas de face donjon.',
+ talents:[
+  {niv:2, choix:[
+    {id:'b2-oreille', ic:'👂', nom:'Tendre l\'oreille', fais:'Sur la carte, partout où quelqu\'un se trouve, il écoute aux portes ou en douce. Chacun y dit une petite phrase ; certaines comptent vraiment. Tout est gardé dans son Carnet, sur la page de la personne.', voit:'La phrase s\'écrit lettre après lettre dans une bulle posée sur la carte.', combien:'Tout le temps, gratuitement.'},
+    {id:'b2-verite', ic:'⚖️', nom:'Exige la vérité', fais:'À la fin d\'un interrogatoire, il exige la vérité : tous les mensonges du villageois deviennent vrais. S\'il n\'y en avait aucun : « J\'ai tout dit vrai ».', voit:'Le même bouton à la fin de chaque interrogatoire, pour ne rien trahir ; les vérités apparaissent en vert.', combien:'Deux fois par enquête.'}],
+   note:'Les deux sont construits et se jouent déjà à l\'enquête 2.'},
+  {niv:4, choix:[
+    {id:'b4-charmeur', ic:'😊', nom:'Charmeur', fais:'Ses questions maladroites ne vexent plus jamais personne.', combien:'Tout le temps.'},
+    {id:'b4-physio', ic:'🧐', nom:'Physionomiste', fais:'Au début de chaque enquête, il connaît déjà la mimique de mensonge d\'un suspect, tiré au hasard.', combien:'Une fois par enquête.'}]},
+  {niv:6, choix:[
+    {id:'b6-rumeur', ic:'🗣️', nom:'Lancer une rumeur', fais:'Avec le Pisteur : à la taverne, il lance une fausse rumeur sur un lieu. Au moment suivant, le Pisteur guette : si quelqu\'un accourt, c\'est le bon lieu ; sinon, ce lieu est écarté.', combien:'Une fois par enquête.'},
+    {id:'b6-hydromel', ic:'🍯', nom:'Hydromel des confidences', fais:'Avec l\'Alchimiste : elle fabrique l\'Hydromel et le lui passe par un code. Offert pendant un interrogatoire, il fait innocenter un suspect, jamais désigner le coupable.', combien:'Une fois par enquête.'}]},
+  {niv:8, choix:[
+    {id:'b8-intuition', ic:'🔮', nom:'Intuition', fais:'Parmi tous ses interrogatoires, un mensonge qu\'il n\'avait pas repéré est signalé. S\'il les a tous trouvés : « Plus aucun mensonge ».', combien:'Une fois par enquête.'},
+    {id:'b8-recoupement', ic:'🧩', nom:'Recoupement', fais:'Il choisit deux phrases de son Carnet, dites par deux villageois : peuvent-elles être vraies toutes les deux, ou l\'une est-elle forcément un mensonge ?', combien:'Une fois par enquête.'}]},
+  {niv:10, choix:[
+    {id:'b10-reseau', ic:'🧒', nom:'Réseau d\'informateurs', fais:'À chaque moment, un enfant du village lui glisse une info vraie sur un suspect.', combien:'À chaque moment.'},
+    {id:'b10-plaidoirie', ic:'📜', nom:'Plaidoirie', fais:'Avec le Sage : s\'il accuse un innocent, le Barde plaide ; l\'accusé prouve son innocence et le Sage ne perd pas de cœur.', combien:'Une fois par enquête.'}]}
+ ],
+ objets:[
+  {id:'b-lanterne', ic:'🕯️', nom:'Lanterne du veilleur', prix:115, fois:'1 fois par enquête', fait:'La nuit, un villageois endormi t\'ouvre sa porte et te confie un gros indice.', boutique:'La nuit, on t\'ouvre même quand tout le monde dort.'},
+  {id:'b-carte', ic:'📇', nom:'Carte de visite', prix:110, fois:'1 fois par enquête', fait:'Un villageois accepte une deuxième visite au même moment : tu peux lui poser ses 4 questions.', boutique:'Sonne une deuxième fois : on te rouvre la porte.'},
+  {id:'b-boussole', ic:'🧭', nom:'Boussole des confidences', prix:105, fois:'À chaque moment', fait:'Elle montre à qui parler en premier.', boutique:'Elle montre qui a le plus à dire.'},
+  {id:'b-lettre', ic:'✉️', nom:'Lettre de recommandation', prix:100, fois:'4 fois par enquête', fait:'Avant de poser une question, tu vois si elle sert à l\'enquête ou à l\'histoire.', boutique:'Elle te dit quelles questions valent la peine.'},
+  {id:'b-fleur', ic:'🌸', nom:'Fleur de patience', prix:90, fois:'2 fois par enquête', fait:'Une question de plus avant que le villageois s\'impatiente.', boutique:'Offre-la : on t\'écoute un peu plus longtemps.'},
+  {id:'b-chapeau', ic:'🎩', nom:'Chapeau de politesse', prix:85, fois:'1 fois par enquête', fait:'Un mauvais choix ne ferme pas la porte : « Pardon, je reformule… »', boutique:'Une maladresse ? Un coup de chapeau, et on oublie.'},
+  {id:'b-bonbons', ic:'🍬', nom:'Bonbons au miel', prix:80, fois:'1 fois par enquête', fait:'Un villageois vexé te reparle tout de suite.', boutique:'Même les plus fâchés fondent pour un bonbon.'},
+  {id:'b-rubans', ic:'🎗️', nom:'Carnet à rubans', prix:70, fois:'Toujours', fait:'Quand quelqu\'un dit une chose utile à l\'enquête, un ruban s\'affiche.', boutique:'Un ruban marque ce qui compte.'},
+  {id:'b-cle', ic:'🗝️', nom:'La vieille clé rouillée', prix:320, fois:'Une seule', rare:true, rareTxt:'Chez Fortuné', fait:'Elle apparaît dès le dialogue avec Fortuné ; ce qu\'elle ouvre est à décider.', boutique:'Une vieille clé couverte de runes, trouvée au-delà de la brume. Personne ne sait ce qu\'elle ouvre.'}
+ ]},
+
+{id:'sage', nom:'Sage', ic:'📜',
+ metier:'Le chef d\'enquête, ses énigmes et le Grand Livre. Dans le donjon, il trouve les points faibles.',
+ bandeau:'Niveau 2 en version vivante. Le constructeur te plaît (14 h 50) ; le portrait-robot est remplacé par les pierres à runes. Les niveaux suivants sont des « ? ».',
+ talents:[
+  {niv:2, choix:[
+    {id:'s2-constructeur', ic:'⚙️', nom:'Le constructeur',
+     fais:'Son Grand Livre a une page « L\'établi ». Les équipiers lui donnent par code les objets cassés et les pièces qu\'ils trouvent (un ressort, une lentille, un engrenage). Il les remonte et fabrique des gadgets pour l\'équipe, qu\'on ne peut pas acheter.',
+     voit:'Les pièces volent sur l\'établi, les engrenages se mettent à tourner, et le gadget se monte sous ses doigts (le mini-jeu « assembler selon une commande », prévu pour le gâteau de l\'enquête 3, en version mécanique).',
+     combien:'À chaque pièce reçue ; deux ou trois gadgets par enquête.',
+     ex:['Des gadgets', 'Une longue-vue pour le Pisteur, un cornet pour le Barde, une pince à fioles pour l\'Alchimiste. Chaque gadget part à son équipier par un code.'],
+     donj:['Vieux mécanismes', 'chaque salle cache un mécanisme des Fondateurs (une herse, un levier, une statue) : lui seul sait le remettre en marche, et il écrase un monstre.'],
+     code:'La page de l\'établi ; le mini-jeu d\'assemblage en décor mécanique ; une liste de gadgets ; 2 ou 3 pièces cachées dans chaque enquête.'},
+    {id:'s2-runes', ic:'🪨', nom:'Les pierres à runes',
+     fais:'Partout au village, de vieilles pierres gravées attendent : sur le puits, sous le pont, au clocher. Lui seul les remarque. Chaque pierre lui apprend une rune des Fondateurs ; avec assez de runes, il lit les inscriptions et découvre ce qu\'elles cachent.',
+     voit:'Sur sa carte, les pierres gravées luisent d\'un éclat bleu. Dans son Grand Livre, le dictionnaire des runes se remplit, une case par rune, comme un album à compléter.',
+     combien:'Deux ou trois pierres par enquête ; le dictionnaire se garde toute la saison.',
+     ex:['Ce que cachent les inscriptions', 'Une cachette avec de l\'or ou un ingrédient rare pour un équipier (par code), un vieux secret des Fondateurs… ou une blague vieille de trois cents ans : « Ici, Barnabé a perdu sa chaussette. »'],
+     donj:['Lire les murs', 'dans chaque salle, une inscription lui révèle un secret : un passage caché, un piège, ou une trouvaille.'],
+     code:'Des pierres gravées sur la carte (2 ou 3 par enquête), lues avec L\'alphabet secret ; la page du dictionnaire ; ce que dit chaque inscription.'}],
+   note:'Les deux sont des découvertes, comme les expériences de l\'Alchimiste : des objets pour le constructeur, des secrets pour les pierres à runes.'},
+  {niv:4, plusTard:true},
+  {niv:6, plusTard:true},
+  {niv:8, plusTard:true},
+  {niv:10, plusTard:true}
+ ],
+ objets:[
+  {id:'o-boule', ic:'🔮', nom:'Boule de cristal', prix:115, fois:'1 fois par enquête', fait:'Au moment d\'accuser, un innocent est rayé dans la liste du QUI.', boutique:'Elle voit clair là où tout est flou.'},
+  {id:'o-banniere', ic:'🏳️', nom:'Bannière de l\'équipe', prix:110, fois:'1 fois par enquête', fait:'Il donne un « Encore une fois ! » à un équipier, par code.', boutique:'Sous la bannière, on ne baisse jamais les bras.'},
+  {id:'o-plume', ic:'🪶', nom:'Plume des archives', prix:100, fois:'1 fois par moment', fait:'Elle souligne dans les archives un vieil indice qui sert aujourd\'hui, s\'il y en a un.', boutique:'Elle se souvient de ce que tout le monde a oublié.', ecrire:true},
+  {id:'o-pierre', ic:'🪨', nom:'Pierre-runes', prix:95, fois:'Toujours', fait:'Assembler les runes : une pièce déjà posée à chaque partie.', boutique:'Une rune déjà à sa place.'},
+  {id:'o-lunettes', ic:'👓', nom:'Lunettes de sage', prix:90, fois:'Toujours', fait:'Superposer les plans : le calque est déjà à la bonne taille.', boutique:'Les vieux plans, enfin à ta vue.'},
+  {id:'o-loupe-l', ic:'🔎', nom:'Loupe de lecture', prix:85, fois:'Toujours', fait:'L\'alphabet secret : la première lettre de chaque mot est déjà écrite.', boutique:'Chaque mot commence à se laisser lire.'},
+  {id:'o-ardoise', ic:'📋', nom:'Ardoise du chef', prix:75, fois:'Toujours', fait:'Sur son tableau d\'enquête, il note à côté de chaque suspect barré qui l\'a innocenté.', boutique:'Pour ne jamais oublier pourquoi tu as barré quelqu\'un.'},
+  {id:'o-marque', ic:'🎀', nom:'Marque-pages de soie', prix:70, fois:'Toujours', fait:'Un ruban marque chaque page du Grand Livre qui a changé.', boutique:'Un ruban sur tout ce qui est nouveau.'},
+  {id:'o-baton', ic:'🪄', nom:'Le bâton des Fondateurs', prix:320, fois:'Toujours', rare:true, fait:'Proposé : dans le donjon, son Bouclier de runes protège les trois héros à la fois.', boutique:'Un bâton gravé de runes que personne ne sait lire. Il brille quand la brume approche.'}
+ ],
+ noteObjets:'La Bannière ramène un deuxième essai, comme le trèfle du Pisteur : jamais pour tout le monde, seulement pour l\'équipe qui s\'est équipée pour.'}
+];
+
+var QUESTIONS = [
+  {id:'q1', t:'Les cases « ? » du donjon sont les talents : chaque talent du niveau 2 a son geste dans le donjon.'},
+  {id:'q-animaux', t:'Mimi et le faucon : si les deux talents sont choisis, deux animaux dans l\'équipe. Le faucon part sur la carte ; Mimi reste à l\'atelier, au labo, et descend dans la crypte. Ça te va ?'},
+  {id:'q-recettes', t:'Les expériences de l\'Alchimiste ne découvrent que des potions rigolotes et des potions du donjon, jamais une recette dont l\'enquête a besoin (la règle du §3.5 reste vraie pour l\'enquête).'},
+  {id:'q-anciens', t:'Tous les anciens talents disparaissent (Vision de nuit, Archiviste, Potionniste, Stratège…). Les héros déjà créés rechoisissent leur talent du niveau 2 au début de l\'enquête suivante ; leurs anciens objets sont remboursés au prix payé.'},
+  {id:'q4', t:'Les deuxièmes essais ne reviennent que par deux objets : le trèfle du Pisteur et la Bannière du Sage.'},
+  {id:'q5', t:'Les trois objets rares viennent de la charrette de Fortuné, « rapportés d\'au-delà de la brume », comme la clé rouillée du Barde.'}
+];
+var REGLES = [
+  'Un talent est un savoir-faire, jamais un pouvoir (Bible §12.9) : la magie reste dans les objets et les potions.',
+  'Chaque talent a deux faces : ce qu\'il change pendant l\'enquête, et un geste dans une case « ? » du donjon.',
+  'Un talent vivant : un nouveau geste, quelque chose qui bouge à l\'écran, une surprise. Jamais « un cœur de plus » (retour de Romain, 9 novembre).',
+  'Un talent ouvre un autre chemin, plus amusant, vers ce qu\'on peut déjà trouver ; jamais un indice de plus.',
+  'Le niveau 2 demande d\'ajouter un peu de texte à l\'enquête 2 (comme les portes du Barde), sans changer ses codes.',
+  'Pour l\'instant, seulement le niveau 2. Les niveaux 4 à 10 sont des « ? » : on les inventera au fil des enquêtes (Romain, 9 novembre, 14 h 24). Le Barde garde les siens, déjà décidés.',
+  'Chaque talent sert plusieurs fois par enquête, aucun ne dépend d\'un autre. Plus de points d\'action, de grille ni de Corbeau.',
+  'Les objets suivent le Barde : une phrase de boutique, 70 à 115 pièces, le plus utile est le plus cher, un rare à 320 lié à l\'histoire.'
+];
+var VIEUX = [
+  'Vision de nuit (« tes yeux brillent ») est un pouvoir : contraire à la règle.',
+  'Archiviste ouvre des « pages scellées » qui n\'existent ni dans l\'enquête 2 ni dans l\'enquête 3 : le choisir ne sert à rien aujourd\'hui.',
+  'Potionniste (deux doses) : tu voulais l\'enlever, et dans le donjon les potions sont déjà infinies.',
+  'Stratège raye deux innocents dès le niveau 2 : sur 5 suspects il en reste 3, c\'est presque donner la réponse.',
+  'Beaucoup d\'anciens talents et objets parlent d\'actions en plus, de la grille, du Corbeau ou d\'une seconde chance, qui n\'existent plus.'
+];
+var OR_ECRIT = [
+  'L\'or : le même compte que le Barde. Au plus 65 pièces après l\'enquête 1 (rien d\'achetable), 130 après l\'enquête 2 avec la mission bonus : un premier objet. Ensuite, environ un objet toutes les deux enquêtes ; un rare vers l\'enquête 6.',
+  'L\'écriture : les choses marquées « texte à écrire » demandent un petit texte dans chaque enquête, comme Tendre l\'oreille et la Lanterne du veilleur.',
+  'Le donjon : les gestes ne sont qu\'un nom et une ligne ; leurs chiffres se règlent avec la fiche des règles du donjon, dans l\'autre conversation.'
+];
+
+/* ---------- La mémoire de cette tablette ---------- */
+var CLE = 'brumeval-talents-objets-v1';
+var S = {marks:{}, notes:'', tab:'pisteur'};
+try { var lu = JSON.parse(localStorage.getItem(CLE) || 'null'); if(lu && typeof lu === 'object'){ S.marks = lu.marks || {}; S.notes = lu.notes || ''; S.tab = lu.tab || 'pisteur'; } } catch(e){}
+function garder(){ try { localStorage.setItem(CLE, JSON.stringify(S)); } catch(e){} }
+
+/* ---------- Petits outils ---------- */
+function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+var CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var VALEURS = [['oui', 'Garder'], ['revoir', 'À revoir'], ['non', 'Non']];
+function avis(id, lab){
+  var v = S.marks[id] || '';
+  return '<div class="avis" data-id="' + id + '"><span class="lab">' + (lab || 'Mon avis') + '</span>' +
+    VALEURS.map(function(x){ return '<button type="button" data-mark="' + id + '" data-v="' + x[0] + '" aria-pressed="' + (v === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>';
+}
+function point(id){ return '<span class="mark-point" data-point="' + id + '" data-v="' + (S.marks[id] || '') + '" aria-hidden="true"></span>'; }
+function idsTalents(r){ var a = []; r.talents.forEach(function(n){ (n.choix || []).forEach(function(c){ a.push(c.id); }); }); return a; }
+function idsObjets(r){ return r.objets.map(function(o){ return o.id; }); }
+function compte(ids){ var n = 0; ids.forEach(function(id){ if(S.marks[id]) n++; }); return n + ' / ' + ids.length + ' avis'; }
+
+/* ---------- Dessin ---------- */
+function face(lab, html, cls){ return '<div class="face' + (cls ? ' ' + cls : '') + '"><span class="lab">' + lab + '</span><p>' + html + '</p></div>'; }
+function carteTalent(c){
+  return '<div class="carte">' +
+    '<div class="carte-tete"><span class="badge" aria-hidden="true">' + c.ic + '</span><span class="carte-nom">' + esc(c.nom) + '</span></div>' +
+    (c.enq ? face('Pendant l\'enquête', esc(c.enq)) : '') +
+    (c.fais ? face('Ce que tu fais', esc(c.fais)) : '') +
+    (c.voit ? face('Ce qu\'on voit', esc(c.voit), 'voit') : '') +
+    (c.combien ? face('Combien de fois', esc(c.combien), 'combien') : '') +
+    (c.ex ? face(esc(c.ex[0]), esc(c.ex[1]), 'ex') : '') +
+    (c.donj ? face('Dans le donjon (case « ? »)', '<b>' + esc(c.donj[0]) + '</b> : ' + esc(c.donj[1]), 'donjon') : '') +
+    (c.code ? face('À construire', esc(c.code), 'code') : '') +
+    (c.ecrire ? '<div><span class="etiq">✍️ texte à écrire par enquête</span></div>' : '') +
+    avis(c.id) + '</div>';
+}
+function niveau(n){
+  if(n.plusTard) return '<div class="niv plus-tard"><span class="pastille-niv">Niv. ' + n.niv + '</span>' +
+    '<span class="niv-noms">?<small>' + QUAND[n.niv] + ' · on l\'inventera plus tard</small></span>' +
+    '<span class="badge" aria-hidden="true">?</span></div>';
+  var noms = n.choix.map(function(c){ return c.ic + ' ' + esc(c.nom); }).join(' ou ');
+  return '<details class="niv"' + (n.niv === 2 ? ' open' : '') + '><summary>' +
+    '<span class="pastille-niv">Niv. ' + n.niv + '</span>' +
+    '<span class="niv-noms">' + noms + '<small>' + QUAND[n.niv] + (n.niv === 2 ? ' · en détail' : '') + '</small></span>' +
+    n.choix.map(function(c){ return point(c.id); }).join('') + CHEV + '</summary>' +
+    '<div class="niv-corps"><div class="choix">' + carteTalent(n.choix[0]) + '<span class="ou">ou</span>' + carteTalent(n.choix[1]) + '</div>' +
+    (n.note ? '<p class="note">' + esc(n.note) + '</p>' : '') + '</div></details>';
+}
+function objet(o){
+  return '<details class="obj' + (o.rare ? ' rare' : '') + '"><summary>' +
+    '<span class="badge" aria-hidden="true">' + o.ic + '</span>' +
+    '<span class="obj-nom">' + esc(o.nom) + '<small>' + esc(o.fois) + (o.rare ? ' · objet rare' : '') + '</small></span>' +
+    '<span class="prix">' + point(o.id) + '<span class="piece" aria-hidden="true"></span>' + o.prix + '</span></summary>' +
+    '<div class="obj-corps"><p>' + esc(o.fait) + '</p><p class="boutique">« ' + esc(o.boutique) + ' »</p>' +
+    ((o.rare || o.ecrire) ? '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (o.rare ? '<span class="etiq or">' + esc(o.rareTxt || 'Vendu par Fortuné (proposé)') + '</span>' : '') + (o.ecrire ? '<span class="etiq">✍️ texte à écrire par enquête</span>' : '') + '</div>' : '') +
+    (o.note ? '<p class="note">' + esc(o.note) + '</p>' : '') +
+    avis(o.id) + '</div></details>';
+}
+function panneauRole(r){
+  var tIds = idsTalents(r), oIds = idsObjets(r);
+  return '<section class="panneau" data-role="' + r.id + '" role="tabpanel" aria-label="' + r.nom + '">' +
+    '<div class="role-tete"><span class="grand" aria-hidden="true">' + r.ic + '</span><div><h2>' + r.nom + '</h2><p>' + esc(r.metier) + '</p></div></div>' +
+    (r.bandeau ? '<p class="bandeau' + (r.vieux ? ' vieux' : '') + '">' + esc(r.bandeau) + '</p>' : '') +
+    '<details class="tiroir" open><summary><span class="tiroir-titre">Talents</span><span class="compte" data-compte="t-' + r.id + '">' + compte(tIds) + '</span>' + CHEV + '</summary>' +
+      '<div class="tiroir-corps">' + r.talents.map(niveau).join('') + '</div></details>' +
+    '<details class="tiroir" open><summary><span class="tiroir-titre">Objets</span><span class="compte" data-compte="o-' + r.id + '">' + compte(oIds) + '</span>' + CHEV + '</summary>' +
+      '<div class="tiroir-corps">' + r.objets.map(objet).join('') + (r.noteObjets ? '<p class="note">' + esc(r.noteObjets) + '</p>' : '') + '</div></details>' +
+    '</section>';
+}
+function panneauTrancher(){
+  var qIds = QUESTIONS.map(function(q){ return q.id; });
+  return '<section class="panneau" data-role="trancher" role="tabpanel" aria-label="À trancher">' +
+    '<div class="role-tete"><span class="grand" aria-hidden="true">❓</span><div><h2>À trancher</h2><p>Les six décisions à prendre, les règles suivies, et tes retours à copier.</p></div></div>' +
+    '<details class="tiroir" open><summary><span class="tiroir-titre">Les décisions</span><span class="compte" data-compte="q">' + compte(qIds) + '</span>' + CHEV + '</summary><div class="tiroir-corps">' +
+      QUESTIONS.map(function(q, i){ return '<div class="question"><p><span class="num">' + (i + 1) + '</span>' + esc(q.t) + '</p>' + avis(q.id, 'D\'accord ?').replace('>Garder<', '>Oui<') + '</div>'; }).join('') +
+    '</div></details>' +
+    '<details class="tiroir"><summary><span class="tiroir-titre">Les règles suivies</span>' + CHEV + '</summary><div class="tiroir-corps"><ul class="liste">' + REGLES.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></details>' +
+    '<details class="tiroir"><summary><span class="tiroir-titre">Ce qui ne va plus</span>' + CHEV + '</summary><div class="tiroir-corps"><ul class="liste">' + VIEUX.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></details>' +
+    '<details class="tiroir"><summary><span class="tiroir-titre">L\'or et l\'écriture</span>' + CHEV + '</summary><div class="tiroir-corps"><ul class="liste">' + OR_ECRIT.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></details>' +
+    '<details class="tiroir" open><summary><span class="tiroir-titre">Mes retours</span>' + CHEV + '</summary><div class="tiroir-corps">' +
+      '<label for="notes" class="compte">Tes remarques (elles restent sur cette tablette)</label>' +
+      '<textarea id="notes" placeholder="Ce que tu veux changer, ajouter, enlever…">' + esc(S.notes) + '</textarea>' +
+      '<div class="actions"><button type="button" class="b-or" id="copier">Copier mes retours</button>' +
+      '<button type="button" class="b-sec danger" id="effacer">Tout effacer</button><span class="msg" id="msg" aria-live="polite"></span></div>' +
+      '<pre class="retour-texte" id="apercu"></pre>' +
+    '</div></details>' +
+    '</section>';
+}
+
+var ONGLETS = ROLES.map(function(r){ return {id:r.id, nom:r.nom, ic:r.ic}; }).concat([{id:'trancher', nom:'À trancher', ic:'❓'}]);
+var nav = document.getElementById('onglets'), main = document.getElementById('contenu');
+nav.innerHTML = ONGLETS.map(function(o){
+  return '<button type="button" class="onglet" role="tab" id="tab-' + o.id + '" data-role="' + o.id + '" data-tab="' + o.id + '"><span class="e" aria-hidden="true">' + o.ic + '</span><span class="n">' + o.nom + '</span></button>';
+}).join('');
+main.innerHTML = ROLES.map(panneauRole).join('') + panneauTrancher();
+
+/* ---------- Le texte à copier ---------- */
+function texteRetours(){
+  var L = ['Mes retours — talents et objets (Pisteur, Alchimiste, Sage)', ''];
+  ROLES.forEach(function(r){
+    var tout = [];
+    r.talents.forEach(function(n){ (n.choix || []).forEach(function(c){ tout.push({id:c.id, nom:c.nom + ' (talent niv. ' + n.niv + ')'}); }); });
+    r.objets.forEach(function(o){ tout.push({id:o.id, nom:o.nom + ' (objet)'}); });
+    var groupes = {oui:[], revoir:[], non:[]};
+    tout.forEach(function(x){ var v = S.marks[x.id]; if(groupes[v]) groupes[v].push(x.nom); });
+    if(!groupes.oui.length && !groupes.revoir.length && !groupes.non.length) return;
+    L.push(r.nom.toUpperCase());
+    if(groupes.oui.length) L.push('Garder : ' + groupes.oui.join(', '));
+    if(groupes.revoir.length) L.push('À revoir : ' + groupes.revoir.join(', '));
+    if(groupes.non.length) L.push('Non : ' + groupes.non.join(', '));
+    L.push('');
+  });
+  var q = QUESTIONS.filter(function(x){ return S.marks[x.id]; });
+  if(q.length){
+    L.push('LES DÉCISIONS');
+    QUESTIONS.forEach(function(x, i){ var v = S.marks[x.id]; if(v) L.push((i + 1) + '. ' + ({oui:'oui', revoir:'à revoir', non:'non'})[v]); });
+    L.push('');
+  }
+  if(S.notes.trim()){ L.push('MES REMARQUES'); L.push(S.notes.trim()); }
+  if(L.length <= 2) return 'Rien de coché pour l\'instant : touche Garder, À revoir ou Non sur les talents et les objets.';
+  return L.join('\n').trim();
+}
+function majApercu(){ var p = document.getElementById('apercu'); if(p) p.textContent = texteRetours(); }
+
+/* ---------- Mises à jour sans tout redessiner ---------- */
+function majCompteurs(){
+  ROLES.forEach(function(r){
+    var t = main.querySelector('[data-compte="t-' + r.id + '"]'), o = main.querySelector('[data-compte="o-' + r.id + '"]');
+    if(t) t.textContent = compte(idsTalents(r)); if(o) o.textContent = compte(idsObjets(r));
+  });
+  var q = main.querySelector('[data-compte="q"]'); if(q) q.textContent = compte(QUESTIONS.map(function(x){ return x.id; }));
+}
+function choisirOnglet(id, garde){
+  if(!ONGLETS.some(function(o){ return o.id === id; })) id = 'pisteur';
+  S.tab = id;
+  nav.querySelectorAll('.onglet').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === id)); });
+  main.querySelectorAll('.panneau').forEach(function(p){ p.hidden = p.dataset.role !== id; });
+  if(garde !== false) garder();
+  if(id === 'trancher') majApercu();
+}
+
+nav.addEventListener('click', function(e){
+  var b = e.target.closest('[data-tab]'); if(!b) return;
+  choisirOnglet(b.dataset.tab);
+  try { history.replaceState(null, '', '#' + b.dataset.tab); } catch(err){}
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+main.addEventListener('click', function(e){
+  var b = e.target.closest('[data-mark]');
+  if(b){
+    var id = b.dataset.mark, v = b.dataset.v;
+    S.marks[id] = S.marks[id] === v ? '' : v;
+    if(!S.marks[id]) delete S.marks[id];
+    main.querySelectorAll('[data-mark="' + id + '"]').forEach(function(x){ x.setAttribute('aria-pressed', String(S.marks[id] === x.dataset.v)); });
+    main.querySelectorAll('[data-point="' + id + '"]').forEach(function(x){ x.dataset.v = S.marks[id] || ''; });
+    majCompteurs(); garder(); return;
+  }
+  if(e.target.id === 'copier'){
+    var txt = texteRetours(), msg = document.getElementById('msg');
+    majApercu();
+    var ok = function(){ msg.textContent = 'Copié ! Colle-le dans la conversation.'; };
+    var ko = function(){
+      var p = document.getElementById('apercu'); var r = document.createRange(); r.selectNodeContents(p);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      msg.textContent = 'Le texte est sélectionné juste en dessous : copie-le.';
+    };
+    try { navigator.clipboard.writeText(txt).then(ok, ko); } catch(err){ ko(); }
+    return;
+  }
+  if(e.target.id === 'effacer'){
+    var bt = e.target, m = document.getElementById('msg');
+    if(bt.dataset.sur !== '1'){ bt.dataset.sur = '1'; bt.textContent = 'Toucher encore pour tout effacer'; m.textContent = '';
+      setTimeout(function(){ bt.dataset.sur = ''; bt.textContent = 'Tout effacer'; }, 4000); return; }
+    S.marks = {}; S.notes = ''; garder();
+    main.querySelectorAll('[data-mark]').forEach(function(x){ x.setAttribute('aria-pressed', 'false'); });
+    main.querySelectorAll('[data-point]').forEach(function(x){ x.dataset.v = ''; });
+    document.getElementById('notes').value = ''; bt.dataset.sur = ''; bt.textContent = 'Tout effacer';
+    majCompteurs(); majApercu(); m.textContent = 'Tout est effacé.';
+  }
+});
+main.addEventListener('input', function(e){ if(e.target.id === 'notes'){ S.notes = e.target.value; garder(); majApercu(); } });
+
+var depart = (location.hash || '').replace('#', '');
+choisirOnglet(ONGLETS.some(function(o){ return o.id === depart; }) ? depart : S.tab, false);
+window.addEventListener('hashchange', function(){ var h = location.hash.replace('#', ''); if(h) choisirOnglet(h); });
+})();
+</script>

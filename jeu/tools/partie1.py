@@ -173,7 +173,7 @@ with sync_playwright() as p:
     for r, pg in J.items(): print('  fin du matin', r, ':', bandeau(pg))
     moment(S, (P, A, B), 1)
     # ======== Après-midi ========
-    entrer(P, code_de(P, 'info:chemin')); fermer(P)
+    entrer(P, code_de(P, 'info:carte')); fermer(P)   # (10 novembre : seul le plan du Sage ouvre la forêt)
     explorer(P, 'boulangerie', ['sol', 'four'])
     entrer(B, code_de(B, 'info:grands_pieds')); fermer(B)
     explorer(P, 'foret', ['carrefour', 'ch_moulin', 'ch_puits', 'ch_chene', 'buisson'])
