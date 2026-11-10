@@ -3,7 +3,9 @@
    On est penché sur la paillasse de l'atelier : le plateau remplit l'écran, le mur de l'atelier est derrière, les deux tiroirs dessous.
    Tout ce qui sert est posé dessus, et tout reste à sa place quand on zoome (loupe, microscope, bandelette). */
 var LOUPE = {x:214, y:442}, TESTP = {x:152, y:374};
-var COUPES = [[800,386],[884,386],[968,386],[842,444],[926,444]];
+var COUPES = [[834,386],[918,386],[1002,386],[876,444],[960,444]];
+var CUIR = {X:178, y0:322, y1:472};          /* le grand carré de cuir : demi-largeur sur le plateau, bord du fond, bord de devant */
+var ARD = {x:246, y:158, w:140, h:106};       /* l'ardoise du code */
 var BOUGIE = {x:216, y:262, e:1.1};
 var MICRO = {x:930, y:304, e:1.05};
 var TIR = {g:106, d:620, w:474, y:506, h:112};
@@ -57,8 +59,10 @@ function plateau(){
     for(i = 0; i < 260; i++){ y = YB + Rn()*(YF - YB); s += '<circle cx="' + f1(xP((Rn() - .5)*1140, y)) + '" cy="' + f1(y) + '" r="' + f1(1 + Rn()*2.6) + '" fill="' + (Rn() < .5 ? 'rgba(30,24,60,.22)' : 'rgba(255,255,255,.3)') + '"/>'; }
     s += T('M250,250 l40,22 l-14,30 l52,34 M980,470 l-46,-28 l10,-20', 'rgba(40,30,70,.35)', 2.4);
   } else {
-    s += T('M120,300 C260,320 300,270 440,300 S640,360 760,330 S980,290 1090,330 M200,440 C340,420 420,470 560,440 S820,420 1000,460 M520,250 C580,270 640,250 720,268', p.joint, 3, ' opacity=".55"') +
-      T('M150,376 C240,360 300,392 380,372 M700,400 C780,384 860,412 960,392', p.joint, 1.8, ' opacity=".45"');
+    s += T('M120,300 C260,320 300,270 440,300 S640,360 760,330 S980,290 1090,330 M200,440 C340,420 420,470 560,440 S820,420 1000,460 M520,250 C580,270 640,250 720,268', p.joint, 3.2, ' opacity=".6"') +
+      T('M150,376 C240,360 300,392 380,372 M700,400 C780,384 860,412 960,392 M300,300 C330,330 320,360 352,392 M860,340 C850,380 880,410 872,450', p.joint, 1.8, ' opacity=".5"') +
+      T('M124,306 C262,326 302,276 442,306 S642,366 762,336 S982,296 1092,336 M204,446 C342,426 422,476 562,446 S822,426 1002,466', p.veine2, 2, ' opacity=".55"');
+    for(i = 0; i < 90; i++){ y = YB + Rn()*(YF - YB); s += '<circle cx="' + f1(xP((Rn() - .5)*1140, y)) + '" cy="' + f1(y) + '" r="' + f1(.8 + Rn()*1.8) + '" fill="' + (Rn() < .5 ? p.joint : p.veine2) + '" opacity=".3"/>'; }
   }
   s += '<path d="M30,478 L1170,478 L1166,456 L34,456 Z" fill="#fff" opacity=".07"/></g>';
   s += R(30, 478, 1140, 18, 3, G('pChant')) + reflet('M40,482 H1160', 2.5, .35);
@@ -73,21 +77,38 @@ function facadeTiroir(t){
     R(w/2 - 50, 72, 100, 26, 9, G('laitonV'), ' stroke-width="3.5"') + T('M' + (w/2 - 30) + ',85 q30,28 60,0', K, 10) + T('M' + (w/2 - 30) + ',85 q30,28 60,0', '#f5b945', 5) + Cir(w/2 - 30, 85, 3.5, '#8a5a12') + Cir(w/2 + 30, 85, 3.5, '#8a5a12');
   return s;
 }
-/* Un tiroir, fermé ou tiré vers nous (p de 0 à 1) : on voit alors l'intérieur, ses parois, ses trois casiers */
+/* Un tiroir, fermé ou tiré vers nous (p de 0 à 1) : on voit alors l'intérieur, ses parois, ses trois casiers.
+   Dans chaque casier, son dessin est couché sur la feutrine (il suit la perspective du tiroir) : on le touche pour sortir ses échantillons. */
 function dessinerTiroir(t){
   var g = $('#tir-' + t); if(!g) return; var p = S.tirP[t], x0 = TIR[t], w = TIR.w, kf = 1 + .22*p, px = 600 + (x0 - 600)*kf, py = TIR.y + 170*p, pw = w*kf, s = '';
+  var yb = TIR.y + 3, yf = py + 5, xb0 = x0 + 4, xb1 = x0 + w - 4, xf0 = px + 9*kf, xf1 = px + pw - 9*kf;
+  function pt(q, m){ return [xb0 + (xb1 - xb0)*q + ((xf0 + (xf1 - xf0)*q) - (xb0 + (xb1 - xb0)*q))*m, yb + (yf - yb)*m]; }
   if(p > 0.01){
     s += F('M' + x0 + ',' + TIR.y + ' L' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + f1(px + 9*kf) + ',' + f1(py + 5) + ' L' + f1(px) + ',' + f1(py) + ' Z', G('pFonce'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"') +
       F('M' + (x0 + w) + ',' + TIR.y + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(px + pw - 9*kf) + ',' + f1(py + 5) + ' L' + f1(px + pw) + ',' + f1(py) + ' Z', G('pFonce'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"') +
       F('M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(px + pw - 9*kf) + ',' + f1(py + 5) + ' L' + f1(px + 9*kf) + ',' + f1(py + 5) + ' Z', G('feutre'), ' stroke="' + K + '" stroke-width="3" stroke-linejoin="round"');
-    [1/3, 2/3].forEach(function(q){ var d = 'M' + f1(x0 + w*q) + ',' + (TIR.y + 3) + ' L' + f1(px + pw*q) + ',' + f1(py + 5); s += T(d, K, 7) + T(d, paletteBois().V[1], 3.5); });
-    s += '<path d="M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(x0 + w - 4 + (px + pw - 9*kf - x0 - w + 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' L' + f1(x0 + 4 + (px + 9*kf - x0 - 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' Z" fill="rgba(8,4,16,.42)"/>';
+    /* le dessin de chaque casier, couché au fond, avec sa petite étiquette de papier */
+    TIROIRS[t].forEach(function(k, n){
+      var c = pt((n + .5)/3, .44), e = pt((n + .5)/3, .84), ek = (.78 + .22*.44*p)*p, a = pt(n/3, 0), b = pt((n + 1)/3, 0), c2 = pt((n + 1)/3, 1), d2 = pt(n/3, 1), choisi = S.casier === k && S.tiroir === t;
+      if(p > .5 && !S.casier) s += '<ellipse class="rond rond-casier" cx="' + f1(c[0]) + '" cy="' + f1(c[1] + 2) + '" rx="' + f1(62*ek) + '" ry="' + f1(40*ek) + '"/>';
+      s += '<ellipse cx="' + f1(c[0] + 4) + '" cy="' + f1(c[1] + 16*ek) + '" rx="' + f1(46*ek) + '" ry="' + f1(13*ek) + '" fill="rgba(6,14,12,.5)" filter="url(#flou2)"/>' +
+        '<g transform="translate(' + f1(c[0]) + ',' + f1(c[1]) + ') scale(' + ek.toFixed(3) + ',' + (ek*.84).toFixed(3) + ')">' + picto(k, 0, 0, 104) + '</g>' +
+        '<g transform="translate(' + f1(e[0]) + ',' + f1(e[1]) + ') scale(' + (ek*1.06).toFixed(3) + ',' + (ek*.9).toFixed(3) + ') rotate(' + [-3, 2, -2][n] + ')">' + R(-44, -15, 88, 30, 3, choisi ? '#f5b945' : '#fff6d8', ' stroke-width="2.6"') + txt(0, 0.5, 23, CASIERS[k]) + '</g>' +
+        '<path data-casier="' + k + '" d="M' + f1(a[0]) + ',' + f1(a[1]) + ' L' + f1(b[0]) + ',' + f1(b[1]) + ' L' + f1(c2[0]) + ',' + f1(c2[1]) + ' L' + f1(d2[0]) + ',' + f1(d2[1]) + ' Z" fill="transparent"/>';
+    });
+    [1/3, 2/3].forEach(function(q){ var d = 'M' + f1(x0 + w*q) + ',' + (TIR.y + 3) + ' L' + f1(px + pw*q) + ',' + f1(py + 5); s += T(d, K, 7, ' pointer-events="none"') + T(d, paletteBois().V[1], 3.5, ' pointer-events="none"'); });
+    s += '<path pointer-events="none" d="M' + (x0 + 4) + ',' + (TIR.y + 3) + ' L' + (x0 + w - 4) + ',' + (TIR.y + 3) + ' L' + f1(x0 + w - 4 + (px + pw - 9*kf - x0 - w + 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' L' + f1(x0 + 4 + (px + 9*kf - x0 - 4)*.22) + ',' + f1(TIR.y + 3 + (py + 2 - TIR.y)*.22) + ' Z" fill="rgba(8,4,16,.42)"/>';
   }
-  s += '<g transform="translate(' + f1(px) + ',' + f1(py) + ') scale(' + kf.toFixed(3) + ')">' + (p < .01 ? '<rect class="rond" x="-6" y="-6" width="' + (w + 12) + '" height="' + (TIR.h + 12) + '" rx="10"/>' : '') + facadeTiroir(t) + '</g>';
+  s += '<g class="facade" transform="translate(' + f1(px) + ',' + f1(py) + ') scale(' + kf.toFixed(3) + ')">' + (p < .01 ? '<rect class="rond" x="-6" y="-6" width="' + (w + 12) + '" height="' + (TIR.h + 12) + '" rx="10"/>' : '') + facadeTiroir(t) + '</g>';
   g.innerHTML = s; g.classList.toggle('tire', p > .01);
 }
+/* La petite étagère de la paillasse : surélevée sur ses pieds, pour profiter de la hauteur de l'écran */
 function etagere(){
-  var s = ombre(600, 262, 230, 8, .4) + P('M388,244 L812,244 L806,218 L394,218 Z', G('boisH'), ' stroke-width="3.5"') + R(388, 244, 424, 16, 3, G('boisS'), ' stroke-width="3.5"') + reflet('M394,247 H806', 2, .3) + R(400, 258, 22, 8, 2, G('boisS'), ' stroke-width="3"') + R(778, 258, 22, 8, 2, G('boisS'), ' stroke-width="3"');
+  var y = YBOC, s = ombre(600, 266, 232, 8, .38), pied = function(x, y0, y1, l, f){ return R(x, y0, l, y1 - y0, 3, f, ' stroke-width="3"') + reflet('M' + (x + 3) + ',' + (y0 + 5) + ' V' + (y1 - 5), 1.6, .25); };
+  /* les pieds du fond, puis la planche, puis les pieds de devant */
+  s += pied(410, y + 6, 250, 10, G('boisS')) + pied(780, y + 6, 250, 10, G('boisS')) + T('M414,' + (y + 44) + ' H786', K, 7) + T('M414,' + (y + 44) + ' H786', '#94603a', 3.5);
+  s += P('M388,' + (y + 12) + ' L812,' + (y + 12) + ' L806,' + (y - 14) + ' L394,' + (y - 14) + ' Z', G('boisH'), ' stroke-width="3.5"') + R(388, y + 12, 424, 16, 3, G('boisS'), ' stroke-width="3.5"') + reflet('M394,' + (y + 15) + ' H806', 2, .3);
+  s += pied(396, y + 26, 264, 13, G('boisV')) + pied(593.5, y + 26, 264, 13, G('boisV')) + pied(791, y + 26, 264, 13, G('boisV'));
   BOCAUX.forEach(function(b){ s += bocal(b); });
   return s;
 }
@@ -117,15 +138,25 @@ function bougieScene(){
     '<circle cx="' + x + '" cy="' + (y - 78) + '" r="52" fill="' + G('halo') + '" opacity=".6"/><g transform="translate(' + x + ',' + y + ') scale(' + BOUGIE.e + ')">' + artBougie() + '</g>' +
     '<rect x="' + (x-40) + '" y="' + (y-112) + '" width="84" height="130" fill="transparent"/></g>';
 }
-/* L'ardoise posée contre le mur, au fond du plateau : c'est là que s'écrit le code à transmettre */
+/* L'ardoise posée contre le mur, au fond du plateau : c'est là que s'écrit le code à transmettre (trois formes, comme tous les codes du jeu).
+   Quand le code est écrit, on peut la toucher pour le voir en grand. */
 function ardoiseScene(){
-  return '<g transform="translate(-22,0)">' + ombre(334, 268, 46, 6, .4) + '<g transform="rotate(-2 331 262)">' + R(290, 150, 82, 114, 4, G('boisS')) + '<rect x="297" y="157" width="68" height="100" rx="2" fill="' + G('ardoise') + '" stroke="' + K + '" stroke-width="2.5"/>' +
-    '<path d="M300,172 q20,-10 62,-4 M302,240 q30,8 60,-2" stroke="#fff" stroke-width="5" opacity=".05" fill="none"/><g id="ardoise"></g></g></g>';
+  var A = ARD, cx = A.x + A.w/2;
+  return '<g id="gArdoise" data-act="ardoise" tabindex="0" role="button" aria-label="L\'ardoise du code"><rect class="rond" x="' + (A.x - 7) + '" y="' + (A.y - 7) + '" width="' + (A.w + 14) + '" height="' + (A.h + 14) + '" rx="12"/>' + ombre(cx + 4, A.y + A.h + 5, A.w*.56, 6, .4) +
+    '<g transform="rotate(-1.6 ' + cx + ' ' + (A.y + A.h) + ')">' + R(A.x, A.y, A.w, A.h, 5, G('boisS')) + grainBois(A.x + 3, A.y + 3, A.w - 6, A.h - 6, 5, 61, '#3a2010', .35) +
+    '<rect x="' + (A.x + 9) + '" y="' + (A.y + 9) + '" width="' + (A.w - 18) + '" height="' + (A.h - 18) + '" rx="2" fill="' + G('ardoise') + '" stroke="' + K + '" stroke-width="2.5"/>' +
+    '<path d="M' + (A.x + 14) + ',' + (A.y + 26) + ' q40,-12 ' + (A.w - 30) + ',-4 M' + (A.x + 16) + ',' + (A.y + A.h - 22) + ' q50,9 ' + (A.w - 34) + ',-3" stroke="#fff" stroke-width="6" opacity=".05" fill="none"/>' +
+    Cir(A.x + 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') + Cir(A.x + A.w - 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') +
+    '<g id="ardoise"></g></g><rect x="' + A.x + '" y="' + A.y + '" width="' + A.w + '" height="' + A.h + '" fill="transparent"/></g>';
 }
+function codePret(){ return !!(S.trouves.fil && S.trouves.noir); }
 function majArdoise(){
-  var g = $('#ardoise'); if(!g) return; var pret = S.trouves.fil && S.trouves.noir, craie = ' font-family="Caveat, cursive" font-weight="700" text-anchor="middle" fill="#f4f1ea"';
-  if(!pret){ g.innerHTML = '<path d="M323,200 l0,-14 l-5,0 l0,-5 l26,0 l0,5 l-5,0 l0,14 l11,20 q2,7 -6,7 l-26,0 q-8,0 -6,-7 Z" fill="none" stroke="#f4f1ea" stroke-width="2" opacity=".5" stroke-linejoin="round"/><path d="M316,216 h30" stroke="#f4f1ea" stroke-width="2" opacity=".35"/>'; return; }
-  g.innerHTML = '<text x="331" y="176" font-size="13"' + craie + '>pour le</text><text x="331" y="190" font-size="15"' + craie + '>Barde</text><text class="chiffres" x="331" y="224" font-size="32"' + craie.replace('#f4f1ea', '#ffe9a3') + '>' + TXT.code + '</text><path d="M308,238 q23,7 46,-1" stroke="#f4f1ea" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+  var g = $('#ardoise'); if(!g) return; var A = ARD, cx = A.x + A.w/2, cy = A.y + A.h/2, pret = codePret(), craie = ' font-family="Caveat, cursive" font-weight="700" text-anchor="middle" fill="#f4f1ea"';
+  $('#gArdoise').classList.toggle('pret', pret);
+  if(!pret){ g.innerHTML = '<g transform="translate(' + (cx - 331) + ',' + (cy - 207) + ')"><path d="M323,200 l0,-14 l-5,0 l0,-5 l26,0 l0,5 l-5,0 l0,14 l11,20 q2,7 -6,7 l-26,0 q-8,0 -6,-7 Z" fill="none" stroke="#f4f1ea" stroke-width="2" opacity=".5" stroke-linejoin="round"/><path d="M316,216 h30" stroke="#f4f1ea" stroke-width="2" opacity=".35"/></g>'; return; }
+  g.innerHTML = '<text x="' + cx + '" y="' + (A.y + 30) + '" font-size="17"' + craie + '>pour le Barde</text>' +
+    '<g class="formes">' + TXT.code.map(function(e, n){ return '<text x="' + (cx - 37 + n*37) + '" y="' + (cy + 9) + '" font-size="29" text-anchor="middle" dominant-baseline="central">' + e + '</text>'; }).join('') + '</g>' +
+    '<path d="M' + (cx - 48) + ',' + (A.y + A.h - 21) + ' q48,8 96,-1" stroke="#f4f1ea" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/>';
 }
 /* Le microscope de laiton, avec sa grosse molette ×10, ×40, ×100 */
 function microscopeScene(){
@@ -173,18 +204,36 @@ function loupeScene(){
     reflet('M' + (x - 34) + ',' + (y - 8) + ' Q' + (x - 18) + ',' + (y - 17) + ' ' + (x + 4) + ',' + (y - 17), 3.5, .85) + '</g>' +
     '<rect x="' + (x - 64) + '" y="' + (y - 34) + '" width="200" height="74" fill="transparent"/></g>';
 }
-/* Le carré de cuir où sont posés les échantillons : une étiquette « n° 1 » et un tout petit bout de fil */
+/* Le grand carré de cuir où l'on pose ce qu'on analyse : une peau épaisse, avec son grain, ses plis, ses coutures et ses rivets.
+   Dessus : une étiquette « n° 1 » et un tout petit bout de fil. */
+function quadPlat(X, a, b, r){ return 'M' + f1(xP(-X, b)) + ',' + b + ' L' + f1(xP(X, b)) + ',' + b + ' L' + f1(xP(X, a)) + ',' + a + ' L' + f1(xP(-X, a)) + ',' + a + ' Z'; }
 function cuirScene(){
-  var q = 'M' + f1(xP(-118, 456)) + ',456 L' + f1(xP(118, 456)) + ',456 L' + f1(xP(118, 368)) + ',368 L' + f1(xP(-118, 368)) + ',368 Z', q2 = 'M' + f1(xP(-108, 449)) + ',449 L' + f1(xP(108, 449)) + ',449 L' + f1(xP(108, 375)) + ',375 L' + f1(xP(-108, 375)) + ',375 Z';
-  return '<g id="gLame" class="objet" data-act="lame" tabindex="0" role="button" aria-label="L\'échantillon numéro 1, sur le carré de cuir"><ellipse class="rond" cx="600" cy="412" rx="132" ry="56"/>' + ombre(604, 420, 122, 44, .3) +
-    P(q, G('cuir'), ' stroke-width="3.5"') + '<path d="' + q2 + '" fill="none" stroke="#6e4226" stroke-width="1.8" stroke-dasharray="6 5" opacity=".75"/><path d="' + q2 + '" fill="#fff" opacity=".06"/>' +
-    '<g transform="rotate(-6 536 392)">' + R(514, 382, 44, 20, 3, '#fff6d8', ' stroke-width="2.2"') + txt(536, 392.5, 12, 'n° 1') + '</g><g id="filLame"></g>' +
-    '<rect x="470" y="358" width="260" height="106" fill="transparent"/></g>';
+  var C = CUIR, q = quadPlat(C.X, C.y0, C.y1), q2 = quadPlat(C.X - 13, C.y0 + 9, C.y1 - 10), Rn = rng(77), i, x, y, d = '', d2 = '';
+  var s = '<g id="gLame" class="objet" data-act="lame" tabindex="0" role="button" aria-label="L\'échantillon numéro 1, sur le carré de cuir"><path class="rond" d="' + quadPlat(C.X + 12, C.y0 - 8, C.y1 + 12) + '" stroke-linejoin="round"/>' + ombre(606, 404, 194, 76, .34);
+  /* l'épaisseur de la peau, puis le dessus */
+  s += '<path d="' + quadPlat(C.X + .5, C.y0 + 6, C.y1 + 6) + '" fill="#7a5232" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/><clipPath id="clipCuir"><path d="' + q + '"/></clipPath>' + P(q, G('cuir'), ' stroke-width="3.5"') + '<g clip-path="url(#clipCuir)" pointer-events="none">';
+  /* les marbrures de la peau */
+  for(i = 0; i < 30; i++){ y = C.y0 + Rn()*(C.y1 - C.y0); x = xP((Rn()*2 - 1)*C.X, y); s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(16 + Rn()*34) + '" ry="' + f1(5 + Rn()*11) + '" fill="' + (Rn() < .55 ? '#8a5a30' : '#f6e0ba') + '" opacity="' + (.05 + Rn()*.08).toFixed(2) + '"/>'; }
+  /* le grain : de tout petits pores, des griffures */
+  for(i = 0; i < 420; i++){ y = C.y0 + Rn()*(C.y1 - C.y0); x = xP((Rn()*2 - 1)*C.X, y); if(i % 3) d += 'M' + f1(x) + ',' + f1(y) + 'h.1 '; else d2 += 'M' + f1(x) + ',' + f1(y) + 'h.1 '; }
+  s += '<path d="' + d + '" stroke="#6e4226" stroke-width="1.5" stroke-linecap="round" opacity=".34" fill="none"/><path d="' + d2 + '" stroke="#fff3d6" stroke-width="1.3" stroke-linecap="round" opacity=".3" fill="none"/>';
+  s += T('M452,352 q40,10 76,-2 M680,340 q26,16 60,8 M470,446 q54,-12 104,2 M640,452 q40,-8 96,4 M556,372 q8,20 -6,44 M700,388 q-10,22 6,40', '#7a4a28', 1.5, ' opacity=".3"') +
+    T('M453,354 q40,10 76,-2 M681,342 q26,16 60,8 M471,448 q54,-12 104,2 M641,454 q40,-8 96,4', '#fff3d6', 1.2, ' opacity=".28"') +
+    T('M520,430 l22,-9 M664,364 l16,7 l-4,6 M742,420 l-18,10', '#5a3418', 1.1, ' opacity=".35"');
+  /* les bords patinés, un reflet doux */
+  s += '<path d="' + q + '" fill="none" stroke="#7a4a28" stroke-width="20" opacity=".16"/><path d="' + q + '" fill="none" stroke="#5a3418" stroke-width="7" opacity=".14"/><ellipse cx="560" cy="372" rx="120" ry="30" fill="#fff" opacity=".06"/></g>';
+  /* la couture (le fil, et son ombre claire), les quatre rivets, la marque au fer */
+  s += '<path d="' + q2 + '" fill="none" stroke="#f6e3c0" stroke-width="2.2" stroke-dasharray="8 6" stroke-dashoffset="7" stroke-linecap="round" opacity=".4"/><path d="' + q2 + '" fill="none" stroke="#5a3418" stroke-width="2.2" stroke-dasharray="8 6" stroke-linecap="round" opacity=".85"/>';
+  [[-1, C.y0 + 9], [1, C.y0 + 9], [1, C.y1 - 10], [-1, C.y1 - 10]].forEach(function(c){ var rx = xP(c[0]*(C.X - 13), c[1]); s += Cir(rx, c[1], 4.6, G('laitonV'), ' stroke-width="2"') + '<circle cx="' + f1(rx - 1.2) + '" cy="' + (c[1] - 1.4) + '" r="1.3" fill="#fff" opacity=".7"/>'; });
+  s += '<g transform="translate(727,440) scale(.62)" opacity=".42" pointer-events="none"><path d="M-6,-16 l0,-12 l-4,0 l0,-4 l20,0 l0,4 l-4,0 l0,12 l10,18 q2,6 -5,6 l-22,0 q-7,0 -5,-6 Z" fill="none" stroke="#5a3418" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="-6" r="23" fill="none" stroke="#5a3418" stroke-width="2.4"/></g>';
+  s += '<g transform="rotate(-6 506 352)">' + '<rect x="481" y="341" width="54" height="26" rx="3" fill="rgba(40,20,8,.3)"/>' + R(479, 338, 54, 26, 3, '#fff6d8', ' stroke-width="2.4"') + txt(506, 351.5, 16, 'n° 1') + Cir(484.5, 351, 2, '#b3262f', ' stroke-width="1"') + '</g><g id="filLame"></g>' +
+    '<rect x="424" y="318" width="352" height="160" fill="transparent"/></g>';
+  return s;
 }
 function dessinerLame(){
   /* de loin, l'échantillon n'est qu'un tout petit trait : c'est la loupe qui montre ce que c'est */
-  var d = 'M592,416 q5,-4 10,0 t10,0 t9,-1', s = T(d, K, 4.6) + T(d, ROUGE, 2.2);
-  if(S.trouves.fil) s += '<text x="676" y="380" font-size="20" text-anchor="middle" dominant-baseline="central">✅</text>';
+  var d = 'M590,408 q5,-4 10,0 t10,0 t9,-1', s = '<ellipse cx="605" cy="411" rx="18" ry="3.5" fill="rgba(40,20,8,.28)"/>' + T(d, K, 4.6) + T(d, ROUGE, 2.2);
+  if(S.trouves.fil) s += '<text x="716" y="350" font-size="24" text-anchor="middle" dominant-baseline="central">✅</text>';
   var g = $('#filLame'); if(g) g.innerHTML = s;
 }
 /* Une coupelle de verre posée en (x, y) : la paroi, le fond, ce qu'il y a dedans, le bord épais, les reflets */
@@ -215,14 +264,15 @@ function dessinerCoupes(){
     if(c){ g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button'); g.setAttribute('aria-label', 'Coupelle : ' + OBJETS[c.t].nom); } else { g.removeAttribute('tabindex'); g.removeAttribute('role'); g.removeAttribute('aria-label'); }
   });
 }
-function posCible(){ if(S.sel === 'fil' || !S.sel) return {x:606, y:414}; var i = S.coupes.findIndex(function(c){ return c && c.t === S.sel; }); return {x:COUPES[i][0], y:COUPES[i][1] - 9}; }
+function posCible(){ if(S.sel === 'fil' || !S.sel) return {x:605, y:408}; var i = S.coupes.findIndex(function(c){ return c && c.t === S.sel; }); return {x:COUPES[i][0], y:COUPES[i][1] - 9}; }
 function dessinerScene(){
   var s = defs() + mur() + plateau();
-  s += '<g id="tir-g" data-act="tiroir" data-outil="tiroir" data-t="g" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.g.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>' +
-       '<g id="tir-d" data-act="tiroir" data-outil="tiroir" data-t="d" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.d.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>';
+  s += '<g id="tir-g" data-act="tiroir" data-t="g" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.g.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>' +
+       '<g id="tir-d" data-act="tiroir" data-t="d" tabindex="0" role="button" aria-label="Tiroir : ' + TIROIRS.d.map(function(k){ return CASIERS[k]; }).join(', ') + '"></g>';
   /* sur le plateau, du fond vers le devant */
-  s += bougieScene() + ardoiseScene() + etagere() + microscopeScene() + testScene() + cuirScene() + loupeScene();
+  s += bougieScene() + etagere() + ardoiseScene() + microscopeScene() + testScene() + cuirScene();
   COUPES.forEach(function(q, i){ s += '<g data-act="coupe" data-i="' + i + '" id="coupe' + i + '"></g>'; });
+  s += loupeScene();     /* en dernier : quand elle s'envole, la loupe passe par-dessus tout, coupelles comprises */
   /* la pipette et la pince (cachées : elles servent aux expériences) */
   s += '<g id="pipette" style="display:none">' + R(-6, -84, 12, 72, 5, 'rgba(220,245,255,.85)', ' stroke-width="3"') + P('M-11,-110 C-11,-127 11,-127 11,-110 L8,-84 L-8,-84 Z', '#d9603a', ' stroke-width="3"') + '<rect id="pipLiq" x="-3.5" y="-40" width="7" height="26" fill="#9fd8ff"/></g>';
   s += '<g id="goutte" style="display:none"><path d="M0,-10 C6,-1 7,5 0,10 C-7,5 -6,-1 0,-10 Z" stroke="' + K + '" stroke-width="2"/></g>';

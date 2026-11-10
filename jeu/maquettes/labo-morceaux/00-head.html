@@ -53,7 +53,10 @@ body:not(.choisi) .objet .rond{opacity:.9; animation:rond 1.4s ease-in-out infin
 [data-outil].non{filter:grayscale(1) brightness(.72); opacity:.6; cursor:not-allowed}
 /* dans un gros plan, seuls brillent ce qu'on peut toucher là : les tiroirs sous la loupe, la molette du microscope */
 body.ouvert .rond{opacity:0!important; animation:none!important}
-body.m-loupe [data-outil="tiroir"]:not(.tire) .rond, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
+body.m-loupe [data-act="tiroir"]:not(.tire) .rond, body.m-loupe .rond-casier, body.m-micro .toujours-micro{opacity:1!important; animation:rond 1.2s ease-in-out infinite!important}
+.rond-casier{stroke-width:3}
+#gArdoise.pret .rond{opacity:1; animation:rond 1.4s ease-in-out infinite}
+#gArdoise:not(.pret){cursor:default}
 body.m-micro .toujours-micro{stroke-width:2.5}
 body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 @keyframes rond{0%,100%{opacity:.3} 50%{opacity:1}}
@@ -63,7 +66,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 @keyframes vapeur{0%{opacity:0; transform:translateY(8px)} 40%{opacity:.75} 100%{opacity:0; transform:translateY(-22px)}}
 .secoue-svg{animation:secoueV .45s; transform-box:fill-box}
 @keyframes secoueV{0%,100%{transform:none} 20%{transform:translateX(-10px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)}}
-#ardoise .chiffres{animation:craie 1.6s ease-in-out infinite alternate}
+#ardoise .formes{animation:craie 1.6s ease-in-out infinite alternate}
 @keyframes craie{from{opacity:.75} to{opacity:1}}
 .obj{opacity:.55; transition:opacity .3s} .obj.actif{opacity:1}
 .num.actif text{fill:#b3262f}
@@ -74,15 +77,13 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .bulle-o::after{content:""; position:absolute; left:50%; bottom:-11px; width:16px; height:16px; background:var(--parchemin); border-right:3px solid var(--K); border-bottom:3px solid var(--K); transform:translateX(-50%) rotate(45deg)}
 @keyframes pop{from{opacity:0; transform:translate(-50%, calc(-100% - 2px)) scale(.8)} to{opacity:1}}
 
-/* Mimi (le dessin du jeu) : il guette au bord de la paillasse et saute dessus quand on l'appelle */
-.mimi{position:absolute; width:15.5%; pointer-events:auto; cursor:pointer; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
+/* Mimi (le dessin du jeu) : il guette au bord de la paillasse ; parfois il saute dessus et s'assoit sur l'échantillon (on le chasse ou on le porte) */
+.mimi{position:absolute; width:calc(15.5%*var(--taille, 1)); pointer-events:auto; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; transform:translate(-50%, -93%) rotate(var(--tangage, 0deg)); z-index:4}
+.mimi.porte{cursor:grabbing; z-index:6; filter:drop-shadow(0 calc(14*var(--u)) calc(8*var(--u)) rgba(0,0,0,.35))}
 .mimi svg{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 100%}
 .cadre.ouvert .mimi{display:none}
 .mimi.elan svg{scale:1.06 .84}
-.mimi.saut .at-ombre, .mimi:not(.saut):not(.renifle) .at-ombre{opacity:0}
-.mimi.renifle .at-c-tete{transform-origin:50% 100%; animation:renifle .26s ease-in-out infinite alternate}
-@keyframes renifle{from{transform:rotate(8deg) translateY(1px)} to{transform:rotate(15deg) translateY(5px)}}
-.mimi.pret::after{content:""; position:absolute; left:50%; top:2%; width:74%; height:48%; transform:translateX(-50%); border:3px solid #ffd36a; border-radius:50%; box-shadow:0 0 8px rgba(255,211,106,.85); animation:rond 1.2s ease-in-out infinite; pointer-events:none}
+.mimi .at-ombre{opacity:0}
 .mimi .dit{position:absolute; bottom:104%; left:50%; transform:translateX(-50%); background:var(--parchemin); color:var(--encre); border:2px solid var(--K); font-family:var(--f-main); font-size:max(15px, calc(24*var(--u))); font-weight:700; padding:0 10px; border-radius:12px; white-space:nowrap; opacity:0; transition:opacity .2s; pointer-events:none; z-index:2}
 .mimi .dit.on{opacity:1}
 .coeur-v{position:absolute; left:50%; top:0; font-size:20px; animation:coeurV 1.2s ease-out forwards; pointer-events:none}
@@ -147,7 +148,8 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .verre-hud.faux .anneau{stroke:rgba(240,84,84,.95)}
 .verre-hud.faux canvas, .bande-hud.faux canvas{animation:secoueV .45s}
 /* Dans le tiroir ouvert : les trois casiers, puis les échantillons */
-.onglets{display:flex; gap:calc(10*var(--u)); align-items:stretch}
+.onglets{display:flex; gap:calc(10*var(--u)); align-items:stretch; pointer-events:none}
+.onglets > *{pointer-events:auto}
 .onglet{display:flex; align-items:center; gap:calc(7*var(--u)); padding:0 calc(18*var(--u)); border:calc(3*var(--u)) solid var(--K); border-radius:calc(11*var(--u)); background:#fff6d8; color:var(--encre); font-family:var(--f-main); font-weight:700; font-size:calc(27*var(--u)); line-height:1; cursor:pointer; box-shadow:0 calc(3*var(--u)) 0 rgba(0,0,0,.35)}
 .onglet svg{width:calc(38*var(--u)); height:calc(32*var(--u)); flex:none}
 .onglet[aria-pressed="true"]{background:var(--or)}
@@ -197,7 +199,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .tourne span{font-size:74px; animation:tourne 2.4s ease-in-out infinite}
 @keyframes tourne{0%,30%{rotate:0deg} 60%,100%{rotate:-90deg}}
 @media (orientation:portrait) and (max-width:620px){ .tourne{display:grid} }
-@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .chiffres,.zoom-plaque,.tourne span{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
+@media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .formes,.zoom-plaque,.tourne span{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
 </style>
 
 <div class="app">
@@ -205,7 +207,7 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
     <h1 class="sr">Le labo de l'Alchimiste</h1>
     <button type="button" id="bReglages" aria-label="Les réglages de la maquette">Maquette ⚙️</button>
     <div class="reglages" id="reglages" hidden>
-      <div class="ligne"><button type="button" id="nvF" aria-pressed="true">Enquête 1</button><button type="button" id="nvD" aria-pressed="false">Plus difficile</button><button type="button" id="bRecommencer" aria-label="Recommencer">🔁</button><button type="button" id="bPlein" aria-label="Plein écran" hidden>⛶</button></div>
+      <div class="ligne"><button type="button" id="nvF" aria-pressed="true">Enquête 1</button><button type="button" id="nvD" aria-pressed="false">Plus difficile</button><button type="button" id="bRecommencer" aria-label="Recommencer">🔁</button><button type="button" id="bPlein" aria-label="Plein écran" hidden>⛶</button><button type="button" id="bSon" aria-pressed="true" aria-label="Les sons">🔈 Sons</button></div>
       <div class="ligne"><span>Paillasse</span><button type="button" data-style="paF" id="stPaF">établi de bois</button><button type="button" data-style="paT" id="stPaT">naturel</button></div>
       <div class="ligne"><span>Mur</span><button type="button" data-style="murF" id="stMurF">pierres</button><button type="button" data-style="murT" id="stMurT">naturel</button></div>
     </div>

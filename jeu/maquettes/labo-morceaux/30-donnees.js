@@ -132,7 +132,7 @@ var BOCAUX = [
   {k:'vinaigre', x:680, nom:['Vinaigre'], liq:'#efe1a0', a:.8},
   {k:'bicar', x:760, nom:['Bicar-','bonate'], poudre:true}
 ];
-BOCAUX.forEach(function(b){ b.y = 232; });
+BOCAUX.forEach(function(b){ b.y = YBOC; });
 var TACHE = {eau:'rgba(140,200,255,.55)', chaude:'rgba(140,200,255,.55)', iode:'rgba(205,115,30,.65)', vinaigre:'rgba(240,225,150,.6)', bicar:'rgba(255,255,255,.8)'};
 var RIEN = {t:'Rien à signaler.'};
 function rea(o){ var r = {eau:RIEN, chaude:RIEN, iode:RIEN, vinaigre:RIEN, bicar:RIEN, flamme:RIEN}; for(var k in o) r[k] = o[k]; return r; }
@@ -150,18 +150,21 @@ var REA = {
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
    Chaque teinture a ses bandes à elle (y : la hauteur où la bande s'arrête, de 0 en bas à 1 en haut ; h : son épaisseur). */
 var TEINTES = [
-  {k:'garance', nom:'racine de garance', c:'#c8503c', b:[{c:'#f0c060', y:.88, h:.05, a:.55}, {c:'#e2553a', y:.66, h:.11}, {c:'#d43a6a', y:.4, h:.09}]},
-  {k:'coquelicot', nom:'coquelicot', c:'#e8343c', b:[{c:'#e8343c', y:.56, h:.14}, {c:'#8a3a9a', y:.3, h:.07}]},
-  {k:'betterave', nom:'betterave', c:'#9c2257', b:[{c:'#f0c838', y:.8, h:.08}, {c:'#b0206a', y:.5, h:.15}]},
-  {k:'cochenille', nom:'cochenille', c:'#c9306a', b:[{c:'#c9306a', y:.27, h:.17}]},
-  {k:'mure', nom:'mûres', c:'#4a2a5c', b:[{c:'#7a3aa0', y:.62, h:.1}, {c:'#3a2a6a', y:.38, h:.12}]},
-  {k:'oignon', nom:'pelure d\'oignon', c:'#d98a2c', b:[{c:'#e8b830', y:.74, h:.12}, {c:'#a8642a', y:.15, h:.08}]},
-  {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.84, h:.14}]},
-  {k:'noix', nom:'brou de noix', c:'#6a4a2c', b:[{c:'#c8a040', y:.7, h:.07}, {c:'#6a4a2c', y:.17, h:.14}]}
+  {k:'garance', nom:'racine de garance', c:'#c8503c', b:[{c:'#f0c060', y:.90, h:.05, a:.6}, {c:'#e2553a', y:.70, h:.09}, {c:'#d43a6a', y:.42, h:.08}]},
+  {k:'coquelicot', nom:'coquelicot', c:'#e8343c', b:[{c:'#e8343c', y:.56, h:.09}, {c:'#8a3a9a', y:.26, h:.07}]},
+  {k:'betterave', nom:'betterave', c:'#9c2257', b:[{c:'#f0c838', y:.78, h:.06}, {c:'#b0206a', y:.50, h:.10}]},
+  {k:'cochenille', nom:'cochenille', c:'#c9306a', b:[{c:'#c9306a', y:.33, h:.13}]},
+  {k:'mure', nom:'mûres', c:'#4a2a5c', b:[{c:'#7a3aa0', y:.62, h:.08}, {c:'#3a2a6a', y:.18, h:.09}]},
+  {k:'oignon', nom:'pelure d\'oignon', c:'#d98a2c', b:[{c:'#e8b830', y:.80, h:.07}, {c:'#a8642a', y:.14, h:.07}]},
+  {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.86, h:.11}]},
+  {k:'noix', nom:'brou de noix', c:'#6a4a2c', b:[{c:'#c8a040', y:.66, h:.07}, {c:'#6a4a2c', y:.20, h:.11}]}
 ];
 function teinte(k){ return TEINTES.filter(function(t){ return t.k === k; })[0]; }
-var CIBLES = {facile:['garance'], difficile:['garance','cochenille']};
-var TXT = {trop:'Trop petit : zoome !', pris:'Dans la coupelle !', mite:'L\'acarien file se cacher entre les fibres !', code:'482'};
+/* Une teinture est souvent un mélange : la bandelette montre alors les bandes de tous ses ingrédients, et chaque bande doit trouver le sien */
+var CIBLES = {facile:['garance','coquelicot'], difficile:['garance','coquelicot','oignon']};
+/* Les bandes de la bandelette à analyser, du haut vers le bas, avec l'ingrédient qui les explique */
+function bandesMelange(){ var l = []; CIBLES[S.niveau].forEach(function(k){ teinte(k).b.forEach(function(b){ l.push({k:k, y:b.y, h:b.h, c:b.c}); }); }); return l.sort(function(a, b){ return b.y - a.y; }); }
+var TXT = {trop:'Trop petit : zoome !', pris:'Dans la coupelle !', mite:'L\'acarien file se cacher entre les fibres !', code:['🍄','🎩','🔑']};
 
 /* ============ État ============ */
 var S;
@@ -172,12 +175,3 @@ function neuf(niveau){
 }
 function couleurDe(liste){ var acc = [0,0,0]; liste.forEach(function(k){ var c = hexRgb(teinte(k).c); for(var j=0;j<3;j++) acc[j] += c[j]; }); return rgbHex(acc.map(function(v){ return v/liste.length; })); }
 function couleurRouge(){ return couleurDe(CIBLES[S.niveau]); }
-/* Ce que Mimi écarte en reniflant : la moitié des mauvaises réponses, jamais celles qui ressemblent le plus à la bonne */
-function flairer(t){
-  var o = OBJETS[t], Rn = rng(t.length*31 + 7), faux, m = {}, v = o.voisins || [], pref = o.liquide ? '' : o.tiroir + ':';
-  if(o.liquide) faux = TEINTES.map(function(i){ return i.k; }).filter(function(k){ return CIBLES[S.niveau].indexOf(k) < 0; });
-  else faux = contenuCasier(o.tiroir).filter(function(k){ return k !== o.bon; });
-  var loin = faux.filter(function(k){ return v.indexOf(k) < 0; }).map(function(k){ return [Rn(), k]; }).sort(function(a, b){ return a[0] - b[0]; });
-  loin.slice(0, Math.floor(faux.length/2)).forEach(function(q){ m[pref + q[1]] = true; });
-  return m;
-}

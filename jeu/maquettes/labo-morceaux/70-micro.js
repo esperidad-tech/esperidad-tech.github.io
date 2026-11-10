@@ -76,25 +76,29 @@ function majMolette(){
 }
 function ouvrirMicro(){
   if(S.occupe) return; S.zoom = 10; S.cx = 500; S.cy = 500;
-  ouvrirMode('micro', '<div class="oculaire-hud" id="ocuHud" style="' + pos(42, 70, 500, 500) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
-    '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(24, 12, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
-  camera(783, 283, 1.749); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
+  ouvrirMode('micro', '<div class="oculaire-hud" id="ocuHud" style="' + pos(8, 22, 596, 596) + '"><canvas id="lentille" aria-label="L\'échantillon au microscope"></canvas>' + svgOculaire() + '</div>' +
+    '<button type="button" class="zoom-plaque pose" id="zoomTxt" data-act="molette" style="' + pos(14, 8, 124, 58) + '" aria-label="Changer de grossissement">×10</button><div class="pince-c" id="pinceC" hidden>' + svgPince() + '</div>');
+  camera(819, 287, 1.62); majMolette(); brancherLentille(); requestAnimationFrame(rendLentille); lancerBoucle();
 }
 function lancerBoucle(){ cancelAnimationFrame(boucle); if(S.mode === 'micro' && !reduit){ var f = function(){ rendLentille(); boucle = requestAnimationFrame(f); }; boucle = requestAnimationFrame(f); } }
+/* Sur un grand écran, l'image du microscope grossit avec l'oculaire (sur un téléphone ou une tablette : un point = un point) */
+function echL(T0){ return Math.max(1, T0/560); }
 function rendLentille(){
-  var cv = $('#lentille'); if(!cv) return; var r = prep(cv), c = r.ctx, T0 = r.w, half = T0/2, now = performance.now();
+  var cv = $('#lentille'); if(!cv) return; var r = prep(cv), c = r.ctx, T0 = r.w, k = echL(T0), vis = T0/k, half = vis/2, now = performance.now();
   S.cx = Math.min(Math.max(S.cx, half), MW - half); S.cy = Math.min(Math.max(S.cy, half), MW - half); var sx = S.cx - half, sy = S.cy - half;
-  c.clearRect(0,0,T0,T0); c.save(); c.beginPath(); c.arc(half, half, half, 0, 6.283); c.clip();
-  c.drawImage(scenes[S.zoom], sx*SDPR, sy*SDPR, T0*SDPR, T0*SDPR, 0, 0, T0, T0);
+  c.clearRect(0,0,T0,T0); c.save(); c.beginPath(); c.arc(T0/2, T0/2, T0/2, 0, 6.283); c.clip();
+  c.save(); c.scale(k, k);
+  c.drawImage(scenes[S.zoom], sx*SDPR, sy*SDPR, vis*SDPR, vis*SDPR, 0, 0, vis, vis);
   S.items[S.zoom].forEach(function(it){ if(!it.pris) dessinerItem(c, it, it.x - sx, it.y - sy, now); });
   if(S.zoom === 100) dessinerMite(c, S.mite.x - sx, S.mite.y - sy, now);
-  var vg = c.createRadialGradient(half, half, half*.7, half, half, half); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.55)'); c.fillStyle = vg; c.fillRect(0,0,T0,T0); c.restore();
+  c.restore();
+  var vg = c.createRadialGradient(T0/2, T0/2, T0*.35, T0/2, T0/2, T0/2); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.55)'); c.fillStyle = vg; c.fillRect(0,0,T0,T0); c.restore();
 }
 function brancherLentille(){
   var cv = $('#lentille'), pc = $('#pinceC'), boite = $('#hudBoite'), gl = null;
   var suivre = function(e){ var v = boite.getBoundingClientRect(); pc.hidden = false; pc.style.left = (e.clientX - v.left) + 'px'; pc.style.top = (e.clientY - v.top) + 'px'; };
   cv.addEventListener('pointerdown', function(e){ cv.setPointerCapture(e.pointerId); gl = {x:e.clientX, y:e.clientY, cx:S.cx, cy:S.cy, bouge:false}; suivre(e); });
-  cv.addEventListener('pointermove', function(e){ suivre(e); if(!gl) return; var dx = e.clientX - gl.x, dy = e.clientY - gl.y; if(Math.hypot(dx,dy) > 9) gl.bouge = true; if(gl.bouge){ S.cx = gl.cx - dx; S.cy = gl.cy - dy; rendLentille(); } });
+  cv.addEventListener('pointermove', function(e){ suivre(e); if(!gl) return; var dx = e.clientX - gl.x, dy = e.clientY - gl.y; if(Math.hypot(dx,dy) > 9) gl.bouge = true; if(gl.bouge){ var k = echL(cv.getBoundingClientRect().width); S.cx = gl.cx - dx/k; S.cy = gl.cy - dy/k; rendLentille(); } });
   cv.addEventListener('pointerup', function(e){ if(gl && !gl.bouge){ var r = cv.getBoundingClientRect(); toucherLentille(e.clientX - r.left, e.clientY - r.top, r.width, e.clientX, e.clientY); } gl = null; if(e.pointerType !== 'mouse') setTimeout(function(){ pc.hidden = true; }, 500); });
   cv.addEventListener('pointerleave', function(){ if(!gl) pc.hidden = true; });
   cv.addEventListener('pointercancel', function(){ gl = null; pc.hidden = true; });
@@ -104,19 +108,19 @@ function bulleLentille(gx, gy, t){
   b.style.left = (gx - r.left) + 'px'; b.style.top = (gy - r.top) + 'px'; v.appendChild(b); setTimeout(function(){ b.remove(); }, 1700);
 }
 function toucherLentille(lx, ly, T0, gx, gy){
-  var half = T0/2; if(Math.hypot(lx - half, ly - half) > half) return;
-  var wx0 = S.cx - half + lx, wy0 = S.cy - half + ly, marge = Math.max(16, T0*.045);
-  if(S.zoom === 100 && Math.hypot(S.mite.x - wx0, S.mite.y - wy0) < 42){ S.mite = {x:150 + Math.random()*700, y:150 + Math.random()*700}; bulleLentille(gx, gy, TXT.mite); return; }
+  var half = T0/2, k = echL(T0); if(Math.hypot(lx - half, ly - half) > half) return;
+  var wx0 = S.cx + (lx - half)/k, wy0 = S.cy + (ly - half)/k, marge = Math.max(16, T0*.045)/k;
+  if(S.zoom === 100 && Math.hypot(S.mite.x - wx0, S.mite.y - wy0) < 42){ S.mite = {x:150 + Math.random()*700, y:150 + Math.random()*700}; son('acarien'); bulleLentille(gx, gy, TXT.mite); return; }
   var it = S.items[S.zoom].filter(function(i){ return !i.pris && Math.hypot(i.x - wx0, i.y - wy0) < i.r + marge; })[0];
   if(!it) return;
-  if(it.min && it.min > S.zoom){ bulleLentille(gx, gy, TXT.trop); var pc = $('#pinceC'); pc.classList.remove('non'); void pc.offsetWidth; pc.classList.add('non'); secouer($('#moletteG')); return; }
+  if(it.min && it.min > S.zoom){ son('tropPetit'); bulleLentille(gx, gy, TXT.trop); var pc = $('#pinceC'); pc.classList.remove('non'); void pc.offsetWidth; pc.classList.add('non'); secouer($('#moletteG')); return; }
   it.pris = true; if(it.id) [10, 40].forEach(function(z){ S.items[z].forEach(function(i){ if(i.ref === it.id) i.pris = true; }); });
-  var idx = ajouterCoupe(it.t); rendLentille(); bulleLentille(gx, gy, TXT.pris); envoler(it.t, gx, gy, idx);
+  var idx = ajouterCoupe(it.t); son('prise'); rendLentille(); bulleLentille(gx, gy, TXT.pris); envoler(it.t, gx, gy, idx);
 }
 function ajouterCoupe(t){ var i = S.coupes.findIndex(function(c){ return c && c.t === t; }); if(i >= 0){ S.coupes[i].n++; return i; } for(i = 0; i < COUPES.length - 1 && S.coupes[i]; i++){} S.coupes[i] = {t:t, n:1}; return i; }
 /* La pince attrape le grain et le porte jusqu'à sa coupelle, qui est restée à sa place sur la paillasse */
 function envoler(t, gx, gy, idx){
-  var cible = $('#coupe' + idx), fin = function(){ dessinerCoupes(); dessinerLame(); };
+  var cible = $('#coupe' + idx), fin = function(){ son('coupelle'); dessinerCoupes(); dessinerLame(); };
   if(!cible || reduit){ fin(); return; }
   var pc = $('#pinceC'); if(pc) pc.hidden = true;
   var v = document.createElement('div'); v.className = 'vol pince-vol'; v.innerHTML = svgPince('<g transform="translate(6,74)">' + contenuCoupe(t, 0, 0, 1, 26) + '</g>'); document.body.appendChild(v);
@@ -125,7 +129,7 @@ function envoler(t, gx, gy, idx){
   setTimeout(function(){ v.remove(); fin(); }, 760);
 }
 function changerZoom(z){
-  if(z === S.zoom || S.mode !== 'micro') return; var rx = S.cx/MW, ry = S.cy/MW; S.zoom = z; S.cx = rx*MW; S.cy = ry*MW; majMolette();
+  if(z === S.zoom || S.mode !== 'micro') return; var rx = S.cx/MW, ry = S.cy/MW; S.zoom = z; S.cx = rx*MW; S.cy = ry*MW; son('molette'); majMolette();
   var cv = $('#lentille'); if(cv && !reduit){ cv.classList.add('flou'); setTimeout(function(){ cv.classList.remove('flou'); }, 240); }
   rendLentille(); lancerBoucle();
 }
