@@ -62,7 +62,8 @@
    {t:'dague', heros:'pisteur', bete:'b1'}
    {t:'potion', heros:'alchimiste', recette:'feu', bete:'b1'}         ou heros2:'sage' (Baume, Cœur vaillant), salle:true (Fumigène), equipe:true (Baume lumineux)
    {t:'louche', heros:'alchimiste', bete:'b1'}      le BONG ; bete : celle de devant, qui prend le coup (ou null) ; le bruit suit pour toutes
-   {t:'herbes', heros:'alchimiste', heros2:'pisteur'}
+   {t:'herbes', heros:'alchimiste', equipe:true}             les herbes : un petit soin pour chaque héros debout (un {t:'soin'} par héros suit)
+   {t:'appel', heros:'sage', bete:'b2', ordre:['b2', 'b1']}   la rune d'appel : cette bête passe devant ; ordre : les vivantes, de devant à derrière
    {t:'rune', heros:'sage', bete:'b1'}              ou salle:true avec le cristal de lune
    {t:'pose-bouclier', heros:'sage', cibles:['pisteur']}              deux cibles avec le bâton de chêne
    {t:'oeil', heros:'sage', jusque:3, plans:[{bete, dans:0|1, attaque, cibles, degats, fois, prepare, gros}]}   la rune de l'œil
@@ -197,7 +198,9 @@ function importer(txt){
 /* les potions de l'Alchimiste, dans l'ordre de l'étagère */
 function potions(p){ return D.ORDRE_RECETTES.filter(function(r){ return (p.recettes || []).indexOf(r) >= 0; }); }
 /* les objets qui prennent une place dans les mains (les carquois n'en prennent pas : le Pisteur les porte tous) */
-function enMains(l){ return (l || []).filter(function(o){ return !(D.OBJETS[o] && D.OBJETS[o].carquois); }); }
+/* (un carquois et une arme ne prennent pas de place : on les porte tous, et on choisit en combat) */
+function sansPlace(o){ return !!(D.OBJETS[o] && (D.OBJETS[o].carquois || D.OBJETS[o].arme)); }
+function enMains(l){ return (l || []).filter(function(o){ return !sansPlace(o); }); }
 
 /* les monstres rencontrés : p.livre[monstre] = 0. Romain, 11 novembre : plus d'« étude » dans le donjon. Le carnet d'un
    aventurier, ramassé à l'entrée, donne toutes les pages au Sage ; en combat, sa rune de l'œil dit qui sera frappé, et de
@@ -288,6 +291,9 @@ P.cache = function(m){ return this._un(m, m.def.cache); };                      
 P.ciblables = function(){ var self = this; return this.vivants().filter(function(m){ return !self.cache(m); }); };
 P.devant = function(){ return this.ciblables()[0] || null; };                      /* la bête de devant */
 /* à portée de dague : la bête de devant, et celles qui sont tombées devant */
+/* ceux que la rune d'appel peut amener devant : ils marchent par terre (ni vol, ni fil, ni eau), on peut les viser, et ils
+   ne sont pas déjà devant */
+P.appelables = function(){ var d = this.devant(); return this.ciblables().filter(function(m){ return m !== d && !m.def.hauteur; }); };
 P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblables().filter(function(m){ return m === d || self._un(m, m.def.tombe); }); };
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
@@ -301,6 +307,8 @@ P.gestes = function(h){
   if(H.avale) return [{geste:'chatouiller', nom:D.GESTES.chatouiller.nom, vise:'salle', permis:true, mot:null, cibles:[], max:0}];
   var cib = ids(this.ciblables()), amis = this.visables(), auSol = D.ORDRE.filter(function(x){ return self.h[x].sol; });
   function g(geste, nom, vise, cibles, permis, mot, max){ l.push({geste:geste, nom:nom, vise:vise, permis:permis, mot:permis ? null : mot, cibles:cibles, max:max == null ? (vise === 'salle' || vise === 'equipe' ? 0 : 1) : max}); }
+  /* les armes que ce héros porte et qui changent ce geste : une carte de plus par arme (« a:<objet> ») */
+  function armes(base, fn){ H.objets.forEach(function(o){ var O = D.OBJETS[o]; if(O && O.arme && O.carte && O.carte.base === base) fn('a:' + o, O); }); }
   D.HEROS[h].gestes.forEach(function(id){
     var G = D.GESTES[id];
     if(id === 'fleche'){
@@ -309,17 +317,24 @@ P.gestes = function(h){
       if(h === 'pisteur') self._carquoisPortes().forEach(function(o){ g('f:' + o, D.OBJETS[o].court || D.OBJETS[o].nom, 'bete', cib, cib.length > 0, self._motCache()); });
     }
     else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motCache()); }
-    else if(id === 'oeil'){        /* la rune de l'œil : refusée si le Sage voit déjà le tour suivant */
-      var deja = self.vu > self.tour;
+    else if(id === 'oeil'){        /* la rune de l'œil : une fois lancée, elle dure tout le combat (« Il voit tout ») */
+      var deja = self.vu >= self.tour;
       g(id, G.nom, 'salle', [], !deja && self.vivants().length > 0, deja ? MOTS.vu : MOTS.fini);
     }
     else if(id === 'rune'){
-      if(self.porte('sage', 'cristal-lune')) g(id, G.nom, 'salle', [], true, null);
-      else g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+      g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+      armes(id, function(a, O){ g(a, G.nom, 'salle', [], true, null); });               /* avec le bâton de lune (le cristal) : toute la salle */
     }
-    else if(id === 'bouclier') g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, self.porte('sage', 'baton-chene') ? 2 : 1);
+    else if(id === 'bouclier'){
+      g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, 1);
+      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : deux amis */
+    }
+    else if(id === 'appel'){       /* la rune d'appel : un monstre qui marche par terre, et qui n'est pas déjà devant */
+      var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return !x.def.hauteur; });
+      g(id, G.nom, 'bete', loin, loin.length > 0, parTerre ? MOTS.devant : cib.length ? MOTS.pasLui : self._motCache());
+    }
     else if(id === 'louche') g(id, G.nom, 'salle', [], true, null);
-    else if(id === 'herbes') g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne);
+    else if(id === 'herbes') g(id, G.nom, 'equipe', [], amis.length > 0, MOTS.personne);
   });
   if(D.HEROS[h].sac) this.sac.forEach(function(rid){
     var r = D.RECETTES[rid], geste = 'p:' + rid;
@@ -359,7 +374,7 @@ P.refus = function(h, geste, cible){
   if(H.avale && geste !== 'chatouiller') return MOTS.avale;
   var l = this.gestes(h), g = null;
   for(var i = 0; i < l.length; i++) if(l[i].geste === geste) g = l[i];
-  if(!g) return geste && (geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] || geste.indexOf('f:') === 0 && D.OBJETS[geste.slice(2)]) ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : MOTS.impossible;
+  if(!g) return geste && (geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] || geste.indexOf('f:') === 0 && D.OBJETS[geste.slice(2)]) ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : geste && geste.indexOf('a:') === 0 && D.OBJETS[geste.slice(2)] ? MOTS.absent : MOTS.impossible;
   if(!g.permis) return g.mot;
   if(g.vise === 'salle' || g.vise === 'equipe') return null;
   var c = Array.isArray(cible) ? cible : [cible];
@@ -374,6 +389,7 @@ P.refus = function(h, geste, cible){
     var m = this.bete(c[k]);
     if(!m || m.mort) return MOTS.fini;
     if(this.cache(m)) return m.e.sous !== undefined ? MOTS.eau : MOTS.haut;
+    if(geste === 'appel') return m === this.devant() ? MOTS.devant : MOTS.pasLui;       /* déjà devant, ou il vole, pend ou nage */
     return MOTS.loin;
   }
   return null;
@@ -533,13 +549,18 @@ P.jouer = function(h, a){
   var m = this.bete(cibles[0]), H = this.h[h];
 
   if(geste === 'oeil') this._oeil(ev, h);
-  else if(geste === 'rune'){
-    if(this.porte('sage', 'cristal-lune')){
-      ev.push({t:'rune', heros:h, salle:true});
-      this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'lumiere', {heros:h}); });
-    } else { ev.push({t:'rune', heros:h, bete:m.id}); this._pouvoir(ev, m, 'lumiere', {heros:h}); }
+  else if(geste === 'rune'){ ev.push({t:'rune', heros:h, bete:m.id}); this._pouvoir(ev, m, 'lumiere', {heros:h}); }
+  else if(geste === 'a:cristal-lune'){
+    ev.push({t:'rune', heros:h, salle:true});
+    this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'lumiere', {heros:h}); });
   }
-  else if(geste === 'bouclier'){
+  else if(geste === 'appel'){
+    /* le monstre appelé passe devant tous les autres (il devient celui que la dague et la louche touchent) */
+    var premier = this.b.indexOf(this.vivants()[0]);
+    this.b.splice(this.b.indexOf(m), 1); this.b.splice(premier, 0, m);
+    ev.push({t:'appel', heros:h, bete:m.id, ordre:ids(this.vivants())});
+  }
+  else if(geste === 'bouclier' || geste === 'a:baton-chene'){
     ev.push({t:'pose-bouclier', heros:h, cibles:cibles.slice()});
     cibles.forEach(function(x){ self.h[x].bouclier = true; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1}); });
   }
@@ -551,8 +572,9 @@ P.jouer = function(h, a){
     this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'bruit', {heros:h}); });
   }
   else if(geste === 'herbes'){
-    ev.push({t:'herbes', heros:h, heros2:cibles[0]});
-    this._soin(ev, cibles[0], C.herbes, 'herbes');
+    /* les herbes : un petit soin pour chaque héros debout (le baume, lui, soigne beaucoup un seul ami) */
+    ev.push({t:'herbes', heros:h, equipe:true});
+    this.visables().forEach(function(x){ self._soin(ev, x, C.herbes, 'herbes'); });
   }
   else if(geste === 'fleche') this._fleche(ev, m, null, null);
   else if(geste.indexOf('f:') === 0) this._fleche(ev, m, null, D.OBJETS[geste.slice(2)]);
@@ -730,12 +752,13 @@ P._prevu = function(m, plan){
   return {attaque:plan.nom, cibles:plan.cibles.slice(), degats:plan.prepare ? 0 : d, fois:fois, prepare:!!plan.prepare, gros:!!A.prepare};
 };
 /* LA RUNE DE L'ŒIL (Romain, 11 novembre) : le Sage voit, pour ce tour et le suivant, qui chaque monstre va frapper et combien.
-   Sans elle, personne ne le sait (etat() ne le dit pas). */
+   Sans elle, personne ne le sait (etat() ne le dit pas). Depuis 16 h 07 : lancée une fois, elle dure tout le combat (TOUJOURS). */
+var TOUJOURS = 9999;
 P._oeil = function(ev, h){
   var self = this;
   this.vivants().forEach(function(m){ if(!m.suite) m.suite = self._prevoir(m); });
-  this.vu = this.tour + 1;
-  ev.push({t:'oeil', heros:h, jusque:this.vu, plans:this.intentions()});
+  this.vu = TOUJOURS;
+  ev.push({t:'oeil', heros:h, jusque:'fin', plans:this.intentions()});
 };
 /* ce que le Sage voit en ce moment : [{bete, dans:0 (ce tour) | 1 (le suivant), attaque, cibles, degats, fois, prepare, gros}] */
 P.intentions = function(){
@@ -762,6 +785,8 @@ P._nouveauTour = function(ev){
     if(m.def.attaques[p.nom].prepare && !self.a(m, 'prepare')){ m.e.prepare = FIN; ev.push({t:'etat', bete:m.id, nom:'prepare', on:true, tours:'fin'}); }
     ev.push({t:'vise', bete:m.id, attaque:p.nom, cibles:p.cibles.slice(), prepare:!!p.prepare});
   });
+  /* l'œil ouvert : le Sage voit aussi le tour d'après (la proie est tirée au sort maintenant, et reprise telle quelle) */
+  if(this.vu > this.tour) this.vivants().forEach(function(m){ if(!m.suite) m.suite = self._prevoir(m); });
   D.ORDRE.forEach(function(h){ if(self.h[h].entoile && !self.h[h].sol) ev.push({t:'passe', heros:h, mot:MOTS.entoile}); });
   this._sauveGraine();
 };
@@ -990,8 +1015,8 @@ function entrer(p, lieu){
 function donner(p, ev, id, heros, laisser){
   var O = D.OBJETS[id], h = O.pour === 'tous' ? heros : O.pour, H = p.heros[h];
   if(!H) return refus(MOTS.pourQui, {objet:id});
-  if(!O.carquois && enMains(H.objets).length >= C.places){      /* (un carquois ne prend pas de place) */
-    if(!laisser || H.objets.indexOf(laisser) < 0 || (D.OBJETS[laisser] && D.OBJETS[laisser].carquois)) return [{t:'plein', heros:h, objets:enMains(H.objets), objet:id}];
+  if(!sansPlace(id) && enMains(H.objets).length >= C.places){      /* (un carquois, une arme ne prennent pas de place) */
+    if(!laisser || H.objets.indexOf(laisser) < 0 || sansPlace(laisser)) return [{t:'plein', heros:h, objets:enMains(H.objets), objet:id}];
     H.objets.splice(H.objets.indexOf(laisser), 1);
     delete p.faits['objet:' + laisser]; p.faits['pose:' + laisser] = p.lieu;
     ev.push({t:'laisse', objet:laisser, heros:h, lieu:p.lieu});

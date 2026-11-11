@@ -249,9 +249,28 @@ def visite(nav):
     J.objet('page-dechiree'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'page:dechiree'), f'la page déchirée montre son code pour le Sage ({J.code_montre()})')
     J.clic('#fenetre .aller'); J.libre()
+    # Romain, 11 novembre (16 h 07) : le Sage prend ses DEUX armes (elles ne prennent pas de place), il choisira en combat
     J.objet('lutrin', 0); pg.wait_for_timeout(2800); J.libre()
     verifie('cristal-lune' in J.partie()['heros']['sage']['objets'], 'le lutrin : le Sage prend le cristal de lune')
-    J.repartir(); J.chemin('atelier')
+    J.objet('lutrin', 1); pg.wait_for_timeout(2800); J.libre()
+    verifie(J.partie()['heros']['sage']['objets'] == ['cristal-lune', 'baton-chene'], 'le lutrin : et le bâton de chêne aussi (il porte ses deux armes) ' + str(J.partie()['heros']['sage']['objets']))
+    verifie(J.js("document.querySelectorAll('#plaque-sage .pl-case.carq').length") == 2 and J.js("document.querySelectorAll('#plaque-sage .pl-case:not(.carq).pleine').length") == 0 and not J.js("!!document.querySelector('#plaque-sage .pl-etat')"),
+            'sa plaque montre les deux armes à part : ses deux places restent libres, pas de « Complet »')
+    J.cap('lutrin')
+    J.repartir()
+    # le bouton « Sauvegarder » de la carte (Romain, 11 novembre) : il demande le code du Sage, et rappelle de sauvegarder
+    verifie(J.js("(function(){ var b = document.querySelector('#b-sauver'); return !!b && b.textContent.indexOf('Sauvegarder') >= 0 && b.classList.contains('rappel'); })()"), 'sur la carte : un bouton « Sauvegarder », avec son point rouge (des combats gagnés depuis la dernière sauvegarde)')
+    J.tap('#b-sauver'); pg.wait_for_selector('#fenetre .pave', timeout=8000); pg.wait_for_timeout(300)
+    verifie(J.js("document.querySelector('#fenetre h2').textContent") == 'Sauvegarder' and 'Le fond du puits' in J.js("document.querySelector('#sauve-ou').textContent") and J.js("document.querySelectorAll('#fenetre .ligne .lire').length") >= 2,
+            'le bouton ouvre le pavé des symboles : il demande le code du Sage et dit d\'où l\'on repartirait (le fond du puits), avec les 🔊')
+    J.cap('sauver')
+    for k in ['etoile', 'cloche', 'poisson']:
+        J.clic('[data-act="symbole"][data-id="%s"]' % k)
+    pg.wait_for_timeout(900)
+    verifie(J.partie()['sauvegarde'].get('lieu') == 'bibliotheque' and 'bibliothèque' in J.js("document.querySelector('#fenetre .ligne').textContent"), 'le code de la page blanche n° 2 sauvegarde ici, à la bibliothèque')
+    J.clic('#fenetre .aller'); pg.wait_for_timeout(300)
+    verifie(not J.js("document.querySelector('#b-sauver').classList.contains('rappel')"), 'une fois sauvegardé, le point rouge s\'en va')
+    J.chemin('atelier')
     # les trois portes : la gueule mène à la fausse crypte (le sarcophage, l'amulette)
     J.va('portes'); J.scene('portes'); J.cap('portes')
     J.objet('porte-gueule'); J.scene('crypte')

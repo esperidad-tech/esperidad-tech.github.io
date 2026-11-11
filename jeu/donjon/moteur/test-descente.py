@@ -169,7 +169,11 @@ class Descente:
         c = self.pg.evaluate(CHOIX)
         if not c:
             self.pg.wait_for_timeout(300); return
-        self.tap('.b-heros[data-id="%s"]' % c['h']); self.tap('.carte[data-id="%s"]' % c['g'])
+        self.tap('.b-heros[data-id="%s"]' % c['h'])
+        # le Sage : le sort dépend du bâton en main (11 novembre, 16 h 37) — si la carte n'est pas là, prendre le bon bâton
+        if not self.pg.query_selector('#bande .carte[data-id="%s"]' % c['g']):
+            self.tap('#bande [data-act="arme"][data-id="%s"]' % (c['g'][2:] if c['g'].startswith('a:') else 'baton'))
+        self.tap('#bande .carte[data-id="%s"]' % c['g'])
         if c['vise'] in ('salle', 'equipe'):
             self.pg.eval_on_selector('.zone[data-type="bete"]' if c['vise'] == 'salle' else '.zone[data-type="heros"]', 'e => e.click()')
         else:
@@ -229,7 +233,7 @@ class Descente:
         if not fait('combat:ossuaire') and not p.get('repos') and abime and not fait('combat:atelier') and not fait('piege:dalles'): return 'camp'
         if not fait('piege:dalles'): return 'dalles'
         if not fait('combat:atelier'): return 'atelier'
-        if not fait('objet:page-dechiree') or not fait('coffre:bibliotheque'): return 'bibliotheque'
+        if not fait('objet:page-dechiree') or not fait('objet:cristal-lune') or not fait('objet:baton-chene'): return 'bibliotheque'
         if not fait('combat:crypte') or not fait('objet:amulette'): return 'crypte'
         if not fait('combat:ossuaire'): return 'ossuaire'
         if not fait('combat:bassin'):
@@ -310,7 +314,10 @@ class Descente:
                 self.objet('dalle-%d-%d' % (6 + k, [1, 1, 0, 0, 0, 0][k])); pg.wait_for_timeout(1200); self.libre()      # N B B, N B N
         elif lieu == 'bibliotheque':
             if not f.get('objet:page-dechiree'): self.objet('page-dechiree'); self.fenetre_code()
-            if not f.get('coffre:bibliotheque'): self.objet('lutrin', 1); pg.wait_for_timeout(2800); self.libre()
+            # le Sage prend ses deux armes (11 novembre) : le cristal de lune et le bâton de chêne
+            for k, arme in enumerate(('cristal-lune', 'baton-chene')):
+                if not self.partie()['faits'].get('objet:' + arme): self.objet('lutrin', k); pg.wait_for_timeout(2800); self.libre()
+            verifie(self.partie()['heros']['sage']['objets'] == ['cristal-lune', 'baton-chene'], 'à la bibliothèque : le Sage prend ses deux armes (il les porte toutes)')
         elif lieu == 'portes' and but in PORTES:
             sv = self.sauver_ici(p, 'portes')                  # la page de sauvegarde, avant de pousser la grande porte
             if sv:

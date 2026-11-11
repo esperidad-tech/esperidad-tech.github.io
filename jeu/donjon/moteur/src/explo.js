@@ -105,6 +105,10 @@ function carte(o){
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
       '<button class="aller" id="b-entrer" data-act="entrer" hidden>Entrer ➜</button>' +
+      /* Romain, 11 novembre (16 h 07) : « sur la carte, il faudrait un bouton sauvegarde. Quand on appuie dessus, ça demande
+         le code du Sage. Au moins, ça aiderait à se rappeler qu'il faut sauvegarder. » Un point rouge s'y pose dès qu'un
+         combat a été gagné depuis la dernière sauvegarde. */
+      '<button class="sombre' + (aSauver() ? ' rappel' : '') + '" id="b-sauver" data-act="sauver">💾 Sauvegarder</button>' +
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
@@ -212,7 +216,7 @@ function aPlace(id){
   var O = D.OBJETS[id], p = X.partie; if(!O) return false;
   if(O.discret) return false;                 /* (la pierre de rune : rien ne dit qu'il reste quelque chose à trouver) */
   if(O.code || O.or) return true;
-  if(O.carquois) return true;                 /* (un carquois ne prend pas de place : le Pisteur les porte tous) */
+  if(O.carquois || O.arme) return true;       /* (un carquois, une arme ne prennent pas de place : on les porte tous) */
   return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && Regles.enMains(p.heros[h].objets).length < D.CHIFFRES.places; });
 }
 function aFaire(lieu){
@@ -331,8 +335,9 @@ function plaquesDuLieu(cont){
 function majPlaque(h){
   if(!S) return;
   var p = X.partie, tous = p.heros[h].objets, l = Regles.enMains(tous), n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
-  /* les carquois spéciaux du Pisteur : il les porte tous, sans prendre de place (Romain, 10 novembre) ; ils sont montrés à part */
-  var carq = tous.filter(function(o){ return D.OBJETS[o] && D.OBJETS[o].fleche; });
+  /* les carquois spéciaux du Pisteur, les armes du Sage : ils les portent tous, sans prendre de place (Romain, 10 et 11 novembre) ;
+     ils sont montrés à part */
+  var carq = tous.filter(function(o){ return D.OBJETS[o] && (D.OBJETS[o].fleche || D.OBJETS[o].arme); });
   if(!e){ e = el('div', 'plaque'); e.id = 'plaque-' + h; e.style.left = hCx(h) + 'px'; q('#hud').appendChild(e); S.plaques[h] = e; DJ.relancer(e, 'pop'); }
   var cases = carq.map(function(id){ return '<div class="pl-case pleine carq" title="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</div>'; }).join('');
   for(var k = 0; k < n; k++){
@@ -458,6 +463,8 @@ function coffreLibre(e, d){
       if(ici(id)){ o.briller(true); rond(o, aPlace(id)); } else { o.pris = true; o.cacher(true); }
     });
   }
+  /* un présentoir sans couvercle (le lutrin de la bibliothèque : les deux armes du Sage, à prendre toutes les deux) */
+  if(!d.ferme){ armer(); return; }
   if(p.vus[cle]){
     /* déjà ouvert : il reste ouvert, avec ce qu'il y a encore dedans */
     var toutes = e.options;
@@ -654,6 +661,9 @@ function colonneDalles(){
     var m = /^dalle-(\d+)-(\d)$/.exec(id); if(!m) return;
     var k = +m[1] - 6, sure = Regles.dalleSure(k) === (m[2] === '0' ? 'fond' : 'devant');
     try{ rond(S.o[id], !fini && k === pas); if(S.o[id].marquer) S.o[id].marquer(sure && (fini || k < pas)); }catch(e){}
+    /* les deux dalles du pas en cours passent par-dessus leurs voisines : leurs zones se chevauchent (la perspective), et un
+       doigt posé sur le bord droit de la bonne dalle tombait sur la suivante (« Trop loin ! ») — vu par test-objets.py */
+    try{ var ez = S.o[id].cadreZones ? S.o[id].cadreZones() : S.o[id].el, actif = !fini && k === pas; ez.style.zIndex = actif ? 8 : (m[2] === '0' ? 2 : 3); if(ez !== S.o[id].el) S.o[id].el.style.zIndex = actif ? 7 : (m[2] === '0' ? 2 : 3); }catch(e2){}
   });
   S.pas = pas;
 }
@@ -783,11 +793,19 @@ function fenetreObjets(){
     (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
-/* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
-function fenetrePave(){
-  var t = 'Le Sage ou l\'Alchimiste vous dictent trois symboles.';
+/* y a-t-il un combat gagné depuis la dernière sauvegarde ? (alors le bouton « Sauvegarder » de la carte porte un point rouge) */
+function aSauver(){
+  var p = X.partie, f0 = (p.sauvegarde && p.sauvegarde.faits) || {};
+  return Object.keys(p.faits || {}).some(function(k){ return k.indexOf('combat:') === 0 && p.faits[k] && !f0[k]; });
+}
+/* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste).
+   mode 'sauve' : ouvert par le bouton « Sauvegarder » — le même pavé, avec les mots de la sauvegarde. */
+function fenetrePave(mode){
+  var p = X.partie, sauve = mode === 'sauve';
+  var t = sauve ? 'Le Sage écrit un sort de sauvegarde sur une page blanche de son Grand Livre. Puis il vous dicte ses trois symboles.' : 'Le Sage ou l\'Alchimiste vous dictent trois symboles.';
+  var t2 = sauve ? 'Sans nouvelle sauvegarde, une défaite vous ramène ici : ' + nomLieu((p.sauvegarde && p.sauvegarde.lieu) || 'puits') + '.' : '';
   X.pave = [];
-  DJ.fenetre('<h2>Un code</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="pave-cases"><i></i><i></i><i></i></div>' +
+  DJ.fenetre('<h2>' + (sauve ? 'Sauvegarder' : 'Un code') + '</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' + (t2 ? '<div class="ligne petit" id="sauve-ou">' + t2 + DJ.lireBtn(t2) + '</div>' : '') + '<div class="pave-cases"><i></i><i></i><i></i></div>' +
     '<div class="pave">' + CODES.ORDRE.map(function(k){ return '<button data-act="symbole" data-id="' + k + '" aria-label="' + CODES.SYM[k].n + '">' + CODES.SYM[k].e + '</button>'; }).join('') + '</div>' +
     '<div class="boutons"><button class="sombre" data-act="pave-efface">⌫ Effacer</button></div>', 'code');
 }
@@ -807,6 +825,7 @@ function symbole(k){
     }
     garder();
     if(x.t === 'sauvegarde'){
+      var bs = q('#b-sauver'); if(bs) bs.classList.remove('rappel');
       bruit('pageSauve', {}, ['page']);
       var t = 'C\'est écrit dans le Grand Livre ! Si ça tourne mal, vous repartirez d\'ici : ' + nomLieu(p.lieu) + '.';
       DJ.fenetre('<h2>Page de sauvegarde</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="code-gros"><span>📖<small>sauvegardé</small></span></div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
@@ -837,6 +856,7 @@ DJ.toucher(function(a, id, b){
   if(a === 'sac-pret'){ if(X.sac) X.sac.pret(); return true; }
   if(a === 'objets'){ son('clic'); fenetreObjets(); return true; }
   if(a === 'pave'){ son('clic'); fenetrePave(); return true; }
+  if(a === 'sauver'){ son('clic'); fenetrePave('sauve'); return true; }
   if(a === 'symbole'){ symbole(id); return true; }
   if(a === 'pave-efface'){ X.pave = []; majPave(); return true; }
   if(a === 'entrer'){ if(!X.occupe && aScene(X.ici)){ son('clic'); arriver(X.ici, {entrer:true}); } return true; }
