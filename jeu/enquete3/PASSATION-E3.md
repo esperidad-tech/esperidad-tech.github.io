@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 21 h 56)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 22 h 16)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -11,7 +11,7 @@
 ## Nouveau depuis le 11 novembre (20 h 50) : l'étape 5 (le Pisteur) est faite aussi, et en ligne
 
 - **Romain, 19 h 51** (conversation qui construit) : « Occupe-toi du Pisteur, le matin, l'après-midi et la nuit… l'oie en train de courir dans le décor de la ville… tu le mets en ligne, tu as mon autorisation. » Fait avant les étapes 2 à 4. Le détail : **Bible §13.16**.
-- **Fait** : l'oie de Gaspard vue de dos dans une ville au matin (course-poursuite), les pattes de Moustache à six doigts (Suivre la piste, avec ou sans le code du Sage), **« Se cacher » dans l'église et le clocher (au bout : la Grosse Marie, Anselme et le Barde, la clé au clou) et dans la mairie (au bout : le bureau du maire et la lettre)** (Romain, 21 h 21 ; construit et testé, **pas encore en ligne** : attend l'accord de Romain), et tout le parcours du Pisteur dans `e3.js` (banderoles, oie, gui, traces jusqu'à la crypte avec le filet, la lettre en cachette, rendre sa mission, la clé d'Anselme, la grille de la crypte, le puits). Cinq codes nouveaux.
+- **Fait** : l'oie de Gaspard vue de dos dans une ville au matin (course-poursuite), les pattes de Moustache à six doigts (Suivre la piste, avec ou sans le code du Sage), **« Se cacher » dans l'église et le clocher (au bout : la Grosse Marie, Anselme et le Barde, la clé au clou) et dans la mairie (au bout : le bureau du maire et la lettre)** (Romain, 21 h 21 ; en ligne à 22 h 14), et tout le parcours du Pisteur dans `e3.js` (banderoles, oie, gui, traces jusqu'à la crypte avec le filet, la lettre en cachette, rendre sa mission, la clé d'Anselme, la grille de la crypte, le puits). Cinq codes nouveaux.
 - **Changé par rapport à `E3-actions-des-roles.md`** : les traces partent de la place (pas de chez Odette) ; **Romain (20 h 51) : on cherche d'abord le départ des traces de Moustache pendant 10 secondes**, quelque part à gauche ou à droite, au milieu d'autres pattes qui se croisent, puis le sol défile (Bible §13.16, « Retouche ») ; le reste est noté en tête de ce fichier.
 - **Attend** : les codes du Barde (étape 2 : « La clé est au clou », « Le vieux puits »), du Sage (étape 3 : « Moustache a six doigts »), de l'Alchimiste (étape 4 : « Le gui du pommier ») ; la descente dans le donjon (étape 6). En attendant, ces codes se tapent à la main dans l'onglet 📜.
 
