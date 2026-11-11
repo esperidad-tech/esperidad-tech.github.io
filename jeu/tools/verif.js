@@ -62,6 +62,8 @@ function elements(E){
   for(const id of Object.keys(E.analyses || {})){
     const A = E.analyses[id];
     els.push({cle:`alchimiste:analyse:${id}`, role:'alchimiste', textes:[A.t, A.note, A.detail && A.detail.t].concat((A.variantes || []).flatMap(v => [v.t, v.note])), ok:A.ok, besoins:[[{code:'obj:' + id}]].concat(A.besoin ? [A.besoin] : []), produit:[A.donne || null].filter(Boolean), action:{type:'analyse', id}, mj:A.mj || null, partiel:!!A.partiel});
+    /* une variante qui donne un code (11 novembre : les deux pièces d'or, la deuxième analysée donne info:piece) : elle compte quand ses conditions (si) sont là */
+    (A.variantes || []).forEach((va, k) => { if(va.donne) els.push({cle:`alchimiste:analyse:${id}:v${k}`, role:'alchimiste', textes:[], besoins:[[{cle:`alchimiste:analyse:${id}`}], va.si || []], produit:[va.donne], action:null}); });
   }
   for(const p of E.pages || []){
     els.push({cle:`sage:page:${p.id}`, role:'sage', textes:[p.t, p.note, p.avant].concat((p.lettres || []).map(l => l.texte)), ok:p.ok, besoins:[p.besoin].filter(Boolean), produit:[p.donne || null].filter(Boolean), action:p.action ? {type:'page', id:p.id} : null, mj:p.mj || null, partiel:!!p.partiel, ouvrePartiel:!!p.ouvrePartiel});
@@ -153,6 +155,7 @@ function analyser(E, roles, echecs, opts){
   function condOk(b, role){
     if(b.cle) return obtenu.has(b.cle);
     if(b.page) return obtenu.has('sage:page:' + b.page);
+    if(b.analyse) return obtenu.has('alchimiste:analyse:' + b.analyse);
     if(b.code) return codes.has(b.code);
     if(b.vu){ const mv = /^verite:([a-z_]+):(\d+)$/.exec(b.vu); return obtenu.has(mv ? `barde:${mv[1]}:${mv[2]}:verite` : b.vu); }   /* « verite:tim:1 » (le jeu) = « barde:tim:1:verite » (ici) */
     if(b.moment) return !opts.matin || b.moment === E.moments[0];

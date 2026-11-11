@@ -43,7 +43,7 @@ function style(){
 function aUnChat(){ var a = M.S.atelier || {}; return (a.objets || []).some(function(o){ return o.t === 'chat'; }); }
 function fiche(){
   var E = M.E(), P = M.P(), S = M.S, l = recus(), codes = {};
-  l.forEach(function(id){ var An = (E.analyses || {})[id]; if(An && An.donne){ try{ codes[id] = {pour:pourQui(An.donne), formes:M.code(An.donne).map(function(s){ return D.SYM[s].e; })}; }catch(e){} } });
+  l.forEach(function(id){ var An = M.texteAnalyse((E.analyses || {})[id]); if(An && An.donne){ try{ codes[id] = {pour:pourQui(An.donne), formes:M.code(An.donne).map(function(s){ return D.SYM[s].e; })}; }catch(e){} } });
   /* le tutoriel (enquête 1) suit sa trame : un échantillon dont ce n'est pas encore le tour attend sur le cuir (« Plus tard ! ») */
   var plusTard = l.filter(function(id){ return !P.analyses[id] && M.tutoPermet && !M.tutoPermet('analyser', {id:id}); });
   return {jeu:true, niveau:(E.niveau || 1) >= 6 ? 'difficile' : 'facile', recus:l, faits:l.filter(function(id){ return !!P.analyses[id]; }), plusTard:plusTard, etat:P.labo || null,

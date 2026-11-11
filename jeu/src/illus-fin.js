@@ -5,6 +5,7 @@
    (Persos.pnj(id, {pied:true}), les héros en entier : le vrai héros de la tablette, un héros ordinaire pour les autres rôles),
    des boucles en CSS (illus-fin.css, préfixe .sf-). Aucun son, rien ne se lit tout seul.
    Enquête 1 : e1-course, e1-remonte, e1-pardon, e1-courant, e1-maire, e1-fete, e1-ragots, e1-planches.
+   Enquête 2 : e2-aveu, e2-prison, e2-riviere, e2-chat, e2-equipe (rien sous « À suivre… »).
    Chargé après regles.js : il complète M.illustration.
    ========================================================== */
 (function(){
@@ -158,6 +159,78 @@ function coupe(){
   s += '<path class="sf-feuille" d="M212 44 q 6 -8 12 0 q -6 8 -12 0 Z" fill="#5aa04a" stroke="' + O + '" stroke-width="1.2"/>';
   return s;
 }
+/* ---------- Les décors de la fin de l'enquête 2 (Romain, 11 novembre, 8 h 11) ---------- */
+/* le bureau du maire, au petit matin : la porte à gauche, la fenêtre où le soleil se lève, son portrait au mur, le plancher.
+   Le grand bureau est posé par-dessus les personnages (bureauHTML) : on ne voit le maire que de la taille à la tête. */
+function bureauMaire(){
+  var id = 'sfa' + (++n);
+  var s = '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb98a"/><stop offset="1" stop-color="#bfe2f6"/></linearGradient></defs>';
+  s += '<rect width="320" height="200" fill="#e2c9a0"/>' +
+    '<g stroke="#c9ad80" stroke-width="1.2" opacity=".7"><path d="M0 30 H320 M0 64 H320"/></g>' +
+    '<rect x="0" y="112" width="320" height="62" fill="#a8784c"/><g stroke="#8a5c36" stroke-width="1.6"><path d="M0 112 H320"/><path d="M40 112 v62 M96 112 v62 M152 112 v62 M208 112 v62 M264 112 v62"/></g>' +
+    '<rect x="0" y="172" width="320" height="28" fill="#8a5a36"/><g stroke="#6e4426" stroke-width="1.4"><path d="M0 172 H320 M0 186 H320"/><path d="M60 172 v14 M150 186 v14 M230 172 v14 M300 186 v14"/></g>';
+  /* la porte (Bastien et Silas sortent par là) */
+  s += '<g stroke="' + O + '" stroke-width="2.5" stroke-linejoin="round"><rect x="8" y="62" width="40" height="110" fill="#7a4e2c"/><rect x="14" y="70" width="28" height="40" fill="#8a5c36"/><rect x="14" y="118" width="28" height="44" fill="#8a5c36"/></g><circle cx="41" cy="118" r="2.6" fill="#ffd23f" stroke="' + O + '" stroke-width="1.2"/>';
+  /* la fenêtre : le soleil se lève */
+  s += '<rect x="112" y="22" width="70" height="62" fill="url(#' + id + ')" stroke="' + O + '" stroke-width="3"/>' +
+    '<circle class="sf-soleil" cx="147" cy="84" r="14" fill="#fff1b8"/><path d="M112 70 Q 140 64 182 72 V84 H112 Z" fill="#7aa858"/>' +
+    '<path d="M147 22 V84 M112 52 H182" stroke="#6e4426" stroke-width="3"/><rect x="108" y="82" width="78" height="6" fill="#8a5c36" stroke="' + O + '" stroke-width="2"/>';
+  /* le portrait du maire, dans son grand cadre doré */
+  s += '<rect x="238" y="18" width="46" height="56" fill="#3a5a8a" stroke="#c8962a" stroke-width="5"/><rect x="238" y="18" width="46" height="56" fill="none" stroke="' + O + '" stroke-width="1.6"/>' +
+    '<circle cx="261" cy="40" r="9" fill="#f2c9a0" stroke="' + O + '" stroke-width="1.4"/><path d="M247 74 Q 249 54 261 52 Q 273 54 275 74 Z" fill="#2f2a52" stroke="' + O + '" stroke-width="1.4"/><path d="M256 56 L 261 68 L 266 56" fill="#e5484d"/>';
+  return s;
+}
+/* le grand bureau du maire (par-dessus le maire), ses papiers, la pièce d'or posée dessus (o.piece) */
+function bureauHTML(o){
+  o = o || {};
+  return '<b class="sf-bureau"><i></i></b>' +
+    '<b class="sf-papiers">' + [0, 1, 2].map(function(i){ return '<i style="--i:' + i + '"></i>'; }).join('') + '</b>' +
+    (o.piece ? '<b class="sf-piece"></b>' : '');
+}
+/* la rivière, le lendemain : elle redevient claire (sf-eau), le petit lavoir sur la rive */
+function riviere(){
+  var s = ciel('jour');
+  s += '<path d="M0 104 Q 70 86 150 100 T 320 94 V140 H0 Z" fill="#7aa858"/><path d="M0 118 Q 100 108 200 118 T 320 114 V140 H0 Z" fill="#66924a"/>';
+  s += '<path class="sf-eau" d="M0 128 Q 80 120 160 130 T 320 126 L 320 160 Q 240 168 160 158 T 0 162 Z" stroke="' + O + '" stroke-width="2.5"/>';
+  s += '<g class="sf-rides" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".7"><path d="M40 140 q 6 -3 12 0"/><path d="M120 146 q 6 -3 12 0"/><path d="M210 140 q 6 -3 12 0"/><path d="M276 148 q 6 -3 12 0"/></g>';
+  s += '<path d="M0 158 Q 80 166 160 156 T 320 158 V200 H0 Z" fill="#7aa858" stroke="' + O + '" stroke-width="2.5"/>';
+  /* le lavoir : une dalle de pierre au bord de l'eau, un petit toit sur deux poteaux */
+  s += '<g stroke="' + O + '" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="150" width="62" height="10" fill="#b8b4c8"/><path d="M10 150 V112 M60 150 V112" stroke-width="3.4"/>' +
+    '<path d="M0 116 L 35 96 L 70 116 Z" fill="#b5652e"/></g>';
+  s += '<g fill="#ffd23f" stroke="' + O + '" stroke-width="1"><circle cx="300" cy="176" r="2.6"/><circle cx="252" cy="186" r="2.2"/><circle cx="110" cy="182" r="2.4"/></g>';
+  return s;
+}
+/* les gros rochers qui bouchent le trou du Vieux Chêne ; o.lueur : une lueur bleue entre les pierres, et l'air froid qui en sort */
+function rochers(o){
+  o = o || {};
+  var s = '<g transform="translate(208 192) scale(1.5) translate(-208 -190)">';
+  if(o.lueur) s += '<ellipse class="sf-lueur-bleue" cx="208" cy="176" rx="14" ry="10" fill="#5ab8e0"/>';
+  s += '<g stroke="' + O + '" stroke-width="2.6" stroke-linejoin="round">' +
+    '<path d="M176 188 C 170 172 178 158 194 158 C 206 158 212 170 210 188 Z" fill="#8a8698"/>' +
+    '<path d="M206 188 C 204 166 216 154 232 158 C 246 162 248 178 242 188 Z" fill="#9a96a8"/>' +
+    '<path d="M190 166 C 190 152 204 146 214 150 C 224 154 224 166 216 172 C 206 176 192 176 190 166 Z" fill="#a8a4b8"/>' +
+    '<path d="M238 190 C 238 182 246 178 252 182 C 256 186 254 190 252 190 Z" fill="#7a7688"/></g>' +
+    '<g stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".45"><path d="M182 166 q 6 -4 12 -2"/><path d="M216 166 q 6 -4 12 -1"/><path d="M198 156 q 6 -3 10 -1"/></g>';
+  if(o.lueur) [0, 1.2, 2.4].forEach(function(d, i){ s += '<path class="sf-souffle" style="animation-delay:' + d + 's" d="M' + (200 + i * 8) + ' 168 q -4 -6 0 -12 t 0 -12" stroke="#dff6ff" stroke-width="2" fill="none" stroke-linecap="round"/>'; });
+  return s + '</g>';
+}
+/* la barrière du maire : le chemin du Vieux Chêne est fermé */
+function barriere(){
+  return '<g transform="translate(-72 0)" stroke="' + O + '" stroke-width="2" stroke-linejoin="round"><path d="M112 190 V160 M152 190 V160" stroke-width="3.4" stroke="#6e4426"/>' +
+    '<rect x="104" y="162" width="56" height="9" fill="#ffffff"/><path d="M110 162 l-6 9 M124 162 l-6 9 M138 162 l-6 9 M152 162 l-6 9 M160 166 l-4 5" stroke="#e5484d" stroke-width="5"/>' +
+    '<rect x="104" y="162" width="56" height="9" fill="none"/></g>';
+}
+/* un des chats d'Odette, roux et rayé, assis de profil (il regarde vers la droite) : la queue bouge, une patte gratte la pierre */
+var CHAT = '<svg viewBox="-30 -42 62 60" aria-hidden="true" focusable="false"><g stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">' +
+  '<g class="sf-chat-queue"><path d="M-14 14 C -30 12 -30 -6 -22 -12" stroke="' + O + '" stroke-width="7" fill="none"/><path d="M-14 14 C -30 12 -30 -6 -22 -12" stroke="#f0a24a" stroke-width="3.6" fill="none"/></g>' +
+  '<path d="M-16 16 C -18 -2 -8 -12 4 -10 C 13 -8 15 4 12 16 Z" fill="#f0a24a"/>' +
+  '<path d="M-10 -2 q 4 4 2 10 M-4 -8 q 4 6 2 12" stroke="#c8702a" fill="none"/>' +
+  '<g class="sf-chat-patte"><path d="M9 2 L 9 14 Q 12 17 15 14 L 15 2 Z" fill="#f0a24a"/></g>' +
+  '<path d="M1 -26 L 2 -36 L 9 -28 Z M11 -28 L 17 -36 L 18 -25 Z" fill="#f0a24a"/>' +
+  '<circle cx="9" cy="-19" r="10" fill="#f0a24a"/><path d="M1 -24 q 3 2 6 0" stroke="#c8702a" fill="none"/></g>' +
+  '<ellipse cx="13" cy="-20" rx="1.6" ry="2.4" fill="' + O + '"/><path d="M18 -16 l2 1 l-2 1 Z" fill="#e8737a"/><path d="M17 -14 l6 -1 M17 -13 l6 1" stroke="' + O + '" stroke-width=".8"/></svg>';
+function chat(cls, st, dedans){ return '<span class="sf-chat' + (cls ? ' ' + cls : '') + '"' + (st ? ' style="' + st + '"' : '') + '>' + CHAT + (dedans || '') + '</span>'; }
+
 function decor(inner){ return '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' + inner + '</svg>'; }
 function scene(cls, label, inner){ return '<div class="rs-scene sf-scene sf-' + cls + '" role="img" aria-label="' + M.esc(label) + '">' + inner + '</div>'; }
 
@@ -233,6 +306,49 @@ var SCENES = {
     [0, 1, 2].forEach(function(i){ s += '<b class="sf-planche" style="--i:' + i + ';animation-delay:' + (i * .5).toFixed(1) + 's"></b>'; });
     s += perso(pnj('grosbec'), {x:42, h:44, dedans:bulle('…', 'sf-b-rien') + bulle('C\'est bien trop dangereux !', 'sf-b-danger')});
     return scene('planches', 'La nuit, le maire regarde longtemps le trou ; le lendemain, il le fait couvrir de grosses planches.', s);
+  },
+  /* ---------- Les scènes de la fin de l'enquête 2 (Romain, 11 novembre, 8 h 11) ---------- */
+  /* 1. Au petit matin, chez le maire : Bastien baisse la tête et avoue ; la pièce d'or est sur le bureau */
+  'e2-aveu':function(){
+    var s = decor(bureauMaire());
+    [['pisteur', 8], ['alchimiste', 18], ['barde', 28], ['sage', 38]].forEach(function(r){ s += perso(heros(r[0]), {x:r[1], h:36}); });
+    s += perso(pnj('bastien', {humeur:'peur'}), {x:54, h:42, cls:'sf-sanglot', dedans:bulle('C\'est moi…', 'sf-b-moi') + bulle('Un homme en cape noire m\'a payé !', 'sf-b-cape')});
+    s += perso(pnj('grosbec'), {x:81, h:44});
+    s += bureauHTML({piece:true});
+    return scene('aveu', 'Au petit matin, chez le maire : Bastien baisse la tête et avoue qu\'un homme en cape noire l\'a payé.', s);
+  },
+  /* 2. Le maire tape sur la table : « En prison ! » ; Silas emmène Bastien ; « L'affaire est close ! », et les papiers filent dans le tiroir */
+  'e2-prison':function(){
+    var s = decor(bureauMaire());
+    s += perso(pnj('silas'), {x:36, h:44, cls:'sf-emmene'});
+    s += perso(pnj('bastien', {humeur:'peur'}), {x:50, h:42, cls:'sf-emmene', st:'animation-delay:.15s'});
+    s += perso(pnj('grosbec'), {x:81, h:44, cls:'sf-tape', dedans:bulle('En prison !', 'sf-b-prison sf-d') + bulle('L\'affaire est close !', 'sf-b-close sf-d')});
+    s += bureauHTML() + '<em class="sf-bam"><i></i><i></i><i></i></em>';
+    return scene('prison', 'Le maire tape sur la table et envoie Bastien en prison ; puis il range très vite ses papiers : l\'affaire est close.', s);
+  },
+  /* 3. Le lendemain, la rivière redevient claire ; les poissons sautent, Mélusine chante… mais tout le monde parle d'Odette */
+  'e2-riviere':function(){
+    var s = decor(riviere());
+    s += perso(pnj('melusine'), {x:20, h:42, dedans:'<em class="sf-note">♪</em><em class="sf-note" style="animation-delay:.8s;left:70%">♫</em><em class="sf-note" style="animation-delay:1.6s;left:40%">♪</em>'});
+    [44, 56, 64].forEach(function(x, i){ s += '<span class="sf-poisson" style="left:' + x + '%;animation-delay:' + (i * 1.7).toFixed(1) + 's"><svg viewBox="-14 -8 28 16" aria-hidden="true" focusable="false"><path d="M-10 0 C -6 -7 6 -7 9 0 C 6 7 -6 7 -10 0 Z M9 0 L 14 -6 L 14 6 Z" fill="#f2a33a" stroke="' + O + '" stroke-width="1.6" stroke-linejoin="round"/><circle cx="-5" cy="-1.5" r="1.4" fill="' + O + '"/></svg></span>'; });
+    s += perso(pnj('gaspard'), {x:76, h:42, dedans:bulle('Et Odette ?', 'sf-b-odette sf-d')});
+    s += perso(pnj('margot'), {x:90, h:42, dedans:bulle('Personne ne l\'a revue…', 'sf-b-revue sf-d')});
+    return scene('riviere', 'Le lendemain, la rivière redevient claire et les poissons sautent ; mais au village, on se demande où est Odette.', s);
+  },
+  /* 4. Au Vieux Chêne, derrière la barrière du maire : un chat d'Odette, assis devant les rochers, miaule et gratte la pierre */
+  'e2-chat':function(){
+    var s = decor(ciel('soir') + collines(false) + chene({}) + rochers() + barriere());
+    s += chat('', 'left:50%', bulle('Miaou…', 'sf-b-miaou'));
+    return scene('chat-odette', 'Au Vieux Chêne, un des chats d\'Odette est assis devant les gros rochers ; il miaule et gratte la pierre.', s);
+  },
+  /* 5. Les quatre enquêteurs se regardent ; entre les rochers, une lueur bleue et un souffle froid : « Allons voir ! » */
+  'e2-equipe':function(){
+    var s = decor(ciel('nuit') + collines(true) + chene({}) + rochers({lueur:true}));
+    [['pisteur', 10], ['alchimiste', 22], ['barde', 34], ['sage', 46]].forEach(function(r, i){
+      s += perso(heros(r[0]), {x:r[1], h:38, cls:'sf-hoche', st:'animation-delay:' + (i * .45).toFixed(2) + 's', dedans:r[0] === 'pisteur' ? bulle('Allons voir !', 'sf-b-allons sf-g') : ''});
+    });
+    s += chat('sf-chat-petit', 'left:78%');
+    return scene('equipe', 'Les quatre enquêteurs se regardent, devant les rochers du Vieux Chêne ; entre les pierres, une lueur bleue et un souffle froid.', s);
   }
 };
 var il0 = M.illustration;

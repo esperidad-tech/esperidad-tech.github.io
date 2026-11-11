@@ -6,7 +6,8 @@
    (oubliée depuis les ancêtres de Farinel), il en a tiré un concentré avec des alambics, et l'a versé dans
    la rivière la nuit dernière. Pendant ce temps, les ouvriers du maire bouchent le trou du Vieux Chêne avec des
    rochers ; Odette a vu ce qu'il ne fallait pas, elle est enfermée dans les sous-sols (en bonne santé).
-   Chaînes : Gaspard (pièce d'or toute neuve) + Pisteur (pièce sous l'alambic) → QUI ;
+   Chaînes : Gaspard donne la pièce d'or toute neuve de Bastien (Barde) + la pièce sous l'alambic (Pisteur) → l'Alchimiste les compare :
+   jumelles (info:piece) → le Barde confronte Bastien → QUI (Romain, 11 novembre, 8 h 24 : l'Alchimiste devient indispensable au QUI) ;
    traces de charrette (Pisteur) → Farinel (Barde) → bibliothèque des plans (Sage) → passage (Pisteur : sans le plan, jamais de pièce cachée,
    Romain, 5 novembre, 00 h 27) → colorant (Alchimiste) → OÙ ; à côté, la nuit, le Pisteur peut guetter l'homme en cape qui sort
    d'une porte cachée du moulin : le suivre mène à la crypte du clocher, un indice pour l'enquête 3 ; Bastien démasqué (détecteur, « J'exige la vérité »,
@@ -72,7 +73,7 @@ E[2] = {
       {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}]},
       {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}]},
       {ic:'💬', t:'Prépare la potion de vérité pour le Barde (la recette est dans ton grimoire). Une seule par enquête : ne la rate pas !', fait:[{potion:'verite'}]},
-      {ic:'⚗️', t:'Analyse ce que le Pisteur te rapportera de ses fouilles.', fait:[{analyse:'colorant'}]},
+      {ic:'⚗️', t:'Analyse tout ce que l\'équipe te rapporte : chaque objet a quelque chose à raconter.', fait:[{et:[{analyse:'colorant'}, {analyse:'piece_pain'}, {analyse:'piece_moulin'}]}]},
       {piste:true, t:'En cueillant, ouvre bien les yeux : certains coins du village ont changé.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
@@ -143,7 +144,7 @@ E[2] = {
       {id:'champ', ic:'🌺', nom:'Champ rasé', si:[{vu:'barde:iris:0'}, {code:'info:champ_rase'}]},
       {id:'rouge_fleurs', ic:'🎨', nom:'Rouge de coquelicot', si:[{vu:'barde:iris:1'}]},
       {id:'charrette', ic:'🛒', nom:'Charrette', si:[{vu:'barde:silas:1'}, {vu:'barde:iris:2'}, {vu:'verite:victor:0'}, {code:'info:traces'}]},
-      {id:'piece', ic:'🪙', nom:'Pièce d\'or neuve', si:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}, {code:'info:piece'}]},
+      {id:'piece', ic:'🪙', nom:'Pièce d\'or neuve', si:[{vu:'barde:gaspard:1'}, {code:'info:piece'}]},
       {id:'cape', ic:'🧥', nom:'Cape noire', si:[{vu:'barde:fortune:1'}, {vu:'verite:bastien:1'}]},
       {id:'poudre', ic:'⚫', nom:'Poudre noire', si:[{vu:'barde:fortune:1'}]},
       {id:'tissus', ic:'🧵', nom:'Tissus qui déteignent', si:[{vu:'verite:melusine:2'}, {vu:'verite:fortune:0'}, {vu:'barde:oreille:atelier'}, {code:'info:lavoir_rose'}]},
@@ -179,7 +180,10 @@ E[2] = {
     colorant:{nom:'Reste de colorant rouge', ic:'🔴', pour:'alchimiste', dire:'L\'Alchimiste saura d\'où vient ce rouge : donne-lui ce code.'},
     pierre:{nom:'Pierre gravée de Tim', ic:'🪨', pour:'sage', dire:'Des runes ! Le Sage saura peut-être les lire : donne-lui ce code.'},
     /* la poudre du pot noir (Romain, 23 h 14) : un code ajouté après le gel (codes-fixes.js : il prend un code libre) */
-    poudre:{nom:'Poudre du pot noir', ic:'⚫', pour:'alchimiste', dire:'L\'Alchimiste pourra l\'analyser dans son atelier : donne-lui ce code.'}
+    poudre:{nom:'Poudre du pot noir', ic:'⚫', pour:'alchimiste', dire:'L\'Alchimiste pourra l\'analyser dans son atelier : donne-lui ce code.'},
+    /* les deux pièces d'or (Romain, 11 novembre, 8 h 24) : des codes ajoutés après le gel (codes-fixes.js : ils prennent un code libre) */
+    piece_pain:{nom:'Pièce d\'or de la boulangerie', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
+    piece_moulin:{nom:'Pièce d\'or du moulin', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'}
   },
   /* dire : la phrase sous un code donné (moteur-base.js, M.direCode), dans l'histoire, à la place de « donne ce code au … » */
   infos:{
@@ -197,8 +201,11 @@ E[2] = {
     champ_rase:{nom:'Le champ rasé', ic:'🌺', pour:'barde', de:'alchimiste', pnj:'iris', t:'L\'Alchimiste a vu, à la clairière aux lièvres, un grand champ de coquelicots tout rasé.',
       dire:'Iris, l\'herboriste, voudra le savoir : donne ce code au Barde.'},
     /* les autres codes */
-    piece:{nom:'La pièce d\'or du moulin', ic:'🪙', pour:'barde', t:'Le Pisteur a trouvé, sous un alambic de la pièce cachée du moulin, une pièce d\'or toute neuve. Quelqu\'un a compté son or ici…',
-      dire:'À qui est cette pièce ? Le Barde va le découvrir : donne-lui ce code.'},
+    /* les deux pièces jumelles (Romain, 11 novembre, 8 h 24) : l'Alchimiste a comparé la pièce de Gaspard et celle du moulin.
+       (le code gelé de l'ancienne « pièce d'or du moulin », que plus rien ne donnait depuis le 5 novembre, resservi : il ne change pas) */
+    piece:{nom:'Les deux pièces jumelles', ic:'🪙', pour:'barde', de:'alchimiste', pnj:'bastien',
+      t:'L\'Alchimiste a comparé les deux pièces d\'or : celle de la boulangerie et celle du moulin. Même or, même petite fêlure : elles sortent du même moule, et de la même bourse !',
+      dire:'Le Barde saura quoi en faire : donne-lui ce code.'},
     /* (Romain, 23 h 22) : bâti par « ses ancêtres » ; le plan arrive toujours dans la page de la bibliothèque des plans du Sage, à réparer */
     plans_moulin:{nom:'Les plans du moulin', ic:'📐', pour:'sage', t:'Farinel a donné les vieux plans de son moulin, bâti par ses ancêtres. Ils sont tout déchirés : répare-les dans la bibliothèque des plans du Grand Livre.',
       dire:'Les plans du moulin : donne ce code au Sage.'},
@@ -343,9 +350,9 @@ E[2] = {
           rate:'Tu as perdu sa trace… mais il partait vers le sud-ouest, du côté du clocher.',
           rateNote:'Nuit : l\'homme en cape noire du moulin est parti vers le sud-ouest, du côté du clocher. Tu as perdu sa trace.',
           ferme:'Il a disparu dans la nuit.'},
-        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{vu:'pisteur:moulin:alambics'}], visibleSi:[{vu:'pisteur:moulin:alambics'}],   /* (plus de code info:piece : il le raconte au Barde) */
-          t:'Sous un alambic, quelque chose brille : quelqu\'un a compté son or ici, et en a perdu une ! Une pièce d\'or toute neuve… Qui, au village, en a eu une récemment ? Raconte-le au Barde !',
-          note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic. Qui, au village, en a eu une récemment ?'}
+        {id:'piece', ic:'🪙', nom:'Sous l\'alambic', moments:['nuit'], besoin:[{vu:'pisteur:moulin:alambics'}], visibleSi:[{vu:'pisteur:moulin:alambics'}], obj:'piece_moulin',   /* (11 novembre : un code pour l'Alchimiste, qui la compare à celle de Gaspard) */
+          t:'Sous un alambic, quelque chose brille : une pièce d\'or toute neuve ! Quelqu\'un a compté son or ici, et en a perdu une.',
+          note:'Moulin, la pièce cachée : une pièce d\'or toute neuve, sous un alambic (code pour l\'Alchimiste).'}
       ]}
     },
     place:{
@@ -392,8 +399,8 @@ E[2] = {
       {q:'Qu\'as-tu fait ces derniers jours ?', a:'Rien du tout ! J\'ai dormi chez moi, et je me suis levé tard.', ment:true, ok:'Son nom est seulement dans son propre interrogatoire, qui ne dit rien de la rivière.',
         vrai:'Bon… avant-hier, je me suis promené dans la forêt. C\'est tout !',
         note:'Bastien dit qu\'il a dormi chez lui ces jours-ci, et qu\'il n\'a rien fait.', noteVrai:'Bastien a avoué : avant-hier, il s\'est promené dans la forêt. Il n\'en dit pas plus.'},
-      /* (Romain, 5 novembre, 13 h 47 : plus de code de la pièce du moulin ; le ragot de Gaspard, ou de Margot la nuit, suffit ; le Pisteur raconte sa pièce à l'oral) */
-      {q:'On t\'a vu payer avec une pièce d\'or toute neuve !', moments:['nuit'], besoin:[{vu:'barde:gaspard:1'}, {vu:'barde:oreille:boulangerie'}, {vu:'barde:margot:3'}],
+      /* (Romain, 11 novembre, 8 h 24 : seulement avec la comparaison des deux pièces par l'Alchimiste, info:piece) */
+      {q:'Ta pièce d\'or est la jumelle de celle du moulin !', moments:['nuit'], besoin:[{code:'info:piece'}],
         a:'D\'accord, c\'est moi qui ai rendu la rivière rouge ! Mais c\'était juste pour faire joli.', ment:true,
         vrai:'Bon… Un homme en cape noire m\'a payé en pièces d\'or toutes neuves. Je n\'ai jamais vu son visage, je le jure !',
         note:'Bastien avoue que c\'est lui qui a rendu la rivière rouge. Il dit que c\'était « pour faire joli ».', noteVrai:'Bastien a avoué : un homme en cape noire l\'a payé avec des pièces d\'or toutes neuves pour rendre la rivière rouge. Il ne sait pas qui c\'était.'}
@@ -425,11 +432,15 @@ E[2] = {
     ]},
     /* Gaspard dès le matin (Romain, 4 novembre, 22 h 38) : Odette, sa toute première cliente, n'est pas venue ; la pièce d'or de Bastien
        et le signe de Margot restent pour l'après-midi (moments) */
+    /* vexeDonne (11 novembre) : vexé la nuit, il lâche quand même la pièce de Bastien (sinon, plus de comparaison possible) */
     gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', nuit:'boulangerie'}, salut:'Bonjour ! Du bon pain chaud ?',
+      vexeDonne:{obj:'piece_pain', moments:['nuit'], a:'Il pose une pièce d\'or sur le comptoir : « Tiens, la pièce toute neuve de Bastien. Et laisse-moi pétrir ! »',
+        note:'Gaspard, fâché, t\'a quand même donné la pièce d\'or toute neuve de Bastien (code pour l\'Alchimiste).'},
       saluts:{matin:'Bonjour ! C\'est le coup de feu, mais pour toi, j\'ai une minute.', nuit:'Ah, c\'est toi ? Je prépare le pain de demain. Entre, entre !'}, questions:[
       /* (7 novembre : l'adresse d'Odette est sur la carte, son visage sur sa maison ; la canne, Mélusine en parle) */
       {q:'Quelles nouvelles, Gaspard ?', a:'Odette, ma toute première cliente, n\'est pas venue ce matin. Ça ne lui ressemble pas… Quelqu\'un devrait aller voir chez elle !', note:'Gaspard : Odette, sa toute première cliente, n\'est pas venue ce matin. Ça ne lui ressemble pas.'},
-      {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], a:'Si ! Bastien, le charretier, m\'a payé avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !', note:'Gaspard : Bastien le charretier l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'},
+      {q:'Et rien d\'autre de bizarre ?', moments:['apresmidi', 'nuit'], obj:'piece_pain', a:'Si ! Bastien m\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou. Tiens, prends-la !',
+        note:'Gaspard : Bastien l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou. Il t\'a donné la pièce (code pour l\'Alchimiste).'},
       /* les signes des menteurs ne se lisent plus : ils s'épinglent sur le liège, avec le nom (liege.js, Bible §12.50) */
       {q:'Margot dit toujours la vérité ?', mimique:'margot',   /* (dès le matin : Romain, 5 novembre, 13 h 19) */ ok:'Un signe de menteur ne dit pas qui est coupable.',
         a:'Margot ? Elle adore les vieilles légendes… et elle en invente parfois. Je connais son truc pour mentir : je te l\'épingle !',
@@ -445,11 +456,7 @@ E[2] = {
       {q:'Comment sais-tu quand quelqu\'un ment ?', besoin:[{vu:'verite:margot:0'}], mimique:['victor', 'tim', 'bastien', 'melusine', 'fortune', 'farinel'], ok:'Des signes de menteurs ne disent pas qui est coupable.',
         a:'Ha ! Tu m\'as bien eue… Tiens, mes secrets de tavernière : je te les épingle. Et surveille le petit Tim : il traîne au Vieux Chêne, ces jours-ci.',
         note:'Margot t\'a confié comment mentent six villageois : six étiquettes sur ton tableau de liège. Le petit Tim traîne au Vieux Chêne, ces jours-ci.'},
-      /* une deuxième source de la pièce de Bastien, la nuit (Romain, 23 h 20) : si Gaspard est vexé la nuit, Margot la raconte aussi
-         (elle ouvre la même question chez Bastien) ; toujours à la fin de la liste : les numéros des questions ne bougent pas */
-      {q:'Quoi de neuf, ce soir ?', moments:['nuit'],
-        a:'Ce soir, toute la taverne en parle : Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve. Lui qui n\'a jamais un sou !',
-        note:'Margot (la nuit) : tout se raconte à la taverne. Bastien a payé son pain chez Gaspard avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou.'}
+      /* (11 novembre : plus de « Quoi de neuf, ce soir ? » : c'était un doublon de la pièce de Gaspard ; Gaspard vexé la donne quand même) */
     ]},
     melusine:{ou:{matin:'lavoir', apresmidi:'atelier'}, carte:{nuit:'atelier'}, occupe:{nuit:'😴 Elle dort à poings fermés.'}, salut:'Bonjour ! Attention aux épingles…', questions:[
       {q:'Odette vient laver son linge ici ?', a:'Odette ne vient plus au lavoir depuis hier… Ce n\'est pas son genre ! Et elle ne sort jamais sans sa canne aux sept chats.', note:'Mélusine : Odette ne vient plus au lavoir depuis hier. Elle ne sort jamais sans sa canne aux sept chats.'},
@@ -536,16 +543,9 @@ E[2] = {
       note:'Lavoir (nuit) : deux ouvriers aux mains pleines de terre parlent d\'avoir tout bouché, et d\'être payés. Personne ne doit approcher du chêne.'}
   ],
   /* Tendre l'oreille (talent du niveau 2, barde.js) : devant un bâtiment, deux fois par enquête ; des phrases à trous.
-     Utiles sans être indispensables : la boulangerie (la pièce d'or), l'atelier (le lavoir rose), la taverne (le tonneau). t : la bribe en entier (vérificateur). */
+     Utiles sans être indispensables : l'atelier (le lavoir rose), la taverne (le tonneau). t : la bribe en entier (vérificateur). */
   bribes:[
-    {id:'boulangerie', lieu:'boulangerie', moments:['matin', 'apresmidi'], titre:'Dans le fournil',
-      intro:'Dans le fournil, Gaspard bavarde avec son apprenti…',
-      phrases:[
-        {qui:'gaspard', texte:'Et devine quoi : Bastien m\'a payé son pain avec une [pièce] d\'or toute [neuve] !'},
-        {qui:'🧑‍🍳', texte:'Bastien ? Lui qui n\'a jamais un [sou] ?'},
-        {qui:'gaspard', texte:'Exactement ! C\'est [bizarre], non ?'}],
-      pieges:['brioche', 'vieille', 'cassée', 'ami', 'pain', 'drôle', 'normal'],
-      t:'Gaspard : Bastien l\'a payé avec une pièce d\'or toute neuve, lui qui n\'a jamais un sou. C\'est bizarre.'},
+    /* (11 novembre : plus de bribe au fournil, « Bastien m'a payé avec une pièce d'or toute neuve » : un doublon de la pièce que Gaspard donne) */
     {id:'atelier', lieu:'atelier', moments:['apresmidi'], titre:'Derrière la porte de l\'atelier',
       intro:'Mélusine parle toute seule en rinçant un tissu…',
       phrases:[
@@ -620,7 +620,21 @@ E[2] = {
       variantes:[
         {si:[{code:'info:rassemblement'}], t:'De la poudre noire mélangée à un colorant rouge : c\'est un fumigène ! C\'est lui qui a fait la fumée rouge du rassemblement. Ce n\'étaient pas des vapeurs toxiques : quelqu\'un a voulu vous faire peur !',
           note:'Analyse de la poudre du pot noir : un fumigène (poudre noire et colorant rouge). La fumée rouge du rassemblement, ce n\'étaient pas des vapeurs toxiques.'}
-      ]}
+      ]},
+    /* les deux pièces d'or (Romain, 11 novembre, 8 h 24) : chacune a la même petite fêlure ; la deuxième qu'on analyse
+       raconte la comparaison et donne le code des pièces jumelles au Barde (variantes, si:{analyse} ; moteur-actions.js M.texteAnalyse) */
+    piece_pain:{
+      t:'Sous ta loupe : de l\'or vrai, tout neuf, sans une rayure. Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui l\'a frappée était fêlé. Et dans les creux… de la farine !',
+      note:'Analyse de la pièce de la boulangerie : de l\'or tout neuf, une petite fêlure en éclair sous la couronne (le moule était fêlé), de la farine dans les creux.',
+      variantes:[{si:[{analyse:'piece_moulin'}], donne:'info:piece',
+        t:'Sous ta loupe : de l\'or tout neuf, et de la farine dans les creux. Sous la couronne, la même petite fêlure en éclair que sur la pièce du moulin, au même endroit ! Les deux pièces sortent du même moule : elles viennent de la même bourse.',
+        note:'Les deux pièces d\'or sont jumelles : même or, même petite fêlure sous la couronne. Elles viennent de la même bourse.'}]},
+    piece_moulin:{
+      t:'Sous ta loupe : de l\'or vrai, tout neuf, sans une rayure. Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui l\'a frappée était fêlé. Et sur la tranche, une tache rouge… du colorant !',
+      note:'Analyse de la pièce du moulin : de l\'or tout neuf, une petite fêlure en éclair sous la couronne (le moule était fêlé), une tache de colorant rouge.',
+      variantes:[{si:[{analyse:'piece_pain'}], donne:'info:piece',
+        t:'Sous ta loupe : de l\'or tout neuf, une tache de colorant rouge. Sous la couronne, la même petite fêlure en éclair que sur la pièce de la boulangerie, au même endroit ! Les deux pièces sortent du même moule : elles viennent de la même bourse.',
+        note:'Les deux pièces d\'or sont jumelles : même or, même petite fêlure sous la couronne. Elles viennent de la même bourse.'}]}
   },
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},   /* (plus de code pour le Barde : Romain, 5 novembre, 01 h 20) */
@@ -686,6 +700,8 @@ E[2] = {
       'Vous vous regardez tous les quatre. Une canne près des rochers, une porte couverte de runes au fond du trou, Odette disparue… Cette affaire n\'est pas finie. Il faut aller voir ce qu\'il y a derrière ces rochers !',
       '<b>À suivre…</b>'
     ],
+    /* une petite scène animée sous chaque texte, dans le même ordre (illus-fin.js ; Romain, 11 novembre, 8 h 11) ; rien sous « À suivre… » */
+    illus:['e2-aveu', 'e2-prison', 'e2-riviere', 'e2-chat', 'e2-equipe'],
     calepin:[
       {ic:'👵', t:'Odette a disparu : elle n\'a pas dormi chez elle.'},
       {ic:'🦯', t:'La canne d\'Odette était dans l\'herbe, près des rochers du Vieux Chêne.'},
@@ -742,8 +758,9 @@ E[2] = {
   ],
   /* Les faits (tools/verif.js) : ce que chaque indice écarte. QUI se trouve (la pièce d'or), OÙ et POURQUOI aussi. */
   faits:[
-    /* QUI : la pièce d'or toute neuve de Bastien (Gaspard, ce qu'on entend au fournil, ou Margot la nuit) + celle sous l'alambic (Pisteur) */
-    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie', 'barde:margot:3'], 'pisteur:moulin:piece'], qui:['melusine', 'margot', 'iris', 'farinel']},
+    /* QUI : la pièce d'or de Bastien (Gaspard la donne au Barde) et celle sous l'alambic (Pisteur), comparées par l'Alchimiste :
+       jumelles (11 novembre). Les deux analyses faites = la comparaison faite (la deuxième raconte la comparaison). */
+    {sources:['alchimiste:analyse:piece_pain', 'alchimiste:analyse:piece_moulin'], qui:['melusine', 'margot', 'iris', 'farinel']},
     {sources:['barde:bastien:1'], qui:['melusine', 'margot', 'iris', 'farinel']},
     /* Mélusine : son rose, c'est le lavoir (ses tissus de Fortuné), pas la rivière */
     {sources:[['barde:melusine:2:verite', 'barde:fortune:0:verite', 'barde:oreille:atelier'], 'alchimiste:analyse:eau_lavoir'], qui:['melusine']},
@@ -760,7 +777,7 @@ E[2] = {
     {sources:[['pisteur:moulin:alambics', 'barde:iris:1'], 'alchimiste:analyse:eau_riviere'], pourquoi:['teindre']},
     {sources:['barde:bastien:1:verite'], pourquoi:['joli', 'teindre', 'farce']},
     /* le filet : même sans aveu, la pièce toute neuve d'un charretier sans le sou dit qu'on l'a payé */
-    {sources:[['barde:gaspard:1', 'barde:oreille:boulangerie', 'barde:margot:3'], 'pisteur:moulin:piece'], pourquoi:['joli', 'farce']}
+    {sources:[['barde:gaspard:1', 'vexe:gaspard'], 'alchimiste:analyse:piece_pain', 'alchimiste:analyse:piece_moulin'], pourquoi:['joli', 'farce']}
   ]
 };
 })();

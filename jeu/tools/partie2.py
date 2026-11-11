@@ -85,7 +85,7 @@ def entrer(pg, cid, src):
 
 def donner(src, cid, *dests):
     # trouvé : dans le sac (P.objets), ou donné par une analyse faite (l'analyse montre son code dans la découverte)
-    verifier(src.evaluate(f"() => {{ var P = M.P(), E = M.E(), c = '{cid}'; return !!(P.objets['_' + c] || P.objets[c.split(':')[1]] && c.indexOf('obj:') === 0 || Object.keys(P.analyses || {{}}).some(function(a){{ return ((E.analyses || {{}})[a] || {{}}).donne === c; }})); }}"), f'{cid} trouvé par {src.evaluate("() => M.role()")}')
+    verifier(src.evaluate(f"() => {{ var P = M.P(), E = M.E(), c = '{cid}'; return !!(P.objets['_' + c] || P.objets[c.split(':')[1]] && c.indexOf('obj:') === 0 || Object.keys(P.analyses || {{}}).some(function(a){{ return (M.texteAnalyse((E.analyses || {{}})[a]) || {{}}).donne === c; }})); }}"), f'{cid} trouvé par {src.evaluate("() => M.role()")}')
     for d in dests: entrer(J[d], cid, src)
 
 def explorer(pg, lieu, points, photo=None):
@@ -220,8 +220,8 @@ with sync_playwright() as p:
     # Barde : Iris, Mélusine au lavoir, Silas, Farinel, le maire, Gaspard (dès le matin), la maison d'Odette
     if TALENT == 'tendre':
         # (Romain, 5 novembre, 12 h 31 : écouter aux portes, tout le temps, sans phrase à trous ; barde.js : A['bd-porte'])
-        ev(B, 'bd-porte', {'l': 'boulangerie'}); B.wait_for_timeout(300); fermer(B)
-        verifier(B.evaluate("() => M.P().vus['barde:oreille:boulangerie'] === 1 && (M.P().portes.gaspard || []).length >= 1"), 'Tendre l\'oreille : la bribe du fournil, gardée chez Gaspard')
+        # (11 novembre : plus de bribe au fournil, doublon de la pièce que Gaspard donne)
+        verifier(not any(b['id'] == 'boulangerie' for b in B.evaluate("() => M.E().bribes")), 'Tendre l\'oreille : plus de bribe au fournil (doublon de la pièce)')
     # Iris d'abord : son champ, puis le signe de Mélusine (un signe de menteur dès le matin : une étiquette du liège)
     # les boîtes des questions : fermées au début (▸), pas de bulle ni de gros bouton 🤥 sous le portrait
     ev(B, 'parler', {'id': 'iris'}); B.wait_for_timeout(300)
@@ -351,6 +351,11 @@ with sync_playwright() as p:
         verifier(P.evaluate("() => M.pointsVisibles('moulin', 'pisteur').map(function(x){ return x.id; }).join(',')") == 'cour' and 'ouvrir le passage sans être vu' in P.evaluate("() => M.pointsVisibles('moulin', 'pisteur')[0].t"), 'Pisteur (après-midi, avec le plan) : au moulin, « Impossible d\'ouvrir le passage sans être vu… Mieux vaut revenir la nuit. »')
     # Gaspard puis Margot (visites libres) : la pièce d'or, les signes (le rassemblement n'est plus au Barde : Romain, 22 h 41)
     parler(B, 'gaspard', [(0, None), (1, None), (2, None)]); fermer(B)
+    donner(B, 'obj:piece_pain', 'alchimiste')   # (11 novembre : Gaspard donne la pièce de Bastien ; l'Alchimiste la comparera)
+    ev(A, 'analyser', {'id': 'piece_pain'}); A.wait_for_timeout(200)
+    m = modal(A) or {}
+    verifier('fêlure' in m.get('t', '') and 'farine' in m.get('t', '') and not m.get('code') and 'jumelle' not in m.get('t', ''), f'Alchimiste : la pièce de la boulangerie seule (fêlure, farine), pas encore de code ({m.get("t", "")[:60]})')
+    fermer(A)
     verifier(B.evaluate("() => !!M.barde.mimiques().margot") and not any(q.get('rassemble') for q in B.evaluate("() => M.E().pnj.gaspard.questions.concat(M.E().pnj.margot.questions)")), 'Barde : Gaspard révèle le signe de Margot ; plus de question de rassemblement')
     parler(B, 'margot', [(0, None)]); demasquer(B, 'margot', 0)
     for i in (1, 2): ev(B, 'question', {'p': 'margot', 'i': str(i)})
@@ -482,22 +487,28 @@ with sync_playwright() as p:
         explorer(P, 'moulin', ['alambics'], photo=('alambics', 'piece-cachee'))
         verifier('piece' in P.evaluate("() => M.pointsVisibles('moulin', 'pisteur').map(function(x){ return x.id; })"), 'Pisteur : entré dans la pièce cachée, « Sous l\'alambic » apparaît')
         explorer(P, 'moulin', ['piece'], photo=('piece', 'sous-alambic'))
-    donner(P, 'obj:colorant', 'alchimiste')   # (la pièce d'or : à l'oral, Romain, 13 h 47)
+    donner(P, 'obj:colorant', 'alchimiste')
+    donner(P, 'obj:piece_moulin', 'alchimiste')   # (11 novembre : la pièce d'or va à l'Alchimiste)
     ev(P, 'lieu', {'id': 'chene'}); ev(P, 'explorer', {'id': 'chene'})
     pot = P.evaluate("() => (M.pointsVisibles('chene', 'pisteur').filter(function(x){ return x.id === 'pot'; })[0] || {}).t || ''")
     verifier('fumée rouge' in pot and 'noirci' in pot, 'Pisteur : la nuit, après le rassemblement, le pot est tout noirci (texte qui change)')
     fermer(P)
     ev(A, 'analyser', {'id': 'colorant'}); A.wait_for_timeout(200); fermer(A)
     verifier(A.evaluate("() => !!M.P().analyses.colorant"), 'Alchimiste : le colorant est le même rouge que la rivière')
+    # les deux pièces comparées : jumelles → le code pour le Barde (sans lui, Bastien ne peut pas être confronté)
+    verifier(not B.evaluate("() => M.besoinOk(M.E().pnj.bastien.questions[1].besoin)"), 'Barde : sans la comparaison des pièces, pas de question de la pièce chez Bastien')
+    ev(A, 'analyser', {'id': 'piece_moulin'}); A.wait_for_timeout(200)
+    m = modal(A) or {}
+    verifier('même petite fêlure' in m.get('t', '') and m.get('code') == 'info:piece', f'Alchimiste : la deuxième pièce, comparée à la première : jumelles, un code pour le Barde ({m.get("code")})')
+    shot(A, 'pieces-jumelles'); fermer(A)
+    donner(A, 'info:piece', 'barde')
     # Barde : les ouvriers au lavoir (phrase à trous), puis Bastien chez lui avec la pièce
     # (Romain, 5 novembre, 14 h 15 : plus de phrase à trous ; les mots des ouvriers tout de suite, et notés)
     ev(B, 'ecouter', {'id': 'ouvriers'})
     verifier('bouché' in ((modal(B) or {}).get('t') or '') and not (B.evaluate("() => M.P().trous") or {}).get('ecoute:ouvriers'), 'Barde : les ouvriers au lavoir, leurs mots tout de suite (plus de phrase à trous)')
     fermer(B)
-    # le filet de Gaspard (Romain, 23 h 20) : la nuit, Margot raconte aussi la pièce d'or de Bastien, et ouvre la même question chez lui
-    parler(B, 'margot', [(3, None)]); fermer(B)
-    verifier(B.evaluate("""() => { var P = M.P(), g = P.vus['barde:gaspard:1'], o = P.vus['barde:oreille:boulangerie']; delete P.vus['barde:gaspard:1']; delete P.vus['barde:oreille:boulangerie'];
-      var ok = M.besoinOk(M.E().pnj.bastien.questions[1].besoin); if(g) P.vus['barde:gaspard:1'] = g; if(o) P.vus['barde:oreille:boulangerie'] = o; return ok; }"""), 'Barde (nuit) : la pièce d\'or racontée par Margot suffit pour la question de la pièce chez Bastien')
+    # (11 novembre : plus de « Quoi de neuf, ce soir ? » chez Margot, doublon de la pièce ; Gaspard vexé la nuit la lâche quand même)
+    verifier(B.evaluate("() => M.E().pnj.margot.questions.length") == 3 and B.evaluate("() => M.E().pnj.gaspard.vexeDonne.obj") == 'piece_pain', 'Barde (nuit) : plus de doublon de la pièce chez Margot ; Gaspard vexé donne quand même la pièce')
     parler(B, 'bastien', [(1, None)], maison='B2')
     if TALENT == 'exiger':
         ev(B, 'bd-exiger', {'p': 'bastien'})
