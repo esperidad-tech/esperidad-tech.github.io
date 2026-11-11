@@ -12,8 +12,8 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 URL = 'file://' + os.path.join(os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist')), 'index.html')
 OUT = os.path.join(ICI, '..', 'test', 'bot-carte')
 os.makedirs(OUT, exist_ok=True)
-ENQ = [a for a in sys.argv[1:] if a in ('e1', 'e2')] or ['e1', 'e2']
-ROLES = next((a.split(',') for a in sys.argv[1:] if a not in ('e1', 'e2')), ['pisteur', 'alchimiste', 'barde', 'sage'])
+ENQ = [a for a in sys.argv[1:] if a in ('e1', 'e2', 'e3')] or ['e1', 'e2']   # e3 : en construction, ouverte par le mode test (#test)
+ROLES = next((a.split(',') for a in sys.argv[1:] if a not in ('e1', 'e2', 'e3')), ['pisteur', 'alchimiste', 'barde', 'sage'])
 problemes, erreurs = [], []
 n_capt = [0]
 
@@ -68,11 +68,17 @@ def creer(b, enq, role):
     pg.on('console', lambda m: erreurs.append(f'[{enq} {role}] {m.text[:200]}') if m.type == 'error' and 'net::' not in m.text and 'fonts' not in m.text else None)
     pg.on('pageerror', lambda e: erreurs.append(f'[{enq} {role}] PAGEERROR {str(e)[:300]}'))
     pg.add_init_script("window.BRUMEVAL_SANS_TUTO = true;")
-    pg.goto(URL)
+    pg.goto(URL + ('#test' if enq == 'e3' else ''))
     pg.click('[data-act=creer]'); pg.click(f'[data-act=crea-role][data-r={role}]'); pg.click('[data-act=crea-suite]'); pg.fill('#nom', role.capitalize()); pg.click('[data-act=crea-fin]')
-    if enq == 'e2':
-        pg.evaluate("() => { M.UI.ecran = 'reglages'; M.render(); }"); pg.click('[data-act=mode-test][data-i="2"]'); pg.click('#voile [data-act=confirmer-oui]')
-    pg.click('[data-act=nouvelle-enquete]'); pg.click('[data-act=commencer]'); pg.wait_for_timeout(300)
+    if enq in ('e2', 'e3'):
+        pg.evaluate("() => { M.UI.ecran = 'reglages'; M.render(); }"); pg.click(f'[data-act=mode-test][data-i="{enq[1]}"]'); pg.click('#voile [data-act=confirmer-oui]')
+    pg.click('[data-act=nouvelle-enquete]')
+    if enq == 'e3': pg.click('[data-act=lettre-suite]')   # la lettre « d'Odette », puis l'écran des missions
+    pg.click('[data-act=commencer]'); pg.wait_for_timeout(300)
+    if enq == 'e3':
+        # tous les codes que ce rôle peut recevoir : tout ce qu'il a à faire se montre (même ce qui ne va pas ensemble, comme la clé et le puits)
+        pg.wait_for_timeout(3000)
+        pg.evaluate("""() => { var E = M.E(), P = M.P(), r = M.role(); M.cle(E.infos).forEach(function(k){ var pr = [].concat(E.infos[k].pour); if(pr.indexOf(r) >= 0) P.recus['info:' + k] = true; }); M.sauver(); }""")
     if pg.evaluate('() => !!(M.tutoTalentForce && M.tutoTalentForce())'):
         pg.click('.b-entete .b-et-heros'); pg.wait_for_timeout(200); pg.click('[data-act=hr-arbre]'); pg.wait_for_timeout(200)
         tid = pg.evaluate("() => DONNEES.TALENTS_PAR_ROLE[M.role()][2][0]")
