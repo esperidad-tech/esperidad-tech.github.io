@@ -3668,7 +3668,11 @@ D.PNJ = {
   margot:{nom:'Margot Chopine', court:'Margot', metier:'la tavernière', ic:'👩‍🍳', pied:4},
   /* enquête 2 (§ 12.11) : le charretier (nom à confirmer par Romain) */
   bastien:{nom:'Bastien Roulebosse', court:'Bastien', metier:'le charretier', ic:'🛒', pied:5},
-  voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
+  voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0},
+  /* enquête 3 (§ 13) : le voisin d'Odette devient un vrai villageois (« voisin », au-dessus, reste la porte d'Odette),
+     et Léo Mouture, l'apprenti du meunier (un grand gaillard aux bottes énormes) */
+  levoisin:{nom:'Le voisin d\'Odette', court:'Le voisin', metier:'le voisin d\'Odette', ic:'🧓', pied:4},
+  leo:{nom:'Léo Mouture', court:'Léo', metier:'l\'apprenti du meunier', ic:'🧑', pied:6}
 };
 /* Où habite chacun, d'une enquête à l'autre (la carte, carte-jeu.js) : une maison dont l'habitant n'est pas dans le registre de
    l'enquête (on ne le connaît pas encore) montre un rond « ? » au lieu de son visage (Romain, 5 novembre, 01 h 20).
@@ -6054,7 +6058,12 @@ var PNJ = {
     sexe:'f', age:'adulte', peau:'p3', coiffure:'chignon', cheveux:'brun', yeux:'noisette', corps:'normal', habit:'#a8302a', chemise:'#f4ecd8', joues:.7, bouche:'ouvert', accessoires:['tablier_blanc','chope']},
   /* enquête 2 : le charretier */
   bastien: {nom:'Bastien Roulebosse', metier:'le charretier', fond:'#8a6a3a',
-    sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'roux', yeux:'vert', nez:'rond', barbe:'courte', corps:'costaud', habit:'#7a4a26', chemise:'#e8d8b0', chapeau:'casquette', sourcils:'epais', terre:true, accessoires:['salopette']}
+    sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'roux', yeux:'vert', nez:'rond', barbe:'courte', corps:'costaud', habit:'#7a4a26', chemise:'#e8d8b0', chapeau:'casquette', sourcils:'epais', terre:true, accessoires:['salopette']},
+  /* enquête 3 : le voisin d'Odette (un vieux monsieur en gilet), et Léo Mouture, l'apprenti du meunier (jeune, grand, plein de farine) */
+  levoisin:{nom:'Le voisin d\'Odette', metier:'le voisin d\'Odette', fond:'#7a8a6a',
+    sexe:'m', age:'age', peau:'p3', coiffure:'degarni', cheveux:'gris', yeux:'marron', nez:'rond', barbe:'moustache', corps:'normal', habit:'#5a6a4a', chemise:'#efe6d0', sourcils:'touffus', sourcilsC:'#d8d8e0', accessoires:['lunettes']},
+  leo:     {nom:'Léo Mouture', metier:'l\'apprenti du meunier', fond:'#a89878',
+    sexe:'m', age:'adulte', peau:'p2', coiffure:'meche', cheveux:'chatain', yeux:'noisette', corps:'maigre', forme:'fin', habit:'#c8bc9c', chemise:'#f4f0e6', chapeau:'bonnet', farine:true, accessoires:['farine_habit']}
 };
 
 function busteCorps(K, sp){
@@ -6185,7 +6194,7 @@ function pnj(id, opts){
    Mêmes repères que le buste (la tête en 0,0 ; le buste s'arrête à y = 120) : on ajoute la taille et la ceinture (ou la jupe),
    les jambes, les chaussures, les bras le long du corps et les mains. Le bas des tabliers continue sur la jupe ou le pantalon. */
 var BAS_PNJ = {grosbec:'#2a2440', gaspard:'#6a5440', melusine:'#2a5a4a', basile:'#3f5f9a', odette:'#5a4a7a', tim:'#3a3a48', victor:'#26386a',
-  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a'};
+  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a', levoisin:'#4a5a3e', leo:'#8a7e62'};
 function geoPied(sp){
   var enf = sp.age === 'enfant';
   var L = sp.corps === 'rond' ? 64 : sp.corps === 'costaud' ? 60 : sp.corps === 'maigre' ? 42 : sp.corps === 'enfant' ? 42 : 50;
@@ -27311,6 +27320,10 @@ M.actionsMax = function(){ return (M.role() === 'alchimiste' ? 3 : 2) + M.fxSomm
    Ce qui limite : le tutoriel (tuto.js), et « un lieu ou un villageois ne donne qu'une chose par moment » (M.rienDePlus, moteur-roles.js).
    Tous les tests d'actions passent par ces trois petites fonctions : les autres enquêtes comptent leurs actions comme avant. */
 M.sansActions = function(){ var E = M.S && M.S.e ? M.E() : null; return !!(E && E.sansActions); };
+/* Une enquête en construction (E.enEcriture : l'enquête 3, étape par étape, Bible § 13.14) : fermée aux joueurs (« en cours d'écriture »),
+   ouverte seulement quand l'adresse porte « test » (…/brumeval/#test : le mode test des Réglages). Pas pour les fichiers ouverts
+   à la main ni pour les robots, qui doivent voir le jeu comme les joueurs. */
+M.enEcriture = function(E){ return !!(E && E.enEcriture && !/(^|[?#&])test\b/.test(location.search + location.hash)); };
 M.peutAgir = function(){ var P = M.P(); return M.sansActions() || !!(P && P.actions > 0); };
 M.depenser = function(){ var P = M.P(); if(P && !M.sansActions()) P.actions--; };
 M.coutTxt = function(t){ return M.sansActions() ? '' : (t === undefined ? ' · 1 action' : t); };   /* « · 1 action » sur un bouton (ou un autre texte), rien sans actions */
