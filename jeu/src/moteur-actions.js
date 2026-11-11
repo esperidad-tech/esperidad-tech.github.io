@@ -1243,7 +1243,9 @@ A.point = function(el){
   }
   if(p.mj){
     /* l'explication avant (p.avant, p.bouton) ; « Plus tard » ramène au lieu : rien n'est encore dépensé ; p.mjNiveauFixe : un niveau fixe (Silas, e2.js) */
-    M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0), p.params, {titre:p.nom, ic:p.ic, avant:p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
+    /* p.facileSi {si:[conditions], niveau, params, avant} (enquête 3) : avec un code, le mini-jeu change (les traces de Moustache, avec ses six doigts) */
+    var fac = p.facileSi && M.besoinOk(p.facileSi.si) ? p.facileSi : null;
+    M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0) + (fac && fac.niveau || 0), fac && fac.params ? Object.assign({}, p.params, fac.params) : p.params, {titre:p.nom, ic:p.ic, avant:(fac && fac.avant) || p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
       sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null}, function(res){
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);

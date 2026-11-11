@@ -339,7 +339,9 @@ var EMP_PRESETS = {
   femme:{nom:'Chaussure fine', L:16.5, W:0.37, bout:'rond', talon:'separe', detail:'aucun', foulee:22, ouvre:4},
   homme:{nom:'Grosse chaussure', L:19.5, W:0.43, bout:'carre', talon:'separe', detail:'aucun', foulee:26, ouvre:10},
   sabot:{nom:'Sabot de bois', L:17, W:0.46, bout:'rond', talon:'plein', detail:'aucun', foulee:22, ouvre:8},
-  botte:{nom:'Botte', L:18.5, W:0.44, bout:'carre', talon:'plein', detail:'trait', foulee:25, ouvre:6}
+  botte:{nom:'Botte', L:18.5, W:0.44, bout:'carre', talon:'plein', detail:'trait', foulee:25, ouvre:6},
+  /* enquête 3 : Moustache, le gros chat gris d'Odette, et ses six doigts (patte:true : une trace de patte, pas une semelle) */
+  chat:{nom:'La patte de Moustache', patte:true, doigts:6, L:21, W:0.95, foulee:27, ouvre:3}   /* (plus grande qu'en vrai : on doit pouvoir compter ses doigts) */
 };
 var BOUTS = ['rond', 'carre'], DETAILS = ['aucun', 'encoche', 'point', 'trait'];
 var formesCache = {};
@@ -347,7 +349,35 @@ function n1(v){ return (Math.round(v * 10) / 10).toString(); }
 /* Forme d'une semelle (pied gauche, pointe vers le haut), centrée sur 0.
    bout : 'rond' (arrondi) | 'carre' (bout plat) ; talon : 'separe' (avant et talon
    bien séparés) | 'plein' (une seule semelle d'un bloc, avec son rebord). */
+/* Une trace de patte (f.patte, enquête 3), pointe vers le haut, centrée sur 0 : le gros coussinet à trois lobes, et les doigts
+   en arc au-dessus (f.doigts : 4 pour un chat, 6 pour Moustache) ; f.griffes : un chien (les griffes marquent le sol).
+   Les doigts sont dans le même chemin que le coussinet (la boue, le creux d'un saut et le flou de nuit les gardent). */
+function formePatte(f){
+  var n = f.doigts || 4, cle = ['patte', n1(f.L), n1(f.W), n, f.griffes ? 1 : 0].join('|');
+  if(formesCache[cle]) return formesCache[cle];
+  var L = f.L, w = f.L * f.W;
+  function P(a, b){ return n1(a * w) + ',' + n1(b * L); }
+  var d = f.griffes
+    /* le chien : un coussinet plus grand, en triangle arrondi */
+    ? 'M' + P(-0.3, 0.2) + ' C' + P(-0.3, 0.02) + ' ' + P(-0.12, -0.06) + ' ' + P(0, -0.06) + ' C' + P(0.12, -0.06) + ' ' + P(0.3, 0.02) + ' ' + P(0.3, 0.2) +
+      ' C' + P(0.31, 0.38) + ' ' + P(0.18, 0.46) + ' ' + P(0, 0.42) + ' C' + P(-0.18, 0.46) + ' ' + P(-0.31, 0.38) + ' ' + P(-0.3, 0.2) + ' Z'
+    : 'M' + P(-0.32, 0.14) + ' C' + P(-0.34, -0.04) + ' ' + P(-0.14, -0.08) + ' ' + P(0, -0.08) + ' C' + P(0.14, -0.08) + ' ' + P(0.34, -0.04) + ' ' + P(0.32, 0.14) +
+      ' C' + P(0.34, 0.3) + ' ' + P(0.27, 0.44) + ' ' + P(0.17, 0.44) + ' C' + P(0.1, 0.44) + ' ' + P(0.07, 0.39) + ' ' + P(0, 0.39) +
+      ' C' + P(-0.07, 0.39) + ' ' + P(-0.1, 0.44) + ' ' + P(-0.17, 0.44) + ' C' + P(-0.27, 0.44) + ' ' + P(-0.34, 0.3) + ' ' + P(-0.32, 0.14) + ' Z';
+  /* les doigts : des ovales sur un arc, ceux du bord plus bas ; plus il y en a, plus ils sont petits et serrés */
+  var ouv = f.griffes ? 1.95 : (n <= 4 ? 1.75 : (n === 5 ? 2.15 : 2.5)), r = (n <= 4 ? 0.115 : (n === 5 ? 0.102 : 0.094)) * L, det = '';
+  var arcX = f.griffes ? 0.47 : 0.4, arcY = f.griffes ? 0.52 : 0.44;   /* (le chien : les doigts plus écartés, plus loin du coussinet) */
+  for(var i = 0; i < n; i++){
+    var a = (i / (n - 1) - 0.5) * ouv, cx = Math.sin(a) * arcX * w, cy = (0.1 - Math.cos(a) * arcY) * L, rx = r, ry = r * 1.3, ca = Math.cos(a), sa = Math.sin(a);
+    /* l'ovale, penché vers l'extérieur : son grand axe suit le rayon de l'arc */
+    var x1 = cx + ry * sa, y1 = cy - ry * ca, x2 = cx - ry * sa, y2 = cy + ry * ca, rot = n1(a * 57.3 + 90);
+    d += ' M' + n1(x1) + ',' + n1(y1) + ' A' + n1(ry) + ',' + n1(rx) + ' ' + rot + ' 1,0 ' + n1(x2) + ',' + n1(y2) + ' A' + n1(ry) + ',' + n1(rx) + ' ' + rot + ' 1,0 ' + n1(x1) + ',' + n1(y1) + ' Z';
+    if(f.griffes){ var gx = cx + (ry + 0.03 * L) * sa, gy = cy - (ry + 0.03 * L) * ca; det += '<path class="e-griffe" d="M' + n1(gx) + ',' + n1(gy) + ' L' + n1(gx + 0.09 * L * sa) + ',' + n1(gy - 0.09 * L * ca) + '"/>'; }
+  }
+  return (formesCache[cle] = {d:d, det:det});
+}
 function formeSemelle(f){
+  if(f.patte) return formePatte(f);
   var cle = [n1(f.L), n1(f.W), f.bout, f.talon, f.detail].join('|');
   if(formesCache[cle]) return formesCache[cle];
   var L = f.L, w = f.L * f.W;
@@ -387,30 +417,54 @@ function varianteCharrette(c, n, evite){
   return v;
 }
 /* La carte du départ (et le rappel de l'aide) : l'empreinte, ou pour une charrette ses traits de roues et deux pas, vus de dessus */
-function traceCarte(f, taille){
-  if(!f.roues) return empreinteCarte(f, taille);
+function traceCarte(f, taille, floue){
+  if(!f.roues) return empreinteCarte(f, taille, floue);
   var s = formeSemelle(f), r = f.roues, H = f.L * 3, Wd = Math.max(r.e, f.L) + 24, k = (taille || 70) / H, rr = '';
   (r.n === 1 ? [0] : [-r.e / 2, r.e / 2]).forEach(function(o){ rr += '<rect class="e-roue" x="' + n1(o - 2.6) + '" y="' + n1(-H / 2) + '" width="5.2" height="' + n1(H) + '" rx="2.6"/>'; });
   return '<svg class="mja-empr-carte" viewBox="' + n1(-Wd / 2) + ' ' + n1(-H / 2) + ' ' + n1(Wd) + ' ' + n1(H) + '" width="' + Math.round(Wd * k) + '" height="' + Math.round(taille || 70) + '" aria-hidden="true"><g class="mja-empr">' + rr + '</g>' +
     '<g class="mja-empr" transform="translate(' + n1(-f.L * 0.3) + ',' + n1(f.L * 0.6) + ')"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g>' +
     '<g class="mja-empr" transform="translate(' + n1(f.L * 0.3) + ',' + n1(-f.L * 0.6) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g></svg>';
 }
-function empreinteCarte(f, taille){
+function empreinteCarte(f, taille, floue){
   var s = formeSemelle(f), h = f.L * 1.25, k = (taille || 70) / h;
+  /* floue (enquête 3, sans « Moustache a six doigts ») : du lait renversé cache les doigts, on ne peut pas les compter */
+  var lait = floue ? '<path class="e-lait" d="M' + n1(-0.5 * f.L) + ',' + n1(-0.12 * f.L) + ' C' + n1(-0.56 * f.L) + ',' + n1(-0.5 * f.L) + ' ' + n1(-0.1 * f.L) + ',' + n1(-0.62 * f.L) + ' ' + n1(0.08 * f.L) + ',' + n1(-0.5 * f.L) +
+    ' C' + n1(0.3 * f.L) + ',' + n1(-0.64 * f.L) + ' ' + n1(0.6 * f.L) + ',' + n1(-0.4 * f.L) + ' ' + n1(0.48 * f.L) + ',' + n1(-0.1 * f.L) + ' C' + n1(0.4 * f.L) + ',' + n1(0.04 * f.L) + ' ' + n1(-0.4 * f.L) + ',' + n1(0.06 * f.L) + ' ' + n1(-0.5 * f.L) + ',' + n1(-0.12 * f.L) + ' Z"/>' : '';
   return '<svg class="mja-empr-carte" viewBox="' + n1(-h * 0.75) + ' ' + n1(-h / 2) + ' ' + n1(h * 1.5) + ' ' + n1(h) + '" width="' + Math.round(h * 1.5 * k) + '" height="' + Math.round(taille || 70) + '" aria-hidden="true">' +
-    '<g class="mja-empr" transform="translate(' + n1(-f.L * 0.32) + ',' + n1(f.L * 0.08) + ')"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g>' +
-    '<g class="mja-empr" transform="translate(' + n1(f.L * 0.32) + ',' + n1(-f.L * 0.08) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g></svg>';
+    '<g class="mja-empr" transform="translate(' + n1(-f.L * 0.32) + ',' + n1(f.L * 0.08) + ')"><path class="e-f" d="' + s.d + '"/>' + s.det + lait + '</g>' +
+    '<g class="mja-empr" transform="translate(' + n1(f.L * 0.32) + ',' + n1(-f.L * 0.08) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + lait + '</g></svg>';
 }
 /* Deux empreintes « pareilles » : même forme (bout, talon, détail, largeur) ET même taille (moins de 9 % d'écart).
    La piste à suivre doit être UNIQUE : aucune autre piste de la carte ne lui est pareille. */
 function memeEmpreinte(a, b){
+  /* des pattes : même nombre de doigts, griffes ou non, même taille */
+  if(a.patte || b.patte) return !!a.patte === !!b.patte && (a.doigts || 4) === (b.doigts || 4) && !!a.griffes === !!b.griffes && Math.abs(a.L - b.L) / Math.min(a.L, b.L) < 0.09;
   return a.bout === b.bout && a.talon === b.talon && a.detail === b.detail && Math.abs(a.W - b.W) < 0.03 &&
     Math.abs(a.L - b.L) / Math.min(a.L, b.L) < 0.09;
 }
 /* Une fausse piste « de la même famille » : toujours une VRAIE différence visible — autre taille (au moins
    +11 %, souvent la même chaussure en plus grand), autre bout, autre talon ou autre petit détail —, plus
    parfois une foulée ou un angle de pied un peu différents. evite : empreintes déjà prises dans le même groupe. */
+/* Une fausse piste de pattes : un autre chat du village (quatre doigts, de sa taille ou pas), un chat à cinq doigts (plus dur à
+   distinguer, dès le niveau 5), ou un chien (plus grand, des griffes) */
+function variantePatte(c, n, evite){
+  var tailles = [1, 0.84, 1.17, 1.32];
+  for(var essai = 0; essai < 80; essai++){
+    var v = Object.assign({}, c), r = Math.random();
+    if(r < 0.2 && n >= 5){ v.doigts = 5; v.L = c.L * U.choix([1, 0.86, 1.16]); }
+    else if(r < 0.82){ v.doigts = 4; v.L = c.L * (n <= 2 && Math.random() < 0.6 ? U.choix([0.84, 1.32]) : U.choix(tailles)); }
+    else { v.doigts = 4; v.griffes = true; v.W = 0.86; v.L = c.L * U.choix([1.32, 1.5]); }
+    v.foulee = c.foulee * Math.pow(v.L / c.L, 0.8);
+    if(Math.random() < 0.3) v.ouvre = c.ouvre + (Math.random() < 0.5 ? -4 : 4);
+    if(memeEmpreinte(v, c)) continue;
+    if(evite && evite.some(function(e){ return memeEmpreinte(v, e); })) continue;
+    if(evite) evite.push(v);
+    return v;
+  }
+  var w = Object.assign({}, c, {doigts:4, griffes:true, W:0.86, L:c.L * 1.7, foulee:c.foulee * 1.5}); if(evite) evite.push(w); return w;
+}
 function variante(c, n, evite){
+  if(c.patte) return variantePatte(c, n, evite);
   var amp = Math.max(0.11, courbe(n, {1:0.3, 3:0.2, 6:0.14, 9:0.11, 12:0.11}));
   function sgn(){ return Math.random() < 0.5 ? -1 : 1; }
   var poids = n <= 2 ? ['taille', 'bout', 'talon', 'detail'] : ['taille', 'taille', 'bout', 'talon', 'talon', 'detail'];
@@ -996,10 +1050,13 @@ var ARRIVEES_HISTOIRE = {
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:function(p){ if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
+  consigne:function(p){ if(p && p.suspect === 'chat') return 'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
+    if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
     return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
     'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },
   ROUES:ROUES,
+  /* (pour les robots et les essais : les formes, les fausses pistes et les modèles d'empreintes) */
+  formes:{semelle:formeSemelle, variante:variante, presets:EMP_PRESETS, meme:memeEmpreinte},
   minuteur:false,
   reglages: function(n, mods){
     var p = {niveau:n};
@@ -1079,8 +1136,9 @@ MJ.enregistrer('traces', {
     var ch = !!(prm && prm.vehicule === 'charrette');
     /* params.compagnon (le massif de la mairie) : les grosses bottes partent avec les petites traces, les croisent, puis s'en vont */
     var comp = !ch && prm && prm.compagnon && EMP_PRESETS[prm.compagnon] ? EMP_PRESETS[prm.compagnon] : null;
-    var f = ch ? charretteCible() : EMP_PRESETS.enfant, g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : comp ? Object.assign({}, comp) : variante(EMP_PRESETS.enfant, 9);
-    if(!ch && !comp){ g.L = 17.5; g.foulee = 23; }
+    var chat = !ch && !comp && prm && prm.suspect === 'chat';   /* (enquête 3) les pattes de Moustache, et un autre chat à quatre doigts */
+    var f = ch ? charretteCible() : (chat ? EMP_PRESETS.chat : EMP_PRESETS.enfant), g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : comp ? Object.assign({}, comp) : (chat ? Object.assign({}, f, {doigts:4, L:f.L * 1.17}) : variante(EMP_PRESETS.enfant, 9));
+    if(!ch && !comp && !chat){ g.L = 17.5; g.foulee = 23; }
     var VL = !!(prm && prm.decor === 'ville'), idv = nid('dtv');
     el.innerHTML = '<svg class="mja-demo-svg mja-traces" viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice">' + (VL ? '<defs>' + villeDefs(idv) + '</defs>' : '') + '<rect x="-200" y="-20" width="700" height="210" fill="' + (VL ? '#8c8173' : '#5b5236') + '"/>' +
       '<g class="dm"></g><circle class="dv" r="30" fill="#fff4d6" fill-opacity=".14" stroke="#8ff3ff" stroke-width="1.6" stroke-dasharray="4 4"/>' +
@@ -1127,7 +1185,7 @@ MJ.enregistrer('traces', {
     var essais = p.essais;
     hud.vies(essais, p.essais);
     hud.barre(0);
-    if(p.aide){ var badge = hud.badge(traceCarte(cibleF, 30)); badge.classList.add('large'); }
+    if(p.aide){ var badge = hud.badge(traceCarte(cibleF, 30, p.carteFloue)); badge.classList.add('large'); }
     /* params.decor = 'nuit' (enquête 2 : suivre Bastien, la nuit) : le même jeu, en plus sombre */
     /* params.decor = 'ville' (enquête 1 : depuis le massif de la mairie) : la ville vue du ciel */
     var VILLE = p.decor === 'ville';
@@ -1348,7 +1406,7 @@ MJ.enregistrer('traces', {
     function esc2(x){ return String(x).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
     var carteD = ch && cibleF.roues ?
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien ces traces</span>' + traceCarte(cibleF, 110) + '<b>' + esc2(cibleF.nom) + '</b><span class="mja-depart-pt">Deux traits de roues, et ses pas au milieu. Attention : pas la brouette (une seule roue), ni la carriole de Fortuné (plus large) !</span></div></div>') :
-      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">' + esc2(p.departTitre || 'Retiens bien cette empreinte') + '</span>' + empreinteCarte(cibleF, 96) + '<b>' + esc2(p.departNom || cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">' + esc2(p.departTxt || 'Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !') + '</span></div></div>');
+      U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">' + esc2(p.departTitre || 'Retiens bien cette empreinte') + '</span>' + empreinteCarte(cibleF, 96, p.carteFloue) + '<b>' + esc2(p.departNom || cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">' + esc2(p.departTxt || 'Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !') + '</span></div></div>');
     terrain.appendChild(carteD);
     P.apres(2800, function(){
       carteD.classList.add('part');
@@ -1949,6 +2007,7 @@ var LANE_H = [168, 180, 192], LANE_B = [62, 180, 298];
 function laneX(l, e){ var a = Math.floor(fixe(l, 0, 2)), b = Math.min(2, a + 1), f = l - a; var xa = LANE_H[a] + (LANE_B[a] - LANE_H[a]) * e, xb = LANE_H[b] + (LANE_B[b] - LANE_H[b]) * e; return xa + (xb - xa) * f; }
 function routeSVG(id, decor){
   if(decor === 'foret') return foretSVG(id);
+  if(decor === 'ville') return villeSVG(id);
   var s = '<defs><linearGradient id="' + id + 'ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141038"/><stop offset=".55" stop-color="#3b2a6a"/><stop offset=".85" stop-color="#7a4a86"/><stop offset="1" stop-color="#e08a6a"/></linearGradient>' +
     '<linearGradient id="' + id + 'sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c4a3a"/><stop offset="1" stop-color="#12261f"/></linearGradient>' +
     '<linearGradient id="' + id + 'rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5e4a"/><stop offset="1" stop-color="#b48a62"/></linearGradient></defs>' +
@@ -1979,6 +2038,192 @@ function foretSVG(id){
 }
 /* la silhouette qui fuit : le même pantin, en sombre, à grande cape */
 function silhouetteSVG(){ return '<g class="mja-fuyard-corps"><g transform="scale(.56)">' + coureurSVG('ombre') + '</g></g>'; }
+
+/* ---------- L'oie de Gaspard, vue de dos, qui court en battant des ailes (E3, params.fuyard = 'oie') ----------
+   Bible (Romain) : « une oie vue de dos : pattes, ailes, long cou, toute blanche ». Les couleurs sont ici, dans OIE_C. */
+var OIE_C = {plume:'#f7f4ec', ombre:'#d6cfbf', bout:'#a9a197', bec:'#f39a2e', becS:'#c96f12', ruban:'#3f86d0'};
+function oieSVG(){
+  var C = OIE_C;
+  var pied = function(c, x){ return '<g transform="translate(' + x + ',-9)"><g class="' + c + '">' +
+    '<path class="oj-c" d="M0,0 L0,9"' + trait(6) + ' stroke-linecap="round" fill="none"/><path class="oj-f" d="M0,0 L0,9" stroke="' + C.bec + '" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+    '<g class="oj-p"><path d="M0,-2 L-7,3.5 C-3,6 3,6 7,3.5 Z" fill="' + C.bec + '"' + trait(2) + ' stroke-linejoin="round"/><path d="M0,-1 L-3,4.3 M0,-1 L3,4.3" stroke="' + C.becS + '" stroke-width="1.2"/></g></g></g>'; };
+  /* une aile : accrochée à l'épaule, elle s'ouvre vers l'extérieur (sg = −1 à gauche, 1 à droite) ; le bout des plumes est gris */
+  var aile = function(c, sg){ var X = function(v){ return (sg * v).toFixed(1); };
+    return '<g transform="translate(' + X(9) + ',-31)"><g class="' + c + '">' +
+      '<path d="M0,-2 C' + X(9) + ',-10 ' + X(24) + ',-9 ' + X(33) + ',-2 L' + X(37) + ',3 L' + X(30) + ',4 L' + X(33) + ',9 L' + X(25) + ',9 L' + X(26) + ',14 L' + X(18) + ',12 C' + X(11) + ',13 ' + X(4) + ',11 0,8 Z" fill="' + C.plume + '"' + trait(3) + ' stroke-linejoin="round"/>' +
+      '<path d="M' + X(30) + ',0 L' + X(36) + ',3 L' + X(30) + ',4 L' + X(32) + ',8 L' + X(25) + ',8.5 L' + X(25.5) + ',12.5 L' + X(19) + ',11 C' + X(22) + ',6 ' + X(26) + ',2 ' + X(30) + ',0 Z" fill="' + C.bout + '"/>' +
+      '<path d="M' + X(5) + ',2 C' + X(11) + ',-1 ' + X(18) + ',-1 ' + X(24) + ',3 M' + X(6) + ',6 C' + X(11) + ',4 ' + X(16) + ',5 ' + X(19) + ',8" stroke="' + C.ombre + '" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+    '</g></g>'; };
+  return '<g class="mja-fuyard-corps mja-oie"><g class="oie-c">' +
+    pied('oie-p1', -7) + pied('oie-p2', 7) +
+    /* le long cou (sa base est cachée par le dos), le ruban bleu de Gaspard, la tête qui se retourne : on voit le bec d'un côté ou de l'autre */
+    '<g transform="translate(0,-36)"><g class="oie-cou">' +
+      '<path d="M0,2 C0,-8 -1.5,-16 0,-25"' + trait(14) + ' stroke-linecap="round" fill="none"/><path d="M0,2 C0,-8 -1.5,-16 0,-25" stroke="' + C.plume + '" stroke-width="8.5" stroke-linecap="round" fill="none"/>' +
+      '<path d="M2.5,-2 C3,-10 2,-17 2.5,-23" stroke="' + C.ombre + '" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+      '<g transform="translate(0,-28)">' +
+        '<g class="oie-bec"><path d="M4,-1.5 L14,1.5 L4,4.5 Z" fill="' + C.bec + '"' + trait(2.2) + ' stroke-linejoin="round"/><path d="M5,1.5 L12,1.5" stroke="' + C.becS + '" stroke-width="1.3"/></g>' +
+        '<ellipse cx="0" cy="0" rx="7.6" ry="8.2" fill="' + C.plume + '"' + trait(3) + '/><path d="M-4,-4.5 C-2,-6.6 1.5,-6.8 3.5,-5.2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '</g>' +
+    '</g></g>' +
+    /* le dos, rond comme une poire, et son ombre à droite */
+    '<path d="M-17,-15 C-20,-30 -12,-41 0,-41 C12,-41 20,-30 17,-15 C15,-5 8,-2 0,-2 C-8,-2 -15,-5 -17,-15 Z" fill="' + C.plume + '"' + trait(3.5) + '/>' +
+    '<path d="M7,-39 C16,-33 18,-22 15,-11 C12,-5 7,-3 2,-2.5 C10,-10 12,-27 7,-39 Z" fill="' + C.ombre + '"/>' +
+    '<path d="M-6.5,-40 C-3,-42.5 3,-42.5 6.5,-40" stroke="' + CONTOUR + '" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="M-6.5,-40 C-3,-42.5 3,-42.5 6.5,-40" stroke="' + C.ruban + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M-1,-41 L-7,-45 L-6.5,-38 Z M1,-41 L7,-45 L6.5,-38 Z" fill="' + C.ruban + '"' + trait(1.6) + ' stroke-linejoin="round"/><circle cx="0" cy="-41" r="1.8" fill="' + C.ruban + '"' + trait(1.4) + '/>' +
+    /* la queue pointue, qui frétille */
+    '<g transform="translate(0,-9)"><g class="oie-queue"><path d="M-7,0 C-7,-5 -4,-9 0,-11 C4,-9 7,-5 7,0 C3,1.5 -3,1.5 -7,0 Z" fill="#fff" stroke="' + C.ombre + '" stroke-width="2"/><path d="M0,-8 L0,-1.5 M-3.2,-5 L-2.4,-0.5 M3.2,-5 L2.4,-0.5" stroke="' + C.ombre + '" stroke-width="1.4" stroke-linecap="round"/></g></g>' +
+    aile('oie-a1', -1) + aile('oie-a2', 1) +
+  '</g>' +
+  /* deux plumes qui s'envolent, et « COUAC ! » de temps en temps */
+  '<path class="oie-plume" d="M0,-5 C3,-2.5 3,2.5 0,5 C-3,2.5 -3,-2.5 0,-5 Z M0,-5 L0,6" fill="#fff" stroke="' + CONTOUR + '" stroke-width="1.2" opacity="0"/>' +
+  '<path class="oie-plume" d="M0,-5 C3,-2.5 3,2.5 0,5 C-3,2.5 -3,-2.5 0,-5 Z M0,-5 L0,6" fill="#fff" stroke="' + CONTOUR + '" stroke-width="1.2" opacity="0"/>' +
+  '<text class="oie-couac" x="26" y="-66" text-anchor="middle" opacity="0">COUAC !</text>' +
+  '</g>';
+}
+/* elle court : appelé à chaque image avec le temps t (s) ; elle se dandine, bat des ailes, ses pattes orange alternent,
+   son cou se balance et elle se retourne pour voir si on la suit */
+function animerOie(g, t, vite){
+  if(!g) return;
+  var q = g.__q;
+  if(!q){
+    var un = function(s){ return g.querySelector(s); };
+    q = g.__q = {c:un('.oie-c'), cou:un('.oie-cou'), bec:un('.oie-bec'), qu:un('.oie-queue'), a1:un('.oie-a1'), a2:un('.oie-a2'), couac:un('.oie-couac'),
+      plumes:[].slice.call(g.querySelectorAll('.oie-plume')), ph:0, t:t,
+      p:['.oie-p1', '.oie-p2'].map(function(s){ var n = un(s); return n ? {c:n.querySelector('.oj-c'), f:n.querySelector('.oj-f'), p:n.querySelector('.oj-p')} : null; })};
+  }
+  var dt = Math.max(0, Math.min(0.05, t - q.t)); q.t = t; q.ph += dt * (vite || 1) * 14;
+  var ph = q.ph, f = function(v){ return (Math.round(v * 10) / 10).toString(); };
+  /* elle se dandine : le corps roule d'un côté à l'autre et rebondit à chaque pas */
+  if(q.c) q.c.setAttribute('transform', 'translate(0,' + f(-Math.abs(Math.sin(ph)) * 2.6) + ') rotate(' + f(7 * Math.sin(ph)) + ')');
+  q.p.forEach(function(a, k){
+    if(!a || !a.c) return;
+    var s = Math.sin(ph + k * Math.PI), lev = Math.max(0, s), sg = k ? 1 : -1;
+    var fx = sg * lev * 2, fy = 9 - lev * 8, d = 'M0,0 Q' + (sg * 2) + ',' + f(fy * 0.5) + ' ' + f(fx) + ',' + f(fy);
+    a.c.setAttribute('d', d); a.f.setAttribute('d', d);
+    a.p.setAttribute('transform', 'translate(' + f(fx) + ',' + f(fy) + ') scale(' + (1 + 0.4 * lev).toFixed(2) + ')');
+  });
+  /* les ailes battent vite (un peu en décalé), toujours un peu ouvertes */
+  var bat = Math.sin(t * 17);
+  if(q.a1) q.a1.setAttribute('transform', 'rotate(' + f(14 + 26 * bat) + ')');
+  if(q.a2) q.a2.setAttribute('transform', 'rotate(' + f(-14 - 26 * Math.sin(t * 17 + 0.25)) + ')');
+  if(q.qu) q.qu.setAttribute('transform', 'rotate(' + f(14 * Math.sin(t * 20)) + ')');
+  /* le cou se balance ; la tête regarde derrière elle, d'un côté puis de l'autre */
+  var re = Math.sin(t * 2.3), cote = re < 0 ? -1 : 1, vu = Math.min(1, Math.abs(re) * 1.6);
+  if(q.cou) q.cou.setAttribute('transform', 'rotate(' + f(-5 * Math.sin(ph) + 5 * re) + ')');
+  if(q.bec){ q.bec.setAttribute('transform', 'scale(' + cote + ',1)'); q.bec.setAttribute('opacity', vu.toFixed(2)); }
+  /* les plumes qui s'envolent (chacune son tour) */
+  q.plumes.forEach(function(pl, k){
+    var u = ((t + k * 0.7) % 1.4) / 1.4, sg = k ? 1 : -1;
+    pl.setAttribute('transform', 'translate(' + f(sg * (12 + 22 * u)) + ',' + f(-30 + 34 * u * u - 10 * u) + ') rotate(' + f(sg * 200 * u) + ') scale(' + (0.8 + 0.5 * u).toFixed(2) + ')');
+    pl.setAttribute('opacity', (u < 0.15 ? u / 0.15 : 1 - (u - 0.15) / 0.85).toFixed(2));
+  });
+  /* « COUAC ! » toutes les 2,6 secondes */
+  if(q.couac){ var c = t % 2.6; q.couac.setAttribute('opacity', c < 0.75 ? Math.min(1, (0.75 - c) * 4).toFixed(2) : '0'); q.couac.setAttribute('transform', 'translate(0,' + f(c < 0.75 ? -c * 8 : 0) + ')'); }
+}
+
+/* ---------- La ville au matin (params.decor = 'ville') : ciel clair, toits de Brumeval et le clocher au bout de la rue,
+   trottoirs de pierre, rue pavée ; sur les côtés, des maisons qui défilent ---------- */
+function villeSVG(id){
+  var s = '<defs><linearGradient id="' + id + 'ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fb6e8"/><stop offset=".6" stop-color="#b9def2"/><stop offset="1" stop-color="#fbe7c4"/></linearGradient>' +
+    '<linearGradient id="' + id + 'sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdbfa3"/><stop offset="1" stop-color="#9c8b70"/></linearGradient>' +
+    '<linearGradient id="' + id + 'rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a9183"/><stop offset="1" stop-color="#c2b49a"/></linearGradient></defs>' +
+    '<rect x="' + DEC.x + '" y="' + DEC.y + '" width="' + DEC.w + '" height="' + (HZ - DEC.y) + '" fill="url(#' + id + 'ciel)"/>' +
+    '<circle cx="306" cy="34" r="24" fill="#fff6c8"/><circle cx="306" cy="34" r="44" fill="#fff6c8" opacity=".25"/>';
+  /* quelques nuages */
+  [[-120, -60, 1.2], [40, 20, 0.9], [210, -110, 1], [470, -20, 1.3], [120, 96, 0.7]].forEach(function(n){
+    s += '<g transform="translate(' + n[0] + ',' + n[1] + ') scale(' + n[2] + ')" opacity=".9"><ellipse cx="0" cy="0" rx="34" ry="12" fill="#fff"/><ellipse cx="-14" cy="-8" rx="16" ry="12" fill="#fff"/><ellipse cx="10" cy="-11" rx="18" ry="14" fill="#fff"/></g>';
+  });
+  /* les toits de Brumeval à l'horizon (le clocher au bout de la rue) */
+  var d = 'M-240,' + HZ;
+  for(var x = -240, k = 0; x < 600; k++){
+    var w = 30 + (k * 37) % 26, h = 22 + (k * 53) % 30;
+    if(x > 120 && x < 230){ x = 230; d += ' L120,' + (HZ - 18) + ' L230,' + (HZ - 18); continue; }
+    d += ' L' + x + ',' + (HZ - h) + ' L' + (x + w / 2) + ',' + (HZ - h - 16) + ' L' + (x + w) + ',' + (HZ - h);
+    x += w;
+  }
+  s += '<path d="' + d + ' L600,' + HZ + ' Z" fill="#a9b9c9" stroke="#8a9bb0" stroke-width="2" stroke-linejoin="round"/>' +
+    '<g fill="#cfdbe6">' + boucleN(18, function(i){ return '<rect x="' + (-220 + i * 46 + (i % 3) * 7) + '" y="' + (HZ - 14 - (i % 2) * 9) + '" width="6" height="7" rx="1"/>'; }) + '</g>' +
+    /* le clocher */
+    '<g transform="translate(180,' + HZ + ')"><path d="M-17,0 L-17,-74 L17,-74 L17,0 Z" fill="#b8c3cf" stroke="#7f8fa3" stroke-width="2.5"/>' +
+      '<path d="M-21,-74 L0,-118 L21,-74 Z" fill="#8a9bb0" stroke="#6d7e94" stroke-width="2.5" stroke-linejoin="round"/><path d="M0,-118 L0,-128 M-4,-124 L4,-124" stroke="#6d7e94" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<circle cx="0" cy="-54" r="8" fill="#f3efe4" stroke="#7f8fa3" stroke-width="2"/><path d="M0,-54 L0,-59 M0,-54 L3.5,-52" stroke="#6d7e94" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M-7,-30 C-7,-40 7,-40 7,-30 L7,-18 L-7,-18 Z" fill="#8d9cb0"/>' +
+      '<path d="M-36,-46 Q0,-30 36,-46" stroke="#8a9bb0" stroke-width="1.2" fill="none"/>' + boucleN(7, function(i){ var xx = -30 + i * 10, yy = -46 + 8 * (1 - Math.pow(xx / 36, 2)); return '<path d="M' + (xx - 3) + ',' + yy.toFixed(1) + ' L' + (xx + 3) + ',' + yy.toFixed(1) + ' L' + xx + ',' + (yy + 6).toFixed(1) + ' Z" fill="' + ['#e5484d', '#ffd36a', '#6cb6ff', '#5fcf86'][i % 4] + '" opacity=".8"/>'; }) +
+    '</g>' +
+    /* trottoirs de pierre, la rue pavée et ses caniveaux */
+    '<rect x="' + DEC.x + '" y="' + HZ + '" width="' + DEC.w + '" height="' + (DEC.y + DEC.h - HZ) + '" fill="url(#' + id + 'sol)"/>' +
+    '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720 L-200,720 Z" fill="url(#' + id + 'rt)" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<path d="M' + (LANE_H[0] - 14) + ',' + HZ + ' L-200,720 M' + (LANE_H[2] + 14) + ',' + HZ + ' L560,720" stroke="#7d7264" stroke-width="7"/>';
+  /* les pavés : des rangées qui se resserrent vers l'horizon */
+  for(var r = 1; r < 16; r++){
+    var e = Math.pow(r / 15, 1.7), y = HZ + (BAS - HZ) * e, xg = laneX(0, e) - 14 - 105 * e, xd = laneX(2, e) + 14 + 105 * e;
+    s += '<path d="M' + xg.toFixed(1) + ',' + y.toFixed(1) + ' L' + xd.toFixed(1) + ',' + y.toFixed(1) + '" stroke="#8a8072" stroke-width="' + (0.6 + 1.6 * e).toFixed(1) + '" opacity=".45"/>';
+  }
+  return s;
+}
+/* une maison de la rue, posée au bord du trottoir ; elle s'étend vers l'extérieur (cote −1 : à gauche ; 1 : à droite). k : le modèle */
+var MAISONS_V = [
+  {mur:'#f3e2c0', toit:'#c4553a', volet:'#3c8a58', bois:'#7a4e2c', colomb:true},
+  {mur:'#f6c9a8', toit:'#5a6478', volet:'#3f86d0', bois:'#8a5a33', colomb:false, enseigne:'pain'},
+  {mur:'#d7e6ee', toit:'#c4553a', volet:'#e5484d', bois:'#7a4e2c', colomb:true, fanions:true},
+  {mur:'#f5e08a', toit:'#a8743f', volet:'#5a6478', bois:'#6b4426', colomb:false, fanions:true}
+];
+function maisonSVG(cote, k){
+  var M = MAISONS_V[k % MAISONS_V.length], K = CONTOUR;
+  var fen = function(x, y){ return '<rect x="' + (x - 13) + '" y="' + y + '" width="9" height="26" rx="1.5" fill="' + M.volet + '" stroke="' + K + '" stroke-width="2.5"/><rect x="' + (x + 4) + '" y="' + y + '" width="9" height="26" rx="1.5" fill="' + M.volet + '" stroke="' + K + '" stroke-width="2.5"/>' +
+    '<rect x="' + (x - 5) + '" y="' + (y + 1) + '" width="10" height="24" fill="#8fc4e6" stroke="' + K + '" stroke-width="2.5"/><path d="M' + x + ',' + (y + 1) + ' L' + x + ',' + (y + 25) + '" stroke="#fff" stroke-width="1.6"/>' +
+    '<rect x="' + (x - 8) + '" y="' + (y + 25) + '" width="16" height="6" rx="2" fill="#a8743f" stroke="' + K + '" stroke-width="2"/><circle cx="' + (x - 4) + '" cy="' + (y + 23) + '" r="2.6" fill="#e5484d"/><circle cx="' + (x + 1) + '" cy="' + (y + 22) + '" r="2.6" fill="#ffd36a"/><circle cx="' + (x + 5) + '" cy="' + (y + 23) + '" r="2.6" fill="#ff8fb3"/>'; };
+  var s = '<g transform="translate(' + (cote < 0 ? -124 : 4) + ',0)">' +
+    '<rect x="0" y="-150" width="120" height="152" fill="' + M.mur + '" stroke="' + K + '" stroke-width="5"/>' +
+    (M.colomb ? '<path d="M3,-76 L117,-76 M30,-148 L30,0 M90,-148 L90,0 M30,-76 L60,-148 L90,-76 M3,-112 L30,-112 M90,-112 L117,-112" stroke="' + M.bois + '" stroke-width="5" fill="none"/>' : '<path d="M3,-76 L117,-76" stroke="' + M.bois + '" stroke-width="4"/>') +
+    '<path d="M-12,-146 L60,-206 L132,-146 Z" fill="' + M.toit + '" stroke="' + K + '" stroke-width="5" stroke-linejoin="round"/>' +
+    '<path d="M2,-152 L60,-200 L118,-152" stroke="#fff" stroke-width="2" fill="none" opacity=".25"/>' +
+    '<path d="M86,-186 L86,-212 L100,-212 L100,-174" fill="#a8743f" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<circle cx="60" cy="-168" r="9" fill="#8fc4e6" stroke="' + K + '" stroke-width="2.5"/>' +
+    fen(30, -136) + fen(90, -136) +
+    '<path d="M44,2 L44,-40 C44,-56 76,-56 76,-40 L76,2 Z" fill="' + M.bois + '" stroke="' + K + '" stroke-width="4"/><circle cx="70" cy="-20" r="2.6" fill="#ffd36a"/>' +
+    fen(17, -58) +
+    (M.enseigne === 'pain' ? '<path d="M120,-92 L136,-92" stroke="' + K + '" stroke-width="4"/><g transform="translate(136,-80)"><rect x="-14" y="-10" width="28" height="22" rx="4" fill="#f3e7cb" stroke="' + K + '" stroke-width="3"/><ellipse cx="0" cy="1" rx="9" ry="5" fill="#e8b04a" stroke="' + K + '" stroke-width="2"/><path d="M-4,-2 l3,5 M1,-3 l3,5" stroke="#a8743f" stroke-width="1.6"/></g>' : '') +
+    (M.fanions ? '<path d="M0,-150 Q60,-128 120,-150" stroke="' + K + '" stroke-width="2" fill="none"/>' + boucleN(6, function(i){ var xx = 12 + i * 19, yy = -150 + 11 * (1 - Math.pow((xx - 60) / 60, 2)); return '<path d="M' + (xx - 6) + ',' + yy.toFixed(1) + ' L' + (xx + 6) + ',' + yy.toFixed(1) + ' L' + xx + ',' + (yy + 13).toFixed(1) + ' Z" fill="' + ['#e5484d', '#ffd36a', '#6cb6ff', '#5fcf86', '#ff8fb3', '#f6a23a'][i] + '" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/>'; }) : '') +
+  '</g>';
+  return s;
+}
+/* le réverbère du matin (éteint), un panier de fleurs accroché */
+function reverbereVille(){
+  return '<path d="M0,0 L0,-120" stroke="' + CONTOUR + '" stroke-width="8"/><path d="M0,0 L0,-120" stroke="#3b3346" stroke-width="4"/>' +
+    '<rect x="-11" y="-146" width="22" height="28" rx="4" fill="#fff4d0" stroke="' + CONTOUR + '" stroke-width="4"/><path d="M-13,-146 L0,-156 L13,-146 Z" fill="#3b3346" stroke="' + CONTOUR + '" stroke-width="3" stroke-linejoin="round"/>' +
+    '<path d="M0,-100 L14,-100" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M6,-100 C6,-84 22,-84 22,-100 Z" fill="#a8743f" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<circle cx="9" cy="-103" r="4" fill="#e5484d"/><circle cx="15" cy="-105" r="4" fill="#ff8fb3"/><circle cx="20" cy="-102" r="3.5" fill="#ffd36a"/><path d="M6,-98 C2,-92 4,-88 2,-84 M22,-98 C26,-92 24,-88 26,-84" stroke="#3c9a62" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+}
+/* Variante « ville » : mêmes familles d'obstacles (mêmes gestes), quelques dessins changés pour la rue un jour de fête */
+function potFleurs(x, y, c){ return '<path d="M' + (x - 8) + ',' + (y - 14) + ' L' + (x + 8) + ',' + (y - 14) + ' L' + (x + 6) + ',' + y + ' L' + (x - 6) + ',' + y + ' Z" fill="#c8643c"' + trait(2.5) + ' stroke-linejoin="round"/>' +
+  '<path d="M' + (x - 5) + ',' + (y - 14) + ' C' + (x - 9) + ',' + (y - 20) + ' ' + (x - 6) + ',' + (y - 24) + ' ' + (x - 2) + ',' + (y - 18) + ' M' + (x + 5) + ',' + (y - 14) + ' C' + (x + 9) + ',' + (y - 20) + ' ' + (x + 6) + ',' + (y - 24) + ' ' + (x + 2) + ',' + (y - 18) + '" fill="#5fcf86"' + trait(1.8) + '/>' +
+  '<circle cx="' + x + '" cy="' + (y - 22) + '" r="6.5" fill="' + c + '"' + trait(2.2) + '/><circle cx="' + x + '" cy="' + (y - 22) + '" r="2.2" fill="#ffd36a"/>'; }
+var VILLE_P = {
+  /* à sauter : un banc de la place (une miche de pain posée dessus) */
+  tronc: '<g>' + ombreSol(60, 7) + HALO +
+    '<path d="M-46,2 L-43,-20 M46,2 L43,-20"' + trait(8) + ' stroke-linecap="round"/><path d="M-46,2 L-43,-20 M46,2 L43,-20" stroke="#5e3a1e" stroke-width="4" stroke-linecap="round"/>' +
+    '<rect x="-50" y="-40" width="100" height="9" rx="3" fill="#a8743f"' + trait(4) + '/><path d="M-36,-31 L-36,-24 M36,-31 L36,-24"' + trait(5) + '/>' +
+    '<rect x="-58" y="-25" width="116" height="10" rx="3" fill="#c08a4a"' + trait(4) + '/><path d="M-50,-20 L50,-20" stroke="#8a5a33" stroke-width="2" opacity=".7"/>' +
+    '<ellipse cx="22" cy="-30" rx="14" ry="6" fill="#e8b04a"' + trait(2.5) + '/><path d="M15,-33 l3,5 M21,-34 l3,5 M27,-33 l3,5" stroke="#a8743f" stroke-width="2" stroke-linecap="round"/></g>',
+  /* à se baisser : une guirlande de fanions tendue entre deux mâts */
+  branche: '<g>' + ombreBarre() + HALO + poteaux(-108) +
+    '<path d="M-55,-102 Q0,-80 55,-102"' + trait(5) + ' fill="none"/><path d="M-55,-102 Q0,-80 55,-102" stroke="#e8d7ae" stroke-width="2.4" fill="none"/>' +
+    boucleN(7, function(i){ var x = -42 + i * 14, u = (x + 55) / 110, y = (1 - u) * (1 - u) * -102 + 2 * (1 - u) * u * -80 + u * u * -102;
+      return '<path d="M' + (x - 6.5) + ',' + y.toFixed(1) + ' L' + (x + 6.5) + ',' + y.toFixed(1) + ' L' + x + ',' + (y + 17).toFixed(1) + ' Z" fill="' + ['#e5484d', '#ffd36a', '#6cb6ff', '#5fcf86', '#ff8fb3', '#f6a23a', '#b48cff'][i] + '"' + trait(2.5) + ' stroke-linejoin="round"/>'; }) +
+    '<path d="M-55,-108 L-55,-124 L-40,-118 L-55,-112 M55,-108 L55,-124 L40,-118 L55,-112" fill="#e5484d"' + trait(2.5) + ' stroke-linejoin="round"/></g>',
+  /* à éviter : l'étagère du marché aux fleurs, trois rangées de pots */
+  rocher: '<g>' + ombreSol(58, 9) + HALO +
+    '<path d="M-50,2 L-40,-124 M50,2 L40,-124"' + trait(9) + ' stroke-linecap="round"/><path d="M-50,2 L-40,-124 M50,2 L40,-124" stroke="#8a5a33" stroke-width="4.5" stroke-linecap="round"/>' +
+    '<rect x="-56" y="-12" width="112" height="9" rx="2" fill="#a8743f"' + trait(3.5) + '/><rect x="-51" y="-54" width="102" height="9" rx="2" fill="#a8743f"' + trait(3.5) + '/><rect x="-46" y="-96" width="92" height="9" rx="2" fill="#a8743f"' + trait(3.5) + '/>' +
+    [[-36, -12, '#e5484d'], [-12, -12, '#ffd36a'], [12, -12, '#b48cff'], [36, -12, '#ff8fb3'], [-30, -54, '#6cb6ff'], [-6, -54, '#e5484d'], [18, -54, '#ffd36a'], [-20, -96, '#ff8fb3'], [4, -96, '#f6a23a'], [26, -96, '#e5484d']].map(function(q){ return potFleurs(q[0], q[1], q[2]); }).join('') + '</g>',
+  /* qui roule vers toi : une grosse meule de fromage échappée du marché */
+  roule: '<g>' + ombreSol(48, 8) + HALO +
+    '<g transform="translate(0,-45)"><g class="mja-roule"><circle r="44" fill="#e9b949"' + trait(5) + '/><circle r="36" fill="#f6d77a"/>' +
+      '<circle cx="-14" cy="-16" r="6" fill="#e0ad3c"/><circle cx="16" cy="-8" r="4.5" fill="#e0ad3c"/><circle cx="-4" cy="14" r="7" fill="#e0ad3c"/><circle cx="20" cy="18" r="3.5" fill="#e0ad3c"/><circle cx="-22" cy="8" r="3.5" fill="#e0ad3c"/><circle cx="4" cy="-26" r="3" fill="#e0ad3c"/>' +
+      '<path d="M0,0 L0,-36" stroke="#d9a32a" stroke-width="2.5"/><path d="M-30,-24 A38,38 0 0 1 2,-38" stroke="#fff3c4" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>' +
+    '<circle cx="-46" cy="-6" r="7" fill="#e8dcc4" opacity=".55"/><circle cx="-56" cy="-12" r="5" fill="#e8dcc4" opacity=".4"/><circle cx="46" cy="-6" r="7" fill="#e8dcc4" opacity=".55"/><circle cx="56" cy="-12" r="5" fill="#e8dcc4" opacity=".4"/></g>'
+};
 /* les familles d'obstacles (pour choisir les vagues) */
 var SAUTS = ['barriere', 'tronc', 'sacs', 'chien'], BAISSES = ['linge', 'branche'],
     BLOCS = ['caisse', 'tonneau', 'foin', 'rocher', 'charrette', 'etal'];
@@ -1988,9 +2233,9 @@ var GESTE_CL = {'⤒':'saut', '⤓':'bas', '◀':'cote', '▶':'cote'};
 function familleGeste(c){ return c === '⤒' ? 'bas' : (c === '⤓' ? 'haut' : 'bloc'); }
 MJ.enregistrer('poursuite', {
   nom:'Course-poursuite', role:'pisteur', ic:'🏃',
-  consigne:function(p){ return 'Rattrape ' + (p && p.fuyard === 'chien' ? 'le petit chien' : 'la silhouette') + ' ! Ce qui est bas : saute (glisse vers le haut). Ce qui passe à hauteur de tête : baisse-toi (vers le bas). Ce qui est grand : change de couloir (à gauche ou à droite).'; },
+  consigne:function(p){ return 'Rattrape ' + (p && p.fuyard === 'chien' ? 'le petit chien' : (p && p.fuyard === 'oie' ? 'l\'oie' : 'la silhouette')) + ' ! Ce qui est bas : saute (glisse vers le haut). Ce qui passe à hauteur de tête : baisse-toi (vers le bas). Ce qui est grand : change de couloir (à gauche ou à droite).'; },
   /* dessins réutilisés par l'écran d'accueil (mj-regles.js) : le coureur, le chien, la silhouette et les obstacles */
-  art:{chien:chienSVG, animerChien:animerChien, foret:FORET_P, route:OBSTACLES_P, coureur:coureurSVG, Pantin:Pantin, silhouette:silhouetteSVG},
+  art:{chien:chienSVG, animerChien:animerChien, oie:oieSVG, animerOie:animerOie, foret:FORET_P, ville:VILLE_P, maison:maisonSVG, route:OBSTACLES_P, coureur:coureurSVG, Pantin:Pantin, silhouette:silhouetteSVG},
   minuteur:false,
   reglages: function(n, mods){
     var p = {niveau:n};
@@ -2026,17 +2271,19 @@ MJ.enregistrer('poursuite', {
     var hud = creerHud(el);
     hud.el.classList.add('mja-hud-course');
     /* variante : params.fuyard = 'chien' (le petit chien noir et blanc), params.decor = 'foret' ; sinon, la silhouette sur la route */
-    var CHIEN = p.fuyard === 'chien', FORET = p.decor === 'foret';
+    var CHIEN = p.fuyard === 'chien', FORET = p.decor === 'foret', OIE = p.fuyard === 'oie', VILLE = p.decor === 'ville';
     var TX = CHIEN ? {raccourci:'👀 Il prend un raccourci !', aie:'Aïe ! Il s\'éloigne…', perdue:'💨 Il s\'échappe…', attrapee:'🙌 Attrapé !', tAttrapee:'attrapé', tPerdue:'perdu',
         rate:'Le petit chien a disparu entre les arbres…', gagne:'Tu as rattrapé le petit chien !'}
+      : OIE ? {raccourci:'👀 Elle prend un raccourci !', aie:'Aïe ! Elle s\'éloigne…', perdue:'💨 Elle s\'échappe…', attrapee:'🙌 Attrapée !', tAttrapee:'attrapée', tPerdue:'perdue',
+        rate:'L\'oie a filé au coin de la rue… COUAC !', gagne:'Tu as rattrapé l\'oie de Gaspard !'}
       : {raccourci:'👀 Elle prend un raccourci !', aie:'Aïe ! Elle s\'éloigne…', perdue:'💨 Elle s\'échappe…', attrapee:'🙌 Attrapée !', tAttrapee:'attrapée', tPerdue:'perdue',
         rate:'La silhouette a disparu à l\'horizon…', gagne:'Tu as rattrapé la silhouette !'};
-    var terrain = U.html('<div class="mja-terrain mja-poursuite' + (FORET ? ' foret' : '') + '"></div>');
+    var terrain = U.html('<div class="mja-terrain mja-poursuite' + (FORET ? ' foret' : '') + (VILLE ? ' ville' : '') + '"></div>');
     el.appendChild(terrain);
     var id = nid('po');
-    terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id, FORET ? 'foret' : '') +
+    terrain.innerHTML = '<svg viewBox="0 0 360 480" preserveAspectRatio="xMidYMid meet">' + routeSVG(id, FORET ? 'foret' : (VILLE ? 'ville' : '')) +
       '<g class="mja-bords"></g><g class="mja-tirets"></g><g class="mja-loin"></g>' +
-      '<g class="mja-poussiere"></g><g class="mja-fuyard">' + (CHIEN ? chienSVG() : silhouetteSVG()) + '<text class="mja-fuyard-ex" x="0" y="-74" text-anchor="middle">!</text></g>' +
+      '<g class="mja-poussiere"></g><g class="mja-fuyard">' + (CHIEN ? chienSVG() : (OIE ? oieSVG() : silhouetteSVG())) + '<text class="mja-fuyard-ex" x="0" y="-74" text-anchor="middle">!</text></g>' +
       '<g class="mja-obstacles"></g>' +
       '<g class="mja-coureur"><ellipse class="mja-ombre-c" cx="0" cy="3" rx="30" ry="8" fill="#000" opacity=".3"/><g class="mja-coureur-corps">' + coureurSVG('pisteur') +
         '<g class="mja-etoiles-choc"><path d="M-30,-104 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z M24,-110 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z" fill="#ffe3a3" stroke="' + CONTOUR + '" stroke-width="1.5"/></g>' +
@@ -2048,10 +2295,10 @@ MJ.enregistrer('poursuite', {
     cadrer(P, svg);
     var gObs = svg.querySelector('.mja-obstacles'), gLoin = svg.querySelector('.mja-loin'), gBords = svg.querySelector('.mja-bords'), gTirets = svg.querySelector('.mja-tirets');
     var coureur = svg.querySelector('.mja-coureur'), corps = svg.querySelector('.mja-coureur-corps'), ombre = svg.querySelector('.mja-ombre-c'), fuyard = svg.querySelector('.mja-fuyard'), conseil = svg.querySelector('.mja-conseil'), conseilT = svg.querySelector('.mja-conseil-t'), conseilF = svg.querySelector('.mja-conseil-f');
-    var pantin = Pantin(corps.querySelector('.pant'), 'pisteur'), pantinF = CHIEN ? null : Pantin(fuyard.querySelector('.pant'), 'ombre');
+    var pantin = Pantin(corps.querySelector('.pant'), 'pisteur'), pantinF = (CHIEN || OIE) ? null : Pantin(fuyard.querySelector('.pant'), 'ombre');
     /* la poussière que soulève le fuyard : huit petits nuages qui servent chacun leur tour */
     var gPous = svg.querySelector('.mja-poussiere'), nuages = [], nuageT = 0, nuageK = 0;
-    for(var nn = 0; nn < 8; nn++) nuages.push({c:svgNoeud('circle', {r:0, fill:FORET ? '#c9b48a' : '#c49a72', opacity:0}, gPous), age:9});
+    for(var nn = 0; nn < 8; nn++) nuages.push({c:svgNoeud('circle', {r:0, fill:FORET ? '#c9b48a' : (VILLE ? '#e8dcc4' : '#c49a72'), opacity:0}, gPous), age:9});
     function poussiere(dt, x, y, sc, cache){
       nuageT -= dt;
       if(nuageT <= 0 && !cache){
@@ -2086,14 +2333,18 @@ MJ.enregistrer('poursuite', {
     var arbres = [];
     for(var i = 0; i < 12; i++){
       var g = svgNoeud('g', {}, gBords);
-      if(FORET && i % 2 === 1) g.innerHTML = '<path d="M0,0 L0,-56" stroke="' + CONTOUR + '" stroke-width="16"/><path d="M0,0 L0,-56" stroke="#5e3f26" stroke-width="10"/><circle cx="0" cy="-92" r="42" fill="#245e3c" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-20" cy="-104" r="20" fill="#2f7a4c"/><circle cx="16" cy="-84" r="16" fill="#2f7a4c"/><path d="M-22,0 C-30,-14 -16,-18 -10,-8 M22,0 C30,-14 16,-18 10,-8" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/>';
+      if(VILLE) g.innerHTML = i % 3 === 2 ? reverbereVille() : maisonSVG(i < 6 ? -1 : 1, i);
+      else if(FORET && i % 2 === 1) g.innerHTML = '<path d="M0,0 L0,-56" stroke="' + CONTOUR + '" stroke-width="16"/><path d="M0,0 L0,-56" stroke="#5e3f26" stroke-width="10"/><circle cx="0" cy="-92" r="42" fill="#245e3c" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="-20" cy="-104" r="20" fill="#2f7a4c"/><circle cx="16" cy="-84" r="16" fill="#2f7a4c"/><path d="M-22,0 C-30,-14 -16,-18 -10,-8 M22,0 C30,-14 16,-18 10,-8" stroke="#3c9a62" stroke-width="5" fill="none" stroke-linecap="round"/>';
       else if(i % 4 === 3 && !FORET) g.innerHTML = '<path d="M0,0 L0,-120" stroke="' + CONTOUR + '" stroke-width="8"/><path d="M0,0 L0,-120" stroke="#3b3346" stroke-width="4"/><rect x="-11" y="-146" width="22" height="28" rx="4" fill="#ffd36a" stroke="' + CONTOUR + '" stroke-width="4"/><circle cy="-132" r="30" fill="#ffd36a" opacity=".18"/>';
       else g.innerHTML = '<path d="M0,0 L0,-30" stroke="#4a3220" stroke-width="10"/><path d="M-34,-24 L0,-120 L34,-24 Z" fill="#1f5a40" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/><path d="M-26,-60 L0,-140 L26,-60 Z" fill="#2a7050" stroke="' + CONTOUR + '" stroke-width="5" stroke-linejoin="round"/>';
-      arbres.push({g:g, p:(i % 6) / 6, cote:i < 6 ? -1 : 1, loin:(i % 2) ? 1.6 : 1});
+      arbres.push({g:g, p:(i % 6) / 6, cote:i < 6 ? -1 : 1, loin:VILLE ? 1 : ((i % 2) ? 1.6 : 1)});
     }
+    /* en ville, les maisons se chevauchent : la plus lointaine est dessinée en premier */
+    if(VILLE) arbres.slice().sort(function(a, b){ return a.p - b.p; }).forEach(function(a){ gBords.appendChild(a.g); });
     var tirets = [];
     for(var k = 0; k < 12; k++) tirets.push({l:svgNoeud('line', {'class':'mja-tiret'}, gTirets), p:(k % 6) / 6, voie:k < 6 ? 0.5 : 1.5});
     if(FORET) tirets.forEach(function(tr){ tr.l.style.stroke = '#c9b48a'; tr.l.style.opacity = '.4'; });
+    if(VILLE) tirets.forEach(function(tr){ tr.l.style.stroke = '#f3ead6'; tr.l.style.opacity = '.55'; });
 
     /* État */
     var voie = 1, xJ = LANE_B[1], saut = 0, glisse = 0, fini = false, t = 0, vagues = [], prochain = 1.1, nVagues = 0, etat = 'course';
@@ -2138,7 +2389,7 @@ MJ.enregistrer('poursuite', {
     function objet(type, voieO, en){
       var o = {type:type, genre:GENRE_P[type], voie:voieO, de:voieO, vers:voieO};
       o.g = svgNoeud('g', {'class':'mja-obstacle g-' + o.genre + (p.aide ? ' tot' : '') + (type === 'bete' ? ' mja-bete' : '')});
-      o.g.innerHTML = (FORET && FORET_P[type]) || OBSTACLES_P[type];
+      o.g.innerHTML = (FORET && FORET_P[type]) || (VILLE && VILLE_P[type]) || OBSTACLES_P[type];
       o.g.style.opacity = '0';
       gLoin.insertBefore(o.g, gLoin.firstChild);
       if(en) Object.assign(o, en);
@@ -2272,9 +2523,9 @@ MJ.enregistrer('poursuite', {
       }
       /* décor */
       arbres.forEach(function(a){
-        a.p += dt * V / p.approche * 0.9; if(a.p > 1.25) a.p -= 1.25;
+        a.p += dt * V / p.approche * 0.9; if(a.p > 1.25){ a.p -= 1.25; if(VILLE) gBords.insertBefore(a.g, gBords.firstChild); }   /* en ville, la maison qui repart au loin passe derrière les autres */
         var pr = projette(a.p), x = 180 + a.cote * (36 + 250 * pr.e * a.loin);
-        a.g.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + pr.y.toFixed(1) + ') scale(' + (pr.s * 1.1).toFixed(3) + ')');
+        a.g.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + pr.y.toFixed(1) + ') scale(' + (pr.s * (VILLE ? 1.55 : 1.1)).toFixed(3) + ')');
         a.g.style.opacity = a.p < 0.05 ? (a.p / 0.05).toFixed(2) : '1';
       });
       tirets.forEach(function(tr){
@@ -2305,13 +2556,14 @@ MJ.enregistrer('poursuite', {
       /* (Romain, 5 novembre, 19 h 31 : « plus il s'éloigne, plus il est petit ») : sa taille suit vraiment la perspective,
          comme les obstacles (avant, un minimum le gardait presque aussi grand au loin), et sa distance ondule un peu en courant */
       var pFv = etat === 'course' ? Math.max(0, pF + 0.035 * Math.sin(t * 0.8) + 0.02 * Math.sin(t * 2.1)) : Math.max(0, pF);
-      var prF = projette(pFv), scF = Math.min(CHIEN ? 1.15 : 1.6, 2.15 * prF.s);   /* (tout près, le petit chien reste petit à côté du coureur) */
+      var prF = projette(pFv), scF = Math.min(CHIEN ? 1.15 : (OIE ? 1.25 : 1.6), 2.15 * prF.s);   /* (tout près, le petit chien reste petit à côté du coureur) */
       var cache = raccourci && raccourci.disparu;
       if(etat !== 'perdue') fuyard.style.opacity = cache ? '0' : '1';
       var xF = etat === 'attrape' ? xJ : laneX(fuyX, prF.e);
       fuyard.setAttribute('transform', 'translate(' + xF.toFixed(1) + ',' + (prF.y + 3).toFixed(1) + ') scale(' + scF.toFixed(3) + ')');
       if(etat !== 'attrape'){
         if(CHIEN) animerChien(fuyard, t, V);
+        else if(OIE) animerOie(fuyard, t, V);
         else { fouleeF += dt * 13 * (0.8 + 0.2 * V); pantinF.poser({ph:fouleeF, j:0, b:0, l:0, t:t, v:1.4}); }
         /* la poussière de ses pas */
         poussiere(dt, xF, prF.y + 3, scF, cache);

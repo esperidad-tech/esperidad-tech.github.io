@@ -736,8 +736,9 @@ MJ.enregistrer('tir', {
       if(type === 'platane') o.zones = o.formesL.map(function(f){ return [30 + f.c[0] - f.c[2] - 10, SOL - 14 + f.c[1] - f.c[2] - 6, f.c[2] * 2 + 20, f.c[2] * 2 + 12]; });
       if(type === 'echelle') o.zones = [[90, 260, 380, 162]];
       o.dx = OFF[0]; o.dy = OFF[1];
-      o.g = svgNoeud('g', {'class':'ti-obstacle ti-o-' + type, transform:(o.dx || o.dy) ? 'translate(' + o.dx + ',' + o.dy + ')' : null}, gBr);
-      if(!(o.dx || o.dy)) o.g.removeAttribute('transform');
+      /* (sans décalage, pas d'attribut du tout : « transform = null » faisait une erreur dans la console, 11 novembre) */
+      var atO = {'class':'ti-obstacle ti-o-' + type}; if(o.dx || o.dy) atO.transform = 'translate(' + o.dx + ',' + o.dy + ')';
+      o.g = svgNoeud('g', atO, gBr);
       o.g.innerHTML = s;
       if(o.marcheur){ o.w = svgNoeud('g', {'class':'ti-marcheur'}, o.g); o.w.innerHTML = o.marcheur; o.jg = o.w.querySelector('.ti-mj-g'); o.jd = o.w.querySelector('.ti-mj-d'); o.wc = o.w.querySelector('.ti-mj-corps'); }
       if(o.art){ o.m = svgNoeud('g', {'class':'ti-o-mob'}, o.g); o.m.innerHTML = o.art; }
@@ -1688,7 +1689,7 @@ if(MJ.DEMOS){
       var nivD = tire <= 0 ? '' : (fort ? 'max' : (tire > 0.75 ? 'fort' : (tire > 0.45 ? 'moyen' : 'faible')));
       if(nivD !== puD._n){ puD._n = nivD; puD.setAttribute('class', 'ti-puiss tid-pu' + (nivD ? ' on ti-pu-' + nivD : '')); puDm.textContent = nivD ? {faible:'Faible', moyen:'Moyen', fort:'Fort', max:'Super flèche ×2'}[nivD] : ''; }
       puDr.setAttribute('y', f1(370 - 140 * tire)); puDr.setAttribute('height', f1(140 * tire));
-      if(filM){ var fm = fil; filM.setAttribute('x1', fm.getAttribute('x1')); filM.setAttribute('y1', fm.getAttribute('y1')); filM.setAttribute('x2', fm.getAttribute('x2')); filM.setAttribute('y2', fm.getAttribute('y2')); filM.setAttribute('opacity', t > T_LACHE + VOL ? 0 : 1); }
+      if(filM && fil.getAttribute('x2') !== null){ var fm = fil; filM.setAttribute('x1', fm.getAttribute('x1')); filM.setAttribute('y1', fm.getAttribute('y1')); filM.setAttribute('x2', fm.getAttribute('x2')); filM.setAttribute('y2', fm.getAttribute('y2')); filM.setAttribute('opacity', t > T_LACHE + VOL ? 0 : 1); }
       ptsG.forEach(function(p, i){ p.setAttribute('opacity', tire > i / 14 ? 1 : 0); p.setAttribute('fill', fort ? '#ffd36a' : '#fffdf4'); });
       archer.poser(a, tire, T, 0, t > T_LACHE + VOL && t < 4.4 ? 'content' : '');
       /* la main : elle se pose près de l'arc, tire vers l'arrière, lâche */

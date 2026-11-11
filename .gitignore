@@ -27,5 +27,6 @@ jeu/test/labo-e2/
 # les captures des robots de l'enquête 3, tools/e3-*.py (refaites à chaque fois)
 jeu/test/e3-barde*/
 jeu/test/e3-roles/
+jeu/test/e3-pisteur/
 jeu/test/e3-marche-*.png
 jeu/test/partie1/

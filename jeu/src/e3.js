@@ -56,8 +56,12 @@ E[3] = {
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
+    /* (étape 5) une mission de fête ratée compte comme faite (fini : un seul essai) ; rendre sa mission au maire, l'après-midi,
+       se coche aussi quand les deux sont ratées (il n'y a alors rien à rendre) */
     pisteur:[
-      {libre:true, ic:'🎉', t:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard.'},
+      {ic:'🎏', t:'Accroche les banderoles de la fête, sur la place.', fait:[{fini:'pisteur:place:banderoles'}]},
+      {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
+      {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     alchimiste:[
@@ -214,7 +218,7 @@ E[3] = {
       t:'Le Barde a trouvé le carnet d\'Odette sur sa table, au 2, rue des Lanternes. Elle y note tout, un chat à chaque page.',
       dire:'Le carnet d\'Odette : donne ce code au Sage et à l\'Alchimiste.'},
     traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde',
-      t:'Chez Odette, du lait renversé… et des petites traces de pattes qui filent dehors. Moustache, le gros chat gris, est passé par là !',
+      t:'Chez Odette, du lait renversé… et des petites traces de pattes qui filent dehors, vers la place. Moustache, le gros chat gris, est passé par là !',
       dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre : donne-lui ce code.'},
     ecriture:{nom:'L\'écriture de Mélusine', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', pnj:'melusine',
       t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : les « M » qui piquent, les « t » en vague, le petit rond sur les « i »… C\'est l\'écriture de Mélusine !',
@@ -224,10 +228,113 @@ E[3] = {
       dire:'Il faudra la clé du sonneur… Le Barde saura lui parler : donne-lui ce code.'},
     aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.',
-      dire:'C\'est une preuve pour le Sage : donne-lui ce code.'}
+      dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
+    /* (étape 5, le Pisteur) ce qu'il reçoit et ce qu'il donne ; ceux du Sage, de l'Alchimiste et des grands dialogues du Barde
+       arriveront avec leurs étapes : en attendant, ils se tapent comme les autres codes */
+    six_doigts:{nom:'Moustache a six doigts', ic:'🐾', pour:'pisteur', de:'sage',
+      t:'Dans le carnet d\'Odette, un dessin de Moustache et une flèche : « Mon gros gris a six doigts à chaque patte ! » Aucun autre chat du village n\'en a autant.',
+      dire:'Le Pisteur saura reconnaître ses traces : donne-lui ce code.'},
+    gui_pommier:{nom:'Le gui du pommier', ic:'🌳', pour:'pisteur', de:'alchimiste',
+      t:'Le gui pousse tout en haut du vieux pommier, dans le potager de Basile. Bien trop haut pour l\'Alchimiste !',
+      dire:'Le Pisteur sait grimper, lui : donne-lui ce code.'},
+    gui:{nom:'Le gui', ic:'🌿', pour:'alchimiste', de:'pisteur',
+      t:'Le Pisteur a grimpé dans le vieux pommier du potager et a cueilli une grosse touffe de gui.',
+      dire:'L\'Alchimiste en a besoin pour ses potions : donne-lui ce code.'},
+    cle_clou:{nom:'La clé est au clou', ic:'🔔', pour:'pisteur', de:'barde',
+      t:'Anselme a pendu sa clé au clou, en haut du clocher. Quand les cloches sonnent, il ferme les yeux et compte les coups…',
+      dire:'C\'est le moment de la décrocher ! Donne ce code au Pisteur.'},
+    vieux_puits:{nom:'Le vieux puits', ic:'🕳️', pour:'pisteur', de:'barde',
+      t:'Tim l\'a vu depuis les toits : Moustache vient de filer dans le vieux puits, entre les barreaux de la grille !',
+      dire:'Le Pisteur doit y aller : donne-lui ce code.'}
   },
-  /* Les lieux du Pisteur et de l'Alchimiste arrivent avec leurs étapes (4 et 5) */
-  lieux:{},
+  /* ---------- Les lieux (étape 5 : le Pisteur ; E3-actions-des-roles.md §1) ----------
+     L'Alchimiste ajoutera ses cueillettes à ces lieux (étape 4). Un seul essai par mini-jeu (essais.js) ; un filet (ouvrePartiel)
+     seulement pour ce qui est indispensable : les traces de Moustache. Niveaux (rang de l'enquête 3 + mjNiveau, puis la courbe
+     enfant / adulte, mj-core.js) : la clé d'Anselme, rang 7 (enfant 9, adulte 8) ; les traces, rang 5 sans « six doigts », rang 3 avec. */
+  lieux:{
+    place:{
+      pisteur:{intro:'La place des Lanternes. Tout le village prépare la fête !', points:[
+        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'tir', params:{decor:'banderoles'},
+          avant:'Le maire veut des banderoles partout sur la place ! Vise les anneaux : chaque flèche emporte sa guirlande de petits drapeaux.',
+          bouton:'🏹 Accrocher les banderoles',
+          t:'Les petits drapeaux claquent au vent, d\'un toit à l\'autre. Basile lève le nez : « Ça, c\'est de la décoration ! »',
+          rate:'Une guirlande s\'emmêle, puis une autre… Le maire soupire : « Bon. On fera sans. »',
+          ferme:'Les banderoles restent dans leur panier.'},
+        /* les traces de Moustache (il faut le code du Barde) : sans « Moustache a six doigts », du lait cache ses doigts sur la carte
+           du départ et le niveau est plus dur ; avec, on voit ses six doigts (p.facileSi, moteur-actions.js). Le filet : raté, on
+           entend un miaulement sous l'église, et le code est donné quand même. Pas de puits l'après-midi. */
+        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:A_, mj:'traces', mjNiveau:2,
+          besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
+          params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+            departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'},
+          facileSi:{si:[{code:'info:six_doigts'}], niveau:-2, params:{carteFloue:false, departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
+          donne:'info:crypte_fermee', ouvrePartiel:true,
+          avant:'Des petites traces de pattes toutes fraîches traversent la place. Moustache est passé par là… Suis-le !',
+          bouton:'🐾 Suivre les traces',
+          t:'Les traces filent jusqu\'à l\'église… et passent sous la grille de la crypte, au pied du clocher. Fermée à clé ! Derrière, dans le noir, un miaulement.',
+          rate:'Tu as perdu les traces… mais un miaulement monte de sous l\'église. La crypte ! Sa grille est fermée à clé.'}
+      ]}
+    },
+    boulangerie:{
+      pisteur:{intro:'La boulangerie de Gaspard. Ça sent la brioche chaude !', points:[
+        /* une oie vue de dos, en ville (mj-pisteur-alchi.js : fuyard 'oie', décor 'ville') ; jamais plus que le niveau 4, comme Tim */
+        {id:'oie', ic:'🦢', nom:'L\'oie de Gaspard', moments:M_, mj:'poursuite', mjNiveauMax:4, params:{fuyard:'oie', decor:'ville'},
+          avant:'COUAC ! L\'oie de Gaspard s\'est sauvée de la cour, et elle file dans les rues ! Gaspard crie : « Sans elle, pas de festin ! » Rattrape-la !',
+          bouton:'🏃 Courir après l\'oie',
+          t:'Tu plonges… et tu l\'attrapes ! COUAC, COUAC ! Elle se débat, puis se calme dans tes bras. Gaspard la serre contre lui : « Ma belle ! Te voilà ! »',
+          rate:'Elle est trop rapide ! L\'oie disparaît au coin de la rue, en battant des ailes. Gaspard s\'arrache les cheveux.',
+          ferme:'L\'oie court encore quelque part dans Brumeval…'}
+      ]}
+    },
+    mairie:{
+      pisteur:{intro:'La mairie. Le maire n\'aime pas qu\'on fouine dans ses papiers…', points:[
+        /* la lettre, en se cachant : pour quand le Barde n'a pas su la demander au maire (le même code que lui) */
+        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'ville', jour:true}, donne:'info:lettre',
+          avant:'Le maire garde la lettre d\'Odette sur son bureau. Faufile-toi jusqu\'à la porte de derrière, sans te faire voir !',
+          bouton:'🫥 Se faufiler',
+          t:'Tu te glisses derrière le grand rideau. Le maire compte ses papiers un par un… puis il sort. La lettre est sur le dessus.',
+          rate:'« Qui va là ?! » On t\'a vu. Tu files sans demander ton reste.',
+          ferme:'Le garde surveille la mairie, maintenant.'},
+        /* rendre sa mission : dès qu'une des deux missions de fête est réussie */
+        {id:'mission', ic:'🎉', nom:'Rendre ta mission au maire', moments:A_, or:5, visibleSi:[{vu:'pisteur:place:banderoles'}, {vu:'pisteur:boulangerie:oie'}],
+          t:'Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu\'à minuit ! »',
+          variantes:[
+            {si:[{et:[{vu:'pisteur:place:banderoles'}, {vu:'pisteur:boulangerie:oie'}]}], t:'Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu\'à minuit ! »'},
+            {si:[{vu:'pisteur:place:banderoles'}], t:'Le maire : « Des banderoles… mais pas d\'oie ? Tant pis ! Ce soir, tout le monde sur la place jusqu\'à minuit ! »'},
+            {si:[{vu:'pisteur:boulangerie:oie'}], t:'Le maire : « Une oie… mais pas de banderoles ? Bon, bon. Ce soir, tout le monde sur la place jusqu\'à minuit ! »'}]}
+      ]}
+    },
+    potager:{
+      pisteur:{intro:'Le potager de Basile : des choux, des poireaux, et un vieux pommier tout tordu.', points:[
+        /* le gui (E3-atelier-des-plantes.md §7) : avec le code de l'Alchimiste ; pas de mini-jeu */
+        {id:'gui', ic:'🌳', nom:'Grimper au vieux pommier', moments:['matin', 'apresmidi'], besoin:[{code:'info:gui_pommier'}], visibleSi:[{code:'info:gui_pommier'}], donne:'info:gui',
+          t:'Une branche, deux branches… Basile crie d\'en bas : « Pas sur mes pommes ! » Tu attrapes une grosse touffe de gui.'}
+      ]}
+    },
+    clocher:{
+      pisteur:{intro:'Le clocher. Tout là-haut dort la Grosse Marie, la plus vieille cloche du village.', points:[
+        /* la clé d'Anselme : avec « La clé est au clou » (le Barde) ; difficile, un seul essai. Raté : le puits apparaît (puits, plus bas) */
+        {id:'cle', ic:'🗝️', nom:'La clé d\'Anselme', moments:['nuit'], mj:'cachette', mjNiveau:4, params:{decor:'ville'},
+          besoin:[{code:'info:cle_clou'}], visibleSi:[{code:'info:cle_clou'}],
+          avant:'Les cloches sonnent ! Là-haut, Anselme compte les coups, les yeux fermés. Faufile-toi jusqu\'au clocher sans te faire voir. Un seul essai !',
+          bouton:'🫥 Se faufiler',
+          t:'DONG ! DONG ! Anselme compte les coups, les yeux fermés. La clé est au clou… Tu la décroches.',
+          rate:'« Qui va là ?! » Anselme raccroche la clé à sa ceinture. En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits !',
+          ferme:'Anselme garde sa clé à la ceinture.'},
+        /* la clé en main : la grille s'ouvre (la descente dans le donjon se branche à l'étape 6) */
+        {id:'crypte', ic:'🕯️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
+          t:'La clé tourne : clac ! La grille grince. Un escalier de pierre descend dans le noir… Moustache file devant toi en miaulant.'}
+      ]}
+    },
+    puits:{
+      pisteur:{intro:'Le vieux puits, au bord de la forêt. Plus personne n\'y tire d\'eau depuis longtemps.', points:[
+        /* seulement si la clé d'Anselme est ratée, ou avec « Le vieux puits » du Barde ; jamais si la clé a été prise.
+           (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec le sac, à l'étape 6.) */
+        {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{rate:'pisteur:clocher:cle'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
+          t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non.'}
+      ]}
+    }
+  },
 
   /* ---------- Les villageois (E3-dialogues-et-trame.md §2 et §3) ----------
      Chacun a une place à chaque moment : ou (on lui parle), sinon carte + occupe (deux petites phrases : la deuxième quand on revient). */

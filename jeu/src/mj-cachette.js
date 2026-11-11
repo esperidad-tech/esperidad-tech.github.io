@@ -540,7 +540,8 @@ MJ.enregistrer('cachette', {
   },
   jouer: function(el, p, fin){
     var P = A.Partie(fin);
-    var decor = PIECES[p.decor] ? p.decor : 'ville', D = PIECES[decor], NUIT = D.nuit, n0 = p.niveau || 1;
+    /* params.jour (enquête 3, la mairie l'après-midi) : la ville en plein jour, sans le voile de la nuit ni les lanternes */
+    var decor = PIECES[p.decor] ? p.decor : 'ville', D = PIECES[decor], NUIT = D.nuit && !p.jour, n0 = p.niveau || 1;
     var vies = p.erreurs + 1, maxVies = vies;
     var hud = A.creerHud(el);
     hud.vies(vies, maxVies);
@@ -1272,7 +1273,7 @@ MJ.enregistrer('cachette', {
    ========================================================== */
 if(MJ.DEMOS){
   MJ.DEMOS.cachette = {w:300, h:420, f:function(el, prm){
-    var decor = prm && PIECES[prm.decor] ? prm.decor : 'ville', NUIT = PIECES[decor].nuit, id = A.nid('ccd'), type = PIECES[decor].types[0];
+    var decor = prm && PIECES[prm.decor] ? prm.decor : 'ville', NUIT = PIECES[decor].nuit && !(prm && prm.jour), id = A.nid('ccd'), type = PIECES[decor].types[0];
     var G = [222, 170], DEP = [150, 392], C1 = [206, 296], C2 = [84, 190], PO = [150, 50];
     var liste = COUV_DECOR[decor];
     var anneau = function(c, x, y, r){ return '<circle class="' + c + '" cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#6cb6ff" fill-opacity=".12" stroke="#8ff3ff" stroke-width="3.5" stroke-dasharray="7 6"/>'; };
