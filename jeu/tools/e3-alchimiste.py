@@ -64,7 +64,9 @@ def debut(b, nom, role, enquete=3, vp=None):
     pg.click('[data-act=creer]'); pg.click(f'[data-act=crea-role][data-r={role}]'); pg.click('[data-act=crea-suite]'); pg.fill('#nom', nom); pg.click('[data-act=crea-fin]')
     pg.evaluate("() => { M.S.heros.joueur = 'adulte'; M.sauver(); M.UI.ecran = 'reglages'; M.render(); }")
     pg.click(f'[data-act=mode-test][data-i="{enquete}"]'); pg.click('#voile [data-act=confirmer-oui]')
-    pg.click('[data-act=nouvelle-enquete]'); pg.click('[data-act=lettre-suite]'); pg.click('[data-act=commencer]'); pg.wait_for_timeout(500)
+    pg.click('[data-act=nouvelle-enquete]'); pg.wait_for_timeout(200)
+    if pg.locator('[data-act=lettre-suite]').count(): pg.click('[data-act=lettre-suite]')   # (l'enquête 2 n'a pas cette page)
+    pg.click('[data-act=commencer]'); pg.wait_for_timeout(500)
     pg.evaluate("""() => { window.__lus = []; M.lire = function(t){ window.__lus.push(String(t)); }; M.lireAuto = function(){};
       var vrai = MJ.lancer;
       MJ.lancer = function(el, type, params, fin, opt){

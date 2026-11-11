@@ -265,7 +265,7 @@ function sacTexte(){
 }
 function sacHTML(){
   var t = sacTexte(), code = '';
-  if(nuit() && faites().length){ try{ code = '<div class="b-donne pl-sac-code"><p>🎒 <b>Le sac</b> : pour le Pisteur</p>' + M.codeHTML(M.code('sac:' + M.sacBits())) + '</div>'; }catch(e){ code = ''; } }
+  if(nuit() && faites().length){ try{ code = '<div class="b-donne pl-sac-code"><p>🎒 <b>Le sac</b> : le code pour le Pisteur ' + lireBtn('Le sac : le code pour le Pisteur.') + '</p>' + M.codeHTML(M.code('sac:' + M.sacBits())) + '</div>'; }catch(e){ code = ''; } }
   return '<div class="pl-voile"><div class="pl-carte" role="dialog" aria-label="Ton sac"><h2>🎒 Ton sac</h2>' + fiolesSac(faites()) +
     '<p>' + esc(t) + ' ' + lireBtn(t) + '</p>' + code + '<button type="button" class="btn second" data-pl="fermer-voile">Fermer</button></div></div>';
 }
