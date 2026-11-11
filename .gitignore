@@ -19,3 +19,5 @@ jeu/test/labo/
 
 # les captures du robot du massif de l'enquête 1, tools/massif.py (refaites à chaque fois)
 jeu/test/massif/
+# les captures du test de l'écran du héros (refaites à chaque fois)
+jeu/test/heros/

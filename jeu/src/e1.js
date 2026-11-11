@@ -140,7 +140,7 @@ E[1] = {
       {ic:'📜', titre:'Ce qui s\'est passé', lignes:[
         ['🐶', 'Pirate, le petit chien noir et blanc de Tim, s\'était perdu dans la forêt.'],
         ['🏮', 'Il faisait trop noir pour le chercher : Tim a pris la Lanterne d\'Or dans le bureau du maire, à la mairie.'],
-        ['🌙', 'À minuit, Odette a vu de sa fenêtre une petite silhouette sauter de toit en toit, avec une lumière dorée, vers la forêt.'],
+        ['🌙', 'À minuit, Odette a vu de sa fenêtre une petite silhouette sauter de toit en toit, jusqu\'à la mairie. Plus tard, une lumière dorée a filé vers la forêt.'],
         ['🕳️', 'Sous le Vieux Chêne, Tim a cru entendre Pirate. La terre a cédé : il est tombé tout au fond d\'un énorme trou.'],
         ['🪢', 'Toute l\'équipe a couru au Vieux Chêne. Gaspard est descendu au bout d\'une corde et a remonté Tim, avec la Lanterne. Pirate est revenu !'],
         ['🎉', 'Le soir, la Lanterne d\'Or a allumé toutes les lanternes de Brumeval : la fête était sauvée.']
@@ -185,7 +185,9 @@ E[1] = {
     victor:{maison:'L6', note:'Distribue le courrier chaque matin.'},
     melusine:{maison:'L4', note:'Tricote plus vite que son ombre.'},
     odette:{maison:'L2', note:'Marche avec une canne. Ne dort presque jamais.'},
-    tim:{maison:'L7', note:'Petit ramoneur de 10 ans : il grimpe sur les toits pour nettoyer les cheminées. Toujours plein de suie !'}
+    /* (Romain, 11 novembre : la fiche ne dit plus « il grimpe sur les toits… toujours plein de suie » : avec la suie de la laine et du balcon,
+       et les traces du massif, le Pisteur, le Sage et l'Alchimiste trouvaient Tim sans le Barde) */
+    tim:{maison:'L7', note:'Petit ramoneur de 10 ans.'}
   },
   objets:{
     /* (Romain, 10 novembre : le Pisteur trouve « des poils », ni un fil ni rouge ; c'est l'analyse qui montre que c'est de la laine.
@@ -320,7 +322,9 @@ E[1] = {
     ]},
     odette:{ou:{matin:'L2', apresmidi:'place', soir:'L2'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'À ma fenêtre, comme toutes les nuits : je ne dors jamais ! La lumière de la boulangerie est restée allumée jusqu\'au matin.', note:'Odette : la lumière de la boulangerie est restée allumée toute la nuit.'},
-      {q:'Avez-vous vu quelque chose ?', a:'Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, avec une lumière dorée qui brillait très fort. Elle est partie vers la forêt.', note:'Odette : à minuit, une petite silhouette avec une lumière dorée a filé sur les toits, vers la forêt.'},
+      /* (Romain, 11 novembre, 8 h : le voleur arrive par les toits, descend par la gouttière et repart à pied — les traces du massif vont à la
+         forêt par le sol. Avant, Odette voyait la silhouette partir vers la forêt « de toit en toit, avec une lumière dorée ».) */
+      {q:'Avez-vous vu quelque chose ?', a:'Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, j\'ai vu une lumière dorée filer vers la forêt.', note:'Odette : à minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, une lumière dorée a filé vers la forêt.'},
       {q:'Et votre écharpe rouge ?', a:'Elle est sur mes épaules, toute neuve ! Et avec ma canne, ça fait longtemps que je ne grimpe plus sur les toits.', note:'L\'écharpe d\'Odette est neuve. Avec sa canne, elle ne grimpe plus.'},
       {q:'Vos chats ont vu quelque chose ?', a:'Mon chat Moustache a rapporté ça cette nuit. Moi qui ne dors presque jamais, je vois tout ce qui se passe au village… mais ça, je ne sais pas d\'où ça vient ! Tiens, prends-le.', note:'Odette t\'a donné une grande plume noire rapportée par son chat.', obj:'plume'}
     ]},
@@ -388,13 +392,13 @@ E[1] = {
   ],
   bonus:[
     /* (tutoriel) une mission bonus n'est proposée que pendant une attente (un code qui n'est pas encore là, le moment suivant, la fin), une seule fois */
-    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', params:{decor:'clocher'}, or:15, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
+    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', params:{decor:'clocher'}, or:3, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
       t:'Le ballon rouge d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
-    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:15, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
+    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:3, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
       t:'Gaspard a oublié l\'ordre de ses fournées. Aide-le à s\'en souvenir !'},
     /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     /* La première phrase à trous du Barde (barde.js) : elle s'écrit dans son Carnet ; on la chante ensuite à Margot, une seule fois */
-    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:15, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
+    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:3, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
       t:'Margot chante la chanson de la fête, mais il y a tant de bruit dans la taverne ! Écoute-la, puis retrouve les mots qui manquent.',
       entendu:'Margot chante à tue-tête… mais avec tout ce bruit, tu n\'as entendu que des morceaux de sa chanson !',
       params:{phrases:[
@@ -403,7 +407,7 @@ E[1] = {
         {qui:'🎶', texte:'on [danse] autour de la [fontaine],'},
         {qui:'🎶', texte:'jusqu\'à ce que se couche la [lune].'}],
         pieges:['neige', 'pluie', 'Bruxelles', 'bougies', 'étoiles', 'deux', 'chante', 'saute', 'mairie', 'rivière', 'soleil']}},   /* des pièges qui vont aussi dans la phrase */
-    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
+    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:3, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
       t:'La vieille horloge de la mairie est déréglée : remets ses runes en place !', params:{image:'horloge'}}
   ],
   fin:{

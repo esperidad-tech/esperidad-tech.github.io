@@ -273,6 +273,26 @@ M.reparerE1 = function(s){
     if(J2 && typeof J2 === 'object') e2Notes(J2.carnet);
     if(s.e && typeof s.e === 'object' && +s.e.id === 2) e2Notes(s.e.carnet);
   }catch(e){}
+  return M.reparerBoutique(s);
+};
+/* Les talents pas encore faits et les objets qui ne marchaient pas sont retirés (Romain, 11 novembre, 8 h 11 ; donnees.js).
+   Une vieille sauvegarde : les talents qui n'existent plus disparaissent (le choix reviendra quand ils seront refaits),
+   les objets retirés sont rendus à Fortuné au prix d'achat, une seule fois ; s.rembourse garde le message à montrer au lancement. */
+M.reparerBoutique = function(s){
+  if(!s || typeof s !== 'object') return s;
+  try{
+    if(Array.isArray(s.talents)) s.talents = s.talents.filter(function(id){ return D.TALENTS[id]; });
+    if(Array.isArray(s.equip)){
+      var rendu = 0;
+      s.equip = s.equip.filter(function(id){
+        if(D.OBJETS[id]) return true;
+        var prix = (D.OBJETS_RETIRES || {})[id];
+        if(prix) rendu += prix;
+        return false;
+      });
+      if(rendu){ s.or = Math.max(0, +s.or || 0) + rendu; s.rembourse = {or:((s.rembourse && s.rembourse.or) || 0) + rendu}; }
+    }
+  }catch(e){}
   return s;
 };
 M.charger = function(n){
@@ -320,7 +340,8 @@ M.talentsEnAttente = function(){
   var n = M.niveau(M.S.xp).n, l = [];
   [2, 4, 6, 8, 10].forEach(function(p){
     if(n >= p){
-      var choix = D.TALENTS_PAR_ROLE[M.role()][p];
+      var choix = (D.TALENTS_PAR_ROLE[M.role()] || {})[p] || [];
+      if(!choix.length) return;   /* (un rôle dont les talents sont encore à faire : rien à choisir) */
       if(!choix.some(function(id){ return M.S.talents.indexOf(id) >= 0; })) l.push(p);
     }
   });

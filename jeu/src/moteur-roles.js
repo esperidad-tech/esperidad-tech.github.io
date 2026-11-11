@@ -34,6 +34,12 @@ M.bonusIci = function(lieu){
 };
 /* L'icône d'une mission bonus sur la carte (Romain, 10 novembre, 16 h 56 : « dès qu'il y a des petits mini-jeux, il faut qu'on le voie
    avec un petit icône », pour tous les rôles et toutes les enquêtes) : celle de son mini-jeu (🎯, 🫧, 🧩…), 🎵 pour une chanson */
+/* Ce que rapporte une mission bonus (Romain, 11 novembre, 8 h 11 : « toutes les missions bonus font gagner entre 1 et 5 pièces d'or, pas plus ») :
+   la valeur de l'enquête (b.or), ramenée entre 1 et 5 ; 3 si elle n'en dit rien */
+M.orBonus = function(b){
+  var n = Math.round(+((b && b.or) || 3));
+  return Math.max(1, Math.min(5, n || 3));
+};
 var IC_BONUS = {runes:'🧩'};   /* (le losange bleu des runes ne dit rien sur une carte) */
 M.icBonus = function(b){
   if(b.ic) return b.ic;
@@ -214,7 +220,7 @@ function bonusHTML(lieu){
   return M.bonusIci(lieu).map(function(b){
     /* (dans la bulle de la carte : seulement « ✨ Mission bonus » et « Tenter » ; le nom et l'histoire sont dans la fenêtre du mini-jeu) */
     return '<div class="b-bonus"><h3>✨ Mission bonus<span class="b-long"> : ' + esc(b.titre) + '</span></h3><p>' + esc(b.t) + '</p>' + lire(b.t) +
-      '<p class="b-bonus-gain">🪙 ' + b.or + ' pièces d\'or · ⚠️ un seul essai</p><button class="btn magie" data-act="bonus" data-id="' + b.id + '"' + (M.peutAgir() ? '' : ' disabled') + '>Tenter' + M.coutTxt() + '</button></div>';
+      '<p class="b-bonus-gain">🪙 ' + M.orBonus(b) + (M.orBonus(b) > 1 ? ' pièces' : ' pièce') + ' d\'or · ⚠️ un seul essai</p><button class="btn magie" data-act="bonus" data-id="' + b.id + '"' + (M.peutAgir() ? '' : ' disabled') + '>Tenter' + M.coutTxt() + '</button></div>';
   }).join('');
 }
 function carteGens(id){

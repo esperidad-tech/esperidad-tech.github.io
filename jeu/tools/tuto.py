@@ -305,6 +305,14 @@ with sync_playwright() as p:
         if pg.is_visible('#voile .b-fermer'): pg.click('#voile .b-fermer', force=True)
         verif(pg.evaluate('() => M.P() && M.P().id') == 2, f'{r} : dans l\'enquête 2')
         if pg.is_visible('[data-act=commencer]'): pg.click('[data-act=commencer]', force=True); pg.wait_for_timeout(400)
+        # (11 novembre : seul le Barde a des talents ; les trois autres rôles n'ont rien à choisir, rien n'est bloqué)
+        if r != 'barde':
+            verif(not pg.evaluate('() => M.tutoTalentForce()') and pg.evaluate('() => M.talentsEnAttente().length') == 0, f'{r} E2 : pas de talent à choisir (ses talents sont à refaire), rien de bloqué')
+            if pg.is_visible('#voile .b-fermer'): pg.click('#voile .b-fermer', force=True); pg.wait_for_timeout(200)
+            pg.click('[data-act=onglet][data-o=carte]', force=True); pg.wait_for_timeout(300)
+            verif(pg.evaluate("() => M.P().onglet") == 'carte', f'{r} E2 : la carte s\'ouvre tout de suite')
+            pg.screenshot(path=f'{OUT}/e2-{r}.png')
+            continue
         verif(pg.evaluate('() => M.tutoTalentForce()'), f'{r} E2 : le talent du niveau 2 est à choisir, tout est bloqué')
         pg.click('[data-act=onglet][data-o=carte]', force=True); pg.wait_for_timeout(200)
         verif(pg.evaluate("() => M.P().onglet") != 'carte' and any('Pas maintenant' in x for x in pg.evaluate('() => window.__toasts')), f'{r} E2 : l\'onglet Carte refuse (« Pas maintenant »)')

@@ -92,14 +92,14 @@ with sync_playwright() as p:
     verif(ev(pg, '() => M.UI.ecran') == 'heros', 'Toucher le nom et le rôle du bandeau ouvre aussi l\'écran du héros')
     # une tenue de la garde-robe et de l'équipement, niveau 3
     ev(pg, """() => { var G = M.etatGarde(); ['bandeau_simple','tunique_lin','bottes_cuir'].forEach(function(id){ if(!G.a[id]) G.a[id] = {c:Garde.ITEMS[id].c}; }); G.p.tete = 'bandeau_simple'; G.a.bandeau_simple.c = 'bleu'; G.p.corps = 'tunique_lin'; G.p.pieds = 'bottes_cuir';
-      M.S.xp = 260; M.S.or = 300; M.S.equip = ['gants_pisteur', 'bottes_vent', 'lanterne_sourde', 'pieges', 'sifflet']; M.sauver(); M.render(); }""")
+      M.S.xp = 260; M.S.or = 300; M.S.equip = ['gants_pisteur', 'bottes_vent', 'lanterne_sourde']; M.sauver(); M.render(); }""")
     pg.wait_for_timeout(300)
     t2 = pg.inner_text('.hr-bas')
     verif('Niveau 3' in t2 and '260 / 380 points d\'expérience' in t2, f'Niveau 3 : « 260 / 380 points d\'expérience » ({t2!r})')
     verif(abs(ev(pg, "() => parseFloat(document.querySelector('.hr-barre i').style.width)") - round((260 - 250) * 100 / 130)) <= 1, 'La barre est remplie en proportion (10/130)')
     verif('👛' in pg.inner_text('.hr-bourse') and '300' in pg.inner_text('.hr-bourse') and '🛒' not in pg.inner_text('.hr-bourse'), 'La bourse 👛 montre les pièces (pas de chariot)')
-    verif(pg.locator('.hr-btn-arbre .hr-badge').count() == 1, 'Un talent à choisir : ⭐ sur le bouton de l\'arbre')
-    verif(pg.locator('.hr-case.pleine').count() == 5 and pg.locator('.hr-case').count() == 8, f'Équipement : 5 cases pleines sur 8 ({pg.locator(".hr-case.pleine").count()}/{pg.locator(".hr-case").count()})')
+    verif(pg.locator('.hr-btn-arbre .hr-badge').count() == 0, 'Pisteur : pas de ⭐ sur le bouton de l\'arbre (ses talents sont à refaire, 11 novembre)')
+    verif(pg.locator('.hr-case.pleine').count() == 3 and pg.locator('.hr-case').count() == 8, f'Équipement : 3 cases pleines sur 8 ({pg.locator(".hr-case.pleine").count()}/{pg.locator(".hr-case").count()})')
     verif(pg.inner_text('.hr-equip-titre') == 'Équipement', '« Équipement » écrit à côté des cases')
     mots = ev(pg, "() => document.querySelector('.hr-ecran').innerText.replace(/\\s+/g, ' ').trim()")
     verif(len(mots) < 90, f'Très peu de texte sur l\'écran du héros ({mots!r})')
@@ -120,7 +120,8 @@ with sync_playwright() as p:
         corps = boite(pg, '.hr-heros .pj-souffle')
         verif(corps['b'] <= bar['y'] + 0.06 * h['h'] and corps['b'] >= bar['y'] - 0.12 * h['h'], f'{W}×{H} : les pieds du héros juste au-dessus de la barre d\'expérience')
         pg.screenshot(path=f'{OUT}/heros-{W}x{H}.png')
-        # l'arbre des talents
+        # l'arbre des talents (celui du Barde : le seul fait, 11 novembre)
+        ev(pg, "() => { M.S.heros.role = 'barde'; M.render(); }")
         pg.click('[data-act=hr-arbre]'); pg.wait_for_timeout(450)
         n = pg.locator('.hr-talent').count()
         tb = ev(pg, "() => Array.from(document.querySelectorAll('.hr-talent, .hr-niv-t')).map(function(e){ var r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom, r.height, e.className]; })")
@@ -132,6 +133,7 @@ with sync_playwright() as p:
         verif(not pg.is_visible('.hr-heros svg') and not pg.is_visible('.hr-case'), f'{W}×{H} : le héros et les cases s\'effacent derrière l\'arbre')
         pg.screenshot(path=f'{OUT}/arbre-{W}x{H}.png')
         pg.click('[data-act=hr-arbre]'); pg.wait_for_timeout(200)
+        ev(pg, "() => { M.S.heros.role = 'pisteur'; M.render(); }")
     pg.set_viewport_size({'width': 390, 'height': 844}); pg.wait_for_timeout(300)
 
     # ================= 2. Bourse → boutique ; un objet acheté remplit une case et se voit sur le héros =================
@@ -150,33 +152,43 @@ with sync_playwright() as p:
     pg.click('.hr-case.pleine[data-id=gants_pisteur]'); pg.wait_for_timeout(200)
     verif('Gants de pisteur' in pg.inner_text('#voile') and pg.locator('#voile .b-lire').count() >= 1, 'Toucher une case : le nom de l\'objet, ce qu\'il fait, avec 🔊')
     pg.screenshot(path=f'{OUT}/objet-390x844.png'); fermer(pg)
-    vus = ev(pg, """() => { var r = {}; ['pieges','deguisement','bottes_vent'].forEach(function(id){ var o = DONNEES.OBJETS[id], h = Object.assign(Persos.defaut(o.role, 'f'), {niveau:5, equip:[id]});
+    vus = ev(pg, """() => { var r = {}; ['bottes_vent'].forEach(function(id){ var o = DONNEES.OBJETS[id], h = Object.assign(Persos.defaut(o.role, 'f'), {niveau:5, equip:[id]});
       if(id === 'bottes_vent') h.garde = {pieds:{id:'bottes_cuir', c:'marron'}};
       var a = Persos.heros(h, {id:'t', anime:false}); h.equip = []; r[id] = a !== Persos.heros(h, {id:'t', anime:false}); }); return r; }""")
-    verif(all(vus.values()), f'Nouveaux dessins sur le héros : pièges, déguisement, ailes des bottes de vent sur les bottes de la garde-robe ({vus})')
+    verif(all(vus.values()), f'Dessin sur le héros : ailes des bottes de vent sur les bottes de la garde-robe ({vus})')
 
     # ================= 3. L'arbre des talents : prendre un talent =================
     print('3. Arbre des talents')
     ev(pg, "() => { M.S.xp = 250; M.sauver(); M.render(); }")
+    # (11 novembre : les talents du Pisteur, de l'Alchimiste et du Sage sont à refaire ; leur arbre montre un message)
     pg.click('[data-act=hr-arbre]'); pg.wait_for_timeout(300)
+    verif(pg.locator('.hr-talent').count() == 0 and pg.is_visible('.hr-arbre-msg') and pg.locator('.hr-arbre-msg .b-lire').count() == 1
+          and ev(pg, '() => M.talentsEnAttente().length') == 0 and pg.locator('.hr-btn-arbre .hr-badge').count() == 0,
+          'Pisteur : pas de talent pour l\'instant, un message avec 🔊 dans l\'arbre, pas de ⭐')
+    pg.screenshot(path=f'{OUT}/arbre-vide-390x844.png')
+    # l'arbre du Barde, le seul fait : on prend un talent
+    ev(pg, "() => { M.S.heros.role = 'barde'; M.S.talents = []; M.S.equip = []; M.sauver(); M.render(); }")
+    pg.wait_for_timeout(300)
+    if not pg.is_visible('.hr-talent'): pg.click('[data-act=hr-arbre]'); pg.wait_for_timeout(300)
     et = ev(pg, "() => Array.from(document.querySelectorAll('.hr-talent')).map(function(e){ return [e.dataset.id, e.dataset.etat, e.closest('.hr-etage').dataset.niv]; })")
     dispo = [x[0] for x in et if x[1] == 'dispo']; ferme = [x for x in et if x[1] == 'ferme']
-    verif(sorted(dispo) == ['pistage', 'vision'] and len(ferme) == 8 and all(x[2] != '2' for x in ferme), f'Niveau 3 : les talents du niveau 2 à choisir, les autres verrouillés ({et})')
+    verif(sorted(dispo) == ['exiger', 'tendre'] and len(ferme) == 8 and all(x[2] != '2' for x in ferme), f'Niveau 3 : les talents du niveau 2 à choisir, les autres verrouillés ({et})')
     verif(pg.locator('.hr-niv-t').all_inner_texts() == ['Niv. 10', 'Niv. 8', 'Niv. 6', 'Niv. 4', 'Niv. 2'], 'Chaque étage montre le niveau où il s\'ouvre')
     longs = [t for t in pg.locator('.hr-t-txt').all_inner_texts() if len(t.split()) > 3]
     longs += ev(pg, "() => Object.keys(DONNEES.TALENTS).map(function(id){ return M.talentCourt(id); }).filter(function(t){ return t.split(/\\s+/).length > 3 || t.length > 24; })")
     verif(not longs, f'Textes des talents très courts (3 mots au plus) {longs}')
-    pg.click('.hr-talent[data-id=vision]'); pg.wait_for_timeout(200)
-    verif(pg.is_visible('#voile [data-act=talent][data-id=vision]') and pg.locator('#voile .b-lire').count() >= 1, 'Toucher un talent à choisir : sa description avec 🔊 et « Je prends ce talent »')
+    pg.click('.hr-talent[data-id=tendre]'); pg.wait_for_timeout(200)
+    verif(pg.is_visible('#voile [data-act=talent][data-id=tendre]') and pg.locator('#voile .b-lire').count() >= 1, 'Toucher un talent à choisir : sa description avec 🔊 et « Je prends ce talent »')
     pg.screenshot(path=f'{OUT}/talent-390x844.png')
-    pg.click('#voile [data-act=talent][data-id=vision]'); pg.wait_for_timeout(200); fermer(pg)
+    pg.click('#voile [data-act=talent][data-id=tendre]'); pg.wait_for_timeout(200); fermer(pg)
     et2 = dict((x[0], x[1]) for x in ev(pg, "() => Array.from(document.querySelectorAll('.hr-talent')).map(function(e){ return [e.dataset.id, e.dataset.etat]; })"))
-    verif(ev(pg, "() => M.S.talents.indexOf('vision') >= 0") and et2.get('vision') == 'pris' and et2.get('pistage') == 'non' and pg.locator('.hr-btn-arbre .hr-badge').count() == 0, f'Talent pris depuis l\'arbre : ✔, l\'autre s\'éteint, plus de ⭐ ({et2.get("vision")}, {et2.get("pistage")})')
-    pg.click('.hr-talent[data-id=pistage]'); pg.wait_for_timeout(150)
+    verif(ev(pg, "() => M.S.talents.indexOf('tendre') >= 0") and et2.get('tendre') == 'pris' and et2.get('exiger') == 'non' and pg.locator('.hr-btn-arbre .hr-badge').count() == 0, f'Talent pris depuis l\'arbre : ✔, l\'autre s\'éteint, plus de ⭐ ({et2.get("tendre")}, {et2.get("exiger")})')
+    pg.click('.hr-talent[data-id=exiger]'); pg.wait_for_timeout(150)
     verif(pg.locator('#voile [data-act=talent]').count() == 0, 'L\'autre talent de l\'étage ne se prend plus'); fermer(pg)
     pg.click('[data-act=retour]'); pg.wait_for_timeout(150)
     verif(ev(pg, '() => M.UI.ecran') == 'heros' and not ev(pg, '() => !!M.UI.arbre'), '« ← Retour » referme d\'abord l\'arbre')
     pg.click('[data-act=retour]'); pg.wait_for_timeout(200)
+    ev(pg, "() => { M.S.heros.role = 'pisteur'; M.S.talents = []; M.sauver(); M.render(); }")   # (on redevient Pisteur pour la suite)
 
     # ================= 4. Le menu ☰ et les « ← Retour » =================
     print('4. Menu')

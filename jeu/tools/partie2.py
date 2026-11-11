@@ -123,7 +123,10 @@ with sync_playwright() as p:
     b = p.chromium.launch()
     J = {r: creer(b, r) for r in ROLES}
     M_ROLE = {J[r]: r for r in ROLES}
-    for r in ROLES: talent(J[r], r, TALENT if r == 'barde' else None)
+    # (11 novembre : seul le Barde a des talents à choisir ; les talents des trois autres rôles sont à refaire)
+    talent(J['barde'], 'barde', TALENT)
+    for r in ROLES:
+        if r != 'barde': verifier(not J[r].evaluate('() => !!M.tutoTalentForce()'), f'{r} : pas de talent à choisir au début de l\'enquête 2')
     P, A, B, S = J['pisteur'], J['alchimiste'], J['barde'], J['sage']
     verifier(S.evaluate("() => M.E().id === 2 && M.sansActions() && M.E().moments.join(',') === 'matin,apresmidi,nuit'"), 'enquête 2 sans actions, matin / après-midi / nuit')
 
