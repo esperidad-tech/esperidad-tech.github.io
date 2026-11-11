@@ -1360,7 +1360,7 @@ A.bonus = function(el){
    (ex. : la poudre du pot noir, enquête 2 : avant et après le rassemblement). Relu à chaque fois : la table d'analyse suit l'enquête. */
 M.texteAnalyse = function(An){
   var v = An && (An.variantes || []).filter(function(x){ return M.besoinOk(x.si); })[0];
-  return v ? Object.assign({}, An, {t:v.t || An.t, note:v.note || An.note}) : An;
+  return v ? Object.assign({}, An, {t:v.t || An.t, note:v.note || An.note, donne:v.donne || An.donne}) : An;   /* (une variante peut donner son code : les pièces jumelles) */
 };
 A.analyser = function(el){
   var P = M.P(), E = M.E(), id = el.dataset.id, An = M.texteAnalyse((E.analyses || {})[id]);

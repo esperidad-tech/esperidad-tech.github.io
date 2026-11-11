@@ -1,5 +1,7 @@
 # Brumeval — l'équilibrage en chiffres
 
+> **Archive (11 novembre) : ce document n'est plus à jour.** Il compte des points d'action, la réserve du Sage et les anciens talents et objets, qui n'existent plus. Son programme est rangé à côté (`jeu/archives/equilibre-ancien.js`, il ne tourne plus avec les données d'aujourd'hui). La Bible fait foi.
+
 *Actions, réserve du Sage, difficulté automatique, progression. Calculs du 2 novembre 2026.*
 
 Ce document répond à tes cinq questions. Les calculs sont faits par un petit programme, `tools/equilibre.js`, qui lit les vraies données du jeu (`src/donnees.js`, `src/e1.js`, `src/e2.js`, `src/e3.js`, le calibrage des mini-jeux) et **simule des milliers de parties**. Il ne modifie rien dans le jeu.

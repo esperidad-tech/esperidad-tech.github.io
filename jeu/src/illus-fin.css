@@ -133,6 +133,74 @@
 .sf-b-danger{animation:sf-b-danger 12s linear infinite both}
 @keyframes sf-b-danger{0%, 74%{opacity:0}78%, 94%{opacity:1}98%, 100%{opacity:0}}
 
+/* ========== La fin de l'enquête 2 (Romain, 11 novembre, 8 h 11) ========== */
+/* le grand bureau du maire, posé devant lui ; ses papiers ; la pièce d'or */
+.sf-bureau{position:absolute;left:63%;bottom:6%;width:35%;height:15%;box-sizing:border-box;background:linear-gradient(#b07a44, #7a4e2c);border:2.5px solid #24182e;border-radius:4px 4px 2px 2px;z-index:2}
+.sf-bureau i{position:absolute;left:-4%;right:-4%;top:-22%;height:30%;box-sizing:border-box;background:#8a5a30;border:2.5px solid #24182e;border-radius:3px}
+.sf-bureau::after{content:"";position:absolute;left:30%;top:36%;width:40%;height:34%;box-sizing:border-box;border:2px solid #24182e;border-radius:3px;background:#9a6a3a}
+.sf-papiers{position:absolute;left:67%;bottom:23%;width:11%;height:6%;z-index:1;pointer-events:none}
+.sf-papiers i{position:absolute;left:calc(var(--i) * 6%);bottom:calc(var(--i) * 14%);width:90%;height:100%;box-sizing:border-box;background:repeating-linear-gradient(#fffdf4 0 3px, #c8c0d8 3px 4px);border:1.5px solid #24182e;transform:rotate(calc((var(--i) - 1) * 5deg))}
+.sf-piece{position:absolute;left:90%;bottom:23%;width:3.6%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%, #fff6b0, #ffc21f 55%, #c8902a);border:1.5px solid #24182e;z-index:3;opacity:0}
+/* ---- 1. Bastien avoue (10 s) ---- */
+.sf-aveu .sf-piece{animation:sf-piece 10s ease-out infinite both}
+@keyframes sf-piece{0%, 44%{opacity:0;transform:translateY(-140%) rotateY(0)}48%{opacity:1;transform:translateY(0) rotateY(180deg)}52%{transform:translateY(-30%) rotateY(360deg)}56%, 94%{opacity:1;transform:translateY(0) rotateY(360deg);box-shadow:0 0 6px 2px rgba(255,214,80,.8)}98%, 100%{opacity:0}}
+.sf-b-moi{animation:sf-b-moi 10s linear infinite both}
+@keyframes sf-b-moi{0%, 6%{opacity:0}10%, 36%{opacity:1}40%, 100%{opacity:0}}
+.sf-b-cape{animation:sf-b-cape 10s linear infinite both}
+@keyframes sf-b-cape{0%, 42%{opacity:0}46%, 92%{opacity:1}96%, 100%{opacity:0}}
+/* ---- 2. « En prison ! » puis « L'affaire est close ! » (10 s) ---- */
+.sf-tape>i{animation:sf-tape 10s ease-in-out infinite both}
+@keyframes sf-tape{0%, 2%{transform:translateY(0)}4%{transform:translateY(-6%)}6%{transform:translateY(3%)}9%, 100%{transform:translateY(0)}}
+.sf-prison .sf-bureau{animation:sf-bureau-tape 10s linear infinite both}
+@keyframes sf-bureau-tape{0%, 5%{transform:translateX(0)}6%{transform:translateX(-1.2%)}7%{transform:translateX(1.2%)}8%{transform:translateX(-.6%)}9%, 100%{transform:translateX(0)}}
+.sf-bam{position:absolute;left:72%;bottom:23%;width:10%;height:10%;z-index:3;pointer-events:none;opacity:0;animation:sf-bam 10s linear infinite both}
+.sf-bam i{position:absolute;bottom:0;width:12%;height:70%;background:#24182e;border-radius:2px;transform-origin:50% 100%}
+.sf-bam i:nth-child(1){left:10%;transform:rotate(-35deg)}.sf-bam i:nth-child(2){left:44%}.sf-bam i:nth-child(3){left:78%;transform:rotate(35deg)}
+@keyframes sf-bam{0%, 5%{opacity:0;transform:scale(.5)}6%{opacity:1;transform:scale(1.15)}12%{opacity:1;transform:scale(1)}16%, 100%{opacity:0}}
+.sf-b-prison{font-size:.78rem;animation:sf-b-prison 10s linear infinite both}
+@keyframes sf-b-prison{0%, 5%{opacity:0;transform:translateX(-50%) scale(.6)}8%{opacity:1;transform:translateX(-50%) scale(1.12)}11%, 30%{opacity:1;transform:translateX(-50%) scale(1)}34%, 100%{opacity:0;transform:translateX(-50%) scale(1)}}
+.sf-emmene{animation:sf-emmene 10s ease-in-out infinite both}
+@keyframes sf-emmene{0%, 30%{left:var(--x);opacity:1}62%{left:-24%;opacity:1}63%, 92%{left:-24%;opacity:0}96%, 100%{left:var(--x);opacity:0}}
+.sf-emmene>i{animation:sf-emmene-pas 10s linear infinite both}
+@keyframes sf-emmene-pas{0%, 30%, 62%, 100%{transform:translateY(0)}34%, 42%, 50%, 58%{transform:translateY(-3%)}38%, 46%, 54%{transform:translateY(0)}}
+.sf-b-close{animation:sf-b-close 10s linear infinite both}
+@keyframes sf-b-close{0%, 60%{opacity:0;transform:translateX(-50%) scale(.6)}63%{opacity:1;transform:translateX(-50%) scale(1.1)}66%, 92%{opacity:1;transform:translateX(-50%) scale(1)}96%, 100%{opacity:0;transform:translateX(-50%) scale(1)}}
+.sf-prison .sf-papiers i{animation:sf-papier 10s ease-in infinite both;animation-delay:calc(var(--i) * .25s)}
+@keyframes sf-papier{0%, 68%{opacity:1;transform:translateY(0) rotate(calc((var(--i) - 1) * 5deg))}76%, 94%{opacity:1;transform:translateY(240%) rotate(0)}96%{opacity:0;transform:translateY(240%)}97%{opacity:0;transform:translateY(0) rotate(calc((var(--i) - 1) * 5deg))}100%{opacity:1;transform:translateY(0) rotate(calc((var(--i) - 1) * 5deg))}}
+/* ---- 3. La rivière redevient claire (12 s) ---- */
+.sf-eau{fill:#c8323a;animation:sf-eau 12s linear infinite both}
+@keyframes sf-eau{0%, 6%{fill:#c8323a}30%, 96%{fill:#5fb0e0}100%{fill:#c8323a}}
+.sf-rides path{stroke-dasharray:6 6;animation:sf-ride 1.8s linear infinite}
+@keyframes sf-ride{to{stroke-dashoffset:-24}}
+.sf-poisson{position:absolute;bottom:22%;width:8%;aspect-ratio:28/16;opacity:0;animation:sf-poisson 5.2s ease-in-out 3.6s infinite both;z-index:1}
+.sf-poisson svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes sf-poisson{0%, 56%{opacity:0;transform:translate(0, 0) rotate(40deg)}60%{opacity:1;transform:translate(-40%, -60%) rotate(20deg)}70%{opacity:1;transform:translate(-110%, -150%) rotate(-10deg)}80%{opacity:1;transform:translate(-180%, -60%) rotate(-40deg)}84%, 100%{opacity:0;transform:translate(-200%, 0) rotate(-50deg)}}
+.sf-note{position:absolute;left:55%;bottom:92%;font-style:normal;font-weight:900;color:#7a5aa0;font-size:.95rem;text-shadow:0 1px 0 #fff;opacity:0;animation:sf-note 2.4s ease-out infinite both}
+@keyframes sf-note{0%{opacity:0;transform:translate(0, 0)}20%{opacity:1}100%{opacity:0;transform:translate(10px, -26px)}}
+.sf-b-odette{animation:sf-b-odette 12s linear infinite both}
+@keyframes sf-b-odette{0%, 58%{opacity:0}62%, 78%{opacity:1}81%, 100%{opacity:0}}
+.sf-b-revue{animation:sf-b-revue 12s linear infinite both}
+@keyframes sf-b-revue{0%, 78%{opacity:0}81%, 95%{opacity:1}98%, 100%{opacity:0}}
+/* ---- 4. Le chat d'Odette devant les rochers (10 s) ---- */
+.sf-chat{position:absolute;bottom:6%;left:var(--x, 50%);width:15%;aspect-ratio:62/60;transform:translateX(-50%);z-index:2}
+.sf-chat svg{display:block;width:100%;height:100%;overflow:visible}
+.sf-chat .sf-bulle{bottom:100%}
+.sf-chat-petit{width:10%}
+.sf-chat-queue{transform-box:fill-box;transform-origin:100% 100%;animation:sf-chat-queue 1.6s ease-in-out infinite alternate}
+@keyframes sf-chat-queue{from{transform:rotate(-10deg)}to{transform:rotate(14deg)}}
+.sf-chat-patte{transform-box:fill-box;transform-origin:50% 0;animation:sf-chat-patte 10s ease-in-out infinite both}
+@keyframes sf-chat-patte{0%, 8%, 30%, 54%, 76%, 100%{transform:rotate(0)}11%, 17%, 23%, 57%, 63%, 69%{transform:rotate(-40deg) translate(10%, -6%)}14%, 20%, 26%, 60%, 66%, 72%{transform:rotate(-14deg)}}
+.sf-b-miaou{animation:sf-b-miaou 10s linear infinite both}
+@keyframes sf-b-miaou{0%, 30%{opacity:0}33%, 48%{opacity:1}51%, 76%{opacity:0}79%, 94%{opacity:1}97%, 100%{opacity:0}}
+/* ---- 5. Les quatre enquêteurs se regardent : « Allons voir ! » (10 s) ---- */
+.sf-hoche>i{animation:sf-hoche 10s ease-in-out infinite both;animation-delay:inherit}
+@keyframes sf-hoche{0%, 6%, 14%, 100%{transform:translateY(0) rotate(0)}9%{transform:translateY(-2%) rotate(-4deg)}11%{transform:translateY(0) rotate(4deg)}60%{transform:translateY(0) rotate(0)}64%, 72%{transform:translateY(-7%) rotate(3deg)}68%, 76%{transform:translateY(0) rotate(3deg)}80%{transform:translateY(0) rotate(0)}}
+.sf-b-allons{font-size:.74rem;animation:sf-b-allons 10s linear infinite both}
+@keyframes sf-b-allons{0%, 60%{opacity:0;transform:scale(.6)}64%{opacity:1;transform:scale(1.1)}68%, 94%{opacity:1;transform:scale(1)}98%, 100%{opacity:0;transform:scale(1)}}
+.sf-souffle{opacity:0;animation:sf-souffle 3.6s ease-out infinite both}
+@keyframes sf-souffle{0%{opacity:0;transform:translate(0, 0)}20%{opacity:.85}100%{opacity:0;transform:translate(6px, -40px)}}
+
 /* moins de mouvement : chaque scène reste figée sur son moment le plus parlant */
+.sf-aveu{--sf-fige:-6s}.sf-prison{--sf-fige:-7s}.sf-riviere{--sf-fige:-8.4s}.sf-chat-odette{--sf-fige:-3.6s}.sf-equipe{--sf-fige:-7s}
 .sf-course{--sf-fige:-4s}.sf-remonte{--sf-fige:-8.8s}.sf-pardon{--sf-fige:-3s}.sf-courant{--sf-fige:-2s}.sf-maire{--sf-fige:-6s}.sf-fete{--sf-fige:-7.4s}.sf-ragots{--sf-fige:-1.8s}.sf-planches{--sf-fige:-10s}
 @media (prefers-reduced-motion: reduce){ .rs-scene.sf-scene *{animation-play-state:paused !important;animation-delay:var(--sf-fige, -5s) !important} }

@@ -107,7 +107,6 @@ O('alchimiste', [
 ]);
 O('barde', [
   ['luth_voyage', 1, 'Luth de voyage', '🪕', 40, 'Les mots perdus : un indice (la liste diminue de moitié pour un mot).', null, {mj:{mots:{aide:1}}}],
-  ['cornet', 2, 'Cornet acoustique', '📯', 70, 'Tendre l\'oreille : une écoute aux portes de plus par enquête (avec ce talent).', null, {oreille:1}],
   ['pendule', 2, 'Pendule de vérité', '🪀', 85, 'Repérer le mensonge : un signe de mensonge en moins.', null, {mj:{mensonge:{signes:1}}}],
   ['carillon', 2, 'Carillon des souvenirs', '🎐', 75, 'Les mots perdus : un mot retrouvé tout seul, et un indice.', null, {mj:{mots:{revele:true, aide:1}}}],
   ['miroir', 3, 'Miroir de vérité', '🪞', 130, 'Dans le reflet, les signes de mensonge durent plus longtemps, et deux signes en moins.', null, {mj:{mensonge:{signes:2, revele:true}}}],
@@ -129,6 +128,7 @@ D.OBJETS_RETIRES = {
   fioles_renf:30, mortier:35, herbier:45, gants_cuir:35, lunettes_alchi:75, oeil_cristal:120, fioles_ether:110, athanor:280, pierre_transmu:260, grand_grimoire:300,
   carnet_ragots:30, bourse:35, bonbons:30, clochette:50, chapeau_plume:35, deguisement:80, cape_scene:65, lettre_maire:60, luth_enchante:120, masque_velours:110,
   plume_rossignol:100, corne:110, anneau:260, registre:300,
+  cornet:70,   /* (on écoute aux portes sans limite depuis le 5 novembre : « une écoute de plus » ne servait plus à rien) */
   plume_encre:30, baton_marche:35, cle_archives:50, longue_vue:70, livre_annote:80, cor:75, astrolabe:85, cartes_fond:90, chapeau_etoile:110, banniere:120,
   index:100, grimoire_sage:280, oeil_temps:300
 };

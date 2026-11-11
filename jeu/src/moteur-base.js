@@ -670,6 +670,7 @@ M.uneCondition = function(b){
   if(b.objet) return M.S.equip.indexOf(b.objet) >= 0;
   if(b.moment) return M.momentId() === b.moment;
   if(b.page) return !!P.pages[b.page];
+  if(b.analyse) return !!(P.analyses && P.analyses[b.analyse]);   /* une analyse faite (les deux pièces d'or de l'enquête 2) */
   if(b.vu) return !!P.vus[b.vu] && P.vus[b.vu] !== 'rate';   /* un mini-jeu raté ne compte pas comme vu */
   if(b.et) return b.et.every(M.uneCondition);                  /* condition « ET » : toutes à la fois */
   if(b.outil) return (M.S.outils || []).indexOf(b.outil) >= 0; /* outil de saison (coffret de teintures…) */
