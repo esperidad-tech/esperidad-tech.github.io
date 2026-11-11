@@ -27,7 +27,9 @@ var cuisson = null;
 function cuireHeros(){
   if(cuisson) return cuisson;
   var s = Math.min(window.innerWidth / 960, window.innerHeight / 540), dpr = window.devicePixelRatio || 1;
-  function res(largeurPx, unites){ return Math.max(.8, Math.min(2.6, largeurPx / unites * s * dpr * 1.25)); }
+  /* (DJ.allegeImages : des images plus petites sur un appareil dont la page s'est déjà fermée en chargeant un combat) */
+  var k = DJ.allegeImages ? DJ.allegeImages() : 1;
+  function res(largeurPx, unites){ return Math.max(k < 1 ? .7 : .8, Math.min(2.6, largeurPx / unites * s * dpr * 1.25) * k); }
   var l = [];
   if(SALLE.Fx && SALLE.Fx.cuire) SALLE.Fx.cuire();
   if(window.HerosAnime && window.HerosAnime.preparer && window.Cuire) l.push(window.HerosAnime.preparer(ORDRE.map(function(h){ return {role:h, lk:DJ.LOOK[h]}; }), {res:res(200, 250)}));
@@ -39,7 +41,8 @@ var ratPret = null;
 function cuireRat(){
   if(ratPret) return ratPret;
   var s = Math.min(window.innerWidth / 960, window.innerHeight / 540), dpr = window.devicePixelRatio || 1;
-  ratPret = window.RatAnime && window.RatAnime.preparer && window.Cuire ? Promise.resolve(window.RatAnime.preparer({res:Math.max(.8, Math.min(2.6, 206 / 540 * s * dpr * 1.25))})).catch(function(){}) : Promise.resolve();
+  var k = DJ.allegeImages ? DJ.allegeImages() : 1;
+  ratPret = window.RatAnime && window.RatAnime.preparer && window.Cuire ? Promise.resolve(window.RatAnime.preparer({res:Math.max(k < 1 ? .7 : .8, Math.min(2.6, 206 / 540 * s * dpr * 1.25) * k)})).catch(function(){}) : Promise.resolve();
   return ratPret;
 }
 /* les bêtes qui peuvent naître en plein combat */
@@ -62,6 +65,7 @@ function preparer(salle){
 /* ====================================================================== 2. CONSTRUIRE L'ÉCRAN */
 function lancer(partie, salle){
   Fx = SALLE.Fx; Son = SALLE.Son;
+  if(DJ.temoinCharge) DJ.temoinCharge(salle);          /* (enlevé quand le combat est à l'écran : voir noyau.js) */
   return preparer(salle).then(function(){
     return new Promise(function(fin){
       E = {partie:partie, salle:salle, c:null, ph:null, A:{h:{}, b:{}}, ordre:[], prises:[], mode:'entree', sel:null, geste:null, choix:[], occupe:true,
@@ -70,7 +74,7 @@ function lancer(partie, salle){
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
       E.baton = batonGarde();
-      jouer(E.c.entree()).then(function(){ q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
+      jouer(E.c.entree()).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
     });
   });
 }
@@ -233,28 +237,37 @@ function majBadges(){
     if(E.mode !== 'fin'){
       /* (un coup préparé que l'œil voit en entier tient sur une seule ligne : la proie, le sablier, puis les dégâts) */
       var coup = b.vise && b.vise.prepare && b.suite && !b.suite.prepare && b.suite.attaque === b.vise.attaque ? b.suite : null;
+      /* UNE SEULE LIGNE : ce tour-ci (Romain, 11 novembre, 19 h 21 : « une seule ligne, ça suffit », puisque l'œil dure
+         maintenant tout le combat — la ligne du tour suivant ne sert plus) */
       if(b.vise) v += ligneVise(b.vise, false, coup);
-      if(b.suite && !coup) v += ligneVise(b.suite, true);
     }
     if(v) s += '<div class="vise-pile">' + v + '</div>';
     var x = '';
     if(b.prepare) x += '<span class="etat e-coup' + (b.prepare === 2 ? ' pret' : '') + '">' + (b.prepare === 2 ? '💥 gros coup !' : '⏳ gros coup bientôt') + '</span>';
-    Object.keys(b.etats).forEach(function(n){ var C = CHIPS[n]; if(C) x += '<span class="etat ' + C[1] + '">' + C[0] + '</span>'; });
+    /* Bourbe : on dit toujours où il est (Romain, 11 novembre, 19 h 21 : « ce n'est pas clair quand il est dans l'eau, hors
+       de l'eau ») — « dans l'eau », « sur la glace », « sous l'eau » */
+    if(b.type === 'bourbe' && !b.etats.gele && !b.etats.sous && !b.etats.dos) x += '<span class="etat e-eau">💧 dans l\'eau</span>';
+    Object.keys(b.etats).forEach(function(n){ var C = n === 'gele' && b.type === 'bourbe' ? ['🧊 sur la glace', 'e-colle'] : CHIPS[n]; if(C) x += '<span class="etat ' + C[1] + '">' + C[0] + '</span>'; });
     if(x) s += '<div class="etats">' + x + '</div>';
-    if(e._html !== s){ e.innerHTML = s; e._html = s; }
+    if(e._html !== s){ e.innerHTML = s; e._html = s; e._w = 0; }
   });
 }
 /* les badges et la zone à toucher suivent la bête (elle se dresse, tombe, vole) : on lit ses ancres */
 /* les badges se posent au-dessus de la bête ; si elle est tout en haut de l'écran (elle vole), ils passent dessous */
 function posBadges(a, haut){
-  var y = Math.min(haut.y - 44, 286);            /* jamais sur la rangée des barres de vie (une bête sur le dos a la tête en bas) */
+  /* jamais sur la rangée des barres de vie (une bête sur le dos a la tête en bas) ; le boss a plus de pastilles, et sa barre porte son nom au-dessus */
+  var y = Math.min(haut.y - 44, a.info.places >= 3 ? 236 : 286);
   if(y >= 88) return {x:haut.x, y:y};
   if(a.info.vole || a.info.suspendue){ var c = a.ancre('centre'); return {x:c.x, y:Math.max(96, c.y + 46)}; }
   return {x:haut.x, y:92};
 }
 function poserBadges(id, a, haut){
   var bd = q('#badges-' + id); if(!bd) return;
-  var p = posBadges(a, haut); bd.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) translateX(-50%)';
+  /* les étiquettes ne sortent jamais de l'écran (Bourbe est tout au bord : « dans l'eau » était coupé). Leur largeur n'est
+     mesurée qu'une fois par contenu (e._w, remis à zéro dans majBadges) : rien n'est mesuré pendant les animations. */
+  var p = posBadges(a, haut), w = bd._w || (bd._w = bd.offsetWidth || 0), x = p.x;
+  if(w) x = Math.max(w / 2 + 6, Math.min(960 - w / 2 - 6, x));
+  bd.style.transform = 'translate(' + x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) translateX(-50%)';
 }
 function placer(id){
   var a = B(id), b = photoB(id); if(!a || a.mort) return;
@@ -578,6 +591,10 @@ async function jouer(evs, avant){
   E.avant = avant || E.ph;
   suivre(true);
   var blocs = enBlocs(evs), k = 0, large = false, ctx = {touche:{}};
+  /* Bourbe remonte en retombant sur tout le monde : UNE seule remontée (Romain, 11 novembre, 19 h 21 : « c'est bizarre, le
+     gros qui remonte de l'eau deux fois »). Avant : il émergeait, puis il sautait. Maintenant il jaillit du fond d'un bond. */
+  var ret = evs.filter(function(x){ return x.t === 'attaque' && x.retour; })[0];
+  ctx.surgit = ret ? ret.bete : null;
   while(k < blocs.length){
     var bl = blocs[k];
     try{
@@ -610,7 +627,21 @@ async function jouer(evs, avant){
     var ph = E.c.etat();
     await Promise.race([Promise.all(ph.betes.map(function(b){ var a = B(b.id); return a && !b.mort ? a.accorder(b.etats, b.ouvert) : null; })), attendre(1500)]);
   }catch(e){}
+  try{ await accorderHeros(); }catch(e){}
   suivre(false);
+}
+/* les règles font foi pour les héros aussi : un héros à terre dans les règles est à terre à l'écran, et un héros debout est
+   debout (Romain, 11 novembre, 19 h 21 : « le Sage a 0 point de vie, il est censé être au sol, mais il s'est relevé »).
+   Rien ne se passe quand tout est déjà d'accord — c'est le cas presque toujours. */
+async function accorderHeros(){
+  var ph = E.c.etat(), l = [];
+  ORDRE.forEach(function(h){
+    var s = ph.heros[h], A = E.A.h[h], slot = slotH(h);
+    if(!s || !A || !slot || s.avale || ph.fini) return;
+    if(s.sol && !A.ko){ slot.classList.add('sol'); l.push(Promise.resolve(A.tomber()).catch(function(){})); }
+    else if(!s.sol && A.ko){ slot.classList.remove('sol'); l.push(Promise.resolve(A.relever()).catch(function(){}).then(function(){ try{ A.attendre(); }catch(e){} })); }
+  });
+  if(l.length){ await Promise.race([Promise.all(l), attendre(2600)]); E.ph = E.c.etat(); majBarres(); }
 }
 async function bloc(bl, ctx){
   var l = bl.evs;
@@ -633,6 +664,8 @@ async function bloc(bl, ctx){
 
 /* ---------- un évènement simple ---------- */
 async function un(ev, bl, ctx){
+  /* (la remontée de Bourbe est jouée avec son saut : voir jouer) */
+  if(ctx && ctx.surgit && ev.bete === ctx.surgit && ((ev.t === 'special' && ev.nom === 'remonter') || (ev.t === 'etat' && ev.nom === 'sous' && ev.on === false))) return;
   var a = ev.bete && typeof ev.bete === 'string' ? B(ev.bete) : null, S = a ? DJ.Betes.SONS[a.module] || {} : {}, p, h = ev.heros;
   switch(ev.t){
     case 'debut': return entreeHeros(ev);
@@ -787,7 +820,8 @@ async function arrivees(gr){
       var S = DJ.Betes.SONS[a.module] || {};
       if(a.rat) son('couine', .3, 1 + k * .12); else if(S.entree) bruit(S.entree); else if(S.cri) bruit(S.cri, {dt:.3});
       var o = {};
-      if(a.module === 'gardien') o.onPas = function(){ bruit(S.pas, {}, ['tombe']); Fx.tremble(7, 300); };
+      /* (un seul « boum » par pas : le son de l'Atelier en contient deux, d'où le boum en trop — Romain, 11 novembre) */
+      if(a.module === 'gardien') o.onPas = function(){ bruit(S.pas, {un:1}, ['tombe']); Fx.tremble(7, 300); };
       return a.entrer(gr[k].par, o);
     });
   }));
@@ -867,7 +901,9 @@ async function geste(ev, evs){
       /* la rune d'appel : le Sage tend la main vers le monstre, qui glisse devant tous les autres */
       son('magie');
       to = a.ancre('centre');
-      await H.sage.sort(fx, to, {cristal:false});
+      /* (rien n'est lancé sur lui : un anneau se referme, un fil de lumière le tire — Romain, 11 novembre, 19 h 21 : « ça lance
+         une flèche, du coup c'est bizarre ») */
+      await H.sage.sort(fx, to, {cristal:false, appel:true});
       Fx.onde(to.x, to.y, '#d9b8ff', 240, 600);
       if(a && DJ.Betes.SONS[a.module] && DJ.Betes.SONS[a.module].cri) bruit(DJ.Betes.SONS[a.module].cri);
       await avancer(a);
@@ -892,8 +928,9 @@ async function geste(ev, evs){
     case 'pose-bouclier':
       son('dome'); if(ev.cibles.length > 1) bruit('baton');
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
-      var d = await H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0]);
-      ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
+      /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
+      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - D.CHIFFRES.bouclier) * 100)})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
+      if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
       await attendre(450);
       return false;
     case 'oeil':
@@ -928,19 +965,22 @@ async function critique(l, i, ctx){
   if(!a) return i;
   var c = a.cible(true);
   barre(a.id, ev.pv, a.pvMax); a.pv = ev.pv;
+  if(meurt && DJ.plantages() >= 1){
+    /* LA PAGE S'EST DÉJÀ FERMÉE EN PLEIN CRITIQUE SUR CET APPAREIL (au moins une fois) : le critique le plus simple possible,
+       pour tous les monstres — le gros texte, le chiffre, des étincelles — pour qu'on puisse toujours continuer à jouer.
+       (Avant le 11 novembre au soir : seulement pour le rat, et après DEUX fermetures. Romain, 20 h 36, iPhone : « j'ai encore
+       eu un bug qui m'a fait revenir au début en faisant un critique sur un rat ».) */
+    retirerHud(a.id); liberer(a);
+    sonCritique('boum'); Fx.tremble(7, 300);
+    if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
+    Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
+    a.el.style.visibility = 'hidden'; a.mort = true;
+    await attendre(1200);
+    return i + 1;
+  }
   if(meurt && a.rat){
     /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
-    if(DJ.plantages() >= 2){
-      /* la page s'est déjà fermée DEUX fois en plein critique sur cet appareil : le critique le plus simple possible
-         (le gros texte, le chiffre, des étincelles), pour qu'on puisse au moins continuer à jouer */
-      sonCritique('boum'); Fx.tremble(7, 300);
-      if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
-      Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
-      a.el.style.visibility = 'hidden'; a.mort = true;
-      await attendre(1200);
-      return i + 1;
-    }
     /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») ;
        et on compte les images en retard : si le critique rame sur cet appareil, les suivants sont allégés */
     var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt)];
@@ -1021,7 +1061,8 @@ async function attaque(l, i, ctx){
     if(ev.gros && joues < jusqu) Fx.tremble(13, 480);          /* le coup préparé : la salle en tremble */
     while(joues < jusqu){ attente.push(coup(coups[joues], a, ev)); joues++; }
   }
-  var ret = await a.attaquer(nomA, {vers:vers, fois:ev.fois || 1, onImpact:impact, onAvale:function(){ if(avale) bruit(S.gobe); }});
+  if(ev.retour){ if(S.plonge) bruit(S.plonge, {dt:.1}); E.ph = E.c.etat(); majBadges(); }       /* (il n'est plus « sous l'eau ») */
+  var ret = await a.attaquer(nomA, {vers:vers, fois:ev.fois || 1, onImpact:impact, onAvale:function(){ if(avale) bruit(S.gobe); }, surgit:!!ev.retour});
   impact(nImpacts - 1);                      /* par sécurité : tout ce qui n'aurait pas été joué */
   await Promise.all(attente);
   if(bloc) bloc.classList.remove('mord');

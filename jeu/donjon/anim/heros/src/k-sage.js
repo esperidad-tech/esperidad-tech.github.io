@@ -79,7 +79,7 @@ H.sort = function(scene, to, opt){
       {d:180, p:pointe, e:'oo', f:function(){ me.expr('cri'); cercle = me._cercle(scene); }},
       {d:260, p:pointe, e:'lin', f:function(){
         var a = me.rep('cristal', scene);
-        vole = me._eclair(scene, a, to, opt).then(sig);
+        vole = (opt.appel ? me._appel(scene, a, to) : me._eclair(scene, a, to, opt)).then(sig);
         me.cristalFlash(true);
       }},
       {d:120, p:recul, e:'o'}, {d:300, p:recul, e:'lin', f:function(){ me.expr('garde'); }},
@@ -93,6 +93,18 @@ H._cercle = function(scene){
   (function suit(){ if(!vivant) return; var q = me.rep('cristal', scene); e.style.left = (q.x - p.x) + 'px'; e.style.top = (q.y - p.y) + 'px'; requestAnimationFrame(suit); })();
   return jouerEl(e, [{transform:place(p.x + 8, p.y, -90, 0), opacity:0}, {transform:place(p.x + 14, p.y, 0, 1.15), opacity:1, offset:.25}, {transform:place(p.x + 14, p.y, 40, 1), opacity:1, offset:.7}, {transform:place(p.x + 20, p.y, 90, 1.6), opacity:0}],
     {duration:820, easing:'ease-out'}).then(function(){ vivant = false; });
+};
+/* la rune d'appel : RIEN n'est lancé sur le monstre (Romain, 11 novembre, 19 h 21 : « ça lance une flèche, du coup c'est
+   bizarre »). Un anneau de lumière violette se referme sur lui, puis un fil tendu du bâton jusqu'à lui se raccourcit : il le tire. */
+H._appel = function(scene, a, to){
+  var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG, V = '#d9b8ff';
+  onde(L, to.x, to.y, {w:170, c:V, ep:4, s0:1.5, s1:0.3, d:460});
+  onde(L, to.x, to.y, {w:170, c:'#ffffff', ep:2, s0:1.9, s1:0.25, d:560});
+  scintille(L, to.x, to.y, {n:8, rx:60, ry:46, c:['#ffffff', V], etale:300});
+  var pose = 'translate(' + a.x + 'px,' + (a.y - 3) + 'px) rotate(' + ang + 'deg) ';
+  var r = div(L, 'width:' + dist + 'px;height:6px;border-radius:4px;transform-origin:0 50%;background:linear-gradient(90deg,#ffffff,' + V + ' 30%,rgba(217,184,255,.55));box-shadow:0 0 12px ' + V);
+  return jouerEl(r, [{transform:pose + 'scaleX(1) scaleY(.2)', opacity:0}, {transform:pose + 'scaleX(1) scaleY(1)', opacity:1, offset:.3}, {transform:pose + 'scaleX(1) scaleY(1.3)', opacity:1, offset:.5},
+    {transform:pose + 'scaleX(.2) scaleY(.6)', opacity:0}], {duration:760, easing:'ease-in'}).then(function(){ return to; });
 };
 H._eclair = function(scene, a, to, opt){
   var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG;
@@ -173,7 +185,7 @@ H._dome = function(L, scene, cible, opt){
     '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
     '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
     '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
-    '<div class="ha-badge">🛡️ −50 % · 1 tour</div>';
+    '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' % · 1 tour</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});

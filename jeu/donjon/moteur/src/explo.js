@@ -25,7 +25,7 @@ var PHRASES = {
   reserve:'Une vieille réserve. Un coffre attend là, depuis bien longtemps.',
   givre:'Brrr ! Il fait froid ici. Une fleur de givre brille au fond.',
   bibliotheque:'Des livres qui flottent sur l\'eau qui luit. Les Fondateurs lisaient beaucoup.',
-  eboulis:'Un cul-de-sac. Un tas d\'os… et un mur qui a l\'air de garder un secret.',
+  eboulis:'Un cul-de-sac. Rien qu\'un éboulis… et un tas d\'os.',
   dalles:'Des dalles claires, des dalles sombres… Attention où l\'on met les pieds !',
   canaux:'Les canaux sont tranquilles. L\'eau coule sous le petit pont.',
   portes:'Trois portes : un œil, une gueule, une lune. Laquelle pousser ?',
@@ -179,7 +179,8 @@ function montrerSorties(){
 function aller(vers, lien){
   var p = X.partie, ici = X.ici, L = C.LIEN[lien], V = X.V, dep;
   X.occupe = true; V.sorties([]);
-  bruit('pasCouloir', {}, ['pasHeros', 1, 2]);
+  /* (Romain, 11 novembre, 19 h 21 : sur la carte, le pas d'entrée dans une salle, « un peu plus aigu, un peu plus rigolo ») */
+  son('pasHeros', 1.1, 2, 1.5);
   var couloirIci = C.LIEUX[ici] && C.LIEUX[ici].couloir, couloirVers = C.LIEUX[vers] && C.LIEUX[vers].couloir;
   if(L.boucle && !couloirIci){
     /* les égouts tournants : on s'y engage (la moitié de la boucle), le reste après ce qu'on y trouve */
@@ -493,7 +494,9 @@ function preparerLieu(lieu, cont, ev, premier){
   if(lieu === 'camp') t = cont.repos && cont.repos.permis ? 'Un feu de camp ! On souffle un peu : le feu remet tout le monde d\'aplomb.' : 'Le feu de camp crépite. Vous êtes déjà reposés.';
   if(lieu === 'dalles'){
     if(cont.dalles.passe){ t = 'Le couloir aux dalles. Vous connaissez le chemin, maintenant.'; }
-    else { conte(t); explicationDalles(); return; }
+    /* Romain, 11 novembre (19 h 21) : « pour le couloir aux dalles, ce n'est pas la peine de faire un truc explicatif. C'est
+       le Sage, avec son document, qui le fait. » Plus de fenêtre : on arrive, et le couloir est tout de suite jouable. */
+    else { conte(t); S.pret = true; colonneDalles(); return; }
   }
   if(lieu === 'eboulis' && cont.tas && !cont.tas.reste) t = 'Le cul-de-sac. Le tas d\'os a tout donné.';
   if(lieu === 'crypte') t = cont.objets.length ? PHRASES.crypte : 'La crypte est vide. Le sarcophage aussi.';
@@ -646,14 +649,6 @@ function toucherGrille(e){
   conte('Une grille de fer. Elle ne bouge pas d\'un poil.');
 }
 /* ---------- le couloir aux dalles ---------- */
-function explicationDalles(){
-  var t1 = 'À chaque pas, deux dalles : une claire, une sombre. Une seule est sûre.', t2 = 'Une mauvaise dalle, et le piège part : tout le monde prend un coup, et on recule d\'un pas.', t3 = 'Claire ou sombre ? Ça change à chaque pas. Les Fondateurs ont noté le chemin quelque part…';
-  DJ.fenetre('<h2>Le couloir aux dalles</h2>' +
-    '<div class="expli"><div><span class="ex-img">◻️ ◼️</span><p>' + t1 + '</p>' + DJ.lireBtn(t1) + '</div>' +
-    '<div><span class="ex-img">💥 ↩️</span><p>' + t2 + '</p>' + DJ.lireBtn(t2) + '</div>' +
-    '<div><span class="ex-img">🗺️ 🧐</span><p>' + t3 + '</p>' + DJ.lireBtn(t3) + '</div></div>' +
-    '<div class="boutons"><button class="aller guide" data-act="dalles-go">On y va !</button></div>', 'large');
-}
 function colonneDalles(){
   if(!S || S.lieu !== 'dalles') return;
   var cont = Regles.contenu(X.partie, 'dalles'), pas = cont.dalles.pas, fini = cont.dalles.passe;
@@ -732,7 +727,11 @@ function repos(e){
 /* ---------- Moustache devant la porte aux quatre signes ---------- */
 function sceneChat(e, encore){
   X.occupe = true;
-  conte('Moustache gratte au bas de la grande porte. Miaou ! Derrière, quelqu\'un répond tout bas…');
+  /* Romain, 11 novembre (19 h 21) : « il ne faut pas dire qu'il y a Odette derrière, il faut juste montrer qu'il y a le chat.
+     Et après, quand le Sage tape le code, là, sur sa fenêtre, on entend la voix d'Odette qui lui répond. Et quand le chat
+     miaule, ce serait bien de lui faire un miaulement. » */
+  conte('Un gros chat gris gratte au bas de la grande porte. Miaou !');
+  setTimeout(function(){ son('miaou'); }, 500); setTimeout(function(){ son('miaou', 1.1); }, 1800);
   Promise.resolve(e && e.scene ? e.scene() : null).catch(function(){}).then(function(){ X.occupe = false; codeDuLieu(); majRepartir(); });
 }
 function sceneLeo(){
@@ -790,6 +789,7 @@ function fenetreObjets(){
   if(o.or){ var tor = o.or + ' pièces d\'or dans la bourse.'; s += '<div class="sous">La bourse</div><div class="ligne">' + o.or + ' pièces d\'or 🪙' + DJ.lireBtn(tor) + '</div>'; }
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
   s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') +
+    (DJ.plantagesCharge && DJ.plantagesCharge() ? ' · images allégées (' + DJ.plantagesCharge() + ')' : '') +
     (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
@@ -862,7 +862,6 @@ DJ.toucher(function(a, id, b){
   if(a === 'entrer'){ if(!X.occupe && aScene(X.ici)){ son('clic'); arriver(X.ici, {entrer:true}); } return true; }
   if(a === 'repartir'){ son('clic'); X.echange = null; repartir(); return true; }
   if(a === 'plaque-objet'){ toucherPlaque(id, b.getAttribute('data-heros')); return true; }
-  if(a === 'dalles-go'){ DJ.fermer(); if(S){ S.pret = true; colonneDalles(); conte('Première rangée. Laquelle des deux ?'); } return true; }
   if(a === 'qui-porte'){ DJ.fermer(); prendre(b.getAttribute('data-objet'), id); return true; }
   if(a === 'laisser'){
     var x = X.plein; DJ.fermer(); X.plein = null;
@@ -886,6 +885,10 @@ function demarrer(P){
   jeu = q('#jeu');
   X.sansCombat = !!P.sanscombat;
   var p = P.nouveau ? null : DJ.relire();
+  /* « ?nouveau=1 » recommence le donjon UNE fois : on l'enlève aussitôt de l'adresse. Sans cela, chaque rechargement de la
+     page (un plantage, un doigt qui tire l'écran vers le bas) recommençait tout depuis le fond du puits — arrivé à Romain le
+     11 novembre à 20 h 13 (« ça m'a fait revenir au tout début du donjon »). */
+  if(P.nouveau){ try{ var u = new URL(location.href); u.searchParams.delete('nouveau'); history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash); }catch(e){} }
   if(!p){
     p = X.partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 2147483646) + 1);
     /* pour les essais : ?nouveau=1&potions=feu,huile,baume — un Alchimiste qui n'a pas su créer toutes ses potions */

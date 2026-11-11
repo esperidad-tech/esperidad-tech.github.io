@@ -52,7 +52,10 @@ function infoDe(module){ return module === 'rat' ? INFO_RAT : (window.BETES[modu
 /* le cadre d'une bête : sa gauche vient de la salle, sa hauteur de son dessin (ses pieds sur le sol de la scène) */
 function cadre(module, x){
   var I = infoDe(module), w = I.cadre.w, h = I.cadre.h;
-  if(module === 'bourbe') return {x:470, y:36, w:490, h:340};          /* posé sur la margelle du décor (decors.js : MARGELLE) */
+  /* Bourbe : posé sur la margelle du décor (decors.js : MARGELLE). Reculé de 42 px et à peine plus petit (470 au lieu de
+     490 de large : son dessin tient encore tout juste dans l'écran) — Romain, 11 novembre, 20 h 54 : « recule-le un petit peu,
+     les informations qui sont au-dessus du têtard lui cachent son œil ». Ses pieds restent sur la même ligne (y + h = 376). */
+  if(module === 'bourbe') return {x:512, y:50, w:470, h:326};
   return {x:x, y:SOL - h * I.sol + (module === 'rat' ? 2 : 0), w:w, h:h};
 }
 function pr(p){ return Promise.resolve(p).catch(function(e){ if(window.console) console.warn('bête', e); }); }
@@ -102,7 +105,12 @@ A.ancre = function(nom){
   return {x:c.x + c.w * .5, y:c.y + c.h * (nom === 'haut' ? .1 : nom === 'pieds' ? this.info.sol : .55)};
 };
 /* où viser : le point faible s'il est ouvert, sinon le milieu de la bête */
-A.cible = function(ouvert){ return this.ancre(ouvert ? 'pointfaible' : 'centre'); };
+/* (Bourbe enfoncé dans l'eau : on vise sa tête, la seule chose qui dépasse) */
+A.cible = function(ouvert){
+  var a = this.acteur;
+  if(!ouvert && this.module === 'bourbe' && a._immerge && a._immerge()) return this.ancre('tete');
+  return this.ancre(ouvert ? 'pointfaible' : 'centre');
+};
 
 /* ---------- les coups ---------- */
 A.touche = function(coup, o){
@@ -188,7 +196,7 @@ A.attaquer = function(nom, o){
   }
   var vers = (o.vers || []).map(function(p){ return DJ.versEcran(p); }), vu = {};
   function impact(i){ i = i || 0; while(vu[i]) i++; vu[i] = 1; if(o.onImpact) o.onImpact(i); }
-  var oo = {scene:this.scene, onImpact:impact, onAvale:o.onAvale};
+  var oo = {scene:this.scene, onImpact:impact, onAvale:o.onAvale, surgit:!!o.surgit};
   /* un seul point pour les attaques sur un héros, un tableau pour celles qui en touchent plusieurs */
   oo.vers = vers.length > 1 && (nom === 'brulure' || nom === 'grouillement' || nom === 'pique') ? vers : vers[0];
   if(nom === 'saut') oo.vers = vers[0];

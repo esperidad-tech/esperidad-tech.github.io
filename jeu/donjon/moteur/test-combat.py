@@ -199,7 +199,7 @@ def oeil(nav):
     v = pg.evaluate(VUE); g = v['betes'][gardien]
     ok1 = v['vu'] == 2 and all(b['lignes'] >= 1 and b['vise'] and b['degats'] and b['degats'][0] == '−' + str(b['vise']['degats']) for b in v['betes'].values())
     verifie(ok1, 'œil : chaque monstre montre sa proie et ses dégâts de ce tour ' + str({k: b['degats'] for k, b in v['betes'].items()}))
-    verifie(g['suite'] and g['suite']['attaque'] == 'marteau' and g['suite']['prepare'] and g['lignes'] == 2 and g['sablier'] == 1, 'œil : et le tour suivant — le Gardien prendra son élan (un sablier, sa proie)')
+    verifie(g['suite'] and g['suite']['attaque'] == 'marteau' and g['suite']['prepare'] and all(b['lignes'] == 1 for b in v['betes'].values()) and g['sablier'] == 0, 'œil : UNE SEULE ligne par monstre, celle de ce tour (Romain, 11 novembre : « une seule ligne, ça suffit ») — le tour suivant n\'est plus affiché')
     proie = g['suite']['cibles'][0]
     pg.screenshot(path=os.path.join(CAP, 'combat-oeil-1.png'))
     pg.tap('.b-heros[data-id="sage"]', force=True); pg.wait_for_timeout(200)
@@ -229,6 +229,8 @@ def oeil(nav):
     pg.screenshot(path=os.path.join(CAP, 'combat-oeil-3.png'))
     autres = pg.evaluate("(h) => { var E = DJ.Combat._E(), t = 0; E.c.etat().betes.forEach(function(b){ if(!b.mort && b.type !== 'gardien' && b.vise && b.vise.cibles.indexOf(h) >= 0) t += Math.ceil(b.vise.degats * b.vise.fois * 0.25); }); return t; }", proie)
     joue('sage', 'bouclier', proie)
+    badge = pg.evaluate("() => [].map.call(document.querySelectorAll('.ha-badge'), function(e){ return e.textContent; })")
+    verifie(badge and all('−75 %' in t for t in badge), 'le bouclier dit bien « −75 % » (il disait −50 %) ' + str(badge))
     # les herbes soignent maintenant toute l'équipe (un petit montant) : on lit les points de vie après elles
     pvs0 = pg.evaluate("() => { var c = DJ.Combat._E().c; return [c.h.sage.pv, c.h.alchimiste.pv, c.h.pisteur.pv]; }")
     joue('alchimiste', 'herbes', 'sage' if proie != 'sage' else 'pisteur')
@@ -341,7 +343,10 @@ def potions(nav):
     verifie(m['gauche'] == ['fleche', 'f:fleches-argent', 'f:fleches-lourdes', 'dague'] and m['droite'] == ['p:feu', 'p:huile', 'p:colle', 'p:acide', 'p:givre'] and m['petites'] == m['droite'] and m['titres'] == ['⚔️ Ses armes', 'Ses combos'],
             'le Pisteur : à gauche ses quatre armes, à droite ses cinq combos (la flèche trempée) ' + str(m['gauche']) + str(m['titres']))
     noms = pg.evaluate(NOMS, '.b-armes')
-    verifie(noms == ['Arc normal — ce qui vole', 'Arc de lune — bêtes de brume [dessin]', 'Arc transperçant — perce l\'armure [dessin]', 'Dague — celui de devant'], 'ses armes : arc normal, arc de lune, arc transperçant, dague ' + str(noms))
+    # (dans cette salle, tout vole : depuis le 11 novembre au soir, la dague y est éteinte et dit « Trop haut ! »)
+    volent = pg.evaluate("() => { var c = DJ.Combat._E().c; return !c.aPortee().length; }")
+    verifie(noms == ['Arc normal — ce qui vole', 'Arc de lune — bêtes de brume [dessin]', 'Arc transperçant — perce l\'armure [dessin]', 'Dague — ' + ('Trop haut !' if volent else 'celui de devant')], 'ses armes : arc normal, arc de lune, arc transperçant, dague ' + str(noms))
+    verifie(not volent or pg.evaluate("() => document.querySelector('#bande .carte[data-id=\"dague\"]').classList.contains('off')"), 'rien ne marche par terre ici : la carte de la dague est éteinte')
     noms = pg.evaluate(NOMS, '.b-combos')
     verifie(noms == ['Feu', 'Huile', 'Colle', 'Acide', 'Givre'], 'ses combos : feu, huile, colle, acide, givre ' + str(noms))
     verifie(not m['dehors'] and m['journal'], 'les cartes du Pisteur tiennent dans la bande ' + str(m['dehors']))

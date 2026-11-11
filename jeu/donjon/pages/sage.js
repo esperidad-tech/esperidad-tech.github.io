@@ -249,7 +249,8 @@ function toucherPlan(p){
     if(sg2){ conte('Pas de nom ici, juste un signe : ' + NOMS_SIGNES[sg2.s] + '.'); return; }
     if(id === 'egouts'){ conte('Un couloir qui tourne, qui tourne… Les Fondateurs aimaient les détours.'); return; }
     if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Un petit crâne rouge… et une note codée, juste à côté.'); return; }
-    if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.' + (S.codes['porte:odette'] ? ' Odette est juste derrière.' : '')); return; }
+    /* (Romain, 11 novembre, 19 h 21 : « sur le plan du Sage, pas marqué Odette » — le plan ne la nomme plus) */
+    if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.'); return; }
   }
 }
 
@@ -278,7 +279,7 @@ function rune(){
     res = reveler(p.x, p.y, wr) || res;
     dernier = p;
     if(res){
-      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'crane' ? ' Et un passage en pointillés part du crâne…' : res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
+      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
       else if(res.debut) conte('Oh ! De l’encre apparaît sous la rune… Continue, doucement.');
     }
   }
@@ -482,6 +483,7 @@ function scene(id){
       '</div></div>' +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Le noter dans le Grand Livre</button></div>', {classe:'scene sombre-fen'});
     PG.guider(w3.el.querySelector('.aller'));
+    PG.son('miaou');                                   /* (le chat miaule : Romain, 11 novembre) */
     conte('Odette est vivante, derrière la porte aux quatre signes. Ton Grand Livre l’a noté.');
   }
 }

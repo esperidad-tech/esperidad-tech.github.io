@@ -527,15 +527,26 @@ function corde(t, f, duree, gain, dest){
 /* =================== les bruitages =================== */
 var B = {};
 /* la course des héros : des bottes sur la pierre */
-B.pasHeros = function(duree, n){
+/* aigu (facultatif) : les mêmes pas, plus haut et plus sautillants — sur la carte du donjon (Romain, 11 novembre, 19 h 21 :
+   « ce petit bruit de pas quand ils rentrent dans une salle, tu peux le mettre aussi quand ils se déplacent sur la carte, avec
+   un bruit un peu plus aigu, un peu plus rigolo ») */
+B.pasHeros = function(duree, n, aigu){
   var o = bus(.3), t = t0(), k = 0;
-  n = n || 1;
+  n = n || 1; aigu = aigu || 1;
   for(var x = 0; x < duree; x += .15 / Math.max(1, n * .7)){
-    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree);
-    ton(tt, {f:hasard(95, 125), f2:48, d:.09, g:.22 * fort}, o);
-    souffle(tt, {type:'bandpass', f:hasard(1400, 2200), q:.9, d:.05, g:.1 * fort}, o);
+    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree), saut = aigu > 1 && k % 2 ? 1.18 : 1;
+    ton(tt, {f:hasard(95, 125) * aigu * saut, f2:48 * aigu * saut, d:.09 / Math.sqrt(aigu), g:.22 * fort}, o);
+    souffle(tt, {type:'bandpass', f:hasard(1400, 2200) * Math.sqrt(aigu), q:.9, d:.05, g:.1 * fort}, o);
     if(k++ % 3 === 0) souffle(tt + .02, {type:'highpass', f:5200, d:.03, g:.025 * fort}, o);   /* les boucles de ceinture */
   }
+};
+/* le miaulement du chat de la porte aux quatre signes : le même que celui du labo (jeu/src/labo/15-sons.js, « miaou ») —
+   deux notes qui glissent, « mi-aou » (Romain, 11 novembre, 19 h 21 : « quand le chat miaule, ce serait bien de lui faire un
+   miaulement ») */
+B.miaou = function(aigu){
+  var o = bus(.25), t = t0(), k = aigu || 1;
+  ton(t, {type:'triangle', f:620 * k, f2:940 * k, a:.05, d:.29, g:.16, lp:2400}, o);
+  ton(t + .16, {type:'triangle', f:940 * k, f2:560 * k, a:.05, d:.25, g:.14, lp:2200}, o);
 };
 /* la course des rats : des griffes qui cliquettent, vite */
 B.pasRats = function(duree){
@@ -2969,14 +2980,16 @@ S.roiFinB = function(A, P){
 };
 
 /* =================== LE GARDIEN DE ROUILLE (élite) =================== */
+/* P.un : UN SEUL pas (le jeu appelle ce son à chaque pied qui frappe le sol ; avec les deux pas d'un coup, on entendait un
+   « boum » de plus que de pas — Romain, 11 novembre, 19 h 21). Dans l'Atelier, on écoute toujours les deux pas. */
 S.gardienPasA = function(A, P){
-  var t = P.t;
-  [0, .85].forEach(function(x, k){ var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1}); rouille(A, t + x, .3, {g:1.8}, o); pasFer(A, t + x + .3, 1, o); });   /* l'articulation grince, puis le pied retombe */
-  return {duree:2.1};
+  var t = P.t, av = P.un ? .02 : .3;
+  (P.un ? [0] : [0, .85]).forEach(function(x, k){ var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1}); rouille(A, t + x, .3, {g:P.un ? 1.1 : 1.8}, o); pasFer(A, t + x + av, 1, o); });   /* l'articulation grince, puis le pied retombe */
+  return {duree:P.un ? 1.2 : 2.1};
 };
 S.gardienPasB = function(A, P){
   var t = P.t;
-  [0, .7].forEach(function(x, k){
+  (P.un ? [0] : [0, .7]).forEach(function(x, k){
     var o = A.bus(ici(P, t + x), {rev:.5, grotte:.3, pan:k ? .3 : -.1});
     A.choc(t + x, {f:80, f2:38, d:.4, g:.8, sat:3.5, corpsF:250, corps:1.5}, o);
     for(var j = 0; j < 7; j++) tinte(A, t + x + .03 + j * h(.03, .06), .9 - j * .1, o);                 /* la chaîne qui tinte */
@@ -3972,6 +3985,8 @@ function salle(fn, duree){
 }
 X.s_clic = salle(function(B){ B.clic(); }, .15);
 X.s_pasHeros = salle(function(B){ B.pasHeros(1.7, 3); }, 1.9);                                  /* les trois héros entrent en courant */
+X.s_pasCarte = salle(function(B){ B.pasHeros(1.1, 2, 1.5); }, 1.3);                              /* les mêmes pas, plus aigus : le pion avance sur la carte du donjon */
+X.s_miaou = salle(function(B){ B.miaou(); }, .6);                                                /* le chat de la porte aux quatre signes (le miaou du labo) */
 X.s_rats = salle(function(B){ B.pasRats(1.5); B.couine(.3, 1); B.couine(.7, 1.15); }, 1.7);       /* les rats arrivent */
 X.s_couine = salle(function(B){ B.couine(0, .9, 1.4); }, .4);
 X.s_page = salle(function(B){ B.page(); }, .3);                                                  /* le Sage étudie */
@@ -4107,7 +4122,7 @@ window.CATALOGUE = [
     {id:'objets', titre:'Objets et salles', sons:[
       {id:'ramasse', t:'Ramasser', v:'AB'}, {id:'coffre', t:'Un coffre', v:'AB'}, {id:'portePierre', t:'Porte de pierre', v:'AB'}, {id:'roueCanaux', t:'Roue des canaux', v:'AB'}, {id:'grilleCanaux', t:'La grille', v:'A'}, {id:'dalles', t:'Piège des dalles', v:'AB'},
       {id:'pageSauve', t:'Page de sauvegarde', v:'AB'}, {id:'codeOk', t:'Code accepté', v:'AB'}, {id:'codeNon', t:'Code refusé', v:'AB'},
-      {id:'pasCouloir', t:'Pas (couloir)', v:'ABCD'}, {id:'brumeCarte', t:'Brume (carte)', v:'AB'}, {id:'feuCamp', t:'Feu de camp', v:'AB', m:1}
+      {id:'pasCouloir', t:'Pas (couloir)', v:'ABCD'}, {id:'s_pasCarte', t:'Pas (carte)', x:1}, {id:'s_miaou', t:'Le chat', x:1}, {id:'brumeCarte', t:'Brume (carte)', v:'AB'}, {id:'feuCamp', t:'Feu de camp', v:'AB', m:1}
     ]}
   ]},
   {id:'musiques', titre:'Musiques', sons:[

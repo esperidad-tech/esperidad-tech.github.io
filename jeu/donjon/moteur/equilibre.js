@@ -254,14 +254,14 @@ function reflechie(o){
         else if(k >= 4){ var f = D.EXPOSES.filter(function(h){ return !c.h[h].sol && !c.h[h].avale; })[0]; if(f && !c.h[f].bouclier) plus({heros:'sage', geste:'bouclier', cible:f}, {etape:true, poids:4}); }
       }
       else if(t === 'bourbe' && k >= 1 && !a(c, m, 'dos') && !a(c, m, 'sous')){
-        var dehors = a(c, m, 'berge') || a(c, m, 'gele');
+        /* depuis le 11 novembre (19 h 21) : SEUL LE GIVRE le sort de l'eau (il saute sur la glace) ; la lumière ne lui fait rien */
+        var dehors = a(c, m, 'gele');
         if(a(c, m, 'sec')){ if(dans(c, 'fumigene')) plus({heros:'alchimiste', geste:'p:fumigene'}, {dure:true, poids:9}); }
         else if(dehors){ if(dans(c, 'feu')) plus(potion('feu', Al ? 'alchimiste' : 'pisteur'), {etape:true, poids:8}); }
-        else if(k >= 3 && dans(c, 'givre') && !S) plus(potion('givre', Al ? 'alchimiste' : 'pisteur'), {etape:true, poids:7});
-        else if(lumiereSure(m)){
+        else if(dans(c, 'givre')){
           /* sans fumée, il faudra le chatouiller : on le sort de l'eau un tour où il prépare un saut (il avalera au suivant) */
           var bonMoment = dans(c, 'fumigene') || !sait(m, 4) || !planDe(c, m) || m.plan.nom === (dans(c, 'feu') ? 'langue' : 'saut');
-          if(bonMoment) plus({heros:'sage', geste:'rune', cible:m.id}, {etape:true, poids:8});
+          if(bonMoment) plus(potion('givre', Al ? 'alchimiste' : 'pisteur'), {etape:true, poids:8});
         }
       }
       return l;
@@ -413,6 +413,9 @@ function tenue(p, o){
 function tenueDe(salle, variante){
   var apres = ['atelier', 'crypte', 'ossuaire', 'bassin'].indexOf(salle) >= 0;
   var o = {pisteur:salle === 'rats' ? null : 'fleches-lourdes', sage:['ossuaire', 'bassin', 'crypte'].indexOf(salle) >= 0 ? 'baton-chene' : null};
+  /* devant Bourbe, l'équipe maligne a le Givre (la fleur cueillie près des canaux, le chaudron, le code) : depuis le
+     11 novembre au soir, lui seul sort Bourbe de l'eau */
+  if(salle === 'bassin') o.recettes = ['givre'];
   if(variante) for(var k in variante) o[k] = variante[k];
   return o;
 }
@@ -447,7 +450,7 @@ function chemin(o){
   l = l.concat(['rats', 'reserve', 'canaux']);
   if(o.egouts) l.push('egouts', 'canaux');
   l = l.concat(['givre', 'toiles']);
-  if(o.secret) l.push('eboulis', 'camp', 'eboulis');
+  /* (le raccourci du crâne, du cul-de-sac éboulé au feu de camp, a été enlevé le 11 novembre : plus de repos avant l'ossuaire) */
   l = l.concat(['dalles', {sauve:'sauve:1'}, 'atelier', 'bibliotheque', 'portes']);
   if(o.crypte) l.push('crypte', 'portes');
   l = l.concat([{sauve:'sauve:2'}, 'ossuaire', 'camp', {sauve:'sauve:3'}, 'bassin', 'porte4', 'leo']);
@@ -481,11 +484,11 @@ function descente(graine, idEquipe, o){
     if(pas === 'aeration'){ R.prendre(p, 'herbes'); }
     if(pas === 'reserve' && o.pisteur) R.prendre(p, o.pisteur);
     if(pas === 'givre') R.prendre(p, 'fleur-givre');
-    if(pas === 'eboulis' && !p.faits.secret){ R.fouiller(p); R.fouiller(p); R.crane(p); }
     if(pas === 'camp'){
       R.repos(p);
       if(p.faits['combat:ossuaire']){
-        if(o.givre) R.code(p, 'recette:givre');
+        /* le Givre est devenu obligatoire contre Bourbe : l'équipe qui a cueilli la fleur tape le code de l'Alchimiste */
+        if(o.givre !== false && p.faits['objet:fleur-givre']) R.code(p, 'recette:givre');
       }
     }
     if(pas === 'dalles' && !p.faits['piege:dalles']){
@@ -621,12 +624,14 @@ dire('L\'équipe maligne, le Grand Livre déjà lu en entier (elle est déjà ve
 dire();
 var MAUVAIS = {}, lignesM = [];
 ['toiles', 'atelier', 'ossuaire', 'bassin'].forEach(function(s){
-  var bon = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{}});      /* toutes ses potions */
+  var bon = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:s === 'bassin' ? {recettes:['givre']} : {}});      /* toutes ses potions (et le Givre devant Bourbe) */
   var m1 = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{sac:['huile', 'colle', 'coeur']}});
   var m2 = salleSeule(s, 'maligne', {livre:TOUT_LU, tenue:{sac:['baume', 'coeur', 'huile']}});
   MAUVAIS[s] = {bon:bon, m1:m1, m2:m2};
   function c3(st){ return p1(st.victoires) + ' % · ' + p1(st.tours) + ' tours · ' + p0(st.pv) + ' PV'; }
   lignesM.push([D.COMBATS[s].nom, c3(bon), c3(m1), c3(m2)]);
+  /* le grand bassin est l'exception voulue (Romain, 11 novembre, 19 h 21 : « il n'y a que la glace qui fonctionne ») */
+  if(s === 'bassin'){ cible(m1.victoires === 0 && m2.victoires === 0, 'sans le Givre, Bourbe ne se bat pas (voulu : lui seul le sort de l\'eau) : ' + p1(m1.victoires) + ' % et ' + p1(m2.victoires) + ' %'); return; }
   cible(m1.victoires >= 30 && m2.victoires >= 30, 'sortie sans la bonne potion : ' + D.COMBATS[s].nom + ' reste faisable (' + p1(m1.victoires) + ' % et ' + p1(m2.victoires) + ' %)');
   function dur(m){ return m.victoires < bon.victoires - 1 || m.tours > bon.tours + 0.5 || m.pv < bon.pv - 20; }
   cible(dur(m1) && dur(m2), 'sortie sans la bonne potion : ' + D.COMBATS[s].nom + ' est plus difficile qu\'avec le bon sac (moins de victoires, plus de tours ou moins de PV à la fin)');
@@ -638,16 +643,16 @@ dire('## 4. Le donjon entier');
 dire();
 dire('Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les salles ; le feu de camp rend la moitié des PV max, une fois entre deux combats. « D\'une traite » : sans tomber une seule fois. Une défaite recharge la dernière sauvegarde (le Grand Livre garde ce qu\'il a lu) et l\'équipe réessaie.');
 dire();
-var BASE = {sacoche:false, secret:true, pisteur:'fleches-lourdes', sage:'baton-chene', crypte:false, plan:true};
+var BASE = {sacoche:false, pisteur:'fleches-lourdes', sage:'baton-chene', crypte:false, plan:true};
 var VARIANTES = [
-  ['base', 'Maligne (lourdes, bâton, passage secret)', 'maligne', BASE],
-  ['sacoche', '… avec la sacoche (Feu en plus, puis Cœur vaillant)', 'maligne', {sacoche:true, sac4:['fumigene', 'acide', 'baume', 'feu'], sacBoss:['feu', 'fumigene', 'baume', 'coeur'], secret:true, pisteur:'fleches-lourdes', sage:'baton-chene'}],
-  ['argent', '… avec les flèches d\'argent', 'maligne', {secret:true, pisteur:'fleches-argent', sage:'baton-chene'}],
-  ['sansSecret', '… sans le passage secret (un seul feu de camp)', 'maligne', {secret:false, pisteur:'fleches-lourdes', sage:'baton-chene'}],
-  ['cristal', '… avec le cristal de lune au lieu du bâton', 'maligne', {secret:true, pisteur:'fleches-lourdes', sage:'cristal-lune'}],
-  ['crypte', '… qui passe par la fausse crypte (l\'amulette)', 'maligne', {secret:true, pisteur:'fleches-lourdes', sage:'baton-chene', crypte:true}],
-  ['sansSauve', '… sans aucune sauvegarde', 'maligne', {secret:true, pisteur:'fleches-lourdes', sage:'baton-chene', sauve:false}],
-  ['sacRats', '… qui garde le sac de la salle des rats (Feu, Huile, Baume) jusqu\'au feu de camp', 'maligne', {secret:true, pisteur:'fleches-lourdes', sage:'baton-chene', sac:['feu', 'huile', 'baume']}],
+  ['base', 'Maligne (lourdes, bâton)', 'maligne', BASE],
+  ['sacoche', '… avec la sacoche (Feu en plus, puis Cœur vaillant)', 'maligne', {sacoche:true, sac4:['fumigene', 'acide', 'baume', 'feu'], sacBoss:['feu', 'fumigene', 'baume', 'coeur'], pisteur:'fleches-lourdes', sage:'baton-chene'}],
+  ['argent', '… avec les flèches d\'argent', 'maligne', {pisteur:'fleches-argent', sage:'baton-chene'}],
+  ['sansGivre', '… qui n\'a pas cueilli la fleur de givre (pas de Givre contre Bourbe)', 'maligne', {pisteur:'fleches-lourdes', sage:'baton-chene', givre:false}],
+  ['cristal', '… avec le cristal de lune au lieu du bâton', 'maligne', {pisteur:'fleches-lourdes', sage:'cristal-lune'}],
+  ['crypte', '… qui passe par la fausse crypte (l\'amulette)', 'maligne', {pisteur:'fleches-lourdes', sage:'baton-chene', crypte:true}],
+  ['sansSauve', '… sans aucune sauvegarde', 'maligne', {pisteur:'fleches-lourdes', sage:'baton-chene', sauve:false}],
+  ['sacRats', '… qui garde le sac de la salle des rats (Feu, Huile, Baume) jusqu\'au feu de camp', 'maligne', {pisteur:'fleches-lourdes', sage:'baton-chene', sac:['feu', 'huile', 'baume']}],
   ['d10', 'Distraite : un geste sur dix joué au hasard', 'distraite10', BASE],
   ['d25', 'Très distraite : un geste sur quatre joué au hasard', 'distraite25', BASE]
 ];
@@ -669,7 +674,7 @@ dire('### Les autres équipes dans le donjon (sans sauvegarde, sans le plan du S
 dire();
 var AUTRES = {}, lignesA = [];
 [['sansSage', 'Sans le Sage'], ['tape', 'Tape sans réfléchir'], ['tapePotions', 'Tape, avec le feu au lieu de la louche'], ['hasard', 'Au hasard'], ['tatons', 'À tâtons']].forEach(function(e){
-  var r = donjon(e[0], {secret:false, pisteur:'fleches-lourdes', sage:'baton-chene', sauve:false, plan:false, sac:e[0] === 'tape' || e[0] === 'tapePotions' || e[0] === 'hasard' ? ['feu', 'huile', 'baume'] : SAC_AVANT_CAMP});
+  var r = donjon(e[0], {pisteur:'fleches-lourdes', sage:'baton-chene', sauve:false, plan:false, sac:e[0] === 'tape' || e[0] === 'tapePotions' || e[0] === 'hasard' ? ['feu', 'huile', 'baume'] : SAC_AVANT_CAMP});
   AUTRES[e[0]] = r;
   lignesA.push([e[1]].concat(D.CHEMIN.map(function(s){ return p1(r.salles[s].passee) + ' %'; })));
 });
@@ -701,16 +706,16 @@ var rates = cibles.filter(function(k){ return !k.ok; });
 dire(rates.length ? '**' + rates.length + ' cible(s) manquée(s).**' : '**Toutes les cibles sont tenues.**');
 dire();
 
-var D10 = DONJ.d10, D25 = DONJ.d25, SANS = DONJ.sansSecret, RATS = DONJ.sacRats;
+var D10 = DONJ.d10, D25 = DONJ.d25, SANS = DONJ.sansGivre, RATS = DONJ.sacRats;
 dire('## 6. Ce qu\'il faut en retenir');
 dire();
 dire('- **La salle des rats n\'a pas bougé** : mêmes règles, mêmes chiffres que l\'essai (`test-regles.js` rejoue 3 000 parties des deux côtés et compare tout).');
 dire('- **Dès les canaux, il faut réfléchir.** Taper sans ouvrir les points faibles, c\'est tomber en ' + Math.floor(S.canaux.tape.toursDefaite) + ' ou ' + Math.ceil(S.canaux.tape.toursDefaite) + ' tours ; l\'équipe qui étudie gagne en 3 ou 4 tours.');
-dire('- **Bien joué, on ne perd pas par malchance** : l\'équipe maligne (un robot qui ne se trompe jamais) arrive chez Léo ' + p0(M.traite) + ' fois sur 100 sans tomber, mais presque toujours avec un héros dans le rouge à un moment (' + p0(M.chaud) + ' % des descentes). Sans le passage secret (un seul feu de camp) : ' + p1(SANS.traite) + ' %.');
+dire('- **Bien joué, on ne perd pas par malchance** : l\'équipe maligne (un robot qui ne se trompe jamais) arrive chez Léo ' + p0(M.traite) + ' fois sur 100 sans tomber, mais presque toujours avec un héros dans le rouge à un moment (' + p0(M.chaud) + ' % des descentes). **Le Givre est obligatoire contre Bourbe** (depuis le 11 novembre, lui seul le sort de l\'eau) : l\'équipe qui n\'a pas cueilli la fleur de givre arrive au bout ' + p1(SANS.gagne) + ' fois sur 100.');
 dire('- **Une vraie famille se trompera, et là ça pique** : avec un geste sur dix joué au hasard, ' + p0(D10.traite) + ' % des descentes réussissent d\'une traite (' + p0(D10.un) + ' % avec un rechargement au plus) ; avec un geste sur quatre, ' + p0(D25.traite) + ' % seulement, et ' + D25.defaites.toFixed(1).replace('.', ',') + ' défaites par descente en moyenne. Les pages blanches du Sage servent donc vraiment. Si c\'est trop dur (ou pas assez) à l\'essai, les chiffres à bouger d\'abord sont les dégâts des attaques dans `donnees.js` (le Gardien, les feux follets, les chauves-souris, le saut de Bourbe).');
 dire('- **Sans les connaissances du Sage, les élites et le boss ne se battent pas** : 0 victoire contre le Gardien, le Roi des rats et Bourbe. Une équipe très prudente (soins et boucliers) traverse lentement les trois premières salles (une vingtaine de tours aux canaux), tient debout devant le Gardien… et ne peut rien lui faire.');
 dire('- **À tâtons**, en essayant tout et en retenant ce qu\'on voit, on tombe parfois sur le combo du Gardien (' + p0(S.atelier.tatons.victoires) + ' % à pleins PV) ou du Roi des rats (' + p0(S.ossuaire.tatons.victoires) + ' %), jamais sur celui de Bourbe, et personne n\'arrive au bout (' + p1(AUTRES.tatons.gagne) + ' %). Les pièges font leur travail.');
-dire('- **Toujours une sortie** : avec un mauvais sac, chaque salle reste faisable par un chemin plus long ou plus coûteux (tableau 3). Le plus dur : le Gardien sans Acide, sans Givre et sans Baume (' + p0(MAUVAIS.atelier.m1.victoires) + ' %). Et **le choix du sac compte** : la même équipe maligne qui garde le sac de la salle des rats (Feu, Huile, Baume) doit lire le Grand Livre jusqu\'aux chemins sans potion, les combats durent deux à quatre fois plus longtemps, et elle ne réussit d\'une traite que ' + p0(RATS.traite) + ' fois sur 100 (' + p0(RATS.un) + ' avec un rechargement au plus).');
+dire('- **Presque toujours une sortie** : avec un mauvais sac, chaque salle reste faisable par un chemin plus long ou plus coûteux (tableau 3), **sauf le grand bassin : sans le Givre, Bourbe ne sort pas de l\'eau**. Le plus dur : le Gardien sans Acide, sans Givre et sans Baume (' + p0(MAUVAIS.atelier.m1.victoires) + ' %). Et **le choix du sac compte** : la même équipe maligne qui garde le sac de la salle des rats (Feu, Huile, Baume) doit lire le Grand Livre jusqu\'aux chemins sans potion, les combats durent deux à quatre fois plus longtemps, et elle ne réussit d\'une traite que ' + p0(RATS.traite) + ' fois sur 100 (' + p0(RATS.un) + ' avec un rechargement au plus).');
 dire();
 dire('### Ce que la simulation ne dit pas');
 dire();

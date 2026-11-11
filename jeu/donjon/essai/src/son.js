@@ -140,6 +140,7 @@ function bruitage(id, o){
     return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.buf.duration), moment:fn.moment, version:v, pre:true};
   }
   var P = A.prise(t, niveau(cle)), r = null;
+  if(o.un) P.un = 1;                                   /* (un seul pas du Gardien, au lieu des deux de l'Atelier) */
   A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
   try{
     if(o.partie){ var C = window.BRUITAGES.CRITIQUE[v]; if(C && C[o.partie]) C[o.partie](A, P, t); r = {duree:C ? C.duree : 3}; }
@@ -502,15 +503,26 @@ function corde(t, f, duree, gain, dest){
 /* =================== les bruitages =================== */
 var B = {};
 /* la course des héros : des bottes sur la pierre */
-B.pasHeros = function(duree, n){
+/* aigu (facultatif) : les mêmes pas, plus haut et plus sautillants — sur la carte du donjon (Romain, 11 novembre, 19 h 21 :
+   « ce petit bruit de pas quand ils rentrent dans une salle, tu peux le mettre aussi quand ils se déplacent sur la carte, avec
+   un bruit un peu plus aigu, un peu plus rigolo ») */
+B.pasHeros = function(duree, n, aigu){
   var o = bus(.3), t = t0(), k = 0;
-  n = n || 1;
+  n = n || 1; aigu = aigu || 1;
   for(var x = 0; x < duree; x += .15 / Math.max(1, n * .7)){
-    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree);
-    ton(tt, {f:hasard(95, 125), f2:48, d:.09, g:.22 * fort}, o);
-    souffle(tt, {type:'bandpass', f:hasard(1400, 2200), q:.9, d:.05, g:.1 * fort}, o);
+    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree), saut = aigu > 1 && k % 2 ? 1.18 : 1;
+    ton(tt, {f:hasard(95, 125) * aigu * saut, f2:48 * aigu * saut, d:.09 / Math.sqrt(aigu), g:.22 * fort}, o);
+    souffle(tt, {type:'bandpass', f:hasard(1400, 2200) * Math.sqrt(aigu), q:.9, d:.05, g:.1 * fort}, o);
     if(k++ % 3 === 0) souffle(tt + .02, {type:'highpass', f:5200, d:.03, g:.025 * fort}, o);   /* les boucles de ceinture */
   }
+};
+/* le miaulement du chat de la porte aux quatre signes : le même que celui du labo (jeu/src/labo/15-sons.js, « miaou ») —
+   deux notes qui glissent, « mi-aou » (Romain, 11 novembre, 19 h 21 : « quand le chat miaule, ce serait bien de lui faire un
+   miaulement ») */
+B.miaou = function(aigu){
+  var o = bus(.25), t = t0(), k = aigu || 1;
+  ton(t, {type:'triangle', f:620 * k, f2:940 * k, a:.05, d:.29, g:.16, lp:2400}, o);
+  ton(t + .16, {type:'triangle', f:940 * k, f2:560 * k, a:.05, d:.25, g:.14, lp:2200}, o);
 };
 /* la course des rats : des griffes qui cliquettent, vite */
 B.pasRats = function(duree){
