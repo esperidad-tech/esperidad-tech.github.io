@@ -922,7 +922,7 @@ function recompenser(erreurs){
 
 /* ---------- Talents ---------- */
 function talentModal(m){
-  var role = M.role(), choix = D.TALENTS_PAR_ROLE[role][m.palier];
+  var role = M.role(), choix = (D.TALENTS_PAR_ROLE[role] || {})[m.palier] || [];
   return '<h2>⭐ Talent du niveau ' + m.palier + '</h2><p>Choisis bien : c\'est pour toujours ! ' + lire('Choisis bien : c\'est pour toujours !') + '</p><div class="b-talents-choix">' + choix.map(function(id){
     var t = D.TALENTS[id];
     var h = M.heroObj(); h.talents = h.talents.concat([id]);
@@ -1350,9 +1350,10 @@ A.bonus = function(el){
     if(res.ragots){
       M.noter('Ragots de la taverne : ' + (res.erreurs ? 'tu t\'es trompé ' + (res.erreurs === 1 ? 'sur un ragot' : res.erreurs + ' fois') + '. Lesquels ? Relis-les dans « À relire ».' : 'tu as eu le nez fin, tous bien jugés ! Ils sont dans « À relire ».'), '🍺');
     }
-    if(res.reussi){ M.S.or += b.or; M.son('gain'); }
+    var gainB = M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre) */
+    if(res.reussi){ M.S.or += gainB; M.son('gain'); }
     M.sauver();
-    M.ouvrir({type:'info', ic:res.reussi ? '🪙' : '💨', titre:res.reussi ? 'Mission réussie : +' + b.or + ' pièces d\'or !' : 'Mission ratée', t:res.reussi ? 'Bravo ! L\'or est dans ta bourse.' : 'Dommage… Cette mission ne se rejoue pas.'});
+    M.ouvrir({type:'info', ic:res.reussi ? '🪙' : '💨', titre:res.reussi ? 'Mission réussie : +' + gainB + (gainB > 1 ? ' pièces' : ' pièce') + ' d\'or !' : 'Mission ratée', t:res.reussi ? 'Bravo ! L\'or est dans ta bourse.' : 'Dommage… Cette mission ne se rejoue pas.'});
   });
 };
 /* Le texte d'une analyse : An.variantes [{si:[conditions], t, note}], la première qui convient, sinon An.t
@@ -1564,7 +1565,12 @@ function demarrer(){
   document.addEventListener('input', function(ev){ if(ev.target.id === 'nom' && UI.crea) UI.crea.nom = ev.target.value; });
   document.getElementById('stop-voix').addEventListener('click', function(){ M.stop(); });
   if(M.S.heros && M.S.e && !M.S.e.resolu) UI.ecran = 'accueil';
+  /* des objets retirés de la boutique (M.reparerBoutique, moteur-base.js) : Fortuné rend l'or, une seule fois */
+  var rb = (M.S.rembourse && M.S.heros) ? +M.S.rembourse.or || 0 : 0;
+  if(M.S.rembourse){ delete M.S.rembourse; M.sauver(); }
   M.render();
+  if(rb > 0) M.ouvrir({type:'info', ic:'👛', titre:'Fortuné te rend ton or',
+    t:'Fortuné a repris certains objets de sa boutique : ils ne servaient à rien pour l\'instant. Il te rend ' + rb + ' pièces d\'or. À toi de choisir autre chose !'});
   try{ M.rateQuitte(); }catch(e){ console.error(e); }   /* un mini-jeu laissé ouvert quand on a quitté : raté */
   /* le service worker : la version GitHub, et un serveur local pour les essais (Jouer sans internet, heros.js) */
   if('serviceWorker' in navigator && ((location.protocol === 'https:' && /github\.io$/.test(location.hostname)) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){

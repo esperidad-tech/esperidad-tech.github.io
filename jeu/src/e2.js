@@ -669,12 +669,12 @@ E[2] = {
       note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Le maire : « La zone est condamnée. Rentrez chez vous ! » Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
   ],
   bonus:[
-    {id:'cerfvolant', role:'pisteur', lieu:'clocher', moments:['matin', 'apresmidi'], mj:'tir', params:{decor:'cerfvolant'}, or:15, titre:'Le cerf-volant du clocher',
+    {id:'cerfvolant', role:'pisteur', lieu:'clocher', moments:['matin', 'apresmidi'], mj:'tir', params:{decor:'cerfvolant'}, or:5, titre:'Le cerf-volant du clocher',
       t:'Le cerf-volant d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
-    {id:'brioches', role:'alchimiste', lieu:'boulangerie', moments:['apresmidi', 'nuit'], mj:'melange', or:15, titre:'La confiture de Gaspard',
+    {id:'brioches', role:'alchimiste', lieu:'boulangerie', moments:['apresmidi', 'nuit'], mj:'melange', or:4, titre:'La confiture de Gaspard',
       t:'Gaspard a perdu la recette de la confiture de ses brioches ! Retrouve sa couleur exacte.'},
     /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
-    {id:'blason', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'Le blason de la mairie',
+    {id:'blason', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:4, titre:'Le blason de la mairie',
       t:'Le vieux blason de la mairie est tombé et s\'est cassé en morceaux : remets-les en place !', params:{image:'blason'}}
   ],
   fin:{

@@ -258,10 +258,11 @@ function vueBoutique(){
   });
   s += '</div>';
   var ens = M.cle(D.ENSEMBLES).filter(function(k){ return D.ENSEMBLES[k].role === role; });
-  s += '<h3 class="b-sous-titre">Les ensembles</h3><p class="doux petit">Trois objets d\'un même ensemble débloquent un pouvoir secret.</p><ul class="b-liste">' + ens.map(function(k){
+  if(ens.length) s += '<h3 class="b-sous-titre">Les ensembles</h3><p class="doux petit">Trois objets d\'un même ensemble débloquent un pouvoir secret.</p><ul class="b-liste">' + ens.map(function(k){
     var e = D.ENSEMBLES[k], c = M.compteEnsemble(k);
     return '<li><span class="b-ic">' + e.ic + '</span><div><b>' + esc(e.nom) + ' · ' + c + '/3</b><p>' + (c >= 3 ? esc(e.bonus) : '??? Complète l\'ensemble pour découvrir son pouvoir.') + '</p></div>' + lire(e.nom + '. ' + (c >= 3 ? e.bonus : 'Complète l\'ensemble pour découvrir son pouvoir.')) + '</li>';
-  }).join('') + '</ul></main>';
+  }).join('') + '</ul>';
+  s += '</main>';
   return s;
 }
 

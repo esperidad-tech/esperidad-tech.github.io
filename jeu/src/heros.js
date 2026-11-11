@@ -110,6 +110,12 @@ function etatTalent(id){
 M.etatTalent = etatTalent;
 function arbreHTML(){
   var T = D.TALENTS_PAR_ROLE[M.role()] || {};
+  /* Pisteur, Alchimiste, Sage : leurs talents sont à refaire (Romain, 11 novembre) ; l'arbre attend, sans cases vides */
+  if(!M.cle(T).length){
+    var tv = 'Ton arbre pousse encore. Tes talents arrivent bientôt : continue tes enquêtes, ton expérience est gardée\u00a0!';
+    return '<div class="hr-arbre hr-arbre-vide" role="group" aria-label="Arbre des talents"><div class="hr-tronc" aria-hidden="true"></div>' +
+      '<p class="hr-arbre-msg">🌱 ' + esc(tv) + ' ' + lire(tv) + '</p><div class="hr-racines" aria-hidden="true"></div></div>';
+  }
   var MARQUE = {pris:'✔', dispo:'⭐', ferme:'🔒', non:''};
   function boite(id, cote){
     var t = D.TALENTS[id]; if(!t) return '<span></span>';

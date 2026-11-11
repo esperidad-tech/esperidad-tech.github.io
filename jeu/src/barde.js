@@ -858,9 +858,10 @@ A['bd-chanter'] = function(el){
   if(a.trous.some(function(m, n){ return !o.poses[n]; })) return;
   var ok = a.trous.every(function(m, n){ return o.poses[n] === m; });
   P.bonus[id] = ok ? 'ok' : 'ko';
-  if(ok){ M.S.or += b.or || 15; M.son('gain'); } else M.son('ko');
+  var gainB = M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre) */
+  if(ok){ M.S.or += gainB; M.son('gain'); } else M.son('ko');
   M.sauver();
-  M.ouvrir({type:'info', ic:ok ? '🪙' : '🎶', titre:ok ? 'Mission réussie : +' + (b.or || 15) + ' pièces d\'or !' : 'Mission ratée', t:ok ? 'Margot applaudit : « Bravo, c\'est exactement ma chanson ! » L\'or est dans ta bourse.' : 'Margot fronce les sourcils : « Hmm… ce n\'est pas tout à fait ça. » Dommage, cette mission ne se rejoue pas.'});
+  M.ouvrir({type:'info', ic:ok ? '🪙' : '🎶', titre:ok ? 'Mission réussie : +' + gainB + (gainB > 1 ? ' pièces' : ' pièce') + ' d\'or !' : 'Mission ratée', t:ok ? 'Margot applaudit : « Bravo, c\'est exactement ma chanson ! » L\'or est dans ta bourse.' : 'Margot fronce les sourcils : « Hmm… ce n\'est pas tout à fait ça. » Dommage, cette mission ne se rejoue pas.'});
 };
 A['bd-carnet'] = function(el){
   var P = M.P(); if(!P) return;
@@ -1357,7 +1358,7 @@ function bonusConvHTML(id){
   var t0 = b.t || '';
   var s = '<div class="bd-conv"><div class="bd-tete"><div class="bd-visage" id="bd-visage">' + visage(pnj) + '</div><div class="bd-nom"><h2>' + esc(b.titre) + '</h2><span class="doux">' + esc(nom(pnj)) + '</span></div>' +
     '<div class="bd-bulle"><p id="bd-texte">' + (UI.bd && UI.bd.p === 'bonus:' + id && UI.bd.mode === 'suite' && !UI.bd.joue ? '' : esc(t0)) + '</p>' + lire(t0, pnj) + '</div></div>';
-  if(juge) return s + '<p class="bd-fini">' + (P.bonus[id] === 'ok' ? '🪙 Bien vu ! Tu as gagné ' + b.or + ' pièces d\'or.' : '💨 Raté… Cette mission ne se rejoue pas.') + '</p></div>';
+  if(juge) return s + '<p class="bd-fini">' + (P.bonus[id] === 'ok' ? '🪙 Bien vu ! Tu as gagné ' + M.orBonus(b) + (M.orBonus(b) > 1 ? ' pièces' : ' pièce') + ' d\'or.' : '💨 Raté… Cette mission ne se rejoue pas.') + '</p></div>';
   s += '<p class="bd-aide">Regarde bien son visage : une de ses histoires est un mensonge. Laquelle ? Un seul essai !</p>';
   if(st.vu < 2) s += '<button class="btn grand" data-act="bd-menteurs-joue" data-id="' + id + '">' + (st.vu ? '🔁 Encore une fois' : '▶ Écouter ses histoires') + '</button>';
   if(st.vu) s += '<div class="bd-questions">' + b.repliques.map(function(r, k){
@@ -1384,9 +1385,10 @@ A['bd-menteurs'] = function(el){
   var P = M.P(), b = bonusConv(el.dataset.id); if(!b || P.bonus[b.id] !== 'encours') return;
   var r = b.repliques[+el.dataset.k], ok = !!(r && r.ment);
   P.bonus[b.id] = ok ? 'ok' : 'ko';
-  if(ok){ M.S.or += b.or || 15; M.son('gain'); } else M.son('ko');
+  var gainB = M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre) */
+  if(ok){ M.S.or += gainB; M.son('gain'); } else M.son('ko');
   M.sauver();
-  M.ouvrir({type:'info', ic:ok ? '🪙' : '💨', titre:ok ? 'Mission réussie : +' + b.or + ' pièces d\'or !' : 'Mission ratée', t:ok ? 'Bien vu ! C\'était bien la blague de ' + nom(b.pnj || 'margot') + '. L\'or est dans ta bourse.' : 'Dommage… Ce n\'était pas celle-là. Cette mission ne se rejoue pas.'});
+  M.ouvrir({type:'info', ic:ok ? '🪙' : '💨', titre:ok ? 'Mission réussie : +' + gainB + (gainB > 1 ? ' pièces' : ' pièce') + ' d\'or !' : 'Mission ratée', t:ok ? 'Bien vu ! C\'était bien la blague de ' + nom(b.pnj || 'margot') + '. L\'or est dans ta bourse.' : 'Dommage… Ce n\'était pas celle-là. Cette mission ne se rejoue pas.'});
 };
 
 /* ==========================================================

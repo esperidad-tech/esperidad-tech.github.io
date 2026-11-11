@@ -185,7 +185,9 @@ E[1] = {
     victor:{maison:'L6', note:'Distribue le courrier chaque matin.'},
     melusine:{maison:'L4', note:'Tricote plus vite que son ombre.'},
     odette:{maison:'L2', note:'Marche avec une canne. Ne dort presque jamais.'},
-    tim:{maison:'L7', note:'Petit ramoneur de 10 ans : il grimpe sur les toits pour nettoyer les cheminées. Toujours plein de suie !'}
+    /* (Romain, 11 novembre : la fiche ne dit plus « il grimpe sur les toits… toujours plein de suie » : avec la suie de la laine et du balcon,
+       et les traces du massif, le Pisteur, le Sage et l'Alchimiste trouvaient Tim sans le Barde) */
+    tim:{maison:'L7', note:'Petit ramoneur de 10 ans.'}
   },
   objets:{
     /* (Romain, 10 novembre : le Pisteur trouve « des poils », ni un fil ni rouge ; c'est l'analyse qui montre que c'est de la laine.
@@ -390,13 +392,13 @@ E[1] = {
   ],
   bonus:[
     /* (tutoriel) une mission bonus n'est proposée que pendant une attente (un code qui n'est pas encore là, le moment suivant, la fin), une seule fois */
-    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', params:{decor:'clocher'}, or:15, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
+    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', params:{decor:'clocher'}, or:3, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
       t:'Le ballon rouge d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
-    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:15, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
+    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:3, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
       t:'Gaspard a oublié l\'ordre de ses fournées. Aide-le à s\'en souvenir !'},
     /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
     /* La première phrase à trous du Barde (barde.js) : elle s'écrit dans son Carnet ; on la chante ensuite à Margot, une seule fois */
-    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:15, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
+    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:3, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
       t:'Margot chante la chanson de la fête, mais il y a tant de bruit dans la taverne ! Écoute-la, puis retrouve les mots qui manquent.',
       entendu:'Margot chante à tue-tête… mais avec tout ce bruit, tu n\'as entendu que des morceaux de sa chanson !',
       params:{phrases:[
@@ -405,7 +407,7 @@ E[1] = {
         {qui:'🎶', texte:'on [danse] autour de la [fontaine],'},
         {qui:'🎶', texte:'jusqu\'à ce que se couche la [lune].'}],
         pieges:['neige', 'pluie', 'Bruxelles', 'bougies', 'étoiles', 'deux', 'chante', 'saute', 'mairie', 'rivière', 'soleil']}},   /* des pièges qui vont aussi dans la phrase */
-    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:15, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
+    {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:3, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
       t:'La vieille horloge de la mairie est déréglée : remets ses runes en place !', params:{image:'horloge'}}
   ],
   fin:{
