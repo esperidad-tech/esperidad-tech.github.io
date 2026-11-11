@@ -170,8 +170,63 @@ function dessinerFeuille(c, w, h, e, seed, s){
   c.closePath(); c.fill(); c.stroke();
   c.strokeStyle = veine; c.lineWidth = 1.3*s; [0, 1.257, -1.257, 2.513, -2.513].forEach(function(a){ var l3 = ((lierre ? 40 : 46) - (lierre ? 14 : 18)*(1 - Math.cos(a))/2)*s*.86; c.beginPath(); c.moveTo(bx0, cy); c.lineTo(bx0 + Math.cos(a)*l3*1.12, cy + Math.sin(a)*l3*.95); c.stroke(); });
 }
+/* Une écriture à la plume (enquête 3 : la lettre d'Odette et les douze mots du Livre d'or), posée sur son bout de papier.
+   Les mots sont écrits lettre par lettre. Trois signes se regardent de près : le « M » (e.M : pointu comme des dents de scie ; sinon
+   rond comme deux collines), la barre du « t » (e.t : une longue vague ; sinon le petit trait droit), le point du « i » (e.i : un
+   petit rond vide ; sinon un point plein). Le reste fait le caractère de chacun : la taille, la pente, le gras, une petite fleur,
+   une tache de farine, des pâtés d'encre. Dessinée pour une case de 122 × 68 (× s). */
+function dessinerEcriture(c, w, h, e, seed, s){
+  s = s || 1; var Rn = rng((seed || 7) + e.l.join('').length), L = e.l, n = L.length, i, k;
+  var pw = 122*s, ph = (e.lettre ? 86 : 68)*s, T0 = (e.taille || 1)*(n > 3 ? 14.5 : (n > 2 ? 16 : (n > 1 ? 20 : 26)))*s, encre = e.encre || '#2b2233';
+  var police = (e.gras ? '700 ' : '500 '), fam = 'px Caveat, "Segoe Script", "Comic Sans MS", cursive';
+  function largeur(t, T){ c.font = police + T + fam; var x = 0; for(var j = 0; j < t.length; j++){ var ch = t[j]; x += ch === 'M' ? T*.66 : c.measureText(ch === 'i' ? '\u0131' : ch).width; x += T*.02; } return x; }
+  /* tout doit tenir sur le papier : on rapetisse un peu si une ligne dépasse */
+  var plus = 0; for(i = 0; i < n; i++) plus = Math.max(plus, largeur(L[i], T0)); if(plus > pw*.9) T0 *= pw*.9/plus;
+  var inter = T0*1.08, haut = inter*(n - 1), y0 = -haut/2 + T0*.28;
+  c.save(); c.translate(w/2, h/2);
+  /* le papier : une ombre, la feuille, ses lignes à peine tracées (la lettre : un pli au milieu, un coin corné) */
+  c.rotate(e.lettre ? -.03 : (Rn() - .5)*.05);
+  c.fillStyle = 'rgba(40,24,10,.28)'; c.fillRect(-pw/2 + 3*s, -ph/2 + 4*s, pw, ph);
+  c.fillStyle = e.papier || '#fbf4de'; c.fillRect(-pw/2, -ph/2, pw, ph);
+  c.strokeStyle = 'rgba(90,64,40,.55)'; c.lineWidth = Math.max(1, 1.1*s); c.strokeRect(-pw/2, -ph/2, pw, ph);
+  if(e.lettre){ c.strokeStyle = 'rgba(120,96,60,.3)'; c.lineWidth = Math.max(1, 1.4*s); c.beginPath(); c.moveTo(-pw/2, 2*s); c.lineTo(pw/2, -1*s); c.stroke();
+    c.fillStyle = 'rgba(120,96,60,.22)'; c.beginPath(); c.moveTo(pw/2, ph/2); c.lineTo(pw/2 - 13*s, ph/2); c.lineTo(pw/2, ph/2 - 13*s); c.closePath(); c.fill(); }
+  else { c.strokeStyle = 'rgba(120,150,190,.28)'; c.lineWidth = Math.max(.6, .7*s); for(i = 0; i < n; i++){ c.beginPath(); c.moveTo(-pw/2 + 5*s, y0 + i*inter + T0*.1); c.lineTo(pw/2 - 5*s, y0 + i*inter + T0*.1); c.stroke(); } }
+  c.fillStyle = encre; c.strokeStyle = encre; c.lineCap = 'round'; c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+  var pen = e.penche == null ? .14 : e.penche, ep = Math.max(1, T0*(e.gras ? .085 : .068));
+  for(i = 0; i < n; i++){
+    var t = L[i], lg = largeur(t, T0), x = -lg/2, signe = e.lettre && i === n - 1;
+    c.save(); c.translate(signe ? pw*.16 : 0, y0 + i*inter); c.transform(1, 0, -pen, 1, 0, 0); c.font = police + T0 + fam;
+    for(k = 0; k < t.length; k++){
+      var ch = t[k], lw;
+      if(ch === 'M'){
+        lw = T0*.66; c.lineWidth = ep; c.beginPath();
+        if(e.M){ c.lineJoin = 'miter'; c.miterLimit = 12; c.moveTo(x + T0*.02, 0); c.lineTo(x + T0*.12, -T0*.7); c.lineTo(x + T0*.31, -T0*.12); c.lineTo(x + T0*.48, -T0*.7); c.lineTo(x + T0*.6, 0); }
+        else { c.lineJoin = 'round'; c.moveTo(x + T0*.03, 0); c.lineTo(x + T0*.05, -T0*.4); c.bezierCurveTo(x + T0*.06, -T0*.72, x + T0*.3, -T0*.72, x + T0*.31, -T0*.36); c.lineTo(x + T0*.31, -T0*.1);
+          c.moveTo(x + T0*.31, -T0*.36); c.bezierCurveTo(x + T0*.32, -T0*.72, x + T0*.57, -T0*.72, x + T0*.58, -T0*.4); c.lineTo(x + T0*.6, 0); }
+        c.stroke();
+      } else if(ch === 'i'){
+        lw = c.measureText('\u0131').width; c.fillText('\u0131', x, 0);
+        c.beginPath(); if(e.i){ c.lineWidth = Math.max(.9, ep*.8); c.arc(x + lw*.5, -T0*.58, T0*.125, 0, 6.283); c.stroke(); } else { c.arc(x + lw*.5, -T0*.54, T0*.055, 0, 6.283); c.fill(); }
+      } else if(ch === 't'){
+        lw = c.measureText('t').width; c.fillText('t', x, 0);
+        if(e.t){ c.lineWidth = Math.max(1, ep); c.lineJoin = 'round'; c.beginPath(); var x0 = x - T0*.16, x1 = x + lw + T0*.2, yb = -T0*.37;
+          c.moveTo(x0, yb); c.bezierCurveTo(x0 + (x1 - x0)*.3, yb - T0*.17, x0 + (x1 - x0)*.42, yb - T0*.15, (x0 + x1)/2, yb); c.bezierCurveTo(x0 + (x1 - x0)*.6, yb + T0*.15, x0 + (x1 - x0)*.72, yb + T0*.15, x1, yb - T0*.03); c.stroke(); }
+      } else { lw = c.measureText(ch).width; c.fillText(ch, x, 0); }
+      x += lw + T0*.02;
+    }
+    c.restore();
+  }
+  /* ce qui traîne sur le papier */
+  if(e.deco === 'fleur'){ var fx = pw*.33, fy = -ph*.2, fr = 5.5*s; c.fillStyle = '#b48cff'; for(i = 0; i < 5; i++){ var a = i/5*6.283 - 1.57; c.beginPath(); c.arc(fx + Math.cos(a)*fr, fy + Math.sin(a)*fr, fr*.62, 0, 6.283); c.fill(); }
+    c.fillStyle = '#f5b945'; c.beginPath(); c.arc(fx, fy, fr*.5, 0, 6.283); c.fill(); c.strokeStyle = encre; c.lineWidth = Math.max(.8, .8*s); c.beginPath(); c.moveTo(fx, fy + fr*1.4); c.quadraticCurveTo(fx + 3*s, fy + fr*2.4, fx - 1*s, fy + fr*3.6); c.stroke(); }
+  if(e.deco === 'farine'){ c.fillStyle = 'rgba(255,255,255,.82)'; for(i = 0; i < 26; i++){ var da = Rn()*6.283, dd = Rn()*17*s; c.beginPath(); c.arc(pw*.3 + Math.cos(da)*dd, ph*.22 + Math.sin(da)*dd*.6, (1 + Rn()*2.6)*s, 0, 6.283); c.fill(); } }
+  if(e.deco === 'pates'){ c.fillStyle = encre; [[-.34, -.24, 4.6], [.36, .1, 6], [.12, .32, 3.4], [.4, .2, 2]].forEach(function(q){ blob(c, pw*q[0], ph*q[1], q[2]*s, Rn, encre, 8); }); }
+  c.restore();
+}
 function dessinerRef(c, w, h, tk, r, seed, s){
   var e = ECH[tk][r];
+  if(tk === 'ecritures'){ dessinerEcriture(c, w, h, e, seed, s || 1); return; }
   if(tk === 'fils') dessinerFil(c, w, h, e.p, {scale:s || 1, seed:seed});
   else if(tk === 'grains') dessinerGrain(c, w, h, r, seed, s);
   else if(tk === 'plumes') dessinerPlume(c, w, h, e, seed, s);
@@ -216,6 +271,8 @@ function dessinerBoutPetale(c, x, y, r, coul){
 /* L'objet de l'enquête, tel qu'on le voit sous la loupe */
 function dessinerPreuve(c, w, h, s){
   var t = S.sel, o = OBJETS[t];
+  /* (enquête 3) la lettre d'Odette : quelques mots de son écriture */
+  if(o.forme === 'papier'){ dessinerEcriture(c, w, h, ECR_LETTRE, 77, s*.8); return; }
   if(t === 'fil'){ var reste = S.dos.fil ? S.dos.fil.items[10].filter(function(i){ return i.t === 'noir' && !i.pris; }).length : 0;
     dessinerFil(c, w, h, {base:ROUGE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}, {scale:s, seed:3, suie:reste*3 + 2}); }
   /* la grande plume noire : la forme d'une plume du tiroir, mais noire, sauf tout en bas (et là où l'eau chaude l'a délavée) */

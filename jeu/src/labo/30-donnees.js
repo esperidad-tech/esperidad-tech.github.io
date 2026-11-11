@@ -117,6 +117,31 @@ var LISTES = {
     grains:['suie','charbon','poudre','poivre','pavot','limaille','ardoise','terre','argile','sciure','rouille','cannelle','tuile','brique','sable','sel','cendre','farine','or','laiton','mica','verre','vertdegris','soufre','bardane','pollenlav','pollenpin','pollenpis']
   }
 };
+/* ===== L'enquête 3 : les écritures du Livre d'or de la fête (Bible §13.14 ; E3-actions-des-roles.md §2) =====
+   Douze habitants y ont écrit un mot. La lettre d'Odette a trois signes : des « M » pointus (M), des « t » barrés d'une vague (t),
+   un petit rond sur les « i » (i). Mélusine seule a les trois ; Victor, Fortuné, Iris et Margot en ont un ou deux. Les autres se
+   reconnaissent de loin (de très grosses lettres, des pâtés d'encre, tout en capitales, des pattes de mouche…).
+   Ce casier n'est dans aucun tiroir : c'est le Livre d'or, posé sur la paillasse, qui l'ouvre (60-loupe.js : ouvrirLivreDor).
+   l : les lignes ; taille, penche (0 : toute droite), gras ; deco : une petite fleur, de la farine, des pâtés d'encre. */
+TIROIRS.livre = ['ecritures'];
+CASIERS.ecritures = 'Le Livre d\'or';
+ECH.ecritures = {
+  melusine:{nom:'Mélusine', l:['Mille bisous,', 'Odette, vite !'], M:1, t:1, i:1},
+  victor:{nom:'Victor', l:['Bien à vous,', 'Madame Odette.'], M:1, i:1, penche:0},
+  fortune:{nom:'Fortuné', l:['Mes amitiés !', 'Bon retour.'], M:1, t:1, penche:.2},
+  iris:{nom:'Iris', l:['Mes iris', 't\'attendent.'], i:1, deco:'fleur', penche:.08},
+  margot:{nom:'Margot', l:['Vite, vite,', 'Madame Odette !'], t:1, penche:.16},
+  gaspard:{nom:'Gaspard', l:['Ma brioche', 't\'attend !'], deco:'farine', gras:1},
+  basile:{nom:'Basile', l:['Vive les', 'lampions !'], taille:1.3, gras:1, penche:.04},
+  tim:{nom:'Tim', l:['Reviens', 'vite !'], deco:'pates', penche:-.08, taille:1.1},
+  silas:{nom:'Silas', l:['BON RETOUR.', 'SILAS.'], penche:0, gras:1, taille:.92},
+  farinel:{nom:'Farinel', l:['Le moulin', 't\'attend.'], penche:.5, deco:'farine'},
+  anselme:{nom:'Anselme', l:['DONG !'], taille:1.5, gras:1, penche:0},
+  maire:{nom:'le maire', l:['Bienvenue chez toi,', 'Odette.'], taille:.62, penche:.24}
+};
+/* la lettre d'Odette, telle qu'on la voit sous la loupe : quelques mots, et les trois signes de celui (de celle…) qui l'a écrite */
+var ECR_LETTRE = {l:['Monsieur le maire,', 'je suis partie…', 'Odette'], M:1, t:1, i:1, encre:'#17151c', papier:'#f3ead2', lettre:true};
+LISTES.facile.ecritures = LISTES.difficile.ecritures = ['gaspard', 'victor', 'iris', 'basile', 'fortune', 'silas', 'tim', 'melusine', 'farinel', 'margot', 'anselme', 'maire'];
 function contenuCasier(k){ return LISTES[S.niveau][k]; }
 /* ============ Les dossiers : ce que l'Alchimiste a reçu ============
    Un dossier = un échantillon posé sur le carré de cuir (on ne sait pas ce que c'est : c'est la loupe qui le dit), et tout ce qu'on en tire :
@@ -178,7 +203,16 @@ var OBJETS = {
   farine_p:{de:'piece_pain', nom:'la poussière blanche', tiroir:'grains', bon:'farine', coul:'#f4efe2', savoir:'La farine, c\'est du blé moulu. Elle est pleine d\'amidon.'},
   piece_moulin:{forme:'piece', tiroir:'grains', bon:'or', scene:'piece', voirMicro:true, requis:['piece_moulin', 'rouge_m'],
     savoir:'L\'or ne rouille jamais : une pièce d\'or reste brillante pendant des siècles.'},
-  rouge_m:{de:'piece_moulin', nom:'l\'eau rougie', liquide:true, cibles:['coquelicot'], savoir:'Le même rouge que la rivière !'}
+  rouge_m:{de:'piece_moulin', nom:'l\'eau rougie', liquide:true, cibles:['coquelicot'], savoir:'Le même rouge que la rivière !'},
+
+  /* ===== L'enquête 3 : la lettre d'Odette, une feuille de papier (forme:'papier') =====
+     à la loupe, son écriture, à comparer aux douze du Livre d'or (il faut le code « Les écritures du village » du Sage : CFG.livredor) ;
+     au microscope, des grains de pollen de lavande (une fausse piste : tout le village en a) ; l'eau chaude fait couler un peu
+     d'encre : au test des couleurs, de l'encre de noix de galle, celle des colporteurs (elle ne se sépare pas) */
+  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', scene:'papier', requis:['lettre', 'pollen_l', 'encre_l'],
+    savoir:'Chacun forme ses lettres à sa façon : une écriture se reconnaît comme un visage.'},
+  pollen_l:{de:'lettre', nom:'le grain jaune', tiroir:'grains', bon:'pollenlav', coul:'#e8c84a', savoir:'Du pollen de lavande, comme dans les sachets d\'Iris… Mais tout le village en a !'},
+  encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. C\'est l\'encre noire que vendent les colporteurs.'}
 };
 /* Ce que l'Alchimiste a reçu, dans l'ordre d'arrivée : chacun à sa place numérotée sur le carré de cuir (quatre places) */
 var CUIRS = ['fil', 'poils', 'plume'];
@@ -241,7 +275,12 @@ var REA = {
   piece_pain:rea({eau:{t:'L\'eau ruisselle sur la pièce : rien ne change.'}, vinaigre:{t:'Rien ! Le vinaigre n\'attaque pas l\'or.'}, iode:{t:'Quelques points deviennent bleu-noir sur la pièce : il y a de l\'amidon collé dessus.'}, flamme:{t:'Elle chauffe, mais elle reste toute brillante : l\'or ne noircit pas au feu.'}}),
   farine_p:rea({eau:{t:'La poussière se mouille et colle : on dirait de la pâte.'}, iode:{t:'L\'iode devient bleu-noir ! Il y a de l\'amidon.', fx:'vire', c:'#1e2050'}, flamme:{t:'Ça grille et ça sent le pain brûlé.'}}),
   piece_moulin:rea({eau:{t:'L\'eau froide ne fait rien à la tache rouge.'}, chaude:{t:'La tache rouge fond dans l\'eau chaude : de l\'eau rougie !', cree:'rouge_m'}, vinaigre:{t:'Rien ! Le vinaigre n\'attaque pas l\'or.'}, flamme:{t:'Elle chauffe, mais elle reste toute brillante : l\'or ne noircit pas au feu.'}}),
-  rouge_m:rea({eau:{t:'Elle devient plus pâle.'}, bicar:{t:'Le rouge vire au bleu-violet.', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rouge.'}})
+  rouge_m:rea({eau:{t:'Elle devient plus pâle.'}, bicar:{t:'Le rouge vire au bleu-violet.', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rouge.'}}),
+  /* l'enquête 3 : la lettre (de vraies réactions : l'encre de noix de galle tient à l'eau froide, et pâlit avec un acide) */
+  lettre:rea({eau:{t:'L\'eau froide ne fait rien à l\'encre : elle tient bon.'}, chaude:{t:'L\'eau chaude fait couler un peu d\'encre : de l\'eau noircie !', cree:'encre_l'},
+    vinaigre:{t:'Là où tombe le vinaigre, l\'encre pâlit un peu.'}, flamme:{t:'Le coin du papier roussit… Stop ! C\'est une preuve.'}}),
+  pollen_l:rea({eau:{t:'Le grain flotte.'}, chaude:{t:'Le grain flotte.'}, flamme:{t:'Pfuit ! Il brûle en un éclair.'}}),
+  encre_l:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}})
 };
 /* Le test des couleurs, comme dans un vrai labo : une goutte du liquide sur une bandelette de papier buvard, le pied dans un peu d'alcool.
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
@@ -258,7 +297,10 @@ var TEINTES = [
   {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.86, h:.11}]},
   {k:'noix', nom:'brou de noix', c:'#6a4a2c', b:[{c:'#c8a040', y:.66, h:.07}, {c:'#6a4a2c', y:.20, h:.11}]}
 ];
-function teinte(k){ return TEINTES.filter(function(t){ return t.k === k; })[0]; }
+/* (enquête 3) l'encre de noix de galle : une seule bande noire, tout en bas — elle ne se sépare pas. Elle n'entre dans le carnet de
+   teintures que quand la lettre d'Odette est sur le cuir (90-main.js) : rien ne change pour les analyses des enquêtes 1 et 2. */
+var TEINTE_GALLE = {k:'galle', nom:'noix de galle', c:'#2a2a32', b:[{c:'#1c1c24', y:.1, h:.15}]};
+function teinte(k){ return TEINTES.filter(function(t){ return t.k === k; })[0] || (k === 'galle' ? TEINTE_GALLE : null); }
 /* Une teinture est souvent un mélange : la bandelette montre alors les bandes de tous ses ingrédients, et chaque bande doit trouver le sien.
    Les ingrédients du liquide du dossier en cours : */
 function ciblesLiq(){ var l = liqDe(S.dc); return l ? OBJETS[l].cibles : []; }
@@ -274,7 +316,9 @@ var SAVOIR_MICRO = {
   /* l'enquête 2 */
   goutte:{40:'Dans une seule goutte, il y a plein de choses : des bouts de plantes, des grains…', 100:'Une goutte de rivière est pleine de toutes petites bêtes !'},
   poudre:{40:'Des grains noirs… et, mêlés à eux, des grains rouges.'},
-  piece:{10:'Une couronne, et tout autour, une ronde de petites étoiles.', 40:'Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui a frappé la pièce était fêlé.'}
+  piece:{10:'Une couronne, et tout autour, une ronde de petites étoiles.', 40:'Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui a frappé la pièce était fêlé.'},
+  /* l'enquête 3 */
+  papier:{40:'Le papier est fait de petits fils emmêlés : l\'encre s\'est glissée entre eux.'}
 };
 
 /* ============ État ============

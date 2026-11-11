@@ -104,7 +104,8 @@ M.lieuxAlchimiste = function(){
 M.cueilletteIci = function(lieu){
   var E = M.E(), L = E.lieux[lieu], R = L && L.alchimiste;
   if(!R || !R.cueillir) return [];
-  return R.cueillir.filter(function(c){ return M.momentOk(c.moments); });
+  /* (enquête 3) c.secret : une plante rare qu'on ne voit pas tant qu'on n'a pas ce qu'il faut (l'herbier du Sage) : « rien à trouver » */
+  return R.cueillir.filter(function(c){ return M.momentOk(c.moments) && !(c.secret && !M.besoinOk(c.besoin)); });
 };
 M.verrouLieu = function(lieu){
   var E = M.E(), L = E.lieux[lieu];
@@ -144,7 +145,7 @@ M.infosCarte = function(){
     M.cle(P.notesIngr || {}).forEach(function(id){
       var l = P.notesIngr[id] || [];
       /* (grisé quand elle a déjà cherché ici à ce moment : Romain, 5 novembre, 12 h 31) */
-      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return D.INGR[i].ic; }).join(''), act:'lieu', id:id, classe:'ingr', grise:P.vus['cueilli:' + id] === P.moment});
+      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return (D.INGR[i] || (D.PLANTES || {})[i] || {}).ic || ''; }).join(''), act:'lieu', id:id, classe:'ingr', grise:P.vus['cueilli:' + id] === P.moment});
     });
   }
   /* (plus de notes « qui habite ici » sur la carte : chaque maison montre le visage de son habitant, carte-jeu.js) */
@@ -185,6 +186,17 @@ M.feuilleLieu = function(lieu){
       }
     } else if(!M.bonusIci(lieu).length) s += '<p class="doux">Rien de spécial ici pour l\'instant. ' + lire('Rien de spécial ici pour l\'instant.') + '</p>';   /* (dès l'enquête 2, tous les lieux se touchent : carte-jeu.js) */
   }
+  /* (enquête 3) l'Alchimiste a aussi des choses à faire dans certains lieux (le gâteau de la fête, le vieux pommier, la poussière des
+     vesses-de-loup) : ses points, comme ceux du Pisteur, mais sans « Explorer » avant (elle sait pourquoi elle vient) */
+  var ptsA = role === 'alchimiste' ? M.pointsVisibles(lieu, role) : [];
+  if(ptsA.length){
+    if(L.alchimiste.intro) s += '<p class="b-intro-lieu">' + esc(L.alchimiste.intro) + ' ' + lire(L.alchimiste.intro) + '</p>';
+    s += '<div class="b-points">' + ptsA.map(function(p){
+      var k = role + ':' + lieu + ':' + p.id, st = P.vus[k];
+      return '<button class="b-point' + (st === 'ok' ? ' vu' : st === 'rate' ? ' rate' : '') + '" data-act="point" data-l="' + lieu + '" data-id="' + p.id + '">' +
+        '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (M.essaisInfinis && M.essaisInfinis() ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
+    }).join('') + '</div>';
+  }
   if(role === 'alchimiste'){
     /* (Romain, 5 novembre, 12 h 31) plus de « Ce que tu sais de ce lieu » ni de « 📝 Noter » : le petit rond qui flotte sur la carte
        montre déjà ce qui pousse ici (il se grise quand elle a cherché). Déjà cherché à ce moment : « ✅ Déjà récolté » ;
@@ -193,11 +205,12 @@ M.feuilleLieu = function(lieu){
     var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
     var pousse = M.cueilletteIci(lieu), cueillable = pousse.filter(function(x){ return M.besoinOk(x.besoin); });
     if(deja) s += '<p class="b-recolte">✅ Déjà récolté</p>';
-    else if(!pousse.length) s += '<p class="b-recolte">🍂 Rien à trouver</p>';
+    else if(!pousse.length){ if(!ptsA.length) s += '<p class="b-recolte">🍂 Rien à trouver</p>'; }   /* (un lieu où elle a autre chose à faire : pas de « rien à trouver ») */
     else if(!cueillable.length){
       var il = []; pousse.forEach(function(x){ M.texteBesoin(x.besoin, role).forEach(function(b){ if(il.indexOf(b.ic + ' ' + b.nom) < 0) il.push(b.ic + ' ' + b.nom); }); });
       s += '<p class="b-recolte">🔒 Il te faut : ' + esc(il.join(', ') || 'le bon matériel') + '</p>';
     }
+    else if(cueillable.every(function(x){ return !!x.plante; })) s += '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '><span class="b-ic-contour">🧺</span> Chercher<span class="b-long"> des plantes</span>' + M.coutTxt(' · 1 action') + '</button>' + plusDAction();   /* (enquête 3) une vraie plante pour l'établi */
     else s += '<button class="btn grand" data-act="cueillir" data-id="' + lieu + '"' + (M.peutAgir() || gratuit ? '' : ' disabled') + '><span class="b-ic-contour">🧺</span> Chercher<span class="b-long"> des ingrédients</span>' + M.coutTxt(   /* (le panier, jaune sur le bouton jaune : un contour foncé, Romain 10 h 45) */' · ' + (gratuit ? 'gratuit (Herboriste)' : '1 action')) + '</button>' +
       '<p class="doux petit">On trouve parfois 1, parfois 2 ou 3 ingrédients d\'un coup : c\'est la chance !</p>' + plusDAction();
     if(UI.modal && UI.modal.noterIngr){

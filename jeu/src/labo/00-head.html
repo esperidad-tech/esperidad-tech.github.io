@@ -174,6 +174,9 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 /* Les deux flèches jaunes de la loupe : l'échantillon d'avant, l'échantillon d'après */
 .fleche-l{display:grid; place-items:center; padding:0; border-radius:50%; border:calc(3.5*var(--u)) solid var(--K); background:linear-gradient(180deg,#ffe08a,#e8a93a); color:#111; font-size:calc(26*var(--u)); line-height:1; cursor:pointer; box-shadow:0 calc(4*var(--u)) 0 rgba(0,0,0,.35); transition:left .45s, top .45s; z-index:6}
 .fleche-l.bat{animation:battre 1.3s ease-in-out infinite}
+/* (enquête 3) le bouton jaune du Livre d'or, sous le verre de la loupe */
+.b-livredor{transform:translateX(-50%); display:flex; align-items:center; gap:calc(8*var(--u)); height:calc(56*var(--u)); padding:0 calc(22*var(--u)); border-radius:calc(28*var(--u)); border:calc(3.5*var(--u)) solid var(--K); background:linear-gradient(180deg,#ffe08a,#e8a93a); color:#111; font-family:var(--f-main); font-weight:700; font-size:calc(30*var(--u)); line-height:1; white-space:nowrap; cursor:pointer; box-shadow:0 calc(4*var(--u)) 0 rgba(0,0,0,.35); z-index:6; animation:battre 1.3s ease-in-out infinite}
+.b-livredor[hidden]{display:none}
 /* Le cône de lumière du microscope */
 .cone-hud{animation:cone .6s ease-out both}
 .cone-point{animation:flammeP 1.6s ease-in-out infinite alternate}

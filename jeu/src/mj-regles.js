@@ -20,7 +20,7 @@
 var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
-  traces:function(p){ return p && p.suspect === 'chat' ? (p.chercher ? 'Trouve le départ, puis suis la bonne piste !' : 'Suis les bonnes traces de pattes !') : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
+  traces:function(p){ return p && p.suspect === 'poussiere' ? 'Suis bien la fine poussière !' : p && p.suspect === 'chat' ? (p.chercher ? 'Trouve le départ, puis suis la bonne piste !' : 'Suis les bonnes traces de pattes !') : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
   poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : (p && p.fuyard === 'oie' ? 'Saute, baisse-toi, évite : attrape l\'oie !' : 'Saute, baisse-toi, évite : attrape-la !'); },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',

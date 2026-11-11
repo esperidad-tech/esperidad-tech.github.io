@@ -1103,6 +1103,46 @@ def('paillasse', {w:480, h:212, p:130, z:'sol', special:'analyses', profil:true,
     return [N(s + '</g>')];
   }});
 
+/* L'établi des plantes (enquête 3, E3-atelier-des-plantes.md §2) : là où l'Alchimiste prépare les potions de la brume avec de vraies
+   plantes (plantes.js). Deux formes (un établi de bois à tablette, un buffet à deux portes) ; dessus, toujours les mêmes outils aux mêmes
+   places : au fond, l'alambic de cuivre, la marmite sur son réchaud, la presse à vis ; devant, la planche et son couteau, le mortier,
+   une plante dans son pot. La couleur choisie teint le linge et le pot. On le touche : ses bulles (« 🌿 Préparer », Forme, 🎨 Couleur).
+   Il n'est dans la pièce que pendant une enquête qui s'en sert (opts.etabli : Atelier.vue le pose et le range tout seul). */
+def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:2, nom:'Établi des plantes', ic:'🌿', surf:null,
+  d:function(c){
+    var f = c.fo, P2 = c.p, Y = 108, s = '<g class="at-etabli-p" data-at="plantes">', mc = c.ti ? THEMES[c.ti].c : '#6fae5a';
+    var B2 = ' stroke-width="2"', B25 = ' stroke-width="2.5"', B3 = ' stroke-width="3"';
+    if(f === 0) s += pieds(c, 20, 360, 146, 212, 8, P2 - 8, 18) + c.boite(26, 186, 354, 196, 14, P2 - 14, UNI(G('boisH')));
+    else s += c.boite(16, 146, 364, 210, 6, P2 - 6, BOIS()) + c.sur(R(28, 152, 156, 52, 5, G('boisC'), B3) + R(196, 152, 156, 52, 5, G('boisC'), B3) + Cir(176, 178, 5, '#f5b945') + Cir(204, 178, 5, '#f5b945'), 6);
+    s += c.boite(10, 122, 370, 146, 3, P2 - 3, BOIS()) + c.boite(4, Y, 376, 124, 0, P2, UNI(G('boisH'), G('boisH'), G('boisS')));
+    /* --- au fond : l'alambic de cuivre (son ballon, son col de cygne, la fiole qui reçoit les gouttes), la marmite sur son réchaud, la presse --- */
+    var col = 'M70,' + (Y - 44) + ' C70,' + (Y - 62) + ' 104,' + (Y - 62) + ' 108,' + (Y - 40) + ' L112,' + (Y - 18);
+    var fond = Ell(70, Y - 3, 24, 5, '#3a3450', B25) + R(52, Y - 12, 36, 9, 2, '#5a5078', B25) +
+      '<path d="M46,' + (Y - 12) + ' C36,' + (Y - 44) + ' 104,' + (Y - 44) + ' 94,' + (Y - 12) + ' Z" fill="#d98a4a" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
+      reflet('M54,' + (Y - 20) + ' C52,' + (Y - 30) + ' 58,' + (Y - 36) + ' 66,' + (Y - 38), 3) + R(63, Y - 50, 14, 10, 3, '#e0a070', B25) + T(col, K, 7) + T(col, '#e0a070', 3.5) +
+      R(105, Y - 20, 14, 19, 4, 'rgba(220,245,255,.4)', B25) + '<rect x="107" y="' + (Y - 9) + '" width="10" height="7" rx="2" fill="#9fe0c0" opacity=".85"/>';
+    fond += R(160, Y - 8, 50, 7, 2, '#3a3450', B25) + '<path d="M170,' + (Y - 9) + ' c-3,-5 -1,-9 2,-12 c2,4 4,8 -2,12 Z M186,' + (Y - 9) + ' c-3,-6 -1,-10 2,-14 c2,5 4,9 -2,14 Z M200,' + (Y - 9) + ' c-3,-5 -1,-9 2,-12 c2,4 4,8 -2,12 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.5"/>' +
+      '<path d="M156,' + (Y - 42) + ' H214 L208,' + (Y - 20) + ' Q185,' + (Y - 14) + ' 162,' + (Y - 20) + ' Z" fill="#5f5582" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + Ell(185, Y - 42, 29, 6, '#3a3352', B25) +
+      T('M150,' + (Y - 36) + ' q-7,3 -4,10 M220,' + (Y - 36) + ' q7,3 4,10', K, 4) + '<g class="at-vapeur"><path d="M176,' + (Y - 50) + ' c-6,-8 6,-12 0,-22"/><path d="M194,' + (Y - 50) + ' c-6,-8 6,-12 0,-20"/></g>';
+    fond += R(268, Y - 10, 62, 9, 2, '#94603a', B25) + R(272, Y - 58, 8, 50, 2, '#7a4a28', B2) + R(318, Y - 58, 8, 50, 2, '#7a4a28', B2) + R(266, Y - 62, 66, 9, 2, '#94603a', B25) +
+      R(295, Y - 74, 8, 44, 2, '#b8b4c8', B2) + T('M295,' + (Y - 66) + ' h8 M295,' + (Y - 58) + ' h8 M295,' + (Y - 50) + ' h8 M295,' + (Y - 42) + ' h8', '#7a7690', 1.4) + R(284, Y - 80, 30, 7, 3, '#5a5078', B2) + R(282, Y - 32, 34, 8, 2, '#c98450', B25);
+    s += c.sur(fond, 84);
+    /* --- devant : la planche et son couteau, le mortier et son pilon, le linge plié, une plante dans son pot --- */
+    var lame = 'M40,' + (Y - 12) + ' L78,' + (Y - 12) + ' L72,' + (Y - 5) + ' L40,' + (Y - 5) + ' Z';
+    var dev = R(22, Y - 5, 84, 6, 2, '#d9a86a', B25) + '<path d="' + lame + '" fill="#dfe6ee" stroke="' + K + '" stroke-width="2" stroke-linejoin="round"/>' + R(22, Y - 13, 20, 8, 3, '#7a4a28', B2) +
+      emo(92, Y - 12, 15, '🌿') +
+      '<path d="M128,' + (Y - 22) + ' H174 C174,' + (Y - 4) + ' 162,' + Y + ' 151,' + Y + ' C140,' + Y + ' 128,' + (Y - 4) + ' 128,' + (Y - 22) + ' Z" fill="#cfc8d8" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
+      Ell(151, Y - 22, 23, 5, '#a8a0b8', B25) + '<g transform="rotate(24 160 ' + (Y - 30) + ')">' + R(156, Y - 50, 9, 32, 4, '#e8dfca', B25) + '</g>' +
+      R(232, Y - 9, 44, 9, 3, melange('#f4efe2', mc, 0.45), B25) + T('M236,' + (Y - 5) + ' h36', sombre(mc, 0.2), 1.6) +
+      '<path d="M318,' + (Y - 20) + ' h30 l-4,20 h-22 Z" fill="' + melange('#c9713f', mc, 0.35) + '" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + R(314, Y - 25, 38, 7, 2, melange('#d98450', mc, 0.35), B25) +
+      '<path d="M333,' + (Y - 25) + ' C331,' + (Y - 40) + ' 322,' + (Y - 44) + ' 318,' + (Y - 52) + ' M333,' + (Y - 25) + ' C334,' + (Y - 42) + ' 342,' + (Y - 48) + ' 346,' + (Y - 58) + ' M333,' + (Y - 25) + ' V' + (Y - 50) + '" fill="none" stroke="#3f8f4f" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="318" cy="' + (Y - 52) + '" rx="6" ry="3.5" fill="#6fae5a" stroke="' + K + '" stroke-width="1.5"/><ellipse cx="346" cy="' + (Y - 58) + '" rx="6" ry="3.5" fill="#6fae5a" stroke="' + K + '" stroke-width="1.5"/><circle cx="333" cy="' + (Y - 52) + '" r="4.5" fill="#f08a1e" stroke="' + K + '" stroke-width="1.5"/>';
+    /* (une plante cueillie attend : elle brille sur la planche) */
+    if(DESSIN.plantes > 0) dev += '<circle class="at-halo at-a-analyser" cx="64" cy="' + (Y - 14) + '" r="26" fill="' + G('halo') + '"/>';
+    s += c.sur(dev, 26);
+    return [N(s + '</g>')];
+  }});
+
 var CHATS = [['#f2a65a', '#d9783c', '#ffe0bf'], ['#b9b3d2', '#7d7799', '#eceaf6'], ['#4a4060', '#2c2440', '#f3f0ff']];
 function teteChat(p, cx, cy, acc){
   acc = acc || {};
@@ -2955,12 +2995,24 @@ function potionsNeuves(V){
   cles(P).forEach(function(k){ POTS_MEMO[k] = P[k] || 0; if(avant && (P[k] || 0) > (avant[k] || 0)) neuves.push(k); });
   return neuves;
 }
+/* L'établi des plantes (enquête 3) n'est dans la pièce que pendant une enquête qui s'en sert (opts.etabli) : on le pose — là où il était
+   la dernière fois (etat.etabli), sinon entre la paillasse et le chaudron — ou on le range, en retenant sa place, sa forme et sa couleur. */
+function poserEtabli(e, voulu){
+  var l = (e.objets || []).filter(function(o){ return o.t === 'etabli'; });
+  if(voulu){
+    if(!l.length){ var g = e.etabli || {}; e.objets.push({id:'et', t:'etabli', x:g.x || 610, y:g.y || 700, f:g.f || 0, v:0, st:g.st || 0, sur:null}); }
+  } else if(l.length){
+    e.etabli = {x:l[0].x, y:l[0].y, f:l[0].f || 0, st:l[0].st || 0};
+    e.objets = e.objets.filter(function(o){ return o.t !== 'etabli' && !(o.sur && o.sur.o === 'et'); });
+  }
+  return e;
+}
 function vue(el, opts){
   opts = opts || {};
   var D = DD();
   INGR = opts.ingr || D.INGR || {};
   var V = {
-    el:el, o:opts, uid:++uidVue, etat:normaliser(opts.etat || etatNeuf()),
+    el:el, o:opts, uid:++uidVue, etat:poserEtabli(normaliser(opts.etat || etatNeuf()), !!opts.etabli),
     mode:'ranger', k:0.5, timers:[], nettoie:[], suivis:[], arrete:false, sel:null, chats:{},
     parId:{}, elO:{}, elK:{}, ouvert:null, mjPartie:null, mjEl:null, grimSel:null, attente:null,
     ext:{l:COTE, r:COTE, t:0, b:0}, vb:{x0:-COTE, y0:0, w:LARGEUR + 2 * COTE, h:860}, pan:{x:0, y:0}, salle:SALLE_MEMO
@@ -3066,7 +3118,7 @@ function maj(V, o2){
   if(V.arrete) return;
   if(o2) cles(o2).forEach(function(k){ V.o[k] = o2[k]; });
   if(V.o.etat && V.o.etat !== V.etat) V.etat = V.o.etat;
-  normaliser(V.etat);
+  normaliser(V.etat); poserEtabli(V.etat, !!V.o.etabli);
   INGR = V.o.ingr || DD().INGR || INGR;
   majMoment(V);
   tamaMoment(V);
@@ -3353,7 +3405,7 @@ function brillerFlacons(V, l){
 function dessinerPiece(V, avantK){
   var sc = V.scene;
   sc.innerHTML = '';
-  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null;
+  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null; V.elEtSigne = null;
   V.etat.objets.forEach(function(o){ V.parId[o.id] = o; });
   /* (la flaque : devant le chaudron, dans sa pièce) */
   if(V.etat.flaque && salleDe(V.parId.ch) === V.salle){
@@ -3436,6 +3488,7 @@ function envoyerSalle(V, o){
 }
 /* Ce que les meubles spéciaux doivent montrer (objets reçus sur la paillasse, chaudron de cuivre) */
 function majDessin(V){
+  DESSIN.plantes = V.o.plantes || 0;   /* (enquête 3) les plantes cueillies qui attendent sur l'établi */
   DESSIN.analyses = V.o.analyses || [];
   DESSIN.cuivre = aObjet(V, 'chaudron_cuivre');
 }
@@ -3463,6 +3516,26 @@ function majSignePa(V){
   V.elPaSigne.style.width = pW(V, 220); V.elPaSigne.style.height = pH(V, 70);
   V.elPaSigne.style.zIndex = Math.round((1000 + F.y) * 5) + 3;
 }
+/* Le signe de l'établi (comme celui de la paillasse) : « 🌿 À préparer ! » sautille au-dessus de lui tant qu'une plante cueillie attend.
+   Le toucher fait comme toucher l'établi (ses bulles). Caché quand ses bulles sont ouvertes. */
+function majSigneEt(V){
+  var o = V.parId && V.parId.et, n = V.o.plantes || 0, autre = V.o.etabliSigne || '', voir = !!(o && V.elO.et && (n > 0 || autre) && V.bullesPa !== 'et');
+  if(!voir){ if(V.elEtSigne){ V.elEtSigne.remove(); V.elEtSigne = null; } return; }
+  if(!V.elEtSigne){
+    var b = document.createElement('div');
+    b.className = 'at-tas-neuf at-pa-signe at-et-signe at-touche';
+    b.setAttribute('data-at', 'et-signe');
+    V.scene.appendChild(b);
+    V.elEtSigne = b;
+  }
+  var txt = n > 1 ? '🌿 ' + n + ' à préparer !' : n === 1 ? '🌿 À préparer !' : autre;
+  if(V.elEtSigne._t !== txt){ V.elEtSigne.innerHTML = '<span>' + txt + '</span>'; V.elEtSigne._t = txt; V.elEtSigne.setAttribute('aria-label', txt); }
+  var F = cadreObjet(V, 'et');
+  if(!F) return;
+  V.elEtSigne.style.left = pX(V, F.x - 110); V.elEtSigne.style.top = pY(V, F.y - F.h - 62);
+  V.elEtSigne.style.width = pW(V, 220); V.elEtSigne.style.height = pH(V, 70);
+  V.elEtSigne.style.zIndex = Math.round((1000 + F.y) * 5) + 3;
+}
 function majFixes(V){
   var nr = Math.max(0, V.etat.reserve.length - (V.enVol || 0)), rb = V.elReserve && V.elReserve.querySelector('.at-badge');
   if(rb){ rb.textContent = nr; rb.style.display = nr ? '' : 'none'; }
@@ -3473,6 +3546,7 @@ function majFixes(V){
     V.elO.pa.classList.toggle('at-attente', att > 0);
   }
   majSignePa(V);
+  if(V.parId.et && V.elO.et){ redessiner(V, V.parId.et); majSigneEt(V); } else if(V.elEtSigne){ V.elEtSigne.remove(); V.elEtSigne = null; }
   var ch = V.elO.ch;
   if(ch){
     var pret = (V.o.fioles || 0) > 0 && recettesDe(V).some(function(r){ return etatRecette(V, r.id).pret; });
@@ -3543,6 +3617,7 @@ function placerEl(V, o, force){
   d.style.zIndex = Math.round(p.z * 5);
   d._s = p.s; d._p = p;
   if(o.id === 'pa' && V.elPaSigne) majSignePa(V);   /* (la paillasse bouge : son signe la suit) */
+  if(o.id === 'et' && V.elEtSigne) majSigneEt(V);   /* (l'établi aussi) */
 }
 function placerTout(V){ ici(V).forEach(function(o){ placerEl(V, o); }); }
 function redessiner(V, o){
@@ -3838,6 +3913,8 @@ function action(V, at, pot){
   else if(at === 'arrivage') ouvrirArrivage(V);
   else if(at === 'analyses') ouvrirAnalyses(V);
   else if(at === 'pa-signe'){ if(V.parId.pa) bullesPaillasse(V, V.parId.pa); }   /* (le signe « À analyser ! » : comme toucher la paillasse) */
+  else if(at === 'et-signe'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }   /* (le signe « À préparer ! » : comme toucher l'établi) */
+  else if(at === 'plantes'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }
   else if(at === 'reserve') ouvrirReserve(V);
   else if(at === 'salle') changerSalle(V, 1 - V.salle);
   else if(at === 'flaque') nettoyerFlaque(V);
@@ -3877,7 +3954,7 @@ function restyler(V, o, st){
   etincelles(V, o);
   son(V, 'clic');
   if(c.lumiere || o.t === 'bougies') majLumiere(V);
-  if(c.special === 'analyses' || c.special === 'chaudron') majFixes(V);
+  if(c.special === 'analyses' || c.special === 'chaudron' || c.special === 'plantes') majFixes(V);
   changer(V);
 }
 function etincelles(V, o){
@@ -3898,7 +3975,8 @@ function etincelles(V, o){
 var BULLES_DE = {
   analyses:{cible:'paillasse', ic:'🔬', mot:'Analyser'},
   chaudron:{cible:'chaudron', ic:'🍲', mot:'Préparer'},
-  grimoire:{cible:'grimoire', ic:'📖', mot:'Lire'}
+  grimoire:{cible:'grimoire', ic:'📖', mot:'Lire'},
+  plantes:{cible:'etabli', ic:'🌿', mot:'Préparer'}   /* (enquête 3) l'établi des plantes */
 };
 /* Le tutoriel montre-t-il le meuble dont les bulles sont ouvertes (ou le meuble id) ? Alors ses bulles restent, et le rond va sur la jaune. */
 function guideBulles(V, id){
@@ -3910,9 +3988,10 @@ function fermerBullesPa(V){
   if(b) b.remove();
   if(V.bullesT){ clearTimeout(V.bullesT); V.bullesT = 0; }
   if(!V.bullesPa) return;
-  var g = guideBulles(V), pa = V.bullesPa === 'pa';
+  var g = guideBulles(V), pa = V.bullesPa === 'pa', et = V.bullesPa === 'et';
   V.bullesPa = null;
   if(pa) majSignePa(V);   /* (le signe « À analyser ! » revient) */
+  if(et) majSigneEt(V);
   if(g) guidePlacer(V);
 }
 function placerBullesPa(V){
@@ -3937,6 +4016,7 @@ function bullesPaillasse(V, o){
     '<button type="button" class="at-bulle-pa" data-bulle="couleur" style="--i:2" aria-label="Changer la couleur"><span aria-hidden="true">🎨</span>Couleur</button>';
   V.calque.appendChild(b); V.bullesPa = o.id;
   if(o.id === 'pa') majSignePa(V);   /* (les bulles de la paillasse remplacent son signe) */
+  if(o.id === 'et') majSigneEt(V);
   placerBullesPa(V); veilleBullesPa(V);
   try{ if(window.Brume && Brume.son) Brume.son('pastilles', 3); else son(V, 'clic'); }catch(e){}
   rebond(V.elO[o.id]);
@@ -3949,6 +4029,7 @@ function bullePaillasse(V, quoi){
   if(quoi === 'aller'){
     var sp = catDe(o).special;
     fermerBullesPa(V);
+    if(sp === 'plantes'){ son(V, 'clic'); if(V.o.etabli){ try{ V.o.etabli(); }catch(e){ console.error(e); } } return; }   /* l'établi : la page des plantes (plantes.js) */
     if(sp === 'chaudron') ouvrirChaudron(V); else if(sp === 'grimoire') ouvrirLivre(V); else ouvrirAnalyses(V);
     return;
   }

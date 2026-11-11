@@ -124,7 +124,7 @@ with sync_playwright() as p:
     verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
     t = page(pg, 'fausse')
     verifier(pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0, 'la lettre et le carnet : fermé sans les codes')
-    code(pg, 'info:lettre'); code(pg, 'info:carnet')
+    code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
     page(pg, 'fausse'); ev(pg, 'ouvrir-page', {'id': 'fausse'}); fermer(pg)
     t = page(pg, 'fausse')
     verifier('la lettre est fausse' in t, 'la lettre est fausse')
@@ -160,7 +160,7 @@ with sync_playwright() as p:
     lieu(pg, 'mairie'); jouer(pg, 'tableau', True); fermer(pg)
     apresmidi(pg)
     lieu(pg, 'mairie'); pg.locator('#voile [data-act=point][data-id=rendu]').click(); pg.wait_for_timeout(250)
-    verifier('accroche sous votre tableau' in texte(pg) and pg.evaluate("() => !!M.P().recus['info:lettre']") and pg.locator('#voile .b-donne').count() == 1,
+    verifier('accroche sous votre tableau' in texte(pg) and pg.evaluate("() => !!M.P().recus['obj:lettre']") and pg.locator('#voile .b-donne').count() == 1,
              'sans la lettre : le maire l\'accroche sous le tableau ; le Sage la reçoit, et son code est pour l\'Alchimiste')
     shot(pg, 'C-filet')
     fermer(pg)
@@ -178,7 +178,7 @@ with sync_playwright() as p:
     verifier('rendu' not in pts and 'sanstableau' in pts, f'tableau raté : rien à rendre, mais on peut passer voir le maire ({pts})')
     or0 = pg.evaluate("() => M.S.or || 0")
     pg.locator('#voile [data-act=point][data-id=sanstableau]').click(); pg.wait_for_timeout(250)
-    verifier('accroche au mur' in texte(pg) and pg.evaluate("() => !!M.P().recus['info:lettre']") and pg.evaluate("() => M.S.or || 0") == or0,
+    verifier('accroche au mur' in texte(pg) and pg.evaluate("() => !!M.P().recus['obj:lettre']") and pg.evaluate("() => M.S.or || 0") == or0,
              'le filet de la lettre marche aussi sans tableau (et sans or)')
     pg.close()
     b.close()

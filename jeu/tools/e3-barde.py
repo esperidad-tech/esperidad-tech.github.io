@@ -269,7 +269,7 @@ with sync_playwright() as p:
     verifier(m and m['type'] == 'conv' and m['id'] == 'voisin', 'chez Odette, l\'après-midi')
     poser(pg, 'voisin', 0)
     m = modal(pg)
-    verifier(m and m['type'] == 'decouverte' and m.get('codes') == ['info:carnet', 'info:traces_moustache'], 'la canne posée : le carnet et les traces, deux codes')
+    verifier(m and m['type'] == 'decouverte' and m.get('codes') == ['obj:carnet', 'info:traces_moustache'], 'la canne posée : le carnet et les traces, deux codes')
     verifier(pg.locator('#voile .b-donne').count() == 2, 'les deux codes à l\'écran')
     shot(pg, 'chez-odette')
     fermer(pg)

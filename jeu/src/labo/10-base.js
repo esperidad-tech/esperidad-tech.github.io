@@ -100,6 +100,8 @@ function picto(k, x, y, t){
   else if(k === 'plumes') s += P('M-13,15 C-16,0 -6,-14 12,-17 C14,-2 4,12 -13,15 Z', '#4a6aa8', ' stroke-width="3"') + T('M-16,18 L10,-14', '#fff', 2) + T('M-7,6 l7,-2 M-3,0 l8,-2 M1,-6 l7,-2', '#1b1d2b', 1.4);
   else if(k === 'petales') s += [0,72,144,216,288].map(function(a){ return '<ellipse cx="0" cy="-10" rx="6.5" ry="9" fill="#e8343c" stroke="' + K + '" stroke-width="2.5" transform="rotate(' + a + ')"/>'; }).join('') + '<circle cx="0" cy="0" r="4.5" fill="#f5c842" stroke="' + K + '" stroke-width="2"/>';
   else if(k === 'feuilles') s += P('M-15,12 C-14,-8 2,-18 16,-14 C18,2 6,16 -15,12 Z', '#6fae5a', ' stroke-width="3"') + T('M-15,13 L12,-11 M-5,4 l1,-9 M1,-2 l1,-8 M-4,4 l9,1 M2,-2 l8,1', '#2f6a3a', 1.5);
+  /* (enquête 3) les écritures du Livre d'or : une petite feuille, trois lignes à la plume */
+  else if(k === 'ecritures') s += P('M-15,-16 H11 L16,-11 V17 H-15 Z', '#fbf4de', ' stroke-width="3"') + T('M-9,-7 q4,-5 8,0 t8,0 M-9,2 q4,-5 8,0 t8,0 M-9,10 q4,-4 8,0', '#2a2230', 2);
   else s += P('M-16,8 L-10,-4 L0,-6 L4,6 L-6,13 Z', '#8a84a0', ' stroke-width="3"') + P('M2,-2 L10,-12 L18,-4 L15,8 L5,8 Z', '#b08a5a', ' stroke-width="3"') + '<circle cx="-2" cy="-13" r="4" fill="#1a1514" stroke="' + K + '" stroke-width="2"/>';
   return s + '</g>';
 }

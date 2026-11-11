@@ -55,6 +55,10 @@ function monterAtelier(){
     analyses:M.analysesAtelier ? M.analysesAtelier() : [],
     /* le labo d'analyses (labo.js) : quand l'enquête a sa fiche, la bulle « 🔬 Analyser » de la paillasse l'ouvre en plein écran */
     labo:(M.laboDispo && M.laboDispo()) ? function(){ M.ouvrirLabo(); } : null,
+    /* (enquête 3) l'établi des plantes (plantes.js) : il n'est dans la pièce que pendant une enquête qui s'en sert ; sa bulle « 🌿 Préparer »
+       ouvre sa page en plein écran ; plantes : celles qui attendent (le signe « 🌿 À préparer ! ») ; etabliSigne : la nuit, « 🎒 Ton sac ! » */
+    etabli:(M.etabliDispo && M.etabliDispo()) ? function(){ M.ouvrirEtabli(); } : null,
+    plantes:M.plantesEnAttente ? M.plantesEnAttente() : 0, etabliSigne:M.etabliSigne ? M.etabliSigne() : null,
     recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; }),
     niveau:(E ? E.niveau : 1) + M.decalage(), mods:mm.mods, aides:mm.aides,
     /* enquête 1 (le tutoriel) : au chaudron, un essai raté rend les ingrédients et on peut recommencer sans fin */
@@ -341,6 +345,7 @@ function contenuModal(m){
     case 'mj-pause': return pauseModal(m);
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
     case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
+    case 'plantes': return M.plantesHTML ? M.plantesHTML(m) : '';   /* 🎒 le sac de l'Alchimiste, reçu par le Pisteur (enquête 3, plantes.js) */
     case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
   }
   return '';
@@ -617,6 +622,8 @@ function traiterCode(seq){
   var id = M.idDuCode(seq);
   /* un code gelé qui ne sert plus (le registre des habitants, Romain, 5 novembre : codes-fixes.js le garde) : il ne marche pas */
   if(id && E && /^(obj|info):/.test(id) && !((id.indexOf('obj:') === 0 ? E.objets : E.infos) || {})[id.split(':')[1]]) id = null;
+  /* (enquête 3) un code du donjon tapé ici : il se tape dans le donjon (donjon-codes.js ; E.codesFixes le réserve pour qu'il ne serve à rien d'autre) */
+  if(id && id.indexOf('donjon:') === 0){ M.son('ko'); M.ouvrir({type:'info', ic:'🕯️', titre:'Un code du donjon', t:'Ce code-là se tape dans le donjon : sur l\'écran du donjon, avec le bouton des codes.'}); return; }
   if(!id){
     /* Un code de passage d'une autre enquête (tapé en retard, ou depuis le village) */
     var v = M.passageVoisin(seq, P ? P.id : S.prochaine);
@@ -677,6 +684,7 @@ function traiterCode(seq){
     /* Une info peut apprendre une recette à l'Alchimiste pour toute la saison */
     if(I.recette){ M.S.recettes = M.S.recettes || []; if(M.S.recettes.indexOf(I.recette) < 0) M.S.recettes.push(I.recette); M.sauver(); }
     if(I.outil){ M.S.outils = M.S.outils || []; if(M.S.outils.indexOf(I.outil) < 0) M.S.outils.push(I.outil); M.sauver(); }
+    if(I.plante && role === 'alchimiste'){ M.ajouterPlante(I.plante); M.sauver(); }   /* (enquête 3) le gui cueilli par le Pisteur arrive sur l'établi */
     M.noter('Reçu : ' + nn.nom + '. ' + (I.t || ''), nn.ic);
     M.ouvrir({type:'info', ic:nn.ic, illu:I.illu, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
   }
@@ -1239,6 +1247,7 @@ A.point = function(el){
     if(p.obj){ P.objets[p.obj] = true; code = 'obj:' + p.obj; }
     if(p.donne){ code = p.donne; P.objets['_' + p.donne] = true; }
     if(p.recoit) [].concat(p.recoit).forEach(function(c){ P.recus[c] = true; });   /* (enquête 3) il le reçoit lui-même : la lettre accrochée sous le tableau du Sage */
+    if(p.plante) M.ajouterPlante(p.plante);   /* (enquête 3) une plante trouvée autrement qu'en cueillant : la vesse-de-loup, au bout de sa piste */
     if(p.or){ M.S.or += p.or; }
     M.sauver();
     M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l, choix:choix()});
@@ -1249,11 +1258,14 @@ A.point = function(el){
     var fac = p.facileSi && M.besoinOk(p.facileSi.si) ? p.facileSi : null;
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0) + (fac && fac.niveau || 0), fac && fac.params ? Object.assign({}, p.params, fac.params) : p.params, {titre:p.nom, ic:p.ic, avant:(fac && fac.avant) || p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
       sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null}, function(res){
+      if(res.gateau){ P.gateau = res.gateau; }   /* (enquête 3) le gâteau de la fête, tel que l'Alchimiste l'a fait */
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */
         if(p.ouvrePartiel && n >= M.MAX_ESSAIS){ P.vus[k] = 'ok'; P.vus[k + ':partiel'] = 1; M.consommerBesoin(p.besoin); var cp = null;
-          if(p.obj){ P.objets[p.obj] = true; cp = 'obj:' + p.obj; } if(p.donne){ cp = p.donne; P.objets['_' + p.donne] = true; } M.sauver();
+          if(p.obj){ P.objets[p.obj] = true; cp = 'obj:' + p.obj; } if(p.donne){ cp = p.donne; P.objets['_' + p.donne] = true; }
+          if(p.plante) M.ajouterPlante(p.plante);
+          M.sauver();
           M.decouvrir({ic:'💨', titre:p.nom, t:p.rate || 'Raté…', rate:true, code:cp, retour:'lieu', retourId:l}); return; }
         M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:M.texteEchec ? M.texteEchec(p, n, 'Raté…') : (p.rate || 'Raté…'), rate:true, retour:'lieu', retourId:l, reessai:n < M.MAX_ESSAIS ? {act:'point', l:l, id:p.id} : null}); }
     });
@@ -1269,17 +1281,27 @@ A.cueillir = function(el){
   var l2 = [], rates = [];
   P.notesIngr = P.notesIngr || {};
   var notes = P.notesIngr[l] = P.notesIngr[l] || [];
+  var plantes = [];
   M.cueilletteIci(l).forEach(function(x){
+    /* x.plante (enquête 3) : une vraie plante pour l'établi (D.PLANTES, plantes.js) ; x.secret : sans ce qu'il faut (l'herbier du Sage),
+       on ne la voit même pas : « rien d'utile ici » */
+    if(x.plante){
+      if(!M.besoinOk(x.besoin)) return;
+      if(notes.indexOf(x.plante) < 0) notes.push(x.plante);
+      M.ajouterPlante(x.plante); plantes.push(x.plante); return;
+    }
     var I = D.INGR[x.ingr];
     if(notes.indexOf(x.ingr) < 0) notes.push(x.ingr);
     if(!M.besoinOk(x.besoin)){ rates.push(I.nom.toLowerCase()); return; }
     var n = Math.max(x.min || 1, I.rare ? 1 : 1 + Math.floor(Math.random() * 3)) + M.fxSomme('cueilletteBonus');
     M.ajouterIngr(x.ingr, n); l2.push(n + ' × ' + I.ic + ' ' + I.nom.toLowerCase());
   });
-  M.son(l2.length ? 'ok' : 'ko'); M.sauver();
-  var t = l2.length ? 'Tu as trouvé : ' + l2.join(', ') + '. Va les ranger dans ton atelier !' : 'Tu cherches partout… mais rien d\'utile ne pousse ici en ce moment.';
+  M.son(l2.length || plantes.length ? 'ok' : 'ko'); M.sauver();
+  var t = l2.length ? 'Tu as trouvé : ' + l2.join(', ') + '. Va les ranger dans ton atelier !' : plantes.length ? '' : 'Tu cherches partout… mais rien d\'utile ne pousse ici en ce moment.';
+  if(plantes.length) t += (t ? ' ' : '') + 'Tu as cueilli ' + plantes.map(function(k){ return D.PLANTES[k].ic + ' ' + D.PLANTES[k].un; }).join(', ') + ' : ' + (plantes.length > 1 ? 'elles t\'attendent' : 'ça t\'attend') + ' sur l\'établi de ton atelier !';
   if(rates.length) t += ' Tu as aussi vu : ' + rates.join(', ') + ', mais tu n\'as pas pu les cueillir sans le bon matériel.';
-  M.ouvrir({type:'info', ic:l2.length ? '🧺' : '🍂', titre:l2.length ? 'Belle cueillette !' : 'Rien trouvé…', t:t});
+  var trouve = l2.length || plantes.length;
+  M.ouvrir({type:'info', ic:trouve ? '🧺' : '🍂', titre:trouve ? 'Belle cueillette !' : 'Rien trouvé…', t:t});
 };
 A.parler = function(el){
   var P = M.P(), id = el.dataset.id;

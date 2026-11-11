@@ -157,7 +157,7 @@ document.addEventListener('click', function(){ clic.pris = false; clic.mode = S.
 function dansVerre(e){ var v = S.verre, b = $('#hudBoite').getBoundingClientRect(), u = b.width/1200; return !!v && Math.hypot((e.clientX - b.left)/u - v.x, (e.clientY - b.top)/u - v.y) < v.r; }
 function reculer(e){
   if(S.occupe) return;
-  if(S.mode === 'loupe'){ if(dansVerre(e)) return; if(S.casier) fermerCasier(); else if(S.tiroir) fermerTiroir(); else fermerMode(); }
+  if(S.mode === 'loupe'){ if(dansVerre(e)) return; if(S.tiroir === 'livre') fermerTiroir(); else if(S.casier) fermerCasier(); else if(S.tiroir) fermerTiroir(); else fermerMode(); }   /* (le Livre d'or se referme d'un coup) */
   else if(S.mode === 'micro'){ if(e.target.closest('#gMicro, [data-act="coupe"]')) return; fermerMode(); }
   else fermerMode();
 }
@@ -168,6 +168,7 @@ $('#scene').addEventListener('click', function(e){
     /* un autre échantillon, visible à côté du verre : la loupe y va directement */
     if((a === 'lame' || a === 'coupe') && !dansVerre(e)){ var autre = a === 'lame' ? g.dataset.t : (D().coupes[+g.dataset.i] || {}).t; if(autre && !OBJETS[autre].liquide && autre !== S.sel && !(ATTENTE[autre] && !S.finis[autre])){ clic.pris = true; changerCible(autre); } return; }
     if(a !== 'tiroir') return; clic.pris = true;
+    if(estEcriture(S.sel)){ secouer(g); return; }   /* (enquête 3) une écriture ne se cherche pas dans les tiroirs : elle se compare au Livre d'or */
     if(S.tiroir !== g.dataset.t) ouvrirTiroir(g.dataset.t); else if((k = e.target.closest('[data-casier]'))) ouvrirCasier(k.dataset.casier); else fermerTiroir();
     return; }
   if(S.mode === 'micro'){ if((z = e.target.closest('[data-zoom]'))){ clic.pris = true; changerZoom(+z.dataset.zoom); } else if(a === 'molette' || a === 'micro'){ clic.pris = true; changerZoom(({10:40, 40:100, 100:10})[S.zoom]); } return; }
@@ -175,6 +176,7 @@ $('#scene').addEventListener('click', function(e){
   clic.pris = true;
   if(a === 'molette') g = $('#gMicro'), a = 'micro';
   if(a === 'ardoise'){ if(codePret()) ouvrirArdoise(); else son('clic'); return; }
+  if(a === 'livredor'){ son('papier'); bulle(LIVRE.x - 40, LIVRE.y - 44, 'Le Livre d\'or de la fête : douze habitants y ont écrit un mot.', 4200); return; }
   if(a === 'lame') return selectionner(g.dataset.t);
   if(a === 'coupe'){ var c = D().coupes[+g.dataset.i]; if(c) selectionner(c.t); return; }
   /* un outil : il faut d'abord avoir choisi quelque chose à analyser, et que l'outil puisse servir */
@@ -196,6 +198,7 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#bFermer')) return fermerMode();
   if(e.target.closest('#bQuitter')) return quitter();
   if(e.target.closest('#bRefermer')) return fermerTiroir();
+  if(e.target.closest('#bLivreDor')) return ouvrirLivreDor();
   if(e.target.closest('#bPrec')) return cibleVoisine(-1);
   if(e.target.closest('#bSuiv')) return cibleVoisine(1);
   if((b = e.target.closest('[data-ech]'))) return essayer(b.dataset.ech, b);
@@ -243,6 +246,10 @@ if(CFG){
   if(Array.isArray(CFG.recus)) CUIRS = CFG.recus.filter(function(d){ return OBJETS[d] && !OBJETS[d].de; }).slice(0, 4);
   if(CFG.codes) CODES = CFG.codes;
   if(Array.isArray(CFG.plusTard)) CFG.plusTard.forEach(function(d){ ATTENTE[d] = 1; });
+  /* (enquête 3) le Livre d'or de la fête est sur la paillasse (le code « Les écritures du village » du Sage) ; avec la lettre d'Odette
+     sur le cuir, le carnet de teintures gagne une page : l'encre de noix de galle */
+  LIVREDOR = !!CFG.livredor;
+  if(CUIRS.indexOf('lettre') >= 0 && !TEINTES.some(function(t){ return t.k === 'galle'; })) TEINTES.push(TEINTE_GALLE);
   if(CFG.style) for(var kS in ST) if(typeof CFG.style[kS] === 'number') ST[kS] = CFG.style[kS];
   if(Array.isArray(CFG.chat) && CFG.chat.length === 3) CHAT = CFG.chat;
   if(JEU){ SON.actif = CFG.son !== false; SANS_MIMI = !CFG.mimi; document.body.classList.add('jeu'); }

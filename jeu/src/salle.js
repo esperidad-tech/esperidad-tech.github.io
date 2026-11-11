@@ -32,7 +32,10 @@ var VARIANTES = {
     {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
       departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
     {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
-      departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
+      departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}},
+    /* (enquête 3) « Suivre la poussière » : la piste de l'Alchimiste jusqu'au rond des vesses-de-loup */
+    {id:'poussiere', ic:'🍄', nom:'Suivre la poussière : les vesses-de-loup', d:'La piste de l\'Alchimiste (enquête 3)', params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
+      departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
     {id:'clocher', ic:'🔔', nom:'Se cacher : le clocher', d:'Jusqu\'à la Grosse Marie et la clé (enquête 3)', params:{decor:'clocher'}},

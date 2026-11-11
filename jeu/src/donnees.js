@@ -157,6 +157,17 @@ D.INGR = {
   racine:{nom:'Racine du Vieux Chêne', ic:'🪵', c:'#9b6a3c', rare:true},
   lune:{nom:'Poussière de lune', ic:'✨', c:'#eef0ff', rare:true}
 };
+/* Enquête 3 : les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les
+   rangements de l'atelier (rien ne change pour les enquêtes 1 et 2) : cueillies, elles attendent sur l'établi (P.plantes). */
+D.PLANTES = {
+  oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬'},
+  souci:{nom:'Le souci', un:'des fleurs de souci', ic:'🏵️'},
+  melisse:{nom:'La mélisse', un:'de la mélisse', ic:'🍃'},
+  lin:{nom:'Le lin', un:'du lin', ic:'🌾'},
+  lycopode:{nom:'Le pied-de-loup', un:'du pied-de-loup', ic:'🌲', rare:true},
+  vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true},
+  gui:{nom:'Le gui', un:'du gui', ic:'🪴', rare:true}
+};
 /* cuisson = mini-jeu ; pour = rôles qui peuvent s'en servir ; fx = effet quand on l'utilise */
 D.POTIONS = {
   /* utile : à quoi elle sert et pour qui, en une ou deux phrases pour un enfant (montré dans le grimoire et l'armoire à potions de l'atelier) */

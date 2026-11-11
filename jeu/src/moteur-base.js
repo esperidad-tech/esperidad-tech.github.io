@@ -517,6 +517,8 @@ function codesBruts(E){
   M.cle(D.POTIONS).forEach(function(id){ if(D.POTIONS[id].tard) ids.push('pot:' + id); });
   for(var nr = 0; nr < 6; nr++) ids.push('rumeur:' + nr);
   ids.push('plaide:1', 'recette:hydromel');
+  /* (enquête 3) E.codesPlus : des codes en plus, à la fin (le sac de l'Alchimiste, sac:0 … sac:127 : plantes.js) */
+  (E.codesPlus || []).forEach(function(id){ ids.push(id); });
   var toutes = [];
   D.ORDRE_SYM.forEach(function(a){ D.ORDRE_SYM.forEach(function(b){ D.ORDRE_SYM.forEach(function(c){
     if(!(a === b && b === c)) toutes.push([a, b, c]);
@@ -595,6 +597,7 @@ M.destinataire = function(id){
   if(t === 'pot') return D.POTIONS[x].pour;
   if(t === 'suite' || t === 'defaite') return 'tous-sauf-sage';
   if(t === 'aide') return D.ROLES[x] ? x : 'tous';
+  if(t === 'sac') return 'pisteur';   /* (enquête 3) le sac de l'Alchimiste */
   return 'tous';
 };
 M.nomCode = function(id){
@@ -606,6 +609,7 @@ M.nomCode = function(id){
   if(t === 'aide') return {ic:'💡', nom:'Une action en plus'};
   if(t === 'suite') return {ic:'➡️', nom:'Enquête suivante'};
   if(t === 'defaite') return {ic:'🌫️', nom:'Défaite'};
+  if(t === 'sac') return {ic:'🎒', nom:'Le sac de l\'Alchimiste'};
   return {ic:'🏆', nom:'Victoire'};
 };
 
@@ -620,6 +624,9 @@ M.enqueteNeuve = function(id){
 M.momentId = function(){ var E = M.E(), P = M.P(); return E.moments[Math.min(P.moment, E.moments.length - 1)]; };
 /* Ingrédients : rangés dans l'atelier si le module existe, sinon dans un simple sac */
 M.ingr = function(){ var S = M.S; if(window.Atelier && S.atelier) return Atelier.compter(S.atelier); return S.ingr || {}; };
+/* (enquête 3) les plantes de l'établi : P.plantes {oseille:1, …}, au plus 3 de chaque (plantes.js) */
+M.plantes = function(){ var P = M.P(); return (P && P.plantes) || {}; };
+M.ajouterPlante = function(k){ var P = M.P(); if(!P || !D.PLANTES || !D.PLANTES[k]) return; P.plantes = P.plantes || {}; P.plantes[k] = Math.min(3, (P.plantes[k] || 0) + 1); P.vus['plante:' + k] = 1; };
 M.ajouterIngr = function(i, n){ var S = M.S; if(window.Atelier){ if(!S.atelier) S.atelier = Atelier.etatNeuf(); Atelier.ajouter(S.atelier, i, n); } else S.ingr[i] = (S.ingr[i] || 0) + n; };
 /* Pas de choix de difficulté dans le jeu : les mini-jeux suivent le numéro de l'enquête (+2), puis l'équipement et les talents du héros. */
 M.decalage = function(){ return 0; };   /* le moteur donne le rang de l'enquête ; MJ.reglages en tire le niveau selon le joueur (mj-core.js : MJ.COURBE) */

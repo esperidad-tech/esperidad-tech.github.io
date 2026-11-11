@@ -31,7 +31,8 @@ function etat(g){ var P = M.P(); P.grands = P.grands || {}; return P.grands[g] |
 function cite(t){ return !t ? '' : /«/.test(t) ? t : '« ' + t + ' »'; }
 /* la réplique d'un choix : ses paroles (entre « », sauf si elles sont déjà mêlées au récit), puis le petit récit */
 function dire(c){ return [cite(c.r || ''), c.n || ''].filter(Boolean).join(' '); }
-function donner(code, note, ic){ var P = M.P(); if(code) P.objets['_' + code] = true; if(note) M.noter(note, ic); }
+/* (un objet — obj:lettre — se range sous son nom, une info sous « _info:… » : le Carnet et l'onglet des codes les retrouvent ainsi) */
+function donner(code, note, ic){ var P = M.P(); if(code) P.objets[code.indexOf('obj:') === 0 ? code.slice(4) : '_' + code] = true; if(note) M.noter(note, ic); }
 function visage(id){
   if(B().visage){ try{ return B().visage(id); }catch(e){} }
   return '<span class="bd-emoji">' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</span>';

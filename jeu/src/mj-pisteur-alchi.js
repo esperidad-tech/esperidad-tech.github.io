@@ -341,7 +341,10 @@ var EMP_PRESETS = {
   sabot:{nom:'Sabot de bois', L:17, W:0.46, bout:'rond', talon:'plein', detail:'aucun', foulee:22, ouvre:8},
   botte:{nom:'Botte', L:18.5, W:0.44, bout:'carre', talon:'plein', detail:'trait', foulee:25, ouvre:6},
   /* enquête 3 : Moustache, le gros chat gris d'Odette, et ses six doigts (patte:true : une trace de patte, pas une semelle) */
-  chat:{nom:'La patte de Moustache', patte:true, doigts:6, L:21, W:0.95, foulee:27, ouvre:3}   /* (plus grande qu'en vrai : on doit pouvoir compter ses doigts) */
+  chat:{nom:'La patte de Moustache', patte:true, doigts:6, L:21, W:0.95, foulee:27, ouvre:3},   /* (plus grande qu'en vrai : on doit pouvoir compter ses doigts) */
+  /* enquête 3, « Suivre la poussière » (l'Alchimiste, la clairière aux lièvres) : pas une empreinte, une tache sur l'herbe (tache) —
+     la fine poussière brune que les vesses-de-loup crachent quand un lièvre les écrase */
+  poussiere:{nom:'La poussière des vesses-de-loup', tache:'poussiere', L:19, W:1, foulee:22, ouvre:0}
 };
 var BOUTS = ['rond', 'carre'], DETAILS = ['aucun', 'encoche', 'point', 'trait'];
 var formesCache = {};
@@ -376,7 +379,37 @@ function formePatte(f){
   }
   return (formesCache[cle] = {d:d, det:det});
 }
+/* Une tache sur l'herbe (f.tache, enquête 3), centrée sur 0 : 'poussiere' — un semis de grains fins (la trace à suivre) ;
+   'gros' — les mêmes grains, plus gros et moins nombreux (du gravier : la fausse piste la plus ressemblante, dès le niveau 5) ;
+   'terre' — une motte d'un bloc ; 'feuille' — une feuille morte et sa nervure ; 'champi' — un petit champignon à chapeau (pas une
+   vesse). Toujours les mêmes grains pour une même taille (une spirale régulière, pas de hasard). */
+function formeTache(f){
+  var cle = ['tache', f.tache, n1(f.L)].join('|');
+  if(formesCache[cle]) return formesCache[cle];
+  var L = f.L, d = '', det = '';
+  function P(a, b){ return n1(a * L) + ',' + n1(b * L); }
+  function rond(cx, cy, r){ return ' M' + n1(cx - r) + ',' + n1(cy) + ' a' + n1(r) + ',' + n1(r) + ' 0 1,0 ' + n1(2 * r) + ',0 a' + n1(r) + ',' + n1(r) + ' 0 1,0 ' + n1(-2 * r) + ',0 Z'; }
+  if(f.tache === 'poussiere' || f.tache === 'gros'){
+    var gros = f.tache === 'gros', n = gros ? 7 : 19;
+    for(var i = 0; i < n; i++){
+      var t = (i + 0.5) / n, ang = i * 2.39996 + (gros ? 0.7 : 0.3), rr = Math.sqrt(t) * 0.5 * L, r = (gros ? 0.088 : 0.043) * L * (1 + 0.3 * Math.sin(i * 1.7));
+      d += rond(Math.cos(ang) * rr * 0.82, Math.sin(ang) * rr, r);
+    }
+    d = d.slice(1);
+  } else if(f.tache === 'feuille'){
+    d = 'M' + P(0, -0.52) + ' C' + P(0.3, -0.3) + ' ' + P(0.3, 0.16) + ' ' + P(0, 0.4) + ' C' + P(-0.3, 0.16) + ' ' + P(-0.3, -0.3) + ' ' + P(0, -0.52) + ' Z';
+    det = '<path class="e-r" d="M' + P(0, -0.4) + ' L' + P(0, 0.54) + ' M' + P(0, -0.14) + ' l' + P(0.14, -0.12) + ' M' + P(0, 0.06) + ' l' + P(-0.14, -0.12) + '"/>';
+  } else if(f.tache === 'champi'){
+    d = 'M' + P(-0.42, 0.02) + ' C' + P(-0.42, -0.5) + ' ' + P(0.42, -0.5) + ' ' + P(0.42, 0.02) + ' Z M' + P(-0.11, 0.07) + ' L' + P(-0.15, 0.44) + ' L' + P(0.15, 0.44) + ' L' + P(0.11, 0.07) + ' Z';
+    det = '<circle class="e-c" cx="' + n1(-0.16 * L) + '" cy="' + n1(-0.18 * L) + '" r="' + n1(0.05 * L) + '"/><circle class="e-c" cx="' + n1(0.14 * L) + '" cy="' + n1(-0.24 * L) + '" r="' + n1(0.04 * L) + '"/>';
+  } else {
+    d = 'M' + P(-0.34, -0.1) + ' C' + P(-0.38, -0.36) + ' ' + P(-0.08, -0.46) + ' ' + P(0.1, -0.38) + ' C' + P(0.36, -0.38) + ' ' + P(0.44, -0.12) + ' ' + P(0.36, 0.08) +
+      ' C' + P(0.42, 0.32) + ' ' + P(0.16, 0.44) + ' ' + P(-0.04, 0.38) + ' C' + P(-0.28, 0.44) + ' ' + P(-0.44, 0.2) + ' ' + P(-0.34, -0.1) + ' Z';
+  }
+  return (formesCache[cle] = {d:d, det:det});
+}
 function formeSemelle(f){
+  if(f.tache) return formeTache(f);
   if(f.patte) return formePatte(f);
   var cle = [n1(f.L), n1(f.W), f.bout, f.talon, f.detail].join('|');
   if(formesCache[cle]) return formesCache[cle];
@@ -431,12 +464,16 @@ function empreinteCarte(f, taille, floue){
   var lait = floue ? '<path class="e-lait" d="M' + n1(-0.5 * f.L) + ',' + n1(-0.12 * f.L) + ' C' + n1(-0.56 * f.L) + ',' + n1(-0.5 * f.L) + ' ' + n1(-0.1 * f.L) + ',' + n1(-0.62 * f.L) + ' ' + n1(0.08 * f.L) + ',' + n1(-0.5 * f.L) +
     ' C' + n1(0.3 * f.L) + ',' + n1(-0.64 * f.L) + ' ' + n1(0.6 * f.L) + ',' + n1(-0.4 * f.L) + ' ' + n1(0.48 * f.L) + ',' + n1(-0.1 * f.L) + ' C' + n1(0.4 * f.L) + ',' + n1(0.04 * f.L) + ' ' + n1(-0.4 * f.L) + ',' + n1(0.06 * f.L) + ' ' + n1(-0.5 * f.L) + ',' + n1(-0.12 * f.L) + ' Z"/>' : '';
   return '<svg class="mja-empr-carte" viewBox="' + n1(-h * 0.75) + ' ' + n1(-h / 2) + ' ' + n1(h * 1.5) + ' ' + n1(h) + '" width="' + Math.round(h * 1.5 * k) + '" height="' + Math.round(taille || 70) + '" aria-hidden="true">' +
+    /* (une tache — la poussière des vesses-de-loup — : une seule, bien au milieu) */
+    (f.tache ? '<g class="mja-empr tache"><path class="e-f" d="' + s.d + '"/>' + s.det + '</g></svg>' :
     '<g class="mja-empr" transform="translate(' + n1(-f.L * 0.32) + ',' + n1(f.L * 0.08) + ')"><path class="e-f" d="' + s.d + '"/>' + s.det + lait + '</g>' +
-    '<g class="mja-empr" transform="translate(' + n1(f.L * 0.32) + ',' + n1(-f.L * 0.08) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + lait + '</g></svg>';
+    '<g class="mja-empr" transform="translate(' + n1(f.L * 0.32) + ',' + n1(-f.L * 0.08) + ') scale(-1,1)"><path class="e-f" d="' + s.d + '"/>' + s.det + lait + '</g></svg>');
 }
 /* Deux empreintes « pareilles » : même forme (bout, talon, détail, largeur) ET même taille (moins de 9 % d'écart).
    La piste à suivre doit être UNIQUE : aucune autre piste de la carte ne lui est pareille. */
 function memeEmpreinte(a, b){
+  /* des taches (la poussière des vesses-de-loup) : la même sorte, de la même taille */
+  if(a.tache || b.tache) return a.tache === b.tache && Math.abs(a.L - b.L) / Math.min(a.L, b.L) < 0.09;
   /* des pattes : même nombre de doigts, griffes ou non, même taille */
   if(a.patte || b.patte) return !!a.patte === !!b.patte && (a.doigts || 4) === (b.doigts || 4) && !!a.griffes === !!b.griffes && Math.abs(a.L - b.L) / Math.min(a.L, b.L) < 0.09;
   return a.bout === b.bout && a.talon === b.talon && a.detail === b.detail && Math.abs(a.W - b.W) < 0.03 &&
@@ -465,7 +502,23 @@ function variantePatte(c, n, evite){
   }
   var w = Object.assign({}, c, {doigts:4, griffes:true, W:0.86, L:c.L * 1.7, foulee:c.foulee * 1.5}); if(evite) evite.push(w); return w;
 }
+/* Une fausse trace sur l'herbe : de la terre, des feuilles mortes, des champignons à chapeau ; dès le niveau 5, du gravier
+   (de gros grains : ce qui ressemble le plus à la poussière) */
+var TXT_TACHE = {terre:'Rien que de la terre…', feuille:'Des feuilles mortes…', champi:'Des champignons à chapeau : pas des vesses !', gros:'Du gravier…'};
+function varianteTache(c, n, evite){
+  var sortes = n >= 5 ? ['terre', 'feuille', 'champi', 'gros', 'gros'] : ['terre', 'feuille', 'champi'];
+  for(var essai = 0; essai < 60; essai++){
+    var v = Object.assign({}, c, {tache:U.choix(sortes)});
+    v.L = c.L * U.choix(v.tache === 'gros' ? [1, 1.1] : [0.86, 1, 1.16]); v.foulee = c.foulee * U.choix([0.9, 1, 1.14]);
+    if(memeEmpreinte(v, c)) continue;
+    if(evite && evite.some(function(e){ return memeEmpreinte(v, e); })) continue;
+    if(evite) evite.push(v);
+    return v;
+  }
+  var w = Object.assign({}, c, {tache:'terre', L:c.L * 1.4}); if(evite) evite.push(w); return w;
+}
 function variante(c, n, evite){
+  if(c.tache) return varianteTache(c, n, evite);
   if(c.patte) return variantePatte(c, n, evite);
   var amp = Math.max(0.11, courbe(n, {1:0.3, 3:0.2, 6:0.14, 9:0.11, 12:0.11}));
   function sgn(){ return Math.random() < 0.5 ? -1 : 1; }
@@ -1024,9 +1077,18 @@ var ARRIVEES_VILLE = {
 };
 /* Les arrivées « de l'histoire » (params.arrivee, params.compagnonArrivee) : jamais tirées au hasard pour les autres pistes */
 function cabouV(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.8" fill="#6cbf55" stroke="' + CONTOUR + '" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="#b4e69a"/>'; }
-var ARRIVEES_GRANDES = {moulin:1, crypte:1};   /* les arrivées-bâtiments : plus grandes, et la vue remonte pour les montrer */
+var ARRIVEES_GRANDES = {moulin:1, crypte:1, vesses:1};   /* les arrivées-bâtiments : plus grandes, et la vue remonte pour les montrer */
 var ARRIVEES_LISIERE = {foret:1};   /* les arrivées au bord de la carte : la ville s'y arrête (voir genererMonde, tuileForet) */
 var ARRIVEES_HISTOIRE = {
+  /* le rond des vesses-de-loup (enquête 3, « Suivre la poussière ») : un cercle de boules blanches dans l'herbe, deux bien mûres
+     (brunes, trouées), et leur petit nuage de poussière */
+  vesses:'<g transform="translate(0,-6)"><ellipse cx="0" cy="4" rx="27" ry="17" fill="#3f7a3a" opacity=".55"/><ellipse cx="0" cy="4" rx="13" ry="7.5" fill="#5b9a48" opacity=".7"/>' +
+    [[-22, 2, 5.4, 0], [-15, -8, 5, 0], [-3, -12.5, 5.6, 1], [10, -10.5, 5, 0], [20, -3, 5.6, 0], [21, 9, 5, 0], [10, 16, 6.2, 1], [-4, 17.5, 5.2, 0], [-17, 12, 5.6, 0]].map(function(q){
+      return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + q[2] * 0.7) + '" rx="' + (q[2] * 0.9) + '" ry="' + (q[2] * 0.35) + '" fill="#000" opacity=".25"/>' +
+        '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="' + (q[3] ? '#b08a5c' : '#f8f3e6') + '" stroke="' + CONTOUR + '" stroke-width="2"/>' +
+        (q[3] ? '<ellipse cx="' + q[0] + '" cy="' + (q[1] - q[2] * 0.55) + '" rx="' + (q[2] * 0.36) + '" ry="' + (q[2] * 0.2) + '" fill="#4a321e"/>' : '<circle cx="' + (q[0] - q[2] * 0.3) + '" cy="' + (q[1] - q[2] * 0.3) + '" r="' + (q[2] * 0.22) + '" fill="#fff"/>');
+    }).join('') +
+    '<g fill="#8a6a44" opacity=".7"><circle cx="-5" cy="-21" r="1.8"/><circle cx="0" cy="-25" r="1.4"/><circle cx="-8" cy="-27" r="1.1"/><circle cx="12" cy="7" r="1.5"/><circle cx="15" cy="3" r="1.1"/></g></g>',
   /* le pied d'une maison et sa gouttière : la piste s'arrête net, quelqu'un est remonté sur les toits (enquête 1) */
   gouttiere:'<rect x="-18" y="-16" width="30" height="28" rx="2" fill="#b4553a" stroke="' + CONTOUR + '" stroke-width="3"/><path d="M-18,-7 H12 M-18,2 H12" stroke="#8f3f2a" stroke-width="2"/>' +
     '<rect x="11" y="-15" width="7" height="31" rx="3" fill="#9aa3b5" stroke="' + CONTOUR + '" stroke-width="2.4"/><path d="M10,17 H22" stroke="' + CONTOUR + '" stroke-width="3.2" stroke-linecap="round"/>',
@@ -1078,7 +1140,8 @@ var ARRIVEES_HISTOIRE = {
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:function(p){ if(p && p.suspect === 'chat') return p.chercher ? 'Retiens bien la trace de patte. Puis cherche où commencent ses traces, au milieu de toutes les autres : tu as ' + p.chercher + ' secondes avant que tout se mette à avancer. Ensuite, guide le Pisteur du doigt sur SA piste jusqu\'au bout !' :
+  consigne:function(p){ if(p && p.suspect === 'poussiere') return 'Retiens bien la trace du départ : une fine poussière brune, en tout petits grains. Puis guide ton héros du doigt sur CETTE trace jusqu\'au bout, sans la confondre avec la terre, les feuilles mortes et les champignons à chapeau !';
+    if(p && p.suspect === 'chat') return p.chercher ? 'Retiens bien la trace de patte. Puis cherche où commencent ses traces, au milieu de toutes les autres : tu as ' + p.chercher + ' secondes avant que tout se mette à avancer. Ensuite, guide le Pisteur du doigt sur SA piste jusqu\'au bout !' :
       'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
     if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
     return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
@@ -1119,7 +1182,7 @@ MJ.enregistrer('traces', {
     p.grace = 2;
     p.essais = 1 + (mods.erreurs || 0);
     p.nuit = !!mods.nuit; p.aide = !!mods.aide; p.revele = !!mods.revele;
-    p.suspect = U.choix(Object.keys(EMP_PRESETS));
+    p.suspect = U.choix(Object.keys(EMP_PRESETS).filter(function(k){ return !EMP_PRESETS[k].patte && !EMP_PRESETS[k].tache; }));   /* (au hasard : une chaussure — jamais une trace de l'histoire, les pattes de Moustache ou la poussière) */
     var obstNoms = []; p.obstaclesListe.forEach(function(o){ if(obstNoms.indexOf(NOMS_OBST[o]) < 0) obstNoms.push(NOMS_OBST[o]); });
     var meteo = [];
     if(p.bruine > 0) meteo.push('bruine'); if(p.averse > 0) meteo.push('grosse pluie'); if(p.vent > 0) meteo.push('vent');
@@ -1166,8 +1229,9 @@ MJ.enregistrer('traces', {
     /* params.compagnon (le massif de la mairie) : les grosses bottes partent avec les petites traces, les croisent, puis s'en vont */
     var comp = !ch && prm && prm.compagnon && EMP_PRESETS[prm.compagnon] ? EMP_PRESETS[prm.compagnon] : null;
     var chat = !ch && !comp && prm && prm.suspect === 'chat';   /* (enquête 3) les pattes de Moustache, et un autre chat à quatre doigts */
-    var f = ch ? charretteCible() : (chat ? EMP_PRESETS.chat : EMP_PRESETS.enfant), g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : comp ? Object.assign({}, comp) : (chat ? Object.assign({}, f, {doigts:4, L:f.L * 1.17}) : variante(EMP_PRESETS.enfant, 9));
-    if(!ch && !comp && !chat){ g.L = 17.5; g.foulee = 23; }
+    var pous = !ch && !comp && prm && prm.suspect === 'poussiere';   /* (enquête 3) la poussière des vesses-de-loup, et des feuilles mortes */
+    var f = ch ? charretteCible() : (chat ? EMP_PRESETS.chat : pous ? EMP_PRESETS.poussiere : EMP_PRESETS.enfant), g = ch ? Object.assign({}, f, {roues:ROUES.brouette}) : comp ? Object.assign({}, comp) : (chat ? Object.assign({}, f, {doigts:4, L:f.L * 1.17}) : pous ? Object.assign({}, f, {tache:'feuille'}) : variante(EMP_PRESETS.enfant, 9));
+    if(!ch && !comp && !chat && !pous){ g.L = 17.5; g.foulee = 23; }
     var VL = !!(prm && prm.decor === 'ville'), idv = nid('dtv');
     el.innerHTML = '<svg class="mja-demo-svg mja-traces" viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice">' + (VL ? '<defs>' + villeDefs(idv) + '</defs>' : '') + '<rect x="-200" y="-20" width="700" height="210" fill="' + (VL ? '#8c8173' : '#5b5236') + '"/>' +
       '<g class="dm"></g><circle class="dv" r="30" fill="#fff4d6" fill-opacity=".14" stroke="#8ff3ff" stroke-width="1.6" stroke-dasharray="4 4"/>' +
@@ -1191,7 +1255,7 @@ MJ.enregistrer('traces', {
     }
     gm.innerHTML = (VL ? '<rect x="-300" y="-700" width="900" height="1300" fill="url(#' + idv + 'pv)"/>' : '') + prints.map(function(q){
       if(q.roue) return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y.toFixed(1) + ') rotate(' + q.a + ')"><rect class="e-roue" x="-2.6" y="' + (-q.h / 2).toFixed(1) + '" width="5.2" height="' + q.h.toFixed(1) + '" rx="2.6"/></g>';
-      return '<g class="mja-empr" transform="translate(' + q.x.toFixed(1) + ',' + q.y + ') scale(' + q.sx + ',1)"><path class="e-f" d="' + q.s.d + '"/>' + q.s.det + '</g>';
+      return '<g class="mja-empr' + (pous ? ' tache' : '') + '" transform="translate(' + q.x.toFixed(1) + ',' + q.y + ') scale(' + q.sx + ',1)"><path class="e-f" d="' + q.s.d + '"/>' + q.s.det + '</g>';
     }).join('');
     var els = gm.querySelectorAll('.mja-empr');
     main.style.transition = 'none';
@@ -1372,7 +1436,7 @@ MJ.enregistrer('traces', {
             contenu = (saut ? '<path class="e-creux" d="' + fs.d + '"/>' : '') + '<path class="e-f" d="' + fs.d + '"/>' + fs.det; forme = fs.d;
           }
           var m = {x:px, d:pd, vrai:t.vrai, o:-1, of:-1};
-          m.g = svgNoeud('g', {'class':'mja-empr' + (boue ? ' boue' : '') + (saut ? ' saut' : ''), transform:tr, opacity:'0'}, gM);
+          m.g = svgNoeud('g', {'class':'mja-empr' + (boue ? ' boue' : '') + (saut ? ' saut' : '') + (t.f.tache && !boue ? ' tache' : ''), transform:tr, opacity:'0'}, gM);
           m.g.innerHTML = contenu;
           if(p.nuit) m.fl = svgNoeud('path', {'class':'e-flou', d:forme, transform:tr, opacity:'0'}, gFlous);
           marques.push(m);
@@ -1492,8 +1556,8 @@ MJ.enregistrer('traces', {
       essais--; hud.perdVie(essais, p.essais);
       a.g.classList.add('fausse');
       erreurSensorielle(terrain);
-      flotter(terrain, q.x, q.y, a.txt ? a.txt : ch ? (a.trace && a.trace.f && a.trace.f.sorte === 'brouette' ? 'Une brouette…' : a.trace && a.trace.f && a.trace.f.sorte === 'carriole' ? 'La carriole de Fortuné…' : 'Pas ces pieds-là…') : 'Ce n\'est pas lui…', 'ko');
-      if(essais <= 0) perdre('Tu as suivi la piste de quelqu\'un d\'autre…');
+      flotter(terrain, q.x, q.y, a.txt ? a.txt : cibleF.tache ? (TXT_TACHE[a.trace && a.trace.f && a.trace.f.tache] || 'Pas de vesses ici…') : ch ? (a.trace && a.trace.f && a.trace.f.sorte === 'brouette' ? 'Une brouette…' : a.trace && a.trace.f && a.trace.f.sorte === 'carriole' ? 'La carriole de Fortuné…' : 'Pas ces pieds-là…') : 'Ce n\'est pas lui…', 'ko');
+      if(essais <= 0) perdre(cibleF.tache ? 'Tu as suivi une autre trace…' : 'Tu as suivi la piste de quelqu\'un d\'autre…');
     }
     function cibleVisible(xMin, xMax, dTop){
       var d0 = Math.max(cible.debut, pd - 30), d1 = Math.min(cible.fin + 12, dTop);

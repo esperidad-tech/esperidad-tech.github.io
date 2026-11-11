@@ -47,7 +47,7 @@ M.pointsVisibles = function(lieu, role){
     else if(P.vus[k] === 'ok' && vu !== undefined && vu !== i){ delete P.vus[k]; delete P.vus[k + ':var']; }
     var v = i >= 0 ? p.variantes[i] : null;
     /* (enquête 3) une variante peut aussi donner un code, ou le faire recevoir (v.donne, v.recoit : le filet de la lettre, chez le Sage) */
-    return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}, v.donne ? {donne:v.donne} : {}, v.recoit ? {recoit:v.recoit} : {}) : p;
+    return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}, v.donne ? {donne:v.donne} : {}, v.obj ? {obj:v.obj} : {}, v.recoit ? {recoit:v.recoit} : {}) : p;
   });
 };
 var point0 = A.point;

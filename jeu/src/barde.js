@@ -519,7 +519,7 @@ function question(el){
   }
   var code = null;
   if(q.obj){ P.objets[q.obj] = true; code = 'obj:' + q.obj; }
-  if(q.donne){ [].concat(q.donne).forEach(function(c1){ P.objets['_' + c1] = true; }); code = q.donne; }   /* (une liste : plusieurs codes d'un coup, la maison d'Odette à l'enquête 3) */
+  if(q.donne){ [].concat(q.donne).forEach(function(c1){ P.objets[c1.indexOf('obj:') === 0 ? c1.slice(4) : '_' + c1] = true; }); code = q.donne; }   /* (un objet dans la liste : le carnet d'Odette) */   /* (une liste : plusieurs codes d'un coup, la maison d'Odette à l'enquête 3) */
   UI.bd = {p:id, i:i, mode:potionRep ? 'potionrep' : 'rep', charme:charme, m:P.moment};
   M.son('clic'); M.sauver();
   if(potionRep && apresVerite(id, [i])){ UI.bd.joue = true; return; }   /* une vérité qui donne un objet (la pierre de Tim) */

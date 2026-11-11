@@ -199,6 +199,18 @@ function majBandeScene(){
   if(D() && D().bande > 0) ciblesLiq().forEach(function(k){ teinte(k).b.forEach(function(b){ s += '<rect x="' + (x - 7.5) + '" y="' + f1(y - 26 - b.y*70 - b.h*30) + '" width="15" height="' + f1(Math.max(3, b.h*60)) + '" fill="' + b.c + '" opacity="' + (b.a || .9) + '"/>'; }); });
   g.innerHTML = s;
 }
+/* (enquête 3) Le Livre d'or de la fête, posé à droite de la paillasse : un gros livre rouge à fermoir doré, ouvert sur ses pages pleines
+   de petits mots. C'est avec lui qu'on compare l'écriture de la lettre, sous la loupe (60-loupe.js : ouvrirLivreDor). */
+var LIVREDOR = false, LIVRE = {x:1092, y:446};
+function livreDorScene(){
+  var x = LIVRE.x, y = LIVRE.y, s = '<g id="gLivreDor" data-act="livredor" tabindex="0" role="button" aria-label="Le Livre d\'or de la fête"><ellipse class="rond" cx="' + x + '" cy="' + (y - 8) + '" rx="74" ry="40"/>' + ombre(x + 4, y + 10, 70, 14, .4);
+  s += P('M' + (x - 66) + ',' + (y + 8) + ' L' + (x + 66) + ',' + (y + 8) + ' L' + (x + 58) + ',' + (y - 30) + ' L' + (x - 58) + ',' + (y - 30) + ' Z', '#9a2a3a', ' stroke-width="3.5"') +
+    P('M' + (x - 60) + ',' + (y + 3) + ' L' + x + ',' + (y + 5) + ' L' + x + ',' + (y - 27) + ' L' + (x - 53) + ',' + (y - 28) + ' Z', G('parchemin'), ' stroke-width="2.5"') +
+    P('M' + (x + 60) + ',' + (y + 3) + ' L' + x + ',' + (y + 5) + ' L' + x + ',' + (y - 27) + ' L' + (x + 53) + ',' + (y - 28) + ' Z', G('parchemin'), ' stroke-width="2.5"') +
+    T('M' + (x - 50) + ',' + (y - 20) + ' q8,-4 16,0 t16,0 M' + (x - 52) + ',' + (y - 11) + ' q8,-4 16,0 t18,0 M' + (x - 54) + ',' + (y - 2) + ' q8,-4 16,0 t12,0 M' + (x + 10) + ',' + (y - 20) + ' q8,-4 16,0 t16,0 M' + (x + 10) + ',' + (y - 11) + ' q8,-4 18,0 t18,0 M' + (x + 10) + ',' + (y - 2) + ' q8,-4 14,0 t14,0', '#2a2230', 1.5, ' opacity=".8"') +
+    T('M' + x + ',' + (y + 5) + ' V' + (y - 27), K, 2.5) + R(x + 60, y - 14, 12, 10, 3, G('laitonV'), ' stroke-width="2.5"') + T('M' + (x - 8) + ',' + (y + 7) + ' q8,12 4,22', '#f5b945', 3.4);
+  return s + '<rect x="' + (x - 72) + '" y="' + (y - 40) + '" width="150" height="66" fill="transparent"/></g>';
+}
 function loupeScene(){
   var x = LOUPE.x, y = LOUPE.y, rx = 54, ry = 25;
   return '<g id="gLoupe" data-act="loupe" data-outil="loupe" tabindex="0" role="button" aria-label="La loupe"><ellipse class="rond" cx="' + (x + 34) + '" cy="' + (y + 6) + '" rx="108" ry="40"/><g id="loupeMobile">' + ombre(x + 10, y + 14, 62, 16, .4) +
@@ -258,6 +270,9 @@ function petitEch(t, x, y){
   if(oe.forme === 'flacon') return petitFlacon(x, y, S.teinte && S.sel === t ? S.teinte : couleurLiq(t));   /* (une goutte de vinaigre ou de bicarbonate : le flacon vire aussi) */
   if(oe.forme === 'tas') return petitTas(x, y, oe.couls || ['#1b1b1f', '#3a3d42']);
   if(oe.forme === 'piece') return petitePiece(x, y);
+  /* (enquête 3) la lettre d'Odette : une petite feuille pliée, quelques lignes d'encre */
+  if(oe.forme === 'papier') return '<g transform="translate(' + x + ',' + (y - 3) + ') rotate(-8)">' + P('M-15,-11 H10 L15,-6 V11 H-15 Z', '#f3ead2', ' stroke-width="1.8"') + P('M10,-11 V-6 H15 Z', '#d9cba6', ' stroke-width="1.4"') +
+    T('M-10,-5 h14 M-10,0 h20 M-10,5 h17', '#2a2230', 1.3) + T('M-15,0 H15', 'rgba(120,96,60,.35)', 1) + '</g>';
   /* les « poils » de la fenêtre (Romain, 10 novembre, 16 h 56 : pour le Pisteur, ni un fil ni rouge) : de loin, une pincée de brins sombres,
      noircis de poussière ; c'est sous la loupe qu'on voit le fil rouge tricoté */
   if(t === 'fil') return [[-12, 2, 3], [-7, -3, -2], [-2, 3, 4], [3, -2, -3], [8, 2, 2]].map(function(q){ var d = 'M' + (x + q[0] - 5) + ',' + (y + q[1] + 3) + ' q' + (5 + q[2]) + ',-8 12,-5'; return T(d, '#1c1214', 2.6) + T(d, '#4a1a20', 1.2); }).join('');
@@ -326,6 +341,7 @@ function dessinerScene(){
   /* sur le plateau, du fond vers le devant */
   s += bougieScene() + etagere() + ardoiseScene() + microscopeScene() + testScene() + cuirScene();
   COUPES.forEach(function(q, i){ s += '<g data-act="coupe" data-i="' + i + '" id="coupe' + i + '"></g>'; });
+  if(LIVREDOR) s += livreDorScene();   /* (enquête 3) le Livre d'or de la fête, prêté par le Sage */
   s += loupeScene();     /* en dernier : quand elle s'envole, la loupe passe par-dessus tout, coupelles comprises */
   /* la pipette et la pince (cachées : elles servent aux expériences) */
   s += '<g id="pipette" style="display:none">' + R(-6, -84, 12, 72, 5, 'rgba(220,245,255,.85)', ' stroke-width="3"') + P('M-11,-110 C-11,-127 11,-127 11,-110 L8,-84 L-8,-84 Z', '#d9603a', ' stroke-width="3"') + '<rect id="pipLiq" x="-3.5" y="-40" width="7" height="26" fill="#9fd8ff"/></g>';

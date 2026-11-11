@@ -29,7 +29,7 @@ function fermerMode(){
   majQuitter();
   mimiReveil();
 }
-function nomTrouve(t){ var o = OBJETS[t]; return o.liquide ? o.cibles.map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
+function nomTrouve(t){ var o = OBJETS[t]; if(o.tiroir === 'ecritures') return 'l\'écriture de ' + ECH.ecritures[o.bon].nom; return o.liquide ? o.cibles.map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
 /* Un petit dessin qui vole d'un endroit à un autre (la carte vers la loupe, le témoin vers la bandelette) */
 function volVers(de, vers, fin, hauteur){
   if(reduit){ fin(); return; }
@@ -57,12 +57,24 @@ function ouvrirLoupe(tir){
     attendre(180, function(){
       S.occupe = false; S.tiroir = null; S.casier = null; S.essai = null;
       ouvrirMode('loupe', '<div class="verre-hud" id="verreHud"><canvas id="cvVerre" aria-label="Sous la loupe"></canvas>' + svgVerre() + '<div class="tampon" id="tampon" aria-hidden="true"></div></div><div class="ruban" id="ruban" hidden></div>' +
-        '<button type="button" class="fleche-l pose" id="bPrec" aria-label="L\'échantillon d\'avant">◀</button><button type="button" class="fleche-l pose" id="bSuiv" aria-label="L\'échantillon d\'après">▶</button><div id="zoneTiroir"></div>');
+        '<button type="button" class="fleche-l pose" id="bPrec" aria-label="L\'échantillon d\'avant">◀</button><button type="button" class="fleche-l pose" id="bSuiv" aria-label="L\'échantillon d\'après">▶</button>' +
+        '<button type="button" class="b-livredor pose" id="bLivreDor" hidden><span aria-hidden="true">📖</span> Le Livre d\'or</button><div id="zoneTiroir"></div>');
       vueLoupe(); placerVerre(); majBas(); requestAnimationFrame(function(){ rendVerre(); });
+      /* (enquête 3) la lettre, sans le Livre d'or du Sage : rien à quoi la comparer */
+      if(ecritureACompa() && !LIVREDOR) attendre(700, function(){ if(S.mode === 'loupe' && ecritureACompa()) bulle(600, 612, 'Il te faudrait d\'autres écritures pour comparer…', 5200); });
     });
   });
 }
 function vueLoupe(){ var c = posCible(); camera(borne(c.x, 520, 690), 410.5, 1.45); }
+/* (enquête 3) ce qu'on regarde est une écriture pas encore reconnue (la lettre d'Odette) : elle se compare au Livre d'or, pas aux tiroirs */
+function estEcriture(t){ return !!t && !!OBJETS[t] && OBJETS[t].tiroir === 'ecritures'; }
+function ecritureACompa(){ return estEcriture(S.sel) && !S.trouves[S.sel]; }
+/* Le Livre d'or s'ouvre sous la loupe : ses douze écritures s'étalent, comme les échantillons d'un casier */
+function ouvrirLivreDor(){
+  if(S.occupe || S.mode !== 'loupe' || S.tiroir === 'livre' || !LIVREDOR || !ecritureACompa()) return;
+  var suite = function(){ S.tiroir = 'livre'; S.casier = 'ecritures'; S.tirP.livre = 1; son('papier'); placerVerre(); majBas(); };
+  if(S.tiroir) fermerTiroir(suite); else suite();
+}
 /* Le grand verre : toujours posé sur ce qu'on regarde. Quand un tiroir est ouvert, il rapetisse et remonte, mais il reste du côté
    de l'objet (au-dessus de la coupelle si on la voit encore, sinon contre le bord le plus proche d'elle).
    De chaque côté du verre, une flèche jaune : on passe à l'échantillon d'avant ou d'après sans reposer la loupe. */
@@ -72,6 +84,8 @@ function placerVerre(){
   else { r = 162; x = borne(sx, r + 78, 1200 - r - 78); y = borne(sy - 58, r + 10, 640 - r - 10); }
   h.style.cssText = pos(x - r, y - r, 2*r, 2*r); S.verre = {x:x, y:y, r:r};
   var rb = $('#ruban'); if(rb) rb.style.cssText = S.tiroir ? 'left:calc(' + f1(borne(x, 300, 900)) + '*var(--u));top:calc(196*var(--u))' : 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(Math.min(y + r + 6, 582)) + '*var(--u))';
+  /* (enquête 3) sous le verre, le bouton jaune du Livre d'or : seulement pour la lettre, tant que son écriture n'est pas reconnue */
+  var bl = $('#bLivreDor'); if(bl){ bl.hidden = !(LIVREDOR && ecritureACompa() && !S.tiroir); bl.style.cssText = 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(Math.min(y + r + 12, 560)) + '*var(--u))'; }
   var a = $('#bPrec'), b = $('#bSuiv'), plusieurs = ciblesLoupe().length > 1;
   if(a){ a.style.cssText = pos(x - r - 70, y - 30, 60, 60); b.style.cssText = pos(x + r + 10, y - 30, 60, 60); a.hidden = b.hidden = !plusieurs; }
   setTimeout(rendVerre, reduit ? 0 : 470);

@@ -57,6 +57,13 @@ function genItems(d){
     40:[{t:'farine_p', x:260, y:700, r:20, id:'fp1'}, {t:'farine_p', x:760, y:300, r:18}],
     100:[]
   };
+  /* ===== L'enquête 3 ===== */
+  /* la lettre d'Odette : deux grains jaunes pris dans les fils du papier, qu'on devine de loin et qu'on attrape à ×40 */
+  if(d === 'lettre') return {
+    10:[{t:'pollen_l', x:380, y:340, r:3.6, min:40, ref:'ql1'}, {t:'pollen_l', x:690, y:650, r:3.2, min:40, ref:'ql2'}],
+    40:[{t:'pollen_l', x:330, y:300, r:22, id:'ql1'}, {t:'pollen_l', x:720, y:690, r:19, id:'ql2'}],
+    100:[]
+  };
   return {10:[], 40:[], 100:[]};
 }
 function centre10(u){ return {x:40 + u*920, y:500 + 190*Math.sin(u*Math.PI*3) + 50*Math.sin(u*Math.PI*7)}; }
@@ -177,6 +184,24 @@ function scenePiece(c, z, d){
   var R = {10:400, 40:1400, 100:3600}[z], cy = z === 10 ? 500 : 500 - R*.35;
   dessinerPieceOr(c, 500, cy, R, {farine:false, tache:d === 'piece_moulin' && !(S.dos[d] && S.dos[d].coupes.some(function(c2){ return c2 && c2.t === 'rouge_m'; })), gros:z > 10});
 }
+/* (enquête 3) La lettre au microscope : le papier et ses petits fils emmêlés ; à ×10, un grand « M » pointu à l'encre noire ; plus près,
+   le bord d'un trait de plume, là où l'encre a filé entre les fils */
+function scenePapier(c, z, Rn){
+  var i, n = z === 10 ? 520 : (z === 40 ? 150 : 46), lg = z === 10 ? 26 : (z === 40 ? 110 : 340), ep = z === 10 ? 1 : (z === 40 ? 3.2 : 9);
+  c.fillStyle = '#f1e7cc'; c.fillRect(0, 0, MW, MW);
+  c.lineCap = 'round';
+  for(i = 0; i < n; i++){ var x = Rn()*MW, y = Rn()*MW, a = Rn()*6.283, l = lg*(.5 + Rn()), k = (Rn() - .5)*l*.5;
+    c.strokeStyle = Rn() < .5 ? 'rgba(160,136,96,.5)' : 'rgba(255,252,240,.75)'; c.lineWidth = ep*(.6 + Rn()*.8); c.beginPath(); c.moveTo(x, y);
+    c.quadraticCurveTo(x + Math.cos(a)*l*.5 - Math.sin(a)*k, y + Math.sin(a)*l*.5 + Math.cos(a)*k, x + Math.cos(a)*l, y + Math.sin(a)*l); c.stroke(); }
+  c.strokeStyle = '#17151c'; c.lineJoin = 'miter'; c.miterLimit = 12;
+  if(z === 10){ c.lineWidth = 34; c.beginPath(); c.moveTo(150, 880); c.lineTo(260, 190); c.lineTo(500, 720); c.lineTo(700, 190); c.lineTo(850, 880); c.stroke(); }
+  else { var y0 = z === 40 ? 520 : 480, w = z === 40 ? 150 : 430;
+    c.lineWidth = w; c.beginPath(); c.moveTo(-100, y0 + 160); c.lineTo(1100, y0 - 160); c.stroke();
+    /* l'encre a bu dans les fils : de petites barbes le long du trait */
+    c.lineWidth = z === 40 ? 5 : 14; c.strokeStyle = 'rgba(23,21,28,.8)';
+    for(i = 0; i < (z === 40 ? 70 : 34); i++){ var u = Rn(), cote = Rn() < .5 ? -1 : 1, bx = -100 + u*1200, by = y0 + 160 - u*320 + cote*w*.5, bl = (z === 40 ? 14 : 44)*(.4 + Rn());
+      c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + (Rn() - .5)*bl, by + cote*bl); c.stroke(); } }
+}
 function fabriquerScene(scene, z){
   var cv = document.createElement('canvas'); cv.width = MW*SDPR; cv.height = MW*SDPR; var c = cv.getContext('2d'); c.scale(SDPR, SDPR); var Rn = rng(z*97 + (scene === 'fibres' ? 0 : scene.length*131));
   var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
@@ -185,6 +210,7 @@ function fabriquerScene(scene, z){
   else if(scene === 'goutte') sceneGoutte(c, z, Rn, couleurLiq(SC.d));
   else if(scene === 'poudre') scenePoudre(c, z, Rn);
   else if(scene === 'piece') scenePiece(c, z, SC.d);
+  else if(scene === 'papier') scenePapier(c, z, Rn);
   else {
     var cols = ['#a3202a','#b8282f','#c4343a','#8f1b25','#cf4a4a'];
     if(z === 10){
@@ -218,7 +244,7 @@ function dessinerItem(c, it, x, y, t){
     var sc = (Math.sin(t/260) + 1)/2; c.fillStyle = 'rgba(255,255,255,' + (.4 + .6*sc) + ')'; c.font = (14 + 8*sc) + 'px sans-serif'; c.textAlign = 'center'; c.fillText('✦', x + it.r*.6, y - it.r*.5); }
   else if(it.t === 'feuil'){ dessinerBoutFeuille(c, x, y, it.r, .5); }
   else if(it.t === 'bardane'){ dessinerBardane(c, x, y, it.r, Rn); }
-  else if(it.t === 'pollen'){ dessinerPollen(c, x, y, it.r, 'lav'); }
+  else if(it.t === 'pollen' || it.t === 'pollen_l'){ dessinerPollen(c, x, y, it.r, 'lav'); }
   /* l'enquête 2 */
   else if(it.t === 'petale_r' || it.t === 'petale_c'){ dessinerBoutPetale(c, x, y, it.r, '#e8202a'); }
   else if(it.t === 'farine_r' || it.t === 'farine_p'){ blob(c, x, y, it.r, Rn, '#f6f2e6', 10); c.fillStyle = 'rgba(190,180,160,.7)'; for(i = 0; i < 6; i++) rond(c, x + (Rn()-.5)*it.r, y + (Rn()-.5)*it.r, Math.max(.8, it.r*.08)); }

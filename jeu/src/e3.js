@@ -39,11 +39,11 @@ E[3] = {
   missionsMaire:{titre:'Les missions du maire', sous:'Pour la fête de cette nuit, chacun a sa mission :', bouton:'Commencer l\'enquête 3',
     barde:'Achète les fleurs de la fête.',
     pisteur:'Accroche les banderoles et rattrape l\'oie de Gaspard.',
-    alchimiste:'Fais le gâteau de la fête, d\'après la commande de Gaspard.',
+    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard.',
     sage:'Peins le tableau d\'Odette et de ses chats.'},
   missions:{
     pisteur:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard. Et ouvre l\'œil : cette lettre est bizarre…',
-    alchimiste:'Fais le gâteau de la fête, d\'après la commande de Gaspard. Et prépare ton atelier : l\'équipe aura besoin de toi.',
+    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard. Puis cueille les plantes de la vallée : cette nuit, l\'équipe aura besoin de tes potions.',
     barde:'Achète les fleurs de la fête avec les pièces du maire. Puis interroge le village : chacun te répond à deux questions, pas plus. Choisis bien !',
     sage:'Peins le tableau d\'Odette et de ses chats. Lis ton Grand Livre à l\'équipe, donne le code de chaque moment, et accuse quand toute l\'équipe est d\'accord.'
   },
@@ -64,8 +64,14 @@ E[3] = {
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
+    /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
-      {libre:true, ic:'🎂', t:'Fais le gâteau de la fête, d\'après la commande de Gaspard.'},
+      {ic:'🎂', t:'Fais le haut du gâteau de la fête, à la boulangerie de Gaspard.', fait:[{vu:'alchimiste:boulangerie:gateau'}]},
+      {ic:'🌿', t:'Cueille les plantes de la vallée : il y en a sept. Pour les plus rares, demande au Sage son herbier.',
+        fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
+      {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
+      {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
+        fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[
@@ -205,7 +211,7 @@ E[3] = {
           /* le piège : le Barde repart avec une copie de sa propre écriture (le Sage : « C'est ton écriture à toi, ça ! ») */
           {q:'Je peux la recopier ici, devant vous ?', r:'Mais bien sûr, recopiez donc !', piege:true}]}
       ],
-      reussi:{bouton:'✉️ Prendre la lettre', titre:'Le maire te prête la lettre', t:'Tu tiens la lettre d\'Odette. Le maire te regarde partir… Il faudra la lui rendre avant ce soir !', code:'info:lettre'},
+      reussi:{bouton:'✉️ Prendre la lettre', titre:'Le maire te prête la lettre', t:'Tu tiens la lettre d\'Odette. Le maire te regarde partir… Il faudra la lui rendre avant ce soir !', code:'obj:lettre'},
       piege:{bouton:'📝 Ranger ma copie', titre:'Ta copie de la lettre', t:'Tu recopies la lettre, mot pour mot, sous l\'œil du maire. Le maire range l\'original dans son grand coffre.', code:'info:copie'},
       resume:{ok:'Le maire t\'a prêté la lettre d\'Odette.', piege:'Tu as recopié la lettre, devant le maire.', rate:'Le maire n\'a pas voulu te prêter la lettre.'}},
     /* la nuit, au clocher : la clé d'Anselme (raté : Tim montre le vieux puits) */
@@ -344,6 +350,23 @@ E[3] = {
     lieux:['clocher', 'puits', 'moulin', 'chene', 'mairie', 'place']},
   sensibles:[],
   recettes:[],
+  /* ---------- Le labo de l'Alchimiste (labo.js ; les fiches : src/labo/30-donnees.js) : la lettre d'Odette ----------
+     Au microscope, du pollen de lavande (une fausse piste : tout le village en a) ; au test des couleurs, de l'encre de noix de galle
+     (celle des colporteurs) ; à la loupe, l'écriture — avec le Livre d'or du Sage posé sur la paillasse (le code « Les écritures
+     du village »), on compare : seule Mélusine a les trois signes de la lettre. */
+  labo:['lettre'],
+  analyses:{
+    lettre:{donne:'info:ecriture',
+      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, une seule personne écrit comme ça : MÉLUSINE ! Sur le papier, du pollen de lavande et de l\'encre de noix de galle.',
+      note:'Analyse de la lettre : c\'est l\'écriture de Mélusine (ses « M » qui piquent, ses « t » en vague, son rond sur les « i »). Du pollen de lavande, de l\'encre de colporteur.'}
+  },
+  laboNotes:{
+    pollen_l:'Sur la lettre : du pollen de lavande, comme les sachets d\'Iris. Mais tout le village en a !',
+    encre_l:'L\'encre de la lettre : de la noix de galle, l\'encre noire que vendent les colporteurs.'},
+  /* ---------- L'établi des plantes (plantes.js ; E3-atelier-des-plantes.md) : les sept potions de la nuit, faites de vraies plantes ---------- */
+  plantes:true,
+  /* le code du sac (plantes.js) : un code par contenu possible du sac (sept potions, faites ou non : 128), pour le Pisteur */
+  codesPlus:(function(){ var l = []; for(var i = 0; i < 128; i++) l.push('sac:' + i); return l; })(),
   /* Le registre du Sage (livre.js) */
   registre:{
     odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},
@@ -364,7 +387,12 @@ E[3] = {
     fortune:{adresse:'sa carriole, sur la place', note:'Le colporteur. Il est le seul à traverser la brume.'},
     grosbec:{adresse:'la mairie, sur la place', note:'Le maire de Brumeval. Il ne quitte jamais ses gants gris, même à l\'intérieur.'}
   },
-  objets:{},
+  /* Les deux objets de l'enquête : le Sage les lit dans son Grand Livre, l'Alchimiste analyse la lettre dans son labo (E.labo, labo.js) */
+  objets:{
+    lettre:{nom:'La lettre d\'Odette', ic:'✉️', pour:['sage', 'alchimiste'], dire:'La vraie lettre, en main ! Donne ce code au Sage et à l\'Alchimiste.'},
+    /* (le carnet n'a pas de fiche au labo : il n'est que pour le Sage, qui le compare à la lettre et y trouve le plan) */
+    carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.'}
+  },
   /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
      Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */
   infos:{
@@ -374,12 +402,7 @@ E[3] = {
     capuchon:{nom:'Le capuchon vers le clocher', ic:'🧥', pour:'sage', de:'barde',
       t:'À l\'aube, du haut des toits, Tim a vu un grand capuchon glisser une lettre sous la porte de la mairie, puis repartir vers le clocher.',
       dire:'Qui porte une lettre comme ça ? Le Sage doit le savoir : donne-lui ce code.'},
-    lettre:{nom:'La lettre d\'Odette', ic:'✉️', pour:['sage', 'alchimiste'], de:'barde',
-      t:'Le maire a prêté la lettre d\'Odette. Le Sage peut la lire de près, et l\'Alchimiste peut l\'analyser dans son laboratoire.',
-      dire:'La vraie lettre, en main ! Donne ce code au Sage et à l\'Alchimiste.'},
-    carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:['sage', 'alchimiste'], de:'barde',
-      t:'Le Barde a trouvé le carnet d\'Odette sur sa table, au 2, rue des Lanternes. Elle y note tout, un chat à chaque page.',
-      dire:'Le carnet d\'Odette : donne ce code au Sage et à l\'Alchimiste.'},
+    /* (la lettre et le carnet sont des objets : E.objets, plus haut ; l'Alchimiste pose la lettre sur sa paillasse) */
     traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde',
       t:'Chez Odette, du lait renversé… et des petites traces de pattes qui filent dehors, vers la place. Moustache, le gros chat gris, est passé par là !',
       dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre : donne-lui ce code.'},
@@ -407,8 +430,8 @@ E[3] = {
     gui_pommier:{nom:'Le gui du pommier', ic:'🌳', pour:'pisteur', de:'alchimiste',
       t:'Le gui pousse tout en haut du vieux pommier, dans le potager de Basile. Bien trop haut pour l\'Alchimiste !',
       dire:'Le Pisteur sait grimper, lui : donne-lui ce code.'},
-    gui:{nom:'Le gui', ic:'🌿', pour:'alchimiste', de:'pisteur',
-      t:'Le Pisteur a grimpé dans le vieux pommier du potager et a cueilli une grosse touffe de gui.',
+    gui:{nom:'Le gui', ic:'🌿', pour:'alchimiste', de:'pisteur', plante:'gui',
+      t:'Le Pisteur a grimpé dans le vieux pommier du potager et a cueilli une grosse touffe de gui. Elle t\'attend sur ton établi !',
       dire:'L\'Alchimiste en a besoin pour ses potions : donne-lui ce code.'},
     cle_clou:{nom:'La clé est au clou', ic:'🔔', pour:'pisteur', de:'barde',
       t:'Anselme a pendu sa clé au clou, en haut du clocher. Quand les cloches sonnent, il ferme les yeux et compte les coups…',
@@ -471,13 +494,42 @@ E[3] = {
           t:'Tu plonges… et tu l\'attrapes ! COUAC, COUAC ! Elle se débat, puis se calme dans tes bras. Gaspard la serre contre lui : « Ma belle ! Te voilà ! »',
           rate:'Elle est trop rapide ! L\'oie disparaît au coin de la rue, en battant des ailes. Gaspard s\'arrache les cheveux.',
           ferme:'L\'oie court encore quelque part dans Brumeval…'}
+      ]},
+      /* l'Alchimiste (étape 4) : le gâteau de la fête (mj-gateau.js : une création libre, quinze minutes, on ne le rate jamais).
+         Gaspard a monté les gros étages du bas ; l'Alchimiste fait le haut (jusqu'à quatre étages) : avec les siens, ça fait bien
+         les « sept étages » dont tout le village parle. */
+      alchimiste:{intro:'La boulangerie de Gaspard. Sur la grande table, trois énormes étages de gâteau attendent leur chapeau.', points:[
+        {id:'gateau', ic:'🎂', nom:'Le gâteau de la fête', moments:['matin', 'apresmidi'], mj:'gateau',
+          avant:'Gaspard a monté les gros étages du bas. Il te confie le plus beau : tout le haut du gâteau ! La pâte, le glaçage, la crème, les décorations… et n\'oublie pas les chats d\'Odette. Tu as quinze minutes.',
+          bouton:'🎂 Faire le gâteau',
+          t:'Gaspard pose ton gâteau tout en haut de sa pièce montée, et recule de trois pas : « Sept étages en tout ! Du jamais vu à Brumeval ! »'}
+      ]}
+    },
+    /* les cueillettes de l'Alchimiste (étape 4 ; E3-atelier-des-plantes.md §4) : quatre plantes ordinaires, le matin ou l'après-midi */
+    lavoir:{alchimiste:{cueillir:[{plante:'oseille', moments:['matin', 'apresmidi']}]}},
+    herboristerie:{alchimiste:{cueillir:[{plante:'melisse', moments:['matin', 'apresmidi']}]}},
+    moulin:{alchimiste:{cueillir:[{plante:'lin', moments:['matin', 'apresmidi']}]}},
+    /* les trois plantes rares : il faut l'herbier du Sage (sans lui, « rien à trouver ») */
+    foret:{alchimiste:{cueillir:[{plante:'lycopode', moments:['matin', 'apresmidi'], besoin:[{code:'info:herbier'}], secret:true}]}},
+    clairiere:{
+      alchimiste:{intro:'La clairière aux lièvres. L\'herbe est haute, et ça sent le champignon.', points:[
+        /* la vesse-de-loup : « Suivre la poussière » (le moteur de la piste, une trace et une arrivée à elle). Un seul essai, et le
+           filet : ratée, on la trouve quand même (jamais d'échec qui bloque une potion). */
+        {id:'vesses', ic:'🍄', nom:'La poussière des vesses-de-loup', moments:['matin', 'apresmidi'], mj:'traces',
+          besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], plante:'vesse', ouvrePartiel:true,
+          params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
+            departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'},
+          avant:'« La vesse-de-loup pousse en rond, là où dansent les lièvres. » Sur l\'herbe, une fine poussière brune file vers le bois… Suis-la, sans la confondre avec la terre et les feuilles mortes !',
+          bouton:'🍄 Suivre la poussière',
+          t:'Un grand rond de boules blanches, au milieu des fougères. Tu en cueilles une bien mûre… tout doucement. Elle t\'attend sur ton établi !',
+          rate:'Tu as perdu la trace… mais un petit nuage brun s\'élève près du gros rocher. Pouf ! Les voilà. Tu en cueilles une bien mûre : elle t\'attend sur ton établi.'}
       ]}
     },
     mairie:{
       pisteur:{intro:'La mairie. Le maire n\'aime pas qu\'on fouine dans ses papiers…', points:[
         /* la lettre, en se cachant : pour quand le Barde n'a pas su la demander au maire (le même code que lui) */
         /* (decor 'mairie' : l'intérieur de la mairie, et au bout le bureau du maire avec la lettre — Romain, 21 h 21) */
-        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'mairie'}, donne:'info:lettre',
+        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'mairie'}, obj:'lettre',
           avant:'Le maire garde la lettre d\'Odette sur son bureau. Traverse la mairie sans te faire voir, jusqu\'à son bureau !',
           bouton:'🫥 Se faufiler',
           t:'Tu te glisses derrière le grand rideau. Le maire compte ses papiers un par un… puis il sort. La lettre est sur le dessus.',
@@ -505,17 +557,29 @@ E[3] = {
         {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], varianteFigee:true,
           t:'Le maire : « Magnifique ! Ce soir, tout le monde sur la place jusqu\'à minuit ! »',
           variantes:[
-            {si:[{et:[{non:{code:'info:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'info:lettre', donne:'info:lettre',
+            {si:[{et:[{non:{code:'obj:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'obj:lettre', obj:'lettre',
               t:'Le maire : « Magnifique ! Et la lettre d\'Odette, je l\'accroche sous votre tableau, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]},
         /* le tableau raté : rien à rendre (pas d'or), mais le filet de la lettre ne doit pas dépendre du tableau (sinon, pas de lettre du tout) */
         {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], varianteFigee:true,
           t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Ce soir, tout le monde sur la place jusqu\'à minuit ! »',
           variantes:[
-            {si:[{et:[{non:{code:'info:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'info:lettre', donne:'info:lettre',
+            {si:[{et:[{non:{code:'obj:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'obj:lettre', obj:'lettre',
               t:'Le maire : « Pas de tableau ? Tant pis. La lettre d\'Odette, je l\'accroche au mur, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]}
+      ]},
+      /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
+      alchimiste:{intro:'La mairie. Le maire attend son gâteau en regardant sa montre.', points:[
+        {id:'gateau', ic:'🎉', nom:'Porter le gâteau au maire', moments:A_, or:5, visibleSi:[{vu:'alchimiste:boulangerie:gateau'}],
+          t:'Le maire fait le tour du gâteau, les mains dans le dos : « Quelle merveille ! On le coupera à minuit pile. Pas une minute avant ! »'}
       ]}
     },
     potager:{
+      /* l'Alchimiste : le souci (cueillette ordinaire), et le gui, bien trop haut pour lui (le code pour le Pisteur, qui grimpe) */
+      alchimiste:{intro:'Le potager de Basile : des choux, des poireaux, des soucis tout orange, et un vieux pommier tordu.',
+        cueillir:[{plante:'souci', moments:['matin', 'apresmidi']}],
+        points:[
+          {id:'pommier', ic:'🌳', nom:'Le vieux pommier', moments:['matin', 'apresmidi'], besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], donne:'info:gui_pommier',
+            t:'« La glu ne touche jamais la terre… » Tout en haut du vieux pommier, une grosse boule verte piquée de perles blanches : du gui ! Bien trop haut pour toi.'}
+        ]},
       pisteur:{intro:'Le potager de Basile : des choux, des poireaux, et un vieux pommier tout tordu.', points:[
         /* le gui (E3-atelier-des-plantes.md §7) : avec le code de l'Alchimiste ; pas de mini-jeu */
         {id:'gui', ic:'🌳', nom:'Grimper au vieux pommier', moments:['matin', 'apresmidi'], besoin:[{code:'info:gui_pommier'}], visibleSi:[{code:'info:gui_pommier'}], donne:'info:gui',
@@ -671,7 +735,7 @@ E[3] = {
     ]},
     /* la maison d'Odette, au 2, rue des Lanternes (l'après-midi) : une visite, sans questions ; deux codes d'un coup */
     voisin:{ou:{apresmidi:'L2'}, salut:'La maison d\'Odette. La porte n\'est toujours pas fermée à clé…', questions:[
-      {q:'Poser la canne d\'Odette', donne:['info:carnet', 'info:traces_moustache'], titreDonne:'Chez Odette',
+      {q:'Poser la canne d\'Odette', donne:['obj:carnet', 'info:traces_moustache'], titreDonne:'Chez Odette',
         a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette. Par terre, du lait renversé… et des petites traces qui filent dehors !',
         note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet. Par terre, du lait renversé, et des petites traces qui filent dehors.'}
     ]},
@@ -861,15 +925,15 @@ E[3] = {
         {si:[{code:'info:poste'}], t:'Pas de timbre, pas de tampon : la lettre n\'est pas passée par la poste. Et Odette n\'a jamais reçu une seule lettre ! Alors, qui l\'a apportée ?'}],
       t:'À l\'aube, un grand capuchon a glissé la lettre sous la porte de la mairie, puis il est reparti vers le clocher. Un facteur, ça ? Sûrement pas !'},
     /* l'après-midi : la lettre et le carnet (les deux codes du Barde) → la lettre est fausse */
-    {id:'fausse', titre:'La lettre et le carnet', ic:'🔍', besoin:[{et:[{code:'info:lettre'}, {code:'info:carnet'}]}], bouton:'Comparer la lettre et le carnet',
+    {id:'fausse', titre:'La lettre et le carnet', ic:'🔍', besoin:[{et:[{code:'obj:lettre'}, {code:'obj:carnet'}]}], bouton:'Comparer la lettre et le carnet',
       avant:'Pour savoir si Odette a vraiment écrit cette lettre, il te faudrait la lettre… et quelque chose qu\'Odette a écrit elle-même.',
       t:'Odette écrit penché, avec un petit chat à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n\'est pas Odette qui l\'a écrite : la lettre est fausse !'},
     /* les sept chats du carnet → Moustache a six doigts (pour le Pisteur) */
-    {id:'chats', titre:'Les sept chats du carnet', ic:'🐈', besoin:[{code:'info:carnet'}], bouton:'Feuilleter le carnet', donne:'info:six_doigts',
+    {id:'chats', titre:'Les sept chats du carnet', ic:'🐈', besoin:[{code:'obj:carnet'}], bouton:'Feuilleter le carnet', donne:'info:six_doigts',
       avant:'Odette note tout dans un carnet, un chat à chaque page. Le Barde pourrait le trouver chez elle…',
       t:'« Moustache : mon gros gris, mon malin. Un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! »'},
     /* le plan des Fondateurs, caché dans la couverture du carnet : l'alphabet secret (il sert cette nuit, dans le donjon) */
-    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', besoin:[{code:'info:carnet'}], mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS'}, bouton:'Déchiffrer le vieux parchemin',
+    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', besoin:[{code:'obj:carnet'}], mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS'}, bouton:'Déchiffrer le vieux parchemin',
       ouvrePartiel:true, partiel:true,
       avant:'Dans la couverture du carnet d\'Odette, un vieux parchemin plié, couvert de signes. Qu\'est-ce qu\'il dit ?',
       t:'« LE CHEMIN DES FONDATEURS » : c\'est le plan des souterrains, sous le village ! Un mot d\'Odette, au crayon : « Ne le montrer à personne. » Tu le ranges dans ton Grand Livre : il te servira cette nuit.',
