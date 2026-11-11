@@ -26,6 +26,37 @@ function genItems(d){
     40:[{t:'pollen', x:430, y:570, r:7, min:100, ref:'p1'}, {t:'pollen', x:690, y:330, r:7, min:100, ref:'p2'}],
     100:[{t:'pollen', x:400, y:590, r:24, id:'p1'}, {t:'pollen', x:720, y:300, r:22, id:'p2'}]
   };
+  /* ===== L'enquête 2 ===== */
+  /* l'eau de la rivière : des bouts de pétales qu'on voit tout de suite ; la farine et la paillette verte, toutes petites, à ×40 */
+  if(d === 'eau_riviere') return {
+    10:[{t:'petale_r', x:330, y:420, r:20}, {t:'petale_r', x:700, y:610, r:17}, {t:'farine_r', x:560, y:300, r:3.5, min:40, ref:'fa1'}, {t:'cuivre_r', x:760, y:380, r:3, min:40, ref:'cu1'}],
+    40:[{t:'farine_r', x:450, y:330, r:22, id:'fa1'}, {t:'farine_r', x:620, y:640, r:18}, {t:'cuivre_r', x:780, y:420, r:16, id:'cu1'}],
+    100:[]
+  };
+  /* l'eau du lavoir : un poil gris qu'on voit tout de suite ; de petits fils blancs et une poussière grise, à ×40 */
+  if(d === 'eau_lavoir') return {
+    10:[{t:'poils_l', x:300, y:560, r:16}, {t:'fibre_l', x:420, y:460, r:5, min:40, ref:'fi1'}, {t:'fibre_l', x:640, y:560, r:5, min:40, ref:'fi2'}, {t:'cendre_l', x:700, y:330, r:3.5, min:40, ref:'ce1'}],
+    40:[{t:'fibre_l', x:380, y:420, r:34, id:'fi1'}, {t:'fibre_l', x:660, y:620, r:30, id:'fi2'}, {t:'cendre_l', x:760, y:300, r:20, id:'ce1'}, {t:'cendre_l', x:250, y:720, r:16}],
+    100:[]
+  };
+  /* la poudre du pot noir : un morceau de charbon et des grains jaunes bien visibles ; le brin de laine noire, caché, à ×40 */
+  if(d === 'poudre') return {
+    10:[{t:'charbon_p', x:640, y:420, r:22}, {t:'soufre_p', x:330, y:360, r:12}, {t:'soufre_p', x:520, y:690, r:10}, {t:'laine_p', x:760, y:640, r:5, min:40, ref:'la1'}],
+    40:[{t:'laine_p', x:720, y:600, r:34, id:'la1'}, {t:'soufre_p', x:300, y:300, r:26}],
+    100:[]
+  };
+  /* le colorant de l'alambic : un bout de pétale resté dedans, caché, à ×40 */
+  if(d === 'colorant') return {
+    10:[{t:'petale_c', x:600, y:520, r:5, min:40, ref:'pc1'}],
+    40:[{t:'petale_c', x:520, y:470, r:30, id:'pc1'}],
+    100:[]
+  };
+  /* la pièce de la boulangerie : de la poussière blanche dans les creux, à ×40 */
+  if(d === 'piece_pain') return {
+    10:[{t:'farine_p', x:300, y:640, r:4, min:40, ref:'fp1'}],
+    40:[{t:'farine_p', x:260, y:700, r:20, id:'fp1'}, {t:'farine_p', x:760, y:300, r:18}],
+    100:[]
+  };
   return {10:[], 40:[], 100:[]};
 }
 function centre10(u){ return {x:40 + u*920, y:500 + 190*Math.sin(u*Math.PI*3) + 50*Math.sin(u*Math.PI*7)}; }
@@ -108,11 +139,52 @@ function scenePlume(c, z, Rn){
       c.strokeStyle = '#3a3846'; c.lineWidth = 40; c.stroke(); c.strokeStyle = 'rgba(200,196,214,.3)'; c.lineWidth = 7; c.beginPath(); c.moveTo(b[0] - nx*11, b[1] - ny*11); c.lineTo(b[0] + ux*1300 - nx*11, b[1] + uy*1300 - ny*11); c.stroke(); });
   }
 }
+/* ===== Les vues de l'enquête 2 ===== */
+/* Une goutte de liquide : l'eau teintée, de toutes petites poussières, des bulles ; à ×40 des algues en fil ;
+   à ×100 des diatomées (de petites algues dans une boîte de verre, en forme de barque) — on en trouve dans toutes les rivières */
+function sceneGoutte(c, z, Rn, coul){
+  var rgb = hexRgb(coul), i, x, y, r;
+  var g = c.createRadialGradient(500, 500, 60, 500, 500, 720); g.addColorStop(0, 'rgba(' + rgb.join(',') + ',.28)'); g.addColorStop(1, 'rgba(' + rgb.join(',') + ',.5)'); c.fillStyle = g; c.fillRect(0, 0, MW, MW);
+  c.fillStyle = 'rgba(' + rgb.map(function(v){ return Math.round(v*.6); }).join(',') + ',.35)';
+  for(i = 0; i < (z === 10 ? 260 : 90); i++) rond(c, Rn()*MW, Rn()*MW, (z === 10 ? .8 : 1.5) + Rn()*(z === 10 ? 1.6 : 3));
+  if(z >= 40){
+    c.lineCap = 'round';
+    for(i = 0; i < (z === 40 ? 5 : 2); i++){ x = Rn()*MW; y = Rn()*MW; var a = Rn()*6.28, L = (z === 40 ? 160 : 420) + Rn()*120, w = z === 40 ? 9 : 22;
+      c.strokeStyle = 'rgba(70,130,60,.75)'; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); for(var k = 1; k <= 20; k++){ var u = k/20; c.lineTo(x + Math.cos(a)*L*u + Math.sin(u*9)*w*.8, y + Math.sin(a)*L*u + Math.cos(u*9)*w*.8); } c.stroke();
+      c.strokeStyle = 'rgba(40,90,40,.55)'; c.lineWidth = w*.25; for(k = 1; k < 10; k++){ var u2 = k/10, px = x + Math.cos(a)*L*u2, py = y + Math.sin(a)*L*u2; c.beginPath(); c.moveTo(px - Math.sin(a)*w*.5, py + Math.cos(a)*w*.5); c.lineTo(px + Math.sin(a)*w*.5, py - Math.cos(a)*w*.5); c.stroke(); } }
+  }
+  if(z === 100){
+    for(i = 0; i < 5; i++){ x = 120 + Rn()*760; y = 120 + Rn()*760; var ro = Rn()*3.14, Lx = 70 + Rn()*40;
+      c.save(); c.translate(x, y); c.rotate(ro); c.fillStyle = 'rgba(214,226,190,.75)'; c.strokeStyle = 'rgba(90,110,70,.9)'; c.lineWidth = 3;
+      c.beginPath(); c.ellipse(0, 0, Lx, Lx*.28, 0, 0, 6.283); c.fill(); c.stroke();
+      c.strokeStyle = 'rgba(120,140,90,.7)'; c.lineWidth = 1.6; for(var j = -6; j <= 6; j++){ c.beginPath(); c.moveTo(j*Lx/7.5, -Lx*.24*Math.sqrt(1 - Math.pow(j/7.5, 2))); c.lineTo(j*Lx/7.5, Lx*.24*Math.sqrt(1 - Math.pow(j/7.5, 2))); c.stroke(); }
+      c.fillStyle = 'rgba(160,120,40,.6)'; rond(c, 0, 0, Lx*.12); c.restore(); }
+  }
+  for(i = 0; i < (z === 10 ? 7 : 3); i++){ x = Rn()*MW; y = Rn()*MW; r = (z === 10 ? 10 : 30) + Rn()*(z === 10 ? 14 : 30);
+    c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = z === 10 ? 2 : 4; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.stroke(); c.fillStyle = 'rgba(255,255,255,.55)'; rond(c, x - r*.35, y - r*.35, r*.2); }
+}
+/* La poudre du pot noir : des grains noirs anguleux, et, mêlés à eux, des grains rouges */
+function scenePoudre(c, z, Rn){
+  var i, n = z === 10 ? 420 : (z === 40 ? 90 : 26), rmin = z === 10 ? 4 : (z === 40 ? 16 : 52), rv = z === 10 ? 6 : (z === 40 ? 18 : 50);
+  c.fillStyle = '#d8d0c0'; c.fillRect(0, 0, MW, MW);
+  for(i = 0; i < n; i++){ var x = Rn()*MW, y = Rn()*MW, r = rmin + Rn()*rv, rouge = Rn() < .16;
+    blob(c, x, y, r, Rn, rouge ? (Rn() < .5 ? '#c8202a' : '#9a1020') : (Rn() < .5 ? '#1b1b1f' : '#2c2e34'), 7);
+    c.fillStyle = rouge ? 'rgba(255,170,170,.5)' : 'rgba(200,200,220,.25)'; rond(c, x - r*.3, y - r*.3, r*.22); }
+}
+/* Une pièce d'or au microscope : la pièce entière à ×10, puis de plus en plus près de la petite fêlure sous la couronne */
+function scenePiece(c, z, d){
+  c.fillStyle = '#e8dcc2'; c.fillRect(0, 0, MW, MW);
+  var R = {10:400, 40:1400, 100:3600}[z], cy = z === 10 ? 500 : 500 - R*.35;
+  dessinerPieceOr(c, 500, cy, R, {farine:false, tache:d === 'piece_moulin' && !(S.dos[d] && S.dos[d].coupes.some(function(c2){ return c2 && c2.t === 'rouge_m'; })), gros:z > 10});
+}
 function fabriquerScene(scene, z){
   var cv = document.createElement('canvas'); cv.width = MW*SDPR; cv.height = MW*SDPR; var c = cv.getContext('2d'); c.scale(SDPR, SDPR); var Rn = rng(z*97 + (scene === 'fibres' ? 0 : scene.length*131));
   var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
   if(scene === 'poils') scenePoils(c, z, Rn);
   else if(scene === 'plume') scenePlume(c, z, Rn);
+  else if(scene === 'goutte') sceneGoutte(c, z, Rn, couleurLiq(SC.d));
+  else if(scene === 'poudre') scenePoudre(c, z, Rn);
+  else if(scene === 'piece') scenePiece(c, z, SC.d);
   else {
     var cols = ['#a3202a','#b8282f','#c4343a','#8f1b25','#cf4a4a'];
     if(z === 10){
@@ -147,6 +219,33 @@ function dessinerItem(c, it, x, y, t){
   else if(it.t === 'feuil'){ dessinerBoutFeuille(c, x, y, it.r, .5); }
   else if(it.t === 'bardane'){ dessinerBardane(c, x, y, it.r, Rn); }
   else if(it.t === 'pollen'){ dessinerPollen(c, x, y, it.r, 'lav'); }
+  /* l'enquête 2 */
+  else if(it.t === 'petale_r' || it.t === 'petale_c'){ dessinerBoutPetale(c, x, y, it.r, '#e8202a'); }
+  else if(it.t === 'farine_r' || it.t === 'farine_p'){ blob(c, x, y, it.r, Rn, '#f6f2e6', 10); c.fillStyle = 'rgba(190,180,160,.7)'; for(i = 0; i < 6; i++) rond(c, x + (Rn()-.5)*it.r, y + (Rn()-.5)*it.r, Math.max(.8, it.r*.08)); }
+  else if(it.t === 'cuivre_r'){ blob(c, x, y, it.r, Rn, '#3aa88a', 7); c.fillStyle = '#5cc0a0'; rond(c, x - it.r*.25, y - it.r*.2, it.r*.35); c.fillStyle = 'rgba(176,106,58,.9)'; rond(c, x + it.r*.3, y + it.r*.2, it.r*.18); }
+  else if(it.t === 'cendre_l'){ blob(c, x, y, it.r, Rn, '#b8b4b0', 9); c.fillStyle = 'rgba(80,76,72,.6)'; for(i = 0; i < 7; i++) rond(c, x + (Rn()-.5)*it.r, y + (Rn()-.5)*it.r, Math.max(.8, it.r*.09)); }
+  else if(it.t === 'poils_l'){ c.save(); c.translate(x, y); c.rotate(.6); c.lineCap = 'round'; c.strokeStyle = '#3a342c'; c.lineWidth = Math.max(2, it.r*.22) + 2; c.beginPath(); c.moveTo(-it.r*2.2, 0); c.quadraticCurveTo(0, -it.r*.5, it.r*2.2, it.r*.2); c.stroke(); c.strokeStyle = '#8c8378'; c.lineWidth = Math.max(2, it.r*.22); c.stroke(); c.restore(); }
+  else if(it.t === 'soufre_p'){ c.fillStyle = '#e8c830'; c.strokeStyle = '#8a7010'; c.lineWidth = Math.max(1, it.r*.08); c.beginPath(); for(i = 0; i < 6; i++){ var aS = i/6*6.283 + .3; c.lineTo(x + Math.cos(aS)*it.r*(i % 2 ? .75 : 1), y + Math.sin(aS)*it.r*(i % 2 ? .75 : 1)); } c.closePath(); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,250,200,.7)'; rond(c, x - it.r*.3, y - it.r*.3, it.r*.22); }
+  else if(it.t === 'charbon_p'){ blob(c, x, y, it.r, Rn, '#1b1b1f', 7); c.fillStyle = 'rgba(120,120,135,.6)'; for(i = 0; i < 9; i++) rond(c, x + (Rn()-.5)*it.r*1.2, y + (Rn()-.5)*it.r*1.2, Math.max(.8, it.r*.07)); }
+  else if(it.t === 'laine_p'){ c.save(); c.translate(x, y); c.rotate(-.4); c.lineCap = 'round'; c.strokeStyle = '#1c1a22'; c.lineWidth = Math.max(2.5, it.r*.3); c.beginPath(); c.moveTo(-it.r*2, 0); c.bezierCurveTo(-it.r, -it.r*.6, it.r, it.r*.6, it.r*2, 0); c.stroke();
+    if(it.r > 12){ c.strokeStyle = 'rgba(80,76,96,.8)'; c.lineWidth = 1.4; for(i = 0; i < 16; i++){ var ux = -it.r*1.8 + i*it.r*.24; c.beginPath(); c.moveTo(ux, -it.r*.2); c.lineTo(ux + (Rn()-.5)*it.r*.4, -it.r*.45 - Rn()*it.r*.2); c.stroke(); } } c.restore(); }
+  else if(it.t === 'fibre_l'){ /* le coton : un ruban plat et tordu (ses torsades se voient bien) */
+    c.save(); c.translate(x, y); c.rotate(-.5); var L2 = it.r*3, W2 = Math.max(1.5, it.r*.28); c.lineCap = 'round';
+    c.strokeStyle = '#9a96a0'; c.lineWidth = W2 + 2; c.beginPath(); c.moveTo(-L2, 0); c.bezierCurveTo(-L2*.3, -it.r, L2*.3, it.r, L2, 0); c.stroke();
+    c.strokeStyle = '#fbfaf6'; c.lineWidth = W2; c.stroke();
+    if(it.r > 12){ c.strokeStyle = 'rgba(120,116,130,.8)'; c.lineWidth = 1.5; for(i = -4; i <= 4; i++){ var u = (i + 4)/8, px = -L2 + 2*L2*u, py = (u < .5 ? -1 : 1)*Math.sin(u*Math.PI)*it.r*.35; c.beginPath(); c.moveTo(px - 3, py - W2*.5); c.lineTo(px + 3, py + W2*.5); c.stroke(); } }
+    c.restore(); }
+}
+/* La daphnie, la puce d'eau : un petit corps transparent, un œil noir, deux grandes antennes en rame (enquête 2, l'eau de la rivière) */
+function dessinerDaphnie(c, x, y, t){
+  var b = Math.sin(t/240);
+  c.save(); c.translate(x, y + b*4); c.lineCap = 'round';
+  c.strokeStyle = 'rgba(90,120,100,.95)'; c.lineWidth = 3; [-1, 1].forEach(function(sd){ c.beginPath(); c.moveTo(-14, -10); c.quadraticCurveTo(-30, -26 - sd*b*6, -46, -14 - sd*18); c.stroke(); c.beginPath(); c.moveTo(-46, -14 - sd*18); c.lineTo(-52, -6 - sd*20); c.stroke(); });
+  c.fillStyle = 'rgba(214,236,214,.7)'; c.strokeStyle = 'rgba(70,110,80,.95)'; c.lineWidth = 2.5; c.beginPath(); c.ellipse(4, 2, 24, 18, .2, 0, 6.283); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(24, 10); c.lineTo(34, 20); c.stroke();
+  c.fillStyle = 'rgba(200,140,60,.6)'; c.beginPath(); c.ellipse(6, 4, 10, 6, .2, 0, 6.283); c.fill();
+  c.fillStyle = '#141018'; rond(c, -14, -6, 4);
+  c.restore();
 }
 /* Un bout de feuille déchiré : un bord en vagues (les lobes), un bord déchiré, des nervures */
 function dessinerBoutFeuille(c, x, y, r, rot){
@@ -245,6 +344,7 @@ function rendLentille(){
   c.drawImage(scenesDe(S.dc)[S.zoom], sx*SDPR, sy*SDPR, vis*SDPR, vis*SDPR, 0, 0, vis, vis);
   d.items[S.zoom].forEach(function(it){ if(!it.pris) dessinerItem(c, it, it.x - sx, it.y - sy, now); });
   if(bete === 'acarien') dessinerMite(c, d.mite.x - sx, d.mite.y - sy, now); else if(bete === 'puce') dessinerPuce(c, d.mite.x - sx, d.mite.y - sy, now);
+  else if(bete === 'daphnie') dessinerDaphnie(c, d.mite.x - sx, d.mite.y - sy, now);
   c.restore();
   var vg = c.createRadialGradient(T0/2, T0/2, T0*.35, T0/2, T0/2, T0/2); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(20,12,30,.55)'); c.fillStyle = vg; c.fillRect(0,0,T0,T0); c.restore();
 }

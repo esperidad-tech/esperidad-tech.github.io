@@ -93,7 +93,7 @@ var ECH = {
     suie:{nom:'suie'}, charbon:{nom:'charbon de bois'}, poudre:{nom:'poudre noire'}, poivre:{nom:'poivre moulu'}, pavot:{nom:'graines de pavot'}, limaille:{nom:'limaille de fer'},
     ardoise:{nom:'ardoise'}, terre:{nom:'terre de jardin'}, argile:{nom:'argile'}, sciure:{nom:'sciure de bois'}, rouille:{nom:'rouille'}, cannelle:{nom:'cannelle'},
     tuile:{nom:'tuile'}, brique:{nom:'brique'}, sable:{nom:'sable'}, sel:{nom:'sel'}, cendre:{nom:'cendre'}, farine:{nom:'farine'},
-    or:{nom:'feuille d\'or'}, laiton:{nom:'laiton'}, mica:{nom:'mica'}, verre:{nom:'verre pilé'},
+    or:{nom:'feuille d\'or'}, laiton:{nom:'laiton'}, mica:{nom:'mica'}, verre:{nom:'verre pilé'}, vertdegris:{nom:'vert-de-gris'}, soufre:{nom:'soufre'},
     /* ce qui s'accroche et ce qui voyage : une graine à crochets, et trois pollens (chaque plante a le sien, avec sa forme à elle) */
     bardane:{nom:'graine de bardane'}, pollenlav:{nom:'pollen de lavande'}, pollenpin:{nom:'pollen de pin'}, pollenpis:{nom:'pollen de pissenlit'}
   }
@@ -106,7 +106,7 @@ var LISTES = {
     plumes:['corbeau','oie','poule','pie','canard','hibou','pigeon','geai','faisan','moineau','mesange','paon'],
     petales:['coquelicot','rose','pivoine','paquerette','tournesol','pissenlit','boutondor','bleuet','violette','myosotis','lavande','souci'],
     feuilles:['chene','hetre','bouleau','tilleul','chataignier','saule','houx','erable','lierre','frene','trefle','sapin'],
-    grains:['suie','charbon','poudre','poivre','pavot','terre','argile','sciure','rouille','tuile','brique','sable','cendre','or','laiton','mica','bardane','pollenlav','pollenpin','pollenpis']
+    grains:['suie','charbon','poudre','poivre','pavot','terre','argile','sciure','rouille','tuile','brique','sable','cendre','farine','or','laiton','mica','vertdegris','soufre','bardane','pollenlav','pollenpin','pollenpis']
   },
   difficile:{
     fils:['tricot','filee','feutree','cardee','mohair','coton','lin','chanvre','jute','soie','broder','dore','crin','cheveu','ficelle','corde','raphia','araignee'],
@@ -114,7 +114,7 @@ var LISTES = {
     plumes:['corbeau','oie','poule','pie','canard','hibou','pigeon','geai','faisan','moineau','mesange','paon','coq','cygne'],
     petales:['coquelicot','rose','pivoine','paquerette','tournesol','pissenlit','boutondor','bleuet','violette','myosotis','lavande','souci','iris','mauve'],
     feuilles:['chene','hetre','bouleau','tilleul','chataignier','saule','houx','ortie','erable','lierre','frene','trefle','sapin','fougere'],
-    grains:['suie','charbon','poudre','poivre','pavot','limaille','ardoise','terre','argile','sciure','rouille','cannelle','tuile','brique','sable','sel','cendre','farine','or','laiton','mica','verre','bardane','pollenlav','pollenpin','pollenpis']
+    grains:['suie','charbon','poudre','poivre','pavot','limaille','ardoise','terre','argile','sciure','rouille','cannelle','tuile','brique','sable','sel','cendre','farine','or','laiton','mica','verre','vertdegris','soufre','bardane','pollenlav','pollenpin','pollenpis']
   }
 };
 function contenuCasier(k){ return LISTES[S.niveau][k]; }
@@ -140,7 +140,45 @@ var OBJETS = {
   /* la grande plume noire */
   plume:{tiroir:'plumes', bon:'oie', scene:'plume', requis:['plume', 'pollen'], bete:'acarien', savoir:'Une plume d\'oie… teinte en noir ! Autrefois, on écrivait avec.'},
   pollen:{de:'plume', nom:'le grain jaune', tiroir:'grains', bon:'pollenlav', coul:'#e8c84a', savoir:'Chaque fleur a son pollen, avec sa forme à elle.'},
-  encre:{de:'plume', nom:'l\'eau noircie', liquide:true, coul:'#3b3340', cibles:['mure', 'noix'], savoir:'Un noir cache souvent plusieurs couleurs.'}
+  encre:{de:'plume', nom:'l\'eau noircie', liquide:true, coul:'#3b3340', cibles:['mure', 'noix'], savoir:'Un noir cache souvent plusieurs couleurs.'},
+
+  /* ===== L'enquête 2 (Romain, 11 novembre) : des flacons posés sur le cuir (forme:'flacon', liquide), une poudre, deux pièces ===== */
+  /* l'eau de la rivière : le coquelicot (bandes), des bouts de pétales (loupe), de la farine (l'iode la fait virer au bleu-noir),
+     des paillettes de cuivre (la flamme devient verte : en plus, une note) ; une puce d'eau pour le plaisir */
+  eau_riviere:{forme:'flacon', liquide:true, cibles:['coquelicot'], scene:'goutte', bete:'daphnie', mite0:{x:600, y:560}, requis:['eau_riviere', 'petale_r', 'farine_r'],
+    savoir:'Le rouge du coquelicot change de couleur avec le vinaigre et le bicarbonate, comme le jus de chou rouge : c\'est un indicateur.'},
+  petale_r:{de:'eau_riviere', nom:'le bout de pétale', tiroir:'petales', bon:'coquelicot', coul:'#e8202a', fragment:true, savoir:'Le coquelicot est un pavot sauvage : ses pétales sont rouges, avec une tache noire tout en bas.'},
+  farine_r:{de:'eau_riviere', nom:'les grains blancs', tiroir:'grains', bon:'farine', coul:'#f4efe2', savoir:'La farine, c\'est du blé moulu. Elle est pleine d\'amidon.'},
+  cuivre_r:{de:'eau_riviere', nom:'la paillette verte', tiroir:'grains', bon:'vertdegris', coul:'#3aa88a', savoir:'Le vert-de-gris, c\'est la rouille du cuivre : il pousse sur les vieilles marmites et les vieux toits.'},
+  /* l'eau du lavoir (Romain, 8 h 58 : « rien qu'avec les analyses, il faut montrer toute la petite enquête ») : de la cendre (la lessive
+     des lavandières), des fibres de coton (un tissu acheté : le coton vient de loin), le bois de Brésil (une teinture de marchand, pas chère,
+     qui part au lavage), et des poils d'âne (les tissus ont voyagé à dos d'âne : celui de Fortuné, jamais nommé) */
+  eau_lavoir:{forme:'flacon', liquide:true, cibles:['bresil'], scene:'goutte', requis:['eau_lavoir', 'fibre_l', 'cendre_l'],
+    savoir:'Le bois de Brésil teint vite et pas cher… mais sa couleur s\'en va au lavage.'},
+  fibre_l:{de:'eau_lavoir', nom:'les petits fils blancs', tiroir:'fils', bon:'coton', coul:'#f6f4ee', savoir:'Le coton ne pousse pas chez nous : il vient de pays chauds, très loin. Ce tissu a été acheté, pas tissé ici.'},
+  cendre_l:{de:'eau_lavoir', nom:'la poussière grise', tiroir:'grains', bon:'cendre', coul:'#b8b4b0', savoir:'Autrefois, on lavait le linge avec de la cendre de bois : c\'était la lessive !'},
+  poils_l:{de:'eau_lavoir', nom:'le poil gris', tiroir:'poils', bon:'ane', coul:'#8c8378', savoir:'Un poil d\'âne : épais et raide. Ces tissus ont voyagé à dos d\'âne…'},
+  /* le reste de colorant de l'alambic : les mêmes bandes que la rivière, et des bouts de pétales */
+  colorant:{forme:'flacon', liquide:true, cibles:['coquelicot'], coul:'#9a1020', scene:'goutte', requis:['colorant', 'petale_c'],
+    savoir:'Deux bandelettes qui ont les mêmes bandes : c\'est le même colorant.'},
+  petale_c:{de:'colorant', nom:'le bout de pétale', tiroir:'petales', bon:'coquelicot', coul:'#e8202a', fragment:true, savoir:'Le coquelicot est un pavot sauvage : ses pétales sont rouges, avec une tache noire tout en bas.'},
+  /* la poudre du pot noir (Romain, 8 h 58 : « tu complexifies, tu donnes des trucs réels ») : de la poudre noire (loupe), du soufre
+     (la flamme bleue qui pique le nez), du charbon de bois (on voit encore les trous du bois), un brin de laine noire feutrée (comme une cape) ;
+     l'eau chaude en fait sortir un rouge (bandes : coquelicot). Jamais de recette ni de quantités. */
+  poudre:{forme:'tas', couls:['#1b1b1f', '#3a3d42', '#c8202a', '#e8c830', '#3a3d42'], tiroir:'grains', bon:'poudre', scene:'poudre', requis:['poudre', 'rouge_p', 'soufre_p'],
+    savoir:'La poudre noire, c\'est elle qui fait partir les feux d\'artifice.'},
+  rouge_p:{de:'poudre', nom:'l\'eau rougie', liquide:true, cibles:['coquelicot'], savoir:'Le même rouge que la rivière : quelqu\'un a mêlé ce colorant à la poudre.'},
+  soufre_p:{de:'poudre', nom:'les grains jaunes', tiroir:'grains', bon:'soufre', coul:'#e8c830', savoir:'Le soufre est jaune ; il brûle avec une petite flamme bleue. On en trouve près des volcans.'},
+  charbon_p:{de:'poudre', nom:'le morceau noir', tiroir:'grains', bon:'charbon', coul:'#1b1b1f', savoir:'Le charbon de bois, c\'est du bois cuit sans air : on y voit encore les petits trous du bois.'},
+  laine_p:{de:'poudre', nom:'le brin noir', tiroir:'fils', bon:'feutree', coul:'#1c1a22', noir:true, savoir:'De la laine feutrée, épaisse et serrée : on en fait les manteaux… et les capes.'},
+  /* les deux pièces d'or : de l'or (loupe), la même fêlure au microscope ; de la farine sur celle de la boulangerie,
+     une tache de colorant sur celle du moulin (l'eau chaude la fait fondre : bandes, coquelicot) */
+  piece_pain:{forme:'piece', tiroir:'grains', bon:'or', scene:'piece', voirMicro:true, requis:['piece_pain', 'farine_p'],
+    savoir:'L\'or ne rouille jamais : une pièce d\'or reste brillante pendant des siècles.'},
+  farine_p:{de:'piece_pain', nom:'la poussière blanche', tiroir:'grains', bon:'farine', coul:'#f4efe2', savoir:'La farine, c\'est du blé moulu. Elle est pleine d\'amidon.'},
+  piece_moulin:{forme:'piece', tiroir:'grains', bon:'or', scene:'piece', voirMicro:true, requis:['piece_moulin', 'rouge_m'],
+    savoir:'L\'or ne rouille jamais : une pièce d\'or reste brillante pendant des siècles.'},
+  rouge_m:{de:'piece_moulin', nom:'l\'eau rougie', liquide:true, cibles:['coquelicot'], savoir:'Le même rouge que la rivière !'}
 };
 /* Ce que l'Alchimiste a reçu, dans l'ordre d'arrivée : chacun à sa place numérotée sur le carré de cuir (quatre places) */
 var CUIRS = ['fil', 'poils', 'plume'];
@@ -148,7 +186,9 @@ function surCuir(t){ return !!t && CUIRS.indexOf(t) >= 0; }
 function rangCuir(t){ return Math.max(0, CUIRS.indexOf(t)); }
 function dossierDe(t){ return surCuir(t) ? t : ((OBJETS[t] || {}).de || null); }
 function nomObjet(t){ return surCuir(t) ? 'l\'échantillon n° ' + (rangCuir(t) + 1) : OBJETS[t].nom; }
-function liqDe(d){ for(var k in OBJETS) if(OBJETS[k].de === d && OBJETS[k].liquide) return k; return null; }
+/* Le liquide d'un dossier : le dossier lui-même quand c'est un flacon posé sur le cuir (l'eau de la rivière, enquête 2),
+   sinon ce que l'eau chaude a fait sortir de l'échantillon */
+function liqDe(d){ if(OBJETS[d] && OBJETS[d].liquide && !OBJETS[d].de) return d; for(var k in OBJETS) if(OBJETS[k].de === d && OBJETS[k].liquide) return k; return null; }
 /* Le code qui s'écrit sur l'ardoise quand un dossier est bouclé (le jeu envoie les vrais ; ici, un exemple) */
 var CODES = {fil:{pour:'pour le Barde', formes:['🍄','🎩','🔑']}};
 /* Dans le jeu, pendant le tutoriel : les échantillons dont ce n'est pas encore le tour (ils attendent sur le cuir : « Plus tard ! ») */
@@ -180,7 +220,28 @@ var REA = {
   plume:rea({eau:{t:'L\'eau roule dessus en perles.'}, chaude:{t:'L\'eau chaude fait déteindre la plume : de l\'eau noircie !', cree:'encre', fx:'delave'}, flamme:{t:'Elle se recroqueville et sent le cheveu brûlé.'}}),
   pollen:rea({eau:{t:'Le grain flotte.'}, chaude:{t:'Le grain flotte.'}, flamme:{t:'Pfuit ! Il brûle en un éclair.'}}),
   /* (le jus de mûre change de couleur comme un vrai indicateur : rouge dans l'acide, bleu-vert avec le bicarbonate) */
-  encre:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir vire au rouge sombre.', fx:'vire', c:'#7a2a3a'}, bicar:{t:'Le noir vire au bleu-vert.', fx:'vire', c:'#2a5a5c'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau sombre.'}})
+  encre:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir vire au rouge sombre.', fx:'vire', c:'#7a2a3a'}, bicar:{t:'Le noir vire au bleu-vert.', fx:'vire', c:'#2a5a5c'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau sombre.'}}),
+  /* l'enquête 2 : de vraies réactions (le rouge du coquelicot et celui du bois de Brésil changent de couleur avec l'acide et la base ;
+     l'iode devient bleu-noir avec l'amidon ; le cuivre colore la flamme en vert ; l'or ne craint ni l'acide ni le feu) */
+  eau_riviere:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le rouge devient encore plus vif.', fx:'vire', c:'#ff2a3a'}, bicar:{t:'Le rouge vire au bleu-violet !', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rouge.'}}),
+  petale_r:rea({eau:{t:'Le bout de pétale flotte.'}, flamme:{t:'Il noircit et se ratatine.'}}),
+  farine_r:rea({eau:{t:'Les grains se mouillent et collent : on dirait de la pâte.'}, chaude:{t:'Ça épaissit, comme une sauce.'}, iode:{t:'L\'iode devient bleu-noir sur les grains ! Il y a de l\'amidon.', fx:'vire', c:'#1e2050'}, flamme:{t:'Ça grille et ça sent le pain brûlé.'}}),
+  cuivre_r:rea({vinaigre:{t:'Le vinaigre devient tout bleu-vert.', fx:'vire', c:'#3aa88a'}, flamme:{t:'La flamme devient toute verte ! C\'est la couleur du cuivre.', verte:true, trouve:'cuivre_r'}}),
+  eau_lavoir:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le rose vire à l\'orangé.', fx:'vire', c:'#f08a4a'}, bicar:{t:'Le rose vire au violet !', fx:'vire', c:'#8a3a8a'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rose.'}}),
+  fibre_l:rea({eau:{t:'Les fils boivent l\'eau.'}, flamme:{t:'Ils brûlent vite, comme du papier, et sentent le papier brûlé : c\'est une plante, pas un poil de bête.'}}),
+  cendre_l:rea({eau:{t:'L\'eau devient un peu glissante, comme du savon.'}, vinaigre:{t:'De toutes petites bulles !', fx:'bulles'}, flamme:{t:'Rien : la cendre a déjà brûlé.'}}),
+  poils_l:rea({eau:{t:'L\'eau glisse sur le poil.'}, flamme:{t:'Il grésille et sent le cheveu brûlé : c\'est un poil de bête.'}}),
+  soufre_p:rea({eau:{t:'Les grains jaunes flottent : ils n\'aiment pas l\'eau.'}, flamme:{t:'Une toute petite flamme bleue ! Et ça pique le nez, comme une allumette qu\'on craque.', bleue:true}}),
+  charbon_p:rea({eau:{t:'Le morceau flotte : il est plein de petits trous remplis d\'air.'}, iode:{t:'L\'orange de l\'iode pâlit : le charbon l\'avale !', fx:'pali'}, flamme:{t:'Il rougeoie tout doucement, sans flamme.', braise:true}}),
+  laine_p:rea({eau:{t:'L\'eau glisse sur le brin.'}, flamme:{t:'Il se recroqueville et sent le cheveu brûlé : c\'est de la laine.'}}),
+  colorant:rea({eau:{t:'Il devient plus pâle : il était très concentré.'}, vinaigre:{t:'Le rouge devient encore plus vif.', fx:'vire', c:'#ff2a3a'}, bicar:{t:'Le rouge vire au bleu-violet, comme l\'eau de la rivière !', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse une croûte rouge.'}}),
+  petale_c:rea({eau:{t:'Le bout de pétale flotte.'}, flamme:{t:'Il noircit et se ratatine.'}}),
+  poudre:rea({eau:{t:'La poudre flotte, et l\'eau rosit un peu autour.'}, chaude:{t:'L\'eau chaude devient toute rouge : un colorant était mêlé à la poudre !', cree:'rouge_p'}, flamme:{t:'Fffft ! Elle fuse d\'un coup, avec une grosse fumée rouge !', fumeeRouge:true}}),
+  rouge_p:rea({eau:{t:'Elle devient plus pâle.'}, bicar:{t:'Le rouge vire au bleu-violet.', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rouge.'}}),
+  piece_pain:rea({eau:{t:'L\'eau ruisselle sur la pièce : rien ne change.'}, vinaigre:{t:'Rien ! Le vinaigre n\'attaque pas l\'or.'}, iode:{t:'Quelques points deviennent bleu-noir sur la pièce : il y a de l\'amidon collé dessus.'}, flamme:{t:'Elle chauffe, mais elle reste toute brillante : l\'or ne noircit pas au feu.'}}),
+  farine_p:rea({eau:{t:'La poussière se mouille et colle : on dirait de la pâte.'}, iode:{t:'L\'iode devient bleu-noir ! Il y a de l\'amidon.', fx:'vire', c:'#1e2050'}, flamme:{t:'Ça grille et ça sent le pain brûlé.'}}),
+  piece_moulin:rea({eau:{t:'L\'eau froide ne fait rien à la tache rouge.'}, chaude:{t:'La tache rouge fond dans l\'eau chaude : de l\'eau rougie !', cree:'rouge_m'}, vinaigre:{t:'Rien ! Le vinaigre n\'attaque pas l\'or.'}, flamme:{t:'Elle chauffe, mais elle reste toute brillante : l\'or ne noircit pas au feu.'}}),
+  rouge_m:rea({eau:{t:'Elle devient plus pâle.'}, bicar:{t:'Le rouge vire au bleu-violet.', fx:'vire', c:'#6a3aa8'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau rouge.'}})
 };
 /* Le test des couleurs, comme dans un vrai labo : une goutte du liquide sur une bandelette de papier buvard, le pied dans un peu d'alcool.
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
@@ -190,6 +251,8 @@ var TEINTES = [
   {k:'coquelicot', nom:'coquelicot', c:'#e8343c', b:[{c:'#e8343c', y:.56, h:.09}, {c:'#8a3a9a', y:.26, h:.07}]},
   {k:'betterave', nom:'betterave', c:'#9c2257', b:[{c:'#f0c838', y:.78, h:.06}, {c:'#b0206a', y:.50, h:.10}]},
   {k:'cochenille', nom:'cochenille', c:'#c9306a', b:[{c:'#c9306a', y:.33, h:.13}]},
+  /* le bois de Brésil (enquête 2, l'eau du lavoir) : une vraie teinture rouge pas chère, qui part au lavage */
+  {k:'bresil', nom:'bois de Brésil', c:'#c2305a', b:[{c:'#f0b040', y:.84, h:.05, a:.6}, {c:'#d8406a', y:.40, h:.10}]},
   {k:'mure', nom:'mûres', c:'#4a2a5c', b:[{c:'#7a3aa0', y:.62, h:.08}, {c:'#3a2a6a', y:.18, h:.09}]},
   {k:'oignon', nom:'pelure d\'oignon', c:'#d98a2c', b:[{c:'#e8b830', y:.80, h:.07}, {c:'#a8642a', y:.14, h:.07}]},
   {k:'safran', nom:'safran', c:'#e8b820', b:[{c:'#f0a820', y:.86, h:.11}]},
@@ -202,12 +265,16 @@ function ciblesLiq(){ var l = liqDe(S.dc); return l ? OBJETS[l].cibles : []; }
 /* Les bandes de la bandelette à analyser, du haut vers le bas, avec l'ingrédient qui les explique */
 function bandesMelange(){ var l = []; ciblesLiq().forEach(function(k){ teinte(k).b.forEach(function(b){ l.push({k:k, y:b.y, h:b.h, c:b.c}); }); }); return l.sort(function(a, b){ return b.y - a.y; }); }
 var TXT = {trop:'Trop petit : zoome !', pris:'Dans la coupelle !',
-  betes:{acarien:'L\'acarien file se cacher !', puce:'Une puce ! Elle saute et se cache dans les poils.'}};
+  betes:{acarien:'L\'acarien file se cacher !', puce:'Une puce ! Elle saute et se cache dans les poils.', daphnie:'Une puce d\'eau ! Elle file d\'un coup de rame.'}};
 /* Ce que le microscope apprend, à chaque grossissement (dit une fois, quand on y arrive ; jamais le nom de la chose) */
 var SAVOIR_MICRO = {
   fibres:{40:'Des écailles, comme les tuiles d\'un toit !'},
   poils:{40:'Au milieu de chaque poil, un petit canal.', 100:'Les écailles pointent toujours vers le bout du poil.'},
-  plume:{40:'Chaque brin porte de plus petits brins encore.', 100:'De tout petits crochets : la plume se referme comme une fermeture éclair !'}
+  plume:{40:'Chaque brin porte de plus petits brins encore.', 100:'De tout petits crochets : la plume se referme comme une fermeture éclair !'},
+  /* l'enquête 2 */
+  goutte:{40:'Dans une seule goutte, il y a plein de choses : des bouts de plantes, des grains…', 100:'Une goutte de rivière est pleine de toutes petites bêtes !'},
+  poudre:{40:'Des grains noirs… et, mêlés à eux, des grains rouges.'},
+  piece:{10:'Une couronne, et tout autour, une ronde de petites étoiles.', 40:'Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui a frappé la pièce était fêlé.'}
 };
 
 /* ============ État ============
@@ -218,15 +285,17 @@ function D(){ return S.dos[S.dc] || VIDE; }
 function neuf(niveau){
   S = {niveau:niveau, sel:null, dc:CUIRS[0] || null, dos:{}, barres:{}, flair:{}, tiroir:null, casier:null, essai:null, trouves:{}, finis:{}, dits:{}, codeEcrit:{}, teinte:null, mode:null,
        zoom:10, cx:500, cy:500, occupe:false, tirP:{g:0, d:0}};
-  CUIRS.forEach(function(d){ S.dos[d] = {coupes:[], items:genItems(d), mite:{x:880, y:140}, mix:[], bande:0, delave:false}; });
+  CUIRS.forEach(function(d){ S.dos[d] = {coupes:[], items:genItems(d), mite:OBJETS[d].mite0 ? {x:OBJETS[d].mite0.x, y:OBJETS[d].mite0.y} : {x:880, y:140}, mix:[], bande:0, delave:false}; });   /* (mite0 : la daphnie part du milieu de la goutte) */
 }
 function couleurDe(liste){ var acc = [0,0,0]; liste.forEach(function(k){ var c = hexRgb(teinte(k).c); for(var j=0;j<3;j++) acc[j] += c[j]; }); return rgbHex(acc.map(function(v){ return v/liste.length; })); }
 function couleurLiq(t){ var o = OBJETS[t] || {}; return o.coul || couleurDe(o.cibles || []); }
 /* Un dossier est bouclé quand tout ce qu'il demande est reconnu */
 function dossierBoucle(d){ return !!d && (OBJETS[d].requis || [d]).every(function(t){ return !!S.trouves[t]; }); }
 /* Ce qu'on garde d'une fois sur l'autre (le jeu le range dans la sauvegarde) */
+/* (le cuir n'a que quatre places : un dossier qui n'y est pas cette fois-ci garde ce qu'on y avait fait, tel quel) */
+var DOS_AILLEURS = {};
 function exporter(){
-  var e = {trouves:S.trouves, barres:S.barres, finis:S.finis, dits:S.dits, dos:{}};
+  var e = {trouves:S.trouves, barres:S.barres, finis:S.finis, dits:S.dits, dos:JSON.parse(JSON.stringify(DOS_AILLEURS))};
   CUIRS.forEach(function(d){ var x = S.dos[d], pris = []; [10, 40, 100].forEach(function(z){ x.items[z].forEach(function(it, i){ if(it.pris) pris.push(z + ':' + i); }); });
     e.dos[d] = {coupes:x.coupes, pris:pris, mix:x.mix, bande:x.bande >= 1 ? 1 : 0, delave:x.delave}; });
   return JSON.parse(JSON.stringify(e));
@@ -234,6 +303,7 @@ function exporter(){
 function importer(e){
   if(!e || typeof e !== 'object') return;
   ['trouves', 'barres', 'finis', 'dits'].forEach(function(k){ if(e[k] && typeof e[k] === 'object') S[k] = JSON.parse(JSON.stringify(e[k])); });
+  DOS_AILLEURS = {}; Object.keys(e.dos || {}).forEach(function(d){ if(CUIRS.indexOf(d) < 0) DOS_AILLEURS[d] = e.dos[d]; });
   CUIRS.forEach(function(d){ var x = S.dos[d], y = (e.dos || {})[d]; if(!y) return;
     if(Array.isArray(y.coupes)) x.coupes = y.coupes.filter(function(c){ return !c || OBJETS[c.t]; });
     (y.pris || []).forEach(function(k){ var q = String(k).split(':'), it = (x.items[q[0]] || [])[+q[1]]; if(it) it.pris = true; });

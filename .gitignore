@@ -21,3 +21,5 @@ jeu/test/labo/
 jeu/test/massif/
 # les captures du test de l'écran du héros (refaites à chaque fois)
 jeu/test/heros/
+# les captures du test du labo de l'enquête 2 (refaites à chaque fois)
+jeu/test/labo-e2/
