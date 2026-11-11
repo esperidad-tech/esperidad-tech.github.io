@@ -425,7 +425,7 @@ var D = {};
 
 /* ===================================================================== 1. LES HÉROS (essai : ne pas changer) */
 D.HEROS = {
-  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['etudier', 'rune', 'bouclier'], sac:null},
+  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
   pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
@@ -436,7 +436,10 @@ D.VISEE = {pisteur:6, alchimiste:2.5, sage:1.5};       /* les monstres visent pl
 /* ===================================================================== 2. LES GESTES
    vise : 'bete' (un monstre), 'devant' (les bêtes à portée de main), 'heros' (un ami debout), 'salle' (pas de cible) */
 D.GESTES = {
-  etudier:{ic:'🔍', nom:'Étudier', d:'un code pour le Sage', vise:'bete'},
+  /* Romain, 11 novembre (9 h 26) : depuis que tout le carnet de l'aventurier est ouvert, « Étudier » ne sert plus. À sa place,
+     la rune de l'œil : le Sage voit, pour ce tour ET le suivant, qui chaque monstre va frapper et combien. Sans elle, on ne
+     sait pas qui sera frappé. */
+  oeil:{ic:'👁️', nom:'Rune de l\'œil', d:'qui sera frappé ?', vise:'salle'},
   rune:{ic:'✨', nom:'Rune de lumière', d:'une vive lumière', vise:'bete'},
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
   louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
@@ -455,7 +458,8 @@ D.GESTES = {
 D.RECETTES = {
   feu:{petit:'Feu', nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
   fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:false, pouvoir:'nuage', coul:'#aab4d2'},
-  huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse…', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630'},
+  /* (libere : lancée sur un ami pris dans une toile, elle le libère tout de suite — Romain, 11 novembre : « il y a toujours un contre ») */
+  huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse… Et sur un ami pris dans une toile, elle le libère.', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630', libere:'entoile'},
   colle:{nom:'Colle', d:'pattes collées', long:'Les pattes restent collées au sol.', vise:'bete', fleche:true, pouvoir:'colle', coul:'#ece4d0'},
   acide:{nom:'Acide', d:'ronge le fer', long:'Il ronge le fer et la rouille.', vise:'bete', fleche:true, pouvoir:'acide', coul:'#9be04a'},
   baume:{nom:'Baume', d:'soigne beaucoup', long:'Il soigne beaucoup un ami.', vise:'heros', fleche:false, soin:40, coul:'#5fd08a'},
@@ -478,7 +482,7 @@ D.CHIFFRES = {
   /* les autres coups sur un point faible ouvert */
   ouvert:{louche:10, feu:30, acide:25},
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
-  bouclier:0.5,                            /* la part des dégâts qui passe à travers le bouclier de runes */
+  bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier de runes (il en arrête 75 % : Romain, 11 novembre) */
   herbes:20,
   amulette:30,                             /* le héros qui tombe se relève avec 30 (une fois par donjon) */
   repos:0.5,                               /* le feu de camp rend la moitié des PV max */
@@ -515,8 +519,8 @@ D.OBJETS = {
   /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
      discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
   /* Romain, 11 novembre (8 h 03) : « qu'il y ait un livre à l'entrée du puits ou de la crypte » — le journal de l'aventurier.
-     Le Sage tape son code : le carnet entre dans son Grand Livre ; chaque monstre étudié y décolle une page. */
-  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera chaque monstre étudié.'},
+     Le Sage tape son code : le carnet entre dans son Grand Livre, toutes les pages ouvertes. */
+  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera tous les monstres du donjon.'},
   'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
@@ -645,8 +649,9 @@ D.MONSTRES = {
     nom:'Le Roi des rats', le:'le Roi des rats', rang:'elite', pv:220, module:'roirats', fin:'fuit',
     attaques:{
       grouillement:{degats:16, cibles:'tous', apres:[['etat', 'etale', 'geste']]},
+      ruee:{degats:70, cibles:'un', prepare:true, anim:'grouillement'},                                    /* le coup préparé du Roi : tous sur le même */
       charge:{degats:30, cibles:'un'}
-    }, rythme:['grouillement'],
+    }, rythme:['grouillement', 'ruee', 'grouillement'],
     passeSi:['noeud'], tombe:[], blinde:['boule'],
     reactions:{
       /* le combo : le nuage (ils tirent chacun de leur côté, le nœud se tend), PUIS le bruit */
@@ -668,7 +673,10 @@ D.MONSTRES = {
   /* ---------- le Gardien de rouille (élite) ---------- */
   gardien:{
     nom:'Le Gardien de rouille', le:'le Gardien', rang:'elite', pv:280, module:'gardien', fin:'meurt',
-    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage']}}, rythme:['poing'],
+    /* Romain, 11 novembre : les élites et le boss PRÉPARENT parfois un coup (prepare:true) : un tour sans rien faire, que tout
+       le monde voit, puis un coup « extrêmement puissant », qui met presque un héros à terre. Seule la rune de l'œil dit sur
+       qui il tombera ; seul le bouclier (75 %) limite la casse. anim : l'animation du module qui sert pour ce coup. */
+    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage']}, marteau:{degats:85, cibles:'un', prepare:true, anim:'poing', plusSi:{rougeoie:10}}}, rythme:['poing', 'marteau', 'poing'],
     passeSi:[], tombe:[],
     reactions:{
       /* le combo : d'abord la plaque (elle reste cassée), ensuite le cœur (la lumière, à chaque tour) */
@@ -695,8 +703,9 @@ D.MONSTRES = {
     nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true,
     attaques:{
       langue:{degats:30, cibles:'un', avale:true},
-      saut:{degats:28, cibles:'tous', doubleSi:['gonfle'], consomme:'gonfle'}
-    }, rythme:['langue', 'saut'],
+      saut:{degats:28, cibles:'tous', doubleSi:['gonfle'], consomme:'gonfle'},
+      ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut'}                               /* le coup préparé de Bourbe : il retombe de tout son poids */
+    }, rythme:['langue', 'ecrasement', 'saut'],
     passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
     reactions:{
       lumiere:[{si:{un:['dos', 'sous']}, fait:[]},
@@ -797,8 +806,9 @@ D.CODES = {
 };
 
 /* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER
-   L'étude d'un monstre donne un code (dans le journal du Pisteur). Le Sage le tape sur sa tablette : il voit le croquis du
-   monstre et la page d'un vieux carnet — le journal d'un aventurier passé par là avant eux.
+   Le carnet d'un aventurier se ramasse à l'entrée du donjon. Le Sage tape son code sur sa tablette : il y trouve, pour chaque
+   monstre, un croquis et une page du carnet — le journal de quelqu'un qui est passé par là avant eux. (Depuis le 11 novembre,
+   plus d'« étude » en combat : toutes les pages sont là dès le début.)
    Romain, 10 novembre (20 h 55 à 21 h 28) et 11 novembre (8 h 02, validé) : PAS d'énigmes à questions (« qui aurait écrit des
    énigmes ? »). Un récit : « ses déboires, ses réussites ». L'aventurier n'a ni pouvoirs ni les armes des héros : sa lampe à
    huile, sa gamelle, son feu, ce qu'il trouve sur place. Il raconte ce qu'il a vécu, il ne décrit pas les étapes, il ne dit
@@ -846,13 +856,6 @@ D.LIVRE = {
     'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
-/* « étudié » dans partie.livre : ce nombre (la simulation y lit « l'équipe sait tout de ce monstre ») */
-D.ETUDIE = 4;
-D.LIVRE_VIDE = 'Le journal est encore vide. Pendant un combat, le Sage peut étudier un monstre.';
-D.LIVRE_COMPLET = 'Le Sage a déjà étudié ce monstre.';
-/* après 2 fuites (ou défaites) dans la même salle, le journal offre le code de la bête la plus forte de la salle que le Sage n'a pas étudiée */
-D.FUITES_POUR_UNE_LIGNE = 2;
-
 /* ===================================================================== 11. LES REFUS, en deux mots */
 D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
@@ -860,7 +863,7 @@ D.MOTS = {
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', etudie:'Déjà étudié'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;
@@ -3459,7 +3462,7 @@ function livre(guide){
     else html += '<button type="button" class="page blanche" data-page="' + i + '"><b>Page blanche</b><small>' + nom + '</small><i aria-hidden="true">✦</i></button>';
   }
   html += '</div>';
-  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre étudié */
+  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre */
   var betes = monstresEtudies();                        /* (tout le carnet dès qu'il est là : Romain, 11 novembre) */
   html += '<div class="livre-betes"><h3>📓 Le vieux carnet</h3>' +
     (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
@@ -3524,7 +3527,7 @@ function voirPage(n, ecrire){
    Les codes (pour le Sage) et leurs petites scènes
    ====================================================================== */
 function unCode(){
-  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi, ou ton héros a étudié un monstre ? Tape les trois symboles qu’il te montre.',
+  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi ? Tape les trois symboles qu’il te montre.',
     deja:function(id){ return !!S.codes[id]; },
     recevoir:function(id){ S.codes[id] = true; garder(); scene(id); }});
 }

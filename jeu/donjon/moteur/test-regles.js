@@ -39,7 +39,7 @@ function finir(c, sauf){
   var ev = [];
   c.aJouer().forEach(function(h){
     if(c.h[h].avale){ ev = ev.concat(c.jouer(h, {geste:'chatouiller'})); return; }
-    if(h === 'sage'){ var v = c.vivants(); ev = ev.concat(c.jouer(h, {geste:'etudier', cible:v[v.length - 1].id})); }
+    if(h === 'sage') c.h.sage.joue = true;                     /* (le Sage n'a plus de geste neutre : on le marque comme ayant joué) */
     else if(h === 'alchimiste') ev = ev.concat(c.jouer(h, {geste:'herbes', cible:c.visables()[0]}));
     else { var cb = c.ciblables(); if(cb.length) ev = ev.concat(c.jouer(h, {geste:'p:baume-absent', cible:cb[0].id})); }
   });
@@ -56,7 +56,7 @@ function pvHeros(c){ return D.EXPOSES.map(function(h){ return c.h[h].pv; }); }
    0. L'ESSAI : les règles de essai/src/jeu.js, recopiées sans l'affichage (l'ordre des tirages au hasard est le même)
    ===================================================================================================================== */
 function Essai(Rnd, sac){
-  var HER = {sage:{pv:90, gestes:['etudier', 'rune', 'bouclier']}, alchimiste:{pv:100, gestes:['louche', 'herbes']}, pisteur:{pv:120, gestes:['fleche', 'dague']}};
+  var HER = {sage:{pv:90, gestes:['rune', 'bouclier']}, alchimiste:{pv:100, gestes:['louche', 'herbes']}, pisteur:{pv:120, gestes:['fleche', 'dague']}};
   var ORDRE = ['sage', 'alchimiste', 'pisteur'], EXPOSES = ['pisteur', 'alchimiste', 'sage'], VISEE = {pisteur:6, alchimiste:2.5, sage:1.5};
   var MORSURE = 8, BRULURE = 4, RAT_PV = 40;
   var REC = {feu:{cible:'rat', fleche:true}, fumigene:{cible:'salle', fleche:false}, huile:{cible:'rat', fleche:true}, colle:{cible:'rat', fleche:true}, baume:{cible:'heros', fleche:false}, coeur:{cible:'sol', fleche:false}};
@@ -93,7 +93,6 @@ function Essai(Rnd, sac){
   }
   function faire(h, g, c){
     var r = c.rat, cible = c.heros;
-    if(g === 'etudier'){ E.livre = 1; return; }                 /* 10 novembre : une seule étude (elle donne le code du rat pour le Sage) */
     if(g === 'rune'){ if(!r.ouvert) r.ouvert = true; return; }
     if(g === 'bouclier'){ E.h[cible].bouclier = true; return; }
     if(g === 'louche'){ var d = devant(); blesser(d, d.ouvert ? 10 : 2); vivants().forEach(function(x){ x.enrage = true; }); return; }
@@ -112,7 +111,7 @@ function Essai(Rnd, sac){
     var n = r.enrage ? 2 : 1;
     for(var k = 0; k < n; k++){
       if(E.h[victime].sol){ var autre = EXPOSES.filter(function(x){ return !E.h[x].sol; })[0]; if(!autre) break; victime = autre; }
-      var s = E.h[victime], d = s.bouclier ? MORSURE / 2 : MORSURE;
+      var s = E.h[victime], d = s.bouclier ? Math.ceil(MORSURE * D.CHIFFRES.bouclier) : MORSURE;      /* (11 novembre : le bouclier arrête 75 %) */
       s.pv = Math.max(0, s.pv - d);
       if(s.pv <= 0) s.sol = true;
     }
@@ -136,7 +135,7 @@ function Essai(Rnd, sac){
   }
   this.recetteOk = function(h, id){ if(h === 'pisteur') return REC[id].fleche; if(id === 'coeur') return ORDRE.some(function(x){ return E.h[x].sol; }); return true; };
   this.typeCible = function(g){ return g.indexOf('p:') === 0 ? REC[g.slice(2)].cible : GES[g]; };
-  this.gestesDe = function(h){ var l = HER[h].gestes.filter(function(g){ return g !== 'etudier' || !E.livre; }), self = this; if(h !== 'sage') sac.forEach(function(id){ if(self.recetteOk(h, id)) l.push('p:' + id); }); return l; };
+  this.gestesDe = function(h){ var l = HER[h].gestes.slice(), self = this; if(h !== 'sage') sac.forEach(function(id){ if(self.recetteOk(h, id)) l.push('p:' + id); }); return l; };
   this.vivants = vivants; this.devant = devant; this.debout = debout; this.dispo = dispo;
   this.auSol = function(){ return ORDRE.filter(function(h){ return E.h[h].sol; }); };
   this.agir = function(h, g, c){
@@ -155,12 +154,12 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
   function photoEssai(es){
     var E = es.E;
     return JSON.stringify({h:D.ORDRE.map(function(h){ return [E.h[h].pv, E.h[h].sol, E.h[h].joue, E.h[h].bouclier]; }),
-      r:E.r.map(function(r){ return r.mort ? [0, true] : [r.pv, r.mort, r.ouvert, r.enrage, r.brule, r.colle, E.fin ? null : r.vise]; }), fin:E.fin, livre:E.livre, tour:E.fin ? 0 : E.tour});
+      r:E.r.map(function(r){ return r.mort ? [0, true] : [r.pv, r.mort, r.ouvert, r.enrage, r.brule, r.colle, E.fin ? null : r.vise]; }), fin:E.fin, tour:E.fin ? 0 : E.tour});
   }
   function photoRegles(c, p){
     return JSON.stringify({h:D.ORDRE.map(function(h){ var S = c.h[h]; return [S.pv, S.sol, S.joue, S.bouclier]; }),
       r:c.b.map(function(m){ return m.mort ? [0, true] : [m.pv, m.mort, m.ouvert !== 0, c.a(m, 'enrage'), c.a(m, 'brule'), c.a(m, 'colle'), m.plan && !c.fini() ? m.plan.cibles[0] : null]; }),
-      fin:c.fini(), livre:(p.livre.rat || 0) > 0 ? 1 : 0, tour:c.fini() ? 0 : c.tour});
+      fin:c.fini(), tour:c.fini() ? 0 : c.tour});
   }
   for(var graine = 1; graine <= 3000; graine++){
     var sac = SACS[graine % SACS.length], choix = R.alea(graine * 7 + 1);
@@ -171,10 +170,10 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
     while(!es.E.fin && n < 400){
       /* de temps en temps : les mêmes gestes sont permis, sur les mêmes cibles, des deux côtés */
       if(graine % 10 === 0) D.ORDRE.forEach(function(hh){
-        var peut = es.dispo().indexOf(hh) >= 0, base = {sage:['etudier', 'rune', 'bouclier'], alchimiste:['louche', 'herbes'], pisteur:['fleche', 'dague']}[hh];
+        var peut = es.dispo().indexOf(hh) >= 0, base = {sage:['rune', 'bouclier'], alchimiste:['louche', 'herbes'], pisteur:['fleche', 'dague']}[hh];
         var tous = base.concat(hh === 'sage' ? [] : sac.map(function(x){ return 'p:' + x; }));
         tous.forEach(function(g2){
-          var t2 = es.typeCible(g2), okG = peut && (g2.indexOf('p:') !== 0 || es.recetteOk(hh, g2.slice(2))) && (g2 !== 'etudier' || !es.E.livre);
+          var t2 = es.typeCible(g2), okG = peut && (g2.indexOf('p:') !== 0 || es.recetteOk(hh, g2.slice(2)));
           var cands = t2 === 'heros' || t2 === 'sol' ? D.ORDRE : ['b1', 'b2', 'b3'];
           if(g2 === 'louche' || g2 === 'p:fumigene') cands = [null];
           cands.forEach(function(x){
@@ -233,7 +232,7 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ev = jouer(c, 'sage', 'bouclier', 'pisteur');
   ev = c.tourMonstres();
   var d = tous(ev, 'degats', function(e){ return e.heros === 'pisteur'; });
-  ok(d.length === 6 && d.every(function(e){ return e.n === 4 && e.absorbe === 4 && e.bouclier; }), 'enragés, ils mordent deux fois ; le bouclier laisse passer la moitié (8 → 4)');
+  ok(d.length === 6 && d.every(function(e){ return e.n === 2 && e.absorbe === 6 && e.bouclier; }), 'enragés, ils mordent deux fois ; le bouclier arrête 75 % (8 → 2)');
   egal(r3.pv, 40 - 5 - 4 - 4, 'la brûlure continue au tour suivant');
   ok(c.vivants().every(function(m){ return c.a(m, 'enrage'); }) && c.a(r3, 'brule'), 'la rage et la brûlure restent d\'un tour à l\'autre');
   ok(!c.h.pisteur.bouclier, 'le bouclier s\'éteint à la fin du tour');
@@ -274,14 +273,19 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ev = jouer(c, 'alchimiste', 'p:coeur', 'sage');
   ok(!c.h.sage.sol && c.h.sage.pv === 40 && trouve(ev, 'releve').par === 'coeur', 'le Cœur vaillant relève avec 40 PV');
   c.h.pisteur.pv = 50;
-  ev = c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
-  ok(trouve(ev, 'livre').code === 'etude:rat' && t.p.livre.rat === D.ETUDIE, 'Étudier : le code du rat entre dans le journal (pour la tablette du Sage)');
+  /* la rune de l'œil (Romain, 11 novembre) : sans elle, on ne sait pas qui sera frappé */
+  ok(c.etat().vu === 0 && c.etat().betes.every(function(x){ return x.vise === null && x.suite === null; }), 'sans la rune de l\'œil, l\'écran ne sait pas qui les rats vont mordre');
+  egal(c.gestes('sage').map(function(g){ return g.geste; }), ['oeil', 'rune', 'bouclier'], 'les gestes du Sage : la rune de l\'œil (à la place d\'« Étudier »), la lumière, le bouclier');
+  ev = c.jouer('sage', {geste:'oeil'});
+  var oe = trouve(ev, 'oeil'), et = c.etat();
+  ok(oe && oe.jusque === c.tour + 1 && et.vu === 2 && et.betes.filter(function(x){ return !x.mort; }).every(function(x){ return x.vise && x.vise.cibles.length === 1 && x.vise.degats === 8 && x.suite && x.suite.cibles.length === 1; }),
+    'la rune de l\'œil : pour ce tour et le suivant, qui chaque rat va mordre, et combien (8)');
+  egal(c.refus('sage', 'oeil'), 'Déjà joué', '(le Sage a joué)');
+  var promis = {}; et.betes.forEach(function(x){ if(x.suite) promis[x.id] = x.suite.cibles[0]; });
   tourSuivant(c);
-  ev = jouer(c, 'alchimiste', 'herbes', 'pisteur');
-  egal(trouve(ev, 'soin').n, 20, 'les Herbes rendent 20');
-  egal(c.refus('sage', 'etudier', c.b[1].id), 'Déjà étudié', 'Étudier encore : refusé, il n\'y a plus de nouveau monstre (« Déjà étudié »)');
-  ok(c.gestes('sage').filter(function(g){ return g.geste === 'etudier'; })[0].permis === false, 'le geste Étudier est éteint tant qu\'il n\'y a pas de nouveau monstre');
-  tourSuivant(c);
+  et = c.etat();
+  ok(et.vu === 1 && et.betes.filter(function(x){ return !x.mort && x.vise; }).every(function(x){ return x.vise.cibles[0] === promis[x.id] && x.suite === null; }), 'au tour suivant, chaque rat vise bien celui que le Sage avait vu ; le tour d\'après n\'est plus montré');
+  egal(c.refus('sage', 'oeil'), null, 'la rune de l\'œil se relance (elle ne montrait plus que ce tour-ci)');
   var avant = c.h.pisteur.pv;
   ev = jouer(c, 'alchimiste', 'p:baume', 'pisteur');
   egal(trouve(ev, 'soin').n, Math.min(40, 120 - avant), 'le Baume rend 40 (sans dépasser le maximum)');
@@ -455,8 +459,6 @@ section('L\'araignée des caves et ses petites');
   ok(pt.mort, 'et un critique la bat');
   t.p.livre = {};
   tourSuivant(c);
-  ev = c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
-  egal(trouve(ev, 'livre').monstre, 'araignee', 'étudier une petite araignée, c\'est lire la page de l\'araignée');
 })();
 
 section('Le têtard');
@@ -469,6 +471,15 @@ section('Le têtard');
   ok(t1.mort, 'un coup de louche suffit aussi');
 })();
 
+/* Les tests qui suivent (élites, boss, objets, soins, fin de combat) datent d'avant les coups préparés : ils regardent les
+   combos et les réactions, pas le rythme. On les joue donc avec le rythme d'avant ; le coup préparé est testé à part, plus bas. */
+var RYTHMES = {gardien:D.MONSTRES.gardien.rythme, roirats:D.MONSTRES.roirats.rythme, bourbe:D.MONSTRES.bourbe.rythme};
+function sansGros(on){
+  D.MONSTRES.gardien.rythme = on ? ['poing'] : RYTHMES.gardien;
+  D.MONSTRES.roirats.rythme = on ? ['grouillement'] : RYTHMES.roirats;
+  D.MONSTRES.bourbe.rythme = on ? ['langue', 'saut'] : RYTHMES.bourbe;
+}
+sansGros(true);
 section('Les élites et le boss sont immunisés tant que le point faible est fermé');
 (function(){
   ['atelier', 'ossuaire', 'bassin'].forEach(function(salle){
@@ -527,7 +538,7 @@ section('Le Gardien de rouille');
   jouer(c, 'sage', 'bouclier', 'pisteur');
   ev = tourSuivant(c);
   var dg = trouve(ev, 'degats', function(e){ return e.bete === g.id; });
-  ok(dg.bouclier && dg.n === Math.ceil(POING / 2) && trouve(ev, 'special', function(e){ return e.nom === 'entrouvert'; }) && c.a(g, 'plaque-entrouverte'), 'sans potion : il frappe le bouclier (' + POING + ' → ' + Math.ceil(POING / 2) + '), sa plaque s\'entrouvre');
+  ok(dg.bouclier && dg.n === Math.ceil(POING * D.CHIFFRES.bouclier) && trouve(ev, 'special', function(e){ return e.nom === 'entrouvert'; }) && c.a(g, 'plaque-entrouverte'), 'sans potion : il frappe le bouclier (' + POING + ' → ' + Math.ceil(POING / 2) + '), sa plaque s\'entrouvre');
   ev = jouer(c, 'sage', 'rune', g);
   ok(g.ouvert !== 0 && !trouve(ev, 'touche').piege, 'au tour suivant, la lumière passe par la fente : ouvert');
   ev = jouer(c, 'pisteur', 'fleche', g);
@@ -576,8 +587,8 @@ section('Le Roi des rats');
   ok(!c.a(roi, 'etale') && trouve(ev, 'etat', function(e){ return e.nom === 'etale' && !e.on; }), 'un autre geste d\'abord : ils se regroupent, c\'est trop tard');
   ev = jouer(c, 'alchimiste', 'louche');
   var ch = trouve(ev, 'attaque', function(e){ return e.nom === 'charge'; });
-  ok(trouve(ev, 'touche', function(e){ return e.coup === 'bruit' && e.bete === roi.id; }).piege && ch && ch.cibles[0] === 'alchimiste' && trouve(ev, 'degats', function(e){ return e.heros === 'alchimiste'; }).n === Math.ceil(D.MONSTRES.roirats.attaques.charge.degats / 2),
-    'piège : le bruit au mauvais moment, ils chargent l\'Alchimiste (son bouclier en arrête la moitié)');
+  ok(trouve(ev, 'touche', function(e){ return e.coup === 'bruit' && e.bete === roi.id; }).piege && ch && ch.cibles[0] === 'alchimiste' && trouve(ev, 'degats', function(e){ return e.heros === 'alchimiste'; }).n === Math.ceil(D.MONSTRES.roirats.attaques.charge.degats * D.CHIFFRES.bouclier),
+    'piège : le bruit au mauvais moment, ils chargent l\'Alchimiste (son bouclier en arrête 75 %)');
 
   t = prep('ossuaire', {sac:['fumigene', 'colle', 'feu']}); c = t.c; roi = seul(c);
   jouer(c, 'alchimiste', 'p:fumigene');
@@ -846,32 +857,56 @@ section('La fin d\'un combat');
 })();
 
 function codeEtude(id){ return !!(CODES.CODES[id] && CODES.CODES[id].a === 'sage' && CODES.CODES[id].de === 'pisteur'); }
-section('Le Grand Livre');
+sansGros(false);
+section('Le journal de l\'aventurier, la rune de l\'œil, les coups préparés');
 (function(){
-  var t = prep('atelier'), c = t.c, p = t.p, g = bete(c, 'gardien'), ev, lus = [];
-  ev = c.jouer('sage', {geste:'etudier', cible:g.id}); lus.push(trouve(ev, 'livre'));
-  ok(lus[0] && lus[0].code === 'etude:gardien' && lus[0].nom === D.MONSTRES.gardien.nom && p.livre.gardien === 4, 'étudier le Gardien : son code entre dans le journal (toute sa page d\'un coup, sur la tablette du Sage)');
-  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = 90; });
-  egal(c.refus('sage', 'etudier', g.id), 'Déjà étudié', 'le Gardien une deuxième fois : « Déjà étudié »');
-  var ge = c.gestes('sage').filter(function(x){ return x.geste === 'etudier'; })[0];
-  ok(ge.permis && ge.cibles.length === 1 && c.bete(ge.cibles[0]).type === 'ratcuir', 'il reste un nouveau monstre : seul le rat cuirassé peut être étudié');
-  ok(R.etudie(p, 'gardien') && !R.etudie(p, 'ratcuir'), 'Regles.etudie dit quels monstres ont leur code');
-  ok(Object.keys(D.LIVRE).every(function(k){ return codeEtude('etude:' + k); }), 'chaque monstre du Grand Livre a son code d\'étude (donjon-codes.js), pour la tablette du Sage');
-  var gl = R.grandLivre(p);
-  egal(gl.map(function(x){ return [x.monstre, x.etudie, x.code]; }), [['ratcuir', false, null], ['gardien', true, 'etude:gardien']], 'le journal à afficher : une ligne par monstre rencontré (pas encore étudié pour le rat cuirassé, un code pour le Gardien)');
-  var mots = /\b(acide|givre|rune|louche|fumigène|fumigene)\b/i;        /* (la lampe à huile de l'aventurier et « les ailes collées » sont voulues par Romain) */
-  var fautes = [];
-  Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(l, i){
-    if(/^touche|\btouche[zr]? (le|la|sur)\b/i.test(l)) fautes.push(k + ' ' + i + ' : « Touche »');
-    if(mots.test(l)) fautes.push(k + ' ' + i + ' : nomme le geste ou la potion');
-  }); });
-  ok(fautes.length === 0, 'aucune ligne ne dit « Touche… » ni ne nomme la potion à utiliser' + (fautes.length ? ' — ' + fautes.join(' ; ') : ''));
-  ok(Object.keys(D.MONSTRES).every(function(k){ var cle = D.MONSTRES[k].livre || k; return D.LIVRE[cle] && D.LIVRE[cle].length >= 1; }), 'chaque monstre a sa page');
   /* le journal de l'aventurier (Romain, 11 novembre) : un récit, jamais une question, jamais le nom d'un geste, d'une potion ou d'un héros */
   var INTERDITS = ['?', 'rune', 'louche', 'fumigène', 'fiole', 'potion', 'acide', 'givre', 'baume', 'bouclier', 'flèche', 'sage', 'alchimiste', 'pisteur', 'lanterne', 'torche'];
   var trahies = []; Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(t, i){ INTERDITS.forEach(function(w){ if(t.toLowerCase().indexOf(w) >= 0) trahies.push(k + ' ' + i + ' : « ' + w + ' »'); }); }); });
   egal(trahies, [], 'le journal de l\'aventurier : pas de question, pas de nom de geste ni de potion, une seule lampe (à huile)');
   ok(Object.keys(D.LIVRE).every(function(k){ return D.LIVRE[k].length >= 1 && D.LIVRE[k].length <= 3 && D.LIVRE[k].every(function(t){ return t.length <= 290; }); }), 'chaque monstre a sa page : un à trois paragraphes courts');
+  ok(Object.keys(D.MONSTRES).every(function(k){ var cle = D.MONSTRES[k].livre || k; return D.LIVRE[cle] && D.LIVRE[cle].length >= 1; }), 'chaque monstre a sa page');
+  ok(D.HEROS.sage.gestes.indexOf('etudier') < 0 && !D.GESTES.etudier, 'plus de geste « Étudier » : tout le carnet est ouvert dès que le Sage l\'a');
+
+  /* les coups préparés (Romain, 11 novembre) : les élites et le boss seulement ; un tour sans rien faire, visible de tous, puis un coup très fort */
+  var gros = Object.keys(D.MONSTRES).filter(function(k){ var A = D.MONSTRES[k].attaques; return Object.keys(A).some(function(n){ return A[n].prepare; }); });
+  egal(gros.sort(), ['bourbe', 'gardien', 'roirats'], 'les coups préparés : les deux élites et le boss, personne d\'autre');
+  var t = prep('atelier', {sac:['acide', 'feu', 'baume'], hasard:[0.99]}), c = t.c, g = bete(c, 'gardien'), ev, k;
+  function tourBlanc(){ D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = D.HEROS[h].pv; c.h[h].joue = true; }); return c.tourMonstres(); }
+  ok(!c.etat().betes[1].prepare, 'le Gardien commence par un coup de poing : rien ne se prépare');
+  ev = tourBlanc();
+  ok(c.a(g, 'prepare') && c.etat().betes[1].prepare === 1 && c.etat().betes[1].vise === null && trouve(ev, 'etat', function(e){ return e.nom === 'prepare' && e.on; }), 'après son premier coup de poing, il prépare son coup : tout le monde le voit (mais pas sur qui)');
+  ev = c.jouer('sage', {geste:'oeil'});
+  var v = c.etat().betes[1];
+  ok(v.vise.prepare && v.vise.degats === 0 && v.vise.attaque === 'marteau' && v.suite.attaque === 'marteau' && !v.suite.prepare && v.suite.degats === 85 && v.suite.cibles.join() === v.vise.cibles.join(),
+    'la rune de l\'œil : ce tour il prépare, au tour suivant le marteau tombe (85) sur ' + v.suite.cibles[0]);
+  var proie = v.suite.cibles[0];
+  ev = tourBlanc();
+  ok(trouve(ev, 'prepare', function(e){ return e.bete === g.id; }) && !trouve(ev, 'degats', function(e){ return e.bete === g.id; }), 'pendant qu\'il prépare, le Gardien ne frappe pas');
+  egal(c.etat().betes[1].prepare, 2, 'au tour suivant, tout le monde voit que le coup va tomber (prepare : 2)');
+  var ea0 = null;
+  D.ORDRE.forEach(function(h){ c.h[h].joue = false; });
+  c.jouer('sage', {geste:'bouclier', cible:proie});
+  ev = tourBlanc();
+  var dm = trouve(ev, 'degats', function(e){ return e.bete === g.id; });
+  ea0 = trouve(ev, 'attaque', function(e){ return e.bete === g.id; });
+  ok(ea0 && ea0.nom === 'marteau' && ea0.anim === 'poing' && ea0.gros === true, 'l\'attaque dit quelle animation du module elle emprunte (marteau : celle du poing) et que c\'est un gros coup');
+  ok(dm && dm.heros === proie && dm.attaque === 'marteau' && dm.brut === 85 && dm.n === Math.ceil(85 * 0.25) && dm.bouclier && !c.a(g, 'prepare'), 'le marteau tombe sur celui que le Sage avait vu ; le bouclier en arrête 75 % (85 → ' + (dm ? dm.n : '?') + ')');
+  ok(85 >= D.HEROS.sage.pv - 10 && 85 < D.HEROS.pisteur.pv, 'sans bouclier, ce coup met presque un héros à terre (85 pour 90 à 120 points de vie)');
+  ev = tourBlanc();
+  ok(trouve(ev, 'attaque', function(e){ return e.bete === g.id; }).nom === 'poing', 'ensuite il reprend ses poings');
+
+  /* l'huile libère un ami pris dans une toile (Romain : « il y a toujours un contre ») */
+  t = prep('toiles', {sac:['huile', 'feu', 'baume'], hasard:[0.3]}); c = t.c;
+  tourSuivant(c);
+  var pris = D.ORDRE.filter(function(h){ return c.h[h].entoile; })[0];
+  ok(!!pris && c.refus(pris, pris === 'sage' ? 'rune' : pris === 'pisteur' ? 'fleche' : 'louche', c.vivants()[0].id) === 'Entoilé !', 'l\'araignée entoile un héros (' + pris + ') : il ne peut plus jouer');
+  if(pris && pris !== 'alchimiste'){
+    var gh = c.gestes('alchimiste').filter(function(x){ return x.geste === 'p:huile'; })[0];
+    ok(gh.amis && gh.amis.join() === pris && gh.cibles.indexOf(pris) >= 0, 'l\'huile peut se lancer sur lui');
+    ev = c.jouer('alchimiste', {geste:'p:huile', cible:pris});
+    ok(!c.h[pris].entoile && trouve(ev, 'etat', function(e){ return e.heros === pris && e.nom === 'entoile' && e.on === false && e.par === 'huile'; }) && c.aJouer().indexOf(pris) >= 0, 'l\'huile le libère tout de suite : il peut jouer ce tour');
+  }
 })();
 
 section('Les sauvegardes, la fuite, les codes');
@@ -883,7 +918,7 @@ section('Les sauvegardes, la fuite, les codes');
   ok(trouve(ev, 'combat').salle === 'rats', 'entrer dans la salle des rats : un combat à lancer');
   var c = R.combat(p, 'rats', {alea:ecrit()});
   egal(R.code(p, 'sauve:1')[0].mot, 'Pas en combat !', 'pas de sauvegarde en combat');
-  c.jouer('sage', {geste:'etudier', cible:'b1'});
+  c.h.sage.joue = true;
   c.b.forEach(function(m){ m.pv = 1; });
   c.jouer('pisteur', {geste:'fleche', cible:'b1'}); c.jouer('alchimiste', {geste:'louche'});
   c.tourMonstres();
@@ -901,13 +936,12 @@ section('Les sauvegardes, la fuite, les codes');
   R.entrer(p, 'reserve'); R.prendre(p, 'fleches-lourdes');
   R.entrer(p, 'canaux');
   c = R.combat(p, 'canaux', {alea:ecrit()});
-  c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
+  c.h.sage.joue = true;
   c.jouer('alchimiste', {geste:'p:feu', cible:c.b[0].id});
   c.jouer('pisteur', {geste:'fleche', cible:c.b[0].id});
   c.tourMonstres();
-  ok(p.livre.chauvesouris === D.ETUDIE && p.livre.rat === D.ETUDIE, 'le journal s\'écrit tout de suite, même en plein combat (la chauve-souris vient d\'être étudiée, le rat l\'était déjà)');
   var texte = R.exporter(p), p2 = R.importer(texte);
-  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres && p2.livre.chauvesouris === D.ETUDIE, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
+  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
   ok(!R.enCombat(p2) && trouve(R.entrer(p2, 'canaux'), 'combat'), 'et le combat est à relancer');
   ok(R.importer('{pas du json') === null && R.importer('{"v":2}') === null, 'un texte abîmé ou d\'une autre version n\'est pas chargé');
   /* la fuite */
@@ -917,15 +951,12 @@ section('Les sauvegardes, la fuite, les codes');
   ok(p.heros.pisteur.pv === pvApres && !p.faits['combat:canaux'] && p.faits['combat:rats'] === 1, 'les points de vie sont ceux de la sauvegarde ; les rats battus AVANT la sauvegarde restent battus');
   ok(p.heros.pisteur.objets.join() === 'fleches-normales,fleches-lourdes' && p.faits['objet:fleches-lourdes'] === 1 && R.contenu(p, 'reserve').objets.join() === 'fleches-argent', 'les objets trouvés depuis sont gardés (les flèches transperçantes restent au Pisteur, la réserve ne les a plus)');
   ok(p.recettes.indexOf('givre') >= 0 && p.codes['recette:givre'] === 1 && p.codes['sauve:1'] === 1 && p.vus.reserve === 1 && p.vus.canaux === 1, 'la recette tapée depuis, les codes et la brume levée sont gardés aussi');
-  ok(p.livre.chauvesouris === D.ETUDIE && R.etudie(p, 'chauvesouris'), 'le journal garde ce qu\'il a appris');
   ok(!R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, le combat est fini (défaite)');
   egal(p.fuites.canaux, 1, 'la fuite est comptée pour cette salle');
-  /* deux fuites au même endroit : une ligne de plus */
+  /* deux fuites au même endroit : plus rien n'est offert (il n'y a plus de code d'étude : le carnet est ouvert) */
   R.entrer(p, 'canaux'); c = R.combat(p, 'canaux', {alea:ecrit()});
-  p.livre.rat = 0;                                      /* (comme si le Sage n'avait pas étudié le rat) */
   ev = R.fuir(p);
-  var l = trouve(ev, 'livre');
-  ok(l && l.cause === 'fuites' && l.code === 'etude:rat' && p.fuites.canaux === 2 && R.etudie(p, 'rat'), 'après 2 fuites dans la même salle, le journal offre le code d\'un monstre pas encore étudié (' + (l ? l.monstre : '?') + ')');
+  ok(!trouve(ev, 'livre') && p.fuites.canaux === 2, 'une deuxième fuite dans la même salle : elle est comptée, rien de plus');
   /* la défaite */
   R.entrer(p, 'canaux'); c = R.combat(p, 'canaux', {alea:ecrit()});
   D.ORDRE.forEach(function(h){ c.h[h].pv = 1; });
@@ -1138,7 +1169,7 @@ section('Les données tiennent debout');
     var etats = {}, specials = {};
     function fait(l){ (l || []).forEach(function(f){ if(f[0] === 'etat' || f[0] === 'retire') etats[f[1]] = 1; if(f[0] === 'special') specials[f[1]] = 1; }); }
     Object.keys(M.reactions).forEach(function(cp){ M.reactions[cp].forEach(function(r){ fait(r.fait); var si = r.si || {}; (si.avec || []).concat(si.sans || [], si.un || []).forEach(function(n){ etats[n] = 1; }); }); });
-    Object.keys(M.attaques).forEach(function(a){ fait(M.attaques[a].apres); if(M.rythme.indexOf(a) >= 0 && noms.attaques.indexOf(a) < 0) inconnus.push(k + ' : attaque ' + a); if(M.rythme.indexOf(a) < 0 && noms.specials.indexOf(a) < 0) inconnus.push(k + ' : riposte ' + a); });
+    Object.keys(M.attaques).forEach(function(a){ fait(M.attaques[a].apres); if(M.rythme.indexOf(a) >= 0 && noms.attaques.indexOf(M.attaques[a].anim || a) < 0) inconnus.push(k + ' : attaque ' + a); if(M.rythme.indexOf(a) < 0 && noms.specials.indexOf(a) < 0) inconnus.push(k + ' : riposte ' + a); });
     (M.passeSi || []).concat(M.tombe || [], M.cache || [], M.blinde || []).forEach(function(n){ etats[n] = 1; });
     Object.keys(etats).forEach(function(n){ if(n.charAt(0) !== '_' && noms.etats.indexOf(n) < 0) inconnus.push(k + ' : état ' + n); });
     Object.keys(specials).forEach(function(n){ if(noms.specials.indexOf(n) < 0) inconnus.push(k + ' : spécial ' + n); });

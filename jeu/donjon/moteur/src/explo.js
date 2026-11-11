@@ -105,7 +105,7 @@ function carte(o){
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
       '<button class="aller" id="b-entrer" data-act="entrer" hidden>Entrer ➜</button>' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button></div>';
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
   DJ.musiqueLieu(X.ici);
@@ -279,7 +279,7 @@ function construireScene(lieu, ev, premier){
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + fondDe(lieu) + '" alt=""><div id="sol-fx"></div><div id="objets"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>' + esc(nomLieu(lieu)) + '</b></div>' + DJ.curseursVolume() + '</div>' +
     '<div id="bas-scene"><div class="bulle" id="conteur"></div><div class="b-outils">' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button>' +
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button>' +
       '<button class="aller" id="b-repartir" data-act="repartir">Continuer ➜</button></div></div><div id="ecran-fx"></div>';
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
@@ -818,13 +818,13 @@ function symbole(k){
   }, 350);
 }
 function finDonjon(){
-  var p = X.partie, n = 0; Object.keys(p.livre || {}).forEach(function(k){ if(p.livre[k] > 0) n++; });
+  var p = X.partie, n = Object.keys(p.livre || {}).length;          /* les sortes de monstres rencontrées */
   fermerScene(); quitterCarte(); X.ecran = 'fin';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
   var t = 'Léo est retrouvé, tout au fond du donjon ! Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !';
   var e = el('div', 'ecran'); e.id = 'fin-donjon';
   e.innerHTML = '<div class="pa-nom">Vous avez retrouvé Léo !</div><div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
-    '<div class="bilan"><div><b>' + n + '</b>🔍 monstres étudiés</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
+    '<div class="bilan"><div><b>' + n + '</b>👾 sortes de monstres</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
     '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
   jeu.appendChild(e);
   var fan = bruit('victoire', {}, ['fanfare']);
@@ -835,7 +835,6 @@ function finDonjon(){
 DJ.toucher(function(a, id, b){
   if(!X.partie) return false;
   if(a === 'sac-pret'){ if(X.sac) X.sac.pret(); return true; }
-  if(a === 'livre-carte'){ son('page'); DJ.grandLivre(X.partie); return true; }
   if(a === 'objets'){ son('clic'); fenetreObjets(); return true; }
   if(a === 'pave'){ son('clic'); fenetrePave(); return true; }
   if(a === 'symbole'){ symbole(id); return true; }
@@ -852,7 +851,7 @@ DJ.toucher(function(a, id, b){
     prendre(x.objet, x.heros, id); return true;
   }
   if(a === 'recommencer'){
-    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée, le journal aussi.';
+    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée.';
     DJ.fenetre('<h2>Recommencer ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="fermer">Non, on continue</button><button class="aller" data-act="recommencer-oui">Oui, on recommence</button></div>');
     return true;
   }

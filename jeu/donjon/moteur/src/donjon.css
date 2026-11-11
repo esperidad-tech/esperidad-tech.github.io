@@ -10,6 +10,26 @@
 .vise.petit{width:30px;height:30px;margin-left:-7px}
 .vise-fleche + .vise.petit{margin-left:0}
 .vise-ic{font-size:19px;margin-left:2px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+/* la rune de l'œil : la proie et les dégâts de ce tour, puis (plus petit, après la flèche) ceux du tour suivant */
+.vise-pile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;animation:oeil-pop .35s ease-out}
+.vise-dg{margin-left:4px;height:24px;padding:0 7px;border-radius:12px;background:#1a1222;border:2px solid #ff5a5a;color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;box-shadow:0 2px 0 rgba(0,0,0,.6);white-space:nowrap}
+.vise-dg small{font-size:11px;margin-left:2px;color:#ffd0d0}
+.vise-bloc.gros .vise-dg{height:28px;font-size:18px;background:#b3261e;border-color:#ffd54a;color:#fff}
+.vise-bloc.puis{opacity:.9;margin-left:8px}
+.vise-bloc.puis .vise.petit{width:27px;height:27px;margin-left:-6px;border-width:2px}
+.vise-bloc.puis .vise-puis + .vise.petit{margin-left:0}
+.vise-bloc.puis .vise-dg{height:22px;font-size:13.5px;padding:0 6px}
+.vise-bloc.puis.gros .vise-dg{height:26px;font-size:16px}
+.vise-bloc.puis .vise-ic{font-size:16px}
+.vise-puis{font-size:15px;font-weight:800;color:#bff8ff;margin:0 3px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+@keyframes oeil-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.oeil-rune{position:absolute;margin:-40px 0 0 -40px;width:80px;height:80px;font-size:62px;line-height:80px;text-align:center;pointer-events:none;animation:oeil-ouvre 1.1s ease-out both}
+@keyframes oeil-ouvre{0%{opacity:0;transform:scale(.2,.05)}22%{opacity:1;transform:scale(1.25,1.25)}34%{transform:scale(1.1,.15)}46%{transform:scale(1.15,1.15)}80%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.5)}}
+/* le coup qui se prépare (élites et boss) : visible de tous — une grosse pastille qui bat, et un rond rouge sous la bête
+   (le rond jaune reprend sa place quand la bête est à toucher) */
+.etat.e-coup{height:26px;padding:0 9px;border-radius:13px;font-size:14px;border-color:#ffd54a;color:#fff3c0;animation:pulse 1.1s ease-in-out infinite}
+.etat.e-coup.pret{background:#b3261e;border-color:#ffd54a;color:#fff;animation:pulse .6s ease-in-out infinite}
+.bete.prepare:not(.dispo):not(.restes):not(.cendre):not(.parti) .anneau{opacity:1;border-color:#ff5a3c;box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 22px 8px rgba(255,80,40,.8),inset 0 0 12px rgba(255,80,40,.6);animation:pulse .8s ease-in-out infinite}
 .pv.elite .barre{width:112px}
 /* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
 .pv.boss{top:20px;left:400px;height:22px;gap:8px;z-index:25}

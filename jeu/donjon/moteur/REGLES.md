@@ -403,3 +403,36 @@ Décisions de Romain du 10 novembre (17 h 47 et 17 h 56, Bible §12.51).
 
 **Pas encore fait** : les armes du Sage se choisissent toujours au lutrin (`Regles.choisir`, une seule des deux).
 
+## 12. Ce qui a changé le 11 novembre : la rune de l'œil, les coups préparés (ces lignes remplacent ce qui est écrit plus haut)
+
+Décisions de Romain du 11 novembre (9 h 08 à 9 h 26, Bible §12.51, « Les sorts du Sage en combat »).
+
+**Plus d'étude dans le donjon**
+
+- Le geste `etudier`, l'évènement `etudie`, l'évènement `livre`, `Regles.grandLivre`, `Regles.etudie`, `D.ETUDIE`, `D.LIVRE_VIDE` et le code offert après deux fuites n'existent plus. `partie.livre[monstre] = 0` veut seulement dire « rencontré » (l'écran de fin compte les sortes de monstres).
+- `D.LIVRE` (le journal de l'aventurier) ne sert plus qu'à la tablette du Sage : le carnet ramassé à l'entrée (`carnet:aventurier`) ouvre toutes les pages. Les codes `etude:<monstre>` restent dans `donjon-codes.js` (la tablette du Sage les accepte encore).
+
+**La rune de l'œil** (`oeil`, Sage, vise `salle`)
+
+- `jouer('sage', {geste:'oeil'})` → `{t:'oeil', heros:'sage', jusque:<tour>, plans:[…]}`. Le Sage voit ce tour et le suivant : `combat.vu = tour + 1`.
+- Refusée (« Déjà vu ! », `D.MOTS.vu`) tant que `vu > tour` ; au tour d'après (`vu === tour`), elle se relance.
+- `etat().vu` : `0` (on ne sait rien), `1` (ce tour), `2` (ce tour et le suivant). Par bête : `vise` (seulement si `vu`) et `suite` (seulement si `vu === 2`), tous deux `{attaque, cibles, degats, fois, prepare, gros}` ; `degats` vaut 0 pendant un tour d'élan. **Sans l'œil, `vise` est `null` : l'écran ne montre plus qui est visé.**
+- `combat.intentions()` : la même chose en liste (`{bete, dans:0|1, …}`).
+- La proie du tour suivant est tirée au sort dès que le Sage regarde (`_prevoir`, gardée dans `m.suite`) et reprise telle quelle au tour d'après (`_planDuTour`).
+
+**Les coups préparés** (attaque `prepare:true` dans `D.MONSTRES` : `marteau` du Gardien, `ruee` du Roi des rats, `ecrasement` de Bourbe)
+
+- Rythmes : `['poing', 'marteau', 'poing']`, `['grouillement', 'ruee', 'grouillement']`, `['langue', 'ecrasement', 'saut']`.
+- Au début du tour d'élan : `{t:'etat', bete, nom:'prepare', on:true, tours:'fin'}` (visible de tous). Au tour des monstres : `{t:'prepare', bete, attaque}` — il ne frappe pas. Au tour suivant : `{t:'attaque', nom, anim, gros:true, …}` sur la proie choisie à l'élan (`m.c.coup`), puis `{t:'etat', nom:'prepare', on:false}`.
+- `anim` : le nom de l'attaque du module animé qui sert pour ce coup (`marteau` → `poing`, `ruee` → `grouillement`, `ecrasement` → `saut`) ; l'affichage joue `ev.anim || ev.nom`.
+- `etat().betes[i].prepare` : `0`, `1` (il prend son élan ce tour-ci) ou `2` (le coup tombe à la fin de ce tour).
+- Un monstre qui passe son tour (`passeSi` : sur le dos, sous l'eau…) garde son coup pour plus tard.
+
+**Le bouclier** : `D.CHIFFRES.bouclier = 0.25` (il laisse passer un quart : 75 % arrêtés).
+
+**L'huile sur un ami** : une recette avec `libere:'entoile'` se lance aussi sur un héros pris dans une toile (`gestes()` l'ajoute aux `cibles`, et le note dans `amis`) : `{t:'potion', heros, recette, heros2}` puis `{t:'etat', heros:heros2, nom:'entoile', on:false, par:'huile'}`. Le héros libéré peut jouer ce tour-ci.
+
+**À l'écran** (`combat.js`) : `ligneVise`, `majBadges` (`.vise-pile`, `.vise-dg`, `.vise-bloc.puis`, `.vise-bloc.elan`, `.vise-bloc.gros`, `.etat.e-coup`), le rond rouge (`.bete.prepare .anneau`), le geste `oeil` (`.oeil-rune`). Plus de `boutonLivre`, de `grandLivre`, de `livre`.
+
+**La simulation** (`equilibre.js`) : l'équipe ne connaît les plans que si l'œil regarde (`voit(c)`, `planDe(c, m)`) ; trois variantes de la maligne (`maligne` : l'œil un tour sur deux ; `oeilGros` : seulement pour un gros coup ; `sansOeil`). Trois cibles manquées, à régler avec Romain après ses essais (Bible §12.51).
+

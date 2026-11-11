@@ -364,7 +364,7 @@ function livre(guide){
     else html += '<button type="button" class="page blanche" data-page="' + i + '"><b>Page blanche</b><small>' + nom + '</small><i aria-hidden="true">✦</i></button>';
   }
   html += '</div>';
-  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre étudié */
+  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre */
   var betes = monstresEtudies();                        /* (tout le carnet dès qu'il est là : Romain, 11 novembre) */
   html += '<div class="livre-betes"><h3>📓 Le vieux carnet</h3>' +
     (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
@@ -429,7 +429,7 @@ function voirPage(n, ecrire){
    Les codes (pour le Sage) et leurs petites scènes
    ====================================================================== */
 function unCode(){
-  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi, ou ton héros a étudié un monstre ? Tape les trois symboles qu’il te montre.',
+  PG.pave({tablette:'sage', titre:'📥 Un code', texte:'Le Pisteur a trouvé quelque chose pour toi ? Tape les trois symboles qu’il te montre.',
     deja:function(id){ return !!S.codes[id]; },
     recevoir:function(id){ S.codes[id] = true; garder(); scene(id); }});
 }

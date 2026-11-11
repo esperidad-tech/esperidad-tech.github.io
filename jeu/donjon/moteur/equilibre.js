@@ -1,8 +1,9 @@
 /* equilibre.js — LA DIFFICULTÉ PROUVÉE PAR LA SIMULATION (MOTEUR-DONJON.md §6).
      node equilibre.js [parties par ligne] [--md]        (2 000 par défaut : environ une minute et demie ; --md réécrit equilibre.md)
    Il joue chaque salle, puis le donjon entier, des milliers de fois, avec les vraies règles (src/regles.js) et quatre équipes :
-     maligne        elle étudie, ouvre les points faibles dans l'ordre, soigne quand il faut, sauvegarde avant les grandes portes
-     sans le Sage   elle joue aussi bien, mais n'étudie jamais et ne connaît aucun combo
+     maligne        elle a lu le carnet de l'aventurier, ouvre les points faibles dans l'ordre, soigne quand il faut, se sert de
+                    la rune de l'œil pour savoir qui protéger, sauvegarde avant les grandes portes
+     sans le Sage   elle joue aussi bien, mais n'a pas lu le carnet et ne connaît aucun combo
      tape           flèche, dague, louche, bouclier sur le Pisteur : jamais un point faible ouvert exprès
      au hasard      des gestes permis tirés au hasard
    et, pour y voir plus clair : « tape avec le feu » (celle de la simulation d'hier, qui passe la salle des rats), « à tâtons »
@@ -23,14 +24,19 @@ function a(c, m, n){ return c.a(m, n); }
 function cle(type){ return D.MONSTRES[type].livre || type; }
 function peut(c, h){ return c.aJouer().indexOf(h) >= 0; }
 function dans(c, r){ return c.sac.indexOf(r) >= 0; }
-/* ce qu'un monstre devrait enlever ce tour-ci à chaque héros, d'après ce qu'il montre */
+/* LA RUNE DE L'ŒIL (11 novembre) : l'équipe ne sait qui sera frappé que si le Sage regarde (ce tour, et le suivant s'il vient
+   de lancer la rune). Sans elle : rien. Le coup qui se prépare (l'état « prepare »), lui, se voit toujours. */
+function voit(c){ return c.vu >= c.tour; }
+function planDe(c, m){ return voit(c) ? m.plan : null; }
+/* ce qu'un monstre devrait enlever ce tour-ci à chaque héros, d'après ce que l'œil montre */
 function coupDe(c, m){
-  if(!m.plan || c._un(m, m.def.passeSi)) return null;
-  var A = m.def.attaques[m.plan.nom], d = A.degats, fois = 1, n;
+  var plan = planDe(c, m);
+  if(!plan || plan.prepare || c._un(m, m.def.passeSi)) return null;
+  var A = m.def.attaques[plan.nom], d = A.degats, fois = 1, n;
   if(A.foisSi) for(n in A.foisSi) if(a(c, m, n)) fois = Math.max(fois, A.foisSi[n]);
   if(A.plusSi) for(n in A.plusSi) if(a(c, m, n)) d += A.plusSi[n];
   if(A.doubleSi && c._un(m, A.doubleSi)) d *= 2;
-  return {cibles:m.plan.cibles, degats:d * fois, attrape:!!(A.pose || A.avale)};
+  return {cibles:plan.cibles, degats:d * fois, attrape:!!(A.pose || A.avale)};
 }
 function menace(c, h){
   var t = 0;
@@ -83,13 +89,17 @@ function tapePotions(c, p, mem, rnd){
   return tape(c, p, mem, rnd);
 }
 
-/* ---------- l'équipe qui réfléchit. o.livre : elle lit le Grand Livre ; o.etudie : le Sage étudie ; o.tatonne : elle essaie au hasard ---------- */
+/* ---------- l'équipe qui réfléchit. o.livre : elle a lu le carnet de l'aventurier (elle connaît les combos) ; o.tatonne : elle
+   essaie au hasard ; o.oeil : 'toujours' (le Sage libre regarde un tour, protège le suivant), 'gros' (il ne regarde que pour
+   un coup qui se prépare), false (jamais : il protège à l'aveugle le plus fragile) ---------- */
 function reflechie(o){
   return function(c, p, mem, rnd){
     var S = peut(c, 'sage'), Al = peut(c, 'alchimiste'), Pi = peut(c, 'pisteur');
     var viv = c.vivants(), cib = c.ciblables(), act;
     mem.vu = mem.vu || {};            /* ce qu'elle a vu marcher : « type:pouvoir » -> 'ouvre' | 'piege' | 'rien' */
-    function K(m){ return o.livre ? (p.livre[cle(m.type || m)] || 0) : 0; }
+    function K(m){ return o.livre ? 4 : 0; }                  /* le carnet, ramassé à l'entrée, a toutes ses pages */
+    var oeil = o.oeil === undefined ? 'toujours' : o.oeil, vois = voit(c);
+    function fragile(sauf){ return c.visables().filter(function(x){ return x !== sauf && !c.h[x].bouclier; }).sort(function(x, y){ return (c.h[x].pv - c.h[y].pv) || (D.VISEE[y] - D.VISEE[x]); })[0]; }
     function sait(m, n){ return K(m) >= n; }
     function vuOuvrir(m, pouvoir){ return mem.vu[cle(m.type) + ':' + pouvoir] === 'ouvre'; }
     /* un pouvoir de toute la salle : est-ce qu'elle SAIT qu'il renforce une bête présente ? */
@@ -118,26 +128,35 @@ function reflechie(o){
     if(Pi && ouverts.length) return tirer(c, ouverts);
     /* sans fumée, il faudra chatouiller Bourbe de l'intérieur : quand il est sorti de l'eau et tire la langue, on ne l'arrête pas */
     var gobe = null;
-    viv.forEach(function(m){ if(m.type === 'bourbe' && K(m) >= 4 && !dans(c, 'fumigene') && (a(c, m, 'berge') || a(c, m, 'gele')) && !a(c, m, 'dos') && m.plan && m.plan.nom === 'langue') gobe = m.plan.cibles[0]; });
-    /* 4. un ami va tomber ce tour-ci : le bouclier s'il suffit, sinon le soin */
-    var urg = D.EXPOSES.filter(function(h){ return h !== gobe && !c.h[h].sol && !c.h[h].avale && coups(c, h) * (c.h[h].bouclier ? 0.5 : 1) >= c.h[h].pv; });
+    viv.forEach(function(m){ if(m.type === 'bourbe' && K(m) >= 4 && !dans(c, 'fumigene') && (a(c, m, 'berge') || a(c, m, 'gele')) && !a(c, m, 'dos') && planDe(c, m) && m.plan.nom === 'langue') gobe = m.plan.cibles[0]; });
+    /* 3 bis. LE GROS COUP (les élites, le boss) : tout le monde voit qu'il se prépare. Au tour où il tombe, le Sage protège
+       la proie si l'œil l'a montrée ; sinon, à l'aveugle, celui que les monstres visent le plus (et le plus fragile avec lui,
+       s'il a le bâton). Pendant l'élan, le Sage ouvre l'œil s'il n'a rien de mieux à faire : voir plus bas (8). */
+    var gros = viv.filter(function(m){ return a(c, m, 'prepare') && !c._un(m, m.def.passeSi); })[0];
+    function probable(sauf){ return c.visables().filter(function(x){ return x !== sauf && !c.h[x].bouclier; }).sort(function(x, y){ return D.VISEE[y] * (c.h[y].pv <= 85 ? 2 : 1) - D.VISEE[x] * (c.h[x].pv <= 85 ? 2 : 1); })[0]; }
+    if(S && gros && gros.c.pret){
+      var proie = vois && gros.plan && gros.plan.cibles.length ? gros.plan.cibles[0] : probable();
+      if(proie && c.visables().indexOf(proie) >= 0 && !c.h[proie].bouclier){
+        var second = c.porte('sage', 'baton-chene') ? (vois ? fragile(proie) : probable(proie)) : null;
+        return {heros:'sage', geste:'bouclier', cible:second ? [proie, second] : proie};
+      }
+    }
+    /* 4. un ami va tomber ce tour-ci (l'œil le montre) : le bouclier s'il suffit, sinon le soin */
+    var PART = C.bouclier;                /* ce que le bouclier laisse passer */
+    var urg = D.EXPOSES.filter(function(h){ return h !== gobe && !c.h[h].sol && !c.h[h].avale && coups(c, h) * (c.h[h].bouclier ? PART : 1) >= c.h[h].pv; });
     if(urg.length){
       var u = urg[0], brut = coups(c, u);
-      if(S && !c.h[u].bouclier && Math.ceil(brut / 2) < c.h[u].pv){
+      if(S && !c.h[u].bouclier && Math.ceil(brut * PART) < c.h[u].pv){
         var autre = c.visables().filter(function(x){ return x !== u; }).sort(function(x, y){ return menace(c, y) - menace(c, x); })[0];
         return {heros:'sage', geste:'bouclier', cible:c.porte('sage', 'baton-chene') && autre ? [u, autre] : u};
       }
       if(Al){ var s = soin(c, u, true); if(s) return s; }
       if(S && !c.h[u].bouclier) return {heros:'sage', geste:'bouclier', cible:u};
     }
-    /* 5. le Sage étudie ce qu'il ne connaît pas : ce qu'il lit sert tout de suite aux deux autres */
-    if(S && o.etudie){
-      var inconnus = viv.filter(function(m){ return K(m) < besoinDeLire(c, m, K(m)) && K(m) < D.LIVRE[cle(m.type)].length; });
-      if(inconnus.length){
-        var rg = {boss:3, elite:2, normal:1};
-        inconnus.sort(function(x, y){ return (rg[y.def.rang] - rg[x.def.rang]) || (danger(y) - danger(x)); });
-        return {heros:'sage', geste:'etudier', cible:inconnus[0].id};
-      }
+    /* 5. l'Alchimiste libère un ami pris dans une toile : l'huile le rend à son tour (« il y a toujours un contre ») */
+    if(Al && dans(c, 'huile')){
+      var pris = D.ORDRE.filter(function(h){ return c.h[h].entoile && !c.h[h].sol && !c.h[h].joue; })[0];
+      if(pris) return {heros:'alchimiste', geste:'p:huile', cible:pris};
     }
 
     /* 6. ouvrir un point faible (ou avancer d'une étape), en commençant par la bête la plus dangereuse qu'on sait ouvrir */
@@ -166,9 +185,12 @@ function reflechie(o){
       var am = c.visables().slice().sort(function(x, y){ return (c.h[x].pv / c.h[x].pvMax) - (c.h[y].pv / c.h[y].pvMax); });
       return {heros:'alchimiste', geste:'herbes', cible:am[0]};
     }
-    /* 8. le Sage, libre : le bouclier sur celui (ou ceux) qui va prendre le plus */
+    /* 8. le Sage, libre : s'il voit, le bouclier sur celui (ou ceux) qui va prendre le plus ; sinon il ouvre l'œil (il verra
+       ce tour et le suivant), ou protège à l'aveugle le plus fragile */
     if(S){
-      var amis = c.visables().filter(function(x){ return x !== gobe; }).sort(function(x, y){ return menace(c, y) - menace(c, x) || D.EXPOSES.indexOf(x) - D.EXPOSES.indexOf(y); });
+      if(oeil && gros && !gros.c.pret && c.vu <= c.tour) return {heros:'sage', geste:'oeil'};       /* l'élan : il saura sur qui ça tombe */
+      if(!vois && oeil === 'toujours') return {heros:'sage', geste:'oeil'};
+      var amis = c.visables().filter(function(x){ return x !== gobe; }).sort(vois ? function(x, y){ return menace(c, y) - menace(c, x) || D.EXPOSES.indexOf(x) - D.EXPOSES.indexOf(y); } : function(x, y){ return (c.h[x].pv - c.h[y].pv) || (D.VISEE[y] - D.VISEE[x]); });
       if(!amis.length) amis = c.visables();
       var nb = c.porte('sage', 'baton-chene') ? 2 : 1;
       return {heros:'sage', geste:'bouclier', cible:nb === 2 && amis.length > 1 ? amis.slice(0, 2) : amis[0]};
@@ -205,7 +227,7 @@ function reflechie(o){
       }
       else if(t === 'feufollet'){
         if((k >= 1 || vuOuvrir(m, 'nuage')) && dans(c, 'fumigene') && !interdit('nuage', m)) plus({heros:'alchimiste', geste:'p:fumigene'}, {poids:3});
-        else if(k >= 4 && !a(c, m, 'accroche') && m.plan && m.plan.cibles.length) plus({heros:'sage', geste:'bouclier', cible:m.plan.cibles[0]}, {etape:true});
+        else if(k >= 4 && !a(c, m, 'accroche') && planDe(c, m) && m.plan.cibles.length && c.visables().indexOf(m.plan.cibles[0]) >= 0 && !c.h[m.plan.cibles[0]].bouclier) plus({heros:'sage', geste:'bouclier', cible:m.plan.cibles[0]}, {etape:true});
       }
       else if(t === 'roirats'){
         if(a(c, m, 'noeud')){
@@ -229,7 +251,7 @@ function reflechie(o){
         else if(k >= 3 && dans(c, 'givre') && !S) plus(potion('givre', Al ? 'alchimiste' : 'pisteur'), {etape:true, poids:7});
         else if(lumiereSure(m)){
           /* sans fumée, il faudra le chatouiller : on le sort de l'eau un tour où il prépare un saut (il avalera au suivant) */
-          var bonMoment = dans(c, 'fumigene') || !sait(m, 4) || !m.plan || m.plan.nom === (dans(c, 'feu') ? 'langue' : 'saut');
+          var bonMoment = dans(c, 'fumigene') || !sait(m, 4) || !planDe(c, m) || m.plan.nom === (dans(c, 'feu') ? 'langue' : 'saut');
           if(bonMoment) plus({heros:'sage', geste:'rune', cible:m.id}, {etape:true, poids:8});
         }
       }
@@ -263,17 +285,6 @@ function reflechie(o){
       return essais[Math.floor(rnd() * essais.length)];
     }
   };
-}
-/* combien de lignes il faut lire pour savoir ouvrir cette bête avec ce qu'on a (au moins une) */
-function besoinDeLire(c, m, k){
-  var t = m.type;
-  if(t === 'tetard') return 0;
-  if(t === 'ratcuir') return dans(c, 'acide') ? 1 : dans(c, 'givre') ? 3 : 4;
-  if(t === 'feufollet') return dans(c, 'fumigene') ? 1 : 4;
-  if(t === 'roirats') return dans(c, 'fumigene') ? 1 : 4;
-  if(t === 'gardien') return dans(c, 'acide') ? 1 : dans(c, 'givre') ? 3 : 4;
-  if(t === 'bourbe') return dans(c, 'feu') && dans(c, 'fumigene') ? 1 : 4;
-  return 1;
 }
 /* le soin de l'Alchimiste : urgent (il faut sauver h) ou de confort (le plus abîmé, si ça vaut un geste) */
 function soin(c, h, urgent){
@@ -317,14 +328,17 @@ function distraite(base, part){
 }
 
 var EQUIPES = {
-  maligne:{nom:'Maligne', choisir:reflechie({livre:true, etudie:true})},
-  sansSage:{nom:'Sans le Sage', choisir:reflechie({livre:false, etudie:false})},
+  maligne:{nom:'Maligne', choisir:reflechie({livre:true})},
+  /* pour mesurer ce que vaut la rune de l'œil : la même, qui ne regarde que les gros coups ; et la même, qui ne regarde jamais */
+  oeilGros:{nom:'Maligne, l\'œil seulement pour les gros coups', choisir:reflechie({livre:true, oeil:'gros'})},
+  sansOeil:{nom:'Maligne, sans la rune de l\'œil', choisir:reflechie({livre:true, oeil:false})},
+  sansSage:{nom:'Sans le Sage', choisir:reflechie({livre:false})},
   tape:{nom:'Tape sans réfléchir', choisir:tape},
   hasard:{nom:'Au hasard', choisir:auHasard},
-  tatons:{nom:'Sans le Sage, à tâtons', choisir:reflechie({livre:false, etudie:false, tatonne:true})},
+  tatons:{nom:'Sans le Sage, à tâtons', choisir:reflechie({livre:false, tatonne:true})},
   tapePotions:{nom:'Tape, avec le feu au lieu de la louche', choisir:tapePotions},
-  distraite10:{nom:'Maligne, un geste sur dix au hasard', choisir:distraite(reflechie({livre:true, etudie:true}), 0.10)},
-  distraite25:{nom:'Maligne, un geste sur quatre au hasard', choisir:distraite(reflechie({livre:true, etudie:true}), 0.25)}
+  distraite10:{nom:'Maligne, un geste sur dix au hasard', choisir:distraite(reflechie({livre:true}), 0.10)},
+  distraite25:{nom:'Maligne, un geste sur quatre au hasard', choisir:distraite(reflechie({livre:true}), 0.25)}
 };
 
 /* ===================================================================== UN COMBAT joué par une équipe */
@@ -366,7 +380,7 @@ var LU_AVANT = {
   ossuaire:{rat:1, chauvesouris:1, araignee:1, feufollet:1, gardien:1, ratcuir:1},
   bassin:{rat:1, chauvesouris:1, araignee:1, feufollet:1, gardien:1, ratcuir:1, roirats:1}
 };
-var TOUT_LU = {}; Object.keys(D.LIVRE).forEach(function(k){ TOUT_LU[k] = D.ETUDIE; });      /* (étudié = l'équipe sait tout de ce monstre) */
+var TOUT_LU = {}; Object.keys(D.LIVRE).forEach(function(k){ TOUT_LU[k] = 4; });      /* (ne sert plus : le carnet de l'aventurier a toutes ses pages dès l'entrée) */
 /* depuis le 10 novembre, une étude donne toute la page du monstre d'un coup (un code pour le Sage) : « déjà lu » = tout lu */
 Object.keys(LU_AVANT).forEach(function(sa){ Object.keys(LU_AVANT[sa]).forEach(function(k){ LU_AVANT[sa][k] = TOUT_LU[k]; }); });
 /* le sac et les objets raisonnables de l'équipe maligne, salle par salle */

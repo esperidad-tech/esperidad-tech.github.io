@@ -69,3 +69,8 @@ Une lampe à huile et sa réserve d'huile, une gamelle, un feu de camp, un bâto
 1. Le texte : `D.LIVRE` dans `moteur/src/donnees.js` (un à trois paragraphes courts par monstre, chacun aura son 🔊). `test-regles.js` refuse une question, le nom d'un geste, d'une potion ou d'un héros, et tout autre lampe que la lampe à huile.
 2. Le croquis : `python3 pages/croquis/seuls.py <id>` puis `python3 pages/croquis/croquis.py <id>`, puis l'enregistrer en WebP dans `pages/portraits/<id>.webp`.
 3. `python3 pages/assembler.py`, `python3 moteur/construire.py`, `test-sage.py --vite`, mise en ligne.
+
+## Le 11 novembre (étape 1 des sorts du Sage) : plus d'étude dans le donjon
+
+« Étudier » et le bouton « Journal » du donjon ont disparu (la rune de l'œil a pris la place d'« Étudier » : Bible §12.51). Le carnet ramassé à l'entrée reste la seule façon d'ouvrir les pages : toutes d'un coup, sur la tablette du Sage. Les anciens codes `etude:<monstre>` marchent encore sur sa tablette, mais le donjon n'en donne plus.
+

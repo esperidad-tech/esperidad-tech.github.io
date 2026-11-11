@@ -284,3 +284,15 @@ Les décisions de Romain sont dans la Bible §12.51 (« Deuxième série de reto
 - **Tests** : `test-regles.js` 359 ; `test-combat.py` 95 (les 8 salles avec toutes les potions et les deux carquois, plus « l'étude » et « les potions et les flèches ») ; `test-donjon.py` et `test-descente.py` : voir la Bible ; `../test-sage.py --vite` 194.
 - **Pas remis d'aplomb** : `equilibre.js` tourne (le sac y veut dire « les potions que l'Alchimiste a su créer »), mais `equilibre.md` n'est pas réécrit et 2 cibles sont manquées. Les §3 à §8 de ce cahier des charges parlent encore du sac de 3 recettes : c'est l'ancien dessin.
 
+### 9.8 Le 11 novembre : le carnet de l'aventurier, la rune de l'œil, les coups préparés
+
+Décisions de Romain : Bible §12.51 (« Les sorts du Sage en combat »). Détail des règles : `moteur/REGLES.md` §12.
+
+- **Plus d'étude ni de journal dans le donjon** : le geste « Étudier », le bouton « Journal » (combat, carte, salles) et la fenêtre des codes d'étude sont retirés (`combat.js`, `explo.js`). Le §9.7 « L'étude » décrit donc l'ancien dessin. Le carnet de l'aventurier (objet `carnet` au fond du puits, code `carnet:aventurier`) ouvre toutes les pages sur la tablette du Sage.
+- **La rune de l'œil** : carte `oeil` du Sage ; `combat.js` montre au-dessus des monstres la proie et les dégâts (`ligneVise`, `majBadges`), seulement quand `etat().vu` le permet.
+- **Les coups préparés** (Gardien, Roi des rats, Bourbe) : état `prepare` (pastille, rond rouge), évènement `prepare` (le mot « Gros coup bientôt ! »), attaque `gros` (secousse plus forte), animation empruntée (`anim`).
+- **Le bouclier à 75 %**, **l'huile qui libère un ami entoilé**.
+- **Adresses d'essai** : `?combat=atelier&potions=toutes` (le Gardien : poing, élan, marteau) ; `?combat=ossuaire&potions=toutes` ; `?combat=bassin&potions=toutes` ; `?combat=toiles&potions=toutes` (la toile, puis l'huile sur l'ami).
+- **Tests** : `test-regles.js` 365 ; `test-combat.py` 108 (`oeil(nav)` dans l'atelier, `huile(nav)` dans la cave aux toiles, `potions(nav)`, les 8 salles) ; `test-descente.py` joue avec la stratégie de `equilibre.js` (l'œil un tour sur deux).
+- **La simulation** : `node equilibre.js 600` — 3 cibles manquées (les moments chauds de l'équipe parfaite ; deux cibles de l'équipe qui tape, à cause du bouclier à 75 %). `equilibre.md` n'est toujours pas réécrit, et son texte parle encore du sac et de l'étude : à refaire quand la difficulté sera réglée avec Romain.
+

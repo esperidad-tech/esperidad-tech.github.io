@@ -137,45 +137,147 @@ def salle(nav, s, graine):
     ctx.close()
 
 
-def etude(nav):
-    """Romain, 10 novembre : étudier un monstre donne un code dans le journal (à taper sur la tablette du Sage), pas un texte."""
-    print('— l\'étude : un code dans le journal')
+def oeil(nav):
+    """Romain, 11 novembre : la rune de l'œil remplace « Étudier ». Sans elle, personne ne sait qui sera frappé ; avec elle,
+    chaque monstre montre sa proie et ses dégâts, pour ce tour et le suivant. Les élites et le boss préparent un gros coup :
+    tout le monde le voit se préparer, seul l'œil dit sur qui ; le bouclier en arrête 75 %."""
+    print('— la rune de l\'œil, le coup qui se prépare, le bouclier à 75 %')
+    ctx = nav.new_context(viewport={'width': 1024, 'height': 768}, device_scale_factor=1, has_touch=True, is_mobile=True)
+    pg = ctx.new_page(); errs = []
+    pg.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
+    pg.on('console', lambda m: errs.append(m.type + ': ' + m.text) if m.type in ('error', 'warning') else None)
+    pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
+    pg.route('**/fonts.gstatic.com/**', lambda r: r.fulfill(status=404, body=''))
+    pg.add_init_script("window.__parle = 0; try{ speechSynthesis.speak = function(u){ window.__parle++; }; }catch(e){}")
+    pg.goto(PAGE + '?combat=atelier&graine=5&potions=toutes&vitesse=3')
+
+    def libre():
+        pg.wait_for_function("(function(){ var e = DJ.Combat.etat(); return !!e && ((e.mode === 'qui' && !e.occupe) || e.mode === 'fin'); })()", timeout=90000, polling=200)
+        pg.wait_for_timeout(300)
+
+    def joue(h, g, cible=None):
+        pg.tap(f'.b-heros[data-id="{h}"]', force=True); pg.wait_for_timeout(200)
+        pg.tap(f'.carte[data-id="{g}"]', force=True); pg.wait_for_timeout(200)
+        if cible in ('sage', 'alchimiste', 'pisteur'):
+            pg.tap(f'.zone[data-type="heros"][data-id="{cible}"]', force=True)
+        elif cible:
+            pg.eval_on_selector('#zone-' + cible, 'e => e.click()')
+        else:
+            pg.eval_on_selector('.zone[data-type="bete"]', 'e => e.click()')
+        pg.wait_for_timeout(400); libre()
+
+    # ce que l'écran montre au-dessus des monstres, et ce que disent les règles
+    VUE = """() => { var E = DJ.Combat._E(), ph = E.c.etat(), o = {tour:ph.tour, vu:ph.vu, betes:{}, cartes:[]};
+      ph.betes.forEach(function(b){ if(b.mort) return; var e = document.querySelector('#badges-' + b.id), a = E.A.b[b.id];
+        o.betes[b.id] = {type:b.type, prepare:b.prepare, vise:b.vise, suite:b.suite, tetes:e.querySelectorAll('.vise').length, lignes:e.querySelectorAll('.vise-bloc').length,
+          degats:[].map.call(e.querySelectorAll('.vise-dg'), function(x){ return x.textContent; }), sablier:e.querySelectorAll('.vise-bloc.elan').length,
+          pastille:(e.querySelector('.etat.e-coup') || {}).textContent || '', pret:!!e.querySelector('.etat.e-coup.pret'), rond:a.el.classList.contains('prepare')}; });
+      return o; }"""
+    libre()
+    v = pg.evaluate(VUE)
+    gardien = [k for k in v['betes'] if v['betes'][k]['type'] == 'gardien'][0]
+    verifie(v['vu'] == 0 and all(b['tetes'] == 0 and b['lignes'] == 0 for b in v['betes'].values()), 'œil : au départ, personne ne sait qui sera frappé (aucune tête au-dessus des monstres)')
+    verifie(not pg.evaluate("() => !!document.querySelector('.b-livre')"), 'plus de bouton « Journal » dans le donjon (le carnet est sur la tablette du Sage)')
+    pg.tap('.b-heros[data-id="sage"]', force=True); pg.wait_for_timeout(250)
+    cartes = pg.evaluate("() => [].map.call(document.querySelectorAll('#bande .carte'), function(c){ return c.getAttribute('data-id') + ':' + c.querySelector('b').textContent; })")
+    verifie(cartes[:3] == ['oeil:Rune de l\'œil', 'rune:Rune de lumière', 'bouclier:Bouclier'] or cartes[0].startswith('oeil:'), 'le Sage a la rune de l\'œil à la place d\'« Étudier » ' + str(cartes[:3]))
+    pg.screenshot(path=os.path.join(CAP, 'combat-oeil-0.png'))
+    pg.tap('.b-retour', force=True); pg.wait_for_timeout(200)
+
+    # tour 1 : l'œil — ce tour et le suivant
+    joue('sage', 'oeil')
+    v = pg.evaluate(VUE); g = v['betes'][gardien]
+    ok1 = v['vu'] == 2 and all(b['lignes'] >= 1 and b['vise'] and b['degats'] and b['degats'][0] == '−' + str(b['vise']['degats']) for b in v['betes'].values())
+    verifie(ok1, 'œil : chaque monstre montre sa proie et ses dégâts de ce tour ' + str({k: b['degats'] for k, b in v['betes'].items()}))
+    verifie(g['suite'] and g['suite']['attaque'] == 'marteau' and g['suite']['prepare'] and g['lignes'] == 2 and g['sablier'] == 1, 'œil : et le tour suivant — le Gardien prendra son élan (un sablier, sa proie)')
+    proie = g['suite']['cibles'][0]
+    pg.screenshot(path=os.path.join(CAP, 'combat-oeil-1.png'))
+    pg.tap('.b-heros[data-id="sage"]', force=True); pg.wait_for_timeout(200)
+    verifie(pg.evaluate("() => DJ.Combat.etat().mode") == 'qui', 'le Sage a joué : il ne rejoue pas ce tour-ci')
+    b0 = pg.evaluate("() => DJ.Combat._E().c.ciblables()[0].id")
+    joue('alchimiste', 'herbes', 'pisteur'); joue('pisteur', 'fleche', b0)
+
+    # tour 2 : l'élan, visible de tous
+    v = pg.evaluate(VUE); g = v['betes'][gardien]
+    verifie(v['tour'] == 2 and g['prepare'] == 1 and 'gros coup bientôt' in g['pastille'] and not g['pret'] and g['rond'], 'tour 2 : le Gardien prépare un gros coup, tout le monde le voit (pastille « ' + g['pastille'] + ' », rond rouge)')
+    verifie(v['vu'] == 1 and g['vise']['prepare'] and g['vise']['cibles'] == [proie] and g['sablier'] == 1 and not g['degats'], 'tour 2 : l\'œil d\'avant montre encore sa proie (' + proie + '), avec un sablier, sans dégâts')
+    mots = pg.evaluate("() => { var E = DJ.Combat._E(), g = E.c.gestes('sage').filter(function(x){ return x.geste === 'oeil'; })[0]; return g.permis; }")
+    verifie(mots, 'tour 2 : le Sage peut relancer la rune de l\'œil (elle ne montrait plus que ce tour)')
+    joue('sage', 'oeil')
+    v = pg.evaluate(VUE); g = v['betes'][gardien]
+    verifie(v['vu'] == 2 and g['lignes'] == 1 and g['degats'] == ['−85'] and g['suite']['cibles'] == [proie], 'tour 2, œil relancé : une seule ligne — la proie, le sablier, puis −85')
+    pg.screenshot(path=os.path.join(CAP, 'combat-oeil-2.png'))
+    refuse = pg.evaluate("() => { var E = DJ.Combat._E(); E.c.h.sage.joue = false; var g = E.c.gestes('sage').filter(function(x){ return x.geste === 'oeil'; })[0]; E.c.h.sage.joue = true; return [g.permis, g.mot]; }")
+    verifie(refuse == [False, 'Déjà vu !'], 'la rune de l\'œil ne se relance pas tant qu\'elle montre déjà le tour suivant (« Déjà vu ! »)')
+    b0 = pg.evaluate("() => DJ.Combat._E().c.ciblables()[0].id")
+    joue('alchimiste', 'herbes', 'pisteur'); joue('pisteur', 'fleche', b0)
+
+    # tour 3 : le coup tombe à la fin du tour ; le bouclier en arrête 75 %
+    v = pg.evaluate(VUE); g = v['betes'][gardien]
+    verifie(v['tour'] == 3 and g['prepare'] == 2 and g['pret'] and 'gros coup' in g['pastille'] and g['degats'] == ['−85'] and g['vise']['cibles'] == [proie], 'tour 3 : « ' + g['pastille'].strip() + ' », −85 sur ' + proie)
+    pg.screenshot(path=os.path.join(CAP, 'combat-oeil-3.png'))
+    pv0 = pg.evaluate("(h) => DJ.Combat._E().c.h[h].pv", proie)
+    autres = pg.evaluate("(h) => { var E = DJ.Combat._E(), t = 0; E.c.etat().betes.forEach(function(b){ if(!b.mort && b.type !== 'gardien' && b.vise && b.vise.cibles.indexOf(h) >= 0) t += Math.ceil(b.vise.degats * b.vise.fois * 0.25); }); return t; }", proie)
+    joue('sage', 'bouclier', proie)
+    b0 = pg.evaluate("() => DJ.Combat._E().c.ciblables()[0].id")
+    joue('alchimiste', 'herbes', 'sage' if proie != 'sage' else 'pisteur'); joue('pisteur', 'fleche', b0)
+    pv1 = pg.evaluate("(h) => DJ.Combat._E().c.h[h].pv", proie)
+    ecran = pg.evaluate("(h) => +document.querySelector('#pv-' + h + ' b').textContent", proie)
+    verifie(pv0 - pv1 == 22 + autres and ecran == pv1, f'le marteau tombe sur {proie} : 85 → 22 derrière le bouclier ({pv0} → {pv1}), et l\'écran dit pareil')
+    v = pg.evaluate(VUE); g = v['betes'][gardien]
+    verifie(g['prepare'] == 0 and not g['pastille'] and not g['rond'], 'après le coup : plus de pastille, plus de rond rouge')
+    verifie(v['vu'] == 0 and all(b['tetes'] == 0 for b in v['betes'].values()), 'tour 4 : l\'œil s\'est refermé, plus aucune tête au-dessus des monstres')
+    verifie(pg.evaluate('window.__parle') == 0 and not errs, 'œil : pas de lecture vocale toute seule, pas d\'erreur ' + str(errs[:2]))
+    ctx.close()
+
+
+def huile(nav):
+    """Romain, 11 novembre : « s'il se prend une toile, l'Alchimiste peut lui balancer de l'huile et ça le libère. »"""
+    print('— l\'huile libère un ami pris dans une toile')
     ctx = nav.new_context(viewport={'width': 1024, 'height': 768}, device_scale_factor=1, has_touch=True, is_mobile=True)
     pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
     pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
     pg.route('**/fonts.gstatic.com/**', lambda r: r.fulfill(status=404, body=''))
-    pg.add_init_script("window.__parle = 0; try{ speechSynthesis.speak = function(u){ window.__parle++; }; }catch(e){}")
-    pg.goto(PAGE + '?combat=canaux&graine=5&sac=feu,huile,baume&vitesse=3')
 
     def libre():
         pg.wait_for_function("(function(){ var e = DJ.Combat.etat(); return !!e && ((e.mode === 'qui' && !e.occupe) || e.mode === 'fin'); })()", timeout=90000, polling=200)
-        pg.wait_for_timeout(250)
-    libre()
-    verifie(pg.evaluate("() => !document.querySelector('.b-livre .nb') && /Journal/.test(document.querySelector('.b-livre').textContent)"), 'étude : le bouton s\'appelle « Journal », sans chiffre au départ')
-    cible = pg.evaluate("() => { var E = DJ.Combat._E(), g = E.c.gestes('sage').filter(function(x){ return x.geste === 'etudier'; })[0]; return g.cibles[g.cibles.length - 1]; }")
-    pg.tap('.b-heros[data-id="sage"]', force=True); pg.wait_for_timeout(200)
-    pg.tap('.carte[data-id="etudier"]', force=True); pg.wait_for_timeout(200)
-    pg.eval_on_selector('#zone-' + cible, 'e => e.click()')
-    pg.wait_for_function("() => !!document.querySelector('.b-livre .nb')", timeout=30000)
-    pg.wait_for_timeout(900)
-    verifie(pg.evaluate("() => document.querySelector('.b-livre .nb').textContent") == '1' and pg.evaluate("() => document.querySelector('.b-livre').classList.contains('a-lire')"), 'étude : un code de plus, le bouton du journal bat')
-    pg.tap('.b-livre', force=True); pg.wait_for_timeout(400)
-    j = pg.evaluate("""() => { var f = document.querySelector('#fenetre'), l = f.querySelector('.ligne.etude'), pb = [];
-      f.querySelectorAll('.ligne').forEach(function(e){ var t = e.textContent.replace(/🔊/g, '').trim(); if(t.split(/\\s+/).length > 3 && !e.querySelector('.lire')) pb.push(t.slice(0, 30)); });
-      return {titre:f.querySelector('h2').textContent, m:l && l.getAttribute('data-etude'), code:l && l.querySelector('.code-ligne').textContent, attendu:l && DONJON_CODES.emojis('etude:' + l.getAttribute('data-etude')),
-        vides:f.querySelectorAll('.ligne.vide').length, texte:f.textContent, pb:pb}; }""")
-    verifie(j['m'] == 'chauvesouris' and j['code'] == j['attendu'] and len(j['code']) > 3, f'étude : le journal montre le code de la chauve-souris pour le Sage ({j["code"]})')
-    verifie(j['vides'] == 1 and 'Pas encore étudié' in j['texte'], 'étude : le rat, rencontré mais pas étudié, est noté « Pas encore étudié »')
-    verifie('fait peur' not in j['texte'] and 'Qui suis-je' not in j['texte'], 'étude : aucune énigme ni solution dans le donjon (elles sont sur la tablette du Sage)')
-    verifie(not j['pb'], 'étude : chaque texte du journal a son 🔊 ' + str(j['pb']))
-    pg.screenshot(path=os.path.join(CAP, 'combat-journal.png'))
-    pg.tap('#fenetre [data-act="fermer"]', force=True) if pg.evaluate("() => !!document.querySelector('#fenetre [data-act=\"fermer\"]')") else pg.evaluate("() => DJ.fermer()")
-    pg.wait_for_timeout(300)
-    verifie(not pg.evaluate("() => document.querySelector('.b-livre').classList.contains('a-lire')"), 'étude : une fois le journal ouvert, le bouton ne bat plus')
-    r = pg.evaluate("() => { var E = DJ.Combat._E(); return {deja:E.c.refus('sage', 'etudier', '" + cible + "'), reste:E.c.gestes('alchimiste').length}; }")
-    verifie(r['deja'] in ('Déjà joué', 'Déjà étudié'), 'étude : ce monstre ne s\'étudie pas deux fois')
-    verifie(pg.evaluate('window.__parle') == 0 and not errs, 'étude : pas de lecture vocale toute seule, pas d\'erreur ' + str(errs[:2]))
+        pg.wait_for_timeout(300)
+
+    def joue(h, g, cible=None):
+        pg.tap(f'.b-heros[data-id="{h}"]', force=True); pg.wait_for_timeout(200)
+        pg.tap(f'.carte[data-id="{g}"]', force=True); pg.wait_for_timeout(200)
+        if cible in ('sage', 'alchimiste', 'pisteur'):
+            pg.tap(f'.zone[data-type="heros"][data-id="{cible}"]', force=True)
+        elif cible:
+            pg.eval_on_selector('#zone-' + cible, 'e => e.click()')
+        else:
+            pg.eval_on_selector('.zone[data-type="bete"]', 'e => e.click()')
+        pg.wait_for_timeout(400); libre()
+
+    pris = None
+    for graine in range(5, 12):
+        # l'araignée lance sa toile au premier tour : on cherche une graine où ce n'est pas l'Alchimiste qui la prend
+        pg.goto(PAGE + f'?combat=toiles&graine={graine}&potions=toutes&vitesse=3'); libre()
+        joue('sage', 'oeil')
+        pris = pg.evaluate("() => { var b = DJ.Combat._E().c.etat().betes.filter(function(x){ return x.type === 'araignee'; })[0]; return b.vise && b.vise.attaque === 'toile' ? b.vise.cibles[0] : null; }")
+        if pris and pris != 'alchimiste':
+            break
+    verifie(pris in ('pisteur', 'sage'), f'huile : l\'œil montre qui l\'araignée va entoiler ({pris}, graine {graine})')
+    verifie(pg.evaluate("() => { var e = document.querySelector('.vise-bloc .vise-ic'); return !!e && e.textContent === '🕸️'; }"), 'huile : la toile se voit à côté de la proie (🕸️)')
+    b0 = pg.evaluate("() => DJ.Combat._E().c.ciblables()[0].id")
+    joue('alchimiste', 'herbes', 'pisteur'); joue('pisteur', 'fleche', b0)
+    e = pg.evaluate("(h) => { var E = DJ.Combat._E(); return {entoile:E.c.h[h].entoile, aJouer:E.c.aJouer()}; }", pris)
+    verifie(e['entoile'] and pris not in e['aJouer'], f'huile : au tour 2, {pris} est pris dans la toile (il passerait son tour)')
+    pg.tap('.b-heros[data-id="alchimiste"]', force=True); pg.wait_for_timeout(250)
+    pg.tap('.carte[data-id="p:huile"]', force=True); pg.wait_for_timeout(300)
+    verifie(pg.evaluate("(h) => { var E = DJ.Combat._E(); return E.geste.cibles.indexOf(h) >= 0 && document.querySelector('.h-' + h).classList.contains('dispo'); }", pris), 'huile : la carte « Huile » choisie, l\'ami entoilé porte le rond jaune (on peut la lui lancer)')
+    pg.screenshot(path=os.path.join(CAP, 'combat-huile-1.png'))
+    pg.tap(f'.zone[data-type="heros"][data-id="{pris}"]', force=True); pg.wait_for_timeout(400); libre()
+    e = pg.evaluate("(h) => { var E = DJ.Combat._E(); return {entoile:E.c.h[h].entoile, aJouer:E.c.aJouer(), alch:E.c.h.alchimiste.joue}; }", pris)
+    verifie(not e['entoile'] and pris in e['aJouer'] and e['alch'], f'huile : {pris} est libéré, et il peut jouer ce tour-ci')
+    pg.screenshot(path=os.path.join(CAP, 'combat-huile-2.png'))
+    verifie(not errs, 'huile : aucune erreur JavaScript ' + str(errs[:2]))
     ctx.close()
 
 
@@ -192,7 +294,7 @@ def potions(nav):
     def libre():
         pg.wait_for_function("(function(){ var e = DJ.Combat.etat(); return !!e && ((e.mode === 'qui' && !e.occupe) || e.mode === 'fin'); })()", timeout=90000, polling=200)
         pg.wait_for_timeout(250)
-    MESURE = """() => { var b = document.querySelector('#bande').getBoundingClientRect(), l = document.querySelector('.b-livre').getBoundingClientRect(), o = {ids:[], dehors:[], petites:[]};
+    MESURE = """() => { var b = document.querySelector('#bande').getBoundingClientRect(), l = {left:b.right, right:b.right}, o = {ids:[], dehors:[], petites:[]};
       document.querySelectorAll('#bande .carte').forEach(function(c){ var r = c.getBoundingClientRect(), id = c.getAttribute('data-id'); o.ids.push(id); if(c.classList.contains('mini')) o.petites.push(id);
         if(r.right > l.left + 1 || r.bottom > b.bottom + 1 || r.left < b.left) o.dehors.push(id);
         var t = c.querySelector('b'); if(t && t.scrollWidth > c.clientWidth + 1) o.dehors.push(id + ' (nom coupé)'); });
@@ -201,7 +303,7 @@ def potions(nav):
     pg.tap('.b-heros[data-id="alchimiste"]', force=True); pg.wait_for_timeout(300)
     m = pg.evaluate(MESURE)
     verifie(m['petites'] == ['p:feu', 'p:fumigene', 'p:huile', 'p:colle', 'p:acide', 'p:baume', 'p:coeur', 'p:givre', 'p:baumelum'], f'l\'Alchimiste a ses 9 potions sous la main, toutes visibles ({len(m["petites"])})')
-    verifie(not m['dehors'] and m['journal'], 'les cartes tiennent toutes dans la bande, le Journal aussi ' + str(m['dehors']))
+    verifie(not m['dehors'] and m['journal'], 'les cartes tiennent toutes dans la bande ' + str(m['dehors']))
     pg.tap('.carte[data-id="p:fumigene"]', force=True); pg.wait_for_timeout(250)
     verifie(pg.evaluate("() => document.querySelector('.b-lbl.dit').textContent") == 'un gros nuage' and pg.evaluate("() => document.querySelector('.carte[data-id=\"p:fumigene\"]').classList.contains('choisie')"), 'la potion choisie dit ce qu\'elle fait, en trois mots')
     pg.screenshot(path=os.path.join(CAP, 'combat-potions.png'))
@@ -229,11 +331,16 @@ with sync_playwright() as p:
             potions(nav)
         except Exception as ex:
             verifie(False, f'potions : le test s\'arrête ({str(ex)[:200]})')
-    if not SALLES or 'canaux' in SALLES or len(sys.argv) < 2:
+    if not SALLES or 'atelier' in SALLES or len(sys.argv) < 2:
         try:
-            etude(nav)
+            oeil(nav)
         except Exception as ex:
-            verifie(False, f'étude : le test s\'arrête ({str(ex)[:200]})')
+            verifie(False, f'œil : le test s\'arrête ({str(ex)[:200]})')
+    if not SALLES or 'toiles' in SALLES or len(sys.argv) < 2:
+        try:
+            huile(nav)
+        except Exception as ex:
+            verifie(False, f'huile : le test s\'arrête ({str(ex)[:200]})')
     for k, s in enumerate(SALLES):
         try:
             salle(nav, s, 11 + k)

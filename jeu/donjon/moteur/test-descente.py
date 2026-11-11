@@ -2,8 +2,8 @@
 
 Une équipe maligne joue tout le donjon sur l'écran du Pisteur, du sac de départ jusqu'à Léo, sans aucun raccourci :
   - chaque combat pour de vrai, geste après geste, par les boutons (qui joue, quel geste, quelle cible) ; ses choix sont
-    ceux de la simulation (equilibre.js, l'équipe « maligne » : elle étudie, ouvre les points faibles dans l'ordre, soigne
-    quand il faut), collés dans la page ;
+    ceux de la simulation (equilibre.js, l'équipe « maligne » : elle a lu le carnet de l'aventurier, ouvre les points faibles
+    dans l'ordre, soigne quand il faut, se sert de la rune de l'œil pour savoir qui protéger), collés dans la page ;
   - chaque salle sans combat : la sacoche, les herbes, le coffre de la réserve, la fleur de givre, le tas d'os et le crâne
     secret, les dalles claires, la page déchirée et le lutrin, la porte de la gueule (la crypte, l'amulette), la porte de
     l'œil, le feu de camp (repos, recette du Givre, sac refait) ;
@@ -36,7 +36,7 @@ _a = _eq.index("/* =============================================================
 _b = _eq.index('var EQUIPES = {')
 POLITIQUE = """window.__POL = (function(){ var R = window.Regles, D = R.D, C = D.CHIFFRES, MAX_TOURS = 40;
 %s
-return {maligne:reflechie({livre:true, etudie:true}), hasard:auHasard}; })();
+return {maligne:reflechie({livre:true}), hasard:auHasard}; })();
 window.__MEM = {vu:{}}; window.__RND = window.Regles.alea(%d); window.__REFUS = [];""" % (_eq[_a:_b], GRAINE * 104729 + 17)
 
 CHOIX = """() => { var E = DJ.Combat._E(), c = E.c, p = DJ.Explo._X().partie;
