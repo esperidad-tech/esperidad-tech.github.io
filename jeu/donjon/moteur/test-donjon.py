@@ -123,16 +123,13 @@ def visite(nav):
     # Romain, 11 novembre : « un livre à l'entrée du puits » — le carnet de l'aventurier attend par terre
     verifie(J.js("document.querySelectorAll('#scene .perso.heros').length") == 3 and J.js("!!DJ.Explo._S().o.carnet") and J.js("!document.querySelector('#b-repartir.guide')"), 'le puits : le carnet de l\'aventurier attend par terre (« Continuer » ne porte pas encore le rond jaune)')
     # Romain, 10 novembre : plus de ronds jaunes dans les salles ; la pierre de rune du Sage est là, sans rien pour la montrer
-    verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0 and J.js("!DJ.Explo._S().o.rune.el.classList.contains('ob-brille')"), 'le puits : aucun rond jaune dans la salle, et la pierre de rune ne brille pas')
+    verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0 and J.js("!DJ.Explo._S().o.rune"), 'le puits : aucun rond jaune dans la salle ; la pierre de rune n\'est plus à l\'entrée (Romain, 11 novembre)')
     J.cap('puits'); J.objet('carnet'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'carnet:aventurier') and 'le Sage' in J.js("document.querySelector('#fenetre .ligne').textContent"), f'le carnet : un code pour le Sage ({J.code_montre()})')
     verifie(not J.sans_lire(), 'la fenêtre du code du carnet : chaque texte a son 🔊')
     J.clic('#fenetre .aller'); pg.wait_for_timeout(900)
     verifie(J.js("!!document.querySelector('#b-repartir.guide')") and J.partie()['faits'].get('objet:carnet') == 1, 'le carnet ramassé : plus rien de visible à prendre, « Continuer » porte le rond jaune')
-    J.objet('rune'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
-    verifie(J.code_montre() == noms_code(pg, 'rune:lumiere') and 'le Sage' in J.js("document.querySelector('#fenetre .ligne').textContent"), f'la pierre de rune : un code pour le Sage ({J.code_montre()})')
-    verifie(not J.sans_lire(), 'la fenêtre du code de la rune : chaque texte a son 🔊')
-    J.cap('rune'); J.clic('#fenetre .aller'); J.repartir()
+    J.repartir()
     e = J.etat()
     verifie(e['ecran'] == 'carte' and sorted(e['sorties']) == ['aeration', 'galerie', 'rats'], f'la carte : trois passages partent du puits ({e["sorties"]})')
     verifie(J.js("DJ.Explo._X().V.brume.estVu('puits') && !DJ.Explo._X().V.brume.estVu('rats')"), 'la brume cache tout sauf le puits')
@@ -141,6 +138,12 @@ def visite(nav):
     # la galerie : la bourse
     J.va('galerie'); J.scene('galerie'); J.objet('bourse'); J.libre(); pg.wait_for_timeout(300)
     verifie(J.partie()['or'] > 0, f'la galerie : la bourse donne de l\'or ({J.partie()["or"]})')
+    # la pierre de rune du Sage est ici, dans la deuxième salle, parmi les éboulis : rien ne la montre
+    verifie(J.js("!DJ.Explo._S().o.rune.el.classList.contains('ob-brille')") and J.js("document.querySelectorAll('#scene .ob-guide').length") == 0, 'la galerie : la pierre de rune est là, sans lueur ni rond jaune')
+    J.objet('rune'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
+    verifie(J.code_montre() == noms_code(pg, 'rune:lumiere') and 'le Sage' in J.js("document.querySelector('#fenetre .ligne').textContent"), f'la pierre de rune : un code pour le Sage ({J.code_montre()})')
+    verifie(not J.sans_lire(), 'la fenêtre du code de la rune : chaque texte a son 🔊')
+    J.cap('rune'); J.clic('#fenetre .aller'); pg.wait_for_timeout(600)
     J.repartir(); J.chemin('puits')
     # l'aération : les herbes (un objet à code) ; la sacoche a disparu avec le sac
     J.va('aeration'); J.scene('aeration'); pg.wait_for_timeout(300)

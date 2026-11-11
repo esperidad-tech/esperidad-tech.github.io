@@ -111,7 +111,8 @@ function majCoin(anim){
   }
 }
 function majTraductions(){ qa('[data-trad]', planEl).forEach(function(g){ g.style.display = S.lues[g.getAttribute('data-trad')] ? '' : 'none'; }); }
-/* la rune de lumière : le Pisteur la trouve au fond du puits (Romain, 10 novembre) ; tant que son code n'est pas arrivé, pas de rune */
+/* la rune de lumière : le Pisteur la trouve dans le donjon (dans la deuxième salle ; le texte ne dit pas où : l'entrée peut être
+   le puits ou la crypte — Romain, 11 novembre) ; tant que son code n'est pas arrivé, pas de rune */
 function majRune(anim){
   var ok = !!S.codes['rune:lumiere'];
   runeEl.hidden = !ok;
@@ -364,11 +365,10 @@ function livre(guide){
   }
   html += '</div>';
   /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre étudié */
-  var betes = monstresEtudies(), carnet = !!S.codes['carnet:aventurier'];
+  var betes = monstresEtudies();                        /* (tout le carnet dès qu'il est là : Romain, 11 novembre) */
   html += '<div class="livre-betes"><h3>📓 Le vieux carnet</h3>' +
     (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
-      : dit(carnet ? 'Ses pages sont collées par l’humidité. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code, et tu sauras quelle page décoller.'
-                   : 'Pas encore de carnet. On raconte qu’un aventurier a laissé le sien à l’entrée du donjon… Si le Pisteur le trouve, il te montrera un code.')) + '</div>';
+      : dit('Pas encore de carnet. On raconte qu’un aventurier a laissé le sien à l’entrée du donjon… Si le Pisteur le trouve, il te montrera un code.')) + '</div>';
   if(S.codes['porte:odette']) html += '<div class="livre-note">' + dit('Noté de ta main : Odette est vivante, derrière la porte aux quatre signes.') + '</div>';
   var w = PG.fenetre(html, {classe:'livre parch'}), f = w.el;
   if(guide) PG.guider(f.querySelector('[data-page="' + guide + '"]'));
@@ -387,15 +387,17 @@ function livre(guide){
    (fabriqués par pages/croquis/seuls.py puis croquis.py, à partir des monstres du bestiaire).
    ====================================================================== */
 var PORTRAITS = /donjon-sage\.html/.test(location.pathname) ? 'pages/portraits/' : 'i/portrait-';
-function monstresEtudies(){ return Object.keys(DD.LIVRE).filter(function(m){ return !!S.codes['etude:' + m]; }); }
+/* Romain, 11 novembre (8 h 45) : « qu'il y ait toutes les pages débloquées dès le début », sans pages collées. Dès que le Sage
+   a le carnet, il le feuillette en entier ; un code d'étude l'ouvre tout droit à la page du monstre. (Sans le carnet, seules
+   les pages ouvertes par un code d'étude sont là.) */
+function monstresEtudies(){ return Object.keys(DD.LIVRE).filter(function(m){ return !!S.codes['carnet:aventurier'] || !!S.codes['etude:' + m]; }); }
 /* la page d'un monstre : le croquis de l'aventurier et son récit (un 🔊 par paragraphe). Pas de titres, pas de questions. */
 function pageMonstre(m, nouveau){
   var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [];
   var html = '<div class="titre"><h2>' + esc(M.nom) + '</h2>' + PG.lireBtn(M.nom) + '</div>' +
     '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt=""><small>Carnet d’un aventurier</small></div>' +
     '<div class="bete-recit">' +
-      (nouveau ? dit(S.codes['carnet:aventurier'] ? 'Une page du carnet se décolle : c’est bien ce monstre-là. L’aventurier raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.'
-                                                  : 'Une vieille page, glissée dans ton Grand Livre. Un aventurier y raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.', 'bete-intro') : '') +
+      (nouveau ? dit('Le carnet s’ouvre à la bonne page : c’est bien ce monstre-là. L’aventurier raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.', 'bete-intro') : '') +
       L.map(function(t){ return '<div class="recit">' + dit(t) + '</div>'; }).join('') +
     '</div></div>' +
     '<div class="rangee"><button type="button" class="aller" data-fen-fermer>' + (nouveau ? 'C’est noté' : 'Refermer la page') + '</button></div>';
@@ -435,18 +437,18 @@ function scene(id){
   if(id.indexOf('etude:') === 0){
     var m = id.slice(6);
     pageMonstre(m, true);
-    conte('Une page de plus dans le carnet de l’aventurier : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras dans ton Grand Livre.');
+    conte('Le carnet de l’aventurier, à la page : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras dans ton Grand Livre.');
   } else if(id === 'carnet:aventurier'){
     /* le carnet trouvé à l'entrée du donjon : il entre dans le Grand Livre */
     var wc = PG.fenetre('<div class="titre"><h2>📓 Un vieux carnet</h2></div>' +
-      dit('Un vieux carnet, trouvé à l’entrée du donjon. Quelqu’un est passé par ici avant vous : un aventurier, sans pouvoirs ni potions, qui a tout noté.') +
-      dit('L’humidité a collé ses pages. Quand ton héros étudiera un monstre, tu sauras laquelle décoller.') +
+      dit('Un vieux carnet, trouvé à l’entrée du donjon. Quelqu’un est passé par ici avant vous : un aventurier, qui a tout noté.') +
+      dit('Chaque monstre qu’il a croisé a sa page. Tu peux le feuilleter quand tu veux, dans ton Grand Livre.') +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Je le garde</button></div>', {classe:'scene parch'});
     PG.son('page'); PG.guider(wc.el.querySelector('.aller'));
-    conte('Le carnet de l’aventurier est rangé dans ton Grand Livre. Ses pages attendent d’être décollées.');
+    conte('Le carnet de l’aventurier est rangé dans ton Grand Livre. Feuillette-le : chaque monstre y a sa page.');
   } else if(id === 'rune:lumiere'){
     var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
-      dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
+      dit('Le Pisteur l’a trouvée parmi les éboulis : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Prendre la rune</button></div>', {classe:'scene parch', surFermer:function(){
         majRune(true); mesurerBords(); PG.guider(runeEl);
         conte('Ta rune de lumière est là, en bas. Promène-la doucement sur le vieux papier…');

@@ -979,7 +979,7 @@ section('Les salles sans combat');
 (function(){
   var p = R.nouvellePartie(21), ev;
   ev = R.entrer(p, 'galerie');
-  egal(trouve(ev, 'scene').contenu.objets, ['bourse'], 'la galerie effondrée : une bourse');
+  egal(trouve(ev, 'scene').contenu.objets, ['bourse', 'rune'], 'la galerie effondrée : une bourse, et la pierre de rune du Sage');
   ev = R.prendre(p, 'bourse');
   ok(trouve(ev, 'or').n === D.CHIFFRES.bourse && p.or === D.CHIFFRES.bourse && p.heros.pisteur.objets.length === 1, 'la bourse donne de l\'or et ne prend pas de place');
   egal(R.prendre(p, 'bourse')[0].mot, 'Déjà pris', 'on ne la prend pas deux fois');
@@ -1050,9 +1050,12 @@ section('Les salles sans combat');
     ok(trouve(der, 'passage').vers === 'toiles' && z.faits['passage:canaux'] === 1 && R.contenu(z, 'canaux').roue.ouvert, 'trois à droite, un à gauche, deux à droite : la grille se lève, le passage vers la cave aux toiles est ouvert');
     ok(R.roue(z, 'd')[0].libre, 'ensuite la roue tourne dans le vide');
     egal(D.ROUE.suite.join(''), 'dddgdd', 'l\'ordre de la roue est celui du plan du Sage (3 à droite, 1 à gauche, 2 à droite)');
-    /* la rune de lumière du Sage, au fond du puits */
+    /* à l'entrée : le carnet de l'aventurier ; la rune de lumière du Sage est dans la deuxième salle (Romain, 11 novembre :
+       le donjon est le même qu'on entre par le puits ou par la crypte, seule la pièce d'entrée change) */
     var y = R.nouvellePartie(8);
-    egal(R.contenu(y, 'puits').objets, ['rune', 'carnet'], 'au fond du puits : la pierre de rune, et le carnet de l\'aventurier');
+    egal(R.contenu(y, 'puits').objets, ['carnet'], 'à l\'entrée : le carnet de l\'aventurier, et pas la pierre de rune');
+    R.entrer(y, 'galerie');
+    egal(R.contenu(y, 'galerie').objets, ['bourse', 'rune'], 'dans la deuxième salle (la galerie effondrée) : la bourse, et la pierre de rune');
     ok(D.OBJETS.carnet.code === 'carnet:aventurier' && CODES.CODES['carnet:aventurier'].a === 'sage' && CODES.CODES['carnet:aventurier'].de === 'pisteur', 'le carnet donne un code pour le Sage (Romain, 11 novembre : « un livre à l\'entrée du puits »)');
     var er = R.prendre(y, 'rune');
     ok(trouve(er, 'code-objet').code === 'rune:lumiere' && trouve(er, 'code-objet').pour === 'sage' && R.objets(y).codes.some(function(c){ return c.code === 'rune:lumiere'; }), 'la prendre donne un code pour le Sage (il reste dans les objets)');

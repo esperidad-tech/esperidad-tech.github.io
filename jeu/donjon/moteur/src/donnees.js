@@ -362,8 +362,10 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true, objets:['rune', 'carnet']},     /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
-  galerie:{nom:'La galerie effondrée', objets:['bourse']},
+  puits:{nom:'Le fond du puits', depart:true, objets:['carnet']},             /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
+  /* Romain, 11 novembre (8 h 45) : la rune du Sage n'est plus dans la première salle, mais dans la deuxième — pour que rien ne
+     dépende de l'entrée (le puits aujourd'hui, la crypte dans l'enquête 3) */
+  galerie:{nom:'La galerie effondrée', objets:['bourse', 'rune']},
   aeration:{nom:'Le puits d\'aération', objets:['herbes']},            /* (la sacoche est retirée : plus de sac à remplir, Romain, 10 novembre) */
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */

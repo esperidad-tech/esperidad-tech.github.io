@@ -216,7 +216,8 @@ class Descente:
         def fait(k):
             return bool(f.get(k))
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
-        if not fait('objet:rune') or not fait('objet:carnet'): return 'puits'      # la pierre de rune du Sage et le carnet de l'aventurier, au fond du puits
+        if not fait('objet:carnet'): return 'puits'                     # le carnet de l'aventurier, à l'entrée
+        if not fait('objet:rune'): return 'galerie'                     # la pierre de rune du Sage, dans la deuxième salle
         if not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
         if not fait('objet:fleches-lourdes') or not fait('objet:fleches-argent'): return 'reserve'
@@ -272,9 +273,12 @@ class Descente:
         if lieu == 'puits' and not f.get('objet:carnet'):
             self.objet('carnet'); self.fenetre_code()
             f = self.partie()['faits']
-        if lieu == 'puits' and not f.get('objet:rune'):
-            self.cap('puits'); self.objet('rune'); self.fenetre_code()
-            verifie(bool(self.partie()['faits'].get('objet:rune')), 'au fond du puits : la pierre de rune est trouvée (un code pour le Sage)')
+        if lieu == 'galerie' and not f.get('objet:rune'):
+            self.cap('galerie'); self.objet('rune'); self.fenetre_code()
+            verifie(bool(self.partie()['faits'].get('objet:rune')), 'dans la galerie : la pierre de rune est trouvée (un code pour le Sage)')
+            f = self.partie()['faits']
+        if False:
+            pass
         elif lieu == 'canaux' and not f.get('passage:canaux'):
             # l'ordre du plan du Sage : 3 à droite, 1 à gauche, 2 à droite
             self.cap('canaux-calme')
