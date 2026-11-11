@@ -951,6 +951,14 @@ var ARRIVEES_HISTOIRE = {
      Avec cette arrivée, la ville s'arrête et la forêt commence sur toute la largeur de la carte (ARRIVEES_LISIERE, genererMonde). */
   foret:'<path d="M-10,14 V-2 C-10,-13 10,-13 10,-2 V14 Z" fill="#12241a" stroke="' + CONTOUR + '" stroke-width="2.4"/>' +
     [[-15, 5, 8], [15, 5, 8], [-13, -7, 8.5], [13, -7, 8.5], [-5, -15, 8], [5, -15, 8]].map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + q[2] + '" fill="#4f9a4a" stroke="' + CONTOUR + '" stroke-width="2.4"/><circle cx="' + (q[0] - 2) + '" cy="' + (q[1] - 2.5) + '" r="3" fill="#9ad67a" opacity=".55"/>'; }).join(''),
+  /* la cour du moulin : les pavés où les traces se perdent, le moulin au toit de chaume et sa roue à aubes (enquête 2, les traces de la
+     charrette depuis le champ de coquelicots — Romain, 11 novembre, 9 h 20 : « il faut rajouter juste un moulin à la fin de la piste ») */
+  moulin:'<g transform="translate(0,-10)"><ellipse cx="2" cy="11" rx="25" ry="8" fill="#8c8aa0" stroke="' + CONTOUR + '" stroke-width="2.4"/><path d="M-14,9 h7 M-3,13 h7 M8,9 h7 M-8,15 h6" stroke="#6d6b82" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<rect x="-16" y="-8" width="27" height="17" rx="2" fill="#b7aa95" stroke="' + CONTOUR + '" stroke-width="2.6"/><path d="M-16,-1 h27 M-9,-8 v7 M3,-1 v10" stroke="#8f8370" stroke-width="1.4"/>' +
+    '<path d="M-4,9 v-7 a3.5,3.5 0 0 1 7,0 v7 z" fill="#6f4529" stroke="' + CONTOUR + '" stroke-width="1.8"/><rect x="-13" y="-5" width="6" height="5" rx="1" fill="#86b9dd" stroke="' + CONTOUR + '" stroke-width="1.6"/>' +
+    '<path d="M-20,-6 L-13,-23 L8,-23 L15,-6 Z" fill="#d9b25c" stroke="' + CONTOUR + '" stroke-width="2.6" stroke-linejoin="round"/><path d="M-12,-21 l-3,13 M-5,-21 l-1,13 M2,-21 l1,13 M8,-21 l3,13" stroke="#a9813a" stroke-width="1.3"/>' +
+    '<circle cx="19" cy="0" r="10" fill="none" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="19" cy="0" r="10" fill="none" stroke="#9a6a40" stroke-width="2.6"/>' +
+    '<path d="M9,0 H29 M19,-10 V10 M12,-7 L26,7 M12,7 L26,-7" stroke="#9a6a40" stroke-width="2.2" stroke-linecap="round"/><circle cx="19" cy="0" r="2.6" fill="#6f4529" stroke="' + CONTOUR + '" stroke-width="1.4"/></g>',   /* (tout remonté de 10 : le Pisteur s'arrête dans la cour, devant la porte) */
   /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
   potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6)
 };
@@ -1180,7 +1188,7 @@ MJ.enregistrer('traces', {
     var ARTS = VILLE ? ARRIVEES_VILLE : ARRIVEES_ART, types = Object.keys(ARTS);
     M.arrivees.forEach(function(a){
       a.type = a.art && ARRIVEES_HISTOIRE[a.art] ? a.art : U.choix(types);
-      a.g = svgNoeud('g', {'class':'mja-arrivee', transform:'translate(' + a.x.toFixed(1) + ',' + (-a.d).toFixed(1) + ') scale(1.25)'}, gArr);
+      a.g = svgNoeud('g', {'class':'mja-arrivee', transform:'translate(' + a.x.toFixed(1) + ',' + (-a.d).toFixed(1) + ') scale(' + (a.type === 'moulin' ? 1.9 : 1.25) + ')'}, gArr);   /* (le moulin : un bâtiment, plus grand) */
       a.g.innerHTML = '<circle class="mja-arr-halo" r="21"/>' + (ARTS[a.type] || ARRIVEES_HISTOIRE[a.type]) + '<text class="mja-arr-x" y="6" text-anchor="middle">✗</text>';
     });
     /* ---- Zones sans empreintes, zones mouillées ---- */
@@ -1344,11 +1352,12 @@ MJ.enregistrer('traces', {
       a.essaye = true;
       var q = pctDans(svg, terrain, ecranX(a.x), ecranY(a.d) - 34);
       if(a.cible){
-        var foret = typeof M.lisiere === 'number';
+        /* (la forêt du massif, et le moulin de la charrette, enquête 2 : la vue remonte pour bien montrer où mène la piste) */
+        var foret = typeof M.lisiere === 'number' || a.type === 'moulin';
         phase = 'fin'; fini = true;
         a.g.classList.add('bonne');
         U.son('victoire'); U.vibrer(40);
-        flotter(terrain, q.x, q.y, ch ? 'C\'est la charrette !' : (a.txt || 'C\'est lui !'), 'ok');
+        flotter(terrain, q.x, q.y, a.txt || (ch ? 'C\'est la charrette !' : 'C\'est lui !'), 'ok');
         if(foret) montrerForet();
         P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, foret ? 2700 : 1500);
         return;
