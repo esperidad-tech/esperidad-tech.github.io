@@ -65,6 +65,13 @@ def talent(pg, role, tid):
 def ev(pg, act, data=None, go=True):
     pg.evaluate(f"() => {{ M.A['{act}']({{dataset:{json.dumps(data or {})}}}); }}")
     pg.wait_for_timeout(90)
+    # (11 novembre) l'enquête 2 passe par le labo : « Analyser » l'ouvre. Le robot ne joue pas l'analyse (tools/labo-e2.py le fait) :
+    # il boucle ce dossier-là et revient à l'atelier, où la fiche de la découverte s'ouvre.
+    if act == 'analyser' and pg.locator('#labo-cadre').count():
+        pg.wait_for_timeout(900)
+        f = next((x for x in pg.frames if x.parent_frame is not None), None)
+        f.wait_for_function('() => !!window.__labo', timeout=8000)
+        f.evaluate(f"() => {{ window.__labo.finir('{(data or {}).get('id')}'); window.__labo.quitter(); }}"); pg.wait_for_timeout(900)
     # l'explication avant un mini-jeu (Romain, 23 h 11) : on touche le bouton jaune (go=False : on s'arrête dessus, pour la regarder)
     if go and act != 'mj-go' and pg.evaluate("() => !!(M.UI.modal && M.UI.modal.type === 'avant-mj')"): ev(pg, 'mj-go')
 

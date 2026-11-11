@@ -460,10 +460,12 @@ function descente(graine, idEquipe, o){
       }
     }
     if(pas === 'dalles' && !p.faits['piege:dalles']){
-      /* avec le plan du Sage : les dalles claires. Sans lui : on essaie, et on retient ce qui a mordu. */
-      var sures = D.DALLES.sures, connu = {}, n = 0;
+      /* avec le plan du Sage : le code des dalles (« N B B, N B N », depuis le 10 novembre). Sans lui : on essaie, et on
+         retient ce qui a mordu. (La simulation lisait encore l'ancienne liste des dalles claires : elle arrivait à l'atelier
+         presque morte. Réparé le 11 novembre.) */
+      var connu = {}, n = 0;
       while(!p.faits['piege:dalles'] && n++ < 60){
-        var k = p.faits.dalles || 0, cote = o.plan !== false ? sures[k] : connu[k] || (rnd() < 0.5 ? 'fond' : 'devant');
+        var k = p.faits.dalles || 0, cote = o.plan !== false ? R.dalleSure(k) : connu[k] || (rnd() < 0.5 ? 'fond' : 'devant');
         var e2 = R.dalle(p, cote);
         if(e2[0].sure) connu[k] = cote; else connu[k] = cote === 'fond' ? 'devant' : 'fond';
       }

@@ -82,6 +82,8 @@ body.m-micro .toujours-micro{stroke-width:2.5}
 body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 @keyframes rond{0%,100%{opacity:.3} 50%{opacity:1}}
 .flamme{transform-box:fill-box; transform-origin:50% 100%; animation:flamme .9s ease-in-out infinite alternate; transition:transform .3s}
+.flamme.verte{filter:hue-rotate(95deg) saturate(1.6)}   /* (enquête 2 : le cuivre colore la flamme en vert) */
+.flamme.bleue{filter:hue-rotate(190deg) saturate(1.4) brightness(.9)}   /* (enquête 2 : le soufre brûle avec une petite flamme bleue) */
 @keyframes flamme{from{transform:scaleY(1) skewX(-3deg)} to{transform:scaleY(1.14) skewX(4deg)}}
 .vapeur{animation:vapeur 2.8s ease-in-out infinite} .vapeur.v2{animation-delay:-1.4s}
 @keyframes vapeur{0%{opacity:0; transform:translateY(8px)} 40%{opacity:.75} 100%{opacity:0; transform:translateY(-22px)}}

@@ -69,7 +69,7 @@ function aCreer(t){ var r = REA[t] || {}; return Object.keys(r).some(function(k)
 function utilisable(outil){
   var t = S.sel, o = t && OBJETS[t]; if(!o) return null; var fait = !!S.trouves[t], cuir = surCuir(t);
   if(outil === 'loupe') return !o.liquide && !fait;
-  if(outil === 'micro') return cuir && !!o.scene && microReste();
+  if(outil === 'micro') return cuir && !!o.scene && (microReste() || !!o.voirMicro);   /* (les pièces : on revient toujours voir la fêlure) */
   if(outil === 'test') return !!o.liquide && !fait;
   return !fait || (cuir && aCreer(t));       /* les bocaux, la bougie : tant qu'on cherche (ou tant que l'eau chaude peut encore faire déteindre) */
 }
@@ -124,7 +124,7 @@ function reaction(k, cible){
   bulle(cible.x, cible.y - 20, r.t, 5200);
   if(r.cree && !D().coupes.some(function(c){ return c && c.t === r.cree; })) nuage(cible, OBJETS[r.cree].coul || couleurLiq(r.cree), function(){ ajouterCoupe(r.cree); dessinerCoupes(); garder(); });
   if(r.fx === 'delave' && S.dos[t]){ S.dos[t].delave = true; garder(); }
-  if(r.fx === 'vire'){ S.teinte = r.c; dessinerCoupes(); setTimeout(function(){ S.teinte = null; dessinerCoupes(); }, 2600); }
+  if(r.fx === 'vire'){ S.teinte = r.c; dessinerCoupes(); dessinerLame(); setTimeout(function(){ S.teinte = null; dessinerCoupes(); dessinerLame(); }, 2600); }
   if(r.fx === 'bulles'){ petitesBulles(cible); son('bulles'); }
   if(r.cree || r.fx === 'vire' || r.fx === 'pali') son('taches');
 }
@@ -133,12 +133,14 @@ function flamme(){
   S.occupe = true; son('pince'); pince.style.display = ''; bout.setAttribute('fill', S.sel === 'fil' ? ROUGE : (o.liquide ? couleurLiq(S.sel) : (o.coul || ({poils:'#2a2a2e', plume:'#17171d'})[S.sel] || '#555')));
   var x0 = cible.x, y0 = cible.y, x1 = BOUGIE.x, y1 = BOUGIE.y - 86*BOUGIE.e;
   tween(680, function(p){ pince.setAttribute('transform', 'translate(' + f1(x0 + (x1 - x0)*p) + ',' + f1(y0 + (y1 - y0)*p - Math.sin(p*Math.PI)*46) + ')'); }, function(){
-    var f = $('#gLampe .flamme'); f.style.transform = 'scale(1.45)'; son('flamme');
-    var fumee = ''; for(var i=0;i<4;i++) fumee += '<circle cx="' + (x1 + i*4) + '" cy="' + (y1 - 14) + '" r="' + (5 + i*2.5) + '" fill="rgba(120,120,130,.45)"/>';
+    var f = $('#gLampe .flamme'); f.style.transform = 'scale(1.45)'; son('flamme'); if(r.verte) f.classList.add('verte'); if(r.bleue) f.classList.add('bleue');
+    /* (la poudre du pot noir fuse : une grosse fumée rouge ; enquête 2) */
+    var fumee = ''; for(var i=0;i<(r.fumeeRouge ? 7 : 4);i++) fumee += '<circle cx="' + (x1 + (r.fumeeRouge ? (i - 3)*7 : i*4)) + '" cy="' + (y1 - 14) + '" r="' + (r.fumeeRouge ? 9 + i*3 : 5 + i*2.5) + '" fill="' + (r.fumeeRouge ? 'rgba(200,40,50,.55)' : 'rgba(120,120,130,.45)') + '"/>';
     $('#effets').insertAdjacentHTML('beforeend', '<g id="fumee">' + fumee + '</g>');
     var cs = document.querySelectorAll('#fumee circle'); tween(1300, function(p){ cs.forEach(function(c, i){ c.setAttribute('cy', y1 - 14 - p*(60 + i*18)); c.setAttribute('opacity', 1 - p); }); });
     if(cuir) bout.setAttribute('fill', '#1a1210'); if(r.braise) bout.setAttribute('fill', '#ff6a2a');
-    attendre(1300, function(){ f.style.transform = ''; var g = $('#fumee'); if(g) g.remove(); bulle(x1 + 60, y1 - 6, r.t, 5600);
+    attendre(1300, function(){ f.style.transform = ''; f.classList.remove('verte', 'bleue'); var g = $('#fumee'); if(g) g.remove(); bulle(x1 + 60, y1 - 6, r.t, 5600);
+      if(r.trouve && !S.dits['t:' + r.trouve]){ S.dits['t:' + r.trouve] = 1; dire('trouve', {id:r.trouve}); garder(); }   /* (une trouvaille en plus, dite par la réaction : le cuivre) */
       tween(520, function(p){ pince.setAttribute('transform', 'translate(' + f1(x1 + (x0 - x1)*p) + ',' + f1(y1 + (y0 - y1)*p) + ')'); }, function(){ pince.style.display = 'none'; S.occupe = false; majOutils(); });
     });
   });

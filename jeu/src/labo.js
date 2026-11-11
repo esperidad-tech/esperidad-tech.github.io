@@ -25,10 +25,15 @@ var CADRE = 'labo-cadre', aMontrer = [];
 var ROLES = {pisteur:'le Pisteur', alchimiste:'l\'Alchimiste', barde:'le Barde', sage:'le Sage'};
 function enquete(){ try{ return M.S && M.S.e ? M.E() : null; }catch(e){ return null; } }
 M.laboDispo = function(){ var E = enquete(); return !!(window.LABO_HTML && E && Array.isArray(E.labo) && E.labo.length && M.P && M.P()); };
-/* Les objets reçus que le labo sait analyser, dans l'ordre où ils sont arrivés (quatre places sur le carré de cuir) */
+/* Les objets reçus que le labo sait analyser, dans l'ordre où ils sont arrivés (quatre places sur le carré de cuir).
+   Plus de quatre (l'enquête 2 en a six) : ceux qui restent à analyser d'abord, puis les derniers analysés. */
 function recus(){
   var E = M.E(), P = M.P();
-  return M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0 && E.labo.indexOf(k.slice(4)) >= 0 && E.objets && E.objets[k.slice(4)]; }).map(function(k){ return k.slice(4); }).slice(0, 4);
+  var l = M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0 && E.labo.indexOf(k.slice(4)) >= 0 && E.objets && E.objets[k.slice(4)]; }).map(function(k){ return k.slice(4); });
+  if(l.length <= 4) return l;
+  var aFaire = l.filter(function(id){ return !P.analyses[id]; }), faits = l.filter(function(id){ return !!P.analyses[id]; });
+  var garde = aFaire.slice(0, 4).concat(faits.slice(-Math.max(0, 4 - aFaire.length)));
+  return l.filter(function(id){ return garde.indexOf(id) >= 0; });   /* (toujours dans l'ordre d'arrivée : chacun garde sa place) */
 }
 /* Pour qui est un code (« pour le Barde ») */
 function pourQui(code){
