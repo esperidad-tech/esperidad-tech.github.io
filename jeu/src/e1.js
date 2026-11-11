@@ -140,7 +140,7 @@ E[1] = {
       {ic:'📜', titre:'Ce qui s\'est passé', lignes:[
         ['🐶', 'Pirate, le petit chien noir et blanc de Tim, s\'était perdu dans la forêt.'],
         ['🏮', 'Il faisait trop noir pour le chercher : Tim a pris la Lanterne d\'Or dans le bureau du maire, à la mairie.'],
-        ['🌙', 'À minuit, Odette a vu de sa fenêtre une petite silhouette sauter de toit en toit, avec une lumière dorée, vers la forêt.'],
+        ['🌙', 'À minuit, Odette a vu de sa fenêtre une petite silhouette sauter de toit en toit, jusqu\'à la mairie. Plus tard, une lumière dorée a filé vers la forêt.'],
         ['🕳️', 'Sous le Vieux Chêne, Tim a cru entendre Pirate. La terre a cédé : il est tombé tout au fond d\'un énorme trou.'],
         ['🪢', 'Toute l\'équipe a couru au Vieux Chêne. Gaspard est descendu au bout d\'une corde et a remonté Tim, avec la Lanterne. Pirate est revenu !'],
         ['🎉', 'Le soir, la Lanterne d\'Or a allumé toutes les lanternes de Brumeval : la fête était sauvée.']
@@ -320,7 +320,9 @@ E[1] = {
     ]},
     odette:{ou:{matin:'L2', apresmidi:'place', soir:'L2'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'À ma fenêtre, comme toutes les nuits : je ne dors jamais ! La lumière de la boulangerie est restée allumée jusqu\'au matin.', note:'Odette : la lumière de la boulangerie est restée allumée toute la nuit.'},
-      {q:'Avez-vous vu quelque chose ?', a:'Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, avec une lumière dorée qui brillait très fort. Elle est partie vers la forêt.', note:'Odette : à minuit, une petite silhouette avec une lumière dorée a filé sur les toits, vers la forêt.'},
+      /* (Romain, 11 novembre, 8 h : le voleur arrive par les toits, descend par la gouttière et repart à pied — les traces du massif vont à la
+         forêt par le sol. Avant, Odette voyait la silhouette partir vers la forêt « de toit en toit, avec une lumière dorée ».) */
+      {q:'Avez-vous vu quelque chose ?', a:'Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, j\'ai vu une lumière dorée filer vers la forêt.', note:'Odette : à minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, une lumière dorée a filé vers la forêt.'},
       {q:'Et votre écharpe rouge ?', a:'Elle est sur mes épaules, toute neuve ! Et avec ma canne, ça fait longtemps que je ne grimpe plus sur les toits.', note:'L\'écharpe d\'Odette est neuve. Avec sa canne, elle ne grimpe plus.'},
       {q:'Vos chats ont vu quelque chose ?', a:'Mon chat Moustache a rapporté ça cette nuit. Moi qui ne dors presque jamais, je vois tout ce qui se passe au village… mais ça, je ne sais pas d\'où ça vient ! Tiens, prends-le.', note:'Odette t\'a donné une grande plume noire rapportée par son chat.', obj:'plume'}
     ]},
