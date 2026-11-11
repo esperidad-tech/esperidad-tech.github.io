@@ -1835,7 +1835,7 @@ Les versions du 6 novembre sont dans `jeu/archives/` ; le document Claude Docs d
 - `e3.js` : la clé d'Anselme se joue dans le clocher, la lettre dans la mairie (leurs explications avant le mini-jeu disent « Traverse l'église et monte tout en haut du clocher… », « Traverse la mairie… jusqu'à son bureau ! »). La salle des mini-jeux : « Se cacher : le clocher » et « Se cacher : la mairie » (la version « ville en plein jour » de 20 h 50 n'est plus dans la salle ; `params.jour` reste dans le code).
 - Choix de Claude : avec 2 pièces (niveaux 1 à 8), on passe directement de la nef au haut du clocher, et du hall au bureau ; la sacristie et les archives n'apparaissent qu'avec 3 pièces (niveau 9 et plus : l'enfant à la clé d'Anselme, niveau 9, les voit).
 - Vérifié : rapide.sh, partie2.py, e3-pisteur, la salle sans erreur (les cinq décors de « Se cacher »), codes inchangés ; le robot de « Se cacher » (`jeu/test/mj-refaits/robot-cachette.py`) gagne autant qu'en ville : clocher niveau 8, 3 sur 4 (ville 4 sur 4) ; mairie niveau 5, 4 sur 4 (ville 3 sur 4).
-- **Pas encore en ligne** (11 novembre, 21 h 56) : la mise en ligne de cette retouche attend l'accord de Romain (les sources sont sur GitHub).
+- **En ligne le 11 novembre à 22 h 14** (accord de Romain à 22 h 06 : « Mets-le en ligne » ; commit 2614fba du site, version 20261111-2114, publication de GitHub vérifiée : `completed success`). Avant, à 21 h 56, la mise en ligne avait été arrêtée en attendant son accord.
 
 **La suite : les étapes 2, 3, 4, puis 6 à 8, chacune au go de Romain.**
 
