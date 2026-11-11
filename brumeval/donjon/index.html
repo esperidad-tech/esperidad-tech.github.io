@@ -501,6 +501,26 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .vise.petit{width:30px;height:30px;margin-left:-7px}
 .vise-fleche + .vise.petit{margin-left:0}
 .vise-ic{font-size:19px;margin-left:2px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+/* la rune de l'œil : la proie et les dégâts de ce tour, puis (plus petit, après la flèche) ceux du tour suivant */
+.vise-pile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;animation:oeil-pop .35s ease-out}
+.vise-dg{margin-left:4px;height:24px;padding:0 7px;border-radius:12px;background:#1a1222;border:2px solid #ff5a5a;color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;box-shadow:0 2px 0 rgba(0,0,0,.6);white-space:nowrap}
+.vise-dg small{font-size:11px;margin-left:2px;color:#ffd0d0}
+.vise-bloc.gros .vise-dg{height:28px;font-size:18px;background:#b3261e;border-color:#ffd54a;color:#fff}
+.vise-bloc.puis{opacity:.9;margin-left:8px}
+.vise-bloc.puis .vise.petit{width:27px;height:27px;margin-left:-6px;border-width:2px}
+.vise-bloc.puis .vise-puis + .vise.petit{margin-left:0}
+.vise-bloc.puis .vise-dg{height:22px;font-size:13.5px;padding:0 6px}
+.vise-bloc.puis.gros .vise-dg{height:26px;font-size:16px}
+.vise-bloc.puis .vise-ic{font-size:16px}
+.vise-puis{font-size:15px;font-weight:800;color:#bff8ff;margin:0 3px;text-shadow:0 2px 0 rgba(0,0,0,.7)}
+@keyframes oeil-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.oeil-rune{position:absolute;margin:-40px 0 0 -40px;width:80px;height:80px;font-size:62px;line-height:80px;text-align:center;pointer-events:none;animation:oeil-ouvre 1.1s ease-out both}
+@keyframes oeil-ouvre{0%{opacity:0;transform:scale(.2,.05)}22%{opacity:1;transform:scale(1.25,1.25)}34%{transform:scale(1.1,.15)}46%{transform:scale(1.15,1.15)}80%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.5)}}
+/* le coup qui se prépare (élites et boss) : visible de tous — une grosse pastille qui bat, et un rond rouge sous la bête
+   (le rond jaune reprend sa place quand la bête est à toucher) */
+.etat.e-coup{height:26px;padding:0 9px;border-radius:13px;font-size:14px;border-color:#ffd54a;color:#fff3c0;animation:pulse 1.1s ease-in-out infinite}
+.etat.e-coup.pret{background:#b3261e;border-color:#ffd54a;color:#fff;animation:pulse .6s ease-in-out infinite}
+.bete.prepare:not(.dispo):not(.restes):not(.cendre):not(.parti) .anneau{opacity:1;border-color:#ff5a3c;box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 22px 8px rgba(255,80,40,.8),inset 0 0 12px rgba(255,80,40,.6);animation:pulse .8s ease-in-out infinite}
 .pv.elite .barre{width:112px}
 /* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
 .pv.boss{top:20px;left:400px;height:22px;gap:8px;z-index:25}
@@ -8614,7 +8634,7 @@ var D = {};
 
 /* ===================================================================== 1. LES HÉROS (essai : ne pas changer) */
 D.HEROS = {
-  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['etudier', 'rune', 'bouclier'], sac:null},
+  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
   pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
@@ -8625,7 +8645,10 @@ D.VISEE = {pisteur:6, alchimiste:2.5, sage:1.5};       /* les monstres visent pl
 /* ===================================================================== 2. LES GESTES
    vise : 'bete' (un monstre), 'devant' (les bêtes à portée de main), 'heros' (un ami debout), 'salle' (pas de cible) */
 D.GESTES = {
-  etudier:{ic:'🔍', nom:'Étudier', d:'un code pour le Sage', vise:'bete'},
+  /* Romain, 11 novembre (9 h 26) : depuis que tout le carnet de l'aventurier est ouvert, « Étudier » ne sert plus. À sa place,
+     la rune de l'œil : le Sage voit, pour ce tour ET le suivant, qui chaque monstre va frapper et combien. Sans elle, on ne
+     sait pas qui sera frappé. */
+  oeil:{ic:'👁️', nom:'Rune de l\'œil', d:'qui sera frappé ?', vise:'salle'},
   rune:{ic:'✨', nom:'Rune de lumière', d:'une vive lumière', vise:'bete'},
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
   louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
@@ -8644,7 +8667,8 @@ D.GESTES = {
 D.RECETTES = {
   feu:{petit:'Feu', nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
   fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:false, pouvoir:'nuage', coul:'#aab4d2'},
-  huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse…', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630'},
+  /* (libere : lancée sur un ami pris dans une toile, elle le libère tout de suite — Romain, 11 novembre : « il y a toujours un contre ») */
+  huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse… Et sur un ami pris dans une toile, elle le libère.', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630', libere:'entoile'},
   colle:{nom:'Colle', d:'pattes collées', long:'Les pattes restent collées au sol.', vise:'bete', fleche:true, pouvoir:'colle', coul:'#ece4d0'},
   acide:{nom:'Acide', d:'ronge le fer', long:'Il ronge le fer et la rouille.', vise:'bete', fleche:true, pouvoir:'acide', coul:'#9be04a'},
   baume:{nom:'Baume', d:'soigne beaucoup', long:'Il soigne beaucoup un ami.', vise:'heros', fleche:false, soin:40, coul:'#5fd08a'},
@@ -8667,7 +8691,7 @@ D.CHIFFRES = {
   /* les autres coups sur un point faible ouvert */
   ouvert:{louche:10, feu:30, acide:25},
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
-  bouclier:0.5,                            /* la part des dégâts qui passe à travers le bouclier de runes */
+  bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier de runes (il en arrête 75 % : Romain, 11 novembre) */
   herbes:20,
   amulette:30,                             /* le héros qui tombe se relève avec 30 (une fois par donjon) */
   repos:0.5,                               /* le feu de camp rend la moitié des PV max */
@@ -8704,8 +8728,8 @@ D.OBJETS = {
   /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
      discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
   /* Romain, 11 novembre (8 h 03) : « qu'il y ait un livre à l'entrée du puits ou de la crypte » — le journal de l'aventurier.
-     Le Sage tape son code : le carnet entre dans son Grand Livre ; chaque monstre étudié y décolle une page. */
-  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera chaque monstre étudié.'},
+     Le Sage tape son code : le carnet entre dans son Grand Livre, toutes les pages ouvertes. */
+  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera tous les monstres du donjon.'},
   'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
@@ -8834,8 +8858,9 @@ D.MONSTRES = {
     nom:'Le Roi des rats', le:'le Roi des rats', rang:'elite', pv:220, module:'roirats', fin:'fuit',
     attaques:{
       grouillement:{degats:16, cibles:'tous', apres:[['etat', 'etale', 'geste']]},
+      ruee:{degats:70, cibles:'un', prepare:true, anim:'grouillement'},                                    /* le coup préparé du Roi : tous sur le même */
       charge:{degats:30, cibles:'un'}
-    }, rythme:['grouillement'],
+    }, rythme:['grouillement', 'ruee', 'grouillement'],
     passeSi:['noeud'], tombe:[], blinde:['boule'],
     reactions:{
       /* le combo : le nuage (ils tirent chacun de leur côté, le nœud se tend), PUIS le bruit */
@@ -8857,7 +8882,10 @@ D.MONSTRES = {
   /* ---------- le Gardien de rouille (élite) ---------- */
   gardien:{
     nom:'Le Gardien de rouille', le:'le Gardien', rang:'elite', pv:280, module:'gardien', fin:'meurt',
-    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage']}}, rythme:['poing'],
+    /* Romain, 11 novembre : les élites et le boss PRÉPARENT parfois un coup (prepare:true) : un tour sans rien faire, que tout
+       le monde voit, puis un coup « extrêmement puissant », qui met presque un héros à terre. Seule la rune de l'œil dit sur
+       qui il tombera ; seul le bouclier (75 %) limite la casse. anim : l'animation du module qui sert pour ce coup. */
+    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage']}, marteau:{degats:85, cibles:'un', prepare:true, anim:'poing', plusSi:{rougeoie:10}}}, rythme:['poing', 'marteau', 'poing'],
     passeSi:[], tombe:[],
     reactions:{
       /* le combo : d'abord la plaque (elle reste cassée), ensuite le cœur (la lumière, à chaque tour) */
@@ -8884,8 +8912,9 @@ D.MONSTRES = {
     nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true,
     attaques:{
       langue:{degats:30, cibles:'un', avale:true},
-      saut:{degats:28, cibles:'tous', doubleSi:['gonfle'], consomme:'gonfle'}
-    }, rythme:['langue', 'saut'],
+      saut:{degats:28, cibles:'tous', doubleSi:['gonfle'], consomme:'gonfle'},
+      ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut'}                               /* le coup préparé de Bourbe : il retombe de tout son poids */
+    }, rythme:['langue', 'ecrasement', 'saut'],
     passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
     reactions:{
       lumiere:[{si:{un:['dos', 'sous']}, fait:[]},
@@ -8986,8 +9015,9 @@ D.CODES = {
 };
 
 /* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER
-   L'étude d'un monstre donne un code (dans le journal du Pisteur). Le Sage le tape sur sa tablette : il voit le croquis du
-   monstre et la page d'un vieux carnet — le journal d'un aventurier passé par là avant eux.
+   Le carnet d'un aventurier se ramasse à l'entrée du donjon. Le Sage tape son code sur sa tablette : il y trouve, pour chaque
+   monstre, un croquis et une page du carnet — le journal de quelqu'un qui est passé par là avant eux. (Depuis le 11 novembre,
+   plus d'« étude » en combat : toutes les pages sont là dès le début.)
    Romain, 10 novembre (20 h 55 à 21 h 28) et 11 novembre (8 h 02, validé) : PAS d'énigmes à questions (« qui aurait écrit des
    énigmes ? »). Un récit : « ses déboires, ses réussites ». L'aventurier n'a ni pouvoirs ni les armes des héros : sa lampe à
    huile, sa gamelle, son feu, ce qu'il trouve sur place. Il raconte ce qu'il a vécu, il ne décrit pas les étapes, il ne dit
@@ -9035,13 +9065,6 @@ D.LIVRE = {
     'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
-/* « étudié » dans partie.livre : ce nombre (la simulation y lit « l'équipe sait tout de ce monstre ») */
-D.ETUDIE = 4;
-D.LIVRE_VIDE = 'Le journal est encore vide. Pendant un combat, le Sage peut étudier un monstre.';
-D.LIVRE_COMPLET = 'Le Sage a déjà étudié ce monstre.';
-/* après 2 fuites (ou défaites) dans la même salle, le journal offre le code de la bête la plus forte de la salle que le Sage n'a pas étudiée */
-D.FUITES_POUR_UNE_LIGNE = 2;
-
 /* ===================================================================== 11. LES REFUS, en deux mots */
 D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
@@ -9049,7 +9072,7 @@ D.MOTS = {
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', etudie:'Déjà étudié'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;
@@ -9098,7 +9121,6 @@ else global.DonjonDonnees = D;
    Regles.potions(partie)                               les potions de l'Alchimiste (toutes celles qu'il a créées : plus de sac à choisir)
    Regles.enMains([objets])                             les objets qui prennent une place (pas les carquois)
    Regles.sauvegarder(partie)           (appelée par le code sauve:N) ;  Regles.objets(partie) : ce que portent les héros
-   Regles.grandLivre(partie)            par monstre rencontré : {monstre, nom, rang, lignes:[…], sur}
    Regles.exporter(partie) / Regles.importer(texte)     pour le localStorage (recharger la page n'est pas une fuite)
 
    =================================================================================================================
@@ -9126,7 +9148,8 @@ else global.DonjonDonnees = D;
    {t:'herbes', heros:'alchimiste', heros2:'pisteur'}
    {t:'rune', heros:'sage', bete:'b1'}              ou salle:true avec le cristal de lune
    {t:'pose-bouclier', heros:'sage', cibles:['pisteur']}              deux cibles avec le bâton de chêne
-   {t:'etudie', heros:'sage', bete:'b1'}            suivi d'un {t:'livre'}
+   {t:'oeil', heros:'sage', jusque:3, plans:[{bete, dans:0|1, attaque, cibles, degats, fois, prepare, gros}]}   la rune de l'œil
+   {t:'prepare', bete:'b1', attaque:'marteau'}       il prépare son coup : rien ce tour (l'état « prepare » est posé dès le début du tour)
    {t:'chatouille', heros:'pisteur', bete:'b3'}     le héros avalé chatouille Bourbe
    --- ce qui arrive aux bêtes ---
    {t:'touche', bete:'b1', coup:'lumiere', piege:false}   sa réaction : acteur.touche(coup). piege:true : ça le renforce. critique:true : c'est un critique (voir degats).
@@ -9155,8 +9178,6 @@ else global.DonjonDonnees = D;
    {t:'releve', heros:'pisteur', pv:40, par:'coeur' | 'amulette'}
    {t:'soin', heros:'pisteur', n:20, pv:80, par:'herbes' | 'baume' | 'baumelum' | 'repos'}
    --- le Grand Livre ---
-   {t:'livre', monstre:'rat', code:'etude:rat', nom:'Rat d\'égout', cause:'etude' | 'fuites'}   le code du monstre entre dans le journal
-   {t:'livre', monstre:'rat', rien:true}            déjà étudié : rien de neuf
    --- hors combat ---
    {t:'lieu', id:'reserve', nom:'La réserve'}
    {t:'combat', salle:'canaux'}                     il faut lancer ce combat : Regles.combat(partie, 'canaux')
@@ -9180,7 +9201,7 @@ else global.DonjonDonnees = D;
    {t:'repos'}                                      le feu de camp : suivi d'un {t:'soin', par:'repos'} par héros
    {t:'recette', id:'givre', nom:'Givre'}           une recette de plus est connue
    {t:'sauvegarde', code:'sauve:1', lieu:'toiles'}
-   {t:'recharge', lieu:'puits', salle:'canaux', fuites:1, revenus:['rats']}   après une fuite ou une défaite ; revenus : les salles dont les monstres sont revenus (suivi d'un {t:'livre', cause:'fuites'} à la 2e fuite au même endroit)
+   {t:'recharge', lieu:'puits', salle:'canaux', fuites:1, revenus:['rats']}   après une fuite ou une défaite ; revenus : les salles dont les monstres sont revenus
    {t:'fin-donjon'}
    ================================================================================================================= */
 (function(global){
@@ -9259,29 +9280,10 @@ function potions(p){ return D.ORDRE_RECETTES.filter(function(r){ return (p.recet
 /* les objets qui prennent une place dans les mains (les carquois n'en prennent pas : le Pisteur les porte tous) */
 function enMains(l){ return (l || []).filter(function(o){ return !(D.OBJETS[o] && D.OBJETS[o].carquois); }); }
 
-/* le Grand Livre : un monstre rencontré y a sa page (blanche tant que le Sage ne l'a pas étudié) */
+/* les monstres rencontrés : p.livre[monstre] = 0. Romain, 11 novembre : plus d'« étude » dans le donjon. Le carnet d'un
+   aventurier, ramassé à l'entrée, donne toutes les pages au Sage ; en combat, sa rune de l'œil dit qui sera frappé, et de
+   combien. (La simulation met p.livre[monstre] au-dessus de 0 pour dire « l'équipe sait tout de ce monstre ».) */
 function rencontrer(p, type){ var cle = (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; if(p.livre[cle] === undefined) p.livre[cle] = 0; }
-/* Romain, 10 novembre : l'étude d'un monstre donne UN CODE (« etude:<monstre> », donjon-codes.js) à montrer au Sage, qui le
-   tape sur sa tablette : c'est là qu'il voit le monstre et lit ses énigmes. Une seule étude par sorte de monstre.
-   p.livre[monstre] : absent = jamais rencontré ; 0 = rencontré ; plus de 0 = étudié (D.ETUDIE). La page du monstre, sur la
-   tablette du Sage, est celle du journal d'un aventurier (D.LIVRE). */
-function cleLivre(type){ return (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; }
-function etudie(p, type){ return (p.livre[cleLivre(type)] || 0) > 0; }
-/* le journal à afficher : par monstre rencontré, étudié ou pas, et son code pour le Sage */
-function grandLivre(p){
-  return Object.keys(D.LIVRE).filter(function(k){ return p.livre[k] !== undefined; }).map(function(k){
-    var ok = p.livre[k] > 0;
-    return {monstre:k, nom:D.MONSTRES[k].nom, rang:D.MONSTRES[k].rang, etudie:ok, code:ok ? 'etude:' + k : null};
-  });
-}
-/* l'étude d'un monstre : son code entre dans le journal (ou rien s'il est déjà étudié) */
-function apprendre(p, type, cause){
-  var cle = cleLivre(type);
-  if(etudie(p, cle)) return {t:'livre', monstre:cle, rien:true};
-  p.livre[cle] = D.ETUDIE;
-  return {t:'livre', monstre:cle, code:'etude:' + cle, nom:D.MONSTRES[cle].nom, cause:cause || 'etude'};
-}
-
 /* ======================================================================= la fuite, la défaite
    Romain, 10 novembre (17 h 47 et 17 h 56) : « quand on doit refaire le donjon, c'est juste les ennemis qu'on doit refaire,
    pas la recherche d'objets. Il n'y a que les monstres qui reviennent en vie, comme à la sauvegarde. »
@@ -9295,13 +9297,6 @@ function fuir(p, salle){
   var livre = p.livre, fuites = p.fuites = p.fuites || {}, s = p.sauvegarde, g = p.graine, revenus = [];
   if(salle){
     fuites[salle] = (fuites[salle] || 0) + 1;
-    /* après 2 fuites au même endroit, le journal offre le code de la bête la plus forte de la salle qui n'est pas étudiée */
-    if(fuites[salle] % D.FUITES_POUR_UNE_LIGNE === 0 && D.COMBATS[salle]){
-      var rangs = {boss:3, elite:2, normal:1}, types = D.COMBATS[salle].monstres.slice().sort(function(a, b){ return rangs[D.MONSTRES[b].rang] - rangs[D.MONSTRES[a].rang]; });
-      for(var i = 0; i < types.length; i++){
-        if(!etudie({livre:livre}, types[i])){ ev.push(apprendre({livre:livre}, types[i], 'fuites')); break; }
-      }
-    }
   }
   /* les monstres battus depuis la sauvegarde reviennent */
   Object.keys(p.faits).forEach(function(k){
@@ -9341,6 +9336,7 @@ function Combat(p, salle, o){
     self.h[h] = {pv:H.pv, pvMax:H.pvMax, sol:!!H.sol || H.pv <= 0, joue:false, bouclier:false, entoile:false, avale:null, objets:H.objets.slice()};
   });
   this.amulette = false;                 /* l'amulette a servi pendant ce combat */
+  this.vu = 0;                           /* la rune de l'œil : jusqu'à quel tour le Sage voit ce que préparent les monstres */
   this.b = [];
   this._ev = [];
   this._ev.push({t:'debut', salle:salle, nom:def.nom, betes:[], heros:this._photoHeros()});
@@ -9354,7 +9350,7 @@ var P = Combat.prototype;
 
 P._creer = function(type){
   var def = D.MONSTRES[type];
-  return {id:'b' + (++this.num), type:type, def:def, pv:def.pv, pvMax:def.pv, mort:false, e:{}, ouvert:0, par:null, plan:null, nAtt:0, c:{}};
+  return {id:'b' + (++this.num), type:type, def:def, pv:def.pv, pvMax:def.pv, mort:false, e:{}, ouvert:0, par:null, plan:null, suite:null, nAtt:0, c:{}};
 };
 P._resume = function(m, pos){ return {id:m.id, type:m.type, module:m.def.module, nom:m.def.nom, rang:m.def.rang, pv:m.pv, pvMax:m.pvMax, position:pos == null ? this.b.indexOf(m) : pos}; };
 P._photoHeros = function(){
@@ -9394,9 +9390,9 @@ P.gestes = function(h){
       if(h === 'pisteur') self._carquoisPortes().forEach(function(o){ g('f:' + o, D.OBJETS[o].court || D.OBJETS[o].nom, 'bete', cib, cib.length > 0, self._motCache()); });
     }
     else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motCache()); }
-    else if(id === 'etudier'){      /* seulement les monstres que le Sage n'a pas encore étudiés (« quand il y a des nouveaux ennemis ») */
-      var v = ids(self.vivants().filter(function(m){ return !etudie(self.p, m.type); }));
-      g(id, G.nom, 'bete', v, v.length > 0, self.vivants().length ? MOTS.etudie : MOTS.fini);
+    else if(id === 'oeil'){        /* la rune de l'œil : refusée si le Sage voit déjà le tour suivant */
+      var deja = self.vu > self.tour;
+      g(id, G.nom, 'salle', [], !deja && self.vivants().length > 0, deja ? MOTS.vu : MOTS.fini);
     }
     else if(id === 'rune'){
       if(self.porte('sage', 'cristal-lune')) g(id, G.nom, 'salle', [], true, null);
@@ -9412,7 +9408,12 @@ P.gestes = function(h){
       if(!r.fleche) g(geste, r.nom, 'bete', [], false, MOTS.impossible);
       else g(geste, r.nom, 'bete', cib, cib.length > 0, self._motCache());
     }
-    else if(r.vise === 'bete') g(geste, r.nom, 'bete', cib, cib.length > 0, self._motCache());
+    else if(r.vise === 'bete'){
+      /* l'huile se lance aussi sur un ami pris dans une toile : elle le libère (r.libere) */
+      var pris = r.libere ? D.ORDRE.filter(function(x){ return self.h[x][r.libere] && !self.h[x].sol; }) : [];
+      g(geste, r.nom, 'bete', cib.concat(pris), cib.length + pris.length > 0, self._motCache());
+      if(pris.length) l[l.length - 1].amis = pris;
+    }
     else if(r.vise === 'heros') g(geste, r.nom, 'heros', amis, amis.length > 0, MOTS.personne);
     else if(r.vise === 'sol') g(geste, r.nom, 'sol', auSol, auSol.length > 0, MOTS.personne);
     else g(geste, r.nom, r.vise, [], true, null);            /* salle, equipe */
@@ -9446,13 +9447,13 @@ P.refus = function(h, geste, cible){
   c = c.map(function(x){ return x && typeof x === 'object' ? x.id : x; });
   if(!c.length || c[0] == null) return MOTS.cible;
   if(c.length > g.max) return MOTS.seul;
+  if(g.amis && c.length === 1 && g.amis.indexOf(c[0]) >= 0) return null;         /* l'huile sur un ami entoilé */
   for(var k = 0; k < c.length; k++){
     if(g.cibles.indexOf(c[k]) >= 0) continue;
     if(g.vise === 'heros') return this.h[c[k]] && this.h[c[k]].avale ? MOTS.avale : MOTS.sol;
     if(g.vise === 'sol') return MOTS.debout;
     var m = this.bete(c[k]);
     if(!m || m.mort) return MOTS.fini;
-    if(geste === 'etudier') return MOTS.etudie;                 /* cette sorte de monstre a déjà son code dans le journal */
     if(this.cache(m)) return m.e.sous !== undefined ? MOTS.eau : MOTS.haut;
     return MOTS.loin;
   }
@@ -9586,10 +9587,7 @@ P.jouer = function(h, a){
   var cibles = (Array.isArray(cible) ? cible : [cible]).map(function(x){ return x && typeof x === 'object' ? x.id : x; });
   var m = this.bete(cibles[0]), H = this.h[h];
 
-  if(geste === 'etudier'){
-    ev.push({t:'etudie', heros:h, bete:m.id});
-    ev.push(apprendre(this.p, m.type, 'etude'));
-  }
+  if(geste === 'oeil') this._oeil(ev, h);
   else if(geste === 'rune'){
     if(this.porte('sage', 'cristal-lune')){
       ev.push({t:'rune', heros:h, salle:true});
@@ -9629,6 +9627,11 @@ P.jouer = function(h, a){
   else {                                   /* une recette du sac */
     var rid = geste.slice(2), rec = D.RECETTES[rid];
     if(h === 'pisteur') this._fleche(ev, m, rid, null);
+    else if(rec.libere && D.ORDRE.indexOf(cibles[0]) >= 0){        /* sur un ami pris dans une toile : il est libre, et peut jouer ce tour */
+      ev.push({t:'potion', heros:h, recette:rid, heros2:cibles[0]});
+      this.h[cibles[0]][rec.libere] = false;
+      ev.push({t:'etat', heros:cibles[0], nom:rec.libere, on:false, par:rid});
+    }
     else if(rec.soin){ ev.push({t:'potion', heros:h, recette:rid, heros2:cibles[0]}); this._soin(ev, cibles[0], rec.soin, rid); }
     else if(rec.releve){
       var S = this.h[cibles[0]];
@@ -9724,14 +9727,15 @@ P._viser = function(){
   for(k = 0; k < d.length; k++){ x -= D.VISEE[d[k]]; if(x < 0) return d[k]; }
   return d[0];
 };
-P._nomAttaque = function(m){
-  var self = this, nom = m.def.rythme[m.nAtt % m.def.rythme.length], A = m.def.attaques[nom];
+P._nomAttaque = function(m, avance){
+  var self = this, nom = m.def.rythme[(m.nAtt + (avance || 0)) % m.def.rythme.length], A = m.def.attaques[nom];
   /* Bourbe n'avale personne s'il a déjà quelqu'un dans le ventre ; gonflé, il saute */
   if(A.avale && (D.ORDRE.some(function(h){ return self.h[h].avale === m.id; }) || (m.def.attaques.saut && this.a(m, 'gonfle')))) nom = 'saut';
   return nom;
 };
-P._planifier = function(m){
-  var nom = this._nomAttaque(m), A = m.def.attaques[nom], cibles = [], self = this;
+/* le hasard choisit la proie d'une attaque (avance : 1 pour l'attaque d'après). sansPoser : ne touche pas à m.plan */
+P._planifier = function(m, avance, sansPoser){
+  var nom = this._nomAttaque(m, avance), A = m.def.attaques[nom], cibles = [], self = this;
   if(A.cibles === 'un'){ var h = this._viser(); if(h) cibles = [h]; }
   else if(A.cibles === 'deux'){
     var h1 = this._viser(); if(h1) cibles = [h1];
@@ -9745,8 +9749,59 @@ P._planifier = function(m){
   }
   else if(A.cibles === 'tous') cibles = D.EXPOSES.filter(function(x){ return !self.h[x].sol && !self.h[x].avale; });
   else if(A.cibles === 'devant'){ var f = D.EXPOSES.filter(function(x){ return !self.h[x].sol && !self.h[x].avale; })[0]; if(f) cibles = [f]; }
-  m.plan = {nom:nom, cibles:cibles};
-  return m.plan;
+  var plan = {nom:nom, cibles:cibles};
+  if(!sansPoser) m.plan = plan;
+  return plan;
+};
+/* Ce que le monstre fera ce tour-ci. suite : ce qu'il avait prévu au tour d'avant, si le Sage l'a regardé (la rune de l'œil).
+   LES COUPS PRÉPARÉS (attaque « prepare ») : le monstre choisit sa proie, passe un tour à préparer (m.c.pret = false), puis
+   frappe au tour suivant (m.c.pret = true), sur la même proie (m.c.coup). */
+P._planDuTour = function(m, suite){
+  var nom = this._nomAttaque(m, 0), A = m.def.attaques[nom];
+  if(A.prepare){
+    if(!m.c.coup || m.c.coup.nom !== nom){
+      var p0 = suite && suite.nom === nom ? suite : this._planifier(m, 0, true);
+      m.c.coup = {nom:nom, cibles:p0.cibles.slice()}; m.c.pret = false;
+    }
+    return {nom:nom, cibles:m.c.coup.cibles.slice(), prepare:!m.c.pret};
+  }
+  if(suite && suite.nom === nom && !suite.prepare) return {nom:nom, cibles:suite.cibles.slice()};
+  return this._planifier(m, 0, true);
+};
+/* ce qu'il fera au tour d'après (pour la rune de l'œil) : sa proie est choisie dès maintenant, et gardée */
+P._prevoir = function(m){
+  var passe = this._un(m, m.def.passeSi);
+  if(m.plan && m.plan.prepare) return {nom:m.plan.nom, cibles:m.plan.cibles.slice(), prepare:passe};        /* son coup préparé tombera au tour suivant */
+  var av = m.plan && !passe ? 1 : 0, p = this._planifier(m, av, true);
+  if(m.def.attaques[p.nom].prepare) p.prepare = true;          /* un coup préparé commence par un tour de préparation */
+  return p;
+};
+/* les dégâts d'un plan, avec ce que le monstre a sur le dos maintenant (rougeoie, enragé, gonflé…) */
+P._prevu = function(m, plan){
+  var A = m.def.attaques[plan.nom], d = A.degats, fois = 1, n;
+  if(A.foisSi) for(n in A.foisSi) if(this.a(m, n)) fois = Math.max(fois, A.foisSi[n]);
+  if(A.plusSi) for(n in A.plusSi) if(this.a(m, n)) d += A.plusSi[n];
+  if(A.doubleSi && this._un(m, A.doubleSi)) d *= 2;
+  return {attaque:plan.nom, cibles:plan.cibles.slice(), degats:plan.prepare ? 0 : d, fois:fois, prepare:!!plan.prepare, gros:!!A.prepare};
+};
+/* LA RUNE DE L'ŒIL (Romain, 11 novembre) : le Sage voit, pour ce tour et le suivant, qui chaque monstre va frapper et combien.
+   Sans elle, personne ne le sait (etat() ne le dit pas). */
+P._oeil = function(ev, h){
+  var self = this;
+  this.vivants().forEach(function(m){ if(!m.suite) m.suite = self._prevoir(m); });
+  this.vu = this.tour + 1;
+  ev.push({t:'oeil', heros:h, jusque:this.vu, plans:this.intentions()});
+};
+/* ce que le Sage voit en ce moment : [{bete, dans:0 (ce tour) | 1 (le suivant), attaque, cibles, degats, fois, prepare, gros}] */
+P.intentions = function(){
+  var self = this, l = [];
+  if(this.vu < this.tour) return l;
+  function note(m, plan, dans){ var o = self._prevu(m, plan); o.bete = m.id; o.dans = dans; l.push(o); }
+  this.vivants().forEach(function(m){
+    if(m.plan && !self._un(m, m.def.passeSi)) note(m, m.plan, 0);
+    if(self.vu > self.tour && m.suite) note(m, m.suite, 1);
+  });
+  return l;
 };
 P._nouveauTour = function(ev){
   var self = this;
@@ -9754,10 +9809,13 @@ P._nouveauTour = function(ev){
   D.ORDRE.forEach(function(h){ self.h[h].joue = false; });
   ev.push({t:'tour', n:this.tour});
   this.vivants().forEach(function(m){
-    m.plan = null;
-    if(self._un(m, m.def.passeSi)) return;            /* sur le dos, sous l'eau… : il ne prépare rien */
-    var p = self._planifier(m);
-    ev.push({t:'vise', bete:m.id, attaque:p.nom, cibles:p.cibles.slice()});
+    var suite = m.suite;
+    m.plan = null; m.suite = null;
+    if(self._un(m, m.def.passeSi)) return;            /* sur le dos, sous l'eau… : il ne prépare rien (un coup préparé attend) */
+    var p = m.plan = self._planDuTour(m, suite);
+    /* un coup qui se prépare : tout le monde le voit, dès le début du tour */
+    if(m.def.attaques[p.nom].prepare && !self.a(m, 'prepare')){ m.e.prepare = FIN; ev.push({t:'etat', bete:m.id, nom:'prepare', on:true, tours:'fin'}); }
+    ev.push({t:'vise', bete:m.id, attaque:p.nom, cibles:p.cibles.slice(), prepare:!!p.prepare});
   });
   D.ORDRE.forEach(function(h){ if(self.h[h].entoile && !self.h[h].sol) ev.push({t:'passe', heros:h, mot:MOTS.entoile}); });
   this._sauveGraine();
@@ -9794,10 +9852,16 @@ P.tourMonstres = function(){
 };
 P._attaque = function(ev, m){
   var self = this;
-  if(!m.plan) this._planifier(m);
+  if(!m.plan) m.plan = this._planDuTour(m, null);
   var nom = this._nomAttaque(m);
-  if(nom !== m.plan.nom){ m.plan = null; this._planifier(m); }      /* il a changé d'idée (gonflé, ou le ventre plein) */
+  if(nom !== m.plan.nom) m.plan = this._planDuTour(m, null);        /* il a changé d'idée (gonflé, ou le ventre plein) */
   var A = m.def.attaques[nom], plan = m.plan;
+  if(A.prepare && !m.c.pret){                                       /* il prépare son coup : rien ce tour-ci, et tout le monde le voit */
+    m.c.pret = true;
+    if(!this.a(m, 'prepare')){ m.e.prepare = FIN; ev.push({t:'etat', bete:m.id, nom:'prepare', on:true, tours:'fin'}); }
+    ev.push({t:'prepare', bete:m.id, attaque:nom});
+    return;
+  }
   function valide(h){ return h && !self.h[h].sol && !self.h[h].avale; }
   function secours(pris){ return D.EXPOSES.filter(function(x){ return valide(x) && pris.indexOf(x) < 0; })[0]; }
   var cibles = [];
@@ -9816,7 +9880,10 @@ P._attaque = function(ev, m){
   if(A.foisSi) for(n in A.foisSi) if(this.a(m, n)) fois = Math.max(fois, A.foisSi[n]);
   if(A.plusSi) for(n in A.plusSi) if(this.a(m, n)) degats += A.plusSi[n];
   if(A.doubleSi && this._un(m, A.doubleSi)) degats *= 2;
-  ev.push({t:'attaque', bete:m.id, nom:nom, cibles:cibles.slice(), fois:fois});
+  var ea = {t:'attaque', bete:m.id, nom:nom, cibles:cibles.slice(), fois:fois};
+  if(A.anim) ea.anim = A.anim;                 /* (un coup préparé emprunte l'animation d'une attaque du module) */
+  if(A.prepare) ea.gros = true;
+  ev.push(ea);
   var surBouclier = false;
   if(A.cibles === 'un'){
     /* comme dans la salle des rats : s'il frappe plusieurs fois et que sa proie tombe, il passe au suivant */
@@ -9827,6 +9894,7 @@ P._attaque = function(ev, m){
     }
   } else cibles.forEach(function(h){ if(valide(h) && self._frappe(ev, h, degats, m, nom, A)) surBouclier = true; });
   m.nAtt++;
+  if(A.prepare){ m.c.pret = false; m.c.coup = null; if(this.a(m, 'prepare')) this._retire(ev, m, 'prepare'); }     /* le coup préparé est tombé */
   if(A.consomme) this._retire(ev, m, A.consomme);
   if(A.apres) this._faire(ev, m, A.apres, null);
   /* son coup est tombé sur un bouclier de runes : certains s'y laissent prendre (feu follet, Gardien) */
@@ -9911,11 +9979,16 @@ P.entree = function(){ return this._ev.slice(); };
 P.fuir = function(){ if(this.resultat === 'victoire') return refus(MOTS.fini); return fuir(this.p, this.salle); };
 P.etat = function(){
   var self = this, o = {salle:this.salle, nom:this.nom, tour:this.tour, fini:this.fini(), sac:this.sac.slice(), heros:{}, betes:[], aJouer:this.aJouer()};
+  /* la rune de l'œil : 0 = on ne sait pas qui sera frappé ; 1 = le Sage voit ce tour ; 2 = ce tour et le suivant */
+  o.vu = this.vu < this.tour ? 0 : this.vu > this.tour ? 2 : 1;
   D.EXPOSES.forEach(function(h){ var S = self.h[h]; o.heros[h] = {pv:S.pv, pvMax:S.pvMax, sol:S.sol, joue:S.joue, bouclier:S.bouclier, entoile:S.entoile, avale:S.avale, objets:S.objets.slice()}; });
   this.b.forEach(function(m, i){
     var e = {}; Object.keys(m.e).forEach(function(n){ e[n] = dureeDite(m.e[n]); });
     o.betes.push({id:m.id, type:m.type, module:m.def.module, nom:m.def.nom, rang:m.def.rang, pv:m.pv, pvMax:m.pvMax, mort:m.mort, position:i,
-      ouvert:m.ouvert !== 0, etats:e, cache:!m.mort && self.cache(m), vise:m.plan ? {attaque:m.plan.nom, cibles:m.plan.cibles.slice()} : null});
+      ouvert:m.ouvert !== 0, etats:e, cache:!m.mort && self.cache(m),
+      prepare:m.mort || !m.e.prepare ? 0 : m.c.pret ? 2 : 1,              /* un gros coup, visible de tous : 1 = il prend son élan ce tour-ci ; 2 = le coup tombe à la fin de ce tour */
+      vise:o.vu && m.plan && !m.mort && !self._un(m, m.def.passeSi) ? self._prevu(m, m.plan) : null,
+      suite:o.vu === 2 && m.suite && !m.mort ? self._prevu(m, m.suite) : null});
   });
   return o;
 };
@@ -10111,7 +10184,7 @@ var Regles = {
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
   entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
   repos:repos, code:code, potions:potions, enMains:enMains,
-  sauvegarder:sauvegarder, objets:objets, grandLivre:grandLivre, etudie:etudie, exporter:exporter, importer:importer
+  sauvegarder:sauvegarder, objets:objets, exporter:exporter, importer:importer
 };
 if(NODE) module.exports = Regles; else global.Regles = Regles;
 })(typeof window !== 'undefined' ? window : this);
@@ -14495,7 +14568,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '11/11 à 8 h 48';
+DJ.VERSION = '11/11 à 10 h 17';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -15091,18 +15164,42 @@ var CHIPS = {
   gonfle:['🎈 saut ×2', ''], noeud:['🪢 nœud tendu', 'e-colle'], sec:['☀️ tout sec', 'e-feu']
 };
 var ICONE_ATT = {toile:'🕸️', langue:'👅'};
+/* un coup préparé emprunte l'animation d'une attaque du module (marteau -> poing…) : donnees.js le dit dans « anim » */
+var ANIM_ATT = {};
+Object.keys(D.MONSTRES).forEach(function(k){ var A = D.MONSTRES[k].attaques || {}; Object.keys(A).forEach(function(n){ if(A[n].anim) ANIM_ATT[n] = A[n].anim; }); });
+function animDe(nom){ return ANIM_ATT[nom] || nom; }
+/* LA RUNE DE L'ŒIL (Romain, 11 novembre) : sans elle, personne ne sait qui sera frappé. Avec elle, chaque monstre montre
+   sa proie et les dégâts de ce tour, puis (plus petit, après la flèche) ceux du tour suivant.
+   LE COUP QUI SE PRÉPARE, lui, se voit toujours (une pastille, un rond rouge sous la bête) ; l'œil dit en plus sur qui il
+   tombera : la proie, un sablier pendant l'élan, et — si le Sage voit aussi le tour suivant — les dégâts à venir. */
+function tetesVise(l, petit){
+  var plusieurs = l.length > 1 || petit, t = plusieurs ? 26 : 32;
+  return l.map(function(h){ return '<span class="vise' + (plusieurs ? ' petit' : '') + '" style="border-color:' + HER[h].coul + '"><i class="img-' + h + '" style="' + DJ.tete(h, t, 74, 4) + '"></i></span>'; }).join('');
+}
+function degatsVise(v){ return v.degats > 0 ? '<b class="vise-dg">−' + v.degats + (v.fois > 1 ? '<small>×' + v.fois + '</small>' : '') + '</b>' : ''; }
+function ligneVise(v, petit, apres){
+  if(!v.cibles.length) return '';
+  var debut = petit ? '<span class="vise-puis">➜</span>' : '<span class="vise-fleche" style="border-right-color:' + HER[v.cibles[0]].coul + '"></span>';
+  /* l'élan : la proie et le sablier ; « apres » = le coup lui-même, au tour suivant, si l'œil le voit déjà */
+  if(v.prepare) return '<div class="vise-bloc elan' + (petit ? ' puis' : '') + (apres ? ' gros' : '') + '">' + debut + tetesVise(v.cibles, petit) + '<span class="vise-ic">⏳</span>' +
+    (apres ? '<span class="vise-puis">➜</span>' + degatsVise(apres) : '') + '</div>';
+  return '<div class="vise-bloc' + (petit ? ' puis' : '') + (v.gros ? ' gros' : '') + '">' + debut + tetesVise(v.cibles, petit) +
+    (ICONE_ATT[v.attaque] ? '<span class="vise-ic">' + ICONE_ATT[v.attaque] + '</span>' : '') + degatsVise(v) + '</div>';
+}
 function majBadges(){
   E.ph.betes.forEach(function(b){
     var e = q('#badges-' + b.id); if(!e) return;
     if(b.mort){ e.innerHTML = ''; return; }
-    var s = '';
-    if(b.vise && E.mode !== 'fin' && b.vise.cibles.length){
-      var l = b.vise.cibles, c = HER[l[0]].coul, t = l.length > 1 ? 26 : 32;
-      s += '<div class="vise-bloc"><span class="vise-fleche" style="border-right-color:' + c + '"></span>' + l.map(function(h){
-        return '<span class="vise' + (l.length > 1 ? ' petit' : '') + '" style="border-color:' + HER[h].coul + '"><i class="img-' + h + '" style="' + DJ.tete(h, t, 74, 4) + '"></i></span>'; }).join('') +
-        (ICONE_ATT[b.vise.attaque] ? '<span class="vise-ic">' + ICONE_ATT[b.vise.attaque] + '</span>' : '') + '</div>';
+    var s = '', v = '';
+    if(E.mode !== 'fin'){
+      /* (un coup préparé que l'œil voit en entier tient sur une seule ligne : la proie, le sablier, puis les dégâts) */
+      var coup = b.vise && b.vise.prepare && b.suite && !b.suite.prepare && b.suite.attaque === b.vise.attaque ? b.suite : null;
+      if(b.vise) v += ligneVise(b.vise, false, coup);
+      if(b.suite && !coup) v += ligneVise(b.suite, true);
     }
+    if(v) s += '<div class="vise-pile">' + v + '</div>';
     var x = '';
+    if(b.prepare) x += '<span class="etat e-coup' + (b.prepare === 2 ? ' pret' : '') + '">' + (b.prepare === 2 ? '💥 gros coup !' : '⏳ gros coup bientôt') + '</span>';
     Object.keys(b.etats).forEach(function(n){ var C = CHIPS[n]; if(C) x += '<span class="etat ' + C[1] + '">' + C[0] + '</span>'; });
     if(x) s += '<div class="etats">' + x + '</div>';
     if(e._html !== s){ e.innerHTML = s; e._html = s; }
@@ -15164,6 +15261,7 @@ function majScene(){
     var a = B(b.id); if(!a || b.mort) return;
     a.el.classList.toggle('dispo', m === 'cible' && cb.betes.indexOf(b.id) >= 0);
     a.el.classList.toggle('ouvert', !!b.ouvert);
+    a.el.classList.toggle('prepare', !!b.prepare);
   });
   majBadges();
   var t = q('#tour-nom'); if(t) t.innerHTML = E.tour ? 'Tour ' + E.tour : '';
@@ -15175,12 +15273,6 @@ function maj(){ E.ph = E.c.etat(); majBarres(); majScene(); bande(); placerTout(
 function pvB(h){
   var s = E.ph.heros[h], k = Math.max(0, s.pv / s.pvMax);
   return '<span class="pv-b"><span class="barre"><i class="' + (k <= .25 ? 'bas' : k <= .5 ? 'moyen' : '') + '" style="width:' + (k * 100) + '%"></i></span><b>' + s.pv + '</b></span>';
-}
-/* le journal : le nombre de monstres étudiés (autant de codes à montrer au Sage) */
-function nbLivre(){ var n = 0, l = E.partie.livre || {}; Object.keys(l).forEach(function(k){ if(l[k] > 0) n++; }); return n; }
-function boutonLivre(){
-  var n = nbLivre();
-  return '<button class="b-livre' + (E.journalNeuf ? ' a-lire' : '') + '" data-act="livre"><span>📖</span><small>Journal</small>' + (n ? '<i class="nb">' + n + '</i>' : '') + '</button>';
 }
 function bande(){
   if(!bandeEl) return;
@@ -15197,7 +15289,6 @@ function bande(){
       return '<button class="b-heros' + cls + '" data-act="heros" data-id="' + h + '"><span class="portrait img-' + h + '" style="' + DJ.tete(h, 76, 116, 10) + '"></span>' +
         '<b>' + D.HEROS[h].nom + '</b>' + pvB(h) + '<em>' + etat + '</em>' + (j && st.joue ? '<span class="ok">✓</span>' : '') + (st.bouclier ? '<span class="bouc-b">🛡️</span>' : '') + '</button>';
     }).join('') + '</div>';
-    s += boutonLivre();
     bandeEl.innerHTML = s;
     return;
   }
@@ -15218,7 +15309,6 @@ function bande(){
     if(ch) lbl = ch.geste.indexOf('p:') === 0 ? D.RECETTES[ch.geste.slice(2)].d : (D.OBJETS[ch.geste.slice(2)].dg || lbl);
     s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lbl) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
   }
-  s += boutonLivre();
   bandeEl.innerHTML = s;
 }
 function carte(g){
@@ -15331,7 +15421,7 @@ var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
   /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
-     (sans cette ligne, le tir, la dague, la potion, la rune et l'étude étaient rangés avec la bête, et le héros ne bougeait plus) */
+     (sans cette ligne, le tir, la dague, la potion et la rune étaient rangés avec la bête, et le héros ne bougeait plus) */
   if(GESTES_HEROS[ev.t]) return 's:' + ev.t;
   if(typeof ev.bete === 'string') return 'b:' + ev.bete;
   if(ev.heros && COTE_HEROS[ev.t]) return null;      /* reste dans le bloc en cours (les suites d'une attaque) */
@@ -15349,7 +15439,7 @@ function enBlocs(evs){
   return blocs;
 }
 function calme(bloc){ return bloc.evs.every(function(e){ return (e.t === 'etat' && e.on === false) || e.t === 'ferme'; }); }
-var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, etudie:1, chatouille:1};
+var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, oeil:1, chatouille:1};
 
 async function jouer(evs, avant){
   if(!evs || !evs.length) return;
@@ -15418,7 +15508,6 @@ async function un(ev, bl, ctx){
     case 'passe': Fx.mot(hCx(h), 110, ev.mot, 'refus'); return attendre(450);
     case 'refus': refus(h ? hCx(h) : 480, ev.mot); return;
     case 'fin': return;
-    case 'livre': return livre(ev);
 
     case 'touche':
       if(!a || ev.critique) return;
@@ -15434,6 +15523,12 @@ async function un(ev, bl, ctx){
     case 'etat':
       if(h) return etatHeros(ev);
       if(!a) return;
+      if(ev.nom === 'prepare'){                 /* le coup qui se prépare : pas un état du module, une lueur et une pastille */
+        a.el.classList.toggle('prepare', !!ev.on);
+        E.ph = E.c.etat(); majBadges();
+        if(ev.on){ if(S.cri) bruit(S.cri); return attendre(350); }
+        return;
+      }
       if(a.rat && ev.on && ev.nom === 'ebloui') bruit('ratLumiere', {enrage:aEtat(a, 'enrage')}, ['couine', 0, 1.3]);
       if(a.rat && ev.on && ev.nom === 'dos') bruit('ratHuile', {cale:1.54, enrage:aEtat(a, 'enrage')}, ['couine', 0, 1.3]);
       if(a.rat && ev.on && ev.nom === 'colle') bruit('ratColle', {enrage:aEtat(a, 'enrage')}, ['splotch']);
@@ -15445,6 +15540,12 @@ async function un(ev, bl, ctx){
       a.el.classList.add('ouvert');
       return a.ouvert(true);
     case 'ferme': if(!a) return; a.el.classList.remove('ouvert'); return a.ouvert(false);
+    case 'prepare':                             /* son tour d'élan : il ne frappe pas, et tout le monde voit ce qui arrive */
+      if(!a) return;
+      if(S.cri) bruit(S.cri);
+      p = a.ancre('haut'); Fx.mot(p.x, Math.max(104, p.y - 4), D.MOTS.prepare, 'refus long');
+      E.ph = E.c.etat(); majBadges();
+      return attendre(900);
     case 'degats':
       if(h) return degatsHeros(ev, null);
       if(!a) return;
@@ -15637,15 +15738,17 @@ async function geste(ev, evs){
       ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
       await attendre(450);
       return false;
-    case 'etudie':
-      son('page');
-      var loupe = el('div', 'page-vol', '🔍'); fx.appendChild(loupe);
-      to = a.ancre('centre');
-      await Promise.all([H.sage.etudier(), Fx.vol(loupe, HER.sage.x + 122, 214, to.x, to.y - 20, 40, 480, 0)]);
-      Fx.mot(to.x, to.y - 50, '?', 'croc');
-      await attendre(380);
-      loupe.remove();
-      E.pointEtude = to;
+    case 'oeil':
+      /* le Sage ouvre son livre, un grand œil s'ouvre entre les héros et les monstres, puis les proies apparaissent */
+      to = {x:(hCx('pisteur') + milieuBetes().x) / 2, y:150};
+      son('magie');
+      var oe = el('div', 'oeil-rune', '👁️'); oe.style.left = to.x + 'px'; oe.style.top = to.y + 'px'; fx.appendChild(oe);
+      setTimeout(function(){ oe.remove(); }, 1150);
+      await Promise.race([Promise.resolve(H.sage.etudier()).catch(function(){}), attendre(950)]);
+      Fx.onde(to.x, to.y, '#bff8ff', 320, 700);
+      son('magie', .05);
+      E.ph = E.c.etat(); majBadges();
+      await attendre(450);
       return false;
     case 'chatouille':
       Fx.mot(a ? a.ancre('centre').x : 700, a ? a.ancre('centre').y - 40 : 200, 'guili-guili !', 'croc');
@@ -15654,20 +15757,6 @@ async function geste(ev, evs){
   }
   return false;
 }
-async function livre(ev){
-  if(ev.rien){ var s = E.pointEtude || {x:480, y:200}; Fx.mot(s.x, s.y - 60, 'Rien de neuf', 'refus'); return attendre(600); }
-  son('page'); son('magie', .2);
-  E.journalNeuf = true;                      /* un code de plus pour le Sage : le bouton du journal bat jusqu'à ce qu'on l'ouvre */
-  var b = q('.b-livre'), bx = 905, by = 462, dep = E.pointEtude || {x:480, y:200};
-  if(b){ var rb = b.getBoundingClientRect(), p = DJ.versScene({x:rb.left + rb.width / 2, y:rb.top + rb.height / 2}); bx = p.x; by = p.y; }
-  var page = el('div', 'page-vol', '📜'); fxHaut.appendChild(page);
-  await Fx.vol(page, dep.x, dep.y - 30, bx, by, 120, 650, 360);
-  page.remove(); DJ.garder(E.partie);
-  bande();
-  var nb = q('.b-livre'); if(nb) relancer(nb, 'neuf');
-  return attendre(500);
-}
-
 /* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ---------- */
 /* dt : dans combien de secondes (programmé d'avance sur l'horloge du son, pour rester calé sur l'image) */
 function sonCritique(nom, dt){
@@ -15743,7 +15832,7 @@ async function mort(a, ev){
 
 /* ---------- l'attaque d'une bête : les coups tombent sur les héros aux moments d'impact ---------- */
 async function attaque(l, i, ctx){
-  var ev = l[i], a = B(ev.bete), j = i + 1, coups = [], cur = null, apres = [];
+  var ev = l[i], a = B(ev.bete), j = i + 1, coups = [], cur = null, apres = [], nomA = ev.anim || ev.nom;
   /* ce qui suit l'attaque et concerne les héros : un groupe par coup (un groupe commence à chaque « degats » ou « pare ») */
   while(j < l.length){
     var s = l[j];
@@ -15762,22 +15851,23 @@ async function attaque(l, i, ctx){
     return j - 1;
   }
   if(a.rat) son('couine', 0, aEtat(a, 'enrage') ? 1 : 1.1, aEtat(a, 'enrage') ? 1.3 : 1, aEtat(a, 'enrage'));
-  else if(S.att && S.att[ev.nom]) bruit(S.att[ev.nom]); else if(S.cri) bruit(S.cri);
+  else if(S.att && S.att[nomA]) bruit(S.att[nomA]); else if(S.cri) bruit(S.cri);
   var joues = 0, attente = [], avale = null;
   coups.forEach(function(g){ g.forEach(function(x){ if(x.t === 'avale') avale = x; }); });
   var vers = ev.cibles.map(function(h){ return hPt(h); });
-  if(ev.nom === 'toile' || ev.nom === 'langue') vers = [{x:hCx(ev.cibles[0]) + 4, y:214}];
-  var nImpacts = a.rat ? (ev.fois || 1) : (ev.nom === 'brulure' || ev.nom === 'grouillement' || (ev.nom === 'pique' && ev.fois > 1)) ? Math.max(1, coups.length) : 1;
+  if(nomA === 'toile' || nomA === 'langue') vers = [{x:hCx(ev.cibles[0]) + 4, y:214}];
+  var nImpacts = a.rat ? (ev.fois || 1) : (nomA === 'brulure' || nomA === 'grouillement' || (nomA === 'pique' && ev.fois > 1)) ? Math.max(1, coups.length) : 1;
   function impact(n){
     /* au dernier impact prévu, tout ce qui reste tombe d'un coup (le saut de Bourbe touche tout le monde en même temps) */
     var jusqu = n >= nImpacts - 1 ? coups.length : Math.min(coups.length, joues + 1);
+    if(ev.gros && joues < jusqu) Fx.tremble(13, 480);          /* le coup préparé : la salle en tremble */
     while(joues < jusqu){ attente.push(coup(coups[joues], a, ev)); joues++; }
   }
-  var ret = await a.attaquer(ev.nom, {vers:vers, fois:ev.fois || 1, onImpact:impact, onAvale:function(){ if(avale) bruit(S.gobe); }});
+  var ret = await a.attaquer(nomA, {vers:vers, fois:ev.fois || 1, onImpact:impact, onAvale:function(){ if(avale) bruit(S.gobe); }});
   impact(nImpacts - 1);                      /* par sécurité : tout ce qui n'aurait pas été joué */
   await Promise.all(attente);
   if(bloc) bloc.classList.remove('mord');
-  if(ev.nom === 'toile' && typeof ret === 'function'){
+  if(nomA === 'toile' && typeof ret === 'function'){
     /* la toile reste sur le héros tant qu'il est entoilé ; arrêtée par un bouclier, elle glisse et s'en va */
     var h0 = ev.cibles[0], prise = coups.some(function(g){ return g.some(function(x){ return x.t === 'etat' && x.nom === 'entoile' && x.on; }); });
     if(prise) E.toiles[h0] = ret; else { try{ ret(); }catch(e){} }
@@ -15802,7 +15892,7 @@ async function degatsHeros(ev, tombe, a, rang){
   barre(h, ev.pv, s.pvMax);
   if(ev.bouclier && E.domes[h]){ son('absorbe'); try{ E.domes[h].absorber(ev.absorbe); }catch(e){} Fx.bulleTexte(hCx(h), 296, '🛡️ ' + ev.brut + ' → ' + ev.n + ' <small>(' + ev.absorbe + ' absorbés)</small>', 'bleu'); }
   if(ev.cause === 'dalles' || ev.cause === 'os') return;
-  var type = ev.attaque === 'brulure' ? 'froid' : ev.attaque === 'grouillement' || ev.attaque === 'charge' ? 'grouillement' : ev.attaque === 'poing' ? 'poing' : undefined;
+  var att = animDe(ev.attaque), type = att === 'brulure' ? 'froid' : att === 'grouillement' || att === 'charge' ? 'grouillement' : att === 'poing' ? 'poing' : undefined;
   if(tombe){ slotH(h).classList.add('sol'); son('tombe'); return Promise.resolve(E.A.h[h].tomber()).catch(function(){}); }
   if(ev.attaque === 'langue') return;                    /* il est happé : pas de réaction, la suite (avale) s'en charge */
   return Promise.resolve(E.A.h[h].touche(type)).catch(function(){});
@@ -15896,7 +15986,7 @@ async function victoire(){
   f.innerHTML = '<div class="voile"></div><div class="victoire"><div class="rayons"></div>' +
     '<h1>' + titre + DJ.lireBtn(titre) + '</h1>' +
     '<div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
-    '<div class="bilan"><div><b>' + n + '</b>tour' + (n > 1 ? 's' : '') + '</div><div><b>' + nbLivre() + '</b>📖 page' + (nbLivre() > 1 ? 's' : '') + '</div></div>' +
+    '<div class="bilan"><div><b>' + n + '</b>tour' + (n > 1 ? 's' : '') + '</div></div>' +
     '<button class="aller guide" data-act="combat-fin">Continuer ➜</button></div>';
   q('#combat').appendChild(f);
   E.resultat = 'victoire';
@@ -15935,14 +16025,12 @@ async function fuite(auto){
   pointFuite(ev, auto);
 }
 /* « On fait le point » : où l'on repart, et c'est tout (Romain, 10 novembre : plus de Grand Livre ni de sac ici — l'écran
-   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). Le journal reste dans son bouton. */
+   débordait quand le Grand Livre était rempli, et on ne pouvait plus atteindre le bouton). */
 function pointFuite(ev, auto){
   var nomLieu = '';
   (ev || []).forEach(function(x){ if(x.t === 'recharge'){ var L = D.LIEUX[x.lieu]; nomLieu = L ? L.nom : x.lieu; } });
-  var neuf = (ev || []).filter(function(x){ return x.t === 'livre' && !x.rien; })[0];
   var rv = 'Retour ' + (nomLieu ? 'à la dernière sauvegarde : ' + nomLieu : 'à la dernière sauvegarde') + '. Les monstres battus depuis sont revenus. Vos trouvailles, elles, sont toujours là.';
   var conte = auto ? 'Les trois héros étaient sonnés… Ils ont filé juste à temps. Et si on essayait autrement ?' : 'Vous en savez plus qu\'avant. Et si on essayait autrement ?';
-  if(neuf) conte = 'À force de fuir, on finit par apprendre : le journal a noté un code de plus pour le Sage. Et si on essayait autrement ?';
   var f = el('div'); f.id = 'fin';
   f.innerHTML = '<div class="voile" style="background:rgba(5,3,10,.9)"></div><div class="point court"><h1>On fait le point' + DJ.lireBtn('On fait le point.') + '</h1>' +
     '<div class="case retour"><h3>🚪 On repart</h3><div class="rats-l"><span>' + rv + '</span>' + DJ.lireBtn(rv) + '</div></div>' +
@@ -15958,29 +16046,12 @@ function terminer(){
   fin(r);
 }
 
-/* ====================================================================== 8. LE JOURNAL (son bouton marche aussi en plein combat)
-   Romain, 10 novembre : « dans le petit icône journal, il y a un code. Le Sage le tape sur sa tablette, et là il voit
-   l'image de l'ennemi et les propositions pour le battre, sous la forme d'énigmes. » Ici, donc : seulement les codes. */
-function grandLivre(partie){
-  var pages = Regles.grandLivre(partie), K = window.DONJON_CODES;
-  var s = '<h2>Le journal</h2>';
-  if(!pages.length) s += '<div class="ligne vide">' + D.LIVRE_VIDE + DJ.lireBtn(D.LIVRE_VIDE) + '</div>';
-  else { var intro = 'Chaque monstre étudié a son code. Le Sage le tape sur sa tablette : il y retrouve le monstre, dans le journal d\'un aventurier passé par là.'; s += '<div class="ligne">' + intro + DJ.lireBtn(intro) + '</div>'; }
-  pages.forEach(function(p){
-    s += '<div class="sous">' + esc(p.nom) + '</div>';
-    if(!p.etudie){ var v = 'Pas encore étudié. Pendant un combat, le Sage peut l\'observer.'; s += '<div class="ligne vide">' + v + DJ.lireBtn(v) + '</div>'; return; }
-    var t = p.nom + ', le code pour le Sage : ' + (K.code(p.code) || []).map(function(k){ return K.SYM[k].n; }).join(', ') + '.';
-    s += '<div class="ligne etude" data-etude="' + p.monstre + '">Pour le Sage : <span class="code-ligne">' + K.emojis(p.code) + '</span>' + DJ.lireBtn(t) + '</div>';
-  });
-  if(E && E.journalNeuf){ E.journalNeuf = false; var b = q('.b-livre'); if(b) b.classList.remove('a-lire'); }
-  DJ.fenetre(s, 'livre');
-}
-DJ.grandLivre = grandLivre;
+/* (8. Le journal du donjon a disparu le 11 novembre : plus d'étude en combat. Le carnet de l'aventurier, ramassé à l'entrée,
+   donne toutes les pages au Sage, sur sa tablette.) */
 
 /* ====================================================================== 9. LES DOIGTS */
 DJ.toucher(function(a, id, b){
   if(!E) return false;
-  if(a === 'livre'){ son('page'); grandLivre(E.partie); return true; }
   if(a === 'fuite'){ demanderFuite(); return true; }
   if(a === 'fuir'){ if(!E.fini && !E.occupe){ fuite(false); } return true; }
   if(a === 'combat-fin'){ terminer(); return true; }
@@ -16109,7 +16180,7 @@ function carte(o){
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
       '<button class="aller" id="b-entrer" data-act="entrer" hidden>Entrer ➜</button>' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button></div>';
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
   DJ.musiqueLieu(X.ici);
@@ -16283,7 +16354,7 @@ function construireScene(lieu, ev, premier){
   c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + fondDe(lieu) + '" alt=""><div id="sol-fx"></div><div id="objets"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="salle-nom"><b>' + esc(nomLieu(lieu)) + '</b></div>' + DJ.curseursVolume() + '</div>' +
     '<div id="bas-scene"><div class="bulle" id="conteur"></div><div class="b-outils">' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button><button class="sombre" data-act="livre-carte">📖 Journal</button>' +
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button>' +
       '<button class="aller" id="b-repartir" data-act="repartir">Continuer ➜</button></div></div><div id="ecran-fx"></div>';
   jeu.appendChild(c);
   DJ.brancherCurseurs(c);
@@ -16822,13 +16893,13 @@ function symbole(k){
   }, 350);
 }
 function finDonjon(){
-  var p = X.partie, n = 0; Object.keys(p.livre || {}).forEach(function(k){ if(p.livre[k] > 0) n++; });
+  var p = X.partie, n = Object.keys(p.livre || {}).length;          /* les sortes de monstres rencontrées */
   fermerScene(); quitterCarte(); X.ecran = 'fin';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
   var t = 'Léo est retrouvé, tout au fond du donjon ! Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !';
   var e = el('div', 'ecran'); e.id = 'fin-donjon';
   e.innerHTML = '<div class="pa-nom">Vous avez retrouvé Léo !</div><div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
-    '<div class="bilan"><div><b>' + n + '</b>🔍 monstres étudiés</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
+    '<div class="bilan"><div><b>' + n + '</b>👾 sortes de monstres</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
     '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
   jeu.appendChild(e);
   var fan = bruit('victoire', {}, ['fanfare']);
@@ -16839,7 +16910,6 @@ function finDonjon(){
 DJ.toucher(function(a, id, b){
   if(!X.partie) return false;
   if(a === 'sac-pret'){ if(X.sac) X.sac.pret(); return true; }
-  if(a === 'livre-carte'){ son('page'); DJ.grandLivre(X.partie); return true; }
   if(a === 'objets'){ son('clic'); fenetreObjets(); return true; }
   if(a === 'pave'){ son('clic'); fenetrePave(); return true; }
   if(a === 'symbole'){ symbole(id); return true; }
@@ -16856,7 +16926,7 @@ DJ.toucher(function(a, id, b){
     prendre(x.objet, x.heros, id); return true;
   }
   if(a === 'recommencer'){
-    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée, le journal aussi.';
+    var t = 'Tout recommencer depuis le haut du puits ? La partie en cours sera effacée.';
     DJ.fenetre('<h2>Recommencer ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="fermer">Non, on continue</button><button class="aller" data-act="recommencer-oui">Oui, on recommence</button></div>');
     return true;
   }
