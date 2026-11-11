@@ -578,11 +578,17 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #explo #conteur{position:absolute;left:14px;bottom:12px;width:430px;min-height:54px;font-size:15.5px}
 .boutons-carte{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:480px}
 .boutons-carte .aller{min-height:50px;font-size:20px;padding:8px 24px}
+/* le rappel de sauvegarde : un point rouge sur le bouton, dès qu'un combat a été gagné depuis la dernière sauvegarde */
+#b-sauver{position:relative}
+#b-sauver.rappel::after{content:'!';position:absolute;right:-7px;top:-9px;width:22px;height:22px;border-radius:50%;background:#ff5a3c;color:#fff;font:800 15px/22px sans-serif;text-align:center;border:2px solid #24182e;animation:pulse 1.2s ease-in-out infinite}
 
 /* ---------- une salle sans combat : la scène en haut, le conteur et les boutons dans la bande du bas ---------- */
 #scene #objets{position:absolute;left:0;top:0;width:960px;height:372px;z-index:3}
 #scene #persos{position:static}
 #scene #hud{pointer-events:none}
+/* dans une salle, les héros ne se touchent pas : leur grand cadre ne doit pas cacher les objets posés derrière eux
+   (Romain, 11 novembre : « comme si la boîte du Pisteur gênait pour cliquer sur les objets qui sont derrière lui ») */
+#scene .perso.heros, #scene .perso.heros *{pointer-events:none}
 #bas-scene{position:absolute;z-index:10;left:0;top:372px;width:960px;height:168px;background:linear-gradient(#0f0b17,#07050b);border-top:3px solid var(--brun);
   box-shadow:0 -6px 18px rgba(0,0,0,.8),inset 0 2px 0 #2a2030;display:flex;align-items:flex-start;gap:14px;padding:14px 14px 0}
 #bas-scene #conteur{flex:1;min-height:76px;font-size:16.5px}
@@ -662,6 +668,27 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
    (Romain, 10 novembre : plus de sac à choisir.) L'image d'abord, le nom à côté ; deux rangées de cinq au plus. */
 .b-petites{display:grid;grid-template-columns:repeat(5,84px);grid-auto-rows:59px;gap:6px}
 .b-petites.n1,.b-petites.n2,.b-petites.n3,.b-petites.n4{grid-template-columns:repeat(2,108px)}
+/* le Pisteur : quatre armes à gauche, ses cinq combos (la flèche trempée) à droite, sur trois colonnes */
+.b-petites.n5,.b-petites.n6{grid-template-columns:repeat(3,84px)}
+/* ---------- les ARMES à gauche, les sorts / les combos / les potions à droite (Romain, 11 novembre, 16 h 37 : « tu différencies
+   bien les deux ») : les armes sont posées sur un râtelier d'acier, leurs cartes sont grises ---------- */
+.b-sec.b-armes{margin:-5px -6px 0;padding:5px 6px 4px;border-radius:15px;background:linear-gradient(rgba(126,150,186,.2),rgba(126,150,186,.07));box-shadow:inset 0 0 0 2px rgba(150,172,206,.26)}
+.b-armes .b-lbl{color:#c3d2e6}
+.b-armes .carte{border-color:#5d6d84;background:linear-gradient(#2a3444,#141a25)}
+.b-armes .carte.choisie{border-color:#ffd36a;background:linear-gradient(#45351f,#1e1610)}
+.carte.arme.image .c-ic img{width:auto;height:auto;max-width:44px;max-height:44px;margin-top:-1px}
+.carte .c-ic svg{display:block;margin:-1px auto 0}
+/* le bâton que le Sage a en main : un cadre doré et une étiquette */
+.carte.baton.enmain{border-color:#ffd36a;background:linear-gradient(#3a3a2a,#1a1a14);box-shadow:0 0 0 2px var(--encre),0 0 12px rgba(255,200,90,.4)}
+.carte.baton:not(.enmain) .c-ic, .carte.baton:not(.enmain) b, .carte.baton:not(.enmain) small{opacity:.72}
+.carte .c-main{position:absolute;left:50%;top:-9px;transform:translateX(-50%);padding:0 7px;border-radius:8px;background:#ffd36a;color:#1a1208;font:800 10.5px/15px var(--f-texte, inherit);font-style:normal;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;box-shadow:0 1px 0 var(--encre)}
+/* un sort changé par le bâton en main : le petit dessin du bâton dans le coin */
+.carte .c-avec{position:absolute;right:1px;top:1px;width:24px;height:24px;border-radius:50%;background:#120c18;border:2px solid #ffd36a;overflow:hidden}
+.carte .c-avec svg{display:block;width:20px;height:20px}
+.carte.avec small{color:#ffe7a8}
+.carte.long b{font-size:12.5px;letter-spacing:-.02em}
+.b-cartes.six .carte{width:94px}
+.b-cartes.six .carte b{font-size:13.5px}
 .carte.mini{width:auto;height:59px;padding:1px 2px 2px;border-radius:11px;justify-content:center}
 .carte.mini .c-ic{position:relative;height:33px;line-height:33px;font-size:24px}
 .carte.mini .c-ic .fiole{width:24px;height:33px;margin:0 auto}
@@ -8637,7 +8664,7 @@ var D = {};
 
 /* ===================================================================== 1. LES HÉROS (essai : ne pas changer) */
 D.HEROS = {
-  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier'], sac:null},
+  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier', 'appel'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
   pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
@@ -8651,15 +8678,28 @@ D.GESTES = {
   /* Romain, 11 novembre (9 h 26) : depuis que tout le carnet de l'aventurier est ouvert, « Étudier » ne sert plus. À sa place,
      la rune de l'œil : le Sage voit, pour ce tour ET le suivant, qui chaque monstre va frapper et combien. Sans elle, on ne
      sait pas qui sera frappé. */
+  /* Romain, 11 novembre (16 h 07) : « je préférerais que le sort qui permet de dévoiler les attaques des ennemis, il soit
+     infini. Qu'il ait besoin de le faire qu'une seule fois. » Lancée une fois, elle dure tout le combat. */
   oeil:{ic:'👁️', nom:'Rune de l\'œil', d:'qui sera frappé ?', vise:'salle'},
+  /* Romain, 11 novembre (9 h 16, 16 h 07) : « une rune pour ramener un ennemi vers lui. Pour qu'après, le Pisteur puisse
+     donner un coup de dague. » Elle amène devant un monstre qui marche par terre (pas ceux qui volent, pendent ou nagent). */
+  appel:{ic:'🧲', nom:'Rune d\'appel', d:'amène un monstre', vise:'bete'},
   rune:{ic:'✨', nom:'Rune de lumière', d:'une vive lumière', vise:'bete'},
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
-  louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
-  herbes:{ic:'🌿', nom:'Herbes', d:'soigne un peu', vise:'heros'},
-  fleche:{ic:'🏹', nom:'Flèche', d:'ce qui vole', vise:'bete'},
-  dague:{ic:'🗡️', nom:'Coup de dague', d:'celui de devant', vise:'devant'},
+  louche:{ic:'🥄', nom:'Coup de louche', arme:'Louche', d:'un grand BONG', vise:'salle'},
+  /* Romain, 11 novembre (16 h 07) : « la plante soigne tout le monde d'un petit montant, et la grosse potion remonte bien
+     les points de vie » — les herbes soignent toute l'équipe (un peu), le baume un seul ami (beaucoup). */
+  herbes:{ic:'🌿', nom:'Herbes', d:'soigne l\'équipe', vise:'equipe'},
+  /* arme : le nom de la carte dans la bande du combat, du côté des armes (Romain, 11 novembre, 16 h 37 : « arc normal, arc de
+     lune, arc transperçant et la dague ») */
+  fleche:{ic:'🏹', nom:'Flèche', arme:'Arc normal', d:'ce qui vole', vise:'bete'},
+  dague:{ic:'🗡️', nom:'Coup de dague', arme:'Dague', d:'celui de devant', vise:'devant'},
   chatouiller:{ic:'🪶', nom:'Chatouiller', d:'guili-guili !', vise:'salle'}
 };
+
+/* le bâton de tous les jours du Sage (Romain, 11 novembre, 16 h 37 : « il y a trois bâtons. Bâton normal, bâton de lune,
+   bâton de chêne. Bâton normal, il fait rien de spécial. ») */
+D.BATON = {id:'baton', ic:'🪄', nom:'Bâton normal', d:'rien de spécial'};
 
 /* ===================================================================== 3. LES RECETTES (les potions de l'Alchimiste)
    Romain, 10 novembre (17 h 47 et 17 h 56) : plus de sac de 3 recettes à choisir (« un peu trop compliqué »). L'Alchimiste a
@@ -8700,7 +8740,7 @@ D.CHIFFRES = {
   ouvert:{louche:10, feu:30, acide:25},
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
   bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier de runes (il en arrête 75 % : Romain, 11 novembre) */
-  herbes:20,
+  herbes:10,                               /* les herbes : chaque héros debout (20 sur un seul ami jusqu'au 11 novembre) */
   amulette:30,                             /* le héros qui tombe se relève avec 30 (une fois par donjon) */
   repos:0.5,                               /* le feu de camp rend la moitié des PV max */
   os:10,                                   /* la morsure du rat du tas d'os (sur le Pisteur) */
@@ -8719,13 +8759,19 @@ D.OBJETS = {
      transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
   'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Elles font très mal à ce qui vole, pend à un fil ou nage. Sur ce qui marche par terre, la dague fait bien mieux.'},
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
-    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume',
+    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
     d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
-    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure',
+    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
     d:'Contre l\'armure : leur critique frappe aussi fort que la dague, même de loin. Sur le rat cuirassé, elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
-  'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
-  'baton-chene':{nom:'Bâton de chêne', pour:'sage', equipe:'baton-chene', d:'Le bouclier de runes protège deux amis à la fois.'},
+  /* Romain, 11 novembre (16 h 07) : « pour le Sage, on puisse récupérer deux armes. Ou plus, autant d'armes qu'on veut. Et
+     on doit choisir dans le donjon. » Une arme (arme:true) ne prend donc pas de place dans les mains, comme un carquois.
+     À 16 h 37 : « il y a trois bâtons : bâton normal, bâton de lune, bâton de chêne. Et après, il y a les sorts. Tu fais en
+     sorte qu'on puisse choisir les bâtons. » En combat, le Sage choisit son bâton, puis son sort : le bâton en main change
+     le sort qu'il sait changer (carte.base) — le geste joué devient « a:<objet> ».
+     carte : nom et effet = la carte du bâton ; d, vise, max = le sort « base » lancé avec ce bâton. */
+  'cristal-lune':{nom:'Cristal de lune', pour:'sage', arme:true, equipe:'cristal-lune', carte:{base:'rune', nom:'Bâton de lune', effet:'lumière pour tous', d:'toute la salle', vise:'salle'}, d:'Le Sage le fixe à son bâton : c\'est le bâton de lune. Avec lui, la rune de lumière éclaire toute la salle. Toute la salle…'},
+  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'protège deux amis', vise:'heros', max:2}, d:'Avec lui, le bouclier de runes protège deux amis à la fois.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -9005,7 +9051,7 @@ D.LIEUX = {
   eboulis:{nom:'Le cul-de-sac éboulé', tas:true, crane:true},
   dalles:{nom:'Le couloir aux dalles', piege:'dalles'},
   atelier:{nom:'L\'atelier des Fondateurs', combat:'atelier'},
-  bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree'], coffre:['cristal-lune', 'baton-chene']},
+  bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree', 'cristal-lune', 'baton-chene']},      /* (le Sage prend les deux armes du lutrin : Romain, 11 novembre) */
   portes:{nom:'La salle aux trois portes', portes:{oeil:'ossuaire', gueule:'crypte', lune:'toiles'}},
   crypte:{nom:'La fausse crypte', combat:'crypte', objets:['amulette'], apresCombat:true},
   ossuaire:{nom:'L\'ossuaire', combat:'ossuaire'},
@@ -9094,7 +9140,7 @@ D.MOTS = {
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !', colere:'En colère !', petitCritique:'Petit critique'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Il voit tout', devant:'Déjà devant !', pasLui:'Pas celui-là !', prepare:'Gros coup bientôt !', colere:'En colère !', petitCritique:'Petit critique'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;
@@ -9167,7 +9213,8 @@ else global.DonjonDonnees = D;
    {t:'dague', heros:'pisteur', bete:'b1'}
    {t:'potion', heros:'alchimiste', recette:'feu', bete:'b1'}         ou heros2:'sage' (Baume, Cœur vaillant), salle:true (Fumigène), equipe:true (Baume lumineux)
    {t:'louche', heros:'alchimiste', bete:'b1'}      le BONG ; bete : celle de devant, qui prend le coup (ou null) ; le bruit suit pour toutes
-   {t:'herbes', heros:'alchimiste', heros2:'pisteur'}
+   {t:'herbes', heros:'alchimiste', equipe:true}             les herbes : un petit soin pour chaque héros debout (un {t:'soin'} par héros suit)
+   {t:'appel', heros:'sage', bete:'b2', ordre:['b2', 'b1']}   la rune d'appel : cette bête passe devant ; ordre : les vivantes, de devant à derrière
    {t:'rune', heros:'sage', bete:'b1'}              ou salle:true avec le cristal de lune
    {t:'pose-bouclier', heros:'sage', cibles:['pisteur']}              deux cibles avec le bâton de chêne
    {t:'oeil', heros:'sage', jusque:3, plans:[{bete, dans:0|1, attaque, cibles, degats, fois, prepare, gros}]}   la rune de l'œil
@@ -9302,7 +9349,9 @@ function importer(txt){
 /* les potions de l'Alchimiste, dans l'ordre de l'étagère */
 function potions(p){ return D.ORDRE_RECETTES.filter(function(r){ return (p.recettes || []).indexOf(r) >= 0; }); }
 /* les objets qui prennent une place dans les mains (les carquois n'en prennent pas : le Pisteur les porte tous) */
-function enMains(l){ return (l || []).filter(function(o){ return !(D.OBJETS[o] && D.OBJETS[o].carquois); }); }
+/* (un carquois et une arme ne prennent pas de place : on les porte tous, et on choisit en combat) */
+function sansPlace(o){ return !!(D.OBJETS[o] && (D.OBJETS[o].carquois || D.OBJETS[o].arme)); }
+function enMains(l){ return (l || []).filter(function(o){ return !sansPlace(o); }); }
 
 /* les monstres rencontrés : p.livre[monstre] = 0. Romain, 11 novembre : plus d'« étude » dans le donjon. Le carnet d'un
    aventurier, ramassé à l'entrée, donne toutes les pages au Sage ; en combat, sa rune de l'œil dit qui sera frappé, et de
@@ -9393,6 +9442,9 @@ P.cache = function(m){ return this._un(m, m.def.cache); };                      
 P.ciblables = function(){ var self = this; return this.vivants().filter(function(m){ return !self.cache(m); }); };
 P.devant = function(){ return this.ciblables()[0] || null; };                      /* la bête de devant */
 /* à portée de dague : la bête de devant, et celles qui sont tombées devant */
+/* ceux que la rune d'appel peut amener devant : ils marchent par terre (ni vol, ni fil, ni eau), on peut les viser, et ils
+   ne sont pas déjà devant */
+P.appelables = function(){ var d = this.devant(); return this.ciblables().filter(function(m){ return m !== d && !m.def.hauteur; }); };
 P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblables().filter(function(m){ return m === d || self._un(m, m.def.tombe); }); };
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
@@ -9406,6 +9458,8 @@ P.gestes = function(h){
   if(H.avale) return [{geste:'chatouiller', nom:D.GESTES.chatouiller.nom, vise:'salle', permis:true, mot:null, cibles:[], max:0}];
   var cib = ids(this.ciblables()), amis = this.visables(), auSol = D.ORDRE.filter(function(x){ return self.h[x].sol; });
   function g(geste, nom, vise, cibles, permis, mot, max){ l.push({geste:geste, nom:nom, vise:vise, permis:permis, mot:permis ? null : mot, cibles:cibles, max:max == null ? (vise === 'salle' || vise === 'equipe' ? 0 : 1) : max}); }
+  /* les armes que ce héros porte et qui changent ce geste : une carte de plus par arme (« a:<objet> ») */
+  function armes(base, fn){ H.objets.forEach(function(o){ var O = D.OBJETS[o]; if(O && O.arme && O.carte && O.carte.base === base) fn('a:' + o, O); }); }
   D.HEROS[h].gestes.forEach(function(id){
     var G = D.GESTES[id];
     if(id === 'fleche'){
@@ -9414,17 +9468,24 @@ P.gestes = function(h){
       if(h === 'pisteur') self._carquoisPortes().forEach(function(o){ g('f:' + o, D.OBJETS[o].court || D.OBJETS[o].nom, 'bete', cib, cib.length > 0, self._motCache()); });
     }
     else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motCache()); }
-    else if(id === 'oeil'){        /* la rune de l'œil : refusée si le Sage voit déjà le tour suivant */
-      var deja = self.vu > self.tour;
+    else if(id === 'oeil'){        /* la rune de l'œil : une fois lancée, elle dure tout le combat (« Il voit tout ») */
+      var deja = self.vu >= self.tour;
       g(id, G.nom, 'salle', [], !deja && self.vivants().length > 0, deja ? MOTS.vu : MOTS.fini);
     }
     else if(id === 'rune'){
-      if(self.porte('sage', 'cristal-lune')) g(id, G.nom, 'salle', [], true, null);
-      else g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+      g(id, G.nom, 'bete', cib, cib.length > 0, self._motCache());
+      armes(id, function(a, O){ g(a, G.nom, 'salle', [], true, null); });               /* avec le bâton de lune (le cristal) : toute la salle */
     }
-    else if(id === 'bouclier') g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, self.porte('sage', 'baton-chene') ? 2 : 1);
+    else if(id === 'bouclier'){
+      g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, 1);
+      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : deux amis */
+    }
+    else if(id === 'appel'){       /* la rune d'appel : un monstre qui marche par terre, et qui n'est pas déjà devant */
+      var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return !x.def.hauteur; });
+      g(id, G.nom, 'bete', loin, loin.length > 0, parTerre ? MOTS.devant : cib.length ? MOTS.pasLui : self._motCache());
+    }
     else if(id === 'louche') g(id, G.nom, 'salle', [], true, null);
-    else if(id === 'herbes') g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne);
+    else if(id === 'herbes') g(id, G.nom, 'equipe', [], amis.length > 0, MOTS.personne);
   });
   if(D.HEROS[h].sac) this.sac.forEach(function(rid){
     var r = D.RECETTES[rid], geste = 'p:' + rid;
@@ -9464,7 +9525,7 @@ P.refus = function(h, geste, cible){
   if(H.avale && geste !== 'chatouiller') return MOTS.avale;
   var l = this.gestes(h), g = null;
   for(var i = 0; i < l.length; i++) if(l[i].geste === geste) g = l[i];
-  if(!g) return geste && (geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] || geste.indexOf('f:') === 0 && D.OBJETS[geste.slice(2)]) ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : MOTS.impossible;
+  if(!g) return geste && (geste.indexOf('p:') === 0 && D.RECETTES[geste.slice(2)] || geste.indexOf('f:') === 0 && D.OBJETS[geste.slice(2)]) ? (D.HEROS[h].sac ? MOTS.absent : MOTS.impossible) : geste && geste.indexOf('a:') === 0 && D.OBJETS[geste.slice(2)] ? MOTS.absent : MOTS.impossible;
   if(!g.permis) return g.mot;
   if(g.vise === 'salle' || g.vise === 'equipe') return null;
   var c = Array.isArray(cible) ? cible : [cible];
@@ -9479,6 +9540,7 @@ P.refus = function(h, geste, cible){
     var m = this.bete(c[k]);
     if(!m || m.mort) return MOTS.fini;
     if(this.cache(m)) return m.e.sous !== undefined ? MOTS.eau : MOTS.haut;
+    if(geste === 'appel') return m === this.devant() ? MOTS.devant : MOTS.pasLui;       /* déjà devant, ou il vole, pend ou nage */
     return MOTS.loin;
   }
   return null;
@@ -9638,13 +9700,18 @@ P.jouer = function(h, a){
   var m = this.bete(cibles[0]), H = this.h[h];
 
   if(geste === 'oeil') this._oeil(ev, h);
-  else if(geste === 'rune'){
-    if(this.porte('sage', 'cristal-lune')){
-      ev.push({t:'rune', heros:h, salle:true});
-      this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'lumiere', {heros:h}); });
-    } else { ev.push({t:'rune', heros:h, bete:m.id}); this._pouvoir(ev, m, 'lumiere', {heros:h}); }
+  else if(geste === 'rune'){ ev.push({t:'rune', heros:h, bete:m.id}); this._pouvoir(ev, m, 'lumiere', {heros:h}); }
+  else if(geste === 'a:cristal-lune'){
+    ev.push({t:'rune', heros:h, salle:true});
+    this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'lumiere', {heros:h}); });
   }
-  else if(geste === 'bouclier'){
+  else if(geste === 'appel'){
+    /* le monstre appelé passe devant tous les autres (il devient celui que la dague et la louche touchent) */
+    var premier = this.b.indexOf(this.vivants()[0]);
+    this.b.splice(this.b.indexOf(m), 1); this.b.splice(premier, 0, m);
+    ev.push({t:'appel', heros:h, bete:m.id, ordre:ids(this.vivants())});
+  }
+  else if(geste === 'bouclier' || geste === 'a:baton-chene'){
     ev.push({t:'pose-bouclier', heros:h, cibles:cibles.slice()});
     cibles.forEach(function(x){ self.h[x].bouclier = true; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1}); });
   }
@@ -9656,8 +9723,9 @@ P.jouer = function(h, a){
     this.vivants().forEach(function(x){ self._pouvoir(ev, x, 'bruit', {heros:h}); });
   }
   else if(geste === 'herbes'){
-    ev.push({t:'herbes', heros:h, heros2:cibles[0]});
-    this._soin(ev, cibles[0], C.herbes, 'herbes');
+    /* les herbes : un petit soin pour chaque héros debout (le baume, lui, soigne beaucoup un seul ami) */
+    ev.push({t:'herbes', heros:h, equipe:true});
+    this.visables().forEach(function(x){ self._soin(ev, x, C.herbes, 'herbes'); });
   }
   else if(geste === 'fleche') this._fleche(ev, m, null, null);
   else if(geste.indexOf('f:') === 0) this._fleche(ev, m, null, D.OBJETS[geste.slice(2)]);
@@ -9835,12 +9903,13 @@ P._prevu = function(m, plan){
   return {attaque:plan.nom, cibles:plan.cibles.slice(), degats:plan.prepare ? 0 : d, fois:fois, prepare:!!plan.prepare, gros:!!A.prepare};
 };
 /* LA RUNE DE L'ŒIL (Romain, 11 novembre) : le Sage voit, pour ce tour et le suivant, qui chaque monstre va frapper et combien.
-   Sans elle, personne ne le sait (etat() ne le dit pas). */
+   Sans elle, personne ne le sait (etat() ne le dit pas). Depuis 16 h 07 : lancée une fois, elle dure tout le combat (TOUJOURS). */
+var TOUJOURS = 9999;
 P._oeil = function(ev, h){
   var self = this;
   this.vivants().forEach(function(m){ if(!m.suite) m.suite = self._prevoir(m); });
-  this.vu = this.tour + 1;
-  ev.push({t:'oeil', heros:h, jusque:this.vu, plans:this.intentions()});
+  this.vu = TOUJOURS;
+  ev.push({t:'oeil', heros:h, jusque:'fin', plans:this.intentions()});
 };
 /* ce que le Sage voit en ce moment : [{bete, dans:0 (ce tour) | 1 (le suivant), attaque, cibles, degats, fois, prepare, gros}] */
 P.intentions = function(){
@@ -9867,6 +9936,8 @@ P._nouveauTour = function(ev){
     if(m.def.attaques[p.nom].prepare && !self.a(m, 'prepare')){ m.e.prepare = FIN; ev.push({t:'etat', bete:m.id, nom:'prepare', on:true, tours:'fin'}); }
     ev.push({t:'vise', bete:m.id, attaque:p.nom, cibles:p.cibles.slice(), prepare:!!p.prepare});
   });
+  /* l'œil ouvert : le Sage voit aussi le tour d'après (la proie est tirée au sort maintenant, et reprise telle quelle) */
+  if(this.vu > this.tour) this.vivants().forEach(function(m){ if(!m.suite) m.suite = self._prevoir(m); });
   D.ORDRE.forEach(function(h){ if(self.h[h].entoile && !self.h[h].sol) ev.push({t:'passe', heros:h, mot:MOTS.entoile}); });
   this._sauveGraine();
 };
@@ -10095,8 +10166,8 @@ function entrer(p, lieu){
 function donner(p, ev, id, heros, laisser){
   var O = D.OBJETS[id], h = O.pour === 'tous' ? heros : O.pour, H = p.heros[h];
   if(!H) return refus(MOTS.pourQui, {objet:id});
-  if(!O.carquois && enMains(H.objets).length >= C.places){      /* (un carquois ne prend pas de place) */
-    if(!laisser || H.objets.indexOf(laisser) < 0 || (D.OBJETS[laisser] && D.OBJETS[laisser].carquois)) return [{t:'plein', heros:h, objets:enMains(H.objets), objet:id}];
+  if(!sansPlace(id) && enMains(H.objets).length >= C.places){      /* (un carquois, une arme ne prennent pas de place) */
+    if(!laisser || H.objets.indexOf(laisser) < 0 || sansPlace(laisser)) return [{t:'plein', heros:h, objets:enMains(H.objets), objet:id}];
     H.objets.splice(H.objets.indexOf(laisser), 1);
     delete p.faits['objet:' + laisser]; p.faits['pose:' + laisser] = p.lieu;
     ev.push({t:'laisse', objet:laisser, heros:h, lieu:p.lieu});
@@ -14618,7 +14689,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '11/11 à 14 h 12';
+DJ.VERSION = '11/11 à 16 h 56';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -15108,6 +15179,7 @@ function lancer(partie, salle){
       construire();
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
+      E.baton = batonGarde();
       jouer(E.c.entree()).then(function(){ q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
     });
   });
@@ -15181,6 +15253,32 @@ function creerBete(b, x){
 function retirerHud(id){ ['zone-', 'pv-', 'badges-'].forEach(function(p){ var e = q('#' + p + id); if(e) e.remove(); }); }
 /* une petite bête née en combat rend sa place en partant (une autre pourra y naître) */
 function liberer(a){ if(DJ.Betes.AVANT[a.module]){ var k = E.prises.indexOf(a.x0); if(k >= 0) E.prises.splice(k, 1); } }
+
+/* LA RUNE D'APPEL : une bête passe devant. Celles qui étaient entre elle et les héros reculent d'un cran. On garde la même
+   largeur de file : chacune reçoit une place à la mesure de son corps (la moitié de son cadre), et le reste est partagé. */
+function centreB(a){ return a.cadre.x + a.cadre.w * (a.rat ? .56 : .5); }
+async function avancer(moi){
+  var viv = E.ordre.map(B).filter(function(x){ return x && !x.mort && x.module !== 'bourbe'; });
+  viv.sort(function(x, y){ return centreB(x) - centreB(y); });
+  var k = viv.indexOf(moi); if(k <= 0) return;
+  var G = viv.slice(0, k + 1), neuf = [moi].concat(viv.slice(0, k));
+  function corps(x){ return x.cadre.w * .5; }
+  var gauche = centreB(G[0]) - corps(G[0]) / 2, droite = centreB(G[k]) + corps(G[k]) / 2, somme = 0;
+  G.forEach(function(x){ somme += corps(x); });
+  var trou = (droite - gauche - somme) / k, cur = gauche;
+  var pas = neuf.map(function(x){ var c = cur + corps(x) / 2; cur += corps(x) + trou; return {a:x, x:c - x.cadre.w * (x.rat ? .56 : .5)}; });
+  pas.forEach(function(p){ p.a.el.style.transition = 'transform .55s cubic-bezier(.3,.1,.3,1)'; p.a.el.style.transform = 'translateX(' + (p.x - p.a.cadre.x).toFixed(1) + 'px)'; });
+  suivre(true);
+  await attendre(600);
+  pas.forEach(function(p, i){
+    var x = p.a, e = x.el, j = E.prises.indexOf(x.x0);
+    e.style.transition = ''; e.style.transform = ''; e.style.left = p.x.toFixed(1) + 'px';
+    x.cadre.x = p.x; if(j >= 0) E.prises[j] = p.x; x.x0 = p.x;
+    e.style.zIndex = 4 + i;                                    /* devant = à gauche ; celles de derrière passent par-dessus */
+    var pv = q('#pv-' + x.id); if(pv && !pv.classList.contains('boss')) pv.style.left = (p.x + x.cadre.w * (x.rat ? .56 : .5)) + 'px';
+  });
+  placerTout();
+}
 
 /* ====================================================================== 3. L'AFFICHAGE DE L'ÉTAT (d'après la photo des règles) */
 function majBarres(){
@@ -15344,39 +15442,107 @@ function bande(){
     bandeEl.innerHTML = s;
     return;
   }
-  /* Romain, 10 novembre : plus de sac de 3 recettes, l'Alchimiste a TOUTES ses potions ; le Pisteur porte tous ses carquois
-     et choisit sa flèche. Les gestes de toujours restent de grandes cartes ; les potions et les flèches spéciales sont de
-     petites cartes (l'image d'abord, le nom dessous), toutes visibles d'un coup : un seul toucher, comme avant. */
-  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h);
-  var base = gestes.filter(function(g){ return g.geste.indexOf('p:') !== 0 && g.geste.indexOf('f:') !== 0; });
-  var petites = gestes.filter(function(g){ return g.geste.indexOf('f:') === 0; }).concat(gestes.filter(function(g){ return g.geste.indexOf('p:') === 0 && (h !== 'pisteur' || D.RECETTES[g.geste.slice(2)].fleche); }));
+  /* Romain, 11 novembre (16 h 07) : « la partie de gauche, c'est pour les armes, et la partie de droite c'est pour les combos
+     avec arc plus acide. Mais il faut que ça soit pareil pour les autres personnages. » Et à 16 h 37 : « il faut bien qu'on
+     différencie les choses. Il y a les armes : arc normal, arc de lune, arc transperçant et la dague. Et après, il y a feu,
+     huile, colle, acide, givre. Pour le Sage, il y a trois bâtons. Et après, il y a les sorts. Tu fais en sorte qu'on puisse
+     choisir les bâtons. »
+     À GAUCHE, sur un fond d'acier : LES ARMES. Le Pisteur : ses arcs et sa dague (toucher l'arme, puis le monstre). Le Sage :
+     ses bâtons — on en prend un EN MAIN (ça ne coûte pas le tour), et il change un sort. L'Alchimiste : sa louche.
+     À DROITE : ce qu'on fait avec. Le Pisteur : ses combos (la flèche de l'arc normal, trempée dans une potion). Le Sage :
+     ses quatre sorts. L'Alchimiste : ses herbes et ses potions. */
+  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h), G = {};
+  gestes.forEach(function(g){ G[g.geste] = g; });
   E.gestes = gestes;
   s += '<div class="b-moi"><span class="portrait img-' + h + '" style="' + DJ.tete(h, 86, 116, 10) + '"></span>' +
     '<button class="b-retour" data-act="retour" aria-label="Changer de héros">↩</button>' +
     '<b class="b-nom">' + H.nom + '</b>' + pvB(h) + '</div>';
-  s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl">Ses gestes</div><div class="b-cartes' + (petites.length > 4 || base.length > 3 ? ' serre' : '') + '">' + base.map(carte).join('') + '</div></div>';
-  if(petites.length){
-    /* la petite carte choisie dit ce qu'elle fait, en trois mots, à la place du titre */
-    var ch = E.geste && petites.filter(function(g){ return g.geste === E.geste.geste; })[0], lbl = h === 'pisteur' ? 'Ses autres flèches' : 'Ses potions';
-    if(ch) lbl = ch.geste.indexOf('p:') === 0 ? D.RECETTES[ch.geste.slice(2)].d : (D.OBJETS[ch.geste.slice(2)].dg || lbl);
-    s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lbl) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
+  /* dans le ventre du Bourbe : un seul geste, pas d'arme */
+  if(G.chatouiller){
+    s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl">Dans le ventre !</div><div class="b-cartes">' + carte(G.chatouiller) + '</div></div>';
+    bandeEl.innerHTML = s; return;
+  }
+  var gauche, droite, nG, nD, lblG = 'Ses armes', lblD, petites = null;
+  if(h === 'sage'){
+    var bs = batons(), enMain = D.OBJETS[E.baton];
+    /* le bâton en main change le sort qu'il sait changer : la carte du sort joue alors « a:<bâton> » */
+    var sorts = H.gestes.map(function(id){ return (enMain && enMain.carte && enMain.carte.base === id && G['a:' + E.baton]) || G[id]; }).filter(Boolean);
+    gauche = bs.map(carteBaton).join(''); nG = bs.length; if(nG > 1) lblG = 'Ses bâtons';
+    droite = sorts.map(carte).join(''); nD = sorts.length; lblD = 'Ses sorts';
+  } else {
+    var armes = gestes.filter(function(g){ return estArme(g.geste); });
+    /* (le Pisteur : ses arcs d'abord, sa dague au bout — « arc normal, arc de lune, arc transperçant et la dague ») */
+    armes.sort(function(x, y){ return (x.geste === 'dague') - (y.geste === 'dague'); });
+    petites = gestes.filter(function(g){ return !estArme(g.geste) && (h !== 'pisteur' || g.geste.indexOf('p:') !== 0 || D.RECETTES[g.geste.slice(2)].fleche); });
+    gauche = armes.map(carte).join(''); nG = armes.length; if(nG === 1) lblG = 'Son arme';
+    lblD = h === 'pisteur' ? 'Ses combos' : 'Ses potions';
+  }
+  var n = nG + (petites ? 0 : nD), serre = petites ? (nG > 3 ? ' serre' : '') : (n > 6 ? ' six' : n > 5 ? ' serre' : '');
+  s += '<div class="b-sep"></div><div class="b-sec b-armes"><div class="b-lbl">⚔️ ' + lblG + '</div><div class="b-cartes' + serre + '">' + gauche + '</div></div>';
+  if(petites){
+    if(petites.length){
+      /* la petite carte choisie dit ce qu'elle fait, en trois mots, à la place du titre */
+      var ch = E.geste && petites.filter(function(g){ return g.geste === E.geste.geste; })[0];
+      if(ch) lblD = infoPetite(ch).d;
+      s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lblD) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
+    }
+  } else {
+    s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl">✨ ' + lblD + '</div><div class="b-cartes' + serre + '">' + droite + '</div></div>';
   }
   bandeEl.innerHTML = s;
 }
+/* une arme : la flèche (l'arc normal), un carquois spécial (« f:<carquois> » : un autre arc), la dague, la louche */
+function estArme(id){ return id.slice(0, 2) === 'f:' || !!(D.GESTES[id] && D.GESTES[id].arme); }
+/* les bâtons du Sage : celui de tous les jours, puis ceux qu'il a trouvés */
+function batons(){
+  var l = [D.BATON.id];
+  ((E.ph && E.ph.heros.sage && E.ph.heros.sage.objets) || []).forEach(function(o){ var O = D.OBJETS[o]; if(O && O.arme && O.carte && l.indexOf(o) < 0) l.push(o); });
+  return l;
+}
+/* le dessin d'un bâton, pour sa carte (le même trait pour les trois : on voit d'un coup d'œil lequel est lequel) */
+function dessinBaton(id){
+  var bois = id === 'baton-chene' ? ['#3d2a17', '#8a5a2e', '#b88048'] : ['#33261c', '#7a5a3c', '#a88660'], t = '';
+  if(id === 'cristal-lune') t = '<circle cx="31" cy="11" r="11" fill="#cfe0ff" opacity=".35"/><path d="M31 1 L37 11 L31 21 L25 11 Z" fill="#eef4ff" stroke="#7f9bd6" stroke-width="1.6" stroke-linejoin="round"/><path d="M31 4 L31 18 M27 11 L35 11" stroke="#b7c9f2" stroke-width="1"/>';
+  else if(id === 'baton-chene') t = '<path d="M30 12 C22 4 13 6 12 13 C19 17 26 17 30 12 Z" fill="#6ab85a" stroke="#2f5a2a" stroke-width="1.4"/><path d="M31 11 C33 1 42 0 45 6 C42 13 36 14 31 11 Z" fill="#8ad07a" stroke="#2f5a2a" stroke-width="1.4"/><circle cx="31" cy="12" r="3.2" fill="#b88048" stroke="#3d2a17" stroke-width="1.2"/>';
+  else t = '<path d="M31 14 C31 6 40 5 40 11 C40 15 35 15 35 12" fill="none" stroke="' + bois[0] + '" stroke-width="5.4" stroke-linecap="round"/><path d="M31 14 C31 6 40 5 40 11 C40 15 35 15 35 12" fill="none" stroke="' + bois[1] + '" stroke-width="2.8" stroke-linecap="round"/>';
+  return '<svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><path d="M12 45 L31 12" stroke="' + bois[0] + '" stroke-width="' + (id === 'baton-chene' ? 7.4 : 6) + '" stroke-linecap="round"/><path d="M12 45 L31 12" stroke="' + bois[1] + '" stroke-width="' + (id === 'baton-chene' ? 4.6 : 3.4) + '" stroke-linecap="round"/><path d="M14 40 L29.5 13.5" stroke="' + bois[2] + '" stroke-width="1" stroke-linecap="round" opacity=".7"/>' + t + '</svg>';
+}
+/* la carte d'un bâton : on la touche pour le prendre en main (le tour n'est pas joué) */
+function carteBaton(id){
+  var O = id === D.BATON.id ? null : D.OBJETS[id], main = E.baton === id;
+  return '<button class="carte arme baton' + (main ? ' enmain' : '') + '" data-act="arme" data-id="' + id + '" aria-pressed="' + main + '">' + (main ? '<i class="c-main">en main</i>' : '') +
+    '<span class="c-ic">' + dessinBaton(id) + '</span><b>' + esc(O ? O.carte.nom : D.BATON.nom) + '</b><small>' + esc(O ? O.carte.effet : D.BATON.d) + '</small></button>';
+}
+/* ce qu'une grande carte montre : une arme (son nom d'arme), ou un sort (avec « a:<bâton> » : le sort changé par ce bâton) */
+function imageObjet(id){ try{ var d = window.SCENES && window.SCENES.portable ? window.SCENES.portable(id) : null; return d ? '<img alt="" draggable="false" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(d.svg) + '">' : ''; }catch(e){ return ''; } }
+function infoCarte(g){
+  var id = g.geste, k = id.slice(0, 2), O, R;
+  if(k === 'f:'){ O = D.OBJETS[id.slice(2)]; return {ic:imageObjet(id.slice(2)) || O.ic || '🏹', nom:(O.carte && O.carte.nom) || O.petit || O.nom, d:(O.carte && O.carte.d) || O.dg, arme:true, image:true}; }
+  if(k === 'a:'){ O = D.OBJETS[id.slice(2)]; R = D.GESTES[O.carte.base]; return {ic:R.ic, nom:R.nom, d:O.carte.d, avec:id.slice(2)}; }
+  R = D.GESTES[id];
+  return {ic:R.ic, nom:R.arme || g.nom || R.nom, d:R.d, arme:!!R.arme};
+}
 function carte(g){
-  var id = g.geste, R = D.GESTES[id];
+  var id = g.geste, R = infoCarte(g);
   var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : (E.mode === 'gestes' ? ' guide' : '');
   var d = g.permis ? R.d : g.mot;
-  return '<button class="carte' + cls + '" data-act="geste" data-id="' + id + '">' +
-    '<span class="c-ic">' + R.ic + '</span><b>' + esc(g.nom || R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
+  var long = R.nom.split(/[\s-]+/).some(function(m){ return m.length > 11; });        /* (un mot trop long pour la carte : « transperçant ») */
+  return '<button class="carte' + cls + (R.arme ? ' arme' : '') + (R.image ? ' image' : '') + (R.avec ? ' avec' : '') + (long ? ' long' : '') + '" data-act="geste" data-id="' + id + '">' +
+    (R.avec ? '<i class="c-avec">' + dessinBaton(R.avec) + '</i>' : '') +
+    '<span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
 }
-/* une petite carte : une potion (pour le Pisteur : la flèche trempée dedans) ou un carquois spécial */
+/* une petite carte : une potion (pour le Pisteur : la flèche trempée dedans), ou les herbes de l'Alchimiste */
+function infoPetite(g){
+  var id = g.geste;
+  if(id.indexOf('p:') === 0){ var R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom, long:g.nom || R.nom, d:R.d}; }
+  var Ge = D.GESTES[id];
+  return {ic:Ge.ic, nom:Ge.nom, long:Ge.nom, d:Ge.d};
+}
 function petite(g){
-  var id = g.geste, potion = id.indexOf('p:') === 0, R = potion ? D.RECETTES[id.slice(2)] : D.OBJETS[id.slice(2)];
+  var id = g.geste, R = infoPetite(g);
   var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : '';
-  var nom = R.petit || R.nom;                                   /* le nom court, sous l'image */
-  return '<button class="carte mini' + cls + (nom.length > 10 ? ' long' : '') + '" data-act="geste" data-id="' + id + '" aria-label="' + esc(g.nom || R.nom) + '">' +
-    '<span class="c-ic">' + (potion ? DJ.potion(id.slice(2)) : (R.ic || '🏹')) + (potion && E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : '') + '</span><b>' + esc(nom) + '</b></button>';
+  return '<button class="carte mini' + cls + (R.nom.length > 10 ? ' long' : '') + '" data-act="geste" data-id="' + id + '" aria-label="' + esc(R.long) + '">' +
+    '<span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b></button>';
 }
 function refus(x, mot, y){ son('clic'); Fx.mot(x, y == null ? 96 : y, mot, 'refus'); }
 
@@ -15404,6 +15570,30 @@ function choisirGeste(id){
   if(!g.permis){ refus(hCx(E.sel), g.mot || D.MOTS.impossible); return; }
   E.geste = g; E.choix = []; E.mode = 'cible';
   bande(); majScene();
+}
+/* le Sage prend un bâton en main : ça ne joue pas son tour, ça change le sort que ce bâton sait changer. Le choix est gardé
+   pour les combats suivants (dans la partie). */
+function choisirArme(id){
+  if(E.sel !== 'sage' || batons().indexOf(id) < 0) return;
+  bruit('icone', {}, ['clic']);
+  if(E.baton !== id){
+    E.baton = id;
+    try{ if(E.partie && E.partie.heros && E.partie.heros.sage) E.partie.heros.sage.baton = id; }catch(x){}
+    tenirBaton(true);
+  }
+  E.geste = null; E.choix = []; E.mode = 'gestes';
+  bande(); majScene();
+}
+/* le bâton en main, au départ : celui du combat d'avant, s'il le porte encore */
+function batonGarde(){
+  var b = null; try{ b = E.partie.heros.sage.baton; }catch(x){}
+  return b && batons().indexOf(b) >= 0 ? b : D.BATON.id;
+}
+/* montrer le bon bâton dans la main du Sage (et seulement celui-là) */
+function tenirBaton(eclat){
+  var A = E.A.h.sage; if(!A || !A.equiper) return;
+  batons().forEach(function(b){ var O = D.OBJETS[b]; if(O && O.equipe && b !== E.baton){ try{ A.equiper(O.equipe, false); }catch(x){} } });
+  var M = D.OBJETS[E.baton]; if(M && M.equipe){ try{ A.equiper(M.equipe, true, {discret:!eclat}); }catch(x){} }
 }
 function retour(){
   if(E.occupe) return;
@@ -15491,7 +15681,7 @@ function enBlocs(evs){
   return blocs;
 }
 function calme(bloc){ return bloc.evs.every(function(e){ return (e.t === 'etat' && e.on === false) || e.t === 'ferme'; }); }
-var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, oeil:1, chatouille:1};
+var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, oeil:1, appel:1, chatouille:1};
 
 async function jouer(evs, avant){
   if(!evs || !evs.length) return;
@@ -15684,7 +15874,8 @@ function special(a, ev, ctx){
 async function entreeHeros(ev){
   ev.betes.forEach(function(b, k){ b._debut = true; b._rang = k; });
   E.debut = ev;
-  ORDRE.forEach(function(h){ (ev.heros[h].objets || []).forEach(function(o){ var n = D.OBJETS[o] && D.OBJETS[o].equipe; try{ if(n && E.A.h[h].equiper) E.A.h[h].equiper(n, true, {discret:true}); }catch(x){} }); });
+  /* (les bâtons du Sage : seulement celui qu'il a en main) */
+  ORDRE.forEach(function(h){ (ev.heros[h].objets || []).forEach(function(o){ var n = D.OBJETS[o] && D.OBJETS[o].equipe; if(h === 'sage' && D.OBJETS[o].arme && o !== E.baton) return; try{ if(n && E.A.h[h].equiper) E.A.h[h].equiper(n, true, {discret:true}); }catch(x){} }); });
   E.ph = E.c.etat(); majBarres();
   await attendre(450);
   son('pasHeros', 1.7, 3);
@@ -15779,7 +15970,19 @@ async function geste(ev, evs){
       await attendre(250);
       return true;
     case 'herbes':
-      await H.alchimiste.herbes(fx, hPt(ev.heros2));
+      /* (depuis le 11 novembre : pour toute l'équipe — elles partent au milieu des trois héros) */
+      await H.alchimiste.herbes(fx, ev.equipe ? {x:hCx('alchimiste') + 6, y:150} : hPt(ev.heros2));
+      return false;
+    case 'appel':
+      /* la rune d'appel : le Sage tend la main vers le monstre, qui glisse devant tous les autres */
+      son('magie');
+      to = a.ancre('centre');
+      await H.sage.sort(fx, to, {cristal:false});
+      Fx.onde(to.x, to.y, '#d9b8ff', 240, 600);
+      if(a && DJ.Betes.SONS[a.module] && DJ.Betes.SONS[a.module].cri) bruit(DJ.Betes.SONS[a.module].cri);
+      await avancer(a);
+      son('magie', .05);
+      E.ph = E.c.etat(); majBadges();
       return false;
     case 'rune':
       son('magie');
@@ -15988,7 +16191,7 @@ async function soin(ev){
   })(k);
   Fx.chiffre(x, y - 30, '+' + ev.n, 'soin');
   barre(h, ev.pv, E.ph.heros[h].pvMax);
-  return attendre(ev.par === 'baumelum' ? 180 : 600);
+  return attendre(ev.par === 'baumelum' || ev.par === 'herbes' ? 180 : 600);
 }
 async function etatHeros(ev){
   var h = ev.heros, A = E.A.h[h];
@@ -16120,8 +16323,9 @@ DJ.toucher(function(a, id, b){
   if(a === 'fuite'){ demanderFuite(); return true; }
   if(a === 'fuir'){ if(!E.fini && !E.occupe){ fuite(false); } return true; }
   if(a === 'combat-fin'){ terminer(); return true; }
-  if(E.occupe || DJ.fenetreOuverte()) return a === 'heros' || a === 'geste' || a === 'retour' || a === 'perso';
+  if(E.occupe || DJ.fenetreOuverte()) return a === 'heros' || a === 'geste' || a === 'arme' || a === 'retour' || a === 'perso';
   if(a === 'heros'){ choisirHeros(id); return true; }
+  if(a === 'arme'){ choisirArme(id); return true; }
   if(a === 'geste'){ choisirGeste(id); return true; }
   if(a === 'retour'){ retour(); return true; }
   if(a === 'perso'){ toucherPerso(b.getAttribute('data-type'), id); return true; }
@@ -16130,7 +16334,7 @@ DJ.toucher(function(a, id, b){
 
 DJ.Combat = {
   preparer:preparer, lancer:lancer, cuireHeros:cuireHeros,
-  etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
+  etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, baton:E.baton, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
   /* pour les tests : le combat des règles, les adaptateurs */
   _E:function(){ return E; }
 };
@@ -16245,6 +16449,10 @@ function carte(o){
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
       '<button class="aller" id="b-entrer" data-act="entrer" hidden>Entrer ➜</button>' +
+      /* Romain, 11 novembre (16 h 07) : « sur la carte, il faudrait un bouton sauvegarde. Quand on appuie dessus, ça demande
+         le code du Sage. Au moins, ça aiderait à se rappeler qu'il faut sauvegarder. » Un point rouge s'y pose dès qu'un
+         combat a été gagné depuis la dernière sauvegarde. */
+      '<button class="sombre' + (aSauver() ? ' rappel' : '') + '" id="b-sauver" data-act="sauver">💾 Sauvegarder</button>' +
       '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button></div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
@@ -16352,7 +16560,7 @@ function aPlace(id){
   var O = D.OBJETS[id], p = X.partie; if(!O) return false;
   if(O.discret) return false;                 /* (la pierre de rune : rien ne dit qu'il reste quelque chose à trouver) */
   if(O.code || O.or) return true;
-  if(O.carquois) return true;                 /* (un carquois ne prend pas de place : le Pisteur les porte tous) */
+  if(O.carquois || O.arme) return true;       /* (un carquois, une arme ne prennent pas de place : on les porte tous) */
   return (O.pour === 'tous' ? ORDRE : [O.pour]).some(function(h){ return p.heros[h] && Regles.enMains(p.heros[h].objets).length < D.CHIFFRES.places; });
 }
 function aFaire(lieu){
@@ -16471,8 +16679,9 @@ function plaquesDuLieu(cont){
 function majPlaque(h){
   if(!S) return;
   var p = X.partie, tous = p.heros[h].objets, l = Regles.enMains(tous), n = D.CHIFFRES.places, e = q('#plaque-' + h), ech = X.echange && X.echange.heros === h;
-  /* les carquois spéciaux du Pisteur : il les porte tous, sans prendre de place (Romain, 10 novembre) ; ils sont montrés à part */
-  var carq = tous.filter(function(o){ return D.OBJETS[o] && D.OBJETS[o].fleche; });
+  /* les carquois spéciaux du Pisteur, les armes du Sage : ils les portent tous, sans prendre de place (Romain, 10 et 11 novembre) ;
+     ils sont montrés à part */
+  var carq = tous.filter(function(o){ return D.OBJETS[o] && (D.OBJETS[o].fleche || D.OBJETS[o].arme); });
   if(!e){ e = el('div', 'plaque'); e.id = 'plaque-' + h; e.style.left = hCx(h) + 'px'; q('#hud').appendChild(e); S.plaques[h] = e; DJ.relancer(e, 'pop'); }
   var cases = carq.map(function(id){ return '<div class="pl-case pleine carq" title="' + esc(D.OBJETS[id].nom) + '">' + iconeObjet(id) + '</div>'; }).join('');
   for(var k = 0; k < n; k++){
@@ -16598,6 +16807,8 @@ function coffreLibre(e, d){
       if(ici(id)){ o.briller(true); rond(o, aPlace(id)); } else { o.pris = true; o.cacher(true); }
     });
   }
+  /* un présentoir sans couvercle (le lutrin de la bibliothèque : les deux armes du Sage, à prendre toutes les deux) */
+  if(!d.ferme){ armer(); return; }
   if(p.vus[cle]){
     /* déjà ouvert : il reste ouvert, avec ce qu'il y a encore dedans */
     var toutes = e.options;
@@ -16794,6 +17005,9 @@ function colonneDalles(){
     var m = /^dalle-(\d+)-(\d)$/.exec(id); if(!m) return;
     var k = +m[1] - 6, sure = Regles.dalleSure(k) === (m[2] === '0' ? 'fond' : 'devant');
     try{ rond(S.o[id], !fini && k === pas); if(S.o[id].marquer) S.o[id].marquer(sure && (fini || k < pas)); }catch(e){}
+    /* les deux dalles du pas en cours passent par-dessus leurs voisines : leurs zones se chevauchent (la perspective), et un
+       doigt posé sur le bord droit de la bonne dalle tombait sur la suivante (« Trop loin ! ») — vu par test-objets.py */
+    try{ var ez = S.o[id].cadreZones ? S.o[id].cadreZones() : S.o[id].el, actif = !fini && k === pas; ez.style.zIndex = actif ? 8 : (m[2] === '0' ? 2 : 3); if(ez !== S.o[id].el) S.o[id].el.style.zIndex = actif ? 7 : (m[2] === '0' ? 2 : 3); }catch(e2){}
   });
   S.pas = pas;
 }
@@ -16923,11 +17137,19 @@ function fenetreObjets(){
     (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
   DJ.fenetre(s, 'livre');
 }
-/* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste) */
-function fenetrePave(){
-  var t = 'Le Sage ou l\'Alchimiste vous dictent trois symboles.';
+/* y a-t-il un combat gagné depuis la dernière sauvegarde ? (alors le bouton « Sauvegarder » de la carte porte un point rouge) */
+function aSauver(){
+  var p = X.partie, f0 = (p.sauvegarde && p.sauvegarde.faits) || {};
+  return Object.keys(p.faits || {}).some(function(k){ return k.indexOf('combat:') === 0 && p.faits[k] && !f0[k]; });
+}
+/* le pavé des 12 symboles : les codes des pages blanches (le Sage) et des recettes (l'Alchimiste).
+   mode 'sauve' : ouvert par le bouton « Sauvegarder » — le même pavé, avec les mots de la sauvegarde. */
+function fenetrePave(mode){
+  var p = X.partie, sauve = mode === 'sauve';
+  var t = sauve ? 'Le Sage écrit un sort de sauvegarde sur une page blanche de son Grand Livre. Puis il vous dicte ses trois symboles.' : 'Le Sage ou l\'Alchimiste vous dictent trois symboles.';
+  var t2 = sauve ? 'Sans nouvelle sauvegarde, une défaite vous ramène ici : ' + nomLieu((p.sauvegarde && p.sauvegarde.lieu) || 'puits') + '.' : '';
   X.pave = [];
-  DJ.fenetre('<h2>Un code</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="pave-cases"><i></i><i></i><i></i></div>' +
+  DJ.fenetre('<h2>' + (sauve ? 'Sauvegarder' : 'Un code') + '</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' + (t2 ? '<div class="ligne petit" id="sauve-ou">' + t2 + DJ.lireBtn(t2) + '</div>' : '') + '<div class="pave-cases"><i></i><i></i><i></i></div>' +
     '<div class="pave">' + CODES.ORDRE.map(function(k){ return '<button data-act="symbole" data-id="' + k + '" aria-label="' + CODES.SYM[k].n + '">' + CODES.SYM[k].e + '</button>'; }).join('') + '</div>' +
     '<div class="boutons"><button class="sombre" data-act="pave-efface">⌫ Effacer</button></div>', 'code');
 }
@@ -16947,6 +17169,7 @@ function symbole(k){
     }
     garder();
     if(x.t === 'sauvegarde'){
+      var bs = q('#b-sauver'); if(bs) bs.classList.remove('rappel');
       bruit('pageSauve', {}, ['page']);
       var t = 'C\'est écrit dans le Grand Livre ! Si ça tourne mal, vous repartirez d\'ici : ' + nomLieu(p.lieu) + '.';
       DJ.fenetre('<h2>Page de sauvegarde</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="code-gros"><span>📖<small>sauvegardé</small></span></div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
@@ -16977,6 +17200,7 @@ DJ.toucher(function(a, id, b){
   if(a === 'sac-pret'){ if(X.sac) X.sac.pret(); return true; }
   if(a === 'objets'){ son('clic'); fenetreObjets(); return true; }
   if(a === 'pave'){ son('clic'); fenetrePave(); return true; }
+  if(a === 'sauver'){ son('clic'); fenetrePave('sauve'); return true; }
   if(a === 'symbole'){ symbole(id); return true; }
   if(a === 'pave-efface'){ X.pave = []; majPave(); return true; }
   if(a === 'entrer'){ if(!X.occupe && aScene(X.ici)){ son('clic'); arriver(X.ici, {entrer:true}); } return true; }
