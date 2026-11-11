@@ -3429,28 +3429,9 @@ D.PALIER_NIVEAU = {1:1, 2:3, 3:5, 4:7};
 /* ---------- Talents ----------
    fx.mj : mods ajoutés aux mini-jeux ; fx.acces : clés d'accès ; fx.usages : nombre d'utilisations par enquête */
 D.TALENTS = {
-  /* Pisteur */
-  vision:{role:'pisteur', niv:2, nom:'Vision de nuit', ic:'🌙', d:'Tu vois dans les lieux sombres. Tes yeux brillent. Pistes : tu vois toutes les empreintes, floues au loin.', fx:{acces:['sombre'], mj:{traces:{nuit:1}}}},
-  pistage:{role:'pisteur', niv:2, nom:'Pistage', ic:'🐾', d:'Tu gardes l\'empreinte en mémoire (rappel dans un coin), les pas suivants s\'allument après chaque obstacle, et tu repères les chemins cachés.', fx:{mj:{traces:{aide:1, revele:1}}, acces:['piste']}},
-  reflexes:{role:'pisteur', niv:4, nom:'Réflexes de chat', ic:'🐱', d:'Les mini-jeux de réflexe sont plus faciles, avec une seconde chance par enquête.', fx:{mj:{poursuite:{facile:1}, tir:{facile:1}, cachette:{facile:1}}, chance:1}},
-  compagnon:{role:'pisteur', niv:4, nom:'Compagnon animal', ic:'🦊', d:'Ton animal fouille un lieu où tu ne peux pas aller et te rapporte un objet. Sur une piste, il renifle avec toi : le sol défile moins vite.', fx:{acces:['compagnon'], mj:{traces:{lent:0.8}}}},
-  camouflage:{role:'pisteur', niv:6, nom:'Camouflage', ic:'🍃', d:'Tu te caches dans un lieu pour voir qui entre et qui sort. Se cacher devient plus facile.', fx:{mj:{cachette:{facile:2}}, acces:['cache']}},
-  course:{role:'pisteur', niv:6, nom:'Course du loup', ic:'🐺', d:'Tu gagnes une course-poursuite sans mini-jeu, deux fois par enquête.', fx:{auto:{poursuite:2}}},
-  instinct:{role:'pisteur', niv:8, nom:'Instinct', ic:'⚡', d:'Tu sens un piège avant d\'y tomber.', fx:{acces:['piege']}},
-  tir:{role:'pisteur', niv:8, nom:'Tir précis', ic:'🎯', d:'Tirer à l\'arc devient bien plus facile.', fx:{mj:{tir:{facile:2}}, acces:['tir']}},
-  scene:{role:'pisteur', niv:10, nom:'Lecture de la scène', ic:'👁️', d:'Une fois par enquête, tu sais dans quel ordre les gens sont passés dans un lieu.', fx:{acces:['scene']}},
-  traque:{role:'pisteur', niv:10, nom:'Maître de la traque', ic:'🗺️', d:'Une fois par enquête, tu suis un suspect pendant tout un moment.', fx:{acces:['traque']}},
-  /* Alchimiste */
-  potionniste:{role:'alchimiste', niv:2, nom:'Potionniste', ic:'🧪', d:'Chaque potion réussie fait deux doses.', fx:{doses:1}},
-  savante:{role:'alchimiste', niv:2, nom:'Savante', ic:'🧐', d:'Deux fois par enquête, une analyse révèle un détail caché.', fx:{acces:['detail'], detail:2}},
-  herboriste:{role:'alchimiste', niv:4, nom:'Herboriste', ic:'🌿', d:'Un jardin pousse dans ton atelier : une cueillette gratuite par enquête.', fx:{cueilletteGratuite:1}},
-  mainsure:{role:'alchimiste', niv:4, nom:'Main sûre', ic:'✋', d:'Les mini-jeux de potion sont plus faciles, avec une seconde chance.', fx:{mj:{chaudron:{facile:1}, bulles:{facile:1}, melange:{facile:1}}, chanceCuisson:true}},
-  poudres:{role:'alchimiste', niv:6, nom:'Poudres d\'action', ic:'💨', d:'Tu fabriques un fumigène et une poudre éclairante pour l\'équipe.', fx:{recettes:['fumigene','eclairante']}},
-  empreintes:{role:'alchimiste', niv:6, nom:'Poudre à empreintes', ic:'🫆', d:'Tu relèves les empreintes sur un objet.', fx:{acces:['empreintes']}},
-  transmutation:{role:'alchimiste', niv:8, nom:'Transmutation', ic:'🔄', d:'Deux ingrédients communs deviennent un ingrédient rare.', fx:{transmutation:true}},
-  antidote:{role:'alchimiste', niv:8, nom:'Antidote', ic:'💚', d:'Tu neutralises les pièges alchimiques du Corbeau.', fx:{acces:['antidote']}},
-  passe:{role:'alchimiste', niv:10, nom:'Potion du passé', ic:'⏳', d:'Une fois par enquête, tu vois une courte scène passée dans un lieu.', fx:{acces:['passe']}},
-  ultime:{role:'alchimiste', niv:10, nom:'Analyse ultime', ic:'🔬', d:'Une fois par enquête, une analyse désigne le propriétaire d\'un objet.', fx:{acces:['ultime']}},
+  /* Seuls les talents du Barde sont faits (Romain, 11 novembre, 8 h 11 : « on va effacer tous les talents qu'on n'a pas faits pour l'instant »).
+     Ceux du Pisteur, de l'Alchimiste et du Sage sont à refaire (Bible §12.51) : pour l'instant, ces trois rôles n'ont pas de talents.
+     Une vieille sauvegarde qui en avait les perd sans bruit (M.reparerBoutique, moteur-base.js). */
   /* Barde (nouvel arbre, Romain, 4 novembre : tout se passe dans les interrogatoires ; barde.js branche chaque effet).
      Aucun talent ne dépend d'un autre. Les anciens talents d'une vieille sauvegarde sont changés en ceux-ci (barde.js). */
   tendre:{role:'barde', niv:2, nom:'Tendre l\'oreille', ic:'👂', d:'Écouter aux portes : sur la carte, partout où quelqu\'un se trouve, tu entends ce qu\'il dit, tout le temps et gratuitement. Tout est gardé dans ton Carnet, sur sa page. Et tu entends mieux que tout le monde : dans tes phrases à trous, la première lettre de chaque mot est écrite, et un mot est déjà à sa place.', fx:{oreille:2}},   /* (Romain, 5 novembre, 12 h 31 : plus de limite, plus de phrase à trous aux portes) */
@@ -3462,20 +3443,9 @@ D.TALENTS = {
   intuition:{role:'barde', niv:8, nom:'Intuition', ic:'🔮', d:'Une fois par enquête, ton intuition te montre un mensonge que tu n\'avais pas repéré.', fx:{intuition:1}},
   recoupement:{role:'barde', niv:8, nom:'Recoupement', ic:'🧩', d:'Une fois par enquête, tu compares deux phrases de ton Carnet : peuvent-elles être vraies toutes les deux ?', fx:{recoupement:1}},
   reseau:{role:'barde', niv:10, nom:'Réseau d\'informateurs', ic:'🧒', d:'À chaque moment, un enfant du village te glisse une info vraie sur un suspect.', fx:{reseau:true}},
-  plaidoirie:{role:'barde', niv:10, nom:'Plaidoirie', ic:'📜', d:'Avec le Sage : une fois par enquête, s\'il accuse un innocent, tu plaides, l\'accusé prouve son innocence et le Sage ne perd pas de cœur.', fx:{plaidoirie:1}},
-  /* Sage */
-  archiviste:{role:'sage', niv:2, nom:'Archiviste', ic:'📚', d:'Tu ouvres les pages scellées du Grand Livre.', fx:{acces:['scelle']}},
-  stratege:{role:'sage', niv:2, nom:'Stratège', ic:'♟️', d:'Au moment d\'accuser, deux innocents sont rayés pour toi, une fois par enquête.', fx:{stratege:2}},
-  dechiffreur:{role:'sage', niv:4, nom:'Déchiffreur', ic:'🔣', d:'Une partie de chaque code secret se traduit toute seule.', fx:{mj:{alphabet:{aide:3}, runes:{aide:1}}}},
-  inspiration:{role:'sage', niv:4, nom:'Inspiration', ic:'💡', d:'Une fois par enquête, tu donnes une action en plus à un équipier (par code).', fx:{inspiration:1}},
-  cartographe:{role:'sage', niv:6, nom:'Cartographe', ic:'🧭', d:'Les passages secrets apparaissent sur ta carte. Superposer les plans devient facile.', fx:{acces:['passage'], mj:{plans:{revele:true}}}},
-  tableau:{role:'sage', niv:6, nom:'Tableau des indices', ic:'🗂️', d:'La grille de déduction se remplit en partie toute seule.', fx:{mj:{grille:{aide:2}}}},
-  protection:{role:'sage', niv:8, nom:'Runes de protection', ic:'🛡️', d:'Une fausse accusation ne compte pas, une fois par enquête.', fx:{protection:1}},
-  etoiles:{role:'sage', niv:8, nom:'Lecture des étoiles', ic:'✨', d:'Tu devines QUAND aura lieu le prochain coup.', fx:{acces:['etoiles']}},
-  verification:{role:'sage', niv:10, nom:'Vérification', ic:'✅', d:'Une fois par enquête, tu demandes si un indice est vrai ou un leurre.', fx:{acces:['verification']}},
-  conseil:{role:'sage', niv:10, nom:'Conseil des anciens', ic:'🏛️', d:'Une fois par enquête, tous les suspects répondent à une même question.', fx:{acces:['conseil']}}
+  plaidoirie:{role:'barde', niv:10, nom:'Plaidoirie', ic:'📜', d:'Avec le Sage : une fois par enquête, s\'il accuse un innocent, tu plaides, l\'accusé prouve son innocence et le Sage ne perd pas de cœur.', fx:{plaidoirie:1}}
 };
-D.TALENTS_PAR_ROLE = {};
+D.TALENTS_PAR_ROLE = {pisteur:{}, alchimiste:{}, barde:{}, sage:{}};
 Object.keys(D.TALENTS).forEach(function(id){
   var t = D.TALENTS[id]; t.id = id;
   var r = D.TALENTS_PAR_ROLE[t.role] = D.TALENTS_PAR_ROLE[t.role] || {};
@@ -3490,112 +3460,71 @@ function O(role, liste){
   });
 }
 D.OBJETS = {};
+/* Seuls les objets qui marchent pour de vrai dans les enquêtes 1 et 2 restent en vente (Romain, 11 novembre, 8 h 11 :
+   « tous les objets qui marchent pas, on va les enlever pour l'instant »). Les autres (accès que plus rien ne demande,
+   grille, ragots, actions, Corbeau…) sont dans D.OBJETS_RETIRES, plus bas. Les boutiques sont à refaire (Bible §12.51, §13.9). */
 O('pisteur', [
-  ['bottes_souples', 1, 'Bottes souples', '🥾', 35, 'Se cacher : les gardes te repèrent moins vite. Pistes : tu marches plus vite.', 'ombre', {mj:{cachette:{zone:1.25}, traces:{vitesse:0.3}}}],
+  ['bottes_souples', 1, 'Bottes souples', '🥾', 35, 'Se cacher : les gardes te repèrent moins vite. Pistes : tu marches plus vite.', null, {mj:{cachette:{zone:1.25}, traces:{vitesse:0.3}}}],
   ['arc_court', 1, 'Arc court de chasseur', '🏹', 40, 'Tir : le viseur tremble moins.', 'chasseur', {mj:{tir:{zone:1.25}}}],
-  ['lanterne_sourde', 1, 'Lanterne sourde', '🏮', 40, 'Éclaire les lieux sombres. Pistes : ton cercle de vision est plus grand.', 'lune', {acces:['sombre'], mj:{traces:{zone:1.3}}}],
-  ['sifflet', 1, 'Sifflet de chasse', '📯', 30, 'Ton compagnon fait un envoi de plus par enquête.', null, {acces:['sifflet']}],
+  ['lanterne_sourde', 1, 'Lanterne sourde', '🏮', 40, 'Pistes : ton cercle de vision est plus grand.', 'lune', {mj:{traces:{zone:1.3}}}],
   ['gants_pisteur', 1, 'Gants de pisteur', '🧤', 35, 'Pistes : après chaque obstacle, les pas suivants s\'allument un instant.', null, {mj:{traces:{revele:1}}}],
-  ['grappin', 1, 'Corde et grappin', '🪝', 45, 'Tu peux monter sur les toits.', null, {acces:['toits']}],
   ['cape_rodeur', 2, 'Cape de rôdeur', '🧥', 80, 'Se cacher : une ronde de garde en moins.', 'lune', {mj:{cachette:{facile:1}}}],
   ['bottes_vent', 2, 'Bottes de vent', '👢', 90, 'Poursuite : 8 obstacles sans faute suffisent pour te rapprocher. Pistes : tu marches bien plus vite.', 'vent', {mj:{poursuite:{vitesse:0.5}, traces:{vitesse:0.5}}}],
-  ['longue_vue_ch', 2, 'Longue-vue de chasseur', '🔭', 70, 'Observer un lieu sans y aller, une fois par moment.', null, {acces:['longuevue']}],
   ['carquois', 2, 'Carquois sans fond', '🎒', 75, 'Tir : des flèches en plus.', 'chasseur', {mj:{tir:{erreurs:2}}}],
-  ['collier', 2, 'Collier de compagnon', '📿', 60, 'Ton compagnon descend dans les puits et les caves.', null, {acces:['profond']}],
-  ['pieges', 2, 'Pièges de chasseur', '🪤', 65, 'Posé la nuit dans un lieu : révèle qui y est passé.', null, {acces:['piege_pose']}],
   ['arc_elfique', 3, 'Arc elfique', '🏹', 130, 'Tir : le temps ralentit.', 'chasseur', {mj:{tir:{lent:0.65}}}],
-  ['lanterne_lune', 3, 'Lanterne de lune', '🌕', 120, 'Révèle les traces magiques du Corbeau. Pistes : un grand cercle de vision.', 'lune', {acces:['sombre', 'magique'], mj:{traces:{zone:1.5}}}],
-  ['amulette_instinct', 3, 'Amulette d\'instinct', '🧿', 110, 'Un frisson te prévient avant chaque piège.', 'ombre', {acces:['piege']}],
+  ['lanterne_lune', 3, 'Lanterne de lune', '🌕', 120, 'Pistes : un très grand cercle de vision.', 'lune', {mj:{traces:{zone:1.5}}}],
   ['bracelets_vent', 3, 'Bracelets du vent', '💫', 100, 'Poursuite : une erreur pardonnée.', 'vent', {mj:{poursuite:{erreurs:1}}}],
-  ['masque_ombre', 3, 'Masque d\'ombre', '🎭', 120, 'Se cacher : tu deviens presque invisible.', 'ombre', {mj:{cachette:{facile:2}}}],
+  ['masque_ombre', 3, 'Masque d\'ombre', '🎭', 120, 'Se cacher : tu deviens presque invisible.', null, {mj:{cachette:{facile:2}}}],
   ['arc_argent', 4, 'Arc d\'argent enchanté', '🏹', 260, 'Tous les tirs deviennent bien plus faciles.', null, {mj:{tir:{facile:3}}}],
-  ['bottes_fondateurs', 4, 'Bottes des Fondateurs', '👢', 280, 'Un fuyard n\'est jamais perdu, et tu sautes jusqu\'aux toits. Pistes : tu marches très vite.', 'vent', {mj:{poursuite:{facile:3, vitesse:1}, traces:{vitesse:0.6}}, acces:['toits']}],
-  ['oeil_faucon', 4, 'Œil du faucon royal', '🦅', 300, 'Une fois par enquête, tu vois où se trouve chaque habitant.', null, {acces:['faucon']}]
+  ['bottes_fondateurs', 4, 'Bottes des Fondateurs', '👢', 280, 'Poursuite : bien plus facile, et 8 obstacles sans faute suffisent. Pistes : tu marches très vite.', 'vent', {mj:{poursuite:{facile:3, vitesse:1}, traces:{vitesse:0.6}}}]
 ]);
 O('alchimiste', [
-  ['fioles_renf', 1, 'Fioles renforcées', '🧴', 30, 'Une potion ratée ne casse pas sa fiole.', null, {fioleSolide:true}],
-  ['mortier', 1, 'Mortier de pierre', '🥣', 35, 'Tu peux broyer les ingrédients durs (racines, écorces).', null, {acces:['mortier']}],
   ['thermometre', 1, 'Thermomètre de cuivre', '🌡️', 40, 'Au chaudron : la jauge précise s\'affiche, avec les chiffres.', 'labo', {mj:{chaudron:{revele:true, zone:1.2}}}],
   ['ceinture_fioles', 1, 'Ceinture à fioles', '🎗️', 40, 'Deux fioles vides en plus à chaque enquête.', null, {fiolesBonus:2}],
-  ['herbier', 1, 'Herbier illustré', '📗', 45, 'Les ingrédients cachés apparaissent sur ta carte.', 'herbo', {acces:['herbier']}],
-  ['gants_cuir', 1, 'Gants de cuir', '🧤', 35, 'Tu peux cueillir les plantes qui piquent (orties, chardons).', null, {acces:['gants']}],
   ['alambic', 2, 'Alambic de verre', '⚗️', 85, 'Potions concentrées : une dose de plus.', 'labo', {doses:1}],
-  ['loupe_doree', 2, 'Loupe dorée', '🔍', 70, 'Chaque analyse révèle un détail caché.', 'savant', {acces:['detail'], detail:9, mj:{differences:{aide:1}}}],
+  ['loupe_doree', 2, 'Loupe dorée', '🔍', 70, 'Chaque analyse révèle un détail caché.', null, {acces:['detail'], detail:9}],
   ['etal', 2, 'Étal du marché', '🛒', 60, 'Tu peux vendre des potions au marché (2 fois par enquête).', null, {acces:['etal']}],
-  ['sac_herbo', 2, 'Sac d\'herboriste', '👜', 65, 'Chaque cueillette rapporte un ingrédient de plus.', 'herbo', {cueilletteBonus:1}],
-  ['lunettes_alchi', 2, 'Lunettes d\'alchimiste', '🥽', 75, 'Tes yeux voient tout : un indice dans les 7 différences, le double et le grand ménage.', 'savant', {mj:{differences:{aide:1}, double:{aide:1}, insectes:{aide:1}}}],
+  ['sac_herbo', 2, 'Sac d\'herboriste', '👜', 65, 'Chaque cueillette rapporte un ingrédient de plus.', null, {cueilletteBonus:1}],
   ['grimoire_rec', 2, 'Grimoire des recettes', '📕', 80, 'Nouvelles recettes : clarté d\'esprit, vérité.', null, {recettes:['clarte', 'verite']}],
   ['chaudron_cuivre', 3, 'Chaudron de cuivre', '🍲', 110, 'Tous les mini-jeux de cuisson sont plus faciles.', 'labo', {mj:{chaudron:{facile:1}, bulles:{facile:1}, melange:{facile:1}}}],
   ['balance_or', 3, 'Balance d\'or', '⚖️', 100, 'Mélange : la zone de réussite est plus large.', null, {mj:{melange:{zone:1.4}}}],
-  ['serre', 3, 'Serre enchantée', '🪴', 130, 'Un ingrédient rare pousse dans ton atelier à chaque enquête.', 'herbo', {rareGratuit:1}],
-  ['oeil_cristal', 3, 'Œil de cristal', '🔮', 120, 'Une analyse révèle aussi d\'où vient l\'objet.', 'savant', {acces:['origine']}],
-  ['fioles_ether', 3, 'Fioles d\'éther', '✨', 110, 'Tes potions ne s\'usent plus après un seul mini-jeu (deux usages).', null, {potionDouble:true}],
-  ['athanor', 4, 'Athanor des Fondateurs', '🔥', 280, 'Une potion réussie d\'office à chaque moment.', null, {autoPotion:true}],
-  ['pierre_transmu', 4, 'Pierre de transmutation', '💎', 260, 'Change un ingrédient en un autre, une fois par moment.', null, {transmutation:true}],
-  ['grand_grimoire', 4, 'Grand Grimoire de la Fondatrice', '📜', 300, 'Recettes légendaires : potion du passé, élixir de vérité.', null, {recettes:['verite', 'clarte'], acces:['passe']}]
+  ['serre', 3, 'Serre enchantée', '🪴', 130, 'Un ingrédient rare pousse dans ton atelier à chaque enquête.', null, {rareGratuit:1}]
 ]);
 O('barde', [
-  ['luth_voyage', 1, 'Luth de voyage', '🪕', 40, 'Les mots perdus : un indice (la liste diminue de moitié pour un mot).', 'troubadour', {mj:{mots:{aide:1}}}],
-  ['carnet_ragots', 1, 'Carnet de ragots', '📓', 30, 'Vrai ou faux des ragots : une réponse donnée.', null, {mj:{ragots:{aide:1}}}],
-  ['bourse', 1, 'Bourse de pièces', '👛', 35, 'Payer un verre : une conversation gratuite à la taverne par moment.', null, {acces:['bourse']}],
-  ['bonbons', 1, 'Bonbons au miel', '🍯', 30, 'Les enfants du village te parlent.', null, {acces:['bonbons']}],
-  ['clochette', 1, 'Clochette de vérité', '🛎️', 50, 'Repérer le mensonge : une fois, elle te dit qu\'une phrase est sûrement vraie.', 'verite', {mj:{mensonge:{indice:1}}}],
-  ['chapeau_plume', 1, 'Chapeau à plume', '👒', 35, 'Les villageois timides te répondent.', null, {acces:['timide']}],
-  ['cornet', 2, 'Cornet acoustique', '📯', 70, 'Tendre l\'oreille : une écoute aux portes de plus par enquête (avec ce talent).', 'espion', {oreille:1}],
-  ['deguisement', 2, 'Déguisement de colporteur', '🥸', 80, 'Tu peux interroger quelqu\'un qui se méfie.', 'espion', {acces:['mefiant']}],
-  ['cape_scene', 2, 'Cape de scène', '🎪', 65, 'Spectacle sur la place : tu vois qui ne vient pas.', 'troubadour', {acces:['spectacle']}],
-  ['pendule', 2, 'Pendule de vérité', '🪀', 85, 'Repérer le mensonge : revoir une phrase, et un signe de mensonge en moins.', 'verite', {mj:{mensonge:{aide:1, signes:1}}}],
-  ['lettre_maire', 2, 'Lettre de recommandation du maire', '✉️', 60, 'Tu entres dans les maisons fermées.', null, {acces:['ferme']}],
+  ['luth_voyage', 1, 'Luth de voyage', '🪕', 40, 'Les mots perdus : un indice (la liste diminue de moitié pour un mot).', null, {mj:{mots:{aide:1}}}],
+  ['pendule', 2, 'Pendule de vérité', '🪀', 85, 'Repérer le mensonge : un signe de mensonge en moins.', null, {mj:{mensonge:{signes:1}}}],
   ['carillon', 2, 'Carillon des souvenirs', '🎐', 75, 'Les mots perdus : un mot retrouvé tout seul, et un indice.', null, {mj:{mots:{revele:true, aide:1}}}],
-  ['luth_enchante', 3, 'Luth enchanté', '🎸', 120, 'Ta chanson apaise tout le monde, même les animaux.', 'troubadour', {acces:['apaiser']}],
-  ['masque_velours', 3, 'Masque de velours', '🎭', 110, 'Imitation parfaite d\'une voix.', 'espion', {acces:['imitation']}],
-  ['miroir', 3, 'Miroir de vérité', '🪞', 130, 'Dans le reflet, les signes de mensonge durent plus longtemps, et deux signes en moins.', 'verite', {mj:{mensonge:{signes:2, revele:true}}}],
-  ['plume_rossignol', 3, 'Plume de rossignol', '🪶', 100, 'Une question de plus par villageois.', null, {acces:['ami']}],
-  ['corne', 3, 'Corne des messagers', '📯', 110, 'Tu convoques un habitant sur la place au moment suivant.', null, {acces:['corne']}],
-  ['harpe', 4, 'Harpe des Fondateurs', '🪉', 280, 'Une fois par moment, tout le monde dit la vérité.', null, {verite:4}],
-  ['anneau', 4, 'Anneau de l\'orateur', '💍', 260, 'Interroger ne coûte plus d\'action pendant un moment, une fois par enquête.', null, {acces:['anneau']}],
-  ['registre', 4, 'Grand Registre des secrets', '📔', 300, 'Un secret de chaque villageois, une fois par enquête.', null, {acces:['ami', 'secrets']}]
+  ['miroir', 3, 'Miroir de vérité', '🪞', 130, 'Dans le reflet, les signes de mensonge durent plus longtemps, et deux signes en moins.', null, {mj:{mensonge:{signes:2, revele:true}}}],
+  ['harpe', 4, 'Harpe des Fondateurs', '🪉', 280, 'Tu peux exiger la vérité 4 fois de plus par enquête, à la fin d\'un interrogatoire.', null, {verite:4}]
 ]);
 O('sage', [
   ['loupe_lecture', 1, 'Loupe de lecture', '🔎', 30, 'Déchiffrer : une lettre donnée.', null, {mj:{alphabet:{aide:1}}}],
-  ['plume_encre', 1, 'Plume et encre', '🖋️', 30, 'Tu annotes la grille de déduction.', null, {mj:{grille:{aide:1}}}],
-  ['baton_marche', 1, 'Bâton de marche', '🦯', 35, 'Une fois par enquête, aller dans un lieu hors du village ne coûte rien.', null, {acces:['baton']}],
-  ['sablier', 1, 'Sablier', '⏳', 45, 'Mini-jeux à chrono : 5 secondes de plus pour toi.', 'chef', {mjTous:{temps:5}}],
-  ['cle_archives', 1, 'Clé des archives', '🗝️', 50, 'Ouvre une page scellée par enquête.', 'archiviste', {acces:['scelle']}],
+  ['sablier', 1, 'Sablier', '⏳', 45, 'Mini-jeux à chrono : 5 secondes de plus pour toi.', null, {mjTous:{temps:5}}],
   ['lunettes_sage', 1, 'Lunettes de sage', '👓', 40, 'Plans : la taille du calque est déjà la bonne (plus besoin de zoomer).', null, {mj:{plans:{echelle:1, zone:1.2}}}],
-  ['longue_vue', 2, 'Longue-vue', '🔭', 70, 'Tu observes le village la nuit depuis la mairie.', null, {acces:['longuevue']}],
-  ['livre_annote', 2, 'Grand Livre annoté', '📘', 80, 'Relie tout seul un indice du calepin à l\'enquête en cours.', 'archiviste', {acces:['relier']}],
-  ['cor', 2, 'Cor du rassemblement', '📯', 75, 'Une fois par enquête, une action en plus pour toute l\'équipe.', 'chef', {acces:['cor']}],
-  ['astrolabe', 2, 'Astrolabe', '🧭', 85, 'Prévoit l\'heure d\'un événement.', null, {acces:['etoiles']}],
   ['pierre_runes', 2, 'Pierre-runes', '🪨', 65, 'Runes : une rune placée pour toi.', 'runes', {mj:{runes:{aide:1}}}],
-  ['cartes_fond', 2, 'Cartes des Fondateurs', '🗺️', 90, 'Les passages secrets apparaissent sur ta carte.', null, {acces:['passage']}],
-  ['baton_cristal', 3, 'Bâton de cristal', '🔮', 130, 'Révèle les runes cachées dans tous les lieux.', 'runes', {acces:['runes_cachees'], mj:{runes:{aide:1}}}],
-  ['chapeau_etoile', 3, 'Chapeau étoilé', '🎩', 110, 'Grille de déduction : une case remplie pour toi.', null, {mj:{grille:{aide:1}}}],
-  ['banniere', 3, 'Bannière de l\'équipe', '🚩', 120, 'Mini-jeux : une seconde chance pour toi.', 'chef', {chance:1}],
-  ['index', 3, 'Index des archives', '🗃️', 100, 'Chercher dans les archives ne coûte pas d\'action.', 'archiviste', {acces:['index']}],
+  ['baton_cristal', 3, 'Bâton de cristal', '🔮', 130, 'Runes : encore une rune placée pour toi.', 'runes', {mj:{runes:{aide:1}}}],
   ['boule', 3, 'Boule de cristal', '🔮', 140, 'Au moment d\'accuser, deux innocents sont rayés.', null, {stratege:2}],
-  ['grimoire_sage', 4, 'Grimoire du Sage fondateur', '📖', 280, 'Une fois par moment, tu vérifies si un indice est vrai.', null, {acces:['verification']}],
-  ['couronne', 4, 'Couronne de runes', '👑', 260, 'Les sceaux et les runes s\'ouvrent sans mini-jeu.', 'runes', {auto:{runes:9}}],
-  ['oeil_temps', 4, 'Œil du Temps', '👁️', 300, 'Une fois par enquête, ton équipe rejoue tout un moment.', null, {acces:['oeil_temps']}]
+  ['couronne', 4, 'Couronne de runes', '👑', 260, 'Les runes s\'ouvrent sans mini-jeu.', 'runes', {auto:{runes:9}}]
 ]);
-/* Les objets qu'on ne vend plus (gardés pour les vieilles sauvegardes qui les ont déjà) : le carnet de ragots
-   (Romain, 5 novembre, 9 h 03 : le mini-jeu des ragots est abandonné) */
-D.OBJETS.carnet_ragots.retire = true;
+/* Les objets retirés de la boutique (11 novembre) et leur prix : une vieille sauvegarde qui en avait un est remboursée
+   au prix d'achat, une seule fois (M.reparerBoutique, moteur-base.js). Le carnet de ragots était déjà retiré le 5 novembre. */
+D.OBJETS_RETIRES = {
+  sifflet:30, grappin:45, longue_vue_ch:70, collier:60, pieges:65, amulette_instinct:110, oeil_faucon:300,
+  fioles_renf:30, mortier:35, herbier:45, gants_cuir:35, lunettes_alchi:75, oeil_cristal:120, fioles_ether:110, athanor:280, pierre_transmu:260, grand_grimoire:300,
+  carnet_ragots:30, bourse:35, bonbons:30, clochette:50, chapeau_plume:35, deguisement:80, cape_scene:65, lettre_maire:60, luth_enchante:120, masque_velours:110,
+  plume_rossignol:100, corne:110, anneau:260, registre:300,
+  cornet:70,   /* (on écoute aux portes sans limite depuis le 5 novembre : « une écoute de plus » ne servait plus à rien) */
+  plume_encre:30, baton_marche:35, cle_archives:50, longue_vue:70, livre_annote:80, cor:75, astrolabe:85, cartes_fond:90, chapeau_etoile:110, banniere:120,
+  index:100, grimoire_sage:280, oeil_temps:300
+};
 
+/* Les ensembles : seulement ceux dont les trois objets sont encore en vente (11 novembre) */
 D.ENSEMBLES = {
-  ombre:{role:'pisteur', nom:'Ombre', ic:'🌑', bonus:'Aucune ronde ne te repère : se cacher devient très facile.', fx:{mj:{cachette:{facile:2}}}},
-  chasseur:{role:'pisteur', nom:'Chasseur', ic:'🦌', bonus:'Un tir raté se rejoue sans pénalité.', fx:{mj:{tir:{erreurs:2}}}},
-  lune:{role:'pisteur', nom:'Rôdeur de lune', ic:'🌙', bonus:'Toutes les traces brillent : tu vois toutes les empreintes, floues au loin, et ton cercle de vision grandit.', fx:{mj:{traces:{nuit:1, zone:1.2}}}},
-  vent:{role:'pisteur', nom:'Vent', ic:'🌬️', bonus:'Chaque poursuite a une étape de moins.', fx:{mj:{poursuite:{facile:2}}}},
+  chasseur:{role:'pisteur', nom:'Chasseur', ic:'🦌', bonus:'Tir : encore des flèches en plus.', fx:{mj:{tir:{erreurs:2}}}},
+  lune:{role:'pisteur', nom:'Rôdeur de lune', ic:'🌙', bonus:'Pistes : tu vois toutes les empreintes, floues au loin, et ton cercle de vision grandit encore.', fx:{mj:{traces:{nuit:1, zone:1.2}}}},
+  vent:{role:'pisteur', nom:'Vent', ic:'🌬️', bonus:'Poursuite : encore plus facile.', fx:{mj:{poursuite:{facile:2}}}},
   labo:{role:'alchimiste', nom:'Laboratoire', ic:'⚗️', bonus:'Chaque potion fait une dose de plus.', fx:{doses:1}},
-  herbo:{role:'alchimiste', nom:'Herboriste', ic:'🌿', bonus:'Les ingrédients rares apparaissent sur la carte.', fx:{acces:['herbier'], cueilletteBonus:1}},
-  savant:{role:'alchimiste', nom:'Savant', ic:'🧐', bonus:'Chaque analyse donne deux détails.', fx:{acces:['detail'], detail:9}},
-  troubadour:{role:'barde', nom:'Troubadour', ic:'🎪', bonus:'Ton spectacle rassemble tout le village.', fx:{acces:['spectacle']}},
-  espion:{role:'barde', nom:'Espion', ic:'🕵️', bonus:'Tendre l\'oreille : encore une écoute de plus par enquête.', fx:{oreille:1}},
-  verite:{role:'barde', nom:'Vérité', ic:'⚖️', bonus:'Tous les mensonges sont détectés.', fx:{mj:{mensonge:{facile:3, revele:true}}}},
-  archiviste:{role:'sage', nom:'Archiviste', ic:'📚', bonus:'Le calepin relie seul les anciens indices utiles.', fx:{acces:['relier', 'index']}},
-  chef:{role:'sage', nom:'Chef', ic:'🚩', bonus:'Une action en plus pour toi à chaque moment.', fx:{actionBonus:1}},
-  runes:{role:'sage', nom:'Runes', ic:'ᚱ', bonus:'Les runes du Corbeau deviennent lisibles.', fx:{mj:{runes:{facile:3}, alphabet:{aide:2}}}}
+  runes:{role:'sage', nom:'Runes', ic:'ᚱ', bonus:'Les runes et l\'alphabet secret deviennent bien plus faciles.', fx:{mj:{runes:{facile:3}, alphabet:{aide:2}}}}
 };
 
 /* ---------- Alchimie ---------- */
@@ -26982,6 +26911,26 @@ M.reparerE1 = function(s){
     if(J2 && typeof J2 === 'object') e2Notes(J2.carnet);
     if(s.e && typeof s.e === 'object' && +s.e.id === 2) e2Notes(s.e.carnet);
   }catch(e){}
+  return M.reparerBoutique(s);
+};
+/* Les talents pas encore faits et les objets qui ne marchaient pas sont retirés (Romain, 11 novembre, 8 h 11 ; donnees.js).
+   Une vieille sauvegarde : les talents qui n'existent plus disparaissent (le choix reviendra quand ils seront refaits),
+   les objets retirés sont rendus à Fortuné au prix d'achat, une seule fois ; s.rembourse garde le message à montrer au lancement. */
+M.reparerBoutique = function(s){
+  if(!s || typeof s !== 'object') return s;
+  try{
+    if(Array.isArray(s.talents)) s.talents = s.talents.filter(function(id){ return D.TALENTS[id]; });
+    if(Array.isArray(s.equip)){
+      var rendu = 0;
+      s.equip = s.equip.filter(function(id){
+        if(D.OBJETS[id]) return true;
+        var prix = (D.OBJETS_RETIRES || {})[id];
+        if(prix) rendu += prix;
+        return false;
+      });
+      if(rendu){ s.or = Math.max(0, +s.or || 0) + rendu; s.rembourse = {or:((s.rembourse && s.rembourse.or) || 0) + rendu}; }
+    }
+  }catch(e){}
   return s;
 };
 M.charger = function(n){
@@ -27029,7 +26978,8 @@ M.talentsEnAttente = function(){
   var n = M.niveau(M.S.xp).n, l = [];
   [2, 4, 6, 8, 10].forEach(function(p){
     if(n >= p){
-      var choix = D.TALENTS_PAR_ROLE[M.role()][p];
+      var choix = (D.TALENTS_PAR_ROLE[M.role()] || {})[p] || [];
+      if(!choix.length) return;   /* (un rôle dont les talents sont encore à faire : rien à choisir) */
       if(!choix.some(function(id){ return M.S.talents.indexOf(id) >= 0; })) l.push(p);
     }
   });
@@ -27358,6 +27308,7 @@ M.uneCondition = function(b){
   if(b.objet) return M.S.equip.indexOf(b.objet) >= 0;
   if(b.moment) return M.momentId() === b.moment;
   if(b.page) return !!P.pages[b.page];
+  if(b.analyse) return !!(P.analyses && P.analyses[b.analyse]);   /* une analyse faite (les deux pièces d'or de l'enquête 2) */
   if(b.vu) return !!P.vus[b.vu] && P.vus[b.vu] !== 'rate';   /* un mini-jeu raté ne compte pas comme vu */
   if(b.et) return b.et.every(M.uneCondition);                  /* condition « ET » : toutes à la fois */
   if(b.outil) return (M.S.outils || []).indexOf(b.outil) >= 0; /* outil de saison (coffret de teintures…) */
