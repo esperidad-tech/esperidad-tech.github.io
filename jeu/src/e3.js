@@ -265,7 +265,8 @@ E[3] = {
            entend un miaulement sous l'église, et le code est donné quand même. Pas de puits l'après-midi. */
         {id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:A_, mj:'traces', mjNiveau:2,
           besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
-          params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+          /* chercher:10 (Romain, 20 h 51) : dix secondes pour trouver le départ des traces au milieu des autres pattes, puis tout avance */
+          params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
             departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'},
           facileSi:{si:[{code:'info:six_doigts'}], niveau:-2, params:{carteFloue:false, departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
           donne:'info:crypte_fermee', ouvrePartiel:true,
