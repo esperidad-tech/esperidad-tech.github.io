@@ -290,8 +290,9 @@ E[3] = {
     mairie:{
       pisteur:{intro:'La mairie. Le maire n\'aime pas qu\'on fouine dans ses papiers…', points:[
         /* la lettre, en se cachant : pour quand le Barde n'a pas su la demander au maire (le même code que lui) */
-        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'ville', jour:true}, donne:'info:lettre',
-          avant:'Le maire garde la lettre d\'Odette sur son bureau. Faufile-toi jusqu\'à la porte de derrière, sans te faire voir !',
+        /* (decor 'mairie' : l'intérieur de la mairie, et au bout le bureau du maire avec la lettre — Romain, 21 h 21) */
+        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'mairie'}, donne:'info:lettre',
+          avant:'Le maire garde la lettre d\'Odette sur son bureau. Traverse la mairie sans te faire voir, jusqu\'à son bureau !',
           bouton:'🫥 Se faufiler',
           t:'Tu te glisses derrière le grand rideau. Le maire compte ses papiers un par un… puis il sort. La lettre est sur le dessus.',
           rate:'« Qui va là ?! » On t\'a vu. Tu files sans demander ton reste.',
@@ -315,9 +316,10 @@ E[3] = {
     clocher:{
       pisteur:{intro:'Le clocher. Tout là-haut dort la Grosse Marie, la plus vieille cloche du village.', points:[
         /* la clé d'Anselme : avec « La clé est au clou » (le Barde) ; difficile, un seul essai. Raté : le puits apparaît (puits, plus bas) */
-        {id:'cle', ic:'🗝️', nom:'La clé d\'Anselme', moments:['nuit'], mj:'cachette', mjNiveau:4, params:{decor:'ville'},
+        /* (decor 'clocher' : la nef, la sacristie, et tout en haut la Grosse Marie, Anselme et le Barde, la clé au clou — Romain, 21 h 21) */
+        {id:'cle', ic:'🗝️', nom:'La clé d\'Anselme', moments:['nuit'], mj:'cachette', mjNiveau:4, params:{decor:'clocher'},
           besoin:[{code:'info:cle_clou'}], visibleSi:[{code:'info:cle_clou'}],
-          avant:'Les cloches sonnent ! Là-haut, Anselme compte les coups, les yeux fermés. Faufile-toi jusqu\'au clocher sans te faire voir. Un seul essai !',
+          avant:'Les cloches sonnent ! Là-haut, Anselme compte les coups, les yeux fermés. Traverse l\'église et monte tout en haut du clocher sans te faire voir. Un seul essai !',
           bouton:'🫥 Se faufiler',
           t:'DONG ! DONG ! Anselme compte les coups, les yeux fermés. La clé est au clou… Tu la décroches.',
           rate:'« Qui va là ?! » Anselme raccroche la clé à sa ceinture. En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits !',

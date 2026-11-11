@@ -2,6 +2,19 @@
 .mja-cachette.cc-ville{background:#20223a}
 .mja-cachette.cc-foret{background:#1f3a24}
 .mja-cachette.cc-moulin{background:#241c22}
+/* (enquête 3) l'église et le clocher, la nuit ; la mairie, de jour (les regards pâles, comme dans la forêt) */
+.mja-cachette.cc-clocher{background:#1c1a2e}
+.mja-cachette.cc-mairie{background:#3a3028}
+.cc-mairie .cc-cone{fill:#fffbe8;opacity:.3;stroke:#fffbe8;stroke-width:1.5;stroke-dasharray:6 6;stroke-opacity:.7}
+.cc-mairie .cc-cone.alerte{fill:#ff6b6b;opacity:.48;stroke:#ff6b6b}
+.cc-mairie .cc-poussiere{fill:#c9a87a}
+/* la scène de la dernière pièce : DONG !, le compte d'Anselme, la clé et la lettre qui brillent */
+.sc-dong{font-family:var(--f-titre, serif);font-size:22px;font-weight:700;fill:#ffd36a;stroke:#24182e;stroke-width:4;paint-order:stroke}
+.sc-compte-t{font-family:var(--f-titre, serif);font-size:15px;font-weight:700;fill:#24182e}
+.sc-brille{animation:sc-brille 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sc-brille{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.3)}}
+.cc-flamme-c{animation:sc-flamme .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes sc-flamme{from{transform:scale(.85,1)}to{transform:scale(1.1,1.2)}}
 /* les lumières : lanterne chaude la nuit, simple regard (pâle) dans la forêt de jour */
 .cc-cone{fill:#ffe39a;opacity:.4;transition:fill .2s}
 .cc-foret .cc-cone{fill:#fffbe8;opacity:.3;stroke:#fffbe8;stroke-width:1.5;stroke-dasharray:6 6;stroke-opacity:.7}

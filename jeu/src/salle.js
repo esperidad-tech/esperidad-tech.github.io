@@ -35,7 +35,8 @@ var VARIANTES = {
       departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
-    {id:'jour', ic:'🏛️', nom:'Se cacher : la ville en plein jour', d:'Jusqu\'à la mairie, l\'après-midi (enquête 3)', params:{decor:'ville', jour:true}}],
+    {id:'clocher', ic:'🔔', nom:'Se cacher : le clocher', d:'Jusqu\'à la Grosse Marie et la clé (enquête 3)', params:{decor:'clocher'}},
+    {id:'mairie', ic:'🏛️', nom:'Se cacher : la mairie', d:'Jusqu\'au bureau du maire et la lettre (enquête 3)', params:{decor:'mairie'}}],
   tir:[{id:'cerfvolant', ic:'🪁', nom:'Tir à l\'arc : le cerf-volant', d:'Coincé en haut du clocher (enquête 2)', params:{decor:'cerfvolant'}},
     {id:'banderoles', ic:'🎏', nom:'Tir à l\'arc : les banderoles', d:'Décorer la place pour la fête (enquête 3)', params:{decor:'banderoles'}}]
 };
