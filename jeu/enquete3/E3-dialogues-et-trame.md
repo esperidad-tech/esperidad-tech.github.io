@@ -4,6 +4,8 @@
 >
 > **Construit le 11 novembre (étape 1, Bible §13.15)** : les §1 à §3 sont dans le jeu (`jeu/src/e3.js`, `jeu/src/marche.js`), sauf le grand dialogue du maire (étape 2). Où est chacun, quand ce fichier ne le disait pas : Tim, le matin, au pied du clocher, l'après-midi dans la ruelle des Brumes ; Silas, le matin, sur la place, l'après-midi devant la mairie ; Victor, l'après-midi, devant le vieux puits ; le voisin, au 1, rue des Lanternes.
 >
+> **Construit le 11 novembre au soir (étape 2, Bible §13.18)** : les §3.1 (le grand dialogue de la lettre) et §4.1 à §4.5 et §4.7 sont dans le jeu (`jeu/src/grands.js` ; les textes dans `e3.js` : `E.grands`, `E.retenir`, `E.fete`). Ce que la construction a changé : un grand dialogue ne compte pas dans les deux questions par visite (§0) ; la deuxième chance de la Grosse Marie reprend à l'étape ratée (§4.2) ; « Retenir le maire » s'arrête dès que deux dialogues sont réussis, ou deux ratés (§4.4) ; le maire a une réplique à la fête quand il ne cherche pas le Barde (« Quelle fête ! Et à minuit pile, le gâteau ! ») ; le voisin d'Odette a deux petites phrases la nuit. Pas construits : la Lanterne du veilleur (§4.6) et les autres objets du Barde (§7) ; la scène finale (§4.8, étape 7).
+>
 > **Ne font plus foi pour les dialogues** : le document Claude Docs du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo) et la page « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC). Ce fichier est la seule source.
 
 ## 0. Comment lire ce fichier

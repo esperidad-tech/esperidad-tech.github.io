@@ -4,6 +4,8 @@
 >
 > **Ce que la construction du Pisteur a changé ici** (Bible §13.16) : les traces de Moustache partent de **la place** (le code du Barde dit « …qui filent dehors, vers la place ») ; sans « Moustache a six doigts », du lait cache ses doigts sur la carte du départ ; **on cherche d'abord le départ de ses traces pendant 10 secondes**, au milieu d'autres pattes qui se croisent, avant que le sol ne se mette à défiler (Romain, 20 h 51) ; la clé d'Anselme se joue dans « Se cacher » **à l'intérieur de l'église et du clocher**, jusqu'à la Grosse Marie (Anselme et le Barde y tirent les cordes) et la clé au clou ; la lettre, **à l'intérieur de la mairie**, jusqu'au bureau du maire (Romain, 21 h 21) ; « Rendre sa mission » dès qu'une des deux missions de fête est réussie (5 pièces d'or).
 >
+> **Le §3 (le Sage), le matin et l'après-midi, est construit et en ligne depuis le 11 novembre, 23 h 43** (Bible §13.18). Ce que la construction a changé : le filet de la lettre marche aussi quand le tableau est raté (« Passer voir le maire », sans or) ; les dessins de l'herbier sont des émojis pour l'instant ; la page de la porte des Fondateurs arrive avec le donjon.
+>
 > La page « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) ne fait plus foi.
 
 Règles pour tous les rôles : chaque texte de plus de 3 mots a son 🔊 ; les aides sont racontées (jamais « Touche … ») ; avant chaque mini-jeu, une explication en images et un bouton jaune ; un seul essai, avec un filet quand la chose est indispensable ; les nouveaux mini-jeux en plein écran verrouillé, montrés d'abord dans la salle des mini-jeux.
