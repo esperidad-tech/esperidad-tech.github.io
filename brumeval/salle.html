@@ -412,6 +412,10 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 @keyframes mja-pluie{from{transform:translate(0,-40px)}to{transform:translate(-16px,46px)}}
 .mja-depart{position:absolute;inset:0;display:grid;place-items:center;z-index:6;background:rgba(13,17,38,.55);transition:opacity .4s}
 .mja-depart.part{opacity:0}
+/* (params.chercher) la recherche du départ des traces : une pastille en haut, et les secondes qui restent */
+.mja-cherche{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;pointer-events:none;display:flex;align-items:center;gap:10px;padding:7px 8px 7px 16px;border-radius:999px;background:rgba(36,24,46,.88);border:3px solid var(--contour);box-shadow:0 4px 0 rgba(0,0,0,.35);color:var(--or-pale);font-family:var(--f-titre);font-size:clamp(.95rem,4vw,1.2rem);white-space:nowrap;transition:opacity .4s}
+.mja-cherche b{display:grid;place-items:center;min-width:2em;height:2em;border-radius:50%;background:var(--or,#f5b945);color:#24182e;font-family:var(--f-texte,inherit);font-weight:800}
+.mja-cherche.part{opacity:0}
 .mja-depart-in{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:86%;padding:16px 22px 18px;border-radius:22px;background:radial-gradient(circle at 50% 40%,#6b6040,#4a4330);border:4px solid var(--contour);box-shadow:0 0 0 3px rgba(143,243,255,.5),0 0 30px rgba(143,243,255,.35),var(--ombre);animation:b-apparait .35s ease-out;text-align:center}
 .mja-depart-in b{font-family:var(--f-titre);font-weight:400;font-size:1.35rem;color:var(--or-pale);text-shadow:0 2px 0 var(--contour)}
 .mja-depart-pt{font-size:.9rem;color:var(--brume)}
@@ -7125,10 +7129,12 @@ function memeEmpreinte(a, b){
 /* Une fausse piste de pattes : un autre chat du village (quatre doigts, de sa taille ou pas), un chat à cinq doigts (plus dur à
    distinguer, dès le niveau 5), ou un chien (plus grand, des griffes) */
 function variantePatte(c, n, evite){
-  var tailles = [1, 0.84, 1.17, 1.32];
+  /* c.floue (sans le code du Sage : le lait cachait ses doigts sur la carte du départ) : pas d'autre chat de SA taille — on ne
+     peut le reconnaître qu'à sa taille ; avec le code, on compte les doigts, et les chats de sa taille sont permis */
+  var tailles = c.floue ? [0.84, 1.17, 1.32] : [1, 0.84, 1.17, 1.32];
   for(var essai = 0; essai < 80; essai++){
     var v = Object.assign({}, c), r = Math.random();
-    if(r < 0.2 && n >= 5){ v.doigts = 5; v.L = c.L * U.choix([1, 0.86, 1.16]); }
+    if(r < 0.2 && n >= 5){ v.doigts = 5; v.L = c.L * U.choix(c.floue ? [0.86, 1.16] : [1, 0.86, 1.16]); }
     else if(r < 0.82){ v.doigts = 4; v.L = c.L * (n <= 2 && Math.random() < 0.6 ? U.choix([0.84, 1.32]) : U.choix(tailles)); }
     else { v.doigts = 4; v.griffes = true; v.W = 0.86; v.L = c.L * U.choix([1.32, 1.5]); }
     v.foulee = c.foulee * Math.pow(v.L / c.L, 0.8);
@@ -7183,12 +7189,18 @@ function Trace(noeuds){
 var NOMS_OBST = {gravier:'gravier', haie:'haies', eau:'ruisseaux et flaques', dalles:'grandes dalles', cloture:'clôtures', maison:'maisons à arcades'};
 function genererMonde(p){
   /* D0 : la ligne droite du départ, avec seulement la bonne piste (230 avant la partie raccourcie du 4 nov.) */
-  var W = p.largeur * 360, X0 = W / 2, D0 = 150, FIN = 200, zones = [], fourches = [];
+  /* params.chercher (enquête 3, les pattes de Moustache — Romain, 11 novembre, 20 h 51) : d'abord on CHERCHE le départ des traces,
+     quelque part dans l'écran, un peu à gauche ou un peu à droite (jamais juste devant le Pisteur), au milieu d'autres pattes qui se
+     croisent dans tous les sens (M.emmeles) ; la ligne droite du départ est plus longue, pour laisser la place à ce méli-mélo */
+  var CH = !!p.chercher;
+  var W = p.largeur * 360, X0 = W / 2, D0 = CH ? 300 : 150, FIN = 200, zones = [], fourches = [];
   var EP = {haie:null, eau:null, dalles:[90, 120], cloture:[30, 30], maison:[72, 118]};   /* maison : en ville seulement (on passe sous les arcades) */
   var evts = U.melanger(p.obstaclesListe.map(function(t){ return {type:t}; }).concat(Array.apply(null, Array(p.fourches)).map(function(){ return {type:'fourche'}; })));
-  var noeuds = [{d:-900, x:X0, m:0}], dern = noeuds[0];
+  var cote0 = Math.random() < 0.5 ? -1 : 1, decal = CH ? cote0 * U.rand(70, 120) : 0, mDepart = CH ? cote0 * U.rand(-0.1, 0.3) : 0;
+  var noeuds = [{d:-900, x:X0 + decal, m:0}], dern = noeuds[0];
   function xA(d){ return dern.x + dern.m * (d - dern.d); }
   function vire(d, m){ var x = xA(d); dern = {d:d, x:x, m:m}; noeuds.push(dern); }
+  if(CH) vire(-40, mDepart);
   function borne(x, m, long){
     var xf = x + m * (long || 320);
     if(xf < W * 0.12 || xf > W * 0.88){ m = -m; xf = x + m * (long || 320); if(xf < W * 0.12 || xf > W * 0.88) m = (X0 - x) / 700; }
@@ -7256,7 +7268,7 @@ function genererMonde(p){
   p._essaiCarte = 0;
   noeuds.push({d:L + 400, m:0});
   var cible = Trace(noeuds);
-  cible.debut = 20; cible.fin = L - 12; cible.vrai = true; cible.f = p.empreinte;
+  cible.debut = CH ? U.rand(30, 110) : 20; cible.fin = L - 12; cible.vrai = true; cible.f = p.empreinte;
   function dansZone(dd, marge){ for(var i = 0; i < zones.length; i++){ if(dd > zones[i].d0 - marge && dd < zones[i].d1 + marge) return zones[i]; } return null; }
   function libre(dd){ var z; while((z = dansZone(dd, VIR + 8))) dd = z.d1 + VIR + 10; return dd; }
   /* arrivées : une seule par écran */
@@ -7364,7 +7376,27 @@ function genererMonde(p){
     if(z.type === 'dalles'){ for(var dd = z.d0 + 14; dd < z.d1 - 8; dd += U.rand(30, 40)) dalles.push({d:dd, x:cible.x(dd) + U.rand(-9, 9), r:U.rand(17, 26), a:U.rand(0, 6)}); for(var k = 0; k < 6; k++){ var dr = U.rand(z.d0, z.d1), xr = cible.x(dr) + (Math.random() < 0.5 ? -1 : 1) * U.rand(60, 170); rochers.push({d:dr, x:xr, r:U.rand(14, 22)}); } }
     if(z.type === 'eau'){ for(var k2 = 0; k2 < 3; k2++){ var dq = z.d1 + U.rand(20, 130), xq = cible.x(dq) + (Math.random() < 0.5 ? -1 : 1) * U.rand(45, 140); flaques.push({d:dq, x:xq, rx:U.rand(16, 26), ry:U.rand(9, 14)}); } }
   });
-  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers, lisiere:lisiere};
+  /* le méli-mélo du départ (params.chercher) : de courtes pistes d'autres bêtes, en diagonale, certaines dans l'autre sens (inverse :
+     les pas tournés vers le bas) ; elles croisent la bonne piste mais ne la suivent jamais longtemps (pentes bien différentes) ;
+     pas d'arrivée au bout : elles s'arrêtent avant la fin de la ligne droite */
+  var emmeles = [];
+  if(CH){
+    var nE = p.niveau >= 5 ? 9 : 7, grE = [];
+    for(var ie = 0, essE = 0; emmeles.length < nE && essE < 120; essE++){
+      /* (aussi des pistes presque droites, comme la sienne : on ne la reconnaît pas à sa direction) */
+      var mE = (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.3 ? U.rand(0, 0.2) : U.rand(0.25, 1.5));
+      var d0E = U.rand(-90, 170), lgE = U.rand(150, 290), xE = X0 + U.rand(-190, 190);
+      var trE = Trace([{d:d0E - 1, x:xE, m:mE}, {d:d0E + lgE + 600, m:mE}]);
+      /* elle croise la bonne piste, mais ne marche jamais à côté d'elle plus de quelques pas */
+      var pres = 0;
+      for(var dq = Math.max(d0E, cible.debut); dq < Math.min(d0E + lgE, D0 + 30); dq += 12){ if(Math.abs(trE.x(dq) - cible.x(dq)) < 30) pres++; }
+      if(pres > 3) continue;
+      if(ie++ % 3 === 0) grE = [];
+      trE.f = variante(p.empreinte, p.niveau, grE); trE.debut = d0E; trE.fin = Math.min(d0E + lgE, D0 + 30); trE.vrai = false; trE.inverse = Math.random() < 0.4; trE.emmele = true;
+      emmeles.push(trE);
+    }
+  }
+  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers, lisiere:lisiere, emmeles:emmeles};
 }
 var ARRIVEES_ART = {
   buisson:'<path d="M-17,8 C-22,-4 -12,-16 -2,-13 C4,-20 18,-14 16,-4 C24,0 20,12 10,12 C2,17 -10,16 -13,11 C-20,12 -21,8 -17,8 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="-5" cy="-3" r="2.3" fill="#e5484d"/><circle cx="7" cy="3" r="2.3" fill="#e5484d"/><ellipse cx="0" cy="9" rx="7" ry="4" fill="#14111f"/>',
@@ -7727,7 +7759,8 @@ var ARRIVEES_HISTOIRE = {
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:function(p){ if(p && p.suspect === 'chat') return 'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
+  consigne:function(p){ if(p && p.suspect === 'chat') return p.chercher ? 'Retiens bien la trace de patte. Puis cherche où commencent ses traces, au milieu de toutes les autres : tu as ' + p.chercher + ' secondes avant que tout se mette à avancer. Ensuite, guide le Pisteur du doigt sur SA piste jusqu\'au bout !' :
+      'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
     if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
     return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
     'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },
@@ -7857,6 +7890,7 @@ MJ.enregistrer('traces', {
     var P = Partie(fin);
     var ch = p.vehicule === 'charrette';
     var cibleF = p.empreinte || (ch ? charretteCible() : null) || EMP_PRESETS[p.suspect] || EMP_PRESETS.enfant;
+    if(cibleF.patte && p.carteFloue && !cibleF.floue) cibleF = Object.assign({}, cibleF, {floue:true});   /* (variantePatte : pas de chat de sa taille) */
     p.empreinte = cibleF;
     var hud = creerHud(el);
     var essais = p.essais;
@@ -7996,7 +8030,7 @@ MJ.enregistrer('traces', {
       });
     }
     /* ---- Empreintes : créées au fil du défilement ---- */
-    var pistes = [cible].concat(M.leurres);
+    var pistes = [cible].concat(M.leurres, M.emmeles || []);   /* (M.emmeles : le méli-mélo du départ, params.chercher) */
     pistes.forEach(function(t){ t.next = t.debut; t.k = 0; });
     var marques = [];
     function creerJusqua(dMax){
@@ -8011,10 +8045,10 @@ MJ.enregistrer('traces', {
           var boue = mouille(px, pd), saut = !boue && atterrissage(d, t.f.foulee), fs = formeSemelle(t.f), tr, contenu, forme;
           if(boue){
             /* la même tache pour tout le monde : même taille, même forme, seulement dans le sens de la marche */
-            tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + (rad * 57.3).toFixed(0) + ')';
+            tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + (rad * 57.3 + (t.inverse ? 180 : 0)).toFixed(0) + ')';
             contenu = '<ellipse class="e-tache" rx="11" ry="15"/><path class="e-f" d="' + TACHE + '"/>'; forme = TACHE;
           } else {
-            var k = saut ? 1.3 : 1, ang = rad * 57.3 + t.f.ouvre * cote;
+            var k = saut ? 1.3 : 1, ang = rad * 57.3 + t.f.ouvre * cote + (t.inverse ? 180 : 0);   /* (inverse : une bête qui allait dans l'autre sens) */
             tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + ang.toFixed(0) + ') scale(' + (cote > 0 ? -k : k) + ',' + k + ')';
             contenu = (saut ? '<path class="e-creux" d="' + fs.d + '"/>' : '') + '<path class="e-f" d="' + fs.d + '"/>' + fs.det; forme = fs.d;
           }
@@ -8074,7 +8108,7 @@ MJ.enregistrer('traces', {
     P.ecoute(document, 'keydown', function(e){ var k = {ArrowLeft:[-1, 0], ArrowRight:[1, 0], ArrowUp:[0, -1], ArrowDown:[0, 1]}[e.key]; if(k){ clavier.x = k[0] || clavier.x; clavier.y = k[1] || clavier.y; e.preventDefault(); } });
     P.ecoute(document, 'keyup', function(e){ if(e.key === 'ArrowLeft' || e.key === 'ArrowRight') clavier.x = 0; if(e.key === 'ArrowUp' || e.key === 'ArrowDown') clavier.y = 0; });
     terrain.mjaViserMonde = function(x, d){ butMonde = (x === null) ? null : {x:x, d:d}; };
-    terrain.mjaEtat = function(){ return {t:t, cam:cam, camX:camX, px:px, pd:pd, YB:YB, L:L, W:W, phase:phase, perduT:perduT, vue:vue, defile:p.defile,
+    terrain.mjaEtat = function(){ return {t:t, cam:cam, camX:camX, px:px, pd:pd, YB:YB, L:L, W:W, phase:phase, perduT:perduT, vue:vue, defile:p.defile, cherche:phase === 'cherche' ? chercheFin - t : 0, debut:cible.debut,
       cible:function(d){ return cible.x(d); }, fourches:M.fourches.map(function(f){ return {d:f.d, x:f.x, leurres:f.leurres}; }),
       zones:M.zones.map(function(z){ return {type:z.type, d0:z.d0, d1:z.d1, x0:z.x0, x1:z.x1, leurres:z.leurres, court:z.court}; }),
       leurre:function(i, d){ return M.leurres[i].x(d); }, finLeurre:function(i){ var a = M.leurres[i].arrivee; return {x:a.x, d:a.d, debut:M.leurres[i].debut}; }, arrivee:{x:M.arrivees[0].x, d:M.arrivees[0].d}, meteo:meteo, sous:sousT}; };
@@ -8085,10 +8119,17 @@ MJ.enregistrer('traces', {
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien ces traces</span>' + traceCarte(cibleF, 110) + '<b>' + esc2(cibleF.nom) + '</b><span class="mja-depart-pt">Deux traits de roues, et ses pas au milieu. Attention : pas la brouette (une seule roue), ni la carriole de Fortuné (plus large) !</span></div></div>') :
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">' + esc2(p.departTitre || 'Retiens bien cette empreinte') + '</span>' + empreinteCarte(cibleF, 96, p.carteFloue) + '<b>' + esc2(p.departNom || cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">' + esc2(p.departTxt || 'Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !') + '</span></div></div>');
     terrain.appendChild(carteD);
+    /* params.chercher (secondes) : le sol ne défile pas encore ; le Pisteur cherche le départ des traces, où il veut dans l'écran,
+       puis tout se met à avancer, à la vitesse normale (Romain, 11 novembre, 20 h 51 : « tu lui laisses 10 secondes pour chercher ») */
+    var chercheFin = 0, pilule = null, pilN = null;
     P.apres(2800, function(){
       carteD.classList.add('part');
       P.apres(400, function(){ if(carteD.parentNode) carteD.parentNode.removeChild(carteD); });
-      phase = 'marche';
+      if(p.chercher){
+        phase = 'cherche'; chercheFin = t + p.chercher;
+        pilule = U.html('<div class="mja-cherche"><span>🔎 Où commencent ses traces ?</span><b>' + Math.ceil(p.chercher) + '</b></div>');
+        terrain.appendChild(pilule); pilN = pilule.querySelector('b');
+      } else phase = 'marche';
     });
     function perdre(detail, ann){
       if(fini) return;
@@ -8147,11 +8188,21 @@ MJ.enregistrer('traces', {
       if(fini) return false;
       t += dt;
       /* le sol défile toujours, même à la fin */
-      if(phase !== 'depart') cam += p.defile * dt;
+      if(phase !== 'depart' && phase !== 'cherche') cam += p.defile * dt;
+      /* la recherche du départ : le compte à rebours, puis tout se met à avancer */
+      if(phase === 'cherche'){
+        var resteC = Math.max(0, Math.ceil(chercheFin - t));
+        if(pilN && pilN.textContent !== String(resteC)){ pilN.textContent = resteC; if(resteC <= 3 && resteC > 0) U.son('tic'); }
+        if(t >= chercheFin){
+          phase = 'marche';
+          if(pilule){ pilule.classList.add('part'); var pl0 = pilule; P.apres(400, function(){ if(pl0.parentNode) pl0.parentNode.removeChild(pl0); }); pilule = null; }
+          annonce(terrain, '👣 Ça avance ! Suis-le !', 1200);
+        }
+      }
       var dBas = cam + YB - (vue.y + vue.h), dHaut = cam + YB - vue.y;
       var xMin = camX + vue.x - 180, xMax = camX + vue.x + vue.w - 180;
       /* le Pisteur marche vers le doigt, à vitesse limitée */
-      if(phase === 'marche'){
+      if(phase === 'marche' || phase === 'cherche'){
         var tx = null, td = null;
         if(butMonde){ tx = butMonde.x; td = butMonde.d; }
         else if(doigt){ tx = camX + (doigt.x - 180); td = cam + YB - doigt.y; }
@@ -22745,7 +22796,7 @@ MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:
 var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
-  traces:function(p){ return p && p.suspect === 'chat' ? 'Suis les bonnes traces de pattes !' : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
+  traces:function(p){ return p && p.suspect === 'chat' ? (p.chercher ? 'Trouve le départ, puis suis la bonne piste !' : 'Suis les bonnes traces de pattes !') : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
   poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : (p && p.fuyard === 'oie' ? 'Saute, baisse-toi, évite : attrape l\'oie !' : 'Saute, baisse-toi, évite : attrape-la !'); },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',
@@ -27703,9 +27754,9 @@ var VARIANTES = {
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
       departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
     /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
-    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
+    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
       departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
       departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
