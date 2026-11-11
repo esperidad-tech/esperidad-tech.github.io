@@ -1,8 +1,21 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 18 h)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 21 h 15)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
-## Nouveau depuis le 11 novembre (18 h) : LA CONSTRUCTION A COMMENCÉ — l'étape 1 sur 8 est faite
+## Nouveau depuis le 11 novembre (21 h 15) : le mini-jeu du gâteau de la fête existe (dans la salle, pas encore dans l'enquête)
+
+- **Romain, 19 h 48, 20 h 29 et 20 h 39** (conversation qui construit) : il a demandé le mini-jeu du gâteau, et l'a décrit lui-même. Le détail : **Bible §13.17**. À essayer : https://esperidad-tech.github.io/brumeval/salle.html#jeu=gateau
+- **Ce qu'il est** : une **création libre** — jusqu'à **4 étages**, 70 décorations qu'on pose où on veut (les sept chats d'Odette en pâte d'amande sont dedans, avec l'oie de Gaspard), un pinceau pour tout repeindre, **un minuteur de 5 minutes**, et on ne perd jamais.
+- **Ce qui ne colle plus avec la conception** (`E3-actions-des-roles.md`, « Le gâteau de la fête » et « Rendre le gâteau ») : là-bas, c'est « assembler selon une commande, noté en étoiles, **sept étages** », et le maire paie selon les étoiles. **Rien n'est tranché** : à décider avec Romain quand on construira l'étape 4 (l'Alchimiste) — création libre dans l'enquête aussi, ou une commande de Gaspard par-dessus (le mini-jeu rend déjà un résumé du gâteau : étages, couleurs, décorations par famille, nombre de chats) ; et accorder les répliques qui disent « sept étages » (Gaspard, Tim, la fête).
+
+## Nouveau depuis le 11 novembre (20 h 50) : l'étape 5 (le Pisteur) est faite aussi, et en ligne
+
+- **Romain, 19 h 51** (conversation qui construit) : « Occupe-toi du Pisteur, le matin, l'après-midi et la nuit… l'oie en train de courir dans le décor de la ville… tu le mets en ligne, tu as mon autorisation. » Fait avant les étapes 2 à 4. Le détail : **Bible §13.16**.
+- **Fait** : l'oie de Gaspard vue de dos dans une ville au matin (course-poursuite), les pattes de Moustache à six doigts (Suivre la piste, avec ou sans le code du Sage), « Se cacher » en plein jour, et tout le parcours du Pisteur dans `e3.js` (banderoles, oie, gui, traces jusqu'à la crypte avec le filet, la lettre en cachette, rendre sa mission, la clé d'Anselme, la grille de la crypte, le puits). Cinq codes nouveaux.
+- **Changé par rapport à `E3-actions-des-roles.md`** : les traces partent de la place (pas de chez Odette) ; **Romain (20 h 51) : on cherche d'abord le départ des traces de Moustache pendant 10 secondes**, quelque part à gauche ou à droite, au milieu d'autres pattes qui se croisent, puis le sol défile (Bible §13.16, « Retouche ») ; le reste est noté en tête de ce fichier.
+- **Attend** : les codes du Barde (étape 2 : « La clé est au clou », « Le vieux puits »), du Sage (étape 3 : « Moustache a six doigts »), de l'Alchimiste (étape 4 : « Le gui du pommier ») ; la descente dans le donjon (étape 6). En attendant, ces codes se tapent à la main dans l'onglet 📜.
+
+## Le 11 novembre (18 h) : LA CONSTRUCTION A COMMENCÉ — l'étape 1 sur 8 est faite
 
 - **Go de Romain à 16 h 33**, dans la conversation qui construit, pour suivre l'ordre de la fin du §13.14. Le détail de ce qui est construit : **Bible §13.15** (et `PASSATION.md`).
 - **Fait** : l'ouverture (la lettre lue par le maire, l'écran des missions), le marché aux fleurs du Barde, tous les villageois du matin et de l'après-midi (les textes de `E3-dialogues-et-trame.md` §1 à §3, mot pour mot), les occupés, les écoutes aux portes, huit codes.

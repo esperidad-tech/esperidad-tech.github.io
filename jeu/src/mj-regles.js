@@ -20,8 +20,8 @@
 var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
-  traces:function(p){ return p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
-  poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : 'Saute, baisse-toi, évite : attrape-la !'; },
+  traces:function(p){ return p && p.suspect === 'chat' ? (p.chercher ? 'Trouve le départ, puis suis la bonne piste !' : 'Suis les bonnes traces de pattes !') : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
+  poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : (p && p.fuyard === 'oie' ? 'Saute, baisse-toi, évite : attrape l\'oie !' : 'Saute, baisse-toi, évite : attrape-la !'); },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',
   bulles:'Touche les bulles dans le même ordre !',
@@ -143,7 +143,8 @@ var COUREUR = '<g class="rg-jambes"><path class="g" d="M-10,-6 L-14,10" stroke="
 var FUYARD = '<path d="M-15,0 C-17,-20 -13,-40 0,-48 C13,-40 17,-20 15,0 Z" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><circle cx="0" cy="-52" r="9" fill="#1d1730" stroke="' + K + '" stroke-width="3"/><path d="M-14,-4 l-9,7 M14,-4 l9,7" stroke="#1d1730" stroke-width="5" stroke-linecap="round"/>';
 D('poursuite', function(el, prm){
   prm = prm || {};
-  var ART = (MJ.TYPES.poursuite && MJ.TYPES.poursuite.art) || {}, CHIEN = prm.fuyard === 'chien' && ART.chien, FORET = prm.decor === 'foret' && ART.foret, PANT = ART.coureur && ART.Pantin;
+  var ART = (MJ.TYPES.poursuite && MJ.TYPES.poursuite.art) || {}, CHIEN = prm.fuyard === 'chien' && ART.chien, FORET = prm.decor === 'foret' && ART.foret, PANT = ART.coureur && ART.Pantin,
+    OIE = prm.fuyard === 'oie' && ART.oie, VILLE = prm.decor === 'ville' && ART.ville;
   var H = LH, HZ = 150, YR = 390, ER = (YR - HZ) / (H - HZ);
   var LHa = [140.7, 150, 159.3], LB = [37, 150, 263];
   function laneX(l, e){ var a = Math.floor(Math.min(1.999, Math.max(0, l))), b = a + 1, f = l - a; var xa = LHa[a] + (LB[a] - LHa[a]) * e, xb = LHa[b] + (LB[b] - LHa[b]) * e; return xa + (xb - xa) * f; }
@@ -161,28 +162,32 @@ D('poursuite', function(el, prm){
   });
   var main = piste(cles), id = uid('rgp');
   var svg = svgDemo(el,
-    '<defs><linearGradient id="' + id + 'c" x1="0" y1="0" x2="0" y2="1">' + (FORET ? '<stop offset="0" stop-color="#0d2219"/><stop offset=".55" stop-color="#244a33"/><stop offset=".85" stop-color="#5f7a3e"/><stop offset="1" stop-color="#d9a65a"/>' : '<stop offset="0" stop-color="#141038"/><stop offset=".6" stop-color="#3b2a6a"/><stop offset="1" stop-color="#e08a6a"/>') + '</linearGradient>' +
-    '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#2a4a2c' : '#2c4a3a') + '"/><stop offset="1" stop-color="' + (FORET ? '#0f1f15' : '#12261f') + '"/></linearGradient>' +
-    '<linearGradient id="' + id + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#5a4430' : '#7a5e4a') + '"/><stop offset="1" stop-color="' + (FORET ? '#8f6e48' : '#b48a62') + '"/></linearGradient></defs>' +
+    '<defs><linearGradient id="' + id + 'c" x1="0" y1="0" x2="0" y2="1">' + (FORET ? '<stop offset="0" stop-color="#0d2219"/><stop offset=".55" stop-color="#244a33"/><stop offset=".85" stop-color="#5f7a3e"/><stop offset="1" stop-color="#d9a65a"/>' : (VILLE ? '<stop offset="0" stop-color="#6fb6e8"/><stop offset=".6" stop-color="#b9def2"/><stop offset="1" stop-color="#fbe7c4"/>' : '<stop offset="0" stop-color="#141038"/><stop offset=".6" stop-color="#3b2a6a"/><stop offset="1" stop-color="#e08a6a"/>')) + '</linearGradient>' +
+    '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#2a4a2c' : (VILLE ? '#cdbfa3' : '#2c4a3a')) + '"/><stop offset="1" stop-color="' + (FORET ? '#0f1f15' : (VILLE ? '#9c8b70' : '#12261f')) + '"/></linearGradient>' +
+    '<linearGradient id="' + id + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (FORET ? '#5a4430' : (VILLE ? '#9a9183' : '#7a5e4a')) + '"/><stop offset="1" stop-color="' + (FORET ? '#8f6e48' : (VILLE ? '#c2b49a' : '#b48a62')) + '"/></linearGradient></defs>' +
     '<rect width="' + LW + '" height="' + HZ + '" fill="url(#' + id + 'c)"/>' +
-    (FORET ? '<circle cx="216" cy="122" r="30" fill="#ffe3a3" opacity=".5"/><circle cx="216" cy="122" r="56" fill="#ffe3a3" opacity=".12"/>' +
+    (VILLE ? '<circle cx="262" cy="34" r="18" fill="#fff6c8"/><circle cx="262" cy="34" r="32" fill="#fff6c8" opacity=".25"/>' +
+      '<path d="M0,' + HZ + ' L0,128 L12,116 L24,128 L24,122 L40,108 L56,122 L56,126 L70,114 L84,126 L100,112 L116,126 L116,' + (HZ - 14) + ' L184,' + (HZ - 14) + ' L184,124 L200,110 L216,124 L230,114 L246,126 L262,110 L278,124 L300,118 L300,' + HZ + ' Z" fill="#a9b9c9" stroke="#8a9bb0" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<g transform="translate(150,' + HZ + ')"><path d="M-13,0 L-13,-58 L13,-58 L13,0 Z" fill="#b8c3cf" stroke="#7f8fa3" stroke-width="2"/><path d="M-16,-58 L0,-92 L16,-58 Z" fill="#8a9bb0" stroke="#6d7e94" stroke-width="2" stroke-linejoin="round"/><circle cx="0" cy="-42" r="6" fill="#f3efe4" stroke="#7f8fa3" stroke-width="1.6"/></g>'
+    : FORET ? '<circle cx="216" cy="122" r="30" fill="#ffe3a3" opacity=".5"/><circle cx="216" cy="122" r="56" fill="#ffe3a3" opacity=".12"/>' +
       '<path d="M0,' + HZ + ' L0,100 L14,130 L28,86 L42,124 L58,92 L72,128 L88,80 L102,122 L118,96 L134,130 L150,88 L166,126 L182,94 L198,128 L214,84 L230,124 L246,98 L262,128 L278,90 L292,124 L300,104 L300,' + HZ + ' Z" fill="#15301f"/>' +
       '<path d="M0,' + HZ + ' L0,126 L12,144 L26,118 L40,142 L54,122 L70,146 L86,120 L100,144 L116,124 L132,146 L148,120 L164,144 L180,122 L196,146 L212,120 L228,144 L244,124 L260,146 L276,120 L290,144 L300,128 L300,' + HZ + ' Z" fill="#0e2417"/>'
     : '<circle cx="238" cy="52" r="20" fill="#fff4d0" opacity=".92"/><circle cx="238" cy="52" r="34" fill="#fff4d0" opacity=".1"/>' +
       '<path d="M0,' + HZ + ' L0,124 L30,112 L62,128 L96,108 L130,126 L170,110 L206,128 L240,112 L276,126 L300,116 L300,' + HZ + ' Z" fill="#241d44"/>') +
     '<rect y="' + HZ + '" width="' + LW + '" height="' + (H - HZ) + '" fill="url(#' + id + 's)"/>' +
     '<path d="M136,' + HZ + ' L164,' + HZ + ' L320,' + H + ' L-20,' + H + ' Z" fill="url(#' + id + 'r)" stroke="' + K + '" stroke-width="2"/>' +
-    '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="' + (FORET ? '#c9b48a' : '#e8d7ae') + '" stroke-width="2.5" stroke-dasharray="12 12" fill="none"' + (FORET ? ' opacity=".45"' : '') + '/>' +
+    '<path class="rg-tirets" d="M145.3,' + HZ + ' L93.3,' + H + ' M154.7,' + HZ + ' L206.7,' + H + '" stroke="' + (FORET ? '#c9b48a' : (VILLE ? '#f3ead6' : '#e8d7ae')) + '" stroke-width="2.5" stroke-dasharray="12 12" fill="none"' + (FORET ? ' opacity=".45"' : '') + '/>' +
+    (VILLE && ART.maison ? '<g class="rg-maisons">' + [[96, 186, .3, -1, 0], [204, 186, .3, 1, 1], [64, 232, .52, -1, 2], [236, 232, .52, 1, 3]].map(function(a){ return '<g transform="translate(' + a[0] + ',' + a[1] + ') scale(' + a[2] + ')">' + ART.maison(a[3], a[4]) + '</g>'; }).join('') + '</g>' : '') +
     (FORET ? '<g class="rg-arbres">' + [[22, 214, 1], [278, 214, 1], [6, 300, 1.5], [294, 300, 1.5], [40, 176, .7], [260, 176, .7]].map(function(a){ return '<g transform="translate(' + a[0] + ',' + a[1] + ') scale(' + a[2] + ')"><path d="M0,0 L0,-26" stroke="' + K + '" stroke-width="9"/><path d="M0,0 L0,-26" stroke="#5e3f26" stroke-width="5"/><circle cx="0" cy="-44" r="22" fill="#245e3c" stroke="' + K + '" stroke-width="3.5"/><circle cx="-8" cy="-50" r="9" fill="#2f7a4c"/></g>'; }).join('') + '</g>' : '') +
-    '<g class="rg-fuyard">' + (CHIEN ? ART.chien() : (PANT && ART.silhouette ? ART.silhouette() : FUYARD)) + '</g><g class="rg-obs"></g>' +
+    '<g class="rg-fuyard">' + (CHIEN ? ART.chien() : (OIE ? ART.oie() : (PANT && ART.silhouette ? ART.silhouette() : FUYARD))) + '</g><g class="rg-obs"></g>' +
     '<ellipse class="rg-ombre" cx="150" cy="' + YR + '" rx="22" ry="5" fill="#000" opacity=".3"/>' +
     '<g class="rg-coureur">' + (PANT ? ART.coureur('pisteur') : COUREUR) + '</g>' +
     '<g class="rg-trace" opacity="0"><path d="" stroke="#8ff3ff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><path d="" fill="#8ff3ff" opacity=".85"/></g>');
   var gObs = $(svg, '.rg-obs'), cour = $(svg, '.rg-coureur'), ombre = $(svg, '.rg-ombre'), fuy = $(svg, '.rg-fuyard'), tir = $(svg, '.rg-tirets');
   var jg = $(svg, '.rg-jambes .g'), jd = $(svg, '.rg-jambes .d'), trace = $(svg, '.rg-trace'), gMain = $(svg, '.rg-main');
   /* le coureur du jeu (pantin vu de dos) et la silhouette, quand mj-pisteur-alchi.js les donne */
-  var pant = PANT ? ART.Pantin(cour, 'pisteur') : null, pantF = (PANT && !CHIEN && ART.silhouette) ? ART.Pantin(fuy, 'ombre') : null;
-  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = (FORET && FORET[s.o]) || (ART.route && ART.route[s.o]) || SP[s.o]; gObs.appendChild(g); return g; });
+  var pant = PANT ? ART.Pantin(cour, 'pisteur') : null, pantF = (PANT && !CHIEN && !OIE && ART.silhouette) ? ART.Pantin(fuy, 'ombre') : null;
+  var obs = SEG.map(function(s){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = (FORET && FORET[s.o]) || (VILLE && VILLE[s.o]) || (ART.route && ART.route[s.o]) || SP[s.o]; gObs.appendChild(g); return g; });
   return boucle(el, P, function(t){
     var i = Math.min(SEG.length - 1, Math.floor(t / DU)), s = SEG[i], t0 = i * DU;
     obs.forEach(function(g, j){
@@ -208,8 +213,9 @@ D('poursuite', function(el, prm){
       jd.setAttribute('transform', dy ? 'rotate(-18)' : 'rotate(' + f1(-course * 14) + ')');
     }
     ombre.setAttribute('cx', f1(x)); ombre.setAttribute('rx', f1(22 + dy / 6));
-    pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, CHIEN ? .62 : .5);
+    pose(fuy, 150 + Math.sin(t * 1.3) * 4, HZ + 12 - Math.abs(Math.sin(t * 9)) * 1.5, CHIEN ? .62 : (OIE ? .66 : .5));
     if(CHIEN && ART.animerChien) ART.animerChien(fuy, t, 1);
+    if(OIE && ART.animerOie) ART.animerOie(fuy, t, 1);
     if(pantF) pantF.poser({ph:t * 12, j:0, b:0, l:0, t:t, v:1});
     tir.setAttribute('stroke-dashoffset', f1(-(t * 60) % 24));
     var m = main(t); poserMain(gMain, m.x, m.y, m.p, t, []);

@@ -1,6 +1,8 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
-> **Cette version remplace celle du 6 novembre** (gardée dans `jeu/archives/E3-actions-des-roles-6-novembre.md`). Réécrite le 11 novembre après le « go pour tout » de Romain (15 h 13). Les décisions : Bible §13.14. La trame d'ensemble : le document « Enquête 3 — la trame du chemin parfait » (https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw). Le Barde : `E3-dialogues-et-trame.md`. L'atelier des plantes, les cueillettes et les potions : `E3-atelier-des-plantes.md`. Le donjon lui-même : `jeu/donjon/` (`CONCEPTION-DONJON.md`, `MOTEUR-DONJON.md`). **Conception seulement : rien n'est construit.**
+> **Cette version remplace celle du 6 novembre** (gardée dans `jeu/archives/E3-actions-des-roles-6-novembre.md`). Réécrite le 11 novembre après le « go pour tout » de Romain (15 h 13). Les décisions : Bible §13.14. La trame d'ensemble : le document « Enquête 3 — la trame du chemin parfait » (https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw). Le Barde : `E3-dialogues-et-trame.md`. L'atelier des plantes, les cueillettes et les potions : `E3-atelier-des-plantes.md`. Le donjon lui-même : `jeu/donjon/` (`CONCEPTION-DONJON.md`, `MOTEUR-DONJON.md`). **Le §1 (le Pisteur) est construit et en ligne depuis le 11 novembre, 20 h 50** (Bible §13.16 ; sauf la descente dans le donjon, étape 6) ; le reste est encore de la conception.
+>
+> **Ce que la construction du Pisteur a changé ici** (Bible §13.16) : les traces de Moustache partent de **la place** (le code du Barde dit « …qui filent dehors, vers la place ») ; sans « Moustache a six doigts », du lait cache ses doigts sur la carte du départ ; **on cherche d'abord le départ de ses traces pendant 10 secondes**, au milieu d'autres pattes qui se croisent, avant que le sol ne se mette à défiler (Romain, 20 h 51) ; la clé d'Anselme et la lettre se jouent dans « Se cacher » en ville (la nuit pour la clé, en plein jour pour la lettre) ; « Rendre sa mission » dès qu'une des deux missions de fête est réussie (5 pièces d'or).
 >
 > La page « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) ne fait plus foi.
 
@@ -38,6 +40,7 @@ Les preuves et les potions. Le matin, le gâteau et les cueillettes ; l'après-m
 
 ### Le matin
 - **Le gâteau de la fête** — la boulangerie. Assembler selon une commande (un moteur neuf, noté en étoiles) : sept étages, un par chat d'Odette, et les décorations de la commande de Gaspard → code « Mission de fête ». Gaspard : « Sept étages et sept chats en pâte d'amande ! »
+  - *(ajouté à la construction, 11 novembre au soir)* **Le mini-jeu existe, mais autrement** : Romain l'a demandé et décrit lui-même (Bible §13.17) — une création libre, **4 étages au plus**, 70 décorations (dont les sept chats), un pinceau, un minuteur de 5 minutes, sans échec. Pas de commande ni d'étoiles pour l'instant, et il n'est pas encore branché ici. À décider avec Romain : garder « assembler selon une commande » par-dessus, ou la création libre ; et accorder « sept étages ».
 - **Les cueillettes** — l'oseille (lavoir), le souci (potager), la mélisse (herboristerie), le lin (moulin) ; avec le code « L'herbier » (Sage) et ses énigmes : le lycopode (carrefour de la forêt), la vesse-de-loup (clairière aux lièvres, mini-jeu « Suivre la poussière »), le gui (potager, par le Pisteur ou Mimi). Détail : `E3-atelier-des-plantes.md` §4 à §8.
 - **L'atelier des plantes** est ouvert dès le matin.
 

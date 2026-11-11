@@ -21,14 +21,21 @@ var LEGENDE = {1:'Le plus facile', 10:'Le plus dur'};
 var RETIRES = {ordre:1, temperature:1, rythme:1, loupe:1, ragots:1};   /* ragots : abandonné (Romain, 5 novembre, 9 h 03) */
 /* Variantes à essayer : mêmes règles et même difficulté, seulement le décor et le fuyard changent */
 var VARIANTES = {
-  poursuite:[{id:'chien', ic:'🐕', nom:'Course-poursuite : le petit chien', d:'Variante forêt (enquête 1)', params:{fuyard:'chien', decor:'foret'}}],
+  poursuite:[{id:'chien', ic:'🐕', nom:'Course-poursuite : le petit chien', d:'Variante forêt (enquête 1)', params:{fuyard:'chien', decor:'foret'}},
+    {id:'oie', ic:'🦢', nom:'Course-poursuite : l\'oie de Gaspard', d:'Variante ville (enquête 3)', params:{fuyard:'oie', decor:'ville'}}],
   /* Romain, 6 novembre, 2 h 34 : des variantes de décor */
   /* (10 novembre, 20 h 44 : la même partie que dans l'enquête 1 — les bottes du jardinier au départ, les petites traces jusqu'à la forêt) */
   traces:[{id:'ville', ic:'🏘️', nom:'Suivre la piste : le massif de la mairie', d:'Les petites traces vont jusqu\'à la forêt (enquête 1)',
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
-      departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}}],
+      departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
+    /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
+    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
+      departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
+    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+      departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
-    {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}}],
+    {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
+    {id:'jour', ic:'🏛️', nom:'Se cacher : la ville en plein jour', d:'Jusqu\'à la mairie, l\'après-midi (enquête 3)', params:{decor:'ville', jour:true}}],
   tir:[{id:'cerfvolant', ic:'🪁', nom:'Tir à l\'arc : le cerf-volant', d:'Coincé en haut du clocher (enquête 2)', params:{decor:'cerfvolant'}},
     {id:'banderoles', ic:'🎏', nom:'Tir à l\'arc : les banderoles', d:'Décorer la place pour la fête (enquête 3)', params:{decor:'banderoles'}}]
 };
@@ -41,6 +48,7 @@ var EN_TRAVAUX = {};
 var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
+  gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };
