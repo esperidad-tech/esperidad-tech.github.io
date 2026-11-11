@@ -51,6 +51,11 @@
 .lv-illu{align-self:center;font-size:3.4rem;line-height:1;filter:drop-shadow(0 3px 0 rgba(53,40,27,.18))}
 .lv-ouvrir{align-self:center}
 .lv-texte-page{display:flex;flex-direction:column;gap:8px}
+/* (enquête 3) des lignes à lire à voix haute : les énigmes de l'herbier */
+.lv-lignes{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.lv-lignes li{display:grid;grid-template-columns:auto minmax(0, 1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:2px dashed rgba(53,40,27,.35);background:rgba(255,255,255,.28)}
+.lv-lignes p{margin:0;font-size:1.04rem;line-height:1.4;font-style:italic}
+.lv-lignes-ic{font-size:2rem;line-height:1}
 .lv-emoji{display:grid;place-items:center;width:100%;height:100%;font-size:1.8rem}
 
 /* Le coin corné (page suivante / précédente), le numéro de page, le sommaire */

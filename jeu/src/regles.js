@@ -46,14 +46,21 @@ M.pointsVisibles = function(lieu, role){
     /* le texte a changé : à revoir (sans :var, il vient d'être vu : A.point ci-dessous le note juste après ; sinon il ne restait jamais vu) */
     else if(P.vus[k] === 'ok' && vu !== undefined && vu !== i){ delete P.vus[k]; delete P.vus[k + ':var']; }
     var v = i >= 0 ? p.variantes[i] : null;
-    return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}) : p;
+    /* (enquête 3) une variante peut aussi donner un code, ou le faire recevoir (v.donne, v.recoit : le filet de la lettre, chez le Sage) */
+    return v ? Object.assign({}, p, {t:v.t || p.t, note:v.note || p.note}, v.donne ? {donne:v.donne} : {}, v.recoit ? {recoit:v.recoit} : {}) : p;
   });
 };
 var point0 = A.point;
 A.point = function(el){
-  var r = point0.apply(this, arguments), P = M.P(), E = M.E(), role = M.role(), l = el.dataset.l, id = el.dataset.id;
+  var P = M.P(), E = M.E(), role = M.role(), l = el.dataset.l, id = el.dataset.id;
   var R = E && E.lieux && E.lieux[l] && E.lieux[l][role], p = R && (R.points || []).filter(function(x){ return x.id === id; })[0];
   var k = role + ':' + l + ':' + id;
+  /* (enquête 3) un point figé sans mini-jeu, dont la découverte change sa propre condition (le filet de la lettre : le Sage la reçoit) :
+     on retient la variante d'AVANT, celle qu'il vient de lire */
+  var avant = P && p && p.variantes && p.varianteFigee && !p.mj && P.vus[k] !== 'ok' ? varianteDe(p) : null;
+  if(avant !== null) P.vus[k + ':var'] = avant;   /* (posée avant : la découverte relit déjà les points du lieu) */
+  var r = point0.apply(this, arguments);
+  if(avant !== null && P.vus[k] !== 'ok'){ delete P.vus[k + ':var']; return r; }   /* (il n'a rien lu : un besoin manquait) */
   if(P && p && p.variantes && P.vus[k] === 'ok' && P.vus[k + ':var'] === undefined){ P.vus[k + ':var'] = varianteDe(p); M.sauver(); }
   return r;
 };

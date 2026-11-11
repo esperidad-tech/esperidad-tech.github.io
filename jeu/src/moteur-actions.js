@@ -341,6 +341,7 @@ function contenuModal(m){
     case 'mj-pause': return pauseModal(m);
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
     case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
+    case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
   }
   return '';
 }
@@ -1237,6 +1238,7 @@ A.point = function(el){
     var code = null;
     if(p.obj){ P.objets[p.obj] = true; code = 'obj:' + p.obj; }
     if(p.donne){ code = p.donne; P.objets['_' + p.donne] = true; }
+    if(p.recoit) [].concat(p.recoit).forEach(function(c){ P.recus[c] = true; });   /* (enquête 3) il le reçoit lui-même : la lettre accrochée sous le tableau du Sage */
     if(p.or){ M.S.or += p.or; }
     M.sauver();
     M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l, choix:choix()});

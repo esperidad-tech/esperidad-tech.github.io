@@ -20,7 +20,7 @@ var TICS = {margot:'yeuxbas', victor:'morsure', fortune:'coin', tim:'mordille', 
 
 /* g : ce qu'apporte la réponse (pour nous, et pour les objets du Barde à venir : la Lettre de recommandation, le Carnet à rubans) :
    'r' un ruban (l'indice d'un grand dialogue), 'e' l'enquête, 'h' l'histoire de la saison. */
-var M_ = ['matin'], A_ = ['apresmidi'];
+var M_ = ['matin'], A_ = ['apresmidi'], N_ = ['nuit'];
 
 E[3] = {
   id:3, titre:'La lettre d\'Odette', niveau:3,
@@ -70,7 +70,8 @@ E[3] = {
     ],
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
-      {libre:true, ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats.'},
+      {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
+      {ic:'🌿', t:'Lis l\'herbier des Fondateurs à l\'Alchimiste, dans ton Grand Livre.', fait:[{lu:'herbier'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
@@ -176,6 +177,168 @@ E[3] = {
       lanterne:{or:5, t:'Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête !'}}
   },
 
+  /* ---------- Les grands dialogues du Barde (grands.js ; Bible § 13.8 ; E3-dialogues-et-trame.md §3.1, §4.1, §4.2, §4.7) ----------
+     On y entre par une question (q.grand), sauf Léo (le code « Léo attrapé » du Pisteur). 4 choix par étape, tous polis ; un seul essai.
+     Les questions à grand dialogue ne comptent pas dans les 2 questions par visite (sinon, le Barde pouvait se priver de la clé d'Anselme).
+     Un choix : q (ce que dit le Barde), r (sa réplique ; avec « » quand elle mêle paroles et récit), n (un petit récit après), bon, piege.
+     rate : la réplique d'un mauvais choix (après r) ; toujours : dit en partant, quoi qu'il arrive ; fermeVisite : un mauvais choix ferme
+     la porte jusqu'au moment suivant ; chances : 2 = une deuxième chance (la Grosse Marie), les mauvaises réponses essayées disparaissent. */
+  grands:{
+    lettre:{pnj:'grosbec', ic:'✉️', fermeVisite:true,
+      rate:'Bien, bien… J\'ai beaucoup à faire. Revenez plus tard.',
+      toujours:'Et ce soir, tout le monde sur la place jusqu\'à minuit !',
+      etapes:[
+        {t:'Oui ?', choix:[
+          {q:'Quelle belle fête vous préparez pour Odette !', r:'N\'est-ce pas ? Les lampions, le gâteau, les fleurs… Que puis-je pour vous ?', bon:true},
+          {q:'Quel beau discours vous avez fait ce matin !'},
+          {q:'Votre mairie est vraiment très bien rangée !'},
+          {q:'Votre chapeau neuf vous va très bien !'}]},
+        {t:'Que puis-je pour vous ?', choix:[
+          {q:'Les enfants voudraient voir l\'écriture d\'Odette, pour être rassurés.'},
+          {q:'Je voudrais recopier ses mots, pour les chanter à la fête.'},
+          {q:'Certains disent que vous gardez la lettre pour vous… Moi, je suis sûr que c\'est faux !', r:'Bien sûr que c\'est faux ! Tenez, la voilà… Mais vous me la rendez quand ?', bon:true},
+          {q:'Odette est ma grande amie : j\'aimerais lire ses mots moi-même.'}]},
+        {t:'Mais vous me la rendez quand ?', choix:[
+          {q:'Je vous la rapporte avant ce soir, promis.', r:'Avant ce soir, c\'est bien compris ?', bon:true},
+          {q:'Demain matin, à la première heure.'},
+          {q:'Le Sage la rangera précieusement dans son Grand Livre.'},
+          /* le piège : le Barde repart avec une copie de sa propre écriture (le Sage : « C'est ton écriture à toi, ça ! ») */
+          {q:'Je peux la recopier ici, devant vous ?', r:'Mais bien sûr, recopiez donc !', piege:true}]}
+      ],
+      reussi:{bouton:'✉️ Prendre la lettre', titre:'Le maire te prête la lettre', t:'Tu tiens la lettre d\'Odette. Le maire te regarde partir… Il faudra la lui rendre avant ce soir !', code:'info:lettre'},
+      piege:{bouton:'📝 Ranger ma copie', titre:'Ta copie de la lettre', t:'Tu recopies la lettre, mot pour mot, sous l\'œil du maire. Le maire range l\'original dans son grand coffre.', code:'info:copie'},
+      resume:{ok:'Le maire t\'a prêté la lettre d\'Odette.', piege:'Tu as recopié la lettre, devant le maire.', rate:'Le maire n\'a pas voulu te prêter la lettre.'}},
+    /* la nuit, au clocher : la clé d'Anselme (raté : Tim montre le vieux puits) */
+    cle:{pnj:'anselme', ic:'🔔', fermeVisite:true,
+      rate:'Bon, je monte sonner, moi. Bonne fête !',
+      etapes:[
+        {t:'Hein ? Ah, le Barde ! Qu\'est-ce que tu me veux ?', choix:[
+          {q:'Une toute petite question, ça ne prendra qu\'une seconde !', r:'UNE SECONDE CLOCHE ? La Grosse Marie suffit bien !'},
+          {q:'Pardon de vous déranger, Monsieur Anselme…', r:'UN HARENG ? Je n\'ai pas faim, mon petit !'},
+          {q:'BON-SOIR, AN-SEL-ME ! J\'AI TOUT MON TEMPS. JE PEUX VOUS PAR-LER ?', r:'Enfin quelqu\'un qui parle comme il faut ! Alors, qu\'est-ce qui t\'amène ?', bon:true},
+          {q:'Vite, Anselme, minuit approche !', r:'UNE VIS ? Demande à Basile !'}]},
+        {t:'Alors, qu\'est-ce qui t\'amène ?', choix:[
+          {q:'Je vous apporte un morceau du gâteau de Gaspard ?', r:'UN CHAPEAU ? Il fait des chapeaux, le boulanger ?'},
+          {q:'Je pourrais jeter un œil à la crypte ?', r:'UNE CRÊPE ? À cette heure-ci ?'},
+          {q:'LA GROSSE MARIE EST SI LOURDE… JE PEUX VOUS AIDER À LA SONNER ?', r:'M\'aider ? Personne ne me l\'a proposé depuis des années… Dis-moi pourquoi, ce soir.', bon:true},
+          {q:'Vous êtes en pleine forme, ce soir !', r:'EN PLEINE FORÊT ? Je suis au clocher, voyons !'}]},
+        {t:'Dis-moi pourquoi, ce soir.', choix:[
+          {q:'Parce que c\'est la fête, et que j\'adore les cloches !', r:'TU ADORES LES BROCHES ? Demande à Mélusine !'},
+          {q:'Parce que le maire veut que tout soit parfait.', r:'LE MAIRE VEUT UNE PAIRE ? De chaussettes ?'},
+          {q:'VOTRE PÈRE A SONNÉ TOUTE UNE NUIT POUR RAMENER SILAS. CE SOIR, ODETTE AUSSI EST PERDUE…', r:'Il essuie une larme. « Alors on la sonne pour Odette. Monte, mon petit ! »', bon:true},
+          {q:'J\'aimerais apprendre le métier de sonneur.', r:'DE SAUTEUR ? Je suis bien trop vieux pour sauter !'}]}
+      ],
+      reussi:{bouton:'🔔 Monter avec Anselme', titre:'La clé est au clou', t:'Anselme pend sa clé au clou. Vous tirez la corde ensemble : DONG ! DONG ! Il ferme les yeux et compte les coups…', code:'info:cle_clou'},
+      echec:{bouton:'🏠 Qui m\'appelle ?', qui:'tim', titre:'Tim, depuis les toits', t:'« Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! »', code:'info:vieux_puits'},
+      resume:{ok:'Anselme a pendu sa clé au clou.', rate:'Anselme est monté sonner, la clé à la ceinture.'}},
+    /* la nuit, au clocher, pendant le donjon : faire sonner la Grosse Marie avant minuit (une deuxième chance) */
+    gm:{pnj:'anselme', ic:'🔔', chances:2,
+      rate:'Bon, tu m\'embrouilles. À minuit, comme prévu !',
+      etapes:[
+        {t:'LA GROSSE MARIE ? À minuit pile, ordre du maire ! Pourquoi maintenant ?', choix:[
+          {q:'Parce que la fête s\'ennuie un peu !', r:'LA FÊTE S\'ENNUIE ? Qu\'elle danse !'},
+          {q:'LA BRUME MONTE, ANSELME ! VOTRE PÈRE DISAIT : QUAND ELLE S\'ÉPAISSIT, SONNE LA GROSSE MARIE.', r:'Il regarde par la lucarne. « Ma parole… on ne voit plus le moulin. Mais le maire va être furieux ! »', bon:true},
+          {q:'Pour réveiller Farinel, qui dort sur le buffet !', r:'DE LA FARINE ? J\'en ai plein les poches !'},
+          {q:'Parce que minuit est passé !', r:'PASSÉ ? Mon horloge dit dix heures, mon petit !'}]},
+        {t:'Mais le maire va être furieux !', choix:[
+          {q:'Le maire est d\'accord : il me l\'a dit lui-même !', r:'LE MAIRE ? Il m\'a dit minuit pile trois fois ce soir !'},
+          {q:'LE VIEUX RÈGLEMENT : QUAND LA BRUME MONTE, LE SONNEUR SONNE. MÊME LE MAIRE N\'Y PEUT RIEN.', r:'Le vieux règlement… Silas te l\'a dit, hein ? C\'est vrai. Mais toi, pourquoi tu y tiens tant ?', bon:true},
+          {q:'Le maire ne s\'en rendra même pas compte.', r:'PAS COMPTE ? Tout le village va l\'entendre !'},
+          {q:'On s\'en moque, du maire !', r:'ON NE SE MOQUE PAS DU MAIRE, MON PETIT !'}]},
+        {t:'Mais toi, pourquoi tu y tiens tant ?', choix:[
+          {q:'Pour que la fête soit encore plus belle !', r:'ELLE EST DÉJÀ BELLE, LA FÊTE !'},
+          {q:'Parce que j\'adore votre cloche !', r:'TU ADORES LE COCHON ? Moi aussi, en rôti !'},
+          {q:'MES AMIS SONT SOUS LA TERRE, DANS LA BRUME. LA GROSSE MARIE PEUT LES PROTÉGER.', r:'Anselme pâlit. « Sous la terre ?! » Il crache dans ses mains. « Alors on sonne. Fort. Très fort ! »', bon:true},
+          {q:'C\'est un secret, je ne peux rien dire.', r:'UN SECRET ? Pas de secret avec Anselme !'}]}
+      ],
+      reussi:{bouton:'🔔 Sonner !', titre:'La Grosse Marie', t:'DONG… DONG… La Grosse Marie fait trembler tout le village. Sous la terre, la brume recule.', code:'info:grosse_marie'},
+      resume:{ok:'La Grosse Marie a sonné avant minuit !', rate:'Anselme n\'a pas voulu sonner la Grosse Marie.', encore:'Anselme n\'a pas voulu… pas encore. Tu peux revenir à la charge, une seule fois.'}},
+    /* dans la crypte, à la fin du donjon (le code « Léo attrapé » du Pisteur) : Léo ment d'entrée (son signe est épinglé par Farinel) ;
+       un mauvais choix : il se ferme, et on passe à la fin des étapes déjà réussies (fins[n]) */
+    leo:{pnj:'leo', ic:'🧑',
+      intro:'Le Pisteur a attrapé Léo dans la crypte ! Il tremble, sa lanterne à la main.',
+      ment:{a:'Laissez-moi partir ! Je cherchais juste un chat perdu !', vrai:'Bon… je descends tous les soirs. On me l\'a demandé. Je ne peux pas dire qui.',
+        noteVrai:'Léo a avoué : il descend dans la crypte tous les soirs. On le lui a demandé, mais il ne peut pas dire qui.'},
+      etapes:[
+        {t:'Qu\'est-ce que vous me voulez ?', choix:[
+          {q:'Léo, tu vas tout nous dire, et tout de suite !', n:'Il croise les bras.'},
+          {q:'Je mène l\'enquête sur la lettre d\'Odette.', r:'L\'enquête ?!', n:'Il devient tout blanc.'},
+          {q:'Chut… personne ne va te faire de mal. Prends ton temps, Léo.', r:'Il s\'assoit à son tour. « … D\'accord. Qu\'est-ce que vous voulez savoir ? »', bon:true},
+          {q:'Les gardes arrivent, Léo. Parle vite !', n:'Il regarde l\'escalier, muet.'}]},
+        {t:'Qu\'est-ce que vous voulez savoir ?', choix:[
+          {q:'Où est Odette ? Dis-le !', n:'Il baisse la tête.'},
+          {q:'Je te donne une pièce d\'or si tu me dis tout.', r:'C\'est avec de l\'or qu\'on m\'a eu. Plus jamais.'},
+          {q:'Odette t\'a appris à lire. Tu crois qu\'elle mérite d\'être enfermée ?', r:'Les larmes aux yeux : « Elle va bien, je lui apporte à manger tous les soirs. Mais si je parle, il le saura. »', bon:true},
+          {q:'Tu sais que tu risques la prison, comme Bastien ?', n:'Il pâlit, muet.'}]},
+        {t:'Si je parle, il le saura.', choix:[
+          {q:'On ira tout raconter au maire : il te protégera.', r:'Au maire ?! Surtout pas !'},
+          {q:'Personne ne saura jamais que c\'est toi qui as parlé. C\'est promis, Léo.', bon:true},
+          {q:'Silas veille sur le village, tu ne risques rien.', r:'Silas ne voit jamais rien.'},
+          {q:'Pars avec Fortuné, au-delà de la brume.', r:'Et laisser Odette toute seule ? Jamais.'}]}
+      ],
+      /* selon le nombre d'étapes réussies (la dernière, +10 pièces d'or : la seule réponse de plus de 30 mots, la révélation de l'enquête) */
+      fins:[
+        {t:'Il bondit, renverse la lanterne et file dans le noir. On entend ses grandes bottes s\'éloigner.'},
+        {t:'« Elle est vivante. C\'est tout ce que je peux dire. » Il file dans le noir.'},
+        {t:'« Elle est sous le clocher, je lui apporte à manger. Je ne dirai rien de plus. » Il reste assis, la tête dans les mains.'},
+        {t:'« Elle est derrière la porte aux quatre signes. Je passe la soupe par une trappe : je n\'ai pas de clé. L\'homme en cape a une bague à tête de corbeau… et les clés de tout le village. »', or:10}
+      ],
+      apres:'Raconte à voix haute à ton équipe ce que Léo a dit. Puis le Sage accuse !',
+      enfui:'Des pas descendent l\'escalier de la crypte. Léo blêmit, renverse sa lanterne et file dans le noir, sans un mot.'}
+  },
+  /* ---------- Retenir le maire (grands.js ; E3-dialogues-et-trame.md §4.4) : trois petits dialogues d'une étape, à la fête, pendant le donjon,
+     au rythme du Barde (sans minuteur). Le premier dès que le dialogue de la clé est fini (le maire porte un « ! ») ; chacun des suivants
+     après le précédent et une autre visite à la fête. Deux réussis : le code pour le Pisteur ; deux ratés : il s'éloigne (on s'arrête là).
+     Le troisième : variante A si la Grosse Marie a sonné, sinon B. */
+  retenir:{pnj:'grosbec', besoin:[{vu:'grand:cle:fini'}], n:2,
+    dialogues:[
+      {t:'Barde ! Je ne vois pas vos trois amis. Où sont-ils passés ?', choix:[
+        {q:'Ils sont allés se coucher.', r:'Se coucher ? Personne ne part avant minuit ! Je vais voir ça…'},
+        {q:'Ils aident Gaspard à porter le gâteau : sept étages, ça pèse !', r:'Ah ! Très bien, très bien. Ce gâteau sera magnifique.', bon:true},
+        {q:'Je ne sais pas, Monsieur le maire.', r:'Vous ne savez pas ? Hmm…', n:'Il regarde vers le clocher.'},
+        {q:'Ils sont au clocher, avec Anselme.', r:'AU CLOCHER ?!'}]},
+      {t:'Je vais monter dire deux mots à Anselme. Rien ne doit rater, ce soir.', choix:[
+        {q:'Monsieur le maire, tout le village réclame votre discours !', r:'Il redresse son chapeau. « Mon discours ? Bon… le village a besoin de moi. »', bon:true},
+        {q:'Anselme dort, il ne faut pas le réveiller.', r:'Il dort ?! Alors il ne sonnera jamais minuit ! J\'y vais !'},
+        {q:'Votre chapeau neuf est magnifique !', r:'Je le déteste, ce chapeau. Laissez-moi passer.'},
+        {q:'Je viens avec vous !', r:'Non, non. Restez ici.', n:'Il part seul.'}]},
+      /* A : la Grosse Marie a déjà sonné (P.vus['grand:gm'] === 'ok') ; B : pas encore */
+      {
+        A:{t:'La Grosse Marie ? Déjà ?! Qui a osé…', choix:[
+          {q:'Le vieux règlement, Monsieur le maire : quand la brume monte, tout le monde reste sur la place.', r:'Silas : « Article premier ! » Le maire serre les dents. « … Bien. Restons. »', bon:true},
+          {q:'C\'est sûrement le vent.', r:'Le vent ne sonne pas les cloches !'},
+          {q:'C\'est moi qui l\'ai demandé à Anselme.', r:'VOUS ?!'},
+          {q:'C\'est pour la fête ! C\'est joli, non ?', r:'Joli ? Il fallait attendre minuit !'}]},
+        B:{t:'Il est presque minuit. Je dois aller vérifier quelque chose…', choix:[
+          {q:'Et le gâteau ? Il se coupe à minuit pile, et c\'est vous qui le coupez !', r:'Le gâteau ! Mais oui, mais oui… Je ne bouge pas.', bon:true},
+          {q:'Allez-y, je surveille la fête pour vous.', r:'Merci, Barde.', n:'Il s\'éloigne.'},
+          {q:'Il n\'est pas encore minuit !', r:'Justement.', n:'Il s\'éloigne.'},
+          {q:'Restez, il fait froid dehors.', r:'Je ne suis pas frileux.', n:'Il s\'éloigne.'}]}}
+    ],
+    reussi:{titre:'Le maire est retenu', t:'Le maire ne quitte plus la place.', code:'info:maire_retenu'},
+    rate:{titre:'Le maire s\'éloigne…', t:'Le maire s\'éloigne vers le clocher…'}},
+  /* ---------- La fête (grands.js ; §4.3) : la nuit, sur la place ; chacun dit une réplique (gratuit). Quelques-unes sont des indices
+     (la Grosse Marie, retenir le maire), notées dans le Carnet. Mélusine, si son aveu n'a pas été obtenu l'après-midi, craque (le filet). */
+  fete:{lieu:'place', moments:N_,
+    gens:{
+      gaspard:{t:'Sept étages et sept chats en pâte d\'amande ! À minuit, il me faudra des bras pour le porter.', note:'Gaspard, à la fête : à minuit, il lui faudra des bras pour porter son gâteau à sept étages.'},
+      margot:{t:'Anselme ferait tout pour un ami. Mais ne lui raconte jamais d\'histoires : il les sent de loin !', note:'Margot, à la fête : Anselme ferait tout pour un ami. Mais il ne faut jamais lui raconter d\'histoires.'},
+      fortune:{t:'Regarde : la brume monte dans les rues ! On ne voit déjà plus le moulin.', note:'Fortuné, à la fête : la brume monte dans les rues. On ne voit déjà plus le moulin.'},
+      silas:{t:'Article premier du vieux règlement : quand la brume monte, le sonneur sonne, et tout le monde reste sur la place. Même le maire !',
+        note:'Silas, à la fête : le vieux règlement dit que quand la brume monte, le sonneur sonne, et tout le monde reste sur la place. Même le maire !'},
+      victor:{t:'Je danse ! Enfin, j\'essaie.'},
+      tim:{t:'Chut ! Je suis monté en haut du mât des lampions.'},
+      melusine:{t:'« Il a dit qu\'il reviendrait à minuit… » Elle se tait. « Non, rien. Bonne fête. »',
+        /* le filet : son aveu n'a pas été obtenu l'après-midi */
+        filet:{sauf:'info:aveu', t:'Je n\'en peux plus… C\'est moi qui ai écrit la lettre, sous la dictée d\'un homme en cape. Il revient à minuit !', code:'info:aveu',
+          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, sous la dictée d\'un homme en cape. Il revient à minuit (code pour le Sage).'}},
+      iris:{t:'Ça sent la lavande… ah non, c\'est Silas : il en met dans ses bottes !'},
+      farinel:{t:'Je ne dors pas, je repose mes yeux !'},
+      basile:{t:'Les lampions tiennent ! Je n\'en reviens pas moi-même.'},
+      /* (ajouté à la construction, le 11 novembre : sa réplique tant que « Retenir le maire » n'a pas commencé, ou quand c'est fini) */
+      grosbec:{t:'Quelle fête ! Et à minuit pile, le gâteau !'}
+    }},
+
   /* Les photos du tableau de liège du Barde (liege.js) ; les mots-clés (« Autre ») viendront avec la suite */
   liege:{pnj:['melusine', 'margot', 'iris', 'victor', 'fortune', 'tim', 'gaspard', 'farinel', 'anselme', 'silas', 'basile', 'levoisin', 'leo'],
     lieux:['clocher', 'puits', 'moulin', 'chene', 'mairie', 'place']},
@@ -226,6 +389,13 @@ E[3] = {
     crypte_fermee:{nom:'La crypte est fermée', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
       t:'Le Pisteur a suivi les traces de Moustache jusqu\'à l\'église : elles passent sous la porte de la crypte, au pied du clocher. La porte est fermée à clé.',
       dire:'Il faudra la clé du sonneur… Le Barde saura lui parler : donne-lui ce code.'},
+    /* (étape 3, le Sage) */
+    ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage',
+      t:'Le Livre d\'or de la fête est posé sur ta paillasse : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Compare ces écritures à celle de la lettre, à la loupe !',
+      dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
+    herbier:{nom:'L\'herbier', ic:'🌿', pour:'alchimiste', de:'sage',
+      t:'L\'herbier des Fondateurs : trois plantes rares poussent dans la vallée, le pied-de-loup, la vesse-de-loup et la glu. Le Sage connaît les énigmes qui disent où les trouver.',
+      dire:'Lis les trois énigmes à l\'Alchimiste, puis donne-lui ce code.'},
     aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
@@ -245,7 +415,23 @@ E[3] = {
       dire:'C\'est le moment de la décrocher ! Donne ce code au Pisteur.'},
     vieux_puits:{nom:'Le vieux puits', ic:'🕳️', pour:'pisteur', de:'barde',
       t:'Tim l\'a vu depuis les toits : Moustache vient de filer dans le vieux puits, entre les barreaux de la grille !',
-      dire:'Le Pisteur doit y aller : donne-lui ce code.'}
+      dire:'Le Pisteur doit y aller : donne-lui ce code.'},
+    /* (étape 2, les grands dialogues du Barde) */
+    copie:{nom:'La copie de la lettre', ic:'📝', pour:['sage', 'alchimiste'], de:'barde',
+      t:'Le Barde a recopié la lettre d\'Odette, devant le maire… de sa propre main ! « C\'est ton écriture à toi, ça ! » Impossible de comparer les écritures avec cette copie.',
+      dire:'Le Sage et l\'Alchimiste vont l\'étudier : donne-leur ce code.'},
+    grosse_marie:{nom:'La Grosse Marie', ic:'🔔', pour:'pisteur', de:'barde',
+      t:'DONG… DONG… La Grosse Marie a sonné avant minuit. Sous la terre, la brume recule : une fois, hors d\'un combat, toute la vie des trois héros revient.',
+      dire:'Quand l\'équipe du donjon dit « On est à plat ! », donne ce code au Pisteur.'},
+    maire_retenu:{nom:'Le maire est retenu', ic:'🎩', pour:'pisteur', de:'barde',
+      t:'Le Barde a retenu le maire sur la place : il ne descendra pas trop tôt dans la crypte.',
+      dire:'Le Pisteur doit le taper avant la dernière salle du donjon : donne-lui ce code.'},
+    leo_attrape:{nom:'Léo attrapé', ic:'🧑', pour:'barde', de:'pisteur', pnj:'leo',
+      t:'Le Pisteur a attrapé Léo dans la crypte. À toi de le faire parler… doucement.',
+      dire:'Le Barde doit parler à Léo : donne-lui ce code.'},
+    leo_enfui:{nom:'Léo s\'est enfui', ic:'🏃', pour:'barde', de:'pisteur', pnj:'leo',
+      t:'Des pas descendent l\'escalier de la crypte. Léo blêmit, renverse sa lanterne et file dans le noir, sans un mot.',
+      dire:'Le Barde doit le savoir : donne-lui ce code.'}
   },
   /* ---------- Les lieux (étape 5 : le Pisteur ; E3-actions-des-roles.md §1) ----------
      L'Alchimiste ajoutera ses cueillettes à ces lieux (étape 4). Un seul essai par mini-jeu (essais.js) ; un filet (ouvrePartiel)
@@ -304,6 +490,29 @@ E[3] = {
             {si:[{et:[{vu:'pisteur:place:banderoles'}, {vu:'pisteur:boulangerie:oie'}]}], t:'Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu\'à minuit ! »'},
             {si:[{vu:'pisteur:place:banderoles'}], t:'Le maire : « Des banderoles… mais pas d\'oie ? Tant pis ! Ce soir, tout le monde sur la place jusqu\'à minuit ! »'},
             {si:[{vu:'pisteur:boulangerie:oie'}], t:'Le maire : « Une oie… mais pas de banderoles ? Bon, bon. Ce soir, tout le monde sur la place jusqu\'à minuit ! »'}]}
+      ]},
+      /* le Sage (étape 3) : le tableau d'Odette (sa mission de fête), le Livre d'or, puis rendre le tableau (et le filet de la lettre) */
+      sage:{intro:'La mairie. Ce soir, le tableau d\'Odette sera accroché au-dessus du gâteau.', points:[
+        {id:'tableau', ic:'🖼️', nom:'Le tableau d\'Odette', moments:['matin', 'apresmidi'], mj:'runes', mjNiveau:7, params:{image:'tableau'},
+          avant:'Pour peindre le tableau, tu as collé les vieux dessins d\'Odette et de ses chats… mais un coup de vent les a tous mélangés ! Remets chaque morceau à sa place.',
+          bouton:'🖼️ Assembler le tableau',
+          t:'Odette sourit sur la toile, sa canne à la main, ses sept chats autour d\'elle. Le maire : « Magnifique ! On l\'accrochera au-dessus du gâteau. »',
+          rate:'Les morceaux se mélangent de plus en plus… Le maire soupire : « Bon. On accrochera des lampions à la place. »',
+          ferme:'Le tableau est rangé dans un coin.'},
+        {id:'livredor', ic:'📖', nom:'Le Livre d\'or de la fête', moments:['matin', 'apresmidi'], donne:'info:ecritures',
+          t:'Sur la table de la mairie, le Livre d\'or de la fête. « Reviens vite, Odette ! » « Vive la fête ! » « Une brioche t\'attend ! »… Tout le village y a écrit un petit mot, chacun avec son écriture.'},
+        /* rendre le tableau : 5 pièces d'or. Le filet : si le Sage n'a pas encore la lettre, le maire l'accroche sous le tableau */
+        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], varianteFigee:true,
+          t:'Le maire : « Magnifique ! Ce soir, tout le monde sur la place jusqu\'à minuit ! »',
+          variantes:[
+            {si:[{et:[{non:{code:'info:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'info:lettre', donne:'info:lettre',
+              t:'Le maire : « Magnifique ! Et la lettre d\'Odette, je l\'accroche sous votre tableau, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]},
+        /* le tableau raté : rien à rendre (pas d'or), mais le filet de la lettre ne doit pas dépendre du tableau (sinon, pas de lettre du tout) */
+        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], varianteFigee:true,
+          t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Ce soir, tout le monde sur la place jusqu\'à minuit ! »',
+          variantes:[
+            {si:[{et:[{non:{code:'info:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'info:lettre', donne:'info:lettre',
+              t:'Le maire : « Pas de tableau ? Tant pis. La lettre d\'Odette, je l\'accroche au mur, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]}
       ]}
     },
     potager:{
@@ -352,7 +561,9 @@ E[3] = {
       {q:'Pourquoi une fête, alors qu\'Odette n\'est pas rentrée ?', g:'h', moments:A_, a:'Un village rassuré ne pose plus de questions. Euh… un village rassuré est un village heureux !',
         note:'Le maire : « Un village rassuré ne pose plus de questions. Euh… un village rassuré est un village heureux ! »'},
       {q:'Vous connaissez Odette depuis longtemps ?', g:'h', moments:A_, a:'Depuis toujours : nos deux familles sont là depuis la fondation. Il n\'en reste plus beaucoup.',
-        note:'Le maire : sa famille et celle d\'Odette sont à Brumeval depuis la fondation. Il n\'en reste plus beaucoup.'}
+        note:'Le maire : sa famille et celle d\'Odette sont à Brumeval depuis la fondation. Il n\'en reste plus beaucoup.'},
+      /* le grand dialogue de la lettre (E.grands.lettre, grands.js) */
+      {q:'Je voudrais vous parler de la lettre…', g:'r', moments:A_, grand:'lettre'}
     ]},
     gaspard:{ou:{matin:'boulangerie'}, carte:{apresmidi:'boulangerie'},
       occupe:{apresmidi:['« Pas maintenant, j\'ai sept étages de gâteau qui penchent ! »', '« Si je lâche ma poche à douille, tout s\'écroule ! »']},
@@ -490,7 +701,7 @@ E[3] = {
         apresmidi:['« Chut ! Je fais les couronnes de ce soir. »', '« Si c\'est pour des fleurs, d\'accord. Sinon, à ce soir ! »']},
       questions:[]},
     /* un peu sourd, il parle fort (il ne ment jamais) */
-    anselme:{ou:{apresmidi:'clocher'}, carte:{matin:'clocher'},
+    anselme:{ou:{apresmidi:'clocher', nuit:'clocher'}, carte:{matin:'clocher'},
       occupe:{matin:['« QUOI ? JE N\'ENTENDS RIEN ! » DONG !', '« UNE BRIOCHE ? NON MERCI, J\'AI DÉJÀ MANGÉ ! » DONG !']},
       salut:'HEIN ? AH, C\'EST TOI !', questions:[
       {q:'Vous m\'entendez bien, Anselme ?', g:'r', moments:A_, a:'HEIN ? Ah ! Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n\'entends plus rien !',
@@ -500,7 +711,16 @@ E[3] = {
       {q:'Comment s\'appellent vos cloches ?', g:'r', moments:A_, a:'Bertille, Gontran et la Grosse Marie. Mon père disait : « Quand la brume s\'épaissit, sonne la Grosse Marie : elle la fait reculer. »',
         note:'Anselme : ses cloches s\'appellent Bertille, Gontran et la Grosse Marie. Son père disait : « Quand la brume s\'épaissit, sonne la Grosse Marie : elle la fait reculer. »'},
       {q:'Que ferez-vous pendant la fête ?', g:'e', moments:A_, a:'L\'ouverture, puis la Grosse Marie à minuit PILE. Le maire y tient tellement… je me demande pourquoi !',
-        note:'Anselme : il sonnera l\'ouverture de la fête, puis la Grosse Marie à minuit pile. Le maire y tient beaucoup.'}
+        note:'Anselme : il sonnera l\'ouverture de la fête, puis la Grosse Marie à minuit pile. Le maire y tient beaucoup.'},
+      /* la nuit (E3-dialogues-et-trame.md §4.1 et §4.2) : la clé, puis la Grosse Marie (dès que le dialogue de la clé est fini) */
+      {q:'Vous êtes prêt pour minuit ?', g:'e', moments:N_, a:'Le maire est venu me le redire trois fois : la Grosse Marie à minuit PILE !',
+        note:'Anselme, la nuit : le maire est venu lui redire trois fois de sonner la Grosse Marie à minuit pile.'},
+      {q:'Vous n\'allez pas à la fête ?', g:'h', moments:N_, a:'Les sonneurs ne dansent pas, mon petit : ils sonnent !',
+        note:'Anselme : « Les sonneurs ne dansent pas, mon petit : ils sonnent ! »'},
+      {q:'Vous avez entendu du bruit dans la crypte ?', g:'e', moments:N_, a:'Je n\'entends plus rien ! Mais tout à l\'heure, la corde de la Grosse Marie a tremblé toute seule…',
+        note:'Anselme, la nuit : tout à l\'heure, la corde de la Grosse Marie a tremblé toute seule.'},
+      {q:'Je voudrais vous demander quelque chose…', g:'r', moments:N_, grand:'cle'},
+      {q:'Anselme, il faut sonner la Grosse Marie, maintenant !', g:'r', moments:N_, besoin:[{vu:'grand:cle:fini'}], grand:'gm'}
     ]},
     farinel:{ou:{apresmidi:'moulin'}, carte:{matin:'moulin'},
       occupe:{matin:['« Pas le temps : mon apprenti n\'est pas là ! Atchoum ! »', '« Regarde-moi : un vrai fantôme de farine ! Reviens cet après-midi. »']},
@@ -594,7 +814,25 @@ E[3] = {
       {qui:'grosbec', texte:'Le gâteau à minuit pile, Gaspard. Pas une minute avant !'},
       {qui:'gaspard', texte:'Mais pourquoi minuit ?'},
       {qui:'grosbec', texte:'Parce que c\'est l\'heure, voyons.'}],
-      t:'Le maire à Gaspard : « Le gâteau à minuit pile. Pas une minute avant ! »'}
+      t:'Le maire à Gaspard : « Le gâteau à minuit pile. Pas une minute avant ! »'},
+    /* la nuit, à la fête (§4.5) : quatre écoutes au même endroit, la place ; chaque « Écouter en douce » joue la suivante (barde.js, B.porteIci) */
+    {id:'gateau_nuit', lieu:'place', moments:N_, titre:'Près du gâteau', phrases:[
+      {qui:'grosbec', texte:'Que personne n\'approche du clocher avant minuit.'},
+      {qui:'silas', texte:'Même pas Anselme ?'},
+      {qui:'grosbec', texte:'Anselme n\'entend rien et ne voit rien. C\'est parfait.'}],
+      t:'Le maire à Silas : « Que personne n\'approche du clocher avant minuit. »'},
+    {id:'banderoles_nuit', lieu:'place', moments:N_, titre:'Sous les banderoles', phrases:[
+      {qui:'iris', texte:'Tu trembles, Mélusine.'},
+      {qui:'melusine', texte:'Il viendra chercher sa réponse à minuit. Je n\'écrirai plus jamais pour lui.'}],
+      t:'Mélusine à Iris : « Il viendra chercher sa réponse à minuit. Je n\'écrirai plus jamais pour lui. »'},
+    {id:'buffet_nuit', lieu:'place', moments:N_, titre:'Au buffet', phrases:[
+      {qui:'farinel', texte:'Léo a écrit sur mon pétrin : « Ne m\'attendez pas. Je descends. »'},
+      {qui:'gaspard', texte:'Il descend ? Où ça ?'}],
+      t:'Farinel : Léo a écrit sur son pétrin « Ne m\'attendez pas. Je descends. »'},
+    {id:'mat_nuit', lieu:'place', moments:N_, titre:'Au pied du mât', phrases:[
+      {qui:'tim', texte:'Six chats d\'Odette attendent devant la crypte. Moustache, lui, est déjà dedans.'},
+      {qui:'victor', texte:'Dedans ? Brrr…'}],
+      t:'Tim : six chats d\'Odette attendent devant la crypte. Moustache est déjà dedans.'}
   ],
   portes:{
     iris:{matin:'« Quelqu\'un a pris mes sachets de lavande cette nuit… et mis de la boue partout ! »'},
@@ -605,8 +843,43 @@ E[3] = {
   /* la maison d'Odette, pour le Pisteur, l'Alchimiste et le Sage */
   absentTexte:{odette:'Odette n\'est pas chez elle. Le maire dit qu\'elle est chez sa sœur…'},
   absentPourTous:true,   /* le Barde aussi (il n'entre chez Odette que l'après-midi, pour poser la canne) */
+  /* ---------- Le Grand Livre du Sage (livre.js ; E3-actions-des-roles.md §3, étape 3) ---------- */
   pages:[
-    {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'}
+    {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},
+    /* dès le matin : trois énigmes à lire à voix haute à l'Alchimiste, et son code (sans lui, les trois plantes rares ne se cueillent pas) */
+    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', donne:'info:herbier',
+      t:'Entre deux pages, des plantes séchées, très anciennes. Les Fondateurs y ont noté où pousser les plus rares. Lis ces énigmes à voix haute à l\'Alchimiste !',
+      lignes:[
+        {ic:'🌿', t:'Le pied-de-loup rampe là où quatre chemins se croisent sous les arbres, et où le soleil n\'entre jamais.'},
+        {ic:'🍄', t:'La vesse-de-loup pousse en rond, là où dansent les lièvres.'},
+        {ic:'🫐', t:'La glu ne touche jamais la terre : elle vit tout en haut du vieux pommier, au fond du potager.'}]},
+    /* les premiers doutes (les codes du Barde : Victor, Tim démasqué) */
+    {id:'doutes', titre:'Une drôle de lettre', ic:'✉️', besoin:[{code:'info:poste'}, {code:'info:capuchon'}], bouton:'Réfléchir à la lettre',
+      avant:'Cette lettre d\'Odette a quelque chose de bizarre… Il te faudrait un indice du Barde.',
+      variantes:[
+        {si:[{et:[{code:'info:poste'}, {code:'info:capuchon'}]}], t:'Pas de timbre, pas de tampon. Glissée sous la porte de la mairie, à l\'aube, par un grand capuchon reparti vers le clocher. Qui envoie une lettre comme ça ?'},
+        {si:[{code:'info:poste'}], t:'Pas de timbre, pas de tampon : la lettre n\'est pas passée par la poste. Et Odette n\'a jamais reçu une seule lettre ! Alors, qui l\'a apportée ?'}],
+      t:'À l\'aube, un grand capuchon a glissé la lettre sous la porte de la mairie, puis il est reparti vers le clocher. Un facteur, ça ? Sûrement pas !'},
+    /* l'après-midi : la lettre et le carnet (les deux codes du Barde) → la lettre est fausse */
+    {id:'fausse', titre:'La lettre et le carnet', ic:'🔍', besoin:[{et:[{code:'info:lettre'}, {code:'info:carnet'}]}], bouton:'Comparer la lettre et le carnet',
+      avant:'Pour savoir si Odette a vraiment écrit cette lettre, il te faudrait la lettre… et quelque chose qu\'Odette a écrit elle-même.',
+      t:'Odette écrit penché, avec un petit chat à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n\'est pas Odette qui l\'a écrite : la lettre est fausse !'},
+    /* les sept chats du carnet → Moustache a six doigts (pour le Pisteur) */
+    {id:'chats', titre:'Les sept chats du carnet', ic:'🐈', besoin:[{code:'info:carnet'}], bouton:'Feuilleter le carnet', donne:'info:six_doigts',
+      avant:'Odette note tout dans un carnet, un chat à chaque page. Le Barde pourrait le trouver chez elle…',
+      t:'« Moustache : mon gros gris, mon malin. Un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! »'},
+    /* le plan des Fondateurs, caché dans la couverture du carnet : l'alphabet secret (il sert cette nuit, dans le donjon) */
+    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', besoin:[{code:'info:carnet'}], mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS'}, bouton:'Déchiffrer le vieux parchemin',
+      ouvrePartiel:true, partiel:true,
+      avant:'Dans la couverture du carnet d\'Odette, un vieux parchemin plié, couvert de signes. Qu\'est-ce qu\'il dit ?',
+      t:'« LE CHEMIN DES FONDATEURS » : c\'est le plan des souterrains, sous le village ! Un mot d\'Odette, au crayon : « Ne le montrer à personne. » Tu le ranges dans ton Grand Livre : il te servira cette nuit.',
+      note:'Le plan des Fondateurs était caché dans le carnet d\'Odette : le chemin des souterrains, sous le village.',
+      rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan : des couloirs, sous le village. Tu le ranges dans ton Grand Livre.',
+      tPartiel:'Il te servira cette nuit.'},
+    /* QUI : l'écriture (l'Alchimiste) et l'aveu (le Barde) */
+    {id:'qui', titre:'Qui a écrit la lettre ?', ic:'🧵', besoin:[{et:[{code:'info:ecriture'}, {code:'info:aveu'}]}], bouton:'Relier les preuves',
+      avant:'Il te faut deux preuves : l\'écriture de la lettre (l\'Alchimiste), et un aveu (le Barde).',
+      t:'Mélusine a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.'}
   ],
   bonus:[],
   /* (la vraie fin, animée, arrive avec l'étape 7) */
@@ -617,4 +890,16 @@ E[3] = {
   ],
   faits:[]
 };
+/* La nuit, tout le village est à la fête, sur la place (§4) : sur la carte, chacun y est ; c'est la fête (grands.js) qui leur fait dire
+   leur réplique au Barde. Le voisin d'Odette veille chez lui ; Anselme est au clocher ; Léo, introuvable. */
+var E3 = E[3];
+M3cle(E3.fete.gens).forEach(function(id){
+  var N = E3.pnj[id]; if(!N) return;
+  N.carte = N.carte || {}; N.carte.nuit = E3.fete.lieu;
+  N.occupe = N.occupe || {}; N.occupe.nuit = 'À la fête, sur la place.';
+});
+E3.pnj.levoisin.carte.nuit = 'L1';
+/* (ajouté à la construction, le 11 novembre : il lui fallait une place la nuit) */
+E3.pnj.levoisin.occupe.nuit = ['« Je veille sur la maison d\'Odette. Rien ne m\'échappe ! »', '« Toujours rien… Enfin, je crois. Je n\'ai pas dormi, hein ! »'];
+function M3cle(o){ return Object.keys(o || {}); }
 })();

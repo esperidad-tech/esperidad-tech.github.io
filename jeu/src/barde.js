@@ -99,6 +99,9 @@ function scenario(id, texte, ment){
   return sc;
 }
 function sansMimiques(texte){ return {D:Math.max(2.2, 1.6 + texte.length * .045), ev:[], couche:null}; }
+/* (enquête 3, grands.js) une réplique jouée dans une autre fenêtre : la bouche, le texte qui s'écrit, et le signe s'il ment */
+B.jouerLigne = function(box, bulle, id, texte, ment){ jouer(box, bulle, texte, ment ? scenario(id, texte, true) : sansMimiques(texte), {}, null); };
+B.visage = function(id){ return visage(id); };
 var HUMEUR = {
   vexe:{sourcils:'fronces', bouche:'moue', regard:'cote-g', menton:true, vitesse:.3},
   outre:{sourcils:'fronces', grandsYeux:true, vitesse:.2},
@@ -363,11 +366,13 @@ M.feuilleConv = function(id){
   Q.forEach(function(q, i){
     var k = 'barde:' + id + ':' + i, st = P.vus[k];
     if(!st && cachee(id, q)) return;
-    if(st !== 'ok' && quotaAtteint(id) && !nouvelleQ(id, i)) return;   /* il s'impatiente (enquête 3) : plus de question pour ce moment */
+    if(st !== 'ok' && !q.grand && quotaAtteint(id) && !nouvelleQ(id, i)) return;   /* il s'impatiente (enquête 3) : plus de question pour ce moment */
     if(q.besoin && !M.besoinOk(q.besoin) && !st){
       s += '<div class="b-question ferme"><span>🔒</span><div><b>' + esc(q.q) + '</b>' + M.besoinHTML(q.besoin, 'barde') + '</div></div>';
       return;
     }
+    /* (enquête 3, grands.js) une question qui ouvre un grand dialogue : sa boîte à elle ; jamais cachée par les 2 questions par visite */
+    if(q.grand && M.grandBoite){ var gb = M.grandBoite(id, i, q, st); if(gb !== null){ s += gb; return; } }
     var ici = dansBoite && bd.i === i;   /* la réplique de ce moment est pour cette question */
     if(st !== 'ok'){
       var vis = q.choix && q.choix.length ? choixVisibles(q) : null;
@@ -476,6 +481,8 @@ function question(el){
   if(!P || !q || estVexe(id)) return;
   if(q.besoin && !M.besoinOk(q.besoin) && !P.vus['barde:' + id + ':' + i]) return;
   if(uneVisite(id)){ P.visites = P.visites || {}; var vv = P.visites[id]; if(!(vv && vv.m === P.moment && vv.q)) P.visites[id] = {m:P.moment, sait:ceQuOnSait(id), q:1}; }   /* la visite compte (porte) */
+  /* (enquête 3, grands.js) un grand dialogue : il ne compte pas dans les questions de la visite ; sa fenêtre s'ouvre */
+  if(q.grand && M.grandOuvrir){ P.vus['barde:' + id + ':' + i] = 'ok'; M.son('clic'); M.sauver(); M.grandOuvrir(q.grand); return; }
   if(repondu(id, i)){ poserDerniere(id, i); UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }   /* redemandée : c'est la dernière réponse */
   if(parVisite() && uneVisite(id) && quotaAtteint(id) && !nouvelleQ(id, i)) return;   /* il s'impatiente (enquête 3) */
   if(P.derniere) delete P.derniere[id];   /* une autre question : la chance du 🤥 sur la réponse d'avant est passée */
@@ -948,7 +955,9 @@ B.porteIci = function(lieu){
   var E = M.E(), mid = M.momentId(), l = [], pris = {};
   /* la nuit, ceux qui dorment ou ne sont pas disponibles (occupe) : plus rien à écouter derrière leur porte (Romain, 5 novembre, 21 h 46) */
   var qui = M.pnjIci(lieu).concat(M.pnjOccupesIci && mid !== 'nuit' ? M.pnjOccupesIci(lieu) : []).filter(function(id, i, a){ return a.indexOf(id) === i && id !== 'voisin' && D.PNJ[id]; });
-  var b = (E.bribes || []).filter(function(x){ return x.lieu === lieu && M.momentOk(x.moments); })[0];
+  /* (enquête 3 : quatre écoutes au même endroit, la nuit, à la fête) la première qu'il n'a pas encore entendue, sinon la première */
+  var bs = (E.bribes || []).filter(function(x){ return x.lieu === lieu && M.momentOk(x.moments); }), P0 = M.P();
+  var b = bs.filter(function(x){ return !(P0 && P0.vus && P0.vus['barde:oreille:' + x.id]); })[0] || bs[0];
   if(b){
     var q0 = (b.phrases || []).map(function(p){ return p.qui; }).filter(function(q){ return D.PNJ[q]; })[0] || null;
     (b.phrases || []).forEach(function(p){ if(D.PNJ[p.qui]) pris[p.qui] = 1; });

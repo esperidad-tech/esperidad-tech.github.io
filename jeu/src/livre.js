@@ -308,7 +308,11 @@ function generique(p, E, P){
         '<button class="btn grand b-aller lv-ouvrir' + (p.obligatoire ? ' b-guide' : '') + '" data-act="ouvrir-page" data-id="' + esc(p.id) + '"' + (sans ? ' disabled' : '') + '>' + (p.mj ? '🎮 ' : (p.boutonIc || '📖 ')) + esc(p.bouton || 'Ouvrir la page') + (p.action ? M.coutTxt() : '') + '</button>' + (sans ? M.plusDAction() : '');
     }
   }
-  s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(p.t || '') + ' ' + (p.t ? lire(p.t) : '') + '</p>') + '</div>';
+  /* (enquête 3) p.variantes [{si, t}] : le texte selon ce que le Sage sait (la page des premiers doutes : un code du Barde, ou les deux) */
+  var pv = (p.variantes || []).filter(function(x){ return M.besoinOk(x.si); })[0], pt = pv ? pv.t : p.t;
+  s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(pt || '') + ' ' + (pt ? lire(pt) : '') + '</p>') + '</div>';
+  /* (enquête 3) p.lignes : des lignes à lire à voix haute, chacune avec son petit dessin et son 🔊 (les énigmes de l'herbier) */
+  if(p.lignes) s += '<ul class="lv-lignes">' + p.lignes.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + (x.ic || '•') + '</span><p>' + esc(x.t) + '</p>' + lire(x.t) + '</li>'; }).join('') + '</ul>';
   if(p.donne && (ouvert || !p.besoin)) s += donne(p);
   return s;
 }

@@ -1,0 +1,19 @@
+/* ==========================================================
+   Brumeval — les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js). Préfixe .gd-
+   (la fenêtre reprend celle du marché aux fleurs : .ma-feuille, .ma-tete, .ma-dit, .ma-choix — marche.css)
+   ========================================================== */
+.gd-feuille .ma-visage{width:min(46vw, 22vh, 200px);border-radius:22px}
+.gd-recit{font-size:1rem}
+.gd-ment-btns{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.gd-ment-btns .bd-ment-p{min-height:54px;padding:8px 16px;font-size:1.05rem}
+/* la question qui ouvre un grand dialogue : un petit liseré doré, pour la reconnaître */
+.bd-boite.gd-q{border-left:6px solid #e8b13a}
+.gd-q .gd-reprendre{display:block;margin-top:4px;font-weight:700;opacity:.85}
+.gd-resume{margin:6px 0 0;font-style:italic;opacity:.85}
+.gd-encore{margin-top:8px;width:100%}
+/* la fête : le maire qui cherche le Barde */
+.gd-fete-intro{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.b-gens-carte.gd-appel{border-color:#e8b13a;box-shadow:0 0 0 3px rgba(232,177,58,.55);animation:gd-appel 1.4s ease-in-out infinite alternate}
+.gd-appel-t{color:#e8b13a;font-weight:700}
+@keyframes gd-appel{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+@media (prefers-reduced-motion: reduce){ .b-gens-carte.gd-appel{animation:none} }

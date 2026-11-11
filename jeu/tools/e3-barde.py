@@ -259,7 +259,7 @@ with sync_playwright() as p:
     shot(pg, 'maire-compte')
     ev(pg, 'ma-rendu')
     m = modal(pg)
-    verifier(m and m['type'] == 'conv' and m['id'] == 'grosbec' and pg.locator('#voile [data-act=question]').count() == 3, 'puis ses questions (3 pour l\'instant)')
+    verifier(m and m['type'] == 'conv' and m['id'] == 'grosbec' and pg.locator('#voile [data-act=question]').count() == 4, 'puis ses questions (4, dont le grand dialogue de la lettre)')
     verifier(pg.evaluate("() => !document.getElementById('ma-compteurs') || document.getElementById('ma-compteurs').hidden"), 'les compteurs ont disparu')
     shot(pg, 'maire-questions')
     fermer(pg)

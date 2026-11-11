@@ -678,6 +678,7 @@ M.uneCondition = function(b){
   if(b.vu) return !!P.vus[b.vu] && P.vus[b.vu] !== 'rate';   /* un mini-jeu raté ne compte pas comme vu */
   if(b.rate) return P.vus[b.rate] === 'rate';                /* (enquête 3) un mini-jeu raté : la clé d'Anselme ratée fait apparaître le puits */
   if(b.et) return b.et.every(M.uneCondition);                  /* condition « ET » : toutes à la fois */
+  if(b.non) return !M.uneCondition(b.non);                     /* (enquête 3) le contraire : le filet de la lettre, si le Sage ne l'a pas encore */
   if(b.outil) return (M.S.outils || []).indexOf(b.outil) >= 0; /* outil de saison (coffret de teintures…) */
   return false;
 };
