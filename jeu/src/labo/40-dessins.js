@@ -74,6 +74,10 @@ function dessinerGrain(c, w, h, k, seed, s){
   else if(k === 'mica'){ c.fillStyle = 'rgba(225,232,244,.7)'; c.beginPath(); for(i=0;i<6;i++){ var a3 = i/6*6.283; c.lineTo(cx + Math.cos(a3)*38*s, cy + Math.sin(a3)*30*s); } c.closePath(); c.fill(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2*s; c.stroke(); c.beginPath(); c.moveTo(cx - 20*s, cy - 6*s); c.lineTo(cx + 10*s, cy - 18*s); c.stroke(); }
   else if(k === 'verre'){ [[-18,-4,0],[14,-10,1],[2,14,2.2]].forEach(function(q){ c.save(); c.translate(cx + q[0]*s, cy + q[1]*s); c.rotate(q[2]); c.fillStyle = 'rgba(140,205,175,.6)'; c.beginPath(); c.moveTo(-18*s, 6*s); c.lineTo(-4*s, -14*s); c.lineTo(18*s, -2*s); c.lineTo(6*s, 12*s); c.closePath(); c.fill(); c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 1.5*s; c.stroke(); c.beginPath(); c.moveTo(-4*s, -14*s); c.lineTo(2*s, 4*s); c.stroke(); c.restore(); }); }
   else if(k === 'bardane'){ dessinerBardane(c, cx, cy, 23*s, Rn); }
+  /* le soufre : des cristaux jaune citron (enquête 2) */
+  else if(k === 'soufre'){ for(i=0;i<7;i++){ px = cx + (Rn()-.5)*60*s; py = cy + (Rn()-.5)*40*s; var rS = (8 + Rn()*7)*s; c.fillStyle = i % 2 ? '#e8c830' : '#f2d84a'; c.strokeStyle = '#8a7010'; c.lineWidth = 1.2*s; c.beginPath(); for(var jS = 0; jS < 6; jS++){ var aS = jS/6*6.283 + Rn()*.4; c.lineTo(px + Math.cos(aS)*rS*(jS % 2 ? .7 : 1), py + Math.sin(aS)*rS*(jS % 2 ? .7 : 1)); } c.closePath(); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,252,210,.7)'; rond(c, px - rS*.3, py - rS*.3, rS*.2); } }
+  /* le vert-de-gris : des croûtes vert-bleu, comme sur une vieille marmite de cuivre (enquête 2) */
+  else if(k === 'vertdegris'){ for(i=0;i<6;i++){ px = cx + (Rn()-.5)*56*s; py = cy + (Rn()-.5)*36*s; blob(c, px, py, (10 + Rn()*8)*s, Rn, i % 2 ? '#3aa88a' : '#5cc0a0', 7); c.fillStyle = '#b06a3a'; rond(c, px + 3*s, py - 2*s, 2.4*s); c.fillStyle = 'rgba(255,255,255,.35)'; rond(c, px - 3*s, py - 4*s, 2*s); } }
   else if(k === 'pollenlav' || k === 'pollenpin' || k === 'pollenpis'){ [[-24,-8,15],[16,-13,13],[0,14,16]].forEach(function(q){ dessinerPollen(c, cx + q[0]*s, cy + q[1]*s, q[2]*s, k.slice(6)); }); }
 }
 function dessinerPlume(c, w, h, e, seed, s){
@@ -175,6 +179,40 @@ function dessinerRef(c, w, h, tk, r, seed, s){
   else if(tk === 'petales') dessinerPetale(c, w, h, e, seed, s);
   else dessinerFeuille(c, w, h, e, seed, s);
 }
+/* Une pièce d'or vue de face (enquête 2) : le bord cranté, une couronne, une ronde d'étoiles, la petite fêlure en éclair sous la couronne ;
+   o.farine : de la poussière blanche dans les creux ; o.tache : une croûte rouge sur le bord */
+function dessinerPieceOr(c, x, y, r, o){
+  o = o || {}; var i, a;
+  /* (au microscope, la pièce est immense : les traits gardent une épaisseur raisonnable) */
+  var L = function(v){ return Math.min(o.gros ? 12 : 99, Math.max(1, v)); };
+  c.save(); c.translate(x, y);
+  c.fillStyle = 'rgba(40,20,8,.25)'; c.beginPath(); c.ellipse(r*.08, r*.12, r*1.02, r*1.02, 0, 0, 6.283); c.fill();
+  var g = c.createRadialGradient(-r*.35, -r*.35, r*.1, 0, 0, r*1.05); g.addColorStop(0, '#fff3b0'); g.addColorStop(.55, '#f2c040'); g.addColorStop(1, '#b07a1c');
+  c.fillStyle = g; c.strokeStyle = '#24182e'; c.lineWidth = L(r*.05); c.beginPath(); c.arc(0, 0, r, 0, 6.283); c.fill(); c.stroke();
+  c.strokeStyle = '#a8761a'; c.lineWidth = L(r*.025); for(i = 0; i < 48; i++){ a = i/48*6.283; c.beginPath(); c.moveTo(Math.cos(a)*r*.9, Math.sin(a)*r*.9); c.lineTo(Math.cos(a)*r*.98, Math.sin(a)*r*.98); c.stroke(); }
+  c.beginPath(); c.arc(0, 0, r*.84, 0, 6.283); c.stroke();
+  c.fillStyle = '#c8901e'; for(i = 0; i < 12; i++){ a = i/12*6.283 - 1.57; etoile(c, Math.cos(a)*r*.7, Math.sin(a)*r*.7, r*.06); }
+  /* la couronne */
+  c.fillStyle = '#d9a428'; c.strokeStyle = '#8a5a10'; c.lineWidth = L(r*.03); c.beginPath();
+  c.moveTo(-r*.32, r*.08); c.lineTo(-r*.36, -r*.22); c.lineTo(-r*.18, -r*.06); c.lineTo(0, -r*.3); c.lineTo(r*.18, -r*.06); c.lineTo(r*.36, -r*.22); c.lineTo(r*.32, r*.08); c.closePath(); c.fill(); c.stroke();
+  c.fillRect(-r*.32, r*.08, r*.64, r*.08); c.strokeRect(-r*.32, r*.08, r*.64, r*.08);
+  /* la fêlure du moule : un petit éclair en relief, juste sous la couronne */
+  c.strokeStyle = '#7a4a08'; c.lineWidth = L(r*.025); c.beginPath(); c.moveTo(-r*.1, r*.24); c.lineTo(r*.02, r*.32); c.lineTo(-r*.04, r*.36); c.lineTo(r*.1, r*.46); c.stroke();
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(-r*.42, -r*.5, r*.18, r*.08, -.6, 0, 6.283); c.fill();
+  if(o.farine){ var Rn = rng(9); c.fillStyle = 'rgba(250,248,240,.95)'; for(i = 0; i < 26; i++){ a = Rn()*6.283; var d = r*(.55 + Rn()*.35); rond(c, Math.cos(a)*d, Math.sin(a)*d, r*(.02 + Rn()*.03)); } }
+  if(o.tache){ c.fillStyle = 'rgba(168,24,42,.9)'; c.beginPath(); c.ellipse(r*.62, r*.42, r*.2, r*.12, .7, 0, 6.283); c.fill(); c.fillStyle = 'rgba(220,60,70,.7)'; rond(c, r*.56, r*.38, r*.05); }
+  c.restore();
+}
+function etoile(c, x, y, r){ c.beginPath(); for(var i = 0; i < 10; i++){ var a = i/10*6.283 - 1.57, rr = i % 2 ? r*.45 : r; c.lineTo(x + Math.cos(a)*rr, y + Math.sin(a)*rr); } c.closePath(); c.fill(); }
+/* Un bout de pétale déchiré : rouge, veiné, avec un coin de la tache noire du bas (le coquelicot) */
+function dessinerBoutPetale(c, x, y, r, coul){
+  c.save(); c.translate(x, y); c.rotate(-.3); c.lineJoin = 'round';
+  c.fillStyle = coul || '#e8202a'; c.strokeStyle = '#6a0a10'; c.lineWidth = Math.max(1, r*.06);
+  c.beginPath(); c.moveTo(-r, r*.3); c.bezierCurveTo(-r*.9, -r*.6, r*.2, -r*1.05, r*.95, -r*.5); c.lineTo(r*.7, -r*.15); c.lineTo(r*.9, r*.1); c.lineTo(r*.5, r*.25); c.lineTo(r*.6, r*.55); c.lineTo(r*.1, r*.5); c.lineTo(-r*.2, r*.8); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#1a1010'; c.beginPath(); c.moveTo(-r, r*.3); c.quadraticCurveTo(-r*.7, r*.05, -r*.55, r*.55); c.lineTo(-r*.2, r*.8); c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(120,10,20,.5)'; c.lineWidth = Math.max(.8, r*.03); for(var i = 0; i < 5; i++){ c.beginPath(); c.moveTo(-r*.7 + i*r*.05, r*.5); c.quadraticCurveTo(-r*.2 + i*r*.2, -r*.2, r*.1 + i*r*.18, -r*.7 + i*r*.1); c.stroke(); }
+  c.restore();
+}
 /* L'objet de l'enquête, tel qu'on le voit sous la loupe */
 function dessinerPreuve(c, w, h, s){
   var t = S.sel, o = OBJETS[t];
@@ -182,7 +220,15 @@ function dessinerPreuve(c, w, h, s){
     dessinerFil(c, w, h, {base:ROUGE, plies:2, twist:16, thick:13, fuzz:.75, sheen:.08, crimp:4.5}, {scale:s, seed:3, suie:reste*3 + 2}); }
   /* la grande plume noire : la forme d'une plume du tiroir, mais noire, sauf tout en bas (et là où l'eau chaude l'a délavée) */
   else if(t === 'plume'){ var m = ECH.plumes[o.bon] || {}; dessinerPlume(c, w, h, {col:'#17171d', tige:'#d9d2c0', lustre:'#3a3a52', L:m.L, larg:m.larg, teinte:true, delave:!!(S.dos.plume && S.dos.plume.delave)}, 77, s*.8); }
+  else if(o.forme === 'piece'){
+    /* (la farine se voit tant qu'on ne l'a pas toute prise ; la tache rouge, tant que l'eau chaude ne l'a pas fait fondre) */
+    var dp = S.dos[t], farine = t === 'piece_pain' && !!dp && [10, 40, 100].some(function(z){ return dp.items[z].some(function(i){ return i.t === 'farine_p' && !i.pris; }); });
+    var tache = t === 'piece_moulin' && !(dp && dp.coupes.some(function(c2){ return c2 && c2.t === 'rouge_m'; }));
+    dessinerPieceOr(c, w/2, h/2, 34*s, {farine:farine, tache:tache}); }
+  else if(o.fragment && o.tiroir === 'petales') dessinerBoutPetale(c, w/2, h/2, 34*s, o.coul);
+  else if(o.noir && o.tiroir === 'fils') dessinerFil(c, w, h, Object.assign({}, ECH.fils[o.bon].p, {base:o.coul}), {scale:s*.9, seed:77});   /* (le brin de laine noire de la poudre : la forme du tiroir, mais noire) */
   else if(o.fragment) dessinerBoutFeuille(c, w/2, h/2, 34*s, .5);
+  else if(t === 'poudre'){ dessinerGrain(c, w, h, 'poudre', 77, s); var Rp = rng(5); c.fillStyle = '#c8202a'; for(var ip = 0; ip < 9; ip++) rond(c, w/2 + (Rp() - .5)*70*s, h/2 + (Rp() - .5)*50*s, (2.2 + Rp()*2)*s); }
   else if(o.tiroir === 'grains') dessinerGrain(c, w, h, o.bon, 77, s);
   else dessinerRef(c, w, h, o.tiroir, o.bon, 77, s*({plumes:.8, poils:.74, feuilles:.8, petales:.76}[o.tiroir] || .8));
 }

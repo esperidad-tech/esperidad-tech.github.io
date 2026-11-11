@@ -237,7 +237,27 @@ function cuirScene(){
   return s;
 }
 /* De loin, un échantillon n'est qu'un tout petit bout de quelque chose : c'est la loupe qui montre ce que c'est */
+/* Les échantillons de l'enquête 2 (11 novembre) : un petit flacon de liquide, un petit tas de poudre, une pièce.
+   (OBJETS[t].forme ; le flacon prend la couleur de son liquide) */
+function petitFlacon(x, y, coul){
+  return '<g transform="translate(' + x + ',' + (y - 8) + ') scale(1.3)">' + R(-4, -20, 8, 7, 1.5, '#c9a46a', ' stroke-width="1.8"') +
+    P('M-3,-13 L-3,-7 C-11,-4 -13,3 -11,8 C-9,13 9,13 11,8 C13,3 11,-4 3,-7 L3,-13 Z', 'rgba(220,240,255,.55)', ' stroke-width="1.8"') +
+    '<path d="M-11.6,4 C-11,10 -6,12.5 0,12.5 C6,12.5 11,10 11.6,4 C6,6.5 -6,6.5 -11.6,4 Z" fill="' + coul + '"/>' + T('M-7,-2 q-2,4 0,8', '#fff', 1.6, ' opacity=".6"') + '</g>';
+}
+function petitTas(x, y, couls){
+  var Rn = rng(31), s = '<g transform="translate(' + x + ',' + y + ')"><path d="M-15,4 C-10,-7 10,-7 15,4 Z" fill="' + couls[0] + '" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/>';
+  for(var i = 0; i < 14; i++) s += '<circle cx="' + f1((Rn() - .5)*24) + '" cy="' + f1(1 - Rn()*6) + '" r="' + f1(.8 + Rn()*1.1) + '" fill="' + couls[1 + (i % (couls.length - 1))] + '"/>';
+  return s + '</g>';
+}
+function petitePiece(x, y){
+  return '<g transform="translate(' + x + ',' + (y - 2) + ')"><ellipse cx="0" cy="2.5" rx="12" ry="5.5" fill="#a87818" stroke="' + K + '" stroke-width="1.8"/><ellipse cx="0" cy="0" rx="12" ry="5.5" fill="#f2c040" stroke="' + K + '" stroke-width="1.8"/>' +
+    '<ellipse cx="0" cy="0" rx="7.5" ry="3.3" fill="none" stroke="#b07a1c" stroke-width="1.2"/><path d="M-4,-.5 l2,-2 l2,1.6 l2,-1.6 l2,2 Z" fill="#b07a1c"/>' + T('M-9,-2 q3,-2 6,-2.5', '#fff', 1.2, ' opacity=".7"') + '</g>';
+}
 function petitEch(t, x, y){
+  var oe = OBJETS[t] || {};
+  if(oe.forme === 'flacon') return petitFlacon(x, y, S.teinte && S.sel === t ? S.teinte : couleurLiq(t));   /* (une goutte de vinaigre ou de bicarbonate : le flacon vire aussi) */
+  if(oe.forme === 'tas') return petitTas(x, y, oe.couls || ['#1b1b1f', '#3a3d42']);
+  if(oe.forme === 'piece') return petitePiece(x, y);
   /* les « poils » de la fenêtre (Romain, 10 novembre, 16 h 56 : pour le Pisteur, ni un fil ni rouge) : de loin, une pincée de brins sombres,
      noircis de poussière ; c'est sous la loupe qu'on voit le fil rouge tricoté */
   if(t === 'fil') return [[-12, 2, 3], [-7, -3, -2], [-2, 3, 4], [3, -2, -3], [8, 2, 2]].map(function(q){ var d = 'M' + (x + q[0] - 5) + ',' + (y + q[1] + 3) + ' q' + (5 + q[2]) + ',-8 12,-5'; return T(d, '#1c1214', 2.6) + T(d, '#4a1a20', 1.2); }).join('');
@@ -276,7 +296,7 @@ function contenuCoupe(t, x, y, n, rx){
   for(var i=0;i<Math.min(n, 5);i++){ var gx = x - 7*u + (i % 3)*7*u + R0()*3*u, gy = y - 2*u - Math.floor(i/3)*3.6*u + R0()*1.5*u;
     s += t === 'feuil' ? '<path d="M' + f1(gx-5*u) + ',' + f1(gy+2*u) + ' q' + f1(-u) + ',' + f1(-6*u) + ' ' + f1(3*u) + ',' + f1(-5*u) + ' q' + f1(2*u) + ',' + f1(-4*u) + ' ' + f1(4.5*u) + ',' + f1(-u) + ' q' + f1(4*u) + ',' + f1(-u) + ' ' + f1(3*u) + ',' + f1(3*u) + ' l' + f1(-3*u) + ',' + f1(u) + ' l' + f1(-u) + ',' + f1(3*u) + ' Z" fill="#5e8a3a" stroke="' + K + '" stroke-width="' + f1(1.3*u) + '" stroke-linejoin="round"/>'
       : t === 'or' ? '<path d="M' + f1(gx-4*u) + ',' + f1(gy) + ' L' + f1(gx) + ',' + f1(gy-4*u) + ' L' + f1(gx+5*u) + ',' + f1(gy-u) + ' L' + f1(gx+u) + ',' + f1(gy+3*u) + ' Z" fill="#f2c040" stroke="' + K + '" stroke-width="' + f1(1.5*u) + '"/>'
-      : '<circle cx="' + f1(gx) + '" cy="' + f1(gy) + '" r="' + f1(3.5*u) + '" fill="' + o.coul + '" stroke="' + K + '" stroke-width="' + f1(1.3*u) + '"/><circle cx="' + f1(gx - u) + '" cy="' + f1(gy - 1.2*u) + '" r="' + f1(.9*u) + '" fill="#fff" opacity=".35"/>'; }
+      : '<circle cx="' + f1(gx) + '" cy="' + f1(gy) + '" r="' + f1(3.5*u) + '" fill="' + (S.teinte && S.sel === t ? S.teinte : o.coul) + '" stroke="' + K + '" stroke-width="' + f1(1.3*u) + '"/><circle cx="' + f1(gx - u) + '" cy="' + f1(gy - 1.2*u) + '" r="' + f1(.9*u) + '" fill="#fff" opacity=".35"/>'; }
   return s;
 }
 function coupelle(x, y, rx, c){

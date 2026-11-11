@@ -600,25 +600,40 @@ E[2] = {
     iris:'Iris ? C\'est son champ qu\'on a rasé ! Elle pleure ses coquelicots depuis deux jours.',
     farinel:'Farinel ? Il dort comme une souche, la nuit. Il ronfle si fort qu\'on l\'entend du pont !'
   },
-  /* (Romain, 10 novembre, 17 h 50 : plus aucun mini-jeu d'analyse, dans aucune enquête ; le résultat tombe tout de suite dans le labo,
-     en attendant le nouveau laboratoire d'analyse, construit dans une autre conversation. Le chaudron reste.) */
+  /* Le labo de l'enquête 2 (Romain, 11 novembre, 8 h 11 → 8 h 58 : « plein d'étapes, de la vraie science » ; labo.js ; les fiches du labo :
+     src/labo/30-donnees.js). Six échantillons, quatre places sur le cuir (ceux qui restent à analyser d'abord). Rien ne se rate ;
+     l'analyse est faite quand l'essentiel est reconnu, la fiche ci-dessous s'ouvre en sortant du labo.
+     - la rivière : bouts de pétales (coquelicot) + farine (l'iode vire au bleu-noir) + les bandes du coquelicot ; en plus : le vert-de-gris (flamme verte) ;
+     - le lavoir : coton (il vient de loin : un tissu acheté) + cendre (la lessive) + les bandes du bois de Brésil ; en plus : un poil d'âne ;
+     - le colorant : un bout de pétale + les mêmes bandes que la rivière ;
+     - la poudre : poudre noire + soufre (flamme bleue) + l'eau chaude en fait sortir le rouge du coquelicot ; en plus : charbon de bois, un brin de laine noire ;
+     - les pièces : de l'or, la fêlure ; la farine (iode) sur celle de la boulangerie, la tache rouge (eau chaude, coquelicot) sur celle du moulin. */
+  labo:['eau_riviere', 'eau_lavoir', 'poudre', 'colorant', 'piece_pain', 'piece_moulin'],
+  /* les trouvailles en plus (pas obligatoires) : une petite note au Carnet, la première fois */
+  laboNotes:{
+    cuivre_r:'Dans l\'eau de la rivière : des paillettes de vert-de-gris, la rouille du cuivre (la flamme devient verte). Du cuivre… comme une vieille marmite ?',
+    poils_l:'Dans l\'eau du lavoir : un poil d\'âne, mêlé aux fibres de coton. Ces tissus ont voyagé à dos d\'âne…',
+    charbon_p:'Dans la poudre du pot noir : du charbon de bois (on voit encore les petits trous du bois).',
+    laine_p:'Dans la poudre du pot noir : un brin de laine noire feutrée, comme celle d\'un manteau… ou d\'une cape.'
+  },
+  /* (Romain, 10 novembre, 17 h 50 : plus aucun mini-jeu d'analyse, dans aucune enquête ; tout se fait au labo. Le chaudron reste.) */
   analyses:{
     eau_riviere:{
-      t:'Sous ta loupe, dans l\'eau de la rivière : un colorant rouge… un colorant qui part à l\'eau : il ne tient sur rien, il ne fait que colorer l\'eau. Et il arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
-      note:'Analyse de la rivière : un colorant rouge qui part à l\'eau (il ne tient sur rien). Il arrive d\'en haut : on ne l\'a pas versé au pont.'},
+      t:'Dans l\'eau de la rivière : du COQUELICOT ! Des bouts de pétales, et ses bandes au test des couleurs. Il y a aussi de la FARINE : ce rouge est passé par un endroit plein de farine… Et l\'eau arrive déjà rouge d\'en haut de la rivière : ce n\'est pas au pont qu\'on l\'a versé.',
+      note:'Analyse de la rivière : du coquelicot (des bouts de pétales, ses bandes) et de la farine. L\'eau arrive rouge d\'en haut : on ne l\'a pas versée au pont.'},
     eau_lavoir:{donne:'info:lavoir_rose',
-      t:'Sous ta loupe, l\'eau du lavoir n\'a rien à voir avec la rivière : ce rose vient d\'un tissu qui déteint, comme un vêtement neuf qu\'on lave pour la première fois !',
-      note:'Analyse du lavoir : ce rose vient d\'un tissu qui déteint. Rien à voir avec le rouge de la rivière.'},
+      t:'L\'eau du lavoir n\'a rien à voir avec la rivière ! Ce rose, c\'est du BOIS DE BRÉSIL, une teinture de marchand, pas chère, qui part au lavage. Dedans : des fibres de COTON (il vient de très loin : ce tissu a été acheté, pas tissé ici) et de la cendre, la lessive des lavandières. Quelqu\'un a lavé un tissu neuf qui déteint !',
+      note:'Analyse du lavoir : un tissu de coton acheté, teint au bois de Brésil, qui déteint ; de la cendre (la lessive). Rien à voir avec le rouge de la rivière.'},
     colorant:{
-      t:'Sous ta loupe, le reste de l\'alambic a exactement la même couleur que la rivière : c\'est le même rouge ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
+      t:'Le reste de l\'alambic : du coquelicot, très concentré, avec un bout de pétale resté dedans. Au test des couleurs, exactement les mêmes bandes que la rivière : c\'est le même rouge ! C\'est bien dans la pièce cachée du moulin qu\'on a fabriqué le colorant.',
       note:'Analyse du colorant : c\'est le même rouge que la rivière. Il a été fabriqué dans la pièce cachée du moulin.'},
     /* la poudre du pot noir (Romain, 23 h 14) : avant le rassemblement, elle fera une fumée rouge ; après, c'est elle qui l'a faite :
        un fumigène, pas des vapeurs toxiques (variantes : moteur-actions.js, M.texteAnalyse, relu à chaque fois) */
     poudre:{
-      t:'Sous ta loupe : de la poudre noire, comme celle des feux d\'artifice… mélangée à un colorant rouge ! Si on l\'allume, ça fera une grosse fumée toute rouge. Mais pour quoi faire ?',
-      note:'Analyse de la poudre du pot noir : de la poudre noire mélangée à un colorant rouge. De quoi faire une fumée rouge !',
+      t:'De la poudre noire, comme celle des feux d\'artifice : il y a du soufre, qui brûle avec une flamme bleue… et un colorant rouge, le même coquelicot que la rivière ! Si on l\'allume, ça fera une grosse fumée toute rouge. Mais pour quoi faire ?',
+      note:'Analyse de la poudre du pot noir : de la poudre noire (avec du soufre) mélangée au même rouge de coquelicot que la rivière. De quoi faire une fumée rouge !',
       variantes:[
-        {si:[{code:'info:rassemblement'}], t:'De la poudre noire mélangée à un colorant rouge : c\'est un fumigène ! C\'est lui qui a fait la fumée rouge du rassemblement. Ce n\'étaient pas des vapeurs toxiques : quelqu\'un a voulu vous faire peur !',
+        {si:[{code:'info:rassemblement'}], t:'De la poudre noire mélangée au même rouge de coquelicot que la rivière : c\'est un fumigène ! C\'est lui qui a fait la fumée rouge du rassemblement. Ce n\'étaient pas des vapeurs toxiques : quelqu\'un a voulu vous faire peur !',
           note:'Analyse de la poudre du pot noir : un fumigène (poudre noire et colorant rouge). La fumée rouge du rassemblement, ce n\'étaient pas des vapeurs toxiques.'}
       ]},
     /* les deux pièces d'or (Romain, 11 novembre, 8 h 24) : chacune a la même petite fêlure ; la deuxième qu'on analyse

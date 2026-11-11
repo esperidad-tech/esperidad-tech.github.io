@@ -77,7 +77,7 @@ function placerVerre(){
   setTimeout(rendVerre, reduit ? 0 : 470);
 }
 /* Tout ce que la loupe peut regarder, dans l'ordre : chaque échantillon du cuir, suivi de ce qu'on en a tiré (ses coupelles pleines, sauf les liquides) */
-function ciblesLoupe(){ var l = []; CUIRS.forEach(function(d){ if(ATTENTE[d] && !S.finis[d]) return; l.push(d); S.dos[d].coupes.forEach(function(c){ if(c && !OBJETS[c.t].liquide) l.push(c.t); }); }); return l; }
+function ciblesLoupe(){ var l = []; CUIRS.forEach(function(d){ if(ATTENTE[d] && !S.finis[d]) return; if(!OBJETS[d].liquide) l.push(d);   /* (un flacon : pas sous la loupe) */ S.dos[d].coupes.forEach(function(c){ if(c && !OBJETS[c.t].liquide) l.push(c.t); }); }); return l; }
 /* On passe à un autre échantillon sans quitter la loupe : le tiroir se referme, la loupe glisse jusqu'à lui */
 function changerCible(t){
   if(S.occupe || S.mode !== 'loupe' || !t || t === S.sel) return;
