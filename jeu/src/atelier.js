@@ -3353,7 +3353,7 @@ function brillerFlacons(V, l){
 function dessinerPiece(V, avantK){
   var sc = V.scene;
   sc.innerHTML = '';
-  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = [];
+  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null;
   V.etat.objets.forEach(function(o){ V.parId[o.id] = o; });
   /* (la flaque : devant le chaudron, dans sa pièce) */
   if(V.etat.flaque && salleDe(V.parId.ch) === V.salle){
@@ -3440,7 +3440,29 @@ function majDessin(V){
   DESSIN.cuivre = aObjet(V, 'chaudron_cuivre');
 }
 /* Le contenu changeant : le carton du coin (son nombre), la paillasse (objets reçus), le chaudron (prêt, fioles vides) */
-function analysesEnAttente(V){ return (V.o.analyses || []).filter(function(a){ return !a.fait; }).length; }
+/* (sans ceux dont ce n'est pas encore le tour au tutoriel, a.attend : ils attendent sur le cuir, « Plus tard ! ») */
+function analysesEnAttente(V){ return (V.o.analyses || []).filter(function(a){ return !a.fait && !a.attend; }).length; }
+/* Le signe de la paillasse (Romain, 11 novembre, 13 h 42 : « un signe bien clair qu'il y a quelque chose à analyser ») : une étiquette
+   « 🔬 À analyser ! » qui sautille au-dessus de la paillasse, tant qu'un objet reçu attend son analyse — quel que soit l'ordre
+   d'arrivée des codes. La toucher fait comme toucher la paillasse (ses bulles). Cachée quand les bulles sont ouvertes. */
+function majSignePa(V){
+  var o = V.parId && V.parId.pa, n = analysesEnAttente(V), voir = !!(o && V.elO.pa && n > 0 && V.bullesPa !== 'pa');
+  if(!voir){ if(V.elPaSigne){ V.elPaSigne.remove(); V.elPaSigne = null; } return; }
+  if(!V.elPaSigne){
+    var b = document.createElement('div');
+    b.className = 'at-tas-neuf at-pa-signe at-touche';
+    b.setAttribute('data-at', 'pa-signe');
+    V.scene.appendChild(b);
+    V.elPaSigne = b;
+  }
+  var txt = n > 1 ? '🔬 ' + n + ' à analyser !' : '🔬 À analyser !';
+  if(V.elPaSigne._t !== txt){ V.elPaSigne.innerHTML = '<span>' + txt + '</span>'; V.elPaSigne._t = txt; V.elPaSigne.setAttribute('aria-label', txt); }
+  var F = cadreObjet(V, 'pa');
+  if(!F) return;
+  V.elPaSigne.style.left = pX(V, F.x - 110); V.elPaSigne.style.top = pY(V, F.y - F.h - 62);
+  V.elPaSigne.style.width = pW(V, 220); V.elPaSigne.style.height = pH(V, 70);
+  V.elPaSigne.style.zIndex = Math.round((1000 + F.y) * 5) + 3;
+}
 function majFixes(V){
   var nr = Math.max(0, V.etat.reserve.length - (V.enVol || 0)), rb = V.elReserve && V.elReserve.querySelector('.at-badge');
   if(rb){ rb.textContent = nr; rb.style.display = nr ? '' : 'none'; }
@@ -3450,6 +3472,7 @@ function majFixes(V){
     redessiner(V, pa);
     V.elO.pa.classList.toggle('at-attente', att > 0);
   }
+  majSignePa(V);
   var ch = V.elO.ch;
   if(ch){
     var pret = (V.o.fioles || 0) > 0 && recettesDe(V).some(function(r){ return etatRecette(V, r.id).pret; });
@@ -3493,7 +3516,8 @@ function elObjet(V, o){
 /* Le dessin d'un objet (dans la perspective, là où il est) ; un rangement porte en plus sa petite règle (💧 le verre, 🍃 les choses sèches),
    visible quand on tient un ingrédient ; le chaudron, le nombre de fioles vides */
 function htmlObjet(V, o, R){
-  var c = catDe(o), D = dessinObjet(o, R), b = D.bb, att = c.special === 'analyses' ? (DESSIN.analyses || []).filter(function(a){ return !a.fait; }).length : 0;
+  /* (plus de petit chiffre sur la paillasse : son signe « À analyser ! » le remplace, majSignePa, 11 novembre) */
+  var c = catDe(o), D = dessinObjet(o, R), b = D.bb, att = 0;
   return {bb:b, html:'<svg viewBox="' + [b[0], b[1], b[2] - b[0], b[3] - b[1]].map(f1).join(' ') + '" overflow="visible" aria-hidden="true">' + D.svg + '</svg>' +
     (c.cases ? '<span class="at-regle ' + (c.verre ? 'at-regle-v' : 'at-regle-s') + '" aria-hidden="true">' + (c.verre ? '💧' : '🍃') + '</span>' : '') +
     (att ? '<b class="at-badge">' + att + '</b>' : '') + (c.special === 'chaudron' ? videsHTML(V) : '') + (o.t === 'chat' ? bulleHTML(o) + bonheurHTML(o) : '')};
@@ -3518,6 +3542,7 @@ function placerEl(V, o, force){
   d.style.setProperty('--s', p.s.toFixed(3));
   d.style.zIndex = Math.round(p.z * 5);
   d._s = p.s; d._p = p;
+  if(o.id === 'pa' && V.elPaSigne) majSignePa(V);   /* (la paillasse bouge : son signe la suit) */
 }
 function placerTout(V){ ici(V).forEach(function(o){ placerEl(V, o); }); }
 function redessiner(V, o){
@@ -3812,6 +3837,7 @@ function action(V, at, pot){
   else if(at === 'potions') ouvrirPotions(V, pot);
   else if(at === 'arrivage') ouvrirArrivage(V);
   else if(at === 'analyses') ouvrirAnalyses(V);
+  else if(at === 'pa-signe'){ if(V.parId.pa) bullesPaillasse(V, V.parId.pa); }   /* (le signe « À analyser ! » : comme toucher la paillasse) */
   else if(at === 'reserve') ouvrirReserve(V);
   else if(at === 'salle') changerSalle(V, 1 - V.salle);
   else if(at === 'flaque') nettoyerFlaque(V);
@@ -3884,8 +3910,9 @@ function fermerBullesPa(V){
   if(b) b.remove();
   if(V.bullesT){ clearTimeout(V.bullesT); V.bullesT = 0; }
   if(!V.bullesPa) return;
-  var g = guideBulles(V);
+  var g = guideBulles(V), pa = V.bullesPa === 'pa';
   V.bullesPa = null;
+  if(pa) majSignePa(V);   /* (le signe « À analyser ! » revient) */
   if(g) guidePlacer(V);
 }
 function placerBullesPa(V){
@@ -3909,6 +3936,7 @@ function bullesPaillasse(V, o){
     '<button type="button" class="at-bulle-pa" data-bulle="forme" style="--i:1" aria-label="Changer la forme"><svg viewBox="0 0 24 18" aria-hidden="true"><path d="M2,4 H22 V8 H2 Z M5,8 V16 M19,8 V16 M9,8 V11 H15 V8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>Forme</button>' +
     '<button type="button" class="at-bulle-pa" data-bulle="couleur" style="--i:2" aria-label="Changer la couleur"><span aria-hidden="true">🎨</span>Couleur</button>';
   V.calque.appendChild(b); V.bullesPa = o.id;
+  if(o.id === 'pa') majSignePa(V);   /* (les bulles de la paillasse remplacent son signe) */
   placerBullesPa(V); veilleBullesPa(V);
   try{ if(window.Brume && Brume.son) Brume.son('pastilles', 3); else son(V, 'clic'); }catch(e){}
   rebond(V.elO[o.id]);
@@ -6534,6 +6562,7 @@ function guideAutorise(V, t){
   var c = GUIDE.cible, els = guideElements(V);
   if(els.some(function(e){ return e.contains(t); })) return true;
   if(V.bullesPa && guideBulles(V) && V.elO[V.bullesPa] && V.elO[V.bullesPa].contains(t)) return true;   /* (retoucher le meuble referme ses bulles) */
+  if(c === 'paillasse' && t.closest('.at-pa-signe')) return true;   /* (le signe « À analyser ! » ouvre les bulles de la paillasse) */
   if(c === 'rangement'){                   /* ranger : la cueillette (on la prend) et tous les rangements (on la pose) */
     if(t.closest('.at-tas')) return true;
     var ob = t.closest('.at-o'), o = ob && V.parId[ob.getAttribute('data-obj')];

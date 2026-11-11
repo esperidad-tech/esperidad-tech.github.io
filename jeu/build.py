@@ -41,7 +41,7 @@ def lire_js(nom):
 # Le labo d'analyses de l'Alchimiste (10 novembre) : une page à part, faite des morceaux de src/labo/ (les mêmes que la maquette).
 # Le jeu la garde dans window.LABO_HTML et l'ouvre dans un cadre, par-dessus l'atelier (src/labo.js).
 # dist/labo.html : la même page, toute seule (la maquette, pour l'essayer hors du jeu).
-LABO = ['00-head.html', '10-base.js', '15-sons.js', '20-chat.js', '30-donnees.js', '40-dessins.js', '50-scene.js', '60-loupe.js', '70-micro.js', '80-test.js', '90-main.js', '99-foot.html']
+LABO = ['00-head.html', '10-base.js', '12-intro-img.js', '15-sons.js', '20-chat.js', '30-donnees.js', '40-dessins.js', '50-scene.js', '60-loupe.js', '70-micro.js', '80-test.js', '85-guide.js', '86-intro.js', '90-main.js', '99-foot.html']
 def labo_html():
     d = os.path.join(SRC, 'labo')
     if not os.path.isdir(d):

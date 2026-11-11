@@ -5,7 +5,7 @@
 # (build.py du jeu fabrique la même page dans dist/labo.html, et la range dans le jeu : window.LABO_HTML.)
 cd "$(dirname "$0")"
 S=../../src/labo
-P="$S/10-base.js $S/15-sons.js $S/20-chat.js $S/30-donnees.js $S/40-dessins.js $S/50-scene.js $S/60-loupe.js $S/70-micro.js $S/80-test.js $S/90-main.js"
+P="$S/10-base.js $S/12-intro-img.js $S/15-sons.js $S/20-chat.js $S/30-donnees.js $S/40-dessins.js $S/50-scene.js $S/60-loupe.js $S/70-micro.js $S/80-test.js $S/85-guide.js $S/86-intro.js $S/90-main.js"
 cat $S/00-head.html $P $S/99-foot.html > ../labo.html
 cat $P > /tmp/labo-verif.js
 node --check /tmp/labo-verif.js && echo SYNTAXE_OK && wc -c ../labo.html

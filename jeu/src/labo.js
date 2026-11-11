@@ -51,8 +51,12 @@ function fiche(){
   l.forEach(function(id){ var An = M.texteAnalyse((E.analyses || {})[id]); if(An && An.donne){ try{ codes[id] = {pour:pourQui(An.donne), formes:M.code(An.donne).map(function(s){ return D.SYM[s].e; })}; }catch(e){} } });
   /* le tutoriel (enquête 1) suit sa trame : un échantillon dont ce n'est pas encore le tour attend sur le cuir (« Plus tard ! ») */
   var plusTard = l.filter(function(id){ return !P.analyses[id] && M.tutoPermet && !M.tutoPermet('analyser', {id:id}); });
+  /* (Romain, 11 novembre, 13 h 42) intro : l'explication en images, la toute première fois (une fois par héros) ;
+     guide : au tutoriel, tant qu'aucune analyse n'est faite, le labo guide la première (le premier échantillon dont c'est le tour) */
+  var aucune = !Object.keys(P.analyses || {}).some(function(k){ return P.analyses[k]; });
+  var guide = (M.tutoActif && M.tutoActif() && aucune) ? (l.filter(function(id){ return !P.analyses[id] && plusTard.indexOf(id) < 0; })[0] || null) : null;
   return {jeu:true, niveau:(E.niveau || 1) >= 6 ? 'difficile' : 'facile', recus:l, faits:l.filter(function(id){ return !!P.analyses[id]; }), plusTard:plusTard, etat:P.labo || null,
-    codes:codes, style:style(), son:!(S.options && S.options.son === false), mimi:aUnChat()};
+    codes:codes, style:style(), son:!(S.options && S.options.son === false), mimi:aUnChat(), intro:!S.laboIntro, guide:guide};
 }
 /* Un dossier est bouclé : l'analyse est faite (les mêmes effets qu'une analyse réussie, moteur-actions.js A.analyser) */
 function fini(id){
@@ -132,6 +136,7 @@ window.addEventListener('message', function(e){
   else if(m.type === 'fini'){ fini(String(m.id)); }
   else if(m.type === 'trouve'){ trouve(String(m.id)); }
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
+  else if(m.type === 'introVue'){ M.S.laboIntro = 1; M.sauver(); }   /* (l'explication en images ne revient plus pour ce héros) */
   else if(m.type === 'quitter'){ if(m.etat && typeof m.etat === 'object') P.labo = m.etat; M.fermerLabo(); }
 });
 })();

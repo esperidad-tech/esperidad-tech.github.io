@@ -234,6 +234,26 @@ body.m-loupe #loupeMobile{opacity:0; transition:opacity .25s .3s}
 .tourne span{font-size:74px; animation:tourne 2.4s ease-in-out infinite}
 @keyframes tourne{0%,30%{rotate:0deg} 60%,100%{rotate:-90deg}}
 @media (orientation:portrait) and (max-width:620px){ .tourne{display:grid} }
+/* Le guide de la première analyse (85-guide.js) : un rond jaune qui pulse autour de ce qu'il faut toucher, une phrase racontée en haut */
+.guide-rond{position:fixed; z-index:60; pointer-events:none; border-radius:50%; border:4px solid #ffd23f; box-shadow:0 0 0 3px rgba(20,12,30,.45), 0 0 22px 6px rgba(255,210,63,.7); animation:guidePulse 1.05s ease-in-out infinite alternate}
+@keyframes guidePulse{from{transform:scale(.96); opacity:1} to{transform:scale(1.1); opacity:.72}}
+.guide-bandeau{position:fixed; left:50%; top:max(8px, env(safe-area-inset-top)); transform:translateX(-50%); z-index:61; width:max-content; max-width:min(60vw, 620px); display:flex; align-items:center; gap:10px;
+  background:var(--parchemin); color:var(--encre); border:3px solid var(--K); border-radius:14px; padding:8px 12px; font-family:var(--f-main); font-weight:700; font-size:clamp(13px, 2.1vw, 18px); line-height:1.25; box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.guide-bandeau.arrive{animation:guideArrive .35s ease-out}
+@keyframes guideArrive{from{opacity:0; transform:translate(-50%, -10px)} to{opacity:1; transform:translate(-50%, 0)}}
+.guide-bouge{animation:guideBouge 1s ease-in-out infinite}
+@keyframes guideBouge{50%{transform:scale(1.14)}}
+/* L'explication en images, la toute première fois (86-intro.js) */
+.intro{position:fixed; inset:0; z-index:70; display:grid; place-items:center; background:rgba(20,12,34,.86); padding:max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left))}
+.intro-carte{width:min(96vw, 1060px); max-height:100%; overflow:auto; background:var(--parchemin); color:var(--encre); border:4px solid var(--K); border-radius:20px; padding:clamp(10px, 2vh, 20px) clamp(12px, 2vw, 24px); box-shadow:0 8px 0 rgba(0,0,0,.4); font-family:var(--f-main); text-align:center}
+.intro-carte h2{margin:0 0 .4em; font-size:clamp(18px, 3.4vw, 30px); display:flex; justify-content:center; align-items:center; gap:10px}
+.intro-pas{display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:clamp(8px, 1.4vw, 16px)}
+.intro-pas figure{margin:0; display:flex; flex-direction:column; gap:6px}
+.intro-pas img{width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:12px; border:3px solid var(--K); background:#2a2040}
+.intro-pas figcaption{display:flex; gap:6px; align-items:flex-start; text-align:left; font-weight:700; font-size:clamp(11px, 1.7vw, 16px); line-height:1.25}
+.intro-pas figcaption b{flex:none; display:grid; place-items:center; width:1.6em; height:1.6em; border-radius:50%; background:#ffd23f; border:2px solid var(--K)}
+.intro-pas figcaption span{flex:1}
+.intro-go{margin-top:clamp(10px, 2vh, 18px); font:inherit; font-weight:800; font-size:clamp(16px, 2.8vw, 24px); color:#111; background:linear-gradient(180deg,#ffe08a,#f2b632); border:3px solid var(--K); border-radius:999px; padding:.45em 1.4em; box-shadow:0 4px 0 rgba(0,0,0,.4); cursor:pointer; animation:guideBouge 1.2s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){ .flamme,.vapeur,.at-c-queue,.at-c-assis .at-c-tete,.at-respire,.at-zzz,#ardoise .formes,.zoom-plaque,.tourne span,.fleche-l.bat,.cone-point{animation:none} .rond{animation:none!important} #molette,.decor,.verre-hud{transition:none} }
 </style>
 

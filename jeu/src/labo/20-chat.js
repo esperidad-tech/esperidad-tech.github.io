@@ -67,6 +67,8 @@ var SANS_MIMI = false;     /* (dans le jeu : pas de visite si l'Alchimiste n'a p
 function mimiVisite(ms){ clearTimeout(mimi.tv); if(SANS_MIMI) return; mimi.tv = setTimeout(mimiVient, ms == null ? 15000 + Math.random()*8000 : ms); }
 function mimiVient(){
   if(mimi.calme) return;
+  /* (pendant l'explication en images et le guide de la première analyse, il laisse l'Alchimiste apprendre tranquille : il reviendra voir après) */
+  if(document.querySelector('.intro') || (typeof GUIDE === 'object' && GUIDE && GUIDE.id && !GUIDE.fini)) return mimiVisite(20000);
   if(S.mode || S.occupe || mimi.enRoute || mimi.pose || mimi.porte || document.hidden) return mimiVisite(6000);
   mimi.enRoute = true; mimi.el.hidden = false; mimiTaille(1); mimiPlace(horsEcran(540));
   mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; son('pose'); mimiDit('Mrrr…'); son('ronron'); majOutils(); }, .84, true);

@@ -340,7 +340,7 @@ E[2] = {
           note:'Moulin, la pièce cachée : des alambics, un reste de colorant rouge, une rigole vers la rivière. Ni tissu ni bassine.'},
         /* suivre l'homme en cape : « Suivre la piste », la nuit (params.decor), au niveau 10 pour tout le monde (très difficile) ;
            gagné : la crypte du clocher (info:crypte) et un vêtement rare (garderobe.js) ; raté : rien d'autre, aucune conséquence */
-        {id:'suivre', ic:'👣', nom:'Suivre l\'homme en cape', moments:['nuit'], choixTxt:'👣 Suivre l\'homme en cape', mj:'traces', mjNiveauFixe:10, params:{decor:'nuit', suspect:'botte'},   /* (plus de code info:crypte : il le raconte à l'oral, Romain, 5 novembre, 13 h 19 ; la crypte va sur son tableau des chemins secrets) */
+        {id:'suivre', ic:'👣', nom:'Suivre l\'homme en cape', moments:['nuit'], choixTxt:'👣 Suivre l\'homme en cape', mj:'traces', mjNiveauFixe:10, params:{decor:'nuit', suspect:'botte', arrivee:'crypte', arriveeTxt:'La grille de la crypte !'},   /* (arrivee:'crypte' : au bout, la grille de la crypte au pied du clocher — Romain, 11 novembre, 13 h 42) (plus de code info:crypte : il le raconte à l'oral, Romain, 5 novembre, 13 h 19 ; la crypte va sur son tableau des chemins secrets) */
           besoin:[{vu:'pisteur:moulin:guet'}], visibleSi:[{vu:'pisteur:moulin:guet'}],
           avant:'Il marche vite et sans bruit… Ce sera très difficile de ne pas le perdre !',
           bouton:'👣 Le suivre',

@@ -31,6 +31,8 @@ with sync_playwright() as p:
         pg.evaluate("() => { M.UI.modal = null; M.render(); M.ouvrirLabo(); }"); pg.wait_for_timeout(1800)
         f = next((x for x in pg.frames if x.parent_frame is not None), None)
         f.wait_for_function('() => !!window.__labo', timeout=8000); f.evaluate("() => { window.__labo.mimi.calme = true; }")
+        # (la toute première fois : l'explication en images ; on la referme par son bouton jaune — elle est essayée dans tools/labo-guide.py)
+        f.evaluate("() => { var g = document.querySelector('.intro-go'); if(g) g.click(); }"); pg.wait_for_timeout(300)
         F['f'] = f; return f
     f = ouvrir()
     etat = lambda: F['f'].evaluate("() => { var S = window.__labo.etat(), d = S.dos[S.dc] || {coupes:[]}; return {mode:S.mode, sel:S.sel, dc:S.dc, trouves:S.trouves, finis:S.finis, coupes:d.coupes.map(function(c){ return c && c.t; })}; }")

@@ -261,6 +261,11 @@ function demarrer(niveau){
   majOutils(); majQuitter();
 }
 demarrer(CFG && CFG.niveau === 'difficile' ? 'difficile' : 'facile');
-window.__labo = {etat:function(){ return S; }, exporter:exporter, finir:finirDossier, attente:function(){ return ATTENTE; }, quitter:quitter, rendre:function(){ rendLentille(); }, mimi:mimi, mimiVient:mimiVient, style:ST, son:SON, sons:SONS, objets:OBJETS, cuirs:function(){ return CUIRS.slice(); }};
+/* la toute première fois : l'explication en images (86-intro.js) ; au tutoriel, le guide de la première analyse (85-guide.js), après elle */
+(function(){
+  var g = function(){ if(CFG && CFG.guide) guideDemarrer(CFG.guide); };
+  if(CFG && CFG.intro) introOuvrir(g); else g();
+})();
+window.__labo = {guide:function(){ return GUIDE.id ? {cle:GUIDE.cle, c:GUIDE.c || null, fini:GUIDE.fini, rond:!!(GUIDE.rond && !GUIDE.rond.hidden), t:GUIDE.el ? GUIDE.el.textContent : ''} : null; }, etat:function(){ return S; }, exporter:exporter, finir:finirDossier, attente:function(){ return ATTENTE; }, quitter:quitter, rendre:function(){ rendLentille(); }, mimi:mimi, mimiVient:mimiVient, style:ST, son:SON, sons:SONS, objets:OBJETS, cuirs:function(){ return CUIRS.slice(); }};
 dire('pret');
 })();

@@ -419,7 +419,9 @@ M.analysesAtelier = function(){
   if(!E || !P) return [];
   return M.cle(P.recus).filter(function(k){ return k.indexOf('obj:') === 0 && E.objets && E.objets[k.slice(4)]; }).map(function(k){
     var id = k.slice(4), o = E.objets[id], A = M.texteAnalyse((E.analyses || {})[id] || {}), fait = P.analyses[id] || 0;
-    return {id:id, ic:o.ic, nom:o.nom, fait:fait, t:fait ? A.t || '' : '', detail:fait === 2 && A.detail ? A.detail.t : ''};
+    /* attend : rien à analyser pour cet objet, ou pas encore son tour au tutoriel (il patiente sur le cuir) — pas de signe « À analyser ! » pour lui */
+    var attend = !fait && (!(E.analyses || {})[id] || !!(M.tutoPermet && !M.tutoPermet('analyser', {id:id})));
+    return {id:id, ic:o.ic, nom:o.nom, fait:fait, attend:attend, t:fait ? A.t || '' : '', detail:fait === 2 && A.detail ? A.detail.t : ''};
   });
 };
 

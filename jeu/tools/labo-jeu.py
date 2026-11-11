@@ -26,7 +26,8 @@ with sync_playwright() as p:
         pg.wait_for_timeout(700)
         # hors tutoriel : on coupe le guidage pour essayer librement ; le fil arrive (comme si le Pisteur avait donné son code)
         # (le tutoriel fait attendre les échantillons dont ce n'est pas le tour : ici on dit que c'est toujours leur tour ; on essaie l'attente à la fin)
-        pg.evaluate("() => { if(window.Atelier && Atelier.guider){ Atelier.guider(null); Atelier.guider = function(){ return false; }; } M.tutoPermet = function(){ return true; }; var P = M.P(); P.recus['obj:fil'] = true; M.sauver(); M.render(); }")
+        # (le guide de la première analyse et l'explication en images sont essayés à part, tools/labo-guide.py : ici, pas de guide dans le labo)
+        pg.evaluate("() => { if(window.Atelier && Atelier.guider){ Atelier.guider(null); Atelier.guider = function(){ return false; }; } M.tutoPermet = function(){ return true; }; M.tutoActif = function(){ return false; }; var P = M.P(); P.recus['obj:fil'] = true; M.sauver(); M.render(); }")
         pg.wait_for_timeout(600)
         r = {}
         # rien reçu ne s'analyse sans objet : avant le fil, la paillasse expliquait comment un objet arrive (vérifié à part, plus bas)
@@ -34,7 +35,7 @@ with sync_playwright() as p:
             pg.evaluate("() => document.querySelector('#atelier-ici [data-at=analyses]').dispatchEvent(new MouseEvent('click', {bubbles:true}))"); pg.wait_for_timeout(900)
             bg = pg.locator('.at-bulle-go').first.bounding_box(); pg.touchscreen.tap(bg['x'] + bg['width']/2, bg['y'] + bg['height']/2); pg.wait_for_timeout(1500)
             f = next((x for x in pg.frames if x.parent_frame is not None), None)
-            if f: f.wait_for_function('() => !!window.__labo', timeout=8000); f.evaluate("() => { window.__labo.mimi.calme = true; }")
+            if f: f.wait_for_function('() => !!window.__labo', timeout=8000); f.evaluate("() => { window.__labo.mimi.calme = true; var g = document.querySelector('.intro-go'); if(g) g.click(); }"); pg.wait_for_timeout(300)
             return f
         f = ouvrir_labo()
         r['cadre'] = pg.locator('#labo-cadre').count(); r['panneau'] = pg.locator('.at-f-analyses').count()
