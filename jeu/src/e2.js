@@ -288,7 +288,8 @@ E[2] = {
           t:'Une brume épaisse couvre toute la clairière : tu ne vois même pas tes pieds ! Impossible de suivre des traces ce matin. Reviens quand elle sera levée.'},
         /* Suivre la piste, version charrette (mj-pisteur-alchi.js) : deux traits de roues + les pieds de celui qui pousse ;
            pour embrouiller, la brouette (une roue) et la carriole plus large de Fortuné */
-        {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', params:{vehicule:'charrette'}, donne:'info:traces',
+        /* arrivee:'moulin' (Romain, 11 novembre, 9 h 20) : au bout de la bonne piste, la cour pavée du moulin et le moulin, sa roue à aubes */
+        {id:'champ', ic:'👣', nom:'Le champ de coquelicots', moments:['apresmidi', 'nuit'], mj:'traces', params:{vehicule:'charrette', arrivee:'moulin', arriveeTxt:'La cour du moulin !'}, donne:'info:traces',
           /* ouvrePartiel : raté deux fois, le code est donné quand même, avec l'indice partiel (moteur-actions.js) */
           ouvrePartiel:true, partiel:true,
           /* l'explication avant le mini-jeu, et le résultat (Romain, 23 h 11, mot pour mot) ; la ligne du code : infos.traces.dire */

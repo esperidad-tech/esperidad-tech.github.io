@@ -1373,6 +1373,16 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **Vérifié** : verif.js 1 2 3 « Tout est bon » ; rapide.sh (tuto.py sans échec) ; `tools/heros.py` (l'arbre du Pisteur avec son message, celui du Barde complet ; restent 3 échecs anciens, sans lien : le menu a « Mon héros » et « Revenir aux projets de Romain », la lettre du maire depuis le Carnet) ; une vieille sauvegarde remboursée une seule fois ; les scènes regardées image par image ; codes E1/E2/E3 inchangés (les deux nouveaux codes de l'E2, `obj:piece_pain` et `obj:piece_moulin`, prennent des codes libres : à geler dans `codes-fixes.js` à leur mise en ligne).
 
+### 12.57 Enquête 2 : ce qui reste, et la charrette qui mène au moulin (Romain, 11 novembre, 9 h 20) — MOULIN_EN_LIGNE
+
+**Ce que Romain a dit.** « Les analyses de l'Alchimiste dans l'enquête 2, il y a aussi les pièces : il y en a 5 en tout. » « Le mini-jeu de la charrette, la charrette menait au moulin, non ? Si ce n'est pas le cas, il faut rajouter juste un moulin à la fin de la piste. » « Le tir à l'arc, le cerf-volant, c'est validé. » « On peut garder écouter en cachette dans les scènes du lavoir, ça me va. » « Le labo de l'enquête 2 est en train d'être fait par une autre conversation. »
+
+- **Les analyses de l'Alchimiste dans l'enquête 2 : cinq** (l'eau de la rivière, l'eau du lavoir, le colorant, la poudre noire, et les deux pièces d'or comparées, §12.56). Elles passent au labo dans l'autre conversation (§12.56, point 7) : celle-ci n'y touche pas.
+- **Le champ de coquelicots (Suivre la piste, version charrette)** : le texte disait déjà « jusqu'à la cour du moulin », mais le mini-jeu finissait sur un dessin au hasard (buisson, terrier, tonneau…). **Maintenant, au bout de la bonne piste : la cour pavée du moulin et le moulin** (toit de chaume, mur de pierre, porte, roue à aubes, comme sur la carte), plus grand que les autres arrivées ; le mot à l'arrivée : « La cour du moulin ! » ; la vue remonte doucement pour bien le montrer, comme la forêt du massif (§12.55). Les fausses pistes gardent leurs dessins au hasard. Technique : `mj-pisteur-alchi.js`, `ARRIVEES_HISTOIRE.moulin`, l'arrivée à l'échelle 1,9, `montrerForet` aussi pour le moulin, `arriveeTxt` passe avant « C'est la charrette ! » ; `e2.js` : `params:{vehicule:'charrette', arrivee:'moulin', arriveeTxt:'La cour du moulin !'}`.
+- **Le tir à l'arc (le cerf-volant de l'enquête 2) est validé.**
+- **« Écouter en cachette » au lavoir : on garde** tel quel (les mots des ouvriers dits tout de suite, et notés, §12.26).
+- Restent ouverts pour l'enquête 2 : le labo (autre conversation) ; « un mini-jeu habillé pour chaque lieu » (§12.53) n'est appliqué qu'aux deux pistes (le massif de l'E1, la charrette de l'E2), pas à « Suivre l'homme en cape », ni à « Se cacher » (Silas, la nuit au moulin), qui ont déjà leurs décors ; les « messages trop lents qui se coupent quand on clique » (5 novembre) : jamais retrouvés, sans réponse de Romain.
+
 ## 13. Enquête 3 — La lettre d'Odette
 
 ### 13.1 L'histoire, pour nous (jamais montrée telle quelle aux joueurs)
