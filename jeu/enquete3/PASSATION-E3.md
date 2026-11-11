@@ -1,8 +1,18 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 15 h 15)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 16 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
-## Nouveau depuis le 11 novembre (15 h 15) : la trame du chemin parfait, refaite, et les décisions de Romain
+## Nouveau depuis le 11 novembre (16 h 30) : LA CONCEPTION DE L'ENQUÊTE 3 EST FINIE
+
+- **Romain (15 h 13)** : « Je suis d'accord pour absolument tout ce que tu m'as proposé. Ça te fait faire un gros chantier, je te laisse le faire. Go pour tout. » Toutes les propositions du §13.14 sont décidées, et la conception a été écrite dans la foulée (rien n'est construit : la construction se fait dans une autre conversation).
+- **Les trois fichiers qui font foi** (dans `jeu/enquete3/` et dans le projet Claude) :
+  - `E3-dialogues-et-trame.md` (version 2) : tous les textes du Barde, réécrits (matin et après-midi −39 % ; en tout −27 %, avec les nouveautés de la nuit qu'il lit pendant le donjon) ;
+  - `E3-actions-des-roles.md` (version 2) : le Pisteur, l'Alchimiste, le Sage, tous les codes, le tableau « qui prouve quoi » et son test ;
+  - `E3-atelier-des-plantes.md` (nouveau) : l'établi, les sept recettes en vraies plantes, les cueillettes, l'herbier du Sage, « Suivre la poussière », le gui, Mimi, le code du sac.
+- Les versions du 6 novembre sont dans `jeu/archives/`. Le document Claude Docs du 5 novembre et la page « La lettre d'Odette » ne font plus foi.
+- **La suite** : la construction, dans la conversation qui construit, étape par étape avec le go de Romain ; l'ordre proposé est à la fin du §13.14. Deux petites choses se règlent en construisant : les chiffres de « Suivre la poussière » et la taille du code du sac. À voir avec la conversation du donjon : le passage secret du crâne (il saute les deux élites), Mimi dans le donjon, le branchement (sac, entrées, Grosse Marie, maire retenu, « Léo s'est enfui »).
+
+## Le 11 novembre (15 h 15) : la trame du chemin parfait, refaite, et les décisions de Romain
 
 - **Romain (11 novembre, 13 h 59)** : « Qu'est-ce qui reste à faire ? Où est-ce qu'on en est ? Refais-moi la trame du chemin parfait, où on voit chaque personnage et ce qu'il fait. » **Puis (14 h 52)** : il a tranché presque tous les points, et **« sur cette discussion, je veux que tu construises rien du tout ; juste, on réfléchit ensemble ; je vais faire fabriquer les changements sur une autre conversation »**.
 - **Le document « Enquête 3 — la trame du chemin parfait »** (Claude Docs, https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw) : le matin, l'après-midi, la nuit, rôle par rôle, avec chaque code et pour qui ; le donjon salle par salle tel qu'il est construit le 11 novembre ; la fin (Léo, l'accusation, minuit) ; un schéma des deux chaînes de preuves (QUI passe par le Barde, le Sage et l'Alchimiste ; OÙ par les quatre) ; les décisions du 11 novembre et les propositions en attente ; ce qui reste à faire. **Il fait foi pour la trame d'ensemble** ; le détail des dialogues reste dans `E3-dialogues-et-trame.md`.

@@ -1,349 +1,200 @@
-# Enquête 3 « La lettre d'Odette » — les actions du Pisteur, de l'Alchimiste et du Sage
+# Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
-> **Mis à jour le 6 novembre à 2 h, dans la conversation qui construit le jeu.** Ce fichier est rangé avec la Bible (`jeu/enquete3/`) et fait foi pour le détail.
-> Avant de construire, appliquer aussi les décisions prises depuis avec Romain (Bible §13.13) : le 🤥 seulement sous la dernière réponse ; rien à écouter la nuit chez ceux qui dorment ; au moins 30 % de lecture en moins pour le Barde (à faire valider) ; des textes d'aide racontés, jamais « Touche … », avec le bouton animé ; les nouveaux mini-jeux et le donjon en plein écran verrouillé ; le tir à l'arc refait (clocher et ballon) ; l'or des missions bonus à revoir.
+> **Cette version remplace celle du 6 novembre** (gardée dans `jeu/archives/E3-actions-des-roles-6-novembre.md`). Réécrite le 11 novembre après le « go pour tout » de Romain (15 h 13). Les décisions : Bible §13.14. La trame d'ensemble : le document « Enquête 3 — la trame du chemin parfait » (https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw). Le Barde : `E3-dialogues-et-trame.md`. L'atelier des plantes, les cueillettes et les potions : `E3-atelier-des-plantes.md`. Le donjon lui-même : `jeu/donjon/` (`CONCEPTION-DONJON.md`, `MOTEUR-DONJON.md`). **Conception seulement : rien n'est construit.**
+>
+> La page « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) ne fait plus foi.
 
-Export de la page « La lettre d'Odette » (onglets Pisteur, Alchimiste, Sage et schémas), 6 novembre 2026. Les dialogues du Barde sont dans le fichier `E3-dialogues-et-trame.md`.
+Règles pour tous les rôles : chaque texte de plus de 3 mots a son 🔊 ; les aides sont racontées (jamais « Touche … ») ; avant chaque mini-jeu, une explication en images et un bouton jaune ; un seul essai, avec un filet quand la chose est indispensable ; les nouveaux mini-jeux en plein écran verrouillé, montrés d'abord dans la salle des mini-jeux.
 
-Étiquette **(proposé, à valider)** : une idée de Claude que Romain n'a pas encore validée.
+## 1. Le Pisteur
 
-## Pisteur
-
-Le rôle de l'action. Le matin, les deux jeux de la fête. L'après-midi, les traces de Moustache, qui donnent les deux chemins de la nuit. La nuit, il mène le donjon sur sa tablette et coince Léo dans la dernière salle.
+L'action : les deux jeux de la fête le matin, les traces de Moustache l'après-midi, la clé (ou le puits) et tout le donjon la nuit, sur sa tablette.
 
 ### Le matin
-
-#### Les banderoles de la fête — La place
-- **Mini-jeu** : Tir à l'arc, décor de fête
-- **Ce qu'il fait** : À chaque tir, une banderole de petits drapeaux part avec la flèche. Il vise les cibles en haut du mât et des lampadaires.
-- **Son écran** : Bravo ! Les banderoles flottent au-dessus de la place. Basile, du haut de son échelle : « Ça, c'est de la décoration ! »
-- **Il donne** : « Mission de fête (1 sur 2) » → tout le monde (rendue au maire l'après-midi)
-
-#### L'oie du festin — Chez Gaspard, puis les rues
-- **Mini-jeu** : Course-poursuite en ville (une oie vue de dos)
-- **Ce qu'il fait** : L'oie de Gaspard s'est échappée. Même mini-jeu que dans la forêt, mais dans les rues du village.
-- **Son écran** : COUAC ! Tu sautes les tonneaux, tu passes sous les lampions… et tu la rattrapes. Gaspard : « Sans elle, pas de festin ! Merci ! »
-- **Il donne** : « Mission de fête (2 sur 2) » → tout le monde (rendue au maire l'après-midi)
-
-#### Un coup d'œil au clocher (proposé, à valider) — Le clocher
-- **Il lui faut** : « Le capuchon vers le clocher » (du Barde ; Tim, démasqué)
-- **Ce qu'il fait** : Facultatif. Il va voir là où le capuchon est parti. Rien à transmettre : ça prépare l'après-midi.
-- **Son écran** : Sous le clocher, la porte de la crypte est fermée à clé. Sur la grille, des runes, comme sur la porte du Vieux Chêne. Et tout au fond… un miaulement.
+- **Les banderoles** — la place. Tir à l'arc, décor banderoles (déjà fait : `params:{decor:'banderoles'}`, §12.44) → code « Mission de fête (1 sur 2) », rendue au maire l'après-midi. Basile : « Ça, c'est de la décoration ! »
+- **L'oie de Gaspard** — la boulangerie, puis les rues. Course-poursuite, une oie vue de dos, en ville ; niveau 4 au plus, comme Tim (`mjNiveauMax:4`) → code « Mission de fête (2 sur 2) ». Gaspard : « Sans elle, pas de festin ! »
+- (Le coup d'œil au clocher est abandonné, §13.14.)
 
 ### L'après-midi
-
-#### La lettre, en se cachant — La mairie
-- **Mini-jeu** : Se cacher
-- **Ce qu'il fait** : Seulement si le Barde rate le grand dialogue du maire. Les deux chemins donnent le même code, qui ne compte qu'une fois.
-- **Son écran** : Tu te glisses derrière le grand rideau. Le maire ouvre son coffre, compte ses papiers un par un… puis il sort. La lettre est là, sur le dessus.
-- **Il donne** : « La lettre d'Odette » → Sage, Alchimiste
-
-#### Les traces de Moustache — Chez Odette, puis tout le village
-- **Mini-jeu** : Suivre la piste, version traces de chats
-- **Il lui faut** : « Les traces de Moustache » (du Barde ; Moustache file de chez Odette)
-- **Il lui faut** : « Moustache a six doigts » (du Sage ; sans ce code, la piste est bien plus dure : toutes les traces se ressemblent)
-- **Ce qu'il fait** : Des traces de chats partout, les sept chats d'Odette traînent dans tout le village. Seules les traces à six doigts sont celles de Moustache.
-- **Son écran** : Les traces à six doigts font des allers-retours. Une partie file vers le clocher et s'arrête sous la porte de la crypte, fermée à clé. L'autre part dans la forêt, jusqu'au vieux puits : Moustache s'est glissé entre les barreaux rouillés.
-- **Il donne** : « La crypte est fermée » → Barde (il faut la clé d'Anselme)
-- **Il donne** : « La grille du puits » → Alchimiste, Sage (une potion pour la rouille, et les archives des souterrains)
-
-#### Rendre sa mission — La mairie
-- **Ce qu'il fait** : Les banderoles et l'oie. Le maire le récompense en or.
-- **Son écran** : Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu'à minuit, hein ! »
+- **Les traces de Moustache** — de chez Odette jusqu'à l'église. Il lui faut « Les traces de Moustache » (Barde). Avec « Moustache a six doigts » (Sage), il sait lesquelles suivre ; sans, toutes les traces de chats se ressemblent (niveau plus dur). Suivre la piste, version traces de chats, décor ville ; **l'arrivée : l'église et la grille de la crypte au pied du clocher** (le dessin existe déjà : `ARRIVEES_HISTOIRE.crypte`, §12.58). Le mot : « La porte de la crypte ! » → code « La crypte est fermée » pour le Barde. Le filet, si c'est raté : « Tu as perdu les traces… mais un miaulement monte de sous l'église. » (même code). **Le puits n'apparaît pas l'après-midi** (§13.14).
+- **Le gui** — le potager de Basile. Avec « Le gui du pommier » (Alchimiste) : « 🌳 Grimper au vieux pommier », une scène racontée, pas de mini-jeu → code « Le gui » pour l'Alchimiste (`E3-atelier-des-plantes.md` §7).
+- **La lettre, en se cachant** — la mairie, seulement si le Barde a raté le maire. Se cacher, décor ville. « Tu te glisses derrière le grand rideau. Le maire compte ses papiers un par un… puis il sort. La lettre est sur le dessus. » → code « La lettre d'Odette » pour le Sage et l'Alchimiste (il ne compte qu'une fois).
+- **Rendre sa mission** — la mairie. Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde sur la place jusqu'à minuit ! » (or).
 
 ### La nuit
+1. **Le sac** — pendant le grand dialogue d'Anselme, sur l'écran « Descendre » : il tape le code du sac de l'Alchimiste ; l'écran montre les potions reçues, l'Alchimiste vérifie (`E3-atelier-des-plantes.md` §9).
+2. **La clé d'Anselme** — avec « La clé est au clou » (Barde). Se cacher dans le clocher, pendant que les cloches sonnent ; **niveau 8 à 10, un seul essai** (§13.14). Réussi : « DONG ! DONG ! Anselme compte les coups, les yeux fermés. La clé est au clou… Tu la décroches. » La crypte s'ouvre : le donjon, entré par la crypte.
+3. **Si ça rate** (vu par Anselme) : « Qui va là ?! » Anselme raccroche la clé à sa ceinture. « En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits ! » Le puits apparaît sur sa carte. Même chose s'il reçoit « Le vieux puits » du Barde (Anselme a refusé).
+4. **Le vieux puits** (seulement après un échec) : « Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. » Avec l'acide dans le sac : « Tu verses l'acide de l'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. » Le donjon, entré par le fond du puits. **Si la clé a été prise, le puits ne s'ouvre jamais.**
+5. **Le donjon** — le même par les deux entrées (§12.51, 11 novembre). Tout se joue sur sa tablette, les trois héros en file ; le Sage a le plan et le carnet de l'aventurier sur la sienne, l'Alchimiste son chaudron. Les codes du donjon sont au §4 (le carnet, la rune, les plantes rares, les pages, les sauvegardes).
+6. **La Grosse Marie** (du Barde, une seule fois, hors combat) : il la tape avec « 📜 Un code » ; « DONG… La brume recule. » Toute la vie des trois héros revient.
+7. **Avant la dernière salle** : « Le Barde a-t-il retenu le maire ? » Il tape « Le maire est retenu », ou continue sans (l'équipe peut attendre le Barde).
+8. **La porte aux quatre signes** (avant-dernière salle) : Moustache gratte, une voix étouffée : « Moustache ? Mon gros gris, c'est toi ? » → code « Odette est derrière la porte » pour le Sage.
+9. **La dernière salle** : Léo, coincé contre le mur, une lanterne blanche de farine et un panier. Avec le code du maire → code « Léo attrapé » pour le Barde. Sans → des pas dans l'escalier, Léo file dans le noir → code « Léo s'est enfui » pour le Barde. Puis l'écran de fin du donjon.
 
-#### Recevoir le sac de l'Alchimiste — Pendant le grand dialogue d'Anselme
-- **Il lui faut** : « Le sac (6 symboles) » (de l'Alchimiste)
-- **Ce qu'il fait** : Pendant que le Barde parle à Anselme, il ouvre l'écran « Descendre » : le jeu demande le code du sac, ou « Descendre sans potions ». L'écran montre ensuite le sac reçu, et l'Alchimiste vérifie que c'est le bon. Comme ça, personne n'attend : le donjon commence dès que le chemin s'ouvre.
-- **Son écran** : Tu reçois : 2 💡, 1 ❤️, 2 💨, 1 👻. C'est bien ça ?
+## 2. L'Alchimiste
 
-#### La clé d'Anselme — Le clocher · chemin court
-- **Mini-jeu** : Se cacher
-- **Il lui faut** : « La clé est au clou » (du Barde ; si le Barde a réussi le grand dialogue d'Anselme)
-- **Ce qu'il fait** : Pendant que le Barde et Anselme sonnent l'ouverture de la fête, il décroche la clé sans être vu.
-- **Son écran** : DONG ! DONG ! Tu te faufiles derrière les grosses cordes. Anselme a les yeux fermés, il compte les coups. La clé est là, au clou… Tu la décroches.
-- **Il donne** : « La crypte s'ouvre » → Pisteur (donjon court, 3 salles)
-
-#### La grille du puits — Le vieux puits · chemin long
-- **Il lui faut** : « La potion qui ronge la rouille » (de l'Alchimiste)
-- **Il lui faut** : « Le chemin, à voix haute » (du Sage ; le parchemin déchiffré)
-- **Ce qu'il fait** : Si le Barde a raté Anselme, ou si l'équipe préfère ce chemin.
-- **Son écran** : Tu verses la potion verte. Pssshhh ! Les barreaux fondent comme du sucre. Une vieille échelle descend dans le noir.
-- **Il donne** : « Le puits s'ouvre » → Pisteur (donjon long, 6 salles, en labyrinthe)
-
-#### Le donjon (proposé, à valider) — Sous le clocher
-- **Mini-jeu** : Le donjon (nouveau, façon Darkest Dungeon)
-- **Ce qu'il fait** : Tout se joue sur sa tablette, avec les trois héros en file : Pisteur, Alchimiste, Sage. Chacun touche l'écran à son tour. Lui : la dague, la flèche (touche l'ennemi du fond), « inspecter » pour voir un piège. Aux embranchements, c'est le Sage qui connaît le chemin.
-- **Son écran** : La torche crépite. Trois portes. Derrière l'une d'elles, quelque chose gratte… « Sage, on prend laquelle ? »
-- **Note** : Le court dure 8 à 10 minutes, le long environ 15. Personne ne meurt : un héros tombé est « sonné ». Si les trois le sont, ils remontent à l'entrée et recommencent. La fiche complète du donjon reste à écrire.
-
-#### La porte aux quatre signes — L'avant-dernière salle du donjon
-- **Ce qu'il fait** : Moustache est là. Une voix répond derrière la porte, mais la porte ne s'ouvre pas.
-- **Son écran** : Une immense porte de pierre, avec quatre signes gravés. Moustache gratte le bas de la porte et miaule. Derrière, une voix étouffée : « Moustache ? Mon gros gris, c'est toi ? »
-- **Il donne** : « Odette est derrière la porte » → Sage (pour OÙ est Odette, à l'accusation)
-
-#### Léo ! — La dernière salle du donjon
-- **Ce qu'il fait** : Pas de poursuite : Léo est coincé. L'équipe le remonte dans la crypte (de l'intérieur, la porte s'ouvre sans clé), et son grand dialogue commence tout de suite, chez le Barde.
-- **Son écran** : Une lanterne toute blanche de farine. Léo, un panier au bras, lâche tout et se colle au mur : « Laissez-moi partir ! »
-- **Il donne** : « Léo attrapé » → Barde (ouvre le grand dialogue de Léo)
-
-## Alchimiste
-
-Le rôle des preuves et des potions. L'après-midi, c'est elle qui trouve qui a écrit la lettre. Tout ce qu'elle prépare l'après-midi part dans son sac pour le donjon.
+Les preuves et les potions. Le matin, le gâteau et les cueillettes ; l'après-midi, le labo (l'écriture de la lettre) et l'atelier des plantes (les sept potions) ; la nuit, le sac et son héros dans le donjon.
 
 ### Le matin
-
-#### Le gâteau de la fête — La boulangerie de Gaspard
-- **Mini-jeu** : Assembler selon une commande (nouveau moteur)
-- **Ce qu'il fait** : La fiche de Gaspard : sept étages, un pour chaque chat d'Odette. Il faut choisir et empiler les bons étages et les bonnes décorations. La note est en étoiles.
-- **Son écran** : Gaspard : « Sept étages ! Et les sept chats en pâte d'amande ! Le maire va être ravi. »
-- **Il donne** : « Mission de fête » → tout le monde (rendue au maire l'après-midi)
-
-#### Les cueillettes pour la nuit (proposé, à valider) — La forêt, le lavoir, les jardins
-- **Ce qu'il fait** : Elle sait où trouver ses ingrédients. Certains ne se cueillent que le matin, d'autres que l'après-midi. Plus elle cueille, plus elle pourra préparer de potions pour le donjon.
-- **Son écran** : La rosée sur les pensées sauvages, la menthe au soleil, l'eau claire du lavoir… Ton panier se remplit.
-- **Note** : Les ingrédients exacts seront fixés avec la fiche du donjon.
+- **Le gâteau de la fête** — la boulangerie. Assembler selon une commande (un moteur neuf, noté en étoiles) : sept étages, un par chat d'Odette, et les décorations de la commande de Gaspard → code « Mission de fête ». Gaspard : « Sept étages et sept chats en pâte d'amande ! »
+- **Les cueillettes** — l'oseille (lavoir), le souci (potager), la mélisse (herboristerie), le lin (moulin) ; avec le code « L'herbier » (Sage) et ses énigmes : le lycopode (carrefour de la forêt), la vesse-de-loup (clairière aux lièvres, mini-jeu « Suivre la poussière »), le gui (potager, par le Pisteur ou Mimi). Détail : `E3-atelier-des-plantes.md` §4 à §8.
+- **L'atelier des plantes** est ouvert dès le matin.
 
 ### L'après-midi
+- **La lettre, au labo** — il faut « La lettre d'Odette » (Barde, ou Pisteur, ou le filet du Sage). Une fiche du labo (`jeu/src/labo/30-donnees.js`), la lettre posée sur le cuir comme un papier :
+  - **au microscope** : des grains de pollen violets → « De la lavande, comme les sachets d'Iris… Tout le village en a. » (une fausse piste) ;
+  - **au test des couleurs** (le bocal à bandelettes) : une encre noire qui ne se sépare pas → « De l'encre noire de noix de galle : l'encre que vendent les colporteurs. » (un fil vers Fortuné, qui a vendu encre et plume la veille) ;
+  - **à la loupe, l'écriture** : il faut « Les écritures du village » (Sage) : **le Livre d'or est posé sur la paillasse**, à côté de la loupe ; on le touche, on tourne ses pages, et on compare chaque écriture à la lettre (comme on compare un échantillon aux tiroirs). **Pas de tiroir « écritures »** (les tiroirs restent pour les échantillons). Sans le Livre d'or : « Il te faudrait d'autres écritures pour comparer… »
+  - Tout est trouvé → code sur l'ardoise : **« L'écriture de Mélusine » pour le Barde et le Sage**.
+- **Le Livre d'or, pas évident** (§13.14) : la lettre a trois signes — des « M » qui piquent, des « t » barrés en vague, un petit rond sur les « i ». Seule Mélusine a les trois :
 
-#### L'odeur de la lettre — L'atelier
-- **Mini-jeu** : Les bulles magiques
-- **Il lui faut** : « La lettre d'Odette » (du Barde ; ou du Pisteur)
-- **Ce qu'il fait** : Une fausse piste : ça ne prouve rien tout seul.
-- **Son écran** : De la lavande ! Toute la lettre sent la lavande… Mais Iris dit que tout le village a ses sachets dans les tiroirs.
+| Qui | Ce qu'il a écrit | Ses « M » qui piquent | Ses « t » en vague | Le rond sur les « i » | Autre chose |
+| --- | --- | --- | --- | --- | --- |
+| **Mélusine** | « Reviens vite, Odette, tes chats t'attendent ! » | oui | oui | oui | — |
+| Victor | « Bon retour, Madame Odette. » | oui | — | oui | une écriture bien droite |
+| Fortuné | « Bon voyage… euh, bon retour ! » | oui | oui | — | — |
+| Iris | « Mes fleurs t'attendent, Odette. » | — | — | oui | une petite fleur dessinée |
+| Margot | « Vive la fête et vive Odette ! » | — | oui | — | — |
+| Gaspard | « Une brioche t'attend ! » | — | — | — | une tache de farine |
+| Basile | « Vive les lampions ! » | — | — | — | de très grosses lettres |
+| Tim | « Reviens vite ! » | — | — | — | des pâtés d'encre |
+| Silas | « BON RETOUR. SILAS. » | — | — | — | tout en capitales |
+| Farinel | « De la part du moulin. » | — | — | — | penchée, toute blanche de farine |
+| Anselme | « DONG ! » | — | — | — | énorme |
+| Le maire | « Bienvenue chez toi, Odette. » | — | — | — | en pattes de mouche, minuscule |
 
-#### Qui a écrit la lettre ? — L'atelier
-- **Mini-jeu** : Les ressemblances (variante des 7 différences)
-- **Il lui faut** : « La lettre d'Odette » (du Barde)
-- **Il lui faut** : « Le carnet d'Odette » (du Barde)
-- **Il lui faut** : « Les écritures du village » (du Sage ; le Livre d'or de la fête)
-- **Ce qu'il fait** : En bas, la lettre. En haut, les écritures. Il faut trouver trois formes de lettres identiques (le moteur sait déjà dessiner des écritures différentes).
-- **Son écran** : Ce n'est pas l'écriture d'Odette : elle, elle dessine un petit chat à côté de chaque « O ». Mais ces « M » qui piquent, ces « t » barrés en vague… ce sont ceux de Mélusine !
-- **Il donne** : « L'écriture de Mélusine » → Barde, Sage (chez Mélusine, le Barde peut lui dire « C'est votre écriture »)
-
-#### La potion qui ronge la rouille — L'atelier
-- **Mini-jeu** : Le chaudron
-- **Il lui faut** : « La grille du puits » (du Pisteur)
-- **Il lui faut** : « La recette qui ronge la rouille » (du Sage) (proposé)
-- **Ce qu'il fait** : Pour le chemin du puits. À préparer l'après-midi, sans savoir encore si on en aura besoin.
-- **Son écran** : Une potion verte qui fait des bulles et sent le vinaigre. Une goutte sur un vieux clou : il fond en un instant.
-- **Il donne** : « La potion qui ronge la rouille » → Pisteur (à donner la nuit, au puits)
-
-#### Les potions du donjon — L'atelier
-- **Mini-jeu** : Le chaudron
-- **Ce qu'il fait** : Lumière, Élixir du Cœur vaillant, fumigène, poudre éclairante, rapidité, invisibilité. Tout ce qu'elle prépare pourra entrer dans son sac, cette nuit. Plus elle en prépare, plus le donjon sera facile.
-- **Son écran** : Les fioles s'alignent sur l'étagère. Mimi les renifle une par une… et éternue sur la poudre éclairante.
-
-#### Rendre le gâteau — La mairie
-- **Ce qu'il fait** : Le maire le récompense en or, selon les étoiles.
-- **Son écran** : Le maire : « Un gâteau à sept étages ! On le coupera à minuit pile. Pas une minute avant ! »
+  Et Odette (son carnet) : une écriture penchée, un petit chat à côté de chaque « O », aucun des trois signes.
+- **Le carnet d'Odette, au labo** (facultatif, il ne donne pas de code) — avec « Le carnet d'Odette » (Barde) : au test des couleurs, une encre violette → « De l'encre de baies de sureau. Odette écrit en violet ; la lettre est en noir. » ; au microscope, des poils gris → « Des poils de chat gris… Moustache dort sur ce carnet ! »
+- **Les sept potions de la nuit** — l'atelier des plantes (`E3-atelier-des-plantes.md`). Sa mission de l'après-midi : « Prépare les sept potions de la nuit. » Le Sage ne donne le code de la nuit que quand c'est fait.
+- **Rendre le gâteau** — la mairie, de l'or selon les étoiles. Le maire : « On le coupera à minuit pile. Pas une minute avant ! »
 
 ### La nuit
+- **Le sac** — pendant le grand dialogue d'Anselme : « Ton sac » et son code pour le Pisteur ; s'il manque encore une potion, il la finit avant.
+- **Dans le donjon** — son héros joue sur la tablette du Pisteur ; sur sa tablette, le chaudron du donjon (la fleur de givre et les herbes lumineuses reçues par code → les codes des recettes Givre et Baume lumineux pour le Pisteur).
 
-#### Composer le sac — Pendant le grand dialogue d'Anselme
-- **Ce qu'il fait** : Elle choisit dans ses potions ce qu'elle emporte : jusqu'à 19 potions, de 8 sortes au plus. Son écran affiche un code de 6 symboles.
-- **Son écran** : Ton sac : 2 lumières, 1 Cœur vaillant, 2 rapidités, 1 invisibilité. Code du sac : 🌙 🔑 🐟 · 🔔 ❤️ 🐱
-- **Il donne** : « Le sac (6 symboles) » → Pisteur (tapé pendant le grand dialogue d'Anselme, puis vérifié)
+## 3. Le Sage
 
-#### Dans le donjon — Sur la tablette du Pisteur
-- **Mini-jeu** : Le donjon
-- **Ce qu'il fait** : Quand c'est son tour, elle touche l'écran du Pisteur. Ses actions : lancer une fiole, soigner (relève un héros sonné), fumigène (l'ennemi rate son coup), rallumer la torche. Les potions sont celles de son sac.
-- **Son écran** : « À toi, Alchimiste ! » Un rat géant montre les dents. Tu sors ta poudre éclairante…
-
-## Sage
-
-Le rôle des livres et du chemin. Il lit le carnet d'Odette, déchiffre les archives, guide le donjon avec le plan, puis accuse. C'est aussi lui qui donne les codes des moments.
+Les livres, le chemin et l'accusation.
 
 ### Le matin
-
-#### Le tableau d'Odette — La mairie
-- **Mini-jeu** : Assembler les runes, version tableau, niveau 10
-- **Ce qu'il fait** : Un grand tableau en l'honneur d'Odette et de ses chats, à reconstituer.
-- **Son écran** : Odette, sa canne à la main, et ses sept chats autour d'elle. Le maire : « Magnifique ! On l'accrochera au-dessus du gâteau. »
-- **Il donne** : « Mission de fête » → tout le monde (rendue au maire l'après-midi)
-
-#### Les premiers doutes — Le Grand Livre
-- **Il lui faut** : « La lettre n'est pas passée par la poste » (du Barde ; Victor)
-- **Il lui faut** : « Le capuchon vers le clocher » (du Barde ; Tim, démasqué)
-- **Ce qu'il fait** : Le Grand Livre range les doutes dans une page « La lettre d'Odette ».
-- **Son écran** : Pas de timbre, pas de tampon. Glissée sous la porte de la mairie, à l'aube, par un grand capuchon reparti vers le clocher. Qui envoie une lettre comme ça ?
-
-#### Le Livre d'or de la fête (proposé, à valider) — La mairie
-- **Ce qu'il fait** : Le matin, tout le village écrit un mot pour Odette dans le Livre d'or. Le Sage peut l'emprunter à la mairie, le matin ou l'après-midi.
-- **Son écran** : « Reviens vite, Odette ! » « Tes chats t'attendent ! » « Vive la fête ! » Une page entière d'écritures différentes.
-- **Il donne** : « Les écritures du village » → Alchimiste (pour comparer avec la lettre)
+- **Le tableau d'Odette** — la mairie. Assembler les runes, version tableau, niveau 10 : Odette, sa canne, ses sept chats → code « Mission de fête ». Le maire : « Magnifique ! On l'accrochera au-dessus du gâteau. »
+- **Le Livre d'or de la fête** — la mairie (validé le 8 novembre). « Reviens vite, Odette ! » « Vive la fête ! »… une page pleine d'écritures → code « Les écritures du village » pour l'Alchimiste (le Livre d'or arrive sur sa paillasse).
+- **L'herbier des Fondateurs** — le Grand Livre. Trois énigmes à lire à voix haute à l'Alchimiste, et le code « L'herbier » pour elle (`E3-atelier-des-plantes.md` §5).
+- **Les premiers doutes** — avec « La lettre n'est pas passée par la poste » et « Le capuchon vers le clocher » (Barde) : une page « La lettre d'Odette » s'ouvre dans le Grand Livre : « Pas de timbre, pas de tampon. Glissée sous la porte de la mairie, à l'aube, par un grand capuchon reparti vers le clocher. Qui envoie une lettre comme ça ? »
+- Il donne le code de l'après-midi.
 
 ### L'après-midi
-
-#### La lettre et le carnet d'Odette — Le Grand Livre
-- **Il lui faut** : « La lettre d'Odette » (du Barde ; ou du Pisteur)
-- **Il lui faut** : « Le carnet d'Odette » (du Barde)
-- **Ce qu'il fait** : Il compare les deux écritures dans son Grand Livre.
-- **Son écran** : Odette écrit penché, avec un petit chat dessiné à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n'est pas Odette qui l'a écrite : la lettre est fausse.
-
-#### Les sept chats du carnet — Le Grand Livre
-- **Il lui faut** : « Le carnet d'Odette » (du Barde)
-- **Ce qu'il fait** : Une page par chat, de la main d'Odette.
-- **Son écran** : « Moustache : mon gros gris, mon malin. Il a un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! »
-- **Il donne** : « Moustache a six doigts » → Pisteur (pour reconnaître ses traces)
-
-#### Le parchemin des souterrains — La bibliothèque, les archives
-- **Mini-jeu** : L'alphabet secret
-- **Il lui faut** : « La grille du puits » (du Pisteur)
-- **Ce qu'il fait** : Pour le chemin long. Une fois déchiffré, le plan reste sur sa tablette : c'est lui qui guidera le donjon.
-- **Son écran** : « Du vieux puits part le chemin des Fondateurs. Il serpente sous la forêt et finit sous le clocher. » Et un plan, plein d'embranchements.
-
-#### La recette qui ronge la rouille (proposé, à valider) — Le Grand Livre
-- **Il lui faut** : « La grille du puits » (du Pisteur)
-- **Ce qu'il fait** : Une recette secrète, qu'il lit à voix haute à l'Alchimiste, comme l'encre révélatrice.
-- **Il donne** : « La recette qui ronge la rouille » → Alchimiste
-
-#### La porte des Fondateurs (proposé, à valider) — La bibliothèque, les archives
-- **Ce qu'il fait** : Une page qu'on n'est pas obligé de trouver. C'est une graine pour l'enquête 4.
-- **Son écran** : Sous le clocher, une grande porte à quatre signes : une main qui cherche, un chaudron, une bouche qui chante, un livre ouvert. « Seuls les quatre, ensemble, pourront l'ouvrir. »
-- **Note** : Les quatre signes sont les quatre rôles : ça rejoint la légende des Cinq familles de Margot (« une pour chercher, une pour soigner, une pour parler, une pour savoir… et une pour garder »).
-
-#### L'aveu de Mélusine — Le Grand Livre
-- **Il lui faut** : « L'écriture de Mélusine » (de l'Alchimiste)
-- **Il lui faut** : « L'aveu de Mélusine » (du Barde)
-- **Ce qu'il fait** : Les deux preuves pour la question QUI.
-- **Son écran** : Mélusine a écrit la lettre, mot pour mot, sous la dictée d'un homme en cape noire, à la voix étouffée, qui sentait la lavande. Il reviendra cette nuit, quand la Grosse Marie sonnera.
-
-#### Rendre le tableau, et lancer la nuit — La mairie
-- **Ce qu'il fait** : Le maire le récompense en or. Puis, comme à chaque moment, le Sage donne le code de la nuit à chacun quand il a fini.
-- **Il donne** : « Le code de la nuit » → tout le monde
+- **La lettre et le carnet** — avec les deux codes du Barde : « Odette écrit penché, avec un petit chat à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n'est pas Odette qui l'a écrite : la lettre est fausse. »
+- **Les sept chats du carnet** — « Moustache : mon gros gris, mon malin. Un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! » → code « Moustache a six doigts » pour le Pisteur.
+- **Le plan des Fondateurs** (décidé le 11 novembre) — dans la couverture du carnet, un vieux parchemin plié, couvert de signes. L'alphabet secret (le mini-jeu, `mj-sage-codes.js`) ; déchiffré : « LE CHEMIN DES FONDATEURS ». Le plan entre dans son Grand Livre : c'est le plan du donjon (avec ses notes codées et son encre invisible, `jeu/donjon/carte.js`, `PLAN`). Un mot d'Odette, au crayon : « Ne le montrer à personne. » Rien ne dépend de l'entrée (crypte ou puits).
+- **QUI** — avec « L'écriture de Mélusine » (Alchimiste) et « L'aveu de Mélusine » (Barde) : « Mélusine a écrit la lettre, mot pour mot, sous la dictée d'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera. »
+- **Rendre le tableau** — la mairie, de l'or. **Le filet de la lettre** : si l'équipe n'a toujours pas la lettre, le maire : « Je l'accroche sous votre tableau, pour que tout le village la lise ce soir ! » → le Sage reçoit « La lettre d'Odette » (et en donne le code à l'Alchimiste).
+- **Le code de la nuit**, quand tout le monde a fini (les sept potions comprises).
 
 ### La nuit
+- **Le donjon** — sur sa tablette : le plan (il dit le chemin à voix haute ; le Pisteur ne voit que la brume), le carnet de l'aventurier (trouvé à l'entrée), les pages blanches de sauvegarde, la rune de lumière (trouvée dans la galerie effondrée). Son héros joue sur la tablette du Pisteur (la rune de l'œil, le bouclier de runes, la rune de lumière).
+- **Odette est derrière la porte** (Pisteur) — OÙ est prouvé. **La page de la porte des Fondateurs** s'ouvre toute seule dans le Grand Livre : « Une porte ronde, scellée. Quatre signes : l'œil, le chaudron, la lyre et l'étoile. Seuls les quatre, ensemble, l'ouvriront. » (Les quatre signes sont ceux du donjon : `scenes/scenes.js`, la porte et la pierre de la salle des rats.)
+- **L'accusation** — après Léo, avec toute l'équipe :
+  - QUI a écrit la fausse lettre ? Mélusine · Margot · Iris · Victor · Fortuné (réponse : Mélusine) ;
+  - OÙ est Odette ? Sous le clocher, derrière la porte aux quatre signes · Au fond du puits · Au moulin · Au Vieux Chêne (réponse : sous le clocher) ;
+  - la question bonus, qui ne coûte pas de cœur : QUI est le Corbeau ? Grosbec · Silas · Fortuné (la réponse reste secrète jusqu'à la suite de la saison).
+  - Puis la scène finale, sur toutes les tablettes (`E3-dialogues-et-trame.md` §4.8).
 
-#### Guider le donjon — Sur sa propre tablette
-- **Ce qu'il fait** : Pour le chemin long, il lui faut le parchemin déchiffré l'après-midi ; le chemin court, 3 salles, n'a pas besoin de plan. Le Pisteur ne voit que les embranchements. Le Sage regarde le plan sur sa tablette et dit le chemin à voix haute. Une mauvaise porte : un cul-de-sac, une rencontre de plus et de la torche perdue.
-- **Son écran** : « À gauche après l'arche, puis tout droit. Attention, la troisième salle est un cul-de-sac ! »
+## 4. Tous les codes de l'enquête 3
 
-#### Dans le donjon — Sur la tablette du Pisteur
-- **Mini-jeu** : Le donjon
-- **Ce qu'il fait** : Quand c'est son tour, il touche l'écran du Pisteur. Ses actions : éblouir (un animal passe son tour), lire le Grand Livre (la faiblesse de l'ennemi apparaît), bouclier de runes.
-- **Son écran** : « À toi, Sage ! » L'araignée des caves descend de son fil. Tu ouvres le Grand Livre : elle a peur de la lumière.
-
-#### Où est Odette ? — Devant la porte aux quatre signes
-- **Il lui faut** : « Odette est derrière la porte » (du Pisteur)
-- **Ce qu'il fait** : Le code du Pisteur répond à OÙ, pour l'accusation : sous le clocher, derrière la porte aux quatre signes.
-- **Son écran** : « Moustache ? Mon gros gris, c'est toi ? » C'est la voix d'Odette : elle est vivante, derrière la porte. Mais la porte reste fermée.
-
-#### L'accusation — Dans la crypte
-- **Il lui faut** : « Ce que Léo a avoué, à voix haute » (du Barde ; facultatif : selon la fin)
-- **Ce qu'il fait** : QUI a écrit la fausse lettre ? OÙ est Odette ? Puis la question bonus, qui ne coûte aucun cœur : QUI est le Corbeau ? Juste après, la Grosse Marie sonne minuit, et le maire descend dans la crypte.
-- **Son écran** : QUI a écrit la lettre ? Mélusine · Margot · Iris · Victor · Fortuné. OÙ est Odette ? Sous le clocher · Au fond du puits · Au moulin · Au Vieux Chêne.
-
-## Tous les codes de l'enquête 3, moment par moment
+Les codes de l'E3 sont neufs ; ils seront gelés dès leur première mise en ligne (`codes-fixes.js`). Ceux du donjon existent déjà (`jeu/donjon/donjon-codes.js`) : ils seront repris dans la table de l'enquête au branchement.
 
 ### Le matin
-
 | De | Code | Pour | Note |
 | --- | --- | --- | --- |
 | Barde | La lettre n'est pas passée par la poste | Sage | Victor |
-| Barde | Le capuchon vers le clocher | Pisteur, Sage | Tim, démasqué |
-| Pisteur | Mission de fête (1 sur 2) | tout le monde | rendue au maire l'après-midi |
-| Pisteur | Mission de fête (2 sur 2) | tout le monde | rendue au maire l'après-midi |
-| Alchimiste | Mission de fête | tout le monde | rendue au maire l'après-midi |
-| Sage | Mission de fête | tout le monde | rendue au maire l'après-midi |
-| Sage | Les écritures du village | Alchimiste | pour comparer avec la lettre |
+| Barde | Le capuchon vers le clocher | Sage | Tim, démasqué |
+| Pisteur | Mission de fête (1 sur 2), (2 sur 2) | (le maire) | rendues l'après-midi |
+| Alchimiste | Mission de fête | (le maire) | rendue l'après-midi |
+| Sage | Mission de fête | (le maire) | rendue l'après-midi |
+| Sage | Les écritures du village | Alchimiste | le Livre d'or sur sa paillasse |
+| Sage | L'herbier | Alchimiste | ouvre les trois plantes rares |
+| Alchimiste | Le gui du pommier | Pisteur | il grimpe (sauf avec Mimi) |
+| Pisteur | Le gui | Alchimiste | la plante arrive à l'atelier |
+| Sage | Le code de l'après-midi | tout le monde | comme à chaque moment |
 
 ### L'après-midi
-
 | De | Code | Pour | Note |
 | --- | --- | --- | --- |
-| Barde | La lettre d'Odette | Sage, Alchimiste | le grand dialogue du maire |
-| Barde | Le carnet d'Odette | Sage, Alchimiste | chez Odette |
+| Barde | La lettre d'Odette | Sage, Alchimiste | le maire ; ou le Pisteur caché ; ou le filet du Sage |
+| Barde | Le carnet d'Odette | Sage, Alchimiste | chez Odette (le plan est dans sa couverture) |
 | Barde | Les traces de Moustache | Pisteur | chez Odette |
-| Barde | L'aveu de Mélusine | Sage |  |
-| Pisteur | La lettre d'Odette | Sage, Alchimiste |  |
-| Pisteur | La crypte est fermée | Barde | il faut la clé d'Anselme |
-| Pisteur | La grille du puits | Alchimiste, Sage | une potion pour la rouille, et les archives des souterrains |
-| Alchimiste | L'écriture de Mélusine | Barde, Sage | chez Mélusine, le Barde peut lui dire « C'est votre écriture » |
-| Alchimiste | La potion qui ronge la rouille | Pisteur | à donner la nuit, au puits |
-| Sage | Moustache a six doigts | Pisteur | pour reconnaître ses traces |
-| Sage | La recette qui ronge la rouille | Alchimiste |  |
-| Sage | Le code de la nuit | tout le monde |  |
+| Sage | Moustache a six doigts | Pisteur | le carnet |
+| Pisteur | La crypte est fermée | Barde | les traces |
+| Alchimiste | L'écriture de Mélusine | Barde, Sage | le labo |
+| Barde | L'aveu de Mélusine | Sage | Mélusine démasquée (filet : la nuit, à la fête) |
+| Sage | Le code de la nuit | tout le monde | quand tout le monde a fini |
+| (le gui peut aussi passer l'après-midi) | | | |
 
 ### La nuit
-
 | De | Code | Pour | Note |
 | --- | --- | --- | --- |
-| Barde | La clé est au clou | Pisteur | le grand dialogue d'Anselme |
-| Barde | Ce que Léo a avoué, à voix haute | Sage |  |
-| Pisteur | Odette est derrière la porte | Sage | pour OÙ est Odette, à l'accusation |
-| Pisteur | Léo attrapé | Barde | ouvre le grand dialogue de Léo |
-| Alchimiste | Le sac (6 symboles) | Pisteur | tapé pendant le grand dialogue d'Anselme, puis vérifié |
+| Barde | La clé est au clou | Pisteur | Anselme réussi |
+| Barde | Le vieux puits | Pisteur | Anselme raté (si c'est le Pisteur qui rate, le puits apparaît chez lui) |
+| Alchimiste | Le sac | Pisteur | pendant le grand dialogue d'Anselme |
+| Pisteur | Le carnet de l'aventurier | Sage | à l'entrée du donjon (existe : `carnet:aventurier`) |
+| Pisteur | La rune de lumière | Sage | la galerie effondrée (existe : `rune:lumiere`) |
+| Pisteur | Les herbes lumineuses, la fleur de givre | Alchimiste | le donjon (existent) |
+| Alchimiste | Les recettes Baume lumineux, Givre | Pisteur | le donjon (existent) |
+| Pisteur | La page déchirée, la page blanche | Sage | le donjon (existent) |
+| Sage | Les sauvegardes 1 à 4 | Pisteur | les pages blanches (existent) |
+| Barde | La Grosse Marie | Pisteur | une fois, hors combat |
+| Barde | Le maire est retenu | Pisteur | avant la dernière salle |
+| Pisteur | Odette est derrière la porte | Sage | existe : `porte:odette` |
+| Pisteur | Léo attrapé, ou Léo s'est enfui | Barde | existe : `leo:attrape` ; « Léo s'est enfui » est nouveau |
+| Barde | Ce que Léo a avoué (à voix haute) | Sage | facultatif |
 
-## Les schémas (qui fait quoi, dans l'ordre)
+## 5. Qui prouve quoi (le test de la Bible)
+
+**QUI a écrit la lettre ? Mélusine.**
+| Preuve | Qui la trouve | Ce qu'il lui faut |
+| --- | --- | --- |
+| La lettre est fausse | Sage | la lettre (Barde, ou Pisteur, ou filet) + le carnet (Barde) |
+| **L'écriture de Mélusine** | Alchimiste (labo) | la lettre + le Livre d'or (Sage) |
+| **L'aveu de Mélusine** | Barde | le code de l'écriture (Alchimiste) ; filet la nuit |
+| Indices seulement (pas des preuves) | Barde | la main fine aux épingles (Fortuné), le tissu neuf (Margot, Mélusine), « Pardon, Odette » (porte), l'écoute de la nuit ; l'encre de colporteur (Alchimiste) |
+
+**OÙ est Odette ? Sous le clocher, derrière la porte aux quatre signes.**
+| Preuve | Qui la trouve | Ce qu'il lui faut |
+| --- | --- | --- |
+| **Odette est derrière la porte** | Pisteur (donjon) | les traces (Barde + Sage) ; la clé (Barde + Pisteur) ou le puits (Pisteur + l'acide de l'Alchimiste) ; le donjon à trois (Pisteur, Alchimiste et ses potions, Sage et son plan) |
+| Indices seulement | Barde | l'aveu de Léo, la Lanterne du veilleur, les écoutes de la nuit |
+
+**Le Corbeau (bonus)** : la bague de l'aveu de Léo, le lapsus de la lanterne, l'homme en cape qui entre à la mairie (Lanterne). Rien d'obligatoire.
+
+**Le test** (chaque rôle est indispensable) :
+- **Sans l'Alchimiste** : pas d'écriture, donc pas d'aveu (la question de Mélusine a besoin du code) ; QUI reste ouvert entre les cinq suspects (il ne reste que des indices). Et le donjon sans potions ne se gagne pas (§12.51).
+- **Sans le Sage** : pas de Livre d'or (pas d'écriture, pas d'aveu), pas de plan (le donjon est impossible sans lui, §12.51), personne pour accuser.
+- **Sans le Barde** : pas de traces (le Pisteur ne peut pas commencer), pas de clé ni de puits (le puits n'apparaît qu'après un échec du clocher, qui passe par lui), pas d'aveu.
+- **Sans le Pisteur** : pas de traces, pas de clé, pas de donjon (il se joue sur sa tablette) : OÙ reste ouvert.
+- **Avec tout le monde** : une seule réponse à QUI, une seule à OÙ. Aucune preuve ne dépend d'un mensonge démasqué « plus tard » : les seuls mensonges indispensables (Mélusine) ont leur filet.
+- À vérifier à la construction avec `tools/verif.js 3` (comme pour l'E2 : une seule solution avec tout, plusieurs sans chaque rôle).
+
+## 6. Les schémas (dans l'ordre)
 
 ### Le matin
-
-**Le matin, c'est la fête qui compte**
-
-1. **tout le monde** : Le maire lit la lettre « d'Odette » et annonce la fête de cette nuit. L'écran des missions donne à chacun sa mission.
-2. **Barde** : Le maire apparaît sur la tablette du Barde et lui donne 10 pièces : le marché aux fleurs.
-3. **Pisteur** : Les banderoles (Tir à l'arc) et l'oie du festin (Course-poursuite).
-4. **Alchimiste** : Le gâteau à sept étages, et les cueillettes pour la nuit.
-5. **Sage** : Le tableau d'Odette (Assembler les runes), et le Livre d'or de la fête.
-6. **Barde + Sage** : Les premiers doutes : pas de timbre (Victor), un capuchon parti vers le clocher (Tim).
+1. **Tout le monde** : la lettre lue par le maire, l'écran des missions.
+2. **Barde** : le marché aux fleurs ; les villageois (les indices du maire, les premiers doutes).
+3. **Pisteur** : les banderoles et l'oie.
+4. **Alchimiste** : le gâteau ; les cueillettes ; les premières potions.
+5. **Sage** : le tableau ; le Livre d'or (→ Alchimiste) ; l'herbier (→ Alchimiste) ; les premiers doutes.
 
 ### L'après-midi
-
-**Qui a écrit la lettre ?**
-
-1. **Barde + Pisteur** : La lettre : le grand dialogue du maire, ou le Pisteur caché dans la mairie.
-2. **Barde** : Chez Odette : le carnet, avec sa vraie écriture.
-3. **Sage** : La lettre et le carnet : ce n'est pas Odette. La lettre est fausse.
-4. **Sage** : Le Livre d'or : toutes les écritures du village, pour l'Alchimiste.
-5. **Alchimiste** : Les ressemblances : c'est l'écriture de Mélusine.
-6. **Barde** : « C'est votre écriture. » Mélusine avoue : un homme en cape, et « il reviendra cette nuit ».
-7. **Sage** : Deux preuves pour la question QUI.
-
-**Où aller cette nuit ?**
-
-1. **Barde** : Chez Odette, Moustache file en laissant des traces.
-2. **Sage** : Le carnet : Moustache a six doigts.
-3. **Pisteur** : Il suit les traces à six doigts, au milieu de celles de tous les chats.
-4. **Pisteur** : Deux pistes : sous la porte de la crypte, fermée à clé, et à la grille rouillée du puits.
-
-### La fourche : préparer les deux chemins (fin d'après-midi)
-
-**Par le clocher (chemin court)**
-
-1. **Barde** : Indices posés l'après-midi : Anselme, Basile, Silas.
-2. **Barde** : La nuit : le grand dialogue d'Anselme, au clocher.
-
-**Par le puits (chemin long)**
-
-1. **Alchimiste** : La potion qui ronge la rouille.
-2. **Sage** : Le parchemin des souterrains, déchiffré.
+- **QUI** : Barde (la lettre, le carnet) → Sage (la lettre est fausse) ; Sage (Livre d'or) + Barde (la lettre) → Alchimiste (l'écriture de Mélusine) → Barde (l'aveu) → Sage.
+- **Le chemin** : Barde (les traces) + Sage (six doigts) → Pisteur (la crypte est fermée) → Barde (il faudra Anselme) ; Sage (le plan dans le carnet).
+- **Les potions** : Alchimiste (les cueillettes, l'herbier, le gui par le Pisteur) → les sept potions.
 
 ### La nuit
-
-**Pour commencer**
-
-1. **tout le monde** : La fête commence sur la place. Tout le village y est : c'est la couverture.
-2. **Alchimiste + Pisteur** : Pendant le grand dialogue d'Anselme : l'Alchimiste compose son sac, le Pisteur le tape.
-
-**Par le clocher (chemin court)**
-
-1. **Barde** : Le grand dialogue d'Anselme. Il accepte de l'aide pour sonner l'ouverture.
-2. **Pisteur** : DONG ! Il décroche la clé du clou (Se cacher).
-3. **Pisteur + Alchimiste + Sage** : Le donjon court : 3 salles, 8 à 10 minutes.
-
-**Par le puits (chemin long)**
-
-1. **Barde** : Anselme n'a pas compris : « Bon, je monte sonner, moi ! »
-2. **Alchimiste + Pisteur** : La potion fait fondre la grille.
-3. **Pisteur + Alchimiste + Sage** : Le donjon long, en labyrinthe : 6 salles, environ 15 minutes. Le Sage guide.
-
-**Les deux chemins arrivent au même endroit**
-
-1. **Pisteur** : L'avant-dernière salle : la porte aux quatre signes. Moustache gratte, une voix répond : « Moustache ? Mon gros gris, c'est toi ? »
-2. **Sage** : Le code du Pisteur : Odette est derrière la porte.
-3. **Pisteur** : La dernière salle : Léo, coincé. On le remonte dans la crypte.
-4. **Barde** : Le grand dialogue de Léo, tout de suite, sans questions : 4 fins possibles.
-5. **Sage** : L'accusation : QUI a écrit la lettre, OÙ est Odette, et le Corbeau.
-6. **tout le monde** : Minuit. La Grosse Marie sonne. Le maire descend dans la crypte, retire ses gants : la bague à tête de corbeau. « Gardes, enfermez-les ! »
+1. **Barde** : Anselme. Réussi → **Pisteur** : la clé, dans le clocher. Raté (l'un ou l'autre) → le puits et l'acide.
+2. **Alchimiste → Pisteur** : le sac.
+3. **Pisteur + Alchimiste + Sage** : le donjon (le Sage guide).
+4. **Barde, pendant ce temps** : la fête et ses indices ; la Grosse Marie (→ Pisteur) ; retenir le maire (→ Pisteur).
+5. **Pisteur → Sage** : Odette est derrière la porte (la page des Fondateurs).
+6. **Pisteur → Barde** : Léo attrapé (ou enfui) ; le grand dialogue de Léo.
+7. **Sage** : l'accusation. Puis minuit, le maire, la bague, le cachot.
