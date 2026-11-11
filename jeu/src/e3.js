@@ -1,393 +1,510 @@
 /* ==========================================================
-   Enquête 3 — Les feux du moulin (niveau 3) — version saison 1 (DESIGN-saison1.md § 7)
-   Solution : Fortuné, sous les meules, aidé par Basile (3 questions, 5 × 3 × 3 = 45 réponses).
-   Clés de voûte : la couleur du fil (Alchimiste + carnet de Mélusine), la grille du Sage (Margot),
-   les traces dans la farine (l'indice partiel suffit).
+   Enquête 3 — La lettre d'Odette — DESIGN-saison1.md § 13 (surtout § 13.14) et jeu/enquete3/*.md (le détail, qui fait foi)
+   EN CONSTRUCTION, étape par étape (§ 13.14) : fermée aux joueurs (enEcriture), ouverte avec le mode test (M.enEcriture, moteur-base.js).
+   Étape 1 (11 novembre) : la lettre, l'écran des missions, le marché aux fleurs du Barde, les villageois du matin et de l'après-midi,
+   les occupés, les écoutes aux portes. Pas encore : les grands dialogues (étape 2), le Sage (3), l'Alchimiste (4), le Pisteur (5),
+   le donjon (6), la nuit et la fin (7), le vérificateur (8).
+
+   Solution : Mélusine a écrit la fausse lettre · Odette est sous le clocher, derrière la porte aux quatre signes.
+   Ce qui s'est passé (jamais dit tel quel) : un homme en cape (le maire, qui ne ment jamais) a payé Mélusine pour écrire, mot pour mot,
+   une lettre « d'Odette », glissée à l'aube sous la porte de la mairie. Odette est enfermée sous le clocher ; Léo, l'apprenti du meunier,
+   lui porte à manger tous les soirs. Moustache, son chat à six doigts, la retrouve toujours.
    ========================================================== */
 (function(){
 'use strict';
 var E = window.ENQUETES = window.ENQUETES || {};
-var D = window.DONNEES;
+
+/* Les signes des menteurs (barde.js lit E.tics) : les mêmes qu'à l'enquête 2 (le tableau de liège est gardé), et celui de Léo, nouveau.
+   Au début de l'enquête, les étiquettes qui manquent s'épinglent toutes seules (signesDepart) ; celle de Léo, c'est Farinel qui l'épingle. */
+var TICS = {margot:'yeuxbas', victor:'morsure', fortune:'coin', tim:'mordille', melusine:'rougeur', farinel:'double', leo:'sueur'};
+
+/* g : ce qu'apporte la réponse (pour nous, et pour les objets du Barde à venir : la Lettre de recommandation, le Carnet à rubans) :
+   'r' un ruban (l'indice d'un grand dialogue), 'e' l'enquête, 'h' l'histoire de la saison. */
+var M_ = ['matin'], A_ = ['apresmidi'];
 
 E[3] = {
-  id:3, titre:'Les feux du moulin', niveau:3,
-  /* L'ancienne histoire (le Corbeau) ne suit plus la nouvelle enquête 2 (§ 12.11) : pas jouable tant qu'elle n'est pas réécrite.
-     Le village montre « Enquête 3 : en cours d'écriture » (moteur-ecrans.js, moteur-actions.js), verif.js la laisse de côté. */
+  id:3, titre:'La lettre d\'Odette', niveau:3,
+  /* pas encore jouable par les joueurs : le village dit « en cours d'écriture ». Avec le mode test (#test), elle s'ouvre (M.enEcriture). */
   enEcriture:true,
-  moments:['matin', 'apresmidi', 'soir', 'nuit'],
-  lettre:'Chers enquêteurs, depuis trois nuits, des lumières vertes dansent au vieux moulin, et chaque matin, un sac de farine a disparu ! Gaspard accuse le meunier, le meunier jure qu\'il n\'y est pour rien, et tout le village se dispute. Gaspard dit aussi que ces sacs sont bien trop lourds pour une seule personne… J\'ai embauché un garde champêtre, Silas, mais il ne voit rien. Trouvez QUI vole la farine, OÙ, dans le moulin, il cache son secret… et QUI l\'aide à porter les sacs !',
-  signature:'Monsieur Grosbec, maire de Brumeval',
+  moments:['matin', 'apresmidi', 'nuit'],
+  sansActions:true,
+  salutUneFois:true,
+
+  /* ---------- L'ouverture (moteur-ecrans.js, vueLettre) : la lettre « d'Odette », lue par le maire sur la place, à l'aube ----------
+     Le texte de la lettre est celui que l'Alchimiste analysera : à garder mot pour mot. */
+  lettre:'Mon cher Monsieur le maire, ne vous faites pas de souci pour moi : je suis partie quelques jours chez ma sœur, de l\'autre côté de la forêt. Je vais très bien et je reviendrai la semaine prochaine. Je ne retrouve plus ma canne : si quelqu\'un la trouve, qu\'il la rapporte chez moi, au 2, rue des Lanternes. Je vous embrasse tous. Odette.',
+  signature:'Odette',
+  lettreLue:{titre:'À l\'aube, sur la place, le maire lit une lettre…', apres:'Odette va bien ! Pour fêter ça : grande fête cette nuit sur la place, jusqu\'à minuit !'},
+  /* L'écran des missions du maire, juste après la lettre, pour tous (§ 13.6) : une ligne par rôle, et le bouton jaune */
+  missionsMaire:{titre:'Les missions du maire', sous:'Pour la fête de cette nuit, chacun a sa mission :', bouton:'Commencer l\'enquête 3',
+    barde:'Achète les fleurs de la fête.',
+    pisteur:'Accroche les banderoles et rattrape l\'oie de Gaspard.',
+    alchimiste:'Fais le gâteau de la fête, d\'après la commande de Gaspard.',
+    sage:'Peins le tableau d\'Odette et de ses chats.'},
   missions:{
-    pisteur:'Fouille le moulin et le pont. Le soir, quelqu\'un rôde au bord de l\'eau : attrape-le ! La nuit, cache-toi dans le moulin pour voir d\'où viennent les lumières… il te faudra de la lumière.',
-    alchimiste:'Analyse ce que le Pisteur rapporte du moulin. Un fil de couleur ? Reproduis sa couleur exacte : Mélusine peut te prêter de quoi faire des teintures. Prépare aussi une potion de lumière pour le Pisteur, et l\'Élixir du Cœur vaillant pour le Sage.',
-    barde:'Tout le monde a un avis sur le meunier ! Interroge les habitants en regardant bien leur visage, interroge ensemble les témoins de la taverne, et va voir Mélusine : elle connaît toutes les couleurs du village.',
-    sage:'Étudie les vieux plans du moulin et remplis la grille « Où était chacun à minuit ? ». Compare la couleur de l\'Alchimiste avec le carnet de Mélusine. Tu donnes les codes et tu accuses : il y a TROIS questions.'
+    pisteur:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard. Et ouvre l\'œil : cette lettre est bizarre…',
+    alchimiste:'Fais le gâteau de la fête, d\'après la commande de Gaspard. Et prépare ton atelier : l\'équipe aura besoin de toi.',
+    barde:'Achète les fleurs de la fête avec les pièces du maire. Puis interroge le village : chacun te répond à deux questions, pas plus. Choisis bien !',
+    sage:'Peins le tableau d\'Odette et de ses chats. Lis ton Grand Livre à l\'équipe, donne le code de chaque moment, et accuse quand toute l\'équipe est d\'accord.'
   },
-  /* Missions de base, en haut du Carnet (mission.js) : générales, sans chemin tout tracé. */
+  /* Les missions de base, en haut du Carnet (mission.js). Celles du Pisteur, de l'Alchimiste et du Sage arrivent avec leurs étapes (3 à 5). */
   etapes:{
+    barde:[
+      {ic:'💐', t:'Le maire t\'a donné 10 pièces : rapporte-lui au moins 10 bouquets pour la fête.', fait:[{vu:'marche:dix'}]},
+      {ic:'🗣️', t:'Chaque villageois répond à deux questions par moment, pas plus : choisis bien !', fait:[{bavard:4}]},
+      {ic:'🦯', t:'Odette demande qu\'on rapporte sa canne chez elle, au 2, rue des Lanternes.', fait:[{vu:'barde:voisin:0'}]},
+      {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
+    ],
     pisteur:[
-      {ic:'🌾', t:'Fouille le vieux moulin de fond en comble.',
-        fait:[{et:[{ou:[{essaye:'pisteur:moulin:farine'}, {apres:3}]}, {vu:'pisteur:moulin:fil'}, {vu:'pisteur:moulin:meules'}]}]},
-      {ic:'🌉', t:'Attrape celui qui rôde au bord de la rivière, le soir.', fait:[{essaye:'pisteur:pont:poursuite'}]},
-      {ic:'💚', t:'Découvre où vont les lumières vertes.', fait:[{essaye:'pisteur:moulin:guet'}, {vu:'pisteur:tunnel_moulin:tunnel'}]},
-      {piste:true, t:'La nuit, le moulin est tout noir : il te faudra de la lumière.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI vole la farine, OÙ est son secret, et QUI l\'aide à porter les sacs ?'}
+      {libre:true, ic:'🎉', t:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard.'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     alchimiste:[
-      {ic:'🔬', t:'Fais parler ce que le Pisteur rapporte du moulin.', fait:[{et:[{ou:[{analyse:'poussiere'}, {fini:'alchimiste:analyse:poussiere'}]}, {ou:[{analyse:'fil'}, {fini:'alchimiste:analyse:fil'}]}]}]},
-      {ic:'💡', t:'Aide le Pisteur à y voir clair, la nuit.', fait:[{donne:'pot:lumiere'}]},
-      {ic:'❤️', t:'Prépare l\'Élixir du Cœur vaillant pour le Sage (la recette est dans son Grand Livre).', fait:[{potion:'coeur'}]},
-      {piste:true, t:'Pour reproduire une couleur, il faut des teintures : le Barde peut t\'aider à en trouver.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI vole la farine, OÙ est son secret, et QUI l\'aide à porter les sacs ?'}
-    ],
-    barde:[
-      {ic:'🎨', t:'Trouve qui, au village, peut aider l\'équipe avec les couleurs.', fait:[{et:[{vu:'barde:melusine:0'}, {vu:'barde:melusine:1'}]}]},
-      {ic:'🔍', t:'Démasque celui qui porte les sacs.', fait:[{vu:'verite:basile:1'}]},
-      {ic:'🍺', t:'Le soir, à la taverne, interroge les témoins tous ensemble : lequel ment ?', fait:[{vu:'ecoute:depositions'}, {vu:'ecoute2:depositions'}]},
-      {piste:true, t:'Une couturière connaît toutes les couleurs du village.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI vole la farine, OÙ est son secret, et QUI l\'aide à porter les sacs ?'}
+      {libre:true, ic:'🎂', t:'Fais le gâteau de la fête, d\'après la commande de Gaspard.'},
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[
-      {ic:'📐', t:'Découvre ce qui a disparu des vieux plans du moulin.', fait:[{page:'plan'}, {fini:'sage:page:plan'}]},
-      {ic:'🧩', t:'Vérifie où était chacun à minuit.', fait:[{page:'grille'}, {fini:'sage:page:grille'}]},
-      {ic:'🧵', t:'Trouve d\'où vient le fil vert.', fait:[{page:'carnet'}]},
-      {piste:true, t:'Compare ce que disent les témoins : qui était où, à minuit ?'},
-      {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse. Attention, TROIS questions : QUI, OÙ, et QUI l\'aide ?'}
+      {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
+      {libre:true, ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats.'},
+      {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
+      {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
   },
-  qui:{titre:'QUI vole la farine du moulin ?', choix:['fortune', 'farinel', 'silas', 'iris', 'margot']},
-  ou:{titre:'OÙ se cache son secret ?', choix:[
-    {id:'meules', nom:'Sous les meules', ic:'⚙️'}, {id:'roue', nom:'Derrière la roue', ic:'🎡'}, {id:'pont', nom:'Sous le pont', ic:'🌉'}]},
-  quoi:{titre:'QUI l\'aide à porter les sacs ?', choix:[
-    {id:'basile', nom:'Basile', ic:'👨‍🌾', pnj:true}, {id:'silas', nom:'Silas', ic:'💂', pnj:true}, {id:'farinel', nom:'Farinel', ic:'🧑‍🌾', pnj:true}]},
-  solution:{qui:'fortune', ou:'meules', quoi:'basile'},
-  /* La quatrième accusation (Romain, 3 novembre) : après les trois bonnes réponses, le Sage peut désigner le Corbeau.
-     Elle ne coûte aucun cœur. Silas est arrivé cette semaine (le Corbeau veille depuis l'enquête 1), Fortuné a été trompé par l'homme masqué.
-     La fin est la même pour toute l'équipe : le maire se démasque et fait arrêter les enquêteurs. */
-  corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec',
-    t:'Vous avez trouvé le voleur de farine. Mais depuis la Fête des Lanternes, quelqu\'un se cache derrière tout ça. Relisez votre calepin, parlez-en ensemble… et désignez le Corbeau !',
-    bravo:'Tu as vu juste : le Corbeau, c\'est le maire ! Mais chut… Regardez bien la fin de l\'histoire.',
-    rate:'Hmm… Ce n\'est pas lui. Regardez bien la fin de l\'histoire : vous allez comprendre.'},
-  /* Les photos du tableau de liège du Barde (liege.js) : les suspects, ceux qui ont pu aider, deux témoins, les lieux du OÙ, le moulin et la taverne */
-  liege:{pnj:['fortune', 'farinel', 'silas', 'iris', 'margot', 'basile', 'victor', 'melusine'], lieux:['moulin', 'meules', 'roue', 'pont', 'taverne']},
-  sensibles:['fortuné', 'colporteur', 'pastille', 'pelle', 'trésor', 'verre vert', 'sous le plancher', 'cave', 'réglisse', 'citrouille'],
-  recettes:['coeur'],
+  qui:{titre:'QUI a écrit la fausse lettre ?', choix:['melusine', 'margot', 'iris', 'victor', 'fortune']},
+  ou:{titre:'OÙ est Odette ?', choix:[
+    {id:'clocher', nom:'Sous le clocher, derrière la porte aux quatre signes', ic:'🔔'}, {id:'puits', nom:'Au fond du puits', ic:'💧'},
+    {id:'moulin', nom:'Au moulin', ic:'🌾'}, {id:'chene', nom:'Au Vieux Chêne', ic:'🌳'}]},
+  solution:{qui:'melusine', ou:'clocher'},
+  /* la question bonus, qui ne coûte pas de cœur ; la réponse reste secrète jusqu'à la suite de la saison */
+  corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec'},
+
+  /* ---------- Le Barde (barde.js) ----------
+     parVisite : chaque villageois répond à 2 questions par moment (E3-dialogues-et-trame.md §0) ; ensuite, sa phrase d'impatience (§8),
+     dite aussi quand on revient (« Encore toi ? »). Du nouveau qui le concerne (un code, une écoute) rouvre la porte pour cette question-là. */
+  parVisite:2,
+  impatience:{
+    grosbec:'J\'ai une fête à organiser, moi ! Repassez plus tard.',
+    gaspard:'Ma pâte va retomber ! Repasse plus tard.',
+    margot:'Tu poses plus de questions que mes clients ne boivent de cidre !',
+    victor:'Trois cents lettres à distribuer ! Une autre fois.',
+    fortune:'Les questions, c\'est gratuit… mais pas illimité !',
+    tim:'Ma cheminée m\'attend ! Salut !',
+    levoisin:'Les chats ont encore faim… Excuse-moi.',
+    melusine:'Laisse-moi coudre, je t\'en prie…',
+    iris:'Mes fleurs vont faner si je bavarde !',
+    anselme:'ASSEZ ! TU VAS ME CASSER LES OREILLES… ENFIN, CE QU\'IL EN RESTE !',
+    farinel:'Toutes ces questions me donnent sommeil…',
+    silas:'Un garde ne bavarde pas pendant son service. Circulez !',
+    basile:'Si je continue, je tombe de mon échelle !'
+  },
+  uneVisite:['grosbec', 'gaspard', 'margot', 'victor', 'fortune', 'tim', 'levoisin', 'melusine', 'iris', 'anselme', 'farinel', 'silas', 'basile'],
+  questionsCachees:true,
+  ecouteMaisons:true,   /* avec « Tendre l'oreille », une maison où il y a quelque chose à écouter montre sa feuille (« Frapper », « Écouter aux portes ») */
+  potionAveu:true,
+  vexeNeutre:true,
+  veriteUnique:true,
+  tics:TICS,
+  /* au début de l'enquête, les étiquettes des menteurs qui manquent sur le liège s'épinglent toutes seules (E3-dialogues-et-trame.md §0) */
+  signesDepart:{qui:['margot', 'victor', 'fortune', 'tim', 'melusine', 'farinel'], note:'Margot t\'a glissé ses secrets de tavernière : les signes des menteurs sont sur ton tableau de liège.'},
+
+  /* ---------- Le marché aux fleurs du Barde (marche.js ; Bible § 13.6 bis ; E3-dialogues-et-trame.md §2.1 et §3.1) ----------
+     Le matin : le maire donne 10 pièces et veut au moins 10 bouquets. Fortuné d'abord (3 étapes ; ses 4 bouquets en papier comptent
+     pour 0 : ils se déchirent chez le premier vrai fleuriste ; la lanterne selon le chemin), puis Iris et Basile.
+     L'après-midi : le maire compte les bouquets (de l'or selon le nombre, 5 de plus pour la lanterne). Au mieux : 11 bouquets, la lanterne, 15 pièces d'or. */
+  marche:{
+    or:10, but:10,
+    maire:{t:'Barde ! Voici 10 pièces. Rapporte-moi au moins 10 bouquets pour la fête de ce soir !', bouton:'💐 En route pour le marché !'},
+    /* avec Tendre l'oreille : cette écoute (bribes) se joue toute seule avant le marchandage de Fortuné */
+    avant:'place_matin',
+    fortune:{
+      papier:4, prix:2,
+      /* r : sa réplique ; fin : {or, lanterne} le marché est conclu ; vers : l'étape suivante ; sait : il a compris que tu veux la lanterne ;
+         reste : on reste à la même étape, et cette réponse disparaît */
+      relance:'Viens voir, j\'en ai d\'autres dans ma carriole !',
+      etapes:[
+        {t:'Psst ! De magnifiques fleurs en papier pour la fête ! 4 bouquets pour 2 pièces : moitié prix !', choix:[
+          {q:'Marché conclu !', r:'Affaire conclue ! Tu ne le regretteras pas, mon ami.', fin:{or:2}},
+          {q:'Vous me faites un prix ?', r:'C\'est déjà moitié prix, mon ami !', vers:1, relance:true},
+          {q:'Je vais d\'abord voir chez Iris.', r:'Attends, attends !', vers:1, relance:true},
+          {q:'Je peux les toucher ?', r:'Pas touche ! On regarde avec les yeux.', vers:1, relance:true}]},
+        /* l'image spéciale (illus-fin.js, 'e3-carriole') : la bâche soulevée, une vieille lanterne cabossée qui brille ; aucun texte ne la décrit */
+        {illu:'e3-carriole', choix:[
+          {q:'Et ce vieux truc cabossé qui brille, là ?', r:'Ça ? Une vieille lanterne. Alors, on fait affaire ?', vers:2},
+          {q:'Cette lanterne est magnifique ! Combien ?', r:'Un trésor : 10 pièces ! Alors, on fait affaire ?', vers:2, sait:true},
+          {q:'Vous n\'avez pas de vraies fleurs ?', r:'Les miennes ne fanent jamais !', reste:true},
+          {q:'Bon, je prends vos 4 bouquets.', r:'Affaire conclue ! Tu ne le regretteras pas, mon ami.', fin:{or:2}}]},
+        {choix:[
+          {q:'Je prends vos bouquets… si vous ajoutez la lanterne. Sinon, je file chez Iris.',
+            r:'Tu es dur en affaires ! Bon… Elle vient des ruines, au-delà de la brume, comme ma vieille clé.', fin:{or:2, lanterne:true},
+            siSait:{r:'La lanterne en plus ? Tu rêves, mon ami !', fin:{or:2}}},
+          {q:'Une pièce de plus pour la lanterne ?',
+            r:'Va pour une pièce, c\'est la fête ! Elle vient des ruines, au-delà de la brume.', fin:{or:3, lanterne:true},
+            siSait:{r:'Allez, deux pièces, parce que c\'est la fête. Elle vient des ruines, au-delà de la brume.', fin:{or:4, lanterne:true}}},
+          {q:'Elle est toute cabossée, elle ne vaut rien !', r:'Rien ?! Alors je la garde !', fin:{or:2}},
+          {q:'Et contre une chanson ?', r:'Une chanson, ça ne se mange pas !', fin:{or:2}}]}
+      ],
+      plainte:'Remboursé ? Marchandise vendue, ni reprise ni échangée !'
+    },
+    /* chez le premier vrai fleuriste, les bouquets en papier se déchirent */
+    dechire:'Oh là là… des fleurs en papier ! Elles se déchirent déjà !',
+    vendeurs:{
+      iris:{t:'Des fleurs pour la fête ? 2 pièces le bouquet.', prix:2, choix:[
+        {q:'Je peux les sentir ? Mmmh…', r:'Enfin quelqu\'un qui prend le temps ! Pour toi, 1 pièce le bouquet.', prix:1},
+        {q:'C\'est le maire qui paie : faites-moi un prix !', r:'Alors c\'est 2 pièces, comme tout le monde.'},
+        {q:'Lesquelles sont les moins chères ?', r:'Toutes au même prix : 2 pièces.'},
+        {q:'2 pièces ? C\'est du vol !', r:'Du vol ?! Va acheter tes fleurs ailleurs !', fache:true}],
+        merci:'Voilà ! Prends-en bien soin.', encore:'Je voudrais des fleurs pour la fête.'},
+      basile:{t:'Des fleurs ? Je suis coincé sur mon échelle avec ces lampions… 2 pièces le bouquet.', prix:2, choix:[
+        {q:'Combien de bouquets pour 2 pièces ?', r:'Un bouquet, pardi !'},
+        {q:'Attendez, je vous tiens l\'échelle !', r:'Ouf, merci ! Tiens, 3 bouquets de mon jardin : cadeau !', cadeau:3},
+        {q:'Vos lampions sont magnifiques !', r:'Merci ! Mais c\'est 2 pièces quand même.'},
+        {q:'Dépêchez-vous, je suis pressé !', r:'Je ne vends rien aux gens pressés !', fache:true}],
+        merci:'Et voilà ! Tout frais du jardin.', encore:'Je voudrais des fleurs pour la fête.'}
+    },
+    /* l'après-midi, à la mairie : le maire compte les bouquets (min : à partir de combien), puis la lanterne */
+    retour:{accueil:'Ah, Barde ! Alors, mes fleurs ?',
+      paliers:[
+        {min:10, or:10, t:'Bravo ! Voici 10 pièces d\'or pour ta peine.'},
+        {min:9, or:5, t:'Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même.'},
+        {min:5, or:0, t:'Il manque des fleurs, mais la fête sera jolie quand même.'},
+        {min:0, or:0, t:'Si peu ?! C\'est une fête ou un enterrement ?'}],
+      lanterne:{or:5, t:'Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête !'}}
+  },
+
+  /* Les photos du tableau de liège du Barde (liege.js) ; les mots-clés (« Autre ») viendront avec la suite */
+  liege:{pnj:['melusine', 'margot', 'iris', 'victor', 'fortune', 'tim', 'gaspard', 'farinel', 'anselme', 'silas', 'basile', 'levoisin', 'leo'],
+    lieux:['clocher', 'puits', 'moulin', 'chene', 'mairie', 'place']},
+  sensibles:[],
+  recettes:[],
+  /* Le registre du Sage (livre.js) */
   registre:{
-    fortune:{note:'Colporteur. Il voyage avec sa charrette et loge à la taverne depuis la semaine dernière.'},
-    farinel:{note:'Meunier. Il porte de gros sabots et chante en travaillant.'},
-    silas:{maison:'B1', note:'Nouveau garde champêtre, arrivé cette semaine. Embauché par le maire.'},
-    iris:{maison:'F4', note:'Herboriste. Elle cueille certaines plantes la nuit.'},
-    margot:{maison:'L1', note:'Tavernière. La taverne ferme à une heure du matin.'},
-    basile:{maison:'B3', note:'Jardinier. Toujours de la boue sur ses grosses bottes.'}
+    odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},
+    levoisin:{maison:'L1', note:'Il habite en face de chez Odette, et il la connaît depuis trente ans.'},
+    melusine:{maison:'L4', note:'Elle coud toutes les banderoles de la fête.'},
+    victor:{maison:'L6', note:'Il passe partout, tous les jours, avec sa grosse sacoche de lettres.'},
+    tim:{maison:'L7', note:'Du haut des toits, il voit tout le village. Son chien s\'appelle Pirate.'},
+    gaspard:{maison:'F1', note:'Il prépare le plus gros gâteau de sa vie pour la fête.'},
+    iris:{maison:'F4', note:'Elle vend des fleurs et des sachets de lavande à tout le village.'},
+    basile:{maison:'B3', note:'Il accroche les lampions de la fête, du haut de son échelle.'},
+    silas:{maison:'B1', note:'Le garde champêtre. Il obéit aux ordres du maire.'},
+    /* (sa maison garde son visage sur la carte, grisée : il n'y est pas) */
+    bastien:{maison:'B2', note:'Le charretier. Il est en prison depuis l\'affaire de la rivière rouge.'},
+    margot:{adresse:'la taverne du Chaudron fêlé, sur la place', note:'Elle adore les vieilles légendes, et elle connaît le signe de chaque menteur.'},
+    farinel:{adresse:'le moulin, au bord de la rivière', note:'Le meunier. Son apprenti s\'appelle Léo.'},
+    leo:{adresse:'le moulin, au bord de la rivière', note:'L\'apprenti du meunier. On ne le voit presque jamais.'},
+    anselme:{adresse:'le clocher', note:'Il sonne les trois cloches du village. Il est un peu sourd.'},
+    fortune:{adresse:'sa carriole, sur la place', note:'Le colporteur. Il est le seul à traverser la brume.'},
+    grosbec:{adresse:'la mairie, sur la place', note:'Le maire de Brumeval. Il ne quitte jamais ses gants gris, même à l\'intérieur.'}
   },
-  objets:{
-    fil:{nom:'Fil vert', ic:'🧵', pour:'alchimiste'},
-    poussiere:{nom:'Poussière grise', ic:'🪨', pour:'alchimiste'},
-    carnet:{nom:'Carnet de couleurs de Mélusine', ic:'📒', pour:'sage'},
-    registre_trappe:{nom:'Registre des gardiens de la trappe', ic:'📔', pour:'barde'}
-  },
+  objets:{},
+  /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
+     Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */
   infos:{
-    /* Renseignements sur un habitant, pour le Barde (carnet.js) : 4 codes dans l'enquête 3 (temoin_basile, sabots, minuit, verts) */
-    sabots:{nom:'Les traces dans la farine', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Dans la farine du moulin : des bottes à clous de 4 carreaux. Ce ne sont pas les gros sabots de Farinel, qui font 5 carreaux.'},
-    minuit:{nom:'La grille de minuit', ic:'🧩', pour:'barde', de:'sage', t:'La grille du Sage : où étaient Margot et Silas à minuit.', pnj:{
-      margot:'À minuit, Margot était à la taverne.', silas:'À minuit, Silas était au moulin, mais son rapport dit « rien à signaler ».'}},
-    verts:{nom:'Les verts du carnet', ic:'📒', pour:'barde', de:'sage', t:'Le carnet de couleurs : le vert de Silas et le vert d\'Iris.', pnj:{
-      silas:'Son chapeau est vert sapin (carnet de Mélusine).', iris:'Son tablier est vert pomme (carnet de Mélusine).'}},
-    temoin_basile:{nom:'Basile, attrapé au bord de l\'eau', ic:'👨‍🌾', pour:'barde', de:'pisteur', pnj:'basile', mimique:'basile', t:'Le Pisteur a attrapé Basile au bord de la rivière, avec un sac vide. Il a peur et il cache quelque chose : va le voir chez lui (3, ruelle des Brumes) ou à la taverne. Un secret : quand Basile ment, une goutte de sueur glisse sur son front.'},
-    boite:{nom:'Boîte de teintures de Mélusine', ic:'🎨', pour:'alchimiste', outil:'teintures', t:'Mélusine te prête sa boîte de teintures : tu peux maintenant reproduire la couleur exacte d\'un fil.'},
-    passage_tunnel:{nom:'Le vieux tunnel sous le pont', ic:'🕳️', pour:'pisteur', t:'Sur les vieux plans du Sage, un vieux tunnel part de l\'arche du pont. Le passage est ouvert !'},
-    serrure:{nom:'La serrure de runes', ic:'🔷', pour:'sage', t:'Le Pisteur a trouvé un coffre fermé par une serrure de runes, dans le vieux tunnel. Remets les runes en place pour trouver la combinaison !'},
-    combinaison:{nom:'La combinaison du coffre', ic:'🔓', pour:'pisteur', t:'Le Sage a trouvé la combinaison de la serrure de runes : tu peux ouvrir le coffre du vieux tunnel !'}
+    poste:{nom:'La lettre n\'est pas passée par la poste', ic:'✉️', pour:'sage', de:'barde',
+      t:'Victor, le facteur, n\'a pas apporté la lettre d\'Odette : elle n\'a ni timbre ni tampon. Et en vingt ans, Odette n\'a jamais reçu une seule lettre.',
+      dire:'Une lettre sans timbre ? Le Sage doit le savoir : donne-lui ce code.'},
+    capuchon:{nom:'Le capuchon vers le clocher', ic:'🧥', pour:'sage', de:'barde',
+      t:'À l\'aube, du haut des toits, Tim a vu un grand capuchon glisser une lettre sous la porte de la mairie, puis repartir vers le clocher.',
+      dire:'Qui porte une lettre comme ça ? Le Sage doit le savoir : donne-lui ce code.'},
+    lettre:{nom:'La lettre d\'Odette', ic:'✉️', pour:['sage', 'alchimiste'], de:'barde',
+      t:'Le maire a prêté la lettre d\'Odette. Le Sage peut la lire de près, et l\'Alchimiste peut l\'analyser dans son laboratoire.',
+      dire:'La vraie lettre, en main ! Donne ce code au Sage et à l\'Alchimiste.'},
+    carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:['sage', 'alchimiste'], de:'barde',
+      t:'Le Barde a trouvé le carnet d\'Odette sur sa table, au 2, rue des Lanternes. Elle y note tout, un chat à chaque page.',
+      dire:'Le carnet d\'Odette : donne ce code au Sage et à l\'Alchimiste.'},
+    traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde',
+      t:'Chez Odette, du lait renversé… et des petites traces de pattes qui filent dehors. Moustache, le gros chat gris, est passé par là !',
+      dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre : donne-lui ce code.'},
+    ecriture:{nom:'L\'écriture de Mélusine', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', pnj:'melusine',
+      t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : les « M » qui piquent, les « t » en vague, le petit rond sur les « i »… C\'est l\'écriture de Mélusine !',
+      dire:'Le Barde et le Sage doivent le savoir : donne-leur ce code.'},
+    crypte_fermee:{nom:'La crypte est fermée', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
+      t:'Le Pisteur a suivi les traces de Moustache jusqu\'à l\'église : elles passent sous la porte de la crypte, au pied du clocher. La porte est fermée à clé.',
+      dire:'Il faudra la clé du sonneur… Le Barde saura lui parler : donne-lui ce code.'},
+    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
+      t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.',
+      dire:'C\'est une preuve pour le Sage : donne-lui ce code.'}
   },
-  lieux:{
-    moulin:{
-      pisteur:{intro:'Le vieux moulin grince au bord de la rivière. À l\'intérieur, deux énormes meules de pierre.', points:[
-        {id:'farine', ic:'👣', nom:'La farine renversée', moments:['matin', 'apresmidi', 'soir'], mj:'traces', donne:'info:sabots',
-          t:'Dans la farine renversée par terre : des empreintes de bottes à clous, de 4 carreaux. Ce ne sont pas celles du meunier : ses gros sabots font 5 carreaux.',
-          note:'Moulin : empreintes de bottes à clous de 4 carreaux dans la farine renversée (pas les sabots du meunier).',
-          rate:'Le vent a soufflé la farine… Tu as juste vu des marques de clous : ce ne sont pas des sabots.',
-          rateNote:'Moulin : des marques de bottes à clous dans la farine, pas des sabots.', partiel:true},   /* clé : « pas des sabots » innocente encore Farinel */
-        {id:'fil', ic:'🧵', nom:'Une écharde du plancher', obj:'fil',
-          t:'Un fil vert est accroché à une écharde, tout près des meules. Quelqu\'un est passé par là en se baissant ! De quel vert est-il ? L\'Alchimiste saura le dire.',
-          note:'Moulin : un fil vert accroché à une écharde, près des meules. Code pour l\'Alchimiste.'},
-        {id:'meules', ic:'⚙️', nom:'Les meules', obj:'poussiere',
-          t:'Autour des grosses meules de pierre, le plancher est couvert d\'une poussière grise… pas blanche comme la farine ! Tu en ramasses un peu.',
-          note:'Moulin : une poussière grise, pas blanche, autour des meules.'},
-        {id:'guet', ic:'🫥', nom:'Se cacher et guetter', moments:['nuit'], mj:'cachette', besoin:[{acces:'sombre'}],
-          alt:'Il fait noir comme dans un four, tu ne verrais rien ! Il te faut de la lumière : une potion de l\'Alchimiste, une lanterne… Et le garde fait sa ronde.',
-          t:'Tu te caches entre deux sacs… Une lumière verte entre dans le moulin, traverse la grande salle… puis disparaît d\'un coup, comme si elle s\'enfonçait dans le sol. Dehors, une lanterne ROUGE passe devant la fenêtre… et ne s\'arrête pas.',
-          note:'Moulin, la nuit : la lumière verte entre dans le moulin et s\'enfonce dans le sol. Une lanterne rouge passe dehors sans s\'arrêter.',
-          rate:'Le garde passe tout près avec sa lanterne rouge ! Tu dois t\'enfuir avant d\'avoir vu quoi que ce soit.'}
-      ]}
-    },
-    pont:{
-      pisteur:{intro:'Le pont de pierre enjambe la rivière, un peu plus bas que le moulin, sur la rivière.', points:[
-        {id:'riviere', ic:'🌊', nom:'Sous le pont',
-          t:'Des tas de terre grise jetés dans la rivière, et des sacs de farine vides, tout mouillés. Dans la boue, de GROSSES empreintes de 5 carreaux vont du moulin jusqu\'au pont… et reviennent.',
-          note:'Pont : terre grise et sacs vides dans la rivière. De grosses empreintes de 5 carreaux font des allers-retours entre le moulin et le pont.'},
-        {id:'poursuite', ic:'🏃', nom:'Quelqu\'un au bord de l\'eau', moments:['soir', 'nuit'], mj:'poursuite', donne:'info:temoin_basile',
-          t:'Une grande silhouette vide un sac dans la rivière… Elle te voit et s\'enfuit dans le brouillard ! Tu cours, tu sautes les flaques… et tu l\'attrapes par sa salopette : c\'est Basile, le jardinier ! Il est tout rouge : « Je ne suis pas coupable, j\'ai eu peur, je me suis enfui, mais je n\'ai rien fait ! » Une goutte de sueur glisse sur son front : c\'est comme ça quand il cache quelque chose ! Donne son code au Barde.',
-          note:'Pont : Basile vidait un sac dans la rivière ! Il a eu peur et s\'est enfui. Code pour le Barde.',
-          rate:'Le fuyard disparaît dans le brouillard… Tu as juste vu qu\'il était grand et qu\'il portait un sac vide.'}
-      ]}
-    },
-    tunnel_moulin:{
-      verrou:{besoin:[{code:'info:passage_tunnel'}], roles:['pisteur'], t:'Il y a peut-être un vieux passage par ici… Les vieux plans du Sage le diront.'},
-      pisteur:{intro:'Sous l\'arche du pont, derrière les ronces, une vieille porte de bois ! Un tunnel humide s\'enfonce sous la terre.', points:[
-        {id:'tunnel', ic:'🕸️', nom:'Le tunnel',
-          t:'Le tunnel est plein de toiles d\'araignée : personne n\'est passé ici depuis des centaines d\'années. Au bout, un éboulement… et au-dessus de ta tête, de la terre toute fraîche tombe du plafond : quelqu\'un a creusé juste au-dessus, sous le moulin !',
-          note:'Vieux tunnel sous le pont : personne n\'y est passé depuis des siècles. Quelqu\'un creuse au-dessus, sous le moulin.'},
-        {id:'serrure', ic:'🔷', nom:'Le coffre à runes', donne:'info:serrure',
-          t:'Contre le mur, un vieux coffre fermé par une serrure de runes. Impossible de l\'ouvrir… Le Sage, lui, sait lire les runes : donne-lui le code !',
-          note:'Vieux tunnel : un coffre fermé par une serrure de runes. Code pour le Sage.'},
-        {id:'coffre', ic:'🧰', nom:'Ouvrir le coffre', besoin:[{code:'info:combinaison'}], obj:'registre_trappe', or:20,
-          t:'Clic ! Le coffre s\'ouvre. Dedans : vingt pièces d\'or anciennes (pour toi !) et un vieux registre, pour le Barde : il peut le montrer au meunier.',
-          note:'Coffre du vieux tunnel : 20 pièces d\'or, et un registre pour le Barde.'}
-      ]}
-    },
-    place:{alchimiste:{cueillir:[{ingr:'eau', n:2}]}},
-    lavoir:{alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin', 'nuit']}, {ingr:'eau', n:2}]}},
-    herboristerie:{alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
-    potager:{alchimiste:{cueillir:[{ingr:'miel', n:2}, {ingr:'menthe', n:2}]}},
-    foret:{alchimiste:{cueillir:[{ingr:'champignon', n:2}]}},
-    clairiere:{alchimiste:{cueillir:[{ingr:'trefle', n:2}, {ingr:'champignon', n:2, moments:['soir', 'nuit']}]}},
-    lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}, {ingr:'ortie', n:1, besoin:[{acces:'gants'}]}]}}
-  },
+  /* Les lieux du Pisteur et de l'Alchimiste arrivent avec leurs étapes (4 et 5) */
+  lieux:{},
+
+  /* ---------- Les villageois (E3-dialogues-et-trame.md §2 et §3) ----------
+     Chacun a une place à chaque moment : ou (on lui parle), sinon carte + occupe (deux petites phrases : la deuxième quand on revient). */
   pnj:{
-    farinel:{ou:{matin:'moulin', apresmidi:'moulin', soir:'taverne', nuit:'moulin'}, questions:[
-      {q:'Les sacs disparaissent ?', a:'Trois sacs, en trois nuits ! Et je n\'y suis pour rien, moi ! Je dors comme une souche, je n\'entends jamais rien.', note:'Farinel : trois sacs ont disparu en trois nuits. Il dort profondément.'},
-      {q:'Votre moulin va bien ?', choix:[
-          {q:'Bonjour, monsieur le meunier ! Votre moulin va bien ?', bon:true},
-          {q:'Votre vieux moulin tout pourri grince encore ?', vexe:'Tout pourri ?! Mon moulin a trois cents ans, et il tourne encore !'}],
-        a:'Ma grosse meule fait un drôle de bruit depuis trois jours. Boum, boum… comme si elle tournait au-dessus d\'un trou ! Mais la roue, elle, tourne comme une horloge.', note:'Farinel : depuis trois jours, la meule sonne creux, comme au-dessus d\'un trou. La roue va bien.'},
-      {q:'Montrer le vieux registre', besoin:[{code:'obj:registre_trappe'}], a:'« Gardiens de la clé de la trappe du moulin »… La famille Grosbec, depuis trois cents ans ? Je ne savais même pas qu\'il y avait une trappe !', note:'Registre : depuis 300 ans, la famille Grosbec garde la clé de la trappe du moulin.'}
+    /* le maire ne ment jamais. Le matin, il attend ses fleurs ; l'après-midi, il les compte (marche.retour), puis ses questions.
+       Sa 4e question (« Je voudrais vous parler de la lettre… », le grand dialogue) arrive avec l'étape 2. */
+    grosbec:{ou:{apresmidi:'mairie'}, carte:{matin:'mairie'},
+      occupe:{matin:['« Mes fleurs d\'abord, Barde ! Nous parlerons cet après-midi. »', '« Dix bouquets, pas un de moins ! Allez, allez ! »']},
+      salut:'', questions:[
+      {q:'D\'où vient cette lettre, Monsieur le maire ?', g:'e', moments:A_, a:'Glissée sous la porte de la mairie, ce matin. Quel soulagement, n\'est-ce pas ?',
+        note:'Le maire : la lettre a été glissée sous la porte de la mairie, ce matin.'},
+      {q:'Pourquoi une fête, alors qu\'Odette n\'est pas rentrée ?', g:'h', moments:A_, a:'Un village rassuré ne pose plus de questions. Euh… un village rassuré est un village heureux !',
+        note:'Le maire : « Un village rassuré ne pose plus de questions. Euh… un village rassuré est un village heureux ! »'},
+      {q:'Vous connaissez Odette depuis longtemps ?', g:'h', moments:A_, a:'Depuis toujours : nos deux familles sont là depuis la fondation. Il n\'en reste plus beaucoup.',
+        note:'Le maire : sa famille et celle d\'Odette sont à Brumeval depuis la fondation. Il n\'en reste plus beaucoup.'}
     ]},
-    melusine:{ou:{matin:'atelier', apresmidi:'atelier', soir:'place', nuit:'L4'}, questions:[
-      {q:'Vous connaissez les couleurs ?', a:'Toutes ! Tenez, voici mon carnet de couleurs : chaque couleur que j\'ai cousue au village, avec sa recette. Donnez-le à votre Sage.', note:'Mélusine t\'a donné son carnet de couleurs : son code est pour le Sage.', obj:'carnet'},
-      {q:'Vous pourriez prêter de quoi faire des teintures ?', a:'Bien sûr ! Je vous dois bien ça, après l\'histoire des lettres. Voici ma boîte de teintures, pour votre Alchimiste.', note:'Mélusine prête sa boîte de teintures : son code est pour l\'Alchimiste.', donne:'info:boite'}
+    gaspard:{ou:{matin:'boulangerie'}, carte:{apresmidi:'boulangerie'},
+      occupe:{apresmidi:['« Pas maintenant, j\'ai sept étages de gâteau qui penchent ! »', '« Si je lâche ma poche à douille, tout s\'écroule ! »']},
+      salut:'Bonjour ! C\'est le coup de feu, mais pour toi, j\'ai une minute.', questions:[
+      {q:'Et le maire, il est comment ?', g:'r', moments:M_, a:'Très fier de ses fêtes ! Il m\'a commandé le plus gros gâteau de ma vie.',
+        note:'Gaspard : le maire est très fier de ses fêtes.'},
+      {q:'Odette est toujours votre première cliente ?', g:'e', moments:M_, a:'Une brioche chaque matin. Ce matin, ses chats l\'attendaient devant ma porte… tous sauf Moustache, le gros gris.',
+        note:'Gaspard : ce matin, les chats d\'Odette attendaient devant sa porte… tous sauf Moustache, le gros gris.'},
+      {q:'Qu\'est-ce que vous pensez de la lettre ?', g:'e', moments:M_, a:'Odette parle de sa canne, mais pas un mot de ses chats. Elle qui ne parle que d\'eux !',
+        note:'Gaspard : dans la lettre, Odette parle de sa canne, mais pas un mot de ses chats. Elle qui ne parle que d\'eux !'},
+      {q:'Votre four est vraiment si vieux ?', g:'h', moments:M_, a:'Au fond, ses briques portent des étoiles gravées. Personne ne sait qui les a faites.',
+        note:'Gaspard : au fond de son vieux four, les briques portent des étoiles gravées.'}
     ]},
-    silas:{ou:{matin:'mairie', apresmidi:'place', soir:'pont', nuit:'moulin'}, questions:[
-      {q:'Qui êtes-vous ?', a:'Silas Sec, le nouveau garde champêtre. Monsieur le maire m\'a embauché cette semaine. Je surveille tout. TOUT.', note:'Silas est le nouveau garde champêtre, embauché par le maire cette semaine.'},
-      {q:'Votre lanterne ?', a:'Une lanterne de garde, rouge, réglementaire ! Je ne m\'en sépare jamais, jour et nuit.', note:'Silas : sa lanterne de garde est rouge, il ne s\'en sépare jamais.'},
-      {q:'Vous avez vu les lumières du moulin ?', a:'Rien à signaler. Rien du tout. Circulez, il n\'y a rien à voir.', ment:true, vrai:'Bon… si, j\'ai vu une lumière verte. Mais le maire m\'a dit de ne pas m\'en occuper. Il a dit que ça le regardait.', note:'Silas dit qu\'il n\'a rien vu au moulin.', noteVrai:'Silas a avoué : il a vu la lumière verte, mais le maire lui a dit de ne pas s\'en occuper.'}
+    margot:{ou:{matin:'taverne', apresmidi:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ce soir, c\'est la fête !', questions:[
+      {q:'Et le maire, il est comment ?', g:'r', moments:M_, a:'Il déteste qu\'on dise qu\'il cache des choses. Un jour, j\'ai parlé d\'un coffre secret : tout rouge !',
+        note:'Margot : le maire déteste qu\'on dise qu\'il cache des choses.'},
+      {q:'Odette est vraiment chez sa sœur ?', g:'e', moments:M_, a:'Bien sûr ! Elle m\'en parle tout le temps.', ment:true,
+        vrai:'Bon… non. Je ne l\'ai jamais entendue parler d\'une sœur, mais tout le monde était si content…',
+        note:'Margot dit qu\'Odette lui parle tout le temps de sa sœur.', noteVrai:'Margot a avoué : elle n\'a jamais entendu Odette parler d\'une sœur.'},
+      {q:'Quelle est la plus vieille légende de Brumeval ?', g:'h', moments:M_, a:'Celle des Cinq : cinq familles ont bâti le village sur une ville plus vieille. Un jour, leurs enfants reviendront…',
+        note:'Margot : la légende des Cinq. Cinq familles ont bâti le village sur une ville plus vieille. Un jour, leurs enfants reviendront…'},
+      {q:'Qu\'est-ce qui se prépare pour la fête ?', g:'r', moments:M_, a:'Mélusine coud des banderoles jour et nuit, avec du tissu tout neuf… elle qui n\'a jamais un sou !',
+        note:'Margot : Mélusine coud des banderoles avec du tissu tout neuf, elle qui n\'a jamais un sou.'},
+      {q:'Vous connaissez bien Léo, l\'apprenti ?', g:'r', moments:A_, a:'Il n\'a pas de parents. C\'est Odette qui lui a appris à lire, le soir.',
+        note:'Margot : Léo n\'a pas de parents. C\'est Odette qui lui a appris à lire.'},
+      {q:'Le maire vous a demandé quelque chose pour ce soir ?', g:'e', moments:A_, a:'Non, rien du tout ! Juste servir la soupe.', ment:true,
+        vrai:'Bon… si : garder tout le monde sur la place jusqu\'à minuit. Il avait l\'air si sérieux…',
+        note:'Margot dit que le maire ne lui a rien demandé, à part servir la soupe.', noteVrai:'Margot a avoué : le maire lui a demandé de garder tout le monde sur la place jusqu\'à minuit.'},
+      {q:'Vous avez entendu du bruit, la nuit dernière ?', g:'e', moments:A_, a:'Vers minuit, une petite lumière bougeait dans la forêt, du côté du vieux puits. J\'ai fermé mes volets !',
+        note:'Margot : la nuit dernière, vers minuit, une petite lumière bougeait dans la forêt, du côté du vieux puits.'},
+      {q:'Qui étaient les Cinq familles ?', g:'h', moments:A_, a:'Ma grand-mère ne disait pas leurs noms. Seulement : « une pour chercher, une pour soigner, une pour parler, une pour savoir… et une pour garder. »',
+        note:'Margot : les Cinq familles. « Une pour chercher, une pour soigner, une pour parler, une pour savoir… et une pour garder. »'}
     ]},
-    fortune:{ou:{matin:'place', apresmidi:'place', soir:'taverne'}, questions:[
-      {q:'Où étiez-vous la nuit dernière ?', a:'Je dormais à la taverne, comme un bébé !', ment:true, ok:'Sortir la nuit ne prouve rien.', vrai:'Bon… je suis sorti. Je cherchais… des champignons. Oui, voilà, des champignons !', note:'Fortuné dit qu\'il dormait à la taverne.', noteVrai:'Fortuné a avoué : il est sorti la nuit dernière.'},
-      {q:'Que vendez-vous ?', ok:'Le colporteur vend de tout : ça ne prouve rien tout seul.', a:'Des rubans, des chapeaux, des savons… Et des pastilles pour changer de voix ! J\'en ai vendu une boîte à un monsieur masqué, la semaine dernière.', note:'Fortuné vend de tout, et même des pastilles pour changer de voix (une boîte à un homme masqué).'},
-      {q:'Avez-vous acheté quelque chose au village ?', a:'Rien du tout ! Moi, je vends, je n\'achète jamais.', ment:true, vrai:'Bon… j\'ai acheté un vieux papier à un homme masqué, avec une voix toute grave. Mais je ne dirai pas ce qu\'il y a dessus !', note:'Fortuné dit qu\'il n\'a rien acheté au village.', noteVrai:'Fortuné a avoué : il a acheté un vieux papier à un homme masqué à la voix grave.', ok:'Un vieux papier ne dit pas où ni quoi.'}
+    victor:{ou:{matin:'poste'}, carte:{apresmidi:'puits'},
+      occupe:{apresmidi:['« Cent invitations à distribuer : pas une minute ! »', '« Le maire ne les a même pas écrites lui-même : « écriture de patte de mouche », qu\'il dit ! »']},
+      salut:'Bonjour ! Une lettre pour toi ? Ah non…', questions:[
+      {q:'Et le maire, il est comment ?', g:'r', moments:M_, a:'Très ordonné : il compte les papiers de son grand coffre chaque soir. Gare à qui en emprunte un !',
+        note:'Victor : le maire compte les papiers de son grand coffre chaque soir. Gare à qui en emprunte un !'},
+      {q:'C\'est vous qui avez apporté la lettre d\'Odette ?', g:'e', moments:M_, donne:'info:poste', a:'Non ! Ni timbre ni tampon. Et en vingt ans, Odette n\'a jamais reçu une seule lettre.',
+        note:'Victor : il n\'a pas apporté la lettre d\'Odette. Ni timbre ni tampon ! Et en vingt ans, Odette n\'a jamais reçu une seule lettre (code pour le Sage).'},
+      {q:'Quel est l\'endroit le plus étrange de votre tournée ?', g:'h', moments:M_, a:'Le vieux puits. Les jours de brume, j\'entends de l\'eau couler au fond… alors qu\'il est sec depuis cent ans !',
+        note:'Victor : au vieux puits, les jours de brume, il entend de l\'eau couler au fond. Il est sec depuis cent ans !'},
+      {q:'Vous n\'avez jamais peur, pendant votre tournée ?', g:'h', moments:M_, a:'Peur, moi ? Jamais !', ment:true,
+        vrai:'Bon… si : j\'ai peur des chats. Et depuis hier, ceux d\'Odette me suivent partout en miaulant. Ils ont faim !',
+        note:'Victor dit qu\'il n\'a jamais peur.', noteVrai:'Victor a avoué : il a peur des chats. Depuis hier, ceux d\'Odette le suivent partout en miaulant : ils ont faim !'},
+      /* une question de plus, avec l'écoute de la mairie, le matin (le maire et Victor) */
+      {q:'Le maire vous a demandé de vous taire ?', g:'e', moments:M_, besoin:[{vu:'barde:oreille:mairie_matin'}], a:'Oui… Pourquoi cacher d\'où vient une lettre qui rassure tout le monde ?',
+        note:'Victor : le maire lui a demandé de se taire sur la lettre. Pourquoi cacher d\'où elle vient ?'}
     ]},
-    victor:{ou:{matin:'poste', apresmidi:'place', soir:'taverne', nuit:'L6'}, questions:[
-      {q:'Où étiez-vous la nuit dernière ?', a:'À la taverne, jusqu\'à minuit, comme tous les soirs.', note:'Victor était à la taverne jusqu\'à minuit.'},
-      {q:'Qui était à la taverne ?', choix:[
-          {q:'Vous avez passé une bonne soirée à la taverne ?', bon:true},
-          {q:'Vous traînez à la taverne tous les soirs, vous ?', vexe:'Traîner ?! Je travaille dur toute la journée, moi !'}],
-        a:'Plein de monde ! Et Margot n\'a pas quitté son comptoir de toute la nuit, je peux te le jurer : elle m\'a resservi de la soupe trois fois !', note:'Victor : Margot n\'a pas quitté son comptoir de toute la nuit. (Mais Victor est parti à minuit…)'}
+    /* après le marchandage, c'est un villageois comme les autres (pas de salut : il vient de te vendre des fleurs) */
+    fortune:{ou:{matin:'place', apresmidi:'place'}, salut:'', questions:[
+      {q:'Et le maire, il est comment ?', g:'r', moments:M_, a:'Il adore qu\'on lui parle de son chapeau neuf !', ment:true,
+        vrai:'Bon… c\'est surtout moi qui voudrais lui vendre un chapeau.',
+        note:'Fortuné dit que le maire adore qu\'on lui parle de son chapeau neuf.', noteVrai:'Fortuné a avoué : c\'est surtout lui qui voudrait vendre un chapeau au maire.'},
+      {q:'D\'où venez-vous, avec votre carriole ?', g:'h', moments:M_, a:'De partout ! Je suis le seul à traverser la brume… et elle me regarde, j\'en suis sûr.',
+        note:'Fortuné : il est le seul à traverser la brume. Il est sûr qu\'elle le regarde.'},
+      {q:'Vous avez revu l\'homme en cape noire ?', g:'r', moments:M_, a:'Jamais revu. Mais hier soir, une main fine m\'a acheté encre et plume, des épingles plantées dans la manche.',
+        note:'Fortuné : hier soir, une main fine lui a acheté de l\'encre et une plume. Il y avait des épingles plantées dans la manche.'},
+      /* (dès cette réponse, la vieille clé rouillée entrera dans la boutique du Barde : 320 pièces, § 13.9 — à brancher avec les objets) */
+      {q:'Qu\'est-ce que vous vendez de plus précieux ?', g:'h', moments:M_, a:'Ça ! Une vieille clé couverte de runes, trouvée dans des ruines au-delà de la brume. Personne n\'en veut.',
+        note:'Fortuné : il vend une vieille clé couverte de runes, trouvée dans des ruines au-delà de la brume.'},
+      {q:'Vous connaissez Léo, l\'apprenti du meunier ?', g:'r', moments:A_, a:'Il adore l\'or ! Propose-lui une pièce, il te dira tout.', ment:true,
+        vrai:'Bon… c\'est moi qui adore l\'or. Lui, il a peur : il m\'a acheté deux lanternes et une corde en tremblant.',
+        note:'Fortuné dit que Léo adore l\'or : « Propose-lui une pièce, il te dira tout. »', noteVrai:'Fortuné a avoué : c\'est lui qui adore l\'or. Léo, lui, a peur : il a acheté deux lanternes et une corde en tremblant.'},
+      {q:'Elle vous plaît, la fête ?', g:'h', moments:A_, a:'Tous mes lampions vendus ! Sauf un qui ne s\'allume pas…',
+        note:'Fortuné : il a vendu tous ses lampions, sauf un qui ne s\'allume pas.'},
+      {q:'Vous traversez la brume, cette nuit ?', g:'h', moments:A_, a:'Jamais ! Les nuits de fête, la brume colle au village comme un chat à son coussin.',
+        note:'Fortuné : les nuits de fête, la brume colle au village comme un chat à son coussin.'},
+      {q:'D\'où vient votre vieille clé rouillée ?', g:'h', moments:A_, a:'Des ruines, au-delà de la brume. Il y a les mêmes dessins que sur ta lanterne… enfin, ma lanterne !',
+        note:'Fortuné : sa vieille clé vient des ruines, au-delà de la brume. Elle porte les mêmes dessins que la vieille lanterne.'}
     ]},
-    margot:{ou:{matin:'taverne', apresmidi:'taverne', soir:'taverne', nuit:'taverne'}, questions:[
-      {q:'Qui est passé hier soir ?', choix:[
-          {q:'Bonsoir Margot ! Qui est passé chez vous hier soir ?', bon:true},
-          {q:'Vous espionnez toujours vos clients, hein ?', vexe:'Espionner ?! Je sers la soupe, moi, je n\'espionne personne !'}],
-        a:'Victor jusqu\'à minuit. Basile, pour une soupe : il est reparti vers le pont, bizarre ! Et Iris, vers dix heures, avant d\'aller cueillir.', note:'Margot : Basile est reparti vers le pont après sa soupe. Iris est passée vers dix heures.'},
-      {q:'Qui loge chez vous ?', a:'Le colporteur a une chambre ici. Il paie bien, c\'est tout ce que je sais.', note:'Margot : le colporteur loge à la taverne.', ok:'Ne l\'accuse de rien.'},
-      /* un villageois révèle la mimique d'un menteur (barde.js) */
-      {q:'Iris vous cache quelque chose ?', mimique:'iris', ok:'Un truc de menteur ne prouve rien.',
-        a:'Iris ? Une gentille fille… Mais je la connais par cœur : quand elle cache quelque chose, sa bouche sourit, et ses yeux, eux, ne sourient pas.',
-        note:'Margot : quand Iris ment, sa bouche sourit mais ses yeux ne sourient pas.'}
+    /* le matin, il ramone près du clocher ; l'après-midi, sur les toits de la ruelle des Brumes */
+    tim:{ou:{matin:'clocher', apresmidi:'ruelle'}, salut:'Salut ! Attention, ça tombe !', questions:[
+      {q:'Tu étais sur les toits ce matin, à l\'aube ?', g:'e', moments:M_, a:'Non ! Je dormais, comme tout le monde.', ment:true, donneVrai:'info:capuchon',
+        vrai:'Bon… oui. Un grand capuchon a glissé une lettre sous la porte de la mairie, puis il est parti vers le clocher.',
+        note:'Tim dit qu\'à l\'aube, il dormait, comme tout le monde.', noteVrai:'Tim a avoué : à l\'aube, un grand capuchon a glissé une lettre sous la porte de la mairie, puis il est parti vers le clocher (code pour le Sage).'},
+      {q:'Ça fait quoi, d\'être ramoneur ?', g:'h', moments:M_, a:'Je vois tout le village ! Et dans une cheminée, j\'ai trouvé une pièce avec une lanterne dessinée.',
+        note:'Tim : dans une cheminée, il a trouvé une pièce avec une lanterne dessinée.'},
+      {q:'Comment va Pirate, ton chien ?', g:'h', moments:M_, a:'Il ouvre le loquet tout seul ! Mais dès qu\'il voit le maire, il file sous mon lit.',
+        note:'Tim : son chien Pirate ouvre le loquet tout seul. Dès qu\'il voit le maire, il file sous le lit.'},
+      {q:'Tu as revu la porte aux runes ?', g:'h', moments:M_, a:'Bouchée par les rochers. Mais les mêmes runes sont sur la grille de la crypte !',
+        note:'Tim : la porte aux runes est bouchée par les rochers. Les mêmes runes sont sur la grille de la crypte !'},
+      {q:'Tu connais Léo ?', g:'r', moments:A_, a:'L\'autre jour, il m\'a chuchoté : « Si on sait que je t\'ai parlé, je suis fichu. Il a des yeux partout. »',
+        note:'Tim : Léo lui a chuchoté : « Si on sait que je t\'ai parlé, je suis fichu. Il a des yeux partout. »'},
+      {q:'C\'est toi qui as pris la lavande d\'Iris ?', g:'e', moments:A_, a:'Moi ? Jamais de la vie !', ment:true,
+        vrai:'Bon… un sachet, pour Pirate : il sent le chien mouillé. Mais cette nuit, quelqu\'un en a pris tout un panier !',
+        note:'Tim dit qu\'il n\'a jamais pris la lavande d\'Iris.', noteVrai:'Tim a avoué : il a pris un sachet de lavande pour son chien. Mais cette nuit, quelqu\'un en a pris tout un panier !'},
+      {q:'Qu\'est-ce que tu vois, du haut des toits ?', g:'e', moments:A_, a:'Des lampions partout ! Et Mélusine qui coud, qui coud… Elle a les yeux tout rouges.',
+        note:'Tim : du haut des toits, il voit Mélusine qui coud sans arrêt. Elle a les yeux tout rouges.'},
+      {q:'Tu viens à la fête, ce soir ?', g:'h', moments:A_, a:'Évidemment : un gâteau à sept étages ! Mais à minuit, loin du clocher : la Grosse Marie, ça casse les oreilles.',
+        note:'Tim : à minuit, il se tiendra loin du clocher. La Grosse Marie, ça casse les oreilles !'}
     ]},
-    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie', soir:'taverne', nuit:'F4'}, questions:[
-      {q:'Où étiez-vous la nuit dernière ?', a:'À la clairière ! Je cueillais des champignons lumineux : ils ne brillent que la nuit.', ment:true, ok:'Cueillir la nuit ne prouve rien.',
-        vrai:'D\'accord… j\'étais derrière le moulin, à cueillir des épis d\'argent, une plante très rare. J\'ai vu une lumière verte entrer dans le moulin… et j\'ai eu peur qu\'on m\'accuse.',
-        note:'Iris dit qu\'elle cueillait des champignons à la clairière.', noteVrai:'Iris a avoué : elle était derrière le moulin et elle a vu une lumière verte y entrer.'}
+    /* le voisin d'Odette, au 1, rue des Lanternes (il ne ment jamais) : un vrai villageois à l'enquête 3 (« voisin », plus bas, reste la porte d'Odette) */
+    levoisin:{ou:{matin:'L1'}, carte:{apresmidi:'L1'},
+      occupe:{apresmidi:['« Pas maintenant : les six chats ont faim, ils me griffent les mollets ! »', '« Je surveille la maison d\'Odette. Repasse ce soir. »']},
+      salut:'Bonjour… Tu viens pour Odette ?', questions:[
+      {q:'Les chats d\'Odette sont chez vous ?', g:'e', moments:M_, a:'Six sur sept, sur ma fenêtre ! Moustache, le gros gris, a disparu hier soir.',
+        note:'Le voisin : six des sept chats d\'Odette sont sur sa fenêtre. Moustache, le gros gris, a disparu hier soir.'},
+      {q:'Odette vous a dit qu\'elle partait ?', g:'e', moments:M_, a:'Odette ne part jamais ! Elle dit toujours : « Mes chats ne savent pas ouvrir les boîtes de sardines. »',
+        note:'Le voisin : Odette ne part jamais. « Mes chats ne savent pas ouvrir les boîtes de sardines. »'},
+      {q:'Vous connaissez Odette depuis longtemps ?', g:'r', moments:M_, a:'Trente ans ! Elle note tout dans un carnet, un chat à chaque page. Il doit être sur sa table.',
+        note:'Le voisin : Odette note tout dans un carnet, un chat à chaque page. Il doit être sur sa table.'},
+      {q:'Si on rapporte sa canne, vous la surveillerez ?', g:'h', moments:M_, a:'Bien sûr ! Enfin… tant que je ne m\'endors pas.',
+        note:'Le voisin veut bien surveiller la canne d\'Odette… tant qu\'il ne s\'endort pas.'}
     ]},
-    basile:{ou:{matin:'potager', apresmidi:'potager', soir:'taverne', nuit:'B3'}, questions:[
-      {q:'Avez-vous vu les lumières ?', a:'Moi ? Je me couche avec les poules ! Je n\'ai rien vu du tout.', ment:true, ok:'Sortir la nuit ne prouve rien.', vrai:'Bon… je sors la nuit. Mais je ne dirai pas pourquoi !', note:'Basile dit qu\'il se couche tôt.', noteVrai:'Basile a avoué : il sort la nuit, mais il ne dit pas pourquoi.'},
-      {q:'Que faisais-tu au bord de l\'eau ?', besoin:[{code:'info:temoin_basile'}], choix:[
-          {q:'Je sais que vous n\'êtes pas méchant, Basile. Que faisiez-vous au bord de l\'eau ?', bon:true},
-          {q:'Alors, voleur de farine, qu\'est-ce que tu jetais dans la rivière ?', vexe:'Voleur ?! Je ne suis pas un voleur, moi !'}],
-        a:'Je… je promenais mon cochon ! Voilà.', ment:true, ok:'Basile porte les sacs, mais il ne sait pas qui creuse.',
-        vrai:'Bon, d\'accord… Je porte des sacs de terre du moulin jusqu\'au pont, et je les vide dans la rivière. Un homme me paie en graines de citrouille géante. Il reste au fond de son trou : je ne vois jamais son visage.',
-        note:'Basile dit qu\'il promenait son cochon.', noteVrai:'Basile a avoué : c\'est LUI qui porte les sacs de terre jusqu\'au pont, pour un homme qui creuse au fond d\'un trou.'}
+    /* la maison d'Odette, au 2, rue des Lanternes (l'après-midi) : une visite, sans questions ; deux codes d'un coup */
+    voisin:{ou:{apresmidi:'L2'}, salut:'La maison d\'Odette. La porte n\'est toujours pas fermée à clé…', questions:[
+      {q:'Poser la canne d\'Odette', donne:['info:carnet', 'info:traces_moustache'], titreDonne:'Chez Odette',
+        a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette. Par terre, du lait renversé… et des petites traces qui filent dehors !',
+        note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet. Par terre, du lait renversé, et des petites traces qui filent dehors.'}
     ]},
-    gaspard:{ou:{matin:'boulangerie', apresmidi:'boulangerie', soir:'place', nuit:'boulangerie'}, questions:[
-      {q:'Pourquoi accusez-vous le meunier ?', a:'Il me manque de la farine pour mon pain ! Qui d\'autre va au moulin la nuit, hein ?', note:'Gaspard accuse le meunier : il lui manque de la farine.'}
+    /* occupée le matin ; l'après-midi, dans son atelier, elle coud les banderoles (elle ment) */
+    melusine:{ou:{apresmidi:'atelier'}, carte:{matin:'atelier'},
+      occupe:{matin:['« Pas maintenant ! Je viens de coudre ma manche à la banderole de Pompon… »', '« Encore toi ? Attention à mes épingles ! Repasse cet après-midi. »']},
+      salut:'Bonjour… Attention aux épingles.', questions:[
+      /* sans le code de l'Alchimiste : elle se ferme. Avec « L'écriture de Mélusine », cette question laisse la place à la dernière. */
+      {q:'Vous avez entendu la lettre d\'Odette ?', g:'e', moments:A_, cacheSi:[{code:'info:ecriture'}], a:'De loin… Je ne sais rien de cette lettre, moi !', ment:true,
+        vrai:'Bon… si. Je ne peux pas en dire plus. Pas maintenant.',
+        note:'Mélusine dit qu\'elle ne sait rien de la lettre d\'Odette.', noteVrai:'Mélusine, les larmes aux yeux : elle sait quelque chose sur la lettre, mais elle ne peut pas en dire plus. Pas maintenant.'},
+      {q:'Pourquoi Odette part-elle toujours avec sa canne ?', g:'e', moments:A_, a:'Je la lui ai offerte, avec sept chats gravés. Elle ne la quitterait pour rien au monde.',
+        note:'Mélusine : c\'est elle qui a offert sa canne à Odette. Odette ne la quitterait pour rien au monde.'},
+      {q:'Vous avez acheté du beau tissu neuf ?', g:'e', moments:A_, a:'Ce vieux tissu ? Il traînait dans mon grenier !', ment:true,
+        vrai:'Bon… je l\'ai acheté hier, avec de l\'or qu\'on m\'a donné. Ne me demande pas qui.',
+        note:'Mélusine dit que son tissu traînait dans son grenier.', noteVrai:'Mélusine a avoué : elle a acheté son tissu hier, avec de l\'or qu\'on lui a donné. Elle ne dit pas qui.'},
+      {q:'Qu\'est-ce que vous cousez pour la fête ?', g:'h', moments:A_, a:'Une banderole par chat : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. Moustache retrouve toujours Odette.',
+        note:'Mélusine : les sept chats d\'Odette s\'appellent Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette et Grisette. Moustache retrouve toujours Odette.'},
+      /* avec le code de l'Alchimiste. Démasquée : son aveu, et le code pour le Sage (le filet : la nuit, à la fête, étape 7) */
+      {q:'C\'est votre écriture, sur la lettre d\'Odette.', g:'e', moments:A_, besoin:[{code:'info:ecriture'}], a:'Mon écriture ? Tout le monde écrit comme ça, à Brumeval !', ment:true, donneVrai:'info:aveu',
+        vrai:'C\'est moi… Un homme en cape m\'a payée pour l\'écrire, mot pour mot. Voix étouffée, odeur de lavande. Il revient quand la Grosse Marie sonnera.',
+        note:'Mélusine dit que tout le monde écrit comme elle, à Brumeval.', noteVrai:'Mélusine a avoué : un homme en cape l\'a payée pour écrire la lettre, mot pour mot. Voix étouffée, odeur de lavande. Il revient quand la Grosse Marie sonnera (code pour le Sage).'}
+    ]},
+    /* le matin et l'après-midi, elle ne fait que vendre ses fleurs (marche.js), puis elle est occupée ; ses questions d'enquête : plus tard */
+    iris:{carte:{matin:'herboristerie', apresmidi:'herboristerie'},
+      occupe:{matin:['« Chut ! Je parle à mes fleurs : si je m\'arrête, elles fanent. »', '« Quarante-sept bouquets à faire ! Plus tard ! »'],
+        apresmidi:['« Chut ! Je fais les couronnes de ce soir. »', '« Si c\'est pour des fleurs, d\'accord. Sinon, à ce soir ! »']},
+      questions:[]},
+    /* un peu sourd, il parle fort (il ne ment jamais) */
+    anselme:{ou:{apresmidi:'clocher'}, carte:{matin:'clocher'},
+      occupe:{matin:['« QUOI ? JE N\'ENTENDS RIEN ! » DONG !', '« UNE BRIOCHE ? NON MERCI, J\'AI DÉJÀ MANGÉ ! » DONG !']},
+      salut:'HEIN ? AH, C\'EST TOI !', questions:[
+      {q:'Vous m\'entendez bien, Anselme ?', g:'r', moments:A_, a:'HEIN ? Ah ! Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n\'entends plus rien !',
+        note:'Anselme : il faut lui parler fort et lentement, et ne jamais le presser.'},
+      {q:'Qu\'y a-t-il sous le clocher ?', g:'r', moments:A_, a:'La crypte des Fondateurs, fermée à clé. Quand je sonne, je pends la clé au clou, près de la corde.',
+        note:'Anselme : sous le clocher, la crypte des Fondateurs, fermée à clé. Quand il sonne, il pend la clé au clou, près de la corde.'},
+      {q:'Comment s\'appellent vos cloches ?', g:'r', moments:A_, a:'Bertille, Gontran et la Grosse Marie. Mon père disait : « Quand la brume s\'épaissit, sonne la Grosse Marie : elle la fait reculer. »',
+        note:'Anselme : ses cloches s\'appellent Bertille, Gontran et la Grosse Marie. Son père disait : « Quand la brume s\'épaissit, sonne la Grosse Marie : elle la fait reculer. »'},
+      {q:'Que ferez-vous pendant la fête ?', g:'e', moments:A_, a:'L\'ouverture, puis la Grosse Marie à minuit PILE. Le maire y tient tellement… je me demande pourquoi !',
+        note:'Anselme : il sonnera l\'ouverture de la fête, puis la Grosse Marie à minuit pile. Le maire y tient beaucoup.'}
+    ]},
+    farinel:{ou:{apresmidi:'moulin'}, carte:{matin:'moulin'},
+      occupe:{matin:['« Pas le temps : mon apprenti n\'est pas là ! Atchoum ! »', '« Regarde-moi : un vrai fantôme de farine ! Reviens cet après-midi. »']},
+      salut:'Bonjour, bonjour ! Tu veux de la farine ?', questions:[
+      {q:'Où est Léo, votre apprenti ?', g:'e', moments:A_, a:'Pas dormi au moulin, des bottes pleines de boue, et ce mot : « Ne m\'attendez pas ce soir. »',
+        note:'Farinel : Léo n\'a pas dormi au moulin. Il a laissé des bottes pleines de boue, et ce mot : « Ne m\'attendez pas ce soir. »'},
+      /* il épingle le signe de Léo sur le liège (Léo ment d'entrée, la nuit) */
+      {q:'Léo est un bon apprenti ?', g:'r', moments:A_, mimique:'leo', a:'Un froussard : quand il a peur, il se ferme comme une huître. Parle-lui doucement… et voilà son truc pour mentir, je te l\'épingle.',
+        note:'Farinel : quand Léo a peur, il se ferme comme une huître. Il faut lui parler doucement. Son signe de menteur est sur ton tableau de liège.'},
+      {q:'Vous viendrez à la fête, ce soir ?', g:'h', moments:A_, a:'Bien sûr ! Je danserai toute la nuit !', ment:true,
+        vrai:'Bon… je vais dormir. Je m\'endors toujours avant le dessert.',
+        note:'Farinel dit qu\'il dansera toute la nuit.', noteVrai:'Farinel a avoué : il s\'endort toujours avant le dessert.'},
+      {q:'Votre moulin est vraiment si vieux ?', g:'h', moments:A_, a:'Le plus vieux de Brumeval ! Une pierre du mur porte une lanterne gravée.',
+        note:'Farinel : son moulin est le plus vieux de Brumeval. Une pierre du mur porte une lanterne gravée.'}
+    ]},
+    /* le matin, sur la place (sa « mission secrète », et Fortuné qui vend sans permis) ; l'après-midi, devant la mairie.
+       Il ne ment pas : il croit à l'éboulement. */
+    silas:{ou:{apresmidi:'mairie'}, carte:{matin:'place'},
+      occupe:{matin:['« Halte ! Mission secrète. Si secrète que même moi, je ne la connais pas. »', '« Chut ! Je surveille une fourmi très suspecte. »']},
+      salut:'Halte ! Ah, c\'est toi.', questions:[
+      {q:'Vous gardez encore le chemin du Vieux Chêne ?', g:'h', moments:A_, a:'Ordre du maire : danger d\'éboulement ! Et ce soir, je garde la fête.',
+        note:'Silas : le chemin du Vieux Chêne reste fermé, par ordre du maire. Ce soir, il garde la fête.'},
+      {q:'C\'est vous qui avez emmené Bastien en prison ?', g:'e', moments:A_, a:'Oui, et il pleurait. Un homme en cape l\'a payé : il en a plus peur que de la prison.',
+        note:'Silas : Bastien a plus peur de l\'homme en cape que de la prison.'},
+      {q:'Vous avez fait votre ronde, cette nuit ?', g:'e', moments:A_, a:'Je n\'ai rien vu… sauf la porte du clocher qui grinçait. Le vent, sûrement.',
+        note:'Silas : cette nuit, la porte du clocher grinçait. « Le vent, sûrement. »'},
+      {q:'Pourquoi êtes-vous devenu garde ?', g:'r', moments:A_, a:'Petit, je me suis perdu trois jours dans la brume. Le père d\'Anselme m\'a retrouvé en sonnant toute la nuit.',
+        note:'Silas : petit, il s\'est perdu trois jours dans la brume. Le père d\'Anselme l\'a retrouvé en sonnant toute la nuit.'}
+    ]},
+    /* sur la place, sur son échelle : le matin, il vend ses fleurs (marche.js), puis il est occupé ; l'après-midi, ses questions (il ne ment jamais) */
+    basile:{ou:{apresmidi:'place'}, carte:{matin:'place'},
+      occupe:{matin:['« Pas maintenant, j\'ai les bras pleins de lampions ! »', '« Attention en dessous ! Oups… Reviens cet après-midi. »']},
+      salut:'Ah, te revoilà ! Tiens-moi cette guirlande, tu veux ?', questions:[
+      {q:'Vous décorez la place pour la fête ?', g:'e', moments:A_, a:'La fête jusqu\'à minuit : le maire n\'a jamais fait ça !',
+        note:'Basile : une fête jusqu\'à minuit, le maire n\'a jamais fait ça.'},
+      {q:'Anselme est quelqu\'un de gentil ?', g:'r', moments:A_, a:'Bourru, mais gentil. Il ne prête rien… sauf à ceux qui l\'aident à sonner la Grosse Marie : elle est si lourde !',
+        note:'Basile : Anselme ne prête rien… sauf à ceux qui l\'aident à sonner la Grosse Marie, qui est si lourde.'},
+      {q:'Vous connaissez le vieux puits ?', g:'h', moments:A_, a:'Sa grille est rouillée depuis toujours. Mon grand-père disait qu\'au fond, il y a une porte.',
+        note:'Basile : la grille du vieux puits est rouillée depuis toujours. Son grand-père disait qu\'au fond, il y a une porte.'},
+      {q:'Quelle est votre fleur préférée ?', g:'h', moments:A_, a:'La pensée sauvage : elle pousse même dans la brume. Les Alchimistes d\'autrefois en mettaient dans toutes leurs potions.',
+        note:'Basile : la pensée sauvage pousse même dans la brume. Les Alchimistes d\'autrefois en mettaient dans toutes leurs potions.'}
     ]}
   },
-  ecoutes:[
-    {id:'depositions', role:'barde', lieu:'taverne', moments:['soir', 'nuit'], titre:'Les dépositions', mj:'depositions', reessai:true,
-      intro:'Ils sont quatre au comptoir. Interroge-les tous ensemble sur la nuit dernière, du côté du moulin : trois disent la même chose, chacun avec ses mots. Un seul ment : lequel ?',
-      params:{scene:{titre:'La nuit dernière', ic:'🌫️', texte:'La nuit dernière, près du moulin. Trois disent la vérité, un seul ment.'},
-        depositions:[
-          {qui:'margot', phrases:[{t:'Vers minuit, on a entendu des coups sourds, BOUM… BOUM…, du côté du moulin.', d:'coups'}, {t:'Il y avait un brouillard épais sur la rivière.', d:'brouillard'}, {t:'On entendait le meunier ronfler jusqu\'au pont !', d:'ronfle'}]},
-          {qui:'victor', phrases:[{t:'En rentrant à minuit, j\'ai entendu des coups sourds, comme un tambour sous la terre.', d:'coups'}, {t:'Le meunier ronflait si fort qu\'on l\'entendait jusqu\'au pont.', d:'ronfle'}, {t:'Quel brouillard ! Je ne voyais même plus mes pieds.', d:'brouillard'}]},
-          {qui:'gaspard', phrases:[{t:'Vers minuit, j\'ai entendu des boum, boum, sous le moulin.', d:'coups'}, 'Le garde est passé devant le moulin avec sa lanterne rouge, sans même s\'arrêter.', {t:'Et quel brouillard sur la rivière !', d:'brouillard'}]},
-          {qui:'iris', ment:true, phrases:['Cette nuit-là, je suis sortie cueillir des plantes.', {t:'Il n\'y avait pas un brin de brouillard.', faux:true, d:'brouillard'}, {t:'Je n\'ai rien entendu du tout, pas un bruit.', faux:true, d:'coups'}]}
-        ]},
-      t:'Iris a menti sur la nuit dernière ! Tous les autres ont entendu des coups sourds vers minuit… et le meunier ronfler jusqu\'au pont : il dormait, il ne portait pas de sacs. Gaspard a aussi vu le garde passer devant le moulin à minuit, sans s\'arrêter.',
-      note:'Dépositions : Iris a menti. Le meunier ronflait toute la nuit : ce n\'est pas lui qui porte les sacs. Le garde est passé devant le moulin à minuit sans s\'arrêter.',
-      rate:'Tu n\'as pas trouvé qui ment… Tu te souviens seulement des coups sourds, vers minuit.',
-      noteRate:'Dépositions : des coups sourds vers minuit (le menteur n\'est pas trouvé).'}
-  ],
-  /* Tendre l'oreille (talent du niveau 2, barde.js) : des phrases à trous, gratuites, 2 fois par enquête. Utiles, jamais indispensables :
-     le moulin (la meule qui sonne creux), la taverne (Margot à son comptoir), le pont (le secret de Silas). Aucun mot sensible. */
+  ecoutes:[],
+  /* 👂 Les écoutes aux portes (talent « Tendre l'oreille », barde.js : B.porteIci) : à deux, une réplique par personne (bribes) ;
+     tout seul, une phrase (portes). Certaines donnent un vrai indice, d'autres font juste rire (E3-dialogues-et-trame.md §2.4 et §3.5). */
   bribes:[
-    {id:'moulin', lieu:'moulin', moments:['matin', 'apresmidi'], titre:'Le meunier parle tout seul',
-      intro:'Tu entres sans bruit dans le moulin. Farinel tapote sa grosse meule en parlant tout seul…',
-      phrases:[
-        {qui:'farinel', texte:'Boum… boum… Ma grosse [meule] sonne creux, comme au-dessus d\'un [trou] !'},
-        {qui:'farinel', texte:'Mais ma [roue], elle, tourne comme une horloge. Et moi, la nuit, je dors comme une [souche] !'}],
-      pieges:['porte', 'cloche', 'puits', 'lac', 'scie', 'pompe', 'bûche', 'marmotte'],
-      t:'Farinel : sa grosse meule sonne creux, comme au-dessus d\'un trou. La roue tourne bien. Il dort comme une souche.'},
-    {id:'taverne', lieu:'taverne', moments:['soir'], titre:'Au comptoir de la taverne',
-      intro:'Tu te glisses derrière un tonneau. Au comptoir, Margot et Victor bavardent…',
-      phrases:[
-        {qui:'margot', texte:'Hier soir, tu es encore parti à [minuit], Victor !'},
-        {qui:'victor', texte:'Comme toujours ! Et toi, tu n\'avais pas quitté ton [comptoir] de la soirée.'},
-        {qui:'margot', texte:'Et en rentrant, tu as entendu le meunier ? Il ronflait si fort qu\'on l\'entendait jusqu\'au [pont] !'}],
-      pieges:['midi', 'huit', 'fauteuil', 'tablier', 'cuisine', 'puits', 'parc'],
-      t:'Victor est parti de la taverne à minuit. Margot n\'avait pas quitté son comptoir de la soirée. Le meunier ronflait si fort qu\'on l\'entendait jusqu\'au pont.'},
-    {id:'pont', lieu:'pont', moments:['soir'], titre:'Au bord de l\'eau', mimique:'silas',
-      intro:'Caché sous l\'arche du pont, tu entends le garde marmonner en faisant sa ronde…',
-      phrases:[
-        {qui:'silas', texte:'Rien à [signaler], rien à signaler… Le maire m\'a dit de ne pas m\'occuper de cette [lumière] verte.'},
-        {qui:'silas', texte:'Et quand je raconte des histoires, je cligne des yeux deux fois, très vite. Heureusement, personne ne le sait !'}],
-      pieges:['raconter', 'déclarer', 'lanterne', 'fumée', 'flamme'],
-      t:'Silas : rien à signaler… Le maire lui a dit de ne pas s\'occuper de la lumière verte. Quand Silas ment, il cligne des yeux deux fois.'}
+    {id:'mairie_matin', lieu:'mairie', moments:M_, titre:'Derrière la porte de la mairie', phrases:[
+      {qui:'grosbec', texte:'Si on vous demande d\'où vient la lettre, vous ne savez rien.'},
+      {qui:'victor', texte:'Mais je ne sais rien, Monsieur le maire.'}],
+      t:'Le maire à Victor : « Si on vous demande d\'où vient la lettre, vous ne savez rien. »'},
+    {id:'boulangerie_matin', lieu:'boulangerie', moments:M_, titre:'Derrière la porte de la boulangerie', phrases:[
+      {qui:'margot', texte:'Je lui ai dit : vous gardez la lettre pour vous ? Il a rougi !'},
+      {qui:'gaspard', texte:'Moi, j\'ai vanté sa fête : trois gâteaux de plus !'}],
+      t:'Margot : le maire a rougi quand elle a dit qu\'il gardait la lettre pour lui. Gaspard : il a vanté sa fête, et le maire a commandé trois gâteaux de plus.'},
+    /* la scène de Silas et Fortuné : avec Tendre l'oreille, elle se joue toute seule avant le marchandage (marche.avant) */
+    {id:'place_matin', lieu:'place', moments:M_, titre:'Sur la place', phrases:[
+      {qui:'silas', texte:'Halte, Fortuné ! Pas de vente sans permis !'},
+      {qui:'fortune', texte:'Chut ! Je dis partout que le maire adore son chapeau neuf. Il le déteste !'},
+      {qui:'silas', texte:'Et ma pendule ? J\'ai dit qu\'elle était belle : tu me l\'as vendue deux fois plus cher !'},
+      {qui:'fortune', texte:'Quand on montre qu\'on veut quelque chose, ça coûte toujours plus cher !'}],
+      t:'Fortuné : le maire déteste son chapeau neuf. Et quand on montre qu\'on veut quelque chose, ça coûte toujours plus cher.'},
+    {id:'lanternes_matin', lieu:'L1', moments:M_, titre:'Rue des Lanternes', phrases:[
+      {qui:'levoisin', texte:'Odette chez sa sœur ? Elle ne m\'a jamais parlé d\'une sœur.'},
+      {qui:'melusine', texte:'Pardon, Odette…'}],
+      t:'Le voisin : Odette ne lui a jamais parlé d\'une sœur. Mélusine, tout bas : « Pardon, Odette… »'},
+    {id:'clocher_matin', lieu:'clocher', moments:M_, titre:'Au pied du clocher', phrases:[
+      {qui:'anselme', texte:'TIM ! MA CLÉ ÉTAIT PAR TERRE CE MATIN !'},
+      {qui:'tim', texte:'Quelqu\'un l\'a prise cette nuit, alors…'}],
+      t:'Anselme : sa clé était par terre ce matin. Tim : quelqu\'un l\'a prise cette nuit.'},
+    {id:'mairie_aprem', lieu:'mairie', moments:A_, titre:'Devant la mairie', phrases:[
+      {qui:'grosbec', texte:'Ce soir, personne ne quitte la place avant minuit. Personne !'},
+      {qui:'silas', texte:'Et ceux qui veulent dormir ?'},
+      {qui:'grosbec', texte:'Ils dormiront… après minuit.'}],
+      t:'Le maire à Silas : « Ce soir, personne ne quitte la place avant minuit. Personne ! »'},
+    {id:'taverne_aprem', lieu:'taverne', moments:A_, titre:'Au comptoir de la taverne', phrases:[
+      {qui:'gaspard', texte:'S\'il me commande un étage de plus, je dors dans mon four !'},
+      {qui:'margot', texte:'Et moi, la soupe jusqu\'à minuit… Il n\'a jamais fait ça !'}],
+      t:'Gaspard et Margot : le maire n\'a jamais fait une fête pareille.'},
+    {id:'herboristerie_aprem', lieu:'herboristerie', moments:A_, titre:'Derrière la porte de l\'herboristerie', phrases:[
+      {qui:'iris', texte:'Tu as les yeux rouges… et tu sens la lavande, comme tout le village !'},
+      {qui:'melusine', texte:'C\'est le fil. J\'ai trop cousu.'}],
+      t:'Iris à Mélusine : « Tu as les yeux rouges… et tu sens la lavande, comme tout le village ! »'},
+    {id:'clocher_aprem', lieu:'clocher', moments:A_, titre:'Au pied du clocher', phrases:[
+      {qui:'basile', texte:'Je t\'aide à sonner, ce soir ?'},
+      {qui:'anselme', texte:'UN PAIN AUX RAISINS ?'},
+      {qui:'basile', texte:'JE-T\'AI-DE-À-SON-NER !'},
+      {qui:'anselme', texte:'Non, je sonne seul. Sauf si on me le demande… lentement !'}],
+      t:'Anselme sonne seul, sauf si on lui demande de l\'aider… lentement.'},
+    {id:'boulangerie_aprem', lieu:'boulangerie', moments:A_, titre:'Derrière la porte de la boulangerie', phrases:[
+      {qui:'grosbec', texte:'Le gâteau à minuit pile, Gaspard. Pas une minute avant !'},
+      {qui:'gaspard', texte:'Mais pourquoi minuit ?'},
+      {qui:'grosbec', texte:'Parce que c\'est l\'heure, voyons.'}],
+      t:'Le maire à Gaspard : « Le gâteau à minuit pile. Pas une minute avant ! »'}
   ],
-  /* Hydromel des confidences (talent du niveau 6) : un villageois innocente un suspect (jamais le voleur) */
-  alibis:{
-    farinel:'Farinel ? Il ronfle si fort, la nuit, qu\'on l\'entend jusqu\'au pont. Il n\'y est pour rien !',
-    silas:'Silas ? Il fait sa ronde avec sa lanterne rouge, toute la nuit. Il n\'a pas le temps de voler la farine.',
-    iris:'Iris ? Elle cueille ses plantes la nuit, mais elle n\'a jamais porté un sac de farine de sa vie.',
-    margot:'Margot ? À minuit, elle servait la soupe à la taverne, devant tout le monde.'
+  portes:{
+    iris:{matin:'« Quelqu\'un a pris mes sachets de lavande cette nuit… et mis de la boue partout ! »'},
+    farinel:{matin:'« Léo ! C\'est toi qui as mis de la boue partout ? … Léo ? »'},
+    basile:{matin:'« Un lampion ici, un lampion là… et un sur ma tête ! »'},
+    victor:{apresmidi:'« Une lueur au fond d\'un puits sec… Je n\'y passerai pas ce soir ! »'}
   },
-  analyses:{
-    fil:{mj:'melange', besoin:[{code:'info:boite'}, {outil:'teintures'}],
-      alt:'Pour reproduire la couleur exacte de ce fil, il te faut des teintures. Le Barde peut demander à Mélusine de te prêter les siennes !',
-      params:{recette:{pensee:3, menthe:1}},
-      t:'Tu as retrouvé la couleur exacte du fil ! Ta teinture : 3 pensées et 1 menthe. Dis-le au Sage : il trouvera ce vert dans le carnet de Mélusine.',
-      note:'Couleur du fil vert : 3 pensées et 1 menthe (à comparer avec le carnet de Mélusine).',
-      rate:'C\'est un vert très vif… mais lequel ? Tu n\'as pas trouvé la nuance exacte. Une chose est sûre : il n\'est ni foncé comme un sapin, ni pâle comme une pomme.',
-      rateNote:'Couleur du fil vert (pas finie) : un vert très vif, ni vert sapin, ni vert pomme.', partiel:true},   /* clé : de quoi comparer avec le carnet de Mélusine */
-    poussiere:{mj:'bulles', t:'Ce n\'est pas de la farine : c\'est de la terre et de la pierre broyée, comme quand on creuse un trou très profond. Il y en a beaucoup trop pour venir de dehors.',
-      note:'Analyse de la poussière : de la terre et de la pierre de creusage, sous le moulin.',
-      rate:'Les bulles ont éclaté trop vite… Tu sais juste que ce n\'est pas de la farine.',
-      detail:{t:'Cette pierre grise ne se trouve qu\'en profondeur, sous la vallée.', note:'Détail : la pierre vient de très profond.'}}
-  },
+  /* la maison d'Odette, pour le Pisteur, l'Alchimiste et le Sage */
+  absentTexte:{odette:'Odette n\'est pas chez elle. Le maire dit qu\'elle est chez sa sœur…'},
+  absentPourTous:true,   /* le Barde aussi (il n'entre chez Odette que l'après-midi, pour poser la canne) */
   pages:[
-    {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},
-    {id:'plan', titre:'Les vieux plans du moulin', ic:'📐', action:true, mj:'plans', bouton:'Superposer les plans',
-      params:{carte:'moulin', secret:'meules', passage:'la cave sous les meules'},
-      avant:'Les archives gardent le plan du moulin dessiné par les fondateurs, il y a 300 ans. Pose-le sur le plan d\'aujourd\'hui pour voir ce qui a changé !',
-      t:'Sur le vieux plan, deux choses ont disparu des plans d\'aujourd\'hui : une cave sous les meules, avec un escalier, et un vieux tunnel sous l\'arche du pont. Sous la roue : rien du tout. Le code du tunnel est pour toute l\'équipe : chacun peut le taper.',
-      note:'Vieux plans : une cave oubliée sous les meules, et un vieux tunnel sous le pont. Rien sous la roue.', donne:'info:passage_tunnel',
-      rate:'Les plans ne coïncident pas…'},
-    {id:'grille', titre:'Où était chacun à minuit ?', ic:'🧩', action:true, mj:'grille', donne:'info:minuit', bouton:'Remplir la grille',
-      avant:'Victor jure que Margot n\'a pas quitté son comptoir… mais Victor est parti à minuit ! Avec ce que racontent les habitants, retrouve où était chacun à minuit pile, et ce qu\'il tenait.',
-      params:{
-        intro:'À minuit pile, la nuit dernière : où était chacun, et que tenait-il dans les mains ?',
-        personnes:['margot', 'victor', 'gaspard', 'silas'],
-        lieux:['taverne', 'place', 'boulangerie', 'moulin'],
-        objets:['soupe', 'courrier', 'pain', 'lanterne'],
-        indices:[
-          {t:'meme', c1:'objet', i1:'soupe', c2:'lieu', i2:'taverne'},
-          {t:'meme', c1:'objet', i1:'pain', c2:'lieu', i2:'boulangerie'},
-          {t:'meme', c1:'objet', i1:'lanterne', c2:'lieu', i2:'moulin'},
-          {t:'nini', p:'victor', c:'lieu', i:['taverne', 'moulin']},
-          {t:'nini', p:'silas', c:'lieu', i:['taverne', 'boulangerie']},
-          {t:'nest', p:'gaspard', c:'objet', i:'soupe'},
-          {t:'nest', p:'victor', c:'objet', i:'pain'}],
-        solution:{
-          margot:{lieu:'taverne', objet:'soupe'},
-          victor:{lieu:'place', objet:'courrier'},
-          gaspard:{lieu:'boulangerie', objet:'pain'},
-          silas:{lieu:'moulin', objet:'lanterne'}},
-        confirme:'C\'est confirmé : à minuit pile, quand tout le monde entendait les coups sous le moulin, Margot servait la soupe à la taverne. Ce n\'est pas elle qui creuse ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
-        note:'Grille : à minuit, Margot était à la taverne (elle n\'a pas pu aller au moulin). Silas, lui, était au moulin… et son rapport dit « rien à signaler ».'},
-      t:'C\'est confirmé : à minuit pile, quand tout le monde entendait les coups sous le moulin, Margot servait la soupe à la taverne. Ce n\'est pas elle qui creuse ! Et autre chose : à minuit, Silas était AU MOULIN, avec sa lanterne rouge… alors que son rapport dit « rien à signaler ».',
-      note:'Grille : à minuit, Margot était à la taverne. Silas était au moulin, mais son rapport dit « rien à signaler ».',
-      rate:'La grille ne tombe pas juste… Une chose est sûre quand même : à minuit, Margot était à la taverne.', rateNote:'Grille (pas finie) : à minuit, Margot était à la taverne.', partiel:true},   /* clé */
-    {id:'carnet', titre:'Le carnet de Mélusine', ic:'📒', besoin:[{code:'obj:carnet'}], donne:'info:verts',
-      avant:'Mélusine, la couturière, connaît toutes les couleurs du village. Le Barde peut lui demander son carnet.',
-      t:'Le carnet de couleurs de Mélusine. VERT SAPIN (2 menthes, 1 myrtille, 1 charbon) : le chapeau de Silas, le garde. VERT POMME (2 menthes, 1 pensée, 1 poussière de lune) : le tablier d\'Iris. VERT PERROQUET (3 pensées, 1 menthe) : celui-là, je ne l\'ai jamais cousu pour personne !',
-      note:'Carnet de Mélusine : vert sapin = chapeau de Silas ; vert pomme = tablier d\'Iris ; vert perroquet (3 pensées, 1 menthe) = jamais cousu par Mélusine.'},
-    {id:'rapport', titre:'Le rapport du garde', ic:'📋', action:true, bouton:'Lire le rapport à la mairie',
-      avant:'Chaque matin, le garde champêtre dépose son rapport de nuit à la mairie.',
-      t:'Rapport de Silas Sec, garde champêtre. 22 heures : la taverne est pleine. 23 heures : Iris Lavandin part cueillir des plantes, avec sa lanterne jaune. Minuit : rien à signaler au moulin. 1 heure : tout le monde dort.',
-      note:'Rapport de Silas : à minuit, « rien à signaler au moulin ».'},
-    {id:'serrure', titre:'La serrure de runes', ic:'🔷', besoin:[{code:'info:serrure'}], mj:'runes', bouton:'Remettre les runes en place',
-      params:{image:'runes'},
-      avant:'Le Pisteur a trouvé un vieux coffre dans un tunnel, fermé par une serrure de runes. Quand il te donnera son code, tu pourras l\'ouvrir.',
-      t:'Les runes s\'emboîtent : la serrure fait clic ! Donne la combinaison au Pisteur.',
-      note:'Serrure de runes ouverte : la combinaison est pour le Pisteur.', donne:'info:combinaison',
-      rate:'Les runes ne s\'emboîtent pas…'},
-    {id:'recettes', titre:'Les recettes', ic:'🧪',
-      t:'Élixir du Cœur vaillant, pour rendre courage au Sage : ' + D.texteEtapes('coeur') + '. Une seule par enquête : elle rend un cœur d\'accusation.',
-      note:'Recette de l\'Élixir du Cœur vaillant : ' + D.texteEtapes('coeur') + '.'},
-    {id:'moulin', titre:'Le plus vieux moulin', ic:'🏛️',
-      t:'Le moulin est le plus vieux bâtiment de Brumeval. Ce sont les fondateurs eux-mêmes qui l\'ont construit. On raconte qu\'ils y venaient la nuit, avec des lanternes…'}
+    {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'}
   ],
-  bonus:[
-    {id:'girouette', role:'pisteur', lieu:'moulin', moments:['matin', 'apresmidi'], mj:'tir', or:20, titre:'La girouette du moulin',
-      t:'La girouette du moulin est coincée ! Tire une flèche dans la goupille pour la débloquer.'},
-    {id:'bouquets', role:'alchimiste', lieu:'herboristerie', moments:['matin', 'apresmidi', 'soir'], mj:'differences', or:20, titre:'Les bouquets d\'Iris',
-      t:'Dans sa boutique, Iris a rangé ses bouquets sur deux étagères presque pareilles. Trouve les différences entre les deux !', params:{theme:'herboristerie'}},
-    {id:'cartes', role:'alchimiste', lieu:'place', moments:['matin', 'apresmidi'], mj:'double', or:20, titre:'Le jeu de cartes du colporteur',
-      t:'Sur la place, le colporteur propose un jeu de cartes : trouve le symbole commun plus vite que lui !'},
-    /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
-    /* dans la conversation (barde.js) : Margot raconte, son visage la trahit ; un seul essai */
-    {id:'menteurs', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], or:20, titre:'Le concours de menteurs', pnj:'margot',
-      t:'Ce soir, concours de menteurs à la taverne ! Margot raconte trois histoires : une seule est une blague. Laquelle ?',
-      repliques:[
-        {texte:'La soupe d\'aujourd\'hui est aux poireaux.', ment:false},
-        {texte:'Hier, j\'ai vu un poisson voler au-dessus du lavoir !', ment:true},
-        {texte:'Gaspard a fait cent pains cette nuit.', ment:false}]},
-    {id:'devise', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi', 'soir'], mj:'alphabet', or:20, titre:'La devise des fondateurs',
-      t:'Sur un vieux mur de la mairie, les fondateurs ont gravé une phrase dans leur alphabet secret. Déchiffre-la !',
-      params:{message:'ENSEMBLE ON EST PLUS FORTS'}}
-  ],
-  fin:{
-    slides:[
-      'Au petit matin, toute l\'équipe descend dans le moulin. Vous poussez les grosses meules… Dessous, une trappe ! Et tout au fond, des bruits de pelle.',
-      '« Sortez de là ! » Une tête couverte de poussière grise apparaît, avec un chapeau à plume tout cabossé, et un gilet vert perroquet tout déchiré : c\'est Fortuné, le colporteur !',
-      'Fortuné bafouille : « Je voulais juste trouver le trésor ! Un homme masqué m\'a vendu cette carte. Il avait une voix toute grave… et pour cause : la veille, je lui avais vendu mes pastilles pour changer de voix ! »',
-      'Basile baisse la tête, tout rouge : « Et moi, je portais les sacs de terre jusqu\'au pont… Il m\'avait promis des graines de citrouille géante. Je voulais tant gagner le concours ! »',
-      '« Je vidais un sac de farine, je le remplissais de terre, et Basile allait la jeter sous le pont, explique Fortuné. Je comptais tout rembourser ! »',
-      'La carte au trésor est fausse : il n\'y a pas de trésor. Mais au fond du trou, vous découvrez un vieux tunnel de pierre… et une grosse pierre gravée de quatre symboles : un œil, un chaudron, une lyre et une étoile. Au milieu, un cinquième creux, vide, en forme de plume.',
-      'Silas, le garde champêtre, arrive en courant, suivi du maire, tout sourire. Le maire vous félicite, fait refermer la trappe… et garde la clé dans sa poche. « C\'est plus prudent. »',
-      'Fortuné rend la farine au meunier, Basile replante ses carottes, et Gaspard reçoit des pastilles à la menthe pour se faire pardonner. Tout le village fait la paix.',
-      'En repartant, vous croisez Silas qui écrit quelque chose dans un petit carnet noir. Quand il vous voit, il le referme d\'un coup sec…',
-      'Le soir même, on frappe à vos portes. C\'est le maire, avec Silas et deux gardes. Il ne sourit plus du tout. Lentement, il retire ses gants gris… À son doigt brille une bague en argent à tête de corbeau ! « Vous en savez beaucoup trop, petits enquêteurs. Gardes, arrêtez-les ! »',
-      {img:'prison', t:'Vous voilà tous les quatre au cachot de la mairie. Entre les barreaux, une plume noire tombe, avec un petit mot : <b class="corbeau">« Restez bien sages, petits enquêteurs. Quand vous sortirez, Brumeval sera à moi. Le Corbeau »</b> À suivre…'}
-    ],
-    calepin:[
-      {ic:'🍬', t:'Fortuné a vendu des pastilles « pour changer de voix » à un homme masqué.'},
-      {ic:'🪨', t:'Sous le moulin : une pierre aux quatre symboles, avec un creux en forme de plume.'},
-      {ic:'🔑', t:'Le maire a gardé la clé de la trappe du moulin.'},
-      {ic:'📋', t:'À minuit, Silas était au moulin… mais son rapport dit « rien à signaler ».'},
-      {ic:'💂', t:'Silas : « Le maire m\'a dit de ne pas m\'occuper des lumières. »'},
-      {ic:'📔', t:'Un vieux registre : depuis 300 ans, la famille Grosbec garde la clé de la trappe du moulin.'},
-      {ic:'💍', t:'Le maire porte la bague en argent à tête de corbeau : le Corbeau, c\'est lui !'},
-      {ic:'⛓️', t:'Le maire vous a fait enfermer au cachot de la mairie.'}
-    ]
-  },
+  bonus:[],
+  /* (la vraie fin, animée, arrive avec l'étape 7) */
+  fin:{slides:['<b>À suivre…</b>'], calepin:[]},
   defaite:[
-    'Au matin, le trou sous les meules est vide : le voleur a filé avec sa pelle. Le village se dispute encore, et le maire vous renvoie chez vous.',
-    'La brume monte de la rivière et efface vos souvenirs… D\'autres enquêteurs viendront.'
+    'Minuit sonne. La fête est finie… et personne ne sait où est Odette.',
+    'La brume entre dans le village et efface vos souvenirs… D\'autres enquêteurs viendront.'
   ],
-  faits:[
-    /* QUI */
-    {sources:['pisteur:moulin:farine', 'sage:page:habitants'], qui:['farinel']},
-    {sources:['pisteur:moulin:fil', 'alchimiste:analyse:fil', 'sage:page:carnet'], qui:['silas', 'iris']},
-    {sources:[['barde:victor:1', 'barde:oreille:taverne'], 'sage:page:grille'], qui:['margot'], quoi:[]},
-    /* OÙ */
-    {sources:['pisteur:moulin:guet'], ou:['pont']},
-    {sources:['pisteur:tunnel_moulin:tunnel'], ou:['pont']},
-    {sources:['sage:page:plan', ['barde:farinel:1', 'barde:oreille:moulin']], ou:['roue']},
-    {sources:['pisteur:moulin:meules', 'alchimiste:analyse:poussiere'], ou:['roue']},
-    /* QUI L'AIDE (quoi) */
-    {sources:['pisteur:pont:poursuite', 'barde:basile:1:verite'], quoi:['silas', 'farinel']},
-    {sources:['pisteur:pont:riviere', 'sage:page:habitants'], quoi:['silas']},
-    {sources:[['barde:ecoute:depositions', 'barde:oreille:taverne']], quoi:['farinel']}
-  ]
+  faits:[]
 };
 })();

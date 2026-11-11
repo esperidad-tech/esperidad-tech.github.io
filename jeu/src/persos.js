@@ -1809,7 +1809,12 @@ var PNJ = {
     sexe:'f', age:'adulte', peau:'p3', coiffure:'chignon', cheveux:'brun', yeux:'noisette', corps:'normal', habit:'#a8302a', chemise:'#f4ecd8', joues:.7, bouche:'ouvert', accessoires:['tablier_blanc','chope']},
   /* enquête 2 : le charretier */
   bastien: {nom:'Bastien Roulebosse', metier:'le charretier', fond:'#8a6a3a',
-    sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'roux', yeux:'vert', nez:'rond', barbe:'courte', corps:'costaud', habit:'#7a4a26', chemise:'#e8d8b0', chapeau:'casquette', sourcils:'epais', terre:true, accessoires:['salopette']}
+    sexe:'m', age:'adulte', peau:'p2', coiffure:'boucles', cheveux:'roux', yeux:'vert', nez:'rond', barbe:'courte', corps:'costaud', habit:'#7a4a26', chemise:'#e8d8b0', chapeau:'casquette', sourcils:'epais', terre:true, accessoires:['salopette']},
+  /* enquête 3 : le voisin d'Odette (un vieux monsieur en gilet), et Léo Mouture, l'apprenti du meunier (jeune, grand, plein de farine) */
+  levoisin:{nom:'Le voisin d\'Odette', metier:'le voisin d\'Odette', fond:'#7a8a6a',
+    sexe:'m', age:'age', peau:'p3', coiffure:'degarni', cheveux:'gris', yeux:'marron', nez:'rond', barbe:'moustache', corps:'normal', habit:'#5a6a4a', chemise:'#efe6d0', sourcils:'touffus', sourcilsC:'#d8d8e0', accessoires:['lunettes']},
+  leo:     {nom:'Léo Mouture', metier:'l\'apprenti du meunier', fond:'#a89878',
+    sexe:'m', age:'adulte', peau:'p2', coiffure:'meche', cheveux:'chatain', yeux:'noisette', corps:'maigre', forme:'fin', habit:'#c8bc9c', chemise:'#f4f0e6', chapeau:'bonnet', farine:true, accessoires:['farine_habit']}
 };
 
 function busteCorps(K, sp){
@@ -1940,7 +1945,7 @@ function pnj(id, opts){
    Mêmes repères que le buste (la tête en 0,0 ; le buste s'arrête à y = 120) : on ajoute la taille et la ceinture (ou la jupe),
    les jambes, les chaussures, les bras le long du corps et les mains. Le bas des tabliers continue sur la jupe ou le pantalon. */
 var BAS_PNJ = {grosbec:'#2a2440', gaspard:'#6a5440', melusine:'#2a5a4a', basile:'#3f5f9a', odette:'#5a4a7a', tim:'#3a3a48', victor:'#26386a',
-  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a'};
+  anselme:'#4a3a2e', iris:'#8a6a3a', fortune:'#3a2a5a', silas:'#5a4a30', farinel:'#a89c80', margot:'#4a2a3a', bastien:'#3f5f9a', levoisin:'#4a5a3e', leo:'#8a7e62'};
 function geoPied(sp){
   var enf = sp.age === 'enfant';
   var L = sp.corps === 'rond' ? 64 : sp.corps === 'costaud' ? 60 : sp.corps === 'maigre' ? 42 : sp.corps === 'enfant' ? 42 : 50;

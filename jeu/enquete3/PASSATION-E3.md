@@ -1,8 +1,16 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 16 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 18 h)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
-## Nouveau depuis le 11 novembre (16 h 30) : LA CONCEPTION DE L'ENQUÊTE 3 EST FINIE
+## Nouveau depuis le 11 novembre (18 h) : LA CONSTRUCTION A COMMENCÉ — l'étape 1 sur 8 est faite
+
+- **Go de Romain à 16 h 33**, dans la conversation qui construit, pour suivre l'ordre de la fin du §13.14. Le détail de ce qui est construit : **Bible §13.15** (et `PASSATION.md`).
+- **Fait** : l'ouverture (la lettre lue par le maire, l'écran des missions), le marché aux fleurs du Barde, tous les villageois du matin et de l'après-midi (les textes de `E3-dialogues-et-trame.md` §1 à §3, mot pour mot), les occupés, les écoutes aux portes, huit codes.
+- **Pour l'essayer** : https://esperidad-tech.github.io/brumeval/#test → ☰ → Réglages → Mode test → Enquête 3. L'enquête reste fermée aux joueurs.
+- **Ce que la construction a ajouté ou changé dans les textes** (à reporter dans `E3-dialogues-et-trame.md` si on le rouvre) : le maire occupé le matin (deux phrases) ; où sont Tim, Silas et Victor ; ce que dit le maire pour 5 bouquets et pour 0 à 2 ; quelques répliques de liaison (Fortuné, Iris, Basile, les saluts de l'après-midi) ; « Sa grille est rouillée depuis toujours » chez Basile. La liste est au §13.15.
+- **À faire** : étapes 2 à 8 du §13.14, chacune avec un point à Romain.
+
+## Le 11 novembre (16 h 30) : LA CONCEPTION DE L'ENQUÊTE 3 EST FINIE
 
 - **Romain (15 h 13)** : « Je suis d'accord pour absolument tout ce que tu m'as proposé. Ça te fait faire un gros chantier, je te laisse le faire. Go pour tout. » Toutes les propositions du §13.14 sont décidées, et la conception a été écrite dans la foulée (rien n'est construit : la construction se fait dans une autre conversation).
 - **Les trois fichiers qui font foi** (dans `jeu/enquete3/` et dans le projet Claude) :

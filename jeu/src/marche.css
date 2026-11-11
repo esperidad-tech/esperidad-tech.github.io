@@ -1,0 +1,56 @@
+/* ==========================================================
+   Brumeval — le marché aux fleurs du Barde (enquête 3, marche.js). Préfixe .ma-
+   ========================================================== */
+/* les deux compteurs, posés en haut à gauche de la carte du Barde */
+/* (une boîte sans hauteur, juste avant la carte : elle ne change rien à la mise en page de la carte des autres rôles ni des autres enquêtes) */
+.ma-compteurs{position:relative;height:0;z-index:6;pointer-events:none}
+.ma-compteurs[hidden]{display:none}
+.ma-cc{position:absolute;left:10px;top:calc(var(--h-bandeau, 0px) + 10px);display:flex;gap:8px}
+.ma-c{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;background:#fff7df;color:#24182e;border:3px solid #24182e;
+  font-weight:700;font-size:1.05rem;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.ma-c b{font-size:1.2rem}
+.ma-c-l{padding:6px 9px}
+
+/* la fenêtre : un villageois, ce qu'il dit, puis les choix */
+.ma-feuille{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.ma-tete{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ma-tete h2{margin:0;text-align:center}
+.ma-visage{width:min(70vw, 34vh, 340px);aspect-ratio:1;border-radius:28px;overflow:hidden;border:4px solid var(--contour, #24182e);background:#e9d8b0}
+.ma-visage.ma-petit{width:min(46vw, 22vh, 200px);border-radius:22px}
+.ma-visage svg{width:100%;height:100%;display:block}
+.ma-dit{margin:0;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.16);font-size:1.08rem;line-height:1.4;
+  display:flex;gap:8px;align-items:center;justify-content:space-between}
+.ma-dit.ma-conteur{font-style:italic;background:none;border-style:dashed}
+.ma-illu{border-radius:18px;overflow:hidden;border:4px solid var(--contour, #24182e)}
+.ma-illu .rs-scene{margin:0;border:0;border-radius:0}
+.ma-choix{display:flex;flex-direction:column;gap:8px}
+.ma-ligne{display:grid;grid-template-columns:minmax(0, 1fr) auto;gap:6px;align-items:center}
+.ma-ligne .b-question{width:100%;text-align:left}
+.ma-gain{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ma-gain span{padding:6px 14px;border-radius:999px;background:#fff7df;color:#24182e;border:3px solid #24182e;font-weight:700;font-size:1.1rem}
+.ma-gain.ma-perte span{background:#ffd9cf}
+.ma-gain.ma-or span{background:linear-gradient(180deg,#ffe08a,#e8a93a)}
+/* combien de bouquets */
+.ma-qte{display:flex;align-items:center;justify-content:center;gap:16px}
+.ma-pm{min-width:64px;min-height:64px;font-size:2rem;line-height:1;border-radius:18px}
+.ma-n{display:flex;flex-direction:column;align-items:center;min-width:110px}
+.ma-n b{font-size:2.6rem;line-height:1}
+.ma-cout{margin:0;text-align:center;font-weight:700;font-size:1.1rem}
+/* le bouton « acheter des fleurs » sur la pastille d'un vendeur, et en bas d'une conversation */
+.ma-btn-vendeur{margin-top:6px}
+.ma-btn-conv{align-self:center}
+/* (barde.js) il s'impatiente : sa phrase, sous ses réponses */
+.bd-impatient{margin:4px 0 0;padding:10px 12px;border-radius:14px;border:2px dashed var(--braise, #e8693c);background:rgba(232,105,60,.08);font-style:italic;
+  display:flex;gap:8px;align-items:center;justify-content:space-between}
+/* la scène de la carriole (illus-fin.js, e3-carriole) */
+.sf-carriole .sf-penche{transform-origin:50% 100%;animation:ma-penche 3.2s ease-in-out infinite alternate}
+@keyframes ma-penche{from{transform:translateX(-50%) rotate(7deg)}to{transform:translateX(-50%) rotate(11deg)}}
+.sf-carriole .ma-lueur{animation:ma-lueur 1.6s ease-in-out infinite alternate;transform-origin:center;transform-box:fill-box}
+@keyframes ma-lueur{from{opacity:.35;transform:scale(.85)}to{opacity:.95;transform:scale(1.12)}}
+.sf-carriole .ma-eclat{animation:ma-eclat 1.6s ease-in-out infinite}
+@keyframes ma-eclat{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+.sf-carriole .ma-eclat{transform-origin:center;transform-box:fill-box}
+@media (prefers-reduced-motion: reduce){ .sf-carriole .sf-penche, .sf-carriole .ma-lueur, .sf-carriole .ma-eclat{animation:none} }
+/* dans la fenêtre du marchandage, l'image de la carriole prend toute la largeur */
+.ma-illu{width:min(100%, calc(40vh * 1.6));align-self:center}
+.ma-illu .rs-scene{max-width:none;width:100%}

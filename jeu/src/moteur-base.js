@@ -632,6 +632,10 @@ M.actionsMax = function(){ return (M.role() === 'alchimiste' ? 3 : 2) + M.fxSomm
    Ce qui limite : le tutoriel (tuto.js), et « un lieu ou un villageois ne donne qu'une chose par moment » (M.rienDePlus, moteur-roles.js).
    Tous les tests d'actions passent par ces trois petites fonctions : les autres enquêtes comptent leurs actions comme avant. */
 M.sansActions = function(){ var E = M.S && M.S.e ? M.E() : null; return !!(E && E.sansActions); };
+/* Une enquête en construction (E.enEcriture : l'enquête 3, étape par étape, Bible § 13.14) : fermée aux joueurs (« en cours d'écriture »),
+   ouverte seulement quand l'adresse porte « test » (…/brumeval/#test : le mode test des Réglages). Pas pour les fichiers ouverts
+   à la main ni pour les robots, qui doivent voir le jeu comme les joueurs. */
+M.enEcriture = function(E){ return !!(E && E.enEcriture && !/(^|[?#&])test\b/.test(location.search + location.hash)); };
 M.peutAgir = function(){ var P = M.P(); return M.sansActions() || !!(P && P.actions > 0); };
 M.depenser = function(){ var P = M.P(); if(P && !M.sansActions()) P.actions--; };
 M.coutTxt = function(t){ return M.sansActions() ? '' : (t === undefined ? ' · 1 action' : t); };   /* « · 1 action » sur un bouton (ou un autre texte), rien sans actions */

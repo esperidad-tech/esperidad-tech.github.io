@@ -340,6 +340,7 @@ function contenuModal(m){
     case 'avant-mj': return avantMJHTML(m);
     case 'mj-pause': return pauseModal(m);
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
+    case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
   }
   return '';
 }
@@ -384,11 +385,12 @@ function illuOuIc(m, ic){
 /* ---------- Découverte ---------- */
 function decouverteHTML(m){
   var s = '<div class="b-decouverte' + (m.rate ? ' rate' : '') + '">' + illuOuIc(m, m.ic) + '<h2>' + esc(m.titre) + '</h2><p>' + (m.html || esc(m.t)) + '</p>' + lire(m.t);
-  if(m.code){
-    var n = M.nomCode(m.code), td = M.texteDonne(m.code), dit = M.direCode ? M.direCode(m.code) : null;
+  /* (m.codes : plusieurs codes d'un coup — la maison d'Odette, à l'enquête 3 : le carnet et les traces) */
+  (m.codes || (m.code ? [m.code] : [])).forEach(function(cd){
+    var n = M.nomCode(cd), td = M.texteDonne(cd), dit = M.direCode ? M.direCode(cd) : null;
     /* dit : une phrase dans l'histoire pour dire à qui donner ce code (I.dire, e2.js) ; sinon « nom : donne ce code au … » */
-    s += '<div class="b-donne"><p>' + n.ic + ' ' + (dit ? esc(dit) + ' ' + lire(dit) : '<b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td)) + '</p>' + M.codeHTML(M.code(m.code), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
-  }
+    s += '<div class="b-donne"><p>' + n.ic + ' ' + (dit ? esc(dit) + ' ' + lire(dit) : '<b>' + esc(n.nom) + '</b> : ' + esc(td) + ' ' + lire(n.nom + ' : ' + td)) + '</p>' + M.codeHTML(M.code(cd), true) + '<p class="doux petit">Tu le retrouveras dans ton onglet ' + D.ROLES[M.role()].onglet.ic + ' ' + D.ROLES[M.role()].onglet.nom + '.</p></div>';
+  });
   /* (Romain, 5 novembre, 14 h 26 : seul le Carnet du Barde garde ce qu'on apprend, sur le visage des habitants ; les autres n'ont plus d'indices) */
   if(m.note && M.role() === 'barde') s += '<p class="b-note-ajoutee">📒 Noté dans ton carnet</p>';
   if(m.reessai && M.boutonReessai) s += M.boutonReessai(m);   /* 1er échec d'un mini-jeu : la dernière chance (essais.js) */
@@ -901,7 +903,7 @@ function enqueteSuivante(erreurs, depuis){
   }
   UI.modal = null; UI.saisie = []; UI.padSuite = false;
   nouvelleEnquete(id);
-  if(window.ENQUETES[id].enEcriture) return;   /* pas encore jouable : nouvelleEnquete l'a dit */
+  if(M.enEcriture(window.ENQUETES[id])) return;   /* pas encore jouable : nouvelleEnquete l'a dit */
   M.son('cloche');
   M.toast('En route pour l\'enquête ' + id + ' !');
 }
@@ -1030,13 +1032,19 @@ function hasard(c){
 function nouvelleEnquete(id){
   var S = M.S, E = window.ENQUETES[id];
   /* une enquête en cours d'écriture (E.enEcriture : l'enquête 3, tant qu'elle n'est pas réécrite) ne se joue pas */
-  if(E && E.enEcriture){ UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.ouvrir({type:'info', ic:'🚧', titre:'Enquête ' + id + ' : en cours d\'écriture', t:'L\'enquête ' + id + ' est en train d\'être écrite. Elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'}); return; }
+  if(M.enEcriture(E)){ UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.ouvrir({type:'info', ic:'🚧', titre:'Enquête ' + id + ' : en cours d\'écriture', t:'L\'enquête ' + id + ' est en train d\'être écrite. Elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'}); return; }
   if(S.e && S.e.etape === 'fin' && !S.e.defaite) M.archiver();
   var avant = S.e;
   S.e = M.enqueteNeuve(id);
   var P = S.e;
   /* le tableau de liège du Barde reste comme il était à la fin de l'enquête d'avant (liege.js) */
   if(M.role() === 'barde' && M.liegeGarde){ var lg = M.liegeGarde(S, avant); if(lg) P.liege = lg; }
+  /* (enquête 3, E.signesDepart) les étiquettes des menteurs qui manquent sur le liège s'épinglent toutes seules, avec une note au Carnet */
+  if(M.role() === 'barde' && E.signesDepart){
+    P.mimiques = P.mimiques || {};
+    (E.signesDepart.qui || []).forEach(function(k){ P.mimiques[k] = P.mimiques[k] || 'depart'; });
+    try{ if(E.signesDepart.note && M.noter) M.noter(E.signesDepart.note, '📌'); }catch(e){ console.error(e); }
+  }
   P.actions = M.actionsMax();
   P.chances = M.fxSomme('chance');
   if(M.role() === 'alchimiste'){
@@ -1172,6 +1180,8 @@ A['mode-test'] = function(el){
 A['confirmer-oui'] = function(){ var f = UI.confirmer; UI.confirmer = null; UI.modal = null; if(f) f(); else M.render(); };
 A['nouvelle-enquete'] = function(){ nouvelleEnquete(M.S.prochaine); };
 A.reprendre = function(){ UI.ecran = 'enquete'; M.render(); window.scrollTo(0, 0); };
+/* après la lettre « d'Odette » : l'écran des missions du maire (enquête 3, moteur-ecrans.js) */
+A['lettre-suite'] = function(){ M.P().etape = 'missions'; M.stop(); M.son('page'); M.sauver(); M.render(); window.scrollTo(0, 0); };
 A.commencer = function(){ M.P().etape = 'jeu'; M.P().onglet = 'role'; M.stop(); M.sauver(); M.render(); window.scrollTo(0, 0); };
 A['relire-lettre'] = function(){ var E = M.E(); M.ouvrir({type:'info', ic:'✉️', titre:'La lettre du maire', t:E.lettre}); };
 A.onglet = function(el){ M.P().onglet = el.dataset.o; UI.saisie = []; M.sauver(); M.render(); window.scrollTo(0, 0); };
@@ -1179,6 +1189,7 @@ A.lieu = function(el){
   var id = el.dataset.id, P = M.P(); if(!P || P.etape !== 'jeu') return;
   if(/^[LFB]\d$/.test(id)) return A.maison(el);
   P.vus['lieu:' + id + ':' + P.moment] = 1;
+  if(M.compterOccupes) M.compterOccupes(id);   /* (enquête 3) un villageois occupé a deux petites phrases : la deuxième quand on revient */
   var bl = bulleDe(el);   /* touché sur la carte : une bulle sur la carte (avec ses pops à elle, plus le bruit de page), sans redessiner la page */
   if(!bl.bulle) M.son('page');
   M.ouvrir(Object.assign({type:'lieu', id:id, leger:true}, bl));
@@ -1187,7 +1198,11 @@ A.lieu = function(el){
    ou quand personne n'est là : il ne dépense rien) ; les autres rôles, et le Barde quand frapper coûte une action, ont la feuille de la maison. */
 A.maison = function(el){
   var P = M.P(); if(!P || P.etape !== 'jeu') return;
-  if(M.role() === 'barde' && (M.sansActions() || !M.pnjIci(el.dataset.id).length)) return A.frapper(el);
+  if(M.compterOccupes) M.compterOccupes(el.dataset.id);
+  /* (enquête 3, E.ecouteMaisons) avec « Tendre l'oreille », quand il y a quelque chose à écouter derrière cette porte : la feuille de la
+     maison, avec « Frapper » et « Écouter aux portes » (sinon l'écoute d'une maison ne se verrait jamais) */
+  var ecoute = M.role() === 'barde' && (M.E() || {}).ecouteMaisons && M.porteBouton && M.porteBouton(el.dataset.id);
+  if(M.role() === 'barde' && !ecoute && (M.sansActions() || !M.pnjIci(el.dataset.id).length)) return A.frapper(el);
   var bl = bulleDe(el);
   if(!bl.bulle) M.son('page');
   M.ouvrir(Object.assign({type:'maison', id:el.dataset.id, leger:true}, bl));

@@ -349,6 +349,55 @@ var SCENES = {
     });
     s += chat('sf-chat-petit', 'left:78%');
     return scene('equipe', 'Les quatre enquêteurs se regardent, devant les rochers du Vieux Chêne ; entre les pierres, une lueur bleue et un souffle froid.', s);
+  },
+  /* ---------- Enquête 3 : le marché aux fleurs (marche.js) ----------
+     L'étape 2 du marchandage de Fortuné (Bible § 13.6 bis, point 7) : Fortuné penché sur sa carriole, la bâche soulevée, des bouquets
+     en papier, et une vieille lanterne de cuivre cabossée qui dépasse et brille. Aucun texte ne la décrit : c'est au Barde de la voir. */
+  'e3-carriole':function(){
+    var g = 'sfk' + (++n);
+    var d = ciel('jour');
+    /* les maisons de la place, au fond, et les pavés */
+    d += '<g stroke="' + O + '" stroke-width="2.2" stroke-linejoin="round" opacity=".9">' +
+      '<path d="M-6 132 L -6 84 L 26 62 L 58 84 L 58 132 Z" fill="#d9b48c"/><path d="M58 132 L 58 92 L 88 72 L 118 92 L 118 132 Z" fill="#c4bcd8"/>' +
+      '<path d="M214 132 L 214 86 L 246 64 L 278 86 L 278 132 Z" fill="#e0c79a"/><path d="M278 132 L 278 96 L 302 80 L 326 96 L 326 132 Z" fill="#cfa98a"/></g>' +
+      '<g fill="#7a5a3a" opacity=".55"><rect x="14" y="98" width="12" height="14" rx="2"/><rect x="80" y="102" width="12" height="14" rx="2"/><rect x="238" y="98" width="12" height="14" rx="2"/></g>';
+    d += '<rect x="0" y="130" width="320" height="70" fill="#cdb894"/><g fill="none" stroke="#a8946e" stroke-width="1.6" opacity=".8">' +
+      '<path d="M0 146 H320 M0 164 H320 M0 182 H320"/><path d="M20 130 v16 M70 130 v16 M120 130 v16 M170 130 v16 M220 130 v16 M270 130 v16 M45 146 v18 M95 146 v18 M145 146 v18 M195 146 v18 M245 146 v18 M295 146 v18 M20 164 v18 M70 164 v18 M120 164 v18 M170 164 v18 M220 164 v18 M270 164 v18"/></g>';
+    /* la carriole : deux roues, la caisse, les brancards */
+    function roue(x){ return '<g transform="translate(' + x + ' 160)"><circle r="25" fill="#8a5a36" stroke="' + O + '" stroke-width="3"/><circle r="18" fill="#cdb894" stroke="' + O + '" stroke-width="2"/>' +
+      '<g stroke="#8a5a36" stroke-width="4" stroke-linecap="round"><path d="M0 -18 V18 M-18 0 H18 M-13 -13 L13 13 M-13 13 L13 -13"/></g><circle r="5" fill="#5a3a22" stroke="' + O + '" stroke-width="2"/></g>'; }
+    d += '<ellipse cx="208" cy="188" rx="104" ry="7" fill="#000" opacity=".16"/>';
+    d += '<path d="M120 138 L 84 150" stroke="' + O + '" stroke-width="7" stroke-linecap="round"/><path d="M120 138 L 84 150" stroke="#8a5a36" stroke-width="4" stroke-linecap="round"/>';
+    /* l'intérieur, sous la bâche soulevée (à gauche) */
+    d += '<path d="M118 122 L 118 82 Q 150 66 184 80 L 184 122 Z" fill="#4a3324"/>';
+    /* trois bouquets en papier */
+    function bouquet(x, y, c1, c2){ return '<g transform="translate(' + x + ' ' + y + ')" stroke="' + O + '" stroke-width="1.5" stroke-linejoin="round"><path d="M-5 16 L 5 16 L 9 2 L -9 2 Z" fill="#f4ead2"/>' +
+      '<circle cx="-6" cy="-2" r="6" fill="' + c1 + '"/><circle cx="6" cy="-3" r="6" fill="' + c2 + '"/><circle cx="0" cy="-9" r="6" fill="' + c1 + '"/>' +
+      '<g fill="none" stroke-width="1"><path d="M-8 -2 q 2 -3 4 0 M4 -3 q 2 -3 4 0 M-2 -9 q 2 -3 4 0"/></g></g>'; }
+    d += bouquet(131, 104, '#ff8fb0', '#ffd24a') + bouquet(149, 108, '#8fd0ff', '#ff8fb0');
+    /* la vieille lanterne de cuivre, cabossée, qui dépasse et brille */
+    d += '<defs><radialGradient id="' + g + '"><stop offset="0" stop-color="#fff6c0" stop-opacity=".95"/><stop offset=".45" stop-color="#ffd76a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd76a" stop-opacity="0"/></radialGradient></defs>';
+    d += '<circle class="ma-lueur" cx="171" cy="97" r="26" fill="url(#' + g + ')"/>';
+    d += '<g transform="translate(171 98) rotate(-12)" stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round">' +
+      '<path d="M-4 -19 a4 4 0 1 1 8 0" fill="none" stroke="#7a4a22" stroke-width="2.2"/>' +
+      '<path d="M-8 -19 L 8 -19 L 6.5 -13 L -6 -12 Z" fill="#c8763a"/>' +
+      '<path d="M-7 -12 L 6.5 -13 L 9 7 L 2 9 L -8.5 7.5 L -6 -2 Z" fill="#ffe9a0"/>' +
+      '<path d="M-2.5 -12.6 L -3 8 M2.5 -12.8 L 3.4 8.6" stroke="#b8632a" stroke-width="1.4"/>' +
+      '<path d="M-10 7.5 L 10 7 L 8 13 L -1 12 L -7.5 13.5 Z" fill="#c8763a"/>' +
+      '<path d="M3 -17 l 3 1 M-5 10.5 l 3 .8" stroke="#8a4a1c" stroke-width="1.2" fill="none"/><circle cx="0" cy="-3" r="3.4" fill="#fff6c0" stroke="none"/></g>';
+    d += '<g class="ma-eclat" fill="#fffbe0" stroke="none"><path d="M186 82 l 2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/></g>';
+    /* la caisse, par-dessus */
+    d += '<path d="M112 120 L 304 120 L 296 150 L 120 150 Z" fill="#a8784c" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/><g stroke="#8a5c36" stroke-width="1.6"><path d="M116 130 H300 M118 140 H298"/></g>';
+    /* la bâche : fermée à droite, soulevée à gauche (le pan relevé) */
+    d += '<path d="M184 122 C 186 76 292 70 302 122 Z" fill="#efe4c8" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<g fill="none" stroke="#cdbf9c" stroke-width="1.6"><path d="M210 120 C 212 92 228 80 240 78 M250 120 C 252 96 262 84 272 82"/></g>' +
+      '<path d="M184 82 Q 150 64 116 80 L 104 58 Q 150 38 196 62 Z" fill="#e2d5b4" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M112 74 Q 150 54 190 72" fill="none" stroke="#c9ba94" stroke-width="1.6"/>';
+    d += roue(150) + roue(268);
+    var s = decor(d);
+    /* Fortuné, penché vers sa carriole */
+    s += perso(pnj('fortune'), {x:21, h:60, cls:'sf-penche', st:'--b:5%'});
+    return scene('carriole', 'Fortuné soulève la bâche de sa carriole.', s);
   }
 };
 var il0 = M.illustration;

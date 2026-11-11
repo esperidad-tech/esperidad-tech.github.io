@@ -283,7 +283,11 @@ D.PNJ = {
   margot:{nom:'Margot Chopine', court:'Margot', metier:'la tavernière', ic:'👩‍🍳', pied:4},
   /* enquête 2 (§ 12.11) : le charretier (nom à confirmer par Romain) */
   bastien:{nom:'Bastien Roulebosse', court:'Bastien', metier:'le charretier', ic:'🛒', pied:5},
-  voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0}
+  voisin:{nom:'Le voisin', court:'Le voisin', metier:'', ic:'🧓', pied:0},
+  /* enquête 3 (§ 13) : le voisin d'Odette devient un vrai villageois (« voisin », au-dessus, reste la porte d'Odette),
+     et Léo Mouture, l'apprenti du meunier (un grand gaillard aux bottes énormes) */
+  levoisin:{nom:'Le voisin d\'Odette', court:'Le voisin', metier:'le voisin d\'Odette', ic:'🧓', pied:4},
+  leo:{nom:'Léo Mouture', court:'Léo', metier:'l\'apprenti du meunier', ic:'🧑', pied:6}
 };
 /* Où habite chacun, d'une enquête à l'autre (la carte, carte-jeu.js) : une maison dont l'habitant n'est pas dans le registre de
    l'enquête (on ne le connaît pas encore) montre un rond « ? » au lieu de son visage (Romain, 5 novembre, 01 h 20).

@@ -161,10 +161,13 @@ function salut(id){
   /* E.salutUneFois (enquête 2, Romain, 7 novembre : « le Barde lit trop ») : le salut n'est dit qu'à la première visite ;
      le salut d'un moment (N.saluts), à la première visite de ce moment. Ensuite, rien sous le nom : le visage, et les questions. */
   var P = M.P(), E = M.E(); if(E && E.salutUneFois && P && P.vus && P.vus[cleSalut(id)]) return '';
+  /* N.salut:'' : pas de salut du tout (Fortuné à l'enquête 3 : il vient de te vendre des fleurs) */
+  if(!(N.saluts && N.saluts[mid]) && N.salut === '') return '';
   return (N.saluts && N.saluts[mid]) || N.salut || (id === 'voisin' ? 'Oui ? Qui est là ?' : 'Bonjour ! Que veux-tu savoir ?');
 }
 function cleSalut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return 'salut:' + id + ':' + (N.saluts && N.saluts[mid] ? mid : '*'); }
-function occupe(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
+/* (une phrase, ou deux à l'enquête 3 : la deuxième quand on revient — moteur-roles.js, M.phraseOccupe) */
+function occupe(id){ if(M.phraseOccupe) return M.phraseOccupe(id); var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
 function estVexe(id){ var P = M.P(); return !!(P && P.vexe && P.vexe[id] === P.moment); }
 /* vexé parce qu'accusé à tort (« Mensonge ? » sur une vérité) : P.vexeAccuse {pnj:moment} */
 function accuseAMoment(id){ var P = M.P(); return !!(P && P.vexeAccuse && P.vexeAccuse[id] === P.moment); }
@@ -198,6 +201,16 @@ B.choixVisibles = choixVisibles;
    appris) rouvre la porte : « Tu as du nouveau ? Bon, je t'écoute. » Un villageois vexé reste fermé jusqu'au moment suivant.
    P.visites {pnj:{m, sait}} ; UI.convOuverte : la conversation ouverte en ce moment (une découverte qui y revient en fait partie). */
 function uneVisite(id){ var E = M.E(); return !!(E && E.uneVisite && E.uneVisite.indexOf(id) >= 0); }
+/* ---------- Enquête 3 (E.parVisite, E3-dialogues-et-trame.md §0 et §8) : chaque villageois répond à n questions par moment (2),
+   puis il s'impatiente (E.impatience[pnj], dite aussi quand on revient). Tant que les n questions ne sont pas posées, la porte reste
+   ouverte (on peut refermer la feuille et revenir). Une question arrivée après le début de la visite (un code d'un équipier, une
+   écoute) est « du nouveau » : elle se pose en plus. P.visites[pnj].n : les questions comptées à ce moment. */
+function parVisite(){ var E = M.E(); return (E && E.parVisite) || 0; }
+function visiteDe(id){ var P = M.P(), v = P && P.visites && P.visites[id]; return v && v.m === P.moment ? v : null; }
+function quotaAtteint(id){ var n = parVisite(), v = visiteDe(id); return !!(n && uneVisite(id) && v && (v.n || 0) >= n); }
+function nouvelleQ(id, i){ var v = visiteDe(id), s = (v && v.sait) || []; return !!v && s.indexOf('q' + i) < 0 && s.indexOf('q' + i + ':pret') < 0; }
+function impatience(id){ var E = M.E(); return (E && E.impatience && E.impatience[id]) || 'Encore toi ? Reviens plus tard !'; }
+B.quotaAtteint = quotaAtteint;
 function ceQuOnSait(id){
   var l = [];
   /* une question à choix dont le bon argument vient d'être appris : c'est du nouveau (« :pret ») */
@@ -217,9 +230,10 @@ function porte(id){
   var v = P.visites[id], sait = ceQuOnSait(id);
   /* (Romain, 5 novembre, 12 h 31) la visite ne compte qu'une fois au moins une question posée (v.q, A.question) :
      ouvrir la conversation puis repartir sans rien demander laisse la porte ouverte */
+  if(parVisite() && v && v.m === P.moment && (v.n || 0) < parVisite()) return true;   /* il lui reste des questions pour ce moment (enquête 3) */
   if(v && v.m === P.moment && v.q){
     if(!sait.some(function(k){ return v.sait.indexOf(k) < 0; })){
-      UI.bd = {p:id, mode:'encore', t:'Encore toi ? Reviens plus tard !', m:P.moment};
+      UI.bd = {p:id, mode:'encore', t:parVisite() ? impatience(id) : 'Encore toi ? Reviens plus tard !', m:P.moment};
       M.son('porte'); M.sauver(); M.ouvrir({type:'conv', id:id, classe:'b-feuille-conv'});
       return false;
     }
@@ -231,6 +245,7 @@ function porte(id){
 function encoreToi(id){
   var P = M.P(); if(!P || !uneVisite(id) || estVexe(id) || occupe(id)) return false;
   var v = P.visites && P.visites[id]; if(!v || v.m !== P.moment || !v.q) return false;
+  if(parVisite() && (v.n || 0) < parVisite()) return false;
   var sait = ceQuOnSait(id);
   return !sait.some(function(k){ return v.sait.indexOf(k) < 0; });
 }
@@ -348,6 +363,7 @@ M.feuilleConv = function(id){
   Q.forEach(function(q, i){
     var k = 'barde:' + id + ':' + i, st = P.vus[k];
     if(!st && cachee(id, q)) return;
+    if(st !== 'ok' && quotaAtteint(id) && !nouvelleQ(id, i)) return;   /* il s'impatiente (enquête 3) : plus de question pour ce moment */
     if(q.besoin && !M.besoinOk(q.besoin) && !st){
       s += '<div class="b-question ferme"><span>🔒</span><div><b>' + esc(q.q) + '</b>' + M.besoinHTML(q.besoin, 'barde') + '</div></div>';
       return;
@@ -385,6 +401,8 @@ M.feuilleConv = function(id){
     s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
+  if(quotaAtteint(id)){ var ti = impatience(id); s += '<p class="bd-impatient">⏳ « ' + esc(ti) + ' » ' + lire(ti, id) + '</p>'; }
+  if(M.convPlus){ try{ s += M.convPlus(id) || ''; }catch(e){ console.error(e); } }   /* (enquête 3, marche.js : acheter encore des fleurs, se plaindre chez Fortuné) */
   s += tableauHTML;
   /* sans points d'action : un villageois ne donne qu'une chose par moment ; tout demandé, on le dit gentiment */
   if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i) || cachee(id, q); })) s += M.rienDePlus();
@@ -459,6 +477,7 @@ function question(el){
   if(q.besoin && !M.besoinOk(q.besoin) && !P.vus['barde:' + id + ':' + i]) return;
   if(uneVisite(id)){ P.visites = P.visites || {}; var vv = P.visites[id]; if(!(vv && vv.m === P.moment && vv.q)) P.visites[id] = {m:P.moment, sait:ceQuOnSait(id), q:1}; }   /* la visite compte (porte) */
   if(repondu(id, i)){ poserDerniere(id, i); UI.bd = {p:id, i:i, mode:'rep', m:P.moment}; M.render(); return; }   /* redemandée : c'est la dernière réponse */
+  if(parVisite() && uneVisite(id) && quotaAtteint(id) && !nouvelleQ(id, i)) return;   /* il s'impatiente (enquête 3) */
   if(P.derniere) delete P.derniere[id];   /* une autre question : la chance du 🤥 sur la réponse d'avant est passée */
   var kc = el.dataset.c, c = q.choix && kc !== undefined && kc !== '' ? q.choix[+kc] : null, charme = false;
   if(q.choix && q.choix.length){
@@ -478,6 +497,7 @@ function question(el){
       M.son('ko'); M.sauver(); if(vexeLache(id)) return; M.render(); return;
     }
   }
+  if(parVisite() && uneVisite(id) && !nouvelleQ(id, i)){ var v3 = visiteDe(id); if(v3) v3.n = (v3.n || 0) + 1; }   /* elle compte dans ses n questions du moment */
   P.vus['barde:' + id + ':' + i] = 'ok';
   poserDerniere(id, i);
   if(q.mimique){ P.mimiques = P.mimiques || {}; [].concat(q.mimique).forEach(function(m){ P.mimiques[m] = P.mimiques[m] || 'question'; }); }
@@ -492,12 +512,12 @@ function question(el){
   }
   var code = null;
   if(q.obj){ P.objets[q.obj] = true; code = 'obj:' + q.obj; }
-  if(q.donne){ P.objets['_' + q.donne] = true; code = q.donne; }
+  if(q.donne){ [].concat(q.donne).forEach(function(c1){ P.objets['_' + c1] = true; }); code = q.donne; }   /* (une liste : plusieurs codes d'un coup, la maison d'Odette à l'enquête 3) */
   UI.bd = {p:id, i:i, mode:potionRep ? 'potionrep' : 'rep', charme:charme, m:P.moment};
   M.son('clic'); M.sauver();
   if(potionRep && apresVerite(id, [i])){ UI.bd.joue = true; return; }   /* une vérité qui donne un objet (la pierre de Tim) */
   if(q.rassemble && rassemblement(id, q)) return;   /* le troisième villageois convaincu : toute la troupe part au Vieux Chêne */
-  if(code){ UI.bd.joue = true; M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.a, code:code, retour:'parler', retourId:id}); return; }
+  if(code){ UI.bd.joue = true; var plusieurs = Array.isArray(code); M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:q.titreDonne || nom(id) + ' te donne quelque chose', t:q.a, code:plusieurs ? null : code, codes:plusieurs ? code : null, retour:'parler', retourId:id}); return; }
   M.render();
 }
 /* ---------- Le rassemblement (E.rassemblement, enquête 2) : convaincre n villageois (questions q.rassemble, le bon argument) ---------- */
@@ -530,9 +550,15 @@ function vexeLache(id){
 }
 /* Une vérité qui donne un objet (q.objVrai : la pierre de Tim) : son code s'affiche tout de suite */
 function apresVerite(id, idx){
-  var P = M.P(), l = idx.filter(function(i){ var q = questions(id)[i]; return q && q.objVrai; });
+  var P = M.P(), l = idx.filter(function(i){ var q = questions(id)[i]; return q && (q.objVrai || q.donneVrai); });
   if(!l.length) return false;
   var q = questions(id)[l[0]];
+  /* q.donneVrai (enquête 3) : la vérité vaut un code pour un équipier (le capuchon de Tim, l'aveu de Mélusine) */
+  if(q.donneVrai && !q.objVrai){
+    P.objets['_' + q.donneVrai] = true; M.sauver();
+    M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' dit enfin la vérité', t:q.vrai, code:q.donneVrai, retour:'parler', retourId:id});
+    return true;
+  }
   P.objets[q.objVrai] = true; M.sauver();
   M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' te donne quelque chose', t:q.vrai, code:'obj:' + q.objVrai, retour:'parler', retourId:id});
   return true;
@@ -1022,6 +1048,8 @@ A['bd-porte-fin'] = function(){
 /* ==========================================================
    La feuille d'un lieu, pour le Barde (moteur-roles.js appelle M.lieuBarde)
    ========================================================== */
+/* la voix du 🔊 d'un villageois occupé : la sienne pour ses deux petites phrases de l'enquête 3 (des paroles, entre « ») ; sinon le conteur, comme avant */
+function voixOcc(id, t){ var N = ((M.E() || {}).pnj || {})[id] || {}, o = N.occupe && N.occupe[M.momentId()]; return Array.isArray(o) && /^«/.test(t || '') ? id : undefined; }
 function carteGens(id){
   var P = M.P(), x = D.PNJ[id], ouvert = P.conv[id] === P.moment, vexe = estVexe(id);
   /* fâché, ou « Encore toi ? » (Romain, 5 novembre, 12 h 31) : son visage et « Reviens plus tard », cerclés de rouge (son rond aussi, sur la carte) */
@@ -1036,8 +1064,9 @@ M.lieuBarde = function(lieu){
   /* ceux qu'on voit ici sur la carte, mais trop occupés pour parler en ce moment (E.pnj[id].carte et .occupe : moteur-roles.js) */
   var occ = M.pnjOccupesIci ? M.pnjOccupesIci(lieu) : [];
   if(occ.length) s += (gens.length ? '' : '<p class="sur-titre">Ici en ce moment</p>') + '<div class="b-gens">' + occ.map(function(id){
-    var t = M.texteOccupe(id);
-    return '<div class="b-gens-carte bd-occupe"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t) + '</div>';
+    /* (enquête 3, marche.js) un vendeur de fleurs : tant qu'il vend, sa pastille le dit, avec le bouton pour acheter */
+    var t = (M.occupeTexte && M.occupeTexte(id)) || M.texteOccupe(id);
+    return '<div class="b-gens-carte bd-occupe"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t, voixOcc(id, t)) + (M.occupeBouton ? M.occupeBouton(id) : '') + '</div>';
   }).join('') + '</div>';
   /* Tendre l'oreille (talent) : 👂 Écouter aux portes, partout où quelqu'un parle, tout le temps (B.porteIci) */
   s += B.porteBouton(lieu);

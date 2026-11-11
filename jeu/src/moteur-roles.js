@@ -22,11 +22,29 @@ M.pnjIci = function(lieu){
    quand on ne peut pas lui parler (Victor en tournée, Mélusine qui dort…) ; E.pnj[id].occupe[moment] = ce qu'on voit en arrivant. */
 M.pnjOccupesIci = function(lieu){
   var E = M.E(), mid = M.momentId();
-  return M.cle(E.pnj || {}).filter(function(id){ var N = E.pnj[id]; return id !== 'voisin' && !(N.ou && N.ou[mid]) && N.carte && N.carte[mid] === lieu; });
+  /* (M.pnjCacheCarte : enquête 3, le Barde ne voit Iris et Basile qu'une fois le marchandage de Fortuné commencé — marche.js) */
+  return M.cle(E.pnj || {}).filter(function(id){ var N = E.pnj[id]; return id !== 'voisin' && !(N.ou && N.ou[mid]) && N.carte && N.carte[mid] === lieu && !(M.pnjCacheCarte && M.pnjCacheCarte(id)); });
+};
+/* E.pnj[id].occupe[moment] : une phrase, ou deux (enquête 3, Bible § 13.6 : « une petite phrase drôle, une deuxième s'il revient ») :
+   la première à la première visite du lieu, la deuxième ensuite (P.occ, compté par M.compterOccupes quand on touche le lieu). */
+M.phraseOccupe = function(id){
+  var E = M.E(), P = M.P(), N = (E && E.pnj && E.pnj[id]) || {}, o = N.occupe && N.occupe[M.momentId()];
+  if(!o) return null;
+  if(typeof o === 'string') return o;
+  var n = (P && P.occ && P.occ[id + ':' + P.moment]) || 0;
+  return o[Math.max(0, Math.min(o.length, n) - 1)] || null;
+};
+M.compterOccupes = function(lieu){
+  var P = M.P(), E = M.E(); if(!P || !E) return;
+  M.pnjOccupesIci(lieu).forEach(function(id){
+    var o = E.pnj[id].occupe && E.pnj[id].occupe[M.momentId()]; if(!o || typeof o === 'string') return;
+    if(M.vendeurDispo && M.vendeurDispo(id)) return;   /* (un vendeur de fleurs qui vend encore : ses petites phrases d'occupé viendront après) */
+    P.occ = P.occ || {}; var k = id + ':' + P.moment; P.occ[k] = (P.occ[k] || 0) + 1;
+  });
 };
 M.texteOccupe = function(id){
-  var E = M.E(), N = (E.pnj || {})[id] || {}, x = D.PNJ[id] || {};
-  return (N.occupe && N.occupe[M.momentId()]) || (x.court || 'Quelqu\'un') + ' est très occupé' + (FEM[id] ? 'e' : '') + ' en ce moment. Repasse plus tard !';
+  var x = D.PNJ[id] || {};
+  return M.phraseOccupe(id) || (x.court || 'Quelqu\'un') + ' est très occupé' + (FEM[id] ? 'e' : '') + ' en ce moment. Repasse plus tard !';
 };
 M.bonusIci = function(lieu){
   var E = M.E(), P = M.P(), role = M.role();
@@ -242,7 +260,8 @@ M.chezLui = function(id){ return 'chez ' + (FEM[id] ? 'elle' : 'lui'); };
 M.texteAbsent = function(maison){
   var id = M.habitantMaison(maison), x = id && D.PNJ[id], E0 = M.E();
   /* une absence qui compte dans l'enquête (E.absentTexte : Odette, à l'E2), pour les autres que le Barde (Romain, 5 novembre, 13 h 19) */
-  if(id && E0 && E0.absentTexte && E0.absentTexte[id] && M.role() !== 'barde') return E0.absentTexte[id];
+  /* (E.absentPourTous : enquête 3, le Barde aussi — chez Odette, il n'entre que l'après-midi, pour poser la canne) */
+  if(id && E0 && E0.absentTexte && E0.absentTexte[id] && (M.role() !== 'barde' || E0.absentPourTous)) return E0.absentTexte[id];
   if(id && M.pnjOccupesIci(maison).indexOf(id) >= 0) return M.texteOccupe(id);   /* chez lui, mais il n'ouvre pas (il dort…) */
   return x ? x.court + ' n\'est pas ' + M.chezLui(id) + ' en ce moment.' : 'Tu frappes, tu attends… Personne ne répond.';
 };

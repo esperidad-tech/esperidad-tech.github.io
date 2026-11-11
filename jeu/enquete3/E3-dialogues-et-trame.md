@@ -2,6 +2,8 @@
 
 > **Cette version remplace celle du 6 novembre** (gardée dans `jeu/archives/E3-dialogues-et-trame-6-novembre.md`). Elle a été réécrite le 11 novembre après le « go pour tout » de Romain (15 h 13) : un tiers de lecture en moins (règles du §12.50), moins d'indices vers le clocher, le puits seulement après un échec, la Grosse Marie et le maire à retenir pendant le donjon, la fin « le maire arrive trop tôt ». Les décisions : Bible §13.14. La trame d'ensemble : le document « Enquête 3 — la trame du chemin parfait » (https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw). Les trois autres rôles : `E3-actions-des-roles.md` ; l'atelier des plantes : `E3-atelier-des-plantes.md`.
 >
+> **Construit le 11 novembre (étape 1, Bible §13.15)** : les §1 à §3 sont dans le jeu (`jeu/src/e3.js`, `jeu/src/marche.js`), sauf le grand dialogue du maire (étape 2). Où est chacun, quand ce fichier ne le disait pas : Tim, le matin, au pied du clocher, l'après-midi dans la ruelle des Brumes ; Silas, le matin, sur la place, l'après-midi devant la mairie ; Victor, l'après-midi, devant le vieux puits ; le voisin, au 1, rue des Lanternes.
+>
 > **Ne font plus foi pour les dialogues** : le document Claude Docs du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo) et la page « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC). Ce fichier est la seule source.
 
 ## 0. Comment lire ce fichier
@@ -133,6 +135,7 @@ Touchés, ils disent une phrase (la deuxième s'ils reviennent). Ça ne compte p
 - **Farinel**, tout blanc de farine : « Pas le temps : mon apprenti n'est pas là ! Atchoum ! » / « Regarde-moi : un vrai fantôme de farine ! Reviens cet après-midi. »
 - **Silas** : « Halte ! Mission secrète. Si secrète que même moi, je ne la connais pas. » / « Chut ! Je surveille une fourmi très suspecte. »
 - **Basile** (après la vente) : « Pas maintenant, j'ai les bras pleins de lampions ! » / « Attention en dessous ! Oups… Reviens cet après-midi. »
+- **Le maire**, à la mairie *(ajouté à la construction, le 11 novembre : il lui fallait une place le matin)* : « Mes fleurs d'abord, Barde ! Nous parlerons cet après-midi. » / « Dix bouquets, pas un de moins ! Allez, allez ! »
 
 ### 2.4 Aux portes, le matin (Tendre l'oreille)
 
@@ -156,8 +159,8 @@ Le Barde rend ses fleurs, obtient la lettre, pose la canne, fait avouer Mélusin
 Accueil : « Ah, Barde ! Alors, mes fleurs ? » Il compte les bouquets :
 - 10 ou 11 : « Bravo ! Voici 10 pièces d'or pour ta peine. »
 - 9 : « Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même. » (5 pièces)
-- 6 à 8 : « Il manque des fleurs, mais la fête sera jolie quand même. »
-- 3 ou 4 : « Si peu ?! C'est une fête ou un enterrement ? »
+- 5 à 8 : « Il manque des fleurs, mais la fête sera jolie quand même. » *(5 ajouté à la construction)*
+- 4 et moins : « Si peu ?! C'est une fête ou un enterrement ? » *(0 à 2 ajoutés à la construction)*
 - En plus, la lanterne : « Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête ! » (+5 pièces ; le lapsus est un indice)
 
 Ses 4 questions :
@@ -244,7 +247,7 @@ Une visite, sans questions : « Tu poses la canne contre la porte. Sur la table,
 **Basile** — sur la place (ne ment jamais)
 1. « Vous décorez la place pour la fête ? » — Enquête : « La fête jusqu'à minuit : le maire n'a jamais fait ça ! »
 2. « Anselme est quelqu'un de gentil ? » — Ruban (Anselme, étape 2) : « Bourru, mais gentil. Il ne prête rien… sauf à ceux qui l'aident à sonner la Grosse Marie : elle est si lourde ! »
-3. « Vous connaissez le vieux puits ? » — Histoire : « Rouillée depuis toujours. Mon grand-père disait qu'au fond, il y a une porte. »
+3. « Vous connaissez le vieux puits ? » — Histoire : « Sa grille est rouillée depuis toujours. Mon grand-père disait qu'au fond, il y a une porte. » *(« Sa grille est » ajouté à la construction, le 11 novembre : sans la question, on ne comprenait pas.)*
 4. « Quelle est votre fleur préférée ? » — Histoire : « La pensée sauvage : elle pousse même dans la brume. Les Alchimistes d'autrefois en mettaient dans toutes leurs potions. »
 
 ### 3.4 Occupés l'après-midi

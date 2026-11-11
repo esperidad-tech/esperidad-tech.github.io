@@ -14,7 +14,8 @@ var CAST = {
   narrateur:{v:F, h:1.00},
   margot:{v:F, h:1.05}, melusine:{v:F, h:1.12}, iris:{v:F, h:0.96}, odette:{v:F, h:0.88}, tim:{v:F, h:1.25},
   gaspard:{v:H, h:1.00}, basile:{v:H, h:0.93}, victor:{v:H, h:1.07}, anselme:{v:H, h:0.86}, fortune:{v:H, h:1.14},
-  grosbec:{v:H, h:0.82}, silas:{v:H, h:0.95}, farinel:{v:H, h:1.10}, voisin:{v:H, h:1.03}, bastien:{v:H, h:0.90}
+  grosbec:{v:H, h:0.82}, silas:{v:H, h:0.95}, farinel:{v:H, h:1.10}, voisin:{v:H, h:1.03}, bastien:{v:H, h:0.90},
+  levoisin:{v:H, h:0.89}, leo:{v:H, h:1.18}
 };
 var SOURCES = [
   'https://cdn.jsdelivr.net/npm/@diffusionstudio/vits-web@1.0.3/+esm',

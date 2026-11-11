@@ -155,7 +155,7 @@ function vueAccueil(){
         '</div></div>' +
       '<div class="b-hub-actions">' +
         (enCours ? '<button class="btn grand" data-act="reprendre">▶ Reprendre l\'enquête ' + S.e.id + '</button>' :
-          (E && E.enEcriture ? '<p class="b-carte-verre centre">🚧 <b>Enquête ' + E.id + ' : en cours d\'écriture.</b> Elle arrive bientôt ! ' + lire('Enquête ' + E.id + ' : en cours d\'écriture. Elle arrive bientôt !') + '</p>' :   /* pas encore jouable (e3.js) */
+          (M.enEcriture(E) ? '<p class="b-carte-verre centre">🚧 <b>Enquête ' + E.id + ' : en cours d\'écriture.</b> Elle arrive bientôt ! ' + lire('Enquête ' + E.id + ' : en cours d\'écriture. Elle arrive bientôt !') + '</p>' :   /* pas encore jouable (e3.js) */
           E ? '<button class="btn grand" data-act="nouvelle-enquete">🔍 Enquête ' + E.id + ' : ' + esc(E.titre) + '</button>' :
             '<p class="b-carte-verre">Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt… ' + lire('Bravo ! Vous avez fini toutes les enquêtes de cette version. La suite arrive bientôt…') + '</p>')) +
       '</div>' +
@@ -316,6 +316,7 @@ function vueEnquete(){
   if(!P || !E) return vueAccueil();
   if(P.defaite) return vueDefaite();
   if(P.etape === 'lettre') return vueLettre();
+  if(P.etape === 'missions' && E.missionsMaire) return vueMissionsMaire();   /* l'écran des missions du maire (enquête 3) */
   if(P.etape === 'fin') return vueFin();
   var role = M.role(), R = D.ROLES[role], mid = M.momentId(), mo = D.MOMENTS[mid];
   var s = '<div class="b-jeu moment-' + mid + '" style="--c:' + R.c + '">';
@@ -339,6 +340,16 @@ function vueLettre(){
       '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
       '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
   }
+  /* Enquête 3 (E.lettreLue, Bible § 13.6) : ce n'est pas une lettre du maire, mais la lettre « d'Odette » qu'il lit sur la place, à l'aube ;
+     dessous, ce qu'il annonce ; puis l'écran des missions du maire (vueMissionsMaire). Même mise en page que la lettre et son affiche. */
+  if(E.lettreLue){
+    var L = E.lettreLue;
+    return '<main class="b-page b-lettre-page b-ecran-fixe b-avec-affiche b-lettre-lue"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
+      '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">' + esc(L.titre) + '</p>' +
+      '<p>« ' + esc(E.lettre) + ' »</p>' + lire(E.lettre, 'grosbec') + '</article>' +
+      '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📣 Le maire</p><p class="centre"><b>« ' + esc(L.apres) + ' »</b></p>' + lire(L.apres, 'grosbec') + '</article>' +
+      '<div class="b-bas"><button class="btn grand b-aller b-guide" data-act="' + (E.missionsMaire ? 'lettre-suite' : 'commencer') + '">➡️ La suite</button></div></main>';
+  }
   /* b-ecran-fixe : tout tient dans l'écran, sans défiler (Romain, 5 novembre, 21 h 46 ; moteur-actions.js, M.ecranFixe) */
   return '<main class="b-page b-lettre-page b-ecran-fixe' + (E.affiche ? ' b-avec-affiche' : '') + '"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
     '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
@@ -347,6 +358,18 @@ function vueLettre(){
     /* Simplifié pour toutes les enquêtes (Romain, 4 novembre, 20 h 49) : la lettre, l'affiche, et « Commencer l'enquête ».
        Plus de mission, de règles ni de code ici : la mission est en haut du Carnet. */
     '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
+}
+/* L'écran des missions du maire (enquête 3, Bible § 13.6) : juste après la lettre, pour tous. Une ligne par rôle (la sienne en couleur),
+   chacune avec son 🔊, et le bouton jaune. Plein écran fixe, comme la lettre. */
+function vueMissionsMaire(){
+  var E = M.E(), X = E.missionsMaire, moi = M.role(), h = (M.S && M.S.heros) || {};
+  var s = '<main class="b-page b-ecran-fixe b-missions-maire"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(X.titre) + '</h1>' +
+    '<div class="b-mm-maire"><div class="b-mm-img">' + M.pnjImg('grosbec', 'content') + '</div><p>« ' + esc(X.sous) + ' » ' + lire(X.sous, 'grosbec') + '</p></div><div class="b-mm-liste">';
+  ['barde', 'pisteur', 'alchimiste', 'sage'].forEach(function(r){
+    var R = D.ROLES[r], n = r === moi ? M.nomRole(r, h.sexe) : R.m;
+    s += '<div class="b-mm-ligne' + (r === moi ? ' moi' : '') + '" style="--c:' + R.c + '"><span class="b-mm-ic">' + R.ic + '</span><div><b>' + esc(n) + (r === moi ? ' <small>(c\'est toi)</small>' : '') + '</b><p>' + esc(X[r]) + '</p></div>' + lire(n + ' : ' + X[r], 'grosbec') + '</div>';
+  });
+  return s + '</div><div class="b-bas"><button class="btn grand b-aller b-guide" data-act="commencer">🔍 ' + esc(X.bouton || 'Commencer l\'enquête') + '</button></div></main>';
 }
 function vueLettreAncienne(E, role, R){   /* l'ancienne lettre complète (gardée pour mémoire, plus affichée) */
   return '<section class="b-carte-verre b-mission" style="--c:' + R.c + '"><h3>' + R.ic + ' Ta mission</h3><p>' + esc(E.missions[role]) + '</p>' + lire(E.missions[role]) + (M.lettreMission ? M.lettreMission() : '') +
@@ -459,7 +482,7 @@ function vueFin(){
       '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + M.S.or + ' pièces d\'or (+' + F.or + ')</span></div>' +
       '<div class="b-hub-dores"><button class="btn b-dore b-guide" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
         (att.length ? '<button class="btn b-dore b-guide" data-act="choisir-talent" data-p="' + att[0] + '">⭐ Talent</button>' : '') + '</div></div>' +
-    '<div class="b-hub-actions">' + blocSuite(E, F) + (N && !N.enEcriture ? '' : '<button class="btn grand" data-act="fin-retour">🏘️ Retour au village</button>') + '</div></section></main>';
+    '<div class="b-hub-actions">' + blocSuite(E, F) + (N && !M.enEcriture(N) ? '' : '<button class="btn grand" data-act="fin-retour">🏘️ Retour au village</button>') + '</div></section></main>';
 }
 function vueFinAncienne(E, F, niv){   /* l'ancien écran des récompenses (gardé pour mémoire, plus affiché) */
   return '<main class="b-page b-fin"><h1 class="centre">Enquête résolue !</h1>' +
@@ -516,7 +539,7 @@ function vueDefaite(){
 function blocSuite(E, F){
   var N = window.ENQUETES[E.id + 1];
   if(!N) return '';
-  if(N.enEcriture){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
+  if(M.enEcriture(N)){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
   /* Plus de code pour partir à l'enquête suivante (Romain, 4 novembre, 20 h 41) : chacun touche le bouton, sur sa tablette.
      (Le code « suite » existe toujours dans la liste des codes : tapé par habitude, il marche encore.) */
   return '<button class="btn grand b-guide" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button>';
@@ -524,7 +547,7 @@ function blocSuite(E, F){
 /* Pendant l'histoire de fin : si le Sage donne déjà le code de l'enquête suivante, on peut le taper sans attendre */
 function padPendantHistoire(E){
   var N = window.ENQUETES[E.id + 1];
-  if(!N || N.enEcriture || M.role() === 'sage') return '';
+  if(!N || M.enEcriture(N) || M.role() === 'sage') return '';
   return '';   /* plus de code pour l'enquête suivante (Romain, 4 novembre, 20 h 41) : le bouton est à la fin de l'histoire */
   if(!UI.padSuite) return '<div class="centre"><button class="btn second petit" data-act="pad-suite">🔢 Le Sage a déjà donné le code de l\'enquête ' + N.id + ' ?</button></div>';
   var t = 'Tape le code de l\'enquête ' + N.id + ' que le Sage te donne. Ne t\'inquiète pas : ton or et ton expérience sont déjà gagnés !';

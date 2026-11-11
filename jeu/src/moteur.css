@@ -750,3 +750,24 @@ html.b-fixe #app{min-height:0}
 .b-code-page .b-pave button{min-height:clamp(50px, 8.6vh, 84px);padding:4px}
 .b-code-page .b-pave span{font-size:clamp(1.6rem, 5vh, 2.5rem)}
 .b-code-page .b-rangee .btn{min-height:44px}
+
+/* ---------- Enquête 3 : l'écran des missions du maire (moteur-ecrans.js, vueMissionsMaire) ---------- */
+.b-missions-maire{gap:calc(12px * var(--serre, 1))}
+.b-mm-maire{display:flex;align-items:center;gap:calc(12px * var(--serre, 1));width:min(100%, 660px);align-self:center}
+.b-mm-img{flex:none;width:calc(76px * var(--serre, 1));height:calc(76px * var(--serre, 1));border-radius:50%;overflow:hidden;border:3px solid #24182e;background:#e9d8b0}
+.b-mm-img svg{width:100%;height:100%}
+.b-mm-maire p{margin:0;font-size:calc(1.08rem * var(--serre, 1));font-weight:700}
+.b-mm-liste{display:grid;gap:calc(8px * var(--serre, 1));width:min(100%, 660px);align-self:center}
+.b-mm-ligne{display:grid;grid-template-columns:auto minmax(0, 1fr) auto;align-items:center;column-gap:calc(12px * var(--serre, 1));
+  padding:calc(9px * var(--serre, 1)) calc(12px * var(--serre, 1));border-radius:16px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.16)}
+.b-mm-ligne.moi{background:color-mix(in srgb, var(--c) 30%, rgba(255,255,255,.06));border-color:var(--c);box-shadow:0 0 0 2px rgba(0,0,0,.25), 0 6px 16px rgba(0,0,0,.3)}
+.b-mm-ic{font-size:calc(1.8rem * var(--serre, 1));line-height:1}
+.b-mm-ligne b{display:block;font-size:calc(1.02rem * var(--serre, 1))}
+.b-mm-ligne b small{font-weight:600;opacity:.8}
+.b-mm-ligne p{margin:0;font-size:calc(1.02rem * var(--serre, 1))}
+@media (orientation: landscape) and (max-height: 600px){
+  .b-mm-liste{grid-template-columns:1fr 1fr;width:min(100%, 1000px)}
+  .b-mm-maire{width:min(100%, 1000px)}
+}
+/* la lettre « d'Odette », lue par le maire (enquête 3) : pas de signature à part, le 🔊 passe sous le texte, à droite */
+.b-ecran-fixe.b-lettre-lue .b-lettre:not(.b-affiche) > .b-lire{position:static;display:flex;margin:calc(8px * var(--serre, 1)) 0 0 auto;clear:both}

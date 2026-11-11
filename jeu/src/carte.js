@@ -1114,6 +1114,8 @@ function marqueurPose(p, mq, i, fx, fy, dir, avecNom, ks, rHit){
   else if(estSvg(mq.ic)) s += '<clipPath id="' + cid + '"><circle r="' + r2 + '"/></clipPath><g clip-path="url(#' + cid + ')">' + svgImbrique(mq.ic, -r2, -r2, r2 * 2) + '</g>';
   else if(mq.ic){ var nIc = nbEmojis(String(mq.ic)); s += '<text x="0" y="1" font-size="' + (nIc <= 1 ? 29 : nIc === 2 ? 20 : 15) + '" text-anchor="middle" dominant-baseline="central">' + esc(mq.ic) + '</text>'; }
   if(presence) s += '<circle r="' + r2 + '" fill="none" stroke="' + CONTOUR + '" stroke-width="1.6"/>';
+  /* mq.bulle (enquête 3, le marché aux fleurs du Barde) : une petite bulle blanche avec un dessin, en haut à droite du visage (🌸 : il vend des fleurs) */
+  if(mq.bulle) s += '<g class="ca-bulle-mq" transform="translate(' + f(R * .82) + ' ' + f(-R * .78) + ')"><circle r="15" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="2.6"/><text x="0" y="1" font-size="17" text-anchor="middle" dominant-baseline="central">' + esc(mq.bulle) + '</text></g>';
   s += '</g>';
   if(presence) s += fleche(0, -R - 5, i, mq.fache);
   if(avecNom && mq.label) s += etiquette(0, -R - 4 - (MQ_NOM + 16) / 2, '', mq.label, {taille: MQ_NOM, classe: 'ca-nom'});

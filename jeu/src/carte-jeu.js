@@ -203,6 +203,8 @@ function presences(E, hab){
     /* E.carteSecret : ceux dont la carte ne doit rien dire, même pas qu'ils ne sont pas chez eux (Tim à l'enquête 1 : ce serait la solution ;
        Romain, 5 novembre, 9 h 23) : le rond de leur maison reste normal, sans triangle ni gris */
     if((E.carteSecret || []).indexOf(id) >= 0) return;
+    /* (enquête 3, marche.js) le Barde ne voit Iris et Basile qu'une fois le marchandage de Fortuné commencé */
+    if(M.pnjCacheCarte && M.pnjCacheCarte(id)) return;
     var ou = ouEst(E, id, mid), m = maisonDe[id];
     var ouM = ou && (/^[LFB]\d$/.test(ou) ? ou : (Carte.LIEUX[ou] && Carte.LIEUX[ou].maison) || null);   /* (sa boutique est sa maison : Gaspard à la boulangerie) */
     /* le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31 ; barde.js) */
@@ -213,6 +215,8 @@ function presences(E, hab){
     var c = connu(E, id), nom = c ? (D.PNJ[id] || {}).court || id : 'Quelqu\'un', estMaison = /^[LFB]\d$/.test(ou);
     if(estMaison ? !Carte.MAISONS[ou] : !Carte.LIEUX[ou]) return;
     var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:estMaison ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8, fache:fache};
+    /* (enquête 3, marche.js) une petite bulle sur son visage : 🌸 il vend des fleurs, 💐 le maire attend ses bouquets */
+    var bu = M.pnjBulleCarte ? M.pnjBulleCarte(id) : ''; if(bu) mq.bulle = bu;
     if(estMaison){ mq.maison = ou; maisons.push(mq); } else { mq.lieu = ou; lieux.push(mq); }
   });
   return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents};
