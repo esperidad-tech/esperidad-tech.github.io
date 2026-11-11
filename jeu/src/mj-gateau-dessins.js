@@ -98,6 +98,7 @@ var PRINC = {fraise:'#e8384a', cerises:'#c81e3a', myrtilles:'#4a4fa0', framboise
   moustache:'#8a8a9a', biscotte:'#e0b888', pompon:'#fdfaf2', caramel:'#e08a3a', mistigri:'#3a3444', noisette:'#8a5a34', grisette:'#c4c4d0', oie:'#fffdf6', champignon:'#e0304a', lanterne:'#ecbc4c', cle:'#b8862e',
   plume:'#2c2838', sardine:'#9cc0d8', chaudron:'#3a3444', grenouille:'#6fbf4a', cornichon:'#7aa83a', chaussette:'#e0304a', fromage:'#f6c52c', escargot:'#c8783a',
   p_confettis:'#f04a6a', p_perles:'#e8eef4', p_etoiles:'#ffd21f', p_coeurs:'#f04a6a', p_vermicelles:'#5c341c', p_neige:'#ffffff',
+  moulinet:'#ff2f55', feu:'#ff2f55', cadeau:'#1fb4ff', boule:'#d8d8d8', papillon:'#ff7fc2', abeille:'#ffd21f', fantome:'#ffffff', fiole:'#3fe06a', poisson:'#ff7a12', chauvesouris:'#5a4a7a',
   r_blanche:'#fffaf0', r_rose:'#f8adc8', r_chocolat:'#7a4a2a', r_menthe:'#8fe3c3', nuage:'#fffaf0', b_vanille:'#fbe9a8', b_fraise:'#f47a9c', b_pistache:'#a8d07a'};
 
 /* ---------- Les décorations (chacune dessinée autour de 0,0 ; r : la zone qu'on attrape au doigt) ---------- */
@@ -106,8 +107,12 @@ function reflet(d, w, o){ return '<path d="' + d + '" fill="none" stroke="#fff" 
 function pts(l, f){ return l.map(f).join(''); }
 /* Une partie qui bouge toute seule (Romain, 11 novembre, 20 h 29 : « un quart des décorations animées »).
    cls : son mouvement (mj-gateau.css, .gta-…) ; o : le point autour duquel elle bouge, en % de la boîte de ce qu'elle contient. */
-function anime(cls, o, dedans){ return '<g class="gta gta-' + cls + '"' + (o ? ' style="transform-origin:' + o + '"' : '') + '>' + dedans + '</g>'; }
-var ANIMEES = ['cerises', 'tournesol', 'tulipe', 'sucette', 'coeur', 'bougie', 'bougie2', 'cierge', 'ballon', 'lampion', 'etoile', 'moustache', 'oie', 'grenouille', 'chaudron', 'lanterne', 'escargot', 'p_etoiles'];
+function anime(cls, o, dedans, duree){ var s = (o ? 'transform-origin:' + o + ';' : '') + (duree ? 'animation-duration:' + duree + 's' : ''); return '<g class="gta gta-' + cls + '"' + (s ? ' style="' + s + '"' : '') + '>' + dedans + '</g>'; }
+var ANIMEES = ['cerises', 'tournesol', 'tulipe', 'sucette', 'coeur', 'bougie', 'bougie2', 'cierge', 'ballon', 'lampion', 'etoile', 'moustache', 'oie', 'grenouille', 'chaudron', 'lanterne', 'escargot', 'p_etoiles',
+  /* (Romain, 11 novembre, 21 h 31 : « rajoute-moi encore des décorations animées ») dix-huit de plus parmi celles d'avant… */
+  'biscotte', 'pompon', 'caramel', 'mistigri', 'noisette', 'grisette', 'marguerite', 'lavande', 'coquelicot', 'guimauve', 'papillote', 'fanion', 'noeud', 'plume', 'sardine', 'p_confettis', 'p_coeurs', 'p_neige',
+  /* … et dix nouvelles, toutes animées */
+  'moulinet', 'feu', 'cadeau', 'boule', 'papillon', 'abeille', 'fantome', 'fiole', 'poisson', 'chauvesouris'];
 
 /* --- les fruits --- */
 D.fraise = function(){ return '<path d="M0,23 C-19,10 -21,-8 -11,-14 C-4,-18 4,-18 11,-14 C21,-8 19,10 0,23 Z" fill="#e8384a"' + st(2.4) + '/>' +
@@ -144,16 +149,16 @@ function petales(n, rx, ry, d, c, bord){ var s = ''; for(var i = 0; i < n; i++) 
 D.rose = function(){ return '<path d="M-14,10 C-24,14 -24,22 -12,18 Z M14,10 C24,14 24,22 12,18 Z" fill="#4fae5a"' + st(1.8) + '/>' +
   '<circle r="18" fill="#e0486a"' + st(2.4) + '/><path d="M-13,-3 C-10,-14 10,-14 13,-3 C12,8 -12,8 -13,-3 Z" fill="#ef6f8c"' + st(1.6, '#a82448') + '/>' +
   '<path d="M-7,-2 C-6,-9 6,-9 7,-2 C6,4 -6,4 -7,-2 Z" fill="#f79ab0"' + st(1.4, '#a82448') + '/><path d="M-2,-2 C-1,-5 3,-4 2,-1 C1,1 -2,1 -2,-2 Z" fill="#c8305a"/>'; };
-D.marguerite = function(){ return petales(10, 5, 11, 12, '#fffdf4', '#b8a888') + '<circle r="7.5" fill="#f6c52c"' + st(2) + '/>' + '<circle cx="-2" cy="-2" r="2" fill="#fff" opacity=".5"/>'; };
+D.marguerite = function(){ return anime('balance', '50% 50%', petales(10, 5, 11, 12, '#fffdf4', '#b8a888'), 2.6) + '<circle r="7.5" fill="#f6c52c"' + st(2) + '/>' + '<circle cx="-2" cy="-2" r="2" fill="#fff" opacity=".5"/>'; };   /* ses pétales se balancent */
 D.pensee = function(){ return '<ellipse cx="-10" cy="-9" rx="11" ry="10" fill="#6a48b8"' + st(2) + '/><ellipse cx="10" cy="-9" rx="11" ry="10" fill="#6a48b8"' + st(2) + '/>' +
   '<ellipse cx="-13" cy="6" rx="10" ry="9" fill="#f2d24a"' + st(2) + '/><ellipse cx="13" cy="6" rx="10" ry="9" fill="#f2d24a"' + st(2) + '/><ellipse cx="0" cy="12" rx="12" ry="10" fill="#f6dd6a"' + st(2) + '/>' +
   '<path d="M0,4 L-6,12 M0,4 L6,12 M0,4 L0,15 M0,4 L-13,6 M0,4 L13,6" stroke="#5a2c8a" stroke-width="1.8" stroke-linecap="round"/><circle cy="3" r="3.4" fill="#f59a2c"' + st(1.4) + '/>'; };
 D.lavande = function(){ var s = '<path d="M0,26 C1,10 0,-4 0,-18" fill="none"' + st(2.6, '#5a8a4a') + '/><path d="M0,14 C-8,10 -12,14 -14,20 M0,8 C8,4 12,8 14,14" fill="none"' + st(2.2, '#5a8a4a') + '/>';
   [[-5,-20],[5,-17],[-5,-13],[5,-10],[-5,-6],[5,-3],[0,-25],[-4,1],[4,4]].forEach(function(p){ s += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="4.6" ry="3.6" fill="#9a7ae0"' + st(1.4, '#5a3ca8') + '/>'; });
-  return s; };
-D.coquelicot = function(){ return '<path d="M0,2 C-22,-4 -22,-24 -4,-20 C-2,-26 2,-26 4,-20 C22,-24 22,-4 0,2 Z" fill="#e8382c"' + st(2.2) + '/>' +
+  return anime('balance', '50% 100%', s, 2.1); };   /* elle se balance sur sa tige */
+D.coquelicot = function(){ return anime('dandine', '50% 50%', '<path d="M0,2 C-22,-4 -22,-24 -4,-20 C-2,-26 2,-26 4,-20 C22,-24 22,-4 0,2 Z" fill="#e8382c"' + st(2.2) + '/>' +   /* il frémit au vent */
   '<path d="M0,0 C-22,4 -20,24 -2,18 C0,24 0,24 2,18 C20,24 22,4 0,0 Z" fill="#f04a34"' + st(2.2) + '/><circle r="6.5" fill="#2c2430"' + st(1.4) + '/>' +
-  pts([0, 1, 2, 3, 4, 5], function(i){ var a = i * 1.047; return '<circle cx="' + f1(Math.cos(a) * 3.6) + '" cy="' + f1(Math.sin(a) * 3.6) + '" r="1" fill="#f6dd6a"/>'; }); };
+  pts([0, 1, 2, 3, 4, 5], function(i){ var a = i * 1.047; return '<circle cx="' + f1(Math.cos(a) * 3.6) + '" cy="' + f1(Math.sin(a) * 3.6) + '" r="1" fill="#f6dd6a"/>'; }), 1.5); };
 D.tulipe = function(){ return anime('balance', '50% 100%', '<path d="M0,28 C0,16 0,10 0,2" fill="none"' + st(2.8, '#4a8a3a') + '/><path d="M0,22 C-12,16 -14,6 -10,2 C-6,8 -2,14 0,22 Z" fill="#5fbf5a"' + st(1.8) + '/>' +   /* elle se balance sur sa tige */
   '<path d="M-13,-18 C-15,-4 -8,6 0,6 C8,6 15,-4 13,-18 L7,-10 L0,-20 L-7,-10 Z" fill="#f47a9c"' + st(2.2) + '/>' + reflet('M-9,-10 C-9,-4 -6,0 -3,2', 2.2)); };
 D.feuilles = function(){ return '<path d="M0,10 C-20,12 -28,-4 -22,-14 C-8,-14 0,-4 0,10 Z" fill="#4fae5a"' + st(2.2) + '/><path d="M0,10 C20,12 28,-4 22,-14 C8,-14 0,-4 0,10 Z" fill="#6fc86a"' + st(2.2) + '/>' +
@@ -164,13 +169,13 @@ D.trefle = function(){ return '<path d="M0,6 C2,14 4,20 8,26" fill="none"' + st(
 /* --- les bonbons --- */
 D.macaron = function(){ return '<path d="M-20,-3 C-20,-16 20,-16 20,-3 Z" fill="#f79ab8"' + st(2.4) + '/><path d="M-20,5 C-20,17 20,17 20,5 Z" fill="#f79ab8"' + st(2.4) + '/>' +
   '<rect x="-19" y="-4" width="38" height="10" rx="5" fill="#fff4e0"' + st(2) + '/>' + reflet('M-13,-9 C-8,-12 2,-12 8,-11', 2.4); };
-D.guimauve = function(){ return '<rect x="-15" y="-17" width="30" height="34" rx="9" fill="#fff"' + st(2.4) + '/>' +
-  '<path d="M-15,-6 C-5,-12 5,0 15,-6 L15,4 C5,10 -5,-2 -15,4 Z" fill="#f8adc8"/><path d="M-15,-6 C-5,-12 5,0 15,-6 M-15,4 C-5,-2 5,10 15,4" fill="none" stroke="#e07aa0" stroke-width="1.4"/>' + reflet('M-9,-12 C-6,-14 0,-14 4,-13', 2); };
+D.guimauve = function(){ return anime('gelee', '50% 100%', '<rect x="-15" y="-17" width="30" height="34" rx="9" fill="#fff"' + st(2.4) + '/>' +   /* elle tremblote */
+  '<path d="M-15,-6 C-5,-12 5,0 15,-6 L15,4 C5,10 -5,-2 -15,4 Z" fill="#f8adc8"/><path d="M-15,-6 C-5,-12 5,0 15,-6 M-15,4 C-5,-2 5,10 15,4" fill="none" stroke="#e07aa0" stroke-width="1.4"/>' + reflet('M-9,-12 C-6,-14 0,-14 4,-13', 2)); };
 D.sucredorge = function(){ var s = '<path d="M6,28 L6,-10 C6,-26 -16,-26 -16,-10" fill="none"' + st(11) + '/><path d="M6,28 L6,-10 C6,-26 -16,-26 -16,-10" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>';
   [[6,22,0],[6,12,0],[6,2,0],[5,-9,-20],[-1,-19,-60],[-10,-20,-110],[-16,-12,-170]].forEach(function(p){ s += '<path d="M-3.5,-3 L3.5,1" transform="translate(' + p[0] + ',' + p[1] + ') rotate(' + p[2] + ')" stroke="#e0304a" stroke-width="4" stroke-linecap="butt"/>'; });
   return s; };
-D.papillote = function(){ return '<path d="M-14,0 L-28,-11 L-25,0 L-28,11 Z M14,0 L28,-11 L25,0 L28,11 Z" fill="#8fe3c3"' + st(2.2) + '/><ellipse rx="15" ry="11" fill="#5bc8f0"' + st(2.4) + '/>' +
-  '<path d="M-6,-10 C-10,-3 -10,3 -6,10 M4,-10.5 C0,-3 0,3 4,10.5" fill="none" stroke="#fff" stroke-width="2.6" opacity=".75"/>' + reflet('M-10,-5 C-8,-8 -4,-9 0,-9', 2); };
+D.papillote = function(){ return anime('dandine', '50% 50%', '<path d="M-14,0 L-28,-11 L-25,0 L-28,11 Z M14,0 L28,-11 L25,0 L28,11 Z" fill="#8fe3c3"' + st(2.2) + '/><ellipse rx="15" ry="11" fill="#5bc8f0"' + st(2.4) + '/>' +   /* elle gigote */
+  '<path d="M-6,-10 C-10,-3 -10,3 -6,10 M4,-10.5 C0,-3 0,3 4,10.5" fill="none" stroke="#fff" stroke-width="2.6" opacity=".75"/>' + reflet('M-10,-5 C-8,-8 -4,-9 0,-9', 2), 1.1); };
 D.sucette = function(){ return '<path d="M0,12 L0,36" ' + st(5.5) + '/><path d="M0,12 L0,36" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
   anime('tourne-vite', '50% 50%', '<circle r="19" fill="#f8adc8"' + st(2.4) + '/><path d="M0,0 C6,-2 8,6 2,8 C-8,10 -12,-2 -6,-8 C2,-16 16,-8 14,4 C12,16 -6,20 -14,10" fill="none" stroke="#de4f7c" stroke-width="3.4" stroke-linecap="round"/>') + reflet('M-13,-8 C-10,-13 -5,-15 0,-15', 2.2); };   /* sa spirale tourne */
 D.chocolat = function(){ return '<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#5c341c"' + st(2.4) + '/><path d="M0,-14 V14 M-18,0 H18" stroke="#3a1e0e" stroke-width="2"/>' +
@@ -192,20 +197,61 @@ D.bougie2 = function(){ return '<path d="M-5,26 L-5,-8 C-5,-14 5,-14 5,-8 L5,26 
 D.cierge = function(){ var s = '';   /* il crépite */
   for(var i = 0; i < 8; i++){ var a = i * Math.PI / 4, r = i % 2 ? 15 : 11; s += '<path d="M' + f1(Math.cos(a) * 4) + ',' + f1(Math.sin(a) * 4) + ' L' + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + '" stroke="#ffd76a" stroke-width="2.4" stroke-linecap="round"/>'; }
   return '<path d="M0,28 L0,-14" ' + st(3.4, '#6a6a7a') + '/><g transform="translate(0,-18)">' + anime('crepite', '50% 50%', '<circle r="15.5" fill="#ffe9a0" opacity=".3"/>' + s + '<circle r="4.5" fill="#fff6c8"/>') + '</g>'; };
-D.fanion = function(){ return '<path d="M-8,28 L-8,-26" ' + st(3.2, '#8a6a3a') + '/><path d="M-8,-25 L20,-16 L-8,-7 Z" fill="#f04a6a"' + st(2.2) + '/><circle cx="-8" cy="-27" r="3" fill="#ecbc4c"' + st(1.6) + '/>' + reflet('M-4,-20 L6,-17', 2, .5); };
+D.fanion = function(){ return '<path d="M-8,28 L-8,-26" ' + st(3.2, '#8a6a3a') + '/>' + anime('drapeau', '0% 50%', '<path d="M-8,-25 L20,-16 L-8,-7 Z" fill="#f04a6a"' + st(2.2) + '/>' + reflet('M-4,-20 L6,-17', 2, .5)) + '<circle cx="-8" cy="-27" r="3" fill="#ecbc4c"' + st(1.6) + '/>'; };   /* il claque au vent */
 D.etoile = function(){ var d = ''; for(var i = 0; i < 10; i++){ var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 21; d += (i ? 'L' : 'M') + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + ' '; }
   return anime('scintille', '50% 50%', '<path d="' + d + 'Z" fill="#f6c52c"' + st(2.4) + '/>' + reflet('M-6,-6 L-2,-13', 2.6, .7)); };   /* elle scintille */
 D.lampion = function(){ return anime('balance', '50% 0%', '<path d="M0,-24 V-17" ' + st(2) + '/><rect x="-7" y="-18" width="14" height="5" rx="1.5" fill="#6a4424"' + st(1.8) + '/><ellipse cy="2" rx="15" ry="17" fill="#f59a2c"' + st(2.4) + '/>' +   /* il se balance à son crochet */
   '<path d="M-8,-12 C-12,-2 -12,8 -8,17 M0,-15 V19 M8,-12 C12,-2 12,8 8,17" fill="none" stroke="#c8641c" stroke-width="1.6"/><ellipse cy="2" rx="6" ry="9" fill="#fff3b0" opacity=".7"/>' +
   '<rect x="-7" y="17" width="14" height="4" rx="1.5" fill="#6a4424"' + st(1.8) + '/><path d="M0,21 V28" stroke="#e0304a" stroke-width="2.4" stroke-linecap="round"/>'); };
-D.noeud = function(){ return '<path d="M0,0 C-10,-16 -26,-14 -24,0 C-26,14 -10,16 0,0 Z M0,0 C10,-16 26,-14 24,0 C26,14 10,16 0,0 Z" fill="#de4f7c"' + st(2.4) + '/>' +
-  '<path d="M-3,3 L-10,22 L-3,17 L0,24 Z M3,3 L10,22 L3,17 L0,24 Z" fill="#c8305a"' + st(2) + '/><rect x="-5.5" y="-6" width="11" height="12" rx="3.5" fill="#f47a9c"' + st(2) + '/>'; };
+D.noeud = function(){ return anime('dandine', '50% 40%', '<path d="M0,0 C-10,-16 -26,-14 -24,0 C-26,14 -10,16 0,0 Z M0,0 C10,-16 26,-14 24,0 C26,14 10,16 0,0 Z" fill="#de4f7c"' + st(2.4) + '/>' +   /* il frétille */
+  '<path d="M-3,3 L-10,22 L-3,17 L0,24 Z M3,3 L10,22 L3,17 L0,24 Z" fill="#c8305a"' + st(2) + '/><rect x="-5.5" y="-6" width="11" height="12" rx="3.5" fill="#f47a9c"' + st(2) + '/>', 1.3); };
 D.ballon = function(){ return anime('flotte', '50% 100%', '<path d="M0,10 C-4,18 4,22 0,30" fill="none"' + st(1.8, '#6a6a7a') + '/><path d="M0,10 C-22,4 -20,-24 0,-24 C20,-24 22,4 0,10 Z" fill="#5bc8f0"' + st(2.4) + '/><path d="M-3,10 L3,10 L0,14 Z" fill="#3a9ac8"' + st(1.4) + '/>' + reflet('M-11,-12 C-10,-17 -6,-19 -2,-19', 3, .6)); };   /* il flotte au bout de sa ficelle */
+/* (ajoutées le 11 novembre à 21 h 31, toutes animées) */
+D.moulinet = function(){ var s = ''; ['#ff2f55', '#ffd21f', '#1fb4ff', '#3fd45a'].forEach(function(c, i){ s += '<path d="M0,0 C2,-11 12,-19 23,-17 C19,-8 10,-2 0,0 Z" transform="rotate(' + (i * 90) + ')" fill="' + c + '"' + st(2) + '/>'; });
+  return '<path d="M0,-4 L0,30" ' + st(4.6) + '/><path d="M0,-4 L0,30" stroke="#c98a4e" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(0,-6)">' + anime('tourne-vite', '50% 50%', s, 1.8) + '<circle r="3.6" fill="#fff"' + st(1.6) + '/></g>'; };   /* le moulin à vent tourne */
+D.feu = function(){ var s = '', C = ['#ff2f55', '#ffd21f', '#1fb4ff', '#3fd45a', '#ff8a1f', '#b06bff'];
+  for(var i = 0; i < 12; i++){ var a = i * Math.PI / 6, r2 = i % 2 ? 16 : 22, x1 = f1(Math.cos(a) * 7), y1 = f1(Math.sin(a) * 7), x2 = f1(Math.cos(a) * r2), y2 = f1(Math.sin(a) * r2);
+    s += '<path d="M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2 + '" ' + st(5) + '/><path d="M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2 + '" stroke="' + C[i % 6] + '" stroke-width="3" stroke-linecap="round"/><circle cx="' + f1(Math.cos(a) * (r2 + 4)) + '" cy="' + f1(Math.sin(a) * (r2 + 4)) + '" r="2.2" fill="' + C[(i + 3) % 6] + '"' + st(.9) + '/>'; }
+  return '<g transform="translate(0,-2)">' + anime('artifice', '50% 50%', s + '<circle r="4.5" fill="#fff6c8"' + st(1.2) + '/>') + '</g>'; };   /* le feu d'artifice éclate, encore et encore */
+D.cadeau = function(){ return '<rect x="-17" y="-4" width="34" height="27" rx="3" fill="#1fb4ff"' + st(2.4) + '/><rect x="-4" y="-4" width="8" height="27" fill="#ffd21f"' + st(1.6) + '/>' +
+  anime('clin', null, '<path d="M-9,-14 l1.6,3.6 3.6,1.6 -3.6,1.6 -1.6,3.6 -1.6,-3.6 -3.6,-1.6 3.6,-1.6 Z M10,-16 l1.2,2.8 2.8,1.2 -2.8,1.2 -1.2,2.8 -1.2,-2.8 -2.8,-1.2 2.8,-1.2 Z" fill="#ffd21f" stroke="#b8862e" stroke-width=".8"/>') +
+  anime('couvercle', '8% 100%', '<rect x="-20" y="-12" width="40" height="9" rx="3" fill="#3fc4ff"' + st(2.4) + '/><rect x="-4" y="-12" width="8" height="9" fill="#ffd21f"' + st(1.6) + '/><path d="M0,-12 C-10,-24 -18,-16 0,-12 C18,-16 10,-24 0,-12 Z" fill="#ff2f55"' + st(2) + '/>'); };   /* son couvercle se soulève */
+D.boule = function(){ var g = '<ellipse cy="-2" rx="6" ry="17" fill="none" stroke="#7a86a0" stroke-width="1"/><ellipse cy="-2" rx="12" ry="17" fill="none" stroke="#7a86a0" stroke-width="1"/>';
+  [[-9, 15.5], [-2, 17], [5, 15.5], [11, 11]].forEach(function(l){ g += '<path d="M' + (-l[1]) + ',' + l[0] + ' Q0,' + (l[0] + 3) + ' ' + l[1] + ',' + l[0] + '" fill="none" stroke="#7a86a0" stroke-width="1"/>'; });
+  return anime('balance', '50% 0%', '<path d="M0,-30 V-19" ' + st(2) + '/><circle cy="-2" r="17" fill="#dcdfe6"' + st(2.4) + '/>' + g +
+    '<rect x="-10" y="-13" width="5" height="5" fill="#fff"/><rect x="3" y="-8" width="5" height="6" fill="#ff8ac4"/><rect x="-5" y="1" width="5" height="5" fill="#7fd0ff"/><rect x="7" y="4" width="4" height="5" fill="#fff"/>' +
+    anime('clin', null, '<path d="M-22,-16 l1.6,3.6 3.6,1.6 -3.6,1.6 -1.6,3.6 -1.6,-3.6 -3.6,-1.6 3.6,-1.6 Z" fill="#fff" stroke="#ffd21f" stroke-width="1"/>') +
+    anime('clin2', null, '<path d="M22,4 l1.6,3.6 3.6,1.6 -3.6,1.6 -1.6,3.6 -1.6,-3.6 -3.6,-1.6 3.6,-1.6 Z" fill="#fff" stroke="#ffd21f" stroke-width="1"/>'), 2.2); };   /* la boule à facettes se balance et brille */
+
 /* --- le farfelu de Brumeval --- */
-/* un chat en pâte d'amande, assis ; c : sa robe, v : son ventre, opt : {raye, moustache} (les sept chats d'Odette) */
+/* (les six qui suivent : ajoutés le 11 novembre à 21 h 31, tous animés) */
+D.papillon = function(){ var aile = '<path d="M-2,-3 C-12,-25 -31,-19 -27,-4 C-25,3 -10,3 -2,0 Z" fill="#ff7fc2"' + st(2.2) + '/><path d="M-2,2 C-10,4 -25,8 -21,19 C-15,25 -4,14 -2,6 Z" fill="#ffb0d8"' + st(2.2) + '/><circle cx="-18" cy="-8" r="3.4" fill="#ffd21f"' + st(1.2) + '/><circle cx="-14" cy="12" r="2.4" fill="#fff"' + st(1) + '/>';
+  return anime('flotte', '50% 50%', anime('aile', '100% 50%', aile) + '<g transform="scale(-1,1)">' + anime('aile', '100% 50%', aile) + '</g>' +
+    '<path d="M-1,-11 C-3,-18 -7,-21 -9,-21 M1,-11 C3,-18 7,-21 9,-21" fill="none"' + st(1.6) + '/><ellipse rx="3" ry="11.5" fill="#5a3a6a"' + st(1.8) + '/>', 2.6); };   /* ses ailes battent */
+D.abeille = function(){ return anime('flotte', '50% 50%', anime('aile-vite', '50% 100%', '<ellipse cx="-3" cy="-13" rx="7" ry="10" transform="rotate(-18 -3 -13)" fill="#eaf7ff"' + st(1.8) + ' opacity=".92"/><ellipse cx="7" cy="-13" rx="6" ry="9" transform="rotate(16 7 -13)" fill="#eaf7ff"' + st(1.8) + ' opacity=".92"/>') +
+    '<path d="M16,2 L24,4 L16,7 Z" fill="' + K + '"/><ellipse cx="2" cy="3" rx="15" ry="11" fill="#ffd21f"' + st(2.4) + '/><path d="M-2,-7.5 C1,-2 1,8 -2,13.5 M6,-7 C9,-2 9,8 6,13" fill="none" stroke="' + K + '" stroke-width="4.4"/>' +
+    '<circle cx="-13" cy="1" r="7.5" fill="#ffd21f"' + st(2.4) + '/><circle cx="-15.5" cy="-.5" r="2.2" fill="' + K + '"/><circle cx="-16.200" cy="-1.200" r=".8" fill="#fff"/><path d="M-17,4 C-15,6.5 -12,6.5 -10,5" fill="none"' + st(1.4) + '/>' +
+    '<path d="M-15,-6 C-16,-12 -19,-14 -21,-14 M-11,-6.5 C-10,-12 -8,-15 -6,-15.5" fill="none"' + st(1.5) + '/>', 1.5); };   /* elle bourdonne */
+D.fantome = function(){ return anime('flotte', '50% 50%', '<path d="M-16,23 L-16,-6 C-16,-29 16,-29 16,-6 L16,23 L10.5,17 L5.300,23 L0,17 L-5.300,23 L-10.500,17 Z" fill="#ffffff"' + st(2.4) + '/>' +
+    '<ellipse cx="-6" cy="-8" rx="3" ry="4.4" fill="' + K + '"/><ellipse cx="6" cy="-8" rx="3" ry="4.4" fill="' + K + '"/><circle cx="-5" cy="-9.500" r="1" fill="#fff"/><circle cx="7" cy="-9.500" r="1" fill="#fff"/>' +
+    '<ellipse cy="1" rx="2.6" ry="3.4" fill="' + K + '"/><ellipse cx="-11" cy="-1" rx="2.6" ry="1.7" fill="#ffb6cf"/><ellipse cx="11" cy="-1" rx="2.6" ry="1.7" fill="#ffb6cf"/>' + reflet('M-11,-14 C-10,-20 -6,-22 -2,-23', 2.4, .5), 2.8); };   /* il flotte… bouh ! */
+D.fiole = function(){ return '<path d="M-5,-21 L-5,-8 L-16,16 C-18,22 -14,25 -10,25 L10,25 C14,25 18,22 16,16 L5,-8 L5,-21 Z" fill="#eef9ff"' + st(2.4) + '/>' +
+  '<path d="M-11.400,6 L-16,16 C-18,22 -14,25 -10,25 L10,25 C14,25 18,22 16,16 L11.400,6 Z" fill="#3fe06a"/><path d="M-11.400,6 C-6,3.500 6,8.500 11.400,6" fill="none" stroke="#1faa48" stroke-width="1.6"/>' +
+  anime('bulles', null, '<circle cx="-4" cy="14" r="2.6" fill="#c8ffd8" stroke="#1faa48" stroke-width=".8"/><circle cx="5" cy="1" r="1.9" fill="#c8ffd8" stroke="#1faa48" stroke-width=".8"/>') +
+  anime('bulles2', null, '<circle cx="4" cy="17" r="2.2" fill="#c8ffd8" stroke="#1faa48" stroke-width=".8"/><circle cx="-2" cy="-4" r="1.6" fill="#c8ffd8" stroke="#1faa48" stroke-width=".8"/>') +
+  '<path d="M-5,-21 L-5,-8 L-16,16 C-18,22 -14,25 -10,25 L10,25 C14,25 18,22 16,16 L5,-8 L5,-21 Z" fill="none"' + st(2.4) + '/><rect x="-6.500" y="-27" width="13" height="7" rx="2" fill="#c98a4e"' + st(2) + '/>' + reflet('M-9,10 L-12,17', 2.4, .6); };   /* la potion fait des bulles */
+D.poisson = function(){ return fixe('<circle cy="3" r="20" fill="#eef9ff"' + st(2.4) + '/><path d="M-18.700,-4 A20,20 0 1 0 18.700,-4 Z" fill="#7fd0ff"/><path d="M-18.700,-4 C-9,-7 9,-1 18.700,-4" fill="none" stroke="#3fa8e8" stroke-width="1.4"/>') +
+  anime('nage', '50% 50%', '<path d="M-5,7 L-12,2 L-11,7 L-12,12 Z" fill="#ff9a2a"' + st(1.6) + '/><ellipse cx="1" cy="7" rx="7.5" ry="5" fill="#ff7a12"' + st(1.8) + '/><circle cx="4.500" cy="5.500" r="1.200" fill="' + K + '"/>') +
+  fixe('<circle cy="3" r="20" fill="none"' + st(2.4) + '/><ellipse cy="-16" rx="11" ry="3.400" fill="#c4e4f8"' + st(2) + '/>' + reflet('M-14,-2 C-15,5 -12,12 -8,16', 2.6, .6)); };   /* le poisson rouge fait des allers-retours */
+D.chauvesouris = function(){ var aile = '<path d="M-6,-3 C-14,-15 -27,-11 -31,-3 C-26,-4 -24,0 -22,5 C-19,1 -16,1 -13,6 C-11,2 -8,2 -6,4 Z" fill="#7a66a8"' + st(2.2) + '/>';
+  return anime('flotte', '50% 50%', anime('aile', '100% 30%', aile) + '<g transform="scale(-1,1)">' + anime('aile', '100% 30%', aile) + '</g>' +
+    '<path d="M-7,-9 L-9,-20 L-2,-13 Z M7,-9 L9,-20 L2,-13 Z" fill="#5a4a7a"' + st(2) + '/><ellipse cy="0" rx="8.500" ry="11" fill="#5a4a7a"' + st(2.2) + '/>' +
+    '<circle cx="-3.400" cy="-4" r="2.400" fill="#fff"/><circle cx="3.400" cy="-4" r="2.400" fill="#fff"/><circle cx="-3" cy="-4" r="1.100" fill="' + K + '"/><circle cx="3.800" cy="-4" r="1.100" fill="' + K + '"/>' +
+    '<path d="M-3,2 C-1,4 1,4 3,2" fill="none"' + st(1.3) + '/><path d="M-2,2.800 L-1.200,5 L-.4,3 Z M.4,3 L1.200,5 L2,2.800 Z" fill="#fff"/>', 1.9); };   /* elle bat des ailes */
+/* un chat en pâte d'amande, assis ; c : sa robe, v : son ventre, opt : {raye, moustache, q : le rythme de sa queue} (les sept chats d'Odette) */
 function chat(c, v, opt){ opt = opt || {}; var b = sombre(c, .45);
   var queue = '<path d="M14,14 C28,16 30,2 22,-2" fill="none"' + st(6.5) + '/><path d="M14,14 C28,16 30,2 22,-2" fill="none" stroke="' + c + '" stroke-width="3.4" stroke-linecap="round"/>';
-  var s = (opt.queue ? anime('queue', '4% 92%', queue) : queue) +
+  var s = anime('queue', '4% 92%', queue, opt.q) +
     '<path d="M-15,22 C-19,6 -12,-4 0,-4 C12,-4 19,6 15,22 Z" fill="' + c + '"' + st(2.4) + '/><ellipse cy="14" rx="8" ry="9" fill="' + v + '"/>' +
     '<path d="M-14,-12 L-16,-27 L-5,-20 Z M14,-12 L16,-27 L5,-20 Z" fill="' + c + '"' + st(2.2) + '/><path d="M-12.500,-15 L-13.500,-22 L-8,-18.500 Z M12.500,-15 L13.500,-22 L8,-18.500 Z" fill="#f8adc8"/>' +
     '<ellipse cy="-11" rx="15" ry="12.5" fill="' + c + '"' + st(2.4) + '/>';
@@ -215,13 +261,14 @@ function chat(c, v, opt){ opt = opt || {}; var b = sombre(c, .45);
   s += opt.moustache ? '<path d="M-4,-5 C-12,-8 -18,-4 -22,-7 M-4,-4 C-12,-3 -17,1 -21,0 M4,-5 C12,-8 18,-4 22,-7 M4,-4 C12,-3 17,1 21,0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>' :
     '<path d="M-7,-6 L-16,-8 M-7,-4 L-16,-3 M7,-6 L16,-8 M7,-4 L16,-3" stroke="' + b + '" stroke-width="1" stroke-linecap="round"/>';
   return s + '<ellipse cx="-7" cy="22" rx="5" ry="3" fill="' + v + '"' + st(1.6) + '/><ellipse cx="7" cy="22" rx="5" ry="3" fill="' + v + '"' + st(1.6) + '/>'; }
-D.moustache = function(){ return chat('#8a8a9a', '#c8c8d4', {moustache:true, queue:true}); };   /* il remue la queue */
-D.biscotte = function(){ return chat('#e0b888', '#f6e6c8'); };
-D.pompon = function(){ return chat('#fdfaf2', '#ffffff'); };
-D.caramel = function(){ return chat('#e08a3a', '#f6d8a8', {raye:true}); };
-D.mistigri = function(){ return chat('#3a3444', '#5a546a'); };
-D.noisette = function(){ return chat('#8a5a34', '#c89a6a', {raye:true}); };
-D.grisette = function(){ return chat('#c4c4d0', '#eeeef4'); };
+/* (ils remuent tous la queue, chacun à son rythme) */
+D.moustache = function(){ return chat('#8a8a9a', '#c8c8d4', {moustache:true, q:.75}); };
+D.biscotte = function(){ return chat('#e0b888', '#f6e6c8', {q:1.15}); };
+D.pompon = function(){ return chat('#fdfaf2', '#ffffff', {q:.9}); };
+D.caramel = function(){ return chat('#e08a3a', '#f6d8a8', {raye:true, q:.6}); };
+D.mistigri = function(){ return chat('#3a3444', '#5a546a', {q:1.5}); };
+D.noisette = function(){ return chat('#8a5a34', '#c89a6a', {raye:true, q:1}); };
+D.grisette = function(){ return chat('#c4c4d0', '#eeeef4', {q:1.3}); };
 D.oie = function(){ return anime('dandine', '50% 100%', '<path d="M-20,8 C-22,-6 -8,-10 4,-6 C6,-18 8,-26 14,-26 C22,-26 22,-18 16,-16 C14,-8 18,2 14,10 C8,18 -14,18 -20,8 Z" fill="#fffdf6"' + st(2.4) + '/>' +   /* elle se dandine */
   '<path d="M19,-23 L29,-21 L20,-18 Z" fill="#f59a2c"' + st(1.8) + '/><circle cx="15" cy="-22" r="1.6" fill="' + K + '"/><path d="M-14,4 C-8,0 2,2 6,8" fill="none" stroke="#d8d0c0" stroke-width="2" stroke-linecap="round"/>' +
   '<path d="M-6,16 L-8,25 L-13,25 M4,16 L4,25 L-1,25" fill="none"' + st(2.4, '#f59a2c') + '/>'); };
@@ -233,9 +280,9 @@ D.lanterne = function(){ return anime('lueur', '50% 50%', '<circle cy="2" r="25"
 D.cle = function(){ return '<circle cx="-14" r="10" fill="none"' + st(7.5) + '/><circle cx="-14" r="10" fill="none" stroke="#b8862e" stroke-width="4"/>' +
   '<path d="M-4,0 L24,0 M14,0 L14,9 M21,0 L21,7" fill="none"' + st(7.5) + '/><path d="M-4,0 L24,0 M14,0 L14,9 M21,0 L21,7" fill="none" stroke="#b8862e" stroke-width="4" stroke-linecap="round"/>' +
   '<path d="M2,-1.500 l3,3 M8,-1.500 l-3,3" stroke="#8ff3ff" stroke-width="1.3"/>'; };
-D.plume = function(){ return '<path d="M-16,24 C-6,10 6,-6 14,-24" fill="none"' + st(2.4, '#6a6a7a') + '/><path d="M-12,18 C-22,4 -10,-20 14,-26 C20,-6 6,14 -12,18 Z" fill="#2c2838"' + st(2.2) + '/>' +
-  '<path d="M-6,8 L-14,2 M0,-2 L-9,-7 M6,-12 L-2,-17 M-4,12 L6,10 M3,2 L12,0 M9,-8 L15,-10" stroke="#5a5470" stroke-width="1.5" stroke-linecap="round"/>'; };
-D.sardine = function(){ return '<path d="M-24,0 C-14,-12 10,-12 18,0 C10,12 -14,12 -24,0 Z" fill="#9cc0d8"' + st(2.4) + '/><path d="M16,0 L28,-10 L25,0 L28,10 Z" fill="#7aa4c4"' + st(2.2) + '/>' +
+D.plume = function(){ return anime('flotte', '50% 50%', '<path d="M-16,24 C-6,10 6,-6 14,-24" fill="none"' + st(2.4, '#6a6a7a') + '/><path d="M-12,18 C-22,4 -10,-20 14,-26 C20,-6 6,14 -12,18 Z" fill="#2c2838"' + st(2.2) + '/>' +
+  '<path d="M-6,8 L-14,2 M0,-2 L-9,-7 M6,-12 L-2,-17 M-4,12 L6,10 M3,2 L12,0 M9,-8 L15,-10" stroke="#5a5470" stroke-width="1.5" stroke-linecap="round"/>', 3); };   /* elle flotte, toute légère */
+D.sardine = function(){ return '<path d="M-24,0 C-14,-12 10,-12 18,0 C10,12 -14,12 -24,0 Z" fill="#9cc0d8"' + st(2.4) + '/>' + anime('nageoire', '0% 50%', '<path d="M16,0 L28,-10 L25,0 L28,10 Z" fill="#7aa4c4"' + st(2.2) + '/>') +   /* sa queue bat */
   '<path d="M-24,0 C-14,6 8,6 18,0 C10,12 -14,12 -24,0 Z" fill="#e8f2f8"/><circle cx="-15" cy="-2" r="2.6" fill="#fff"' + st(1.4) + '/><circle cx="-15" cy="-2" r="1" fill="' + K + '"/>' +
   '<path d="M-8,-6 C-6,-2 -6,2 -8,6 M0,-7 C2,-2 2,2 0,7 M8,-6 C10,-2 10,2 8,5" fill="none" stroke="#5a84a4" stroke-width="1.4"/>'; };
 D.chaudron = function(){ return anime('vapeur', '50% 100%', '<path d="M-16,-10 C-20,-22 -8,-24 -6,-16 C-2,-26 8,-24 6,-15 C12,-22 20,-16 15,-9" fill="#8fe3c3" stroke="#3aa884" stroke-width="1.6" opacity=".9"/>') +   /* sa vapeur monte */
@@ -263,9 +310,11 @@ function pincee(sorte){ var R = graine(sorte.length * 7 + sorte.charCodeAt(0)), 
       var et = '<path d="' + dd + 'Z" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot) + ')" fill="#ffd21f" stroke="#b8862e" stroke-width=".8"/>'; if(i % 2) impaires += et; else paires += et; }
     else if(sorte === 'coeurs') s += '<path d="M0,3.800 C-5,.8 -4.400,-3.400 -2,-3.400 C-.8,-3.400 0,-2.400 0,-1.700 C0,-2.400 .8,-3.400 2,-3.400 C4.400,-3.400 5,.8 0,3.800 Z" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot - 90) + ')" fill="' + (i % 2 ? '#f04a6a' : '#f8adc8') + '" stroke="#a82448" stroke-width=".7"/>';
     else if(sorte === 'vermicelles') s += '<rect x="-4" y="-1.300" width="8" height="2.600" rx="1.300" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot) + ')" fill="' + (i % 3 ? '#5c341c' : '#8a5a34') + '" stroke="#2c1608" stroke-width=".6"/>';
-    else s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(1.4 + R() * 2.2) + '" fill="#fff" opacity=".92"/>';   /* la neige de sucre */
+    else { var fl = '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(1.4 + R() * 2.2) + '" fill="#fff" opacity=".92"/>'; if(i % 2) impaires += fl; else paires += fl; }   /* la neige de sucre */
   }
-  if(sorte === 'etoiles') return anime('clin', null, paires) + anime('clin2', null, impaires);   /* elles clignotent, une sur deux à la fois */
+  if(sorte === 'etoiles' || sorte === 'neige') return anime('clin', null, paires) + anime('clin2', null, impaires);   /* elles clignotent, une sur deux à la fois */
+  if(sorte === 'confettis') return anime('tourne', '50% 50%', s, 14);   /* ils tournoient */
+  if(sorte === 'coeurs') return anime('bat', '50% 50%', s, 1.2);         /* ils battent */
   return s; }
 ['confettis', 'perles', 'etoiles', 'coeurs', 'vermicelles', 'neige'].forEach(function(n){ D['p_' + n] = function(){ return pincee(n); }; });
 
@@ -292,9 +341,11 @@ var CATS = [
   {id:'fruits', nom:'Fruits', son:'fruit', l:[['fraise', 'Fraise'], ['cerises', 'Cerises'], ['myrtilles', 'Myrtilles'], ['framboise', 'Framboise'], ['orange', 'Orange'], ['citron', 'Citron'], ['kiwi', 'Kiwi'], ['raisin', 'Raisin'], ['ananas', 'Ananas'], ['pomme', 'Pomme d\'amour']]},
   {id:'fleurs', nom:'Fleurs', son:'fleur', l:[['rose', 'Rose'], ['marguerite', 'Marguerite'], ['pensee', 'Pensée sauvage'], ['lavande', 'Lavande'], ['coquelicot', 'Coquelicot'], ['tulipe', 'Tulipe'], ['tournesol', 'Tournesol'], ['trefle', 'Trèfle'], ['feuilles', 'Feuilles']]},
   {id:'bonbons', nom:'Bonbons', son:'bonbon', l:[['macaron', 'Macaron'], ['guimauve', 'Guimauve'], ['sucredorge', 'Sucre d\'orge'], ['papillote', 'Papillote'], ['sucette', 'Sucette'], ['chocolat', 'Chocolat'], ['biscuit', 'Biscuit étoile'], ['meringue', 'Meringue'], ['coeur', 'Cœur en sucre'], ['reglisse', 'Réglisse']]},
-  {id:'fete', nom:'Fête', son:'fete', l:[['bougie', 'Bougie'], ['bougie2', 'Bougie bleue'], ['cierge', 'Cierge magique'], ['fanion', 'Fanion'], ['etoile', 'Étoile'], ['lampion', 'Lampion'], ['noeud', 'Nœud'], ['ballon', 'Ballon']]},
+  {id:'fete', nom:'Fête', son:'fete', l:[['bougie', 'Bougie'], ['bougie2', 'Bougie bleue'], ['cierge', 'Cierge magique'], ['fanion', 'Fanion'], ['etoile', 'Étoile'], ['lampion', 'Lampion'], ['noeud', 'Nœud'], ['ballon', 'Ballon'],
+    ['moulinet', 'Moulin à vent'], ['feu', 'Feu d\'artifice'], ['cadeau', 'Cadeau surprise'], ['boule', 'Boule à facettes']]},
   {id:'farfelu', nom:'Farfelu', son:'farfelu', l:[['moustache', 'Moustache'], ['biscotte', 'Biscotte'], ['pompon', 'Pompon'], ['caramel', 'Caramel'], ['mistigri', 'Mistigri'], ['noisette', 'Noisette'], ['grisette', 'Grisette'],
-    ['oie', 'L\'oie de Gaspard'], ['champignon', 'Champignon'], ['lanterne', 'Lanterne d\'or'], ['cle', 'Vieille clé'], ['plume', 'Plume noire'], ['sardine', 'Sardine'], ['chaudron', 'Chaudron'], ['grenouille', 'Grenouille'], ['cornichon', 'Cornichon'], ['chaussette', 'Chaussette'], ['fromage', 'Fromage'], ['escargot', 'Escargot']]},
+    ['oie', 'L\'oie de Gaspard'], ['champignon', 'Champignon'], ['lanterne', 'Lanterne d\'or'], ['cle', 'Vieille clé'], ['plume', 'Plume noire'], ['sardine', 'Sardine'], ['chaudron', 'Chaudron'], ['grenouille', 'Grenouille'], ['cornichon', 'Cornichon'], ['chaussette', 'Chaussette'], ['fromage', 'Fromage'], ['escargot', 'Escargot'],
+    ['papillon', 'Papillon'], ['abeille', 'Abeille'], ['fantome', 'Petit fantôme'], ['fiole', 'Fiole qui bulle'], ['poisson', 'Poisson rouge'], ['chauvesouris', 'Chauve-souris']]},
   {id:'paillettes', nom:'Paillettes', son:'paillettes', l:[['p_confettis', 'Confettis'], ['p_perles', 'Perles d\'argent'], ['p_etoiles', 'Étoiles d\'or'], ['p_coeurs', 'Petits cœurs'], ['p_vermicelles', 'Vermicelles'], ['p_neige', 'Neige de sucre']]},
   {id:'chantilly', nom:'Chantilly', son:'chantilly', l:[['r_blanche', 'Rosette'], ['r_rose', 'Rosette rose'], ['r_chocolat', 'Rosette chocolat'], ['r_menthe', 'Rosette menthe'], ['nuage', 'Gros nuage'], ['b_vanille', 'Boule vanille'], ['b_fraise', 'Boule fraise'], ['b_pistache', 'Boule pistache']]}
 ];

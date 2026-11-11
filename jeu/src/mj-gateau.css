@@ -77,6 +77,26 @@
 .gta-clin{animation:gta-clin .9s ease-in-out infinite alternate}
 .gta-clin2{animation:gta-clin .9s ease-in-out infinite alternate-reverse}
 @keyframes gta-clin{from{opacity:.2}to{opacity:1}}
+/* (ajoutés le 11 novembre à 21 h 31, avec les nouvelles décorations animées) */
+.gta-drapeau{animation:gta-drapeau .7s ease-in-out infinite alternate}
+@keyframes gta-drapeau{from{transform:skewY(-9deg) scaleX(1)}to{transform:skewY(8deg) scaleX(.88)}}
+.gta-gelee{animation:gta-gelee .8s ease-in-out infinite alternate}
+@keyframes gta-gelee{from{transform:scale(1.07,.93)}to{transform:scale(.94,1.06)}}
+.gta-nageoire{animation:gta-nageoire .45s ease-in-out infinite alternate}
+@keyframes gta-nageoire{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+.gta-aile{animation:gta-aile .3s ease-in-out infinite alternate}
+@keyframes gta-aile{from{transform:scaleX(1)}to{transform:scaleX(.32)}}
+.gta-aile-vite{animation:gta-aile-vite .11s ease-in-out infinite alternate}
+@keyframes gta-aile-vite{from{transform:scaleY(1)}to{transform:scaleY(.5)}}
+.gta-artifice{animation:gta-artifice 1.7s ease-out infinite}
+@keyframes gta-artifice{0%{transform:scale(.4);opacity:.35}30%{transform:scale(1.05);opacity:1}75%{transform:scale(1.12);opacity:1}100%{transform:scale(1.22);opacity:.3}}
+.gta-couvercle{animation:gta-couvercle 2.4s ease-in-out infinite}
+@keyframes gta-couvercle{0%,52%,100%{transform:none}66%{transform:translateY(-7px) rotate(-10deg)}80%{transform:translateY(-2px) rotate(-3deg)}90%{transform:translateY(-4px) rotate(-6deg)}}
+.gta-bulles{animation:gta-bulles 1.5s linear infinite}
+.gta-bulles2{animation:gta-bulles 1.5s linear -.75s infinite}
+@keyframes gta-bulles{0%{transform:translateY(7px);opacity:0}25%{opacity:1}75%{opacity:1}100%{transform:translateY(-11px);opacity:0}}
+.gta-nage{animation:gta-nage 3.4s ease-in-out infinite}
+@keyframes gta-nage{0%{transform:translateX(-6px) scaleX(1)}45%{transform:translateX(6px) scaleX(1)}50%{transform:translateX(6px) scaleX(-1)}95%{transform:translateX(-6px) scaleX(-1)}100%{transform:translateX(-6px) scaleX(1)}}
 
 /* ---------- les icônes, de chaque côté : des médaillons ronds, comme sur la carte ---------- */
 .gt-col{position:absolute;top:8px;bottom:calc(var(--gt-bas) + 4px);z-index:5;display:flex;flex-direction:column;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:16px 8px;padding:0 10px;pointer-events:none}

@@ -2,7 +2,7 @@
 1. la salle, sur une tablette couchée : l'accueil en images, les deux colonnes d'icônes, les bulles de chaque icône, les étages,
    la pâte, le glaçage, le motif, la crème, la table ; une décoration posée, tournée, déplacée, tirée depuis sa bulle, jetée,
    « annuler » ; le pinceau (une décoration, la pâte, le glaçage, le motif, la crème, le plat, la nappe) ; les bulles ne cachent
-   jamais le gâteau ; les 70 décorations, dont un quart bougent ; la limite ; le minuteur ; « C'est prêt ! », « Retoucher », « À la fête ! » ;
+   jamais le gâteau ; les 80 décorations, dont plus de la moitié bougent ; la limite ; le minuteur ; « C'est prêt ! », « Retoucher », « À la fête ! » ;
 2. la salle, sur un téléphone debout, une tablette debout, un téléphone couché : tout tient dans l'écran, les bulles ne cachent
    pas le gâteau ; le minuteur arrive à zéro : le gâteau part à la fête ;
 3. le jeu (index.html) : le mini-jeu lancé par le moteur, en plein écran, la pause (le temps s'arrête), la fin.
@@ -79,7 +79,7 @@ with sync_playwright() as p:
 
     print('— 1. La salle, tablette couchée')
     pg = page(b, 1180, 820); pg.goto(SALLE); pg.wait_for_timeout(900)
-    verifier(pg.locator('.mj-gateau .mj-demo .gtd-cadre svg').count() == 2 and 'Cinq minutes' in pg.inner_text('.mj-phrase'), 'l\'accueil : l\'explication en images et la phrase (« Cinq minutes… »)')
+    verifier(pg.locator('.mj-gateau .mj-demo .gtd-cadre svg').count() == 2 and 'Quinze minutes' in pg.inner_text('.mj-phrase'), 'l\'accueil : l\'explication en images et la phrase (« Quinze minutes… »)')
     verifier(pg.evaluate("() => { var g = document.querySelector('.mj-go'), c = getComputedStyle(g); return /255, 224, 138|232, 169, 58/.test(c.backgroundImage) && c.color === 'rgb(17, 17, 17)'; }"), '« C\'est parti ! » : jaune, texte noir')
     verifier(pg.evaluate("() => document.getElementById('sl-plein').classList.contains('mj-large') && document.querySelector('.sl-cadre').getBoundingClientRect().width > 1100"), 'le mini-jeu prend toute la largeur de l\'écran')
     pg.wait_for_timeout(2300); pg.screenshot(path=os.path.join(PHOTOS, 'gateau-accueil.png'))
@@ -89,12 +89,12 @@ with sync_playwright() as p:
     verifier(pg.locator('.gt-fond path').count() > 300 and 'blur' in pg.evaluate("() => getComputedStyle(document.querySelector('.gt-fond')).filter") and pg.locator('.gt-scene .gt-table rect').count() >= 1,
              'derrière : la place en fête, un peu floue ; devant, bien nets : la table et le gâteau')
     t0 = temps(pg); pg.wait_for_timeout(1300); t1 = temps(pg)
-    verifier(299 < t0 <= 300 and .9 < t0 - t1 < 1.9 and pg.inner_text('.gt-temps b') in ('4:59', '4:58'), f'le minuteur : 5 minutes, et il descend ({pg.inner_text(".gt-temps b")})')
+    verifier(899 < t0 <= 900 and .9 < t0 - t1 < 1.9 and pg.inner_text('.gt-temps b') in ('14:59', '14:58'), f'le minuteur : 15 minutes, et il descend ({pg.inner_text(".gt-temps b")})')
     an = pg.evaluate("() => { var A = MJ.GATEAU_ART; return [A.ANIMEES.length, A.ANIMEES.filter(function(k){ return A.DECOS[k].anime && A.DECOS[k].dessin().indexOf('class=\"gta ') >= 0; }).length]; }")
-    verifier(an[0] == an[1] and an[0] * 4 >= 70, f'{an[0]} décorations sur 70 bougent toutes seules (un quart au moins)')
+    verifier(an[0] == an[1] and an[0] * 2 >= 80, f'{an[0]} décorations sur 80 bougent toutes seules (plus de la moitié)')
     c = pg.evaluate("() => MJ.GATEAU.compte()")
     print('     ', c)
-    verifier(c['unEtage'] >= 500000 and c['decorations'] == 70 and c['couleursParDecoration'] == 9, f"sans une seule décoration : {c['unEtage']:,} gâteaux à un étage ; 70 décorations, 9 couleurs chacune".replace(',', ' '))
+    verifier(c['unEtage'] >= 500000 and c['decorations'] == 80 and c['couleursParDecoration'] == 9, f"sans une seule décoration : {c['unEtage']:,} gâteaux à un étage ; 80 décorations, 9 couleurs chacune".replace(',', ' '))
     # les étages
     icone(pg, 'etages')
     verifier(nb_bulles(pg) == 7 and pg.locator('.gt-ic.gt-appel').count() == 0 and pg.locator('.gt-conteur:not([hidden])').count() == 0, 'Étages : 7 bulles ; l\'icône n\'appelle plus, le conteur se tait')
@@ -185,10 +185,10 @@ with sync_playwright() as p:
         for i in range(nb_bulles(pg)): pg.click(f'.gt-plateau .gt-bulle >> nth={i}', force=True); total += 1
     pg.wait_for_timeout(300)
     e = etat(pg)
-    verifier(total == 70 and len(e['decos']) == 70 and len(set(x['d'] for x in e['decos'])) == 70, 'les 70 décorations se posent toutes')
+    verifier(total == 80 and len(e['decos']) == 80 and len(set(x['d'] for x in e['decos'])) == 80, 'les 80 décorations se posent toutes')
     places = set((round(x['x']), round(x['y'])) for x in e['decos'])
     verifier(len(places) >= 40, f'elles n\'arrivent pas toutes au même endroit ({len(places)} endroits)')
-    pg.screenshot(path=os.path.join(PHOTOS, 'gateau-70.png'))
+    pg.screenshot(path=os.path.join(PHOTOS, 'gateau-80.png'))
     for i in range(12): pg.click('.gt-plateau .gt-bulle >> nth=0', force=True)
     pg.wait_for_timeout(200)
     verifier(len(etat(pg)['decos']) == 80 and 'n\'en peut plus' in pg.inner_text('.gt-conteur'), 'pas plus de 80 : le conteur prévient')
@@ -230,7 +230,7 @@ with sync_playwright() as p:
         # le minuteur arrive à zéro : le gâteau part à la fête tel qu'il est, sans « Retoucher »
         temps(pg, 30.3); pg.wait_for_timeout(500); verifier(pg.locator('.gt-temps.gt-presse').count() == 1, 'à trente secondes de la fin, le minuteur rougit')
         temps(pg, 1.1); pg.wait_for_timeout(2100)
-        verifier(pg.locator('.gt.gt-fini').count() == 1 and pg.locator('.gt-retouche').count() == 0 and 'cinq minutes' in pg.inner_text('.gt-final-dit') and pg.locator('.gt-final-dit .mj-lire-mini').count() == 1,
+        verifier(pg.locator('.gt.gt-fini').count() == 1 and pg.locator('.gt-retouche').count() == 0 and 'quinze minutes' in pg.inner_text('.gt-final-dit') and pg.locator('.gt-final-dit .mj-lire-mini').count() == 1,
                  'à zéro : la fête commence toute seule, sans « Retoucher » ; le conteur le dit (avec son 🔊)')
         d = pg.evaluate(DEDANS); verifier(not d['dehors'] and not d['defile'], f'la fête tient dans l\'écran {d if d["dehors"] or d["defile"] else ""}')
         haut = pg.evaluate("() => { var f = document.querySelector('.gt-final').getBoundingClientRect(), bas = 0; document.querySelectorAll('.gt-etage').forEach(function(e){ bas = Math.max(bas, e.getBoundingClientRect().bottom); }); return [Math.round(bas), Math.round(f.top)]; }")
