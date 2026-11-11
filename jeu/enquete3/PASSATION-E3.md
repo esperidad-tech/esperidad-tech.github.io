@@ -1,6 +1,20 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 10 novembre à 19 h)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 14 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 11 novembre (14 h 30) : la trame du chemin parfait, refaite
+
+- **Romain (11 novembre, 13 h 59)** : « Qu'est-ce qui reste à faire ? Où est-ce qu'on en est ? Refais-moi la trame du chemin parfait, où on voit chaque personnage et ce qu'il fait. »
+- **Le document « Enquête 3 — la trame du chemin parfait »** (Claude Docs, https://claude.ai/artifact/2RcGGWamDNVQStUN6ud1Cw) : le matin, l'après-midi, la nuit, rôle par rôle, avec chaque code et pour qui ; le donjon salle par salle tel qu'il est construit le 11 novembre ; la fin (Léo, l'accusation, minuit) ; un schéma des deux chaînes de preuves (QUI passe par le Barde, le Sage et l'Alchimiste ; OÙ par les quatre) ; les points à trancher ; ce qui reste à faire. **Il fait foi pour la trame d'ensemble** ; le détail des dialogues reste dans `E3-dialogues-et-trame.md`.
+- **Six points à trancher avec Romain, parce que le donjon a changé depuis la trame du 6 novembre** (avis de Claude entre parenthèses ; **rien n'est décidé**) :
+  1. Réussir Anselme ne raccourcit plus le donjon (Romain, 11 novembre, 8 h 45 : même donjon par la crypte ou par le puits, seule l'entrée change). (Garder les deux entrées ; récompense proposée : Anselme promet de sonner la Grosse Marie pour les héros, une fois pendant le donjon, par un code « DONG » du Barde au Pisteur hors combat : la brume recule, les héros reprennent des forces.)
+  2. Le Barde attend pendant tout le donjon (30 à 45 minutes estimées, pas mesurées). (Le coup de cloche ci-dessus, plus « occuper le maire » : trois fois, il veut aller voir le clocher et le Barde doit le retenir sur la place, en petits dialogues à étapes. Le Barde en quatrième héros est pour plus tard.)
+  3. Le code du sac à 6 symboles n'existe plus (Bible §12.51 : l'Alchimiste a toutes les potions créées pendant ses missions ; le lien n'est pas fait ; le « code par joueur » est en attente depuis le 8 novembre). (Les 7 potions se font toutes l'après-midi, sans difficulté ; l'acide est la potion qui ronge la rouille. Rappel de la Bible : avec seulement feu, huile et baume, le donjon ne se gagne pas.)
+  4. Le plan du Sage était lié au puits ; le donjon en a toujours besoin. (Le parchemin s'ouvre avec « La crypte est fermée » ou « La grille du puits ».)
+  5. Les analyses passent au labo (§12.53). (La lavande de la lettre et la comparaison des écritures au labo, avec un tiroir « écritures » rempli par le Livre d'or, plutôt que le mini-jeu des ressemblances.)
+  6. La durée : 1 h 15 visée avec un donjon de 8 à 10 minutes ; plutôt 1 h 30 à 1 h 45 maintenant. (Deux soirées, arrêtées au code de la nuit ; chaque tablette garde sa partie.)
+- **Repéré dans le donjon (à vérifier avec la conversation du donjon)** : le passage secret du crâne (cul-de-sac éboulé → feu de camp, `carte.js`) saute les dalles, l'atelier et l'ossuaire, donc les deux élites.
+- Toujours en attente : le coup d'œil du Pisteur au clocher (avis : non), la page de la porte des Fondateurs (avis : oui, la nuit), les talents du niveau 2 des trois autres rôles.
 
 ## Nouveau depuis le 9 novembre (0 h 25)
 

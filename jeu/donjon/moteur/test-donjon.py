@@ -320,9 +320,10 @@ def combat(nav):
 
     def geste(h, g, sel):
         J.tap('.b-heros[data-id="%s"]' % h); J.tap('.carte[data-id="%s"]' % g); J.clic(sel); pg.wait_for_timeout(300); libre()
-    # l'Huile retourne un rat, la flèche du Pisteur fait un critique ; le Sage protège le Pisteur pour finir le tour
+    # l'Huile retourne le rat de devant, la dague du Pisteur fait un critique (depuis le 11 novembre : sur ce qui marche par
+    # terre, c'est la dague qui fait les gros dégâts) ; le Sage protège le Pisteur pour finir le tour
     for b in ['b1', 'b2', 'b3']:
-        geste('alchimiste', 'p:huile', '#zone-' + b); geste('pisteur', 'fleche', '#zone-' + b)
+        geste('alchimiste', 'p:huile', '#zone-' + b); geste('pisteur', 'dague', '#zone-' + b)
         if b != 'b3':
             geste('sage', 'bouclier', '.zone[data-type="heros"][data-id="pisteur"]')
     pg.wait_for_selector('#fin [data-act="combat-fin"]', timeout=40000); pg.wait_for_timeout(400)

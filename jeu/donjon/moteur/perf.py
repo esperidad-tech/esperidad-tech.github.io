@@ -29,7 +29,7 @@ SANS_MEMOIRE = '--sans-memoire' in args
 args = [a for a in args if not a.startswith('--')]
 # le scénario de chaque salle : (héros, geste, cible) ; cible None = n'importe quelle bête (un geste sur toute la salle)
 SCENARIOS = {
-    'rats': ('feu,huile,baume', [('alchimiste', 'p:huile', 'b1'), ('pisteur', 'fleche', 'b1'), ('sage', 'oeil', None)]),
+    'rats': ('feu,huile,baume', [('alchimiste', 'p:huile', 'b1'), ('pisteur', 'dague', 'b1'), ('sage', 'oeil', None)]),       # (le gros critique : la dague, depuis le 11 novembre)
     'canaux': ('colle,feu,baume', [('alchimiste', 'louche', None), ('pisteur', 'dague', 'b2'), ('sage', 'bouclier', 'pisteur')]),
     'toiles': ('fumigene,huile,feu', [('sage', 'rune', 'b1'), ('alchimiste', 'p:fumigene', None), ('pisteur', 'fleche', 'b1')]),
     'atelier': ('acide,feu,baume', [('alchimiste', 'p:acide', 'b2'), ('sage', 'rune', 'b2'), ('pisteur', 'fleche', 'b2')]),

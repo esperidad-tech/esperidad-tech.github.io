@@ -58,7 +58,10 @@ function pvHeros(c){ return D.EXPOSES.map(function(h){ return c.h[h].pv; }); }
 function Essai(Rnd, sac){
   var HER = {sage:{pv:90, gestes:['rune', 'bouclier']}, alchimiste:{pv:100, gestes:['louche', 'herbes']}, pisteur:{pv:120, gestes:['fleche', 'dague']}};
   var ORDRE = ['sage', 'alchimiste', 'pisteur'], EXPOSES = ['pisteur', 'alchimiste', 'sage'], VISEE = {pisteur:6, alchimiste:2.5, sage:1.5};
-  var MORSURE = 8, BRULURE = 4, RAT_PV = 40;
+  /* 11 novembre (Romain, 13 h 53) : trois chiffres de l'essai ont changé, exprès — la morsure (8 → 13 : « les rats ne font
+     pas assez de dégâts »), et le critique : la dague tue toujours un rat ouvert, mais la flèche, sur ce qui marche par terre,
+     ne fait plus que le petit critique (20 : il faut deux flèches). Tout le reste de l'essai est inchangé. */
+  var MORSURE = D.MONSTRES.rat.attaques.morsure.degats, BRULURE = 4, RAT_PV = 40, FLECHE_CRIT = D.CHIFFRES.critique.normal.sol;
   var REC = {feu:{cible:'rat', fleche:true}, fumigene:{cible:'salle', fleche:false}, huile:{cible:'rat', fleche:true}, colle:{cible:'rat', fleche:true}, baume:{cible:'heros', fleche:false}, coeur:{cible:'sol', fleche:false}};
   var GES = {etudier:'rat', rune:'rat', bouclier:'heros', louche:'devant', herbes:'heros', fleche:'rat', dague:'devant'};
   var E = this.E = {tour:0, livre:0, h:{}, r:[], fin:null, sac:sac.slice()};
@@ -86,8 +89,8 @@ function Essai(Rnd, sac){
   }
   function fleche(r, potion){
     var surprise = !potion && !r.ouvert && Rnd() < 1 / 8;
-    if(r.ouvert) return critique(r);
-    if(surprise) return critique(r);
+    if(r.ouvert) return blesser(r, FLECHE_CRIT);
+    if(surprise) return blesser(r, FLECHE_CRIT);
     if(potion) return effetPotion(potion, r);
     blesser(r, 3);
   }
@@ -212,7 +215,7 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
 section('La salle des rats : les chiffres de l\'essai, un par un');
 (function(){
   var t = prep('rats', {sac:['feu', 'huile', 'colle']}), c = t.c, r1 = c.b[0], r2 = c.b[1], r3 = c.b[2], ev;
-  egal([D.HEROS.pisteur.pv, D.HEROS.alchimiste.pv, D.HEROS.sage.pv, D.MONSTRES.rat.pv, D.MONSTRES.rat.attaques.morsure.degats], [120, 100, 90, 40, 8], 'Pisteur 120, Alchimiste 100, Sage 90, rat 40 PV, morsure 8');
+  egal([D.HEROS.pisteur.pv, D.HEROS.alchimiste.pv, D.HEROS.sage.pv, D.MONSTRES.rat.pv, D.MONSTRES.rat.attaques.morsure.degats], [120, 100, 90, 40, 13], 'Pisteur 120, Alchimiste 100, Sage 90, rat 40 PV, morsure 13 (8 jusqu\'au 11 novembre)');
   egal(D.VISEE, {pisteur:6, alchimiste:2.5, sage:1.5}, 'les rats visent le Pisteur à 60 %, l\'Alchimiste à 25 %, le Sage à 15 %');
   ev = jouer(c, 'pisteur', 'fleche', r2);
   egal(trouve(ev, 'degats').n, 3, 'une flèche sur un rat fermé : 3');
@@ -223,7 +226,7 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ev = c.tourMonstres();
   egal(trouve(ev, 'brulure').n, 4, 'la brûlure : −4 au tour des rats');
   ok(r1.ouvert === 0 && !c.a(r1, 'ebloui') && trouve(ev, 'ferme'), 'à la fin du tour des rats, le point faible se referme');
-  egal(c.h.pisteur.pv, 120 - 24, 'trois morsures de 8 sur le Pisteur');
+  egal(c.h.pisteur.pv, 120 - 39, 'trois morsures de 13 sur le Pisteur');
   ev = jouer(c, 'pisteur', 'dague', r1);
   egal(trouve(ev, 'degats').n, 4, 'la dague sur le rat de devant, fermé : 4');
   egal(c.refus('pisteur', 'dague', r2.id), 'Déjà joué', 'un héros ne joue qu\'une fois par tour (« Déjà joué »)');
@@ -232,7 +235,7 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ev = jouer(c, 'sage', 'bouclier', 'pisteur');
   ev = c.tourMonstres();
   var d = tous(ev, 'degats', function(e){ return e.heros === 'pisteur'; });
-  ok(d.length === 6 && d.every(function(e){ return e.n === 2 && e.absorbe === 6 && e.bouclier; }), 'enragés, ils mordent deux fois ; le bouclier arrête 75 % (8 → 2)');
+  ok(d.length === 6 && d.every(function(e){ return e.n === 4 && e.absorbe === 9 && e.bouclier; }), 'enragés, ils mordent deux fois ; le bouclier arrête 75 % (13 → 4)');
   egal(r3.pv, 40 - 5 - 4 - 4, 'la brûlure continue au tour suivant');
   ok(c.vivants().every(function(m){ return c.a(m, 'enrage'); }) && c.a(r3, 'brule'), 'la rage et la brûlure restent d\'un tour à l\'autre');
   ok(!c.h.pisteur.bouclier, 'le bouclier s\'éteint à la fin du tour');
@@ -250,9 +253,11 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ev = jouer(c, 'sage', 'rune', r1);
   ev = jouer(c, 'alchimiste', 'louche');
   egal(trouve(ev, 'degats').n, 10, 'la louche sur un rat ouvert : 10');
+  var pvR1 = r1.pv;
   ev = jouer(c, 'pisteur', 'p:feu', r1);
   var dg = trouve(ev, 'degats');
-  ok(dg.critique && dg.n === 60 && r1.mort && trouve(ev, 'mort').mode === 'explose', 'une flèche (même trempée) sur un rat ouvert : critique, il explose');
+  /* Romain, 11 novembre : l'arc ne fait un gros critique que sur ce qui vole, pend à un fil ou nage ; par terre, c'est la dague */
+  ok(dg.critique && dg.petit && dg.n === 20 && r1.pv === Math.max(0, pvR1 - 20), 'une flèche (même trempée) sur un rat ouvert : le petit critique (20), quatre fois moins que la dague');
   ok(!c.a(r1, 'brule'), 'la flèche trempée qui fait un critique ne pose pas sa potion');
 })();
 (function(){
@@ -265,7 +270,7 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   egal(c.refus('pisteur', 'p:baume', c.b[0].id), 'Impossible !', 'le Baume ne tient pas sur une flèche (« Impossible ! »)');
   egal(c.refus('pisteur', 'dague', c.b[1].id), 'Trop loin !', 'la dague sur un rat du fond : « Trop loin ! »');
   ev = jouer(c, 'pisteur', 'dague', c.b[0]);
-  ok(trouve(ev, 'degats').critique && trouve(ev, 'degats').n === 75, 'la dague sur un rat ouvert : critique de 75');
+  ok(trouve(ev, 'degats').critique && !trouve(ev, 'degats').petit && trouve(ev, 'degats').n === 80 && c.b[0].mort && trouve(ev, 'mort').mode === 'explose', 'la dague sur un rat ouvert : critique de 80, il explose');
   ev = c.tourMonstres();
   ok(c.h.sage.sol && trouve(ev, 'tombe', function(e){ return e.heros === 'sage'; }), 'à 0 PV, le héros tombe au sol');
   egal(c.refus('sage', 'rune', c.b[1].id), 'Au sol !', 'un héros au sol ne joue pas (« Au sol ! »)');
@@ -278,8 +283,8 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   egal(c.gestes('sage').map(function(g){ return g.geste; }), ['oeil', 'rune', 'bouclier'], 'les gestes du Sage : la rune de l\'œil (à la place d\'« Étudier »), la lumière, le bouclier');
   ev = c.jouer('sage', {geste:'oeil'});
   var oe = trouve(ev, 'oeil'), et = c.etat();
-  ok(oe && oe.jusque === c.tour + 1 && et.vu === 2 && et.betes.filter(function(x){ return !x.mort; }).every(function(x){ return x.vise && x.vise.cibles.length === 1 && x.vise.degats === 8 && x.suite && x.suite.cibles.length === 1; }),
-    'la rune de l\'œil : pour ce tour et le suivant, qui chaque rat va mordre, et combien (8)');
+  ok(oe && oe.jusque === c.tour + 1 && et.vu === 2 && et.betes.filter(function(x){ return !x.mort; }).every(function(x){ return x.vise && x.vise.cibles.length === 1 && x.vise.degats === 13 && x.suite && x.suite.cibles.length === 1; }),
+    'la rune de l\'œil : pour ce tour et le suivant, qui chaque rat va mordre, et combien (13)');
   egal(c.refus('sage', 'oeil'), 'Déjà joué', '(le Sage a joué)');
   var promis = {}; et.betes.forEach(function(x){ if(x.suite) promis[x.id] = x.suite.cibles[0]; });
   tourSuivant(c);
@@ -296,7 +301,7 @@ section('Le critique et le critique surprise');
   var t = prep('rats', {hasard:[0.5, 0.5, 0.5, 0.1]}), c = t.c, ev;        /* 3 tirages pour les proies, puis 0,1 < 1/8 */
   ev = jouer(c, 'pisteur', 'fleche', c.b[2]);
   var d = trouve(ev, 'degats');
-  ok(d.critique && d.surprise && d.n === 60 && c.b[2].mort, 'une flèche simple sur un rat FERMÉ, tirage sous 1/8 : critique surprise de 60, le rat explose');
+  ok(d.critique && d.surprise && d.petit && d.n === 20 && !c.b[2].mort && c.b[2].pv === 20, 'une flèche simple sur un rat FERMÉ, tirage sous 1/8 : critique surprise — le petit (20), le rat n\'en meurt pas');
   t = prep('rats', {sac:['feu', 'huile', 'colle'], hasard:[0.5, 0.5, 0.5, 0.1]}); c = t.c;
   ev = jouer(c, 'pisteur', 'p:feu', c.b[2]);
   ok(!trouve(ev, 'degats').critique, 'pas de critique surprise avec une flèche trempée');
@@ -306,8 +311,14 @@ section('Le critique et le critique surprise');
   t = prep('atelier', {hasard:[0.5, 0.01]}); c = t.c;
   ev = jouer(c, 'pisteur', 'fleche', bete(c, 'ratcuir'));
   var d2 = trouve(ev, 'degats');
-  ok(d2.surprise && d2.n === 60 && !bete(c, 'ratcuir').mort && bete(c, 'ratcuir').pv === D.MONSTRES.ratcuir.pv - 60, 'le critique affiche 60 mais ne tue pas le rat cuirassé (70 PV)');
-  egal(D.CHIFFRES.critique, {normal:{fleche:60, dague:75}, elite:{fleche:110, dague:140}, boss:{fleche:300, dague:380}}, 'la table des critiques : 60 / 75, 110 / 140, 300 / 380');
+  ok(d2.surprise && d2.n === 20 && !bete(c, 'ratcuir').mort && bete(c, 'ratcuir').pv === D.MONSTRES.ratcuir.pv - 20, 'le critique surprise affiche 20 sur le rat cuirassé (70 PV)');
+  egal(D.CHIFFRES.critique, {normal:{dague:80, fleche:60, sol:20}, elite:{dague:140, fleche:110, sol:35}, boss:{dague:380, fleche:300, sol:95}}, 'la table des critiques : la dague 80 / 140 / 380 ; la flèche sur ce qui est en hauteur 60 / 110 / 300 ; la flèche sur ce qui marche par terre, quatre fois moins que la dague : 20 / 35 / 95');
+  egal(Object.keys(D.MONSTRES).filter(function(k){ return D.MONSTRES[k].hauteur; }).sort(), ['araignee', 'bourbe', 'chauvesouris', 'feufollet', 'tetard'], 'en hauteur (ils volent, pendent à un fil ou nagent) : la chauve-souris, le feu follet, l\'araignée, le têtard, Bourbe');
+  /* une chauve-souris tombée : l'arc lui fait le gros critique */
+  t = prep('crypte', {}); c = t.c;
+  jouer(c, 'alchimiste', 'louche');
+  ev = jouer(c, 'pisteur', 'fleche', c.b[1]);
+  ok(trouve(ev, 'degats').critique && !trouve(ev, 'degats').petit && trouve(ev, 'degats').n === 60 && c.b[1].mort, 'la flèche sur une chauve-souris ouverte : le gros critique (60), même au fond de la salle');
 })();
 
 section('Le rat cuirassé');
@@ -322,7 +333,7 @@ section('Le rat cuirassé');
   tourSuivant(c);
   ok(rc.ouvert === R.FIN && c.a(rc, 'nu'), 'ce qui est cassé reste cassé : il est encore ouvert au tour suivant');
   ev = jouer(c, 'pisteur', 'dague', rc);
-  ok(trouve(ev, 'degats').n === 75 && rc.mort, 'la dague sur la peau nue : critique de 75, il est battu');
+  ok(trouve(ev, 'degats').n === 80 && rc.mort, 'la dague sur la peau nue : critique de 80, il est battu');
 
   t = prep('atelier', {sac:['givre', 'feu', 'baume'], recettes:D.ORDRE_RECETTES}); c = t.c; rc = bete(c, 'ratcuir');
   ev = jouer(c, 'pisteur', 'p:givre', rc);
@@ -343,7 +354,7 @@ section('Le rat cuirassé');
   ev = jouer(c, 'sage', 'rune', rc);
   ok(rc.ouvert !== 0 && c.a(rc, 'ebloui'), 'puis la lumière : il se dresse, ébloui, ouvert');
   ev = jouer(c, 'pisteur', 'fleche', rc);
-  ok(trouve(ev, 'degats').critique && rc.pv === 70 - 60, 'critique à la flèche : 60, il lui reste 10 (une flèche ne suffit pas, il en faudra une autre)');
+  ok(trouve(ev, 'degats').critique && rc.pv === 70 - 20, 'critique à la flèche sur ce rat qui marche par terre : 20, il lui reste 50 (c\'est le travail de la dague)');
   tourSuivant(c);
   ok(rc.ouvert === 0 && c.a(rc, 'sans-casque'), 'ébloui, il se referme à la fin du tour ; le casque reste tombé');
 
@@ -421,7 +432,7 @@ section('L\'araignée des caves et ses petites');
   ev = jouer(c, 'sage', 'rune', ar);
   ok(ar.ouvert !== 0 && c.a(ar, 'dos'), 'chemin normal : la lumière la fait tomber sur le dos');
   ev = jouer(c, 'pisteur', 'dague', ar);
-  ok(trouve(ev, 'degats').n === 75 && ar.mort, 'critique à la dague : 75, elle est battue (60 PV)');
+  ok(trouve(ev, 'degats').n === 80 && ar.mort, 'critique à la dague : 80, elle est battue (60 PV)');
 
   t = prep('toiles', {sac:['huile', 'feu', 'baume'], hasard:[0.3]}); c = t.c; ar = bete(c, 'araignee');
   ev = jouer(c, 'alchimiste', 'p:huile', ar);
@@ -471,13 +482,16 @@ section('Le têtard');
   ok(t1.mort, 'un coup de louche suffit aussi');
 })();
 
-/* Les tests qui suivent (élites, boss, objets, soins, fin de combat) datent d'avant les coups préparés : ils regardent les
-   combos et les réactions, pas le rythme. On les joue donc avec le rythme d'avant ; le coup préparé est testé à part, plus bas. */
+/* Les tests qui suivent (élites, boss, objets, soins, fin de combat) datent d'avant les coups préparés et la colère : ils
+   regardent les combos et les réactions, pas le rythme. On les joue donc avec le rythme d'avant, et sans colère ; le coup
+   préparé et la colère sont testés à part, plus bas. */
 var RYTHMES = {gardien:D.MONSTRES.gardien.rythme, roirats:D.MONSTRES.roirats.rythme, bourbe:D.MONSTRES.bourbe.rythme};
+var COLERES = {gardien:D.MONSTRES.gardien.colere, roirats:D.MONSTRES.roirats.colere, bourbe:D.MONSTRES.bourbe.colere};
 function sansGros(on){
   D.MONSTRES.gardien.rythme = on ? ['poing'] : RYTHMES.gardien;
   D.MONSTRES.roirats.rythme = on ? ['grouillement'] : RYTHMES.roirats;
   D.MONSTRES.bourbe.rythme = on ? ['langue', 'saut'] : RYTHMES.bourbe;
+  ['gardien', 'roirats', 'bourbe'].forEach(function(k){ D.MONSTRES[k].colere = on ? null : COLERES[k]; });
 }
 sansGros(true);
 section('Les élites et le boss sont immunisés tant que le point faible est fermé');
@@ -518,7 +532,7 @@ section('Le Gardien de rouille');
   ok(g.ouvert === 0 && c.a(g, 'plaque-ouverte'), 'le cœur se referme à la fin du tour ; la plaque reste tombée');
   ev = jouer(c, 'sage', 'rune', g);
   ev = jouer(c, 'pisteur', 'fleche', g);
-  egal(trouve(ev, 'degats').n, 110, 'critique à la flèche sur un élite : 110');
+  egal(trouve(ev, 'degats').n, 35, 'critique à la flèche sur un élite qui marche par terre : 35 (la dague : 140)');
   ok(!g.mort, 'un critique ne tue pas un élite d\'un coup');
   ev = jouer(c, 'alchimiste', 'p:feu', g);
   ok(trouve(ev, 'degats').n === 30 && c.a(g, 'brule') && !c.a(g, 'rougeoie'), 'ouvert, le feu le blesse (30) et le fait brûler');
@@ -597,7 +611,7 @@ section('Le Roi des rats');
   tourSuivant(c);
   ok(roi.ouvert !== 0, 'le roi collé reste ouvert jusqu\'à la fin du tour suivant');
   ev = jouer(c, 'pisteur', 'fleche', roi);
-  egal(trouve(ev, 'degats').n, 110, 'critique à la flèche : 110');
+  egal(trouve(ev, 'degats').n, 35, 'critique à la flèche sur le Roi des rats : 35 (la dague : 140)');
   tourSuivant(c);
   ok(roi.ouvert === 0, 'puis il se referme');
 
@@ -909,6 +923,83 @@ section('Le journal de l\'aventurier, la rune de l\'œil, les coups préparés')
   }
 })();
 
+section('La colère des élites et du boss (Romain, 11 novembre, 13 h 53)');
+(function(){
+  var ev, t, c;
+  egal(Object.keys(D.MONSTRES).filter(function(k){ return D.MONSTRES[k].colere; }).sort().map(function(k){ return k + ':' + D.MONSTRES[k].colere.si; }), ['bourbe:mi-vie', 'gardien:mi-vie', 'roirats:seul'],
+    'ils se fâchent : le Gardien et Bourbe à mi-vie, le Roi des rats quand il n\'a plus ses sbires ; personne d\'autre');
+
+  /* le Gardien : à mi-vie, ses poings frappent double, son marteau cogne plus fort */
+  t = prep('atelier', {sac:['acide', 'feu', 'baume'], hasard:[0.99]}); c = t.c;
+  var g = bete(c, 'gardien'), rc = bete(c, 'ratcuir');
+  egal(c.refus('pisteur', 'dague', g.id), 'Trop loin !', 'la dague ne touche que celui de devant : le Gardien, derrière le rat cuirassé, est « Trop loin ! »');
+  jouer(c, 'alchimiste', 'p:acide', rc);
+  ev = jouer(c, 'pisteur', 'dague', rc);
+  ok(rc.mort && c.refus('sage', 'rune', g.id) === null && c.devant() === g, 'le rat cuirassé battu (l\'acide, puis la dague : 80), le Gardien est devant');
+  ev = tourSuivant(c);
+  egal(trouve(ev, 'degats', function(e){ return e.bete === g.id; }).brut, 40, 'avant la colère : un coup de poing de 40');
+  D.ORDRE.forEach(function(h){ c.h[h].pv = D.HEROS[h].pv; });
+  jouer(c, 'alchimiste', 'p:acide', g); jouer(c, 'sage', 'rune', g);
+  ev = jouer(c, 'pisteur', 'dague', g);
+  ok(trouve(ev, 'degats').n === 140 && g.pv === 140 && c.a(g, 'colere') && trouve(ev, 'colere', function(e){ return e.bete === g.id; }) && trouve(ev, 'etat', function(e){ return e.nom === 'colere' && e.on && e.tours === 'fin'; }),
+    'la dague sur le Gardien ouvert : 140 ; à mi-vie (140 sur 280), il se fâche, jusqu\'à la fin');
+  ok(c.etat().betes.filter(function(b){ return b.id === g.id; })[0].etats.colere !== undefined, 'la colère se lit dans la photo du combat (etats.colere)');
+  c.jouer('sage', {geste:'oeil'});      /* (refusé : il a joué — on regarde les plans autrement) */
+  var pl = c._prevu(g, c._planDuTour(g, null));
+  ok(pl.prepare && c.a(g, 'prepare'), 'il était en train de prendre son élan : la colère ne change pas ça');
+  D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = D.HEROS[h].pv; c.h[h].joue = true; });
+  c.tourMonstres();
+  D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = D.HEROS[h].pv; c.h[h].joue = true; });
+  ev = c.tourMonstres();
+  var dm = trouve(ev, 'degats', function(e){ return e.bete === g.id; });
+  ok(dm && dm.attaque === 'marteau' && dm.brut === 100, 'en colère, son marteau cogne à 100 (85 + 15)');
+  D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].pv = D.HEROS[h].pv; c.h[h].joue = true; });
+  ev = c.tourMonstres();
+  dm = trouve(ev, 'degats', function(e){ return e.bete === g.id; });
+  ok(dm && dm.attaque === 'poing' && dm.brut === 80, 'en colère, ses poings frappent double (80)');
+
+  /* le Roi des rats : quand il n'a plus ses sbires */
+  t = prep('ossuaire', {sac:['fumigene', 'colle', 'feu']}); c = t.c;
+  var roi = bete(c, 'roirats'), ff = c.b.filter(function(m){ return m.type === 'feufollet'; });
+  ev = []; c._blesse(ev, roi, 150, {});
+  ok(!c.a(roi, 'colere') && roi.pv === 70, 'le Roi des rats ne se fâche pas à mi-vie : il a encore ses deux feux follets');
+  ev = []; c._tue(ev, ff[0], 'meurt');
+  ok(!c.a(roi, 'colere'), 'un feu follet de moins : pas encore');
+  ev = []; c._tue(ev, ff[1], 'meurt');
+  ok(c.a(roi, 'colere') && trouve(ev, 'colere', function(e){ return e.bete === roi.id; }), 'le dernier sbire tombé : le Roi des rats se fâche');
+  D.ORDRE.forEach(function(h){ c.h[h].joue = true; });
+  ev = c.tourMonstres();
+  var gr = tous(ev, 'degats', function(e){ return e.bete === roi.id; });
+  ok(gr.length === 3 && gr.every(function(e){ return e.brut === 2 * D.MONSTRES.roirats.attaques.grouillement.degats; }), 'en colère, son grouillement frappe double sur les trois héros (' + 2 * D.MONSTRES.roirats.attaques.grouillement.degats + ')');
+  egal(c._prevu(roi, {nom:'ruee', cibles:['pisteur']}).degats, 90, 'en colère, sa ruée cogne à 90 (70 + 20)');
+
+  /* Bourbe : sa phase 2 — à mi-vie il plonge, remonte avec deux têtards en retombant sur tout le monde */
+  t = prep('bassin', {sac:['feu', 'fumigene', 'baume']}); c = t.c;
+  var bo = bete(c, 'bourbe');
+  jouer(c, 'sage', 'rune', bo); jouer(c, 'pisteur', 'p:feu', bo); jouer(c, 'alchimiste', 'p:fumigene');
+  c.tourMonstres();
+  ok(c.a(bo, 'dos') && bo.ouvert !== 0, '(Bourbe est sur le dos, ouvert, pour ce tour encore)');
+  bo.pv = 520;
+  ev = jouer(c, 'pisteur', 'dague', bo);
+  ok(bo.pv === 140 && c.a(bo, 'colere') && trouve(ev, 'colere') && trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && !c.a(bo, 'dos') && bo.ouvert === 0 && c.cache(bo),
+    'à mi-vie, Bourbe se fâche : il se retourne d\'un bond et plonge (son point faible se referme, on ne peut plus le viser)');
+  egal(c.refus('sage', 'rune', bo.id), 'Sous l\'eau !', 'sous l\'eau : rien à faire ce tour-ci');
+  var tetAvant = c.vivants().filter(function(m){ return m.type === 'tetard'; }).length;
+  ev = tourSuivant(c);
+  var ret = trouve(ev, 'attaque', function(e){ return e.bete === bo.id && e.retour; });
+  ok(trouve(ev, 'special', function(e){ return e.nom === 'remonter'; }) && c.vivants().filter(function(m){ return m.type === 'tetard'; }).length === Math.min(D.BOURBE.tetardsMax, tetAvant + D.BOURBE.tetards) && ret && ret.nom === 'saut' && !c.a(bo, 'sous') && c.a(bo, 'colere'),
+    'il remonte à la fin du tour avec deux têtards de plus et retombe sur tout le monde ; il reste en colère');
+  egal(c._prevu(bo, {nom:'ecrasement', cibles:['pisteur']}).degats, 100, 'en colère, son écrasement cogne à 100 (80 + 20)');
+  ev = []; c._blesse(ev, bo, 10, {});
+  ok(!trouve(ev, 'colere') && !c.a(bo, 'sous'), 'il ne se fâche qu\'une fois : pas de deuxième plongeon');
+  /* le bassin gelé : il ne peut pas plonger */
+  t = prep('bassin', {sac:['givre', 'feu', 'fumigene'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo);
+  ok(c.a(bo, 'gele'), '(le bassin est gelé)');
+  bo.pv = 510; ev = []; c._blesse(ev, bo, 20, {});
+  ok(c.a(bo, 'colere') && !c.a(bo, 'sous') && !trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && trouve(ev, 'mot', function(e){ return e.texte === 'Il se cogne !'; }), 'bassin gelé : il se fâche, mais ne peut pas plonger (« Il se cogne ! »)');
+})();
+
 section('Les sauvegardes, la fuite, les codes');
 (function(){
   var p = R.nouvellePartie(11), ev;
@@ -1143,7 +1234,7 @@ section('Les salles sans combat');
 
 section('Les données tiennent debout');
 (function(){
-  var coups = ['lumiere', 'bruit', 'nuage', 'feu', 'huile', 'colle', 'givre', 'acide', 'louche', 'bouclier', 'chatouille'], pb = [];
+  var coups = ['lumiere', 'bruit', 'nuage', 'feu', 'huile', 'colle', 'givre', 'acide', 'louche', 'bouclier', 'chatouille', 'colere'], pb = [];       /* (colere : ce qu'il fait en se fâchant) */
   Object.keys(D.MONSTRES).forEach(function(k){
     var M = D.MONSTRES[k];
     Object.keys(M.reactions).forEach(function(cp){ if(coups.indexOf(cp) < 0) pb.push(k + ' : coup inconnu ' + cp); });
@@ -1202,7 +1293,7 @@ section('Dans la page comme dans Node');
   ok(fen.DonjonDonnees && fen.Regles && typeof fen.Regles.combat === 'function', 'sans « module » (comme dans une page) : window.DonjonDonnees et window.Regles sont là');
   var p = fen.Regles.nouvellePartie(9); p.recettes = ['feu', 'huile', 'baume'];
   var c = fen.Regles.combat(p, 'rats'), ev = c.jouer('sage', {geste:'rune', cible:'b1'});
-  ok(ev.length === 4 && ev[3].t === 'ouvert' && c.jouer('pisteur', {geste:'fleche', cible:'b1'}).pop().mode === 'explose', 'un combat s\'y joue pareil');
+  ok(ev.length === 4 && ev[3].t === 'ouvert' && c.jouer('pisteur', {geste:'dague', cible:'b1'}).pop().mode === 'explose', 'un combat s\'y joue pareil');
   var src = fs.readFileSync(path.join(__dirname, 'src', 'regles.js'), 'utf8') + fs.readFileSync(path.join(__dirname, 'src', 'donnees.js'), 'utf8');
   var code = src.replace(/\/\*[\s\S]*?\*\//g, '');
   ok(!/\bdocument\b|\bsetTimeout\b|\bsetInterval\b|\bMath\.random\b|\blocalStorage\b|\bAudio\b|=>|\blet\b|\bconst\b/.test(code), 'les règles et les données : pas de DOM, pas de minuterie, pas de Math.random, pas de son, et un JavaScript que les vieilles tablettes lisent');

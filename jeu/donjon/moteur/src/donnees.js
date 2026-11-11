@@ -55,7 +55,7 @@ D.GESTES = {
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
   louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
   herbes:{ic:'🌿', nom:'Herbes', d:'soigne un peu', vise:'heros'},
-  fleche:{ic:'🏹', nom:'Flèche', d:'n\'importe quel monstre', vise:'bete'},
+  fleche:{ic:'🏹', nom:'Flèche', d:'ce qui vole', vise:'bete'},
   dague:{ic:'🗡️', nom:'Coup de dague', d:'celui de devant', vise:'devant'},
   chatouiller:{ic:'🪶', nom:'Chatouiller', d:'guili-guili !', vise:'salle'}
 };
@@ -85,8 +85,13 @@ D.ORDRE_RECETTES = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeu
 /* ===================================================================== 4. LES CHIFFRES COMMUNS */
 D.CHIFFRES = {
   places:2,                                /* places d'objet par héros */
-  /* le critique du Pisteur sur un point faible ouvert, selon le rang de la bête */
-  critique:{normal:{fleche:60, dague:75}, elite:{fleche:110, dague:140}, boss:{fleche:300, dague:380}},
+  /* le critique du Pisteur sur un point faible ouvert, selon le rang de la bête.
+     Romain, 11 novembre (9 h 16, 9 h 26, 13 h 53) : « on ne chasse pas des oiseaux avec une dague ». LA DAGUE fait les gros
+     dégâts, mais ne touche que le monstre de devant (et ceux qui sont tombés devant). L'ARC ne fait un gros critique que sur
+     ce qui vole, pend à un fil ou nage (hauteur:true dans D.MONSTRES) : « fleche ». Sur ce qui marche par terre, son critique
+     est « quatre fois plus petit » que celui de la dague : « sol ». (Une flèche spéciale, sur le monstre pour lequel elle est
+     faite, frappe comme en hauteur : les transperçantes contre l'armure.) */
+  critique:{normal:{dague:80, fleche:60, sol:20}, elite:{dague:140, fleche:110, sol:35}, boss:{dague:380, fleche:300, sol:95}},
   surprise:1 / 8,                          /* le critique surprise : flèche simple, monstre normal, même fermé */
   /* un coup sur un monstre NORMAL au point faible fermé (les élites et le boss : 0, « ça rebondit ») */
   ferme:{fleche:3, dague:4, louche:2, feu:5, acide:5},
@@ -111,13 +116,13 @@ D.OBJETS = {
      le type de flèche » en combat. Un carquois (carquois:true) ne prend donc plus de place dans les mains.
      Chaque sorte a son défaut (accepté par Romain) : les flèches de lune rebondissent sur l'armure (rebondit), les
      transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
-  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Ni bonus, ni mauvaise surprise.'},
+  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Elles font très mal à ce qui vole, pend à un fil ou nage. Sur ce qui marche par terre, la dague fait bien mieux.'},
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
     contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume',
     d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
     contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure',
-    d:'Contre l\'armure : le critique frappe une fois et demie plus fort, et sur le rat cuirassé elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
+    d:'Contre l\'armure : leur critique frappe aussi fort que la dague, même de loin. Sur le rat cuirassé, elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
   'baton-chene':{nom:'Bâton de chêne', pour:'sage', equipe:'baton-chene', d:'Le bouclier de runes protège deux amis à la fois.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
@@ -154,7 +159,7 @@ D.MONSTRES = {
   /* ---------- le rat d'égout : L'ESSAI, validé par Romain. Ne rien changer. ---------- */
   rat:{
     nom:'Rat d\'égout', le:'le rat', rang:'normal', pv:40, module:'rat', fin:'fuit',
-    attaques:{morsure:{degats:8, cibles:'un', foisSi:{enrage:2}}}, rythme:['morsure'],
+    attaques:{morsure:{degats:13, cibles:'un', foisSi:{enrage:2}}}, rythme:['morsure'],          /* (8 jusqu'au 11 novembre : « les rats ne font pas assez de dégâts ») */
     passeSi:['colle', 'gele'], tombe:[],             /* comme dans l'essai : la dague ne touche que le rat de devant, même si un autre est sur le dos */
     reactions:{
       lumiere:[{si:{sans:['ouvert']}, fait:[['etat', 'ebloui', 1], ['ouvre', 1, 'lumiere']]},
@@ -192,7 +197,7 @@ D.MONSTRES = {
 
   /* ---------- la chauve-souris de la brume ---------- */
   chauvesouris:{
-    nom:'Chauve-souris de la brume', le:'la chauve-souris', rang:'normal', pv:25, module:'chauvesouris', fin:'fuit',
+    nom:'Chauve-souris de la brume', le:'la chauve-souris', rang:'normal', pv:25, module:'chauvesouris', fin:'fuit', hauteur:true,
     attaques:{pique:{degats:30, cibles:'un', foisSi:{folle:2}}}, rythme:['pique'],
     passeSi:['colle', 'gele'], tombe:['au-sol'], seReleve:true,
     reactions:{
@@ -205,7 +210,7 @@ D.MONSTRES = {
 
   /* ---------- le feu follet ---------- */
   feufollet:{
-    nom:'Feu follet', le:'le feu follet', rang:'normal', pv:30, module:'feufollet', fin:'meurt',
+    nom:'Feu follet', le:'le feu follet', rang:'normal', pv:30, module:'feufollet', fin:'meurt', hauteur:true,
     attaques:{brulure:{degats:18, cibles:'deux'}}, rythme:['brulure'],
     passeSi:['colle', 'gele'], tombe:[],
     ferme:{fleche:1, dague:1, louche:0, feu:0, acide:1},
@@ -222,7 +227,7 @@ D.MONSTRES = {
 
   /* ---------- l'araignée des caves ---------- */
   araignee:{
-    nom:'Araignée des caves', le:'l\'araignée', rang:'normal', pv:60, module:'araignee', fin:'fuit',
+    nom:'Araignée des caves', le:'l\'araignée', rang:'normal', pv:60, module:'araignee', fin:'fuit', hauteur:true,
     attaques:{morsure:{degats:18, cibles:'un'}, toile:{degats:0, cibles:'un', pose:'entoile'}}, rythme:['toile', 'morsure'],
     passeSi:['colle', 'gele'], tombe:['dos'], cache:['haut'], seReleve:true,
     reactions:{
@@ -248,7 +253,7 @@ D.MONSTRES = {
 
   /* ---------- le têtard du puits : pas de point faible, un seul coup suffit ---------- */
   tetard:{
-    nom:'Têtard du puits', le:'le têtard', rang:'normal', pv:15, module:'tetard', fin:'fuit',
+    nom:'Têtard du puits', le:'le têtard', rang:'normal', pv:15, module:'tetard', fin:'fuit', hauteur:true,
     attaques:{morsure:{degats:8, cibles:'un'}}, rythme:['morsure'],
     passeSi:['colle', 'gele'], tombe:[],
     ferme:{fleche:15, dague:15, louche:15, feu:15, acide:15},
@@ -258,9 +263,12 @@ D.MONSTRES = {
   /* ---------- le Roi des rats (élite) ---------- */
   roirats:{
     nom:'Le Roi des rats', le:'le Roi des rats', rang:'elite', pv:220, module:'roirats', fin:'fuit',
+    /* Romain, 11 novembre (13 h 53) : « le Roi des rats, dès qu'il n'a plus ses sbires, il s'énerve ». En colère (jusqu'à la
+       fin) : son grouillement frappe double, sa ruée cogne plus fort. */
+    colere:{si:'seul'},
     attaques:{
-      grouillement:{degats:16, cibles:'tous', apres:[['etat', 'etale', 'geste']]},
-      ruee:{degats:70, cibles:'un', prepare:true, anim:'grouillement'},                                    /* le coup préparé du Roi : tous sur le même */
+      grouillement:{degats:16, cibles:'tous', doubleSi:['colere'], apres:[['etat', 'etale', 'geste']]},
+      ruee:{degats:70, cibles:'un', prepare:true, anim:'grouillement', plusSi:{colere:20}},                 /* le coup préparé du Roi : tous sur le même */
       charge:{degats:30, cibles:'un'}
     }, rythme:['grouillement', 'ruee', 'grouillement'],
     passeSi:['noeud'], tombe:[], blinde:['boule'],
@@ -287,7 +295,10 @@ D.MONSTRES = {
     /* Romain, 11 novembre : les élites et le boss PRÉPARENT parfois un coup (prepare:true) : un tour sans rien faire, que tout
        le monde voit, puis un coup « extrêmement puissant », qui met presque un héros à terre. Seule la rune de l'œil dit sur
        qui il tombera ; seul le bouclier (75 %) limite la casse. anim : l'animation du module qui sert pour ce coup. */
-    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage']}, marteau:{degats:85, cibles:'un', prepare:true, anim:'poing', plusSi:{rougeoie:10}}}, rythme:['poing', 'marteau', 'poing'],
+    /* Romain, 11 novembre (13 h 53) : les élites et le boss « se fâchent à mi-vie ». Le Gardien en colère (jusqu'à la fin) :
+       ses poings frappent double, son marteau cogne plus fort. */
+    colere:{si:'mi-vie'},
+    attaques:{poing:{degats:40, cibles:'devant', plusSi:{rougeoie:10}, doubleSi:['enrage', 'colere']}, marteau:{degats:85, cibles:'un', prepare:true, anim:'poing', plusSi:{rougeoie:10, colere:15}}}, rythme:['poing', 'marteau', 'poing'],
     passeSi:[], tombe:[],
     reactions:{
       /* le combo : d'abord la plaque (elle reste cassée), ensuite le cœur (la lumière, à chaque tour) */
@@ -311,11 +322,16 @@ D.MONSTRES = {
      Dans l'eau (immunisé) → lumière : sur la berge → feu : sec → nuage : sur le dos, ouvert jusqu'à la fin du tour suivant.
      Le reste de son comportement (il sèche tout seul, il replonge, il remonte avec ses têtards) est dans D.BOURBE. */
   bourbe:{
-    nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true,
+    nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true, hauteur:true,
+    /* SA PHASE 2 (Romain, 11 novembre, 13 h 53 : « se fâchent à mi-vie », « une sorte de phase 2 ») : à mi-vie, Bourbe se
+       retourne d'un bond, plonge, et remonte avec deux têtards en retombant sur tout le monde (reactions.colere). Ensuite,
+       jusqu'à la fin, son écrasement cogne plus fort. */
+    colere:{si:'mi-vie'},
     attaques:{
       langue:{degats:30, cibles:'un', avale:true},
       saut:{degats:28, cibles:'tous', doubleSi:['gonfle'], consomme:'gonfle'},
-      ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut'}                               /* le coup préparé de Bourbe : il retombe de tout son poids */
+      /* (mesuré le 11 novembre : avec en plus la langue et le saut plus forts, même une équipe sans faute perdait 15 fois sur 100) */
+      ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut', plusSi:{colere:20}}             /* le coup préparé de Bourbe : il retombe de tout son poids */
     }, rythme:['langue', 'ecrasement', 'saut'],
     passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
     reactions:{
@@ -337,6 +353,9 @@ D.MONSTRES = {
       /* l'autre chemin : le givre gèle le bassin pour trois tours (il ne plonge plus, il est comme sur la berge) */
       givre:[{si:{un:['dos', 'sous']}, fait:[]},
              {fait:[['etat', 'gele', 3], ['mot', 'Le bassin gèle !']]}],
+      /* ce qu'il fait en se fâchant (voir colere, plus haut) : il plonge — sauf si le bassin est gelé */
+      colere:[{si:{avec:['gele']}, fait:[['mot', 'Il se cogne !']]},
+              {fait:[['ferme'], ['retire', 'dos'], ['retire', 'berge'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il plonge !']]}],
       /* sans nuage : le héros avalé le chatouille ; s'il est sec, il en roule sur le dos */
       chatouille:[{si:{avec:['sec'], sans:['dos']}, fait:[['special', 'chatouille'], ['etat', 'dos', 2], ['ouvre', 2, 'chatouille']]},
                   {fait:[['special', 'recrache']]}]
@@ -474,7 +493,7 @@ D.MOTS = {
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !', colere:'En colère !', petitCritique:'Petit critique'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;

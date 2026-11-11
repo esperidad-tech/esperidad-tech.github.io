@@ -436,3 +436,27 @@ Décisions de Romain du 11 novembre (9 h 08 à 9 h 26, Bible §12.51, « Les sor
 
 **La simulation** (`equilibre.js`) : l'équipe ne connaît les plans que si l'œil regarde (`voit(c)`, `planDe(c, m)`) ; trois variantes de la maligne (`maligne` : l'œil un tour sur deux ; `oeilGros` : seulement pour un gros coup ; `sansOeil`). Trois cibles manquées, à régler avec Romain après ses essais (Bible §12.51).
 
+## 13. Le durcissement du 11 novembre : la dague, l'arc, la colère (ces lignes remplacent ce qui est écrit plus haut)
+
+Décisions de Romain du 11 novembre (13 h 32 et 13 h 53, Bible §12.51, « Le durcissement du donjon »).
+
+**Le critique : la dague fait les gros dégâts, l'arc seulement sur ce qui est en hauteur**
+
+- `D.CHIFFRES.critique = {normal:{dague:80, fleche:60, sol:20}, elite:{dague:140, fleche:110, sol:35}, boss:{dague:380, fleche:300, sol:95}}`.
+- `hauteur:true` dans `D.MONSTRES` : la chauve-souris, le feu follet, l'araignée, le têtard, Bourbe (ils volent, pendent à un fil ou nagent). Une flèche y fait le critique `fleche` ; sur les autres (ils marchent par terre), le critique `sol`, quatre fois plus petit que la dague.
+- `combat.critiqueDe(monstre, 'fleche' | 'dague', bonus)` rend le chiffre. `bonus` : le multiplicateur d'une flèche spéciale sur un monstre de sa liste `contre` — elle frappe alors comme en hauteur (transperçante sur le rat cuirassé : 90 ; sur le Gardien : 165).
+- Le petit critique : `{t:'touche', …, critique:true, petit:true}` puis `{t:'degats', …, critique:true, petit:true}`. S'il tue, la bête finit comme d'habitude (`fuit` / `meurt`), pas en `explose`. L'écran le joue comme un coup ordinaire et écrit « Petit critique » (`D.MOTS.petitCritique`).
+- La dague n'a pas changé de portée : la bête de devant, et celles qui sont tombées devant (`aPortee`). Dans l'atelier, le Gardien est derrière le rat cuirassé.
+- Le critique surprise (1 chance sur 8, flèche simple, monstre normal fermé) suit la même table : 20 sur un rat.
+
+**La colère** (`colere:{si:'mi-vie' | 'seul'}` dans `D.MONSTRES` : `gardien` et `bourbe` à mi-vie, `roirats` quand il est le dernier vivant)
+
+- `_colere(ev, m)` est appelée après chaque blessure et chaque mort. Elle pose l'état `colere` (jusqu'à la fin) : `{t:'etat', bete, nom:'colere', on:true, tours:'fin'}` puis `{t:'colere', bete}`. Une seule fois par monstre.
+- Les attaques lisent l'état : `doubleSi:['colere']` (le grouillement du Roi : 32 ; les poings du Gardien : 80), `plusSi:{colere:n}` (la ruée 90, le marteau 100, l'écrasement 100).
+- **La phase 2 de Bourbe** : `reactions.colere` (une liste de règles comme pour un pouvoir) dit ce qu'il fait en se fâchant — il se referme, quitte le dos et la berge, plonge (`special:'plonger'`, état `sous` pour un tour) ; à la fin du tour suivant, `_bourbeApres` le fait remonter avec ses têtards et retomber sur tout le monde, comme pour le piège du bruit. Bassin gelé : « Il se cogne ! », pas de plongeon.
+- À l'écran (`combat.js`) : la pastille `😡 en colère` (`CHIPS.colere`, `.etat.e-rage`), le rond rouge (`.bete.colere .anneau`), l'évènement `colere` (le cri, la secousse, le mot `D.MOTS.colere`). Pas d'état du module animé : rien de nouveau n'est dessiné.
+
+**Les dégâts** : la morsure du rat passe de 8 à 13. `test-regles.js` : le modèle de l'essai (« Essai ») a suivi (morsure, petit critique à la flèche) ; les anciens tests des élites et du boss tournent sans coups préparés et sans colère (`sansGros`), la colère a sa section.
+
+**La simulation** (`equilibre.js`) : `tirer()` passe par `critiqueDe` ; l'équipe `decouvre` (`reflechie({livre:true, apprend:1, tatonne:true})` : aucun combo en entrant, une ligne comprise par tour passé devant chaque sorte de monstre, 4 lignes = tout) et `decouvreLent` (une ligne tous les deux tours). Les trois équipes de Romain : `maligne`, `decouvre`, `hasard`.
+

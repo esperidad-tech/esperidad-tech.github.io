@@ -97,7 +97,17 @@ function reflechie(o){
     var S = peut(c, 'sage'), Al = peut(c, 'alchimiste'), Pi = peut(c, 'pisteur');
     var viv = c.vivants(), cib = c.ciblables(), act;
     mem.vu = mem.vu || {};            /* ce qu'elle a vu marcher : « type:pouvoir » -> 'ouvre' | 'piege' | 'rien' */
-    function K(m){ return o.livre ? 4 : 0; }                  /* le carnet, ramassé à l'entrée, a toutes ses pages */
+    /* o.apprend : L'ÉQUIPE QUI DÉCOUVRE (Romain, 11 novembre). Elle ne connaît aucun combo en entrant. À chaque tour passé
+       devant une sorte de monstre, elle en comprend un peu plus (elle essaie, elle lit la page du carnet) : o.apprend lignes
+       par tour, 4 lignes = elle sait tout de ce monstre. Elle retient d'une salle à l'autre, et d'un essai à l'autre. */
+    if(o.apprend){
+      mem.lu = mem.lu || {};
+      if(c._luAu !== c.tour){
+        if(c.tour > 1){ var deja = {}; viv.forEach(function(m){ var t = cle(m.type); if(!deja[t]){ deja[t] = 1; mem.lu[t] = Math.min(4, (mem.lu[t] || 0) + o.apprend); } }); }
+        c._luAu = c.tour;
+      }
+    }
+    function K(m){ return o.apprend ? Math.floor(mem.lu[cle(m.type || m)] || 0) : o.livre ? 4 : 0; }      /* (le carnet, ramassé à l'entrée, a toutes ses pages) */
     var oeil = o.oeil === undefined ? 'toujours' : o.oeil, vois = voit(c);
     function fragile(sauf){ return c.visables().filter(function(x){ return x !== sauf && !c.h[x].bouclier; }).sort(function(x, y){ return (c.h[x].pv - c.h[y].pv) || (D.VISEE[y] - D.VISEE[x]); })[0]; }
     function sait(m, n){ return K(m) >= n; }
@@ -307,8 +317,8 @@ function tirer(c, cibles){
   cibles.forEach(function(m){
     if(c._un(m, m.def.blinde)) return;
     var q = carq.filter(function(x){ return x.O.contre.indexOf(m.type) >= 0; })[0], bonus = !!q, imm = m.def.rang !== 'normal' && m.ouvert === 0;
-    var fl = m.ouvert !== 0 ? Math.round(C.critique[m.def.rang].fleche * (bonus ? q.O.critique : 1)) : (bonus && m.def.rang === 'normal') ? q.O.ferme : imm ? 0 : c._ferm(m, 'fleche');
-    var dg = portee.indexOf(m) < 0 ? -1 : m.ouvert !== 0 ? C.critique[m.def.rang].dague : imm ? 0 : c._ferm(m, 'dague');
+    var fl = m.ouvert !== 0 ? c.critiqueDe(m, 'fleche', bonus ? q.O.critique : 0) : (bonus && m.def.rang === 'normal') ? q.O.ferme : imm ? 0 : c._ferm(m, 'fleche');
+    var dg = portee.indexOf(m) < 0 ? -1 : m.ouvert !== 0 ? c.critiqueDe(m, 'dague') : imm ? 0 : c._ferm(m, 'dague');
     var arme = dg > fl ? 'dague' : (q ? 'f:' + q.id : 'fleche'), d = Math.max(fl, dg), tue = d >= m.pv;
     var note = (tue ? 1000 + danger(m) : 0) + Math.min(d, m.pv) + danger(m) / 100;
     if(!best || note > best.note) best = {note:note, m:m, arme:arme};
@@ -332,6 +342,10 @@ var EQUIPES = {
   /* pour mesurer ce que vaut la rune de l'œil : la même, qui ne regarde que les gros coups ; et la même, qui ne regarde jamais */
   oeilGros:{nom:'Maligne, l\'œil seulement pour les gros coups', choisir:reflechie({livre:true, oeil:'gros'})},
   sansOeil:{nom:'Maligne, sans la rune de l\'œil', choisir:reflechie({livre:true, oeil:false})},
+  /* les trois équipes de Romain (11 novembre) : celle qui connaît tous les combos = maligne ; celle qui découvre le donjon ;
+     celle qui appuie au hasard = hasard */
+  decouvre:{nom:'Découvre le donjon (4 tours pour comprendre chaque monstre)', choisir:reflechie({livre:true, apprend:1, tatonne:true})},
+  decouvreLent:{nom:'Découvre le donjon, lentement (8 tours par monstre)', choisir:reflechie({livre:true, apprend:0.5, tatonne:true})},
   sansSage:{nom:'Sans le Sage', choisir:reflechie({livre:false})},
   tape:{nom:'Tape sans réfléchir', choisir:tape},
   hasard:{nom:'Au hasard', choisir:auHasard},
