@@ -70,6 +70,7 @@
    {t:'chatouille', heros:'pisteur', bete:'b3'}     le héros avalé chatouille Bourbe
    --- ce qui arrive aux bêtes ---
    {t:'touche', bete:'b1', coup:'lumiere', piege:false}   sa réaction : acteur.touche(coup). piege:true : ça le renforce. critique:true : c'est un critique (voir degats).
+                                                         petit:true (sur touche et sur degats) : le petit critique d'une flèche sur une bête qui marche par terre.
                                                     Les coups : fleche, fleche-argent, fleche-lourde, dague, feu, lumiere, louche, colle, huile, nuage, givre,
                                                     acide, bruit, bouclier (son attaque est tombée sur un bouclier de runes), chatouille (Bourbe)
    {t:'rebond', bete:'b2', coup:'fleche'}           immunisé (ou en boule) : acteur.touche('rebond')
@@ -81,6 +82,7 @@
    {t:'degats', bete:'b1', n:60, pv:0, critique:true, surprise:false, cause:'fleche'}     n : le chiffre à montrer ; pv : ce qu'il lui reste
    {t:'gagne', bete:'b2', n:30, pv:60, pvMax:60}    il gagne des PV (le feu follet qui grandit)
    {t:'mot', bete:'b1', texte:'Il rougeoie !'}      deux mots à faire voler au-dessus de la bête
+   {t:'colere', bete:'b1'}                                 un élite ou le boss se fâche (l'état « colere » vient d'être posé, jusqu'à la fin)
    {t:'mort', bete:'b1', mode:'fuit' | 'explose' | 'meurt', cause:'fleche'}    explose : le critique mortel ; cause:'chef' : son chef est tombé, il détale
    --- le tour des monstres ---
    {t:'brulure', bete:'b1', n:4, pv:12}             il brûle encore (juste avant son attaque)
@@ -413,8 +415,25 @@ P._blesse = function(ev, m, n, info){
   info = info || {};
   m.pv = Math.max(0, m.pv - n);
   var e = {t:'degats', bete:m.id, n:n, pv:m.pv, critique:!!info.critique, surprise:!!info.surprise, cause:info.cause || null};
+  if(info.petit) e.petit = true;               /* le petit critique d'une flèche sur une bête qui marche par terre */
   ev.push(e);
-  if(m.pv <= 0) this._tue(ev, m, info.critique ? 'explose' : m.def.fin, info.cause);
+  if(m.pv <= 0) this._tue(ev, m, info.critique && !info.petit ? 'explose' : m.def.fin, info.cause);
+  else this._colere(ev, m);
+};
+/* LA COLÈRE (Romain, 11 novembre, 13 h 53) : les élites et le boss « se fâchent ». colere:{si:'mi-vie'} : quand il n'a plus
+   que la moitié de sa vie ; colere:{si:'seul'} : quand il n'a plus personne avec lui (le Roi des rats sans ses sbires).
+   L'état « colere » dure jusqu'à la fin : ses attaques le lisent (doubleSi, foisSi, plusSi dans D.MONSTRES). */
+/* (appelée après chaque blessure et chaque mort) */
+P._colere = function(ev, m){
+  var K = m.def.colere;
+  if(!K || m.mort || this.a(m, 'colere')) return;
+  if(K.si === 'seul' ? this.vivants().length > 1 : m.pv > m.pvMax / 2) return;
+  m.e.colere = FIN;
+  ev.push({t:'etat', bete:m.id, nom:'colere', on:true, tours:'fin'});
+  ev.push({t:'colere', bete:m.id});
+  /* sa « phase 2 » : ce qu'il fait en se fâchant (reactions.colere dans D.MONSTRES — Bourbe plonge chercher ses têtards) */
+  var r = this._regle(m, 'colere');
+  if(r && r.fait) this._faire(ev, m, r.fait, null);
 };
 P._tue = function(ev, m, mode, cause){
   var self = this;
@@ -423,6 +442,7 @@ P._tue = function(ev, m, mode, cause){
   D.ORDRE.forEach(function(h){ if(self.h[h].avale === m.id){ self.h[h].avale = null; ev.push({t:'recrache', bete:m.id, heros:h}); } });
   /* le chef est tombé : ses petits détalent */
   if(m.def.chef) this.vivants().forEach(function(x){ x.mort = true; x.ouvert = 0; x.e = {}; ev.push({t:'mort', bete:x.id, mode:'fuit', cause:'chef'}); });
+  this.vivants().forEach(function(x){ self._colere(ev, x); });          /* celui qui reste seul peut se fâcher */
 };
 
 /* ---------- un pouvoir arrive sur une bête : sa règle, ou la réaction ordinaire ---------- */
@@ -487,10 +507,18 @@ P._naissent = function(ev, mere, type, n, par){
 };
 
 /* ---------- le critique du Pisteur ---------- */
+/* combien ferait un critique sur cette bête : la dague fait les gros dégâts ; l'arc aussi sur ce qui est en hauteur (vole,
+   pend à un fil, nage), mais quatre fois moins sur ce qui marche par terre. bonus : le multiplicateur d'une flèche spéciale
+   sur le monstre pour lequel elle est faite (elle frappe alors comme en hauteur). */
+P.critiqueDe = function(m, arme, bonus){
+  var T = C.critique[m.def.rang], base = arme !== 'fleche' ? T[arme] : (m.def.hauteur || bonus) ? T.fleche : T.sol;
+  return Math.round(base * (bonus ? bonus : 1));
+};
 P._critique = function(ev, m, arme, coup, bonus, surprise){
-  var n = Math.round(C.critique[m.def.rang][arme] * (bonus ? bonus : 1));
-  ev.push({t:'touche', bete:m.id, coup:coup, piege:false, critique:true});
-  this._blesse(ev, m, n, {critique:true, surprise:!!surprise, cause:arme});
+  var n = this.critiqueDe(m, arme, bonus), petit = arme === 'fleche' && !m.def.hauteur && !bonus, et = {t:'touche', bete:m.id, coup:coup, piege:false, critique:true};
+  if(petit) et.petit = true;                   /* (le petit critique : l'écran le montre comme un coup ordinaire, sans le grand spectacle) */
+  ev.push(et);
+  this._blesse(ev, m, n, {critique:true, surprise:!!surprise, cause:arme, petit:petit});
 };
 
 /* ---------- JOUER un geste ---------- */

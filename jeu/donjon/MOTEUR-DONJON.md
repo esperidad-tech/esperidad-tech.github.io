@@ -296,3 +296,14 @@ Décisions de Romain : Bible §12.51 (« Les sorts du Sage en combat »). Détai
 - **Tests** : `test-regles.js` 365 ; `test-combat.py` 108 (`oeil(nav)` dans l'atelier, `huile(nav)` dans la cave aux toiles, `potions(nav)`, les 8 salles) ; `test-descente.py` joue avec la stratégie de `equilibre.js` (l'œil un tour sur deux).
 - **La simulation** : `node equilibre.js 600` — 3 cibles manquées (les moments chauds de l'équipe parfaite ; deux cibles de l'équipe qui tape, à cause du bouclier à 75 %). `equilibre.md` n'est toujours pas réécrit, et son texte parle encore du sac et de l'étude : à refaire quand la difficulté sera réglée avec Romain.
 
+### 9.9 Le 11 novembre après-midi : le durcissement (la dague, l'arc, la colère)
+
+Décisions de Romain : Bible §12.51 (« Le durcissement du donjon »). Détail des règles : `moteur/REGLES.md` §13.
+
+- **Le critique** dépend de l'arme et du monstre : `combat.critiqueDe(m, arme, bonus)`, `hauteur:true` dans `D.MONSTRES`, le petit critique (`petit:true`).
+- **La colère** : `colere:{si}` dans `D.MONSTRES`, `_colere`, l'état `colere`, l'évènement `colere`, `reactions.colere` (la phase 2 de Bourbe).
+- **Le rat mord à 13.** Rien d'autre n'a bougé dans les dégâts.
+- **Adresses d'essai** : `?combat=rats&potions=toutes` (l'huile ou la lumière, puis la dague sur celui de devant) ; `?combat=canaux&potions=toutes` (le rat à la dague, les chauves-souris à l'arc) ; `?combat=atelier&potions=toutes` (le rat cuirassé d'abord, puis le Gardien, en colère à mi-vie) ; `?combat=ossuaire&potions=toutes` (le Roi des rats se fâche quand ses feux follets sont tombés) ; `?combat=bassin&potions=toutes` (Bourbe plonge à mi-vie).
+- **La simulation** : `node equilibre.js 600` — 3 cibles manquées, sur des cas qui n'existent pas dans le jeu d'aujourd'hui (l'atelier et l'ossuaire sans la bonne potion ; l'équipe qui tape aux canaux). Les mesures faites pour doser sont dans la Bible. `equilibre.md` n'est toujours pas réécrit.
+- **Tests** : `test-regles.js` 389 ; `test-donjon.py` (le combat de la visite se gagne à la dague) ; `perf.py` (le gros critique de la salle des rats se mesure à la dague).
+

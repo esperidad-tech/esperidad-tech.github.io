@@ -172,7 +172,8 @@ function barre(cle, pv, pvMax){
 var CHIPS = {
   enrage:['💢×2', ''], folle:['💢×2', ''], brule:['🔥−4', 'e-feu'], colle:['collé', 'e-colle'], gele:['❄️ gelé', 'e-colle'], tournis:['💫 sonné', 'e-colle'],
   rougeoie:['♨️ plus fort', 'e-feu'], grand:['⬆️ plus fort', ''], boule:['🛡️ en boule', 'e-colle'], haut:['⬆️ trop haut', 'e-colle'], sous:['🌊 sous l\'eau', 'e-colle'],
-  gonfle:['🎈 saut ×2', ''], noeud:['🪢 nœud tendu', 'e-colle'], sec:['☀️ tout sec', 'e-feu']
+  gonfle:['🎈 saut ×2', ''], noeud:['🪢 nœud tendu', 'e-colle'], sec:['☀️ tout sec', 'e-feu'],
+  colere:['😡 en colère', 'e-rage']            /* (Romain, 11 novembre : les élites et le boss se fâchent) */
 };
 var ICONE_ATT = {toile:'🕸️', langue:'👅'};
 /* un coup préparé emprunte l'animation d'une attaque du module (marteau -> poing…) : donnees.js le dit dans « anim » */
@@ -273,6 +274,7 @@ function majScene(){
     a.el.classList.toggle('dispo', m === 'cible' && cb.betes.indexOf(b.id) >= 0);
     a.el.classList.toggle('ouvert', !!b.ouvert);
     a.el.classList.toggle('prepare', !!b.prepare);
+    a.el.classList.toggle('colere', b.etats.colere !== undefined);
   });
   majBadges();
   var t = q('#tour-nom'); if(t) t.innerHTML = E.tour ? 'Tour ' + E.tour : '';
@@ -503,7 +505,7 @@ async function bloc(bl, ctx){
         await arrivees(gr);
         continue;
       }
-      if(ev.t === 'degats' && ev.bete && ev.critique){ i = await critique(l, i, ctx); continue; }
+      if(ev.t === 'degats' && ev.bete && ev.critique && !ev.petit){ i = await critique(l, i, ctx); continue; }
       if(ev.t === 'vise'){ while(i + 1 < l.length && l[i + 1].t === 'vise') i++; E.ph = E.c.etat(); majBadges(); continue; }
       await un(ev, bl, ctx);
     }catch(e){ if(window.console) console.error('évènement ' + ev.t, e); }
@@ -521,7 +523,7 @@ async function un(ev, bl, ctx){
     case 'fin': return;
 
     case 'touche':
-      if(!a || ev.critique) return;
+      if(!a || (ev.critique && !ev.petit)) return;
       ctx.touche[a.id] = 1;
       sonTouche(a, ev);
       return a.touche(ev.coup, a.module === 'roirats' && ev.coup === 'bruit' ? {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }} : null);
@@ -534,6 +536,11 @@ async function un(ev, bl, ctx){
     case 'etat':
       if(h) return etatHeros(ev);
       if(!a) return;
+      if(ev.nom === 'colere'){                  /* la colère : pas un état du module non plus — une pastille, un rond rouge */
+        a.el.classList.toggle('colere', !!ev.on);
+        E.ph = E.c.etat(); majBadges();
+        return;
+      }
       if(ev.nom === 'prepare'){                 /* le coup qui se prépare : pas un état du module, une lueur et une pastille */
         a.el.classList.toggle('prepare', !!ev.on);
         E.ph = E.c.etat(); majBadges();
@@ -551,6 +558,12 @@ async function un(ev, bl, ctx){
       a.el.classList.add('ouvert');
       return a.ouvert(true);
     case 'ferme': if(!a) return; a.el.classList.remove('ouvert'); return a.ouvert(false);
+    case 'colere':                              /* il se fâche : son cri, la salle tremble, le mot au-dessus de lui */
+      if(!a) return;
+      if(S.cri) bruit(S.cri);
+      Fx.tremble(11, 460);
+      p = a.ancre('haut'); Fx.mot(p.x, Math.max(104, p.y - 4), D.MOTS.colere, 'refus');
+      return attendre(900);
     case 'prepare':                             /* son tour d'élan : il ne frappe pas, et tout le monde voit ce qui arrive */
       if(!a) return;
       if(S.cri) bruit(S.cri);
@@ -562,6 +575,8 @@ async function un(ev, bl, ctx){
       if(!a) return;
       p = a.cible(!!(photoAvant(a.id) || {}).ouvert);
       Fx.chiffre(p.x, Math.max(96, a.ancre('haut').y + 6), '−' + ev.n, ev.n >= 25 ? 'gros' : ev.n <= 2 ? 'petit' : '');
+      /* le petit critique d'une flèche sur une bête qui marche par terre : on le dit, pour qu'on comprenne le chiffre */
+      if(ev.petit) Fx.mot(p.x, Math.max(104, a.ancre('haut').y - 22), D.MOTS.petitCritique, 'refus long');
       barre(a.id, ev.pv, a.pvMax); a.pv = ev.pv;
       return attendre(160);
     case 'gagne':

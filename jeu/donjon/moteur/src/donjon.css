@@ -29,6 +29,9 @@
    (le rond jaune reprend sa place quand la bête est à toucher) */
 .etat.e-coup{height:26px;padding:0 9px;border-radius:13px;font-size:14px;border-color:#ffd54a;color:#fff3c0;animation:pulse 1.1s ease-in-out infinite}
 .etat.e-coup.pret{background:#b3261e;border-color:#ffd54a;color:#fff;animation:pulse .6s ease-in-out infinite}
+/* la colère (élites et boss) : une pastille rouge, et un rond rouge qui reste sous la bête */
+.etat.e-rage{height:26px;padding:0 9px;border-radius:13px;font-size:14px;background:#7a1410;border-color:#ff8a65;color:#fff}
+.bete.colere:not(.dispo):not(.restes):not(.cendre):not(.parti) .anneau{opacity:1;border-color:#ff5a3c;box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 16px 5px rgba(255,60,30,.6)}
 .bete.prepare:not(.dispo):not(.restes):not(.cendre):not(.parti) .anneau{opacity:1;border-color:#ff5a3c;box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 22px 8px rgba(255,80,40,.8),inset 0 0 12px rgba(255,80,40,.6);animation:pulse .8s ease-in-out infinite}
 .pv.elite .barre{width:112px}
 /* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
