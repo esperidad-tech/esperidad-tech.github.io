@@ -30,3 +30,5 @@ jeu/test/e3-roles/
 jeu/test/e3-pisteur/
 jeu/test/e3-marche-*.png
 jeu/test/partie1/
+# les captures du robot du gâteau de la fête, tools/gateau.py (refaites à chaque fois)
+jeu/test/gateau-*.png

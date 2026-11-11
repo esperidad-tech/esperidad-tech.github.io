@@ -507,8 +507,14 @@ section('Les élites et le boss sont immunisés tant que le point faible est fer
     ev = jouer(c, 'pisteur', 'fleche', m);
     ok(trouve(ev, 'rebond') && trouve(ev, 'tir').rebond && m.pv === pv, D.MONSTRES[type].nom + ' : la flèche rebondit');
     tourSuivant(c); c.h.pisteur.pv = 120; c.h.alchimiste.pv = 100; c.h.sage.pv = 90; D.ORDRE.forEach(function(h){ c.h[h].sol = false; c.h[h].avale = null; });
+    if(type === 'bourbe'){
+      /* (11 novembre, 19 h 21) dans l'eau, la dague ne l'atteint pas : « Dans l'eau ! » */
+      egal(c.refus('pisteur', 'dague', m.id), 'Dans l\'eau !', 'Bourbe dans l\'eau : la dague ne l\'atteint pas (« Dans l\'eau ! »)');
+      egal(c.gestes('pisteur').filter(function(g){ return g.geste === 'dague'; })[0].mot, 'Dans l\'eau !', 'et la carte de la dague le dit');
+      c.sac = c.sac.concat(['givre']); jouer(c, 'alchimiste', 'p:givre', m); c.h.alchimiste.joue = false;
+    }
     ev = jouer(c, 'pisteur', 'dague', m);
-    ok(trouve(ev, 'rebond') && m.pv === pv, D.MONSTRES[type].nom + ' : la dague rebondit');
+    ok(trouve(ev, 'rebond') && m.pv === pv, D.MONSTRES[type].nom + ' : la dague rebondit' + (type === 'bourbe' ? ' (sur la glace)' : ''));
     if(type !== 'gardien'){
       ev = jouer(c, 'alchimiste', 'p:acide', m);
       ok(trouve(ev, 'rebond') && m.pv === pv, D.MONSTRES[type].nom + ' : l\'acide ne lui fait rien');
@@ -637,12 +643,17 @@ section('Le Roi des rats');
 
 section('Bourbe, le crapaud du puits');
 (function(){
-  var t = prep('bassin', {sac:['feu', 'fumigene', 'baume'], hasard:[0.99, 0.99, 0.3]}), c = t.c, bo = bete(c, 'bourbe'), ev;
+  var t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES, hasard:[0.99, 0.99, 0.3]}), c = t.c, bo = bete(c, 'bourbe'), ev;
   egal([bo.plan.nom, bo.plan.cibles], ['langue', ['alchimiste']], 'il commence par la langue, et montre qui il va avaler');
   ev = jouer(c, 'alchimiste', 'p:feu', bo);
   ok(!c.a(bo, 'sec') && trouve(ev, 'mot'), 'dans l\'eau, le feu ne sèche rien');
   ev = jouer(c, 'sage', 'rune', bo);
-  ok(c.a(bo, 'berge') && bo.ouvert === 0, 'étape 1 : la lumière le fait sortir sur la berge');
+  ok(!c.a(bo, 'gele') && !c.a(bo, 'berge') && bo.ouvert === 0 && !trouve(ev, 'etat', function(e){ return e.bete === bo.id; }), 'la lumière ne le fait plus sortir de l\'eau (Romain, 11 novembre, 19 h 21)');
+  ok(c.aPortee().indexOf(bo) < 0 && !c.auSol(bo), 'dans l\'eau, il n\'est pas à portée de dague');
+  c.h.alchimiste.joue = false;
+  ev = jouer(c, 'alchimiste', 'p:givre', bo);
+  ok(c.a(bo, 'gele') && bo.ouvert === 0 && trouve(ev, 'etat', function(e){ return e.nom === 'gele'; }).tours === 3 && trouve(ev, 'mot', function(e){ return e.bete === bo.id; }), 'étape 1 : le givre gèle le bassin pour 3 tours, il saute sur la glace');
+  ok(c.auSol(bo) && c.aPortee().indexOf(bo) < 0, 'sur la glace, la dague pourrait l\'atteindre — mais les têtards sont devant');
   ev = jouer(c, 'pisteur', 'p:feu', bo);
   ok(c.a(bo, 'sec') && !trouve(ev, 'degats'), 'étape 2 : le feu (ici en flèche) sèche sa bave');
   ev = c.tourMonstres();
@@ -662,35 +673,36 @@ section('Bourbe, le crapaud du puits');
   ev = jouer(c, 'alchimiste', 'p:feu', bo);
   ok(trouve(ev, 'degats').n === 30 && c.a(bo, 'brule'), 'ouvert, le feu le blesse (30) et le fait brûler');
   ev = tourSuivant(c);
-  ok(bo.ouvert === 0 && !c.a(bo, 'dos') && !c.a(bo, 'sec') && !c.a(bo, 'berge'), 'à la fin du tour suivant, il se retourne et replonge : tout est à refaire');
+  ok(bo.ouvert === 0 && !c.a(bo, 'dos') && !c.a(bo, 'sec') && !c.a(bo, 'gele'), 'à la fin du tour suivant, il se retourne, passe à travers la glace et replonge : tout est à refaire');
   ok(trouve(ev, 'brulure', function(e){ return e.bete === bo.id; }), 'la brûlure, elle, continue');
 
   /* le chemin normal, avec le nuage */
-  t = prep('bassin', {sac:['feu', 'fumigene', 'baume']}); c = t.c; bo = bete(c, 'bourbe');
-  jouer(c, 'sage', 'rune', bo); jouer(c, 'pisteur', 'p:feu', bo);
+  t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo); jouer(c, 'pisteur', 'p:feu', bo);
+  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
   ev = jouer(c, 'alchimiste', 'p:fumigene');
-  ok(c.a(bo, 'dos') && bo.ouvert !== 0 && trouve(ev, 'ouvert').par === 'nuage', 'chemin normal : lumière, feu, nuage, dans le même tour : sur le dos, ouvert');
+  ok(c.a(bo, 'dos') && bo.ouvert !== 0 && trouve(ev, 'ouvert').par === 'nuage', 'chemin normal : le givre et le feu, puis le nuage au tour d\'après : sur le dos, ouvert');
   ev = c.tourMonstres();
   ok(!trouve(ev, 'attaque', function(e){ return e.bete === bo.id; }), 'il n\'attaque pas');
 
   /* sans feu : il sèche tout seul */
-  t = prep('bassin', {sac:['fumigene', 'colle', 'baume']}); c = t.c; bo = bete(c, 'bourbe');
-  jouer(c, 'sage', 'rune', bo);
+  t = prep('bassin', {sac:['fumigene', 'givre', 'baume'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo);
   tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; });
-  ok(c.a(bo, 'berge') && !c.a(bo, 'sec'), 'sans feu : un tour sur la berge, pas encore sec');
+  ok(c.a(bo, 'gele') && !c.a(bo, 'sec'), 'sans feu : un tour sur la glace, pas encore sec');
   ev = tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; });
-  ok(c.a(bo, 'sec') && c.a(bo, 'berge') && trouve(ev, 'etat', function(e){ return e.nom === 'sec' && e.seul; }), 'deux tours entiers sur la berge : il sèche tout seul, et reste encore un tour dehors');
+  ok(c.a(bo, 'sec') && c.a(bo, 'gele') && !c.a(bo, 'berge') && trouve(ev, 'etat', function(e){ return e.nom === 'sec' && e.seul; }), 'deux tours entiers sur la glace : il sèche tout seul, et la glace tient encore un tour');
   ev = jouer(c, 'alchimiste', 'p:fumigene');
   ok(c.a(bo, 'dos') && bo.ouvert !== 0, 'le nuage le renverse');
-  t = prep('bassin', {sac:['fumigene', 'colle', 'baume']}); c = t.c; bo = bete(c, 'bourbe');
-  jouer(c, 'sage', 'rune', bo);
+  t = prep('bassin', {sac:['fumigene', 'givre', 'baume'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo);
   tourSuivant(c); tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; });
+  ok(c.a(bo, 'sec') && c.a(bo, 'gele'), 'au troisième tour, il est toujours sur la glace, tout sec');
   ev = tourSuivant(c);
-  ok(!c.a(bo, 'sec') && !c.a(bo, 'berge'), 'si on ne fait rien de plus, il replonge au tour d\'après');
+  ok(!c.a(bo, 'sec') && !c.a(bo, 'gele') && !c.auSol(bo), 'si on ne fait rien de plus, la glace fond : il retourne à l\'eau au tour d\'après');
 
   /* les pièges */
   t = prep('bassin', {sac:['fumigene', 'feu', 'baume']}); c = t.c; bo = bete(c, 'bourbe');
-  jouer(c, 'sage', 'rune', bo);
   ev = jouer(c, 'alchimiste', 'p:fumigene');
   ok(trouve(ev, 'touche', function(e){ return e.bete === bo.id; }).piege && c.a(bo, 'gonfle') && bo.ouvert === 0, 'piège : le nuage avant qu\'il soit sec, il gonfle');
   ev = tourSuivant(c);
@@ -699,7 +711,7 @@ section('Bourbe, le crapaud du puits');
   D.ORDRE.forEach(function(h){ c.h[h].pv = 90; });
   var avant = c.vivants().length;
   ev = jouer(c, 'alchimiste', 'louche');
-  ok(trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && !c.a(bo, 'berge') && c.cache(bo), 'piège : le bruit, il plonge (on ne peut plus le viser)');
+  ok(trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && c.cache(bo), 'piège : le bruit, il plonge (on ne peut plus le viser)');
   egal(c.refus('sage', 'rune', bo.id), 'Sous l\'eau !', 'refus : « Sous l\'eau ! »');
   ev = tourSuivant(c);
   var tet = tous(ev, 'arrive', function(e){ return e.par === 'plongeon'; });
@@ -715,12 +727,12 @@ section('Bourbe, le crapaud du puits');
   /* le givre */
   t = prep('bassin', {sac:['givre', 'fumigene', 'baume'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
   ev = jouer(c, 'alchimiste', 'p:givre', bo);
-  ok(c.a(bo, 'gele') && trouve(ev, 'etat', function(e){ return e.nom === 'gele'; }).tours === 3, 'autre chemin : le givre gèle le bassin pour 3 tours');
+  ok(c.a(bo, 'gele') && trouve(ev, 'etat', function(e){ return e.nom === 'gele'; }).tours === 3, 'le givre gèle le bassin pour 3 tours');
   tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; });
   ev = jouer(c, 'alchimiste', 'louche');
   ok(trouve(ev, 'mot', function(e){ return e.bete === bo.id; }) && !trouve(ev, 'special') && !c.a(bo, 'sous'), 'bassin gelé : au bruit, il ne peut pas plonger, il se cogne (pas de têtards)');
   ev = tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; });
-  ok(c.a(bo, 'sec'), 'coincé sur la glace, il compte comme sur la berge : deux tours, et il est sec');
+  ok(c.a(bo, 'sec'), 'sur la glace depuis deux tours : il est sec');
   ev = jouer(c, 'alchimiste', 'p:fumigene');
   ok(c.a(bo, 'dos') && bo.ouvert !== 0, 'et le nuage le renverse');
 
@@ -979,6 +991,51 @@ section('La rune d\'appel, les herbes pour toute l\'équipe (Romain, 11 novembre
   ok(tous(ev, 'soin').every(function(e){ return e.heros !== 'sage'; }) && c.h.sage.pv === 0 && c.h.pisteur.pv === 60, 'un héros au sol n\'est pas soigné par les herbes');
 })();
 
+section('La dague ne touche pas ce qui vole (Romain, 11 novembre, 19 h 21)');
+(function(){
+  var ev, t, c, cd;
+  function carteDague(){ return c.gestes('pisteur').filter(function(x){ return x.geste === 'dague'; })[0]; }
+  function idsDe(l){ return l.map(function(m){ return m.id; }); }
+  /* la salle des rats : tout marche par terre, rien ne change */
+  t = prep('rats', {}); c = t.c;
+  ok(c.b.every(function(m){ return c.auSol(m); }) && c.devantSol() === c.devant() && carteDague().permis && !c.refus('pisteur', 'dague', c.b[0].id), 'les rats marchent par terre : la dague frappe celui de devant, comme avant');
+  /* la fausse crypte : deux chauves-souris en l'air */
+  t = prep('crypte', {sac:['colle', 'feu', 'baume']}); c = t.c;
+  var a = c.b[0], b = c.b[1];
+  cd = carteDague();
+  ok(!cd.permis && cd.mot === 'Trop haut !' && !c.aPortee().length && c.devantSol() === null, 'deux chauves-souris en l\'air : la carte de la dague est éteinte et dit « Trop haut ! »');
+  egal([c.refus('pisteur', 'dague', a.id), c.refus('pisteur', 'dague', b.id)], ['Trop haut !', 'Trop haut !'], 'la dague sur une chauve-souris qui vole, même celle de devant : « Trop haut ! »');
+  var pv = a.pv; ev = jouer(c, 'pisteur', 'dague', a);
+  ok(trouve(ev, 'refus') && trouve(ev, 'refus').mot === 'Trop haut !' && a.pv === pv && !c.h.pisteur.joue, 'le coup refusé ne coûte rien : pas de dégâts, le Pisteur n\'a pas joué');
+  egal(c.refus('sage', 'appel', b.id), 'Pas celui-là !', 'la rune d\'appel ne tire pas non plus une bête qui vole : « Pas celui-là ! »');
+  /* celle du fond tombe (la colle) : c'est elle que la dague atteint, pas celle de devant, qui vole toujours */
+  ev = jouer(c, 'alchimiste', 'p:colle', b);
+  ok(c.a(b, 'au-sol') && !c.a(a, 'au-sol') && c.devant() === a && c.devantSol() === b, 'la colle fait tomber celle du fond : c\'est elle, la première bête « au sol »');
+  egal(idsDe(c.aPortee()), [b.id], 'à portée de dague : seulement celle qui est tombée');
+  egal([c.refus('pisteur', 'dague', a.id), c.refus('pisteur', 'dague', b.id)], ['Trop haut !', null], 'celle qui vole : « Trop haut ! » ; celle qui est tombée : on peut');
+  ev = jouer(c, 'pisteur', 'dague', b);
+  ok(trouve(ev, 'degats') && trouve(ev, 'degats').critique && b.mort, 'la dague sur la chauve-souris tombée : critique, elle est battue');
+  /* les canaux : un rat devant, deux chauves-souris en l'air derrière */
+  t = prep('canaux', {}); c = t.c;
+  var r = bete(c, 'rat'), s1 = bete(c, 'chauvesouris', 0), s2 = bete(c, 'chauvesouris', 1);
+  egal(idsDe(c.aPortee()), [r.id], 'aux canaux : la dague n\'atteint que le rat');
+  egal([c.refus('pisteur', 'dague', r.id), c.refus('pisteur', 'dague', s1.id)], [null, 'Trop haut !'], 'le rat : on peut ; une chauve-souris : « Trop haut ! »');
+  var ca = c.gestes('sage').filter(function(x){ return x.geste === 'appel'; })[0];
+  ok(!ca.permis && ca.mot === 'Déjà devant !' && !c.appelables().length, 'la rune d\'appel n\'a personne à tirer : le seul qui marche par terre est déjà devant');
+  egal([c.refus('sage', 'appel', r.id), c.refus('sage', 'appel', s1.id)], ['Déjà devant !', 'Déjà devant !'], 'la carte est éteinte : qui qu\'on vise, elle répond « Déjà devant ! »');
+  /* la louche les fait tomber : les deux sont à portée (comme avant) */
+  ev = jouer(c, 'alchimiste', 'louche');
+  ok(c.a(s1, 'au-sol') && c.a(s2, 'au-sol') && idsDe(c.aPortee()).join() === [r.id, s1.id, s2.id].join(), 'après la louche, les deux chauves-souris sont par terre : la dague les atteint toutes les deux');
+  /* la cave aux toiles : l'araignée pend à son fil, les feux follets flottent */
+  t = prep('toiles', {}); c = t.c;
+  var ar = bete(c, 'araignee'), f1 = bete(c, 'feufollet', 0);
+  cd = carteDague();
+  ok(!cd.permis && cd.mot === 'Trop haut !' && !c.aPortee().length, 'la cave aux toiles, au départ : rien n\'est à portée de dague (« Trop haut ! »)');
+  egal([c.refus('pisteur', 'dague', ar.id), c.refus('pisteur', 'dague', f1.id)], ['Trop haut !', 'Trop haut !'], 'l\'araignée pend, le feu follet flotte : « Trop haut ! »');
+  ok(D.MONSTRES.araignee.dague.si.join() === 'dos' && D.MONSTRES.feufollet.dague.si.join() === 'accroche' && D.MONSTRES.chauvesouris.dague.si.join() === 'au-sol' && !D.MONSTRES.rat.dague && !D.MONSTRES.gardien.dague && !D.MONSTRES.roirats.dague,
+    'ce qui vole, pend ou flotte a sa règle (l\'araignée : sur le dos ; le feu follet : accroché ; la chauve-souris : au sol) ; ce qui marche n\'en a pas');
+})();
+
 section('La colère des élites et du boss (Romain, 11 novembre, 13 h 53)');
 (function(){
   var ev, t, c;
@@ -1030,15 +1087,16 @@ section('La colère des élites et du boss (Romain, 11 novembre, 13 h 53)');
   egal(c._prevu(roi, {nom:'ruee', cibles:['pisteur']}).degats, 90, 'en colère, sa ruée cogne à 90 (70 + 20)');
 
   /* Bourbe : sa phase 2 — à mi-vie il plonge, remonte avec deux têtards en retombant sur tout le monde */
-  t = prep('bassin', {sac:['feu', 'fumigene', 'baume']}); c = t.c;
+  t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES}); c = t.c;
   var bo = bete(c, 'bourbe');
-  jouer(c, 'sage', 'rune', bo); jouer(c, 'pisteur', 'p:feu', bo); jouer(c, 'alchimiste', 'p:fumigene');
-  c.tourMonstres();
-  ok(c.a(bo, 'dos') && bo.ouvert !== 0, '(Bourbe est sur le dos, ouvert, pour ce tour encore)');
+  jouer(c, 'alchimiste', 'p:givre', bo); jouer(c, 'pisteur', 'p:feu', bo);
+  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
+  jouer(c, 'alchimiste', 'p:fumigene');
+  ok(c.a(bo, 'dos') && c.a(bo, 'gele') && bo.ouvert !== 0, '(Bourbe est sur le dos, sur la glace, ouvert)');
   bo.pv = 520;
   ev = jouer(c, 'pisteur', 'dague', bo);
-  ok(bo.pv === 140 && c.a(bo, 'colere') && trouve(ev, 'colere') && trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && !c.a(bo, 'dos') && bo.ouvert === 0 && c.cache(bo),
-    'à mi-vie, Bourbe se fâche : il se retourne d\'un bond et plonge (son point faible se referme, on ne peut plus le viser)');
+  ok(bo.pv === 140 && c.a(bo, 'colere') && trouve(ev, 'colere') && trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && !c.a(bo, 'dos') && !c.a(bo, 'gele') && bo.ouvert === 0 && c.cache(bo),
+    'à mi-vie, Bourbe se fâche : il se retourne d\'un bond, brise la glace et plonge (son point faible se referme, on ne peut plus le viser)');
   egal(c.refus('sage', 'rune', bo.id), 'Sous l\'eau !', 'sous l\'eau : rien à faire ce tour-ci');
   var tetAvant = c.vivants().filter(function(m){ return m.type === 'tetard'; }).length;
   ev = tourSuivant(c);
@@ -1053,7 +1111,12 @@ section('La colère des élites et du boss (Romain, 11 novembre, 13 h 53)');
   jouer(c, 'alchimiste', 'p:givre', bo);
   ok(c.a(bo, 'gele'), '(le bassin est gelé)');
   bo.pv = 510; ev = []; c._blesse(ev, bo, 20, {});
-  ok(c.a(bo, 'colere') && !c.a(bo, 'sous') && !trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && trouve(ev, 'mot', function(e){ return e.texte === 'Il se cogne !'; }), 'bassin gelé : il se fâche, mais ne peut pas plonger (« Il se cogne ! »)');
+  ok(c.a(bo, 'colere') && c.a(bo, 'sous') && !c.a(bo, 'gele') && trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && trouve(ev, 'mot', function(e){ return e.texte === 'Il brise la glace !'; }), 'bassin gelé : en se fâchant, il brise la glace et plonge quand même (« Il brise la glace ! »)');
+  /* la louche, elle, ne casse pas la glace */
+  t = prep('bassin', {sac:['givre', 'feu', 'fumigene'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo); tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
+  ev = jouer(c, 'alchimiste', 'louche');
+  ok(c.a(bo, 'gele') && !c.a(bo, 'sous') && trouve(ev, 'mot', function(e){ return e.texte === 'Il se cogne !'; }), 'le bruit, sur la glace : il ne peut pas plonger, il se cogne');
 })();
 
 section('Les sauvegardes, la fuite, les codes');
@@ -1187,9 +1250,9 @@ section('Les salles sans combat');
   ok(trouve(ev, 'fouille').trouve === 'page' && trouve(ev, 'code-objet').code === 'page:blanche', 'deuxième fouille : la page blanche (code page:blanche, pour le Sage)');
   ev = R.fouiller(p);
   ok(trouve(ev, 'fouille').trouve === null && p.heros.pisteur.pv === 110, 'ensuite : plus rien, et plus de morsure');
-  ok(!p.faits.secret, 'le passage secret est fermé');
+  /* (Romain, 11 novembre, 19 h 21 : le passage secret du crâne vers le feu de camp est enlevé) */
   ev = R.crane(p);
-  ok(trouve(ev, 'passage').vers === 'camp' && p.faits.secret === 1, 'le crâne : le passage vers le feu de camp s\'ouvre');
+  ok(!p.faits.secret && !trouve(ev, 'passage') && ev[0].t === 'refus' && !D.LIEUX.eboulis.crane, 'plus de passage secret au cul-de-sac : le crâne n\'ouvre plus rien');
   egal(R.fouiller(R.nouvellePartie(1))[0].mot, 'Pas ici !', 'on ne fouille que là où il y a un tas d\'os');
   /* les dalles */
   R.entrer(p, 'dalles');
@@ -1413,7 +1476,7 @@ section('Le contrat des évènements');
    R.dalle(q, 'devant'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
    R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });
   q.faits['combat:egouts'] = 1; noter(R.entrer(q, 'egouts'), null);
-  q.lieu = 'canaux'; q.faits['combat:canaux'] = 1; ['g', 'g', 'g', 'g', 'g', 'g'].forEach(function(x){ noter(R.roue(q, x), null); });
+  q.lieu = 'canaux'; q.faits['combat:canaux'] = 1; ['g', 'g', 'g', 'g', 'g', 'g'].forEach(function(x){ noter(R.roue(q, x), null); }); D.ROUE.suite.forEach(function(x){ noter(R.roue(q, x), null); });
   D.OBJETS['essai-a'] = {nom:'Objet d\'essai A', pour:'sage'}; D.OBJETS['essai-b'] = {nom:'Objet d\'essai B', pour:'sage'};
   q.lieu = 'crypte'; q.faits['combat:crypte'] = 1; q.heros.sage.objets = ['essai-a', 'essai-b'];
   noter(R.prendre(q, 'amulette', 'sage'), null); noter(R.prendre(q, 'amulette', 'sage', 'essai-b'), null);

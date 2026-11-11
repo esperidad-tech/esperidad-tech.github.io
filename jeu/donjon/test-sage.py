@@ -98,26 +98,28 @@ def parcours(nav, appareil):
     capture(pg, 'sage-rune-' + t)
     clic(pg, '.scene [data-fen-fermer].aller'); pg.wait_for_timeout(900)
     b.ok(pg.is_visible('#rune.guide'), 'la rune est posée en bas, et le rond jaune la montre')
-    # --- l'encre invisible : la vraie rune, promenée au doigt (souris) sur le cul-de-sac éboulé ---
-    vide = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=crane]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
+    # --- l'encre invisible : la vraie rune, promenée au doigt (souris) sur la grotte de la fleur de givre ---
+    # (jusqu'au 11 novembre : sur le cul-de-sac éboulé — le passage secret du crâne a été enlevé à la demande de Romain)
+    vide = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=fleur]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
     b.ok(vide == 0, 'l’encre est invisible au départ')
-    pg.evaluate('SAGE.centrerSur(1990, 1060, 1)'); pg.wait_for_timeout(900)
+    pg.evaluate('SAGE.centrerSur(905, 1188, 1)'); pg.wait_for_timeout(900)
     r = pg.locator('#rune').bounding_box()
     pg.mouse.move(r['x'] + r['width'] / 2, r['y'] + r['height'] / 2); pg.mouse.down()
-    for yy in range(1000, 1125, 22):
-        for xx in (range(1845, 2150, 30) if (yy // 22) % 2 else range(2140, 1840, -30)):
+    for yy in range(1150, 1234, 22):
+        for xx in (range(760, 1060, 30) if (yy // 22) % 2 else range(1050, 755, -30)):
             sx, sy = ecran(pg, xx, yy)
             pg.mouse.move(sx, sy + 54)
     pg.mouse.up(); pg.wait_for_timeout(1300)
     S = pg.evaluate('SAGE.etat()')
-    b.ok('1' in S['encre'].get('crane', ''), 'la rune révèle l’encre là où elle passe')
-    b.ok(S['encreFinie'].get('crane'), 'assez révélée, la note se réveille : « appuie sur le crâne » et le passage secret')
-    vu = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=crane]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
+    b.ok('1' in S['encre'].get('fleur', ''), 'la rune révèle l’encre là où elle passe')
+    b.ok(S['encreFinie'].get('fleur'), 'assez révélée, la note se réveille : « ici pousse la fleur qui ne fond jamais »')
+    b.ok(not any(n['id'] == 'crane' for n in pg.evaluate('CARTE_DONJON.PLAN.notes')) and not pg.evaluate('!!CARTE_DONJON.LIEN.secret'), 'plus de note « appuie sur le crâne » ni de passage secret vers le feu de camp (enlevés le 11 novembre)')
+    vu = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=fleur]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
     b.ok(vu > 200, 'l’encre est visible sur le plan (%d points)' % vu)
-    b.ok('crâne' in pg.inner_text('#bulle'), 'le conteur dit ce que l’encre révèle')
+    b.ok('fleur' in pg.inner_text('#bulle'), 'le conteur dit ce que l’encre révèle')
     capture(pg, 'sage-encre-' + t)
     # l'autre note à l'encre : la rune ne l'a pas touchée
-    b.ok(not S['encreFinie'].get('fleur') and not S['encreFinie'].get('roue'), 'les autres notes à l’encre (la fleur, la roue) restent cachées tant que la rune n’y passe pas')
+    b.ok(not S['encreFinie'].get('roue'), 'l’autre note à l’encre (la roue) reste cachée tant que la rune n’y passe pas')
     # la roue des canaux : le passage secret vers la salle de la lune, et l'ordre pour la tourner
     r3 = pg.evaluate('(() => { var n = SAGE.notes.filter(function(x){ return x.id === "roue"; })[0], b = n.boite, pts = []; for(var y = b.y + 10; y < b.y + b.h; y += 22) for(var x = b.x + 10; x < b.x + b.w; x += 26) pts.push([x, y]); var r = SAGE.promener(pts, 40); return {fini:!!SAGE.etat().encreFinie.roue, lignes:n.lignes.join(" "), passage:n.passage}; })()')
     b.ok(r3['fini'] and r3['passage'] == 'c5' and '3 à droite' in r3['lignes'] and '1 à gauche' in r3['lignes'] and '2 à droite' in r3['lignes'], 'la rune passée sur les canaux réveille l’ordre de la roue (« %s ») et le passage secret' % r3['lignes'])
@@ -164,7 +166,8 @@ def parcours(nav, appareil):
     regles(b, pg, 'scène Odette'); muet(b, pg, 'scène Odette')
     capture(pg, 'sage-odette-' + t)
     clic(pg, '.scene [data-fen-fermer].aller'); pg.wait_for_timeout(300)
-    b.ok(pg.evaluate('document.querySelector(".coeur-odette").style.display') == '', 'le petit cœur d’Odette apparaît près de la porte')
+    b.ok(pg.evaluate('document.querySelector(".coeur-odette").style.display') == '', 'le petit cœur apparaît près de la porte')
+    b.ok('Odette' not in pg.evaluate('document.querySelector(".coeur-odette").textContent') and 'Odette' not in pg.evaluate('document.querySelector(".coin").textContent'), 'le plan ne marque pas « Odette » (Romain, 11 novembre)')
     taper(pg, 'porte:odette')
     b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'porte:odette ne marche qu’une fois')
     clic(pg, '.pave-fen .fermer')
@@ -216,7 +219,7 @@ def parcours(nav, appareil):
     S = pg.evaluate('SAGE.etat()')
     b.ok(S['pages'].get('2') and S['codes'].get('page:blanche') and S['codes'].get('page:dechiree') and S['codes'].get('porte:odette'), 'après rechargement : pages et codes gardés')
     b.ok(not pg.evaluate('document.querySelector(".coin").hidden') and pg.inner_text('#b-livre .badge') == '3', 'après rechargement : le coin est là, 3 pages blanches restent')
-    vu2 = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=crane]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
+    vu2 = pg.evaluate('(() => { var c = document.querySelector("canvas.encre[data-note=fleur]"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, n = 0; for(var i = 3; i < d.length; i += 16) if(d[i] > 0) n++; return n; })()')
     b.ok(vu2 > 200 and S['lues'].get('rune') and S['codes'].get('rune:lumiere') and pg.is_visible('#rune'), 'après rechargement : l’encre révélée, la note déchiffrée et la rune restent')
     clic(pg, '#b-livre'); pg.wait_for_timeout(300)
     b.ok(pg.get_attribute('.livre [data-voir="2"] .code-grand', 'data-code') == 'sauve:2' and 'Odette' in pg.inner_text('.livre'), 'après rechargement : le Grand Livre garde la page écrite et la note d’Odette')

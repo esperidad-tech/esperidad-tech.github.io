@@ -304,9 +304,9 @@ function svg(){
   q += '<g class="encre-plan">' + donjon('c', true) + '</g>';
   P.noms.forEach(function(n){ if(n.coin) q += texte(n.x, n.y, n.l, n.t); });
   P.notes.forEach(function(n){ if(n.type === 'coin') q += texte(n.x, n.y, n.lignes, 19, ROUGE); });
-  /* le petit cœur d'Odette (quand le Sage a reçu « Odette est derrière la porte ») */
-  q += '<g class="coeur-odette" style="display:none">' + G(2352, 1196, -8, 1, '<path d="M0 6 C -10 -2 -8 -10 -2 -9 C 0 -9 0 -7 0 -6 C 0 -7 0 -9 2 -9 C 8 -10 10 -2 0 6 Z" fill="#c0392b" opacity=".85" stroke="' + ENC + '" stroke-width="1.2"/>') +
-    texte(2352, 1224, ['Odette'], 19, ROUGE) + '</g>';
+  /* le petit cœur à la porte (quand le Sage a entendu la voix derrière). Romain, 11 novembre (19 h 21) : « sur le plan du
+     Sage, pas marqué Odette » — le cœur reste, le nom n'y est plus */
+  q += '<g class="coeur-odette" style="display:none">' + G(2352, 1196, -8, 1, '<path d="M0 6 C -10 -2 -8 -10 -2 -9 C 0 -9 0 -7 0 -6 C 0 -7 0 -9 2 -9 C 8 -10 10 -2 0 6 Z" fill="#c0392b" opacity=".85" stroke="' + ENC + '" stroke-width="1.2"/>') + '</g>';
   q += '<rect x="' + f(bc.x) + '" y="' + f(bc.y) + '" width="' + f(bc.w) + '" height="' + f(bc.h) + '" fill="url(#cbrule)"/>' + bordBrule(BORDS.coin);
   c += '<g clip-path="url(#cparch)">' + q + '</g>';
   /* les fibres du papier arraché */
@@ -335,14 +335,6 @@ function encre(ctx, n, res){
     var pts = C.LIEN[n.passage].pts, d = new Path2D(U.lisse(pts));
     ctx.strokeStyle = 'rgba(127,240,255,.45)'; ctx.lineWidth = 9; ctx.stroke(d);
     ctx.setLineDash([.1, 11]); ctx.strokeStyle = INV; ctx.lineWidth = 4; ctx.stroke(d); ctx.setLineDash([]);
-    if(n.id === 'crane'){
-      /* le crâne gravé, au départ du passage */
-      ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
-      var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
-      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
-      ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
-      ctx.restore();
-    }
     if(n.id === 'roue'){
       /* la roue des canaux, au départ du passage : un cercle, ses rayons, et un trait qui la relie à sa note */
       var r0 = pts[0], rx = r0[0] - 6, ry = r0[1] - 46;
@@ -368,7 +360,7 @@ function encre(ctx, n, res){
     for(var k = 0; k < 6; k++){ ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -15); ctx.moveTo(0, -9); ctx.lineTo(-5, -13); ctx.moveTo(0, -9); ctx.lineTo(5, -13); ctx.stroke(); }
     ctx.restore();
   }
-  ecrire(n.lignes, n.x, n.y, n.id === 'crane' ? 24 : 22);
+  ecrire(n.lignes, n.x, n.y, 22);
   ctx.restore();
 }
 

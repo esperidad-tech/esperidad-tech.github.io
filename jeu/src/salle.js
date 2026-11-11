@@ -49,6 +49,7 @@ var EN_TRAVAUX = {};
 var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
+  gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };

@@ -129,13 +129,15 @@ D.OBJETS = {
      le type de flèche » en combat. Un carquois (carquois:true) ne prend donc plus de place dans les mains.
      Chaque sorte a son défaut (accepté par Romain) : les flèches de lune rebondissent sur l'armure (rebondit), les
      transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
-  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Elles font très mal à ce qui vole, pend à un fil ou nage. Sur ce qui marche par terre, la dague fait bien mieux.'},
+  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours.'},
+  /* (Romain, 11 novembre, 19 h 21 : « pour le Pisteur, les objets : toutes les solutions, enlève ça ». Les textes des flèches
+     ne disent donc plus contre qui elles servent : ni dans « 🎒 Objets », ni quand on les ramasse.) */
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
     contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
-    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
+    d:'Des flèches à la pointe d\'argent. Elles brillent comme la lune.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
     contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
-    d:'Contre l\'armure : leur critique frappe aussi fort que la dague, même de loin. Sur le rat cuirassé, elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
+    d:'De lourdes flèches, à la pointe de fer.'},
   /* Romain, 11 novembre (16 h 07) : « pour le Sage, on puisse récupérer deux armes. Ou plus, autant d'armes qu'on veut. Et
      on doit choisir dans le donjon. » Une arme (arme:true) ne prend donc pas de place dans les mains, comme un carquois.
      À 16 h 37 : « il y a trois bâtons : bâton normal, bâton de lune, bâton de chêne. Et après, il y a les sorts. Tu fais en
@@ -219,6 +221,9 @@ D.MONSTRES = {
     nom:'Chauve-souris de la brume', le:'la chauve-souris', rang:'normal', pv:25, module:'chauvesouris', fin:'fuit', hauteur:true,
     attaques:{pique:{degats:30, cibles:'un', foisSi:{folle:2}}}, rythme:['pique'],
     passeSi:['colle', 'gele'], tombe:['au-sol'], seReleve:true,
+    /* dague:{si:[états]} — elle vole : la dague ne l'atteint que tombée au sol (Romain, 11 novembre, 19 h 21 : « avec la
+       dague, on ne peut pas toucher ceux qui volent, ceux qui sont en l'air ») */
+    dague:{si:['au-sol']},
     reactions:{
       bruit:[{si:{sans:['au-sol']}, fait:[['etat', 'au-sol', 1], ['ouvre', 1, 'bruit']]}, {fait:[]}],
       colle:[{fait:[['etat', 'colle', 1], ['etat', 'au-sol', 1], ['ouvre', 1, 'colle']]}],
@@ -232,6 +237,7 @@ D.MONSTRES = {
     nom:'Feu follet', le:'le feu follet', rang:'normal', pv:30, module:'feufollet', fin:'meurt', hauteur:true,
     attaques:{brulure:{degats:18, cibles:'deux'}}, rythme:['brulure'],
     passeSi:['colle', 'gele'], tombe:[],
+    dague:{si:['accroche']},                 /* il vole : la dague ne l'atteint qu'accroché à un bouclier de runes */
     ferme:{fleche:1, dague:1, louche:0, feu:0, acide:1},
     reactions:{
       nuage:[{fait:[['etat', 'visible', 1], ['ouvre', 1, 'nuage']]}],
@@ -249,6 +255,7 @@ D.MONSTRES = {
     nom:'Araignée des caves', le:'l\'araignée', rang:'normal', pv:60, module:'araignee', fin:'fuit', hauteur:true,
     attaques:{morsure:{degats:18, cibles:'un'}, toile:{degats:0, cibles:'un', pose:'entoile'}}, rythme:['toile', 'morsure'],
     passeSi:['colle', 'gele'], tombe:['dos'], cache:['haut'], seReleve:true,
+    dague:{si:['dos']},                      /* elle pend à son fil : la dague ne l'atteint que tombée sur le dos */
     reactions:{
       lumiere:[{si:{sans:['dos']}, fait:[['retire', 'haut'], ['etat', 'dos', 1], ['ouvre', 1, 'lumiere']]}, {fait:[['mot', 'Déjà par terre']]}],
       huile:[{si:{sans:['dos']}, fait:[['retire', 'haut'], ['etat', 'dos', 1], ['ouvre', 1, 'huile']]}, {fait:[['mot', 'Déjà par terre']]}],
@@ -338,7 +345,12 @@ D.MONSTRES = {
   },
 
   /* ---------- Bourbe, le crapaud du puits (boss) ----------
-     Dans l'eau (immunisé) → lumière : sur la berge → feu : sec → nuage : sur le dos, ouvert jusqu'à la fin du tour suivant.
+     Dans l'eau (immunisé, on ne voit que le haut de sa tête) → GIVRE : le bassin gèle, il bondit et retombe SUR LA GLACE,
+     tout entier → feu : sec → nuage : sur le dos, ouvert jusqu'à la fin du tour suivant.
+     Romain, 11 novembre (19 h 21) : « il faudrait que ça soit le sort de givre qui le fasse sortir de l'eau. La lumière qui
+     le fait sortir de l'eau, ce n'est pas logique. La glace sous ses pieds : il ne veut pas rester coincé, donc il saute et
+     il tombe sur la glace. Et après, on lui balance du feu dessus. Et après, le fumigène. Pour moi, il n'y a que la glace
+     qui fonctionne. » La lumière ne lui fait donc plus rien, et il n'y a plus de « berge ».
      Le reste de son comportement (il sèche tout seul, il replonge, il remonte avec ses têtards) est dans D.BOURBE. */
   bourbe:{
     nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true, hauteur:true,
@@ -353,11 +365,12 @@ D.MONSTRES = {
       ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut', plusSi:{colere:20}}             /* le coup préparé de Bourbe : il retombe de tout son poids */
     }, rythme:['langue', 'ecrasement', 'saut'],
     passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
+    /* dans l'eau, la dague ne l'atteint pas ; sur la glace, oui (s'il n'y a plus de têtard devant), et sur le dos toujours */
+    dague:{si:['gele', 'sec', 'dos'], mot:'dansEau'},
     reactions:{
-      lumiere:[{si:{un:['dos', 'sous']}, fait:[]},
-               {fait:[['etat', 'berge', 2]]}],
+      lumiere:[{fait:[]}],
       feu:[{si:{avec:['ouvert']}, defaut:true},
-           {si:{un:['berge', 'gele'], sans:['sec', 'sous']}, fait:[['etat', 'sec', 'fin'], ['mot', 'Tout sec !']]},
+           {si:{un:['gele'], sans:['sec', 'sous']}, fait:[['etat', 'sec', 'fin'], ['mot', 'Tout sec !']]},
            {si:{avec:['sec']}, fait:[['mot', 'Déjà sec']]},
            {fait:[['mot', 'Trop mouillé !']]}],
       nuage:[{si:{un:['dos', 'sous']}, fait:[]},
@@ -368,13 +381,15 @@ D.MONSTRES = {
       /* le piège : le bruit, il plonge et revient avec deux têtards (sauf si le bassin est gelé : il se cogne) */
       bruit:[{si:{un:['dos', 'sous']}, fait:[]},
              {si:{avec:['gele']}, fait:[['mot', 'Il se cogne !']]},
-             {fait:[['special', 'plonger'], ['retire', 'berge'], ['retire', 'sec'], ['etat', 'sous', 1], ['mot', 'Il plonge !']], piege:true}],
-      /* l'autre chemin : le givre gèle le bassin pour trois tours (il ne plonge plus, il est comme sur la berge) */
+             {fait:[['special', 'plonger'], ['retire', 'sec'], ['etat', 'sous', 1], ['mot', 'Il plonge !']], piege:true}],
+      /* LE chemin : le givre gèle le bassin pour trois tours. Il bondit pour ne pas rester pris et retombe sur la glace :
+         le voilà hors de l'eau, et il ne peut plus plonger */
       givre:[{si:{un:['dos', 'sous']}, fait:[]},
-             {fait:[['etat', 'gele', 3], ['mot', 'Le bassin gèle !']]}],
-      /* ce qu'il fait en se fâchant (voir colere, plus haut) : il plonge — sauf si le bassin est gelé */
-      colere:[{si:{avec:['gele']}, fait:[['mot', 'Il se cogne !']]},
-              {fait:[['ferme'], ['retire', 'dos'], ['retire', 'berge'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il plonge !']]}],
+             {si:{avec:['gele']}, fait:[['etat', 'gele', 3], ['mot', 'Déjà gelé']]},
+             {fait:[['etat', 'gele', 3], ['mot', 'Il saute sur la glace !']]}],
+      /* ce qu'il fait en se fâchant (voir colere, plus haut) : il se retourne d'un bond, BRISE LA GLACE et plonge. (Depuis
+         le 11 novembre, 19 h 21, on ne le blesse plus que sur la glace : sans cela, sa phase 2 n'arriverait jamais.) */
+      colere:[{fait:[['ferme'], ['retire', 'dos'], ['retire', 'gele'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il brise la glace !']]}],
       /* sans nuage : le héros avalé le chatouille ; s'il est sec, il en roule sur le dos */
       chatouille:[{si:{avec:['sec'], sans:['dos']}, fait:[['special', 'chatouille'], ['etat', 'dos', 2], ['ouvre', 2, 'chatouille']]},
                   {fait:[['special', 'recrache']]}]
@@ -384,8 +399,8 @@ D.MONSTRES = {
 
 /* Bourbe : ce que les réactions ne disent pas */
 D.BOURBE = {
-  secApres:2,          /* sans feu : au bout de 2 tours entiers hors de l'eau, il sèche tout seul… */
-  secReste:1,          /* …et un crapaud sec reste encore 1 tour dehors, tout raide */
+  secApres:2,          /* sans feu : au bout de 2 tours entiers sur la glace, il sèche tout seul… */
+  secReste:1,          /* …et la glace tient alors encore 1 tour sous un crapaud sec, tout raide */
   tetards:2,           /* les têtards qu'il ramène quand il a plongé */
   tetardsMax:4,        /* jamais plus de têtards que ça en même temps */
   retour:'saut'        /* quand il remonte, il retombe sur tout le monde (en plus de son rythme) */
@@ -420,7 +435,9 @@ D.LIEUX = {
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
   toiles:{nom:'La cave aux toiles', combat:'toiles'},
-  eboulis:{nom:'Le cul-de-sac éboulé', tas:true, crane:true},
+  /* (Romain, 11 novembre, 19 h 21 : plus de passage secret du crâne vers le feu de camp — « on arrive directement au boss,
+     on loupe absolument tout le donjon. Il faudrait l'enlever. ») */
+  eboulis:{nom:'Le cul-de-sac éboulé', tas:true},
   dalles:{nom:'Le couloir aux dalles', piege:'dalles'},
   atelier:{nom:'L\'atelier des Fondateurs', combat:'atelier'},
   bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree', 'cristal-lune', 'baton-chene']},      /* (le Sage prend les deux armes du lutrin : Romain, 11 novembre) */
@@ -500,15 +517,17 @@ D.LIVRE = {
     'J\'ai couru me cacher derrière une vieille porte. Elle a cogné dessus, et sa plaque s\'est entrouverte, le temps d\'un souffle. Derrière, quelque chose brillait. C\'est là qu\'il faut mettre la lumière. Si seulement j\'avais eu de quoi ronger cette plaque pour de bon…'
   ],
   bourbe:[
-    'Un crapaud grand comme une maison. Tant qu\'il reste dans l\'eau, rien ne l\'atteint. C\'est ma lampe qui l\'a fait sortir sur la berge. Là, mes coups glissaient sur sa bave.',
-    'J\'ai eu le malheur de faire du bruit : il a replongé, et il est revenu avec ses petits. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite.',
+    /* (Romain, 11 novembre, 19 h 21 : « il faut modifier aussi le livre de l'aventurier : tu inventes un truc pour dire qu'il
+       a réussi à trouver un moyen de le faire sortir de l'eau » — ici : une nuit de grand froid) */
+    'Un crapaud grand comme une maison. Dans l\'eau, on ne voit que sa tête, et rien ne l\'atteint. Ma lampe, il s\'en moque. Une nuit de grand froid, le bassin a gelé d\'un coup. Il a bondi pour ne pas rester pris, et il est retombé sur la glace, tout entier.',
+    'Sur la glace, mes coups glissaient sur sa bave. Mais il ne pouvait plus plonger. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite. Et pas de bruit, surtout : dans l\'eau, le bruit le fait plonger, et il revient avec ses petits.',
     'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
 /* ===================================================================== 11. LES REFUS, en deux mots */
 D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
-  personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !',
+  personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !', dansEau:'Dans l\'eau !',
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',

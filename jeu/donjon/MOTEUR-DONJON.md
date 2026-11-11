@@ -79,8 +79,8 @@ Regles.fuir(partie);                                   // recharge la dernière 
   - Un **coffre à choix** : les deux objets brillent, on en prend un, l'autre reste là pour toujours.
 - **Les lieux particuliers** :
   - *Le tas d'os* (cul-de-sac éboulé) : la première fouille réveille un rat qui mord le Pisteur (−10) et détale ; la deuxième fouille donne **la page blanche** (code `page:blanche`). C'est la seule page blanche à trouver : celle dessinée dans la bibliothèque n'est pas posée.
-  - *Le crâne secret* : invisible, sauf si le Sage a révélé l'encre invisible sur son plan. Comme les tablettes ne se parlent pas, c'est le joueur du Pisteur qui touche l'endroit du mur que le Sage lui décrit : le crâne s'allume, le mur glisse, le passage vers le feu de camp s'ouvre sur la carte.
-  - *Le couloir aux dalles* : une explication en images et un bouton jaune, puis on traverse en choisissant une dalle à chaque rangée. Une dalle sombre déclenche le piège : −15 à toute l'équipe, et on recule d'une rangée. Rien à l'écran ne dit quelle couleur est sûre : c'est écrit sur le plan du Sage.
+  - *Le crâne secret* (**ENLEVÉ le 11 novembre au soir, §9.11** : plus de crâne, plus de raccourci vers le feu de camp) : invisible, sauf si le Sage a révélé l'encre invisible sur son plan. Comme les tablettes ne se parlent pas, c'est le joueur du Pisteur qui touche l'endroit du mur que le Sage lui décrit : le crâne s'allume, le mur glisse, le passage vers le feu de camp s'ouvre sur la carte.
+  - *Le couloir aux dalles* : (**depuis le 11 novembre au soir : plus d'explication ni de bouton jaune, on marche tout de suite**) une explication en images et un bouton jaune, puis on traverse en choisissant une dalle à chaque rangée. Une dalle sombre déclenche le piège : −15 à toute l'équipe, et on recule d'une rangée. Rien à l'écran ne dit quelle couleur est sûre : c'est écrit sur le plan du Sage.
   - *Les trois portes* : œil → l'ossuaire ; gueule → la fausse crypte ; lune → retour à la cave aux toiles.
   - *La fausse crypte* : le combat (2 chauves-souris) d'abord, puis le sarcophage s'ouvre : l'amulette de vie.
   - *Les égouts tournants* : un rat errant (combat court), puis on ressort aux canaux.
@@ -129,6 +129,7 @@ partie = {
   - ce qui est **cassé** reste cassé jusqu'à la fin du combat (le casque et l'armure du rat cuirassé, la plaque du Gardien) : le premier tour est le plus dur ;
   - **Bourbe sur le dos** le reste jusqu'à la fin du tour suivant, puisque son combo demande trois gestes.
 - **Bourbe**, précisément :
+  - (**REMPLACÉ le 11 novembre au soir, §9.11** : seul le *givre* le sort de l'eau — il saute sur la glace ; la lumière ne fait plus rien ; « sur la berge » se lit « sur la glace » ; sa colère brise la glace)
   - dans l'eau (immunisé) → *lumière* : sur la berge pour 2 tours → *feu* : sec → *nuage* : sur le dos, ouvert ;
   - *givre* : le bassin gèle pour 3 tours, il ne peut plus plonger et compte comme « sur la berge » ;
   - sans feu : s'il passe 2 tours entiers sur la berge, il sèche tout seul ;
@@ -324,3 +325,21 @@ Demandes de Romain : Bible §12.51 (« Les armes à choisir… »). Détail des 
 - **Adresses d'essai** : `?combat=atelier&potions=toutes&objets=sage:cristal-lune,sage:baton-chene,pisteur:fleches-argent,pisteur:fleches-lourdes` (les trois bandes complètes ; la rune d'appel sur le Gardien) ; `?combat=toiles&…` (la rune d'appel éteinte : tout pend ou vole).
 - **Tests** : `test-regles.js` 413 ; `test-combat.py` 135 ; `test-donjon.py` 91 ; `test-objets.py` 35 ; `../test-sage.py` 206 ; `test-descente.py` 21.
 
+### 9.11 Le 11 novembre au soir : les retouches après l'essai de Romain (19 h 21 à 20 h 54)
+
+Demandes de Romain : Bible §12.51 (« Les retouches du soir du 11 novembre »). Détail des règles : `moteur/REGLES.md` §15.
+
+- **Les étiquettes au-dessus des monstres** (`combat.js`) : `majBadges` n'écrit plus qu'UNE ligne de l'œil (`b.vise`, ce tour-ci). Pour Bourbe, une pastille dit où il est : `💧 dans l'eau` (classe `e-eau`), `🧊 sur la glace`. `poserBadges` garde les étiquettes dans l'écran (largeur mesurée une seule fois par contenu : `e._w`, remis à zéro quand le contenu change).
+- **Le bouclier** : `H.sage.bouclier(fx, …, {pct})` — l'étiquette lit `D.CHIFFRES.bouclier` (« −75 % »). Une garde de 6 s autour de l'animation des dômes (`Promise.race`) : si elle ne finit pas, le tour continue.
+- **`accorderHeros()`** (fin de `jouer()`) : recale l'écran sur les règles — un héros `sol` est couché, un héros debout est relevé.
+- **Bourbe à l'écran** (`anim/betes/bourbe/bourbe-anime.js`) : `_immerge()` (ni `sous`, ni `dos`, ni `gele`) → pose enfoncée et penchée (`FOND`, `PENCHE`, `RECUL`), mains cachées (`_majMains`) ; la langue le fait sortir la gueule (`LEVE`) ; `changerEtat('gele', true)` dans l'eau → `_surLaGlace()` (le bond, la glace qui se fêle) ; quand il jaillit pour écraser (`surgit`), `special remonter` et `etat sous off` ne sont plus joués à part (il ne remonte plus deux fois). Son cadre (`betes.js`, `cadre('bourbe')`) : `{x:512, y:50, w:470, h:326}` (reculé de 42 px, 4 % plus petit, mêmes pieds). Barre de vie : `.pv.boss` (plus grande, son nom au-dessus). `A.cible` vise sa tête quand il est dans l'eau.
+- **La rune d'appel à l'écran** (`anim/heros/src/k-sage.js`, `H._appel`) : un anneau violet se referme sur le monstre, un fil de lumière revient vers le bâton ; plus d'éclair lancé.
+- **Les salles** (`explo.js`) : plus de fenêtre avant les dalles (`explicationDalles` enlevée ; `S.pret = true` tout de suite) ; `sceneChat` — « Un gros chat gris gratte au bas de la grande porte. Miaou ! » et deux `son('miaou')` ; le code `porte:odette` s'appelle « Un chat gratte à la porte » (`donjon-codes.js`) ; les pas sur la carte : `son('pasHeros', 1.1, 2, 1.5)`.
+- **Le tas d'os** (`scenes/objets.js`, `Tas.fouiller`) : après la morsure, le tas se remet en place et redevient touchable (`fouille = false`, `actif(true)`).
+- **Les fenêtres** : `.parchemin .boutons` (donjon) et `.fen .rangee` (tablettes) gardent l'onde du rond jaune dans leur cadre (`overflow:hidden`, marges négatives) : plus de barre de défilement qui clignote.
+- **La tablette du Sage** (`pages/sage.js`, `pages/sage-plan.js`) : la fenêtre du code `porte:odette` joue `PG.son('miaou')` ; le plan ne marque plus « Odette » ; plus rien sur le crâne.
+- **Les sons** (`essai/src/son.js`) : `B.pasHeros(duree, n, aigu)`, `B.miaou(aigu)`, `bruitage({un:1})` (un seul pas du Gardien : `gardienPasA/B` lisent `P.un`). Atelier des sons : « Pas (carte) » (`s_pasCarte`), « Le chat » (`s_miaou`).
+- **Les filets contre les plantages** (`noyau.js`) : `DJ.temoinCharge(salle)` posé au lancement d'un combat et retiré quand l'entrée est jouée ; `DJ.plantagesCharge()` ; `DJ.allegeImages()` (1, puis 0,66 après un plantage au chargement, 0,5 après deux) multiplie la taille des images cuites (`cuireHeros`, `cuireRat`). Le critique le plus simple pour TOUS les monstres dès `DJ.plantages() >= 1`. La dernière ligne de « 🎒 Objets » : version, plantages, images allégées, dernière mesure d'un critique.
+- **`?nouveau=1`** : enlevé de la barre d'adresse dès le départ (`history.replaceState`) — sinon chaque rechargement de la page recommençait le donjon.
+- **Adresses d'essai** : `?combat=bassin&potions=toutes&graine=5` (Bourbe : givre, feu, fumigène) ; `?combat=crypte&potions=toutes` (la dague éteinte : « Trop haut ! »).
+- **Tests** : `test-regles.js` 436 ; `test-combat.py` 135 sur la version de 20 h 58 (une attente du test corrigée depuis), puis la cave aux toiles et le grand bassin repassés sur la version finale : 51 ; `test-donjon.py` 89 (`J.touche(id)` : un vrai doigt sur un objet) ; `test-objets.py` 35 ; `../test-sage.py` 210 ; `../test-carte.py` 72 ; `test-descente.py` 21.

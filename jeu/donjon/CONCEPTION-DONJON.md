@@ -67,7 +67,7 @@ Les points de vie sont ceux des fiches du bestiaire. Les attaques ont été rég
 | Têtard | 15 | morsure 8 | pas de point faible : un seul coup suffit | — | — | — |
 | **Le Roi des rats** (élite) | 220 | grouillement 16 sur chaque héros | nuage (le nœud se tend jusqu'à la fin du tour suivant, ils n'attaquent pas) PUIS bruit | nuage puis colle sur le roi (ouvert jusqu'à la fin du tour suivant) | bruit juste après leur attaque : en premier geste du tour suivant | lumière (boule 2 tours) ; bruit avant nuage (30 sur l'Alchimiste) |
 | **Le Gardien de rouille** (élite) | 280 | poing 40 sur celui de devant | acide (plaque, elle reste tombée) PUIS lumière (cœur, à chaque tour) | givre puis lumière | Bouclier : il frappe le bouclier, s'arrête, sa plaque s'entrouvre jusqu'à la fin du tour suivant, puis lumière | lumière avant acide (coups doublés 2 tours) ; feu (+10 par coup jusqu'à la fin) |
-| **Bourbe** (boss) | 1 000 | langue 30 (avale un héros) ; saut 28 sur tous ; en alternance | lumière dans l'eau (sur la berge 2 tours) PUIS feu sur la bave PUIS nuage (sur le dos jusqu'à la fin du tour suivant) | givre sur le bassin (3 tours : il ne plonge plus) ; miel, sel, piment (plus tard) | sans feu : 2 tours sur la berge ; sans nuage : « Chatouiller » le héros avalé, une fois Bourbe sec | nuage avant feu (gonfle, saut double) ; bruit (plonge, remonte avec 2 têtards et retombe sur tout le monde) |
+| **Bourbe** (boss) | 1 000 | langue 30 (avale un héros) ; saut 28 sur tous ; en alternance | **(depuis le 11 novembre au soir)** GIVRE sur le bassin (il saute sur la glace, 3 tours) PUIS feu sur la bave PUIS nuage (sur le dos jusqu'à la fin du tour suivant) ; la lumière ne fait plus rien | aucun autre moyen de le sortir de l'eau (décision de Romain) ; miel, sel, piment (plus tard) | sans feu : 2 tours sur la berge ; sans nuage : « Chatouiller » le héros avalé, une fois Bourbe sec | nuage avant feu (gonfle, saut double) ; bruit (plonge, remonte avec 2 têtards et retombe sur tout le monde) |
 
 Chaque monstre a ses animations : entrée, attente, attaque, réactions à chaque pouvoir, point faible ouvert, fuite ou mort, et explosion au critique mortel (§10).
 
@@ -106,7 +106,7 @@ Chaque salle a son décor (§10).
 | — | Les égouts tournants | boucle | un rat errant (combat court), puis on ressort aux canaux |
 | — | La grotte de la fleur de givre | objets | la fleur de givre (code Alchimiste) |
 | 3 | La cave aux toiles | combat | 1 araignée et 2 feux follets |
-| — | Le cul-de-sac éboulé | curiosité | un tas d'os à fouiller : la première fouille réveille un rat qui mord (−10), la deuxième donne la page blanche (code Sage) ; le crâne du passage secret (visible avec l'encre invisible du Sage) mène au feu de camp |
+| — | Le cul-de-sac éboulé | curiosité | un tas d'os à fouiller : la première fouille réveille un rat qui mord (−10), la deuxième donne la page blanche (code Sage) ; (le crâne et son passage secret vers le feu de camp sont enlevés depuis le 11 novembre au soir) |
 | — | Le couloir aux dalles | piège | un damier : sur les dalles sombres, −15 à toute l'équipe ; le plan du Sage dit « seulement les dalles claires » |
 | 4 | L'atelier des Fondateurs | combat, élite | le Gardien de rouille et 1 rat cuirassé |
 | — | La bibliothèque engloutie | objets, choix | la page déchirée (code Sage) ; cristal de lune OU bâton de chêne |

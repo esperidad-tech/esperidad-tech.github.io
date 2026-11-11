@@ -15,7 +15,9 @@ function versions(s){
 }
 function cleDe(s, v){ return s.salles ? s.id + ':' + v[0] : s.id + v[0]; }
 function statut(s){
-  if(s.x) return s.ok ? 'valide' : 'jeu';             /* ok:1 : pas encore dans le jeu, mais validé d'avance par Romain (les sons du labo, 10 novembre) */
+  /* ok:1 : pas encore dans le jeu, mais validé d'avance par Romain (les sons du labo, 10 novembre) ;
+     neuf:1 : déjà dans le jeu, mais Romain ne l'a pas encore écouté (les sons du gâteau de la fête, 11 novembre) */
+  if(s.x) return s.ok ? 'valide' : (s.neuf ? 'nouveau' : 'jeu');
   if(s.salles) return 'valide';                       /* les trois couleurs de salle : toutes gardées par Romain (10 novembre) */
   return CHOIX[s.id] && CHOIX[s.id].length ? 'valide' : 'nouveau';
 }

@@ -31,7 +31,7 @@ var CODES = {
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
-  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Odette est derrière la porte'},
+  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Un chat gratte à la porte'},
   /* le carnet de l'aventurier, trouvé à l'entrée du donjon (Romain, 11 novembre) : c'est lui que le Sage feuillette */
   'carnet:aventurier': {code:['chapeau','arbre','poisson'], de:'pisteur', a:'sage', nom:'Le carnet de l’aventurier'},
   /* l'étude des monstres (Romain, 10 novembre) : le Sage étudie un monstre en combat, son code entre dans le journal du

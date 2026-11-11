@@ -64,6 +64,17 @@ function note(f, t0, d, type, vol){
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
   }catch(e){}
 }
+/* une note qui glisse (le miaulement) */
+function glisse(f0, f1, t0, d, vol){
+  var a = audio(); if(!a) return;
+  try{
+    var o = a.createOscillator(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (t0 || 0);
+    o.type = 'triangle'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+    lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = .5;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol || .05, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(lp); lp.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
+  }catch(e){}
+}
 function son(type){
   try{ if(AC && AC.state === 'suspended') AC.resume(); }catch(e){}
   if(type === 'tic') note(880, 0, .06, 'triangle', .05);
@@ -73,6 +84,7 @@ function son(type){
   else if(type === 'page'){ note(320, 0, .12, 'triangle', .03); note(420, .05, .1, 'triangle', .02); }
   else if(type === 'plouf'){ note(260, 0, .25, 'sine', .08); note(180, .05, .3, 'sine', .05); }
   else if(type === 'feu'){ note(120, 0, .25, 'sawtooth', .025); note(90, .04, .3, 'triangle', .04); }
+  else if(type === 'miaou'){ glisse(620, 940, 0, .34, .06); glisse(940, 560, .16, .3, .05); }      /* le miaou du labo (jeu/src/labo/15-sons.js) */
 }
 PAGE.son = son;
 

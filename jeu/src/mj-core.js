@@ -176,6 +176,9 @@ MJ.coeurs = U.coeurs; MJ.plusDeCoeur = U.plusDeCoeur;
    là où l'on touche des boutons (ZOOM_JEU), pas là où l'on glisse le doigt sur un dessin (le zoom y fausserait les positions). */
 MJ.PLEIN_ECRAN = {traces:1, poursuite:1, cachette:1, tir:1, bulles:1, melange:1, differences:1, double:1, insectes:1, chaudron:1, plans:1, runes:1};
 var ZOOM_JEU = {bulles:1, melange:1, double:1};
+/* Un mini-jeu qui prend toute la largeur de l'écran (le gâteau de la fête, 11 novembre : on voit toute la place derrière lui) :
+   la fenêtre qui le porte reçoit la classe mj-large (son cadre n'est plus limité à 820 px, mj-gateau.css). */
+MJ.LARGE = MJ.LARGE || {};
 function zoneDeborde(e){
   var cs = getComputedStyle(e);
   return /(auto|scroll)/.test(cs.overflowY) && e.clientHeight > 20;
@@ -231,7 +234,7 @@ MJ.lancer = function(el, type, params, fin, options){
   el.appendChild(racine);
   /* plein écran verrouillé : la classe mj-fixe sur le mini-jeu et sur la fenêtre qui le porte (#mj-plein du jeu, #sl-plein de la salle) */
   var fixe = !!MJ.PLEIN_ECRAN[type], hote = el.closest ? el.closest('#mj-plein, #sl-plein') : null;
-  racine.classList.toggle('mj-fixe', fixe); if(hote) hote.classList.toggle('mj-fixe', fixe);
+  racine.classList.toggle('mj-fixe', fixe); if(hote){ hote.classList.toggle('mj-fixe', fixe); hote.classList.toggle('mj-large', !!MJ.LARGE[type]); }
   if(fixe) try{ MJ.ajusterHauteur(racine, type); }catch(e){}
   var scene = racine.querySelector('.mj-scene');
   var consigne = (typeof def.consigne === 'function') ? def.consigne(params) : (def.consigne || '');

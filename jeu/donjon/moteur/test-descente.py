@@ -73,10 +73,10 @@ GRAPHE = {
     'rats': ['puits', 'reserve', 'canaux'], 'reserve': ['rats'],
     'canaux': ['rats', 'givre', 'toiles'], 'givre': ['canaux'],
     'toiles': ['canaux', 'J'], 'J': ['toiles', 'eboulis', 'dalles'],
-    'eboulis': ['J', 'camp'], 'dalles': ['J', 'atelier'],
+    'eboulis': ['J'], 'dalles': ['J', 'atelier'],
     'atelier': ['dalles', 'bibliotheque', 'portes'], 'bibliotheque': ['atelier'],
     'portes': ['atelier', 'crypte', 'ossuaire'], 'crypte': ['portes'], 'ossuaire': ['portes', 'camp'],
-    'camp': ['ossuaire', 'bassin', 'eboulis'], 'bassin': ['camp', 'porte4'], 'porte4': ['bassin', 'leo'], 'leo': ['porte4'],
+    'camp': ['ossuaire', 'bassin'], 'bassin': ['camp', 'porte4'], 'porte4': ['bassin', 'leo'], 'leo': ['porte4'],
 }
 COMBATS = ['rats', 'canaux', 'toiles', 'atelier', 'crypte', 'ossuaire', 'bassin']
 PORTES = {'crypte': 'porte-gueule', 'ossuaire': 'porte-oeil'}
@@ -229,8 +229,7 @@ class Descente:
         if not fait('objet:fleur-givre'): return 'givre'
         if not fait('passage:canaux'): return 'canaux'                  # le passage secret : la roue des canaux
         if not fait('combat:toiles'): return 'toiles'
-        if not fait('secret'): return 'eboulis'
-        if not fait('combat:ossuaire') and not p.get('repos') and abime and not fait('combat:atelier') and not fait('piege:dalles'): return 'camp'
+        if (f.get('os') or 0) < 2: return 'eboulis'                     # le cul-de-sac : le tas d'os et sa page blanche (plus de raccourci vers le feu de camp depuis le 11 novembre)
         if not fait('piege:dalles'): return 'dalles'
         if not fait('combat:atelier'): return 'atelier'
         if not fait('objet:page-dechiree') or not fait('objet:cristal-lune') or not fait('objet:baton-chene'): return 'bibliotheque'
@@ -253,8 +252,6 @@ class Descente:
             if x == but: break
             if x != ici and x in ferme: continue
             for y in GRAPHE.get(x, []):
-                if x == 'eboulis' and y == 'camp' and not f.get('secret'): continue
-                if x == 'camp' and y == 'eboulis' and not f.get('secret'): continue
                 if {x, y} == {'canaux', 'toiles'} and not f.get('passage:canaux'): continue
                 if y not in vus:
                     vus[y] = x; q.append(y)
@@ -307,9 +304,7 @@ class Descente:
         elif lieu == 'eboulis':
             if not f.get('os'): self.objet('tas-os'); pg.wait_for_timeout(3200); self.libre()
             if (self.partie()['faits'].get('os') or 0) < 2: self.objet('tas-os'); self.fenetre_code()
-            if not f.get('secret'): self.objet('crane'); pg.wait_for_timeout(3400); self.libre()
         elif lieu == 'dalles' and not f.get('piege:dalles'):
-            if self.a('#fenetre [data-act="dalles-go"]'): self.clic('[data-act="dalles-go"]')
             for k in range(self.partie()['faits'].get('dalles', 0) or 0, 6):
                 self.objet('dalle-%d-%d' % (6 + k, [1, 1, 0, 0, 0, 0][k])); pg.wait_for_timeout(1200); self.libre()      # N B B, N B N
         elif lieu == 'bibliotheque':
