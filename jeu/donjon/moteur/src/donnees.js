@@ -125,6 +125,9 @@ D.OBJETS = {
   'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'},
   /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
      discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
+  /* Romain, 11 novembre (8 h 03) : « qu'il y ait un livre à l'entrée du puits ou de la crypte » — le journal de l'aventurier.
+     Le Sage tape son code : le carnet entre dans son Grand Livre ; chaque monstre étudié y décolle une page. */
+  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera chaque monstre étudié.'},
   'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
@@ -359,7 +362,7 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true, objets:['rune']},
+  puits:{nom:'Le fond du puits', depart:true, objets:['rune', 'carnet']},     /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['herbes']},            /* (la sacoche est retirée : plus de sac à remplir, Romain, 10 novembre) */
   rats:{nom:'La salle des rats', combat:'rats'},
@@ -402,78 +405,58 @@ D.CODES = {
   'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'}
 };
 
-/* ===================================================================== 10. LE GRAND LIVRE
-   Romain, 10 novembre (17 h 47) : l'étude d'un monstre ne donne plus une ligne dans le donjon, mais UN CODE (dans le
-   journal). Le Sage le tape sur sa tablette : il voit l'image du monstre et « toutes les propositions pour le battre, mais
-   sous la forme d'énigmes. Pas écrit clairement "la lumière leur fait mal" : qu'il faille un petit peu réfléchir ».
-   Par monstre, dans l'ordre : ce qui l'ouvre ; le piège à éviter ; l'autre chemin ; le chemin sans la bonne potion
-   (deux étapes au lieu d'une). Chaque pouvoir est une devinette (« Qui suis-je ? ») : jamais son nom.
-     la lumière   : elle entre partout sans ouvrir de porte ; elle chasse le noir ; on lui doit toutes les ombres…
-     le bruit     : il sort du chaudron sans être de la soupe (le coup de louche) ; on l'entend sans le voir
-     la fumée     : la fille du feu, la grise, qui monte sans échelle
-     le feu       : il mange tout et meurt s'il boit ; il danse sans jambes
-     l'huile      : elle ne se mélange jamais avec l'eau ; dorée comme le miel
-     la colle     : ce qu'elle attrape, elle ne le lâche plus
-     l'acide      : il grignote le fer sans avoir de dents
-     le givre     : il dessine des fleurs sur les vitres ; il change l'eau en caillou
-     le bouclier  : un mur sans pierres, tracé en l'air par un vieux savant
-     la chatouille : ce qui fait rire et crier « arrête ! » à la fois */
+/* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER
+   L'étude d'un monstre donne un code (dans le journal du Pisteur). Le Sage le tape sur sa tablette : il voit le croquis du
+   monstre et la page d'un vieux carnet — le journal d'un aventurier passé par là avant eux.
+   Romain, 10 novembre (20 h 55 à 21 h 28) et 11 novembre (8 h 02, validé) : PAS d'énigmes à questions (« qui aurait écrit des
+   énigmes ? »). Un récit : « ses déboires, ses réussites ». L'aventurier n'a ni pouvoirs ni les armes des héros : sa lampe à
+   huile, sa gamelle, son feu, ce qu'il trouve sur place. Il raconte ce qu'il a vécu, il ne décrit pas les étapes, il ne dit
+   pas tout (« si seulement j'avais eu… »). Tout doit être logique et concret (une lampe fige les rats, elle ne les fait pas
+   se dresser ; un seul objet du début à la fin). Aux joueurs de faire le lien : le bruit = le coup de louche, la fumée = le
+   fumigène, « de quoi ronger le fer » = l'acide, « les ailes collées » = la colle, la lumière = la rune du Sage.
+   Une page = quelques paragraphes courts (chacun aura son 🔊). Les mots de Romain et les versions : CARNET-EXPLORATEUR.md. */
 D.LIVRE = {
   rat:[
-    'J\'entre partout sans ouvrir de porte, et le noir s\'enfuit devant moi. Quand il me voit, le rat se dresse, le ventre à l\'air. Qui suis-je ?',
-    'Je sors d\'un chaudron, mais je ne suis pas de la soupe. On m\'entend sans me voir. Avec moi, les rats deviennent enragés : ils mordent deux fois. Qui suis-je ?',
-    'L\'eau et moi, on ne se mélange jamais. Un rat qui me court dessus finit les quatre pattes en l\'air. Qui suis-je ?'
+    'Des rats, gros comme des chats. Ils vivent dans le noir : tant que ma lampe à huile brûlait, ils restaient figés, sans oser approcher.',
+    'J\'ai voulu en profiter pour filer… et j\'ai fait tomber ma gamelle. Quel vacarme ! Ils sont devenus enragés. C\'est ma réserve d\'huile qui m\'a sauvé : elle a coulé sur les dalles, et ils ont patiné. Ça m\'a fait gagner du temps.'
   ],
   ratcuir:[
-    'Je n\'ai pas de dents, et pourtant je grignote le fer. Avec moi, sa vieille cuirasse tombe en morceaux. Qui suis-je ?',
-    'Je danse sans jambes et je mords sans dents. Si je touche son armure, elle rougit : il cogne plus fort, et il brûle. Qui suis-je ?',
-    'L\'hiver, je dessine des fleurs sur les vitres. Sous moi, le vieux fer casse comme du verre. Qui suis-je ?',
-    'Rien de tout ça dans le sac ? Un casque, c\'est une cloche. Qui la fait sonner une fois lui donne le tournis. Deux fois, et le casque roule par terre. Alors seulement, celle qui chasse le noir fait le reste.'
+    'Celui-là porte une cuirasse à moitié mangée par la rouille. Il n\'a même plus peur de la lumière. J\'ai essayé de le brûler, mais sa carapace le protège.',
+    'Je me suis défendu comme j\'ai pu, à grands coups de gamelle, et j\'ai fini par m\'en sortir. Toute cette rouille… Si seulement j\'avais eu de quoi finir le travail.'
   ],
   chauvesouris:[
-    'Je n\'ai pas de jambes, et je traverse la salle d\'un seul coup. Elles, qui volent à l\'oreille, en perdent le nord et tombent. Qui suis-je ?',
-    'On me doit toutes les ombres, et je n\'en ai aucune. Elles ne me voient pas, mais je les rends folles : une folle pique deux fois. Qui suis-je ?',
-    'Ce que j\'attrape, je ne le lâche plus. Des ailes prises dans mes bras ne battent plus. Qui suis-je ?'
+    'Elles me sont tombées dessus dans les canaux. J\'ai levé ma lampe pour les chasser : mauvaise idée, la lumière les a rendues folles.',
+    'De peur, j\'ai hurlé… et elles sont tombées comme des pommes, complètement perdues. J\'en ai profité pour les ficeler, les ailes collées contre le corps. Elles ne pouvaient plus bouger. C\'est comme ça que je m\'en suis débarrassé.'
   ],
   feufollet:[
-    'Je suis la fille du feu, mais plus légère que lui. Je monte sans échelle et je cache tout. Pourtant, dans mes bras, celui qu\'on voit à moitié prend forme. Qui suis-je ?',
-    'Le matin me ramène, le soir m\'emporte. Lui, il me boit comme du petit-lait : une gorgée, et il grandit. Qui suis-je ?',
-    'Nous dormons serrées dans un carquois, et nous brillons comme la nuit quand elle est ronde. La brume ne nous arrête pas. Lui non plus. Qui sommes-nous ?',
-    'Rien de tout ça ? Il adore les signes qu\'un vieux savant trace en l\'air pour protéger ses amis. Qu\'il vienne s\'y cogner : il s\'y accroche, et on le voit enfin tout entier.'
+    'Ceux-là, je les ai à peine aperçus. Le temps de lever ma lampe, ils avaient avalé sa lumière, comme aspirée, jusqu\'à n\'en laisser que de la fumée.',
+    'Et c\'est là que je les ai vus : tout entiers, et gigantesques. J\'ai couru. Je n\'ai jamais couru aussi vite.'
   ],
   araignee:[
-    'Je n\'ai ni poids ni odeur, et sans moi vous ne verriez rien. Pendue à son fil, elle me fuit si fort qu\'elle en lâche prise. Qui suis-je ?',
-    'Deux pièges. Celui qui mange tout et qui meurt s\'il boit : à sa chaleur, ses œufs éclosent. Et sa fille, la grise, qui monte sans échelle : l\'araignée remonte s\'y cacher.',
-    'Je suis dorée comme le miel, mais personne ne tient debout sur moi. Un fil qui me touche ne tient plus rien. Même pas elle. Qui suis-je ?'
+    'Une araignée grosse comme un tonneau, pendue à son fil. Elle aussi, elle a l\'air de détester ma lumière.',
+    'J\'ai voulu mettre le feu à ses œufs. Au lieu de brûler, ils ont tous éclos ! Cette erreur m\'a coûté mon sac de vivres.',
+    'Dans la fumée, la mère est remontée se cacher, et elle m\'a entoilé par surprise. Je ne m\'en suis sorti que grâce à l\'huile de ma lampe : sur du gras, sa toile ne colle plus.'
   ],
   tetard:[
-    'Petit, gluant et toujours affamé. Pas d\'énigme ici : un seul coup suffit.',
-    'Ils arrivent par deux, chaque fois que leur gros papa plonge.'
+    'Au bord du grand bassin, des têtards gros comme des chiens m\'ont sauté dessus. Je les ai chassés à coups de pied, l\'un après l\'autre. Mais chaque fois que le gros crapaud plongeait, il en ramenait deux de plus.'
   ],
   roirats:[
-    'Dix rats, une seule queue. Il faut deux sœurs, dans l\'ordre. D\'abord la grise, la fille du feu, qui cache tout : ils paniquent, chacun tire de son côté. Ensuite celle qu\'on entend sans la voir : ils sursautent, et le nœud se montre.',
-    'Jamais celle qui chasse le noir : ils se roulent en boule, et plus rien ne passe. Et celle qui sort du chaudron, pas trop tôt : ils chargent celui qui a tapé.',
-    'Ce que j\'attrape, je ne le lâche plus. Quand le nœud est tendu, un roi pris dans mes bras ne commande plus personne. Qui suis-je ?',
-    'Pas de grise dans le sac ? Juste après leur assaut, ils sont étalés partout. C\'est le moment de faire parler le chaudron, avant tout autre geste : c\'est la panique.'
+    'Dix rats noués par la queue, qui bougent comme un seul. C\'est ignoble. Et malin, avec ça : dès que j\'ai levé ma lampe, ils se sont roulés en boule pour se protéger les uns les autres.',
+    'Je n\'ai pas pu m\'empêcher de crier. Ça les a rendus furieux : ils m\'ont chargé.',
+    'Je ne leur ai échappé que le soir, quand mon feu s\'est mis à fumer. Dans la fumée, ils ne savaient plus où aller : chacun tirait de son côté. Cette fois, mon cri les a fait sursauter, et j\'ai vu le nœud de leurs queues.'
   ],
   gardien:[
-    'D\'abord la plaque, ensuite le cœur. Pour la plaque : celle qui n\'a pas de dents et qui grignote le fer. Pour le cœur : celle qui chasse le noir.',
-    'Dans le mauvais ordre, ses runes s\'affolent : il frappe double. Et gardez loin de lui celui qui danse sans jambes : chauffé au rouge, il cogne encore plus fort.',
-    'Je change l\'eau en caillou sans la toucher. Sous moi, le vieux bronze éclate. Ensuite, visez le cœur. Qui suis-je ?',
-    'Rien de tout ça ? Qu\'il cogne sur un mur sans pierres, tracé en l\'air par un vieux savant : sa plaque s\'entrouvre un instant. C\'est le moment de montrer à son cœur celle qui chasse le noir.'
+    'Une machine des Fondateurs, haute comme deux hommes, toute rouillée. Elle m\'a barré la route. J\'ai levé ma lampe pour voir à qui j\'avais affaire : elle est devenue folle.',
+    'J\'ai couru me cacher derrière une vieille porte. Elle a cogné dessus, et sa plaque s\'est entrouverte, le temps d\'un souffle. Derrière, quelque chose brillait. C\'est là qu\'il faut mettre la lumière. Si seulement j\'avais eu de quoi ronger cette plaque pour de bon…'
   ],
   bourbe:[
-    'Trois clés, dans l\'ordre. Dans l\'eau, rien ne l\'atteint : celle qui entre partout sans ouvrir de porte le fait sortir. Sur la berge, sa bave le protège : celui qui meurt s\'il boit la sèche. Et un crapaud tout sec ne supporte pas la fille du feu : il en tombe à la renverse.',
-    'La grise trop tôt, sur un crapaud encore mouillé : il gonfle, et il saute deux fois plus fort. Et celle qui sort du chaudron : il plonge chercher ses petits.',
-    'L\'hiver, je dessine des fleurs sur les vitres. Avec moi, le bassin devient dur comme la pierre : le voilà coincé dehors, sans pouvoir plonger. Qui suis-je ?',
-    'Il manque une clé ? Sans celui qui meurt s\'il boit : deux tours au sec, et sa bave sèche toute seule. Sans la grise : celui qu\'il a avalé connaît ce qui fait rire et crier « arrête ! » à la fois. Une fois sa peau bien sèche, il rit, il recrache, il roule sur le dos.'
+    'Un crapaud grand comme une maison. Tant qu\'il reste dans l\'eau, rien ne l\'atteint. C\'est ma lampe qui l\'a fait sortir sur la berge. Là, mes coups glissaient sur sa bave.',
+    'J\'ai eu le malheur de faire du bruit : il a replongé, et il est revenu avec ses petits. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite.',
+    'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
-/* le titre de chaque énigme sur la tablette du Sage */
-D.LIVRE_TITRES = ['Son point faible', 'Le piège', 'Un autre chemin', 'Sans la potion'];     /* (3 mots au plus : pas besoin de 🔊) */
-D.LIVRE_TITRES_DE = {tetard:['Ce qu\'il faut savoir', 'D\'où ils viennent']};
-/* ce que chaque ligne apprend (pour la simulation et les tests) */
-D.LIVRE_SUJETS = ['ouvre', 'piege', 'autre', 'sans-potion'];
+/* « étudié » dans partie.livre : ce nombre (la simulation y lit « l'équipe sait tout de ce monstre ») */
+D.ETUDIE = 4;
 D.LIVRE_VIDE = 'Le journal est encore vide. Pendant un combat, le Sage peut étudier un monstre.';
 D.LIVRE_COMPLET = 'Le Sage a déjà étudié ce monstre.';
 /* après 2 fuites (ou défaites) dans la même salle, le journal offre le code de la bête la plus forte de la salle que le Sage n'a pas étudiée */

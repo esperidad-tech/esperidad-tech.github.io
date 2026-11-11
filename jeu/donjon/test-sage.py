@@ -12,7 +12,7 @@ from outils_test import Bilan, contexte, page, capture, regles, muet, mesurer_gl
 VITE = '--vite' in sys.argv
 CODES = {'rune:lumiere': ['flamme', 'etoile', 'cle'], 'page:dechiree': ['cle', 'flamme', 'poisson'], 'page:blanche': ['cloche', 'chat', 'soleil'], 'porte:odette': ['chapeau', 'lune', 'coeur'],
          'faux': ['lune', 'lune', 'lune'], 'recette:givre': ['champi', 'coeur', 'cle'],
-         'etude:gardien': ['cloche', 'cle', 'soleil'], 'etude:rat': ['chat', 'champi', 'etoile']}
+         'etude:gardien': ['cloche', 'cle', 'soleil'], 'etude:rat': ['chat', 'champi', 'etoile'], 'carnet:aventurier': ['chapeau', 'arbre', 'poisson']}
 b = Bilan('Sage')
 
 
@@ -171,16 +171,23 @@ def parcours(nav, appareil):
     taper(pg, 'page:dechiree')
     b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'page:dechiree ne marche qu’une fois')
     clic(pg, '.pave-fen .fermer')
-    # --- l'étude d'un monstre (Romain, 10 novembre) : le code du journal du Pisteur ouvre la page du monstre, avec ses énigmes ---
+    # --- le carnet de l'aventurier (Romain, 10 et 11 novembre) : trouvé à l'entrée du donjon ; chaque monstre étudié y décolle une page ---
     clic(pg, '#b-livre'); pg.wait_for_timeout(300)
-    b.ok(pg.locator('.livre .bete-vignette').count() == 0 and 'Aucun pour l’instant' in pg.inner_text('.livre-betes'), 'Grand Livre : aucun monstre étudié pour l’instant (c’est dit)')
+    b.ok(pg.locator('.livre .bete-vignette').count() == 0 and 'Pas encore de carnet' in pg.inner_text('.livre-betes'), 'Grand Livre : pas encore de carnet (c’est dit)')
+    clic(pg, '.livre .fermer'); pg.wait_for_timeout(200)
+    taper(pg, 'carnet:aventurier'); pg.wait_for_timeout(700)
+    b.ok(pg.is_visible('.scene') and 'carnet' in pg.inner_text('.scene').lower() and pg.is_visible('.scene .aller.guide'), 'le code du carnet : une petite scène, le rond jaune sur « Je le garde »')
+    regles(b, pg, 'le carnet')
+    clic(pg, '.scene .aller'); pg.wait_for_timeout(300)
+    clic(pg, '#b-livre'); pg.wait_for_timeout(300)
+    b.ok('pages sont collées' in pg.inner_text('.livre-betes'), 'Grand Livre : le carnet est là, ses pages sont encore collées')
     clic(pg, '.livre .fermer'); pg.wait_for_timeout(200)
     taper(pg, 'etude:gardien'); pg.wait_for_timeout(900)
-    b.ok(pg.is_visible('.bete-fen') and 'Gardien de rouille' in pg.inner_text('.bete-fen h2'), 'le code d’étude du Gardien ouvre sa page')
-    b.ok(pg.evaluate('(() => { var i = document.querySelector(".bete-fen .bete-img img"); return i.complete && i.naturalWidth > 0; })()'), 'on voit l’image du monstre')
-    b.ok(pg.locator('.bete-fen .enigme').count() == 4 and pg.locator('.bete-fen .enigme .lire').count() == 4, 'quatre énigmes (point faible, piège, autre chemin, sans la bonne potion), chacune avec son 🔊')
-    txt = pg.inner_text('.bete-fen .bete-enigmes').lower()
-    b.ok(not any(m in txt for m in ['lumière', 'acide', 'givre', 'bouclier', 'fiole', 'louche']), 'les énigmes ne nomment pas le pouvoir à trouver')
+    b.ok(pg.is_visible('.bete-fen') and 'Gardien de rouille' in pg.inner_text('.bete-fen h2'), 'le code d’étude du Gardien décolle sa page')
+    b.ok(pg.evaluate('(() => { var i = document.querySelector(".bete-fen .bete-img img"); return i.complete && i.naturalWidth > 0; })()'), 'on voit le croquis du monstre')
+    b.ok(pg.locator('.bete-fen .recit').count() == 2 and pg.locator('.bete-fen .recit .lire').count() == 2 and pg.locator('.bete-fen .enigme, .bete-fen h3').count() == 0, 'le récit de l’aventurier : deux paragraphes, chacun avec son 🔊, sans titres')
+    txt = pg.inner_text('.bete-fen .bete-recit').lower()
+    b.ok('qui suis-je' not in txt and not any(m in txt for m in ['rune', 'acide', 'givre', 'bouclier', 'fiole', 'louche', 'potion']), 'un récit : pas de question, pas de nom de geste ni de potion')
     b.ok(pg.is_visible('.bete-fen .aller.guide'), 'le rond jaune est sur « C’est noté »')
     regles(b, pg, 'page du monstre')
     capture(pg, 'sage-monstre-' + t)
@@ -190,10 +197,10 @@ def parcours(nav, appareil):
     b.ok('déjà reçu' in pg.inner_text('.pave-msg'), 'un code d’étude ne marche qu’une fois')
     clic(pg, '.pave-fen .fermer')
     taper(pg, 'etude:rat'); pg.wait_for_timeout(700)
-    b.ok(pg.locator('.bete-fen .enigme').count() == 3, 'le rat d’égout : trois énigmes')
+    b.ok(pg.locator('.bete-fen .recit').count() == 2, 'le rat d’égout : sa page')
     clic(pg, '.bete-fen .aller'); pg.wait_for_timeout(300)
     clic(pg, '#b-livre'); pg.wait_for_timeout(400)
-    b.ok(pg.locator('.livre .bete-vignette').count() == 2, 'le Grand Livre garde les deux monstres étudiés')
+    b.ok(pg.locator('.livre .bete-vignette').count() == 2, 'le Grand Livre garde les deux pages décollées')
     capture(pg, 'sage-livre-monstres-' + t)
     clic(pg, '.livre [data-bete="gardien"]'); pg.wait_for_timeout(500)
     b.ok(pg.is_visible('.bete-fen') and pg.locator('.bete-fen .bete-intro').count() == 0, 'on rouvre la page du Gardien depuis le Grand Livre')

@@ -381,10 +381,10 @@ Décisions de Romain du 10 novembre (17 h 47 et 17 h 56, Bible §12.51).
 
 - `etudier` : seulement sur un monstre d'une sorte **pas encore étudiée** (`Regles.etudie(partie, type)`). Sinon le geste est éteint (« Déjà étudié »). Une seule étude par sorte suffit.
 - L'évènement qui suit `etudie` : `{t:'livre', monstre, code:'etude:<monstre>', nom, cause:'etude' | 'fuites'}` (ou `{t:'livre', monstre, rien:true}`). Plus de `ligne`, `texte`, `sujet`, `total`, `sur`.
-- `partie.livre[monstre]` : absent = jamais rencontré ; `0` = rencontré ; plus de `0` = étudié (c'est le nombre d'énigmes de sa page, pour la simulation).
+- `partie.livre[monstre]` : absent = jamais rencontré ; `0` = rencontré ; plus de `0` = étudié (`D.ETUDIE`, 4 : pour la simulation, « l'équipe sait tout de ce monstre »).
 - `Regles.grandLivre(partie)` → `[{monstre, nom, rang, etudie, code}]` : c'est **le journal** du donjon (les codes à montrer au Sage).
 - Après 2 fuites dans la même salle : le journal offre le code de la bête la plus forte **pas encore étudiée** (rien si tout l'est).
-- Les codes `etude:<monstre>` sont dans `donjon-codes.js` (affichés par le Pisteur, tapés par le Sage). Les énigmes sont dans `D.LIVRE` (quatre par monstre au plus : `D.LIVRE_TITRES`), lues par la tablette du Sage. **Aucune énigme ne nomme le pouvoir à trouver** (`test-regles.js` le vérifie).
+- Les codes `etude:<monstre>` sont dans `donjon-codes.js` (affichés par le Pisteur, tapés par le Sage). Depuis le 11 novembre, `D.LIVRE` contient **le journal d'un aventurier** (un à trois paragraphes par monstre, lus par la tablette du Sage ; plus de devinettes : `CARNET-EXPLORATEUR.md`). `test-regles.js` refuse une question, le nom d'un geste, d'une potion ou d'un héros. Le carnet lui-même est un objet à code de la salle `puits` (`carnet`, code `carnet:aventurier` pour le Sage).
 
 **Les potions : plus de sac**
 

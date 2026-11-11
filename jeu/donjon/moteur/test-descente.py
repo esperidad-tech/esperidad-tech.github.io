@@ -216,7 +216,7 @@ class Descente:
         def fait(k):
             return bool(f.get(k))
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
-        if not fait('objet:rune'): return 'puits'                       # la pierre de rune du Sage, au fond du puits
+        if not fait('objet:rune') or not fait('objet:carnet'): return 'puits'      # la pierre de rune du Sage et le carnet de l'aventurier, au fond du puits
         if not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
         if not fait('objet:fleches-lourdes') or not fait('objet:fleches-argent'): return 'reserve'
@@ -269,6 +269,9 @@ class Descente:
     # ----- ce qu'on fait dans une salle sans combat -----
     def salle_calme(self, lieu):
         pg = self.pg; self.libre(); p = self.partie(); f = p['faits']; but = self.but(p)
+        if lieu == 'puits' and not f.get('objet:carnet'):
+            self.objet('carnet'); self.fenetre_code()
+            f = self.partie()['faits']
         if lieu == 'puits' and not f.get('objet:rune'):
             self.cap('puits'); self.objet('rune'); self.fenetre_code()
             verifie(bool(self.partie()['faits'].get('objet:rune')), 'au fond du puits : la pierre de rune est trouvée (un code pour le Sage)')

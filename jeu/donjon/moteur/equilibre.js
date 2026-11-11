@@ -366,7 +366,7 @@ var LU_AVANT = {
   ossuaire:{rat:1, chauvesouris:1, araignee:1, feufollet:1, gardien:1, ratcuir:1},
   bassin:{rat:1, chauvesouris:1, araignee:1, feufollet:1, gardien:1, ratcuir:1, roirats:1}
 };
-var TOUT_LU = {}; Object.keys(D.LIVRE).forEach(function(k){ TOUT_LU[k] = D.LIVRE[k].length; });
+var TOUT_LU = {}; Object.keys(D.LIVRE).forEach(function(k){ TOUT_LU[k] = D.ETUDIE; });      /* (étudié = l'équipe sait tout de ce monstre) */
 /* depuis le 10 novembre, une étude donne toute la page du monstre d'un coup (un code pour le Sage) : « déjà lu » = tout lu */
 Object.keys(LU_AVANT).forEach(function(sa){ Object.keys(LU_AVANT[sa]).forEach(function(k){ LU_AVANT[sa][k] = TOUT_LU[k]; }); });
 /* le sac et les objets raisonnables de l'équipe maligne, salle par salle */

@@ -4,7 +4,7 @@
      complété par le code page:dechiree.
    - Le Grand Livre et ses pages blanches de sauvegarde (3, +1 avec page:blanche) : chaque page donne un code sauve:N.
    - Le bouton « 📥 Un code » : page:dechiree, page:blanche, porte:odette, rune:lumiere (chacun une seule fois), et les
-     codes d'étude des monstres (etude:<monstre>) : le Grand Livre montre le monstre et ses énigmes (donnees.js, D.LIVRE).
+     codes d'étude des monstres (etude:<monstre>) : la page du monstre dans le carnet de l'aventurier (carnet:aventurier ; donnees.js, D.LIVRE).
    Tout est gardé dans localStorage ('brumeval-donjon-sage'). Rapidité : glisser / zoomer = un seul transform ;
    la rune ne peint que la petite toile de l'encre qu'elle touche ; au repos, rien ne tourne. */
 (function(){
@@ -363,11 +363,12 @@ function livre(guide){
     else html += '<button type="button" class="page blanche" data-page="' + i + '"><b>Page blanche</b><small>' + nom + '</small><i aria-hidden="true">✦</i></button>';
   }
   html += '</div>';
-  /* les monstres étudiés : une page chacun (le portrait et les énigmes) */
-  var betes = monstresEtudies();
-  html += '<div class="livre-betes"><h3>🔍 Les monstres étudiés</h3>' +
+  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre étudié */
+  var betes = monstresEtudies(), carnet = !!S.codes['carnet:aventurier'];
+  html += '<div class="livre-betes"><h3>📓 Le vieux carnet</h3>' +
     (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
-      : dit('Aucun pour l’instant. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code.')) + '</div>';
+      : dit(carnet ? 'Ses pages sont collées par l’humidité. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code, et tu sauras quelle page décoller.'
+                   : 'Pas encore de carnet. On raconte qu’un aventurier a laissé le sien à l’entrée du donjon… Si le Pisteur le trouve, il te montrera un code.')) + '</div>';
   if(S.codes['porte:odette']) html += '<div class="livre-note">' + dit('Noté de ta main : Odette est vivante, derrière la porte aux quatre signes.') + '</div>';
   var w = PG.fenetre(html, {classe:'livre parch'}), f = w.el;
   if(guide) PG.guider(f.querySelector('[data-page="' + guide + '"]'));
@@ -380,25 +381,26 @@ function livre(guide){
 }
 
 /* ======================================================================
-   Les monstres étudiés (Romain, 10 novembre) : « le code, il le tape sur sa tablette, et là il voit apparaître l'image de
-   l'ennemi. Ensuite, toutes les propositions pour le battre, mais sous la forme d'énigmes : qu'il faille un peu réfléchir. »
-   Les énigmes sont dans moteur/src/donnees.js (D.LIVRE) ; les portraits viennent des fiches du bestiaire.
+   Les monstres étudiés (Romain, 10 et 11 novembre) : « le code, il le tape sur sa tablette, et là il voit apparaître l'image
+   de l'ennemi ». Pas d'énigmes à questions : le journal d'un aventurier (son récit, ses déboires), et des monstres « dessinés
+   à la main, comme dans un carnet ». Les pages sont dans moteur/src/donnees.js (D.LIVRE) ; les croquis dans pages/portraits/
+   (fabriqués par pages/croquis/seuls.py puis croquis.py, à partir des monstres du bestiaire).
    ====================================================================== */
 var PORTRAITS = /donjon-sage\.html/.test(location.pathname) ? 'pages/portraits/' : 'i/portrait-';
-var ICONES_ENIGMES = ['🗝️', '⚠️', '🔀', '🎒'];
 function monstresEtudies(){ return Object.keys(DD.LIVRE).filter(function(m){ return !!S.codes['etude:' + m]; }); }
+/* la page d'un monstre : le croquis de l'aventurier et son récit (un 🔊 par paragraphe). Pas de titres, pas de questions. */
 function pageMonstre(m, nouveau){
-  var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [], T = (DD.LIVRE_TITRES_DE && DD.LIVRE_TITRES_DE[m]) || DD.LIVRE_TITRES;
-  var rang = M.rang === 'boss' ? 'Le maître du donjon' : M.rang === 'elite' ? 'Un monstre d’élite' : 'Un monstre du donjon';
+  var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [];
   var html = '<div class="titre"><h2>' + esc(M.nom) + '</h2>' + PG.lireBtn(M.nom) + '</div>' +
-    '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt="" width="560" height="502"><small>' + esc(rang) + '</small></div>' +
-    '<div class="bete-enigmes">' +
-      (nouveau ? dit('Ton Grand Livre s’ouvre tout seul à sa page. Les Fondateurs n’écrivaient jamais rien clairement : à toi de deviner, et de le dire aux autres.', 'bete-intro') : '') +
-      L.map(function(t, i){ return '<div class="enigme"><h3>' + (ICONES_ENIGMES[i] || '•') + ' ' + esc(T[i] || '') + '</h3>' + dit(t) + '</div>'; }).join('') +
+    '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt=""><small>Carnet d’un aventurier</small></div>' +
+    '<div class="bete-recit">' +
+      (nouveau ? dit(S.codes['carnet:aventurier'] ? 'Une page du carnet se décolle : c’est bien ce monstre-là. L’aventurier raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.'
+                                                  : 'Une vieille page, glissée dans ton Grand Livre. Un aventurier y raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.', 'bete-intro') : '') +
+      L.map(function(t){ return '<div class="recit">' + dit(t) + '</div>'; }).join('') +
     '</div></div>' +
     '<div class="rangee"><button type="button" class="aller" data-fen-fermer>' + (nouveau ? 'C’est noté' : 'Refermer la page') + '</button></div>';
   var w = PG.fenetre(html, {classe:'bete-fen parch', surFermer:nouveau ? null : function(){ livre(); }});
-  if(nouveau){ PG.son('magie'); var r = w.el.getBoundingClientRect(); PG.etincelles(w.el, r.width * .25, r.height * .4, 22, {dist:130, duree:1100}); PG.guider(w.el.querySelector('.aller')); }
+  if(nouveau){ PG.son('page'); PG.guider(w.el.querySelector('.aller')); }
   return w;
 }
 function utiliser(n){
@@ -433,7 +435,15 @@ function scene(id){
   if(id.indexOf('etude:') === 0){
     var m = id.slice(6);
     pageMonstre(m, true);
-    conte('Une page de plus dans ton Grand Livre : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras là-bas, avec ses énigmes.');
+    conte('Une page de plus dans le carnet de l’aventurier : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras dans ton Grand Livre.');
+  } else if(id === 'carnet:aventurier'){
+    /* le carnet trouvé à l'entrée du donjon : il entre dans le Grand Livre */
+    var wc = PG.fenetre('<div class="titre"><h2>📓 Un vieux carnet</h2></div>' +
+      dit('Un vieux carnet, trouvé à l’entrée du donjon. Quelqu’un est passé par ici avant vous : un aventurier, sans pouvoirs ni potions, qui a tout noté.') +
+      dit('L’humidité a collé ses pages. Quand ton héros étudiera un monstre, tu sauras laquelle décoller.') +
+      '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Je le garde</button></div>', {classe:'scene parch'});
+    PG.son('page'); PG.guider(wc.el.querySelector('.aller'));
+    conte('Le carnet de l’aventurier est rangé dans ton Grand Livre. Ses pages attendent d’être décollées.');
   } else if(id === 'rune:lumiere'){
     var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
       dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +

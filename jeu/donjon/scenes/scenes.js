@@ -1346,6 +1346,8 @@ SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambi
   elements: [
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},
     /* la pierre de rune du Sage : posée là comme une pierre ordinaire, sans lueur ni étoiles (il faut chercher) */
+    /* le carnet de l'aventurier (Romain, 11 novembre : « un livre à l'entrée du puits ») : posé par terre, bien visible */
+    objet({id: 'carnet', nom: 'Un vieux carnet', svg: A.livre('#6b4a2a'), x: 468, y: SOL - 30, w: 60, h: 30, sol: true, lueur: '#ffe8a8', pour: 'sage', code: 'carnet'}),
     objet({id: 'rune', nom: 'Une pierre gravée', svg: A.pierreRune(), x: 846, y: SOL - 31, w: 60, h: 40, sol: true, brille: false, discret: true, lueur: '#9ff6ff', pour: 'sage', code: 'rune'}),
     poussiere(530, 40, 170, 250, 8, '#eef4ff'),
     poussiere(700, 30, 220, 300, 3, '#bfe0ff', 'gouttes')

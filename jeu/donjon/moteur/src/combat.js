@@ -1049,7 +1049,7 @@ function grandLivre(partie){
   var pages = Regles.grandLivre(partie), K = window.DONJON_CODES;
   var s = '<h2>Le journal</h2>';
   if(!pages.length) s += '<div class="ligne vide">' + D.LIVRE_VIDE + DJ.lireBtn(D.LIVRE_VIDE) + '</div>';
-  else { var intro = 'Chaque monstre étudié a son code. Le Sage le tape sur sa tablette : son Grand Livre lui montre le monstre, et ses énigmes.'; s += '<div class="ligne">' + intro + DJ.lireBtn(intro) + '</div>'; }
+  else { var intro = 'Chaque monstre étudié a son code. Le Sage le tape sur sa tablette : il y retrouve le monstre, dans le journal d\'un aventurier passé par là.'; s += '<div class="ligne">' + intro + DJ.lireBtn(intro) + '</div>'; }
   pages.forEach(function(p){
     s += '<div class="sous">' + esc(p.nom) + '</div>';
     if(!p.etudie){ var v = 'Pas encore étudié. Pendant un combat, le Sage peut l\'observer.'; s += '<div class="ligne vide">' + v + DJ.lireBtn(v) + '</div>'; return; }

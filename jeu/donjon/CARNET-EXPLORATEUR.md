@@ -1,7 +1,11 @@
 # Le journal de l'aventurier (les pages des monstres sur la tablette du Sage)
 
-**État : version 4 envoyée à Romain le 10 novembre à 21 h 35, après ses remarques de 21 h 28 (le rat est « super », Bourbe « pas mal »). Pas encore validée en entier. Rien de tout ça n'est dans le jeu.**
-En ligne, la page d'un monstre montre encore le portrait en couleurs et les devinettes « Qui suis-je ? » (`D.LIVRE` dans `moteur/src/donnees.js`).
+**État : validé par Romain le 11 novembre (8 h 02 : « Oui pour les 3 » ; 8 h 03 : « go pour créer la page du Sage, et fais en sorte qu'il y ait un livre à l'entrée du puits ou l'entrée de la crypte »). Construit et en ligne le 11 novembre (8 h 34, commit du site 369ee6d, version « 11/11 à 8 h 10 »).**
+
+- Les pages en ligne sont celles de `D.LIVRE` (`moteur/src/donnees.js`) : la version 4 ci-dessous, avec deux retouches acceptées par Romain (« oui pour les 3 ») : au **Roi des rats**, la phrase « Cette fois, mon cri les a fait sursauter, et j'ai vu le nœud de leurs queues » ; **Bourbe** raccourci dans le même esprit que les autres. **Romain n'a pas encore lu ces deux textes dans leur forme finale.**
+- Les neuf croquis sont dans `pages/portraits/<id>.webp` (les originaux en PNG : `pages/croquis/croquis-<id>.png`). Style validé (« oui »).
+- **Le carnet est un objet** : il attend à l'entrée du donjon (`carnet`, dans la salle `puits`, par terre entre le Pisteur et la corde). Le Pisteur le ramasse : code `carnet:aventurier` (🎩 🌳 🐟) pour le Sage. Sur la tablette du Sage, le carnet entre dans le Grand Livre (« 📓 Le vieux carnet ») ; ses pages sont « collées par l'humidité » : chaque monstre étudié en décolle une (le code d'étude). Un code d'étude marche même sans le carnet (rien ne bloque).
+- Romain a ajouté : « On va garder la même longueur pour la crypte ou le puits. » Compris ainsi : le livre est à l'entrée du donjon, que cette entrée soit le puits (aujourd'hui) ou la crypte (dans l'enquête 3), et rien d'autre ne change. **À lui redemander si ce n'est pas ça.**
 
 ## Ce que Romain a dit (10 novembre, 20 h 55, 21 h 05 et 21 h 08)
 
@@ -58,8 +62,8 @@ Une lampe à huile et sa réserve d'huile, une gamelle, un feu de camp, un bâto
 - Essais envoyés à Romain à 20 h 58 : `pages/croquis/croquis-rat.png`, `croquis-gardien.png` (encre brune sur vieux papier). **Pas encore de réponse sur le style.**
 - Fabrication : `python3 pages/croquis/seuls.py <id…>` (le monstre du bestiaire seul sur fond blanc, avec Playwright), puis `python3 pages/croquis/croquis.py <id…>`.
 
-## Quand Romain aura validé
+## Pour changer une page ou un croquis
 
-1. Remplacer `D.LIVRE` par les pages du journal (une page = un ou plusieurs paragraphes, chacun avec son 🔊) ; retirer les quatre titres (`D.LIVRE_TITRES`) ; adapter le test « les énigmes ne nomment jamais le pouvoir » de `test-regles.js`.
-2. Remplacer `pages/portraits/<id>.webp` par les croquis ; habiller la page du monstre comme une page de carnet (`pages/sage.js`, `pageMonstre` ; `pages/sage.css`).
-3. `python3 pages/assembler.py`, `python3 construire.py`, `test-sage.py --vite`, mise en ligne.
+1. Le texte : `D.LIVRE` dans `moteur/src/donnees.js` (un à trois paragraphes courts par monstre, chacun aura son 🔊). `test-regles.js` refuse une question, le nom d'un geste, d'une potion ou d'un héros, et tout autre lampe que la lampe à huile.
+2. Le croquis : `python3 pages/croquis/seuls.py <id>` puis `python3 pages/croquis/croquis.py <id>`, puis l'enregistrer en WebP dans `pages/portraits/<id>.webp`.
+3. `python3 pages/assembler.py`, `python3 moteur/construire.py`, `test-sage.py --vite`, mise en ligne.

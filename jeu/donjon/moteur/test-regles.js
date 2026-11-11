@@ -275,7 +275,7 @@ section('La salle des rats : les chiffres de l\'essai, un par un');
   ok(!c.h.sage.sol && c.h.sage.pv === 40 && trouve(ev, 'releve').par === 'coeur', 'le Cœur vaillant relève avec 40 PV');
   c.h.pisteur.pv = 50;
   ev = c.jouer('sage', {geste:'etudier', cible:c.b[1].id});
-  ok(trouve(ev, 'livre').code === 'etude:rat' && t.p.livre.rat === D.LIVRE.rat.length, 'Étudier : le code du rat entre dans le journal (pour la tablette du Sage)');
+  ok(trouve(ev, 'livre').code === 'etude:rat' && t.p.livre.rat === D.ETUDIE, 'Étudier : le code du rat entre dans le journal (pour la tablette du Sage)');
   tourSuivant(c);
   ev = jouer(c, 'alchimiste', 'herbes', 'pisteur');
   egal(trouve(ev, 'soin').n, 20, 'les Herbes rendent 20');
@@ -856,21 +856,22 @@ section('Le Grand Livre');
   var ge = c.gestes('sage').filter(function(x){ return x.geste === 'etudier'; })[0];
   ok(ge.permis && ge.cibles.length === 1 && c.bete(ge.cibles[0]).type === 'ratcuir', 'il reste un nouveau monstre : seul le rat cuirassé peut être étudié');
   ok(R.etudie(p, 'gardien') && !R.etudie(p, 'ratcuir'), 'Regles.etudie dit quels monstres ont leur code');
-  egal(D.LIVRE_TITRES.length, 4, 'quatre sortes d\'énigmes : le point faible, le piège, l\'autre chemin, sans la bonne potion');
   ok(Object.keys(D.LIVRE).every(function(k){ return codeEtude('etude:' + k); }), 'chaque monstre du Grand Livre a son code d\'étude (donjon-codes.js), pour la tablette du Sage');
   var gl = R.grandLivre(p);
   egal(gl.map(function(x){ return [x.monstre, x.etudie, x.code]; }), [['ratcuir', false, null], ['gardien', true, 'etude:gardien']], 'le journal à afficher : une ligne par monstre rencontré (pas encore étudié pour le rat cuirassé, un code pour le Gardien)');
-  var mots = /\b(acide|givre|rune|louche|fumigène|fumigene|colle|huile)\b/i;
+  var mots = /\b(acide|givre|rune|louche|fumigène|fumigene)\b/i;        /* (la lampe à huile de l'aventurier et « les ailes collées » sont voulues par Romain) */
   var fautes = [];
   Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(l, i){
     if(/^touche|\btouche[zr]? (le|la|sur)\b/i.test(l)) fautes.push(k + ' ' + i + ' : « Touche »');
-    if(mots.test(l) && !(k === 'feufollet' && i === 3) && !(k === 'gardien' && i === 3) && !(k === 'roirats' && i === 2)) fautes.push(k + ' ' + i + ' : nomme le geste ou la potion');
+    if(mots.test(l)) fautes.push(k + ' ' + i + ' : nomme le geste ou la potion');
   }); });
   ok(fautes.length === 0, 'aucune ligne ne dit « Touche… » ni ne nomme la potion à utiliser' + (fautes.length ? ' — ' + fautes.join(' ; ') : ''));
-  ok(Object.keys(D.MONSTRES).every(function(k){ var cle = D.MONSTRES[k].livre || k; return D.LIVRE[cle] && D.LIVRE[cle].length >= 2; }), 'chaque monstre a sa page');
-  var INTERDITS = ['lumière', 'louche', 'fumigène', 'fumée', 'nuage', 'fiole', 'huile', 'colle', 'acide', 'givre', 'bouclier', 'rune de', 'chatouill', 'bruit', 'vacarme'];
+  ok(Object.keys(D.MONSTRES).every(function(k){ var cle = D.MONSTRES[k].livre || k; return D.LIVRE[cle] && D.LIVRE[cle].length >= 1; }), 'chaque monstre a sa page');
+  /* le journal de l'aventurier (Romain, 11 novembre) : un récit, jamais une question, jamais le nom d'un geste, d'une potion ou d'un héros */
+  var INTERDITS = ['?', 'rune', 'louche', 'fumigène', 'fiole', 'potion', 'acide', 'givre', 'baume', 'bouclier', 'flèche', 'sage', 'alchimiste', 'pisteur', 'lanterne', 'torche'];
   var trahies = []; Object.keys(D.LIVRE).forEach(function(k){ D.LIVRE[k].forEach(function(t, i){ INTERDITS.forEach(function(w){ if(t.toLowerCase().indexOf(w) >= 0) trahies.push(k + ' ' + i + ' : « ' + w + ' »'); }); }); });
-  egal(trahies, [], 'les énigmes ne nomment jamais le pouvoir à trouver (Romain : « pas écrit clairement, qu\'il faille réfléchir »)');
+  egal(trahies, [], 'le journal de l\'aventurier : pas de question, pas de nom de geste ni de potion, une seule lampe (à huile)');
+  ok(Object.keys(D.LIVRE).every(function(k){ return D.LIVRE[k].length >= 1 && D.LIVRE[k].length <= 3 && D.LIVRE[k].every(function(t){ return t.length <= 290; }); }), 'chaque monstre a sa page : un à trois paragraphes courts');
 })();
 
 section('Les sauvegardes, la fuite, les codes');
@@ -904,9 +905,9 @@ section('Les sauvegardes, la fuite, les codes');
   c.jouer('alchimiste', {geste:'p:feu', cible:c.b[0].id});
   c.jouer('pisteur', {geste:'fleche', cible:c.b[0].id});
   c.tourMonstres();
-  ok(p.livre.chauvesouris === 3 && p.livre.rat === 3, 'le journal s\'écrit tout de suite, même en plein combat (la chauve-souris vient d\'être étudiée, le rat l\'était déjà)');
+  ok(p.livre.chauvesouris === D.ETUDIE && p.livre.rat === D.ETUDIE, 'le journal s\'écrit tout de suite, même en plein combat (la chauve-souris vient d\'être étudiée, le rat l\'était déjà)');
   var texte = R.exporter(p), p2 = R.importer(texte);
-  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres && p2.livre.chauvesouris === 3, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
+  ok(p2 && p2.lieu === 'canaux' && !p2.faits['combat:canaux'] && p2.heros.pisteur.pv === pvApres && p2.livre.chauvesouris === D.ETUDIE, 'recharger la page en plein combat : on revient à l\'entrée de la salle, avec l\'état d\'avant le combat (le Grand Livre garde la ligne)');
   ok(!R.enCombat(p2) && trouve(R.entrer(p2, 'canaux'), 'combat'), 'et le combat est à relancer');
   ok(R.importer('{pas du json') === null && R.importer('{"v":2}') === null, 'un texte abîmé ou d\'une autre version n\'est pas chargé');
   /* la fuite */
@@ -916,7 +917,7 @@ section('Les sauvegardes, la fuite, les codes');
   ok(p.heros.pisteur.pv === pvApres && !p.faits['combat:canaux'] && p.faits['combat:rats'] === 1, 'les points de vie sont ceux de la sauvegarde ; les rats battus AVANT la sauvegarde restent battus');
   ok(p.heros.pisteur.objets.join() === 'fleches-normales,fleches-lourdes' && p.faits['objet:fleches-lourdes'] === 1 && R.contenu(p, 'reserve').objets.join() === 'fleches-argent', 'les objets trouvés depuis sont gardés (les flèches transperçantes restent au Pisteur, la réserve ne les a plus)');
   ok(p.recettes.indexOf('givre') >= 0 && p.codes['recette:givre'] === 1 && p.codes['sauve:1'] === 1 && p.vus.reserve === 1 && p.vus.canaux === 1, 'la recette tapée depuis, les codes et la brume levée sont gardés aussi');
-  ok(p.livre.chauvesouris === 3 && R.etudie(p, 'chauvesouris'), 'le journal garde ce qu\'il a appris');
+  ok(p.livre.chauvesouris === D.ETUDIE && R.etudie(p, 'chauvesouris'), 'le journal garde ce qu\'il a appris');
   ok(!R.enCombat(p) && c.fini() === 'defaite', 'après une fuite, le combat est fini (défaite)');
   egal(p.fuites.canaux, 1, 'la fuite est comptée pour cette salle');
   /* deux fuites au même endroit : une ligne de plus */
@@ -1051,7 +1052,8 @@ section('Les salles sans combat');
     egal(D.ROUE.suite.join(''), 'dddgdd', 'l\'ordre de la roue est celui du plan du Sage (3 à droite, 1 à gauche, 2 à droite)');
     /* la rune de lumière du Sage, au fond du puits */
     var y = R.nouvellePartie(8);
-    egal(R.contenu(y, 'puits').objets, ['rune'], 'au fond du puits : la pierre de rune');
+    egal(R.contenu(y, 'puits').objets, ['rune', 'carnet'], 'au fond du puits : la pierre de rune, et le carnet de l\'aventurier');
+    ok(D.OBJETS.carnet.code === 'carnet:aventurier' && CODES.CODES['carnet:aventurier'].a === 'sage' && CODES.CODES['carnet:aventurier'].de === 'pisteur', 'le carnet donne un code pour le Sage (Romain, 11 novembre : « un livre à l\'entrée du puits »)');
     var er = R.prendre(y, 'rune');
     ok(trouve(er, 'code-objet').code === 'rune:lumiere' && trouve(er, 'code-objet').pour === 'sage' && R.objets(y).codes.some(function(c){ return c.code === 'rune:lumiere'; }), 'la prendre donne un code pour le Sage (il reste dans les objets)');
     ok(CODES.CODES['rune:lumiere'] && CODES.CODES['rune:lumiere'].a === 'sage' && D.OBJETS.rune.discret, 'le code rune:lumiere se tape sur la tablette du Sage ; rien ne signale la pierre dans la salle');

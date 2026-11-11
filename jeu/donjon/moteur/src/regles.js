@@ -203,7 +203,8 @@ function enMains(l){ return (l || []).filter(function(o){ return !(D.OBJETS[o] &
 function rencontrer(p, type){ var cle = (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; if(p.livre[cle] === undefined) p.livre[cle] = 0; }
 /* Romain, 10 novembre : l'étude d'un monstre donne UN CODE (« etude:<monstre> », donjon-codes.js) à montrer au Sage, qui le
    tape sur sa tablette : c'est là qu'il voit le monstre et lit ses énigmes. Une seule étude par sorte de monstre.
-   p.livre[monstre] : absent = jamais rencontré ; 0 = rencontré ; plus de 0 = étudié (le nombre d'énigmes de sa page). */
+   p.livre[monstre] : absent = jamais rencontré ; 0 = rencontré ; plus de 0 = étudié (D.ETUDIE). La page du monstre, sur la
+   tablette du Sage, est celle du journal d'un aventurier (D.LIVRE). */
 function cleLivre(type){ return (D.MONSTRES[type] && D.MONSTRES[type].livre) || type; }
 function etudie(p, type){ return (p.livre[cleLivre(type)] || 0) > 0; }
 /* le journal à afficher : par monstre rencontré, étudié ou pas, et son code pour le Sage */
@@ -217,7 +218,7 @@ function grandLivre(p){
 function apprendre(p, type, cause){
   var cle = cleLivre(type);
   if(etudie(p, cle)) return {t:'livre', monstre:cle, rien:true};
-  p.livre[cle] = (D.LIVRE[cle] || []).length || 1;
+  p.livre[cle] = D.ETUDIE;
   return {t:'livre', monstre:cle, code:'etude:' + cle, nom:D.MONSTRES[cle].nom, cause:cause || 'etude'};
 }
 
