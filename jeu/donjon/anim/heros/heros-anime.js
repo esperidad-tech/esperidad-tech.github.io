@@ -2179,7 +2179,7 @@ H.sort = function(scene, to, opt){
       {d:180, p:pointe, e:'oo', f:function(){ me.expr('cri'); cercle = me._cercle(scene); }},
       {d:260, p:pointe, e:'lin', f:function(){
         var a = me.rep('cristal', scene);
-        vole = me._eclair(scene, a, to, opt).then(sig);
+        vole = (opt.appel ? me._appel(scene, a, to) : me._eclair(scene, a, to, opt)).then(sig);
         me.cristalFlash(true);
       }},
       {d:120, p:recul, e:'o'}, {d:300, p:recul, e:'lin', f:function(){ me.expr('garde'); }},
@@ -2193,6 +2193,18 @@ H._cercle = function(scene){
   (function suit(){ if(!vivant) return; var q = me.rep('cristal', scene); e.style.left = (q.x - p.x) + 'px'; e.style.top = (q.y - p.y) + 'px'; requestAnimationFrame(suit); })();
   return jouerEl(e, [{transform:place(p.x + 8, p.y, -90, 0), opacity:0}, {transform:place(p.x + 14, p.y, 0, 1.15), opacity:1, offset:.25}, {transform:place(p.x + 14, p.y, 40, 1), opacity:1, offset:.7}, {transform:place(p.x + 20, p.y, 90, 1.6), opacity:0}],
     {duration:820, easing:'ease-out'}).then(function(){ vivant = false; });
+};
+/* la rune d'appel : RIEN n'est lancé sur le monstre (Romain, 11 novembre, 19 h 21 : « ça lance une flèche, du coup c'est
+   bizarre »). Un anneau de lumière violette se referme sur lui, puis un fil tendu du bâton jusqu'à lui se raccourcit : il le tire. */
+H._appel = function(scene, a, to){
+  var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG, V = '#d9b8ff';
+  onde(L, to.x, to.y, {w:170, c:V, ep:4, s0:1.5, s1:0.3, d:460});
+  onde(L, to.x, to.y, {w:170, c:'#ffffff', ep:2, s0:1.9, s1:0.25, d:560});
+  scintille(L, to.x, to.y, {n:8, rx:60, ry:46, c:['#ffffff', V], etale:300});
+  var pose = 'translate(' + a.x + 'px,' + (a.y - 3) + 'px) rotate(' + ang + 'deg) ';
+  var r = div(L, 'width:' + dist + 'px;height:6px;border-radius:4px;transform-origin:0 50%;background:linear-gradient(90deg,#ffffff,' + V + ' 30%,rgba(217,184,255,.55));box-shadow:0 0 12px ' + V);
+  return jouerEl(r, [{transform:pose + 'scaleX(1) scaleY(.2)', opacity:0}, {transform:pose + 'scaleX(1) scaleY(1)', opacity:1, offset:.3}, {transform:pose + 'scaleX(1) scaleY(1.3)', opacity:1, offset:.5},
+    {transform:pose + 'scaleX(.2) scaleY(.6)', opacity:0}], {duration:760, easing:'ease-in'}).then(function(){ return to; });
 };
 H._eclair = function(scene, a, to, opt){
   var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG;
@@ -2273,7 +2285,7 @@ H._dome = function(L, scene, cible, opt){
     '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
     '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
     '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
-    '<div class="ha-badge">🛡️ −50 % · 1 tour</div>';
+    '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' % · 1 tour</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
@@ -2669,37 +2681,7 @@ H._poing = function(o){
 var releverBase = H.relever;
 H.relever = function(opt){
   if(opt && opt.amulette) return this._releverAmulette(opt);
-  if(opt && opt.sonne) return this._releverSonne(opt);
   return releverBase.call(this, opt);
-};
-/* se relever après la défaite : difficilement, encore tout sonné. Pas de lumière dorée (ce n'est pas un soin) ;
-   on s'assoit, on retombe un peu, un genou à terre, puis debout en titubant, les étoiles au-dessus de la tête
-   (Romain, 10 novembre : « ils se relèvent difficilement, ils sont tous sonnés, ils disent fuite et ils s'en vont »).
-   opt.retard : ms avant de commencer (pour que les trois héros ne bougent pas comme un seul). */
-H._releverSonne = function(o){
-  o = o || {};
-  return this._file(function(){
-    var me = this, g = this.garde();
-    this._etoiles(false);
-    this.expr('ko');
-    var assis = {racine:{x:70, y:-10, r:-30}, bassin:{x:0, y:30, r:0}, torse:10, tete:14, cuisseA:-80, tibiaA:110, piedA:-30, cuisseB:-60, tibiaB:120, piedB:-60, brasA:-20, avantBrasA:-20, brasB:30, avantBrasB:-30, mainA:0, mainB:0};
-    var retombe = {racine:{x:94, y:-16, r:-54}, torse:2, tete:22};
-    var assis2 = {racine:{x:64, y:-10, r:-24}, torse:18, tete:20};
-    var genou = {racine:{x:0, y:0, r:0}, bassin:{x:0, y:48, r:0}, torse:28, tete:18, pA:[92, 272], fA:40, pB:[160, 272], brasA:-30, avantBrasA:-50, brasB:20, avantBrasB:-40};
-    var gauche = {racine:{x:-12, y:0, r:-6}, bassin:{x:0, y:16, r:0}, torse:16, tete:16, pA:[100, 272], fA:0, pB:[156, 272]};
-    var droite = {racine:{x:12, y:0, r:6}, bassin:{x:0, y:12, r:0}, torse:4, tete:-10, pA:[106, 272], pB:[160, 272]};
-    var gauche2 = {racine:{x:-7, y:0, r:-4}, bassin:{x:0, y:8, r:0}, torse:10, tete:10, pA:[104, 272], pB:[154, 272]};
-    var seq = [];
-    if(o.retard) seq.push({d:o.retard});
-    seq.push({d:560, p:assis, e:'io'}, {d:220, p:assis, e:'lin'},
-      {d:380, p:retombe, e:'io'}, {d:160, p:retombe, e:'lin'},
-      {d:520, p:assis2, e:'io', f:function(){ me.expr('aie'); }}, {d:160, p:assis2, e:'lin'},
-      {d:560, p:genou, e:'io'}, {d:240, p:genou, e:'lin'},
-      {d:520, p:gauche, e:'io', f:function(){ me.ko = false; me.expr('ko'); me._etoiles(true); }},
-      {d:460, p:droite, e:'io'}, {d:420, p:gauche2, e:'io'},
-      {d:380, p:g, e:'io', f:function(){ me.expr('aie'); }});
-    return this.jouer(seq).then(function(){ me.ko = false; });
-  });
 };
 H._releverAmulette = function(o){
   return this._file(function(){

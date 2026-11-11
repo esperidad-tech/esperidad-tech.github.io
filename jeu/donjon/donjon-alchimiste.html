@@ -89,11 +89,14 @@ p{margin:0}
 .fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px;min-height:48px}
 .fen .titre h2{flex:1}
 .fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
-.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;
+  /* l'onde du rond jaune reste dans la rangée : sinon elle débordait de la fenêtre à chaque battement, et une barre de
+     défilement apparaissait puis disparaissait (Romain, 11 novembre, 19 h 21) */
+  overflow:hidden;padding:30px 34px 24px;margin:-24px -20px -18px}
 .fen.parch{background:linear-gradient(180deg,#f3e7cb,#e3cf9f);color:#35281b;border-color:#8a6a3a}
 .fen.parch h2{color:#3b2414;text-shadow:none}
 .fen.parch .fermer{background:rgba(36,24,46,.08);border-color:#8a6a3a;color:#35281b}
-@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} }
+@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} .fen .rangee{padding:28px 28px 24px;margin:-24px -14px -12px} }
 
 /* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
 .pave-fen{width:min(820px, 100%)}
@@ -362,7 +365,7 @@ var CODES = {
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
-  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Odette est derrière la porte'},
+  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Un chat gratte à la porte'},
   /* le carnet de l'aventurier, trouvé à l'entrée du donjon (Romain, 11 novembre) : c'est lui que le Sage feuillette */
   'carnet:aventurier': {code:['chapeau','arbre','poisson'], de:'pisteur', a:'sage', nom:'Le carnet de l’aventurier'},
   /* l'étude des monstres (Romain, 10 novembre) : le Sage étudie un monstre en combat, son code entre dans le journal du
@@ -627,7 +630,7 @@ lieu('egouts',       {nom:'Les égouts tournants', ic:'🌀', type:'combat', bou
   pts:[[1385, 988], [1378, 1050], [1336, 1105], [1352, 1172], [1420, 1212], [1502, 1196], [1546, 1130], [1520, 1062], [1500, 990]], decor:'egouts', monstres:['rat']});
 lieu('givre',        {nom:'La grotte de la fleur de givre', ic:'❄️', type:'objets', culDeSac:true, x:1000, y:1010, v1:1, scene:'givre', objets:['fleur-givre'], codes:['plante:givre']});
 lieu('toiles',       {nom:'La cave aux toiles', ic:'🕸️', type:'combat', x:1700, y:925, v1:1, decor:'toiles', signe:'lune', monstres:['araignee', 'feufollet', 'feufollet']});
-lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os', 'crane'], codes:['page:blanche']});
+lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os'], codes:['page:blanche']});
 lieu('dalles',       {nom:'Le couloir aux dalles', ic:'⚠️', type:'piege', x:1866, y:838, couloir:true, l:32, pts:[[1840, 915], [1866, 838], [1890, 754]], scene:'dalles'});
 lieu('atelier',      {nom:'L’atelier des Fondateurs', ic:'⚙️', type:'combat', elite:true, x:1920, y:700, v1:1, decor:'atelier', monstres:['gardien', 'ratcuir']});
 lieu('bibliotheque', {nom:'La bibliothèque engloutie', ic:'📚', type:'objets', choix:true, culDeSac:true, x:1920, y:560, v1:1, scene:'bibliotheque', objets:['page-dechiree', 'page-blanche', 'cristal-lune', 'baton-chene'], codes:['page:dechiree', 'page:blanche']});
@@ -674,8 +677,9 @@ var VIEUX = [[921, 762], [872, 790], [846, 860], [856, 935], [890, 985], [934, 1
 LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 960], [852, 912]], bouche:true});
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
+/* (Romain, 11 novembre, 19 h 21 : ce passage est ENLEVÉ — « on arrive directement au boss, on loupe absolument tout le
+   donjon, on ne voit pas la plupart des ennemis, on n'a pas les bâtons du Sage ». Le tracé reste ici, pour mémoire.) */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -833,7 +837,7 @@ var PLAN = {
        oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
        dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
        roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
-       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       (crane : le passage secret du cul-de-sac au feu de camp, enlevé le 11 novembre à la demande de Romain) ;
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
@@ -842,8 +846,6 @@ var PLAN = {
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
       boite:{x:1470, y:862, w:320, h:240}},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
-      boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
@@ -2107,6 +2109,17 @@ function note(f, t0, d, type, vol){
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
   }catch(e){}
 }
+/* une note qui glisse (le miaulement) */
+function glisse(f0, f1, t0, d, vol){
+  var a = audio(); if(!a) return;
+  try{
+    var o = a.createOscillator(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (t0 || 0);
+    o.type = 'triangle'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+    lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = .5;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol || .05, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(lp); lp.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
+  }catch(e){}
+}
 function son(type){
   try{ if(AC && AC.state === 'suspended') AC.resume(); }catch(e){}
   if(type === 'tic') note(880, 0, .06, 'triangle', .05);
@@ -2116,6 +2129,7 @@ function son(type){
   else if(type === 'page'){ note(320, 0, .12, 'triangle', .03); note(420, .05, .1, 'triangle', .02); }
   else if(type === 'plouf'){ note(260, 0, .25, 'sine', .08); note(180, .05, .3, 'sine', .05); }
   else if(type === 'feu'){ note(120, 0, .25, 'sawtooth', .025); note(90, .04, .3, 'triangle', .04); }
+  else if(type === 'miaou'){ glisse(620, 940, 0, .34, .06); glisse(940, 560, .16, .3, .05); }      /* le miaou du labo (jeu/src/labo/15-sons.js) */
 }
 PAGE.son = son;
 

@@ -36,7 +36,7 @@ Les champs sont ceux du cahier des charges (`v, graine, lieu, vus, faits, heros,
 | `pose:<id>` = lieu | cet objet a été laissé dans ce lieu (on peut l'y reprendre) |
 | `coffre:<lieu>` = id | le choix fait dans ce coffre (`reserve`, `bibliotheque`) |
 | `os` = 1 ou 2 | les fouilles du tas d'os |
-| `secret` | le crâne a été touché : le passage `eboulis` ↔ `camp` est ouvert |
+| `secret` | (n'existe plus depuis le 11 novembre au soir : le crâne et son raccourci sont enlevés, voir §15) |
 | `dalles` = 0…5 | où on en est dans le couloir aux dalles ; `piege:dalles` : il est passé pour toujours |
 | `code:<id>` | un code a été montré (`porte:odette`, `leo:attrape`) |
 | `sac:ouvert` | on peut refaire le sac (au départ, et après une fuite ; il se ferme en entrant dans une salle de combat) |
@@ -261,6 +261,8 @@ Le coup de louche lui-même (`touche louche`) rebondit sur lui s'il est fermé (
 
 ### Bourbe (`bourbe`, boss)
 
+> **Remplacé le 11 novembre au soir (§15)** : seul le givre le sort de l'eau ; l'état `berge` n'est plus jamais posé ; la lumière ne fait rien. Le tableau ci-dessous garde l'ancienne étape 1.
+
 1 000 PV. Il alterne `langue` 30 (il avale le héros visé) et `saut` 28 sur chaque héros, en commençant par la langue. Le ventre plein, ou gonflé, il saute. Immunisé sauf sur le dos. **`touche` ne pose aucun état pour lui : tout est à faire d'après les évènements.**
 
 | Ce qui arrive | Évènements | À appeler |
@@ -483,3 +485,38 @@ Demandes de Romain du 11 novembre (16 h 07 et 16 h 37, Bible §12.51, « Les arm
 **Les herbes** (`D.GESTES.herbes`, `vise:'equipe'`, `D.CHIFFRES.herbes = 10`) : `{t:'herbes', heros:'alchimiste', equipe:true}` puis un `soin` de 10 pour chaque héros debout. Le baume reste à 40 sur un seul ami.
 
 **Tests** : `test-regles.js` 413 (section « La rune d'appel, les herbes pour toute l'équipe » ; les places se testent avec deux objets inventés, `essai-a` et `essai-b`).
+
+## 15. Le 11 novembre au soir : la dague et ce qui vole, Bourbe et le givre, le crâne enlevé (ces lignes remplacent ce qui est écrit plus haut)
+
+Demandes de Romain du 11 novembre (19 h 21 à 20 h 54, Bible §12.51, « Les retouches du soir du 11 novembre »).
+
+**La dague ne touche pas ce qui vole** (`dague:{si:[états], mot}` dans `D.MONSTRES`)
+
+- Un monstre qui a `dague` n'est « au sol » que dans un des états de `si` : `chauvesouris` `['au-sol']`, `feufollet` `['accroche']`, `araignee` `['dos']`, `bourbe` `['gele', 'sec', 'dos']` avec `mot:'dansEau'`. Un monstre sans `dague` marche par terre (rat, rat cuirassé, Gardien, Roi des rats, têtard).
+- `combat.auSol(m)` ; `combat.devantSol()` : le premier monstre visable qui est au sol (ce n'est plus forcément `devant()`) ; `combat.aPortee()` : `devantSol()` et les monstres au sol qui sont tombés (`def.tombe`) ; `combat.appelables()` : les monstres au sol qui ne sont pas `devantSol()`.
+- La carte de la dague : éteinte si `aPortee()` est vide, avec le mot `_motDague()` — `D.MOTS.haut` (« Trop haut ! ») ou le `mot` du monstre (`D.MOTS.dansEau`, « Dans l'eau ! »). `refus('pisteur', 'dague', id)` sur un monstre qui n'est pas au sol rend ce mot ; sur un monstre au sol mais pas à portée, « Trop loin ! » comme avant.
+- La rune d'appel : `refus` rend `D.MOTS.devant` pour `devantSol()`, `D.MOTS.pasLui` pour ce qui vole. Carte éteinte quand `appelables()` est vide (le mot de la carte vaut alors pour toute cible).
+
+**Bourbe : seul le givre le sort de l'eau** (`D.MONSTRES.bourbe.reactions`)
+
+- `givre` : `etat gele` (3 tours), `mot` « Il saute sur la glace ! » (« Déjà gelé » s'il y est : la glace repart pour 3 tours). Rien s'il est sur le dos ou sous l'eau.
+- `lumiere` : `fait:[]` — elle ne fait plus rien. **L'état `berge` n'est plus jamais posé.**
+- `feu` : sur la glace (`gele`, ni `sec` ni `sous`) → `etat sec` (fin), « Tout sec ! » ; dans l'eau → « Trop mouillé ! ».
+- `nuage` : sec → `etat dos` (2), `ouvre` (2) ; pas sec → il gonfle (piège) ; rien sur le dos ou sous l'eau.
+- `bruit` : sur la glace → « Il se cogne ! » ; sinon il plonge (`special plonger`, `etat sous` 1), piège.
+- `_bourbeAvant` : « hors de l'eau » = `gele` sans `dos` ni `sous`. Après `D.BOURBE.secApres` (2) fins de tour sur la glace, il sèche seul (`etat sec {seul:true}`) et la glace tient encore `1 + secReste` tour.
+- `_bourbeApres` : quand `dos` finit, `gele` et `sec` sont retirés (il passe à travers la glace) ; quand `gele` finit sans `dos`, `sec` est retiré : il est de nouveau dans l'eau.
+- `colere` (mi-vie) : `ferme`, retire `dos`, `gele`, `sec`, `special plonger`, `etat sous` (1), `mot` « Il brise la glace ! ». Il remonte au tour suivant avec deux têtards.
+- **Sans la recette du Givre, Bourbe ne peut pas être battu** (le chatouiller de l'intérieur demande qu'il soit sec, donc sur la glace). Le Givre vient de la fleur de givre (`objet:fleur-givre`, grotte `givre`) puis du code `recette:givre`, accepté partout hors combat.
+- `D.LIVRE.bourbe` : les deux premiers paragraphes du carnet sont réécrits (le froid, la glace).
+
+**Le crâne et son raccourci sont enlevés**
+
+- `D.LIEUX.eboulis = {nom, tas:true}` : plus de `crane`. `Regles.crane(p)` existe encore et refuse (`D.MOTS.pasIci`). `faits.secret` n'est plus jamais posé. Le seul évènement `passage` est celui de la roue (`{t:'passage', de:'canaux', vers:'toiles'}`).
+- `carte.js` : plus de lien `secret` (`C.LIEN.secret` n'existe pas ; le tableau `SECRET` reste, inutilisé), plus de note `crane` dans `PLAN.notes` (restent `rune`, `oeil`, `dalles` codées ; `roue`, `fleur` à l'encre ; `bourbe` au coin).
+
+**Divers**
+
+- Les textes des carquois (`D.OBJETS['fleches-*'].d`) ne donnent plus de solution.
+- `moteur/equilibre.js` : l'équipe maligne joue le givre contre Bourbe, ne prend plus de raccourci, tape le code du Givre au feu de camp ; la variante « sans le passage secret » est remplacée par « qui n'a pas cueilli la fleur de givre » (0 victoire). Deux cibles sont manquées exprès (« le grand bassin reste faisable sans la bonne potion ») : c'est la décision de Romain.
+- Tests : `test-regles.js` 436 (section « La dague ne touche pas ce qui vole » ; Bourbe : le givre d'abord ; la colère brise la glace).

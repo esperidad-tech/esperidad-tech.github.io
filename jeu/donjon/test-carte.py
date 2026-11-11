@@ -49,13 +49,13 @@ def geometrie(pg):
     b.ok(all(G['lieux'][k]['d'] and G['lieux'][k]['poly'] > 6 for k in G['ordre']), 'chaque lieu a sa forme (chemin SVG et contour)')
     b.ok(G['ferme'] is None and 'toiles' not in G['canauxFerme'] and G['c5'] == 'passage:canaux', 'le passage des canaux à la cave aux toiles est secret : tant qu’il est fermé, aucun chemin ne mène à Léo')
     b.ok(G['chemin'] == ['puits', 'rats', 'canaux', 'toiles', 'dalles', 'atelier', 'portes', 'ossuaire', 'camp', 'bassin', 'porte4', 'leo'], 'une fois ouvert, le bon chemin : ' + ' › '.join(G['chemin'] or []))
-    b.ok(G['secret'] == ['puits', 'rats', 'canaux', 'toiles', 'eboulis', 'camp', 'bassin', 'porte4', 'leo'] and G['secretLien'] == 'eboulis>camp', 'le passage secret (cul-de-sac éboulé → feu de camp)')
+    b.ok(G['secret'] == G['chemin'] and not G['secretLien'], 'plus de raccourci du cul-de-sac éboulé au feu de camp (enlevé le 11 novembre : il faisait sauter presque tout le donjon)')
     b.ok(sorted(G['portes']) == sorted(['atelier:', 'ossuaire:oeil', 'crypte:gueule', 'toiles:lune']), 'les trois portes : œil → ossuaire, gueule → fausse crypte, lune → la cave')
     b.ok(G['lune'] and G['lune']['fermee'], 'la porte de la lune ne s’ouvre pas depuis la cave')
     b.ok(sorted(G['puits']) == ['aeration', 'galerie', 'rats'] and G['egouts'] == ['canaux'], 'trois couloirs au fond du puits ; les égouts tournent et ramènent aux canaux')
     b.ok(G['lieuEn'] == ['puits', 'dalles', None], 'lieuEn trouve le lieu sous un point')
-    b.ok(sorted(G['notes']) == sorted(['code:rune', 'code:oeil', 'code:dalles', 'encre:roue', 'encre:crane', 'encre:fleur', 'coin:bourbe']) and G['passages'] == ['vieux:true'] and G['signes'] == 7,
-         'les notes du plan : 3 codées (la rune, l’œil, les dalles), 3 à l’encre invisible (la roue, le crâne, la fleur), Bourbe ; le passage bloqué ; 7 signes')
+    b.ok(sorted(G['notes']) == sorted(['code:rune', 'code:oeil', 'code:dalles', 'encre:roue', 'encre:fleur', 'coin:bourbe']) and G['passages'] == ['vieux:true'] and G['signes'] == 7,
+         'les notes du plan : 3 codées (la rune, l’œil, les dalles), 2 à l’encre invisible (la roue, la fleur), Bourbe ; le passage bloqué ; 7 signes')
     tous = set()
     for k in G['ordre']:
         tous.update(G['lieux'][k]['codes'])

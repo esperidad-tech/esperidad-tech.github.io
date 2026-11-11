@@ -145,11 +145,24 @@ var CLE_TEMOIN = 'brumeval-donjon-critique', CLE_PLANTAGES = 'brumeval-donjon-pl
 DJ.temoinCritique = function(on){ try{ if(on) localStorage.setItem(CLE_TEMOIN, (on === true ? 'debut' : on) + '|' + Date.now()); else localStorage.removeItem(CLE_TEMOIN); }catch(e){} };
 DJ.plantages = function(){ try{ return +localStorage.getItem(CLE_PLANTAGES) || 0; }catch(e){ return 0; } };
 DJ.plantageOu = function(){ try{ return localStorage.getItem(CLE_OU) || ''; }catch(e){ return ''; } };
+/* LE MÊME FILET POUR LE CHARGEMENT D'UN COMBAT (Romain, 11 novembre, 20 h 27, iPhone : « dès que j'arrive dans la salle des
+   rats, ça fait relancer le jeu »). On ne peut pas essayer Safari ici ; le plus probable est la mémoire, au moment où l'on
+   prépare les images des héros et des monstres. Un témoin est posé quand un combat se charge et enlevé quand il est à
+   l'écran. S'il est encore là au démarrage, la page s'est fermée pendant le chargement : sur cet appareil, les images des
+   personnages sont alors préparées plus petites (elles prennent deux à trois fois moins de mémoire). */
+var CLE_CHARGE = 'brumeval-donjon-charge', CLE_PLANT_CHARGE = 'brumeval-donjon-plantages-charge';
+DJ.temoinCharge = function(on){ try{ if(on) localStorage.setItem(CLE_CHARGE, String(on) + '|' + Date.now()); else localStorage.removeItem(CLE_CHARGE); }catch(e){} };
+DJ.plantagesCharge = function(){ try{ return +localStorage.getItem(CLE_PLANT_CHARGE) || 0; }catch(e){ return 0; } };
+/* de combien réduire les images cuites sur cet appareil (1 : rien) */
+DJ.allegeImages = function(){ var n = DJ.plantagesCharge(); return n >= 2 ? .5 : n === 1 ? .66 : 1; };
 DJ.verifierTemoin = function(){
   try{
     var v = (localStorage.getItem(CLE_TEMOIN) || '').split('|'), t = +v[1] || 0;
     if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
+    var c = (localStorage.getItem(CLE_CHARGE) || '').split('|'), tc = +c[1] || 0;
+    if(tc && Date.now() - tc < 600000) localStorage.setItem(CLE_PLANT_CHARGE, String(DJ.plantagesCharge() + 1));
+    localStorage.removeItem(CLE_CHARGE);
   }catch(e){}
   if(DJ.plantages() > 0 || DJ.critLent()) SALLE.critLeger = true;
   return DJ.plantages();

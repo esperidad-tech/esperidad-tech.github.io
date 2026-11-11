@@ -71,6 +71,8 @@ function salle(fn, duree){
 }
 X.s_clic = salle(function(B){ B.clic(); }, .15);
 X.s_pasHeros = salle(function(B){ B.pasHeros(1.7, 3); }, 1.9);                                  /* les trois héros entrent en courant */
+X.s_pasCarte = salle(function(B){ B.pasHeros(1.1, 2, 1.5); }, 1.3);                              /* les mêmes pas, plus aigus : le pion avance sur la carte du donjon */
+X.s_miaou = salle(function(B){ B.miaou(); }, .6);                                                /* le chat de la porte aux quatre signes (le miaou du labo) */
 X.s_rats = salle(function(B){ B.pasRats(1.5); B.couine(.3, 1); B.couine(.7, 1.15); }, 1.7);       /* les rats arrivent */
 X.s_couine = salle(function(B){ B.couine(0, .9, 1.4); }, .4);
 X.s_page = salle(function(B){ B.page(); }, .3);                                                  /* le Sage étudie */

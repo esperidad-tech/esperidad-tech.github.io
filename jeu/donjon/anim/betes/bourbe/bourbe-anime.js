@@ -872,6 +872,16 @@ R._calque = function(scene){
    5. Les poses de base de chaque mode
    ===================================================================== */
 var BERGE = {x: -34, y: -66};
+/* DANS L'EAU, ON NE VOIT QUE LE HAUT DE SA TÊTE (Romain, 11 novembre, 19 h 21 : « ce n'est pas clair quand il est dans l'eau,
+   hors de l'eau. Soit il est immergé et on ne le voit quasiment plus, soit il sort juste un tout petit peu sa tête, et là on
+   peut dire qu'il est dans l'eau, soit tout son corps est sorti de l'eau. »)
+   - sous l'eau (état sous) : on ne voit que la lueur de son œil ;
+   - dans l'eau (ni gelé, ni sur le dos) : il est enfoncé de FOND et PENCHÉ (le museau levé, la croupe au fond) : on ne voit
+     que SON VISAGE, AVEC SON ŒIL, au-dessus des têtards (Romain, 20 h 38 : « il faudrait qu'on voie juste son visage avec
+     son œil ; là, il est caché derrière les têtards ») ; ses mains sont sous l'eau (la chaîne B est cachée) ; pour tirer la
+     langue, il sort la gueule (LEVE) ; pour sauter, il jaillit en entier, puis retombe et s'enfonce ;
+   - hors de l'eau (état gele : le givre a gelé le bassin, il a sauté sur la glace ; sur le dos) : tout son corps se voit. */
+var FOND = 120, LEVE = 40, PENCHE = 24, RECUL = 50;         /* RECUL : dans l'eau, il se tient un peu plus loin des têtards (leur queue et leurs étiquettes passaient devant son œil : Romain, 20 h 54) */
 var POSES = {
   eau: {},
   /* sur la berge : sorti de l'eau, posé sur le bord, en entier */
@@ -885,15 +895,23 @@ var POSES = {
 /* la main sur l'œil (ébloui) : bras levé, avant-bras replié vers la tête */
 var MAIN_OEIL = {bras: {a: 52}, avbras: {a: 76}, main: {a: 30, x: -4, y: -6}};
 R._mode = function(){ return this.etat.sous ? 'sous' : (this.etat.dos ? 'dos' : (this.etat.berge ? 'berge' : 'eau')); };
+/* dans l'eau pour de bon : ni sous l'eau, ni sur le dos, ni sur la glace, ni sur la berge */
+R._immerge = function(){ var e = this.etat; return !e.sous && !e.dos && !e.berge && !e.gele; };
+/* ses mains (la chaîne B, dessinée par-dessus l'eau) : cachées quand il est enfoncé dans l'eau */
+R._majMains = function(ms){ if(this.mort || this.etat.sous) return; this._fondu(this.plongeB, this._immerge() ? 0 : 1, ms == null ? 260 : ms); };
 R._base = function(){
   var p = {}, m = POSES[this._mode()], n, e = this.etat;
   for(n in m) p[n] = fusion(Z, m[n]);
+  if(this._immerge()){
+    p.pos = fusion(Z, {x: RECUL, y: e.gonfle ? FOND * .55 : FOND});          /* (gonflé, il flotte plus haut, presque à plat) */
+    p.posture = fusion(Z, {a: e.gonfle ? PENCHE * .4 : PENCHE});
+  }
   if(e.dos && e.berge){ p.pos = fusion(Z, {x: BERGE.x, y: BERGE.y + 6}); p.posture = fusion(Z, {a: 180, y: 52}); }
   if(e.gonfle){
     p.corps = fusion(Z, {sx: 1.15, sy: 1.2});
     p.ventre = fusion(Z, {s: 1.08});
     p.gorge = fusion(Z, {sx: 1.25, sy: 1.35});
-    if(!e.dos && !e.sous){ p.pos = p.pos || fusion(Z); p.pos.y -= 12; }
+    if(!e.dos && !e.sous && !this._immerge()){ p.pos = p.pos || fusion(Z); p.pos.y -= 12; }
   }
   if(e.ebloui && !e.dos && !e.sous){ for(n in MAIN_OEIL) p[n] = fusion(Z, MAIN_OEIL[n]); p.paupiere = fusion(Z, {y: 14}); p.paupB = fusion(Z, {y: -6}); p.pupille = fusion(Z, {sx: .55, sy: .7}); }
   if(e.enrage){ for(var i = 0; i < 5; i++) p['pointe' + i] = fusion(Z, {sy: 1.18}); p.pupille = fusion(p.pupille || Z, {sx: .7}); }
@@ -911,6 +929,10 @@ R._reprendre = function(duree){
   var self = this, n = this.reprise = (this.reprise || 0) + 1;
   if(this.mort) return Promise.resolve();
   this._couperBoucles();
+  this._majMains();
+  /* il se renfonce dans l'eau après une action (la langue, un saut, l'entrée) : un peu plus lentement, avec des rides */
+  var bas = this._immerge() && Math.abs((this._lire('pos').y || 0) - this._base().pos.y) > 30;
+  if(bas){ duree = Math.max(duree == null ? 380 : duree, 620); setTimeout(function(){ if(!self.mort && self._immerge()){ self._rides(240, 2, 1.4); self._rides(400, 2, 1.2); } }, 200); }
   return this._allerA(this._base(), duree == null ? 380 : duree, 'cubic-bezier(.3,.7,.3,1)', true).then(function(){
     if(n !== self.reprise || self.enAction || self.mort) return;
     if(self.attente) self._lancerBoucles();
@@ -1462,6 +1484,8 @@ R._langue = function(o){
   for(var i = 0; i < 5; i++){ pt5['pointe' + i] = {sy: 1.14}; pt5b['pointe' + i] = {sy: 1}; }
   var anticip = {saut: {y: 6, sy: .96, sx: 1.02}, secousse: {x: 12, a: 1.6}, langue: {sy: .06}, gorge: {sx: 1.3, sy: 1.6}, pupille: {sx: .42, x: -4}, paupB: {y: -5}, machoire: {a: 1.5}};
   for(var n in pt5) anticip[n] = pt5[n];
+  /* dans l'eau : il sort d'abord la gueule (il se renfoncera tout seul à la fin, _reprendre) */
+  if(this._immerge()){ anticip.pos = {y: LEVE}; anticip.posture = {a: 0}; setTimeout(function(){ self._rides(220, 2, 1.5); self._rides(420, 2, 1.3); }, 260); }
   var corpsSeq = this._seq([
     {t: 0, p: {}},
     {t: t(300), p: {langue: {sy: .06}}, e: 'cubic-bezier(.6,0,.9,.5)'},
@@ -1506,6 +1530,7 @@ R._langue = function(o){
   return Promise.all([corpsSeq.fini, fin]).then(function(){ return attendreMs(500); }).then(function(){ return self._finAction(j, 300); });
 };
 
+function fusionP(a, b){ for(var k in b) a[k] = b[k]; return a; }
 /* LE SAUT : il bondit hors de l'eau et retombe de tout son poids */
 R._saut = function(o){
   var self = this, j = this._debutAction(), gros = this.etat.gonfle, berge = this.etat.berge, gele = this.etat.gele;
@@ -1516,15 +1541,30 @@ R._saut = function(o){
   for(var i = 0; i < 5; i++){ pt5['pointe' + i] = {sy: 1.2}; pt0['pointe' + i] = {sy: 1}; }
   var coil = {saut: {y: 14, sy: .86, sx: 1.07}, cuisse: {a: 8}, jambe: {a: 6}, bras: {a: -8}, avbras: {a: 10}, machoire: {a: 2}, paupB: {y: -5}, pupille: {sx: .5}, gorge: {sx: 1.2, sy: 1.3}};
   for(var n in pt5) coil[n] = pt5[n];
+  /* dans l'eau (il n'en sort que la tête), ou quand il surgit du fond (o.surgit : il était sous l'eau) : il jaillit EN ENTIER,
+     puis retombe ; _reprendre le renfonce ensuite. Ses mains (cachées sous l'eau) reviennent le temps du saut. */
+  var surgit = !!o.surgit && this.etat.sous;
+  var eauAvant = this._immerge() || surgit, saillie = {}, chute1 = {}, chute2 = {}, fondA = gros ? FOND * .55 : FOND;
+  if(surgit){
+    this.etat.sous = false;
+    this._fondu([this.plongeA, this.plongeB], 0, 0);
+    this._bulles(300, 6, 1); setTimeout(function(){ self._bulles(260, 8, 1.4); }, 200);
+    setTimeout(function(){ self._fondu(self.plongeA, 1, 200); self._gerbe(300, 372, 2, {n: 20}); }, ta);
+  }
+  if(eauAvant){
+    saillie = {pos: {y: 0, x: 0}, posture: {a: 0}}; chute1 = {pos: {y: fondA * .75, x: 0}}; chute2 = {pos: {y: fondA, x: 0}};
+    setTimeout(function(){ self._fondu(self.plongeB, 1, 180); }, ta + 60);
+    setTimeout(function(){ self._fondu(self.plongeB, 0, 160); }, td - 40);
+  }
   var corpsSeq = this._seq([
     {t: 0, p: {}},
     {t: t(ta), p: coil, e: 'cubic-bezier(.3,.6,.4,1)'},
     /* il s'arrache de l'eau, les jambes se déplient */
-    {t: t(tb), p: {saut: {y: -H, x: X, sy: 1.12, sx: .92}, cuisse: {a: -24}, jambe: {a: -66}, pied: {a: 40}, bras: {a: -34}, avbras: {a: 22}, main: {a: 34}, brasF: {a: -22}, mainF: {a: 26}, algues: {a: -10}, brins: {a: -22}, couronne: {a: 5}, langue: {a: 30}, gorge: {sx: .9, sy: .8}, machoire: {a: -7}, oeil: {s: 1.1}, pupille: {sx: 1.2}, paupB: {y: 0}}, e: 'cubic-bezier(.15,.8,.35,1)'},
+    {t: t(tb), p: fusionP({saut: {y: -H, x: X, sy: 1.12, sx: .92}, cuisse: {a: -24}, jambe: {a: -66}, pied: {a: 40}, bras: {a: -34}, avbras: {a: 22}, main: {a: 34}, brasF: {a: -22}, mainF: {a: 26}, algues: {a: -10}, brins: {a: -22}, couronne: {a: 5}, langue: {a: 30}, gorge: {sx: .9, sy: .8}, machoire: {a: -7}, oeil: {s: 1.1}, pupille: {sx: 1.2}, paupB: {y: 0}}, saillie), e: 'cubic-bezier(.15,.8,.35,1)'},
     {t: t(tc), p: {saut: {y: -H * .92, x: X, sy: 1.04, sx: .97}, cuisse: {a: -16}, jambe: {a: -50}, bras: {a: -44}, avbras: {a: 6}, langue: {a: -10}, brins: {a: 10}, algues: {a: 4}, paupiere: {y: 0}, machoire: {a: -7}, gorge: {sx: .9, sy: .8}}, e: 'ease-in-out'},
     /* il retombe de tout son poids */
-    {t: t(td), p: {saut: {y: 12, x: X * .3, sy: .76, sx: 1.2}, cuisse: {a: 6}, jambe: {a: 4}, pied: {a: 0}, bras: {a: 12}, avbras: {a: 10}, main: {a: 4}, brasF: {a: 8}, mainF: {a: 6}, langue: {a: -26}, brins: {a: 28}, algues: {a: 10}, couronne: {a: -4}, machoire: {a: 2}, paupiere: {y: 32}, gorge: {sx: 1.35, sy: .8}, oeil: {s: 1}}, e: 'cubic-bezier(.6,0,.95,.6)'},
-    {t: t(td + 260), p: {saut: {y: -14, x: 0, sy: 1.06, sx: .96}, langue: {a: 16}, brins: {a: -10}, algues: {a: -4}, couronne: {a: 2}, paupiere: {y: 0}, gorge: {sx: 1, sy: 1}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, cuisse: {a: 0}, jambe: {a: 0}}, e: 'cubic-bezier(.3,.6,.4,1)'},
+    {t: t(td), p: fusionP({saut: {y: 12, x: X * .3, sy: .76, sx: 1.2}, cuisse: {a: 6}, jambe: {a: 4}, pied: {a: 0}, bras: {a: 12}, avbras: {a: 10}, main: {a: 4}, brasF: {a: 8}, mainF: {a: 6}, langue: {a: -26}, brins: {a: 28}, algues: {a: 10}, couronne: {a: -4}, machoire: {a: 2}, paupiere: {y: 32}, gorge: {sx: 1.35, sy: .8}, oeil: {s: 1}}, chute1), e: 'cubic-bezier(.6,0,.95,.6)'},
+    {t: t(td + 260), p: fusionP({saut: {y: -14, x: 0, sy: 1.06, sx: .96}, langue: {a: 16}, brins: {a: -10}, algues: {a: -4}, couronne: {a: 2}, paupiere: {y: 0}, gorge: {sx: 1, sy: 1}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, cuisse: {a: 0}, jambe: {a: 0}}, chute2), e: 'cubic-bezier(.3,.6,.4,1)'},
     {t: t(td + 520), p: {saut: {y: 0, sy: .97, sx: 1.02}, langue: {a: -6}, brins: {a: 5}, algues: {a: 0}, couronne: {a: 0}}, e: 'cubic-bezier(.5,0,.5,1)'},
     /* content de lui : la gorge gonflée */
     {t: t(td + 900), p: {saut: {y: 0, sy: 1, sx: 1}, langue: {a: 0}, brins: {a: 0}, gorge: {sx: 1.4, sy: 1.8}, pupille: {sx: 1, x: -3}}, e: 'ease-out'},
@@ -2024,7 +2064,7 @@ R._retourEau = function(){
 R._retourner = function(on, j){
   var self = this, T;
   this.etat.dos = on;
-  var dans = !this.etat.berge;
+  var dans = !this.etat.berge && !this.etat.gele;
   if(on){
     T = 1600;
     var fin = POSES.dos, k = [{t: 0, p: {}}];
@@ -2270,11 +2310,31 @@ R.changerEtat = function(nom, on){
       this._bosseBoucle(on);
       return Promise.resolve();
   }
+  /* LE GIVRE (Romain, 11 novembre, 19 h 21) : « la glace sous ses pieds : il ne veut pas rester coincé, donc il saute et il
+     tombe sur la glace ». Et quand la glace s'en va (elle fond, ou il la brise), il retombe dans l'eau : plouf. */
+  if(nom === 'gele' && on && this._immerge() && !this.enAction) return this._surLaGlace();
   this.etat[nom] = on;
   this._etatVisuel(nom, on);
+  if(nom === 'gele' && !on && this._immerge()) setTimeout(function(){ if(!self.mort){ self._gerbe(300, 374, 1.7, {n: 16}); self._rides(180, 3, 1.6); self._rides(440, 3, 1.4); } }, 160);
   if(nom === 'enrage' || nom === 'ebloui' || nom === 'cible' || nom === 'gele') return this._changerMode(nom === 'ebloui' ? 500 : 350);
   if(!this.enAction && this.attente && !this.mort){ this._couperMinuteurs(); this._planifier(300); }
   return attendreMs(nom === 'sec' || nom === 'gele' ? 1000 : 300);
+};
+/* le bassin gèle sous lui : il se tasse, bondit hors de l'eau, et retombe de tout son poids sur la glace, en entier */
+R._surLaGlace = function(){
+  var self = this, j = this._debutAction(), T = 1700;
+  this.etat.gele = true;
+  this._etatVisuel('gele', true);
+  setTimeout(function(){ if(self.mort) return; self._gerbe(300, 372, 1.7, {n: 16}); self._fondu(self.plongeB, 1, 200); }, T * .24);
+  setTimeout(function(){ if(self.mort) return; self._glaceFele(); self._etincelles([300, 370], 22, ['#ffffff', '#cfeaff', '#9ad0f0'], 1.8); self._etincelles([420, 372], 10, ['#ffffff', '#cfeaff']); }, T * .6);
+  return this._seq([
+    {t: 0, p: {}},
+    {t: .2, p: {saut: {y: 12, sy: .88, sx: 1.06}, pupille: {sx: .5}, paupB: {y: -5}, gorge: {sx: 1.2, sy: 1.3}}, e: 'ease-out'},
+    {t: .42, p: {pos: {y: 0, x: 0}, posture: {a: 0}, saut: {y: -120, sy: 1.1, sx: .94}, cuisse: {a: -24}, jambe: {a: -64}, pied: {a: 38}, bras: {a: -32}, avbras: {a: 20}, brasF: {a: -22}, algues: {a: -10}, brins: {a: -22}, oeil: {s: 1.15}, pupille: {sx: 1.2}, paupB: {y: 0}, gorge: {sx: .9, sy: .8}}, e: 'cubic-bezier(.15,.8,.35,1)'},
+    {t: .6, p: {saut: {y: 12, sy: .78, sx: 1.18}, cuisse: {a: 6}, jambe: {a: 4}, pied: {a: 0}, bras: {a: 12}, avbras: {a: 10}, brasF: {a: 8}, algues: {a: 10}, brins: {a: 26}, paupiere: {y: 30}, gorge: {sx: 1.3, sy: .8}, oeil: {s: 1}}, e: 'cubic-bezier(.6,0,.95,.6)'},
+    {t: .76, p: {saut: {y: -12, sy: 1.06, sx: .96}, bras: {a: 0}, avbras: {a: 0}, brasF: {a: 0}, cuisse: {a: 0}, jambe: {a: 0}, algues: {a: -4}, brins: {a: -10}, paupiere: {y: 0}, gorge: {sx: 1, sy: 1}}, e: 'cubic-bezier(.3,.6,.4,1)'},
+    {t: 1, p: {saut: {y: 0, sy: 1, sx: 1}, algues: {a: 0}, brins: {a: 0}, pupille: {sx: 1}}, e: 'cubic-bezier(.5,0,.5,1)'}
+  ], T).fini.then(function(){ return self._finAction(j, 250); });
 };
 /* ce qui se voit de chaque état (sans la pose, gérée par _base) : on montre ou on cache des variantes pré-dessinées */
 R._etatVisuel = function(nom, on){

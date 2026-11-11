@@ -230,7 +230,7 @@ lieu('egouts',       {nom:'Les égouts tournants', ic:'🌀', type:'combat', bou
   pts:[[1385, 988], [1378, 1050], [1336, 1105], [1352, 1172], [1420, 1212], [1502, 1196], [1546, 1130], [1520, 1062], [1500, 990]], decor:'egouts', monstres:['rat']});
 lieu('givre',        {nom:'La grotte de la fleur de givre', ic:'❄️', type:'objets', culDeSac:true, x:1000, y:1010, v1:1, scene:'givre', objets:['fleur-givre'], codes:['plante:givre']});
 lieu('toiles',       {nom:'La cave aux toiles', ic:'🕸️', type:'combat', x:1700, y:925, v1:1, decor:'toiles', signe:'lune', monstres:['araignee', 'feufollet', 'feufollet']});
-lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os', 'crane'], codes:['page:blanche']});
+lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os'], codes:['page:blanche']});
 lieu('dalles',       {nom:'Le couloir aux dalles', ic:'⚠️', type:'piege', x:1866, y:838, couloir:true, l:32, pts:[[1840, 915], [1866, 838], [1890, 754]], scene:'dalles'});
 lieu('atelier',      {nom:'L’atelier des Fondateurs', ic:'⚙️', type:'combat', elite:true, x:1920, y:700, v1:1, decor:'atelier', monstres:['gardien', 'ratcuir']});
 lieu('bibliotheque', {nom:'La bibliothèque engloutie', ic:'📚', type:'objets', choix:true, culDeSac:true, x:1920, y:560, v1:1, scene:'bibliotheque', objets:['page-dechiree', 'page-blanche', 'cristal-lune', 'baton-chene'], codes:['page:dechiree', 'page:blanche']});
@@ -277,8 +277,9 @@ var VIEUX = [[921, 762], [872, 790], [846, 860], [856, 935], [890, 985], [934, 1
 LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 960], [852, 912]], bouche:true});
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
+/* (Romain, 11 novembre, 19 h 21 : ce passage est ENLEVÉ — « on arrive directement au boss, on loupe absolument tout le
+   donjon, on ne voit pas la plupart des ennemis, on n'a pas les bâtons du Sage ». Le tracé reste ici, pour mémoire.) */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -436,7 +437,7 @@ var PLAN = {
        oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
        dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
        roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
-       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       (crane : le passage secret du cul-de-sac au feu de camp, enlevé le 11 novembre à la demande de Romain) ;
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
@@ -445,8 +446,6 @@ var PLAN = {
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
       boite:{x:1470, y:862, w:320, h:240}},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
-      boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}

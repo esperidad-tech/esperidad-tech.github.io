@@ -352,7 +352,13 @@ Tas.prototype.fouiller = function(o){
     particule(c, cx + entre(-14, 14), top, 30, 'url("' + urlSvg(os) + '")', pts, {duration: 1500, delay: 250 + b * 70, easing: 'linear'});
   }
   return fini(a).then(function(){
-    if(o.trouve === 'morsure') return self.morsure(o).then(function(){ return null; });
+    /* après la morsure, le tas se remet en place et on peut le fouiller ENCORE (la page est dessous). Avant, il restait
+       « déjà fouillé » et sa zone éteinte : la deuxième fouille ne marchait pas (Romain, 11 novembre, 19 h 21). */
+    if(o.trouve === 'morsure') return self.morsure(o).then(function(){
+      try{ a.cancel(); }catch(er){}
+      self.fouille = false; self.actif(true); if(d.brille !== false) self.briller(true);
+      return null;
+    });
     var td = d.trouvaille; if(!td) return null;
     var t = OBJETS.creer(c, Object.assign({}, td, {cache: true, z: (d.z || 5) + 1}), self.opts);
     t.el.style.visibility = '';

@@ -79,6 +79,11 @@ class Jeu:
     def objet(self, id, option=None):
         self.pg.evaluate("([id, o]) => { var S = DJ.Explo._S(), e = S.o[id]; (o == null ? e : e.options[o]).zone.click(); }", [id, option]); self.pg.wait_for_timeout(400)
 
+    def touche(self, id):
+        """un VRAI doigt sur un objet (au milieu de sa zone) : rend False si autre chose que sa zone est sous le doigt"""
+        r = self.pg.evaluate("(id) => { var z = DJ.Explo._S().o[id].zone, b = z.getBoundingClientRect(), x = b.left + b.width / 2, y = b.top + b.height / 2, e = document.elementFromPoint(x, y); return {x:x, y:y, ok:!!e && (e === z || z.contains(e))}; }", id)
+        self.pg.touchscreen.tap(r['x'], r['y']); self.pg.wait_for_timeout(400); return r['ok']
+
     def roue(self, crans):
         """tourner la roue des canaux : 'd' touche sa moitié droite, 'g' sa moitié gauche"""
         for c in crans:
@@ -212,23 +217,22 @@ def visite(nav):
     verifie('toiles' in J.etat()['sorties'], f'la carte montre maintenant le passage vers la cave aux toiles ({J.etat()["sorties"]})')
     J.chemin('toiles', 'J')
     verifie(sorted(J.etat()['sorties']) == ['dalles', 'eboulis', 'toiles'], f'l\'embranchement : deux chemins (et le retour) ({J.etat()["sorties"]})')
-    # le cul-de-sac : le tas d'os (une morsure, puis la page blanche), le crâne secret
+    # le cul-de-sac : le tas d'os (une morsure, puis la page blanche). Plus de crâne ni de raccourci (11 novembre)
     J.va('eboulis'); J.scene('eboulis'); pv = J.partie()['heros']['pisteur']['pv']
     J.objet('tas-os'); pg.wait_for_timeout(3200); J.libre()
     verifie(J.partie()['heros']['pisteur']['pv'] == pv - 10, 'le tas d\'os : à la première fouille, un rat mord le Pisteur (−10)')
-    J.objet('tas-os'); pg.wait_for_selector('#fenetre .code-gros', timeout=15000); pg.wait_for_timeout(300)
-    verifie(J.code_montre() == noms_code(pg, 'page:blanche'), f'la deuxième fouille donne la page blanche et son code ({J.code_montre()})')
+    sous = J.touche('tas-os')      # un vrai doigt : avant le 11 novembre, la zone du tas restait éteinte après la morsure
+    try: pg.wait_for_selector('#fenetre .code-gros', timeout=15000)
+    except Exception: pass
+    pg.wait_for_timeout(300)
+    verifie(sous and J.code_montre() == noms_code(pg, 'page:blanche'), f'la deuxième fouille, avec un vrai doigt, donne la page blanche et son code ({J.code_montre()})')
     J.clic('#fenetre .aller'); J.libre()
-    verifie(J.js("!document.querySelector('#scene .ob-crane .ob-guide, #scene [data-ob=\"crane\"].ob-guide')"), 'rien ne montre le crâne secret (c\'est le plan du Sage qui le dit)')
-    J.objet('crane'); pg.wait_for_timeout(3400); J.libre()
-    verifie(bool(J.partie()['faits'].get('secret')), 'toucher le bon endroit du mur ouvre le passage secret')
-    J.cap('crane'); J.repartir()
-    verifie('camp' in J.etat()['sorties'], 'la carte montre le passage secret vers le feu de camp')
-    # le couloir aux dalles : l'explication en images, une erreur, puis le bon chemin
+    verifie(J.js("!document.querySelector('#scene [data-ob=\"crane\"], #scene .ob-crane')") and not J.partie()['faits'].get('secret'), 'plus de crâne dans le cul-de-sac : le raccourci vers le feu de camp est enlevé (il faisait sauter presque tout le donjon)')
+    J.cap('eboulis'); J.repartir()
+    verifie('camp' not in J.etat()['sorties'], f'la carte ne montre aucun passage vers le feu de camp ({J.etat()["sorties"]})')
+    # le couloir aux dalles : PAS d'explication (Romain, 11 novembre : c'est le Sage, avec son plan, qui explique), une erreur, puis le bon chemin
     J.chemin('J'); J.va('dalles'); J.scene('dalles')
-    verifie(J.js("!!document.querySelector('#fenetre .expli') && !!document.querySelector('#fenetre .aller[data-act=\"dalles-go\"]')"), 'avant les dalles : une explication en images et un bouton jaune')
-    verifie(not J.sans_lire(), 'l\'explication des dalles : chaque texte a son 🔊')
-    J.cap('dalles-explication'); J.clic('[data-act="dalles-go"]')
+    verifie(J.js("!document.querySelector('#fenetre .expli') && !document.querySelector('[data-act=\"dalles-go\"]') && DJ.Explo._S().pret"), 'les dalles : pas de fenêtre d\'explication, on marche tout de suite')
     pv = [J.partie()['heros'][h]['pv'] for h in ('sage', 'alchimiste', 'pisteur')]
     verifie(J.js("document.querySelectorAll('#scene .ob-guide').length") == 0, 'les dalles : aucun rond jaune')
     # le code du plan du Sage : N B B, N B N. Au premier pas, la dalle CLAIRE (au fond) est piégée : il faut la noire.

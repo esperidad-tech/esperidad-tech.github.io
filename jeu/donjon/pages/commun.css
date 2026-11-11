@@ -76,11 +76,14 @@ p{margin:0}
 .fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px;min-height:48px}
 .fen .titre h2{flex:1}
 .fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
-.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;
+  /* l'onde du rond jaune reste dans la rangée : sinon elle débordait de la fenêtre à chaque battement, et une barre de
+     défilement apparaissait puis disparaissait (Romain, 11 novembre, 19 h 21) */
+  overflow:hidden;padding:30px 34px 24px;margin:-24px -20px -18px}
 .fen.parch{background:linear-gradient(180deg,#f3e7cb,#e3cf9f);color:#35281b;border-color:#8a6a3a}
 .fen.parch h2{color:#3b2414;text-shadow:none}
 .fen.parch .fermer{background:rgba(36,24,46,.08);border-color:#8a6a3a;color:#35281b}
-@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} }
+@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} .fen .rangee{padding:28px 28px 24px;margin:-24px -14px -12px} }
 
 /* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
 .pave-fen{width:min(820px, 100%)}

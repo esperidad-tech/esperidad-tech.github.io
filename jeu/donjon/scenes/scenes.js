@@ -1403,19 +1403,13 @@ SALLES.bibliotheque = function(){
     {id: 'lutrin', type: 'choix', nom: 'Le lutrin', x: 780, y: SOL - 180, w: 140, h: 184, z: 4, pieces: [], options: opt},
     poussiere(480, 246, 460, 70, 6, '#8affe0', 'lucioles')
   ]}; };
-SALLES.eboulis = function(){ return {nom: 'Le cul-de-sac éboulé', type: 'curiosite', ambiance: 'un tas d\'os, un éboulement ; un crâne gravé dans la paroi (le passage secret)',
+SALLES.eboulis = function(){ return {nom: 'Le cul-de-sac éboulé', type: 'curiosite', ambiance: 'un tas d\'os, un éboulement',
   elements: [
     {id: 'tas-os', type: 'tas', nom: 'Le tas d\'os', svg: A.tasOs(), os: A.os(), x: 540, y: SOL - 74, w: 180, h: 90, lueur: '#e8f0c8', z: 5,
       pieces: [{id: 'rat', svg: A.ratTete(), x: 30, y: 2, w: 70, h: 50, cache: true}, {id: 'machoire', dans: 'rat', svg: A.ratMachoire(), x: 4, y: 28, w: 40, h: 20, ox: 36, oy: 4}],
       zone: {x: 548, y: SOL - 62, w: 164, h: 78},
       trouvaille: objet({id: 'page-blanche-os', nom: 'Une page blanche', svg: A.pageBlanche(), x: 600, y: SOL - 136, w: 62, h: 74, lueur: '#fff6d8', pour: 'sage', code: 'page-blanche'})},
-    {id: 'crane', type: 'crane', nom: 'Le crâne gravé', x: CRANE.x, y: CRANE.y, w: CRANE.w, h: CRANE.h, decoupe: true, centre: [CRANE.cx, CRANE.cy], rayon: 40, lueur: '#9ff6ff', z: 3, vers: 'camp',
-      secours: A.craneDalle(),
-      pieces: [{id: 'passage', svg: A.cranePassage(), x: 0, y: 0, w: CRANE.w, h: CRANE.h}, {id: 'dalle', x: 0, y: 0, w: CRANE.w, h: CRANE.h},
-        {id: 'fissures', dans: 'dalle', svg: A.craneFissures(), x: 0, y: 0, w: CRANE.w, h: CRANE.h, cache: true},
-        {id: 'lueur', dans: 'dalle', lueur: '#7ff0ff', force: 0.45, x: -6, y: -4, w: 104, h: 108, cache: true},
-        {id: 'contour', dans: 'dalle', svg: A.craneContour(), x: 0, y: 0, w: CRANE.w, h: CRANE.h, cache: true}],
-      zone: {x: CRANE.x - 4, y: CRANE.y + 2, w: 100, h: 104}},
+    /* (le crâne gravé et son passage secret vers le feu de camp : enlevés le 11 novembre, à la demande de Romain) */
     poussiere(520, 120, 420, 220, 8, '#b8ff90', 'spores')
   ]}; };
 SALLES.dalles = function(){

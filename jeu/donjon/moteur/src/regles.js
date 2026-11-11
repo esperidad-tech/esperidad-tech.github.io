@@ -110,7 +110,7 @@
    {t:'laisse', objet:'baton-chene', heros:'sage', lieu:'crypte'}
    {t:'coffre', lieu:'reserve', pris:'fleches-lourdes', reste:'fleches-argent'}
    {t:'fouille', n:1, trouve:'morsure' | 'page' | null}
-   {t:'passage', de:'eboulis', vers:'camp', deja:false}               le passage secret s'ouvre
+   {t:'passage', de:'canaux', vers:'toiles'}                          le passage secret s'ouvre (la roue des canaux ; celui du crâne est enlevé)
    {t:'roue', sens:'d', cran:2, sur:6}                                 la roue des canaux tourne d'un cran (libre:true : la grille est déjà levée)
    {t:'roue-retour', crans:6}                                          le dernier cran, et l'ordre était faux : la roue revient toute seule
    {t:'dalle', pas:0, cote:'fond', sure:true, element:'dalle-6-0'}    element : l'id de la dalle dans scenes.js
@@ -290,11 +290,18 @@ P._un = function(m, liste){ var self = this; return !!liste && liste.some(functi
 P.cache = function(m){ return this._un(m, m.def.cache); };                         /* on ne peut pas le viser */
 P.ciblables = function(){ var self = this; return this.vivants().filter(function(m){ return !self.cache(m); }); };
 P.devant = function(){ return this.ciblables()[0] || null; };                      /* la bête de devant */
-/* à portée de dague : la bête de devant, et celles qui sont tombées devant */
-/* ceux que la rune d'appel peut amener devant : ils marchent par terre (ni vol, ni fil, ni eau), on peut les viser, et ils
-   ne sont pas déjà devant */
-P.appelables = function(){ var d = this.devant(); return this.ciblables().filter(function(m){ return m !== d && !m.def.hauteur; }); };
-P.aPortee = function(){ var self = this, d = this.devant(); return this.ciblables().filter(function(m){ return m === d || self._un(m, m.def.tombe); }); };
+/* LA DAGUE NE TOUCHE PAS CE QUI EST EN L'AIR (Romain, 11 novembre, 19 h 21 : « avec la dague, on ne peut pas toucher ceux
+   qui volent, ceux qui sont en l'air »). def.dague = {si:[états]} : ce monstre vole, pend à son fil ou reste dans l'eau ;
+   la dague ne l'atteint que dans ces états-là (tombé au sol, sur le dos, accroché à un bouclier, sorti de l'eau).
+   « Celui de devant », pour la dague, c'est donc le premier monstre AU SOL de la file. */
+P.auSol = function(m){ return !m.def.dague || this._un(m, m.def.dague.si); };
+P.devantSol = function(){ var self = this; return this.ciblables().filter(function(m){ return self.auSol(m); })[0] || null; };
+/* à portée de dague : le premier monstre au sol, et ceux qui sont tombés (où qu'ils soient dans la file) */
+P.aPortee = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m === d || (self.auSol(m) && self._un(m, m.def.tombe)); }); };
+/* ceux que la rune d'appel peut amener devant : ils sont au sol, on peut les viser, et ils ne sont pas déjà devant */
+P.appelables = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m !== d && self.auSol(m); }); };
+/* pourquoi la dague ne peut rien : « Trop haut ! » (tout vole ou pend), « Dans l'eau ! » (Bourbe) */
+P._motDague = function(){ var c = this.ciblables(); if(!c.length) return this._motCache(); var d = c[c.length - 1].def.dague; return MOTS[(d && d.mot) || 'haut']; };
 P.debout = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol; }); };
 P.visables = function(){ var self = this; return D.ORDRE.filter(function(h){ return !self.h[h].sol && !self.h[h].avale; }); };
 P.porte = function(h, objet){ return this.h[h].objets.indexOf(objet) >= 0; };
@@ -316,7 +323,7 @@ P.gestes = function(h){
       /* une carte par carquois spécial : le Pisteur choisit la flèche qu'il tire (« f:<objet> ») */
       if(h === 'pisteur') self._carquoisPortes().forEach(function(o){ g('f:' + o, D.OBJETS[o].court || D.OBJETS[o].nom, 'bete', cib, cib.length > 0, self._motCache()); });
     }
-    else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motCache()); }
+    else if(id === 'dague'){ var p = ids(self.aPortee()); g(id, G.nom, 'devant', p, p.length > 0, self._motDague()); }
     else if(id === 'oeil'){        /* la rune de l'œil : une fois lancée, elle dure tout le combat (« Il voit tout ») */
       var deja = self.vu >= self.tour;
       g(id, G.nom, 'salle', [], !deja && self.vivants().length > 0, deja ? MOTS.vu : MOTS.fini);
@@ -330,7 +337,7 @@ P.gestes = function(h){
       armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : deux amis */
     }
     else if(id === 'appel'){       /* la rune d'appel : un monstre qui marche par terre, et qui n'est pas déjà devant */
-      var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return !x.def.hauteur; });
+      var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return self.auSol(x); });
       g(id, G.nom, 'bete', loin, loin.length > 0, parTerre ? MOTS.devant : cib.length ? MOTS.pasLui : self._motCache());
     }
     else if(id === 'louche') g(id, G.nom, 'salle', [], true, null);
@@ -389,7 +396,8 @@ P.refus = function(h, geste, cible){
     var m = this.bete(c[k]);
     if(!m || m.mort) return MOTS.fini;
     if(this.cache(m)) return m.e.sous !== undefined ? MOTS.eau : MOTS.haut;
-    if(geste === 'appel') return m === this.devant() ? MOTS.devant : MOTS.pasLui;       /* déjà devant, ou il vole, pend ou nage */
+    if(geste === 'appel') return m === this.devantSol() ? MOTS.devant : MOTS.pasLui;       /* déjà devant, ou il vole, pend ou nage */
+    if(geste === 'dague' && !this.auSol(m)) return MOTS[m.def.dague.mot || 'haut'];        /* il vole, il pend, il est dans l'eau */
     return MOTS.loin;
   }
   return null;
@@ -886,23 +894,24 @@ P._finTour = function(ev){
   });
   D.ORDRE.forEach(function(h){ if(self.h[h].bouclier){ self.h[h].bouclier = false; ev.push({t:'etat', heros:h, nom:'bouclier', on:false}); } });
 };
-/* Bourbe : hors de l'eau depuis 2 tours entiers, il sèche tout seul (et reste encore un tour dehors, tout raide) */
+/* Bourbe : sur la glace depuis 2 tours entiers, il sèche tout seul (et la glace tient alors encore un tour sous lui, tout
+   raide). Depuis le 11 novembre (19 h 21), seul le givre le sort de l'eau : il n'y a plus de « berge ». */
 P._bourbeAvant = function(ev, m){
-  var B = D.BOURBE, hors = (this.a(m, 'berge') || this.a(m, 'gele')) && !this.a(m, 'dos') && !this.a(m, 'sous');
+  var B = D.BOURBE, hors = this.a(m, 'gele') && !this.a(m, 'dos') && !this.a(m, 'sous');
   if(!hors){ if(!this.a(m, 'dos')) m.c.hors = 0; return; }
   m.c.hors = (m.c.hors || 0) + 1;
   if(m.c.hors >= B.secApres && !this.a(m, 'sec')){
     ev.push({t:'etat', bete:m.id, nom:'sec', on:true, tours:'fin', seul:true}); m.e.sec = FIN;
     var reste = 1 + B.secReste;
-    if(m.e.berge === undefined){ m.e.berge = reste; ev.push({t:'etat', bete:m.id, nom:'berge', on:true, tours:reste}); }
-    else if(m.e.berge < reste) m.e.berge = reste;
+    if(m.e.gele < reste){ m.e.gele = reste; ev.push({t:'etat', bete:m.id, nom:'gele', on:true, tours:reste, deja:true}); }
   }
 };
-/* Bourbe : il retourne à l'eau quand la berge est finie ou qu'il se remet sur ses pattes ; il remonte avec ses têtards */
+/* Bourbe : il retourne à l'eau quand la glace a fondu ou qu'il se remet sur ses pattes (il passe alors à travers la glace) ;
+   il remonte avec ses têtards */
 P._bourbeApres = function(ev, m, partis){
   var B = D.BOURBE, self = this;
-  if(partis.indexOf('dos') >= 0){ this._retire(ev, m, 'berge'); this._retire(ev, m, 'sec'); m.c.hors = 0; }
-  else if(!this.a(m, 'dos') && (partis.indexOf('berge') >= 0 || partis.indexOf('gele') >= 0) && !this.a(m, 'berge') && !this.a(m, 'gele')){ this._retire(ev, m, 'sec'); m.c.hors = 0; }
+  if(partis.indexOf('dos') >= 0){ this._retire(ev, m, 'gele'); this._retire(ev, m, 'sec'); m.c.hors = 0; }
+  else if(!this.a(m, 'dos') && partis.indexOf('gele') >= 0 && !this.a(m, 'gele')){ this._retire(ev, m, 'sec'); m.c.hors = 0; }
   if(partis.indexOf('sous') >= 0){
     ev.push({t:'special', bete:m.id, nom:'remonter'});
     var la = this.vivants().filter(function(x){ return x.type === 'tetard'; }).length, n = Math.max(0, Math.min(B.tetards, B.tetardsMax - la));

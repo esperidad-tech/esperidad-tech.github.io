@@ -89,11 +89,14 @@ p{margin:0}
 .fen .titre{display:flex;align-items:center;gap:10px;padding-right:52px;min-height:48px}
 .fen .titre h2{flex:1}
 .fen .fermer{position:absolute;right:10px;top:10px;width:48px;height:48px;border-radius:50%;background:rgba(255,244,224,.08);border:2px solid #5a4630;font-size:22px;display:grid;place-items:center}
-.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+.fen .rangee{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;
+  /* l'onde du rond jaune reste dans la rangée : sinon elle débordait de la fenêtre à chaque battement, et une barre de
+     défilement apparaissait puis disparaissait (Romain, 11 novembre, 19 h 21) */
+  overflow:hidden;padding:30px 34px 24px;margin:-24px -20px -18px}
 .fen.parch{background:linear-gradient(180deg,#f3e7cb,#e3cf9f);color:#35281b;border-color:#8a6a3a}
 .fen.parch h2{color:#3b2414;text-shadow:none}
 .fen.parch .fermer{background:rgba(36,24,46,.08);border-color:#8a6a3a;color:#35281b}
-@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} }
+@media (max-height:520px){ .fen{padding:12px 14px;gap:8px;border-radius:18px} .fen h2{font-size:21px} .fen .rangee{padding:28px 28px 24px;margin:-24px -14px -12px} }
 
 /* ---------- le pavé des codes (12 symboles, comme l'onglet Code du jeu) ---------- */
 .pave-fen{width:min(820px, 100%)}
@@ -354,7 +357,7 @@ var CODES = {
   /* les trouvailles pour le Sage */
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
-  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Odette est derrière la porte'},
+  'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Un chat gratte à la porte'},
   /* le carnet de l'aventurier, trouvé à l'entrée du donjon (Romain, 11 novembre) : c'est lui que le Sage feuillette */
   'carnet:aventurier': {code:['chapeau','arbre','poisson'], de:'pisteur', a:'sage', nom:'Le carnet de l’aventurier'},
   /* l'étude des monstres (Romain, 10 novembre) : le Sage étudie un monstre en combat, son code entre dans le journal du
@@ -518,13 +521,15 @@ D.OBJETS = {
      le type de flèche » en combat. Un carquois (carquois:true) ne prend donc plus de place dans les mains.
      Chaque sorte a son défaut (accepté par Romain) : les flèches de lune rebondissent sur l'armure (rebondit), les
      transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
-  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Elles font très mal à ce qui vole, pend à un fil ou nage. Sur ce qui marche par terre, la dague fait bien mieux.'},
+  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours.'},
+  /* (Romain, 11 novembre, 19 h 21 : « pour le Pisteur, les objets : toutes les solutions, enlève ça ». Les textes des flèches
+     ne disent donc plus contre qui elles servent : ni dans « 🎒 Objets », ni quand on les ramasse.) */
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
     contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
-    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
+    d:'Des flèches à la pointe d\'argent. Elles brillent comme la lune.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
     contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
-    d:'Contre l\'armure : leur critique frappe aussi fort que la dague, même de loin. Sur le rat cuirassé, elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
+    d:'De lourdes flèches, à la pointe de fer.'},
   /* Romain, 11 novembre (16 h 07) : « pour le Sage, on puisse récupérer deux armes. Ou plus, autant d'armes qu'on veut. Et
      on doit choisir dans le donjon. » Une arme (arme:true) ne prend donc pas de place dans les mains, comme un carquois.
      À 16 h 37 : « il y a trois bâtons : bâton normal, bâton de lune, bâton de chêne. Et après, il y a les sorts. Tu fais en
@@ -608,6 +613,9 @@ D.MONSTRES = {
     nom:'Chauve-souris de la brume', le:'la chauve-souris', rang:'normal', pv:25, module:'chauvesouris', fin:'fuit', hauteur:true,
     attaques:{pique:{degats:30, cibles:'un', foisSi:{folle:2}}}, rythme:['pique'],
     passeSi:['colle', 'gele'], tombe:['au-sol'], seReleve:true,
+    /* dague:{si:[états]} — elle vole : la dague ne l'atteint que tombée au sol (Romain, 11 novembre, 19 h 21 : « avec la
+       dague, on ne peut pas toucher ceux qui volent, ceux qui sont en l'air ») */
+    dague:{si:['au-sol']},
     reactions:{
       bruit:[{si:{sans:['au-sol']}, fait:[['etat', 'au-sol', 1], ['ouvre', 1, 'bruit']]}, {fait:[]}],
       colle:[{fait:[['etat', 'colle', 1], ['etat', 'au-sol', 1], ['ouvre', 1, 'colle']]}],
@@ -621,6 +629,7 @@ D.MONSTRES = {
     nom:'Feu follet', le:'le feu follet', rang:'normal', pv:30, module:'feufollet', fin:'meurt', hauteur:true,
     attaques:{brulure:{degats:18, cibles:'deux'}}, rythme:['brulure'],
     passeSi:['colle', 'gele'], tombe:[],
+    dague:{si:['accroche']},                 /* il vole : la dague ne l'atteint qu'accroché à un bouclier de runes */
     ferme:{fleche:1, dague:1, louche:0, feu:0, acide:1},
     reactions:{
       nuage:[{fait:[['etat', 'visible', 1], ['ouvre', 1, 'nuage']]}],
@@ -638,6 +647,7 @@ D.MONSTRES = {
     nom:'Araignée des caves', le:'l\'araignée', rang:'normal', pv:60, module:'araignee', fin:'fuit', hauteur:true,
     attaques:{morsure:{degats:18, cibles:'un'}, toile:{degats:0, cibles:'un', pose:'entoile'}}, rythme:['toile', 'morsure'],
     passeSi:['colle', 'gele'], tombe:['dos'], cache:['haut'], seReleve:true,
+    dague:{si:['dos']},                      /* elle pend à son fil : la dague ne l'atteint que tombée sur le dos */
     reactions:{
       lumiere:[{si:{sans:['dos']}, fait:[['retire', 'haut'], ['etat', 'dos', 1], ['ouvre', 1, 'lumiere']]}, {fait:[['mot', 'Déjà par terre']]}],
       huile:[{si:{sans:['dos']}, fait:[['retire', 'haut'], ['etat', 'dos', 1], ['ouvre', 1, 'huile']]}, {fait:[['mot', 'Déjà par terre']]}],
@@ -727,7 +737,12 @@ D.MONSTRES = {
   },
 
   /* ---------- Bourbe, le crapaud du puits (boss) ----------
-     Dans l'eau (immunisé) → lumière : sur la berge → feu : sec → nuage : sur le dos, ouvert jusqu'à la fin du tour suivant.
+     Dans l'eau (immunisé, on ne voit que le haut de sa tête) → GIVRE : le bassin gèle, il bondit et retombe SUR LA GLACE,
+     tout entier → feu : sec → nuage : sur le dos, ouvert jusqu'à la fin du tour suivant.
+     Romain, 11 novembre (19 h 21) : « il faudrait que ça soit le sort de givre qui le fasse sortir de l'eau. La lumière qui
+     le fait sortir de l'eau, ce n'est pas logique. La glace sous ses pieds : il ne veut pas rester coincé, donc il saute et
+     il tombe sur la glace. Et après, on lui balance du feu dessus. Et après, le fumigène. Pour moi, il n'y a que la glace
+     qui fonctionne. » La lumière ne lui fait donc plus rien, et il n'y a plus de « berge ».
      Le reste de son comportement (il sèche tout seul, il replonge, il remonte avec ses têtards) est dans D.BOURBE. */
   bourbe:{
     nom:'Bourbe, le crapaud du puits', le:'Bourbe', rang:'boss', pv:1000, module:'bourbe', fin:'meurt', chef:true, hauteur:true,
@@ -742,11 +757,12 @@ D.MONSTRES = {
       ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut', plusSi:{colere:20}}             /* le coup préparé de Bourbe : il retombe de tout son poids */
     }, rythme:['langue', 'ecrasement', 'saut'],
     passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
+    /* dans l'eau, la dague ne l'atteint pas ; sur la glace, oui (s'il n'y a plus de têtard devant), et sur le dos toujours */
+    dague:{si:['gele', 'sec', 'dos'], mot:'dansEau'},
     reactions:{
-      lumiere:[{si:{un:['dos', 'sous']}, fait:[]},
-               {fait:[['etat', 'berge', 2]]}],
+      lumiere:[{fait:[]}],
       feu:[{si:{avec:['ouvert']}, defaut:true},
-           {si:{un:['berge', 'gele'], sans:['sec', 'sous']}, fait:[['etat', 'sec', 'fin'], ['mot', 'Tout sec !']]},
+           {si:{un:['gele'], sans:['sec', 'sous']}, fait:[['etat', 'sec', 'fin'], ['mot', 'Tout sec !']]},
            {si:{avec:['sec']}, fait:[['mot', 'Déjà sec']]},
            {fait:[['mot', 'Trop mouillé !']]}],
       nuage:[{si:{un:['dos', 'sous']}, fait:[]},
@@ -757,13 +773,15 @@ D.MONSTRES = {
       /* le piège : le bruit, il plonge et revient avec deux têtards (sauf si le bassin est gelé : il se cogne) */
       bruit:[{si:{un:['dos', 'sous']}, fait:[]},
              {si:{avec:['gele']}, fait:[['mot', 'Il se cogne !']]},
-             {fait:[['special', 'plonger'], ['retire', 'berge'], ['retire', 'sec'], ['etat', 'sous', 1], ['mot', 'Il plonge !']], piege:true}],
-      /* l'autre chemin : le givre gèle le bassin pour trois tours (il ne plonge plus, il est comme sur la berge) */
+             {fait:[['special', 'plonger'], ['retire', 'sec'], ['etat', 'sous', 1], ['mot', 'Il plonge !']], piege:true}],
+      /* LE chemin : le givre gèle le bassin pour trois tours. Il bondit pour ne pas rester pris et retombe sur la glace :
+         le voilà hors de l'eau, et il ne peut plus plonger */
       givre:[{si:{un:['dos', 'sous']}, fait:[]},
-             {fait:[['etat', 'gele', 3], ['mot', 'Le bassin gèle !']]}],
-      /* ce qu'il fait en se fâchant (voir colere, plus haut) : il plonge — sauf si le bassin est gelé */
-      colere:[{si:{avec:['gele']}, fait:[['mot', 'Il se cogne !']]},
-              {fait:[['ferme'], ['retire', 'dos'], ['retire', 'berge'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il plonge !']]}],
+             {si:{avec:['gele']}, fait:[['etat', 'gele', 3], ['mot', 'Déjà gelé']]},
+             {fait:[['etat', 'gele', 3], ['mot', 'Il saute sur la glace !']]}],
+      /* ce qu'il fait en se fâchant (voir colere, plus haut) : il se retourne d'un bond, BRISE LA GLACE et plonge. (Depuis
+         le 11 novembre, 19 h 21, on ne le blesse plus que sur la glace : sans cela, sa phase 2 n'arriverait jamais.) */
+      colere:[{fait:[['ferme'], ['retire', 'dos'], ['retire', 'gele'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il brise la glace !']]}],
       /* sans nuage : le héros avalé le chatouille ; s'il est sec, il en roule sur le dos */
       chatouille:[{si:{avec:['sec'], sans:['dos']}, fait:[['special', 'chatouille'], ['etat', 'dos', 2], ['ouvre', 2, 'chatouille']]},
                   {fait:[['special', 'recrache']]}]
@@ -773,8 +791,8 @@ D.MONSTRES = {
 
 /* Bourbe : ce que les réactions ne disent pas */
 D.BOURBE = {
-  secApres:2,          /* sans feu : au bout de 2 tours entiers hors de l'eau, il sèche tout seul… */
-  secReste:1,          /* …et un crapaud sec reste encore 1 tour dehors, tout raide */
+  secApres:2,          /* sans feu : au bout de 2 tours entiers sur la glace, il sèche tout seul… */
+  secReste:1,          /* …et la glace tient alors encore 1 tour sous un crapaud sec, tout raide */
   tetards:2,           /* les têtards qu'il ramène quand il a plongé */
   tetardsMax:4,        /* jamais plus de têtards que ça en même temps */
   retour:'saut'        /* quand il remonte, il retombe sur tout le monde (en plus de son rythme) */
@@ -809,7 +827,9 @@ D.LIEUX = {
   egouts:{nom:'Les égouts tournants', combat:'egouts', boucle:'canaux'},
   givre:{nom:'La grotte de la fleur de givre', objets:['fleur-givre']},
   toiles:{nom:'La cave aux toiles', combat:'toiles'},
-  eboulis:{nom:'Le cul-de-sac éboulé', tas:true, crane:true},
+  /* (Romain, 11 novembre, 19 h 21 : plus de passage secret du crâne vers le feu de camp — « on arrive directement au boss,
+     on loupe absolument tout le donjon. Il faudrait l'enlever. ») */
+  eboulis:{nom:'Le cul-de-sac éboulé', tas:true},
   dalles:{nom:'Le couloir aux dalles', piege:'dalles'},
   atelier:{nom:'L\'atelier des Fondateurs', combat:'atelier'},
   bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree', 'cristal-lune', 'baton-chene']},      /* (le Sage prend les deux armes du lutrin : Romain, 11 novembre) */
@@ -889,15 +909,17 @@ D.LIVRE = {
     'J\'ai couru me cacher derrière une vieille porte. Elle a cogné dessus, et sa plaque s\'est entrouverte, le temps d\'un souffle. Derrière, quelque chose brillait. C\'est là qu\'il faut mettre la lumière. Si seulement j\'avais eu de quoi ronger cette plaque pour de bon…'
   ],
   bourbe:[
-    'Un crapaud grand comme une maison. Tant qu\'il reste dans l\'eau, rien ne l\'atteint. C\'est ma lampe qui l\'a fait sortir sur la berge. Là, mes coups glissaient sur sa bave.',
-    'J\'ai eu le malheur de faire du bruit : il a replongé, et il est revenu avec ses petits. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite.',
+    /* (Romain, 11 novembre, 19 h 21 : « il faut modifier aussi le livre de l'aventurier : tu inventes un truc pour dire qu'il
+       a réussi à trouver un moyen de le faire sortir de l'eau » — ici : une nuit de grand froid) */
+    'Un crapaud grand comme une maison. Dans l\'eau, on ne voit que sa tête, et rien ne l\'atteint. Ma lampe, il s\'en moque. Une nuit de grand froid, le bassin a gelé d\'un coup. Il a bondi pour ne pas rester pris, et il est retombé sur la glace, tout entier.',
+    'Sur la glace, mes coups glissaient sur sa bave. Mais il ne pouvait plus plonger. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite. Et pas de bruit, surtout : dans l\'eau, le bruit le fait plonger, et il revient avec ses petits.',
     'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
 /* ===================================================================== 11. LES REFUS, en deux mots */
 D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
-  personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !',
+  personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !', dansEau:'Dans l\'eau !',
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
@@ -1141,7 +1163,7 @@ lieu('egouts',       {nom:'Les égouts tournants', ic:'🌀', type:'combat', bou
   pts:[[1385, 988], [1378, 1050], [1336, 1105], [1352, 1172], [1420, 1212], [1502, 1196], [1546, 1130], [1520, 1062], [1500, 990]], decor:'egouts', monstres:['rat']});
 lieu('givre',        {nom:'La grotte de la fleur de givre', ic:'❄️', type:'objets', culDeSac:true, x:1000, y:1010, v1:1, scene:'givre', objets:['fleur-givre'], codes:['plante:givre']});
 lieu('toiles',       {nom:'La cave aux toiles', ic:'🕸️', type:'combat', x:1700, y:925, v1:1, decor:'toiles', signe:'lune', monstres:['araignee', 'feufollet', 'feufollet']});
-lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os', 'crane'], codes:['page:blanche']});
+lieu('eboulis',      {nom:'Le cul-de-sac éboulé', ic:'🦴', type:'curiosite', culDeSac:true, x:1835, y:1095, v1:1, scene:'eboulis', objets:['tas-os'], codes:['page:blanche']});
 lieu('dalles',       {nom:'Le couloir aux dalles', ic:'⚠️', type:'piege', x:1866, y:838, couloir:true, l:32, pts:[[1840, 915], [1866, 838], [1890, 754]], scene:'dalles'});
 lieu('atelier',      {nom:'L’atelier des Fondateurs', ic:'⚙️', type:'combat', elite:true, x:1920, y:700, v1:1, decor:'atelier', monstres:['gardien', 'ratcuir']});
 lieu('bibliotheque', {nom:'La bibliothèque engloutie', ic:'📚', type:'objets', choix:true, culDeSac:true, x:1920, y:560, v1:1, scene:'bibliotheque', objets:['page-dechiree', 'page-blanche', 'cristal-lune', 'baton-chene'], codes:['page:dechiree', 'page:blanche']});
@@ -1188,8 +1210,9 @@ var VIEUX = [[921, 762], [872, 790], [846, 860], [856, 935], [890, 985], [934, 1
 LIENS.push({id:'vieux', de:'givre', a:null, pts:[[934, 1006], [896, 990], [866, 960], [852, 912]], bouche:true});
 /* le passage secret : du cul-de-sac éboulé au feu de camp. Seule l'encre invisible du plan le montre ; dans le donjon,
    il s'ouvre quand on appuie sur le crâne gravé (scenes : crâne → 'camp') */
+/* (Romain, 11 novembre, 19 h 21 : ce passage est ENLEVÉ — « on arrive directement au boss, on loupe absolument tout le
+   donjon, on ne voit pas la plupart des ennemis, on n'a pas les bâtons du Sage ». Le tracé reste ici, pour mémoire.) */
 var SECRET = [[1892, 1096], [1950, 1092], [2005, 1086], [2088, 1082]];
-LIENS.push({id:'secret', de:'eboulis', a:'camp', pts:SECRET, secret:'secret', l:20});
 var LIEN = {};
 LIENS.forEach(function(c){
   c.l = c.l || SOL;
@@ -1347,7 +1370,7 @@ var PLAN = {
        oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
        dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
        roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
-       crane   (encre)  le passage secret du cul-de-sac éboulé au feu de camp ;
+       (crane : le passage secret du cul-de-sac au feu de camp, enlevé le 11 novembre à la demande de Romain) ;
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
@@ -1356,8 +1379,6 @@ var PLAN = {
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
       boite:{x:1470, y:862, w:320, h:240}},
-    {id:'crane', type:'encre', x:1930, y:1028, lignes:['appuie sur', 'le crâne'], pres:'eboulis', passage:'secret',
-      boite:{x:1840, y:990, w:300, h:130}},
     {id:'fleur', type:'encre', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], pres:'givre',
       boite:{x:755, y:1145, w:300, h:85}},
     {id:'bourbe', type:'coin', x:2100, y:1236, lignes:['Ici dort Bourbe.', 'Chut… pas de bruit !'], pres:'bassin'}
@@ -2621,6 +2642,17 @@ function note(f, t0, d, type, vol){
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
   }catch(e){}
 }
+/* une note qui glisse (le miaulement) */
+function glisse(f0, f1, t0, d, vol){
+  var a = audio(); if(!a) return;
+  try{
+    var o = a.createOscillator(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (t0 || 0);
+    o.type = 'triangle'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+    lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = .5;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol || .05, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(lp); lp.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .05);
+  }catch(e){}
+}
 function son(type){
   try{ if(AC && AC.state === 'suspended') AC.resume(); }catch(e){}
   if(type === 'tic') note(880, 0, .06, 'triangle', .05);
@@ -2630,6 +2662,7 @@ function son(type){
   else if(type === 'page'){ note(320, 0, .12, 'triangle', .03); note(420, .05, .1, 'triangle', .02); }
   else if(type === 'plouf'){ note(260, 0, .25, 'sine', .08); note(180, .05, .3, 'sine', .05); }
   else if(type === 'feu'){ note(120, 0, .25, 'sawtooth', .025); note(90, .04, .3, 'triangle', .04); }
+  else if(type === 'miaou'){ glisse(620, 940, 0, .34, .06); glisse(940, 560, .16, .3, .05); }      /* le miaou du labo (jeu/src/labo/15-sons.js) */
 }
 PAGE.son = son;
 
@@ -3062,9 +3095,9 @@ function svg(){
   q += '<g class="encre-plan">' + donjon('c', true) + '</g>';
   P.noms.forEach(function(n){ if(n.coin) q += texte(n.x, n.y, n.l, n.t); });
   P.notes.forEach(function(n){ if(n.type === 'coin') q += texte(n.x, n.y, n.lignes, 19, ROUGE); });
-  /* le petit cœur d'Odette (quand le Sage a reçu « Odette est derrière la porte ») */
-  q += '<g class="coeur-odette" style="display:none">' + G(2352, 1196, -8, 1, '<path d="M0 6 C -10 -2 -8 -10 -2 -9 C 0 -9 0 -7 0 -6 C 0 -7 0 -9 2 -9 C 8 -10 10 -2 0 6 Z" fill="#c0392b" opacity=".85" stroke="' + ENC + '" stroke-width="1.2"/>') +
-    texte(2352, 1224, ['Odette'], 19, ROUGE) + '</g>';
+  /* le petit cœur à la porte (quand le Sage a entendu la voix derrière). Romain, 11 novembre (19 h 21) : « sur le plan du
+     Sage, pas marqué Odette » — le cœur reste, le nom n'y est plus */
+  q += '<g class="coeur-odette" style="display:none">' + G(2352, 1196, -8, 1, '<path d="M0 6 C -10 -2 -8 -10 -2 -9 C 0 -9 0 -7 0 -6 C 0 -7 0 -9 2 -9 C 8 -10 10 -2 0 6 Z" fill="#c0392b" opacity=".85" stroke="' + ENC + '" stroke-width="1.2"/>') + '</g>';
   q += '<rect x="' + f(bc.x) + '" y="' + f(bc.y) + '" width="' + f(bc.w) + '" height="' + f(bc.h) + '" fill="url(#cbrule)"/>' + bordBrule(BORDS.coin);
   c += '<g clip-path="url(#cparch)">' + q + '</g>';
   /* les fibres du papier arraché */
@@ -3093,14 +3126,6 @@ function encre(ctx, n, res){
     var pts = C.LIEN[n.passage].pts, d = new Path2D(U.lisse(pts));
     ctx.strokeStyle = 'rgba(127,240,255,.45)'; ctx.lineWidth = 9; ctx.stroke(d);
     ctx.setLineDash([.1, 11]); ctx.strokeStyle = INV; ctx.lineWidth = 4; ctx.stroke(d); ctx.setLineDash([]);
-    if(n.id === 'crane'){
-      /* le crâne gravé, au départ du passage */
-      ctx.save(); ctx.translate(1903, 1080); ctx.scale(1.6, 1.6);
-      var cr = new Path2D('M-5 -1 C -5 -7 5 -7 5 -1 L 4 3 L 2 3 L 2 5 L -2 5 L -2 3 L -4 3 Z');
-      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(159,246,255,.6)'; ctx.stroke(cr); ctx.lineWidth = 1.3; ctx.strokeStyle = INV; ctx.stroke(cr);
-      ctx.fillStyle = INV; ctx.beginPath(); ctx.arc(-2, -1, 1.3, 0, 6.29); ctx.arc(2, -1, 1.3, 0, 6.29); ctx.fill();
-      ctx.restore();
-    }
     if(n.id === 'roue'){
       /* la roue des canaux, au départ du passage : un cercle, ses rayons, et un trait qui la relie à sa note */
       var r0 = pts[0], rx = r0[0] - 6, ry = r0[1] - 46;
@@ -3126,7 +3151,7 @@ function encre(ctx, n, res){
     for(var k = 0; k < 6; k++){ ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -15); ctx.moveTo(0, -9); ctx.lineTo(-5, -13); ctx.moveTo(0, -9); ctx.lineTo(5, -13); ctx.stroke(); }
     ctx.restore();
   }
-  ecrire(n.lignes, n.x, n.y, n.id === 'crane' ? 24 : 22);
+  ecrire(n.lignes, n.x, n.y, 22);
   ctx.restore();
 }
 
@@ -3385,7 +3410,8 @@ function toucherPlan(p){
     if(sg2){ conte('Pas de nom ici, juste un signe : ' + NOMS_SIGNES[sg2.s] + '.'); return; }
     if(id === 'egouts'){ conte('Un couloir qui tourne, qui tourne… Les Fondateurs aimaient les détours.'); return; }
     if(id === 'dalles'){ conte('Un couloir pavé de dalles claires et sombres. Un petit crâne rouge… et une note codée, juste à côté.'); return; }
-    if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.' + (S.codes['porte:odette'] ? ' Odette est juste derrière.' : '')); return; }
+    /* (Romain, 11 novembre, 19 h 21 : « sur le plan du Sage, pas marqué Odette » — le plan ne la nomme plus) */
+    if(id === 'porte4' && coinOk){ conte('Une grande porte ronde, avec quatre signes gravés.'); return; }
   }
 }
 
@@ -3414,7 +3440,7 @@ function rune(){
     res = reveler(p.x, p.y, wr) || res;
     dernier = p;
     if(res){
-      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'crane' ? ' Et un passage en pointillés part du crâne…' : res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
+      if(res.fini) conte('L’encre se réveille : « ' + res.n.lignes.join(' ') + ' » !' + (res.n.id === 'roue' ? ' Et un passage en pointillés part des canaux… jusqu’à la salle de la lune !' : ''));
       else if(res.debut) conte('Oh ! De l’encre apparaît sous la rune… Continue, doucement.');
     }
   }
@@ -3618,6 +3644,7 @@ function scene(id){
       '</div></div>' +
       '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Le noter dans le Grand Livre</button></div>', {classe:'scene sombre-fen'});
     PG.guider(w3.el.querySelector('.aller'));
+    PG.son('miaou');                                   /* (le chat miaule : Romain, 11 novembre) */
     conte('Odette est vivante, derrière la porte aux quatre signes. Ton Grand Livre l’a noté.');
   }
 }

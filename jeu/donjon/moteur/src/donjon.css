@@ -35,10 +35,13 @@
 .bete.prepare:not(.dispo):not(.restes):not(.cendre):not(.parti) .anneau{opacity:1;border-color:#ff5a3c;box-shadow:0 0 0 2px rgba(36,24,46,.5),0 0 22px 8px rgba(255,80,40,.8),inset 0 0 12px rgba(255,80,40,.6);animation:pulse .8s ease-in-out infinite}
 .pv.elite .barre{width:112px}
 /* la barre du boss : tout en haut, entre le nom de la salle et les curseurs de volume */
-.pv.boss{top:20px;left:400px;height:22px;gap:8px;z-index:25}
-.pv.boss .barre{width:200px;height:14px;border-radius:8px}
-.pv.boss em{font-style:normal;font-family:var(--f-titre);font-size:20px;color:var(--or-pale);text-shadow:0 2px 0 var(--encre),0 0 8px #000}
-.pv.boss b{font-size:16px}
+/* la vie du boss : SOUS LUI, dans la rangée des autres barres (Romain, 11 novembre, 19 h 21 : « on ne voit pas ses points de
+   vie » — elle était tout en haut, à côté du titre de la salle) */
+.pv.boss{top:346px;left:872px;height:22px;gap:6px;z-index:25}
+.pv.boss .barre{width:104px;height:15px;border-radius:8px;border-width:3px}
+.pv.boss em{position:absolute;left:0;top:-17px;font-style:normal;font-family:var(--f-titre);font-size:15px;line-height:1;color:var(--or-pale);text-shadow:0 2px 0 var(--encre),0 0 6px #000;white-space:nowrap}
+.pv.boss b{font-size:17px;min-width:38px}
+.etat.e-eau{background:#17384a;border-color:#5fb8d8;color:#d6f3ff}
 .mot.refus.long{font-size:28px}
 .heros.avale .anneau, .heros.avale .ombre, .heros.avale .check, .heros.avale .etoiles{display:none}
 
@@ -107,6 +110,10 @@
 
 /* ---------- les fenêtres du donjon ---------- */
 .parchemin.code, .parchemin.large{text-align:center}
+/* la rangée des boutons garde l'onde du rond jaune DANS son cadre : sans cela l'onde débordait du parchemin à chaque
+   battement, une barre de défilement apparaissait puis disparaissait, et toute la fenêtre se décalait (Romain, 11 novembre,
+   19 h 21 : « la fenêtre se décale, une barre de scroll apparaît, puis ça disparaît ») */
+.parchemin .boutons{overflow:hidden;padding:26px 40px 26px;margin:-10px -26px -20px}
 .code-gros{display:flex;gap:18px;justify-content:center;align-items:center;margin:12px 0 8px}
 .code-gros span{display:flex;flex-direction:column;align-items:center;font-size:58px;line-height:1.1;min-width:92px;padding:8px 6px 4px;border-radius:16px;background:rgba(36,24,46,.08);border:3px solid rgba(36,24,46,.35)}
 .code-gros small{font-size:14px;font-weight:700;color:#5a4630}
