@@ -862,6 +862,70 @@ var SONS = {
 };
 
 return SONS;
+},
+gateau:function(audio, SORTIE){
+function sonsGateau(audio, sortie){
+  function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+    g.connect(sortie(a)); o.start(t); o.stop(t + duree + 0.03);
+  }
+  /* un souffle : du bruit filtré dont la hauteur glisse de f0 à f1 */
+  function souffle(t0, duree, vol, f0, f1, q, type){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, n = Math.floor(a.sampleRate * duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+    f.type = type || 'bandpass'; f.Q.value = q || 0.8; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.06, duree * .3)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  /* de tout petits grains secs (le sucre, les paillettes) */
+  function grains(t0, duree, vol, nb, passeHaut){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var k = 0; k < nb; k++){ var c = Math.floor(n * Math.random() * .9), l = Math.floor(sr * (.001 + Math.random() * .004)), v = .4 + Math.random() * .6; for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random() * 2 - 1) * v * (1 - j / l); }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  return {
+    /* ce dont le gâteau est fait */
+    etage:function(){ souffle(0, .12, .02, 700, 300, .8, 'lowpass'); tendre(196, .02, .17, .075, 128, .006, 'triangle', 700); tendre(523, .13, .1, .034, null, .008); tendre(784, .21, .18, .03, null, .01); },   /* un étage se pose : « poum », puis deux notes contentes */
+    etageMoins:function(){ tendre(659, 0, .09, .034, 523, .008); tendre(392, .08, .15, .04, 262, .01, 'triangle', 900); },                                                                              /* on en retire un */
+    forme:function(){ tendre(440, 0, .06, .04, 587, .005, 'triangle', 1500); tendre(660, .075, .09, .034, 880, .005, 'triangle', 1800); },                                                               /* le moule change : toc-toc */
+    penche:function(){ tendre(520, 0, .2, .034, 330, .02); tendre(330, .19, .17, .03, 440, .02); },                                                                                                    /* oups, ça penche */
+    pate:function(){ souffle(0, .1, .024, 520, 240, .9, 'lowpass'); tendre(220, 0, .15, .06, 147, .01); tendre(294, .11, .1, .03, 262, .008); },                                                         /* la pâte : un « plof » moelleux */
+    glacage:function(){ souffle(0, .3, .026, 2400, 900, .9); tendre(880, .04, .26, .02, 440, .03); tendre(1319, .31, .08, .02, 988, .004); },                                                            /* le glaçage glisse, une goutte tombe */
+    motif:function(){ [0, .07, .14].forEach(function(t, i){ tendre(988 + i * 131, t, .05, .028, null, .004, 'triangle', 2600); }); },                                                                  /* trois petits coups de pinceau */
+    creme:function(){ for(var i = 0; i < 5; i++){ souffle(i * .07, .06, .028, 1700 + i * 300, 2500 + i * 300, 1.2); tendre(587 + i * 98, i * .07, .05, .018, null, .005); } },                            /* la poche à douille : psch-psch-psch */
+    plat:function(){ tendre(1760, 0, .32, .034, null, .003); tendre(2637, .004, .22, .015, null, .003); tendre(3520, .008, .12, .007, null, .003); },                                                    /* la porcelaine tinte */
+    nappe:function(){ souffle(0, .4, .038, 500, 1500, .6); souffle(.24, .26, .024, 1500, 600, .6); },                                                                                                  /* on secoue la nappe */
+    /* une décoration posée : un bruit par famille */
+    fruit:function(){ tendre(700, 0, .07, .05, 300, .004); tendre(300, .05, .13, .045, 180, .006); tendre(1400, .14, .05, .014, 900, .003); },                                                           /* un « ploc » juteux */
+    fleur:function(){ souffle(0, .22, .008, 3000, 5200, .7); tendre(1047, 0, .36, .03, null, .01); tendre(1319, .08, .4, .026, null, .01); tendre(1568, .16, .5, .018, null, .012); },                   /* trois notes de harpe, un souffle */
+    bonbon:function(){ tendre(1800, 0, .03, .04, null, .002, 'triangle', 5000); tendre(2400, .06, .03, .034, null, .002, 'triangle', 6000); tendre(1175, .115, .07, .03, 1568, .003); },                 /* tic-tac sucré */
+    fete:function(){ [1568, 2093, 2637, 3136].forEach(function(f, i){ tendre(f, i * .045, .2, .022, null, .004); }); grains(0, .26, .012, 14, 5000); },                                                  /* « tzing ! » : des étincelles */
+    farfelu:function(){ tendre(196, 0, .13, .055, 494, .008, 'triangle', 1600); tendre(494, .11, .2, .045, 233, .01, 'triangle', 1600); tendre(659, .33, .07, .026, 587, .005, 'triangle', 1400); },     /* « boïng… couic » */
+    paillettes:function(){ grains(0, .36, .03, 40, 4200); tendre(2637, .02, .12, .012, null, .004); tendre(3136, .1, .12, .01, null, .004); tendre(3520, .18, .14, .008, null, .004); },                 /* une pincée qui scintille */
+    chantilly:function(){ souffle(0, .3, .04, 900, 2200, .7); tendre(262, .28, .1, .045, 180, .006); },                                                                                                /* « pfffrt… plop » */
+    /* les gestes */
+    prend:function(){ tendre(520, 0, .06, .034, 780, .005); },                                                                                                                                         /* on la soulève */
+    tourne:function(){ grains(0, .07, .028, 7, 2000); tendre(784, .01, .08, .03, 988, .006, 'triangle', 2400); },                                                                                      /* un cran : cric */
+    poubelle:function(){ tendre(900, 0, .25, .034, 200, .01); tendre(110, .24, .12, .06, 70, .004, 'triangle', 500); },                                                                                /* ça siffle et ça tombe */
+    annule:function(){ souffle(0, .16, .022, 1400, 500, .8); tendre(587, 0, .1, .03, 440, .008); },                                                                                                    /* un pas en arrière */
+    pinceau:function(){ souffle(0, .17, .03, 900, 2300, .8); tendre(659, .03, .09, .03, 880, .006); tendre(1319, .1, .1, .014, null, .006); },                                                         /* un coup de pinceau */
+    plein:function(){ tendre(330, 0, .12, .05, 294, .01, 'triangle', 1100); tendre(262, .1, .18, .045, 233, .01, 'triangle', 900); },                                                                  /* plus de place ! */
+    /* la fête */
+    bravo:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(f, i){ tendre(f, i * .09, .3, .055, null, .01, 'triangle', 3000); });
+      tendre(1047, .6, .95, .04, null, .02); tendre(1319, .6, .95, .03, null, .02); tendre(1568, .6, .95, .024, null, .02); grains(.55, .8, .016, 50, 5000); },                                        /* « C'est prêt ! » */
+    confetti:function(){ for(var i = 0; i < 5; i++){ var f = 600 + Math.random() * 900; tendre(f, i * .08 + Math.random() * .03, .06, .022, f * 1.5, .005); } }                                         /* petits « pop » de la fête */
+  };
+}
+
+return sonsGateau(audio, function(){ return SORTIE; });
 }
 };
 /* Atelier des sons de Brumeval — le moteur.
@@ -4159,6 +4223,29 @@ var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
 })(window);
 
+/* Atelier des sons de Brumeval — les sons du gâteau de la fête (le mini-jeu de l'Alchimiste, 11 novembre 2026).
+   Leur code vient tel quel du jeu (jeu/src/mj-gateau.js, la fabrique sonsGateau, recopiée par construire-sons.py
+   dans EXTRAITS.gateau) : ce qu'on entend ici est ce qu'on entend dans le mini-jeu.
+   Ils sont NEUFS : Romain ne les a pas encore écoutés. Ils sont donc marqués 🆕 (neuf:1), pas ✅ ;
+   il coche ceux qu'il garde, et touche 🔁 « à refaire » sur ceux qu'il veut changer.
+   (Les petits « pop » des bulles sont ceux des pastilles de la carte : « Le jeu », déjà validés.) */
+(function(G){
+'use strict';
+var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
+function gateau(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J, S){ E.gateau(function(){ return J.ctx; }, S)[nom](); }}; }
+function liste(l){ return l.map(function(e){ X['g_' + e[0]] = gateau(e[0], e[2]); return {id:'g_' + e[0], t:e[1], x:1, neuf:1}; }); }
+var section = {id:'mj-gateau', titre:'Gâteau de fête', sous:[
+  {id:'gateau-etages', titre:'Étages et couleurs', sons:liste([['etage', 'Étage posé', .45], ['etageMoins', 'Étage retiré', .3], ['forme', 'Le moule change', .25], ['penche', 'Ça penche', .4],
+    ['pate', 'La pâte', .25], ['glacage', 'Le glaçage', .45], ['motif', 'Le motif', .25], ['creme', 'La crème', .4], ['plat', 'Le plat', .35], ['nappe', 'La nappe', .55], ['pinceau', 'Le pinceau', .25]])},
+  {id:'gateau-decos', titre:'Une décoration posée', sons:liste([['fruit', 'Un fruit', .25], ['fleur', 'Une fleur', .7], ['bonbon', 'Un bonbon', .25], ['fete', 'Fête', .3], ['farfelu', 'Farfelu', .45],
+    ['paillettes', 'Paillettes', .4], ['chantilly', 'Chantilly', .4]])},
+  {id:'gateau-gestes', titre:'Gestes et fête', sons:liste([['prend', 'On la soulève', .12], ['tourne', 'Elle tourne', .15], ['poubelle', 'À la poubelle', .4], ['annule', 'Annuler', .2],
+    ['plein', 'Plus de place', .3], ['bravo', 'C’est prêt !', 1.6], ['confetti', 'Confettis', .5]])}
+]};
+var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
+if(mj) mj.sous.push(section);
+})(window);
+
 /* Atelier des sons de Brumeval — la page : des sections qu'on ouvre et qu'on ferme, les boutons A B C, les cases « validé par moi »,
    la petite barre du bas qui copie les choix. Le catalogue est dans catalogue.js. */
 (function(){
@@ -4176,7 +4263,9 @@ function versions(s){
 }
 function cleDe(s, v){ return s.salles ? s.id + ':' + v[0] : s.id + v[0]; }
 function statut(s){
-  if(s.x) return s.ok ? 'valide' : 'jeu';             /* ok:1 : pas encore dans le jeu, mais validé d'avance par Romain (les sons du labo, 10 novembre) */
+  /* ok:1 : pas encore dans le jeu, mais validé d'avance par Romain (les sons du labo, 10 novembre) ;
+     neuf:1 : déjà dans le jeu, mais Romain ne l'a pas encore écouté (les sons du gâteau de la fête, 11 novembre) */
+  if(s.x) return s.ok ? 'valide' : (s.neuf ? 'nouveau' : 'jeu');
   if(s.salles) return 'valide';                       /* les trois couleurs de salle : toutes gardées par Romain (10 novembre) */
   return CHOIX[s.id] && CHOIX[s.id].length ? 'valide' : 'nouveau';
 }
