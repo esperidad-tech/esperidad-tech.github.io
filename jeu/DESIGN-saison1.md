@@ -1385,7 +1385,7 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **Vérifié** : verif.js 1 2 3 « Tout est bon » ; rapide.sh (tuto.py sans échec) ; `tools/heros.py` (l'arbre du Pisteur avec son message, celui du Barde complet ; restent 3 échecs anciens, sans lien : le menu a « Mon héros » et « Revenir aux projets de Romain », la lettre du maire depuis le Carnet) ; une vieille sauvegarde remboursée une seule fois ; les scènes regardées image par image ; codes E1/E2/E3 inchangés (les deux nouveaux codes de l'E2, `obj:piece_pain` et `obj:piece_moulin`, prennent des codes libres : à geler dans `codes-fixes.js` à leur mise en ligne).
 
-### 12.57 Enquête 2 : ce qui reste, et la charrette qui mène au moulin (Romain, 11 novembre, 9 h 20) — MOULIN_EN_LIGNE
+### 12.57 Enquête 2 : ce qui reste, et la charrette qui mène au moulin (Romain, 11 novembre, 9 h 20) — en ligne le 11 novembre à 9 h 52 (commit 327fb80 du site, version 20261111-0852, avec le labo de l'E2 de l'autre conversation). Vérifié sur le jeu fusionné : un robot suit la charrette jusqu'au moulin (3 parties, téléphone et tablette, images regardées), rapide.sh vert, `labo-e2.py` sans échec, partie2.py sans échec, codes E1/E2/E3 identiques
 
 **Ce que Romain a dit.** « Les analyses de l'Alchimiste dans l'enquête 2, il y a aussi les pièces : il y en a 5 en tout. » « Le mini-jeu de la charrette, la charrette menait au moulin, non ? Si ce n'est pas le cas, il faut rajouter juste un moulin à la fin de la piste. » « Le tir à l'arc, le cerf-volant, c'est validé. » « On peut garder écouter en cachette dans les scènes du lavoir, ça me va. » « Le labo de l'enquête 2 est en train d'être fait par une autre conversation. »
 
