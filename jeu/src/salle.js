@@ -29,9 +29,9 @@ var VARIANTES = {
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
       departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
     /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
-    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
+    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
       departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
       departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},

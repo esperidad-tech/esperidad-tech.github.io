@@ -125,6 +125,7 @@ def partie(b, joueur, chemin):
     pp = (i or {}).get('params', {})
     verifier(pp.get('suspect') == 'chat' and pp.get('arrivee') == 'crypte' and pp.get('decor') == 'ville', 'les traces : des pattes de chat, en ville, jusqu\'à la crypte')
     verifier(bool(pp.get('carteFloue')) == A, f'sans « six doigts », le lait cache ses doigts ; avec, on les voit ({pp.get("carteFloue")})')
+    verifier(pp.get('chercher') == 10, 'les traces : dix secondes pour chercher le départ, puis tout avance')
     print('   niveau des traces : rang', pp.get('niveau'), '→ joué au niveau', pp.get('niveauEffectif'))
     verifier(pp.get('niveau') == (5 if A else 3), 'les traces : plus dures sans « six doigts » (rang 5), normales avec (rang 3)')
     t = voile(pg)
