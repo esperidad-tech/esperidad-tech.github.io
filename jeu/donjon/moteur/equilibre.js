@@ -120,7 +120,9 @@ function reflechie(o){
         return K(m) >= 2 && PIEGES.some(function(P){ return P[0] === m.type && P[1] === pouvoir && !c._un(m, P[2]); });
       });
     }
-    function lumiereSure(m){ return c.porte('sage', 'cristal-lune') ? !interdit('lumiere', m) : true; }
+    function lumiereSure(m){ return true; }       /* (depuis le 11 novembre : la rune de lumière vise toujours un seul monstre ; le cristal a sa carte à lui, que la simulation ne joue pas) */
+    /* le bouclier : avec le bâton de chêne (la carte « a:baton-chene »), deux amis à la fois */
+    function bouc(l){ l = [].concat(l).filter(function(x, i, t){ return x && t.indexOf(x) === i; }); var deux = c.porte('sage', 'baton-chene') && l.length > 1; return {heros:'sage', geste:deux ? 'a:baton-chene' : 'bouclier', cible:deux ? l.slice(0, 2) : l[0]}; }
 
     /* 0. dans le ventre de Bourbe : un seul geste (et s'il est sec, c'est même une bonne idée, avant le Pisteur) */
     for(var i = 0; i < D.ORDRE.length; i++){ var hh = D.ORDRE[i]; if(c.h[hh].avale && peut(c, hh)) return {heros:hh, geste:'chatouiller'}; }
@@ -147,8 +149,7 @@ function reflechie(o){
     if(S && gros && gros.c.pret){
       var proie = vois && gros.plan && gros.plan.cibles.length ? gros.plan.cibles[0] : probable();
       if(proie && c.visables().indexOf(proie) >= 0 && !c.h[proie].bouclier){
-        var second = c.porte('sage', 'baton-chene') ? (vois ? fragile(proie) : probable(proie)) : null;
-        return {heros:'sage', geste:'bouclier', cible:second ? [proie, second] : proie};
+        return bouc([proie, vois ? fragile(proie) : probable(proie)]);
       }
     }
     /* 4. un ami va tomber ce tour-ci (l'œil le montre) : le bouclier s'il suffit, sinon le soin */
@@ -158,7 +159,7 @@ function reflechie(o){
       var u = urg[0], brut = coups(c, u);
       if(S && !c.h[u].bouclier && Math.ceil(brut * PART) < c.h[u].pv){
         var autre = c.visables().filter(function(x){ return x !== u; }).sort(function(x, y){ return menace(c, y) - menace(c, x); })[0];
-        return {heros:'sage', geste:'bouclier', cible:c.porte('sage', 'baton-chene') && autre ? [u, autre] : u};
+        return bouc([u, autre]);
       }
       if(Al){ var s = soin(c, u, true); if(s) return s; }
       if(S && !c.h[u].bouclier) return {heros:'sage', geste:'bouclier', cible:u};
@@ -192,18 +193,16 @@ function reflechie(o){
       if(cibleA && fiole) return {heros:'alchimiste', geste:'p:' + fiole, cible:cibleA.id};
       /* sans rien savoir, elle lance ce qui fait mal sur la bête de devant (et tant pis pour les pièges) */
       if(!o.livre && fiole && cib.length && rnd() < 0.5) return {heros:'alchimiste', geste:'p:' + fiole, cible:cib[0].id};
-      var am = c.visables().slice().sort(function(x, y){ return (c.h[x].pv / c.h[x].pvMax) - (c.h[y].pv / c.h[y].pvMax); });
-      return {heros:'alchimiste', geste:'herbes', cible:am[0]};
+      return {heros:'alchimiste', geste:'herbes'};             /* (les herbes : un petit soin pour toute l'équipe) */
     }
-    /* 8. le Sage, libre : s'il voit, le bouclier sur celui (ou ceux) qui va prendre le plus ; sinon il ouvre l'œil (il verra
-       ce tour et le suivant), ou protège à l'aveugle le plus fragile */
+    /* 8. le Sage, libre : s'il voit, le bouclier sur celui (ou ceux) qui va prendre le plus ; sinon il ouvre l'œil (une fois
+       lancée, elle dure tout le combat), ou protège à l'aveugle le plus fragile */
     if(S){
-      if(oeil && gros && !gros.c.pret && c.vu <= c.tour) return {heros:'sage', geste:'oeil'};       /* l'élan : il saura sur qui ça tombe */
+      if(oeil && gros && !gros.c.pret && !vois) return {heros:'sage', geste:'oeil'};       /* l'élan : il saura sur qui ça tombe */
       if(!vois && oeil === 'toujours') return {heros:'sage', geste:'oeil'};
       var amis = c.visables().filter(function(x){ return x !== gobe; }).sort(vois ? function(x, y){ return menace(c, y) - menace(c, x) || D.EXPOSES.indexOf(x) - D.EXPOSES.indexOf(y); } : function(x, y){ return (c.h[x].pv - c.h[y].pv) || (D.VISEE[y] - D.VISEE[x]); });
       if(!amis.length) amis = c.visables();
-      var nb = c.porte('sage', 'baton-chene') ? 2 : 1;
-      return {heros:'sage', geste:'bouclier', cible:nb === 2 && amis.length > 1 ? amis.slice(0, 2) : amis[0]};
+      return bouc(amis);
     }
     /* 9. le Pisteur, libre : une flèche trempée qui avance un combo, sinon le coup qui fait le plus mal */
     if(Pi){
@@ -306,7 +305,9 @@ function soin(c, h, urgent){
     if(tot >= (dans(c, 'baume') ? 41 : 30) && !(urgent && manque > 40 && dans(c, 'baume'))) return {heros:'alchimiste', geste:'p:baumelum'};
   }
   if(dans(c, 'baume') && (manque >= 40 || (urgent && manque >= 20))) return {heros:'alchimiste', geste:'p:baume', cible:qui};
-  if(manque >= 20 && (urgent || c.h[qui].pv / c.h[qui].pvMax < 0.7 || !dans(c, 'baume'))) return {heros:'alchimiste', geste:'herbes', cible:qui};
+  /* les herbes : un petit soin pour chacun (depuis le 11 novembre) — elles valent le geste dès que deux héros en profitent */
+  var gain = 0; c.visables().forEach(function(x){ gain += Math.min(D.CHIFFRES.herbes, c.h[x].pvMax - c.h[x].pv); });
+  if(gain >= D.CHIFFRES.herbes * 2 || (urgent && manque > 0) || (gain > 0 && !dans(c, 'baume') && c.h[qui].pv / c.h[qui].pvMax < 0.7)) return {heros:'alchimiste', geste:'herbes'};
   return null;
 }
 /* le Pisteur choisit sa cible et son arme : d'abord ce qu'il abat d'un coup (le plus dangereux), sinon ce qui fait le plus mal */
@@ -405,7 +406,7 @@ function tenue(p, o){
      ces potions-là » (les essais « avec un mauvais sac ») ; sinon il les a toutes. */
   if(o.sac) p.recettes = o.sac.slice();
   p.heros.pisteur.objets = ['fleches-normales'].concat(o.pisteur ? [o.pisteur] : []);
-  p.heros.sage.objets = o.sage ? [o.sage] : [];
+  p.heros.sage.objets = o.sage ? [].concat(o.sage) : [];
   p.heros.alchimiste.objets = [];
   if(o.recettes) o.recettes.forEach(function(r){ if(p.recettes.indexOf(r) < 0) p.recettes.push(r); });
 }
@@ -498,7 +499,7 @@ function descente(graine, idEquipe, o){
         if(e2[0].sure) connu[k] = cote; else connu[k] = cote === 'fond' ? 'devant' : 'fond';
       }
     }
-    if(pas === 'bibliotheque'){ R.prendre(p, 'page-dechiree'); if(o.sage) R.choisir(p, o.sage); }
+    if(pas === 'bibliotheque'){ R.prendre(p, 'page-dechiree'); if(o.sage){ R.prendre(p, 'cristal-lune'); R.prendre(p, 'baton-chene'); } }        /* (le Sage prend ses deux armes) */
     if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur');
     i++;
   }

@@ -69,6 +69,7 @@ function lancer(partie, salle){
       construire();
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
+      E.baton = batonGarde();
       jouer(E.c.entree()).then(function(){ q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
     });
   });
@@ -142,6 +143,32 @@ function creerBete(b, x){
 function retirerHud(id){ ['zone-', 'pv-', 'badges-'].forEach(function(p){ var e = q('#' + p + id); if(e) e.remove(); }); }
 /* une petite bête née en combat rend sa place en partant (une autre pourra y naître) */
 function liberer(a){ if(DJ.Betes.AVANT[a.module]){ var k = E.prises.indexOf(a.x0); if(k >= 0) E.prises.splice(k, 1); } }
+
+/* LA RUNE D'APPEL : une bête passe devant. Celles qui étaient entre elle et les héros reculent d'un cran. On garde la même
+   largeur de file : chacune reçoit une place à la mesure de son corps (la moitié de son cadre), et le reste est partagé. */
+function centreB(a){ return a.cadre.x + a.cadre.w * (a.rat ? .56 : .5); }
+async function avancer(moi){
+  var viv = E.ordre.map(B).filter(function(x){ return x && !x.mort && x.module !== 'bourbe'; });
+  viv.sort(function(x, y){ return centreB(x) - centreB(y); });
+  var k = viv.indexOf(moi); if(k <= 0) return;
+  var G = viv.slice(0, k + 1), neuf = [moi].concat(viv.slice(0, k));
+  function corps(x){ return x.cadre.w * .5; }
+  var gauche = centreB(G[0]) - corps(G[0]) / 2, droite = centreB(G[k]) + corps(G[k]) / 2, somme = 0;
+  G.forEach(function(x){ somme += corps(x); });
+  var trou = (droite - gauche - somme) / k, cur = gauche;
+  var pas = neuf.map(function(x){ var c = cur + corps(x) / 2; cur += corps(x) + trou; return {a:x, x:c - x.cadre.w * (x.rat ? .56 : .5)}; });
+  pas.forEach(function(p){ p.a.el.style.transition = 'transform .55s cubic-bezier(.3,.1,.3,1)'; p.a.el.style.transform = 'translateX(' + (p.x - p.a.cadre.x).toFixed(1) + 'px)'; });
+  suivre(true);
+  await attendre(600);
+  pas.forEach(function(p, i){
+    var x = p.a, e = x.el, j = E.prises.indexOf(x.x0);
+    e.style.transition = ''; e.style.transform = ''; e.style.left = p.x.toFixed(1) + 'px';
+    x.cadre.x = p.x; if(j >= 0) E.prises[j] = p.x; x.x0 = p.x;
+    e.style.zIndex = 4 + i;                                    /* devant = à gauche ; celles de derrière passent par-dessus */
+    var pv = q('#pv-' + x.id); if(pv && !pv.classList.contains('boss')) pv.style.left = (p.x + x.cadre.w * (x.rat ? .56 : .5)) + 'px';
+  });
+  placerTout();
+}
 
 /* ====================================================================== 3. L'AFFICHAGE DE L'ÉTAT (d'après la photo des règles) */
 function majBarres(){
@@ -305,39 +332,107 @@ function bande(){
     bandeEl.innerHTML = s;
     return;
   }
-  /* Romain, 10 novembre : plus de sac de 3 recettes, l'Alchimiste a TOUTES ses potions ; le Pisteur porte tous ses carquois
-     et choisit sa flèche. Les gestes de toujours restent de grandes cartes ; les potions et les flèches spéciales sont de
-     petites cartes (l'image d'abord, le nom dessous), toutes visibles d'un coup : un seul toucher, comme avant. */
-  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h);
-  var base = gestes.filter(function(g){ return g.geste.indexOf('p:') !== 0 && g.geste.indexOf('f:') !== 0; });
-  var petites = gestes.filter(function(g){ return g.geste.indexOf('f:') === 0; }).concat(gestes.filter(function(g){ return g.geste.indexOf('p:') === 0 && (h !== 'pisteur' || D.RECETTES[g.geste.slice(2)].fleche); }));
+  /* Romain, 11 novembre (16 h 07) : « la partie de gauche, c'est pour les armes, et la partie de droite c'est pour les combos
+     avec arc plus acide. Mais il faut que ça soit pareil pour les autres personnages. » Et à 16 h 37 : « il faut bien qu'on
+     différencie les choses. Il y a les armes : arc normal, arc de lune, arc transperçant et la dague. Et après, il y a feu,
+     huile, colle, acide, givre. Pour le Sage, il y a trois bâtons. Et après, il y a les sorts. Tu fais en sorte qu'on puisse
+     choisir les bâtons. »
+     À GAUCHE, sur un fond d'acier : LES ARMES. Le Pisteur : ses arcs et sa dague (toucher l'arme, puis le monstre). Le Sage :
+     ses bâtons — on en prend un EN MAIN (ça ne coûte pas le tour), et il change un sort. L'Alchimiste : sa louche.
+     À DROITE : ce qu'on fait avec. Le Pisteur : ses combos (la flèche de l'arc normal, trempée dans une potion). Le Sage :
+     ses quatre sorts. L'Alchimiste : ses herbes et ses potions. */
+  var h = E.sel, H = D.HEROS[h], gestes = E.c.gestes(h), G = {};
+  gestes.forEach(function(g){ G[g.geste] = g; });
   E.gestes = gestes;
   s += '<div class="b-moi"><span class="portrait img-' + h + '" style="' + DJ.tete(h, 86, 116, 10) + '"></span>' +
     '<button class="b-retour" data-act="retour" aria-label="Changer de héros">↩</button>' +
     '<b class="b-nom">' + H.nom + '</b>' + pvB(h) + '</div>';
-  s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl">Ses gestes</div><div class="b-cartes' + (petites.length > 4 || base.length > 3 ? ' serre' : '') + '">' + base.map(carte).join('') + '</div></div>';
-  if(petites.length){
-    /* la petite carte choisie dit ce qu'elle fait, en trois mots, à la place du titre */
-    var ch = E.geste && petites.filter(function(g){ return g.geste === E.geste.geste; })[0], lbl = h === 'pisteur' ? 'Ses autres flèches' : 'Ses potions';
-    if(ch) lbl = ch.geste.indexOf('p:') === 0 ? D.RECETTES[ch.geste.slice(2)].d : (D.OBJETS[ch.geste.slice(2)].dg || lbl);
-    s += '<div class="b-sep"></div><div class="b-sec"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lbl) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
+  /* dans le ventre du Bourbe : un seul geste, pas d'arme */
+  if(G.chatouiller){
+    s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl">Dans le ventre !</div><div class="b-cartes">' + carte(G.chatouiller) + '</div></div>';
+    bandeEl.innerHTML = s; return;
+  }
+  var gauche, droite, nG, nD, lblG = 'Ses armes', lblD, petites = null;
+  if(h === 'sage'){
+    var bs = batons(), enMain = D.OBJETS[E.baton];
+    /* le bâton en main change le sort qu'il sait changer : la carte du sort joue alors « a:<bâton> » */
+    var sorts = H.gestes.map(function(id){ return (enMain && enMain.carte && enMain.carte.base === id && G['a:' + E.baton]) || G[id]; }).filter(Boolean);
+    gauche = bs.map(carteBaton).join(''); nG = bs.length; if(nG > 1) lblG = 'Ses bâtons';
+    droite = sorts.map(carte).join(''); nD = sorts.length; lblD = 'Ses sorts';
+  } else {
+    var armes = gestes.filter(function(g){ return estArme(g.geste); });
+    /* (le Pisteur : ses arcs d'abord, sa dague au bout — « arc normal, arc de lune, arc transperçant et la dague ») */
+    armes.sort(function(x, y){ return (x.geste === 'dague') - (y.geste === 'dague'); });
+    petites = gestes.filter(function(g){ return !estArme(g.geste) && (h !== 'pisteur' || g.geste.indexOf('p:') !== 0 || D.RECETTES[g.geste.slice(2)].fleche); });
+    gauche = armes.map(carte).join(''); nG = armes.length; if(nG === 1) lblG = 'Son arme';
+    lblD = h === 'pisteur' ? 'Ses combos' : 'Ses potions';
+  }
+  var n = nG + (petites ? 0 : nD), serre = petites ? (nG > 3 ? ' serre' : '') : (n > 6 ? ' six' : n > 5 ? ' serre' : '');
+  s += '<div class="b-sep"></div><div class="b-sec b-armes"><div class="b-lbl">⚔️ ' + lblG + '</div><div class="b-cartes' + serre + '">' + gauche + '</div></div>';
+  if(petites){
+    if(petites.length){
+      /* la petite carte choisie dit ce qu'elle fait, en trois mots, à la place du titre */
+      var ch = E.geste && petites.filter(function(g){ return g.geste === E.geste.geste; })[0];
+      if(ch) lblD = infoPetite(ch).d;
+      s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl' + (ch ? ' dit' : '') + '">' + esc(lblD) + '</div><div class="b-petites n' + petites.length + '">' + petites.map(petite).join('') + '</div></div>';
+    }
+  } else {
+    s += '<div class="b-sep"></div><div class="b-sec b-combos"><div class="b-lbl">✨ ' + lblD + '</div><div class="b-cartes' + serre + '">' + droite + '</div></div>';
   }
   bandeEl.innerHTML = s;
 }
+/* une arme : la flèche (l'arc normal), un carquois spécial (« f:<carquois> » : un autre arc), la dague, la louche */
+function estArme(id){ return id.slice(0, 2) === 'f:' || !!(D.GESTES[id] && D.GESTES[id].arme); }
+/* les bâtons du Sage : celui de tous les jours, puis ceux qu'il a trouvés */
+function batons(){
+  var l = [D.BATON.id];
+  ((E.ph && E.ph.heros.sage && E.ph.heros.sage.objets) || []).forEach(function(o){ var O = D.OBJETS[o]; if(O && O.arme && O.carte && l.indexOf(o) < 0) l.push(o); });
+  return l;
+}
+/* le dessin d'un bâton, pour sa carte (le même trait pour les trois : on voit d'un coup d'œil lequel est lequel) */
+function dessinBaton(id){
+  var bois = id === 'baton-chene' ? ['#3d2a17', '#8a5a2e', '#b88048'] : ['#33261c', '#7a5a3c', '#a88660'], t = '';
+  if(id === 'cristal-lune') t = '<circle cx="31" cy="11" r="11" fill="#cfe0ff" opacity=".35"/><path d="M31 1 L37 11 L31 21 L25 11 Z" fill="#eef4ff" stroke="#7f9bd6" stroke-width="1.6" stroke-linejoin="round"/><path d="M31 4 L31 18 M27 11 L35 11" stroke="#b7c9f2" stroke-width="1"/>';
+  else if(id === 'baton-chene') t = '<path d="M30 12 C22 4 13 6 12 13 C19 17 26 17 30 12 Z" fill="#6ab85a" stroke="#2f5a2a" stroke-width="1.4"/><path d="M31 11 C33 1 42 0 45 6 C42 13 36 14 31 11 Z" fill="#8ad07a" stroke="#2f5a2a" stroke-width="1.4"/><circle cx="31" cy="12" r="3.2" fill="#b88048" stroke="#3d2a17" stroke-width="1.2"/>';
+  else t = '<path d="M31 14 C31 6 40 5 40 11 C40 15 35 15 35 12" fill="none" stroke="' + bois[0] + '" stroke-width="5.4" stroke-linecap="round"/><path d="M31 14 C31 6 40 5 40 11 C40 15 35 15 35 12" fill="none" stroke="' + bois[1] + '" stroke-width="2.8" stroke-linecap="round"/>';
+  return '<svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><path d="M12 45 L31 12" stroke="' + bois[0] + '" stroke-width="' + (id === 'baton-chene' ? 7.4 : 6) + '" stroke-linecap="round"/><path d="M12 45 L31 12" stroke="' + bois[1] + '" stroke-width="' + (id === 'baton-chene' ? 4.6 : 3.4) + '" stroke-linecap="round"/><path d="M14 40 L29.5 13.5" stroke="' + bois[2] + '" stroke-width="1" stroke-linecap="round" opacity=".7"/>' + t + '</svg>';
+}
+/* la carte d'un bâton : on la touche pour le prendre en main (le tour n'est pas joué) */
+function carteBaton(id){
+  var O = id === D.BATON.id ? null : D.OBJETS[id], main = E.baton === id;
+  return '<button class="carte arme baton' + (main ? ' enmain' : '') + '" data-act="arme" data-id="' + id + '" aria-pressed="' + main + '">' + (main ? '<i class="c-main">en main</i>' : '') +
+    '<span class="c-ic">' + dessinBaton(id) + '</span><b>' + esc(O ? O.carte.nom : D.BATON.nom) + '</b><small>' + esc(O ? O.carte.effet : D.BATON.d) + '</small></button>';
+}
+/* ce qu'une grande carte montre : une arme (son nom d'arme), ou un sort (avec « a:<bâton> » : le sort changé par ce bâton) */
+function imageObjet(id){ try{ var d = window.SCENES && window.SCENES.portable ? window.SCENES.portable(id) : null; return d ? '<img alt="" draggable="false" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(d.svg) + '">' : ''; }catch(e){ return ''; } }
+function infoCarte(g){
+  var id = g.geste, k = id.slice(0, 2), O, R;
+  if(k === 'f:'){ O = D.OBJETS[id.slice(2)]; return {ic:imageObjet(id.slice(2)) || O.ic || '🏹', nom:(O.carte && O.carte.nom) || O.petit || O.nom, d:(O.carte && O.carte.d) || O.dg, arme:true, image:true}; }
+  if(k === 'a:'){ O = D.OBJETS[id.slice(2)]; R = D.GESTES[O.carte.base]; return {ic:R.ic, nom:R.nom, d:O.carte.d, avec:id.slice(2)}; }
+  R = D.GESTES[id];
+  return {ic:R.ic, nom:R.arme || g.nom || R.nom, d:R.d, arme:!!R.arme};
+}
 function carte(g){
-  var id = g.geste, R = D.GESTES[id];
+  var id = g.geste, R = infoCarte(g);
   var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : (E.mode === 'gestes' ? ' guide' : '');
   var d = g.permis ? R.d : g.mot;
-  return '<button class="carte' + cls + '" data-act="geste" data-id="' + id + '">' +
-    '<span class="c-ic">' + R.ic + '</span><b>' + esc(g.nom || R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
+  var long = R.nom.split(/[\s-]+/).some(function(m){ return m.length > 11; });        /* (un mot trop long pour la carte : « transperçant ») */
+  return '<button class="carte' + cls + (R.arme ? ' arme' : '') + (R.image ? ' image' : '') + (R.avec ? ' avec' : '') + (long ? ' long' : '') + '" data-act="geste" data-id="' + id + '">' +
+    (R.avec ? '<i class="c-avec">' + dessinBaton(R.avec) + '</i>' : '') +
+    '<span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b><small>' + esc(d || '') + '</small></button>';
 }
-/* une petite carte : une potion (pour le Pisteur : la flèche trempée dedans) ou un carquois spécial */
+/* une petite carte : une potion (pour le Pisteur : la flèche trempée dedans), ou les herbes de l'Alchimiste */
+function infoPetite(g){
+  var id = g.geste;
+  if(id.indexOf('p:') === 0){ var R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom, long:g.nom || R.nom, d:R.d}; }
+  var Ge = D.GESTES[id];
+  return {ic:Ge.ic, nom:Ge.nom, long:Ge.nom, d:Ge.d};
+}
 function petite(g){
-  var id = g.geste, potion = id.indexOf('p:') === 0, R = potion ? D.RECETTES[id.slice(2)] : D.OBJETS[id.slice(2)];
+  var id = g.geste, R = infoPetite(g);
   var cls = !g.permis ? ' off' : E.geste && E.geste.geste === id ? ' choisie' : '';
-  var nom = R.petit || R.nom;                                   /* le nom court, sous l'image */
-  return '<button class="carte mini' + cls + (nom.length > 10 ? ' long' : '') + '" data-act="geste" data-id="' + id + '" aria-label="' + esc(g.nom || R.nom) + '">' +
-    '<span class="c-ic">' + (potion ? DJ.potion(id.slice(2)) : (R.ic || '🏹')) + (potion && E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : '') + '</span><b>' + esc(nom) + '</b></button>';
+  return '<button class="carte mini' + cls + (R.nom.length > 10 ? ' long' : '') + '" data-act="geste" data-id="' + id + '" aria-label="' + esc(R.long) + '">' +
+    '<span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b></button>';
 }
 function refus(x, mot, y){ son('clic'); Fx.mot(x, y == null ? 96 : y, mot, 'refus'); }
 
@@ -365,6 +460,30 @@ function choisirGeste(id){
   if(!g.permis){ refus(hCx(E.sel), g.mot || D.MOTS.impossible); return; }
   E.geste = g; E.choix = []; E.mode = 'cible';
   bande(); majScene();
+}
+/* le Sage prend un bâton en main : ça ne joue pas son tour, ça change le sort que ce bâton sait changer. Le choix est gardé
+   pour les combats suivants (dans la partie). */
+function choisirArme(id){
+  if(E.sel !== 'sage' || batons().indexOf(id) < 0) return;
+  bruit('icone', {}, ['clic']);
+  if(E.baton !== id){
+    E.baton = id;
+    try{ if(E.partie && E.partie.heros && E.partie.heros.sage) E.partie.heros.sage.baton = id; }catch(x){}
+    tenirBaton(true);
+  }
+  E.geste = null; E.choix = []; E.mode = 'gestes';
+  bande(); majScene();
+}
+/* le bâton en main, au départ : celui du combat d'avant, s'il le porte encore */
+function batonGarde(){
+  var b = null; try{ b = E.partie.heros.sage.baton; }catch(x){}
+  return b && batons().indexOf(b) >= 0 ? b : D.BATON.id;
+}
+/* montrer le bon bâton dans la main du Sage (et seulement celui-là) */
+function tenirBaton(eclat){
+  var A = E.A.h.sage; if(!A || !A.equiper) return;
+  batons().forEach(function(b){ var O = D.OBJETS[b]; if(O && O.equipe && b !== E.baton){ try{ A.equiper(O.equipe, false); }catch(x){} } });
+  var M = D.OBJETS[E.baton]; if(M && M.equipe){ try{ A.equiper(M.equipe, true, {discret:!eclat}); }catch(x){} }
 }
 function retour(){
   if(E.occupe) return;
@@ -452,7 +571,7 @@ function enBlocs(evs){
   return blocs;
 }
 function calme(bloc){ return bloc.evs.every(function(e){ return (e.t === 'etat' && e.on === false) || e.t === 'ferme'; }); }
-var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, oeil:1, chatouille:1};
+var GESTES_HEROS = {tir:1, dague:1, potion:1, louche:1, herbes:1, rune:1, 'pose-bouclier':1, oeil:1, appel:1, chatouille:1};
 
 async function jouer(evs, avant){
   if(!evs || !evs.length) return;
@@ -645,7 +764,8 @@ function special(a, ev, ctx){
 async function entreeHeros(ev){
   ev.betes.forEach(function(b, k){ b._debut = true; b._rang = k; });
   E.debut = ev;
-  ORDRE.forEach(function(h){ (ev.heros[h].objets || []).forEach(function(o){ var n = D.OBJETS[o] && D.OBJETS[o].equipe; try{ if(n && E.A.h[h].equiper) E.A.h[h].equiper(n, true, {discret:true}); }catch(x){} }); });
+  /* (les bâtons du Sage : seulement celui qu'il a en main) */
+  ORDRE.forEach(function(h){ (ev.heros[h].objets || []).forEach(function(o){ var n = D.OBJETS[o] && D.OBJETS[o].equipe; if(h === 'sage' && D.OBJETS[o].arme && o !== E.baton) return; try{ if(n && E.A.h[h].equiper) E.A.h[h].equiper(n, true, {discret:true}); }catch(x){} }); });
   E.ph = E.c.etat(); majBarres();
   await attendre(450);
   son('pasHeros', 1.7, 3);
@@ -740,7 +860,19 @@ async function geste(ev, evs){
       await attendre(250);
       return true;
     case 'herbes':
-      await H.alchimiste.herbes(fx, hPt(ev.heros2));
+      /* (depuis le 11 novembre : pour toute l'équipe — elles partent au milieu des trois héros) */
+      await H.alchimiste.herbes(fx, ev.equipe ? {x:hCx('alchimiste') + 6, y:150} : hPt(ev.heros2));
+      return false;
+    case 'appel':
+      /* la rune d'appel : le Sage tend la main vers le monstre, qui glisse devant tous les autres */
+      son('magie');
+      to = a.ancre('centre');
+      await H.sage.sort(fx, to, {cristal:false});
+      Fx.onde(to.x, to.y, '#d9b8ff', 240, 600);
+      if(a && DJ.Betes.SONS[a.module] && DJ.Betes.SONS[a.module].cri) bruit(DJ.Betes.SONS[a.module].cri);
+      await avancer(a);
+      son('magie', .05);
+      E.ph = E.c.etat(); majBadges();
       return false;
     case 'rune':
       son('magie');
@@ -949,7 +1081,7 @@ async function soin(ev){
   })(k);
   Fx.chiffre(x, y - 30, '+' + ev.n, 'soin');
   barre(h, ev.pv, E.ph.heros[h].pvMax);
-  return attendre(ev.par === 'baumelum' ? 180 : 600);
+  return attendre(ev.par === 'baumelum' || ev.par === 'herbes' ? 180 : 600);
 }
 async function etatHeros(ev){
   var h = ev.heros, A = E.A.h[h];
@@ -1081,8 +1213,9 @@ DJ.toucher(function(a, id, b){
   if(a === 'fuite'){ demanderFuite(); return true; }
   if(a === 'fuir'){ if(!E.fini && !E.occupe){ fuite(false); } return true; }
   if(a === 'combat-fin'){ terminer(); return true; }
-  if(E.occupe || DJ.fenetreOuverte()) return a === 'heros' || a === 'geste' || a === 'retour' || a === 'perso';
+  if(E.occupe || DJ.fenetreOuverte()) return a === 'heros' || a === 'geste' || a === 'arme' || a === 'retour' || a === 'perso';
   if(a === 'heros'){ choisirHeros(id); return true; }
+  if(a === 'arme'){ choisirArme(id); return true; }
   if(a === 'geste'){ choisirGeste(id); return true; }
   if(a === 'retour'){ retour(); return true; }
   if(a === 'perso'){ toucherPerso(b.getAttribute('data-type'), id); return true; }
@@ -1091,7 +1224,7 @@ DJ.toucher(function(a, id, b){
 
 DJ.Combat = {
   preparer:preparer, lancer:lancer, cuireHeros:cuireHeros,
-  etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
+  etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, baton:E.baton, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
   /* pour les tests : le combat des règles, les adaptateurs */
   _E:function(){ return E; }
 };

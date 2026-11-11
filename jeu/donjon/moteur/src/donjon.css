@@ -87,11 +87,17 @@
 #explo #conteur{position:absolute;left:14px;bottom:12px;width:430px;min-height:54px;font-size:15.5px}
 .boutons-carte{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:480px}
 .boutons-carte .aller{min-height:50px;font-size:20px;padding:8px 24px}
+/* le rappel de sauvegarde : un point rouge sur le bouton, dès qu'un combat a été gagné depuis la dernière sauvegarde */
+#b-sauver{position:relative}
+#b-sauver.rappel::after{content:'!';position:absolute;right:-7px;top:-9px;width:22px;height:22px;border-radius:50%;background:#ff5a3c;color:#fff;font:800 15px/22px sans-serif;text-align:center;border:2px solid #24182e;animation:pulse 1.2s ease-in-out infinite}
 
 /* ---------- une salle sans combat : la scène en haut, le conteur et les boutons dans la bande du bas ---------- */
 #scene #objets{position:absolute;left:0;top:0;width:960px;height:372px;z-index:3}
 #scene #persos{position:static}
 #scene #hud{pointer-events:none}
+/* dans une salle, les héros ne se touchent pas : leur grand cadre ne doit pas cacher les objets posés derrière eux
+   (Romain, 11 novembre : « comme si la boîte du Pisteur gênait pour cliquer sur les objets qui sont derrière lui ») */
+#scene .perso.heros, #scene .perso.heros *{pointer-events:none}
 #bas-scene{position:absolute;z-index:10;left:0;top:372px;width:960px;height:168px;background:linear-gradient(#0f0b17,#07050b);border-top:3px solid var(--brun);
   box-shadow:0 -6px 18px rgba(0,0,0,.8),inset 0 2px 0 #2a2030;display:flex;align-items:flex-start;gap:14px;padding:14px 14px 0}
 #bas-scene #conteur{flex:1;min-height:76px;font-size:16.5px}
@@ -171,6 +177,27 @@
    (Romain, 10 novembre : plus de sac à choisir.) L'image d'abord, le nom à côté ; deux rangées de cinq au plus. */
 .b-petites{display:grid;grid-template-columns:repeat(5,84px);grid-auto-rows:59px;gap:6px}
 .b-petites.n1,.b-petites.n2,.b-petites.n3,.b-petites.n4{grid-template-columns:repeat(2,108px)}
+/* le Pisteur : quatre armes à gauche, ses cinq combos (la flèche trempée) à droite, sur trois colonnes */
+.b-petites.n5,.b-petites.n6{grid-template-columns:repeat(3,84px)}
+/* ---------- les ARMES à gauche, les sorts / les combos / les potions à droite (Romain, 11 novembre, 16 h 37 : « tu différencies
+   bien les deux ») : les armes sont posées sur un râtelier d'acier, leurs cartes sont grises ---------- */
+.b-sec.b-armes{margin:-5px -6px 0;padding:5px 6px 4px;border-radius:15px;background:linear-gradient(rgba(126,150,186,.2),rgba(126,150,186,.07));box-shadow:inset 0 0 0 2px rgba(150,172,206,.26)}
+.b-armes .b-lbl{color:#c3d2e6}
+.b-armes .carte{border-color:#5d6d84;background:linear-gradient(#2a3444,#141a25)}
+.b-armes .carte.choisie{border-color:#ffd36a;background:linear-gradient(#45351f,#1e1610)}
+.carte.arme.image .c-ic img{width:auto;height:auto;max-width:44px;max-height:44px;margin-top:-1px}
+.carte .c-ic svg{display:block;margin:-1px auto 0}
+/* le bâton que le Sage a en main : un cadre doré et une étiquette */
+.carte.baton.enmain{border-color:#ffd36a;background:linear-gradient(#3a3a2a,#1a1a14);box-shadow:0 0 0 2px var(--encre),0 0 12px rgba(255,200,90,.4)}
+.carte.baton:not(.enmain) .c-ic, .carte.baton:not(.enmain) b, .carte.baton:not(.enmain) small{opacity:.72}
+.carte .c-main{position:absolute;left:50%;top:-9px;transform:translateX(-50%);padding:0 7px;border-radius:8px;background:#ffd36a;color:#1a1208;font:800 10.5px/15px var(--f-texte, inherit);font-style:normal;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;box-shadow:0 1px 0 var(--encre)}
+/* un sort changé par le bâton en main : le petit dessin du bâton dans le coin */
+.carte .c-avec{position:absolute;right:1px;top:1px;width:24px;height:24px;border-radius:50%;background:#120c18;border:2px solid #ffd36a;overflow:hidden}
+.carte .c-avec svg{display:block;width:20px;height:20px}
+.carte.avec small{color:#ffe7a8}
+.carte.long b{font-size:12.5px;letter-spacing:-.02em}
+.b-cartes.six .carte{width:94px}
+.b-cartes.six .carte b{font-size:13.5px}
 .carte.mini{width:auto;height:59px;padding:1px 2px 2px;border-radius:11px;justify-content:center}
 .carte.mini .c-ic{position:relative;height:33px;line-height:33px;font-size:24px}
 .carte.mini .c-ic .fiole{width:24px;height:33px;margin:0 auto}

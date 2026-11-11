@@ -460,3 +460,26 @@ Décisions de Romain du 11 novembre (13 h 32 et 13 h 53, Bible §12.51, « Le du
 
 **La simulation** (`equilibre.js`) : `tirer()` passe par `critiqueDe` ; l'équipe `decouvre` (`reflechie({livre:true, apprend:1, tatonne:true})` : aucun combo en entrant, une ligne comprise par tour passé devant chaque sorte de monstre, 4 lignes = tout) et `decouvreLent` (une ligne tous les deux tours). Les trois équipes de Romain : `maligne`, `decouvre`, `hasard`.
 
+## 14. Le 11 novembre en fin d'après-midi : les armes à choisir, la rune d'appel, l'œil qui dure, les herbes (ces lignes remplacent ce qui est écrit plus haut)
+
+Demandes de Romain du 11 novembre (16 h 07 et 16 h 37, Bible §12.51, « Les armes à choisir… »).
+
+**Une arme ne prend pas de place** (`arme:true` dans `D.OBJETS` : `cristal-lune`, `baton-chene`)
+
+- Comme un carquois (`carquois:true`), une arme ne compte pas dans les deux places des mains : `Regles.enMains(objets)` les écarte, `prendre` ne rend jamais `plein` pour elle. Le lutrin de la bibliothèque n'est plus un coffre à choix : `D.LIEUX.bibliotheque.objets = ['page-dechiree', 'cristal-lune', 'baton-chene']`, le Sage prend les deux.
+- `carte` dans l'objet : `base` (le sort que ce bâton change : `'rune'` ou `'bouclier'`), `nom` et `effet` (la carte du bâton dans la bande), `d`, `vise`, `max` (le sort lancé avec ce bâton).
+- `combat.gestes('sage')` rend, en plus de `rune` et `bouclier`, un geste par bâton porté : **`a:cristal-lune`** (la rune de lumière sur toute la salle, `vise:'salle'`) et **`a:baton-chene`** (le bouclier sur deux amis, `max:2`). Leur `nom` est celui du sort (« Rune de lumière », « Bouclier de runes »). `jouer('sage', {geste:'a:cristal-lune'})` → `{t:'rune', heros:'sage', salle:true}` puis la lumière sur chaque monstre ; `jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste']})` → `pose-bouclier` sur les deux. Un geste `a:<objet>` que le héros ne porte pas est refusé (`D.MOTS.absent`).
+- **Les règles ne savent pas quel bâton est « en main »** : c'est l'écran qui le sait (`combat.js`, `E.baton`, gardé dans `partie.heros.sage.baton`) et qui ne propose que le sort du bâton en main. Les règles acceptent les deux gestes tant que le bâton est porté.
+- `D.BATON = {id:'baton', nom:'Bâton normal', d:'rien de spécial'}` : le bâton de tous les jours (il n'est pas un objet).
+- Les noms d'arme pour la bande : `D.GESTES.fleche.arme = 'Arc normal'`, `D.GESTES.dague.arme = 'Dague'`, `D.GESTES.louche.arme = 'Louche'`, `D.OBJETS['fleches-argent'].carte.nom = 'Arc de lune'`, `D.OBJETS['fleches-lourdes'].carte.nom = 'Arc transperçant'`. Les gestes ne changent pas (`fleche`, `f:fleches-argent`, `f:fleches-lourdes`, `dague`). Une flèche trempée (`p:<potion>`) part toujours de l'arc normal.
+
+**La rune d'appel** (`appel` dans `D.HEROS.sage.gestes`, `D.GESTES.appel`)
+
+- `combat.appelables()` : les monstres qu'on peut cibler, qui marchent par terre (`!def.hauteur`) et qui ne sont pas déjà devant. Sinon la carte est éteinte : `D.MOTS.devant` (« Déjà devant ! ») s'il y a un monstre par terre, `D.MOTS.pasLui` (« Pas celui-là ! ») sinon.
+- `jouer('sage', {geste:'appel', cible:'b2'})` déplace le monstre en tête de la file (`this.b`) : `{t:'appel', heros:'sage', bete:'b2', ordre:['b2', 'b1']}`. La dague du Pisteur le touche ensuite (`aPortee`).
+
+**La rune de l'œil dure tout le combat** : `_oeil` pose `this.vu = 9999` ; `{t:'oeil', heros:'sage', jusque:'fin', plans}`. À chaque nouveau tour, tant que l'œil est ouvert, le coup suivant de chaque monstre est prévu (`_nouveauTour`). La carte est ensuite refusée avec `D.MOTS.vu` (« Il voit tout »). `etat().vu` vaut toujours 0, 1 ou 2.
+
+**Les herbes** (`D.GESTES.herbes`, `vise:'equipe'`, `D.CHIFFRES.herbes = 10`) : `{t:'herbes', heros:'alchimiste', equipe:true}` puis un `soin` de 10 pour chaque héros debout. Le baume reste à 40 sur un seul ami.
+
+**Tests** : `test-regles.js` 413 (section « La rune d'appel, les herbes pour toute l'équipe » ; les places se testent avec deux objets inventés, `essai-a` et `essai-b`).

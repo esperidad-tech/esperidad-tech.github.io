@@ -425,7 +425,7 @@ var D = {};
 
 /* ===================================================================== 1. LES HÉROS (essai : ne pas changer) */
 D.HEROS = {
-  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier'], sac:null},
+  sage:{nom:'Sage', le:'le Sage', Le:'Le Sage', du:'du Sage', pv:90, gestes:['oeil', 'rune', 'bouclier', 'appel'], sac:null},
   alchimiste:{nom:'Alchimiste', le:'l\'Alchimiste', Le:'L\'Alchimiste', du:'de l\'Alchimiste', pv:100, gestes:['louche', 'herbes'], sac:'potion'},
   pisteur:{nom:'Pisteur', le:'le Pisteur', Le:'Le Pisteur', du:'du Pisteur', pv:120, gestes:['fleche', 'dague'], sac:'fleche', objets:['fleches-normales']}
 };
@@ -439,15 +439,28 @@ D.GESTES = {
   /* Romain, 11 novembre (9 h 26) : depuis que tout le carnet de l'aventurier est ouvert, « Étudier » ne sert plus. À sa place,
      la rune de l'œil : le Sage voit, pour ce tour ET le suivant, qui chaque monstre va frapper et combien. Sans elle, on ne
      sait pas qui sera frappé. */
+  /* Romain, 11 novembre (16 h 07) : « je préférerais que le sort qui permet de dévoiler les attaques des ennemis, il soit
+     infini. Qu'il ait besoin de le faire qu'une seule fois. » Lancée une fois, elle dure tout le combat. */
   oeil:{ic:'👁️', nom:'Rune de l\'œil', d:'qui sera frappé ?', vise:'salle'},
+  /* Romain, 11 novembre (9 h 16, 16 h 07) : « une rune pour ramener un ennemi vers lui. Pour qu'après, le Pisteur puisse
+     donner un coup de dague. » Elle amène devant un monstre qui marche par terre (pas ceux qui volent, pendent ou nagent). */
+  appel:{ic:'🧲', nom:'Rune d\'appel', d:'amène un monstre', vise:'bete'},
   rune:{ic:'✨', nom:'Rune de lumière', d:'une vive lumière', vise:'bete'},
   bouclier:{ic:'🛡️', nom:'Bouclier de runes', d:'protège un ami', vise:'heros'},
-  louche:{ic:'🥄', nom:'Coup de louche', d:'un grand BONG', vise:'salle'},
-  herbes:{ic:'🌿', nom:'Herbes', d:'soigne un peu', vise:'heros'},
-  fleche:{ic:'🏹', nom:'Flèche', d:'ce qui vole', vise:'bete'},
-  dague:{ic:'🗡️', nom:'Coup de dague', d:'celui de devant', vise:'devant'},
+  louche:{ic:'🥄', nom:'Coup de louche', arme:'Louche', d:'un grand BONG', vise:'salle'},
+  /* Romain, 11 novembre (16 h 07) : « la plante soigne tout le monde d'un petit montant, et la grosse potion remonte bien
+     les points de vie » — les herbes soignent toute l'équipe (un peu), le baume un seul ami (beaucoup). */
+  herbes:{ic:'🌿', nom:'Herbes', d:'soigne l\'équipe', vise:'equipe'},
+  /* arme : le nom de la carte dans la bande du combat, du côté des armes (Romain, 11 novembre, 16 h 37 : « arc normal, arc de
+     lune, arc transperçant et la dague ») */
+  fleche:{ic:'🏹', nom:'Flèche', arme:'Arc normal', d:'ce qui vole', vise:'bete'},
+  dague:{ic:'🗡️', nom:'Coup de dague', arme:'Dague', d:'celui de devant', vise:'devant'},
   chatouiller:{ic:'🪶', nom:'Chatouiller', d:'guili-guili !', vise:'salle'}
 };
+
+/* le bâton de tous les jours du Sage (Romain, 11 novembre, 16 h 37 : « il y a trois bâtons. Bâton normal, bâton de lune,
+   bâton de chêne. Bâton normal, il fait rien de spécial. ») */
+D.BATON = {id:'baton', ic:'🪄', nom:'Bâton normal', d:'rien de spécial'};
 
 /* ===================================================================== 3. LES RECETTES (les potions de l'Alchimiste)
    Romain, 10 novembre (17 h 47 et 17 h 56) : plus de sac de 3 recettes à choisir (« un peu trop compliqué »). L'Alchimiste a
@@ -488,7 +501,7 @@ D.CHIFFRES = {
   ouvert:{louche:10, feu:30, acide:25},
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
   bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier de runes (il en arrête 75 % : Romain, 11 novembre) */
-  herbes:20,
+  herbes:10,                               /* les herbes : chaque héros debout (20 sur un seul ami jusqu'au 11 novembre) */
   amulette:30,                             /* le héros qui tombe se relève avec 30 (une fois par donjon) */
   repos:0.5,                               /* le feu de camp rend la moitié des PV max */
   os:10,                                   /* la morsure du rat du tas d'os (sur le Pisteur) */
@@ -507,13 +520,19 @@ D.OBJETS = {
      transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
   'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Elles font très mal à ce qui vole, pend à un fil ou nage. Sur ce qui marche par terre, la dague fait bien mieux.'},
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
-    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume',
+    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
     d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
-    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure',
+    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
     d:'Contre l\'armure : leur critique frappe aussi fort que la dague, même de loin. Sur le rat cuirassé, elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
-  'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
-  'baton-chene':{nom:'Bâton de chêne', pour:'sage', equipe:'baton-chene', d:'Le bouclier de runes protège deux amis à la fois.'},
+  /* Romain, 11 novembre (16 h 07) : « pour le Sage, on puisse récupérer deux armes. Ou plus, autant d'armes qu'on veut. Et
+     on doit choisir dans le donjon. » Une arme (arme:true) ne prend donc pas de place dans les mains, comme un carquois.
+     À 16 h 37 : « il y a trois bâtons : bâton normal, bâton de lune, bâton de chêne. Et après, il y a les sorts. Tu fais en
+     sorte qu'on puisse choisir les bâtons. » En combat, le Sage choisit son bâton, puis son sort : le bâton en main change
+     le sort qu'il sait changer (carte.base) — le geste joué devient « a:<objet> ».
+     carte : nom et effet = la carte du bâton ; d, vise, max = le sort « base » lancé avec ce bâton. */
+  'cristal-lune':{nom:'Cristal de lune', pour:'sage', arme:true, equipe:'cristal-lune', carte:{base:'rune', nom:'Bâton de lune', effet:'lumière pour tous', d:'toute la salle', vise:'salle'}, d:'Le Sage le fixe à son bâton : c\'est le bâton de lune. Avec lui, la rune de lumière éclaire toute la salle. Toute la salle…'},
+  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'protège deux amis', vise:'heros', max:2}, d:'Avec lui, le bouclier de runes protège deux amis à la fois.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -793,7 +812,7 @@ D.LIEUX = {
   eboulis:{nom:'Le cul-de-sac éboulé', tas:true, crane:true},
   dalles:{nom:'Le couloir aux dalles', piege:'dalles'},
   atelier:{nom:'L\'atelier des Fondateurs', combat:'atelier'},
-  bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree'], coffre:['cristal-lune', 'baton-chene']},
+  bibliotheque:{nom:'La bibliothèque engloutie', objets:['page-dechiree', 'cristal-lune', 'baton-chene']},      /* (le Sage prend les deux armes du lutrin : Romain, 11 novembre) */
   portes:{nom:'La salle aux trois portes', portes:{oeil:'ossuaire', gueule:'crypte', lune:'toiles'}},
   crypte:{nom:'La fausse crypte', combat:'crypte', objets:['amulette'], apresCombat:true},
   ossuaire:{nom:'L\'ossuaire', combat:'ossuaire'},
@@ -882,7 +901,7 @@ D.MOTS = {
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
   combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
-  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Déjà vu !', prepare:'Gros coup bientôt !', colere:'En colère !', petitCritique:'Petit critique'
+  rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', vu:'Il voit tout', devant:'Déjà devant !', pasLui:'Pas celui-là !', prepare:'Gros coup bientôt !', colere:'En colère !', petitCritique:'Petit critique'
 };
 
 if(typeof module !== 'undefined' && module.exports) module.exports = D;

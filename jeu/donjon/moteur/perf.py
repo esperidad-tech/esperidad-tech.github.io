@@ -65,7 +65,9 @@ def libre(pg, s=90):
 
 def toucher(pg, h, g, cible):
     pg.tap(f'.b-heros[data-id="{h}"]', force=True); pg.wait_for_timeout(250)
-    pg.tap(f'.carte[data-id="{g}"]', force=True); pg.wait_for_timeout(250)
+    if not pg.query_selector(f'#bande .carte[data-id="{g}"]'):      # le Sage : prendre d'abord le bâton qu'il faut
+        pg.tap('#bande [data-act="arme"][data-id="%s"]' % (g[2:] if g.startswith('a:') else 'baton'), force=True); pg.wait_for_timeout(250)
+    pg.tap(f'#bande .carte[data-id="{g}"]', force=True); pg.wait_for_timeout(250)
     sel = '.zone[data-type="bete"]' if cible is None else ('.zone[data-type="heros"][data-id="%s"]' % cible if cible in ('sage', 'alchimiste', 'pisteur') else '#zone-' + cible)
     return sel
 
