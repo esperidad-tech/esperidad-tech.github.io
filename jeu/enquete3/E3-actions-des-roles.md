@@ -40,6 +40,7 @@ Les preuves et les potions. Le matin, le gâteau et les cueillettes ; l'après-m
 
 ### Le matin
 - **Le gâteau de la fête** — la boulangerie. Assembler selon une commande (un moteur neuf, noté en étoiles) : sept étages, un par chat d'Odette, et les décorations de la commande de Gaspard → code « Mission de fête ». Gaspard : « Sept étages et sept chats en pâte d'amande ! »
+  - *(ajouté à la construction, 11 novembre au soir)* **Le mini-jeu existe, mais autrement** : Romain l'a demandé et décrit lui-même (Bible §13.17) — une création libre, **4 étages au plus**, 70 décorations (dont les sept chats), un pinceau, un minuteur de 5 minutes, sans échec. Pas de commande ni d'étoiles pour l'instant, et il n'est pas encore branché ici. À décider avec Romain : garder « assembler selon une commande » par-dessus, ou la création libre ; et accorder « sept étages ».
 - **Les cueillettes** — l'oseille (lavoir), le souci (potager), la mélisse (herboristerie), le lin (moulin) ; avec le code « L'herbier » (Sage) et ses énigmes : le lycopode (carrefour de la forêt), la vesse-de-loup (clairière aux lièvres, mini-jeu « Suivre la poussière »), le gui (potager, par le Pisteur ou Mimi). Détail : `E3-atelier-des-plantes.md` §4 à §8.
 - **L'atelier des plantes** est ouvert dès le matin.
 

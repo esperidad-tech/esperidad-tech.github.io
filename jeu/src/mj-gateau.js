@@ -371,6 +371,7 @@ function jouer(zone, params, fin){
   function memo(){ histoire.push(JSON.stringify(etat)); if(histoire.length > 60) histoire.shift(); bAnnuler.disabled = false; }
   function annuler(){
     if(!histoire.length || enFete) return;
+    prises = {}; racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');   /* (ce qu'un autre doigt tenait est lâché) */
     etat = JSON.parse(histoire.pop()); bAnnuler.disabled = !histoire.length;
     toutRendre(); if(ouvert) bulles(ouvert, true); son('annule');
   }
@@ -709,6 +710,8 @@ function jouer(zone, params, fin){
   function feter(){
     if(enFete || arrete) return;
     enFete = true; fermer(); taire(); U.stop();
+    racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');
+    gDecos.querySelectorAll('.gt-tenu, .gt-jete').forEach(function(n){ n.classList.remove('gt-tenu', 'gt-jete'); });   /* (une décoration qu'on tirait encore de sa bulle se pose là) */
     racine.classList.add('gt-fini');
     var R = resume(), phrase = tempsFini ? DIT.fini : phraseFin(R);
     final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🎉 À la fête !</button></div>';

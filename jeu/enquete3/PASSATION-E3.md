@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 20 h 50)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à @@HEURE@@)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 11 novembre (@@HEURE@@) : le mini-jeu du gâteau de la fête existe (dans la salle, pas encore dans l'enquête)
+
+- **Romain, 19 h 48, 20 h 29 et 20 h 39** (conversation qui construit) : il a demandé le mini-jeu du gâteau, et l'a décrit lui-même. Le détail : **Bible §13.17**. À essayer : https://esperidad-tech.github.io/brumeval/salle.html#jeu=gateau
+- **Ce qu'il est** : une **création libre** — jusqu'à **4 étages**, 70 décorations qu'on pose où on veut (les sept chats d'Odette en pâte d'amande sont dedans, avec l'oie de Gaspard), un pinceau pour tout repeindre, **un minuteur de 5 minutes**, et on ne perd jamais.
+- **Ce qui ne colle plus avec la conception** (`E3-actions-des-roles.md`, « Le gâteau de la fête » et « Rendre le gâteau ») : là-bas, c'est « assembler selon une commande, noté en étoiles, **sept étages** », et le maire paie selon les étoiles. **Rien n'est tranché** : à décider avec Romain quand on construira l'étape 4 (l'Alchimiste) — création libre dans l'enquête aussi, ou une commande de Gaspard par-dessus (le mini-jeu rend déjà un résumé du gâteau : étages, couleurs, décorations par famille, nombre de chats) ; et accorder les répliques qui disent « sept étages » (Gaspard, Tim, la fête).
 
 ## Nouveau depuis le 11 novembre (20 h 50) : l'étape 5 (le Pisteur) est faite aussi, et en ligne
 
