@@ -412,10 +412,6 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 @keyframes mja-pluie{from{transform:translate(0,-40px)}to{transform:translate(-16px,46px)}}
 .mja-depart{position:absolute;inset:0;display:grid;place-items:center;z-index:6;background:rgba(13,17,38,.55);transition:opacity .4s}
 .mja-depart.part{opacity:0}
-/* (params.chercher) la recherche du départ des traces : une pastille en haut, et les secondes qui restent */
-.mja-cherche{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;pointer-events:none;display:flex;align-items:center;gap:10px;padding:7px 8px 7px 16px;border-radius:999px;background:rgba(36,24,46,.88);border:3px solid var(--contour);box-shadow:0 4px 0 rgba(0,0,0,.35);color:var(--or-pale);font-family:var(--f-titre);font-size:clamp(.95rem,4vw,1.2rem);white-space:nowrap;transition:opacity .4s}
-.mja-cherche b{display:grid;place-items:center;min-width:2em;height:2em;border-radius:50%;background:var(--or,#f5b945);color:#24182e;font-family:var(--f-texte,inherit);font-weight:800}
-.mja-cherche.part{opacity:0}
 .mja-depart-in{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:86%;padding:16px 22px 18px;border-radius:22px;background:radial-gradient(circle at 50% 40%,#6b6040,#4a4330);border:4px solid var(--contour);box-shadow:0 0 0 3px rgba(143,243,255,.5),0 0 30px rgba(143,243,255,.35),var(--ombre);animation:b-apparait .35s ease-out;text-align:center}
 .mja-depart-in b{font-family:var(--f-titre);font-weight:400;font-size:1.35rem;color:var(--or-pale);text-shadow:0 2px 0 var(--contour)}
 .mja-depart-pt{font-size:.9rem;color:var(--brume)}
@@ -3302,6 +3298,196 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .ti-ap-deux text,.ti-ap-un text{font:700 11px/1 var(--f-titre, serif);fill:#24182e}
 .ti-ap-un{pointer-events:none}
 
+/* ==========================================================
+   Brumeval — Le gâteau de la fête (mj-gateau.js, mj-gateau-dessins.js). Préfixe .gt-
+   La scène remplit tout le mini-jeu : la place en fête, la table, le gâteau ; les icônes sont posées par-dessus, de chaque côté.
+   ========================================================== */
+.mj-gateau .mj-zone{background:#3a9ef0}
+.gt{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  --gt-ic:60px;--gt-b:56px;--gt-bas:66px;font-family:var(--f-texte, inherit)}
+.gt svg.gt-fond,.gt svg.gt-scene{position:absolute;left:0;top:0;width:100%;height:calc(100% - var(--gt-bas));overflow:visible;display:block}
+/* la place, derrière : un peu floue et un peu moins vive, pour que le gâteau ressorte (Romain, 11 novembre, 20 h 39) */
+.gt svg.gt-fond{pointer-events:none;z-index:0;filter:blur(var(--gt-flou, 2.6px)) saturate(.8)}
+/* (l'explication en images, avant de jouer : les mêmes deux calques) */
+.gtd-cadre{position:absolute;inset:0;overflow:hidden;background:#3a9ef0}
+.gtd-cadre > svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.gtd-cadre > .gtd-fond{filter:blur(1.3px) saturate(.8)}
+.gt svg.gt-scene{z-index:1;touch-action:none}
+
+/* ---------- le gâteau ---------- */
+.gt-etage{cursor:pointer}
+.gt-e-in.gt-tombe{animation:gt-tombe .55s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes gt-tombe{0%{transform:translateY(-80px) scale(.92,1.08);opacity:0}55%{transform:translateY(0) scale(1.06,.9);opacity:1}78%{transform:scale(.98,1.03)}100%{transform:none;opacity:1}}
+.gt-e-in.gt-pouf{animation:gt-pouf .32s ease-out}
+@keyframes gt-pouf{0%{transform:scale(1.045,.94)}55%{transform:scale(.985,1.025)}100%{transform:none}}
+/* l'étage choisi : un liseré clair qui court tout autour */
+.gt-sel{fill:none;stroke:#8ff3ff;stroke-width:4;stroke-linejoin:round;stroke-dasharray:10 8;pointer-events:none;animation:gt-sel 1s linear infinite;filter:drop-shadow(0 0 4px rgba(143,243,255,.9))}
+@keyframes gt-sel{to{stroke-dashoffset:-18}}
+
+/* ---------- les décorations ---------- */
+.gt-deco{cursor:grab;touch-action:none}
+.gt-prise{fill:transparent;stroke:none}
+.gt-deco-r{transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
+.gt-deco-p{transition:transform .12s ease-out}
+.gt-deco-p.gt-pose{animation:gt-pose .34s cubic-bezier(.3,1.6,.5,1)}
+@keyframes gt-pose{0%{transform:scale(1.32)}55%{transform:scale(.92)}100%{transform:none}}
+.gt-deco.gt-tenu{cursor:grabbing}
+.gt-deco.gt-tenu .gt-deco-p{transform:scale(1.18)}
+.gt-deco.gt-jete .gt-deco-p{transform:scale(.6);opacity:.55}
+.gt-deco.gt-part{transition:opacity .24s;opacity:0}
+.gt-deco.gt-part .gt-deco-p{transform:scale(.2) rotate(40deg);transition:transform .24s ease-in}
+/* les runes du plat luisent */
+.gt-rune{animation:gt-rune 2.4s ease-in-out infinite alternate}
+@keyframes gt-rune{from{opacity:.45}to{opacity:1}}
+/* le gâteau étincelle : de petits éclats s'allument et s'éteignent, chacun à son tour */
+.gt-eclat{transform-box:fill-box;transform-origin:50% 50%;pointer-events:none;animation:gt-eclat 2.6s ease-in-out infinite}
+@keyframes gt-eclat{0%,55%,100%{transform:scale(0) rotate(0deg);opacity:0}72%{transform:scale(1) rotate(40deg);opacity:1}88%{transform:scale(.5) rotate(70deg);opacity:.8}}
+.gt-fini .gt-eclat{animation-duration:1.3s}
+
+/* ---------- les décorations qui bougent toutes seules (un quart d'entre elles : .gta dans mj-gateau-dessins.js) ----------
+   Chaque partie animée tourne ou saute autour d'un point de sa propre boîte (transform-box:fill-box ; le point est donné dans le dessin). */
+.gta{transform-box:fill-box;transform-origin:50% 50%}
+.gta-balance{animation:gta-balance 1.7s ease-in-out infinite alternate}
+@keyframes gta-balance{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.gta-tourne{animation:gta-tourne 11s linear infinite}
+.gta-tourne-vite{animation:gta-tourne 3.4s linear infinite}
+@keyframes gta-tourne{to{transform:rotate(360deg)}}
+.gta-bat{animation:gta-bat 1s ease-in-out infinite}
+@keyframes gta-bat{0%,100%{transform:scale(1)}16%{transform:scale(1.17)}32%{transform:scale(1)}48%{transform:scale(1.1)}64%{transform:scale(1)}}
+.gta-flamme{animation:gta-flamme .42s ease-in-out infinite alternate}
+@keyframes gta-flamme{from{transform:scale(1,1) skewX(-5deg)}to{transform:scale(.88,1.16) skewX(6deg)}}
+.gta-crepite{animation:gta-crepite .4s steps(1, end) infinite}
+@keyframes gta-crepite{0%{transform:rotate(0deg) scale(1);opacity:1}34%{transform:rotate(22.5deg) scale(.78);opacity:.7}67%{transform:rotate(45deg) scale(1.12);opacity:1}100%{transform:rotate(67.5deg) scale(.9);opacity:.85}}
+.gta-flotte{animation:gta-flotte 2.3s ease-in-out infinite alternate}
+@keyframes gta-flotte{from{transform:translateY(2px) rotate(-5deg)}to{transform:translateY(-4px) rotate(5deg)}}
+.gta-scintille{animation:gta-scintille 1.1s ease-in-out infinite alternate}
+@keyframes gta-scintille{from{transform:scale(.86) rotate(-9deg)}to{transform:scale(1.13) rotate(9deg)}}
+.gta-queue{animation:gta-queue .75s ease-in-out infinite alternate}
+@keyframes gta-queue{from{transform:rotate(-12deg)}to{transform:rotate(18deg)}}
+.gta-dandine{animation:gta-dandine .85s ease-in-out infinite alternate}
+@keyframes gta-dandine{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.gta-saute{animation:gta-saute 2.2s ease-in-out infinite}
+@keyframes gta-saute{0%,56%,100%{transform:none}65%{transform:scale(1.1,.85)}80%{transform:translateY(-12px) scale(.94,1.1)}92%{transform:scale(1.07,.91)}}
+.gta-vapeur{animation:gta-vapeur 1.5s ease-in-out infinite alternate}
+@keyframes gta-vapeur{from{transform:translateY(1px) scale(.9);opacity:.5}to{transform:translateY(-5px) scale(1.1);opacity:1}}
+.gta-lueur{animation:gta-lueur 1.3s ease-in-out infinite alternate}
+@keyframes gta-lueur{from{transform:scale(.78);opacity:.45}to{transform:scale(1.2);opacity:1}}
+.gta-antennes{animation:gta-antennes 1.1s ease-in-out infinite alternate}
+@keyframes gta-antennes{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+.gta-clin{animation:gta-clin .9s ease-in-out infinite alternate}
+.gta-clin2{animation:gta-clin .9s ease-in-out infinite alternate-reverse}
+@keyframes gta-clin{from{opacity:.2}to{opacity:1}}
+
+/* ---------- les icônes, de chaque côté : des médaillons ronds, comme sur la carte ---------- */
+.gt-col{position:absolute;top:8px;bottom:calc(var(--gt-bas) + 4px);z-index:5;display:flex;flex-direction:column;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:16px 8px;padding:0 10px;pointer-events:none}
+.gt-gauche{left:0}
+.gt-droite{right:0;flex-wrap:wrap-reverse}
+.gt-ic{pointer-events:auto;position:relative;flex:none;width:var(--gt-ic);height:var(--gt-ic);border-radius:50%;padding:0;border:3px solid #24182e;
+  background:radial-gradient(circle at 35% 28%, #fffdf2, #f6e4b6 70%, #e6cc8e);box-shadow:0 4px 0 rgba(20,10,30,.6), 0 7px 14px rgba(0,0,0,.4);cursor:pointer;
+  animation:gt-flotte 3.2s ease-in-out infinite alternate;animation-delay:calc(var(--i, 0) * -.53s);-webkit-tap-highlight-color:transparent}
+.gt-ic svg{display:block;width:76%;height:76%;margin:auto;overflow:visible;pointer-events:none}
+.gt-ic b{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);padding:0 7px;border-radius:999px;background:#f6ead0;color:#24182e;border:2px solid #24182e;font-size:.66rem;line-height:1.35;font-weight:700;white-space:nowrap;pointer-events:none}
+.gt-petit .gt-ic b{display:none}
+.gt-petit .gt-col{gap:7px 6px;padding:0 5px}
+@keyframes gt-flotte{from{transform:translateY(-2px) rotate(-2deg)}to{transform:translateY(2px) rotate(2deg)}}
+.gt-ic.gt-rebond{animation:gt-rebond .5s cubic-bezier(.3,1.65,.5,1)}
+@keyframes gt-rebond{0%{transform:scale(1)}28%{transform:scale(.8) rotate(-6deg)}62%{transform:scale(1.18) rotate(4deg)}100%{transform:scale(1)}}
+.gt-ic.on{background:radial-gradient(circle at 35% 28%, #fffbe0, #ffe08a 65%, #e8a93a);box-shadow:0 0 0 4px #f5b945, 0 0 18px rgba(245,185,69,.95), 0 4px 0 rgba(20,10,30,.6)}
+.gt-ic.on b{background:linear-gradient(180deg,#ffe08a,#e8a93a)}
+/* au début : la première icône appelle le doigt (elle bouge, et porte le rond jaune) */
+.gt-ic.gt-appel{animation:gt-appel 1s ease-in-out infinite}
+.gt-ic.gt-appel::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:5px solid #ffd23f;box-shadow:0 0 16px rgba(255,210,63,.9);animation:gt-rond 1s ease-in-out infinite;pointer-events:none}
+@keyframes gt-appel{0%,100%{transform:scale(1)}50%{transform:scale(1.12) rotate(-5deg)}}
+@keyframes gt-rond{0%,100%{opacity:.95;transform:scale(1)}50%{opacity:.5;transform:scale(1.14)}}
+
+/* ---------- les bulles d'une icône : elles sortent l'une après l'autre, en rebondissant (comme les pastilles de la carte) ---------- */
+.gt-plateau{position:absolute;z-index:6;top:8px;display:grid;grid-template-columns:repeat(var(--cols, 3), var(--gt-b));gap:8px;align-content:start;pointer-events:none}
+.gt-plateau[hidden]{display:none}
+.gt-plateau > *{pointer-events:auto}
+.gt-titre{grid-column:1 / -1;justify-self:center;display:flex;align-items:center;gap:8px;min-height:30px;padding:2px 12px;border-radius:999px;background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:2px solid #0b1030;
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);font-size:.86rem;line-height:1.2;white-space:nowrap;animation:gt-bulle .4s cubic-bezier(.3,1.65,.5,1) both}
+.gt-titre b{font-weight:700}
+.gt-titre b.gt-nom-pop{animation:gt-nom .3s ease-out}
+@keyframes gt-nom{from{transform:scale(1.25);color:#ffe08a}to{transform:none}}
+.gt-quel{display:inline-flex;gap:4px}
+.gt-num{width:28px;height:28px;border-radius:50%;padding:0;border:2px solid #0b1030;background:var(--nuit-3, #28325e);color:var(--lune, #eef0ff);font-weight:700;font-size:.9rem;line-height:1;cursor:pointer}
+.gt-num.on{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;border-color:#24182e}
+.gt-sep{grid-column:1 / -1;height:2px;border-radius:2px;background:rgba(238,240,255,.5);margin:1px 6px}
+.gt-bulle{width:var(--gt-b);height:var(--gt-b);border-radius:50%;padding:0;border:2.5px solid #24182e;background:radial-gradient(circle at 35% 28%, #ffffff, #fff3d2 78%);
+  box-shadow:0 3px 0 rgba(20,10,30,.55), 0 6px 10px rgba(0,0,0,.4);cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;
+  animation:gt-bulle .5s cubic-bezier(.3,1.65,.5,1) both}
+.gt-bulle svg{display:block;width:84%;height:84%;margin:auto;overflow:visible;pointer-events:none}
+@keyframes gt-bulle{0%{opacity:0;transform:translateY(10px) scale(.4)}55%{opacity:1;transform:translateY(-3px) scale(1.1)}78%{transform:translateY(1px) scale(.96)}100%{opacity:1;transform:none}}
+.gt-calme .gt-bulle,.gt-calme .gt-titre{animation:none}
+.gt-bulle:active{filter:brightness(.92)}
+.gt-bulle.on{box-shadow:0 0 0 4px #f5b945, 0 0 14px rgba(245,185,69,.95), 0 3px 0 rgba(20,10,30,.55)}
+.gt-bulle:disabled{opacity:.4;filter:grayscale(.8);cursor:default}
+.gt-bulle-deco{cursor:grab}
+/* pendant qu'on promène une décoration, les bulles s'effacent : on peut la poser dessous */
+.gt-drag .gt-plateau{opacity:.25}
+.gt-drag .gt-plateau > *{pointer-events:none}
+
+/* ---------- en bas : annuler, la poubelle, « C'est prêt ! » ---------- */
+.gt-bas{position:absolute;left:0;right:0;bottom:0;height:var(--gt-bas);z-index:5;display:flex;align-items:center;gap:10px;padding:0 10px 6px;pointer-events:none;box-sizing:border-box}
+.gt-bas > *{pointer-events:auto;flex:none}
+.gt-bas > .gt-place{flex:1 1 0;min-width:0;display:flex;justify-content:center;pointer-events:none}
+.gt-rond{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:50%;padding:0;border:3px solid #24182e;background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);font-size:1.35rem;line-height:1;
+  box-shadow:0 3px 0 rgba(20,10,30,.6), 0 6px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .15s}
+.gt-rond:disabled{opacity:.45;cursor:default}
+.gt-poubelle{cursor:default;opacity:.55;transition:transform .15s, opacity .15s, background .15s}
+.gt-drag .gt-poubelle{opacity:1;animation:gt-poubelle .6s ease-in-out infinite alternate}
+@keyframes gt-poubelle{to{transform:scale(1.12)}}
+.gt-poubelle.gt-chaud{animation:none;transform:scale(1.35);background:#e8693c;box-shadow:0 0 0 4px #ffd23f, 0 0 18px rgba(255,210,63,.9)}
+.gt-pret{min-height:50px;white-space:nowrap}
+/* le temps qui reste : une pastille ; à trente secondes de la fin, elle rougit et bat */
+.gt-temps{display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:0 13px 0 9px;border-radius:999px;background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:3px solid #24182e;box-shadow:0 3px 0 rgba(20,10,30,.6), 0 6px 12px rgba(0,0,0,.35);font-weight:700;font-size:1.1rem;line-height:1;font-variant-numeric:tabular-nums}
+.gt-temps i{font-style:normal;font-size:1rem}
+.gt-temps.gt-presse{background:#c8302c;color:#fff;animation:gt-presse 1s ease-in-out infinite}
+@keyframes gt-presse{50%{transform:scale(1.1)}}
+.gt-petit .gt-temps{min-height:34px;font-size:1rem;padding:0 10px 0 7px}
+.gt-petit .gt-rond{width:44px;height:44px;font-size:1.15rem}
+.gt-petit .gt-pret{min-height:44px;padding:6px 12px}
+.gt-petit .gt-bas{gap:7px;padding:0 7px 6px}
+
+/* ---------- le conteur : une petite phrase, avec son 🔊 ---------- */
+.gt-conteur{pointer-events:auto;max-width:520px;box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:5px 8px 5px 14px;border-radius:18px;
+  background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:2px solid #0b1030;box-shadow:0 3px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);font-size:.92rem;line-height:1.3;font-style:italic;animation:gt-bulle .45s cubic-bezier(.3,1.65,.5,1) both}
+.gt-conteur[hidden]{display:none}
+.gt-conteur p{margin:0}
+.gt-conteur .mj-lire-mini{margin:0;flex:none}
+/* sur un petit écran, la phrase est en haut, entre les deux colonnes (mj-gateau.js la sort de la barre du bas) : en bas, elle cacherait le gâteau */
+.gt > .gt-conteur{position:absolute;z-index:7;top:var(--gt-sous, 8px);left:8px;right:8px;max-width:none;font-size:.86rem}
+.gt-ouvert > .gt-conteur{left:calc(var(--gt-cg, 60px) + 2px);right:calc(var(--gt-cd, 60px) + 2px)}
+
+/* ---------- la fête ---------- */
+.gt-fini .gt-col,.gt-fini .gt-bas,.gt-fini .gt-plateau,.gt-fini .gt-conteur{display:none}
+.gt-fini svg.gt-scene{pointer-events:none}
+.gt-final{position:absolute;z-index:8;left:0;right:0;bottom:0;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 12px;padding:8px 10px 10px;animation:b-apparait .35s ease-out}
+.gt-final[hidden]{display:none}
+.gt-final-dit{order:1;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 8px 16px;border-radius:18px;background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:2px solid #0b1030;
+  box-shadow:0 3px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);font-style:italic;font-size:1rem;line-height:1.3}
+.gt-final-dit p{margin:0}
+.gt-final-dit .mj-lire-mini{margin:0;flex:none}
+.gt-final-b{display:contents}
+.gt-final .gt-retouche{order:0;background:var(--nuit-2, #1c2447)}
+.gt-final .gt-fete{order:2}
+.gt-etroit .gt-final-dit{order:0;flex:1 1 100%}
+.gt-etroit .gt-final .gt-retouche{order:1}
+/* les confettis tombent */
+.gt-pluie{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
+.gt-pluie i{position:absolute;top:-24px;border-radius:2px;border:1px solid rgba(36,24,46,.55);animation:gt-confetti var(--d, 3s) linear infinite;will-change:transform}
+@keyframes gt-confetti{0%{transform:translate(0,-30px) rotate(var(--r, 0deg))}100%{transform:translate(var(--x, 0px), 110vh) rotate(calc(var(--r, 0deg) + 620deg))}}
+
+@media (prefers-reduced-motion: reduce){
+  .gt-ic,.gt-bulle,.gt-titre,.gt-conteur,.gt-e-in.gt-tombe,.gt-e-in.gt-pouf,.gt-deco-p.gt-pose,.gta,.gt-rune,.gt-sel,.gt-drag .gt-poubelle,.gt-temps.gt-presse{animation:none}
+  .gt-eclat{animation:none;opacity:0}
+  .gt-ic.gt-appel{animation:none}
+  .gt-deco-r{transition:none}
+}
+
+/* Ce mini-jeu prend toute la largeur de l'écran (MJ.LARGE, mj-core.js) : on voit la place en fête de chaque côté du gâteau */
+#mj-plein.mj-large .b-mj-cadre, #sl-plein.mj-large .sl-cadre{max-width:1280px}
+
 /* Relire un mini-jeu du Barde après coup */
 .rv{display:flex;flex-direction:column;gap:12px;text-align:left}
 .rv-tete h3{margin:0 0 4px;color:var(--or-pale)}
@@ -3993,6 +4179,9 @@ MJ.coeurs = U.coeurs; MJ.plusDeCoeur = U.plusDeCoeur;
    là où l'on touche des boutons (ZOOM_JEU), pas là où l'on glisse le doigt sur un dessin (le zoom y fausserait les positions). */
 MJ.PLEIN_ECRAN = {traces:1, poursuite:1, cachette:1, tir:1, bulles:1, melange:1, differences:1, double:1, insectes:1, chaudron:1, plans:1, runes:1};
 var ZOOM_JEU = {bulles:1, melange:1, double:1};
+/* Un mini-jeu qui prend toute la largeur de l'écran (le gâteau de la fête, 11 novembre : on voit toute la place derrière lui) :
+   la fenêtre qui le porte reçoit la classe mj-large (son cadre n'est plus limité à 820 px, mj-gateau.css). */
+MJ.LARGE = MJ.LARGE || {};
 function zoneDeborde(e){
   var cs = getComputedStyle(e);
   return /(auto|scroll)/.test(cs.overflowY) && e.clientHeight > 20;
@@ -4048,7 +4237,7 @@ MJ.lancer = function(el, type, params, fin, options){
   el.appendChild(racine);
   /* plein écran verrouillé : la classe mj-fixe sur le mini-jeu et sur la fenêtre qui le porte (#mj-plein du jeu, #sl-plein de la salle) */
   var fixe = !!MJ.PLEIN_ECRAN[type], hote = el.closest ? el.closest('#mj-plein, #sl-plein') : null;
-  racine.classList.toggle('mj-fixe', fixe); if(hote) hote.classList.toggle('mj-fixe', fixe);
+  racine.classList.toggle('mj-fixe', fixe); if(hote){ hote.classList.toggle('mj-fixe', fixe); hote.classList.toggle('mj-large', !!MJ.LARGE[type]); }
   if(fixe) try{ MJ.ajusterHauteur(racine, type); }catch(e){}
   var scene = racine.querySelector('.mj-scene');
   var consigne = (typeof def.consigne === 'function') ? def.consigne(params) : (def.consigne || '');
@@ -7129,12 +7318,10 @@ function memeEmpreinte(a, b){
 /* Une fausse piste de pattes : un autre chat du village (quatre doigts, de sa taille ou pas), un chat à cinq doigts (plus dur à
    distinguer, dès le niveau 5), ou un chien (plus grand, des griffes) */
 function variantePatte(c, n, evite){
-  /* c.floue (sans le code du Sage : le lait cachait ses doigts sur la carte du départ) : pas d'autre chat de SA taille — on ne
-     peut le reconnaître qu'à sa taille ; avec le code, on compte les doigts, et les chats de sa taille sont permis */
-  var tailles = c.floue ? [0.84, 1.17, 1.32] : [1, 0.84, 1.17, 1.32];
+  var tailles = [1, 0.84, 1.17, 1.32];
   for(var essai = 0; essai < 80; essai++){
     var v = Object.assign({}, c), r = Math.random();
-    if(r < 0.2 && n >= 5){ v.doigts = 5; v.L = c.L * U.choix(c.floue ? [0.86, 1.16] : [1, 0.86, 1.16]); }
+    if(r < 0.2 && n >= 5){ v.doigts = 5; v.L = c.L * U.choix([1, 0.86, 1.16]); }
     else if(r < 0.82){ v.doigts = 4; v.L = c.L * (n <= 2 && Math.random() < 0.6 ? U.choix([0.84, 1.32]) : U.choix(tailles)); }
     else { v.doigts = 4; v.griffes = true; v.W = 0.86; v.L = c.L * U.choix([1.32, 1.5]); }
     v.foulee = c.foulee * Math.pow(v.L / c.L, 0.8);
@@ -7189,18 +7376,12 @@ function Trace(noeuds){
 var NOMS_OBST = {gravier:'gravier', haie:'haies', eau:'ruisseaux et flaques', dalles:'grandes dalles', cloture:'clôtures', maison:'maisons à arcades'};
 function genererMonde(p){
   /* D0 : la ligne droite du départ, avec seulement la bonne piste (230 avant la partie raccourcie du 4 nov.) */
-  /* params.chercher (enquête 3, les pattes de Moustache — Romain, 11 novembre, 20 h 51) : d'abord on CHERCHE le départ des traces,
-     quelque part dans l'écran, un peu à gauche ou un peu à droite (jamais juste devant le Pisteur), au milieu d'autres pattes qui se
-     croisent dans tous les sens (M.emmeles) ; la ligne droite du départ est plus longue, pour laisser la place à ce méli-mélo */
-  var CH = !!p.chercher;
-  var W = p.largeur * 360, X0 = W / 2, D0 = CH ? 300 : 150, FIN = 200, zones = [], fourches = [];
+  var W = p.largeur * 360, X0 = W / 2, D0 = 150, FIN = 200, zones = [], fourches = [];
   var EP = {haie:null, eau:null, dalles:[90, 120], cloture:[30, 30], maison:[72, 118]};   /* maison : en ville seulement (on passe sous les arcades) */
   var evts = U.melanger(p.obstaclesListe.map(function(t){ return {type:t}; }).concat(Array.apply(null, Array(p.fourches)).map(function(){ return {type:'fourche'}; })));
-  var cote0 = Math.random() < 0.5 ? -1 : 1, decal = CH ? cote0 * U.rand(70, 120) : 0, mDepart = CH ? cote0 * U.rand(-0.1, 0.3) : 0;
-  var noeuds = [{d:-900, x:X0 + decal, m:0}], dern = noeuds[0];
+  var noeuds = [{d:-900, x:X0, m:0}], dern = noeuds[0];
   function xA(d){ return dern.x + dern.m * (d - dern.d); }
   function vire(d, m){ var x = xA(d); dern = {d:d, x:x, m:m}; noeuds.push(dern); }
-  if(CH) vire(-40, mDepart);
   function borne(x, m, long){
     var xf = x + m * (long || 320);
     if(xf < W * 0.12 || xf > W * 0.88){ m = -m; xf = x + m * (long || 320); if(xf < W * 0.12 || xf > W * 0.88) m = (X0 - x) / 700; }
@@ -7268,7 +7449,7 @@ function genererMonde(p){
   p._essaiCarte = 0;
   noeuds.push({d:L + 400, m:0});
   var cible = Trace(noeuds);
-  cible.debut = CH ? U.rand(30, 110) : 20; cible.fin = L - 12; cible.vrai = true; cible.f = p.empreinte;
+  cible.debut = 20; cible.fin = L - 12; cible.vrai = true; cible.f = p.empreinte;
   function dansZone(dd, marge){ for(var i = 0; i < zones.length; i++){ if(dd > zones[i].d0 - marge && dd < zones[i].d1 + marge) return zones[i]; } return null; }
   function libre(dd){ var z; while((z = dansZone(dd, VIR + 8))) dd = z.d1 + VIR + 10; return dd; }
   /* arrivées : une seule par écran */
@@ -7376,27 +7557,7 @@ function genererMonde(p){
     if(z.type === 'dalles'){ for(var dd = z.d0 + 14; dd < z.d1 - 8; dd += U.rand(30, 40)) dalles.push({d:dd, x:cible.x(dd) + U.rand(-9, 9), r:U.rand(17, 26), a:U.rand(0, 6)}); for(var k = 0; k < 6; k++){ var dr = U.rand(z.d0, z.d1), xr = cible.x(dr) + (Math.random() < 0.5 ? -1 : 1) * U.rand(60, 170); rochers.push({d:dr, x:xr, r:U.rand(14, 22)}); } }
     if(z.type === 'eau'){ for(var k2 = 0; k2 < 3; k2++){ var dq = z.d1 + U.rand(20, 130), xq = cible.x(dq) + (Math.random() < 0.5 ? -1 : 1) * U.rand(45, 140); flaques.push({d:dq, x:xq, rx:U.rand(16, 26), ry:U.rand(9, 14)}); } }
   });
-  /* le méli-mélo du départ (params.chercher) : de courtes pistes d'autres bêtes, en diagonale, certaines dans l'autre sens (inverse :
-     les pas tournés vers le bas) ; elles croisent la bonne piste mais ne la suivent jamais longtemps (pentes bien différentes) ;
-     pas d'arrivée au bout : elles s'arrêtent avant la fin de la ligne droite */
-  var emmeles = [];
-  if(CH){
-    var nE = p.niveau >= 5 ? 9 : 7, grE = [];
-    for(var ie = 0, essE = 0; emmeles.length < nE && essE < 120; essE++){
-      /* (aussi des pistes presque droites, comme la sienne : on ne la reconnaît pas à sa direction) */
-      var mE = (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.3 ? U.rand(0, 0.2) : U.rand(0.25, 1.5));
-      var d0E = U.rand(-90, 170), lgE = U.rand(150, 290), xE = X0 + U.rand(-190, 190);
-      var trE = Trace([{d:d0E - 1, x:xE, m:mE}, {d:d0E + lgE + 600, m:mE}]);
-      /* elle croise la bonne piste, mais ne marche jamais à côté d'elle plus de quelques pas */
-      var pres = 0;
-      for(var dq = Math.max(d0E, cible.debut); dq < Math.min(d0E + lgE, D0 + 30); dq += 12){ if(Math.abs(trE.x(dq) - cible.x(dq)) < 30) pres++; }
-      if(pres > 3) continue;
-      if(ie++ % 3 === 0) grE = [];
-      trE.f = variante(p.empreinte, p.niveau, grE); trE.debut = d0E; trE.fin = Math.min(d0E + lgE, D0 + 30); trE.vrai = false; trE.inverse = Math.random() < 0.4; trE.emmele = true;
-      emmeles.push(trE);
-    }
-  }
-  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers, lisiere:lisiere, emmeles:emmeles};
+  return {W:W, X0:X0, D0:D0, L:L, zones:zones, fourches:fourches, cible:cible, leurres:leurres, arrivees:arrivees, dalles:dalles, flaques:flaques, rochers:rochers, lisiere:lisiere};
 }
 var ARRIVEES_ART = {
   buisson:'<path d="M-17,8 C-22,-4 -12,-16 -2,-13 C4,-20 18,-14 16,-4 C24,0 20,12 10,12 C2,17 -10,16 -13,11 C-20,12 -21,8 -17,8 Z" fill="#2f7a4c" stroke="' + CONTOUR + '" stroke-width="3"/><circle cx="-5" cy="-3" r="2.3" fill="#e5484d"/><circle cx="7" cy="3" r="2.3" fill="#e5484d"/><ellipse cx="0" cy="9" rx="7" ry="4" fill="#14111f"/>',
@@ -7759,8 +7920,7 @@ var ARRIVEES_HISTOIRE = {
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
-  consigne:function(p){ if(p && p.suspect === 'chat') return p.chercher ? 'Retiens bien la trace de patte. Puis cherche où commencent ses traces, au milieu de toutes les autres : tu as ' + p.chercher + ' secondes avant que tout se mette à avancer. Ensuite, guide le Pisteur du doigt sur SA piste jusqu\'au bout !' :
-      'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
+  consigne:function(p){ if(p && p.suspect === 'chat') return 'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
     if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
     return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
     'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },
@@ -7890,7 +8050,6 @@ MJ.enregistrer('traces', {
     var P = Partie(fin);
     var ch = p.vehicule === 'charrette';
     var cibleF = p.empreinte || (ch ? charretteCible() : null) || EMP_PRESETS[p.suspect] || EMP_PRESETS.enfant;
-    if(cibleF.patte && p.carteFloue && !cibleF.floue) cibleF = Object.assign({}, cibleF, {floue:true});   /* (variantePatte : pas de chat de sa taille) */
     p.empreinte = cibleF;
     var hud = creerHud(el);
     var essais = p.essais;
@@ -8030,7 +8189,7 @@ MJ.enregistrer('traces', {
       });
     }
     /* ---- Empreintes : créées au fil du défilement ---- */
-    var pistes = [cible].concat(M.leurres, M.emmeles || []);   /* (M.emmeles : le méli-mélo du départ, params.chercher) */
+    var pistes = [cible].concat(M.leurres);
     pistes.forEach(function(t){ t.next = t.debut; t.k = 0; });
     var marques = [];
     function creerJusqua(dMax){
@@ -8045,10 +8204,10 @@ MJ.enregistrer('traces', {
           var boue = mouille(px, pd), saut = !boue && atterrissage(d, t.f.foulee), fs = formeSemelle(t.f), tr, contenu, forme;
           if(boue){
             /* la même tache pour tout le monde : même taille, même forme, seulement dans le sens de la marche */
-            tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + (rad * 57.3 + (t.inverse ? 180 : 0)).toFixed(0) + ')';
+            tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + (rad * 57.3).toFixed(0) + ')';
             contenu = '<ellipse class="e-tache" rx="11" ry="15"/><path class="e-f" d="' + TACHE + '"/>'; forme = TACHE;
           } else {
-            var k = saut ? 1.3 : 1, ang = rad * 57.3 + t.f.ouvre * cote + (t.inverse ? 180 : 0);   /* (inverse : une bête qui allait dans l'autre sens) */
+            var k = saut ? 1.3 : 1, ang = rad * 57.3 + t.f.ouvre * cote;
             tr = 'translate(' + px.toFixed(1) + ',' + (-pd).toFixed(1) + ') rotate(' + ang.toFixed(0) + ') scale(' + (cote > 0 ? -k : k) + ',' + k + ')';
             contenu = (saut ? '<path class="e-creux" d="' + fs.d + '"/>' : '') + '<path class="e-f" d="' + fs.d + '"/>' + fs.det; forme = fs.d;
           }
@@ -8108,7 +8267,7 @@ MJ.enregistrer('traces', {
     P.ecoute(document, 'keydown', function(e){ var k = {ArrowLeft:[-1, 0], ArrowRight:[1, 0], ArrowUp:[0, -1], ArrowDown:[0, 1]}[e.key]; if(k){ clavier.x = k[0] || clavier.x; clavier.y = k[1] || clavier.y; e.preventDefault(); } });
     P.ecoute(document, 'keyup', function(e){ if(e.key === 'ArrowLeft' || e.key === 'ArrowRight') clavier.x = 0; if(e.key === 'ArrowUp' || e.key === 'ArrowDown') clavier.y = 0; });
     terrain.mjaViserMonde = function(x, d){ butMonde = (x === null) ? null : {x:x, d:d}; };
-    terrain.mjaEtat = function(){ return {t:t, cam:cam, camX:camX, px:px, pd:pd, YB:YB, L:L, W:W, phase:phase, perduT:perduT, vue:vue, defile:p.defile, cherche:phase === 'cherche' ? chercheFin - t : 0, debut:cible.debut,
+    terrain.mjaEtat = function(){ return {t:t, cam:cam, camX:camX, px:px, pd:pd, YB:YB, L:L, W:W, phase:phase, perduT:perduT, vue:vue, defile:p.defile,
       cible:function(d){ return cible.x(d); }, fourches:M.fourches.map(function(f){ return {d:f.d, x:f.x, leurres:f.leurres}; }),
       zones:M.zones.map(function(z){ return {type:z.type, d0:z.d0, d1:z.d1, x0:z.x0, x1:z.x1, leurres:z.leurres, court:z.court}; }),
       leurre:function(i, d){ return M.leurres[i].x(d); }, finLeurre:function(i){ var a = M.leurres[i].arrivee; return {x:a.x, d:a.d, debut:M.leurres[i].debut}; }, arrivee:{x:M.arrivees[0].x, d:M.arrivees[0].d}, meteo:meteo, sous:sousT}; };
@@ -8119,17 +8278,10 @@ MJ.enregistrer('traces', {
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">Retiens bien ces traces</span>' + traceCarte(cibleF, 110) + '<b>' + esc2(cibleF.nom) + '</b><span class="mja-depart-pt">Deux traits de roues, et ses pas au milieu. Attention : pas la brouette (une seule roue), ni la carriole de Fortuné (plus large) !</span></div></div>') :
       U.html('<div class="mja-depart"><div class="mja-depart-in"><span class="sur-titre">' + esc2(p.departTitre || 'Retiens bien cette empreinte') + '</span>' + empreinteCarte(cibleF, 96, p.carteFloue) + '<b>' + esc2(p.departNom || cibleF.nom || 'L\'empreinte du suspect') + '</b><span class="mja-depart-pt">' + esc2(p.departTxt || 'Au début, elle est toute seule. Ensuite, la piste se sépare : ne la perds pas de vue !') + '</span></div></div>');
     terrain.appendChild(carteD);
-    /* params.chercher (secondes) : le sol ne défile pas encore ; le Pisteur cherche le départ des traces, où il veut dans l'écran,
-       puis tout se met à avancer, à la vitesse normale (Romain, 11 novembre, 20 h 51 : « tu lui laisses 10 secondes pour chercher ») */
-    var chercheFin = 0, pilule = null, pilN = null;
     P.apres(2800, function(){
       carteD.classList.add('part');
       P.apres(400, function(){ if(carteD.parentNode) carteD.parentNode.removeChild(carteD); });
-      if(p.chercher){
-        phase = 'cherche'; chercheFin = t + p.chercher;
-        pilule = U.html('<div class="mja-cherche"><span>🔎 Où commencent ses traces ?</span><b>' + Math.ceil(p.chercher) + '</b></div>');
-        terrain.appendChild(pilule); pilN = pilule.querySelector('b');
-      } else phase = 'marche';
+      phase = 'marche';
     });
     function perdre(detail, ann){
       if(fini) return;
@@ -8188,21 +8340,11 @@ MJ.enregistrer('traces', {
       if(fini) return false;
       t += dt;
       /* le sol défile toujours, même à la fin */
-      if(phase !== 'depart' && phase !== 'cherche') cam += p.defile * dt;
-      /* la recherche du départ : le compte à rebours, puis tout se met à avancer */
-      if(phase === 'cherche'){
-        var resteC = Math.max(0, Math.ceil(chercheFin - t));
-        if(pilN && pilN.textContent !== String(resteC)){ pilN.textContent = resteC; if(resteC <= 3 && resteC > 0) U.son('tic'); }
-        if(t >= chercheFin){
-          phase = 'marche';
-          if(pilule){ pilule.classList.add('part'); var pl0 = pilule; P.apres(400, function(){ if(pl0.parentNode) pl0.parentNode.removeChild(pl0); }); pilule = null; }
-          annonce(terrain, '👣 Ça avance ! Suis-le !', 1200);
-        }
-      }
+      if(phase !== 'depart') cam += p.defile * dt;
       var dBas = cam + YB - (vue.y + vue.h), dHaut = cam + YB - vue.y;
       var xMin = camX + vue.x - 180, xMax = camX + vue.x + vue.w - 180;
       /* le Pisteur marche vers le doigt, à vitesse limitée */
-      if(phase === 'marche' || phase === 'cherche'){
+      if(phase === 'marche'){
         var tx = null, td = null;
         if(butMonde){ tx = butMonde.x; td = butMonde.d; }
         else if(doigt){ tx = camX + (doigt.x - 180); td = cam + YB - doigt.y; }
@@ -22796,7 +22938,7 @@ MJ.sageCodes = {SYSTEMES:SYSTEMES, IMAGES:IMAGES, SYMBOLES:SYMBOLES, construire:
 var MJ = window.MJ = window.MJ || {};
 
 MJ.PHRASES = {
-  traces:function(p){ return p && p.suspect === 'chat' ? (p.chercher ? 'Trouve le départ, puis suis la bonne piste !' : 'Suis les bonnes traces de pattes !') : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
+  traces:function(p){ return p && p.suspect === 'chat' ? 'Suis les bonnes traces de pattes !' : p && p.vehicule === 'charrette' ? 'Suis bien les traces de la charrette !' : (p && p.decor === 'ville' ? 'Suis les traces : sous les toits, tout droit !' : 'Suis bien les traces de pas !'); },
   poursuite:function(p){ return p && p.fuyard === 'chien' ? 'Saute, baisse-toi, évite : attrape le chien !' : (p && p.fuyard === 'oie' ? 'Saute, baisse-toi, évite : attrape l\'oie !' : 'Saute, baisse-toi, évite : attrape-la !'); },
   cachette:'Cache-toi et file jusqu\'à la porte !',
   tir:'Tire à fond, lâche : la flèche transperce !',
@@ -26899,6 +27041,1398 @@ if(MJ.DEMOS){
 })();
 
 }).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
+/* ===== mj-gateau-dessins.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
+/* ==========================================================
+   LE GÂTEAU DE LA FÊTE (Alchimiste) — les dessins (Romain, 11 novembre 2026, 19 h 48)
+   « plein d'options les plus farfelues les unes que les autres […] des icônes de chaque côté du gâteau
+     […] tu mets tout ça sur une jolie table, toujours dans la charte graphique, et en fond la ville festive ».
+
+   Ce fichier ne contient que des dessins (du SVG écrit à la main, dans le style du jeu : contour sombre
+   #24182e, aplats francs, un reflet clair) et les listes de choix. Le jeu est dans mj-gateau.js.
+   MJ.GATEAU_ART = {K, PATES, GLACAGES, MOTIFS, FORMES, CREMES, CREME_COUL, PLATS, NAPPES, CATS, DECOS,
+                    icone(cat), jeton(...), fond(id), table(id, nappe), plat(style), defs(id), clair, sombre}
+   Tout est dessiné dans le repère de la scène : 640 × 660, le gâteau au milieu (x = 320), le dessus de la table à y = 548.
+   ========================================================== */
+(function(){
+'use strict';
+var MJ = window.MJ = window.MJ || {};
+var K = '#24182e';
+function f1(v){ return (Math.round(v * 10) / 10).toString(); }
+function st(w, c){ return ' stroke="' + (c || K) + '" stroke-width="' + w + '" stroke-linejoin="round" stroke-linecap="round"'; }
+function hex(c){ return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)]; }
+function mix(a, b, u){ var x = hex(a), y = hex(b); return '#' + [0, 1, 2].map(function(i){ var v = Math.round(x[i] + (y[i] - x[i]) * u); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+function clair(c, u){ return mix(c, '#ffffff', u); }
+function sombre(c, u){ return mix(c, '#1c1026', u); }
+/* un hasard qui se répète (les mêmes coulures, les mêmes miettes à chaque dessin) */
+function graine(n){ var s = (n * 9301 + 49297) % 233280; return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+
+/* ---------- Les choix ---------- */
+/* (Romain, 11 novembre, 20 h 29 : « que le gâteau soit étincelant de couleurs très vives ») */
+var PATES = [
+  {id:'vanille', nom:'Vanille', c:'#ffd84f'}, {id:'chocolat', nom:'Chocolat', c:'#8a3f14'}, {id:'fraise', nom:'Fraise', c:'#ff6f9e'},
+  {id:'pistache', nom:'Pistache', c:'#8fdc3c'}, {id:'citron', nom:'Citron', c:'#fff23a'}, {id:'myrtille', nom:'Myrtille', c:'#7a52f0'},
+  {id:'velours', nom:'Velours rouge', c:'#e81f3c'}, {id:'caramel', nom:'Caramel', c:'#f39a12'}, {id:'coco', nom:'Noix de coco', c:'#fffaf0'},
+  {id:'carotte', nom:'Carotte', c:'#ff7a12'}, {id:'charbon', nom:'Charbon', c:'#2e2842'}, {id:'arcenciel', nom:'Arc-en-ciel', c:'#ffd84f', arc:true}
+];
+var GLACAGES = [
+  {id:'blanc', nom:'Crème', c:'#ffffff'}, {id:'rose', nom:'Rose', c:'#ff7fc2'}, {id:'framboise', nom:'Framboise', c:'#ff1f72'},
+  {id:'chocolat', nom:'Chocolat', c:'#6e3212'}, {id:'caramel', nom:'Caramel', c:'#ffa012'}, {id:'citron', nom:'Citron', c:'#ffec1f'},
+  {id:'pistache', nom:'Pistache', c:'#9cec2e'}, {id:'menthe', nom:'Menthe', c:'#2fe6b4'}, {id:'ciel', nom:'Bleu ciel', c:'#2fb4ff'},
+  {id:'lavande', nom:'Lavande', c:'#b07cff'}, {id:'myrtille', nom:'Myrtille', c:'#4a3fe6'}, {id:'reglisse', nom:'Réglisse', c:'#221c38'},
+  {id:'or', nom:'Doré', c:'#ffc61a'}, {id:'arcenciel', nom:'Arc-en-ciel', c:'#ff7fc2', arc:true}
+];
+var MOTIFS = [{id:'lisse', nom:'Lisse'}, {id:'coulant', nom:'Qui coule'}, {id:'moitie', nom:'À moitié'}, {id:'pois', nom:'À pois'}, {id:'rayures', nom:'Rayé'}, {id:'vagues', nom:'En vagues'}];
+var FORMES = [{id:'rond', nom:'Rond'}, {id:'carre', nom:'Carré'}, {id:'pans', nom:'À pans'}, {id:'cannele', nom:'Cannelé'}];
+var CREMES = [{id:'perles', nom:'Perles'}, {id:'rosettes', nom:'Rosettes'}, {id:'festons', nom:'Festons'}, {id:'etoiles', nom:'Étoiles'}, {id:'nuages', nom:'Nuages'}];
+var CREME_COUL = ['blanc', 'rose', 'framboise', 'chocolat', 'caramel', 'citron', 'pistache', 'menthe', 'ciel', 'lavande'];
+var PLATS = [{id:'porcelaine', nom:'Porcelaine'}, {id:'bois', nom:'Bois'}, {id:'argent', nom:'Argent'}, {id:'or', nom:'Doré'}, {id:'pois', nom:'À pois'}, {id:'runes', nom:'Pierre à runes'}];
+var NAPPES = [{id:'vichy', nom:'Vichy rouge'}, {id:'bleue', nom:'Vichy bleu'}, {id:'dentelle', nom:'Dentelle'}, {id:'bois', nom:'Bois'}, {id:'nuit', nom:'Nuit étoilée'}, {id:'rayee', nom:'Rayée'}];
+/* (une couleur du pinceau, « #rrggbb », est acceptée à la place d'un nom de la liste) */
+function glac(id){ if(id && id.charAt(0) === '#') return {id:id, nom:'', c:id}; for(var i = 0; i < GLACAGES.length; i++) if(GLACAGES[i].id === id) return GLACAGES[i]; return GLACAGES[0]; }
+function pate(id){ if(id && id.charAt(0) === '#') return {id:id, nom:'', c:id}; for(var i = 0; i < PATES.length; i++) if(PATES[i].id === id) return PATES[i]; return PATES[0]; }
+
+/* ---------- Le pinceau (Romain, 11 novembre, 20 h 39 : « qu'on puisse personnaliser les couleurs de tous les éléments ») ----------
+   Huit couleurs. Sur un étage, la couleur du pinceau remplace telle quelle la pâte, le glaçage, le motif ou la crème.
+   Une décoration, le plat, la nappe sont des dessins à plusieurs couleurs : teinter() les repeint sans les redessiner.
+   - un dessin coloré (une fraise, un ballon) : toutes ses couleurs tournent d'autant qu'il faut pour que sa couleur principale
+     devienne celle du pinceau ; ses blancs, ses gris, son contour ne changent pas, et son feuillage reste vert ;
+   - un dessin blanc, gris ou noir (un chat, une meringue, le chaudron) : ses blancs, ses gris prennent la couleur du pinceau.
+   Ce qui est entre <!--f--> et <!--/f--> (une flamme) garde toujours ses couleurs. */
+var PINCEAUX = [{id:'rouge', nom:'Rouge', c:'#ff2f45'}, {id:'orange', nom:'Orange', c:'#ff8a12'}, {id:'jaune', nom:'Jaune', c:'#ffd91f'}, {id:'vert', nom:'Vert', c:'#3fd44a'},
+  {id:'turquoise', nom:'Turquoise', c:'#1fd6c0'}, {id:'bleu', nom:'Bleu', c:'#2f9bff'}, {id:'violet', nom:'Violet', c:'#9a5cff'}, {id:'rose', nom:'Rose', c:'#ff6fc0'}];
+function versTSL(c){
+  if(c.length === 4) c = '#' + c.charAt(1) + c.charAt(1) + c.charAt(2) + c.charAt(2) + c.charAt(3) + c.charAt(3);
+  var r = parseInt(c.substr(1, 2), 16) / 255, g = parseInt(c.substr(3, 2), 16) / 255, b = parseInt(c.substr(5, 2), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn, h = 0, s = 0;
+  if(d){ s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = 60 * (mx === r ? (g - b) / d + (g < b ? 6 : 0) : (mx === g ? (b - r) / d + 2 : (r - g) / d + 4)); }
+  return [h, s, l];
+}
+function deTSL(h, s, l){
+  h = (((h % 360) + 360) % 360) / 360; var q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  function v(x){ x = (x + 1) % 1; x = x < 1 / 6 ? p + (q - p) * 6 * x : (x < .5 ? q : (x < 2 / 3 ? p + (q - p) * (2 / 3 - x) * 6 : p)); x = Math.round(Math.max(0, Math.min(1, x)) * 255); return (x < 16 ? '0' : '') + x.toString(16); }
+  return '#' + v(h + 1 / 3) + v(h) + v(h - 1 / 3);
+}
+function fixe(s){ return '<!--f-->' + s + '<!--/f-->'; }
+var RE_COUL = /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g;
+function teinter(s, p, c){
+  var Pp = versTSL(p), C = versTSL(c), vif = Pp[1] >= .25 && Pp[2] > .2 && Pp[2] < .93;
+  function une(x){
+    var lx = x.toLowerCase(); if(lx === K || lx === '#1c1026') return x;                 /* le contour et les ombres ne changent jamais */
+    var X = versTSL(x);
+    if(vif){
+      if(X[1] < .18 || X[2] < .1 || X[2] > .97) return x;                                 /* ses blancs, ses gris, ses noirs */
+      if(X[0] > 75 && X[0] < 165 && Math.abs(((X[0] - Pp[0] + 540) % 360) - 180) > 50) return x;   /* son feuillage reste vert */
+      return deTSL(X[0] + C[0] - Pp[0], X[1], X[2]);
+    }
+    if(X[1] > Math.max(.3, Pp[1] + .15) || Math.abs(X[2] - Pp[2]) > .32) return x;        /* un dessin blanc, gris ou noir : seules les couleurs de sa famille changent */
+    return deTSL(C[0], .66, Math.max(.3, Math.min(.84, X[2] > .84 ? X[2] * .86 : X[2])));
+  }
+  var out = '', i = 0, a, b;
+  for(;;){
+    a = s.indexOf('<!--f-->', i); if(a < 0){ out += s.slice(i).replace(RE_COUL, une); break; }
+    b = s.indexOf('<!--/f-->', a); out += s.slice(i, a).replace(RE_COUL, une) + s.slice(a, b < 0 ? s.length : b + 9);
+    if(b < 0) break; i = b + 9;
+  }
+  return out;
+}
+/* la couleur principale de chaque décoration (celle que le pinceau remplace) */
+var PRINC = {fraise:'#e8384a', cerises:'#c81e3a', myrtilles:'#4a4fa0', framboise:'#d83a6a', orange:'#f59a2c', citron:'#f2c92c', kiwi:'#9ccc4a', raisin:'#8a4fb8', ananas:'#e8b02c', pomme:'#d81e2c',
+  rose:'#e0486a', marguerite:'#fffdf4', pensee:'#6a48b8', lavande:'#9a7ae0', coquelicot:'#e8382c', tulipe:'#f47a9c', tournesol:'#f6c52c', trefle:'#4fbf5a', feuilles:'#4fae5a',
+  macaron:'#f79ab8', guimauve:'#f8adc8', sucredorge:'#e0304a', papillote:'#5bc8f0', sucette:'#f8adc8', chocolat:'#5c341c', biscuit:'#e0a85a', meringue:'#fffaf0', coeur:'#f04a6a', reglisse:'#2f2b3c',
+  bougie:'#f8adc8', bougie2:'#9ccbf5', cierge:'#ffd76a', fanion:'#f04a6a', etoile:'#f6c52c', lampion:'#f59a2c', noeud:'#de4f7c', ballon:'#5bc8f0',
+  moustache:'#8a8a9a', biscotte:'#e0b888', pompon:'#fdfaf2', caramel:'#e08a3a', mistigri:'#3a3444', noisette:'#8a5a34', grisette:'#c4c4d0', oie:'#fffdf6', champignon:'#e0304a', lanterne:'#ecbc4c', cle:'#b8862e',
+  plume:'#2c2838', sardine:'#9cc0d8', chaudron:'#3a3444', grenouille:'#6fbf4a', cornichon:'#7aa83a', chaussette:'#e0304a', fromage:'#f6c52c', escargot:'#c8783a',
+  p_confettis:'#f04a6a', p_perles:'#e8eef4', p_etoiles:'#ffd21f', p_coeurs:'#f04a6a', p_vermicelles:'#5c341c', p_neige:'#ffffff',
+  r_blanche:'#fffaf0', r_rose:'#f8adc8', r_chocolat:'#7a4a2a', r_menthe:'#8fe3c3', nuage:'#fffaf0', b_vanille:'#fbe9a8', b_fraise:'#f47a9c', b_pistache:'#a8d07a'};
+
+/* ---------- Les décorations (chacune dessinée autour de 0,0 ; r : la zone qu'on attrape au doigt) ---------- */
+var D = {};
+function reflet(d, w, o){ return '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="' + (w || 2.4) + '" stroke-linecap="round" opacity="' + (o || .5) + '"/>'; }
+function pts(l, f){ return l.map(f).join(''); }
+/* Une partie qui bouge toute seule (Romain, 11 novembre, 20 h 29 : « un quart des décorations animées »).
+   cls : son mouvement (mj-gateau.css, .gta-…) ; o : le point autour duquel elle bouge, en % de la boîte de ce qu'elle contient. */
+function anime(cls, o, dedans){ return '<g class="gta gta-' + cls + '"' + (o ? ' style="transform-origin:' + o + '"' : '') + '>' + dedans + '</g>'; }
+var ANIMEES = ['cerises', 'tournesol', 'tulipe', 'sucette', 'coeur', 'bougie', 'bougie2', 'cierge', 'ballon', 'lampion', 'etoile', 'moustache', 'oie', 'grenouille', 'chaudron', 'lanterne', 'escargot', 'p_etoiles'];
+
+/* --- les fruits --- */
+D.fraise = function(){ return '<path d="M0,23 C-19,10 -21,-8 -11,-14 C-4,-18 4,-18 11,-14 C21,-8 19,10 0,23 Z" fill="#e8384a"' + st(2.4) + '/>' +
+  '<g fill="#ffe9a0">' + pts([[-8,-3],[0,-6],[8,-3],[-5,5],[5,5],[0,13],[-11,4],[11,4]], function(p){ return '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="1.5" ry="2.2"/>'; }) + '</g>' +
+  '<path d="M-12,-12 C-7,-21 -2,-15 0,-22 C2,-15 7,-21 12,-12 C6,-9 -6,-9 -12,-12 Z" fill="#4fae5a"' + st(2) + '/>' + reflet('M-13,-3 C-14,3 -11,9 -7,13'); };
+D.cerises = function(){ return anime('balance', '70% 8%', '<path d="M-10,8 C-8,-8 2,-18 12,-22 M11,10 C10,-4 10,-14 12,-22" fill="none"' + st(2.4, '#4a7a2c') + '/>' +   /* elles se balancent au bout de leurs queues */
+  '<path d="M12,-22 C20,-26 26,-20 22,-14 C18,-12 14,-16 12,-22 Z" fill="#5fbf5a"' + st(1.8) + '/>' +
+  '<circle cx="-10" cy="12" r="11" fill="#c81e3a"' + st(2.4) + '/><circle cx="12" cy="13" r="11" fill="#e0304a"' + st(2.4) + '/>' + reflet('M-16,8 C-16,5 -14,3 -12,3') + reflet('M6,9 C6,6 8,4 10,4')); };
+D.myrtilles = function(){ return pts([[-9,6,10],[9,7,10],[0,-8,10]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" fill="#4a4fa0"' + st(2.2) + '/><path d="M' + (p[0] - 3) + ',' + (p[1] - 2) + ' l3,-3 l3,3 l-3,3 Z" fill="#2c2f66"/>'; }) + reflet('M-15,3 C-15,0 -13,-1 -11,-1', 2) + reflet('M-6,-11 C-6,-14 -4,-15 -2,-15', 2); };
+D.framboise = function(){ var s = '<path d="M0,20 C-16,12 -18,-6 -10,-13 C-4,-17 4,-17 10,-13 C18,-6 16,12 0,20 Z" fill="#d83a6a"' + st(2.4) + '/>';
+  [[-6,-6],[6,-6],[0,-1],[-9,2],[9,2],[-4,8],[4,8],[0,14],[0,-11]].forEach(function(p){ s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4.2" fill="#ec5a86" stroke="#a82450" stroke-width="1.2"/>'; });
+  return s + '<path d="M-8,-13 C-4,-19 4,-19 8,-13 C3,-11 -3,-11 -8,-13 Z" fill="#4fae5a"' + st(1.8) + '/>'; };
+D.orange = function(){ var s = '<circle r="21" fill="#f59a2c"' + st(2.4) + '/><circle r="17" fill="#ffd27a"/>';
+  for(var i = 0; i < 8; i++){ var a = i * Math.PI / 4; s += '<path d="M0,0 L' + f1(Math.cos(a) * 16) + ',' + f1(Math.sin(a) * 16) + ' A16,16 0 0 1 ' + f1(Math.cos(a + .68) * 16) + ',' + f1(Math.sin(a + .68) * 16) + ' Z" fill="#f7a93a" stroke="#ffe6b0" stroke-width="1.4"/>'; }
+  return s + '<circle r="2.4" fill="#ffe6b0"/>'; };
+D.citron = function(){ var s = '<path d="M-21,0 A21,21 0 0 1 21,0 Z" fill="#f2c92c"' + st(2.4) + '/><path d="M-17,-1 A17,17 0 0 1 17,-1 Z" fill="#fff3a8"/>';
+  for(var i = 0; i < 5; i++){ var a = Math.PI + (i + .08) * Math.PI / 5; s += '<path d="M0,-1 L' + f1(Math.cos(a) * 16) + ',' + f1(Math.sin(a) * 16 - 1) + ' A16,16 0 0 1 ' + f1(Math.cos(a + .52) * 16) + ',' + f1(Math.sin(a + .52) * 16 - 1) + ' Z" fill="#f9e25a" stroke="#fff7c8" stroke-width="1.2"/>'; }
+  return s; };
+D.kiwi = function(){ var s = '<ellipse rx="21" ry="19" fill="#8a6a3a"' + st(2.4) + '/><ellipse rx="17.5" ry="15.5" fill="#9ccc4a"/><ellipse rx="6" ry="5" fill="#f4f6d8"/>';
+  for(var i = 0; i < 12; i++){ var a = i * Math.PI / 6; s += '<ellipse cx="' + f1(Math.cos(a) * 10.5) + '" cy="' + f1(Math.sin(a) * 9.5) + '" rx="1.1" ry="2" transform="rotate(' + f1(a * 57.3 + 90) + ' ' + f1(Math.cos(a) * 10.5) + ' ' + f1(Math.sin(a) * 9.5) + ')" fill="#2c2418"/>'; }
+  return s; };
+D.pomme = function(){ return '<path d="M0,6 L0,34" ' + st(5) + '/><path d="M0,6 L0,34" stroke="#d9b98a" stroke-width="2.6" stroke-linecap="round"/>' +
+  '<path d="M0,-8 C-10,-20 -24,-10 -22,2 C-20,14 -10,20 0,16 C10,20 20,14 22,2 C24,-10 10,-20 0,-8 Z" fill="#d81e2c"' + st(2.4) + '/>' +
+  '<path d="M-22,2 C-14,10 14,10 22,2 C20,14 10,20 0,16 C-10,20 -20,14 -22,2 Z" fill="#a8121e" opacity=".55"/>' + reflet('M-15,-6 C-16,-1 -14,4 -11,7', 3, .6) + '<path d="M0,-9 C1,-14 4,-17 7,-18" fill="none"' + st(2.2, '#5a3a1c') + '/>'; };
+D.raisin = function(){ var s = '<path d="M0,-18 C2,-24 8,-26 12,-24" fill="none"' + st(2.4, '#5a7a2c') + '/><path d="M2,-20 C10,-28 20,-22 16,-14 C10,-12 4,-14 2,-20 Z" fill="#6fbf5a"' + st(1.8) + '/>';
+  [[-8,-10],[8,-10],[0,-12],[-12,0],[0,-1],[12,0],[-6,10],[6,10],[0,20]].forEach(function(p){ s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="7" fill="#8a4fb8"' + st(1.8) + '/><circle cx="' + (p[0] - 2) + '" cy="' + (p[1] - 2) + '" r="1.8" fill="#fff" opacity=".55"/>'; });
+  return s; };
+D.ananas = function(){ var s = '<circle r="21" fill="#e8b02c"' + st(2.4) + '/><circle r="16.5" fill="#ffe27a"/><circle r="6" fill="#e8b02c"' + st(1.6, '#b8862e') + '/>';
+  for(var i = 0; i < 10; i++){ var a = i * Math.PI / 5; s += '<path d="M' + f1(Math.cos(a) * 7.5) + ',' + f1(Math.sin(a) * 7.5) + ' L' + f1(Math.cos(a) * 15.5) + ',' + f1(Math.sin(a) * 15.5) + '" stroke="#f2c84a" stroke-width="1.6"/>'; }
+  return s; };
+
+/* --- les fleurs --- */
+function petales(n, rx, ry, d, c, bord){ var s = ''; for(var i = 0; i < n; i++) s += '<ellipse cx="0" cy="' + (-d) + '" rx="' + rx + '" ry="' + ry + '" transform="rotate(' + f1(i * 360 / n) + ')" fill="' + c + '"' + st(1.8, bord) + '/>'; return s; }
+D.rose = function(){ return '<path d="M-14,10 C-24,14 -24,22 -12,18 Z M14,10 C24,14 24,22 12,18 Z" fill="#4fae5a"' + st(1.8) + '/>' +
+  '<circle r="18" fill="#e0486a"' + st(2.4) + '/><path d="M-13,-3 C-10,-14 10,-14 13,-3 C12,8 -12,8 -13,-3 Z" fill="#ef6f8c"' + st(1.6, '#a82448') + '/>' +
+  '<path d="M-7,-2 C-6,-9 6,-9 7,-2 C6,4 -6,4 -7,-2 Z" fill="#f79ab0"' + st(1.4, '#a82448') + '/><path d="M-2,-2 C-1,-5 3,-4 2,-1 C1,1 -2,1 -2,-2 Z" fill="#c8305a"/>'; };
+D.marguerite = function(){ return petales(10, 5, 11, 12, '#fffdf4', '#b8a888') + '<circle r="7.5" fill="#f6c52c"' + st(2) + '/>' + '<circle cx="-2" cy="-2" r="2" fill="#fff" opacity=".5"/>'; };
+D.pensee = function(){ return '<ellipse cx="-10" cy="-9" rx="11" ry="10" fill="#6a48b8"' + st(2) + '/><ellipse cx="10" cy="-9" rx="11" ry="10" fill="#6a48b8"' + st(2) + '/>' +
+  '<ellipse cx="-13" cy="6" rx="10" ry="9" fill="#f2d24a"' + st(2) + '/><ellipse cx="13" cy="6" rx="10" ry="9" fill="#f2d24a"' + st(2) + '/><ellipse cx="0" cy="12" rx="12" ry="10" fill="#f6dd6a"' + st(2) + '/>' +
+  '<path d="M0,4 L-6,12 M0,4 L6,12 M0,4 L0,15 M0,4 L-13,6 M0,4 L13,6" stroke="#5a2c8a" stroke-width="1.8" stroke-linecap="round"/><circle cy="3" r="3.4" fill="#f59a2c"' + st(1.4) + '/>'; };
+D.lavande = function(){ var s = '<path d="M0,26 C1,10 0,-4 0,-18" fill="none"' + st(2.6, '#5a8a4a') + '/><path d="M0,14 C-8,10 -12,14 -14,20 M0,8 C8,4 12,8 14,14" fill="none"' + st(2.2, '#5a8a4a') + '/>';
+  [[-5,-20],[5,-17],[-5,-13],[5,-10],[-5,-6],[5,-3],[0,-25],[-4,1],[4,4]].forEach(function(p){ s += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="4.6" ry="3.6" fill="#9a7ae0"' + st(1.4, '#5a3ca8') + '/>'; });
+  return s; };
+D.coquelicot = function(){ return '<path d="M0,2 C-22,-4 -22,-24 -4,-20 C-2,-26 2,-26 4,-20 C22,-24 22,-4 0,2 Z" fill="#e8382c"' + st(2.2) + '/>' +
+  '<path d="M0,0 C-22,4 -20,24 -2,18 C0,24 0,24 2,18 C20,24 22,4 0,0 Z" fill="#f04a34"' + st(2.2) + '/><circle r="6.5" fill="#2c2430"' + st(1.4) + '/>' +
+  pts([0, 1, 2, 3, 4, 5], function(i){ var a = i * 1.047; return '<circle cx="' + f1(Math.cos(a) * 3.6) + '" cy="' + f1(Math.sin(a) * 3.6) + '" r="1" fill="#f6dd6a"/>'; }); };
+D.tulipe = function(){ return anime('balance', '50% 100%', '<path d="M0,28 C0,16 0,10 0,2" fill="none"' + st(2.8, '#4a8a3a') + '/><path d="M0,22 C-12,16 -14,6 -10,2 C-6,8 -2,14 0,22 Z" fill="#5fbf5a"' + st(1.8) + '/>' +   /* elle se balance sur sa tige */
+  '<path d="M-13,-18 C-15,-4 -8,6 0,6 C8,6 15,-4 13,-18 L7,-10 L0,-20 L-7,-10 Z" fill="#f47a9c"' + st(2.2) + '/>' + reflet('M-9,-10 C-9,-4 -6,0 -3,2', 2.2)); };
+D.feuilles = function(){ return '<path d="M0,10 C-20,12 -28,-4 -22,-14 C-8,-14 0,-4 0,10 Z" fill="#4fae5a"' + st(2.2) + '/><path d="M0,10 C20,12 28,-4 22,-14 C8,-14 0,-4 0,10 Z" fill="#6fc86a"' + st(2.2) + '/>' +
+  '<path d="M0,10 C-8,2 -14,-6 -19,-11 M0,10 C8,2 14,-6 19,-11" fill="none" stroke="#2c6a34" stroke-width="1.6" stroke-linecap="round"/>'; };
+D.tournesol = function(){ return anime('tourne', '50% 50%', petales(14, 4.6, 10, 15, '#f6c52c', '#b8862e')) + '<circle r="10" fill="#6a4424"' + st(2) + '/>' + pts([[-3,-3],[3,-2],[0,3],[-4,2],[4,3],[0,-5]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.2" fill="#3a2414"/>'; }); };   /* ses pétales tournent doucement */
+D.trefle = function(){ return '<path d="M0,6 C2,14 4,20 8,26" fill="none"' + st(2.6, '#3a7a34') + '/>' + pts([0, 90, 180, 270], function(a){ return '<path d="M0,0 C-10,-6 -12,-18 -4,-18 C-1,-18 0,-15 0,-13 C0,-15 1,-18 4,-18 C12,-18 10,-6 0,0 Z" transform="rotate(' + a + ')" fill="#4fbf5a"' + st(1.8) + '/>'; }); };
+
+/* --- les bonbons --- */
+D.macaron = function(){ return '<path d="M-20,-3 C-20,-16 20,-16 20,-3 Z" fill="#f79ab8"' + st(2.4) + '/><path d="M-20,5 C-20,17 20,17 20,5 Z" fill="#f79ab8"' + st(2.4) + '/>' +
+  '<rect x="-19" y="-4" width="38" height="10" rx="5" fill="#fff4e0"' + st(2) + '/>' + reflet('M-13,-9 C-8,-12 2,-12 8,-11', 2.4); };
+D.guimauve = function(){ return '<rect x="-15" y="-17" width="30" height="34" rx="9" fill="#fff"' + st(2.4) + '/>' +
+  '<path d="M-15,-6 C-5,-12 5,0 15,-6 L15,4 C5,10 -5,-2 -15,4 Z" fill="#f8adc8"/><path d="M-15,-6 C-5,-12 5,0 15,-6 M-15,4 C-5,-2 5,10 15,4" fill="none" stroke="#e07aa0" stroke-width="1.4"/>' + reflet('M-9,-12 C-6,-14 0,-14 4,-13', 2); };
+D.sucredorge = function(){ var s = '<path d="M6,28 L6,-10 C6,-26 -16,-26 -16,-10" fill="none"' + st(11) + '/><path d="M6,28 L6,-10 C6,-26 -16,-26 -16,-10" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>';
+  [[6,22,0],[6,12,0],[6,2,0],[5,-9,-20],[-1,-19,-60],[-10,-20,-110],[-16,-12,-170]].forEach(function(p){ s += '<path d="M-3.5,-3 L3.5,1" transform="translate(' + p[0] + ',' + p[1] + ') rotate(' + p[2] + ')" stroke="#e0304a" stroke-width="4" stroke-linecap="butt"/>'; });
+  return s; };
+D.papillote = function(){ return '<path d="M-14,0 L-28,-11 L-25,0 L-28,11 Z M14,0 L28,-11 L25,0 L28,11 Z" fill="#8fe3c3"' + st(2.2) + '/><ellipse rx="15" ry="11" fill="#5bc8f0"' + st(2.4) + '/>' +
+  '<path d="M-6,-10 C-10,-3 -10,3 -6,10 M4,-10.5 C0,-3 0,3 4,10.5" fill="none" stroke="#fff" stroke-width="2.6" opacity=".75"/>' + reflet('M-10,-5 C-8,-8 -4,-9 0,-9', 2); };
+D.sucette = function(){ return '<path d="M0,12 L0,36" ' + st(5.5) + '/><path d="M0,12 L0,36" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
+  anime('tourne-vite', '50% 50%', '<circle r="19" fill="#f8adc8"' + st(2.4) + '/><path d="M0,0 C6,-2 8,6 2,8 C-8,10 -12,-2 -6,-8 C2,-16 16,-8 14,4 C12,16 -6,20 -14,10" fill="none" stroke="#de4f7c" stroke-width="3.4" stroke-linecap="round"/>') + reflet('M-13,-8 C-10,-13 -5,-15 0,-15', 2.2); };   /* sa spirale tourne */
+D.chocolat = function(){ return '<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#5c341c"' + st(2.4) + '/><path d="M0,-14 V14 M-18,0 H18" stroke="#3a1e0e" stroke-width="2"/>' +
+  pts([[-9,-7],[9,-7],[-9,7],[9,7]], function(p){ return '<rect x="' + (p[0] - 6) + '" y="' + (p[1] - 4.5) + '" width="12" height="9" rx="2" fill="#7a4a2a"/>'; }) + reflet('M-14,-10 L-5,-10', 2, .4); };
+D.biscuit = function(){ var d = ''; for(var i = 0; i < 10; i++){ var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 10 : 21; d += (i ? 'L' : 'M') + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + ' '; }
+  return '<path d="' + d + 'Z" fill="#e0a85a"' + st(2.4) + '/><path d="' + d + 'Z" transform="scale(.62)" fill="#fff6e0" stroke="#f8adc8" stroke-width="2"/>' + pts([[-3,-2],[4,1],[0,5]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.4" fill="#de4f7c"/>'; }); };
+D.meringue = function(){ return '<path d="M-19,14 C-24,4 -16,-2 -12,-2 C-14,-10 -6,-14 -3,-12 C-3,-20 3,-24 2,-28 C8,-22 6,-16 5,-12 C12,-12 14,-4 12,-2 C18,-2 24,6 19,14 Z" fill="#fffaf0"' + st(2.4) + '/>' +
+  '<path d="M-12,-2 C-4,2 6,2 12,-2 M-16,7 C-6,12 8,12 16,7" fill="none" stroke="#e0d0b8" stroke-width="1.8" stroke-linecap="round"/>'; };
+D.coeur = function(){ return anime('bat', '50% 55%', '<path d="M0,19 C-24,4 -22,-16 -10,-16 C-4,-16 0,-11 0,-8 C0,-11 4,-16 10,-16 C22,-16 24,4 0,19 Z" fill="#f04a6a"' + st(2.4) + '/>' + reflet('M-13,-8 C-13,-11 -11,-12 -9,-12', 2.6, .6)); };   /* il bat */
+D.reglisse = function(){ return '<circle r="19" fill="#2f2b3c"' + st(2.4) + '/><path d="M0,0 C5,-2 7,5 2,7 C-7,9 -11,-2 -5,-8 C2,-15 15,-8 13,4 C11,14 -5,18 -13,9" fill="none" stroke="#5a5470" stroke-width="2.4" stroke-linecap="round"/>' +
+  '<circle r="4" fill="#f8adc8"' + st(1.4) + '/>'; };
+
+/* --- la fête --- */
+function flamme(y){ return '<g transform="translate(0,' + y + ')">' + fixe(anime('flamme', '50% 92%', '<ellipse cy="-4" rx="11" ry="14" fill="#ffd76a" opacity=".4"/><path d="M0,3 C-7,-2 -5,-10 0,-17 C5,-10 7,-2 0,3 Z" fill="#ffb02c"' + st(1.4, '#c8641c') + '/><path d="M0,2 C-3,-1 -2,-5 0,-9 C2,-5 3,-1 0,2 Z" fill="#fff3b0"/>')) + '</g>'; }   /* la flamme danse */
+D.bougie = function(){ return '<rect x="-5" y="-12" width="10" height="38" rx="2.5" fill="#f8adc8"' + st(2.2) + '/><path d="M-5,-4 L5,-9 M-5,6 L5,1 M-5,16 L5,11" stroke="#fff" stroke-width="3" opacity=".85"/>' +
+  '<path d="M0,-12 V-17" ' + st(1.8) + '/>' + flamme(-18); };
+D.bougie2 = function(){ return '<path d="M-5,26 L-5,-8 C-5,-14 5,-14 5,-8 L5,26 Z" fill="#9ccbf5"' + st(2.2) + '/><path d="M-5,-2 C0,-6 0,2 5,-2 M-5,8 C0,4 0,12 5,8 M-5,18 C0,14 0,22 5,18" fill="none" stroke="#fff" stroke-width="2.4" opacity=".9"/>' +
+  '<path d="M0,-12 V-17" ' + st(1.8) + '/>' + flamme(-18); };
+D.cierge = function(){ var s = '';   /* il crépite */
+  for(var i = 0; i < 8; i++){ var a = i * Math.PI / 4, r = i % 2 ? 15 : 11; s += '<path d="M' + f1(Math.cos(a) * 4) + ',' + f1(Math.sin(a) * 4) + ' L' + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + '" stroke="#ffd76a" stroke-width="2.4" stroke-linecap="round"/>'; }
+  return '<path d="M0,28 L0,-14" ' + st(3.4, '#6a6a7a') + '/><g transform="translate(0,-18)">' + anime('crepite', '50% 50%', '<circle r="15.5" fill="#ffe9a0" opacity=".3"/>' + s + '<circle r="4.5" fill="#fff6c8"/>') + '</g>'; };
+D.fanion = function(){ return '<path d="M-8,28 L-8,-26" ' + st(3.2, '#8a6a3a') + '/><path d="M-8,-25 L20,-16 L-8,-7 Z" fill="#f04a6a"' + st(2.2) + '/><circle cx="-8" cy="-27" r="3" fill="#ecbc4c"' + st(1.6) + '/>' + reflet('M-4,-20 L6,-17', 2, .5); };
+D.etoile = function(){ var d = ''; for(var i = 0; i < 10; i++){ var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 21; d += (i ? 'L' : 'M') + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + ' '; }
+  return anime('scintille', '50% 50%', '<path d="' + d + 'Z" fill="#f6c52c"' + st(2.4) + '/>' + reflet('M-6,-6 L-2,-13', 2.6, .7)); };   /* elle scintille */
+D.lampion = function(){ return anime('balance', '50% 0%', '<path d="M0,-24 V-17" ' + st(2) + '/><rect x="-7" y="-18" width="14" height="5" rx="1.5" fill="#6a4424"' + st(1.8) + '/><ellipse cy="2" rx="15" ry="17" fill="#f59a2c"' + st(2.4) + '/>' +   /* il se balance à son crochet */
+  '<path d="M-8,-12 C-12,-2 -12,8 -8,17 M0,-15 V19 M8,-12 C12,-2 12,8 8,17" fill="none" stroke="#c8641c" stroke-width="1.6"/><ellipse cy="2" rx="6" ry="9" fill="#fff3b0" opacity=".7"/>' +
+  '<rect x="-7" y="17" width="14" height="4" rx="1.5" fill="#6a4424"' + st(1.8) + '/><path d="M0,21 V28" stroke="#e0304a" stroke-width="2.4" stroke-linecap="round"/>'); };
+D.noeud = function(){ return '<path d="M0,0 C-10,-16 -26,-14 -24,0 C-26,14 -10,16 0,0 Z M0,0 C10,-16 26,-14 24,0 C26,14 10,16 0,0 Z" fill="#de4f7c"' + st(2.4) + '/>' +
+  '<path d="M-3,3 L-10,22 L-3,17 L0,24 Z M3,3 L10,22 L3,17 L0,24 Z" fill="#c8305a"' + st(2) + '/><rect x="-5.5" y="-6" width="11" height="12" rx="3.5" fill="#f47a9c"' + st(2) + '/>'; };
+D.ballon = function(){ return anime('flotte', '50% 100%', '<path d="M0,10 C-4,18 4,22 0,30" fill="none"' + st(1.8, '#6a6a7a') + '/><path d="M0,10 C-22,4 -20,-24 0,-24 C20,-24 22,4 0,10 Z" fill="#5bc8f0"' + st(2.4) + '/><path d="M-3,10 L3,10 L0,14 Z" fill="#3a9ac8"' + st(1.4) + '/>' + reflet('M-11,-12 C-10,-17 -6,-19 -2,-19', 3, .6)); };   /* il flotte au bout de sa ficelle */
+/* --- le farfelu de Brumeval --- */
+/* un chat en pâte d'amande, assis ; c : sa robe, v : son ventre, opt : {raye, moustache} (les sept chats d'Odette) */
+function chat(c, v, opt){ opt = opt || {}; var b = sombre(c, .45);
+  var queue = '<path d="M14,14 C28,16 30,2 22,-2" fill="none"' + st(6.5) + '/><path d="M14,14 C28,16 30,2 22,-2" fill="none" stroke="' + c + '" stroke-width="3.4" stroke-linecap="round"/>';
+  var s = (opt.queue ? anime('queue', '4% 92%', queue) : queue) +
+    '<path d="M-15,22 C-19,6 -12,-4 0,-4 C12,-4 19,6 15,22 Z" fill="' + c + '"' + st(2.4) + '/><ellipse cy="14" rx="8" ry="9" fill="' + v + '"/>' +
+    '<path d="M-14,-12 L-16,-27 L-5,-20 Z M14,-12 L16,-27 L5,-20 Z" fill="' + c + '"' + st(2.2) + '/><path d="M-12.500,-15 L-13.500,-22 L-8,-18.500 Z M12.500,-15 L13.500,-22 L8,-18.500 Z" fill="#f8adc8"/>' +
+    '<ellipse cy="-11" rx="15" ry="12.5" fill="' + c + '"' + st(2.4) + '/>';
+  if(opt.raye) s += '<path d="M-5,-23 L-4,-17 M0,-24 L0,-17 M5,-23 L4,-17 M-15,10 L-9,11 M-16,16 L-10,16 M15,10 L9,11 M16,16 L10,16" stroke="' + b + '" stroke-width="2" stroke-linecap="round"/>';
+  s += '<ellipse cx="-6" cy="-12" rx="2.2" ry="3" fill="' + K + '"/><ellipse cx="6" cy="-12" rx="2.2" ry="3" fill="' + K + '"/><circle cx="-5.300" cy="-13" r=".8" fill="#fff"/><circle cx="6.700" cy="-13" r=".8" fill="#fff"/>' +
+    '<path d="M-2,-7 L2,-7 L0,-5 Z" fill="#f47a9c"/><path d="M0,-5 C-1,-2 -4,-2 -5,-4 M0,-5 C1,-2 4,-2 5,-4" fill="none" stroke="' + K + '" stroke-width="1.3" stroke-linecap="round"/>';
+  s += opt.moustache ? '<path d="M-4,-5 C-12,-8 -18,-4 -22,-7 M-4,-4 C-12,-3 -17,1 -21,0 M4,-5 C12,-8 18,-4 22,-7 M4,-4 C12,-3 17,1 21,0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>' :
+    '<path d="M-7,-6 L-16,-8 M-7,-4 L-16,-3 M7,-6 L16,-8 M7,-4 L16,-3" stroke="' + b + '" stroke-width="1" stroke-linecap="round"/>';
+  return s + '<ellipse cx="-7" cy="22" rx="5" ry="3" fill="' + v + '"' + st(1.6) + '/><ellipse cx="7" cy="22" rx="5" ry="3" fill="' + v + '"' + st(1.6) + '/>'; }
+D.moustache = function(){ return chat('#8a8a9a', '#c8c8d4', {moustache:true, queue:true}); };   /* il remue la queue */
+D.biscotte = function(){ return chat('#e0b888', '#f6e6c8'); };
+D.pompon = function(){ return chat('#fdfaf2', '#ffffff'); };
+D.caramel = function(){ return chat('#e08a3a', '#f6d8a8', {raye:true}); };
+D.mistigri = function(){ return chat('#3a3444', '#5a546a'); };
+D.noisette = function(){ return chat('#8a5a34', '#c89a6a', {raye:true}); };
+D.grisette = function(){ return chat('#c4c4d0', '#eeeef4'); };
+D.oie = function(){ return anime('dandine', '50% 100%', '<path d="M-20,8 C-22,-6 -8,-10 4,-6 C6,-18 8,-26 14,-26 C22,-26 22,-18 16,-16 C14,-8 18,2 14,10 C8,18 -14,18 -20,8 Z" fill="#fffdf6"' + st(2.4) + '/>' +   /* elle se dandine */
+  '<path d="M19,-23 L29,-21 L20,-18 Z" fill="#f59a2c"' + st(1.8) + '/><circle cx="15" cy="-22" r="1.6" fill="' + K + '"/><path d="M-14,4 C-8,0 2,2 6,8" fill="none" stroke="#d8d0c0" stroke-width="2" stroke-linecap="round"/>' +
+  '<path d="M-6,16 L-8,25 L-13,25 M4,16 L4,25 L-1,25" fill="none"' + st(2.4, '#f59a2c') + '/>'); };
+D.champignon = function(){ return '<path d="M-8,2 C-10,14 -9,22 -7,24 L7,24 C9,22 10,14 8,2 Z" fill="#fff6e0"' + st(2.4) + '/><path d="M-24,2 C-24,-24 24,-24 24,2 C14,6 -14,6 -24,2 Z" fill="#e0304a"' + st(2.4) + '/>' +
+  pts([[-12,-8,4.5],[2,-14,5],[13,-5,3.6],[-2,-2,2.8]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" fill="#fff"/>'; }); };
+D.lanterne = function(){ return anime('lueur', '50% 50%', '<circle cy="2" r="25" fill="#ffe27a" opacity=".5"/>') + '<path d="M-4,-22 A5,5 0 1 1 4,-22" fill="none"' + st(2.4, '#8a6a1e') + '/>' +   /* elle luit */
+  '<path d="M-12,-20 L12,-20 L9,-13 L-9,-13 Z" fill="#ecbc4c"' + st(2.2) + '/><path d="M-10,-13 L10,-13 L13,16 L-13,16 Z" fill="#fff3b0"' + st(2.2) + '/>' +
+  '<path d="M-4,-13 L-5,16 M4,-13 L5,16" stroke="#b8862e" stroke-width="2"/><path d="M-15,16 L15,16 L12,23 L-12,23 Z" fill="#ecbc4c"' + st(2.2) + '/>' + fixe(anime('flamme', '50% 100%', '<path d="M0,8 C-4,5 -3,0 0,-5 C3,0 4,5 0,8 Z" fill="#ffb02c"/>')); };
+D.cle = function(){ return '<circle cx="-14" r="10" fill="none"' + st(7.5) + '/><circle cx="-14" r="10" fill="none" stroke="#b8862e" stroke-width="4"/>' +
+  '<path d="M-4,0 L24,0 M14,0 L14,9 M21,0 L21,7" fill="none"' + st(7.5) + '/><path d="M-4,0 L24,0 M14,0 L14,9 M21,0 L21,7" fill="none" stroke="#b8862e" stroke-width="4" stroke-linecap="round"/>' +
+  '<path d="M2,-1.500 l3,3 M8,-1.500 l-3,3" stroke="#8ff3ff" stroke-width="1.3"/>'; };
+D.plume = function(){ return '<path d="M-16,24 C-6,10 6,-6 14,-24" fill="none"' + st(2.4, '#6a6a7a') + '/><path d="M-12,18 C-22,4 -10,-20 14,-26 C20,-6 6,14 -12,18 Z" fill="#2c2838"' + st(2.2) + '/>' +
+  '<path d="M-6,8 L-14,2 M0,-2 L-9,-7 M6,-12 L-2,-17 M-4,12 L6,10 M3,2 L12,0 M9,-8 L15,-10" stroke="#5a5470" stroke-width="1.5" stroke-linecap="round"/>'; };
+D.sardine = function(){ return '<path d="M-24,0 C-14,-12 10,-12 18,0 C10,12 -14,12 -24,0 Z" fill="#9cc0d8"' + st(2.4) + '/><path d="M16,0 L28,-10 L25,0 L28,10 Z" fill="#7aa4c4"' + st(2.2) + '/>' +
+  '<path d="M-24,0 C-14,6 8,6 18,0 C10,12 -14,12 -24,0 Z" fill="#e8f2f8"/><circle cx="-15" cy="-2" r="2.6" fill="#fff"' + st(1.4) + '/><circle cx="-15" cy="-2" r="1" fill="' + K + '"/>' +
+  '<path d="M-8,-6 C-6,-2 -6,2 -8,6 M0,-7 C2,-2 2,2 0,7 M8,-6 C10,-2 10,2 8,5" fill="none" stroke="#5a84a4" stroke-width="1.4"/>'; };
+D.chaudron = function(){ return anime('vapeur', '50% 100%', '<path d="M-16,-10 C-20,-22 -8,-24 -6,-16 C-2,-26 8,-24 6,-15 C12,-22 20,-16 15,-9" fill="#8fe3c3" stroke="#3aa884" stroke-width="1.6" opacity=".9"/>') +   /* sa vapeur monte */
+  '<path d="M-22,-8 C-26,14 -14,22 0,22 C14,22 26,14 22,-8 Z" fill="#3a3444"' + st(2.4) + '/><ellipse cy="-8" rx="23" ry="6" fill="#5a546a"' + st(2.4) + '/><ellipse cy="-8" rx="17" ry="3.6" fill="#6fd8a8"/>' +
+  '<path d="M-12,21 L-15,27 M12,21 L15,27" ' + st(4) + '/>' + reflet('M-17,0 C-17,8 -13,14 -8,16', 2.4, .3); };
+D.grenouille = function(){ return anime('saute', '50% 100%', '<path d="M-22,14 C-26,2 -14,-8 0,-8 C14,-8 26,2 22,14 C12,22 -12,22 -22,14 Z" fill="#6fbf4a"' + st(2.4) + '/><ellipse cy="12" rx="12" ry="7" fill="#d8eeb0"/>' +   /* elle saute */
+  '<circle cx="-10" cy="-12" r="8" fill="#6fbf4a"' + st(2.2) + '/><circle cx="10" cy="-12" r="8" fill="#6fbf4a"' + st(2.2) + '/><circle cx="-10" cy="-12" r="4.4" fill="#fff"/><circle cx="10" cy="-12" r="4.4" fill="#fff"/>' +
+  '<circle cx="-9" cy="-12" r="2" fill="' + K + '"/><circle cx="11" cy="-12" r="2" fill="' + K + '"/><path d="M-10,2 C-4,8 4,8 10,2" fill="none"' + st(1.8) + '/>'); };
+D.cornichon = function(){ return '<path d="M-22,6 C-26,-8 -10,-16 4,-14 C18,-12 28,-2 22,8 C16,16 -16,18 -22,6 Z" fill="#7aa83a"' + st(2.4) + '/>' +
+  pts([[-12,-4],[-2,-8],[8,-5],[15,2],[-8,6],[4,5],[-16,3]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.7" fill="#4a7a24"/>'; }) + reflet('M-16,-4 C-10,-10 0,-11 8,-10', 2.2, .4); };
+D.chaussette = function(){ return '<path d="M-10,-24 L8,-24 L8,2 C20,4 26,10 24,18 C22,26 6,24 -4,20 C-10,16 -10,8 -10,-24 Z" fill="#f6efe0"' + st(2.4) + '/>' +
+  '<path d="M-10,-14 L8,-14 M-10,-6 L8,-6 M-9,3 L9,3" stroke="#e0304a" stroke-width="4"/><rect x="-11.500" y="-26" width="21" height="7" rx="2.5" fill="#5bc8f0"' + st(2) + '/><path d="M12,8 C18,8 22,12 22,17" fill="none" stroke="#e0304a" stroke-width="3" stroke-linecap="round"/>'; };
+D.fromage = function(){ return '<path d="M-24,12 L22,-12 L24,12 Z" fill="#f6c52c"' + st(2.4) + '/><path d="M-24,12 L24,12 L24,20 L-24,20 Z" fill="#e0a82c"' + st(2.4) + '/>' +
+  '<circle cx="6" cy="4" r="4.4" fill="#d89a1e"/><circle cx="-8" cy="8" r="2.6" fill="#d89a1e"/><circle cx="16" cy="-2" r="2.6" fill="#d89a1e"/><circle cx="12" cy="16" r="2" fill="#c8881a"/>'; };
+D.escargot = function(){ return '<path d="M-24,18 C-28,10 -18,8 -10,12 L20,12 C28,12 28,20 20,20 L-18,20 Z" fill="#f2d5a0"' + st(2.4) + '/>' +
+  anime('antennes', '55% 100%', '<path d="M-22,10 L-26,-2 M-16,10 L-16,-3" ' + st(2.2) + '/><circle cx="-26" cy="-3" r="2.4" fill="' + K + '"/><circle cx="-16" cy="-4" r="2.4" fill="' + K + '"/>') +   /* ses antennes bougent */
+  '<circle cx="6" cy="0" r="17" fill="#c8783a"' + st(2.4) + '/><path d="M6,0 C10,-2 12,4 8,6 C0,8 -3,-2 2,-7 C8,-13 19,-7 18,3 C17,12 4,15 -3,8" fill="none" stroke="#7a4420" stroke-width="2.4" stroke-linecap="round"/>'; };
+/* --- les paillettes : une pincée (un petit nuage de grains, toujours le même pour une sorte) --- */
+function pincee(sorte){ var R = graine(sorte.length * 7 + sorte.charCodeAt(0)), s = '', n = 13, paires = '', impaires = '';
+  var COUL = ['#f04a6a', '#5bc8f0', '#f6c52c', '#6fc86a', '#bba5ea', '#f59a2c', '#ffffff'];
+  for(var i = 0; i < n; i++){ var a = R() * 6.283, d = Math.sqrt(R()) * 21, x = Math.cos(a) * d, y = Math.sin(a) * d * .8, rot = R() * 180, c = COUL[i % COUL.length];
+    if(sorte === 'confettis') s += '<rect x="-3.500" y="-1.600" width="7" height="3.200" rx="1.600" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot) + ')" fill="' + c + '" stroke="' + K + '" stroke-width=".7"/>';
+    else if(sorte === 'perles') s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(2.2 + R() * 1.4) + '" fill="#e8eef4" stroke="#8a94a4" stroke-width=".9"/><circle cx="' + f1(x - .8) + '" cy="' + f1(y - .8) + '" r=".8" fill="#fff"/>';
+    else if(sorte === 'etoiles'){ var dd = ''; for(var k = 0; k < 10; k++){ var aa = -1.5708 + k * .6283, rr = k % 2 ? 2 : 4.6; dd += (k ? 'L' : 'M') + f1(Math.cos(aa) * rr) + ',' + f1(Math.sin(aa) * rr) + ' '; }
+      var et = '<path d="' + dd + 'Z" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot) + ')" fill="#ffd21f" stroke="#b8862e" stroke-width=".8"/>'; if(i % 2) impaires += et; else paires += et; }
+    else if(sorte === 'coeurs') s += '<path d="M0,3.800 C-5,.8 -4.400,-3.400 -2,-3.400 C-.8,-3.400 0,-2.400 0,-1.700 C0,-2.400 .8,-3.400 2,-3.400 C4.400,-3.400 5,.8 0,3.800 Z" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot - 90) + ')" fill="' + (i % 2 ? '#f04a6a' : '#f8adc8') + '" stroke="#a82448" stroke-width=".7"/>';
+    else if(sorte === 'vermicelles') s += '<rect x="-4" y="-1.300" width="8" height="2.600" rx="1.300" transform="translate(' + f1(x) + ',' + f1(y) + ') rotate(' + f1(rot) + ')" fill="' + (i % 3 ? '#5c341c' : '#8a5a34') + '" stroke="#2c1608" stroke-width=".6"/>';
+    else s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(1.4 + R() * 2.2) + '" fill="#fff" opacity=".92"/>';   /* la neige de sucre */
+  }
+  if(sorte === 'etoiles') return anime('clin', null, paires) + anime('clin2', null, impaires);   /* elles clignotent, une sur deux à la fois */
+  return s; }
+['confettis', 'perles', 'etoiles', 'coeurs', 'vermicelles', 'neige'].forEach(function(n){ D['p_' + n] = function(){ return pincee(n); }; });
+
+/* --- la chantilly et les boules de glace --- */
+function rosette(c){ var o = sombre(c, .22), l = clair(c, .5);
+  return '<ellipse cy="12" rx="20" ry="9" fill="' + c + '"' + st(2.2) + '/><path d="M-20,12 C-14,6 -8,16 -2,8 C4,16 10,6 20,12" fill="none" stroke="' + o + '" stroke-width="1.6"/>' +
+    '<ellipse cy="2" rx="15" ry="8" fill="' + c + '"' + st(2.2) + '/><path d="M-15,2 C-9,-3 -4,6 2,-1 C7,5 11,-2 15,2" fill="none" stroke="' + o + '" stroke-width="1.6"/>' +
+    '<path d="M-10,-6 C-10,-13 -3,-12 -1,-16 C0,-21 4,-23 3,-27 C8,-20 6,-14 10,-6 C6,-1 -6,-1 -10,-6 Z" fill="' + c + '"' + st(2.2) + '/><path d="M-5,-8 C-2,-12 2,-13 4,-17" fill="none" stroke="' + l + '" stroke-width="2" stroke-linecap="round"/>'; }
+function boule(c){ var o = sombre(c, .25);
+  return '<path d="M-21,8 C-23,16 -17,18 -14,12 C-11,20 -5,20 -3,13 C1,20 8,19 9,12 C13,19 22,17 21,8 Z" fill="' + c + '"' + st(2.2) + '/><circle cy="-2" r="19" fill="' + c + '"' + st(2.4) + '/>' +
+    '<path d="M-21,8 C-12,13 12,13 21,8" fill="none" stroke="' + o + '" stroke-width="1.6"/>' + reflet('M-12,-10 C-10,-15 -5,-17 0,-17', 3, .55) + pts([[5,-4],[-4,2],[9,5]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.3" fill="' + o + '"/>'; }); }
+D.r_blanche = function(){ return rosette('#fffaf0'); };
+D.r_rose = function(){ return rosette('#f8adc8'); };
+D.r_chocolat = function(){ return rosette('#7a4a2a'); };
+D.r_menthe = function(){ return rosette('#8fe3c3'); };
+D.b_vanille = function(){ return boule('#fbe9a8'); };
+D.b_fraise = function(){ return boule('#f47a9c'); };
+D.b_pistache = function(){ return boule('#a8d07a'); };
+D.nuage = function(){ return '<path d="M-26,12 C-34,2 -24,-10 -14,-6 C-14,-20 6,-24 10,-10 C20,-16 32,-4 24,6 C30,14 18,20 10,16 C2,22 -12,22 -16,16 C-22,18 -26,16 -26,12 Z" fill="#fffaf0"' + st(2.4) + '/>' +
+  '<path d="M-14,-6 C-8,-4 -4,0 -4,6 M10,-10 C6,-6 6,-2 8,2 M-16,16 C-10,12 -4,12 0,14" fill="none" stroke="#e0d0b8" stroke-width="1.8" stroke-linecap="round"/>'; };
+
+/* Les catégories de décorations, dans l'ordre de la colonne de droite ; son : le bruit de la catégorie (mj-gateau.js, SONS) */
+var CATS = [
+  {id:'fruits', nom:'Fruits', son:'fruit', l:[['fraise', 'Fraise'], ['cerises', 'Cerises'], ['myrtilles', 'Myrtilles'], ['framboise', 'Framboise'], ['orange', 'Orange'], ['citron', 'Citron'], ['kiwi', 'Kiwi'], ['raisin', 'Raisin'], ['ananas', 'Ananas'], ['pomme', 'Pomme d\'amour']]},
+  {id:'fleurs', nom:'Fleurs', son:'fleur', l:[['rose', 'Rose'], ['marguerite', 'Marguerite'], ['pensee', 'Pensée sauvage'], ['lavande', 'Lavande'], ['coquelicot', 'Coquelicot'], ['tulipe', 'Tulipe'], ['tournesol', 'Tournesol'], ['trefle', 'Trèfle'], ['feuilles', 'Feuilles']]},
+  {id:'bonbons', nom:'Bonbons', son:'bonbon', l:[['macaron', 'Macaron'], ['guimauve', 'Guimauve'], ['sucredorge', 'Sucre d\'orge'], ['papillote', 'Papillote'], ['sucette', 'Sucette'], ['chocolat', 'Chocolat'], ['biscuit', 'Biscuit étoile'], ['meringue', 'Meringue'], ['coeur', 'Cœur en sucre'], ['reglisse', 'Réglisse']]},
+  {id:'fete', nom:'Fête', son:'fete', l:[['bougie', 'Bougie'], ['bougie2', 'Bougie bleue'], ['cierge', 'Cierge magique'], ['fanion', 'Fanion'], ['etoile', 'Étoile'], ['lampion', 'Lampion'], ['noeud', 'Nœud'], ['ballon', 'Ballon']]},
+  {id:'farfelu', nom:'Farfelu', son:'farfelu', l:[['moustache', 'Moustache'], ['biscotte', 'Biscotte'], ['pompon', 'Pompon'], ['caramel', 'Caramel'], ['mistigri', 'Mistigri'], ['noisette', 'Noisette'], ['grisette', 'Grisette'],
+    ['oie', 'L\'oie de Gaspard'], ['champignon', 'Champignon'], ['lanterne', 'Lanterne d\'or'], ['cle', 'Vieille clé'], ['plume', 'Plume noire'], ['sardine', 'Sardine'], ['chaudron', 'Chaudron'], ['grenouille', 'Grenouille'], ['cornichon', 'Cornichon'], ['chaussette', 'Chaussette'], ['fromage', 'Fromage'], ['escargot', 'Escargot']]},
+  {id:'paillettes', nom:'Paillettes', son:'paillettes', l:[['p_confettis', 'Confettis'], ['p_perles', 'Perles d\'argent'], ['p_etoiles', 'Étoiles d\'or'], ['p_coeurs', 'Petits cœurs'], ['p_vermicelles', 'Vermicelles'], ['p_neige', 'Neige de sucre']]},
+  {id:'chantilly', nom:'Chantilly', son:'chantilly', l:[['r_blanche', 'Rosette'], ['r_rose', 'Rosette rose'], ['r_chocolat', 'Rosette chocolat'], ['r_menthe', 'Rosette menthe'], ['nuage', 'Gros nuage'], ['b_vanille', 'Boule vanille'], ['b_fraise', 'Boule fraise'], ['b_pistache', 'Boule pistache']]}
+];
+var DECOS = {};
+CATS.forEach(function(c){ c.l = c.l.map(function(e){ var d = {id:e[0], nom:e[1], cat:c.id, son:c.son, dessin:D[e[0]], r:27, anime:ANIMEES.indexOf(e[0]) >= 0, p:PRINC[e[0]]}; DECOS[d.id] = d; return d; }); });
+
+/* ---------- Les icônes des catégories (des médaillons ronds, comme les lieux de la carte) ---------- */
+function mini(id, k, dx, dy){ return '<g transform="translate(' + (dx || 0) + ',' + (dy || 0) + ') scale(' + (k || .8) + ')">' + D[id]() + '</g>'; }
+var ICONES = {
+  etages:function(){ return '<ellipse cy="19" rx="23" ry="4" fill="#fffaf0"' + st(2) + '/><rect x="-19" y="6" width="38" height="13" rx="3" fill="#f8adc8"' + st(2.2) + '/><rect x="-13" y="-6" width="26" height="12" rx="3" fill="#fff8ea"' + st(2.2) + '/><rect x="-8" y="-17" width="16" height="11" rx="3" fill="#8fe3c3"' + st(2.2) + '/>' +
+    '<path d="M0,-17 V-22" ' + st(1.8) + '/><path d="M0,-22 C-3,-25 -2,-28 0,-31 C2,-28 3,-25 0,-22 Z" fill="#ffb02c"' + st(1.2, '#c8641c') + '/>'; },
+  pate:function(){ return '<path d="M-22,14 L20,-12 L22,14 Z" fill="#f2d58a"' + st(2.4) + '/><path d="M-22,14 L22,14 L22,22 L-22,22 Z" fill="#e0b85a"' + st(2.4) + '/><path d="M-9,6 L21,2 M-22,14 L22,14" stroke="#fff3d6" stroke-width="3.4"/>' +
+    '<path d="M-22,14 L20,-12 L22,-4 L-12,16 Z" fill="#f8adc8"' + st(2) + '/>'; },
+  glacage:function(){ return '<path d="M-22,-10 C-22,-22 22,-22 22,-10 L22,-2 C22,6 16,6 16,-1 C16,-6 10,-6 10,0 L10,10 C10,18 2,18 2,10 L2,2 C2,-5 -5,-5 -5,2 L-5,6 C-5,13 -13,13 -13,6 L-13,-1 C-13,-6 -19,-5 -19,0 C-19,5 -22,4 -22,-2 Z" fill="#de4f7c"' + st(2.4) + '/>' + reflet('M-15,-14 C-8,-17 4,-17 12,-15', 2.6) +
+    '<circle cx="10" cy="20" r="3.4" fill="#de4f7c"' + st(1.6) + '/>'; },
+  motif:function(){ return '<circle r="21" fill="#9ccbf5"' + st(2.4) + '/><path d="M-21,0 A21,21 0 0 1 0,-21 L0,21 A21,21 0 0 1 -21,0 Z" fill="#fff8ea"/><path d="M-14,-15.500 V15.500 M-7,-19.800 V19.800" stroke="#f8adc8" stroke-width="3.400"/>' +
+    pts([[7,-10],[14,-2],[6,2],[12,10],[5,13]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.8" fill="#fff"/>'; }) + '<circle r="21" fill="none"' + st(2.4) + '/><path d="M0,-21 V21" ' + st(1.6) + '/>'; },
+  creme:function(){ return '<path d="M-22,-20 L10,-20 L-2,10 L-9,10 Z" fill="#fff8ea"' + st(2.4) + '/><path d="M-9,10 L-2,10 L-4,18 L-7,18 Z" fill="#c8c8d4"' + st(2) + '/>' +
+    '<g transform="translate(13,13) scale(.52)">' + rosette('#f8adc8') + '</g>' + reflet('M-17,-15 L-10,3', 2.4, .6); },
+  couleurs:function(){ return '<path d="M-2,-21 C-18,-21 -27,-9 -24,4 C-22,15 -11,21 0,19 C6,18 5,12 1,10 C-3,6 2,1 9,3 C18,6 25,-1 22,-9 C19,-17 10,-21 -2,-21 Z" fill="#f2d5a0"' + st(2.4) + '/>' +
+    '<circle cx="-13" cy="-7" r="4.4" fill="#ff2f45"' + st(1.4) + '/><circle cx="-3" cy="-13" r="4.4" fill="#ffd91f"' + st(1.4) + '/><circle cx="9" cy="-10" r="4.4" fill="#2f9bff"' + st(1.4) + '/><circle cx="-15" cy="5" r="4.4" fill="#3fd44a"' + st(1.4) + '/>' +
+    '<path d="M8,25 L21,8" ' + st(6.5) + '/><path d="M8,25 L21,8" stroke="#c98a4e" stroke-width="3.4" stroke-linecap="round"/><path d="M19,10 C22,4 26,1 29,-3 C28,3 27,8 23,12 Z" fill="#ff6fc0"' + st(1.8) + '/>'; },
+  table:function(){ return '<ellipse cy="-8" rx="23" ry="6" fill="#fffaf0"' + st(2.4) + '/><path d="M-5,-3 C-5,8 -4,12 -11,17 L11,17 C4,12 5,8 5,-3 Z" fill="#fffaf0"' + st(2.4) + '/><ellipse cy="18" rx="15" ry="4" fill="#e8dcc8"' + st(2.2) + '/>' +
+    '<path d="M-17,-9 C-8,-6 8,-6 17,-9" fill="none" stroke="#5b8fd8" stroke-width="2"/>'; },
+  fruits:function(){ return mini('fraise', .92, 0, 0); },
+  fleurs:function(){ return mini('marguerite', .88, 0, 0); },
+  bonbons:function(){ return mini('sucette', .78, 0, -6); },
+  fete:function(){ return mini('bougie', .86, 0, 4); },
+  farfelu:function(){ return mini('moustache', .8, 0, 0); },
+  paillettes:function(){ return mini('p_confettis', .95, 0, 0); },
+  chantilly:function(){ return mini('r_blanche', .82, 0, 5); }
+};
+function icone(id){ return '<svg viewBox="-30 -30 60 60" aria-hidden="true">' + (ICONES[id] ? ICONES[id]() : '') + '</svg>'; }
+function icoBrut(id){ return ICONES[id] ? ICONES[id]() : ''; }   /* le dessin seul (pour la démo de l'accueil) */
+/* le dessin d'une décoration ; c (facultatif) : la couleur du pinceau qui l'a repeinte */
+function dessinDeco(id, c){ var s = D[id](); return c && PRINC[id] ? teinter(s, PRINC[id], c) : s; }
+function svgDeco(id, k){ return '<svg viewBox="-30 -30 60 60" aria-hidden="true"><g transform="scale(' + (k || .9) + ')">' + D[id]() + '</g></svg>'; }
+
+/* ---------- Les jetons des choix (une pastille de couleur, une petite forme…) ---------- */
+function jetonCouleur(g){ return '<svg viewBox="-30 -30 60 60" aria-hidden="true">' + (g.arc ? '<defs><linearGradient id="gtj-arc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f47a9c"/><stop offset=".25" stop-color="#f6c52c"/><stop offset=".5" stop-color="#8fe3c3"/><stop offset=".75" stop-color="#9ccbf5"/><stop offset="1" stop-color="#bba5ea"/></linearGradient></defs>' : '') +
+  '<path d="M-20,-6 C-20,-22 20,-22 20,-6 C24,6 14,22 0,22 C-14,22 -24,6 -20,-6 Z" fill="' + (g.arc ? 'url(#gtj-arc)' : g.c) + '"' + st(2.6) + '/>' + reflet('M-13,-9 C-9,-14 0,-16 8,-14', 3, .55) + '</svg>'; }
+function jetonPate(p){ var c = p.c, o = sombre(c, .2), s = '<svg viewBox="-30 -30 60 60" aria-hidden="true"><path d="M-22,-12 L22,-12 L22,16 C22,20 -22,20 -22,16 Z" fill="' + c + '"' + st(2.6) + '/>';
+  if(p.arc) s += pts([['#f47a9c', -12], ['#f6c52c', -5], ['#8fe3c3', 2], ['#9ccbf5', 9]], function(e){ return '<rect x="-21" y="' + e[1] + '" width="42" height="7" fill="' + e[0] + '"/>'; }) + '<path d="M-22,-12 L22,-12 L22,16 C22,20 -22,20 -22,16 Z" fill="none"' + st(2.6) + '/>';
+  else s += '<path d="M-21,0 H21" stroke="#fff3d6" stroke-width="4"/>' + pts([[-12,-6],[2,-7],[12,-4],[-6,8],[8,9],[-15,10]], function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="1.5" fill="' + o + '"/>'; });
+  return s + '</svg>'; }
+var JETONS = {
+  /* les formes d'un étage, vues de dessus */
+  rond:'<circle r="19" fill="#f2d58a"' + st(2.6) + '/>',
+  carre:'<rect x="-17" y="-17" width="34" height="34" rx="3" fill="#f2d58a"' + st(2.6) + '/>',
+  pans:'<path d="M-10,-18 L10,-18 L20,0 L10,18 L-10,18 L-20,0 Z" fill="#f2d58a"' + st(2.6) + '/>',
+  cannele:'<path d="' + (function(){ var d = ''; for(var i = 0; i < 24; i++){ var a = i * Math.PI / 12, r = i % 2 ? 16 : 21; d += (i ? 'L' : 'M') + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + ' '; } return d + 'Z'; })() + '" fill="#f2d58a"' + st(2.4) + '/><circle r="6" fill="#e0b85a"' + st(1.8) + '/>',
+  plus:'<rect x="-18" y="2" width="36" height="14" rx="3" fill="#f8adc8"' + st(2.4) + '/><path d="M0,-22 V-4 M-9,-13 H9" ' + st(5.5, '#2c8a4a') + '/>',
+  moins:'<rect x="-18" y="2" width="36" height="14" rx="3" fill="#f8adc8"' + st(2.4) + '/><path d="M-9,-13 H9" ' + st(5.5, '#c8302c') + '/>',
+  penche:'<g transform="rotate(-9)"><rect x="-19" y="4" width="38" height="14" rx="3" fill="#f8adc8"' + st(2.4) + '/></g><g transform="rotate(8)"><rect x="-13" y="-12" width="26" height="14" rx="3" fill="#8fe3c3"' + st(2.4) + '/></g>',
+  origine:'<path d="M-13,-9 A16,16 0 1 1 -15,6" fill="none"' + st(4.6, '#24182e') + '/><path d="M-21,-13 L-11,-16 L-9,-5 Z" fill="#24182e"' + st(2.4, '#24182e') + '/>',
+  sans:'<circle r="18" fill="none"' + st(3, '#c8302c') + '/><path d="M-12.500,12.500 L12.500,-12.500" ' + st(3, '#c8302c') + '/>',
+  /* les motifs du glaçage */
+  lisse:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#f8adc8"' + st(2.6) + '/>' + reflet('M-14,-10 H4', 3, .55),
+  coulant:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#f2d58a"' + st(2.6) + '/><path d="M-20,-12 C-20,-17 20,-17 20,-12 L20,-4 C20,2 15,2 15,-3 C15,-7 9,-7 9,-2 L9,6 C9,12 2,12 2,6 L2,0 C2,-5 -5,-5 -5,0 L-5,3 C-5,8 -12,8 -12,3 L-12,-2 C-12,-6 -20,-5 -20,-1 Z" fill="#5c341c"' + st(2) + '/>',
+  moitie:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#f2d58a"' + st(2.6) + '/><path d="M-20,-12 C-20,-17 20,-17 20,-12 L20,0 C14,5 8,-4 0,1 C-8,6 -14,-3 -20,1 Z" fill="#f8adc8"' + st(2) + '/>',
+  pois:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#9ccbf5"' + st(2.6) + '/>' + pts([[-11,-7],[1,-9],[12,-6],[-6,3],[7,4],[-13,10],[1,11],[13,10]], function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3" fill="#fff"/>'; }),
+  rayures:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#fff8ea"' + st(2.6) + '/><path d="M-12,-15 V15 M-4,-15 V15 M4,-15 V15 M12,-15 V15" stroke="#de4f7c" stroke-width="4"/><rect x="-20" y="-16" width="40" height="32" rx="4" fill="none"' + st(2.6) + '/>',
+  vagues:'<rect x="-20" y="-16" width="40" height="32" rx="4" fill="#8fe3c3"' + st(2.6) + '/><path d="M-19,-7 C-13,-12 -7,-2 0,-7 C7,-12 13,-2 19,-7 M-19,2 C-13,-3 -7,7 0,2 C7,-3 13,7 19,2 M-19,11 C-13,6 -7,16 0,11 C7,6 13,16 19,11" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'
+};
+function jeton(id){ return '<svg viewBox="-30 -30 60 60" aria-hidden="true">' + (JETONS[id] || '') + '</svg>'; }
+/* une bordure de crème, en petit */
+function jetonCreme(style){ var s = '<svg viewBox="-30 -30 60 60" aria-hidden="true"><path d="M-24,2 L24,2 L24,18 L-24,18 Z" fill="#f2d58a"' + st(2.4) + '/>';
+  for(var i = 0; i < 5; i++) s += '<g transform="translate(' + (-18 + i * 9) + ',0)">' + bouleCreme(style, '#fff8ea', 1.25) + '</g>';
+  return s + '</svg>'; }
+/* une bouchée de crème de la bordure (dessinée autour de 0,0, posée sur le bord) ; k : la taille */
+function bouleCreme(style, c, k){ var o = sombre(c, .22), l = clair(c, .55); k = k || 1;
+  if(style === 'perles') return '<circle r="' + f1(5 * k) + '" fill="' + c + '" stroke="' + o + '" stroke-width="1.2"/><circle cx="' + f1(-1.5 * k) + '" cy="' + f1(-1.6 * k) + '" r="' + f1(1.5 * k) + '" fill="' + l + '"/>';
+  if(style === 'rosettes') return '<circle r="' + f1(7 * k) + '" fill="' + c + '" stroke="' + o + '" stroke-width="1.2"/><path d="M0,0 C' + f1(2.4 * k) + ',' + f1(-1 * k) + ' ' + f1(3 * k) + ',' + f1(2.6 * k) + ' 0,' + f1(3.2 * k) + ' C' + f1(-4.2 * k) + ',' + f1(3.6 * k) + ' ' + f1(-5 * k) + ',' + f1(-2 * k) + ' ' + f1(-1 * k) + ',' + f1(-4.4 * k) + '" fill="none" stroke="' + o + '" stroke-width="1.3" stroke-linecap="round"/>';
+  if(style === 'festons') return '<path d="M' + f1(-7.5 * k) + ',' + f1(-2 * k) + ' C' + f1(-7.5 * k) + ',' + f1(8 * k) + ' ' + f1(7.5 * k) + ',' + f1(8 * k) + ' ' + f1(7.5 * k) + ',' + f1(-2 * k) + ' C' + f1(4 * k) + ',' + f1(-5 * k) + ' ' + f1(-4 * k) + ',' + f1(-5 * k) + ' ' + f1(-7.5 * k) + ',' + f1(-2 * k) + ' Z" fill="' + c + '" stroke="' + o + '" stroke-width="1.2"/><path d="M' + f1(-4 * k) + ',' + f1(.5 * k) + ' C' + f1(-2 * k) + ',' + f1(3.6 * k) + ' ' + f1(2 * k) + ',' + f1(3.6 * k) + ' ' + f1(4 * k) + ',' + f1(.5 * k) + '" fill="none" stroke="' + l + '" stroke-width="1.4" stroke-linecap="round"/>';
+  if(style === 'etoiles'){ var d = ''; for(var i = 0; i < 12; i++){ var a = i * Math.PI / 6, r = (i % 2 ? 4.4 : 7.6) * k; d += (i ? 'L' : 'M') + f1(Math.cos(a) * r) + ',' + f1(Math.sin(a) * r) + ' '; } return '<path d="' + d + 'Z" fill="' + c + '" stroke="' + o + '" stroke-width="1.2" stroke-linejoin="round"/><circle r="' + f1(1.8 * k) + '" fill="' + l + '"/>'; }
+  /* nuages */
+  return '<circle r="' + f1(9.5 * k) + '" fill="' + c + '" stroke="' + o + '" stroke-width="1.2"/><path d="M' + f1(-5 * k) + ',' + f1(-3 * k) + ' C' + f1(-3 * k) + ',' + f1(-7 * k) + ' ' + f1(2 * k) + ',' + f1(-7 * k) + ' ' + f1(4 * k) + ',' + f1(-4 * k) + '" fill="none" stroke="' + l + '" stroke-width="1.8" stroke-linecap="round"/>'; }
+
+/* ---------- Les dégradés et les motifs partagés ---------- */
+/* les nappes : la taille d'un carreau du motif, et son dessin */
+var NAPPE = {
+  vichy:['width="44" height="44"', '<rect width="44" height="44" fill="#ffffff"/><rect width="22" height="44" fill="#ff2f4a" opacity=".55"/><rect width="44" height="22" fill="#ff2f4a" opacity=".55"/>'],
+  bleue:['width="44" height="44"', '<rect width="44" height="44" fill="#ffffff"/><rect width="22" height="44" fill="#1f7fe8" opacity=".55"/><rect width="44" height="22" fill="#1f7fe8" opacity=".55"/>'],
+  dentelle:['width="36" height="36"', '<rect width="36" height="36" fill="#fffdf6"/><circle cx="18" cy="18" r="7" fill="none" stroke="#ecdcc4" stroke-width="2"/><circle cx="18" cy="18" r="2" fill="#ecdcc4"/><circle cx="0" cy="0" r="3" fill="#f2e4d0"/><circle cx="36" cy="0" r="3" fill="#f2e4d0"/><circle cx="0" cy="36" r="3" fill="#f2e4d0"/><circle cx="36" cy="36" r="3" fill="#f2e4d0"/>'],
+  bois:['width="180" height="38"', '<rect width="180" height="38" fill="#c98a4e"/><path d="M0,0 H180 M0,19 H180 M60,0 V19 M140,19 V38" stroke="#8a5628" stroke-width="2"/><path d="M10,9 C40,5 70,13 110,8 M20,29 C60,25 100,33 170,28" fill="none" stroke="#b0763c" stroke-width="1.6"/>'],
+  nuit:['width="90" height="70"', '<rect width="90" height="70" fill="#1c2447"/><path d="M20,10 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 Z" fill="#f5b945"/><circle cx="62" cy="24" r="2.2" fill="#ffe3a3"/><path d="M70,48 l1.5,4 4,1.5 -4,1.5 -1.5,4 -1.5,-4 -4,-1.5 4,-1.5 Z" fill="#8ff3ff"/><circle cx="30" cy="52" r="1.8" fill="#eef0ff"/><circle cx="8" cy="38" r="1.3" fill="#ffe3a3"/>'],
+  rayee:['width="56" height="20"', '<rect width="56" height="20" fill="#fffaf0"/><rect width="14" height="20" fill="#ff9a1f"/><rect x="28" width="14" height="20" fill="#2fc88e"/>']
+};
+function nappeMotif(idMotif, nappe){ var n = NAPPE[nappe]; return '<pattern id="' + idMotif + '" ' + n[0] + ' patternUnits="userSpaceOnUse">' + n[1] + '</pattern>'; }
+function defs(id){
+  return '<defs>' +
+    /* le ciel d'un bel après-midi (Romain, 11 novembre, 20 h 29 : « de jour, avec un joli éclairage de journée ») */
+    '<linearGradient id="' + id + 'ciel" gradientUnits="userSpaceOnUse" x1="0" y1="-620" x2="0" y2="440"><stop offset="0" stop-color="#1877dc"/><stop offset=".45" stop-color="#3a9ef0"/><stop offset=".8" stop-color="#86cdfa"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient>' +
+    '<radialGradient id="' + id + 'soleil"><stop offset="0" stop-color="#fffbd0"/><stop offset=".3" stop-color="#fff0a0" stop-opacity=".85"/><stop offset=".6" stop-color="#ffe76a" stop-opacity=".25"/><stop offset="1" stop-color="#ffe76a" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="' + id + 'vitre" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaf7ff"/><stop offset=".5" stop-color="#9fd2f2"/><stop offset="1" stop-color="#5fa4d6"/></linearGradient>' +
+    /* le volume du gâteau : la lumière vient de la gauche */
+    '<linearGradient id="' + id + 'ombre" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".66" stop-color="#1c1026" stop-opacity="0"/><stop offset="1" stop-color="#1c1026" stop-opacity=".2"/></linearGradient>' +
+    '<linearGradient id="' + id + 'arcG" x1="0" y1="0" x2="1" y2=".25"><stop offset="0" stop-color="#ff5fa2"/><stop offset=".25" stop-color="#ffd21f"/><stop offset=".5" stop-color="#3fe08a"/><stop offset=".75" stop-color="#3fb4ff"/><stop offset="1" stop-color="#a66bff"/></linearGradient>' +
+    '<pattern id="' + id + 'tuiles" width="14" height="10" patternUnits="userSpaceOnUse"><rect width="14" height="10" fill="#e8693c"/><path d="M0,10 C0,5 7,5 7,10 C7,5 14,5 14,10 M-7,5 C-7,0 0,0 0,5 C0,0 7,0 7,5 C7,0 14,0 14,5" fill="none" stroke="#b8431f" stroke-width="1.3"/></pattern>' +
+    '<pattern id="' + id + 'ardoise" width="12" height="9" patternUnits="userSpaceOnUse"><rect width="12" height="9" fill="#6f86c8"/><path d="M0,9 C0,4 6,4 6,9 C6,4 12,4 12,9 M-6,4.5 C-6,-.5 0,-.5 0,4.5 C0,-.5 6,-.5 6,4.5 C6,-.5 12,-.5 12,4.5" fill="none" stroke="#4a5f9e" stroke-width="1.2"/></pattern>' +
+    '<pattern id="' + id + 'blocs" width="34" height="22" patternUnits="userSpaceOnUse"><path d="M0,11 H34 M0,22 H34 M17,0 V11 M0,11 V22 M34,11 V22" stroke="#b8a888" stroke-width="1.6" opacity=".8" fill="none"/></pattern>' +
+    /* les nappes */
+    Object.keys(NAPPE).map(function(n){ return nappeMotif(id + 'n-' + n, n); }).join('') +
+    '<linearGradient id="' + id + 'tableO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1026" stop-opacity=".16"/><stop offset=".22" stop-color="#1c1026" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>' +
+    '</defs>';
+}
+
+/* ---------- Le fond : la place de Brumeval en fête, en plein jour ---------- */
+var SOL = 512;
+function maison(id, x, w, h, mur, o){
+  o = o || {};
+  var y0 = SOL - h, s = '', hT = o.pignon ? w * .42 : 32, vol = o.volets || '#2f9a6a';
+  s += '<rect x="' + x + '" y="' + y0 + '" width="' + w + '" height="' + h + '" fill="' + mur + '"' + st(3) + '/>';
+  /* le soleil vient de la gauche : ce côté du mur est plus clair ; le toit fait un peu d'ombre en haut */
+  s += '<rect x="' + (x + 1.5) + '" y="' + y0 + '" width="' + f1(w * .38) + '" height="' + h + '" fill="#fff" opacity=".2"/><rect x="' + (x + 1.5) + '" y="' + y0 + '" width="' + (w - 3) + '" height="9" fill="#24182e" opacity=".14"/>';
+  if(o.colombages) s += '<path d="M' + x + ',' + f1(y0 + h * .48) + ' H' + (x + w) + ' M' + f1(x + w / 3) + ',' + y0 + ' V' + SOL + ' M' + f1(x + 2 * w / 3) + ',' + y0 + ' V' + SOL + ' M' + x + ',' + y0 + ' L' + f1(x + w / 3) + ',' + f1(y0 + h * .48) + ' M' + (x + w) + ',' + y0 + ' L' + f1(x + 2 * w / 3) + ',' + f1(y0 + h * .48) + '" stroke="#8a5630" stroke-width="5" fill="none"/>';
+  var nf = Math.max(1, Math.round(w / 62)), FL = ['#ff3f5e', '#ffd21f', '#ff7fb6', '#ffffff'];
+  for(var e = 0; e < 2; e++) for(var i = 0; i < nf; i++){
+    var fx = x + w * (i + .5) / nf - 11, fy = y0 + 16 + e * h * .42;
+    if(e === 1 && nf % 2 && i === (nf - 1) / 2){   /* la porte, à la place de la fenêtre du milieu */
+      s += '<path d="M' + f1(fx - 3) + ',' + SOL + ' V' + f1(fy + 8) + ' Q' + f1(fx + 11) + ',' + f1(fy - 8) + ' ' + f1(fx + 25) + ',' + f1(fy + 8) + ' V' + SOL + ' Z" fill="' + (o.porte || '#b8632c') + '"' + st(2.6) + '/><circle cx="' + f1(fx + 19) + '" cy="' + f1((fy + SOL) / 2 + 6) + '" r="2.2" fill="#ffd23f"' + st(1.2) + '/>';
+      continue;
+    }
+    s += '<rect x="' + f1(fx) + '" y="' + f1(fy) + '" width="22" height="26" rx="2" fill="url(#' + id + 'vitre)"' + st(2.4) + '/><path d="M' + f1(fx + 11) + ',' + f1(fy) + ' V' + f1(fy + 26) + ' M' + f1(fx) + ',' + f1(fy + 12) + ' H' + f1(fx + 22) + '" stroke="' + K + '" stroke-width="1.6"/>';
+    s += '<path d="M' + f1(fx + 3) + ',' + f1(fy + 9) + ' L' + f1(fx + 8) + ',' + f1(fy + 3) + '" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>';
+    s += '<rect x="' + f1(fx - 9) + '" y="' + f1(fy) + '" width="8" height="26" rx="1.5" fill="' + vol + '"' + st(2) + '/><rect x="' + f1(fx + 23) + '" y="' + f1(fy) + '" width="8" height="26" rx="1.5" fill="' + vol + '"' + st(2) + '/>';
+    /* une jardinière fleurie sous chaque fenêtre */
+    s += '<rect x="' + f1(fx - 3) + '" y="' + f1(fy + 27) + '" width="28" height="6" rx="2" fill="#a8622c"' + st(1.8) + '/>';
+    for(var k = 0; k < 4; k++) s += '<circle cx="' + f1(fx + 1 + k * 6.6) + '" cy="' + f1(fy + 25.5 - (k % 2) * 1.5) + '" r="3.4" fill="' + FL[(k + i + e) % 4] + '" stroke="' + K + '" stroke-width="1"/>';
+  }
+  if(nf % 2 === 0) s += '<path d="M' + f1(x + w / 2 - 12) + ',' + SOL + ' V' + (SOL - 36) + ' Q' + f1(x + w / 2) + ',' + (SOL - 52) + ' ' + f1(x + w / 2 + 12) + ',' + (SOL - 36) + ' V' + SOL + ' Z" fill="' + (o.porte || '#b8632c') + '"' + st(2.6) + '/><circle cx="' + f1(x + w / 2 + 7) + '" cy="' + (SOL - 20) + '" r="2.2" fill="#ffd23f"' + st(1.2) + '/>';
+  if(o.pignon) s += '<path d="M' + (x - 8) + ',' + (y0 + 2) + ' L' + f1(x + w / 2) + ',' + f1(y0 - hT) + ' L' + (x + w + 8) + ',' + (y0 + 2) + ' Z" fill="url(#' + id + 'tuiles)"' + st(3.4) + '/>';
+  else s += '<path d="M' + (x - 8) + ',' + (y0 + 2) + ' L' + (x + 10) + ',' + (y0 - hT) + ' L' + (x + w - 10) + ',' + (y0 - hT) + ' L' + (x + w + 8) + ',' + (y0 + 2) + ' Z" fill="url(#' + id + (o.ardoise ? 'ardoise' : 'tuiles') + ')"' + st(3.4) + '/>';
+  if(o.cheminee !== false){ var cx = x + w * (o.pignon ? .72 : .26), cy = y0 - (o.pignon ? hT * .45 : hT) - 16; s += '<rect x="' + f1(cx) + '" y="' + f1(cy) + '" width="15" height="26" fill="#c9683c"' + st(2.6) + '/><rect x="' + f1(cx - 2) + '" y="' + f1(cy - 4) + '" width="19" height="6" fill="#a04e2a"' + st(2.2) + '/>'; }
+  return s;
+}
+function clocher(id, X){
+  var s = '<g transform="translate(' + X + ',0)">';
+  s += '<rect x="-34" y="170" width="68" height="' + (SOL - 170) + '" fill="#f0e6d0"' + st(3.4) + '/><rect x="-34" y="170" width="68" height="' + (SOL - 170) + '" fill="url(#' + id + 'blocs)"/><rect x="-32.5" y="170" width="24" height="' + (SOL - 170) + '" fill="#fff" opacity=".25"/>';
+  s += '<circle cy="218" r="21" fill="#ffd23f"' + st(3) + '/><circle cy="218" r="16" fill="#ffffff"' + st(2) + '/><path d="M0,218 L0,207 M0,218 L8,222" ' + st(2.4) + '/><circle cy="218" r="2" fill="' + K + '"/>';
+  s += '<rect x="-38" y="166" width="76" height="9" rx="2" fill="#d8ccb2"' + st(2.6) + '/><rect x="-32" y="116" width="64" height="52" fill="#f0e6d0"' + st(3.2) + '/><path d="M-20,168 V138 Q0,118 20,138 V168 Z" fill="#3a3050"' + st(2.4) + '/>';
+  s += '<path d="M0,130 V136" ' + st(3) + '/><path d="M-12,158 C-12,144 -8,136 0,136 C8,136 12,144 12,158 L15,162 L-15,162 Z" fill="#ffc832"' + st(2.4) + '/><circle cy="163" r="3" fill="#a8741c"' + st(1.4) + '/>';
+  s += '<rect x="-36" y="112" width="72" height="8" rx="2" fill="#d8ccb2"' + st(2.6) + '/><path d="M-34,113 L0,28 L34,113 Z" fill="url(#' + id + 'ardoise)"' + st(3.4) + '/><path d="M0,30 V6" ' + st(3) + '/><circle cy="16" r="3.4" fill="#ffd23f"' + st(1.4) + '/>';
+  return s + '</g>';
+}
+/* une guirlande entre deux points, qui pend : des fanions, ou des lampions de papier */
+function guirlande(id, x1, y1, x2, y2, pend, n, sorte, i0){
+  var mx = (x1 + x2) / 2, my = (y1 + y2) / 2 + pend, s = '<path d="M' + x1 + ',' + y1 + ' Q' + f1(mx) + ',' + f1(my + pend) + ' ' + x2 + ',' + y2 + '" fill="none"' + st(2.2, '#4a3a2c') + '/>';
+  var COUL = ['#ff2f55', '#ffd21f', '#1fb4ff', '#3fd45a', '#ff8a1f', '#b06bff', '#ff6fc0'];
+  for(var i = 1; i <= n; i++){
+    var u = i / (n + 1), a = 1 - u, px = a * a * x1 + 2 * a * u * mx + u * u * x2, py = a * a * y1 + 2 * a * u * (my + pend) + u * u * y2, c = COUL[(i + (i0 || 0)) % COUL.length];
+    if(sorte === 'fanions') s += '<path d="M' + f1(px - 9.5) + ',' + f1(py) + ' L' + f1(px + 9.5) + ',' + f1(py) + ' L' + f1(px) + ',' + f1(py + 21) + ' Z" fill="' + c + '"' + st(1.8) + '/><path d="M' + f1(px - 6) + ',' + f1(py + 3) + ' L' + f1(px - 1) + ',' + f1(py + 13) + '" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>';
+    else s += '<path d="M' + f1(px) + ',' + f1(py) + ' V' + f1(py + 5) + '" stroke="' + K + '" stroke-width="1.6"/><ellipse cx="' + f1(px) + '" cy="' + f1(py + 15) + '" rx="9" ry="10.5" fill="' + c + '"' + st(1.8) + '/>' +
+      '<path d="M' + f1(px - 4.5) + ',' + f1(py + 6.5) + ' Q' + f1(px - 7) + ',' + f1(py + 15) + ' ' + f1(px - 4.5) + ',' + f1(py + 23.5) + ' M' + f1(px + 4.5) + ',' + f1(py + 6.5) + ' Q' + f1(px + 7) + ',' + f1(py + 15) + ' ' + f1(px + 4.5) + ',' + f1(py + 23.5) + '" fill="none" stroke="' + K + '" stroke-width="1" opacity=".45"/>' +
+      '<ellipse cx="' + f1(px - 3.5) + '" cy="' + f1(py + 11) + '" rx="2" ry="3.4" fill="#fff" opacity=".65"/><rect x="' + f1(px - 4) + '" y="' + f1(py + 24.5) + '" width="8" height="3" rx="1" fill="#ffd23f" stroke="' + K + '" stroke-width="1"/>';
+  }
+  return s;
+}
+function nuage(x, y, k){ return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')"><path d="M-64,20 C-92,20 -94,-12 -64,-14 C-66,-42 -24,-50 -10,-26 C4,-52 50,-46 46,-16 C74,-20 86,16 58,20 Z" fill="#ffffff"/><path d="M-66,20 C-44,6 38,8 60,20 Z" fill="#cfe7fa"/></g>'; }
+function ballon(x, y, c, x0, y0){ return '<path d="M' + x0 + ',' + y0 + ' Q' + f1((x + x0) / 2 + 6) + ',' + f1((y + y0) / 2 + 8) + ' ' + x + ',' + (y + 21) + '" fill="none" stroke="' + K + '" stroke-width="1.4"/>' +
+  '<path d="M' + x + ',' + (y + 20) + ' C' + (x - 20) + ',' + (y + 14) + ' ' + (x - 18) + ',' + (y - 20) + ' ' + x + ',' + (y - 20) + ' C' + (x + 18) + ',' + (y - 20) + ' ' + (x + 20) + ',' + (y + 14) + ' ' + x + ',' + (y + 20) + ' Z" fill="' + c + '"' + st(2.2) + '/><path d="M' + (x - 9) + ',' + (y - 6) + ' C' + (x - 9) + ',' + (y - 12) + ' ' + (x - 6) + ',' + (y - 15) + ' ' + (x - 2) + ',' + (y - 15) + '" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>'; }
+function fond(id){
+  var R = graine(7), s = '<rect x="-1100" y="-1100" width="2840" height="1700" fill="url(#' + id + 'ciel)"/>', i;
+  /* le soleil, en haut à gauche (toute la lumière vient de là), et ses rayons */
+  s += '<circle cx="196" cy="78" r="140" fill="url(#' + id + 'soleil)"/>';
+  for(i = 0; i < 12; i++) s += '<path d="M0,-44 L5.5,-' + (i % 2 ? 62 : 70) + ' L-5.5,-' + (i % 2 ? 62 : 70) + ' Z" transform="translate(196,78) rotate(' + (i * 30) + ')" fill="#ffe14a"/>';
+  s += '<circle cx="196" cy="78" r="33" fill="#fff3a0" stroke="#ffcf2a" stroke-width="3"/>';
+  /* les nuages (il y en a aussi très haut : sur un écran debout, on voit beaucoup de ciel) */
+  [[430, 104, .9], [668, 196, .6], [-150, 150, .72], [350, -150, 1.2], [-300, 14, 1.05], [860, -6, 1.15], [600, -300, .95], [40, -360, 1.15], [-520, -200, 1], [1120, 110, 1.05], [-820, 110, 1.15], [300, -520, 1.1], [1330, -170, 1], [-80, -640, 1.2], [720, -700, 1.1]].forEach(function(n){ s += nuage(n[0], n[1], n[2]); });
+  /* des oiseaux, très loin */
+  s += '<path d="M452,176 q5,-7 10,0 q5,-7 10,0 M484,160 q4,-6 8,0 q4,-6 8,0 M306,30 q5,-7 10,0 q5,-7 10,0" fill="none" stroke="' + K + '" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>';
+  /* au loin : les montagnes bleues, puis les collines vertes et leurs arbres */
+  s += '<path d="M-1100,320 L-900,236 L-760,290 L-600,216 L-430,300 L-250,226 L-90,290 L80,220 L240,296 L420,230 L600,290 L760,222 L940,290 L1120,232 L1300,296 L1500,236 L1740,310 L1740,560 L-1100,560 Z" fill="#a4d2f4"/>';
+  s += '<path d="M-1100,330 C-900,270 -700,312 -500,288 C-300,266 -100,318 100,288 C300,260 500,316 700,286 C900,258 1100,314 1300,288 C1500,266 1650,300 1740,290 L1740,560 L-1100,560 Z" fill="#8fe070"/>';
+  for(i = 0; i < 40; i++){ var tx = -1080 + i * 71 + R() * 30, ty = 300 + R() * 26; s += '<path d="M' + f1(tx) + ',' + f1(ty) + ' v12" stroke="#8a5630" stroke-width="3"/><circle cx="' + f1(tx) + '" cy="' + f1(ty - 7) + '" r="' + f1(10 + R() * 6) + '" fill="#3fae4a"/>'; }
+  s += '<path d="M-1100,372 C-860,336 -640,368 -420,348 C-200,330 0,372 220,346 C440,324 640,370 860,346 C1080,326 1300,370 1740,342 L1740,560 L-1100,560 Z" fill="#5fc956"/>';
+  /* les maisons de la place (de gauche à droite), aux couleurs de bonbon */
+  var M = [[-960, 150, 190, '#d6f5b0', {ardoise:true, volets:'#3f78d8'}], [-800, 160, 170, '#ffc9d8', {pignon:true, volets:'#d83f6a'}], [-630, 150, 196, '#fff0b0', {colombages:true, volets:'#e8552a'}],
+    [-470, 140, 168, '#bfe6ff', {volets:'#2f6fd0', ardoise:true}], [-322, 150, 186, '#ffd6a8', {pignon:true, colombages:true, volets:'#e8552a'}], [-164, 104, 160, '#d6f5b0', {volets:'#3f78d8'}],
+    [16, 150, 176, '#fff0b0', {volets:'#2f9a6a'}], [172, 148, 150, '#ffc9d8', {ardoise:true, volets:'#3f78d8'}], [326, 156, 158, '#bfe6ff', {pignon:true, volets:'#2f9a6a'}],
+    [488, 150, 190, '#ffd6a8', {colombages:true, volets:'#e8552a'}], [644, 150, 172, '#d6f5b0', {pignon:true, volets:'#3f78d8'}], [800, 160, 198, '#fff0b0', {ardoise:true, colombages:true, volets:'#2f9a6a'}],
+    [966, 150, 170, '#ffc9d8', {volets:'#d83f6a'}], [1122, 160, 190, '#bfe6ff', {pignon:true, colombages:true, volets:'#2f6fd0'}], [1288, 150, 176, '#ffd6a8', {ardoise:true, volets:'#e8552a'}], [1444, 160, 192, '#d6f5b0', {pignon:true, volets:'#3f78d8'}]];
+  M.forEach(function(m){ s += maison(id, m[0], m[1], m[2], m[3], m[4]); });
+  /* le clocher, juste derrière le gâteau, à gauche ; le mât de la fête, à droite, avec ses ballons */
+  s += clocher(id, 92);
+  s += ballon(536, 92, '#ff2f55', 562, 150) + ballon(590, 98, '#1fb4ff', 562, 150) + ballon(564, 70, '#ffd21f', 562, 150);
+  s += '<path d="M562,' + SOL + ' V150" ' + st(8) + '/><path d="M562,' + SOL + ' V150" stroke="#ffc832" stroke-width="4.4" stroke-linecap="round"/><circle cx="562" cy="148" r="8" fill="#ffd23f"' + st(2.4) + '/>';
+  /* les guirlandes : des fanions et des lampions de papier, de toit en toit, du clocher au mât */
+  s += guirlande(id, -520, 250, 92, 120, 30, 11, 'fanions', 0) + guirlande(id, 92, 120, 562, 150, 40, 9, 'fanions', 3) + guirlande(id, 562, 150, 1240, 250, 34, 12, 'fanions', 1);
+  s += guirlande(id, -700, 300, 92, 178, 40, 11, 'lampions', 0) + guirlande(id, 92, 178, 562, 196, 52, 7, 'lampions', 2) + guirlande(id, 562, 196, 1400, 300, 44, 12, 'lampions', 4);
+  s += guirlande(id, -300, -40, 320, -150, 40, 8, 'lampions', 1) + guirlande(id, 320, -150, 960, -40, 40, 8, 'lampions', 5) + guirlande(id, -200, -250, 840, -260, 60, 12, 'fanions', 2);
+  /* un voile de lumière sur la place : elle recule un peu, et le gâteau, devant, ressort */
+  s += '<rect x="-1100" y="-1100" width="2840" height="' + (1100 + SOL) + '" fill="#e8f6ff" opacity=".26"/>';
+  /* les pavés de la place, au soleil */
+  s += '<rect x="-1100" y="' + SOL + '" width="2840" height="60" fill="#ecdcb8"/><rect x="-1100" y="' + SOL + '" width="2840" height="6" fill="#24182e" opacity=".12"/><path d="M-1100,' + SOL + ' H1740" ' + st(3) + '/>';
+  for(var k = 0; k < 2; k++) for(var x3 = -1100 + k * 17; x3 < 1740; x3 += 34) s += '<rect x="' + (x3 + 1.5) + '" y="' + (SOL + 10 + k * 15) + '" width="31" height="12" rx="5" fill="' + ['#dccaa0', '#d4c094', '#e4d2aa'][(Math.floor(x3 / 34) % 3 + 3) % 3] + '"/>';
+  return s;
+}
+
+/* ---------- La table et sa nappe (le dessus de la table : de y = 548 jusqu'en bas) ---------- */
+/* teinte (facultatif) : la couleur du pinceau qui a repeint la nappe ; elle a alors son propre motif, repeint */
+var PRINC_NAPPE = {vichy:'#ff2f4a', bleue:'#1f7fe8', dentelle:'#fffdf6', bois:'#c98a4e', nuit:'#1c2447', rayee:'#ff9a1f'};
+function table(id, nappe, teinte){
+  var motif = id + 'n-' + nappe, d = '';
+  if(teinte && NAPPE[nappe]){ motif = id + 'nt'; d = '<defs>' + teinter(nappeMotif(motif, nappe), PRINC_NAPPE[nappe], teinte) + '</defs>'; }
+  return d + '<rect x="-1100" y="548" width="2840" height="260" fill="url(#' + motif + ')"/><rect x="-1100" y="548" width="2840" height="260" fill="url(#' + id + 'tableO)" pointer-events="none"/>' +
+    '<path d="M-1100,548 H1740" ' + st(3.4) + '/><path d="M-1100,552 H1740" stroke="#fff" stroke-width="2" opacity=".35"/>';
+}
+/* ---------- Le présentoir (le plat à gâteau sur pied) : le dessus du plat à y = 538, le pied posé à y = 596 ----------
+   teinte (facultatif) : la couleur du pinceau qui l'a repeint (ses dégradés d'argent et d'or sont dessinés avec lui, pour l'être aussi) */
+var PRINC_PLAT = {porcelaine:'#fffaf2', bois:'#c89460', argent:'#d4d4d4', or:'#ffc832', pois:'#f8adc8', runes:'#3a4058'};
+function plat(id, style, teinte){
+  var P = {porcelaine:['#fffaf2', '#e8dcc8', '#5b8fd8'], bois:['#c89460', '#9a6a3a', '#7a4e28'], argent:['url(#' + id + 'pm)', '#a4acbc', '#eef2f8'], or:['url(#' + id + 'pm)', '#c88a14', '#fff6b8'],
+    pois:['#f8adc8', '#e07aa0', '#ffffff'], runes:['#3a4058', '#262b40', '#8ff3ff']}[style] || ['#fffaf2', '#e8dcc8', '#5b8fd8'];
+  var s = '<ellipse cx="320" cy="600" rx="150" ry="16" fill="#1c1026" opacity=".22"/>';
+  if(style === 'argent') s += '<linearGradient id="' + id + 'pm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#cfd6e2"/><stop offset="1" stop-color="#8f98ac"/></linearGradient>';
+  if(style === 'or') s += '<linearGradient id="' + id + 'pm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff6b8"/><stop offset=".45" stop-color="#ffc832"/><stop offset="1" stop-color="#c88a14"/></linearGradient>';
+  s += '<ellipse cx="320" cy="594" rx="92" ry="13" fill="' + P[1] + '"' + st(2.8) + '/><path d="M296,548 C296,570 292,578 262,588 C290,596 350,596 378,588 C348,578 344,570 344,548 Z" fill="' + P[0] + '"' + st(2.8) + '/>' +
+    '<path d="M302,552 C302,570 300,578 286,586" fill="none" stroke="#fff" stroke-width="3" opacity=".45" stroke-linecap="round" pointer-events="none"/>';
+  s += '<path d="M90,538 C90,556 550,556 550,538 L550,544 C550,564 90,564 90,544 Z" fill="' + P[1] + '"' + st(2.8) + '/><ellipse cx="320" cy="538" rx="230" ry="20" fill="' + P[0] + '"' + st(2.8) + '/>';
+  if(style === 'pois'){ for(var i = 0; i < 15; i++){ var a = Math.PI * (i + .5) / 15; s += '<circle cx="' + f1(320 - Math.cos(a) * 212) + '" cy="' + f1(538 + Math.sin(a) * 15) + '" r="4" fill="#fff"/>'; } }
+  else if(style === 'runes'){ for(var j = 0; j < 9; j++){ var b = Math.PI * (j + .5) / 9, rx = 320 - Math.cos(b) * 205, ry = 552 + Math.sin(b) * 6; s += '<path class="gt-rune" d="M' + f1(rx - 4) + ',' + f1(ry - 4) + ' l4,8 l4,-8 M' + f1(rx - 4) + ',' + f1(ry + 1) + ' h8" fill="none" stroke="#8ff3ff" stroke-width="1.6" stroke-linecap="round"/>'; } }
+  else if(style === 'bois') s += '<ellipse cx="320" cy="538" rx="190" ry="15" fill="none" stroke="' + P[2] + '" stroke-width="1.6" opacity=".6"/><ellipse cx="320" cy="538" rx="150" ry="11" fill="none" stroke="' + P[2] + '" stroke-width="1.4" opacity=".5"/>';
+  else s += '<ellipse cx="320" cy="538" rx="216" ry="16.500" fill="none" stroke="' + P[2] + '" stroke-width="2.4" opacity=".8"/>';
+  return teinte ? teinter(s, PRINC_PLAT[style] || '#fffaf2', teinte) : s;
+}
+
+MJ.GATEAU_ART = {K:K, ANIMEES:ANIMEES, PINCEAUX:PINCEAUX, teinter:teinter, dessinDeco:dessinDeco, PATES:PATES, GLACAGES:GLACAGES, MOTIFS:MOTIFS, FORMES:FORMES, CREMES:CREMES, CREME_COUL:CREME_COUL, PLATS:PLATS, NAPPES:NAPPES, CATS:CATS, DECOS:DECOS,
+  glac:glac, pate:pate, icone:icone, icoBrut:icoBrut, svgDeco:svgDeco, jeton:jeton, jetonCouleur:jetonCouleur, jetonPate:jetonPate, jetonCreme:jetonCreme, bouleCreme:bouleCreme,
+  defs:defs, fond:fond, table:table, plat:plat, clair:clair, sombre:sombre, mix:mix, graine:graine, st:st, f1:f1};
+})();
+
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
+/* ===== mj-gateau.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
+/* ==========================================================
+   LE GÂTEAU DE LA FÊTE (Alchimiste) — le jeu (Romain, 11 novembre 2026, 19 h 48)
+   « un mini-jeu avec plein d'options pour faire au moins 300 000 ou 500 000 gâteaux différents […] des gâteaux à 4 étages
+     avec plein de décorations farfelues, qu'on puisse placer n'importe où […] des icônes de chaque côté du gâteau […]
+     quand on clique sur les icônes, ils sont un petit peu animés, avec des petites bulles, toujours avec les mêmes bruits ;
+     quand on pose les éléments, des bruits pour chaque catégorie de décoration ; on peut les déplacer où on veut ;
+     quand on appuie dessus, ça les fait tourner (dans le sens des aiguilles d'une montre). »
+
+   - Pas de cœurs, on ne perd jamais : on fabrique, puis « C'est prêt ! ». Un minuteur de 5 minutes (Romain, 20 h 29) :
+     à zéro, le gâteau part à la fête tel qu'il est.
+   - De jour, des couleurs très vives, de petits éclats qui scintillent sur le gâteau, et 18 décorations sur 70 qui bougent
+     toutes seules (Romain, 20 h 29 : « un quart des décorations animées »).
+   - À gauche, ce dont le gâteau est fait (étages, pâte, glaçage, motif, crème, table) : le choix s'applique à l'étage choisi
+     (on touche un étage, ou son numéro dans la petite bulle du titre). La dernière icône, « Couleurs », est un pinceau
+     (Romain, 20 h 39 : « personnaliser les couleurs de tous les éléments ») : on choisit une couleur, puis on touche ce qu'on
+     veut repeindre — une décoration, la pâte, le glaçage, le motif, la crème d'un étage, le plat, la nappe.
+   - À droite, les décorations (fruits, fleurs, bonbons, fête, farfelu, paillettes, chantilly) : on touche une bulle
+     (ou on la tire jusqu'au gâteau), on déplace au doigt, un petit coup de doigt fait tourner d'un huitième de tour.
+   - Les dessins et les listes sont dans mj-gateau-dessins.js (MJ.GATEAU_ART) ; les sons du gâteau sont ici (sonsGateau),
+     et dans l'Atelier des sons (donjon/essai/sons/gateau.js) pour que Romain les écoute.
+   - fin({reussi:true, gateau:{…}}) : le résumé du gâteau, pour une future « commande de Gaspard » (rien n'en dépend encore).
+   MJ.GATEAU.compte() : le nombre de gâteaux différents, sans compter une seule décoration.
+   ========================================================== */
+(function(){
+'use strict';
+var MJ = window.MJ = window.MJ || {}, U = MJ.util, A = MJ.GATEAU_ART;
+if(!U || !A) return;
+var K = A.K, f1 = A.f1, sombre = A.sombre, clair = A.clair;
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var nUid = 0; function uid(){ return 'gt' + (++nUid) + '-'; }
+function reduit(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+function lum(c){ return (0.299 * parseInt(c.substr(1, 2), 16) + 0.587 * parseInt(c.substr(3, 2), 16) + 0.114 * parseInt(c.substr(5, 2), 16)) / 255; }
+
+/* >>> LES SONS DU GÂTEAU (ce bloc est recopié tel quel dans l'Atelier des sons : donjon/essai/construire-sons.py)
+   Les mêmes briques que le jeu (moteur-base.js) et que le labo : des notes douces, des souffles, de petits grains. Tout est discret. */
+function sonsGateau(audio, sortie){
+  function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+    g.connect(sortie(a)); o.start(t); o.stop(t + duree + 0.03);
+  }
+  /* un souffle : du bruit filtré dont la hauteur glisse de f0 à f1 */
+  function souffle(t0, duree, vol, f0, f1, q, type){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, n = Math.floor(a.sampleRate * duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+    f.type = type || 'bandpass'; f.Q.value = q || 0.8; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.06, duree * .3)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  /* de tout petits grains secs (le sucre, les paillettes) */
+  function grains(t0, duree, vol, nb, passeHaut){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var k = 0; k < nb; k++){ var c = Math.floor(n * Math.random() * .9), l = Math.floor(sr * (.001 + Math.random() * .004)), v = .4 + Math.random() * .6; for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random() * 2 - 1) * v * (1 - j / l); }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  return {
+    /* ce dont le gâteau est fait */
+    etage:function(){ souffle(0, .12, .02, 700, 300, .8, 'lowpass'); tendre(196, .02, .17, .075, 128, .006, 'triangle', 700); tendre(523, .13, .1, .034, null, .008); tendre(784, .21, .18, .03, null, .01); },   /* un étage se pose : « poum », puis deux notes contentes */
+    etageMoins:function(){ tendre(659, 0, .09, .034, 523, .008); tendre(392, .08, .15, .04, 262, .01, 'triangle', 900); },                                                                              /* on en retire un */
+    forme:function(){ tendre(440, 0, .06, .04, 587, .005, 'triangle', 1500); tendre(660, .075, .09, .034, 880, .005, 'triangle', 1800); },                                                               /* le moule change : toc-toc */
+    penche:function(){ tendre(520, 0, .2, .034, 330, .02); tendre(330, .19, .17, .03, 440, .02); },                                                                                                    /* oups, ça penche */
+    pate:function(){ souffle(0, .1, .024, 520, 240, .9, 'lowpass'); tendre(220, 0, .15, .06, 147, .01); tendre(294, .11, .1, .03, 262, .008); },                                                         /* la pâte : un « plof » moelleux */
+    glacage:function(){ souffle(0, .3, .026, 2400, 900, .9); tendre(880, .04, .26, .02, 440, .03); tendre(1319, .31, .08, .02, 988, .004); },                                                            /* le glaçage glisse, une goutte tombe */
+    motif:function(){ [0, .07, .14].forEach(function(t, i){ tendre(988 + i * 131, t, .05, .028, null, .004, 'triangle', 2600); }); },                                                                  /* trois petits coups de pinceau */
+    creme:function(){ for(var i = 0; i < 5; i++){ souffle(i * .07, .06, .028, 1700 + i * 300, 2500 + i * 300, 1.2); tendre(587 + i * 98, i * .07, .05, .018, null, .005); } },                            /* la poche à douille : psch-psch-psch */
+    plat:function(){ tendre(1760, 0, .32, .034, null, .003); tendre(2637, .004, .22, .015, null, .003); tendre(3520, .008, .12, .007, null, .003); },                                                    /* la porcelaine tinte */
+    nappe:function(){ souffle(0, .4, .038, 500, 1500, .6); souffle(.24, .26, .024, 1500, 600, .6); },                                                                                                  /* on secoue la nappe */
+    /* une décoration posée : un bruit par famille */
+    fruit:function(){ tendre(700, 0, .07, .05, 300, .004); tendre(300, .05, .13, .045, 180, .006); tendre(1400, .14, .05, .014, 900, .003); },                                                           /* un « ploc » juteux */
+    fleur:function(){ souffle(0, .22, .008, 3000, 5200, .7); tendre(1047, 0, .36, .03, null, .01); tendre(1319, .08, .4, .026, null, .01); tendre(1568, .16, .5, .018, null, .012); },                   /* trois notes de harpe, un souffle */
+    bonbon:function(){ tendre(1800, 0, .03, .04, null, .002, 'triangle', 5000); tendre(2400, .06, .03, .034, null, .002, 'triangle', 6000); tendre(1175, .115, .07, .03, 1568, .003); },                 /* tic-tac sucré */
+    fete:function(){ [1568, 2093, 2637, 3136].forEach(function(f, i){ tendre(f, i * .045, .2, .022, null, .004); }); grains(0, .26, .012, 14, 5000); },                                                  /* « tzing ! » : des étincelles */
+    farfelu:function(){ tendre(196, 0, .13, .055, 494, .008, 'triangle', 1600); tendre(494, .11, .2, .045, 233, .01, 'triangle', 1600); tendre(659, .33, .07, .026, 587, .005, 'triangle', 1400); },     /* « boïng… couic » */
+    paillettes:function(){ grains(0, .36, .03, 40, 4200); tendre(2637, .02, .12, .012, null, .004); tendre(3136, .1, .12, .01, null, .004); tendre(3520, .18, .14, .008, null, .004); },                 /* une pincée qui scintille */
+    chantilly:function(){ souffle(0, .3, .04, 900, 2200, .7); tendre(262, .28, .1, .045, 180, .006); },                                                                                                /* « pfffrt… plop » */
+    /* les gestes */
+    prend:function(){ tendre(520, 0, .06, .034, 780, .005); },                                                                                                                                         /* on la soulève */
+    tourne:function(){ grains(0, .07, .028, 7, 2000); tendre(784, .01, .08, .03, 988, .006, 'triangle', 2400); },                                                                                      /* un cran : cric */
+    poubelle:function(){ tendre(900, 0, .25, .034, 200, .01); tendre(110, .24, .12, .06, 70, .004, 'triangle', 500); },                                                                                /* ça siffle et ça tombe */
+    annule:function(){ souffle(0, .16, .022, 1400, 500, .8); tendre(587, 0, .1, .03, 440, .008); },                                                                                                    /* un pas en arrière */
+    pinceau:function(){ souffle(0, .17, .03, 900, 2300, .8); tendre(659, .03, .09, .03, 880, .006); tendre(1319, .1, .1, .014, null, .006); },                                                         /* un coup de pinceau */
+    plein:function(){ tendre(330, 0, .12, .05, 294, .01, 'triangle', 1100); tendre(262, .1, .18, .045, 233, .01, 'triangle', 900); },                                                                  /* plus de place ! */
+    /* la fête */
+    bravo:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(f, i){ tendre(f, i * .09, .3, .055, null, .01, 'triangle', 3000); });
+      tendre(1047, .6, .95, .04, null, .02); tendre(1319, .6, .95, .03, null, .02); tendre(1568, .6, .95, .024, null, .02); grains(.55, .8, .016, 50, 5000); },                                        /* « C'est prêt ! » */
+    confetti:function(){ for(var i = 0; i < 5; i++){ var f = 600 + Math.random() * 900; tendre(f, i * .08 + Math.random() * .03, .06, .022, f * 1.5, .005); } }                                         /* petits « pop » de la fête */
+  };
+}
+/* <<< LES SONS DU GÂTEAU */
+var ctxA = null;
+function audio(){
+  try{ if(window.Brume && Brume.sonActif && !Brume.sonActif()) return null; }catch(e){}
+  try{ if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return null; }catch(e){}
+  if(!ctxA){ try{ var AC = window.AudioContext || window.webkitAudioContext; ctxA = AC ? new AC() : null; }catch(e){ ctxA = null; } }
+  if(ctxA && ctxA.state === 'suspended') try{ ctxA.resume(); }catch(e){}
+  return ctxA;
+}
+var SONS = sonsGateau(audio, function(a){ return a.destination; });
+function son(nom){ try{ if(SONS[nom]) SONS[nom](); }catch(e){} }
+/* les petits « pop » des bulles : ceux des pastilles de la carte (moteur-base.js) */
+function pops(n){ try{ if(window.Brume && Brume.son) Brume.son('pastilles', Math.max(1, Math.min(6, n))); }catch(e){} }
+
+/* ---------- Le gâteau : sa géométrie ----------
+   La scène : 640 de large ; le gâteau au milieu (x = 320), posé sur le plat (y = 538). Chaque étage est dessiné autour de
+   (0,0) = le milieu de sa base ; un étage « penché » est couché de 9° (skewX) et pousse de côté les étages du dessus. */
+var CX = 320, BASE = 538, LARG = [400, 320, 244, 172], HAUT = [92, 86, 80, 74], APLAT = 0.087, PENCHE = Math.tan(9 * Math.PI / 180);
+var MAX_ETAGES = 4, MAX_DECOS = 80;
+var DUREE = 300;   /* cinq minutes pour faire le gâteau (Romain, 11 novembre, 20 h 29 : « un timer de 5 minutes ») ; à zéro, il part à la fête tel qu'il est */
+var HAUT_VUE = 590, DY = 32;   /* ce qu'on voit toujours de la scène : de y = 32 à y = 622 */
+function geo(etages){
+  var g = [], cx = CX, y = BASE;
+  etages.forEach(function(t, k){
+    var h = HAUT[k], r = LARG[k] / 2, s = t.penche ? (k % 2 ? -1 : 1) * h * PENCHE : 0;
+    g.push({k:k, cx:cx, yB:y, yT:y - h, r:r, h:h, e:r * APLAT, s:s, dir:k % 2 ? -1 : 1});
+    cx += s; y -= h;
+  });
+  return g;
+}
+function P(x, y){ return f1(x) + ',' + f1(y); }
+/* la forme d'un étage : son côté (ce qu'on voit de face), son dessus, la hauteur du bord du bas à l'abscisse x, le tour du dessus */
+function forme(idf, r, h, e){
+  var F = {}, i, a;
+  if(idf === 'carre'){
+    var av = .62 * e, ar = .95 * e, ren = 1.5 * e;
+    F.bas = function(){ return av; };
+    F.cote = 'M' + P(-r, -h + av) + ' L' + P(-r, av) + ' L' + P(r, av) + ' L' + P(r, -h + av) + ' Z';
+    F.dessus = 'M' + P(-r, -h + av) + ' L' + P(r, -h + av) + ' L' + P(r - ren, -h - ar) + ' L' + P(-r + ren, -h - ar) + ' Z';
+    F.tour = [[-r, -h + av], [r, -h + av], [r - ren, -h - ar], [-r + ren, -h - ar]];
+  } else if(idf === 'pans'){
+    var c = .52 * r, f = .8 * e;
+    F.bas = function(x){ x = Math.abs(x); return x <= c ? f : f * Math.max(0, r - x) / (r - c); };
+    F.cote = 'M' + P(-r, -h) + ' L' + P(-r, 0) + ' L' + P(-c, f) + ' L' + P(c, f) + ' L' + P(r, 0) + ' L' + P(r, -h) + ' L' + P(c, -h + f) + ' L' + P(-c, -h + f) + ' Z';
+    F.dessus = 'M' + P(-r, -h) + ' L' + P(-c, -h + f) + ' L' + P(c, -h + f) + ' L' + P(r, -h) + ' L' + P(c, -h - f) + ' L' + P(-c, -h - f) + ' Z';
+    F.tour = [[-r, -h], [-c, -h + f], [c, -h + f], [r, -h], [c, -h - f], [-c, -h - f]];
+    F.faces = '<path d="M' + P(-r, -h) + ' L' + P(-r, 0) + ' L' + P(-c, f) + ' L' + P(-c, -h + f) + ' Z" fill="#fff" opacity=".17"/><path d="M' + P(r, -h) + ' L' + P(r, 0) + ' L' + P(c, f) + ' L' + P(c, -h + f) + ' Z" fill="#1c1026" opacity=".22"/>';
+    F.aretes = 'M' + P(-c, -h + f) + ' L' + P(-c, f) + ' M' + P(c, -h + f) + ' L' + P(c, f);
+  } else {
+    F.bas = function(x){ var u = x / r; return e * Math.sqrt(Math.max(0, 1 - u * u)); };
+    F.tour = []; for(i = 0; i < 72; i++){ a = i * Math.PI / 36; F.tour.push([r * Math.cos(a), -h + e * Math.sin(a)]); }
+    if(idf === 'cannele'){
+      /* un moule cannelé : le bord fait de petites vagues (9 devant), des rainures de haut en bas */
+      var N = 9, g = 4.6, pts = [], ctl = [], d, j;
+      for(i = 0; i <= N; i++){ a = Math.PI - i * Math.PI / N; pts.push([r * Math.cos(a), e * Math.sin(a)]); }
+      for(i = 0; i < N; i++){ a = Math.PI - (i + .5) * Math.PI / N; ctl.push([(r + g) * Math.cos(a), (e + g) * Math.sin(a)]); }
+      d = 'M' + P(-r, -h) + ' L' + P(-r, 0);
+      for(i = 0; i < N; i++) d += ' Q' + P(ctl[i][0], ctl[i][1]) + ' ' + P(pts[i + 1][0], pts[i + 1][1]);
+      d += ' L' + P(r, -h);
+      for(i = N - 1; i >= 0; i--) d += ' Q' + P(ctl[i][0], ctl[i][1] - h) + ' ' + P(pts[i][0], pts[i][1] - h);
+      F.cote = d + ' Z';
+      d = 'M' + P(r, -h);
+      for(j = 0; j < 2 * N; j++){ a = (j + .5) * Math.PI / N; var b = (j + 1) * Math.PI / N; d += ' Q' + P((r + g) * Math.cos(a), -h + (e + g) * Math.sin(a)) + ' ' + P(r * Math.cos(b), -h + e * Math.sin(b)); }
+      F.dessus = d + ' Z';
+      F.aretes = ''; for(i = 1; i < N; i++) F.aretes += 'M' + P(pts[i][0], pts[i][1] - h) + ' L' + P(pts[i][0], pts[i][1]) + ' ';
+      F.fin = true;   /* des arêtes fines */
+    } else {
+      F.cote = 'M' + P(-r, -h) + ' L' + P(-r, 0) + ' A' + P(r, e) + ' 0 0 0 ' + P(r, 0) + ' L' + P(r, -h) + ' A' + P(r, e) + ' 0 0 1 ' + P(-r, -h) + ' Z';
+      F.dessus = 'M' + P(-r, -h) + ' A' + P(r, e) + ' 0 1 0 ' + P(r, -h) + ' A' + P(r, e) + ' 0 1 0 ' + P(-r, -h) + ' Z';
+    }
+  }
+  F.rond = idf === 'rond' || idf === 'cannele';
+  return F;
+}
+/* des points à pas réguliers le long d'un tour fermé (pour la bordure de crème) */
+function semer(tour, pas){
+  var L = 0, seg = [], n = tour.length, i, j, out = [];
+  for(i = 0; i < n; i++){ var p = tour[i], q = tour[(i + 1) % n], d = Math.sqrt((q[0] - p[0]) * (q[0] - p[0]) + (q[1] - p[1]) * (q[1] - p[1])); seg.push(d); L += d; }
+  var nb = Math.max(4, Math.round(L / pas)), acc = 0; i = 0;
+  for(j = 0; j < nb; j++){
+    var cible = L * j / nb;
+    while(i < n - 1 && acc + seg[i] < cible){ acc += seg[i]; i++; }
+    var u = (cible - acc) / (seg[i] || 1), a = tour[i], b = tour[(i + 1) % n];
+    out.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]);
+  }
+  return out;
+}
+var PLEINS = {lisse:1, pois:1, rayures:1, vagues:1};   /* ces motifs couvrent tout le côté (on ne voit plus la pâte) */
+/* la couleur qui se voit sur un glaçage (les pois, les rayures, les vagues) */
+function contraste(G){ return G.arc ? '#ffffff' : (lum(G.c) > .85 ? '#f79ab8' : (lum(G.c) < .3 ? clair(G.c, .55) : clair(G.c, .8))); }
+/* Un étage, dessiné autour de (0,0) = le milieu de sa base. t : ses choix ; g : sa géométrie ; id : le préfixe des dégradés */
+function etageSVG(t, g, id, choisi){
+  var r = g.r, h = g.h, e = g.e, k = g.k, F = forme(t.forme, r, h, e), Pa = A.pate(t.pate), G = t.glacage ? A.glac(t.glacage) : null;
+  var cid = id + 'c' + k, R = A.graine(k * 31 + 7), x, i, d;
+  var plein = !!(G && PLEINS[t.motif]), cG = G ? (G.arc ? 'url(#' + id + 'arcG)' : G.c) : null, cGs = G ? (G.arc ? '#b07ab0' : sombre(G.c, .32)) : null;
+  function y0(x){ return -h + F.bas(Math.max(-r, Math.min(r, x))); }   /* le bord du haut, vu de face */
+  var s = '<clipPath id="' + cid + '"><path d="' + F.cote + '"/></clipPath>';
+  s += '<ellipse cx="0" cy="1.5" rx="' + f1(r + 6) + '" ry="' + f1(e + 2.5) + '" fill="#1c1026" opacity=".22"/>';   /* son ombre sur ce qui le porte */
+  s += '<path data-p="' + (plein ? 'glacage' : 'pate') + '" d="' + F.cote + '" fill="' + (plein ? (G.arc ? '#f8adc8' : G.c) : Pa.c) + '"/><g clip-path="url(#' + cid + ')">';
+  if(!plein){
+    if(Pa.arc) ['#2fa8ff', '#3fe06a', '#ffe21f', '#ff8a12', '#ff3f8e'].forEach(function(c, n){ s += '<path data-p="pate" d="' + F.cote + '" transform="translate(0,' + f1(-n * h / 5) + ')" fill="' + c + '"/>'; });
+    else {
+      /* la crème entre les deux moitiés du gâteau, et quelques miettes */
+      d = ''; for(x = -r; x <= r + .1; x += r / 12) d += (d ? ' L' : 'M') + P(x, F.bas(x) - h * .47);
+      s += '<path d="' + d + '" fill="none" stroke="' + (lum(Pa.c) > .82 ? '#ff8fb4' : '#fff6dc') + '" stroke-width="' + f1(h * .1) + '" pointer-events="none"/>';
+      var cm = lum(Pa.c) < .3 ? clair(Pa.c, .25) : sombre(Pa.c, .2);
+      for(i = 0; i < Math.round(r / 4); i++){ x = (R() * 2 - 1) * r * .96; var fy = R(); if(fy > .38 && fy < .56) continue; s += '<circle cx="' + f1(x) + '" cy="' + f1(F.bas(x) - 4 - fy * (h - 9)) + '" r="' + f1(1.2 + R() * 1.3) + '" fill="' + cm + '" opacity=".75" pointer-events="none"/>'; }
+    }
+    if(G){
+      /* le glaçage qui descend du dessus : en coulures, ou jusqu'à la moitié */
+      var haut = -h - 2 * e - 8, xa, xb;
+      d = 'M' + P(-r - 8, haut) + ' L' + P(r + 8, haut);
+      if(t.motif === 'moitie'){ for(x = r + 8; x >= -r - 8.1; x -= 8) d += ' L' + P(x, y0(x) + h * .5 + 4.5 * Math.sin(x * .075 + k * 1.7)); }
+      else {
+        var b0 = h * .17; d += ' L' + P(r + 8, y0(r) + b0); x = r - 3 - R() * 10;
+        while(x > -r + 10){
+          var w = 13 + R() * 9, len = h * (.14 + R() * .5); xa = x; xb = x - w; if(xb < -r + 2) break;
+          var ya = y0(xa) + b0, yb = y0(xb) + b0, xm = (xa + xb) / 2, ym = y0(xm) + b0 + len;
+          d += ' L' + P(xa, ya) + ' C' + P(xa, ya + len * .7) + ' ' + P(xa - w * .06, ym) + ' ' + P(xm, ym) + ' C' + P(xb + w * .06, ym) + ' ' + P(xb, yb + len * .7) + ' ' + P(xb, yb);
+          var xn = xb - (9 + R() * 24); if(xn > -r + 10) d += ' Q' + P((xb + xn) / 2, y0((xb + xn) / 2) + b0 + 5) + ' ' + P(xn, y0(xn) + b0);
+          x = xn;
+        }
+        d += ' L' + P(-r - 8, y0(-r) + b0);
+      }
+      s += '<path data-p="glacage" d="' + d + ' Z" fill="' + cG + '" stroke="' + cGs + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    }
+  } else {
+    var cc = t.motifC || contraste(G);
+    if(G.arc) s += '<path data-p="glacage" d="' + F.cote + '" fill="' + cG + '"/>';
+    s += '<g data-p="motif">';
+    if(t.motif === 'pois'){
+      [.24, .5, .76].forEach(function(fr, n){ for(x = -r + (n % 2 ? 22 : 8); x < r; x += 28) s += '<circle cx="' + f1(x) + '" cy="' + f1(y0(x) + fr * h) + '" r="5.2" fill="' + cc + '"/>'; });
+    } else if(t.motif === 'rayures'){
+      if(F.rond){ for(i = -5; i <= 5; i++){ var ph = i * 16.4 * Math.PI / 180, w2 = 11 * Math.cos(ph) + 1.5; s += '<rect x="' + f1(r * Math.sin(ph) - w2 / 2) + '" y="' + f1(-h - 2 * e) + '" width="' + f1(w2) + '" height="' + f1(h + 4 * e) + '" fill="' + cc + '"/>'; } }
+      else for(x = -r + 12; x < r - 6; x += 26) s += '<rect x="' + f1(x) + '" y="' + f1(-h - 2 * e) + '" width="12" height="' + f1(h + 4 * e) + '" fill="' + cc + '"/>';
+    } else if(t.motif === 'vagues'){
+      [.27, .52, .77].forEach(function(fr, n){ d = ''; for(x = -r; x <= r + .1; x += 5) d += (d ? ' L' : 'M') + P(x, y0(x) + fr * h + 4.2 * Math.sin(x * .11 + n * 1.3)); s += '<path d="' + d + '" fill="none" stroke="' + cc + '" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>'; });
+    }
+    s += '</g>';
+  }
+  /* le volume : clair à gauche, sombre à droite ; un reflet sous le bord ; un peu d'ombre en bas */
+  s += '<g pointer-events="none">' + (F.faces ? F.faces : '<path d="' + F.cote + '" fill="url(#' + id + 'ombre)"/>');
+  if(G){ d = ''; for(x = -r * .82; x <= -r * .2; x += r / 12) d += (d ? ' L' : 'M') + P(x, y0(x) + 7); s += '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/>'; }
+  d = ''; for(x = -r; x <= r + .1; x += r / 12) d += (d ? ' L' : 'M') + P(x, F.bas(x) - 3);
+  s += '<path d="' + d + '" fill="none" stroke="#1c1026" stroke-width="9" opacity=".1"/></g></g>';
+  if(F.aretes) s += '<path d="' + F.aretes + '" fill="none" stroke="' + K + '" stroke-width="' + (F.fin ? 1.6 : 2.4) + '" stroke-linecap="round" opacity="' + (F.fin ? .38 : .8) + '"/>';
+  s += '<path d="' + F.cote + '" fill="none" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>';
+  /* le dessus */
+  var cD = G ? cG : (Pa.arc ? '#f6dd9a' : (lum(Pa.c) < .3 ? clair(Pa.c, .16) : clair(Pa.c, .22)));
+  s += '<path data-p="' + (G ? 'glacage' : 'pate') + '" d="' + F.dessus + '" fill="' + cD + '" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>';
+  s += '<ellipse pointer-events="none" cx="' + f1(-r * .34) + '" cy="' + f1(-h - e * .12) + '" rx="' + f1(r * .36) + '" ry="' + f1(e * .3) + '" fill="#fff" opacity=".36"/>';
+  /* la bordure de crème, tout autour du dessus (celles du fond d'abord) */
+  if(t.creme){
+    var cC = A.glac(t.cremeC || 'blanc').c, pas = {perles:11, rosettes:15.5, festons:16, etoiles:16, nuages:19.5}[t.creme] || 15;
+    var pts = semer(F.tour, pas).sort(function(a, b){ return a[1] - b[1]; }), yMin = -h - e, yMax = -h + e;
+    s += '<g data-p="creme">';
+    pts.forEach(function(p){
+      var u = Math.max(0, Math.min(1, (p[1] - yMin) / ((yMax - yMin) || 1)));
+      if(t.creme === 'festons' && p[1] < -h - .01) return;   /* les festons pendent devant seulement */
+      s += '<g transform="translate(' + P(p[0], p[1] + (t.creme === 'festons' ? 3 : 0)) + ')">' + A.bouleCreme(t.creme, cC, .8 + .22 * u) + '</g>';
+    });
+    s += '</g>';
+  }
+  /* il étincelle (Romain, 11 novembre, 20 h 29) : de petits éclats s'allument et s'éteignent, chacun à son tour */
+  for(i = 0; i < 4; i++){
+    x = (R() * 2 - 1) * r * .86; var ye = i === 0 ? -h + (R() - .5) * e : y0(x) + (.14 + R() * .72) * h;
+    s += '<g transform="translate(' + P(x, ye) + ') scale(' + f1(.7 + R() * .7) + ')"><path class="gt-eclat" style="animation-delay:' + f1(-R() * 2.6) + 's" d="M0,-10 C1,-2 2,-1 10,0 C2,1 1,2 0,10 C-1,2 -2,1 -10,0 C-2,-1 -1,-2 0,-10 Z" fill="#fff" stroke="#ffd21f" stroke-width="1.3"/></g>';
+  }
+  if(choisi) s += '<path class="gt-sel" d="' + F.cote + ' ' + F.dessus + '"/>';
+  return s;
+}
+/* tout le gâteau (opts.neuf : l'étage qui vient de se poser ; opts.pouf : celui qui vient de changer ; opts.choisi : celui qu'on montre) */
+function gateauSVG(etages, id, opts){
+  opts = opts || {};
+  return geo(etages).map(function(g){
+    var t = etages[g.k];
+    return '<g class="gt-etage" data-k="' + g.k + '" transform="translate(' + P(g.cx, g.yB) + ')' + (g.s ? ' skewX(' + (-g.dir * 9) + ')' : '') + '">' +
+      '<g class="gt-e-in' + (opts.neuf === g.k ? ' gt-tombe' : (opts.pouf === g.k ? ' gt-pouf' : '')) + '">' + etageSVG(t, g, id, opts.choisi === g.k) + '</g></g>';
+  }).join('');
+}
+function etageNeuf(){ return {forme:'rond', penche:false, pate:'vanille', glacage:'rose', motif:'coulant', creme:null, cremeC:'blanc'}; }
+
+/* Combien de gâteaux différents, sans une seule décoration ? (le calcul suit les listes : il reste juste si on en ajoute) */
+function compte(){
+  var nB = A.PINCEAUX.length, nP = A.PATES.length + nB, nG = A.GLACAGES.length + nB, aspects = nP;   /* les couleurs des listes, plus celles du pinceau ; d'abord : sans glaçage */
+  A.MOTIFS.forEach(function(m){
+    if(!PLEINS[m.id]) aspects += nP * nG;                 /* un glaçage qui laisse voir la pâte */
+    else aspects += nG * (m.id === 'lisse' ? 1 : 1 + nB);  /* un glaçage qui couvre tout ; ses pois, ses rayures, ses vagues : leur couleur, ou une du pinceau */
+  });
+  var cremes = A.CREMES.length * (A.CREME_COUL.length + nB) + 1, parEtage = A.FORMES.length * 2 * aspects * cremes, table = A.PLATS.length * (1 + nB) * A.NAPPES.length * (1 + nB);
+  var total = 0, l = []; for(var n = 1; n <= MAX_ETAGES; n++){ var v = Math.pow(parEtage, n) * table; l.push(v); total += v; }
+  var decos = 0; A.CATS.forEach(function(c){ decos += c.l.length; });
+  return {parEtage:parEtage, table:table, unEtage:l[0], parNombre:l, total:total, decorations:decos, couleursParDecoration:1 + nB};
+}
+MJ.GATEAU = {compte:compte, sons:SONS, etageSVG:etageSVG, gateauSVG:gateauSVG, geo:geo};
+
+/* ---------- Les deux colonnes d'icônes ---------- */
+var GAUCHE = [{id:'etages', nom:'Étages'}, {id:'pate', nom:'Pâte'}, {id:'glacage', nom:'Glaçage'}, {id:'motif', nom:'Motif'}, {id:'creme', nom:'Crème'}, {id:'table', nom:'Table'}, {id:'couleurs', nom:'Couleurs'}];
+var PAR_ETAGE = {etages:1, pate:1, glacage:1, motif:1, creme:1};
+var CAT = {}; A.CATS.forEach(function(c){ CAT[c.id] = c; });
+
+/* ---------- Ce que dit le conteur ---------- */
+var DIT = {
+  debut:'Un gâteau bien sage… pour l\'instant. Les ronds, sur les côtés, débordent de surprises !',
+  deco:'Un petit coup de doigt : elle tourne. Fais-la glisser : elle voyage !',
+  plein:'Stop ! Le gâteau n\'en peut plus. Une de plus, et il s\'écroule !',
+  minute:'Plus qu\'une minute ! Gaspard a déjà sorti les assiettes.',
+  pinceau:'Un pinceau magique ! Choisis une couleur, puis effleure ce que tu veux repeindre : une fraise, un étage, la nappe…',
+  fini:'Dong ! Les cinq minutes sont passées. Gaspard emporte le gâteau… en courant !'
+};
+function phraseFin(R){
+  if(R.parDeco.chaussette) return 'Une chaussette sur un gâteau ? À Brumeval, on appelle ça de la grande cuisine !';
+  if(R.chats >= 7) return 'Les sept chats d\'Odette sont tous là. Ils se trouvent très ressemblants !';
+  if(!R.nbDecos) return 'Un gâteau tout nu ? Sobre, élégant… et il reste de la place pour les fraises !';
+  if(R.parDeco.sardine || R.parDeco.fromage || R.parDeco.cornichon) return 'Sucré, salé, un peu les deux… Gaspard goûte. Il en reprend. Deux fois !';
+  if(R.etages >= 4) return 'Quatre étages ! Il faudra une échelle pour souffler les bougies.';
+  return U.choix(['Gaspard en lâche sa cuillère. Un gâteau pareil, Brumeval n\'en a jamais vu !', 'Toute la place retient son souffle. Même les pigeons font la queue !', 'Le clocher sonne tout seul. Il veut sa part, lui aussi !']);
+}
+
+/* ==========================================================
+   Le jeu
+   ========================================================== */
+function jouer(zone, params, fin){
+  var id = uid(), arrete = false, enFete = false, minuteurs = [];
+  var etat = {etages:[etageNeuf()], sel:0, plat:'porcelaine', nappe:'vichy', decos:[]}, nDeco = 0, histoire = [], ouvert = null, tours = {}, dejaDit = {};
+  var reste = (params && params.duree) || DUREE, tempsFini = false, horloge = null, tAvant = Date.now();
+  var pinceau = A.PINCEAUX[0].c;   /* la couleur du pinceau (null : « d'origine », il rend ses couleurs à ce qu'il touche) */
+  var VB = '0 0 640 ' + HAUT_VUE, MONDE = '<g class="gt-monde" transform="translate(0,' + (-DY) + ')">';
+  zone.innerHTML = '';
+  var racine = U.html('<div class="gt">' +
+    /* deux calques : la place, un peu floue (Romain, 11 novembre, 20 h 39 : « l'arrière-plan un peu flou », pour que ses couleurs
+       ne se mêlent pas à celles du gâteau) ; et, par-dessus, bien nets, la table, le plat, le gâteau et ses décorations */
+    '<svg class="gt-fond" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' + A.defs(id) + MONDE + A.fond(id) + '</g></svg>' +
+    '<svg class="gt-scene" viewBox="' + VB + '" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Le gâteau">' + MONDE + '<g class="gt-table"></g><g class="gt-plat"></g><g class="gt-gateau"></g><g class="gt-decos"></g></g></svg>' +
+    '<div class="gt-pluie" aria-hidden="true"></div>' +
+    '<div class="gt-col gt-gauche"></div><div class="gt-col gt-droite"></div>' +
+    '<div class="gt-plateau" hidden></div>' +
+    '<div class="gt-bas"><button type="button" class="gt-rond gt-annuler" aria-label="Annuler" disabled>↩️</button><span class="gt-rond gt-poubelle" role="img" aria-label="La poubelle">🗑️</span>' +
+      '<span class="gt-temps" role="timer" aria-label="Le temps qui reste"><i aria-hidden="true">⏳</i><b>5:00</b></span>' +
+      '<div class="gt-place"><div class="gt-conteur" hidden></div></div><button type="button" class="btn b-aller gt-pret">🎂 C\'est prêt !</button></div>' +
+    '<div class="gt-final" hidden></div>' +
+  '</div>');
+  zone.appendChild(racine);
+  var q = function(s){ return racine.querySelector(s); };
+  var scene = q('.gt-scene'), monde = scene.querySelector('.gt-monde'), gTable = q('.gt-table'), gPlat = q('.gt-plat'), gGateau = q('.gt-gateau'), gDecos = q('.gt-decos');
+  var colG = q('.gt-gauche'), colD = q('.gt-droite'), plateau = q('.gt-plateau'), conteur = q('.gt-conteur'), bAnnuler = q('.gt-annuler'), poubelle = q('.gt-poubelle'), bPret = q('.gt-pret'), final = q('.gt-final'), pluie = q('.gt-pluie'), bTemps = q('.gt-temps');
+  function apres(ms, fn){ var t = setTimeout(function(){ if(!arrete) fn(); }, ms); minuteurs.push(t); return t; }
+
+  /* ----- les icônes ----- */
+  function boutonIcone(c, i){
+    var b = U.html('<button type="button" class="gt-ic" data-c="' + c.id + '" style="--i:' + i + '" aria-label="' + esc(c.nom) + '">' + A.icone(c.id) + '<b>' + esc(c.nom) + '</b></button>');
+    b.addEventListener('click', function(){ if(enFete) return; b.classList.remove('gt-rebond'); void b.offsetWidth; b.classList.add('gt-rebond'); ouvrir(c.id); });
+    return b;
+  }
+  GAUCHE.forEach(function(c, i){ colG.appendChild(boutonIcone(c, i)); });
+  A.CATS.forEach(function(c, i){ colD.appendChild(boutonIcone(c, i + 3)); });
+
+  /* ----- les dessins ----- */
+  function rendreTable(){ gTable.innerHTML = A.table(id, etat.nappe, etat.nappeC); }
+  function rendrePlat(){ gPlat.innerHTML = A.plat(id, etat.plat, etat.platC); }
+  function montrerChoisi(){ return etat.etages.length > 1 && ouvert && PAR_ETAGE[ouvert] ? etat.sel : -1; }
+  function rendreGateau(opts){ opts = opts || {}; opts.choisi = opts.choisi !== undefined ? opts.choisi : montrerChoisi(); gGateau.innerHTML = gateauSVG(etat.etages, id, opts); }
+  function noeudDeco(d){
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'gt-deco'); g.setAttribute('data-id', d.id); g.setAttribute('transform', 'translate(' + P(d.x, d.y) + ')');
+    if(tours[d.id] === undefined) tours[d.id] = d.r;
+    g.innerHTML = '<circle class="gt-prise" r="30"/><g class="gt-deco-p"><g class="gt-deco-r" style="transform:rotate(' + tours[d.id] + 'deg)">' + A.dessinDeco(d.d, d.t) + '</g></g>';
+    return g;
+  }
+  function rendreDecos(){ gDecos.innerHTML = ''; tours = {}; etat.decos.forEach(function(d){ gDecos.appendChild(noeudDeco(d)); }); }
+  function noeudDe(d){ return gDecos.querySelector('.gt-deco[data-id="' + d.id + '"]'); }
+  function parId(n){ for(var i = 0; i < etat.decos.length; i++) if(String(etat.decos[i].id) === String(n)) return etat.decos[i]; return null; }
+  function toutRendre(){ rendreTable(); rendrePlat(); rendreGateau(); rendreDecos(); }
+
+  /* ----- revenir en arrière ----- */
+  function memo(){ histoire.push(JSON.stringify(etat)); if(histoire.length > 60) histoire.shift(); bAnnuler.disabled = false; }
+  function annuler(){
+    if(!histoire.length || enFete) return;
+    prises = {}; racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');   /* (ce qu'un autre doigt tenait est lâché) */
+    etat = JSON.parse(histoire.pop()); bAnnuler.disabled = !histoire.length;
+    toutRendre(); if(ouvert) bulles(ouvert, true); son('annule');
+  }
+  bAnnuler.addEventListener('click', annuler);
+
+  /* ----- le conteur (une petite phrase en haut, avec son 🔊 ; jamais lue toute seule) ----- */
+  var tConteur = null;
+  function dire(cle, duree){
+    if(dejaDit[cle]) return; dejaDit[cle] = 1;
+    conteur.innerHTML = '<p>' + esc(DIT[cle]) + '</p>'; conteur.appendChild(MJ.boutonLire(DIT[cle])); conteur.hidden = false; sousLesBulles();
+    clearTimeout(tConteur); if(duree) tConteur = apres(duree, taire);
+  }
+  function taire(){ conteur.hidden = true; clearTimeout(tConteur); }
+  /* sur un petit écran, la phrase est en haut (en bas, elle cacherait le gâteau) : sous les bulles quand il y en a */
+  function sousLesBulles(){ racine.style.setProperty('--gt-sous', (ouvert && !plateau.hidden ? plateau.offsetTop + plateau.offsetHeight + 6 : 8) + 'px'); }
+
+  /* ----- les bulles d'une icône ----- */
+  function contenu(c){
+    var t = etat.etages[etat.sel], l = [], n = etat.etages.length;
+    if(c === 'etages'){
+      l.push({j:A.jeton('plus'), nom:'Étage en plus', act:'plus', off:n >= MAX_ETAGES}, {j:A.jeton('moins'), nom:'Étage en moins', act:'moins', off:n <= 1}, {sep:1});
+      A.FORMES.forEach(function(f){ l.push({j:A.jeton(f.id), nom:f.nom, act:'forme', v:f.id, on:t.forme === f.id}); });
+      l.push({j:A.jeton('penche'), nom:'Penché', act:'penche', on:!!t.penche});
+    } else if(c === 'pate') A.PATES.forEach(function(p){ l.push({j:A.jetonPate(p), nom:p.nom, act:'pate', v:p.id, on:t.pate === p.id}); });
+    else if(c === 'glacage'){
+      A.GLACAGES.forEach(function(g){ l.push({j:A.jetonCouleur(g), nom:g.nom, act:'glacage', v:g.id, on:t.glacage === g.id}); });
+      l.push({j:A.jeton('sans'), nom:'Sans glaçage', act:'glacage', v:null, on:!t.glacage});
+    } else if(c === 'motif') A.MOTIFS.forEach(function(m){ l.push({j:A.jeton(m.id), nom:m.nom, act:'motif', v:m.id, on:!!t.glacage && t.motif === m.id}); });
+    else if(c === 'creme'){
+      A.CREMES.forEach(function(m){ l.push({j:A.jetonCreme(m.id), nom:m.nom, act:'creme', v:m.id, on:t.creme === m.id}); });
+      l.push({j:A.jeton('sans'), nom:'Sans crème', act:'creme', v:null, on:!t.creme}, {sep:1});
+      A.CREME_COUL.forEach(function(k){ var g = A.glac(k); l.push({j:A.jetonCouleur(g), nom:g.nom, act:'cremeC', v:k, on:!!t.creme && t.cremeC === k}); });
+    } else if(c === 'table'){
+      A.PLATS.forEach(function(p){ l.push({j:jetonPlat(p.id), nom:p.nom, act:'plat', v:p.id, on:etat.plat === p.id}); });
+      l.push({sep:1});
+      A.NAPPES.forEach(function(p){ l.push({j:jetonNappe(p.id), nom:p.nom, act:'nappe', v:p.id, on:etat.nappe === p.id}); });
+    } else if(c === 'couleurs'){
+      A.PINCEAUX.forEach(function(p){ l.push({j:A.jetonCouleur(p), nom:p.nom, act:'pinceau', v:p.c, on:pinceau === p.c}); });
+      l.push({j:A.jeton('origine'), nom:'D\'origine', act:'pinceau', v:null, on:pinceau === null});
+    } else if(CAT[c]) CAT[c].l.forEach(function(d){ l.push({j:A.svgDeco(d.id), nom:d.nom, act:'deco', v:d.id}); });
+    return l;
+  }
+  function jetonPlat(p){ return '<svg viewBox="80 500 480 120" aria-hidden="true">' + A.plat(id + 'j-' + p, p) + '</svg>'; }
+  function jetonNappe(n){ return '<svg viewBox="-30 -30 60 60" aria-hidden="true"><rect x="-22" y="-18" width="44" height="36" rx="5" fill="url(#' + id + 'n-' + n + ')" stroke="' + K + '" stroke-width="2.6"/></svg>'; }
+  function nomIcone(c){ for(var i = 0; i < GAUCHE.length; i++) if(GAUCHE[i].id === c) return GAUCHE[i].nom; return CAT[c] ? CAT[c].nom : ''; }
+  /* Où se posent les bulles : en haut, contre leur colonne d'icônes, là où elles ne cachent ni le gâteau ni l'endroit où les
+     décorations arrivent. On essaie d'abord les plus grosses bulles et le moins de rangées ; s'il n'y a pas la place (un grand
+     gâteau, un petit écran), elles rapetissent ; en dernier recours, on prend ce qui cache le moins. */
+  function placer(){
+    if(!ouvert || plateau.hidden) return;
+    var R = racine.getBoundingClientRect(), cg = colG.getBoundingClientRect(), cd = colD.getBoundingClientRect(), m = monde.getScreenCTM(); if(!m || !R.width) return;
+    var cs = getComputedStyle(racine), basH = parseFloat(cs.getPropertyValue('--gt-bas')) || 66, b0 = parseFloat(cs.getPropertyValue('--gt-b')) || 56;
+    var aGauche = !CAT[ouvert], x0 = cg.right - R.left + 8, x1 = cd.left - R.left - 8, hDispo = R.height - basH - 8;
+    var G = geo(etat.etages), h = G[G.length - 1];
+    function px(x){ return m.a * x + m.e - R.left; } function py(y){ return m.d * y + m.f - R.top; }
+    /* (un étage penché ou cannelé déborde un peu de son rectangle : une marge) */
+    var zones = G.map(function(g){ return [px(Math.min(g.cx, g.cx + g.s) - g.r - 20), py(g.yT - g.e - 14), px(Math.max(g.cx, g.cx + g.s) + g.r + 20), py(g.yB + g.e)]; });
+    zones.push([px(h.cx + h.s - h.r * .8), py(h.yT - 62), px(h.cx + h.s + h.r * .8), py(h.yT)]);
+    var groupes = [0]; contenu(ouvert).forEach(function(e){ if(e.sep) groupes.push(0); else groupes[groupes.length - 1]++; });
+    var plusGros = Math.max.apply(null, groupes);
+    function hauteur(cols, pas){ var r = 0; groupes.forEach(function(n){ r += Math.ceil(n / cols); }); return 8 + 38 + r * pas + (groupes.length - 1) * 10; }
+    function cache(cols, pas){
+      var w = cols * pas - 8, hh = hauteur(cols, pas), a = aGauche ? x0 : x1 - w, s = 0;
+      zones.forEach(function(z){ var ox = Math.min(a + w, z[2]) - Math.max(a, z[0]), oy = Math.min(hh, z[3]) - Math.max(0, z[1]); if(ox > 0 && oy > 0) s += ox * oy; });
+      return s;
+    }
+    var choix = null, repli = null, tailles = [b0, 52, 46, 40].filter(function(b, i, l){ return b <= b0 && l.indexOf(b) === i; });
+    tailles.some(function(b){
+      var pas = b + 8, c = Math.min(plusGros, Math.floor((x1 - x0 + 8) / pas));
+      for(; c >= 2; c--){
+        var hh = hauteur(c, pas), ov = hh > hDispo ? 1e9 + hh : cache(c, pas);
+        if(!repli || ov < repli.ov) repli = {b:b, cols:c, ov:ov};
+        if(ov === 0){ if(!choix || hh <= choix.h) choix = {b:b, cols:c, h:hh}; else break; }
+        else if(choix) break;
+      }
+      return !!choix;
+    });
+    choix = choix || repli || {b:b0, cols:3};
+    plateau.classList.toggle('gt-pl-g', aGauche); plateau.classList.toggle('gt-pl-d', !aGauche);
+    plateau.style.left = aGauche ? Math.round(x0) + 'px' : ''; plateau.style.right = aGauche ? '' : Math.round(R.width - x1) + 'px';
+    plateau.style.setProperty('--gt-b', choix.b + 'px'); plateau.style.setProperty('--cols', choix.cols);
+    sousLesBulles();
+  }
+  function bulles(c, calme){
+    var l = contenu(c), nb = 0, i = 0;
+    l.forEach(function(e){ if(!e.sep) nb++; });
+    plateau.innerHTML = ''; plateau.hidden = false; plateau.classList.toggle('gt-calme', !!calme);
+    var titre = U.html('<div class="gt-titre"><b>' + esc(nomIcone(c)) + '</b></div>');
+    if(PAR_ETAGE[c] && etat.etages.length > 1){
+      var ch = U.html('<span class="gt-quel" aria-label="Quel étage ?"></span>');
+      etat.etages.forEach(function(t, k){
+        var bk = U.html('<button type="button" class="gt-num' + (k === etat.sel ? ' on' : '') + '" aria-label="Étage ' + (k + 1) + '">' + (k + 1) + '</button>');
+        bk.addEventListener('click', function(){ choisirEtage(k); });
+        ch.appendChild(bk);
+      });
+      titre.appendChild(ch);
+    }
+    plateau.appendChild(titre);
+    var pasMs = nb > 10 ? 32 : 55;
+    l.forEach(function(e){
+      if(e.sep){ plateau.appendChild(U.html('<i class="gt-sep"></i>')); return; }
+      var b = U.html('<button type="button" class="gt-bulle' + (e.on ? ' on' : '') + (e.act === 'deco' ? ' gt-bulle-deco' : '') + '" style="animation-delay:' + (i * pasMs) + 'ms" aria-label="' + esc(e.nom) + '"' + (e.off ? ' disabled' : '') + '>' + e.j + '</button>');
+      i++;
+      if(e.act === 'deco') tirer(b, e); else b.addEventListener('click', function(){ agir(e); });
+      plateau.appendChild(b);
+    });
+    placer();
+    return nb;
+  }
+  function montrerNom(nom){ var b = plateau.querySelector('.gt-titre b'); if(b){ b.textContent = nom; b.classList.remove('gt-nom-pop'); void b.offsetWidth; b.classList.add('gt-nom-pop'); } }
+  function ouvrir(c){
+    taire();
+    racine.querySelectorAll('.gt-appel').forEach(function(e){ e.classList.remove('gt-appel'); });
+    if(ouvert === c){ fermer(); U.son('clic'); return; }
+    ouvert = c; racine.classList.add('gt-ouvert');
+    racine.querySelectorAll('.gt-ic').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-c') === c); });
+    pops(bulles(c));
+    rendreGateau();
+  }
+  function fermer(){
+    if(!ouvert) return;
+    ouvert = null; plateau.hidden = true; plateau.innerHTML = ''; racine.classList.remove('gt-ouvert'); sousLesBulles();
+    racine.querySelectorAll('.gt-ic.on').forEach(function(b){ b.classList.remove('on'); });
+    rendreGateau();
+  }
+  function choisirEtage(k){
+    if(k === etat.sel && montrerChoisi() === k) return;
+    etat.sel = k; U.son('clic');
+    if(ouvert && PAR_ETAGE[ouvert]){ bulles(ouvert, true); rendreGateau({pouf:k}); }
+    else { rendreGateau({pouf:k, choisi:etat.etages.length > 1 ? k : -1}); apres(1300, function(){ if(!ouvert || !PAR_ETAGE[ouvert]) rendreGateau(); }); }
+  }
+  /* quand un étage se couche ou se redresse, les décorations posées plus haut suivent */
+  function suivre(k, avant){
+    var G = geo(etat.etages)[k], ds = G.s - avant;
+    etat.decos.forEach(function(d){ if(d.y < G.yB){ d.x += ds * Math.min(1, (G.yB - d.y) / G.h); var n = noeudDe(d); if(n) n.setAttribute('transform', 'translate(' + P(d.x, d.y) + ')'); } });
+  }
+  function agir(e){
+    if(enFete) return;
+    var t = etat.etages[etat.sel], k = etat.sel;
+    montrerNom(e.nom);
+    switch(e.act){
+      case 'plus':
+        if(etat.etages.length >= MAX_ETAGES) return;
+        memo(); var haut = etat.etages[etat.etages.length - 1], neuf = JSON.parse(JSON.stringify(haut)); neuf.penche = false;
+        etat.etages.push(neuf); etat.sel = etat.etages.length - 1;
+        rendreGateau({neuf:etat.sel}); bulles(ouvert, true); montrerNom(e.nom); son('etage'); return;
+      case 'moins':
+        if(etat.etages.length <= 1) return;
+        memo(); etat.etages.pop(); etat.sel = Math.min(etat.sel, etat.etages.length - 1);
+        rendreGateau(); bulles(ouvert, true); montrerNom(e.nom); son('etageMoins'); return;
+      case 'forme': if(t.forme === e.v) return; memo(); t.forme = e.v; son('forme'); break;
+      case 'penche': memo(); var av = geo(etat.etages)[k].s; t.penche = !t.penche; suivre(k, av); son('penche'); break;
+      case 'pate': if(t.pate === e.v) return; memo(); t.pate = e.v; son('pate'); break;
+      case 'glacage': if((t.glacage || null) === e.v) return; memo(); t.glacage = e.v; son('glacage'); break;
+      case 'motif': if(t.glacage && t.motif === e.v) return; memo(); t.motif = e.v; if(!t.glacage) t.glacage = 'rose'; son('motif'); break;
+      case 'creme': if((t.creme || null) === e.v) return; memo(); t.creme = e.v; son('creme'); break;
+      case 'cremeC': if(t.creme && t.cremeC === e.v) return; memo(); t.cremeC = e.v; if(!t.creme) t.creme = 'rosettes'; son('creme'); break;
+      case 'plat': if(etat.plat === e.v && !etat.platC) return; memo(); etat.plat = e.v; etat.platC = null; rendrePlat(); son('plat'); majBulles(); return;
+      case 'nappe': if(etat.nappe === e.v && !etat.nappeC) return; memo(); etat.nappe = e.v; etat.nappeC = null; rendreTable(); son('nappe'); majBulles(); return;
+      case 'pinceau': pinceau = e.v; U.son('clic'); majBulles(); dire('pinceau', 12000); return;
+    }
+    rendreGateau({pouf:k}); majBulles();
+  }
+  /* les bulles choisies changent de halo, sans que tout se redessine */
+  function majBulles(){
+    if(!ouvert) return;
+    var l = contenu(ouvert).filter(function(e){ return !e.sep; }), bs = plateau.querySelectorAll('.gt-bulle');
+    l.forEach(function(e, i){ if(bs[i]) bs[i].classList.toggle('on', !!e.on); });
+  }
+
+  /* ----- les décorations : poser, déplacer, tourner, jeter ----- */
+  function versScene(x, y){ var m = monde.getScreenCTM(); if(!m) return {x:CX, y:300}; var p = scene.createSVGPoint(); p.x = x; p.y = y; p = p.matrixTransform(m.inverse()); return {x:p.x, y:p.y}; }
+  function limites(){
+    var R = racine.getBoundingClientRect(), cg = colG.getBoundingClientRect(), cd = colD.getBoundingClientRect(), bas = q('.gt-bas').getBoundingClientRect();
+    var a = versScene(Math.max(R.left, cg.right) + 2, R.top + 4), b = versScene(Math.min(R.right, cd.left) - 2, bas.top + 14);
+    return {x0:a.x + 20, y0:a.y + 24, x1:b.x - 20, y1:b.y - 20};
+  }
+  function borner(p, L){ return {x:Math.max(L.x0, Math.min(L.x1, p.x)), y:Math.max(L.y0, Math.min(L.y1, p.y))}; }
+  function surPoubelle(x, y){ var r = poubelle.getBoundingClientRect(); return Math.abs(x - (r.left + r.width / 2)) < r.width * .85 && Math.abs(y - (r.top + r.height / 2)) < r.height * .85; }
+  /* L'endroit où une décoration arrive quand on touche sa bulle : d'abord sur le dessus du gâteau, puis sur le rebord de chaque
+     étage, à gauche, à droite ; au tour suivant, un peu à côté (jamais deux fois pile au même endroit). */
+  function arrivee(){
+    var G = geo(etat.etages), places = [], i, j;
+    for(i = G.length - 1; i >= 0; i--){
+      var g = G[i], sup = G[i + 1], mx = g.cx + g.s;
+      if(!sup){ var nb = Math.max(1, Math.round(g.r * 1.4 / 46)), ordre = []; for(j = 0; j < nb; j++) ordre.push(j); ordre.sort(function(a, b){ return Math.abs(a - (nb - 1) / 2) - Math.abs(b - (nb - 1) / 2); });
+        ordre.forEach(function(k){ places.push([mx + (nb > 1 ? (k / (nb - 1) - .5) * g.r * 1.3 : 0), g.yT - 17]); }); }
+      else places.push([mx - (g.r + sup.r) / 2, g.yT - 15], [mx + (g.r + sup.r) / 2, g.yT - 15]);
+    }
+    var n = nDeco, p = places[n % places.length], tour = Math.floor(n / places.length) % 5;
+    return {x:p[0] + tour * 9 * (tour % 2 ? 1 : -1), y:p[1] - tour * 7};
+  }
+  function ajouter(did, p){
+    if(etat.decos.length >= MAX_DECOS){ dire('plein', 6000); son('plein'); return null; }
+    memo();
+    var d = {id:++nDeco, d:did, x:p.x, y:p.y, r:0};
+    etat.decos.push(d); gDecos.appendChild(noeudDeco(d));
+    return d;
+  }
+  function pose(d){
+    var n = noeudDe(d); if(!n) return;
+    var pp = n.querySelector('.gt-deco-p'); pp.classList.remove('gt-pose'); void pp.getBoundingClientRect(); pp.classList.add('gt-pose');
+    son(A.DECOS[d.d].son);
+    if(!dejaDit.deco) dire('deco', 9000);
+  }
+  function jeter(d){
+    var n = noeudDe(d), i = etat.decos.indexOf(d); if(i >= 0) etat.decos.splice(i, 1);
+    if(n){ n.classList.add('gt-part'); n.style.pointerEvents = 'none'; apres(260, function(){ if(n.parentNode) n.parentNode.removeChild(n); }); }
+    son('poubelle');
+  }
+  function devant(d){ var i = etat.decos.indexOf(d); if(i >= 0){ etat.decos.splice(i, 1); etat.decos.push(d); } var n = noeudDe(d); if(n) gDecos.appendChild(n); }
+  /* (x, y) : où la décoration doit aller, à l'écran ; chaud : le doigt est sur la poubelle */
+  function bouger(d, x, y, L, chaud){
+    var p = borner(versScene(x, y), L); d.x = p.x; d.y = p.y;
+    var n = noeudDe(d); if(n){ n.setAttribute('transform', 'translate(' + P(d.x, d.y) + ')'); n.classList.toggle('gt-jete', !!chaud); }
+    poubelle.classList.toggle('gt-chaud', !!chaud);
+  }
+  function lacher(d, aLaPoubelle){
+    racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');
+    var n = noeudDe(d); if(n) n.classList.remove('gt-tenu', 'gt-jete');
+    if(aLaPoubelle) jeter(d); else pose(d);
+  }
+  /* le pinceau : une décoration, un morceau d'étage, le plat, la nappe prennent sa couleur (« d'origine » la leur rend) */
+  function peindreDeco(d){
+    if((d.t || null) === pinceau) return;
+    memo(); d.t = pinceau;
+    var n = noeudDe(d), neuf = noeudDeco(d); if(n) gDecos.replaceChild(neuf, n); else gDecos.appendChild(neuf);
+    neuf.querySelector('.gt-deco-p').classList.add('gt-pose'); son('pinceau');
+  }
+  function peindreEtage(k, part){
+    var t = etat.etages[k]; if(!t) return;
+    memo();
+    if(part === 'creme') t.cremeC = pinceau || 'blanc';
+    else if(part === 'motif'){ if(pinceau) t.motifC = pinceau; else delete t.motifC; }
+    else if(part === 'pate') t.pate = pinceau || 'vanille';
+    else t.glacage = pinceau || 'rose';
+    rendreGateau({pouf:k}); son('pinceau');
+  }
+  function tourner(d){
+    memo(); d.r = (d.r + 45) % 360; tours[d.id] = (tours[d.id] || 0) + 45;
+    var n = noeudDe(d); if(n) n.querySelector('.gt-deco-r').style.transform = 'rotate(' + tours[d.id] + 'deg)';
+    son('tourne');
+  }
+  /* une décoration déjà posée : glisser = déplacer, toucher = tourner
+     (c'est le calque des décorations qui retient le doigt, pas la décoration : elle passe devant les autres pendant qu'on la promène,
+     et changer un dessin de place dans la page lui ferait lâcher le doigt) */
+  var prises = {};
+  gDecos.addEventListener('pointerdown', function(ev){
+    if(enFete || arrete) return;
+    var g = ev.target.closest ? ev.target.closest('.gt-deco') : null, d = g ? parId(g.getAttribute('data-id')) : null; if(!d) return;
+    ev.preventDefault(); ev.stopPropagation();
+    var p = versScene(ev.clientX, ev.clientY), m = monde.getScreenCTM(), ech = m ? m.a : 1;
+    prises[ev.pointerId] = {d:d, x0:ev.clientX, y0:ev.clientY, ex:(d.x - p.x) * ech, ey:(d.y - p.y) * ech, bouge:false, L:null};
+    try{ gDecos.setPointerCapture(ev.pointerId); }catch(e){}
+  });
+  function surBouge(ev){
+    var pr = prises[ev.pointerId]; if(!pr) return;
+    if(!pr.bouge){
+      if(Math.abs(ev.clientX - pr.x0) + Math.abs(ev.clientY - pr.y0) < 9) return;
+      pr.bouge = true; pr.L = limites(); memo(); devant(pr.d); son('prend');
+      var n = noeudDe(pr.d); if(n) n.classList.add('gt-tenu'); racine.classList.add('gt-drag');
+    }
+    bouger(pr.d, ev.clientX + pr.ex, ev.clientY + pr.ey, pr.L, surPoubelle(ev.clientX, ev.clientY));
+  }
+  function surLache(ev){
+    var pr = prises[ev.pointerId]; if(!pr) return;
+    delete prises[ev.pointerId];
+    try{ gDecos.releasePointerCapture(ev.pointerId); }catch(e){}
+    var perdu = ev.type !== 'pointerup';   /* le doigt a été repris (un appel, un geste du système) : on pose là où elle est */
+    if(pr.bouge) lacher(pr.d, !perdu && surPoubelle(ev.clientX, ev.clientY)); else if(!perdu){ if(ouvert === 'couleurs') peindreDeco(pr.d); else tourner(pr.d); }
+  }
+  gDecos.addEventListener('pointermove', surBouge);
+  gDecos.addEventListener('pointerup', surLache);
+  gDecos.addEventListener('pointercancel', surLache);
+  gDecos.addEventListener('lostpointercapture', surLache);
+  /* une bulle de décoration : on la touche (elle arrive sur le gâteau), ou on la tire jusqu'où on veut */
+  function tirer(b, e){
+    var pr = null;
+    b.addEventListener('pointerdown', function(ev){
+      if(enFete || b.disabled) return;
+      ev.preventDefault();
+      pr = {x0:ev.clientX, y0:ev.clientY, d:null, L:null, pid:ev.pointerId};
+      try{ b.setPointerCapture(ev.pointerId); }catch(er){}
+    });
+    b.addEventListener('pointermove', function(ev){
+      if(!pr || ev.pointerId !== pr.pid) return;
+      if(!pr.d){
+        if(Math.abs(ev.clientX - pr.x0) + Math.abs(ev.clientY - pr.y0) < 12) return;
+        pr.L = limites(); pr.d = ajouter(e.v, borner(versScene(ev.clientX, ev.clientY), pr.L)); if(!pr.d){ pr = null; return; }
+        var n = noeudDe(pr.d); if(n) n.classList.add('gt-tenu'); racine.classList.add('gt-drag'); son('prend'); montrerNom(e.nom);
+      }
+      bouger(pr.d, ev.clientX, ev.clientY, pr.L, surPoubelle(ev.clientX, ev.clientY));
+    });
+    function finTire(ev){
+      if(!pr || ev.pointerId !== pr.pid) return;
+      var p = pr, perdu = ev.type !== 'pointerup'; pr = null;
+      try{ b.releasePointerCapture(ev.pointerId); }catch(er){}
+      if(p.d){ lacher(p.d, !perdu && surPoubelle(ev.clientX, ev.clientY)); return; }
+      if(perdu) return;
+      var d = ajouter(e.v, arrivee()); if(d){ montrerNom(e.nom); pose(d); }
+    }
+    b.addEventListener('pointerup', finTire);
+    b.addEventListener('pointercancel', finTire);
+    b.addEventListener('lostpointercapture', finTire);
+    /* au clavier (pas de doigt) : Entrée pose la décoration sur le gâteau */
+    b.addEventListener('click', function(ev){ if(ev.detail === 0 && !enFete){ var d = ajouter(e.v, arrivee()); if(d){ montrerNom(e.nom); pose(d); } } });
+  }
+  /* toucher un étage : on le choisit ; toucher le décor : les bulles se rangent */
+  scene.addEventListener('pointerdown', function(ev){
+    if(enFete || arrete) return;
+    var g = ev.target.closest ? ev.target.closest('.gt-etage') : null;
+    if(ouvert === 'couleurs'){
+      /* avec le pinceau : on repeint ce qu'on touche (la pâte, le glaçage, le motif, la crème d'un étage ; le plat ; la nappe) */
+      if(g){ var pp = ev.target.closest('[data-p]'), kk = parseInt(g.getAttribute('data-k'), 10) || 0; peindreEtage(kk, pp ? pp.getAttribute('data-p') : (etat.etages[kk].glacage ? 'glacage' : 'pate')); return; }
+      if(gPlat.contains(ev.target)){ if((etat.platC || null) !== pinceau){ memo(); etat.platC = pinceau; rendrePlat(); son('pinceau'); } return; }
+      if(gTable.contains(ev.target)){ if((etat.nappeC || null) !== pinceau){ memo(); etat.nappeC = pinceau; rendreTable(); son('pinceau'); } return; }
+    }
+    if(g){ choisirEtage(parseInt(g.getAttribute('data-k'), 10) || 0); return; }
+    if(ouvert){ fermer(); }
+  });
+
+  /* ----- « C'est prêt ! » : la fête ----- */
+  function resume(){
+    var R = {etages:etat.etages.length, formes:[], pates:[], glacages:[], motifs:[], cremes:[], penches:0, plat:etat.plat, nappe:etat.nappe, nbDecos:etat.decos.length, parCat:{}, parDeco:{}, chats:0};
+    etat.etages.forEach(function(t){ R.formes.push(t.forme); R.pates.push(t.pate); R.glacages.push(t.glacage || ''); R.motifs.push(t.glacage ? t.motif : ''); R.cremes.push(t.creme ? t.creme + ':' + t.cremeC : ''); if(t.penche) R.penches++; });
+    R.repeintes = 0;
+    etat.decos.forEach(function(d){ var c = A.DECOS[d.d].cat; R.parCat[c] = (R.parCat[c] || 0) + 1; R.parDeco[d.d] = (R.parDeco[d.d] || 0) + 1; if(d.t) R.repeintes++; });
+    ['moustache', 'biscotte', 'pompon', 'caramel', 'mistigri', 'noisette', 'grisette'].forEach(function(c){ if(R.parDeco[c]) R.chats++; });
+    return R;
+  }
+  function confettis(){
+    var C = ['#f04a6a', '#f6c52c', '#5bc8f0', '#6fc86a', '#f59a2c', '#bba5ea', '#ffffff'], s = '', n = reduit() ? 0 : 54;
+    for(var i = 0; i < n; i++) s += '<i style="left:' + f1(Math.random() * 100) + '%;background:' + C[i % C.length] + ';--d:' + f1(2.8 + Math.random() * 2.6) + 's;--r:' + Math.round(Math.random() * 360) + 'deg;--x:' + Math.round(Math.random() * 120 - 60) + 'px;animation-delay:' + f1(-Math.random() * 5) + 's;width:' + Math.round(7 + Math.random() * 7) + 'px;height:' + Math.round(10 + Math.random() * 8) + 'px"></i>';
+    pluie.innerHTML = s;
+  }
+  function feter(){
+    if(enFete || arrete) return;
+    enFete = true; fermer(); taire(); U.stop();
+    racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');
+    gDecos.querySelectorAll('.gt-tenu, .gt-jete').forEach(function(n){ n.classList.remove('gt-tenu', 'gt-jete'); });   /* (une décoration qu'on tirait encore de sa bulle se pose là) */
+    racine.classList.add('gt-fini');
+    var R = resume(), phrase = tempsFini ? DIT.fini : phraseFin(R);
+    final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🎉 À la fête !</button></div>';
+    final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
+    final.hidden = false; mesurer();
+    /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
+    if(!tempsFini) final.querySelector('.gt-retouche').addEventListener('click', function(){ enFete = false; tAvant = Date.now(); racine.classList.remove('gt-fini'); final.hidden = true; pluie.innerHTML = ''; U.stop(); U.son('clic'); mesurer(); });
+    final.querySelector('.gt-fete').addEventListener('click', function(){
+      if(arrete) return; U.stop();
+      var det = R.etages + (R.etages > 1 ? ' étages' : ' étage') + (R.nbDecos ? ' et ' + R.nbDecos + (R.nbDecos > 1 ? ' décorations' : ' décoration') : '') + ' : toute la place en parle déjà.';
+      fin({reussi:true, score:1, message:'Quel gâteau !', detail:det, gateau:R});
+    });
+    confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
+  }
+  bPret.addEventListener('click', feter);
+
+  /* ----- le temps : cinq minutes (il s'arrête pendant la pause du jeu, et pendant qu'on regarde la fête) ----- */
+  function ecrireTemps(){
+    var s = Math.max(0, Math.ceil(reste)); bTemps.querySelector('b').textContent = Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+    bTemps.classList.toggle('gt-presse', s <= 30);
+  }
+  function tic(){
+    var t = Date.now(), dt = Math.max(0, Math.min(1.5, (t - tAvant) / 1000)); tAvant = t;
+    if(arrete || enFete || tempsFini) return;
+    var avant = reste; reste -= dt;
+    if(avant > 60 && reste <= 60){ dejaDit.minute = 0; dire('minute', 7000); }
+    if(reste > 0 && reste <= 10 && Math.ceil(reste) !== Math.ceil(avant)) U.son('tic');
+    ecrireTemps();
+    if(reste <= 0){
+      /* c'est l'heure : ce qu'on tenait au bout du doigt se pose là, et le gâteau part à la fête */
+      tempsFini = true; Object.keys(prises).forEach(function(k){ var pr = prises[k]; delete prises[k]; if(pr.bouge) lacher(pr.d, false); });
+      feter();
+    }
+  }
+  horloge = setInterval(tic, 250); ecrireTemps();
+
+  /* ----- la taille des icônes et des bulles suit la place qu'on a ----- */
+  function mesurer(){
+    if(arrete || !racine.isConnected) return;
+    var w = racine.clientWidth, h = racine.clientHeight; if(!w || !h) return;
+    var bas = h < 420 ? 54 : 66, ic = Math.floor((h - bas - 18) / 7) - 16, etroit = w < 640;
+    if(enFete) bas = Math.max(bas, final.offsetHeight);   /* à la fête, le gâteau monte au-dessus de ce que dit le conteur */
+    var place = q('.gt-place'); if(etroit && conteur.parentNode !== racine) racine.appendChild(conteur); else if(!etroit && conteur.parentNode !== place) place.appendChild(conteur);
+    ic = Math.max(38, Math.min(66, ic, w < 520 ? 48 : (w < 760 ? 56 : 66)));
+    racine.style.setProperty('--gt-ic', ic + 'px'); racine.style.setProperty('--gt-bas', bas + 'px');
+    var mm = monde.getScreenCTM(); racine.style.setProperty('--gt-flou', (mm ? Math.max(1.5, Math.min(3.4, mm.a * 2.7)) : 2.6).toFixed(1) + 'px');   /* le flou du fond suit la taille du dessin */
+    racine.style.setProperty('--gt-b', (w < 520 || h < 420 ? 46 : (w < 760 ? 52 : 58)) + 'px');
+    racine.classList.toggle('gt-petit', ic < 50); racine.classList.toggle('gt-etroit', etroit);
+    racine.style.setProperty('--gt-cg', Math.round(colG.offsetWidth) + 'px'); racine.style.setProperty('--gt-cd', Math.round(colD.offsetWidth) + 'px');
+    placer();
+  }
+  var ro = null; try{ ro = new ResizeObserver(mesurer); ro.observe(racine); }catch(e){ window.addEventListener('resize', mesurer); }
+
+  toutRendre(); mesurer();
+  /* pour commencer : le conteur dit un mot, et la première icône appelle le doigt (elle bouge, avec son rond jaune) */
+  dire('debut'); colG.firstChild.classList.add('gt-appel');
+  racine.__gateau = {etat:function(){ return etat; }, resume:resume, temps:function(v){ if(v !== undefined){ reste = v; ecrireTemps(); } return reste; }};   /* pour les essais */
+
+  return {arreter:function(){
+    arrete = true; clearInterval(horloge); minuteurs.forEach(function(t){ clearTimeout(t); }); if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
+  }};
+}
+
+MJ.enregistrer('gateau', {
+  nom:'Le gâteau de la fête', role:'alchimiste', ic:'🎂', minuteur:true,
+  consigne:'Fabrique le gâteau de la fête : jusqu\'à quatre étages, la pâte, le glaçage, la crème, et toutes les décorations que tu veux, posées où tu veux. Un petit coup de doigt sur une décoration la fait tourner. Tu as cinq minutes : à la fin, le gâteau part à la fête tel qu\'il est.',
+  reglages:function(){ return {duree:DUREE, lignes:[{nom:'Étages', val:'de 1 à ' + MAX_ETAGES}, {nom:'Décorations', val:'jusqu\'à ' + MAX_DECOS}, {nom:'Temps', val:'5 minutes'}]}; },
+  jouer:jouer
+});
+MJ.PLEIN_ECRAN = MJ.PLEIN_ECRAN || {}; MJ.PLEIN_ECRAN.gateau = 1;
+MJ.LARGE = MJ.LARGE || {}; MJ.LARGE.gateau = 1;   /* toute la largeur de l'écran : on voit la place en fête derrière le gâteau */
+MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.gateau = 'Cinq minutes pour le plus beau gâteau !';
+
+/* ==========================================================
+   L'explication en images, avant de jouer (MJ.DEMOS.gateau) : la main touche une icône, les bulles sortent, elle en choisit une
+   (le glaçage change) ; puis elle tire une fraise jusqu'au gâteau, et un petit coup de doigt la fait tourner.
+   ========================================================== */
+var MAIN = '<g class="rg-main"><circle class="rg-onde" r="13" fill="none" stroke="#8ff3ff" stroke-width="3" opacity="0"/><g class="rg-main-g">' +
+  '<g transform="scale(.7) rotate(-12)"><path d="M-5,4 C-5,-4 5,-4 5,4 L5,24 C9,21 15,22 16,27 C19,25 24,27 24,32 C27,31 31,34 30,40 L28,54 C27,60 21,64 13,64 L1,64 C-7,64 -11,59 -13,52 L-20,34 C-22,28 -16,25 -12,30 L-5,39 Z" fill="#ffe0c2" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+  '<path d="M5,30 L5,40 M16,31 L16,41" stroke="' + K + '" stroke-width="2.5" stroke-linecap="round" opacity=".5"/></g></g></g>';
+function lisse(u){ u = u < 0 ? 0 : (u > 1 ? 1 : u); return u * u * (3 - 2 * u); }
+function piste(cles){
+  return function(t){
+    for(var i = 0; i < cles.length - 1; i++){ var a = cles[i], b = cles[i + 1]; if(t >= a[0] && t <= b[0]){ var u = lisse((t - a[0]) / ((b[0] - a[0]) || 1)); return {x:a[1] + (b[1] - a[1]) * u, y:a[2] + (b[2] - a[2]) * u, p:!!a[3]}; } }
+    var z = t < cles[0][0] ? cles[0] : cles[cles.length - 1]; return {x:z[1], y:z[2], p:!!z[3]};
+  };
+}
+MJ.DEMOS = MJ.DEMOS || {};
+MJ.DEMOS.gateau = {w:300, h:420, f:function(el){
+  var id = uid(), E = .47, OX = -0.4, OY = 122;   /* la scène (640 de large) tient dans les 300 de la démo */
+  function sc(x, y){ return [OX + x * E, OY + y * E]; }
+  var e1 = etageNeuf(), e2 = etageNeuf(); e1.creme = 'perles'; e2.glacage = 'blanc'; e2.creme = 'rosettes'; e2.cremeC = 'rose';
+  var e2b = JSON.parse(JSON.stringify(e2)); e2b.glacage = 'menthe';
+  var G = geo([e1, e2]);
+  function medaillon(cls, x, y, r, dedans){ return '<g class="' + cls + '" transform="translate(' + P(x, y) + ')"><g class="gtd-in"><circle r="' + r + '" fill="#fff6dc" stroke="' + K + '" stroke-width="' + f1(r * .11) + '"/><g transform="scale(' + f1(r / 36) + ')">' + dedans + '</g></g></g>'; }
+  var IC1 = [62, 392], IC2 = [578, 392], B1 = [[150, 300], [150, 392], [150, 484]], B2 = [486, 392], FR = [300, 348];
+  var coul = ['rose', 'menthe', 'citron'].map(function(c){ return A.glac(c).c; });
+  var VUE = ' viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">', CALQUE = '<g transform="translate(' + OX + ',' + OY + ') scale(' + E + ')">';
+  el.innerHTML = '<div class="gtd-cadre"><svg class="gtd-fond" aria-hidden="true"' + VUE + A.defs(id) + CALQUE + A.fond(id) + '</g></svg><svg class="rg-demo-svg gtd"' + VUE +
+    CALQUE + A.table(id, 'vichy') + A.plat(id, 'porcelaine') +
+      '<g transform="translate(' + P(G[0].cx, G[0].yB) + ')">' + etageSVG(e1, G[0], id + 'a') + '</g>' +
+      '<g class="gtd-e2a" transform="translate(' + P(G[1].cx, G[1].yB) + ')">' + etageSVG(e2, G[1], id + 'b') + '</g>' +
+      '<g class="gtd-e2b" transform="translate(' + P(G[1].cx, G[1].yB) + ')" opacity="0">' + etageSVG(e2b, G[1], id + 'd') + '</g>' +
+      medaillon('gtd-ic1', IC1[0], IC1[1], 46, A.icoBrut('glacage')) + medaillon('gtd-ic2', IC2[0], IC2[1], 46, A.icoBrut('fruits')) +
+      B1.map(function(b, i){ return '<g class="gtd-b1" transform="translate(' + P(b[0], b[1]) + ')" opacity="0"><g class="gtd-in"><circle r="34" fill="#fff6dc" stroke="' + K + '" stroke-width="4"/><circle r="21" fill="' + coul[i] + '" stroke="' + K + '" stroke-width="3.4"/><path d="M-12,-8 C-8,-13 0,-15 7,-13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".6"/></g></g>'; }).join('') +
+      '<g class="gtd-b2" transform="translate(' + P(B2[0], B2[1]) + ')" opacity="0"><g class="gtd-in"><circle r="34" fill="#fff6dc" stroke="' + K + '" stroke-width="4"/><g transform="scale(1.05)">' + A.DECOS.fraise.dessin() + '</g></g></g>' +
+      '<g class="gtd-fr" opacity="0"><g class="gtd-frr" transform="scale(1.5)">' + A.DECOS.fraise.dessin() + '</g></g>' +
+    '</g>' + MAIN + '</svg></div>';
+  var svg = el.querySelector('.gtd'), $ = function(s){ return svg.querySelector(s); }, $$ = function(s){ return Array.prototype.slice.call(svg.querySelectorAll(s)); };
+  var main = $('.rg-main'), ic1 = $('.gtd-ic1 .gtd-in'), ic2 = $('.gtd-ic2 .gtd-in'), b1 = $$('.gtd-b1'), b2 = $('.gtd-b2'), fr = $('.gtd-fr'), frr = $('.gtd-frr'), ea = $('.gtd-e2a'), eb = $('.gtd-e2b');
+  /* le film (8 secondes) : 0,8 la main touche « glaçage » ; 1,9 elle touche la bulle verte ; 3,4 elle touche « fruits » ;
+     4,3 → 5,5 elle tire la fraise jusqu'au gâteau ; 6,3 un petit coup de doigt : la fraise tourne */
+  var m1 = sc(IC1[0], IC1[1]), mb = sc(B1[1][0], B1[1][1]), m2 = sc(IC2[0], IC2[1]), mf = sc(B2[0], B2[1]), mg = sc(FR[0], FR[1]);
+  var PF = piste([[0, 120, 400, 0], [.7, m1[0], m1[1], 0], [.8, m1[0], m1[1], 1], [1.05, m1[0], m1[1], 0], [1.8, mb[0], mb[1], 0], [1.9, mb[0], mb[1], 1], [2.15, mb[0], mb[1], 0],
+    [3.3, m2[0], m2[1], 0], [3.4, m2[0], m2[1], 1], [3.65, m2[0], m2[1], 0], [4.2, mf[0], mf[1], 0], [4.3, mf[0], mf[1], 1], [5.5, mg[0], mg[1], 1], [5.6, mg[0], mg[1], 0], [5.9, mg[0] + 14, mg[1] + 26, 0],
+    [6.2, mg[0], mg[1], 0], [6.3, mg[0], mg[1], 1], [6.5, mg[0], mg[1], 0], [7.2, mg[0] + 40, mg[1] + 70, 0], [8, 120, 400, 0]]);
+  var TAPES = [.8, 1.9, 3.4, 6.3], P0 = 8;
+  function rebond(t, t0){ var u = (t - t0) / .4; return u > 0 && u < 1 ? 1 + .16 * Math.sin(Math.PI * u) * (1 - u) * 2 : 1; }
+  function eclos(t, t0){ var u = (t - t0) / .35; if(u <= 0) return 0; if(u >= 1) return 1; return u < .6 ? 1.12 * lisse(u / .6) : 1.12 - .12 * lisse((u - .6) / .4); }
+  function image(t){
+    var m = PF(t), o = main.firstChild, mm = main.lastChild, r = 13, op = m.p ? .8 : 0;
+    main.setAttribute('transform', 'translate(' + P(m.x, m.y) + ')');
+    TAPES.forEach(function(tt){ if(t >= tt && t < tt + .5){ var u = (t - tt) / .5; r = 9 + 22 * u; op = 1 - u; } });
+    o.setAttribute('r', f1(r)); o.setAttribute('opacity', op.toFixed(2)); mm.setAttribute('transform', m.p ? 'scale(.9)' : '');
+    ic1.setAttribute('transform', 'scale(' + rebond(t, .8).toFixed(3) + ')'); ic2.setAttribute('transform', 'scale(' + rebond(t, 3.4).toFixed(3) + ')');
+    b1.forEach(function(b, i){ var k = t < 2.9 ? eclos(t, .9 + i * .09) : 1 - lisse((t - 2.9) / .25); b.setAttribute('opacity', k > 0 ? Math.min(1, k * 1.5).toFixed(2) : '0'); b.firstChild.setAttribute('transform', 'scale(' + Math.max(.01, k).toFixed(3) + ')'); });
+    var vert = lisse((t - 1.9) / .25) * (1 - lisse((t - 7.5) / .4));
+    eb.setAttribute('opacity', vert.toFixed(2)); ea.setAttribute('opacity', vert > .99 ? '0' : '1');
+    var k2 = t < 5.7 ? eclos(t, 3.5) : 1 - lisse((t - 5.7) / .25); b2.setAttribute('opacity', k2 > 0 ? Math.min(1, k2 * 1.5).toFixed(2) : '0'); b2.firstChild.setAttribute('transform', 'scale(' + Math.max(.01, k2).toFixed(3) + ')');
+    /* la fraise : elle sort de sa bulle sous le doigt, se pose, puis tourne d'un cran */
+    var vis = t > 4.35 && t < 7.6 ? 1 : 0, u = lisse((t - 4.3) / 1.2), fx = B2[0] + (FR[0] - B2[0]) * u, fy = B2[1] + (FR[1] - B2[1]) * u;
+    fr.setAttribute('opacity', vis ? (t > 7.3 ? (1 - lisse((t - 7.3) / .3)).toFixed(2) : '1') : '0');
+    fr.setAttribute('transform', 'translate(' + P(fx, fy) + ')');
+    frr.setAttribute('transform', 'scale(' + (t > 4.3 && t < 5.5 ? 1.7 : 1.5) + ') rotate(' + f1(45 * lisse((t - 6.3) / .25)) + ')');
+  }
+  if(reduit()){ image(5.55); return {arreter:function(){}}; }
+  image(0);
+  var stop = U.boucle(function(dt, T){ if(!svg.isConnected) return false; image(T % P0); });
+  el.__rgImage = image;
+  return {arreter:stop};
+}};
+})();
+
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== revision.js ===== */
 /* ==========================================================
    Brumeval — relire un mini-jeu du Barde après coup.
@@ -27754,9 +29288,9 @@ var VARIANTES = {
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
       departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
     /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
-    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
+    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
       departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
+    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
       departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}}],
   cachette:[{id:'foret', ic:'🌲', nom:'Se cacher : la forêt', d:'Passer derrière Silas (enquête 2)', params:{decor:'foret'}},
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
@@ -27773,6 +29307,7 @@ var EN_TRAVAUX = {};
 var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
+  gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };
