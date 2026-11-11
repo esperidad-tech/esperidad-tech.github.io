@@ -62,6 +62,9 @@ E[3] = {
       {ic:'🎏', t:'Accroche les banderoles de la fête, sur la place.', fait:[{fini:'pisteur:place:banderoles'}]},
       {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
+      /* (étape 6) la nuit : le sac de l'Alchimiste, puis le donjon (descente.js) */
+      {ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de son sac.', fait:[{vu:'sac:recu'}]},
+      {ic:'🕯️', t:'Traverse le donjon avec le Sage et l\'Alchimiste, jusqu\'au bout.', fait:[{vu:'donjon:fini'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
@@ -72,12 +75,14 @@ E[3] = {
       {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
       {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
+      {ic:'🎒', t:'La nuit : donne le code de ton sac au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
       {ic:'🌿', t:'Lis l\'herbier des Fondateurs à l\'Alchimiste, dans ton Grand Livre.', fait:[{lu:'herbier'}]},
+      {ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
@@ -365,6 +370,9 @@ E[3] = {
     encre_l:'L\'encre de la lettre : de la noix de galle, l\'encre noire que vendent les colporteurs.'},
   /* ---------- L'établi des plantes (plantes.js ; E3-atelier-des-plantes.md) : les sept potions de la nuit, faites de vraies plantes ---------- */
   plantes:true,
+  /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
+     pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
+  donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}},
   /* le code du sac (plantes.js) : un code par contenu possible du sac (sept potions, faites ou non : 128), pour le Pisteur */
   codesPlus:(function(){ var l = []; for(var i = 0; i < 128; i++) l.push('sac:' + i); return l; })(),
   /* Le registre du Sage (livre.js) */
@@ -443,12 +451,16 @@ E[3] = {
     copie:{nom:'La copie de la lettre', ic:'📝', pour:['sage', 'alchimiste'], de:'barde',
       t:'Le Barde a recopié la lettre d\'Odette, devant le maire… de sa propre main ! « C\'est ton écriture à toi, ça ! » Impossible de comparer les écritures avec cette copie.',
       dire:'Le Sage et l\'Alchimiste vont l\'étudier : donne-leur ce code.'},
-    grosse_marie:{nom:'La Grosse Marie', ic:'🔔', pour:'pisteur', de:'barde',
+    grosse_marie:{nom:'La Grosse Marie', ic:'🔔', pour:'pisteur', de:'barde', donjon:true,
       t:'DONG… DONG… La Grosse Marie a sonné avant minuit. Sous la terre, la brume recule : une fois, hors d\'un combat, toute la vie des trois héros revient.',
-      dire:'Quand l\'équipe du donjon dit « On est à plat ! », donne ce code au Pisteur.'},
-    maire_retenu:{nom:'Le maire est retenu', ic:'🎩', pour:'pisteur', de:'barde',
+      dire:'Quand l\'équipe du donjon dit « On est à plat ! », donne ce code au Pisteur : il le tape dans le donjon.'},
+    maire_retenu:{nom:'Le maire est retenu', ic:'🎩', pour:'pisteur', de:'barde', donjon:true,
       t:'Le Barde a retenu le maire sur la place : il ne descendra pas trop tôt dans la crypte.',
-      dire:'Le Pisteur doit le taper avant la dernière salle du donjon : donne-lui ce code.'},
+      dire:'Le Pisteur doit le taper dans le donjon, avant la dernière salle : donne-lui ce code.'},
+    /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
+    odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
+      t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
+      dire:'Un gros chat gris gratte à la porte aux quatre signes : donne ce code au Sage.'},
     leo_attrape:{nom:'Léo attrapé', ic:'🧑', pour:'barde', de:'pisteur', pnj:'leo',
       t:'Le Pisteur a attrapé Léo dans la crypte. À toi de le faire parler… doucement.',
       dire:'Le Barde doit parler à Léo : donne-lui ce code.'},
@@ -506,16 +518,17 @@ E[3] = {
       ]}
     },
     /* les cueillettes de l'Alchimiste (étape 4 ; E3-atelier-des-plantes.md §4) : quatre plantes ordinaires, le matin ou l'après-midi */
-    lavoir:{alchimiste:{cueillir:[{plante:'oseille', moments:['matin', 'apresmidi']}]}},
-    herboristerie:{alchimiste:{cueillir:[{plante:'melisse', moments:['matin', 'apresmidi']}]}},
-    moulin:{alchimiste:{cueillir:[{plante:'lin', moments:['matin', 'apresmidi']}]}},
+    /* (aussi la nuit : s'il manque une potion — l'acide de la grille du puits ! —, on peut encore la finir avant de descendre) */
+    lavoir:{alchimiste:{cueillir:[{plante:'oseille'}]}},
+    herboristerie:{alchimiste:{cueillir:[{plante:'melisse'}]}},
+    moulin:{alchimiste:{cueillir:[{plante:'lin'}]}},
     /* les trois plantes rares : il faut l'herbier du Sage (sans lui, « rien à trouver ») */
-    foret:{alchimiste:{cueillir:[{plante:'lycopode', moments:['matin', 'apresmidi'], besoin:[{code:'info:herbier'}], secret:true}]}},
+    foret:{alchimiste:{cueillir:[{plante:'lycopode', besoin:[{code:'info:herbier'}], secret:true}]}},
     clairiere:{
       alchimiste:{intro:'La clairière aux lièvres. L\'herbe est haute, et ça sent le champignon.', points:[
         /* la vesse-de-loup : « Suivre la poussière » (le moteur de la piste, une trace et une arrivée à elle). Un seul essai, et le
            filet : ratée, on la trouve quand même (jamais d'échec qui bloque une potion). */
-        {id:'vesses', ic:'🍄', nom:'La poussière des vesses-de-loup', moments:['matin', 'apresmidi'], mj:'traces',
+        {id:'vesses', ic:'🍄', nom:'La poussière des vesses-de-loup', mj:'traces',
           besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], plante:'vesse', ouvrePartiel:true,
           params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
             departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'},
@@ -575,9 +588,9 @@ E[3] = {
     potager:{
       /* l'Alchimiste : le souci (cueillette ordinaire), et le gui, bien trop haut pour lui (le code pour le Pisteur, qui grimpe) */
       alchimiste:{intro:'Le potager de Basile : des choux, des poireaux, des soucis tout orange, et un vieux pommier tordu.',
-        cueillir:[{plante:'souci', moments:['matin', 'apresmidi']}],
+        cueillir:[{plante:'souci'}],
         points:[
-          {id:'pommier', ic:'🌳', nom:'Le vieux pommier', moments:['matin', 'apresmidi'], besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], donne:'info:gui_pommier',
+          {id:'pommier', ic:'🌳', nom:'Le vieux pommier', besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], donne:'info:gui_pommier',
             t:'« La glu ne touche jamais la terre… » Tout en haut du vieux pommier, une grosse boule verte piquée de perles blanches : du gui ! Bien trop haut pour toi.'}
         ]},
       pisteur:{intro:'Le potager de Basile : des choux, des poireaux, et un vieux pommier tout tordu.', points:[
@@ -598,8 +611,10 @@ E[3] = {
           rate:'« Qui va là ?! » Anselme raccroche la clé à sa ceinture. En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits !',
           ferme:'Anselme garde sa clé à la ceinture.'},
         /* la clé en main : la grille s'ouvre (la descente dans le donjon se branche à l'étape 6) */
-        {id:'crypte', ic:'🕯️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
-          t:'La clé tourne : clac ! La grille grince. Un escalier de pierre descend dans le noir… Moustache file devant toi en miaulant.'}
+        {id:'crypte', ic:'🗝️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
+          t:'La clé tourne : clac ! La grille grince. Un escalier de pierre descend dans le noir… Moustache file devant toi en miaulant.', choix:['descendre']},
+        /* (étape 6) la descente : la fenêtre du donjon (descente.js) ; il lui faut le sac de l'Alchimiste */
+        {id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}], descente:'crypte'}
       ]}
     },
     puits:{
@@ -607,7 +622,12 @@ E[3] = {
         /* seulement si la clé d'Anselme est ratée, ou avec « Le vieux puits » du Barde ; jamais si la clé a été prise.
            (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec le sac, à l'étape 6.) */
         {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{rate:'pisteur:clocher:cle'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
-          t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non.'}
+          t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. Il faudrait de quoi ronger toute cette rouille !'},
+        /* (étape 6) l'acide du sac de l'Alchimiste (le code du sac : P.vus['sac:acide'], plantes.js) fait fondre les barreaux */
+        {id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],
+          alt:'Tu n\'as rien pour ronger la rouille. L\'Alchimiste a ce qu\'il faut : demande-lui le code de son sac, et tape-le dans ton onglet Code.',
+          t:'Tu verses l\'acide de l\'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. Tout en bas, deux yeux brillent : Moustache t\'attend.', choix:['descendre']},
+        {id:'descendre', ic:'🕯️', nom:'Descendre au fond du puits', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:acide'}], descente:'puits'}
       ]}
     }
   },
@@ -940,6 +960,14 @@ E[3] = {
       note:'Le plan des Fondateurs était caché dans le carnet d\'Odette : le chemin des souterrains, sous le village.',
       rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan : des couloirs, sous le village. Tu le ranges dans ton Grand Livre.',
       tPartiel:'Il te servira cette nuit.'},
+    /* (étape 6) la nuit : le plan des souterrains (sa page du donjon, descente.js) ; la porte des Fondateurs, quand le Pisteur l'a trouvée */
+    {id:'donjon', titre:'Le plan des souterrains', ic:'🗺️', moments:['nuit'], horsMoment:'Sous le village, il y aurait de vieux souterrains… Cette page servira cette nuit.',
+      get html(){ return window.M && window.M.donjonPageSage ? window.M.donjonPageSage() : ''; }},
+    /* (obligatoire, livre.js : dès que le Sage a le code de la porte, son Grand Livre s'ouvre tout seul sur cette page, le bouton jaune palpite) */
+    {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', moments:['nuit'], horsMoment:'Une page blanche. Elle s\'écrira cette nuit.', besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
+      avant:'Tout au fond des souterrains, il y aurait une grande porte ronde. Le Pisteur la trouvera-t-il ?',
+      t:'Une porte ronde, scellée. Quatre signes gravés : l\'œil, le chaudron, la lyre et l\'étoile. « Seuls les quatre, ensemble, l\'ouvriront. » Odette est là, derrière, sous le clocher. Mais cette porte ne s\'ouvrira pas cette nuit…',
+      note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'},
     /* QUI : l'écriture (l'Alchimiste) et l'aveu (le Barde) */
     {id:'qui', titre:'Qui a écrit la lettre ?', ic:'🧵', besoin:[{et:[{code:'info:ecriture'}, {code:'info:aveu'}]}], bouton:'Relier les preuves',
       avant:'Il te faut deux preuves : l\'écriture de la lettre (l\'Alchimiste), et un aveu (le Barde).',

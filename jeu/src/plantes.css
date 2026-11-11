@@ -190,3 +190,9 @@ html.pl-ouvert, html.pl-ouvert body{overflow:hidden}
 }
 
 .pl-decor{pointer-events:none}
+
+/* ---------- la descente dans le donjon (descente.js) ---------- */
+.ds-fenetre .pl-sac-fioles{margin:8px auto;max-width:420px}
+.ds-fenetre .btn{margin:6px 4px 0}
+.ds-suite{margin:10px 0 6px!important;font-size:.98rem!important}
+.pl-carte .b-aller[data-pl=donjon]{margin:0 0 10px}

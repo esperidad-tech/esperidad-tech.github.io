@@ -46,7 +46,15 @@ var CODES = {
   'etude:gardien':     {code:['cloche','cle','soleil'],     de:'pisteur', a:'sage', nom:'Étude : le Gardien de rouille'},
   'etude:bourbe':      {code:['poisson','soleil','chapeau'],de:'pisteur', a:'sage', nom:'Étude : Bourbe'},
   /* la fin du donjon, pour le Barde */
-  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'}
+  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'},
+  /* le branchement dans l'enquête 3 (12 novembre ; Bible §13.14, étape 6) : les mêmes symboles que dans l'enquête
+     (jeu/src/codes-fixes.js, enquête 3 ; jeu/tools/e3-donjon-codes.js vérifie que les deux fichiers disent la même chose).
+     · le maire n'a pas été retenu : Léo file au bruit de ses pas (à la place de « Léo attrapé ») ;
+     · le Barde, resté à la fête, donne deux codes au Pisteur, qui les tape ici : la Grosse Marie (toute la vie des trois héros
+       revient, une fois, hors combat) et « Le maire est retenu » (à taper avant la dernière salle). */
+  'leo:enfui':      {code:['lune','flamme','chat'],      de:'pisteur',    a:'barde',      nom:'Léo s’est enfui'},
+  'grosse:marie':   {code:['cloche','cloche','lune'],    de:'barde',      a:'pisteur',    nom:'La Grosse Marie'},
+  'maire:retenu':   {code:['chapeau','cle','chapeau'],   de:'barde',      a:'pisteur',    nom:'Le maire est retenu'}
 };
 
 var parCode = {};

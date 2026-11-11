@@ -990,7 +990,7 @@ function contenu(p, lieu){
   if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
   if(L.repos) o.repos = {permis:!p.repos};
-  if(L.donne) o.code = {id:L.donne, pour:L.pour};
+  if(L.donne) o.code = {id:donneDe(p, L), pour:L.pour};
   if(L.boucle) o.boucle = L.boucle;
   if(L.fin) o.fin = true;
   return o;
@@ -1004,6 +1004,11 @@ function bloque(p, lieu){
   if(L.piege === 'dalles' && !p.faits['piege:dalles']) return 'dalles';
   return null;
 }
+/* le code que donne un lieu. Dans l'enquête 3 (p.enquete : la descente vient de l'enquête), la dernière salle donne « Léo s'est
+   enfui » à la place de « Léo attrapé » quand le Pisteur n'a pas tapé « Le maire est retenu » (le maire descend trop tôt). Une fois
+   donné, le code ne change plus. Hors de l'enquête (le donjon tout seul), rien ne change : Léo est attrapé. */
+function leoEnfui(p){ var L = D.LIEUX.leo; return !!(p.enquete && L.sansMaire && !p.faits['code:' + L.donne] && (p.faits['code:' + L.sansMaire] || !p.codes['maire:retenu'])); }
+function donneDe(p, L){ return L.sansMaire && L === D.LIEUX.leo && leoEnfui(p) ? L.sansMaire : L.donne; }
 function entrer(p, lieu){
   var L = D.LIEUX[lieu];
   if(!L) return refus(MOTS.pasIci);
@@ -1014,7 +1019,7 @@ function entrer(p, lieu){
     ev.push({t:'combat', salle:L.combat});
     return ev;
   }
-  if(L.donne){ p.faits['code:' + L.donne] = 1; ev.push({t:'code-objet', objet:null, code:L.donne, pour:L.pour}); }
+  if(L.donne){ var dn = donneDe(p, L); p.faits['code:' + dn] = 1; ev.push({t:'code-objet', objet:null, code:dn, pour:L.pour}); }
   ev.push({t:'scene', lieu:lieu, contenu:contenu(p, lieu)});
   if(L.boucle) ev.push({t:'boucle', vers:L.boucle});
   if(L.fin){ p.faits.fin = 1; ev.push({t:'fin-donjon'}); }
@@ -1147,6 +1152,14 @@ function code(p, id){
   if(p.codes[id]) return refus(MOTS.use, {code:id});
   p.codes[id] = 1;
   if(def.sauve){ sauvegarder(p); return [{t:'sauvegarde', code:id, lieu:p.lieu}]; }
+  /* (l'enquête 3) la Grosse Marie sonne avant minuit : toute la vie des trois héros revient, et ceux qui étaient au sol se relèvent */
+  if(def.marie){
+    var evm = [{t:'marie', code:id}];
+    D.EXPOSES.forEach(function(h){ var H = p.heros[h], avant = H.pv; H.pv = H.pvMax; H.sol = false; evm.push({t:'soin', heros:h, n:H.pv - avant, pv:H.pv, par:'marie'}); });
+    return evm;
+  }
+  /* (l'enquête 3) le Barde retient le maire à la fête : Léo ne s'enfuira pas (leoEnfui) */
+  if(def.maire) return [{t:'maire', code:id}];
   if(p.recettes.indexOf(def.recette) < 0) p.recettes.push(def.recette);
   return [{t:'recette', id:def.recette, nom:D.RECETTES[def.recette].nom}];
 }
@@ -1154,7 +1167,9 @@ function objets(p){
   var o = {heros:{}, codes:[], or:p.or, recettes:potions(p)};
   D.EXPOSES.forEach(function(h){ o.heros[h] = p.heros[h].objets.slice(); });
   Object.keys(D.OBJETS).forEach(function(id){ if(D.OBJETS[id].code && p.faits['objet:' + id]) o.codes.push({objet:id, code:D.OBJETS[id].code, pour:D.OBJETS[id].pour}); });
-  Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l]; if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour}); });
+  Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l];
+    if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour});
+    if(L.sansMaire && p.faits['code:' + L.sansMaire]) o.codes.push({objet:null, code:L.sansMaire, pour:L.pour}); });
   return o;
 }
 
@@ -1162,7 +1177,7 @@ var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
   entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
-  repos:repos, code:code, potions:potions, enMains:enMains,
+  repos:repos, code:code, potions:potions, enMains:enMains, leoEnfui:leoEnfui,
   sauvegarder:sauvegarder, objets:objets, exporter:exporter, importer:importer
 };
 if(NODE) module.exports = Regles; else global.Regles = Regles;

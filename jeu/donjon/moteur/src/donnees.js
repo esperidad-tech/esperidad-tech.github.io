@@ -447,7 +447,7 @@ D.LIEUX = {
   camp:{nom:'Le feu de camp', repos:true},
   bassin:{nom:'Le grand bassin', combat:'bassin'},
   porte4:{nom:'La porte aux quatre signes', donne:'porte:odette', pour:'sage'},
-  leo:{nom:'La dernière salle', donne:'leo:attrape', pour:'barde', fin:true}
+  leo:{nom:'La dernière salle', donne:'leo:attrape', sansMaire:'leo:enfui', pour:'barde', fin:true}
 };
 
 /* le couloir aux dalles : 6 pas ; à chaque pas, deux dalles (celle du fond, celle de devant) ; une seule est claire.
@@ -468,7 +468,10 @@ D.ROUE = {lieu:'canaux', suite:['d', 'd', 'd', 'g', 'd', 'd'], ouvre:'passage:ca
    (les ids de donjon-codes.js ; les symboles restent là-bas). Chaque code ne marche qu'une fois. */
 D.CODES = {
   'sauve:1':{sauve:true}, 'sauve:2':{sauve:true}, 'sauve:3':{sauve:true}, 'sauve:4':{sauve:true},
-  'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'}
+  'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'},
+  /* (le branchement dans l'enquête 3) les deux codes du Barde, resté à la fête : la Grosse Marie rend toute leur vie aux trois héros ;
+     « Le maire est retenu » se tape avant la dernière salle (sans lui, Léo file au bruit des pas du maire : LIEUX.leo.sansMaire) */
+  'grosse:marie':{marie:true}, 'maire:retenu':{maire:true}
 };
 
 /* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER

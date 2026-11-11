@@ -345,6 +345,7 @@ function contenuModal(m){
     case 'mj-pause': return pauseModal(m);
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
     case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
+    case 'descente': return M.descenteHTML ? M.descenteHTML(m) : '';   /* 🕯️ la descente dans le donjon (enquête 3, descente.js) */
     case 'plantes': return M.plantesHTML ? M.plantesHTML(m) : '';   /* 🎒 le sac de l'Alchimiste, reçu par le Pisteur (enquête 3, plantes.js) */
     case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
   }

@@ -88,8 +88,32 @@ function son(type){
 }
 PAGE.son = son;
 
+/* ================= la descente lancée depuis l'enquête 3 (jeu/src/descente.js) =================
+   L'adresse porte ?enquete=3&jeton=… : un jeton nouveau = une descente neuve, la mémoire de la page repart de zéro (une vieille
+   partie d'essai ne se mélange pas à l'enquête) ; le même jeton : on reprend. L'enquête relit ensuite la mémoire de la page (le code
+   de la porte tapé par le Sage). Et un petit bouton, en haut à gauche, ramène à l'enquête. */
+var ENQ = (function(){
+  var o = {};
+  try{ (location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ if(!x) return; var k = x.split('='); o[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); }); }catch(e){}
+  return o.enquete ? {id:o.enquete, jeton:o.jeton || ''} : null;
+})();
+PAGE.enquete = ENQ;
+function jetonNeuf(cle){
+  if(!ENQ || !ENQ.jeton) return false;
+  var nom = cle.replace(/^brumeval-donjon-/, ''), k = 'brumeval-donjon-jeton:' + nom;
+  try{ if(localStorage.getItem(k) === ENQ.jeton) return false; localStorage.setItem(k, ENQ.jeton); localStorage.removeItem(cle); return true; }catch(e){ return false; }
+}
+function boutonEnquete(){
+  if(!ENQ || q('#b-enquete')) return;
+  var b = el('a', 'discret', '🏘️'); b.id = 'b-enquete'; b.href = '../index.html'; b.setAttribute('aria-label', 'Retour à l\'enquête'); b.title = 'Retour à l\'enquête';
+  b.style.cssText = 'position:fixed;left:max(10px, env(safe-area-inset-left, 0px));top:max(10px, env(safe-area-inset-top, 0px));z-index:40;text-decoration:none;opacity:.9';
+  document.body.appendChild(b);
+}
+if(ENQ){ if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boutonEnquete); else boutonEnquete(); }
+
 /* ================= la mémoire (localStorage peut manquer : jamais d'erreur) ================= */
 PAGE.memoire = function(cle){
+  jetonNeuf(cle);     /* (une descente neuve : la page repart de zéro) */
   return {
     lire:function(defaut){ try{ var v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; }catch(e){ return defaut; } },
     ecrire:function(o){ try{ localStorage.setItem(cle, JSON.stringify(o)); return true; }catch(e){ return false; } },

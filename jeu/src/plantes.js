@@ -252,6 +252,7 @@ function grimoireHTML(){
 }
 /* ---------- Le sac ---------- */
 function fiolesSac(l){
+  l = l || [];
   return '<div class="pl-sac-fioles">' + ORDRE.map(function(id){ var f = l.indexOf(id) >= 0; return '<span class="pl-fiole' + (f ? ' pl-pleine' : '') + '">' + PLD.fiole(f ? RE[id].coul : null) + '<small>' + esc(RE[id].court) + '</small></span>'; }).join('') + '</div>';
 }
 function sacTexte(){
@@ -267,8 +268,9 @@ function sacHTML(){
   var t = sacTexte(), code = '';
   if(nuit() && faites().length){ try{ code = '<div class="b-donne pl-sac-code"><p>🎒 <b>Le sac</b> : le code pour le Pisteur ' + lireBtn('Le sac : le code pour le Pisteur.') + '</p>' + M.codeHTML(M.code('sac:' + M.sacBits())) + '</div>'; }catch(e){ code = ''; } }
   return '<div class="pl-voile"><div class="pl-carte" role="dialog" aria-label="Ton sac"><h2>🎒 Ton sac</h2>' + fiolesSac(faites()) +
-    '<p>' + esc(t) + ' ' + lireBtn(t) + '</p>' + code + '<button type="button" class="btn second" data-pl="fermer-voile">Fermer</button></div></div>';
+    '<p>' + esc(t) + ' ' + lireBtn(t) + '</p>' + code + (M.donjonBoutonAlchimiste ? M.donjonBoutonAlchimiste() : '') + '<button type="button" class="btn second" data-pl="fermer-voile">Fermer</button></div></div>';
 }
+M.sacFiolesHTML = fiolesSac;   /* (la fenêtre de la descente du Pisteur : descente.js) */
 /* ---------- L'explication en images, la première fois (une fois par héros) ---------- */
 var INTRO = 'Sept plantes, sept potions pour la nuit. Le grimoire sait tout : quelle partie de la plante il faut, et quels gestes faire, dans l\'ordre. Toi, tu as tes mains et tes outils. Et si tu te trompes ? Rien n\'est perdu : la plante revient comme neuve.';
 function introHTML(){
@@ -370,6 +372,7 @@ function clic(e){
     if(V.voile === 'intro'){ M.S.etabliIntro = 1; M.sauver(); }
     V.voile = null; M.stop && M.stop(); M.son('clic'); rendre(); return;
   }
+  if(a === 'donjon'){ M.fermerEtabli(); if(M.A['ds-aller']) M.A['ds-aller'](); return; }   /* 🫕 le chaudron du donjon (descente.js) */
   if(a === 'grimoire'){ V.voile = 'grimoire'; V.page = null; M.son('page'); rendre(); return; }
   if(a === 'page'){ V.page = id; M.stop && M.stop(); M.son('feuille'); rendre(); return; }
   if(a === 'sac'){ V.voile = 'sac'; M.son('page'); if(nuit() && faites().length){ M.P().vus['sac:donne'] = 1; M.sauver(); } rendre(); return; }
@@ -414,6 +417,7 @@ M.codeSpecial = function(t, x, id){
   if(t === 'sac'){
     var P = M.P(), l = M.sacDe(+x), deja = P.sac && P.sac.join(',') === l.join(',');
     P.sac = l; P.recus['sac'] = true; P.vus['sac:recu'] = 1;
+    ORDRE.forEach(function(k){ if(l.indexOf(k) >= 0) P.vus['sac:' + k] = 1; else delete P.vus['sac:' + k]; });   /* (ce qu'il y a dedans : l'acide pour la grille du puits) */
     if(!deja) M.noter('Le sac de l\'Alchimiste : ' + l.map(function(k){ return RE[k].court.toLowerCase(); }).join(', ') + '.', '🎒');
     M.son('gain'); M.sauver();
     M.ouvrir({type:'plantes', vue:'sac-recu'});
