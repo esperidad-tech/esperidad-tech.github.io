@@ -7606,6 +7606,7 @@ var ARRIVEES_VILLE = {
 };
 /* Les arrivées « de l'histoire » (params.arrivee, params.compagnonArrivee) : jamais tirées au hasard pour les autres pistes */
 function cabouV(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.8" fill="#6cbf55" stroke="' + CONTOUR + '" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="#b4e69a"/>'; }
+var ARRIVEES_GRANDES = {moulin:1, crypte:1};   /* les arrivées-bâtiments : plus grandes, et la vue remonte pour les montrer */
 var ARRIVEES_LISIERE = {foret:1};   /* les arrivées au bord de la carte : la ville s'y arrête (voir genererMonde, tuileForet) */
 var ARRIVEES_HISTOIRE = {
   /* le pied d'une maison et sa gouttière : la piste s'arrête net, quelqu'un est remonté sur les toits (enquête 1) */
@@ -7623,6 +7624,37 @@ var ARRIVEES_HISTOIRE = {
     '<path d="M-20,-6 L-13,-23 L8,-23 L15,-6 Z" fill="#d9b25c" stroke="' + CONTOUR + '" stroke-width="2.6" stroke-linejoin="round"/><path d="M-12,-21 l-3,13 M-5,-21 l-1,13 M2,-21 l1,13 M8,-21 l3,13" stroke="#a9813a" stroke-width="1.3"/>' +
     '<circle cx="19" cy="0" r="10" fill="none" stroke="' + CONTOUR + '" stroke-width="5"/><circle cx="19" cy="0" r="10" fill="none" stroke="#9a6a40" stroke-width="2.6"/>' +
     '<path d="M9,0 H29 M19,-10 V10 M12,-7 L26,7 M12,7 L26,-7" stroke="#9a6a40" stroke-width="2.2" stroke-linecap="round"/><circle cx="19" cy="0" r="2.6" fill="#6f4529" stroke="' + CONTOUR + '" stroke-width="1.4"/></g>',   /* (tout remonté de 10 : le Pisteur s'arrête dans la cour, devant la porte) */
+  /* l'église et son clocher, la nuit, et la grille de la crypte au pied du clocher (enquête 2, suivre l'homme en cape — Romain, 11 novembre,
+     13 h 42 et 13 h 57 : « on voit aussi le grand bâtiment de l'église, pour que ce soit crédible ; dessine-moi un truc joli »).
+     De face : la nef en deux ailes aux fenêtres allumées, le clocher au milieu (la cloche, l'horloge, la rosace, la flèche et sa croix),
+     et, en bas du clocher, l'arche de la crypte : la grille fermée par un cadenas, deux marches. Le Pisteur s'arrête devant les marches. */
+  crypte:'<g transform="translate(0,-15)">' +
+    '<ellipse cx="0" cy="10" rx="62" ry="10" fill="#0d0b18" opacity=".3"/>' +
+    /* les deux ailes de la nef : murs, toits d'ardoise, fenêtres hautes allumées */
+    [-1, 1].map(function(s){
+      var x0 = s * 16, x1 = s * 54, xm = s * 35;
+      return '<path d="M' + x0 + ',8 V-46 L' + x1 + ',-34 V8 Z" fill="#b9b4c8" stroke="' + CONTOUR + '" stroke-width="2.6" stroke-linejoin="round"/>' +
+        '<path d="M' + (s * 14) + ',-60 L' + (s * 58) + ',-36 L' + (s * 55) + ',-31 L' + (s * 16) + ',-50 Z" fill="#5d6283" stroke="' + CONTOUR + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+        '<path d="M' + (s * 20) + ',-48 L' + (s * 50) + ',-32" stroke="#7b80a3" stroke-width="1.4"/>' +
+        '<path d="M' + (xm - 5) + ',-4 V-22 a5,5 0 0 1 10,0 V-4 Z" fill="#ffd27a" stroke="' + CONTOUR + '" stroke-width="2"/><path d="M' + xm + ',-26 V-4 M' + (xm - 5) + ',-14 h10" stroke="#b07a2a" stroke-width="1.2"/>' +
+        '<path d="M' + x0 + ',-20 H' + x1 + ' M' + x0 + ',-6 H' + (xm - 7 * s) + ' M' + (xm + 7 * s) + ',-6 H' + x1 + '" stroke="#9e98b2" stroke-width="1.1"/>';
+    }).join('') +
+    /* le clocher : la tour, ses pierres d'angle, la rosace, l'horloge, la cloche */
+    '<rect x="-17" y="-110" width="34" height="118" fill="#c4bfd2" stroke="' + CONTOUR + '" stroke-width="2.8"/>' +
+    '<path d="M-17,-92 H17 M-17,-70 H17 M-17,-44 H17 M-17,-24 H17 M-17,-101 h6 M11,-101 h6 M-17,-81 h6 M11,-81 h6 M-17,-57 h6 M11,-57 h6 M-17,-34 h6 M11,-34 h6" stroke="#a49eb8" stroke-width="1.2"/>' +
+    '<path d="M-10,-74 V-90 a10,10 0 0 1 20,0 V-74 Z" fill="#262238" stroke="' + CONTOUR + '" stroke-width="2.2"/>' +
+    '<path d="M-5,-77 q0,-10 5,-10 q5,0 5,10 h2 v2.4 h-14 v-2.4 z" fill="#e0b54c" stroke="' + CONTOUR + '" stroke-width="1.4"/><circle cx="0" cy="-73.5" r="1.6" fill="#e0b54c"/>' +
+    '<circle cx="0" cy="-57" r="8.5" fill="#f4edd8" stroke="' + CONTOUR + '" stroke-width="2"/><path d="M0,-57 V-62.5 M0,-57 l4,2.5" stroke="' + CONTOUR + '" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<circle cx="0" cy="-34" r="7.5" fill="#8fb6e6" stroke="' + CONTOUR + '" stroke-width="2"/><path d="M0,-41.5 V-26.5 M-7.5,-34 H7.5 M-5.3,-39.3 L5.3,-28.7 M5.3,-39.3 L-5.3,-28.7" stroke="#4d6fa5" stroke-width="1.1"/>' +
+    /* la flèche du clocher, en ardoise, et sa croix dorée */
+    '<path d="M-21,-108 L0,-158 L21,-108 Z" fill="#555a7c" stroke="' + CONTOUR + '" stroke-width="2.6" stroke-linejoin="round"/><path d="M0,-150 L-9,-110 M0,-150 L9,-110 M-15,-118 h30" stroke="#6f7498" stroke-width="1.3"/>' +
+    '<path d="M-23,-108 h46 v4 h-46 z" fill="#a49eb8" stroke="' + CONTOUR + '" stroke-width="2"/>' +
+    '<path d="M0,-158 V-172 M-5,-166 H5" stroke="' + CONTOUR + '" stroke-width="4.4" stroke-linecap="round"/><path d="M0,-158 V-172 M-5,-166 H5" stroke="#e0b54c" stroke-width="2.2" stroke-linecap="round"/>' +
+    /* la crypte : l'arche sombre au pied du clocher, la grille de fer et son cadenas, deux marches qui descendent */
+    '<path d="M-12,8 V-6 a12,12 0 0 1 24,0 V8 Z" fill="#a49eb8" stroke="' + CONTOUR + '" stroke-width="2.4"/><path d="M-9,8 V-5 a9,9 0 0 1 18,0 V8 Z" fill="#14121f"/>' +
+    '<path d="M-6,8 V-9 M-2,8 V-13.5 M2,8 V-13.5 M6,8 V-9 M-9,-1 H9" stroke="#43455a" stroke-width="2.2" stroke-linecap="round"/>' +
+    '<rect x="-2.8" y="-1" width="5.6" height="5" rx="1" fill="#e0b54c" stroke="' + CONTOUR + '" stroke-width="1.2"/><path d="M-1.7,-1 v-2.2 a1.7,1.7 0 0 1 3.4,0 v2.2" fill="none" stroke="#e0b54c" stroke-width="1.3"/>' +
+    '<path d="M-15,8 h30 l-2,4 h-26 z M-17,12 h34 l-2,4 h-30 z" fill="#c9c4d6" stroke="' + CONTOUR + '" stroke-width="1.8" stroke-linejoin="round"/></g>',
   /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
   potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6)
 };
@@ -7852,7 +7884,7 @@ MJ.enregistrer('traces', {
     var ARTS = VILLE ? ARRIVEES_VILLE : ARRIVEES_ART, types = Object.keys(ARTS);
     M.arrivees.forEach(function(a){
       a.type = a.art && ARRIVEES_HISTOIRE[a.art] ? a.art : U.choix(types);
-      a.g = svgNoeud('g', {'class':'mja-arrivee', transform:'translate(' + a.x.toFixed(1) + ',' + (-a.d).toFixed(1) + ') scale(' + (a.type === 'moulin' ? 1.9 : 1.25) + ')'}, gArr);   /* (le moulin : un bâtiment, plus grand) */
+      a.g = svgNoeud('g', {'class':'mja-arrivee', transform:'translate(' + a.x.toFixed(1) + ',' + (-a.d).toFixed(1) + ') scale(' + (ARRIVEES_GRANDES[a.type] ? 1.9 : 1.25) + ')'}, gArr);   /* (le moulin, la crypte : des bâtiments, plus grands) */
       a.g.innerHTML = '<circle class="mja-arr-halo" r="21"/>' + (ARTS[a.type] || ARRIVEES_HISTOIRE[a.type]) + '<text class="mja-arr-x" y="6" text-anchor="middle">✗</text>';
     });
     /* ---- Zones sans empreintes, zones mouillées ---- */
@@ -7996,8 +8028,8 @@ MJ.enregistrer('traces', {
     }
     /* Arrivé à la lisière (params.arrivee = 'foret') : la vue remonte doucement, le Pisteur reste à l'entrée, et on voit le début de la
        forêt avant l'écran de résultat (Romain, 10 novembre, 20 h 44). La boucle du jeu est finie : celle-ci ne bouge plus que la vue. */
-    function montrerForet(){
-      var de = cam, vers = Math.max(cam, L + (vue.y + vue.h * 0.62) - YB), tF = 0;
+    function montrerForet(part){   /* part : où le Pisteur se retrouve dans la hauteur de l'écran (0,62 ; plus bas pour un bâtiment très haut) */
+      var de = cam, vers = Math.max(cam, L + (vue.y + vue.h * (part || 0.62)) - YB), tF = 0;
       cercle.style.opacity = '0'; cercleHalo.style.opacity = '0'; cercleSol.style.opacity = '0';
       P.boucle(function(dt){
         tF += dt;
@@ -8017,12 +8049,12 @@ MJ.enregistrer('traces', {
       var q = pctDans(svg, terrain, ecranX(a.x), ecranY(a.d) - 34);
       if(a.cible){
         /* (la forêt du massif, et le moulin de la charrette, enquête 2 : la vue remonte pour bien montrer où mène la piste) */
-        var foret = typeof M.lisiere === 'number' || a.type === 'moulin';
+        var foret = typeof M.lisiere === 'number' || !!ARRIVEES_GRANDES[a.type];
         phase = 'fin'; fini = true;
         a.g.classList.add('bonne');
         U.son('victoire'); U.vibrer(40);
         flotter(terrain, q.x, q.y, a.txt || (ch ? 'C\'est la charrette !' : 'C\'est lui !'), 'ok');
-        if(foret) montrerForet();
+        if(foret) montrerForet(a.type === 'crypte' ? 0.86 : 0.62);   /* (l'église est haute : on veut voir jusqu'à la croix du clocher) */
         P.finir({reussi:true, score:1, erreurs:p.essais - essais, detail:'Tu as suivi la bonne piste jusqu\'au bout !'}, foret ? 2700 : 1500);
         return;
       }
