@@ -233,28 +233,28 @@ p{margin:0}
 .clavier .eff{background:#6a2a1a}
 .loupe-msg{min-height:0}
 
-/* ---------- les monstres étudiés : le portrait et les énigmes ---------- */
+/* ---------- le carnet de l'aventurier : le croquis du monstre et son récit ---------- */
 .livre-betes{border-top:2px dashed rgba(107,84,52,.45);padding-top:8px;display:flex;flex-direction:column;gap:8px}
 .livre-betes h3{font-family:var(--f-titre);font-weight:400;font-size:20px;color:#3b2414}
 .betes{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
-.bete-vignette{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 6px 8px;border-radius:12px;background:#1a1426;border:2px solid #8a6a3a;box-shadow:0 4px 0 rgba(0,0,0,.25);color:#ffe9c4}
-.bete-vignette img{display:block;width:100%;height:auto;aspect-ratio:560/502;object-fit:cover;border-radius:8px}
+.bete-vignette{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 6px 8px;border-radius:10px;background:#eee1c1;border:2px solid #8a6a3a;box-shadow:0 4px 0 rgba(0,0,0,.2);color:#3b2414}
+.bete-vignette img{display:block;width:100%;height:auto;aspect-ratio:560/440;object-fit:contain;border-radius:6px}
 .bete-vignette b{font-family:var(--f-titre);font-weight:400;font-size:15px;line-height:1.1;text-align:center}
 .bete-vignette:active{transform:translateY(2px)}
 .bete-fen{width:min(980px,100%)}
 .bete-page{display:flex;gap:16px;align-items:flex-start}
-.bete-img{flex:none;width:min(38%,340px);display:flex;flex-direction:column;align-items:center;gap:4px;position:sticky;top:0}
-.bete-img img{display:block;width:100%;height:auto;border-radius:14px;border:3px solid #8a6a3a;box-shadow:0 6px 16px rgba(0,0,0,.35);background:#0e0a16}
-.bete-img small{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b5434}
-.bete-enigmes{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-.bete-intro{font-style:italic}
-.enigme{border-radius:12px;background:rgba(255,250,240,.55);border:2px solid rgba(138,106,58,.55);padding:8px 10px}
-.enigme h3{font-family:var(--f-titre);font-weight:400;font-size:17px;color:#8e2e1c;margin-bottom:2px}
-.enigme .dit{font-size:17px;line-height:1.35;align-items:flex-start}
-.enigme .dit .lire{flex:none}
+/* le croquis : une feuille du carnet, un peu de travers, tenue par un bout de ficelle */
+.bete-img{flex:none;width:min(40%,360px);display:flex;flex-direction:column;align-items:center;gap:6px;position:sticky;top:0}
+.bete-img img{display:block;width:100%;height:auto;border-radius:3px;border:1px solid rgba(90,62,34,.55);box-shadow:0 6px 14px rgba(40,24,10,.35);transform:rotate(-1.2deg);background:#eee1c1}
+.bete-img small{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b5434}
+.bete-recit{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.bete-intro{font-style:italic;color:#5a4326}
+.recit{border-left:3px solid rgba(138,106,58,.6);padding:2px 0 2px 12px}
+.recit .dit{font-size:18px;line-height:1.42;align-items:flex-start;color:#2e1d10}
+.recit .dit .lire{flex:none}
 @media (max-height:520px), (max-width:700px){
-  .bete-img{width:30%}
-  .enigme .dit{font-size:15px}
+  .bete-img{width:32%}
+  .recit .dit{font-size:15.5px}
   .betes{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
 }
 
@@ -355,8 +355,10 @@ var CODES = {
   'page:dechiree':  {code:['cle','flamme','poisson'],    de:'pisteur',    a:'sage',       nom:'La page déchirée du plan'},
   'page:blanche':   {code:['cloche','chat','soleil'],    de:'pisteur',    a:'sage',       nom:'Une page blanche'},
   'porte:odette':   {code:['chapeau','lune','coeur'],    de:'pisteur',    a:'sage',       nom:'Odette est derrière la porte'},
+  /* le carnet de l'aventurier, trouvé à l'entrée du donjon (Romain, 11 novembre) : c'est lui que le Sage feuillette */
+  'carnet:aventurier': {code:['chapeau','arbre','poisson'], de:'pisteur', a:'sage', nom:'Le carnet de l’aventurier'},
   /* l'étude des monstres (Romain, 10 novembre) : le Sage étudie un monstre en combat, son code entre dans le journal du
-     Pisteur ; tapé sur la tablette du Sage, il montre le monstre et ses énigmes */
+     Pisteur ; tapé sur la tablette du Sage, il décolle la page de ce monstre dans le carnet de l'aventurier */
   'etude:rat':         {code:['chat','champi','etoile'],    de:'pisteur', a:'sage', nom:'Étude : le rat d’égout'},
   'etude:ratcuir':     {code:['cle','chapeau','flamme'],    de:'pisteur', a:'sage', nom:'Étude : le rat cuirassé'},
   'etude:chauvesouris':{code:['lune','cloche','champi'],    de:'pisteur', a:'sage', nom:'Étude : la chauve-souris de la brume'},
@@ -444,27 +446,29 @@ D.GESTES = {
   chatouiller:{ic:'🪶', nom:'Chatouiller', d:'guili-guili !', vise:'salle'}
 };
 
-/* ===================================================================== 3. LES RECETTES (le sac de l'Alchimiste)
+/* ===================================================================== 3. LES RECETTES (les potions de l'Alchimiste)
+   Romain, 10 novembre (17 h 47 et 17 h 56) : plus de sac de 3 recettes à choisir (« un peu trop compliqué »). L'Alchimiste a
+   TOUTES les potions qu'il a réussi à créer pendant ses missions (partie.recettes). S'il lui en manque une, il reste un
+   chemin plus long, en deux étapes, écrit en énigme dans le Grand Livre du Sage (D.LIVRE, la dernière ligne).
    vise : 'bete', 'salle', 'heros' (un ami debout), 'sol' (un ami au sol), 'equipe' (tout le monde, pas de cible)
    fleche : le Pisteur peut y tremper une flèche. pouvoir : le nom du coup que reçoit le monstre. */
 D.RECETTES = {
-  feu:{nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
+  feu:{petit:'Feu', nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
   fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:false, pouvoir:'nuage', coul:'#aab4d2'},
   huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse…', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630'},
   colle:{nom:'Colle', d:'pattes collées', long:'Les pattes restent collées au sol.', vise:'bete', fleche:true, pouvoir:'colle', coul:'#ece4d0'},
   acide:{nom:'Acide', d:'ronge le fer', long:'Il ronge le fer et la rouille.', vise:'bete', fleche:true, pouvoir:'acide', coul:'#9be04a'},
   baume:{nom:'Baume', d:'soigne beaucoup', long:'Il soigne beaucoup un ami.', vise:'heros', fleche:false, soin:40, coul:'#5fd08a'},
-  coeur:{nom:'Cœur vaillant', d:'relève un ami', long:'Il relève un ami tombé au sol.', vise:'sol', fleche:false, releve:40, coul:'#ff5a7a'},
+  coeur:{petit:'Cœur', nom:'Cœur vaillant', d:'relève un ami', long:'Il relève un ami tombé au sol.', vise:'sol', fleche:false, releve:40, coul:'#ff5a7a'},
   /* celles qu'on gagne au chaudron de l'Alchimiste (codes recette:givre et recette:baumelum) */
   givre:{nom:'Givre', d:'gèle tout', long:'Un froid qui gèle tout ce qu\'il touche.', vise:'bete', fleche:true, pouvoir:'givre', coul:'#bff4ff', gagnee:true},
-  baumelum:{nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:15, coul:'#7affc0', gagnee:true}
+  baumelum:{petit:'Lumineux', nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:15, coul:'#7affc0', gagnee:true}
 };
 D.RECETTES_DEPART = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
 D.ORDRE_RECETTES = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur', 'givre', 'baumelum'];
 
 /* ===================================================================== 4. LES CHIFFRES COMMUNS */
 D.CHIFFRES = {
-  sac:3,                                   /* places de recettes (4 avec la sacoche) */
   places:2,                                /* places d'objet par héros */
   /* le critique du Pisteur sur un point faible ouvert, selon le rang de la bête */
   critique:{normal:{fleche:60, dague:75}, elite:{fleche:110, dague:140}, boss:{fleche:300, dague:380}},
@@ -488,18 +492,19 @@ D.CHIFFRES = {
    equipe : le nom pour HerosAnime.equiper(nom). */
 D.OBJETS = {
   /* Romain, 10 novembre : « flèches de lune » et « flèches transperçantes » (les identifiants ne changent pas : 'fleches-argent',
-     'fleches-lourdes'). Le Pisteur part avec ses flèches normales, qui prennent une de ses deux places : dans la réserve,
-     il en prend un, il est complet ; pour prendre l'autre, il repose quelque chose (ses flèches normales, par exemple). */
-  'fleches-normales':{nom:'Flèches normales', pour:'pisteur', equipe:null, d:'Les flèches de tous les jours.'},
-  'fleches-argent':{nom:'Flèches de lune', pour:'pisteur', equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent',
-    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5,
-    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort.'},
-  'fleches-lourdes':{nom:'Flèches transperçantes', pour:'pisteur', equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde',
-    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5,
-    d:'Contre l\'armure : le critique frappe une fois et demie plus fort. Sur le rat cuirassé, elles touchent même fermé.'},
+     'fleches-lourdes'). À 17 h 56 : « fais en sorte qu'on puisse prendre toutes les flèches, et c'est juste qu'on peut choisir
+     le type de flèche » en combat. Un carquois (carquois:true) ne prend donc plus de place dans les mains.
+     Chaque sorte a son défaut (accepté par Romain) : les flèches de lune rebondissent sur l'armure (rebondit), les
+     transperçantes passent à travers les bêtes de brume (traverse), les normales n'ont pas de bonus. */
+  'fleches-normales':{nom:'Flèches normales', court:'Flèche', pour:'pisteur', carquois:true, equipe:null, d:'Les flèches de tous les jours. Ni bonus, ni mauvaise surprise.'},
+  'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
+    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume',
+    d:'Contre les créatures de brume : elles touchent même fermé, et le critique frappe une fois et demie plus fort. Mais sur une armure, elles rebondissent.'},
+  'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
+    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure',
+    d:'Contre l\'armure : le critique frappe une fois et demie plus fort, et sur le rat cuirassé elles touchent même fermé. Mais elles passent à travers les bêtes de brume, sans rien leur faire.'},
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', equipe:'cristal-lune', d:'La rune de lumière éclaire toute la salle. Toute la salle…'},
   'baton-chene':{nom:'Bâton de chêne', pour:'sage', equipe:'baton-chene', d:'Le bouclier de runes protège deux amis à la fois.'},
-  'sacoche':{nom:'Sacoche', pour:'alchimiste', equipe:'sacoche', d:'Une quatrième recette dans le sac.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -509,6 +514,9 @@ D.OBJETS = {
   'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'},
   /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).
      discret : rien ne la signale dans la salle (elle ne brille pas, elle ne compte pas dans « il reste quelque chose à faire ici ») */
+  /* Romain, 11 novembre (8 h 03) : « qu'il y ait un livre à l'entrée du puits ou de la crypte » — le journal de l'aventurier.
+     Le Sage tape son code : le carnet entre dans son Grand Livre ; chaque monstre étudié y décolle une page. */
+  'carnet':{nom:'Le carnet d\'un aventurier', pour:'sage', code:'carnet:aventurier', d:'Le journal de quelqu\'un qui est passé par là avant vous. Le Sage y retrouvera chaque monstre étudié.'},
   'rune':{nom:'Pierre de rune', pour:'sage', code:'rune:lumiere', discret:true, d:'Une rune de lumière : elle réveille l\'encre cachée du plan du Sage.'}
 };
 
@@ -743,9 +751,9 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true, objets:['rune']},
+  puits:{nom:'Le fond du puits', depart:true, objets:['rune', 'carnet']},     /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
   galerie:{nom:'La galerie effondrée', objets:['bourse']},
-  aeration:{nom:'Le puits d\'aération', objets:['sacoche', 'herbes']},
+  aeration:{nom:'Le puits d\'aération', objets:['herbes']},            /* (la sacoche est retirée : plus de sac à remplir, Romain, 10 novembre) */
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
   canaux:{nom:'Les canaux de la ville d\'avant', combat:'canaux', roue:true},      /* la roue qui lève la grille du passage secret (D.ROUE) */
@@ -786,78 +794,58 @@ D.CODES = {
   'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'}
 };
 
-/* ===================================================================== 10. LE GRAND LIVRE
-   Romain, 10 novembre (17 h 47) : l'étude d'un monstre ne donne plus une ligne dans le donjon, mais UN CODE (dans le
-   journal). Le Sage le tape sur sa tablette : il voit l'image du monstre et « toutes les propositions pour le battre, mais
-   sous la forme d'énigmes. Pas écrit clairement "la lumière leur fait mal" : qu'il faille un petit peu réfléchir ».
-   Par monstre, dans l'ordre : ce qui l'ouvre ; le piège à éviter ; l'autre chemin ; le chemin sans la bonne potion
-   (deux étapes au lieu d'une). Chaque pouvoir est une devinette (« Qui suis-je ? ») : jamais son nom.
-     la lumière   : elle entre partout sans ouvrir de porte ; elle chasse le noir ; on lui doit toutes les ombres…
-     le bruit     : il sort du chaudron sans être de la soupe (le coup de louche) ; on l'entend sans le voir
-     la fumée     : la fille du feu, la grise, qui monte sans échelle
-     le feu       : il mange tout et meurt s'il boit ; il danse sans jambes
-     l'huile      : elle ne se mélange jamais avec l'eau ; dorée comme le miel
-     la colle     : ce qu'elle attrape, elle ne le lâche plus
-     l'acide      : il grignote le fer sans avoir de dents
-     le givre     : il dessine des fleurs sur les vitres ; il change l'eau en caillou
-     le bouclier  : un mur sans pierres, tracé en l'air par un vieux savant
-     la chatouille : ce qui fait rire et crier « arrête ! » à la fois */
+/* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER
+   L'étude d'un monstre donne un code (dans le journal du Pisteur). Le Sage le tape sur sa tablette : il voit le croquis du
+   monstre et la page d'un vieux carnet — le journal d'un aventurier passé par là avant eux.
+   Romain, 10 novembre (20 h 55 à 21 h 28) et 11 novembre (8 h 02, validé) : PAS d'énigmes à questions (« qui aurait écrit des
+   énigmes ? »). Un récit : « ses déboires, ses réussites ». L'aventurier n'a ni pouvoirs ni les armes des héros : sa lampe à
+   huile, sa gamelle, son feu, ce qu'il trouve sur place. Il raconte ce qu'il a vécu, il ne décrit pas les étapes, il ne dit
+   pas tout (« si seulement j'avais eu… »). Tout doit être logique et concret (une lampe fige les rats, elle ne les fait pas
+   se dresser ; un seul objet du début à la fin). Aux joueurs de faire le lien : le bruit = le coup de louche, la fumée = le
+   fumigène, « de quoi ronger le fer » = l'acide, « les ailes collées » = la colle, la lumière = la rune du Sage.
+   Une page = quelques paragraphes courts (chacun aura son 🔊). Les mots de Romain et les versions : CARNET-EXPLORATEUR.md. */
 D.LIVRE = {
   rat:[
-    'J\'entre partout sans ouvrir de porte, et le noir s\'enfuit devant moi. Quand il me voit, le rat se dresse, le ventre à l\'air. Qui suis-je ?',
-    'Je sors d\'un chaudron, mais je ne suis pas de la soupe. On m\'entend sans me voir. Avec moi, les rats deviennent enragés : ils mordent deux fois. Qui suis-je ?',
-    'L\'eau et moi, on ne se mélange jamais. Un rat qui me court dessus finit les quatre pattes en l\'air. Qui suis-je ?'
+    'Des rats, gros comme des chats. Ils vivent dans le noir : tant que ma lampe à huile brûlait, ils restaient figés, sans oser approcher.',
+    'J\'ai voulu en profiter pour filer… et j\'ai fait tomber ma gamelle. Quel vacarme ! Ils sont devenus enragés. C\'est ma réserve d\'huile qui m\'a sauvé : elle a coulé sur les dalles, et ils ont patiné. Ça m\'a fait gagner du temps.'
   ],
   ratcuir:[
-    'Je n\'ai pas de dents, et pourtant je grignote le fer. Avec moi, sa vieille cuirasse tombe en morceaux. Qui suis-je ?',
-    'Je danse sans jambes et je mords sans dents. Si je touche son armure, elle rougit : il cogne plus fort, et il brûle. Qui suis-je ?',
-    'L\'hiver, je dessine des fleurs sur les vitres. Sous moi, le vieux fer casse comme du verre. Qui suis-je ?',
-    'Rien de tout ça dans le sac ? Un casque, c\'est une cloche. Qui la fait sonner une fois lui donne le tournis. Deux fois, et le casque roule par terre. Alors seulement, celle qui chasse le noir fait le reste.'
+    'Celui-là porte une cuirasse à moitié mangée par la rouille. Il n\'a même plus peur de la lumière. J\'ai essayé de le brûler, mais sa carapace le protège.',
+    'Je me suis défendu comme j\'ai pu, à grands coups de gamelle, et j\'ai fini par m\'en sortir. Toute cette rouille… Si seulement j\'avais eu de quoi finir le travail.'
   ],
   chauvesouris:[
-    'Je n\'ai pas de jambes, et je traverse la salle d\'un seul coup. Elles, qui volent à l\'oreille, en perdent le nord et tombent. Qui suis-je ?',
-    'On me doit toutes les ombres, et je n\'en ai aucune. Elles ne me voient pas, mais je les rends folles : une folle pique deux fois. Qui suis-je ?',
-    'Ce que j\'attrape, je ne le lâche plus. Des ailes prises dans mes bras ne battent plus. Qui suis-je ?'
+    'Elles me sont tombées dessus dans les canaux. J\'ai levé ma lampe pour les chasser : mauvaise idée, la lumière les a rendues folles.',
+    'De peur, j\'ai hurlé… et elles sont tombées comme des pommes, complètement perdues. J\'en ai profité pour les ficeler, les ailes collées contre le corps. Elles ne pouvaient plus bouger. C\'est comme ça que je m\'en suis débarrassé.'
   ],
   feufollet:[
-    'Je suis la fille du feu, mais plus légère que lui. Je monte sans échelle et je cache tout. Pourtant, dans mes bras, celui qu\'on voit à moitié prend forme. Qui suis-je ?',
-    'Le matin me ramène, le soir m\'emporte. Lui, il me boit comme du petit-lait : une gorgée, et il grandit. Qui suis-je ?',
-    'Nous dormons serrées dans un carquois, et nous brillons comme la nuit quand elle est ronde. La brume ne nous arrête pas. Lui non plus. Qui sommes-nous ?',
-    'Rien de tout ça ? Il adore les signes qu\'un vieux savant trace en l\'air pour protéger ses amis. Qu\'il vienne s\'y cogner : il s\'y accroche, et on le voit enfin tout entier.'
+    'Ceux-là, je les ai à peine aperçus. Le temps de lever ma lampe, ils avaient avalé sa lumière, comme aspirée, jusqu\'à n\'en laisser que de la fumée.',
+    'Et c\'est là que je les ai vus : tout entiers, et gigantesques. J\'ai couru. Je n\'ai jamais couru aussi vite.'
   ],
   araignee:[
-    'Je n\'ai ni poids ni odeur, et sans moi vous ne verriez rien. Pendue à son fil, elle me fuit si fort qu\'elle en lâche prise. Qui suis-je ?',
-    'Deux pièges. Celui qui mange tout et qui meurt s\'il boit : à sa chaleur, ses œufs éclosent. Et sa fille, la grise, qui monte sans échelle : l\'araignée remonte s\'y cacher.',
-    'Je suis dorée comme le miel, mais personne ne tient debout sur moi. Un fil qui me touche ne tient plus rien. Même pas elle. Qui suis-je ?'
+    'Une araignée grosse comme un tonneau, pendue à son fil. Elle aussi, elle a l\'air de détester ma lumière.',
+    'J\'ai voulu mettre le feu à ses œufs. Au lieu de brûler, ils ont tous éclos ! Cette erreur m\'a coûté mon sac de vivres.',
+    'Dans la fumée, la mère est remontée se cacher, et elle m\'a entoilé par surprise. Je ne m\'en suis sorti que grâce à l\'huile de ma lampe : sur du gras, sa toile ne colle plus.'
   ],
   tetard:[
-    'Petit, gluant et toujours affamé. Pas d\'énigme ici : un seul coup suffit.',
-    'Ils arrivent par deux, chaque fois que leur gros papa plonge.'
+    'Au bord du grand bassin, des têtards gros comme des chiens m\'ont sauté dessus. Je les ai chassés à coups de pied, l\'un après l\'autre. Mais chaque fois que le gros crapaud plongeait, il en ramenait deux de plus.'
   ],
   roirats:[
-    'Dix rats, une seule queue. Il faut deux sœurs, dans l\'ordre. D\'abord la grise, la fille du feu, qui cache tout : ils paniquent, chacun tire de son côté. Ensuite celle qu\'on entend sans la voir : ils sursautent, et le nœud se montre.',
-    'Jamais celle qui chasse le noir : ils se roulent en boule, et plus rien ne passe. Et celle qui sort du chaudron, pas trop tôt : ils chargent celui qui a tapé.',
-    'Ce que j\'attrape, je ne le lâche plus. Quand le nœud est tendu, un roi pris dans mes bras ne commande plus personne. Qui suis-je ?',
-    'Pas de grise dans le sac ? Juste après leur assaut, ils sont étalés partout. C\'est le moment de faire parler le chaudron, avant tout autre geste : c\'est la panique.'
+    'Dix rats noués par la queue, qui bougent comme un seul. C\'est ignoble. Et malin, avec ça : dès que j\'ai levé ma lampe, ils se sont roulés en boule pour se protéger les uns les autres.',
+    'Je n\'ai pas pu m\'empêcher de crier. Ça les a rendus furieux : ils m\'ont chargé.',
+    'Je ne leur ai échappé que le soir, quand mon feu s\'est mis à fumer. Dans la fumée, ils ne savaient plus où aller : chacun tirait de son côté. Cette fois, mon cri les a fait sursauter, et j\'ai vu le nœud de leurs queues.'
   ],
   gardien:[
-    'D\'abord la plaque, ensuite le cœur. Pour la plaque : celle qui n\'a pas de dents et qui grignote le fer. Pour le cœur : celle qui chasse le noir.',
-    'Dans le mauvais ordre, ses runes s\'affolent : il frappe double. Et gardez loin de lui celui qui danse sans jambes : chauffé au rouge, il cogne encore plus fort.',
-    'Je change l\'eau en caillou sans la toucher. Sous moi, le vieux bronze éclate. Ensuite, visez le cœur. Qui suis-je ?',
-    'Rien de tout ça ? Qu\'il cogne sur un mur sans pierres, tracé en l\'air par un vieux savant : sa plaque s\'entrouvre un instant. C\'est le moment de montrer à son cœur celle qui chasse le noir.'
+    'Une machine des Fondateurs, haute comme deux hommes, toute rouillée. Elle m\'a barré la route. J\'ai levé ma lampe pour voir à qui j\'avais affaire : elle est devenue folle.',
+    'J\'ai couru me cacher derrière une vieille porte. Elle a cogné dessus, et sa plaque s\'est entrouverte, le temps d\'un souffle. Derrière, quelque chose brillait. C\'est là qu\'il faut mettre la lumière. Si seulement j\'avais eu de quoi ronger cette plaque pour de bon…'
   ],
   bourbe:[
-    'Trois clés, dans l\'ordre. Dans l\'eau, rien ne l\'atteint : celle qui entre partout sans ouvrir de porte le fait sortir. Sur la berge, sa bave le protège : celui qui meurt s\'il boit la sèche. Et un crapaud tout sec ne supporte pas la fille du feu : il en tombe à la renverse.',
-    'La grise trop tôt, sur un crapaud encore mouillé : il gonfle, et il saute deux fois plus fort. Et celle qui sort du chaudron : il plonge chercher ses petits.',
-    'L\'hiver, je dessine des fleurs sur les vitres. Avec moi, le bassin devient dur comme la pierre : le voilà coincé dehors, sans pouvoir plonger. Qui suis-je ?',
-    'Il manque une clé ? Sans celui qui meurt s\'il boit : deux tours au sec, et sa bave sèche toute seule. Sans la grise : celui qu\'il a avalé connaît ce qui fait rire et crier « arrête ! » à la fois. Une fois sa peau bien sèche, il rit, il recrache, il roule sur le dos.'
+    'Un crapaud grand comme une maison. Tant qu\'il reste dans l\'eau, rien ne l\'atteint. C\'est ma lampe qui l\'a fait sortir sur la berge. Là, mes coups glissaient sur sa bave.',
+    'J\'ai eu le malheur de faire du bruit : il a replongé, et il est revenu avec ses petits. Alors j\'ai attendu, sans bouger. Au sec, sa bave a fini par sécher. Avec un bon feu, ça irait plus vite.',
+    'Mon compagnon, lui, s\'est fait avaler. Il a gigoté là-dedans : le crapaud a éclaté de rire et l\'a recraché. C\'est la fumée de notre feu qui nous a sauvés : tout sec, il ne la supporte pas. Il est tombé à la renverse.'
   ]
 };
-/* le titre de chaque énigme sur la tablette du Sage */
-D.LIVRE_TITRES = ['Son point faible', 'Le piège', 'Un autre chemin', 'Sans la potion'];     /* (3 mots au plus : pas besoin de 🔊) */
-D.LIVRE_TITRES_DE = {tetard:['Ce qu\'il faut savoir', 'D\'où ils viennent']};
-/* ce que chaque ligne apprend (pour la simulation et les tests) */
-D.LIVRE_SUJETS = ['ouvre', 'piege', 'autre', 'sans-potion'];
+/* « étudié » dans partie.livre : ce nombre (la simulation y lit « l'équipe sait tout de ce monstre ») */
+D.ETUDIE = 4;
 D.LIVRE_VIDE = 'Le journal est encore vide. Pendant un combat, le Sage peut étudier un monstre.';
 D.LIVRE_COMPLET = 'Le Sage a déjà étudié ce monstre.';
 /* après 2 fuites (ou défaites) dans la même salle, le journal offre le code de la bête la plus forte de la salle que le Sage n'a pas étudiée */
@@ -868,7 +856,7 @@ D.MOTS = {
   sol:'Au sol !', joue:'Déjà joué', loin:'Trop loin !', debout:'Encore debout', impossible:'Impossible !',
   personne:'Personne au sol', entoile:'Entoilé !', avale:'Avalé !', haut:'Trop haut !', eau:'Sous l\'eau !',
   absent:'Pas emporté', fini:'C\'est fini', pasEncore:'Pas encore !', seul:'Un seul geste', cible:'Qui viser ?',
-  combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', sacFerme:'Sac fermé', tropPlein:'Sac trop plein',
+  combat:'Pas en combat !', use:'Code usé', inconnu:'Code inconnu', traverse:'À travers !',
   recette:'Recette inconnue', pourQui:'Pour qui ?', pris:'Déjà pris', plein:'Mains pleines', pasIci:'Pas ici !', repos:'Déjà reposés',
   rebond:'Ça rebondit !', tropFort:'Trop fort !', rien:'Rien du tout', etudie:'Déjà étudié'
 };
@@ -3109,7 +3097,7 @@ global.PLAN_SAGE = {svg:svg, encre:encre, glyphes:glyphes, cle:cle, bord:BORDS.p
      complété par le code page:dechiree.
    - Le Grand Livre et ses pages blanches de sauvegarde (3, +1 avec page:blanche) : chaque page donne un code sauve:N.
    - Le bouton « 📥 Un code » : page:dechiree, page:blanche, porte:odette, rune:lumiere (chacun une seule fois), et les
-     codes d'étude des monstres (etude:<monstre>) : le Grand Livre montre le monstre et ses énigmes (donnees.js, D.LIVRE).
+     codes d'étude des monstres (etude:<monstre>) : la page du monstre dans le carnet de l'aventurier (carnet:aventurier ; donnees.js, D.LIVRE).
    Tout est gardé dans localStorage ('brumeval-donjon-sage'). Rapidité : glisser / zoomer = un seul transform ;
    la rune ne peint que la petite toile de l'encre qu'elle touche ; au repos, rien ne tourne. */
 (function(){
@@ -3468,11 +3456,12 @@ function livre(guide){
     else html += '<button type="button" class="page blanche" data-page="' + i + '"><b>Page blanche</b><small>' + nom + '</small><i aria-hidden="true">✦</i></button>';
   }
   html += '</div>';
-  /* les monstres étudiés : une page chacun (le portrait et les énigmes) */
-  var betes = monstresEtudies();
-  html += '<div class="livre-betes"><h3>🔍 Les monstres étudiés</h3>' +
+  /* le carnet de l'aventurier (trouvé par le Pisteur à l'entrée du donjon) : une page par monstre étudié */
+  var betes = monstresEtudies(), carnet = !!S.codes['carnet:aventurier'];
+  html += '<div class="livre-betes"><h3>📓 Le vieux carnet</h3>' +
     (betes.length ? '<div class="betes">' + betes.map(function(m){ return '<button type="button" class="bete-vignette" data-bete="' + m + '"><img src="' + PORTRAITS + m + '.webp" alt="" loading="lazy"><b>' + esc(DD.MONSTRES[m].nom) + '</b></button>'; }).join('') + '</div>'
-      : dit('Aucun pour l’instant. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code.')) + '</div>';
+      : dit(carnet ? 'Ses pages sont collées par l’humidité. Pendant un combat, ton héros peut étudier un monstre : le Pisteur te montrera un code, et tu sauras quelle page décoller.'
+                   : 'Pas encore de carnet. On raconte qu’un aventurier a laissé le sien à l’entrée du donjon… Si le Pisteur le trouve, il te montrera un code.')) + '</div>';
   if(S.codes['porte:odette']) html += '<div class="livre-note">' + dit('Noté de ta main : Odette est vivante, derrière la porte aux quatre signes.') + '</div>';
   var w = PG.fenetre(html, {classe:'livre parch'}), f = w.el;
   if(guide) PG.guider(f.querySelector('[data-page="' + guide + '"]'));
@@ -3485,25 +3474,26 @@ function livre(guide){
 }
 
 /* ======================================================================
-   Les monstres étudiés (Romain, 10 novembre) : « le code, il le tape sur sa tablette, et là il voit apparaître l'image de
-   l'ennemi. Ensuite, toutes les propositions pour le battre, mais sous la forme d'énigmes : qu'il faille un peu réfléchir. »
-   Les énigmes sont dans moteur/src/donnees.js (D.LIVRE) ; les portraits viennent des fiches du bestiaire.
+   Les monstres étudiés (Romain, 10 et 11 novembre) : « le code, il le tape sur sa tablette, et là il voit apparaître l'image
+   de l'ennemi ». Pas d'énigmes à questions : le journal d'un aventurier (son récit, ses déboires), et des monstres « dessinés
+   à la main, comme dans un carnet ». Les pages sont dans moteur/src/donnees.js (D.LIVRE) ; les croquis dans pages/portraits/
+   (fabriqués par pages/croquis/seuls.py puis croquis.py, à partir des monstres du bestiaire).
    ====================================================================== */
 var PORTRAITS = /donjon-sage\.html/.test(location.pathname) ? 'pages/portraits/' : 'i/portrait-';
-var ICONES_ENIGMES = ['🗝️', '⚠️', '🔀', '🎒'];
 function monstresEtudies(){ return Object.keys(DD.LIVRE).filter(function(m){ return !!S.codes['etude:' + m]; }); }
+/* la page d'un monstre : le croquis de l'aventurier et son récit (un 🔊 par paragraphe). Pas de titres, pas de questions. */
 function pageMonstre(m, nouveau){
-  var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [], T = (DD.LIVRE_TITRES_DE && DD.LIVRE_TITRES_DE[m]) || DD.LIVRE_TITRES;
-  var rang = M.rang === 'boss' ? 'Le maître du donjon' : M.rang === 'elite' ? 'Un monstre d’élite' : 'Un monstre du donjon';
+  var M = DD.MONSTRES[m], L = DD.LIVRE[m] || [];
   var html = '<div class="titre"><h2>' + esc(M.nom) + '</h2>' + PG.lireBtn(M.nom) + '</div>' +
-    '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt="" width="560" height="502"><small>' + esc(rang) + '</small></div>' +
-    '<div class="bete-enigmes">' +
-      (nouveau ? dit('Ton Grand Livre s’ouvre tout seul à sa page. Les Fondateurs n’écrivaient jamais rien clairement : à toi de deviner, et de le dire aux autres.', 'bete-intro') : '') +
-      L.map(function(t, i){ return '<div class="enigme"><h3>' + (ICONES_ENIGMES[i] || '•') + ' ' + esc(T[i] || '') + '</h3>' + dit(t) + '</div>'; }).join('') +
+    '<div class="bete-page"><div class="bete-img"><img src="' + PORTRAITS + m + '.webp" alt=""><small>Carnet d’un aventurier</small></div>' +
+    '<div class="bete-recit">' +
+      (nouveau ? dit(S.codes['carnet:aventurier'] ? 'Une page du carnet se décolle : c’est bien ce monstre-là. L’aventurier raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.'
+                                                  : 'Une vieille page, glissée dans ton Grand Livre. Un aventurier y raconte ce qui lui est arrivé. À toi de voir ce que ça vous apprend.', 'bete-intro') : '') +
+      L.map(function(t){ return '<div class="recit">' + dit(t) + '</div>'; }).join('') +
     '</div></div>' +
     '<div class="rangee"><button type="button" class="aller" data-fen-fermer>' + (nouveau ? 'C’est noté' : 'Refermer la page') + '</button></div>';
   var w = PG.fenetre(html, {classe:'bete-fen parch', surFermer:nouveau ? null : function(){ livre(); }});
-  if(nouveau){ PG.son('magie'); var r = w.el.getBoundingClientRect(); PG.etincelles(w.el, r.width * .25, r.height * .4, 22, {dist:130, duree:1100}); PG.guider(w.el.querySelector('.aller')); }
+  if(nouveau){ PG.son('page'); PG.guider(w.el.querySelector('.aller')); }
   return w;
 }
 function utiliser(n){
@@ -3538,7 +3528,15 @@ function scene(id){
   if(id.indexOf('etude:') === 0){
     var m = id.slice(6);
     pageMonstre(m, true);
-    conte('Une page de plus dans ton Grand Livre : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras là-bas, avec ses énigmes.');
+    conte('Une page de plus dans le carnet de l’aventurier : ' + DD.MONSTRES[m].nom + '. Tu la retrouveras dans ton Grand Livre.');
+  } else if(id === 'carnet:aventurier'){
+    /* le carnet trouvé à l'entrée du donjon : il entre dans le Grand Livre */
+    var wc = PG.fenetre('<div class="titre"><h2>📓 Un vieux carnet</h2></div>' +
+      dit('Un vieux carnet, trouvé à l’entrée du donjon. Quelqu’un est passé par ici avant vous : un aventurier, sans pouvoirs ni potions, qui a tout noté.') +
+      dit('L’humidité a collé ses pages. Quand ton héros étudiera un monstre, tu sauras laquelle décoller.') +
+      '<div class="rangee"><button type="button" class="aller" data-fen-fermer>Je le garde</button></div>', {classe:'scene parch'});
+    PG.son('page'); PG.guider(wc.el.querySelector('.aller'));
+    conte('Le carnet de l’aventurier est rangé dans ton Grand Livre. Ses pages attendent d’être décollées.');
   } else if(id === 'rune:lumiere'){
     var wr = PG.fenetre('<div class="titre"><h2>✨ La rune de lumière</h2>' + PG.lireBtn('La rune de lumière') + '</div>' + '<div class="scene-img rune-img" aria-hidden="true"><i>ᛉ</i></div>' +
       dit('Le Pisteur l’a trouvée au fond du puits : une pierre gravée, tiède comme un petit soleil. Promène-la sur ton plan : elle réveille l’encre que les Fondateurs ont cachée.', 'scene-txt') +
