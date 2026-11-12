@@ -1,9 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 17 h 00)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 18 h 20)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 ## Nouveau depuis le 12 novembre (15 h 37 et 15 h 39) : la cueillette est durcie, et Anselme réclame sa tisane
 
+- **Mis à jour le 12 novembre à 17 h 44 (en ligne à 18 h 17) : le « pied-de-loup » s'appelle « le lycopode »** (vrai nom ; « pied-de-loup » désigne d'abord une autre plante, au bord de l'eau), et son indice n'est plus « à l'ombre des grands rochers » (faux) mais « il aime les landes, en terre pauvre, parmi la bruyère ». Bible §13.28, « Retouche ». Reste à décider avec Romain : l'endroit (les Cinq Pierres) doit-il ressembler à une lande ?
 - Le détail : **Bible §13.28**. Romain, en lisant ce qui était en ligne : « c'est trop facile la recherche de plantes ».
 - **L'herbier du Sage ne dit plus où est la plante : il donne un indice, et l'équipe devine où chercher.** Jamais le nom d'un lieu. Exemples (les sept sont au §13.28 et dans `E3-atelier-des-plantes.md` §5) : « à l'ombre des grands rochers » (le pied-de-loup), « dans l'humidité de la forêt sombre […] on raconte que les sorcières s'en servaient pour leurs incantations » (la vesse-de-loup), « les herboristes l'aiment beaucoup » (le souci), « les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail » (le lin). **C'est le modèle pour toute plante future : un indice qui fait faire un lien, pas une adresse.**
 - **L'endroit à toucher est tout juste le rond qui s'affiche** : on ne trouve plus une plante par accident.

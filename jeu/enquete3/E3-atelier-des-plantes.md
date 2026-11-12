@@ -68,7 +68,7 @@ Chaque recette a ses phrases à elle pour ses erreurs les plus probables (de 5 �
 
 | Potion | La vraie plante | La partie | Les étapes, dans l'ordre | « C'est vrai ! » |
 | --- | --- | --- | --- | --- |
-| **Feu** | le pied-de-loup (lycopode) | les épis jaunes | séchoir → tamis (la poudre jaune) → fiole | La poudre de lycopode s'enflamme d'un coup : les flammes du théâtre, le flash des premiers photographes. La plante est protégée aujourd'hui : on ne la cueille plus. |
+| **Feu** | le lycopode (« patte de loup » ; appelé « pied-de-loup » jusqu'au 12 novembre, 17 h 44) | les épis jaunes | séchoir → tamis (la poudre jaune) → fiole | La poudre de lycopode s'enflamme d'un coup : les flammes du théâtre, le flash des premiers photographes. La plante est protégée aujourd'hui : on ne la cueille plus. |
 | **Fumigène** | la vesse-de-loup | la grosse boule brune, bien mûre | séchoir → fiole (on la presse au-dessus du bocal, et on bouche vite) | Jeune, elle est blanche et ferme ; mûre, pleine d'une poussière brune (ses spores). Une goutte de pluie, et pouf ! On ne respire jamais ce nuage. |
 | **Huile** | le lin | les petites boules dorées (les graines sont dedans) | tamis (les graines) → pressoir → filtre → fiole | On presse les graines sans les chauffer. Ce qui reste, le « tourteau », nourrit les vaches. Avec les tiges, on fait du fil. |
 | **Colle** | le gui | les baies blanches | mortier → marmite avec de l'eau, **sans feu** (ça trempe) → marmite à **feu doux** → fiole | Avec ces baies, on faisait la « glu ». L'oiseau essuie son bec collant sur une branche… et un nouveau gui y pousse. Les baies sont du poison. |
@@ -98,7 +98,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 | **Le souci** | au bout des rangs de lavande de l'herboriste | une plante d'herboriste (pour la peau) | pas avant l'après-midi (il dort la nuit, s'ouvre quand le soleil est haut) |
 | **Le lin** | dans le champ, au pied de l'épouvantail | les champs cultivés | pas avant l'après-midi (le matin, la rosée mouille ses graines) |
 | **La mélisse** ⭐ | au-delà de la brume : au pied de la première ruche du Rucher | « l'herbe aux abeilles », près des ruches et des jardins | dès le matin, la rosée partie |
-| **Le pied-de-loup** ⭐ | au-delà de la brume : aux Cinq Pierres, au pied de la pierre du nord | les landes des collines, au ras du sol | à toute heure |
+| **Le lycopode** ⭐ | au-delà de la brume : aux Cinq Pierres, au pied de la pierre du nord | les landes des collines, au ras du sol | à toute heure |
 | **La vesse-de-loup** ⭐ | au-delà de la brume : au milieu du Rond des Sorcières | les bois humides, à même la terre | à toute heure |
 | **Le gui** ⭐ | au-delà de la brume : dans le Vieux verger, sur le pommier à l'échelle | jamais dans la terre : sur les branches des vieux pommiers | à toute heure (il reste vert en hiver) |
 
@@ -120,7 +120,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
     - le souci : « Une jolie fleur orange, comme un petit soleil : elle soigne la peau. Les herboristes l'aiment beaucoup. »
     - le lin : « Il pousse dans les champs cultivés. Les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail. »
     - la mélisse : « On l'appelle l'herbe aux abeilles : elles raffolent de ses petites fleurs. Elle ne pousse plus qu'au-delà de la brume. »
-    - le pied-de-loup : « Il rampe au ras du sol, comme une petite branche de sapin. Il pousse au-delà de la brume, à l'ombre des grands rochers. »
+    - le lycopode : « On l'appelle aussi patte de loup. Il rampe au ras du sol, comme une petite branche de sapin. Il aime les landes, en terre pauvre, parmi la bruyère : au-delà de la brume. » *(12 novembre, 17 h 44 : « à l'ombre des grands rochers » était faux)*
     - la vesse-de-loup : « Un champignon tout rond, qui pousse dans l'humidité de la forêt sombre, au-delà de la brume. On raconte que les sorcières s'en servaient pour leurs incantations. »
     - le gui : « Il ne pousse jamais dans la terre : il vit accroché aux branches des vieux pommiers. Il se cache au-delà de la brume. »
   - **« Quand ? »** (`quand`). Exemple : « Pas avant l'après-midi : il dort la nuit, et ne s'ouvre que quand le soleil est haut. »
@@ -199,7 +199,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 - la mélisse est appelée « herbe aux abeilles » (son nom vient du mot grec pour l'abeille) ; on la cueille le matin, quand la rosée s'est évaporée : c'est là qu'elle a le plus de parfum ;
 - le souci : son vieux nom latin veut dire « qui suit le soleil » ; ses fleurs se ferment la nuit et se rouvrent avec le soleil ; les jardiniers le plantent au potager, près des choux, contre les pucerons ;
 - le lin se sème dans les champs ; sa fleur bleue ne dure qu'une matinée ; on récolte ses graines bien sèches, et les capsules mûres tintent quand on les secoue ;
-- le pied-de-loup (lycopode en massue) vit sur les landes et les pelouses des collines et des montagnes, en terre pauvre et acide, souvent avec la bruyère ;
+- le lycopode en massue (patte de loup) vit sur les landes et les pelouses des collines et des montagnes, en terre pauvre et acide, souvent avec la bruyère ;
 - la vesse-de-loup pousse dans les bois et les prairies, sur le sol, souvent en petits groupes (le « Rond des Sorcières » de la carte est un clin d'œil aux ronds de champignons, pas un fait vérifié pour cette espèce) ;
 - le gui n'a pas de racine dans la terre : il vit sur les branches des arbres (pommiers et peupliers surtout) et reste vert l'hiver.
 
