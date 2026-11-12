@@ -1,6 +1,14 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 2 h 37)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 9 h 25)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (9 h 25) : une grande carte avec de la brume, en modèle
+
+- Romain a ouvert un chantier à part : **une grande carte faite pour les tablettes, avec le village au milieu et de la brume qu'on lève zone par zone** (Bible chapitre 14). C'est un modèle à regarder (https://claude.ai/artifact/V1tSYx1X8z9m1T6uFsuEnp) : **rien ne change dans l'enquête 3 ni dans le jeu**. À décider avec lui (§14.3) : si l'enquête 3 prend la grande carte, et si elle lève une première zone de brume.
+
+## Nouveau depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles en discussion
+
+- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde (construit, en attente de l'accord de Romain pour la mise en ligne). Les banderoles sont « trop faciles, même au niveau 10 » : Romain veut un tir plus magique et plus dur, avec le même arc. Trois idées proposées (les chats de lumière, les lanternes qui s'envolent, les banderoles vivantes) ; **rien n'est construit**.
 
 ## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
 
