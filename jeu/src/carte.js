@@ -1289,7 +1289,7 @@ function calque(o){
     '<circle cx="62" cy="62" r="40" fill="#1c2447" stroke="' + c[0] + '" stroke-width="6"/><text x="62" y="64" font-size="38" text-anchor="middle" dominant-baseline="central">' + c[1] + '</text></g>';
 }
 
-/* ---------- Les endroits cachés où poussent les plantes (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.25) ----------
+/* ---------- Les endroits cachés où poussent les plantes (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.26) ----------
    o.cachettes = [{id, x, y, ic, connu, grise}], dans les mesures du village (une plante d'au-delà de la brume a des mesures qui en sortent :
    le groupe du village n'est pas découpé, elle tombe à sa place dans le grand monde).
    Tant que l'endroit n'est pas trouvé, RIEN ne se voit : seulement un rond invisible, qu'il faut toucher exactement (R_CACHETTE, en mesures
@@ -1336,7 +1336,7 @@ function svg(opts){
     /* LE GRAND MONDE (Bible chapitre 14). Le village est à sa place de toujours : tout ce qui est du village reste dans ses anciennes mesures, dans
        un groupe décalé de (OX, OY). o.brume : les zones dont la brume est levée (rien : toute la brume). */
     var mo = MOMENTS[o.moment] ? o.moment : 'apresmidi', pm = p + 'm-';
-    /* o.brumePart (12 novembre, cueillette.js ; Bible §13.25) : les zones qu'on vient de lever (elles sont aussi dans o.brume). La brume d'avant
+    /* o.brumePart (12 novembre, cueillette.js ; Bible §13.26) : les zones qu'on vient de lever (elles sont aussi dans o.brume). La brume d'avant
        est posée une dernière fois par-dessus, sur une toile à elle, qui s'efface en entier : seule son opacité bouge (carte.css, .ca-brume-part). */
     var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, part: o.brumePart, etiquette: o.etiquette, maquette: o.maquette});
     var village = '<g class="ca-village" transform="translate(' + Monde.OX + ' ' + Monde.OY + ')">';

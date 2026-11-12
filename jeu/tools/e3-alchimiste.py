@@ -1,5 +1,5 @@
 """Enquête 3, étape 4 (Bible § 13.14) : l'Alchimiste, du matin à la nuit (Playwright).
-Le matin : ses missions, l'établi dans l'atelier, le gâteau de la fête chez Gaspard ; les cueillettes (12 novembre, Bible §13.25 : sept
+Le matin : ses missions, l'établi dans l'atelier, le gâteau de la fête chez Gaspard ; les cueillettes (12 novembre, Bible §13.26 : sept
 endroits cachés de la carte, tools/cueillette_outils.py) : l'oseille et la mélisse, le souci et le lin pas avant l'après-midi, les trois
 lointaines hors d'atteinte sans Bertille, puis Bertille et les sept plantes (le robot qui touche la carte au doigt : e3-cueillette.py).
 L'établi (refait le 12 novembre : un cadre, src/etabli/, tools/etabli_outils.py) : l'explication en images et son bouton jaune, un outil
@@ -131,7 +131,7 @@ with sync_playwright() as p:
     verifier('Sept étages' in texte(pg) and pg.evaluate("() => M.P().vus['alchimiste:boulangerie:gateau'] === 'ok' && !!M.P().gateau"), 'réussi : « Sept étages en tout ! », et le gâteau est gardé')
     fermer(pg)
     verifier(lieu(pg, 'mairie') == [], 'la mairie, le matin : rien pour l\'Alchimiste (le gâteau se porte l\'après-midi)')
-    # ---------- les cueillettes (12 novembre, Bible §13.25 : sept endroits cachés de la carte ; le robot qui les touche au doigt : e3-cueillette.py) ----------
+    # ---------- les cueillettes (12 novembre, Bible §13.26 : sept endroits cachés de la carte ; le robot qui les touche au doigt : e3-cueillette.py) ----------
     print('— Le matin : les cueillettes')
     for l in ['lavoir', 'herboristerie', 'moulin', 'foret', 'clairiere', 'potager']:
         pts = lieu(pg, l)

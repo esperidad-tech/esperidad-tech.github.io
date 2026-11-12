@@ -22,7 +22,7 @@ var ORDRE_PL = ['oseille', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui'
 
 var PL = {
   oseille:{milieu:'Dans les prés et au bord des chemins, là où la terre reste fraîche.',
-    /* (12 novembre, Bible §13.25 : les anciens « ou », les énigmes qui menaient à un lieu du village, sont partis d'ici — l'endroit de chaque
+    /* (12 novembre, Bible §13.26 : les anciens « ou », les énigmes qui menaient à un lieu du village, sont partis d'ici — l'endroit de chaque
        plante sur la carte, et ce qu'en dit l'herbier du Sage, sont dans D.PLANTES, donnees.js) */
     nom:'L\'oseille', court:'Oseille', potion:'acide',
     arrive:'De grandes feuilles en fer de flèche, et une tige de petites fleurs rouges.',

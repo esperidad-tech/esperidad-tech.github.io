@@ -306,7 +306,7 @@ function contenu(ou, w, h){
       marqueurs = (aides ? marqueurs.filter(function(mq){ return mq.classe !== 'pnj'; }) : marqueurs.filter(function(mq){ return mq.classe === 'ingr' || mq.classe === 'bonus'; })).concat(PR.marqueurs);
       M.cle(hab).forEach(function(k){ if(hab[k].id) vis[hab[k].id] = visage(hab[k].id); });
       marqueurs.forEach(function(mq){ if(mq.visage) vis[mq.visage] = visage(mq.visage); });
-      /* LA BRUME REPOUSSÉE (Romain, 12 novembre, 12 h 52 ; cueillette.js, M.brumeLevee ; Bible §13.25) : les zones que l'enquête a levées pour ce
+      /* LA BRUME REPOUSSÉE (Romain, 12 novembre, 12 h 52 ; cueillette.js, M.brumeLevee ; Bible §13.26) : les zones que l'enquête a levées pour ce
          joueur (enquête 3 : Bertille, la petite cloche d'Anselme). Une zone levée reste sous sa brume tant que la carte n'a pas été regardée
          (montrer) ; alors sa brume s'en va sous les yeux du joueur (brumePart : elle est dessinée une dernière fois, et s'efface), et la zone
          est notée comme vue (res.commit.brume, monterVue). Pendant que la brume s'efface (UI.brumePart), un nouveau rendu redonne le même dessin :

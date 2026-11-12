@@ -1,4 +1,4 @@
-"""Les gestes d'un robot pour la cueillette des sept plantes (src/cueillette.js ; D.PLANTES, donnees.js ; Bible §13.25).
+"""Les gestes d'un robot pour la cueillette des sept plantes (src/cueillette.js ; D.PLANTES, donnees.js ; Bible §13.26).
 Par les actions du jeu, sans viser la carte : pour les robots qui ont autre chose à vérifier (e3-alchimiste.py, partie3.py, e3-descente.py…).
 Le robot qui touche la vraie carte au doigt, endroit par endroit : e3-cueillette.py.
 

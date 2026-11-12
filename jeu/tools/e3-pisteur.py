@@ -115,7 +115,7 @@ def partie(b, joueur, chemin):
         pg.locator('#voile [data-act=point][data-id=oie]').click(); pg.wait_for_timeout(300)
         verifier(pg.locator('#voile [data-act=mj-go]').count() == 1, 'l\'oie : le point se rouvre depuis la boulangerie (3e essai)')
     fermer(pg)
-    verifier(lieu(pg, 'potager') == [], 'le potager : plus rien pour le Pisteur (12 novembre : le gui est au Vieux verger, l\'Alchimiste le cueille elle-même, Bible §13.25)')
+    verifier(lieu(pg, 'potager') == [], 'le potager : plus rien pour le Pisteur (12 novembre : le gui est au Vieux verger, l\'Alchimiste le cueille elle-même, Bible §13.26)')
     fermer(pg)
     for l in ['clocher', 'mairie', 'puits']:
         verifier(lieu(pg, l) == [], f'{l}, le matin : rien pour le Pisteur'); fermer(pg)

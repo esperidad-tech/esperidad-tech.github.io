@@ -4,7 +4,7 @@
 
 ## Nouveau depuis le 12 novembre (après-midi) : les plantes cachées sur la carte, l'herbier du Sage, Bertille — le plan de Romain pour les plantes est construit
 
-- Le détail : **Bible §13.25** (la cueillette) et **§14.7** (la brume qui recule). Romain, 12 h 52 et 13 h 09. `E3-atelier-des-plantes.md` §4 et §5 et `E3-actions-des-roles.md` sont à jour.
+- Le détail : **Bible §13.26** (la cueillette) et **§14.7** (la brume qui recule). Romain, 12 h 52 et 13 h 09. `E3-atelier-des-plantes.md` §4 et §5 et `E3-actions-des-roles.md` sont à jour.
 - **Ce qui a changé dans l'enquête 3** :
   - **l'Alchimiste** ne « cherche » plus de plantes dans des lieux : **sept endroits cachés sur sa carte**, qu'elle touche. Quatre au village (l'oseille au bord du ruisseau au-dessus du lavoir, la mélisse derrière l'herboristerie, le souci dans le potager, le lin au pied de l'épouvantail du champ de blé), trois au-delà de la brume (le pied-de-loup aux Cinq Pierres, la vesse-de-loup au Rond des Sorcières, le gui dans le Vieux verger). **Chaque plante est là où elle pousse pour de vrai** (Romain : « je veux qu'on apprenne des choses sur la réalité »). Le souci et le lin : pas avant l'après-midi. Tout se cueille encore la nuit ;
   - **une action nouvelle pour l'Alchimiste, au clocher** : « 🔔 Demander à Anselme de chasser la brume ». Il sonne **Bertille, sa plus petite cloche** : la brume recule au nord et à l'ouest (sur la carte de l'Alchimiste seulement). C'est le premier usage, dans l'histoire, des cloches contre la brume : **la Grosse Marie, à minuit, reste l'affaire du Barde** ;

@@ -1,5 +1,5 @@
 /* ==========================================================
-   Brumeval — la cueillette des sept plantes, et la brume repoussée (Romain, 12 novembre, 12 h 52 et 13 h 09 ; Bible §13.25)
+   Brumeval — la cueillette des sept plantes, et la brume repoussée (Romain, 12 novembre, 12 h 52 et 13 h 09 ; Bible §13.26)
 
    CE QUE ROMAIN A DEMANDÉ
    · Chaque plante pousse à UN endroit précis de la carte, qu'on ne voit pas (« on ne peut pas deviner où sont les plantes »). Quand l'Alchimiste

@@ -2,13 +2,13 @@
 
 > Décidé par Romain le 11 novembre (14 h 52 : « un atelier où il a besoin de séparer certains ingrédients de ces plantes… écraser les plantes, couper les plantes ; des potions basées sur des plantes qui existent réellement » ; 15 h 13 : « d'accord pour absolument tout ce que tu m'as proposé, go pour tout »). Construit une première fois le 12 novembre à 1 h (Bible §13.19).
 >
-> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.22)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2, §3 et §9 de ce document décrivent l'établi tel qu'il est construit aujourd'hui, avec les retouches de Romain du 12 novembre à 12 h 45 (Bible §13.23).** Les recettes ont changé : elles suivent les vrais gestes des herboristes. **⚠️ LES CUEILLETTES ONT ÉTÉ REFAITES LE 12 NOVEMBRE APRÈS-MIDI (Bible §13.25)**, à la demande de Romain (12 h 45, 12 h 52, 13 h 09) : les sept plantes sont **cachées sur la carte**, quatre au village (dès l'enquête 2), trois au-delà de la brume (enquête 3, après la cloche d'Anselme), chacune là où elle pousse pour de vrai ; l'herbier du Sage dit où et quand. **Les §4 et §5 décrivent ce qui est construit aujourd'hui ; les §6 et §7 (« Suivre la poussière », le gui par le Pisteur) sont retirés de l'enquête.** Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
+> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.22)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2, §3 et §9 de ce document décrivent l'établi tel qu'il est construit aujourd'hui, avec les retouches de Romain du 12 novembre à 12 h 45 (Bible §13.23).** Les recettes ont changé : elles suivent les vrais gestes des herboristes. **⚠️ LES CUEILLETTES ONT ÉTÉ REFAITES LE 12 NOVEMBRE APRÈS-MIDI (Bible §13.26)**, à la demande de Romain (12 h 45, 12 h 52, 13 h 09) : les sept plantes sont **cachées sur la carte**, quatre au village (dès l'enquête 2), trois au-delà de la brume (enquête 3, après la cloche d'Anselme), chacune là où elle pousse pour de vrai ; l'herbier du Sage dit où et quand. **Les §4 et §5 décrivent ce qui est construit aujourd'hui ; les §6 et §7 (« Suivre la poussière », le gui par le Pisteur) sont retirés de l'enquête.** Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
 
 ## 1. Le principe
 
 - **Les sept potions du donjon** (feu, fumigène, huile, colle, acide, baume, cœur vaillant ; ce sont les identifiants de `jeu/donjon/moteur/src/donnees.js`, `D.RECETTES_DEPART`) se font **à l'atelier des plantes**, à partir de **vraies plantes**, que l'Alchimiste cueille sur la carte (§4 : sept endroits cachés ; à toute heure, sauf le souci et le lin, pas avant l'après-midi).
 - **Jamais d'échec** (comme le labo) : un geste faux donne un petit résultat drôle, et on recommence. Il faut du travail, pas de la chance.
-- **Le chaudron ne change pas** : il garde les potions des enquêtes 1 et 2 (`D.POTIONS`, `D.RECETTES` de `donnees.js`). **Les codes des enquêtes 1 et 2 ne bougent pas.** Depuis le 12 novembre, les quatre plantes du village existent aussi dans l'enquête 2 (cachées, sans mission : §4) ; **les trois potions « du début » du chaudron (lumière, rapidité, invisibilité) sont retirées du grimoire** (Romain, 12 h 52 ; Bible §13.25).
+- **Le chaudron ne change pas** : il garde les potions des enquêtes 1 et 2 (`D.POTIONS`, `D.RECETTES` de `donnees.js`). **Les codes des enquêtes 1 et 2 ne bougent pas.** Depuis le 12 novembre, les quatre plantes du village existent aussi dans l'enquête 2 (cachées, sans mission : §4) ; **les trois potions « du début » du chaudron (lumière, rapidité, invisibilité) sont retirées du grimoire** (Romain, 12 h 52 ; Bible §13.26).
 - **Deux noms en commun, à régler à la construction** : le « Fumigène » et le « Cœur vaillant » existent déjà au chaudron des enquêtes 1 et 2 (`fumigene`, `coeur` : un nuage pour se cacher, un cœur d'accusation rendu au Sage). Proposé : ce sont les mêmes potions, avec une nouvelle recette à partir de l'enquête 3 ; dans l'enquête, le Cœur vaillant garde son effet (un cœur d'accusation) ; dans le donjon, il relève un ami tombé. Une potion, deux usages, comme l'acide.
 - **L'acide est la « potion qui ronge la rouille »** : la même fiole ouvre la grille du puits (si le chemin du clocher rate) et ronge l'armure du rat cuirassé et du Gardien de rouille dans le donjon.
 - **Toutes les potions doivent être faites quoi qu'il arrive** (Romain) : la mission de l'Alchimiste l'après-midi est « Prépare les sept potions de la nuit » ; le Sage ne donne le code de la nuit que quand chacun a fini. S'il en manque encore une à la nuit, l'Alchimiste peut la finir pendant le grand dialogue d'Anselme, avant de donner le code du sac.
@@ -84,7 +84,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 ## 4. Où poussent les plantes (les cueillettes)
 
-> **Refait le 12 novembre après-midi (Bible §13.25).** Romain, 12 h 52 : « sur la carte, on ne les voit pas […] dès qu'on va appuyer exactement sur la zone […] la petite bulle, avec marqué cueillir cette plante-là » ; « 4 plantes dans le plan de base du village […] 3 plantes dans la carte élargie, pas accessibles à l'enquête numéro 2 ». 13 h 09 : « liés à là où on peut les trouver dans la réalité […] je veux qu'on apprenne des choses sur la réalité ».
+> **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « sur la carte, on ne les voit pas […] dès qu'on va appuyer exactement sur la zone […] la petite bulle, avec marqué cueillir cette plante-là » ; « 4 plantes dans le plan de base du village […] 3 plantes dans la carte élargie, pas accessibles à l'enquête numéro 2 ». 13 h 09 : « liés à là où on peut les trouver dans la réalité […] je veux qu'on apprenne des choses sur la réalité ».
 
 **Chaque plante pousse à UN endroit précis de la carte, qu'on ne voit pas.** L'Alchimiste touche le bon endroit : la plante surgit (une petite pastille, qui reste sur la carte pour toute la saison) et sa bulle s'ouvre, avec le bouton jaune « 🧺 Cueillir … ». À côté, rien ne se passe. Seul l'Alchimiste a ces endroits. Cueillie, la plante pend à la tringle de l'établi (§2).
 
@@ -105,7 +105,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 ## 5. L'herbier des Fondateurs (le Sage)
 
-> **Refait le 12 novembre après-midi (Bible §13.25).** Romain, 12 h 52 : « dans l'herbier, je veux pas qu'il parle de donjon […] uniquement de plantes et uniquement là où elles sont […] et à quel moment de la journée on peut les cueillir » ; « des informations très précises ».
+> **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « dans l'herbier, je veux pas qu'il parle de donjon […] uniquement de plantes et uniquement là où elles sont […] et à quel moment de la journée on peut les cueillir » ; « des informations très précises ».
 
 - **Dès le matin de l'enquête 3**, une page du Grand Livre du Sage : « L'herbier des Fondateurs ». En tête : « Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont noté où elle vit, et quand la cueillir. Lis-les à voix haute à l'Alchimiste ! »
 - **Une planche par plante** (les quatre du village, puis les trois d'au-delà de la brume) : son dessin (le même qu'à l'établi), son nom, puis deux lignes, chacune avec son 🔊 :
@@ -117,7 +117,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 ## 6. La vesse-de-loup : « Suivre la poussière » (mini-jeu de l'Alchimiste) — RETIRÉ DE L'ENQUÊTE LE 12 NOVEMBRE
 
-> **Retiré de l'enquête 3 le 12 novembre après-midi (Bible §13.25)** : la vesse-de-loup se trouve maintenant en touchant le milieu du Rond des Sorcières, au-delà de la brume. Le mini-jeu existe toujours dans le code (`mj-pisteur-alchi.js` : suspect `poussiere`, arrivée `vesses`) et dans la salle des mini-jeux ; il peut resservir. Ce qui suit est la conception d'origine.
+> **Retiré de l'enquête 3 le 12 novembre après-midi (Bible §13.26)** : la vesse-de-loup se trouve maintenant en touchant le milieu du Rond des Sorcières, au-delà de la brume. Le mini-jeu existe toujours dans le code (`mj-pisteur-alchi.js` : suspect `poussiere`, arrivée `vesses`) et dans la salle des mini-jeux ; il peut resservir. Ce qui suit est la conception d'origine.
 
 - Romain voulait que l'Alchimiste, comme le Pisteur, suive des traces pour trouver une plante. **Le moteur de « Suivre la piste » sert tel quel**, en décor forêt (déjà fait pour l'enquête 2), avec une autre trace : **une fine poussière brune sur l'herbe**, que les vesses-de-loup crachent quand un lièvre les écrase. De fausses traces : des feuilles mortes, de la terre, des champignons qui ne sont pas des vesses.
 - À l'arrivée, comme pour le moulin et la crypte (§12.57, §12.58), un dessin plus grand : **le rond des vesses-de-loup**, et le mot « Le rond des vesses-de-loup ! ».
@@ -125,7 +125,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 ## 7. Le gui : le Pisteur grimpe — RETIRÉ DE L'ENQUÊTE LE 12 NOVEMBRE
 
-> **Retiré de l'enquête 3 le 12 novembre après-midi (Bible §13.25)** : le gui est dans le Vieux verger, au-delà de la brume, sur le pommier qui a une échelle ; l'Alchimiste y grimpe elle-même. Les deux codes (« Le gui du pommier », « Le gui ») n'existent plus. Ce qui suit est la conception d'origine.
+> **Retiré de l'enquête 3 le 12 novembre après-midi (Bible §13.26)** : le gui est dans le Vieux verger, au-delà de la brume, sur le pommier qui a une échelle ; l'Alchimiste y grimpe elle-même. Les deux codes (« Le gui du pommier », « Le gui ») n'existent plus. Ce qui suit est la conception d'origine.
 
 - Quand l'Alchimiste a l'herbier et va au potager de Basile : « Le gui est tout en haut du vieux pommier. Bien trop haut pour toi ! » → **code « Le gui du pommier » pour le Pisteur**.
 - Le Pisteur, au potager, a une action de plus : « 🌳 Grimper au vieux pommier » (pas de mini-jeu ; une petite scène racontée : « Une branche, deux branches… Basile crie d'en bas : « Pas sur mes pommes ! » Tu attrapes une grosse touffe de gui. ») → **code « Le gui » pour l'Alchimiste**, qui peut alors le cueillir (il arrive dans son atelier).
@@ -150,7 +150,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 ## 10. Ce qu'il fallait construire (liste d'origine, du 11 novembre)
 
-> Tout est construit (Bible §13.19, §13.20), sauf Mimi chasseuse de plantes (point 8). **Les points 1, 5, 6 et 7 ont été remplacés le 12 novembre après-midi par les plantes cachées sur la carte (§4, §5 ; Bible §13.25).** L'établi (point 2), le grimoire (point 3) et les recettes (point 4) ont été refaits le 12 novembre (§13.22, et §2-§3 ci-dessus). Les sons de l'établi (point 10) sont dans l'Atelier des sons, en attente de l'écoute de Romain.
+> Tout est construit (Bible §13.19, §13.20), sauf Mimi chasseuse de plantes (point 8). **Les points 1, 5, 6 et 7 ont été remplacés le 12 novembre après-midi par les plantes cachées sur la carte (§4, §5 ; Bible §13.26).** L'établi (point 2), le grimoire (point 3) et les recettes (point 4) ont été refaits le 12 novembre (§13.22, et §2-§3 ci-dessus). Les sons de l'établi (point 10) sont dans l'Atelier des sons, en attente de l'écoute de Romain.
 
 1. Les sept plantes (`D.INGR`), leurs lieux de cueillette dans `e3.js`, et le code « L'herbier » qui ouvre les trois rares.
 2. L'établi : un meuble de l'atelier, ses bulles, son signe « 🌿 À préparer ! », et la page plein écran sur le modèle du labo (les outils, la plante en parties, les gestes, les phrases du conteur, les gestes faux).

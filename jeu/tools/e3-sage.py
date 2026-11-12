@@ -106,7 +106,7 @@ with sync_playwright() as p:
     verifier('Livre d\'or' in texte(pg) and '_info:ecritures' in objets(pg) and pg.locator('#voile .b-donne').count() == 1, 'le Livre d\'or : le code « Les écritures du village » pour l\'Alchimiste')
     fermer(pg)
     t = page(pg, 'herbier')
-    verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.25)')
+    verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.26)')
     verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' in t and 'épouvantail' in t and 'donjon' not in t.lower(), 'plus de code : le Sage lit, l\'Alchimiste cherche sur sa carte ; pas un mot du donjon')
     shot(pg, 'A-herbier')
     t = page(pg, 'doutes')
