@@ -55,14 +55,37 @@ def debut(b, nom, role, enquete=3):
     carte(pg)
     return pg
 
+# Un endroit se nomme par sa plante ; quand elle en a plusieurs : 'oseille' est le premier, 'oseille#1' le deuxième (data-n, carte.js).
+def _sel(pid):
+    i, _, n = pid.partition('#')
+    return f'.ca-cachette[data-id="{i}"]' + (f'[data-n="{n}"]' if n else ':not([data-n])')
+
 def ronds(pg):
-    return pg.evaluate("() => [].map.call(document.querySelectorAll('#carte-ici .ca-cachette'), function(c){ return c.dataset.id; })")
+    return pg.evaluate("() => [].map.call(document.querySelectorAll('#carte-ici .ca-cachette'), function(c){ return c.dataset.id + (c.dataset.n ? '#' + c.dataset.n : ''); })")
 
 def connues(pg):
-    return pg.evaluate("() => [].filter.call(document.querySelectorAll('#carte-ici .ca-cach-pastille'), function(g){ return !g.classList.contains('ca-cach-inconnue'); }).map(function(g){ return g.dataset.cachette; })")
+    return pg.evaluate("() => [].filter.call(document.querySelectorAll('#carte-ici .ca-cach-pastille'), function(g){ return !g.classList.contains('ca-cach-inconnue'); }).map(function(g){ return g.dataset.cachette + (g.dataset.n ? '#' + g.dataset.n : ''); })")
 
 def grises(pg):
-    return pg.evaluate("() => [].map.call(document.querySelectorAll('#carte-ici .ca-cach-pastille.ca-cach-grise'), function(g){ return g.dataset.cachette; })")
+    return pg.evaluate("() => [].map.call(document.querySelectorAll('#carte-ici .ca-cach-pastille.ca-cach-grise'), function(g){ return g.dataset.cachette + (g.dataset.n ? '#' + g.dataset.n : ''); })")
+
+def rayons(pg, pid):
+    """le rayon du rond à toucher, et celui du rond qui s'affiche (son trait compris), en mesures de la carte ; et s'ils sont au même endroit"""
+    return pg.evaluate("""(sel) => {
+      var c = document.querySelector('#carte-ici ' + sel), i = c.dataset.id, n = c.dataset.n || '';
+      var g = [].filter.call(document.querySelectorAll('#carte-ici .ca-cach-pastille'), function(g){ return g.dataset.cachette === i && (g.dataset.n || '') === n; })[0], r = g.querySelector('circle');
+      var t = /translate\\(\\s*(-?[\\d.]+)[ ,]+(-?[\\d.]+)/.exec(g.getAttribute('transform') || '');
+      return {touche:+c.getAttribute('r'), affiche:+r.getAttribute('r') + (+r.getAttribute('stroke-width')) / 2, meme:!!t && +t[1] === +c.getAttribute('cx') && +t[2] === +c.getAttribute('cy')};
+    }""", _sel(pid))
+
+def carnet(pg):
+    """tout ce qui est écrit dans le Carnet (les missions), puis retour à la carte"""
+    pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'carnet'; M.render(); }"); pg.wait_for_timeout(250)
+    if pg.locator('.b-missions.plie').count():   # (repliées au départ : on les déplie)
+        pg.locator('.b-missions.plie .b-mi-plier').first.click(force=True); pg.wait_for_timeout(250)
+    t = pg.evaluate("() => [].map.call(document.querySelectorAll('.b-missions'), function(s){ return s.innerText.replace(/\\s+/g, ' '); }).join(' ')")
+    carte(pg)
+    return t
 
 def echelle(pg):
     return pg.evaluate("() => { var m = document.querySelector('#carte-ici .ca-monde'), s = m && m.querySelector('svg'); return m && s ? m.getBoundingClientRect().width / s.viewBox.baseVal.width : 0; }")
@@ -81,15 +104,15 @@ def zoomer(pg):
 
 def point(pg, pid, dx=0, dy=0):
     """là où est l'endroit de cette plante, à l'écran (après l'avoir amené au milieu de la carte) ; dx, dy : un écart, en mesures de la carte"""
-    return pg.evaluate("""([pid, dx, dy]) => {
-      var c = document.querySelector('#carte-ici .ca-cachette[data-id="' + pid + '"]'), vue = document.querySelector('#carte-ici .ca-vue'), monde = document.querySelector('#carte-ici .ca-monde');
+    return pg.evaluate("""([sel, dx, dy]) => {
+      var c = document.querySelector('#carte-ici ' + sel), vue = document.querySelector('#carte-ici .ca-vue'), monde = document.querySelector('#carte-ici .ca-monde');
       if(!c) return null;
       var svg = c.ownerSVGElement, k = monde.getBoundingClientRect().width / svg.viewBox.baseVal.width, ox = +svg.getAttribute('data-ox') || 0, oy = +svg.getAttribute('data-oy') || 0;
       var x = (+c.getAttribute('cx') + ox + dx) * k, y = (+c.getAttribute('cy') + oy + dy) * k;
       vue.scrollLeft = x + monde.offsetLeft - vue.clientWidth / 2; vue.scrollTop = y + monde.offsetTop - vue.clientHeight / 2;
       var R = monde.getBoundingClientRect();
       return {x:R.left + x, y:R.top + y, k:k, r:+c.getAttribute('r') * k};
-    }""", [pid, dx, dy])
+    }""", [_sel(pid), dx, dy])
 
 def toucher(pg, pid, dx=0, dy=0):
     q = point(pg, pid, dx, dy); pg.wait_for_timeout(220)
@@ -107,7 +130,7 @@ def moment(pg, i):
 def cueillir(pg, pid, mot):
     """touche l'endroit, puis le bouton jaune ; rend le texte de la bulle avant et après"""
     toucher(pg, pid)
-    avant = texte(pg); bt = pg.locator(f'#voile [data-act=cueillir-plante][data-id={pid}]')
+    avant = texte(pg); bt = pg.locator(f'#voile [data-act=cueillir-plante][data-id={pid.partition("#")[0]}]')
     if not bt.count(): return avant, None
     lib = bt.inner_text()
     bt.tap(); pg.wait_for_timeout(400)
@@ -117,53 +140,68 @@ with sync_playwright() as p:
     b = p.chromium.launch()
     PL = None
     # ======================================================================== le matin
-    print('— L\'Alchimiste, le matin : rien ne se voit, quatre endroits cachés')
+    print('— L\'Alchimiste, le matin : rien ne se voit ; au village, trois plantes en quatre endroits')
     pg = debut(b, 'Alchi', 'alchimiste')
     PL = pg.evaluate("() => DONNEES.PLANTES")
     verifier(pg.evaluate("() => M.E().id === 3 && M.momentId() === 'matin'"), 'enquête 3, le matin')
-    verifier(sorted(ronds(pg)) == ['lin', 'melisse', 'oseille', 'souci'], f'quatre endroits cachés sur la carte, ceux du village ({ronds(pg)})')
+    verifier(sorted(ronds(pg)) == ['lin', 'oseille', 'oseille#1', 'souci'], f'quatre endroits cachés sur la carte, ceux du village : l\'oseille (deux endroits), le souci, le lin ({ronds(pg)})')
+    verifier('melisse' not in ronds(pg), 'la mélisse n\'est plus au village : elle ne pousse que derrière la brume')
     verifier(connues(pg) == [], 'aucune pastille de plante ne se voit')
     verifier(pg.evaluate("() => [].every.call(document.querySelectorAll('#carte-ici .ca-cachette'), function(c){ return c.getAttribute('opacity') === '0'; })"), 'les ronds à toucher sont invisibles')
     verifier(pg.evaluate("() => document.querySelectorAll('#carte-ici canvas.ca-nuages').length") == 1 and pg.evaluate("() => M.brumeLevee().length") == 0, 'toute la brume est là (une seule toile de brume, aucune zone levée)')
     shot(pg, 'matin-rien-ne-se-voit')
     mi = pg.evaluate("() => M.etapesMission().map(function(m){ return m.t; })")
-    verifier(any('sept plantes' in t and 'herbier du Sage' in t for t in mi) and any('Anselme' in t and 'brume' in t for t in mi), 'ses missions : les sept plantes (l\'herbier du Sage), et Anselme pour la brume')
+    verifier(any('sept plantes' in t and 'herbier du Sage' in t for t in mi) and any('Anselme' in t and 'brume' in t and 'peut-être' in t for t in mi), 'ses missions : les sept plantes (l\'herbier du Sage), et « Anselme pourra peut-être t\'aider » pour la brume')
+    tc = carnet(pg)
+    verifier('sept plantes' in tc and 'Rapporte de la mélisse' not in tc, f'la mission de la tisane d\'Anselme n\'est pas encore dans le Carnet (elle arrive après Bertille) ({tc[:60]})')
     zoomer(pg)
-    # toucher à côté : deux fois le rayon plus loin
-    q = toucher(pg, 'oseille', 95, 0)
-    m = bulle(pg)
-    verifier(not m or m['type'] != 'cachette', f'toucher à côté de l\'oseille (95 plus à droite) : pas de plante ({m})')
-    verifier(connues(pg) == [], 'et toujours aucune pastille')
-    fermer(pg); carte(pg); zoomer(pg)
-    q = toucher(pg, 'oseille')
+    # L'ENDROIT À TOUCHER EST EXACTEMENT LE ROND QUI S'AFFICHE (Romain, 15 h 37) : pas plus grand, au même endroit
+    for pid in ronds(pg):
+        ry = rayons(pg, pid)
+        verifier(abs(ry['touche'] - ry['affiche']) < 0.06 and ry['meme'] and ry['touche'] <= 24, f'{pid} : le rond à toucher est exactement le rond qui s\'affiche ({ry["touche"]} et {ry["affiche"]})')
+    R = rayons(pg, 'oseille')['touche']
+    # toucher juste à côté : rien (à droite, à 1,2 fois le rayon : la rivière ; en bas à gauche, à 1,27 fois : la lavande de l'herboriste)
+    for dx, dy, ou in [(R * 1.2, 0, 'à droite, à 1,2 fois le rayon'), (-R * 0.9, R * 0.9, 'en biais, à 1,27 fois le rayon')]:
+        toucher(pg, 'oseille', dx, dy)
+        m = bulle(pg)
+        verifier(not m or m['type'] != 'cachette', f'toucher juste à côté de l\'oseille ({ou}) : pas de plante ({m})')
+        verifier(connues(pg) == [], 'et toujours aucune pastille')
+        fermer(pg); carte(pg); zoomer(pg)
+    # toucher juste dedans, près du bord
+    q = toucher(pg, 'oseille', R * 0.85, 0)
     m = bulle(pg); t = texte(pg)
-    verifier(m and m['type'] == 'cachette' and m['id'] == 'oseille' and m['bulle'], f'toucher juste : la bulle de l\'oseille, sur la carte ({m})')
+    verifier(m and m['type'] == 'cachette' and m['id'] == 'oseille' and m['bulle'], f'toucher juste dedans (à 0,85 fois le rayon) : la bulle de l\'oseille, sur la carte ({m})')
     verifier('fer de flèche' in t and 'Cueillir de l\'oseille' in t, f'« … de l\'oseille ! » et le bouton « Cueillir de l\'oseille » ({t[:110]})')
     verifier(pg.evaluate("() => { var b = document.querySelector('#voile [data-act=cueillir-plante]'); return !!b && /rgb\\(17, 17, 17\\)/.test(getComputedStyle(b).color); }"), 'le bouton est jaune, texte noir')
-    verifier(connues(pg) == ['oseille'] and pg.evaluate("() => !!M.S.plantesVues.oseille"), 'sa pastille est apparue sur la carte, et le jeu s\'en souvient (pour toute la saison)')
-    verifier(q and q['r'] * 2 >= 44, f'au plus gros zoom, le rond à toucher fait au moins 44 px ({q and round(q["r"] * 2)})')
+    verifier(connues(pg) == ['oseille'] and pg.evaluate("() => !!M.S.cachettesVues.oseille"), 'sa pastille est apparue sur la carte, et le jeu s\'en souvient (pour toute la saison)')
+    # (depuis 15 h 37, le rond à toucher n'est pas plus grand que la pastille : « beaucoup plus resserré ». Sur un téléphone, au plus gros zoom, il
+    #  ne fait que 36 px — dit à Romain ; si c'est trop dur : laisser le téléphone zoomer plus, ou grossir pastille et rond ensemble, R_CACHETTE)
+    verifier(q and q['r'] * 2 >= (34 if IPHONE else 44), f'au plus gros zoom, le rond à toucher fait {q and round(q["r"] * 2)} px (au moins {34 if IPHONE else 44})')
     shot(pg, 'oseille-trouvee')
     av, ap = cueillir(pg, 'oseille', 'oseille')
     verifier(ap is not None and 'Cueilli' in ap and 'établi' in ap and pg.evaluate("() => M.plantes().oseille") == 1 and pg.evaluate("() => !!M.P().vus['plante:oseille']"), f'cueillie : « ça t\'attend sur l\'établi », une oseille sur l\'établi ({(ap or "")[:60]})')
     verifier(grises(pg) == ['oseille'], 'sa pastille devient grise')
     toucher(pg, 'oseille'); t = texte(pg)
     verifier('Cueilli' in t and pg.locator('#voile [data-act=cueillir-plante]').count() == 0 and pg.evaluate("() => M.plantes().oseille") == 1, 'la retoucher ce matin : déjà cueillie, pas de deuxième')
-    # la mélisse (dès le matin), le souci et le lin (pas avant l'après-midi)
-    av, ap = cueillir(pg, 'melisse', 'mélisse')
-    verifier(ap is not None and 'citron' in av and pg.evaluate("() => M.plantes().melisse") == 1, f'la mélisse, dès le matin ({av[:70]})')
+    # le deuxième endroit de l'oseille (au bord gauche du potager, les pieds dans le ruisseau) : la même plante, sa propre pastille
+    toucher(pg, 'oseille#1'); m = bulle(pg); t = texte(pg)
+    verifier(m and m['type'] == 'cachette' and m['id'] == 'oseille' and 'Cueilli' in t and pg.locator('#voile [data-act=cueillir-plante]').count() == 0 and pg.evaluate("() => M.plantes().oseille") == 1,
+             f'le deuxième endroit de l\'oseille : c\'est bien de l\'oseille, déjà cueillie ce matin ({t[:60]})')
+    verifier(sorted(connues(pg)) == ['oseille', 'oseille#1'] and pg.evaluate("() => !!M.S.cachettesVues['oseille#1']"), 'chaque endroit trouvé a sa pastille')
+    # le souci et le lin (pas avant l'après-midi)
     for pid, mot in [('souci', 'dorment encore'), ('lin', 'rosée')]:
         toucher(pg, pid); t = texte(pg)
         verifier(mot in t and pg.locator('#voile [data-act=cueillir-plante]').count() == 0 and not pg.evaluate(f"() => M.plantes().{pid} || 0"), f'{pid}, le matin : trop tôt (« {mot} »), pas de bouton ({t[:80]})')
-    verifier(sorted(connues(pg)) == ['lin', 'melisse', 'oseille', 'souci'], 'les quatre plantes du village sont trouvées')
+    verifier(sorted(connues(pg)) == ['lin', 'oseille', 'oseille#1', 'souci'], 'les quatre endroits du village sont trouvés')
     shot(pg, 'village-quatre-trouvees')
     # ======================================================================== Bertille
     print('— Bertille : la brume recule, au nord et à l\'ouest')
     pg.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); pg.wait_for_timeout(300)
     pts = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile [data-act=point]'), function(b){ return b.dataset.id; })")
-    verifier(pts == ['bertille'], f'au clocher : demander à Anselme de chasser la brume ({pts})')
+    verifier(pts == ['bertille'], f'au clocher : monter voir Anselme (et pas encore de mélisse à lui porter) ({pts})')
     pg.locator('#voile [data-act=point][data-id=bertille]').click(); pg.wait_for_timeout(400)
     t = texte(pg)
-    verifier('Bertille' in t and 'DING' in t and 'TES TANTES' in t and pg.locator('#voile .b-lire').count() >= 1, f'la scène d\'Anselme, avec son 🔊 ({t[:90]})')
+    verifier('Bertille' in t and 'DING' in t and 'tisane de mélisse' in t and 'derrière la brume' in t and pg.locator('#voile .b-lire').count() >= 1, f'la scène d\'Anselme (il veut une tisane de mélisse, qui ne pousse plus que derrière la brume), avec son 🔊 ({t[:90]})')
     verifier('Grosse Marie' not in t, 'Anselme ne sonne pas la Grosse Marie (elle, c\'est à minuit)')
     shot(pg, 'bertille')
     verifier(pg.evaluate("() => M.brumeLevee().join()") == 'n,o' and pg.evaluate("() => !M.P().vus['brume:n']"), 'la brume du nord et de l\'ouest est levée ; la carte ne l\'a pas encore montré')
@@ -184,13 +222,32 @@ with sync_playwright() as p:
     verifier(pg.evaluate("() => document.querySelectorAll('#carte-ici .ca-brume-part').length") == 0, 'ensuite, ce dessin n\'est plus là')
     noms = pg.evaluate("() => document.querySelector('#carte-ici svg.ca-carte').textContent")
     verifier('Rond des Sorcières' in noms and 'Vieux verger' in noms and 'Cinq Pierres' in noms and 'Mine condamnée' not in noms and 'Bergerie' not in noms, 'les noms des lieux du nord et de l\'ouest paraissent ; ceux des autres zones, non')
-    verifier(sorted(ronds(pg)) == ['gui', 'lin', 'lycopode', 'melisse', 'oseille', 'souci', 'vesse'], f'sept endroits cachés maintenant ({len(ronds(pg))})')
-    verifier(sorted(connues(pg)) == ['lin', 'melisse', 'oseille', 'souci'], 'les trois lointaines ne se voient pas')
+    verifier('Rucher' in noms, 'le Rucher (où pousse la mélisse) est dans la zone ouverte')
+    verifier(sorted(ronds(pg)) == ['gui', 'lin', 'lycopode', 'melisse', 'oseille', 'oseille#1', 'souci', 'vesse'], f'huit endroits cachés maintenant, pour sept plantes ({len(ronds(pg))})')
+    verifier(sorted(connues(pg)) == ['lin', 'oseille', 'oseille#1', 'souci'], 'les quatre lointaines ne se voient pas')
+    verifier('Rapporte de la mélisse' in carnet(pg), 'la mission « Rapporte de la mélisse à Anselme » est arrivée dans le Carnet')
     zoomer(pg)
-    for pid, mot, ok in [('gui', 'échelle', 'gui'), ('lycopode', 'bruyères', 'pied-de-loup'), ('vesse', 'boule brune', 'vesse-de-loup')]:
+    for pid in ['melisse', 'gui', 'lycopode', 'vesse']:
+        ry = rayons(pg, pid)
+        verifier(abs(ry['touche'] - ry['affiche']) < 0.06 and ry['meme'], f'{pid} : le rond à toucher est exactement le rond qui s\'affiche')
+    for pid, mot, ok in [('melisse', 'citron', 'mélisse'), ('gui', 'échelle', 'gui'), ('lycopode', 'grande pierre', 'pied-de-loup'), ('vesse', 'boule brune', 'vesse-de-loup')]:
         av, ap = cueillir(pg, pid, ok)
         verifier(ap is not None and mot in av and ok in av and pg.evaluate(f"() => M.plantes().{pid}") == 1, f'{ok} : « {mot} », cueilli ({av[:80]})')
+        if pid == 'melisse': shot(pg, 'melisse-au-rucher')
         if pid == 'gui': shot(pg, 'gui-au-verger')
+    # ---------- la tisane d'Anselme : on lui rapporte de la mélisse (et on garde la sienne pour l'établi) ----------
+    print('— La tisane d\'Anselme')
+    or0 = pg.evaluate("() => M.S.or")
+    pg.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); pg.wait_for_timeout(300)
+    pts = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile [data-act=point]'), function(b){ return b.dataset.id; })")
+    verifier('tisane' in pts, f'au clocher, avec de la mélisse : « Porter la mélisse à Anselme » ({pts})')
+    pg.locator('#voile [data-act=point][data-id=tisane]').click(); pg.wait_for_timeout(400)
+    t = texte(pg)
+    verifier('CITRON' in t and 'tisane' in t and pg.locator('#voile .b-lire').count() >= 1, f'Anselme a sa mélisse, avec le 🔊 ({t[:90]})')
+    verifier(pg.evaluate("() => M.S.or") == or0 + 3 and pg.evaluate("() => M.plantes().melisse") == 1, 'trois pièces d\'or, et la mélisse reste à l\'Alchimiste pour son établi')
+    shot(pg, 'tisane')
+    fermer(pg)
+    verifier(pg.evaluate("() => { M.majMission && M.majMission(); return M.etapesMission().some(function(m){ return /Rapporte de la mélisse/.test(m.t) && m.fait.some(M.condMission); }); }"), 'la mission de la tisane se coche')
     # la brume ne revient pas, et ne repart pas une deuxième fois
     carte(pg)
     verifier(pg.evaluate("() => document.querySelectorAll('#carte-ici .ca-brume-part').length") == 0 and 'Vieux verger' in pg.evaluate("() => document.querySelector('#carte-ici svg.ca-carte').textContent"), 'en rouvrant la carte : la brume ne repart pas une deuxième fois, les zones restent ouvertes')
@@ -210,17 +267,24 @@ with sync_playwright() as p:
     print('— La nuit : tout se cueille encore')
     pn = debut(b, 'Nuit', 'alchimiste')
     pn.evaluate("() => { M.P().vus['alchimiste:clocher:bertille'] = 'ok'; M.P().vus['brume:n'] = 1; M.P().vus['brume:o'] = 1; M.P().moment = 2; M.sauver(); M.render(); }"); carte(pn); zoomer(pn)
-    verifier(pn.evaluate("() => M.momentId()") == 'nuit' and len(ronds(pn)) == 7, 'la nuit, Bertille sonnée : les sept endroits')
-    for pid in ['oseille', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui']:
-        av, ap = cueillir(pn, pid, pid)
-        verifier(ap is not None and pn.evaluate(f"() => M.plantes().{pid}") == 1, f'{pid} se cueille la nuit')
+    verifier(pn.evaluate("() => M.momentId()") == 'nuit' and len(ronds(pn)) == 8, 'la nuit, Bertille sonnée : les huit endroits')
+    for pid in ['oseille#1', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui']:
+        av, ap = cueillir(pn, pid, pid); k = pid.partition('#')[0]
+        verifier(ap is not None and pn.evaluate(f"() => M.plantes().{k}") == 1, f'{pid} se cueille la nuit' + (' (par son deuxième endroit)' if '#' in pid else ''))
     shot(pn, 'nuit')
     # sans Bertille, la nuit : seulement les quatre du village ; on peut encore aller voir Anselme
     ps = debut(b, 'SansCloche', 'alchimiste')
     ps.evaluate("() => { M.P().moment = 2; M.sauver(); M.render(); }"); carte(ps)
-    verifier(len(ronds(ps)) == 4, 'la nuit, sans Bertille : les quatre du village seulement')
+    verifier(len(ronds(ps)) == 4, 'la nuit, sans Bertille : les quatre endroits du village seulement')
     ps.evaluate("() => { M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); ps.wait_for_timeout(300)
-    verifier(ps.locator('#voile [data-act=point][data-id=bertille]').count() == 1, 'la nuit, on peut encore demander à Anselme de sonner Bertille')
+    verifier(ps.locator('#voile [data-act=point][data-id=bertille]').count() == 1, 'la nuit, on peut encore monter voir Anselme')
+    # ======================================================================== le Barde : dès le matin, Anselme fait appeler l'Alchimiste
+    print('— Le Barde : Anselme fait appeler l\'Alchimiste')
+    bd = debut(b, 'Barde', 'barde')
+    bd.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); bd.wait_for_timeout(300)
+    t = texte(bd)
+    verifier('VA ME CHERCHER L\'ALCHIMISTE' in t and 'SERVICE' in t, f'le matin, au clocher : « Va me chercher l\'Alchimiste : j\'ai un service à lui demander ! » ({t[:120]})')
+    verifier(ronds(bd) == [], 'le Barde : aucun endroit caché sur sa carte')
     # ======================================================================== le Sage : l'herbier
     print('— Le Sage : l\'herbier des Fondateurs')
     sg = debut(b, 'Sage', 'sage')
@@ -230,11 +294,15 @@ with sync_playwright() as p:
       return {n:u.children.length, plantes:[].map.call(u.children, function(li){ return li.dataset.plante; }), dessins:u.querySelectorAll('.lv-herb-planche svg').length,
         lire:u.querySelectorAll('.b-lire').length, ou:u.querySelectorAll('.lv-herb-ou').length, quand:u.querySelectorAll('.lv-herb-quand').length, t:u.innerText.replace(/\\s+/g, ' '),
         page:document.querySelector('#livre-ici .lv-page.on').innerText.replace(/\\s+/g, ' '), donne:document.querySelectorAll('#livre-ici .lv-page.on .b-donne').length}; }""")
-    verifier(h is not None and h['n'] == 7 and h['plantes'] == ['oseille', 'melisse', 'souci', 'lin', 'lycopode', 'vesse', 'gui'], f'la page de l\'herbier : sept planches, le village d\'abord ({h and h["plantes"]})')
+    verifier(h is not None and h['n'] == 7 and h['plantes'] == ['oseille', 'souci', 'lin', 'melisse', 'lycopode', 'vesse', 'gui'], f'la page de l\'herbier : sept planches, les trois du village d\'abord ({h and h["plantes"]})')
     if h:
         verifier(h['dessins'] == 7 and h['ou'] == 7 and h['quand'] == 7 and h['lire'] == 14, f'chaque plante : son dessin, « Où ? », « Quand ? », et un 🔊 par texte ({h["dessins"]} dessins, {h["lire"]} 🔊)')
-        verifier(all(PL[k]['ou'] in h['t'] and PL[k]['vit'] in h['t'] and PL[k]['quand'] in h['t'] for k in PL), 'où elle vit, l\'endroit précis et le moment de chacune y sont')
+        verifier(all(PL[k]['ou'] in h['t'] and PL[k]['vit'] in h['t'] and PL[k]['quand'] in h['t'] for k in PL), 'où elle vit, son indice et le moment de chacune y sont')
         bas = h['page'].lower()
+        # (Romain, 15 h 37) l'herbier ne dit plus l'endroit : ni le nom du lieu, ni le détail du dessin
+        dits = [m for m in ['cinq pierres', 'rond des sorcières', 'verger', 'rucher', 'ruche', 'lavoir', 'lavande', 'ruisseau', 'rivière', 'échelle', 'à l\'ouest', 'au nord'] if m in bas]
+        verifier(dits == [], f'l\'herbier ne nomme aucun endroit de la carte : des indices seulement ({dits})')
+        verifier(all(m in bas for m in ['grands rochers', 'incantations', 'herboristes', 'épouvantail', 'potagers', 'abeilles', 'pommiers']) and bas.count('brume') >= 4, 'les indices de Romain y sont (rochers, incantations, herboristes, épouvantail, potagers), et « au-delà de la brume » pour les quatre lointaines')
         verifier(not any(m in bas for m in ['donjon', 'potion', 'crypte', 'monstre', 'code']), 'pas un mot du donjon, des potions ni d\'un code')
         verifier(h['donne'] == 0, 'plus de code à donner')
         verifier(sg.evaluate("() => { M.majMission && M.majMission(); return M.etapesMission().some(function(m){ return /herbier/.test(m.t) && !!(m.fait && m.fait.some(M.condMission)); }); }"), 'sa mission « Lis l\'herbier à l\'Alchimiste » se coche')
@@ -243,7 +311,7 @@ with sync_playwright() as p:
     # ======================================================================== l'enquête 2 : une curieuse
     print('— L\'enquête 2 : une curieuse trouve les plantes du village')
     p2 = debut(b, 'Curieuse', 'alchimiste', 2)
-    verifier(p2.evaluate("() => M.E().id") == 2 and sorted(ronds(p2)) == ['lin', 'melisse', 'oseille', 'souci'], f'enquête 2 : les quatre endroits du village existent déjà ({ronds(p2)})')
+    verifier(p2.evaluate("() => M.E().id") == 2 and sorted(ronds(p2)) == ['lin', 'oseille', 'oseille#1', 'souci'], f'enquête 2 : les quatre endroits du village existent déjà — l\'oseille, le souci, le lin ({ronds(p2)})')
     zoomer(p2)
     verifier(not p2.evaluate("() => M.etabliDispo()"), 'enquête 2, aucune plante : pas d\'établi dans l\'atelier')
     av, ap = cueillir(p2, 'oseille', 'oseille')
@@ -257,7 +325,7 @@ with sync_playwright() as p:
     verifier(p2.locator('#atelier-ici .at-etabli-p').count() == 1, 'l\'établi des plantes est posé dans l\'atelier de l\'enquête 2')
     shot(p2, 'enquete2-atelier')
     carte(p2)
-    verifier(sorted(ronds(p2)) == ['lin', 'melisse', 'oseille', 'souci'] and p2.evaluate("() => M.brumeLevee().length") == 0, 'enquête 2 : jamais les trois lointaines, jamais de brume levée')
+    verifier(sorted(ronds(p2)) == ['lin', 'oseille', 'oseille#1', 'souci'] and p2.evaluate("() => M.brumeLevee().length") == 0, 'enquête 2 : jamais les quatre lointaines, jamais de brume levée')
     # la même héroïne passe à l'enquête 3 : la pastille est déjà là, et la plante aussi
     fermer(p2)
     p2.evaluate("() => { M.UI.ecran = 'reglages'; M.render(); }"); p2.click('[data-act=mode-test][data-i="3"]'); p2.click('#voile [data-act=confirmer-oui]')

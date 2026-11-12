@@ -163,56 +163,68 @@ D.INGR = {
    L'Alchimiste doit toucher exactement là : alors seulement la plante se montre, avec sa bulle « Cueillir ». C'est l'herbier du Sage qui dit où et quand.
    · x, y : dans les mesures du village (carte.js : 1000 × 1400). Les trois plantes d'au-delà de la brume ont des mesures qui sortent du village
      (le grand monde, monde-*.js : x + 1000, y + 320) ; zone : le banc de brume qu'il faut avoir repoussé (monde-brume.js, ZONES).
-   · des : la première enquête où l'endroit existe (2 : les quatre du village — dès l'enquête 2 on les trouve à l'aveugle, on les cueille et on fait
-     leurs potions, Romain, 12 h 45 ; 3 : les trois lointaines, avec l'herbier du Sage et la brume repoussée).
+   · des : la première enquête où l'endroit existe (2 : celles du village — dès l'enquête 2 on les trouve à l'aveugle, on les cueille et on fait
+     leurs potions, Romain, 12 h 45 ; 3 : les lointaines, avec l'herbier du Sage et la brume repoussée).
    · pasAvant : le moment à partir duquel elle se cueille (rien : dès le matin). Plus tard dans la journée, et la nuit, elle se cueille toujours.
-   · vit, ou, quand : ce que dit l'herbier (le Sage le lit à voix haute : rien que la plante, là où elle vit, l'endroit et le moment) ;
+   · vit, ou, quand : ce que dit l'herbier (le Sage le lit à voix haute : rien que la plante, là où elle vit, un indice et le moment) ;
      ici : ce que voit l'Alchimiste quand elle la trouve ; tot : quand elle vient trop tôt.
+   · aussi : d'autres endroits où pousse la même plante ([{x, y}] ; l'oseille en a deux). Un seul suffit pour la cueillir.
+   ⚠️ DEPUIS 15 H 37 (Romain : « c'est trop facile ») : L'HERBIER NE DIT PLUS L'ENDROIT EXACT. « ou » est un INDICE qui fait chercher (« à l'ombre des
+   grands rochers », « les herboristes l'aiment beaucoup »…) : jamais le nom du lieu, jamais le détail du dessin. Et l'endroit à toucher est
+   exactement le rond qui s'affiche (Carte.R_CACHETTE), pas plus. Trois plantes au village (l'oseille, le souci, le lin), QUATRE au-delà de la
+   brume : la mélisse y est partie (15 h 39 : Anselme en réclame pour sa tisane, et « on ne peut la trouver que derrière la brume »). Bible §13.27.
    CHAQUE PLANTE EST LÀ OÙ ELLE POUSSE POUR DE VRAI (Romain, 12 novembre, 13 h 09 : « je veux qu'on apprenne des choses sur la réalité ») : « vit »
    dit son vrai milieu, et l'endroit de la carte est un milieu de cette sorte. Vérifié en ligne le 12 novembre (les sources : E3-atelier-des-plantes.md) :
    l'oseille des prés aime les sols humides ; la mélisse, « herbe aux abeilles », se cueille le matin, la rosée partie ; le souci (du latin « qui suit
    le soleil ») se ferme la nuit et ne se rouvre que quand le soleil est haut, et on le plante près des choux contre les pucerons ; le lin se sème dans
    les champs, sa fleur bleue ne dure qu'un matin, et on récolte ses graines bien sèches ; le pied-de-loup vit sur les landes et les pelouses des
    collines, en terre pauvre et acide, avec la bruyère ; la vesse-de-loup pousse dans les bois, sur le sol, en petits groupes ; le gui n'a pas de
-   racine dans la terre, il vit sur les branches (pommiers et peupliers surtout) et reste vert l'hiver.
-   SI ON DÉPLACE UN ENDROIT : changer x, y ET la phrase « ou » (elle décrit le dessin de la carte), garder un milieu qui est le vrai, puis
-   `python3 tools/e3-cueillette.py`. */
+   racine dans la terre, il vit sur les branches (pommiers et peupliers surtout) et reste vert l'hiver. Ajouté à 15 h 37 :
+   l'oseille est aussi une plante de potager, qui veut une terre fraîche et humide ; le souci est une plante d'herboriste (« officinal »), on en fait
+   des soins pour la peau ; les oiseaux mangent les graines de lin ; les apiculteurs aiment la mélisse près des ruches, et sa tisane aide à dormir ;
+   la vesse-de-loup et les sorcières, c'est une légende (l'herbier dit « on raconte que »), pas un fait.
+   SI ON DÉPLACE UN ENDROIT : changer x, y, vérifier que l'indice « ou » mène toujours là (sans le dire), garder un milieu qui est le vrai, puis
+   `python3 tools/e3-cueillette.py`.
+   OÙ SONT LES ENDROITS (pour nous ; l'herbier ne le dit pas) : l'oseille, entre le carré de lavande de l'herboriste et la rivière, ET au bord
+   gauche du potager, les pieds dans le ruisseau ; le souci, au bout des rangs de lavande de l'herboriste ; le lin, au pied de l'épouvantail du
+   champ ; la mélisse, au pied de la première ruche du Rucher ; le pied-de-loup, au pied de la pierre du nord des Cinq Pierres ; la vesse-de-loup,
+   au milieu du Rond des Sorcières ; le gui, sur le pommier à l'échelle du Vieux verger. */
 D.PLANTES = {
-  oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬', x:90, y:1090, des:2,
-    vit:'Elle aime les prés humides.',
-    ou:'Cherche au bord du ruisseau, juste au-dessus du lavoir : là où un petit bras d\'eau le rejoint.',
+  oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬', x:910, y:894, des:2, aussi:[{x:165, y:1316}],
+    vit:'Elle a toujours soif.',
+    ou:'On en trouve aux abords des potagers et des jardins, là où la terre est très humide.',
     quand:'À toute heure, même la nuit.',
     ici:'Dans l\'herbe mouillée, de grandes feuilles en fer de flèche : de l\'oseille !'},
-  souci:{nom:'Le souci', un:'des fleurs de souci', ic:'🏵️', x:327, y:1316, des:2, pasAvant:'apresmidi',
-    vit:'Les jardiniers le plantent près des choux : il éloigne les pucerons.',
-    ou:'Cherche dans le potager, au pied de la cloche de paille du milieu.',
+  souci:{nom:'Le souci', un:'des fleurs de souci', ic:'🏵️', x:790, y:894, des:2, pasAvant:'apresmidi',
+    vit:'Une jolie fleur orange, comme un petit soleil : elle soigne la peau.',
+    ou:'Les herboristes l\'aiment beaucoup.',
     quand:'Pas avant l\'après-midi : il dort la nuit, et ne s\'ouvre que quand le soleil est haut.',
     ici:'De petits soleils orange, grands ouverts : des soucis !',
     tot:'Des boutons orange, bien fermés. Les soucis dorment encore : ils attendent que le soleil soit haut.'},
-  melisse:{nom:'La mélisse', un:'de la mélisse', ic:'🍃', x:905, y:894, des:2,
-    vit:'On l\'appelle l\'herbe aux abeilles, et elle aime les jardins.',
-    ou:'Cherche derrière l\'herboristerie, entre le carré de lavande et la rivière.',
-    quand:'Dès le matin, quand la rosée est partie : c\'est là qu\'elle sent le plus fort.',
-    ici:'Tu froisses une feuille entre tes doigts : ça sent le citron ! De la mélisse.'},
   lin:{nom:'Le lin', un:'du lin', ic:'🌾', x:770, y:1112, des:2, pasAvant:'apresmidi',
-    vit:'On le sème dans les champs, en plein soleil.',
-    ou:'Cherche dans le grand champ de blé, au pied de l\'épouvantail.',
+    vit:'Il pousse dans les champs cultivés.',
+    ou:'Les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail.',
     quand:'Pas avant l\'après-midi : le matin, la rosée mouille ses graines. Sèches, elles tintent quand on secoue la tige.',
     ici:'Tu secoues une tige : ses petites boules dorées tintent. Du lin, bien sec !',
     tot:'De jolies fleurs bleues… et des boules trempées de rosée. Trop tôt : laisse le soleil sécher les graines.'},
+  melisse:{nom:'La mélisse', un:'de la mélisse', ic:'🍃', x:-256, y:878, des:3, zone:'o',
+    vit:'On l\'appelle l\'herbe aux abeilles : elles raffolent de ses petites fleurs.',
+    ou:'Elle ne pousse plus qu\'au-delà de la brume.',
+    quand:'Dès le matin, quand la rosée est partie : c\'est là qu\'elle sent le plus fort.',
+    ici:'Les abeilles bourdonnent tout autour. Tu froisses une feuille : ça sent le citron ! De la mélisse.'},
   lycopode:{nom:'Le pied-de-loup', un:'du pied-de-loup', ic:'🌲', rare:true, x:-551, y:548, des:3, zone:'o',
-    vit:'Il aime les landes des collines, là où la terre est pauvre : il y rampe entre les bruyères.',
-    ou:'Au-delà de la brume, à l\'ouest : sur la colline des Cinq Pierres, au pied de la pierre du nord.',
+    vit:'Il rampe au ras du sol, comme une petite branche de sapin.',
+    ou:'Il pousse au-delà de la brume, à l\'ombre des grands rochers.',
     quand:'À toute heure.',
-    ici:'Entre les bruyères, on dirait une petite branche de sapin qui rampe : du pied-de-loup !'},
+    ici:'Au pied de la grande pierre, on dirait une petite branche de sapin qui rampe : du pied-de-loup !'},
   vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true, x:229, y:-115, des:3, zone:'n',
-    vit:'Elle pousse dans les bois et les clairières, à même la terre, par petits groupes.',
-    ou:'Au-delà de la brume, au nord du Vieux Chêne : au beau milieu du Rond des Sorcières.',
+    vit:'Un champignon tout rond, qui pousse dans l\'humidité de la forêt sombre, au-delà de la brume.',
+    ou:'On raconte que les sorcières s\'en servaient pour leurs incantations.',
     quand:'À toute heure.',
     ici:'Sur la terre du sous-bois, une grosse boule brune, bien mûre : une vesse-de-loup !'},
   gui:{nom:'Le gui', un:'du gui', ic:'🪴', rare:true, x:-221, y:609, des:3, zone:'o',
-    vit:'Il ne pousse jamais dans la terre : il vit accroché aux branches, surtout celles des vieux pommiers.',
-    ou:'Au-delà de la brume, à l\'ouest : dans le Vieux verger, tout en haut du pommier à l\'échelle.',
+    vit:'Il ne pousse jamais dans la terre : il vit accroché aux branches des vieux pommiers.',
+    ou:'Il se cache au-delà de la brume.',
     quand:'À toute heure : il reste vert même en hiver.',
     ici:'Tu grimpes à l\'échelle. Sur la plus haute branche, une boule verte piquée de perles blanches : du gui !'}
 };

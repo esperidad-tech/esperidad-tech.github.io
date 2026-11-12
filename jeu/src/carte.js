@@ -1294,16 +1294,21 @@ function calque(o){
    le groupe du village n'est pas découpé, elle tombe à sa place dans le grand monde).
    Tant que l'endroit n'est pas trouvé, RIEN ne se voit : seulement un rond invisible, qu'il faut toucher exactement (R_CACHETTE, en mesures
    de la carte : il ne grossit pas quand on recule, il faut zoomer pour viser). Trouvé : une petite pastille avec la plante (grise : plus rien
-   à y cueillir pour l'instant). Le rond passe par-dessus les zones des lieux (le souci est dans le potager) mais sous les visages et les noms.
+   à y cueillir pour l'instant). Le rond passe par-dessus les zones des lieux (le souci est dans la lavande de l'herboriste) mais sous les visages et les noms.
    La pastille est toujours dans le dessin (cachée tant que l'endroit n'est pas connu) : quand on le trouve, seule sa classe change, et la
-   carte n'a pas à se redessiner (carte-jeu.js, patcherCarte). */
-var R_CACHETTE = 38;
+   carte n'a pas à se redessiner (carte-jeu.js, patcherCarte).
+   ⚠️ L'ENDROIT À TOUCHER EST EXACTEMENT LE ROND QUI S'AFFICHE (Romain, 12 novembre, 15 h 37 : « que la hitbox soit exactement le rond qui
+   s'affiche. Qu'on ne puisse pas cliquer à côté […] beaucoup plus resserré […] ça évitera les accidents »). R_CACHETTE est le bord extérieur
+   de la pastille (son trait compris) ET le rayon du rond invisible : ne jamais donner à l'un un rayon que l'autre n'a pas. (Avant : 38 pour
+   toucher, 24 pour la pastille.) c.n : le rang de l'endroit, quand une plante en a plusieurs (cueillette.js, pl.aussi). */
+var R_CACHETTE = 24, TRAIT_CACHETTE = 3;   /* (le rond de la pastille : rayon 22,5 + la moitié de son trait = 24, tout rond) */
 function cachettes(o){
   var fond = '', dessus = '';
   (o.cachettes || []).forEach(function(c){
-    fond += '<circle class="ca-cachette" data-act="cachette" data-id="' + esc(c.id) + '" cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="' + R_CACHETTE + '" fill="#fff" opacity="0"/>';
-    dessus += '<g class="ca-cach-pastille' + (c.connu ? '' : ' ca-cach-inconnue') + (c.grise ? ' ca-cach-grise' : '') + '" data-cachette="' + esc(c.id) + '" transform="translate(' + f(c.x) + ' ' + f(c.y) + ')" pointer-events="none">' +
-      '<g class="ca-cach-rond"><circle r="22" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="3.5"/><text x="0" y="1" font-size="25" text-anchor="middle" dominant-baseline="central">' + esc(c.ic || '🌿') + '</text></g></g>';
+    var n = c.n ? ' data-n="' + (+c.n) + '"' : '';
+    fond += '<circle class="ca-cachette" data-act="cachette" data-id="' + esc(c.id) + '"' + n + ' cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="' + R_CACHETTE + '" fill="#fff" opacity="0"/>';
+    dessus += '<g class="ca-cach-pastille' + (c.connu ? '' : ' ca-cach-inconnue') + (c.grise ? ' ca-cach-grise' : '') + '" data-cachette="' + esc(c.id) + '"' + n + ' transform="translate(' + f(c.x) + ' ' + f(c.y) + ')" pointer-events="none">' +
+      '<g class="ca-cach-rond"><circle r="' + f(R_CACHETTE - TRAIT_CACHETTE / 2) + '" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="' + TRAIT_CACHETTE + '"/><text x="0" y="1" font-size="25" text-anchor="middle" dominant-baseline="central">' + esc(c.ic || '🌿') + '</text></g></g>';
   });
   return {fond: fond, dessus: dessus};
 }

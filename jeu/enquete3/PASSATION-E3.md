@@ -2,7 +2,18 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 12 novembre (15 h 37 et 15 h 39) : la cueillette est durcie, et Anselme réclame sa tisane
+
+- Le détail : **Bible §13.27**. Romain, en lisant ce qui était en ligne : « c'est trop facile la recherche de plantes ».
+- **L'herbier du Sage ne dit plus où est la plante : il donne un indice, et l'équipe devine où chercher.** Jamais le nom d'un lieu. Exemples (les sept sont au §13.27 et dans `E3-atelier-des-plantes.md` §5) : « à l'ombre des grands rochers » (le pied-de-loup), « dans l'humidité de la forêt sombre […] on raconte que les sorcières s'en servaient pour leurs incantations » (la vesse-de-loup), « les herboristes l'aiment beaucoup » (le souci), « les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail » (le lin). **C'est le modèle pour toute plante future : un indice qui fait faire un lien, pas une adresse.**
+- **L'endroit à toucher est tout juste le rond qui s'affiche** : on ne trouve plus une plante par accident.
+- **Les places ont bougé** : au village, l'oseille (deux endroits : près de l'herboriste côté rivière, et au bord du potager côté ruisseau), le souci (dans la lavande de l'herboriste), le lin (l'épouvantail) ; **derrière la brume, quatre plantes** : la mélisse (le Rucher), le pied-de-loup, la vesse-de-loup, le gui.
+- **La tisane d'Anselme, une petite histoire à trois** : le matin, Anselme dit au Barde d'aller lui chercher l'Alchimiste (à voix haute, sans code) ; l'Alchimiste monte, Anselme veut une tisane de mélisse pour dormir, mais la mélisse ne pousse plus que derrière la brume : il sonne Bertille ; l'Alchimiste lui en rapporte (trois pièces d'or, et elle garde sa plante). C'est la « négociation » que Romain voulait.
+- **Ce qui reste ouvert avec Romain** : les neuf décisions de Claude du §13.27 (surtout quatre plantes derrière la brume au lieu de trois) ; les nouvelles potions du chaudron ; Mimi.
+
 ## Nouveau depuis le 12 novembre (après-midi) : les plantes cachées sur la carte, l'herbier du Sage, Bertille — le plan de Romain pour les plantes est construit
+
+> **Les endroits, les phrases de l'herbier et la scène du clocher décrits ci-dessous ont changé à 15 h 37 : voir le paragraphe juste au-dessus.**
 
 - Le détail : **Bible §13.26** (la cueillette) et **§14.7** (la brume qui recule). Romain, 12 h 52 et 13 h 09. `E3-atelier-des-plantes.md` §4 et §5 et `E3-actions-des-roles.md` sont à jour.
 - **Ce qui a changé dans l'enquête 3** :
