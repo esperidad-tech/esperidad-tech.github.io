@@ -41,10 +41,43 @@ function suivre(){
   ORDRE_PL.forEach(function(k){ if(P.plantes && P.plantes[k] > 0 && !g.plantes[k]) g.plantes[k] = n; });
   ORDRE.forEach(function(id){ if(P.vus['fiole:' + id] && !g.fioles[id]) g.fioles[id] = n; });
 }
+/* La tringle de l'établi n'a que TROIS places (Romain, 12 novembre, 13 h 52). Une plante cueillie s'y pend s'il en reste une ; sinon elle
+   attend devant la porte de l'atelier (P.plPorte). Là, on touche le panier : elles vont se pendre s'il y a de la place, sinon « plus de place ».
+   Une place se libère quand la potion de la plante est faite. P.tringle = les plantes de l'établi (pendues, ou sur le linge). */
+var PLACES = 3;
+function utile(k){ var P = M.P(); return !!(P && P.plantes && P.plantes[k] > 0 && !P.vus['fiole:' + PL[k].potion]); }
+function repartir(){
+  var P = M.P(); if(!P) return [];
+  if(!Array.isArray(P.tringle)) P.tringle = [];
+  if(!P.plPorte || typeof P.plPorte !== 'object') P.plPorte = {};
+  P.tringle = P.tringle.filter(function(k, i, l){ return PL[k] && utile(k) && l.indexOf(k) === i; }).slice(0, PLACES);
+  ORDRE_PL.forEach(function(k){
+    if(!utile(k)){ delete P.plPorte[k]; return; }
+    if(P.tringle.indexOf(k) >= 0){ delete P.plPorte[k]; return; }
+    if(P.plPorte[k]) return;
+    if(P.tringle.length < PLACES) P.tringle.push(k); else P.plPorte[k] = 1;
+  });
+  return P.tringle;
+}
+M.plantesPorte = function(){ if(!M.etabliDispo()) return []; var P = M.P(); return ORDRE_PL.filter(function(k){ return P.plPorte && P.plPorte[k] && utile(k); }); };
+/* On touche le panier devant la porte : ce qui peut va se pendre. Rend {mis, reste, t (la phrase à dire)} */
+M.rangerPlantes = function(){
+  var l = M.plantesPorte(), P = M.P(), t = repartir(), n = 0, ph;
+  l.forEach(function(k){ if(t.length < PLACES){ t.push(k); delete P.plPorte[k]; n++; } });
+  var r = l.length - n;
+  if(!l.length) ph = 'Plus rien devant la porte.';
+  else if(!n) ph = 'Il n\'y a plus de place sur la tringle de l\'établi : trois plantes, pas une de plus. Prépare d\'abord une potion !';
+  else if(r) ph = (n > 1 ? n + ' plantes vont' : 'Une plante va') + ' se pendre à la tringle de l\'établi. Il n\'y a plus de place pour ' + (r > 1 ? 'les ' + r + ' autres' : 'la dernière') + '.';
+  else ph = (n > 1 ? 'Tes ' + n + ' plantes vont' : 'Ta plante va') + ' se pendre à la tringle de l\'établi.';
+  if(n) M.sauver();
+  return {mis:n, reste:r, t:ph};
+};
+/* (le dessin d'une plante cueillie, à glisser dans un autre dessin : le panier devant la porte de l'atelier) */
+M.planteSVG = function(k, x, y, w, h){ return PL[k] ? '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" viewBox="0 0 260 322" class="pl-dessin" overflow="visible">' + PLD.corps(k) + '</svg>' : ''; };
 /* L'établi est là dès que le héros a trouvé une plante (dans n'importe quelle enquête), et toujours dans une enquête à plantes */
 M.etabliDispo = function(){
   var E = enquete(); if(!(window.ETABLI_HTML && E && M.P && M.P() && M.role() === 'alchimiste')) return false;
-  suivre();
+  suivre(); repartir();
   var P = M.P();
   return !!(E.plantes || ORDRE_PL.some(function(k){ return P.plantes && P.plantes[k] > 0; }) || ORDRE.some(function(id){ return P.vus['fiole:' + id]; }));
 };
@@ -52,7 +85,7 @@ function faite(id){ var P = M.P(); return !!(P && P.vus['fiole:' + id]); }
 function faites(){ return ORDRE.filter(faite); }
 function aPlante(k){ var P = M.P(); return !!(P && P.plantes && P.plantes[k] > 0); }
 /* les plantes cueillies dont la potion n'est pas encore faite : le signe « 🌿 À préparer ! » de l'établi */
-M.plantesEnAttente = function(){ return M.etabliDispo() ? ORDRE_PL.filter(function(k){ return aPlante(k) && !faite(PL[k].potion); }).length : 0; };
+M.plantesEnAttente = function(){ return M.etabliDispo() ? repartir().length : 0; };
 function nuit(){ var E = enquete(), P = M.P(); return !!(E && P && E.moments[Math.min(P.moment, E.moments.length - 1)] === 'nuit'); }
 M.sacBits = function(){ var n = 0; ORDRE.forEach(function(id, i){ if(faite(id)) n |= (1 << i); }); return n; };
 M.sacDe = function(n){ return ORDRE.filter(function(id, i){ return (n >> i) & 1; }); };
@@ -72,11 +105,13 @@ function sacFiche(){
   try{ return {formes:M.code('sac:' + M.sacBits()).map(function(s){ return D.SYM[s].e; })}; }catch(e){ return null; }
 }
 function donjonDispo(){ try{ return !!(M.donjonBoutonAlchimiste && M.donjonBoutonAlchimiste()); }catch(e){ return false; } }
-function plantesDispo(){ var P = M.P(), r = {}; ORDRE_PL.forEach(function(k){ r[k] = (P.plantes && P.plantes[k] > 0) ? P.plantes[k] : 0; }); return r; }
+/* pour la page : seulement les plantes de la tringle ; et toutes celles qu'on a trouvées (leurs pages du grimoire) */
+function plantesDispo(){ var t = repartir(), r = {}; ORDRE_PL.forEach(function(k){ r[k] = t.indexOf(k) >= 0 ? 1 : 0; }); return r; }
+function trouvees(){ var P = M.P(); return ORDRE_PL.filter(function(k){ return P.vus['plante:' + k] || (P.plantes && P.plantes[k] > 0); }); }
 function fiche(){
   suivre();
   var P = M.P(), S = M.S;
-  return {jeu:true, plantes:plantesDispo(), faites:faites(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
+  return {jeu:true, plantes:plantesDispo(), trouvees:trouvees(), faites:faites(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
     intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), vite:!!window.BRUMEVAL_ETABLI_VITE};
 }
 function cadre(){ return document.getElementById(CADRE); }
@@ -121,7 +156,7 @@ window.addEventListener('message', function(e){
   else if(m.type === 'finie'){
     finie(String(m.id));
     /* on répond : ce que le jeu sait maintenant (le code du sac change avec chaque potion) */
-    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faites(), plantes:plantesDispo(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo()}, '*'); }catch(err){}
+    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faites(), plantes:plantesDispo(), trouvees:trouvees(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo()}, '*'); }catch(err){}
   }
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
   else if(m.type === 'stop'){ M.stop && M.stop(); }

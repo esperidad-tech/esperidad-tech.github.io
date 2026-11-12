@@ -20,6 +20,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0; height:100%; overflow:hidden}
+@supports (height:100dvh){ html,body{height:100dvh} }   /* (iPhone : la hauteur qu'on voit vraiment, barres du navigateur déduites) */
 body{background:#1b1430; color:var(--lune); font-family:var(--f-texte); font-size:17px; line-height:1.45; overscroll-behavior:none}
 html, body, body *{touch-action:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent}
 .app{position:fixed; inset:0}
@@ -62,6 +63,7 @@ body:not(.jeu) .coin-jeu{display:none}
 /* rien n'est en route : les plantes cueillies appellent */
 body.e-choisir .plante.dispo .rond{opacity:.9; animation:rond 1.4s ease-in-out infinite}
 /* les plantes cueillies, pendues à la tringle : on en décroche une */
+.porte.glisse .leve{opacity:.25}
 .pendue{cursor:pointer} .pendue .corps-p, .pendue .corps-p *{pointer-events:none} .pendue .pl-z{fill:transparent; stroke:none}
 body.e-choisir .pendue .rond{opacity:.9; animation:rond 1.4s ease-in-out infinite}
 body.m-plante .pendue, body.m-plante .potion{pointer-events:none}

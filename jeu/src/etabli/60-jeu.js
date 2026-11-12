@@ -14,7 +14,7 @@ var S = null, CAM = {cx:600, cy:320, z:1}, bulleT = 0, inviteT = 0;
 var HAUT = {alambic:246, marmite:196, presse:224, sechoir:140, fiole:116, mortier:132, tamis:88, filtre:106, planche:74, cruche:110, huilier:120, buches:104, allumettes:62, sac:108, livre:176};
 function neuf(){
   S = {plante:null, partie:null, n:0, ou:null, pos:'entree', m:null, faitIci:false, H:null, feux:{marmite:{b:0, allume:false}, alambic:{b:0, allume:false}}, liq:{marmite:null, alambic:null},
-    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false, posees:{}, pagesVues:{}};
+    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false, posee:null, pagesVues:{}, trouvees:{}, stock:null};
 }
 function recette(){ return S.plante ? RE[PL[S.plante].potion] : null; }
 function pos(x, y, w, h){ return 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(y) + '*var(--u));width:calc(' + f1(w) + '*var(--u));height:calc(' + f1(h) + '*var(--u))'; }
@@ -23,19 +23,27 @@ function svgEl(html){ var g = document.createElementNS('http://www.w3.org/2000/s
 function nbFaites(){ return ORDRE.filter(function(id){ return S.faites[id]; }).length; }
 function toutesFaites(){ return nbFaites() === ORDRE.length; }
 /* les pages du grimoire : une par plante trouvée (cueillie, ou déjà en potion) ; celles qu'on n'a pas encore lues */
-function connues(){ return ORDRE.filter(function(id){ return S.dispo[RE[id].plante] > 0 || S.faites[id]; }); }
+function connues(){ return ORDRE.filter(function(id){ var k = RE[id].plante; return S.dispo[k] > 0 || S.faites[id] || S.trouvees[k]; }); }
 function nouvellesPages(){ return connues().filter(function(id){ return !S.pagesVues[id]; }); }
-/* Une plante pendue à la tringle : on la touche, hop, elle se couche sur le linge (là, on peut la regarder de près) */
+/* Une plante pendue à la tringle : on la touche, hop, elle vient en grand sur le linge. Une seule plante sur le linge à la fois : celle
+   qui y était retourne se pendre (Romain, 12 novembre, 13 h 52). */
 function decrocher(k){
-  if(S.occupe || S.mode || !PL[k] || !(S.dispo[k] > 0) || S.posees[k]) return;
-  poser(); enleverBulle(); S.posees[k] = 1; son('pose');
+  if(S.occupe || S.mode || !PL[k] || !(S.dispo[k] > 0) || S.posee === k) return;
+  if(S.partie){ son('non'); secouer($('#pendue-' + k)); bulle(TRI.x0 + surTringle().indexOf(k)*TRI.pas, TRI.yTr + 96, DIT.uneChose, 'oups'); return; }
+  poser(); enleverBulle(); S.plante = null; S.posee = k; son('pose');
   majPendues(); majPlantes(); majEtat();
-  var g = $('#plante-' + k), c = g && g.querySelector('.corps'), q = PLACE[k];
-  if(c && !reduit) tween(320, function(p){
+  var g = $('#plante-' + k), c = g && g.querySelector('.corps');
+  if(c && !reduit) tween(340, function(p){
     var e = 1 - (1 - p)*(1 - p);
-    c.setAttribute('transform', 'translate(' + q[0] + ',' + f1(q[1] - 96*(1 - e)) + ') scale(' + SP + ',' + (SP*(APLAT + (1 - APLAT)*(1 - e))).toFixed(3) + ') translate(-130,-' + q[2] + ')'); c.setAttribute('opacity', f1(.35 + .65*e));
-  }, function(){ c.removeAttribute('opacity'); });
+    c.setAttribute('transform', trPlante(k, -110*(1 - e), APLAT + (1 - APLAT)*(1 - e))); c.setAttribute('opacity', f1(.35 + .65*e));
+  }, function(){ c.removeAttribute('opacity'); c.setAttribute('transform', trPlante(k)); });
   garder();
+}
+/* (la maquette, sans atelier ni porte : la tringle se regarnit toute seule, trois plantes à la fois) */
+function regarnir(){
+  if(!S.stock) return;
+  var n = ORDRE_PL.filter(function(k){ return S.dispo[k] > 0 && !S.faites[PL[k].potion]; }).length;
+  S.stock = S.stock.filter(function(k){ if(S.faites[PL[k].potion] || S.dispo[k] > 0) return false; if(n < TRI.n){ S.dispo[k] = 1; n++; return false; } return true; });
 }
 
 /* ---------- La caméra, les gros plans ---------- */
@@ -145,7 +153,7 @@ function choisirPlante(k){
   son('plante');
   ouvrirMode('plante', '<div class="ruban-p" style="' + pos(250, 22, 700, 0) + ';height:auto"><b></b><span></span></div>');
   var rb = $('#hudBoite .ruban-p'); rb.querySelector('b').textContent = p.nom; rb.querySelector('span').textContent = p.arrive; avecSon(rb, p.nom + '. ' + p.arrive);
-  majPlantes(); camera(c.x, c.y + 4, 3); son('zoom'); majEtat();
+  S.posee = k; majPendues(); majPlantes(); camera(c.x, c.y + 6, 2.1); son('zoom'); majEtat();
 }
 function prendre(pa){
   var p = PL[S.plante], d = p.parties[pa]; if(!d) return;
@@ -202,13 +210,13 @@ function reussir(o, e, r){
 }
 function finir(id, e){
   var r = RE[id], k = S.plante;
-  S.faites[id] = 1; if(S.dispo[k] > 0) S.dispo[k]--; delete S.posees[k];
+  S.faites[id] = 1; if(S.dispo[k] > 0) S.dispo[k]--; if(S.posee === k) S.posee = null; regarnir();
   S.partie = null; S.n = 0; S.ou = null; S.m = null; S.pos = 'entree'; S.faitIci = false; S.plante = null; S.restes = {}; S.presseBas = false;
   S.aDire.push(id); dire('finie', {id:id}); garder();
   majTout(); occupe(false); majQuitter();
   var toutes = nbFaites() === ORDRE.length;
   son(toutes ? 'toutes' : 'potion');
-  var i = ORDRE.indexOf(id); etoiles(426 + i*54, 96, 8);
+  var i = ORDRE.indexOf(id); etoiles(xPort(i), PORT.yEt - 32, 8);
   /* la potion a rejoint l'étagère : une carte la montre en grand, avec ce qui est vrai (on apprend quelque chose à chaque potion) */
   occupe(true);
   attendre(850, function(){ occupe(false); ouvrirPrete(id, e.t, toutes); });
@@ -313,7 +321,7 @@ var ANIM = {
     son('fiole'); l.setAttribute('fill', res.c); fondre('fiole');
     tween(900, function(p){ l.setAttribute('y', f1(-12 - 42*p)); l.setAttribute('height', f1(42*p)); }, function(){
       son('bouchon');
-      var i = ORDRE.indexOf(id), a = pt('fiole', 0, -30), b = {x:426 + i*54, y:122};
+      var i = ORDRE.indexOf(id), a = pt('fiole', 0, -30), b = {x:xPort(i), y:PORT.yEt};
       l.setAttribute('height', 0);
       voler('<g>' + flacon(id, res.c) + '</g>', a, b, 900, 90, fin, [.84, 1]);
     });
@@ -410,14 +418,14 @@ function toucherPotion(id){
 }
 
 /* ---------- Garder, reprendre ---------- */
-function exporter(){ return {p:S.plante, pa:S.partie, n:S.n, ou:S.ou, pos:S.pos, liq:S.liq, vu:S.vuH || {}, po:Object.keys(S.posees), pv:Object.keys(S.pagesVues)}; }
+function exporter(){ return {p:S.plante, pa:S.partie, n:S.n, ou:S.ou, pos:S.pos, liq:S.liq, vu:S.vuH || {}, po:S.posee ? [S.posee] : [], pv:Object.keys(S.pagesVues)}; }
 function importer(e){
   if(!e || typeof e !== 'object') return;
   if(e.vu && typeof e.vu === 'object') S.vuH = e.vu;
-  if(Array.isArray(e.po)) e.po.forEach(function(k){ if(PL[k]) S.posees[k] = 1; });
+  if(Array.isArray(e.po)) e.po.forEach(function(k){ if(PL[k] && S.dispo[k] > 0 && !S.faites[PL[k].potion]) S.posee = k; });
   if(Array.isArray(e.pv)) e.pv.forEach(function(id){ if(RE[id]) S.pagesVues[id] = 1; });
   var p = PL[e.p]; if(!p || !(S.dispo[e.p] > 0) || S.faites[p.potion]) return;
-  S.plante = e.p; S.posees[e.p] = 1;
+  S.plante = e.p; S.posee = e.p;
   var r = RE[p.potion], d = p.parties[e.pa]; if(!d) return;
   var n = Math.max(0, Math.min(r.etapes.length - 1, e.n | 0));
   if(e.pa !== r.partie) n = 0;

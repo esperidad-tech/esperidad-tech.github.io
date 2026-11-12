@@ -140,7 +140,12 @@ with sync_playwright() as p:
     verifier(lieu(pg, 'clairiere') == [] and 'Rien à trouver' in texte(pg), 'sans l\'herbier, la clairière : rien')
     verifier(lieu(pg, 'potager') == [], 'sans l\'herbier, le potager : pas de vieux pommier')
     atelier(pg)
-    verifier(signe(pg) == '🌿 4 à préparer !', f'le signe au-dessus de l\'établi : « 🌿 4 à préparer ! » ({signe(pg)})')
+    verifier(signe(pg) == '🌿 3 à préparer !', f'quatre plantes cueillies, trois places sur la tringle : le signe dit « 🌿 3 à préparer ! » ({signe(pg)})')
+    verifier(pg.locator('.at-plantes-porte').count() == 1 and pg.evaluate("() => M.plantesPorte().length") == 1 and pg.locator('.at-plantes-porte .pl-dessin').count() == 1, 'la quatrième attend devant la porte de l\'atelier (un panier, dans la rangée de la cueillette)')
+    shot(pg, 'atelier-porte')
+    pg.locator('.at-plantes-porte').click(force=True); pg.wait_for_timeout(400)
+    tt = pg.evaluate("() => { var t = document.querySelector('.at-toast'); return t && !t.hidden ? t.innerText.replace(/\\s+/g, ' ') : ''; }")
+    verifier('plus de place' in tt and pg.evaluate("() => M.plantesPorte().length") == 1 and pg.locator('.at-toast .at-toast-lire').count() == 1, f'on touche le panier : « il n\'y a plus de place », avec son 🔊, et elle reste devant la porte ({tt[:70]})')
     t = code(pg, 'info:herbier')
     verifier('herbier' in t.lower(), 'le code « L\'herbier » du Sage')
     t = cueillir(pg, 'foret')
@@ -162,7 +167,7 @@ with sync_playwright() as p:
     # ======================================================================== l'établi
     print('— L\'établi des plantes')
     atelier(pg)
-    verifier(signe(pg) == '🌿 7 à préparer !', f'le signe : « 🌿 7 à préparer ! » ({signe(pg)})')
+    verifier(signe(pg) == '🌿 3 à préparer !' and pg.evaluate("() => M.plantesPorte().length") == 4 and pg.locator('.at-plantes-porte .pl-dessin').count() == 4, f'sept plantes cueillies : trois sur la tringle, quatre devant la porte ({signe(pg)})')
     shot(pg, 'atelier-signe')
     # (au doigt : l'établi, ses trois bulles, la jaune)
     pg.evaluate("() => { var e = document.querySelector('#atelier-ici .at-et-signe'); e.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true})); e.dispatchEvent(new PointerEvent('pointerup', {bubbles:true})); e.click(); }"); pg.wait_for_timeout(700)
@@ -171,6 +176,8 @@ with sync_playwright() as p:
         pg.locator('#atelier-ici .at-et-signe').click(force=True); pg.wait_for_timeout(700); bulles = pg.locator('#atelier-ici .at-bulle-pa')
     verifier(bulles.count() == 3 and 'Préparer' in bulles.first.inner_text(), f'toucher le signe : les trois bulles de l\'établi, la jaune « 🌿 Préparer » ({bulles.count()})')
     shot(pg, 'bulles')
+    # (pour la suite du robot : le lin, le pied-de-loup et la vesse-de-loup sur la tringle ; les quatre autres devant la porte)
+    pg.evaluate("() => { var P = M.P(); M.plantesEnAttente(); P.tringle = ['lin', 'lycopode', 'vesse']; P.plPorte = {gui:1, oseille:1, souci:1, melisse:1}; M.sauver(); }")
     ET.vite(pg)
     if bulles.count(): bulles.first.click(force=True); pg.wait_for_timeout(600)
     if not pg.locator('#etabli-cadre').count(): echecs.append('la bulle jaune n\'a pas ouvert l\'établi')
@@ -183,8 +190,8 @@ with sync_playwright() as p:
     verifier(avant == 0 and pg.evaluate("() => window.__lus.length") == 1, 'un 🔊 lit sa phrase (et rien ne se lit tout seul)')
     ET.fermer_intro(pg)
     verifier(pg.evaluate("() => !!M.S.etabliIntro") and not ET.intro(pg), 'le bouton jaune « 🌿 À l\'établi ! » : l\'explication ne reviendra pas')
-    verifier(fr.locator('#scene .pendue').count() == 7 and fr.locator('#scene .plante .corps').count() == 0 and fr.locator('#g-sac').count() == 0 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
-             'l\'établi : sept plantes pendues à la tringle, le linge vide, les outils sur la table, sept flacons vides sur l\'étagère, plus de sac')
+    verifier(fr.locator('#etagere-plantes .pendue').count() == 3 and fr.locator('#scene .plante .corps').count() == 0 and fr.locator('#g-sac').count() == 0 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
+             'l\'établi : trois plantes pendues à la tringle (les autres attendent à la porte), le linge vide, les outils sur la table, sept flacons vides sur l\'étagère, plus de sac')
     shot(pg, 'etabli')
     # ---------- on se trompe ----------
     ET.outil(pg, 'planche'); verifier(len(ET.texte(pg)) > 12 and ET.etat(pg)['ou'] is None and fr.locator('#calque .bulle-o .b-son').count() == 1, f'un outil touché les mains vides : il dit à quoi il sert, avec son 🔊 ({ET.texte(pg)[:50]})')
@@ -216,6 +223,7 @@ with sync_playwright() as p:
             fait = pid in ET.etat(pg)['faites']
         else:
             fait = ET.faire(pg, pid, R)
+            fr = ET.cadre(pg)        # (ET.faire a pu sortir chercher la plante devant la porte : le cadre est neuf)
         t = carte(pg, '.carte.prete')
         if pid == 'huile': shot(pg, 'huile-prete')
         e = etat_pl(pg)
@@ -230,6 +238,15 @@ with sync_playwright() as p:
             ET.fermer_mode(pg)
         else:
             verifier(ET.continuer(pg) and ET.etat(pg)['mode'] is None, f'{r["nom"]} : le bouton jaune « Continuer »')
+        if pid == 'huile':
+            # une place s'est libérée sur la tringle : dans l'atelier, on touche le panier devant la porte
+            ET.quitter(pg); pg.wait_for_timeout(300)
+            pg.locator('.at-plantes-porte').click(force=True); pg.wait_for_timeout(400)
+            tt = pg.evaluate("() => { var t = document.querySelector('.at-toast'); return t && !t.hidden ? t.innerText.replace(/\\s+/g, ' ') : ''; }")
+            verifier('se pendre' in tt and pg.evaluate("() => M.P().tringle.length") == 3 and pg.evaluate("() => M.plantesPorte().length") == 3 and pg.locator('.at-plantes-porte .pl-dessin').count() == 3,
+                     f'une potion faite, une place libre : on touche le panier devant la porte, une plante va se pendre ; trois attendent encore ({tt[:70]})')
+            fr = ET.ouvrir(pg)
+            verifier(fr.locator('#etagere-plantes .pendue').count() == 3, 'de retour à l\'établi : trois plantes sur la tringle')
     verifier(fr.locator('#scene [id^=potion-].pleine').count() == 7, 'les sept flacons sont pleins sur l\'étagère')
     shot(pg, 'sept-potions')
     verifier(fr.locator('#scene .pendue').count() == 0 and fr.locator('#scene .plante .corps').count() == 0, 'plus une plante sur la tringle ni sur le linge : tout est en fiole')

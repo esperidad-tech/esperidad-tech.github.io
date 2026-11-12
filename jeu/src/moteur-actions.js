@@ -58,7 +58,9 @@ function monterAtelier(){
     /* (enquête 3) l'établi des plantes (plantes.js) : il n'est dans la pièce que pendant une enquête qui s'en sert ; sa bulle « 🌿 Préparer »
        ouvre sa page en plein écran ; plantes : celles qui attendent (le signe « 🌿 À préparer ! ») ; etabliSigne : la nuit, « 🎒 Ton sac ! » */
     etabli:(M.etabliDispo && M.etabliDispo()) ? function(){ M.ouvrirEtabli(); } : null,
-    plantes:M.plantesEnAttente ? M.plantesEnAttente() : 0, etabliSigne:M.etabliSigne ? M.etabliSigne() : null,
+    plantes:M.plantesEnAttente ? function(){ return M.plantesEnAttente(); } : 0, etabliSigne:M.etabliSigne ? M.etabliSigne() : null,
+    /* la tringle de l'établi n'a que trois places : le reste attend devant la porte (plantes.js) */
+    plantesPorte:M.plantesPorte ? function(){ return M.plantesPorte(); } : null, rangerPlantes:M.rangerPlantes || null, planteSVG:M.planteSVG || null,
     recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; }),
     niveau:(E ? E.niveau : 1) + M.decalage(), mods:mm.mods, aides:mm.aides,
     /* enquête 1 (le tutoriel) : au chaudron, un essai raté rend les ingrédients et on peut recommencer sans fin */
@@ -1305,7 +1307,12 @@ A.cueillir = function(el){
   });
   M.son(l2.length || plantes.length ? 'ok' : 'ko'); M.sauver();
   var t = l2.length ? 'Tu as trouvé : ' + l2.join(', ') + '. Va les ranger dans ton atelier !' : plantes.length ? '' : 'Tu cherches partout… mais rien d\'utile ne pousse ici en ce moment.';
-  if(plantes.length) t += (t ? ' ' : '') + 'Tu as cueilli ' + plantes.map(function(k){ return D.PLANTES[k].ic + ' ' + D.PLANTES[k].un; }).join(', ') + ' : ' + (plantes.length > 1 ? 'elles t\'attendent' : 'ça t\'attend') + ' sur l\'établi de ton atelier !';
+  if(plantes.length){
+    /* (la tringle de l'établi n'a que trois places : une plante en trop attend devant la porte de l'atelier — plantes.js) */
+    var dehors = (M.plantesEnAttente && M.plantesPorte) ? (M.plantesEnAttente(), M.plantesPorte()) : [], nDehors = plantes.filter(function(k){ return dehors.indexOf(k) >= 0; }).length;
+    t += (t ? ' ' : '') + 'Tu as cueilli ' + plantes.map(function(k){ return D.PLANTES[k].ic + ' ' + D.PLANTES[k].un; }).join(', ') + ' : ' + (plantes.length > 1 ? 'elles t\'attendent' : 'ça t\'attend') +
+      (!nDehors ? ' sur l\'établi de ton atelier !' : nDehors === plantes.length ? ' devant la porte de ton atelier. La tringle de l\'établi est pleine !' : ' dans ton atelier !');
+  }
   if(rates.length) t += ' Tu as aussi vu : ' + rates.join(', ') + ', mais tu n\'as pas pu les cueillir sans le bon matériel.';
   var trouve = l2.length || plantes.length;
   M.ouvrir({type:'info', ic:trouve ? '🧺' : '🍂', titre:trouve ? 'Belle cueillette !' : 'Rien trouvé…', t:t});

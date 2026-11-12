@@ -2854,6 +2854,7 @@ function trouverPlace(V, o){
      à gauche de la fenêtre — on voit bien où vont les ingrédients quand ils se rangent tout seuls */
   var dessusPorte = o.t === 'fioles_ingr' && !V.etat.objets.some(function(p){ return p !== o && p.t === 'fioles_ingr'; });
   if(rang && c.cases && (premierSec || dessusPorte)) rang = false;
+  if(o.t === 'etabli') rang = false;       /* (l'établi des plantes : de face, on voit sa tringle et ses flacons) */
   if(c.z === 'petit' && SUR_MEUBLE[o.t] !== 0 && o.t !== 'chat' && o.t !== 'plante' && surSurface(V, o)) return true;
   var sa = salleDe(o);
   /* les rideaux : devant la fenêtre de la pièce */
@@ -2871,6 +2872,8 @@ function trouverPlace(V, o){
   var arche = zoneArche(V, sa);
   var gene = sa ? (mur ? [[362 + FEN_CH, 56, 538 + FEN_CH, 320], arche] : [arche]) :
     (mur ? [[362, 56, 538, 320], dessusPorte ? [PORTE.x - PORTE.w / 2 - 12, PORTE.y - PORTE.h - 8, PORTE.x + PORTE.w / 2 + 12, PORTE.y] : [540, 70, 760, 524], [786, 20, 1114, 524], arche] : [[TAS.x - 210, SOL_Y + 10, TAS.x + 210, TAS.y + FLACONS.dy + TAS.dy + 16], arche]);
+  /* (l'établi des plantes ne se pose pas non plus sur les cartons pas encore ouverts) */
+  if(o.t === 'etabli') cartonsIci(V).forEach(function(k, i){ var tk = CARTON_TAILLE[k.t] || CARTON_TAILLE.carton, pk = POS_CARTONS[i % POS_CARTONS.length]; gene.push([pk[0] - tk[0] / 2, pk[1] - tk[1], pk[0] + tk[0] / 2, pk[1]]); });
   if(!mur && c.h > 150){ var ch = V.parId.ch; if(ch && ch !== o && salleDe(ch) === sa){ var pc = posObj(V, ch); gene.push([pc.x - 170, pc.y - 200, pc.x + 170, 1e4]); } }
   var essai = {t:o.t, st:o.st, v:o.v, cases:o.cases, f:0, cote:0}, pref = mur ? (dessusPorte && !sa ? [PORTE.x, PORTE.y - PORTE.h - 40] : premierSec && !sa ? [250, 250] : [640, 240]) : [700, 790], libre = null;
   function noter(){
@@ -3039,11 +3042,20 @@ function potionsNeuves(V){
   return neuves;
 }
 /* L'établi des plantes (enquête 3) n'est dans la pièce que pendant une enquête qui s'en sert (opts.etabli) : on le pose — là où il était
-   la dernière fois (etat.etabli), sinon entre la paillasse et le chaudron — ou on le range, en retenant sa place, sa forme et sa couleur. */
+   la dernière fois (etat.etabli), sinon à une place libre, de face (trouverPlace : jamais devant la porte, où l'on pose la cueillette et
+   le panier des plantes qui attendent) — ou on le range, en retenant sa place, sa forme et sa couleur.
+   (12 novembre, 14 h) Avant, il se posait d'office devant la porte (610, 700) et cachait la cueillette : celui qui y est encore, sans
+   avoir été bougé, se trouve une vraie place — une seule fois (etat.etPlace). */
 function poserEtabli(e, voulu){
   var l = (e.objets || []).filter(function(o){ return o.t === 'etabli'; });
+  function dOffice(g){ return g.x === 610 && g.y === 700 && !g.cote; }
   if(voulu){
-    if(!l.length){ var g = e.etabli || {}; e.objets.push({id:'et', t:'etabli', x:g.x || 610, y:g.y || 700, f:g.f || 0, v:0, st:g.st || 0, sur:null}); }
+    if(!l.length){
+      var g = e.etabli || {}, o = {id:'et', t:'etabli', x:g.x || 610, y:g.y || 700, f:g.f || 0, v:0, st:g.st || 0, sur:null};
+      if(!g.x || (!e.etPlace && dOffice(g))) o.placer = 1;
+      e.objets.push(o);
+    } else if(!e.etPlace) l.forEach(function(o){ if(dOffice(o) && !o.sur) o.placer = 1; });
+    e.etPlace = 1;
   } else if(l.length){
     e.etabli = {x:l[0].x, y:l[0].y, f:l[0].f || 0, st:l[0].st || 0};
     e.objets = e.objets.filter(function(o){ return o.t !== 'etabli' && !(o.sur && o.sur.o === 'et'); });
@@ -3170,6 +3182,8 @@ function maj(V, o2){
   if(V.mode === 'prep') return;
   if(V.sel && !(V.etat.panier[V.sel] > 0)) V.sel = null;
   mise(V);
+  /* (un meuble arrivé entre-temps — l'établi des plantes — se trouve une place) */
+  if(V.etat.objets.some(function(o){ return o.placer; })){ V.etat.objets.forEach(function(o){ V.parId[o.id] = o; }); if(reajuster(V)) changer(V); }
   dessinerPiece(V, avantK);
   var nv = potionsNeuves(V);
   if(nv.length) brillerFlacons(V, nv);
@@ -3389,9 +3403,9 @@ function dessinerTas(V){
   placerFlacons(V);
 }
 function placerTas(V){
-  var n = (V.elTas || []).length;
+  var np = (V.plP && V.plP.length && V.elPlP) ? 1 : 0, n = (V.elTas || []).length + np;     /* (le panier des plantes qui attendent : la première place) */
   (V.elTas || []).forEach(function(d, i){
-    var q = posTas(i, n), m = surSol(q.x, q.y), R = repere([m.X, 0, m.Z], AXES_FACE, TAS.w, TAS.h), D = dessinTas(d._k, d._n, R), b = D.bb, bw = b[2] - b[0], bh = b[3] - b[1];
+    var q = posTas(i + np, n), m = surSol(q.x, q.y), R = repere([m.X, 0, m.Z], AXES_FACE, TAS.w, TAS.h), D = dessinTas(d._k, d._n, R), b = D.bb, bw = b[2] - b[0], bh = b[3] - b[1];
     d.innerHTML = '<svg viewBox="' + [b[0], b[1], bw, bh].map(f1).join(' ') + '" overflow="visible" aria-hidden="true">' + D.svg + '</svg>';
     d.style.left = pX(V, q.x + b[0] - TAS.w / 2); d.style.top = pY(V, q.y + b[1] - TAS.h);
     d.style.width = pW(V, bw); d.style.height = pH(V, bh);
@@ -3400,6 +3414,7 @@ function placerTas(V){
     d.style.zIndex = Math.round((1000 + q.y) * 5);
     d._s = R.k; d._bb = b; d._p = {x:q.x, y:q.y, s:R.k}; d._w = TAS.w; d._h = TAS.h;
   });
+  placerBotte(V);
   if(V.elNeuf && n){
     var q0 = posTas(0, n), q1 = posTas(Math.min(n, TAS.rang) - 1, n);
     V.elNeuf.style.left = pX(V, (q0.x + q1.x) / 2 - 85); V.elNeuf.style.top = pY(V, q0.y - TAS.h - 70);
@@ -3424,7 +3439,7 @@ function dessinerFlacons(V){
   placerFlacons(V);
 }
 function placerFlacons(V){
-  var l = V.elFl || [], n = l.length, rangs = Math.ceil(cles(V.etat.panier).filter(function(k){ return V.etat.panier[k] > 0; }).length / TAS.rang);
+  var l = V.elFl || [], n = l.length, rangs = Math.ceil((cles(V.etat.panier).filter(function(k){ return V.etat.panier[k] > 0; }).length + ((V.plP && V.plP.length) ? 1 : 0)) / TAS.rang);
   l.forEach(function(d, i){
     var q = posFlacon(i, n, rangs), m = surSol(q.x, q.y), R = repere([m.X, 0, m.Z], AXES_FACE, FLACONS.w, FLACONS.h), D = dessinFlacon(d._k, d._n, R), b = D.bb, bw = b[2] - b[0], bh = b[3] - b[1];
     d.innerHTML = '<svg viewBox="' + [b[0], b[1], bw, bh].map(f1).join(' ') + '" overflow="visible" aria-hidden="true">' + D.svg + '</svg>';
@@ -3448,7 +3463,7 @@ function brillerFlacons(V, l){
 function dessinerPiece(V, avantK){
   var sc = V.scene;
   sc.innerHTML = '';
-  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null; V.elEtSigne = null;
+  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null; V.elEtSigne = null; V.elPlP = null; V.plP = null;
   V.etat.objets.forEach(function(o){ V.parId[o.id] = o; });
   /* (la flaque : devant le chaudron, dans sa pièce) */
   if(V.etat.flaque && salleDe(V.parId.ch) === V.salle){
@@ -3531,7 +3546,7 @@ function envoyerSalle(V, o){
 }
 /* Ce que les meubles spéciaux doivent montrer (objets reçus sur la paillasse, chaudron de cuivre) */
 function majDessin(V){
-  DESSIN.plantes = V.o.plantes || 0;   /* (enquête 3) les plantes cueillies qui attendent sur l'établi */
+  DESSIN.plantes = (typeof V.o.plantes === 'function' ? V.o.plantes() : V.o.plantes) || 0;   /* (enquête 3) les plantes cueillies qui attendent sur l'établi */
   DESSIN.analyses = V.o.analyses || [];
   DESSIN.cuivre = aObjet(V, 'chaudron_cuivre');
 }
@@ -3562,7 +3577,7 @@ function majSignePa(V){
 /* Le signe de l'établi (comme celui de la paillasse) : « 🌿 À préparer ! » sautille au-dessus de lui tant qu'une plante cueillie attend.
    Le toucher fait comme toucher l'établi (ses bulles). Caché quand ses bulles sont ouvertes. */
 function majSigneEt(V){
-  var o = V.parId && V.parId.et, n = V.o.plantes || 0, autre = V.o.etabliSigne || '', voir = !!(o && V.elO.et && (n > 0 || autre) && V.bullesPa !== 'et');
+  var o = V.parId && V.parId.et, n = (typeof V.o.plantes === 'function' ? V.o.plantes() : V.o.plantes) || 0, autre = V.o.etabliSigne || '', voir = !!(o && V.elO.et && (n > 0 || autre) && V.bullesPa !== 'et');
   if(!voir){ if(V.elEtSigne){ V.elEtSigne.remove(); V.elEtSigne = null; } return; }
   if(!V.elEtSigne){
     var b = document.createElement('div');
@@ -3579,6 +3594,50 @@ function majSigneEt(V){
   V.elEtSigne.style.width = pW(V, 220); V.elEtSigne.style.height = pH(V, 70);
   V.elEtSigne.style.zIndex = Math.round((1000 + F.y) * 5) + 3;
 }
+/* Les plantes cueillies qui n'ont pas trouvé de place sur la tringle de l'établi (trois places) : un panier posé devant la porte,
+   dans la rangée de la cueillette (la première place), d'où dépassent les plantes qui attendent.
+   On le touche : elles vont se pendre s'il reste de la place ; sinon « il n'y a plus de place » (plantes.js : M.rangerPlantes). */
+function dessinBotte(V, l, R){
+  var x = ajouterOutils3d(ctx3d(R, false)), cz = 30, pts = [], n = l.length, vus = l.slice(0, 4), w = 80, h = 99;
+  x.p = 60; x.cat = {w:TAS.w, h:TAS.h};
+  for(var i = 0; i < 24; i++){ var a = i / 24 * Math.PI * 2; pts.push(x.Q(43 + Math.cos(a) * 40, TAS.h, cz + Math.sin(a) * 30)); }
+  var s = '<path d="' + lisse(pts, true) + '" fill="rgba(12,6,20,.3)"/>' +
+    /* l'anse du panier (derrière les plantes) */
+    x.sur('<path d="M8,60 C8,2 78,2 78,60" fill="none" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/><path d="M8,60 C8,2 78,2 78,60" fill="none" stroke="#d9a066" stroke-width="4.5" stroke-linecap="round"/>', cz) +
+    x.cylindre(43, cz, 36, 58, 86, '#c58a4a', null, '', 30) + x.arcAvant(43, cz, 35, 68, '#8a5a2a', 3) + x.arcAvant(43, cz, 33, 78, '#8a5a2a', 3) +
+    x.cylindre(43, cz, 37, 56, 62, '#d9a066', '#7a4f26', ' stroke-width="3.5"') +
+    x.sur(vus.map(function(k, j){ var cx = 43 + (j - (vus.length - 1) / 2) * 15; return V.o.planteSVG ? V.o.planteSVG(k, f1(cx - w / 2), 68 - h, w, h) : emo(cx, 30, 30, '🌿'); }).join(''), cz) +
+    x.arcAvant(43, cz, 37, 59, '#d9a066', 6) + x.arcAvant(43, cz, 37, 62.5, K, 2.5) + x.arcAvant(43, cz, 37, 55.5, K, 2.5) +
+    x.sur('<circle cx="14" cy="66" r="14" fill="#ffd23f" stroke="' + K + '" stroke-width="3"/><text x="14" y="66" font-size="17" font-weight="800" fill="#24182e" text-anchor="middle" dominant-baseline="central">' + n + '</text>', cz - 30);
+  [[-6, -38], [92, -38], [-6, 82], [92, 82]].forEach(function(q){ x.Q(q[0], q[1], cz - 30); });
+  var b = x.bb.slice();
+  return {svg:'<rect x="' + f1(b[0]) + '" y="' + f1(b[1]) + '" width="' + f1(b[2] - b[0]) + '" height="' + f1(b[3] - b[1]) + '" fill="transparent"/>' + s, bb:b};
+}
+function placerBotte(V){
+  var d = V.elPlP, l = V.plP || [];
+  if(!d || !l.length) return;
+  var nt = (V.elTas || []).length, q = posTas(0, nt + 1), m = surSol(q.x, q.y), R = repere([m.X, 0, m.Z], AXES_FACE, TAS.w, TAS.h), D = dessinBotte(V, l, R), b = D.bb, bw = b[2] - b[0], bh = b[3] - b[1];
+  d.innerHTML = '<svg viewBox="' + [b[0], b[1], bw, bh].map(f1).join(' ') + '" overflow="visible" aria-hidden="true">' + D.svg + '</svg>';
+  d.style.left = pX(V, q.x + b[0] - TAS.w / 2); d.style.top = pY(V, q.y + b[1] - TAS.h);
+  d.style.width = pW(V, bw); d.style.height = pH(V, bh);
+  d.style.transformOrigin = ((TAS.w / 2 - b[0]) / bw * 100).toFixed(2) + '% ' + ((TAS.h - b[1]) / bh * 100).toFixed(2) + '%';
+  d.style.setProperty('--s', R.k.toFixed(3));
+  d.style.zIndex = Math.round((1000 + q.y) * 5);
+}
+function majPlantesPorte(V){
+  var l = (!V.salle && V.o.plantesPorte) ? V.o.plantesPorte() : [], sig = l.join(','), av = V.plP ? V.plP.join(',') : '';
+  if(!l.length){
+    if(V.elPlP){ V.elPlP.remove(); V.elPlP = null; }
+    V.plP = null;
+    if(av){ placerTas(V); placerFlacons(V); }
+    return;
+  }
+  var neuf = !V.elPlP;
+  if(neuf){ var b = document.createElement('div'); b.className = 'at-plantes-porte at-touche'; b.setAttribute('data-at', 'plantes-porte'); V.scene.appendChild(b); V.elPlP = b; }
+  V.plP = l;
+  V.elPlP.setAttribute('aria-label', l.length + (l.length > 1 ? ' plantes attendent' : ' plante attend') + ' devant la porte');
+  if(neuf || sig !== av){ placerTas(V); placerFlacons(V); }
+}
 function majFixes(V){
   var nr = Math.max(0, V.etat.reserve.length - (V.enVol || 0)), rb = V.elReserve && V.elReserve.querySelector('.at-badge');
   if(rb){ rb.textContent = nr; rb.style.display = nr ? '' : 'none'; }
@@ -3589,6 +3648,7 @@ function majFixes(V){
     V.elO.pa.classList.toggle('at-attente', att > 0);
   }
   majSignePa(V);
+  majPlantesPorte(V);
   if(V.parId.et && V.elO.et){ redessiner(V, V.parId.et); majSigneEt(V); } else if(V.elEtSigne){ V.elEtSigne.remove(); V.elEtSigne = null; }
   var ch = V.elO.ch;
   if(ch){
@@ -3956,7 +4016,8 @@ function action(V, at, pot){
   else if(at === 'arrivage') ouvrirArrivage(V);
   else if(at === 'analyses') ouvrirAnalyses(V);
   else if(at === 'pa-signe'){ if(V.parId.pa) bullesPaillasse(V, V.parId.pa); }   /* (le signe « À analyser ! » : comme toucher la paillasse) */
-  else if(at === 'et-signe'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }   /* (le signe « À préparer ! » : comme toucher l'établi) */
+  else if(at === 'et-signe'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }
+  else if(at === 'plantes-porte'){ var rp = V.o.rangerPlantes ? V.o.rangerPlantes() : null; if(rp){ son(V, 'clic'); toast(V, '<b>🌿</b> ' + esc(rp.t), 4600, rp.t); majFixes(V); } }   /* la botte devant la porte → la tringle de l'établi, s'il reste une place */   /* (le signe « À préparer ! » : comme toucher l'établi) */
   else if(at === 'plantes'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }
   else if(at === 'reserve') ouvrirReserve(V);
   else if(at === 'salle') changerSalle(V, 1 - V.salle);

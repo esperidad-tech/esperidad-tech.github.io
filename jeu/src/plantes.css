@@ -22,3 +22,9 @@
 .ds-fenetre .pl-sac-fioles .pl-fiole small, .pl-sac-recu .pl-sac-fioles .pl-fiole small{font-size:.66rem}
 .ds-fenetre .btn{margin:6px 4px 0}
 .ds-suite{margin:10px 0 6px!important;font-size:.98rem!important}
+
+/* Les plantes qui n'ont pas trouvé de place sur la tringle de l'établi : une botte posée devant la porte de l'atelier (on la touche) */
+.at-plantes-porte{position:absolute;pointer-events:none;cursor:pointer;transform-origin:50% 100%;transform:scale(var(--s,1))}
+.at-plantes-porte > svg{width:100%;height:100%;display:block;overflow:visible}
+.at-plantes-porte svg *{pointer-events:visiblePainted}
+.at-plantes-porte .pl-z{fill:transparent;stroke:none;pointer-events:none}

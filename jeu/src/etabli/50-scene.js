@@ -9,7 +9,7 @@
 YF = 540; YB = 250;
 function yTe(t){ return VY + (YF - VY)/(1 + t*((YF - VY)/(YB - VY) - 1)); }
 var OU = {
-  buches:{x:92, y:326, e:.8}, alambic:{x:216, y:316, e:.8}, marmite:{x:494, y:322, e:.84}, livre:{x:664, y:308, e:1}, presse:{x:842, y:320, e:.8},
+  buches:{x:92, y:326, e:.8}, alambic:{x:228, y:316, e:.8}, marmite:{x:494, y:322, e:.84}, livre:{x:664, y:308, e:1}, presse:{x:842, y:320, e:.8},
   sechoir:{x:990, y:326, e:.84}, fiole:{x:1106, y:330, e:.84},
   allumettes:{x:64, y:424, e:.92}, mortier:{x:158, y:430, e:.92}, tamis:{x:308, y:430, e:.92},
   cruche:{x:906, y:424, e:.92}, huilier:{x:976, y:426, e:.92}, filtre:{x:1084, y:434, e:.92},
@@ -29,9 +29,13 @@ var FENTE = {
 };
 var NOMS_O = {planche:'La planche et le couteau', tamis:'Le tamis', mortier:'Le mortier et son pilon', presse:'Le pressoir', filtre:'Le bocal à filtrer', marmite:'La marmite',
   alambic:'L\'alambic', sechoir:'Le séchoir', fiole:'Les fioles vides', cruche:'La cruche d\'eau', huilier:'L\'huile de lin', buche:'Les bûches', allumette:'Les allumettes'};
-var PLACE = {oseille:[444, 448, 258], souci:[548, 448, 258], melisse:[652, 448, 258], lin:[756, 448, 258], lycopode:[492, 526, 296], vesse:[600, 526, 310], gui:[708, 526, 298]};
-var SP = .44, APLAT = .64;
-function centrePlante(k){ var q = PLACE[k]; return {x:q[0], y:q[1] - (q[2] - 150)*SP*APLAT}; }
+/* Sur le linge : UNE seule plante à la fois, en grand (Romain, 12 novembre, 13 h 52). On la cale dans le linge d'après la place que prend
+   son dessin (mesurée une fois). PLACE[k][2] = la hauteur du pied de la plante dans son dessin. */
+var PLACE = {oseille:[600, 526, 258], souci:[600, 526, 258], melisse:[600, 526, 258], lin:[600, 526, 258], lycopode:[600, 526, 296], vesse:[600, 526, 310], gui:[600, 526, 298]};
+var SP = .8, APLAT = .64, BOITE = {}, LINGE_P = {x:600, bas:528, w:330, h:140};
+function calePlante(k){ var b = BOITE[k] || {x:20, y:PLACE[k][2] - 230, w:220, h:250}, e = Math.min(LINGE_P.w/b.w, LINGE_P.h/(b.h*APLAT), 1.1); return {e:e, cx:b.x + b.w/2, bas:b.y + b.h, w:b.w*e, h:b.h*e*APLAT}; }
+function trPlante(k, dy, ap){ var c = calePlante(k); ap = ap === undefined ? APLAT : ap; return 'translate(' + LINGE_P.x + ',' + f1(LINGE_P.bas + (dy || 0)) + ') scale(' + c.e.toFixed(3) + ',' + (c.e*ap).toFixed(3) + ') translate(' + f1(-c.cx) + ',' + f1(-c.bas) + ')'; }
+function centrePlante(k){ var c = calePlante(k); return {x:LINGE_P.x, y:LINGE_P.bas - c.h/2}; }
 function gT(o, s, x){ var q = OU[o]; return '<g transform="translate(' + q.x + ',' + q.y + ') scale(' + q.e + ')"' + (x || '') + '>' + s + '</g>'; }
 function TT(d, c, w, plus, xx){ return T(d, K, w + (plus || 4.5), xx) + T(d, c, w, xx); }   /* un trait de couleur cerné de noir */
 function pt(o, lx, ly){ var q = OU[o]; return {x:q.x + lx*q.e, y:q.y + ly*q.e}; }        /* un point d'un outil, dans le grand dessin */
@@ -107,37 +111,51 @@ function flacon(id, coul){
   s += reflet('M' + (id === 'acide' ? -12 : -11) + ',-' + (id === 'colle' || id === 'baume' ? 26 : 30) + ' q-3,10 1,18', 3, coul ? .6 : .35);
   return s;
 }
-/* Le portique de l'établi (Romain, 12 novembre, 12 h 45 : « accrochée à l'établi, pas collée au mur », « bien au-dessus de tous les autres
-   trucs ») : deux montants fixés au fond de la table ; tout en haut, l'étagère des sept potions ; dessous, une tringle de laiton où sèchent,
-   la tête en bas, les plantes cueillies. Chaque plante pend juste sous le flacon de sa potion. */
-var PORT = {x0:414, pas:58, yEt:84, yTr:108, eF:.9, eP:.25};
+/* Deux étagères fixées au fond de l'établi (Romain, 12 novembre, 12 h 45 puis 13 h 52) :
+   · celle des POTIONS, au milieu : basse (sa tablette juste au-dessus de la cuillère de la marmite et du grimoire), un pied à gauche de la
+     marmite, l'autre entre le grimoire et le pressoir ; les sept flacons dessus (ils tiennent dans l'écran d'un téléphone) ;
+   · celle des PLANTES, à droite du pressoir et jusqu'au bout de la table : une tringle de laiton, trois places ; les plantes cueillies y
+     pendent la tête en bas, au-dessus de l'écriteau « On laisse sécher » (elles sont dessinées AVANT lui : leurs ronds passent derrière). */
+var PORT = {x0:412, pas:52, yEt:146, eF:.9, a:372, b:764};
+var TRI = {a:920, b:1120, yEt:84, yTr:108, x0:961, pas:59, n:3, eP:.25};
 function xPort(i){ return PORT.x0 + i*PORT.pas; }
-function colPlante(k){ return ORDRE.indexOf(PL[k].potion); }
-function etagereScene(){
-  var a = 372, b = 804, yE = PORT.yEt, yT = PORT.yTr, s = '';
+function montants(a, b, yE){
+  var s = '';
   [a, b].forEach(function(x, i){
     var d = i ? -1 : 1;
-    s += R(x - 8, yE - 2, 16, 190, 3, G('boisS'), ' stroke-width="3.5"') + T('M' + (x - 3) + ',' + (yE + 20) + ' V262', 'rgba(255,255,255,.14)', 2) +
-      P('M' + (x + d*8) + ',' + (yE + 12) + ' L' + (x + d*40) + ',' + (yE + 12) + ' L' + (x + d*8) + ',' + (yE + 46) + ' Z', G('boisS'), ' stroke-width="3"') +
-      Cir(x, 230, 4, G('laitonV'), ' stroke-width="2"') + Cir(x, 243, 4, G('laitonV'), ' stroke-width="2"');
+    s += R(x - 7, yE - 2, 14, 270 - yE, 3, G('boisS'), ' stroke-width="3.5"') + T('M' + (x - 2.5) + ',' + (yE + 20) + ' V262', 'rgba(255,255,255,.14)', 2) +
+      P('M' + (x + d*7) + ',' + (yE + 12) + ' L' + (x + d*34) + ',' + (yE + 12) + ' L' + (x + d*7) + ',' + (yE + 40) + ' Z', G('boisS'), ' stroke-width="3"') +
+      Cir(x, 232, 3.6, G('laitonV'), ' stroke-width="2"') + Cir(x, 244, 3.6, G('laitonV'), ' stroke-width="2"');
   });
-  s += TT('M' + (a + 22) + ',' + (yE + 12) + ' V' + yT + ' M' + (b - 22) + ',' + (yE + 12) + ' V' + yT, '#5f5872', 3, 3) + TT('M' + (a + 14) + ',' + yT + ' H' + (b - 14), '#c9973a', 5, 4) +
-    reflet('M' + (a + 20) + ',' + (yT - 1.5) + ' H' + (b - 20), 1.4, .5) + Cir(a + 14, yT, 5, G('laitonV')) + Cir(b - 14, yT, 5, G('laitonV'));
-  s += ombre(588, yE + 16, 200, 5, .25) + R(a - 26, yE, b - a + 52, 13, 3, G('boisC'), ' stroke-width="3.5"') + reflet('M' + (a - 20) + ',' + (yE + 3) + ' H' + (b + 20), 2, .35);
-  ORDRE.forEach(function(id, i){ s += '<g class="potion" id="potion-' + id + '" data-act="potion" data-id="' + id + '" tabindex="0" role="button" transform="translate(' + xPort(i) + ',' + yE + ') scale(' + PORT.eF + ')"></g>'; });
+  return s;
+}
+function tablette(a, b, yE){ return ombre((a + b)/2, yE + 16, (b - a)/2, 5, .25) + R(a - 22, yE, b - a + 44, 13, 3, G('boisC'), ' stroke-width="3.5"') + reflet('M' + (a - 16) + ',' + (yE + 3) + ' H' + (b + 16), 2, .35); }
+function etagereScene(){
+  var s = montants(PORT.a, PORT.b, PORT.yEt) + tablette(PORT.a, PORT.b, PORT.yEt);
+  ORDRE.forEach(function(id, i){ s += '<g class="potion" id="potion-' + id + '" data-act="potion" data-id="' + id + '" tabindex="0" role="button" transform="translate(' + xPort(i) + ',' + PORT.yEt + ') scale(' + PORT.eF + ')"></g>'; });
   return '<g id="portique">' + s + '</g>';
 }
-/* les plantes cueillies qui attendent, pendues à la tringle (on en touche une : elle se couche sur le linge) */
+function tringleScene(){
+  var a = TRI.a, b = TRI.b, yE = TRI.yEt, yT = TRI.yTr;
+  return '<g id="etagere-plantes">' + montants(a, b, yE) + tablette(a, b, yE) +
+    /* un petit panier et une pelote de ficelle, sur la tablette */
+    '<g transform="translate(' + (a + 46) + ',' + yE + ')">' + P('M-24,0 L-20,-22 L20,-22 L24,0 Z', '#c99a5a', ' stroke-width="3"') + T('M-21,-15 H21 M-22,-8 H22', '#8a5a36', 1.6) + T('M-14,-22 C-12,-42 12,-42 14,-22', '#8a5a36', 3.4) + '</g>' +
+    '<g transform="translate(' + (b - 40) + ',' + (yE - 13) + ')">' + Cir(0, 0, 13, '#e8d9b0', ' stroke-width="3"') + T('M-9,-6 Q0,2 10,-5 M-11,3 Q0,10 11,2 M-4,-12 Q4,0 -3,12', '#b8a67a', 1.6) + '</g>' +
+    TT('M' + (a + 20) + ',' + (yE + 12) + ' V' + yT + ' M' + (b - 20) + ',' + (yE + 12) + ' V' + yT, '#5f5872', 3, 3) + TT('M' + (a + 12) + ',' + yT + ' H' + (b - 12), '#c9973a', 5, 4) +
+    reflet('M' + (a + 18) + ',' + (yT - 1.5) + ' H' + (b - 18), 1.4, .5) + Cir(a + 12, yT, 5, G('laitonV')) + Cir(b - 12, yT, 5, G('laitonV')) + '<g id="pendues"></g></g>';
+}
+/* les plantes de la tringle : celles qu'on a (trois au plus), dans l'ordre de l'herbier ; celle qui est sur le linge garde sa place vide */
+function surTringle(){ return ORDRE_PL.filter(function(k){ return S.dispo[k] > 0 && !S.faites[PL[k].potion]; }).slice(0, TRI.n); }
 function majPendues(){
   var g = $('#pendues'); if(!g) return; var s = '';
-  ORDRE_PL.forEach(function(k){
-    var p = PL[k], i = colPlante(k);
-    if(!(S.dispo[k] > 0) || S.faites[p.potion] || S.posees[k] || S.plante === k) return;
-    var q = PLACE[k], h = Math.round(q[2]*PORT.eP) + 8;
-    s += '<g class="pendue" id="pendue-' + k + '" data-act="pendue" data-k="' + k + '" tabindex="0" role="button" aria-label="' + p.nom + ' : la décrocher" transform="translate(' + xPort(i) + ',' + PORT.yTr + ')">' +
+  surTringle().forEach(function(k, i){
+    var p = PL[k];
+    if(S.posee === k || S.plante === k) return;
+    var q = PLACE[k], h = Math.round(q[2]*TRI.eP) + 8;
+    s += '<g class="pendue" id="pendue-' + k + '" data-act="pendue" data-k="' + k + '" tabindex="0" role="button" aria-label="' + p.nom + ' : la décrocher" transform="translate(' + (TRI.x0 + i*TRI.pas) + ',' + TRI.yTr + ')">' +
       '<ellipse class="rond" cx="0" cy="' + (h/2 + 4) + '" rx="30" ry="' + (h/2 + 8) + '"/>' +
-      '<g class="balance' + (i % 3 === 1 ? ' b2' : i % 3 === 2 ? ' b3' : '') + '">' + T('M0,-3 V9', '#e8d9b0', 2.6) + '<g class="corps-p" transform="translate(0,8) rotate(180) scale(' + PORT.eP + ') translate(-130,-' + q[2] + ')">' + PLD.corps(k) + '</g>' + T('M-5,7 q5,4 10,0 M-5,11 q5,4 10,0', '#c9483f', 2.4) + '</g>' +
-      '<rect x="-28" y="-6" width="56" height="' + (h + 14) + '" fill="transparent"/></g>';
+      '<g class="balance' + (i % 3 === 1 ? ' b2' : i % 3 === 2 ? ' b3' : '') + '">' + T('M0,-3 V9', '#e8d9b0', 2.6) + '<g class="corps-p" transform="translate(0,8) rotate(180) scale(' + TRI.eP + ') translate(-130,-' + q[2] + ')">' + PLD.corps(k) + '</g>' + T('M-5,7 q5,4 10,0 M-5,11 q5,4 10,0', '#c9483f', 2.4) + '</g>' +
+      '<rect x="-29" y="-6" width="58" height="' + (h + 14) + '" fill="transparent"/></g>';
   });
   g.innerHTML = s;
 }
@@ -283,8 +301,10 @@ ART.buches = function(){
   function mb(x, y){ return Cir(x, y, 9, '#8a5a36', ' stroke-width="2.4"') + '<circle cx="' + x + '" cy="' + y + '" r="5.6" fill="#e2b87c" stroke="#a5713a" stroke-width="1.2"/>'; }
   function fl(x, y, k){ return '<path transform="translate(' + x + ',' + y + ') scale(' + k + ')" d="M0,12 C-11,3 -7,-9 0,-21 C7,-9 11,3 0,12 Z" fill="' + G('flamme') + '" stroke="#e8693c" stroke-width="2.2" stroke-linejoin="round"/>'; }
   function ec(x, y, t){ return '<text x="' + x + '" y="' + y + '" font-size="15" font-weight="800" font-family="Fredoka, system-ui, sans-serif" fill="#3a2410">' + t + '</text>'; }
-  var pan = '<g class="pan-feu" pointer-events="none" transform="translate(4,-170)">' + T('M-50,34 V62 M50,34 V62', K, 8) + T('M-50,34 V62 M50,34 V62', '#8a5a36', 4.4) + R(-78, -42, 156, 78, 6, G('boisC'), ' stroke-width="3.5"') + reflet('M-70,-36 H70', 2, .3) +
-    mb(-58, -21) + ec(-42, -16, '= feu doux') + fl(60, -19, .62) + mb(-64, 15) + mb(-50, 15) + ec(-36, 20, '= feu fort') + fl(60, 16, 1) + '</g>';
+  /* le panneau du feu : un écriteau sur son poteau, PLANTÉ SUR LA TABLE (son pied et son ombre se voient), comme « On laisse sécher » */
+  var pan = '<g class="pan-feu" pointer-events="none" transform="translate(14,-146)">' + ombre(64, 122, 16, 5, .4) + T('M62,30 V120', K, 9) + T('M62,30 V120', '#8a5a36', 5) + P('M48,122 L52,112 L72,112 L76,122 Z', '#6f4426', ' stroke-width="3"') +
+    T('M62,60 L40,38', K, 6.5) + T('M62,60 L40,38', '#8a5a36', 3.4) + R(-74, -38, 150, 76, 6, G('boisC'), ' stroke-width="3.5"') + reflet('M-66,-32 H68', 2, .3) + Cir(62, -30, 2.6, '#5f5872', ' stroke-width="1"') + Cir(62, 30, 2.6, '#5f5872', ' stroke-width="1"') +
+    mb(-56, -17) + ec(-40, -12, '= feu doux') + fl(58, -15, .62) + mb(-62, 19) + mb(-48, 19) + ec(-34, 24, '= feu fort') + fl(58, 20, 1) + '</g>';
   return pan + '<rect class="rond" x="-64" y="-112" width="128" height="126" rx="18"/><g class="leve">' + s + '</g><rect x="-64" y="-110" width="128" height="122" fill="transparent"/>';
 };
 /* L'alambic : le fourneau de briques, la cucurbite de cuivre, son chapeau, le col de cygne, le seau d'eau froide et son serpentin, le vase qui reçoit */
@@ -494,20 +514,26 @@ function lingeScene(){
   s += '<path d="' + q2 + '" fill="none" stroke="#c9483f" stroke-width="3" opacity=".8"/><path d="' + q3 + '" fill="none" stroke="#c9483f" stroke-width="1.2" opacity=".8"/>';
   s += '</g>';
   /* les sept places : une plante cueillie y est couchée ; sinon, un rond brodé qui l'attend */
+  s = '<g id="linge">' + s + '</g>';
   ORDRE_PL.forEach(function(k){ s += '<g class="plante" id="plante-' + k + '" data-act="plante" data-k="' + k + '" tabindex="0" role="button"></g>'; });
   return s;
 }
 function majPlantes(){
   ORDRE_PL.forEach(function(k){
-    var g = $('#plante-' + k); if(!g) return; var q = PLACE[k], p = PL[k], la = S.dispo[k] > 0, fait = !!S.faites[p.potion], c = centrePlante(k), s = '', choisie = S.plante === k && !!S.partie;
-    /* (une plante cueillie attend d'abord sur la tringle : majPendues ; sa potion faite, elle est partie) */
-    if(!la || fait || !(S.posees[k] || S.plante === k)){ g.innerHTML = ''; g.setAttribute('class', 'plante'); g.removeAttribute('aria-label'); return; }
-    s += '<ellipse class="rond" cx="' + q[0] + '" cy="' + (c.y + 4) + '" rx="54" ry="42"/>' + '<ellipse cx="' + (q[0] + 3) + '" cy="' + (q[1] - 2) + '" rx="40" ry="7" fill="rgba(60,40,20,.2)"/>';
-    s += '<g class="corps" transform="translate(' + q[0] + ',' + q[1] + ') scale(' + SP + ',' + (SP*APLAT).toFixed(3) + ') translate(-130,-' + q[2] + ')">' + PLD.corps(k) + '</g>';
-    s += '<rect class="prise" x="' + (q[0] - 50) + '" y="' + (c.y - 40) + '" width="100" height="86" fill="transparent"/>';
+    var g = $('#plante-' + k); if(!g) return; var p = PL[k], la = S.dispo[k] > 0, fait = !!S.faites[p.potion], s = '', choisie = S.plante === k && !!S.partie;
+    /* (une plante cueillie attend sur la tringle : majPendues ; une seule vient sur le linge ; sa potion faite, elle est partie) */
+    if(!la || fait || !(S.posee === k || S.plante === k)){ g.innerHTML = ''; g.setAttribute('class', 'plante'); g.removeAttribute('aria-label'); return; }
+    if(!BOITE[k]){   /* on mesure son dessin une fois, pour qu'elle remplisse le linge sans en sortir */
+      g.innerHTML = '<g class="corps">' + PLD.corps(k) + '</g>';
+      try{ var bb = g.querySelector('.corps').getBBox(); if(bb.width > 10 && bb.height > 10) BOITE[k] = {x:bb.x, y:bb.y, w:bb.width, h:bb.height}; }catch(e){}
+    }
+    var c = calePlante(k), ctr = centrePlante(k);
+    s += '<ellipse class="rond" cx="' + ctr.x + '" cy="' + f1(ctr.y) + '" rx="' + f1(c.w/2 + 16) + '" ry="' + f1(c.h/2 + 8) + '"/>' + '<ellipse cx="' + (LINGE_P.x + 4) + '" cy="' + (LINGE_P.bas - 2) + '" rx="' + f1(c.w*.36) + '" ry="9" fill="rgba(60,40,20,.2)"/>';
+    s += '<g class="corps" transform="' + trPlante(k) + '">' + PLD.corps(k) + '</g>';
+    s += '<rect class="prise" x="' + f1(ctr.x - c.w/2 - 8) + '" y="' + f1(ctr.y - c.h/2 - 4) + '" width="' + f1(c.w + 16) + '" height="' + f1(c.h + 8) + '" fill="transparent"/>';
     g.innerHTML = s;
-    g.setAttribute('class', 'plante' + (la && !fait ? ' dispo' : '') + (fait ? ' faite' : '') + (S.mode === 'plante' && S.plante === k ? ' zoom' : '') + (choisie ? ' choisie' + (S.ou === 'linge' ? ' partie-sur-linge' : '') : ''));
-    g.setAttribute('aria-label', p.nom + (fait ? ' : sa potion est faite' : ''));
+    g.setAttribute('class', 'plante dispo' + (S.mode === 'plante' && S.plante === k ? ' zoom' : '') + (choisie ? ' choisie' + (S.ou === 'linge' ? ' partie-sur-linge' : '') : ''));
+    g.setAttribute('aria-label', p.nom);
     if(choisie){ var pa = g.querySelector('.pl-pa[data-pa="' + S.partie + '"]'); if(pa) pa.classList.add(S.ou === 'linge' ? 'pl-sel' : 'pl-pris'); }
     /* dans le gros plan, on touche les parties, pas la plante entière */
     var pr = g.querySelector('.prise'); if(pr && S.mode === 'plante' && S.plante === k) pr.remove();
@@ -520,13 +546,13 @@ function majOutil(o){ var g = $('#g-' + o); if(g) g.innerHTML = ART[o](); }
 function majTout(){ OUTILS_SC.forEach(majOutil); ['buches', 'allumettes', 'cruche', 'huilier'].forEach(majOutil); majPlantes(); majPendues(); majEtagere(); majLivre(); }
 function majLivre(){ var g = $('#gLivre'); if(g) g.innerHTML = ART.livre(); }
 function dessinerScene(){
-  var s = defsEtabli() + '<clipPath id="clipFour"><path d="M-34,3 V-28 A34,24 0 0 1 34,-28 V3 Z"/></clipPath>' + mur() + decorMur() + etagereScene() + plateau();
+  var s = defsEtabli() + '<clipPath id="clipFour"><path d="M-34,3 V-28 A34,24 0 0 1 34,-28 V3 Z"/></clipPath>' + mur() + decorMur() + etagereScene() + tringleScene() + plateau();
   function outil(o, nom){ return gT(o, '', ' id="g-' + o + '" class="outil" data-act="outil" data-o="' + o + '" tabindex="0" role="button" aria-label="' + nom + '"'); }
   function porte(o, h, nom){ return gT(o, '', ' id="g-' + o + '" class="porte" data-act="porte" data-h="' + h + '" tabindex="0" role="button" aria-label="' + nom + '"'); }
   /* du fond vers le devant */
   s += porte('buches', 'buche', NOMS_O.buche) + outil('alambic', NOMS_O.alambic) + outil('marmite', NOMS_O.marmite) +
     gT('livre', ART.livre(), ' id="gLivre" data-act="livre" tabindex="0" role="button" aria-label="Le grimoire : les potions de la brume"') +
-    outil('presse', NOMS_O.presse) + outil('sechoir', NOMS_O.sechoir) + outil('fiole', NOMS_O.fiole) + '<g id="pendues"></g>';   /* (les plantes pendues : par-dessus le haut des outils du fond, pour qu'on les touche bien) */
+    outil('presse', NOMS_O.presse) + outil('sechoir', NOMS_O.sechoir) + outil('fiole', NOMS_O.fiole);   /* (les plantes pendues : par-dessus le haut des outils du fond, pour qu'on les touche bien) */
   s += porte('allumettes', 'allumette', NOMS_O.allumette) + outil('mortier', NOMS_O.mortier) + outil('tamis', NOMS_O.tamis) + lingeScene() + porte('cruche', 'cruche', NOMS_O.cruche) + porte('huilier', 'huilier', NOMS_O.huilier) + outil('filtre', NOMS_O.filtre);
   s += outil('planche', NOMS_O.planche);
   /* de la poussière dorée dans la lumière de la lanterne, puis ce qui vole, les effets, le bord sombre */
