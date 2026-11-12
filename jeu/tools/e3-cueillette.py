@@ -302,7 +302,7 @@ with sync_playwright() as p:
         # (Romain, 15 h 37) l'herbier ne dit plus l'endroit : ni le nom du lieu, ni le détail du dessin
         dits = [m for m in ['cinq pierres', 'rond des sorcières', 'verger', 'rucher', 'ruche', 'lavoir', 'lavande', 'ruisseau', 'rivière', 'échelle', 'à l\'ouest', 'au nord'] if m in bas]
         verifier(dits == [], f'l\'herbier ne nomme aucun endroit de la carte : des indices seulement ({dits})')
-        verifier(all(m in bas for m in ['bruyère', 'incantations', 'herboristes', 'épouvantail', 'potagers', 'abeilles', 'pommiers']) and bas.count('brume') >= 4, 'les indices de Romain y sont (collines, pierres et bruyère, incantations, herboristes, épouvantail, potagers), et « au-delà de la brume » pour les quatre lointaines')
+        verifier(all(m in bas for m in ['bruyère', 'incantations', 'herboristes', 'épouvantail', 'potagers', 'abeilles', 'pommiers']) and bas.count('brume') >= 4, 'les indices de Romain y sont (plaines, pierres et bruyère, incantations, herboristes, épouvantail, potagers), et « au-delà de la brume » pour les quatre lointaines')
         verifier(not any(m in bas for m in ['donjon', 'potion', 'crypte', 'monstre', 'code']), 'pas un mot du donjon, des potions ni d\'un code')
         verifier(h['donne'] == 0, 'plus de code à donner')
         verifier(sg.evaluate("() => { M.majMission && M.majMission(); return M.etapesMission().some(function(m){ return /herbier/.test(m.t) && !!(m.fait && m.fait.some(M.condMission)); }); }"), 'sa mission « Lis l\'herbier à l\'Alchimiste » se coche')
