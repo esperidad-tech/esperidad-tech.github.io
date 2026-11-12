@@ -2343,7 +2343,7 @@ Il a joint trois images du jeu « Archery » pour montrer la flèche vue de derr
 
 **Pas vérifié** : un vrai téléphone, une vraie tablette. C'est le doigt de Romain qui dira si 36 points d'écran suffisent sur son iPhone.
 
-### 13.29 Les banderoles de la fête : les retours de Romain après son deuxième essai (12 novembre, 16 h 51) — FAITS, PAS ENCORE EN LIGNE (on attend son « mets en ligne »)
+### 13.29 Les banderoles de la fête : les retours de Romain après son deuxième essai (12 novembre, 16 h 51) — FAITS ET EN LIGNE DANS LA SALLE DES MINI-JEUX (18 h 11)
 
 **Ce que Romain a dit** (« la flèche, c'est beaucoup mieux », puis) :
 - **le vent** : « il faut qu'elle aille maximum jusqu'à 10 ; au-delà de 10, c'est ingérable » ;
@@ -2374,7 +2374,7 @@ Il a joint trois images du jeu « Archery » pour montrer la flèche vue de derr
 
 **Les essais** : le robot `jeu/tools/visee.py` (un peu plus de 70 vérifications, toutes bonnes ; nouvelles : peu de confettis, de formes et de tailles variées ; l'arc debout dans la main, les doigts derrière le bois et le pouce devant ; le viseur glisse loin, lentement, sans zigzaguer ; un vent de 10 dans les quatre sens, sur tablette et téléphone ; l'arrêt en cours de partie quand il manque des flèches). Photos regardées : la vue de tir au repos et arc bandé (tablette, téléphone debout et couché), un gros plan de la main avec et sans la flèche, les confettis et leurs trajets (vent de 3 et de 10), un tir image par image, le film d'explication. `rapide.sh`, `partie2.py`, les codes des enquêtes identiques à ceux du jeu en ligne, `sons/test-page.py` 59 sur 59 — sur les sources fusionnées avec la cueillette durcie (§13.28). **Jamais essayé sur une vraie tablette** : la fluidité est à regarder (l'arc est redessiné à chaque image pendant qu'on vise).
 
-**PAS ENCORE EN LIGNE** : la sécurité de la session demande un accord de Romain écrit dans la conversation pour chaque mise en ligne. Les sources sont sur la branche `brumeval-sources`. En ligne, c'est toujours la version 20261112-1559 (les banderoles du §13.27).
+**EN LIGNE DEPUIS LE 12 NOVEMBRE, 18 H 11** (accord de Romain à 18 h 06 : « Mets-le en ligne » ; la sécurité de la session demande un accord écrit dans la conversation pour chaque mise en ligne) : commit 9d0f238 du site, **version 20261112-1710** (dans les Réglages : « 12/11 à 18 h 06 »), puis l'Atelier des sons avec les six sons de corde (commit 81e8e26) ; publication de GitHub vérifiée. Le jeu en ligne était exactement les sources d'avant ce travail (la version 20261112-1559, avec la cueillette durcie du §13.28) : cette mise en ligne n'a ajouté que ces retouches. Juste avant l'envoi : `rapide.sh` et les codes des enquêtes, refaits sur le jeu reconstruit. À essayer : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 (le dernier chiffre est le niveau ; le 10 pour les vents de 1 à 10) ; les sons : https://esperidad-tech.github.io/brumeval/sons-essai.html (Mini-jeux › Tir aux anneaux). **Romain ne l'a pas encore essayé : attendre ses retours.**
 
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
