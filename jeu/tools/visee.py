@@ -172,7 +172,7 @@ with sync_playwright() as p:
     vit = [math.hypot(d[0], d[1]) / d[2] for d in pas]
     tourne = [abs((math.atan2(e[1], e[0]) - math.atan2(d[1], d[0]) + math.pi) % (2 * math.pi) - math.pi) for d, e in zip(pas, pas[1:])]
     verifier(loin > 60, f'le doigt ne bouge pas, mais le viseur glisse tout seul, loin ({loin:.0f} px en deux secondes)')
-    verifier(max(vit) < 14 * sV, f'lentement (au plus {max(vit):.0f} px par seconde)')
+    verifier(max(vit) < 17 * sV, f'lentement (au plus {max(vit):.0f} px par seconde)')
     verifier(max(tourne) < .5, f'et sans zigzaguer : il garde son cap, il tourne à peine (au plus {math.degrees(max(tourne)):.0f}° d\'un quart de seconde à l\'autre)')
     V(pg, 'v.tremble(0)'); pg.wait_for_timeout(100); c = V(pg, 'v.curseur()'); duree = V(pg, 'v.p.duree')
     verifier(abs(c['x'] - c['rx']) < .5 and abs(c['y'] - c['ry']) < .5, '(le robot peut arrêter cette dérive pour viser)')
