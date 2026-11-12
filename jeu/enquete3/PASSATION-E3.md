@@ -1,6 +1,13 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 11 novembre à 23 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 1 h 10)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (1 h 03) : l'étape 4 (l'Alchimiste) est faite, et en ligne
+
+- Le détail : **Bible §13.19**. Même demande de Romain que pour les étapes 2 et 3 (« finis l'enquête 3, tu peux publier », « je te laisse prendre les initiatives »).
+- **Fait pour l'Alchimiste** : le gâteau de la fête chez Gaspard (le mini-jeu, branché), les sept plantes (quatre cueillettes ordinaires ; trois rares avec l'herbier du Sage : le pied-de-loup, la vesse-de-loup par « Suivre la poussière », le gui par le Pisteur), **l'établi des plantes** et ses sept potions (la partie de la plante, les gestes dans l'ordre, onze outils, le grimoire, jamais d'échec), **la lettre au labo** (le Livre d'or et ses douze écritures : seule Mélusine a les trois signes ; le pollen de lavande ; l'encre de noix de galle), porter le gâteau au maire, et **le sac** (la nuit : son code pour le Pisteur).
+- **Changé par rapport à `E3-atelier-des-plantes.md` et à `E3-actions-des-roles.md`** (dix décisions de Claude, Bible §13.19) : le grimoire est sur la page de l'établi ; « le haut du gâteau » (Gaspard a fait le bas : les « sept étages » des répliques restent justes) ; un code de sac par contenu possible (128) ; on peut cueillir aussi la nuit ; le carnet d'Odette n'a pas de fiche au labo ; Mimi chasseuse de plantes n'est pas construite.
+- **Reste** : l'étape 6 (le donjon branché : écrite, en cours d'essai), l'étape 7 (l'accusation, la fin animée), l'étape 8 (le vérificateur et un robot de partie complète).
 
 ## Nouveau depuis le 11 novembre (23 h 43) : les étapes 2 (le Barde) et 3 (le Sage) sont faites, et en ligne
 
@@ -8,7 +15,7 @@
 - **Fait pour le Barde** : les grands dialogues (la lettre du maire et son piège de la copie, la clé d'Anselme, la Grosse Marie avec sa deuxième chance, Léo et ses quatre fins), la fête de la nuit sur la place (une réplique par villageois, le filet de Mélusine, quatre écoutes), « Retenir le maire » (trois petits dialogues, sans minuteur).
 - **Fait pour le Sage** : le tableau d'Odette (Assembler les runes, niveau 10), le Livre d'or, l'herbier et ses trois énigmes, « Une drôle de lettre », « La lettre et le carnet », « Les sept chats du carnet », « Le plan des Fondateurs » (l'alphabet secret), « Qui a écrit la lettre ? », rendre le tableau, et le filet de la lettre.
 - **Changé par rapport aux deux fichiers de conception** (dix décisions de Claude, Bible §13.18) : un grand dialogue ne compte pas dans les deux questions par visite ; la deuxième chance de la Grosse Marie reprend à l'étape ratée ; « Retenir le maire » s'arrête dès que deux dialogues sont réussis (ou deux ratés) ; le filet de la lettre du Sage marche aussi quand le tableau est raté.
-- **Reste** : l'étape 4 (l'Alchimiste), l'étape 6 (le donjon branché), l'étape 7 (l'accusation, la fin animée), l'étape 8 (le vérificateur et un robot de partie complète).
+- **La suite** : l'étape 4, ci-dessus.
 
 ## Nouveau depuis le 11 novembre (21 h 15) : le mini-jeu du gâteau de la fête existe (dans la salle, pas encore dans l'enquête)
 
