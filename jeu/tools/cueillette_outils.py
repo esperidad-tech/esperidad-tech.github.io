@@ -7,7 +7,7 @@ Le robot qui touche la vraie carte au doigt, endroit par endroit : e3-cueillette
    CU.cueillir(pg, 'oseille')  # trouve l'endroit et cueille ; rend le texte de la bulle (None : pas de bouton — trop tôt, déjà cueillie, hors d'atteinte)
    CU.tout(pg)                 # Bertille, puis les sept plantes (le souci et le lin ne se cueillent pas le matin : voir « forcer »)
    CU.tisane(pg)               # rapporter de la mélisse à Anselme (il faut l'avoir cueillie)
-Depuis le 12 novembre, 15 h 39 (Bible §13.27) : trois plantes au village, quatre au-delà de la brume (la mélisse y est partie).
+Depuis le 12 novembre, 15 h 39 (Bible §13.28) : trois plantes au village, quatre au-delà de la brume (la mélisse y est partie).
 """
 VILLAGE = ['oseille', 'souci', 'lin']
 LOIN = ['melisse', 'lycopode', 'vesse', 'gui']

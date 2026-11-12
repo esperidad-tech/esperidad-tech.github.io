@@ -19,7 +19,7 @@
    · DÈS L'ENQUÊTE 2 (Romain, 12 h 45 : « elles ne servent pas à l'enquête, mais on peut déjà faire leurs potions ») : les quatre plantes du village
      se trouvent et se cueillent comme à l'enquête 3 — à l'aveugle, car l'herbier du Sage n'arrive qu'à l'enquête 3. L'établi apparaît dans
      l'atelier dès la première plante, et plantes et potions suivent le héros d'une enquête à l'autre (plantes.js : M.etabliDispo, M.S.herbier).
-   · DEPUIS 15 H 37 (Romain : « c'est trop facile », Bible §13.27) : l'herbier ne donne plus qu'un INDICE (il fait chercher) ; l'endroit à toucher
+   · DEPUIS 15 H 37 (Romain : « c'est trop facile », Bible §13.28) : l'herbier ne donne plus qu'un INDICE (il fait chercher) ; l'endroit à toucher
      est exactement le rond qui s'affiche (Carte.R_CACHETTE) ; une plante peut pousser à plusieurs endroits (pl.aussi : l'oseille en a deux) ;
      trois plantes au village, quatre au-delà de la brume (la mélisse y est partie : Anselme en veut pour sa tisane, e3.js, lieux.clocher).
    Chargé APRÈS moteur-actions.js (M.A, M.bulleDe, M.ouvrir) ; livre.js lui demande la page de l'herbier (M.herbierHTML).

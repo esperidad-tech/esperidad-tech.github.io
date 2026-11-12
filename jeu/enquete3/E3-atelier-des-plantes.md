@@ -88,7 +88,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 > **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « sur la carte, on ne les voit pas […] dès qu'on va appuyer exactement sur la zone […] la petite bulle, avec marqué cueillir cette plante-là » ; « 4 plantes dans le plan de base du village […] 3 plantes dans la carte élargie, pas accessibles à l'enquête numéro 2 ». 13 h 09 : « liés à là où on peut les trouver dans la réalité […] je veux qu'on apprenne des choses sur la réalité ».
 
-> **Durci à 15 h 37 et 15 h 39 (Bible §13.27).** Romain : « c'est trop facile » ; « que la hitbox soit exactement le rond qui s'affiche » ; « la mélisse, on ne peut la trouver que derrière la brume ». Ce qui suit est l'état d'aujourd'hui.
+> **Durci à 15 h 37 et 15 h 39 (Bible §13.28).** Romain : « c'est trop facile » ; « que la hitbox soit exactement le rond qui s'affiche » ; « la mélisse, on ne peut la trouver que derrière la brume ». Ce qui suit est l'état d'aujourd'hui.
 
 **Chaque plante pousse à un endroit précis de la carte, qu'on ne voit pas** (l'oseille en a deux). L'Alchimiste touche le bon endroit : la plante surgit (une petite pastille, qui reste sur la carte pour toute la saison) et sa bulle s'ouvre, avec le bouton jaune « 🧺 Cueillir … ». **L'endroit à toucher est exactement le rond de la pastille, pas plus** : juste à côté, rien ne se passe. Seul l'Alchimiste a ces endroits. Cueillie, la plante pend à la tringle de l'établi (§2), ou attend devant la porte de l'atelier s'il n'y a plus de place.
 
@@ -111,7 +111,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 > **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « dans l'herbier, je veux pas qu'il parle de donjon […] uniquement de plantes et uniquement là où elles sont […] et à quel moment de la journée on peut les cueillir » ; « des informations très précises ».
 
-> **Durci à 15 h 37 (Bible §13.27).** Romain : « c'est trop facile […] tu écris des indices qui sont un peu moins évidents […] tu dis pas exactement l'emplacement. Il faut que ça soit un jeu quand même de recherche. »
+> **Durci à 15 h 37 (Bible §13.28).** Romain : « c'est trop facile […] tu écris des indices qui sont un peu moins évidents […] tu dis pas exactement l'emplacement. Il faut que ça soit un jeu quand même de recherche. »
 
 - **Dès le matin de l'enquête 3**, une page du Grand Livre du Sage : « L'herbier des Fondateurs ». En tête : « Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l'Alchimiste : à vous de deviner où chercher ! »
 - **Une planche par plante** (les trois du village, puis les quatre d'au-delà de la brume) : son dessin (le même qu'à l'établi), son nom, puis deux lignes, chacune avec son 🔊 :
@@ -203,7 +203,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 - la vesse-de-loup pousse dans les bois et les prairies, sur le sol, souvent en petits groupes (le « Rond des Sorcières » de la carte est un clin d'œil aux ronds de champignons, pas un fait vérifié pour cette espèce) ;
 - le gui n'a pas de racine dans la terre : il vit sur les branches des arbres (pommiers et peupliers surtout) et reste vert l'hiver.
 
-**Pour les indices de l'herbier de 15 h 37 (Bible §13.27)** :
+**Pour les indices de l'herbier de 15 h 37 (Bible §13.28)** :
 - **la vesse-de-loup et les sorcières : une légende, pas un fait.** Romain proposait « souvent utilisé pour faire des incantations » ; l'herbier dit « on raconte que les sorcières s'en servaient pour leurs incantations ». Ce qu'on a trouvé (recherche du 12 novembre, 15 h 50) : les ronds de champignons s'appellent « ronds de sorcières », et on les a longtemps attribués aux gnomes, aux fées ou au diable ([Rond de sorcière, Futura](https://www.futura-sciences.com/planete/definitions/champignon-rond-sorciere-21012/)) ; une vesse-de-loup passe pour plonger dans un demi-sommeil où l'on entend des voix qui répondent aux questions ([fiche « lycoperdon », Office québécois de la langue française](https://vitrinelinguistique.oqlf.gouv.qc.ca/fiche-gdt/fiche/17017848/lycoperdon)) ; elle pousse dans les endroits humides et ombragés, en grappes, et servait à arrêter les saignements ([La vesse-de-loup, savoirs des Kainai](https://galileo.org/kainai/puffball/)). Rien qui dise que les sorcières d'Europe s'en servaient « souvent » ;
 - non vérifié en ligne ce jour-là, mais connu : l'oseille est une plante de potager qui veut une terre fraîche ; le souci des jardins est « officinal » (une plante d'apothicaire, pour la peau) ; les oiseaux mangent les graines de lin ; la tisane de mélisse calme et aide à dormir (c'est pour ça qu'Anselme en veut) ; les apiculteurs aiment la mélisse près des ruches. **À revérifier si on veut en faire des « C'est vrai ! ».**
 

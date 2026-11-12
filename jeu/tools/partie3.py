@@ -195,7 +195,7 @@ def partie(nav, base):
     S.point('mairie', 'livredor'); S.fermer()
     S.page('habitants')
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
-    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'grands rochers' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.27)')
+    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'grands rochers' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     t = S.ouvrir_page('doutes'); S.fermer()
     verifier('capuchon' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
     verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')
@@ -204,7 +204,7 @@ def partie(nav, base):
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
-    # (12 novembre, Bible §13.26 et §13.27) les plantes : des endroits cachés de la carte ; l'herbier du Sage ne donne que des indices. Le matin, au
+    # (12 novembre, Bible §13.26 et §13.28) les plantes : des endroits cachés de la carte ; l'herbier du Sage ne donne que des indices. Le matin, au
     # village : l'oseille. Anselme veut une tisane de mélisse et sonne Bertille, la brume recule : la mélisse, le pied-de-loup, la vesse-de-loup,
     # le gui ; on rapporte de la mélisse à Anselme. Le souci et le lin : pas avant l'après-midi.
     verifier(CU.cueillir(A.pg, 'oseille') is not None, 'l\'Alchimiste cueille l\'oseille, dans le village')

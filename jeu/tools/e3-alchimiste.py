@@ -136,7 +136,7 @@ with sync_playwright() as p:
     for l in ['lavoir', 'herboristerie', 'moulin', 'foret', 'clairiere', 'potager']:
         pts = lieu(pg, l)
         verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 0, f'{l} : plus rien à « chercher » dans la bulle du lieu ({pts})')
-    # (12 novembre, 15 h 39, Bible §13.27 : trois plantes au village — l'oseille, le souci, le lin —, quatre au-delà de la brume, dont la mélisse)
+    # (12 novembre, 15 h 39, Bible §13.28 : trois plantes au village — l'oseille, le souci, le lin —, quatre au-delà de la brume, dont la mélisse)
     for k, mot in [('oseille', 'oseille')]:
         t = CU.cueillir(pg, k)
         verifier(t is not None and mot in t and 'établi' in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : son endroit caché, « Cueillir », « sur l\'établi de ton atelier » ({(t or "")[:70]})')

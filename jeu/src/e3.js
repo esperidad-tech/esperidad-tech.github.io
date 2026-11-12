@@ -74,7 +74,7 @@ E[3] = {
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
       {ic:'🎂', t:'Fais le haut du gâteau de la fête, à la boulangerie de Gaspard.', fait:[{vu:'alchimiste:boulangerie:gateau'}]},
-      /* (12 novembre, Bible §13.26 et §13.27) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : l'herbier du Sage ne donne
+      /* (12 novembre, Bible §13.26 et §13.28) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : l'herbier du Sage ne donne
          que des indices ; quatre poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume).
          En échange, il veut de la mélisse pour sa tisane : la troisième mission n'arrive qu'après Bertille (e.si, mission.js). */
       {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : l\'herbier du Sage te mettra sur la piste.',
@@ -603,7 +603,7 @@ E[3] = {
       /* (12 novembre, Bible §13.26) L'ALCHIMISTE ET BERTILLE : des plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
          ses trois cloches (« Bertille, Gontran et la Grosse Marie », pnj.anselme) : elle repousse la brume « un petit peu » — au nord et à l'ouest
          (E.brume). La Grosse Marie, elle, ne sonne qu'à minuit (ordre du maire) : c'est l'affaire du Barde, la nuit. À tout moment de la journée.
-         LA TISANE D'ANSELME (Romain, 12 novembre, 15 h 39 ; Bible §13.27) : « c'est Anselme qui réclame de la tisane à la mélisse, et la mélisse, on
+         LA TISANE D'ANSELME (Romain, 12 novembre, 15 h 39 ; Bible §13.28) : « c'est Anselme qui réclame de la tisane à la mélisse, et la mélisse, on
          ne peut la trouver que derrière la brume ». Il sonne donc Bertille POUR qu'on aille lui en chercher ; l'Alchimiste lui en rapporte (le
          point « tisane », visible dès qu'elle a de la mélisse ; elle garde sa plante pour l'établi). Dès le matin, Anselme la fait appeler par le
          Barde (pnj.anselme, occupe.matin). En vrai : la tisane de mélisse calme et aide à dormir. */
@@ -949,7 +949,7 @@ E[3] = {
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},
     /* dès le matin : L'HERBIER (Romain, 12 novembre, 12 h 52 : « uniquement de plantes, là où elles sont, et à quel moment de la journée on peut les
        cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, UN INDICE (plus l'endroit précis
-       depuis 15 h 37 : « il faut que ça soit un jeu de recherche », Bible §13.27), le moment. Tout vient de D.PLANTES (donnees.js) ; la page est
+       depuis 15 h 37 : « il faut que ça soit un jeu de recherche », Bible §13.28), le moment. Tout vient de D.PLANTES (donnees.js) ; la page est
        dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix haute, l'Alchimiste cherche sur sa carte. */
     {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier',
       t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},

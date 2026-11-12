@@ -172,7 +172,7 @@ D.INGR = {
    ⚠️ DEPUIS 15 H 37 (Romain : « c'est trop facile ») : L'HERBIER NE DIT PLUS L'ENDROIT EXACT. « ou » est un INDICE qui fait chercher (« à l'ombre des
    grands rochers », « les herboristes l'aiment beaucoup »…) : jamais le nom du lieu, jamais le détail du dessin. Et l'endroit à toucher est
    exactement le rond qui s'affiche (Carte.R_CACHETTE), pas plus. Trois plantes au village (l'oseille, le souci, le lin), QUATRE au-delà de la
-   brume : la mélisse y est partie (15 h 39 : Anselme en réclame pour sa tisane, et « on ne peut la trouver que derrière la brume »). Bible §13.27.
+   brume : la mélisse y est partie (15 h 39 : Anselme en réclame pour sa tisane, et « on ne peut la trouver que derrière la brume »). Bible §13.28.
    CHAQUE PLANTE EST LÀ OÙ ELLE POUSSE POUR DE VRAI (Romain, 12 novembre, 13 h 09 : « je veux qu'on apprenne des choses sur la réalité ») : « vit »
    dit son vrai milieu, et l'endroit de la carte est un milieu de cette sorte. Vérifié en ligne le 12 novembre (les sources : E3-atelier-des-plantes.md) :
    l'oseille des prés aime les sols humides ; la mélisse, « herbe aux abeilles », se cueille le matin, la rosée partie ; le souci (du latin « qui suit
