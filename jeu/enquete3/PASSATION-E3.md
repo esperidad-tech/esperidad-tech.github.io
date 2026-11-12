@@ -1,6 +1,16 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 22 h 05)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 23 h 35)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (23 h 27) : LE SCÉNARIO A CHANGÉ, les dialogues du Barde sont refaits et VERROUILLÉS
+
+- **À lire d'abord : Bible §13.31**, et le scénario de Romain (https://claude.ai/artifact/Ya2t6QJG6zsqQ9s96xjFtM). En ligne : depuis le 12 novembre à 23 h 27 (heure de Paris ; accord de Romain à 21 h 44 : « je te laisse faire tout ça et après tu publies »), commit ef61be3 du site, **version 20261112-2226**, publication de GitHub vérifiée.
+- **L'histoire** : le maire a fait écrire la lettre ; un homme en cape a forcé Mélusine, qui l'a écrite (en imitant Odette, avec de l'encre volée chez Iris) **et déposée elle-même**, dans un châle à chats ; l'homme en cape est Léo, l'apprenti du meunier, **dont le nom n'est dit nulle part avant la nuit**. **Retirés pour de bon** : la lavande comme piste, « minuit », les grosses bottes, Léo froussard et son grand dialogue, la trappe à soupe.
+- **La chaîne de l'enquête, validée par Romain** (11 étapes, Bible §13.31) : quelque chose cloche → l'idée de Victor (comparer les écritures) → la lettre → le carnet d'Odette → pas son écriture → une femme, de l'encre volée → l'encre est celle d'Iris → Mélusine ou Margot (Livre d'or) → des empreintes de pieds d'enfant : Mélusine → son aveu → les traces jusqu'à la crypte → la clé d'Anselme (ou le puits).
+- **🔒 Les dialogues du Barde sont verrouillés** : `E3-dialogues-et-trame.md` (version 3) est **écrit par l'outil `jeu/tools/e3-dialogues.js` à partir du jeu**. Ne jamais le modifier à la main, ne jamais y recoller un dialogue des versions d'avant (archives). Une réplique ne change qu'avec le « go » de Romain, dans `e3.js`, puis l'outil. La page de Romain : https://claude.ai/artifact/KpEtFyE3zCWVN4mmEMfyCv (écrite par `jeu/tools/e3-dialogues-page.js`).
+- **Les règles des dialogues** : les mêmes trois questions pour tous (la lettre, Odette, la nuit) + une sur le métier ; plus de limite à deux questions ; les grandes conversations (le maire, Anselme) seulement quand tout est demandé, affichées en violet avec « 🎭 » ; chez Anselme, les quatre choix en majuscules ; Anselme sonne la Grosse Marie dans tous les cas ; la grille : tirer, pousser ou soulever (tirer et pousser sont des erreurs).
+- **`E3-actions-des-roles.md` N'EST PAS À JOUR** pour le Pisteur, le Sage et l'Alchimiste : il décrit l'ancien fil, qui est encore celui du jeu pour ces trois rôles. **Ce qui reste à concevoir puis construire, un chantier à la fois** : les empreintes de pieds d'enfant et le geste de la grille (Pisteur), les pointures et les deux suspectes (Sage), l'encre comparée (Alchimiste), Léo chef du donjon, la fin.
+- **Questions ouvertes pour Romain** : Odette à la fin ; Léo chef du donjon ; la Grosse Marie et la brume (double emploi avec la tisane d'Anselme, §13.28) ; la longueur de la lecture le matin.
 
 ## Nouveau depuis le 12 novembre (22 h 05) : le concours de gâteaux
 

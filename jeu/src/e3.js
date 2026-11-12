@@ -7,7 +7,7 @@
 
    Solution : Mélusine a écrit la fausse lettre · Odette est sous le clocher, derrière la porte aux quatre signes.
 
-   LE SCÉNARIO A CHANGÉ LE 12 NOVEMBRE AU SOIR (Romain, 18 h 06 à 21 h 44 ; Bible § 13.30 ; E3-dialogues-et-trame.md, version 3, qui fait foi
+   LE SCÉNARIO A CHANGÉ LE 12 NOVEMBRE AU SOIR (Romain, 18 h 06 à 21 h 44 ; Bible § 13.31 ; E3-dialogues-et-trame.md, version 3, qui fait foi
    pour tous les textes du Barde). Ce qui s'est passé (jamais dit tel quel) : le maire (qui ne ment jamais) a chargé Léo, l'apprenti du
    meunier — c'est lui, l'homme en cape — de faire écrire une lettre « d'Odette ». Léo a forcé Mélusine, qui a volé un flacon d'encre chez
    Iris, écrit la lettre en imitant Odette, et l'a glissée elle-même sous la porte de la mairie, à l'aube, dans un châle comme celui d'Odette.
@@ -218,7 +218,7 @@ E[3] = {
       lanterne:{or:5, t:'Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête !'}}
   },
 
-  /* ---------- Les grands dialogues du Barde (grands.js ; Bible § 13.8 et § 13.30 ; E3-dialogues-et-trame.md, version 3) ----------
+  /* ---------- Les grands dialogues du Barde (grands.js ; Bible § 13.8 et § 13.31 ; E3-dialogues-et-trame.md, version 3) ----------
      On y entre par une question (q.grand), qui n'apparaît qu'une fois tout demandé à tout le monde (q.besoin : {toutDit:[…]}, barde.js ;
      Romain, 12 novembre, 21 h 31 et 21 h 44), et qui ne ressemble pas aux autres (grands.css : violette, « 🎭 Grande conversation », un reflet).
      4 choix par étape, tous polis, de la même longueur ; un seul essai. La bonne réponse n'est jamais à la même place.
