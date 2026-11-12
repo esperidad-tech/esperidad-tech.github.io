@@ -96,7 +96,7 @@ def partie(b, joueur, chemin):
     verifier([p['id'] for p in pts] == ['oie'], 'la boulangerie, le matin : l\'oie')
     i = jouer_point(pg, 'boulangerie', 'oie', A, f'{chemin}-oie')
     verifier(i and i['params'].get('fuyard') == 'oie' and i['params'].get('decor') == 'ville', 'l\'oie : course-poursuite, une oie, en ville')
-    verifier(i and i['params'].get('niveauEffectif', i['params'].get('niveau', 9)) <= 4, f'l\'oie : niveau 4 au plus ({i and i["params"].get("niveauEffectif")})')
+    verifier(i and i['params'].get('niveauEffectif') == 9, f'l\'oie : niveau 9 (Romain, 12 novembre) ({i and i["params"].get("niveauEffectif")})')
     verifier(('Ma belle' in voile(pg)) if A else ('trop rapide' in voile(pg)), 'l\'oie : le bon texte (attrapée / ratée)')
     fermer(pg)
     verifier(lieu(pg, 'potager') == [], 'le potager sans le code : rien')

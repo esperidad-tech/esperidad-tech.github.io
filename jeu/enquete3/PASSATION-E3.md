@@ -2,6 +2,10 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles en discussion
+
+- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde (construit, en attente de l'accord de Romain pour la mise en ligne). Les banderoles sont « trop faciles, même au niveau 10 » : Romain veut un tir plus magique et plus dur, avec le même arc. Trois idées proposées (les chats de lumière, les lanternes qui s'envolent, les banderoles vivantes) ; **rien n'est construit**.
+
 ## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
 
 - Le détail : **Bible §13.20**. Romain, 1 h 11 : « L'essai du donjon est terminé, c'est validé. »

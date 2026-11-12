@@ -522,8 +522,9 @@ E[3] = {
     },
     boulangerie:{
       pisteur:{intro:'La boulangerie de Gaspard. Ça sent la brioche chaude !', points:[
-        /* une oie vue de dos, en ville (mj-pisteur-alchi.js : fuyard 'oie', décor 'ville') ; jamais plus que le niveau 4, comme Tim */
-        {id:'oie', ic:'🦢', nom:'L\'oie de Gaspard', moments:M_, mj:'poursuite', mjNiveauMax:4, params:{fuyard:'oie', decor:'ville'},
+        /* une oie vue de dos, en ville (mj-pisteur-alchi.js : fuyard 'oie', décor 'ville') ; niveau 9 pour tout le monde
+           (Romain, 12 novembre, 8 h 56 ; avant : 4 au plus, comme Tim). Un seul essai : ratée, elle ne coûte que l'or de la mission. */
+        {id:'oie', ic:'🦢', nom:'L\'oie de Gaspard', moments:M_, mj:'poursuite', mjNiveauFixe:9, params:{fuyard:'oie', decor:'ville'},
           avant:'COUAC ! L\'oie de Gaspard s\'est sauvée de la cour, et elle file dans les rues ! Gaspard crie : « Sans elle, pas de festin ! » Rattrape-la !',
           bouton:'🏃 Courir après l\'oie',
           t:'Tu plonges… et tu l\'attrapes ! COUAC, COUAC ! Elle se débat, puis se calme dans tes bras. Gaspard la serre contre lui : « Ma belle ! Te voilà ! »',

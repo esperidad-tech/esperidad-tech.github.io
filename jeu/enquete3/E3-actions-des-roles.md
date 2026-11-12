@@ -16,7 +16,7 @@ L'action : les deux jeux de la fête le matin, les traces de Moustache l'après-
 
 ### Le matin
 - **Les banderoles** — la place. Tir à l'arc, décor banderoles (déjà fait : `params:{decor:'banderoles'}`, §12.44) → code « Mission de fête (1 sur 2) », rendue au maire l'après-midi. Basile : « Ça, c'est de la décoration ! »
-- **L'oie de Gaspard** — la boulangerie, puis les rues. Course-poursuite, une oie vue de dos, en ville ; niveau 4 au plus, comme Tim (`mjNiveauMax:4`) → code « Mission de fête (2 sur 2) ». Gaspard : « Sans elle, pas de festin ! »
+- **L'oie de Gaspard** — la boulangerie, puis les rues. Course-poursuite, une oie vue de dos, en ville ; niveau 4 au plus, comme Tim (`mjNiveauMax:4`) — **niveau 9 pour tout le monde depuis le 12 novembre** (Romain ; `mjNiveauFixe:9`, Bible §13.21) → code « Mission de fête (2 sur 2) ». Gaspard : « Sans elle, pas de festin ! »
 - (Le coup d'œil au clocher est abandonné, §13.14.)
 
 ### L'après-midi
