@@ -20,7 +20,7 @@
 
 ## Nouveau depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles en discussion
 
-- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde (construit, en attente de l'accord de Romain pour la mise en ligne). Les banderoles sont « trop faciles, même au niveau 10 » : Romain veut un tir plus magique et plus dur, avec le même arc. Trois idées proposées (les chats de lumière, les lanternes qui s'envolent, les banderoles vivantes) ; **rien n'est construit**.
+- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde, et on la recommence autant qu'on veut (en ligne à 13 h 12). La règle enfant / adulte est retirée de la Bible : les niveaux se choisiront selon le scénario, avec Romain. Les banderoles sont « trop faciles, même au niveau 10 » : les trois idées de Claude sont refusées ; Romain propose une vue de tir rapprochée façon « Archery » (« 2 Player Games »), cinq anneaux d'affilée. **En discussion, rien n'est construit**.
 
 ## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
 
