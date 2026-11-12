@@ -3868,16 +3868,64 @@ D.INGR = {
   racine:{nom:'Racine du Vieux Chêne', ic:'🪵', c:'#9b6a3c', rare:true},
   lune:{nom:'Poussière de lune', ic:'✨', c:'#eef0ff', rare:true}
 };
-/* Enquête 3 : les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les
-   rangements de l'atelier (rien ne change pour les enquêtes 1 et 2) : cueillies, elles attendent sur l'établi (P.plantes). */
+/* Les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les rangements de
+   l'atelier : cueillies, elles attendent sur l'établi (P.plantes), et suivent le héros d'une enquête à l'autre (plantes.js, M.S.herbier). */
+/* OÙ ELLES POUSSENT (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.25) : chaque plante a UN endroit précis de la carte, qu'on ne voit pas.
+   L'Alchimiste doit toucher exactement là : alors seulement la plante se montre, avec sa bulle « Cueillir ». C'est l'herbier du Sage qui dit où et quand.
+   · x, y : dans les mesures du village (carte.js : 1000 × 1400). Les trois plantes d'au-delà de la brume ont des mesures qui sortent du village
+     (le grand monde, monde-*.js : x + 1000, y + 320) ; zone : le banc de brume qu'il faut avoir repoussé (monde-brume.js, ZONES).
+   · des : la première enquête où l'endroit existe (2 : les quatre du village — dès l'enquête 2 on les trouve à l'aveugle, on les cueille et on fait
+     leurs potions, Romain, 12 h 45 ; 3 : les trois lointaines, avec l'herbier du Sage et la brume repoussée).
+   · pasAvant : le moment à partir duquel elle se cueille (rien : dès le matin). Plus tard dans la journée, et la nuit, elle se cueille toujours.
+   · vit, ou, quand : ce que dit l'herbier (le Sage le lit à voix haute : rien que la plante, là où elle vit, l'endroit et le moment) ;
+     ici : ce que voit l'Alchimiste quand elle la trouve ; tot : quand elle vient trop tôt.
+   CHAQUE PLANTE EST LÀ OÙ ELLE POUSSE POUR DE VRAI (Romain, 12 novembre, 13 h 09 : « je veux qu'on apprenne des choses sur la réalité ») : « vit »
+   dit son vrai milieu, et l'endroit de la carte est un milieu de cette sorte. Vérifié en ligne le 12 novembre (les sources : E3-atelier-des-plantes.md) :
+   l'oseille des prés aime les sols humides ; la mélisse, « herbe aux abeilles », se cueille le matin, la rosée partie ; le souci (du latin « qui suit
+   le soleil ») se ferme la nuit et ne se rouvre que quand le soleil est haut, et on le plante près des choux contre les pucerons ; le lin se sème dans
+   les champs, sa fleur bleue ne dure qu'un matin, et on récolte ses graines bien sèches ; le pied-de-loup vit sur les landes et les pelouses des
+   collines, en terre pauvre et acide, avec la bruyère ; la vesse-de-loup pousse dans les bois, sur le sol, en petits groupes ; le gui n'a pas de
+   racine dans la terre, il vit sur les branches (pommiers et peupliers surtout) et reste vert l'hiver.
+   SI ON DÉPLACE UN ENDROIT : changer x, y ET la phrase « ou » (elle décrit le dessin de la carte), garder un milieu qui est le vrai, puis
+   `python3 tools/e3-cueillette.py`. */
 D.PLANTES = {
-  oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬'},
-  souci:{nom:'Le souci', un:'des fleurs de souci', ic:'🏵️'},
-  melisse:{nom:'La mélisse', un:'de la mélisse', ic:'🍃'},
-  lin:{nom:'Le lin', un:'du lin', ic:'🌾'},
-  lycopode:{nom:'Le pied-de-loup', un:'du pied-de-loup', ic:'🌲', rare:true},
-  vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true},
-  gui:{nom:'Le gui', un:'du gui', ic:'🪴', rare:true}
+  oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬', x:90, y:1090, des:2,
+    vit:'Elle aime les prés humides.',
+    ou:'Cherche au bord du ruisseau, juste au-dessus du lavoir : là où un petit bras d\'eau le rejoint.',
+    quand:'À toute heure, même la nuit.',
+    ici:'Dans l\'herbe mouillée, de grandes feuilles en fer de flèche : de l\'oseille !'},
+  souci:{nom:'Le souci', un:'des fleurs de souci', ic:'🏵️', x:327, y:1316, des:2, pasAvant:'apresmidi',
+    vit:'Les jardiniers le plantent près des choux : il éloigne les pucerons.',
+    ou:'Cherche dans le potager, au pied de la cloche de paille du milieu.',
+    quand:'Pas avant l\'après-midi : il dort la nuit, et ne s\'ouvre que quand le soleil est haut.',
+    ici:'De petits soleils orange, grands ouverts : des soucis !',
+    tot:'Des boutons orange, bien fermés. Les soucis dorment encore : ils attendent que le soleil soit haut.'},
+  melisse:{nom:'La mélisse', un:'de la mélisse', ic:'🍃', x:905, y:894, des:2,
+    vit:'On l\'appelle l\'herbe aux abeilles, et elle aime les jardins.',
+    ou:'Cherche derrière l\'herboristerie, entre le carré de lavande et la rivière.',
+    quand:'Dès le matin, quand la rosée est partie : c\'est là qu\'elle sent le plus fort.',
+    ici:'Tu froisses une feuille entre tes doigts : ça sent le citron ! De la mélisse.'},
+  lin:{nom:'Le lin', un:'du lin', ic:'🌾', x:770, y:1112, des:2, pasAvant:'apresmidi',
+    vit:'On le sème dans les champs, en plein soleil.',
+    ou:'Cherche dans le grand champ de blé, au pied de l\'épouvantail.',
+    quand:'Pas avant l\'après-midi : le matin, la rosée mouille ses graines. Sèches, elles tintent quand on secoue la tige.',
+    ici:'Tu secoues une tige : ses petites boules dorées tintent. Du lin, bien sec !',
+    tot:'De jolies fleurs bleues… et des boules trempées de rosée. Trop tôt : laisse le soleil sécher les graines.'},
+  lycopode:{nom:'Le pied-de-loup', un:'du pied-de-loup', ic:'🌲', rare:true, x:-551, y:548, des:3, zone:'o',
+    vit:'Il aime les landes des collines, là où la terre est pauvre : il y rampe entre les bruyères.',
+    ou:'Au-delà de la brume, à l\'ouest : sur la colline des Cinq Pierres, au pied de la pierre du nord.',
+    quand:'À toute heure.',
+    ici:'Entre les bruyères, on dirait une petite branche de sapin qui rampe : du pied-de-loup !'},
+  vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true, x:229, y:-115, des:3, zone:'n',
+    vit:'Elle pousse dans les bois et les clairières, à même la terre, par petits groupes.',
+    ou:'Au-delà de la brume, au nord du Vieux Chêne : au beau milieu du Rond des Sorcières.',
+    quand:'À toute heure.',
+    ici:'Sur la terre du sous-bois, une grosse boule brune, bien mûre : une vesse-de-loup !'},
+  gui:{nom:'Le gui', un:'du gui', ic:'🪴', rare:true, x:-221, y:609, des:3, zone:'o',
+    vit:'Il ne pousse jamais dans la terre : il vit accroché aux branches, surtout celles des vieux pommiers.',
+    ou:'Au-delà de la brume, à l\'ouest : dans le Vieux verger, tout en haut du pommier à l\'échelle.',
+    quand:'À toute heure : il reste vert même en hiver.',
+    ici:'Tu grimpes à l\'échelle. Sur la plus haute branche, une boule verte piquée de perles blanches : du gui !'}
 };
 /* cuisson = mini-jeu ; pour = rôles qui peuvent s'en servir ; fx = effet quand on l'utilise */
 D.POTIONS = {
@@ -3955,7 +4003,13 @@ Object.keys(D.RECETTES).forEach(function(id){
   });
   D.CHAUDRON[id] = {zone:c[0], frise:frise};
 });
-D.RECETTES_DE_BASE = ['lumiere', 'rapidite', 'invisibilite'];
+/* Les potions que l'Alchimiste savait faire « depuis le début » (lumière, rapidité, invisibilité) sont retirées de son grimoire
+   (Romain, 12 novembre, 12 h 52 : « des potions qui servent plus ou moins à rien, ce serait cool qu'on les enlève » ; Bible §13.25).
+   Il ne reste que la recette de chaque enquête (l'encre révélatrice à l'enquête 1, la potion de vérité à l'enquête 2), et celles qu'un
+   talent ou un objet apporte. D.POTIONS et D.RECETTES les gardent : leurs codes ne bougent pas (codes gelés), et une vieille sauvegarde
+   qui en a une fiole peut encore la boire. D'autres potions viendront plus tard (à réfléchir avec Romain). */
+D.RECETTES_DE_BASE = [];
+D.RECETTES_RETIREES = ['lumiere', 'rapidite', 'invisibilite'];
 
 /* ANCIEN chaudron pas à pas : n'est plus utilisé par l'atelier ni par le Sage (remplacé par D.CHAUDRON).
    Gardé seulement parce que moteur-actions.js le lit encore (recettes passées à l'atelier).
