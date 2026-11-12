@@ -45,6 +45,14 @@ function ligne(t, qui, ment){
   return '<p class="ma-dit"><span id="gd-texte" data-k="' + esc(k) + '" data-p="' + esc(qui) + '" data-t="' + esc(t) + '"' + (ment ? ' data-ment="1"' : '') + '>' + (joue ? esc(t) : '') + '</span> ' + lire(t, qui) + '</p>';
 }
 function recit(t){ return t ? '<p class="ma-dit ma-conteur gd-recit">' + esc(t) + ' ' + lire(t) + '</p>' : ''; }
+/* (12 novembre au soir ; Romain, 21 h 44 : « les grands dialogues, tu les fais apparaître différemment ») le bandeau d'un grand dialogue,
+   en haut de sa fenêtre : son nom, et un petit rond par étape (les étapes réussies sont pleines). La fenêtre a aussi son cadre doré à
+   elle (gd-fenetre, grands.css). */
+function bandeau(X, st){
+  var n = (X.etapes || []).length, fait = st.fini === 'ok' ? n : (st.ok || 0), h = '';
+  for(var i = 0; i < n; i++) h += '<i class="' + (i < fait ? 'fait' : i === st.e && !st.fini ? 'ici' : '') + '"></i>';
+  return '<div class="gd-bandeau"><b>🎭 Grande conversation</b>' + (n ? '<span class="gd-pas" aria-hidden="true">' + h + '</span>' : '') + (st.fini ? '' : '<small>un seul essai</small>') + '</div>';
+}
 function choixHTML(l, act, cacher){
   var h = '<p class="bd-choix-sous">Qu\'est-ce que tu réponds ?</p><div class="ma-choix">';
   l.forEach(function(c, k){
@@ -61,23 +69,25 @@ M.grandOuvrir = function(g){
   var X = Gd(g); if(!X || !barde()) return;
   var st = etat(g); if(st.fini === 'encore'){ st.fini = ''; st.r = ''; }
   M.sauver();
-  M.ouvrir({type:'grand', g:g, classe:'b-feuille-conv', fixe:g === 'leo' && !st.fini});
+  M.ouvrir({type:'grand', g:g, classe:'b-feuille-conv' + (X.scene ? '' : ' gd-fenetre'), fixe:g === 'leo' && !st.fini});
 };
 A['gd-ouvrir'] = function(el){ M.son('clic'); M.grandOuvrir(el.dataset.g); };
 A['gd-reprendre'] = function(el){ var g = el.dataset.g, st = etat(g); if(st.fini !== 'encore') return; M.son('clic'); M.grandOuvrir(g); };
 
 function grandHTML(m){
   var g = m.g, X = Gd(g), st = etat(g); if(!X) return '';
-  var id = X.pnj, h = '<div class="ma-feuille gd-feuille">' + tete(id);
-  /* Léo ment d'entrée : « 🤥 Mensonge ? » (son signe, épinglé par Farinel), ou on continue */
-  if(g === 'leo' && !st.ment){
+  var id = X.pnj, h = '<div class="ma-feuille gd-feuille">' + (X.scene ? '' : bandeau(X, st)) + tete(id);
+  /* Léo ment d'entrée : « 🤥 Mensonge ? » (son signe, épinglé par Farinel), ou on continue
+     (12 novembre au soir : plus à l'enquête 3, où Léo est une scène sans choix — X.scene, sceneLeo plus bas) */
+  if(g === 'leo' && !X.scene && !st.ment){
     return h + recit(X.intro) + ligne(cite(X.ment.a), id, true) +
       '<div class="gd-ment-btns"><button class="btn petit bd-ment-p" data-act="gd-leo-ment">🤥 Mensonge ?</button><button class="btn grand" data-act="gd-leo-suite">▶ Continuer</button></div></div>';
   }
-  if(g === 'leo' && st.ment === 'vrai')
+  if(g === 'leo' && !X.scene && st.ment === 'vrai')
     return h + ligne(cite(X.ment.vrai), id) + '<p class="bd-tag-ment">🤥 Mensonge démasqué</p><button class="btn grand" data-act="gd-leo-suite">▶ Continuer</button></div>';
+  if(X.scene && !st.fini) return h + recit(X.intro) + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
   if(st.fini){
-    h += ligne(st.r, id);
+    h += (X.scene ? recit(X.intro) : '') + ligne(st.r, id);
     if(g === 'leo'){
       /* (étape 7) ce que Léo a dit part chez le Sage : « ✨ La suite » montre le code (fins[n].code) */
       var fL = st.n >= 0 ? X.fins[st.n] : null, orL = st.or ? '<div class="ma-gain ma-or"><span>🪙 +' + st.or + ' pièces d\'or</span></div>' : '';
@@ -160,6 +170,15 @@ function finLeo(c){
   M.son(n ? 'ok' : 'ko');
   if(UI.modal && UI.modal.type === 'grand') UI.modal.fixe = false;
 }
+/* (12 novembre au soir) Léo, une scène sans choix (X.scene) : le code « Léo attrapé » la joue tout de suite. Le Barde apprend qui est
+   l'homme en cape ; « Ce que Léo a dit » (fins[0].code) part chez le Sage. */
+function sceneLeo(){
+  var X = Gd('leo'), st = etat('leo'), P = M.P(), f = X.fins[0];
+  st.fini = 'leo'; st.n = 0; st.ment = 'fait'; st.r = f.t;
+  P.vus['grand:leo'] = 'ok'; P.vus['grand:leo:fini'] = 1; P.vus['leo:etapes'] = 1;
+  if(f.code) donner(f.code);
+  M.noter('Léo, dans la crypte : ' + f.t, '🧑');
+}
 A['gd-leo-code'] = function(){
   var X = Gd('leo'), st = etat('leo'), f = X && st.n >= 0 ? X.fins[st.n] : null; if(!f || !f.code) return;
   M.decouvrir({ic:'🧑', titre:X.titreCode || 'Ce que Léo a dit', t:X.apresCode || X.apres, code:f.code});
@@ -172,7 +191,7 @@ M.codeSpecial = function(t, x, id){
     if(X && t === 'info' && (x === 'leo_attrape' || x === 'leo_enfui') && M.role() === 'barde'){
       var P = M.P(), st = etat('leo');
       if(P.recus[id]){
-        if(x === 'leo_attrape' && !st.fini){ M.grandOuvrir('leo'); return true; }
+        if(x === 'leo_attrape' && (!st.fini || (X.scene && st.n >= 0))){ M.grandOuvrir('leo'); return true; }   /* (la scène se revoit en retapant le code) */
         M.ouvrir({type:'info', ic:'👍', titre:'Déjà reçu', t:'Tu as déjà ce code.'}); return true;
       }
       P.recus[id] = true; M.son('gain');
@@ -181,7 +200,9 @@ M.codeSpecial = function(t, x, id){
         M.noter('Léo s\'est enfui : ' + X.enfui, '🏃'); M.sauver();
         M.ouvrir({type:'info', ic:'🏃', titre:'Léo s\'est enfui', t:X.enfui + ' ' + (X.apresRien || X.apres)}); return true;
       }
-      M.noter('Le Pisteur a attrapé Léo dans la crypte.', '🧑'); M.sauver();
+      M.noter(X.scene ? 'Tes amis ont coincé l\'homme en cape, au fond des souterrains.' : 'Le Pisteur a attrapé Léo dans la crypte.', '🧑');
+      if(X.scene) sceneLeo();
+      M.sauver();
       M.grandOuvrir('leo'); return true;
     }
   }catch(e){ console.error(e); }
@@ -193,8 +214,11 @@ M.codeSpecial = function(t, x, id){
 M.grandBoite = function(id, i, q, posee){
   var X = Gd(q.grand); if(!X) return null;
   var P = M.P(), st = (P.grands || {})[q.grand];
-  if(!posee || !st) return '<button class="b-question bd-boite bd-a-poser gd-q" data-act="question" data-p="' + id + '" data-i="' + i + '"><b>' + esc(q.q) + '</b></button>';
-  if(!st.fini) return '<button class="b-question bd-boite bd-a-poser gd-q" data-act="gd-ouvrir" data-g="' + q.grand + '"><b>' + esc(q.q) + '</b><small class="gd-reprendre">💬 Reprendre la conversation</small></button>';
+  /* (12 novembre au soir) elle ne ressemble pas aux autres questions : son étiquette « 🎭 Grande conversation », son cadre doré et son
+     petit reflet qui passe (gd-q, grands.css). Elle n'arrive que quand tout a été demandé (q.besoin : {toutDit}, barde.js). */
+  var tag = '<small class="gd-tag">🎭 Grande conversation</small>';
+  if(!posee || !st) return '<button class="b-question bd-boite bd-a-poser gd-q gd-neuve" data-act="question" data-p="' + id + '" data-i="' + i + '">' + tag + '<b>' + esc(q.q) + '</b></button>';
+  if(!st.fini) return '<button class="b-question bd-boite bd-a-poser gd-q gd-neuve" data-act="gd-ouvrir" data-g="' + q.grand + '">' + tag + '<b>' + esc(q.q) + '</b><small class="gd-reprendre">💬 Reprendre la conversation</small></button>';
   var res = (X.resume || {})[st.fini] || '';
   var h = '<details class="b-question repondue bd-boite gd-q" name="bdq-' + id + '"' + (st.fini === 'encore' ? ' open' : '') + '><summary><b>' + esc(q.q) + '</b></summary><div class="bd-boite-in"><div class="bd-cadre">' +
     '<p class="b-reponse">' + esc(st.r) + '</p>' + (res ? '<p class="gd-resume">' + esc(res) + '</p>' : '') + '<div class="bd-rep-outils">' + lire(st.r, id) + '</div></div>';
@@ -231,7 +255,7 @@ function feteHTML(lieu){
 }
 A['gd-fete'] = function(el){
   var id = el.dataset.id, f = F(), x = f && f.gens[id], P = M.P(), Rt = R(); if(!x || !barde() || !M.momentOk(f.moments)) return;
-  if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv'}); return; }
+  if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv gd-fenetre'}); return; }
   P.fete = P.fete || {vus:{}, n:0};
   if(!Rt || id !== Rt.pnj) P.fete.n++;
   var premiere = !P.fete.vus[id]; P.fete.vus[id] = 1;
@@ -277,7 +301,9 @@ function retenirDispo(){
 M.retenirDispo = function(){ try{ return retenirDispo(); }catch(e){ return false; } };
 function dialogueRet(k){ var d = R().dialogues[k]; return d && d.A ? (M.P().vus['grand:gm'] === 'ok' ? d.A : d.B) : d; }
 function retenirHTML(m){
-  var Rt = R(), st = retenirEtat(), h = '<div class="ma-feuille gd-feuille">' + tete(Rt.pnj);
+  var Rt = R(), st = retenirEtat(), nR = Rt.dialogues.length, pas = '';
+  for(var iR = 0; iR < nR; iR++) pas += '<i class="' + (iR < st.k ? (st.res[iR] ? 'fait' : 'rate') : iR === st.k && !st.fini ? 'ici' : '') + '"></i>';
+  var h = '<div class="ma-feuille gd-feuille"><div class="gd-bandeau"><b>🎭 Retenir le maire</b><span class="gd-pas" aria-hidden="true">' + pas + '</span></div>' + tete(Rt.pnj);
   if(m.r) return h + ligne(m.r, Rt.pnj) + '<button class="btn grand" data-act="gd-ret-ok">D\'accord</button></div>';
   var d = dialogueRet(st.k); if(!d) return h + '</div>';
   return h + ligne(cite(d.t), Rt.pnj) + choixHTML(d.choix, 'gd-ret') + '</div>';
@@ -305,9 +331,19 @@ A['gd-ret-ok'] = function(){
 /* sur la carte, le maire porte un « ! » quand il cherche le Barde */
 var bu0 = M.pnjBulleCarte;
 M.pnjBulleCarte = function(id){
-  try{ var Rt = R(); if(Rt && id === Rt.pnj && retenirDispo()) return '❗'; }catch(e){ console.error(e); }
+  try{ var Rt = R(); if(Rt && id === Rt.pnj && retenirDispo()) return '❗'; if(grandPret(id)) return '🎭'; }catch(e){ console.error(e); }
   return bu0 ? bu0.apply(this, arguments) : '';
 };
+/* (12 novembre au soir) un grand dialogue vient de s'ouvrir chez ce villageois (tout a été demandé) et il n'est pas fini : « 🎭 » sur son
+   visage, sur la carte — on sait où aller, sans qu'aucun texte ne le dise */
+function grandPret(id){
+  var E = EN(), N = E && E.pnj && E.pnj[id], P = M.P(); if(!N || !P || !barde() || !(N.ou && N.ou[M.momentId()])) return false;
+  return (N.questions || []).some(function(q){
+    if(!q.grand || !M.momentOk(q.moments) || (q.besoin && !M.besoinOk(q.besoin))) return false;
+    var st = (P.grands || {})[q.grand]; return !(st && st.fini && st.fini !== 'encore');
+  });
+}
+M.grandPret = function(id){ try{ return grandPret(id); }catch(e){ return false; } };
 
 /* ---------- La fenêtre ---------- */
 M.grandHTML = function(m){
@@ -328,10 +364,23 @@ function apresRendu(){
   try{ B().jouerLigne(box, bulle, bulle.getAttribute('data-p'), bulle.getAttribute('data-t') || '', bulle.getAttribute('data-ment') === '1'); }
   catch(e){ console.error(e); bulle.textContent = bulle.getAttribute('data-t') || ''; }
 }
+/* (12 novembre au soir) la question d'un grand dialogue arrive en bas de la liste, souvent sous le bord de la fenêtre : la première fois
+   qu'elle apparaît dans une conversation, la fenêtre glisse juste assez pour la montrer (la réponse qui s'écrit au-dessus reste visible) */
+function montrerNeuve(){
+  var m = UI.modal, conv = m && m.type === 'conv' ? m.id : '';
+  if(!conv){ UI.gdNeuve = ''; return; }
+  var el = document.querySelector('#voile .gd-q.gd-neuve');
+  if(!el){ if(UI.gdNeuve === conv) UI.gdNeuve = ''; return; }
+  if(UI.gdNeuve === conv) return;
+  UI.gdNeuve = conv;
+  var doux = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  try{ el.scrollIntoView({block:'nearest', behavior:doux ? 'smooth' : 'auto'}); }catch(e){ try{ el.scrollIntoView(false); }catch(e2){} }
+}
 var r0 = M.render;
 M.render = function(){
   var r = r0.apply(this, arguments);
   try{ apresRendu(); }catch(e){ console.error(e); }
+  try{ montrerNeuve(); }catch(e){ console.error(e); }
   return r;
 };
 })();

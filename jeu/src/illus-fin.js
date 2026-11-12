@@ -421,15 +421,15 @@ var SCENES = {
     s += '<em class="sf-bulle sf-b-voix" style="left:60%;bottom:44%">Moustache ? C\'est toi ?</em>';
     return scene('e3-porte', 'La grande porte ronde aux quatre signes : Moustache gratte au bas de la porte, et une voix lui répond de l\'autre côté.', s);
   },
-  /* 2. Minuit : la Grosse Marie sonne, des lanternes descendent l'escalier — le maire, Silas, deux gardes */
+  /* 2. Des lanternes descendent l'escalier — le maire, Silas, deux gardes. (12 novembre au soir ; Romain, 19 h 32 : « enlève cette histoire
+     de minuit, définitivement » : plus de « DONG… » ni de « Minuit sonne » ; la scène garde son nom de code, e3-minuit) */
   'e3-minuit':function(){
     var s = decor(crypte({escalier:true, lueur:true}));
     [['pisteur', 9], ['alchimiste', 20], ['barde', 31], ['sage', 42]].forEach(function(r, i){ s += perso(heros(r[0]), {x:r[1], h:36, cls:'sf-sursaut', st:'animation-delay:' + (i * .12).toFixed(2) + 's'}); });
-    s += '<em class="sf-dong" style="left:14%;top:8%">DONG…</em><em class="sf-dong" style="left:40%;top:16%;animation-delay:1.1s">DONG…</em><em class="sf-dong" style="left:24%;top:26%;animation-delay:2.2s">DONG…</em>';
     s += garde({x:94, cls:'sf-descend', st:'animation-delay:.5s'}) + garde({x:85, cls:'sf-descend', st:'animation-delay:.35s'});
     s += perso(pnj('silas'), {x:75, h:42, cls:'sf-descend', st:'animation-delay:.2s'});
     s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-descend', dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%')});
-    return scene('e3-minuit', 'Minuit sonne. Dans la crypte, le maire descend l\'escalier, une lanterne à la main, avec Silas et deux gardes.', s);
+    return scene('e3-minuit', 'Dans la crypte, le maire descend l\'escalier, une lanterne à la main, avec Silas et deux gardes.', s);
   },
   /* 3. Le maire et Léo : selon ce que Léo a dit au Barde (P.fin.variante : 2, il a tout dit ; 1, à moitié ; 0, il n'est pas là) */
   'e3-leo':function(){

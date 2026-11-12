@@ -79,7 +79,7 @@ module.exports = function verifierE3(E, SRC, D){
   /* la fête : le filet de celui qui craque (Mélusine), si le Barde n'a pas déjà son aveu */
   for(const id of Object.keys((E.fete || {}).gens || {})){
     const x = E.fete.gens[id];
-    if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[{donne:x.filet.sauf}], produit:[x.filet.code], filet:true});
+    if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[{donne:x.filet.sauf}], produit:[x.filet.code], faits:[`fete:filet:${id}`], filet:true});
   }
   if(E.retenir) aj({cle:'grand:retenir', role:'barde', moments:(E.fete || {}).moments || NUIT, besoins:[E.retenir.besoin].filter(Boolean), produit:liste(E.retenir.reussi.code), faits:['grand:retenir:fini'], ratable:true,
     rate:{produit:[], faits:['grand:retenir:fini']}});
@@ -131,6 +131,10 @@ module.exports = function verifierE3(E, SRC, D){
       if(c.analyse) return faits.has('alchimiste:analyse:' + c.analyse);
       if(c.page) return faits.has('page:' + c.page);
       if(c.et) return c.et.every(x => ok(x, role));
+      if(c.ou) return c.ou.some(x => ok(x, role));
+      /* (12 novembre au soir) « tout demandé à ces villageois » (barde.js, M.toutDit) : toujours possible — celui à qui on ne peut pas
+         parler à ce moment ne bloque pas, et poser une question ne se rate pas */
+      if(c.toutDit) return true;
       if(c.non) return !ok(c.non, role);
       return false;
     }
@@ -183,7 +187,22 @@ module.exports = function verifierE3(E, SRC, D){
   const parfait = jouer(ROLES), sp = solutions(parfait);
   dit(juste(sp), `Avec toute l'équipe, tout réussi : ${resume(sp)}`);
   const leo = parfait.codes.has('info:leo_attrape') && parfait.codes.has((E.grands.leo.fins.slice(-1)[0] || {}).code);
-  dit(leo, 'le chemin parfait va jusqu\'au bout : le maire retenu, Léo attrapé, « Léo a tout dit »');
+  dit(leo, 'le chemin parfait va jusqu\'au bout : le maire retenu, Léo attrapé, « Ce que Léo a dit »');
+  /* (12 novembre au soir ; Romain, 21 h 44) un grand dialogue ne s'ouvre qu'une fois tout demandé : sa question porte {toutDit} */
+  const sansTout = [];
+  for(const id of Object.keys(E.pnj || {})) (E.pnj[id].questions || []).forEach(q => { if(q.grand && !/"toutDit"/.test(JSON.stringify(q.besoin || []))) sansTout.push(q.grand); });
+  dit(!sansTout.length, sansTout.length ? 'des grands dialogues s\'ouvrent sans avoir tout demandé (pas de {toutDit}) : ' + sansTout.join(', ') : 'Les grands dialogues ne s\'ouvrent qu\'une fois tout demandé ({toutDit})');
+  /* le verrou des dialogues (Romain, 12 novembre, 21 h 44) : E3-dialogues-et-trame.md est écrit par tools/e3-dialogues.js à partir de e3.js ;
+     s'ils ne disent plus la même chose, un dialogue a changé sans que le fichier suive (ou le fichier a été retouché à la main) */
+  const verrou = require('./e3-dialogues.js');
+  const miroir = fs.existsSync(verrou.CIBLE) && fs.readFileSync(verrou.CIBLE, 'utf8') === verrou.texte(E, D);
+  dit(miroir, miroir ? 'Les dialogues sont verrouillés : E3-dialogues-et-trame.md est le miroir exact du jeu' : 'E3-dialogues-et-trame.md et le jeu ne disent plus la même chose : un dialogue a changé (go de Romain ? puis « node tools/e3-dialogues.js »)');
+  /* les trois questions communes, dans le même ordre chez tous (0 la lettre, 1 Odette, 2 la nuit), et aucun nom soufflé avant la nuit */
+  const communes = Object.keys(E.pnj || {}).filter(id => id !== 'voisin' && (E.pnj[id].questions || []).length).filter(id => { const Q = E.pnj[id].questions; return !(Q.length >= 4 && /lettre/.test(Q[0].q) && /Odette/.test(Q[1].q) && /nuit/.test(Q[2].q)); });
+  dit(!communes.length, communes.length ? 'des villageois n\'ont pas les trois questions communes en tête : ' + communes.join(', ') : 'Tous les villageois ont les trois questions communes, dans le même ordre, puis celle de leur métier');
+  const souffle = [];
+  for(const id of Object.keys(E.pnj || {})) (E.pnj[id].questions || []).forEach((q, i) => { if(/L[ée]o\b|minuit|lavande/i.test([q.q, q.a, q.vrai, q.note, q.noteVrai].filter(Boolean).join(' '))) souffle.push(`${id}[${i}]`); });
+  dit(!souffle.length, souffle.length ? 'des questions parlent encore de Léo, de minuit ou de lavande : ' + souffle.join(', ') : 'Aucune question du Barde ne parle de Léo, de minuit ni de lavande');
 
   /* ---------- 2. chaque rôle est indispensable ---------- */
   ROLES.forEach(role => {
@@ -205,14 +224,18 @@ module.exports = function verifierE3(E, SRC, D){
   dit(R.some(r => r.cle === 'alchimiste:cueillir:' + RECETTES.acide.plante && !r.besoins.length && !r.moments), 'l\'acide de la grille du puits : sa plante se cueille à tout moment, sans rien demander à personne');
 
   /* ---------- 4. les codes ---------- */
-  const ids = Object.keys(E.objets || {}).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).map(k => 'info:' + k));
+  /* (12 novembre au soir) un code « en réserve » (I.reserve : « La Grosse Marie », gardé pour le donjon, que plus personne ne donne tant que
+     Romain n'a pas décidé de la suite) n'est pas vérifié ici */
+  const ids = Object.keys(E.objets || {}).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).filter(k => !E.infos[k].reserve).map(k => 'info:' + k));
+  const enReserve = Object.keys(E.infos || {}).filter(k => E.infos[k].reserve);
+  if(enReserve.length) console.log(`  · en réserve (plus donné par personne pour l'instant) : ${enReserve.map(k => 'info:' + k).join(', ')}`);
   const donneurs = {}, lecteurs = {};
   R.forEach(r => r.produit.concat(r.rate.produit).forEach(c => (donneurs[c] = donneurs[c] || new Set()).add(r.role)));
   ['info:odette_porte', 'info:leo_attrape', 'info:leo_enfui'].forEach(c => (donneurs[c] = donneurs[c] || new Set()).add('pisteur'));   /* (le donjon : descente.js) */
   const F = E.grands.leo.fins; F.forEach(f => { if(f.code) (donneurs[f.code] = donneurs[f.code] || new Set()).add('barde'); });
   if(E.grands.lettre && E.grands.lettre.piege) (donneurs[E.grands.lettre.piege.code] = donneurs[E.grands.lettre.piege.code] || new Set()).add('barde');
   const mauvais = [];
-  function lire(c, role, ou){ if(!c) return; if(c.code){ (lecteurs[c.code] = lecteurs[c.code] || new Set()).add(role); const p = pour(c.code); if(p.length && !p.includes(role)) mauvais.push(`${ou} (${role}) attend « ${c.code} », qui est pour ${p.join(', ')}`); } if(c.et) c.et.forEach(x => lire(x, role, ou)); if(c.non) lire(c.non, role, ou); }
+  function lire(c, role, ou){ if(!c) return; if(c.code){ (lecteurs[c.code] = lecteurs[c.code] || new Set()).add(role); const p = pour(c.code); if(p.length && !p.includes(role)) mauvais.push(`${ou} (${role}) attend « ${c.code} », qui est pour ${p.join(', ')}`); } if(c.et) c.et.forEach(x => lire(x, role, ou)); if(c.ou) c.ou.forEach(x => lire(x, role, ou)); if(c.non) lire(c.non, role, ou); }
   R.forEach(r => { r.besoins.flat().forEach(c => lire(c, r.role, r.cle)); (r.sauf || []).forEach(c => lire(c, r.role, r.cle)); });
   for(const l of Object.keys(E.lieux)) for(const role of ['pisteur', 'sage', 'alchimiste']) ((E.lieux[l][role] || {}).points || []).forEach(p => { ((p.facileSi || {}).si || []).forEach(c => lire(c, role, `${role}:${l}:${p.id}`)); (p.variantes || []).forEach(v => (v.si || []).forEach(c => lire(c, role, `${role}:${l}:${p.id}`))); });
   (E.pages || []).forEach(p => (p.variantes || []).forEach(v => (v.si || []).forEach(c => lire(c, 'sage', 'sage:page:' + p.id))));

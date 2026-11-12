@@ -212,7 +212,7 @@ var OBJETS = {
   lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', scene:'papier', requis:['lettre', 'pollen_l', 'encre_l'],
     savoir:'Chacun forme ses lettres à sa façon : une écriture se reconnaît comme un visage.'},
   pollen_l:{de:'lettre', nom:'le grain jaune', tiroir:'grains', bon:'pollenlav', coul:'#e8c84a', savoir:'Du pollen de lavande, comme dans les sachets d\'Iris… Mais tout le village en a !'},
-  encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. C\'est l\'encre noire que vendent les colporteurs.'}
+  encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. On la fait avec de petites boules qui poussent sur les chênes.'}
 };
 /* Ce que l'Alchimiste a reçu, dans l'ordre d'arrivée : chacun à sa place numérotée sur le carré de cuir (quatre places) */
 var CUIRS = ['fil', 'poils', 'plume'];

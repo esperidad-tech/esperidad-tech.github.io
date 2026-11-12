@@ -6,9 +6,34 @@
 .gd-recit{font-size:1rem}
 .gd-ment-btns{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
 .gd-ment-btns .bd-ment-p{min-height:54px;padding:8px 16px;font-size:1.05rem}
-/* la question qui ouvre un grand dialogue : un petit liseré doré, pour la reconnaître */
-.bd-boite.gd-q{border-left:6px solid #e8b13a}
+/* ---------- (12 novembre au soir ; Romain, 21 h 44) Un grand dialogue ne s'affiche pas comme les autres ----------
+   Les questions ordinaires du Barde sont roses ; un grand dialogue est VIOLET (le rideau d'un théâtre) : pas jaune, le jaune est
+   réservé aux boutons « aller / lancer ». La question qui l'ouvre a son étiquette « 🎭 Grande conversation », son cadre violet, et
+   un reflet qui passe tant qu'elle n'est pas finie ; sa fenêtre a un cadre violet, un bandeau, et un rond par étape. */
+.bd-boite.gd-q{position:relative;overflow:hidden;border:2px solid var(--violet);border-left:6px solid var(--violet);background:linear-gradient(135deg, rgba(157,110,227,.30), rgba(157,110,227,.10))}
+.bd-a-poser.gd-q{padding-top:28px;scroll-margin:20px}
+.bd-a-poser.gd-q::before{color:#c9a9ff}
+.bd-a-poser.gd-q::after{content:'✨'}
+.gd-q .gd-tag{position:absolute;top:0;left:0;padding:3px 12px 3px 10px;border-radius:0 0 12px 0;background:var(--violet);color:#fff;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1.3}
+.bd-boite.gd-q.gd-neuve{box-shadow:0 0 0 3px rgba(157,110,227,.30), 0 0 20px rgba(157,110,227,.50);
+  background-image:linear-gradient(110deg, transparent 0 40%, rgba(255,255,255,.24) 50%, transparent 60% 100%), linear-gradient(135deg, rgba(157,110,227,.32), rgba(157,110,227,.12));
+  background-size:250% 100%, 100% 100%;background-repeat:no-repeat;animation:gd-reflet 3.4s ease-in-out infinite}
+@keyframes gd-reflet{0%{background-position:150% 0, 0 0}55%,100%{background-position:-50% 0, 0 0}}
 .gd-q .gd-reprendre{display:block;margin-top:4px;font-weight:700;opacity:.85}
+/* la fenêtre d'un grand dialogue (classe posée par M.grandOuvrir) */
+.b-feuille.gd-fenetre{border:2px solid var(--violet);border-top:6px solid var(--violet);background:radial-gradient(120% 55% at 50% 0, rgba(157,110,227,.34), transparent 72%), var(--nuit-2);
+  box-shadow:0 -10px 46px rgba(157,110,227,.40), 0 0 0 1px rgba(0,0,0,.35)}
+.gd-bandeau{align-self:center;margin:0 48px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:6px 16px;border-radius:999px;background:rgba(157,110,227,.24);border:2px solid var(--violet);color:#e9dcff;font-size:.82rem}
+.gd-bandeau b{letter-spacing:.08em;text-transform:uppercase}
+.gd-bandeau small{opacity:.85;font-size:.8rem}
+.gd-pas{display:inline-flex;gap:6px}
+.gd-pas i{width:13px;height:13px;border-radius:50%;border:2px solid #c9a9ff;background:transparent}
+.gd-pas i.ici{box-shadow:0 0 0 3px rgba(201,169,255,.45)}
+.gd-pas i.fait{background:var(--or);border-color:var(--or)}
+.gd-pas i.rate{background:transparent;border-color:var(--braise);border-style:dashed}
+.gd-fenetre .bd-facon{border-color:var(--violet);background:rgba(157,110,227,.12)}
+.gd-fenetre .ma-dit{border-color:rgba(201,169,255,.45)}
+@media (prefers-reduced-motion: reduce){ .bd-boite.gd-q.gd-neuve{animation:none;background-image:linear-gradient(135deg, rgba(157,110,227,.32), rgba(157,110,227,.12));background-size:auto} }
 .gd-resume{margin:6px 0 0;font-style:italic;opacity:.85}
 .gd-encore{margin-top:8px;width:100%}
 /* la fête : le maire qui cherche le Barde */

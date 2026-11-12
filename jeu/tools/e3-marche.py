@@ -55,7 +55,7 @@ with sync_playwright() as p:
     verifier(s['v']['iris']['fache'] and 'Du vol' in texte(pg) and s['papier'] == 0, 'Iris fâchée : elle ne vend rien (et le papier s\'est déchiré chez elle)')
     fermer(pg)
     ev(pg, 'lieu', {'id': 'herboristerie'})
-    verifier(pg.locator('#voile [data-act=ma-vendeur]').count() == 0 and 'Je parle à mes fleurs' in texte(pg), 'elle est occupée, plus de bouton')
+    verifier(pg.locator('#voile [data-act=ma-vendeur]').count() == 0 and pg.locator('#voile [data-act=parler][data-id=iris]').count() == 1, 'fâchée : plus de bouton pour les fleurs, mais elle répond encore aux questions du Barde (12 novembre au soir)')
     fermer(pg)
     ev(pg, 'lieu', {'id': 'place'}); ev(pg, 'ma-vendeur', {'id': 'basile'})
     verifier((modal(pg) or {}).get('vue') == 'choix', 'chez Basile, plus de papier à déchirer : tout de suite ses 4 réponses')

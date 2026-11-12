@@ -16,7 +16,9 @@ M.ecriture = function(txt, pt){
 M.momentOk = function(liste){ return !liste || liste.indexOf(M.momentId()) >= 0; };
 M.pnjIci = function(lieu){
   var E = M.E(), mid = M.momentId();
-  return M.cle(E.pnj || {}).filter(function(id){ return E.pnj[id].ou && E.pnj[id].ou[mid] === lieu; });
+  /* (enquête 3, 12 novembre au soir) Iris répond aux questions du Barde le matin : comme sur la carte, il ne la voit qu'une fois le
+     marchandage de Fortuné commencé (M.pnjCacheCarte, marche.js) */
+  return M.cle(E.pnj || {}).filter(function(id){ return E.pnj[id].ou && E.pnj[id].ou[mid] === lieu && !(M.pnjCacheCarte && M.pnjCacheCarte(id)); });
 };
 /* Là, mais occupé (Romain, 5 novembre, 8 h 59 : la carte montre toujours où est chacun) : E.pnj[id].carte[moment] = où il est
    quand on ne peut pas lui parler (Victor en tournée, Mélusine qui dort…) ; E.pnj[id].occupe[moment] = ce qu'on voit en arrivant. */

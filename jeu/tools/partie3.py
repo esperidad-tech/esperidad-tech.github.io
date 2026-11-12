@@ -169,6 +169,14 @@ def livrer(T, de, seulement=None):
         de.donnes.add(cid); faits.append(cid)
     return faits
 
+def tout_demander(B, ids):
+    """(12 novembre au soir) le Barde pose à ces villageois toutes les questions qu'il voit (pas les grands dialogues) : un grand dialogue
+    ne s'ouvre qu'une fois tout demandé ({toutDit}, barde.js)"""
+    B.js("""(ids) => { ids.forEach(function(id){ (M.E().pnj[id].questions || []).forEach(function(q, i){
+        if(q.grand || M.barde.cachee(id, q)) return;
+        M.A.question({dataset:{p:id, i:String(i)}, closest:function(){ return null; }}); M.UI.modal = null; }); }); M.sauver(); M.render(); }""", ids)
+    B.pg.wait_for_timeout(200)
+
 def moment(T, i, nom):
     """le Sage passe au moment suivant et donne son code aux trois autres"""
     S = T['sage']
@@ -187,9 +195,12 @@ def partie(nav, base):
     print('— LE MATIN')
     # le Barde : le marché aux fleurs (rendu : dix bouquets ; il a son propre robot), puis Victor et Tim
     B.js("() => { M.A['ma-debut'](); var s = M.P().marche; s.f.fini = true; s.f.ouvert = true; s.b = 10; s.or = 0; M.UI.modal = null; M.sauver(); M.render(); }")
-    B.ev('lieu', {'id': 'poste'}); B.ev('parler', {'id': 'victor'}); B.ev('question', {'p': 'victor', 'i': '1'}); B.fermer()
-    B.ev('lieu', {'id': 'clocher'}); B.ev('parler', {'id': 'tim'}); B.ev('question', {'p': 'tim', 'i': '0'}); B.ev('bd-ment', {'p': 'tim', 'i': '0'}); B.fermer()
-    verifier(set(livrer(T, B)) == {'info:poste', 'info:capuchon'}, 'le Barde a donné au Sage : la poste, le capuchon')
+    B.ev('lieu', {'id': 'poste'}); B.ev('parler', {'id': 'victor'}); B.ev('question', {'p': 'victor', 'i': '0'}); B.fermer()
+    B.ev('lieu', {'id': 'clocher'}); B.ev('parler', {'id': 'tim'}); B.ev('question', {'p': 'tim', 'i': '2'}); B.ev('bd-ment', {'p': 'tim', 'i': '2'}); B.fermer()
+    # (12 novembre au soir) il pose toutes ses questions aux sept villageois du matin : sa mission, et ce qui ouvrira le maire
+    tout_demander(B, ['levoisin', 'gaspard', 'victor', 'iris', 'margot', 'tim', 'fortune']); B.fermer()
+    verifier(B.js("() => { M.render(); return !!M.P().mission.faits[1]; }"), 'le Barde a tout demandé aux sept villageois du matin : sa mission se coche')
+    verifier(set(livrer(T, B)) == {'info:poste', 'info:chale'}, 'le Barde a donné au Sage : la poste, « Odette… sans sa canne »')
     # le Sage : le tableau, le Livre d'or, l'herbier, les premiers doutes
     verifier(S.jouer('mairie', 'tableau') == 'runes', 'le Sage peint le tableau d\'Odette (Assembler les runes)'); S.fermer()
     S.point('mairie', 'livredor'); S.fermer()
@@ -197,7 +208,7 @@ def partie(nav, base):
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
     verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     t = S.ouvrir_page('doutes'); S.fermer()
-    verifier('capuchon' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
+    verifier('sans sa canne' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
     verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')
     # le Pisteur : les banderoles et l'oie
     verifier(P.jouer('place', 'banderoles') == 'tir', 'le Pisteur accroche les banderoles (tir à l\'arc)'); P.fermer()
@@ -243,9 +254,14 @@ def partie(nav, base):
     # le Barde : le maire (les bouquets, la lettre), la maison d'Odette (le carnet, les traces)
     B.carte(); B.ev('parler', {'id': 'grosbec'}); B.ev('ma-rendu')
     i = B.js("() => M.E().pnj.grosbec.questions.map(function(q){ return q.grand || ''; }).indexOf('lettre')")
+    verifier(B.pg.locator('#voile .gd-q').count() == 0, 'le Barde : le grand dialogue de la lettre ne se voit pas tant qu\'il reste une question pour le maire')
+    tout_demander(B, ['grosbec']); B.ev('parler', {'id': 'grosbec'})
+    verifier(B.pg.locator('#voile .gd-q.gd-neuve').count() == 1 and B.js("() => M.pnjBulleCarte('grosbec')") == '🎭', 'tout demandé : le grand dialogue arrive (« 🎭 » sur le maire)')
     B.ev('question', {'p': 'grosbec', 'i': str(i)}); B.pg.wait_for_timeout(500)
-    for k in (0, 2, 0): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
+    for k in (1, 2, 3): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
     verifier(B.js("() => !!M.P().objets.lettre"), 'le Barde : le maire lui prête la lettre d\'Odette'); B.fermer()
+    tout_demander(B, ['melusine', 'anselme', 'silas', 'basile', 'farinel']); B.fermer()
+    verifier(B.js("() => { M.render(); return !!M.P().mission.faits[3]; }"), 'le Barde a tout demandé aux villageois de l\'après-midi : sa mission se coche')
     B.carte(); B.ev('frapper', {'id': 'L2'}); B.ev('question', {'p': 'voisin', 'i': '0'}); B.fermer()
     verifier(set(livrer(T, B)) == {'obj:lettre', 'obj:carnet', 'info:traces_moustache'}, 'le Barde a donné : la lettre (Sage, Alchimiste), le carnet (Sage), les traces de Moustache (Pisteur)')
     # le Sage : la lettre est fausse, les sept chats, le plan des Fondateurs
@@ -274,7 +290,7 @@ def partie(nav, base):
     B.ev('question', {'p': 'melusine', 'i': str(iq)}); B.ev('bd-ment', {'p': 'melusine', 'i': str(iq)}); B.fermer()
     verifier(livrer(T, B) == ['info:aveu'], 'le Barde a donné au Sage : l\'aveu de Mélusine')
     S.ouvrir_page('qui'); S.fermer()
-    verifier('sous la dictée' in S.page('qui'), 'le Sage : « Qui a écrit la lettre ? » — Mélusine, sous la dictée d\'un homme en cape')
+    verifier('Un homme en cape l\'y a forcée' in S.page('qui') and 'Léo' not in S.page('qui'), 'le Sage : « Qui a écrit la lettre ? » — Mélusine, forcée par un homme en cape (aucun nom)')
     # chacun rend sa mission au maire
     S.point('mairie', 'rendu'); S.fermer()
     P.point('mairie', 'mission'); P.fermer()
@@ -285,10 +301,15 @@ def partie(nav, base):
     print('— LA NUIT')
     # le Barde : la clé d'Anselme
     idx = B.js("() => M.E().pnj.anselme.questions.map(function(q){ return q.grand || ''; })")
-    B.carte(); B.ev('parler', {'id': 'anselme'}); B.ev('question', {'p': 'anselme', 'i': str(idx.index('cle'))}); B.pg.wait_for_timeout(400)
-    for k in (2, 2, 2): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
+    verifier('gm' not in idx, 'plus de grand dialogue de la Grosse Marie')
+    B.carte(); B.ev('parler', {'id': 'anselme'})
+    verifier(B.pg.locator('#voile .gd-q').count() == 0, 'le Barde, chez Anselme : il reste une question (« Qu\'y a-t-il sous le clocher ? »), son grand dialogue attend')
+    tout_demander(B, ['anselme']); B.ev('parler', {'id': 'anselme'})
+    verifier(B.pg.locator('#voile .gd-q.gd-neuve').count() == 1, 'l\'aveu de Mélusine, la crypte fermée, tout demandé : le grand dialogue d\'Anselme arrive')
+    B.ev('question', {'p': 'anselme', 'i': str(idx.index('cle'))}); B.pg.wait_for_timeout(400)
+    for k in (2, 0, 3): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
     B.fermer()
-    verifier(livrer(T, B) == ['info:cle_clou'], 'le Barde a donné au Pisteur : la clé est au clou')
+    verifier(livrer(T, B) == ['info:cle_clou'], 'le Barde a donné au Pisteur : « La Grosse Marie sonne » (la clé d\'Anselme pend à sa ceinture)')
     # l'Alchimiste : le sac
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); fra = ET.ouvrir(A.pg); ET.sac(A.pg)
@@ -317,24 +338,19 @@ def partie(nav, base):
     P.pg.wait_for_function("() => DJ.Explo.etat().ecran === 'scene' && !DJ.Explo.etat().occupe", timeout=40000); P.pg.wait_for_timeout(500)
     P.pg.eval_on_selector('#b-repartir', 'e => e.click()')
     P.pg.wait_for_function("() => DJ.Explo.etat().ecran === 'carte' && !DJ.Explo.etat().occupe", timeout=40000); P.pg.wait_for_timeout(500)
-    # le Barde, pendant ce temps : la Grosse Marie, puis retenir le maire ; ses deux codes sont tapés DANS le donjon
-    B.carte(); B.ev('parler', {'id': 'anselme'}); B.ev('question', {'p': 'anselme', 'i': str(idx.index('gm'))}); B.pg.wait_for_timeout(400)
-    for k in (1, 1, 2): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
-    B.fermer()
+    # le Barde, pendant ce temps : retenir le maire, à la fête ; son code est tapé DANS le donjon
+    # (12 novembre au soir : plus de grand dialogue de la Grosse Marie ; son code, gardé en réserve, n'est plus donné par personne)
     B.carte(); B.ev('lieu', {'id': 'place'}); B.ev('gd-fete', {'id': 'grosbec'}); B.pg.locator('#voile [data-act=gd-ret][data-k="1"]').click(); B.pg.wait_for_timeout(250); B.ev('gd-ret-ok')
     B.ev('gd-fete', {'id': 'silas'}); B.fermer()
     B.ev('gd-fete', {'id': 'grosbec'}); B.pg.locator('#voile [data-act=gd-ret][data-k="0"]').click(); B.pg.wait_for_timeout(250); B.ev('gd-ret-ok'); B.fermer()
-    verifier(set(B.a_donner()) >= {'info:grosse_marie', 'info:maire_retenu'}, 'le Barde a ses deux codes pour le donjon : la Grosse Marie, le maire est retenu')
+    verifier('info:maire_retenu' in B.a_donner() and 'info:grosse_marie' not in B.a_donner(), 'le Barde a son code pour le donjon : le maire est retenu (plus celui de la Grosse Marie)')
     def pave(seq):
         P.pg.eval_on_selector('[data-act=pave]', 'e => e.click()'); P.pg.wait_for_selector('#fenetre .pave-cases', timeout=8000)
         for s in seq: P.pg.eval_on_selector(f'#fenetre [data-act=symbole][data-id="{s}"]', 'e => e.click()'); P.pg.wait_for_timeout(300)
         P.pg.wait_for_timeout(1000); t = P.pg.inner_text('#fenetre'); P.pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); P.pg.wait_for_timeout(400); return t
-    P.pg.evaluate("() => { DJ.Explo._X().partie.heros.sage.pv = 1; }")
-    t = pave(B.js("() => M.code('info:grosse_marie')"))
-    verifier('Grosse Marie' in t and P.pg.evaluate("() => { var H = DJ.Explo._X().partie.heros.sage; return H.pv === H.pvMax; }"), 'le Barde → le Pisteur, DANS le donjon : la Grosse Marie (toute la vie revient)'); passes.append(('barde', 'info:grosse_marie', 'pisteur'))
     t = pave(B.js("() => M.code('info:maire_retenu')"))
     verifier('Le maire est retenu' in t and P.pg.evaluate("() => !!DJ.Explo._X().partie.codes['maire:retenu']"), 'le Barde → le Pisteur, DANS le donjon : le maire est retenu'); passes.append(('barde', 'info:maire_retenu', 'pisteur'))
-    B.donnes |= {'info:grosse_marie', 'info:maire_retenu'}
+    B.donnes |= {'info:maire_retenu'}
     # la fin du donjon (le chemin est sauté : la porte aux quatre signes, puis Léo), et on remonte
     P.pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.entrer(p, 'porte4'); Regles.entrer(p, 'leo'); DJ.garder(p); }")
     P.pg.eval_on_selector('[data-act=enquete]', 'e => e.click()'); P.pg.wait_for_url('**/brumeval/index.html**'); P.pg.wait_for_timeout(1400); P.preparer()
@@ -345,12 +361,9 @@ def partie(nav, base):
     verifier(livrer(T, P, {'info:odette_porte'}) == ['info:odette_porte'], 'le Pisteur a donné au Sage : Odette est derrière la porte')
     seq = P.js("() => M.code('info:leo_attrape')")
     B.taper(seq, garder=True)
-    verifier(B.pg.locator('#voile [data-act=gd-leo-ment]').count() == 1, 'le Pisteur → le Barde : « Léo attrapé » — son grand dialogue s\'ouvre'); passes.append(('pisteur', 'info:leo_attrape', 'barde')); P.donnes.add('info:leo_attrape')
-    B.pg.locator('#voile [data-act=gd-leo-ment]').click(); B.pg.wait_for_timeout(250); B.pg.locator('#voile [data-act=gd-leo-suite]').click(); B.pg.wait_for_timeout(250)
-    for k in (2, 2, 1): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(300)
-    verifier('bague à tête de corbeau' in B.texte() and B.pg.locator('#voile [data-act=gd-leo-code]').count() == 1, 'le Barde : Léo dit tout (la porte, la trappe, la bague à tête de corbeau)')
+    verifier('apprenti du meunier' in B.texte() and B.pg.locator('#voile [data-act=gd-leo-code]').count() == 1 and B.pg.locator('#voile [data-act=gd-choix]').count() == 0, 'le Pisteur → le Barde : « Léo attrapé » — la scène de Léo (sans choix) : l\'homme en cape, c\'était lui'); passes.append(('pisteur', 'info:leo_attrape', 'barde')); P.donnes.add('info:leo_attrape')
     B.pg.locator('#voile [data-act=gd-leo-code]').click(); B.pg.wait_for_timeout(300); B.shot('leo-code'); B.fermer()
-    verifier(livrer(T, B) == ['info:leo_dit3'], 'le Barde a donné au Sage : Léo a tout dit')
+    verifier(livrer(T, B) == ['info:leo_dit3'], 'le Barde a donné au Sage : ce que Léo a dit')
     # le Sage : la porte des Fondateurs, puis l'accusation
     S.js("() => { M.UI.ecran = 'enquete'; M.P().onglet = 'carte'; M.UI.modal = null; M.render(); M.P().onglet = 'role'; M.render(); }"); S.pg.wait_for_timeout(400)
     verifier(S.pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=porte]').count() == 1, 'le Grand Livre du Sage s\'ouvre tout seul sur « La porte des Fondateurs »')

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dialogues du Barde — Enquête 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Plan : carnet d'enquête — un onglet par moment de la journée, une fiche repliable par villageois, la couleur dit le moment, les pastilles disent ce que vaut la réponse. */
+:root{
+  --fond:#f3efe6; --papier:#fffdf8; --encre:#26221c; --doux:#6d6558; --trait:#dcd3c2;
+  --matin:#c9821b; --aprem:#1f8a7a; --nuit:#4b4fa8; --donjon:#a3333d; --veille:#b85c12;
+  --indice:#f6e3a8; --indice-t:#6b4e00; --ruban:#f8d9e6; --ruban-t:#8a2350; --carac:#ebe7df; --carac-t:#5a5348;
+  --histoire:#dbe8f6; --histoire-t:#1f4e7a; --ment:#fbe0dc; --ment-t:#9a2a1c; --vrai:#e3f2df; --vrai-t:#2d6a24;
+  --code:#e6e1fb; --code-t:#433391;
+  --display:"Fraunces",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --fond:#1b1916; --papier:#25221d; --encre:#efe9dd; --doux:#a99f8f; --trait:#3d382f;
+  --indice:#4a3c12; --indice-t:#f3d886; --ruban:#4a2233; --ruban-t:#f5b8d0; --carac:#34302a; --carac-t:#cfc6b6;
+  --histoire:#1f3349; --histoire-t:#a9cbf0; --ment:#4a2620; --ment-t:#f4b3a6; --vrai:#21381d; --vrai-t:#b5e0aa;
+  --code:#2e2850; --code-t:#c9c0fb; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --fond:#1b1916; --papier:#25221d; --encre:#efe9dd; --doux:#a99f8f; --trait:#3d382f;
+  --indice:#4a3c12; --indice-t:#f3d886; --ruban:#4a2233; --ruban-t:#f5b8d0; --carac:#34302a; --carac-t:#cfc6b6;
+  --histoire:#1f3349; --histoire-t:#a9cbf0; --ment:#4a2620; --ment-t:#f4b3a6; --vrai:#21381d; --vrai-t:#b5e0aa;
+  --code:#2e2850; --code-t:#c9c0fb; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--body);font-size:16px;line-height:1.5}
+.page{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+h1{font-family:var(--display);font-size:1.9rem;margin:0 0 4px;text-wrap:balance}
+.sous{color:var(--doux);margin:0 0 18px}
+nav{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;background:var(--fond);padding:10px 0;z-index:5;border-bottom:1px solid var(--trait)}
+nav button{font:inherit;font-weight:700;border:2px solid var(--c);color:var(--c);background:var(--papier);border-radius:999px;padding:7px 14px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--c);color:#fff}
+nav button:focus-visible,summary:focus-visible,.outils button:focus-visible{outline:3px solid var(--c,#888);outline-offset:2px}
+section{display:none;padding-top:16px} section.actif{display:block}
+h2{font-family:var(--display);font-size:1.4rem;margin:18px 0 6px;color:var(--c)}
+h3{font-size:1.05rem;margin:20px 0 8px;color:var(--c);text-transform:uppercase;letter-spacing:.04em}
+.intro{background:var(--papier);border-left:5px solid var(--c);border-radius:8px;padding:12px 14px;margin:10px 0}
+.outils{display:flex;gap:8px;margin:8px 0}
+.outils button{font:inherit;font-size:.9rem;background:var(--papier);border:1px solid var(--trait);color:var(--encre);border-radius:8px;padding:5px 10px;cursor:pointer}
+details.v{background:var(--papier);border:1px solid var(--trait);border-left:6px solid var(--c);border-radius:10px;margin:10px 0;padding:0 14px}
+details.v>summary{cursor:pointer;padding:12px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;list-style:none}
+details.v>summary::-webkit-details-marker{display:none}
+details.v>summary::before{content:"▸";color:var(--c);font-size:1.1rem;transition:transform .15s}
+details.v[open]>summary::before{transform:rotate(90deg)}
+.ico{font-size:1.5rem}
+.nom{font-weight:700;font-size:1.08rem}
+.metier{color:var(--doux);font-size:.92rem}
+.pastille{font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.p-vrai{background:var(--vrai);color:var(--vrai-t)} .p-ment{background:var(--ment);color:var(--ment-t)}
+.qa{border-top:1px dashed var(--trait);padding:10px 0}
+.q{font-weight:700;display:flex;gap:8px}
+.r{margin:4px 0 0 30px}
+.r .dit{font-style:italic}
+.mens{margin:4px 0 0 30px;background:var(--ment);color:var(--ment-t);border-radius:8px;padding:6px 10px}
+.verite{margin:6px 0 0 30px;background:var(--vrai);color:var(--vrai-t);border-radius:8px;padding:6px 10px}
+.tags{margin:6px 0 0 30px;display:flex;flex-wrap:wrap;gap:6px}
+.t{font-size:.8rem;border-radius:6px;padding:2px 8px;font-weight:700}
+.t-indice{background:var(--indice);color:var(--indice-t)} .t-ruban{background:var(--ruban);color:var(--ruban-t)}
+.t-carac{background:var(--carac);color:var(--carac-t)} .t-histoire{background:var(--histoire);color:var(--histoire-t)}
+.t-code{background:var(--code);color:var(--code-t)} .t-neuf{background:var(--trait);color:var(--encre)}
+.occupes{display:grid;gap:8px}
+.occ{background:var(--papier);border:1px solid var(--trait);border-radius:8px;padding:8px 12px}
+.occ b{display:inline-block;min-width:120px}
+.etape{background:var(--papier);border:1px solid var(--trait);border-radius:10px;padding:10px 14px;margin:10px 0}
+.etape h4{margin:0 0 6px;font-size:1rem}
+.choix{list-style:none;padding:0;margin:6px 0}
+.choix li{padding:6px 10px;border-radius:8px;margin:4px 0;background:var(--carac)}
+.choix li.bon{background:var(--vrai);color:var(--vrai-t);font-weight:700}
+.choix li .rep{display:block;font-weight:400;font-style:italic;margin-top:2px}
+.legende{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+table{border-collapse:collapse;width:100%;background:var(--papier);font-size:.95rem}
+.tbl{overflow-x:auto} th,td{border:1px solid var(--trait);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--carac)}
+ul.alerte li{margin:8px 0}
+.nb{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>

@@ -265,6 +265,20 @@ B.rienADire = function(id){
   if(talent('hydromel') && (P.potions.hydromel || 0) > 0 && !(P.usages && P.usages.hydromel)) return false;
   return true;
 };
+/* (enquête 3, 12 novembre au soir) {toutDit:[pnj…]} — « tout demandé à tout le monde » : la condition d'un grand dialogue (Romain, 21 h 44 :
+   « il faut vraiment que les grands dialogues soient activés uniquement après qu'on ait lu tous les dialogues »). Pour chaque villageois de
+   la liste : toutes ses questions visibles à ce moment sont posées (pas les grands dialogues ; pas celles qui attendent encore un code).
+   Celui à qui on ne peut pas parler à ce moment (ailleurs, occupé, fâché) ne bloque pas : sinon, un oubli du matin fermerait le grand
+   dialogue pour toute l'enquête. Lue par M.uneCondition (moteur-base.js). */
+M.toutDit = function(ids){
+  var E = M.E(), P = M.P(); if(!E || !P) return false;
+  var mid = M.momentId();
+  return (ids || []).every(function(id){
+    var N = (E.pnj || {})[id]; if(!N) return true;
+    if(!(N.ou && N.ou[mid]) || occupe(id) || estVexe(id)) return true;
+    return questions(id).every(function(q, i){ return !!q.grand || repondu(id, i) || cachee(id, q); });
+  });
+};
 /* la pastille rouge de la carte (fâché, « Encore toi », plus rien à dire) ; '' : on peut lui parler */
 B.pastilleRouge = function(id){
   var t = B.fache(id) ? 'reviens plus tard' : B.rienADire(id) ? 'rien de plus à dire' : '';
@@ -410,7 +424,12 @@ M.feuilleConv = function(id){
   if(M.convPlus){ try{ s += M.convPlus(id) || ''; }catch(e){ console.error(e); } }   /* (enquête 3, marche.js : acheter encore des fleurs, se plaindre chez Fortuné) */
   s += tableauHTML;
   /* sans points d'action : un villageois ne donne qu'une chose par moment ; tout demandé, on le dit gentiment */
-  if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i) || cachee(id, q); })) s += M.rienDePlus();
+  if(M.sansActions() && M.rienDePlus && Q.length && Q.every(function(q, i){ return repondu(id, i) || cachee(id, q); })){
+    /* (enquête 3, 12 novembre au soir : plus de limite à deux questions) tout demandé : il le fait comprendre avec humour, de sa phrase à lui
+       (E.impatience) ; sinon, comme avant, « Rien de plus ici pour ce moment » */
+    var tI = !parVisite() && E.impatience && E.impatience[id];
+    s += tI ? '<p class="bd-impatient">⏳ « ' + esc(tI) + ' » ' + lire(tI, id) + '</p>' : M.rienDePlus();
+  }
   /* en bas : ce qui sert à la fin d'un interrogatoire */
   var bas = '';
   var parle = Q.some(function(q, i){ return repondu(id, i); });
@@ -1062,10 +1081,13 @@ function voixOcc(id, t){ var N = ((M.E() || {}).pnj || {})[id] || {}, o = N.occu
 function carteGens(id){
   var P = M.P(), x = D.PNJ[id], ouvert = P.conv[id] === P.moment, vexe = estVexe(id);
   /* fâché, ou « Encore toi ? » (Romain, 5 novembre, 12 h 31) : son visage et « Reviens plus tard », cerclés de rouge (son rond aussi, sur la carte) */
-  var rouge = B.pastilleRouge(id); if(rouge) return rouge;
+  /* (enquête 3, 12 novembre au soir) un villageois à qui on parle ET qui vend des fleurs (Iris, le matin : marche.js) : le bouton
+     « 🌸 » est aussi sur sa pastille, même quand il n'a plus rien à dire */
+  var fleurs = M.occupeBouton ? M.occupeBouton(id) : '';
+  var rouge = B.pastilleRouge(id); if(rouge) return fleurs ? rouge.replace(/<\/div>$/, fleurs + '</div>') : rouge;
   return '<div class="b-gens-carte' + (vexe ? ' bd-vexe' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(x.court) + '</b><small>' + esc(x.metier) + '</small>' +
     (vexe ? '<small class="bd-boude-mini">' + ((M.E() || {}).vexeNeutre ? '🤔 plus tard' : '😤 vexé' + (FEM[id] ? 'e' : '')) + '</small>' : '') +
-    '<button class="btn petit' + (ouvert ? ' second' : '') + '" data-act="parler" data-id="' + id + '"' + (ouvert || M.peutAgir() ? '' : ' disabled') + '>' + (ouvert ? '💬 Continuer' : '💬 Parler' + M.coutTxt()) + '</button></div>';
+    '<button class="btn petit' + (ouvert ? ' second' : '') + '" data-act="parler" data-id="' + id + '"' + (ouvert || M.peutAgir() ? '' : ' disabled') + '>' + (ouvert ? '💬 Continuer' : '💬 Parler' + M.coutTxt()) + '</button>' + fleurs + '</div>';
 }
 M.lieuBarde = function(lieu){
   var E = M.E(), P = M.P(), s = '', gens = M.pnjIci(lieu);
