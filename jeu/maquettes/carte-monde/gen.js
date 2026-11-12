@@ -52,20 +52,21 @@ corps = corps.replace(new RegExp('<ellipse cx="[\\d.-]+" cy="[\\d.-]+" rx="[\\d.
 
 /* ---------- 3. Le dessin ---------- */
 var arbres = T.planter(emprises, vieux);
-/* Ce qui dépasse du sol (arbres, lieux, petites choses) est rangé par zone de brume : tant qu'une zone est sous la brume, son contenu n'est pas dessiné
-   du tout (il ne se voit pas, et la tablette n'a pas à le peindre). La frange — les arbres tout près du village — reste toujours dessinée :
-   on les devine au bord de la brume. */
-function zoneDe(x, y){
-  var V = B.VILLAGE, m = 70, id = 'frange';
-  if(x > V[0] - m && x < V[2] + m && y > V[1] - m && y < V[3] + m) return id;
+/* Ce qui dépasse du sol (arbres, lieux, petites choses) est rangé par zone de brume : tant qu'une zone est sous la brume, ce qui est loin du village
+   (là où la brume est pleine) n'est pas dessiné du tout — il ne se voit pas, et la tablette n'a pas à le peindre. Ce qui est près du village
+   (la frange, là où la brume est encore légère) reste toujours dessiné : on le devine à travers la brume. Les étiquettes, elles, ne se montrent
+   jamais avant que la zone soit levée. */
+function zoneDe(x, y, marge){
+  var id = 'frange';
+  if(B.distVillage(x, y) < B.D_BRUME + marge) return id;
   B.ZONES.forEach(function(z){ if(x >= z.r[0] && x < z.r[2] && y >= z.r[1] && y < z.r[3]) id = z.id; });
   return id;
 }
 var dessus = {frange: []};
 B.ZONES.forEach(function(z){ dessus[z.id] = []; });
-arbres.forEach(function(a){ dessus[zoneDe(a.x, a.y)].push({y: a.y, svg: T.arbre(p, pv, a)}); });
-monde.lieux.forEach(function(l){ dessus[l.zone].push({y: l.y, svg: '<g data-lieu="' + l.id + '">' + l.dessin() + '</g>'}); });
-monde.curieux.forEach(function(c){ dessus[c.zone].push({y: c.y, svg: c.svg}); });
+arbres.forEach(function(a){ dessus[zoneDe(a.x, a.y, 60)].push({y: a.y, svg: T.arbre(p, pv, a)}); });
+monde.lieux.forEach(function(l){ dessus[zoneDe(l.x, l.y, 140) === 'frange' ? 'frange' : l.zone].push({y: l.y, svg: '<g data-lieu="' + l.id + '">' + l.dessin() + '</g>'}); });
+monde.curieux.forEach(function(c){ dessus.frange.push({y: c.y, svg: c.svg}); });   /* de toutes petites choses : toujours dessinées */
 function couche(id){ return dessus[id].sort(function(a, b){ return a.y - b.y; }).map(function(d){ return d.svg; }).join(''); }
 
 /* les étiquettes, rangées par zone : elles n'apparaissent que quand la brume de leur zone est levée */
