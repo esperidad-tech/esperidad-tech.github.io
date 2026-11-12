@@ -44,3 +44,5 @@ jeu/test/etabli/
 
 # les captures du robot de la cueillette, tools/e3-cueillette.py (refaites à chaque fois)
 jeu/test/e3-cueillette/
+# les captures du robot des banderoles de la fête (le tir à l'arc vu de face), tools/visee.py (refaites à chaque fois)
+jeu/test/visee-*.png

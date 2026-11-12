@@ -53,6 +53,7 @@ var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
   gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
+  visee:'🟡',    /* les banderoles de la fête, le nouveau tir vu par les yeux du Pisteur (12 novembre) : tout neuf, à essayer par Romain */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
 };

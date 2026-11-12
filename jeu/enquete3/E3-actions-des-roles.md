@@ -17,7 +17,7 @@ Règles pour tous les rôles : chaque texte de plus de 3 mots a son 🔊 ; les a
 L'action : les deux jeux de la fête le matin, les traces de Moustache l'après-midi, la clé (ou le puits) et tout le donjon la nuit, sur sa tablette.
 
 ### Le matin
-- **Les banderoles** — la place. Tir à l'arc, décor banderoles (déjà fait : `params:{decor:'banderoles'}`, §12.44) → code « Mission de fête (1 sur 2) », rendue au maire l'après-midi. Basile : « Ça, c'est de la décoration ! »
+- **Les banderoles** — la place. Tir à l'arc, décor banderoles (déjà fait : `params:{decor:'banderoles'}`, §12.44) → code « Mission de fête (1 sur 2) », rendue au maire l'après-midi. Basile : « Ça, c'est de la décoration ! » — **Romain, 12 novembre : trop facile, même au niveau 10. Un nouveau mini-jeu est construit pour le remplacer** (type `visee`, le tir vu par les yeux du Pisteur, cinq anneaux, le vent ; Bible §13.24) : il se montre d'abord dans la salle des mini-jeux, et ne remplacera celui-ci dans l'enquête qu'avec le go de Romain et le niveau qu'il choisira.
 - **L'oie de Gaspard** — la boulangerie, puis les rues. Course-poursuite, une oie vue de dos, en ville ; niveau 4 au plus, comme Tim (`mjNiveauMax:4`) — **niveau 9 pour tout le monde depuis le 12 novembre** (Romain ; `mjNiveauFixe:9`, Bible §13.21) → code « Mission de fête (2 sur 2) ». Gaspard : « Sans elle, pas de festin ! »
 - (Le coup d'œil au clocher est abandonné, §13.14.)
 

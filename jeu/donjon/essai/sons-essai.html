@@ -1012,6 +1012,53 @@ function sonsEtabli(audio, sortie){
 }
 
 return sonsEtabli(audio, function(){ return SORTIE; });
+},
+visee:function(audio, SORTIE){
+function sonsVisee(audio, sortie){
+  function tendre(fq, t0, duree, vol, glisse, att, type, filtre){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(fq, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+    g.connect(sortie(a)); o.start(t); o.stop(t + duree + 0.03);
+  }
+  /* un souffle : du bruit filtré dont la hauteur glisse de f0 à f1 */
+  function souffle(t0, duree, vol, f0, f1, q, type, att){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, n = Math.floor(a.sampleRate * duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+    fl.type = type || 'bandpass'; fl.Q.value = q || 0.8; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  /* une note qui tremble (la flèche qui vibre dans le bois, la corde qui frémit) */
+  function tremble(fq, t0, duree, vol, vite, type){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain();
+    o.type = type || 'triangle'; o.frequency.setValueAtTime(fq, t); o.frequency.exponentialRampToValueAtTime(fq * .8, t + duree);
+    l.frequency.value = vite; lg.gain.value = vol * .8; l.connect(lg); lg.connect(g.gain);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    o.connect(g); g.connect(sortie(a)); o.start(t); l.start(t); o.stop(t + duree + .03); l.stop(t + duree + .03);
+  }
+  return {
+    choisir:function(){ souffle(0, .22, .03, 500, 1700, .7); tendre(660, .02, .09, .03, 880, .006); },                                                                       /* on regarde un anneau de plus près */
+    bander:function(){ souffle(0, .34, .034, 240, 520, 1.6); tendre(92, 0, .32, .05, 128, .05, 'sawtooth', 420); tendre(310, .12, .05, .02, 360, .004, 'triangle', 900); tendre(350, .24, .05, .018, 410, .004, 'triangle', 900); },   /* le bois de l'arc craque, la corde se tend */
+    tic:function(){ tendre(1500, 0, .035, .03, null, .002, 'triangle', 4000); },                                                                                               /* le minuteur presse */
+    lacher:function(){ tendre(196, 0, .16, .09, 122, .003, 'triangle', 1400); tremble(147, .01, .3, .03, 46); souffle(0, .07, .05, 1800, 700, .7); },                           /* « twang ! » */
+    vol:function(){ souffle(0, .95, .06, 500, 2400, 1.1, 'bandpass', .5); souffle(.05, .9, .03, 3000, 5200, .8, 'bandpass', .6); },                                              /* la flèche file dans le vent */
+    bois:function(){ tendre(150, 0, .2, .2, 62, .003, 'sine'); tendre(330, 0, .06, .1, 190, .002, 'triangle', 1800); souffle(0, .06, .12, 1400, 400, .7, 'lowpass', .004); tremble(210, .05, .42, .045, 31); },   /* « tchac ! » : plantée dans le bois, elle vibre */
+    dedans:function(){ souffle(0, .2, .06, 2600, 900, .9); tendre(1047, .1, .3, .05, null, .006); tendre(1568, .2, .4, .045, null, .006); souffle(.16, .1, .03, 700, 1500, .6); souffle(.3, .1, .026, 800, 1700, .6); },   /* elle passe : un souffle, deux notes claires, la banderole claque */
+    acote:function(){ souffle(0, .5, .04, 2200, 500, .8); tendre(392, .3, .22, .04, 262, .01, 'triangle', 900); },                                                               /* elle file au loin… */
+    accroche:function(){ souffle(0, .16, .03, 900, 2000, .7); [784, 988, 1175].forEach(function(n, i){ tendre(n, .06 + i * .07, .16, .032, null, .006, 'triangle', 3000); }); },    /* la banderole se tend entre deux anneaux */
+    fete:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(n, i){ tendre(n, i * .09, .3, .055, null, .01, 'triangle', 3000); }); tendre(1047, .6, .9, .04, null, .02); tendre(1319, .6, .9, .03, null, .02); tendre(1568, .6, .9, .024, null, .02);
+      for(var i = 0; i < 6; i++){ var n = 700 + Math.random() * 900; tendre(n, .7 + i * .09, .06, .02, n * 1.5, .005); } },                                                      /* la place est décorée ! */
+    vide:function(){ tendre(330, 0, .16, .05, 262, .01, 'triangle', 1000); tendre(220, .16, .3, .05, 165, .01, 'triangle', 800); }                                               /* plus de flèches */
+  };
+}
+
+return sonsVisee(audio, function(){ return SORTIE; });
 }
 };
 /* Atelier des sons de Brumeval — le moteur.
@@ -4357,6 +4404,27 @@ var section = {id:'mj-etabli', titre:'Établi des plantes', sous:[
     ['bouillon', 'Gros bouillons', 1.8], ['alambic', 'L’alambic distille', 2.3]])},
   {id:'etabli-fioles', titre:'Fioles, grimoire, sac', sons:liste([['fiole', 'La fiole remplie', .6], ['bouchon', 'Le bouchon', .12], ['potion', 'Potion prête !', 1], ['toutes', 'Les sept potions !', 1.4],
     ['livre', 'Le grimoire s’ouvre', .3], ['page', 'Une page tourne', .25], ['sac', 'Le sac', .3]])}
+]};
+var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
+if(mj) mj.sous.push(section);
+})(window);
+
+/* Atelier des sons de Brumeval — les sons des banderoles de la fête, le tir à l'arc vu de face
+   (le mini-jeu du Pisteur, enquête 3 ; 12 novembre 2026).
+   Leur code vient tel quel du jeu (jeu/src/mj-visee.js, la fabrique sonsVisee, recopiée par construire-sons.py
+   dans EXTRAITS.visee) : ce qu'on entend ici est ce qu'on entend dans le mini-jeu.
+   Ils sont NEUFS : Romain ne les a pas encore écoutés. Ils sont donc marqués 🆕 (neuf:1), pas ✅ ;
+   il coche ceux qu'il garde, et touche 🔁 « à refaire » sur ceux qu'il veut changer. */
+(function(G){
+'use strict';
+var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
+function visee(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J, S){ E.visee(function(){ return J.ctx; }, S)[nom](); }}; }
+function liste(l){ return l.map(function(e){ X['vs_' + e[0]] = visee(e[0], e[2]); return {id:'vs_' + e[0], t:e[1], x:1, neuf:1}; }); }
+var section = {id:'mj-visee', titre:'Tir aux anneaux', sous:[
+  {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['bander', 'L’arc se bande', .4], ['tic', 'Le minuteur presse', .05],
+    ['lacher', 'La corde claque', .35], ['vol', 'La flèche file', 1]])},
+  {id:'visee-arrivee', titre:'L’arrivée', sons:liste([['dedans', 'Dans l’anneau', .65], ['bois', 'Dans le bois', .5], ['acote', 'À côté', .55],
+    ['accroche', 'Banderole tendue', .45], ['fete', 'Place décorée !', 1.6], ['vide', 'Plus de flèches', .5]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
