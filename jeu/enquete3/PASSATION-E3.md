@@ -1,11 +1,11 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 12 h 20)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 13 h 05)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 ## Nouveau depuis le 12 novembre (10 h 30) : l'établi des plantes est refait, comme la paillasse d'analyse — et les sept recettes ont changé
 
 - Le détail : **Bible §13.22**. Romain, 8 h 50 : l'établi n'était « que des icônes, pas de magie » ; il le voulait « exactement » comme la paillasse d'analyse : une table, tous les outils modélisés et interactifs, un vrai feu qu'on allume ou non, un livre de recettes sur un pupitre, des étapes réalistes, un petit message sur la réalité à chaque étape, et ce qui se passe pour de vrai dans le mauvais instrument. « Quand il a fini de jouer, il a appris des trucs sur la nature. »
-- **Construit et vérifié ; pas encore en ligne** (la mise en ligne attend l'accord de Romain dans la conversation qui construit) ; Romain ne l'a donc pas encore essayé. **`E3-atelier-des-plantes.md` est à jour** : ses §2 (la table, les outils, comment on joue) et §3 (les sept recettes, étape par étape, et leurs « C'est vrai ! ») décrivent ce qui est construit, avec les faits vérifiés à la fin.
+- **Construit, vérifié, et dans le jeu en ligne depuis le 12 novembre à 13 h 11** (parti avec la mise en ligne de l'oie ; la page d'essai seule n'est pas encore publiée) ; Romain ne l'a pas encore essayé. **`E3-atelier-des-plantes.md` est à jour** : ses §2 (la table, les outils, comment on joue) et §3 (les sept recettes, étape par étape, et leurs « C'est vrai ! ») décrivent ce qui est construit, avec les faits vérifiés à la fin.
 - **Changé par rapport à la conception du 11 novembre** : les recettes suivent les vrais gestes (le pied-de-loup se sèche puis se tamise ; le lin se tamise, se presse, se filtre ; le gui s'écrase, trempe sans feu, puis cuit à petit feu ; l'oseille se hache, se presse, se filtre, réduit à grand feu, sèche en cristaux, puis fond dans un peu d'eau ; le souci sèche, puis chauffe dans l'huile de lin ; la mélisse se hache et se distille) ; **le feu a trois forces** (pas de bûche, une, deux) ; le grimoire est en phrases, sans images d'outils ; une cruche de grès remplace la « carafe » ; chaque potion finie montre une carte « C'est vrai ! ».
 - **Pour la conception des enquêtes suivantes** : si une enquête a besoin d'une nouvelle potion faite à l'établi, il suffit d'une plante (son dessin, ses trois parties) et d'une recette dans `jeu/src/plantes-donnees.js` — les outils et le feu existent.
 - **Pour l'essayer (une fois en ligne)** : https://esperidad-tech.github.io/brumeval/etabli-essai.html (l'établi tout seul), ou dans le jeu : https://esperidad-tech.github.io/brumeval/#test → ☰ → Réglages → Mode test → Enquête 3, héros Alchimiste.
@@ -13,13 +13,14 @@
 ## Nouveau depuis le 12 novembre (12 h 06) : la grande carte et la brume sont dans le jeu
 
 - Romain a ouvert un chantier à part : **une grande carte faite pour les tablettes, avec le village au milieu et de la brume qu'on lève zone par zone** (Bible chapitre 14, lire le §14.5). **Elle est dans le jeu et en ligne depuis 12 h 06** (version 20261112-1106).
+- **Retouchée à 12 h 57 (Bible §14.6)** après l'essai de Romain sur iPhone (elle ramait dès qu'on glissait vers la brume) : la brume est maintenant une image, et **on zoome en pinçant à deux doigts** (ou à la molette) : il n'y a plus de boutons ＋ / − sur la carte.
 - **Pour l'enquête 3, rien ne change pour jouer** : le village est à la même place, les lieux, les bulles et les 229 codes sont les mêmes ; **aucune zone de brume n'est levée**. Autour du village il y a maintenant 26 lieux sous la brume (une mine, une tour, un lac, un manoir, un marais… la liste au §14.2), qu'on ne peut pas encore toucher.
 - **À décider avec Romain (§14.3)** : qui lève la brume dans l'histoire, et si l'enquête 3 (ou la suivante) ouvre une première zone. Lever une zone reste à construire (§14.5, « Ce qui reste »).
-- **Attention, mise en ligne faite à part** : l'oie au niveau 9 et l'établi des plantes refait ne sont toujours pas en ligne (voir PASSATION.md) ; la prochaine mise en ligne normale les publiera avec le reste.
+- ~~Attention, mise en ligne faite à part~~ : depuis 13 h 11, l'oie au niveau 9 et l'établi des plantes refait sont en ligne aussi (version 20261112-1210).
 
 ## Nouveau depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles en discussion
 
-- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde (construit, en attente de l'accord de Romain pour la mise en ligne). Les banderoles sont « trop faciles, même au niveau 10 » : Romain veut un tir plus magique et plus dur, avec le même arc. Trois idées proposées (les chats de lumière, les lanternes qui s'envolent, les banderoles vivantes) ; **rien n'est construit**.
+- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde, et on la recommence autant qu'on veut (en ligne à 13 h 12). La règle enfant / adulte est retirée de la Bible : les niveaux se choisiront selon le scénario, avec Romain. Les banderoles sont « trop faciles, même au niveau 10 » : les trois idées de Claude sont refusées ; Romain propose une vue de tir rapprochée façon « Archery » (« 2 Player Games »), cinq anneaux d'affilée. **En discussion, rien n'est construit**.
 
 ## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
 

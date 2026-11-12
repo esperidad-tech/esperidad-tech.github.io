@@ -1,7 +1,15 @@
 /* ==========================================================
    Brumeval — le grand monde : la brume, et l'assemblage du monde que carte.js appelle (Bible chapitre 14)
    Huit bancs de brume autour du village (un par zone), qu'on lève un par un, et le mur de brume du bord de la vallée, qui ne se lève jamais.
-   Pas de flou (trop lourd pour une vieille tablette) : des ronds en dégradé, et on n'anime que la place et l'opacité.
+   Pas de flou (trop lourd pour une vieille tablette) : des ronds en dégradé.
+
+   DANS LE JEU, LA BRUME EST UNE IMAGE, PAS UN DESSIN (Romain, 12 novembre, 12 h 20 : sur son iPhone, « dès que je me déplace vers les
+   nuages, ça rame à mort »). Un millier de ronds en dégradé qui se recouvrent, à repeindre morceau par morceau chaque fois qu'on glisse :
+   c'était trop pour un téléphone. Maintenant la brume est peinte UNE fois, en petit (ECH), sur une toile (un <canvas>) que la tablette étire
+   comme une photo — étirer une photo ne lui coûte rien, et une brume un peu floue reste une brume. Une toile par moment de la journée et par
+   jeu de zones levées, gardée en mémoire (toileBrume).
+   La page du modèle, elle, garde la brume en dessin (un seul grand dessin, où l'on lève les zones en les touchant).
+   Les deux sortent de la même liste de morceaux (zone, mur) : ecrire() en fait un dessin, peindre() une image.
    ========================================================== */
 (function(){
 'use strict';
@@ -19,49 +27,7 @@ var ZONES = [
   {id:'s',  nom:'La route du Sud',       r:[1000, 1724, 2040, 2000]},
   {id:'se', nom:'Le marais',             r:[2040, 1420, 3000, 2000]}
 ];
-
-/* ---------- La teinte du moment ----------
-   Dans le jeu, la brume est un dessin posé PAR-DESSUS celui du village (carte.js, « trois dessins ») : le voile de lumière du moment (rose le matin,
-   bleu sombre la nuit…), qui est dans le dessin du village, ne la recouvre plus. On la teinte donc à la source : chaque couleur de la brume est
-   mélangée à la couleur du voile. Le voile change du haut vers le bas de la carte : la carte est coupée en N_BANDES bandes couchées, chacune avec
-   ses dégradés (d'une bande à l'autre l'écart ne se voit pas). C'est le même résultat que le voile posé sur la brume.
-   Sans teinte (la page du modèle, où le voile recouvre tout) : une seule série de dégradés. */
-var N_BANDES = 6, TEINTE = null;
-function hex(c){ c = c.replace('#', ''); return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)]; }
-function teinter(c, y){   /* la couleur c vue à travers le voile du moment, à la hauteur y */
-  if(!TEINTE) return c;
-  var t = Math.max(0, Math.min(1, y / H)), h = hex(TEINTE.haut[0]), b = hex(TEINTE.bas[0]), a = TEINTE.haut[1] + (TEINTE.bas[1] - TEINTE.haut[1]) * t, k = hex(c);
-  return '#' + [0, 1, 2].map(function(i){ var v = Math.round(k[i] * (1 - a) + (h[i] + (b[i] - h[i]) * t) * a); return (v < 16 ? '0' : '') + v.toString(16); }).join('');
-}
-function bande(y){ return TEINTE ? Math.max(0, Math.min(N_BANDES - 1, Math.floor(y / H * N_BANDES))) : ''; }
-function bandes(){ var l = ['']; if(TEINTE){ l = []; for(var k = 0; k < N_BANDES; k++) l.push(k); } return l; }
 var E_MUR = 112;   /* l'épaisseur du mur de brume, au bord du monde */
-
-function defs(p, teinte){
-  TEINTE = teinte || null;
-  function st(o, c, a){ return '<stop offset="' + o + '" stop-color="' + c + '" stop-opacity="' + a + '"/>'; }
-  var s = '';
-  bandes().forEach(function(b){
-    var y = TEINTE ? (b + .5) * H / N_BANDES : 0, t = function(c){ return teinter(c, y); };
-    s += '<radialGradient id="' + p + 'bm' + b + '" cx="50%" cy="50%" r="50%">' + st(0, t('#e6ecf8'), 1) + st(.55, t('#e6ecf8'), .96) + st(.8, t('#e9eefa'), .55) + st(1, t('#eef2ff'), 0) + '</radialGradient>';
-    s += '<radialGradient id="' + p + 'bmD' + b + '" cx="50%" cy="50%" r="50%">' + PROFIL.map(function(q){ return st(q[0], t('#e6ecf8'), q[1]); }).join('') + '</radialGradient>';
-    s += '<radialGradient id="' + p + 'bmC' + b + '" cx="42%" cy="38%" r="55%">' + st(0, t('#ffffff'), .95) + st(.5, t('#ffffff'), .5) + st(1, t('#ffffff'), 0) + '</radialGradient>';
-    s += '<radialGradient id="' + p + 'bmO' + b + '" cx="50%" cy="50%" r="50%">' + st(0, t('#b4bfdc'), .32) + st(1, t('#aab6d6'), 0) + '</radialGradient>';
-    s += '<radialGradient id="' + p + 'bmV' + b + '" cx="50%" cy="50%" r="50%">' + st(0, t('#ffffff'), .42) + st(.6, t('#ffffff'), .18) + st(1, t('#ffffff'), 0) + '</radialGradient>';
-    ['g', 'd'].forEach(function(c){   /* les murs de gauche et de droite : un morceau par bande */
-      s += '<linearGradient id="' + p + 'mur-' + c + b + '" x1="' + (c === 'd' ? 1 : 0) + '" y1="0" x2="' + (c === 'g' ? 1 : 0) + '" y2="0">' + st(0, t('#eef2ff'), 1) + st(.45, t('#eef2ff'), .96) + st(1, t('#eef2ff'), 0) + '</linearGradient>';
-    });
-  });
-  ['h', 'b'].forEach(function(c){   /* les murs du haut et du bas */
-    var col = teinter('#eef2ff', c === 'h' ? E_MUR / 2 : H - E_MUR / 2);
-    s += '<linearGradient id="' + p + 'mur-' + c + '" x1="0" y1="' + (c === 'b' ? 1 : 0) + '" x2="0" y2="' + (c === 'h' ? 1 : 0) + '">' + st(0, col, 1) + st(.45, col, .96) + st(1, col, 0) + '</linearGradient>';
-  });
-  /* le cœur plein des bancs : un seul dégradé, posé sur le monde, qui suit le voile du haut en bas */
-  if(TEINTE) s += '<linearGradient id="' + p + 'bmFond" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="' + H + '">' + [0, .25, .5, .75, 1].map(function(u){ return st(u, teinter('#e6ecf8', u * H), 1); }).join('') + '</linearGradient>';
-  return s;
-}
-
-function rond(p, x, y, r, id, extra){ return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '" fill="url(#' + p + id + bande(y) + ')"' + (extra || '') + '/>'; }
 
 /* Le village : jamais de brume ici */
 var VILLAGE = [1000, 318, 2040, 1724];
@@ -75,7 +41,7 @@ function voulue(d){ var t = Math.max(0, Math.min(1, d / D_BRUME)); return 1 - Ma
 /* Les ronds se recouvrent : pour obtenir la brume voulue, chacun doit être plus léger. On calcule une fois ce que donnent des ronds d'une
    force donnée (rayon R_ROND, un rond tous les PAS), et on lit la table à l'envers. */
 var R_ROND = 104, PAS = 76;
-var PROFIL = [[0, 1], [.35, .86], [.7, .42], [1, 0]];   /* le dégradé d'un rond, du centre au bord (c'est le dégradé « bmD » de defs) */
+var PROFIL = [[0, 1], [.35, .86], [.7, .42], [1, 0]];   /* le dégradé d'un rond, du centre au bord (c'est le dégradé « bmD ») */
 function profil(u){ for(var i = 1; i < PROFIL.length; i++) if(u <= PROFIL[i][0]){ var a = PROFIL[i - 1], b = PROFIL[i]; return a[1] + (b[1] - a[1]) * (u - a[0]) / (b[0] - a[0]); } return 0; }
 var TABLE = (function(){
   var t = [], dens = Math.PI * R_ROND * R_ROND / (PAS * PAS);
@@ -92,12 +58,44 @@ function force(part){   /* la force d'un rond pour que la brume, là, ait cette 
   return 1;
 }
 
+/* ---------- Les dégradés : une seule table, pour le dessin et pour l'image ----------
+   c : le centre et le rayon du dégradé, en parts de la boîte du rond ; s : les arrêts [place, couleur, force]. */
+var DEGRADES = {
+  bm:  {c: [.5, .5, .5],    s: [[0, '#e6ecf8', 1], [.55, '#e6ecf8', .96], [.8, '#e9eefa', .55], [1, '#eef2ff', 0]]},   /* le mur du bord */
+  bmD: {c: [.5, .5, .5],    s: PROFIL.map(function(q){ return [q[0], '#e6ecf8', q[1]]; })},                           /* les ronds d'un banc */
+  bmC: {c: [.42, .38, .55], s: [[0, '#ffffff', .95], [.5, '#ffffff', .5], [1, '#ffffff', 0]]},                        /* une bosse claire */
+  bmO: {c: [.5, .5, .5],    s: [[0, '#b4bfdc', .32], [1, '#aab6d6', 0]]},                                            /* un creux d'ombre */
+  bmV: {c: [.5, .5, .5],    s: [[0, '#ffffff', .42], [.6, '#ffffff', .18], [1, '#ffffff', 0]]}                       /* un voile */
+};
+var MUR_S = [[0, '#eef2ff', 1], [.45, '#eef2ff', .96], [1, '#eef2ff', 0]];   /* du bord du monde (plein) vers le dedans (rien) */
+var PLEIN = '#e6ecf8';
+
+function defs(p){
+  function st(q){ return '<stop offset="' + q[0] + '" stop-color="' + q[1] + '" stop-opacity="' + q[2] + '"/>'; }
+  var s = '';
+  Object.keys(DEGRADES).forEach(function(id){
+    var d = DEGRADES[id];
+    s += '<radialGradient id="' + p + id + '" cx="' + d.c[0] * 100 + '%" cy="' + d.c[1] * 100 + '%" r="' + d.c[2] * 100 + '%">' + d.s.map(st).join('') + '</radialGradient>';
+  });
+  ['h', 'b', 'g', 'd'].forEach(function(c){
+    s += '<linearGradient id="' + p + 'mur-' + c + '" x1="' + (c === 'd' ? 1 : 0) + '" y1="' + (c === 'b' ? 1 : 0) + '" x2="' + (c === 'g' ? 1 : 0) + '" y2="' + (c === 'h' ? 1 : 0) + '">' + MUR_S.map(st).join('') + '</linearGradient>';
+  });
+  return s;
+}
+
+/* ---------- Les morceaux de la brume ----------
+   Une liste de morceaux tout simples :
+     ['coeur', x, y, l, h]            un grand rectangle plein, aux coins ronds, au bord adouci
+     ['rond', x, y, r, dégradé, force] un rond en dégradé (force : de 0 à 1)
+     ['voile', x, y, rx, ry, n, retard] un voile ovale (dans la page du modèle, il dérive)
+     ['mur', côté]                    une bande du mur du bord : 'h', 'b', 'g' ou 'd' */
+
 /* Un banc de brume : un cœur plein (loin du village), des ronds doux partout ailleurs — de plus en plus légers près du village —, des bosses claires
-   et des creux d'ombre (le relief), quelques voiles qui dérivent.
+   et des creux d'ombre (le relief), quelques voiles.
    Du côté d'une autre zone, les ronds s'arrêtent un peu avant la limite : deux bancs voisins se recouvrent sans laisser de fente, et quand l'un se lève
    l'autre garde un bord doux. */
-function zone(p, z, i, maquette, levee){
-  var r = O.rng(500 + i * 37), x0 = z.r[0], y0 = z.r[1], x1 = z.r[2], y1 = z.r[3], s = '';
+function zone(z, i, maquette, levee){
+  var r = O.rng(500 + i * 37), x0 = z.r[0], y0 = z.r[1], x1 = z.r[2], y1 = z.r[3], L = [];
   var VERS_Z = 45;   /* de combien le centre des ronds reste en deçà de la limite d'une zone voisine */
   var cotes = [   /* a → b, la direction du dehors, et si ce côté est au bord du monde */
     {a:[x0, y0], b:[x1, y0], n:[0, -1], monde: y0 <= 0},
@@ -122,9 +120,7 @@ function zone(p, z, i, maquette, levee){
     c.rentre = c.monde ? -24 : (c.village ? D_BRUME + 30 : (c.plein ? -30 : VERS_Z + 30));
   });
   var cx0 = x0 + cotes[2].rentre, cx1 = x1 - cotes[3].rentre, cy0 = y0 + cotes[0].rentre, cy1 = y1 - cotes[1].rentre, coeur = cx1 - cx0 > 60 && cy1 - cy0 > 60;
-  /* (le trait à demi transparent adoucit le bord du cœur, là où les ronds ne sont pas tout à fait pleins) */
-  var plein = TEINTE ? 'url(#' + p + 'bmFond)' : '#e6ecf8';
-  if(coeur) s += '<rect x="' + cx0 + '" y="' + cy0 + '" width="' + (cx1 - cx0) + '" height="' + (cy1 - cy0) + '" rx="50" fill="' + plein + '" stroke="' + plein + '" stroke-opacity=".5" stroke-width="44"/>';
+  if(coeur) L.push(['coeur', cx0, cy0, cx1 - cx0, cy1 - cy0]);
   /* du côté du village, le bord du cœur disparaît sous des ronds doux posés à cheval dessus : jamais de ligne droite dans la brume.
      (Petits, et un peu rentrés : ils ne dépassent pas de la brume déjà pleine, la pente douce vers le village ne change pas.) */
   if(coeur) cotes.forEach(function(c){
@@ -134,7 +130,7 @@ function zone(p, z, i, maquette, levee){
     var a0 = couche ? Math.max(cx0, x0) : Math.max(cy0, y0), a1 = couche ? Math.min(cx1, x1) : Math.min(cy1, y1), n = Math.max(1, Math.round((a1 - a0) / 60));
     for(var q = 0; q < n; q++){
       var u = a0 + (a1 - a0) * (q + .5) / n + (r() - .5) * 12;
-      s += rond(p, couche ? u : bord, couche ? bord : u, 76 + r() * 10, 'bmD');
+      L.push(['rond', couche ? u : bord, couche ? bord : u, 76 + r() * 10, 'bmD', 1]);
     }
   });
   /* les ronds : un semis régulier, un peu bousculé, sur toute la zone sauf bien au milieu du cœur */
@@ -151,7 +147,7 @@ function zone(p, z, i, maquette, levee){
     var fo = force(voulue(distVillage(x, y)));
     if(fo < .02) return;
     if(fo < 1) nBande++;
-    s += rond(p, x, y, R_ROND * (.92 + r() * .2), 'bmD', fo < 1 ? ' fill-opacity="' + fo.toFixed(2) + '"' : '');
+    L.push(['rond', x, y, R_ROND * (.92 + r() * .2), 'bmD', fo < 1 ? +fo.toFixed(2) : 1]);
   }
   /* un rang de ronds le long de chaque limite avec une zone voisine, toujours à la même distance de la limite : jamais de fente entre deux bancs */
   cotes.forEach(function(c){
@@ -180,42 +176,115 @@ function zone(p, z, i, maquette, levee){
   }
   aire = (x1 - x0) * (y1 - y0) * pleins.length / 900;
   var n = Math.min(pleins.length, Math.round(aire / 30000)), k1 = 0;
-  for(var a = 0; a < n; a++){ var qa = pleins[k1++ % pleins.length]; s += rond(p, qa[0] + 22, qa[1] + 30, 56 + r() * 50, 'bmO'); }
-  for(var b = 0; b < n * 1.5; b++){ var qb = pleins[k1++ % pleins.length]; s += rond(p, qb[0], qb[1], 58 + r() * 66, 'bmC'); }
+  for(var a = 0; a < n; a++){ var qa = pleins[k1++ % pleins.length]; L.push(['rond', qa[0] + 22, qa[1] + 30, 56 + r() * 50, 'bmO', 1]); }
+  for(var b = 0; b < n * 1.5; b++){ var qb = pleins[k1++ % pleins.length]; L.push(['rond', qb[0], qb[1], 58 + r() * 66, 'bmC', 1]); }
   /* le relief de la bande douce : quelques bosses claires, d'autant plus légères qu'on est près du village */
   for(var e = 0, fait = 0; e < 4000 && fait < nBande / 3; e++){
     var ex = x0 + r() * (x1 - x0), ey = y0 + r() * (y1 - y0), ed = distVillage(ex, ey);
     if(ed < D_DEBUT + 50 || ed > D_BRUME + 40 || !dansZoneRonds(ex, ey, VERS_Z)) continue;
-    s += rond(p, ex, ey, 54 + r() * 62, 'bmC', ' opacity="' + (voulue(ed) * .85).toFixed(2) + '"'); fait++;
+    L.push(['rond', ex, ey, 54 + r() * 62, 'bmC', +(voulue(ed) * .85).toFixed(2)]); fait++;
   }
-  /* les voiles qui dérivent : ils restent dans le cœur du banc (ils glissent de 70 de chaque côté) */
+  /* les voiles : ils restent dans le cœur du banc (dans la page du modèle, ils glissent de 70 de chaque côté) */
   if(coeur) for(var v = 0; v < 3; v++){
     var vrx = Math.min(190 + r() * 110, (cx1 - cx0) / 2 - 80), vry = 50 + r() * 28;
     if(vrx < 60) continue;
     var vx = cx0 + vrx + 70 + r() * Math.max(0, cx1 - cx0 - 2 * vrx - 140), vy = cy0 + vry + r() * Math.max(0, cy1 - cy0 - 2 * vry);
-    s += '<ellipse class="ca-brume ca-brume' + (v % 2) + '" cx="' + f(vx) + '" cy="' + f(vy) + '" rx="' + f(vrx) + '" ry="' + f(vry) + '" fill="url(#' + p + 'bmV' + bande(vy) + ')" style="animation-delay:-' + (v * 9 + i * 3) + 's"/>';
+    L.push(['voile', vx, vy, vrx, vry, v % 2, v * 9 + i * 3]);
   }
-  return '<g class="bm-zone" data-zone="' + z.id + '" style="transform-origin:' + f((x0 + x1) / 2) + 'px ' + f((y0 + y1) / 2) + 'px">' + s +
-    (maquette ? '<rect class="bm-hit" x="' + x0 + '" y="' + y0 + '" width="' + (x1 - x0) + '" height="' + (y1 - y0) + '" fill="#fff" fill-opacity="0"/>' : '') + '</g>';
+  return L;
 }
 
 /* Le mur de brume : le bord de la vallée. Il ne se lève jamais. */
-function mur(p){
-  var E = E_MUR, r = O.rng(77), s = '<g class="bm-mur" pointer-events="none">';
-  s += '<rect x="0" y="0" width="' + W + '" height="' + E + '" fill="url(#' + p + 'mur-h)"/>';
-  s += '<rect x="0" y="' + (H - E) + '" width="' + W + '" height="' + E + '" fill="url(#' + p + 'mur-b)"/>';
-  bandes().forEach(function(b){   /* à gauche et à droite : un morceau par bande de teinte (ils se recouvrent d'un rien, pour ne laisser aucune fente) */
-    var y0 = TEINTE ? b * H / N_BANDES : 0, h = TEINTE ? H / N_BANDES + (b < N_BANDES - 1 ? 1 : 0) : H;
-    s += '<rect x="0" y="' + f(y0) + '" width="' + E + '" height="' + f(h) + '" fill="url(#' + p + 'mur-g' + b + ')"/>';
-    s += '<rect x="' + (W - E) + '" y="' + f(y0) + '" width="' + E + '" height="' + f(h) + '" fill="url(#' + p + 'mur-d' + b + ')"/>';
-  });
-  for(var x = 0; x <= W; x += 84){ s += rond(p, x + (r() - .5) * 34, 2 + r() * 18, 58 + r() * 34, 'bm') + rond(p, x + (r() - .5) * 34, H - 2 - r() * 18, 58 + r() * 34, 'bm'); }
-  for(var y = 60; y <= H - 60; y += 84){ s += rond(p, 2 + r() * 18, y + (r() - .5) * 34, 58 + r() * 34, 'bm') + rond(p, W - 2 - r() * 18, y + (r() - .5) * 34, 58 + r() * 34, 'bm'); }
-  for(var k = 0; k < 26; k++){ var a = r(), t = r(); var px = a < .5 ? t * W : (a < .75 ? 18 : W - 18), py = a < .25 ? 16 : (a < .5 ? H - 16 : t * H); s += rond(p, px, py, 40 + r() * 34, 'bmC'); }
-  return s + '</g>';
+function mur(){
+  var r = O.rng(77), L = [['mur', 'h'], ['mur', 'b'], ['mur', 'g'], ['mur', 'd']];
+  for(var x = 0; x <= W; x += 84){ L.push(['rond', x + (r() - .5) * 34, 2 + r() * 18, 58 + r() * 34, 'bm', 1]); L.push(['rond', x + (r() - .5) * 34, H - 2 - r() * 18, 58 + r() * 34, 'bm', 1]); }
+  for(var y = 60; y <= H - 60; y += 84){ L.push(['rond', 2 + r() * 18, y + (r() - .5) * 34, 58 + r() * 34, 'bm', 1]); L.push(['rond', W - 2 - r() * 18, y + (r() - .5) * 34, 58 + r() * 34, 'bm', 1]); }
+  for(var k = 0; k < 26; k++){ var a = r(), t = r(); var px = a < .5 ? t * W : (a < .75 ? 18 : W - 18), py = a < .25 ? 16 : (a < .5 ? H - 16 : t * H); L.push(['rond', px, py, 40 + r() * 34, 'bmC', 1]); }
+  return L;
+}
+function rectMur(c){ return c === 'h' ? [0, 0, W, E_MUR] : c === 'b' ? [0, H - E_MUR, W, E_MUR] : c === 'g' ? [0, 0, E_MUR, H] : [W - E_MUR, 0, E_MUR, H]; }
+
+/* ---------- La liste en dessin (la page du modèle) ---------- */
+function ecrire(p, L){
+  return L.map(function(m){
+    if(m[0] === 'coeur') return '<rect x="' + m[1] + '" y="' + m[2] + '" width="' + m[3] + '" height="' + m[4] + '" rx="50" fill="' + PLEIN + '" stroke="' + PLEIN + '" stroke-opacity=".5" stroke-width="44"/>';
+    if(m[0] === 'rond') return '<circle cx="' + f(m[1]) + '" cy="' + f(m[2]) + '" r="' + f(m[3]) + '" fill="url(#' + p + m[4] + ')"' + (m[5] < 1 ? ' opacity="' + m[5] + '"' : '') + '/>';
+    if(m[0] === 'voile') return '<ellipse class="ca-brume ca-brume' + m[5] + '" cx="' + f(m[1]) + '" cy="' + f(m[2]) + '" rx="' + f(m[3]) + '" ry="' + f(m[4]) + '" fill="url(#' + p + 'bmV)" style="animation-delay:-' + m[6] + 's"/>';
+    var q = rectMur(m[1]);
+    return '<rect x="' + q[0] + '" y="' + q[1] + '" width="' + q[2] + '" height="' + q[3] + '" fill="url(#' + p + 'mur-' + m[1] + ')"/>';
+  }).join('');
 }
 
-var B = Monde.B = {ZONES: ZONES, VILLAGE: VILLAGE, D_BRUME: D_BRUME, distVillage: distVillage, defs: defs, zone: zone, mur: mur};
+/* ---------- La liste en image (le jeu) ---------- */
+function rvb(c, a){ c = c.replace('#', ''); return 'rgba(' + parseInt(c.slice(0, 2), 16) + ',' + parseInt(c.slice(2, 4), 16) + ',' + parseInt(c.slice(4, 6), 16) + ',' + a + ')'; }
+function peindre(ctx, L){
+  L.forEach(function(m){
+    var g, d;
+    ctx.globalAlpha = 1;
+    if(m[0] === 'coeur'){
+      var x = m[1], y = m[2], l = m[3], h = m[4], c = Math.min(50, l / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + c, y); ctx.lineTo(x + l - c, y); ctx.arcTo(x + l, y, x + l, y + c, c); ctx.lineTo(x + l, y + h - c); ctx.arcTo(x + l, y + h, x + l - c, y + h, c);
+      ctx.lineTo(x + c, y + h); ctx.arcTo(x, y + h, x, y + h - c, c); ctx.lineTo(x, y + c); ctx.arcTo(x, y, x + c, y, c); ctx.closePath();
+      ctx.fillStyle = PLEIN; ctx.fill();
+      ctx.globalAlpha = .5; ctx.strokeStyle = PLEIN; ctx.lineWidth = 44; ctx.stroke();
+    } else if(m[0] === 'rond'){
+      d = DEGRADES[m[4]];
+      var gx = m[1] - m[3] + d.c[0] * 2 * m[3], gy = m[2] - m[3] + d.c[1] * 2 * m[3];
+      g = ctx.createRadialGradient(gx, gy, 0, gx, gy, d.c[2] * 2 * m[3]);
+      d.s.forEach(function(q){ g.addColorStop(q[0], rvb(q[1], q[2])); });
+      ctx.globalAlpha = m[5]; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(m[1], m[2], m[3], 0, Math.PI * 2); ctx.fill();
+    } else if(m[0] === 'voile'){
+      d = DEGRADES.bmV;
+      ctx.save(); ctx.translate(m[1], m[2]); ctx.scale(m[3], m[4]);
+      g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      d.s.forEach(function(q){ g.addColorStop(q[0], rvb(q[1], q[2])); });
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    } else {
+      var q0 = rectMur(m[1]), k = m[1];
+      g = k === 'h' ? ctx.createLinearGradient(0, 0, 0, E_MUR) : k === 'b' ? ctx.createLinearGradient(0, H, 0, H - E_MUR) : k === 'g' ? ctx.createLinearGradient(0, 0, E_MUR, 0) : ctx.createLinearGradient(W, 0, W - E_MUR, 0);
+      MUR_S.forEach(function(q){ g.addColorStop(q[0], rvb(q[1], q[2])); });
+      ctx.fillStyle = g; ctx.fillRect(q0[0], q0[1], q0[2], q0[3]);
+    }
+  });
+  ctx.globalAlpha = 1;
+}
+/* La toile de la brume, pour ces zones levées et ce voile de lumière ({haut:[couleur, force], bas:[couleur, force]} : le moment de la journée).
+   Peinte une seule fois, puis gardée : c'est toujours le même <canvas> qu'on repose dans la carte (carte.js, poserBrume) — on n'en fabrique pas
+   un à chaque affichage (un téléphone finit par refuser d'en créer).
+   ECH : la toile fait 1200 × 800 pour un monde de 3000 × 2000. Le voile de lumière est posé sur la brume seulement (« source-atop ») : le dessin
+   du village, dessous, a déjà le sien. */
+var ECH = .4, TOILES = [], MAX_TOILES = 5;
+function toileBrume(levees, voile){
+  if(typeof document === 'undefined') return null;
+  var levee = {}; (levees || []).forEach(function(id){ levee[id] = true; });
+  var cle = ZONES.map(function(z){ return levee[z.id] ? z.id : ''; }).join(',') + '|' + (voile ? voile.haut.join(',') + ',' + voile.bas.join(',') : '');
+  for(var i = 0; i < TOILES.length; i++) if(TOILES[i].cle === cle){ var t = TOILES.splice(i, 1)[0]; TOILES.push(t); return t.toile; }
+  var c = document.createElement('canvas'), ctx;
+  c.width = Math.round(W * ECH); c.height = Math.round(H * ECH);
+  try{ ctx = c.getContext('2d'); }catch(e){ ctx = null; }
+  if(!ctx) return null;
+  ctx.setTransform(ECH, 0, 0, ECH, 0, 0);
+  ZONES.forEach(function(z, k){ if(!levee[z.id]) peindre(ctx, zone(z, k, false, levee)); });
+  peindre(ctx, mur());
+  if(voile){
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-atop';
+    var g = ctx.createLinearGradient(0, 0, 0, c.height);
+    g.addColorStop(0, rvb(voile.haut[0], voile.haut[1])); g.addColorStop(1, rvb(voile.bas[0], voile.bas[1]));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  c.className = 'ca-fond ca-nuages';
+  c.setAttribute('aria-hidden', 'true');
+  TOILES.push({cle: cle, toile: c});
+  while(TOILES.length > MAX_TOILES){ var vieux = TOILES.shift().toile; if(vieux.parentNode) vieux.parentNode.removeChild(vieux); vieux.width = vieux.height = 0; }
+  return c;
+}
+
+var B = Monde.B = {ZONES: ZONES, VILLAGE: VILLAGE, D_BRUME: D_BRUME, distVillage: distVillage, defs: defs, zone: zone, mur: mur, ecrire: ecrire, peindre: peindre};
+Monde.toileBrume = toileBrume;
 
 /* ==========================================================
    L'assemblage : ce que carte.js pose autour du village
@@ -234,15 +303,15 @@ function zoneDe(x, y){ var id = null; ZONES.forEach(function(z){ if(x >= z.r[0] 
 
 Monde.W = W; Monde.H = H; Monde.OX = O.OX; Monde.OY = O.OY;
 Monde.frange = frange; Monde.zoneDe = zoneDe; Monde.CONTREES = CONTREES;
-Monde.defs = function(p, teinte){ return T.defs(p) + defs(p, teinte); };
+Monde.defs = function(p){ return T.defs(p) + defs(p); };
 /* p : le préfixe des dégradés du monde ; pv : celui de la carte du village.
    o.brume : la liste des zones dont la brume est levée (rien : toute la brume) ; o.riviere === 'rouge' ; o.etiquette : la taille des étiquettes ;
-   o.teinte : {haut:[couleur, force], bas:[couleur, force]}, le voile de lumière du moment, pour teinter la brume (le jeu) ;
-   o.maquette : la page du modèle (tout est là, rangé par zone, et la page montre ou cache). */
+   o.maquette : la page du modèle (tout est là, rangé par zone, et la page montre ou cache ; la brume y est un dessin).
+   Rend aussi « vu » : les rectangles du monde où l'on voit quelque chose (le village et ses abords, jusqu'où la brume devient pleine, et les
+   zones levées). Ailleurs, sous la brume pleine, carte.js ne fait rien peindre du tout. */
 Monde.assembler = function(p, pv, o){
   o = o || {};
   var maq = !!o.maquette, levee = {};
-  TEINTE = (!maq && o.teinte) || null;   /* la brume teintée à la source (le jeu) ou pas (la page du modèle) : voir « La teinte du moment » */
   (o.brume || []).forEach(function(id){ levee[id] = true; });
   var L = Monde.lieux(p, pv), groupes = {frange: []};
   ZONES.forEach(function(z){ groupes[z.id] = []; });
@@ -268,14 +337,24 @@ Monde.assembler = function(p, pv, o){
   CONTREES.forEach(function(c){ if(maq || levee[c.zone]) parZone[c.zone] += O.texte(c.x, c.y, c.t, 46, c.c, {classe: 'mo-contree', rot: c.rot, contour: '#24182e', cw: 7, opacite: .82}); });
   L.lieux.forEach(function(l){ if(l.nom && (maq || levee[l.zone])) parZone[l.zone] += O.etiquette(l.etiq[0], l.etiq[1], l.ic, l.nom, {classe: 'ca-etiq-lieu', taille: taille}).svg; });
   var etiq = ZONES.map(function(z){ return maq ? '<g class="mo-etiq-zone" data-zone="' + z.id + '">' + parZone[z.id] + '</g>' : parZone[z.id]; }).join('');
-  /* la brume des zones pas encore levées, et le mur du bord */
-  var brume = ZONES.map(function(z, i){ return maq || !levee[z.id] ? zone(p, z, i, maq, levee) : ''; }).join('') + mur(p);
+  /* la brume en dessin : pour la page du modèle seulement (dans le jeu, c'est une image : toileBrume) */
+  var brume = '';
+  if(maq) brume = ZONES.map(function(z, i){
+    return '<g class="bm-zone" data-zone="' + z.id + '" style="transform-origin:' + f((z.r[0] + z.r[2]) / 2) + 'px ' + f((z.r[1] + z.r[3]) / 2) + 'px">' + ecrire(p, zone(z, i, true, levee)) +
+      '<rect class="bm-hit" x="' + z.r[0] + '" y="' + z.r[1] + '" width="' + (z.r[2] - z.r[0]) + '" height="' + (z.r[3] - z.r[1]) + '" fill="#fff" fill-opacity="0"/></g>';
+  }).join('') + '<g class="bm-mur" pointer-events="none">' + ecrire(p, mur()) + '</g>';
+  /* là où l'on voit quelque chose : autour du village, jusqu'où la brume est pleine ; et les zones levées, un peu élargies (le bord doux des voisines) */
+  var D = D_BRUME + 40, vu = [[VILLAGE[0] - D, VILLAGE[1] - D, VILLAGE[2] + D, VILLAGE[3] + D]];
+  ZONES.forEach(function(z){ if(levee[z.id]) vu.push([z.r[0] - 150, z.r[1] - 150, z.r[2] + 150, z.r[3] + 150]); });
+  vu = vu.map(function(q){ return [Math.max(0, q[0]), Math.max(0, q[1]), Math.min(W, q[2]), Math.min(H, q[3])]; });
   return {
     sol: '<g class="mo-sol">' + T.sol(p, pv, {riviere: o.riviere, sansVives: !maq, voit: function(zi){ return zi < 0 || maq || !!levee[ZONES[zi].id]; }}) + '</g>',
     vives: T.eauxVives(p, pv, {riviere: o.riviere}),   /* le ruisseau et la rivière du village, qui coulent (carte.js les pose dans le dessin du village) */
     dessus: '<g class="mo-dessus">' + dessus + '</g>',
-    brume: '<g class="mo-brume"' + (maq ? '' : ' pointer-events="none"') + '>' + brume + '</g>',
-    etiquettes: '<g class="mo-etiqs" pointer-events="none">' + etiq + '</g>'
+    brume: '<g class="mo-brume">' + brume + '</g>',
+    etiquettes: '<g class="mo-etiqs" pointer-events="none">' + etiq + '</g>',
+    vu: vu,
+    levees: ZONES.filter(function(z){ return levee[z.id]; }).map(function(z){ return z.id; })
   };
 };
 })();
