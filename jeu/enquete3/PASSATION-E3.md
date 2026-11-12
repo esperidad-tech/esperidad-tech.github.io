@@ -1,6 +1,11 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 14 h 46)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 14 h 51)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (13 h 52) : l'établi n'a que trois places pour les plantes
+
+- Le détail : **Bible §13.25**. Deuxième série de retouches de Romain sur l'établi, **toutes faites dans les sources, PAS ENCORE EN LIGNE (la mise en ligne attend le « oui » de Romain)** : deux étagères (celle des potions, baissée ; une autre à droite, avec la tringle) ; **la tringle n'a que trois places** ; **une seule plante à la fois sur le linge, en grand** ; le panneau du feu planté sur la table ; les bûches, l'eau et l'huile se glissent aussi avec le doigt.
+- **Ce que ça change pour la conception** : **l'Alchimiste ne peut garder que trois plantes à l'établi.** Les autres attendent **devant la porte de son atelier** (un panier, avec la cueillette) ; on touche le panier pour les pendre s'il y a de la place, sinon « il n'y a plus de place ». **Une place se libère quand une potion est faite.** Donc, avec sept plantes : elle cueille, prépare, revient chercher le panier. À garder en tête pour le rythme d'une enquête où il y a beaucoup de plantes d'un coup.
 
 ## Nouveau depuis le 12 novembre (12 h 45) : les retours de Romain sur l'établi, et son plan pour les plantes
 

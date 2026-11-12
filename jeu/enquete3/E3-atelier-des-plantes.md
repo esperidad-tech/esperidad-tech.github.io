@@ -13,7 +13,7 @@
 - **L'acide est la « potion qui ronge la rouille »** : la même fiole ouvre la grille du puits (si le chemin du clocher rate) et ronge l'armure du rat cuirassé et du Gardien de rouille dans le donjon.
 - **Toutes les potions doivent être faites quoi qu'il arrive** (Romain) : la mission de l'Alchimiste l'après-midi est « Prépare les sept potions de la nuit » ; le Sage ne donne le code de la nuit que quand chacun a fini. S'il en manque encore une à la nuit, l'Alchimiste peut la finir pendant le grand dialogue d'Anselme, avant de donner le code du sac.
 
-## 2. L'écran : l'établi des plantes (refait le 12 novembre)
+## 2. L'écran : l'établi des plantes (refait le 12 novembre ; retouché à 12 h 45 et à 13 h 52, Bible §13.23 et §13.25)
 
 Fait comme la paillasse d'analyse (`jeu/src/labo/`) : **on est penché sur une vraie table, dessinée en entier**. Chaque outil est un objet posé dessus, qu'on touche et qui bouge. Pas de menu, pas de liste d'icônes. Le code : `jeu/src/etabli/` (une page à part, ouverte dans un cadre par-dessus l'atelier, comme le labo) ; les recettes et les phrases : `jeu/src/plantes-donnees.js` ; les dessins des plantes : `jeu/src/plantes-dessins.js`.
 
@@ -21,8 +21,8 @@ Fait comme la paillasse d'analyse (`jeu/src/labo/`) : **on est penché sur une v
 
 | L'objet | À quoi il sert | Ce qu'on voit quand il travaille |
 | --- | --- | --- |
-| **La tringle**, fixée à l'établi, sous l'étagère | les plantes cueillies y pendent d'abord, la tête en bas, chacune sous le flacon de sa potion | on touche une plante pendue : elle se couche sur le linge |
-| **Le linge, au milieu** | les plantes qu'on a décrochées | on touche une plante : elle vient vers nous, en grand, avec ses trois parties à toucher |
+| **L'étagère des plantes et sa tringle**, fixée sur le bord droit de l'établi (ses pieds à droite du pressoir) | **trois places, pas une de plus** : les plantes cueillies y pendent d'abord, la tête en bas, au-dessus de l'écriteau « On laisse sécher » (leurs ronds jaunes passent derrière lui) | on touche une plante pendue : elle se couche sur le linge |
+| **Le linge, au milieu** | **une seule plante à la fois, en grand** (elle remplit le linge à bordure rouge, sans dépasser) | on touche une autre plante pendue : celle du linge retourne se pendre ; on touche la plante du linge : elle vient vers nous, avec ses trois parties à toucher |
 | **La planche et le couteau** | hacher | le couteau fait « tchac, tchac, tchac », les morceaux sautent |
 | **Le tamis** (sur son bol) | trier : le fin passe, le gros reste | le tamis se secoue, la poudre ou les graines tombent dessous |
 | **Le mortier et son pilon** | écraser | le pilon tape et tourne |
@@ -32,17 +32,19 @@ Fait comme la paillasse d'analyse (`jeu/src/labo/`) : **on est penché sur une v
 | **L'alambic de cuivre** (sur son petit four de briques, avec son seau d'eau froide et son petit vase) | distiller | la vapeur monte dans le col de cygne, les gouttes tombent dans le vase |
 | **Le séchoir** (une claie, avec la pancarte « On laisse sécher ») | laisser sécher, à l'ombre | un sablier tourne : le temps passe |
 | **Les fioles vides** (sur leur râtelier, avec un entonnoir) | la dernière étape de chaque potion | la fiole se remplit, on la bouche, elle monte sur l'étagère |
-| **Le tas de bûches, son panneau, et la boîte d'allumettes** | le feu, sous la marmite ou sous l'alambic ; le panneau dit : une bûche = feu doux, deux bûches = feu fort | voir « Le feu » plus bas |
+| **Le tas de bûches, son panneau (planté sur la table, sur un piquet), et la boîte d'allumettes** | le feu, sous la marmite ou sous l'alambic ; le panneau dit : une bûche = feu doux, deux bûches = feu fort | voir « Le feu » plus bas |
 | **La cruche d'eau** (en grès, une goutte bleue et « EAU » dessus) et **la bouteille d'huile** (étiquette « Huile ») | ce qu'on verse dans la marmite ou l'alambic | la cruche est toujours pleine ; la bouteille est « vide » tant qu'on n'a pas fait la potion d'huile |
 | **Le grimoire, sur son petit pupitre** | les recettes des plantes déjà trouvées | il s'ouvre en grand : une page par plante trouvée ; un rond jaune « ! » quand une page vient de s'écrire |
-| **L'étagère des potions**, fixée à l'établi, tout en haut | sept flacons de verre, tous différents | vides et pâles au début ; pleins et brillants quand la potion est faite ; les sept faites, on la touche pour voir le code (§9) |
+| **L'étagère des potions**, fixée à l'établi (son pied droit entre le grimoire et le pressoir), juste au-dessus du grimoire et de la cuillère de la marmite | sept flacons de verre, tous différents | vides et pâles au début ; pleins et brillants quand la potion est faite ; les sept faites, on la touche pour voir le code (§9) |
 
 Au mur : une lanterne.
+
+**Plus de trois plantes cueillies ?** Les autres attendent **devant la porte de l'atelier**, dans un panier d'osier posé par terre avec la cueillette. On touche le panier : s'il reste une place sur la tringle, elles vont s'y pendre ; sinon, « Il n'y a plus de place sur la tringle de l'établi : trois plantes, pas une de plus. Prépare d'abord une potion ! ». Une place se libère quand la potion de la plante est faite. On ne change pas de plante au milieu d'une préparation (« Une chose à la fois ! »).
 
 **Comment on joue** (toujours pareil) :
 1. On touche une plante pendue à la tringle : elle se couche sur le linge. On la touche encore : elle vient en grand. On touche **la partie** qu'on veut (feuilles, fleurs, graines, racine…).
 2. On touche **un outil** : la matière y va. On touche **l'outil encore une fois** : il travaille. Le filtre, le séchoir et les fioles travaillent tout seuls dès que la matière arrive.
-3. **La cruche, l'huile, une bûche, une allumette** : on la touche (on la tient), puis on touche où on veut la mettre.
+3. **La cruche, l'huile, une bûche, une allumette** : on la touche (on la tient), puis on touche où on veut la mettre. **Ou bien on la fait glisser avec le doigt** jusqu'à la marmite ou l'alambic, et on lâche (Romain, 12 novembre, 13 h 52 : les deux façons marchent).
 4. À chaque étape réussie, la matière change (les feuilles deviennent des feuilles hachées, puis un jus vert…) et **une phrase courte raconte ce qui se passe pour de vrai**, avec son 🔊.
 
 **Le feu, c'est le joueur qui décide** (Romain) : pas de bûche = pas de feu ; **une bûche = feu doux** ; **deux bûches = feu fort** (un petit panneau le rappelle, près des bûches). Puis une allumette. Une allumette sans bûche : « Craac ! Une jolie flamme… et rien à brûler. » On peut retirer une bûche tant que le feu n'est pas allumé. Quand la cuisson est finie, le bois a brûlé : le feu s'éteint.
