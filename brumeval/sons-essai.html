@@ -1033,7 +1033,7 @@ function sonsVisee(audio, sortie){
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
     s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* une note qui tremble (la flèche qui vibre dans le bois, la corde qui frémit) */
+  /* une note qui tremble (la corde qui frémit) */
   function tremble(fq, t0, duree, vol, vite, type){
     var a = audio(); if(!a) return;
     var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain();
@@ -1048,8 +1048,8 @@ function sonsVisee(audio, sortie){
     tic:function(){ tendre(1500, 0, .035, .03, null, .002, 'triangle', 4000); },                                                                                               /* le minuteur presse */
     lacher:function(){ tendre(196, 0, .16, .09, 122, .003, 'triangle', 1400); tremble(147, .01, .3, .03, 46); souffle(0, .07, .05, 1800, 700, .7); },                           /* « twang ! » */
     vol:function(){ souffle(0, .95, .06, 500, 2400, 1.1, 'bandpass', .5); souffle(.05, .9, .03, 3000, 5200, .8, 'bandpass', .6); },                                              /* la flèche file dans le vent */
-    bois:function(){ tendre(150, 0, .2, .2, 62, .003, 'sine'); tendre(330, 0, .06, .1, 190, .002, 'triangle', 1800); souffle(0, .06, .12, 1400, 400, .7, 'lowpass', .004); tremble(210, .05, .42, .045, 31); },   /* « tchac ! » : plantée dans le bois, elle vibre */
-    dedans:function(){ souffle(0, .2, .06, 2600, 900, .9); tendre(1047, .1, .3, .05, null, .006); tendre(1568, .2, .4, .045, null, .006); souffle(.16, .1, .03, 700, 1500, .6); souffle(.3, .1, .026, 800, 1700, .6); },   /* elle passe : un souffle, deux notes claires, la banderole claque */
+    bois:function(){ souffle(0, .035, .3, 2600, 500, .8, 'lowpass', .002); tendre(175, 0, .09, .3, 78, .002, 'sine'); tendre(520, 0, .03, .12, 240, .001, 'triangle', 2200); },   /* « tchac ! » : un coup sec dans le bois, rien d'autre (Romain, 15 h 08) */
+    dedans:function(){ souffle(0, .2, .09, 700, 4200, 1.3, 'bandpass', .09); souffle(.12, .16, .05, 3600, 900, 1); [784, 1047, 1319].forEach(function(n, i){ tendre(n, .2 + i * .085, .2, .05, null, .006, 'triangle', 3600); }); tendre(1568, .46, .4, .04, null, .008); },   /* « fwip ! » : elle traverse l'anneau, puis un petit air de victoire (Romain, 15 h 08) */
     acote:function(){ souffle(0, .5, .04, 2200, 500, .8); tendre(392, .3, .22, .04, 262, .01, 'triangle', 900); },                                                               /* elle file au loin… */
     accroche:function(){ souffle(0, .16, .03, 900, 2000, .7); [784, 988, 1175].forEach(function(n, i){ tendre(n, .06 + i * .07, .16, .032, null, .006, 'triangle', 3000); }); },    /* la banderole se tend entre deux anneaux */
     fete:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(n, i){ tendre(n, i * .09, .3, .055, null, .01, 'triangle', 3000); }); tendre(1047, .6, .9, .04, null, .02); tendre(1319, .6, .9, .03, null, .02); tendre(1568, .6, .9, .024, null, .02);
