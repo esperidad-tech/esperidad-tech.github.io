@@ -74,11 +74,13 @@ E[3] = {
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
       {ic:'🎂', t:'Fais le haut du gâteau de la fête, à la boulangerie de Gaspard.', fait:[{vu:'alchimiste:boulangerie:gateau'}]},
-      /* (12 novembre, Bible §13.26) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : seul l'herbier du Sage dit où et quand ;
-         trois poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume) */
-      {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : seul l\'herbier du Sage dit où, et quand.',
+      /* (12 novembre, Bible §13.26 et §13.28) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : l'herbier du Sage ne donne
+         que des indices ; quatre poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume).
+         En échange, il veut de la mélisse pour sa tisane : la troisième mission n'arrive qu'après Bertille (e.si, mission.js). */
+      {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : l\'herbier du Sage te mettra sur la piste.',
         fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
-      {ic:'🔔', t:'Trois plantes poussent au-delà de la brume. Anselme, au clocher, sait la faire reculer.', fait:[{vu:'alchimiste:clocher:bertille'}]},
+      {ic:'🔔', t:'Des plantes poussent au-delà de la brume. Anselme, au clocher, pourra peut-être t\'aider.', fait:[{vu:'alchimiste:clocher:bertille'}]},
+      {si:[{vu:'alchimiste:clocher:bertille'}], ic:'🍵', t:'Rapporte de la mélisse à Anselme, pour sa tisane. Une promesse est une promesse !', fait:[{vu:'alchimiste:clocher:tisane'}]},
       {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
       {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
@@ -88,7 +90,7 @@ E[3] = {
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
-      {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : où vit chaque plante, et quand la cueillir.', fait:[{lu:'herbier'}]},
+      {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir.', fait:[{lu:'herbier'}]},
       {des:2, ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
@@ -387,7 +389,7 @@ E[3] = {
   plantes:true,
   /* ---------- La brume repoussée (12 novembre, Bible §13.26 et §14.7 ; cueillette.js, carte-jeu.js) : Bertille, la petite cloche d'Anselme, lève
      deux bancs de brume de la grande carte — le Nord (le Rond des Sorcières, où pousse la vesse-de-loup) et les collines de l'Ouest (le Vieux
-     verger et son gui, les Cinq Pierres et leur pied-de-loup). Les zones : monde-brume.js, ZONES. Sur la tablette de l'Alchimiste seulement
+     verger et son gui, les Cinq Pierres et leur pied-de-loup, le Rucher et sa mélisse). Les zones : monde-brume.js, ZONES. Sur la tablette de l'Alchimiste seulement
      (c'est elle qui demande à Anselme) ; la brume revient à l'enquête suivante. ---------- */
   brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}]},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
@@ -598,13 +600,20 @@ E[3] = {
       ]}
     },
     clocher:{
-      /* (12 novembre, Bible §13.26) L'ALCHIMISTE ET BERTILLE : trois plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
+      /* (12 novembre, Bible §13.26) L'ALCHIMISTE ET BERTILLE : des plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
          ses trois cloches (« Bertille, Gontran et la Grosse Marie », pnj.anselme) : elle repousse la brume « un petit peu » — au nord et à l'ouest
-         (E.brume). La Grosse Marie, elle, ne sonne qu'à minuit (ordre du maire) : c'est l'affaire du Barde, la nuit. À tout moment de la journée. */
+         (E.brume). La Grosse Marie, elle, ne sonne qu'à minuit (ordre du maire) : c'est l'affaire du Barde, la nuit. À tout moment de la journée.
+         LA TISANE D'ANSELME (Romain, 12 novembre, 15 h 39 ; Bible §13.28) : « c'est Anselme qui réclame de la tisane à la mélisse, et la mélisse, on
+         ne peut la trouver que derrière la brume ». Il sonne donc Bertille POUR qu'on aille lui en chercher ; l'Alchimiste lui en rapporte (le
+         point « tisane », visible dès qu'elle a de la mélisse ; elle garde sa plante pour l'établi). Dès le matin, Anselme la fait appeler par le
+         Barde (pnj.anselme, occupe.matin). En vrai : la tisane de mélisse calme et aide à dormir. */
       alchimiste:{intro:'Le clocher. Tout là-haut, Anselme veille sur ses trois cloches : Bertille, Gontran et la Grosse Marie.', points:[
-        {id:'bertille', ic:'🔔', nom:'Demander à Anselme de chasser la brume',
-          t:'« ANSELME ! LA BRUME CACHE MES PLANTES ! » — « TES TANTES ? » — « MES PLAN-TES ! » Il rit, et attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
-          note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village.'}
+        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme',
+          t:'« AH, TE VOILÀ ! » Anselme bâille à s\'en décrocher la mâchoire. « Mes cloches me résonnent dans la tête : je ne dors plus ! Il me faudrait une tisane de mélisse… mais la mélisse ne pousse plus que derrière la brume. » Il attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. Ça suffira. Tu m\'en rapportes ? » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
+          note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village. En échange, il veut de la mélisse pour sa tisane.'},
+        {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', or:3, visibleSi:[{vu:'plante:melisse'}],
+          t:'Tu lui tends une belle poignée de mélisse. Il froisse une feuille sous son nez. « ÇA SENT LE CITRON ! » Ce soir, une bonne tisane, et il dormira comme un loir. « Garde le reste pour toi. Et merci ! »',
+          note:'Anselme a sa mélisse. En tisane, elle calme et elle aide à dormir.'}
       ]},
       pisteur:{intro:'Le clocher. Tout là-haut dort la Grosse Marie, la plus vieille cloche du village.', points:[
         /* la clé d'Anselme : avec « La clé est au clou » (le Barde) ; difficile, un seul essai. Raté : le puits apparaît (puits, plus bas) */
@@ -792,7 +801,9 @@ E[3] = {
       questions:[]},
     /* un peu sourd, il parle fort (il ne ment jamais) */
     anselme:{ou:{apresmidi:'clocher', nuit:'clocher'}, carte:{matin:'clocher'},
-      occupe:{matin:['« QUOI ? JE N\'ENTENDS RIEN ! » DONG !', '« UNE BRIOCHE ? NON MERCI, J\'AI DÉJÀ MANGÉ ! » DONG !']},
+      /* (Romain, 12 novembre, 15 h 39) le matin, il fait appeler l'Alchimiste par le Barde : il a un service à lui demander (sa tisane de mélisse,
+         lieux.clocher). Dit à voix haute, sans code : l'Alchimiste peut monter au clocher dès le matin, avec ou sans ce message. */
+      occupe:{matin:['« AH, LE BARDE ! VA ME CHERCHER L\'ALCHIMISTE : J\'AI UN SERVICE À LUI DEMANDER ! » DONG !', '« L\'AL-CHI-MISTE ! PAS LE FLEURISTE ! DIS-LUI DE MONTER ME VOIR ! » DONG !']},
       salut:'HEIN ? AH, C\'EST TOI !', questions:[
       {q:'Vous m\'entendez bien, Anselme ?', g:'r', moments:A_, a:'HEIN ? Ah ! Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n\'entends plus rien !',
         note:'Anselme : il faut lui parler fort et lentement, et ne jamais le presser.'},
@@ -937,11 +948,11 @@ E[3] = {
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},
     /* dès le matin : L'HERBIER (Romain, 12 novembre, 12 h 52 : « uniquement de plantes, là où elles sont, et à quel moment de la journée on peut les
-       cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, l'endroit précis sur la carte,
-       le moment. Tout vient de D.PLANTES (donnees.js) ; la page est dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix
-       haute, l'Alchimiste cherche sur sa carte. */
+       cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, UN INDICE (plus l'endroit précis
+       depuis 15 h 37 : « il faut que ça soit un jeu de recherche », Bible §13.28), le moment. Tout vient de D.PLANTES (donnees.js) ; la page est
+       dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix haute, l'Alchimiste cherche sur sa carte. */
     {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier',
-      t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont noté où elle vit, et quand la cueillir. Lis-les à voix haute à l\'Alchimiste !'},
+      t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},
     /* les premiers doutes (les codes du Barde : Victor, Tim démasqué) */
     {id:'doutes', titre:'Une drôle de lettre', ic:'✉️', besoin:[{code:'info:poste'}, {code:'info:capuchon'}], bouton:'Réfléchir à la lettre',
       avant:'Cette lettre d\'Odette a quelque chose de bizarre… Il te faudrait un indice du Barde.',

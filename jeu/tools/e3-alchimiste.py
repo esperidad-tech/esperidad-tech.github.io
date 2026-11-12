@@ -119,7 +119,7 @@ with sync_playwright() as p:
     R = pg.evaluate("() => window.PLANTES_RECETTES")
     verifier(pg.evaluate("() => M.E().id === 3 && M.etabliDispo() && M.laboDispo()"), 'enquête 3, Alchimiste : l\'établi et le labo sont branchés')
     mi = pg.evaluate("() => M.etapesMission().map(function(m){ return m.t; })")
-    verifier(len(mi) >= 5 and 'gâteau' in mi[0] and 'sept plantes' in mi[1] and 'Anselme' in mi[2] and 'lettre' in mi[3] and 'sept potions' in mi[4], f'ses cinq missions ({len(mi)} lignes au Carnet)')
+    verifier(len(mi) >= 6 and 'gâteau' in mi[0] and 'sept plantes' in mi[1] and 'Anselme' in mi[2] and 'tisane' in mi[3] and 'lettre' in mi[4] and 'sept potions' in mi[5], f'ses missions (celle de la tisane d\'Anselme n\'arrive qu\'après Bertille) ({len(mi)} lignes)')
     atelier(pg)
     verifier(pg.evaluate("() => M.S.atelier.objets.filter(function(o){ return o.t === 'etabli'; }).length") == 1 and pg.locator('#atelier-ici .at-etabli-p').count() == 1, 'l\'établi des plantes est dans l\'atelier')
     verifier(signe(pg) == '', 'pas de signe au-dessus de l\'établi : aucune plante n\'attend')
@@ -136,7 +136,8 @@ with sync_playwright() as p:
     for l in ['lavoir', 'herboristerie', 'moulin', 'foret', 'clairiere', 'potager']:
         pts = lieu(pg, l)
         verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 0, f'{l} : plus rien à « chercher » dans la bulle du lieu ({pts})')
-    for k, mot in [('oseille', 'oseille'), ('melisse', 'mélisse')]:
+    # (12 novembre, 15 h 39, Bible §13.28 : trois plantes au village — l'oseille, le souci, le lin —, quatre au-delà de la brume, dont la mélisse)
+    for k, mot in [('oseille', 'oseille')]:
         t = CU.cueillir(pg, k)
         verifier(t is not None and mot in t and 'établi' in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : son endroit caché, « Cueillir », « sur l\'établi de ton atelier » ({(t or "")[:70]})')
     verifier(CU.cueillir(pg, 'oseille') is None and pg.evaluate("() => M.plantes().oseille") == 1, 'l\'oseille une deuxième fois ce matin : déjà cueillie')
@@ -144,9 +145,10 @@ with sync_playwright() as p:
         verifier(CU.cueillir(pg, k) is None and not pg.evaluate(f"() => M.plantes().{k} || 0"), f'{k} : pas avant l\'après-midi')
     for k in CU.LOIN:
         verifier(CU.cueillir(pg, k) is None and not pg.evaluate(f"() => M.plantes().{k} || 0"), f'{k} : au-delà de la brume, hors d\'atteinte sans Bertille')
+    verifier(CU.tisane(pg) is None, 'pas de mélisse à porter à Anselme tant qu\'on n\'en a pas')
     t = CU.bertille(pg)
-    verifier(t is not None and 'Bertille' in t and pg.evaluate("() => M.brumeLevee().join()") == 'n,o', 'au clocher : Anselme sonne Bertille, la brume du nord et de l\'ouest recule')
-    for k, mot in [('lycopode', 'pied-de-loup'), ('vesse', 'vesse-de-loup')]:
+    verifier(t is not None and 'Bertille' in t and 'tisane de mélisse' in t and pg.evaluate("() => M.brumeLevee().join()") == 'n,o', 'au clocher : Anselme veut une tisane de mélisse, il sonne Bertille, la brume du nord et de l\'ouest recule')
+    for k, mot in [('melisse', 'mélisse'), ('lycopode', 'pied-de-loup'), ('vesse', 'vesse-de-loup')]:
         t = CU.cueillir(pg, k)
         verifier(t is not None and mot in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : cueilli au-delà de la brume')
     # (Romain, 13 h 52, Bible §13.25) la tringle de l'établi n'a que trois places : la quatrième plante cueillie attend devant la porte de l'atelier
@@ -160,6 +162,10 @@ with sync_playwright() as p:
     verifier('plus de place' in tt and pg.evaluate("() => M.plantesPorte().length") == 1 and pg.locator('.at-toast .at-toast-lire').count() == 1, f'on touche le panier : « il n\'y a plus de place », avec son 🔊, et elle reste devant la porte ({tt[:70]})')
     t = CU.cueillir(pg, 'gui')
     verifier(t is not None and 'gui' in t and pg.evaluate("() => M.plantes().gui") == 1, 'le gui : cueilli au-delà de la brume')
+    # la tisane d'Anselme : on lui rapporte de la mélisse (et on garde la sienne pour l'établi)
+    or0 = pg.evaluate("() => M.S.or")
+    t = CU.tisane(pg)
+    verifier(t is not None and 'CITRON' in t and pg.evaluate("() => M.S.or") == or0 + 3 and pg.evaluate("() => M.plantes().melisse") == 1 and pg.evaluate("() => !!M.P().vus['alchimiste:clocher:tisane']"), f'la mélisse rapportée à Anselme : trois pièces d\'or, et la plante reste à l\'Alchimiste ({(t or "")[:60]})')
     # (le souci et le lin : l'après-midi ; le robot avance l'heure le temps de les cueillir, pour faire les sept potions d'une traite)
     pg.evaluate("() => { M.P().moment = 1; }")
     for k, mot in [('souci', 'souci'), ('lin', 'lin')]:
@@ -356,7 +362,7 @@ with sync_playwright() as p:
     verifier('minuit pile' in texte(pg) and pg.evaluate("() => M.S.or") == or0 + 5, 'le maire : « On le coupera à minuit pile », et cinq pièces d\'or')
     fermer(pg)
     fait = pg.evaluate("() => { M.majMission(); return Object.keys(M.P().mission.faits).length; }")
-    verifier(fait == 5, f'ses cinq missions sont validées ({fait})')
+    verifier(fait == 6, f'ses six missions sont validées, la tisane d\'Anselme comprise ({fait})')
     # ======================================================================== la nuit : le sac
     print('— La nuit : le sac')
     code(pg, 'moment:2')

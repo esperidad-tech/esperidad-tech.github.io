@@ -16,6 +16,8 @@
      lu (page du Grand Livre ouverte), dictee (recette secrète complète dans le grimoire), ou [une des conditions].
    Une mission validée le reste (on ne recule jamais).
    (enquête 3) e.des : le n° du moment où la mission arrive (2 : la nuit). Avant, elle n'est pas dans la liste : elle gâcherait la surprise.
+   (enquête 3, 12 novembre) e.si : [conditions] — la mission n'arrive que quand l'une est vraie (la tisane d'Anselme, après Bertille). Les
+   enquêtes 1 et 2 n'ont ni l'un ni l'autre : rien ne change pour elles.
    ========================================================== */
 (function(){
 'use strict';
@@ -56,8 +58,9 @@ function un(b){
 }
 function liste(l){ return !!(l && l.length && l.some(un)); }
 M.condMission = un;
-/* une mission qui n'est pas encore arrivée (e.des : le n° du moment où elle apparaît) */
-function pasEncore(e){ var P = M.P(); return e.des !== undefined && (!P || (P.moment || 0) < e.des); }
+/* une mission qui n'est pas encore arrivée (e.des : le n° du moment où elle apparaît ; e.si : des conditions, dont une doit être vraie) */
+function tardive(e){ return e.des !== undefined || !!e.si; }
+function pasEncore(e){ var P = M.P(); return (e.des !== undefined && (!P || (P.moment || 0) < e.des)) || !!(e.si && !(P && liste(e.si))); }
 
 /* ---------- État ---------- */
 M.etapesMission = function(){
@@ -66,7 +69,7 @@ M.etapesMission = function(){
 };
 function etat(){
   var P = M.P();
-  if(!P.mission || typeof P.mission !== 'object') P.mission = {faits:{}, manuels:{}, coches:{}, nonLus:M.etapesMission().filter(function(e){ return !e.libre && !e.piste && e.des === undefined; }).length};
+  if(!P.mission || typeof P.mission !== 'object') P.mission = {faits:{}, manuels:{}, coches:{}, nonLus:M.etapesMission().filter(function(e){ return !e.libre && !e.piste && !tardive(e); }).length};
   P.mission.coches = P.mission.coches || {};
   return P.mission;
 }
@@ -85,8 +88,8 @@ M.majMission = function(){
   var Mi = etat(), nouvelles = [], arrivees = 0;
   L.forEach(function(e, i){
     if(pasEncore(e)) return;
-    /* (e.des) une mission qui vient d'arriver : la pastille 🎯 de l'onglet Carnet le dit */
-    if(e.des !== undefined && !e.libre && !e.piste){ Mi.arrivees = Mi.arrivees || {}; if(!Mi.arrivees[i]){ Mi.arrivees[i] = 1; arrivees++; } }
+    /* (e.des, e.si) une mission qui vient d'arriver : la pastille 🎯 de l'onglet Carnet le dit */
+    if(tardive(e) && !e.libre && !e.piste){ Mi.arrivees = Mi.arrivees || {}; if(!Mi.arrivees[i]){ Mi.arrivees[i] = 1; arrivees++; } }
     if(!Mi.faits[i] && faite(e, i, Mi)){ Mi.faits[i] = 1; Mi.coches[i] = 1; nouvelles.push(e); }   /* validée : sa case se coche (on peut la décocher) */
   });
   if(arrivees){ Mi.nonLus = (Mi.nonLus || 0) + arrivees; M.sauver(); if(!nouvelles.length) setTimeout(function(){ M.toast(arrivees > 1 ? '🎯 De nouvelles missions dans ton Carnet !' : '🎯 Une nouvelle mission dans ton Carnet !'); }, 900); }

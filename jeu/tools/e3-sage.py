@@ -107,7 +107,8 @@ with sync_playwright() as p:
     fermer(pg)
     t = page(pg, 'herbier')
     verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.26)')
-    verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' in t and 'épouvantail' in t and 'donjon' not in t.lower(), 'plus de code : le Sage lit, l\'Alchimiste cherche sur sa carte ; pas un mot du donjon')
+    verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' not in t and 'Cinq Pierres' not in t and 'incantations' in t and 'grands rochers' in t and 'épouvantail' in t and 'donjon' not in t.lower(),
+             'plus de code : le Sage lit des indices (plus le nom des lieux : Bible §13.28), l\'Alchimiste cherche sur sa carte ; pas un mot du donjon')
     shot(pg, 'A-herbier')
     t = page(pg, 'doutes')
     verifier('🔒' in t or pg.locator('#livre-ici .lv-page.on .b-besoin').count() >= 1, 'les premiers doutes : fermés sans code du Barde')

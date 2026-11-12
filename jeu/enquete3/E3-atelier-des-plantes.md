@@ -88,33 +88,44 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 
 > **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « sur la carte, on ne les voit pas […] dès qu'on va appuyer exactement sur la zone […] la petite bulle, avec marqué cueillir cette plante-là » ; « 4 plantes dans le plan de base du village […] 3 plantes dans la carte élargie, pas accessibles à l'enquête numéro 2 ». 13 h 09 : « liés à là où on peut les trouver dans la réalité […] je veux qu'on apprenne des choses sur la réalité ».
 
-**Chaque plante pousse à UN endroit précis de la carte, qu'on ne voit pas.** L'Alchimiste touche le bon endroit : la plante surgit (une petite pastille, qui reste sur la carte pour toute la saison) et sa bulle s'ouvre, avec le bouton jaune « 🧺 Cueillir … ». À côté, rien ne se passe. Seul l'Alchimiste a ces endroits. Cueillie, la plante pend à la tringle de l'établi (§2).
+> **Durci à 15 h 37 et 15 h 39 (Bible §13.28).** Romain : « c'est trop facile » ; « que la hitbox soit exactement le rond qui s'affiche » ; « la mélisse, on ne peut la trouver que derrière la brume ». Ce qui suit est l'état d'aujourd'hui.
 
-| Plante | L'endroit précis, sur la carte | Son vrai milieu | Quand |
+**Chaque plante pousse à un endroit précis de la carte, qu'on ne voit pas** (l'oseille en a deux). L'Alchimiste touche le bon endroit : la plante surgit (une petite pastille, qui reste sur la carte pour toute la saison) et sa bulle s'ouvre, avec le bouton jaune « 🧺 Cueillir … ». **L'endroit à toucher est exactement le rond de la pastille, pas plus** : juste à côté, rien ne se passe. Seul l'Alchimiste a ces endroits. Cueillie, la plante pend à la tringle de l'établi (§2), ou attend devant la porte de l'atelier s'il n'y a plus de place.
+
+| Plante | Où elle est (pour nous : l'herbier ne le dit pas, §5) | Son vrai milieu | Quand |
 | --- | --- | --- | --- |
-| **L'oseille** | au bord du ruisseau, juste au-dessus du lavoir, là où un petit bras d'eau le rejoint | les prés humides | à toute heure, même la nuit |
-| **La mélisse** | derrière l'herboristerie, entre le carré de lavande et la rivière | les jardins (« l'herbe aux abeilles ») | dès le matin, la rosée partie |
-| **Le souci** | dans le potager, au pied de la cloche de paille du milieu | les potagers, près des choux (il éloigne les pucerons) | pas avant l'après-midi (il dort la nuit, s'ouvre quand le soleil est haut) |
-| **Le lin** | dans le grand champ de blé, au pied de l'épouvantail | les champs, en plein soleil | pas avant l'après-midi (le matin, la rosée mouille ses graines) |
-| **Le pied-de-loup** ⭐ | au-delà de la brume, à l'ouest : sur la colline des Cinq Pierres, au pied de la pierre du nord | les landes des collines, en terre pauvre, entre les bruyères | à toute heure |
-| **La vesse-de-loup** ⭐ | au-delà de la brume, au nord du Vieux Chêne : au beau milieu du Rond des Sorcières | les bois et les clairières, à même la terre, par petits groupes | à toute heure |
-| **Le gui** ⭐ | au-delà de la brume, à l'ouest : dans le Vieux verger, tout en haut du pommier à l'échelle | jamais dans la terre : sur les branches, surtout des vieux pommiers | à toute heure (il reste vert en hiver) |
+| **L'oseille** | **deux endroits** : entre le carré de lavande de l'herboriste et la rivière ; au bord gauche du potager, les pieds dans le ruisseau | les terres fraîches et humides, les potagers | à toute heure, même la nuit |
+| **Le souci** | au bout des rangs de lavande de l'herboriste | une plante d'herboriste (pour la peau) | pas avant l'après-midi (il dort la nuit, s'ouvre quand le soleil est haut) |
+| **Le lin** | dans le champ, au pied de l'épouvantail | les champs cultivés | pas avant l'après-midi (le matin, la rosée mouille ses graines) |
+| **La mélisse** ⭐ | au-delà de la brume : au pied de la première ruche du Rucher | « l'herbe aux abeilles », près des ruches et des jardins | dès le matin, la rosée partie |
+| **Le pied-de-loup** ⭐ | au-delà de la brume : aux Cinq Pierres, au pied de la pierre du nord | les landes des collines, au ras du sol | à toute heure |
+| **La vesse-de-loup** ⭐ | au-delà de la brume : au milieu du Rond des Sorcières | les bois humides, à même la terre | à toute heure |
+| **Le gui** ⭐ | au-delà de la brume : dans le Vieux verger, sur le pommier à l'échelle | jamais dans la terre : sur les branches des vieux pommiers | à toute heure (il reste vert en hiver) |
 
-- **Les quatre premières** sont dans le village : on les trouve avec toute la brume, **dès l'enquête 2** (à l'aveugle : pas d'herbier, pas de mission ; trouvée, la plante se cueille vraiment, l'établi apparaît et on peut faire sa potion ; tout suit le héros à l'enquête 3).
-- **Les trois ⭐** n'existent que dans l'enquête 3, et seulement quand la brume a reculé : **l'Alchimiste monte au clocher et demande à Anselme** (« 🔔 Demander à Anselme de chasser la brume ») ; il sonne **Bertille, sa plus petite cloche**, qui « ne repousse la brume qu'un petit peu » : au nord et à l'ouest, sur la carte de l'Alchimiste seulement (Bible §14.7).
+- **Les trois premières** sont dans le village : on les trouve avec toute la brume, **dès l'enquête 2** (à l'aveugle : pas d'herbier, pas de mission ; trouvée, la plante se cueille vraiment, l'établi apparaît et on peut faire sa potion ; tout suit le héros à l'enquête 3).
+- **Les quatre ⭐** n'existent que dans l'enquête 3, et seulement quand la brume a reculé. **La tisane d'Anselme** : dès le matin, Anselme fait appeler l'Alchimiste par le Barde (« Va me chercher l'Alchimiste : j'ai un service à lui demander ! », dit à voix haute, sans code). Au clocher (« 🔔 Monter voir Anselme »), il réclame une tisane de mélisse — « mais la mélisse ne pousse plus que derrière la brume » — et sonne **Bertille, sa plus petite cloche** : la brume recule au nord et à l'ouest, sur la carte de l'Alchimiste seulement (Bible §14.7). Une mission arrive : « Rapporte de la mélisse à Anselme ». Avec de la mélisse, « 🍵 Porter la mélisse à Anselme » : trois pièces d'or, et l'Alchimiste garde sa plante.
 - **Trop tôt** (le souci et le lin, le matin) : la plante se montre, sa bulle raconte pourquoi elle ne se cueille pas encore. **Jamais trop tard** : tout se cueille encore la nuit (les sept potions sont obligatoires).
-- **Tout est dans `D.PLANTES`** (`jeu/src/donnees.js`) : la place (`x`, `y`), la première enquête (`des`), la zone de brume (`zone`), le moment (`pasAvant`) et toutes les phrases. Pour déplacer une plante : changer la place **et** la phrase « où » de l'herbier, garder un vrai milieu, relancer `tools/e3-cueillette.py`.
+- **Tout est dans `D.PLANTES`** (`jeu/src/donnees.js`) : la place (`x`, `y`, et `aussi` pour un deuxième endroit), la première enquête (`des`), la zone de brume (`zone`), le moment (`pasAvant`) et toutes les phrases. Pour déplacer une plante : changer la place, vérifier que l'indice de l'herbier y mène toujours **sans le dire**, garder un vrai milieu, relancer `tools/e3-cueillette.py`.
 
 ## 5. L'herbier des Fondateurs (le Sage)
 
 > **Refait le 12 novembre après-midi (Bible §13.26).** Romain, 12 h 52 : « dans l'herbier, je veux pas qu'il parle de donjon […] uniquement de plantes et uniquement là où elles sont […] et à quel moment de la journée on peut les cueillir » ; « des informations très précises ».
 
-- **Dès le matin de l'enquête 3**, une page du Grand Livre du Sage : « L'herbier des Fondateurs ». En tête : « Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont noté où elle vit, et quand la cueillir. Lis-les à voix haute à l'Alchimiste ! »
-- **Une planche par plante** (les quatre du village, puis les trois d'au-delà de la brume) : son dessin (le même qu'à l'établi), son nom, puis deux lignes, chacune avec son 🔊 :
-  - **« Où ? »** : d'abord son vrai milieu, puis l'endroit précis de la carte (les deux premières colonnes du tableau du §4, mot pour mot dans `D.PLANTES` : `vit` et `ou`). Exemple : « Il ne pousse jamais dans la terre : il vit accroché aux branches, surtout celles des vieux pommiers. Au-delà de la brume, à l'ouest : dans le Vieux verger, tout en haut du pommier à l'échelle. »
+> **Durci à 15 h 37 (Bible §13.28).** Romain : « c'est trop facile […] tu écris des indices qui sont un peu moins évidents […] tu dis pas exactement l'emplacement. Il faut que ça soit un jeu quand même de recherche. »
+
+- **Dès le matin de l'enquête 3**, une page du Grand Livre du Sage : « L'herbier des Fondateurs ». En tête : « Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l'Alchimiste : à vous de deviner où chercher ! »
+- **Une planche par plante** (les trois du village, puis les quatre d'au-delà de la brume) : son dessin (le même qu'à l'établi), son nom, puis deux lignes, chacune avec son 🔊 :
+  - **« Où ? » : un indice, jamais l'endroit** (ni le nom d'un lieu, ni un détail du dessin, ni une direction). Les sept, mot pour mot (`vit` puis `ou` dans `D.PLANTES`) :
+    - l'oseille : « Elle a toujours soif. On en trouve aux abords des potagers et des jardins, là où la terre est très humide. »
+    - le souci : « Une jolie fleur orange, comme un petit soleil : elle soigne la peau. Les herboristes l'aiment beaucoup. »
+    - le lin : « Il pousse dans les champs cultivés. Les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail. »
+    - la mélisse : « On l'appelle l'herbe aux abeilles : elles raffolent de ses petites fleurs. Elle ne pousse plus qu'au-delà de la brume. »
+    - le pied-de-loup : « Il rampe au ras du sol, comme une petite branche de sapin. Il pousse au-delà de la brume, à l'ombre des grands rochers. »
+    - la vesse-de-loup : « Un champignon tout rond, qui pousse dans l'humidité de la forêt sombre, au-delà de la brume. On raconte que les sorcières s'en servaient pour leurs incantations. »
+    - le gui : « Il ne pousse jamais dans la terre : il vit accroché aux branches des vieux pommiers. Il se cache au-delà de la brume. »
   - **« Quand ? »** (`quand`). Exemple : « Pas avant l'après-midi : il dort la nuit, et ne s'ouvre que quand le soleil est haut. »
 - **Pas un mot du donjon, pas un mot des potions.**
-- **Plus de code « L'herbier »** : le Sage lit, l'Alchimiste cherche sur sa carte. La mission du Sage : « Lis l'herbier à l'Alchimiste, dans ton Grand Livre : où vit chaque plante, et quand la cueillir. »
+- **Plus de code « L'herbier »** : le Sage lit, l'Alchimiste cherche sur sa carte. La mission du Sage : « Lis l'herbier à l'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir. »
 - Les anciennes énigmes (le carrefour, les lièvres, le pommier du potager) sont supprimées.
 
 ## 6. La vesse-de-loup : « Suivre la poussière » (mini-jeu de l'Alchimiste) — RETIRÉ DE L'ENQUÊTE LE 12 NOVEMBRE
@@ -191,6 +202,10 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
 - le pied-de-loup (lycopode en massue) vit sur les landes et les pelouses des collines et des montagnes, en terre pauvre et acide, souvent avec la bruyère ;
 - la vesse-de-loup pousse dans les bois et les prairies, sur le sol, souvent en petits groupes (le « Rond des Sorcières » de la carte est un clin d'œil aux ronds de champignons, pas un fait vérifié pour cette espèce) ;
 - le gui n'a pas de racine dans la terre : il vit sur les branches des arbres (pommiers et peupliers surtout) et reste vert l'hiver.
+
+**Pour les indices de l'herbier de 15 h 37 (Bible §13.28)** :
+- **la vesse-de-loup et les sorcières : une légende, pas un fait.** Romain proposait « souvent utilisé pour faire des incantations » ; l'herbier dit « on raconte que les sorcières s'en servaient pour leurs incantations ». Ce qu'on a trouvé (recherche du 12 novembre, 15 h 50) : les ronds de champignons s'appellent « ronds de sorcières », et on les a longtemps attribués aux gnomes, aux fées ou au diable ([Rond de sorcière, Futura](https://www.futura-sciences.com/planete/definitions/champignon-rond-sorciere-21012/)) ; une vesse-de-loup passe pour plonger dans un demi-sommeil où l'on entend des voix qui répondent aux questions ([fiche « lycoperdon », Office québécois de la langue française](https://vitrinelinguistique.oqlf.gouv.qc.ca/fiche-gdt/fiche/17017848/lycoperdon)) ; elle pousse dans les endroits humides et ombragés, en grappes, et servait à arrêter les saignements ([La vesse-de-loup, savoirs des Kainai](https://galileo.org/kainai/puffball/)). Rien qui dise que les sorcières d'Europe s'en servaient « souvent » ;
+- non vérifié en ligne ce jour-là, mais connu : l'oseille est une plante de potager qui veut une terre fraîche ; le souci des jardins est « officinal » (une plante d'apothicaire, pour la peau) ; les oiseaux mangent les graines de lin ; la tisane de mélisse calme et aide à dormir (c'est pour ça qu'Anselme en veut) ; les apiculteurs aiment la mélisse près des ruches. **À revérifier si on veut en faire des « C'est vrai ! ».**
 
 **Une liberté prise ici** : dans la nature, on ne trouverait pas forcément ces sept plantes à la même saison, ni mûres le même jour.
 

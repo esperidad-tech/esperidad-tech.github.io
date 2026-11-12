@@ -198,7 +198,7 @@ with sync_playwright() as p:
     ev(pg, 'parler', {'id': 'victor'}); fermer(pg)
     # Tim : il ment, démasqué → le code du capuchon
     ev(pg, 'lieu', {'id': 'clocher'})
-    verifier('JE N\'ENTENDS RIEN' in texte(pg), 'au clocher : Anselme, occupé, et Tim')
+    verifier('VA ME CHERCHER L\'ALCHIMISTE' in texte(pg), 'au clocher : Anselme, occupé, fait appeler l\'Alchimiste (sa tisane de mélisse : Bible §13.28), et Tim')
     shot(pg, 'clocher-matin')
     ev(pg, 'parler', {'id': 'tim'}); poser(pg, 'tim', 0)
     verifier(pg.locator('#voile [data-act=bd-ment]').count() == 1, 'le 🤥 sous la dernière réponse')
