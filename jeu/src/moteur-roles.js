@@ -139,7 +139,14 @@ M.infosCarte = function(){
   });
   /* (plus de marqueurs « qui est là » pour le Barde : depuis le 5 novembre, 8 h 59, la carte montre à tout le monde où est chacun, carte-jeu.js) */
   (E.bonus || []).forEach(function(b){
-    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:b.label || 'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+  });
+  /* (enquête 3) un point de lieu peut aussi avoir son icône sur la carte (p.carteIc, p.carteNom), tant qu'il n'est pas fait :
+     le gâteau de l'Alchimiste, comme celui des trois autres (des missions bonus) — Romain, 12 novembre, 21 h 34 */
+  M.cle(E.lieux).forEach(function(id){
+    M.pointsVisibles(id, role).forEach(function(p){
+      if(p.carteIc && !P.vus[role + ':' + id + ':' + p.id]) marqueurs.push({lieu:id, ic:p.carteIc, label:p.carteNom || p.nom, act:'lieu', id:id, classe:'bonus'});
+    });
   });
   if(role === 'alchimiste'){
     M.cle(P.notesIngr || {}).forEach(function(id){

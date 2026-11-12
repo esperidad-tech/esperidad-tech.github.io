@@ -536,14 +536,16 @@ E[3] = {
           rate:'Elle est trop rapide ! L\'oie disparaît au coin de la rue, en battant des ailes. Gaspard s\'arrache les cheveux.',
           ferme:'L\'oie court encore quelque part dans Brumeval…'}
       ]},
-      /* l'Alchimiste (étape 4) : le gâteau de la fête (mj-gateau.js : une création libre, quinze minutes, on ne le rate jamais).
+      /* l'Alchimiste (étape 4) : le gâteau de la fête (mj-gateau.js : une création libre, dix minutes, on ne le rate jamais).
          Gaspard a monté les gros étages du bas ; l'Alchimiste fait le haut (jusqu'à quatre étages) : avec les siens, ça fait bien
-         les « sept étages » dont tout le village parle. */
+         les « sept étages » dont tout le village parle. Depuis le 12 novembre (21 h 34, Romain : « que le mini-jeu du gâteau soit pour
+         tout le monde ») les trois autres font aussi le leur (E.bonus, « Le concours de gâteaux ») : on attend les autres, on commence
+         ensemble, et on élit le plus beau. L'icône 🎂 sur la carte : carteIc (moteur-roles.js, M.infosCarte). */
       alchimiste:{intro:'La boulangerie de Gaspard. Sur la grande table, trois énormes étages de gâteau attendent leur chapeau.', points:[
-        {id:'gateau', ic:'🎂', nom:'Le gâteau de la fête', moments:['matin', 'apresmidi'], mj:'gateau',
-          avant:'Gaspard a monté les gros étages du bas. Il te confie le plus beau : tout le haut du gâteau ! La pâte, le glaçage, la crème, les décorations… et n\'oublie pas les chats d\'Odette. Tu as quinze minutes.',
+        {id:'gateau', ic:'🎂', nom:'Le gâteau de la fête', moments:['matin', 'apresmidi'], mj:'gateau', carteIc:'🎂', carteNom:'Le gâteau',
+          avant:'Gaspard te confie le haut de son gâteau ! Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau !',
           bouton:'🎂 Faire le gâteau',
-          t:'Gaspard pose ton gâteau tout en haut de sa pièce montée, et recule de trois pas : « Sept étages en tout ! Du jamais vu à Brumeval ! »'}
+          t:'Gaspard pose ton gâteau tout en haut de sa pièce montée : « Sept étages ! » Montre-le aux autres… et votez pour le plus beau !'}
       ]}
     },
     /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.26) : les sept plantes poussent à sept endroits
@@ -989,7 +991,18 @@ E[3] = {
       avant:'Il te faut deux preuves : l\'écriture de la lettre (l\'Alchimiste), et un aveu (le Barde).',
       t:'Mélusine a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.'}
   ],
-  bonus:[],
+  /* Le concours de gâteaux (Romain, 12 novembre, 21 h 34 : « que tout le monde fasse un gâteau, et après on élit le plus beau » ;
+     dix minutes ; une icône sur la carte ; « attends tes amis, commencez en même temps ») : le Barde, le Pisteur et le Sage font le leur
+     à la boulangerie, le matin ou l'après-midi, en même temps que l'Alchimiste (son point « Le gâteau de la fête », plus haut).
+     On ne le rate jamais ; l'élection se fait autour de la table, pas dans le jeu. */
+  bonus:['barde', 'pisteur', 'sage'].map(function(r){
+    return {id:'gateau_' + r, role:r, lieu:'boulangerie', moments:['matin', 'apresmidi'], mj:'gateau', ic:'🎂', label:'Le gâteau', or:3,
+      titre:'Le concours de gâteaux',
+      t:'Gaspard lance un concours : chacun fait son gâteau pour la fête !',
+      avant:'Concours de gâteaux chez Gaspard ! Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau !',
+      bouton:'🎂 Faire le gâteau',
+      fin:'Ton gâteau part sur la grande table de la fête. Montre-le aux autres… et votez pour le plus beau !'};
+  }),
   /* ---------- La fin (étape 7 ; E3-dialogues-et-trame.md §4.8) : minuit dans la crypte, le maire, la bague, le cachot ----------
      La même pour toute l'équipe. Une seule réplique change, selon ce que Léo a dit au Barde : la tablette du Sage le sait par le code
      « Ce que Léo a dit » (info:leo_dit2 / leo_dit3), et le dit aux autres dans le code de fin (victoire:1x, victoire:2x : moteur-actions.js,
