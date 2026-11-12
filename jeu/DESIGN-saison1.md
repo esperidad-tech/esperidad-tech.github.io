@@ -2110,7 +2110,7 @@ Même demande de Romain (11 novembre, 22 h 59 et 23 h 29). **Romain, 12 novembre
 
 ---
 
-### 13.24 Les banderoles de la fête, le nouveau tir vu par les yeux du Pisteur (12 novembre, 13 h 26) — CONSTRUIT, dans les sources ; PAS ENCORE EN LIGNE ; pas encore branché dans l'enquête 3
+### 13.24 Les banderoles de la fête, le nouveau tir vu par les yeux du Pisteur (12 novembre, 13 h 26) — CONSTRUIT ET EN LIGNE DANS LA SALLE DES MINI-JEUX (14 h 44) ; pas encore branché dans l'enquête 3
 
 **La demande de Romain** (13 h 01, 13 h 26 et 13 h 27 ; « Commence la création. »). Le tir de côté des banderoles est « trop facile, même au niveau 10 » et « un peu basique » : il faut changer la mécanique. Il veut le système de tir du jeu « Archery » de l'application « 2 Player Games » (on reprend l'idée, pas les dessins), tel qu'il l'a décrit :
 - des anneaux dans le ciel, tenus par des perches ; on touche un anneau, et la vue de tir s'ouvre ; **cinq fois d'affilée** ;
@@ -2150,7 +2150,7 @@ Même demande de Romain (11 novembre, 22 h 59 et 23 h 29). **Romain, 12 novembre
 
 **Les essais** : un robot neuf, **`jeu/tools/visee.py`** (50 vérifications, toutes bonnes : l'accueil, la place, le doigt sur l'anneau qui ne fait rien, le doigt en bas, le retard du curseur, le minuteur qui tire tout seul, dans le trou / dans le bois / à côté, le vent qui fait rater quand on l'oublie, les cinq anneaux, les dix niveaux, trop de flèches perdues, téléphone debout, tablette debout, téléphone couché, puis dans le jeu : plein écran, la pause qui arrête le minuteur, la fin). `rapide.sh` (verif.js 1 2 3 « Tout est bon », tuto.py sans échec), `partie2.py` sans échec, **codes des enquêtes 1, 2 et 3 identiques** à ceux du jeu en ligne, `sons/test-page.py` 59 sur 59. Le robot vise parfaitement : il prouve qu'on peut gagner à tous les niveaux, pas que c'est faisable pour un enfant. **Jamais essayé sur une vraie tablette.**
 
-**PAS ENCORE EN LIGNE.** À 14 h 33, la sécurité de la session a refusé la mise en ligne (comme le matin à 10 h 27) : il faut que Romain l'autorise à nouveau dans la conversation. Tout est prêt dans les sources. Une fois en ligne, à essayer là : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 (changer le dernier chiffre pour le niveau).
+**EN LIGNE DEPUIS LE 12 NOVEMBRE, 14 H 44** (accord de Romain à 14 h 42 : « Tu peux le mettre en ligne. » ; à 14 h 33, la sécurité de la session avait refusé la mise en ligne tant qu'il ne l'avait pas écrit dans la conversation, comme le matin à 10 h 27) : commit 4be8abd du site, **version 20261112-1343** (dans les Réglages : « 12/11 à 14 h 43 »), puis **l'Atelier des sons avec les onze sons** (commit 15d2b98) ; publication de GitHub vérifiée. Le jeu en ligne était exactement les sources d'avant : cette mise en ligne n'a ajouté que ce mini-jeu (il est dans le jeu, mais aucune enquête ne le lance). À essayer là : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 (changer le dernier chiffre pour le niveau). Les sons : https://esperidad-tech.github.io/brumeval/sons-essai.html (Mini-jeux › Tir aux anneaux).
 
 **Ce qui reste à décider avec Romain** : les deux flèches de secours ou zéro raté ; le niveau des banderoles dans l'enquête 3 ; puis, avec son go, brancher ce jeu à la place de l'ancien dans l'enquête 3 (`e3.js`, le point des banderoles : `mj:'visee'`), revoir les textes de Basile et du maire s'ils parlent du tir, et adapter `e3-pisteur.py`.
 
