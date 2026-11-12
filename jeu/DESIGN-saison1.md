@@ -2248,7 +2248,7 @@ Ce chantier fait aussi ce que le §13.23 annonçait pour « une autre conversati
 
 ---
 
-### 13.27 Les banderoles de la fête : les retours de Romain après son premier essai (12 novembre, 15 h 08 et 15 h 10) — FAITS, dans les sources ; PAS ENCORE EN LIGNE (la version en ligne est celle du §13.24)
+### 13.27 Les banderoles de la fête : les retours de Romain après son premier essai (12 novembre, 15 h 08 et 15 h 10) — FAITS ET EN LIGNE DANS LA SALLE DES MINI-JEUX (16 h 36)
 
 **Ce que Romain a dit** (« les graphismes, c'est sympa », puis) :
 - **les confettis du vent** : quand on vise un anneau, des confettis passent à l'arrière-plan dans le sens du vent ; « un vent de 1, on voit les confettis qui avancent tout doucement ; un vent de 12, ils filent ». « C'est les confettis qui vont tout faire. Vraiment, c'est extrêmement important » : ce sont eux qui disent où placer la flèche ;
@@ -2282,7 +2282,7 @@ Il a joint trois images du jeu « Archery » pour montrer la flèche vue de derr
 
 **Les essais** : le robot `jeu/tools/visee.py` refait (64 vérifications, toutes bonnes : les confettis vont dans le sens du vent et à la vitesse de sa force ; un vent plus faible, des confettis plus lents ; on s'approche en bandant ; sur l'arc on ne voit que le bout de la flèche ; en vol, ses plumes et sa traînée ; passée dans l'anneau, elle est derrière lui et descend ; le curseur dérive tout seul ; les niveaux ; un vent de 12 vers le haut, le bas, la gauche et la droite se compense toujours, sur tablette et sur téléphone, debout et couché ; la pause arrête le minuteur et les confettis). Le robot vise sans trembler (`v.tremble(0)`). Des films image par image regardés (dans le trou, dans le bois, à côté, le film d'explication). `rapide.sh`, `partie2.py`, codes des enquêtes identiques à ceux du jeu en ligne, `sons/test-page.py` 59 sur 59. **Jamais essayé sur une vraie tablette** (soixante confettis de plus à animer : à surveiller sur un appareil ancien).
 
-**PAS ENCORE EN LIGNE** : à 15 h 52, la sécurité de la session a de nouveau refusé la mise en ligne tant que Romain ne l'a pas écrite dans la conversation (un accord par mise en ligne). Tout est prêt : le jeu en ligne est exactement les sources d'avant ce travail, la mise en ligne n'ajoutera que ces retouches.
+**EN LIGNE DEPUIS LE 12 NOVEMBRE, 16 H 36** (accord de Romain à 16 h 34 : « met en ligne » ; à 15 h 52, la sécurité de la session avait refusé la mise en ligne tant qu'il ne l'avait pas écrite dans la conversation — un accord par mise en ligne) : commit f6f207d du site, **version 20261112-1535** (dans les Réglages : « 12/11 à 16 h 35 »), puis l'Atelier des sons avec les deux sons refaits (commit d5b9ef7) ; publication de GitHub vérifiée. Le jeu en ligne était exactement les sources d'avant ce travail : cette mise en ligne n'a ajouté que ces retouches. À essayer : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 (le dernier chiffre est le niveau ; le 10 pour les vents de 1 à 12).
 
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 

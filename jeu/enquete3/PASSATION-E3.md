@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 15 h 56)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 16 h 38)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -51,7 +51,7 @@
 
 - Le détail : **Bible §13.24**. Sur son « Commence la création. », le tir que Romain a décrit (façon « Archery » de « 2 Player Games ») est construit : un mini-jeu neuf, type `visee`. La place en fête vue par les yeux du Pisteur, cinq anneaux de bois au bout de perches ; on en touche un, on pose le doigt en bas, l'arc se bande, le viseur suit le doigt avec du retard, le vent pousse la flèche, elle doit passer dans le trou. 5 anneaux, 7 flèches ; seuls la taille du trou et le vent changent avec le niveau.
 - **En ligne depuis 14 h 44** (accord de Romain à 14 h 42 ; version 20261112-1343). Il se joue dans la salle : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 .
-- **Romain l'a essayé à 15 h 08 ; ses retours sont faits (Bible §13.27), pas encore en ligne** (il faut son accord pour la mise en ligne) : des confettis passent derrière l'anneau dans le sens du vent, d'autant plus vite qu'il est fort (« c'est les confettis qui vont tout faire ») ; le vent souffle dans tous les sens, de 1 à 4 (de 1 à 12 au niveau 10) ; le bras tremble, le curseur dérive tout seul ; la flèche est en vraie perspective (on la voit de derrière, elle tourne, passe l'anneau et retombe derrière lui) ; deux sons refaits.
+- **Romain l'a essayé à 15 h 08 ; ses retours sont faits et en ligne depuis 16 h 36 (Bible §13.27 ; version 20261112-1535)** : des confettis passent derrière l'anneau dans le sens du vent, d'autant plus vite qu'il est fort (« c'est les confettis qui vont tout faire ») ; le vent souffle dans tous les sens, de 1 à 4 (de 1 à 12 au niveau 10) ; le bras tremble, le curseur dérive tout seul ; la flèche est en vraie perspective (on la voit de derrière, elle tourne, passe l'anneau et retombe derrière lui) ; deux sons refaits.
 - **Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté. Avec le go de Romain : `mj:'visee'` dans `e3.js`, à un niveau qu'il choisit ; relire alors les phrases de Basile et du maire, et adapter `e3-pisteur.py`.
 - À lui demander : deux ratés permis (7 flèches) ou aucun ; le niveau dans l'enquête.
 
