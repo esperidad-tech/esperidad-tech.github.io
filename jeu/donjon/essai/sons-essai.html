@@ -1033,15 +1033,6 @@ function sonsVisee(audio, sortie){
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
     s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* une note qui tremble (la corde qui frémit) */
-  function tremble(fq, t0, duree, vol, vite, type){
-    var a = audio(); if(!a) return;
-    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain();
-    o.type = type || 'triangle'; o.frequency.setValueAtTime(fq, t); o.frequency.exponentialRampToValueAtTime(fq * .8, t + duree);
-    l.frequency.value = vite; lg.gain.value = vol * .8; l.connect(lg); lg.connect(g.gain);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    o.connect(g); g.connect(sortie(a)); o.start(t); l.start(t); o.stop(t + duree + .03); l.stop(t + duree + .03);
-  }
   /* un grincement qui dure (la corde, le bois qui se tendent) : des à-coups de plus en plus serrés (de r0 à r1 par seconde), qui
      résonnent de plus en plus aigu (de f0 à f1) ; le tout enfle jusqu'au bout, puis s'arrête net */
   function grince(t0, duree, vol, r0, r1, f0, f1, q){
