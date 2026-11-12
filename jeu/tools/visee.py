@@ -1,15 +1,16 @@
 """Les banderoles de la fête, le tir à l'arc vu de face (mj-visee.js) : le robot joue dans la salle des mini-jeux, puis dans le jeu.
 1. la salle, sur une tablette couchée : l'accueil en images (le film, le 🔊, le bouton jaune) ; la place et ses cinq anneaux
    (chacun son rond jaune, assez gros pour un doigt, et son vent : une force et un sens) ; on touche un anneau : la vue de tir,
-   les confettis qui passent dans le sens du vent, d'autant plus vite qu'il est fort ; un doigt posé en haut ne fait rien, un doigt
-   posé en bas bande l'arc et on s'approche un peu ; le curseur naît à côté de l'anneau, suit le doigt avec du retard, et tremble
-   tout seul ; lever le doigt tire ; dans le trou (la flèche passe derrière l'anneau et retombe), dans le bois, à côté ; le minuteur
+   les confettis qui passent dans le sens du vent, d'autant plus vite qu'il est fort (peu nombreux, de formes et de tailles
+   variées) ; l'arc et la main qui le tient ; un doigt posé en haut ne fait rien, un doigt posé en bas bande l'arc et on s'approche
+   un peu ; le curseur naît à côté de l'anneau, suit le doigt avec du retard, et glisse tout seul, lentement, loin, sans zigzaguer ;
+   lever le doigt tire ; dans le trou (la flèche passe derrière l'anneau et retombe), dans le bois, à côté ; le minuteur
    tire tout seul ; le vent compte (viser en plein milieu ne suffit pas) ; les cinq anneaux : « La place est décorée ! » ;
-2. les niveaux : du 1 au 10 l'anneau rapetisse ; le vent va de 1 à 3 au niveau 1, de 1 à 4 ensuite, de 1 à 12 au niveau 10 ;
-3. trop de flèches perdues : la partie s'arrête ;
+2. les niveaux : du 1 au 10 l'anneau rapetisse ; le vent va de 1 à 3 au niveau 1, de 1 à 4 ensuite, de 1 à 10 au niveau 10 ;
+3. trop de flèches perdues : la partie s'arrête dès qu'il n'en reste plus assez (même après des anneaux réussis) ;
 4. un téléphone debout, une tablette debout, un téléphone couché : tout tient dans l'écran, on y tire ;
 5. le jeu (index.html) : le mini-jeu lancé par le moteur, en plein écran, la pause (le minuteur s'arrête), la fin.
-Le robot vise sans trembler (v.tremble(0)), sauf quand il vérifie le tremblement.
+Le viseur du robot ne glisse pas tout seul (v.tremble(0)), sauf quand il vérifie cette dérive.
    BRUMEVAL_DIST=<dossier construit> python3 tools/visee.py"""
 import sys, os, json, math
 from playwright.sync_api import sync_playwright
@@ -67,11 +68,15 @@ DEDANS = """() => { var s = document.querySelector('.vs').getBoundingClientRect(
 # où sont les confettis du vent (le milieu de chacun)
 CONF = """() => [].map.call(document.querySelectorAll('.vs-souffle i'), function(e){ var m = /translate3d\\(([-\\d.]+)px, ?([-\\d.]+)px/.exec(e.style.transform); return m ? [+m[1], +m[2]] : null; })"""
 def vitesse_confettis(pg, ms=160):
-    """la vitesse des confettis, en pixels par seconde : (le long du vent, en travers) ; la médiane, sans ceux qui viennent de rentrer par l'autre bord"""
-    i, a = V(pg, 'v.mesures().actif'), pg.evaluate(CONF); pg.wait_for_timeout(ms); b = pg.evaluate(CONF)
-    va = V(pg, 'v.anneaux[%d].va' % i); ca, sa = math.cos(va), math.sin(va)
-    l = sorted(((q[0] - p[0]) * ca + (q[1] - p[1]) * sa, abs(-(q[0] - p[0]) * sa + (q[1] - p[1]) * ca)) for p, q in zip(a, b) if p and q and math.hypot(q[0] - p[0], q[1] - p[1]) < 600)
-    return l[len(l) // 2][0] * 1000 / ms, sorted(x[1] for x in l)[len(l) // 2] * 1000 / ms
+    """la vitesse des confettis, en pixels par seconde : (le long du vent, en travers) ; la médiane, sans ceux qui viennent de rentrer
+    par l'autre bord. Certains ondulent, d'autres font des boucles : on mesure trois fois de suite, et on garde la médiane du tout."""
+    i = V(pg, 'v.mesures().actif'); va = V(pg, 'v.anneaux[%d].va' % i); ca, sa = math.cos(va), math.sin(va); l = []
+    for _ in range(3):
+        t0 = pg.evaluate("performance.now()"); a = pg.evaluate(CONF); pg.wait_for_timeout(ms); b = pg.evaluate(CONF); dt = (pg.evaluate("performance.now()") - t0) / 1000
+        l += [((q[0] - p[0]) * ca + (q[1] - p[1]) * sa, abs(-(q[0] - p[0]) * sa + (q[1] - p[1]) * ca), dt) for p, q in zip(a, b) if p and q and math.hypot(q[0] - p[0], q[1] - p[1]) < 600]
+    return sorted(x[0] / x[2] for x in l)[len(l) // 2], sorted(x[1] / x[2] for x in l)[len(l) // 2]
+# les confettis : combien de dessins différents, combien de tailles différentes
+SORTES = """() => { var f = {}, t = {}; [].forEach.call(document.querySelectorAll('.vs-souffle i'), function(e){ f[e.innerHTML.replace(/(fill|stroke)="[^"]*"/g, '')] = 1; var m = /scale\\(([\\d.]+)/.exec(e.style.transform); if(m) t[m[1]] = 1; }); return [Object.keys(f).length, Object.keys(t).length]; }"""
 # la flèche passée derrière l'anneau : est-elle dessinée, et à quelle hauteur ?
 DERRIERE = """() => { var g = document.querySelector('.vs-fx-fond g'); if(!g || g.style.display === 'none') return null; var b = g.querySelector('.vs-f-fut').getBBox(); return b.width + b.height > 0 ? b.y + b.height / 2 : null; }"""
 
@@ -80,7 +85,8 @@ with sync_playwright() as p:
     # ---------------------------------------------------------------- 1. la salle, tablette couchée
     print('1. la salle, sur une tablette couchée (niveau 5)')
     pg = page(b, 1180, 820); pg.goto(SALLE + '5'); pg.wait_for_timeout(700)
-    verifier(pg.locator('.vsd').count() >= 1 and pg.locator('.vsd .vs-souffle i').count() > 10, 'l\'accueil montre le film d\'explication, avec les confettis du vent')
+    verifier(pg.locator('.vsd').count() >= 1 and 5 <= pg.locator('.vsd .vs-souffle i').count() <= 12, 'l\'accueil montre le film d\'explication, avec quelques confettis dans le vent')
+    verifier(pg.locator('.vsd .vs-a-m1 path').count() > 8 and pg.locator('.vsd .vs-a-m2 path').count() > 8 and pg.evaluate("() => document.querySelector('.vsd .vs-a-bois').getAttribute('d').length > 100"), 'et l\'arc dans la main du Pisteur')
     verifier(pg.locator('.mj-btn-lire, .mj-lire-consigne').count() >= 1, 'la phrase de l\'accueil a son 🔊')
     coul = pg.evaluate("() => { var c = getComputedStyle(document.querySelector('.mj-go')); return [c.backgroundImage + c.backgroundColor, c.color]; }")
     verifier('rgb(26' in coul[1] or 'rgb(0, 0, 0)' in coul[1] or 'rgb(2' in coul[1] or 'rgb(3' in coul[1] or 'rgb(1' in coul[1], f'le bouton pour lancer est jaune à texte sombre {coul[1]}')
@@ -100,9 +106,14 @@ with sync_playwright() as p:
     fort, faible = forces.index(max(forces)), forces.index(min(forces))
     i = fort; verifier(choisir(pg, i), 'toucher un anneau : on le vise de près')
     verifier(pg.locator('.vs-vent b').inner_text().strip() == str(forces[i]) and pg.locator('.vs-vent .vs-vent-d').count() == 1, 'le vent de cet anneau est écrit au-dessus, avec la flèche de son sens')
-    verifier(pg.locator('.vs-souffle i').count() >= 40 and float(pg.evaluate("() => getComputedStyle(document.querySelector('.vs-souffle')).opacity")) > .9, 'des confettis passent derrière l\'anneau')
+    nc = pg.locator('.vs-souffle i').count()
+    verifier(15 <= nc <= 30 and float(pg.evaluate("() => getComputedStyle(document.querySelector('.vs-souffle')).opacity")) > .9, f'des confettis passent derrière l\'anneau, pas trop ({nc})')
+    so = pg.evaluate(SORTES); verifier(so[0] >= 6 and so[1] >= 4, f'ils ont des formes et des tailles différentes ({so[0]} formes, {so[1]} tailles)')
     sV = m['sV']; v1, t1 = vitesse_confettis(pg)
-    verifier(v1 > 0 and abs(v1 - forces[i] * 26 * sV) < .25 * forces[i] * 26 * sV and t1 < .35 * v1 + 25, f'ils vont dans le sens du vent, à la vitesse de sa force (force {forces[i]} : {v1:.0f} px par seconde)')
+    verifier(v1 > 0 and abs(v1 - forces[i] * 26 * sV) < .3 * forces[i] * 26 * sV and t1 < .5 * v1 + 40, f'ils vont dans le sens du vent, à la vitesse de sa force (force {forces[i]} : {v1:.0f} px par seconde, {t1:.0f} en travers)')
+    verifier(pg.locator('.vs-arc .vs-a-m1 path').count() > 8 and pg.locator('.vs-arc .vs-a-m2 path').count() > 8, 'l\'arc est dans la main du Pisteur (les doigts derrière le bois, le pouce devant)')
+    bo = pg.evaluate("() => { var b = document.querySelector('.vs-arc .vs-a-bois').getBBox(); return [b.width, b.height]; }")
+    verifier(bo[1] > 3 * bo[0], f'on voit l\'arc de derrière : debout, presque droit ({bo[0]:.0f} × {bo[1]:.0f})')
     verifier(pg.evaluate("() => { var f = document.querySelector('.vs-fl .vs-f-fut'); return document.querySelector('.vs-fl').style.display !== 'none' && f.getAttribute('d').length > 10 && !document.querySelector('.vs-fl .vs-f-pl').getAttribute('d'); }"), 'sur l\'arc, on ne voit que le bout de la flèche (pas les plumes)')
     r, m = scene(pg), V(pg, 'v.mesures()')
     pg.mouse.move(r[0] + m['C'][0], r[1] + m['C'][1]); pg.mouse.down(); pg.wait_for_timeout(250)
@@ -150,15 +161,21 @@ with sync_playwright() as p:
         choisir(pg, forts[0]); n, fl = tirer(pg, 0, 0, compter_le_vent=False)
         verifier(n == 1, f'viser en plein milieu sans compter le vent (force {forces[forts[0]]}) : raté')
     pg.context.close()
-    # le bras tremble ; le minuteur tire tout seul ; puis les cinq anneaux
-    print('   le bras qui tremble, le minuteur, puis les cinq anneaux (niveau 3)')
+    # le viseur glisse tout seul ; le minuteur tire tout seul ; puis les cinq anneaux
+    print('   le viseur qui glisse tout seul, le minuteur, puis les cinq anneaux (niveau 3)')
     pg = page(b, 1180, 820); pg.goto(SALLE + '3'); pg.wait_for_timeout(600); lancer(pg, tremble=1)
-    choisir(pg, 0); x0, y0 = poser(pg); pg.wait_for_timeout(700); ec = []
-    for _ in range(10):
-        c = V(pg, 'v.curseur()'); ec.append(math.hypot(c['x'] - c['rx'], c['y'] - c['ry'])); pg.wait_for_timeout(150)
-    verifier(max(ec) > 10 and max(ec) - min(ec) > 6, f'le doigt ne bouge pas, mais le curseur dérive tout seul (jusqu\'à {max(ec):.0f} px) : le bras tremble')
+    choisir(pg, 0); x0, y0 = poser(pg); pg.wait_for_timeout(300); pts, t0 = [], pg.evaluate("performance.now()")
+    for _ in range(9):
+        c = V(pg, 'v.curseur()'); pts.append((c['x'] - c['rx'], c['y'] - c['ry'], pg.evaluate("performance.now()"))); pg.wait_for_timeout(250)
+    sV = V(pg, 'v.mesures().sV'); loin = math.hypot(pts[-1][0] - pts[0][0], pts[-1][1] - pts[0][1])
+    pas = [(q[0] - p[0], q[1] - p[1], (q[2] - p[2]) / 1000) for p, q in zip(pts, pts[1:])]
+    vit = [math.hypot(d[0], d[1]) / d[2] for d in pas]
+    tourne = [abs((math.atan2(e[1], e[0]) - math.atan2(d[1], d[0]) + math.pi) % (2 * math.pi) - math.pi) for d, e in zip(pas, pas[1:])]
+    verifier(loin > 60, f'le doigt ne bouge pas, mais le viseur glisse tout seul, loin ({loin:.0f} px en deux secondes)')
+    verifier(max(vit) < 14 * sV, f'lentement (au plus {max(vit):.0f} px par seconde)')
+    verifier(max(tourne) < .5, f'et sans zigzaguer : il garde son cap, il tourne à peine (au plus {math.degrees(max(tourne)):.0f}° d\'un quart de seconde à l\'autre)')
     V(pg, 'v.tremble(0)'); pg.wait_for_timeout(100); c = V(pg, 'v.curseur()'); duree = V(pg, 'v.p.duree')
-    verifier(abs(c['x'] - c['rx']) < .5 and abs(c['y'] - c['ry']) < .5, '(le robot peut arrêter le tremblement pour viser)')
+    verifier(abs(c['x'] - c['rx']) < .5 and abs(c['y'] - c['ry']) < .5, '(le robot peut arrêter cette dérive pour viser)')
     verifier(etat(pg) == 'bande' and c['reste'] > 1, f'tant que le minuteur n\'a pas fini, la flèche attend (reste {c["reste"]:.1f} s)')
     pg.wait_for_timeout(int(c['reste'] * 1000) + 500); verifier(etat(pg) in ('vol', 'impact', 'retour'), f'au bout de {duree:.0f} secondes, la flèche part toute seule')
     pg.mouse.up(); attendre(pg, 'large'); verifier(V(pg, 'v.mesures().fleches') == 6, 'et elle compte comme une autre : une flèche de moins')
@@ -175,14 +192,14 @@ with sync_playwright() as p:
     regl = pg.evaluate("() => { var l = []; for(var n = 1; n <= 10; n++) l.push(MJ.reglages('visee', n, null, {brut:true})); return l; }")   # le niveau brut, comme dans la salle
     trous, vmax, vmin = [x['trou'] for x in regl], [x['ventMax'] for x in regl], [x['ventMin'] for x in regl]
     verifier(all(trous[k] > trous[k + 1] for k in range(9)) and trous[0] > 2 * trous[9], f'l\'anneau rapetisse du niveau 1 au 10 ({trous[0]:.1f} → {trous[9]:.1f})')
-    verifier(vmin == [1] * 10 and vmax == [3] + [4] * 8 + [12], f'le vent : de 1 à 3 au niveau 1, de 1 à 4 ensuite, de 1 à 12 au niveau 10 {vmax}')
+    verifier(vmin == [1] * 10 and vmax == [3] + [4] * 8 + [10], f'le vent : de 1 à 3 au niveau 1, de 1 à 4 ensuite, de 1 à 10 au niveau 10, jamais plus {vmax}')
     verifier(len({(x['anneaux'], x['fleches'], x['duree']) for x in regl}) == 1, 'rien d\'autre ne change : cinq anneaux, sept flèches, le même minuteur')
     pg.context.close()
     # ---------------------------------------------------------------- 3. trop de flèches perdues
     print('3. trop de flèches perdues (niveau 10)')
     pg = page(b, 1180, 820); pg.goto(SALLE + '10'); pg.wait_for_timeout(600); lancer(pg)
     f10 = V(pg, 'v.anneaux.map(function(a){ return a.vent; })')
-    verifier(all(1 <= f <= 12 for f in f10), f'au niveau 10, des vents de 1 à 12 {f10}')
+    verifier(all(1 <= f <= 10 for f in f10), f'au niveau 10, des vents de 1 à 10 {f10}')
     for k in range(3):
         choisir(pg, 0); n, fl = tirer(pg, 0, -V(pg, 'v.p.trou + v.p.bois + 10'))
     verifier(n == 0 and fl == 4 and etat(pg) == 'fin', 'trois flèches perdues : il n\'en reste plus assez pour cinq anneaux, la partie s\'arrête')
@@ -190,14 +207,27 @@ with sync_playwright() as p:
     txt = pg.evaluate("() => { var r = document.querySelector('.mj-resultat'); return r ? r.innerText.replace(/\\s+/g, ' ') : ''; }")
     verifier('flèches' in txt and 'cinq' not in txt and '5 anneaux' in txt, f'la fin le dit ({txt[:70]})')
     pg.context.close()
+    # la même chose en cours de partie (Romain, 16 h 51 : « ça sert à rien d'aller jusqu'au bout des flèches si on peut pas y arriver »)
+    print('   un anneau, raté, un anneau, raté, raté : deux flèches pour trois anneaux (niveau 4)')
+    pg = page(b, 1180, 820); pg.goto(SALLE + '4'); pg.wait_for_timeout(600); lancer(pg)
+    loin = -V(pg, 'v.p.trou + v.p.bois + 10'); suite = []
+    for k, rate in enumerate([False, True, False, True, True]):
+        if etat(pg) != 'large': break
+        choisir(pg, libre(pg)); n, fl = tirer(pg, 0, loin if rate else 0); suite.append((n, fl, etat(pg)))
+    verifier(suite[:4] == [(1, 6, 'large'), (1, 5, 'large'), (2, 4, 'large'), (2, 3, 'large')], f'tant qu\'il reste assez de flèches pour les anneaux qui manquent, on continue {suite[:4]}')
+    verifier(len(suite) == 5 and suite[4] == (2, 2, 'fin'), f'deux flèches pour trois anneaux : la partie s\'arrête tout de suite, sans faire tirer les deux dernières {suite[4:]}')
+    pg.wait_for_selector('.mj-resultat', timeout=8000); pg.wait_for_timeout(200)
+    txt = pg.evaluate("() => { var r = document.querySelector('.mj-resultat'); return r ? r.innerText.replace(/\\s+/g, ' ') : ''; }")
+    verifier('Plus assez de flèches' in txt and '3 anneaux' in txt, f'la fin le dit ({txt[:70]})')
+    pg.context.close()
     # le plus fort des vents, dans les quatre sens : on peut toujours amener le curseur où il faut
-    print('   un vent de 12, vers le haut, le bas, la gauche, la droite (niveau 10)')
+    print('   un vent de 10, vers le haut, le bas, la gauche, la droite (niveau 10)')
     pg = page(b, 1180, 820); pg.goto(SALLE + '10'); pg.wait_for_timeout(600); lancer(pg)
-    pg.evaluate("() => { var v = document.querySelector('.vs').__visee; [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(function(a, i){ var an = v.anneaux[i]; an.vent = 12; an.va = a; an.vx = 12 * Math.cos(a); an.vy = 12 * Math.sin(a); }); }")
+    pg.evaluate("() => { var v = document.querySelector('.vs').__visee; [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(function(a, i){ var an = v.anneaux[i]; an.vent = 10; an.va = a; an.vx = 10 * Math.cos(a); an.vy = 10 * Math.sin(a); }); }")
     for k, nom in enumerate(['la droite', 'le bas', 'la gauche', 'le haut']):
         choisir(pg, k); n, fl = tirer(pg)
-        verifier(n == k + 1, f'vent de 12 vers {nom} : en visant de l\'autre côté, la flèche passe')
-        if k == 2: pg.screenshot(path=os.path.join(PHOTOS, 'visee-vent12.png'))
+        verifier(n == k + 1, f'vent de 10 vers {nom} : en visant de l\'autre côté, la flèche passe')
+        if k == 2: pg.screenshot(path=os.path.join(PHOTOS, 'visee-vent10.png'))
     pg.context.close()
     # ---------------------------------------------------------------- 4. les autres écrans
     print('4. les autres écrans')
@@ -205,10 +235,10 @@ with sync_playwright() as p:
         pg = page(b, w, h); pg.goto(SALLE + '10'); pg.wait_for_timeout(600); lancer(pg)
         d = pg.evaluate(DEDANS); t = pg.evaluate("() => [].map.call(document.querySelectorAll('.vs-cible'), function(e){ var r = e.getBoundingClientRect(); return Math.min(r.width, r.height); })")
         verifier(not d['hors'] and d['bas'] <= d['h'] + 1 and min(t) >= 44, f'{nom} : tout tient dans l\'écran, les anneaux se touchent au doigt ({min(t):.0f} px) {d["hors"] or ""}')
-        # le pire des vents pour cet écran : force 12, vers le bas (il faut viser tout en haut)
-        pg.evaluate("() => { var an = document.querySelector('.vs').__visee.anneaux[0]; an.vent = 12; an.va = Math.PI / 2; an.vx = 0; an.vy = 12; }")
+        # le pire des vents pour cet écran : force 10, vers le bas (il faut viser tout en haut)
+        pg.evaluate("() => { var an = document.querySelector('.vs').__visee.anneaux[0]; an.vent = 10; an.va = Math.PI / 2; an.vx = 0; an.vy = 10; }")
         choisir(pg, 0); n, fl = tirer(pg)
-        verifier(n == 1 and fl == 6, f'{nom} : on y tire, même contre un vent de 12 vers le bas, la flèche passe')
+        verifier(n == 1 and fl == 6, f'{nom} : on y tire, même contre un vent de 10 vers le bas, la flèche passe')
         pg.screenshot(path=os.path.join(PHOTOS, 'visee-%dx%d.png' % (w, h)))
         pg.context.close()
     # ---------------------------------------------------------------- 5. le jeu

@@ -10,8 +10,10 @@ var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
 function visee(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J, S){ E.visee(function(){ return J.ctx; }, S)[nom](); }}; }
 function liste(l){ return l.map(function(e){ X['vs_' + e[0]] = visee(e[0], e[2]); return {id:'vs_' + e[0], t:e[1], x:1, neuf:1}; }); }
 var section = {id:'mj-visee', titre:'Tir aux anneaux', sous:[
-  {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['bander', 'L’arc se bande', .4], ['tic', 'Le minuteur presse', .05],
-    ['lacher', 'La corde claque', .35], ['vol', 'La flèche file', 1]])},
+  /* la corde qui se tend, la corde lâchée : trois sons chacune ; le jeu en tire un au hasard à chaque tir, chaque fois un peu
+     plus grave ou un peu plus aigu (Romain, 12 novembre, 16 h 51). Ici on les écoute un par un, pour garder ou refaire. */
+  {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['banderA', 'Corde tendue A', .8], ['banderB', 'Corde tendue B', .8], ['banderC', 'Corde tendue C', .8],
+    ['tic', 'Le minuteur presse', .05], ['lacherA', 'Corde lâchée A', .25], ['lacherB', 'Corde lâchée B', .3], ['lacherC', 'Corde lâchée C', .2], ['vol', 'La flèche file', 1]])},
   {id:'visee-arrivee', titre:'L’arrivée', sons:liste([['dedans', 'Dans l’anneau', .65], ['bois', 'Dans le bois', .5], ['acote', 'À côté', .55],
     ['accroche', 'Banderole tendue', .45], ['fete', 'Place décorée !', 1.6], ['vide', 'Plus de flèches', .5]])}
 ]};

@@ -11,7 +11,9 @@
 /* les confettis du vent : derrière l'anneau et sa perche, devant les maisons. Ils disent où viser : ils ne s'arrêtent jamais. */
 .vs-souffle{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .35s}
 .vs-e-zoom .vs-souffle,.vs-e-vise .vs-souffle,.vs-e-bande .vs-souffle,.vs-e-vol .vs-souffle,.vs-e-impact .vs-souffle{opacity:1}
-.vs-souffle i{position:absolute;left:0;top:0;width:calc(8px + 5px * var(--vs-u));height:calc(5px + 3.2px * var(--vs-u));margin:calc(-2.5px - 1.6px * var(--vs-u)) 0 0 calc(-4px - 2.5px * var(--vs-u));border-radius:1.5px;box-shadow:0 0 0 1px rgba(36,24,46,.6);will-change:transform}
+.vs-souffle i{position:absolute;left:0;top:0;width:calc(14px + 10px * var(--vs-u));height:calc(14px + 10px * var(--vs-u));margin:calc(-7px - 5px * var(--vs-u)) 0 0 calc(-7px - 5px * var(--vs-u));will-change:transform}
+/* chaque confetti est un petit dessin (sa forme, son pli dans l'ombre) */
+.vs-souffle i svg{position:static;display:block;width:100%;height:100%;overflow:visible}
 /* la flèche une fois passée derrière l'anneau : il la cache */
 .vs-fx-fond{z-index:2}
 .vs-perche{z-index:3}

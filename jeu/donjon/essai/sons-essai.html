@@ -1033,20 +1033,38 @@ function sonsVisee(audio, sortie){
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
     s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* une note qui tremble (la corde qui frémit) */
-  function tremble(fq, t0, duree, vol, vite, type){
+  /* un grincement qui dure (la corde, le bois qui se tendent) : des à-coups de plus en plus serrés (de r0 à r1 par seconde), qui
+     résonnent de plus en plus aigu (de f0 à f1) ; le tout enfle jusqu'au bout, puis s'arrête net */
+  function grince(t0, duree, vol, r0, r1, f0, f1, q){
     var a = audio(); if(!a) return;
-    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain();
-    o.type = type || 'triangle'; o.frequency.setValueAtTime(fq, t); o.frequency.exponentialRampToValueAtTime(fq * .8, t + duree);
-    l.frequency.value = vite; lg.gain.value = vol * .8; l.connect(lg); lg.connect(g.gain);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    o.connect(g); g.connect(sortie(a)); o.start(t); l.start(t); o.stop(t + duree + .03); l.stop(t + duree + .03);
+    var t = a.currentTime + t0, o = a.createOscillator(), bp = a.createBiquadFilter(), g = a.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(r0, t); o.frequency.exponentialRampToValueAtTime(r1, t + duree);
+    bp.type = 'bandpass'; bp.Q.value = q || 3; bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + duree);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * .45, t + duree * .2); g.gain.linearRampToValueAtTime(vol, t + duree * .86); g.gain.linearRampToValueAtTime(0, t + duree);
+    o.connect(bp); bp.connect(g); g.connect(sortie(a)); o.start(t); o.stop(t + duree + .03);
   }
+  /* chaque fois un peu plus grave ou un peu plus aigu : jamais deux fois tout à fait le même son */
+  function ton(){ return .95 + Math.random() * .1; }
+  /* LA CORDE QUI SE TEND (Romain, 16 h 51 : « un son vraiment de corde qui se tend, un peu plus longue ») : trois façons */
+  var TENDUE = [
+    function(k){ grince(0, .75, .5, 16, 46, 520 * k, 900 * k, 4); grince(.05, .7, .28, 23, 61, 1100 * k, 1700 * k, 5); souffle(0, .75, .012, 400, 1200, 1.2, 'bandpass', .5); },      /* A : la corde de chanvre, qui grince de plus en plus vite */
+    function(k){ grince(0, .28, .5, 12, 30, 380 * k, 520 * k, 5); grince(.36, .42, .55, 18, 52, 450 * k, 760 * k, 5); souffle(.3, .48, .012, 500, 1300, 1.2, 'bandpass', .3); },      /* B : le bois de l'arc craque, en deux fois */
+    function(k){ grince(0, .7, .4, 30, 92, 900 * k, 1500 * k, 6); grince(0, .7, .3, 15, 46, 450 * k, 700 * k, 4); souffle(0, .65, .01, 900, 2200, 1.8, 'bandpass', .4); }               /* C : une corde fine, plus aiguë, qui file */
+  ];
+  /* LA CORDE LÂCHÉE (« essaye de me trouver d'autres sons ») : un coup sec et court, l'air fendu ; plus de corde qui vibre. Trois façons */
+  var LACHEE = [
+    function(k){ souffle(0, .045, .2, 1500, 260, .8, 'lowpass', .002); tendre(190 * k, 0, .1, .15, 92 * k, .002, 'triangle', 900); souffle(.008, .13, .05, 2400, 6200, 1.3, 'bandpass', .015); },                                              /* A : « toc ! », mat, puis l'air fendu */
+    function(k){ souffle(0, .028, .17, 2600, 700, .9, 'lowpass', .002); souffle(.034, .03, .1, 2000, 600, .9, 'lowpass', .002); tendre(240 * k, 0, .07, .1, 130 * k, .002, 'triangle', 1400); souffle(.01, .12, .04, 3000, 5600, 1.1, 'bandpass', .02); },   /* B : « clac-clac », la corde tape le brassard */
+    function(k){ souffle(0, .1, .11, 800, 5200, 1.6, 'bandpass', .006); tendre(210 * k, 0, .07, .12, 100 * k, .002, 'triangle', 1100); tendre(700 * k, .004, .025, .035, 320 * k, .001, 'triangle', 2600); }                                  /* C : un coup de fouet */
+  ];
+  function auHasard(l){ l[Math.floor(Math.random() * l.length)](ton()); }
   return {
     choisir:function(){ souffle(0, .22, .03, 500, 1700, .7); tendre(660, .02, .09, .03, 880, .006); },                                                                       /* on regarde un anneau de plus près */
-    bander:function(){ souffle(0, .34, .034, 240, 520, 1.6); tendre(92, 0, .32, .05, 128, .05, 'sawtooth', 420); tendre(310, .12, .05, .02, 360, .004, 'triangle', 900); tendre(350, .24, .05, .018, 410, .004, 'triangle', 900); },   /* le bois de l'arc craque, la corde se tend */
+    bander:function(){ auHasard(TENDUE); },                                                                                                                                     /* dans le jeu : une des trois, au hasard */
+    banderA:function(){ TENDUE[0](ton()); }, banderB:function(){ TENDUE[1](ton()); }, banderC:function(){ TENDUE[2](ton()); },                                                  /* (pour les écouter une par une dans l'Atelier des sons) */
     tic:function(){ tendre(1500, 0, .035, .03, null, .002, 'triangle', 4000); },                                                                                               /* le minuteur presse */
-    lacher:function(){ tendre(196, 0, .16, .09, 122, .003, 'triangle', 1400); tremble(147, .01, .3, .03, 46); souffle(0, .07, .05, 1800, 700, .7); },                           /* « twang ! » */
+    lacher:function(){ auHasard(LACHEE); },                                                                                                                                     /* dans le jeu : une des trois, au hasard */
+    lacherA:function(){ LACHEE[0](ton()); }, lacherB:function(){ LACHEE[1](ton()); }, lacherC:function(){ LACHEE[2](ton()); },
     vol:function(){ souffle(0, .95, .06, 500, 2400, 1.1, 'bandpass', .5); souffle(.05, .9, .03, 3000, 5200, .8, 'bandpass', .6); },                                              /* la flèche file dans le vent */
     bois:function(){ souffle(0, .035, .3, 2600, 500, .8, 'lowpass', .002); tendre(175, 0, .09, .3, 78, .002, 'sine'); tendre(520, 0, .03, .12, 240, .001, 'triangle', 2200); },   /* « tchac ! » : un coup sec dans le bois, rien d'autre (Romain, 15 h 08) */
     dedans:function(){ souffle(0, .2, .09, 700, 4200, 1.3, 'bandpass', .09); souffle(.12, .16, .05, 3600, 900, 1); [784, 1047, 1319].forEach(function(n, i){ tendre(n, .2 + i * .085, .2, .05, null, .006, 'triangle', 3600); }); tendre(1568, .46, .4, .04, null, .008); },   /* « fwip ! » : elle traverse l'anneau, puis un petit air de victoire (Romain, 15 h 08) */
@@ -4421,8 +4439,10 @@ var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
 function visee(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J, S){ E.visee(function(){ return J.ctx; }, S)[nom](); }}; }
 function liste(l){ return l.map(function(e){ X['vs_' + e[0]] = visee(e[0], e[2]); return {id:'vs_' + e[0], t:e[1], x:1, neuf:1}; }); }
 var section = {id:'mj-visee', titre:'Tir aux anneaux', sous:[
-  {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['bander', 'L’arc se bande', .4], ['tic', 'Le minuteur presse', .05],
-    ['lacher', 'La corde claque', .35], ['vol', 'La flèche file', 1]])},
+  /* la corde qui se tend, la corde lâchée : trois sons chacune ; le jeu en tire un au hasard à chaque tir, chaque fois un peu
+     plus grave ou un peu plus aigu (Romain, 12 novembre, 16 h 51). Ici on les écoute un par un, pour garder ou refaire. */
+  {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['banderA', 'Corde tendue A', .8], ['banderB', 'Corde tendue B', .8], ['banderC', 'Corde tendue C', .8],
+    ['tic', 'Le minuteur presse', .05], ['lacherA', 'Corde lâchée A', .25], ['lacherB', 'Corde lâchée B', .3], ['lacherC', 'Corde lâchée C', .2], ['vol', 'La flèche file', 1]])},
   {id:'visee-arrivee', titre:'L’arrivée', sons:liste([['dedans', 'Dans l’anneau', .65], ['bois', 'Dans le bois', .5], ['acote', 'À côté', .55],
     ['accroche', 'Banderole tendue', .45], ['fete', 'Place décorée !', 1.6], ['vide', 'Plus de flèches', .5]])}
 ]};
