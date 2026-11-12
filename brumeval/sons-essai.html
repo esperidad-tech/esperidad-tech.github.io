@@ -1033,23 +1033,40 @@ function sonsVisee(audio, sortie){
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
     s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* un grincement qui dure (la corde, le bois qui se tendent) : des à-coups de plus en plus serrés (de r0 à r1 par seconde), qui
-     résonnent de plus en plus aigu (de f0 à f1) ; le tout enfle jusqu'au bout, puis s'arrête net */
-  function grince(t0, duree, vol, r0, r1, f0, f1, q){
+  /* le bois et la corde qui se tendent, pour de vrai (Romain, 18 h 28 : « un son plus naturel, plus réaliste ») : ni une note, ni
+     un ronronnement régulier. Ils travaillent par à-coups : de petits craquements secs, par grappes, jamais deux fois au même
+     rythme, de plus en plus rapprochés, sur un frottement très doux. Tout est tiré au hasard à chaque fois.
+     grappes : combien de craquements ; coups : combien de petits chocs dans chacun, au plus ; f0 → f1 : leur hauteur, du début à
+     la fin ; frotte : la force du frottement */
+  function craque(t0, duree, vol, grappes, coups, f0, f1, frotte){
     var a = audio(); if(!a) return;
-    var t = a.currentTime + t0, o = a.createOscillator(), bp = a.createBiquadFilter(), g = a.createGain();
-    o.type = 'sawtooth'; o.frequency.setValueAtTime(r0, t); o.frequency.exponentialRampToValueAtTime(r1, t + duree);
-    bp.type = 'bandpass'; bp.Q.value = q || 3; bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + duree);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * .45, t + duree * .2); g.gain.linearRampToValueAtTime(vol, t + duree * .86); g.gain.linearRampToValueAtTime(0, t + duree);
-    o.connect(bp); bp.connect(g); g.connect(sortie(a)); o.start(t); o.stop(t + duree + .03);
+    var sr = a.sampleRate, N = Math.floor(sr * duree), buf = a.createBuffer(1, N, sr), d = buf.getChannelData(0), i, q, c, y1 = 0, y2 = 0, p1 = Math.random() * 6.283, p2 = Math.random() * 6.283;
+    /* le frottement (la flèche qui glisse sur la main, la corde sur les doigts) : un souffle sec, qui enfle et frémit un peu */
+    for(i = 0; i < N; i++){
+      var b = Math.random() * 2 - 1, ti = i / sr; y1 += (b - y1) * .6; y2 += (b - y2) * .12;
+      d[i] = (y1 - y2) * frotte * (.3 + .7 * i / N) * (1 + .3 * Math.sin(44 * ti + p1) + .2 * Math.sin(82 * ti + p2));
+    }
+    /* les craquements : chaque petit choc résonne quelques millièmes de seconde dans le bois */
+    for(q = 0; q < grappes; q++){
+      var x = Math.pow((q + Math.random() * .7) / grappes, .7), tq = x * (duree - .1), fq = (f0 + (f1 - f0) * x) * (.8 + Math.random() * .4), nb = 2 + Math.floor(Math.random() * (coups - 1)), pas = .017 - .009 * x;
+      for(c = 0; c < nb; c++){
+        var i0 = Math.floor(tq * sr), amp = (.4 + .6 * Math.random()) * (.45 + .55 * x), dec = 110 + Math.random() * 170, fr = fq * (.92 + Math.random() * .16), ph = Math.random() * 6.283, n = Math.floor(sr * .028);
+        for(i = 0; i < n && i0 + i < N; i++){ var tt = i / sr; d[i0 + i] += amp * Math.exp(-tt * dec) * Math.sin(6.283 * fr * tt + ph) * Math.min(1, i / 6); }
+        tq += pas * (.6 + Math.random() * .8);
+      }
+    }
+    var s = a.createBufferSource(), lp = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime + t0; s.buffer = buf;
+    lp.type = 'lowpass'; lp.frequency.value = 5000; lp.Q.value = .5;
+    g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + duree - .05); g.gain.linearRampToValueAtTime(0, t + duree);
+    s.connect(lp); lp.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
   /* chaque fois un peu plus grave ou un peu plus aigu : jamais deux fois tout à fait le même son */
   function ton(){ return .95 + Math.random() * .1; }
   /* LA CORDE QUI SE TEND (Romain, 16 h 51 : « un son vraiment de corde qui se tend, un peu plus longue ») : trois façons */
   var TENDUE = [
-    function(k){ grince(0, .75, .5, 16, 46, 520 * k, 900 * k, 4); grince(.05, .7, .28, 23, 61, 1100 * k, 1700 * k, 5); souffle(0, .75, .012, 400, 1200, 1.2, 'bandpass', .5); },      /* A : la corde de chanvre, qui grince de plus en plus vite */
-    function(k){ grince(0, .28, .5, 12, 30, 380 * k, 520 * k, 5); grince(.36, .42, .55, 18, 52, 450 * k, 760 * k, 5); souffle(.3, .48, .012, 500, 1300, 1.2, 'bandpass', .3); },      /* B : le bois de l'arc craque, en deux fois */
-    function(k){ grince(0, .7, .4, 30, 92, 900 * k, 1500 * k, 6); grince(0, .7, .3, 15, 46, 450 * k, 700 * k, 4); souffle(0, .65, .01, 900, 2200, 1.8, 'bandpass', .4); }               /* C : une corde fine, plus aiguë, qui file */
+    function(k){ craque(0, .8, .15, 4, 5, 520 * k, 880 * k, .34); },     /* A : surtout la flèche qui glisse ; le bois craque quatre fois, doucement */
+    function(k){ craque(0, .85, .15, 7, 5, 420 * k, 760 * k, .13); },    /* B : surtout le bois de l'arc, qui craque de plus en plus vite */
+    function(k){ craque(0, .78, .15, 11, 3, 320 * k, 560 * k, .22); }    /* C : la corde, plus sourde : beaucoup de tout petits craquements */
   ];
   /* LA CORDE LÂCHÉE (« essaye de me trouver d'autres sons ») : un coup sec et court, l'air fendu ; plus de corde qui vibre. Trois façons */
   var LACHEE = [
