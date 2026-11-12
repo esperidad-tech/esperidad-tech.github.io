@@ -908,7 +908,13 @@ DJ.toucher(function(a, id, b){
     DJ.fenetre('<h2>Recommencer ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="fermer">Non, on continue</button><button class="aller" data-act="recommencer-oui">Oui, on recommence</button></div>');
     return true;
   }
-  if(a === 'recommencer-oui'){ DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname; return true; }
+  if(a === 'recommencer-oui'){
+    /* (l'enquête 3) une descente de l'enquête, recommencée, reste celle de l'enquête : son jeton, son entrée, et les potions du sac de
+       l'Alchimiste (pas les recettes apprises en route) */
+    var pr = X.partie, suite = '';
+    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + '&nouveau=1';
+    DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname + suite; return true;
+  }
   if(a === 'fin-donjon'){ DJ.fermer(); finDonjon(); return true; }
   /* (l'enquête 3) */
   if(a === 'enquete'){ son('clic'); garder(); DJ.taire(); location.href = '../index.html'; return true; }

@@ -6,6 +6,7 @@
    des boucles en CSS (illus-fin.css, préfixe .sf-). Aucun son, rien ne se lit tout seul.
    Enquête 1 : e1-course, e1-remonte, e1-pardon, e1-courant, e1-maire, e1-fete, e1-ragots, e1-planches.
    Enquête 2 : e2-aveu, e2-prison, e2-riviere, e2-chat, e2-equipe (rien sous « À suivre… »).
+   Enquête 3 : e3-porte, e3-minuit, e3-leo (trois variantes : P.fin.variante), e3-bague, e3-gardes ; puis le cachot (moteur-ecrans.js).
    Chargé après regles.js : il complète M.illustration.
    ========================================================== */
 (function(){
@@ -231,6 +232,68 @@ var CHAT = '<svg viewBox="-30 -42 62 60" aria-hidden="true" focusable="false"><g
   '<ellipse cx="13" cy="-20" rx="1.6" ry="2.4" fill="' + O + '"/><path d="M18 -16 l2 1 l-2 1 Z" fill="#e8737a"/><path d="M17 -14 l6 -1 M17 -13 l6 1" stroke="' + O + '" stroke-width=".8"/></svg>';
 function chat(cls, st, dedans){ return '<span class="sf-chat' + (cls ? ' ' + cls : '') + '"' + (st ? ' style="' + st + '"' : '') + '>' + CHAT + (dedans || '') + '</span>'; }
 
+/* ---------- Enquête 3, la fin : la crypte des Fondateurs, les gardes ---------- */
+/* les quatre signes des Fondateurs (comme sur la porte du donjon, jeu/donjon/scenes/scenes.js) : l'œil, le chaudron, la lyre, l'étoile */
+function signes4(cx, cy, k, c){
+  return '<g class="sf-signes" transform="translate(' + cx + ' ' + cy + ') scale(' + k + ')" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M-26 -16 Q -17 -25 -8 -16 Q -17 -7 -26 -16 Z"/><circle cx="-17" cy="-16" r="2.4" fill="' + c + '" stroke="none"/>' +
+    '<path d="M8 -22 Q 8 -8 18 -8 Q 28 -8 28 -22 Z M6 -22 L 30 -22 M12 -6 L 10 -2 M24 -6 L 26 -2"/>' +
+    '<path d="M-26 8 Q -26 26 -17 26 Q -8 26 -8 8 M-22 12 L -22 24 M-17 12 L -17 24 M-12 12 L -12 24 M-28 8 L -24 6 M-6 8 L -10 6"/>' +
+    '<path d="M18 4 L 21 12 L 29 12 L 23 17 L 25 25 L 18 20 L 11 25 L 13 17 L 7 12 L 15 12 Z"/></g>';
+}
+/* la crypte : un mur de grosses pierres, des voûtes sombres, des dalles ; o.escalier : l'escalier qui remonte, à droite (o.lueur : des
+   lanternes arrivent d'en haut) ; o.porte : la grande porte ronde aux quatre signes, sa petite trappe, la lumière chaude dessous */
+function crypte(o){
+  o = o || {};
+  var id = 'sfy' + (++n);
+  var s = '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#34344e"/></linearGradient>' +
+    '<radialGradient id="' + id + 'h"><stop offset="0" stop-color="#ffd27a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>' +
+    '<rect width="320" height="200" fill="url(#' + id + ')"/>';
+  /* les pierres du mur */
+  s += '<g stroke="#12121e" stroke-width="1.4" fill="none" opacity=".8"><path d="M0 24 H320 M0 52 H320 M0 80 H320 M0 108 H320 M0 136 H320"/>' +
+    '<path d="M30 0 v24 M96 0 v24 M168 0 v24 M236 0 v24 M296 0 v24 M62 24 v28 M134 24 v28 M204 24 v28 M270 24 v28 M26 52 v28 M100 52 v28 M172 52 v28 M240 52 v28 M300 52 v28 M64 80 v28 M136 80 v28 M206 80 v28 M272 80 v28 M28 108 v28 M98 108 v28 M170 108 v28 M238 108 v28 M298 108 v28"/></g>';
+  if(o.porte){
+    /* le cadre de pierre et le battant */
+    s += '<path d="M92 160 V 84 A 68 68 0 0 1 228 84 V 160" fill="none" stroke="' + O + '" stroke-width="22"/><path d="M92 160 V 84 A 68 68 0 0 1 228 84 V 160" fill="none" stroke="#5a6080" stroke-width="16"/>' +
+      '<path d="M100 160 V 84 A 60 60 0 0 1 220 84 V 160 Z" fill="#2c3048" stroke="' + O + '" stroke-width="3"/><path d="M160 26 V160" stroke="#12121e" stroke-width="2"/>' +
+      '<g fill="#3c3c4a" stroke="' + O + '" stroke-width="2"><rect x="101" y="128" width="118" height="9"/></g>' +
+      '<g fill="#7a7a8a"><circle cx="112" cy="132.5" r="1.8"/><circle cx="136" cy="132.5" r="1.8"/><circle cx="184" cy="132.5" r="1.8"/><circle cx="208" cy="132.5" r="1.8"/></g>';
+    /* le sceau rond et ses quatre signes, qui luisent */
+    s += '<circle class="sf-sceau-halo" cx="160" cy="84" r="42" fill="#7ff0ff"/><circle cx="160" cy="84" r="33" fill="#343a58" stroke="' + O + '" stroke-width="3"/><circle cx="160" cy="84" r="28" fill="none" stroke="#5a6080" stroke-width="2"/>' +
+      '<path d="M134 84 H186 M160 58 V110" stroke="#5a6080" stroke-width="1.6"/>' + signes4(160, 84, .78, '#9ff6ff');
+    /* la petite trappe, et la lumière chaude sous la porte */
+    s += '<rect x="150" y="140" width="22" height="20" fill="#6a4a2e" stroke="' + O + '" stroke-width="2.4"/><path d="M161 140 v20" stroke="#2a1a0c" stroke-width="1.4"/>' +
+      '<ellipse class="sf-chaud" cx="160" cy="161" rx="70" ry="9" fill="url(#' + id + 'h)"/><rect class="sf-chaud" x="102" y="158" width="116" height="3" fill="#ffc070"/>';
+  } else {
+    /* trois voûtes sombres */
+    [[14, 92], [108, 92], [202, o.escalier ? 0 : 92]].forEach(function(v){
+      if(!v[1]) return;
+      s += '<path d="M' + v[0] + ' 150 V 86 Q ' + (v[0] + v[1] / 2) + ' 26 ' + (v[0] + v[1]) + ' 86 V 150 Z" fill="#15152a" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>' +
+        '<path d="M' + (v[0] - 5) + ' 150 V 86 Q ' + (v[0] + v[1] / 2) + ' 18 ' + (v[0] + v[1] + 5) + ' 86 V 150" fill="none" stroke="#5a5a78" stroke-width="3" opacity=".7"/>';
+    });
+  }
+  /* les dalles */
+  s += '<rect x="0" y="150" width="320" height="50" fill="#4a4a62"/><path d="M0 150 H320" stroke="' + O + '" stroke-width="3"/>' +
+    '<g stroke="#32324a" stroke-width="1.6" fill="none"><path d="M0 166 H320 M0 184 H320"/><path d="M40 150 v16 M110 150 v16 M180 150 v16 M250 150 v16 M74 166 v18 M146 166 v18 M216 166 v18 M288 166 v18 M36 184 v16 M112 184 v16 M184 184 v16 M254 184 v16"/></g>';
+  if(o.escalier){
+    /* l'escalier de pierre, qui remonte vers le clocher (à droite) */
+    if(o.lueur) s += '<ellipse class="sf-lueur-esc" cx="300" cy="54" rx="64" ry="58" fill="url(#' + id + 'h)"/>';
+    s += '<path d="M218 150 V 44 Q 268 6 322 30 V 150 Z" fill="#101020" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>';
+    var m = '';
+    for(var i = 0; i < 7; i++){ var x = 222 + i * 14, y = 150 - (i + 1) * 13; m += '<path d="M' + x + ' ' + (y + 13) + ' V ' + y + ' H 324 V ' + (y + 13) + ' Z" fill="' + (i % 2 ? '#56566e' : '#4c4c64') + '" stroke="' + O + '" stroke-width="2"/>'; }
+    s += m;
+  }
+  return s;
+}
+/* un garde de la mairie : un casque, une cape sombre, une pique (une silhouette simple : on ne les connaît pas) */
+var GARDE = '<svg viewBox="-30 -124 60 126" aria-hidden="true" focusable="false"><g stroke="' + O + '" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">' +
+  '<path d="M20 -118 V 0" stroke="#6a5a3a" stroke-width="4"/><path d="M20 -124 L 14 -108 H 26 Z" fill="#c8ccdc"/>' +
+  '<path d="M-18 0 C -20 -40 -18 -66 -11 -76 H 11 C 18 -66 20 -40 18 0 Z" fill="#2c2a48"/><path d="M-11 -76 C -4 -70 4 -70 11 -76" fill="#3c3a5e"/>' +
+  '<path d="M-17 -38 H 17" stroke="#8a7a4a" stroke-width="3.4"/><circle cx="0" cy="-90" r="12.5" fill="#e2c09a"/>' +
+  '<path d="M-15 -92 C -15 -112 15 -112 15 -92 Z" fill="#9a9eb4"/><path d="M-17 -92 H 17" stroke-width="3.4"/><path d="M0 -110 V -116" stroke-width="3"/>' +
+  '<path d="M-6 -84 h 3 M4 -84 h 3" stroke-width="2.2"/><path d="M-4 -80 h 8" stroke-width="1.8"/></g></svg>';
+function garde(o){ return '<span class="sf-garde' + (o.cls ? ' ' + o.cls : '') + '" style="--x:' + o.x + '%' + (o.st ? ';' + o.st : '') + '">' + GARDE + '</span>'; }
+
 function decor(inner){ return '<svg class="rs-decor" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' + inner + '</svg>'; }
 function scene(cls, label, inner){ return '<div class="rs-scene sf-scene sf-' + cls + '" role="img" aria-label="' + M.esc(label) + '">' + inner + '</div>'; }
 
@@ -349,6 +412,72 @@ var SCENES = {
     });
     s += chat('sf-chat-petit', 'left:78%');
     return scene('equipe', 'Les quatre enquêteurs se regardent, devant les rochers du Vieux Chêne ; entre les pierres, une lueur bleue et un souffle froid.', s);
+  },
+  /* ---------- Les scènes de la fin de l'enquête 3 (étape 7 ; E3-dialogues-et-trame.md §4.8) : minuit dans la crypte ---------- */
+  /* 1. La porte aux quatre signes : Moustache gratte, une lumière chaude filtre dessous, une voix répond */
+  'e3-porte':function(){
+    var s = decor(crypte({porte:true}));
+    s += chat('sf-chat-gris', 'left:38%', bulle('Miaou…', 'sf-b-miaou'));   /* (Moustache, le gros gris d'Odette) */
+    s += '<em class="sf-bulle sf-b-voix" style="left:60%;bottom:44%">Moustache ? C\'est toi ?</em>';
+    return scene('e3-porte', 'La grande porte ronde aux quatre signes : Moustache gratte au bas de la porte, et une voix lui répond de l\'autre côté.', s);
+  },
+  /* 2. Minuit : la Grosse Marie sonne, des lanternes descendent l'escalier — le maire, Silas, deux gardes */
+  'e3-minuit':function(){
+    var s = decor(crypte({escalier:true, lueur:true}));
+    [['pisteur', 9], ['alchimiste', 20], ['barde', 31], ['sage', 42]].forEach(function(r, i){ s += perso(heros(r[0]), {x:r[1], h:36, cls:'sf-sursaut', st:'animation-delay:' + (i * .12).toFixed(2) + 's'}); });
+    s += '<em class="sf-dong" style="left:14%;top:8%">DONG…</em><em class="sf-dong" style="left:40%;top:16%;animation-delay:1.1s">DONG…</em><em class="sf-dong" style="left:24%;top:26%;animation-delay:2.2s">DONG…</em>';
+    s += garde({x:94, cls:'sf-descend', st:'animation-delay:.5s'}) + garde({x:85, cls:'sf-descend', st:'animation-delay:.35s'});
+    s += perso(pnj('silas'), {x:75, h:42, cls:'sf-descend', st:'animation-delay:.2s'});
+    s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-descend', dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%')});
+    return scene('e3-minuit', 'Minuit sonne. Dans la crypte, le maire descend l\'escalier, une lanterne à la main, avec Silas et deux gardes.', s);
+  },
+  /* 3. Le maire et Léo : selon ce que Léo a dit au Barde (P.fin.variante : 2, il a tout dit ; 1, à moitié ; 0, il n'est pas là) */
+  'e3-leo':function(){
+    var P = M.P(), v = (P && P.fin && P.fin.variante) || 0, s = decor(crypte({escalier:true}));
+    if(v === 2){
+      s += perso(pnj('leo', {humeur:'peur'}), {x:30, h:40, cls:'sf-sanglot'});
+      s += perso(pnj('grosbec'), {x:62, h:44, dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%') + bulle('Toi…', 'sf-b-tot') + bulle('Tu as beaucoup trop parlé.', 'sf-b-tard')});
+    } else if(v === 1){
+      s += perso(pnj('leo', {humeur:'peur'}), {x:30, h:40, cls:'sf-file'});
+      s += perso(pnj('grosbec'), {x:62, h:44, dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%') + bulle('Léo. Rentre au moulin.', 'sf-b-tot') + bulle('Tout de suite.', 'sf-b-tard')});
+    } else {
+      [['pisteur', 9], ['alchimiste', 20], ['barde', 31], ['sage', 42]].forEach(function(r){ s += perso(heros(r[0]), {x:r[1], h:36}); });
+      s += perso(pnj('grosbec'), {x:66, h:44, dedans:lanterne('sf-leve', '--lx:8%;--ly:46%;--w:26%') + bulle('Tiens, tiens…', 'sf-b-tot sf-d') + bulle('Nos petits enquêteurs !', 'sf-b-tard sf-d')});
+    }
+    s += perso(pnj('silas'), {x:78, h:42}) + garde({x:91});
+    return scene('e3-leo', v === 2 ? 'Le maire regarde Léo, longtemps.' : v === 1 ? 'Le maire renvoie Léo au moulin ; Léo file sans un mot.' : 'Le maire lève sa lanterne vers les quatre enquêteurs.', s);
+  },
+  /* 4. Il retire ses gants gris : à son doigt, une bague en argent à tête de corbeau */
+  'e3-bague':function(){
+    var g = 'sfb' + (++n);
+    var d = '<defs><radialGradient id="' + g + '"><stop offset="0" stop-color="#fff6c0" stop-opacity=".9"/><stop offset=".5" stop-color="#ffd76a" stop-opacity=".35"/><stop offset="1" stop-color="#ffd76a" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect width="320" height="200" fill="#1c1a30"/><circle cx="160" cy="96" r="120" fill="url(#' + g + ')" opacity=".55"/>';
+    /* la manche et la main du maire, de près */
+    d += '<g transform="translate(-58 -44) scale(1.3)"><g stroke="' + O + '" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">' +
+      '<path d="M-10 150 L 96 116 L 112 168 L -10 214 Z" fill="#3a2f5e"/><path d="M92 112 L 116 106 L 132 168 L 108 176 Z" fill="#f4ead2"/>' +
+      '<path d="M116 108 C 150 92 184 90 206 100 C 232 96 262 100 272 110 C 278 118 270 126 258 124 L 226 122 C 250 128 268 134 266 144 C 264 152 250 152 238 148 L 210 142 C 226 150 236 158 232 166 C 228 172 216 170 206 164 L 182 152 C 170 164 150 172 132 166 Z" fill="#e8c4a0"/>' +
+      '<path d="M150 104 C 156 88 172 78 186 84 C 192 88 190 96 182 98 L 168 106" fill="#e8c4a0"/>' +
+      '<path d="M226 122 L 204 120 M210 142 L 190 136" fill="none" stroke-width="1.8"/></g>';
+    /* la bague : un anneau d'argent autour du doigt, et dessus une tête de corbeau (le bec vers la droite, un œil rouge) */
+    d += '<g class="sf-bague"><path d="M229 101 C 224 106 224 120 230 125" fill="none" stroke="' + O + '" stroke-width="7.5" stroke-linecap="round"/><path d="M229 101 C 224 106 224 120 230 125" fill="none" stroke="#dfe3ee" stroke-width="4.2" stroke-linecap="round"/>' +
+      '<g transform="translate(232 93)" stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round"><path d="M-13 6 C -17 -6 -8 -17 5 -15 C 11 -14 15 -11 17 -8 L 33 -3 L 17 2 C 14 8 6 12 -3 11 C -8 10 -11 9 -13 6 Z" fill="#b9bfd2"/>' +
+      '<path d="M17 -8 L 33 -3 L 17 2 Z" fill="#6a6f86"/><path d="M-12 -4 C -8 -12 -2 -15 5 -15 C 0 -11 -4 -7 -6 -1 Z" fill="#8d93aa" stroke="none"/>' +
+      '<circle cx="7" cy="-6" r="2.8" fill="#e5484d" stroke-width="1.1"/><circle cx="7.8" cy="-6.8" r=".9" fill="#fff" stroke="none"/><path d="M-9 5 q 4 -3 9 -1" fill="none" stroke-width="1.1" stroke="#6a6f86"/></g></g></g>';
+    d += '<g class="sf-eclat" fill="#fffbe0"><path d="M268 58 l 3 7.5 7.5 3 -7.5 3 -3 7.5 -3 -7.5 -7.5 -3 7.5 -3 Z"/></g><g class="sf-eclat" fill="#fffbe0" style="animation-delay:.9s"><path d="M222 70 l 2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/></g>';
+    /* le gant gris, qui tombe */
+    d += '<g class="sf-gant" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"><path d="M0 0 C -6 -14 -4 -30 2 -34 C 6 -36 9 -32 9 -26 L 10 -40 C 11 -46 18 -46 18 -40 L 18 -28 L 21 -42 C 23 -47 29 -45 28 -39 L 26 -26 L 30 -36 C 33 -40 38 -37 36 -32 L 30 -14 C 30 -6 26 0 20 2 Z" fill="#9a98a6"/><path d="M2 2 L 20 4 L 20 12 L 1 10 Z" fill="#7c7a88"/></g>';
+    var s = decor(d);
+    s += '<em class="sf-bulle sf-b-long" style="left:30%;bottom:78%">Beaucoup trop loin.</em>';
+    return scene('e3-bague', 'Le maire a retiré ses gants gris : à son doigt brille une bague en argent à tête de corbeau.', s);
+  },
+  /* 5. Silas, bouche bée ; « Gardes ! Enfermez-les ! » : les deux gardes avancent vers les quatre enquêteurs */
+  'e3-gardes':function(){
+    var s = decor(crypte({escalier:true}));
+    [['pisteur', 9], ['alchimiste', 19], ['barde', 29], ['sage', 39]].forEach(function(r, i){ s += perso(heros(r[0]), {x:r[1], h:36, cls:'sf-recule', st:'animation-delay:' + (i * .1).toFixed(2) + 's'}); });
+    s += garde({x:94, cls:'sf-avance', st:'--vers:48%'}) + garde({x:85, cls:'sf-avance', st:'--vers:56%;animation-delay:.25s'});
+    s += perso(pnj('silas', {humeur:'peur'}), {x:75, h:42, dedans:bulle('Monsieur le maire… ?', 'sf-b-tot sf-d')});
+    s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-tape', dedans:bulle('Gardes ! Enfermez-les !', 'sf-b-tard')});
+    return scene('e3-gardes', 'Silas reste bouche bée. Le maire appelle ses gardes : ils avancent vers les quatre enquêteurs.', s);
   },
   /* ---------- Enquête 3 : le marché aux fleurs (marche.js) ----------
      L'étape 2 du marchandage de Fortuné (Bible § 13.6 bis, point 7) : Fortuné penché sur sa carriole, la bâche soulevée, des bouquets

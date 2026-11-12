@@ -811,10 +811,12 @@ function victoireModal(m){
   var E = M.E(), cb = '';
   if(m.corbeau && E && E.corbeau){
     var ok = m.corbeau === E.corbeau.solution, tc = ok ? E.corbeau.bravo : E.corbeau.rate;
-    cb = '<p class="b-corbeau-rep' + (ok ? ' ok' : '') + '">' + (ok ? '🪶 ' : '❔ ') + esc(tc) + ' ' + lire(tc) + '</p>';
+    /* (E.corbeau.secret : la réponse reste secrète jusqu'à la suite de la saison — la même phrase, juste ou pas) */
+    if(E.corbeau.secret){ ok = false; tc = E.corbeau.secret; }
+    cb = '<p class="b-corbeau-rep' + (ok ? ' ok' : '') + '">' + (ok || E.corbeau.secret ? '🪶 ' : '❔ ') + esc(tc) + ' ' + lire(tc) + '</p>';
   }
   return '<div class="b-info-modal b-victoire"><div class="b-grand-ic">🏆</div><h2>Bravo, c\'est la bonne réponse !</h2>' + cb + '<p>Donne ce code à toute l\'équipe pour qu\'ils voient la fin de l\'histoire :</p>' + lire('Bravo, c\'est la bonne réponse ! Donne ce code à toute l\'équipe pour qu\'ils voient la fin de l\'histoire.') +
-    M.codeHTML(M.code('victoire:' + m.n), true) + '<button class="btn grand" data-act="fin-sage" data-n="' + m.n + '">📜 Voir la fin de l\'histoire</button></div>';
+    M.codeHTML(M.code(M.idVictoire(m.n)), true) + '<button class="btn grand" data-act="fin-sage" data-n="' + m.n + '">📜 Voir la fin de l\'histoire</button></div>';
 }
 function validerAccusation(m){
   var E = M.E(), P = M.P(), bon = 0, total = 0;
@@ -887,14 +889,16 @@ M.recommencer = function(fin){
 /* ---------- Fin d'enquête ---------- */
 function commencerFin(erreurs){
   var P = M.P(), E = M.E();
+  /* (enquête 3) le code de fin porte aussi la variante de la scène finale : la dizaine (M.idVictoire, moteur-base.js) */
+  var variante = Math.floor((+erreurs || 0) / 10); erreurs = (+erreurs || 0) % 10;
   UI.ecran = 'enquete';   /* même tapé depuis le village : on montre la fin */
   if(P.defaite){ UI.modal = null; M.render(); return; }
   if(P.etape === 'fin') { UI.modal = null; M.render(); return; }
   recompenser(erreurs);
+  if(variante) P.fin.variante = variante;
   UI.modal = null;
   M.sauver(); M.render();
   window.scrollTo(0, 0);
-  M.lireAuto(E.fin.slides[0]);
 }
 /* Passer directement à l'enquête suivante (code du Sage). Les récompenses sont données si ce n'est pas déjà fait.
    « depuis » : l'enquête que l'on quitte (celle du code). Sans enquête sur la tablette (village), on part à la prochaine.
@@ -1504,7 +1508,7 @@ A.accuser = function(){ M.ouvrir({type:'accusation', etape:'qui', choix:{}}); };
 A['corbeau-choix'] = function(el){
   var P = M.P(), E = M.E(); if(!P || !E || !E.corbeau) return;
   P.corbeau = el.dataset.v; M.sauver();
-  M.son(P.corbeau === E.corbeau.solution ? 'magie' : 'page');
+  M.son(!E.corbeau.secret && P.corbeau === E.corbeau.solution ? 'magie' : 'page');   /* (secret : le même bruit, juste ou pas) */
   M.ouvrir({type:'victoire', n:+el.dataset.n || 0, fixe:true, corbeau:P.corbeau});
 };
 A['acc-choix'] = function(el){
@@ -1521,11 +1525,11 @@ A.stratege = function(){
   innocents.sort(function(){ return Math.random() - .5; }).slice(0, 2).forEach(function(id){ P.raye.push(id); });
   P.usages.stratege = 1; M.son('magie'); M.sauver(); M.render();
 };
-A['fin-sage'] = function(el){ commencerFin(+el.dataset.n); };
+A['fin-sage'] = function(el){ commencerFin((+el.dataset.n || 0) + 10 * M.finVariante()); };
 A['fin-suite'] = function(){
   var P = M.P(), E = M.E();
   if(!P || !E || !P.fin){ UI.ecran = 'accueil'; M.render(); return; }
-  if(P.fin.slide < E.fin.slides.length - 1){ P.fin.slide++; M.sauver(); M.render(); M.lireAuto(E.fin.slides[P.fin.slide]); }
+  if(P.fin.slide < E.fin.slides.length - 1){ P.fin.slide++; M.sauver(); M.render(); }
   else { P.fin.etape = 'recompenses'; UI.padSuite = false; M.son('gain'); M.sauver(); M.render(); window.scrollTo(0, 0); }
 };
 /* Pendant l'histoire de fin : le Sage a déjà donné le code de l'enquête suivante ? On peut le taper tout de suite. */

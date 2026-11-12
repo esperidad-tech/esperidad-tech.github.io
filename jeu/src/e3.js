@@ -53,6 +53,10 @@ E[3] = {
       {ic:'💐', t:'Le maire t\'a donné 10 pièces : rapporte-lui au moins 10 bouquets pour la fête.', fait:[{vu:'marche:dix'}]},
       {ic:'🗣️', t:'Chaque villageois répond à deux questions par moment, pas plus : choisis bien !', fait:[{bavard:4}]},
       {ic:'🦯', t:'Odette demande qu\'on rapporte sa canne chez elle, au 2, rue des Lanternes.', fait:[{vu:'barde:voisin:0'}]},
+      /* (étapes 6 et 7) la nuit (des:2 : ces missions n'arrivent dans le Carnet qu'à la nuit, mission.js) */
+      {des:2, ic:'🗝️', t:'La nuit : la crypte est fermée à clé. Va voir Anselme, au clocher.', fait:[{vu:'grand:cle:fini'}]},
+      {des:2, ic:'🎉', t:'Pendant que les trois autres sont sous la terre : reste à la fête, parle à Anselme et au maire. Tu peux les aider d\'en haut !', fait:[{et:[{vu:'grand:gm:fini'}, {vu:'grand:retenir:fini'}]}]},
+      {des:2, ic:'🧑', t:'Quand le Pisteur remonte, il a un code pour toi : tape-le vite.', fait:[{vu:'grand:leo:fini'}]},
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -63,8 +67,8 @@ E[3] = {
       {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       /* (étape 6) la nuit : le sac de l'Alchimiste, puis le donjon (descente.js) */
-      {ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de son sac.', fait:[{vu:'sac:recu'}]},
-      {ic:'🕯️', t:'Traverse le donjon avec le Sage et l\'Alchimiste, jusqu\'au bout.', fait:[{vu:'donjon:fini'}]},
+      {des:2, ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de son sac.', fait:[{vu:'sac:recu'}]},
+      {des:2, ic:'🕯️', t:'Traverse le donjon avec le Sage et l\'Alchimiste, jusqu\'au bout.', fait:[{vu:'donjon:fini'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
@@ -75,14 +79,14 @@ E[3] = {
       {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
       {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
-      {ic:'🎒', t:'La nuit : donne le code de ton sac au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
+      {des:2, ic:'🎒', t:'La nuit : donne le code de ton sac au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
       {ic:'🌿', t:'Lis l\'herbier des Fondateurs à l\'Alchimiste, dans ton Grand Livre.', fait:[{lu:'herbier'}]},
-      {ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
+      {des:2, ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
@@ -93,7 +97,10 @@ E[3] = {
     {id:'moulin', nom:'Au moulin', ic:'🌾'}, {id:'chene', nom:'Au Vieux Chêne', ic:'🌳'}]},
   solution:{qui:'melusine', ou:'clocher'},
   /* la question bonus, qui ne coûte pas de cœur ; la réponse reste secrète jusqu'à la suite de la saison */
-  corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec'},
+  corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec',
+    t:'Un homme en cape a dicté la lettre, et il a enfermé Odette. Depuis la Fête des Lanternes, quelqu\'un se cache derrière tout ça… Parlez-en ensemble, puis désignez le Corbeau ! Cette question ne coûte aucun cœur.',
+    /* (étape 7) secret : le jeu ne dit ni « bravo » ni « raté » (même phrase, même bruit) ; la réponse est gardée pour la suite de la saison */
+    secret:'C\'est écrit dans le Grand Livre, à l\'encre secrète. As-tu vu juste ? Regardez bien la fin de l\'histoire…'},
 
   /* ---------- Le Barde (barde.js) ----------
      parVisite : chaque villageois répond à 2 questions par moment (E3-dialogues-et-trame.md §0) ; ensuite, sa phrase d'impatience (§8),
@@ -290,11 +297,16 @@ E[3] = {
       /* selon le nombre d'étapes réussies (la dernière, +10 pièces d'or : la seule réponse de plus de 30 mots, la révélation de l'enquête) */
       fins:[
         {t:'Il bondit, renverse la lanterne et file dans le noir. On entend ses grandes bottes s\'éloigner.'},
-        {t:'« Elle est vivante. C\'est tout ce que je peux dire. » Il file dans le noir.'},
-        {t:'« Elle est sous le clocher, je lui apporte à manger. Je ne dirai rien de plus. » Il reste assis, la tête dans les mains.'},
-        {t:'« Elle est derrière la porte aux quatre signes. Je passe la soupe par une trappe : je n\'ai pas de clé. L\'homme en cape a une bague à tête de corbeau… et les clés de tout le village. »', or:10}
+        {t:'« Elle est vivante. C\'est tout ce que je peux dire. » Il file dans le noir.', code:'info:leo_dit1'},
+        {t:'« Elle est sous le clocher, je lui apporte à manger. Je ne dirai rien de plus. » Il reste assis, la tête dans les mains.', code:'info:leo_dit2'},
+        {t:'« Elle est derrière la porte aux quatre signes. Je passe la soupe par une trappe : je n\'ai pas de clé. L\'homme en cape a une bague à tête de corbeau… et les clés de tout le village. »', or:10, code:'info:leo_dit3'}
       ],
+      /* (étape 7) ce que Léo a dit part chez le Sage, par un code (fins[n].code) : il le note, et la scène finale s'en souvient
+         sur toutes les tablettes (E.finVariante, plus bas) */
       apres:'Raconte à voix haute à ton équipe ce que Léo a dit. Puis le Sage accuse !',
+      apresCode:'Raconte à voix haute à ton équipe ce que Léo a dit, et donne son code au Sage. Puis le Sage accuse !',
+      apresRien:'Léo n\'a rien voulu dire. Raconte à ton équipe ce qui s\'est passé. Puis le Sage accuse !',
+      titreCode:'Ce que Léo a dit',
       enfui:'Des pas descendent l\'escalier de la crypte. Léo blêmit, renverse sa lanterne et file dans le noir, sans un mot.'}
   },
   /* ---------- Retenir le maire (grands.js ; E3-dialogues-et-trame.md §4.4) : trois petits dialogues d'une étape, à la fête, pendant le donjon,
@@ -374,7 +386,8 @@ E[3] = {
      pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
   donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}},
   /* le code du sac (plantes.js) : un code par contenu possible du sac (sept potions, faites ou non : 128), pour le Pisteur */
-  codesPlus:(function(){ var l = []; for(var i = 0; i < 128; i++) l.push('sac:' + i); return l; })(),
+  /* (étape 7) et les codes de fin qui portent la variante de la scène finale (E.finVariante : la dizaine ; l'unité : les erreurs) */
+  codesPlus:(function(){ var l = [], i; for(i = 0; i < 128; i++) l.push('sac:' + i); [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); return l; })(),
   /* Le registre du Sage (livre.js) */
   registre:{
     odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},
@@ -461,6 +474,16 @@ E[3] = {
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
       dire:'Un gros chat gris gratte à la porte aux quatre signes : donne ce code au Sage.'},
+    /* (étape 7) ce que Léo a dit au Barde, pour le Sage : une, deux ou trois étapes réussies du grand dialogue (grands.js) */
+    leo_dit1:{nom:'Léo : « Elle est vivante »', ic:'🧑', pour:'sage', de:'barde',
+      t:'Léo, le garçon du moulin, l\'a dit au Barde : « Elle est vivante. C\'est tout ce que je peux dire. » Puis il a filé dans le noir.',
+      dire:'Le Sage note tout dans son Grand Livre : donne-lui ce code.'},
+    leo_dit2:{nom:'Léo : « Elle est sous le clocher »', ic:'🧑', pour:'sage', de:'barde',
+      t:'Léo l\'a dit au Barde : « Elle est sous le clocher, je lui apporte à manger. Je ne dirai rien de plus. » Il a bien trop peur de quelqu\'un.',
+      dire:'Le Sage note tout dans son Grand Livre : donne-lui ce code.'},
+    leo_dit3:{nom:'Léo a tout dit', ic:'💍', pour:'sage', de:'barde',
+      t:'Léo a tout dit au Barde. Odette est derrière la porte aux quatre signes ; il lui passe la soupe par une trappe. L\'homme en cape a une bague à tête de corbeau… et les clés de tout le village.',
+      dire:'Le Sage note tout dans son Grand Livre : donne-lui ce code.'},
     leo_attrape:{nom:'Léo attrapé', ic:'🧑', pour:'barde', de:'pisteur', pnj:'leo',
       t:'Le Pisteur a attrapé Léo dans la crypte. À toi de le faire parler… doucement.',
       dire:'Le Barde doit parler à Léo : donne-lui ce code.'},
@@ -974,13 +997,48 @@ E[3] = {
       t:'Mélusine a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.'}
   ],
   bonus:[],
-  /* (la vraie fin, animée, arrive avec l'étape 7) */
-  fin:{slides:['<b>À suivre…</b>'], calepin:[]},
+  /* ---------- La fin (étape 7 ; E3-dialogues-et-trame.md §4.8) : minuit dans la crypte, le maire, la bague, le cachot ----------
+     La même pour toute l'équipe. Une seule réplique change, selon ce que Léo a dit au Barde : la tablette du Sage le sait par le code
+     « Ce que Léo a dit » (info:leo_dit2 / leo_dit3), et le dit aux autres dans le code de fin (victoire:1x, victoire:2x : moteur-actions.js,
+     commencerFin ; P.fin.variante). 0 : Léo n'est pas là (enfui, ou rien dit) ; 1 : il a parlé à moitié ; 2 : il a tout dit. */
+  finVariante:function(P){ return P && P.recus && P.recus['info:leo_dit3'] ? 2 : P && P.recus && P.recus['info:leo_dit2'] ? 1 : 0; },
+  fin:{
+    slides:[
+      'Mélusine a écrit la fausse lettre, mot pour mot, sous la dictée d\'un homme en cape. Et Odette est vivante : elle est là, tout près, derrière la porte aux quatre signes. Mais qui l\'a enfermée ?',
+      'DONG… DONG… DONG… La Grosse Marie sonne minuit. Dans la crypte des Fondateurs, des pas descendent l\'escalier. Des lanternes : c\'est le maire, avec Silas et deux gardes.',
+      function(P){
+        var v = (P && P.fin && P.fin.variante) || 0;
+        return v === 2 ? 'Le maire regarde Léo, longtemps. « Toi… tu as beaucoup trop parlé, mon garçon. »'
+          : v === 1 ? 'Le maire aperçoit Léo, assis contre le mur. « Léo. Rentre au moulin. Tout de suite. » Léo file sans un mot.'
+          : 'Le maire lève sa lanterne. « Tiens, tiens… Nos petits enquêteurs, dans la crypte des Fondateurs, en pleine nuit. »';
+      },
+      'Lentement, il retire ses gants gris. À son doigt brille une bague en argent, à tête de corbeau. « Vous êtes allés trop loin. Beaucoup trop loin. »',
+      'Silas en reste bouche bée : « Monsieur le maire… ? » Le maire ne le regarde même pas. « Gardes ! Enfermez-les ! »',
+      {img:'prison', plume:true, t:'Vous voilà tous les quatre au cachot de la mairie. Devant la grille, une plume noire se pose, sans un bruit… <b>À suivre…</b>'}
+    ],
+    illus:['e3-porte', 'e3-minuit', 'e3-leo', 'e3-bague', 'e3-gardes'],
+    calepin:[
+      {ic:'✍️', t:'Mélusine a écrit la fausse lettre d\'Odette, sous la dictée d\'un homme en cape qui sentait la lavande.'},
+      {ic:'🚪', t:'Odette est vivante, enfermée sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'},
+      {ic:'🧑', t:'Léo, le garçon du moulin, portait à manger à Odette tous les soirs. Quelqu\'un le lui avait demandé.'},
+      {ic:'💍', t:'À minuit, dans la crypte, le maire a retiré ses gants : il porte une bague en argent à tête de corbeau.'},
+      {ic:'💂', t:'Silas, le garde champêtre, n\'en revenait pas : « Monsieur le maire… ? »'},
+      {ic:'⛓️', t:'Le maire vous a fait enfermer au cachot de la mairie.'}
+    ]
+  },
   defaite:[
     'Minuit sonne. La fête est finie… et personne ne sait où est Odette.',
     'La brume entre dans le village et efface vos souvenirs… D\'autres enquêteurs viendront.'
   ],
-  faits:[]
+  /* ---------- Les preuves (pour le vérificateur : tools/verif.js 3 → verif-e3.js ; E3-actions-des-roles.md §5, « Qui prouve quoi ») ----------
+     Une preuve écarte les autres réponses. Les sources sont les clés du vérificateur (un point, une analyse, une vérité démasquée…). */
+  faits:[
+    /* QUI : l'écriture de la lettre (l'Alchimiste, au labo, avec le Livre d'or du Sage), ou l'aveu de Mélusine (le Barde : démasquée
+       l'après-midi, ou le filet, la nuit, à la fête) */
+    {sources:[['alchimiste:analyse:lettre', 'barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune']},
+    /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */
+    {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene']}
+  ]
 };
 /* La nuit, tout le village est à la fête, sur la place (§4) : sur la carte, chacun y est ; c'est la fête (grands.js) qui leur fait dire
    leur réplique au Barde. Le voisin d'Odette veille chez lui ; Anselme est au clocher ; Léo, introuvable. */

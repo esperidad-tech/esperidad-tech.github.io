@@ -203,4 +203,57 @@
 /* moins de mouvement : chaque scène reste figée sur son moment le plus parlant */
 .sf-aveu{--sf-fige:-6s}.sf-prison{--sf-fige:-7s}.sf-riviere{--sf-fige:-8.4s}.sf-chat-odette{--sf-fige:-3.6s}.sf-equipe{--sf-fige:-7s}
 .sf-course{--sf-fige:-4s}.sf-remonte{--sf-fige:-8.8s}.sf-pardon{--sf-fige:-3s}.sf-courant{--sf-fige:-2s}.sf-maire{--sf-fige:-6s}.sf-fete{--sf-fige:-7.4s}.sf-ragots{--sf-fige:-1.8s}.sf-planches{--sf-fige:-10s}
+/* ---------- Enquête 3 : la fin, dans la crypte (étape 7 ; 9 s) ---------- */
+.sf-b-tot{animation:sf-b-tot 9s linear infinite both}
+@keyframes sf-b-tot{0%, 8%{opacity:0}12%, 44%{opacity:1}48%, 100%{opacity:0}}
+.sf-b-tard{animation:sf-b-tard 9s linear infinite both}
+@keyframes sf-b-tard{0%, 50%{opacity:0}54%, 92%{opacity:1}96%, 100%{opacity:0}}
+.sf-b-long{animation:sf-b-long 9s linear infinite both}
+@keyframes sf-b-long{0%, 34%{opacity:0;transform:translateX(-50%) scale(.7)}38%{opacity:1;transform:translateX(-50%) scale(1.08)}42%, 92%{opacity:1;transform:translateX(-50%) scale(1)}96%, 100%{opacity:0;transform:translateX(-50%) scale(1)}}
+.sf-b-voix{font-style:italic;background:#fff3d8;animation:sf-b-voix 10s linear infinite both}
+@keyframes sf-b-voix{0%, 52%{opacity:0}56%, 74%{opacity:1}78%, 100%{opacity:0}}
+/* la porte aux quatre signes */
+.sf-signes{animation:sf-signes 2.4s ease-in-out infinite alternate}
+@keyframes sf-signes{from{opacity:.55}to{opacity:1}}
+.sf-sceau-halo{transform-box:fill-box;transform-origin:center;opacity:.14;animation:sf-sceau 2.4s ease-in-out infinite alternate}
+@keyframes sf-sceau{from{opacity:.08;transform:scale(.92)}to{opacity:.24;transform:scale(1.06)}}
+.sf-chat-gris{width:13%}
+.sf-chat-gris svg{filter:grayscale(1) brightness(.92)}
+.sf-chaud{animation:sf-rayon 1.8s ease-in-out infinite alternate}
+/* minuit : les coups de la Grosse Marie, le sursaut, les lanternes qui descendent l'escalier */
+.sf-dong{position:absolute;font-style:normal;font-weight:900;font-size:.82rem;letter-spacing:.06em;color:#ffe9a0;text-shadow:0 1px 0 #24182e, 0 0 8px rgba(255,210,90,.8);opacity:0;animation:sf-dong 9s ease-out infinite both;z-index:3}
+@keyframes sf-dong{0%{opacity:0;transform:scale(.5)}4%{opacity:1;transform:scale(1.25)}10%{opacity:1;transform:scale(1)}18%, 100%{opacity:0;transform:scale(1.1) translateY(-30%)}}
+.sf-sursaut>i{animation:sf-sursaut 9s ease-in-out infinite both;animation-delay:inherit}
+@keyframes sf-sursaut{0%, 3%, 9%, 100%{transform:translateY(0)}6%{transform:translateY(-7%)}}
+.sf-lueur-esc{animation:sf-lueur-esc 9s ease-in-out infinite both}
+@keyframes sf-lueur-esc{0%, 14%{opacity:0}40%, 92%{opacity:1}98%, 100%{opacity:0}}
+.sf-descend{animation:sf-descend 9s ease-out infinite both}
+@keyframes sf-descend{0%, 22%{left:calc(var(--x) + 22%);bottom:54%;opacity:0}26%{left:calc(var(--x) + 22%);bottom:54%;opacity:1}52%{left:var(--x);bottom:var(--b, 8%);opacity:1}92%{left:var(--x);bottom:var(--b, 8%);opacity:1}98%, 100%{left:var(--x);bottom:var(--b, 8%);opacity:0}}
+.sf-descend>i, .sf-descend>svg{animation:sf-descend-pas 9s linear infinite both}
+@keyframes sf-descend-pas{0%, 26%, 52%, 100%{transform:translateY(0)}30%, 38%, 46%{transform:translateY(-3%)}34%, 42%, 50%{transform:translateY(0)}}
+.sf-leve{animation:sf-leve 9s ease-in-out infinite both}
+@keyframes sf-leve{0%, 6%{transform:translate(-50%, -30%)}14%, 92%{transform:translate(-50%, -62%)}100%{transform:translate(-50%, -30%)}}
+/* Léo file sans un mot */
+.sf-file{animation:sf-file 9s ease-in infinite both}
+@keyframes sf-file{0%, 50%{left:var(--x);opacity:1}72%{left:-22%;opacity:1}73%, 94%{left:-22%;opacity:0}98%, 100%{left:var(--x);opacity:0}}
+.sf-file>i{animation:sf-pas .28s ease-in-out infinite alternate}
+/* les gardes */
+.sf-garde{position:absolute;bottom:8%;left:var(--x);height:42%;aspect-ratio:60/126;transform:translateX(-50%);z-index:1}
+.sf-garde svg{display:block;width:100%;height:100%;overflow:visible}
+.sf-avance{animation:sf-avance 9s ease-in-out infinite both}
+@keyframes sf-avance{0%, 58%{left:var(--x)}84%, 94%{left:var(--vers, 50%);opacity:1}98%, 100%{left:var(--vers, 50%);opacity:0}}
+.sf-avance svg{animation:sf-avance-pas 9s linear infinite both}
+@keyframes sf-avance-pas{0%, 58%, 84%, 100%{transform:translateY(0)}62%, 70%, 78%{transform:translateY(-3%)}66%, 74%, 82%{transform:translateY(0)}}
+.sf-recule{animation:sf-recule 9s ease-in-out infinite both}
+@keyframes sf-recule{0%, 60%{left:var(--x)}80%, 94%{left:calc(var(--x) - 5%);opacity:1}98%, 100%{left:calc(var(--x) - 5%);opacity:0}}
+/* la bague à tête de corbeau : elle brille ; le gant gris tombe */
+.sf-bague{transform-box:fill-box;transform-origin:center;animation:sf-bague 9s ease-in-out infinite both}
+@keyframes sf-bague{0%, 24%{opacity:0;transform:scale(.6)}30%{opacity:1;transform:scale(1.25)}36%, 100%{opacity:1;transform:scale(1)}}
+.sf-eclat{transform-box:fill-box;transform-origin:center;opacity:0;animation:sf-eclat 1.8s ease-in-out infinite}
+@keyframes sf-eclat{0%, 100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(30deg)}}
+.sf-e3-bague .sf-eclat{animation-name:sf-eclat-tard}
+@keyframes sf-eclat-tard{0%, 100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:.95;transform:scale(1.2) rotate(30deg)}}
+.sf-gant{transform-box:fill-box;transform-origin:50% 100%;animation:sf-gant 9s ease-in infinite both}
+@keyframes sf-gant{0%, 6%{transform:translate(238px, 74px) rotate(-12deg);opacity:1}26%{transform:translate(276px, 150px) rotate(40deg);opacity:1}32%, 100%{transform:translate(284px, 220px) rotate(70deg);opacity:0}}
+.sf-e3-porte{--sf-fige:-6.2s}.sf-e3-minuit{--sf-fige:-6s}.sf-e3-leo{--sf-fige:-3s}.sf-e3-bague{--sf-fige:-5s}.sf-e3-gardes{--sf-fige:-5.6s}
 @media (prefers-reduced-motion: reduce){ .rs-scene.sf-scene *{animation-play-state:paused !important;animation-delay:var(--sf-fige, -5s) !important} }

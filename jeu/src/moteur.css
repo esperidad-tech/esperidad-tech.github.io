@@ -601,6 +601,11 @@ button.b-bocal:not(:disabled):active{transform:scale(.94)}
 .b-prison-sol{position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(#5d4a30, #3a2c1c);box-shadow:inset 0 6px 10px rgba(0,0,0,.35)}
 .b-prison-sol::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg, transparent 0 9px, rgba(230,190,90,.35) 9px 11px, transparent 11px 23px);opacity:.7}
 .b-prison-ombre,.b-prison-moi{position:absolute;bottom:8%}
+/* (enquête 3) une plume noire descend en se balançant, et se pose devant la grille */
+.b-prison-plume{position:absolute;left:68%;bottom:3%;width:clamp(16px, 4.2vw, 26px);aspect-ratio:24/60;z-index:4;pointer-events:none;transform-origin:50% 100%;animation:b-plume 7s ease-in-out both}
+.b-prison-plume svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes b-plume{0%{transform:translate(-90px, -340px) rotate(-30deg);opacity:0}8%{opacity:1}20%{transform:translate(30px, -270px) rotate(24deg)}40%{transform:translate(-50px, -190px) rotate(-26deg)}60%{transform:translate(26px, -110px) rotate(22deg)}80%{transform:translate(-16px, -40px) rotate(-12deg)}100%{transform:translate(0, 0) rotate(72deg);opacity:1}}
+@media (prefers-reduced-motion: reduce){ .b-prison-plume{animation:none;transform:rotate(72deg)} }
 .b-prison-ombre svg,.b-prison-moi svg{height:100%;width:auto;display:block}
 .b-prison-ombre{height:60%;filter:brightness(0);opacity:.62}
 .b-prison-ombre.o0{left:6%}

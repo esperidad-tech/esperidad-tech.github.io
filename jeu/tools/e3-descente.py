@@ -87,6 +87,13 @@ def jaune(pg, sel):
 def missions(pg):
     return pg.evaluate("() => (M.etapesMission() || []).map(function(x){ return [x.t, !!(x.fait && x.fait.some(M.condMission))]; })")
 
+def carnet_missions(pg):
+    """les missions à cocher que le Carnet montre (dépliées)"""
+    pg.evaluate("() => { M.UI.modal = null; M.majMission(); M.P().mission.plie = false; M.P().onglet = 'carnet'; M.render(); }"); pg.wait_for_timeout(250)
+    n = pg.locator('.b-missions li:not(.libre):not(.piste)').count()
+    pg.evaluate("() => { M.P().onglet = 'carte'; M.render(); }")
+    return n
+
 def jeton(pg):
     return pg.evaluate("() => M.P().donjonJeton || ''")
 
@@ -109,7 +116,7 @@ def preparer(pg):
 def debut(b, nom, role, url=None, sans_donjon=True):
     pg = b.new_context(viewport={'width': 1180, 'height': 820}, has_touch=True).new_page()
     pg.set_default_timeout(9000)
-    pg.on('console', lambda m: erreurs.append(f'[{nom}] {m.text}') if m.type == 'error' and 'net::' not in m.text and 'fonts' not in m.text and 'ERR_' not in m.text and 'Failed to load' not in m.text and 'sw.js' not in m.text else None)
+    pg.on('console', lambda m: erreurs.append(f'[{nom}] {m.text}') if m.type == 'error' and 'net::' not in m.text and 'fonts' not in m.text and 'ERR_' not in m.text and 'Failed to load' not in m.text and 'sw.js' not in m.text and 'fetching the script' not in m.text else None)   # (le petit serveur d'essai n'a pas de sw.js)
     pg.on('pageerror', lambda e: erreurs.append(f'[{nom}] PAGEERROR {e}'))
     pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
     pg.route('**/fonts.gstatic.com/**', lambda r: r.fulfill(status=404, body=''))
@@ -145,8 +152,10 @@ def partie_enquete(b):
     verifier(pg.evaluate("() => M.donjonDispo() && !!M.E().donjon"), 'enquête 3 : le donjon est branché')
     m = missions(pg)
     verifier(len(m) == 6 and 'sac' in m[3][0] and 'donjon' in m[4][0] and not m[3][1] and not m[4][1], f'le Carnet du Pisteur : deux missions de plus, pour la nuit ({len(m)})')
+    verifier(carnet_missions(pg) == 3, f'le matin, son Carnet ne montre que ses trois missions du jour ({carnet_missions(pg)}) : celles de la nuit n\'y sont pas encore')
     code(pg, 'moment:1'); code(pg, 'moment:2')
     verifier(pg.evaluate("() => M.momentId()") == 'nuit', 'la nuit')
+    verifier(carnet_missions(pg) == 5, f'la nuit, les deux missions de la nuit arrivent dans son Carnet ({carnet_missions(pg)})')
     cle_anselme(pg, True)
     pts = lieu(pg, 'clocher')
     verifier(pts == ['cle', 'crypte'], f'le clocher : la grille de la crypte, pas encore de descente ({pts})')

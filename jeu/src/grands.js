@@ -78,7 +78,12 @@ function grandHTML(m){
     return h + ligne(cite(X.ment.vrai), id) + '<p class="bd-tag-ment">🤥 Mensonge démasqué</p><button class="btn grand" data-act="gd-leo-suite">▶ Continuer</button></div>';
   if(st.fini){
     h += ligne(st.r, id);
-    if(g === 'leo') return h + recit(X.apres) + (st.or ? '<div class="ma-gain ma-or"><span>🪙 +' + st.or + ' pièces d\'or</span></div>' : '') + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
+    if(g === 'leo'){
+      /* (étape 7) ce que Léo a dit part chez le Sage : « ✨ La suite » montre le code (fins[n].code) */
+      var fL = st.n >= 0 ? X.fins[st.n] : null, orL = st.or ? '<div class="ma-gain ma-or"><span>🪙 +' + st.or + ' pièces d\'or</span></div>' : '';
+      if(fL && fL.code) return h + orL + '<button class="btn grand b-aller" data-act="gd-leo-code">✨ La suite</button></div>';
+      return h + recit(st.n > 0 ? X.apres : (X.apresRien || X.apres)) + orL + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
+    }
     var S = st.fini === 'ok' ? X.reussi : st.fini === 'piege' ? X.piege : st.fini === 'rate' ? X.echec : null;
     if(S && S.code) return h + '<button class="btn grand b-aller" data-act="gd-suite" data-g="' + g + '">' + esc(S.bouton || '✨ La suite') + '</button></div>';
     return h + '<button class="btn grand" data-act="gd-retour" data-id="' + id + '">D\'accord</button></div>';
@@ -150,10 +155,15 @@ function finLeo(c){
   st.fini = 'leo'; st.n = n; st.r = [dire(c), f.t].filter(Boolean).join(' ');
   P.vus['grand:leo'] = n >= X.fins.length - 1 ? 'ok' : 'rate'; P.vus['grand:leo:fini'] = 1; P.vus['leo:etapes'] = n + 1;   /* (+1 : 0 serait « pas vu ») */
   if(f.or){ st.or = f.or; M.S.or = (M.S.or || 0) + f.or; }
+  if(f.code) donner(f.code);   /* (étape 7) « Ce que Léo a dit », pour le Sage */
   M.noter('Léo, dans la crypte : ' + f.t, '🧑');
   M.son(n ? 'ok' : 'ko');
   if(UI.modal && UI.modal.type === 'grand') UI.modal.fixe = false;
 }
+A['gd-leo-code'] = function(){
+  var X = Gd('leo'), st = etat('leo'), f = X && st.n >= 0 ? X.fins[st.n] : null; if(!f || !f.code) return;
+  M.decouvrir({ic:'🧑', titre:X.titreCode || 'Ce que Léo a dit', t:X.apresCode || X.apres, code:f.code});
+};
 /* le code du Pisteur : « Léo attrapé » ouvre le dialogue tout de suite ; « Léo s'est enfui » : la scène, sans dialogue */
 var cs0 = M.codeSpecial;
 M.codeSpecial = function(t, x, id){
@@ -169,7 +179,7 @@ M.codeSpecial = function(t, x, id){
       if(x === 'leo_enfui' || st.fini){
         if(!st.fini){ st.fini = 'leo'; st.n = -1; P.vus['grand:leo'] = 'enfui'; P.vus['grand:leo:fini'] = 1; }
         M.noter('Léo s\'est enfui : ' + X.enfui, '🏃'); M.sauver();
-        M.ouvrir({type:'info', ic:'🏃', titre:'Léo s\'est enfui', t:X.enfui + ' ' + X.apres}); return true;
+        M.ouvrir({type:'info', ic:'🏃', titre:'Léo s\'est enfui', t:X.enfui + ' ' + (X.apresRien || X.apres)}); return true;
       }
       M.noter('Le Pisteur a attrapé Léo dans la crypte.', '🧑'); M.sauver();
       M.grandOuvrir('leo'); return true;

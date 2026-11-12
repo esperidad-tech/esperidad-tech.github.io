@@ -529,6 +529,11 @@ function codesBruts(E){
   return E._codesBruts;
 }
 M.code = function(id){ return M.codesEnquete(M.E()).parId[id]; };
+/* (enquête 3) Le code de fin peut porter une variante de la scène finale, pour que toute l'équipe voie la même : E.finVariante(P) rend
+   0, 1 ou 2 sur la tablette du Sage (ce qu'il a reçu) ; le code de fin est alors « victoire:<10 × variante + erreurs> » (les codes en
+   plus sont dans E.codesPlus). Sans E.finVariante (enquêtes 1 et 2) : toujours 0, les codes « victoire:0 » à « victoire:3 » d'avant. */
+M.finVariante = function(){ var E = M.E(), P = M.P(); try{ return (E && P && typeof E.finVariante === 'function' ? +E.finVariante(P) : 0) || 0; }catch(e){ return 0; } };
+M.idVictoire = function(erreurs, variante){ return 'victoire:' + (Math.min(+erreurs || 0, 3) + 10 * (variante == null ? M.finVariante() : (+variante || 0))); };
 M.codeDe = function(E, id){ return E ? M.codesEnquete(E).parId[id] : null; };
 M.idDuCode = function(seq){ var E = M.E(); return E ? (M.codesEnquete(E).parCode[seq.join('-')] || null) : null; };
 /* Un code de passage d'une enquête voisine de « autour » : {id, e} ou null */
@@ -658,6 +663,7 @@ M.archiver = function(){
   S.journal = S.journal || {};
   S.journal[P.id] = {titre:E.titre, e:P.id, tableau:P.tableau ? M.copie(P.tableau) : null, liege:P.liege ? M.copie(P.liege) : null, mission:P.mission ? M.copie(P.mission) : null, revisions:(P.revisions || []).slice(), vus:M.copie(P.vus || {}), carnet:(P.carnet || []).slice(), raye:(P.raye || []).slice(), suspects:(E.qui && E.qui.choix || []).slice(),
     recus:M.cle(P.recus || {}).filter(function(k){ return P.recus[k] && /^(obj|info|pot):/.test(k); }).map(function(k){ try{ return M.nomCode(k); }catch(e){ return null; } }).filter(Boolean)};
+  if(P.corbeau) S.journal[P.id].corbeau = P.corbeau;   /* (enquête 3) la réponse du Sage à « QUI est le Corbeau ? », gardée pour la suite de la saison */
 };
 M.noter = function(texte, ic, cle){
   var P = M.P(); if(!P || !texte) return;

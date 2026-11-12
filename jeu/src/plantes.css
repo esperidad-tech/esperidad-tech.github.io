@@ -122,8 +122,12 @@ html.pl-ouvert, html.pl-ouvert body{overflow:hidden}
 .pl-intro-img i{font-style:normal;font-weight:800;color:#7a5a3a}
 .pl-sac-fioles{display:flex;justify-content:center;gap:4px;margin:6px 0;background:#3a2a4a;border-radius:12px;padding:8px 6px 4px}
 .pl-sac-fioles .pl-fiole svg{height:48px}
+/* (dans le sac, le fond est sombre : les noms des fioles en clair) */
+.pl-sac-fioles .pl-fiole small{color:#cfc4e2;opacity:.8}
+.pl-sac-fioles .pl-fiole.pl-pleine small{color:#fff;opacity:1}
+.pl-sac-fioles .pl-fiole.pl-pleine small::after{color:#8fe6a2}
 .pl-sac-code{margin:8px 0 12px}
-.pl-sac-recu .pl-sac-fioles{margin:8px auto;max-width:420px}
+.pl-sac-recu .pl-sac-fioles{margin:8px auto;max-width:480px}
 
 .pl-livre{width:100%;max-width:860px;height:100%;max-height:640px;display:flex;flex-direction:column;background:#fbf3dc;color:#2e2130;border:3px solid #24182e;border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.5);overflow:hidden}
 .pl-livre-tete{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px 4px 14px}
@@ -192,7 +196,8 @@ html.pl-ouvert, html.pl-ouvert body{overflow:hidden}
 .pl-decor{pointer-events:none}
 
 /* ---------- la descente dans le donjon (descente.js) ---------- */
-.ds-fenetre .pl-sac-fioles{margin:8px auto;max-width:420px}
+.ds-fenetre .pl-sac-fioles{margin:8px auto;max-width:480px}
+.ds-fenetre .pl-sac-fioles .pl-fiole small, .pl-sac-recu .pl-sac-fioles .pl-fiole small{font-size:.66rem}
 .ds-fenetre .btn{margin:6px 4px 0}
 .ds-suite{margin:10px 0 6px!important;font-size:.98rem!important}
 .pl-carte .b-aller[data-pl=donjon]{margin:0 0 10px}

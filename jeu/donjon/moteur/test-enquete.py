@@ -147,6 +147,14 @@ def descente(nav):
     # une potion de plus, le même jeton
     J.va_a(PAGE + '?sanscombat=1&enquete=3&jeton=jeton-A&potions=feu,huile,acide&entree=crypte'); J.carte()
     verifie(J.partie()['recettes'] == ['feu', 'huile', 'acide'], 'le même jeton, une potion de plus : elle rejoint le sac')
+    # « ↺ Recommencer la descente » (dans 🎒 Objets) : la descente recommencée reste celle de l'enquête
+    J.js("(function(){ var p = DJ.Explo._X().partie; p.recettes.push('givre'); p.or = 12; DJ.garder(p); })()")
+    J.clic('[data-act=objets]'); J.clic('#fenetre [data-act=recommencer]'); J.clic('#fenetre [data-act=recommencer-oui]')
+    pg.wait_for_timeout(1500); J.depart()
+    p = J.partie()
+    verifie(p['enquete'] == 3 and p['jeton'] == 'jeton-A' and p['entree'] == 'crypte' and p['recettes'] == ['feu', 'huile', 'acide'] and not p.get('or') and 'nouveau' not in pg.url and 'jeton=jeton-A' in pg.url,
+            f'« Recommencer la descente » : une partie neuve, toujours celle de l\'enquête (son jeton, son entrée, les potions du sac, sans la recette apprise en route) ({p["recettes"]})')
+    J.clic('[data-act=sac-pret]'); J.scene('puits'); J.repartir()
     # ---------- 2. les codes du Barde ----------
     print('— 2. Les codes du Barde, sur le pavé')
     J.js("(function(){ var p = DJ.Explo._X().partie; p.heros.sage.pv = 1; p.heros.alchimiste.pv = 2; })()")

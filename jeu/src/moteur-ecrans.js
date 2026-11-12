@@ -460,10 +460,11 @@ function vueFin(){
   if(!F) return '';
   if(F.etape === 'histoire'){
     var i = Math.min(F.slide, slides.length - 1), t = slides[i], img = '';
-    if(t && typeof t === 'object'){ img = t.img === 'prison' ? prisonHTML() : ''; t = t.t || ''; }   /* une image dans l'histoire : {t, img:'prison'} */
+    if(typeof t === 'function'){ try{ t = t(P); }catch(e){ console.error(e); t = ''; } }   /* (enquête 3) un texte qui dépend de la partie (la variante de la scène finale) */
+    if(t && typeof t === 'object'){ img = t.img === 'prison' ? prisonHTML(t) : ''; t = t.t || ''; }   /* une image dans l'histoire : {t, img:'prison'} */
     /* une petite scène animée sous le texte (E.fin.illus[i] : illus-fin.js ; Romain, 5 novembre, 9 h 37) */
     var anim = !img && E.fin.illus && E.fin.illus[i] && M.illustration ? M.illustration(E.fin.illus[i]) : '';
-    var codeFin = M.role() === 'sage' ? '<details class="b-code-fin"><summary>🔢 Le code de fin pour l\'équipe</summary>' + M.codeHTML(M.code('victoire:' + Math.min(F.erreurs || 0, 3))) + '</details>' : '';
+    var codeFin = M.role() === 'sage' ? '<details class="b-code-fin"><summary>🔢 Le code de fin pour l\'équipe</summary>' + M.codeHTML(M.code(M.idVictoire(F.erreurs, F.variante || 0))) + '</details>' : '';
     return '<main class="b-page b-fin"><p class="sur-titre centre">Enquête ' + E.id + ' · ' + esc(E.titre) + '</p>' + codeFin +
       (F.slide === 0 && F.erreurs >= 3 ? '<p class="b-carte-verre centre">La solution vous a été révélée. Ce n\'est pas grave : on apprend en enquêtant !</p>' : '') +
       '<article class="parchemin b-fin-slide" data-n="' + i + '">' + img + '<p>' + t + '</p>' + lire(t) + anim + '</article>' +
@@ -499,7 +500,7 @@ function vueFinAncienne(E, F, niv){   /* l'ancien écran des récompenses (gard�
 }
 /* Fin de l'enquête 3 : le héros de cette tablette au cachot de la mairie, derrière les barreaux,
    avec les trois autres enquêteurs en ombres (on ne connaît pas l'allure des héros des autres tablettes) */
-function prisonHTML(){
+function prisonHTML(o){
   var moi = M.role(), autres = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi; });
   var ombre = function(r, i){
     var h = window.Persos && Persos.defaut ? Persos.defaut(r, i % 2 ? 'm' : 'f') : {role:r};
@@ -509,7 +510,9 @@ function prisonHTML(){
     '<i class="b-prison-fenetre"></i><i class="b-prison-rayon"></i><i class="b-prison-sol"></i>' +
     autres.map(ombre).join('') +
     '<div class="b-prison-moi">' + portrait('pied', true, false) + '</div>' +
-    '<i class="b-prison-barreaux"></i></div>';
+    '<i class="b-prison-barreaux"></i>' +
+    /* (enquête 3, o.plume) une plume noire descend en se balançant, et se pose devant la grille */
+    (o && o.plume ? '<b class="b-prison-plume" aria-hidden="true"><svg viewBox="-12 -30 24 60" focusable="false"><path d="M0 28 C -1 10 -2 -8 1 -27" stroke="#0c0a12" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M1 -27 C -9 -18 -11 -2 -7 12 C -5 16 -2 18 0 20 C 2 18 6 15 8 10 C 11 -3 9 -19 1 -27 Z" fill="#15121c" stroke="#05040a" stroke-width="1"/><path d="M0 16 C -2 2 -2 -12 1 -24 M-5 6 L 0 2 M-6 -4 L 0 -8 M6 4 L 0 -1 M6 -8 L 1 -13" stroke="#3a3550" stroke-width=".9" fill="none"/></svg></b>' : '') + '</div>';
 }
 /* ---------- Défaite ---------- */
 function vueDefaite(){

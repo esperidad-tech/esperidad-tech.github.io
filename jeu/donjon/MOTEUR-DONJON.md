@@ -343,3 +343,23 @@ Demandes de Romain : Bible §12.51 (« Les retouches du soir du 11 novembre »).
 - **`?nouveau=1`** : enlevé de la barre d'adresse dès le départ (`history.replaceState`) — sinon chaque rechargement de la page recommençait le donjon.
 - **Adresses d'essai** : `?combat=bassin&potions=toutes&graine=5` (Bourbe : givre, feu, fumigène) ; `?combat=crypte&potions=toutes` (la dague éteinte : « Trop haut ! »).
 - **Tests** : `test-regles.js` 436 ; `test-combat.py` 135 sur la version de 20 h 58 (une attente du test corrigée depuis), puis la cave aux toiles et le grand bassin repassés sur la version finale : 51 ; `test-donjon.py` 89 (`J.touche(id)` : un vrai doigt sur un objet) ; `test-objets.py` 35 ; `../test-sage.py` 210 ; `../test-carte.py` 72 ; `test-descente.py` 21.
+
+### 9.12 Le 12 novembre : le donjon branché dans l'enquête 3 (étape 6 de la Bible §13.14)
+
+**Romain a validé le donjon le 12 novembre à 1 h 11** (« L'essai du donjon est terminé, c'est validé »). Le branchement ne change **rien au donjon joué tout seul** (`…/donjon/` sans rien dans l'adresse) : `test-enquete.py`, partie 5, le vérifie. Fait par la conversation qui construit l'enquête 3 ; le détail côté enquête : Bible §13.20, `jeu/src/descente.js`.
+
+- **L'adresse** : l'enquête ouvre `index.html?enquete=3&jeton=<jeton>&potions=feu,huile,…&entree=crypte|puits` (le Pisteur), `sage.html?enquete=3&jeton=…` et `alchimiste.html?enquete=3&jeton=…`.
+  - **Le jeton** : un par descente. Un jeton nouveau = une partie neuve (`explo.js`, `demarrer` : la partie gardée d'un autre jeton est laissée de côté ; `pages/commun.js`, `jetonNeuf` : la mémoire de la page du Sage ou de l'Alchimiste repart de zéro, clé `brumeval-donjon-jeton:<page>`) ; le même jeton : on reprend. L'enquête ne croit que la partie qui porte son jeton.
+  - **Les potions** : celles que l'Alchimiste a vraiment préparées sur son établi (une à sept). Une potion finie plus tard rejoint le sac à la descente suivante (même jeton). L'écran du sac le dit : « Dans le sac de l'Alchimiste : deux fioles… Il en manque ? Il peut encore en faire, là-haut. »
+  - **L'entrée** : `partie.entree` = `crypte` ou `puits`. Le donjon est le même ; seuls changent le titre de la carte (« Sous le clocher » / « Sous le puits ») et la première phrase du fond du puits.
+- **Dans la partie** (`partie.enquete`, `partie.jeton`, `partie.entree`) :
+  - un bouton **« 🏘️ L'enquête »** sur la carte (la partie est gardée, on revient quand on veut) ; sur les pages du Sage et de l'Alchimiste, un petit bouton 🏘️ en haut à gauche (`pages/commun.js`, `boutonEnquete`) ;
+  - **deux codes du Barde** sur le pavé « 📜 Un code » (`donnees.js`, `D.CODES` ; `regles.js`, `code`) : **`grosse:marie`** (toute la vie des trois héros revient, ceux qui étaient au sol se relèvent ; une seule fois) et **`maire:retenu`** ;
+  - **avant la dernière salle**, sans le code du maire : la fenêtre « Avant d'entrer » (`explo.js`, `fenetreMaire` : taper le code, ou « On y va quand même ») ;
+  - **sans le code du maire, Léo s'enfuit** : la dernière salle donne `leo:enfui` à la place de `leo:attrape` (`regles.js`, `leoEnfui`, `donneDe` ; `D.LIEUX.leo.sansMaire`) ; la scène et l'écran de fin le disent ;
+  - à la fin : **« Remonter au village ➜ »** à la place de « Recommencer la descente ».
+- **Les codes partagés** ont les mêmes symboles des deux côtés (`donjon-codes.js` et `jeu/src/codes-fixes.js`, enquête 3) : `porte:odette`, `leo:attrape`, `leo:enfui`, `grosse:marie`, `maire:retenu`. Les autres codes du donjon sont réservés dans l'enquête (aucun code de l'enquête ne tombe dessus). `node jeu/tools/e3-donjon-codes.js` vérifie que les deux fichiers disent la même chose. **Ne pas changer les symboles d'un code du donjon sans changer `codes-fixes.js`.**
+- **Ce que l'enquête relit** (au retour, dans la mémoire de la tablette) : `brumeval-donjon-partie` (`faits['code:porte:odette']`, `faits.fin`, `faits['code:leo:enfui']`) et `brumeval-donjon-sage` (`codes['porte:odette']`). **Ne pas renommer ces clés sans changer `jeu/src/descente.js`.**
+- **Adresses d'essai** : `index.html?sanscombat=1&enquete=3&jeton=essai&potions=feu,huile&entree=crypte`.
+- **Tests** : `node test-regles.js` (436, inchangé : les règles de l'enquête ne s'appliquent que si `partie.enquete`) ; **`test-enquete.py`** (nouveau, 35 vérifications : la descente lancée par l'enquête, les deux codes du Barde, Léo enfui ou attrapé, et le donjon tout seul qui ne change pas) ; côté enquête, `jeu/tools/e3-descente.py` (le vrai aller-retour avec le donjon construit) et `jeu/tools/partie3.py` (une partie complète à quatre tablettes).
+- **Pas fait** : « Jouer sans internet » ne garde pas encore les fichiers du donjon (il faut l'avoir ouvert une fois en ligne) ; Mimi dans le donjon.

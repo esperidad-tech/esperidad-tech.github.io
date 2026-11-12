@@ -15,6 +15,7 @@
      bavard (habitants interrogés), demasque (aveux obtenus),
      lu (page du Grand Livre ouverte), dictee (recette secrète complète dans le grimoire), ou [une des conditions].
    Une mission validée le reste (on ne recule jamais).
+   (enquête 3) e.des : le n° du moment où la mission arrive (2 : la nuit). Avant, elle n'est pas dans la liste : elle gâcherait la surprise.
    ========================================================== */
 (function(){
 'use strict';
@@ -55,6 +56,8 @@ function un(b){
 }
 function liste(l){ return !!(l && l.length && l.some(un)); }
 M.condMission = un;
+/* une mission qui n'est pas encore arrivée (e.des : le n° du moment où elle apparaît) */
+function pasEncore(e){ var P = M.P(); return e.des !== undefined && (!P || (P.moment || 0) < e.des); }
 
 /* ---------- État ---------- */
 M.etapesMission = function(){
@@ -63,7 +66,7 @@ M.etapesMission = function(){
 };
 function etat(){
   var P = M.P();
-  if(!P.mission || typeof P.mission !== 'object') P.mission = {faits:{}, manuels:{}, coches:{}, nonLus:M.etapesMission().filter(function(e){ return !e.libre && !e.piste; }).length};
+  if(!P.mission || typeof P.mission !== 'object') P.mission = {faits:{}, manuels:{}, coches:{}, nonLus:M.etapesMission().filter(function(e){ return !e.libre && !e.piste && e.des === undefined; }).length};
   P.mission.coches = P.mission.coches || {};
   return P.mission;
 }
@@ -79,8 +82,14 @@ M.majMission = function(){
   var P = M.P();
   if(!P || P.etape !== 'jeu' || P.defaite) return;
   var L = M.etapesMission(); if(!L.length) return;
-  var Mi = etat(), nouvelles = [];
-  L.forEach(function(e, i){ if(!Mi.faits[i] && faite(e, i, Mi)){ Mi.faits[i] = 1; Mi.coches[i] = 1; nouvelles.push(e); } });   /* validée : sa case se coche (on peut la décocher) */
+  var Mi = etat(), nouvelles = [], arrivees = 0;
+  L.forEach(function(e, i){
+    if(pasEncore(e)) return;
+    /* (e.des) une mission qui vient d'arriver : la pastille 🎯 de l'onglet Carnet le dit */
+    if(e.des !== undefined && !e.libre && !e.piste){ Mi.arrivees = Mi.arrivees || {}; if(!Mi.arrivees[i]){ Mi.arrivees[i] = 1; arrivees++; } }
+    if(!Mi.faits[i] && faite(e, i, Mi)){ Mi.faits[i] = 1; Mi.coches[i] = 1; nouvelles.push(e); }   /* validée : sa case se coche (on peut la décocher) */
+  });
+  if(arrivees){ Mi.nonLus = (Mi.nonLus || 0) + arrivees; M.sauver(); if(!nouvelles.length) setTimeout(function(){ M.toast(arrivees > 1 ? '🎯 De nouvelles missions dans ton Carnet !' : '🎯 Une nouvelle mission dans ton Carnet !'); }, 900); }
   if(!nouvelles.length) return;
   Mi.nonLus = (Mi.nonLus || 0) + nouvelles.length;
   M.sauver();
@@ -132,12 +141,13 @@ M.sectionMissions = function(){
   var R = D.ROLES[M.role()];
   /* repliable (Romain, 5 novembre, 12 h 31 : pour tous les rôles) : le titre est un bouton ; replié, on voit combien sont faites */
   var nb = 0, faites = 0;
-  L.forEach(function(e, i){ if(e.libre || e.piste) return; nb++; if(Mi.faits[i] || Mi.coches[i]) faites++; });
+  L.forEach(function(e, i){ if(e.libre || e.piste || pasEncore(e)) return; nb++; if(Mi.faits[i] || Mi.coches[i]) faites++; });
   var s = '<section class="b-missions' + (plie ? ' plie' : '') + '" style="--c:' + R.c + '"><h3><button type="button" class="b-mi-plier" data-act="missions-plier" aria-expanded="' + !plie + '">' +
     '<span>🎯 Mes missions</span>' + (nb ? '<small class="b-mi-compte">' + faites + ' / ' + nb + ' ✅</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>';
   if(plie) return s + '</section>';
   s += '<ul>';
   L.forEach(function(e, i){
+    if(pasEncore(e)) return;
     var fait = !!Mi.faits[i], coche = !!Mi.coches[i];
     var t = e.piste ? 'Piste : ' + e.t : e.t;
     var cls = e.libre ? 'libre' : e.piste ? 'piste' : fait ? 'fait' : 'afaire';

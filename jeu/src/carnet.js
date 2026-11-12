@@ -234,7 +234,7 @@ function codesDonnes(E, P){
   }
   if(M.role() === 'sage'){
     for(var i = 1; i <= P.moment && i < E.moments.length; i++) aj('moment:' + i);
-    if(P.resolu && P.fin) aj('victoire:' + Math.min(P.fin.erreurs || 0, 3), {ic:'🏆', nom:'Fin de l\'enquête'});
+    if(P.resolu && P.fin) aj(M.idVictoire ? M.idVictoire(P.fin.erreurs, P.fin.variante || 0) : 'victoire:' + Math.min(P.fin.erreurs || 0, 3), {ic:'🏆', nom:'Fin de l\'enquête'});   /* (enquête 3 : le code de fin porte la variante de la scène finale) */
   }
   M.cle(P.objets || {}).forEach(function(id){ if(P.objets[id]) aj(id.charAt(0) === '_' ? id.slice(1) : 'obj:' + id); });
   M.cle(P.donnes || {}).forEach(function(k){ if(P.donnes[k] && k.indexOf('pot:') === 0) aj(k); });

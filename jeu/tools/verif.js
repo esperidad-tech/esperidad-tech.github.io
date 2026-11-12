@@ -477,6 +477,8 @@ function verifierPortes(E){
 function verifier(id){
   const E = ENQ[id];
   if(!E){ console.log(`Enquête ${id} : absente`); return; }
+  /* l'enquête 3 (les grands dialogues, la fête, l'établi, le sac, le donjon) a son propre vérificateur : verif-e3.js */
+  if(E.grands && E.donjon){ console.log(`\n=== Enquête ${id} : ${E.titre} ===` + (E.enEcriture ? '  (fermée aux joueurs : en cours d\'écriture)' : '')); echecs += require('./verif-e3.js')(E, SRC); return; }
   if(E.enEcriture){ console.log(`\n=== Enquête ${id} : ${E.titre} ===\n  (en cours d'écriture : pas jouable, pas vérifiée)`); return; }
   console.log(`\n=== Enquête ${id} : ${E.titre} ===`);
   verifierPortes(E);
