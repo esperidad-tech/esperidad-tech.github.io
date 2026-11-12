@@ -102,6 +102,13 @@
 .ca-tire .ca-vue{cursor:grabbing}
 .ca-monde{position:relative;flex:none;margin:auto}
 .ca-monde > .ca-carte{width:100%;height:100%;border-radius:0}
+/* Le grand monde (carte.js, Bible chapitre 14) : trois dessins l'un sur l'autre. Dessous (.ca-fond) : le sol du monde d'autour, où rien ne bouge.
+   Au milieu : le dessin de toujours (le village, ce qui se touche), au fond transparent. Dessus (.ca-nuages) : la brume, où rien ne bouge non plus.
+   will-change : chacun des deux dessins immobiles est gardé tout peint par la tablette ; quand une fumée bouge dans le village, elle ne les repeint pas
+   (mesuré le 12 novembre : sans cela, la carte tournait bien moins vite que l'ancienne). */
+.ca-monde > .ca-carte.ca-grand{position:relative;z-index:1;background:transparent}
+.ca-monde > .ca-fond{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;display:block;background:#4f8c55;pointer-events:none;-webkit-user-select:none;user-select:none;will-change:transform}
+.ca-monde > .ca-fond.ca-nuages{z-index:2;background:transparent}
 /* bords qui s'assombrissent : il y a encore de la carte de ce côté-là */
 .ca-bord{position:absolute;pointer-events:none;z-index:2;opacity:0;transition:opacity .25s}
 .ca-bord.g,.ca-bord.d{top:0;bottom:0;width:26px}

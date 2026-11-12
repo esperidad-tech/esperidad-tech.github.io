@@ -344,7 +344,9 @@ function monterVue(el, c){
   var neuve = ouverture[c.ou]; ouverture[c.ou] = false;
   var mem = neuve ? null : (vuesMem()[cle] || null);
   var foc = c.focus || null;   /* un chemin secret qui apparaît sur le tableau : on zoome dessus (le plus gros zoom du cadre) */
-  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:foc || mem || c.depart, zoom:foc ? 1 : mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
+  /* la carte du village qui s'ouvre : le village bien au milieu du cadre (il y tient en entier ; autour, le grand monde sous la brume, Bible chapitre 14) */
+  var milieuVillage = c.couche === 'surface' ? {x:Carte.W / 2, y:Carte.H / 2} : null;
+  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:foc || mem || milieuVillage || c.depart, zoom:foc ? 1 : mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
     surVue:function(p){ vuesMem()[cle] = p; },
     surTaille:function(w, h){
       /* le cadre a beaucoup changé (tablette tournée) : si les étiquettes doivent changer de taille, on redessine cette carte */

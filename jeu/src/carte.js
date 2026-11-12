@@ -567,20 +567,38 @@ function plaqueRects(P){
 /* ---------- Le dessin complet ---------- */
 var compteur = 0;
 
-function svgSurface(p, o, ctx){
+/* Le voile de lumière du moment (rose le matin, bleu nuit…) : sur toute la carte, large de w et haute de h */
+function voile(p, mo, w, h){
+  var M = MOMENTS[mo];
+  return '<linearGradient id="' + p + 'voile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + M.haut[0] + '" stop-opacity="' + M.haut[1] + '"/><stop offset="1" stop-color="' + M.bas[0] + '" stop-opacity="' + M.bas[1] + '"/></linearGradient>' +
+    '<rect class="ca-voile" x="0" y="0" width="' + w + '" height="' + h + '" fill="url(#' + p + 'voile)" pointer-events="none"/>';
+}
+/* Le numéro des arbres de l'ancienne carte qu'on ne dessine plus dans le grand monde : un nouveau chemin ou une nouvelle eau y passe (monde-arbres.js) */
+var ARBRES_OTES = null;
+function arbreOte(i){
+  if(!ARBRES_OTES){ ARBRES_OTES = {}; ((window.Monde && window.Monde.OTES) || []).forEach(function(k){ ARBRES_OTES[k] = true; }); }
+  return !!ARBRES_OTES[i];
+}
+
+/* Le dessin du village. Il rend deux morceaux : [le sol, les maisons, les arbres ; les lumières du moment].
+   monde : le village est posé au milieu du grand monde (monde-*.js, Bible chapitre 14), qui dessine lui-même l'herbe, le sol de la forêt, le ruisseau
+   et la rivière, d'un seul tenant, et pose le voile de lumière sur toute la carte ; plus de rose des vents ni de bord blanc. */
+function svgSurface(p, o, ctx, monde){
   var mo = MOMENTS[o.moment] ? o.moment : 'apresmidi';
   var M = MOMENTS[mo];
   var s = '';
-  // sol
-  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'herbe)"/>';
-  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'herbeT)"/>';
-  // sol de forêt
-  var bord = 'M0 0 H1000';
-  for(var x = 1000; x >= 0; x -= 25){ var y = 452 + 14 * Math.sin(x / 47) + 8 * Math.sin(x / 13); bord += ' L' + x + ' ' + f(y); }
-  s += '<path d="' + bord + ' Z" fill="url(#' + p + 'foret)" stroke="#1b3a2a" stroke-width="4"/>';
-  // eaux (o.riviere === 'rouge' : l'enquête 2, la rivière rouge qui luit)
-  s += eau(p, RUISSEAU, 22);
-  s += o.riviere === 'rouge' ? eauRouge(p, RIVIERE, 62) : eau(p, RIVIERE, 62);
+  if(!monde){
+    // sol
+    s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'herbe)"/>';
+    s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'herbeT)"/>';
+    // sol de forêt
+    var bord = 'M0 0 H1000';
+    for(var x = 1000; x >= 0; x -= 25){ var y = 452 + 14 * Math.sin(x / 47) + 8 * Math.sin(x / 13); bord += ' L' + x + ' ' + f(y); }
+    s += '<path d="' + bord + ' Z" fill="url(#' + p + 'foret)" stroke="#1b3a2a" stroke-width="4"/>';
+    // eaux (o.riviere === 'rouge' : l'enquête 2, la rivière rouge qui luit)
+    s += eau(p, RUISSEAU, 22);
+    s += o.riviere === 'rouge' ? eauRouge(p, RIVIERE, 62) : eau(p, RIVIERE, 62);
+  }
   // chemins de forêt
   Object.keys(CHEMINS).forEach(function(k){ s += chemin(CHEMINS[k], 24, '#b99a6a', '#6b5236'); });
   // clairières
@@ -606,14 +624,14 @@ function svgSurface(p, o, ctx){
   s += dessinPont(p);
   // arbres de forêt + chêne + lisière + moulin
   s += dessinChene(p);
-  ARBRES.forEach(function(a){ if(a.foret) s += arbre(p, a); });
+  ARBRES.forEach(function(a, i){ if(a.foret && !(monde && arbreOte(i))) s += arbre(p, a); });
   s += dessinLisiere(p);
   s += dessinMoulin(p, ctx);
   // bâtiments du village, du haut vers le bas
   var bat = [];
   Object.keys(MAISONS).forEach(function(k){ bat.push({y: MAISONS[k].y, k: k}); });
   bat.push({y:610, k:'mairie'}); bat.push({y:600, k:'clocher'}); bat.push({y:745, k:'taverne'});
-  ARBRES.forEach(function(a){ if(!a.foret) bat.push({y:a.y, arbre:a}); });
+  ARBRES.forEach(function(a, i){ if(!a.foret && !(monde && arbreOte(i))) bat.push({y:a.y, arbre:a}); });
   bat.sort(function(a, b){ return a.y - b.y; });
   bat.forEach(function(b){
     if(b.arbre){ s += arbre(p, b.arbre); return; }
@@ -631,11 +649,11 @@ function svgSurface(p, o, ctx){
   });
   // plaques de rue (PLAQUES, plus bas)
   PLAQUES.forEach(function(P){ s += plaque(P); });
-  s += rose();
+  if(!monde) s += rose();
 
-  /* --- lumière du moment --- */
-  s += '<linearGradient id="' + p + 'voile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + M.haut[0] + '" stop-opacity="' + M.haut[1] + '"/><stop offset="1" stop-color="' + M.bas[0] + '" stop-opacity="' + M.bas[1] + '"/></linearGradient>';
-  s += '<rect class="ca-voile" x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'voile)" pointer-events="none"/>';
+  /* --- lumière du moment --- (dans le grand monde, le voile est posé par svg(), sur toute la carte, entre les deux morceaux) */
+  var bas = s; s = '';
+  if(!monde) s += voile(p, mo, W, H);
   if(mo === 'nuit'){
     // reflets de lune sur la rivière
     [[930,240],[925,620],[940,1010]].forEach(function(q){ s += '<ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="9" ry="30" fill="#dfe8ff" opacity=".45"/>'; });
@@ -669,8 +687,8 @@ function svgSurface(p, o, ctx){
   s += '<g class="ca-brumes" opacity="' + M.brume + '">';
   bandes.forEach(function(b, i){ s += '<ellipse class="ca-brume ca-brume' + (i % 2) + '" cx="' + b[0] + '" cy="' + b[1] + '" rx="' + b[2] + '" ry="' + b[3] + '" fill="url(#' + p + 'brume)" style="animation-delay:-' + (i * 7) + 's"/>'; });
   s += '</g>';
-  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'vignette)" opacity="' + (mo === 'nuit' ? .35 : .55) + '" pointer-events="none" style="mix-blend-mode:normal"/>';
-  return s;
+  if(!monde) s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#' + p + 'vignette)" opacity="' + (mo === 'nuit' ? .35 : .55) + '" pointer-events="none" style="mix-blend-mode:normal"/>';
+  return [bas, s];
 }
 
 /* La roche, et le village en fantôme au-dessus (pour s'y retrouver) */
@@ -1278,7 +1296,10 @@ function svg(opts){
   if(!o.caches && o['cachés']) o.caches = o['cachés'];
   var ctx = {fenetres: [], cheminees: [], lanternes: []};
   var ss = niveau === 'dessous' && o.sousSols;   /* les sous-sols du Pisteur : seulement ce qu'il a découvert */
-  var corps = ss ? svgSousSols(p, o) : niveau === 'dessous' ? svgDessous(p, o) : svgSurface(p, o, ctx);
+  /* la surface : le village posé au milieu du grand monde (monde-*.js, Bible chapitre 14) ; sans ces fichiers, l'ancienne carte du village seul */
+  var Monde = window.Monde;
+  var grand = niveau === 'surface' && o.monde !== false && !!(Monde && Monde.assembler);
+  var corps = ss ? svgSousSols(p, o) : niveau === 'dessous' ? svgDessous(p, o) : svgSurface(p, o, ctx, grand);
   var cls = 'ca-carte ca-' + niveau + ' ca-m-' + (o.moment || 'apresmidi') + (o.anime === false ? ' ca-fixe' : '') + (o.calque ? ' ca-calque-' + o.calque : '');
   if(ss) o = Object.assign({}, o, {caches: Object.keys(LIEUX)});
   var geo = geoLieux(o, niveau), li = lieuxInteractifs(p, o, niveau, geo), mq = marqueurs(p, o, geo);
@@ -1286,13 +1307,47 @@ function svg(opts){
   /* de bas en haut : le dessin, la surbrillance du tutoriel (sous la maison), les maisons, les zones invisibles à toucher, les notes,
      les marqueurs, et TOUT EN HAUT les écritures — le nom des lieux, « ✨ Nouveau ! » — : rien ne passe plus dessus
      (Romain, 5 novembre, 17 h 08 : « il faut toujours que les écritures soient au-dessus, pour qu'on ne soit pas gêné pour lire ») */
-  return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
-    defs(p) + defsVisages(p, o) + corps +
-    surbrillance(o) +
+  var parDessus = surbrillance(o) +
     (niveau === 'surface' ? maisonsInteractives(o, p) : '') +
     li.fond + mq.fond +
     (niveau === 'surface' ? notes(o) : '') +
-    mq.dessus + li.dessus + calque(o) +
+    mq.dessus + li.dessus + calque(o);
+  if(grand){
+    /* LE GRAND MONDE (Bible chapitre 14). Le village est à sa place de toujours : tout ce qui est du village reste dans ses anciennes mesures, dans
+       un groupe décalé de (OX, OY). o.brume : les zones dont la brume est levée (rien : toute la brume). */
+    var mo = MOMENTS[o.moment] ? o.moment : 'apresmidi', pm = p + 'm-';
+    var teinte = o.maquette ? null : {haut: MOMENTS[mo].haut, bas: MOMENTS[mo].bas};
+    var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, etiquette: o.etiquette, maquette: o.maquette, teinte: teinte});
+    var village = '<g class="ca-village" transform="translate(' + Monde.OX + ' ' + Monde.OY + ')">';
+    var tete = ' viewBox="0 0 ' + Monde.W + ' ' + Monde.H + '" xmlns="http://www.w3.org/2000/svg"';
+    if(o.maquette)   /* la page du modèle : un seul dessin (sol, village, arbres et lieux d'autour, brume, voile du moment, lumières, écritures) */
+      return '<svg class="' + cls + ' ca-grand"' + tete + ' data-ox="' + Monde.OX + '" data-oy="' + Monde.OY + '" role="img" aria-label="Carte de Brumeval">' +
+        defs(p) + '<defs>' + Monde.defs(pm) + '</defs>' + defsVisages(p, o) +
+        G.sol + village + corps[0] + '</g>' + G.dessus + G.brume + voile(p, mo, Monde.W, Monde.H) +
+        village + corps[1] + parDessus + '</g>' + G.etiquettes +
+        '</svg>';
+    /* Dans le jeu : TROIS DESSINS posés l'un sur l'autre, de la même taille (12 novembre, 12 h — mesuré : dans un seul dessin, tout ce qui bouge
+       dans le village — fumées, roue, rivière — obligeait la tablette à repeindre à chaque image le monde et la brume, et la carte tournait
+       trois fois moins vite que l'ancienne).
+       1. dessous (ca-fond) : le sol du monde, ses arbres, ses lieux. RIEN N'Y BOUGE (ca-fixe coupe ses animations) : la tablette le peint une fois.
+       2. au milieu, LE DESSIN DE TOUJOURS (le premier dans la page, celui que le jeu connaît) : le ruisseau et la rivière qui coulent, le village,
+          le voile de lumière du moment (sur tout ce qui est dessous), les lumières, ce qui se touche, les écritures. Son fond est transparent ;
+          il compte à peu près autant de morceaux que l'ancienne carte.
+       3. dessus (ca-fond ca-nuages) : la brume. Rien n'y bouge non plus, et on ne la touche pas (les touchers passent au travers). Le voile du
+          moment ne la recouvre pas : elle est teintée à la source (monde-brume.js, « La teinte du moment »).
+       Les dégradés sont tous rangés dans le dessin du milieu : les deux autres s'en servent aussi (ils sont dans la même page). */
+    return '<svg class="' + cls + ' ca-grand"' + tete + ' data-ox="' + Monde.OX + '" data-oy="' + Monde.OY + '" role="img" aria-label="Carte de Brumeval">' +
+      defs(p) + '<defs>' + Monde.defs(pm, teinte) + '</defs>' + defsVisages(p, o) +
+      '<g class="mo-vives">' + G.vives + '</g>' +
+      village + corps[0] + '</g>' + voile(p, mo, Monde.W, Monde.H) +
+      village + corps[1] + parDessus + '</g>' + G.etiquettes +
+      '</svg>' +
+      '<svg class="ca-fond ca-fixe"' + tete + ' aria-hidden="true">' + G.sol + G.dessus + '</svg>' +
+      '<svg class="ca-fond ca-nuages ca-fixe"' + tete + ' aria-hidden="true">' + G.brume + '</svg>';
+  }
+  if(niveau === 'surface' && !ss) corps = corps[0] + corps[1];
+  return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
+    defs(p) + defsVisages(p, o) + corps + parDessus +
     '</svg>';
 }
 
@@ -1334,12 +1389,24 @@ function monter(ici, opts){
      opts.zoom === 0 : on part de toute la carte dans l'écran (l'ouverture de la carte, Romain, 4 novembre, 21 h 12 ; ＋ / − pour zoomer) */
   var V = {k: 0, kMin: 0, kMax: 0, z: opts.zoom === 0 ? 0 : Math.max(0.05, Math.min(1, opts.zoom || 1)), bloque: false, fins: []};
   var raf = 0;
+  /* Le grand monde (Bible chapitre 14) : le dessin est plus grand que le village (MW × MH), et le village y est posé en (OX, OY).
+     Dehors, rien ne change : les places qu'on donne ou qu'on reçoit (centre, allerVers, surVue) restent dans les mesures du village.
+     - le plus petit zoom : la carte couvre tout le cadre (jamais de bande vide) ;
+     - à l'ouverture (zoom 0) : le village tient dans le cadre, comme avant, avec le paysage autour ;
+     - le plus gros zoom : le même qu'avant. */
+  var dessin0 = monde.querySelector('svg'), vb0 = dessin0 && dessin0.viewBox && dessin0.viewBox.baseVal;
+  var MW = vb0 && vb0.width ? vb0.width : W, MH = vb0 && vb0.height ? vb0.height : H;
+  var OX = dessin0 ? +dessin0.getAttribute('data-ox') || 0 : 0, OY = dessin0 ? +dessin0.getAttribute('data-oy') || 0 : 0;
+  var grand = MW > W + 1 || MH > H + 1;
+  function kPetit(w, h){ return grand ? Math.max(w / MW, h / MH) : Math.min(w / W, h / H); }
+  /* les dessins posés sous le premier (le grand monde et sa brume, où rien ne bouge) : ils suivent ses étirements pendant un zoom */
+  function fonds(){ return [].slice.call(monde.children, 1).filter(function(d){ return d.classList && d.classList.contains('ca-fond'); }); }
   function centreVue(){
     if(!V.k) return null;
-    return {x: (vue.scrollLeft + vue.clientWidth / 2 - monde.offsetLeft) / V.k, y: (vue.scrollTop + vue.clientHeight / 2 - monde.offsetTop) / V.k};
+    return {x: (vue.scrollLeft + vue.clientWidth / 2 - monde.offsetLeft) / V.k - OX, y: (vue.scrollTop + vue.clientHeight / 2 - monde.offsetTop) / V.k - OY};
   }
   function centrer(x, y, doux){
-    var l = x * V.k + monde.offsetLeft - vue.clientWidth / 2, t = y * V.k + monde.offsetTop - vue.clientHeight / 2;
+    var l = (x + OX) * V.k + monde.offsetLeft - vue.clientWidth / 2, t = (y + OY) * V.k + monde.offsetTop - vue.clientHeight / 2;
     l = Math.max(0, Math.min(vue.scrollWidth - vue.clientWidth, l)); t = Math.max(0, Math.min(vue.scrollHeight - vue.clientHeight, t));
     if(doux && vue.scrollTo) vue.scrollTo({left: l, top: t, behavior: 'smooth'});
     else { vue.scrollLeft = l; vue.scrollTop = t; }
@@ -1361,7 +1428,7 @@ function monter(ici, opts){
        (Romain, 5 novembre, 19 h 39 : « la carte se déplace derrière, elle se réinitialise ») */
     var rv = vue.getBoundingClientRect();
     if(!c && V.k && V.w === w && V.h && V.h !== h){
-      var kMin2 = Math.min(V.kMax, Math.min(w / W, h / H));
+      var kMin2 = Math.min(V.kMax, kPetit(w, h));
       if(V.k >= kMin2 - 1e-6){
         var dTop = rv.top - V.top, off0 = monde.offsetTop, st0 = vue.scrollTop;
         V.taille = w + 'x' + h; V.h = h; V.top = rv.top; V.kMin = kMin2;
@@ -1375,15 +1442,16 @@ function monter(ici, opts){
     V.w = w; V.h = h; V.top = rv.top;
     V.taille = w + 'x' + h;
     V.kMax = echelle(w, h, opts.murale);
-    V.kMin = Math.min(V.kMax, Math.min(w / W, h / H));
-    V.k = Math.max(V.kMin, Math.min(V.kMax, V.kMax * V.z));
+    V.kMin = Math.min(V.kMax, kPetit(w, h));
+    V.kDepart = Math.max(V.kMin, Math.min(V.kMax, Math.min(w / W, h / H)));   /* l'ouverture : le village entier dans le cadre */
+    V.k = V.z ? Math.max(V.kMin, Math.min(V.kMax, V.kMax * V.z)) : V.kDepart;
     taille();
     if(centre) centrer(centre.x, centre.y);
     bords();
   }
   function taille(){
-    monde.style.width = (W * V.k).toFixed(1) + 'px';
-    monde.style.height = (H * V.k).toFixed(1) + 'px';
+    monde.style.width = (MW * V.k).toFixed(1) + 'px';
+    monde.style.height = (MH * V.k).toFixed(1) + 'px';
     ici.style.setProperty('--ca-k', V.k.toFixed(4));
     ici.classList.toggle('ca-zoome', V.k < V.kMax - 1e-4);
     majBoutons();
@@ -1418,8 +1486,9 @@ function monter(ici, opts){
   function debutPince(){
     var l = liste(), a = l[0], b = l[1], pv = pointVue((a.x + b.x) / 2, (a.y + b.y) / 2);
     G = {type: 'pince', a: a.id, b: b.id, d0: Math.max(24, Math.hypot(a.x - b.x, a.y - b.y)), k0: V.k, k: V.k, s0: {x: vue.scrollLeft, y: vue.scrollTop},
-      o0: {x: monde.offsetLeft, y: monde.offsetTop}, m: sousPoint(pv), p: pv, bouge: true, svg: monde.firstElementChild};
+      o0: {x: monde.offsetLeft, y: monde.offsetTop}, m: sousPoint(pv), p: pv, bouge: true, svg: monde.firstElementChild, fonds: fonds()};
     if(G.svg){ G.svg.style.transformOrigin = '0 0'; G.svg.style.willChange = 'transform'; }
+    G.fonds.forEach(function(d){ d.style.transformOrigin = '0 0'; d.style.willChange = 'transform'; });
     ici.classList.add('ca-pince');
   }
   function majPince(){
@@ -1428,11 +1497,14 @@ function monter(ici, opts){
     var k = borne(G.k0 * Math.hypot(a.x - b.x, a.y - b.y) / G.d0, V.kMin, V.kMax), f = k / G.k0;
     /* pendant le geste, on étire l'image (rapide) ; la vraie taille est posée à la fin */
     var tx = p.x + G.s0.x - G.o0.x - f * G.m.x * G.k0, ty = p.y + G.s0.y - G.o0.y - f * G.m.y * G.k0;
-    if(G.svg) G.svg.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + f.toFixed(4) + ')';
+    var tr = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + f.toFixed(4) + ')';
+    if(G.svg) G.svg.style.transform = tr;
+    G.fonds.forEach(function(d){ d.style.transform = tr; });
     G.k = k; G.p = p;
   }
   function finPince(){
     if(G.svg){ G.svg.style.transform = ''; G.svg.style.willChange = ''; }
+    (G.fonds || []).forEach(function(d){ d.style.transform = ''; d.style.willChange = ''; });
     ici.classList.remove('ca-pince');
     zoomerA(G.k, G.m, G.p);
   }
@@ -1510,6 +1582,7 @@ function monter(ici, opts){
     bMoins.disabled = V.k <= V.kMin * 1.005;
   }
   function cran(){ return Math.max(1.3, Math.pow(V.kMax / Math.max(1e-4, V.kMin), 1 / 3)); }
+  var animFonds = [];
   function zoomBouton(sens){
     if(!V.k) return;
     var k1 = sens > 0 ? V.k * cran() : V.k / cran();
@@ -1524,9 +1597,12 @@ function monter(ici, opts){
     /* la vraie taille est posée tout de suite ; l'image part de l'ancienne vue et glisse jusqu'à la nouvelle (jamais hors du cadre) */
     var f = k0 / V.k, tx = o0.x - s0.x - monde.offsetLeft + vue.scrollLeft, ty = o0.y - s0.y - monde.offsetTop + vue.scrollTop;
     if(anim){ try{ anim.cancel(); }catch(e){} }
+    animFonds.forEach(function(a){ try{ a.cancel(); }catch(e){} });
+    var images = [{transform: 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + f.toFixed(4) + ')'}, {transform: 'none'}], duree = {duration: 240, easing: 'ease-out'};
     svgEl.style.transformOrigin = '0 0';
-    anim = svgEl.animate([{transform: 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + f.toFixed(4) + ')'}, {transform: 'none'}], {duration: 240, easing: 'ease-out'});
+    anim = svgEl.animate(images, duree);
     anim.onfinish = function(){ anim = 0; };
+    animFonds = fonds().map(function(d){ d.style.transformOrigin = '0 0'; return d.animate(images, duree); });   /* le grand monde, dessous, fait le même trajet */
   }
   zb.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   zb.addEventListener('click', function(e){
@@ -1557,5 +1633,5 @@ function monter(ici, opts){
   };
 }
 
-window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, telephone: telephone};
+window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, ARBRES: ARBRES, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, telephone: telephone};
 })();
