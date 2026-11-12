@@ -167,3 +167,15 @@
 .ca-marqueur.ingr-fait{filter:grayscale(1);opacity:.55}
 /* Le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31) */
 .ca-marqueur.presence.ca-fache{--ca-m:#ff5a4a}
+/* ---------- Les plantes cachées de l'Alchimiste (Romain, 12 novembre, 12 h 52 ; carte.js « cachettes », cueillette.js ; Bible §13.23) ----------
+   L'endroit ne se voit pas : un rond invisible (.ca-cachette) qu'il faut toucher exactement. Trouvé : sa pastille surgit (la classe
+   ca-cach-inconnue s'en va, la pastille grossit en rebondissant) et reste sur la carte ; grise : plus rien à y cueillir pour l'instant. */
+.ca-cachette{cursor:pointer}
+.ca-cach-rond{transform-box:fill-box;transform-origin:center;transition:transform .45s cubic-bezier(.3,1.65,.5,1), opacity .2s ease-out}
+.ca-cach-inconnue .ca-cach-rond{transform:scale(.2);opacity:0}
+.ca-cach-pastille.ca-cach-grise{filter:grayscale(1);opacity:.6}
+/* La brume qui s'en va (une zone qu'on vient de lever : Bertille, enquête 3) : un quatrième dessin, tout en haut, qui s'efface en entier.
+   Seule son opacité bouge (la tablette ne repeint rien) ; rien ne bouge dedans. Il reste là, invisible, jusqu'au prochain dessin de la carte. */
+.ca-monde > .ca-fond.ca-brume-part{z-index:3;animation:ca-brume-part 5s ease-in-out .7s both}
+.ca-brume-part *{animation:none!important}
+@keyframes ca-brume-part{from{opacity:1}to{opacity:0}}

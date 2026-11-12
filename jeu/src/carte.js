@@ -1289,6 +1289,25 @@ function calque(o){
     '<circle cx="62" cy="62" r="40" fill="#1c2447" stroke="' + c[0] + '" stroke-width="6"/><text x="62" y="64" font-size="38" text-anchor="middle" dominant-baseline="central">' + c[1] + '</text></g>';
 }
 
+/* ---------- Les endroits cachés où poussent les plantes (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.23) ----------
+   o.cachettes = [{id, x, y, ic, connu, grise}], dans les mesures du village (une plante d'au-delà de la brume a des mesures qui en sortent :
+   le groupe du village n'est pas découpé, elle tombe à sa place dans le grand monde).
+   Tant que l'endroit n'est pas trouvé, RIEN ne se voit : seulement un rond invisible, qu'il faut toucher exactement (R_CACHETTE, en mesures
+   de la carte : il ne grossit pas quand on recule, il faut zoomer pour viser). Trouvé : une petite pastille avec la plante (grise : plus rien
+   à y cueillir pour l'instant). Le rond passe par-dessus les zones des lieux (le souci est dans le potager) mais sous les visages et les noms.
+   La pastille est toujours dans le dessin (cachée tant que l'endroit n'est pas connu) : quand on le trouve, seule sa classe change, et la
+   carte n'a pas à se redessiner (carte-jeu.js, patcherCarte). */
+var R_CACHETTE = 38;
+function cachettes(o){
+  var fond = '', dessus = '';
+  (o.cachettes || []).forEach(function(c){
+    fond += '<circle class="ca-cachette" data-act="cachette" data-id="' + esc(c.id) + '" cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="' + R_CACHETTE + '" fill="#fff" opacity="0"/>';
+    dessus += '<g class="ca-cach-pastille' + (c.connu ? '' : ' ca-cach-inconnue') + (c.grise ? ' ca-cach-grise' : '') + '" data-cachette="' + esc(c.id) + '" transform="translate(' + f(c.x) + ' ' + f(c.y) + ')" pointer-events="none">' +
+      '<g class="ca-cach-rond"><circle r="22" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="3.5"/><text x="0" y="1" font-size="25" text-anchor="middle" dominant-baseline="central">' + esc(c.ic || '🌿') + '</text></g></g>';
+  });
+  return {fond: fond, dessus: dessus};
+}
+
 function svg(opts){
   var o = opts || {};
   var p = 'ca' + (o.id ? String(o.id).replace(/[^\w-]/g, '') : '') + (++compteur) + '-';
@@ -1307,17 +1326,20 @@ function svg(opts){
   /* de bas en haut : le dessin, la surbrillance du tutoriel (sous la maison), les maisons, les zones invisibles à toucher, les notes,
      les marqueurs, et TOUT EN HAUT les écritures — le nom des lieux, « ✨ Nouveau ! » — : rien ne passe plus dessus
      (Romain, 5 novembre, 17 h 08 : « il faut toujours que les écritures soient au-dessus, pour qu'on ne soit pas gêné pour lire ») */
+  var ch = niveau === 'surface' && !ss ? cachettes(o) : {fond: '', dessus: ''};   /* les plantes cachées de l'Alchimiste */
   var parDessus = surbrillance(o) +
     (niveau === 'surface' ? maisonsInteractives(o, p) : '') +
-    li.fond + mq.fond +
+    li.fond + ch.fond + mq.fond +
     (niveau === 'surface' ? notes(o) : '') +
-    mq.dessus + li.dessus + calque(o);
+    mq.dessus + ch.dessus + li.dessus + calque(o);
   if(grand){
     /* LE GRAND MONDE (Bible chapitre 14). Le village est à sa place de toujours : tout ce qui est du village reste dans ses anciennes mesures, dans
        un groupe décalé de (OX, OY). o.brume : les zones dont la brume est levée (rien : toute la brume). */
     var mo = MOMENTS[o.moment] ? o.moment : 'apresmidi', pm = p + 'm-';
     var teinte = o.maquette ? null : {haut: MOMENTS[mo].haut, bas: MOMENTS[mo].bas};
-    var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, etiquette: o.etiquette, maquette: o.maquette, teinte: teinte});
+    /* o.brumePart (12 novembre, cueillette.js) : les zones qu'on vient de lever (elles sont aussi dans o.brume). Leur brume est dessinée une
+       dernière fois, dans un quatrième dessin posé tout en haut, qui s'efface en entier : seule son opacité bouge (carte.css, .ca-brume-part). */
+    var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, part: o.brumePart, etiquette: o.etiquette, maquette: o.maquette, teinte: teinte});
     var village = '<g class="ca-village" transform="translate(' + Monde.OX + ' ' + Monde.OY + ')">';
     var tete = ' viewBox="0 0 ' + Monde.W + ' ' + Monde.H + '" xmlns="http://www.w3.org/2000/svg"';
     if(o.maquette)   /* la page du modèle : un seul dessin (sol, village, arbres et lieux d'autour, brume, voile du moment, lumières, écritures) */
@@ -1343,7 +1365,8 @@ function svg(opts){
       village + corps[1] + parDessus + '</g>' + G.etiquettes +
       '</svg>' +
       '<svg class="ca-fond ca-fixe"' + tete + ' aria-hidden="true">' + G.sol + G.dessus + '</svg>' +
-      '<svg class="ca-fond ca-nuages ca-fixe"' + tete + ' aria-hidden="true">' + G.brume + '</svg>';
+      '<svg class="ca-fond ca-nuages ca-fixe"' + tete + ' aria-hidden="true">' + G.brume + '</svg>' +
+      (G.brumePart ? '<svg class="ca-fond ca-nuages ca-brume-part"' + tete + ' aria-hidden="true">' + G.brumePart + '</svg>' : '');
   }
   if(niveau === 'surface' && !ss) corps = corps[0] + corps[1];
   return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
@@ -1633,5 +1656,5 @@ function monter(ici, opts){
   };
 }
 
-window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, ARBRES: ARBRES, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, telephone: telephone};
+window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, ARBRES: ARBRES, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, telephone: telephone, R_CACHETTE: R_CACHETTE};
 })();

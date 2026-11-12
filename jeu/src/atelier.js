@@ -2953,7 +2953,9 @@ function anim(el, kf, o){ try{ if(MOINS_MOUV && o){ o.duration = Math.min(o.dura
 
 function recettesDe(V){
   var D = DD();
-  if(Array.isArray(V.o.recettes) && V.o.recettes.length) return V.o.recettes;
+  /* (12 novembre : une liste VIDE est une vraie liste — l'enquête 3 n'a aucune recette au chaudron, ses potions se font à l'établi ;
+     avant, une liste vide montrait toutes les recettes du jeu. Sans liste du tout — l'atelier hors du jeu — : toutes.) */
+  if(Array.isArray(V.o.recettes)) return V.o.recettes;
   return cles(D.RECETTES || {}).map(function(id){
     var p = (D.POTIONS || {})[id] || {};
     return {id:id, nom:p.nom || id, ic:p.ic || '🧪', c:p.c || '#8ff3ff', connue:!D.RECETTES[id].secrete};
@@ -5035,7 +5037,7 @@ function utilePotion(id){ var p = (DD().POTIONS || {})[id] || {}; return p.utile
 function ouvrirLivre(V){
   if(V.mode !== 'ranger') return;
   fermerBullesPa(V);
-  if(!recettesDe(V).length) return;
+  if(!recettesDe(V).length){ sansRecette(V); return; }
   ouvrirCalque(V, 'at-cal-livre', '<div class="at-livre"></div>');
   dessinerLivre(V);
   son(V, 'page');
@@ -5143,9 +5145,16 @@ function etatRecette(V, id){
   });
   return {pret:!manquent.length, manquent:manquent, auPanier:auPanier};
 }
+/* Aucune recette au chaudron dans cette enquête (l'enquête 3 : les potions se font à l'établi, avec les plantes) : le grimoire et le chaudron
+   le disent, au lieu de rester muets (V.o.sansRecette : la phrase du jeu, moteur-actions.js) */
+function sansRecette(V){
+  var t = V.o.sansRecette || 'Aucune recette pour le chaudron aujourd\'hui.';
+  son(V, 'bulle'); toast(V, esc(t), 5200, t);
+}
 function ouvrirChaudron(V){
   if(V.mode !== 'ranger') return;
   fermerBullesPa(V);
+  if(!recettesDe(V).length){ sansRecette(V); return; }
   var prets = recettesDe(V).filter(function(r){ return etatRecette(V, r.id).pret; });
   if(!prets.length){
     son(V, 'bulle');

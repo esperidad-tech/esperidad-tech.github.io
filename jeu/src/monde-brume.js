@@ -241,9 +241,14 @@ Monde.defs = function(p, teinte){ return T.defs(p) + defs(p, teinte); };
    o.maquette : la page du modèle (tout est là, rangé par zone, et la page montre ou cache). */
 Monde.assembler = function(p, pv, o){
   o = o || {};
-  var maq = !!o.maquette, levee = {};
+  var maq = !!o.maquette, levee = {}, part = {}, avant = {};
   TEINTE = (!maq && o.teinte) || null;   /* la brume teintée à la source (le jeu) ou pas (la page du modèle) : voir « La teinte du moment » */
   (o.brume || []).forEach(function(id){ levee[id] = true; });
+  /* o.part (12 novembre) : les zones qu'on vient de lever, dont la brume s'en va sous les yeux du joueur. Elles comptent comme levées (leurs
+     lieux et leurs noms sont dessinés) ; leur banc est rendu à part (brumePart), tel qu'il était juste avant : carte.js le pose dans un dessin
+     à lui, qui s'efface. */
+  (o.part || []).forEach(function(id){ if(levee[id]) part[id] = true; });
+  Object.keys(levee).forEach(function(id){ if(!part[id]) avant[id] = true; });
   var L = Monde.lieux(p, pv), groupes = {frange: []};
   ZONES.forEach(function(z){ groupes[z.id] = []; });
   /* ce qui dépasse du sol : les arbres, les lieux, les petites choses */
@@ -270,7 +275,9 @@ Monde.assembler = function(p, pv, o){
   var etiq = ZONES.map(function(z){ return maq ? '<g class="mo-etiq-zone" data-zone="' + z.id + '">' + parZone[z.id] + '</g>' : parZone[z.id]; }).join('');
   /* la brume des zones pas encore levées, et le mur du bord */
   var brume = ZONES.map(function(z, i){ return maq || !levee[z.id] ? zone(p, z, i, maq, levee) : ''; }).join('') + mur(p);
+  var brumePart = maq ? '' : ZONES.map(function(z, i){ return part[z.id] ? zone(p, z, i, false, avant) : ''; }).join('');
   return {
+    brumePart: brumePart ? '<g class="mo-brume" pointer-events="none">' + brumePart + '</g>' : '',
     sol: '<g class="mo-sol">' + T.sol(p, pv, {riviere: o.riviere, sansVives: !maq, voit: function(zi){ return zi < 0 || maq || !!levee[ZONES[zi].id]; }}) + '</g>',
     vives: T.eauxVives(p, pv, {riviere: o.riviere}),   /* le ruisseau et la rivière du village, qui coulent (carte.js les pose dans le dessin du village) */
     dessus: '<g class="mo-dessus">' + dessus + '</g>',

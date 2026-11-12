@@ -306,9 +306,23 @@ function contenu(ou, w, h){
       marqueurs = (aides ? marqueurs.filter(function(mq){ return mq.classe !== 'pnj'; }) : marqueurs.filter(function(mq){ return mq.classe === 'ingr' || mq.classe === 'bonus'; })).concat(PR.marqueurs);
       M.cle(hab).forEach(function(k){ if(hab[k].id) vis[hab[k].id] = visage(hab[k].id); });
       marqueurs.forEach(function(mq){ if(mq.visage) vis[mq.visage] = visage(mq.visage); });
+      /* LA BRUME REPOUSSÉE (Romain, 12 novembre, 12 h 52 ; cueillette.js, M.brumeLevee ; Bible §13.23) : les zones que l'enquête a levées pour ce
+         joueur (enquête 3 : Bertille, la petite cloche d'Anselme). Une zone levée reste sous sa brume tant que la carte n'a pas été regardée
+         (montrer) ; alors sa brume s'en va sous les yeux du joueur (brumePart : elle est dessinée une dernière fois, et s'efface), et la zone
+         est notée comme vue (res.commit.brume, monterVue). Pendant que la brume s'efface (UI.brumePart), un nouveau rendu redonne le même dessin :
+         la carte n'est pas refaite, la brume continue de s'effacer. */
+      var levees = (!T && M.brumeLevee) ? M.brumeLevee() : [];
+      var brVues = levees.filter(function(z){ return P.vus['brume:' + z]; });
+      var brNeuves = montrer ? levees.filter(function(z){ return !P.vus['brume:' + z]; }) : [];
+      var enCours = UI.brumePart && UI.brumePart.p === P.id && Date.now() - UI.brumePart.t < 6500 ? UI.brumePart.zones.filter(function(z){ return brVues.indexOf(z) >= 0; }) : [];
+      var brume = brVues.concat(brNeuves);
+      if(brNeuves.length){ res.commit = res.commit || {ids:[], tout:false}; res.commit.brume = brNeuves; }
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts,
-        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents});
+        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents,
+        brume:brume, brumePart:brNeuves.concat(enCours),
+        /* les endroits cachés où poussent les plantes de l'Alchimiste (cueillette.js) : ceux du village, et ceux des zones sans brume */
+        cachettes:(!T && !guide && ou === 'onglet' && M.cachettesCarte) ? M.cachettesCarte(brume) : []});
     }
   }catch(e){ console.error(e); svg = '<p>Erreur de carte</p>'; }
   res.html = '<div class="ca-vue"><div class="ca-monde">' + svg + '</div></div>' +
@@ -346,7 +360,19 @@ function monterVue(el, c){
   var foc = c.focus || null;   /* un chemin secret qui apparaît sur le tableau : on zoome dessus (le plus gros zoom du cadre) */
   /* la carte du village qui s'ouvre : le village bien au milieu du cadre (il y tient en entier ; autour, le grand monde sous la brume, Bible chapitre 14) */
   var milieuVillage = c.couche === 'surface' ? {x:Carte.W / 2, y:Carte.H / 2} : null;
-  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:foc || mem || milieuVillage || c.depart, zoom:foc ? 1 : mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
+  /* la brume qui s'en va (12 novembre : une zone qu'on vient de lever, contenu) : la carte recule tout entière, le village au milieu, pour qu'on la
+     voie partir (0,05 : le plus petit zoom, le monde remplit l'écran) */
+  var part = !!(c.commit && c.commit.brume && c.commit.brume.length);
+  if(part){
+    foc = null; mem = null;
+    /* (le milieu du village et des zones qui s'ouvrent : sur une tablette couchée, la carte glisse vers le nord pour montrer aussi le haut) */
+    try{
+      var B = window.Monde && Monde.B, bo = B.VILLAGE.slice();
+      B.ZONES.forEach(function(z){ if(c.commit.brume.indexOf(z.id) >= 0) bo = [Math.min(bo[0], z.r[0]), Math.min(bo[1], z.r[1]), Math.max(bo[2], z.r[2]), Math.max(bo[3], z.r[3])]; });
+      milieuVillage = {x:(bo[0] + bo[2]) / 2 - Monde.OX, y:(bo[1] + bo[3]) / 2 - Monde.OY};
+    }catch(e){}
+  }
+  var v = Carte.monter(el, {murale:c.ou === 'cabane', centre:foc || mem || milieuVillage || c.depart, zoom:part ? 0.05 : foc ? 1 : mem && typeof mem.z === 'number' ? mem.z : 0,   /* 0 : toute la carte ; sinon le zoom gardé d'un rendu à l'autre */
     surVue:function(p){ vuesMem()[cle] = p; },
     surTaille:function(w, h){
       /* le cadre a beaucoup changé (tablette tournée) : si les étiquettes doivent changer de taille, on redessine cette carte */
@@ -359,8 +385,10 @@ function monterVue(el, c){
     if(A.ids){ P.carteVue = P.carteVue || {}; A.ids.forEach(function(id){ P.carteVue[id] = 1; }); if(A.tout) P.carteVue['*'] = 1; }
     if(A.ss){ var st = etatSS(); A.ss.forEach(function(id){ st.montres[id] = 1; }); }
     if(A.ch){ var st2 = etatSS(); A.ch.forEach(function(id){ st2.montres['ch:' + id] = 1; }); }
+    /* la brume de ces zones s'en va maintenant : elles sont vues ; pendant qu'elle s'efface, le même dessin est redonné (contenu, UI.brumePart) */
+    if(part){ A.brume.forEach(function(z){ P.vus['brume:' + z] = 1; }); UI.brumePart = {p:P.id, t:Date.now(), zones:A.brume.slice()}; vuesMem()[cle] = null; }
     M.sauver();
-    var nv = (A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length);
+    var nv = (A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length) || part;
     if(nv || A.force){
       setTimeout(function(){ if(A.pan && vues[c.ou] && vues[c.ou].vue === v) v.allerVers(A.pan); }, 250);
       if(nv) setTimeout(function(){ if(vues[c.ou] && vues[c.ou].vue === v) M.son('magie'); }, 420);
@@ -447,7 +475,7 @@ M.carteInchangee = function(){
   try{ c = contenu('onglet', window.innerWidth || 800, Math.max(200, (window.innerHeight || 800) - 140)); } finally { UI.tutoIci = ti; }
   if(!c || c.couche !== v.couche) return false;
   var A = c.commit;
-  if(A && ((A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length) || A.force || A.tout)) return false;
+  if(A && ((A.ids && A.ids.length) || (A.ss && A.ss.length) || (A.ch && A.ch.length) || (A.brume && A.brume.length) || A.force || A.tout)) return false;
   var h = memesIds(c.html, v.html);
   if(h === v.html) return true;
   if(!patcherCarte(ici, v.html, h)) return false;

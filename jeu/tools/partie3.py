@@ -7,7 +7,7 @@ et vérifie qu'il est reçu et qu'il ouvre bien la suite. Les mini-jeux se lance
 (les mini-jeux, le labo, l'établi et le donjon ont chacun leur propre robot).
 
   Le matin : le Barde (Victor, Tim démasqué) → le Sage ; le Sage (le tableau, le Livre d'or, l'herbier) → l'Alchimiste ; l'Alchimiste
-    (le gâteau, quatre cueillettes, puis le pied-de-loup, la vesse-de-loup, le vieux pommier) → le Pisteur (le gui) → l'Alchimiste ;
+    (le gâteau ; l'oseille et la mélisse ; Bertille, puis le pied-de-loup, la vesse-de-loup, le gui : Bible §13.23) ;
     le Pisteur (les banderoles, l'oie) ; l'établi : les sept potions ; le Sage donne le code de l'après-midi.
   L'après-midi : le Barde (la lettre du maire, le carnet et les traces chez Odette) → le Sage, l'Alchimiste, le Pisteur ; le Sage
     (la lettre est fausse, les sept chats → le Pisteur, le plan des Fondateurs) ; le Pisteur (les traces → le Barde) ; l'Alchimiste
@@ -26,6 +26,7 @@ from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import etabli_outils as ET
+import cueillette_outils as CU
 DIST = os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist'))
 DONJON = os.path.abspath(os.environ.get('BRUMEVAL_DONJON') or os.path.join(ICI, '..', 'donjon', 'moteur', 'sortie'))
 OUT = os.path.join(ICI, '..', 'test', 'partie3'); os.makedirs(OUT, exist_ok=True)
@@ -193,40 +194,50 @@ def partie(nav, base):
     verifier(S.jouer('mairie', 'tableau') == 'runes', 'le Sage peint le tableau d\'Odette (Assembler les runes)'); S.fermer()
     S.point('mairie', 'livredor'); S.fermer()
     S.page('habitants')
-    S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
+    th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
+    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'Rond des Sorcières' in th, 'le Sage lit l\'herbier à voix haute : sept plantes, où et quand (plus de code, Bible §13.23)')
     t = S.ouvrir_page('doutes'); S.fermer()
     verifier('capuchon' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
-    verifier(set(livrer(T, S)) == {'info:ecritures', 'info:herbier'}, 'le Sage a donné à l\'Alchimiste : les écritures du village, l\'herbier')
+    verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')
     # le Pisteur : les banderoles et l'oie
     verifier(P.jouer('place', 'banderoles') == 'tir', 'le Pisteur accroche les banderoles (tir à l\'arc)'); P.fermer()
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
-    for l in ('lavoir', 'potager', 'herboristerie', 'moulin', 'foret'):
-        A.lieu(l); b = A.pg.locator('#voile [data-act=cueillir]')
-        if b.count(): b.first.click(); A.pg.wait_for_timeout(250)
-        A.fermer()
-    verifier(A.jouer('clairiere', 'vesses') == 'traces', 'l\'Alchimiste suit la poussière des vesses-de-loup'); A.fermer()
-    A.point('potager', 'pommier'); A.fermer()
-    verifier(livrer(T, A) == ['info:gui_pommier'], 'l\'Alchimiste a donné au Pisteur : le gui du pommier')
-    P.point('potager', 'gui'); P.fermer()
-    verifier(livrer(T, P) == ['info:gui'], 'le Pisteur a donné à l\'Alchimiste : le gui')
-    pl = A.js("() => M.plantes()")
-    verifier(all(pl.get(k) for k in ('oseille', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui')), f'l\'Alchimiste a ses sept plantes ({pl})')
-    # l'établi : les sept potions, geste par geste
+    # (12 novembre, Bible §13.23) les plantes : sept endroits cachés de la carte, que l'herbier du Sage décrit. Le matin : l'oseille et la mélisse ;
+    # Anselme sonne Bertille, la brume recule : le pied-de-loup, la vesse-de-loup, le gui. Le souci et le lin : pas avant l'après-midi.
+    verifier(all(CU.cueillir(A.pg, k) for k in ('oseille', 'melisse')), 'l\'Alchimiste cueille l\'oseille et la mélisse, dans le village')
+    verifier(CU.cueillir(A.pg, 'souci') is None and CU.cueillir(A.pg, 'lin') is None, 'le souci et le lin : pas avant l\'après-midi')
+    verifier(CU.cueillir(A.pg, 'gui') is None, 'le gui : au-delà de la brume, hors d\'atteinte')
+    verifier('Bertille' in (CU.bertille(A.pg) or ''), 'l\'Alchimiste demande à Anselme : il sonne Bertille, la brume recule au nord et à l\'ouest')
+    verifier(all(CU.cueillir(A.pg, k) for k in CU.LOIN), 'l\'Alchimiste cueille le pied-de-loup, la vesse-de-loup et le gui')
+    verifier(livrer(T, A) == [], 'aucun code à donner pour les plantes (plus de gui du pommier pour le Pisteur)')
+    # l'établi : les cinq potions du matin, geste par geste
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); ET.ouvrir(A.pg); ET.fermer_intro(A.pg)
     R = ET.recettes(A.pg)
-    for pid in ('huile', 'feu', 'fumigene', 'colle', 'acide', 'baume', 'coeur'):
+    for pid in ('feu', 'fumigene', 'colle', 'acide', 'coeur'):
+        if not ET.faire(A.pg, pid, R): echecs.append('l\'établi : la potion ' + pid + ' n\'est pas faite'); print('  ✗ potion', pid, ET.etat(A.pg))
+        ET.continuer(A.pg)
+    fi = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).length")
+    verifier(fi == 5, f'l\'Alchimiste a préparé cinq potions le matin ({fi})')
+    ET.quitter(A.pg); A.fermer()
+    moment(T, 1, 'apresmidi')
+
+    # ======================================================================== L'APRÈS-MIDI
+    print('— L\'APRÈS-MIDI')
+    # l'Alchimiste : le souci et le lin (pas avant l'après-midi), puis l'huile et le baume : les sept potions
+    verifier(all(CU.cueillir(A.pg, k) for k in ('souci', 'lin')), 'l\'Alchimiste cueille le souci et le lin, l\'après-midi')
+    pl = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('plante:') === 0; }).length")
+    verifier(pl == 7, f'l\'Alchimiste a cueilli ses sept plantes ({pl})')
+    A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
+    ET.vite(A.pg); ET.ouvrir(A.pg)
+    for pid in ('huile', 'baume'):
         if not ET.faire(A.pg, pid, R): echecs.append('l\'établi : la potion ' + pid + ' n\'est pas faite'); print('  ✗ potion', pid, ET.etat(A.pg))
         ET.continuer(A.pg)
     fi = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).length")
     verifier(fi == 7, f'l\'Alchimiste a préparé ses sept potions sur l\'établi ({fi})')
     A.shot('sept-potions'); ET.quitter(A.pg); A.fermer()
-    moment(T, 1, 'apresmidi')
-
-    # ======================================================================== L'APRÈS-MIDI
-    print('— L\'APRÈS-MIDI')
     # le Barde : le maire (les bouquets, la lettre), la maison d'Odette (le carnet, les traces)
     B.carte(); B.ev('parler', {'id': 'grosbec'}); B.ev('ma-rendu')
     i = B.js("() => M.E().pnj.grosbec.questions.map(function(q){ return q.grand || ''; }).indexOf('lettre')")

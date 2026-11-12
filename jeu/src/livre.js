@@ -313,6 +313,8 @@ function generique(p, E, P){
   s += '<div class="lv-texte-page">' + (p.html || '<p class="lv-texte">' + esc(pt || '') + ' ' + (pt ? lire(pt) : '') + '</p>') + '</div>';
   /* (enquête 3) p.lignes : des lignes à lire à voix haute, chacune avec son petit dessin et son 🔊 (les énigmes de l'herbier) */
   if(p.lignes) s += '<ul class="lv-lignes">' + p.lignes.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + (x.ic || '•') + '</span><p>' + esc(x.t) + '</p>' + lire(x.t) + '</li>'; }).join('') + '</ul>';
+  /* (12 novembre) p.type 'herbier' : une planche par plante — son dessin, où elle vit et l'endroit précis, le moment de la journée (cueillette.js, D.PLANTES) */
+  if(p.type === 'herbier' && M.herbierHTML) s += M.herbierHTML();
   if(p.donne && (ouvert || !p.besoin)) s += donne(p);
   return s;
 }

@@ -74,8 +74,11 @@ E[3] = {
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
       {ic:'🎂', t:'Fais le haut du gâteau de la fête, à la boulangerie de Gaspard.', fait:[{vu:'alchimiste:boulangerie:gateau'}]},
-      {ic:'🌿', t:'Cueille les plantes de la vallée : il y en a sept. Pour les plus rares, demande au Sage son herbier.',
+      /* (12 novembre, Bible §13.23) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : seul l'herbier du Sage dit où et quand ;
+         trois poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume) */
+      {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : seul l\'herbier du Sage dit où, et quand.',
         fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
+      {ic:'🔔', t:'Trois plantes poussent au-delà de la brume. Anselme, au clocher, sait la faire reculer.', fait:[{vu:'alchimiste:clocher:bertille'}]},
       {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
       {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
@@ -85,7 +88,7 @@ E[3] = {
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
-      {ic:'🌿', t:'Lis l\'herbier des Fondateurs à l\'Alchimiste, dans ton Grand Livre.', fait:[{lu:'herbier'}]},
+      {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : où vit chaque plante, et quand la cueillir.', fait:[{lu:'herbier'}]},
       {des:2, ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
@@ -382,6 +385,11 @@ E[3] = {
     encre_l:'L\'encre de la lettre : de la noix de galle, l\'encre noire que vendent les colporteurs.'},
   /* ---------- L'établi des plantes (plantes.js ; E3-atelier-des-plantes.md) : les sept potions de la nuit, faites de vraies plantes ---------- */
   plantes:true,
+  /* ---------- La brume repoussée (12 novembre, Bible §13.23 et §14.6 ; cueillette.js, carte-jeu.js) : Bertille, la petite cloche d'Anselme, lève
+     deux bancs de brume de la grande carte — le Nord (le Rond des Sorcières, où pousse la vesse-de-loup) et les collines de l'Ouest (le Vieux
+     verger et son gui, les Cinq Pierres et leur pied-de-loup). Les zones : monde-brume.js, ZONES. Sur la tablette de l'Alchimiste seulement
+     (c'est elle qui demande à Anselme) ; la brume revient à l'enquête suivante. ---------- */
+  brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}]},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
      pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
   donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}},
@@ -437,9 +445,7 @@ E[3] = {
     ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage',
       t:'Le Livre d\'or de la fête est posé sur ta paillasse : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Compare ces écritures à celle de la lettre, à la loupe !',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
-    herbier:{nom:'L\'herbier', ic:'🌿', pour:'alchimiste', de:'sage',
-      t:'L\'herbier des Fondateurs : trois plantes rares poussent dans la vallée, le pied-de-loup, la vesse-de-loup et la glu. Le Sage connaît les énigmes qui disent où les trouver.',
-      dire:'Lis les trois énigmes à l\'Alchimiste, puis donne-lui ce code.'},
+    /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.23) */
     aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
@@ -448,12 +454,8 @@ E[3] = {
     six_doigts:{nom:'Moustache a six doigts', ic:'🐾', pour:'pisteur', de:'sage',
       t:'Dans le carnet d\'Odette, un dessin de Moustache et une flèche : « Mon gros gris a six doigts à chaque patte ! » Aucun autre chat du village n\'en a autant.',
       dire:'Le Pisteur saura reconnaître ses traces : donne-lui ce code.'},
-    gui_pommier:{nom:'Le gui du pommier', ic:'🌳', pour:'pisteur', de:'alchimiste',
-      t:'Le gui pousse tout en haut du vieux pommier, dans le potager de Basile. Bien trop haut pour l\'Alchimiste !',
-      dire:'Le Pisteur sait grimper, lui : donne-lui ce code.'},
-    gui:{nom:'Le gui', ic:'🌿', pour:'alchimiste', de:'pisteur', plante:'gui',
-      t:'Le Pisteur a grimpé dans le vieux pommier du potager et a cueilli une grosse touffe de gui. Elle t\'attend sur ton établi !',
-      dire:'L\'Alchimiste en a besoin pour ses potions : donne-lui ce code.'},
+    /* (12 novembre : plus de codes « Le gui du pommier » ni « Le gui » — le gui est dans le Vieux verger, au-delà de la brume, sur le pommier
+       à l'échelle : l'Alchimiste y grimpe elle-même ; Bible §13.23) */
     cle_clou:{nom:'La clé est au clou', ic:'🔔', pour:'pisteur', de:'barde',
       t:'Anselme a pendu sa clé au clou, en haut du clocher. Quand les cloches sonnent, il ferme les yeux et compte les coups…',
       dire:'C\'est le moment de la décrocher ! Donne ce code au Pisteur.'},
@@ -541,27 +543,12 @@ E[3] = {
           t:'Gaspard pose ton gâteau tout en haut de sa pièce montée, et recule de trois pas : « Sept étages en tout ! Du jamais vu à Brumeval ! »'}
       ]}
     },
-    /* les cueillettes de l'Alchimiste (étape 4 ; E3-atelier-des-plantes.md §4) : quatre plantes ordinaires, le matin ou l'après-midi */
-    /* (aussi la nuit : s'il manque une potion — l'acide de la grille du puits ! —, on peut encore la finir avant de descendre) */
-    lavoir:{alchimiste:{cueillir:[{plante:'oseille'}]}},
-    herboristerie:{alchimiste:{cueillir:[{plante:'melisse'}]}},
-    moulin:{alchimiste:{cueillir:[{plante:'lin'}]}},
-    /* les trois plantes rares : il faut l'herbier du Sage (sans lui, « rien à trouver ») */
-    foret:{alchimiste:{cueillir:[{plante:'lycopode', besoin:[{code:'info:herbier'}], secret:true}]}},
-    clairiere:{
-      alchimiste:{intro:'La clairière aux lièvres. L\'herbe est haute, et ça sent le champignon.', points:[
-        /* la vesse-de-loup : « Suivre la poussière » (le moteur de la piste, une trace et une arrivée à elle). Un seul essai, et le
-           filet : ratée, on la trouve quand même (jamais d'échec qui bloque une potion). */
-        {id:'vesses', ic:'🍄', nom:'La poussière des vesses-de-loup', mj:'traces',
-          besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], plante:'vesse', ouvrePartiel:true,
-          params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
-            departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'},
-          avant:'« La vesse-de-loup pousse en rond, là où dansent les lièvres. » Sur l\'herbe, une fine poussière brune file vers le bois… Suis-la, sans la confondre avec la terre et les feuilles mortes !',
-          bouton:'🍄 Suivre la poussière',
-          t:'Un grand rond de boules blanches, au milieu des fougères. Tu en cueilles une bien mûre… tout doucement. Elle t\'attend sur ton établi !',
-          rate:'Tu as perdu la trace… mais un petit nuage brun s\'élève près du gros rocher. Pouf ! Les voilà. Tu en cueilles une bien mûre : elle t\'attend sur ton établi.'}
-      ]}
-    },
+    /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.23) : les sept plantes poussent à sept endroits
+       précis de la carte, qu'on ne voit pas (D.PLANTES, donnees.js ; cueillette.js). L'herbier du Sage dit où et quand ; trois sont au-delà de la
+       brume (E.brume, plus bas : Bertille). Retirés de l'enquête : « Chercher des plantes » au lavoir, à l'herboristerie, au moulin, au carrefour ;
+       le mini-jeu « Suivre la poussière » de la clairière (il reste dans mj-pisteur-alchi.js : suspect 'poussiere', arrivée 'vesses') ; le gui du
+       potager, que le Pisteur allait cueillir (deux codes). L'oseille se cueille à tout moment, sans rien demander à personne : c'est elle qui
+       donne l'acide de la grille du puits (tools/verif-e3.js le vérifie). */
     mairie:{
       pisteur:{intro:'La mairie. Le maire n\'aime pas qu\'on fouine dans ses papiers…', points:[
         /* la lettre, en se cachant : pour quand le Barde n'a pas su la demander au maire (le même code que lui) */
@@ -609,21 +596,15 @@ E[3] = {
           t:'Le maire fait le tour du gâteau, les mains dans le dos : « Quelle merveille ! On le coupera à minuit pile. Pas une minute avant ! »'}
       ]}
     },
-    potager:{
-      /* l'Alchimiste : le souci (cueillette ordinaire), et le gui, bien trop haut pour lui (le code pour le Pisteur, qui grimpe) */
-      alchimiste:{intro:'Le potager de Basile : des choux, des poireaux, des soucis tout orange, et un vieux pommier tordu.',
-        cueillir:[{plante:'souci'}],
-        points:[
-          {id:'pommier', ic:'🌳', nom:'Le vieux pommier', besoin:[{code:'info:herbier'}], visibleSi:[{code:'info:herbier'}], donne:'info:gui_pommier',
-            t:'« La glu ne touche jamais la terre… » Tout en haut du vieux pommier, une grosse boule verte piquée de perles blanches : du gui ! Bien trop haut pour toi.'}
-        ]},
-      pisteur:{intro:'Le potager de Basile : des choux, des poireaux, et un vieux pommier tout tordu.', points:[
-        /* le gui (E3-atelier-des-plantes.md §7) : avec le code de l'Alchimiste ; pas de mini-jeu */
-        {id:'gui', ic:'🌳', nom:'Grimper au vieux pommier', moments:['matin', 'apresmidi'], besoin:[{code:'info:gui_pommier'}], visibleSi:[{code:'info:gui_pommier'}], donne:'info:gui',
-          t:'Une branche, deux branches… Basile crie d\'en bas : « Pas sur mes pommes ! » Tu attrapes une grosse touffe de gui.'}
-      ]}
-    },
     clocher:{
+      /* (12 novembre, Bible §13.23) L'ALCHIMISTE ET BERTILLE : trois plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
+         ses trois cloches (« Bertille, Gontran et la Grosse Marie », pnj.anselme) : elle repousse la brume « un petit peu » — au nord et à l'ouest
+         (E.brume). La Grosse Marie, elle, ne sonne qu'à minuit (ordre du maire) : c'est l'affaire du Barde, la nuit. À tout moment de la journée. */
+      alchimiste:{intro:'Le clocher. Tout là-haut, Anselme veille sur ses trois cloches : Bertille, Gontran et la Grosse Marie.', points:[
+        {id:'bertille', ic:'🔔', nom:'Demander à Anselme de chasser la brume',
+          t:'« ANSELME ! LA BRUME CACHE MES PLANTES ! » — « TES TANTES ? » — « MES PLAN-TES ! » Il rit, et attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
+          note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village.'}
+      ]},
       pisteur:{intro:'Le clocher. Tout là-haut dort la Grosse Marie, la plus vieille cloche du village.', points:[
         /* la clé d'Anselme : avec « La clé est au clou » (le Barde) ; difficile, un seul essai. Raté : le puits apparaît (puits, plus bas) */
         /* (decor 'clocher' : la nef, la sacristie, et tout en haut la Grosse Marie, Anselme et le Barde, la clé au clou — Romain, 21 h 21) */
@@ -954,13 +935,12 @@ E[3] = {
   /* ---------- Le Grand Livre du Sage (livre.js ; E3-actions-des-roles.md §3, étape 3) ---------- */
   pages:[
     {id:'habitants', titre:'Les habitants', ic:'👥', type:'registre'},
-    /* dès le matin : trois énigmes à lire à voix haute à l'Alchimiste, et son code (sans lui, les trois plantes rares ne se cueillent pas) */
-    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', donne:'info:herbier',
-      t:'Entre deux pages, des plantes séchées, très anciennes. Les Fondateurs y ont noté où pousser les plus rares. Lis ces énigmes à voix haute à l\'Alchimiste !',
-      lignes:[
-        {ic:'🌿', t:'Le pied-de-loup rampe là où quatre chemins se croisent sous les arbres, et où le soleil n\'entre jamais.'},
-        {ic:'🍄', t:'La vesse-de-loup pousse en rond, là où dansent les lièvres.'},
-        {ic:'🫐', t:'La glu ne touche jamais la terre : elle vit tout en haut du vieux pommier, au fond du potager.'}]},
+    /* dès le matin : L'HERBIER (Romain, 12 novembre, 12 h 52 : « uniquement de plantes, là où elles sont, et à quel moment de la journée on peut les
+       cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, l'endroit précis sur la carte,
+       le moment. Tout vient de D.PLANTES (donnees.js) ; la page est dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix
+       haute, l'Alchimiste cherche sur sa carte. */
+    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier',
+      t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont noté où elle vit, et quand la cueillir. Lis-les à voix haute à l\'Alchimiste !'},
     /* les premiers doutes (les codes du Barde : Victor, Tim démasqué) */
     {id:'doutes', titre:'Une drôle de lettre', ic:'✉️', besoin:[{code:'info:poste'}, {code:'info:capuchon'}], bouton:'Réfléchir à la lettre',
       avant:'Cette lettre d\'Odette a quelque chose de bizarre… Il te faudrait un indice du Barde.',

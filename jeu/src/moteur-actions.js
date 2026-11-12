@@ -60,6 +60,8 @@ function monterAtelier(){
     etabli:(M.etabliDispo && M.etabliDispo()) ? function(){ M.ouvrirEtabli(); } : null,
     plantes:M.plantesEnAttente ? M.plantesEnAttente() : 0, etabliSigne:M.etabliSigne ? M.etabliSigne() : null,
     recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; }),
+    /* (12 novembre) une enquête sans recette au chaudron : ce que disent le grimoire et le chaudron quand on les touche (atelier.js, sansRecette) */
+    sansRecette:(E && E.plantes) ? 'Rien pour le chaudron aujourd\'hui : tes potions se préparent sur l\'établi, avec les plantes !' : 'Aucune recette pour le chaudron aujourd\'hui.',
     niveau:(E ? E.niveau : 1) + M.decalage(), mods:mm.mods, aides:mm.aides,
     /* enquête 1 (le tutoriel) : au chaudron, un essai raté rend les ingrédients et on peut recommencer sans fin */
     tutoriel:!!(E && E.id === 1),
@@ -348,6 +350,7 @@ function contenuModal(m){
     case 'descente': return M.descenteHTML ? M.descenteHTML(m) : '';   /* 🕯️ la descente dans le donjon (enquête 3, descente.js) */
     case 'plantes': return M.plantesHTML ? M.plantesHTML(m) : '';   /* 🎒 le sac de l'Alchimiste, reçu par le Pisteur (enquête 3, plantes.js) */
     case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
+    case 'cachette': return M.cachetteHTML ? M.cachetteHTML(m) : '';   /* 🌿 un endroit caché où pousse une plante, trouvé par l'Alchimiste sur la carte (cueillette.js) */
   }
   return '';
 }

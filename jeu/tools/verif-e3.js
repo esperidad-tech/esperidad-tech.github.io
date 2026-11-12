@@ -16,7 +16,7 @@
 const fs = require('fs'), path = require('path');
 const ROLES = ['pisteur', 'alchimiste', 'barde', 'sage'];
 
-module.exports = function verifierE3(E, SRC){
+module.exports = function verifierE3(E, SRC, D){
   let pb = 0;
   const dit = (ok, t) => { console.log(`  ${ok ? '✓' : '✗'} ${t}`); if(!ok) pb++; };
   const NUIT = ['nuit'];
@@ -49,6 +49,15 @@ module.exports = function verifierE3(E, SRC){
       (L.cueillir || []).forEach(c => { if(c.plante) aj({cle:`alchimiste:cueillir:${c.plante}`, role, moments:c.moments, besoins:[c.besoin].filter(Boolean), faits:['plante:' + c.plante]}); });
     }
   }
+  /* (12 novembre, Bible §13.23) les sept plantes : sept endroits cachés de la carte (D.PLANTES, donnees.js ; src/cueillette.js). Celles d'au-delà
+     de la brume demandent que leur zone soit levée (E.brume : Bertille, la petite cloche d'Anselme) ; pasAvant : pas avant ce moment — ensuite,
+     toujours (la nuit aussi). Une plante dont la zone n'est levée par rien ne se cueille jamais. */
+  Object.keys((D && D.PLANTES) || {}).forEach(id => {
+    const pl = D.PLANTES[id]; if(typeof pl.x !== 'number' || (pl.des || 99) > (E.id || 3)) return;
+    const r0 = pl.pasAvant ? E.moments.indexOf(pl.pasAvant) : 0;
+    const levee = !pl.zone ? [] : (E.brume && (E.brume.zones || []).indexOf(pl.zone) >= 0) ? [E.brume.si] : [[{vu:'jamais'}]];
+    aj({cle:`alchimiste:cueillir:${id}`, role:'alchimiste', moments:r0 > 0 ? E.moments.slice(r0) : null, besoins:levee, faits:['plante:' + id]});
+  });
   for(const id of Object.keys(E.pnj || {})){
     const N = E.pnj[id];
     /* une question sans moment se pose quand le villageois est là, et pas occupé (N.ou, N.occupe) */

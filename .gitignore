@@ -41,3 +41,6 @@ jeu/test/partie3/
 
 # les captures du robot de l'établi des plantes, tools/etabli.py (refaites à chaque fois)
 jeu/test/etabli/
+
+# les captures du robot de la cueillette, tools/e3-cueillette.py (refaites à chaque fois)
+jeu/test/e3-cueillette/

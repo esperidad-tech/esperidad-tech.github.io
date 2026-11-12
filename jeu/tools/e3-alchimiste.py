@@ -1,7 +1,7 @@
 """Enquête 3, étape 4 (Bible § 13.14) : l'Alchimiste, du matin à la nuit (Playwright).
-Le matin : ses missions, l'établi dans l'atelier, le gâteau de la fête chez Gaspard, les quatre cueillettes ordinaires ; sans l'herbier,
-rien à la forêt, à la clairière ni au pommier ; avec le code « L'herbier » : le pied-de-loup, « Suivre la poussière » (le moteur de la
-piste, la trace 'poussiere', l'arrivée 'vesses'), le vieux pommier (le code pour le Pisteur), puis le code « Le gui » : sept plantes.
+Le matin : ses missions, l'établi dans l'atelier, le gâteau de la fête chez Gaspard ; les cueillettes (12 novembre, Bible §13.23 : sept
+endroits cachés de la carte, tools/cueillette_outils.py) : l'oseille et la mélisse, le souci et le lin pas avant l'après-midi, les trois
+lointaines hors d'atteinte sans Bertille, puis Bertille et les sept plantes (le robot qui touche la carte au doigt : e3-cueillette.py).
 L'établi (refait le 12 novembre : un cadre, src/etabli/, tools/etabli_outils.py) : l'explication en images et son bouton jaune, un outil
 touché les mains vides, une mauvaise partie, un mauvais outil, l'huile de lin encore vide, puis les sept potions, geste par geste, au
 doigt ; la carte « C'est vrai ! » ; le grimoire (sept pages, chaque texte avec son 🔊) ; le sac ; on quitte au milieu d'une potion et on
@@ -16,6 +16,7 @@ from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import etabli_outils as ET
+import cueillette_outils as CU
 URL = 'file://' + os.path.join(os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist')), 'index.html') + '#test'
 OUT = os.path.join(ICI, '..', 'test', 'e3-alchimiste'); os.makedirs(OUT, exist_ok=True)
 erreurs, echecs = [], []
@@ -118,7 +119,7 @@ with sync_playwright() as p:
     R = pg.evaluate("() => window.PLANTES_RECETTES")
     verifier(pg.evaluate("() => M.E().id === 3 && M.etabliDispo() && M.laboDispo()"), 'enquête 3, Alchimiste : l\'établi et le labo sont branchés')
     mi = pg.evaluate("() => M.etapesMission().map(function(m){ return m.t; })")
-    verifier(len(mi) >= 4 and 'gâteau' in mi[0] and 'sept' in mi[1] and 'lettre' in mi[2] and 'sept potions' in mi[3], f'ses quatre missions ({len(mi)} lignes au Carnet)')
+    verifier(len(mi) >= 5 and 'gâteau' in mi[0] and 'sept plantes' in mi[1] and 'Anselme' in mi[2] and 'lettre' in mi[3] and 'sept potions' in mi[4], f'ses cinq missions ({len(mi)} lignes au Carnet)')
     atelier(pg)
     verifier(pg.evaluate("() => M.S.atelier.objets.filter(function(o){ return o.t === 'etabli'; }).length") == 1 and pg.locator('#atelier-ici .at-etabli-p').count() == 1, 'l\'établi des plantes est dans l\'atelier')
     verifier(signe(pg) == '', 'pas de signe au-dessus de l\'établi : aucune plante n\'attend')
@@ -130,34 +131,30 @@ with sync_playwright() as p:
     verifier('Sept étages' in texte(pg) and pg.evaluate("() => M.P().vus['alchimiste:boulangerie:gateau'] === 'ok' && !!M.P().gateau"), 'réussi : « Sept étages en tout ! », et le gâteau est gardé')
     fermer(pg)
     verifier(lieu(pg, 'mairie') == [], 'la mairie, le matin : rien pour l\'Alchimiste (le gâteau se porte l\'après-midi)')
-    # ---------- les cueillettes ----------
+    # ---------- les cueillettes (12 novembre, Bible §13.23 : sept endroits cachés de la carte ; le robot qui les touche au doigt : e3-cueillette.py) ----------
     print('— Le matin : les cueillettes')
-    for l, k, mot in [('lavoir', 'oseille', 'oseille'), ('potager', 'souci', 'souci'), ('herboristerie', 'melisse', 'mélisse'), ('moulin', 'lin', 'lin')]:
-        t = cueillir(pg, l)
-        verifier(t is not None and 'plantes' in t and mot in t and 'établi' in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{l} : on cueille {mot}, « sur l\'établi de ton atelier » ({(t or "")[:70]})')
-    lieu(pg, 'lavoir'); verifier('Déjà récolté' in texte(pg), 'le lavoir une deuxième fois ce matin : « Déjà récolté »')
-    lieu(pg, 'foret'); verifier('Rien à trouver' in texte(pg) and pg.locator('#voile [data-act=cueillir]').count() == 0, 'sans l\'herbier, la forêt : « Rien à trouver »')
-    verifier(lieu(pg, 'clairiere') == [] and 'Rien à trouver' in texte(pg), 'sans l\'herbier, la clairière : rien')
-    verifier(lieu(pg, 'potager') == [], 'sans l\'herbier, le potager : pas de vieux pommier')
-    atelier(pg)
-    verifier(signe(pg) == '🌿 4 à préparer !', f'le signe au-dessus de l\'établi : « 🌿 4 à préparer ! » ({signe(pg)})')
-    t = code(pg, 'info:herbier')
-    verifier('herbier' in t.lower(), 'le code « L\'herbier » du Sage')
-    t = cueillir(pg, 'foret')
-    verifier(t is not None and 'pied-de-loup' in t and pg.evaluate("() => M.plantes().lycopode") == 1, 'avec l\'herbier, la forêt : le pied-de-loup')
-    pts = lieu(pg, 'clairiere')
-    verifier(pts == ['vesses'], f'la clairière : la poussière des vesses-de-loup ({pts})')
-    info = jouer(pg, 'vesses', True, 'poussiere')
-    verifier(info and info['type'] == 'traces' and info['params'].get('suspect') == 'poussiere' and info['params'].get('arrivee') == 'vesses', 'Suivre la poussière : le moteur de la piste, la trace « poussiere », l\'arrivée « vesses »')
-    verifier('rond de boules blanches' in texte(pg) and pg.evaluate("() => M.plantes().vesse") == 1, 'réussi : le rond des vesses-de-loup, une vesse sur l\'établi')
-    fermer(pg)
-    pts = lieu(pg, 'potager')
-    verifier(pts == ['pommier'], f'le potager : le vieux pommier ({pts})')
-    pg.locator('#voile [data-act=point][data-id=pommier]').click(); pg.wait_for_timeout(250)
-    verifier('trop haut' in texte(pg) and pg.evaluate("() => !!M.P().objets['_info:gui_pommier']") and pg.locator('#voile .b-donne').count() == 1, 'le gui est trop haut : le code « Le gui du pommier » pour le Pisteur')
-    fermer(pg)
-    t = code(pg, 'info:gui')
-    verifier('établi' in t and pg.evaluate("() => M.plantes().gui") == 1, 'le code « Le gui » du Pisteur : le gui arrive sur l\'établi')
+    for l in ['lavoir', 'herboristerie', 'moulin', 'foret', 'clairiere', 'potager']:
+        pts = lieu(pg, l)
+        verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 0, f'{l} : plus rien à « chercher » dans la bulle du lieu ({pts})')
+    for k, mot in [('oseille', 'oseille'), ('melisse', 'mélisse')]:
+        t = CU.cueillir(pg, k)
+        verifier(t is not None and mot in t and 'établi' in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : son endroit caché, « Cueillir », « sur l\'établi de ton atelier » ({(t or "")[:70]})')
+    verifier(CU.cueillir(pg, 'oseille') is None and pg.evaluate("() => M.plantes().oseille") == 1, 'l\'oseille une deuxième fois ce matin : déjà cueillie')
+    for k in ['souci', 'lin']:
+        verifier(CU.cueillir(pg, k) is None and not pg.evaluate(f"() => M.plantes().{k} || 0"), f'{k} : pas avant l\'après-midi')
+    for k in CU.LOIN:
+        verifier(CU.cueillir(pg, k) is None and not pg.evaluate(f"() => M.plantes().{k} || 0"), f'{k} : au-delà de la brume, hors d\'atteinte sans Bertille')
+    t = CU.bertille(pg)
+    verifier(t is not None and 'Bertille' in t and pg.evaluate("() => M.brumeLevee().join()") == 'n,o', 'au clocher : Anselme sonne Bertille, la brume du nord et de l\'ouest recule')
+    for k, mot in [('lycopode', 'pied-de-loup'), ('vesse', 'vesse-de-loup'), ('gui', 'gui')]:
+        t = CU.cueillir(pg, k)
+        verifier(t is not None and mot in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : cueilli au-delà de la brume')
+    # (le souci et le lin : l'après-midi ; le robot avance l'heure le temps de les cueillir, pour faire les sept potions d'une traite)
+    pg.evaluate("() => { M.P().moment = 1; }")
+    for k, mot in [('souci', 'souci'), ('lin', 'lin')]:
+        t = CU.cueillir(pg, k)
+        verifier(t is not None and mot in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot}, l\'après-midi : cueilli')
+    pg.evaluate("() => { M.P().moment = 0; M.sauver(); M.render(); }")
     verifier(pg.evaluate("() => ['oseille','souci','melisse','lin','lycopode','vesse','gui'].every(function(k){ return !!M.P().vus['plante:' + k]; })"), 'les sept plantes sont cueillies')
     # ======================================================================== l'établi
     print('— L\'établi des plantes')
@@ -330,7 +327,7 @@ with sync_playwright() as p:
     verifier('minuit pile' in texte(pg) and pg.evaluate("() => M.S.or") == or0 + 5, 'le maire : « On le coupera à minuit pile », et cinq pièces d\'or')
     fermer(pg)
     fait = pg.evaluate("() => { M.majMission(); return Object.keys(M.P().mission.faits).length; }")
-    verifier(fait == 4, f'ses quatre missions sont validées ({fait})')
+    verifier(fait == 5, f'ses cinq missions sont validées ({fait})')
     # ======================================================================== la nuit : le sac
     print('— La nuit : le sac')
     code(pg, 'moment:2')
