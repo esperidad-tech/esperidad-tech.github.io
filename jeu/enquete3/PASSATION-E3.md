@@ -4,7 +4,7 @@
 
 ## Nouveau depuis le 12 novembre (19 h 07) : l'indice du lycopode et la lande
 
-- Bible §13.28, « Retouche de 19 h 05 ». L'herbier dit du lycopode : « …au-delà de la brume, sur les plaines battues par le vent, parmi les pierres et la bruyère, là où personne ne sème rien. » Les Cinq Pierres sont dessinées en lande (bruyère, cailloux, terre nue). **Règle pour tout indice : ne dire que ce qui se voit sur la carte.** En ligne (version 20261112-1815).
+- Bible §13.28, « Retouche de 19 h 05 ». L'herbier dit du lycopode : « …au-delà de la brume, sur les plaines battues par le vent, parmi les rochers et la bruyère, là où personne ne sème rien. » Les Cinq Pierres sont dessinées en lande (bruyère, cailloux, terre nue). **Règle pour tout indice : ne dire que ce qui se voit sur la carte.** En ligne (version 20261112-1815).
 
 ## Nouveau depuis le 12 novembre (15 h 37 et 15 h 39) : la cueillette est durcie, et Anselme réclame sa tisane
 

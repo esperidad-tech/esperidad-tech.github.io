@@ -214,7 +214,7 @@ D.PLANTES = {
     ici:'Les abeilles bourdonnent tout autour. Tu froisses une feuille : ça sent le citron ! De la mélisse.'},
   lycopode:{nom:'Le lycopode', un:'du lycopode', ic:'🌲', rare:true, x:-551, y:548, des:3, zone:'o',
     vit:'On l\'appelle aussi patte de loup. Il rampe au ras du sol, comme une petite branche de sapin.',
-    ou:'On le trouve au-delà de la brume, sur les plaines battues par le vent, parmi les pierres et la bruyère, là où personne ne sème rien.',
+    ou:'On le trouve au-delà de la brume, sur les plaines battues par le vent, parmi les rochers et la bruyère, là où personne ne sème rien.',
     quand:'À toute heure.',
     ici:'Au pied de la grande pierre, on dirait une petite branche de sapin qui rampe : du lycopode, la patte de loup !'},
   vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true, x:229, y:-115, des:3, zone:'n',

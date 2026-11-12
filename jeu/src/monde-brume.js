@@ -293,7 +293,6 @@ var STYLES = ['foret', 'sombre', 'pre'];
 /* les noms des contrées, écrits en grand dans le paysage */
 var CONTREES = [
   {zone:'no', x:640, y:488, t:'Le Bois Sombre', rot:-5, c:'#d6f2e0'},
-  {zone:'o',  x:668, y:1112, t:'Les Collines', rot:-4, c:'#fbf3d6'},
   {zone:'e',  x:2372, y:1106, t:'L\'Autre Rive', rot:2, c:'#fbf3d6'}
 ];
 /* Près du village, la brume est encore légère : ce qui s'y trouve reste dessiné même sous la brume (on le devine). Plus loin, la brume est pleine :

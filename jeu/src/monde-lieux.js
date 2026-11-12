@@ -157,7 +157,7 @@ Monde.lieux = function(p, pv){
   lieu({id:'cercle', zone:'o', x:450, y:960, nom:'Cinq Pierres', ic:'🗿', etiq:[450,1002], emprise:[450,892,150], dessin:function(){
     var cx = 450, cy = 896, s = '<ellipse cx="' + cx + '" cy="' + cy + '" rx="84" ry="56" fill="none" stroke="#3f7a45" stroke-width="3" stroke-dasharray="3 12" opacity=".5"/>';
     /* La lande (Romain, 12 novembre 19 h 07) : ce lieu doit se reconnaître comme une lande, pour que l'indice du lycopode
-       (« plaines battues par le vent, parmi les pierres et la bruyère ») mène ici : terre nue et cailloux, touffes de bruyère
+       (« plaines battues par le vent, parmi les rochers et la bruyère ») mène ici : terre nue et cailloux, touffes de bruyère
        violette, aucun arbre, aucun champ. Aucun autre lieu de la carte n'a de bruyère. */
     s += '<ellipse cx="' + cx + '" cy="' + (cy + 18) + '" rx="150" ry="92" fill="#a08c6e" opacity=".32"/><ellipse cx="' + (cx - 6) + '" cy="' + (cy + 22) + '" rx="112" ry="64" fill="#b9a583" opacity=".3"/>';
     [[-130, 20, 5], [-102, 70, 4], [-70, 100, 5], [-20, 110, 4], [40, 108, 5], [88, 92, 4], [128, 54, 5], [140, 4, 4], [118, -38, 5], [-138, -22, 4], [-112, -56, 5], [96, -64, 4], [-34, -78, 4], [52, -80, 5], [10, 76, 3], [-86, 36, 3], [92, 28, 3]].forEach(function(b){
