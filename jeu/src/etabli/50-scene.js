@@ -77,22 +77,6 @@ function decorMur(){
     TT('M0,-78 V-96 M-20,-96 H20', '#5f5872', 4) + P('M-19,-60 L19,-60 L24,-6 L-24,-6 Z', 'rgba(255,224,160,.32)') + P('M-22,-60 L22,-60 L12,-78 L-12,-78 Z', G('fer')) + R(-27, -8, 54, 11, 3, G('fer')) +
     T('M-19,-60 L-24,-6 M19,-60 L24,-6 M0,-60 V-8', K, 3.2) + R(-5, -26, 10, 18, 2, G('cire'), ' stroke-width="2.5"') +
     '<g class="flamme"><path d="M0,-27 C-7,-35 -4,-45 0,-54 C4,-45 7,-35 0,-27 Z" fill="' + G('flamme') + '" stroke="#e8693c" stroke-width="2"/></g></g>';
-  /* la tringle et ses bouquets : lavande, camomille, roses, chardons, blé */
-  s += TT('M852,40 H1192', '#94603a', 6) + Cir(852, 40, 6, G('laitonV')) + Cir(1192, 40, 6, G('laitonV')) + TT('M872,40 V22 M1172,40 V22', '#5f5872', 3, 3);
-  var B = [['#9a7ae0', '#6a9a5a', 'epi'], ['#fffdf2', '#7cb26a', 'rond'], ['#e0587a', '#5f9a52', 'rond'], ['#7ab6e8', '#8aa878', 'pic'], ['#f0cf6a', '#c9a84a', 'epi']];
-  B.forEach(function(b, i){
-    var x = 894 + i*68, t = '', k;
-    t += T('M' + x + ',43 V60', '#e8d9b0', 2.5);
-    for(k = -2; k <= 2; k++){
-      var x1 = x + k*11, y1 = 122 + (k % 2 ? 6 : 0) - Math.abs(k)*3, dd = 'M' + x + ',62 Q' + (x + k*4) + ',92 ' + x1 + ',' + y1;
-      t += T(dd, K, 4.6) + T(dd, b[1], 2.4);
-      if(b[2] === 'epi') t += '<ellipse cx="' + x1 + '" cy="' + (y1 + 9) + '" rx="5" ry="12" fill="' + b[0] + '" stroke="' + K + '" stroke-width="2.2"/>' + T('M' + (x1 - 3) + ',' + (y1 + 4) + ' l6,3 M' + (x1 - 3) + ',' + (y1 + 10) + ' l6,3', sombre(b[0], .3), 1.2);
-      else if(b[2] === 'pic') t += '<path d="M' + x1 + ',' + (y1 + 18) + ' l-7,-6 l3,-1 l-4,-7 l5,2 l3,-8 l3,8 l5,-2 l-4,7 l3,1 Z" fill="' + b[0] + '" stroke="' + K + '" stroke-width="2.2" stroke-linejoin="round"/>';
-      else t += '<circle cx="' + x1 + '" cy="' + (y1 + 7) + '" r="7.5" fill="' + b[0] + '" stroke="' + K + '" stroke-width="2.2"/><circle cx="' + x1 + '" cy="' + (y1 + 7) + '" r="2.6" fill="' + (i === 1 ? '#f2c230' : sombre(b[0], .3)) + '"/>';
-    }
-    t += T('M' + (x - 6) + ',66 q6,5 12,0 M' + (x - 6) + ',71 q6,5 12,0', '#c9483f', 2.6);
-    s += '<g class="balance' + (i % 3 === 1 ? ' b2' : i % 3 === 2 ? ' b3' : '') + '">' + t + '</g>';
-  });
   return s;
 }
 /* ---------- Les sept potions : chacune dans son verre à elle ---------- */
@@ -123,16 +107,44 @@ function flacon(id, coul){
   s += reflet('M' + (id === 'acide' ? -12 : -11) + ',-' + (id === 'colle' || id === 'baume' ? 26 : 30) + ' q-3,10 1,18', 3, coul ? .6 : .35);
   return s;
 }
+/* Le portique de l'établi (Romain, 12 novembre, 12 h 45 : « accrochée à l'établi, pas collée au mur », « bien au-dessus de tous les autres
+   trucs ») : deux montants fixés au fond de la table ; tout en haut, l'étagère des sept potions ; dessous, une tringle de laiton où sèchent,
+   la tête en bas, les plantes cueillies. Chaque plante pend juste sous le flacon de sa potion. */
+var PORT = {x0:414, pas:58, yEt:84, yTr:108, eF:.9, eP:.25};
+function xPort(i){ return PORT.x0 + i*PORT.pas; }
+function colPlante(k){ return ORDRE.indexOf(PL[k].potion); }
 function etagereScene(){
-  var s = P('M408,134 L420,134 L414,154 Z', G('boisS'), ' stroke-width="3"') + P('M768,134 L756,134 L762,154 Z', G('boisS'), ' stroke-width="3"') +
-    ombre(588, 142, 180, 6, .3) + R(400, 122, 376, 13, 3, G('boisC'), ' stroke-width="3.5"') + reflet('M406,125 H770', 2, .35);
-  ORDRE.forEach(function(id, i){ s += '<g class="potion" id="potion-' + id + '" data-act="potion" data-id="' + id + '" tabindex="0" role="button" transform="translate(' + (426 + i*54) + ',122)"></g>'; });
-  return s;
+  var a = 372, b = 804, yE = PORT.yEt, yT = PORT.yTr, s = '';
+  [a, b].forEach(function(x, i){
+    var d = i ? -1 : 1;
+    s += R(x - 8, yE - 2, 16, 190, 3, G('boisS'), ' stroke-width="3.5"') + T('M' + (x - 3) + ',' + (yE + 20) + ' V262', 'rgba(255,255,255,.14)', 2) +
+      P('M' + (x + d*8) + ',' + (yE + 12) + ' L' + (x + d*40) + ',' + (yE + 12) + ' L' + (x + d*8) + ',' + (yE + 46) + ' Z', G('boisS'), ' stroke-width="3"') +
+      Cir(x, 230, 4, G('laitonV'), ' stroke-width="2"') + Cir(x, 243, 4, G('laitonV'), ' stroke-width="2"');
+  });
+  s += TT('M' + (a + 22) + ',' + (yE + 12) + ' V' + yT + ' M' + (b - 22) + ',' + (yE + 12) + ' V' + yT, '#5f5872', 3, 3) + TT('M' + (a + 14) + ',' + yT + ' H' + (b - 14), '#c9973a', 5, 4) +
+    reflet('M' + (a + 20) + ',' + (yT - 1.5) + ' H' + (b - 20), 1.4, .5) + Cir(a + 14, yT, 5, G('laitonV')) + Cir(b - 14, yT, 5, G('laitonV'));
+  s += ombre(588, yE + 16, 200, 5, .25) + R(a - 26, yE, b - a + 52, 13, 3, G('boisC'), ' stroke-width="3.5"') + reflet('M' + (a - 20) + ',' + (yE + 3) + ' H' + (b + 20), 2, .35);
+  ORDRE.forEach(function(id, i){ s += '<g class="potion" id="potion-' + id + '" data-act="potion" data-id="' + id + '" tabindex="0" role="button" transform="translate(' + xPort(i) + ',' + yE + ') scale(' + PORT.eF + ')"></g>'; });
+  return '<g id="portique">' + s + '</g>';
+}
+/* les plantes cueillies qui attendent, pendues à la tringle (on en touche une : elle se couche sur le linge) */
+function majPendues(){
+  var g = $('#pendues'); if(!g) return; var s = '';
+  ORDRE_PL.forEach(function(k){
+    var p = PL[k], i = colPlante(k);
+    if(!(S.dispo[k] > 0) || S.faites[p.potion] || S.posees[k] || S.plante === k) return;
+    var q = PLACE[k], h = Math.round(q[2]*PORT.eP) + 8;
+    s += '<g class="pendue" id="pendue-' + k + '" data-act="pendue" data-k="' + k + '" tabindex="0" role="button" aria-label="' + p.nom + ' : la décrocher" transform="translate(' + xPort(i) + ',' + PORT.yTr + ')">' +
+      '<ellipse class="rond" cx="0" cy="' + (h/2 + 4) + '" rx="30" ry="' + (h/2 + 8) + '"/>' +
+      '<g class="balance' + (i % 3 === 1 ? ' b2' : i % 3 === 2 ? ' b3' : '') + '">' + T('M0,-3 V9', '#e8d9b0', 2.6) + '<g class="corps-p" transform="translate(0,8) rotate(180) scale(' + PORT.eP + ') translate(-130,-' + q[2] + ')">' + PLD.corps(k) + '</g>' + T('M-5,7 q5,4 10,0 M-5,11 q5,4 10,0', '#c9483f', 2.4) + '</g>' +
+      '<rect x="-28" y="-6" width="56" height="' + (h + 14) + '" fill="transparent"/></g>';
+  });
+  g.innerHTML = s;
 }
 function majEtagere(){
   ORDRE.forEach(function(id){
     var g = $('#potion-' + id); if(!g) return; var f = !!S.faites[id], r = RE[id];
-    g.innerHTML = (f ? '<circle class="halo-p" cx="0" cy="-30" r="38" fill="' + G('haloP') + '"/>' : '') + '<g' + (f ? '' : ' opacity=".5"') + '>' + flacon(id, f ? r.coul : null) + '</g><rect x="-26" y="-82" width="52" height="84" fill="transparent"/>';
+    g.innerHTML = '<circle class="rond" cx="0" cy="-36" r="40"/>' + (f ? '<circle class="halo-p" cx="0" cy="-30" r="38" fill="' + G('haloP') + '"/>' : '') + '<g' + (f ? '' : ' opacity=".5"') + '>' + flacon(id, f ? r.coul : null) + '</g><rect x="-26" y="-82" width="52" height="84" fill="transparent"/>';
     g.classList.toggle('pleine', f); g.setAttribute('aria-label', r.nom + (f ? ' : prête' : ' : pas encore faite'));
   });
 }
@@ -268,7 +280,12 @@ ART.buches = function(){
       Cir(x, y, 18, '#8a5a36') + '<circle cx="' + x + '" cy="' + y + '" r="13" fill="#e2b87c" stroke="#a5713a" stroke-width="1.6"/><circle cx="' + (x + 1) + '" cy="' + y + '" r="8" fill="none" stroke="#c9975a" stroke-width="1.5"/><circle cx="' + (x + 1) + '" cy="' + (y + 1) + '" r="3.4" fill="none" stroke="#c9975a" stroke-width="1.3"/>' +
       T('M' + x + ',' + y + ' l' + [9, -7, 6, 8, -9, 5][i] + ',' + [-8, -9, 9, 6, 4, -10][i], '#a5713a', 1.5);
   });
-  return '<rect class="rond" x="-64" y="-112" width="128" height="126" rx="18"/><g class="leve">' + s + '</g><rect x="-64" y="-110" width="128" height="122" fill="transparent"/>';
+  function mb(x, y){ return Cir(x, y, 9, '#8a5a36', ' stroke-width="2.4"') + '<circle cx="' + x + '" cy="' + y + '" r="5.6" fill="#e2b87c" stroke="#a5713a" stroke-width="1.2"/>'; }
+  function fl(x, y, k){ return '<path transform="translate(' + x + ',' + y + ') scale(' + k + ')" d="M0,12 C-11,3 -7,-9 0,-21 C7,-9 11,3 0,12 Z" fill="' + G('flamme') + '" stroke="#e8693c" stroke-width="2.2" stroke-linejoin="round"/>'; }
+  function ec(x, y, t){ return '<text x="' + x + '" y="' + y + '" font-size="15" font-weight="800" font-family="Fredoka, system-ui, sans-serif" fill="#3a2410">' + t + '</text>'; }
+  var pan = '<g class="pan-feu" pointer-events="none" transform="translate(4,-170)">' + T('M-50,34 V62 M50,34 V62', K, 8) + T('M-50,34 V62 M50,34 V62', '#8a5a36', 4.4) + R(-78, -42, 156, 78, 6, G('boisC'), ' stroke-width="3.5"') + reflet('M-70,-36 H70', 2, .3) +
+    mb(-58, -21) + ec(-42, -16, '= feu doux') + fl(60, -19, .62) + mb(-64, 15) + mb(-50, 15) + ec(-36, 20, '= feu fort') + fl(60, 16, 1) + '</g>';
+  return pan + '<rect class="rond" x="-64" y="-112" width="128" height="126" rx="18"/><g class="leve">' + s + '</g><rect x="-64" y="-110" width="128" height="122" fill="transparent"/>';
 };
 /* L'alambic : le fourneau de briques, la cucurbite de cuivre, son chapeau, le col de cygne, le seau d'eau froide et son serpentin, le vase qui reçoit */
 ART.alambic = function(){
@@ -336,7 +353,8 @@ ART.livre = function(){
   s += R(-88, -32, 176, 10, 4, G('boisC'), ' stroke-width="3.2"') + TT('M-6,-30 q-5,22 2,40', '#e8343c', 4.5, 3.5) + P('M-8,8 l4,10 l4,-9 Z', '#e8343c', ' stroke-width="2"');
   /* un peu de magie : de petites étoiles au-dessus des pages */
   s += '<g fill="#fff3a8"><path class="scint" d="M-34,-140 l2.5,-7 l2.5,7 l7,2.5 l-7,2.5 l-2.5,7 l-2.5,-7 l-7,-2.5 Z"/><path class="scint s2" d="M30,-150 l2,-5.5 l2,5.5 l5.5,2 l-5.5,2 l-2,5.5 l-2,-5.5 l-5.5,-2 Z"/><path class="scint s3" d="M0,-166 l1.8,-5 l1.8,5 l5,1.8 l-5,1.8 l-1.8,5 l-1.8,-5 l-5,-1.8 Z"/></g>';
-  return '<rect class="rond" x="-92" y="-176" width="184" height="200" rx="18"/>' + s + '<rect x="-92" y="-176" width="184" height="196" fill="transparent"/>';
+  if(S && S.pagesVues && nouvellesPages().length) s += '<g class="badge-l" transform="translate(86,-30)">' + Cir(0, 0, 16, '#ffd23f', ' stroke-width="3.2"') + '<text x="0" y="1" font-size="23" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#2a1d0e" font-family="Fredoka, system-ui, sans-serif">!</text></g>';
+  return '<rect class="rond" x="-92" y="-134" width="184" height="158" rx="18"/>' + s + '<rect x="-92" y="-128" width="184" height="148" fill="transparent"/>';
 };
 /* Le pressoir : un cadre de bois, une grosse vis, un panier à claire-voie, un plateau à bec, le petit verre dessous */
 ART.presse = function(){
@@ -425,17 +443,20 @@ ART.cruche = function(){
   var s = ombre(4, 6, 36, 8, .42);
   s += '<g class="leve" id="crucheG"><g id="crucheT">' + TT('M18,-80 C46,-80 46,-34 24,-28', '#8fa6c0', 7, 5) +
     '<path d="M-23,-6 C-36,-30 -32,-64 -15,-76 L-13,-94 L13,-94 L15,-76 C32,-64 36,-30 23,-6 Q0,3 -23,-6 Z" fill="' + G('gres') + '" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' + P('M-13,-94 L-25,-99 L-17,-84 Z', G('gres'), ' stroke-width="3.2"') +
-    T('M-31,-46 Q0,-37 31,-46', '#2f5f9a', 3.4) + T('M-30,-38 Q0,-29 30,-38', '#2f5f9a', 1.8) + '<path d="M-8,-26 c4,-8 12,-8 16,0 c-4,6 -12,6 -16,0 Z M0,-30 v8" fill="none" stroke="#2f5f9a" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="M0,-71 C-10,-57 -12,-52 -12,-47 A12,12 0 0 0 12,-47 C12,-52 10,-57 0,-71 Z" fill="#4f9be0" stroke="#2f5f9a" stroke-width="2.4" stroke-linejoin="round"/><path d="M-5,-49 q-1,6 5,8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".85"/>' + '<text x="0" y="-17" font-size="17" font-weight="800" text-anchor="middle" font-family="Fredoka, system-ui, sans-serif" fill="#2f5f9a" letter-spacing="1">EAU</text>' +
     Ell(0, -94, 13, 4.2, '#4f9be0', ' stroke-width="3"') + '<ellipse cx="-3" cy="-95" rx="5" ry="1.4" fill="#fff" opacity=".6"/>' + reflet('M-22,-58 C-24,-44 -22,-28 -16,-16', 3.6, .45) + '</g></g>';
   return '<rect class="rond" x="-44" y="-110" width="96" height="128" rx="16"/>' + s + '<rect x="-44" y="-108" width="96" height="122" fill="transparent"/>';
 };
 /* L'huile de lin : une petite burette de verre (vide tant que la potion d'huile n'est pas faite) */
 ART.huilier = function(){
-  var plein = !!(S && S.faites.huile), d = 'M-13,0 L-15,-38 C-15,-48 -6,-50 -5,-58 L-5,-68 L5,-68 L5,-58 C6,-50 15,-48 15,-38 L13,0 Z', s = ombre(2, 5, 22, 6, .42);
-  s += '<g class="leve" id="huilierG"><g id="huilierT">' + '<clipPath id="clipHuile"><path d="' + d + '"/></clipPath>' + (plein ? '<g clip-path="url(#clipHuile)"><rect x="-18" y="-34" width="36" height="36" fill="#f2b630"/><ellipse cx="0" cy="-34" rx="15" ry="3" fill="#ffd86a"/></g>' : '') +
-    '<path d="' + d + '" fill="rgba(220,245,255,.2)" stroke="' + K + '" stroke-width="3.4" stroke-linejoin="round"/>' + R(-6, -78, 12, 11, 3, '#d9a066', ' stroke-width="2.6"') + TT('M5,-62 q12,-2 14,-12', '#e0a23a', 3, 3.5) +
-    '<g transform="rotate(-4 0 -18)">' + R(-11, -27, 22, 15, 2, '#fff6d8', ' stroke-width="2"') + '<circle cx="0" cy="-19.5" r="3.6" fill="#6ea8ff" stroke="' + K + '" stroke-width="1.2"/><circle cx="0" cy="-19.5" r="1.2" fill="#ffe07a"/></g>' + reflet('M-10,-36 l1,22', 2.4, .55) + '</g></g>';
-  return '<rect class="rond" x="-30" y="-92" width="64" height="108" rx="14"/><g' + (plein ? '' : ' class="non-dispo"') + '>' + s + '</g><rect x="-30" y="-90" width="64" height="104" fill="transparent"/>';
+  var plein = !!(S && S.faites.huile), d = 'M-13,0 L-15,-38 C-15,-48 -6,-50 -5,-58 L-5,-68 L5,-68 L5,-58 C6,-50 15,-48 15,-38 L13,0 Z', s = ombre(2, 5, 26, 7, .42);
+  s += '<g class="leve" id="huilierG"><g id="huilierT"><g transform="scale(1.3)">' + '<clipPath id="clipHuile"><path d="' + d + '"/></clipPath>' + (plein ? '<g clip-path="url(#clipHuile)"><rect x="-18" y="-34" width="36" height="36" fill="#f2b630"/><ellipse cx="0" cy="-34" rx="15" ry="3" fill="#ffd86a"/></g>' : '') +
+    '<path d="' + d + '" fill="rgba(220,245,255,.2)" stroke="' + K + '" stroke-width="2.8" stroke-linejoin="round"/>' + R(-6, -78, 12, 11, 3, '#d9a066', ' stroke-width="2.2"') + reflet('M-10,-36 l1,22', 2.2, .55) + '</g>' +
+    /* l'étiquette, pendue au goulot par une ficelle */
+    T('M4,-84 Q20,-92 30,-74', '#e8d9b0', 2.2) + '<g transform="rotate(5 38 -60)">' + R(12, -76, 54, plein ? 24 : 38, 4, '#fff6d8', ' stroke-width="2.6"') + Cir(19, -69, 2.2, '#8a5a12', ' stroke-width="1"') +
+    '<text x="41" y="-58" font-size="16" font-weight="800" text-anchor="middle" font-family="Fredoka, system-ui, sans-serif" fill="#8a5a12">Huile</text>' +
+    (plein ? '' : '<text x="39" y="-43" font-size="13" font-weight="700" font-style="italic" text-anchor="middle" font-family="Fredoka, system-ui, sans-serif" fill="#9a8f80">vide</text>') + '</g></g></g>';
+  return '<rect class="rond" x="-32" y="-114" width="104" height="130" rx="14"/>' + s + '<rect x="-32" y="-112" width="104" height="126" fill="transparent"/>';
 };
 /* Le bocal à filtrer : une étamine tendue sur un bocal de verre, tenue par une ficelle */
 ART.filtre = function(){
@@ -456,21 +477,10 @@ ART.planche = function(){
     T('M-96,-10 Q0,-4 100,-12 M-90,-30 Q0,-24 96,-32 M-88,-46 Q0,-42 92,-48', '#b9824e', 1.6, ' opacity=".7"') + T('M-60,-18 l26,-6 M-46,-8 l30,-9 M-30,-34 l22,-4 M-66,-36 l18,-7 M-18,-14 l24,-3', 'rgba(90,50,20,.45)', 1.4) + '<ellipse cx="86" cy="-44" rx="6" ry="4" fill="#3a2010" stroke="' + K + '" stroke-width="2"/>';
   s += fenteSvg('planche', 'entree');
   /* le couteau : au repos, couché au fond de la planche */
-  s += '<g class="agit" id="couteau"><g id="couteauT" transform="translate(52,-50) rotate(-3)">' + '<path d="M-6,-10 L-104,-10 Q-124,-6 -130,8 L-6,12 Z" fill="' + G('acier') + '" stroke="' + K + '" stroke-width="3.4" stroke-linejoin="round"/>' + T('M-12,6 L-122,4', '#fff', 2, ' opacity=".8"') + T('M-14,-6 L-100,-6', '#8e9aa8', 1.4, ' opacity=".7"') +
+  s += '<g class="agit" id="couteau"><g id="couteauT" transform="translate(52,-50) rotate(-3)">' + '<path d="M-6,-10 L-110,-10 Q-126,-9 -134,-3 Q-96,15 -6,14 Z" fill="' + G('acier') + '" stroke="' + K + '" stroke-width="3.4" stroke-linejoin="round"/>' + '<path d="M-6,-10 L-110,-10 Q-126,-9 -134,-3 L-124,-4 Q-118,-5 -108,-5 L-6,-5 Z" fill="#7f8a99" opacity=".85"/>' + '<path d="M-8,13 Q-96,14 -132,-3 Q-98,6 -8,6 Z" fill="#ffffff" opacity=".92"/>' + T('M-8,6 Q-98,6 -130,-3', '#9aa6b4', 1.2, ' opacity=".8"') +
     R(-8, -12, 9, 26, 2, '#b8b4c8', ' stroke-width="3"') + R(0, -9, 56, 19, 8, '#5a3418', ' stroke-width="3.4"') + Cir(14, 0, 2.6, '#f5c45a', ' stroke-width="1"') + Cir(32, 0, 2.6, '#f5c45a', ' stroke-width="1"') + reflet('M6,-5 H48', 2, .3) + '</g></g>';
   return '<rect class="rond" x="-118" y="-74" width="236" height="100" rx="18"/>' + s + '<rect x="-116" y="-72" width="232" height="94" fill="transparent"/>';
 };
-/* Le sac de cuir, pour emporter les potions cette nuit */
-ART.sac = function(){
-  var n = S ? ORDRE.filter(function(id){ return S.faites[id]; }).length : 0, s = ombre(2, 6, 70, 11, .45), i;
-  s += '<g class="saute">' + TT('M-42,-58 C-40,-108 40,-108 42,-58', '#8f5429', 7, 5);
-  for(i = 0; i < Math.min(n, 4); i++) s += '<g transform="translate(' + (-27 + i*18) + ',-64) scale(.5)">' + R(-6, -30, 12, 30, 3, 'rgba(220,245,255,.5)', ' stroke-width="4"') + R(-7, -40, 14, 12, 3, '#d9a066', ' stroke-width="4"') + '</g>';
-  s += R(-60, -62, 120, 62, 16, G('cuirS')) + '<path d="M-52,-10 Q0,-2 52,-10" fill="none" stroke="#f6e3c0" stroke-width="2" stroke-dasharray="6 5" opacity=".6"/>' +
-    P('M-62,-62 Q0,-76 62,-62 L60,-36 Q0,-12 -60,-36 Z', '#a5653a') + '<path d="M-54,-38 Q0,-18 54,-38" fill="none" stroke="#f6e3c0" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>' + reflet('M-50,-58 Q0,-70 50,-58', 2.6, .3) +
-    R(-10, -34, 20, 20, 4, G('laitonV'), ' stroke-width="3.2"') + R(-4, -28, 8, 10, 2, '#8a5a12', ' stroke-width="1.6"') + '</g>';
-  return '<rect class="rond" x="-72" y="-108" width="144" height="124" rx="20"/>' + s + '<rect x="-72" y="-106" width="144" height="118" fill="transparent"/>';
-};
-
 /* ---------- Le grand linge de la cueillette, et les plantes couchées dessus ---------- */
 var LINGE = {X:238, y0:374, y1:536};
 function quadPlat(X, a, b){ return 'M' + f1(xP(-X, b)) + ',' + b + ' L' + f1(xP(X, b)) + ',' + b + ' L' + f1(xP(X, a)) + ',' + a + ' L' + f1(xP(-X, a)) + ',' + a + ' Z'; }
@@ -490,13 +500,10 @@ function lingeScene(){
 function majPlantes(){
   ORDRE_PL.forEach(function(k){
     var g = $('#plante-' + k); if(!g) return; var q = PLACE[k], p = PL[k], la = S.dispo[k] > 0, fait = !!S.faites[p.potion], c = centrePlante(k), s = '', choisie = S.plante === k && !!S.partie;
-    if(!la && !fait){
-      s = '<ellipse cx="' + q[0] + '" cy="' + (c.y + 6) + '" rx="38" ry="26" fill="none" stroke="#c9bd98" stroke-width="2.4" stroke-dasharray="5 6" opacity=".9"/><text x="' + q[0] + '" y="' + (c.y + 8) + '" font-size="30" text-anchor="middle" dominant-baseline="central" font-family="Caveat, cursive" font-weight="700" fill="#c9bd98">?</text>';
-      g.innerHTML = s; g.setAttribute('class', 'plante'); g.setAttribute('aria-label', 'Une plante pas encore cueillie'); return;
-    }
+    /* (une plante cueillie attend d'abord sur la tringle : majPendues ; sa potion faite, elle est partie) */
+    if(!la || fait || !(S.posees[k] || S.plante === k)){ g.innerHTML = ''; g.setAttribute('class', 'plante'); g.removeAttribute('aria-label'); return; }
     s += '<ellipse class="rond" cx="' + q[0] + '" cy="' + (c.y + 4) + '" rx="54" ry="42"/>' + '<ellipse cx="' + (q[0] + 3) + '" cy="' + (q[1] - 2) + '" rx="40" ry="7" fill="rgba(60,40,20,.2)"/>';
     s += '<g class="corps" transform="translate(' + q[0] + ',' + q[1] + ') scale(' + SP + ',' + (SP*APLAT).toFixed(3) + ') translate(-130,-' + q[2] + ')">' + PLD.corps(k) + '</g>';
-    if(fait) s += '<text x="' + q[0] + '" y="' + c.y + '" font-size="34" text-anchor="middle" dominant-baseline="central">✅</text>';
     s += '<rect class="prise" x="' + (q[0] - 50) + '" y="' + (c.y - 40) + '" width="100" height="86" fill="transparent"/>';
     g.innerHTML = s;
     g.setAttribute('class', 'plante' + (la && !fait ? ' dispo' : '') + (fait ? ' faite' : '') + (S.mode === 'plante' && S.plante === k ? ' zoom' : '') + (choisie ? ' choisie' + (S.ou === 'linge' ? ' partie-sur-linge' : '') : ''));
@@ -510,7 +517,8 @@ function majPlantes(){
 /* ---------- Tout l'établi ---------- */
 var OUTILS_SC = ['alambic', 'marmite', 'presse', 'sechoir', 'fiole', 'mortier', 'tamis', 'filtre', 'planche'];
 function majOutil(o){ var g = $('#g-' + o); if(g) g.innerHTML = ART[o](); }
-function majTout(){ OUTILS_SC.forEach(majOutil); ['buches', 'allumettes', 'cruche', 'huilier', 'sac'].forEach(majOutil); majPlantes(); majEtagere(); }
+function majTout(){ OUTILS_SC.forEach(majOutil); ['buches', 'allumettes', 'cruche', 'huilier'].forEach(majOutil); majPlantes(); majPendues(); majEtagere(); majLivre(); }
+function majLivre(){ var g = $('#gLivre'); if(g) g.innerHTML = ART.livre(); }
 function dessinerScene(){
   var s = defsEtabli() + '<clipPath id="clipFour"><path d="M-34,3 V-28 A34,24 0 0 1 34,-28 V3 Z"/></clipPath>' + mur() + decorMur() + etagereScene() + plateau();
   function outil(o, nom){ return gT(o, '', ' id="g-' + o + '" class="outil" data-act="outil" data-o="' + o + '" tabindex="0" role="button" aria-label="' + nom + '"'); }
@@ -518,9 +526,9 @@ function dessinerScene(){
   /* du fond vers le devant */
   s += porte('buches', 'buche', NOMS_O.buche) + outil('alambic', NOMS_O.alambic) + outil('marmite', NOMS_O.marmite) +
     gT('livre', ART.livre(), ' id="gLivre" data-act="livre" tabindex="0" role="button" aria-label="Le grimoire : les potions de la brume"') +
-    outil('presse', NOMS_O.presse) + outil('sechoir', NOMS_O.sechoir) + outil('fiole', NOMS_O.fiole);
+    outil('presse', NOMS_O.presse) + outil('sechoir', NOMS_O.sechoir) + outil('fiole', NOMS_O.fiole) + '<g id="pendues"></g>';   /* (les plantes pendues : par-dessus le haut des outils du fond, pour qu'on les touche bien) */
   s += porte('allumettes', 'allumette', NOMS_O.allumette) + outil('mortier', NOMS_O.mortier) + outil('tamis', NOMS_O.tamis) + lingeScene() + porte('cruche', 'cruche', NOMS_O.cruche) + porte('huilier', 'huilier', NOMS_O.huilier) + outil('filtre', NOMS_O.filtre);
-  s += outil('planche', NOMS_O.planche) + gT('sac', '', ' id="g-sac" data-act="sac" tabindex="0" role="button" aria-label="Ton sac"');
+  s += outil('planche', NOMS_O.planche);
   /* de la poussière dorée dans la lumière de la lanterne, puis ce qui vole, les effets, le bord sombre */
   s += '<g fill="#ffe9a3" pointer-events="none"><circle class="poussiere" cx="120" cy="250" r="2"/><circle class="poussiere p2" cx="170" cy="210" r="1.6"/><circle class="poussiere p3" cx="90" cy="290" r="1.8"/><circle class="poussiere p2" cx="250" cy="170" r="1.4"/><circle class="poussiere p3" cx="640" cy="200" r="1.5"/><circle class="poussiere" cx="700" cy="230" r="1.3"/></g>';
   s += '<g id="vol"></g><g id="effets"></g><rect x="-1900" y="-1800" width="5000" height="4000" fill="' + G('vignette') + '" pointer-events="none"/>';

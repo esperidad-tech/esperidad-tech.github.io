@@ -280,7 +280,7 @@ def partie(nav, base):
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); fra = ET.ouvrir(A.pg); ET.sac(A.pg)
     seq = A.js("() => M.code('sac:' + M.sacBits())")
-    verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1, 'l\'Alchimiste : « 🎒 Ton sac », sept potions, le code du sac')
+    verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1, 'l\'Alchimiste : les sept potions sont prêtes, leur code pour le Pisteur')
     A.shot('sac')
     # le Pisteur : la clé d'Anselme, la grille de la crypte, le sac
     verifier(P.jouer('clocher', 'cle') == 'cachette', 'le Pisteur prend la clé d\'Anselme (se cacher dans le clocher)'); P.fermer()

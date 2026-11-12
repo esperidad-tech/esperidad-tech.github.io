@@ -5,7 +5,8 @@
  - le feu : une allumette sans bûche, une bûche (petit feu), deux (grand feu), le foyer plein, une bûche qu'on retire ;
  - l'eau et l'huile qui ne se mélangent pas ;
  - le grimoire : sept pages, chaque texte de plus de trois mots avec son 🔊, la recette en phrases (jamais d'image d'outil) ;
- - le sac ; la carte « C'est vrai ! » de chaque potion ;
+ - la tringle (une plante pendue qu'on décroche), l'étagère des potions tout en haut, le panneau du feu, « EAU », « Huile » ;
+ - la carte « C'est vrai ! » de chaque potion ; après la septième, le code pour le Pisteur (plus de sac) ;
  - les 5 formes d'établi × 8 couleurs : la scène se dessine sans erreur ;
  - un téléphone couché (780 × 360) : tout tient dans l'écran et tout se touche.
    BRUMEVAL_DIST=<dossier construit> python3 tools/etabli.py"""
@@ -44,6 +45,8 @@ class Robot:
         return self.pg.evaluate("() => { var S = window.__etabli.etat(); return {plante:S.plante, partie:S.partie, n:S.n, ou:S.ou, pos:S.pos, m:S.m && S.m.nom, H:S.H, feux:S.feux, liq:S.liq, faites:Object.keys(S.faites), mode:S.mode}; }")
     def texte(self): return self.pg.evaluate("() => window.__etabli.texte()")
     def plante(self, k, pa):
+        if self.pg.evaluate("(k) => !!document.querySelector('#pendue-' + k)", k):
+            self.toucher('#pendue-' + k + ' > rect[fill=transparent]'); self.pg.wait_for_timeout(200)
         self.toucher('#plante-' + k + ' .prise'); self.pg.wait_for_timeout(120)
         q = self.pg.evaluate("""(pa) => { var g = document.querySelector('.plante.zoom .pl-pa[data-pa=' + pa + ']'); if(!g) return null; var r = g.getBoundingClientRect();
           for(var i = 6; i >= 1; i--) for(var a = 0; a < 12; a++){ var d = (6 - i)/6, x = r.left + r.width/2 + Math.cos(a/12*6.283)*r.width/2*d, y = r.top + r.height/2 + Math.sin(a/12*6.283)*r.height/2*d, el = document.elementFromPoint(x, y);
@@ -66,8 +69,17 @@ with sync_playwright() as p:
     pg = page(b, 1180, 820); r = Robot(pg)
     D = pg.evaluate("() => window.PLANTES_DONNEES"); RE = D['RE']
     print('— La scène')
-    ok(pg.locator('#scene .outil').count() >= 9 and pg.locator('#scene .plante').count() == 7 and pg.locator('#scene [id^=potion-]').count() == 7,
-       f'neuf outils, sept plantes sur le linge, sept flacons vides sur l\'étagère ({pg.locator("#scene .outil").count()} outils)')
+    ok(pg.locator('#scene .outil').count() >= 9 and pg.locator('#scene .pendue').count() == 7 and pg.locator('#portique [id^=potion-]').count() == 7 and pg.locator('#g-sac').count() == 0,
+       f'neuf outils, sept plantes pendues à la tringle, sept flacons vides sur l\'étagère de l\'établi, plus de sac ({pg.locator("#scene .outil").count()} outils)')
+    haut = pg.evaluate("""() => { var e = document.querySelector('#portique').getBoundingClientRect(), m = 1e9;
+      [].forEach.call(document.querySelectorAll('#scene .outil, #gLivre, #scene .porte'), function(o){ m = Math.min(m, o.getBoundingClientRect().top); });
+      var pot = document.querySelector('#potion-feu').getBoundingClientRect(); return [Math.round(pot.bottom), Math.round(m), Math.round(e.top)]; }""")
+    ok(haut[0] <= haut[1] + 2 and haut[2] >= -1, f'l\'étagère des potions est au-dessus de tout le reste, et dans l\'écran ({haut})')
+    ok(pg.locator('#scene .plante .corps').count() == 0, 'le linge est vide tant qu\'on n\'a rien décroché')
+    r.toucher('#pendue-souci > rect[fill=transparent]'); pg.wait_for_timeout(450)
+    ok(pg.locator('#pendue-souci').count() == 0 and pg.locator('#plante-souci .corps').count() == 1 and r.etat()['plante'] is None, 'on touche le souci pendu : il se couche sur le linge')
+    t = pg.evaluate("() => document.querySelector('#g-buches .pan-feu').textContent + ' | ' + document.querySelector('#g-cruche').textContent + ' | ' + document.querySelector('#g-huilier').textContent")
+    ok('feu doux' in t and 'feu fort' in t and 'EAU' in t and 'Huile' in t and 'vide' in t, f'le panneau du feu, « EAU » sur la cruche, « Huile » et « vide » sur la bouteille ({t})')
     pg.screenshot(path=f'{OUT}/01-scene.png')
     print('— Les gestes faux')
     r.outil('planche'); ok(len(r.texte()) > 12 and r.etat()['ou'] is None, f'un outil touché les mains vides : il dit à quoi il sert ({r.texte()[:50]})')
@@ -80,8 +92,8 @@ with sync_playwright() as p:
     pg.screenshot(path=f'{OUT}/02-faux.png')
     print('— Le feu')
     r.outil('allumettes'); r.outil('marmite'); ok('rien à brûler' in r.texte() and not r.etat()['feux']['marmite']['allume'], f'une allumette sans bûche : pas de feu ({r.texte()[:50]})')
-    r.outil('buches'); r.outil('marmite'); ok(r.etat()['feux']['marmite']['b'] == 1 and 'petit feu' in r.texte(), f'une bûche : un petit feu ({r.texte()})')
-    r.outil('buches'); r.outil('marmite'); ok(r.etat()['feux']['marmite']['b'] == 2 and 'grand feu' in r.texte(), f'deux bûches : un grand feu ({r.texte()})')
+    r.outil('buches'); r.outil('marmite'); ok(r.etat()['feux']['marmite']['b'] == 1 and 'feu doux' in r.texte(), f'une bûche : un feu doux ({r.texte()})')
+    r.outil('buches'); r.outil('marmite'); ok(r.etat()['feux']['marmite']['b'] == 2 and 'feu fort' in r.texte(), f'deux bûches : un feu fort ({r.texte()})')
     r.outil('buches'); r.outil('marmite'); ok(r.etat()['feux']['marmite']['b'] == 2 and 'plein' in r.texte(), f'trois : le foyer est plein ({r.texte()})')
     r.toucher('[data-act=foyer][data-o=marmite]'); ok(r.etat()['feux']['marmite']['b'] == 1, f'toucher le foyer éteint : on retire une bûche ({r.texte()})')
     r.toucher('[data-act=foyer][data-o=marmite]'); ok(r.etat()['feux']['marmite']['b'] == 0, 'et encore une : plus de bois')
@@ -116,27 +128,33 @@ with sync_playwright() as p:
         s = r.etat(); carte = pg.evaluate("() => { var c = document.querySelector('.carte.prete'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
         ok(pid in s['faites'] and s['mode'] == 'prete' and "C'est vrai" in carte and r.sans_son('.carte.prete') == [], f'{pid} : la potion est sur l\'étagère, et sa carte « C\'est vrai ! » avec ses 🔊 ({carte[:44]})')
         if pid == 'acide': pg.screenshot(path=f'{OUT}/03-prete.png')
-        r.toucher('.carte.prete .b-jaune'); pg.wait_for_timeout(150)
-        ok(r.etat()['mode'] is None, f'{pid} : « Continuer » referme la carte')
-    ok(len(r.etat()['faites']) == 7 and pg.locator('#scene [id^=potion-].pleine').count() == 7, 'les sept potions sont faites : sept flacons pleins sur l\'étagère')
-    r.toucher('#plante-gui .prise'); ok('Déjà en fiole' in r.texte(), f'une potion déjà faite ne se refait pas ({r.texte()})')
-    pg.wait_for_timeout(500); pg.screenshot(path=f'{OUT}/04-sept.png')
-    print('— Le grimoire, le sac')
+        if pid == 'huile':
+            ok('vide' not in pg.evaluate("() => document.querySelector('#g-huilier').textContent"), 'l\'huile est faite : la bouteille n\'est plus « vide »')
+            # le grimoire se remplit au fur et à mesure : en maquette tout est cueilli, sept signets
+        r.toucher('.carte.prete .b-jaune'); pg.wait_for_timeout(200)
+        if pid != 'coeur': ok(r.etat()['mode'] is None, f'{pid} : « Continuer » referme la carte')
+    carte = pg.evaluate("() => { var c = document.querySelector('.carte'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
+    ok(r.etat()['mode'] == 'sac' and pg.locator('#sacCode').count() == 1 and pg.locator('.carte .rang .pleine').count() == 7 and 'Pisteur' in carte and r.sans_son('.carte') == [] and pg.locator('.carte [data-donjon]').count() == 0,
+       f'la septième potion : la carte du code pour le Pisteur s\'ouvre toute seule, avec ses 🔊 ({carte[:60]})')
+    pg.screenshot(path=f'{OUT}/06-code.png')
+    r.fermer()
+    ok(len(r.etat()['faites']) == 7 and pg.locator('#portique [id^=potion-].pleine').count() == 7 and pg.locator('#scene .pendue').count() == 0 and pg.locator('#scene .plante .corps').count() == 0,
+       'les sept potions sont faites : sept flacons pleins sur l\'étagère, plus une plante sur la tringle ni sur le linge')
+    r.toucher('#potion-colle > rect[fill=transparent]'); pg.wait_for_timeout(200)
+    ok(r.etat()['mode'] == 'sac' and pg.locator('#sacCode').count() == 1, 'toucher l\'étagère des potions : on revoit le code')
+    r.fermer()
+    pg.wait_for_timeout(300); pg.screenshot(path=f'{OUT}/04-sept.png')
+    print('— Le grimoire')
     r.toucher('#gLivre > rect[fill=transparent]'); pg.wait_for_timeout(200)
     bon = r.etat()['mode'] == 'livre'
     for pid in D['ORDRE']:
         pg.locator(f'.livre .signet[data-page={pid}]').click(force=True); pg.wait_for_timeout(120)
         rc = RE[pid]; t = pg.evaluate("() => document.querySelector('#pagesLivre').innerText.replace(/\\s+/g, ' ')")
         muets = r.sans_son('#pagesLivre'); images = pg.locator('#pagesLivre .page.d svg').count()
-        if muets or rc['recette'][0][:18] not in t or "C'est vrai" not in t or pg.locator('#pagesLivre .planche-b svg').count() != 1 or images != 1:
+        if muets or rc['recette'][0][:18] not in t or "C'est vrai" not in t or pg.locator('#pagesLivre .planche-b svg').count() != 1 or images != 1 or rc['sert'][:20] in t or 'donjon' in t.lower() or 'monstre' in t.lower():
             bon = False; print('     page', pid, muets, images, t[:80])
-    ok(bon, 'le grimoire : sept pages (la plante dessinée, où elle pousse, la partie, la recette en phrases, « C\'est vrai ! »), chaque texte avec son 🔊')
+    ok(bon, 'le grimoire : sept pages (la plante dessinée, où elle pousse, la partie, la recette en phrases, « C\'est vrai ! »), chaque texte avec son 🔊 ; rien sur ce à quoi sert la potion, pas un mot du donjon')
     pg.screenshot(path=f'{OUT}/05-grimoire.png')
-    r.fermer()
-    r.toucher('#g-sac > rect[fill=transparent]'); pg.wait_for_timeout(200)
-    t = pg.evaluate("() => { var c = document.querySelector('.carte'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
-    ok(r.etat()['mode'] == 'sac' and pg.locator('.carte .rang .pleine').count() == 7 and r.sans_son('.carte') == [], f'le sac : les sept fioles, chaque texte avec son 🔊 ({t[:50]})')
-    pg.screenshot(path=f'{OUT}/06-sac.png')
     r.fermer()
     pg.close()
 
@@ -147,7 +165,7 @@ with sync_playwright() as p:
       for(var f = 0; f < 5; f++){
         for(var t = 0; t < 8; t++){
           var st = window.__etabli.style; vus[st.paF + '-' + st.paT] = 1;
-          if(document.querySelectorAll('#scene .outil').length >= 9 && document.querySelectorAll('#scene .plante').length === 7) n++;
+          if(document.querySelectorAll('#scene .outil').length >= 9 && document.querySelectorAll('#scene .pendue').length === 7) n++;
           b[1].click(); b[3].click(); }
         b[0].click(); b[2].click(); }
       return Object.keys(vus).length === 40 ? n : -Object.keys(vus).length; }""")
@@ -155,10 +173,23 @@ with sync_playwright() as p:
     pg.screenshot(path=f'{OUT}/07-autre-style.png')
     pg.close()
 
+    print('— Le grimoire se remplit au fur et à mesure')
+    pg = page(b, 1180, 820); r = Robot(pg)
+    pg.evaluate("() => { var S = window.__etabli.etat(); Object.keys(S.dispo).forEach(function(k){ S.dispo[k] = 0; }); }")
+    r.toucher('#gLivre > rect[fill=transparent]'); pg.wait_for_timeout(200)
+    t = pg.evaluate("() => document.querySelector('#pagesLivre').innerText.replace(/\\s+/g, ' ')")
+    ok(pg.locator('.livre .signet').count() == 0 and 'attend tes cueillettes' in t and r.sans_son('#pagesLivre') == [], f'aucune plante trouvée : le grimoire est vide, et le dit ({t[:50]})')
+    r.fermer()
+    pg.evaluate("() => { var S = window.__etabli.etat(); S.dispo.lin = 1; S.dispo.gui = 1; }")
+    r.toucher('#gLivre > rect[fill=transparent]'); pg.wait_for_timeout(200)
+    noms = pg.evaluate("() => [].map.call(document.querySelectorAll('.livre .signet'), function(b){ return b.dataset.page; }).join(',')")
+    ok(noms == 'huile,colle', f'deux plantes trouvées (le lin, le gui) : deux pages, deux signets ({noms})')
+    r.fermer(); pg.close()
+
     print('— Un téléphone couché (780 × 360)')
     pg = page(b, 780, 360); r = Robot(pg)
     bad = pg.evaluate("""() => { var W = innerWidth, H = innerHeight, bad = [];
-      [].forEach.call(document.querySelectorAll('#scene .outil > rect[fill=transparent], #scene .plante .prise, #gLivre > rect[fill=transparent]'), function(e){
+      [].forEach.call(document.querySelectorAll('#scene .outil > rect[fill=transparent], #scene .pendue > rect[fill=transparent], #scene .potion > rect[fill=transparent], #scene .porte > rect[fill=transparent], #gLivre > rect[fill=transparent]'), function(e){
         var q = e.getBoundingClientRect(), id = (e.closest('[id]') || e).id;
         if(q.left < -1 || q.top < -1 || q.right > W + 1 || q.bottom > H + 1) bad.push(id + ' dépasse');
         else if(q.width < 24 || q.height < 24) bad.push(id + ' trop petit ' + Math.round(q.width) + '×' + Math.round(q.height)); });

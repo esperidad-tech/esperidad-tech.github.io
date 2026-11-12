@@ -2,7 +2,7 @@
 
 > Décidé par Romain le 11 novembre (14 h 52 : « un atelier où il a besoin de séparer certains ingrédients de ces plantes… écraser les plantes, couper les plantes ; des potions basées sur des plantes qui existent réellement » ; 15 h 13 : « d'accord pour absolument tout ce que tu m'as proposé, go pour tout »). Construit une première fois le 12 novembre à 1 h (Bible §13.19).
 >
-> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.22)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2 et §3 de ce document décrivent l'établi tel qu'il est construit aujourd'hui.** Les recettes ont changé : elles suivent les vrais gestes des herboristes. Le reste (cueillettes, herbier, gui, sac) n'a pas changé. Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
+> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.22)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2, §3 et §9 de ce document décrivent l'établi tel qu'il est construit aujourd'hui, avec les retouches de Romain du 12 novembre à 12 h 45 (Bible §13.23).** Romain a aussi annoncé un nouveau plan pour trouver les plantes (dès l'enquête 2, dans la brume, à l'aveugle : Bible §13.23) : **les §4 à §7 seront à revoir**, dans une autre conversation. Les recettes ont changé : elles suivent les vrais gestes des herboristes. Le reste (cueillettes, herbier, gui, sac) n'a pas changé. Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
 
 ## 1. Le principe
 
@@ -21,7 +21,8 @@ Fait comme la paillasse d'analyse (`jeu/src/labo/`) : **on est penché sur une v
 
 | L'objet | À quoi il sert | Ce qu'on voit quand il travaille |
 | --- | --- | --- |
-| **Le linge, au milieu** | les sept plantes cueillies, posées dessus, bien en vue | on touche une plante : elle vient vers nous, en grand, avec ses trois parties à toucher |
+| **La tringle**, fixée à l'établi, sous l'étagère | les plantes cueillies y pendent d'abord, la tête en bas, chacune sous le flacon de sa potion | on touche une plante pendue : elle se couche sur le linge |
+| **Le linge, au milieu** | les plantes qu'on a décrochées | on touche une plante : elle vient vers nous, en grand, avec ses trois parties à toucher |
 | **La planche et le couteau** | hacher | le couteau fait « tchac, tchac, tchac », les morceaux sautent |
 | **Le tamis** (sur son bol) | trier : le fin passe, le gros reste | le tamis se secoue, la poudre ou les graines tombent dessous |
 | **Le mortier et son pilon** | écraser | le pilon tape et tourne |
@@ -31,28 +32,27 @@ Fait comme la paillasse d'analyse (`jeu/src/labo/`) : **on est penché sur une v
 | **L'alambic de cuivre** (sur son petit four de briques, avec son seau d'eau froide et son petit vase) | distiller | la vapeur monte dans le col de cygne, les gouttes tombent dans le vase |
 | **Le séchoir** (une claie, avec la pancarte « On laisse sécher ») | laisser sécher, à l'ombre | un sablier tourne : le temps passe |
 | **Les fioles vides** (sur leur râtelier, avec un entonnoir) | la dernière étape de chaque potion | la fiole se remplit, on la bouche, elle monte sur l'étagère |
-| **Le tas de bûches et la boîte d'allumettes** | le feu, sous la marmite ou sous l'alambic | voir « Le feu » plus bas |
-| **La cruche d'eau** (en grès) et **la bouteille d'huile de lin** | ce qu'on verse dans la marmite ou l'alambic | la bouteille d'huile est vide tant qu'on n'a pas fait la potion d'huile |
-| **Le grimoire, sur son petit pupitre** | les sept recettes | il s'ouvre en grand : une page par potion |
-| **Le sac** | les fioles prêtes ; la nuit, le code pour le Pisteur | voir §9 |
-| **L'étagère au mur** | sept flacons de verre, tous différents | vides et pâles au début ; pleins et brillants quand la potion est faite |
+| **Le tas de bûches, son panneau, et la boîte d'allumettes** | le feu, sous la marmite ou sous l'alambic ; le panneau dit : une bûche = feu doux, deux bûches = feu fort | voir « Le feu » plus bas |
+| **La cruche d'eau** (en grès, une goutte bleue et « EAU » dessus) et **la bouteille d'huile** (étiquette « Huile ») | ce qu'on verse dans la marmite ou l'alambic | la cruche est toujours pleine ; la bouteille est « vide » tant qu'on n'a pas fait la potion d'huile |
+| **Le grimoire, sur son petit pupitre** | les recettes des plantes déjà trouvées | il s'ouvre en grand : une page par plante trouvée ; un rond jaune « ! » quand une page vient de s'écrire |
+| **L'étagère des potions**, fixée à l'établi, tout en haut | sept flacons de verre, tous différents | vides et pâles au début ; pleins et brillants quand la potion est faite ; les sept faites, on la touche pour voir le code (§9) |
 
-Au mur : une lanterne, et des bouquets qui sèchent, pendus la tête en bas.
+Au mur : une lanterne.
 
 **Comment on joue** (toujours pareil) :
-1. On touche une plante sur le linge. Elle vient en grand. On touche **la partie** qu'on veut (feuilles, fleurs, graines, racine…).
+1. On touche une plante pendue à la tringle : elle se couche sur le linge. On la touche encore : elle vient en grand. On touche **la partie** qu'on veut (feuilles, fleurs, graines, racine…).
 2. On touche **un outil** : la matière y va. On touche **l'outil encore une fois** : il travaille. Le filtre, le séchoir et les fioles travaillent tout seuls dès que la matière arrive.
 3. **La cruche, l'huile, une bûche, une allumette** : on la touche (on la tient), puis on touche où on veut la mettre.
 4. À chaque étape réussie, la matière change (les feuilles deviennent des feuilles hachées, puis un jus vert…) et **une phrase courte raconte ce qui se passe pour de vrai**, avec son 🔊.
 
-**Le feu, c'est le joueur qui décide** (Romain) : pas de bûche = pas de feu ; **une bûche = un petit feu** ; **deux bûches = un grand feu**. Puis une allumette. Une allumette sans bûche : « Craac ! Une jolie flamme… et rien à brûler. » On peut retirer une bûche tant que le feu n'est pas allumé. Quand la cuisson est finie, le bois a brûlé : le feu s'éteint.
+**Le feu, c'est le joueur qui décide** (Romain) : pas de bûche = pas de feu ; **une bûche = feu doux** ; **deux bûches = feu fort** (un petit panneau le rappelle, près des bûches). Puis une allumette. Une allumette sans bûche : « Craac ! Une jolie flamme… et rien à brûler. » On peut retirer une bûche tant que le feu n'est pas allumé. Quand la cuisson est finie, le bois a brûlé : le feu s'éteint.
 
 **On ne peut pas rater pour de bon** :
 - **le mauvais outil, ou le mauvais feu** : une phrase dit ce qui se passerait pour de vrai (« Trop fort ! La glu attache au fond et brûle. À petit feu, toujours. »). La matière reste comme elle était : on essaie autre chose ;
 - **la mauvaise partie de la plante** : une phrase vraie sur cette partie (« De jolies fleurs bleues… qui ne donnent pas une goutte. Elles ne durent qu'un matin ! »), et la plante revient entière sur le linge.
 Chaque recette a ses phrases à elle pour ses erreurs les plus probables (de 5 à 13 par recette), et chaque outil a ses phrases pour tout le reste.
 
-**Le grimoire** : une page par potion. À gauche, la plante dessinée et « Où ? » (où elle pousse). À droite : à quoi sert la potion, **« La partie »** (en mots, sans la montrer), **« La recette »** en phrases numérotées (« 1. Hache les feuilles. 2. Presse-les : garde le jus… »), jamais en images d'outils. Il faut lire, reconnaître la partie sur la plante, et trouver le bon outil et le bon feu.
+**Le grimoire** : une page par plante trouvée (il se remplit au fur et à mesure). À gauche, la plante dessinée et « Où ? » (où elle pousse **dans la vraie nature**). À droite : **« La partie »** (en mots, sans la montrer), **« La recette »** en phrases numérotées (« 1. Hache les feuilles. 2. Presse-les : garde le jus… »), jamais en images d'outils. Il faut lire, reconnaître la partie sur la plante, et trouver le bon outil et le bon feu.
 
 **Une potion finie** : des étoiles, la fiole monte sur l'étagère, et une carte s'ouvre : la potion en grand, puis **« C'est vrai ! »** — ce qu'il y a de vrai dans cette recette (colonne de droite du §3), avec son 🔊 et un bouton jaune « Continuer ». Le « C'est vrai ! » reste ensuite dans le grimoire, à la page de la potion.
 
@@ -69,10 +69,10 @@ Chaque recette a ses phrases à elle pour ses erreurs les plus probables (de 5 �
 | **Feu** | le pied-de-loup (lycopode) | les épis jaunes | séchoir → tamis (la poudre jaune) → fiole | La poudre de lycopode s'enflamme d'un coup : les flammes du théâtre, le flash des premiers photographes. La plante est protégée aujourd'hui : on ne la cueille plus. |
 | **Fumigène** | la vesse-de-loup | la grosse boule brune, bien mûre | séchoir → fiole (on la presse au-dessus du bocal, et on bouche vite) | Jeune, elle est blanche et ferme ; mûre, pleine d'une poussière brune (ses spores). Une goutte de pluie, et pouf ! On ne respire jamais ce nuage. |
 | **Huile** | le lin | les petites boules dorées (les graines sont dedans) | tamis (les graines) → pressoir → filtre → fiole | On presse les graines sans les chauffer. Ce qui reste, le « tourteau », nourrit les vaches. Avec les tiges, on fait du fil. |
-| **Colle** | le gui | les baies blanches | mortier → marmite avec de l'eau, **sans feu** (ça trempe) → marmite à **petit feu** → fiole | Avec ces baies, on faisait la « glu ». L'oiseau essuie son bec collant sur une branche… et un nouveau gui y pousse. Les baies sont du poison. |
-| **Acide** | l'oseille | les feuilles | planche → pressoir (le jus vert) → filtre → marmite à **grand feu** (le jus réduit) → séchoir (des cristaux blancs) → un peu d'eau de la cruche dessus → fiole | L'oseille pique la langue : elle contient un acide. On en tirait le « sel d'oseille », qui enlève encore la rouille et les taches d'encre. Il ne se mange pas. |
-| **Baume** | le souci (calendula) | les fleurs orange | séchoir → marmite avec **l'huile de lin**, à **petit feu** → filtre → fiole | L'huile de souci est un très vieux remède pour la peau. La fleur s'ouvre quand le soleil est haut et se referme le soir. |
-| **Cœur vaillant** | la mélisse | les feuilles | planche → alambic avec de l'eau, à **petit feu** → fiole | Distiller : changer un liquide en vapeur, puis la vapeur en gouttes. Des moines de Paris préparaient l'eau de mélisse dès 1611 ; on en trouve encore en pharmacie. |
+| **Colle** | le gui | les baies blanches | mortier → marmite avec de l'eau, **sans feu** (ça trempe) → marmite à **feu doux** → fiole | Avec ces baies, on faisait la « glu ». L'oiseau essuie son bec collant sur une branche… et un nouveau gui y pousse. Les baies sont du poison. |
+| **Acide** | l'oseille | les feuilles | planche → pressoir (le jus vert) → filtre → marmite à **feu fort** (le jus réduit) → séchoir (des cristaux blancs) → un peu d'eau de la cruche dessus → fiole | L'oseille pique la langue : elle contient un acide. On en tirait le « sel d'oseille », qui enlève encore la rouille et les taches d'encre. Il ne se mange pas. |
+| **Baume** | le souci (calendula) | les fleurs orange | séchoir → marmite avec **l'huile de lin**, à **feu doux** → filtre → fiole | L'huile de souci est un très vieux remède pour la peau. La fleur s'ouvre quand le soleil est haut et se referme le soir. |
+| **Cœur vaillant** | la mélisse | les feuilles | planche → alambic avec de l'eau, à **feu doux** → fiole | Distiller : changer un liquide en vapeur, puis la vapeur en gouttes. Des moines de Paris préparaient l'eau de mélisse dès 1611 ; on en trouve encore en pharmacie. |
 
 **Le baume a besoin de la potion d'huile** (la bouteille d'huile de lin est vide avant) : c'est le seul ordre imposé entre les potions.
 
@@ -126,7 +126,9 @@ La cueillette marche comme aujourd'hui (un lieu donne sa plante une fois par mom
 - **Dans le donjon** (à voir avec la conversation du donjon) : une fois par zone, Mimi flaire une chose cachée (la pierre de rune sans lueur, le crâne secret, la page blanche du tas d'os) : un petit chat qui s'assoit dessus.
 - La règle des talents : un chemin plus amusant, jamais une chose qu'on ne pourrait pas trouver autrement.
 
-## 9. Le code du sac (gardé)
+## 9. Le code des sept potions (le sac est enlevé : Romain, 12 novembre, 12 h 45)
+
+> **Ce qui est construit** : il n'y a plus de sac sur l'établi. **Le code pour le Pisteur n'est donné qu'une fois les sept potions faites** : il s'affiche tout seul après la septième, et on le revoit en touchant l'étagère des potions. Romain : « on ne peut pas faire le donjon si on n'a pas réuni les ingrédients ». Ce qui suit est la conception d'origine (un code même avec un sac incomplet), gardée pour mémoire.
 
 - À la nuit, avant de descendre (pendant le grand dialogue d'Anselme), la tablette de l'Alchimiste montre **« Ton sac »** : les potions faites (normalement les sept), avec un **code** que le Pisteur tape sur son écran « Descendre » ; puis un écran montre le sac reçu, et l'Alchimiste vérifie.
 - Proposé : 3 symboles suffisent pour dire lesquelles des sept potions sont faites (128 possibilités), plus un symbole de contrôle si on veut repérer une faute de frappe (§12.51). Si le « code par joueur » (la tenue, §12.51) est fait un jour, il peut porter le sac.

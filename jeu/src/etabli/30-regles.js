@@ -19,7 +19,7 @@ var QUOI = {
   cruche:'La cruche. De l\'eau fraîche du puits.',
   huilier:'L\'huile de lin. Elle sert à faire chauffer une plante… ou à graisser les serrures.',
   huilierVide:'Vide ! Pour la remplir, il faudra presser des graines de lin.',
-  buche:'Des bûches bien sèches. Une bûche : petit feu. Deux bûches : grand feu.',
+  buche:'Des bûches bien sèches. Une bûche : feu doux. Deux bûches : feu fort.',
   allumette:'Les allumettes. Craac… et le feu prend, s\'il a du bois.'
 };
 function famille(m){ return !m ? 'solide' : m.f === 'jus' ? 'liquide' : (m.f === 'tas' || m.f === 'cristaux' || m.f === 'graines') ? 'poudre' : m.f === 'pate' ? 'pate' : 'solide'; }
@@ -50,13 +50,13 @@ var PORTE = {
   allumette:{defaut:'Rien à allumer ici. Et gare aux doigts !', sechoir:'Surtout pas ! Des plantes sèches, ça flambe d\'un seul coup.', presse:'Un pressoir en bois ? Surtout pas de feu ici !', planche:'Une planche en bois ? Surtout pas de feu ici !'}
 };
 var DIT = {
-  buche1:'Une bûche : un petit feu.', buche2:'Deux bûches : un grand feu !', plein:'Le foyer est plein.', retire:'Tu retires une bûche.',
+  buche1:'Une bûche : un feu doux.', buche2:'Deux bûches : un feu fort !', plein:'Le foyer est plein.', retire:'Tu retires une bûche.',
   sansBois:'Craac ! Une jolie flamme… et rien à brûler. Sans bûche, pas de feu.', dejaFeu:'Ça brûle déjà !',
   eau:'De l\'eau fraîche.', dejaEau:'Il y a déjà de l\'eau.', huile:'Un bon fond d\'huile de lin.', dejaHuile:'Il y a déjà de l\'huile.',
   melange:'L\'eau et l\'huile ne se mélangent jamais : l\'huile flotte dessus ! Il faut choisir.',
   dejaFait:'C\'est fait ! La suite est dans le grimoire.', uneChose:'Une chose à la fois ! Tu as déjà une préparation en route.',
   dejaPotion:'Déjà en fiole !', pasCueillie:'Pas encore cueillie.', pasPrete:'Pas encore prête.',
-  toutes:'Sept fioles, sept couleurs : ton sac est prêt pour la nuit !',
+  toutes:'Sept fioles, sept couleurs : tout est prêt !', code:'Les sept potions sont prêtes. Donne ce code au Pisteur : il le tape dans son onglet Code.', pendue:'Elle sèche la tête en bas.', livreVide:'Le grimoire attend tes cueillettes. À chaque plante trouvée, une page s\'écrit toute seule.',
   feuEteint:'Le bois a brûlé : le feu s\'éteint.'
 };
 /* Le « cas » d'une marmite ou d'un alambic : ce qu'on y a versé, et le feu dessous */

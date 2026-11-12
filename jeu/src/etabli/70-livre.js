@@ -8,64 +8,60 @@ function echap(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 function bSon(t){ return '<button type="button" class="b-son" aria-label="Écouter" data-lire="' + echap(t) + '">🔊</button>'; }
 function ligne(html, t, cls){ return '<div class="lg' + (cls ? ' ' + cls : '') + '"><div>' + html + '</div>' + bSon(t) + '</div>'; }
 function pageLivre(id){
-  var r = RE[id], p = PL[r.plante], fait = !!S.faites[id], n = ORDRE.indexOf(id);
-  var ou = p.rare ? 'Une plante rare ! Seul l\'herbier des Fondateurs, que garde le Sage, sait où elle pousse.' : p.ou;
+  var r = RE[id], p = PL[r.plante], fait = !!S.faites[id], L = connues(), n = L.indexOf(id);
   var g = '<div class="page g"><h3>' + echap(p.nom) + '</h3><div class="planche-b">' + PLD.plante(r.plante) + '</div>' +
-    ligne('<p><b>Où ?</b> ' + echap(ou) + '</p>', p.nom + '. ' + ou) +
+    ligne('<p><b>Où ?</b> ' + echap(p.milieu) + '</p>', p.nom + '. ' + p.milieu) +
     (fait ? ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') : '') + '</div>';
+  /* (Romain, 12 novembre, 12 h 45 : rien sur ce à quoi la potion servira — seulement la partie, puis la recette) */
   var d = '<div class="page d"><h2><svg viewBox="-30 -82 60 86" aria-hidden="true">' + flacon(id, r.coul) + '</svg><span>' + echap(r.nom) + (fait ? ' <span class="fait-t">✓ prête</span>' : '') + '</span></h2>' +
-    ligne('<p>' + echap(r.sert) + '</p>', r.nom + '. ' + r.sert) +
     ligne('<p><b>La partie :</b> ' + echap(r.dit) + '</p>', 'La partie à prendre : ' + r.dit) +
     ligne('<p><b>La recette :</b></p><ol>' + r.recette.map(function(l){ return '<li>' + echap(l) + '</li>'; }).join('') + '</ol>', 'La recette. ' + r.recette.map(function(l, i){ return (i + 1) + ' : ' + l; }).join(' ')) +
     (r.note ? ligne('<p>' + echap(r.note) + '</p>', r.note, 'note') : '') +
-    '<div class="pied"><span>Les potions de la brume</span><span>' + (n + 1) + ' / ' + ORDRE.length + '</span></div></div>';
+    '<div class="pied"><span>Le grimoire des plantes</span><span>' + (n + 1) + ' / ' + L.length + '</span></div></div>';
   return g + d;
 }
+/* Le grimoire se remplit tout seul : une page (et son signet) par plante trouvée */
 function livreHTML(id){
-  return '<div class="voile-l" data-fond="1"></div><div class="livre" role="dialog" aria-label="Le grimoire : les potions de la brume" style="' + '' + '">' +
-    '<div class="signets">' + ORDRE.map(function(x){ return '<button type="button" class="signet' + (S.faites[x] ? ' fait' : '') + '" data-page="' + x + '" aria-pressed="' + (x === id) + '" aria-label="' + echap(RE[x].nom) + '"><i style="background:' + RE[x].coul + '"></i>' + echap(RE[x].court) + '</button>'; }).join('') + '</div>' +
+  var L = connues(), v = '<div class="voile-l" data-fond="1"></div>';
+  if(!L.length || !id) return v + '<div class="livre" role="dialog" aria-label="Le grimoire des plantes"><div class="cuir"></div><div class="pages" id="pagesLivre"><div class="page g"></div><div class="page d">' + ligne('<p>' + echap(DIT.livreVide) + '</p>', DIT.livreVide) + '</div></div></div>';
+  return v + '<div class="livre" role="dialog" aria-label="Le grimoire des plantes">' +
+    '<div class="signets">' + L.map(function(x){ return '<button type="button" class="signet' + (S.faites[x] ? ' fait' : '') + '" data-page="' + x + '" aria-pressed="' + (x === id) + '" aria-label="' + echap(RE[x].nom) + '"><i style="background:' + RE[x].coul + '"></i>' + echap(RE[x].court) + '</button>'; }).join('') + '</div>' +
     '<div class="cuir"></div><div class="pages" id="pagesLivre">' + pageLivre(id) + '</div>' +
-    '<button type="button" class="tourne-p prec" data-tourne="-1" aria-label="La page d\'avant">◀</button><button type="button" class="tourne-p suiv" data-tourne="1" aria-label="La page d\'après">▶</button></div>';
+    (L.length > 1 ? '<button type="button" class="tourne-p prec" data-tourne="-1" aria-label="La page d\'avant">◀</button><button type="button" class="tourne-p suiv" data-tourne="1" aria-label="La page d\'après">▶</button>' : '') + '</div>';
 }
 function ouvrirLivre(id){
   if(S.occupe || (S.mode && S.mode !== 'livre')) return;
   poser();
-  /* le livre s'ouvre à la page de ce qu'on prépare ; sinon à la dernière page lue ; sinon à la première potion qui reste à faire */
-  id = id || (S.plante ? PL[S.plante].potion : null) || S.page || ORDRE.filter(function(x){ return !S.faites[x]; })[0] || ORDRE[0];
-  S.page = id; son('livre');
-  ouvrirMode('livre', livreHTML(id));
+  /* le livre s'ouvre à la page de ce qu'on prépare ; sinon à une page qui vient de s'écrire ; sinon à la dernière page lue ; sinon à la première potion qui reste à faire */
+  var L = connues(), N = nouvellesPages(), ok = function(x){ return x && L.indexOf(x) >= 0 ? x : null; };
+  id = ok(id) || ok(S.plante && S.partie ? PL[S.plante].potion : null) || N[0] || ok(S.page) || L.filter(function(x){ return !S.faites[x]; })[0] || L[0] || null;
+  S.page = id; if(id) S.pagesVues[id] = 1; son('livre');
+  ouvrirMode('livre', livreHTML(id)); majLivre(); garder();
 }
 function pageLivreVa(id){
-  if(S.mode !== 'livre' || !RE[id]) return;
-  S.page = id; son('page'); arreterLecture();
+  if(S.mode !== 'livre' || !RE[id] || connues().indexOf(id) < 0) return;
+  S.page = id; S.pagesVues[id] = 1; son('page'); arreterLecture();
   $('#pagesLivre').innerHTML = pageLivre(id);
   $$('#hudBoite .signet').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.page === id)); });
+  majLivre();
 }
-function tournerPage(d){ var i = ORDRE.indexOf(S.page); pageLivreVa(ORDRE[(i + d + ORDRE.length) % ORDRE.length]); }
+function tournerPage(d){ var L = connues(), i = L.indexOf(S.page); if(L.length) pageLivreVa(L[(i + d + L.length) % L.length]); }
 
-/* ---------- Le sac : les potions faites ; la nuit, son code pour le Pisteur ---------- */
-function sacTexte(){
-  var n = nbFaites(), t;
-  if(!n) t = 'Ton sac est vide ! Pas une seule potion pour la nuit…';
-  else if(n === 7) t = 'Sept fioles, sept couleurs : ton sac est plein !';
-  else t = 'Ton sac : ' + n + ' potion' + (n > 1 ? 's' : '') + ' sur sept. Tu peux encore préparer les autres.';
-  if(S.nuit) t += n ? ' Le Pisteur t\'attend pour descendre : donne-lui le code de ton sac. Il le tape dans son onglet Code.' : '';
-  else t += ' Cette nuit, tu donneras le code de ton sac au Pisteur, avant de descendre.';
-  return t;
-}
-function sacHTML(){
-  var t = sacTexte(), code = '', dj = '', TD = 'Dans le donjon, ton chaudron te suit : le Pisteur y trouvera des plantes rares, à cuisiner pour lui.';
-  if(S.nuit && nbFaites() && S.sac && S.sac.formes) code = '<div class="code" id="sacCode"><span>🎒 Le code pour le Pisteur</span><span class="formes">' + S.sac.formes.map(echap).join('') + '</span>' + bSon('Le sac : le code pour le Pisteur.') + '</div>';
-  if(S.nuit && S.donjon) dj = ligne('<p>' + echap(TD) + '</p>', TD) + '<button type="button" class="b-jaune" data-donjon="1">🫕 Le chaudron du donjon</button>';
-  return '<div class="voile-l" data-fond="1"></div><div class="carte" role="dialog" aria-label="Ton sac"><h2>🎒 Ton sac</h2>' +
-    '<div class="rang">' + ORDRE.map(function(id){ var f = !!S.faites[id]; return '<span class="' + (f ? 'pleine' : '') + '"><svg viewBox="-32 -84 64 90" aria-hidden="true">' + flacon(id, f ? RE[id].coul : null) + '</svg>' + echap(RE[id].court) + (f ? ' ✓' : '') + '</span>'; }).join('') + '</div>' +
+/* ---------- Les sept potions sont prêtes : le code pour le Pisteur (Romain, 12 novembre, 12 h 45 : plus de sac ; le code n'est donné
+   qu'une fois TOUT fait). On le revoit en touchant l'étagère des potions. La nuit, le bouton du chaudron du donjon est ici. ---------- */
+function codeHTML(){
+  var t = DIT.code, code = '', dj = '', TD = 'Dans le donjon, ton chaudron te suit : le Pisteur y trouvera des plantes rares, à cuisiner pour lui.';
+  if(S.sac && S.sac.formes) code = '<div class="code" id="sacCode"><span>Le code pour le Pisteur</span><span class="formes">' + S.sac.formes.map(echap).join('') + '</span>' + bSon('Le code des sept potions, pour le Pisteur.') + '</div>';
+  if(S.donjon) dj = ligne('<p>' + echap(TD) + '</p>', TD) + '<button type="button" class="b-jaune" data-donjon="1">🫕 Le chaudron du donjon</button>';
+  return '<div class="voile-l" data-fond="1"></div><div class="carte" role="dialog" aria-label="Les sept potions"><h2>🧪 Les sept potions</h2>' +
+    '<div class="rang">' + ORDRE.map(function(id){ return '<span class="pleine"><svg viewBox="-32 -84 64 90" aria-hidden="true">' + flacon(id, RE[id].coul) + '</svg>' + echap(RE[id].court) + ' ✓</span>'; }).join('') + '</div>' +
     ligne('<p>' + echap(t) + '</p>', t) + code + dj + '</div>';
 }
-function ouvrirSac(){
-  if(S.occupe || S.mode) return;
-  poser(); son('sac');
-  ouvrirMode('sac', sacHTML());
-  if(S.nuit && nbFaites() && S.sac){ S.sacVu = true; dire('sacVu'); majEtat(); }
+function ouvrirCode(){
+  if(S.occupe || S.mode || !toutesFaites() || !S.sac) return;
+  poser(); son('potion');
+  ouvrirMode('sac', codeHTML());
+  S.sacVu = true; dire('sacVu'); majEtat();
 }
 
 /* ---------- Une potion est prête : on la voit en grand, et on apprend ce qui est vrai ---------- */
@@ -74,16 +70,16 @@ function ouvrirPrete(id, t, toutes){
   ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : la potion est prête">' +
     '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/>' + flacon(id, r.coul) + '</svg><div class="prete-t"><h2>' + echap(r.nom) + ' !</h2>' + ligne('<p>' + echap(t) + '</p>', t) + '</div></div>' +
     ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') +
-    (toutes ? ligne('<p>🎒 ' + echap(DIT.toutes) + '</p>', DIT.toutes, 'note') : '') +
-    '<button type="button" class="b-jaune" data-fond="1">Continuer</button></div>');
+    (toutes ? ligne('<p>' + echap(DIT.toutes) + '</p>', DIT.toutes, 'note') : '') +
+    '<button type="button" class="b-jaune" ' + (toutes ? 'data-suite="code"' : 'data-fond="1"') + '>Continuer</button></div>');
 }
 
 /* ---------- L'explication en images, la toute première fois (une fois par héros) : des images, puis un bouton jaune ---------- */
 var INTRO_PAS = [
-  {t:'Le grimoire sait tout : quelle partie de la plante il faut, et quels gestes faire, dans l\'ordre.'},
-  {t:'Choisis une plante sur ton linge. Regarde-la de près, et prends la bonne partie : feuilles, fleurs, graines…'},
+  {t:'Le grimoire s\'écrit tout seul : une page pour chaque plante trouvée. Il dit quelle partie prendre, et quels gestes faire.'},
+  {t:'Tes cueillettes sèchent, la tête en bas. Décroche une plante, regarde-la de près, et prends la bonne partie.'},
   {t:'Pose-la sur un outil. Puis fais travailler l\'outil : il hache, il écrase, il presse…'},
-  {t:'Le feu ? C\'est toi qui décides : pas de bûche, une bûche, ou deux. Et si tu te trompes, rien n\'est perdu !'}
+  {t:'Le feu ? C\'est toi qui décides. Une bûche : feu doux. Deux bûches : feu fort. Et si tu te trompes, rien n\'est perdu !'}
 ];
 function vignette(i){
   if(i === 0) return '<svg viewBox="-110 -186 220 206" preserveAspectRatio="xMidYMid slice">' + ART.livre().replace('class="rond"', 'class="rond" style="display:none"') + '</svg>';

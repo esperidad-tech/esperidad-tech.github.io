@@ -67,7 +67,7 @@ E[3] = {
       {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       /* (étape 6) la nuit : le sac de l'Alchimiste, puis le donjon (descente.js) */
-      {des:2, ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de son sac.', fait:[{vu:'sac:recu'}]},
+      {des:2, ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de ses sept potions.', fait:[{vu:'sac:recu'}]},
       {des:2, ic:'🕯️', t:'Traverse le donjon avec le Sage et l\'Alchimiste, jusqu\'au bout.', fait:[{vu:'donjon:fini'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -79,7 +79,7 @@ E[3] = {
       {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
       {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
-      {des:2, ic:'🎒', t:'La nuit : donne le code de ton sac au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
+      {des:2, ic:'🎒', t:'La nuit : donne le code de tes sept potions au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[

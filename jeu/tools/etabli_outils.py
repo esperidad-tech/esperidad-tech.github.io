@@ -77,6 +77,9 @@ def porte(pg, quoi):
 
 def plante(pg, k, pa, pause=120):
     fr = cadre(pg)
+    # la plante cueillie attend, pendue à la tringle : on la décroche d'abord (elle se couche sur le linge)
+    if fr.evaluate("(k) => !!document.querySelector('#pendue-' + k)", k):
+        toucher(pg, '#pendue-' + k + ' > rect[fill=transparent]'); pg.wait_for_timeout(pause + 380)
     toucher(pg, '#plante-' + k + ' .prise'); pg.wait_for_timeout(pause)
     # la plante vient vers nous (un zoom) : on attend qu'elle ne bouge plus
     avant = None
@@ -131,8 +134,13 @@ def faire(pg, pid, R=None, chaque=None):
 def livre(pg):
     toucher(pg, '#gLivre > rect[fill=transparent]'); pg.wait_for_timeout(150)
 
-def sac(pg):
-    toucher(pg, '#g-sac > rect[fill=transparent]'); pg.wait_for_timeout(150)
+def code(pg):
+    """les sept potions sont prêtes : toucher l'étagère ouvre la carte du code (il n'y a plus de sac)"""
+    fr = cadre(pg)
+    if fr and fr.evaluate("() => window.__etabli.etat().mode === 'sac'"): return
+    fermer_mode(pg)
+    toucher(pg, '#potion-feu > rect[fill=transparent]'); pg.wait_for_timeout(150)
+sac = code
 
 def fermer_mode(pg):
     fr = cadre(pg)

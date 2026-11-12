@@ -183,8 +183,8 @@ with sync_playwright() as p:
     verifier(avant == 0 and pg.evaluate("() => window.__lus.length") == 1, 'un 🔊 lit sa phrase (et rien ne se lit tout seul)')
     ET.fermer_intro(pg)
     verifier(pg.evaluate("() => !!M.S.etabliIntro") and not ET.intro(pg), 'le bouton jaune « 🌿 À l\'établi ! » : l\'explication ne reviendra pas')
-    verifier(fr.locator('#scene .plante.dispo').count() == 7 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
-             'l\'établi : sept plantes sur le linge, les outils sur la table, sept flacons vides sur l\'étagère')
+    verifier(fr.locator('#scene .pendue').count() == 7 and fr.locator('#scene .plante .corps').count() == 0 and fr.locator('#g-sac').count() == 0 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
+             'l\'établi : sept plantes pendues à la tringle, le linge vide, les outils sur la table, sept flacons vides sur l\'étagère, plus de sac')
     shot(pg, 'etabli')
     # ---------- on se trompe ----------
     ET.outil(pg, 'planche'); verifier(len(ET.texte(pg)) > 12 and ET.etat(pg)['ou'] is None and fr.locator('#calque .bulle-o .b-son').count() == 1, f'un outil touché les mains vides : il dit à quoi il sert, avec son 🔊 ({ET.texte(pg)[:50]})')
@@ -221,30 +221,36 @@ with sync_playwright() as p:
         e = etat_pl(pg)
         verifier(fait and pid in e['fioles'] and e['plantes'].get(r['plante']) == 0 and "C'est vrai" in t and r['vrai'][:24] in t and ET.sans_son(pg, '.carte.prete') == [],
                  f'{r["nom"]} : {len(r["etapes"])} étapes, la fiole est sur l\'étagère, et la carte « C\'est vrai ! » ({t[:50]})')
-        if pid == 'coeur': verifier('ton sac est prêt' in t, 'la septième : « ton sac est prêt pour la nuit ! »')
-        verifier(ET.continuer(pg) and ET.etat(pg)['mode'] is None, f'{r["nom"]} : le bouton jaune « Continuer »')
+        if pid == 'coeur':
+            verifier('tout est prêt' in t, 'la septième : « tout est prêt ! »')
+            ET.continuer(pg); t2 = carte(pg)
+            verifier(ET.etat(pg)['mode'] == 'sac' and fr.locator('#sacCode').count() == 1 and fr.locator('.carte .rang .pleine').count() == 7 and 'Pisteur' in t2 and ET.sans_son(pg, '.carte') == [] and fr.locator('.carte [data-donjon]').count() == 0,
+                     f'« Continuer » : le code des sept potions pour le Pisteur, avec son 🔊 (et rien sur le donjon, le jour) ({t2[:60]})')
+            shot(pg, 'code')
+            ET.fermer_mode(pg)
+        else:
+            verifier(ET.continuer(pg) and ET.etat(pg)['mode'] is None, f'{r["nom"]} : le bouton jaune « Continuer »')
     verifier(fr.locator('#scene [id^=potion-].pleine').count() == 7, 'les sept flacons sont pleins sur l\'étagère')
     shot(pg, 'sept-potions')
-    ET.toucher(pg, '#plante-gui .prise'); verifier('Déjà en fiole' in ET.texte(pg), 'une potion déjà faite ne se refait pas')
+    verifier(fr.locator('#scene .pendue').count() == 0 and fr.locator('#scene .plante .corps').count() == 0, 'plus une plante sur la tringle ni sur le linge : tout est en fiole')
     # ---------- le grimoire ----------
     ET.livre(pg)
     ok = ET.etat(pg)['mode'] == 'livre'
     for pid in R['ORDRE']:
         fr.locator(f'.livre .signet[data-page={pid}]').click(force=True); pg.wait_for_timeout(120)
         r = R['RE'][pid]; t = carte(pg, '#pagesLivre'); muets = ET.sans_son(pg, '#pagesLivre')
-        if muets or r['recette'][0][:18] not in t or r['dit'][:18] not in t or fr.locator('#pagesLivre .planche-b svg').count() != 1 or fr.locator('#pagesLivre .page.d svg').count() != 1:
+        if muets or r['recette'][0][:18] not in t or r['dit'][:18] not in t or r['sert'][:20] in t or 'donjon' in t.lower() or fr.locator('#pagesLivre .planche-b svg').count() != 1 or fr.locator('#pagesLivre .page.d svg').count() != 1:
             ok = False; print('     page', pid, muets, t[:80])
     verifier(ok, 'le grimoire : sept pages (la plante dessinée, la partie en mots, la recette en phrases, sans image d\'outil), chaque texte avec son 🔊')
     shot(pg, 'grimoire')
+    tg = carte(pg, '#pagesLivre')
     ET.fermer_mode(pg)
-    ET.sac(pg)
-    t = carte(pg)
-    verifier(fr.locator('.carte .rang .pleine').count() == 7 and fr.locator('#sacCode').count() == 0 and 'Cette nuit' in t and ET.sans_son(pg, '.carte') == [], f'le sac, le jour : les sept fioles, pas encore de code ({t[:60]})')
-    shot(pg, 'sac-jour')
+    ET.code(pg)
+    verifier(ET.etat(pg)['mode'] == 'sac' and fr.locator('#sacCode').count() == 1, 'toucher l\'étagère des potions : on revoit le code')
     ET.quitter(pg)
     verifier(pg.locator('#etabli-cadre').count() == 0 and signe(pg) == '' and not pg.evaluate("() => !!(M.P().etabli && M.P().etabli.p)"), 'retour à l\'atelier : plus de signe au-dessus de l\'établi, plus rien en route')
     notes = pg.evaluate("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')")
-    verifier('Les sept potions de la nuit sont prêtes' in notes and 'acide' in notes, 'au Carnet : les potions prêtes')
+    verifier('Les sept potions sont prêtes' in notes and 'acide' in notes and 'donjon' not in notes.lower() and 'monstre' not in notes.lower(), 'au Carnet : les potions prêtes, sans un mot du donjon')
     # ======================================================================== l'après-midi : la lettre au labo
     print('— L\'après-midi : la lettre au labo')
     code(pg, 'moment:1')
@@ -336,13 +342,12 @@ with sync_playwright() as p:
     code(pg, 'moment:2')
     verifier(pg.evaluate("() => M.momentId()") == 'nuit', 'la nuit')
     atelier(pg)
-    verifier(signe(pg) == '🎒 Ton sac !', f'au-dessus de l\'établi : « 🎒 Ton sac ! » ({signe(pg)})')
+    verifier(signe(pg) == '', f'au-dessus de l\'établi : rien, le code a déjà été montré ({signe(pg)})')
     shot(pg, 'nuit-signe')
     fr = ET.ouvrir(pg)
-    verifier(fr.locator('#g-sac.appel').count() == 1, 'sur l\'établi, le sac sautille : il appelle')
-    ET.sac(pg)
+    ET.code(pg)
     t = carte(pg)
-    verifier(fr.locator('#sacCode').count() == 1 and 'Pisteur' in t and ET.sans_son(pg, '.carte') == [], f'le sac, la nuit : le code pour le Pisteur, et le 🔊 ({t[:60]})')
+    verifier(fr.locator('#sacCode').count() == 1 and 'Pisteur' in t and ET.sans_son(pg, '.carte') == [], f'la nuit : le code des sept potions pour le Pisteur, et le 🔊 ({t[:60]})')
     shot(pg, 'sac')
     seq7 = pg.evaluate("() => M.code('sac:' + M.sacBits())"); bits = pg.evaluate("() => M.sacBits()")
     verifier(bits == 127 and len(seq7) == 3, f'sept potions : le sac n° 127 ({seq7})')

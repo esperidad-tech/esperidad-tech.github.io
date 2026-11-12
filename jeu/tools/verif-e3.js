@@ -94,7 +94,7 @@ module.exports = function verifierE3(E, SRC){
   for(const id of Object.keys(E.infos || {})){ const I = E.infos[id]; if(I.plante) liste(I.pour).forEach(role => aj({cle:`${role}:recu:${id}`, role, besoins:[[{code:'info:' + id}]], faits:['plante:' + I.plante]})); }
   /* l'établi : une plante, une potion (plantes.js) ; le sac, la nuit (à la main : plantes.js) */
   for(const k of Object.keys(RECETTES)) aj({cle:'fiole:' + k, role:'alchimiste', besoins:[[{vu:'plante:' + RECETTES[k].plante}]].concat(RECETTES[k].avant ? [[{vu:'fiole:' + RECETTES[k].avant}]] : [])});
-  aj({cle:'alchimiste:sac', role:'alchimiste', moments:NUIT, besoins:[Object.keys(RECETTES).map(k => ({vu:'fiole:' + k}))], produit:['sac']});
+  aj({cle:'alchimiste:sac', role:'alchimiste', moments:NUIT, besoins:Object.keys(RECETTES).map(k => [{vu:'fiole:' + k}]), produit:['sac']});   /* (Romain, 12 novembre, 12 h 45 : le code n'est donné qu'une fois les SEPT potions faites) */
   aj({cle:'sac:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'sac'}]]});
   for(const k of Object.keys(RECETTES)) aj({cle:'sac:' + k, role:'pisteur', moments:NUIT, besoins:[[{vu:'sac:recu'}], [{vu:'fiole:' + k}]]});
   /* le donjon (à la main : descente.js) : une entrée et le sac ; au bout, la porte aux quatre signes, puis Léo */
