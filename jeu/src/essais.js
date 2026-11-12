@@ -45,6 +45,6 @@ M.texteEchec = function(x, n, defaut){
 M.boutonReessai = function(m){
   if(!m || !m.reessai) return '';
   var r = m.reessai, d = M.cle(r).filter(function(k){ return k !== 'act'; }).map(function(k){ return ' data-' + k + '="' + M.esc(r[k]) + '"'; }).join('');
-  return '<button class="btn magie grand b-reessai" data-act="' + M.esc(r.act) + '" data-gratuit="1"' + d + '>🔁 Réessayer' + (M.essaisInfinis() ? '' : ' (dernière chance)') + '</button>';
+  return '<button class="btn magie grand b-reessai" data-act="' + M.esc(r.act) + '" data-gratuit="1"' + d + '>🔁 Réessayer' + (M.essaisInfinis() || r.infini ? '' : ' (dernière chance)') + '</button>';   /* r.infini : un point à essais infinis (p.essaisInfinis) */
 };
 })();

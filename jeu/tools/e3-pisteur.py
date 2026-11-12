@@ -52,7 +52,7 @@ def jouer_point(pg, l, pid, reussi, capt):
     verifier(pg.locator('#mj-plein .mj-go').count() == 1, f'{pid} : l\'écran des règles et son bouton jaune')
     pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
     pg.screenshot(path=f'{OUT}/{capt}-jeu.png')
-    info = pg.evaluate("() => window.__mjCourant ? {type:window.__mjCourant.type, params:window.__mjCourant.params} : null")
+    info = pg.evaluate("() => window.__mjCourant ? {type:window.__mjCourant.type, params:window.__mjCourant.params, reessais:!!(window.__mjCourant.opt || {}).reessaisInfinis} : null")
     pg.evaluate(f"() => window.__finir({'true' if reussi else 'false'})"); pg.wait_for_timeout(500)
     pg.screenshot(path=f'{OUT}/{capt}-fin.png')
     return info
@@ -73,7 +73,7 @@ def partie(b, joueur, chemin):
     pg.evaluate("""() => { M.lire = function(){}; M.lireAuto = function(){};
       var vrai = MJ.lancer;
       MJ.lancer = function(el, type, params, fin, opt){
-        var c = {type:type, params:params, fin:fin, fini:false};
+        var c = {type:type, params:params, fin:fin, fini:false, opt:opt};
         c.h = vrai.call(MJ, el, type, params, function(r){ if(!c.fini){ c.fini = true; fin(r); } }, opt);
         window.__mjCourant = c; return c.h;
       };
@@ -97,7 +97,23 @@ def partie(b, joueur, chemin):
     i = jouer_point(pg, 'boulangerie', 'oie', A, f'{chemin}-oie')
     verifier(i and i['params'].get('fuyard') == 'oie' and i['params'].get('decor') == 'ville', 'l\'oie : course-poursuite, une oie, en ville')
     verifier(i and i['params'].get('niveauEffectif') == 9, f'l\'oie : niveau 9 (Romain, 12 novembre) ({i and i["params"].get("niveauEffectif")})')
+    verifier(i and i.get('reessais') is True, 'l\'oie : « 🔁 Recommencer » à la fin du mini-jeu (essais infinis)')
     verifier(('Ma belle' in voile(pg)) if A else ('trop rapide' in voile(pg)), 'l\'oie : le bon texte (attrapée / ratée)')
+    if not A:
+        # l'oie se recommence à l'infini (Romain, 12 novembre, 12 h 54) : le message d'échec, puis la boulangerie
+        b = pg.locator('#voile .b-reessai')
+        verifier(b.count() == 1 and 'dernière chance' not in b.inner_text(), 'l\'oie ratée : « 🔁 Réessayer », sans « dernière chance »')
+        b.click(); pg.wait_for_timeout(900)
+        verifier(pg.locator('#mj-plein .mj-go').count() == 1, 'l\'oie : on la recommence (2e essai)')
+        pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
+        pg.evaluate("() => window.__finir(false)"); pg.wait_for_timeout(500)
+        verifier(pg.locator('#voile .b-reessai').count() == 1, 'l\'oie ratée deux fois : toujours « 🔁 Réessayer »')
+        fermer(pg)
+        lieu(pg, 'boulangerie')
+        t = pg.evaluate("() => (document.querySelector('#voile [data-act=point][data-id=oie]') || {}).innerText || ''")
+        verifier('réessayer' in t and 'fini' not in t, f'la boulangerie : l\'oie à réessayer, pas « fini » ({t!r})')
+        pg.locator('#voile [data-act=point][data-id=oie]').click(); pg.wait_for_timeout(300)
+        verifier(pg.locator('#voile [data-act=mj-go]').count() == 1, 'l\'oie : le point se rouvre depuis la boulangerie (3e essai)')
     fermer(pg)
     verifier(lieu(pg, 'potager') == [], 'le potager sans le code : rien')
     fermer(pg)

@@ -178,7 +178,7 @@ M.feuilleLieu = function(lieu){
           var k = role + ':' + lieu + ':' + p.id, st = P.vus[k];
           var ouvert = P.vus[cle] === P.moment;
           return '<button class="b-point' + (st === 'ok' ? ' vu' : st === 'rate' ? ' rate' : '') + '" data-act="point" data-l="' + lieu + '" data-id="' + p.id + '"' + (!st && !ouvert ? ' disabled' : '') + '>' +
-            '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (M.essaisInfinis && M.essaisInfinis() ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
+            '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (!p.essaisInfinis && M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (p.essaisInfinis || (M.essaisInfinis && M.essaisInfinis()) ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
         }).join('') + '</div>';
         if(M.sansActions()){ if(toutVu(lieu, role)) s += rienDePlus(); }   /* sans actions : un lieu ne donne qu'une chose par moment ; tout vu, on ne le redonne pas */
         else if(P.vus[cle] !== P.moment) s += M.fouilleGratuite && M.fouilleGratuite(lieu) ? '<button class="btn second" data-act="explorer" data-id="' + lieu + '">🔦 Fouiller à nouveau · gratuit</button>' :
@@ -194,7 +194,7 @@ M.feuilleLieu = function(lieu){
     s += '<div class="b-points">' + ptsA.map(function(p){
       var k = role + ':' + lieu + ':' + p.id, st = P.vus[k];
       return '<button class="b-point' + (st === 'ok' ? ' vu' : st === 'rate' ? ' rate' : '') + '" data-act="point" data-l="' + lieu + '" data-id="' + p.id + '">' +
-        '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (M.essaisInfinis && M.essaisInfinis() ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
+        '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (p.besoin && !st && !M.besoinOk(p.besoin) ? '<small>🔒</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? (!p.essaisInfinis && M.ferme && M.ferme(k) ? '<small>🔒 fini</small>' : '<small>🔁 ' + (p.essaisInfinis || (M.essaisInfinis && M.essaisInfinis()) ? 'réessayer' : 'dernière chance') + '</small>') : '') + '</button>';
     }).join('') + '</div>';
   }
   if(role === 'alchimiste'){
