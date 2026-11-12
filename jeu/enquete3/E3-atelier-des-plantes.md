@@ -2,7 +2,7 @@
 
 > Décidé par Romain le 11 novembre (14 h 52 : « un atelier où il a besoin de séparer certains ingrédients de ces plantes… écraser les plantes, couper les plantes ; des potions basées sur des plantes qui existent réellement » ; 15 h 13 : « d'accord pour absolument tout ce que tu m'as proposé, go pour tout »). Construit une première fois le 12 novembre à 1 h (Bible §13.19).
 >
-> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.21)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2 et §3 de ce document décrivent l'établi tel qu'il est construit aujourd'hui.** Les recettes ont changé : elles suivent les vrais gestes des herboristes. Le reste (cueillettes, herbier, gui, sac) n'a pas changé. Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
+> **⚠️ L'ÉTABLI A ÉTÉ REFAIT LE 12 NOVEMBRE (Bible §13.22)**, à la demande de Romain (8 h 50 : « il est pas joli. C'est que des icônes, il n'y a pas de magie… Je veux que tu reprennes le modèle du laboratoire d'analyse »). **Les §2 et §3 de ce document décrivent l'établi tel qu'il est construit aujourd'hui.** Les recettes ont changé : elles suivent les vrais gestes des herboristes. Le reste (cueillettes, herbier, gui, sac) n'a pas changé. Les autres parties de l'enquête : `E3-dialogues-et-trame.md` (Barde), `E3-actions-des-roles.md` (Pisteur, Alchimiste, Sage).
 
 ## 1. Le principe
 
@@ -134,7 +134,7 @@ La cueillette marche comme aujourd'hui (un lieu donne sa plante une fois par mom
 
 ## 10. Ce qu'il fallait construire (liste d'origine, du 11 novembre)
 
-> Tout est construit (Bible §13.19, §13.20), sauf Mimi chasseuse de plantes (point 8). L'établi (point 2), le grimoire (point 3) et les recettes (point 4) ont été refaits le 12 novembre (§13.21, et §2-§3 ci-dessus). Les sons de l'établi (point 10) sont dans l'Atelier des sons, en attente de l'écoute de Romain.
+> Tout est construit (Bible §13.19, §13.20), sauf Mimi chasseuse de plantes (point 8). L'établi (point 2), le grimoire (point 3) et les recettes (point 4) ont été refaits le 12 novembre (§13.22, et §2-§3 ci-dessus). Les sons de l'établi (point 10) sont dans l'Atelier des sons, en attente de l'écoute de Romain.
 
 1. Les sept plantes (`D.INGR`), leurs lieux de cueillette dans `e3.js`, et le code « L'herbier » qui ouvre les trois rares.
 2. L'établi : un meuble de l'atelier, ses bulles, son signe « 🌿 À préparer ! », et la page plein écran sur le modèle du labo (les outils, la plante en parties, les gestes, les phrases du conteur, les gestes faux).

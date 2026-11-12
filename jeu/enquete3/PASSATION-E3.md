@@ -1,6 +1,14 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 9 h 25)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 10 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (10 h 30) : l'établi des plantes est refait, comme la paillasse d'analyse — et les sept recettes ont changé
+
+- Le détail : **Bible §13.22**. Romain, 8 h 50 : l'établi n'était « que des icônes, pas de magie » ; il le voulait « exactement » comme la paillasse d'analyse : une table, tous les outils modélisés et interactifs, un vrai feu qu'on allume ou non, un livre de recettes sur un pupitre, des étapes réalistes, un petit message sur la réalité à chaque étape, et ce qui se passe pour de vrai dans le mauvais instrument. « Quand il a fini de jouer, il a appris des trucs sur la nature. »
+- **Construit et vérifié ; pas encore en ligne** (la mise en ligne attend l'accord de Romain dans la conversation qui construit) ; Romain ne l'a donc pas encore essayé. **`E3-atelier-des-plantes.md` est à jour** : ses §2 (la table, les outils, comment on joue) et §3 (les sept recettes, étape par étape, et leurs « C'est vrai ! ») décrivent ce qui est construit, avec les faits vérifiés à la fin.
+- **Changé par rapport à la conception du 11 novembre** : les recettes suivent les vrais gestes (le pied-de-loup se sèche puis se tamise ; le lin se tamise, se presse, se filtre ; le gui s'écrase, trempe sans feu, puis cuit à petit feu ; l'oseille se hache, se presse, se filtre, réduit à grand feu, sèche en cristaux, puis fond dans un peu d'eau ; le souci sèche, puis chauffe dans l'huile de lin ; la mélisse se hache et se distille) ; **le feu a trois forces** (pas de bûche, une, deux) ; le grimoire est en phrases, sans images d'outils ; une cruche de grès remplace la « carafe » ; chaque potion finie montre une carte « C'est vrai ! ».
+- **Pour la conception des enquêtes suivantes** : si une enquête a besoin d'une nouvelle potion faite à l'établi, il suffit d'une plante (son dessin, ses trois parties) et d'une recette dans `jeu/src/plantes-donnees.js` — les outils et le feu existent.
+- **Pour l'essayer (une fois en ligne)** : https://esperidad-tech.github.io/brumeval/etabli-essai.html (l'établi tout seul), ou dans le jeu : https://esperidad-tech.github.io/brumeval/#test → ☰ → Réglages → Mode test → Enquête 3, héros Alchimiste.
 
 ## Nouveau depuis le 12 novembre (9 h 25) : une grande carte avec de la brume, en modèle
 
