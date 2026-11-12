@@ -313,7 +313,7 @@ Monde.assembler = function(p, pv, o){
   o = o || {};
   var maq = !!o.maquette, levee = {}, part = {}, avant = {};
   (o.brume || []).forEach(function(id){ levee[id] = true; });
-  /* o.part (12 novembre, Bible §13.24) : les zones qu'on vient de lever, dont la brume s'en va sous les yeux du joueur. Elles comptent comme
+  /* o.part (12 novembre, Bible §13.25) : les zones qu'on vient de lever, dont la brume s'en va sous les yeux du joueur. Elles comptent comme
      levées (leurs lieux et leurs noms sont dessinés, la toile de la brume ne les a plus) ; « partAvant » dit quelles zones étaient levées juste
      avant : carte.js pose par-dessus la toile de la brume d'avant, qui s'efface (carte.css, .ca-brume-part). */
   (o.part || []).forEach(function(id){ if(levee[id]) part[id] = true; });

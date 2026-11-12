@@ -74,7 +74,7 @@ E[3] = {
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
       {ic:'🎂', t:'Fais le haut du gâteau de la fête, à la boulangerie de Gaspard.', fait:[{vu:'alchimiste:boulangerie:gateau'}]},
-      /* (12 novembre, Bible §13.24) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : seul l'herbier du Sage dit où et quand ;
+      /* (12 novembre, Bible §13.25) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : seul l'herbier du Sage dit où et quand ;
          trois poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume) */
       {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : seul l\'herbier du Sage dit où, et quand.',
         fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
@@ -385,7 +385,7 @@ E[3] = {
     encre_l:'L\'encre de la lettre : de la noix de galle, l\'encre noire que vendent les colporteurs.'},
   /* ---------- L'établi des plantes (plantes.js ; E3-atelier-des-plantes.md) : les sept potions de la nuit, faites de vraies plantes ---------- */
   plantes:true,
-  /* ---------- La brume repoussée (12 novembre, Bible §13.24 et §14.7 ; cueillette.js, carte-jeu.js) : Bertille, la petite cloche d'Anselme, lève
+  /* ---------- La brume repoussée (12 novembre, Bible §13.25 et §14.7 ; cueillette.js, carte-jeu.js) : Bertille, la petite cloche d'Anselme, lève
      deux bancs de brume de la grande carte — le Nord (le Rond des Sorcières, où pousse la vesse-de-loup) et les collines de l'Ouest (le Vieux
      verger et son gui, les Cinq Pierres et leur pied-de-loup). Les zones : monde-brume.js, ZONES. Sur la tablette de l'Alchimiste seulement
      (c'est elle qui demande à Anselme) ; la brume revient à l'enquête suivante. ---------- */
@@ -445,7 +445,7 @@ E[3] = {
     ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage',
       t:'Le Livre d\'or de la fête est posé sur ta paillasse : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Compare ces écritures à celle de la lettre, à la loupe !',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
-    /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.24) */
+    /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.25) */
     aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, mot pour mot, sous la dictée d\'un homme en cape, à la voix étouffée, qui sentait la lavande. Il reviendra quand la Grosse Marie sonnera.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
@@ -455,7 +455,7 @@ E[3] = {
       t:'Dans le carnet d\'Odette, un dessin de Moustache et une flèche : « Mon gros gris a six doigts à chaque patte ! » Aucun autre chat du village n\'en a autant.',
       dire:'Le Pisteur saura reconnaître ses traces : donne-lui ce code.'},
     /* (12 novembre : plus de codes « Le gui du pommier » ni « Le gui » — le gui est dans le Vieux verger, au-delà de la brume, sur le pommier
-       à l'échelle : l'Alchimiste y grimpe elle-même ; Bible §13.24) */
+       à l'échelle : l'Alchimiste y grimpe elle-même ; Bible §13.25) */
     cle_clou:{nom:'La clé est au clou', ic:'🔔', pour:'pisteur', de:'barde',
       t:'Anselme a pendu sa clé au clou, en haut du clocher. Quand les cloches sonnent, il ferme les yeux et compte les coups…',
       dire:'C\'est le moment de la décrocher ! Donne ce code au Pisteur.'},
@@ -544,7 +544,7 @@ E[3] = {
           t:'Gaspard pose ton gâteau tout en haut de sa pièce montée, et recule de trois pas : « Sept étages en tout ! Du jamais vu à Brumeval ! »'}
       ]}
     },
-    /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.24) : les sept plantes poussent à sept endroits
+    /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.25) : les sept plantes poussent à sept endroits
        précis de la carte, qu'on ne voit pas (D.PLANTES, donnees.js ; cueillette.js). L'herbier du Sage dit où et quand ; trois sont au-delà de la
        brume (E.brume, plus bas : Bertille). Retirés de l'enquête : « Chercher des plantes » au lavoir, à l'herboristerie, au moulin, au carrefour ;
        le mini-jeu « Suivre la poussière » de la clairière (il reste dans mj-pisteur-alchi.js : suspect 'poussiere', arrivée 'vesses') ; le gui du
@@ -598,7 +598,7 @@ E[3] = {
       ]}
     },
     clocher:{
-      /* (12 novembre, Bible §13.24) L'ALCHIMISTE ET BERTILLE : trois plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
+      /* (12 novembre, Bible §13.25) L'ALCHIMISTE ET BERTILLE : trois plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
          ses trois cloches (« Bertille, Gontran et la Grosse Marie », pnj.anselme) : elle repousse la brume « un petit peu » — au nord et à l'ouest
          (E.brume). La Grosse Marie, elle, ne sonne qu'à minuit (ordre du maire) : c'est l'affaire du Barde, la nuit. À tout moment de la journée. */
       alchimiste:{intro:'Le clocher. Tout là-haut, Anselme veille sur ses trois cloches : Bertille, Gontran et la Grosse Marie.', points:[

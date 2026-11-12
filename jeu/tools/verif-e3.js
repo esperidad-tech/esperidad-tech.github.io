@@ -49,7 +49,7 @@ module.exports = function verifierE3(E, SRC, D){
       (L.cueillir || []).forEach(c => { if(c.plante) aj({cle:`alchimiste:cueillir:${c.plante}`, role, moments:c.moments, besoins:[c.besoin].filter(Boolean), faits:['plante:' + c.plante]}); });
     }
   }
-  /* (12 novembre, Bible §13.24) les sept plantes : sept endroits cachés de la carte (D.PLANTES, donnees.js ; src/cueillette.js). Celles d'au-delà
+  /* (12 novembre, Bible §13.25) les sept plantes : sept endroits cachés de la carte (D.PLANTES, donnees.js ; src/cueillette.js). Celles d'au-delà
      de la brume demandent que leur zone soit levée (E.brume : Bertille, la petite cloche d'Anselme) ; pasAvant : pas avant ce moment — ensuite,
      toujours (la nuit aussi). Une plante dont la zone n'est levée par rien ne se cueille jamais. */
   Object.keys((D && D.PLANTES) || {}).forEach(id => {

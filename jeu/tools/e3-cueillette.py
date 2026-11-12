@@ -1,4 +1,4 @@
-"""La cueillette des sept plantes et la brume repoussée (Romain, 12 novembre ; Bible §13.24 ; src/cueillette.js, D.PLANTES) — Playwright.
+"""La cueillette des sept plantes et la brume repoussée (Romain, 12 novembre ; Bible §13.25 ; src/cueillette.js, D.PLANTES) — Playwright.
 Tout se fait AU DOIGT, sur la vraie carte : on touche l'endroit exact de chaque plante.
 · L'Alchimiste de l'enquête 3, le matin : rien ne se voit sur la carte ; quatre endroits cachés (ceux du village), aucun au-delà de la brume ;
   toucher à côté n'ouvre pas de plante ; toucher juste : la pastille surgit, la bulle « Cueillir … » ; cueillir : la plante est sur l'établi ;

@@ -2,7 +2,22 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 12 novembre (après-midi) : les plantes cachées sur la carte, l'herbier du Sage, Bertille — le plan de Romain pour les plantes est construit
+
+- Le détail : **Bible §13.25** (la cueillette) et **§14.7** (la brume qui recule). Romain, 12 h 52 et 13 h 09. `E3-atelier-des-plantes.md` §4 et §5 et `E3-actions-des-roles.md` sont à jour.
+- **Ce qui a changé dans l'enquête 3** :
+  - **l'Alchimiste** ne « cherche » plus de plantes dans des lieux : **sept endroits cachés sur sa carte**, qu'elle touche. Quatre au village (l'oseille au bord du ruisseau au-dessus du lavoir, la mélisse derrière l'herboristerie, le souci dans le potager, le lin au pied de l'épouvantail du champ de blé), trois au-delà de la brume (le pied-de-loup aux Cinq Pierres, la vesse-de-loup au Rond des Sorcières, le gui dans le Vieux verger). **Chaque plante est là où elle pousse pour de vrai** (Romain : « je veux qu'on apprenne des choses sur la réalité »). Le souci et le lin : pas avant l'après-midi. Tout se cueille encore la nuit ;
+  - **une action nouvelle pour l'Alchimiste, au clocher** : « 🔔 Demander à Anselme de chasser la brume ». Il sonne **Bertille, sa plus petite cloche** : la brume recule au nord et à l'ouest (sur la carte de l'Alchimiste seulement). C'est le premier usage, dans l'histoire, des cloches contre la brume : **la Grosse Marie, à minuit, reste l'affaire du Barde** ;
+  - **le Sage** : l'herbier des Fondateurs n'a plus d'énigmes ni de code ; sept planches, « Où ? » et « Quand ? », à lire à voix haute. Pas un mot du donjon ;
+  - **le Pisteur** ne grimpe plus au pommier (le gui et ses deux codes sont retirés) ; **« Suivre la poussière » n'est plus dans l'enquête** (le mini-jeu reste dans la salle).
+- **Dès l'enquête 2**, les quatre plantes du village existent, cachées, sans mission : une curieuse les trouve, les cueille, et son établi apparaît. Plantes, potions et pastilles suivent le héros.
+- **Les trois potions « du début » du chaudron (lumière, rapidité, invisibilité) sont retirées du grimoire** dans toutes les enquêtes. Romain veut en inventer d'autres « plus tard », ensemble : **rien n'est commencé**.
+- **Les codes de l'enquête 3 ont changé** (3 de moins, la plupart des autres ont de nouveaux symboles). Ceux des enquêtes 1 et 2 sont identiques.
+- **Pour la conception, ce qui reste ouvert avec Romain** : (1) **« négocier avec Anselme »** (il l'a dit à 12 h 45) : aujourd'hui Anselme sonne dès qu'on le lui demande — deux idées lui sont proposées (le Barde négocie et donne un code à l'Alchimiste ; ou Anselme réclame de la mélisse pour sa tisane) ; (2) les nouvelles potions du chaudron ; (3) Mimi, chasseuse de plantes, à repenser (plus de pommier trop haut, plus de mini-jeu à éviter) ; (4) les lieux des zones levées (le Rond des Sorcières, la Grotte aux Échos, les Cinq Pierres, le Vieux verger, le Rucher, la Porte sans mur, l'Étang aux Nénuphars, la Cabane du pêcheur) sont dessinés mais ne se touchent pas : rien n'y est écrit.
+
 ## Nouveau depuis le 12 novembre (12 h 45) : les retours de Romain sur l'établi, et son plan pour les plantes
+
+> **Le plan annoncé ci-dessous est construit depuis l'après-midi du 12 novembre : voir le paragraphe juste au-dessus.**
 
 - Le détail : **Bible §13.23**. Romain a essayé le nouvel établi (« je le trouve super ») et demandé des retouches, **toutes faites et en ligne (13 h 33)** : l'étagère des potions et une tringle fixées à l'établi ; une plante cueillie pend d'abord à la tringle, puis on la couche sur le linge ; **le grimoire n'a une page que pour les plantes déjà trouvées** ; **plus un mot du donjon** dans l'établi ; **plus de sac** — le code pour le Pisteur n'est donné qu'une fois **les sept potions faites**.
 - **Ce que ça change pour la conception** (annoncé par Romain, **à faire dans une autre conversation, rien n'est construit**) :

@@ -159,7 +159,7 @@ D.INGR = {
 };
 /* Les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les rangements de
    l'atelier : cueillies, elles attendent sur l'établi (P.plantes), et suivent le héros d'une enquête à l'autre (plantes.js, M.S.herbier). */
-/* OÙ ELLES POUSSENT (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.24) : chaque plante a UN endroit précis de la carte, qu'on ne voit pas.
+/* OÙ ELLES POUSSENT (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.25) : chaque plante a UN endroit précis de la carte, qu'on ne voit pas.
    L'Alchimiste doit toucher exactement là : alors seulement la plante se montre, avec sa bulle « Cueillir ». C'est l'herbier du Sage qui dit où et quand.
    · x, y : dans les mesures du village (carte.js : 1000 × 1400). Les trois plantes d'au-delà de la brume ont des mesures qui sortent du village
      (le grand monde, monde-*.js : x + 1000, y + 320) ; zone : le banc de brume qu'il faut avoir repoussé (monde-brume.js, ZONES).
@@ -293,7 +293,7 @@ Object.keys(D.RECETTES).forEach(function(id){
   D.CHAUDRON[id] = {zone:c[0], frise:frise};
 });
 /* Les potions que l'Alchimiste savait faire « depuis le début » (lumière, rapidité, invisibilité) sont retirées de son grimoire
-   (Romain, 12 novembre, 12 h 52 : « des potions qui servent plus ou moins à rien, ce serait cool qu'on les enlève » ; Bible §13.24).
+   (Romain, 12 novembre, 12 h 52 : « des potions qui servent plus ou moins à rien, ce serait cool qu'on les enlève » ; Bible §13.25).
    Il ne reste que la recette de chaque enquête (l'encre révélatrice à l'enquête 1, la potion de vérité à l'enquête 2), et celles qu'un
    talent ou un objet apporte. D.POTIONS et D.RECETTES les gardent : leurs codes ne bougent pas (codes gelés), et une vieille sauvegarde
    qui en a une fiole peut encore la boire. D'autres potions viendront plus tard (à réfléchir avec Romain). */

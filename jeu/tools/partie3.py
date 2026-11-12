@@ -7,7 +7,7 @@ et vérifie qu'il est reçu et qu'il ouvre bien la suite. Les mini-jeux se lance
 (les mini-jeux, le labo, l'établi et le donjon ont chacun leur propre robot).
 
   Le matin : le Barde (Victor, Tim démasqué) → le Sage ; le Sage (le tableau, le Livre d'or, l'herbier) → l'Alchimiste ; l'Alchimiste
-    (le gâteau ; l'oseille et la mélisse ; Bertille, puis le pied-de-loup, la vesse-de-loup, le gui : Bible §13.24) ;
+    (le gâteau ; l'oseille et la mélisse ; Bertille, puis le pied-de-loup, la vesse-de-loup, le gui : Bible §13.25) ;
     le Pisteur (les banderoles, l'oie) ; l'établi : les sept potions ; le Sage donne le code de l'après-midi.
   L'après-midi : le Barde (la lettre du maire, le carnet et les traces chez Odette) → le Sage, l'Alchimiste, le Pisteur ; le Sage
     (la lettre est fausse, les sept chats → le Pisteur, le plan des Fondateurs) ; le Pisteur (les traces → le Barde) ; l'Alchimiste
@@ -195,7 +195,7 @@ def partie(nav, base):
     S.point('mairie', 'livredor'); S.fermer()
     S.page('habitants')
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
-    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'Rond des Sorcières' in th, 'le Sage lit l\'herbier à voix haute : sept plantes, où et quand (plus de code, Bible §13.24)')
+    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'Rond des Sorcières' in th, 'le Sage lit l\'herbier à voix haute : sept plantes, où et quand (plus de code, Bible §13.25)')
     t = S.ouvrir_page('doutes'); S.fermer()
     verifier('capuchon' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
     verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')
@@ -204,7 +204,7 @@ def partie(nav, base):
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
-    # (12 novembre, Bible §13.24) les plantes : sept endroits cachés de la carte, que l'herbier du Sage décrit. Le matin : l'oseille et la mélisse ;
+    # (12 novembre, Bible §13.25) les plantes : sept endroits cachés de la carte, que l'herbier du Sage décrit. Le matin : l'oseille et la mélisse ;
     # Anselme sonne Bertille, la brume recule : le pied-de-loup, la vesse-de-loup, le gui. Le souci et le lin : pas avant l'après-midi.
     verifier(all(CU.cueillir(A.pg, k) for k in ('oseille', 'melisse')), 'l\'Alchimiste cueille l\'oseille et la mélisse, dans le village')
     verifier(CU.cueillir(A.pg, 'souci') is None and CU.cueillir(A.pg, 'lin') is None, 'le souci et le lin : pas avant l\'après-midi')
