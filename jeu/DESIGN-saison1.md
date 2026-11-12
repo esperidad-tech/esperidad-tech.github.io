@@ -2246,6 +2246,44 @@ Ce chantier fait aussi ce que le §13.23 annonçait pour « une autre conversati
 
 **Après la mise en ligne (15 h 19) : les sources fusionnées avec ces retouches de l'établi (§13.25 : la tringle n'a que trois places, le reste attend devant la porte de l'atelier).** Une seule chose a dû changer dans la cueillette : la bulle de la carte dit où la plante est allée — « ✅ Cueilli ! Ça t'attend devant la porte de ton atelier. La tringle de l'établi est pleine ! » quand les trois places sont prises (`dehors`, `cueillette.js`) ; sinon « … sur l'établi de ton atelier. ». Le robot `e3-alchimiste.py` réunit les deux : les endroits cachés, puis la quatrième plante qui attend devant la porte. Vérifié sur ce jeu fusionné (pas en ligne) : `rapide.sh`, `partie2.py`, les codes (enquêtes 1 et 2 identiques ; enquête 3 : les mêmes que ceux qui sont en ligne), `e3-alchimiste.py`, `e3-cueillette.py` (tablette et téléphone), `etabli.py`, `partie3.py`, `e3-descente.py`.
 
+---
+
+### 13.27 Les banderoles de la fête : les retours de Romain après son premier essai (12 novembre, 15 h 08 et 15 h 10) — FAITS, dans les sources ; PAS ENCORE EN LIGNE (la version en ligne est celle du §13.24)
+
+**Ce que Romain a dit** (« les graphismes, c'est sympa », puis) :
+- **les confettis du vent** : quand on vise un anneau, des confettis passent à l'arrière-plan dans le sens du vent ; « un vent de 1, on voit les confettis qui avancent tout doucement ; un vent de 12, ils filent ». « C'est les confettis qui vont tout faire. Vraiment, c'est extrêmement important » : ce sont eux qui disent où placer la flèche ;
+- **le vent vient de partout** : « totalement aléatoire, dans n'importe quel sens », « surtout quand il est en diagonale » ; **au niveau 10, des vents de 1 à 12 et de petits anneaux ; aux autres niveaux, des anneaux un peu plus grands et des vents de 1 à 4 ; de 1 à 3 au niveau 1** ;
+- **le bras tremble** : dans Archery, le curseur se déplace tout seul, « comme le tremblement d'un bras » ; il faut compenser avec le doigt et lâcher au bon moment, « c'est là où tout le gameplay est intéressant » ;
+- **la flèche n'était pas dans la bonne perspective** : quand on vise, « ça zoome un peu », la flèche est tournée vers l'anneau et on n'en voit plus que le bout ; quand on lâche, on suit son départ, on la voit presque de derrière (« on voit quasiment que l'arrière », la caméra un peu décalée), elle tremble un peu au début puis file droit **en tournant sur elle-même** ; passée dans l'anneau, elle doit **redescendre vers le sol**, pas filer vers le ciel ;
+- **les sons** : dans le bois, « juste un tchac », un vrai bruit de flèche qui se plante ; dans l'anneau, un souffle et un petit son de victoire.
+Il a joint trois images du jeu « Archery » pour montrer la flèche vue de derrière et sa traînée (on s'en inspire, on ne les recopie pas : nos couleurs, nos dessins).
+
+**Ce qui est fait** (tout est dans `jeu/src/mj-visee.js`, dont l'en-tête raconte ces retours) :
+1. **Les confettis du vent** (`Souffle`, calque `.vs-souffle`) : soixante confettis derrière l'anneau et sa perche, devant les maisons. Ils vont tous dans le sens du vent ; leur vitesse est celle de sa force (`V_CONF` : 26 unités du décor par seconde et par point de vent — sur une tablette, 120 pixels par seconde pour un vent de 1, près de 1 500 pour un vent de 12). Lents, ils tournoient ; rapides, ils s'étirent en traits. Ils ne s'arrêtent jamais, même si l'appareil demande moins d'animations. Ils passent aussi dans le film d'explication.
+2. **Plus de flèche blanche qui mesurait la poussée** (décision de Claude, c'était son doute du §13.24) : au-dessus de l'anneau il reste le chiffre du vent et **une petite flèche rouge tournée vers où il souffle** ; pareil sur les étiquettes de la place. Le petit fanion de l'anneau claque dans le sens du vent. L'étiquette pâlit quand le curseur passe dessus.
+3. **Le vent dans tous les sens** : chaque anneau a une force (`vent`) et un angle (`va`) tirés au hasard ; la flèche est poussée de 3,3 unités par point, dans ce sens-là. **Niveaux** : niveau 1, vent de 1 à 3 ; niveaux 2 à 9, de 1 à 4 ; niveau 10, de 1 à 12. La taille du trou ne change pas (13 unités au niveau 1, 5,2 au niveau 10).
+4. **Le bras tremble** (`tremblement`, `TREMBLE`) : une fois l'arc bandé, le curseur dérive tout seul, lentement, jusqu'à 6,5 unités de côté et 4,5 en hauteur (sur une tablette : une trentaine de pixels ; le trou du niveau 10 en fait 27 de rayon). Deux balancements lents de chaque côté : on peut les suivre, pas les prévoir. Le même à tous les niveaux (la difficulté reste l'anneau et le vent).
+5. **On s'approche un peu en bandant l'arc** (`ZOOM_BANDE` : 12 %).
+6. **La flèche en vraie perspective** (`Fleche`, `oeil`, `Vol`, `poseArc`) : c'est un petit objet placé dans l'espace (un fût, une pointe d'acier, trois plumes — une rouge, deux claires, pour qu'on la voie tourner —, une encoche grise) et regardé par la même caméra que le décor, un peu décalée vers le haut et la droite (`OEIL`).
+   - sur l'arc : on n'en voit que le bout, qui sort du coin bas gauche et **pointe vers le curseur** ; il recule quand l'arc se bande ;
+   - en vol : elle part de l'arc, frétille un instant, puis file droit en tournant sur elle-même ; on la voit de trois quarts arrière (les plumes en gros, le fût court, la pointe vers l'anneau) ; sa traînée blanche s'élargit vers nous ; la banderole la suit ; le vent la déporte sans la retourner ;
+   - dans le trou : elle traverse (devant l'anneau tant qu'elle n'a pas fini de passer), puis elle est **derrière l'anneau** (il la cache, calque `.vs-fx-fond`), s'éloigne, pique du nez et retombe ;
+   - à côté : pareil, elle continue et retombe ;
+   - dans le bois : elle reste plantée, de trois quarts, et vibre ; le petit choc de l'écran est gardé.
+7. **Les sons** (`sonsVisee`) : `bois` est un coup sec (un claquement, un choc sourd, plus de vibration qui chantait) ; `dedans` est un souffle qui monte, puis quatre petites notes. Dans l'Atelier des sons, toujours « Mini-jeux › Tir aux anneaux », toujours marqués 🆕. **Claude ne peut pas écouter : c'est Romain qui juge.**
+
+**Décisions prises par Claude, à valider par Romain :**
+1. **Le vent des niveaux 2 à 9 est le même (1 à 4)**, comme il l'a dit ; seule la taille de l'anneau les sépare, puis **une grosse marche entre le 9 et le 10** (4 → 12). Proposé : faire monter le vent peu à peu à partir du niveau 5 ou 6.
+2. **Le chiffre du vent est gardé** (avec sa petite flèche de sens). S'il veut que seuls les confettis parlent, on l'enlève.
+3. **Le tremblement est le même à tous les niveaux.**
+4. **L'arc reste visible** quand on vise (le bout de la flèche passe par-dessus le poing).
+5. **Toujours 7 flèches pour 5 anneaux**, et un minuteur de 5 secondes : pas de réponse de Romain là-dessus.
+6. Au niveau 10, avec un vent de 12 tiré au hasard, le tremblement et deux flèches de secours seulement, **la partie sera très rarement gagnée** — c'est peut-être ce qu'il veut (« une chance sur cinq quand un autre chemin existe »), mais ce n'est pas mesuré.
+
+**Les essais** : le robot `jeu/tools/visee.py` refait (64 vérifications, toutes bonnes : les confettis vont dans le sens du vent et à la vitesse de sa force ; un vent plus faible, des confettis plus lents ; on s'approche en bandant ; sur l'arc on ne voit que le bout de la flèche ; en vol, ses plumes et sa traînée ; passée dans l'anneau, elle est derrière lui et descend ; le curseur dérive tout seul ; les niveaux ; un vent de 12 vers le haut, le bas, la gauche et la droite se compense toujours, sur tablette et sur téléphone, debout et couché ; la pause arrête le minuteur et les confettis). Le robot vise sans trembler (`v.tremble(0)`). Des films image par image regardés (dans le trou, dans le bois, à côté, le film d'explication). `rapide.sh`, `partie2.py`, codes des enquêtes identiques à ceux du jeu en ligne, `sons/test-page.py` 59 sur 59. **Jamais essayé sur une vraie tablette** (soixante confettis de plus à animer : à surveiller sur un appareil ancien).
+
+**PAS ENCORE EN LIGNE** : à 15 h 52, la sécurité de la session a de nouveau refusé la mise en ligne tant que Romain ne l'a pas écrite dans la conversation (un accord par mise en ligne). Tout est prêt : le jeu en ligne est exactement les sources d'avant ce travail, la mise en ligne n'ajoutera que ces retouches.
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.

@@ -7,7 +7,13 @@
 .vs{position:relative;flex:1;min-height:0;width:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;background:#3f95e8;font-family:var(--f-texte, inherit);--vs-u:1}
 .vs-couche{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;will-change:transform,opacity;pointer-events:none}
 .vs-couche > svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
-.vs-perche,.vs-fx,.vs-arc{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;display:block}
+.vs-perche,.vs-fx,.vs-fx-fond,.vs-arc{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;display:block}
+/* les confettis du vent : derrière l'anneau et sa perche, devant les maisons. Ils disent où viser : ils ne s'arrêtent jamais. */
+.vs-souffle{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .35s}
+.vs-e-zoom .vs-souffle,.vs-e-vise .vs-souffle,.vs-e-bande .vs-souffle,.vs-e-vol .vs-souffle,.vs-e-impact .vs-souffle{opacity:1}
+.vs-souffle i{position:absolute;left:0;top:0;width:calc(8px + 5px * var(--vs-u));height:calc(5px + 3.2px * var(--vs-u));margin:calc(-2.5px - 1.6px * var(--vs-u)) 0 0 calc(-4px - 2.5px * var(--vs-u));border-radius:1.5px;box-shadow:0 0 0 1px rgba(36,24,46,.6);will-change:transform}
+/* la flèche une fois passée derrière l'anneau : il la cache */
+.vs-fx-fond{z-index:2}
 .vs-perche{z-index:3}
 /* (pas de will-change ici : l'anneau visé est un petit dessin, il se redessine net à chaque image du vol) */
 .vs-anneau{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;z-index:4}
@@ -36,16 +42,15 @@
 .vs-cible:nth-child(4n+1) i{animation-delay:-.8s}
 @keyframes vs-rond{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.4);opacity:0}}
 .vs-etiq{position:absolute;transform:translate(-50%,-100%);display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:999px;background:#fff6dc;border:2px solid #24182e;font-weight:700;font-size:calc(11px + 2.5px * var(--vs-u));line-height:1.35;color:#24182e;white-space:nowrap;box-shadow:0 2px 0 rgba(36,24,46,.3)}
-.vs-et-g,.vs-et-d{width:0;height:0;border:calc(3px + 1.6px * var(--vs-u)) solid transparent}
-.vs-et-g{border-right:calc(6px + 2.5px * var(--vs-u)) solid #d9413f;border-left-width:0}
-.vs-et-d{border-left:calc(6px + 2.5px * var(--vs-u)) solid #d9413f;border-right-width:0}
+.vs-et-f{width:calc(12px + 4px * var(--vs-u));height:calc(12px + 4px * var(--vs-u));display:block;overflow:visible}
 
 /* ---------- la vue de tir : le vent au-dessus de l'anneau, l'endroit où poser le doigt, le curseur ---------- */
 .vs-vent{position:absolute;z-index:7;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:calc(2px + 2px * var(--vs-u));pointer-events:none;opacity:0;transition:opacity .2s}
 .vs-e-vise .vs-vent,.vs-e-bande .vs-vent{opacity:1}
+.vs-e-bande .vs-vent.vs-pale{opacity:.3}
 .vs-vent-p{display:inline-flex;align-items:center;gap:6px;padding:1px 13px 1px 9px;border-radius:999px;background:#fff6dc;border:2.5px solid #24182e;box-shadow:0 3px 0 rgba(36,24,46,.35);font-weight:700;font-size:calc(14px + 6px * var(--vs-u));line-height:1.25;color:#24182e}
 .vs-vent-p svg{width:calc(16px + 6px * var(--vs-u));height:auto;display:block}
-.vs-vent-f{display:block;overflow:visible}
+.vs-vent-p .vs-vent-d{width:calc(19px + 9px * var(--vs-u));height:calc(19px + 9px * var(--vs-u));overflow:visible;margin-left:1px}
 .vs-e-vise::after,.vs-e-bande::after{content:'';position:absolute;left:0;right:0;top:56%;bottom:0;background:linear-gradient(rgba(255,210,63,0), rgba(255,210,63,.16));pointer-events:none;z-index:2}
 .vs-zone{position:absolute;left:50%;top:79%;width:0;height:0;z-index:8;pointer-events:none;opacity:0;transition:opacity .25s}
 .vs-e-vise .vs-zone{opacity:1}
@@ -86,6 +91,7 @@
 .vsd{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#3f95e8;border-radius:inherit}
 .vsd svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
 .vsd .vsd-monde{transform-origin:0 0;will-change:transform}
+.vsd .vs-souffle{opacity:1;z-index:auto;--vs-u:.5}
 
 @media (prefers-reduced-motion: reduce){
   .vs-anneau .vs-fanion,.vs-an-g.vs-touche,.vs-fan-neuf,.vs-mot b,.vs-h-fl.vs-pouls,.vs-fete .vs-c-large,.vs-e-bande .vs-curseur svg{animation:none}
