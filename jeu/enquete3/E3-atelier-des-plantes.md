@@ -120,7 +120,7 @@ Pas de minuteur. La difficulté : lire la recette, choisir la bonne partie, trou
     - le souci : « Une jolie fleur orange, comme un petit soleil : elle soigne la peau. Les herboristes l'aiment beaucoup. »
     - le lin : « Il pousse dans les champs cultivés. Les oiseaux raffolent de ses graines : pour les faire fuir, rien ne vaut un épouvantail. »
     - la mélisse : « On l'appelle l'herbe aux abeilles : elles raffolent de ses petites fleurs. Elle ne pousse plus qu'au-delà de la brume. »
-    - le lycopode : « On l'appelle aussi patte de loup. Il rampe au ras du sol, comme une petite branche de sapin. Il aime les landes, en terre pauvre, parmi la bruyère : au-delà de la brume. » *(12 novembre, 17 h 44 : « à l'ombre des grands rochers » était faux)*
+    - le lycopode : « On l'appelle aussi patte de loup. Il rampe au ras du sol, comme une petite branche de sapin. On le trouve au-delà de la brume, sur les collines battues par le vent, parmi les pierres et la bruyère, là où personne ne sème rien. (Version B de Romain, 12 novembre 19 h 07 ; les Cinq Pierres sont dessinées en lande.) » *(12 novembre, 17 h 44 : « à l'ombre des grands rochers » était faux)*
     - la vesse-de-loup : « Un champignon tout rond, qui pousse dans l'humidité de la forêt sombre, au-delà de la brume. On raconte que les sorcières s'en servaient pour leurs incantations. »
     - le gui : « Il ne pousse jamais dans la terre : il vit accroché aux branches des vieux pommiers. Il se cache au-delà de la brume. »
   - **« Quand ? »** (`quand`). Exemple : « Pas avant l'après-midi : il dort la nuit, et ne s'ouvre que quand le soleil est haut. »

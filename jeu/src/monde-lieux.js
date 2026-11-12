@@ -156,6 +156,19 @@ Monde.lieux = function(p, pv){
   /* 🗿 Le cercle des Cinq Pierres (sur sa colline) */
   lieu({id:'cercle', zone:'o', x:450, y:960, nom:'Cinq Pierres', ic:'🗿', etiq:[450,1002], emprise:[450,892,150], dessin:function(){
     var cx = 450, cy = 896, s = '<ellipse cx="' + cx + '" cy="' + cy + '" rx="84" ry="56" fill="none" stroke="#3f7a45" stroke-width="3" stroke-dasharray="3 12" opacity=".5"/>';
+    /* La lande (Romain, 12 novembre 19 h 07) : ce lieu doit se reconnaître comme une lande, pour que l'indice du lycopode
+       (« collines battues par le vent, parmi les pierres et la bruyère ») mène ici : terre nue et cailloux, touffes de bruyère
+       violette, aucun arbre, aucun champ. Aucun autre lieu de la carte n'a de bruyère. */
+    s += '<ellipse cx="' + cx + '" cy="' + (cy + 18) + '" rx="150" ry="92" fill="#a08c6e" opacity=".32"/><ellipse cx="' + (cx - 6) + '" cy="' + (cy + 22) + '" rx="112" ry="64" fill="#b9a583" opacity=".3"/>';
+    [[-130, 20, 5], [-102, 70, 4], [-70, 100, 5], [-20, 110, 4], [40, 108, 5], [88, 92, 4], [128, 54, 5], [140, 4, 4], [118, -38, 5], [-138, -22, 4], [-112, -56, 5], [96, -64, 4], [-34, -78, 4], [52, -80, 5], [10, 76, 3], [-86, 36, 3], [92, 28, 3]].forEach(function(b){
+      var bx = cx + b[0], by = cy + b[1] + 6, k = b[2] / 5;
+      s += om(bx + 3, by + 3, 15 * k, 5 * k, .22) +
+        '<path d="M' + f(bx - 14 * k) + ' ' + f(by) + ' q' + f(2 * k) + ' ' + f(-16 * k) + ' ' + f(14 * k) + ' ' + f(-14 * k) + ' q' + f(13 * k) + ' ' + f(-2 * k) + ' ' + f(14 * k) + ' ' + f(14 * k) + ' z" fill="#5f4a8c"' + st + ' stroke-width="2"/>' +
+        '<circle cx="' + f(bx - 6 * k) + '" cy="' + f(by - 8 * k) + '" r="' + f(3 * k) + '" fill="#c58ad8"/><circle cx="' + f(bx + 2 * k) + '" cy="' + f(by - 12 * k) + '" r="' + f(3.4 * k) + '" fill="#d9a3e6"/><circle cx="' + f(bx + 9 * k) + '" cy="' + f(by - 7 * k) + '" r="' + f(3 * k) + '" fill="#c58ad8"/>';
+    });
+    [[-52, 64], [58, 70], [-96, -4], [104, -6], [-8, -62], [24, 94], [-120, 52]].forEach(function(c){
+      s += '<ellipse cx="' + (cx + c[0]) + '" cy="' + (cy + c[1] + 8) + '" rx="7" ry="4.5" fill="#9a9aa6"' + st + ' stroke-width="1.6"/>';
+    });
     var pts = [];
     for(var i = 0; i < 5; i++){ var a = -Math.PI / 2 + i * Math.PI * 2 / 5; pts.push([cx + Math.cos(a) * 76, cy + Math.sin(a) * 50 + 14, i]); }
     pts.sort(function(a, b){ return a[1] - b[1]; });
