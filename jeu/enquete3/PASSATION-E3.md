@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 13 h 33)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 14 h 40)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -27,9 +27,16 @@
 - **À décider avec Romain (§14.3)** : qui lève la brume dans l'histoire, et si l'enquête 3 (ou la suivante) ouvre une première zone. Lever une zone reste à construire (§14.5, « Ce qui reste »).
 - ~~Attention, mise en ligne faite à part~~ : depuis 13 h 11, l'oie au niveau 9 et l'établi des plantes refait sont en ligne aussi (version 20261112-1210).
 
-## Nouveau depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles en discussion
+## Nouveau depuis le 12 novembre (13 h 26) : le nouveau mini-jeu des banderoles est construit, pas encore en ligne, pas encore dans l'enquête
 
-- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde, et on la recommence autant qu'on veut (en ligne à 13 h 12). La règle enfant / adulte est retirée de la Bible : les niveaux se choisiront selon le scénario, avec Romain. Les banderoles sont « trop faciles, même au niveau 10 » : les trois idées de Claude sont refusées ; Romain propose une vue de tir rapprochée façon « Archery » (« 2 Player Games »), cinq anneaux d'affilée. **En discussion, rien n'est construit**.
+- Le détail : **Bible §13.24**. Sur son « Commence la création. », le tir que Romain a décrit (façon « Archery » de « 2 Player Games ») est construit : un mini-jeu neuf, type `visee`. La place en fête vue par les yeux du Pisteur, cinq anneaux de bois au bout de perches ; on en touche un, on pose le doigt en bas, l'arc se bande, le viseur suit le doigt avec du retard, le vent pousse la flèche, elle doit passer dans le trou. 5 anneaux, 7 flèches ; seuls la taille du trou et le vent changent avec le niveau.
+- **Pas encore en ligne** : la sécurité de la session a refusé la mise en ligne à 14 h 33, il faut l'accord de Romain dans la conversation. Ensuite il se joue dans la salle : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5
+- **Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté. Avec le go de Romain : `mj:'visee'` dans `e3.js`, à un niveau qu'il choisit ; relire alors les phrases de Basile et du maire, et adapter `e3-pisteur.py`.
+- À lui demander : deux ratés permis (7 flèches) ou aucun ; le niveau dans l'enquête.
+
+## Depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles à refaire
+
+- Le détail : **Bible §13.21**. L'oie de Gaspard se joue au niveau 9 pour tout le monde, et on la recommence autant qu'on veut (en ligne à 13 h 12). La règle enfant / adulte est retirée de la Bible : les niveaux se choisiront selon le scénario, avec Romain. Les banderoles sont « trop faciles, même au niveau 10 » : les trois idées de Claude sont refusées ; Romain propose une vue de tir rapprochée façon « Archery » (« 2 Player Games »), cinq anneaux d'affilée (construite depuis : voir au-dessus).
 
 ## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
 

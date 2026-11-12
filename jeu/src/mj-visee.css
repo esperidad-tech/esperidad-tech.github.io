@@ -1,0 +1,92 @@
+/* ==========================================================
+   Brumeval — Les banderoles de la fête (mj-visee.js, mj-visee-decor.js). Préfixe .vs-
+   On ne bouge que des calques (transform, opacity) : la place entière, la vue de tir, l'anneau visé, l'arc.
+   --vs-u : l'unité de l'écran (1 sur un téléphone, 1,7 sur une tablette), posée par le jeu.
+   ========================================================== */
+.mj-visee .mj-zone{background:#16233f;align-items:center}
+.vs{position:relative;flex:1;min-height:0;width:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;background:#3f95e8;font-family:var(--f-texte, inherit);--vs-u:1}
+.vs-couche{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;will-change:transform,opacity;pointer-events:none}
+.vs-couche > svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.vs-perche,.vs-fx,.vs-arc{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;display:block}
+.vs-perche{z-index:3}
+/* (pas de will-change ici : l'anneau visé est un petit dessin, il se redessine net à chaque image du vol) */
+.vs-anneau{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;z-index:4}
+.vs-anneau svg{display:block;width:100%;height:100%;overflow:visible}
+.vs-arc{z-index:5;will-change:transform,opacity}
+.vs-fx{z-index:6}
+
+/* le fanion du haut de la perche bat au vent (seulement sur l'anneau visé : le reste de la place ne se redessine jamais) */
+.vs-anneau .vs-fanion{transform-box:fill-box;transform-origin:0 50%;animation:vs-fanion .8s ease-in-out infinite alternate}
+@keyframes vs-fanion{from{transform:scaleX(1) skewY(-7deg)}to{transform:scaleX(.8) skewY(9deg)}}
+/* la flèche vient de passer : l'anneau se balance au bout de sa ficelle */
+.vs-an-g.vs-touche{animation:vs-touche .9s ease-out}
+@keyframes vs-touche{0%{transform:rotate(0)}20%{transform:rotate(8deg)}45%{transform:rotate(-6deg)}70%{transform:rotate(3deg)}100%{transform:rotate(0)}}
+/* un nouveau bout de banderole : ses petits drapeaux éclosent l'un après l'autre */
+.vs-fan-neuf{transform-box:fill-box;transform-origin:50% 0;animation:vs-fan .4s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes vs-fan{from{transform:scale(0)}}
+
+/* ---------- la place entière : les anneaux à toucher (le rond jaune) et le vent de chacun ---------- */
+.vs-cibles{position:absolute;left:0;top:0;width:100%;height:100%;z-index:7;pointer-events:none;opacity:0;transition:opacity .2s}
+.vs-e-large .vs-cibles{opacity:1}
+.vs-cible{position:absolute;transform:translate(-50%,-50%);border:0;background:none;padding:0;border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.vs-e-large .vs-cible{pointer-events:auto}
+.vs-cible::before{content:'';position:absolute;left:5px;top:5px;right:5px;bottom:5px;border-radius:50%;border:2.5px solid #ffd23f;box-shadow:0 0 0 1.5px #24182e, inset 0 0 0 1.5px #24182e;opacity:.85}
+.vs-cible i{position:absolute;left:3px;top:3px;right:3px;bottom:3px;border-radius:50%;border:3.5px solid #ffd23f;animation:vs-rond 1.2s ease-out infinite}
+.vs-cible:nth-child(4n+3) i{animation-delay:-.4s}
+.vs-cible:nth-child(4n+1) i{animation-delay:-.8s}
+@keyframes vs-rond{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.4);opacity:0}}
+.vs-etiq{position:absolute;transform:translate(-50%,-100%);display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:999px;background:#fff6dc;border:2px solid #24182e;font-weight:700;font-size:calc(11px + 2.5px * var(--vs-u));line-height:1.35;color:#24182e;white-space:nowrap;box-shadow:0 2px 0 rgba(36,24,46,.3)}
+.vs-et-g,.vs-et-d{width:0;height:0;border:calc(3px + 1.6px * var(--vs-u)) solid transparent}
+.vs-et-g{border-right:calc(6px + 2.5px * var(--vs-u)) solid #d9413f;border-left-width:0}
+.vs-et-d{border-left:calc(6px + 2.5px * var(--vs-u)) solid #d9413f;border-right-width:0}
+
+/* ---------- la vue de tir : le vent au-dessus de l'anneau, l'endroit où poser le doigt, le curseur ---------- */
+.vs-vent{position:absolute;z-index:7;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:calc(2px + 2px * var(--vs-u));pointer-events:none;opacity:0;transition:opacity .2s}
+.vs-e-vise .vs-vent,.vs-e-bande .vs-vent{opacity:1}
+.vs-vent-p{display:inline-flex;align-items:center;gap:6px;padding:1px 13px 1px 9px;border-radius:999px;background:#fff6dc;border:2.5px solid #24182e;box-shadow:0 3px 0 rgba(36,24,46,.35);font-weight:700;font-size:calc(14px + 6px * var(--vs-u));line-height:1.25;color:#24182e}
+.vs-vent-p svg{width:calc(16px + 6px * var(--vs-u));height:auto;display:block}
+.vs-vent-f{display:block;overflow:visible}
+.vs-e-vise::after,.vs-e-bande::after{content:'';position:absolute;left:0;right:0;top:56%;bottom:0;background:linear-gradient(rgba(255,210,63,0), rgba(255,210,63,.16));pointer-events:none;z-index:2}
+.vs-zone{position:absolute;left:50%;top:79%;width:0;height:0;z-index:8;pointer-events:none;opacity:0;transition:opacity .25s}
+.vs-e-vise .vs-zone{opacity:1}
+.vs-zone i{position:absolute;left:calc(-36px * var(--vs-u));top:calc(-36px * var(--vs-u));width:calc(72px * var(--vs-u));height:calc(72px * var(--vs-u));border-radius:50%;border:4px solid #ffd23f;box-shadow:0 0 0 2px #24182e, inset 0 0 0 2px #24182e;animation:vs-rond2 1.2s ease-in-out infinite}
+@keyframes vs-rond2{0%,100%{transform:scale(.86)}50%{transform:scale(1.08)}}
+.vs-zone svg{position:absolute;left:calc(-13px * var(--vs-u));top:calc(-4px * var(--vs-u));width:calc(40px * var(--vs-u));height:calc(80px * var(--vs-u));overflow:visible;animation:vs-main 1.2s ease-in-out infinite}
+@keyframes vs-main{0%,100%{transform:translateY(9px)}50%{transform:translateY(0) scale(.94)}}
+.vs-zone.vs-rappel{animation:vs-rappel .5s ease-in-out}
+@keyframes vs-rappel{30%{transform:scale(1.5)}60%{transform:scale(.9)}}
+.vs-curseur{position:absolute;left:0;top:0;width:0;height:0;z-index:9;pointer-events:none;opacity:0;will-change:transform}
+.vs-e-bande .vs-curseur{opacity:1}
+.vs-curseur svg{position:absolute;left:calc(-30px * var(--vs-u));top:calc(-30px * var(--vs-u));width:calc(60px * var(--vs-u));height:calc(60px * var(--vs-u));overflow:visible}
+.vs-e-bande .vs-curseur svg{animation:vs-cu-in .2s ease-out}
+@keyframes vs-cu-in{from{transform:scale(2);opacity:0}}
+
+/* ---------- les flèches qui restent, les anneaux décorés, le mot du résultat, les confettis ---------- */
+.vs-hud{position:absolute;left:8px;right:8px;top:6px;z-index:10;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.vs-h-fl{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 9px;border-radius:999px;background:rgba(19,25,50,.74);border:2px solid rgba(255,224,138,.6);color:#fff;font-weight:700;font-size:1.05rem;line-height:1.2}
+.vs-h-fl svg{width:40px;height:14px;display:block}
+.vs-h-fl.vs-pouls{animation:vs-pouls .35s ease-out}
+@keyframes vs-pouls{40%{transform:scale(1.2)}}
+.vs-h-an{display:inline-flex;gap:5px;padding:6px 10px;border-radius:999px;background:rgba(19,25,50,.74);border:2px solid rgba(255,224,138,.6)}
+.vs-h-an i{width:15px;height:15px;border-radius:50%;border:3.4px solid #b98a52;background:transparent;box-sizing:border-box}
+.vs-h-an i.fait{border-color:#ffd23f;background:#4fb06a}
+.vs-mot{position:absolute;left:0;right:0;bottom:16%;z-index:11;text-align:center;pointer-events:none}
+.vs-mot b{display:inline-block;padding:3px 20px;border-radius:999px;font-family:var(--f-titre, inherit);font-size:calc(1.15rem + .55rem * var(--vs-u));color:#24182e;background:#fff6dc;border:3px solid #24182e;box-shadow:0 4px 0 rgba(36,24,46,.4);animation:vs-mot .4s cubic-bezier(.3,1.6,.5,1) both}
+.vs-mot b.vs-mot-ok{background:#ffe08a}
+.vs-mot b.vs-mot-bois{background:#f6c9a0}
+.vs-mot b.vs-mot-ko{background:#dfe6f2}
+@keyframes vs-mot{from{transform:scale(.4);opacity:0}}
+.vs-confettis{position:absolute;left:0;top:0;width:100%;height:100%;z-index:12;pointer-events:none;overflow:hidden}
+.vs-confettis i{position:absolute;width:calc(6px + 2px * var(--vs-u));height:calc(9px + 3px * var(--vs-u));margin:-5px 0 0 -4px;border-radius:1.5px;opacity:0;animation:vs-conf 1.2s cubic-bezier(.15,.7,.3,1) both}
+@keyframes vs-conf{0%{transform:translate(0,0) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 90px)) rotate(var(--r));opacity:0}}
+.vs-fete .vs-c-large{animation:vs-fete 1.5s ease-out}
+@keyframes vs-fete{40%{filter:brightness(1.12) saturate(1.2)}}
+
+/* l'explication en images, avant de jouer (MJ.DEMOS.visee) */
+.vsd{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#3f95e8;border-radius:inherit}
+.vsd svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.vsd .vsd-monde{transform-origin:0 0;will-change:transform}
+
+@media (prefers-reduced-motion: reduce){
+  .vs-anneau .vs-fanion,.vs-an-g.vs-touche,.vs-fan-neuf,.vs-mot b,.vs-h-fl.vs-pouls,.vs-fete .vs-c-large,.vs-e-bande .vs-curseur svg{animation:none}
+}

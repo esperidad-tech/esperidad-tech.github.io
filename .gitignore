@@ -41,3 +41,6 @@ jeu/test/partie3/
 
 # les captures du robot de l'établi des plantes, tools/etabli.py (refaites à chaque fois)
 jeu/test/etabli/
+
+# les captures du robot des banderoles de la fête (le tir à l'arc vu de face), tools/visee.py (refaites à chaque fois)
+jeu/test/visee-*.png
