@@ -380,7 +380,15 @@ var CODES = {
   'etude:gardien':     {code:['cloche','cle','soleil'],     de:'pisteur', a:'sage', nom:'Étude : le Gardien de rouille'},
   'etude:bourbe':      {code:['poisson','soleil','chapeau'],de:'pisteur', a:'sage', nom:'Étude : Bourbe'},
   /* la fin du donjon, pour le Barde */
-  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'}
+  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'},
+  /* le branchement dans l'enquête 3 (12 novembre ; Bible §13.14, étape 6) : les mêmes symboles que dans l'enquête
+     (jeu/src/codes-fixes.js, enquête 3 ; jeu/tools/e3-donjon-codes.js vérifie que les deux fichiers disent la même chose).
+     · le maire n'a pas été retenu : Léo file au bruit de ses pas (à la place de « Léo attrapé ») ;
+     · le Barde, resté à la fête, donne deux codes au Pisteur, qui les tape ici : la Grosse Marie (toute la vie des trois héros
+       revient, une fois, hors combat) et « Le maire est retenu » (à taper avant la dernière salle). */
+  'leo:enfui':      {code:['lune','flamme','chat'],      de:'pisteur',    a:'barde',      nom:'Léo s’est enfui'},
+  'grosse:marie':   {code:['cloche','cloche','lune'],    de:'barde',      a:'pisteur',    nom:'La Grosse Marie'},
+  'maire:retenu':   {code:['chapeau','cle','chapeau'],   de:'barde',      a:'pisteur',    nom:'Le maire est retenu'}
 };
 
 var parCode = {};
@@ -2133,8 +2141,32 @@ function son(type){
 }
 PAGE.son = son;
 
+/* ================= la descente lancée depuis l'enquête 3 (jeu/src/descente.js) =================
+   L'adresse porte ?enquete=3&jeton=… : un jeton nouveau = une descente neuve, la mémoire de la page repart de zéro (une vieille
+   partie d'essai ne se mélange pas à l'enquête) ; le même jeton : on reprend. L'enquête relit ensuite la mémoire de la page (le code
+   de la porte tapé par le Sage). Et un petit bouton, en haut à gauche, ramène à l'enquête. */
+var ENQ = (function(){
+  var o = {};
+  try{ (location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ if(!x) return; var k = x.split('='); o[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); }); }catch(e){}
+  return o.enquete ? {id:o.enquete, jeton:o.jeton || ''} : null;
+})();
+PAGE.enquete = ENQ;
+function jetonNeuf(cle){
+  if(!ENQ || !ENQ.jeton) return false;
+  var nom = cle.replace(/^brumeval-donjon-/, ''), k = 'brumeval-donjon-jeton:' + nom;
+  try{ if(localStorage.getItem(k) === ENQ.jeton) return false; localStorage.setItem(k, ENQ.jeton); localStorage.removeItem(cle); return true; }catch(e){ return false; }
+}
+function boutonEnquete(){
+  if(!ENQ || q('#b-enquete')) return;
+  var b = el('a', 'discret', '🏘️'); b.id = 'b-enquete'; b.href = '../index.html'; b.setAttribute('aria-label', 'Retour à l\'enquête'); b.title = 'Retour à l\'enquête';
+  b.style.cssText = 'position:fixed;left:max(10px, env(safe-area-inset-left, 0px));top:max(10px, env(safe-area-inset-top, 0px));z-index:40;text-decoration:none;opacity:.9';
+  document.body.appendChild(b);
+}
+if(ENQ){ if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boutonEnquete); else boutonEnquete(); }
+
 /* ================= la mémoire (localStorage peut manquer : jamais d'erreur) ================= */
 PAGE.memoire = function(cle){
+  jetonNeuf(cle);     /* (une descente neuve : la page repart de zéro) */
   return {
     lire:function(defaut){ try{ var v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; }catch(e){ return defaut; } },
     ecrire:function(o){ try{ localStorage.setItem(cle, JSON.stringify(o)); return true; }catch(e){ return false; } },

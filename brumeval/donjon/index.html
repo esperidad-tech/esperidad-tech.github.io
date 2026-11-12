@@ -8610,7 +8610,15 @@ var CODES = {
   'etude:gardien':     {code:['cloche','cle','soleil'],     de:'pisteur', a:'sage', nom:'Étude : le Gardien de rouille'},
   'etude:bourbe':      {code:['poisson','soleil','chapeau'],de:'pisteur', a:'sage', nom:'Étude : Bourbe'},
   /* la fin du donjon, pour le Barde */
-  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'}
+  'leo:attrape':    {code:['etoile','arbre','flamme'],   de:'pisteur',    a:'barde',      nom:'Léo attrapé'},
+  /* le branchement dans l'enquête 3 (12 novembre ; Bible §13.14, étape 6) : les mêmes symboles que dans l'enquête
+     (jeu/src/codes-fixes.js, enquête 3 ; jeu/tools/e3-donjon-codes.js vérifie que les deux fichiers disent la même chose).
+     · le maire n'a pas été retenu : Léo file au bruit de ses pas (à la place de « Léo attrapé ») ;
+     · le Barde, resté à la fête, donne deux codes au Pisteur, qui les tape ici : la Grosse Marie (toute la vie des trois héros
+       revient, une fois, hors combat) et « Le maire est retenu » (à taper avant la dernière salle). */
+  'leo:enfui':      {code:['lune','flamme','chat'],      de:'pisteur',    a:'barde',      nom:'Léo s’est enfui'},
+  'grosse:marie':   {code:['cloche','cloche','lune'],    de:'barde',      a:'pisteur',    nom:'La Grosse Marie'},
+  'maire:retenu':   {code:['chapeau','cle','chapeau'],   de:'barde',      a:'pisteur',    nom:'Le maire est retenu'}
 };
 
 var parCode = {};
@@ -9078,7 +9086,7 @@ D.LIEUX = {
   camp:{nom:'Le feu de camp', repos:true},
   bassin:{nom:'Le grand bassin', combat:'bassin'},
   porte4:{nom:'La porte aux quatre signes', donne:'porte:odette', pour:'sage'},
-  leo:{nom:'La dernière salle', donne:'leo:attrape', pour:'barde', fin:true}
+  leo:{nom:'La dernière salle', donne:'leo:attrape', sansMaire:'leo:enfui', pour:'barde', fin:true}
 };
 
 /* le couloir aux dalles : 6 pas ; à chaque pas, deux dalles (celle du fond, celle de devant) ; une seule est claire.
@@ -9099,7 +9107,10 @@ D.ROUE = {lieu:'canaux', suite:['d', 'd', 'd', 'g', 'd', 'd'], ouvre:'passage:ca
    (les ids de donjon-codes.js ; les symboles restent là-bas). Chaque code ne marche qu'une fois. */
 D.CODES = {
   'sauve:1':{sauve:true}, 'sauve:2':{sauve:true}, 'sauve:3':{sauve:true}, 'sauve:4':{sauve:true},
-  'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'}
+  'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'},
+  /* (le branchement dans l'enquête 3) les deux codes du Barde, resté à la fête : la Grosse Marie rend toute leur vie aux trois héros ;
+     « Le maire est retenu » se tape avant la dernière salle (sans lui, Léo file au bruit des pas du maire : LIEUX.leo.sansMaire) */
+  'grosse:marie':{marie:true}, 'maire:retenu':{maire:true}
 };
 
 /* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER
@@ -10163,7 +10174,7 @@ function contenu(p, lieu){
   if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
   if(L.repos) o.repos = {permis:!p.repos};
-  if(L.donne) o.code = {id:L.donne, pour:L.pour};
+  if(L.donne) o.code = {id:donneDe(p, L), pour:L.pour};
   if(L.boucle) o.boucle = L.boucle;
   if(L.fin) o.fin = true;
   return o;
@@ -10177,6 +10188,11 @@ function bloque(p, lieu){
   if(L.piege === 'dalles' && !p.faits['piege:dalles']) return 'dalles';
   return null;
 }
+/* le code que donne un lieu. Dans l'enquête 3 (p.enquete : la descente vient de l'enquête), la dernière salle donne « Léo s'est
+   enfui » à la place de « Léo attrapé » quand le Pisteur n'a pas tapé « Le maire est retenu » (le maire descend trop tôt). Une fois
+   donné, le code ne change plus. Hors de l'enquête (le donjon tout seul), rien ne change : Léo est attrapé. */
+function leoEnfui(p){ var L = D.LIEUX.leo; return !!(p.enquete && L.sansMaire && !p.faits['code:' + L.donne] && (p.faits['code:' + L.sansMaire] || !p.codes['maire:retenu'])); }
+function donneDe(p, L){ return L.sansMaire && L === D.LIEUX.leo && leoEnfui(p) ? L.sansMaire : L.donne; }
 function entrer(p, lieu){
   var L = D.LIEUX[lieu];
   if(!L) return refus(MOTS.pasIci);
@@ -10187,7 +10203,7 @@ function entrer(p, lieu){
     ev.push({t:'combat', salle:L.combat});
     return ev;
   }
-  if(L.donne){ p.faits['code:' + L.donne] = 1; ev.push({t:'code-objet', objet:null, code:L.donne, pour:L.pour}); }
+  if(L.donne){ var dn = donneDe(p, L); p.faits['code:' + dn] = 1; ev.push({t:'code-objet', objet:null, code:dn, pour:L.pour}); }
   ev.push({t:'scene', lieu:lieu, contenu:contenu(p, lieu)});
   if(L.boucle) ev.push({t:'boucle', vers:L.boucle});
   if(L.fin){ p.faits.fin = 1; ev.push({t:'fin-donjon'}); }
@@ -10320,6 +10336,14 @@ function code(p, id){
   if(p.codes[id]) return refus(MOTS.use, {code:id});
   p.codes[id] = 1;
   if(def.sauve){ sauvegarder(p); return [{t:'sauvegarde', code:id, lieu:p.lieu}]; }
+  /* (l'enquête 3) la Grosse Marie sonne avant minuit : toute la vie des trois héros revient, et ceux qui étaient au sol se relèvent */
+  if(def.marie){
+    var evm = [{t:'marie', code:id}];
+    D.EXPOSES.forEach(function(h){ var H = p.heros[h], avant = H.pv; H.pv = H.pvMax; H.sol = false; evm.push({t:'soin', heros:h, n:H.pv - avant, pv:H.pv, par:'marie'}); });
+    return evm;
+  }
+  /* (l'enquête 3) le Barde retient le maire à la fête : Léo ne s'enfuira pas (leoEnfui) */
+  if(def.maire) return [{t:'maire', code:id}];
   if(p.recettes.indexOf(def.recette) < 0) p.recettes.push(def.recette);
   return [{t:'recette', id:def.recette, nom:D.RECETTES[def.recette].nom}];
 }
@@ -10327,7 +10351,9 @@ function objets(p){
   var o = {heros:{}, codes:[], or:p.or, recettes:potions(p)};
   D.EXPOSES.forEach(function(h){ o.heros[h] = p.heros[h].objets.slice(); });
   Object.keys(D.OBJETS).forEach(function(id){ if(D.OBJETS[id].code && p.faits['objet:' + id]) o.codes.push({objet:id, code:D.OBJETS[id].code, pour:D.OBJETS[id].pour}); });
-  Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l]; if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour}); });
+  Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l];
+    if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour});
+    if(L.sansMaire && p.faits['code:' + L.sansMaire]) o.codes.push({objet:null, code:L.sansMaire, pour:L.pour}); });
   return o;
 }
 
@@ -10335,7 +10361,7 @@ var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
   entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
-  repos:repos, code:code, potions:potions, enMains:enMains,
+  repos:repos, code:code, potions:potions, enMains:enMains, leoEnfui:leoEnfui,
   sauvegarder:sauvegarder, objets:objets, exporter:exporter, importer:importer
 };
 if(NODE) module.exports = Regles; else global.Regles = Regles;
@@ -14732,7 +14758,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '11/11 à 21 h 32';
+DJ.VERSION = '12/11 à 1 h 49';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -16498,6 +16524,8 @@ function ecranDepart(){
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
   var s = el('div', 'ecran'); s.id = 'sac'; s.className = 'ecran depart n' + connues.length;
   var phrase = 'L\'Alchimiste descend avec toutes ses potions : ' + nb(connues.length) + ' fioles, prêtes à servir. Plus besoin de choisir !';
+  /* (l'enquête 3) la descente vient de l'enquête : ce sont les potions que l'Alchimiste a préparées sur son établi (une, ou sept) */
+  if(p.enquete) phrase = 'Dans le sac de l\'Alchimiste : ' + nb(connues.length) + ' fiole' + (connues.length > 1 ? 's' : '') + ', préparée' + (connues.length > 1 ? 's' : '') + ' sur son établi. ' + (connues.length < D.RECETTES_DEPART.length ? 'Il en manque ? Il peut encore en faire, là-haut, avant de descendre.' : 'Pas une ne manque !');
   s.innerHTML = '<img class="fond" src="' + DJ.charger.decor('rats') + '" alt=""><div class="voile"></div>' +
     '<h1>Les potions de l\'Alchimiste</h1>' + DJ.curseursVolume() +
     '<div class="bulle" id="conteur"></div>' +
@@ -16536,7 +16564,7 @@ function carte(o){
   DJ.fermer(); DJ.taire();
   jeu.innerHTML = ''; jeu.classList.add('sur-carte');
   var h = el('div', 'ecran hud-c'); h.id = 'explo';
-  h.innerHTML = '<div class="titre-carte"><b>Sous le puits</b><span id="lieu-nom"></span></div>' +
+  h.innerHTML = '<div class="titre-carte"><b>' + (p.entree === 'crypte' ? 'Sous le clocher' : 'Sous le puits') + '</b><span id="lieu-nom"></span></div>' +
     '<img id="rose" alt="La rose des vents : le nord est en haut" src="' + C.svgURL(C.roseSVG()) + '">' + DJ.curseursVolume() +
     '<div class="bulle" id="conteur"></div>' +
     '<div class="boutons-carte">' +
@@ -16545,7 +16573,9 @@ function carte(o){
          le code du Sage. Au moins, ça aiderait à se rappeler qu'il faut sauvegarder. » Un point rouge s'y pose dès qu'un
          combat a été gagné depuis la dernière sauvegarde. */
       '<button class="sombre' + (aSauver() ? ' rappel' : '') + '" id="b-sauver" data-act="sauver">💾 Sauvegarder</button>' +
-      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button></div>';
+      '<button class="sombre" data-act="pave">📜 Un code</button><button class="sombre" data-act="objets">🎒 Objets</button>' +
+      /* (l'enquête 3) la descente vient de l'enquête : un bouton pour y retourner (la partie est gardée, on revient quand on veut) */
+      (p.enquete ? '<button class="sombre" data-act="enquete">🏘️ L\'enquête</button>' : '') + '</div>';
   jeu.appendChild(h);
   DJ.brancherCurseurs(h);
   DJ.musiqueLieu(X.ici);
@@ -16612,8 +16642,17 @@ function montrerSorties(){
   }), function(s){ if(!X.occupe){ son('clic'); aller(s.vers, s.lien); } });
 }
 /* le pion avance dans un couloir, la brume se lève, et on arrive */
+/* (l'enquête 3) avant la dernière salle : « Le Barde a-t-il retenu le maire ? » On tape son code, ou on y va quand même
+   (sans lui, le maire descend trop tôt, et Léo file au bruit de ses pas). L'équipe peut attendre le Barde. */
+function fenetreMaire(vers, lien){
+  var t = 'Tout au bout, une lanterne tremble… Attendez ! Là-haut, le Barde a-t-il retenu le maire à la fête ? S\'il vous a donné son code, c\'est maintenant qu\'il faut le taper.';
+  X.maire = {vers:vers, lien:lien};
+  DJ.fenetre('<h2>Avant d\'entrer</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' +
+    '<div class="boutons"><button class="aller guide" data-act="pave">📜 Taper le code</button><button class="sombre" data-act="maire-sans">On y va quand même ➜</button></div>', 'code');
+}
 function aller(vers, lien){
   var p = X.partie, ici = X.ici, L = C.LIEN[lien], V = X.V, dep;
+  if(vers === 'leo' && p.enquete && !p.codes['maire:retenu'] && !p.faits.fin && !X.maireVu){ fenetreMaire(vers, lien); return Promise.resolve(); }
   X.occupe = true; V.sorties([]);
   /* (Romain, 11 novembre, 19 h 21 : sur la carte, le pas d'entrée dans une salle, « un peu plus aigu, un peu plus rigolo ») */
   son('pasHeros', 1.1, 2, 1.5);
@@ -16936,6 +16975,7 @@ function preparerLieu(lieu, cont, ev, premier){
   }
   if(lieu === 'eboulis' && cont.tas && !cont.tas.reste) t = 'Le cul-de-sac. Le tas d\'os a tout donné.';
   if(lieu === 'crypte') t = cont.objets.length ? PHRASES.crypte : 'La crypte est vide. Le sarcophage aussi.';
+  if(lieu === 'puits' && premier && p.entree === 'crypte') t = 'L\'escalier de la crypte descend, descend… jusqu\'au fond d\'un vieux puits. Trois passages s\'enfoncent dans la brume. Par où aller ?';
   conte(t);
   if(lieu === 'porte4'){ sceneChat(S.o.moustache, false); return; }
   if(lieu === 'leo'){ sceneLeo(); return; }
@@ -17173,8 +17213,13 @@ function sceneChat(e, encore){
 function sceneLeo(){
   var e = S.o.leo;
   X.occupe = true;
-  conte('Léo ! Coincé là, avec sa lanterne. Il lève la tête… et il n\'a plus du tout l\'air de vouloir s\'enfuir.');
-  Promise.resolve(e && e.lever ? e.lever() : null).catch(function(){}).then(function(){ X.occupe = false; codeDuLieu(true); });
+  /* (l'enquête 3) le maire n'a pas été retenu : des pas dans l'escalier, et Léo file dans le noir (Regles.leoEnfui) */
+  var enfui = !!X.partie.faits['code:leo:enfui'];
+  conte(enfui ? 'Léo ! Coincé là, avec sa lanterne… Mais des pas descendent l\'escalier. Il blêmit, et il file dans le noir, sans un mot !'
+    : 'Léo ! Coincé là, avec sa lanterne. Il lève la tête… et il n\'a plus du tout l\'air de vouloir s\'enfuir.');
+  Promise.resolve(e && e.lever ? e.lever() : null).catch(function(){}).then(function(){
+    if(enfui && e && e.el && e.el.animate){ try{ e.el.animate([{opacity:1, transform:'none'}, {opacity:0, transform:'translateX(140px)'}], {duration:700, easing:'ease-in', fill:'forwards'}); }catch(x){} return attendre(750); }
+  }).then(function(){ X.occupe = false; codeDuLieu(true); });
 }
 /* le code que donne ce lieu (la porte : pour le Sage ; Léo : pour le Barde) */
 function codeDuLieu(fin){
@@ -17238,7 +17283,7 @@ function aSauver(){
    mode 'sauve' : ouvert par le bouton « Sauvegarder » — le même pavé, avec les mots de la sauvegarde. */
 function fenetrePave(mode){
   var p = X.partie, sauve = mode === 'sauve';
-  var t = sauve ? 'Le Sage écrit un sort de sauvegarde sur une page blanche de son Grand Livre. Puis il vous dicte ses trois symboles.' : 'Le Sage ou l\'Alchimiste vous dictent trois symboles.';
+  var t = sauve ? 'Le Sage écrit un sort de sauvegarde sur une page blanche de son Grand Livre. Puis il vous dicte ses trois symboles.' : (p.enquete ? 'Le Sage, l\'Alchimiste ou le Barde vous dictent trois symboles.' : 'Le Sage ou l\'Alchimiste vous dictent trois symboles.');
   var t2 = sauve ? 'Sans nouvelle sauvegarde, une défaite vous ramène ici : ' + nomLieu((p.sauvegarde && p.sauvegarde.lieu) || 'puits') + '.' : '';
   X.pave = [];
   DJ.fenetre('<h2>' + (sauve ? 'Sauvegarder' : 'Un code') + '</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div>' + (t2 ? '<div class="ligne petit" id="sauve-ou">' + t2 + DJ.lireBtn(t2) + '</div>' : '') + '<div class="pave-cases"><i></i><i></i><i></i></div>' +
@@ -17269,6 +17314,17 @@ function symbole(k){
       bruit('codeOk', {}, ['magie']);
       var R = D.RECETTES[x.id], t2 = 'Nouvelle recette : ' + R.nom + ' ! ' + R.long + ' L\'Alchimiste l\'a tout de suite avec lui.';
       DJ.fenetre('<h2>Nouvelle recette</h2><div class="ligne">' + t2 + DJ.lireBtn(t2) + '</div><div class="code-gros">' + DJ.potion(x.id) + '</div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
+    } else if(x.t === 'marie'){
+      /* (l'enquête 3) la Grosse Marie : toute la vie des trois héros revient */
+      bruit('codeOk', {}, ['magie']);
+      try{ if(S) majPV(); }catch(e){}
+      var t3 = 'DONG… DONG… Là-haut, la Grosse Marie sonne avant minuit. Sous la terre, la brume recule : toute la vie des trois héros revient !';
+      DJ.fenetre('<h2>La Grosse Marie</h2><div class="ligne">' + t3 + DJ.lireBtn(t3) + '</div><div class="code-gros"><span>🔔<small>toute la vie</small></span></div><div class="boutons"><button class="aller guide" data-act="fermer">Merci, le Barde ! ➜</button></div>', 'code');
+    } else if(x.t === 'maire'){
+      /* (l'enquête 3) le maire est retenu à la fête : Léo ne s'enfuira pas */
+      bruit('codeOk', {}, ['magie']);
+      var t4 = 'Là-haut, le Barde retient le maire sur la place. Personne ne descendra vous déranger : vous avez tout votre temps.';
+      DJ.fenetre('<h2>Le maire est retenu</h2><div class="ligne">' + t4 + DJ.lireBtn(t4) + '</div><div class="code-gros"><span>🎩<small>retenu</small></span></div><div class="boutons"><button class="aller guide" data-act="fermer">Parfait ➜</button></div>', 'code');
     } else DJ.fermer();
   }, 350);
 }
@@ -17276,11 +17332,15 @@ function finDonjon(){
   var p = X.partie, n = Object.keys(p.livre || {}).length;          /* les sortes de monstres rencontrées */
   fermerScene(); quitterCarte(); X.ecran = 'fin';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
-  var t = 'Léo est retrouvé, tout au fond du donjon ! Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !';
+  var enfui = !!p.faits['code:leo:enfui'];
+  var t = enfui ? 'Tout au fond du donjon, Léo était là… et il a filé dans le noir. Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !'
+    : 'Léo est retrouvé, tout au fond du donjon ! Les trois héros ont battu les rats, le Gardien, le Roi des rats et Bourbe. Quelle descente !';
+  /* (l'enquête 3) la descente vient de l'enquête : on y remonte (elle relit la partie gardée : la porte, Léo) ; sinon, on peut recommencer */
+  if(p.enquete) t += ' Il est temps de remonter : le Barde et le Sage attendent vos codes.';
   var e = el('div', 'ecran'); e.id = 'fin-donjon';
-  e.innerHTML = '<div class="pa-nom">Vous avez retrouvé Léo !</div><div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
+  e.innerHTML = '<div class="pa-nom">' + (enfui ? 'Léo s\'est enfui…' : 'Vous avez retrouvé Léo !') + '</div><div class="bulle"><span class="txt">' + t + '</span>' + DJ.lireBtn(t) + '</div>' +
     '<div class="bilan"><div><b>' + n + '</b>👾 sortes de monstres</div><div><b>' + (p.or || 0) + '</b>🪙 pièces</div></div>' +
-    '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>';
+    (p.enquete ? '<button class="aller guide" data-act="enquete">Remonter au village ➜</button>' : '<button class="aller guide" data-act="recommencer-oui">Recommencer la descente ↻</button>');
   jeu.appendChild(e);
   var fan = bruit('victoire', {}, ['fanfare']);
   setTimeout(function(){ DJ.musique('fin'); }, ((fan && fan.duree) || 3) * 1000);
@@ -17310,8 +17370,17 @@ DJ.toucher(function(a, id, b){
     DJ.fenetre('<h2>Recommencer ?</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="fermer">Non, on continue</button><button class="aller" data-act="recommencer-oui">Oui, on recommence</button></div>');
     return true;
   }
-  if(a === 'recommencer-oui'){ DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname; return true; }
+  if(a === 'recommencer-oui'){
+    /* (l'enquête 3) une descente de l'enquête, recommencée, reste celle de l'enquête : son jeton, son entrée, et les potions du sac de
+       l'Alchimiste (pas les recettes apprises en route) */
+    var pr = X.partie, suite = '';
+    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + '&nouveau=1';
+    DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname + suite; return true;
+  }
   if(a === 'fin-donjon'){ DJ.fermer(); finDonjon(); return true; }
+  /* (l'enquête 3) */
+  if(a === 'enquete'){ son('clic'); garder(); DJ.taire(); location.href = '../index.html'; return true; }
+  if(a === 'maire-sans'){ var mv = X.maire; X.maire = null; X.maireVu = true; DJ.fermer(); if(mv) aller(mv.vers, mv.lien); return true; }
   return false;
 });
 
@@ -17321,6 +17390,10 @@ function demarrer(P){
   jeu = q('#jeu');
   X.sansCombat = !!P.sanscombat;
   var p = P.nouveau ? null : DJ.relire();
+  /* (l'enquête 3) une descente lancée depuis l'enquête porte un jeton (?enquete=3&jeton=…&potions=…&entree=crypte|puits) :
+     un jeton nouveau = une partie neuve ; le même jeton = on reprend où on en était. L'enquête, elle, ne croit que la partie
+     qui porte son jeton (jeu/src/descente.js). */
+  if(P.jeton && p && p.jeton !== P.jeton) p = null;
   /* « ?nouveau=1 » recommence le donjon UNE fois : on l'enlève aussitôt de l'adresse. Sans cela, chaque rechargement de la
      page (un plantage, un doigt qui tire l'écran vers le bas) recommençait tout depuis le fond du puits — arrivé à Romain le
      11 novembre à 20 h 13 (« ça m'a fait revenir au tout début du donjon »). */
@@ -17329,10 +17402,13 @@ function demarrer(P){
     p = X.partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 2147483646) + 1);
     /* pour les essais : ?nouveau=1&potions=feu,huile,baume — un Alchimiste qui n'a pas su créer toutes ses potions */
     if(P.potions){ var lp = P.potions === 'toutes' ? D.ORDRE_RECETTES.slice() : P.potions.split(',').filter(function(r){ return D.RECETTES[r]; }); if(lp.length) p.recettes = lp; }
+    if(P.enquete){ p.enquete = +P.enquete || 3; p.jeton = P.jeton || ''; p.entree = P.entree === 'crypte' ? 'crypte' : 'puits'; }
     DJ.garder(p);
     return DJ.Combat.cuireHeros(), ecranDepart().then(function(){ return ouvrirScene('puits', [], true); });
   }
   X.partie = p;
+  /* (l'enquête 3) l'Alchimiste a fini une potion de plus avant qu'on redescende : elle rejoint le sac */
+  if(P.potions && P.jeton && p.jeton === P.jeton){ var plus = false; P.potions.split(',').forEach(function(r){ if(D.RECETTES[r] && p.recettes.indexOf(r) < 0){ p.recettes.push(r); plus = true; } }); if(plus) DJ.garder(p); }
   DJ.Combat.cuireHeros();
   var c = Regles.contenu(p, p.lieu);
   if(c.combat && !c.gagne) return lancerCombat(c.combat);      /* la page s'est rechargée en plein combat : on revient à l'entrée de la salle */
