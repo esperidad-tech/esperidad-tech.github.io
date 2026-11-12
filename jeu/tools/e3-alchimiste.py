@@ -148,7 +148,7 @@ with sync_playwright() as p:
     verifier(CU.tisane(pg) is None, 'pas de mélisse à porter à Anselme tant qu\'on n\'en a pas')
     t = CU.bertille(pg)
     verifier(t is not None and 'Bertille' in t and 'tisane de mélisse' in t and pg.evaluate("() => M.brumeLevee().join()") == 'n,o', 'au clocher : Anselme veut une tisane de mélisse, il sonne Bertille, la brume du nord et de l\'ouest recule')
-    for k, mot in [('melisse', 'mélisse'), ('lycopode', 'pied-de-loup'), ('vesse', 'vesse-de-loup')]:
+    for k, mot in [('melisse', 'mélisse'), ('lycopode', 'lycopode'), ('vesse', 'vesse-de-loup')]:
         t = CU.cueillir(pg, k)
         verifier(t is not None and mot in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot} : cueilli au-delà de la brume')
     # (Romain, 13 h 52, Bible §13.25) la tringle de l'établi n'a que trois places : la quatrième plante cueillie attend devant la porte de l'atelier

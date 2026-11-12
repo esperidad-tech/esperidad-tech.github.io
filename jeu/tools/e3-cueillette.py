@@ -230,7 +230,7 @@ with sync_playwright() as p:
     for pid in ['melisse', 'gui', 'lycopode', 'vesse']:
         ry = rayons(pg, pid)
         verifier(abs(ry['touche'] - ry['affiche']) < 0.06 and ry['meme'], f'{pid} : le rond à toucher est exactement le rond qui s\'affiche')
-    for pid, mot, ok in [('melisse', 'citron', 'mélisse'), ('gui', 'échelle', 'gui'), ('lycopode', 'grande pierre', 'pied-de-loup'), ('vesse', 'boule brune', 'vesse-de-loup')]:
+    for pid, mot, ok in [('melisse', 'citron', 'mélisse'), ('gui', 'échelle', 'gui'), ('lycopode', 'grande pierre', 'lycopode'), ('vesse', 'boule brune', 'vesse-de-loup')]:
         av, ap = cueillir(pg, pid, ok)
         verifier(ap is not None and mot in av and ok in av and pg.evaluate(f"() => M.plantes().{pid}") == 1, f'{ok} : « {mot} », cueilli ({av[:80]})')
         if pid == 'melisse': shot(pg, 'melisse-au-rucher')
@@ -302,7 +302,7 @@ with sync_playwright() as p:
         # (Romain, 15 h 37) l'herbier ne dit plus l'endroit : ni le nom du lieu, ni le détail du dessin
         dits = [m for m in ['cinq pierres', 'rond des sorcières', 'verger', 'rucher', 'ruche', 'lavoir', 'lavande', 'ruisseau', 'rivière', 'échelle', 'à l\'ouest', 'au nord'] if m in bas]
         verifier(dits == [], f'l\'herbier ne nomme aucun endroit de la carte : des indices seulement ({dits})')
-        verifier(all(m in bas for m in ['grands rochers', 'incantations', 'herboristes', 'épouvantail', 'potagers', 'abeilles', 'pommiers']) and bas.count('brume') >= 4, 'les indices de Romain y sont (rochers, incantations, herboristes, épouvantail, potagers), et « au-delà de la brume » pour les quatre lointaines')
+        verifier(all(m in bas for m in ['bruyère', 'incantations', 'herboristes', 'épouvantail', 'potagers', 'abeilles', 'pommiers']) and bas.count('brume') >= 4, 'les indices de Romain y sont (landes et bruyère, incantations, herboristes, épouvantail, potagers), et « au-delà de la brume » pour les quatre lointaines')
         verifier(not any(m in bas for m in ['donjon', 'potion', 'crypte', 'monstre', 'code']), 'pas un mot du donjon, des potions ni d\'un code')
         verifier(h['donne'] == 0, 'plus de code à donner')
         verifier(sg.evaluate("() => { M.majMission && M.majMission(); return M.etapesMission().some(function(m){ return /herbier/.test(m.t) && !!(m.fait && m.fait.some(M.condMission)); }); }"), 'sa mission « Lis l\'herbier à l\'Alchimiste » se coche')

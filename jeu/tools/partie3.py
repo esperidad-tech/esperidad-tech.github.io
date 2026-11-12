@@ -195,7 +195,7 @@ def partie(nav, base):
     S.point('mairie', 'livredor'); S.fermer()
     S.page('habitants')
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
-    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'grands rochers' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
+    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     t = S.ouvrir_page('doutes'); S.fermer()
     verifier('capuchon' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
     verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')

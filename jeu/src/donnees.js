@@ -177,7 +177,7 @@ D.INGR = {
    dit son vrai milieu, et l'endroit de la carte est un milieu de cette sorte. Vérifié en ligne le 12 novembre (les sources : E3-atelier-des-plantes.md) :
    l'oseille des prés aime les sols humides ; la mélisse, « herbe aux abeilles », se cueille le matin, la rosée partie ; le souci (du latin « qui suit
    le soleil ») se ferme la nuit et ne se rouvre que quand le soleil est haut, et on le plante près des choux contre les pucerons ; le lin se sème dans
-   les champs, sa fleur bleue ne dure qu'un matin, et on récolte ses graines bien sèches ; le pied-de-loup vit sur les landes et les pelouses des
+   les champs, sa fleur bleue ne dure qu'un matin, et on récolte ses graines bien sèches ; le lycopode en massue (« patte de loup » ; « pied-de-loup » désigne d'abord une autre plante, le lycope d'Europe, au bord de l'eau : c'est pourquoi le jeu dit « lycopode », 12 novembre 17 h 44) vit sur les landes et les pelouses des
    collines, en terre pauvre et acide, avec la bruyère ; la vesse-de-loup pousse dans les bois, sur le sol, en petits groupes ; le gui n'a pas de
    racine dans la terre, il vit sur les branches (pommiers et peupliers surtout) et reste vert l'hiver. Ajouté à 15 h 37 :
    l'oseille est aussi une plante de potager, qui veut une terre fraîche et humide ; le souci est une plante d'herboriste (« officinal »), on en fait
@@ -187,7 +187,7 @@ D.INGR = {
    `python3 tools/e3-cueillette.py`.
    OÙ SONT LES ENDROITS (pour nous ; l'herbier ne le dit pas) : l'oseille, entre le carré de lavande de l'herboriste et la rivière, ET au bord
    gauche du potager, les pieds dans le ruisseau ; le souci, au bout des rangs de lavande de l'herboriste ; le lin, au pied de l'épouvantail du
-   champ ; la mélisse, au pied de la première ruche du Rucher ; le pied-de-loup, au pied de la pierre du nord des Cinq Pierres ; la vesse-de-loup,
+   champ ; la mélisse, au pied de la première ruche du Rucher ; le lycopode, au pied de la pierre du nord des Cinq Pierres ; la vesse-de-loup,
    au milieu du Rond des Sorcières ; le gui, sur le pommier à l'échelle du Vieux verger. */
 D.PLANTES = {
   oseille:{nom:'L\'oseille', un:'de l\'oseille', ic:'🥬', x:910, y:894, des:2, aussi:[{x:165, y:1316}],
@@ -212,11 +212,11 @@ D.PLANTES = {
     ou:'Elle ne pousse plus qu\'au-delà de la brume.',
     quand:'Dès le matin, quand la rosée est partie : c\'est là qu\'elle sent le plus fort.',
     ici:'Les abeilles bourdonnent tout autour. Tu froisses une feuille : ça sent le citron ! De la mélisse.'},
-  lycopode:{nom:'Le pied-de-loup', un:'du pied-de-loup', ic:'🌲', rare:true, x:-551, y:548, des:3, zone:'o',
-    vit:'Il rampe au ras du sol, comme une petite branche de sapin.',
-    ou:'Il pousse au-delà de la brume, à l\'ombre des grands rochers.',
+  lycopode:{nom:'Le lycopode', un:'du lycopode', ic:'🌲', rare:true, x:-551, y:548, des:3, zone:'o',
+    vit:'On l\'appelle aussi patte de loup. Il rampe au ras du sol, comme une petite branche de sapin.',
+    ou:'Il aime les landes, en terre pauvre, parmi la bruyère : au-delà de la brume.',
     quand:'À toute heure.',
-    ici:'Au pied de la grande pierre, on dirait une petite branche de sapin qui rampe : du pied-de-loup !'},
+    ici:'Au pied de la grande pierre, on dirait une petite branche de sapin qui rampe : du lycopode, la patte de loup !'},
   vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true, x:229, y:-115, des:3, zone:'n',
     vit:'Un champignon tout rond, qui pousse dans l\'humidité de la forêt sombre, au-delà de la brume.',
     ou:'On raconte que les sorcières s\'en servaient pour leurs incantations.',
