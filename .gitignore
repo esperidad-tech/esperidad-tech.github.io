@@ -38,3 +38,6 @@ jeu/test/e3-alchimiste/
 jeu/test/e3-descente/
 jeu/test/e3-fin/
 jeu/test/partie3/
+
+# les captures du robot de l'établi des plantes, tools/etabli.py (refaites à chaque fois)
+jeu/test/etabli/

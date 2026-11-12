@@ -1,203 +1,24 @@
 /* ==========================================================
-   Brumeval — l'établi des plantes (plantes.js, plantes-dessins.js ; enquête 3). Tout est préfixé « pl- ».
-   Une page plein écran par-dessus l'atelier : à gauche la plante, à droite l'étagère des potions et les outils, en bas le conteur.
-   Tablette ou téléphone couché : deux colonnes. Debout : la plante en haut, les outils dessous.
+   Brumeval — les petites fioles du sac de l'Alchimiste (plantes.js : la fenêtre du Pisteur qui reçoit le sac ; descente.js).
+   L'établi des plantes lui-même est une page à part, avec ses styles à elle (src/etabli/00-head.html) : depuis le 12 novembre,
+   il n'y a plus rien de lui ici. Tout est préfixé « pl- ».
    ========================================================== */
-html.pl-ouvert, html.pl-ouvert body{overflow:hidden}
-.pl{position:fixed;top:0;bottom:0;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);z-index:2147482000;
-  display:flex;flex-direction:column;background:linear-gradient(180deg,#2c2142,#3d2c4c);
-  box-shadow:0 0 0 100vmax #2c2142;color:#fff6e6;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.pl *{box-sizing:border-box}
-.pl-haut{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;flex:none}
-.pl-haut h2{flex:1;margin:0;font-size:1.05rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffe9b8}
-.pl-haut .btn{flex:none;white-space:nowrap}
-.pl-haut .btn.second{color:#fff6e6;border-color:rgba(255,246,230,.4)}
-.pl-appel{animation:pl-appel 1.1s ease-in-out infinite}
-@keyframes pl-appel{50%{transform:translateY(-3px) scale(1.06)}}
-
-.pl-corps{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:10px;padding:2px 10px 8px}
-.pl-g,.pl-d{min-width:0;min-height:0;display:flex;flex-direction:column;gap:6px}
-
-/* ---------- Le panier : les sept plantes (un « ? » tant qu'on ne l'a pas cueillie) ---------- */
-.pl-panier{flex:none;display:flex;gap:5px;justify-content:center}
-.pl-chip{position:relative;flex:1 1 0;min-width:0;max-width:58px;aspect-ratio:1;border-radius:12px;border:2.5px solid #24182e;background:#f4ecd6;padding:1px;display:flex;align-items:center;justify-content:center}
-.pl-chip svg{width:100%;height:100%;pointer-events:none}
-.pl-chip.pl-sel{background:#ffe08a;box-shadow:0 0 0 3px #ffd36a, 0 3px 0 #b07a1c;transform:translateY(-2px)}
-.pl-chip.pl-fait svg{opacity:.5;filter:saturate(.4)}
-.pl-chip b{position:absolute;right:-4px;top:-6px;width:20px;height:20px;border-radius:50%;background:#3fae5a;color:#fff;border:2px solid #24182e;font-size:.72rem;line-height:16px;text-align:center}
-.pl-chip.pl-vide{background:rgba(244,236,214,.12);border-style:dashed;border-color:rgba(255,246,230,.35)}
-.pl-chip.pl-vide i{font-style:normal;font-weight:800;color:rgba(255,246,230,.45);font-size:1.1rem}
-
-/* ---------- La plante, entière, sur sa planche ; ses trois parties se touchent ---------- */
-.pl-planche{position:relative;flex:1;min-height:0;border-radius:16px;border:3px solid #24182e;background:radial-gradient(ellipse at 50% 38%,#fbf6e6,#ecdfbf);
-  box-shadow:inset 0 0 26px rgba(140,100,40,.25), 0 4px 0 rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.pl-planche h3{position:absolute;left:10px;top:6px;margin:0;font-size:.95rem;color:#5a4028;font-family:'Caveat','Andika',cursive;font-size:1.35rem;line-height:1}
-.pl-planche > svg{width:100%;height:100%;padding:4px}
-.pl-planche-vide span{font-size:3.4rem;opacity:.35}
-.pl-z{fill:transparent;stroke:none;pointer-events:all}
-.pl-planche .pl-pa{cursor:pointer;outline:none;transition:opacity .2s}
-.pl-planche .pl-pa:focus-visible{filter:drop-shadow(0 0 3px #4f9be0)}
-/* une partie en main : elle brille, le reste s'efface un peu ; une fois partie vers les outils, elle manque sur le dessin */
-.pl-planche.pl-choix:not(.pl-route) .pl-pa, .pl-planche.pl-choix:not(.pl-route) .pl-decor{opacity:.45}
-.pl-planche.pl-choix .pl-pa.pl-sel{opacity:1!important;filter:drop-shadow(0 0 4px #ffb300) drop-shadow(0 0 2px #ffb300);animation:pl-tenue 1s ease-in-out infinite}
-.pl-planche.pl-route .pl-pa, .pl-planche.pl-route .pl-decor{opacity:.8}
-.pl-planche.pl-route .pl-pa.pl-pris{opacity:.08}
-@keyframes pl-tenue{50%{filter:drop-shadow(0 0 8px #ffb300) drop-shadow(0 0 3px #ffb300)}}
-.pl-planche.pl-fini > svg{opacity:.45;filter:saturate(.35)}
-.pl-planche.pl-fini .pl-pa{cursor:default}
-.pl-planche.pl-remue > svg{animation:pl-remue .5s ease-in-out 2}
-@keyframes pl-remue{25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
-/* la main : ce qu'on tient, ou ce que c'est devenu */
-.pl-main{flex:none;min-height:38px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:rgba(20,12,30,.5);border:2px solid rgba(255,246,230,.25);padding:4px 14px;font-size:.98rem}
-.pl-main i{width:20px;height:20px;border-radius:50%;border:2.5px solid #24182e;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
-.pl-main b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-main-vide{opacity:.4}
-
-/* ---------- L'étagère des sept potions ---------- */
-.pl-etagere{flex:none;display:flex;justify-content:space-around;align-items:flex-end;gap:2px;padding:5px 8px 2px;border:3px solid #24182e;border-bottom-width:9px;border-bottom-color:#8a5a36;
-  border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#efe0ba,#dcc696);box-shadow:0 3px 0 #24182e;margin:0 2px 3px}
 .pl-fiole{display:flex;flex-direction:column;align-items:center;flex:1 1 0;min-width:0}
 .pl-fiole svg{height:50px;width:auto;display:block;opacity:.45}
 .pl-fiole small{font-size:.72rem;line-height:1.1;margin:1px 0 2px;white-space:nowrap;color:#5a4028;font-weight:700;opacity:.7}
 .pl-fiole.pl-pleine svg{opacity:1;filter:drop-shadow(0 2px 0 rgba(36,24,46,.35))}
 .pl-fiole.pl-pleine small{opacity:1;color:#2e2130}
 .pl-fiole.pl-pleine small::after{content:' ✓';color:#2c8a42}
-.pl-fiole.pl-neuve{animation:pl-neuve .9s cubic-bezier(.3,1.6,.5,1) 1.5s both}
-@keyframes pl-neuve{0%{transform:translateY(-34px) scale(1.7);opacity:0}100%{transform:none;opacity:1}}
-
-/* ---------- Les onze outils, sur deux planches (trois, tablette debout) ---------- */
-.pl-outils{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:6px 4px;padding:0 4px}
-.pl-outil{position:relative;min-width:0;min-height:0;padding:0 2px 9px;border:0;background:none;display:flex;align-items:flex-end;justify-content:center;border-radius:10px}
-.pl-outil::after{content:'';position:absolute;left:-3px;right:-3px;bottom:0;height:9px;background:linear-gradient(180deg,#b9824e,#8a5a36);border-top:2.5px solid #24182e;border-bottom:2.5px solid #24182e}
-.pl-outil svg{width:100%;height:100%;max-height:150px;display:block;overflow:visible;transition:transform .12s}
-.pl-outil:active svg{transform:scale(.94)}
-.pl-mat,.pl-flammes,.pl-vapeur,.pl-goutte{display:none}
-.pl-vapeur path{fill:none;stroke:rgba(255,255,255,.75);stroke-width:3;stroke-linecap:round}
-.pl-outil.pl-ici .pl-mat{display:block}
-.pl-outil.pl-ici svg{filter:drop-shadow(0 0 5px #ffd36a) drop-shadow(0 0 2px #ffd36a)}
-.pl-outil.pl-ici .pl-goutte{display:block;animation:pl-goutte 1.1s ease-in infinite}
-.pl-outil.pl-chaud .pl-flammes{display:block;transform-box:fill-box;transform-origin:50% 100%;animation:pl-flamme .28s ease-in-out infinite alternate}
-.pl-outil.pl-chaud .pl-vapeur{display:block;animation:pl-vapeur 1.6s linear infinite}
-@keyframes pl-flamme{from{transform:scaleY(.82)}to{transform:scaleY(1.12)}}
-@keyframes pl-vapeur{from{transform:translateY(4px);opacity:0}30%{opacity:.9}to{transform:translateY(-8px);opacity:0}}
-@keyframes pl-goutte{0%{transform:translateY(-5px);opacity:0}30%{opacity:1}100%{transform:translateY(3px);opacity:0}}
-.pl-etincelle{transform-box:fill-box;transform-origin:50% 100%;animation:pl-flamme .34s ease-in-out infinite alternate}
-.pl-outil.pl-ok svg{animation:pl-ok .5s cubic-bezier(.3,1.7,.5,1)}
-@keyframes pl-ok{0%{transform:scale(.8)}55%{transform:scale(1.14)}100%{transform:none}}
-.pl-outil.pl-non svg{animation:pl-non .45s ease-in-out}
-.pl-outil.pl-attend svg{animation:pl-non .45s ease-in-out}
-@keyframes pl-non{20%{transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(6px) rotate(4deg)}80%{transform:translateX(-3px)}}
-.pl-pouf{position:absolute;left:50%;top:18%;font-size:1.7rem;pointer-events:none;animation:pl-pouf 1s ease-out both}
-@keyframes pl-pouf{0%{transform:translate(-50%,6px) scale(.5);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-26px) scale(1.5);opacity:0}}
-
-/* ---------- Le conteur ---------- */
-.pl-conteur{flex:none;display:flex;align-items:center;gap:8px;margin:0 10px calc(8px + env(safe-area-inset-bottom,0px));padding:8px 10px 8px 12px;border-radius:14px;background:#fbf3dc;color:#2e2130;border:3px solid #24182e;min-height:58px;box-shadow:0 4px 0 rgba(0,0,0,.3)}
-.pl-conteur p{flex:1;margin:0;font-size:1rem;line-height:1.3;-webkit-user-select:text;user-select:text}
-.pl-conteur em{font-style:normal;color:#7a5a3a;font-size:.9em}
-.pl-plume{font-size:1.3rem;flex:none}
-.pl-conteur.pl-neuf p{animation:pl-dit .35s ease-out}
-@keyframes pl-dit{from{opacity:0;transform:translateY(5px)}}
-.pl .b-lire{background:rgba(53,40,27,.14);color:#2e2130;min-width:44px;height:40px;flex:none}
-
-/* ---------- Une potion est prête ---------- */
-.pl-bravo{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(circle,rgba(255,224,138,.5),rgba(20,12,30,.72) 62%);animation:pl-bravo 2.3s ease-in-out both;pointer-events:auto}
-.pl-bravo-fiole svg{height:min(38vh,220px);width:auto;filter:drop-shadow(0 0 22px #fff3c4);animation:pl-ok .7s cubic-bezier(.3,1.7,.5,1)}
-.pl-bravo b{font-size:1.6rem;color:#fff6e6;text-shadow:0 2px 0 #24182e, 0 0 12px rgba(0,0,0,.6);font-family:'Macondo','Andika',serif}
-@keyframes pl-bravo{0%{opacity:0}10%{opacity:1}82%{opacity:1}100%{opacity:0;visibility:hidden}}
-
-/* ---------- Ce qui s'ouvre par-dessus : le grimoire, le sac, l'explication ---------- */
-.pl-voile{position:absolute;inset:0;z-index:8;background:rgba(20,12,30,.78);display:flex;align-items:center;justify-content:center;padding:10px}
-.pl-carte{max-width:560px;width:100%;max-height:100%;overflow:auto;background:#fbf3dc;color:#2e2130;border:3px solid #24182e;border-radius:18px;padding:16px 18px;text-align:center;box-shadow:0 12px 34px rgba(0,0,0,.5)}
-.pl-carte h2{margin:0 0 8px;font-size:1.3rem;color:#2e2130}
-.pl-carte p{margin:8px 0 12px;line-height:1.4;font-size:1.02rem}
-.pl-carte .btn.second{background:#2e2547;color:#fff;border-color:#2e2547}
-.pl-intro-img{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:4px 0}
-.pl-intro-img span{width:84px;height:84px;border-radius:12px;background:#ecdfbf;border:2.5px solid #24182e;display:flex;align-items:center;justify-content:center;padding:4px;position:relative}
-.pl-intro-img span svg{width:100%;height:100%}
-.pl-intro-img span.pl-intro-livre{font-size:2.9rem;line-height:1}
-.pl-intro-img span.pl-intro-outil{background:#6b4a2e}
-.pl-intro-img span.pl-intro-plante .pl-pa[data-pa=fleurs]{filter:drop-shadow(0 0 4px #ffb300) drop-shadow(0 0 2px #ffb300)}
-.pl-intro-img span.pl-intro-fiole{background:#3a2a4a}
-@media (max-width:520px){ .pl-intro-img span{width:58px;height:58px} .pl-intro-img span.pl-intro-livre{font-size:2rem} }
-.pl-intro-img i{font-style:normal;font-weight:800;color:#7a5a3a}
 .pl-sac-fioles{display:flex;justify-content:center;gap:4px;margin:6px 0;background:#3a2a4a;border-radius:12px;padding:8px 6px 4px}
 .pl-sac-fioles .pl-fiole svg{height:48px}
 /* (dans le sac, le fond est sombre : les noms des fioles en clair) */
 .pl-sac-fioles .pl-fiole small{color:#cfc4e2;opacity:.8}
 .pl-sac-fioles .pl-fiole.pl-pleine small{color:#fff;opacity:1}
 .pl-sac-fioles .pl-fiole.pl-pleine small::after{color:#8fe6a2}
-.pl-sac-code{margin:8px 0 12px}
 .pl-sac-recu .pl-sac-fioles{margin:8px auto;max-width:480px}
-
-.pl-livre{width:100%;max-width:860px;height:100%;max-height:640px;display:flex;flex-direction:column;background:#fbf3dc;color:#2e2130;border:3px solid #24182e;border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.5);overflow:hidden}
-.pl-livre-tete{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px 4px 14px}
-.pl-livre-tete h2{flex:1;margin:0;font-size:1.15rem;color:#2e2130;font-family:'Macondo','Andika',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-livre-tete .btn.second{background:#2e2547;color:#fff;border-color:#2e2547}
-.pl-onglets{flex:none;display:flex;gap:4px;padding:4px 8px 0;border-bottom:3px solid #24182e}
-.pl-onglet{flex:1 1 0;min-width:0;border:2.5px solid #24182e;border-bottom:0;border-radius:10px 10px 0 0;background:#d9c9a8;padding:3px 0 1px;display:flex;flex-direction:column;align-items:center;opacity:.8}
-.pl-onglet svg{height:30px;width:auto}
-.pl-onglet small{font-size:.66rem;white-space:nowrap}
-.pl-onglet.pl-sel{background:#ffe08a;opacity:1;transform:translateY(1px)}
-.pl-onglet.pl-fait small::after{content:' ✓';color:#2c8a42;font-weight:800}
-.pl-page{flex:1;min-height:0;overflow:auto;padding:10px 14px 14px;-webkit-overflow-scrolling:touch}
-.pl-page-tete{display:flex;align-items:center;gap:10px}
-.pl-page-fiole svg{height:54px;width:auto;background:#3a2a4a;border-radius:10px;padding:4px}
-.pl-page-tete h3{margin:0;font-size:1.25rem;color:#2e2130}
-.pl-page-tete p{margin:2px 0 0}
-.pl-ok{color:#2c8a42}
-.pl-page-corps{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:12px;margin-top:8px;align-items:start}
-.pl-page-plante{background:radial-gradient(ellipse at 50% 38%,#fff,#ecdfbf);border:2.5px solid #24182e;border-radius:14px;padding:4px 4px 6px;text-align:center}
-.pl-page-plante svg{width:100%;height:auto;display:block;pointer-events:none}
-.pl-page-plante b{font-family:'Caveat','Andika',cursive;font-size:1.3rem;color:#5a4028}
-.pl-page-txt p{margin:0 0 8px;line-height:1.38;font-size:1rem;text-align:left}
-.pl-gestes-titre{margin-bottom:2px!important}
-.pl-gestes{display:flex;flex-wrap:wrap;align-items:center;gap:3px;margin:0 0 8px}
-.pl-geste{width:54px;height:54px;border-radius:10px;background:#6b4a2e;border:2.5px solid #24182e;padding:2px;flex:none}
-.pl-geste svg{width:100%;height:100%;display:block}
-.pl-gestes i{font-style:normal;font-weight:800;color:#7a5a3a;font-size:.9rem}
-.pl-page-note{background:#ffe9b8;border-radius:10px;padding:6px 10px}
-.pl-vrai{background:#e3f0d6;border-radius:10px;padding:6px 10px}
-
-/* ---------- Debout (téléphone, tablette tenue droite) : la plante en haut, les outils dessous ---------- */
-@media (orientation:portrait){
-  .pl-corps{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,6fr) minmax(0,5fr)}
-  .pl-haut h2{display:none}
-  .pl-haut{justify-content:space-between}
-  .pl-page-corps{grid-template-columns:minmax(0,1fr)}
-  .pl-page-plante{max-width:210px;margin:0 auto}
-}
-@media (max-width:420px){
-  .pl-haut .btn.petit{padding:6px 10px;font-size:.86rem}
-}
-/* un téléphone couché : tout se serre un peu */
-@media (orientation:landscape) and (max-height:480px){
-  .pl-haut{padding:4px 10px 2px}
-  .pl-haut .btn.petit{min-height:36px;padding:4px 12px}
-  .pl-outils{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .pl-chip{max-width:40px;border-radius:9px}
-  .pl-fiole svg{height:30px}
-  .pl-fiole small{font-size:.62rem}
-  .pl-conteur{min-height:46px;padding:5px 10px;margin-bottom:5px}
-  .pl-conteur p{font-size:.92rem;line-height:1.22}
-  /* le panier passe en colonne à gauche de la plante, et « la main » se pose en bas de la planche : la plante garde toute la hauteur */
-  .pl-g{flex-direction:row;position:relative;gap:5px}
-  .pl-panier{flex-direction:column;justify-content:flex-start;gap:3px;width:34px}
-  .pl-chip{flex:0 1 34px;width:34px;max-width:34px}
-  .pl-main{position:absolute;left:46px;right:8px;bottom:6px;min-height:28px;font-size:.88rem;background:rgba(20,12,30,.78);padding:2px 10px}
-  .pl-main-vide{display:none}
-  .pl-planche h3{font-size:1.1rem}
-  .pl-page-corps{grid-template-columns:150px minmax(0,1fr)}
-  .pl-corps{padding-bottom:5px}
-}
-@media (prefers-reduced-motion:reduce){
-  .pl *{animation-duration:.01s!important;animation-iteration-count:1!important}
-}
-
-.pl-decor{pointer-events:none}
 
 /* ---------- la descente dans le donjon (descente.js) ---------- */
 .ds-fenetre .pl-sac-fioles{margin:8px auto;max-width:480px}
 .ds-fenetre .pl-sac-fioles .pl-fiole small, .pl-sac-recu .pl-sac-fioles .pl-fiole small{font-size:.66rem}
 .ds-fenetre .btn{margin:6px 4px 0}
 .ds-suite{margin:10px 0 6px!important;font-size:.98rem!important}
-.pl-carte .b-aller[data-pl=donjon]{margin:0 0 10px}

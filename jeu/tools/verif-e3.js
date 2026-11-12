@@ -2,7 +2,7 @@
 
    L'enquête 3 ne marche pas comme les deux premières (pas de points d'action, des grands dialogues à étapes, la fête, l'établi des
    plantes, le sac, le donjon) : elle a son propre modèle. Il est LU dans les données de e3.js (les points, les questions, les grands
-   dialogues, la fête, les pages du Sage, les analyses, les missions) et dans plantes.js (les recettes) ; seuls quelques liens qui
+   dialogues, la fête, les pages du Sage, les analyses, les missions) et dans plantes-donnees.js (les recettes) ; seuls quelques liens qui
    vivent dans le code sont écrits ici à la main (ils sont marqués « à la main »).
 
    Ce qu'il vérifie (Bible § 13.14, étape 8 ; E3-actions-des-roles.md § 5, « Qui prouve quoi ») :
@@ -23,13 +23,14 @@ module.exports = function verifierE3(E, SRC){
   const liste = x => x == null ? [] : Array.isArray(x) ? x : [x];
   const pour = id => { const p = id.split(':'), I = p[0] === 'obj' ? (E.objets || {})[p[1]] : p[0] === 'info' ? (E.infos || {})[p[1]] : null; return id === 'sac' ? ['pisteur'] : I ? liste(I.pour) : []; };
 
-  /* ---------- les recettes de l'établi (plantes.js) : la plante de chaque potion, et la potion qu'il faut avant (le baume : l'huile) ---------- */
-  const txt = fs.readFileSync(path.join(SRC, 'plantes.js'), 'utf8');
-  const bloc = txt.slice(txt.indexOf('var RE = {'), txt.indexOf('\n};', txt.indexOf('var RE = {')));
+  /* ---------- les recettes de l'établi (plantes-donnees.js) : la plante de chaque potion, et la potion qu'il faut avant (le baume cuit dans
+     l'huile de lin : une étape liq:'huile') ---------- */
+  const W = {};
+  new Function('window', fs.readFileSync(path.join(SRC, 'plantes-donnees.js'), 'utf8'))(W);
   const RECETTES = {};
-  bloc.split(/\n  (?=[a-z]+:\{nom:)/).slice(1).forEach(b => {
-    const id = /^([a-z]+):\{/.exec(b)[1], pl = /plante:'([a-z]+)'/.exec(b), av = /besoin:'([a-z]+)'/.exec(b);
-    RECETTES[id] = {plante:pl && pl[1], avant:av && av[1]};
+  W.PLANTES_DONNEES.ORDRE.forEach(id => {
+    const r = W.PLANTES_DONNEES.RE[id];
+    RECETTES[id] = {plante:r.plante, avant:id !== 'huile' && r.etapes.some(e => e.liq === 'huile') ? 'huile' : null};
   });
 
   /* ---------- les règles : {cle, role, moments, besoins (toutes ; chacune : une des conditions), sauf, produit, faits, ratable, rate} ---------- */

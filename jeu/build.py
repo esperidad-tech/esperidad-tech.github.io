@@ -7,7 +7,7 @@ SRC = os.path.join(ICI, 'src')
 DIST = os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, 'dist'))  # BRUMEVAL_DIST=/chemin : construit ailleurs (agents en parallèle)
 CSS = ['base.css', 'mj-core.css', 'persos.css', 'carte.css', 'mj-pisteur-alchi.css', 'mj-observation.css', 'mj-melange.css', 'mj-bulles.css', 'mj-chaudron.css', 'mj-barde-sage.css', 'mj-sage-plans.css', 'mj-mots.css', 'mj-ragots.css', 'mj-depositions.css', 'mj-sage-codes.css', 'mj-regles.css', 'mj-cachette.css', 'mj-tir.css', 'mj-gateau.css', 'revision.css', 'atelier.css', 'moteur.css', 'mission.css', 'tableau.css', 'liege.css', 'carnet.css', 'barde.css', 'illus-fin.css', 'marche.css', 'grands.css', 'plantes.css','livre.css', 'cabane.css', 'heros.css', 'tuto.css']
 JS = ['sans-zoom.js', 'donnees.js', 'mj-temps.js', 'mj-core.js', 'persos.js', 'garderobe.js', 'carte.js', 'mj-pisteur-alchi.js', 'mj-observation.js', 'mj-melange.js', 'mj-bulles.js', 'mj-chaudron.js', 'mj-barde-sage.js', 'mj-sage-plans.js', 'mj-mots.js', 'ragots.js', 'mj-ragots.js', 'mj-depositions.js', 'mj-sage-codes.js', 'mj-regles.js', 'mj-cachette.js', 'mj-tir.js', 'mj-gateau-dessins.js', 'mj-gateau.js', 'revision.js', 'repliques.js', 'voix.js', 'atelier.js',
-      'e1.js', 'e2.js', 'e3.js', 'codes-fixes.js', 'souterrains.js', 'moteur-base.js', 'moteur-ecrans.js', 'moteur-roles.js', 'moteur-actions.js', 'mission.js', 'tableau.js', 'liege.js', 'carnet.js', 'essais.js', 'labo.js', 'barde.js', 'livre.js', 'regles.js', 'illus-fin.js', 'carte-jeu.js', 'marche.js', 'grands.js', 'plantes-dessins.js', 'plantes.js', 'descente.js','cabane.js', 'heros.js', 'tuto.js']
+      'e1.js', 'e2.js', 'e3.js', 'codes-fixes.js', 'souterrains.js', 'moteur-base.js', 'moteur-ecrans.js', 'moteur-roles.js', 'moteur-actions.js', 'mission.js', 'tableau.js', 'liege.js', 'carnet.js', 'essais.js', 'labo.js', 'barde.js', 'livre.js', 'regles.js', 'illus-fin.js', 'carte-jeu.js', 'marche.js', 'grands.js', 'plantes-donnees.js', 'plantes-dessins.js', 'plantes.js', 'descente.js','cabane.js', 'heros.js', 'tuto.js']
 
 # BRUMEVAL_SANS="mj-bulles,mj-chaudron" : laisse de côté des fichiers encore en chantier
 FIGE = set(x.strip() for x in os.environ.get('BRUMEVAL_FIGE', '').split(',') if x.strip())
@@ -53,6 +53,21 @@ def labo_html():
             t += f.read()
     return t
 
+# L'établi des plantes de l'Alchimiste (enquête 3, refait le 12 novembre sur le modèle du labo) : une page à part, faite des morceaux
+# de src/etabli/. Elle partage avec le labo ses outils de dessin (labo/10-base.js : le même œil, les mêmes tables, les mêmes murs), et avec
+# le jeu les plantes et les recettes (plantes-donnees.js, plantes-dessins.js : une seule source). Le jeu la garde dans window.ETABLI_HTML
+# et l'ouvre dans un cadre, par-dessus l'atelier (src/plantes.js). dist/etabli.html : la même page, toute seule (pour l'essayer hors du jeu).
+ETABLI = ['etabli/00-head.html', 'plantes-donnees.js', 'plantes-dessins.js', 'labo/10-base.js', 'etabli/15-sons.js', 'etabli/30-regles.js', 'etabli/50-scene.js', 'etabli/60-jeu.js', 'etabli/70-livre.js', 'etabli/90-main.js', 'etabli/99-foot.html']
+def etabli_html():
+    if not os.path.isdir(os.path.join(SRC, 'etabli')):
+        print('  (absent) src/etabli', file=sys.stderr)
+        return ''
+    t = ''
+    for n in ETABLI:
+        with open(os.path.join(SRC, n), encoding='utf-8') as f:
+            t += f.read() + '\n'
+    return t
+
 def main():
     os.makedirs(DIST, exist_ok=True)
     css = '\n'.join(lire(n) for n in CSS)
@@ -62,6 +77,11 @@ def main():
         js = '/* ===== le labo d\'analyses (src/labo/) ===== */\nwindow.LABO_HTML = ' + json.dumps(labo, ensure_ascii=False) + ';\n' + js
         with open(os.path.join(DIST, 'labo.html'), 'w', encoding='utf-8') as f:
             f.write(labo)
+    etabli = etabli_html()
+    if etabli:
+        js = '/* ===== l\'établi des plantes (src/etabli/) ===== */\nwindow.ETABLI_HTML = ' + json.dumps(etabli, ensure_ascii=False) + ';\n' + js
+        with open(os.path.join(DIST, 'etabli.html'), 'w', encoding='utf-8') as f:
+            f.write(etabli)
     js = js.replace('</script', '<\\/script')
     date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     html = f'''<!doctype html>

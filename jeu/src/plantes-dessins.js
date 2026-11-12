@@ -1,5 +1,5 @@
 /* ==========================================================
-   Brumeval — les dessins de l'établi des plantes (enquête 3 ; plantes.js ; E3-atelier-des-plantes.md).
+   Brumeval — les dessins des sept plantes de l'enquête 3 (plantes.js ; la page de l'établi : src/etabli/ ; E3-atelier-des-plantes.md).
 
    · Les sept plantes, dessinées entières (un dessin de 260 × 320), chacune avec TROIS parties qu'on peut toucher :
      <g class="pl-pa" data-pa="feuilles">. Les vraies plantes : l'oseille (ses feuilles en fer de flèche, sa tige de petites fleurs
@@ -7,11 +7,11 @@
      bleues, ses capsules rondes pleines de graines), le pied-de-loup (un lycopode : il rampe, et porte des épis jaunes),
      la vesse-de-loup (blanche quand elle est jeune, brune et trouée quand elle est mûre), le gui (ses feuilles deux par deux,
      ses baies blanches, sur une branche de pommier).
-   · Les onze outils (un dessin de 100 × 100 chacun), toujours les mêmes, aux mêmes places : la planche et son couteau, le tamis,
-     le mortier, la presse, le linge, la marmite sur son réchaud, les allumettes, l'alambic, la coupelle à la fenêtre, la cruche
-     d'eau, les fioles vides. .pl-mat : ce qu'on y a mis (sa couleur : --mat) ; .pl-flammes : le feu, quand ça chauffe.
-   · PLD.fiole(couleur) : une fiole pleine (l'étagère des sept potions).
-   Rien que des dessins : pas de règles ici.
+   · PLD.plante(id) : le dessin debout, avec son bout de terre (la planche du grimoire).
+     PLD.corps(id) : le même, cueilli (sans la ligne de terre), à poser dans un autre dessin (l'établi : la plante couchée sur le linge).
+   · PLD.fiole(couleur) : une fiole pleine (le sac, chez l'Alchimiste et chez le Pisteur).
+   Ce fichier est chargé dans le jeu ET dans la page de l'établi (build.py). Rien que des dessins : pas de règles ici.
+   (Les onze outils en petites images de la première version sont partis le 12 novembre : l'établi les dessine en grand, src/etabli/50-scene.js.)
    ========================================================== */
 (function(){
 'use strict';
@@ -35,7 +35,9 @@ function bez(a, t){
   return [u * u * u * a[0] + 3 * u * u * t * a[2] + 3 * u * t * t * a[4] + t * t * t * a[6], u * u * u * a[1] + 3 * u * u * t * a[3] + 3 * u * t * t * a[5] + t * t * t * a[7]];
 }
 function courbe(a){ return 'M' + a[0] + ',' + a[1] + ' C' + a[2] + ',' + a[3] + ' ' + a[4] + ',' + a[5] + ' ' + a[6] + ',' + a[7]; }
+var CUEILLIE = false;   /* (cueillie : plus de ligne de terre ni d'herbe au pied) */
 function sol(y, x0, x1){
+  if(CUEILLIE) return '';
   var s = L('M' + x0 + ',' + y + ' H' + x1, '#8a6a44', 4), i;
   for(i = x0 + 14; i < x1 - 6; i += 34) s += L('M' + i + ',' + y + ' l-4,-9 M' + (i + 3) + ',' + y + ' l1,-11 M' + (i + 6) + ',' + y + ' l5,-8', '#6aa84f', 2.2);
   return s;
@@ -182,7 +184,7 @@ function lycopode(){
   }
   var ep = epis(90, 112, 4) + epis(180, 104, -3);
   var ra = L('M52,254 q-3,14 -10,22 M52,254 q5,12 3,24 M104,254 q-2,16 -9,24 M104,254 q7,12 6,24 M150,252 q-4,14 -2,26 M196,252 q-3,14 -9,22 M196,252 q7,10 6,24 M226,254 q2,12 -2,20', '#b88a58', 2.6);
-  return L('M14,256 H246', '#8a6a44', 4) +
+  return (CUEILLIE ? '' : L('M14,256 H246', '#8a6a44', 4)) +
     partie('racines', 'Les petites racines', Z(34, 258, 200, 34) + ra) +
     partie('tiges', 'Les tiges vertes', ti) +
     partie('epis', 'Les épis jaunes', Z(68, 26, 50, 90) + Z(152, 20, 52, 90) + ep);
@@ -236,76 +238,6 @@ function gui(){
     partie('baies', 'Les baies blanches', zo + ba);
 }
 
-/* ---------------------------------------------------------- Les onze outils ---------------------------------------------------------- */
-function mat(s){ return '<g class="pl-mat">' + s + '</g>'; }
-function tas(cx, cy, rx, ry){ return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="var(--mat,#8fbf4a)" stroke="' + K + '" stroke-width="2.2"/>' +
-  '<ellipse cx="' + (cx - rx * 0.3) + '" cy="' + (cy - ry * 0.3) + '" rx="' + f1(rx * 0.3) + '" ry="' + f1(ry * 0.3) + '" fill="#fff" opacity=".35"/>'; }
-function flammes(x, y, l){
-  var s = '<g class="pl-flammes">', n = Math.max(2, Math.round(l / 12)), i;
-  for(i = 0; i < n; i++){
-    var fx = x + (i + 0.5) * l / n, h = (i % 2) ? 15 : 12;
-    s += '<path d="M' + f1(fx - 5) + ',' + y + ' c-3,-' + f1(h * 0.5) + ' 1,-' + f1(h * 0.8) + ' 5,-' + h + ' c2,' + f1(h * 0.4) + ' 8,' + f1(h * 0.5) + ' 5,' + h + ' Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.8" stroke-linejoin="round"/>';
-  }
-  return s + '</g>';
-}
-var OUTILS = {
-  couteau:function(){
-    return R(5, 70, 88, 16, 6, '#d9a86a', 3) + C(84, 78, 2.6, '#9a6c3a', 0) + L('M16,78 h50', '#c4925a', 1.6) + mat(tas(58, 68, 18, 6)) +
-      P('M32,60 L76,36 L82,45 L37,67 Z', '#e4ebf2', 2.6) + L('M40,60 L74,42', '#fff', 1.6) + P('M12,66 L30,57 L37,67 L19,77 Z', '#7a4a28', 2.6) + C(21, 69, 1.6, '#e8c98a', 0) + C(28, 65, 1.6, '#e8c98a', 0);
-  },
-  tamis:function(){
-    return P('M10,56 V72 A40,14 0 0 0 90,72 V56 Z', '#b9773a', 3) + E(50, 56, 40, 14, '#d99a5a', 3) + E(50, 56, 33, 10.5, '#efe3c2', 2) +
-      '<g clip-path="url(#pl-clip-tamis)">' + L('M20,50 l60,12 M20,56 l60,12 M20,44 l60,12 M20,62 l60,-12 M20,68 l60,-12 M20,56 l60,-12 M36,40 v32 M50,40 v32 M64,40 v32', '#b8a476', 1.2) + '</g>' +
-      mat(tas(50, 55, 20, 6)) + L('M10,64 A40,14 0 0 0 90,64', '#8a5426', 1.8);
-  },
-  mortier:function(){
-    return R(38, 82, 24, 6, 3, '#a8a0b8', 2.6) + P('M20,48 H80 C80,72 68,84 50,84 C32,84 20,72 20,48 Z', '#cfc8d8', 3) + E(50, 48, 30, 8, '#8f879f', 2.6) + mat(tas(50, 49, 20, 5)) +
-      '<g transform="rotate(26 64 40)">' + R(59, 8, 11, 44, 5.5, '#e8dfca', 2.6) + '</g>' + L('M28,60 q4,12 12,18', '#fff', 2, ' opacity=".5"');
-  },
-  presse:function(){
-    return R(12, 80, 76, 9, 3, '#94603a', 2.6) + R(19, 20, 9, 60, 2, '#7a4a28', 2.4) + R(72, 20, 9, 60, 2, '#7a4a28', 2.4) + R(12, 14, 76, 10, 3, '#94603a', 2.6) +
-      R(45, 4, 10, 46, 2, '#b8b4c8', 2.2) + L('M45,22 h10 M45,29 h10 M45,36 h10 M45,43 h10', '#7a7690', 1.4) + R(30, 0, 40, 7, 3.5, '#5a5078', 2.2) +
-      R(30, 50, 40, 8, 2, '#c98450', 2.6) + mat(tas(50, 63, 17, 5)) + P('M28,62 H72 L68,78 H32 Z', '#d9c9a8', 2.6) + L('M72,72 h10 v6', K, 5) + L('M72,72 h10 v6', '#d9c9a8', 2.4) +
-      '<path class="pl-goutte" d="M82,82 c-3,4 -3,7 0,8 c3,-1 3,-4 0,-8 Z" fill="#f2b630" stroke="' + K + '" stroke-width="1.2"/>';
-  },
-  linge:function(){
-    return P('M10,60 L66,42 L92,66 L36,86 Z', '#f6f1e4', 3) + P('M66,42 L92,66 L72,63 Z', '#ddd6c2', 2.4) + L('M20,62 L44,82 M27,60 L51,80', '#d0544a', 2.4) + L('M58,47 L82,69', '#d0544a', 2.4) + mat(tas(52, 64, 15, 6));
-  },
-  marmite:function(){
-    return R(24, 80, 52, 8, 3, '#3a3450', 2.6) + L('M30,80 v-8 M70,80 v-8', K, 4) + flammes(32, 80, 36) +
-      L('M16,36 q-9,3 -5,13 M84,36 q9,3 5,13', K, 4.5) + P('M16,28 H84 L78,60 Q50,70 22,60 Z', '#5f5582', 3) + E(50, 28, 34, 8, '#3a3352', 2.6) + mat(tas(50, 28, 25, 5)) +
-      L('M26,40 q2,12 8,18', '#fff', 2.2, ' opacity=".35"') + '<g class="pl-vapeur"><path d="M40,16 c-6,-7 6,-10 0,-18"/><path d="M58,16 c-6,-7 6,-10 0,-18"/></g>';
-  },
-  feu:function(){
-    return P('M16,62 L58,52 L84,62 L42,74 Z', '#efe2b4', 2.6) + P('M42,74 L84,62 V76 L42,88 Z', '#c8443c', 2.6) + P('M16,62 L42,74 V88 L16,76 Z', '#a2332e', 2.6) + L('M48,79 L78,70', '#7a2420', 4) +
-      L('M54,54 L74,24', K, 6) + L('M54,54 L74,24', '#e8c98a', 3) + C(75, 22, 5, '#c0392b', 2.2) +
-      '<path class="pl-etincelle" d="M75,17 c-9,-8 -2,-14 1,-19 c2,6 11,9 5,19 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="2" stroke-linejoin="round"/>';
-  },
-  alambic:function(){
-    var col = 'M30,36 C30,12 62,12 66,36 L72,58';
-    return R(8, 82, 44, 7, 3, '#3a3450', 2.6) + flammes(12, 82, 34) + P('M10,70 C-2,36 62,36 50,70 C44,76 16,76 10,70 Z', '#d98a4a', 3) + L('M18,60 C16,50 22,44 30,42', '#fff', 2.6, ' opacity=".45"') +
-      mat('<circle cx="30" cy="60" r="9" fill="var(--mat,#8fbf4a)" stroke="' + K + '" stroke-width="2"/>') +
-      R(22, 28, 16, 11, 3, '#e0a070', 2.6) + L(col, K, 9) + L(col, '#e0a070', 5) +
-      P('M64,58 h16 v7 l5,17 q1,6 -5,6 h-16 q-6,0 -5,-6 l5,-17 Z', 'rgba(220,245,255,.5)', 2.6) + '<path class="pl-goutte" d="M72,62 c-3,4 -3,7 0,8 c3,-1 3,-4 0,-8 Z" fill="#9fe0c0" stroke="' + K + '" stroke-width="1.2"/>';
-  },
-  coupelle:function(){
-    return R(18, 2, 64, 52, 4, '#bfe6ff', 3) + C(64, 18, 8, '#ffe07a', 0) + L('M64,4 v4 M64,28 v4 M50,18 h4 M74,18 h4 M54,8 l3,3 M71,25 l3,3 M74,8 l-3,3 M57,25 l-3,3', '#ffd24a', 1.8) +
-      L('M50,2 V54 M18,28 H82', K, 3) + R(8, 54, 84, 9, 3, '#c98a4a', 2.6) +
-      P('M24,70 H76 C74,82 64,88 50,88 C36,88 26,82 24,70 Z', '#f4efe2', 3) + E(50, 70, 26, 6, '#fffaf0', 2.6) + mat(tas(50, 70, 17, 3.6));
-  },
-  eau:function(){
-    var anse = 'M68,38 C94,38 94,72 70,74';
-    return L(anse, K, 10) + L(anse, '#8fb8d8', 5) + P('M34,30 H66 C82,46 82,74 66,88 H34 C18,74 18,46 34,30 Z', '#8fb8d8', 3) + P('M36,18 H64 V32 H36 Z', '#a8cbe6', 2.6) + P('M36,18 L24,13 L30,27 Z', '#a8cbe6', 2.6) +
-      E(50, 19, 13, 3.4, '#4f9be0', 2) + L('M30,48 q-2,14 4,26', '#fff', 2.6, ' opacity=".5"') + P('M50,48 c-8,10 -8,18 0,20 c8,-2 8,-10 0,-20 Z', '#4f9be0', 2);
-  },
-  fiole:function(){
-    function v(x, y, k){ return '<g transform="translate(' + x + ' ' + y + ') scale(' + k + ')">' + R(-6, -8, 12, 10, 2, '#c98a4a', 2.4) + P('M-7,0 h14 v14 l11,30 q3,12 -9,12 h-18 q-12,0 -9,-12 l11,-30 Z', 'rgba(220,245,255,.38)', 2.8) + L('M-8,36 q-4,10 2,14', '#fff', 2.4, ' opacity=".6"') + '</g>'; }
-    return v(66, 36, 0.86) + v(34, 30, 1);
-  }
-};
-var ORDRE_OUTILS = ['couteau', 'tamis', 'mortier', 'presse', 'linge', 'marmite', 'feu', 'alambic', 'coupelle', 'eau', 'fiole'];
-var NOMS_OUTILS = {couteau:'La planche et le couteau', tamis:'Le tamis', mortier:'Le mortier', presse:'La presse', linge:'Le linge', marmite:'La marmite', feu:'Les allumettes', alambic:'L\'alambic',
-  coupelle:'La coupelle, à la fenêtre', eau:'La cruche d\'eau', fiole:'Les fioles vides'};
 var PLANTES = {oseille:oseille, souci:souci, melisse:melisse, lin:lin, lycopode:lycopode, vesse:vesse, gui:gui};
 
 /* une fiole de potion (pleine si on donne sa couleur) : l'étagère des sept potions, les pages du grimoire */
@@ -315,10 +247,8 @@ function fiole(coul){
     P('M14,10 h12 v12 l8,26 q2,9 -7,9 h-14 q-9,0 -7,-9 l8,-26 Z', coul ? 'rgba(255,255,255,.16)' : 'rgba(220,245,255,.14)', 2.6) +
     (coul ? L('M12,40 q-2,8 2,11', '#fff', 2.2, ' opacity=".7"') : '') + '</svg>';
 }
-function svgOutil(id){ return '<svg viewBox="0 -4 100 100" aria-hidden="true">' + OUTILS[id]() + '</svg>'; }
 function svgPlante(id){ return '<svg viewBox="0 0 260 322" class="pl-dessin" data-plante="' + id + '">' + PLANTES[id]() + '</svg>'; }
-/* (une seule fois dans la page : la toile du tamis ne dépasse pas de son cercle) */
-var DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="pl-clip-tamis"><ellipse cx="50" cy="56" rx="32" ry="9.6"/></clipPath></defs></svg>';
+function corps(id){ CUEILLIE = true; var s; try{ s = PLANTES[id](); } finally { CUEILLIE = false; } return s; }
 
-window.PLD = {outil:svgOutil, plante:svgPlante, fiole:fiole, OUTILS:ORDRE_OUTILS, NOMS:NOMS_OUTILS, DEFS:DEFS};
+window.PLD = {plante:svgPlante, corps:corps, fiole:fiole};
 })();

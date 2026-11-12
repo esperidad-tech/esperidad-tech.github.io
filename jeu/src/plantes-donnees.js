@@ -1,0 +1,181 @@
+/* ==========================================================
+   Brumeval — les sept plantes et les sept potions de la brume (enquête 3). Rien que des données : pas de règles, pas de dessins.
+   Ce fichier sert DEUX fois : dans le jeu (plantes.js : les noms, les couleurs, le sac) et dans la page de l'établi
+   (src/etabli/, assemblée par build.py : les recettes, geste par geste). Une seule source : on ne recopie rien.
+
+   Refait le 12 novembre (Romain, 8 h 50 : « je veux des étapes qui soient vraiment réalistes… quand il a fini de jouer, il a appris
+   des trucs sur la nature »). Chaque recette suit les vrais gestes (vérifiés : Bible §13.21) :
+   · PL : les plantes. parties : {nom, c (couleur), s (sa sorte : pour la dessiner une fois détachée), faux (la phrase d'une mauvaise partie)}.
+   · RE : les potions (mêmes identifiants et mêmes couleurs que le donjon : jeu/donjon/moteur/src/donnees.js).
+       dit : la partie, en mots (le grimoire) ; recette : les phrases du grimoire ; vrai : ce qui est vrai, dit quand la potion est finie ;
+       etapes : {o : l'outil où ça se passe (planche, tamis, mortier, presse, filtre, marmite, alambic, sechoir, fiole),
+                 liq : 'eau' ou 'huile' (ce qu'il faut verser avant, marmite et alambic), feu : 0 (sans feu), 1 (une bûche : petit feu), 2 (deux : grand feu),
+                 verse : 'eau' (l'étape se fait en versant la cruche là où la matière est posée),
+                 m : ce que c'est devenu (3 mots au plus), c : sa couleur, f : sa forme (pour la dessiner), t : le petit message (ce qui se passe, pour de vrai)}.
+       faux : 'rang:outil' ou 'rang:outil:cas' → ce qui se passe avec le mauvais outil (cas de la marmite et de l'alambic : sec, froid, doux, fort,
+              eau, huile ; « cas » peut en réunir deux : 'eau+fort').
+   ========================================================== */
+(function(){
+'use strict';
+var ORDRE = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
+var ORDRE_PL = ['oseille', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui'];
+
+var PL = {
+  oseille:{nom:'L\'oseille', court:'Oseille', potion:'acide', ou:'Elle aime avoir les pieds au frais, tout au bord de l\'eau.',
+    arrive:'De grandes feuilles en fer de flèche, et une tige de petites fleurs rouges.',
+    parties:{feuilles:{nom:'Les feuilles', c:'#62b24c', s:'feuilles'},
+      hampe:{nom:'Les fleurs rouges', c:'#c9483f', s:'brins', faux:'De toutes petites fleurs rouges. C\'est joli… mais le piquant de l\'oseille n\'est pas là.'},
+      racine:{nom:'La racine', c:'#d2a878', s:'racine', faux:'Une racine pleine de terre. Elle ne pique même pas la langue !'}}},
+  souci:{nom:'Le souci', court:'Souci', potion:'baume', ou:'Il fleurit au soleil, entre les choux et les poireaux.',
+    arrive:'Des fleurs orange comme de petits soleils.',
+    parties:{fleurs:{nom:'Les fleurs orange', c:'#ff9a1f', s:'fleurs'},
+      feuilles:{nom:'Les feuilles', c:'#6cba55', s:'feuilles', faux:'Des feuilles un peu collantes… et c\'est tout. Ce qui soigne, chez le souci, c\'est la fleur.'},
+      racine:{nom:'Les racines', c:'#b88a58', s:'racine', faux:'Des racines toutes tordues, pleines de terre. Rien à en tirer !'}}},
+  melisse:{nom:'La mélisse', court:'Mélisse', potion:'coeur', ou:'Celle qui soigne avec des fleurs en garde toujours un pied dans son jardin.',
+    arrive:'Frotte une feuille : tout l\'atelier sent le citron !',
+    parties:{feuilles:{nom:'Les feuilles', c:'#7cc46a', s:'feuilles'},
+      fleurs:{nom:'Les petites fleurs', c:'#fffdf2', s:'brins', faux:'De toutes petites fleurs blanches. Les abeilles en raffolent… mais le parfum de citron est dans les feuilles.'},
+      tige:{nom:'La tige', c:'#8fcf7a', s:'tige', faux:'Une tige carrée. Carrée ! C\'est rigolo… mais elle ne sent presque rien.'}}},
+  lin:{nom:'Le lin', court:'Lin', potion:'huile', ou:'Ses graines se moulent comme le blé : le meunier en garde toujours un sac.',
+    arrive:'De fines tiges, des fleurs bleues, et de petites boules dorées.',
+    parties:{graines:{nom:'Les boules dorées', c:'#d8b25e', s:'boules'},
+      fleurs:{nom:'Les fleurs bleues', c:'#6ea8ff', s:'fleurs', faux:'De jolies fleurs bleues… qui ne donnent pas une goutte. Elles ne durent qu\'un matin !'},
+      tiges:{nom:'Les tiges', c:'#6aa84f', s:'tige', faux:'Rien ne coule. Les tiges du lin, c\'est pour faire du fil !'}}},
+  lycopode:{nom:'Le pied-de-loup', court:'Pied-de-loup', potion:'feu', rare:true,
+    arrive:'On dirait une petite branche de sapin qui rampe.',
+    parties:{epis:{nom:'Les épis jaunes', c:'#f0dc7a', s:'epis'},
+      tiges:{nom:'Les tiges vertes', c:'#4f9a4a', s:'tige', faux:'Les tiges du pied-de-loup font de jolies couronnes… mais pas la moindre flamme.'},
+      racines:{nom:'Les petites racines', c:'#b88a58', s:'racine', faux:'De petites racines toutes fines. Rien à en tirer !'}}},
+  vesse:{nom:'La vesse-de-loup', court:'Vesse-de-loup', potion:'fumigene', rare:true,
+    arrive:'Une grosse brune, et une petite toute blanche.',
+    parties:{mure:{nom:'La grosse brune', c:'#b08a5c', s:'champi'},
+      jeune:{nom:'La petite blanche', c:'#f8f3e6', s:'champi', faux:'Dedans, c\'est blanc et ferme comme du fromage. Elle est trop jeune : pas un grain de poussière !'},
+      fils:{nom:'Les fils blancs', c:'#f6eedb', s:'racine', faux:'Des fils blancs pleins de terre : c\'est par eux que le champignon se nourrit. Le nuage ne se cache pas là !'}}},
+  gui:{nom:'Le gui', court:'Gui', potion:'colle', rare:true,
+    arrive:'Il est encore accroché à son bout de pommier.',
+    parties:{baies:{nom:'Les baies blanches', c:'#fbfaf0', s:'baies'},
+      feuilles:{nom:'Les feuilles', c:'#8fbf4a', s:'feuilles', faux:'Une bouillie verte… qui ne colle pas du tout.'},
+      branche:{nom:'La branche', c:'#8a5a36', s:'bois', faux:'Du bois de pommier. Dur comme… du bois. Ça ne colle à rien !'}}}
+};
+
+var RE = {
+  feu:{nom:'La fiole de feu', court:'Feu', coul:'#ff7a2a', plante:'lycopode', partie:'epis', dit:'les épis jaunes, tout au bout des tiges.',
+    sert:'Dans le donjon, elle brûle un monstre.',
+    recette:['Laisse sécher les épis.', 'Secoue-les au tamis : garde la poudre jaune.', 'Mets la poudre en fiole.'],
+    etapes:[
+      {o:'sechoir', m:'Les épis secs', c:'#e2c860', f:'epis', t:'Les épis sèchent à l\'ombre. En séchant, ils s\'ouvrent : leur poudre va pouvoir sortir.'},
+      {o:'tamis', m:'La poudre jaune', c:'#ffe45a', f:'tas', t:'Tu secoues. Une poudre jaune traverse le tamis : ce sont les spores, les « graines » du pied-de-loup.'},
+      {o:'fiole', t:'En fiole ! Lancée dans une flamme, cette poudre fait FOUCH : un éclair de feu.'}],
+    faux:{'0:tamis':'Les épis sont encore frais : la poudre reste collée dedans. Il faut d\'abord les laisser sécher.',
+      '0:mortier':'Tu écrases les épis. Une pâte jaune… qui ne brûle pas du tout.',
+      '1:mortier':'Écrasés, les épis se mélangent à leur poudre. Elle ne s\'enflammera plus d\'un coup !',
+      '1:marmite:eau':'Incroyable : la poudre flotte sur l\'eau sans se mouiller ! Elle est grasse comme une plume de canard.',
+      '2:marmite:eau':'Incroyable : la poudre flotte sur l\'eau sans se mouiller ! Elle est grasse comme une plume de canard.'},
+    vrai:'La poudre de lycopode existe vraiment. Elle s\'enflamme d\'un coup : on s\'en servait pour les flammes au théâtre et le flash des premiers photographes. Aujourd\'hui, le pied-de-loup est protégé : on ne le cueille plus.'},
+  fumigene:{nom:'Le fumigène', court:'Fumigène', coul:'#aab4d2', plante:'vesse', partie:'mure', dit:'la grosse boule brune, bien mûre.',
+    sert:'Dans le donjon, il fait un gros nuage dans toute la salle.',
+    recette:['Laisse-la finir de sécher.', 'Presse-la au-dessus d\'un bocal, et bouche vite !'],
+    etapes:[
+      {o:'sechoir', m:'La vesse séchée', c:'#9a7a52', f:'champi', t:'La vesse-de-loup finit de sécher. Elle devient légère comme du papier.'},
+      {o:'fiole', t:'Tu la presses au-dessus du bocal… POUF ! Le nuage brun descend dedans. Vite, le bouchon !'}],
+    faux:{'0:planche':'Pouf ! Un nuage brun… en plein dans ta figure. Atchoum !', '1:planche':'Pouf ! Un nuage brun… en plein dans ta figure. Atchoum !',
+      '0:mortier':'Pouf ! Tout le nuage s\'envole du mortier. Atchoum !', '1:mortier':'Pouf ! Tout le nuage s\'envole du mortier. Atchoum !',
+      '0:presse':'Pouf ! Le pressoir crache un nuage brun… qui s\'envole par la fenêtre.', '1:presse':'Pouf ! Le pressoir crache un nuage brun… qui s\'envole par la fenêtre.',
+      '0:tamis':'Pouf ! La poussière traverse le tamis… et s\'envole dans tout l\'atelier.', '1:tamis':'Pouf ! La poussière traverse le tamis… et s\'envole dans tout l\'atelier.',
+      '0:filtre':'Pouf ! Le nuage traverse le tissu… et s\'envole.', '1:filtre':'Pouf ! Le nuage traverse le tissu… et s\'envole.',
+      '0:fiole':'Pff… Un tout petit nuage. Elle est encore humide : sa poussière colle. Il faut la laisser sécher.',
+      '0:marmite:eau':'Mouillée, la vesse-de-loup ne crache plus rien : sa poussière colle au fond.', '1:marmite:eau':'Mouillée, la vesse-de-loup ne crache plus rien : sa poussière colle au fond.'},
+    vrai:'Jeune, la vesse-de-loup est blanche et ferme. Mûre, elle se remplit d\'une poussière brune : ses spores. Une goutte de pluie tombe dessus, et pouf, elle les crache ! On ne respire jamais ce nuage : il fait tousser.'},
+  huile:{nom:'L\'huile', court:'Huile', coul:'#f2b630', plante:'lin', partie:'graines', dit:'les petites boules dorées : les graines sont dedans.',
+    sert:'Dans le donjon, elle fait glisser un monstre. Et elle libère un ami pris dans une toile.',
+    recette:['Frotte les boules au tamis : garde les graines.', 'Presse les graines.', 'Filtre l\'huile.', 'Mets-la en fiole.'],
+    etapes:[
+      {o:'tamis', m:'Les graines', c:'#a8743a', f:'graines', t:'Tu frottes les boules sur le tamis. Les coques restent dessus, les petites graines brunes passent.'},
+      {o:'presse', m:'L\'huile trouble', c:'#dba83a', f:'jus', t:'Tu tournes la vis. Ça craque… Une huile dorée coule, goutte à goutte. On ne chauffe rien : c\'est la pression à froid.'},
+      {o:'filtre', m:'L\'huile claire', c:'#f2b630', f:'jus', t:'L\'huile traverse le tissu. Les miettes restent dessus : elle sort bien claire.'},
+      {o:'fiole', t:'En fiole ! Une belle huile dorée, qui glisse entre les doigts.'}],
+    faux:{'0:mortier':'Écrasées avec leurs coques, les graines font une farine pleine de paille. Et l\'huile reste collée dedans !',
+      '0:presse':'Les coques s\'écrasent avec les graines : trois gouttes d\'huile pleines de paille. Il faut d\'abord trier.',
+      '0:planche':'Les boules dorées roulent sous la lame et s\'échappent partout. Reviens ici, toi !',
+      '1:mortier':'Pilées, les graines font une farine grasse. L\'huile reste collée dedans : il faut presser, pas écraser.',
+      '1:marmite:eau':'Des graines de lin dans l\'eau : une gelée toute gluante ! Elle sert vraiment… à coiffer les cheveux.',
+      '2:fiole':'Pas encore ! Pleine de miettes, l\'huile deviendrait vite mauvaise. Il faut d\'abord la filtrer.'},
+    vrai:'L\'huile de lin sort des graines qu\'on presse, sans les chauffer. Ce qui reste, le « tourteau », régale les vaches. Et avec les tiges du lin, on fait du fil : les draps et les chemises de lin !'},
+  colle:{nom:'La colle', court:'Colle', coul:'#ece4d0', plante:'gui', partie:'baies', dit:'les baies blanches.',
+    sert:'Dans le donjon, les pattes du monstre restent collées au sol.',
+    recette:['Écrase les baies.', 'Fais-les tremper dans l\'eau, sans feu.', 'Puis cuis à petit feu, en tournant.', 'Mets la glu en fiole.'],
+    etapes:[
+      {o:'mortier', m:'La pâte blanche', c:'#f1ecd8', f:'pate', t:'Ploc, ploc ! Les baies éclatent sous le pilon. Leur chair file et colle déjà aux doigts.'},
+      {o:'marmite', liq:'eau', feu:0, m:'La pâte gonflée', c:'#e6dfc6', f:'pate', t:'La pâte trempe dans l\'eau froide. Elle gonfle, elle s\'étire… Il fallait lui laisser du temps.'},
+      {o:'marmite', liq:'eau', feu:1, m:'La glu', c:'#ece4d0', f:'pate', t:'À petit feu, tu tournes sans arrêt. La pâte devient une glu fine, très collante.'},
+      {o:'fiole', t:'En fiole ! N\'y mets surtout pas les doigts…'}],
+    faux:{'0:planche':'Les baies roulent sous la lame et s\'échappent partout. Reviens ici, toi !',
+      '0:presse':'Splatch ! Le pressoir est tout collé. Bon courage pour le laver…',
+      '0:marmite':'Entières, les baies gardent leur colle bien à l\'abri sous la peau. Il faut d\'abord les écraser.',
+      '0:tamis':'Les baies roulent sur le tamis. Trop grosses pour passer !',
+      '1:marmite:eau+doux':'Trop vite ! La pâte n\'a pas eu le temps de gonfler dans l\'eau froide. Elle fait des grumeaux.',
+      '1:marmite:eau+fort':'Trop vite, et trop fort ! La pâte attache au fond et brûle.',
+      '1:filtre':'La pâte bouche tous les trous du tissu. Plus rien ne passe !',
+      '2:marmite:eau+fort':'Trop fort ! La glu attache au fond et brûle. À petit feu, toujours.',
+      '2:marmite:eau+froid':'Elle a déjà bien trempé. Maintenant, il faut la cuire.',
+      '2:fiole':'Pas encore ! Crue, la pâte ne colle pas assez. Il faut la cuire.'},
+    vrai:'Avec les baies du gui, on faisait autrefois la « glu » : une colle très forte. Les oiseaux la connaissent : la baie colle à leur bec, ils l\'essuient sur une branche… et un nouveau gui y pousse ! Attention : ces baies sont du poison.'},
+  acide:{nom:'L\'acide', court:'Acide', coul:'#9be04a', plante:'oseille', partie:'feuilles', dit:'les feuilles.',
+    sert:'Il ronge le fer et la rouille : une vieille grille, une armure…',
+    recette:['Hache les feuilles.', 'Presse-les : garde le jus.', 'Filtre le jus.', 'Fais-le réduire à grand feu.', 'Laisse sécher : des cristaux apparaissent.', 'Fais-les fondre dans un peu d\'eau.', 'Mets en fiole.'],
+    etapes:[
+      {o:'planche', m:'Les feuilles hachées', c:'#62b24c', f:'hache', t:'Tchac, tchac, tchac ! Hachées menu, les feuilles laissent sortir leur jus.'},
+      {o:'presse', m:'Le jus vert', c:'#7cbf4c', f:'jus', t:'Tu serres la vis. Un jus vert coule : tout le piquant de l\'oseille est dedans.'},
+      {o:'filtre', m:'Le jus clair', c:'#a6d86a', f:'jus', t:'Le jus traverse le tissu. Les miettes de feuilles restent dessus.'},
+      {o:'marmite', feu:2, m:'Le jus épais', c:'#8fbf3a', f:'jus', t:'À grand feu, le jus bout et réduit. L\'eau s\'en va en vapeur, le piquant reste.'},
+      {o:'sechoir', m:'Les cristaux blancs', c:'#ffffff', f:'cristaux', t:'Le jus épais repose et sèche. Au fond, de petits cristaux blancs : le sel d\'oseille !'},
+      {o:'sechoir', verse:'eau', m:'L\'eau acide', c:'#c8f08a', f:'jus', t:'Un peu d\'eau sur les cristaux. Ils fondent sans bruit : l\'eau devient acide.'},
+      {o:'fiole', t:'En fiole ! Pssshhh… Celle-là, elle ronge la rouille.'}],
+    faux:{'0:mortier':'Une purée verte, bien acide. Elle pique la langue… mais le jus reste pris dedans.',
+      '0:presse':'Entières, les feuilles s\'aplatissent sans rien donner. Hachées, elles lâcheraient leur jus.',
+      '0:marmite:eau':'Une soupe à l\'oseille ! Délicieuse… mais ce n\'est pas une potion.', '1:marmite:eau':'Une soupe à l\'oseille ! Délicieuse… mais ce n\'est pas une potion.',
+      '1:filtre':'Rien ne coule. Il faut d\'abord presser les feuilles pour avoir du jus.',
+      '2:marmite':'Plein de miettes, le jus accroche au fond et brûle. Il faut d\'abord le filtrer.',
+      '3:marmite:doux':'À petit feu, le jus tiédit… sans réduire. Il lui faut un grand feu !',
+      '3:marmite:froid':'Sans feu, le jus reste du jus. Il lui faut un grand feu !',
+      '3:sechoir':'Le jus est trop clair : il mettrait des semaines à sécher. Il faut d\'abord le faire réduire.',
+      '3:fiole':'Pas encore ! Ce jus pique la langue, mais pas la rouille. Il faut en tirer les cristaux.',
+      '4:fiole':'Pas encore ! Ce jus pique la langue, mais pas la rouille. Il faut en tirer les cristaux.',
+      '5:fiole':'Des cristaux tout secs ne rongent rien. Il faut les faire fondre dans un peu d\'eau.',
+      '5:mortier':'Une poudre blanche. Attention : ça ne se mange pas !'},
+    vrai:'L\'oseille pique la langue parce qu\'elle contient un acide. On en tirait des cristaux, le « sel d\'oseille » : il enlève encore la rouille et les taches d\'encre. Attention : lui, il ne se mange pas !'},
+  baume:{nom:'Le baume', court:'Baume', coul:'#5fd08a', plante:'souci', partie:'fleurs', dit:'les fleurs orange.',
+    sert:'Dans le donjon, il soigne beaucoup un ami.',
+    note:'Il faut de l\'huile de lin : fais d\'abord la potion d\'huile !',
+    recette:['Fais sécher les fleurs.', 'Chauffe-les dans l\'huile de lin, à petit feu.', 'Filtre.', 'Mets en fiole.'],
+    etapes:[
+      {o:'sechoir', m:'Les fleurs séchées', c:'#f08a1e', f:'fleurs', t:'Les fleurs sèchent à l\'ombre. Au soleil, elles perdraient leur belle couleur orange.'},
+      {o:'marmite', liq:'huile', feu:1, m:'L\'huile orange', c:'#ffb640', f:'jus', t:'Les fleurs chauffent tout doucement dans l\'huile. Elle devient orange : elle leur prend ce qui soigne.'},
+      {o:'filtre', m:'L\'huile de souci', c:'#ffab3a', f:'jus', t:'Tu filtres. Les fleurs restent dans le tissu, l\'huile orange passe.'},
+      {o:'fiole', t:'En fiole, le baume tourne au vert tendre. Il est prêt à soigner !'}],
+    faux:{'0:marmite:huile':'Des fleurs fraîches, c\'est plein d\'eau : dans l\'huile, elles moisiraient. Il faut d\'abord les sécher.',
+      '0:marmite:eau':'Une tisane orange… qui ne tient pas sur une blessure.', '1:marmite:eau':'Une tisane orange… qui ne tient pas sur une blessure. Le souci donne ses bienfaits à l\'huile.',
+      '0:mortier':'Une purée orange qui tache tout. Ton établi a pris des couleurs !',
+      '1:marmite:huile+fort':'Trop chaud ! L\'huile fume et les fleurs grillent. À petit feu, toujours.',
+      '1:marmite:huile+froid':'À froid, ça marche… mais il faut attendre un mois, au soleil ! Un petit feu ira bien plus vite.',
+      '1:mortier':'Les fleurs sèches tombent en poussière orange. Et après ?',
+      '2:fiole':'Pas encore ! Avec les fleurs dedans, l\'huile s\'abîmerait. Il faut la filtrer.'},
+    vrai:'L\'huile de souci est un très vieux remède : on en met sur la peau qui gratte et sur les petits bobos. Le souci s\'appelle aussi le calendula. Sa fleur s\'ouvre quand le soleil est haut, et se referme le soir.'},
+  coeur:{nom:'Le cœur vaillant', court:'Cœur', coul:'#ff5a7a', plante:'melisse', partie:'feuilles', dit:'les feuilles.',
+    sert:'Dans le donjon, il relève un ami tombé au sol.',
+    recette:['Hache les feuilles.', 'Distille-les dans l\'alambic, avec de l\'eau, à petit feu.', 'Mets les gouttes en fiole.'],
+    etapes:[
+      {o:'planche', m:'Les feuilles coupées', c:'#7cc46a', f:'hache', t:'Tchac ! Coupées, les feuilles sentent le citron : leur parfum se libère.'},
+      {o:'alambic', liq:'eau', feu:1, m:'L\'eau de mélisse', c:'#bfeee0', f:'jus', t:'L\'eau chauffe. La vapeur emporte le parfum, monte dans le col de cygne, refroidit… et retombe goutte à goutte.'},
+      {o:'fiole', t:'En fiole ! L\'eau de mélisse rosit : elle redonne du courage.'}],
+    faux:{'0:alambic':'Entières, les feuilles gardent leur parfum bien enfermé. Il faut d\'abord les couper.',
+      '0:marmite:eau':'Une bonne tisane au citron ! Mais son parfum s\'envole avec la vapeur… Il faudrait l\'attraper.',
+      '1:marmite:eau':'Une bonne tisane au citron ! Mais son parfum s\'envole avec la vapeur… Il faudrait l\'attraper.',
+      '0:mortier':'Une purée verte qui sent bon le citron. Mais le parfum reste dans la purée !', '1:mortier':'Une purée verte qui sent bon le citron. Mais le parfum reste dans la purée !',
+      '1:alambic:eau+fort':'Trop fort ! L\'eau bout à gros bouillons et passe dans le tuyau sans se changer en vapeur. Tout est trouble.',
+      '1:presse':'Trois gouttes vertes… Le parfum de la mélisse ne se presse pas : il s\'envole.'},
+    vrai:'Distiller, c\'est changer un liquide en vapeur, puis la vapeur en gouttes. L\'eau de mélisse existe vraiment : des moines de Paris la préparaient déjà en 1611. On en trouve encore en pharmacie !'}
+};
+
+window.PLANTES_DONNEES = {ORDRE:ORDRE, ORDRE_PL:ORDRE_PL, PL:PL, RE:RE};
+})();

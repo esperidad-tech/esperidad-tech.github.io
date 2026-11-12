@@ -266,6 +266,8 @@ function normaliser(e){
   });
   /* le chaudron a maintenant trois formes (10 novembre) : une ancienne sauvegarde garde son chaudron rond, et sa couleur */
   if(!e.chFormes){ e.chFormes = 1; e.objets.forEach(function(o){ if(o.t === 'chaudron') o.st = styleAvec(3, 0, (o.st || 0) % 8); }); }
+  /* l'établi des plantes a maintenant cinq formes, comme la paillasse (12 novembre) : une ancienne sauvegarde garde sa couleur, et prend l'établi de bois */
+  if(!e.etFormes){ e.etFormes = 1; e.objets.forEach(function(o){ if(o.t === 'etabli') o.st = styleAvec(5, 0, (o.st || 0) % 8); }); if(e.etabli) e.etabli.st = styleAvec(5, 0, (e.etabli.st || 0) % 8); }
   if(avant3 && typeof CAT !== 'undefined') reglerVerre(e);
   /* plein de rangements : une seule fois, un carton de beaux rangements pour les anciennes sauvegardes */
   if(!e.cadeauRangements){
@@ -1104,41 +1106,82 @@ def('paillasse', {w:480, h:212, p:130, z:'sol', special:'analyses', profil:true,
   }});
 
 /* L'établi des plantes (enquête 3, E3-atelier-des-plantes.md §2) : là où l'Alchimiste prépare les potions de la brume avec de vraies
-   plantes (plantes.js). Deux formes (un établi de bois à tablette, un buffet à deux portes) ; dessus, toujours les mêmes outils aux mêmes
-   places : au fond, l'alambic de cuivre, la marmite sur son réchaud, la presse à vis ; devant, la planche et son couteau, le mortier,
-   une plante dans son pot. La couleur choisie teint le linge et le pot. On le touche : ses bulles (« 🌿 Préparer », Forme, 🎨 Couleur).
+   plantes (plantes.js ; sa page vue de près : src/etabli/). Refait le 12 novembre (Romain : « comme pour la paillasse, je veux qu'il y ait
+   plusieurs modèles et plusieurs couleurs ») : cinq formes de table, les mêmes que la paillasse (établi de bois, comptoir de pierre sur un
+   buffet, marbre et or, meuble à tiroirs, tréteaux), et sur chacune TOUJOURS les mêmes outils aux mêmes places, comme sur sa page :
+   au fond, les bûches, l'alambic de cuivre et son seau, la marmite sur son trépied, le grimoire sur son lutrin, le pressoir, le séchoir ;
+   devant, le mortier, la planche et son couteau, le linge et ses plantes, la cruche, le bocal à filtrer. La table prend le thème (le marbre
+   aussi ; son or reste or). On le touche : ses bulles (« 🌿 Préparer », Forme, 🎨 Couleur).
    Il n'est dans la pièce que pendant une enquête qui s'en sert (opts.etabli : Atelier.vue le pose et le range tout seul). */
-def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:2, nom:'Établi des plantes', ic:'🌿', surf:null,
+def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:5, nom:'Établi des plantes', ic:'🌿', surf:null,
   d:function(c){
-    var f = c.fo, P2 = c.p, Y = 108, s = '<g class="at-etabli-p" data-at="plantes">', mc = c.ti ? THEMES[c.ti].c : '#6fae5a';
+    var f = c.fo, P2 = c.p, Y = 108, s = '<g class="at-etabli-p" data-at="plantes">', mc = c.ti ? THEMES[c.ti].c : null, k;
     var B2 = ' stroke-width="2"', B25 = ' stroke-width="2.5"', B3 = ' stroke-width="3"';
-    if(f === 0) s += pieds(c, 20, 360, 146, 212, 8, P2 - 8, 18) + c.boite(26, 186, 354, 196, 14, P2 - 14, UNI(G('boisH')));
-    else s += c.boite(16, 146, 364, 210, 6, P2 - 6, BOIS()) + c.sur(R(28, 152, 156, 52, 5, G('boisC'), B3) + R(196, 152, 156, 52, 5, G('boisC'), B3) + Cir(176, 178, 5, '#f5b945') + Cir(204, 178, 5, '#f5b945'), 6);
-    s += c.boite(10, 122, 370, 146, 3, P2 - 3, BOIS()) + c.boite(4, Y, 376, 124, 0, P2, UNI(G('boisH'), G('boisH'), G('boisS')));
-    /* --- au fond : l'alambic de cuivre (son ballon, son col de cygne, la fiole qui reçoit les gouttes), la marmite sur son réchaud, la presse --- */
-    var col = 'M70,' + (Y - 44) + ' C70,' + (Y - 62) + ' 104,' + (Y - 62) + ' 108,' + (Y - 40) + ' L112,' + (Y - 18);
-    var fond = Ell(70, Y - 3, 24, 5, '#3a3450', B25) + R(52, Y - 12, 36, 9, 2, '#5a5078', B25) +
-      '<path d="M46,' + (Y - 12) + ' C36,' + (Y - 44) + ' 104,' + (Y - 44) + ' 94,' + (Y - 12) + ' Z" fill="#d98a4a" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
-      reflet('M54,' + (Y - 20) + ' C52,' + (Y - 30) + ' 58,' + (Y - 36) + ' 66,' + (Y - 38), 3) + R(63, Y - 50, 14, 10, 3, '#e0a070', B25) + T(col, K, 7) + T(col, '#e0a070', 3.5) +
-      R(105, Y - 20, 14, 19, 4, 'rgba(220,245,255,.4)', B25) + '<rect x="107" y="' + (Y - 9) + '" width="10" height="7" rx="2" fill="#9fe0c0" opacity=".85"/>';
-    fond += R(160, Y - 8, 50, 7, 2, '#3a3450', B25) + '<path d="M170,' + (Y - 9) + ' c-3,-5 -1,-9 2,-12 c2,4 4,8 -2,12 Z M186,' + (Y - 9) + ' c-3,-6 -1,-10 2,-14 c2,5 4,9 -2,14 Z M200,' + (Y - 9) + ' c-3,-5 -1,-9 2,-12 c2,4 4,8 -2,12 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.5"/>' +
-      '<path d="M156,' + (Y - 42) + ' H214 L208,' + (Y - 20) + ' Q185,' + (Y - 14) + ' 162,' + (Y - 20) + ' Z" fill="#5f5582" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + Ell(185, Y - 42, 29, 6, '#3a3352', B25) +
-      T('M150,' + (Y - 36) + ' q-7,3 -4,10 M220,' + (Y - 36) + ' q7,3 4,10', K, 4) + '<g class="at-vapeur"><path d="M176,' + (Y - 50) + ' c-6,-8 6,-12 0,-22"/><path d="M194,' + (Y - 50) + ' c-6,-8 6,-12 0,-20"/></g>';
-    fond += R(268, Y - 10, 62, 9, 2, '#94603a', B25) + R(272, Y - 58, 8, 50, 2, '#7a4a28', B2) + R(318, Y - 58, 8, 50, 2, '#7a4a28', B2) + R(266, Y - 62, 66, 9, 2, '#94603a', B25) +
-      R(295, Y - 74, 8, 44, 2, '#b8b4c8', B2) + T('M295,' + (Y - 66) + ' h8 M295,' + (Y - 58) + ' h8 M295,' + (Y - 50) + ' h8 M295,' + (Y - 42) + ' h8', '#7a7690', 1.4) + R(284, Y - 80, 30, 7, 3, '#5a5078', B2) + R(282, Y - 32, 34, 8, 2, '#c98450', B25);
+    var OR = UNI('#f5b945', '#ffe08a', '#b8862e');
+    var MARBRE = UNI(mc ? melange('#efeaf6', mc, 0.42) : '#efeaf6', mc ? melange('#fbf9fd', mc, 0.3) : '#f7f4fb', mc ? melange('#d9d3ea', mc, 0.52) : '#d6d0e8'), veine = mc ? sombre(mc, 0.18) : '#c9c2dc';
+    /* --- le bas du meuble : ce qui change d'une forme à l'autre --- */
+    if(f === 0){        /* établi de bois : quatre pieds et une tablette basse */
+      s += pieds(c, 20, 360, 146, 212, 8, P2 - 8, 18) + c.boite(26, 186, 354, 196, 14, P2 - 14, UNI(G('boisH')));
+    } else if(f === 1){ /* comptoir de pierre sur un buffet à deux portes */
+      s += c.boite(16, 146, 364, 210, 6, P2 - 6, BOIS()) + c.sur(R(28, 152, 156, 52, 5, G('boisC'), B3) + R(196, 152, 156, 52, 5, G('boisC'), B3) + Cir(176, 178, 5, '#f5b945') + Cir(204, 178, 5, '#f5b945'), 6);
+    } else if(f === 2){ /* marbre et pieds dorés */
+      [10, P2 - 12].forEach(function(z){ [32, 128, 252, 348].forEach(function(x, j){ var l = [[x, 146, z], [x + (j < 2 ? -6 : 6), 180, z], [x, 210, z]]; s += c.ligne(l, K, 11) + c.ligne(l, '#f5b945', 5); }); });
+    } else if(f === 3){ /* meuble à petits tiroirs */
+      var t3 = '';
+      for(k = 0; k < 8; k++){ var x3 = 20 + (k % 4) * 86, y3 = 151 + Math.floor(k / 4) * 29; t3 += R(x3, y3, 80, 25, 4, G('boisC'), B3) + Cir(x3 + 40, y3 + 12.5, 3.5, '#f5b945'); }
+      s += c.boite(12, 146, 368, 210, 6, P2 - 6, BOIS()) + c.sur(t3, 6);
+    } else {            /* tréteaux */
+      [12, P2 - 12].forEach(function(z){ [[32, 90], [90, 32], [290, 348], [348, 290]].forEach(function(q){ var l = [[q[0], 146, z], [q[1], 210, z]]; s += c.ligne(l, K, 12) + c.ligne(l, '#b06f3e', 6); }); });
+      s += c.boite(60, 176, 320, 184, P2 / 2 - 4, P2 / 2 + 4, UNI('#d29a5e'));
+    }
+    /* --- la ceinture : une tringle de laiton, où pendent les ciseaux, la cuillère de bois et un bouquet de lavande --- */
+    var tr = 'M24,135 H356';
+    s += c.boite(10, 122, 370, 146, 3, P2 - 3, f === 2 ? OR : BOIS()) +
+      c.sur(T(tr, K, 5) + T(tr, f === 2 ? '#fff1b8' : '#e0a23a', 2.4) + T('M92,136 v7 M190,136 v8 M288,136 v7', K, 3.4) + '<circle cx="92" cy="145" r="2.6" fill="#5f5872"/><ellipse cx="190" cy="146" rx="2.6" ry="3.4" fill="#c98450" stroke="' + K + '" stroke-width="1"/><ellipse cx="288" cy="146" rx="2.4" ry="3.6" fill="#9a7ae0" stroke="' + K + '" stroke-width="1"/>', 3);
+    /* --- le plateau --- */
+    if(f === 1) s += c.boite(2, Y, 378, 124, -3, P2 + 1, UNI(G('pierre'))) + c.sur(reflet('M14,114 H366', 3), -3);
+    else if(f === 2) s += c.boite(4, Y, 376, 124, 0, P2, MARBRE) + c.sur(T('M50,113 C100,120 130,109 190,116 M240,111 C280,118 320,111 360,116', veine, 2.5), 0) +
+      c.dessus(T('M26,-30 C100,-50 160,-20 240,-44 S330,-28 366,-58 M64,-88 C140,-72 190,-94 262,-78', veine, 2.5, ' opacity=".7"'), Y, 0);
+    else s += c.boite(4, Y, 376, 124, 0, P2, f === 4 ? BOIS() : UNI(G('boisH'), G('boisH'), G('boisS')));
+    /* --- au fond, de gauche à droite : les bûches, l'alambic (son fourneau de briques, son col de cygne, son seau), la marmite sur son trépied,
+       le grimoire sur son lutrin, le pressoir, le séchoir --- */
+    var fond = '';
+    [[22, 0], [34, 0], [28, -10]].forEach(function(q){ fond += '<circle cx="' + q[0] + '" cy="' + (Y - 6 + q[1]) + '" r="6" fill="#8a5a36" stroke="' + K + '" stroke-width="2"/><circle cx="' + q[0] + '" cy="' + (Y - 6 + q[1]) + '" r="3" fill="#e2b87c"/>'; });
+    var col = 'M70,' + (Y - 52) + ' C76,' + (Y - 70) + ' 110,' + (Y - 68) + ' 112,' + (Y - 44) + ' L112,' + (Y - 30);
+    fond += R(52, Y - 20, 36, 19, 2, '#b0563e', B25) + '<path d="M62,' + (Y - 1) + ' v-7 a8,7 0 0 1 16,0 v7 Z" fill="#170f0c" stroke="' + K + '" stroke-width="1.6"/>' + T('M53,' + (Y - 11) + ' h34', '#e9c9a6', 1, ' opacity=".7"') +
+      '<path d="M54,' + (Y - 20) + ' C46,' + (Y - 42) + ' 94,' + (Y - 42) + ' 86,' + (Y - 20) + ' Z" fill="#d98a4a" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + reflet('M59,' + (Y - 26) + ' C58,' + (Y - 33) + ' 62,' + (Y - 37) + ' 68,' + (Y - 38), 2.6) +
+      '<path d="M61,' + (Y - 38) + ' C58,' + (Y - 48) + ' 82,' + (Y - 48) + ' 79,' + (Y - 38) + ' Z" fill="#e0a070" stroke="' + K + '" stroke-width="2.5" stroke-linejoin="round"/>' + T(col, K, 7) + T(col, '#e0a070', 3.5) +
+      '<path d="M102,' + (Y - 30) + ' h20 l-2,29 h-16 Z" fill="#a5653a" stroke="' + K + '" stroke-width="2.5" stroke-linejoin="round"/>' + T('M103,' + (Y - 22) + ' h18 M104,' + (Y - 8) + ' h16', '#3a3450', 2) + '<ellipse cx="112" cy="' + (Y - 30) + '" rx="10" ry="2.6" fill="#8fc6e8" stroke="' + K + '" stroke-width="1.6"/>' +
+      R(125, Y - 12, 9, 11, 3, 'rgba(220,245,255,.5)', B2);
+    fond += Ell(166, Y - 2, 22, 5, '#8f879f', B2) + T('M152,' + (Y - 24) + ' L147,' + (Y - 2) + ' M180,' + (Y - 24) + ' L185,' + (Y - 2), K, 4.5) + T('M152,' + (Y - 24) + ' L147,' + (Y - 2) + ' M180,' + (Y - 24) + ' L185,' + (Y - 2), '#4a465e', 2) +
+      '<path d="M160,' + (Y - 3) + ' c-3,-5 -1,-9 2,-12 c2,4 4,8 -2,12 Z M172,' + (Y - 3) + ' c-3,-6 -1,-10 2,-14 c2,5 4,9 -2,14 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.4"/>' +
+      '<path d="M146,' + (Y - 48) + ' C142,' + (Y - 32) + ' 152,' + (Y - 22) + ' 166,' + (Y - 21) + ' C180,' + (Y - 22) + ' 190,' + (Y - 32) + ' 186,' + (Y - 48) + ' Z" fill="#4a465e" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + Ell(166, Y - 48, 20, 5, '#2a2538', B25) +
+      T('M172,' + (Y - 48) + ' L184,' + (Y - 70), K, 5) + T('M172,' + (Y - 48) + ' L184,' + (Y - 70), '#c98450', 2.4) + '<g class="at-vapeur"><path d="M158,' + (Y - 56) + ' c-6,-8 6,-12 0,-22"/><path d="M170,' + (Y - 58) + ' c-6,-8 6,-12 0,-20"/></g>';
+    /* le lutrin et le grimoire ouvert */
+    fond += R(208, Y - 6, 42, 6, 2, '#94603a', B2) + '<path d="M204,' + (Y - 8) + ' L254,' + (Y - 8) + ' L250,' + (Y - 44) + ' L208,' + (Y - 44) + ' Z" fill="#7a2a3a" stroke="' + K + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<path d="M207,' + (Y - 11) + ' L229,' + (Y - 10) + ' L229,' + (Y - 41) + ' L210,' + (Y - 42) + ' Z M251,' + (Y - 11) + ' L229,' + (Y - 10) + ' L229,' + (Y - 41) + ' L248,' + (Y - 42) + ' Z" fill="#f6ecd2" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      T('M233,' + (Y - 36) + ' h11 M233,' + (Y - 30) + ' h12 M233,' + (Y - 24) + ' h10 M233,' + (Y - 18) + ' h12', '#3a2a22', 1.1, ' opacity=".7"') + T('M218,' + (Y - 16) + ' C217,' + (Y - 26) + ' 220,' + (Y - 32) + ' 218,' + (Y - 37), '#3f8f4f', 1.6) + '<circle cx="218" cy="' + (Y - 38) + '" r="2.6" fill="#ff9a1f"/>' +
+      T('M228,' + (Y - 9) + ' q-2,6 1,11', '#e8343c', 2.4) + emo(229, Y - 52, 9, '✨');
+    /* le pressoir, le séchoir */
+    fond += R(266, Y - 8, 50, 8, 2, '#94603a', B25) + R(270, Y - 56, 7, 49, 2, '#7a4a28', B2) + R(305, Y - 56, 7, 49, 2, '#7a4a28', B2) + R(264, Y - 62, 54, 8, 2, '#94603a', B25) +
+      R(288, Y - 74, 6, 42, 2, '#b8b4c8', B2) + T('M288,' + (Y - 64) + ' h6 M288,' + (Y - 56) + ' h6 M288,' + (Y - 48) + ' h6 M288,' + (Y - 40) + ' h6', '#7a7690', 1.2) + T('M278,' + (Y - 75) + ' h26', K, 5.5) + T('M278,' + (Y - 75) + ' h26', '#94603a', 2.6) + R(280, Y - 32, 22, 22, 2, '#b06f3e', B2) + T('M286,' + (Y - 31) + ' v20 M291,' + (Y - 31) + ' v20 M296,' + (Y - 31) + ' v20', '#5a3418', 1.2);
+    fond += '<path d="M328,' + (Y - 14) + ' C330,' + (Y - 4) + ' 340,' + (Y - 1) + ' 346,' + (Y - 1) + ' C352,' + (Y - 1) + ' 362,' + (Y - 4) + ' 364,' + (Y - 14) + ' Z" fill="#c57e4c" stroke="' + K + '" stroke-width="2.5" stroke-linejoin="round"/>' + Ell(346, Y - 14, 18, 4.5, '#f0d0a8', B2) +
+      T('M362,' + (Y - 10) + ' V' + (Y - 40), K, 4) + T('M362,' + (Y - 10) + ' V' + (Y - 40), '#94603a', 1.8) + '<g transform="rotate(-5 362 ' + (Y - 44) + ')">' + R(348, Y - 52, 26, 13, 2, '#e9bb80', B2) + T('M352,' + (Y - 47) + ' h18 M354,' + (Y - 43) + ' h14', '#5a3418', 1.1) + '</g>';
     s += c.sur(fond, 84);
-    /* --- devant : la planche et son couteau, le mortier et son pilon, le linge plié, une plante dans son pot --- */
-    var lame = 'M40,' + (Y - 12) + ' L78,' + (Y - 12) + ' L72,' + (Y - 5) + ' L40,' + (Y - 5) + ' Z';
-    var dev = R(22, Y - 5, 84, 6, 2, '#d9a86a', B25) + '<path d="' + lame + '" fill="#dfe6ee" stroke="' + K + '" stroke-width="2" stroke-linejoin="round"/>' + R(22, Y - 13, 20, 8, 3, '#7a4a28', B2) +
-      emo(92, Y - 12, 15, '🌿') +
-      '<path d="M128,' + (Y - 22) + ' H174 C174,' + (Y - 4) + ' 162,' + Y + ' 151,' + Y + ' C140,' + Y + ' 128,' + (Y - 4) + ' 128,' + (Y - 22) + ' Z" fill="#cfc8d8" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
-      Ell(151, Y - 22, 23, 5, '#a8a0b8', B25) + '<g transform="rotate(24 160 ' + (Y - 30) + ')">' + R(156, Y - 50, 9, 32, 4, '#e8dfca', B25) + '</g>' +
-      R(232, Y - 9, 44, 9, 3, melange('#f4efe2', mc, 0.45), B25) + T('M236,' + (Y - 5) + ' h36', sombre(mc, 0.2), 1.6) +
-      '<path d="M318,' + (Y - 20) + ' h30 l-4,20 h-22 Z" fill="' + melange('#c9713f', mc, 0.35) + '" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + R(314, Y - 25, 38, 7, 2, melange('#d98450', mc, 0.35), B25) +
-      '<path d="M333,' + (Y - 25) + ' C331,' + (Y - 40) + ' 322,' + (Y - 44) + ' 318,' + (Y - 52) + ' M333,' + (Y - 25) + ' C334,' + (Y - 42) + ' 342,' + (Y - 48) + ' 346,' + (Y - 58) + ' M333,' + (Y - 25) + ' V' + (Y - 50) + '" fill="none" stroke="#3f8f4f" stroke-width="3" stroke-linecap="round"/>' +
-      '<ellipse cx="318" cy="' + (Y - 52) + '" rx="6" ry="3.5" fill="#6fae5a" stroke="' + K + '" stroke-width="1.5"/><ellipse cx="346" cy="' + (Y - 58) + '" rx="6" ry="3.5" fill="#6fae5a" stroke="' + K + '" stroke-width="1.5"/><circle cx="333" cy="' + (Y - 52) + '" r="4.5" fill="#f08a1e" stroke="' + K + '" stroke-width="1.5"/>';
-    /* (une plante cueillie attend : elle brille sur la planche) */
-    if(DESSIN.plantes > 0) dev += '<circle class="at-halo at-a-analyser" cx="64" cy="' + (Y - 14) + '" r="26" fill="' + G('halo') + '"/>';
+    /* --- à plat sur le plateau : le linge de la cueillette --- */
+    s += c.dessus(R(150, -46, 100, 36, 2, '#f6f1e4', B25) + '<rect x="154" y="-42" width="92" height="28" rx="1" fill="none" stroke="#c9483f" stroke-width="1.4"/>', Y, 0);
+    /* --- devant : le mortier et son pilon, la planche et son couteau, les plantes sur le linge, la cruche, le bocal à filtrer --- */
+    var lame = 'M70,' + (Y - 12) + ' L104,' + (Y - 12) + ' L98,' + (Y - 6) + ' L70,' + (Y - 6) + ' Z';
+    var dev = '<path d="M20,' + (Y - 20) + ' H56 C56,' + (Y - 5) + ' 46,' + (Y - 1) + ' 38,' + (Y - 1) + ' C30,' + (Y - 1) + ' 20,' + (Y - 5) + ' 20,' + (Y - 20) + ' Z" fill="#cfc8d8" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' + Ell(38, Y - 20, 18, 4.4, '#a8a0b8', B25) +
+      '<g transform="rotate(-22 32 ' + (Y - 26) + ')">' + R(28, Y - 46, 8, 28, 4, '#e8dfca', B25) + '</g>' +
+      R(62, Y - 5, 62, 6, 2, '#d9a86a', B25) + '<path d="' + lame + '" fill="#dfe6ee" stroke="' + K + '" stroke-width="2" stroke-linejoin="round"/>' + R(102, Y - 13, 18, 8, 3, '#5a3418', B2);
+    dev += T('M170,' + (Y - 4) + ' C168,' + (Y - 14) + ' 172,' + (Y - 20) + ' 168,' + (Y - 26) + ' M196,' + (Y - 4) + ' C198,' + (Y - 14) + ' 194,' + (Y - 20) + ' 198,' + (Y - 26) + ' M224,' + (Y - 4) + ' V' + (Y - 22), '#3f8f4f', 2.4) +
+      '<circle cx="168" cy="' + (Y - 28) + '" r="4.5" fill="#f08a1e" stroke="' + K + '" stroke-width="1.5"/><circle cx="198" cy="' + (Y - 28) + '" r="4" fill="#6ea8ff" stroke="' + K + '" stroke-width="1.5"/><ellipse cx="224" cy="' + (Y - 25) + '" rx="3.4" ry="6" fill="#c9483f" stroke="' + K + '" stroke-width="1.4"/>' +
+      '<ellipse cx="180" cy="' + (Y - 10) + '" rx="6" ry="3" fill="#6fae5a" stroke="' + K + '" stroke-width="1.3" transform="rotate(-24 180 ' + (Y - 10) + ')"/><ellipse cx="212" cy="' + (Y - 12) + '" rx="6" ry="3" fill="#6fae5a" stroke="' + K + '" stroke-width="1.3" transform="rotate(22 212 ' + (Y - 12) + ')"/>';
+    dev += '<path d="M278,' + (Y - 2) + ' C270,' + (Y - 14) + ' 272,' + (Y - 28) + ' 280,' + (Y - 32) + ' L281,' + (Y - 40) + ' L293,' + (Y - 40) + ' L294,' + (Y - 32) + ' C302,' + (Y - 28) + ' 304,' + (Y - 14) + ' 296,' + (Y - 2) + ' Z" fill="#8fa6c0" stroke="' + K + '" stroke-width="2.6" stroke-linejoin="round"/>' + T('M274,' + (Y - 18) + ' q13,5 26,0', '#2f5f9a', 2) + T('M296,' + (Y - 33) + ' q10,2 6,14', K, 4) + T('M296,' + (Y - 33) + ' q10,2 6,14', '#8fa6c0', 1.8) +
+      R(322, Y - 30, 34, 29, 5, 'rgba(220,245,255,.4)', B25) + '<path d="M318,' + (Y - 32) + ' q20,-8 42,0 l-2,7 q-19,6 -38,0 Z" fill="#f6f1e4" stroke="' + K + '" stroke-width="2.2" stroke-linejoin="round"/>' + T('M320,' + (Y - 26) + ' q19,6 38,0', '#c9483f', 1.6);
+    /* (une plante cueillie attend : elle brille sur le linge) */
+    if(DESSIN.plantes > 0) dev += '<circle class="at-halo at-a-analyser" cx="196" cy="' + (Y - 16) + '" r="30" fill="' + G('halo') + '"/>';
     s += c.sur(dev, 26);
     return [N(s + '</g>')];
   }});

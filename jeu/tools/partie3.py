@@ -24,6 +24,8 @@ import sys, os, json, threading, tempfile, shutil, functools
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ICI)
+import etabli_outils as ET
 DIST = os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist'))
 DONJON = os.path.abspath(os.environ.get('BRUMEVAL_DONJON') or os.path.join(ICI, '..', 'donjon', 'moteur', 'sortie'))
 OUT = os.path.join(ICI, '..', 'test', 'partie3'); os.makedirs(OUT, exist_ok=True)
@@ -82,7 +84,7 @@ class Tablette:
         return self.pg.evaluate(f"() => {{ var e = document.querySelector('{sel}'), g = document.querySelector('#gd-texte'); return e && !e.hidden ? (e.innerText + ' ' + (g ? g.getAttribute('data-t') : '')).replace(/\\s+/g, ' ') : ''; }}")
 
     def fermer(self):
-        self.pg.evaluate("() => { var p = document.getElementById('pl-page'); if(p && M.fermerEtabli) M.fermerEtabli(); M.UI.modal = null; M.render(); }"); self.pg.wait_for_timeout(120)
+        self.pg.evaluate("() => { if(M.etabliOuvert && M.etabliOuvert()) M.fermerEtabli(); M.UI.modal = null; M.render(); }"); self.pg.wait_for_timeout(120)
 
     def carte(self):
         self.pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'carte'; M.render(); }")
@@ -213,20 +215,14 @@ def partie(nav, base):
     verifier(all(pl.get(k) for k in ('oseille', 'souci', 'melisse', 'lin', 'lycopode', 'vesse', 'gui')), f'l\'Alchimiste a ses sept plantes ({pl})')
     # l'établi : les sept potions, geste par geste
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
-    A.js("() => M.ouvrirEtabli()"); A.pg.wait_for_timeout(400)
-    if A.pg.locator('#pl-page [data-pl=fermer-voile]').count(): A.pg.click('#pl-page [data-pl=fermer-voile]'); A.pg.wait_for_timeout(250)
-    R = A.js("() => window.PLANTES_RECETTES")
+    ET.vite(A.pg); ET.ouvrir(A.pg); ET.fermer_intro(A.pg)
+    R = ET.recettes(A.pg)
     for pid in ('huile', 'feu', 'fumigene', 'colle', 'acide', 'baume', 'coeur'):
-        r = R['RE'][pid]
-        A.pg.click(f'#pl-page [data-pl=plante][data-id={r["plante"]}]'); A.pg.wait_for_timeout(120)
-        A.pg.evaluate("(pa) => { var g = document.querySelector('#pl-page .pl-planche .pl-pa[data-pa=' + pa + ']'); (g.querySelector('path:not(.pl-z), circle:not(.pl-z), ellipse') || g).dispatchEvent(new MouseEvent('click', {bubbles:true})); }", r['partie'])
-        A.pg.wait_for_timeout(120)
-        for i, g in enumerate(r['gestes']):
-            A.pg.click(f'#pl-page [data-pl=outil][data-id={g["o"]}]'); A.pg.wait_for_timeout(420 if i == len(r['gestes']) - 1 else 160)
-        A.pg.wait_for_timeout(2400)
+        if not ET.faire(A.pg, pid, R): echecs.append('l\'établi : la potion ' + pid + ' n\'est pas faite'); print('  ✗ potion', pid, ET.etat(A.pg))
+        ET.continuer(A.pg)
     fi = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).length")
     verifier(fi == 7, f'l\'Alchimiste a préparé ses sept potions sur l\'établi ({fi})')
-    A.shot('sept-potions'); A.fermer()
+    A.shot('sept-potions'); ET.quitter(A.pg); A.fermer()
     moment(T, 1, 'apresmidi')
 
     # ======================================================================== L'APRÈS-MIDI
@@ -282,10 +278,9 @@ def partie(nav, base):
     verifier(livrer(T, B) == ['info:cle_clou'], 'le Barde a donné au Pisteur : la clé est au clou')
     # l'Alchimiste : le sac
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
-    A.js("() => M.ouvrirEtabli()"); A.pg.wait_for_timeout(400)
-    A.pg.click('#pl-page [data-pl=sac]', force=True); A.pg.wait_for_timeout(250)
+    ET.vite(A.pg); fra = ET.ouvrir(A.pg); ET.sac(A.pg)
     seq = A.js("() => M.code('sac:' + M.sacBits())")
-    verifier(A.js("() => M.sacBits()") == 127 and A.pg.locator('#pl-page .pl-sac-code').count() == 1, 'l\'Alchimiste : « 🎒 Ton sac », sept potions, le code du sac')
+    verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1, 'l\'Alchimiste : « 🎒 Ton sac », sept potions, le code du sac')
     A.shot('sac')
     # le Pisteur : la clé d'Anselme, la grille de la crypte, le sac
     verifier(P.jouer('clocher', 'cle') == 'cachette', 'le Pisteur prend la clé d\'Anselme (se cacher dans le clocher)'); P.fermer()
@@ -294,7 +289,7 @@ def partie(nav, base):
     t = P.taper(seq, garder=True)
     verifier('7 potions' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : le sac, sept potions'); passes.append(('alchimiste', 'sac', 'pisteur')); P.fermer()
     # l'Alchimiste et le Sage ouvrent leur page du donjon (et reviennent)
-    A.pg.click('#pl-page [data-pl=donjon]'); A.pg.wait_for_url('**/donjon/alchimiste.html**'); A.pg.wait_for_timeout(1200)
+    ET.toucher(A.pg, '.carte [data-donjon]', attendre=False); A.pg.wait_for_url('**/donjon/alchimiste.html**'); A.pg.wait_for_timeout(1200)
     A.pg.eval_on_selector('#b-enquete', 'e => e.click()'); A.pg.wait_for_url('**/brumeval/index.html**'); A.pg.wait_for_timeout(900); A.preparer()
     verifier(A.js("() => M.UI.ecran") == 'enquete', 'l\'Alchimiste ouvre le chaudron du donjon, puis revient dans l\'enquête')
     S.page('donjon'); S.pg.locator('#livre-ici .lv-page.on [data-act=ds-aller]').click(); S.pg.wait_for_url('**/donjon/sage.html**'); S.pg.wait_for_timeout(1200)

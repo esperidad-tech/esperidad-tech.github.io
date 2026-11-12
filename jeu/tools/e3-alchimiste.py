@@ -2,8 +2,10 @@
 Le matin : ses missions, l'établi dans l'atelier, le gâteau de la fête chez Gaspard, les quatre cueillettes ordinaires ; sans l'herbier,
 rien à la forêt, à la clairière ni au pommier ; avec le code « L'herbier » : le pied-de-loup, « Suivre la poussière » (le moteur de la
 piste, la trace 'poussiere', l'arrivée 'vesses'), le vieux pommier (le code pour le Pisteur), puis le code « Le gui » : sept plantes.
-L'établi : l'explication en images et son bouton jaune, une mauvaise partie, un mauvais outil, le baume sans l'huile, puis les sept
-potions, geste par geste ; le grimoire (sept pages, chaque texte avec son 🔊) ; le sac.
+L'établi (refait le 12 novembre : un cadre, src/etabli/, tools/etabli_outils.py) : l'explication en images et son bouton jaune, un outil
+touché les mains vides, une mauvaise partie, un mauvais outil, l'huile de lin encore vide, puis les sept potions, geste par geste, au
+doigt ; la carte « C'est vrai ! » ; le grimoire (sept pages, chaque texte avec son 🔊) ; le sac ; on quitte au milieu d'une potion et on
+la retrouve.
 L'après-midi : la lettre au labo — sans le Livre d'or (« Il te faudrait d'autres écritures… »), puis avec : une mauvaise écriture, celle de
 Mélusine, le pollen au microscope, l'eau chaude et l'encre de noix de galle → le code « L'écriture de Mélusine » ; le gâteau au maire.
 La nuit : « 🎒 Ton sac ! », le code du sac ; un Pisteur le tape : il reçoit les sept potions (et un sac de trois potions : trois).
@@ -12,6 +14,8 @@ Enfin : pas d'établi dans l'atelier d'une enquête 2.
 import sys, os, json
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ICI)
+import etabli_outils as ET
 URL = 'file://' + os.path.join(os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist')), 'index.html') + '#test'
 OUT = os.path.join(ICI, '..', 'test', 'e3-alchimiste'); os.makedirs(OUT, exist_ok=True)
 erreurs, echecs = [], []
@@ -98,30 +102,13 @@ def atelier(pg):
 def signe(pg):
     return pg.evaluate("() => { var e = document.querySelector('#atelier-ici .at-et-signe'); return e ? e.textContent : ''; }")
 
-def conteur(pg):
-    return pg.evaluate("() => { var e = document.querySelector('#pl-page .pl-conteur p'); return e ? e.textContent : ''; }")
-
-def plante(pg, k):
-    pg.click(f'#pl-page [data-pl=plante][data-id={k}]'); pg.wait_for_timeout(120)
-
-def partie(pg, pa):
-    pg.evaluate("(pa) => { var g = document.querySelector('#pl-page .pl-planche .pl-pa[data-pa=' + pa + ']'); (g.querySelector('path:not(.pl-z), circle:not(.pl-z), ellipse') || g).dispatchEvent(new MouseEvent('click', {bubbles:true})); }", pa)
-    pg.wait_for_timeout(120)
-
-def outil(pg, o, t=160):
-    pg.click(f'#pl-page [data-pl=outil][data-id={o}]'); pg.wait_for_timeout(t)
+def carte(pg, sel='.carte'):
+    """le texte d'une carte de l'établi (dans son cadre)"""
+    fr = ET.cadre(pg)
+    return fr.evaluate("(s) => { var c = document.querySelector(s); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }", sel) if fr else ''
 
 def etat_pl(pg):
     return pg.evaluate("() => { var P = M.P(); return {plantes:P.plantes || {}, fioles:Object.keys(P.vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).map(function(k){ return k.slice(6); })}; }")
-
-def sans_son(pg, sel):
-    """les textes de plus de trois mots qui n'ont pas leur bouton 🔊 (dans sel)"""
-    return pg.evaluate("""(sel) => { var r = [];
-      [].forEach.call(document.querySelectorAll(sel + ' p'), function(p){
-        var t = p.textContent.replace('🔊', '').trim(), mots = t.split(/\\s+/).filter(function(m){ return /[A-Za-zÀ-ÿ0-9]/.test(m); }).length;
-        var a = p.querySelector('.b-lire') || (p.nextElementSibling && p.nextElementSibling.classList.contains('b-lire') ? p.nextElementSibling : null);
-        if(mots > 3 && !a) r.push(t.slice(0, 50)); });
-      return r; }""", sel)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -184,58 +171,78 @@ with sync_playwright() as p:
         pg.locator('#atelier-ici .at-et-signe').click(force=True); pg.wait_for_timeout(700); bulles = pg.locator('#atelier-ici .at-bulle-pa')
     verifier(bulles.count() == 3 and 'Préparer' in bulles.first.inner_text(), f'toucher le signe : les trois bulles de l\'établi, la jaune « 🌿 Préparer » ({bulles.count()})')
     shot(pg, 'bulles')
+    ET.vite(pg)
     if bulles.count(): bulles.first.click(force=True); pg.wait_for_timeout(600)
-    if not pg.locator('#pl-page').count(): pg.evaluate("() => M.ouvrirEtabli()"); pg.wait_for_timeout(400); echecs.append('la bulle jaune n\'a pas ouvert l\'établi')
-    verifier(pg.locator('#pl-page .pl-intro .b-aller').count() == 1 and pg.locator('#pl-page .pl-intro .b-lire').count() == 1 and pg.locator('#pl-page .pl-intro-img svg').count() >= 3,
-             'la première fois : l\'explication en images, son 🔊 et son bouton jaune')
+    if not pg.locator('#etabli-cadre').count(): echecs.append('la bulle jaune n\'a pas ouvert l\'établi')
+    fr = ET.ouvrir(pg)
+    verifier(ET.intro(pg) and fr.locator('.carte.intro .b-jaune').count() == 1 and fr.locator('.carte.intro figure svg').count() == 4 and ET.sans_son(pg, '.carte.intro') == [],
+             'la première fois : l\'explication en quatre images, chaque phrase avec son 🔊, et son bouton jaune')
     shot(pg, 'etabli-intro')
-    pg.click('#pl-page [data-pl=fermer-voile]'); pg.wait_for_timeout(250)
-    verifier(pg.locator('#pl-page .pl-chip:not(.pl-vide)').count() == 7 and pg.locator('#pl-page .pl-outil').count() == 11 and pg.locator('#pl-page .pl-etagere .pl-fiole').count() == 7,
-             'la page : sept plantes au panier, onze outils, sept fioles vides sur l\'étagère')
-    verifier(pg.locator('#pl-page .pl-conteur .b-lire').count() == 1 and len(conteur(pg)) > 20, f'le conteur et son 🔊 ({conteur(pg)[:50]})')
-    pg.click('#pl-page .pl-conteur .b-lire'); verifier(pg.evaluate("() => window.__lus.length") == 1, 'le 🔊 lit la phrase (jamais de lecture toute seule)')
+    avant = pg.evaluate("() => window.__lus.length")
+    fr.locator('.carte.intro .b-son').first.click(force=True); pg.wait_for_timeout(200)
+    verifier(avant == 0 and pg.evaluate("() => window.__lus.length") == 1, 'un 🔊 lit sa phrase (et rien ne se lit tout seul)')
+    ET.fermer_intro(pg)
+    verifier(pg.evaluate("() => !!M.S.etabliIntro") and not ET.intro(pg), 'le bouton jaune « 🌿 À l\'établi ! » : l\'explication ne reviendra pas')
+    verifier(fr.locator('#scene .plante.dispo').count() == 7 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
+             'l\'établi : sept plantes sur le linge, les outils sur la table, sept flacons vides sur l\'étagère')
     shot(pg, 'etabli')
     # ---------- on se trompe ----------
-    outil(pg, 'couteau'); verifier('mains vides' in conteur(pg), f'un outil sans rien en main : « Tu as les mains vides ! » ({conteur(pg)[:40]})')
-    plante(pg, 'lin'); partie(pg, 'tiges'); verifier('Tu tiens les tiges' in conteur(pg), f'on prend les tiges du lin ({conteur(pg)})')
-    outil(pg, 'presse', 300)
-    verifier('pour faire du fil' in conteur(pg) and 'Rien n\'est perdu' in conteur(pg) and pg.evaluate("() => M.plantes().lin") == 1, f'la mauvaise partie : une phrase drôle, et rien n\'est perdu ({conteur(pg)[:60]})')
+    ET.outil(pg, 'planche'); verifier(len(ET.texte(pg)) > 12 and ET.etat(pg)['ou'] is None and fr.locator('#calque .bulle-o .b-son').count() == 1, f'un outil touché les mains vides : il dit à quoi il sert, avec son 🔊 ({ET.texte(pg)[:50]})')
+    ET.plante(pg, 'lin', 'fleurs'); verifier(ET.etat(pg)['partie'] == 'fleurs', 'on regarde le lin de près, on prend ses fleurs bleues')
+    ET.outil(pg, 'tamis'); ET.outil(pg, 'tamis')
+    verifier('fleurs bleues' in ET.texte(pg) and ET.etat(pg)['partie'] is None and pg.evaluate("() => M.plantes().lin") == 1, f'la mauvaise partie : une phrase vraie, et la plante revient entière ({ET.texte(pg)[:60]})')
     shot(pg, 'faux-partie')
-    plante(pg, 'oseille'); partie(pg, 'feuilles'); outil(pg, 'mortier', 300)
-    verifier('purée verte' in conteur(pg), f'le mauvais outil : sa phrase à lui ({conteur(pg)[:50]})')
-    plante(pg, 'souci'); partie(pg, 'fleurs'); outil(pg, 'couteau'); outil(pg, 'marmite', 300)
-    verifier('huile de lin' in conteur(pg) and 'Rien n\'est perdu' not in conteur(pg), f'le baume sans l\'huile : la marmite est sèche ({conteur(pg)[:60]})')
-    outil(pg, 'feu', 300); verifier(etat_pl(pg)['fioles'] == [], 'et rien n\'est fait')
+    ET.plante(pg, 'lin', 'graines'); ET.outil(pg, 'mortier'); ET.outil(pg, 'mortier')
+    verifier('farine' in ET.texte(pg) and ET.etat(pg)['n'] == 0 and ET.etat(pg)['ou'] == 'mortier', f'le mauvais outil : ce qui se passe pour de vrai, et rien n\'est perdu ({ET.texte(pg)[:50]})')
+    shot(pg, 'faux-outil')
+    ET.porte(pg, 'huilier'); verifier('Vide' in ET.texte(pg) and ET.etat(pg)['H'] is None, f'la bouteille d\'huile de lin est vide tant que l\'huile n\'est pas faite ({ET.texte(pg)[:50]})')
+    verifier(etat_pl(pg)['fioles'] == [], 'et rien n\'est fait')
+    # ---------- on quitte au milieu, on revient : la préparation est gardée ----------
+    ET.outil(pg, 'tamis'); ET.outil(pg, 'tamis')
+    verifier(ET.etat(pg)['n'] == 1, f'les graines sont triées au tamis ({ET.texte(pg)[:50]})')
+    ET.quitter(pg)
+    verifier(pg.locator('#etabli-cadre').count() == 0 and pg.evaluate("() => { var e = M.P().etabli; return !!e && e.p === 'lin' && e.n === 1; }"), 'on quitte au milieu : la préparation est gardée dans la sauvegarde')
+    fr = ET.ouvrir(pg)
+    verifier(not ET.intro(pg) and ET.etat(pg)['plante'] == 'lin' and ET.etat(pg)['n'] == 1 and ET.etat(pg)['ou'] == 'tamis', 'on revient : pas d\'explication, et les graines attendent au tamis')
     # ---------- les sept potions, geste par geste (l'huile avant le baume) ----------
     for pid in ['huile', 'feu', 'fumigene', 'colle', 'acide', 'baume', 'coeur']:
         r = R['RE'][pid]
-        plante(pg, r['plante']); partie(pg, r['partie'])
-        for i, g in enumerate(r['gestes']):
-            outil(pg, g['o'], 420 if i == len(r['gestes']) - 1 else 160)
-            if i == 1 and pid == 'acide': shot(pg, 'acide-marmite')
-        if pid == 'huile': shot(pg, 'huile-bravo')
+        if pid == 'huile':
+            # (elle est déjà en route : il reste le pressoir, le filtre, la fiole)
+            ET.outil(pg, 'presse'); ET.outil(pg, 'presse'); ET.outil(pg, 'filtre'); ET.outil(pg, 'fiole')
+            for _ in range(40):
+                if ET.etat(pg)['mode'] == 'prete': break
+                pg.wait_for_timeout(100)
+            fait = pid in ET.etat(pg)['faites']
+        else:
+            fait = ET.faire(pg, pid, R)
+        t = carte(pg, '.carte.prete')
+        if pid == 'huile': shot(pg, 'huile-prete')
         e = etat_pl(pg)
-        verifier(pid in e['fioles'] and e['plantes'].get(r['plante']) == 0 and r['gestes'][-1]['t'][:20] in conteur(pg), f'{r["nom"]} : {len(r["gestes"])} gestes, la fiole est sur l\'étagère')
-        pg.wait_for_timeout(2400)
-    verifier(pg.locator('#pl-page .pl-etagere .pl-fiole.pl-pleine').count() == 7 and 'ton sac est prêt' in conteur(pg), 'les sept fioles sont pleines : « ton sac est prêt pour la nuit ! »')
+        verifier(fait and pid in e['fioles'] and e['plantes'].get(r['plante']) == 0 and "C'est vrai" in t and r['vrai'][:24] in t and ET.sans_son(pg, '.carte.prete') == [],
+                 f'{r["nom"]} : {len(r["etapes"])} étapes, la fiole est sur l\'étagère, et la carte « C\'est vrai ! » ({t[:50]})')
+        if pid == 'coeur': verifier('ton sac est prêt' in t, 'la septième : « ton sac est prêt pour la nuit ! »')
+        verifier(ET.continuer(pg) and ET.etat(pg)['mode'] is None, f'{r["nom"]} : le bouton jaune « Continuer »')
+    verifier(fr.locator('#scene [id^=potion-].pleine').count() == 7, 'les sept flacons sont pleins sur l\'étagère')
     shot(pg, 'sept-potions')
-    plante(pg, 'gui'); partie(pg, 'baies'); verifier('déjà dans sa fiole' in conteur(pg), 'une potion déjà faite ne se refait pas')
+    ET.toucher(pg, '#plante-gui .prise'); verifier('Déjà en fiole' in ET.texte(pg), 'une potion déjà faite ne se refait pas')
     # ---------- le grimoire ----------
-    pg.click('#pl-page [data-pl=grimoire]'); pg.wait_for_timeout(300)
-    ok = True
+    ET.livre(pg)
+    ok = ET.etat(pg)['mode'] == 'livre'
     for pid in R['ORDRE']:
-        pg.click(f'#pl-page [data-pl=page][data-id={pid}]'); pg.wait_for_timeout(120)
-        r = R['RE'][pid]
-        ng = pg.locator('#pl-page .pl-page .pl-geste').count(); muets = sans_son(pg, '#pl-page .pl-page')
-        if ng != len(r['gestes']) or muets or r['dit'] not in texte(pg, '#pl-page .pl-page') or pg.locator('#pl-page .pl-page-plante svg').count() != 1:
-            ok = False; print('     page', pid, ng, muets)
-    verifier(ok, 'le grimoire : sept pages (la plante, la partie en mots, les gestes en images), chaque texte avec son 🔊')
+        fr.locator(f'.livre .signet[data-page={pid}]').click(force=True); pg.wait_for_timeout(120)
+        r = R['RE'][pid]; t = carte(pg, '#pagesLivre'); muets = ET.sans_son(pg, '#pagesLivre')
+        if muets or r['recette'][0][:18] not in t or r['dit'][:18] not in t or fr.locator('#pagesLivre .planche-b svg').count() != 1 or fr.locator('#pagesLivre .page.d svg').count() != 1:
+            ok = False; print('     page', pid, muets, t[:80])
+    verifier(ok, 'le grimoire : sept pages (la plante dessinée, la partie en mots, la recette en phrases, sans image d\'outil), chaque texte avec son 🔊')
     shot(pg, 'grimoire')
-    pg.click('#pl-page [data-pl=fermer-voile]')
-    pg.click('#pl-page [data-pl=sac]'); pg.wait_for_timeout(250)
-    verifier('Sept fioles' in texte(pg, '#pl-page .pl-carte') and pg.locator('#pl-page .pl-sac-code').count() == 0 and 'Cette nuit' in texte(pg, '#pl-page .pl-carte'), 'le sac, le jour : les sept fioles, pas encore de code')
-    pg.click('#pl-page [data-pl=fermer-voile]'); pg.click('#pl-page [data-pl=fermer]'); pg.wait_for_timeout(700)
-    verifier(pg.locator('#pl-page').count() == 0 and signe(pg) == '', 'retour à l\'atelier : plus de signe au-dessus de l\'établi')
+    ET.fermer_mode(pg)
+    ET.sac(pg)
+    t = carte(pg)
+    verifier(fr.locator('.carte .rang .pleine').count() == 7 and fr.locator('#sacCode').count() == 0 and 'Cette nuit' in t and ET.sans_son(pg, '.carte') == [], f'le sac, le jour : les sept fioles, pas encore de code ({t[:60]})')
+    shot(pg, 'sac-jour')
+    ET.quitter(pg)
+    verifier(pg.locator('#etabli-cadre').count() == 0 and signe(pg) == '' and not pg.evaluate("() => !!(M.P().etabli && M.P().etabli.p)"), 'retour à l\'atelier : plus de signe au-dessus de l\'établi, plus rien en route')
     notes = pg.evaluate("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')")
     verifier('Les sept potions de la nuit sont prêtes' in notes and 'acide' in notes, 'au Carnet : les potions prêtes')
     # ======================================================================== l'après-midi : la lettre au labo
@@ -331,14 +338,15 @@ with sync_playwright() as p:
     atelier(pg)
     verifier(signe(pg) == '🎒 Ton sac !', f'au-dessus de l\'établi : « 🎒 Ton sac ! » ({signe(pg)})')
     shot(pg, 'nuit-signe')
-    pg.evaluate("() => M.ouvrirEtabli()"); pg.wait_for_timeout(400)
-    verifier(pg.locator('#pl-page [data-pl=sac].pl-appel').count() == 1, 'sur l\'établi, le bouton « 🎒 Ton sac » sautille')
-    pg.click('#pl-page [data-pl=sac]', force=True); pg.wait_for_timeout(250)
-    verifier(pg.locator('#pl-page .pl-sac-code').count() == 1 and 'Pisteur' in texte(pg, '#pl-page .pl-carte') and not sans_son(pg, '#pl-page .pl-carte'), 'le sac, la nuit : le code pour le Pisteur, et le 🔊')
+    fr = ET.ouvrir(pg)
+    verifier(fr.locator('#g-sac.appel').count() == 1, 'sur l\'établi, le sac sautille : il appelle')
+    ET.sac(pg)
+    t = carte(pg)
+    verifier(fr.locator('#sacCode').count() == 1 and 'Pisteur' in t and ET.sans_son(pg, '.carte') == [], f'le sac, la nuit : le code pour le Pisteur, et le 🔊 ({t[:60]})')
     shot(pg, 'sac')
     seq7 = pg.evaluate("() => M.code('sac:' + M.sacBits())"); bits = pg.evaluate("() => M.sacBits()")
     verifier(bits == 127 and len(seq7) == 3, f'sept potions : le sac n° 127 ({seq7})')
-    pg.click('#pl-page [data-pl=fermer-voile]'); pg.click('#pl-page [data-pl=fermer]'); pg.wait_for_timeout(500)
+    ET.quitter(pg)
     verifier(signe(pg) == '', 'le code est montré : le signe s\'en va')
     t = code(pg, 'sac:127')
     verifier('Pisteur' in t or 'équipier' in t, f'l\'Alchimiste ne peut pas taper son propre code de sac ({t[:50]})')
@@ -358,8 +366,13 @@ with sync_playwright() as p:
     pp.close()
     # ---------- téléphone couché : l'établi tient dans l'écran ----------
     pg.set_viewport_size({'width': 780, 'height': 360}); pg.wait_for_timeout(300)
-    pg.evaluate("() => M.ouvrirEtabli()"); pg.wait_for_timeout(400)
-    debord = pg.evaluate("() => { var r = document.querySelector('#pl-page').getBoundingClientRect(), bad = []; [].forEach.call(document.querySelectorAll('#pl-page .pl-outil, #pl-page .pl-conteur, #pl-page .pl-chip, #pl-page .pl-planche'), function(e){ var q = e.getBoundingClientRect(); if(q.bottom > r.bottom + 1 || q.right > r.right + 1 || q.width < 24 || q.height < 24) bad.push(e.className); }); return bad; }")
+    fr = ET.ouvrir(pg)
+    debord = fr.evaluate("""() => { var W = innerWidth, H = innerHeight, bad = [];
+      [].forEach.call(document.querySelectorAll('#scene .outil > rect[fill=transparent], #scene .plante .prise, #gLivre > rect[fill=transparent], #bQuitter'), function(e){
+        var q = e.getBoundingClientRect(), id = (e.closest('[id]') || e).id;
+        if(q.left < -1 || q.top < -1 || q.right > W + 1 || q.bottom > H + 1) bad.push(id + ' dépasse');
+        else if(q.width < 24 || q.height < 24) bad.push(id + ' trop petit'); });
+      return bad; }""")
     verifier(debord == [], f'sur un téléphone couché (780 × 360), rien ne dépasse et tout se touche ({debord[:3]})')
     shot(pg, 'telephone')
     pg.close()
