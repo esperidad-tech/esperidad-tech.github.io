@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 12 h 20)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 13 h 05)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -13,6 +13,7 @@
 ## Nouveau depuis le 12 novembre (12 h 06) : la grande carte et la brume sont dans le jeu
 
 - Romain a ouvert un chantier à part : **une grande carte faite pour les tablettes, avec le village au milieu et de la brume qu'on lève zone par zone** (Bible chapitre 14, lire le §14.5). **Elle est dans le jeu et en ligne depuis 12 h 06** (version 20261112-1106).
+- **Retouchée à 12 h 57 (Bible §14.6)** après l'essai de Romain sur iPhone (elle ramait dès qu'on glissait vers la brume) : la brume est maintenant une image, et **on zoome en pinçant à deux doigts** (ou à la molette) : il n'y a plus de boutons ＋ / − sur la carte.
 - **Pour l'enquête 3, rien ne change pour jouer** : le village est à la même place, les lieux, les bulles et les 229 codes sont les mêmes ; **aucune zone de brume n'est levée**. Autour du village il y a maintenant 26 lieux sous la brume (une mine, une tour, un lac, un manoir, un marais… la liste au §14.2), qu'on ne peut pas encore toucher.
 - **À décider avec Romain (§14.3)** : qui lève la brume dans l'histoire, et si l'enquête 3 (ou la suivante) ouvre une première zone. Lever une zone reste à construire (§14.5, « Ce qui reste »).
 - **Attention, mise en ligne faite à part** : l'oie au niveau 9 et l'établi des plantes refait ne sont toujours pas en ligne (voir PASSATION.md) ; la prochaine mise en ligne normale les publiera avec le reste.

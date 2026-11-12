@@ -1,7 +1,7 @@
 /* ==========================================================
    Brumeval — la carte dans le jeu
    - L'onglet Carte : seulement la carte, en grand, entre le bandeau et les onglets, sans cadre ni liste.
-     À l'ouverture, tout le village tient dans l'écran ; ＋ / − pour zoomer, puis on la fait glisser au doigt (carte.js, Carte.monter).
+     À l'ouverture, tout le village tient dans l'écran ; on pince à deux doigts (ou la molette) pour zoomer, on la fait glisser au doigt (carte.js, Carte.monter).
    - Enquête 1, Pisteur : la carte se dévoile pas à pas, en suivant ses missions (mission.js : M.missionsLieux).
    - Le Pisteur, et lui seul, a aussi son tableau « Les chemins secrets » (Romain, 5 novembre, 01 h 30 ; c'était « Sous le village ») :
      les passages des sous-sols (souterrains.js) ET les chemins secrets en surface, que chaque enquête déclare (E.chemins : le chemin
@@ -335,7 +335,7 @@ M.ongletCarteHTML = function(){
 /* ---------- Monter une carte (après le rendu) : elle garde l'endroit où on regardait, fait surgir ce qui est nouveau ---------- */
 var vues = {onglet:null, cabane:null};
 /* Une carte qui s'ouvre (l'onglet Carte, ou la cabane du Pisteur, qui n'étaient pas à l'écran au rendu d'avant) montre tout le village
-   en entier (Romain, 4 novembre, 21 h 12) ; ＋ / − pour zoomer. Tant qu'elle reste ouverte, elle garde son zoom et sa place d'un rendu à l'autre. */
+   en entier (Romain, 4 novembre, 21 h 12) ; on pince ou on tourne la molette pour zoomer. Tant qu'elle reste ouverte, elle garde son zoom et sa place d'un rendu à l'autre. */
 var ouverture = {onglet:true, cabane:true};
 function arreterVue(ou){ var v = vues[ou]; vues[ou] = null; if(v){ try{ v.arreter(); }catch(e){} } if(ou === 'cabane') UI.carteMurale = null; }
 function monterVue(el, c){
@@ -452,6 +452,7 @@ M.carteInchangee = function(){
   if(h === v.html) return true;
   if(!patcherCarte(ici, v.html, h)) return false;
   v.html = h;
+  if(Carte.poserBrume) Carte.poserBrume(ici);   /* le moment a pu changer : la brume est une image, on pose celle du nouveau moment (carte.js) */
   return true;
 };
 /* (la carte gardée : le bandeau du haut a pu changer de hauteur) */
