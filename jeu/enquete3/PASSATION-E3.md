@@ -1,13 +1,21 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 1 h 10)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 2 h 37)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (2 h 37) : LES HUIT ÉTAPES SONT FAITES — l'enquête 3 est construite, en ligne, et attend l'essai de Romain
+
+- Le détail : **Bible §13.20**. Romain, 1 h 11 : « L'essai du donjon est terminé, c'est validé. »
+- **Fait** : le donjon branché dans l'enquête (le sac, la crypte ou le puits et son acide, les deux codes du Barde tapés dans le donjon, « Léo s'est enfui » sans le maire retenu, le retour avec les codes pour le Sage et le Barde, la page de la porte des Fondateurs) ; la fin (le code « Ce que Léo a dit » du Barde au Sage, la question du Corbeau sans « bravo », six images dont cinq scènes animées et le cachot, la même sur les quatre tablettes) ; `verif.js 3` (une seule solution, chaque rôle indispensable, jamais de blocage) ; une partie complète jouée par un robot à quatre tablettes.
+- **Changé par rapport aux fichiers de conception** (neuf décisions de Claude, Bible §13.20) : un code de plus après Léo (le Barde le donne au Sage ; la conception disait « à voix haute, facultatif ») ; « Léo à moitié » = deux étapes réussies ; une image de plus au début de la fin ; les missions de la nuit n'arrivent dans le Carnet qu'à la nuit ; sans l'Alchimiste on trouve quand même QUI (le filet de Mélusine), mais pas OÙ.
+- **Pour l'essayer** : https://esperidad-tech.github.io/brumeval/#test → ☰ → Réglages → Mode test → Enquête 3, sur les quatre tablettes.
+- **Reste** : les retours de Romain ; puis ouvrir l'enquête aux joueurs (et geler ses codes). Pas fait : Mimi chasseuse de plantes, « Jouer sans internet » pour le donjon, l'archive de l'enquête 3 pour l'enquête 4.
 
 ## Nouveau depuis le 12 novembre (1 h 03) : l'étape 4 (l'Alchimiste) est faite, et en ligne
 
 - Le détail : **Bible §13.19**. Même demande de Romain que pour les étapes 2 et 3 (« finis l'enquête 3, tu peux publier », « je te laisse prendre les initiatives »).
 - **Fait pour l'Alchimiste** : le gâteau de la fête chez Gaspard (le mini-jeu, branché), les sept plantes (quatre cueillettes ordinaires ; trois rares avec l'herbier du Sage : le pied-de-loup, la vesse-de-loup par « Suivre la poussière », le gui par le Pisteur), **l'établi des plantes** et ses sept potions (la partie de la plante, les gestes dans l'ordre, onze outils, le grimoire, jamais d'échec), **la lettre au labo** (le Livre d'or et ses douze écritures : seule Mélusine a les trois signes ; le pollen de lavande ; l'encre de noix de galle), porter le gâteau au maire, et **le sac** (la nuit : son code pour le Pisteur).
 - **Changé par rapport à `E3-atelier-des-plantes.md` et à `E3-actions-des-roles.md`** (dix décisions de Claude, Bible §13.19) : le grimoire est sur la page de l'établi ; « le haut du gâteau » (Gaspard a fait le bas : les « sept étages » des répliques restent justes) ; un code de sac par contenu possible (128) ; on peut cueillir aussi la nuit ; le carnet d'Odette n'a pas de fiche au labo ; Mimi chasseuse de plantes n'est pas construite.
-- **Reste** : l'étape 6 (le donjon branché : écrite, en cours d'essai), l'étape 7 (l'accusation, la fin animée), l'étape 8 (le vérificateur et un robot de partie complète).
+- **La suite** : les étapes 6, 7 et 8, ci-dessus.
 
 ## Nouveau depuis le 11 novembre (23 h 43) : les étapes 2 (le Barde) et 3 (le Sage) sont faites, et en ligne
 
