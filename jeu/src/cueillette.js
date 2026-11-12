@@ -73,14 +73,19 @@ M.cachettesCarte = function(brume){
 
 /* ---------- La bulle d'un endroit (sur la carte : de petites pastilles, sans 🔊, comme toutes les bulles de la carte — moteur.css) ---------- */
 function phrase(t, cls){ return '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(t) + ' ' + lire(t) + '</p>'; }
+/* La tringle de l'établi n'a que trois places (Romain, 12 novembre, 13 h 52 ; plantes.js, Bible §13.25) : une plante en trop attend devant la
+   porte de l'atelier. La bulle dit où la plante est allée. */
+function dehors(id){
+  try{ if(M.plantesEnAttente) M.plantesEnAttente(); return !!(M.plantesPorte && M.plantesPorte().indexOf(id) >= 0); }catch(e){ return false; }
+}
 M.cachetteHTML = function(m){
   var E = enquete(), P = M.P(), pl = D.PLANTES[m.id];
   if(!E || !P || !pl) return '';
   var e = etat(E, P, m.id);
   var s = '<div class="b-feuille-tete"><span class="b-feuille-ic">' + pl.ic + '</span><div><h2>' + esc(pl.nom) + '</h2></div></div>';
   if(e === 'tot') return s + phrase(pl.tot || 'Ce n\'est pas encore le moment.');
-  if(e === 'cueillie') return s + phrase('✅ Cueilli ! Ça t\'attend sur l\'établi de ton atelier.', 'b-recolte');
-  if(e === 'deja') return s + phrase('✅ Tu en as déjà sur ton établi.', 'b-recolte');
+  if(e === 'cueillie') return s + phrase(dehors(m.id) ? '✅ Cueilli ! Ça t\'attend devant la porte de ton atelier. La tringle de l\'établi est pleine !' : '✅ Cueilli ! Ça t\'attend sur l\'établi de ton atelier.', 'b-recolte');
+  if(e === 'deja') return s + phrase(dehors(m.id) ? '✅ Tu en as déjà : ça attend devant la porte de ton atelier.' : '✅ Tu en as déjà sur ton établi.', 'b-recolte');
   if(e === 'faite') return s + phrase('✅ Ta potion est prête : plus besoin d\'en cueillir.', 'b-recolte');
   return s + phrase(pl.ici) +
     '<button class="btn grand" data-act="cueillir-plante" data-id="' + esc(m.id) + '"><span class="b-ic-contour">🧺</span> Cueillir ' + esc(pl.un) + '</button>';

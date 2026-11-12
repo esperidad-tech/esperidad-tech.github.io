@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 14 h 46)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 15 h 19)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -15,9 +15,14 @@
 - **Les codes de l'enquête 3 ont changé** (3 de moins, la plupart des autres ont de nouveaux symboles). Ceux des enquêtes 1 et 2 sont identiques.
 - **Pour la conception, ce qui reste ouvert avec Romain** : (1) **« négocier avec Anselme »** (il l'a dit à 12 h 45) : aujourd'hui Anselme sonne dès qu'on le lui demande — deux idées lui sont proposées (le Barde négocie et donne un code à l'Alchimiste ; ou Anselme réclame de la mélisse pour sa tisane) ; (2) les nouvelles potions du chaudron ; (3) Mimi, chasseuse de plantes, à repenser (plus de pommier trop haut, plus de mini-jeu à éviter) ; (4) les lieux des zones levées (le Rond des Sorcières, la Grotte aux Échos, les Cinq Pierres, le Vieux verger, le Rucher, la Porte sans mur, l'Étang aux Nénuphars, la Cabane du pêcheur) sont dessinés mais ne se touchent pas : rien n'y est écrit.
 
+## Nouveau depuis le 12 novembre (13 h 52) : l'établi n'a que trois places pour les plantes
+
+- Le détail : **Bible §13.25**. Deuxième série de retouches de Romain sur l'établi, **toutes faites dans les sources, PAS ENCORE EN LIGNE (la mise en ligne attend le « oui » de Romain)** : deux étagères (celle des potions, baissée ; une autre à droite, avec la tringle) ; **la tringle n'a que trois places** ; **une seule plante à la fois sur le linge, en grand** ; le panneau du feu planté sur la table ; les bûches, l'eau et l'huile se glissent aussi avec le doigt.
+- **Ce que ça change pour la conception** : **l'Alchimiste ne peut garder que trois plantes à l'établi.** Les autres attendent **devant la porte de son atelier** (un panier, avec la cueillette) ; on touche le panier pour les pendre s'il y a de la place, sinon « il n'y a plus de place ». **Une place se libère quand une potion est faite.** Donc, avec sept plantes : elle cueille, prépare, revient chercher le panier. À garder en tête pour le rythme d'une enquête où il y a beaucoup de plantes d'un coup.
+
 ## Nouveau depuis le 12 novembre (12 h 45) : les retours de Romain sur l'établi, et son plan pour les plantes
 
-> **Le plan annoncé ci-dessous est construit depuis l'après-midi du 12 novembre : voir le paragraphe juste au-dessus.**
+> **Le plan annoncé ci-dessous est construit et en ligne depuis le 12 novembre à 14 h 57 : voir le premier paragraphe, tout en haut.**
 
 - Le détail : **Bible §13.23**. Romain a essayé le nouvel établi (« je le trouve super ») et demandé des retouches, **toutes faites et en ligne (13 h 33)** : l'étagère des potions et une tringle fixées à l'établi ; une plante cueillie pend d'abord à la tringle, puis on la couche sur le linge ; **le grimoire n'a une page que pour les plantes déjà trouvées** ; **plus un mot du donjon** dans l'établi ; **plus de sac** — le code pour le Pisteur n'est donné qu'une fois **les sept potions faites**.
 - **Ce que ça change pour la conception** (annoncé par Romain, **à faire dans une autre conversation, rien n'est construit**) :

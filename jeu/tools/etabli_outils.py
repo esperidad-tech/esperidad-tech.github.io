@@ -75,7 +75,20 @@ def outil(pg, o):
 def porte(pg, quoi):
     toucher(pg, '#g-' + quoi + ' > rect[fill=transparent]')
 
+def assurer(pg, k):
+    """la tringle n'a que trois places : si la plante n'y est pas (elle attend devant la porte de l'atelier), le robot lui fait une place
+    (il remet une autre plante devant la porte, s'il le faut), en fermant puis en rouvrant l'établi. Rend True si l'établi a été rouvert."""
+    fr = cadre(pg)
+    if fr and fr.evaluate("(k) => window.__etabli.etat().dispo[k] > 0", k): return False
+    if fr: quitter(pg)
+    pg.evaluate("""(k) => { var P = M.P(); M.plantesEnAttente(); P.tringle = (P.tringle || []).filter(function(x){ return x !== k; });
+      while(P.tringle.length >= 3){ var y = P.tringle.pop(); P.plPorte[y] = 1; }
+      P.tringle.push(k); delete P.plPorte[k]; if(P.etabli) delete P.etabli.po; M.sauver(); }""", k)
+    ouvrir(pg)
+    return True
+
 def plante(pg, k, pa, pause=120):
+    assurer(pg, k)
     fr = cadre(pg)
     # la plante cueillie attend, pendue à la tringle : on la décroche d'abord (elle se couche sur le linge)
     if fr.evaluate("(k) => !!document.querySelector('#pendue-' + k)", k):

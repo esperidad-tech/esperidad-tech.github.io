@@ -21,7 +21,11 @@ function quitter(){ if(S.occupe) return; if(S.mode) fermerMode(); arreterLecture
 
 /* ---------- Les doigts ---------- */
 var clic = {pris:false};
-document.addEventListener('click', function(){ clic.pris = false; }, true);
+document.addEventListener('click', function(e){
+  clic.pris = false;
+  /* (le toucher qui suit un glisser-déposer ne compte pas) */
+  if(clic.avale && Date.now() - clic.avale < 450){ clic.avale = 0; e.stopPropagation(); e.preventDefault(); }
+}, true);
 $('#scene').addEventListener('click', function(e){
   if(S.occupe) return;
   clic.pris = true;
@@ -43,6 +47,46 @@ $('#scene').addEventListener('click', function(e){
   else if(a === 'pendue') decrocher(g.dataset.k);
   else if(a === 'potion') toucherPotion(g.dataset.id);
 });
+/* ---------- Glisser-déposer (Romain, 12 novembre, 13 h 52) : une bûche, la cruche d'eau, l'huile, une allumette se prennent aussi au doigt,
+   se font glisser et se lâchent sur la marmite ou sur l'alambic. « Toucher, puis toucher » marche toujours : les deux façons sont là. ---------- */
+var glisse = null, DE_QUOI = {buche:'buches', allumette:'allumettes', cruche:'cruche', huilier:'huilier'};
+function ptScene(e){ var sv = $('#scene'), m = sv.getScreenCTM(); if(!m) return {x:0, y:0}; var q = sv.createSVGPoint(); q.x = e.clientX; q.y = e.clientY; q = q.matrixTransform(m.inverse()); return {x:q.x, y:q.y}; }
+$('#scene').addEventListener('pointerdown', function(e){
+  if(S.occupe || S.mode || glisse) return;
+  var g = e.target.closest('[data-act="porte"]'); if(!g) return;
+  glisse = {h:g.dataset.h, g:g, x0:e.clientX, y0:e.clientY, id:e.pointerId, bouge:false, el:null};
+});
+document.addEventListener('pointermove', function(e){
+  if(!glisse || e.pointerId !== glisse.id) return;
+  if(!glisse.bouge){
+    if(Math.abs(e.clientX - glisse.x0) + Math.abs(e.clientY - glisse.y0) < 12) return;
+    if(S.occupe || S.mode){ glisse = null; return; }
+    if(glisse.h === 'huilier' && !S.faites.huile){ glisse = null; clic.avale = Date.now(); tenir('huilier'); return; }   /* (vide : elle le dit) */
+    glisse.bouge = true; poser(); enleverBulle();
+    var lv = glisse.g.querySelector('.leve');
+    glisse.e = OU[DE_QUOI[glisse.h]].e;
+    glisse.el = svgEl('<g pointer-events="none">' + (glisse.h === 'buche' ? bucheArt(0, 0, -14, 1.15) : (lv ? lv.outerHTML : '')) + '</g>');
+    $('#vol').appendChild(glisse.el); glisse.g.classList.add('glisse'); document.body.classList.add('e-glisse');
+    son(glisse.h === 'buche' ? 'buche' : 'clic');
+  }
+  var q = ptScene(e);
+  glisse.el.setAttribute('transform', 'translate(' + f1(q.x) + ',' + f1(q.y + (glisse.h === 'buche' ? 6 : 46*glisse.e)) + ') scale(' + glisse.e + ')');
+  if(e.cancelable) e.preventDefault();
+}, {passive:false});
+function finGlisse(e, annule){
+  if(!glisse || (e && e.pointerId !== glisse.id)) return;
+  var gl = glisse; glisse = null;
+  if(!gl.bouge) return;                                   /* un simple toucher : le « click » fait le reste, comme avant */
+  if(gl.el) gl.el.remove(); gl.g.classList.remove('glisse'); document.body.classList.remove('e-glisse');
+  clic.avale = Date.now();
+  if(annule || S.occupe || S.mode) return;
+  var t = document.elementFromPoint(e.clientX, e.clientY), c = t && t.closest ? t.closest('[data-act="foyer"], [data-act="outil"]') : null;
+  if(!c){ son('clic'); return; }                           /* lâché à côté : il retourne à sa place */
+  S.H = gl.h; majEtat(); appliquer(gl.h, c.dataset.o);
+  if(S.H === gl.h){ S.H = null; majEtat(); }               /* (après un glisser, on n'a plus rien « en main ») */
+}
+document.addEventListener('pointerup', function(e){ finGlisse(e, false); });
+document.addEventListener('pointercancel', function(e){ finGlisse(e, true); });
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){ if(S.mode && S.mode !== 'intro') return fermerMode(); if(JEU && !S.mode) return quitter(); }
   if(S.mode === 'livre' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return tournerPage(e.key === 'ArrowLeft' ? -1 : 1);
@@ -75,6 +119,11 @@ function majStyles(){
 /* Tout se mesure avec la même unité : --u = la taille d'un point du dessin à l'écran */
 function mesure(){ var c = $('#cadre'); c.style.setProperty('--u', Math.min(c.clientWidth/1200, c.clientHeight/640) + 'px'); }
 window.addEventListener('resize', mesure);
+/* (iPhone : la barre du navigateur apparaît ou s'en va, on tourne le téléphone… sans toujours prévenir par « resize » — et le dessin,
+   resté trop grand, dépassait en haut et en bas : Romain, 12 novembre, 13 h 52. On remesure dès que le cadre change vraiment de taille.) */
+window.addEventListener('orientationchange', function(){ setTimeout(mesure, 80); setTimeout(mesure, 450); });
+if(window.visualViewport && visualViewport.addEventListener) visualViewport.addEventListener('resize', mesure);
+if(window.ResizeObserver){ try{ new ResizeObserver(function(){ mesure(); }).observe(document.getElementById('cadre')); }catch(e){} }
 /* Jamais de zoom par accident (comme dans le jeu) */
 (function(){
   var bloquer = function(e){ if(e.cancelable) e.preventDefault(); };
@@ -93,6 +142,7 @@ if(CFG && CFG.vite){ reduit = true; document.documentElement.classList.add('vite
 function appliquerFiche(c){
   if(!c) return;
   if(c.plantes && typeof c.plantes === 'object'){ S.dispo = {}; ORDRE_PL.forEach(function(k){ S.dispo[k] = c.plantes[k] > 0 ? c.plantes[k] : 0; }); }
+  if(Array.isArray(c.trouvees)){ S.trouvees = {}; c.trouvees.forEach(function(k){ if(PL[k]) S.trouvees[k] = 1; }); }
   if(Array.isArray(c.faites)){ S.faites = {}; c.faites.forEach(function(id){ if(RE[id]) S.faites[id] = 1; }); }
   if('nuit' in c) S.nuit = !!c.nuit;
   if('sac' in c) S.sac = c.sac && Array.isArray(c.sac.formes) ? {formes:c.sac.formes.slice(0, 4)} : null;
@@ -102,7 +152,7 @@ function demarrer(){
   if(S && S.mode){ S.occupe = false; fermerMode(); }
   neuf();
   if(CFG){ appliquerFiche(CFG); if(CFG.sacVu) S.sacVu = true; importer(CFG.etat); }
-  else{ ORDRE_PL.forEach(function(k){ S.dispo[k] = 1; }); S.sac = {formes:['🌙', '⭐', '🔥']}; }   /* (la maquette : tout est cueilli, et un code pour voir) */
+  else{ S.stock = ORDRE_PL.slice(); ORDRE_PL.forEach(function(k){ S.trouvees[k] = 1; }); regarnir(); S.sac = {formes:['🌙', '⭐', '🔥']}; }   /* (la maquette : tout est cueilli, et un code pour voir) */
   camera(600, 320, 1); mesure(); majStyles(); dessinerScene(); majEtat(); majQuitter();
 }
 demarrer();
@@ -116,6 +166,7 @@ if(CFG && CFG.intro) ouvrirIntro();
 window.__etabli = {etat:function(){ return S; }, exporter:exporter, libre:function(){ return !S.occupe; }, recettes:RE, plantes:PL, quitter:quitter, style:ST, son:SON, sons:SONS,
   texte:function(){ var b = $('#calque .bulle-o span'); return b ? b.textContent : ''; },
   /* boucler une potion d'un coup, sans les gestes */
+  redessiner:function(){ majTout(); majEtat(); },
   finir:function(id){ var r = RE[id]; if(!r || S.faites[id]) return false; S.plante = r.plante; S.partie = r.partie; S.n = r.etapes.length - 1; finir(id, r.etapes[r.etapes.length - 1]); return true; }};
 dire('pret');
 })();

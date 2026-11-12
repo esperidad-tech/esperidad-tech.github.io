@@ -69,22 +69,34 @@ with sync_playwright() as p:
     pg = page(b, 1180, 820); r = Robot(pg)
     D = pg.evaluate("() => window.PLANTES_DONNEES"); RE = D['RE']
     print('— La scène')
-    ok(pg.locator('#scene .outil').count() >= 9 and pg.locator('#scene .pendue').count() == 7 and pg.locator('#portique [id^=potion-]').count() == 7 and pg.locator('#g-sac').count() == 0,
-       f'neuf outils, sept plantes pendues à la tringle, sept flacons vides sur l\'étagère de l\'établi, plus de sac ({pg.locator("#scene .outil").count()} outils)')
-    haut = pg.evaluate("""() => { var e = document.querySelector('#portique').getBoundingClientRect(), m = 1e9;
-      [].forEach.call(document.querySelectorAll('#scene .outil, #gLivre, #scene .porte'), function(o){ m = Math.min(m, o.getBoundingClientRect().top); });
-      var pot = document.querySelector('#potion-feu').getBoundingClientRect(); return [Math.round(pot.bottom), Math.round(m), Math.round(e.top)]; }""")
-    ok(haut[0] <= haut[1] + 2 and haut[2] >= -1, f'l\'étagère des potions est au-dessus de tout le reste, et dans l\'écran ({haut})')
+    # (pour l'essai : la tringle porte d'abord le lin, le pied-de-loup et la vesse-de-loup ; les quatre autres attendent)
+    pg.evaluate("() => { var S = window.__etabli.etat(); S.dispo = {lin:1, lycopode:1, vesse:1}; S.stock = ['gui', 'oseille', 'souci', 'melisse']; S.posee = null; window.__etabli.redessiner(); }")
+    ok(pg.locator('#scene .outil').count() >= 9 and pg.locator('#etagere-plantes .pendue').count() == 3 and pg.locator('#portique [id^=potion-]').count() == 7 and pg.locator('#g-sac').count() == 0,
+       f'neuf outils, trois plantes pendues à la tringle de droite (pas une de plus), sept flacons vides sur l\'étagère des potions, plus de sac')
+    haut = pg.evaluate("""() => { var R = function(s){ var r = document.querySelector(s).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]; };
+      return {pot:R('#potion-feu'), cu:R('#cuillere'), li:R('#gLivre > rect[fill=transparent]'), pr:R('#g-presse > rect[fill=transparent]'), tr:R('#etagere-plantes'), se:R('#g-sechoir > rect[fill=transparent]'), pe:R('#pendues'), sc:R('#scene')}; }""")
+    ok(haut['pot'][3] <= haut['cu'][1] + 3 and haut['pot'][3] <= haut['li'][1] + 3 and haut['pot'][1] >= haut['sc'][1] + (haut['sc'][3] - haut['sc'][1])*.08,
+       f'l\'étagère des potions : juste au-dessus de la cuillère et du grimoire, et loin du haut de l\'écran ({haut["pot"]}, cuillère {haut["cu"][1]}, livre {haut["li"][1]})')
+    ok(haut['pe'][0] >= haut['pr'][2] - 2 and haut['pe'][3] <= haut['se'][1] + 6,
+       f'l\'étagère des plantes : à droite du pressoir, et les plantes pendent au-dessus de « On laisse sécher » ({haut["tr"]}, pressoir {haut["pr"][2]}, plantes {haut["pe"][3]}, séchoir {haut["se"][1]})')
+    ordre = pg.evaluate("() => { var a = document.querySelector('#pendues'), b = document.querySelector('#g-sechoir'); return !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); }")
+    ok(ordre, 'les plantes pendues (et leurs ronds jaunes) sont dessinées avant l\'écriteau « On laisse sécher » : elles passent derrière')
+    pied = pg.evaluate("""() => { var p = document.querySelector('#g-buches .pan-feu').getBoundingClientRect(), b = document.querySelector('#g-buches .leve').getBoundingClientRect(), a = document.querySelector('#g-alambic').getBoundingClientRect(); return [Math.round(p.bottom), Math.round(b.top), Math.round(b.right), Math.round(a.left)]; }""")
+    ok(pied[0] > pied[1] + 30, f'le panneau du feu a un pied qui descend jusque sur la table, entre les bûches et l\'alambic ({pied})')
     ok(pg.locator('#scene .plante .corps').count() == 0, 'le linge est vide tant qu\'on n\'a rien décroché')
-    r.toucher('#pendue-souci > rect[fill=transparent]'); pg.wait_for_timeout(450)
-    ok(pg.locator('#pendue-souci').count() == 0 and pg.locator('#plante-souci .corps').count() == 1 and r.etat()['plante'] is None, 'on touche le souci pendu : il se couche sur le linge')
+    r.toucher('#pendue-vesse > rect[fill=transparent]'); pg.wait_for_timeout(450)
+    ok(pg.locator('#pendue-vesse').count() == 0 and pg.locator('#plante-vesse .corps').count() == 1 and r.etat()['plante'] is None, 'on touche la vesse-de-loup pendue : elle vient sur le linge')
+    r.toucher('#pendue-lin > rect[fill=transparent]'); pg.wait_for_timeout(450)
+    grand = pg.evaluate("""() => { var c = document.querySelector('#plante-lin .corps').getBoundingClientRect(), l = document.querySelector('#linge').getBoundingClientRect(); return [Math.round(c.width), Math.round(c.height), Math.round(l.width), Math.round(l.height), c.left >= l.left - 2 && c.right <= l.right + 2 && c.top >= l.top - 2 && c.bottom <= l.bottom + 2]; }""")
+    ok(pg.locator('#scene .plante .corps').count() == 1 and pg.locator('#pendue-vesse').count() == 1 and pg.locator('#pendue-lin').count() == 0, 'on touche le lin : la vesse-de-loup retourne se pendre, une seule plante sur le linge')
+    ok(grand[4] and grand[1] >= grand[3]*.6, f'elle est en grand, et ne dépasse pas du linge ({grand})')
     t = pg.evaluate("() => document.querySelector('#g-buches .pan-feu').textContent + ' | ' + document.querySelector('#g-cruche').textContent + ' | ' + document.querySelector('#g-huilier').textContent")
     ok('feu doux' in t and 'feu fort' in t and 'EAU' in t and 'Huile' in t and 'vide' in t, f'le panneau du feu, « EAU » sur la cruche, « Huile » et « vide » sur la bouteille ({t})')
     pg.screenshot(path=f'{OUT}/01-scene.png')
     print('— Les gestes faux')
     r.outil('planche'); ok(len(r.texte()) > 12 and r.etat()['ou'] is None, f'un outil touché les mains vides : il dit à quoi il sert ({r.texte()[:50]})')
     ok(pg.locator('#calque .bulle-o .b-son').count() == 1, 'la phrase a son 🔊')
-    r.plante('lin', 'fleurs'); ok(r.etat()['partie'] == 'fleurs', 'le lin : on prend les fleurs bleues (la mauvaise partie)')
+    r.plante('lin', 'fleurs'); pg.screenshot(path=f'{OUT}/02-partie.png'); ok(r.etat()['partie'] == 'fleurs', 'le lin : on prend les fleurs bleues (la mauvaise partie)')
     r.outil('tamis'); r.outil('tamis'); ok('fleurs bleues' in r.texte() and r.etat()['partie'] is None, f'la mauvaise partie : la phrase de la plante, et elle revient entière ({r.texte()[:50]})')
     r.plante('lin', 'graines'); r.outil('mortier'); r.outil('mortier'); ok('farine' in r.texte() and r.etat()['n'] == 0 and r.etat()['ou'] == 'mortier', f'le mauvais outil : ce qui se passe pour de vrai, et rien n\'est perdu ({r.texte()[:50]})')
     r.outil('presse'); r.outil('presse'); ok('trier' in r.texte() and r.etat()['n'] == 0, f'le pressoir trop tôt ({r.texte()[:50]})')
@@ -158,6 +170,28 @@ with sync_playwright() as p:
     r.fermer()
     pg.close()
 
+    print('— Glisser-déposer')
+    pg = page(b, 1180, 820); r = Robot(pg)
+    def glisser(de, vers):
+        a = pg.evaluate("(s) => { var q = document.querySelector(s).getBoundingClientRect(); return [q.left + q.width/2, q.top + q.height/2]; }", de)
+        z = pg.evaluate("(s) => { var q = document.querySelector(s).getBoundingClientRect(); return [q.left + q.width/2, q.top + q.height/2]; }", vers)
+        pg.mouse.move(a[0], a[1]); pg.mouse.down(); pg.mouse.move((a[0] + z[0])/2, (a[1] + z[1])/2, steps=6); pg.mouse.move(z[0], z[1], steps=6)
+        fant = pg.locator('#vol > g').count(); pg.mouse.up(); pg.wait_for_timeout(120); r.libre(); return fant
+    f1 = glisser('#g-buches > rect[fill=transparent]', '[data-act=foyer][data-o=marmite]')
+    ok(f1 == 1 and r.etat()['feux']['marmite']['b'] == 1 and r.etat()['H'] is None, f'on glisse une bûche jusque sous la marmite : elle y est ({r.texte()})')
+    glisser('#g-buches > rect[fill=transparent]', '#g-alambic > rect[fill=transparent]')
+    glisser('#g-buches > rect[fill=transparent]', '#g-alambic > rect[fill=transparent]')
+    ok(r.etat()['feux']['alambic']['b'] == 2, f'deux bûches glissées dans l\'alambic : feu fort ({r.texte()})')
+    glisser('#g-cruche > rect[fill=transparent]', '#g-marmite > rect[fill=transparent]')
+    ok(r.etat()['liq']['marmite'] == 'eau', f'on glisse la cruche sur la marmite : de l\'eau dedans ({r.texte()})')
+    glisser('#g-cruche > rect[fill=transparent]', '#linge')
+    ok(r.etat()['liq']['alambic'] is None and r.etat()['H'] is None, 'lâchée à côté : rien ne se passe, elle retourne à sa place')
+    glisser('#g-huilier > rect[fill=transparent]', '#g-marmite > rect[fill=transparent]')
+    ok('Vide' in r.texte() and r.etat()['liq']['marmite'] == 'eau', f'la bouteille d\'huile vide ne se glisse pas : elle le dit ({r.texte()[:40]})')
+    r.outil('buches'); r.outil('marmite')
+    ok(r.etat()['feux']['marmite']['b'] == 2, 'et toucher puis toucher marche toujours : une deuxième bûche sous la marmite')
+    pg.close()
+
     print('— Les 5 formes × 8 couleurs, les 5 murs × 8 couleurs')
     pg = page(b, 1180, 820)
     n = pg.evaluate("""() => { var n = 0, b = ['stPaF', 'stPaT', 'stMurF', 'stMurT'].map(function(i){ return document.getElementById(i); }), vus = {};
@@ -165,7 +199,7 @@ with sync_playwright() as p:
       for(var f = 0; f < 5; f++){
         for(var t = 0; t < 8; t++){
           var st = window.__etabli.style; vus[st.paF + '-' + st.paT] = 1;
-          if(document.querySelectorAll('#scene .outil').length >= 9 && document.querySelectorAll('#scene .pendue').length === 7) n++;
+          if(document.querySelectorAll('#scene .outil').length >= 9 && document.querySelectorAll('#scene .pendue').length === 3) n++;
           b[1].click(); b[3].click(); }
         b[0].click(); b[2].click(); }
       return Object.keys(vus).length === 40 ? n : -Object.keys(vus).length; }""")
@@ -175,7 +209,7 @@ with sync_playwright() as p:
 
     print('— Le grimoire se remplit au fur et à mesure')
     pg = page(b, 1180, 820); r = Robot(pg)
-    pg.evaluate("() => { var S = window.__etabli.etat(); Object.keys(S.dispo).forEach(function(k){ S.dispo[k] = 0; }); }")
+    pg.evaluate("() => { var S = window.__etabli.etat(); Object.keys(S.dispo).forEach(function(k){ S.dispo[k] = 0; }); S.trouvees = {}; S.stock = []; }")
     r.toucher('#gLivre > rect[fill=transparent]'); pg.wait_for_timeout(200)
     t = pg.evaluate("() => document.querySelector('#pagesLivre').innerText.replace(/\\s+/g, ' ')")
     ok(pg.locator('.livre .signet').count() == 0 and 'attend tes cueillettes' in t and r.sans_son('#pagesLivre') == [], f'aucune plante trouvée : le grimoire est vide, et le dit ({t[:50]})')
