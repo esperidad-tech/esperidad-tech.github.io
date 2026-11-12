@@ -2054,6 +2054,8 @@ Même demande de Romain (11 novembre, 22 h 59 et 23 h 29). **Romain, 12 novembre
 11. **De nouveaux bruits** (35 : le couteau, le pilon, la vis du pressoir, l'allumette, le feu, les bouillons, l'alambic, le bouchon…), fabriqués comme ceux du labo. Ils sont **dans l'Atelier des sons, marqués 🆕** (« Mini-jeux » → « Établi des plantes ») : Romain ne les a pas encore écoutés.
 12. **Pas fait** : Mimi n'est pas sur l'établi ; pas de version « plus facile » pour les moins de 10 ans ; **jamais essayé sur une vraie tablette** (seulement par des robots, en taille tablette et téléphone).
 
+**En attendant la mise en ligne, un aperçu privé pour Romain** (l'établi tout seul) : https://claude.ai/artifact/Cz6wM1WxQuTNvABLLGqS3v .
+
 **Pour l'essayer sans lancer une enquête (une fois en ligne)** : https://esperidad-tech.github.io/brumeval/etabli-essai.html (l'établi tout seul, les sept plantes déjà cueillies ; le bouton « Maquette ⚙️ » change la forme, la couleur, le mur, et passe à la nuit). Dans le jeu : https://esperidad-tech.github.io/brumeval/#test → ☰ → Réglages → Mode test → Enquête 3, héros Alchimiste.
 
 **Dans le code** (rien ne change pour les enquêtes 1 et 2) :
