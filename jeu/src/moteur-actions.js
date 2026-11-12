@@ -1243,7 +1243,7 @@ A.point = function(el){
     return c.length ? c.map(function(x){ return {l:l, id:x.id, t:x.choixTxt || x.nom}; }) : null;
   }
   if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:'lieu', retourId:l, choix:choix()}); return; }
-  if(p.mj && M.ferme && M.ferme(k)){ M.ouvrir({type:'decouverte', ic:'🔒', titre:p.nom, t:M.texteEchec(p, M.MAX_ESSAIS), rate:true, retour:'lieu', retourId:l}); return; }   /* raté deux fois : fermé (essais.js) */
+  if(p.mj && !p.essaisInfinis && M.ferme && M.ferme(k)){ M.ouvrir({type:'decouverte', ic:'🔒', titre:p.nom, t:M.texteEchec(p, M.MAX_ESSAIS), rate:true, retour:'lieu', retourId:l}); return; }   /* raté deux fois : fermé (essais.js) ; p.essaisInfinis (l'oie de l'enquête 3) : jamais fermé */
   if(P.vus['explore:' + l] !== P.moment) return;
   if(p.besoin && !M.besoinOk(p.besoin)){
     M.ouvrir({type:'besoin', ic:p.ic, titre:p.nom, t:p.alt || 'Tu ne peux pas encore faire ça.', besoin:p.besoin, retourId:l});
@@ -1265,10 +1265,12 @@ A.point = function(el){
     /* p.facileSi {si:[conditions], niveau, params, avant} (enquête 3) : avec un code, le mini-jeu change (les traces de Moustache, avec ses six doigts) */
     var fac = p.facileSi && M.besoinOk(p.facileSi.si) ? p.facileSi : null;
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0) + (fac && fac.niveau || 0), fac && fac.params ? Object.assign({}, p.params, fac.params) : p.params, {titre:p.nom, ic:p.ic, avant:(fac && fac.avant) || p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
-      sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null}, function(res){
+      sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null, reessaisInfinis:!!p.essaisInfinis}, function(res){
       if(res.gateau){ P.gateau = res.gateau; }   /* (enquête 3) le gâteau de la fête, tel que l'Alchimiste l'a fait */
       if(res.reussi) reveler();
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
+        /* p.essaisInfinis (l'oie de l'enquête 3, Romain, 12 novembre) : on recommence autant qu'on veut ; le point ne se ferme jamais */
+        if(p.essaisInfinis){ M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:(p.rate || 'Raté…') + ' Tu peux réessayer !', rate:true, retour:'lieu', retourId:l, reessai:{act:'point', l:l, id:p.id, infini:1}}); return; }
         /* p.ouvrePartiel (enquête 2) : le dernier raté compte quand même (l'indice partiel), et le code est donné : on ne reste jamais bloqué */
         if(p.ouvrePartiel && n >= M.MAX_ESSAIS){ P.vus[k] = 'ok'; P.vus[k + ':partiel'] = 1; M.consommerBesoin(p.besoin); var cp = null;
           if(p.obj){ P.objets[p.obj] = true; cp = 'obj:' + p.obj; } if(p.donne){ cp = p.donne; P.objets['_' + p.donne] = true; }

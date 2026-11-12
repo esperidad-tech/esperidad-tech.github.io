@@ -157,13 +157,14 @@ D.INGR = {
   racine:{nom:'Racine du Vieux Chêne', ic:'🪵', c:'#9b6a3c', rare:true},
   lune:{nom:'Poussière de lune', ic:'✨', c:'#eef0ff', rare:true}
 };
-/* Enquête 3 : les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les
-   rangements de l'atelier (rien ne change pour les enquêtes 1 et 2) : cueillies, elles attendent sur l'établi (P.plantes). */
-/* OÙ ELLES POUSSENT (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.23) : chaque plante a UN endroit précis de la carte, qu'on ne voit pas.
+/* Les sept vraies plantes de l'établi (E3-atelier-des-plantes.md ; plantes.js). Elles ne vont ni au chaudron ni dans les rangements de
+   l'atelier : cueillies, elles attendent sur l'établi (P.plantes), et suivent le héros d'une enquête à l'autre (plantes.js, M.S.herbier). */
+/* OÙ ELLES POUSSENT (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.24) : chaque plante a UN endroit précis de la carte, qu'on ne voit pas.
    L'Alchimiste doit toucher exactement là : alors seulement la plante se montre, avec sa bulle « Cueillir ». C'est l'herbier du Sage qui dit où et quand.
    · x, y : dans les mesures du village (carte.js : 1000 × 1400). Les trois plantes d'au-delà de la brume ont des mesures qui sortent du village
      (le grand monde, monde-*.js : x + 1000, y + 320) ; zone : le banc de brume qu'il faut avoir repoussé (monde-brume.js, ZONES).
-   · des : la première enquête où l'endroit existe (2 : les quatre du village, qu'une curieuse peut déjà trouver à l'enquête 2 ; 3 : les trois lointaines).
+   · des : la première enquête où l'endroit existe (2 : les quatre du village — dès l'enquête 2 on les trouve à l'aveugle, on les cueille et on fait
+     leurs potions, Romain, 12 h 45 ; 3 : les trois lointaines, avec l'herbier du Sage et la brume repoussée).
    · pasAvant : le moment à partir duquel elle se cueille (rien : dès le matin). Plus tard dans la journée, et la nuit, elle se cueille toujours.
    · vit, ou, quand : ce que dit l'herbier (le Sage le lit à voix haute : rien que la plante, là où elle vit, l'endroit et le moment) ;
      ici : ce que voit l'Alchimiste quand elle la trouve ; tot : quand elle vient trop tôt.
@@ -205,7 +206,7 @@ D.PLANTES = {
     quand:'À toute heure.',
     ici:'Entre les bruyères, on dirait une petite branche de sapin qui rampe : du pied-de-loup !'},
   vesse:{nom:'La vesse-de-loup', un:'une vesse-de-loup', ic:'⚪', rare:true, x:229, y:-115, des:3, zone:'n',
-    vit:'Elle pousse dans les bois, à même la terre, par petits groupes.',
+    vit:'Elle pousse dans les bois et les clairières, à même la terre, par petits groupes.',
     ou:'Au-delà de la brume, au nord du Vieux Chêne : au beau milieu du Rond des Sorcières.',
     quand:'À toute heure.',
     ici:'Sur la terre du sous-bois, une grosse boule brune, bien mûre : une vesse-de-loup !'},
@@ -292,7 +293,7 @@ Object.keys(D.RECETTES).forEach(function(id){
   D.CHAUDRON[id] = {zone:c[0], frise:frise};
 });
 /* Les potions que l'Alchimiste savait faire « depuis le début » (lumière, rapidité, invisibilité) sont retirées de son grimoire
-   (Romain, 12 novembre, 12 h 52 : « des potions qui servent plus ou moins à rien, ce serait cool qu'on les enlève » ; Bible §13.23).
+   (Romain, 12 novembre, 12 h 52 : « des potions qui servent plus ou moins à rien, ce serait cool qu'on les enlève » ; Bible §13.24).
    Il ne reste que la recette de chaque enquête (l'encre révélatrice à l'enquête 1, la potion de vérité à l'enquête 2), et celles qu'un
    talent ou un objet apporte. D.POTIONS et D.RECETTES les gardent : leurs codes ne bougent pas (codes gelés), et une vieille sauvegarde
    qui en a une fiole peut encore la boire. D'autres potions viendront plus tard (à réfléchir avec Romain). */

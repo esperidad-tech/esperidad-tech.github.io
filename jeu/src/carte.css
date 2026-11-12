@@ -88,7 +88,7 @@
 /* autour de la carte (quand on voit toute la carte) : de l'eau bleue, comme un lac autour du village */
 .ca-plein{position:relative;width:100%;min-height:220px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%, #3f7fb3 0%, #2b5f8f 55%, #1f4a73 100%)}
 .ca-plein.ca-couche-dessous{background:radial-gradient(ellipse at 50% 45%, #2a2036 0%, #140f1c 80%)}
-/* les boutons ＋ / − (carte.js) : en bas à droite, toujours au-dessus de la carte */
+/* (les boutons ＋ / − : ENLEVÉS le 12 novembre — on pince à deux doigts, ou on tourne la molette, carte.js. Leurs règles ne servent plus.) */
 .ca-zoom{position:absolute;right:10px;bottom:10px;z-index:5;display:flex;flex-direction:column;gap:8px}
 .ca-zoom[hidden]{display:none}
 .ca-zoom button{width:52px;height:52px;border-radius:50%;border:2px solid var(--trait, #3b4679);background:rgba(19,25,50,.9);color:var(--or-pale, #ffe3a3);font:700 1.7rem/1 var(--f-texte);display:grid;place-items:center;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.45);touch-action:manipulation;cursor:pointer}
@@ -102,9 +102,10 @@
 .ca-tire .ca-vue{cursor:grabbing}
 .ca-monde{position:relative;flex:none;margin:auto}
 .ca-monde > .ca-carte{width:100%;height:100%;border-radius:0}
-/* Le grand monde (carte.js, Bible chapitre 14) : trois dessins l'un sur l'autre. Dessous (.ca-fond) : le sol du monde d'autour, où rien ne bouge.
-   Au milieu : le dessin de toujours (le village, ce qui se touche), au fond transparent. Dessus (.ca-nuages) : la brume, où rien ne bouge non plus.
-   will-change : chacun des deux dessins immobiles est gardé tout peint par la tablette ; quand une fumée bouge dans le village, elle ne les repeint pas
+/* Le grand monde (carte.js, Bible chapitre 14) : trois couches l'une sur l'autre. Dessous (.ca-fond) : le sol du monde d'autour, où rien ne bouge.
+   Au milieu : le dessin de toujours (le village, ce qui se touche), au fond transparent. Dessus (.ca-nuages) : la brume, une image (une toile)
+   que la tablette étire.
+   will-change : le dessin du dessous est gardé tout peint par la tablette ; quand une fumée bouge dans le village, elle ne le repeint pas
    (mesuré le 12 novembre : sans cela, la carte tournait bien moins vite que l'ancienne). */
 .ca-monde > .ca-carte.ca-grand{position:relative;z-index:1;background:transparent}
 .ca-monde > .ca-fond{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;display:block;background:#4f8c55;pointer-events:none;-webkit-user-select:none;user-select:none;will-change:transform}
@@ -167,7 +168,7 @@
 .ca-marqueur.ingr-fait{filter:grayscale(1);opacity:.55}
 /* Le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31) */
 .ca-marqueur.presence.ca-fache{--ca-m:#ff5a4a}
-/* ---------- Les plantes cachées de l'Alchimiste (Romain, 12 novembre, 12 h 52 ; carte.js « cachettes », cueillette.js ; Bible §13.23) ----------
+/* ---------- Les plantes cachées de l'Alchimiste (Romain, 12 novembre, 12 h 52 ; carte.js « cachettes », cueillette.js ; Bible §13.24) ----------
    L'endroit ne se voit pas : un rond invisible (.ca-cachette) qu'il faut toucher exactement. Trouvé : sa pastille surgit (la classe
    ca-cach-inconnue s'en va, la pastille grossit en rebondissant) et reste sur la carte ; grise : plus rien à y cueillir pour l'instant. */
 .ca-cachette{cursor:pointer}

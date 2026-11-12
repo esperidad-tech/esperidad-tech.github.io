@@ -5,22 +5,38 @@
    · on touche un outil : ce qu'on prépare s'y pose. On retouche l'outil : il travaille (le couteau hache, le pilon écrase, la vis serre,
      la cuillère tourne…). Le bocal à filtrer, le séchoir et les fioles travaillent tout seuls, dès qu'on y pose quelque chose ;
    · la cruche, l'huile, une bûche, une allumette : on la touche (on la tient), puis on touche l'endroit où la verser, la poser, l'allumer.
-     Le feu, c'est donc le joueur qui le choisit : pas de bûche, une bûche (petit feu), deux bûches (grand feu), allumé ou pas ;
+     Le feu, c'est donc le joueur qui le choisit : pas de bûche, une bûche (feu doux), deux bûches (feu fort), allumé ou pas ;
    · jamais d'échec : un geste qui n'est pas dans la recette donne ce que ça donnerait pour de vrai (une petite phrase), et la matière
      reste comme elle était. Une mauvaise partie de la plante : la plante revient entière.
    S : l'état. plante, partie, n (les étapes faites), ou (où est la matière : 'linge' ou un outil), pos ('entree' / 'sortie' de l'outil),
    m ({nom, c, f} : ce que c'est devenu), H (ce qu'on tient), feux, liq, faites, dispo. */
 var S = null, CAM = {cx:600, cy:320, z:1}, bulleT = 0, inviteT = 0;
-var HAUT = {alambic:246, marmite:196, presse:224, sechoir:140, fiole:116, mortier:132, tamis:88, filtre:106, planche:74, cruche:110, huilier:92, buches:104, allumettes:62, sac:108, livre:176};
+var HAUT = {alambic:246, marmite:196, presse:224, sechoir:140, fiole:116, mortier:132, tamis:88, filtre:106, planche:74, cruche:110, huilier:120, buches:104, allumettes:62, sac:108, livre:176};
 function neuf(){
   S = {plante:null, partie:null, n:0, ou:null, pos:'entree', m:null, faitIci:false, H:null, feux:{marmite:{b:0, allume:false}, alambic:{b:0, allume:false}}, liq:{marmite:null, alambic:null},
-    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false};
+    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false, posees:{}, pagesVues:{}};
 }
 function recette(){ return S.plante ? RE[PL[S.plante].potion] : null; }
 function pos(x, y, w, h){ return 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(y) + '*var(--u));width:calc(' + f1(w) + '*var(--u));height:calc(' + f1(h) + '*var(--u))'; }
 function borne(v, a, b){ return Math.max(a, Math.min(b, v)); }
 function svgEl(html){ var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = html; return g; }
 function nbFaites(){ return ORDRE.filter(function(id){ return S.faites[id]; }).length; }
+function toutesFaites(){ return nbFaites() === ORDRE.length; }
+/* les pages du grimoire : une par plante trouvée (cueillie, ou déjà en potion) ; celles qu'on n'a pas encore lues */
+function connues(){ return ORDRE.filter(function(id){ return S.dispo[RE[id].plante] > 0 || S.faites[id]; }); }
+function nouvellesPages(){ return connues().filter(function(id){ return !S.pagesVues[id]; }); }
+/* Une plante pendue à la tringle : on la touche, hop, elle se couche sur le linge (là, on peut la regarder de près) */
+function decrocher(k){
+  if(S.occupe || S.mode || !PL[k] || !(S.dispo[k] > 0) || S.posees[k]) return;
+  poser(); enleverBulle(); S.posees[k] = 1; son('pose');
+  majPendues(); majPlantes(); majEtat();
+  var g = $('#plante-' + k), c = g && g.querySelector('.corps'), q = PLACE[k];
+  if(c && !reduit) tween(320, function(p){
+    var e = 1 - (1 - p)*(1 - p);
+    c.setAttribute('transform', 'translate(' + q[0] + ',' + f1(q[1] - 96*(1 - e)) + ') scale(' + SP + ',' + (SP*(APLAT + (1 - APLAT)*(1 - e))).toFixed(3) + ') translate(-130,-' + q[2] + ')'); c.setAttribute('opacity', f1(.35 + .65*e));
+  }, function(){ c.removeAttribute('opacity'); });
+  garder();
+}
 
 /* ---------- La caméra, les gros plans ---------- */
 function camera(cx, cy, z){
@@ -48,7 +64,7 @@ function majEtat(){
   OUTILS_SC.forEach(function(o){ var g = $('#g-' + o); if(g) g.classList.toggle('ici', m && S.ou === o && !AUTO[o] && !S.occupe); });
   [['buches', 'buche'], ['allumettes', 'allumette'], ['cruche', 'cruche'], ['huilier', 'huilier']].forEach(function(q){ var g = $('#g-' + q[0]); if(g) g.classList.toggle('tenu', S.H === q[1]); });
   var fa = $('#flammeAll'); if(fa) fa.style.display = S.H === 'allumette' ? '' : 'none';
-  var sc = $('#g-sac'); if(sc) sc.classList.toggle('appel', !!(S.nuit && nbFaites() > 0 && !S.sacVu));
+  var sc = $('#portique'); if(sc) sc.classList.toggle('appel', !!(toutesFaites() && S.sac && !S.sacVu));
 }
 /* une invitation : pendant deux secondes, tous les outils montrent qu'on peut y poser la matière */
 function inviter(){ document.body.classList.add('invite'); clearTimeout(inviteT); inviteT = setTimeout(function(){ document.body.classList.remove('invite'); }, 2600); }
@@ -186,7 +202,7 @@ function reussir(o, e, r){
 }
 function finir(id, e){
   var r = RE[id], k = S.plante;
-  S.faites[id] = 1; if(S.dispo[k] > 0) S.dispo[k]--;
+  S.faites[id] = 1; if(S.dispo[k] > 0) S.dispo[k]--; delete S.posees[k];
   S.partie = null; S.n = 0; S.ou = null; S.m = null; S.pos = 'entree'; S.faitIci = false; S.plante = null; S.restes = {}; S.presseBas = false;
   S.aDire.push(id); dire('finie', {id:id}); garder();
   majTout(); occupe(false); majQuitter();
@@ -389,16 +405,19 @@ function toucherFoyer(o){
 function toucherPotion(id){
   if(S.occupe || S.mode) return;
   var r = RE[id], i = ORDRE.indexOf(id); son('clic'); poser();
-  bulle(426 + i*54, 136, S.faites[id] ? r.nom + '. ' + r.sert : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
+  if(toutesFaites() && S.sac) return ouvrirCode();   /* les sept sont prêtes : le code pour le Pisteur */
+  bulle(xPort(i), PORT.yEt + 30, S.faites[id] ? r.nom + ' : prête !' : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
 }
 
 /* ---------- Garder, reprendre ---------- */
-function exporter(){ return {p:S.plante, pa:S.partie, n:S.n, ou:S.ou, pos:S.pos, liq:S.liq, vu:S.vuH || {}}; }
+function exporter(){ return {p:S.plante, pa:S.partie, n:S.n, ou:S.ou, pos:S.pos, liq:S.liq, vu:S.vuH || {}, po:Object.keys(S.posees), pv:Object.keys(S.pagesVues)}; }
 function importer(e){
   if(!e || typeof e !== 'object') return;
   if(e.vu && typeof e.vu === 'object') S.vuH = e.vu;
+  if(Array.isArray(e.po)) e.po.forEach(function(k){ if(PL[k]) S.posees[k] = 1; });
+  if(Array.isArray(e.pv)) e.pv.forEach(function(id){ if(RE[id]) S.pagesVues[id] = 1; });
   var p = PL[e.p]; if(!p || !(S.dispo[e.p] > 0) || S.faites[p.potion]) return;
-  S.plante = e.p;
+  S.plante = e.p; S.posees[e.p] = 1;
   var r = RE[p.potion], d = p.parties[e.pa]; if(!d) return;
   var n = Math.max(0, Math.min(r.etapes.length - 1, e.n | 0));
   if(e.pa !== r.partie) n = 0;

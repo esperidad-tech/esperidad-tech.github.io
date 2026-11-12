@@ -1,5 +1,5 @@
 /* ==========================================================
-   Brumeval — la cueillette des sept plantes, et la brume repoussée (Romain, 12 novembre, 12 h 52 et 13 h 09 ; Bible §13.23)
+   Brumeval — la cueillette des sept plantes, et la brume repoussée (Romain, 12 novembre, 12 h 52 et 13 h 09 ; Bible §13.24)
 
    CE QUE ROMAIN A DEMANDÉ
    · Chaque plante pousse à UN endroit précis de la carte, qu'on ne voit pas (« on ne peut pas deviner où sont les plantes »). Quand l'Alchimiste
@@ -16,7 +16,9 @@
      l'Alchimiste). M.brumeLevee() donne les zones levées pour ce joueur ; carte-jeu.js fait partir la brume sous ses yeux, une seule fois.
    · Les moments : pl.pasAvant ('apresmidi') = pas avant ce moment-là. Jamais « trop tard » : plus tard dans la journée, et la nuit, la plante se
      cueille toujours (une potion ne doit jamais devenir impossible : Bible §13.14).
-   · Une enquête sans établi (l'enquête 2) : on trouve la plante, on ne la cueille pas (« pas besoin aujourd'hui »).
+   · DÈS L'ENQUÊTE 2 (Romain, 12 h 45 : « elles ne servent pas à l'enquête, mais on peut déjà faire leurs potions ») : les quatre plantes du village
+     se trouvent et se cueillent comme à l'enquête 3 — à l'aveugle, car l'herbier du Sage n'arrive qu'à l'enquête 3. L'établi apparaît dans
+     l'atelier dès la première plante, et plantes et potions suivent le héros d'une enquête à l'autre (plantes.js : M.etabliDispo, M.S.herbier).
    Chargé APRÈS moteur-actions.js (M.A, M.bulleDe, M.ouvrir) ; livre.js lui demande la page de l'herbier (M.herbierHTML).
    ========================================================== */
 (function(){
@@ -46,11 +48,10 @@ function tropTot(E, P, pl){
   var r = (E.moments || []).indexOf(pl.pasAvant);
   return r > 0 && Math.min(P.moment || 0, E.moments.length - 1) < r;
 }
-/* 'plustard' : une enquête sans établi (on la trouve, on ne la cueille pas) · 'tot' : pas encore le moment · 'cueillie' : cueillie à ce moment-ci ·
-   'deja' : il y en a sur l'établi · 'faite' : sa potion est prête · 'pret' : à cueillir */
+/* 'tot' : pas encore le moment · 'cueillie' : cueillie à ce moment-ci · 'deja' : il y en a sur l'établi (cueillie plus tôt, ou à une enquête
+   d'avant) · 'faite' : sa potion est prête · 'pret' : à cueillir */
 function etat(E, P, id){
   var pl = D.PLANTES[id];
-  if(!E.plantes) return 'plustard';
   if(tropTot(E, P, pl)) return 'tot';
   if(P.vus['cueilli:plante:' + id] === P.moment) return 'cueillie';
   if(P.plantes && P.plantes[id] > 0) return 'deja';
@@ -78,7 +79,6 @@ M.cachetteHTML = function(m){
   var e = etat(E, P, m.id);
   var s = '<div class="b-feuille-tete"><span class="b-feuille-ic">' + pl.ic + '</span><div><h2>' + esc(pl.nom) + '</h2></div></div>';
   if(e === 'tot') return s + phrase(pl.tot || 'Ce n\'est pas encore le moment.');
-  if(e === 'plustard') return s + phrase(tropTot(E, P, pl) ? (pl.tot || pl.ici) : pl.ici) + phrase('Pas besoin aujourd\'hui… mais tu sais où la trouver !');
   if(e === 'cueillie') return s + phrase('✅ Cueilli ! Ça t\'attend sur l\'établi de ton atelier.', 'b-recolte');
   if(e === 'deja') return s + phrase('✅ Tu en as déjà sur ton établi.', 'b-recolte');
   if(e === 'faite') return s + phrase('✅ Ta potion est prête : plus besoin d\'en cueillir.', 'b-recolte');
@@ -102,6 +102,7 @@ A['cueillir-plante'] = function(el){
   if(!P || !E || M.role() !== 'alchimiste' || !D.PLANTES[id] || !atteinte(E, id) || etat(E, P, id) !== 'pret') return;
   M.ajouterPlante(id);
   P.vus['cueilli:plante:' + id] = P.moment;
+  if(M.etabliDispo) M.etabliDispo();   /* (plantes.js : la plante est notée pour toute la saison ; hors de l'enquête 3, c'est elle qui fait apparaître l'établi) */
   M.son('ok'); M.sauver();
   M.ouvrir({type:'cachette', id:id, bulle:!!(m && m.bulle), ancre:m ? m.ancre : null, neuve:false});
 };

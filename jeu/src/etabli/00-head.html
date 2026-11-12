@@ -61,6 +61,13 @@ body:not(.jeu) .coin-jeu{display:none}
 @keyframes rond{0%,100%{opacity:.25} 50%{opacity:.95}}
 /* rien n'est en route : les plantes cueillies appellent */
 body.e-choisir .plante.dispo .rond{opacity:.9; animation:rond 1.4s ease-in-out infinite}
+/* les plantes cueillies, pendues à la tringle : on en décroche une */
+.pendue{cursor:pointer} .pendue .corps-p, .pendue .corps-p *{pointer-events:none} .pendue .pl-z{fill:transparent; stroke:none}
+body.e-choisir .pendue .rond{opacity:.9; animation:rond 1.4s ease-in-out infinite}
+body.m-plante .pendue, body.m-plante .potion{pointer-events:none}
+/* les sept potions sont prêtes : l'étagère appelle (le code pour le Pisteur) */
+#portique.appel .potion .rond{opacity:1; animation:rond 1.1s ease-in-out infinite}
+.badge-l{animation:rond 1.4s ease-in-out infinite}
 /* une matière est en route : là où elle est posée, l'outil appelle (il bouge) ; quand elle vient d'arriver ou de changer, tous les
    outils s'allument un instant (« invite ») : on peut la porter partout */
 body.e-matiere.invite .outil:not(.ici) .rond{opacity:.7; animation:rond 1.1s ease-in-out infinite}

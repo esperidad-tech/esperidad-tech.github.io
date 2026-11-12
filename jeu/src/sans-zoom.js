@@ -5,9 +5,9 @@
    - CSS : touch-action pan-x pan-y partout où un module ne dit rien d'autre (ni pincer, ni toucher deux fois pour zoomer) ;
    - iOS Safari ignore le meta : on bloque gesturestart / gesturechange, et tout geste à deux doigts (touchmove) ;
    - ordinateur : Ctrl + molette (ou pincer sur le pavé tactile) ne zoome pas la page.
-   La carte se zoome avec ses boutons ＋ / − (carte.js, Carte.monter), plus à deux doigts (3 novembre).
-   Le tableau de liège du Barde garde son zoom à deux doigts : il passe par les événements « pointer »,
-   pas par le zoom du navigateur, donc il marche quand même. Un autre module qui voudrait zoomer fera pareil.
+   La carte se zoome à deux doigts ou à la molette (carte.js, Carte.monter ; Romain, 12 novembre — du 3 au 12 novembre elle avait des
+   boutons ＋ / −). Comme le tableau de liège du Barde, elle passe par les événements « pointer », pas par le zoom du navigateur,
+   donc elle marche quand même, et la page, elle, ne zoome toujours pas. Un autre module qui voudrait zoomer fera pareil.
    ========================================================== */
 (function(){
 'use strict';

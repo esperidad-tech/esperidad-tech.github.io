@@ -40,7 +40,7 @@ $('#scene').addEventListener('click', function(e){
   else if(a === 'foyer') toucherFoyer(g.dataset.o);
   else if(a === 'porte') tenir(g.dataset.h);
   else if(a === 'livre') ouvrirLivre();
-  else if(a === 'sac') ouvrirSac();
+  else if(a === 'pendue') decrocher(g.dataset.k);
   else if(a === 'potion') toucherPotion(g.dataset.id);
 });
 document.addEventListener('keydown', function(e){
@@ -58,10 +58,11 @@ document.addEventListener('click', function(e){
   if((b = e.target.closest('[data-tourne]'))) return tournerPage(+b.dataset.tourne);
   if(e.target.closest('[data-intro]')){ son('clic'); arreterLecture(); S.mode = 'intro'; fermerMode(); dire('introVue'); return; }
   if(e.target.closest('[data-donjon]')){ son('clic'); fermerMode(); dire('donjon', {etat:exporter()}); return; }
+  if(e.target.closest('[data-suite]')){ arreterLecture(); fermerMode(); if(toutesFaites() && S.sac) ouvrirCode(); return; }   /* après la septième potion : le code */
   if(e.target.closest('[data-fond]')){ arreterLecture(); return fermerMode(); }
   if(e.target.closest('#bReglages')){ var pn = $('#reglages'); pn.hidden = !pn.hidden; son('clic'); return; }
   if(e.target.closest('#bRecommencer')){ demarrer(); return; }
-  if(e.target.closest('#bNuit')){ S.nuit = !S.nuit; S.sac = S.nuit ? {formes:['🌙', '⭐', '🔥']} : null; S.sacVu = false; $('#bNuit').setAttribute('aria-pressed', String(S.nuit)); majEtat(); son('clic'); return; }
+  if(e.target.closest('#bNuit')){ S.nuit = !S.nuit; S.donjon = S.nuit; $('#bNuit').setAttribute('aria-pressed', String(S.nuit)); majEtat(); son('clic'); return; }
   if(e.target.closest('#bSon')){ SON.actif = !SON.actif; try { localStorage.setItem('brumeval-etabli-son', SON.actif ? 'oui' : 'non'); } catch(err){} majStyles(); son('clic'); return; }
   if((b = e.target.closest('[data-style]'))){ var cle = b.dataset.style; ST[cle] = (ST[cle] + 1) % (cle.slice(-1) === 'F' ? 5 : THEMES.length); try { localStorage.setItem('brumeval-etabli-style', JSON.stringify(ST)); } catch(err){} majStyles(); dessinerScene(); majEtat(); son('clic'); return; }
   /* un toucher à côté, dans un gros plan : on recule */
@@ -101,14 +102,14 @@ function demarrer(){
   if(S && S.mode){ S.occupe = false; fermerMode(); }
   neuf();
   if(CFG){ appliquerFiche(CFG); if(CFG.sacVu) S.sacVu = true; importer(CFG.etat); }
-  else ORDRE_PL.forEach(function(k){ S.dispo[k] = 1; });
+  else{ ORDRE_PL.forEach(function(k){ S.dispo[k] = 1; }); S.sac = {formes:['🌙', '⭐', '🔥']}; }   /* (la maquette : tout est cueilli, et un code pour voir) */
   camera(600, 320, 1); mesure(); majStyles(); dessinerScene(); majEtat(); majQuitter();
 }
 demarrer();
 /* le jeu répond (une potion vient d'être notée : le code du sac a changé) */
 window.addEventListener('message', function(e){
   var m = e.data; if(!m || m.etabli !== 1 || e.source !== window.parent) return;
-  if(m.type === 'maj'){ appliquerFiche(m); majEtat(); if(S.mode === 'sac'){ $('#hudBoite').innerHTML = sacHTML(); } }
+  if(m.type === 'maj'){ appliquerFiche(m); majEtat(); if(S.mode === 'sac'){ $('#hudBoite').innerHTML = codeHTML(); } }
 });
 if(CFG && CFG.intro) ouvrirIntro();
 /* (pour les robots d'essai) */

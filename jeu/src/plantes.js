@@ -26,7 +26,28 @@ window.PLANTES_RECETTES = {ORDRE:ORDRE, RE:RE, PL:PL};   /* (pour les robots d'e
 
 /* ---------- Ce que sait le jeu ---------- */
 function enquete(){ try{ return M.S && M.S.e ? M.E() : null; }catch(e){ return null; } }
-M.etabliDispo = function(){ var E = enquete(); return !!(window.ETABLI_HTML && E && E.plantes && M.P && M.P() && M.role() === 'alchimiste'); };
+/* D'une enquête à l'autre (Romain, 12 novembre, 12 h 45 : « dès l'enquête numéro 2 ») : les plantes trouvées et les potions faites suivent le
+   héros. M.S.herbier = {plantes:{<plante>:n° de l'enquête où on l'a trouvée}, fioles:{<potion>:n° de l'enquête où on l'a faite}}.
+   Au début d'une partie, on reprend ce qui vient d'une enquête D'AVANT ; rejouer une enquête repart de zéro pour ce qu'on y avait fait. */
+function memoire(){ var S = M.S; if(!S.herbier || typeof S.herbier !== 'object') S.herbier = {}; S.herbier.plantes = S.herbier.plantes || {}; S.herbier.fioles = S.herbier.fioles || {}; return S.herbier; }
+function suivre(){
+  var P = M.P && M.P(); if(!P || !M.S || M.role() !== 'alchimiste') return;
+  var g = memoire(), n = +P.id || 0;
+  if(!P.herbierRepris){
+    P.herbierRepris = 1; P.plantes = P.plantes || {};
+    ORDRE.forEach(function(id){ if(g.fioles[id] >= n) delete g.fioles[id]; else if(g.fioles[id]) P.vus['fiole:' + id] = 1; });
+    ORDRE_PL.forEach(function(k){ if(g.plantes[k] >= n) delete g.plantes[k]; else if(g.plantes[k]){ P.vus['plante:' + k] = 1; if(!g.fioles[PL[k].potion] && !(P.plantes[k] > 0)) P.plantes[k] = 1; } });
+  }
+  ORDRE_PL.forEach(function(k){ if(P.plantes && P.plantes[k] > 0 && !g.plantes[k]) g.plantes[k] = n; });
+  ORDRE.forEach(function(id){ if(P.vus['fiole:' + id] && !g.fioles[id]) g.fioles[id] = n; });
+}
+/* L'établi est là dès que le héros a trouvé une plante (dans n'importe quelle enquête), et toujours dans une enquête à plantes */
+M.etabliDispo = function(){
+  var E = enquete(); if(!(window.ETABLI_HTML && E && M.P && M.P() && M.role() === 'alchimiste')) return false;
+  suivre();
+  var P = M.P();
+  return !!(E.plantes || ORDRE_PL.some(function(k){ return P.plantes && P.plantes[k] > 0; }) || ORDRE.some(function(id){ return P.vus['fiole:' + id]; }));
+};
 function faite(id){ var P = M.P(); return !!(P && P.vus['fiole:' + id]); }
 function faites(){ return ORDRE.filter(faite); }
 function aPlante(k){ var P = M.P(); return !!(P && P.plantes && P.plantes[k] > 0); }
@@ -35,8 +56,8 @@ M.plantesEnAttente = function(){ return M.etabliDispo() ? ORDRE_PL.filter(functi
 function nuit(){ var E = enquete(), P = M.P(); return !!(E && P && E.moments[Math.min(P.moment, E.moments.length - 1)] === 'nuit'); }
 M.sacBits = function(){ var n = 0; ORDRE.forEach(function(id, i){ if(faite(id)) n |= (1 << i); }); return n; };
 M.sacDe = function(n){ return ORDRE.filter(function(id, i){ return (n >> i) & 1; }); };
-/* le signe au-dessus de l'établi, la nuit : le sac attend son code */
-M.etabliSigne = function(){ return (M.etabliDispo() && nuit() && !(M.P().vus['sac:donne'])) ? '🎒 Ton sac !' : null; };
+/* le signe au-dessus de l'établi : les sept potions sont prêtes, leur code attend (Romain, 12 novembre, 12 h 45 : plus de sac) */
+M.etabliSigne = function(){ return (M.etabliDispo() && sacFiche() && !(M.P().vus['sac:donne'])) ? '🧪 Ton code !' : null; };
 
 /* ---------- La page de l'établi : un cadre, en plein écran, par-dessus l'atelier (comme le labo) ---------- */
 var CADRE = 'etabli-cadre';
@@ -45,14 +66,15 @@ function style(){
   var a = M.S.atelier || {}, et = (a.objets || []).filter(function(o){ return o.id === 'et'; })[0], st = et ? (et.st || 0) : ((a.etabli || {}).st || 0), fond = (a.deco || {}).fond || 0;
   return {paF:st % 5, paT:st % 8, murF:fond % 5, murT:fond % 8};
 }
-/* le code du sac, en trois formes (seulement la nuit, et s'il y a au moins une potion) */
+/* le code pour le Pisteur, en trois formes : seulement quand les SEPT potions sont faites (dans une enquête qui a ce code) */
 function sacFiche(){
-  if(!nuit() || !faites().length) return null;
+  if(faites().length < ORDRE.length) return null;
   try{ return {formes:M.code('sac:' + M.sacBits()).map(function(s){ return D.SYM[s].e; })}; }catch(e){ return null; }
 }
 function donjonDispo(){ try{ return !!(M.donjonBoutonAlchimiste && M.donjonBoutonAlchimiste()); }catch(e){ return false; } }
 function plantesDispo(){ var P = M.P(), r = {}; ORDRE_PL.forEach(function(k){ r[k] = (P.plantes && P.plantes[k] > 0) ? P.plantes[k] : 0; }); return r; }
 function fiche(){
+  suivre();
   var P = M.P(), S = M.S;
   return {jeu:true, plantes:plantesDispo(), faites:faites(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
     intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), vite:!!window.BRUMEVAL_ETABLI_VITE};
@@ -83,10 +105,11 @@ function finie(id){
   if(!P || !r || P.vus['fiole:' + id]) return;
   P.vus['fiole:' + id] = 1;
   if(P.plantes && P.plantes[r.plante] > 0) P.plantes[r.plante]--;
-  M.noter('Potion prête : ' + r.nom.charAt(0).toLowerCase() + r.nom.slice(1) + '. ' + r.sert, '🧪');
+  M.noter('Potion prête : ' + r.nom.charAt(0).toLowerCase() + r.nom.slice(1) + '.', '🧪');
   toutes = faites().length === ORDRE.length;
-  if(toutes) M.noter('Les sept potions de la nuit sont prêtes !', '🎒');
-  delete P.etabli;
+  if(toutes) M.noter('Les sept potions sont prêtes !', '🧪');
+  if(P.etabli && typeof P.etabli === 'object') P.etabli = {vu:P.etabli.vu, po:P.etabli.po, pv:P.etabli.pv}; else delete P.etabli;
+  suivre();
   M.sauver();
 }
 window.addEventListener('message', function(e){
@@ -103,7 +126,7 @@ window.addEventListener('message', function(e){
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
   else if(m.type === 'stop'){ M.stop && M.stop(); }
   else if(m.type === 'introVue'){ M.S.etabliIntro = 1; M.sauver(); }
-  else if(m.type === 'sacVu'){ if(nuit() && faites().length){ P.vus['sac:donne'] = 1; M.sauver(); } }
+  else if(m.type === 'sacVu'){ if(sacFiche()){ P.vus['sac:donne'] = 1; M.sauver(); } }
   else if(m.type === 'donjon'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); if(M.A['ds-aller']) M.A['ds-aller'](); }   /* 🫕 le chaudron du donjon (descente.js) */
   else if(m.type === 'quitter'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); }
 });

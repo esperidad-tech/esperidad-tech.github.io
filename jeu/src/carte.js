@@ -1289,7 +1289,7 @@ function calque(o){
     '<circle cx="62" cy="62" r="40" fill="#1c2447" stroke="' + c[0] + '" stroke-width="6"/><text x="62" y="64" font-size="38" text-anchor="middle" dominant-baseline="central">' + c[1] + '</text></g>';
 }
 
-/* ---------- Les endroits cachés où poussent les plantes (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.23) ----------
+/* ---------- Les endroits cachés où poussent les plantes (Romain, 12 novembre, 12 h 52 ; cueillette.js ; Bible §13.24) ----------
    o.cachettes = [{id, x, y, ic, connu, grise}], dans les mesures du village (une plante d'au-delà de la brume a des mesures qui en sortent :
    le groupe du village n'est pas découpé, elle tombe à sa place dans le grand monde).
    Tant que l'endroit n'est pas trouvé, RIEN ne se voit : seulement un rond invisible, qu'il faut toucher exactement (R_CACHETTE, en mesures
@@ -1336,10 +1336,9 @@ function svg(opts){
     /* LE GRAND MONDE (Bible chapitre 14). Le village est à sa place de toujours : tout ce qui est du village reste dans ses anciennes mesures, dans
        un groupe décalé de (OX, OY). o.brume : les zones dont la brume est levée (rien : toute la brume). */
     var mo = MOMENTS[o.moment] ? o.moment : 'apresmidi', pm = p + 'm-';
-    var teinte = o.maquette ? null : {haut: MOMENTS[mo].haut, bas: MOMENTS[mo].bas};
-    /* o.brumePart (12 novembre, cueillette.js) : les zones qu'on vient de lever (elles sont aussi dans o.brume). Leur brume est dessinée une
-       dernière fois, dans un quatrième dessin posé tout en haut, qui s'efface en entier : seule son opacité bouge (carte.css, .ca-brume-part). */
-    var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, part: o.brumePart, etiquette: o.etiquette, maquette: o.maquette, teinte: teinte});
+    /* o.brumePart (12 novembre, cueillette.js ; Bible §13.24) : les zones qu'on vient de lever (elles sont aussi dans o.brume). La brume d'avant
+       est posée une dernière fois par-dessus, sur une toile à elle, qui s'efface en entier : seule son opacité bouge (carte.css, .ca-brume-part). */
+    var G = Monde.assembler(pm, p, {riviere: o.riviere, brume: o.brume, part: o.brumePart, etiquette: o.etiquette, maquette: o.maquette});
     var village = '<g class="ca-village" transform="translate(' + Monde.OX + ' ' + Monde.OY + ')">';
     var tete = ' viewBox="0 0 ' + Monde.W + ' ' + Monde.H + '" xmlns="http://www.w3.org/2000/svg"';
     if(o.maquette)   /* la page du modèle : un seul dessin (sol, village, arbres et lieux d'autour, brume, voile du moment, lumières, écritures) */
@@ -1348,25 +1347,31 @@ function svg(opts){
         G.sol + village + corps[0] + '</g>' + G.dessus + G.brume + voile(p, mo, Monde.W, Monde.H) +
         village + corps[1] + parDessus + '</g>' + G.etiquettes +
         '</svg>';
-    /* Dans le jeu : TROIS DESSINS posés l'un sur l'autre, de la même taille (12 novembre, 12 h — mesuré : dans un seul dessin, tout ce qui bouge
-       dans le village — fumées, roue, rivière — obligeait la tablette à repeindre à chaque image le monde et la brume, et la carte tournait
-       trois fois moins vite que l'ancienne).
-       1. dessous (ca-fond) : le sol du monde, ses arbres, ses lieux. RIEN N'Y BOUGE (ca-fixe coupe ses animations) : la tablette le peint une fois.
+    /* Dans le jeu : TROIS COUCHES posées l'une sur l'autre, de la même taille.
+       (12 novembre, 12 h — mesuré : dans un seul dessin, tout ce qui bouge dans le village — fumées, roue, rivière — obligeait la tablette à
+       repeindre à chaque image le monde et la brume, et la carte tournait trois fois moins vite que l'ancienne.)
+       1. dessous (ca-fond) : le sol du monde, ses arbres, ses lieux. RIEN N'Y BOUGE (ca-fixe coupe ses animations). Il n'est dessiné que là où
+          l'on voit quelque chose (G.vu : autour du village, et les zones levées) : sous la brume pleine, la tablette n'a rien à peindre.
        2. au milieu, LE DESSIN DE TOUJOURS (le premier dans la page, celui que le jeu connaît) : le ruisseau et la rivière qui coulent, le village,
           le voile de lumière du moment (sur tout ce qui est dessous), les lumières, ce qui se touche, les écritures. Son fond est transparent ;
           il compte à peu près autant de morceaux que l'ancienne carte.
-       3. dessus (ca-fond ca-nuages) : la brume. Rien n'y bouge non plus, et on ne la touche pas (les touchers passent au travers). Le voile du
-          moment ne la recouvre pas : elle est teintée à la source (monde-brume.js, « La teinte du moment »).
-       Les dégradés sont tous rangés dans le dessin du milieu : les deux autres s'en servent aussi (ils sont dans la même page). */
+       3. dessus (ca-fond ca-nuages) : LA BRUME, UNE IMAGE (12 novembre, 12 h 20 : en dessin, elle faisait ramer le téléphone de Romain dès qu'on
+          glissait vers elle). Ici ce n'est qu'une petite toile vide : Carte.monter (poserBrume) la remplace par la toile peinte une fois pour
+          toutes (monde-brume.js, toileBrume), teintée selon le moment. On ne la touche pas (les touchers passent au travers).
+       Les dégradés sont tous rangés dans le dessin du milieu : celui du dessous s'en sert aussi (ils sont dans la même page). Sa découpe
+       (« vu »), elle, est rangée chez lui. */
+    var VM = MOMENTS[mo];
     return '<svg class="' + cls + ' ca-grand"' + tete + ' data-ox="' + Monde.OX + '" data-oy="' + Monde.OY + '" role="img" aria-label="Carte de Brumeval">' +
-      defs(p) + '<defs>' + Monde.defs(pm, teinte) + '</defs>' + defsVisages(p, o) +
+      defs(p) + '<defs>' + Monde.defs(pm) + '</defs>' + defsVisages(p, o) +
       '<g class="mo-vives">' + G.vives + '</g>' +
       village + corps[0] + '</g>' + voile(p, mo, Monde.W, Monde.H) +
       village + corps[1] + parDessus + '</g>' + G.etiquettes +
       '</svg>' +
-      '<svg class="ca-fond ca-fixe"' + tete + ' aria-hidden="true">' + G.sol + G.dessus + '</svg>' +
-      '<svg class="ca-fond ca-nuages ca-fixe"' + tete + ' aria-hidden="true">' + G.brume + '</svg>' +
-      (G.brumePart ? '<svg class="ca-fond ca-nuages ca-brume-part"' + tete + ' aria-hidden="true">' + G.brumePart + '</svg>' : '');
+      '<svg class="ca-fond ca-fixe"' + tete + ' aria-hidden="true"><defs><clipPath id="' + pm + 'vu">' + G.vu.map(function(q){ return '<rect x="' + q[0] + '" y="' + q[1] + '" width="' + (q[2] - q[0]) + '" height="' + (q[3] - q[1]) + '"/>'; }).join('') + '</clipPath></defs>' +
+        '<g clip-path="url(#' + pm + 'vu)">' + G.sol + G.dessus + '</g></svg>' +
+      '<canvas class="ca-fond ca-nuages" width="1" height="1" aria-hidden="true" data-levees="' + G.levees.join(',') + '" data-voile="' + [VM.haut[0], VM.haut[1], VM.bas[0], VM.bas[1]].join(',') + '"></canvas>' +
+      /* (12 novembre) la brume qui s'en va : la toile de la brume d'AVANT (G.partAvant : les zones qui étaient déjà levées), posée par-dessus, et qui s'efface */
+      (G.partAvant ? '<canvas class="ca-fond ca-nuages ca-brume-part" width="1" height="1" aria-hidden="true" data-levees="' + G.partAvant.join(',') + '" data-voile="' + [VM.haut[0], VM.haut[1], VM.bas[0], VM.bas[1]].join(',') + '"></canvas>' : '');
   }
   if(niveau === 'surface' && !ss) corps = corps[0] + corps[1];
   return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de Brumeval">' +
@@ -1376,7 +1381,7 @@ function svg(opts){
 
 /* ==========================================================
    La carte en plein écran (onglet Carte du jeu)
-   À l'ouverture, toute la carte tient dans l'écran (opts.zoom = 0, carte-jeu.js) ; les boutons ＋ / − zooment, jusqu'au plus gros
+   À l'ouverture, toute la carte tient dans l'écran (opts.zoom = 0, carte-jeu.js) ; on zoome en pinçant à deux doigts ou à la molette (12 novembre ; avant : des boutons ＋ / −), jusqu'au plus gros
    (téléphone : la carte devient bien plus grande que l'écran, on la fait glisser au doigt, avec l'élan, ou à la souris).
    Plus de zoom à deux doigts (Romain, 3 novembre) : sur iPhone, on pouvait tirer la carte hors de l'écran. Deux doigts ne font rien de plus qu'un.
    Tablette : la carte prend toute la largeur (couchée, on la fait glisser de haut en bas).
@@ -1404,12 +1409,40 @@ function position(id){
   var e = posEtiquette(id); return e ? {x: e[0], y: e[1]} : null;
 }
 
+/* La brume du grand monde est une image (monde-brume.js, toileBrume). Le dessin de la carte ne contient qu'une petite toile vide, qui dit quelles
+   zones sont levées (data-levees) et quel est le voile de lumière du moment (data-voile) ; ici on la remplace par la vraie toile, peinte une
+   fois et gardée (toujours le même <canvas> pour un même moment : on n'en fabrique pas un à chaque affichage).
+   Appelé par Carte.monter, et par carte-jeu.js quand il retouche la carte affichée sans la remonter (M.carteInchangee) : le moment qui change
+   se contente alors de changer data-voile sur la toile en place — c'est le signe qu'il faut poser l'autre toile.
+   (Si la bonne toile est déjà posée dans une autre carte encore affichée, on en pose une copie.) */
+function poserBrume(racine){
+  var Monde = window.Monde;
+  if(!racine || !Monde || !Monde.toileBrume) return;
+  [].forEach.call(racine.querySelectorAll('canvas.ca-nuages[data-voile]'), function(c){
+    var v = (c.getAttribute('data-voile') || '').split(','), lev = (c.getAttribute('data-levees') || '').split(',').filter(function(x){ return x; });
+    c.removeAttribute('data-voile'); c.removeAttribute('data-levees');   /* une toile posée ne porte plus ces deux marques */
+    var toile = Monde.toileBrume(lev, v.length === 4 ? {haut: [v[0], +v[1]], bas: [v[2], +v[3]]} : null);
+    if(!toile || !c.parentNode || toile === c) return;
+    /* (12 novembre) la brume qui s'en va (carte.css, .ca-brume-part) : la toile de la brume d'avant porte cette classe le temps de s'effacer ;
+       reposée plus tard comme brume ordinaire (c'est la même toile, gardée par toileBrume), elle la perd */
+    toile.className = 'ca-fond ca-nuages' + (c.classList.contains('ca-brume-part') ? ' ca-brume-part' : '');
+    if(toile.parentNode && toile.parentNode !== c.parentNode && document.documentElement.contains(toile)){
+      var copie = document.createElement('canvas');
+      copie.className = toile.className; copie.setAttribute('aria-hidden', 'true'); copie.width = toile.width; copie.height = toile.height;
+      try{ copie.getContext('2d').drawImage(toile, 0, 0); }catch(e){}
+      toile = copie;
+    }
+    c.parentNode.replaceChild(toile, c);
+  });
+}
+
 function monter(ici, opts){
   opts = opts || {};
   var vue = ici && ici.querySelector('.ca-vue'), monde = ici && ici.querySelector('.ca-monde');
   if(!vue || !monde) return null;
+  poserBrume(monde);
   /* k : px par unité de carte ; kMax = le plus gros zoom, kMin = toute la carte dans l'écran ; z = k / kMax.
-     opts.zoom === 0 : on part de toute la carte dans l'écran (l'ouverture de la carte, Romain, 4 novembre, 21 h 12 ; ＋ / − pour zoomer) */
+     opts.zoom === 0 : on part de toute la carte dans l'écran (l'ouverture de la carte, Romain, 4 novembre, 21 h 12) */
   var V = {k: 0, kMin: 0, kMax: 0, z: opts.zoom === 0 ? 0 : Math.max(0.05, Math.min(1, opts.zoom || 1)), bloque: false, fins: []};
   var raf = 0;
   /* Le grand monde (Bible chapitre 14) : le dessin est plus grand que le village (MW × MH), et le village y est posé en (OX, OY).
@@ -1549,7 +1582,8 @@ function monter(ici, opts){
     arreterElan(); V.bloque = false;
     doigts[e.pointerId] = {id: e.pointerId, x: e.clientX, y: e.clientY, souris: e.pointerType === 'mouse'};
     var n = liste().length;
-    if(n === 1) debutGlisse(false);   /* un deuxième doigt ne fait rien : on continue de glisser avec le premier */
+    if(n === 1) debutGlisse(false);
+    else if(n === 2) debutPince();   /* deux doigts : on pince pour zoomer (Romain, 12 novembre, 12 h 20 ; du 3 au 12 novembre, il y avait des boutons ＋ / −) */
   }
   function surMouv(e){
     var d = doigts[e.pointerId]; if(!d || !G) return;
@@ -1583,27 +1617,20 @@ function monter(ici, opts){
   window.addEventListener('pointerup', surHaut);
   window.addEventListener('pointercancel', surHaut);
   V.fins.push(function(){ window.removeEventListener('pointermove', surMouv); window.removeEventListener('pointerup', surHaut); window.removeEventListener('pointercancel', surHaut); arreterElan(); });
-  /* ordinateur : Ctrl + molette (ou pincer sur le pavé tactile) zoome la carte, pas la page */
+  /* ordinateur : la molette zoome la carte, là où est la souris (Romain, 12 novembre, 12 h 20) ; pincer sur le pavé tactile aussi (le navigateur
+     l'envoie comme une molette avec Ctrl). La page, elle, ne zoome jamais (sans-zoom.js). */
   vue.addEventListener('wheel', function(e){
-    if(!e.ctrlKey) return;
     e.preventDefault();
-    var p = pointVue(e.clientX, e.clientY);
-    zoomerA(V.k * Math.exp(-e.deltaY * 0.0025), sousPoint(p), p);
+    arreterElan();
+    var p = pointVue(e.clientX, e.clientY), pas = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;   /* (certaines souris comptent en lignes) */
+    zoomerA(V.k * Math.exp(-Math.max(-240, Math.min(240, pas)) * 0.0025), sousPoint(p), p);
   }, {passive: false});
-  ici.addEventListener('click', function(e){ if(V.bloque && !(e.target.closest && e.target.closest('.ca-zoom'))){ V.bloque = false; e.stopPropagation(); e.preventDefault(); } }, true);   /* les boutons ＋ / − marchent toujours */
+  ici.addEventListener('click', function(e){ if(V.bloque){ V.bloque = false; e.stopPropagation(); e.preventDefault(); } }, true);
   vue.addEventListener('dragstart', function(e){ e.preventDefault(); });
-  /* ---------- Les boutons ＋ / − : un zoom doux autour du milieu de l'écran, en 3 crans environ ---------- */
-  var zb = document.createElement('div');
-  zb.className = 'ca-zoom';
-  zb.innerHTML = '<button type="button" class="ca-zoom-plus" data-z="1" aria-label="Zoomer sur la carte">＋</button><button type="button" class="ca-zoom-moins" data-z="-1" aria-label="Voir plus de carte">−</button>';
-  ici.appendChild(zb);
-  var bPlus = zb.children[0], bMoins = zb.children[1], anim = 0;
-  function majBoutons(){
-    var rien = !(V.kMax > V.kMin * 1.02);
-    zb.hidden = rien;
-    bPlus.disabled = V.k >= V.kMax * 0.995;
-    bMoins.disabled = V.k <= V.kMin * 1.005;
-  }
+  /* ---------- Plus de boutons ＋ / − (Romain, 12 novembre, 12 h 20) : on pince à deux doigts, ou on tourne la molette ----------
+     Il reste un zoom « d'un cran » autour du milieu de l'écran, pour les robots d'essai : la poignée rendue par Carte.monter a zoomer(+1 ou -1). */
+  var anim = 0;
+  function majBoutons(){}
   function cran(){ return Math.max(1.3, Math.pow(V.kMax / Math.max(1e-4, V.kMin), 1 / 3)); }
   var animFonds = [];
   function zoomBouton(sens){
@@ -1627,14 +1654,6 @@ function monter(ici, opts){
     anim.onfinish = function(){ anim = 0; };
     animFonds = fonds().map(function(d){ d.style.transformOrigin = '0 0'; return d.animate(images, duree); });   /* le grand monde, dessous, fait le même trajet */
   }
-  zb.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-  zb.addEventListener('click', function(e){
-    var bt = e.target.closest('button[data-z]'); if(!bt || bt.disabled) return;
-    e.stopPropagation(); e.preventDefault();
-    if(window.M && M.son) M.son('clic');
-    zoomBouton(+bt.dataset.z);
-  });
-  V.fins.push(function(){ if(zb.parentNode) zb.parentNode.removeChild(zb); });
   ajuster(depart);
   /* le cadre change de taille sans nouveau rendu (tablette qu'on tourne, cabane qui se réarrange) */
   var ro = null;
@@ -1647,6 +1666,7 @@ function monter(ici, opts){
     centre: centreVue,
     get k(){ return V.k; },
     etat: function(){ return {k: V.k, kMin: V.kMin, kMax: V.kMax, z: V.z}; },
+    zoomer: function(sens){ zoomBouton(sens); },   /* un cran de zoom (+1) ou de recul (-1), autour du milieu : pour les robots d'essai */
     /* glisse doucement jusqu'à un lieu (id) ou un point {x, y} */
     allerVers: function(cible, doux){
       var p = typeof cible === 'string' ? position(cible) : cible;
@@ -1656,5 +1676,5 @@ function monter(ici, opts){
   };
 }
 
-window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, ARBRES: ARBRES, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, telephone: telephone, R_CACHETTE: R_CACHETTE};
+window.Carte = {LIEUX: LIEUX, MAISONS: MAISONS, ARBRES: ARBRES, svg: svg, W: W, H: H, echelle: echelle, reglagesEcran: reglagesEcran, position: position, monter: monter, poserBrume: poserBrume, telephone: telephone, R_CACHETTE: R_CACHETTE};
 })();
