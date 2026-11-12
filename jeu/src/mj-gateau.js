@@ -6,8 +6,8 @@
      quand on pose les éléments, des bruits pour chaque catégorie de décoration ; on peut les déplacer où on veut ;
      quand on appuie dessus, ça les fait tourner (dans le sens des aiguilles d'une montre). »
 
-   - Pas de cœurs, on ne perd jamais : on fabrique, puis « C'est prêt ! ». Un minuteur de 15 minutes (Romain : 5 minutes
-     à 20 h 29, 15 minutes à 21 h 31) : à zéro, le gâteau part à la fête tel qu'il est.
+   - Pas de cœurs, on ne perd jamais : on fabrique, puis « C'est prêt ! ». Un minuteur de 10 minutes (Romain : 5 minutes
+     à 20 h 29, 15 minutes à 21 h 31, 10 minutes le 12 novembre à 21 h 34) : à zéro, le gâteau part à la fête tel qu'il est.
    - De jour, des couleurs très vives, de petits éclats qui scintillent sur le gâteau, et 46 décorations sur 80 qui bougent
      toutes seules (Romain, 20 h 29 : « un quart des décorations animées » ; 21 h 31 : « encore des décorations animées »).
    - À gauche, ce dont le gâteau est fait (étages, pâte, glaçage, motif, crème, table) : le choix s'applique à l'étage choisi
@@ -112,7 +112,8 @@ function pops(n){ try{ if(window.Brume && Brume.son) Brume.son('pastilles', Math
    (0,0) = le milieu de sa base ; un étage « penché » est couché de 9° (skewX) et pousse de côté les étages du dessus. */
 var CX = 320, BASE = 538, LARG = [400, 320, 244, 172], HAUT = [92, 86, 80, 74], APLAT = 0.087, PENCHE = Math.tan(9 * Math.PI / 180);
 var MAX_ETAGES = 4, MAX_DECOS = 80;
-var DUREE = 900;   /* un quart d'heure pour faire le gâteau (Romain, 11 novembre : « un timer de 5 minutes » à 20 h 29, puis « de 15 minutes » à 21 h 31) ; à zéro, il part à la fête tel qu'il est */
+var DUREE = 600;   /* dix minutes pour faire le gâteau (Romain, 11 novembre : « un timer de 5 minutes » à 20 h 29, puis « de 15 minutes » à 21 h 31 ;
+                      12 novembre, 21 h 34 : « qu'il dure uniquement 10 minutes », tout le monde fait le sien en même temps) ; à zéro, il part à la fête tel qu'il est */
 var HAUT_VUE = 590, DY = 32;   /* ce qu'on voit toujours de la scène : de y = 32 à y = 622 */
 function geo(etages){
   var g = [], cx = CX, y = BASE;
@@ -301,7 +302,7 @@ var DIT = {
   plein:'Stop ! Le gâteau n\'en peut plus. Une de plus, et il s\'écroule !',
   minute:'Plus qu\'une minute ! Gaspard a déjà sorti les assiettes.',
   pinceau:'Un pinceau magique ! Choisis une couleur, puis effleure ce que tu veux repeindre : une fraise, un étage, la nappe…',
-  fini:'Dong ! Les quinze minutes sont passées. Gaspard emporte le gâteau… en courant !'
+  fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !'
 };
 function phraseFin(R){
   if(R.parDeco.chaussette) return 'Une chaussette sur un gâteau ? À Brumeval, on appelle ça de la grande cuisine !';
@@ -728,7 +729,7 @@ function jouer(zone, params, fin){
   }
   bPret.addEventListener('click', feter);
 
-  /* ----- le temps : quinze minutes (il s'arrête pendant la pause du jeu, et pendant qu'on regarde la fête) ----- */
+  /* ----- le temps : dix minutes (il s'arrête pendant la pause du jeu, et pendant qu'on regarde la fête) ----- */
   function ecrireTemps(){
     var s = Math.max(0, Math.ceil(reste)); bTemps.querySelector('b').textContent = Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
     bTemps.classList.toggle('gt-presse', s <= 30);
@@ -777,13 +778,13 @@ function jouer(zone, params, fin){
 
 MJ.enregistrer('gateau', {
   nom:'Le gâteau de la fête', role:'alchimiste', ic:'🎂', minuteur:true,
-  consigne:'Fabrique le gâteau de la fête : jusqu\'à quatre étages, la pâte, le glaçage, la crème, et toutes les décorations que tu veux, posées où tu veux. Un petit coup de doigt sur une décoration la fait tourner. Tu as quinze minutes : à la fin, le gâteau part à la fête tel qu\'il est.',
-  reglages:function(){ return {duree:DUREE, lignes:[{nom:'Étages', val:'de 1 à ' + MAX_ETAGES}, {nom:'Décorations', val:'jusqu\'à ' + MAX_DECOS}, {nom:'Temps', val:'15 minutes'}]}; },
+  consigne:'Fabrique le gâteau de la fête : jusqu\'à quatre étages, la pâte, le glaçage, la crème, et toutes les décorations que tu veux, posées où tu veux. Un petit coup de doigt sur une décoration la fait tourner. Tu as dix minutes : à la fin, le gâteau part à la fête tel qu\'il est.',
+  reglages:function(){ return {duree:DUREE, lignes:[{nom:'Étages', val:'de 1 à ' + MAX_ETAGES}, {nom:'Décorations', val:'jusqu\'à ' + MAX_DECOS}, {nom:'Temps', val:Math.round(DUREE / 60) + ' minutes'}]}; },
   jouer:jouer
 });
 MJ.PLEIN_ECRAN = MJ.PLEIN_ECRAN || {}; MJ.PLEIN_ECRAN.gateau = 1;
 MJ.LARGE = MJ.LARGE || {}; MJ.LARGE.gateau = 1;   /* toute la largeur de l'écran : on voit la place en fête derrière le gâteau */
-MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.gateau = 'Quinze minutes pour le plus beau gâteau !';
+MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.gateau = 'Dix minutes pour le plus beau gâteau !';
 
 /* ==========================================================
    L'explication en images, avant de jouer (MJ.DEMOS.gateau) : la main touche une icône, les bulles sortent, elle en choisit une

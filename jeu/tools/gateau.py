@@ -79,7 +79,7 @@ with sync_playwright() as p:
 
     print('— 1. La salle, tablette couchée')
     pg = page(b, 1180, 820); pg.goto(SALLE); pg.wait_for_timeout(900)
-    verifier(pg.locator('.mj-gateau .mj-demo .gtd-cadre svg').count() == 2 and 'Quinze minutes' in pg.inner_text('.mj-phrase'), 'l\'accueil : l\'explication en images et la phrase (« Quinze minutes… »)')
+    verifier(pg.locator('.mj-gateau .mj-demo .gtd-cadre svg').count() == 2 and 'Dix minutes' in pg.inner_text('.mj-phrase'), 'l\'accueil : l\'explication en images et la phrase (« Dix minutes… »)')
     verifier(pg.evaluate("() => { var g = document.querySelector('.mj-go'), c = getComputedStyle(g); return /255, 224, 138|232, 169, 58/.test(c.backgroundImage) && c.color === 'rgb(17, 17, 17)'; }"), '« C\'est parti ! » : jaune, texte noir')
     verifier(pg.evaluate("() => document.getElementById('sl-plein').classList.contains('mj-large') && document.querySelector('.sl-cadre').getBoundingClientRect().width > 1100"), 'le mini-jeu prend toute la largeur de l\'écran')
     pg.wait_for_timeout(2300); pg.screenshot(path=os.path.join(PHOTOS, 'gateau-accueil.png'))
@@ -89,7 +89,7 @@ with sync_playwright() as p:
     verifier(pg.locator('.gt-fond path').count() > 300 and 'blur' in pg.evaluate("() => getComputedStyle(document.querySelector('.gt-fond')).filter") and pg.locator('.gt-scene .gt-table rect').count() >= 1,
              'derrière : la place en fête, un peu floue ; devant, bien nets : la table et le gâteau')
     t0 = temps(pg); pg.wait_for_timeout(1300); t1 = temps(pg)
-    verifier(899 < t0 <= 900 and .9 < t0 - t1 < 1.9 and pg.inner_text('.gt-temps b') in ('14:59', '14:58'), f'le minuteur : 15 minutes, et il descend ({pg.inner_text(".gt-temps b")})')
+    verifier(599 < t0 <= 600 and .9 < t0 - t1 < 1.9 and pg.inner_text('.gt-temps b') in ('9:59', '9:58'), f'le minuteur : 10 minutes, et il descend ({pg.inner_text(".gt-temps b")})')
     an = pg.evaluate("() => { var A = MJ.GATEAU_ART; return [A.ANIMEES.length, A.ANIMEES.filter(function(k){ return A.DECOS[k].anime && A.DECOS[k].dessin().indexOf('class=\"gta ') >= 0; }).length]; }")
     verifier(an[0] == an[1] and an[0] * 2 >= 80, f'{an[0]} décorations sur 80 bougent toutes seules (plus de la moitié)')
     c = pg.evaluate("() => MJ.GATEAU.compte()")
@@ -230,7 +230,7 @@ with sync_playwright() as p:
         # le minuteur arrive à zéro : le gâteau part à la fête tel qu'il est, sans « Retoucher »
         temps(pg, 30.3); pg.wait_for_timeout(500); verifier(pg.locator('.gt-temps.gt-presse').count() == 1, 'à trente secondes de la fin, le minuteur rougit')
         temps(pg, 1.1); pg.wait_for_timeout(2100)
-        verifier(pg.locator('.gt.gt-fini').count() == 1 and pg.locator('.gt-retouche').count() == 0 and 'quinze minutes' in pg.inner_text('.gt-final-dit') and pg.locator('.gt-final-dit .mj-lire-mini').count() == 1,
+        verifier(pg.locator('.gt.gt-fini').count() == 1 and pg.locator('.gt-retouche').count() == 0 and 'dix minutes' in pg.inner_text('.gt-final-dit') and pg.locator('.gt-final-dit .mj-lire-mini').count() == 1,
                  'à zéro : la fête commence toute seule, sans « Retoucher » ; le conteur le dit (avec son 🔊)')
         d = pg.evaluate(DEDANS); verifier(not d['dehors'] and not d['defile'], f'la fête tient dans l\'écran {d if d["dehors"] or d["defile"] else ""}')
         haut = pg.evaluate("() => { var f = document.querySelector('.gt-final').getBoundingClientRect(), bas = 0; document.querySelectorAll('.gt-etage').forEach(function(e){ bas = Math.max(bas, e.getBoundingClientRect().bottom); }); return [Math.round(bas), Math.round(f.top)]; }")

@@ -1411,7 +1411,8 @@ A.bonus = function(el){
     var gainB = M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre) */
     if(res.reussi){ M.S.or += gainB; M.son('gain'); }
     M.sauver();
-    M.ouvrir({type:'info', ic:res.reussi ? '🪙' : '💨', titre:res.reussi ? 'Mission réussie : +' + gainB + (gainB > 1 ? ' pièces' : ' pièce') + ' d\'or !' : 'Mission ratée', t:res.reussi ? 'Bravo ! L\'or est dans ta bourse.' : 'Dommage… Cette mission ne se rejoue pas.'});
+    /* (b.fin : ce qu'on dit à la fin, à la place de « Bravo ! » — le concours de gâteaux de l'enquête 3) */
+    M.ouvrir({type:'info', ic:res.reussi ? '🪙' : '💨', titre:res.reussi ? 'Mission réussie : +' + gainB + (gainB > 1 ? ' pièces' : ' pièce') + ' d\'or !' : 'Mission ratée', t:res.reussi ? (b.fin || 'Bravo ! L\'or est dans ta bourse.') : 'Dommage… Cette mission ne se rejoue pas.'});
   });
 };
 /* Le texte d'une analyse : An.variantes [{si:[conditions], t, note}], la première qui convient, sinon An.t

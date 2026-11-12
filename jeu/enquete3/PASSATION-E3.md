@@ -1,6 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 19 h 20)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 22 h 05)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 12 novembre (22 h 05) : le concours de gâteaux
+
+- Bible §13.30. Le gâteau de la fête pour les quatre rôles, à la boulangerie, le matin ou l'après-midi, **dix minutes** ; une icône 🎂 « Le gâteau » sur la carte ; avant de jouer : « Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau ! » L'élection se fait autour de la table. Le Barde, le Pisteur et le Sage : des missions bonus (3 pièces) ; l'Alchimiste garde son gâteau du haut de la pièce montée. En ligne (version 20261112-2100).
 
 ## Nouveau depuis le 12 novembre (19 h 07) : l'indice du lycopode et la lande
 
