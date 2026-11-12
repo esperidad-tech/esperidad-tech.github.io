@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Brumeval — la grande carte (modèle)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Macondo&display=swap">
+<style>
+:root{
+  --nuit:#131932; --nuit-2:#1c2447; --trait:#3b4679; --lune:#eef0ff; --cyan:#8ff3ff; --or:#f5b945; --or-pale:#ffe3a3; --braise:#e8693c;
+  --c-pisteur:#5fcf86; --c-alchimiste:#b48cff; --c-barde:#ff8fb3; --c-sage:#6cb6ff;
+  --f-titre:"Macondo", "Georgia", "Times New Roman", serif;
+  --f-texte:"Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--nuit);color:var(--lune);font-family:var(--f-texte);-webkit-text-size-adjust:100%}
+/*CARTE_CSS*/
+
+/* ---------- la page du modèle ---------- */
+.mo-page{position:fixed;inset:0;display:flex;flex-direction:column}
+.mo-barre{flex:none;display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--nuit);border-bottom:2px solid #2b3566}
+.mo-titre{font-family:var(--f-titre);font-size:1.25rem;color:var(--or-pale);white-space:nowrap;margin-right:auto;overflow:hidden;text-overflow:ellipsis}
+.mo-titre small{font-family:var(--f-texte);font-size:.8rem;color:#a6aed8;margin-left:8px}
+.mo-choix{display:flex;gap:6px;flex:none}
+.mo-choix button{font:700 .95rem/1 var(--f-texte);padding:10px 14px;border-radius:999px;border:2px solid var(--trait);background:var(--nuit-2);color:var(--lune);cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.mo-choix button[aria-pressed=true]{background:linear-gradient(180deg,#ffe08a,#e8a93a);color:#111;border-color:#24182e}
+.mo-choix button:active{transform:scale(.96)}
+.mo-cadre{position:relative;flex:1;min-height:0;background:#dfe6f5}
+.mo-vue{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab}
+.mo-vue::-webkit-scrollbar{display:none}
+.mo-tire .mo-vue{cursor:grabbing}
+.mo-monde{position:relative}
+.mo-monde > .ca-carte{display:block;width:100%;height:100%;border-radius:0;background:#64a15e}
+.mo-zoom{position:absolute;right:12px;bottom:12px;z-index:5;display:flex;flex-direction:column;gap:8px}
+.mo-zoom button{width:52px;height:52px;border-radius:50%;border:2px solid var(--trait);background:rgba(19,25,50,.9);color:var(--or-pale);font:700 1.7rem/1 var(--f-texte);display:grid;place-items:center;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.45);touch-action:manipulation;cursor:pointer}
+.mo-zoom button:active:not(:disabled){transform:scale(.93)}
+.mo-zoom button:disabled{opacity:.35;cursor:default}
+.mo-mot{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:6;max-width:calc(100% - 150px);padding:9px 16px;border-radius:999px;background:rgba(19,25,50,.92);border:2px solid var(--trait);color:var(--lune);font-size:.95rem;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.4);pointer-events:none;transition:opacity .5s ease}
+.mo-mot[hidden]{display:block;opacity:0}
+.mo-mot b{color:var(--or-pale)}
+
+/* ---------- la brume ---------- */
+.bm-zone{transition:opacity 1.5s ease, transform 2.4s ease;cursor:pointer}
+.bm-zone.bm-levee{opacity:0;transform:scale(1.07);pointer-events:none}
+.bm-zone circle,.bm-zone ellipse,.bm-zone rect:not(.bm-hit){pointer-events:none}
+.mo-etiq-zone{opacity:0;transition:opacity .4s ease;pointer-events:none}
+.mo-etiq-zone.mo-vu{opacity:1;transition:opacity 1s ease .7s}
+.mo-contree{font-family:var(--f-titre);font-weight:400;letter-spacing:.06em}
+.mo-cache{display:none}   /* le contenu d'une zone encore sous la brume : pas dessiné du tout */
+@media (max-width:640px){
+  .mo-titre{font-size:1.05rem}.mo-titre small{display:none}
+  .mo-choix button{padding:9px 10px;font-size:.85rem}
+  .mo-zoom button{width:44px;height:44px;font-size:1.35rem}
+  .mo-mot{font-size:.82rem;max-width:calc(100% - 120px)}
+}
+@media (max-width:420px){.mo-titre{display:none}.mo-choix{flex:1}.mo-choix button{flex:1}}
+</style>
+</head>
+<body>
+<div class="mo-page">
+  <div class="mo-barre">
+    <div class="mo-titre">Brumeval, la grande carte <small>modèle du 12 novembre</small></div>
+    <div class="mo-choix" role="group" aria-label="La brume">
+      <button type="button" id="avec" aria-pressed="true">🌫️ Avec la brume</button>
+      <button type="button" id="sans" aria-pressed="false">☀️ Sans la brume</button>
+    </div>
+  </div>
+  <div class="mo-cadre" id="cadre">
+    <div class="mo-vue" id="vue"><div class="mo-monde" id="monde"><!--CARTE--></div></div>
+    <div class="mo-zoom"><button type="button" id="plus" aria-label="Zoomer">＋</button><button type="button" id="moins" aria-label="Dézoomer">－</button></div>
+    <div class="mo-mot" id="mot">La brume se lève là où on la touche.</div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var W = 3000, H = 2000, VILLAGE = {x: 1500, y: 1030};
+  var ZONES = /*ZONES*/;
+  var cadre = document.getElementById('cadre'), vue = document.getElementById('vue'), monde = document.getElementById('monde');
+  var plus = document.getElementById('plus'), moins = document.getElementById('moins'), mot = document.getElementById('mot');
+  var V = {k: 0, kMin: 0, kMax: 0};
+
+  /* ---------- glisser et zoomer ---------- */
+  function telephone(){ return Math.min(window.innerWidth, window.innerHeight) < 600; }
+  function bornes(){
+    var w = vue.clientWidth, h = vue.clientHeight;
+    V.kMin = Math.max(w / W, h / H);                 /* la carte remplit toujours l'écran : jamais de bandes vides */
+    V.kMax = Math.max(V.kMin, telephone() ? 0.75 : 1);
+  }
+  function centre(){ return {x: (vue.scrollLeft + vue.clientWidth / 2) / V.k, y: (vue.scrollTop + vue.clientHeight / 2) / V.k}; }
+  function poser(k, c){
+    V.k = Math.max(V.kMin, Math.min(V.kMax, k));
+    monde.style.width = (W * V.k).toFixed(1) + 'px';
+    monde.style.height = (H * V.k).toFixed(1) + 'px';
+    vue.scrollLeft = c.x * V.k - vue.clientWidth / 2;
+    vue.scrollTop = c.y * V.k - vue.clientHeight / 2;
+    plus.disabled = V.k >= V.kMax - 1e-4; moins.disabled = V.k <= V.kMin + 1e-4;
+  }
+  function ajuster(depart){
+    if(!vue.clientWidth || !vue.clientHeight) return;
+    var c = depart || !V.k ? VILLAGE : centre();
+    bornes();
+    poser(depart || !V.k ? V.kMin : V.k, c);
+  }
+  function cran(){ return Math.max(1.25, Math.pow(V.kMax / Math.max(1e-4, V.kMin), 1 / 3)); }
+  plus.addEventListener('click', function(){ poser(V.k * cran(), centre()); });
+  moins.addEventListener('click', function(){ poser(V.k / cran(), centre()); });
+  window.addEventListener('resize', function(){ ajuster(false); });
+  if(window.ResizeObserver) new ResizeObserver(function(){ ajuster(false); }).observe(vue);
+
+  /* à la souris : on tire la carte (au doigt, le navigateur la fait glisser tout seul) */
+  var tire = null, aBouge = false;
+  vue.addEventListener('pointerdown', function(e){ aBouge = false; if(e.pointerType !== 'mouse' || e.button !== 0) return; tire = {x: e.clientX, y: e.clientY, l: vue.scrollLeft, t: vue.scrollTop}; });
+  window.addEventListener('pointermove', function(e){
+    if(!tire) return;
+    var dx = e.clientX - tire.x, dy = e.clientY - tire.y;
+    if(Math.abs(dx) + Math.abs(dy) > 5){ aBouge = true; cadre.classList.add('mo-tire'); }
+    vue.scrollLeft = tire.l - dx; vue.scrollTop = tire.t - dy;
+  });
+  window.addEventListener('pointerup', function(){ tire = null; cadre.classList.remove('mo-tire'); });
+  vue.addEventListener('wheel', function(e){ if(e.ctrlKey){ e.preventDefault(); poser(V.k * (e.deltaY < 0 ? 1.12 : 1 / 1.12), centre()); } }, {passive: false});
+
+  /* ---------- la brume ---------- */
+  var levees = {}, avec = document.getElementById('avec'), sans = document.getElementById('sans'), minuteur = 0;
+  function dire(html, duree){
+    mot.innerHTML = html; mot.hidden = false;
+    clearTimeout(minuteur); if(duree) minuteur = setTimeout(function(){ mot.hidden = true; }, duree);
+  }
+  var attente = {};
+  function chaque(sel, fn){ Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function maj(){
+    var n = 0;
+    ZONES.forEach(function(z){ if(levees[z.id]) n++; });
+    /* le contenu d'une zone : montré juste avant que sa brume se lève, retiré une fois la brume bien revenue */
+    chaque('.mo-contenu', function(g){
+      var id = g.getAttribute('data-zone');
+      clearTimeout(attente[id]);
+      if(levees[id]) g.classList.remove('mo-cache');
+      else if(!g.classList.contains('mo-cache')) attente[id] = setTimeout(function(){ if(!levees[id]) g.classList.add('mo-cache'); }, 1700);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.bm-zone'), function(g){ g.classList.toggle('bm-levee', !!levees[g.getAttribute('data-zone')]); });
+    Array.prototype.forEach.call(document.querySelectorAll('.mo-etiq-zone'), function(g){ g.classList.toggle('mo-vu', !!levees[g.getAttribute('data-zone')]); });
+    avec.setAttribute('aria-pressed', n === 0 ? 'true' : 'false');
+    sans.setAttribute('aria-pressed', n === ZONES.length ? 'true' : 'false');
+  }
+  avec.addEventListener('click', function(){ levees = {}; maj(); dire('La brume est revenue partout. Elle se lève là où on la touche.', 5000); });
+  sans.addEventListener('click', function(){ ZONES.forEach(function(z){ levees[z.id] = true; }); maj(); dire('Toute la brume est levée. Il ne reste que le mur de brume, au bord de la vallée.', 5000); });
+  monde.addEventListener('click', function(e){
+    if(aBouge) return;
+    var g = e.target.closest ? e.target.closest('.bm-zone') : null;
+    if(!g) return;
+    var id = g.getAttribute('data-zone'), nom = '';
+    ZONES.forEach(function(z){ if(z.id === id) nom = z.nom; });
+    levees[id] = true; maj();
+    dire('La brume se lève : <b>' + nom + '</b>', 3500);
+  });
+
+  ajuster(true);
+  maj();
+  window.__carte = {V: V, poser: poser, centre: centre, lever: function(l){ levees = {}; (l || []).forEach(function(id){ levees[id] = true; }); maj(); mot.hidden = true; }};
+})();
+</script>
+</body>
+</html>
