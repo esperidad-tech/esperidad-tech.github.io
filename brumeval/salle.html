@@ -3540,7 +3540,9 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 /* les confettis du vent : derrière l'anneau et sa perche, devant les maisons. Ils disent où viser : ils ne s'arrêtent jamais. */
 .vs-souffle{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .35s}
 .vs-e-zoom .vs-souffle,.vs-e-vise .vs-souffle,.vs-e-bande .vs-souffle,.vs-e-vol .vs-souffle,.vs-e-impact .vs-souffle{opacity:1}
-.vs-souffle i{position:absolute;left:0;top:0;width:calc(8px + 5px * var(--vs-u));height:calc(5px + 3.2px * var(--vs-u));margin:calc(-2.5px - 1.6px * var(--vs-u)) 0 0 calc(-4px - 2.5px * var(--vs-u));border-radius:1.5px;box-shadow:0 0 0 1px rgba(36,24,46,.6);will-change:transform}
+.vs-souffle i{position:absolute;left:0;top:0;width:calc(14px + 10px * var(--vs-u));height:calc(14px + 10px * var(--vs-u));margin:calc(-7px - 5px * var(--vs-u)) 0 0 calc(-7px - 5px * var(--vs-u));will-change:transform}
+/* chaque confetti est un petit dessin (sa forme, son pli dans l'ombre) */
+.vs-souffle i svg{position:static;display:block;width:100%;height:100%;overflow:visible}
 /* la flèche une fois passée derrière l'anneau : il la cache */
 .vs-fx-fond{z-index:2}
 .vs-perche{z-index:3}
@@ -29543,6 +29545,15 @@ MJ.VISEE_ART = {monde:monde, anneau:anneau, PORTEURS:PORTEURS, MAT:MAT, BORNES:B
      elle-même ; passée dans l'anneau, elle continue derrière lui et retombe vers le sol ;
    - LES SONS : un « tchac » sec dans le bois ; un souffle et un petit air de victoire dans l'anneau.
 
+   Ses retours après le deuxième essai (12 novembre, 16 h 51) :
+   - LE VENT : jamais plus de 10 (« au-delà de 10, c'est ingérable ») ;
+   - LE VISEUR NE TREMBLE PLUS, IL GLISSE : « pas comme une mouche » ; il part tout seul, lentement, loin, sans changer de
+     sens à tout bout de champ (le bras fatigue). On le retient avec le doigt, et comme il a de l'inertie, c'est là qu'est le jeu ;
+   - L'ARC ET LA MAIN sont redessinés, vus de derrière comme la flèche (tout part vers le même point : là où on vise) ;
+   - LES CONFETTIS : beaucoup moins nombreux, de formes et de tailles variées, pliés, et qui font des volutes et des loopings
+     (ils ne s'étirent plus quand le vent est fort) ;
+   - LES SONS : la corde qui se tend dure plus longtemps ; trois sons pour la tendre, trois pour la lâcher, tirés au hasard.
+
    Comment c'est fait (pour rester fluide sur une vieille tablette, on ne bouge que des calques) :
    - le décor (mj-visee-decor.js) est posé deux fois : la place entière (.vs-c-large) et la vue de
      tir (.vs-c-vise, le même dessin regardé de près, net) ; on passe de l'un à l'autre par un zoom
@@ -29551,13 +29562,14 @@ MJ.VISEE_ART = {monde:monde, anneau:anneau, PORTEURS:PORTEURS, MAT:MAT, BORNES:B
      sa perche est un trait redessiné entre les mains du porteur (au fond) et l'anneau (devant) ;
    - quand la flèche vole, la caméra avance : l'anneau grossit plus vite que les maisons derrière
      (camera()), c'est ce qui donne la profondeur ;
-   - l'arc est un vrai petit modèle en trois dimensions, projeté à l'écran (Arc) : la poignée, les
-     branches qui plient, la corde, le bras ;
+   - l'arc et la main qui le tient (Arc) sont dessinés en perspective, vus de derrière : tout ce qui
+     vient vers nous s'écarte du point qu'on vise, comme la flèche ; les branches plient, la corde file
+     vers nous ;
    - la flèche aussi (Fleche) : un fût, une pointe, trois plumes et une encoche, placés dans l'espace
      (de côté en unités du monde, en profondeur de 0, l'œil du Pisteur, à 1, l'anneau) et projetés
      par la même caméra que le décor (oeil()). Vol décrit son trajet.
    Les sons sont fabriqués ici (sonsVisee) et recopiés tels quels dans l'Atelier des sons.
-   Pour les essais : la scène porte __visee (l'état, les anneaux, choisir, viser, tremble).
+   Pour les essais : la scène porte __visee (l'état, les anneaux, choisir, viser, tremble : tremble(0) arrête la dérive du viseur).
    ========================================================== */
 (function(){
 'use strict';
@@ -29572,14 +29584,14 @@ var ZONE_BAS = 0.56;    /* on pose le doigt sous cette hauteur */
 var T_VOL = 0.95;       /* le vol de la flèche, en secondes */
 var FOND = 0.5;         /* les maisons sont plus loin que l'anneau : elles grossissent moins vite */
 var OMEGA = 4, AMORTI = 0.85;   /* l'inertie du curseur : un ressort mou, à peine amorti */
-var TREMBLE = [6.5, 4.5];       /* le bras tremble : le curseur dérive tout seul d'autant, de côté et en hauteur (unités du monde) */
+var DERIVE = 8;                 /* le bras fatigue : le viseur glisse tout seul à cette vitesse (unités du monde par seconde) */
 var V_CONF = 26;        /* les confettis du vent : leur vitesse par point de vent (unités du monde par seconde) */
 var MARGE = 0.4;        /* la flèche a une épaisseur */
 var PISTEUR = [0, 590]; /* là où le Pisteur tient le bout de la banderole (sous l'écran) */
 /* la flèche, en unités du monde : sa longueur, la moitié de son épaisseur, la hauteur d'une plume ; DW : la distance du Pisteur
    à l'anneau ; H0 : à quelle profondeur est la main qui tient l'arc (0 = l'œil, 1 = l'anneau) ; AVANCE : ce que la pointe dépasse
    de l'arc au repos ; RECUL : ce qu'elle recule quand on bande ; G : ce qui la fait retomber derrière l'anneau */
-var FL = {L:24, R:.25, PL:2.7, DW:300, H0:.11, AVANCE:5, RECUL:9, G:170};
+var FL = {L:24, R:.25, PL:2.7, DW:300, H0:.11, AVANCE:8, RECUL:8, G:170};
 var OEIL = [4.4, -5.4]; /* la caméra est un peu à droite et au-dessus de la flèche : on la voit presque de derrière, pas tout à fait */
 var DMIN = 0.018;       /* plus près de l'œil que ça, on ne dessine plus */
 var nUid = 0;
@@ -29609,20 +29621,38 @@ function sonsVisee(audio, sortie){
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || Math.min(.06, duree * .3))); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
     s.connect(fl); fl.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* une note qui tremble (la corde qui frémit) */
-  function tremble(fq, t0, duree, vol, vite, type){
+  /* un grincement qui dure (la corde, le bois qui se tendent) : des à-coups de plus en plus serrés (de r0 à r1 par seconde), qui
+     résonnent de plus en plus aigu (de f0 à f1) ; le tout enfle jusqu'au bout, puis s'arrête net */
+  function grince(t0, duree, vol, r0, r1, f0, f1, q){
     var a = audio(); if(!a) return;
-    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain();
-    o.type = type || 'triangle'; o.frequency.setValueAtTime(fq, t); o.frequency.exponentialRampToValueAtTime(fq * .8, t + duree);
-    l.frequency.value = vite; lg.gain.value = vol * .8; l.connect(lg); lg.connect(g.gain);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    o.connect(g); g.connect(sortie(a)); o.start(t); l.start(t); o.stop(t + duree + .03); l.stop(t + duree + .03);
+    var t = a.currentTime + t0, o = a.createOscillator(), bp = a.createBiquadFilter(), g = a.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(r0, t); o.frequency.exponentialRampToValueAtTime(r1, t + duree);
+    bp.type = 'bandpass'; bp.Q.value = q || 3; bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + duree);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * .45, t + duree * .2); g.gain.linearRampToValueAtTime(vol, t + duree * .86); g.gain.linearRampToValueAtTime(0, t + duree);
+    o.connect(bp); bp.connect(g); g.connect(sortie(a)); o.start(t); o.stop(t + duree + .03);
   }
+  /* chaque fois un peu plus grave ou un peu plus aigu : jamais deux fois tout à fait le même son */
+  function ton(){ return .95 + Math.random() * .1; }
+  /* LA CORDE QUI SE TEND (Romain, 16 h 51 : « un son vraiment de corde qui se tend, un peu plus longue ») : trois façons */
+  var TENDUE = [
+    function(k){ grince(0, .75, .5, 16, 46, 520 * k, 900 * k, 4); grince(.05, .7, .28, 23, 61, 1100 * k, 1700 * k, 5); souffle(0, .75, .012, 400, 1200, 1.2, 'bandpass', .5); },      /* A : la corde de chanvre, qui grince de plus en plus vite */
+    function(k){ grince(0, .28, .5, 12, 30, 380 * k, 520 * k, 5); grince(.36, .42, .55, 18, 52, 450 * k, 760 * k, 5); souffle(.3, .48, .012, 500, 1300, 1.2, 'bandpass', .3); },      /* B : le bois de l'arc craque, en deux fois */
+    function(k){ grince(0, .7, .4, 30, 92, 900 * k, 1500 * k, 6); grince(0, .7, .3, 15, 46, 450 * k, 700 * k, 4); souffle(0, .65, .01, 900, 2200, 1.8, 'bandpass', .4); }               /* C : une corde fine, plus aiguë, qui file */
+  ];
+  /* LA CORDE LÂCHÉE (« essaye de me trouver d'autres sons ») : un coup sec et court, l'air fendu ; plus de corde qui vibre. Trois façons */
+  var LACHEE = [
+    function(k){ souffle(0, .045, .2, 1500, 260, .8, 'lowpass', .002); tendre(190 * k, 0, .1, .15, 92 * k, .002, 'triangle', 900); souffle(.008, .13, .05, 2400, 6200, 1.3, 'bandpass', .015); },                                              /* A : « toc ! », mat, puis l'air fendu */
+    function(k){ souffle(0, .028, .17, 2600, 700, .9, 'lowpass', .002); souffle(.034, .03, .1, 2000, 600, .9, 'lowpass', .002); tendre(240 * k, 0, .07, .1, 130 * k, .002, 'triangle', 1400); souffle(.01, .12, .04, 3000, 5600, 1.1, 'bandpass', .02); },   /* B : « clac-clac », la corde tape le brassard */
+    function(k){ souffle(0, .1, .11, 800, 5200, 1.6, 'bandpass', .006); tendre(210 * k, 0, .07, .12, 100 * k, .002, 'triangle', 1100); tendre(700 * k, .004, .025, .035, 320 * k, .001, 'triangle', 2600); }                                  /* C : un coup de fouet */
+  ];
+  function auHasard(l){ l[Math.floor(Math.random() * l.length)](ton()); }
   return {
     choisir:function(){ souffle(0, .22, .03, 500, 1700, .7); tendre(660, .02, .09, .03, 880, .006); },                                                                       /* on regarde un anneau de plus près */
-    bander:function(){ souffle(0, .34, .034, 240, 520, 1.6); tendre(92, 0, .32, .05, 128, .05, 'sawtooth', 420); tendre(310, .12, .05, .02, 360, .004, 'triangle', 900); tendre(350, .24, .05, .018, 410, .004, 'triangle', 900); },   /* le bois de l'arc craque, la corde se tend */
+    bander:function(){ auHasard(TENDUE); },                                                                                                                                     /* dans le jeu : une des trois, au hasard */
+    banderA:function(){ TENDUE[0](ton()); }, banderB:function(){ TENDUE[1](ton()); }, banderC:function(){ TENDUE[2](ton()); },                                                  /* (pour les écouter une par une dans l'Atelier des sons) */
     tic:function(){ tendre(1500, 0, .035, .03, null, .002, 'triangle', 4000); },                                                                                               /* le minuteur presse */
-    lacher:function(){ tendre(196, 0, .16, .09, 122, .003, 'triangle', 1400); tremble(147, .01, .3, .03, 46); souffle(0, .07, .05, 1800, 700, .7); },                           /* « twang ! » */
+    lacher:function(){ auHasard(LACHEE); },                                                                                                                                     /* dans le jeu : une des trois, au hasard */
+    lacherA:function(){ LACHEE[0](ton()); }, lacherB:function(){ LACHEE[1](ton()); }, lacherC:function(){ LACHEE[2](ton()); },
     vol:function(){ souffle(0, .95, .06, 500, 2400, 1.1, 'bandpass', .5); souffle(.05, .9, .03, 3000, 5200, .8, 'bandpass', .6); },                                              /* la flèche file dans le vent */
     bois:function(){ souffle(0, .035, .3, 2600, 500, .8, 'lowpass', .002); tendre(175, 0, .09, .3, 78, .002, 'sine'); tendre(520, 0, .03, .12, 240, .001, 'triangle', 2200); },   /* « tchac ! » : un coup sec dans le bois, rien d'autre (Romain, 15 h 08) */
     dedans:function(){ souffle(0, .2, .09, 700, 4200, 1.3, 'bandpass', .09); souffle(.12, .16, .05, 3600, 900, 1); [784, 1047, 1319].forEach(function(n, i){ tendre(n, .2 + i * .085, .2, .05, null, .006, 'triangle', 3600); }); tendre(1568, .46, .4, .04, null, .008); },   /* « fwip ! » : elle traverse l'anneau, puis un petit air de victoire (Romain, 15 h 08) */
@@ -29646,67 +29676,133 @@ var SONS = sonsVisee(audio, function(a){ return a.destination; });
 function son(nom){ try{ if(SONS[nom]) SONS[nom](); }catch(e){} }
 
 /* ==========================================================
-   L'ARC, vu par l'archer : un petit modèle en trois dimensions, projeté à l'écran.
-   La caméra est derrière l'épaule ; la poignée est en bas à gauche. d = 0 : l'arc au repos ;
-   d = 1 : bandé à fond (les branches plient vers nous). La flèche n'est pas dessinée ici (Fleche).
-   Dessiné pour un écran de 1164 × 740, puis mis à l'échelle (regler) et calé en bas à gauche.
+   L'ARC ET LA MAIN, vus par les yeux du Pisteur (Romain, 16 h 51 : « il faut que tout l'arc soit dans la bonne
+   perspective », « une main beaucoup plus jolie »).
+   On regarde l'arc de derrière, un peu de la droite et d'en haut, comme la flèche : il est presque droit, debout à gauche de
+   l'écran ; ses branches viennent vers nous, et tout ce qui vient vers nous s'écarte du point qu'on vise. La main gauche tient
+   la poignée : les doigts en font le tour par la gauche (ils passent derrière le bois), le pouce est couché à droite, devant.
+   La flèche (dessinée à part : Fleche) repose dans le creux, entre le pouce et l'index, et passe par-dessus la main.
+   d = 0 : l'arc au repos ; d = 1 : bandé à fond. Dessiné pour un écran de 1164 × 740, puis mis à l'échelle (regler).
    ========================================================== */
 function Arc(svg, id){
-  var F = 700, OX = 582, OY = 370, kb = 1, hb = 740;
-  function nrm(v){ var l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; }
-  function add(a, b, k){ return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]; }
-  function pv(a, b){ return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
-  var G = [-0.322, -0.263, 0.80], D = nrm([0.30, 0.26, 1]);
-  var u0 = [Math.sin(.25), Math.cos(.25), 0], k0 = u0[0] * D[0] + u0[1] * D[1] + u0[2] * D[2], UP = nrm(add(u0, D, -k0)), DR = nrm(pv(UP, D));
-  function pr(p){ var z = Math.max(.1, p[2]); return [(OX + F * p[0] / z) * kb, hb - (740 - (OY - F * p[1] / z)) * kb, F / z * kb]; }
-  svg.innerHTML = '<defs><linearGradient id="' + id + 'ab" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f0cc8c"/><stop offset=".5" stop-color="#cf9a52"/><stop offset="1" stop-color="#96662c"/></linearGradient>' +
-    '<linearGradient id="' + id + 'am" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4c9c68"/><stop offset="1" stop-color="#2a6a42"/></linearGradient></defs>' +
-    '<g class="vs-arc-g"><path class="vs-a-bras" fill="url(#' + id + 'am)" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-brassard" fill="#7a4e2c" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-sangle" fill="none" stroke="#4c2e18"/>' +
-    '<path class="vs-a-bois" fill="url(#' + id + 'ab)" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-reflet" fill="none" stroke="#fff3d0" stroke-linecap="round" opacity=".75"/><path class="vs-a-poignee" fill="#5a3422" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-couture" fill="none" stroke="#c9a070" stroke-linecap="round" opacity=".8"/>' +
-    '<path class="vs-a-corde-c" fill="none" stroke="' + K + '" stroke-linecap="round" stroke-linejoin="round"/><path class="vs-a-corde" fill="none" stroke="#f4ecdc" stroke-linecap="round" stroke-linejoin="round"/>' +
-    '<path class="vs-a-main" fill="#f1c7a0" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-doigts" fill="none" stroke="#a8745a" stroke-linecap="round"/><path class="vs-a-pouce" fill="#f1c7a0" stroke="' + K + '" stroke-linejoin="round"/></g>';
+  var DG = 1.25;                     /* l'œil est à cette distance de la main (l'unité : la moitié de la hauteur de l'arc) */
+  var HU = .09;                      /* l'unité de la main */
+  var RC = -.92 * HU, UC = -1.55 * HU;   /* le milieu de la poignée : un peu à gauche et en dessous de l'endroit où repose la flèche */
+  var PEAU = '#f3c9a3', OMBRE = '#d99f7a', CLAIR = '#fde6cf', PLI = '#a8694c';
+  var kb = 1, kA = 400, hu = 29, s0 = [300, 545], g0 = [270, 590], pc = [582, 266], etat = {d:0, dd:-9, px:0, py:0};
+  svg.innerHTML = '<defs><linearGradient id="' + id + 'am" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#58a873"/><stop offset="1" stop-color="#2f7049"/></linearGradient></defs>' +
+    '<g class="vs-arc-g"><g class="vs-a-m1"></g>' +
+    '<path class="vs-a-bois" fill="#d6a45a" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-cote" fill="#9a6830" opacity=".85"/><path class="vs-a-reflet" fill="#f6dba0" opacity=".9"/><path class="vs-a-veine" fill="none" stroke="#b07c3c" stroke-linecap="round" opacity=".55"/>' +
+    '<path class="vs-a-cuir" fill="#5a3422" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-rouge" fill="#e5484d" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-or" fill="#f6c23a" stroke="' + K + '" stroke-linejoin="round"/><path class="vs-a-bouts" fill="#4a3320" stroke="' + K + '" stroke-linejoin="round"/>' +
+    '<path class="vs-a-corde-c" fill="none" stroke="' + K + '" stroke-linecap="round"/><path class="vs-a-corde" fill="none" stroke="#f4ecdc" stroke-linecap="round"/>' +
+    '<g class="vs-a-m2"></g></g>';
   function q(c){ return svg.querySelector(c); }
-  var E = {bras:q('.vs-a-bras'), brassard:q('.vs-a-brassard'), sangle:q('.vs-a-sangle'), bois:q('.vs-a-bois'), reflet:q('.vs-a-reflet'), poignee:q('.vs-a-poignee'), couture:q('.vs-a-couture'), cordeC:q('.vs-a-corde-c'), corde:q('.vs-a-corde'), main:q('.vs-a-main'), doigts:q('.vs-a-doigts'), pouce:q('.vs-a-pouce')};
-  /* un ruban : des points au milieu (x, y, demi-largeur) → le contour */
-  function ruban(pts){
-    var g = [], dr = [];
-    for(var i = 0; i < pts.length; i++){
-      var a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1, nx = -ty / l, ny = tx / l;
-      g.push(P(pts[i][0] + nx * pts[i][2], pts[i][1] + ny * pts[i][2])); dr.unshift(P(pts[i][0] - nx * pts[i][2], pts[i][1] - ny * pts[i][2]));
-    }
-    return 'M' + g.join(' L') + ' L' + dr.join(' L') + ' Z';
+  var E = {m1:q('.vs-a-m1'), m2:q('.vs-a-m2'), bois:q('.vs-a-bois'), cote:q('.vs-a-cote'), reflet:q('.vs-a-reflet'), veine:q('.vs-a-veine'), cuir:q('.vs-a-cuir'), rouge:q('.vs-a-rouge'), or:q('.vs-a-or'), bouts:q('.vs-a-bouts'), cordeC:q('.vs-a-corde-c'), corde:q('.vs-a-corde')};
+  /* la perspective de l'arc : u, vers le haut ; r, vers la droite ; a, vers nous (tout cela compté depuis l'endroit où repose la
+     flèche, en moitiés d'arc). Ce qui vient vers nous grossit et s'écarte du point qu'on vise (pc), exactement comme la flèche. */
+  function pj(u, r, a){ var fz = DG / (DG - a); return [pc[0] + (s0[0] - pc[0] + r * kA) * fz, pc[1] + (s0[1] - pc[1] - u * kA) * fz, kA * fz]; }
+  /* le bois : s va de −1 (le bout du bas) à 1 (le bout du haut) → [x, y, demi-largeur] à l'écran. La poignée est étroite, les
+     branches s'élargissent puis s'affinent ; elles viennent vers nous (de plus en plus quand on bande), leurs bouts repartent un peu. */
+  function demi(q){ return q <= .15 ? .041 : (q <= .3 ? .041 + .023 * lisse((q - .15) / .15) : .064 - .034 * Math.pow((q - .3) / .7, .85)); }
+  function bois(s){
+    var q = Math.abs(s), d = etat.d, bout = Math.max(0, q - .8) / .2, p = pj(UC + s * (1 - .09 * d), RC, (.13 + .18 * d) * s * s - .06 * bout * bout);
+    return [p[0], p[1], demi(q) * p[2]];
   }
-  function pointDuBois(s, d){ return add(add(G, UP, 0.5 * s * (1 - .1 * d)), D, -(0.17 + 0.11 * d) * s * s); }
-  var etat = {d:0};
-  this.ruban = ruban;
-  this.regler = function(k, h){ kb = k; hb = h; };
+  /* une lame du bois, de s = sa à sb, entre ta et tb en travers (−1 : le bord gauche ; 1 : le bord droit) */
+  function lame(sa, sb, n, ta, tb){
+    var g = [], dr = [];
+    for(var i = 0; i <= n; i++){
+      var s = sa + (sb - sa) * i / n, p = bois(s), a = bois(s - .012), b = bois(s + .012), tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1, nx = -ty / l * p[2], ny = tx / l * p[2];
+      g.push(P(p[0] + nx * ta, p[1] + ny * ta)); if(tb !== undefined) dr.unshift(P(p[0] + nx * tb, p[1] + ny * tb));
+    }
+    return 'M' + g.join(' L') + (tb !== undefined ? ' L' + dr.join(' L') + ' Z' : '');
+  }
+  /* ---------- la main, le brassard, la manche : dessinés une fois pour toutes (ils ne bougent qu'avec tout l'arc) ---------- */
+  function mm(x, y){ return [g0[0] + x * hu, g0[1] + y * hu]; }
+  /* une courbe lisse qui passe par tous les points (en unités de la main) ; fermée ou non */
+  function courbe(pts, fermee){
+    var n = pts.length, q = pts.map(function(p){ return mm(p[0], p[1]); }), d = 'M' + P(q[0][0], q[0][1]);
+    function pt(i){ return fermee ? q[(i + n) % n] : q[Math.max(0, Math.min(n - 1, i))]; }
+    for(var i = 0; i < (fermee ? n : n - 1); i++){
+      var p0 = pt(i - 1), p1 = pt(i), p2 = pt(i + 1), p3 = pt(i + 2);
+      d += ' C' + P(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6) + ' ' + P(p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6) + ' ' + P(p2[0], p2[1]);
+    }
+    return d + (fermee ? ' Z' : '');
+  }
+  /* un boudin entre deux points */
+  function boudin(x0, y0, x1, y1, r){
+    var a = mm(x0, y0), b = mm(x1, y1), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * r * hu, ny = dx / l * r * hu, R = f(r * hu) + ' ' + f(r * hu);
+    return 'M' + P(a[0] + nx, a[1] + ny) + ' L' + P(b[0] + nx, b[1] + ny) + ' A' + R + ' 0 0 0 ' + P(b[0] - nx, b[1] - ny) + ' L' + P(a[0] - nx, a[1] - ny) + ' A' + R + ' 0 0 0 ' + P(a[0] + nx, a[1] + ny) + ' Z';
+  }
+  function main(){
+    var ep = f(Math.max(1.5, 2.7 * kb)), fin = Math.max(1, 1.5 * kb), CT = ' stroke="' + K + '" stroke-width="' + ep + '" stroke-linejoin="round"', q1 = '', q2 = '';
+    function plein(d, c, o){ return '<path d="' + d + '" fill="' + c + '"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    function cerne(d, c){ return '<path d="' + d + '" fill="' + c + '"' + CT + '/>'; }
+    function trait(d, c, w, o){ return '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + f(fin * (w || 1)) + '" stroke-linecap="round" stroke-linejoin="round"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    /* DERRIÈRE LE BOIS : le dos de la main et les quatre doigts, qui font le tour de la poignée par la gauche */
+    q1 += cerne(courbe([[.3, -1.76], [-.7, -1.7], [-1.5, -1.58], [-2.02, -1.2], [-2.2, -.66], [-2.38, -.22], [-2.3, .2], [-2.38, .62], [-2.24, 1.02], [-2.12, 1.42], [-1.98, 1.84], [-2.3, 2.6], [-.2, 3.3], [.3, 2.4], [.34, 1], [.34, -.6]], true), PEAU);
+    q1 += plein(courbe([[-2.2, 1.1], [-1.5, 1.72], [-.6, 2.0], [-.3, 2.9], [-2.1, 2.5], [-1.95, 1.84]], true), OMBRE, .55);
+    [[-.72, -.88], [.14, -.04], [.92, .76]].forEach(function(y){
+      /* sous chaque doigt, son ombre ; entre deux doigts, le pli */
+      q1 += plein(boudin(-1.86, y[0] - .13, -.36, y[1] - .13, .12), OMBRE, .7) + trait(courbe([[-2.1, y[0] + .07], [-1.3, y[0]], [-.3, y[1]]]), PLI, 1.3);
+    });
+    q1 += plein(boudin(-1.8, 1.6, -.4, 1.44, .11), OMBRE, .7);
+    [-1.14, -.3, .56, 1.3].forEach(function(y, i){
+      /* les jointures : un petit pli en arc, un point de lumière */
+      q1 += trait(courbe([[-1.3, y - .25], [-1.5, y], [-1.3, y + .25]]), PLI, 1, .75) + plein(boudin(-1.92, y - .16, -1.7, y - .2, i === 3 ? .07 : .09), CLAIR, .9);
+    });
+    q1 += plein(boudin(-1.1, -1.42, -.1, -1.5, .08), CLAIR, .8);
+    /* DEVANT LE BOIS : le gras du pouce, qui appuie sur la poignée, et le pouce couché le long du bois, à droite */
+    q2 += cerne(courbe([[-.52, -.5], [.1, -.92], [.58, -1.38], [.95, -1.62], [1.36, -1.4], [1.52, -.8], [1.5, 0], [1.62, .7], [1.3, 1.7], [.75, 2.5], [.1, 3], [-.6, 3.3], [-1.2, 2.9], [-.8, 1.6], [-.68, .5]], true), PEAU);
+    q2 += plein(courbe([[-.56, .5], [-.22, 1], [-.1, 1.9], [-.3, 2.9], [-.86, 2.8], [-.62, 1.6]], true), OMBRE, .6);
+    q2 += plein(courbe([[1.38, .2], [1.5, .75], [1.2, 1.7], [.72, 2.45], [.92, 1.6], [1.2, .9]], true), OMBRE, .45);
+    q2 += trait(courbe([[.16, -.6], [.6, -.1], [.78, .6], [.66, 1.4]]), PLI, 1.2, .8);
+    q2 += trait(courbe([[.84, -.64], [1.12, -.72], [1.42, -.62]]), PLI, 1, .8) + trait(courbe([[.9, -.5], [1.14, -.56], [1.38, -.48]]), PLI, .8, .55);
+    q2 += '<path d="' + courbe([[.74, -1.14], [.72, -1.4], [.96, -1.54], [1.22, -1.42], [1.24, -1.14], [.98, -1.06]], true) + '" fill="#fbeadb" stroke="' + PLI + '" stroke-width="' + f(fin) + '" stroke-linejoin="round"/>';
+    q2 += plein(boudin(1.32, -.9, 1.36, -.2, .06), CLAIR, .85) + plein(boudin(1.42, .3, 1.36, .9, .07), CLAIR, .7);
+    /* l'avant-bras vient vers nous, en bas à gauche : il grossit. Le brassard de cuir lacé, puis la manche verte du Pisteur */
+    var W0 = [-1.1, 2.45], dA = [-.45, .893], nA = [.893, .45];
+    function larg(t){ return 1.38 + .11 * t; }
+    function bras(t, c, plus){ var w = larg(t) + (plus || 0); return mm(W0[0] + dA[0] * t + nA[0] * c * w, W0[1] + dA[1] * t + nA[1] * c * w); }
+    function ruban(ta, tb, ca, cb, plus){ var a = bras(ta, ca, plus), b = bras(tb, ca, plus), c = bras(tb, cb, plus), d = bras(ta, cb, plus); return 'M' + P(a[0], a[1]) + ' L' + P(b[0], b[1]) + ' L' + P(c[0], c[1]) + ' L' + P(d[0], d[1]) + ' Z'; }
+    function travers(t, ca, cb, plus, creux){ var a = bras(t, ca, plus), b = bras(t + (creux || 0), (ca + cb) / 2, plus), c = bras(t, cb, plus); return 'M' + P(a[0], a[1]) + ' Q' + P(b[0], b[1]) + ' ' + P(c[0], c[1]); }
+    q2 += '<path d="' + ruban(1.9, 22, -1, 1, .24) + '" fill="url(#' + id + 'am)"' + CT + '/>' + plein(ruban(1.9, 22, .42, .94, .24), '#1f5535', .55) + plein(ruban(1.9, 22, -.84, -.56, .24), '#8fd0a2', .5);
+    q2 += trait(travers(2.9, -.9, .2, .24, .5), '#1f5535', 1.3, .8) + trait(travers(3.7, -.5, .8, .24, .55), '#1f5535', 1.3, .8) + trait(travers(4.9, -.95, .35, .24, .6), '#1f5535', 1.3, .7);
+    q2 += cerne(ruban(0, 2.15, -1, 1), '#8a5a34') + plein(ruban(.04, 2.1, .4, .95), '#5d3a1e', .6) + plein(ruban(.04, 2.1, -.86, -.6), '#b98a56', .7);
+    q2 += cerne(ruban(0, .3, -1.04, 1.04), '#b98a56') + cerne(ruban(1.85, 2.15, -1.04, 1.04), '#b98a56');
+    [.5, .84, 1.18, 1.52].forEach(function(t){
+      /* le lacet, en croix */
+      var a = bras(t, -.3), b = bras(t + .26, .3), c = bras(t, .3), d = bras(t + .26, -.3);
+      q2 += trait('M' + P(a[0], a[1]) + ' L' + P(b[0], b[1]) + ' M' + P(c[0], c[1]) + ' L' + P(d[0], d[1]), '#ecd9b4', 1.5);
+    });
+    E.m1.innerHTML = q1; E.m2.innerHTML = q2;
+  }
+  /* k : l'échelle (1 pour un écran de 1164 × 740) ; h, w : la hauteur et la largeur de la scène */
+  this.regler = function(k, h, w){
+    kb = k; kA = 400 * k; hu = HU * kA;
+    s0 = [Math.min(300 * k, .26 * (w || 1164 * k)), h - 232 * k]; g0 = [s0[0] + RC * kA, s0[1] - UC * kA];
+    etat.dd = -9; main();
+  };
   /* là où la flèche repose sur le poing, à l'écran */
-  this.repos = function(){ var r = pr(add(G, UP, .055)); return [r[0], r[1]]; };
-  this.dessiner = function(d){
+  this.repos = function(){ return [s0[0], s0[1]]; };
+  /* d : l'arc bandé (0 à 1) ; p : le point de l'écran qu'on vise (là où pointe la flèche) */
+  this.dessiner = function(d, p){
     if(d === undefined) d = etat.d;
-    etat.d = d;
-    var ep = Math.max(1.4, 2.6 * kb), i, s, r;
-    /* le bois */
-    var pts = [], po = [];
-    for(i = 0; i <= 28; i++){ s = -1 + i / 14; r = pr(pointDuBois(s, d)); var l = (0.014 + 0.022 * (1 - Math.pow(Math.abs(s), 1.4))) * .5 * r[2]; pts.push([r[0], r[1], l]); if(Math.abs(s) <= .15) po.push([r[0], r[1], l * 1.14]); }
-    E.bois.setAttribute('d', ruban(pts)); E.bois.setAttribute('stroke-width', f(ep));
-    E.reflet.setAttribute('d', 'M' + pts.map(function(p, k){ var a = pts[Math.max(0, k - 1)], b = pts[Math.min(pts.length - 1, k + 1)], tx = b[0] - a[0], ty = b[1] - a[1], l2 = Math.hypot(tx, ty) || 1; return P(p[0] - ty / l2 * p[2] * .45, p[1] + tx / l2 * p[2] * .45); }).join(' L')); E.reflet.setAttribute('stroke-width', f(1.6 * kb));
-    E.poignee.setAttribute('d', ruban(po)); E.poignee.setAttribute('stroke-width', f(ep));
-    E.couture.setAttribute('d', po.filter(function(p, k){ return k > 0 && k < po.length - 1; }).map(function(p){ return 'M' + P(p[0] - p[2] * .7, p[1] - p[2] * .1) + ' L' + P(p[0] + p[2] * .7, p[1] + p[2] * .1); }).join(' ')); E.couture.setAttribute('stroke-width', f(1.3 * kb));
-    /* la corde : d'un bout à l'autre de l'arc, en passant par l'encoche de la flèche (qui recule quand on bande) */
-    var N = add(G, D, -(0.17 + 0.45 * d)), h1 = pr(pointDuBois(1, d)), h2 = pr(pointDuBois(-1, d)), n2 = pr(N), dc = 'M' + P(h1[0], h1[1]) + ' L' + P(n2[0], n2[1]) + ' L' + P(h2[0], h2[1]);
-    E.cordeC.setAttribute('d', dc); E.cordeC.setAttribute('stroke-width', f(4.4 * kb)); E.corde.setAttribute('d', dc); E.corde.setAttribute('stroke-width', f(2.2 * kb));
-    /* l'avant-bras (la manche verte du Pisteur), son brassard de cuir, le poing sur la poignée */
-    var g2 = pr(G), co = pr(add(G, [-0.10, -0.40, -0.42], 1)), dx = co[0] - g2[0], dy = co[1] - g2[1];
-    function surBras(t, lar){ return [g2[0] + dx * t, g2[1] + dy * t, lar * (g2[2] + (co[2] - g2[2]) * t) * .5]; }
-    E.bras.setAttribute('d', ruban([surBras(.04, .08), surBras(.5, .092), surBras(1, .105)])); E.bras.setAttribute('stroke-width', f(ep));
-    E.brassard.setAttribute('d', ruban([surBras(.09, .086), surBras(.3, .093)])); E.brassard.setAttribute('stroke-width', f(ep));
-    E.sangle.setAttribute('d', [.15, .24].map(function(t){ var a = surBras(t, .09), l3 = Math.hypot(dx, dy) || 1; return 'M' + P(a[0] + dy / l3 * a[2], a[1] - dx / l3 * a[2]) + ' L' + P(a[0] - dy / l3 * a[2], a[1] + dx / l3 * a[2]); }).join(' ')); E.sangle.setAttribute('stroke-width', f(2 * kb));
-    var rm = .05 * g2[2], a1 = pr(pointDuBois(.1, d)), a0 = pr(pointDuBois(-.1, d)), an = Math.atan2(a1[1] - a0[1], a1[0] - a0[0]), ca = Math.cos(an), sa = Math.sin(an);
-    function mm(x, y){ return P(g2[0] + (x * ca - y * sa) * rm, g2[1] + (x * sa + y * ca) * rm); }
-    E.main.setAttribute('d', 'M' + mm(-1.05, -.2) + ' C' + mm(-1.1, -1) + ' ' + mm(-.2, -1.1) + ' ' + mm(.5, -1) + ' C' + mm(1.1, -.95) + ' ' + mm(1.15, .1) + ' ' + mm(.95, .7) + ' C' + mm(.6, 1.2) + ' ' + mm(-.7, 1.15) + ' ' + mm(-1, .5) + ' Z'); E.main.setAttribute('stroke-width', f(ep));
-    E.doigts.setAttribute('d', [-.5, 0, .5].map(function(x){ return 'M' + mm(x, -1) + ' Q' + mm(x + .08, -.3) + ' ' + mm(x, .25); }).join(' ')); E.doigts.setAttribute('stroke-width', f(1.6 * kb));
-    E.pouce.setAttribute('d', 'M' + mm(-.2, .45) + ' C' + mm(.2, .2) + ' ' + mm(.95, .3) + ' ' + mm(1.25, .62) + ' C' + mm(1.4, .95) + ' ' + mm(1.05, 1.15) + ' ' + mm(.7, .98) + ' C' + mm(.4, .85) + ' ' + mm(0, .95) + ' ' + mm(-.3, .9) + ' Z'); E.pouce.setAttribute('stroke-width', f(ep * .85));
+    if(p){ pc[0] = p[0]; pc[1] = p[1]; }
+    if(Math.abs(d - etat.dd) < .002 && Math.abs(pc[0] - etat.px) < 1.2 && Math.abs(pc[1] - etat.py) < 1.2) return;
+    etat.d = etat.dd = d; etat.px = pc[0]; etat.py = pc[1];
+    var ep = f(Math.max(1.5, 2.7 * kb));
+    E.bois.setAttribute('d', lame(-1, 1, 40, -1, 1)); E.bois.setAttribute('stroke-width', ep);
+    E.cote.setAttribute('d', lame(-.98, .98, 40, .36, .9)); E.reflet.setAttribute('d', lame(-.98, .98, 40, -.8, -.44));
+    E.veine.setAttribute('d', lame(.36, .9, 12, .06) + ' ' + lame(-.9, -.36, 12, -.12)); E.veine.setAttribute('stroke-width', f(Math.max(.8, 1.1 * kb)));
+    E.cuir.setAttribute('d', lame(-.21, .21, 8, -1.1, 1.1)); E.cuir.setAttribute('stroke-width', ep);
+    E.rouge.setAttribute('d', lame(.26, .296, 2, -1.12, 1.12) + ' ' + lame(-.296, -.26, 2, -1.12, 1.12) + ' ' + lame(.84, .868, 2, -1.15, 1.15)); E.rouge.setAttribute('stroke-width', f(Math.max(1, 1.8 * kb)));
+    E.or.setAttribute('d', lame(.312, .332, 2, -1.12, 1.12) + ' ' + lame(-.332, -.312, 2, -1.12, 1.12) + ' ' + lame(.876, .892, 2, -1.15, 1.15)); E.or.setAttribute('stroke-width', f(Math.max(1, 1.8 * kb)));
+    E.bouts.setAttribute('d', lame(.93, 1, 4, -1.2, 1.2) + ' ' + lame(-1, -.93, 4, -1.2, 1.2)); E.bouts.setAttribute('stroke-width', ep);
+    /* la corde : des deux bouts de l'arc jusqu'à l'encoche de la flèche, qui est tout près de nous (hors de l'écran), dans le
+       prolongement de la flèche ; quand on bande, elle recule encore */
+    var N = pj(0, 0, .62 + .36 * d), h1 = bois(.962), h2 = bois(-.962), dc = 'M' + P(h1[0], h1[1]) + ' L' + P(N[0], N[1]) + ' L' + P(h2[0], h2[1]);
+    E.cordeC.setAttribute('d', dc); E.cordeC.setAttribute('stroke-width', f(4.6 * kb)); E.corde.setAttribute('d', dc); E.corde.setAttribute('stroke-width', f(2.3 * kb));
   };
 }
 
@@ -29812,37 +29908,78 @@ function Fleche(g){
 
 /* ==========================================================
    LES CONFETTIS DU VENT (Romain, 15 h 08 et 15 h 10 : « c'est les confettis qui vont tout faire »).
-   Derrière l'anneau, ils passent dans le sens du vent : tout doucement pour un vent de 1, à toute vitesse pour un vent de 12.
-   À grande vitesse ils s'étirent et ne tournoient plus. Ils ne s'arrêtent jamais, même si l'appareil demande moins d'animations :
-   c'est eux qui disent où viser.
+   Derrière l'anneau, ils passent dans le sens du vent : tout doucement pour un vent de 1, vite pour un vent de 10.
+   Romain, 16 h 51 : « il y en a trop, une sorte de pluie bizarre » ; il en faut beaucoup moins, de tailles et de formes
+   différentes, qu'on voie qu'ils sont pliés, et qui fassent « des loopings, des petites volutes » au lieu de passer tout droit.
+   Donc : une vingtaine, sept formes à deux tons (l'endroit, et le pli ou l'envers dans l'ombre), cinq tailles ; un sur deux
+   ondule, un sur quatre fait des boucles ; ils tournoient et se retournent, sans jamais s'étirer.
+   Ils ne s'arrêtent jamais, même si l'appareil demande moins d'animations : c'est eux qui disent où viser.
    ========================================================== */
+function fonce(c, t){
+  var n = parseInt(c.slice(1), 16);
+  function m(v, w){ return Math.round(v + (w - v) * t); }
+  return 'rgb(' + m(n >> 16, 62) + ',' + m((n >> 8) & 255, 34) + ',' + m(n & 255, 72) + ')';
+}
+var TC = ' stroke="' + K + '" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"';
+function etoile(){ var q = []; for(var i = 0; i < 10; i++){ var r = i % 2 ? 3.8 : 9, a = -Math.PI / 2 + i * Math.PI / 5; q.push(P(r * Math.cos(a), r * Math.sin(a))); } return 'M' + q.join(' L') + ' Z'; }
+/* les formes, dessinées dans un carré qui va de −12 à 12 ; c : la couleur ; o : la même, dans l'ombre */
+var FORMES = [
+  /* la bandelette pliée en deux */
+  function(c, o){ return '<path d="M-10,-1.5 L0,-5 L0,3.5 L-10,6 Z" fill="' + c + '"' + TC + '/><path d="M0,-5 L10,-1 L10,7 L0,3.5 Z" fill="' + o + '"' + TC + '/>'; },
+  /* le carré au coin corné */
+  function(c, o){ return '<path d="M-7,-7 H2.5 L7.5,-2 V7.5 H-7 Z" fill="' + c + '"' + TC + '/><path d="M2.5,-7 V-2 H7.5 Z" fill="' + o + '"' + TC + '/>'; },
+  /* le rond plié */
+  function(c, o){ return '<circle r="7.5" fill="' + c + '"' + TC + '/><path d="M-3.2,-6.8 A7.5,7.5 0 0 1 6.8,3.2 Q1,0 -3.2,-6.8 Z" fill="' + o + '"' + TC + '/>'; },
+  /* le serpentin */
+  function(c, o){ return '<path d="M-10,3 C-7,-7 -3,-7 -1,0 S6,8 10,-2" fill="none" stroke="' + K + '" stroke-width="6.4" stroke-linecap="round"/><path d="M-10,3 C-7,-7 -3,-7 -1,0 S6,8 10,-2" fill="none" stroke="' + c + '" stroke-width="3.6" stroke-linecap="round"/><path d="M-1,0 C1,7 6,8 10,-2" fill="none" stroke="' + o + '" stroke-width="3.6" stroke-linecap="round"/>'; },
+  /* le triangle plié */
+  function(c, o){ return '<path d="M-8,6.5 L-.5,-8 L8,6.5 Z" fill="' + c + '"' + TC + '/><path d="M-.5,-8 L8,6.5 L1.5,6.5 Z" fill="' + o + '"' + TC + '/>'; },
+  /* le papillon : une bandelette tordue */
+  function(c, o){ return '<path d="M-10,-5.5 L0,0 L-10,5.5 Z" fill="' + c + '"' + TC + '/><path d="M10,-5.5 L0,0 L10,5.5 Z" fill="' + o + '"' + TC + '/>'; },
+  /* l'étoile, une branche repliée */
+  function(c, o){ return '<path d="' + etoile() + '" fill="' + c + '"' + TC + '/><path d="M0,-9 L2.2,-3.1 L0,0 L-2.2,-3.1 Z" fill="' + o + '"/>'; }
+];
+var TAILLES = [.8, 1.2, 1, 1.75, 1.45];
 function Souffle(div, n){
-  var ps = [], W = 0, H = 0, R = 1, k = 0, force = 0, ca = 1, sa = 0, ang = 0;
+  var ps = [], W = 0, H = 0, R = 1, k = 0, force = 0, ca = 1, sa = 0;
   for(var i = 0; i < n; i++){
-    var e = document.createElement('i'); e.style.background = A.COULEURS[i % A.COULEURS.length]; div.appendChild(e);
-    ps.push({e:e, a:0, b:0, v:.9 + Math.random() * .2, ph:Math.random() * 6.28, w:1.3 + Math.random() * 1.6, g:.75 + Math.random() * .6});
+    var e = document.createElement('i'), c = A.COULEURS[(i * 3 + (i >> 3)) % A.COULEURS.length];
+    e.innerHTML = '<svg viewBox="-12 -12 24 24" aria-hidden="true">' + FORMES[i % FORMES.length](c, fonce(c, .32)) + '</svg>'; div.appendChild(e);
+    /* a, b : où il est (le long du vent, en travers) ; g : sa taille ; v : sa vitesse à lui ; mode : 0 il plane, 1 et 3 il ondule,
+       2 il fait des boucles (de rayon rho) ; tr : il tournoie ; pli, wp : il se retourne plus ou moins, plus ou moins vite */
+    ps.push({e:e, a:0, b:0, g:TAILLES[i % TAILLES.length], v:.86 + Math.random() * .28, ph:Math.random() * 6.283, w:.9 + Math.random() * 1.3, mode:i % 4, rho:14 + Math.random() * 14,
+      sens:Math.random() < .5 ? -1 : 1, tr:(1.1 + Math.random() * 2.2) * (Math.random() < .5 ? -1 : 1), pli:.25 + Math.random() * .75, wp:1.6 + Math.random() * 2.6});
   }
   function semer(){ ps.forEach(function(p){ p.a = (Math.random() * 2 - 1) * R; p.b = (Math.random() * 2 - 1) * R; }); }
   /* la taille de l'écran, et les pixels par unité du monde */
-  this.regler = function(w, h, ech){ if(w === W && h === H && ech === k) return; W = w; H = h; k = ech; R = Math.hypot(w, h) / 2 + 24; semer(); };
+  this.regler = function(w, h, ech){ if(w === W && h === H && ech === k) return; W = w; H = h; k = ech; R = Math.hypot(w, h) / 2 + 40; semer(); };
   /* la force du vent, et vers où il souffle (un angle, 0 = vers la droite, en tournant vers le bas) */
-  this.vent = function(fo, an){ force = fo; ang = an; ca = Math.cos(an); sa = Math.sin(an); semer(); };
+  this.vent = function(fo, an){ force = fo; ca = Math.cos(an); sa = Math.sin(an); semer(); };
   this.pas = function(dt, T){
-    var v = force * V_CONF * k, calme = 1 - Math.min(1, v / 900), etire = 1 + Math.min(3.4, Math.max(0, v - 150) / 240);
+    var v = force * V_CONF * k, e = k / 4, vif = Math.min(1, v / 500);
     for(var i = 0; i < ps.length; i++){
       var p = ps[i];
       p.a += v * p.v * dt; if(p.a > R){ p.a -= 2 * R; p.b = (Math.random() * 2 - 1) * R; }
-      var o = p.b + Math.sin(T * p.w + p.ph) * 7 * calme * p.g, x = W / 2 + p.a * ca - o * sa, y = H / 2 + p.a * sa + o * ca;
-      var rot = ang + Math.sin(T * p.w * 1.7 + p.ph) * 1.4 * calme, sy = 1 - (1 - Math.abs(Math.cos(T * (2.6 + p.w) + p.ph))) * (.25 + .75 * calme);
-      p.e.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) rotate(' + rot.toFixed(2) + 'rad) scale(' + (p.g * etire).toFixed(2) + ',' + (p.g * Math.max(.2, sy)).toFixed(2) + ')';
+      var al = p.a, tv = p.b;
+      if(p.mode === 2){
+        /* le looping : il tourne en rond tout en avançant ; plus le vent est fort, plus la boucle est grande et rapide */
+        var rho = p.rho * e * (1 + v / 600), th = p.ph + p.sens * T * Math.min(12, Math.max(2.2, 1.5 * v / rho));
+        al += rho * Math.cos(th); tv += rho * Math.sin(th);
+      } else if(p.mode){
+        /* la volute : il se balance d'un côté à l'autre, en prenant un peu d'avance puis un peu de retard */
+        tv += Math.sin(T * p.w + p.ph) * (15 + 13 * vif) * e; al += Math.sin(T * p.w * 2 + p.ph) * 9 * e;
+      } else tv += Math.sin(T * p.w * .7 + p.ph) * 6 * e;
+      var x = W / 2 + al * ca - tv * sa, y = H / 2 + al * sa + tv * ca, sy = 1 - p.pli * (1 - Math.abs(Math.cos(T * p.wp + p.ph)));
+      p.e.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) rotate(' + (p.ph + T * p.tr * (.6 + .8 * vif)).toFixed(2) + 'rad) scale(' + p.g.toFixed(2) + ',' + (p.g * Math.max(.14, sy)).toFixed(2) + ')';
     }
   };
 }
-/* le bras qui tremble : de combien le curseur dérive tout seul, t secondes après que l'arc est bandé (en unités du monde).
-   ph : quatre décalages tirés au hasard à chaque tir. Deux balancements lents de chaque côté : on peut les suivre, pas les prévoir. */
-function tremblement(t, ph){
-  var r = lisse(t / .6);
-  return [TREMBLE[0] * r * (.62 * Math.sin(t * 2.17 + ph[0]) + .38 * Math.sin(t * 4.83 + ph[1])), TREMBLE[1] * r * (.62 * Math.sin(t * 1.85 + ph[2]) + .38 * Math.sin(t * 3.93 + ph[3]))];
+/* le bras fatigue (Romain, 16 h 51) : le viseur ne tremble pas « comme une mouche », il glisse tout seul, lentement, loin, sans
+   changer de sens à tout bout de champ. Rend sa vitesse, t secondes après que l'arc est bandé (en unités du monde par seconde).
+   ph : trois nombres tirés au hasard à chaque tir (vers où il part, comment il tourne, comment il ralentit et repart). */
+function derive(t, ph){
+  var an = ph[0] + .9 * Math.sin(.55 * t + ph[1]), v = DERIVE * lisse(t / .5) * (1 + .22 * Math.sin(.8 * t + ph[2]));
+  return [v * Math.cos(an), v * Math.sin(an)];
 }
 
 /* le curseur : le rond du minuteur, la croix, le point rouge du milieu */
@@ -29927,7 +30064,7 @@ function jouer(el, p, fin){
   var svgP = $('.vs-perche'), peC = $('.vs-pe-c'), peR = $('.vs-pe-r'), divA = $('.vs-anneau'), svgA = divA.firstChild, svgArc = $('.vs-arc'), svgFx = $('.vs-fx'), svgFond = $('.vs-fx-fond');
   var divVent = $('.vs-vent'), divCibles = $('.vs-cibles'), divZone = $('.vs-zone'), divCur = $('.vs-curseur'), cuT = $('.vs-cu-t'), divMot = $('.vs-mot'), divConf = $('.vs-confettis'), hFl = $('.vs-h-fl b'), hAn = $('.vs-h-an');
   var gVol = $('.vs-vol'), gBande = $('.vs-v-bande'), gFanions = $('.vs-v-fanions'), gEclats = $('.vs-eclats');
-  var arc = new Arc(svgArc, id + 'a'), flA = new Fleche($('.vs-fl')), flB = new Fleche(svgFond.firstChild), souffle = new Souffle($('.vs-souffle'), 60);
+  var arc = new Arc(svgArc, id + 'a'), flA = new Fleche($('.vs-fl')), flB = new Fleche(svgFond.firstChild), souffle = new Souffle($('.vs-souffle'), 24);
   flA.montrer(false); flB.montrer(false);
   cuT.setAttribute('stroke-dasharray', f(TOUR)); cuT.setAttribute('stroke-dashoffset', f(TOUR));
 
@@ -29980,7 +30117,7 @@ function jouer(el, p, fin){
     var vb = [-(W / 2) / sL, -120 - (H * .5 + oyL) / sL, W / sL, H / sL].map(f).join(' ');
     svgL.setAttribute('viewBox', vb); dynL.setAttribute('viewBox', vb);
     [svgP, svgArc, svgFx, svgFond].forEach(function(s){ s.setAttribute('viewBox', '0 0 ' + W + ' ' + H); });
-    arc.regler(Math.min(H / 740, W / 620), H); arc.dessiner();
+    arc.regler(Math.min(H / 740, W / 620), H, W); arc.dessiner(undefined, C);
     souffle.regler(W, H, sV);
     racine.style.setProperty('--vs-u', u.toFixed(3));
     cibles();
@@ -30070,27 +30207,29 @@ function jouer(el, p, fin){
     var an = anneaux[i]; if(!an || an.fait) return;
     actif = i; mVise = 1; U.stop(); son('choisir');
     etre('zoom'); mot('');
-    rangerFx(); cadrerVisee(); dessinerDyn(); arc.dessiner(0);
+    rangerFx(); cadrerVisee(); dessinerDyn(); arc.dessiner(0, C);
     souffle.vent(an.vent, an.va);
     if(!ventEnRoute){ ventEnRoute = true; boucles.push(U.boucle(function(dt, T){ if(arrete || etat === 'large' || etat === 'fin'){ ventEnRoute = false; return false; } souffle.pas(dt, T); })); }
     anim(reduit() ? 0 : .62, function(x){ zoomer(lisse(x)); }, function(){ zoomer(1); etre('vise'); flecheVise(0); });
   }
   /* ---------- la flèche sur l'arc : on n'en voit que le bout, pointé vers l'anneau (ou vers le curseur, quand on vise) ---------- */
-  var doigt = null, cur = {x:0, y:0, vx:0, vy:0}, but = {x:0, y:0}, vu = {x:0, y:0}, tBande = 0, dBande = 0, dernierTic = 9, arretVise = null, ph = [0, 0, 0, 0], pose = null;
+  var doigt = null, cur = {x:0, y:0, vx:0, vy:0}, but = {x:0, y:0}, vu = {x:0, y:0}, der = {x:0, y:0}, tBande = 0, dBande = 0, dernierTic = 9, arretVise = null, ph = [0, 0, 0], pose = null;
   /* l'arc suit un peu la visée */
   function balance(){ return etat === 'bande' ? [(vu.x - C[0]) * .1, (vu.y - C[1]) * .1] : [0, 0]; }
   function flecheVise(d){
     var sT = sV * mVise, vise = etat === 'bande', ax = vise ? vu.x : C[0], ay = vise ? vu.y : C[1], cw = [(ax - C[0]) / sT, (ay - C[1]) / sT];
     var voir = oeil(mVise, cw, ax, ay, sV), r = arc.repos(), b = balance();
     pose = poseArc(voir, [r[0] + b[0], r[1] + b[1]], cw, d || 0); pose.cw = cw;
+    /* l'arc est dessiné vers le même point que la flèche : là où on vise */
+    arc.dessiner(d || 0, [ax - b[0], ay - b[1]]);
     flA.montrer(true); flA.opacite('1'); flA.dessiner(voir, pose.tete, pose.dir, .5, {sansPlumes:true});
   }
   /* ---------- le doigt se pose en bas : l'arc se bande, on s'approche un peu, le curseur apparaît quelque part autour de l'anneau ---------- */
-  function borner(){ but.x = U.borne(but.x, 14, W - 14); but.y = U.borne(but.y, 14, H - 30 * u); }
-  /* le curseur qu'on voit : là où le ressort l'a amené, plus le tremblement du bras */
+  /* (le but du ressort ne se voit pas : c'est le curseur, dérive comprise, qui doit rester dans l'écran) */
+  function borner(){ but.x = U.borne(but.x, 14 - der.x, W - 14 - der.x); but.y = U.borne(but.y, 14 - der.y, H - 30 * u - der.y); }
+  /* le curseur qu'on voit : là où le ressort l'a amené, plus ce que le bras a glissé tout seul */
   function poserCurseur(){
-    var t = tremblement(tBande, ph), s = sV * mVise * kTremble;
-    vu.x = cur.x + t[0] * s; vu.y = cur.y + t[1] * s;
+    vu.x = cur.x + der.x; vu.y = cur.y + der.y;
     divCur.style.transform = 'translate(' + f(vu.x) + 'px,' + f(vu.y) + 'px)';
     /* le curseur passe sur l'étiquette du vent (il faut parfois viser là) : elle pâlit, pour qu'on voie toujours le curseur et l'anneau */
     divVent.classList.toggle('vs-pale', Math.abs(vu.x - C[0]) < 78 * u && Math.abs(vu.y - (C[1] - (rExt + 14) * sV * mVise - 22 * u)) < 44 * u);
@@ -30099,7 +30238,8 @@ function jouer(el, p, fin){
     etre('bande'); son('bander');
     var a = Math.random() * Math.PI * 2, d = (66 + Math.random() * 38) * u;
     cur.x = U.borne(C[0] + Math.cos(a) * d, 30, W - 30); cur.y = U.borne(C[1] + Math.sin(a) * d * .8, 30, H * .72); cur.vx = cur.vy = 0;
-    but.x = cur.x; but.y = cur.y; tBande = 0; dBande = 0; dernierTic = 9; ph = [0, 1, 2, 3].map(function(){ return Math.random() * 6.283; });
+    /* vers où le bras va glisser : le plus souvent vers le bas (il fatigue), parfois de côté ; au hasard à chaque tir */
+    but.x = cur.x; but.y = cur.y; der.x = der.y = 0; tBande = 0; dBande = 0; dernierTic = 9; ph = [Math.PI / 2 + (Math.random() * 2 - 1) * 1.2, Math.random() * 6.283, Math.random() * 6.283];
     cuT.setAttribute('stroke-dashoffset', f(2 * Math.PI * 24)); cuT.setAttribute('stroke', '#ffd23f'); poserCurseur();
     arretVise = U.boucle(function(dt){
       if(arrete || etat !== 'bande') return false;
@@ -30109,10 +30249,12 @@ function jouer(el, p, fin){
       cur.x += cur.vx * dt; cur.y += cur.vy * dt;
       /* on s'approche un peu de l'anneau pendant que l'arc se bande (Romain : « quand on vise, ça zoome un peu ») */
       if(mVise < ZOOM_BANDE){ mVise = 1 + (ZOOM_BANDE - 1) * lisse(tBande / .32); camera(mVise, [0, 0], C[0], C[1]); poserVent(); }
+      /* le bras fatigue : le viseur glisse tout seul, lentement (il s'arrête au bord de l'écran) */
+      var dv = derive(tBande, ph), sd = sV * mVise * kTremble * dt;
+      der.x = U.borne(der.x + dv[0] * sd, 10 - cur.x, W - 10 - cur.x); der.y = U.borne(der.y + dv[1] * sd, 10 - cur.y, H - 24 * u - cur.y);
       poserCurseur();
       /* l'arc se bande (un quart de seconde), puis suit un peu la visée ; la flèche recule et pointe vers le curseur */
       dBande = lisse(tBande / .28);
-      if(tBande < .34) arc.dessiner(dBande);
       var b = balance(); svgArc.style.transform = 'translate(' + f(b[0]) + 'px,' + f(b[1]) + 'px)';
       flecheVise(dBande);
       /* le minuteur, autour du curseur ; à la fin, la flèche part toute seule */
@@ -30238,7 +30380,7 @@ function jouer(el, p, fin){
       camera(m, [pw0[0] * (1 - e), pw0[1] * (1 - e)], ax0 + (C[0] - ax0) * e, ay0 + (C[1] - ay0) * e);
     }, function(){
       actif = an.i; dessinerDyn(false, pris);
-      arc.dessiner(0); svgArc.style.opacity = '';
+      arc.dessiner(0, C); svgArc.style.opacity = '';
       anim(reduit() ? 0 : .55, function(t){ zoomer(1 - lisse(t)); }, function(){
         zoomer(0); actif = -1; cL.style.transform = ''; cL.style.opacity = '';
         var restants = anneaux.filter(function(a){ return !a.fait; }).length;
@@ -30263,14 +30405,14 @@ function jouer(el, p, fin){
   if(window.ResizeObserver){ ro = new ResizeObserver(mesurer); ro.observe(el); } else window.addEventListener('resize', mesurer);
   cV.style.opacity = svgP.style.opacity = divA.style.opacity = '0';
   mesurer(); dessinerDyn(); hud(); cibles();
-  /* pour les essais. viser(ex, ey, sansVent) : où amener le curseur (sans son tremblement) pour que la flèche arrive à (ex, ey)
-     unités du milieu de l'anneau, vent compris (ou sans en tenir compte) ; tremble(0) : le bras ne tremble plus. */
+  /* pour les essais. viser(ex, ey, sansVent) : où amener le curseur (sans sa dérive) pour que la flèche arrive à (ex, ey)
+     unités du milieu de l'anneau, vent compris (ou sans en tenir compte) ; tremble(0) : le viseur ne glisse plus tout seul. */
   racine.__visee = {
     etat:function(){ return etat; }, anneaux:anneaux, p:p, DEV:DEV,
     mesures:function(){ return {W:W, H:H, u:u, sV:sV, sL:sL, C:C.slice(), zf:zf, zone:H * ZONE_BAS, fleches:fleches, faits:chaine.slice(), actif:actif, zoom:mVise}; },
     curseur:function(){ return {x:vu.x, y:vu.y, rx:cur.x, ry:cur.y, bx:but.x, by:but.y, reste:p.duree - tBande}; },
     viser:function(ex, ey, sansVent){ var an = anneaux[actif], s = sV * ZOOM_BANDE; return [C[0] + (ex - (sansVent ? 0 : an.vx * DEV)) * s, C[1] + (ey - (sansVent ? 0 : an.vy * DEV)) * s]; },
-    tremble:function(k){ kTremble = k; },
+    tremble:function(k){ kTremble = k; if(!k) der.x = der.y = 0; },
     ecran:function(i){ return ecranL(anneaux[i].c[0], anneaux[i].c[1]); },
     choisir:choisir
   };
@@ -30282,7 +30424,7 @@ function jouer(el, p, fin){
 
 MJ.enregistrer('visee', {
   nom:'Les banderoles de la fête', role:'pisteur', ic:'🎏', minuteur:false,
-  consigne:'Cinq anneaux de bois attendent leur banderole. Choisis-en un : te voilà en train de le viser. Pose ton doigt en bas de l\'écran : l\'arc se bande et un viseur apparaît. Il suit ton doigt, mais avec du retard, et ton bras tremble : le viseur bouge tout seul. Regarde les confettis derrière l\'anneau : ils filent dans le sens du vent, d\'autant plus vite qu\'il est fort, et le vent poussera ta flèche pareil. Lève le doigt, la flèche part. Dans le trou, la banderole est accrochée. Dans le bois ou à côté, la flèche est perdue.',
+  consigne:'Cinq anneaux de bois attendent leur banderole. Choisis-en un : te voilà en train de le viser. Pose ton doigt en bas de l\'écran : l\'arc se bande et un viseur apparaît. Il suit ton doigt, mais avec du retard, et ton bras fatigue : le viseur glisse tout seul, lentement. Retiens-le ! Regarde les confettis derrière l\'anneau : ils filent dans le sens du vent, d\'autant plus vite qu\'il est fort, et le vent poussera ta flèche pareil. Lève le doigt, la flèche part. Dans le trou, la banderole est accrochée. Dans le bois ou à côté, la flèche est perdue.',
   reglages:function(n, mods){
     var p = {anneaux:5};
     p.reserve = 2 + (mods.erreurs || 0) + (mods.fleches || 0);
@@ -30290,9 +30432,10 @@ MJ.enregistrer('visee', {
     /* la difficulté (Romain) : la taille de l'anneau et la force du vent, rien d'autre */
     p.trou = U.parNiveau(n, 13, 5.2, 4.4) * (mods.zone || 1);
     p.bois = U.parNiveau(n, 4.6, 3.3, 3);
-    /* le vent (Romain, 15 h 10) : de 1 à 12 au niveau 10 ; de 1 à 4 aux autres niveaux ; de 1 à 3 au niveau 1 ; dans tous les sens */
+    /* le vent (Romain, 15 h 10 puis 16 h 51) : de 1 à 10 au niveau 10 (« au-delà de 10, c'est ingérable ») ; de 1 à 4 aux autres
+       niveaux ; de 1 à 3 au niveau 1 ; dans tous les sens */
     p.ventMin = 1;
-    p.ventMax = Math.max(1, Math.round((n >= 9.5 ? 12 : (n <= 1.5 ? 3 : 4)) * (mods.stable === undefined ? 1 : mods.stable)));
+    p.ventMax = Math.max(1, Math.min(10, Math.round((n >= 9.5 ? 10 : (n <= 1.5 ? 3 : 4)) * (mods.stable === undefined ? 1 : mods.stable))));
     p.duree = 5 + (mods.temps || 0) * .5;
     p.lignes = [
       {nom:'Anneaux', val:String(p.anneaux)},
@@ -30311,8 +30454,8 @@ MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.visee = 'Fais passer la banderole dans
 
 /* ==========================================================
    L'explication en images, avant de jouer (MJ.DEMOS.visee) : les confettis passent dans le vent ; la main se pose en bas,
-   l'arc se bande, le curseur apparaît à côté de l'anneau et tremble ; la main glisse, le curseur la suit avec du retard et
-   s'arrête un peu contre le vent ; la main se lève, la flèche part, le vent la pousse dans l'anneau, elle retombe derrière,
+   l'arc se bande, le curseur apparaît à côté de l'anneau et se met à glisser tout seul ; la main le ramène, il la suit avec
+   du retard et s'arrête un peu contre le vent ; la main se lève, la flèche part, le vent la pousse dans l'anneau, elle retombe derrière,
    et la banderole reste accrochée.
    ========================================================== */
 MJ.DEMOS = MJ.DEMOS || {};
@@ -30332,32 +30475,34 @@ MJ.DEMOS.visee = {w:300, h:420, f:function(el, prm){
       '<g class="vsd-cur" opacity="0"><g transform="scale(.6)">' + CURSEUR + '</g></g>' +
       '<g class="vsd-main"><circle class="vsd-onde" r="13" fill="none" stroke="#ffd23f" stroke-width="3.4" opacity="0"/><g class="vsd-main-g">' + MAIN + '</g></g></svg></div>';
   var rac = el.firstChild, $ = function(s){ return rac.querySelector(s); };
-  var arc = new Arc($('.vsd-arc'), id + 'a'); arc.regler(.4, H); arc.dessiner(0);
-  var divS = $('.vs-souffle'), souf = new Souffle(divS, 26), flA = new Fleche($('.vsd-fl')), flB = new Fleche($('.vsd-fl2'));
+  var arc = new Arc($('.vsd-arc'), id + 'a'); arc.regler(.4, H, W); arc.dessiner(0, C);
+  var divS = $('.vs-souffle'), souf = new Souffle(divS, 9), flA = new Fleche($('.vsd-fl')), flB = new Fleche($('.vsd-fl2'));
   souf.vent(force, ang); flB.montrer(false);
   var main = $('.vsd-main'), onde = $('.vsd-onde'), mainG = $('.vsd-main-g'), gCur = $('.vsd-cur'), cuT = gCur.querySelector('.vs-cu-t'), eclat = $('.vsd-eclat'), bande = $('.vsd-bande'), gAn = rac.querySelector('.vs-an');
   cuT.setAttribute('stroke-dasharray', f(TOUR));
-  /* le film (7,8 secondes) : 0,9 la main se pose ; 1,3 → 3,3 elle glisse ; 3,8 elle se lève, la flèche part ; 4,7 la flèche passe */
-  var T_POSE = .9, T_LEVE = 3.8, T_PASSE = 4.7, P0 = 7.8, M0 = [150, 348], M1 = [100, 378], TL = T_LEVE - T_POSE;
-  /* le bras tremble aussi dans le film ; réglé pour que le curseur soit juste au bon endroit quand la main se lève */
-  var PH = [-2.17 * TL, -4.83 * TL, -1.85 * TL, -3.93 * TL];
+  /* le film (7,8 secondes) : 0,9 la main se pose ; 1,7 → 3,3 elle glisse ; 3,8 elle se lève, la flèche part ; 4,7 la flèche passe */
+  var T_POSE = .9, T_LEVE = 3.8, T_PASSE = 4.7, P0 = 7.8, M0 = [178, 350], TL = T_LEVE - T_POSE;
+  /* dans le film aussi, le viseur glisse tout seul (vers le bas, un peu à droite) : PH dit comment ; D : tout ce qu'il aura glissé */
+  var PH = [1.25, .3, 1], D = [0, 0];
+  for(var td = 0; td < TL; td += 1 / 60){ var dvd = derive(td, PH), dtd = Math.min(1 / 60, TL - td); D[0] += dvd[0] * sD * dtd; D[1] += dvd[1] * sD * dtd; }
+  /* le curseur naît en haut à droite de l'anneau ; il doit finir un peu contre le vent (le vent poussera la flèche d'autant) :
+     la main fait le chemin qu'il faut pour ça, dérive comprise */
+  var arrivee = [C[0] - dev[0] * sD, C[1] - dev[1] * sD], depart = [C[0] + 55, C[1] - 38], M1 = [M0[0] + arrivee[0] - depart[0] - D[0], M0[1] + arrivee[1] - depart[1] - D[1]];
   function doigt(t){
     if(t < T_POSE){ var a = lisse(t / T_POSE); return [214 + (M0[0] - 214) * a, 404 + (M0[1] - 404) * a]; }
-    if(t < T_LEVE){ var b = lisse((t - 1.3) / 2); return [M0[0] + (M1[0] - M0[0]) * b, M0[1] + (M1[1] - M0[1]) * b]; }
+    if(t < T_LEVE){ var b = lisse((t - 1.7) / 1.6); return [M0[0] + (M1[0] - M0[0]) * b, M0[1] + (M1[1] - M0[1]) * b]; }
     var c = lisse((t - T_LEVE - .2) / .9); return [M1[0] + (214 - M1[0]) * c, M1[1] + (404 - M1[1]) * c];
   }
-  /* le curseur part d'un endroit « au hasard » ; il doit finir un peu contre le vent (le vent poussera la flèche d'autant) */
-  var arrivee = [C[0] - dev[0] * sD, C[1] - dev[1] * sD], depart = [arrivee[0] - (M1[0] - M0[0]), arrivee[1] - (M1[1] - M0[1])], sim = {t:-1, x:0, y:0, vx:0, vy:0}, vu = {d:-1}, tirD = null, avant = -1;
+  var sim = {t:-1, x:0, y:0, vx:0, vy:0, dx:0, dy:0}, vise = C, tirD = null, avant = -1;
   function curseur(t){
-    if(sim.t < 0 || t < sim.t){ sim.t = T_POSE; sim.x = depart[0]; sim.y = depart[1]; sim.vx = sim.vy = 0; }
+    if(sim.t < 0 || t < sim.t){ sim.t = T_POSE; sim.x = depart[0]; sim.y = depart[1]; sim.vx = sim.vy = sim.dx = sim.dy = 0; }
     var fin2 = Math.min(t, T_LEVE);
     while(sim.t < fin2){
-      var dt = Math.min(1 / 60, fin2 - sim.t), d = doigt(sim.t), bx = depart[0] + d[0] - M0[0], by = depart[1] + d[1] - M0[1];
+      var dt = Math.min(1 / 60, fin2 - sim.t), d = doigt(sim.t), bx = depart[0] + d[0] - M0[0], by = depart[1] + d[1] - M0[1], dv = derive(sim.t - T_POSE, PH);
       sim.vx += (OMEGA * OMEGA * (bx - sim.x) - 2 * AMORTI * OMEGA * sim.vx) * dt; sim.vy += (OMEGA * OMEGA * (by - sim.y) - 2 * AMORTI * OMEGA * sim.vy) * dt;
-      sim.x += sim.vx * dt; sim.y += sim.vy * dt; sim.t += dt;
+      sim.x += sim.vx * dt; sim.y += sim.vy * dt; sim.dx += dv[0] * sD * dt; sim.dy += dv[1] * sD * dt; sim.t += dt;
     }
-    var tr = tremblement(fin2 - T_POSE, PH);
-    return [sim.x + tr[0] * sD, sim.y + tr[1] * sD];
+    return [sim.x + sim.dx, sim.y + sim.dy];
   }
   function image(t){
     /* les confettis du vent (ils avancent tout le temps ; la taille du cadre peut changer) */
@@ -30369,11 +30514,13 @@ MJ.DEMOS.visee = {w:300, h:420, f:function(el, prm){
     onde.setAttribute('r', f(r)); onde.setAttribute('opacity', op.toFixed(2));
     /* l'arc se bande, puis la corde claque */
     var da = t < T_POSE ? 0 : (t < T_LEVE ? lisse((t - T_POSE) / .3) : (t < T_LEVE + .05 ? 1 - (t - T_LEVE) / .05 : 0));
-    if(da !== vu.d){ vu.d = da; arc.dessiner(da); }
     /* le curseur et son minuteur */
     var c = null;
     if(t >= T_POSE + .05 && t < T_LEVE){ c = curseur(t); gCur.setAttribute('opacity', '1'); gCur.setAttribute('transform', 'translate(' + P(c[0], c[1]) + ')'); cuT.setAttribute('stroke-dashoffset', f(TOUR * (1 - (t - T_POSE) / 5))); }
     else gCur.setAttribute('opacity', '0');
+    /* l'arc, tourné vers le point qu'on vise */
+    if(c) vise = c; else if(t < T_POSE || t > 6.6) vise = C;
+    arc.dessiner(da, vise);
     /* la flèche : sur l'arc (on n'en voit que le bout, pointé vers le curseur), puis elle vole, passe, et retombe derrière l'anneau */
     if(t < T_LEVE || t > 6.6){
       var v0 = c || C, cw = [(v0[0] - C[0]) / sD, (v0[1] - C[1]) / sD], voir = oeil(1, cw, v0[0], v0[1], sD), ps = poseArc(voir, arc.repos(), cw, t < T_LEVE ? da : 0);
