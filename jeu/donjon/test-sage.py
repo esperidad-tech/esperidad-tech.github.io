@@ -130,13 +130,13 @@ def parcours(nav, appareil):
     sx, sy = ecran(pg, 1019.5, 619.6)
     pg.mouse.click(sx, sy); pg.wait_for_timeout(500)
     b.ok(pg.is_visible('.loupe'), 'toucher une note codée ouvre la loupe (signes en grand + grille)')
-    b.ok(pg.locator('.loupe .loupe-l').count() == 17 and pg.is_visible('.loupe .cle-svg'), 'la loupe montre les 17 signes et la grille de l’alphabet secret')
+    b.ok(pg.locator('.loupe .loupe-l').count() == 23 and pg.is_visible('.loupe .cle-svg'), 'la loupe montre les 23 signes et la grille de l’alphabet secret')
     regles(b, pg, 'loupe')
-    for l in 'LARUNEDORTAUPUITX':
+    for l in 'LARUNEDORTDANSLAGALERIX':
         clic(pg, '.loupe [data-l="%s"]' % l)
     b.ok('rien dire' in pg.inner_text('.loupe-msg'), 'une mauvaise lettre : « ça ne veut rien dire »')
-    clic(pg, '.loupe .loupe-l[data-i="16"]'); clic(pg, '.loupe [data-l="S"]'); pg.wait_for_timeout(200)
-    b.ok(pg.evaluate('SAGE.etat().lues.rune'), 'les bonnes lettres déchiffrent la note « LA RUNE DORT AU PUITS »')
+    clic(pg, '.loupe .loupe-l[data-i="22"]'); clic(pg, '.loupe [data-l="E"]'); pg.wait_for_timeout(200)
+    b.ok(pg.evaluate('SAGE.etat().lues.rune'), 'les bonnes lettres déchiffrent la note « LA RUNE DORT DANS LA GALERIE »')
     capture(pg, 'sage-loupe-' + t)
     clic(pg, '.loupe .fermer'); pg.wait_for_timeout(200)
     b.ok(pg.evaluate('document.querySelector("[data-trad=rune]").style.display') == '', 'la traduction est notée au crayon sur le plan')

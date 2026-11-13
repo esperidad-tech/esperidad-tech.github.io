@@ -656,7 +656,8 @@ var PLAN = {
   rose:{x:px(894), y:py(74), r:pt(24)},
   /* les noms à la plume (les salles à signe n'ont pas de nom : leur signe suffit) */
   noms:[
-    {lieu:'puits', x:1200, y:838, l:['Le fond du puits'], t:24},
+    /* (Romain, 13 novembre : « enlever les indices, le puits, la crypte » — le plan ne dit plus par où l'on entre) */
+    {lieu:'puits', x:1200, y:838, l:['L’entrée'], t:24},
     {lieu:'galerie', x:990, y:755, l:['La grande', 'galerie'], t:20},
     {lieu:'rats', x:1440, y:752, l:['La salle', 'des rats'], t:24},
     {lieu:'reserve', x:1455, y:610, l:['La réserve'], t:22},
@@ -689,7 +690,8 @@ var PLAN = {
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'AU PUITS'], pres:'puits', dit:'La rune dort au puits'},
+    /* (13 novembre) la pierre de rune est dans la galerie effondrée depuis le 11 novembre : la note le dit enfin, et ne parle plus du puits */
+    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'DANS LA GALERIE'], pres:'galerie', dit:'La rune dort dans la galerie'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',

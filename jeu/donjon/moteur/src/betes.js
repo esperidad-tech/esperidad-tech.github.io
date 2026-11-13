@@ -84,7 +84,16 @@ A.entrer = function(par, o){
   this.montrer();
   if(this.rat) return pr(a.entrer()).then(function(){ return a.yeux('jaune'); }).then(function(){ return a.attendre(); });
   var p = this.module === 'petitearaignee' ? a.entrer(par === 'eclosion' ? {} : {oeuf:false}) : this.module === 'gardien' ? a.entrer(o || {}) : a.entrer();
+  this.voile();
   return pr(p).then(function(){ if(!self.mort && a.attendre) a.attendre(); });
+};
+/* LE FEU FOLLET, À MOITIÉ TRANSPARENT TANT QU'IL N'EST PAS RÉVÉLÉ (Romain, 13 novembre : « il faut qu'ils soient plus transparents
+   avant qu'on les révèle »). Révélé = dans la fumée (« visible »), accroché à un bouclier de runes (« accroche »), ou point faible
+   ouvert. Seule l'opacité de son calque change (rien d'autre à recalculer). */
+A.voile = function(){
+  if(this.module !== 'feufollet' || this.mort) return;
+  var cur = {}; try{ cur = this.acteur.etatCourant() || {}; }catch(e){}
+  this.el.style.transition = 'opacity .45s'; this.el.style.opacity = cur.visible || cur.accroche || cur.ouvert ? '' : '.42';
 };
 
 /* ---------- les ancres : un point de la bête, dans la scène ---------- */
@@ -159,7 +168,8 @@ A.etat = function(nom, on){
     return Promise.resolve();
   }
   try{ var cur = a.etatCourant ? a.etatCourant() : {}; if(!!cur[nom] === !!on) return Promise.resolve(); }catch(e){}
-  try{ return pr(a.etat(nom, on)); }catch(e){ return Promise.resolve(); }
+  var self = this;
+  try{ return pr(a.etat(nom, on)).then(function(x){ self.voile(); return x; }); }catch(e){ return Promise.resolve(); }
 };
 A.ouvert = function(on){
   if(this.mort) return Promise.resolve();

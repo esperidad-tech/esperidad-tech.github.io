@@ -377,8 +377,13 @@ section('La chauve-souris');
   var t = prep('crypte', {sac:['colle', 'feu', 'baume']}), c = t.c, a = c.b[0], b = c.b[1], ev;
   ev = jouer(c, 'alchimiste', 'louche');
   ok(a.ouvert !== 0 && b.ouvert !== 0 && c.a(a, 'au-sol') && c.a(b, 'au-sol'), 'chemin normal : le bruit (la louche) les fait tomber toutes les deux, ouvertes');
+  /* (13 novembre) la dague ne touche que le premier monstre au sol : celle du fond, même tombée, est trop loin */
   ev = jouer(c, 'pisteur', 'dague', b);
-  ok(trouve(ev, 'degats').critique && b.mort, 'tombée devant, même celle du fond est à portée de dague : critique');
+  ok(trouve(ev, 'refus') && !b.mort && !trouve(ev, 'degats'), 'tombée, mais derrière : celle du fond n\'est pas à portée de dague (la dague ne touche que le premier)');
+  ok(c.aPortee().length === 1 && c.aPortee()[0] === a, 'à portée de dague : la première, et elle seule');
+  /* (pour la suite du test, celle du fond part d'un coup de flèche : elle est en hauteur, l'arc lui fait le gros critique) */
+  ev = jouer(c, 'pisteur', 'fleche', b);
+  ok(trouve(ev, 'degats').critique && b.mort, 'celle du fond, tombée et ouverte : la flèche lui fait un critique');
   ev = tourSuivant(c);
   ok(trouve(ev, 'attaque', function(e){ return e.bete === a.id; }) && a.ouvert === 0 && !c.a(a, 'au-sol'), 'une chauve-souris tombée attaque quand même (elle se renvole pour piquer), puis elle est refermée');
   var ordre = ev.filter(function(e){ return e.bete === a.id && (e.t === 'etat' || e.t === 'ferme' || e.t === 'attaque'); }).map(function(e){ return e.t + (e.nom ? ':' + e.nom : ''); });
@@ -663,7 +668,12 @@ section('Bourbe, le crapaud du puits');
   egal(bo.plan.nom, 'saut', 'le ventre plein, il ne tire pas la langue : il prépare un saut');
   ev = jouer(c, 'alchimiste', 'chatouiller');
   ok(trouve(ev, 'special').nom === 'chatouille' && trouve(ev, 'recrache') && !c.h.alchimiste.avale && c.a(bo, 'dos') && bo.ouvert !== 0, 'sans nuage : chatouillé alors qu\'il est sec, il rit, recrache, et roule sur le dos (ouvert)');
-  ok(c.aPortee().indexOf(bo) >= 0, 'sur le dos, il est à portée de dague (malgré les têtards devant)');
+  /* (13 novembre) la dague ne touche que le premier monstre au sol : derrière ses têtards, même sur le dos, Bourbe est trop loin.
+     La rune d'appel du Sage l'amène devant. */
+  ok(c.aPortee().indexOf(bo) < 0 && !!c.refus('pisteur', 'dague', bo), 'sur le dos, mais derrière ses têtards : pas à portée de dague');
+  ok(c.appelables().indexOf(bo) >= 0, 'la rune d\'appel peut l\'amener devant');
+  ev = jouer(c, 'sage', 'appel', bo);
+  ok(c.aPortee().length === 1 && c.aPortee()[0] === bo, 'appelé devant par le Sage : à portée de dague, et lui seul');
   ev = jouer(c, 'pisteur', 'dague', bo);
   egal(trouve(ev, 'degats').n, 380, 'critique à la dague sur le boss : 380');
   ev = tourSuivant(c);
@@ -1023,9 +1033,9 @@ section('La dague ne touche pas ce qui vole (Romain, 11 novembre, 19 h 21)');
   var ca = c.gestes('sage').filter(function(x){ return x.geste === 'appel'; })[0];
   ok(!ca.permis && ca.mot === 'Déjà devant !' && !c.appelables().length, 'la rune d\'appel n\'a personne à tirer : le seul qui marche par terre est déjà devant');
   egal([c.refus('sage', 'appel', r.id), c.refus('sage', 'appel', s1.id)], ['Déjà devant !', 'Déjà devant !'], 'la carte est éteinte : qui qu\'on vise, elle répond « Déjà devant ! »');
-  /* la louche les fait tomber : les deux sont à portée (comme avant) */
+  /* la louche les fait tomber : (13 novembre) la dague ne touche quand même que le premier, le rat ; les chauves-souris, derrière lui, sont trop loin */
   ev = jouer(c, 'alchimiste', 'louche');
-  ok(c.a(s1, 'au-sol') && c.a(s2, 'au-sol') && idsDe(c.aPortee()).join() === [r.id, s1.id, s2.id].join(), 'après la louche, les deux chauves-souris sont par terre : la dague les atteint toutes les deux');
+  ok(c.a(s1, 'au-sol') && c.a(s2, 'au-sol') && idsDe(c.aPortee()).join() === [r.id].join() && !!c.refus('pisteur', 'dague', s1.id), 'après la louche, les deux chauves-souris sont par terre, mais derrière le rat : la dague ne touche que le premier');
   /* la cave aux toiles : l'araignée pend à son fil, les feux follets flottent */
   t = prep('toiles', {}); c = t.c;
   var ar = bete(c, 'araignee'), f1 = bete(c, 'feufollet', 0);
@@ -1090,10 +1100,12 @@ section('La colère des élites et du boss (Romain, 11 novembre, 13 h 53)');
   t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES}); c = t.c;
   var bo = bete(c, 'bourbe');
   jouer(c, 'alchimiste', 'p:givre', bo); jouer(c, 'pisteur', 'p:feu', bo);
+  jouer(c, 'sage', 'appel', bo);   /* (13 novembre) la dague ne touche que le premier : sorti de l'eau, le Sage l'appelle devant ses têtards */
   tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
   jouer(c, 'alchimiste', 'p:fumigene');
   ok(c.a(bo, 'dos') && c.a(bo, 'gele') && bo.ouvert !== 0, '(Bourbe est sur le dos, sur la glace, ouvert)');
   bo.pv = 520;
+  ok(c.aPortee()[0] === bo, '(appelé devant au tour d\'avant, il est à portée de dague)');
   ev = jouer(c, 'pisteur', 'dague', bo);
   ok(bo.pv === 140 && c.a(bo, 'colere') && trouve(ev, 'colere') && trouve(ev, 'special', function(e){ return e.nom === 'plonger'; }) && c.a(bo, 'sous') && !c.a(bo, 'dos') && !c.a(bo, 'gele') && bo.ouvert === 0 && c.cache(bo),
     'à mi-vie, Bourbe se fâche : il se retourne d\'un bond, brise la glace et plonge (son point faible se referme, on ne peut plus le viser)');

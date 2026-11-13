@@ -296,8 +296,10 @@ P.devant = function(){ return this.ciblables()[0] || null; };                   
    « Celui de devant », pour la dague, c'est donc le premier monstre AU SOL de la file. */
 P.auSol = function(m){ return !m.def.dague || this._un(m, m.def.dague.si); };
 P.devantSol = function(){ var self = this; return this.ciblables().filter(function(m){ return self.auSol(m); })[0] || null; };
-/* à portée de dague : le premier monstre au sol, et ceux qui sont tombés (où qu'ils soient dans la file) */
-P.aPortee = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m === d || (self.auSol(m) && self._un(m, m.def.tombe)); }); };
+/* à portée de dague : LE PREMIER MONSTRE AU SOL, ET LUI SEUL (Romain, 13 novembre : « une chauve-souris collée au sol, en deuxième
+   position, a été touchée par la dague : la dague ne doit toucher que le premier »). Avant, un monstre tombé était à portée où qu'il
+   soit dans la file. */
+P.aPortee = function(){ var d = this.devantSol(); return d ? [d] : []; };
 /* ceux que la rune d'appel peut amener devant : ils sont au sol, on peut les viser, et ils ne sont pas déjà devant */
 P.appelables = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m !== d && self.auSol(m); }); };
 /* pourquoi la dague ne peut rien : « Trop haut ! » (tout vole ou pend), « Dans l'eau ! » (Bourbe) */
