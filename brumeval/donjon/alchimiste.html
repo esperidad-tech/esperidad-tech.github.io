@@ -2158,7 +2158,7 @@ function jetonNeuf(cle){
 }
 function boutonEnquete(){
   if(!ENQ || q('#b-enquete')) return;
-  var b = el('a', 'discret', '🏘️'); b.id = 'b-enquete'; b.href = '../index.html'; b.setAttribute('aria-label', 'Retour à l\'enquête'); b.title = 'Retour à l\'enquête';
+  var b = el('a', 'discret', '🏘️'); b.id = 'b-enquete'; b.href = '../index.html' + (ENQ.jeton ? '?retour=' + encodeURIComponent(ENQ.jeton) : '');   /* (13 novembre : le jeu retrouve le héros de cette descente) */ b.setAttribute('aria-label', 'Retour à l\'enquête'); b.title = 'Retour à l\'enquête';
   b.style.cssText = 'position:fixed;left:max(10px, env(safe-area-inset-left, 0px));top:max(10px, env(safe-area-inset-top, 0px));z-index:40;text-decoration:none;opacity:.9';
   document.body.appendChild(b);
 }
