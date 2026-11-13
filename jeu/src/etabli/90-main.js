@@ -141,7 +141,8 @@ if(JEU){ SON.actif = CFG.son !== false; document.body.classList.add('jeu'); }
 if(CFG && CFG.vite){ reduit = true; document.documentElement.classList.add('vite'); }   /* (les robots d'essai : tout va d'un coup) */
 function appliquerFiche(c){
   if(!c) return;
-  if(c.plantes && typeof c.plantes === 'object'){ S.dispo = {}; ORDRE_PL.forEach(function(k){ S.dispo[k] = c.plantes[k] > 0 ? c.plantes[k] : 0; }); }
+  if(c.plantes && typeof c.plantes === 'object'){ S.dispo = {}; TOUTES_PL.forEach(function(k){ S.dispo[k] = c.plantes[k] > 0 ? c.plantes[k] : 0; }); }
+  if(c.plus && typeof c.plus === 'object'){ S.plus = {}; PLUS.forEach(function(id){ var x = c.plus[id]; if(x && Array.isArray(x.formes)) S.plus[id] = {formes:x.formes.slice(0, 4)}; }); }   /* (les codes des potions en plus : le givre) */
   if(Array.isArray(c.trouvees)){ S.trouvees = {}; c.trouvees.forEach(function(k){ if(PL[k]) S.trouvees[k] = 1; }); }
   if(Array.isArray(c.faites)){ S.faites = {}; c.faites.forEach(function(id){ if(RE[id]) S.faites[id] = 1; }); }
   if('nuit' in c) S.nuit = !!c.nuit;
@@ -152,7 +153,7 @@ function demarrer(){
   if(S && S.mode){ S.occupe = false; fermerMode(); }
   neuf();
   if(CFG){ appliquerFiche(CFG); if(CFG.sacVu) S.sacVu = true; importer(CFG.etat); }
-  else{ S.stock = ORDRE_PL.slice(); ORDRE_PL.forEach(function(k){ S.trouvees[k] = 1; }); regarnir(); S.sac = {formes:['🌙', '⭐', '🔥']}; }   /* (la maquette : tout est cueilli, et un code pour voir) */
+  else{ S.stock = TOUTES_PL.slice(); TOUTES_PL.forEach(function(k){ S.trouvees[k] = 1; }); regarnir(); S.sac = {formes:['🌙', '⭐', '🔥']}; PLUS.forEach(function(id){ S.plus[id] = {formes:['🍄', '❤️', '🔑']}; }); }   /* (la maquette : tout est cueilli, et des codes pour voir) */
   camera(600, 320, 1); mesure(); majStyles(); dessinerScene(); majEtat(); majQuitter();
 }
 demarrer();

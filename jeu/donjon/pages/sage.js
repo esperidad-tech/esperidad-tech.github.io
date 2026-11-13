@@ -529,9 +529,34 @@ function recommencer(){
     mem.effacer(); S = neuf(); location.reload();
   });
 }
+/* (13 novembre : Romain, « pas une interface à part ») DANS LE JEU : le plan s'ouvre dans un cadre, par-dessus le Grand Livre du Sage
+   (jeu/src/descente.js). Les codes se tapent dans le jeu, qui les passe ici (« codes=rune:lumiere,page:dechiree… ») ; le Grand Livre,
+   le carnet et les pages de sauvegarde sont dans le jeu : ici, il ne reste que le plan, sa grille, sa rune, et « Refermer ».
+   « nouveau=<code> » : ce code vient d'arriver — sa petite scène se joue sur le plan (la rune apparaît, le coin se recolle). */
+var DANS = PG.dansJeu, PARAMS = PG.params || {};
+function codesDuJeu(){
+  var neufs = {};
+  if(!DANS) return neufs;
+  String(PARAMS.codes || '').split(',').forEach(function(id){
+    if(!id || !DC.CODES[id] || DC.CODES[id].a !== 'sage') return;
+    if(!S.codes[id]){ S.codes[id] = true; neufs[id] = true; }
+  });
+  return neufs;
+}
+function arrivee(id){
+  if(id === 'rune:lumiere'){
+    majRune(true); mesurerBords(); PG.guider(runeEl); PG.son('magie');
+    conte('Une rune apparaît ! Elle est là, en bas. Promène-la doucement sur le vieux papier…');
+  } else if(id === 'page:dechiree'){
+    majCoin(true); majOdette(); PG.son('page');
+    setTimeout(function(){ centrerSur(2200, 1220, Math.max(zoomFit() * 1.6, .7)); }, 200);
+    conte('Les bords se recollent tout seuls… Le grand bassin ! Et une note à l’encre rouge, sur Bourbe !');
+  }
+}
 function demarrer(){
   S = mem.lire(null); if(!S || S.v !== 1) S = neuf();
   if(S.grille === null) S.grille = window.innerWidth >= 900;
+  var neufs = codesDuJeu(); if(DANS){ document.body.classList.add('dans-jeu'); garder(); }
   PG.orientation();
   table = q('#table'); couche = q('#couche'); runeEl = q('#rune'); curseur = q('#curseur'); bulleEl = q('#bulle');
   q('#grille .cle').innerHTML = PS.cle();
@@ -548,10 +573,12 @@ function demarrer(){
   q('#b-plus').addEventListener('click', function(){ var d = dims(); zoomer(Z.z * 1.45, (d.w - BARRE) / 2, (d.h - BAS) / 2, true); });
   q('#b-moins').addEventListener('click', function(){ var d = dims(); zoomer(Z.z / 1.45, (d.w - BARRE) / 2, (d.h - BAS) / 2, true); });
   q('#b-nouveau').addEventListener('click', recommencer);
+  var bf = q('#b-fermer'); if(bf){ bf.hidden = !DANS; bf.addEventListener('click', function(){ PG.son('page'); garder(); PG.auJeu('fermer'); }); }
   window.addEventListener('resize', function(){ mesurerBords(); var f0 = zoomFit(); if(Z.z < f0) Z.z = f0; Z.zMin = Math.min(.3, f0); borner(); poser(); });
   Z.zMin = Math.min(.3, zoomFit());
-  if(S.debut && !S.codes['rune:lumiere']){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
-  else conte('Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
+  if(DANS && PARAMS.nouveau && neufs[PARAMS.nouveau]){ S.debut = false; garder(); setTimeout(function(){ arrivee(PARAMS.nouveau); }, 500); }
+  else if(S.debut && !S.codes['rune:lumiere']){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
+  else conte(DANS ? 'Le plan des Fondateurs. Il glisse sous ton doigt, et il s’approche à deux doigts.' : 'Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
 })();

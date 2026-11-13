@@ -71,10 +71,28 @@ def etabli_html():
             t += f.read() + '\n'
     return t
 
+# Le carnet de l'aventurier (enquête 3, Grand Livre du Sage : src/descente.js) : les noms des monstres du donjon et ce que l'aventurier
+# en raconte. Une seule source : jeu/donjon/moteur/src/donnees.js (D.MONSTRES, D.LIVRE), lue par node. Le jeu la garde dans
+# window.DONJON_CARNET = {ordre, noms, livre}.
+def carnet_donjon():
+    import subprocess
+    src = os.path.join(ICI, 'donjon', 'moteur', 'src', 'donnees.js')
+    if not os.path.exists(src):
+        print('  (absent) donjon/moteur/src/donnees.js', file=sys.stderr)
+        return ''
+    prog = "var D = require(process.argv[1]); var o = Object.keys(D.LIVRE), n = {}; o.forEach(function(m){ n[m] = (D.MONSTRES[m] || {}).nom || m; }); process.stdout.write(JSON.stringify({ordre:o, noms:n, livre:D.LIVRE}));"
+    try:
+        r = subprocess.run(['node', '-e', prog, src], capture_output=True, text=True, timeout=30)
+        d = json.loads(r.stdout)
+    except Exception as e:
+        print('  (carnet du donjon : pas lu) ' + str(e), file=sys.stderr)
+        return ''
+    return '/* ===== le carnet de l\'aventurier (jeu/donjon/moteur/src/donnees.js) ===== */\nwindow.DONJON_CARNET = ' + json.dumps(d, ensure_ascii=False) + ';\n'
+
 def main():
     os.makedirs(DIST, exist_ok=True)
     css = '\n'.join(lire(n) for n in CSS)
-    js = '\n'.join('/* ===== ' + n + ' ===== */\n' + lire_js(n) for n in JS)
+    js = carnet_donjon() + '\n'.join('/* ===== ' + n + ' ===== */\n' + lire_js(n) for n in JS)
     labo = labo_html()
     if labo:
         js = '/* ===== le labo d\'analyses (src/labo/) ===== */\nwindow.LABO_HTML = ' + json.dumps(labo, ensure_ascii=False) + ';\n' + js

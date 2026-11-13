@@ -1990,16 +1990,21 @@ PAGE.son = son;
 var ENQ = (function(){
   var o = {};
   try{ (location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ if(!x) return; var k = x.split('='); o[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); }); }catch(e){}
+  PAGE.params = o;
   return o.enquete ? {id:o.enquete, jeton:o.jeton || ''} : null;
 })();
 PAGE.enquete = ENQ;
+/* (13 novembre) « ?dans=jeu » : la page est montrée DANS le jeu, dans un cadre par-dessus le Grand Livre du Sage (jeu/src/descente.js) —
+   pas de bouton « retour à l'enquête » (on ne quitte pas le jeu) : la page se referme par un petit message au jeu. */
+PAGE.dansJeu = !!(PAGE.params && PAGE.params.dans === 'jeu' && window.parent && window.parent !== window);
+PAGE.auJeu = function(type, plus){ var m = {donjonPlan:1, type:type}, k; for(k in (plus || {})) m[k] = plus[k]; try{ window.parent.postMessage(m, '*'); }catch(e){} };
 function jetonNeuf(cle){
   if(!ENQ || !ENQ.jeton) return false;
   var nom = cle.replace(/^brumeval-donjon-/, ''), k = 'brumeval-donjon-jeton:' + nom;
   try{ if(localStorage.getItem(k) === ENQ.jeton) return false; localStorage.setItem(k, ENQ.jeton); localStorage.removeItem(cle); return true; }catch(e){ return false; }
 }
 function boutonEnquete(){
-  if(!ENQ || q('#b-enquete')) return;
+  if(!ENQ || q('#b-enquete') || PAGE.dansJeu) return;
   var b = el('a', 'discret', '🏘️'); b.id = 'b-enquete'; b.href = '../index.html' + (ENQ.jeton ? '?retour=' + encodeURIComponent(ENQ.jeton) : '');   /* (13 novembre : le jeu retrouve le héros de cette descente) */ b.setAttribute('aria-label', 'Retour à l\'enquête'); b.title = 'Retour à l\'enquête';
   b.style.cssText = 'position:fixed;left:max(10px, env(safe-area-inset-left, 0px));top:max(10px, env(safe-area-inset-top, 0px));z-index:40;text-decoration:none;opacity:.9';
   document.body.appendChild(b);

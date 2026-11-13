@@ -629,7 +629,11 @@ function traiterCode(seq){
   /* un code gelé qui ne sert plus (le registre des habitants, Romain, 5 novembre : codes-fixes.js le garde) : il ne marche pas */
   if(id && E && /^(obj|info):/.test(id) && !((id.indexOf('obj:') === 0 ? E.objets : E.infos) || {})[id.split(':')[1]]) id = null;
   /* (enquête 3) un code du donjon tapé ici : il se tape dans le donjon (donjon-codes.js ; E.codesFixes le réserve pour qu'il ne serve à rien d'autre) */
-  if(id && id.indexOf('donjon:') === 0){ M.son('ko'); M.ouvrir({type:'info', ic:'🕯️', titre:'Un code du donjon', t:'Ce code-là se tape dans le donjon : sur l\'écran du donjon, avec le bouton des codes.'}); return; }
+  /* (13 novembre) ceux du Sage et de l'Alchimiste se tapent ICI : descente.js, M.codeDonjon (le carnet, la rune, les pages, la fleur de givre) */
+  if(id && id.indexOf('donjon:') === 0){
+    if(M.codeDonjon && M.codeDonjon(id)) return;
+    M.son('ko'); M.ouvrir({type:'info', ic:'🕯️', titre:'Un code du donjon', t:'Ce code-là se tape dans le donjon : sur l\'écran du donjon, avec le bouton des codes.'}); return;
+  }
   if(!id){
     /* Un code de passage d'une autre enquête (tapé en retard, ou depuis le village) */
     var v = M.passageVoisin(seq, P ? P.id : S.prochaine);

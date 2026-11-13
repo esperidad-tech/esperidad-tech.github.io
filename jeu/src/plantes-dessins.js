@@ -238,7 +238,38 @@ function gui(){
     partie('baies', 'Les baies blanches', zo + ba);
 }
 
-var PLANTES = {oseille:oseille, souci:souci, melisse:melisse, lin:lin, lycopode:lycopode, vesse:vesse, gui:gui};
+/* ---------------------------------------------------------- La fleur de givre ----------------------------------------------------------
+   (13 novembre) Elle ne pousse que sous Brumeval, dans la grotte de givre du donjon : le Pisteur la cueille, et donne son code à
+   l'Alchimiste. Une plante inventée : une tige bleu pâle, des feuilles en aiguilles de glace, et deux fleurs en étoile à six branches,
+   comme des flocons. Ses trois parties : les pétales de glace (la bonne), les feuilles en aiguilles, la racine. */
+function flocon(cx, cy, r){
+  var s = '', i, a;
+  for(i = 0; i < 6; i++){
+    a = i * 60;
+    s += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + a + ')">' +
+      P('M0,' + f1(-r * 0.16) + ' C' + f1(r * 0.2) + ',' + f1(-r * 0.36) + ' ' + f1(r * 0.17) + ',' + f1(-r * 0.76) + ' 0,' + f1(-r) + ' C' + f1(-r * 0.17) + ',' + f1(-r * 0.76) + ' ' + f1(-r * 0.2) + ',' + f1(-r * 0.36) + ' 0,' + f1(-r * 0.16) + ' Z', i % 2 ? '#d6f4ff' : '#bfeaff', 2.2) +
+      L('M0,' + f1(-r * 0.28) + ' V' + f1(-r * 0.84) + ' M0,' + f1(-r * 0.52) + ' l' + f1(-r * 0.09) + ',' + f1(-r * 0.1) + ' M0,' + f1(-r * 0.52) + ' l' + f1(r * 0.09) + ',' + f1(-r * 0.1), '#ffffff', 1.5) + '</g>';
+  }
+  return s + C(cx, cy, f1(r * 0.2), '#eafcff', 2) + C(cx - r * 0.05, cy - r * 0.05, f1(r * 0.07), '#ffffff', 0);
+}
+function givre(){
+  var aiguille = P('M0,0 C-7,-10 -6,-34 0,-50 C6,-34 7,-10 0,0 Z', '#9fd4e6', 2.4) + L('M0,-6 V-42', '#eafcff', 1.5);
+  var tiges = LL('M130,258 C129,214 126,160 121,104', '#7fb8cc', 5) + LL('M127,190 C148,178 170,160 184,138', '#7fb8cc', 4);
+  var fe = '';
+  [[129, 244, -70, 1], [129, 232, 66, 0.96], [127, 200, -58, 0.9], [125, 164, 54, 0.8], [158, 172, 116, 0.74], [123, 140, -46, 0.66]].forEach(function(a){
+    fe += G('translate(' + a[0] + ' ' + a[1] + ') rotate(' + a[2] + ') scale(' + a[3] + ')', aiguille);
+  });
+  var ra = L('M130,258 C128,274 121,290 114,304 M130,258 C132,278 138,294 147,308 M130,258 C130,280 129,296 131,316 M130,262 C121,270 110,274 100,283 M131,262 C141,270 151,276 160,287', '#8aa0b4', 3.2);
+  /* de petits éclats de givre autour des fleurs */
+  var eclats = L('M62,52 l0,-9 M57.5,47.5 l9,0 M176,60 l0,-7 M172.5,56.5 l7,0 M222,96 l0,-7 M218.5,92.5 l7,0', '#ffffff', 1.8);
+  return sol(258, 22, 238) +
+    partie('racine', 'La racine', Z(92, 262, 76, 58) + ra) +
+    '<g class="pl-decor">' + tiges + '</g>' +
+    partie('feuilles', 'Les feuilles en aiguilles', fe) +
+    partie('petales', 'Les pétales de glace', ZC(119, 74, 48) + ZC(188, 120, 34) + flocon(119, 74, 46) + flocon(188, 120, 31) + eclats);
+}
+
+var PLANTES = {oseille:oseille, souci:souci, melisse:melisse, lin:lin, lycopode:lycopode, vesse:vesse, gui:gui, givre:givre};
 
 /* une fiole de potion (pleine si on donne sa couleur) : l'étagère des sept potions, les pages du grimoire */
 function fiole(coul){

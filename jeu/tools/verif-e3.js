@@ -21,7 +21,7 @@ module.exports = function verifierE3(E, SRC, D){
   const dit = (ok, t) => { console.log(`  ${ok ? '✓' : '✗'} ${t}`); if(!ok) pb++; };
   const NUIT = ['nuit'];
   const liste = x => x == null ? [] : Array.isArray(x) ? x : [x];
-  const pour = id => { const p = id.split(':'), I = p[0] === 'obj' ? (E.objets || {})[p[1]] : p[0] === 'info' ? (E.infos || {})[p[1]] : null; return id === 'sac' ? ['pisteur'] : I ? liste(I.pour) : []; };
+  const pour = id => { const p = id.split(':'), I = p[0] === 'obj' ? (E.objets || {})[p[1]] : p[0] === 'info' ? (E.infos || {})[p[1]] : null; return id === 'sac' || id === 'allure:sage' ? ['pisteur'] : I ? liste(I.pour) : []; };
 
   /* ---------- les recettes de l'établi (plantes-donnees.js) : la plante de chaque potion, et la potion qu'il faut avant (le baume cuit dans
      l'huile de lin : une étape liq:'huile') ---------- */
@@ -105,14 +105,22 @@ module.exports = function verifierE3(E, SRC, D){
   for(const id of Object.keys(E.infos || {})){ const I = E.infos[id]; if(I.plante) liste(I.pour).forEach(role => aj({cle:`${role}:recu:${id}`, role, besoins:[[{code:'info:' + id}]], faits:['plante:' + I.plante]})); }
   /* l'établi : une plante, une potion (plantes.js) ; le sac, la nuit (à la main : plantes.js) */
   for(const k of Object.keys(RECETTES)) aj({cle:'fiole:' + k, role:'alchimiste', besoins:[[{vu:'plante:' + RECETTES[k].plante}]].concat(RECETTES[k].avant ? [[{vu:'fiole:' + RECETTES[k].avant}]] : [])});
+  /* (13 novembre) « sac » : le code d'allure de l'Alchimiste — il ne l'a qu'avec ses sept potions, et il les met dans le sac du Pisteur */
   aj({cle:'alchimiste:sac', role:'alchimiste', moments:NUIT, besoins:Object.keys(RECETTES).map(k => [{vu:'fiole:' + k}]), produit:['sac']});   /* (Romain, 12 novembre, 12 h 45 : le code n'est donné qu'une fois les SEPT potions faites) */
   aj({cle:'sac:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'sac'}]]});
   for(const k of Object.keys(RECETTES)) aj({cle:'sac:' + k, role:'pisteur', moments:NUIT, besoins:[[{vu:'sac:recu'}], [{vu:'fiole:' + k}]]});
-  /* le donjon (à la main : descente.js) : une entrée et le sac ; au bout, la porte aux quatre signes, puis Léo */
+  /* le donjon (à la main : descente.js) : une entrée, et les deux codes d'allure — celui de l'Alchimiste (« sac » : ses sept potions) et
+     celui du Sage, qu'il n'a qu'avec le code du départ du Pisteur (info:on_descend, donné quand l'entrée s'ouvre) ; au bout, la porte
+     aux quatre signes, puis Léo */
   if(E.donjon){
     const entrees = [];
     for(const l of Object.keys(E.lieux)) ((E.lieux[l].pisteur || {}).points || []).forEach(p => { if(p.descente) entrees.push({vu:`pisteur:${l}:${p.id}`}); });
-    aj({cle:'donjon:fini', role:'pisteur', moments:NUIT, besoins:[entrees, [{vu:'sac:recu'}]], produit:['info:odette_porte'], donjon:true});
+    if((E.infos || {}).on_descend){
+      aj({cle:'sage:tenue', role:'sage', moments:NUIT, besoins:[[{code:'info:on_descend'}]], produit:['allure:sage']});
+      aj({cle:'alchimiste:tenue', role:'alchimiste', moments:NUIT, besoins:[[{code:'info:on_descend'}]]});
+      aj({cle:'allure:sage:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'allure:sage'}]]});
+    }
+    aj({cle:'donjon:fini', role:'pisteur', moments:NUIT, besoins:[entrees, [{vu:'sac:recu'}]].concat((E.infos || {}).on_descend ? [[{vu:'allure:sage:recu'}]] : []), produit:['info:odette_porte'], donjon:true});
     aj({cle:'donjon:ouvert:sage', role:'sage', moments:NUIT, besoins:[[{vu:'page:donjon'}]]});
     aj({cle:'donjon:ouvert:alchimiste', role:'alchimiste', moments:NUIT});
   }

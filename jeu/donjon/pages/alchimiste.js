@@ -129,17 +129,18 @@ function conte(t){ var b = q('#bulle'); b.innerHTML = '<span>' + esc(t) + '</spa
 /* ======================================================================
    Les codes
    ====================================================================== */
+function recevoirPlante(id){
+  S.codes[id] = true; var k = PLANTE_DE_CODE[id]; if(k && !S.plantes[k]) S.plantes[k] = 'attend'; garder();
+  var p = PLANTES[k];
+  var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + dit(p.nom, 'plante-nom', 'h3') + '</div>' + dit(p.arrivee, 'arrivee-txt') +
+    '<div class="rangee"><button type="button" class="aller" data-fen-fermer>La poser près du chaudron</button></div>', {classe:'parch plante-fen', surFermer:majFoyer});
+  PG.guider(w.el.querySelector('.aller'));
+  PG.son('magie');
+}
 function unCode(){
   PG.pave({tablette:'alchimiste', titre:'📥 Un code', texte:'Le Pisteur a trouvé une plante rare ? Tape les trois symboles qu’il te montre.',
     deja:function(id){ return !!S.codes[id]; },
-    recevoir:function(id){
-      S.codes[id] = true; var k = PLANTE_DE_CODE[id]; if(k && !S.plantes[k]) S.plantes[k] = 'attend'; garder();
-      var p = PLANTES[k];
-      var w = PG.fenetre('<div class="titre"><h2>🌿 Une plante rare !</h2></div><div class="arrivee">' + dessinPlante(k) + dit(p.nom, 'plante-nom', 'h3') + '</div>' + dit(p.arrivee, 'arrivee-txt') +
-        '<div class="rangee"><button type="button" class="aller" data-fen-fermer>La poser près du chaudron</button></div>', {classe:'parch plante-fen', surFermer:majFoyer});
-      PG.guider(w.el.querySelector('.aller'));
-      PG.son('magie');
-    }});
+    recevoir:recevoirPlante});
 }
 
 /* ======================================================================
@@ -343,6 +344,9 @@ function demarrer(){
   q('#b-code').addEventListener('click', function(){ PG.son('tic'); unCode(); });
   q('#b-nouveau').addEventListener('click', recommencer);
   q('#actions-cuisine').addEventListener('click', function(e){ var b = e.target.closest('[data-cuisiner]'); if(b){ PG.son('tic'); cuisiner(b.getAttribute('data-cuisiner')); } });
+  /* (13 novembre) « ?recu=plante:lumiere » : le code a été tapé dans le jeu (jeu/src/descente.js) — la plante arrive toute seule, sans le retaper */
+  var recu = PG.params && PG.params.recu;
+  if(recu && PLANTE_DE_CODE[recu] && !S.codes[recu]) recevoirPlante(recu);
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
 })();

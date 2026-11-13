@@ -193,7 +193,8 @@ def partie(b, joueur, chemin):
         pts = lieu(pg, 'clocher')
         verifier([p['id'] for p in pts] == ['cle', 'crypte'], 'le clocher : la grille de la crypte apparaît')
         pg.locator('#voile [data-act=point][data-id=crypte]').click(); pg.wait_for_timeout(300)
-        verifier('escalier de pierre' in voile(pg), 'la grille de la crypte s\'ouvre'); pg.screenshot(path=f'{OUT}/{chemin}-crypte.png'); fermer(pg)
+        # (13 novembre) la grille est déverrouillée : reste à l'ouvrir — tirer, pousser ou soulever (le détail : e3-descente.py)
+        verifier('déverrouillée' in voile(pg) and pg.locator('#voile .b-choix-point [data-id=soulever]').count() == 1, 'la grille de la crypte est déverrouillée : trois gestes pour l\'ouvrir'); pg.screenshot(path=f'{OUT}/{chemin}-crypte.png'); fermer(pg)
         verifier(lieu(pg, 'puits') == [], 'la clé prise : jamais de puits'); fermer(pg)
         verifier(code(pg, 'info:vieux_puits') and lieu(pg, 'puits') == [], 'même avec « Le vieux puits » : pas de puits'); fermer(pg)
     else:

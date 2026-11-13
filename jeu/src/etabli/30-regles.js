@@ -4,6 +4,10 @@
    vides, et ce qui se passe quand on se trompe d'outil — toujours par rapport à la réalité (Romain, 12 novembre : « quand on le met dans
    le mauvais instrument, tu expliques ce qui se passe… eh ben non, là, il va se passer ça »). Des phrases courtes, racontées. */
 var DN = window.PLANTES_DONNEES, ORDRE = DN.ORDRE, ORDRE_PL = DN.ORDRE_PL, PL = DN.PL, RE = DN.RE, PLD = window.PLD;
+/* (13 novembre) en plus des sept : la fleur de givre du donjon et sa potion (plantes-donnees.js, PLUS et PL_PLUS). Elles ne comptent pas
+   parmi « les sept potions » : ORDRE et ORDRE_PL ne changent pas. TOUTES, TOUTES_PL : les sept, puis celles en plus. */
+var PLUS = DN.PLUS || [], PL_PLUS = DN.PL_PLUS || [], TOUTES = ORDRE.concat(PLUS), TOUTES_PL = ORDRE_PL.concat(PL_PLUS);
+function enPlus(id){ return PLUS.indexOf(id) >= 0; }
 /* les outils où la matière travaille toute seule dès qu'on l'y pose (on verse, ça filtre ; on pose, ça sèche ; on met en fiole) */
 var AUTO = {filtre:1, sechoir:1, fiole:1};
 var QUOI = {

@@ -13,8 +13,8 @@
      « etat », « lire » (un bouton 🔊 : jamais de lecture toute seule), « stop », « introVue », « sacVu », « donjon », « quitter ».
    · Les recettes et les plantes : plantes-donnees.js (la même source pour le jeu et pour la page).
    · Jamais d'échec : un geste faux donne ce que ça donnerait pour de vrai, et rien n'est perdu.
-   · Le sac : la nuit, il montre les potions faites et leur code (sac:<n>, n = un bit par potion : E.codesPlus, e3.js) pour le Pisteur ;
-     il le tape dans son onglet Code : P.sac = la liste des potions (elle part avec lui dans le donjon).
+   · Le code des sept potions (13 novembre) : quand elles sont toutes prêtes, l'établi montre le code de l'Alchimiste pour le Pisteur — son
+     code d'allure (descente.js). Le Pisteur le tape dans son onglet Code : P.sac = les sept potions (elles partent avec lui dans le donjon).
    Chargé APRÈS moteur-actions.js, grands.js, plantes-donnees.js et plantes-dessins.js.
    ========================================================== */
 (function(){
@@ -22,6 +22,9 @@
 var M = window.M, D = window.DONNEES, PLD = window.PLD, DN = window.PLANTES_DONNEES;
 if(!M || !PLD || !DN) return;
 var esc = M.esc, ORDRE = DN.ORDRE, ORDRE_PL = DN.ORDRE_PL, PL = DN.PL, RE = DN.RE;
+/* (13 novembre) en plus des sept : la fleur de givre du donjon et sa potion (plantes-donnees.js). Elles ne suivent pas le héros d'une
+   enquête à l'autre et ne comptent pas parmi « les sept potions » ; elles ont leur place à la tringle et dans le grimoire. */
+var PLUS = DN.PLUS || [], PL_PLUS = DN.PL_PLUS || [], TOUTES_PL = ORDRE_PL.concat(PL_PLUS);
 window.PLANTES_RECETTES = {ORDRE:ORDRE, RE:RE, PL:PL};   /* (pour les robots d'essai et le vérificateur) */
 
 /* ---------- Ce que sait le jeu ---------- */
@@ -51,7 +54,7 @@ function repartir(){
   if(!Array.isArray(P.tringle)) P.tringle = [];
   if(!P.plPorte || typeof P.plPorte !== 'object') P.plPorte = {};
   P.tringle = P.tringle.filter(function(k, i, l){ return PL[k] && utile(k) && l.indexOf(k) === i; }).slice(0, PLACES);
-  ORDRE_PL.forEach(function(k){
+  TOUTES_PL.forEach(function(k){
     if(!utile(k)){ delete P.plPorte[k]; return; }
     if(P.tringle.indexOf(k) >= 0){ delete P.plPorte[k]; return; }
     if(P.plPorte[k]) return;
@@ -59,7 +62,7 @@ function repartir(){
   });
   return P.tringle;
 }
-M.plantesPorte = function(){ if(!M.etabliDispo()) return []; var P = M.P(); return ORDRE_PL.filter(function(k){ return P.plPorte && P.plPorte[k] && utile(k); }); };
+M.plantesPorte = function(){ if(!M.etabliDispo()) return []; var P = M.P(); return TOUTES_PL.filter(function(k){ return P.plPorte && P.plPorte[k] && utile(k); }); };
 /* On touche le panier devant la porte : ce qui peut va se pendre. Rend {mis, reste, t (la phrase à dire)} */
 M.rangerPlantes = function(){
   var l = M.plantesPorte(), P = M.P(), t = repartir(), n = 0, ph;
@@ -79,7 +82,7 @@ M.etabliDispo = function(){
   var E = enquete(); if(!(window.ETABLI_HTML && E && M.P && M.P() && M.role() === 'alchimiste')) return false;
   suivre(); repartir();
   var P = M.P();
-  return !!(E.plantes || ORDRE_PL.some(function(k){ return P.plantes && P.plantes[k] > 0; }) || ORDRE.some(function(id){ return P.vus['fiole:' + id]; }));
+  return !!(E.plantes || TOUTES_PL.some(function(k){ return P.plantes && P.plantes[k] > 0; }) || ORDRE.some(function(id){ return P.vus['fiole:' + id]; }));
 };
 function faite(id){ var P = M.P(); return !!(P && P.vus['fiole:' + id]); }
 function faites(){ return ORDRE.filter(faite); }
@@ -99,20 +102,45 @@ function style(){
   var a = M.S.atelier || {}, et = (a.objets || []).filter(function(o){ return o.id === 'et'; })[0], st = et ? (et.st || 0) : ((a.etabli || {}).st || 0), fond = (a.deco || {}).fond || 0;
   return {paF:st % 5, paT:st % 8, murF:fond % 5, murT:fond % 8};
 }
-/* le code pour le Pisteur, en trois formes : seulement quand les SEPT potions sont faites (dans une enquête qui a ce code) */
+/* le code pour le Pisteur, en trois formes : seulement quand les SEPT potions sont faites (dans une enquête qui a ce code).
+   (13 novembre, Romain : « on a besoin des sept potions pour descendre ») C'est le CODE D'ALLURE de l'Alchimiste (descente.js,
+   M.allureCode) : tapé par le Pisteur, il dit à quoi ressemble son héros dans le donjon ET que les sept potions sont du voyage. */
 function sacFiche(){
-  if(faites().length < ORDRE.length) return null;
-  try{ return {formes:M.code('sac:' + M.sacBits()).map(function(s){ return D.SYM[s].e; })}; }catch(e){ return null; }
+  if(faites().length < ORDRE.length || !M.allureCode) return null;
+  try{ var id = M.allureCode(), c = id && M.code(id); return c ? {formes:c.map(function(s){ return D.SYM[s].e; })} : null; }catch(e){ return null; }
 }
+M.potionsPretes = function(){ return {n:faites().length, sur:ORDRE.length}; };
+/* (le Pisteur a tapé le code de l'Alchimiste) les sept potions sont dans son sac ; l'acide pour la grille du puits : P.vus['sac:acide'] */
+M.sacTout = function(){
+  var P = M.P(); if(!P) return;
+  P.sac = ORDRE.slice(); P.recus['sac'] = true; P.vus['sac:recu'] = 1;
+  ORDRE.forEach(function(k){ P.vus['sac:' + k] = 1; });
+};
 function donjonDispo(){ try{ return !!(M.donjonBoutonAlchimiste && M.donjonBoutonAlchimiste()); }catch(e){ return false; } }
 /* pour la page : seulement les plantes de la tringle ; et toutes celles qu'on a trouvées (leurs pages du grimoire) */
-function plantesDispo(){ var t = repartir(), r = {}; ORDRE_PL.forEach(function(k){ r[k] = t.indexOf(k) >= 0 ? 1 : 0; }); return r; }
-function trouvees(){ var P = M.P(); return ORDRE_PL.filter(function(k){ return P.vus['plante:' + k] || (P.plantes && P.plantes[k] > 0); }); }
+function plantesDispo(){ var t = repartir(), r = {}; TOUTES_PL.forEach(function(k){ r[k] = t.indexOf(k) >= 0 ? 1 : 0; }); return r; }
+function trouvees(){ var P = M.P(); return TOUTES_PL.filter(function(k){ return P.vus['plante:' + k] || (P.plantes && P.plantes[k] > 0); }); }
+/* les potions faites, pour la page de l'établi : les sept, et celles en plus */
+function faitesTout(){ return faites().concat(PLUS.filter(faite)); }
+/* les codes des potions en plus (le givre : le code de sa recette, que le Pisteur tape dans le donjon) */
+function codesPlus(){
+  var r = {};
+  PLUS.forEach(function(id){ try{ var c = RE[id].code && M.code(RE[id].code); if(c) r[id] = {formes:c.map(function(s){ return D.SYM[s].e; })}; }catch(e){} });
+  return r;
+}
+/* (descente.js) le Pisteur a envoyé une plante rare du donjon : elle arrive chez l'Alchimiste (la tringle de l'établi, ou le panier devant la porte) */
+M.recevoirPlanteRare = function(k){
+  var P = M.P(); if(!P || PL_PLUS.indexOf(k) < 0) return false;
+  P.plantes = P.plantes || {};
+  if(!P.vus['fiole:' + PL[k].potion] && !(P.plantes[k] > 0)) P.plantes[k] = 1;
+  P.vus['plante:' + k] = 1; repartir();
+  return true;
+};
 function fiche(){
   suivre();
   var P = M.P(), S = M.S;
-  return {jeu:true, plantes:plantesDispo(), trouvees:trouvees(), faites:faites(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
-    intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), vite:!!window.BRUMEVAL_ETABLI_VITE};
+  return {jeu:true, plantes:plantesDispo(), trouvees:trouvees(), faites:faitesTout(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
+    intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), plus:codesPlus(), vite:!!window.BRUMEVAL_ETABLI_VITE};
 }
 function cadre(){ return document.getElementById(CADRE); }
 M.etabliOuvert = function(){ return !!cadre(); };
@@ -141,7 +169,9 @@ function finie(id){
   P.vus['fiole:' + id] = 1;
   if(P.plantes && P.plantes[r.plante] > 0) P.plantes[r.plante]--;
   M.noter('Potion prête : ' + r.nom.charAt(0).toLowerCase() + r.nom.slice(1) + '.', '🧪');
-  toutes = faites().length === ORDRE.length;
+  /* (une potion en plus : le givre) son code est pour le Pisteur — il le tape dans le donjon */
+  if(PLUS.indexOf(id) >= 0){ if(r.code){ P.objets['_' + r.code] = true; M.noter(r.nom + ' : son code est pour le Pisteur. ' + (r.apres || ''), '❄️'); } }
+  toutes = PLUS.indexOf(id) < 0 && faites().length === ORDRE.length;
   if(toutes) M.noter('Les sept potions sont prêtes !', '🧪');
   if(P.etabli && typeof P.etabli === 'object') P.etabli = {vu:P.etabli.vu, po:P.etabli.po, pv:P.etabli.pv}; else delete P.etabli;
   suivre();
@@ -156,13 +186,13 @@ window.addEventListener('message', function(e){
   else if(m.type === 'finie'){
     finie(String(m.id));
     /* on répond : ce que le jeu sait maintenant (le code du sac change avec chaque potion) */
-    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faites(), plantes:plantesDispo(), trouvees:trouvees(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo()}, '*'); }catch(err){}
+    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faitesTout(), plantes:plantesDispo(), trouvees:trouvees(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo(), plus:codesPlus()}, '*'); }catch(err){}
   }
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
   else if(m.type === 'stop'){ M.stop && M.stop(); }
   else if(m.type === 'introVue'){ M.S.etabliIntro = 1; M.sauver(); }
   else if(m.type === 'sacVu'){ if(sacFiche()){ P.vus['sac:donne'] = 1; M.sauver(); } }
-  else if(m.type === 'donjon'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); if(M.A['ds-aller']) M.A['ds-aller'](); }   /* 🫕 le chaudron du donjon (descente.js) */
+  else if(m.type === 'donjon'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); if(M.A['ds-chaudron']) M.A['ds-chaudron'](); }   /* 🫕 le chaudron du donjon : les herbes lumineuses (descente.js) */
   else if(m.type === 'quitter'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); }
 });
 
@@ -183,27 +213,6 @@ if(M.A && M.A.point){
   };
 }
 
-/* ---------- Le code du sac, tapé par le Pisteur (moteur-actions.js, traiterCode → M.codeSpecial) ---------- */
-var special0 = M.codeSpecial;
-M.codeSpecial = function(t, x, id){
-  if(t === 'sac'){
-    var P = M.P(), l = M.sacDe(+x), deja = P.sac && P.sac.join(',') === l.join(',');
-    P.sac = l; P.recus['sac'] = true; P.vus['sac:recu'] = 1;
-    ORDRE.forEach(function(k){ if(l.indexOf(k) >= 0) P.vus['sac:' + k] = 1; else delete P.vus['sac:' + k]; });   /* (ce qu'il y a dedans : l'acide pour la grille du puits) */
-    if(!deja) M.noter('Le sac de l\'Alchimiste : ' + l.map(function(k){ return RE[k].court.toLowerCase(); }).join(', ') + '.', '🎒');
-    M.son('gain'); M.sauver();
-    M.ouvrir({type:'plantes', vue:'sac-recu'});
-    return true;
-  }
-  return special0 ? special0.apply(this, arguments) : false;
-};
-/* (la fenêtre du Pisteur : le sac qu'il vient de recevoir) */
-M.plantesHTML = function(m){
-  var P = M.P(), l = (P && P.sac) || [], n = l.length;
-  var t = 'L\'Alchimiste te confie son sac : ' + n + ' potion' + (n > 1 ? 's' : '') + '. Compte-les avec lui ! ' +
-    (n === 7 ? 'Tout y est.' : 'S\'il en prépare d\'autres avant de descendre, il te donnera un nouveau code.');
-  return '<div class="b-info-modal pl-sac-recu"><div class="b-grand-ic">🎒</div><h2>Le sac de l\'Alchimiste</h2>' + fiolesSac(l) +
-    '<p>' + esc(t) + '</p>' + M.lireBtn(t) + '<button class="btn" data-act="fermer">Fermer</button></div>';
-};
+/* (13 novembre : plus de code du sac — le Pisteur tape le code d'allure de l'Alchimiste : descente.js, M.sacTout ci-dessus) */
 M.sacPotions = function(){ var P = M.P(); return (P && P.sac) || null; };
 })();

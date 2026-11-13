@@ -14,7 +14,7 @@ var S = null, CAM = {cx:600, cy:320, z:1}, bulleT = 0, inviteT = 0;
 var HAUT = {alambic:246, marmite:196, presse:224, sechoir:140, fiole:116, mortier:132, tamis:88, filtre:106, planche:74, cruche:110, huilier:120, buches:104, allumettes:62, sac:108, livre:176};
 function neuf(){
   S = {plante:null, partie:null, n:0, ou:null, pos:'entree', m:null, faitIci:false, H:null, feux:{marmite:{b:0, allume:false}, alambic:{b:0, allume:false}}, liq:{marmite:null, alambic:null},
-    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false, posee:null, pagesVues:{}, trouvees:{}, stock:null};
+    mode:null, occupe:false, faites:{}, dispo:{}, restes:{}, presseBas:false, aDire:[], page:null, nuit:false, sac:null, donjon:false, posee:null, pagesVues:{}, trouvees:{}, stock:null, plus:{}};
 }
 function recette(){ return S.plante ? RE[PL[S.plante].potion] : null; }
 function pos(x, y, w, h){ return 'left:calc(' + f1(x) + '*var(--u));top:calc(' + f1(y) + '*var(--u));width:calc(' + f1(w) + '*var(--u));height:calc(' + f1(h) + '*var(--u))'; }
@@ -23,7 +23,7 @@ function svgEl(html){ var g = document.createElementNS('http://www.w3.org/2000/s
 function nbFaites(){ return ORDRE.filter(function(id){ return S.faites[id]; }).length; }
 function toutesFaites(){ return nbFaites() === ORDRE.length; }
 /* les pages du grimoire : une par plante trouvée (cueillie, ou déjà en potion) ; celles qu'on n'a pas encore lues */
-function connues(){ return ORDRE.filter(function(id){ var k = RE[id].plante; return S.dispo[k] > 0 || S.faites[id] || S.trouvees[k]; }); }
+function connues(){ return TOUTES.filter(function(id){ var k = RE[id].plante; return S.dispo[k] > 0 || S.faites[id] || S.trouvees[k]; }); }
 function nouvellesPages(){ return connues().filter(function(id){ return !S.pagesVues[id]; }); }
 /* Une plante pendue à la tringle : on la touche, hop, elle vient en grand sur le linge. Une seule plante sur le linge à la fois : celle
    qui y était retourne se pendre (Romain, 12 novembre, 13 h 52). */
@@ -42,7 +42,7 @@ function decrocher(k){
 /* (la maquette, sans atelier ni porte : la tringle se regarnit toute seule, trois plantes à la fois) */
 function regarnir(){
   if(!S.stock) return;
-  var n = ORDRE_PL.filter(function(k){ return S.dispo[k] > 0 && !S.faites[PL[k].potion]; }).length;
+  var n = TOUTES_PL.filter(function(k){ return S.dispo[k] > 0 && !S.faites[PL[k].potion]; }).length;
   S.stock = S.stock.filter(function(k){ if(S.faites[PL[k].potion] || S.dispo[k] > 0) return false; if(n < TRI.n){ S.dispo[k] = 1; n++; return false; } return true; });
 }
 
@@ -214,9 +214,10 @@ function finir(id, e){
   S.partie = null; S.n = 0; S.ou = null; S.m = null; S.pos = 'entree'; S.faitIci = false; S.plante = null; S.restes = {}; S.presseBas = false;
   S.aDire.push(id); dire('finie', {id:id}); garder();
   majTout(); occupe(false); majQuitter();
-  var toutes = nbFaites() === ORDRE.length;
+  /* (une potion en plus des sept, le givre : pas de « tout est prêt », mais son code pour le Pisteur, sur sa carte) */
+  var toutes = !enPlus(id) && nbFaites() === ORDRE.length;
   son(toutes ? 'toutes' : 'potion');
-  var i = ORDRE.indexOf(id); etoiles(xPort(i), PORT.yEt - 32, 8);
+  var qp = placePotion(id); etoiles(qp.x, qp.y - 32, 8);
   /* la potion a rejoint l'étagère : une carte la montre en grand, avec ce qui est vrai (on apprend quelque chose à chaque potion) */
   occupe(true);
   attendre(850, function(){ occupe(false); ouvrirPrete(id, e.t, toutes); });
@@ -306,9 +307,11 @@ var ANIM = {
     majAlambicFerme();
     var va = $('#vapAl'), g = $('#goutteAl'), v = $('#vaseLiq'), chaud = cas.feu !== 'froid';
     if(!chaud){ son('clic'); return attendre(700, fin); }
-    son(cas.liq === 'eau' ? 'alambic' : 'grille'); if(va && cas.liq === 'eau') va.style.display = '';
-    if(cas.liq === 'eau') sablier('alambic', 2600);   /* (le temps passe) */
-    if(!res || cas.liq !== 'eau') return attendre(1600, function(){ if(va) va.style.display = 'none'; fin(); });
+    /* (13 novembre : le givre) un jus qu'on distille tel quel, sans eau en plus, fait sa vapeur comme l'eau — quand c'est le bon geste */
+    var vapeur = cas.liq === 'eau' || (!!res && cas.liq === 'jus');
+    son(vapeur ? 'alambic' : 'grille'); if(va && vapeur) va.style.display = '';
+    if(vapeur) sablier('alambic', 2600);   /* (le temps passe) */
+    if(!res || !vapeur) return attendre(1600, function(){ if(va) va.style.display = 'none'; fin(); });
     g.setAttribute('fill', res.c); v.setAttribute('fill', res.c);
     attendre(700, function(){ gouttes(g, 6, 300, function(i){ v.setAttribute('y', f1(6 - 6*i)); v.setAttribute('height', f1(6*i)); }); });
     attendre(700 + 6*300 + 200, function(){ if(va) va.style.display = 'none'; fin(); });
@@ -321,7 +324,7 @@ var ANIM = {
     son('fiole'); l.setAttribute('fill', res.c); fondre('fiole');
     tween(900, function(p){ l.setAttribute('y', f1(-12 - 42*p)); l.setAttribute('height', f1(42*p)); }, function(){
       son('bouchon');
-      var i = ORDRE.indexOf(id), a = pt('fiole', 0, -30), b = {x:xPort(i), y:PORT.yEt};
+      var a = pt('fiole', 0, -30), b = placePotion(id);
       l.setAttribute('height', 0);
       voler('<g>' + flacon(id, res.c) + '</g>', a, b, 900, 90, fin, [.84, 1]);
     });
@@ -412,9 +415,13 @@ function toucherFoyer(o){
 /* ---------- L'étagère : une potion dit son nom et ce qu'elle fait ---------- */
 function toucherPotion(id){
   if(S.occupe || S.mode) return;
-  var r = RE[id], i = ORDRE.indexOf(id); son('clic'); poser();
+  var r = RE[id], q = placePotion(id); son('clic'); poser();
+  if(enPlus(id)){   /* une potion en plus (le givre) : prête, elle remontre son code pour le Pisteur */
+    if(S.faites[id] && codePlus(id)) return ouvrirPrete(id, null, false);
+    return bulle(q.x, q.y + 30, S.faites[id] ? r.nom + ' : prête !' : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
+  }
   if(toutesFaites() && S.sac) return ouvrirCode();   /* les sept sont prêtes : le code pour le Pisteur */
-  bulle(xPort(i), PORT.yEt + 30, S.faites[id] ? r.nom + ' : prête !' : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
+  bulle(q.x, q.y + 30, S.faites[id] ? r.nom + ' : prête !' : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
 }
 
 /* ---------- Garder, reprendre ---------- */

@@ -403,10 +403,14 @@ E[3] = {
   brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}], revient:true},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
      pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
-  donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}},
-  /* le code du sac (plantes.js) : un code par contenu possible du sac (sept potions, faites ou non : 128), pour le Pisteur */
+  donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}, tenue:'donjon/tenue.html', portraits:'donjon/i/portrait-'},
+  /* LES CODES D'ALLURE (Romain, 13 novembre : « les codes d'apparence du Sage et de l'Alchimiste, pour le Pisteur ») : avant de descendre,
+     le Sage et l'Alchimiste montrent chacun un code au Pisteur ; il dit à quoi ressemble leur héros (fille ou garçon, la peau, les
+     cheveux), pour qu'on le reconnaisse dans le donjon. allure:<n> : descente.js (M.allureCode). Celui de l'Alchimiste n'existe que
+     quand ses sept potions sont prêtes (« on a besoin des sept potions pour descendre ») : il remplace le code du sac (plus de sac:<n>).
+     2 rôles × 2 × 6 peaux × 9 cheveux = 216 codes, à la fin de la liste. */
   /* (étape 7) et les codes de fin qui portent la variante de la scène finale (E.finVariante : la dizaine ; l'unité : les erreurs) */
-  codesPlus:(function(){ var l = [], i; for(i = 0; i < 128; i++) l.push('sac:' + i); [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); return l; })(),
+  codesPlus:(function(){ var l = [], i; [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); for(i = 0; i < 216; i++) l.push('allure:' + i); return l; })(),
   /* Le registre du Sage (livre.js) */
   registre:{
     odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},
@@ -496,6 +500,13 @@ E[3] = {
     maire_retenu:{nom:'Le maire est retenu', ic:'🎩', pour:'pisteur', de:'barde', donjon:true,
       t:'Le Barde a retenu le maire sur la place : il ne descendra pas trop tôt dans la crypte.',
       dire:'Le Pisteur doit le taper dans le donjon, avant la dernière salle : donne-lui ce code.'},
+    /* LE DÉPART (Romain, 13 novembre : « le code du Pisteur au Sage : on va dans la crypte ») : la grille ouverte (ou les barreaux du puits
+       fondus), le Pisteur le donne au Sage ET à l'Alchimiste. Chez eux : la fenêtre « Il est temps d'enfiler notre tenue de combat ! »,
+       et leur code à eux pour le Pisteur (leur allure dans le donjon : descente.js) ; chez le Sage, ses pages du donjon s'ouvrent dans son
+       Grand Livre. (tenue:true : descente.js ouvre la fenêtre de la tenue à la place du « Tu as reçu » ordinaire.) */
+    on_descend:{nom:'On va dans la crypte', ic:'🕯️', pour:['sage', 'alchimiste'], de:'pisteur', tenue:true,
+      t:'Le Pisteur a ouvert le passage : sous le village, un escalier de pierre descend dans le noir. Tout le monde s\'équipe !',
+      dire:'Il est temps d\'enfiler notre tenue de combat ! Donne ce code au Sage et à l\'Alchimiste.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
@@ -658,11 +669,29 @@ E[3] = {
           t:'DONG ! DONG ! Anselme compte les coups, les yeux fermés. Sa clé pend à sa ceinture… Tu la décroches, tout doucement.',
           rate:'« Qui va là ?! » Anselme pose la main sur sa clé. En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits !',
           ferme:'Anselme garde sa clé à la ceinture.'},
-        /* la clé en main : la grille s'ouvre (la descente dans le donjon se branche à l'étape 6) */
+        /* LA GRILLE (Romain, 12 novembre, 21 h 44, et 13 novembre : « Explorer, déverrouiller ; tirer ou pousser : un énorme bruit s'est entendu
+           dans tout le village ; soulever : le portail s'ouvre sans bruit et vous pénétrez dans la crypte »). La clé en main, la grille se
+           déverrouille ; reste à l'ouvrir : trois gestes, un seul compte (les deux autres s'en vont : cacheSi). Silas le dit au Barde :
+           « Anselme, lui, la soulève un peu, et elle ne dit rien. » Tirer ou pousser : P.vus['pisteur:clocher:tirer'] (ou :pousser) reste
+           noté — ce que le bruit change pour le maire se décidera avec la fin du donjon (rien n'est encore branché dessus).
+           Chacun des trois gestes donne le code du départ, « On va dans la crypte », pour le Sage et l'Alchimiste (infos.on_descend). */
         {id:'crypte', ic:'🗝️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
-          t:'La clé tourne : clac ! La grille grince. Un escalier de pierre descend dans le noir… Moustache file devant toi en miaulant.', choix:['descendre']},
-        /* (étape 6) la descente : la fenêtre du donjon (descente.js) ; il lui faut le sac de l'Alchimiste */
-        {id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}], descente:'crypte'}
+          t:'La clé tourne : clac ! La grille est déverrouillée. Elle est lourde, et toute rouillée… Comment vas-tu l\'ouvrir ?', choix:['tirer', 'pousser', 'soulever']},
+        {id:'tirer', ic:'💥', nom:'Tirer la grille', choixTxt:'Tirer', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+          cacheSi:[{vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend',
+          t:'Tu tires de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
+          note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
+        {id:'pousser', ic:'💥', nom:'Pousser la grille', choixTxt:'Pousser', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend',
+          t:'Tu pousses de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
+          note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
+        {id:'soulever', ic:'🤫', nom:'Soulever la grille', choixTxt:'Soulever', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}], donne:'info:on_descend',
+          t:'Tu soulèves un peu la grille, tout doucement. Le portail s\'ouvre sans bruit, et vous pénétrez dans la crypte. Moustache file devant toi.',
+          note:'La grille de la crypte s\'est ouverte sans un bruit.', choix:['descendre']},
+        /* (étape 6) la descente : la fenêtre du donjon (descente.js) ; il lui faut les codes du Sage et de l'Alchimiste */
+        {id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'],
+          visibleSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], descente:'crypte'}
       ]}
     },
     /* LES INGRÉDIENTS DU CHAUDRON, comme à l'enquête 2 (Romain, 13 novembre) : la pensée sauvage et le miel de la potion de vérité, et
@@ -676,12 +705,13 @@ E[3] = {
     puits:{
       pisteur:{intro:'Le vieux puits, au bord de la forêt. Plus personne n\'y tire d\'eau depuis longtemps.', points:[
         /* seulement si la clé d'Anselme est ratée, ou avec « Le vieux puits » du Barde ; jamais si la clé a été prise.
-           (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec le sac, à l'étape 6.) */
+           (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec son code, quand ses sept potions sont prêtes : descente.js.) */
         {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{rate:'pisteur:clocher:cle'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
           t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. Il faudrait de quoi ronger toute cette rouille !'},
-        /* (étape 6) l'acide du sac de l'Alchimiste (le code du sac : P.vus['sac:acide'], plantes.js) fait fondre les barreaux */
+        /* (étape 6) l'acide de l'Alchimiste (son code, tapé par le Pisteur : P.vus['sac:acide'], descente.js) fait fondre les barreaux */
         {id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],
-          alt:'Tu n\'as rien pour ronger la rouille. L\'Alchimiste a ce qu\'il faut : demande-lui le code de son sac, et tape-le dans ton onglet Code.',
+          alt:'Tu n\'as rien pour ronger la rouille. L\'Alchimiste a ce qu\'il faut… quand ses sept potions seront prêtes ! Demande-lui son code, et tape-le dans ton onglet Code.',
+          donne:'info:on_descend',
           t:'Tu verses l\'acide de l\'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. Tout en bas, deux yeux brillent : Moustache t\'attend.', choix:['descendre']},
         {id:'descendre', ic:'🕯️', nom:'Descendre au fond du puits', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:acide'}], descente:'puits'}
       ]}
@@ -1016,9 +1046,22 @@ E[3] = {
       t:'« LE CHEMIN DES FONDATEURS » : un très vieux plan, plein de couloirs. Tu le gardes dans ton Grand Livre.',
       note:'Dans le Grand Livre, un très vieux plan : « Le chemin des Fondateurs ».',
       rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan, plein de couloirs. Tu le gardes dans ton Grand Livre.'},
-    /* (étape 6) la nuit : le plan des souterrains (sa page du donjon, descente.js) ; la porte des Fondateurs, quand le Pisteur l'a trouvée */
+    /* LA TENUE DE COMBAT (Romain, 13 novembre) : avec le code du Pisteur « On va dans la crypte ». Le Sage y retrouve son héros en
+       tenue et son code d'allure pour le Pisteur (descente.js, M.tenueHTML) — la fenêtre s'ouvre toute seule quand il tape le code. */
+    {id:'tenue', titre:'Ma tenue de combat', ic:'🛡️', visibleSi:[{code:'info:on_descend'}],
+      get html(){ return window.M && window.M.tenueHTML ? window.M.tenueHTML(true) : ''; }},
+    /* LE DONJON DANS LE GRAND LIVRE (Romain, 13 novembre : « le carnet de l'aventurier, le plan, les pages de sauvegarde, le plan déchiré :
+       des pages du Grand Livre, pas une interface à part » ; descente.js).
+       · le plan des souterrains, la nuit : il s'ouvre en grand par-dessus le jeu (« Regarder le plan ») ;
+       · les pages de sauvegarde : avec le code du départ (« elles apparaissent quand le Pisteur donne le code du départ ») ; deux pages,
+         une de plus avec le code « Une page blanche » ; un code utilisé se barre ;
+       · le carnet de l'aventurier : avec son code (chapeau, arbre, poisson), ou page par page avec les codes d'étude des monstres. */
     {id:'donjon', titre:'Le plan des souterrains', ic:'🗺️', moments:['nuit'], horsMoment:'Sous le village, il y aurait de vieux souterrains… Cette page servira cette nuit.',
       get html(){ return window.M && window.M.donjonPageSage ? window.M.donjonPageSage() : ''; }},
+    {id:'sauvegardes', titre:'Les pages de sauvegarde', ic:'📜', visibleSi:[{code:'info:on_descend'}],
+      get html(){ return window.M && window.M.sauvegardesHTML ? window.M.sauvegardesHTML() : ''; }},
+    {id:'aventurier', titre:'Le carnet de l\'aventurier', ic:'📓', visibleSi:[{vu:'donjon:carnet'}],
+      get html(){ return window.M && window.M.carnetAventurierHTML ? window.M.carnetAventurierHTML() : ''; }},
     /* (obligatoire, livre.js : dès que le Sage a le code de la porte, son Grand Livre s'ouvre tout seul sur cette page, le bouton jaune palpite) */
     {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', moments:['nuit'], horsMoment:'Une page blanche. Elle s\'écrira cette nuit.', besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
       avant:'Tout au fond des souterrains, il y aurait une grande porte ronde. Le Pisteur la trouvera-t-il ?',

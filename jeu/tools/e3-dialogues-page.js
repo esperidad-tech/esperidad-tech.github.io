@@ -128,12 +128,12 @@ function page(E, D, sous){
     '<h2>🧑 Léo (une scène, sans choix)</h2><div class="etape"><p><i>' + e(Le.intro) + '</i></p><p>' + e(Le.fins[0].t) + '</p><div class="metier">↳ Code ' + e(nomCode(Le.fins[0].code)) + '. Si le maire n\'a pas été retenu : ' + e(Le.enfui) + '</div></div>'];
 
   S.reste = ['🚧 Pas encore fait', 'var(--veille)',
-    '<h2>Ce qui n\'est pas construit</h2><div class="intro">Seuls <b>les dialogues du Barde</b> suivent le nouveau scénario. Les trois autres rôles et le donjon suivent encore l\'ancien fil. L\'enquête se joue quand même du début à la fin, mais la chaîne est plus courte que celle du scénario.</div>' +
+    '<h2>Ce qui n\'est pas construit</h2><div class="intro"><b>Les dialogues du Barde</b> suivent le nouveau scénario. Depuis le 13 novembre, le Sage, l\'Alchimiste et le Pisteur aussi, en partie. L\'enquête se joue du début à la fin ; voici ce qui manque encore.</div>' +
     '<ul class="alerte">' +
-    '<li><b>La grille du clocher</b> : tirer, pousser ou soulever. Tirer et pousser sont des erreurs (elle grince, le maire arrive plus tôt). Silas donne l\'indice. Le geste est à construire chez le Pisteur.</li>' +
+    '<li><b>La grille du clocher</b> : le geste est construit (13 novembre). Tirer ou pousser : « un énorme bruit s\'est entendu dans tout le village ». Soulever : sans bruit. Silas donne l\'indice. <b>Ce que le bruit change pour le maire reste à décider.</b></li>' +
     '<li><b>Le Pisteur</b> : les empreintes de pieds d\'enfant chez Iris et derrière l\'atelier de Mélusine. La clé prise à la ceinture d\'Anselme : le dessin du mini-jeu la montre encore au clou.</li>' +
-    '<li><b>Le Sage</b> : les pointures dans le registre ; le Livre d\'or qui laisse deux suspectes, Mélusine ou Margot.</li>' +
-    '<li><b>L\'Alchimiste</b> : comparer l\'encre de la lettre avec celle d\'Iris. Aujourd\'hui, son labo dit tout de suite « c\'est l\'écriture de Mélusine », et montre encore du pollen de lavande.</li>' +
+    '<li><b>Le Sage</b> : les pointures dans le registre. (Fait le 13 novembre : le Livre d\'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot.)</li>' +
+    '<li><b>L\'Alchimiste</b> : comparer l\'encre de la lettre avec celle d\'Iris. Son labo montre encore du pollen de lavande. (Fait le 13 novembre : il désigne deux écritures, Mélusine et Margot.)</li>' +
     '<li><b>Le donjon</b> : Léo en chef des monstres. Le code de la Grosse Marie (qui redonnait toute la vie) n\'est plus donné par personne : le donjon est un peu plus dur.</li>' +
     '<li><b>La quatrième écoute de la fête</b> (« au pied du mât ») : elle dépend de la grille.</li></ul>' +
     '<h2>À décider avec Romain</h2><ul class="alerte">' +

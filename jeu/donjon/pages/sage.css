@@ -175,3 +175,7 @@
   .loupe-l b{width:44px;height:44px;font-size:22px}
   .loupe-l .glyphes{width:32px;height:32px}
 }
+
+/* (13 novembre) le plan montré DANS le jeu (un cadre par-dessus le Grand Livre du Sage, jeu/src/descente.js) : les codes, le Grand Livre
+   et « recommencer » sont dans le jeu ; ici, il reste la grille, le zoom, la rune et « Refermer » */
+body.dans-jeu #b-livre, body.dans-jeu #b-code, body.dans-jeu #b-nouveau{display:none}

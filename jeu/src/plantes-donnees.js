@@ -186,5 +186,53 @@ var RE = {
     vrai:'Distiller, c\'est changer un liquide en vapeur, puis la vapeur en gouttes. L\'eau de mélisse existe vraiment : des moines de Paris la préparaient déjà en 1611. On en trouve encore en pharmacie !'}
 };
 
-window.PLANTES_DONNEES = {ORDRE:ORDRE, ORDRE_PL:ORDRE_PL, PL:PL, RE:RE};
+/* ---------- EN PLUS DES SEPT : la fleur de givre et sa potion (Romain, 13 novembre) ----------
+   « La fleur de givre : le code tapé dans l'interface principale, la fleur arrive dans l'atelier, plein d'étapes ; à la fin : donne ce
+   code au Pisteur, ça peut être utile. » Le Pisteur la cueille dans le donjon (la grotte de givre) et donne son code à l'Alchimiste
+   (donjon:plante:givre : descente.js) ; la fleur vient se pendre à la tringle de l'établi. La potion finie, l'établi montre le code de
+   la recette (donjon:recette:givre) : tapé DANS le donjon par le Pisteur, il lui donne le Givre (« gèle tout » : le grand bassin de
+   Bourbe). Elle ne compte pas parmi les sept potions du départ (ORDRE ne change pas) : PLUS (les potions) et PL_PLUS (les plantes).
+   C'est une plante inventée : sa recette suit de vrais gestes (macérer à froid, filtrer, distiller, laisser cristalliser), et « vrai »
+   dit ce qui est vrai dans le monde (le menthol de la menthe). */
+var PLUS = ['givre'], PL_PLUS = ['givre'];
+PL.givre = {milieu:'Tout au fond des souterrains de Brumeval, dans une grotte où il gèle toute l\'année.',
+  nom:'La fleur de givre', court:'Fleur de givre', potion:'givre', rare:true,
+  arrive:'Elle ne fond jamais. Rien qu\'à la toucher, tes doigts picotent !',
+  parties:{petales:{nom:'Les pétales de glace', c:'#bfeaff', s:'fleurs'},
+    feuilles:{nom:'Les feuilles en aiguilles', c:'#9fd4e6', s:'feuilles', faux:'Des aiguilles toutes froides… mais le vrai froid, celui qui gèle, est dans les pétales.'},
+    racine:{nom:'La racine', c:'#9fb2c2', s:'racine', faux:'Une racine grise, tiède comme un caillou. Le froid n\'est pas là !'}}};
+RE.givre = {nom:'Le givre', court:'Givre', coul:'#bff4ff', plante:'givre', partie:'petales', dit:'les pétales de glace.',
+  sert:'Dans le donjon, il gèle tout ce qu\'il touche. Même l\'eau !',
+  /* (le code de cette recette, pour le Pisteur : plantes.js le passe à l'établi ; apres : ce que l'établi dit en le montrant) */
+  code:'donjon:recette:givre', apres:'Donne ce code au Pisteur : ça peut être utile !',
+  recette:['Émince les pétales.', 'Écrase-les : ils deviennent une neige bleue.', 'Fais fondre cette neige dans l\'eau, sans feu.', 'Filtre l\'eau bleue.',
+    'Distille-la à feu doux.', 'Laisse reposer les gouttes : des cristaux apparaissent.', 'Écrase les cristaux en poudre.', 'Mets en fiole.'],
+  etapes:[
+    {o:'planche', m:'Les pétales émincés', c:'#bfeaff', f:'hache', t:'Tchac, tchac ! Les pétales craquent sous la lame, comme de la glace fine.'},
+    {o:'mortier', m:'La neige bleue', c:'#d2f1ff', f:'tas', t:'Cric, crac ! Sous le pilon, les pétales deviennent une neige bleue. Le mortier se couvre de buée.'},
+    {o:'marmite', liq:'eau', feu:0, m:'L\'eau bleue', c:'#8fd6f2', f:'jus', t:'Sans feu, surtout ! La neige fond dans l\'eau froide et lui donne tout son froid. L\'eau devient bleue.'},
+    {o:'filtre', m:'L\'eau bleue claire', c:'#9fe6ff', f:'jus', t:'L\'eau traverse le tissu. Les miettes de pétales restent dessus.'},
+    {o:'alambic', feu:1, m:'Les gouttes glacées', c:'#dff8ff', f:'jus', t:'À feu doux, la vapeur monte dans le col de cygne… et retombe en gouttes glacées. Le vase se couvre de buée !'},
+    {o:'sechoir', m:'Les cristaux de givre', c:'#f2fdff', f:'cristaux', t:'Les gouttes reposent à l\'ombre. De petits cristaux poussent, comme le givre sur une vitre.'},
+    {o:'mortier', m:'La poudre de givre', c:'#e2f8ff', f:'tas', t:'Cric, crac ! Les cristaux deviennent une poudre plus fine que la neige.'},
+    {o:'fiole', t:'En fiole ! Le verre se couvre de givre. Ne la garde pas trop longtemps dans la main…'}],
+  faux:{'0:mortier':'Entiers, les pétales glissent sous le pilon comme des glaçons. Il faut d\'abord les couper.',
+    '0:marmite:eau':'Entiers, les pétales flottent sur l\'eau comme de petits glaçons. Ils gardent leur froid pour eux.',
+    '1:marmite:eau':'Les morceaux flottent sur l\'eau sans fondre. Il faut d\'abord les écraser.',
+    '2:marmite:eau+doux':'Malheur ! Avec le feu, tout le froid s\'envole en vapeur. Sans feu, surtout !',
+    '2:marmite:eau+fort':'Malheur ! Avec le feu, tout le froid s\'envole en vapeur. Sans feu, surtout !',
+    '2:filtre':'Rien ne coule : c\'est de la neige, pas de l\'eau. Il faut d\'abord la faire fondre.',
+    '3:alambic':'Pleine de miettes, l\'eau bleue boucherait le col de cygne. Il faut d\'abord la filtrer.',
+    '4:alambic:froid':'Sans feu, pas de vapeur : pas une goutte ne monte.',
+    '4:alambic:fort':'Trop fort ! L\'eau bleue bout à gros bouillons et passe toute trouble dans le tuyau. À feu doux !',
+    '4:marmite':'Dans la marmite ouverte, la vapeur glacée s\'envole par la fenêtre. Il faudrait l\'attraper…',
+    '4:sechoir':'L\'eau bleue sèche… et il ne reste qu\'une tache. Son froid est trop mélangé : il faut d\'abord la distiller.',
+    '4:fiole':'Pas encore ! Cette eau est fraîche, mais elle ne gèle rien. Il faut la distiller.',
+    '5:fiole':'Pas encore ! Ces gouttes sont à peine fraîches. Laisse-les reposer : le froid doit se rassembler en cristaux.',
+    '6:fiole':'Les cristaux sont trop gros : ils ne passent pas par le goulot. Il faut les écraser.',
+    '6:tamis':'Les cristaux restent tous sur le tamis : ils sont trop gros !',
+    '6:marmite:eau':'Dans l\'eau, les cristaux fondraient d\'un coup ! Tu les retires vite. Ce qu\'il leur faut, c\'est le pilon.'},
+  vrai:'La fleur de givre ne pousse que sous Brumeval. Mais une plante qui fait froid, ça existe vraiment : la menthe ! Son menthol trompe ta langue : elle croit qu\'il fait froid, alors que rien n\'a refroidi.'};
+
+window.PLANTES_DONNEES = {ORDRE:ORDRE, ORDRE_PL:ORDRE_PL, PL:PL, RE:RE, PLUS:PLUS, PL_PLUS:PL_PLUS};
 })();

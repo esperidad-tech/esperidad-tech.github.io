@@ -6,7 +6,13 @@
    les pages de sauvegarde), alchimiste.html (le chaudron du donjon). Ici, on y va et on en revient :
    · E.donjon = {pages:{pisteur, sage, alchimiste}} (e3.js) : l'enquête a un donjon.
    · Le Pisteur : un point « descente » (la crypte, ou le puits une fois la grille rongée à l'acide) ouvre la fenêtre de la descente.
-     Il lui faut le sac de l'Alchimiste (P.sac : plantes.js, le code du sac). Le bouton jaune l'emmène dans le donjon, avec ses potions.
+     (13 novembre, Romain : « il est temps d'enfiler notre tenue de combat », « les codes d'apparence », « on a besoin des sept potions
+     pour descendre ».) Il donne le code du départ, « On va dans la crypte » (E.infos.on_descend), au Sage et à l'Alchimiste. Chez eux
+     s'ouvre la fenêtre de la tenue de combat, avec LEUR code pour le Pisteur : un CODE D'ALLURE (allure:<n>, E.codesPlus) qui dit à quoi
+     ressemble leur héros — fille ou garçon, la peau, les cheveux. Celui de l'Alchimiste n'existe que quand ses sept potions sont prêtes
+     (il remplace le code du sac : tapé par le Pisteur, il met les sept potions dans P.sac). Les deux codes tapés, le bouton jaune
+     emmène le Pisteur dans le donjon, avec l'allure des trois héros (« look=… », jeu/donjon/moteur/src/allure.js).
+     Les héros en tenue se voient dans un petit cadre : la page jeu/donjon/moteur/src/tenue.html (E.donjon.tenue).
    · Le Sage : la page « Le plan des souterrains » de son Grand Livre, la nuit ; l'Alchimiste : « Le chaudron du donjon », dans son sac.
    · Chaque descente a son jeton (P.donjonJeton) : la page du donjon recommence une partie neuve quand le jeton est nouveau, et
      l'enquête ne croit que ce qui porte son jeton (une vieille partie d'essai du donjon, restée dans la tablette, ne compte pas).
@@ -46,6 +52,7 @@ M.donjonAdresse = function(){
   if(role === 'pisteur'){
     if(P.sac && P.sac.length) q.push('potions=' + P.sac.join(','));
     if(P.vus['donjon:entree']) q.push('entree=' + P.vus['donjon:entree']);
+    q.push('look=' + encodeURIComponent(lookTxt()));
   }
   return base + '?' + q.join('&');
 };
@@ -53,7 +60,7 @@ M.donjonAdresse = function(){
 A['ds-aller'] = function(){
   var P = M.P(), role = M.role(), u = M.donjonAdresse();
   if(!u) return;
-  if(role === 'pisteur'){ if(!(P.sac && P.sac.length)) return; P.vus['donjon:parti'] = 1; }
+  if(role === 'pisteur'){ if(!pretADescendre()) return; P.vus['donjon:parti'] = 1; }
   P.vus['donjon:ouvert:' + role] = 1;
   M.sauver(); if(M.stop) M.stop(); M.son('pas');
   /* (les robots d'essai n'ont pas le donjon à côté d'eux : ils notent seulement où on allait) */
@@ -66,14 +73,77 @@ A['ds-aller'] = function(){
 };
 A['ds-code'] = function(){ var P = M.P(); M.UI.modal = null; P.onglet = 'code'; M.UI.saisie = []; M.sauver(); M.render(); window.scrollTo(0, 0); };
 
+/* ---------- L'allure des héros dans le donjon : les codes d'apparence (Romain, 13 novembre) ----------
+   allure:<n> : n = rôle (0 le Sage, 1 l'Alchimiste) + 2 × (fille 0, garçon 1) + 4 × (peau 0 à 5) + 24 × (cheveux 0 à 8) : 216 codes.
+   (Les yeux n'y sont pas : il faudrait un quatrième symbole. Dans le donjon, ils gardent la couleur d'origine du héros de ce rôle ;
+   le Pisteur, lui, est sur sa propre tablette : tout son héros passe, les yeux aussi.) */
+var PEAUX_A = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'], CHEV_A = ['brun', 'chatain', 'noir', 'blond', 'roux', 'gris', 'blanc', 'nuit', 'rose'], ROLES_A = ['sage', 'alchimiste'];
+M.allureNumero = function(role, a){
+  return Math.max(0, ROLES_A.indexOf(role)) + 2 * ((a.sexe === 'm' ? 1 : 0) + 2 * (Math.max(0, PEAUX_A.indexOf(a.peau)) + 6 * Math.max(0, CHEV_A.indexOf(a.cheveux))));
+};
+M.allureDe = function(n){
+  n = Math.max(0, Math.min(215, Math.floor(+n) || 0));
+  var r = n % 2; n = (n - r) / 2; var sx = n % 2; n = (n - sx) / 2; var pe = n % 6, ch = (n - pe) / 6;
+  return {role:ROLES_A[r], sexe:sx ? 'm' : 'f', peau:PEAUX_A[pe], cheveux:CHEV_A[ch]};
+};
+M.allureMoi = function(){
+  var h = (M.S && M.S.heros) || {};
+  return {sexe:h.sexe === 'm' ? 'm' : 'f', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || ''};
+};
+/* mon code d'allure (le Sage, l'Alchimiste) */
+M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 0 ? 'allure:' + M.allureNumero(role, M.allureMoi()) : null; };
+function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : ''); }
+/* l'allure à passer au donjon et à la petite page de la tenue : moi, et (le Pisteur) ceux dont j'ai tapé le code */
+function lookTxt(){
+  var P = M.P(), role = M.role(), a = (P && P.allures) || {}, l = [role.charAt(0) + ':' + allureTxt(M.allureMoi())];
+  if(role === 'pisteur') ROLES_A.forEach(function(r){ if(a[r]) l.push(r.charAt(0) + ':' + allureTxt(a[r])); });
+  return l.join(',');
+}
+M.donjonLook = lookTxt;
+function pretADescendre(){ var P = M.P(), a = (P && P.allures) || {}; return !!(a.sage && a.alchimiste && P.sac && P.sac.length); }
+M.donjonPret = pretADescendre;
+/* les héros en tenue de combat : la petite page du donjon, dans un cadre (pas de texte, pas de son, rien à toucher) */
+function tenueCadre(qui){
+  var C = cfg(); if(!C || !C.tenue) return '';
+  if(window.BRUMEVAL_SANS_DONJON) return '<div class="ds-tenue ds-tenue-vide" data-qui="' + qui.join(',') + '" data-look="' + esc(lookTxt()) + '"></div>';
+  return '<iframe class="ds-tenue' + (qui.length > 1 ? ' ds-tenue-trois' : '') + '" title="La tenue de combat" tabindex="-1" scrolling="no" src="' + esc(C.tenue + '?h=' + qui.join(',') + '&look=' + encodeURIComponent(lookTxt())) + '"></iframe>';
+}
+function potions(){ return M.potionsPretes ? M.potionsPretes() : {n:0, sur:7}; }
+var TITRE_TENUE = 'Il est temps d\'enfiler notre tenue de combat !';
+/* mon code d'allure, à montrer au Pisteur */
+function monCodeHTML(){
+  var id = M.allureCode(), t = 'Montre ce code au Pisteur : il te reconnaîtra dans le donjon.';
+  return id ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(M.code(id), true) + '</div>' : '';
+}
+/* ---------- Le Sage et l'Alchimiste : la fenêtre de la tenue de combat (ils ont tapé « On va dans la crypte ») ---------- */
+function tenueTexte(){
+  var role = M.role(), po = potions(), reste = po.sur - po.n;
+  if(role === 'sage') return {ok:true, t:'Capuche bleue, grimoire à la ceinture, bâton de cristal : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
+  if(reste <= 0) return {ok:true, t:'Capuche violette, lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
+  return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
+}
+M.tenueHTML = function(dansLivre){
+  var role = M.role(), x = tenueTexte(), s = tenueCadre([role]);
+  if(!dansLivre) s += '<h2>' + esc(TITRE_TENUE) + '</h2>';
+  s += '<p' + (dansLivre ? ' class="lv-texte"' : '') + '>' + esc(x.t) + ' ' + lire(dansLivre ? x.t : TITRE_TENUE + ' ' + x.t) + '</p>';
+  if(x.ok) s += monCodeHTML();
+  if(!dansLivre && role === 'sage'){ var t2 = 'Ton Grand Livre a de nouvelles pages, pour le donjon.'; s += '<p class="ds-suite">' + esc(t2) + ' ' + lire(t2) + '</p>'; }
+  return s;
+};
 /* ---------- Le Pisteur : la fenêtre de la descente ---------- */
 function fioles(l){ return M.sacFiolesHTML ? M.sacFiolesHTML(l) : ''; }
-function codeDonne(id){
-  var n = M.nomCode(id), dit = M.direCode ? M.direCode(id) : null, t = dit || n.nom;
+function codeDonne(id, autre){
+  var n = M.nomCode(id), dit = M.direCode ? M.direCode(id) : null, t = autre || dit || n.nom;
   return '<div class="b-donne"><p>' + n.ic + ' ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(M.code(id), true) + '</div>';
 }
+function lignePret(ok, ic, t){ return '<li class="' + (ok ? 'ds-ok' : 'ds-attend') + '"><span aria-hidden="true">' + (ok ? '✅' : '⏳') + ' ' + ic + '</span><span>' + esc(t) + ' ' + lire(t) + '</span></li>'; }
 M.descenteHTML = function(m){
-  var P = M.P(), sac = P.sac || [], t, s = '<div class="b-info-modal ds-fenetre">';
+  var P = M.P(), role = M.role(), sac = P.sac || [], t, s = '<div class="b-info-modal ds-fenetre">';
+  /* le Sage, l'Alchimiste : ce qu'un code du donjon leur apporte (plus bas) ; sinon leur tenue de combat, et leur code pour le Pisteur */
+  if(role !== 'pisteur'){
+    var vue = m.vue && VUES[m.vue] ? VUES[m.vue](m) : null;
+    return s + (vue || M.tenueHTML(false) + '<button class="btn grand b-aller" data-act="fermer">C\'est noté</button>') + '</div>';
+  }
   if(m.vue === 'fin' || P.vus['donjon:fini']){
     var enfui = P.vus['donjon:leo'] === 'enfui';
     t = enfui ? 'Vous voilà remontés du donjon ! Tout au fond, Léo était là, avec sa lanterne… Mais des pas ont descendu l\'escalier, et il a filé dans le noir.'
@@ -83,17 +153,32 @@ M.descenteHTML = function(m){
     s += codeDonne(enfui ? 'info:leo_enfui' : 'info:leo_attrape');
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
-  if(!sac.length){
-    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! Là-dessous, il te faut les potions de l\'Alchimiste. Demande-lui le code de son sac : il est sur son établi. Puis tape-le ici, dans ton onglet Code.';
-    return s + '<div class="b-grand-ic">🎒</div><h2>Il te manque le sac</h2><p>' + esc(t) + '</p>' + lire(t) +
-      '<button class="btn grand b-aller" data-act="ds-code">🔢 Taper le code du sac</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
+  var al = P.allures || {}, okS = !!al.sage, okA = !!(al.alchimiste && sac.length), ouvert = !!P.vus['donjon:entree'];
+  /* il vient de taper le code d'un équipier : le voilà, dans sa tenue (« c'est bien lui ? ») */
+  if(m.vue === 'recu' && al[m.role]){
+    var qui = m.role === 'sage' ? 'Le Sage' : 'L\'Alchimiste';
+    t = (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat, ses sept potions à la ceinture.') + ' C\'est bien ton équipier ? Sinon, retape son code.';
+    s += tenueCadre([m.role]) + '<h2>' + qui + ' est prêt !</h2>' + (m.role === 'alchimiste' ? fioles(sac) : '') + '<p>' + esc(t) + ' ' + lire(qui + ' est prêt ! ' + t) + '</p>';
+    if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
+    return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button></div>';
+  }
+  /* il manque un équipier : on s'habille, on donne le code du départ, on attend les deux codes */
+  if(!(okS && okA)){
+    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. Capuche verte, arc et dague : te voilà prêt.';
+    return s + tenueCadre(['pisteur']) + '<h2>' + esc(TITRE_TENUE) + '</h2><p>' + esc(t) + ' ' + lire(TITRE_TENUE + ' ' + t) + '</p>' +
+      codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.') +
+      '<ul class="ds-prets">' +
+        lignePret(okS, '📖', okS ? 'Le Sage est prêt.' : 'Il te manque le code du Sage.') +
+        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : 'On a besoin des sept potions pour descendre. Quand elles seront toutes prêtes, l\'Alchimiste aura son code.') +
+      '</ul><button class="btn grand b-aller" data-act="ds-code">🔢 Taper un code</button></div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
   }
   var n = sac.length, deja = !!P.vus['donjon:parti'];
   t = deja ? 'Le donjon t\'attend, là où tu l\'as laissé. Les trois héros descendent ensemble, sur ta tablette.'
-    : 'Le sac de l\'Alchimiste sur le dos : ' + n + ' potion' + (n > 1 ? 's' : '') + '. Les trois héros descendent ensemble, sur ta tablette. Le Sage ouvre son plan : il voit le chemin, toi tu ne vois que la brume. L\'Alchimiste garde son chaudron.';
-  return s + '<div class="b-grand-ic">🕯️</div><h2>' + (deja ? 'Retourner dans le donjon' : 'Descendre dans le donjon') + '</h2>' + fioles(sac) + '<p>' + esc(t) + '</p>' + lire(t) +
+    : 'Tout le monde est en tenue, les ' + (n === 7 ? 'sept' : n) + ' potions de l\'Alchimiste sont du voyage. Les trois héros descendent ensemble, sur ta tablette. Le Sage ouvre son Grand Livre : il voit le chemin, toi tu ne vois que la brume.';
+  return s + tenueCadre(['sage', 'alchimiste', 'pisteur']) + '<h2>' + (deja ? 'Retourner dans le donjon' : 'Descendre dans le donjon') + '</h2>' + fioles(sac) + '<p>' + esc(t) + '</p>' + lire(t) +
     '<button class="btn grand b-aller" data-act="ds-aller">🕯️ ' + (deja ? 'Y retourner' : 'Descendre') + '</button><button class="btn second" data-act="fermer">Pas tout de suite</button></div>';
 };
+A['ds-voir'] = function(){ M.son('page'); M.ouvrir({type:'descente'}); };
 /* un point « descente » (p.descente : 'crypte' ou 'puits') n'est pas une découverte : il ouvre la fenêtre de la descente */
 if(A.point){
   var point0 = A.point;
@@ -110,18 +195,197 @@ if(A.point){
   };
 }
 
-/* ---------- Le Sage et l'Alchimiste : leur page du donjon ---------- */
+/* ---------- Le donjon du Sage et de l'Alchimiste, DANS le jeu (Romain, 13 novembre) ----------
+   « Tous les codes du donjon se tapent dans l'interface principale du Sage et de l'Alchimiste ; le carnet de l'aventurier, le plan, les
+   pages de sauvegarde, le plan déchiré : des pages du Grand Livre, pas une interface à part. »
+   · Un code du donjon (donjon:<sorte>:<quoi>, gelé dans codes-fixes.js) tapé dans l'onglet Code : M.codeDonjon (moteur-actions.js,
+     traiterCode). Ce que le héros a reçu : P.donjonCodes {'rune:lumiere':1, 'etude:rat':1…}.
+   · Le Sage : « Le plan des souterrains » (le plan s'ouvre en grand par-dessus le jeu, dans un cadre : la page du donjon
+     jeu/donjon/pages/sage.js, en mode « dans le jeu » — sans son pavé de codes ni son livre) ; « Les pages de sauvegarde » (deux pages,
+     une de plus avec le code « Une page blanche » ; un sort écrit montre son code, puis on le barre : P.donjonPages) ; « Le carnet de
+     l'aventurier » (avec son code, ou page par page avec les codes d'étude ; les textes : window.DONJON_CARNET, tirés par build.py de
+     jeu/donjon/moteur/src/donnees.js).
+   · L'Alchimiste : la fleur de givre arrive sur son établi (plantes.js) ; les herbes lumineuses attendent la décision de Romain
+     (« on va en parler ensemble ») : elles vont encore dans l'ancien chaudron du donjon. */
+var POUR_DONJON = {rune:'sage', page:'sage', carnet:'sage', etude:'sage', plante:'alchimiste', sauve:'pisteur', recette:'pisteur'};
+function dj(){ var P = M.P(); if(!P.donjonCodes || typeof P.donjonCodes !== 'object') P.donjonCodes = {}; return P.donjonCodes; }
+M.donjonCodes = function(){ var P = M.P(); return (P && P.donjonCodes) || {}; };
+function CARNET(){ return window.DONJON_CARNET || {ordre:[], noms:{}, livre:{}}; }
+function portrait(m){ var C = cfg(), base = C && C.portraits; return base ? '<img class="ds-croquis" src="' + esc(base + m + '.webp') + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : ''; }
+
+/* --- le plan, en grand, par-dessus le jeu --- */
+var CADRE_PLAN = 'donjon-plan-cadre';
+function planAdresse(nouveau){
+  var C = cfg(), P = M.P(), c = Object.keys(dj()).filter(function(k){ return POUR_DONJON[k.split(':')[0]] === 'sage'; });
+  if(P.recus['info:odette_porte']) c.push('porte:odette');
+  return C.pages.sage + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&dans=jeu&codes=' + encodeURIComponent(c.join(',')) + (nouveau ? '&nouveau=' + encodeURIComponent(nouveau) : '');
+}
+M.planOuvert = function(){ return !!document.getElementById(CADRE_PLAN); };
+M.fermerPlan = function(){
+  var f = document.getElementById(CADRE_PLAN); if(!f) return;
+  f.remove(); document.documentElement.classList.remove('labo-ouvert'); M.son('page'); M.render();
+};
+A['ds-plan'] = function(el){
+  var P = M.P(); if(!P || M.role() !== 'sage' || !cfg() || M.planOuvert()) return;
+  var u = planAdresse(el && el.dataset ? el.dataset.nouveau : '');
+  P.vus['donjon:ouvert:sage'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('page');
+  M.UI.modal = null;
+  if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.render(); return; }
+  M.render();
+  var f = document.createElement('iframe');
+  f.id = CADRE_PLAN; f.className = 'labo-cadre ds-plan-cadre'; f.setAttribute('title', 'Le plan des souterrains'); f.setAttribute('allow', 'autoplay; fullscreen');
+  f.src = u;
+  document.body.appendChild(f);
+  document.documentElement.classList.add('labo-ouvert');
+  try{ f.focus(); }catch(e){}
+};
+window.addEventListener('message', function(e){
+  var m = e.data, f = document.getElementById(CADRE_PLAN);
+  if(!m || m.donjonPlan !== 1 || !f || e.source !== f.contentWindow) return;
+  if(m.type === 'fermer') M.fermerPlan();
+  else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
+});
 /* la page « Le plan des souterrains » du Grand Livre (e3.js : un getter html qui appelle ceci) */
 M.donjonPageSage = function(){
-  var P = M.P(), aPlan = !!(P && P.pages && P.pages.plan);
+  var P = M.P(), C = dj(), aPlan = !!(P && P.pages && P.pages.plan);
   var t = (aPlan ? 'Le plan des Fondateurs te sert enfin : il montre les souterrains, salle par salle.' : 'Entre deux pages de ton Grand Livre, un vieux plan que tu n\'avais jamais vu : des souterrains, sous le village.') +
     ' Le Pisteur, lui, n\'y verra que de la brume. C\'est toi qui dis le chemin, à voix haute !';
-  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p><button class="btn grand b-aller lv-ouvrir" data-act="ds-aller">🗺️ Ouvrir le plan</button>';
+  var l = [];
+  l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan : quelqu\'un l\'a déchiré.']);
+  if(C['rune:lumiere']) l.push(['✨', 'Ta rune de lumière t\'attend sur le plan : promène-la sur le vieux papier.']);
+  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' +
+    '<ul class="lv-lignes ds-plan-notes">' + l.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + x[0] + '</span><p>' + esc(x[1]) + '</p>' + lire(x[1]) + '</li>'; }).join('') + '</ul>' +
+    '<button class="btn grand b-aller lv-ouvrir" data-act="ds-plan">🗺️ Regarder le plan</button>';
 };
-/* dans le sac de l'Alchimiste, la nuit (plantes.js) */
+
+/* --- les pages de sauvegarde --- */
+function pagesSauve(){ return [1, 2].concat(dj()['page:blanche'] ? [4] : []); }
+function nomPage(n){ return n === 4 ? 'La page trouvée' : 'Page n° ' + n; }
+M.sauvegardesHTML = function(){
+  var P = M.P(), E = P.donjonPages || {};
+  var t = 'Chaque page blanche garde un sort de sauvegarde. Écris-le, puis montre son code au Pisteur : il le tape quand l\'équipe est au calme, jamais pendant un combat. Un sort ne sert qu\'une fois.';
+  var s = '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p><div class="ds-pages">';
+  pagesSauve().forEach(function(n){
+    var e = E[n], code = M.code('donjon:sauve:' + n), nom = nomPage(n);
+    if(!e) s += '<button class="ds-page ds-blanche" data-act="ds-ecrire" data-n="' + n + '"><b>' + nom + '</b><i aria-hidden="true">✦</i><small>Écrire le sort</small></button>';
+    else if(e === 'barree') s += '<div class="ds-page ds-barree"><b>' + nom + '</b><div class="ds-code-barre">' + M.codeHTML(code, true) + '</div><small>Sort utilisé</small></div>';
+    else s += '<div class="ds-page ds-ecrite"><b>' + nom + '</b>' + M.codeHTML(code, true) + '<button class="btn petit" data-act="ds-barrer" data-n="' + n + '">✔️ Le Pisteur l\'a tapé</button></div>';
+  });
+  return s + '</div>';
+};
+A['ds-ecrire'] = function(el){
+  var P = M.P(), n = +el.dataset.n; if(pagesSauve().indexOf(n) < 0) return;
+  P.donjonPages = P.donjonPages || {}; if(P.donjonPages[n]) return;
+  P.donjonPages[n] = 'ecrite'; M.son('magie'); M.sauver(); M.UI.garderDefilement = true; M.render();
+};
+A['ds-barrer'] = function(el){
+  var P = M.P(), n = +el.dataset.n; if(!P.donjonPages || P.donjonPages[n] !== 'ecrite') return;
+  P.donjonPages[n] = 'barree'; M.son('clic'); M.sauver(); M.UI.garderDefilement = true; M.render();
+};
+
+/* --- le carnet de l'aventurier --- */
+function monstresDuCarnet(){ var C = dj(), K = CARNET(); return K.ordre.filter(function(m){ return C['carnet:aventurier'] || C['etude:' + m]; }); }
+M.carnetAventurierHTML = function(){
+  var l = monstresDuCarnet(), K = CARNET(), entier = !!dj()['carnet:aventurier'];
+  var t = entier ? 'Le carnet d\'un aventurier, trouvé à l\'entrée du donjon. Il a tout noté : chaque monstre qu\'il a croisé a sa page. À toi de voir ce que ça vous apprend.'
+    : 'Des pages d\'un vieux carnet : un aventurier est passé par ici avant vous. Il raconte les monstres qu\'il a croisés.';
+  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p><div class="ds-betes">' + l.map(function(m){
+    return '<button class="ds-bete" data-act="ds-bete" data-m="' + esc(m) + '">' + portrait(m) + '<b>' + esc(K.noms[m] || m) + '</b></button>';
+  }).join('') + '</div>';
+};
+A['ds-bete'] = function(el){ M.son('page'); M.ouvrir({type:'descente', vue:'bete', m:el.dataset.m}); };
+/* (aller à une page du Grand Livre, depuis une fenêtre) */
+A['ds-livre'] = function(el){
+  var P = M.P(), id = el.dataset.id; M.UI.modal = null; M.son('page');
+  if(P.onglet !== 'role' || !M.livreAller || !M.livreAller(id, true)){ P.onglet = 'role'; M.UI.livrePage = id; M.sauver(); M.render(); }
+};
+
+/* --- les fenêtres qu'un code du donjon ouvre (M.descenteHTML, plus haut) --- */
+function fen(ic, titre, t, boutons){ return '<div class="b-grand-ic">' + ic + '</div><h2>' + esc(titre) + '</h2><p>' + esc(t) + ' ' + lire(titre + '. ' + t) + '</p>' + boutons; }
+var PLUS_TARD = '<button class="btn second" data-act="fermer">Plus tard</button>';
+var VUES = {
+  'carnet-recu':function(){
+    return fen('📓', 'Un vieux carnet', 'Un vieux carnet, trouvé à l\'entrée du donjon. Quelqu\'un est passé par ici avant vous : un aventurier, qui a tout noté. Chaque monstre qu\'il a croisé a sa page. Tu le gardes dans ton Grand Livre.',
+      '<button class="btn grand b-aller" data-act="ds-livre" data-id="aventurier">📖 Ouvrir le carnet</button>' + PLUS_TARD);
+  },
+  bete:function(m){
+    var K = CARNET(), L = K.livre[m.m] || [], nom = K.noms[m.m] || m.m;
+    var s = '<div class="ds-bete-page">' + portrait(m.m) + '<h2>' + esc(nom) + ' ' + lire(nom) + '</h2>';
+    if(m.nouveau){ var t0 = 'Le carnet s\'ouvre à la bonne page : c\'est bien ce monstre-là. L\'aventurier raconte ce qui lui est arrivé.'; s += '<p class="ds-suite">' + esc(t0) + ' ' + lire(t0) + '</p>'; }
+    s += L.map(function(t){ return '<p class="ds-recit">' + esc(t) + ' ' + lire(t) + '</p>'; }).join('') + '</div>';
+    return s + '<button class="btn grand b-aller" data-act="fermer">' + (m.nouveau ? 'C\'est noté' : 'Refermer la page') + '</button>';
+  },
+  rune:function(){
+    return fen('✨', 'Une rune apparaît !', 'La pierre que le Pisteur a trouvée se met à briller… Une rune apparaît ! C\'est une rune de lumière : promène-la sur ton plan, elle réveille l\'encre que les Fondateurs y ont cachée.',
+      '<button class="btn grand b-aller" data-act="ds-plan" data-nouveau="rune:lumiere">🗺️ Regarder le plan</button>' + PLUS_TARD);
+  },
+  coin:function(){
+    return fen('📜', 'Le morceau perdu du plan', 'Le Pisteur a trouvé le morceau déchiré de ton plan, dans la bibliothèque engloutie. Pose-le à sa place : les bords se recollent tout seuls…',
+      '<button class="btn grand b-aller" data-act="ds-plan" data-nouveau="page:dechiree">🗺️ Regarder le plan</button>' + PLUS_TARD);
+  },
+  blanche:function(){
+    return fen('✨', 'Une page blanche', 'Le Pisteur l\'a trouvée en fouillant. Elle se glisse dans ton Grand Livre : une sauvegarde de plus !',
+      '<button class="btn grand b-aller" data-act="ds-livre" data-id="sauvegardes">📖 Ouvrir le Grand Livre</button>' + PLUS_TARD);
+  },
+  givre:function(){
+    return fen('❄️', 'La fleur de givre', 'Le Pisteur t\'envoie une fleur de givre, cueillie tout au fond des souterrains. Elle ne fond jamais… Elle t\'attend sur ton établi : il y a du travail !',
+      '<button class="btn grand b-aller" data-act="ds-etabli">🌿 Aller à l\'établi</button>' + PLUS_TARD);
+  },
+  lumiere:function(){
+    return fen('🌿', 'Des herbes lumineuses', 'Le Pisteur t\'envoie des herbes qui brillent dans le noir. Celles-là se préparent dans ton chaudron du donjon.',
+      '<button class="btn grand b-aller" data-act="ds-chaudron">🫕 Le chaudron du donjon</button>' + PLUS_TARD);
+  }
+};
+A['ds-etabli'] = function(){ M.UI.modal = null; M.render(); if(M.ouvrirEtabli) M.ouvrirEtabli(); };
+/* (les herbes lumineuses, en attendant : l'ancienne page du chaudron du donjon, qui reçoit la plante toute seule) */
+A['ds-chaudron'] = function(){
+  var C = cfg(), P = M.P(); if(!C || M.role() !== 'alchimiste') return;
+  var u = C.pages.alchimiste + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&recu=' + encodeURIComponent('plante:lumiere');
+  P.vus['donjon:ouvert:alchimiste'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('pas');
+  if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.UI.modal = null; M.render(); return; }
+  try{ sessionStorage.setItem(CLE_RETOUR, P.donjonJeton); }catch(e){}
+  noterDepart(P.donjonJeton);
+  M.UI.modal = null;
+  window.location.href = u;
+};
+/* Un code du donjon tapé dans l'enquête (traiterCode) : id = « donjon:<sorte>:<quoi> ». Rend true quand c'est traité. */
+M.codeDonjon = function(id){
+  var P = M.P(), role = M.role(), k = String(id).split(':'), sorte = k[1], quoi = k[2], pour = POUR_DONJON[sorte], court = sorte + ':' + quoi;
+  if(!P || !cfg() || !pour) return false;
+  if(pour === 'pisteur'){
+    M.son('ko');
+    if(role === 'pisteur') M.ouvrir({type:'info', ic:'🕯️', titre:'Un code du donjon', t:'Ce code-là se tape dans le donjon : sur l\'écran du donjon, avec le bouton « 📜 Un code ».'});
+    else M.ouvrir({type:'info', ic:'🤝', titre:'Ce code est pour un équipier', t:'Ce code est pour le Pisteur : il le tape dans le donjon.'});
+    return true;
+  }
+  if(pour !== role){
+    M.son('ko');
+    M.ouvrir({type:'info', ic:'🤝', titre:'Ce code est pour un équipier', t:'Ce code est pour ' + (D.ROLES[pour] ? D.ROLES[pour].le : pour) + ' : dis-lui de le taper sur sa tablette !'});
+    return true;
+  }
+  M.UI.ecran = 'enquete';
+  var C = dj(), deja = !!C[court], vue = null, note = null;
+  C[court] = 1;
+  if(sorte === 'carnet'){ P.vus['donjon:carnet'] = 1; vue = {vue:'carnet-recu'}; note = ['Le carnet de l\'aventurier est dans ton Grand Livre : chaque monstre du donjon y a sa page.', '📓']; }
+  else if(sorte === 'etude'){
+    if(!CARNET().livre[quoi]){ delete C[court]; return false; }
+    P.vus['donjon:carnet'] = 1; vue = {vue:'bete', m:quoi, nouveau:!deja}; note = ['Le carnet de l\'aventurier, à la page : ' + (CARNET().noms[quoi] || quoi) + '.', '📓'];
+  }
+  else if(court === 'rune:lumiere'){ vue = {vue:'rune'}; note = ['Une rune de lumière : elle réveille l\'encre cachée du plan des souterrains.', '✨']; }
+  else if(court === 'page:dechiree'){ vue = {vue:'coin'}; note = ['Le morceau déchiré du plan des souterrains est retrouvé.', '📜']; }
+  else if(court === 'page:blanche'){ vue = {vue:'blanche'}; note = ['Une page blanche de plus dans ton Grand Livre : une sauvegarde de plus.', '✨']; }
+  else if(court === 'plante:givre'){ if(M.recevoirPlanteRare) M.recevoirPlanteRare('givre'); vue = {vue:'givre'}; note = ['Le Pisteur t\'a envoyé une fleur de givre : elle t\'attend sur ton établi.', '❄️']; }
+  else if(court === 'plante:lumiere'){ vue = {vue:'lumiere'}; note = ['Le Pisteur t\'a envoyé des herbes lumineuses, pour ton chaudron du donjon.', '🌿']; }
+  else { delete C[court]; return false; }
+  if(!deja && note) M.noter(note[0], note[1]);
+  M.son(deja ? 'clic' : 'gain'); M.sauver();
+  M.ouvrir(Object.assign({type:'descente'}, vue));
+  return true;
+};
+/* dans le sac de l'Alchimiste, la nuit (plantes.js) : le chaudron du donjon n'est plus là que pour les herbes lumineuses, une fois reçues */
 M.donjonBoutonAlchimiste = function(){
-  if(!cfg() || M.role() !== 'alchimiste' || !nuit()) return '';
-  var t = 'Dans le donjon, ton chaudron te suit : le Pisteur y trouvera des plantes rares, à cuisiner pour lui.';
+  if(!cfg() || M.role() !== 'alchimiste' || !nuit() || !dj()['plante:lumiere']) return '';
+  var t = 'Tes herbes lumineuses t\'attendent dans ton chaudron du donjon.';
   return '<p class="ds-suite">' + esc(t) + ' <button type="button" class="b-lire" data-pl="lire" data-t="' + esc(t) + '" aria-label="Écouter">🔊</button></p>' +
     '<button type="button" class="btn b-aller" data-pl="donjon">🫕 Le chaudron du donjon</button>';
 };
@@ -228,7 +492,25 @@ window.addEventListener('pageshow', function(ev){
 /* un code qui sert DANS le donjon (I.donjon : la Grosse Marie, le maire retenu), tapé ici par le Pisteur : on lui dit où le taper */
 var special0 = M.codeSpecial;
 M.codeSpecial = function(t, x, id){
-  var E = enquete(), I = t === 'info' && E && E.infos ? E.infos[x] : null;
+  var E = enquete(), I = t === 'info' && E && E.infos ? E.infos[x] : null, P = M.P();
+  /* « On va dans la crypte » (I.tenue), tapé par le Sage ou l'Alchimiste : la fenêtre de la tenue de combat, et leur code pour le
+     Pisteur. Retapé : la même fenêtre (pour retrouver son code). */
+  if(I && I.tenue && cfg()){
+    if(!P.recus[id]){ P.recus[id] = true; M.noter('Reçu : ' + I.nom + '. ' + (I.t || ''), I.ic); M.son('gain'); M.sauver(); } else M.son('clic');
+    M.ouvrir({type:'descente', vue:'tenue'});
+    return true;
+  }
+  /* le code d'allure d'un équipier, tapé par le Pisteur : son héros, tel qu'on le verra dans le donjon. Celui de l'Alchimiste apporte
+     aussi ses sept potions (il ne l'a que quand elles sont toutes prêtes : plantes.js, M.sacTout). */
+  if(t === 'allure' && cfg()){
+    var a = M.allureDe(x), av = P.allures && P.allures[a.role], deja = !!(av && allureTxt(av) === allureTxt(a));
+    P.allures = P.allures || {}; P.allures[a.role] = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}; P.recus['allure:' + a.role] = true;
+    if(a.role === 'alchimiste' && M.sacTout) M.sacTout();
+    if(!deja) M.noter(a.role === 'sage' ? 'Le Sage a enfilé sa tenue de combat.' : 'L\'Alchimiste a enfilé sa tenue de combat. Ses sept potions sont prêtes.', '🛡️');
+    M.son('gain'); M.sauver();
+    M.ouvrir({type:'descente', vue:'recu', role:a.role});
+    return true;
+  }
   if(I && I.donjon && cfg()){
     M.son('clic');
     M.ouvrir({type:'info', ic:I.ic, titre:I.nom, t:'Ce code-là se tape dans le donjon, pas ici : sur l\'écran du donjon, avec le bouton « 📜 Un code ».'});

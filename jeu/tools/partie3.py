@@ -13,7 +13,7 @@ et vérifie qu'il est reçu et qu'il ouvre bien la suite. Les mini-jeux se lance
     (la lettre est fausse, les sept chats → le Pisteur, le plan des Fondateurs) ; le Pisteur (les traces → le Barde) ; l'Alchimiste
     (la lettre au labo → le Barde et le Sage) ; le Barde (l'aveu de Mélusine → le Sage) ; le Sage (qui a écrit la lettre ?) ;
     chacun rend sa mission au maire ; le Sage donne le code de la nuit.
-  La nuit : le Barde (la clé d'Anselme → le Pisteur) ; l'Alchimiste (le sac → le Pisteur, le chaudron du donjon) ; le Pisteur (la clé,
+  La nuit : le Barde (la clé d'Anselme → le Pisteur) ; l'Alchimiste (ses sept potions, son code → le Pisteur) ; le Pisteur (la clé,
     la crypte, la descente : le VRAI donjon s'ouvre, avec les sept potions) ; le Sage (le plan des souterrains) ; le Barde (la Grosse
     Marie, le maire retenu → tapés DANS le donjon) ; la fin du donjon (le chemin est sauté : il a ses robots) ; le Pisteur remonte :
     « Odette est derrière la porte » → le Sage, « Léo attrapé » → le Barde ; le Barde (Léo, les trois étapes → « Léo a tout dit » → le Sage) ;
@@ -316,25 +316,39 @@ def partie(nav, base):
     for k in (2, 0, 3): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
     B.fermer()
     verifier(livrer(T, B) == ['info:cle_clou'], 'le Barde a donné au Pisteur : « La Grosse Marie sonne » (la clé d\'Anselme pend à sa ceinture)')
-    # l'Alchimiste : le sac
+    # l'Alchimiste : ses sept potions, son code (le code d'allure : 13 novembre, plus de code du sac)
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); fra = ET.ouvrir(A.pg); ET.sac(A.pg)
-    seq = A.js("() => M.code('sac:' + M.sacBits())")
-    verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1, 'l\'Alchimiste : les sept potions sont prêtes, leur code pour le Pisteur')
-    A.shot('sac')
-    # le Pisteur : la clé d'Anselme, la grille de la crypte, le sac
+    seqA = A.js("() => M.code(M.allureCode())")
+    verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1 and fra.locator('.carte [data-donjon]').count() == 0, 'l\'Alchimiste : les sept potions sont prêtes, son code pour le Pisteur')
+    A.shot('sac'); ET.quitter(A.pg)
+    # le Pisteur : la clé d'Anselme, la grille de la crypte (il la soulève), le code du départ
     verifier(P.jouer('clocher', 'cle') == 'cachette', 'le Pisteur prend la clé d\'Anselme (se cacher dans le clocher)'); P.fermer()
-    P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
-    verifier('Il te manque le sac' in P.texte(), 'le Pisteur, devant l\'escalier : « Il te manque le sac »')
-    t = P.taper(seq, garder=True)
-    verifier('7 potions' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : le sac, sept potions'); passes.append(('alchimiste', 'sac', 'pisteur')); P.fermer()
-    # l'Alchimiste et le Sage ouvrent leur page du donjon (et reviennent)
-    ET.toucher(A.pg, '.carte [data-donjon]', attendre=False); A.pg.wait_for_url('**/donjon/alchimiste.html**'); A.pg.wait_for_timeout(1200)
-    A.pg.eval_on_selector('#b-enquete', 'e => e.click()'); A.pg.wait_for_url('**/brumeval/index.html**'); A.pg.wait_for_timeout(900); A.preparer()
-    verifier(A.js("() => M.UI.ecran") == 'enquete', 'l\'Alchimiste ouvre le chaudron du donjon, puis revient dans l\'enquête')
-    S.page('donjon'); S.pg.locator('#livre-ici .lv-page.on [data-act=ds-aller]').click(); S.pg.wait_for_url('**/donjon/sage.html**'); S.pg.wait_for_timeout(1200)
-    S.pg.eval_on_selector('#b-enquete', 'e => e.click()'); S.pg.wait_for_url('**/brumeval/index.html**'); S.pg.wait_for_timeout(900); S.preparer()
-    verifier(S.js("() => M.UI.ecran") == 'enquete', 'le Sage ouvre le plan des souterrains, puis revient dans l\'enquête')
+    P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=soulever]').click(); P.pg.wait_for_timeout(300)
+    verifier('sans bruit' in P.texte() and 'info:on_descend' in P.a_donner(), 'le Pisteur soulève la grille : pas un bruit, et il a le code du départ')
+    P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
+    verifier('tenue de combat' in P.texte() and 'On a besoin des sept potions pour descendre' in P.texte() and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat, et les deux codes qu\'il attend')
+    P.fermer()
+    # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
+    seq = P.js("() => M.code('info:on_descend')")
+    t = S.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'sage'))
+    verifier('tenue de combat' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue, son code')
+    seqS = S.js("() => M.code(M.allureCode())"); S.shot('tenue'); S.fermer()
+    t = A.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'alchimiste'))
+    verifier('sept potions à la ceinture' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
+    P.donnes |= {'info:on_descend'}
+    t = P.taper(seqS, garder=True); passes.append(('sage', 'allure', 'pisteur'))
+    verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code d\'allure'); P.fermer()
+    t = P.taper(seqA, garder=True); passes.append(('alchimiste', 'allure', 'pisteur'))
+    verifier('L\'Alchimiste est prêt' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : son code d\'allure, et ses sept potions'); P.fermer()
+    # le Sage : ses pages du donjon sont dans son Grand Livre ; son plan s'ouvre DANS le jeu
+    S.page('sauvegardes')
+    verifier(S.pg.locator('#livre-ici .lv-page.on .ds-blanche').count() == 2, 'le Sage : deux pages de sauvegarde dans son Grand Livre')
+    S.page('donjon'); S.pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').click(); S.pg.wait_for_timeout(2500)
+    plan = S.pg.frame_locator('#donjon-plan-cadre')
+    verifier(S.pg.locator('#donjon-plan-cadre').count() == 1 and plan.locator('#b-fermer').is_visible(), 'le Sage ouvre le plan des souterrains, dans le jeu')
+    plan.locator('#b-fermer').click(); S.pg.wait_for_timeout(500)
+    verifier(S.pg.locator('#donjon-plan-cadre').count() == 0 and S.js("() => M.UI.ecran") == 'enquete', 'il le referme : il est toujours dans l\'enquête')
     # le Pisteur descend : le vrai donjon
     P.point('clocher', 'descendre'); P.pg.locator('#voile [data-act=ds-aller]').click()
     P.pg.wait_for_url('**/donjon/index.html**'); P.pg.wait_for_timeout(1500)

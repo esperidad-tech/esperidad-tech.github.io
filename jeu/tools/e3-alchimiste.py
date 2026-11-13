@@ -204,8 +204,8 @@ with sync_playwright() as p:
     verifier(avant == 0 and pg.evaluate("() => window.__lus.length") == 1, 'un 🔊 lit sa phrase (et rien ne se lit tout seul)')
     ET.fermer_intro(pg)
     verifier(pg.evaluate("() => !!M.S.etabliIntro") and not ET.intro(pg), 'le bouton jaune « 🌿 À l\'établi ! » : l\'explication ne reviendra pas')
-    verifier(fr.locator('#etagere-plantes .pendue').count() == 3 and fr.locator('#scene .plante .corps').count() == 0 and fr.locator('#g-sac').count() == 0 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#scene [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0,
-             'l\'établi : trois plantes pendues à la tringle (les autres attendent à la porte), le linge vide, les outils sur la table, sept flacons vides sur l\'étagère, plus de sac')
+    verifier(fr.locator('#etagere-plantes .pendue').count() == 3 and fr.locator('#scene .plante .corps').count() == 0 and fr.locator('#g-sac').count() == 0 and fr.locator('#scene .outil').count() >= 9 and fr.locator('#portique [id^=potion-]').count() == 7 and fr.locator('#scene [id^=potion-].pleine').count() == 0 and fr.evaluate("() => document.querySelector('#potion-givre').style.display") == 'none',
+             'l\'établi : trois plantes pendues à la tringle (les autres attendent à la porte), le linge vide, les outils sur la table, sept flacons vides sur l\'étagère (celui du givre n\'est pas là : sa fleur n\'est pas arrivée), plus de sac')
     shot(pg, 'etabli')
     # ---------- on se trompe ----------
     ET.outil(pg, 'planche'); verifier(len(ET.texte(pg)) > 12 and ET.etat(pg)['ou'] is None and fr.locator('#calque .bulle-o .b-son').count() == 1, f'un outil touché les mains vides : il dit à quoi il sert, avec son 🔊 ({ET.texte(pg)[:50]})')
@@ -381,25 +381,25 @@ with sync_playwright() as p:
     t = carte(pg)
     verifier(fr.locator('#sacCode').count() == 1 and 'Pisteur' in t and ET.sans_son(pg, '.carte') == [], f'la nuit : le code des sept potions pour le Pisteur, et le 🔊 ({t[:60]})')
     shot(pg, 'sac')
-    seq7 = pg.evaluate("() => M.code('sac:' + M.sacBits())"); bits = pg.evaluate("() => M.sacBits()")
-    verifier(bits == 127 and len(seq7) == 3, f'sept potions : le sac n° 127 ({seq7})')
+    # (13 novembre) le code des sept potions est le CODE D'ALLURE de l'Alchimiste (descente.js) : plus de code du sac
+    moi = pg.evaluate("() => M.allureCode()"); seq7 = pg.evaluate("(id) => M.code(id)", moi); bits = pg.evaluate("() => M.sacBits()")
+    verifier(bits == 127 and len(seq7) == 3 and moi.startswith('allure:') and fr.locator('#sacCode .formes').inner_text() == pg.evaluate("(q) => q.map(function(s){ return DONNEES.SYM[s].e; }).join('')", seq7),
+             f'sept potions : l\'établi montre le code d\'allure de l\'Alchimiste ({moi}, {seq7})')
     ET.quitter(pg)
     verifier(signe(pg) == '', 'le code est montré : le signe s\'en va')
-    t = code(pg, 'sac:127')
-    verifier('Pisteur' in t or 'équipier' in t, f'l\'Alchimiste ne peut pas taper son propre code de sac ({t[:50]})')
-    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les 128 codes du sac compris)')
+    t = code(pg, moi)
+    verifier('Pisteur' in t or 'équipier' in t, f'l\'Alchimiste ne peut pas taper son propre code ({t[:50]})')
+    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les 216 codes d\'allure compris)')
     # ---------- le Pisteur tape le code ----------
     pp = debut(b, 'Pisteur', 'pisteur')
     code(pp, 'moment:1'); code(pp, 'moment:2')
-    seq = pp.evaluate("() => M.code('sac:127')")
-    verifier(seq == seq7, 'les deux tablettes ont le même code pour le même sac')
-    t = code(pp, 'sac:127', True)
-    verifier('sac de l\'Alchimiste' in t and '7 potions' in t and pp.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pp.evaluate("() => (M.sacPotions() || []).join(',')") == 'feu,fumigene,huile,colle,acide,baume,coeur',
-             f'le Pisteur tape le code : il reçoit le sac, sept potions ({t[:60]})')
+    seq = pp.evaluate("(id) => M.code(id)", moi)
+    verifier(seq == seq7, 'les deux tablettes ont le même code')
+    t = code(pp, moi, True)
+    verifier('L\'Alchimiste est prêt' in t and pp.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pp.evaluate("() => (M.sacPotions() || []).join(',')") == 'feu,fumigene,huile,colle,acide,baume,coeur',
+             f'le Pisteur tape le code : l\'Alchimiste est prêt, ses sept potions sont du voyage ({t[:60]})')
+    verifier(pp.evaluate("() => { var a = M.P().allures.alchimiste; return !!a && !!M.P().vus['sac:acide']; }"), 'il connaît l\'allure de l\'Alchimiste, et il a l\'acide (la grille du puits)')
     pp.screenshot(path=f'{OUT}/pisteur-sac.png'); fermer(pp)
-    t = code(pp, 'sac:21', True)   # (feu + huile + acide : 1 + 4 + 16)
-    verifier('3 potions' in t and pp.evaluate("() => (M.sacPotions() || []).join(',')") == 'feu,huile,acide', f'un sac de trois potions : feu, huile, acide ({t[:60]})')
-    fermer(pp)
     pp.close()
     # ---------- téléphone couché : l'établi tient dans l'écran ----------
     pg.set_viewport_size({'width': 780, 'height': 360}); pg.wait_for_timeout(300)

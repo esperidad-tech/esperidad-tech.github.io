@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La tenue de combat — Les Enquêteurs de Brumeval</title>
+<style>
+/* tenue.html — les héros dans leur tenue de combat, à l'allure des joueurs (Romain, 13 novembre : « il est temps d'enfiler notre
+   tenue de combat »). Une toute petite page, montrée dans un cadre par le jeu (jeu/src/descente.js) : aucun texte, aucun bouton,
+   aucun son. tenue.html?h=sage  ou  ?h=sage,alchimiste,pisteur   &look=p:f.p1.roux.vert,s:m.p5.noir,a:f.p2.blond (allure.js) */
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:radial-gradient(ellipse at 50% 38%, #4a3c68 0%, #2a2040 46%, #120c1c 100%)}
+#sc{position:absolute;left:50%;top:50%;transform-origin:50% 50%;opacity:0;transition:opacity .35s}
+body.pret #sc{opacity:1}
+.h{position:absolute;top:0;width:200px;height:240px}
+.h .a{position:absolute;inset:0}
+#sol{position:absolute;left:-40px;right:-40px;bottom:-14px;height:44px;border-radius:50%;background:radial-gradient(closest-side, rgba(255,226,160,.16), rgba(255,226,160,0))}
+</style>
+</head>
+<body>
+<div id="sc"><div id="sol"></div></div>
+<script>
+/*JEU*/
+</script>
+<script>
+(function(){
+'use strict';
+var P = {};
+(location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ if(!x) return; var k = x.split('='); P[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); });
+var ORDRE = ['sage', 'alchimiste', 'pisteur'], HA = window.HerosAnime;
+var qui = ORDRE.filter(function(h){ return (P.h || 'pisteur').split(',').indexOf(h) >= 0; });
+if(!qui.length) qui = ['pisteur'];
+var LOOK = window.DonjonAllure.lire(P.look, HA.DEFAUT);
+var sc = document.getElementById('sc'), PAS = 138, W = 200 + PAS * (qui.length - 1), H = 240, boites = [];
+sc.style.width = W + 'px'; sc.style.height = H + 'px';
+qui.forEach(function(h, i){
+  var d = document.createElement('div'); d.className = 'h'; d.style.left = (i * PAS) + 'px'; d.style.zIndex = 10 + i;
+  d.innerHTML = '<div class="a"></div>'; sc.appendChild(d); boites.push(d.firstChild);
+});
+function taille(){ var k = Math.min(window.innerWidth / (W + 24), window.innerHeight / (H + 22)); sc.style.transform = 'translate(-50%,-50%) scale(' + k.toFixed(4) + ')'; }
+taille(); window.addEventListener('resize', taille);
+window.TENUE = {qui:qui, look:LOOK, pret:false};
+function creer(){
+  qui.forEach(function(h, i){ try{ var a = HA.creer(boites[i], h, LOOK[h]); a.attendre(); }catch(e){ if(window.console) console.warn(e); } });
+  document.body.classList.add('pret'); window.TENUE.pret = true;
+}
+var k0 = Math.min(window.innerWidth / (W + 24), window.innerHeight / (H + 22)) * (window.devicePixelRatio || 1);
+try{ HA.preparer(qui.map(function(h){ return {role:h, lk:LOOK[h]}; }), {res:Math.max(1, Math.min(2.6, k0 * 1.2))}).then(creer, creer); }catch(e){ creer(); }
+})();
+</script>
+</body>
+</html>

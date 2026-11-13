@@ -22,9 +22,45 @@
 .ds-fenetre .pl-sac-fioles .pl-fiole small, .pl-sac-recu .pl-sac-fioles .pl-fiole small{font-size:.66rem}
 .ds-fenetre .btn{margin:6px 4px 0}
 .ds-suite{margin:10px 0 6px!important;font-size:.98rem!important}
+/* (13 novembre) la tenue de combat : les héros dans un petit cadre (la page jeu/donjon/moteur/src/tenue.html), les deux codes attendus */
+.ds-tenue{display:block;width:100%;max-width:340px;height:170px;margin:0 auto 8px;border:0;border-radius:16px;background:#1c1430;pointer-events:none}
+.ds-tenue-trois{max-width:520px;height:200px}
+.ds-tenue-vide{background:radial-gradient(ellipse at 50% 38%, #4a3c68 0%, #2a2040 46%, #120c1c 100%)}
+.ds-prets{list-style:none;margin:8px 0 2px;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left;width:100%}
+.ds-prets li{display:flex;gap:10px;align-items:center;padding:5px 12px;border-radius:14px;background:rgba(120,90,40,.1);border:2px solid rgba(120,90,40,.18)}
+.ds-prets li.ds-ok{background:rgba(60,160,90,.14);border-color:rgba(60,160,90,.4)}
+.ds-prets li>span:first-child{white-space:nowrap;font-size:1.15rem}
+.ds-moncode{margin-top:8px}
+@media (max-height:520px){ .ds-tenue{height:150px} .ds-tenue-trois{height:160px} }
+@media (max-width:480px){ .ds-tenue{height:160px} .ds-tenue-trois{height:150px} }
 
 /* Les plantes qui n'ont pas trouvé de place sur la tringle de l'établi : une botte posée devant la porte de l'atelier (on la touche) */
 .at-plantes-porte{position:absolute;pointer-events:none;cursor:pointer;transform-origin:50% 100%;transform:scale(var(--s,1))}
 .at-plantes-porte > svg{width:100%;height:100%;display:block;overflow:visible}
 .at-plantes-porte svg *{pointer-events:visiblePainted}
 .at-plantes-porte .pl-z{fill:transparent;stroke:none;pointer-events:none}
+
+/* ---------- (13 novembre) le donjon dans le Grand Livre du Sage (descente.js) : les pages de sauvegarde, le carnet de l'aventurier ---------- */
+.ds-pages{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:10px 0 4px}
+.ds-page{flex:1 1 200px;max-width:250px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:14px;
+  background:#fffaf0;border:2px solid #b89a6a;color:#35281b;font:inherit;box-shadow:0 3px 0 rgba(120,90,40,.25)}
+.ds-page b{font-size:1rem}
+.ds-page small{font-size:.86rem;opacity:.8}
+button.ds-page{cursor:pointer}
+.ds-blanche i{font-style:normal;font-size:2rem;color:#c9a24a;line-height:1}
+.ds-blanche small{font-weight:700;color:#7a5a1c;opacity:1}
+.ds-ecrite{border-color:#c9952a;background:#fff6dc}
+.ds-barree{opacity:.72;background:#efe8d8}
+.ds-code-barre{position:relative;display:inline-block}
+.ds-code-barre::after{content:'';position:absolute;left:-6px;right:-6px;top:50%;height:5px;border-radius:3px;background:#a02a2a;transform:rotate(-8deg)}
+.ds-page .b-code{flex-wrap:nowrap;gap:6px;justify-content:center}
+.ds-page .b-code.grand .b-sym{width:62px;padding:8px 2px;border-radius:14px;animation:none}
+.ds-page .b-code.grand .b-sym span{font-size:2rem}
+.ds-betes{display:grid;grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));gap:10px;margin:10px 0 4px}
+.ds-bete{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;border-radius:12px;background:#fffaf0;border:2px solid #b89a6a;color:#35281b;font:inherit;cursor:pointer;min-height:112px}
+.ds-bete b{font-size:.86rem;line-height:1.15;text-align:center}
+.ds-croquis{width:84px;height:84px;object-fit:contain;display:block}
+.ds-bete-page{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.ds-bete-page .ds-croquis{width:150px;height:150px;border-radius:12px;background:#f3e7cb}
+.ds-recit{text-align:left;width:100%;margin:4px 0!important}
+.ds-plan-notes{margin-top:8px}

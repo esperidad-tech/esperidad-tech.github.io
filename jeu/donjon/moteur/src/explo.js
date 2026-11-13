@@ -912,7 +912,7 @@ DJ.toucher(function(a, id, b){
     /* (l'enquête 3) une descente de l'enquête, recommencée, reste celle de l'enquête : son jeton, son entrée, et les potions du sac de
        l'Alchimiste (pas les recettes apprises en route) */
     var pr = X.partie, suite = '';
-    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + '&nouveau=1';
+    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + (pr.look ? '&look=' + encodeURIComponent(pr.look) : '') + '&nouveau=1';
     DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname + suite; return true;
   }
   if(a === 'fin-donjon'){ DJ.fermer(); finDonjon(); return true; }
@@ -943,10 +943,14 @@ function demarrer(P){
     /* pour les essais : ?nouveau=1&potions=feu,huile,baume — un Alchimiste qui n'a pas su créer toutes ses potions */
     if(P.potions){ var lp = P.potions === 'toutes' ? D.ORDRE_RECETTES.slice() : P.potions.split(',').filter(function(r){ return D.RECETTES[r]; }); if(lp.length) p.recettes = lp; }
     if(P.enquete){ p.enquete = +P.enquete || 3; p.jeton = P.jeton || ''; p.entree = P.entree === 'crypte' ? 'crypte' : 'puits'; }
+    /* (13 novembre : les codes d'apparence) l'allure des trois héros, telle que l'enquête la donne ; la partie la garde */
+    if(P.look){ p.look = P.look; DJ.poserLook(p.look); }
     DJ.garder(p);
     return DJ.Combat.cuireHeros(), ecranDepart().then(function(){ return ouvrirScene('puits', [], true); });
   }
   X.partie = p;
+  if(P.look && P.jeton && p.jeton === P.jeton && p.look !== P.look){ p.look = P.look; DJ.garder(p); }
+  if(p.look) DJ.poserLook(p.look);
   /* (l'enquête 3) l'Alchimiste a fini une potion de plus avant qu'on redescende : elle rejoint le sac */
   if(P.potions && P.jeton && p.jeton === P.jeton){ var plus = false; P.potions.split(',').forEach(function(r){ if(D.RECETTES[r] && p.recettes.indexOf(r) < 0){ p.recettes.push(r); plus = true; } }); if(plus) DJ.garder(p); }
   DJ.Combat.cuireHeros();

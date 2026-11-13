@@ -65,11 +65,21 @@ function ouvrirCode(){
 }
 
 /* ---------- Une potion est prête : on la voit en grand, et on apprend ce qui est vrai ---------- */
+/* (13 novembre) une potion en plus des sept (le givre) : son code pour le Pisteur (S.plus[id].formes : le jeu le donne), montré sur sa
+   carte quand elle est prête, et chaque fois qu'on retouche son flacon (Romain : « à la fin : donne ce code au Pisteur, ça peut être utile ») */
+function codePlus(id){ var c = S.plus && S.plus[id]; return c && Array.isArray(c.formes) && c.formes.length ? c : null; }
+function codePlusHTML(id){
+  var c = codePlus(id), r = RE[id]; if(!c) return '';
+  return ligne('<p>' + echap(r.apres || '') + '</p>', r.apres || '', 'note') +
+    '<div class="code" id="plusCode"><span>Le code pour le Pisteur</span><span class="formes">' + c.formes.map(echap).join('') + '</span>' + bSon('Le code de la potion, pour le Pisteur.') + '</div>';
+}
 function ouvrirPrete(id, t, toutes){
   var r = RE[id];
+  if(!t) t = r.etapes[r.etapes.length - 1].t;
   ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : la potion est prête">' +
     '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/>' + flacon(id, r.coul) + '</svg><div class="prete-t"><h2>' + echap(r.nom) + ' !</h2>' + ligne('<p>' + echap(t) + '</p>', t) + '</div></div>' +
     ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') +
+    (enPlus(id) ? codePlusHTML(id) : '') +
     (toutes ? ligne('<p>' + echap(DIT.toutes) + '</p>', DIT.toutes, 'note') : '') +
     '<button type="button" class="b-jaune" ' + (toutes ? 'data-suite="code"' : 'data-fond="1"') + '>Continuer</button></div>');
 }

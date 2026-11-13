@@ -565,7 +565,7 @@ function codesBruts(E){
   M.cle(D.POTIONS).forEach(function(id){ if(D.POTIONS[id].tard) ids.push('pot:' + id); });
   for(var nr = 0; nr < 6; nr++) ids.push('rumeur:' + nr);
   ids.push('plaide:1', 'recette:hydromel');
-  /* (enquête 3) E.codesPlus : des codes en plus, à la fin (le sac de l'Alchimiste, sac:0 … sac:127 : plantes.js) */
+  /* (enquête 3) E.codesPlus : des codes en plus, à la fin (les fins à variante, les codes d'allure allure:0 … allure:215 : descente.js) */
   (E.codesPlus || []).forEach(function(id){ ids.push(id); });
   var toutes = [];
   D.ORDRE_SYM.forEach(function(a){ D.ORDRE_SYM.forEach(function(b){ D.ORDRE_SYM.forEach(function(c){
@@ -650,7 +650,8 @@ M.destinataire = function(id){
   if(t === 'pot') return D.POTIONS[x].pour;
   if(t === 'suite' || t === 'defaite') return 'tous-sauf-sage';
   if(t === 'aide') return D.ROLES[x] ? x : 'tous';
-  if(t === 'sac') return 'pisteur';   /* (enquête 3) le sac de l'Alchimiste */
+  if(t === 'sac' || t === 'allure') return 'pisteur';   /* (enquête 3) le code d'allure du Sage ou de l'Alchimiste (descente.js) */
+  if(t === 'donjon') return x === 'plante' ? 'alchimiste' : (x === 'sauve' || x === 'recette') ? 'pisteur' : 'sage';   /* (enquête 3) un code du donjon : descente.js, M.codeDonjon */
   return 'tous';
 };
 M.nomCode = function(id){
@@ -663,6 +664,9 @@ M.nomCode = function(id){
   if(t === 'suite') return {ic:'➡️', nom:'Enquête suivante'};
   if(t === 'defaite') return {ic:'🌫️', nom:'Défaite'};
   if(t === 'sac') return {ic:'🎒', nom:'Le sac de l\'Alchimiste'};
+  if(t === 'allure') return {ic:'🛡️', nom:'La tenue de combat'};
+  /* (enquête 3) un code du donjon qu'un joueur de l'enquête garde pour un équipier : le givre de l'Alchimiste, que le Pisteur tape DANS le donjon */
+  if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'Le givre (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
   return {ic:'🏆', nom:'Victoire'};
 };
 

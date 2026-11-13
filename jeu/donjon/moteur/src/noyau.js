@@ -336,6 +336,27 @@ DJ.cssHeros = function(){
   st.textContent = ['sage', 'alchimiste', 'pisteur'].map(function(h){ return '.img-' + h + '{background-image:url(' + DJ.img('heros-' + h + '.png') + ')}'; }).join('');
   document.head.appendChild(st);
 };
+/* (l'enquête 3, 13 novembre : les codes d'apparence) L'allure des trois héros vient de l'enquête : « look=p:f.p1.roux.vert,s:m.p5.noir,… »
+   (allure.js). À appeler AVANT de cuire les héros (combat.js) et de les créer. Les petites têtes de l'écran (les photos heros-*.png,
+   à l'allure d'origine) sont refaites à la nouvelle allure, dès qu'elles sont prêtes (HerosAnime.photo) ; en attendant, celles d'avant. */
+DJ.lookTexte = '';
+DJ.poserLook = function(texte){
+  texte = String(texte || '');
+  if(!texte || !window.DonjonAllure || texte === DJ.lookTexte) return;
+  DJ.lookTexte = texte;
+  DJ.LOOK = window.DonjonAllure.lire(texte, DJ.LOOK);
+  if(!(window.HerosAnime && window.HerosAnime.photo)) return;
+  DJ.cssHeros();
+  var st = q('#dj-css-heros-look'); if(!st){ st = el('style'); st.id = 'dj-css-heros-look'; document.head.appendChild(st); }
+  var regles = {};
+  ['sage', 'alchimiste', 'pisteur'].forEach(function(h){
+    window.HerosAnime.photo(h, DJ.LOOK[h]).then(function(u){
+      if(!u || texte !== DJ.lookTexte) return;
+      regles[h] = '.img-' + h + '{background-image:url(' + u + ')}';
+      st.textContent = Object.keys(regles).map(function(k){ return regles[k]; }).join('');
+    });
+  });
+};
 
 /* ================= les fioles des recettes (le dessin de la salle d'essai, avec les trois nouvelles) ================= */
 var O = '#24182e';

@@ -1,21 +1,26 @@
-"""Enquête 3, étape 6 (Bible § 13.14) : la descente dans le donjon, branchée dans l'enquête (Playwright).
+"""Enquête 3, étape 6 (Bible § 13.14 et § 13.33) : la descente dans le donjon, branchée dans l'enquête (Playwright).
+
+Depuis le 13 novembre (le test de Romain) : la grille s'ouvre de trois façons (tirer, pousser : « un énorme bruit s'est entendu dans tout
+le village » ; soulever : sans bruit) ; le Pisteur donne le code du départ, « On va dans la crypte », au Sage et à l'Alchimiste ; chacun
+enfile sa tenue de combat et lui montre son code d'allure (celui de l'Alchimiste : seulement avec ses sept potions) ; les codes du donjon
+du Sage et de l'Alchimiste se tapent dans l'enquête ; le plan, les pages de sauvegarde et le carnet de l'aventurier sont des pages du
+Grand Livre ; la fleur de givre se prépare sur l'établi.
 
 Première partie — l'enquête seule (le donjon n'est pas à côté : window.BRUMEVAL_SANS_DONJON, on note seulement où on allait) :
-  le Pisteur A (la clé d'Anselme prise) : la grille de la crypte et son bouton « 🕯️ Descendre » ; sans le sac : « Il te manque le sac »
-    et le bouton jaune vers l'onglet Code ; le code du sac ; la fenêtre de la descente (les fioles, le 🔊, le bouton jaune) ; l'adresse
-    (la page du Pisteur, le jeton, les potions, l'entrée) ; une vieille partie du donjon (un autre jeton) ne compte pas ; la porte aux
-    quatre signes : le code pour le Sage ; le donjon fini : « Léo attrapé » pour le Barde, la mission cochée ;
-  le Pisteur B (la clé ratée) : le puits, la grille, l'acide (rien sans le sac, rien sans la fiole d'acide), l'entrée « puits » ;
-    le maire pas retenu : « Léo s'est enfui » ;
-  un code qui sert DANS le donjon (la Grosse Marie), tapé dans l'enquête : « Ce code-là se tape dans le donjon » ;
-  le Sage : la page « Le plan des souterrains » (la nuit seulement), son bouton jaune, sa page du donjon ; le code de la porte tapé sur
-    son plan arrive tout seul dans l'enquête (et pas avec un autre jeton) ; la page « La porte des Fondateurs » ;
-  l'Alchimiste : « 🫕 Le chaudron du donjon » dans son sac, la nuit seulement ;
+  le Pisteur A (la clé d'Anselme prise) : la grille, ses trois gestes, le code du départ ; la fenêtre de la tenue (les deux codes
+    attendus, « on a besoin des sept potions pour descendre ») ; les deux codes d'allure ; la fenêtre de la descente (les trois héros, les
+    sept fioles, le 🔊, le bouton jaune) ; l'adresse (le jeton, les potions, l'entrée, l'allure) ; une vieille partie du donjon ne compte
+    pas ; la porte aux quatre signes ; le donjon fini : « Léo attrapé » ; tirer et pousser : le bruit ;
+  le Pisteur B (la clé ratée) : le puits, la grille, l'acide (rien sans le code de l'Alchimiste), l'entrée « puits » ; « Léo s'est enfui » ;
+  un code qui sert DANS le donjon, tapé dans l'enquête par le Pisteur : « Ce code-là se tape dans le donjon » ;
+  le Sage : le plan des souterrains (la nuit), qui s'ouvre dans le jeu ; le code du départ : sa tenue, son code, ses pages de sauvegarde
+    (deux, écrire, barrer, une de plus) ; le carnet de l'aventurier ; la rune (« Une rune apparaît ! ») ; le morceau déchiré ; la porte ;
+  l'Alchimiste : son code (celui des sept potions) ; la fleur de givre, de son code à la potion ; les herbes lumineuses (le chaudron) ;
   les codes partagés ont les mêmes symboles que dans le donjon, et aucun code de l'enquête 3 n'est en double.
 Deuxième partie — le vrai aller-retour (si le donjon construit est là : jeu/donjon/moteur/sortie, ou BRUMEVAL_DONJON=<dossier>) :
-  un petit serveur sert le jeu et, à côté, donjon/ ; le Pisteur descend pour de vrai (ses potions, « Sous le clocher », le bouton
-  « 🏘️ L'enquête »), remonte (on revient DANS l'enquête, pas au village), redescend (la partie est gardée), finit, et remonte : les codes.
-  Le Sage et l'Alchimiste ouvrent leur page (le petit bouton 🏘️ ramène à l'enquête).
+  un petit serveur sert le jeu et, à côté, donjon/ ; le Pisteur descend pour de vrai (ses sept potions, l'allure des trois héros,
+  « Sous le clocher », le bouton « 🏘️ L'enquête »), remonte, redescend, finit, et remonte : les codes. Le Sage voit son héros en tenue
+  et ouvre son plan DANS le jeu (la rune y apparaît) ; l'Alchimiste envoie ses herbes lumineuses au chaudron du donjon.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-descente.py"""
 import sys, os, json, threading, tempfile, shutil, functools
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
@@ -147,58 +152,90 @@ def rendre(pg, ms=700):
     pg.evaluate("() => M.render()"); pg.wait_for_timeout(ms)
 
 
+def allure(pg, role, sexe='f', peau='p5', cheveux='noir'):
+    """le code d'allure d'un équipier (comme il s'affiche chez lui), vu depuis cette tablette"""
+    return pg.evaluate("([r, a]) => 'allure:' + M.allureNumero(r, a)", [role, {'sexe': sexe, 'peau': peau, 'cheveux': cheveux}])
+
+def tenue_prete(pg, attente=20000):
+    """la petite page de la tenue (un cadre dans la fenêtre) : on attend que ses héros soient là ; rend « qui » (ou '')"""
+    for _ in range(int(attente / 250)):
+        for f in pg.frames:
+            if 'tenue.html' in f.url:
+                try:
+                    q = f.evaluate("() => window.TENUE && TENUE.pret ? TENUE.qui.join(',') : ''")
+                    if q: return q
+                except Exception:
+                    pass
+        pg.wait_for_timeout(250)
+    return ''
+
+def ouvrir_grille(pg, geste='soulever'):
+    lieu(pg, 'clocher'); point(pg, 'crypte'); point(pg, geste)
+
 def partie_enquete(b):
     # ======================================================================== le Pisteur, par la crypte
     print('— Le Pisteur A : la crypte')
     pg = debut(b, 'Pisteur', 'pisteur')
     verifier(pg.evaluate("() => M.donjonDispo() && !!M.E().donjon"), 'enquête 3 : le donjon est branché')
     m = missions(pg)
-    # (13 novembre, Romain : « les missions de la nuit sont trop grillées ») plus de mission du sac ni du donjon : on les découvre en jouant
     verifier(not any('donjon' in x[0] or 'potions' in x[0] for x in m), f'le Carnet du Pisteur : ses missions du jour, rien sur la nuit ({len(m)})')
-    verifier(carnet_missions(pg) == 3, f'le matin, son Carnet ne montre que ses trois missions du jour ({carnet_missions(pg)}) : celles de la nuit n\'y sont pas encore')
+    verifier(carnet_missions(pg) == 3, f'le matin, son Carnet ne montre que ses trois missions du jour ({carnet_missions(pg)})')
     code(pg, 'moment:1'); code(pg, 'moment:2')
     verifier(pg.evaluate("() => M.momentId()") == 'nuit', 'la nuit')
-    verifier(carnet_missions(pg) == 3, f'la nuit, aucune mission de plus dans son Carnet ({carnet_missions(pg)})')
     cle_anselme(pg, True)
     pts = lieu(pg, 'clocher')
-    verifier(pts == ['cle', 'crypte'], f'le clocher : la grille de la crypte, pas encore de descente ({pts})')
+    verifier(pts == ['cle', 'crypte'], f'le clocher : la grille de la crypte, rien d\'autre ({pts})')
     point(pg, 'crypte')
     t = texte(pg)
-    verifier('escalier de pierre' in t and pg.locator('#voile .b-choix-point [data-act=point][data-id=descendre]').count() == 1 and 'Descendre' in t, 'la grille s\'ouvre : le bouton « 🕯️ Descendre »')
-    verifier(jaune(pg, '#voile .b-choix-point [data-id=descendre]'), 'ce bouton est jaune, texte noir')
-    shot(pg, 'crypte')
+    verifier('déverrouillée' in t and all(pg.locator(f'#voile .b-choix-point [data-act=point][data-id={g}]').count() == 1 for g in ('tirer', 'pousser', 'soulever')), f'la grille est déverrouillée : tirer, pousser ou soulever ({t[:70]})')
+    verifier(all(jaune(pg, f'#voile .b-choix-point [data-id={g}]') for g in ('tirer', 'pousser', 'soulever')) and not sans_son(pg), 'trois boutons jaunes, et le 🔊')
+    shot(pg, 'grille')
+    point(pg, 'soulever')
+    t = texte(pg)
+    verifier('Le portail s\'ouvre sans bruit' in t and 'pénétrez dans la crypte' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1, f'soulever : « le portail s\'ouvre sans bruit, et vous pénétrez dans la crypte » ({t[:80]})')
+    verifier(pg.locator('#voile .b-code').count() == 1 and 'tenue de combat' in t and 'au Sage et à l\'Alchimiste' in t and pg.evaluate("() => !!M.P().objets['_info:on_descend']"), 'le code du départ est donné : « On va dans la crypte », pour le Sage et l\'Alchimiste')
+    verifier(not sans_son(pg) and jaune(pg, '#voile .b-choix-point [data-id=descendre]'), f'le 🔊, et le bouton jaune « 🕯️ Descendre » ({sans_son(pg)})')
+    shot(pg, 'soulever')
+    fermer(pg)
+    pts = lieu(pg, 'clocher')
+    verifier(pts == ['cle', 'crypte', 'soulever', 'descendre'], f'les deux autres gestes s\'en vont ({pts})')
     point(pg, 'descendre')
     t = texte(pg)
-    verifier('Il te manque le sac' in t and pg.locator('#voile [data-act=ds-code]').count() == 1 and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'sans le sac de l\'Alchimiste : « Il te manque le sac », pas de descente')
-    verifier(not sans_son(pg) and jaune(pg, '#voile [data-act=ds-code]'), f'cette fenêtre : le 🔊, et un bouton jaune ({sans_son(pg)})')
-    shot(pg, 'sans-sac')
+    verifier('Il est temps d\'enfiler notre tenue de combat' in t and 'Il te manque le code du Sage' in t and 'On a besoin des sept potions pour descendre' in t, f'la fenêtre de la tenue : les deux codes attendus ({t[:70]})')
+    verifier(pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-code]').count() == 1 and pg.locator('#voile .b-code').count() == 1 and pg.locator('#voile .ds-tenue').count() == 1, 'pas de descente sans les deux codes ; le code du départ est rappelé ; le héros est en tenue')
+    verifier(not sans_son(pg) and jaune(pg, '#voile [data-act=ds-code]'), f'cette fenêtre : le 🔊 partout, et un bouton jaune ({sans_son(pg)})')
+    shot(pg, 'tenue-pisteur')
     pg.locator('#voile [data-act=ds-code]').click(); pg.wait_for_timeout(300)
     verifier(pg.evaluate("() => M.P().onglet") == 'code' and pg.evaluate("() => !M.UI.modal"), 'le bouton jaune emmène à l\'onglet Code')
     verifier(pg.evaluate("() => M.P().vus['donjon:entree']") == 'crypte', 'l\'entrée est retenue : la crypte')
-    pts = lieu(pg, 'clocher')
-    verifier(pts == ['cle', 'crypte', 'descendre'], f'le clocher : « Descendre sous le clocher » reste là ({pts})')
-    t = code(pg, 'sac:5', True)   # (feu + huile : 1 + 4)
-    verifier('2 potions' in t and pg.evaluate("() => (M.P().sac || []).join(',')") == 'feu,huile', f'le code du sac : deux potions, feu et huile ({t[:50]})')
-    fermer(pg)
+    cs, ca = allure(pg, 'sage', 'm', 'p6', 'blond'), allure(pg, 'alchimiste', 'f', 'p2', 'rose')
+    t = code(pg, cs, True)
+    verifier('Le Sage est prêt' in t and pg.evaluate("() => { var a = M.P().allures.sage; return a.sexe + a.peau + a.cheveux; }") == 'mp6blond' and not sans_son(pg), f'le code d\'allure du Sage : « Le Sage est prêt ! » ({t[:60]})')
+    shot(pg, 'recu-sage'); fermer(pg)
     lieu(pg, 'clocher'); point(pg, 'descendre')
     t = texte(pg)
-    verifier('Descendre dans le donjon' in t and '2 potions' in t and pg.locator('#voile .pl-fiole.pl-pleine').count() == 2 and pg.locator('#voile .pl-fiole').count() == 7, 'la fenêtre de la descente : le sac, deux fioles pleines sur sept')
+    verifier('Le Sage est prêt.' in t and 'On a besoin des sept potions' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'il manque encore l\'Alchimiste : « on a besoin des sept potions pour descendre »')
+    t = code(pg, ca, True)
+    verifier('L\'Alchimiste est prêt' in t and pg.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pg.locator('#voile [data-act=ds-voir]').count() == 1, f'le code de l\'Alchimiste : ses sept potions, et « Voir la descente » ({t[:60]})')
+    verifier(pg.evaluate("() => (M.P().sac || []).join(',')") == 'feu,fumigene,huile,colle,acide,baume,coeur' and jaune(pg, '#voile [data-act=ds-voir]'), 'les sept potions sont dans son sac')
+    pg.locator('#voile [data-act=ds-voir]').click(); pg.wait_for_timeout(300)
+    t = texte(pg)
+    verifier('Descendre dans le donjon' in t and pg.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pg.locator('#voile .ds-tenue').get_attribute('data-qui') == 'sage,alchimiste,pisteur', 'la fenêtre de la descente : les trois héros en tenue, les sept fioles')
     verifier(not sans_son(pg) and jaune(pg, '#voile [data-act=ds-aller]'), f'elle a son 🔊 et son bouton jaune « 🕯️ Descendre » ({sans_son(pg)})')
     shot(pg, 'descente')
     pg.locator('#voile .b-lire').first.click(); pg.wait_for_timeout(150)
     verifier(pg.evaluate("() => window.__lus.length") == 1, 'le 🔊 lit la phrase (jamais de lecture toute seule)')
     pg.locator('#voile [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
     u = vers(pg); j = jeton(pg)
-    verifier(u.startswith('donjon/index.html?') and 'enquete=3' in u and ('jeton=' + j) in u and len(j) > 8 and 'potions=feu,huile' in u and 'entree=crypte' in u, f'on part vers la page du Pisteur, avec le jeton, les potions et l\'entrée ({u})')
+    verifier(u.startswith('donjon/index.html?') and 'enquete=3' in u and ('jeton=' + j) in u and len(j) > 8 and 'potions=feu,fumigene,huile,colle,acide,baume,coeur' in u and 'entree=crypte' in u, f'on part vers la page du Pisteur, avec le jeton, les potions et l\'entrée ({u[:110]})')
+    import urllib.parse
+    look = urllib.parse.parse_qs(u.split('?')[1]).get('look', [''])[0]
+    verifier(look.startswith('p:f.') and 's:m.p6.blond' in look and 'a:f.p2.rose' in look, f'et avec l\'allure des trois héros ({look})')
     verifier(pg.evaluate("() => !!M.P().vus['donjon:parti'] && !!M.P().vus['donjon:ouvert:pisteur']"), 'la descente est notée')
     lieu(pg, 'clocher'); point(pg, 'descendre')
     t = texte(pg)
     verifier('Retourner dans le donjon' in t and 'Y retourner' in t, 'ensuite : « Retourner dans le donjon »')
     fermer(pg)
-    # une potion de plus : la même descente (le même jeton), le sac à jour
-    code(pg, 'sac:21')   # (feu + huile + acide)
-    lieu(pg, 'clocher'); point(pg, 'descendre'); pg.locator('#voile [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
-    verifier(('jeton=' + j) in vers(pg) and 'potions=feu,huile,acide' in vers(pg), 'un nouveau sac (une potion de plus) : le même jeton, les trois potions')
     # une vieille partie du donjon, restée dans la tablette (un autre jeton) : elle ne compte pas
     donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': 'vieux', 'faits': {'fin': 1, 'code:porte:odette': 1, 'code:leo:attrape': 1}})
     rendre(pg)
@@ -221,19 +258,38 @@ def partie_enquete(b):
     lieu(pg, 'clocher'); point(pg, 'descendre')
     verifier('Le donjon est fini' in texte(pg) and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le donjon fini : on n\'y redescend plus, on retrouve ses codes')
     fermer(pg)
-    # un code qui sert dans le donjon, tapé dans l'enquête
+    # des codes qui servent dans le donjon, tapés dans l'enquête par le Pisteur
     t = code(pg, 'info:grosse_marie', True)
     verifier('dans le donjon' in t and not pg.evaluate("() => !!M.P().recus['info:grosse_marie']"), f'« La Grosse Marie » tapée dans l\'enquête : « ce code-là se tape dans le donjon » ({t[:50]})')
     fermer(pg)
     t = code(pg, 'info:maire_retenu', True)
     verifier('dans le donjon' in t, '« Le maire est retenu » : pareil')
     fermer(pg)
+    t = code(pg, 'donjon:sauve:1', True)
+    verifier('dans le donjon' in t, f'un sort de sauvegarde tapé dans l\'enquête : « dans le donjon » ({t[:50]})')
+    fermer(pg)
+    t = code(pg, 'donjon:rune:lumiere', True)
+    verifier('pour le Sage' in t, f'un code du Sage tapé par le Pisteur : « pour le Sage » ({t[:60]})')
+    fermer(pg)
     # les codes : les mêmes symboles que dans le donjon, et aucun en double
     att = {'info:leo_attrape': 'etoile-arbre-flamme', 'info:leo_enfui': 'lune-flamme-chat', 'info:odette_porte': 'chapeau-lune-coeur', 'info:grosse_marie': 'cloche-cloche-lune', 'info:maire_retenu': 'chapeau-cle-chapeau'}
     vu = pg.evaluate("(l) => { var o = {}; l.forEach(function(k){ o[k] = M.code(k).join('-'); }); return o; }", list(att.keys()))
     verifier(vu == att, f'les cinq codes partagés ont les symboles du donjon ({vu})')
-    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les codes du donjon compris)')
+    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les codes du donjon et les 216 codes d\'allure compris)')
+    verifier(pg.evaluate("() => { for(var n = 0; n < 216; n++){ var a = M.allureDe(n); if(M.allureNumero(a.role, a) !== n) return false; } return !!M.code('allure:215') && !M.code('sac:5'); }"), 'les 216 codes d\'allure se lisent et s\'écrivent ; plus de code du sac')
     pg.context.close()
+
+    # ---------- tirer, pousser : le bruit
+    for geste in ('tirer', 'pousser'):
+        pg = debut(b, 'Pisteur', 'pisteur')
+        code(pg, 'moment:1'); code(pg, 'moment:2')
+        cle_anselme(pg, True)
+        ouvrir_grille(pg, geste)
+        t = texte(pg)
+        verifier('Un énorme bruit s\'est entendu dans tout le village' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 1, f'{geste} : « un énorme bruit s\'est entendu dans tout le village », le code du départ, puis « Descendre » ({t[:60]})')
+        verifier(pg.evaluate(f"() => M.P().vus['pisteur:clocher:{geste}'] === 'ok' && !M.P().vus['pisteur:clocher:soulever']") and not sans_son(pg), 'le bruit est retenu (pour la fin de l\'enquête)')
+        if geste == 'tirer': shot(pg, 'tirer')
+        pg.context.close()
 
     # ======================================================================== le Pisteur, par le puits
     print('— Le Pisteur B : le puits')
@@ -248,21 +304,22 @@ def partie_enquete(b):
     verifier(pts == ['grille', 'acide'], f'ensuite : « Verser l\'acide sur la grille » ({pts})')
     point(pg, 'acide')
     t = texte(pg)
-    verifier('code de son sac' in t and not pg.evaluate("() => !!M.P().vus['pisteur:puits:acide']"), f'sans le sac : « L\'Alchimiste a ce qu\'il faut » ({t[:60]})')
+    verifier('sept potions' in t and 'son code' in t and not pg.evaluate("() => !!M.P().vus['pisteur:puits:acide']"), f'sans le code de l\'Alchimiste : « quand ses sept potions seront prêtes » ({t[:70]})')
     shot(pg, 'puits-sans-acide'); fermer(pg)
-    code(pg, 'sac:5')   # (feu + huile : pas d'acide)
-    lieu(pg, 'puits'); point(pg, 'acide')
-    verifier(not pg.evaluate("() => !!M.P().vus['pisteur:puits:acide']"), 'un sac sans la fiole d\'acide : la grille tient bon'); fermer(pg)
-    code(pg, 'sac:127')
+    code(pg, allure(pg, 'alchimiste'))
     lieu(pg, 'puits'); point(pg, 'acide')
     t = texte(pg)
-    verifier('Pssshhh' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1, 'avec l\'acide : « Pssshhh ! », et le bouton « 🕯️ Descendre »')
+    verifier('Pssshhh' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 1, 'avec le code de l\'Alchimiste : « Pssshhh ! », le code du départ, et « 🕯️ Descendre »')
     shot(pg, 'puits-acide')
     point(pg, 'descendre')
-    verifier('7 potions' in texte(pg) and pg.locator('#voile .pl-fiole.pl-pleine').count() == 7, 'la fenêtre de la descente : sept potions')
+    t = texte(pg)
+    verifier('Il te manque le code du Sage' in t and 'L\'Alchimiste est prêt' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'la fenêtre de la tenue : il manque le Sage')
+    code(pg, allure(pg, 'sage'))
+    lieu(pg, 'puits'); point(pg, 'descendre')
+    verifier(pg.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pg.locator('#voile [data-act=ds-aller]').count() == 1, 'les deux codes tapés : la fenêtre de la descente, sept potions')
     pg.locator('#voile [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
     u = vers(pg); j = jeton(pg)
-    verifier('entree=puits' in u and 'potions=feu,fumigene,huile,colle,acide,baume,coeur' in u, f'on part par le puits, avec les sept potions ({u[-90:]})')
+    verifier('entree=puits' in u and 'potions=feu,fumigene,huile,colle,acide,baume,coeur' in u, f'on part par le puits, avec les sept potions ({u[-120:]})')
     verifier(lieu(pg, 'clocher') == ['cle'], 'toujours pas de crypte au clocher'); fermer(pg)
     # le maire n'a pas été retenu : Léo s'est enfui
     donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:leo:enfui': 1, 'fin': 1}})
@@ -274,76 +331,144 @@ def partie_enquete(b):
     pg.context.close()
 
     # ======================================================================== le Sage
-    print('— Le Sage : le plan des souterrains')
+    print('— Le Sage : son Grand Livre du donjon')
     pg = debut(b, 'Sage', 'sage')
+    def livre(pid):
+        pg.evaluate("(p) => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller(p, true); }", pid); pg.wait_for_timeout(350)
+        return texte(pg, '#livre-ici .lv-page.on')
+    def pages():
+        return pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); return [].map.call(document.querySelectorAll('#livre-ici .lv-page'), function(s){ return s.dataset.id; }); }")
+    ACT = '#livre-ici .lv-page.on '
     m = missions(pg)
     verifier(not any('souterrains' in x[0] or 'donjon' in x[0] for x in m), 'le Carnet du Sage : plus de mission de la nuit (13 novembre)')
-    pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('donjon', true); }"); pg.wait_for_timeout(300)
-    verifier(pg.locator('#livre-ici [data-act=ds-aller]').count() == 0, 'le matin : pas de plan des souterrains dans le Grand Livre')
+    livre('donjon')
+    verifier(pg.locator(ACT + '[data-act=ds-plan]').count() == 0, 'le matin : pas de plan des souterrains à regarder')
     for _ in range(2):
         pg.evaluate("() => { M.UI.modal = null; M.A['passer-moment'](); }"); pg.wait_for_timeout(400); fermer(pg)
     verifier(pg.evaluate("() => M.momentId()") == 'nuit', 'la nuit')
-    pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('donjon', true); }"); pg.wait_for_timeout(300)
-    t = texte(pg, '#livre-ici .lv-page.on')
-    verifier('souterrains' in t and 'voix haute' in t and pg.locator('#livre-ici .lv-page.on [data-act=ds-aller]').count() == 1, f'la nuit : la page « Le plan des souterrains » et son bouton ({t[:60]})')
-    verifier(jaune(pg, '#livre-ici .lv-page.on [data-act=ds-aller]') and not sans_son(pg, '#livre-ici .lv-page.on'), 'ce bouton est jaune, et la page a son 🔊')
+    t = livre('donjon')
+    verifier('souterrains' in t and 'voix haute' in t and 'Il manque un coin' in t and pg.locator(ACT + '[data-act=ds-plan]').count() == 1, f'la nuit : la page « Le plan des souterrains » et son bouton ({t[:60]})')
+    verifier(jaune(pg, ACT + '[data-act=ds-plan]') and not sans_son(pg, '#livre-ici .lv-page.on'), 'ce bouton est jaune, et la page a ses 🔊')
     shot(pg, 'sage-plan')
-    pg.locator('#livre-ici .lv-page.on [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
+    pg.locator(ACT + '[data-act=ds-plan]').click(); pg.wait_for_timeout(300)
     u = vers(pg); j = jeton(pg)
-    verifier(u.startswith('donjon/sage.html?') and ('jeton=' + j) in u and 'potions' not in u, f'on part vers la page du Sage ({u})')
-    pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('porte', true); }"); pg.wait_for_timeout(300)
-    t = texte(pg, '#livre-ici .lv-page.on')
-    verifier('Le Pisteur la trouvera-t-il' in t and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0, f'« La porte des Fondateurs » : fermée sans le code ({t[:50]})')
-    # le code de la porte, tapé sur son plan (une autre descente : rien ; la sienne : il arrive tout seul)
-    donjon_ecrit(pg, 'brumeval-donjon-sage', {'codes': {'porte:odette': True}}); donjon_ecrit(pg, 'brumeval-donjon-jeton:sage', 'vieux')
-    rendre(pg)
-    verifier(not pg.evaluate("() => !!M.P().recus['info:odette_porte']"), 'un code tapé sur le plan d\'une autre descente ne compte pas')
-    donjon_ecrit(pg, 'brumeval-donjon-jeton:sage', j)
-    rendre(pg, 900)
+    verifier(u.startswith('donjon/sage.html?') and ('jeton=' + j) in u and 'dans=jeu' in u and 'potions' not in u and pg.evaluate("() => !!M.S.e && M.UI.ecran === 'enquete'"), f'le plan s\'ouvre DANS le jeu : on ne quitte pas l\'enquête ({u})')
+    l = pages()
+    verifier('sauvegardes' not in l and 'aventurier' not in l and 'tenue' not in l, f'avant le départ : ni pages de sauvegarde, ni carnet, ni tenue ({l[-8:]})')
+    # le code du départ : la tenue, son code, les pages de sauvegarde
+    t = code(pg, 'info:on_descend', True)
+    verifier('Il est temps d\'enfiler notre tenue de combat' in t and 'Montre ce code au Pisteur' in t and pg.locator('#voile .ds-moncode .b-code').count() == 1 and pg.locator('#voile .ds-tenue').count() == 1, f'« On va dans la crypte » : la tenue de combat, et son code pour le Pisteur ({t[:60]})')
+    verifier(not sans_son(pg) and jaune(pg, '#voile .b-aller'), f'le 🔊 partout, et un bouton jaune ({sans_son(pg)})')
+    moi = pg.evaluate("() => M.allureCode()")
+    verifier(pg.evaluate("(id) => { var a = M.allureDe(+id.split(':')[1]), h = M.S.heros; return a.role === 'sage' && a.sexe === (h.sexe === 'm' ? 'm' : 'f') && a.peau === h.peau && a.cheveux === h.cheveux; }", moi), f'ce code dit bien son héros ({moi})')
+    shot(pg, 'sage-tenue'); fermer(pg)
+    t = code(pg, 'info:on_descend', True); verifier('Montre ce code au Pisteur' in t, 'le code retapé : la même fenêtre (il retrouve son code)'); fermer(pg)
+    t = code(pg, moi, True); verifier('pour le Pisteur' in t, f'son propre code tapé chez lui : « pour le Pisteur » ({t[:50]})'); fermer(pg)
+    l = pages()
+    verifier('sauvegardes' in l and 'tenue' in l and l.index('tenue') < l.index('donjon') < l.index('sauvegardes'), f'ses pages : la tenue, le plan, les sauvegardes ({l[-9:]})')
+    t = livre('tenue')
+    verifier('Montre ce code au Pisteur' in t and not sans_son(pg, '#livre-ici .lv-page.on'), 'la page « Ma tenue de combat » garde son code')
+    t = livre('sauvegardes')
+    verifier(pg.locator(ACT + '.ds-page').count() == 2 and pg.locator(ACT + '.ds-blanche').count() == 2 and not sans_son(pg, '#livre-ici .lv-page.on'), f'les pages de sauvegarde : deux pages blanches ({t[:50]})')
+    pg.locator(ACT + '.ds-blanche[data-n="1"]').click(); pg.wait_for_timeout(350)
+    verifier(pg.locator(ACT + '.ds-ecrite .b-code').count() == 1 and pg.locator(ACT + '[data-act=ds-barrer]').count() == 1 and pg.evaluate("() => M.code('donjon:sauve:1').join('-')") == 'lune-cle-arbre', 'écrire le sort : son code apparaît (celui du donjon), avec « Le Pisteur l\'a tapé »')
+    shot(pg, 'sage-sauvegardes')
+    pg.locator(ACT + '[data-act=ds-barrer]').click(); pg.wait_for_timeout(350)
+    verifier(pg.locator(ACT + '.ds-barree .ds-code-barre').count() == 1 and pg.locator(ACT + '.ds-blanche').count() == 1 and 'Sort utilisé' in texte(pg, '#livre-ici .lv-page.on'), 'le code utilisé est barré')
+    t = code(pg, 'donjon:page:blanche', True)
+    verifier('Une page blanche' in t and jaune(pg, '#voile [data-act=ds-livre]') and not sans_son(pg), f'le code « Une page blanche » ({t[:50]})')
+    pg.locator('#voile [data-act=ds-livre]').click(); pg.wait_for_timeout(500)
+    verifier(pg.evaluate("() => M.livrePage()") == 'sauvegardes' and pg.locator(ACT + '.ds-page').count() == 3, 'une page de plus, et le livre s\'ouvre dessus')
+    # le carnet de l'aventurier
+    t = code(pg, 'donjon:etude:rat', True)
+    verifier('Rat' in t and 'bonne page' in t and not sans_son(pg), f'un code d\'étude : la page du monstre ({t[:60]})'); fermer(pg)
+    livre('aventurier')
+    verifier(pg.locator(ACT + '.ds-bete').count() == 1, 'le carnet : une seule page, celle du rat')
+    t = code(pg, 'donjon:carnet:aventurier', True)
+    verifier('Un vieux carnet' in t and pg.evaluate("() => M.code('donjon:carnet:aventurier').join('-')") == 'chapeau-arbre-poisson' and not sans_son(pg), 'le code du carnet : chapeau, arbre, poisson')
+    pg.locator('#voile [data-act=ds-livre]').click(); pg.wait_for_timeout(500)
+    verifier(pg.evaluate("() => M.livrePage()") == 'aventurier' and pg.locator(ACT + '.ds-bete').count() == 9 and not sans_son(pg, '#livre-ici .lv-page.on'), 'tout le carnet : neuf monstres')
+    shot(pg, 'sage-carnet')
+    pg.locator(ACT + '.ds-bete').nth(8).click(); pg.wait_for_timeout(350)
     t = texte(pg)
-    verifier(pg.evaluate("() => !!M.P().recus['info:odette_porte']") and 'Odette est derrière la porte' in t, f'le code de la porte, tapé sur son plan, arrive tout seul dans l\'enquête ({t[:60]})')
-    verifier(not sans_son(pg), 'cette fenêtre a son 🔊')
-    shot(pg, 'sage-porte-recue'); fermer(pg)
-    pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('porte', true); }"); pg.wait_for_timeout(300)
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=porte]').count() == 1, '« La porte des Fondateurs » peut s\'ouvrir')
-    pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=porte]').click(); pg.wait_for_timeout(400); fermer(pg)
-    pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('porte', true); }"); pg.wait_for_timeout(300)
-    t = texte(pg, '#livre-ici .lv-page.on')
-    verifier('Quatre signes' in t and 'ne s\'ouvrira pas cette nuit' in t and not sans_son(pg, '#livre-ici .lv-page.on'), f'la page : la porte aux quatre signes, Odette derrière ({t[:60]})')
-    shot(pg, 'sage-porte')
-    pg.context.close()
-    # le Sage peut aussi taper le code à la main (le Pisteur le lui dicte)
-    pg = debut(b, 'Sage2', 'sage')
-    for _ in range(2):
-        pg.evaluate("() => { M.UI.modal = null; M.A['passer-moment'](); }"); pg.wait_for_timeout(400); fermer(pg)
+    verifier('Bourbe' in t and pg.locator('#voile .ds-recit .b-lire').count() >= 2 and not sans_son(pg), f'toucher un monstre : sa page, un 🔊 par paragraphe ({t[:40]})'); fermer(pg)
+    # la rune, le morceau déchiré
+    t = code(pg, 'donjon:rune:lumiere', True)
+    verifier('Une rune apparaît' in t and jaune(pg, '#voile [data-act=ds-plan]') and not sans_son(pg), f'la rune : « Une rune apparaît ! », puis le plan ({t[:50]})')
+    shot(pg, 'sage-rune')
+    pg.locator('#voile [data-act=ds-plan]').click(); pg.wait_for_timeout(300)
+    u = urllib.parse.parse_qs(vers(pg).split('?')[1])
+    verifier(u.get('nouveau') == ['rune:lumiere'] and 'rune:lumiere' in u.get('codes', [''])[0].split(',') and u.get('dans') == ['jeu'], f'le plan s\'ouvre avec la rune ({u.get("codes")})')
+    t = code(pg, 'donjon:page:dechiree', True)
+    verifier('morceau' in t and pg.locator('#voile [data-act=ds-plan][data-nouveau="page:dechiree"]').count() == 1, 'le morceau déchiré du plan'); fermer(pg)
+    t = livre('donjon')
+    verifier('Le morceau déchiré est recollé' in t and 'rune de lumière' in t, 'la page du plan dit où on en est')
+    # la porte : le Pisteur lui dicte le code
+    t = livre('porte')
+    verifier('Le Pisteur la trouvera-t-il' in t and pg.locator(ACT + '[data-act=ouvrir-page]').count() == 0, f'« La porte des Fondateurs » : fermée sans le code ({t[:50]})')
     t = code(pg, 'info:odette_porte', True)
-    verifier(pg.evaluate("() => !!M.P().recus['info:odette_porte']") and 'Odette' in t, 'le Sage peut aussi taper le code de la porte dans l\'enquête')
+    verifier(pg.evaluate("() => !!M.P().recus['info:odette_porte']") and 'Odette' in t, 'le code de la porte se tape dans l\'enquête'); fermer(pg)
+    livre('porte')
+    verifier(pg.locator(ACT + '[data-act=ouvrir-page][data-id=porte]').count() == 1, '« La porte des Fondateurs » peut s\'ouvrir')
+    pg.locator(ACT + '[data-act=ouvrir-page][data-id=porte]').click(); pg.wait_for_timeout(400); fermer(pg)
+    t = livre('porte')
+    verifier('Quatre signes' in t and 'ne s\'ouvrira pas cette nuit' in t and not sans_son(pg, '#livre-ici .lv-page.on'), f'la page : la porte aux quatre signes, Odette derrière ({t[:60]})')
+    pg.evaluate("() => { M.A['ds-plan']({dataset:{}}); }"); pg.wait_for_timeout(200)
+    verifier('porte:odette' in urllib.parse.parse_qs(vers(pg).split('?')[1]).get('codes', [''])[0], 'le plan saura que la porte est trouvée')
+    t = code(pg, 'donjon:plante:givre', True); verifier('Alchimiste' in t, f'la fleur de givre tapée par le Sage : « pour l\'Alchimiste » ({t[:60]})')
     pg.context.close()
 
     # ======================================================================== l'Alchimiste
-    print('— L\'Alchimiste : le chaudron du donjon')
+    print('— L\'Alchimiste : son code, la fleur de givre')
     pg = debut(b, 'Alchi', 'alchimiste')
-    pg.evaluate("() => { var P = M.P(); ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'].forEach(function(k){ P.vus['fiole:' + k] = 1; }); M.S.etabliIntro = 1; M.sauver(); }")
-    pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); pg.wait_for_timeout(900)
-    ET.vite(pg); fr = ET.ouvrir(pg); ET.sac(pg)
-    verifier(fr.locator('.carte [data-donjon]').count() == 0 and fr.locator('.carte .rang .pleine').count() == 7 and fr.locator('#sacCode').count() == 1, 'le jour, les sept potions faites : le code pour le Pisteur, mais pas de chaudron du donjon')
-    ET.quitter(pg)
+    pg.evaluate("() => { M.S.etabliIntro = 1; M.sauver(); }")
+    ET.vite(pg)
     code(pg, 'moment:1'); code(pg, 'moment:2')
+    t = code(pg, 'info:on_descend', True)
+    verifier('Il est temps d\'enfiler notre tenue de combat' in t and 'Il t\'en manque 7' in t and 'On a besoin des sept potions pour descendre' in t and pg.locator('#voile .ds-moncode').count() == 0, f'sans ses potions : la tenue, mais pas de code ({t[:90]})')
+    verifier(not sans_son(pg), 'le 🔊'); shot(pg, 'alchimiste-sans-potions'); fermer(pg)
+    pg.evaluate("() => { var P = M.P(); ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'].forEach(function(k){ P.vus['fiole:' + k] = 1; }); M.sauver(); }")
+    t = code(pg, 'info:on_descend', True)
+    verifier('sept potions à la ceinture' in t and pg.locator('#voile .ds-moncode .b-code').count() == 1, 'avec ses sept potions : son code pour le Pisteur')
+    moi = pg.evaluate("() => M.allureCode()"); att = pg.evaluate("(id) => M.code(id).map(function(s){ return DONNEES.SYM[s].e; }).join('')", moi)
+    fermer(pg)
     pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); pg.wait_for_timeout(900)
     fr = ET.ouvrir(pg); ET.sac(pg)
-    t = fr.evaluate("() => { var c = document.querySelector('.carte'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
-    verifier(fr.locator('.carte [data-donjon]').count() == 1 and 'chaudron te suit' in t and fr.locator('#sacCode').count() == 1, f'la nuit, sur la carte des sept potions : le code pour le Pisteur, et « 🫕 Le chaudron du donjon » ({t[-80:]})')
-    verifier(ET.sans_son(pg, '.carte') == [] and jaune(fr, '.carte [data-donjon]'), f'le 🔊 partout, et le bouton jaune ({ET.sans_son(pg, ".carte")})')
-    shot(pg, 'alchimiste-sac')
-    ET.toucher(pg, '.carte [data-donjon]', attendre=False); pg.wait_for_timeout(400)
+    verifier(fr.locator('.carte .rang .pleine').count() == 7 and fr.locator('#sacCode .formes').inner_text() == att and fr.locator('.carte [data-donjon]').count() == 0, f'l\'établi montre le même code, celui des sept potions ({att}) ; plus de chaudron du donjon')
+    verifier(ET.sans_son(pg, '.carte') == [], 'le 🔊 partout')
+    shot(pg, 'alchimiste-code')
+    ET.quitter(pg)
+    # la fleur de givre
+    t = code(pg, 'donjon:plante:givre', True)
+    verifier('fleur de givre' in t and jaune(pg, '#voile [data-act=ds-etabli]') and not sans_son(pg) and pg.evaluate("() => M.code('donjon:plante:givre').join('-')") == 'poisson-lune-etoile', f'le code de la fleur de givre ({t[:60]})')
+    verifier(pg.evaluate("() => M.P().plantes.givre === 1 && M.plantesEnAttente() === 1 && M.potionsPretes().n === 7"), 'elle attend sur la tringle ; les sept potions restent sept')
+    pg.locator('#voile [data-act=ds-etabli]').click(); pg.wait_for_timeout(300)
+    fr = ET.ouvrir(pg)
+    verifier(fr.evaluate("() => !!document.querySelector('#pendue-givre') && document.querySelector('#potion-givre').style.display !== 'none'"), 'l\'établi s\'ouvre : la fleur pend à la tringle, son flacon vide attend')
+    R = ET.recettes(pg)
+    ET.faire(pg, 'givre', R); pg.wait_for_timeout(1300)
+    carte = fr.evaluate("() => { var c = document.querySelector('.carte.prete'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
+    verifier('givre' in ET.etat(pg)['faites'] and len(R['RE']['givre']['etapes']) == 8, 'la potion de givre se fait, geste par geste : huit étapes')
+    verifier('Donne ce code au Pisteur : ça peut être utile' in carte and 'Sept fioles' not in carte and fr.locator('#plusCode .formes').inner_text() == '🍄❤️🔑', f'sa carte : « Donne ce code au Pisteur : ça peut être utile ! », et le code de la recette ({carte[-90:]})')
+    verifier(ET.sans_son(pg, '.carte') == [], 'le 🔊 partout')
+    shot(pg, 'alchimiste-givre')
+    ET.continuer(pg); pg.wait_for_timeout(300)
+    verifier(pg.evaluate("() => !!M.P().vus['fiole:givre'] && M.potionsPretes().n === 7 && M.code('donjon:recette:givre').join('-') === 'champi-coeur-cle'"), 'le jeu a noté le givre ; les sept restent sept ; le code est celui du donjon')
+    ET.quitter(pg)
+    # les herbes lumineuses : en attendant la décision de Romain, l'ancien chaudron du donjon
+    t = code(pg, 'donjon:plante:lumiere', True)
+    verifier('herbes' in t and jaune(pg, '#voile [data-act=ds-chaudron]') and not sans_son(pg), f'les herbes lumineuses : le chaudron du donjon ({t[:60]})')
+    pg.locator('#voile [data-act=ds-chaudron]').click(); pg.wait_for_timeout(300)
     u = vers(pg)
-    verifier(u.startswith('donjon/alchimiste.html?') and ('jeton=' + jeton(pg)) in u and pg.locator('#etabli-cadre').count() == 0, f'on part vers la page de l\'Alchimiste ({u})')
+    verifier(u.startswith('donjon/alchimiste.html?') and ('jeton=' + jeton(pg)) in u and 'recu=plante%3Alumiere' in u, f'on part vers le chaudron du donjon, avec la plante ({u})')
     pg.context.close()
 
     # ======================================================================== le Barde n'a pas de page du donjon
     print('— Le Barde')
     pg = debut(b, 'Barde', 'barde')
     verifier(pg.evaluate("() => M.donjonAdresse()") is None, 'le Barde n\'a pas de page du donjon : il fait la fête')
+    t = code(pg, 'info:on_descend', True)
+    verifier('équipier' in t and not pg.evaluate("() => !!M.P().recus['info:on_descend']"), f'le code du départ n\'est pas pour lui ({t[:60]})')
     pg.context.close()
 
 
@@ -365,21 +490,32 @@ def partie_vraie(b):
         pg = debut(b, 'Pisteur', 'pisteur', base + 'index.html#test', sans_donjon=False)
         code(pg, 'moment:1'); code(pg, 'moment:2')
         cle_anselme(pg, True)
-        lieu(pg, 'clocher'); point(pg, 'crypte'); point(pg, 'descendre'); fermer(pg)
-        code(pg, 'sac:5')
-        lieu(pg, 'clocher'); point(pg, 'descendre')
+        ouvrir_grille(pg, 'soulever'); fermer(pg)
+        lieu(pg, 'clocher'); point(pg, 'descendre'); pg.wait_for_timeout(600)
+        verifier(pg.locator('#voile iframe.ds-tenue').count() == 1 and tenue_prete(pg) == 'pisteur', 'la fenêtre de la tenue montre pour de vrai le Pisteur en tenue de combat (la petite page du donjon)')
+        pg.screenshot(path=f'{OUT}/v0-tenue-pisteur.png')
+        fermer(pg)
+        code(pg, allure(pg, 'sage', 'm', 'p6', 'blond')); code(pg, allure(pg, 'alchimiste', 'f', 'p2', 'rose'))
+        lieu(pg, 'clocher'); point(pg, 'descendre'); pg.wait_for_timeout(400)
+        verifier(tenue_prete(pg) == 'sage,alchimiste,pisteur', 'la fenêtre de la descente montre les trois héros en tenue')
+        pg.screenshot(path=f'{OUT}/v0-descente-trois.png')
         j = jeton(pg) or pg.evaluate("() => { M.donjonAdresse(); return M.P().donjonJeton; }")
         pg.locator('#voile [data-act=ds-aller]').click()
         pg.wait_for_url('**/donjon/index.html**'); pg.wait_for_timeout(1500)
-        P = pg.evaluate("() => { var p = DJ.Explo._X().partie; return {enquete:p.enquete, jeton:p.jeton, entree:p.entree, recettes:p.recettes}; }")
-        verifier(P['enquete'] == 3 and P['jeton'] == j and P['entree'] == 'crypte' and P['recettes'] == ['feu', 'huile'], f'le donjon s\'ouvre pour de vrai : une partie neuve, le jeton, la crypte, deux potions ({P})')
+        P = pg.evaluate("() => { var p = DJ.Explo._X().partie; return {enquete:p.enquete, jeton:p.jeton, entree:p.entree, recettes:p.recettes, look:p.look}; }")
+        verifier(P['enquete'] == 3 and P['jeton'] == j and P['entree'] == 'crypte' and len(P['recettes']) == 7, f'le donjon s\'ouvre pour de vrai : une partie neuve, le jeton, la crypte, sept potions ({P["recettes"]})')
+        L = pg.evaluate("() => { var A = DonjonAllure, L = DJ.LOOK; return {sage:[L.sage.fille, L.sage.pe === A.PE.p6, L.sage.ch === A.CH.blond, !!L.sage.lunettes], alchimiste:[L.alchimiste.fille, L.alchimiste.pe === A.PE.p2, L.alchimiste.ch === A.CH.rose], pisteur:[L.pisteur.fille, !!L.pisteur.pe]}; }")
+        verifier(L['sage'] == [False, True, True, True] and L['alchimiste'] == [True, True, True] and 's:m.p6.blond' in (P['look'] or ''), f'les trois héros ont l\'allure des joueurs ({P["look"]})')
+        pg.wait_for_timeout(1200)
+        verifier(pg.evaluate("() => { var st = document.querySelector('#dj-css-heros-look'); return !!st && (st.textContent.match(/data:image\\/png/g) || []).length; }") == 3, 'leurs petites têtes sont refaites à leur allure (trois photos)')
         t = pg.evaluate("() => document.querySelector('#conteur') ? document.querySelector('#conteur').textContent : ''")
-        verifier('sac de l\'Alchimiste' in t and 'deux' in t.lower(), f'l\'écran du sac parle du sac de l\'Alchimiste ({t[:70]})')
+        verifier('sac de l\'Alchimiste' in t, f'l\'écran du sac parle du sac de l\'Alchimiste ({t[:70]})')
         pg.screenshot(path=f'{OUT}/v1-donjon-sac.png')
         pg.eval_on_selector('[data-act=sac-pret]', 'e => e.click()')
         pg.wait_for_function("() => DJ.Explo.etat().ecran === 'scene' && !DJ.Explo.etat().occupe", timeout=40000); pg.wait_for_timeout(600)
         t = pg.evaluate("() => document.querySelector('#conteur') ? document.querySelector('#conteur').textContent : ''")
         verifier('escalier de la crypte' in t, f'le fond du puits, en venant de la crypte : « L\'escalier de la crypte descend… » ({t[:60]})')
+        pg.screenshot(path=f'{OUT}/v1b-donjon-heros.png')
         pg.eval_on_selector('#b-repartir', 'e => e.click()')
         pg.wait_for_function("() => DJ.Explo.etat().ecran === 'carte' && !DJ.Explo.etat().occupe", timeout=40000); pg.wait_for_timeout(500)
         verifier('Sous le clocher' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 1, 'la carte : « Sous le clocher », et le bouton « 🏘️ L\'enquête »')
@@ -394,8 +530,8 @@ def partie_vraie(b):
         pg.locator('#voile [data-act=ds-aller]').click()
         pg.wait_for_url('**/donjon/index.html**'); pg.wait_for_timeout(1500)
         pg.wait_for_function("() => DJ.Explo.etat().ecran === 'carte' && !DJ.Explo.etat().occupe", timeout=40000)
-        verifier(pg.evaluate("() => DJ.Explo._X().partie.jeton") == j and pg.locator('#sac').count() == 0, 'on redescend : la même partie, là où on l\'avait laissée (pas d\'écran du sac)')
-        # les deux codes du Barde, dans le donjon (le pavé)
+        verifier(pg.evaluate("() => DJ.Explo._X().partie.jeton") == j and pg.locator('#sac').count() == 0 and pg.evaluate("() => DJ.LOOK.sage.fille") is False, 'on redescend : la même partie, là où on l\'avait laissée, les mêmes héros')
+        # les deux codes du Barde, et le code du givre de l'Alchimiste, dans le donjon (le pavé)
         def pave(cid):
             pg.eval_on_selector('[data-act=pave]', 'e => e.click()'); pg.wait_for_timeout(400)
             for s in pg.evaluate("(id) => DONJON_CODES.code(id)", cid):
@@ -411,6 +547,9 @@ def partie_vraie(b):
         t = pave('maire:retenu')
         verifier('Le maire est retenu' in t and pg.evaluate("() => !!DJ.Explo._X().partie.codes['maire:retenu']"), f'« Le maire est retenu » tapé dans le donjon ({t[:50]})')
         pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); pg.wait_for_timeout(400)
+        t = pave('recette:givre')
+        verifier(pg.evaluate("() => DJ.Explo._X().partie.recettes.indexOf('givre') >= 0"), f'le code du givre (celui que l\'établi donne à l\'Alchimiste), tapé dans le donjon : le Givre est appris ({t[:50]})')
+        if pg.locator('#fenetre [data-act=fermer]').count(): pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); pg.wait_for_timeout(400)
         # la fin (on saute le chemin : les règles du donjon ont leurs propres tests) : la porte, puis Léo
         pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.entrer(p, 'porte4'); Regles.entrer(p, 'leo'); DJ.garder(p); }")
         f = pg.evaluate("() => DJ.Explo._X().partie.faits")
@@ -421,30 +560,41 @@ def partie_vraie(b):
         verifier('Le donjon est fini' in t and 'coincé Léo' in t and pg.locator('#voile .b-donne').count() == 2, f'on remonte : « Le donjon est fini », les deux codes ({t[:60]})')
         pg.screenshot(path=f'{OUT}/v4-retour-fini.png')
         pg.context.close()
-        # ---------- le Sage ----------
+        # ---------- le Sage : sa tenue, son plan DANS le jeu ----------
         pg = debut(b, 'Sage', 'sage', base + 'index.html#test', sans_donjon=False)
         for _ in range(2):
             pg.evaluate("() => { M.UI.modal = null; M.A['passer-moment'](); }"); pg.wait_for_timeout(400); fermer(pg)
+        code(pg, 'info:on_descend', True)
+        verifier(pg.locator('#voile iframe.ds-tenue').count() == 1 and tenue_prete(pg) == 'sage', 'le Sage voit pour de vrai son héros en tenue de combat')
+        pg.screenshot(path=f'{OUT}/v5-sage-tenue.png'); fermer(pg)
         pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('donjon', true); }"); pg.wait_for_timeout(300)
-        pg.locator('#livre-ici .lv-page.on [data-act=ds-aller]').click()
-        pg.wait_for_url('**/donjon/sage.html**'); pg.wait_for_timeout(1500)
-        j = pg.evaluate("() => localStorage.getItem('brumeval-donjon-jeton:sage')")
-        verifier(bool(j) and pg.locator('#b-enquete').count() == 1, f'la page du Sage s\'ouvre pour de vrai, avec son jeton et le petit bouton 🏘️ ({j})')
-        pg.screenshot(path=f'{OUT}/v5-sage.png')
-        pg.evaluate("() => { var s = JSON.parse(localStorage.getItem('brumeval-donjon-sage') || '{}'); s.codes = s.codes || {}; s.codes['porte:odette'] = true; localStorage.setItem('brumeval-donjon-sage', JSON.stringify(s)); }")
-        pg.eval_on_selector('#b-enquete', 'e => e.click()')
-        pg.wait_for_url('**/brumeval/index.html**'); pg.wait_for_timeout(1300)
-        verifier(pg.evaluate("() => M.UI.ecran") == 'enquete' and pg.evaluate("() => !!M.P().recus['info:odette_porte']") and 'Odette est derrière la porte' in texte(pg), 'le Sage revient dans l\'enquête : le code de la porte est arrivé tout seul')
+        pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').click(); pg.wait_for_timeout(3000)
+        plan = pg.frame_locator('#donjon-plan-cadre')
+        verifier(pg.locator('#donjon-plan-cadre').count() == 1 and '/brumeval/index.html' in pg.url and plan.locator('#b-fermer').is_visible() and not plan.locator('#b-code').is_visible() and not plan.locator('#b-livre').is_visible() and not plan.locator('#rune').is_visible(),
+                 'le plan s\'ouvre DANS le jeu (un cadre) : « Refermer », pas de pavé de codes ni de livre à part, pas encore de rune')
+        pg.screenshot(path=f'{OUT}/v5-sage-plan.png')
+        plan.locator('#b-fermer').click(); pg.wait_for_timeout(600)
+        verifier(pg.locator('#donjon-plan-cadre').count() == 0 and pg.evaluate("() => M.UI.ecran") == 'enquete' and pg.locator('#livre-ici').count() == 1, '« Refermer » : on retrouve le Grand Livre')
+        code(pg, 'donjon:rune:lumiere', True)
+        pg.locator('#voile [data-act=ds-plan]').click(); pg.wait_for_timeout(3500)
+        plan = pg.frame_locator('#donjon-plan-cadre')
+        verifier(plan.locator('#rune').is_visible() and 'Une rune apparaît' in plan.locator('#bulle').inner_text(), 'le code de la rune, tapé dans l\'enquête : « Une rune apparaît ! », et elle est sur le plan')
+        pg.screenshot(path=f'{OUT}/v5-sage-rune.png')
+        plan.locator('#b-fermer').click(); pg.wait_for_timeout(500)
+        code(pg, 'donjon:page:dechiree', True)
+        pg.locator('#voile [data-act=ds-plan]').click(); pg.wait_for_timeout(4000)
+        plan = pg.frame_locator('#donjon-plan-cadre')
+        verifier(plan.locator('.coin').is_visible() and 'recollent' in plan.locator('#bulle').inner_text() and plan.locator('#rune').is_visible(), 'le morceau déchiré se recolle sur le plan ; la rune est toujours là')
+        pg.screenshot(path=f'{OUT}/v5-sage-coin.png')
+        plan.locator('#b-fermer').click(); pg.wait_for_timeout(500)
         pg.context.close()
-        # ---------- l'Alchimiste ----------
+        # ---------- l'Alchimiste : les herbes lumineuses, au chaudron du donjon ----------
         pg = debut(b, 'Alchi', 'alchimiste', base + 'index.html#test', sans_donjon=False)
-        pg.evaluate("() => { var P = M.P(); ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'].forEach(function(k){ P.vus['fiole:' + k] = 1; }); M.S.etabliIntro = 1; M.sauver(); }")
         code(pg, 'moment:1'); code(pg, 'moment:2')
-        pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); pg.wait_for_timeout(900)
-        ET.vite(pg); ET.ouvrir(pg); ET.sac(pg)
-        ET.toucher(pg, '.carte [data-donjon]', attendre=False)
+        code(pg, 'donjon:plante:lumiere', True)
+        pg.locator('#voile [data-act=ds-chaudron]').click()
         pg.wait_for_url('**/donjon/alchimiste.html**'); pg.wait_for_timeout(1500)
-        verifier(pg.locator('#b-enquete').count() == 1 and pg.evaluate("() => !!localStorage.getItem('brumeval-donjon-jeton:alchimiste')"), 'la page de l\'Alchimiste s\'ouvre pour de vrai, avec le petit bouton 🏘️')
+        verifier(pg.locator('#b-enquete').count() == 1 and pg.evaluate("() => !!ALCHI.etat().codes['plante:lumiere']") and pg.locator('.plante-fen').count() == 1, 'le chaudron du donjon s\'ouvre pour de vrai, et la plante y arrive toute seule (sans retaper le code)')
         pg.screenshot(path=f'{OUT}/v6-alchimiste.png')
         pg.eval_on_selector('#b-enquete', 'e => e.click()')
         pg.wait_for_url('**/brumeval/index.html**'); pg.wait_for_timeout(900)
