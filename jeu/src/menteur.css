@@ -1,0 +1,10 @@
+/* Le petit tutoriel du menteur (enquête 2, le Barde ; menteur.js). Le rond jaune et le bouton qui respire : tuto.css.
+   La flèche rouge « Elle ment ! », posée sur le grand visage, qui montre le front (la goutte de sueur), le temps du signe. */
+.bd-visage{position:relative}
+.tm-fleche{position:absolute;left:4%;top:6%;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:0;pointer-events:none;
+  animation:tm-fleche-vient .25s ease-out, tm-fleche .7s ease-in-out .25s infinite alternate}
+.tm-fleche b{font-family:var(--f-titre, inherit);font-size:clamp(1.2rem, 5.5vw, 1.9rem);line-height:1;color:#ff2e2e;
+  text-shadow:-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 3px 8px rgba(0,0,0,.4);transform:rotate(-6deg)}
+.tm-fleche svg{width:clamp(70px, 26%, 120px);height:auto;margin-left:18%;transform:rotate(18deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+@keyframes tm-fleche{0%{transform:translate(0, 0)}100%{transform:translate(8px, 5px)}}
+@keyframes tm-fleche-vient{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}

@@ -138,7 +138,9 @@ M.sectionMissions = function(){
   var P = M.P(); if(!P || P.etape !== 'jeu') return '';
   var L = M.etapesMission(); if(!L.length) return '';
   var Mi = etat();
-  /* fermée au départ, pour tous (Romain, 5 novembre, 14 h 26) : on la déplie soi-même (Mi.plie === false : dépliée) */
+  /* fermée au départ, pour tous (Romain, 5 novembre, 14 h 26) : on la déplie soi-même (Mi.plie === false : dépliée) ;
+     (Romain, 13 novembre) ouverte au départ d'une enquête qui commence sur le Carnet (E.debutCarnet, enquête 2 : P.missionsOuvertes, A.commencer) */
+  if(P.missionsOuvertes && Mi.plie === undefined) Mi.plie = false;
   var plie = Mi.plie !== false;
   Mi.nonLus = 0;
   var R = D.ROLES[M.role()];

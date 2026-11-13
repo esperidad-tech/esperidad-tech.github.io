@@ -286,17 +286,29 @@ function deuxLignes(nom){
   var m = nom.length/2, best = -1; for(var i = 0; i < nom.length; i++) if(nom[i] === ' ' && (best < 0 || Math.abs(i - m) < Math.abs(best - m))) best = i;
   return [nom.slice(0, best), nom.slice(best + 1)];
 }
-/* Chaque place : l'étiquette « n° 1 », le petit échantillon ; une fois reconnu, c'est fini pour lui et ça se voit :
-   un grand ✅ dessus, et son nom sur une étiquette verte. */
+/* Chaque place : l'étiquette « n° 1 », le petit échantillon ; une fois TOUT vu (Romain, 13 novembre : « le signe validé vert, il doit être
+   vraiment quand on a tout vu ; s'il manque des choses, il faut bien montrer qu'il y a encore des choses à voir »), un grand ✅ dessus et son nom
+   sur une étiquette verte. Avant : une loupe 🔎 et « 2 / 5 », ce qui a été reconnu sur tout ce qu'on peut en tirer (l'échantillon, et tout ce
+   qui vient de lui : ce que la pince prélève, le liquide de l'eau chaude), sur une étiquette orange. */
+function aVoir(d){ var l = [d]; for(var k in OBJETS) if(OBJETS[k].de === d) l.push(k); return l; }
+function vusDe(d){ return aVoir(d).filter(function(k){ return !!S.trouves[k]; }).length; }
+function toutVu(d){ return vusDe(d) >= aVoir(d).length; }
 function dessinerLame(){
   CUIRS.forEach(function(t, n){
     var g = $('#echD-' + t); if(!g) return; var q = posEch(n), x = q.x, y = q.y, fait = !!S.trouves[t], att = !!ATTENTE[t] && !fait && !S.finis[t], s = '';
-    s += '<g transform="rotate(-5 ' + x + ' ' + (y - 46) + ')"><rect x="' + (x - 20) + '" y="' + (y - 55) + '" width="44" height="22" rx="3" fill="rgba(40,20,8,.3)"/>' + R(x - 22, y - 58, 44, 22, 3, fait ? '#c9f2cd' : '#fff6d8', ' stroke-width="2.2"') + txt(x, y - 46.5, 14, 'n° ' + (n + 1)) + '</g>';
-    s += '<g' + (fait ? ' opacity=".5"' : (att ? ' opacity=".4"' : '')) + '><ellipse cx="' + x + '" cy="' + (y + 5) + '" rx="17" ry="3.5" fill="rgba(40,20,8,.28)"/>' + petitEch(t, x, y) + '</g>';
-    if(fait){ var l = deuxLignes(nomTrouve(t)), h = l.length > 1 ? 30 : 19;
+    var nv = vusDe(t), nt = aVoir(t).length, tout = nv >= nt, enCours = !tout && nv > 0;
+    s += '<g transform="rotate(-5 ' + x + ' ' + (y - 46) + ')"><rect x="' + (x - 20) + '" y="' + (y - 55) + '" width="44" height="22" rx="3" fill="rgba(40,20,8,.3)"/>' + R(x - 22, y - 58, 44, 22, 3, tout ? '#c9f2cd' : enCours ? '#ffe2b8' : '#fff6d8', ' stroke-width="2.2"') + txt(x, y - 46.5, 14, 'n° ' + (n + 1)) + '</g>';
+    s += '<g' + (tout ? ' opacity=".5"' : (att ? ' opacity=".4"' : '')) + '><ellipse cx="' + x + '" cy="' + (y + 5) + '" rx="17" ry="3.5" fill="rgba(40,20,8,.28)"/>' + petitEch(t, x, y) + '</g>';
+    if(tout){ var l = deuxLignes(nomTrouve(t)), h = l.length > 1 ? 30 : 19;
       s += '<text x="' + x + '" y="' + (y - 4) + '" font-size="34" text-anchor="middle" dominant-baseline="central">✅</text>' +
         '<rect x="' + (x - 39) + '" y="' + (y + 20) + '" width="78" height="' + h + '" rx="5" fill="#eaffea" stroke="#2f8a3e" stroke-width="2.4"/>' +
         l.map(function(m, k){ return txt(x, y + 30 + k*12, l.length > 1 ? 12.5 : 14, m, ' fill="#1f5a2a"'); }).join(''); }
+    else if(enCours){
+      var l2 = fait ? deuxLignes(nomTrouve(t)) : ['En cours…'], h2 = (l2.length > 1 ? 30 : 19) + 15;
+      s += '<text x="' + (x + 17) + '" y="' + (y - 15) + '" font-size="22" text-anchor="middle" dominant-baseline="central">🔎</text>' +
+        '<rect x="' + (x - 39) + '" y="' + (y + 20) + '" width="78" height="' + h2 + '" rx="5" fill="#fff0d8" stroke="#d27a12" stroke-width="2.4" stroke-dasharray="5 3"/>' +
+        l2.map(function(m, k){ return txt(x, y + 30 + k*12, l2.length > 1 ? 12.5 : 14, m, ' fill="#7a3f06"'); }).join('') +
+        txt(x, y + 30 + l2.length * 12 + 2, 13, nv + ' / ' + nt + ' trouvés', ' fill="#a8560a"'); }
     /* pas encore son tour (le tutoriel suit sa trame) : il est pâle, avec un petit sablier */
     if(att) s += '<text x="' + (x + 15) + '" y="' + (y - 14) + '" font-size="17" text-anchor="middle" dominant-baseline="central">⏳</text>';
     g.innerHTML = s;

@@ -38,8 +38,9 @@ function guideEtape(){
   var d = GUIDE.id; if(!d || !S.dos[d] || ATTENTE[d]) return null;
   if(S.finis[d]){
     if(S.mode === 'ardoise'){ GUIDE.vuArdoise = true; return {c:'#bFermer', t:'Voilà ton code ! Retiens bien ses trois formes. Puis reviens à ta paillasse.', k:'ard-vu'}; }
-    if(S.mode) return {c:'#bFermer', t:'Bravo, l\'analyse est finie ! Reviens à ta paillasse.', k:'fin-ret'};
-    if(!GUIDE.vuArdoise) return {c:'#gArdoise', t:'Tout est trouvé ! Ton code s\'est écrit tout seul sur l\'ardoise. Va le voir de près !', k:'ard'};
+    /* (13 novembre) le ✅ de l'échantillon n'arrive qu'une fois TOUT vu (50-scene.js) : ici, on a trouvé l'essentiel, pas forcément tout */
+    if(S.mode) return {c:'#bFermer', t:'Bravo, tu as trouvé l\'essentiel ! Reviens à ta paillasse.', k:'fin-ret'};
+    if(!GUIDE.vuArdoise) return {c:'#gArdoise', t:'L\'essentiel est trouvé ! Ton code s\'est écrit tout seul sur l\'ardoise. Va le voir de près !', k:'ard'};
     return {c:'#bQuitter', t:'Mission accomplie ! Retourne à ton atelier : il y a du nouveau à noter.', k:'quitter'};
   }
   var t = guideManque(d); if(!t) return null;

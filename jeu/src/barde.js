@@ -79,11 +79,12 @@ function reglagesMensonge(){
   return p;
 }
 B.reglages = reglagesMensonge;
-function scenario(id, texte, ment){
+function scenario(id, texte, ment, force){
   var T = window.MJ && MJ.TYPES && MJ.TYPES.mensonge;
   if(!T || !T.scenario) return {D:2.4 + texte.length * .05, ev:[], couche:null};
   var p = reglagesMensonge(), signe = null;
-  if(ment){
+  if(ment && force) signe = force;   /* (13 novembre) le petit tutoriel du menteur, enquête 2 : la goutte de sueur, pendant toute la phrase (menteur.js) */
+  else if(ment){
     if(B.mimiques()[id] && tic(id)){
       /* le secret est connu : SON geste, un peu plus net que les signes au hasard, mais bref et glissé parmi les gestes naturels.
          Durée et netteté suivent le niveau (MJ.reglages, le mini-jeu du mensonge) : au niveau 2, bien visible ; au niveau 10, très bref.
@@ -255,6 +256,12 @@ function encoreToi(id){
 /* fâché (vexé) ou « Encore toi ? » : on ne peut plus lui parler pour ce moment */
 B.fache = function(id){ return estVexe(id) || encoreToi(id); };
 M.pnjFache = function(id){ try{ return M.role() === 'barde' && B.fache(id); }catch(e){ return false; } };
+/* (Romain, 13 novembre : « dès qu'on ne peut pas aller dans une boîte de dialogue, je veux qu'il soit affiché en rouge… une règle pour
+   absolument tout ») : pour le Barde, un villageois à qui on ne peut pas parler en ce moment — fâché, « Encore toi ? », plus rien à dire,
+   ou là mais trop occupé (E.pnj[id].carte et .occupe : « Pas le temps, je pars livrer ! ») — a son visage cerclé de rouge, sur la carte
+   et dans sa pastille. (Un vendeur de fleurs qui vend encore, enquête 3, n'est pas « indisponible » : on lui achète des fleurs.) */
+function occupeLa(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}, mid = M.momentId(); return !(N.ou && N.ou[mid]) && !!(N.carte && N.carte[mid]) && !(M.vendeurDispo && M.vendeurDispo(id)); }
+M.pnjIndispo = function(id){ try{ return M.role() === 'barde' && id !== 'voisin' && (B.fache(id) || B.rienADire(id) || occupeLa(id)); }catch(e){ return false; } };
 /* Plus rien de nouveau à lui demander (Romain, 5 novembre, 13 h 19) : toutes ses questions ouvertes sont posées, pas de mensonge à démasquer,
    pas d'hydromel à offrir → sur la carte, son visage et « Rien de plus à dire », cerclés de rouge (sans « Parler ») */
 B.rienADire = function(id){
@@ -313,7 +320,7 @@ function texteDe(bd){
   var q = questions(bd.p)[bd.i];
   if(bd.mode === 'rep' && q) return (bd.charme ? CHARME : '') + q.a;
   if(bd.mode === 'vrai' && q) return q.vrai || q.a;
-  if(bd.mode === 'potionrep' && q) return q.a + ' ' + corrige(bd.p) + q.vrai;   /* la potion de vérité : le mensonge, puis il se reprend tout de suite */
+  if(bd.mode === 'potionrep' && q) return q.vrai || q.a;   /* la potion de vérité : la vérité, tout de suite (Romain, 13 novembre ; avant : le mensonge, puis « je me suis trompé ») */
   return bd.t || '';
 }
 function mentNonVu(id, i){ var P = M.P(), q = questions(id)[i]; return !!(q && q.ment && repondu(id, i) && !P.vus['verite:' + id + ':' + i]); }
@@ -370,7 +377,9 @@ M.feuilleConv = function(id){
   }
   /* la potion de vérité (enquête 2, E.potionAveu) : on l'offre AVANT les questions ; il accepte toujours, sans savoir ce que c'est.
      Une seule par enquête : un seul villageois la boit (P.potionBue). Bouton jaune (la règle des boutons). */
-  var resteADemander = Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); });
+  /* (Romain, 13 novembre) la potion se donne n'importe quand : avant les questions, ou une fois tout demandé (elle fait alors avouer
+     tous ses mensonges d'un coup) ; il en faut juste encore quelque chose à lui faire dire */
+  var resteADemander = Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); }) || Q.some(function(q, i){ return mentNonVu(id, i); });
   if(e2 && E.potionAveu && (P.potions.verite || 0) > 0 && !P.potionBue && resteADemander) s += '<button class="btn b-aller bd-potion-btn" data-act="bd-potion" data-p="' + id + '">💬 Lui offrir la potion de vérité</button>';
   if(aBu(id)) s += '<p class="bd-potion-bue">💬 ' + esc(nom(id)) + ' a bu ta potion de vérité : maintenant, tout ce qu\'' + il(id) + ' dit est vrai.</p>';
   /* Chaque question : une petite boîte repliable (▸ fermée, ▾ ouverte), une seule ouverte à la fois (name + bd-boites, plus bas).
@@ -392,7 +401,7 @@ M.feuilleConv = function(id){
       var vis = q.choix && q.choix.length ? choixVisibles(q) : null;
       if(vis && vis.length){
         /* une question à choix : sa boîte s'ouvre sur les façons de demander */
-        s += '<details class="b-question bd-boite bd-choix" name="' + nomBoites + '"><summary><b>' + esc(q.q) + '</b></summary><div class="bd-boite-in"><p class="bd-choix-sous">' + esc(q.sousTitre || 'Comment tu le demandes ?') + '</p>' + vis.map(function(x){
+        s += '<details class="b-question bd-boite bd-choix" name="' + nomBoites + '"' + (q.avert && !P.vus['avert:' + id + ':' + i] ? ' data-avert="' + id + ':' + i + '"' : '') + '><summary><b>' + esc(q.q) + '</b></summary><div class="bd-boite-in"><p class="bd-choix-sous">' + esc(q.sousTitre || 'Comment tu le demandes ?') + '</p>' + vis.map(function(x){
           var c = x.c, kc = x.kc, barre = !!P.vus['maladroit:' + id + ':' + i + ':' + kc];
           return '<button class="b-question bd-facon' + (barre ? ' barre' : '') + '" data-act="question" data-p="' + id + '" data-i="' + i + '" data-c="' + kc + '"' + (barre ? ' disabled' : '') + '><span>' + (barre ? '❌' : '🗨️') + '</span><b>« ' + esc(c.q) + ' »</b></button>';
         }).join('') + '</div></details>';
@@ -406,17 +415,18 @@ M.feuilleConv = function(id){
     /* le cadre de la réponse ; ce qui s'écrit en ce moment (id bd-texte) : la réponse, la vérité, ou sa réplique (outré, clochette) */
     var ecrit = ici ? bd.mode : '';
     var cadre = '<div class="bd-cadre">';
-    if(ecrit === 'potionrep') cadre += '<p class="b-reponse" id="bd-texte">' + texteEcrit(t) + '</p>';
+    /* (Romain, 13 novembre) la potion de vérité : seulement la vérité, sans le mensonge d'abord */
+    if(ecrit === 'potionrep') cadre += '<p class="b-reponse verite"><b>🔍 La vérité :</b> <span id="bd-texte">' + texteEcrit(t) + '</span></p>';
     else {
-      cadre += '<p class="b-reponse"' + (ecrit === 'rep' ? ' id="bd-texte"' : '') + '>' + (ecrit === 'rep' ? texteEcrit(t) : '« ' + esc(q.a) + ' »') + '</p>';
-      if(v) cadre += '<p class="b-reponse verite"><b>🔍 La vérité :</b> ' + (pot ? esc(corrige(id)) : '') + '<span' + (ecrit === 'vrai' || ecrit === 'exige' ? ' id="bd-texte">' + texteEcrit(t) : '>« ' + esc(q.vrai) + ' »') + '</span></p>';
+      if(!(v && pot)) cadre += '<p class="b-reponse"' + (ecrit === 'rep' ? ' id="bd-texte"' : '') + '>' + (ecrit === 'rep' ? texteEcrit(t) : '« ' + esc(q.a) + ' »') + '</p>';
+      if(v) cadre += '<p class="b-reponse verite"><b>🔍 La vérité :</b> <span' + (ecrit === 'vrai' || ecrit === 'exige' ? ' id="bd-texte">' + texteEcrit(t) : '>« ' + esc(q.vrai) + ' »') + '</span></p>';
       if(ecrit === 'cloche' || ecrit === 'outre') cadre += '<p class="b-reponse bd-replique" id="bd-texte">' + texteEcrit(t) + '</p>';
     }
     if(v) cadre += '<p class="bd-tag-ment">🤥 Mensonge' + (pot ? ' <small>(potion de vérité)</small>' : '') + '</p>';
     if(intu) cadre += '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>';
     cadre += '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
       (e2 && repetes(id) < repetesMax() ? '<button class="btn petit second" data-act="bd-repete" data-p="' + id + '" data-i="' + i + '">🔁 Répète</button>' : '') +
-      (e2 && !v && !ferme && derniere(id) === i ? '<button class="btn petit bd-ment-p" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '">🤥 Mensonge ?</button>' : '') + '</div></div>';
+      (e2 && !v && !ferme && derniere(id) === i && !minuteFinie(id, i, bd) ? boutonMent(id, i, bd) : '') + '</div></div>';
     s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
@@ -443,6 +453,52 @@ M.feuilleConv = function(id){
   /* (le bloc « 📖 Les 7 signes du menteur » n'est plus dans l'interrogatoire : Romain, 4 novembre, 22 h 25) */
   return s + '</div>';
 };
+
+/* ---------- ⏳ Le minuteur du bouton « 🤥 Mensonge ? » (Romain, 13 novembre) ----------
+   « Il faut détecter le mensonge pendant qu'il est encore temps » : dès que le villageois commence à répondre, une barre grise avance sur le
+   bouton ; elle dure le temps de la réponse, plus une seconde. Tout gris : une petite fumée, et le bouton disparaît. Pour toutes les
+   conversations où il y a ce bouton (enquêtes 2 et 3), une fois fini le petit tutoriel du menteur du Barde (menteur.js, enquête 2).
+   « 🔁 Répète » rejoue la réponse : le minuteur repart (la règle de la répétition ne change pas).
+   P.mentMinute {'pnj:i':{fin, duree}} (ms) : gardé dans la sauvegarde, pour qu'une conversation refermée puis rouverte ne rende pas le bouton. */
+function minuteurActif(){ return enquete2() && !(M.menteurTutoEnCours && M.menteurTutoEnCours()); }
+function minuteDe(id, i){ var P = M.P(); return (P && P.mentMinute && P.mentMinute[id + ':' + i]) || null; }
+/* la réponse qui va s'écrire (pas encore jouée) : le bouton est là, son minuteur partira avec la voix */
+function repEnAttente(id, i, bd){ return !!(bd && bd.p === id && bd.i === i && bd.mode === 'rep' && !bd.joue); }
+function minuteFinie(id, i, bd){ var m = minuteDe(id, i); return !!m && !repEnAttente(id, i, bd) && Date.now() >= m.fin; }
+function boutonMent(id, i, bd){
+  var m = repEnAttente(id, i, bd) ? null : minuteDe(id, i), st = '';
+  if(m){ var reste = m.fin - Date.now(); st = ' style="--ment-d:' + m.duree + 'ms;--ment-t:' + (reste - m.duree) + 'ms"'; }
+  return '<button class="btn petit bd-ment-p' + (m ? ' bd-minute' : '') + '" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '"' + st + '>🤥 Mensonge ?</button>';
+}
+function partirEnFumee(b){
+  if(!b || !b.isConnected || b.classList.contains('bd-part')) return;
+  var r = b.getBoundingClientRect();
+  b.classList.add('bd-part');
+  if(r.width && r.height){ bouffees(r); M.son('fumee'); }
+  setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 380);
+}
+/* après chaque rendu : chaque bouton qui a un minuteur part en fumée à l'heure dite */
+function armerMinutes(){
+  [].forEach.call(document.querySelectorAll('#voile .bd-ment-p.bd-minute'), function(b){
+    if(b.__minute) return;
+    var m = minuteDe(b.dataset.p, +b.dataset.i); if(!m) return;
+    b.__minute = setTimeout(function(){ partirEnFumee(b); }, Math.max(0, m.fin - Date.now()));
+  });
+}
+function lancerMinute(id, i, sc){
+  var P = M.P(); if(!P || !minuteurActif()) return;
+  var d = Math.round(((sc && sc.D) || 3) * 1000) + 1000;
+  P.mentMinute = P.mentMinute || {}; P.mentMinute[id + ':' + i] = {fin:Date.now() + d, duree:d};
+  M.sauver();
+  var b = document.querySelector('#voile .bd-ment-p[data-p="' + id + '"][data-i="' + i + '"]');
+  if(!b) return;
+  b.style.setProperty('--ment-d', d + 'ms'); b.style.setProperty('--ment-t', '0ms');
+  b.classList.remove('bd-minute'); void b.offsetWidth; b.classList.add('bd-minute');
+  armerMinutes();
+}
+B.minuteDe = minuteDe;
+/* (le tutoriel du menteur, menteur.js) le bouton « Mensonge ? » revient sous cette réponse */
+B.redonnerMent = function(id, i){ var P = M.P(); if(!P || !repondu(id, i) || P.vus['verite:' + id + ':' + i]) return; poserDerniere(id, i); if(P.mentMinute) delete P.mentMinute[id + ':' + i]; M.sauver(); UI.garderDefilement = true; M.render(); };
 
 /* ---------- Les actions de l'interrogatoire ---------- */
 var parler0 = A.parler, frapper0 = A.frapper;
@@ -599,6 +655,7 @@ A['bd-ment'] = function(el){
   var P = M.P(), id = el.dataset.p, i = +el.dataset.i, q = questions(id)[i];
   if(!P || !q || !enquete2() || !repondu(id, i) || P.vus['verite:' + id + ':' + i]) return;
   if(derniere(id) !== i) return;   /* plus que sous la dernière réponse */
+  if(minuteFinie(id, i, null) && !(M.menteurTutoEnCours && M.menteurTutoEnCours())) return;   /* (13 novembre) le minuteur est passé : le bouton est parti en fumée */
   if(fermeDemasque(id)){ M.toast(nom(id) + ' ne te croit plus : plus possible de ' + (FEM[id] ? 'la' : 'le') + ' démasquer dans cette enquête.'); return; }
   if(q.ment){
     P.vus['verite:' + id + ':' + i] = 1;
@@ -663,8 +720,15 @@ A['bd-potion'] = function(el){
   if(!P || !E || !E.potionAveu || !((P.potions.verite || 0) > 0) || P.potionBue) return;
   P.potions.verite--; P.potionBue = id;
   M.noter('Tu as offert ta potion de vérité à ' + nom(id) + ' (sans le lui dire) : tout ce qu\'' + il(id) + ' te dira maintenant est vrai.', '💬');
-  UI.bd = {p:id, mode:'potion', m:P.moment, t:MERCI};
-  M.son('magie'); M.sauver(); M.render();
+  /* (Romain, 13 novembre) bue après ses mensonges : ils deviennent tout de suite la vérité, sans toucher « Mensonge ? » */
+  var aveux = [];
+  questions(id).forEach(function(q, i){ if(mentNonVu(id, i)){ aveux.push(i); P.vus['potion:' + id + ':' + i] = 1; } });
+  avouer(id, aveux, '💬');
+  if(aveux.length) UI.bd = {p:id, i:aveux[0], mode:'exige', m:P.moment, t:MERCI + ' Hic… ' + aveux.map(function(i){ return questions(id)[i].vrai; }).join(' ')};
+  else UI.bd = {p:id, mode:'potion', m:P.moment, t:MERCI};
+  M.son('magie'); M.sauver();
+  if(aveux.length && apresVerite(id, aveux)){ UI.bd.joue = true; return; }
+  M.render();
 };
 /* 📌 Mon tableau : le tableau de liège (les signes des menteurs n'y sont plus qu'en étiquettes), puis ↩️ retour au même villageois,
    dans la même visite (liege.js : M.retourConv) */
@@ -715,8 +779,18 @@ function apresRendu(){
   if(!t) return;
   /* la réponse s'écrit dans sa boîte : on la fait voir (le moins de défilement possible, pour garder le visage) */
   try{ var bx = bulle.closest && bulle.closest('.bd-boite'); if(bx && bx.scrollIntoView) bx.scrollIntoView({block:'nearest'}); }catch(e){}
-  var sc = bd.mode === 'rep' ? scenario(bd.p, t, !!(q && q.ment)) : (bd.mode === 'vrai' || bd.mode === 'exige' || bd.mode === 'potionrep' ? scenario(bd.p, t, false) : sansMimiques(t));
+  /* (13 novembre) le petit tutoriel du menteur (menteur.js) : la première réponse de Margot, avec la goutte de sueur pendant toute la phrase */
+  var force = bd.mode === 'rep' && q && q.ment && M.menteurTutoSigne ? M.menteurTutoSigne(bd.p, bd.i) : null;
+  var sc = bd.mode === 'rep' ? scenario(bd.p, t, !!(q && q.ment), force) : (bd.mode === 'vrai' || bd.mode === 'exige' || bd.mode === 'potionrep' ? scenario(bd.p, t, false) : sansMimiques(t));
   jouer(box, bulle, t, sc, HUMEUR[bd.mode] || {}, function(){ if(bd.mode === 'vexe' || bd.mode === 'outre' || bd.mode === 'accuse'){ var svg = box.querySelector('svg'); if(svg && window.Persos) try{ Persos.expression(svg, HUMEUR[bd.mode]); }catch(e){} } });
+  /* le tutoriel : la flèche rouge « Elle ment ! » le temps du signe (menteur.js) */
+  if(force && sc.couche && anim && M.menteurTutoFleche){
+    var a0 = anim, cc = sc.couche;
+    a0.t.push(setTimeout(function(){ if(anim === a0) M.menteurTutoFleche(box, true); }, cc.t * 1000));
+    a0.t.push(setTimeout(function(){ if(anim === a0) M.menteurTutoFleche(box, false); }, (cc.t + cc.actif) * 1000));
+  }
+  /* ⏳ le minuteur du bouton « Mensonge ? » part avec la voix */
+  if(bd.mode === 'rep' && q && enquete2() && bd.p !== 'voisin' && derniere(bd.p) === bd.i && !M.P().vus['verite:' + bd.p + ':' + bd.i]) lancerMinute(bd.p, bd.i, sc);
 }
 
 /* Les boîtes des questions : une seule ouverte à la fois (en plus de l'attribut name, pour les navigateurs qui ne le connaissent pas) */
@@ -724,7 +798,25 @@ document.addEventListener('toggle', function(e){
   var d = e.target;
   if(!d || !d.classList || !d.classList.contains('bd-boite') || !d.open || !d.parentNode) return;
   Array.prototype.forEach.call(d.parentNode.querySelectorAll('details.bd-boite[open]'), function(x){ if(x !== d) x.open = false; });
+  if(d.dataset.avert) avertir(d);
 }, true);
+/* (Romain, 13 novembre) le premier choix où il ne faut pas se tromper (q.avert : Iris, « À quoi servent vos coquelicots ? ») : en ouvrant
+   sa boîte, la première fois, une petite fenêtre par-dessus la conversation, et « OK » pour la fermer (P.vus['avert:pnj:i']) */
+function avertir(d){
+  var k = d.dataset.avert, p = k.split(':'), q = questions(p[0])[+p[1]], P = M.P();
+  if(!q || !q.avert || !P || P.vus['avert:' + k] || document.querySelector('.bd-avert-choix')) return;
+  var f = document.createElement('div');
+  f.className = 'bd-avert-choix'; f.setAttribute('role', 'dialog');
+  f.innerHTML = '<div class="bd-avert-in"><p>' + esc(q.avert) + ' ' + lire(q.avert) + '</p><button type="button" class="btn">OK</button></div>';
+  document.body.appendChild(f);
+  M.son('cloche');
+  f.querySelector('.btn').addEventListener('click', function(ev){
+    ev.stopPropagation();
+    P.vus['avert:' + k] = 1; M.sauver(); delete d.dataset.avert;
+    if(f.parentNode) f.parentNode.removeChild(f);
+    M.son('clic');
+  });
+}
 
 /* ==========================================================
    Les dépositions : tous les témoins dans la même pièce
@@ -1097,7 +1189,7 @@ M.lieuBarde = function(lieu){
   if(occ.length) s += (gens.length ? '' : '<p class="sur-titre">Ici en ce moment</p>') + '<div class="b-gens">' + occ.map(function(id){
     /* (enquête 3, marche.js) un vendeur de fleurs : tant qu'il vend, sa pastille le dit, avec le bouton pour acheter */
     var t = (M.occupeTexte && M.occupeTexte(id)) || M.texteOccupe(id);
-    return '<div class="b-gens-carte bd-occupe"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t, voixOcc(id, t)) + (M.occupeBouton ? M.occupeBouton(id) : '') + '</div>';
+    return '<div class="b-gens-carte bd-occupe' + (M.pnjIndispo(id) ? ' bd-indispo' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b><small>' + esc(t) + '</small>' + lire(t, voixOcc(id, t)) + (M.occupeBouton ? M.occupeBouton(id) : '') + '</div>';
   }).join('') + '</div>';
   /* Tendre l'oreille (talent) : 👂 Écouter aux portes, partout où quelqu'un parle, tout le temps (B.porteIci) */
   s += B.porteBouton(lieu);
@@ -1506,6 +1598,7 @@ M.render = function(){
   try{ majTalents(); }catch(e){ console.error(e); }
   var r = r0.apply(this, arguments);
   try{ apresRendu(); }catch(e){ console.error(e); }
+  try{ armerMinutes(); }catch(e){ console.error(e); }
   return r;
 };
 })();

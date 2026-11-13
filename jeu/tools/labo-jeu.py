@@ -2,7 +2,7 @@
 l'Alchimiste reçoit le fil, touche sa paillasse, la bulle « Analyser » : le labo s'ouvre en plein écran (un cadre, src/labo.js).
 Il reconnaît le fil à la loupe (laine tricotée), prélève les grains au microscope, reconnaît la suie : l'analyse est bouclée,
 le code s'écrit sur l'ardoise. Il quitte : la fiche de la découverte s'ouvre avec le vrai code, l'analyse est notée dans la partie.
-Puis les poils et la plume arrivent : le labo se rouvre avec trois échantillons, le fil déjà reconnu, ses coupelles gardées.
+Puis les poils arrivent (13 novembre : plus de plume noire) : le labo se rouvre avec deux échantillons, le fil déjà reconnu, ses coupelles gardées.
   BRUMEVAL_DIST=<dossier de build> python3 tools/labo-jeu.py [iphone|tablette]     (captures dans jeu/test/labo/)"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -81,12 +81,19 @@ with sync_playwright() as p:
         r['sauve'] = pg.evaluate("() => { var L = M.P().labo; return L ? {finis:Object.keys(L.finis), coupes:L.dos.fil.coupes.map(function(c){ return c && c.t; })} : null; }")
         pg.screenshot(path=f'{ICI}/{nom}-05-fiche.png')
         pg.evaluate("() => M.fermer()"); pg.wait_for_timeout(600)
-        # ---------- les poils et la plume arrivent : le labo se rouvre, tout est resté ----------
-        pg.evaluate("() => { var P = M.P(); P.recus['obj:poils'] = true; P.recus['obj:plume'] = true; M.sauver(); M.render(); }"); pg.wait_for_timeout(600)
+        # ---------- les poils arrivent : le labo se rouvre, tout est resté (13 novembre : plus de plume noire, deux analyses) ----------
+        pg.evaluate("() => { var P = M.P(); P.recus['obj:poils'] = true; M.sauver(); M.render(); }"); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{ICI}/{nom}-06-atelier.png')
+        # ---------- le tutoriel dit « les poils, plus tard » : ils attendent sur le cuir, on ne peut pas les choisir ----------
+        pg.evaluate("() => { M.tutoPermet = function(n, x){ return !(n === 'analyser' && x && x.id === 'poils'); }; M.render(); }"); pg.wait_for_timeout(500)
+        f = ouvrir_labo()
+        r['plus_tard'] = f.evaluate("() => JSON.stringify(window.LABO_CFG.plusTard)"); clic('#ech-poils'); pg.wait_for_timeout(500)
+        r['plume_refusee'] = etat()['sel'] != 'poils'; r['bulle_attente'] = f.evaluate("() => { var b = document.querySelector('.bulle-o'); return b ? b.textContent : ''; }"); pg.screenshot(path=f'{ICI}/{nom}-09-plus-tard.png')
+        f.locator('#bQuitter').click(force=True); pg.wait_for_timeout(900); r['rien_de_neuf'] = pg.evaluate("() => M.UI.modal && M.UI.modal.type")
+        pg.evaluate("() => { M.tutoPermet = function(){ return true; }; M.render(); }"); pg.wait_for_timeout(500)
         f = ouvrir_labo(); e2 = etat()
         r['cuirs2'] = e2['cuirs']; r['fil_garde'] = e2['finis'].get('fil'); r['dc2'] = e2['dc']
-        clic('#ech-fil'); pg.wait_for_timeout(500); r['coupes_gardees'] = etat()['coupes']; pg.screenshot(path=f'{ICI}/{nom}-07-trois.png')
+        clic('#ech-fil'); pg.wait_for_timeout(500); r['coupes_gardees'] = etat()['coupes']; pg.screenshot(path=f'{ICI}/{nom}-07-deux.png')
         clic('#ech-poils'); pg.wait_for_timeout(400); clic('#gLoupe'); pg.wait_for_timeout(1900); trouver('g', 'poils', 'chien'); pg.wait_for_timeout(2400); clic('#bFermer'); pg.wait_for_timeout(900)
         clic('#ech-poils'); pg.wait_for_timeout(300); clic('#gMicro'); pg.wait_for_timeout(1300); prendre(10); clic('.num[data-zoom="40"]'); pg.wait_for_timeout(900); prendre(40); clic('#bFermer'); pg.wait_for_timeout(900)
         coupe('feuil'); clic('#gLoupe'); pg.wait_for_timeout(2000); trouver('d', 'feuilles', 'chene'); pg.wait_for_timeout(2400); clic('#bFermer'); pg.wait_for_timeout(900)
@@ -94,17 +101,7 @@ with sync_playwright() as p:
         f.locator('#bQuitter').click(force=True); pg.wait_for_timeout(1200)
         r['fiche2'] = pg.evaluate("() => M.UI.modal && M.UI.modal.titre"); pg.screenshot(path=f'{ICI}/{nom}-08-fiche-poils.png')
         pg.evaluate("() => M.fermer()"); pg.wait_for_timeout(700)
-        # ---------- le tutoriel dit « la plume, plus tard » : elle attend sur le cuir, on ne peut pas la choisir ----------
-        pg.evaluate("() => { M.tutoPermet = function(n, x){ return !(n === 'analyser' && x && x.id === 'plume'); }; M.render(); }"); pg.wait_for_timeout(500)
-        f = ouvrir_labo()
-        r['plus_tard'] = f.evaluate("() => JSON.stringify(window.LABO_CFG.plusTard)"); clic('#ech-plume'); pg.wait_for_timeout(500)
-        r['plume_refusee'] = etat()['sel'] != 'plume'; r['bulle_attente'] = f.evaluate("() => { var b = document.querySelector('.bulle-o'); return b ? b.textContent : ''; }"); pg.screenshot(path=f'{ICI}/{nom}-09-plus-tard.png')
-        f.locator('#bQuitter').click(force=True); pg.wait_for_timeout(900); r['rien_de_neuf'] = pg.evaluate("() => M.UI.modal && M.UI.modal.type")
-        # ---------- c'est son tour : on la boucle d'un coup (pour ne pas tout rejouer), et sa fiche s'ouvre ----------
-        pg.evaluate("() => { M.tutoPermet = function(){ return true; }; M.render(); }"); pg.wait_for_timeout(500)
-        f = ouvrir_labo(); f.evaluate("() => window.__labo.finir('plume')"); pg.wait_for_timeout(400)
-        f.locator('#bQuitter').click(force=True); pg.wait_for_timeout(1200)
-        r['fiche3'] = pg.evaluate("() => M.UI.modal && M.UI.modal.titre"); pg.evaluate("() => M.fermer()"); pg.wait_for_timeout(600)
+        r['fiche3'] = True
         r['analyses'] = pg.evaluate("() => JSON.stringify(M.P().analyses)")
         r['ancien_bouton'] = pg.evaluate("() => { M.A.analyser({dataset:{id:'fil'}}); return !!document.getElementById('labo-cadre'); }")      # le vieux chemin ouvre le labo, jamais une analyse toute faite
         pg.evaluate("() => M.fermerLabo()"); pg.wait_for_timeout(300)
@@ -113,9 +110,9 @@ with sync_playwright() as p:
         return (r['cadre'] == 1 and r['panneau'] == 0 and r['cuirs'] == ['fil'] and r['jeu'] and not r['reglages'] and r['quitter'] and r['fil'] and r['suie'] and r['fini'] and r['analyse_notee'] >= 1
                 and r['terre'] and 'aller' in r['bouton'] and r['cadre_apres'] == 0 and r['modal'] == 'decouverte' and r['code_fiche'] and r['code_fiche'] == r['code_attendu'] and r['code_attendu'] in r['ardoise'].replace(' ', '')
                 and any('Analyse des poils de la fenêtre' in t for t in r['notes']) and any('terre' in t for t in r['notes']) and r['sauve'] and 'fil' in r['sauve']['finis'] and 'noir' in r['sauve']['coupes']
-                and r['cuirs2'] == ['fil', 'poils', 'plume'] and r['fil_garde'] and r['dc2'] == 'poils' and 'noir' in r['coupes_gardees'] and r['poils'] and r['fiche2'] and r['fiche3']
-                and 'plume' in r['plus_tard'] and r['plume_refusee'] and 'Plus tard' in r['bulle_attente'] and r['rien_de_neuf'] is None
-                and all(k in r['analyses'] for k in ('fil', 'poils', 'plume')) and r['ancien_bouton'])
+                and r['cuirs2'] == ['fil', 'poils'] and r['fil_garde'] and r['dc2'] == 'poils' and 'noir' in r['coupes_gardees'] and r['poils'] and r['fiche2'] and r['fiche3']
+                and 'poils' in r['plus_tard'] and r['plume_refusee'] and 'Plus tard' in r['bulle_attente'] and r['rien_de_neuf'] is None
+                and all(k in r['analyses'] for k in ('fil', 'poils')) and r['ancien_bouton'])
     ok = all(bon(r) for r in R.values())
     print(json.dumps(R, ensure_ascii=False)); print('ERREURS', err); print('ÉCHECS' if (err or not ok) else 'tout est bon')
     b.close()

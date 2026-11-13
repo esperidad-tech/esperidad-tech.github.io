@@ -262,7 +262,8 @@ D.RECETTES = {
   lumiere:{ingr:[['champignon', 2], ['eau', 1]], cuisson:'chaudron'},
   rapidite:{ingr:[['trefle', 2], ['miel', 1]], cuisson:'chaudron'},
   invisibilite:{ingr:[['brume', 2], ['lavande', 1]], cuisson:'chaudron'},
-  verite:{ingr:[['pensee', 2], ['miel', 1]], cuisson:'chaudron'},
+  /* secrète (Romain, 13 novembre) : comme l'encre de l'enquête 1, c'est le Sage qui a la recette ; il la dicte à l'Alchimiste (son grimoire n'a que des « ? ») */
+  verite:{ingr:[['pensee', 2], ['miel', 1]], cuisson:'chaudron', secrete:true},
   clarte:{ingr:[['menthe', 2], ['eau', 1]], cuisson:'chaudron'},
   fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
   eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},

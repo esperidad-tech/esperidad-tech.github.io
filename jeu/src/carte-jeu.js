@@ -208,7 +208,7 @@ function presences(E, hab){
     var ou = ouEst(E, id, mid), m = maisonDe[id];
     var ouM = ou && (/^[LFB]\d$/.test(ou) ? ou : (Carte.LIEUX[ou] && Carte.LIEUX[ou].maison) || null);   /* (sa boutique est sa maison : Gaspard à la boulangerie) */
     /* le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31 ; barde.js) */
-    var fache = !!(M.pnjFache && M.pnjFache(id));
+    var fache = !!(M.pnjIndispo ? M.pnjIndispo(id) : (M.pnjFache && M.pnjFache(id)));   /* (13 novembre) et tous ceux à qui on ne peut pas parler maintenant (barde.js) */
     if(m && ouM === m){ chez[m] = fache ? 'fache' : 1; return; }
     if(m) absents[m] = 1;
     if(!ou || !visage(id)) return;

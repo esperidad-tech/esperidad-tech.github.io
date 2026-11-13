@@ -351,6 +351,8 @@ function sauver(){
   try{ M.sauver(); }catch(e){}
 }
 function consigne(t){ V.consigne.hidden = !t; V.consigne.textContent = t || ''; }
+/* (le tutoriel du menteur, menteur.js) la bobine est-elle prise, et quelle photo est choisie */
+M.liegeGeste = function(){ return V ? {mode:V.mode, sel:V.sel} : null; };
 
 /* ---------- Gestes ---------- */
 function suivre(e, cb){

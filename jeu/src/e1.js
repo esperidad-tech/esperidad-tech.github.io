@@ -73,8 +73,7 @@ E[1] = {
         attend:[{code:'obj:fil'}], attendT:'Le Pisteur fouille la mairie… Il va sûrement te rapporter un indice !', fait:[{analyse:'fil'}]},
       {ic:'🐾', m:1, action:true, atelier:'analyse', objet:'poils', t:'Plus tard, il trouvera une touffe de poils dans la forêt : analyse-la aussi.', court:'Analyse la touffe de poils, puis raconte au Pisteur.', histoire:'Une touffe de poils, trouvée dans la forêt ! Analyse-la, puis raconte tout au Pisteur.',
         attend:[{code:'obj:poils'}], attendT:'Le Pisteur court après un indice, dans la forêt… Patience !', fait:[{analyse:'poils'}]},
-      {ic:'🪶', m:2, action:true, atelier:'analyse', objet:'plume', t:'Odette a donné une grande plume noire au Barde : tape son code et analyse-la.', court:'Analyse la grande plume noire d\'Odette.', histoire:'Une grande plume noire… À qui peut-elle bien appartenir ?',
-        attend:[{code:'obj:plume'}], attendT:'Le Barde rend visite à Odette… Elle lui confiera peut-être un indice.', fait:[{analyse:'plume'}]},
+      /* (Romain, 13 novembre : deux choses à analyser seulement, les poils de la fenêtre et la touffe de la forêt ; plus de plume noire) */
       {ic:'📜', m:2, t:'Raconte au Sage ce que tes analyses ont montré.', court:'Raconte au Sage ce que tes analyses ont montré.', histoire:'Le Sage t\'attend : raconte-lui ce que tes analyses ont révélé !', manuel:true},
       {piste:true, t:'Pour analyser : choisis un échantillon sur ta paillasse, puis sers-toi de ta loupe, de ton microscope et de tes bocaux.'},   /* (Romain, 10 novembre : plus de mini-jeu pour les analyses, tout se passe dans le labo) */
       {libre:true, ic:'🔍', t:'Ensuite, analyse ce que l\'équipe te confie, et aide-la à trouver QUI a pris la Lanterne, et OÙ elle est !'}
@@ -83,8 +82,9 @@ E[1] = {
       /* (Romain, 5 novembre, 00 h 14 et 01 h 20 : plus d'adresses à noter, chaque maison montre le visage de son habitant, et plus de code
          du registre ; une astuce garde la place de l'ancienne première étape : les étapes suivantes gardent leur numéro, P.mission) */
       {piste:true, t:'Sur la carte, chaque maison montre le visage de celui qui y habite : touche-la pour frapper à sa porte.'},
-      {ic:'👵', m:0, action:true, pnj:'odette', t:'Frappe chez Odette : touche sa maison sur la carte (son visage est dessus), et pose-lui toutes tes questions. Si elle te donne quelque chose, donne son code à l\'Alchimiste.', court:'Chez Odette : pose tes questions. Son cadeau : pour l\'Alchimiste.', histoire:'Odette, la grand-mère aux sept chats, a peut-être vu quelque chose…',
-        fait:[{et:[{vu:'barde:odette:1'}, {vu:'barde:odette:2'}, {vu:'barde:odette:3'}]}]},
+      /* (Romain, 13 novembre : plus de plume noire — Odette ne donne plus rien ; sa question « Vos chats ont vu quelque chose ? » est retirée) */
+      {ic:'👵', m:0, action:true, pnj:'odette', t:'Frappe chez Odette : touche sa maison sur la carte (son visage est dessus), et pose-lui toutes tes questions.', court:'Chez Odette : pose-lui toutes tes questions.', histoire:'Odette, la grand-mère aux sept chats, a peut-être vu quelque chose…',
+        fait:[{et:[{vu:'barde:odette:1'}, {vu:'barde:odette:2'}]}]},
       /* (Romain, 10 novembre : le plan de la forêt est au Sage seul ; Basile sert au QUI, ses grosses bottes expliquent les grosses traces de la mairie) */
       {ic:'🥕', m:0, action:true, pnj:'basile', t:'Va voir Basile au potager : demande-lui où il était cette nuit.', court:'Basile, au potager : où était-il cette nuit ?', histoire:'Basile, le jardinier, bêche son potager du matin au soir… A-t-il remarqué quelque chose ?', fait:[{vu:'barde:basile:0'}]},
       {ic:'🧵', m:1, action:true, pnj:'melusine', t:'Trouve Mélusine, la couturière (à son atelier le matin, puis sur la place) : parle-lui de ses écharpes.', court:'Mélusine, sur la place : parle-lui des écharpes.', histoire:'Mélusine tricote des écharpes pour tout le village… Va donc lui en parler !',
@@ -102,7 +102,7 @@ E[1] = {
       {ic:'🧪', m:0, livre:'recettes', t:'Lis à l\'Alchimiste la recette de l\'encre révélatrice (page « Les recettes »).', court:'Lis la recette de l\'encre à l\'Alchimiste.', histoire:'L\'Alchimiste a besoin de toi : lis-lui la recette de l\'encre révélatrice.', fait:[{lu:'recettes'}]},
       {ic:'🔭', m:0, action:true, lieu:'mairie', points:['balcon'], t:'Mairie : monte au balcon et regarde les toits.', court:'Mairie : monte au balcon et regarde les toits.', histoire:'Du balcon de la mairie, on voit tous les toits… Va jeter un œil !', fait:[{vu:'sage:mairie:balcon'}]},
       /* (Romain, 10 novembre : plus de « Passer » au tutoriel : tout se refait à l'infini, chacun réussit forcément ses missions ; sans ce plan, personne n'entre dans la forêt) */
-      {ic:'❔', m:1, livre:'mystere', t:'Quand l\'Alchimiste t\'apporte l\'encre, fais parler la page blanche de ton Grand Livre → donne le code du plan au Pisteur : sans lui, personne n\'entre dans la forêt !', court:'Page blanche : reconstitue le plan (pour le Pisteur).', histoire:'L\'encre est là ! La page blanche de ton livre cache un secret… et le Pisteur compte sur toi.',
+      {ic:'❔', m:1, livre:'mystere', t:'Quand l\'Alchimiste t\'apporte l\'encre, verse-la sur la page blanche de ton Grand Livre et fais-la couler jusqu\'en bas → donne le code du plan au Pisteur : sans lui, personne n\'entre dans la forêt !', court:'Page blanche : verse l\'encre, fais-la couler !', histoire:'L\'encre est là ! Renverse-la sur la page blanche, et fais-la couler jusqu\'en bas… Le Pisteur compte sur toi.',
         attend:[{code:'pot:revelatrice'}], attendT:'L\'Alchimiste prépare l\'encre… Ça bouillonne, ça fume, patience !', fait:[{page:'mystere'}]},
       {ic:'📋', m:2, livre:'tableau', t:'Écoute ce que chacun a trouvé, et barre les innocents dans ton tableau d\'enquête (la première page du Grand Livre).', court:'Écoute chacun, et barre les innocents dans ton tableau.', histoire:'Chacun te raconte ses trouvailles : barre les innocents dans ton tableau !', manuel:true},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments, dans ton Grand Livre).'},
@@ -159,7 +159,6 @@ E[1] = {
         ['🌬️', 'Un courant d\'air froid sort d\'entre les racines, comme si un passage s\'enfonçait sous la terre.'],
         ['🪵', 'Le maire a fait couvrir le trou de grosses planches : « C\'est bien trop dangereux, que personne ne s\'en approche ! »'],
         ['✊', 'En remontant du trou, Tim gardait l\'autre main bien fermée au fond de sa poche.'],
-        ['🪶', 'La grande plume noire rapportée par le chat d\'Odette, la nuit du vol, sentait la lavande.'],
         ['🧤', 'Le maire ne quitte jamais ses gants gris, même à l\'intérieur.'],
         ['🏮', 'Le maire garde la Lanterne d\'Or dans son bureau toute l\'année. Quand on la lui a rendue, il l\'a serrée très fort contre lui.'],
         ['🔮', 'La Lanterne d\'Or est un objet magique : tout le monde croit qu\'elle sert seulement à allumer les lanternes du village.']
@@ -194,6 +193,7 @@ E[1] = {
        L'identifiant « fil » reste : son code est gelé) */
     fil:{nom:'Poils de la fenêtre', ic:'〰️', pour:'alchimiste'},
     poils:{nom:'Touffe de poils de la forêt', ic:'🐾', pour:'alchimiste'},
+    /* (plus donnée depuis le 13 novembre : plus de plume noire ; gardée pour que les codes gelés ne bougent pas) */
     plume:{nom:'Grande plume noire', ic:'🪶', pour:'alchimiste'},
     affiche:{nom:'Affiche du chien perdu', ic:'🐶', pour:'barde'}
   },
@@ -325,8 +325,7 @@ E[1] = {
       /* (Romain, 11 novembre, 8 h : le voleur arrive par les toits, descend par la gouttière et repart à pied — les traces du massif vont à la
          forêt par le sol. Avant, Odette voyait la silhouette partir vers la forêt « de toit en toit, avec une lumière dorée ».) */
       {q:'Avez-vous vu quelque chose ?', a:'Oh oui ! À minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, j\'ai vu une lumière dorée filer vers la forêt.', note:'Odette : à minuit, une petite silhouette a sauté de toit en toit, jusqu\'à la mairie. Plus tard, une lumière dorée a filé vers la forêt.'},
-      {q:'Et votre écharpe rouge ?', a:'Elle est sur mes épaules, toute neuve ! Et avec ma canne, ça fait longtemps que je ne grimpe plus sur les toits.', note:'L\'écharpe d\'Odette est neuve. Avec sa canne, elle ne grimpe plus.'},
-      {q:'Vos chats ont vu quelque chose ?', a:'Mon chat Moustache a rapporté ça cette nuit. Moi qui ne dors presque jamais, je vois tout ce qui se passe au village… mais ça, je ne sais pas d\'où ça vient ! Tiens, prends-le.', note:'Odette t\'a donné une grande plume noire rapportée par son chat.', obj:'plume'}
+      {q:'Et votre écharpe rouge ?', a:'Elle est sur mes épaules, toute neuve ! Et avec ma canne, ça fait longtemps que je ne grimpe plus sur les toits.', note:'L\'écharpe d\'Odette est neuve. Avec sa canne, elle ne grimpe plus.'}
     ]},
     victor:{ou:{matin:'poste', apresmidi:'place', soir:'taverne'}, questions:[
       {q:'Où étiez-vous cette nuit ?', a:'Au lit ! Je me lève à cinq heures pour trier le courrier.', note:'Victor dormait. Il se lève à 5 heures.'},
@@ -347,15 +346,14 @@ E[1] = {
      les fiches du labo : src/labo/30-donnees.js). On y cherche avec la loupe, le microscope, les bocaux ; rien ne se rate ; l'analyse est faite
      quand l'essentiel est reconnu (les poils de la fenêtre : laine tricotée + suie ; la touffe de la forêt : chien + feuille de chêne ;
      la plume : plume d'oie + pollen de lavande). Le code s'écrit sur l'ardoise du labo ; en sortant, la fiche de la découverte ci-dessous. */
-  labo:['fil', 'poils', 'plume'],
+  labo:['fil', 'poils'],   /* (plus de plume depuis le 13 novembre) */
   /* les trouvailles en plus (pas obligatoires) : une petite note au Carnet, la première fois */
   laboNotes:{
     brun:'Sur la laine de la fenêtre : un peu de terre de jardin.',
     orange:'Sur la laine de la fenêtre : un éclat de tuile.',
     or:'Sur la laine de la fenêtre : une paillette de feuille d\'or, comme sur la Lanterne !',
     rouge:'La laine de la fenêtre a été teinte avec de la garance et de la pelure d\'oignon.',
-    bardane:'Dans la touffe de poils : des graines de bardane, qui s\'accrochent à tout ce qui passe.',
-    encre:'Le noir de la plume : des mûres et du brou de noix.'
+    bardane:'Dans la touffe de poils : des graines de bardane, qui s\'accrochent à tout ce qui passe.'
   },
   analyses:{
     /* (Romain, 10 novembre, 16 h 56 : plus de mini-jeu pour les analyses de l'Alchimiste ; tout se passe dans son labo.
@@ -367,10 +365,8 @@ E[1] = {
     poils:{
       t:'Sous ta loupe : des poils de chien, noirs et blancs. Coincée dedans : une petite feuille de CHÊNE !',
       note:'Analyse des poils : chien noir et blanc, avec une feuille de chêne.',
-      detail:{t:'Les poils sont encore humides : le chien est passé ce matin, très tôt.', note:'Détail : le chien est passé ce matin très tôt.'}},
-    /* (une plume d'oie teinte en noir, avec du pollen de lavande : décidé par Romain le 9 novembre, mystère pour plus tard) */
-    plume:{t:'Sous ta loupe : une plume d\'oie, teinte en noir ! Elle sent la lavande : dessus, il y a du pollen de LAVANDE. D\'où peut-elle venir ? Mystère… Rien à voir avec la Lanterne. Garde-la bien : elle servira peut-être un jour.',
-      note:'Analyse de la plume : une plume d\'oie teinte en noir, avec du pollen de lavande. Mystère…'}
+      detail:{t:'Les poils sont encore humides : le chien est passé ce matin, très tôt.', note:'Détail : le chien est passé ce matin très tôt.'}}
+    /* (la plume d'oie teinte en noir, avec du pollen de lavande, est retirée le 13 novembre : Romain, « on peut enlever tout ce qui est plume noire ») */
   },
   recettes:['revelatrice'],
   pages:[
@@ -378,35 +374,20 @@ E[1] = {
     {id:'recettes', titre:'Les recettes', ic:'🧪',
       recette:'revelatrice', t:'Encre révélatrice, pour lire l\'encre invisible : ' + window.DONNEES.texteEtapes('revelatrice') + '.',
       note:'Recette de l\'encre révélatrice : ' + window.DONNEES.texteEtapes('revelatrice') + '.'},
-    /* Le tutoriel (12.2) : quand l'encre arrive, la page blanche se révèle avec le mini-jeu « Les runes » (blancheMj : livre.js la garde toute blanche).
-       Raté deux fois : l'indice partiel suffit (ouvrePartiel : la page s'ouvre quand même, avec le plan à moitié effacé et son code ; partiel : pour le vérificateur). */
-    {id:'mystere', titre:'La page blanche', ic:'❔', besoin:[{code:'pot:revelatrice'}, {acces:'encre'}], mj:'runes', params:{image:'carte'}, blancheMj:true, partiel:true, ouvrePartiel:true,
+    /* (Romain, 13 novembre : plus de mini-jeu « Les runes » sur la page blanche, « il est juste censé mettre la potion révélatrice sur la page ».
+       verser : on touche la page, l'encre s'y renverse, on la fait couler jusqu'en bas et le plan apparaît (livre.js, verser) ; rien ne se rate) */
+    {id:'mystere', titre:'La page blanche', ic:'❔', besoin:[{code:'pot:revelatrice'}, {acces:'encre'}], verser:true,
       avant:'Cette page est toute blanche… Mais quand on la penche vers la lumière, on dirait qu\'il y a quelque chose d\'écrit. De l\'encre invisible ? L\'Alchimiste a peut-être de quoi la révéler.',
       t:'L\'encre révélatrice fait apparaître un dessin : le plan de la forêt ! Le carrefour, puis trois chemins : vers le Moulin, le Puits et le Vieux Chêne.',
-      note:'Page blanche : le plan de la forêt est apparu. Son code est pour toute l\'équipe : chacun peut le taper.', donne:'info:carte',
-      rate:'L\'encre a pâli trop vite : les morceaux du dessin se brouillent…',
-      tPartiel:'Il reste juste assez du dessin : le carrefour de la forêt, et trois chemins vers le Moulin, le Puits et le Vieux Chêne. Le Pisteur pourra entrer dans la forêt !',
-      rateNote:'Page blanche : le plan de la forêt, à moitié effacé (le carrefour et trois chemins).'},
+      note:'Page blanche : le plan de la forêt est apparu. Son code est pour toute l\'équipe : chacun peut le taper.', donne:'info:carte'},
     {id:'fondateurs', titre:'Les fondateurs', ic:'🏛️',
       t:'Brumeval a été fondé il y a 300 ans par quatre amis : une pisteuse, un alchimiste, une barde et un sage. Comme vous ! Une vieille chanson dit qu\'ils étaient cinq… mais plus personne ne se souvient du cinquième.'}
   ],
   bonus:[
-    /* (tutoriel) une mission bonus n'est proposée que pendant une attente (un code qui n'est pas encore là, le moment suivant, la fin), une seule fois */
-    {id:'ballon', role:'pisteur', lieu:'clocher', moments:['apresmidi', 'soir'], mj:'tir', params:{decor:'clocher'}, or:3, titre:'Le ballon du clocher', histoire:'Un enfant pleure : son ballon est coincé tout en haut du clocher !',
-      t:'Le ballon rouge d\'un enfant est coincé en haut du clocher. Coupe la ficelle avec une flèche !'},
-    {id:'fournees', role:'alchimiste', lieu:'boulangerie', moments:['matin', 'apresmidi', 'soir'], mj:'bulles', or:3, titre:'Les fournées de Gaspard', histoire:'Gaspard a oublié l\'ordre de ses fournées : aide-le !',
-      t:'Gaspard a oublié l\'ordre de ses fournées. Aide-le à s\'en souvenir !'},
+    /* (tutoriel) une mission bonus n'est proposée que pendant une attente (un code qui n'est pas encore là, le moment suivant, la fin), une seule fois.
+       (Romain, 13 novembre : retirées — le ballon du clocher du Pisteur, les fournées de Gaspard de l'Alchimiste, la chanson de la fête du Barde,
+       « ça le sort du contexte ». Le tir du clocher reste dans la salle des mini-jeux ; la chanson, dans le code de barde.js, sans enquête.) */
     /* (plus de mission « Les ragots de la taverne » : Romain, 5 novembre, 9 h 03, le mini-jeu des ragots est abandonné) */
-    /* La première phrase à trous du Barde (barde.js) : elle s'écrit dans son Carnet ; on la chante ensuite à Margot, une seule fois */
-    {id:'chanson', role:'barde', lieu:'taverne', moments:['apresmidi', 'soir'], trous:true, or:3, titre:'La chanson de la fête', histoire:'Margot a perdu les paroles de sa chanson : aide-la !',
-      t:'Margot chante la chanson de la fête, mais il y a tant de bruit dans la taverne ! Écoute-la, puis retrouve les mots qui manquent.',
-      entendu:'Margot chante à tue-tête… mais avec tout ce bruit, tu n\'as entendu que des morceaux de sa chanson !',
-      params:{phrases:[
-        {qui:'🎶', texte:'Quand la [brume] se lève sur [Brumeval],'},
-        {qui:'🎶', texte:'les [lanternes] s\'allument une à [une],'},
-        {qui:'🎶', texte:'on [danse] autour de la [fontaine],'},
-        {qui:'🎶', texte:'jusqu\'à ce que se couche la [lune].'}],
-        pieges:['neige', 'pluie', 'Bruxelles', 'bougies', 'étoiles', 'deux', 'chante', 'saute', 'mairie', 'rivière', 'soleil']}},   /* des pièges qui vont aussi dans la phrase */
     {id:'horloge', role:'sage', lieu:'mairie', moments:['matin', 'apresmidi'], mj:'runes', or:3, titre:'L\'horloge de la mairie', histoire:'La vieille horloge de la mairie est déréglée : répare-la !',
       t:'La vieille horloge de la mairie est déréglée : remets ses runes en place !', params:{image:'horloge'}}
   ],
@@ -428,7 +409,6 @@ E[1] = {
       {ic:'🌬️', t:'Vieux Chêne : un courant d\'air froid sort d\'entre les racines.'},
       {ic:'🕳️', t:'Un énorme trou sous le Vieux Chêne : personne ne sait d\'où il vient.'},
       {ic:'🪵', t:'Le maire a fait couvrir le trou de grosses planches.'},
-      {ic:'🪶', t:'La grande plume noire de la nuit du vol sentait la lavande.'},
       {ic:'🧤', t:'Le maire ne quitte jamais ses gants.'}
     ]
   },

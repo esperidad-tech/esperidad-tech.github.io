@@ -48,6 +48,12 @@ E[2] = {
   /* le salut d'un villageois n'est dit qu'à la première visite (le salut du moment, à la première visite de ce moment) : Romain,
      7 novembre, « le Barde lit trop » (barde.js, salut ; Bible §12.50) */
   salutUneFois:true,
+  /* (Romain, 13 novembre) on commence sur le Carnet, les missions ouvertes, pour les quatre (moteur-actions.js, commencer ; mission.js) ;
+     le Barde a un petit tutoriel pour trouver un menteur, avec Margot, puis le minuteur du bouton « Mensonge ? » (menteur.js, barde.js) */
+  debutCarnet:true,
+  tutoMenteur:true,
+  /* (Romain, 13 novembre) les ingrédients de base sur la carte de l'Alchimiste, transparents une fois cueillis (moteur-roles.js) */
+  carteIngredients:true,
   riviereRouge:true,   /* sur la carte, l'eau de la rivière est rouge et luit doucement (carte.js, Romain, 4 novembre, 21 h 12) */
   lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',
   signature:'Monsieur Grosbec, maire de Brumeval',
@@ -56,7 +62,7 @@ E[2] = {
   affiche:{titre:'Par ordre du maire', t:'Le chemin du Vieux Chêne est fermé : danger !'},
   missions:{
     pisteur:'Le chemin du Vieux Chêne est fermé et gardé : trouve un moyen d\'y aller sans te faire voir. Suis les traces, cherche partout… et la nuit, quand tout le monde dort, fouille là où il y avait trop de monde le jour. Ce que tu trouves a un code : donne-le à la bonne personne !',
-    alchimiste:'La rivière est toute rouge, et l\'eau du lavoir toute rose ! Va prendre un peu de cette eau (au pont, au lavoir) et analyse-la dans ton atelier. Cueille, prépare des potions (le Barde aimerait bien une potion de vérité), et analyse ce que l\'équipe te rapporte.',
+    alchimiste:'La rivière est toute rouge, et l\'eau du lavoir toute rose ! Va prendre un peu de cette eau (au pont, au lavoir) et analyse-la dans ton atelier. Cueille, prépare des potions (le Barde aimerait bien une potion de vérité : la recette est secrète, le Sage te la dictera), et analyse ce que l\'équipe te rapporte.',
     barde:'Interroge tout le monde : cette fois, beaucoup vont te mentir ! Regarde bien leur visage. Certains ne veulent te voir qu\'une fois par moment : reviens quand tu as du nouveau pour eux. Attention : si tu accuses quelqu\'un qui dit la vérité, il se vexe et ne te parle plus jusqu\'au moment suivant.',
     sage:'Lis le Grand Livre à l\'équipe : les habitants, les vieux chemins, les vieux plans. Déchiffre ce qu\'on t\'apporte. La nuit, rassemble tout le village au Vieux Chêne ! Tu donnes le code de chaque moment, et quand toute l\'équipe est d\'accord, tu accuses : QUI, OÙ et POURQUOI.'
   },
@@ -72,7 +78,7 @@ E[2] = {
     alchimiste:[
       {ic:'💧', t:'Va prendre un peu d\'eau de la rivière, au pont, et analyse-la dans ton atelier.', fait:[{analyse:'eau_riviere'}]},
       {ic:'🧺', t:'L\'eau du lavoir est toute rose : prends-en un peu et analyse-la.', fait:[{analyse:'eau_lavoir'}]},
-      {ic:'💬', t:'Prépare la potion de vérité pour le Barde (la recette est dans ton grimoire). Une seule par enquête : ne la rate pas !', fait:[{potion:'verite'}]},
+      {ic:'💬', t:'Prépare la potion de vérité pour le Barde. C\'est une recette secrète : le Sage va te la dicter, dans ton grimoire. Une seule par enquête : ne la rate pas !', fait:[{potion:'verite'}]},
       {ic:'⚗️', t:'Analyse tout ce que l\'équipe te rapporte : chaque objet a quelque chose à raconter.', fait:[{et:[{analyse:'colorant'}, {analyse:'piece_pain'}, {analyse:'piece_moulin'}]}]},
       {piste:true, t:'En cueillant, ouvre bien les yeux : certains coins du village ont changé.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
@@ -87,7 +93,8 @@ E[2] = {
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a rendu la rivière rouge, OÙ, et POURQUOI ?'}
     ],
     sage:[
-      {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe : qui fait quoi, où chacun habite, et ce qu\'on sait de lui.', fait:[{lu:'habitants'}]},
+      /* (Romain, 13 novembre : le Sage a la recette de la potion de vérité, comme l'encre de l'enquête 1 ; dans la même mission, quatre au plus) */
+      {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe : qui fait quoi, où chacun habite, et ce qu\'on sait de lui. Et lis à l\'Alchimiste la recette secrète de la potion de vérité (page « Les recettes »).', fait:[{et:[{lu:'habitants'}, {lu:'recettes'}]}]},
       {ic:'🗺️', t:'Le garde ne laisse passer personne vers le Vieux Chêne : cherche un vieux chemin dans ton Grand Livre.', fait:[{page:'chemins'}]},
       {ic:'📐', t:'Quand un code te mène à la bibliothèque des plans, répare le plan déchiré.', fait:[{page:'bibliotheque'}, {fini:'sage:page:bibliotheque'}]},
       {ic:'🪨', t:'Déchiffre les runes qu\'on t\'apportera.', fait:[{page:'pierre'}, {fini:'sage:page:pierre'}]},
@@ -192,7 +199,8 @@ E[2] = {
        maisons ; le code gelé reste dans codes-fixes.js, inutilisé. L'indice de Tim, « il ne confie ses secrets qu'à ceux qui promettent
        de ne rien répéter », est dans le registre, que le Sage lit à voix haute.) */
     /* aussi pour le Sage, qui accuse (le même code, son « pour » seul change ; ce n'est plus une condition du rassemblement) */
-    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !',
+    /* convBarde (Romain, 13 novembre) : tapé par le Barde, il arrive tout droit dans la conversation de Tim (moteur-actions.js) */
+    tim_chene:{nom:'Tim, attrapé au Vieux Chêne', ic:'🧒', pour:['barde', 'sage'], de:'pisteur', pnj:'tim', convBarde:'tim', t:'Le Pisteur a attrapé Tim qui se cachait près du Vieux Chêne. Il a très peur, et il cache quelque chose : le Barde saura le faire parler !',
       dire:'Le Barde saura le faire parler : donne ce code au Barde, et aussi au Sage.'},
     traces:{nom:'Les traces perdues', ic:'👣', pour:'barde', de:'pisteur', pnj:'farinel', t:'Le Pisteur a suivi des traces de charrette depuis le champ rasé jusqu\'à la cour du moulin. Là, sur les pavés, elles se perdent.',
       dire:'Farinel, le meunier, sait peut-être quelque chose : donne ce code au Barde.'},   /* (Romain, 23 h 11) */
@@ -246,7 +254,8 @@ E[2] = {
           rate:'Silas tourne la tête : « Hé, toi ! Pas par là ! » Tu dois faire demi-tour.',
           ferme:'Silas te surveille, maintenant : impossible de passer derrière son dos. Attends que le Sage trouve un autre chemin, dans son Grand Livre.'}
       ]},
-      alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit']}]}
+      /* annonce (Romain, 13 novembre) : sur la carte de l'Alchimiste dès le matin, grisé ; touché, il dit quand revenir (moteur-roles.js) */
+      alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit'], annonce:'Les champignons, c\'est à la tombée de la nuit qu\'on les cueille le mieux. Reviens cette nuit !'}]}
     },
     chene:{
       /* (Romain, 5 novembre, 13 h 56 : la phrase courte pour tout le monde ; le conseil et « ce qui marcherait », seulement pour le Pisteur) */
@@ -260,14 +269,16 @@ E[2] = {
           t:'De gros rochers bouchent le trou du Vieux Chêne. Entre les pierres, un courant d\'air froid souffle encore… Ce n\'est pas un éboulement : ces rochers ont été posés là, bien rangés !',
           note:'Vieux Chêne : de gros rochers bouchent le trou, bien rangés. Ce n\'est pas un éboulement.'},
         /* le pot noir (Romain, 23 h 14) : une pincée de sa poudre pour l'Alchimiste (obj:poudre, analyses.poudre) */
-        {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['apresmidi', 'nuit'], obj:'poudre',
+        /* (Romain, 13 novembre : « c'est bizarre qu'il ne voie pas le pot noir la première fois à l'arbre » → dès le matin, une variante) */
+        {id:'pot', ic:'⚱️', nom:'Le pot noir', moments:['matin', 'apresmidi', 'nuit'], obj:'poudre',
           t:'Sous les branches basses, il y a un pot noir, tout neuf : on l\'a posé ce matin. Il sent la poudre… Mais à quoi sert-il ? Tu en prends une pincée dans ton mouchoir.',
           note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre. Une pincée pour l\'Alchimiste.',
           /* le texte change selon le moment et le rassemblement (regles.js : la première variante qui convient) */
           /* le rassemblement (le Sage, la nuit) : après lui, le pot est tout noirci, encore tiède */
           variantes:[
             {si:[{code:'info:rassemblement'}], t:'Le pot noir sous les branches est tout noirci, encore tiède : c\'est de lui qu\'est sortie la fumée rouge du rassemblement ! Ce n\'étaient pas des vapeurs du trou. Tu prends une pincée de ce qui reste au fond.', note:'Vieux Chêne : la fumée rouge du rassemblement sortait du pot noir posé ce matin, pas du trou. Une pincée pour l\'Alchimiste.'},
-            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin… Tu en prends une pincée dans ton mouchoir.', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire. Une pincée pour l\'Alchimiste.'}
+            {si:[{moment:'nuit'}], t:'Le pot noir est toujours là, froid, sous les branches. Il sent la poudre noire. On l\'a posé ce matin… Tu en prends une pincée dans ton mouchoir.', note:'Vieux Chêne : un pot noir, posé ce matin sous les branches. Il sent la poudre noire. Une pincée pour l\'Alchimiste.'},
+            {si:[{moment:'matin'}], t:'Sous les branches basses, il y a un pot noir, tout neuf : on vient juste de le poser. Il sent la poudre… Mais à quoi sert-il ? Tu en prends une pincée dans ton mouchoir.', note:'Vieux Chêne : un pot noir tout neuf, posé ce matin sous les branches. Il sent la poudre. Une pincée pour l\'Alchimiste.'}
           ]},
         {id:'canne', ic:'🦯', nom:'Dans l\'herbe', donne:'info:canne',
           t:'Près des rochers, dans l\'herbe, une canne en bois. Sur la poignée, on a gravé sept petits chats : c\'est la canne d\'Odette ! Que fait-elle ici ? Odette ne sort jamais sans elle…',
@@ -498,10 +509,12 @@ E[2] = {
     iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, carte:{nuit:'herboristerie'}, occupe:{nuit:'😴 Elle dort.'}, salut:'Grrr… Les gens achètent mes bouquets sans même les sentir ! Celui qui prendra la peine de sentir mes fleurs, je lui ferai une réduction, foi d\'Iris !',
       /* (Bible §13.10, 6 novembre : l'astuce d'Iris, pour le marché aux fleurs de l'enquête 3 ; elle s'inscrit aussi dans le Carnet) */
       noteSalut:'Iris fait une réduction à qui prend la peine de sentir ses fleurs.', questions:[
-      {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres !', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres.'},
+      /* (Romain, 13 novembre : « est-ce que le Pisteur pourrait aller jeter un œil ? », tu rajoutes ça) */
+      {q:'Bonjour Iris ! Vous avez l\'air fâchée…', a:'FURIEUSE ! Avant-hier, quelqu\'un a rasé tout mon champ de coquelicots, à la clairière aux lièvres ! Ton Pisteur pourrait aller y jeter un œil ?', note:'Iris : avant-hier, quelqu\'un a rasé tout son champ de coquelicots, à la clairière aux lièvres. Elle aimerait que le Pisteur aille jeter un œil.'},
       /* l'indice : Mélusine (« pour la consoler, rien de tel qu'un compliment sur ses fleurs ») ; après sa colère (son champ rasé),
          pour qu'aucun choix ne dise avant elle que ses coquelicots ont disparu */
-      {q:'À quoi servent vos coquelicots ?', besoin:[{vu:'barde:iris:0'}], choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
+      /* avert (Romain, 13 novembre) : le premier choix où il ne faut pas se tromper ; en ouvrant sa boîte, un petit mot et « OK » (barde.js) */
+      {q:'À quoi servent vos coquelicots ?', besoin:[{vu:'barde:iris:0'}], avert:'⚠️ Attention : une seule réponse possible ! Si tu as bien fait ton enquête, tu sauras quoi dire.', choix:choix('Vos coquelicots devaient être magnifiques… À quoi servaient-ils ?', ['On pourrait en replanter ensemble. À quoi servaient-ils ?', 'Le maire va sûrement vous aider. À quoi servaient-ils ?'], 2),
         a:'Ils donnent un rouge magnifique… qui part au premier lavage : pour teindre, ça ne vaut rien. Et pour le tirer des fleurs, il faut des alambics.',
         note:'Iris : le rouge de coquelicot part à l\'eau, il ne sert à rien pour teindre un tissu. Pour le fabriquer, il faut des alambics.'},
       {q:'Votre champ est tout rasé : on a emporté les fleurs ?', besoin:[{code:'info:champ_rase'}], a:'Jusqu\'à la dernière ! Il a fallu une grande charrette pour tout emporter.', note:'Iris : il a fallu une grande charrette pour emporter toutes ses fleurs.'},

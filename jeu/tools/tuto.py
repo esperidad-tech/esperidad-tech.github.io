@@ -238,6 +238,14 @@ with sync_playwright() as p:
             if gd and gd['etat'] == 'bonus' and pg.is_visible('.bd-trou.choisi') and pg.locator('.bd-mot:not([disabled])').count():
                 pg.locator('.bd-mot:not([disabled])').first.click(); pg.wait_for_timeout(250); agi = True; pas_total += 1; continue
             pt = rond(pg)
+            # (13 novembre) l'encre renversée sur la page blanche : on fait glisser la flaque jusqu'en bas de la page (livre.js, verser)
+            gt = pg.evaluate("() => { var g = document.querySelector('#livre-ici .lv-page.on .lv-vs-goutte.prete'); if(!g) return null; var r = g.getBoundingClientRect(), o = g.closest('.lv-vs').getBoundingClientRect(); return {x:r.left + r.width / 2, y:r.top + r.height / 2, bas:o.bottom}; }")
+            if gt:
+                pg.mouse.move(gt['x'], gt['y']); pg.mouse.down()
+                for k in range(1, 13): pg.mouse.move(gt['x'] + (18 if k % 2 else -18), gt['y'] + (gt['bas'] - gt['y']) * k / 12); pg.wait_for_timeout(30)
+                pg.mouse.up(); pg.wait_for_timeout(1700)
+                journal.append('sage : l\'encre coule jusqu\'en bas de la page blanche')
+                agi = True; pas_total += 1; continue
             if pt:
                 un_seul_lieu(pg, r)
                 pg.mouse.click(pt['x'], pt['y']); pg.wait_for_timeout(260)
@@ -333,7 +341,11 @@ with sync_playwright() as p:
             if pg.evaluate("() => M.UI.ecran") != 'enquete' and pg.is_visible('[data-act=retour]'): pg.click('[data-act=retour]', force=True); pg.wait_for_timeout(300)
         verif(pg.evaluate("() => M.UI.ecran") == 'enquete', f'{r} E2 : « ← Retour » ramène à l\'enquête ({etat(pg)})')
         pg.click('[data-act=onglet][data-o=carte]', force=True); pg.wait_for_timeout(300)
-        verif(pg.evaluate("() => M.P().onglet") == 'carte' and not pg.evaluate("() => [].some.call(document.querySelectorAll('.tu-bandeau, .tu-rond'), function(x){ return !!x.offsetParent || (!x.hidden && x.classList.contains('tu-rond')); })"), f'{r} E2 : ensuite, libre (pas de bandeau ni de rond)')
+        # (13 novembre) le Barde a ensuite son petit tutoriel du menteur (menteur.js : son rond à lui, .tm-rond, sur la taverne) ; les autres : libres
+        verif(pg.evaluate("() => M.P().onglet") == 'carte' and not pg.evaluate("() => [].some.call(document.querySelectorAll('.tu-bandeau, .tu-rond:not(.tm-rond)'), function(x){ return !!x.offsetParent || (!x.hidden && x.classList.contains('tu-rond')); })"), f'{r} E2 : ensuite, libre (pas de bandeau ni de rond du tutoriel)')
+        if r == 'barde':
+            pg.wait_for_timeout(500)
+            verif(pg.evaluate("() => { var c = M.menteurTutoCible && M.menteurTutoCible(); var d = document.querySelector('.tm-rond'); return !!c && !!c.closest('g.ca-lieu[data-lieu=taverne]') && !!d && !d.hidden; }"), 'barde E2 : le tutoriel du menteur commence, la taverne brille')
         pg.screenshot(path=f'{OUT}/e2-{r}.png')
     print('ÉCHECS :', echecs)
     print('ERREURS :', erreurs)

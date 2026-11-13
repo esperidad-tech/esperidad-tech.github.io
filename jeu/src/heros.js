@@ -50,7 +50,8 @@ M.aller = function(e){
 };
 A.ecran = function(el){ M.aller(el.dataset.e); };
 A.retour = function(){
-  if(UI.ecran === 'heros' && UI.arbre){ UI.arbre = false; M.son('page'); M.render(); return; }   /* d'abord refermer l'arbre */
+  if(UI.ecran === 'heros' && UI.arbre && !UI.arbreDirect){ UI.arbre = false; M.son('page'); M.render(); return; }   /* d'abord refermer l'arbre */
+  UI.arbreDirect = false;   /* (13 novembre) l'arbre ouvert tout droit depuis « Enquête résolue » (A['fin-talents']) : « Retour » y ramène d'un coup */
   UI.pile = UI.pile || [];
   var x = UI.pile.pop(), e = x ? x.e : (M.S && M.S.e ? 'enquete' : 'accueil');
   if(e === 'enquete' && !(M.S && M.S.e)) e = 'accueil';

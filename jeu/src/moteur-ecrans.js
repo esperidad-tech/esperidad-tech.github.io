@@ -205,9 +205,8 @@ function vueCreation(){
     var h2 = Object.assign({}, c, {niveau:1, talents:[], equip:[]});
     s += '<div class="b-crea-grille"><div class="b-crea-apercu">' + portrait('pied', true, true, h2) + '<button class="btn second petit" data-act="crea-hasard">🎲 Au hasard</button></div><div class="b-crea-options">';
     if(C){
-      /* la difficulté des mini-jeux en dépend. (Romain, 7 novembre : les joueurs ont 11-12 ans ; le mode « enfant » a été réglé pour
-         des 8 ans → on le présente par l'âge, et les 10 ans et plus jouent comme les adultes) */
-      s += option('Qui va jouer ?', 'joueur', [{id:'enfant', nom:'🧒 Moins de 10 ans'}, {id:'adulte', nom:'🧑 10 ans et plus'}], c.joueur === 'enfant' ? 'enfant' : 'adulte', 'puce');
+      /* (Romain, 13 novembre : plus de « Qui va jouer ? » à la création ; un nouveau héros joue comme les 10 ans et plus. Le choix reste dans
+         les Réglages, pour une vieille sauvegarde réglée sur « moins de 10 ans ») */
       s += option('Je suis', 'sexe', C.sexe.map(function(x){ return {id:x.id, nom:x.id === 'f' ? 'Une fille' : 'Un garçon'}; }), c.sexe, 'puce');
       s += option('Mon âge', 'age', C.age, c.age, 'puce');
       s += option('Ma peau', 'peau', C.peau, c.peau, 'couleur');
@@ -477,13 +476,21 @@ function vueFin(){
      ses pièces d'or, les deux boutons dorés (Boutique, Talent), le bouton de l'enquête suivante, le menu ☰ en haut.
      Le calepin de fin reste dans le menu ☰ (Calepin). */
   var h = M.S.heros, att = M.talentsEnAttente(), N = window.ENQUETES[E.id + 1];
+  /* (Romain, 13 novembre) plus de bouton Boutique ici : à sa place, le bouton Talents, pour les quatre rôles, au-dessus de l'enquête suivante,
+     et c'est LUI qui brille (plus l'enquête suivante) tant qu'on ne l'a pas touché (F.talentsVus). Le Barde y choisit son talent ;
+     les trois autres rôles voient leur page des talents (pour l'instant, sans talent à choisir : heros.js, message 🌱). */
+  var guideT = !F.talentsVus;
+  var talent = '<button class="btn b-dore' + (guideT ? ' b-guide' : '') + '" data-act="fin-talents"' + (att.length ? ' data-p="' + att[0] + '"' : '') + '>⭐ Talent' + (att.length ? '' : 's') + '</button>';
+  /* (Romain, 13 novembre) à la fin du tutoriel (l'enquête 1), un petit mot en gros sur le héros : l'entraînement est fini, plus d'aide ensuite */
+  var tFin = 'Dans l\'enquête ' + (N ? N.id : E.id + 1) + ', plus personne ne vous guide : à vous de jouer !';
+  var motTuto = E.tuto && !F.motTutoVu && N ? '<div class="b-fin-tuto" role="dialog" aria-label="Entraînement terminé"><b class="b-fin-tuto-t">🎓 Entraînement terminé !</b>' +
+    '<p>' + esc(tFin) + ' ' + lire('Entraînement terminé ! ' + tFin) + '</p><button class="btn" data-act="fin-mot-tuto">OK</button></div>' : '';
   return '<main class="b-page b-fin b-hub-simple b-ecran-fixe"><button class="b-menu-haut" data-act="menu" aria-label="Menu">☰</button><h1 class="centre">Enquête résolue !</h1>' +
-    '<section class="b-hub"><div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '"><div class="b-hub-portrait">' + portrait('pied', true, true) + '</div>' +
+    '<section class="b-hub"><div class="b-hub-heros b-hub-fixe" style="--c:' + D.ROLES[h.role].c + '"><div class="b-hub-portrait">' + portrait('pied', true, true) + motTuto + '</div>' +
       '<div class="b-hub-info"><b>' + esc(h.nom) + '</b><span>' + M.nomRole(h.role, h.sexe) + ' · niveau ' + niv.n + (F.monte ? ' 🎉' : '') + '</span>' +
       '<div class="b-xp"><i style="width:' + niv.pct + '%"></i></div><span class="b-or">🪙 ' + M.S.or + ' pièces d\'or (+' + F.or + ')</span></div>' +
-      '<div class="b-hub-dores"><button class="btn b-dore b-guide" data-act="ecran" data-e="boutique">🛒 Boutique</button>' +
-        (att.length ? '<button class="btn b-dore b-guide" data-act="choisir-talent" data-p="' + att[0] + '">⭐ Talent</button>' : '') + '</div></div>' +
-    '<div class="b-hub-actions">' + blocSuite(E, F) + (N && !M.enEcriture(N) ? '' : '<button class="btn grand" data-act="fin-retour">🏘️ Retour au village</button>') + '</div></section></main>';
+      '<div class="b-hub-dores">' + talent + '</div></div>' +
+    '<div class="b-hub-actions">' + blocSuite(E, F, !guideT) + (N && !M.enEcriture(N) ? '' : '<button class="btn grand" data-act="fin-retour">🏘️ Retour au village</button>') + '</div></section></main>';
 }
 function vueFinAncienne(E, F, niv){   /* l'ancien écran des récompenses (gardé pour mémoire, plus affiché) */
   return '<main class="b-page b-fin"><h1 class="centre">Enquête résolue !</h1>' +
@@ -539,13 +546,14 @@ function vueDefaite(){
 }
 
 /* Passer à l'enquête suivante : le Sage montre le code, les autres le tapent ici */
-function blocSuite(E, F){
+function blocSuite(E, F, guide){
   var N = window.ENQUETES[E.id + 1];
+  if(guide === undefined) guide = true;
   if(!N) return '';
   if(M.enEcriture(N)){ var te = 'L\'enquête ' + N.id + ' est en cours d\'écriture : elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'; return '<section class="b-carte-verre b-suite centre"><h3>🚧 Enquête ' + N.id + ' : en cours d\'écriture</h3><p>' + esc(te) + ' ' + lire(te) + '</p></section>'; }
   /* Plus de code pour partir à l'enquête suivante (Romain, 4 novembre, 20 h 41) : chacun touche le bouton, sur sa tablette.
      (Le code « suite » existe toujours dans la liste des codes : tapé par habitude, il marche encore.) */
-  return '<button class="btn grand b-guide" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button>';
+  return '<button class="btn grand' + (guide ? ' b-guide' : '') + '" data-act="suite-sage">🔍 Enquête ' + N.id + ' : ' + esc(N.titre) + '</button>';
 }
 /* Pendant l'histoire de fin : si le Sage donne déjà le code de l'enquête suivante, on peut le taper sans attendre */
 function padPendantHistoire(E){

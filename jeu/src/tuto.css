@@ -81,6 +81,8 @@
    il grossit un peu au rythme du rond (propriété scale : elle s'ajoute à son transform, elle ne le remplace pas) */
 .tu-respire{animation:tu-respire 1.3s ease-in-out infinite !important}   /* (!important : les pastilles des lieux ont déjà leur petite respiration, trop discrète) */
 @keyframes tu-respire{0%,100%{scale:1}50%{scale:1.07}}
+/* (Romain, 13 novembre) la boîte autour d'un bouton qui respire ne montre plus sa barre de défilement du bas à chaque respiration (tuto.js, calerDefilement) */
+.tu-sans-x{overflow-x:hidden !important}
 
 /* le bandeau encore un peu plus petit (Romain, 23 h 35 : « le plus petit possible ») */
 .tu-bandeau{padding:2px 3px 2px 7px}

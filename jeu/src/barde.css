@@ -203,6 +203,9 @@
 /* fâché, ou « Encore toi ? » : son visage et « Reviens plus tard », cerclés de rouge */
 .b-gens-carte.bd-fache{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important;padding:2px 12px 2px 2px!important;gap:8px}
 .b-gens-carte.bd-fache > span{font-size:.8rem;font-weight:700;color:#ffd2cb}
+/* (Romain, 13 novembre) à qui on ne peut pas parler maintenant (fâché, occupé, plus rien à dire) : son visage cerclé de rouge, partout */
+.b-gens-carte.bd-indispo, .b-maison-hab.bd-indispo{border-color:#ff5a4a!important;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 3px 8px rgba(0,0,0,.5)!important}
+.bd-fache .b-gens-img, .bd-indispo .b-gens-img{border-radius:50%;box-shadow:0 0 0 3px #ff5a4a, 0 0 8px 2px rgba(255,90,74,.55)!important}
 .b-gens-carte.bd-fache > span b{color:#fff;font-weight:800}
 /* Une réplique à la fois (Romain, 15 h 34 : les longs dialogues) : la boîte garde sa taille, le texte long défile dedans */
 .b-bulle .bd-porte-long .bd-porte-txt{height:6.6em;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
@@ -214,6 +217,22 @@
 @media (prefers-reduced-motion: reduce){ .bd-porte-suite{animation:none} }
 /* 🤥 Mensonge ? qui part en fumée quand on pose une autre question (Romain, 5 novembre, 21 h 46 ; barde.js, enFumee) */
 .bd-ment-p.bd-part{pointer-events:none;animation:bd-part .38s ease-in forwards}
+/* (Romain, 13 novembre) « Attention : une seule réponse possible ! » : une petite fenêtre par-dessus la conversation (barde.js, avertir) */
+.bd-avert-choix{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:16px;background:rgba(10,6,20,.55)}
+.bd-avert-in{width:min(100%, 380px);display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 16px;border-radius:20px;text-align:center;
+  background:#2a1f4a;border:3px solid #ffd23f;box-shadow:0 12px 30px rgba(0,0,0,.5);animation:b-fin-tuto-in .35s cubic-bezier(.2,1.4,.4,1) both}
+.bd-avert-in p{margin:0;font-size:1.12rem;font-weight:700;line-height:1.35;color:#fff}
+.bd-avert-in .btn{min-width:120px}
+@keyframes b-fin-tuto-in{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+/* ⏳ le minuteur du bouton « Mensonge ? » (Romain, 13 novembre ; barde.js, lancerMinute) : une barre avance sur le bouton, il devient gris derrière elle,
+   tout gris il part en fumée. La couleur s'en va (mix-blend-mode : saturation) ; l'écriture reste lisible. Toujours animé (il dit combien de temps il reste). */
+.bd-ment-p.bd-minute{position:relative;overflow:hidden;isolation:isolate}
+.bd-ment-p.bd-minute::after{content:'';position:absolute;inset:0;z-index:1;background:#7c7c86;mix-blend-mode:saturation;transform-origin:0 50%;transform:scaleX(0);pointer-events:none;
+  animation:bd-minute var(--ment-d, 4000ms) linear var(--ment-t, 0ms) forwards !important}
+.bd-ment-p.bd-minute::before{content:'';position:absolute;top:0;bottom:0;left:0;z-index:2;width:4px;margin-left:-2px;background:#fff;box-shadow:0 0 7px 1px rgba(255,255,255,.9);pointer-events:none;
+  animation:bd-minute-barre var(--ment-d, 4000ms) linear var(--ment-t, 0ms) forwards !important}
+@keyframes bd-minute{to{transform:scaleX(1)}}
+@keyframes bd-minute-barre{0%{left:0}99%{opacity:1}100%{left:100%;opacity:0}}
 @keyframes bd-part{0%{opacity:1;filter:blur(0)}100%{opacity:0;filter:blur(6px);transform:translateY(-8px) scale(1.12)}}
 .bd-fumee{position:fixed;z-index:200;width:0;height:0;pointer-events:none}
 .bd-fumee i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;opacity:0;

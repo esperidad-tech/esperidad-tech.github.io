@@ -389,7 +389,9 @@ function trouver(d){
     case 'cueillir': el = q('#voile [data-act=cueillir][data-id="' + d.id + '"]'); break;
     case 'bonus': el = q('#voile [data-act=bonus][data-id="' + d.id + '"]'); break;
     case 'page': el = coinLivre(d.id); break;
-    case 'blanche': el = q('#livre-ici .lv-page.on [data-lv=blanche]'); break;
+    case 'blanche':   /* (13 novembre) l'encre renversée sur la page : le rond sur la flaque, tant qu'on ne la tient pas (livre.js, verser) */
+      var vs = q('#livre-ici .lv-page.on .lv-vs');
+      el = vs ? vs.querySelector('.lv-vs-goutte.prete:not(.tenue)') : q('#livre-ici .lv-page.on [data-lv=blanche]'); break;
     case 'fait': el = q('.tu-bandeau [data-act=tuto-fait]') || q('#tu-astuce [data-act=tuto-fait]'); break;
     case 'passe': el = q('.tu-bandeau [data-act=tuto-passer]'); break;
     case 'chanter': el = present(['[data-act=bd-chanter]']) || (q('.bd-trou.choisi') ? null : present(['.bd-trous.ouvert .bd-trou:not(.plein)', '.bd-trous:not(.ouvert) [data-act=bd-trous-ouvre]'])); break;   /* (plus bas dans le Carnet : on y fait défiler) */   /* un trou, jamais un mot : on ne montre pas la réponse */
@@ -752,6 +754,7 @@ function poserRonds(els){
      pas les dessins de la carte (SVG : leur place est dans leur transform) */
   l.forEach(function(e){ e.classList.add('tu-vise'); if(!(e instanceof SVGElement)) e.classList.add('tu-respire'); });
   vises = l.slice();
+  calerDefilement(l);
   for(var k = 0; k < Math.max(l.length, ronds.length); k++){
     var d = rond(k), el = l[k];
     if(!el){ d.hidden = true; d.__el = null; continue; }
@@ -766,6 +769,33 @@ function poserRonds(els){
   }
   if(!boucleRonds && ronds.some(function(x){ return x.__el; })) boucleRonds = requestAnimationFrame(suivreRonds);
 }
+/* (Romain, 13 novembre : « la barre de scroll du bas arrive et s'en va de façon régulière » — dans le Grand Livre, sur « Les codes des moments »,
+   et dans l'atelier) Le bouton qui respire grossit de 7 % : il déborde un instant de la boîte qui le contient, et cette boîte, qui peut défiler,
+   montre sa barre de côté puis la cache. Tant qu'un bouton respire, les boîtes autour de lui qui n'ont rien à montrer de côté ne défilent
+   plus de côté (classe tu-sans-x, tuto.css) ; elles défilent toujours de haut en bas. Aussi pour le rond de l'atelier (M.calerDefilement). */
+var cales = [];
+function boitesACaler(l){
+  var garder = [];
+  l.forEach(function(e){
+    if(!e || !e.parentElement) return;
+    var marge = Math.ceil(Math.max(e.offsetWidth || 0, 40) * .5) + 4;   /* (le bouton grossit de 7 % ; son onde, jusqu'à 45 %) */
+    for(var a = e.parentElement; a; a = a.parentElement){
+      if(garder.indexOf(a) >= 0) continue;
+      var deja = a.classList.contains('tu-sans-x'), ox = deja ? 'auto' : getComputedStyle(a).overflowX;
+      if(!deja && !/auto|scroll/.test(ox) && a !== document.documentElement && a !== document.body) continue;
+      if(deja || a.scrollWidth <= a.clientWidth + marge) garder.push(a);
+    }
+  });
+  return garder;
+}
+function calerDefilement(l){
+  var garder = boitesACaler((l || []).filter(function(e){ return !(e instanceof SVGElement); }).concat(autresCales));
+  cales.forEach(function(a){ if(garder.indexOf(a) < 0) a.classList.remove('tu-sans-x'); });
+  garder.forEach(function(a){ a.classList.add('tu-sans-x'); });
+  cales = garder;
+}
+var autresCales = [];
+M.calerDefilement = function(els){ autresCales = (els || []).filter(Boolean); calerDefilement(vises); };
 function suivreRonds(){
   boucleRonds = 0;
   var encore = false;

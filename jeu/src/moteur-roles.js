@@ -156,6 +156,17 @@ M.infosCarte = function(){
       /* (grisé quand elle a déjà cherché ici à ce moment : Romain, 5 novembre, 12 h 31) */
       if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return (D.INGR[i] || (D.PLANTES || {})[i] || {}).ic || ''; }).join(''), act:'lieu', id:id, classe:'ingr', grise:P.vus['cueilli:' + id] === P.moment});
     });
+    /* (Romain, 13 novembre ; E.carteIngredients, enquête 2) les ingrédients de base sont sur la carte de l'Alchimiste, là où ils poussent
+       (pas les plantes cachées de l'établi) ; une fois cueillis à ce moment, leur icône devient transparente. Un ingrédient qui ne pousse
+       qu'à un moment (c.annonce : les champignons de la nuit) a son icône à tous les moments, grisée tant que ce n'est pas le bon ;
+       le lieu dit alors quand revenir (feuilleLieu). */
+    if(E.carteIngredients) M.cle(E.lieux).forEach(function(id){
+      var c = ((E.lieux[id].alchimiste || {}).cueillir || []).filter(function(x){ return x.ingr && D.INGR[x.ingr] && !x.plante && !x.secret; }); if(!c.length) return;
+      if(marqueurs.some(function(mq){ return mq.classe === 'ingr' && mq.lieu === id; })) return;
+      var maintenant = c.filter(function(x){ return M.momentOk(x.moments); }), montre = maintenant.length ? maintenant : c.filter(function(x){ return x.annonce; });
+      if(!montre.length) return;
+      marqueurs.push({lieu:id, ic:montre.map(function(x){ return D.INGR[x.ingr].ic; }).join(''), act:'lieu', id:id, classe:'ingr', grise:!maintenant.length || P.vus['cueilli:' + id] === P.moment});
+    });
   }
   /* (plus de notes « qui habite ici » sur la carte : chaque maison montre le visage de son habitant, carte-jeu.js) */
   liste.sort(function(a, b){ return (b.bonus - a.bonus) || a.nom.localeCompare(b.nom); });
@@ -213,7 +224,10 @@ M.feuilleLieu = function(lieu){
     var deja = P.vus['cueilli:' + lieu] === P.moment;
     var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
     var pousse = M.cueilletteIci(lieu), cueillable = pousse.filter(function(x){ return M.besoinOk(x.besoin); });
+    /* (Romain, 13 novembre) c.annonce : pas le bon moment pour cet ingrédient → quand revenir (« les champignons, c'est la nuit ») */
+    var annonces = ((L.alchimiste || {}).cueillir || []).filter(function(x){ return x.annonce && !M.momentOk(x.moments) && D.INGR[x.ingr]; });
     if(deja) s += '<p class="b-recolte">✅ Déjà récolté</p>';
+    else if(!pousse.length && annonces.length){ annonces.forEach(function(x){ var ta = x.annonce === true ? D.INGR[x.ingr].nom + ' : ce n\'est pas le bon moment pour les cueillir. Reviens plus tard !' : x.annonce; s += '<p class="b-recolte b-recolte-tard">' + D.INGR[x.ingr].ic + ' ' + esc(ta) + ' ' + lire(ta) + '</p>'; }); }
     else if(!pousse.length){ if(!ptsA.length) s += '<p class="b-recolte">🍂 Rien à trouver</p>'; }   /* (un lieu où elle a autre chose à faire : pas de « rien à trouver ») */
     else if(!cueillable.length){
       var il = []; pousse.forEach(function(x){ M.texteBesoin(x.besoin, role).forEach(function(b){ if(il.indexOf(b.ic + ' ' + b.nom) < 0) il.push(b.ic + ' ' + b.nom); }); });
@@ -294,7 +308,9 @@ M.feuilleMaison = function(maison){
     var la = !!(E.pnj && E.pnj[id] && E.pnj[id].ou && E.pnj[id].ou[mid] === maison);
     var t = la ? x.court + ' est ' + M.chezLui(id) + ' en ce moment.' : M.texteAbsent(maison);
     /* dans la bulle de la carte (Romain, 10 h 32) : une seule pastille, son visage et la phrase */
-    if(UI.modal && UI.modal.bulle) s += '<div class="b-maison-hab b-maison-mini"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span>' + esc(t) + '</span></div>';
+    /* (13 novembre) le Barde : chez lui mais trop occupé pour parler (il dort…) → son visage cerclé de rouge (barde.js, M.pnjIndispo) */
+    var rougeM = role === 'barde' && !la && M.pnjOccupesIci(maison).indexOf(id) >= 0 && M.pnjIndispo && M.pnjIndispo(id);
+    if(UI.modal && UI.modal.bulle) s += '<div class="b-maison-hab b-maison-mini' + (rougeM ? ' bd-indispo' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><span>' + esc(t) + '</span></div>';
     else s += '<div class="b-maison-hab"><div class="b-gens-img">' + M.pnjImg(id) + '</div><div><b>' + esc(x.nom) + '</b><small>' + esc(x.metier) + '</small></div></div>' +
       '<p class="doux">' + esc(t) + ' ' + lire(t) + '</p>';
   } else {

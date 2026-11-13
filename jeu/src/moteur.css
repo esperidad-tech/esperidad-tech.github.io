@@ -745,6 +745,15 @@ html.b-fixe #app{min-height:0}
   .b-ecran-fixe.b-hub-simple > h1{padding-right:54px}
 }
 .b-ecran-fixe .b-hub-dores .btn{white-space:nowrap;padding-inline:calc(10px * var(--serre))}
+/* « Enquête résolue », fin du tutoriel (Romain, 13 novembre) : un petit mot en gros, posé sur le héros, et un bouton OK */
+.b-fin-tuto{position:absolute;left:50%;top:50%;z-index:4;width:min(92%, 380px);max-height:96%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px, 1.1vh, 10px);
+  padding:clamp(8px, 1.8vh, 16px) clamp(8px, 2vh, 14px);border-radius:20px;text-align:center;color:#fff;
+  background:rgba(28,20,60,.93);border:3px solid #ffd23f;box-shadow:0 10px 30px rgba(0,0,0,.5), 0 0 0 4px rgba(36,24,46,.6);animation:b-fin-tuto .45s cubic-bezier(.2,1.4,.4,1) both}
+.b-fin-tuto-t{font-family:var(--f-titre, inherit);font-size:clamp(1.05rem, 3.2vh, 1.45rem);line-height:1.12;color:#ffd23f}
+.b-fin-tuto p{margin:0;font-size:clamp(.85rem, 2.3vh, 1.12rem);line-height:1.28;font-weight:700}
+.b-fin-tuto .b-lire{width:clamp(30px, 5vh, 40px);height:clamp(30px, 5vh, 40px)}
+.b-fin-tuto .btn{min-width:110px;min-height:clamp(34px, 5.6vh, 46px);padding-block:0}
+@keyframes b-fin-tuto{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 
 /* L'onglet Code tient dans l'écran, même sur un petit téléphone avec le bandeau du tutoriel (Romain, 5 novembre, 23 h 06 :
    « même l'écran du code, tu es obligé de descendre ») : les cases et les touches suivent la hauteur de l'écran */

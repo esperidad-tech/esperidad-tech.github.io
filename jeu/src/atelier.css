@@ -952,7 +952,10 @@
 .at-ri-q.at-guide-q{position:relative}
 .at-ri-q.at-guide-q::before{content:'';position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;margin:-50% 0 0 -50%;border-radius:50%;border:3px solid #ffd23f;opacity:0;animation:tu-onde 1.3s ease-out infinite;pointer-events:none;z-index:2}   /* (plus d'écriteau « Touche ! » : l'onde, comme partout) */
 @keyframes at-guide-q{50%{transform:scale(1.07)}}
-.at-dicte{border-radius:16px;background:#fff1cf;border:3px solid var(--contour);padding:8px 10px 10px;box-shadow:0 6px 0 rgba(36,24,46,.25);animation:at-msg .25s ease-out}
+.at-dicte{border-radius:16px;background:#fff1cf;border:3px solid var(--contour);padding:8px 10px 10px;box-shadow:0 6px 0 rgba(36,24,46,.25);animation:at-dicte-vient .25s ease-out}
+/* (Romain, 13 novembre : la fenêtre des ingrédients « vient de la gauche et se déplace » — elle prenait at-msg, faite pour les messages centrés
+   avec translate(-50%) ; elle apparaît maintenant sur place) */
+@keyframes at-dicte-vient{0%{opacity:0;transform:translateY(8px) scale(.96)}100%{opacity:1;transform:none}}
 .at-dicte-t{display:flex;align-items:center;gap:8px;margin:0 0 8px!important;font-weight:800;color:var(--encre)}
 .at-dicte-t > b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffd36a;border:2px solid var(--contour);flex:none}
 .at-dicte-t .at-rond{width:42px;height:42px;flex:none;background:#fff8e6;border-color:var(--contour);color:var(--encre)}

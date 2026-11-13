@@ -540,9 +540,11 @@ function monter(){
   vuPage(V.L[V.i]);
   V.minut.push(setTimeout(function(){ voisines(V && V.i); }, 40));
   indice();
+  try{ reprendreVerser(); }catch(e){ console.error(e); }
 }
 function demonter(){
   if(!V) return;
+  try{ arreterVerser(); }catch(e){}
   try{ garderDefil(); }catch(e){}
   V.minut.forEach(clearTimeout); arreterIndice();
   window.removeEventListener('resize', V.resize);
@@ -741,6 +743,7 @@ function toucherBlanche(el){
   var P = M.P(), id = el.dataset.id, p = pageE(id);
   if(!p || P.pages[id]) return;
   if(M.besoinOk(p.besoin)){
+    if(p.verser && !p.mj){ if(!(M.tutoPermet && !M.tutoPermet('ouvrir-page', {id:id}))) verser(el, p); else M.A['ouvrir-page']({dataset:{id:id}}); return; }   /* (le tutoriel refuse ? ouvrir-page le dit) */
     UI.livreRevele = id; M.son('magie');
     M.A['ouvrir-page']({dataset:{id:id}});
     return;
@@ -752,6 +755,146 @@ function toucherBlanche(el){
     if(r) r.animate([{opacity:1}, {opacity:2.2, filter:'saturate(1.6)'}, {opacity:1}], {duration:900, easing:'ease-out'});
     if(f) f.animate([{opacity:0, transform:'translate(-50%,-50%) scale(.8)'}, {opacity:.22, transform:'translate(-50%,-50%) scale(1)'}, {opacity:0, transform:'translate(-50%,-50%) scale(1.15)'}], {duration:1300, easing:'ease-in-out'});
   }catch(er){}
+}
+/* ---------- 🫗 Verser l'encre sur la page blanche (Romain, 13 novembre : « il est juste censé mettre la potion révélatrice sur la page » ;
+   plus de mini-jeu ; « quand on clique sur la page blanche, une sorte de potion renversée se verse dessus ; le Sage doit déplacer la potion,
+   et au fur et à mesure qu'il descend, ça révèle la page ») ----------
+   La fiole se renverse en haut de la page, une flaque d'encre s'y pose. Le Sage la fait glisser avec le doigt : partout où l'encre passe,
+   le papier se mouille et le dessin caché apparaît. Arrivée tout en bas : toute la page se révèle, puis la découverte s'ouvre (ouvrir-page,
+   qui donne le code). Rien ne se rate. Une page qui le fait : p.verser:true (e1.js, la page blanche).
+   Robots : la flaque est .lv-vs-goutte.prete (la glisser jusqu'en bas), ou M.verserFini() d'un coup. */
+var VS = null;
+function verser(el, p){
+  if(VS && VS.id === p.id && VS.el.isConnected) return;
+  var f = el.closest('.lv-feuille'); if(!f || !p) return;
+  arreterVerser();
+  var c = (D.POTIONS.revelatrice || {}).c || '#8a5cff', dessin = p.donne === 'info:carte' || p.id === 'mystere' ? carteForet() : glyphes();
+  var o = document.createElement('div');
+  o.className = 'lv-vs';
+  o.style.setProperty('--p', c);
+  o.innerHTML = '<div class="lv-vs-fond"><div class="lv-vs-dessin' + (p.donne === 'info:carte' || p.id === 'mystere' ? '' : ' lettre') + '">' + dessin + '</div></div><canvas class="lv-vs-voile" aria-hidden="true"></canvas>' +
+    '<span class="lv-vs-fiole" aria-hidden="true">' + fiole(c, D.POTIONS.revelatrice.ic) + '</span><i class="lv-vs-filet" aria-hidden="true"></i>' +
+    '<span class="lv-vs-goutte" role="button" aria-label="L\'encre : fais-la couler jusqu\'en bas de la page"><svg viewBox="0 0 120 100" aria-hidden="true">' +
+      '<path class="lv-vs-tache" d="M60 8 C84 6 108 22 110 46 C112 70 94 92 64 92 C36 94 10 80 10 52 C10 26 34 10 60 8 Z"/>' +
+      '<path d="M36 32 C44 23 56 20 66 22" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".55"/><circle cx="84" cy="34" r="5" fill="#fff" opacity=".45"/></svg></span>' +
+    '<span class="lv-vs-fleches" aria-hidden="true"><i></i><i></i><i></i></span>';
+  f.appendChild(o);
+  f.scrollTop = 0;
+  VS = {id:p.id, el:o, f:f, p:p, cv:o.querySelector('canvas'), g:o.querySelector('.lv-vs-goutte'), x:0, y:0, fini:false, tenu:null, minut:[]};
+  taillerVerser();
+  var deja = UI.versee === p.id;   /* déjà renversée (le livre s'est redessiné) : la flaque est là tout de suite */
+  UI.versee = p.id;
+  VS.x = VS.w / 2; VS.y = Math.max(VS.R * 0.95, VS.h * 0.15);
+  poserGoutte();
+  VS.g.addEventListener('pointerdown', vsBas);
+  VS.g.addEventListener('pointermove', vsBouge);
+  VS.g.addEventListener('pointerup', vsHaut);
+  VS.g.addEventListener('pointercancel', vsHaut);
+  o.addEventListener('pointerdown', function(e){ e.stopPropagation(); });   /* le livre ne tourne pas la page sous le doigt */
+  VS.resize = function(){ taillerVerser(true); };
+  window.addEventListener('resize', VS.resize);
+  if(deja || calme()){ o.classList.add('prete'); VS.g.classList.add('prete'); essuyer(VS.x, VS.y, VS.x, VS.y); return; }
+  /* la fiole se renverse, l'encre coule, la flaque s'étale */
+  M.son('magie');
+  o.classList.add('verse');
+  VS.minut.push(setTimeout(function(){ if(!VS) return; M.son('plouf'); essuyer(VS.x, VS.y, VS.x, VS.y); }, 950));
+  VS.minut.push(setTimeout(function(){ if(!VS) return; o.classList.add('prete'); VS.g.classList.add('prete'); }, 1500));
+}
+function taillerVerser(garder){
+  if(!VS) return;
+  var r = VS.el.getBoundingClientRect(), k = Math.min(2, window.devicePixelRatio || 1);
+  var w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
+  if(garder && VS.w === w && VS.h === h) return;
+  var ancien = garder && VS.w ? {w:VS.w, h:VS.h} : null;
+  VS.w = w; VS.h = h; VS.R = Math.max(44, Math.min(w, h) * 0.19);
+  VS.cv.width = Math.round(w * k); VS.cv.height = Math.round(h * k);
+  VS.cv.style.width = w + 'px'; VS.cv.style.height = h + 'px';
+  var g = VS.cv.getContext('2d'); VS.ctx = g;
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = '#fdfcff'; g.fillRect(0, 0, w, h);
+  var gr = g.createLinearGradient(0, 0, w, h);   /* de légers reflets bleu-violet, comme la page blanche */
+  gr.addColorStop(0, 'rgba(150,130,255,.08)'); gr.addColorStop(.5, 'rgba(150,130,255,0)'); gr.addColorStop(1, 'rgba(120,170,255,.09)');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  VS.g.style.width = Math.round(VS.R * 2.2) + 'px'; VS.g.style.height = Math.round(VS.R * 1.85) + 'px';
+  if(ancien){ VS.x = VS.x * w / ancien.w; VS.y = VS.y * h / ancien.h; essuyer(VS.x, VS.y, VS.x, VS.y); poserGoutte(); }
+}
+function poserGoutte(){
+  if(!VS) return;
+  VS.g.style.transform = 'translate(' + (VS.x - VS.R * 1.1).toFixed(1) + 'px,' + (VS.y - VS.R * 0.92).toFixed(1) + 'px)';
+  var fl = VS.el.querySelector('.lv-vs-fleches');
+  if(fl) fl.style.transform = 'translate(' + VS.x.toFixed(1) + 'px,' + (VS.y + VS.R * 1.05).toFixed(1) + 'px)';
+  var fi = VS.el.querySelector('.lv-vs-fiole'), ft = VS.el.querySelector('.lv-vs-filet');   /* la fiole se renverse juste au-dessus de la flaque */
+  if(fi) fi.style.left = VS.x + 'px';
+  if(ft){ ft.style.left = VS.x + 'px'; ft.style.height = Math.max(10, VS.y - 70) + 'px'; }
+}
+/* là où l'encre passe, la page devient transparente : on voit le dessin (un pinceau rond aux bords doux) */
+function essuyer(x0, y0, x1, y1){
+  if(!VS || !VS.ctx) return;
+  var g = VS.ctx, R = VS.R, d = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)), n = Math.max(1, Math.ceil(d / (R * 0.25)));
+  g.globalCompositeOperation = 'destination-out';
+  for(var i = 0; i <= n; i++){
+    var x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n;
+    var gr = g.createRadialGradient(x, y, R * 0.35, x, y, R);
+    gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.7, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.fill();
+  }
+  g.globalCompositeOperation = 'source-over';
+}
+function vsBas(e){
+  if(!VS || VS.fini || !VS.g.classList.contains('prete')) return;
+  e.stopPropagation(); if(e.cancelable) e.preventDefault();
+  var r = VS.el.getBoundingClientRect();
+  VS.tenu = {id:e.pointerId, dx:VS.x - (e.clientX - r.left), dy:VS.y - (e.clientY - r.top)};
+  try{ VS.g.setPointerCapture(e.pointerId); }catch(er){}
+  VS.g.classList.add('tenue'); VS.el.classList.add('touchee');
+  M.son('bulle');
+}
+function vsBouge(e){
+  var T = VS && VS.tenu; if(!T || e.pointerId !== T.id || VS.fini) return;
+  e.stopPropagation(); if(e.cancelable) e.preventDefault();
+  var r = VS.el.getBoundingClientRect(), R = VS.R;
+  var x = Math.max(R * 0.5, Math.min(VS.w - R * 0.5, e.clientX - r.left + T.dx)), y = Math.max(R * 0.5, Math.min(VS.h - R * 0.3, e.clientY - r.top + T.dy));
+  essuyer(VS.x, VS.y, x, y);
+  VS.x = x; VS.y = y; poserGoutte();
+  if(!VS.son || performance.now() - VS.son > 280){ VS.son = performance.now(); M.son('tic'); }
+  if(VS.y >= VS.h - R * 0.95) finirVerser();
+}
+function vsHaut(e){
+  var T = VS && VS.tenu; if(!T || e.pointerId !== T.id) return;
+  e.stopPropagation();
+  VS.tenu = null; VS.g.classList.remove('tenue');
+  if(V) V.bloque = Date.now();   /* le « clic » qui suit ne touche rien */
+}
+/* arrivée en bas : toute la page se révèle, puis la découverte (le code du plan) */
+function finirVerser(){
+  if(!VS || VS.fini) return;
+  VS.fini = true; VS.tenu = null;
+  var id = VS.id;
+  VS.el.classList.add('fini'); VS.g.classList.remove('prete', 'tenue');
+  M.son('magie');
+  setTimeout(function(){
+    arreterVerser();
+    UI.versee = null;
+    UI.livreRevele = id;
+    M.A['ouvrir-page']({dataset:{id:id}});
+  }, calme() ? 60 : 1300);
+}
+function arreterVerser(){
+  if(!VS) return;
+  VS.minut.forEach(clearTimeout);
+  window.removeEventListener('resize', VS.resize);
+  if(VS.el && VS.el.parentNode && !VS.fini) VS.el.parentNode.removeChild(VS.el);
+  VS = null;
+}
+M.verserFini = function(){ if(VS && !VS.fini){ finirVerser(); return true; } return false; };
+/* le livre s'est redessiné pendant qu'on versait : la flaque revient en haut de la page (la page n'est pas encore révélée) */
+function reprendreVerser(){
+  if(!V || !UI.versee) return;
+  var p = pageE(UI.versee), P = M.P();
+  if(!p || P.pages[p.id] || V.L[V.i].id !== p.id){ if(!p || P.pages[p.id]) UI.versee = null; return; }
+  var b = V.ici.querySelector('.lv-page.on [data-lv=blanche][data-id="' + p.id + '"]');
+  if(b && M.besoinOk(p.besoin)) verser(b, p);
 }
 /* Premier livre : le coin de la page se soulève tout seul (jusqu'au premier tour de page) */
 function indice(){

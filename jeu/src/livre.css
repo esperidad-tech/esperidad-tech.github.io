@@ -179,6 +179,44 @@
 .lv-glyphes circle{fill:#4b3aa0;stroke:none}
 .lv-revele.neuf.lettre .lv-glyphes svg{opacity:0;animation:lv-paraît .6s ease-out forwards;animation-delay:var(--d)}
 
+/* 🫗 Verser l'encre sur la page blanche (Romain, 13 novembre ; livre.js, verser) : dessous le dessin sur un papier mouillé d'encre,
+   dessus le papier blanc (une toile qu'on efface là où passe la flaque), la flaque qu'on fait glisser, des flèches qui montrent le bas */
+.lv-vs{position:absolute;inset:0;z-index:6;overflow:hidden;touch-action:none;background:#fdfcff;-webkit-user-select:none;user-select:none}
+.lv-vs-fond{position:absolute;inset:0;display:grid;place-items:center;padding:18px;
+  background:radial-gradient(80% 60% at 50% 45%, rgba(150,120,255,.22), rgba(150,120,255,.1) 70%), #f4f0ff}
+.lv-vs-dessin{width:min(100%, 520px)}
+.lv-vs-dessin.lettre{width:min(100%, 360px)}
+.lv-vs-voile{position:absolute;left:0;top:0;pointer-events:none}
+.lv-vs-goutte{position:absolute;left:0;top:0;z-index:3;display:block;cursor:grab;touch-action:none;opacity:0;transform-origin:50% 50%;
+  filter:drop-shadow(0 4px 6px rgba(60,30,140,.35))}
+.lv-vs-goutte svg{display:block;width:100%;height:100%;overflow:visible}
+.lv-vs-tache{fill:var(--p, #8a5cff);stroke:#24182e;stroke-width:3.5;stroke-linejoin:round;transform-origin:50% 50%;animation:lv-vs-tremble 2.2s ease-in-out infinite}
+@keyframes lv-vs-tremble{0%,100%{transform:scale(1, 1)}35%{transform:scale(1.04, .96)}70%{transform:scale(.97, 1.03)}}
+.lv-vs-goutte.prete{opacity:1}
+.lv-vs-goutte.tenue{cursor:grabbing}
+.lv-vs-goutte.tenue .lv-vs-tache{animation-duration:.7s}
+.lv-vs-fleches{position:absolute;left:0;top:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;margin-left:-17px;pointer-events:none;opacity:0;transition:opacity .3s}
+.lv-vs.prete:not(.touchee) .lv-vs-fleches{opacity:1}
+.lv-vs-fleches i{display:block;width:34px;height:18px;background:var(--p, #8a5cff);clip-path:polygon(0 0, 50% 70%, 100% 0, 100% 30%, 50% 100%, 0 30%);opacity:.25;animation:lv-vs-fleche 1.2s ease-in-out infinite}
+.lv-vs-fleches i:nth-child(2){animation-delay:.2s}
+.lv-vs-fleches i:nth-child(3){animation-delay:.4s}
+@keyframes lv-vs-fleche{0%,100%{opacity:.2;transform:translateY(-4px)}50%{opacity:.95;transform:translateY(3px)}}
+/* la fiole se renverse au-dessus de la flaque, un filet d'encre coule */
+.lv-vs-fiole{position:absolute;top:14px;z-index:4;width:56px;height:74px;margin-left:-28px;opacity:0;pointer-events:none;transform-origin:50% 30%}
+.lv-vs-fiole .lv-fiole{--p:var(--p, #8a5cff)}
+.lv-vs-filet{position:absolute;top:62px;z-index:3;width:8px;margin-left:-4px;border-radius:4px;background:var(--p, #8a5cff);transform-origin:50% 0;transform:scaleY(0);opacity:0;pointer-events:none}
+.lv-vs.verse .lv-vs-fiole{animation:lv-vs-fiole 1.5s ease-in-out forwards}
+.lv-vs.verse .lv-vs-filet{animation:lv-vs-filet 1.5s ease-in forwards}
+.lv-vs.verse .lv-vs-goutte:not(.prete){animation:lv-vs-flaque 1.5s ease-out forwards}
+@keyframes lv-vs-fiole{0%{opacity:0;transform:translateY(-30px) rotate(0deg)}18%{opacity:1;transform:translateY(0) rotate(0deg)}45%{opacity:1;transform:rotate(150deg)}80%{opacity:1;transform:rotate(150deg)}100%{opacity:0;transform:translateY(-20px) rotate(150deg)}}
+@keyframes lv-vs-filet{0%,40%{opacity:0;transform:scaleY(0)}55%{opacity:1;transform:scaleY(1)}80%{opacity:1;transform:scaleY(1) translateY(0)}100%{opacity:0;transform:scaleY(.2) translateY(60%)}}
+@keyframes lv-vs-flaque{0%,55%{opacity:0;scale:.2}75%{opacity:1;scale:1.12}100%{opacity:1;scale:1}}
+/* arrivée en bas : tout le papier se mouille, le dessin apparaît en entier */
+.lv-vs.fini .lv-vs-voile{transition:opacity 1.1s ease-out;opacity:0}
+.lv-vs.fini .lv-vs-goutte{transition:opacity .6s, scale .6s;opacity:0;scale:2.2}
+.lv-vs.fini .lv-vs-fond{animation:b-lueur 1.2s ease-in-out}
+@media (prefers-reduced-motion: reduce){ .lv-vs-tache, .lv-vs-fleches i{animation:none} }
+
 /* Une page fermée par un sceau */
 .lv-sceau{align-self:center;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;
   background:radial-gradient(circle at 36% 30%, #e46a5a, #a8261a 70%);box-shadow:0 0 0 5px rgba(168,38,26,.25), 0 4px 0 #7a1a12;transform:rotate(-8deg)}

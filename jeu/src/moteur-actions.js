@@ -692,6 +692,15 @@ function traiterCode(seq){
     if(I.outil){ M.S.outils = M.S.outils || []; if(M.S.outils.indexOf(I.outil) < 0) M.S.outils.push(I.outil); M.sauver(); }
     if(I.plante && role === 'alchimiste'){ M.ajouterPlante(I.plante); M.sauver(); }   /* (enquête 3) le gui cueilli par le Pisteur arrive sur l'établi */
     M.noter('Reçu : ' + nn.nom + '. ' + (I.t || ''), nn.ic);
+    /* (Romain, 13 novembre) I.convBarde : tapé par le Barde, ce code l'emmène tout droit dans la conversation de ce villageois
+       (Tim, attrapé par le Pisteur au Vieux Chêne : on le fait parler tout de suite) */
+    if(I.convBarde && role === 'barde' && E.pnj && E.pnj[I.convBarde] && A.parler){
+      M.sauver(); UI.saisie = [];
+      M.toast('📨 ' + (I.t ? nn.nom + ' : fais-le parler !' : 'Fais-le parler !'));
+      if(M.barde && M.barde.preparer) M.barde.preparer(I.convBarde);
+      A.parler({dataset:{id:I.convBarde}});
+      return;
+    }
     M.ouvrir({type:'info', ic:nn.ic, illu:I.illu, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
   }
 }
@@ -1201,7 +1210,13 @@ A['nouvelle-enquete'] = function(){ nouvelleEnquete(M.S.prochaine); };
 A.reprendre = function(){ UI.ecran = 'enquete'; M.render(); window.scrollTo(0, 0); };
 /* après la lettre « d'Odette » : l'écran des missions du maire (enquête 3, moteur-ecrans.js) */
 A['lettre-suite'] = function(){ M.P().etape = 'missions'; M.stop(); M.son('page'); M.sauver(); M.render(); window.scrollTo(0, 0); };
-A.commencer = function(){ M.P().etape = 'jeu'; M.P().onglet = 'role'; M.stop(); M.sauver(); M.render(); window.scrollTo(0, 0); };
+A.commencer = function(){
+  var P = M.P(), E = M.E();
+  P.etape = 'jeu'; P.onglet = 'role';
+  /* (Romain, 13 novembre ; E.debutCarnet, enquête 2) on commence sur le Carnet, les missions ouvertes (mission.js) */
+  if(E && E.debutCarnet){ P.onglet = 'carnet'; P.missionsOuvertes = 1; }
+  M.stop(); M.sauver(); M.render(); window.scrollTo(0, 0);
+};
 A['relire-lettre'] = function(){ var E = M.E(); M.ouvrir({type:'info', ic:'✉️', titre:'La lettre du maire', t:E.lettre}); };
 A.onglet = function(el){ M.P().onglet = el.dataset.o; UI.saisie = []; M.sauver(); M.render(); window.scrollTo(0, 0); };
 A.lieu = function(el){
@@ -1550,6 +1565,12 @@ A['pad-suite'] = function(){ UI.padSuite = !UI.padSuite; UI.saisie = []; M.son('
 A['fin-retour'] = function(){ M.archiver(); M.S.e = null; UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.render(); window.scrollTo(0, 0); };
 A.journal = function(el){ UI.journalE = {p:M.P().id, e:+el.dataset.e}; M.son('page'); UI.garderDefilement = true; M.render(); };
 A['suite-sage'] = function(){ var F = M.P() && M.P().fin; enqueteSuivante(F ? Math.min(F.erreurs || 0, 3) : 0); };
+/* « Enquête résolue » (Romain, 13 novembre) : le bouton Talents (il ne brille plus une fois touché), et le petit mot de la fin du tutoriel */
+A['fin-talents'] = function(el){
+  var F = M.P() && M.P().fin; if(F){ F.talentsVus = 1; M.sauver(); }
+  if(el && el.dataset.p) A['choisir-talent'](el); else { A.ecran({dataset:{e:'heros'}}); UI.arbre = true; UI.arbreDirect = true; M.render(); }   /* l'arbre des talents ouvert (heros.js) */
+};
+A['fin-mot-tuto'] = function(){ var F = M.P() && M.P().fin; if(F){ F.motTutoVu = 1; M.sauver(); } M.son('clic'); M.render(); };
 A.calepin = function(){ M.ouvrir({type:'calepin'}); };
 /* A.aide, A['menu-enquete'], A['changer-joueur'] : des pages du menu ☰ (heros.js) */
 A['sous-atelier'] = function(el){ UI.sousAtelier = el.dataset.v; M.son('clic'); M.render(); };

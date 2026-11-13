@@ -193,7 +193,8 @@ var OBJETS = {
   poudre:{forme:'tas', couls:['#1b1b1f', '#3a3d42', '#c8202a', '#e8c830', '#3a3d42'], tiroir:'grains', bon:'poudre', scene:'poudre', requis:['poudre', 'rouge_p', 'soufre_p'],
     savoir:'La poudre noire, c\'est elle qui fait partir les feux d\'artifice.'},
   rouge_p:{de:'poudre', nom:'l\'eau rougie', liquide:true, cibles:['coquelicot'], savoir:'Le même rouge que la rivière : quelqu\'un a mêlé ce colorant à la poudre.'},
-  soufre_p:{de:'poudre', nom:'les grains jaunes', tiroir:'grains', bon:'soufre', coul:'#e8c830', savoir:'Le soufre est jaune ; il brûle avec une petite flamme bleue. On en trouve près des volcans.'},
+  /* (Romain, 13 novembre : « un message sur le soufre, que c'est avec ça qu'on fait les allumettes ») */
+  soufre_p:{de:'poudre', nom:'les grains jaunes', tiroir:'grains', bon:'soufre', coul:'#e8c830', savoir:'Le soufre est jaune ; il brûle avec une petite flamme bleue. Il y en a dans le bout des allumettes : c\'est lui qui les aide à s\'enflammer !'},
   charbon_p:{de:'poudre', nom:'le morceau noir', tiroir:'grains', bon:'charbon', coul:'#1b1b1f', savoir:'Le charbon de bois, c\'est du bois cuit sans air : on y voit encore les petits trous du bois.'},
   laine_p:{de:'poudre', nom:'le brin noir', tiroir:'fils', bon:'feutree', coul:'#1c1a22', noir:true, savoir:'De la laine feutrée, épaisse et serrée : on en fait les manteaux… et les capes.'},
   /* les deux pièces d'or : de l'or (loupe), la même fêlure au microscope ; de la farine sur celle de la boulangerie,
