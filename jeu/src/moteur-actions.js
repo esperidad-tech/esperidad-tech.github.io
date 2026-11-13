@@ -563,7 +563,7 @@ var LIBRE_EN_PAUSE = {fermer:1, lire:1, 'tuto-lire':1, 'tuto-fait':1, 'tuto-pass
   journal:1, calepin:1, revoir:1, 'relire-lettre':1, 'carnet-pnj':1, page:1, rayer:1, 'tab-case':1, 'tab-tete':1, 'tab-effacer':1, 'mission-coche':1, 'missions-plier':1, 'fil-plier':1, 'codes-plier':1, 'arch-plier':1, 'bib-plier':1, 'gens-plier':1,
   sym:1, 'sym-efface':1, 'bd-code':1, 'bd-porte-fin':1, 'donner-potion':1, 'potion-donnee':1, reserve:1, inspiration:1, 'don-action':1, 'don-donne':1,
   'bd-carnet':1, 'bd-trous-ouvre':1, 'bd-trou':1, 'bd-mot':1, 'bd-tableau':1, 'noter-ingr':1, 'basculer-ingr':1, 'sous-sol':1, 'sous-atelier':1, palier:1,
-  opt:1, 'test-voix':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
+  opt:1, 'test-voix':1, 'voix-mesurer':1, 'voix-oublier':1, 'voix-plus-tard':1, 'voix-telecharger':1, 'plein-ecran':1, joueur:1, sauvegarder:1, 'hors-ligne':1, 'hors-ligne-maj':1,
   'mj-reprendre':1};
 M.LIBRE_EN_PAUSE = LIBRE_EN_PAUSE;
 /* « Un mini-jeu est en pause » : la petite fenêtre quand on veut faire autre chose (t : pourquoi, si besoin) */
@@ -1202,6 +1202,8 @@ A.talent = function(el){
 A.joueur = function(el){ if(!M.S.heros) return; M.S.heros.joueur = el.dataset.v === 'enfant' ? 'enfant' : 'adulte'; M.sauver(); M.son('clic'); UI.garderDefilement = true; M.render(); };
 A.opt = function(el){ M.S.options[el.dataset.k] = el.checked; M.sauver(); if(el.dataset.k === 'lecture' && !el.checked) M.stop(); };
 A['test-voix'] = function(){ M.lire('Bonjour ! Je suis la voix de Brumeval. Bonne enquête !'); };
+/* Réglages, appareil jugé trop lent pour les voix naturelles : refaire la mesure de vitesse (voix.js, V.remesurer) */
+A['voix-mesurer'] = function(){ M.son('clic'); if(window.Voix && Voix.remesurer) Voix.remesurer(); M.render(); };
 /* (La « Sauvegarde de secours » copier / coller des Réglages est remplacée par 💾 Sauvegarder et 📂 Charger un fichier, dans le menu ☰ : heros.js) */
 A['mode-test'] = function(el){
   var i = +el.dataset.i;

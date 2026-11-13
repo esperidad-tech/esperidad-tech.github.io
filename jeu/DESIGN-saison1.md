@@ -32,6 +32,8 @@ Ce document est la référence du jeu. **Le chapitre 0 dit en une page à quoi r
 
 **La carte.** Depuis le 12 novembre à 12 h 06, **la carte du jeu est la grande carte (chapitre 14, §14.5)** : le village de toujours, à sa place, au milieu d'un monde de 3000 × 2000 ; tout autour, de la brume (huit bancs, un par zone, et le mur du bord). Elle remplit l'écran d'une tablette (plus de bandes vides). **Dans les enquêtes 1 et 2, aucune zone de brume n'est levée : on y joue exactement comme avant** (mêmes lieux, mêmes codes). **Dans l'enquête 3, depuis le 12 novembre après-midi, deux zones se lèvent sur la carte de l'Alchimiste** (le Nord et les collines de l'Ouest) quand Anselme sonne Bertille, sa petite cloche : ses quatre plantes lointaines y poussent (§13.28, §13.26, §14.7). Les lieux de ces zones sont dessinés mais ne se touchent pas encore ; les six autres zones restent à décider avec Romain (§14.3).
 
+**Les voix (§12.61).** Un toucher sur 🔊, et le son sort tout de suite : **jamais d'attente**. La voix naturelle du personnage si elle est prête dans l'instant, sinon la voix de l'appareil. Un appareil trop lent pour les voix naturelles (c'est mesuré, et écrit dans les Réglages) lit toujours avec sa propre voix.
+
 **Les règles de Romain, toujours.** Tout en français simple. Jamais de lecture vocale automatique : un bouton 🔊 pour tout texte de plus de 3 mots. Boutons jaunes avec texte noir pour aller ou lancer. Les aides sont racontées par un conteur (jamais « Touche … »), le bouton à toucher porte le rond jaune animé. Pas trop d'indices, jamais une réponse trahie par le texte, peu de minuteurs, pas de points d'action. Ce qui est en discussion ne se construit pas sans son « go ».
 
 
@@ -1523,6 +1525,44 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 - **Le donjon dit quelle descente remonte** : le bouton « L'enquête » revient avec `?retour=<jeton>` ; le jeu retrouve l'emplacement du héros qui porte ce jeton (`M.emplacementDuJeton`) et remet l'adresse au propre.
 - **Ce qui ne se rattrape pas** : les héros déjà écrasés avant la correction sont perdus (dit à Romain : recréer avec Changer de joueur → Nouveau héros → Mode test).
 - Robot : `jeu/tools/emplacements.py` (quatre onglets ouverts avant les héros, le Pisteur descend et remonte : chacun retrouve le sien).
+
+### 12.61 Les voix : « dès qu'on appuie, le son sort » — le moteur des voix refait (Romain, 13 novembre, 18 h 51) — construit, vérifié, EN LIGNE (13 novembre, 20 h 33 ; commit 04a5e89 du site, version 20261113-1932 ; dans les Réglages : « 13/11 à 20 h 25 » ; publication de GitHub vérifiée)
+
+**Ce que Romain a vu.** « Sur les tablettes un peu anciennes, les voix mettent énormément de temps à arriver… presque 1 minute à charger. Du coup, ça marche pas. Et même moi sur l'iPhone, quand on appuie sur lecture, la voix est de meilleure qualité, mais ça met beaucoup de temps à charger. Soit tu peux trouver une optimisation, soit trouve une solution pour qu'il y ait une voix, même si elle n'est pas terrible, instantanée. Le but, c'est que dès qu'on appuie, le son sort instantanément. » À 20 h 24 : « Dès que tu as trouvé la solution, tu la modifies et tu mets en ligne. »
+
+**La cause.** À chaque toucher sur 🔊, la bibliothèque des voix (vits-web, `predict`) rechargeait TOUT : la voix (un fichier de 60 Mo), le moteur de calcul, le programme de prononciation. Puis elle fabriquait le texte entier d'un seul bloc. Et tout cela sur le fil de l'écran : le jeu se figeait pendant ce temps. Mesuré ici, sur les mêmes phrases : **3,3 à 5 secondes par phrase avec l'ancien moteur (dont 3 secondes rien que pour tout recharger), 0,4 à 0,75 seconde avec le nouveau.** Sur une vieille tablette, ces 3 secondes deviennent la minute que Romain a vue.
+
+**LA RÈGLE (elle fait foi) : JAMAIS D'ATTENTE.** Un toucher sur 🔊, et le son sort. La voix naturelle du personnage si sa première phrase est prête dans l'instant (0,6 seconde au plus) ; sinon **la voix de l'appareil, tout de suite**. Une lecture ne mélange jamais les deux voix.
+
+**Ce qui est fait** (`jeu/src/voix.js`, presque entièrement réécrit ; `moteur-base.js` : `M.lireAppareil` rend la phrase lancée, `M.majBoutonStop` ; `moteur-ecrans.js` : `M.voixHTML` ; `moteur-actions.js` : `voix-mesurer` ; `heros.js` : `fichiersVoix`).
+- **Le moteur tourne à part** (un « travailleur », `moteur()` dans `voix.js`) et **garde tout en mémoire** : une voix se charge une seule fois, ensuite une phrase ne coûte que son calcul. L'écran ne se fige plus (17 millisecondes au pire, mesuré pendant le calcul d'une longue phrase).
+- **Un texte se lit phrase par phrase** (`decouper` : après un point, un point d'exclamation, d'interrogation ; une phrase de plus de 120 lettres se coupe à une virgule) : la première part dès qu'elle est prête, les suivantes se fabriquent pendant qu'on écoute. Les phrases fabriquées sont gardées en réserve (24 Mo, les plus anciennes s'en vont).
+- **Sur un appareil rapide, l'écran est préparé d'avance** (`scan`) : la première phrase de chaque 🔊 visible (8 textes au mieux, 2 sur un appareil tout juste rapide ; les textes qui viennent d'apparaître d'abord). Rien pendant un mini-jeu d'action. Les deux voix (Siwis, Tom) sont chargées dès le lancement (`chauffer`).
+- **La vitesse de l'appareil est mesurée une fois** (`etalonner` : quatre secondes après le premier lancement avec les voix, trois phrases fabriquées sans être jouées ; gardée dans `brumeval-voix-mesure`). **« Rapide » = l'appareil fabrique la voix au moins deux fois plus vite qu'elle ne se dit** (`RAPIDE = 0.5`). **Un appareil « lent » ne charge rien du tout et lit toujours avec sa propre voix** ; sa mesure est refaite au bout de 14 jours, ou avec le bouton « 🔁 Mesurer encore » des Réglages. 1 Go de mémoire ou moins : classé lent sans essayer.
+- **Les Réglages disent ce que fait l'appareil** (« Son et voix ») : « assez rapide pour ces voix », « trop lent pour ces voix… il lit tout de suite avec sa propre voix », « je mesure… », et **« Vitesse : ×4,6 »** (combien de fois plus vite que la parole ; il faut au moins ×2). **C'est le chiffre à demander à Romain pour chaque tablette.**
+- **Une tablette dont la voix d'appareil reste muette** (rien ne se passe pendant deux secondes) : la voix naturelle prend le relais, même lente ; deux fois de suite, l'appareil est tenu pour muet jusqu'à la fin de la séance. Pareil s'il a des voix mais aucune en français.
+- **Les pannes ne cassent rien** : cdnjs ne répond pas → le moteur vient de jsDelivr ; le moteur ne se charge pas deux fois de suite → « panne », la voix de l'appareil lit ; la page se ferme toute seule deux fois de suite pendant le chargement d'une voix (manque de mémoire) → on n'insiste plus sur cet appareil (`brumeval-voix-temoin`).
+- **« Jouer sans internet »** : le moteur donne lui-même la liste de ses fichiers (`V.prechauffer`, `V.listeFichiers`), parce que la page ne les voit plus passer.
+- **L'ancien chemin (`predict`) ne sert plus que de tout dernier recours** (ni moteur, ni voix d'appareil). Ne jamais le remettre dans le chemin normal.
+- **Rien ne change** pour le téléchargement des voix (120 Mo, une fois), pour les hauteurs des personnages, ni pour la règle « jamais de lecture automatique ». Le donjon, le labo et l'établi lisaient déjà avec la voix de l'appareil ou par le jeu : pas touchés.
+
+**Ce que ça change, appareil par appareil.**
+- **iPhone récent, tablette récente** : la voix naturelle, tout de suite pour ce qui est à l'écran depuis une seconde ; la voix de l'appareil pour un toucher « trop tôt » ou une première phrase très longue.
+- **Vieille tablette** : la voix de l'appareil, tout de suite, toujours. Les belles voix n'y servent plus : inutile d'y télécharger les 120 Mo.
+
+**Le robot** : `jeu/tools/voix.py` (14 situations, environ 80 vérifications ; il ouvre le vrai jeu sous son adresse GitHub et sert d'ici tout ce que le moteur demande à l'extérieur ; la première fois, il va chercher trois paquets npm et une voix d'essai sur GitHub). Vérifié aussi à la main : un appareil ralenti exprès (processeur saturé) est bien classé « lent » (×1,7), rend sa mémoire et lit avec sa propre voix.
+
+**Ce qui n'a PAS pu être essayé ici.** Ni iPhone, ni Safari, ni vraie vieille tablette. Hugging Face n'est pas joignable depuis une session : les voix d'aujourd'hui (Siwis, Tom) sont remplacées dans les essais par la Siwis de 2023 (GitHub), qui fait aussi le « Tom ». **Attendre le retour de Romain sur ses appareils.**
+
+**Les limites, dites à Romain.**
+- **Sur une vieille tablette, il n'y aura pas de belle voix** : seulement celle de l'appareil. C'est le prix du « tout de suite ».
+- **D'un toucher à l'autre, on peut entendre deux voix différentes** pour le même personnage (la naturelle si elle était prête, celle de l'appareil sinon).
+- **iPhone en mode silencieux** (le petit bouton sur le côté) : la voix de l'appareil ne s'entend pas, alors que la voix naturelle, si. À vérifier avec lui.
+- Sans internet, sur iPhone, le moteur pourrait ne pas retrouver ses fichiers gardés : dans ce cas, la voix de l'appareil lit (rien ne casse). Pas essayé.
+
+**La piste pour aller plus loin — pas construite, à décider avec Romain.** Enregistrer d'avance toutes les répliques avec les belles voix, et mettre ces sons dans le jeu : la belle voix, tout de suite, partout, même sur les vieilles tablettes, et plus de 120 Mo à télécharger. Mais c'est un gros chantier : recenser tous les textes du jeu, refabriquer les sons à chaque texte changé (chaque conversation qui touche un dialogue devrait le faire), et plusieurs dizaines de Mo de sons en plus.
+
+**Sept décisions de Claude, à valider par Romain** : (1) 0,6 seconde d'attente au plus avant de passer à la voix de l'appareil ; (2) « rapide » à partir de ×2 ; (3) tant que l'appareil n'est pas mesuré, c'est sa propre voix qui lit ; (4) la mesure d'un appareil lent refaite tous les 14 jours, et le bouton « 🔁 Mesurer encore » ; (5) sur un appareil rapide, les deux voix chargées dès le lancement et jusqu'à 8 textes préparés d'avance ; (6) un appareil muet deux fois de suite passe à la voix naturelle pour toute la séance ; (7) le texte des Réglages et la ligne « Vitesse : ×… ».
 
 ## 13. Enquête 3 — La lettre d'Odette
 

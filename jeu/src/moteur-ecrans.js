@@ -271,7 +271,21 @@ function vueBoutique(){
 M.voixHTML = function(){
   var V = window.Voix;
   if(!V || !V.possible) return '';   /* hors de la version installée (GitHub) : rien sur les voix */
-  if(V.pret) return '<p class="hr-voix-etat">✔ Voix installées</p><button class="btn second" data-act="test-voix">🔊 Essayer la voix</button>';
+  if(V.pret){
+    /* Ce que cet appareil fait de ses voix (voix.js, V.mode ; Romain, 13 novembre : « dès qu'on appuie, le son sort ») :
+       jamais d'attente, la voix de l'appareil lit dès que la voix naturelle n'est pas prête. « Vitesse » : combien de fois plus vite
+       que la parole l'appareil fabrique la voix (au moins ×2 pour être « rapide ») ; c'est le chiffre à demander à Romain pour une tablette. */
+    var md = V.mode ? V.mode() : 'rapide', vit = V.vitesse ? V.vitesse() : 0;
+    var t = md === 'rapide' ? 'Cet appareil est assez rapide pour ces voix. Si l\'une d\'elles n\'est pas prête à l\'instant, c\'est la voix de l\'appareil qui lit, sans attendre.'
+      : md === 'lent' ? 'Cet appareil est trop lent pour ces voix. Pour ne pas te faire attendre, il lit tout de suite avec sa propre voix.'
+      : md === 'panne' ? 'Les voix naturelles ne démarrent pas sur cet appareil : il lit avec sa propre voix.'
+      : 'Je mesure la vitesse de cet appareil. En attendant, il lit avec sa propre voix.';
+    return '<p class="hr-voix-etat">✔ Voix installées</p><p class="doux petit hr-voix-mode" data-mode="' + md + '">' + esc(t) + ' ' + lire(t) + '</p>' +
+      (vit ? '<p class="doux petit hr-voix-vit">Vitesse : ×' + String(vit).replace('.', ',') + '</p>' : '') +
+      '<div class="b-rangee"><button class="btn second" data-act="test-voix">🔊 Essayer la voix</button>' +
+      /* un appareil jugé lent un jour où il était très occupé : on peut refaire la mesure (elle se refait aussi toute seule au bout de 14 jours) */
+      (md === 'lent' || md === 'panne' ? '<button class="btn second" data-act="voix-mesurer">🔁 Mesurer encore</button>' : '') + '</div>';
+  }
   var a = V.avance || [0, ''];
   return '<button class="btn" data-act="voix-telecharger"' + (V.enCours ? ' disabled' : '') + '>⬇ Télécharger les voix</button>' +
     '<div id="voix-prog" class="b-voix-prog"' + (V.enCours ? '' : ' hidden') + '><progress max="100" value="' + Math.round((a[0] || 0) * 100) + '"></progress><small>' + esc(a[1] || '') + '</small></div>';
