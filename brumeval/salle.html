@@ -30896,19 +30896,43 @@ window.Brume = {lire:function(t, o){ return M.lire(t, o); }, stop:function(){ re
 
 /* ---------- Sauvegarde (emplacements : plusieurs héros par appareil) ---------- */
 var PREFIXE = 'brumeval-v2-';
+/* UN HÉROS NE PREND JAMAIS LA PLACE D'UN AUTRE (Romain, 13 novembre, 13 h 57 : « quand on est dans le Pisteur et qu'on appuie sur
+   L'enquête, ça efface le personnage et ça lance l'Alchimiste »). La cause : quatre onglets du même navigateur, ouverts AVANT de créer
+   les héros — aucun héros n'existe encore, donc chaque onglet prenait l'emplacement 1 ; les quatre héros se sauvaient au même endroit,
+   le dernier qui touchait quelque chose écrasait les autres. Tant qu'un onglet restait ouvert, il gardait son héros en mémoire : on ne
+   voyait rien. Le premier rechargement (remonter du donjon) relisait l'emplacement… et trouvait le héros d'un autre.
+   Maintenant : chaque héros a une identité (S.uid), chaque onglet retient celle qu'il a vue en dernier dans son emplacement (vuUid), et
+   M.sauver regarde avant d'écrire : si un AUTRE héros s'y est installé entre-temps, on ne l'écrase pas — on prend un emplacement libre. */
+var MAX_EMPL = 8;     /* (on en propose 4 ; les suivants ne servent qu'à ne jamais écraser personne) */
+var emMem = null;     /* l'emplacement de cet onglet, si la mémoire de l'onglet (sessionStorage) manque */
+var vuUid = {};       /* par emplacement : l'identité que CET onglet y a vue (ou écrite) en dernier */
+function uidNeuf(){ return 'h' + Date.now().toString(36) + Math.floor(Math.random() * 1e9).toString(36); }
+/* (une sauvegarde d'avant le 13 novembre n'a pas d'identité : on lui en donne une qui ne dépend que du héros, pour que deux onglets
+   qui ouvrent le même héros soient d'accord) */
+function uidDe(s){ return s ? (s.uid || (s.heros ? 'vieux:' + s.heros.role + ':' + s.heros.nom : null)) : null; }
+function lireEmpl(n){ try{ var t = localStorage.getItem(PREFIXE + n); return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+function retenirEmpl(n){ emMem = String(n); try{ sessionStorage.setItem('brumeval-emplacement', String(n)); }catch(e){} }
+function emplLibre(){ for(var i = 1; i <= MAX_EMPL; i++){ var s = lireEmpl(i); if(!s || !s.heros) return i; } return 0; }
 M.emplacement = function(){
-  try{ return sessionStorage.getItem('brumeval-emplacement') || null; }catch(e){ return null; }
+  try{ var v = sessionStorage.getItem('brumeval-emplacement'); if(v) return v; }catch(e){}
+  return emMem;
 };
-M.choisirEmplacement = function(n){ try{ sessionStorage.setItem('brumeval-emplacement', String(n)); }catch(e){} M.S = M.charger(n); };
+M.choisirEmplacement = function(n){ retenirEmpl(n); M.S = M.charger(n); };
 M.emplacements = function(){
   var l = [];
-  for(var i = 1; i <= 4; i++){
-    try{ var t = localStorage.getItem(PREFIXE + i); if(t){ var s = JSON.parse(t); if(s && s.heros) l.push({n:i, s:s}); } }catch(e){}
+  for(var i = 1; i <= MAX_EMPL; i++){
+    var s = lireEmpl(i); if(s && s.heros) l.push({n:i, s:s});
   }
   return l;
 };
+/* l'emplacement du héros qui a cette descente dans le donjon en cours (descente.js : en remontant, on retrouve le bon héros à coup sûr) */
+M.emplacementDuJeton = function(jeton){
+  if(!jeton) return 0;
+  for(var i = 1; i <= MAX_EMPL; i++){ var s = lireEmpl(i); if(s && s.heros && s.e && s.e.donjonJeton === jeton) return i; }
+  return 0;
+};
 M.etatNeuf = function(){
-  return {v:2, heros:null, xp:0, or:0, talents:[], equip:[], ingr:{}, fioles:3, potions:{}, prochaine:1, finies:{}, calepin:[], e:null, journal:{}, legendes:[],
+  return {v:2, uid:uidNeuf(), heros:null, xp:0, or:0, talents:[], equip:[], ingr:{}, fioles:3, potions:{}, prochaine:1, finies:{}, calepin:[], e:null, journal:{}, legendes:[],
     options:{son:true, lecture:true, vitesse:0.95}};
 };
 /* L'enquête 1 refaite le 4 novembre après-midi (plus de Corbeau ni de « fer noir », la plume devient « une grande plume noire ») :
@@ -30989,17 +31013,41 @@ M.reparerBoutique = function(s){
   return s;
 };
 M.charger = function(n){
+  n = n || 1;
+  vuUid[n] = null;
   try{
-    var t = localStorage.getItem(PREFIXE + (n || 1));
-    if(t){ var s = JSON.parse(t); var base = M.etatNeuf(); for(var k in base) if(s[k] === undefined) s[k] = base[k]; return M.reparerE1(s); }
+    var t = localStorage.getItem(PREFIXE + n);
+    if(t){
+      var s = JSON.parse(t);
+      s.uid = uidDe(s) || uidNeuf();   /* (avant de compléter avec l'état neuf, qui apporterait une identité tirée au hasard) */
+      vuUid[n] = s.uid;
+      var base = M.etatNeuf(); for(var k in base) if(s[k] === undefined) s[k] = base[k];
+      return M.reparerE1(s);
+    }
   }catch(e){}
   return M.etatNeuf();
 };
 M.sauver = function(){
-  var n = M.emplacement() || '1';
-  try{ localStorage.setItem(PREFIXE + n, JSON.stringify(M.S)); }catch(e){}
+  var S = M.S, n = M.emplacement();
+  if(!S) return;
+  if(!S.uid) S.uid = uidNeuf();
+  if(!n){
+    /* aucun emplacement choisi (l'écran « Qui joue sur cet écran ? ») : un état sans héros ne s'écrit nulle part — surtout pas
+       par-dessus le héros de l'emplacement 1 */
+    if(!S.heros) return;
+    n = emplLibre(); if(!n) return;
+    retenirEmpl(n);
+  }
+  var la = lireEmpl(n), uidLa = uidDe(la);
+  if(la && la.heros && uidLa !== S.uid && uidLa !== vuUid[n]){
+    /* un autre héros s'est installé ici depuis notre dernière lecture (un autre onglet) : on ne l'écrase pas */
+    if(!S.heros) return;
+    var libre = emplLibre(); if(!libre) return;
+    n = libre; retenirEmpl(n);
+  }
+  try{ localStorage.setItem(PREFIXE + n, JSON.stringify(S)); vuUid[n] = S.uid; }catch(e){}
 };
-M.effacerEmplacement = function(n){ try{ localStorage.removeItem(PREFIXE + n); }catch(e){} };
+M.effacerEmplacement = function(n){ try{ localStorage.removeItem(PREFIXE + n); }catch(e){} vuUid[n] = null; };
 /* Lit un fichier de sauvegarde (💾 Sauvegarder du menu ☰, ou l'ancienne « sauvegarde de secours ») ; renvoie l'état, ou null s'il n'est pas bon */
 M.lireSauvegarde = function(texte){
   var o;
