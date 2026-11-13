@@ -384,6 +384,8 @@ function vus(re){ try{ return performance.getEntriesByType('resource').map(funct
 function fichiersVoix(){
   var V = window.Voix; if(!V || !V.pret) return [];
   var l = vus(/^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)\//);
+  /* depuis le 13 novembre, le moteur tourne dans un travailleur à part : la page ne voit pas passer ses fichiers, il en donne la liste (voix.js, V.prechauffer) */
+  (V.listeFichiers || []).forEach(function(u){ if(l.indexOf(u) < 0) l.push(u); });
   return l.length ? l : (V.SOURCES || []).slice(0, 1);
 }
 function dateCourte(iso){ return iso ? dateFr(iso.slice(0, 10)) : ''; }
