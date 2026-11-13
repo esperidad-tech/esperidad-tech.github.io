@@ -2676,12 +2676,12 @@ Le fumigène n'est pas utilisé en phase 2 : il est gardé pour la phase 3.
    - **OÙ est Odette ?** Réponse : sous l'église, au pied du clocher, derrière la porte aux quatre signes (une seule bonne réponse ; le puits n'en est pas une) ;
    - **QUI a écrit la lettre ?** Réponse : Mélusine ;
    - **QUI se cachait sous la cape noire ?** Réponse : Léo (nouvelle question).
-   - La question bonus « QUI est le Corbeau ? » n'est pas dans la liste de Romain : **à confirmer qu'elle part** (après ce que dit Léo, elle n'a plus de suspense).
+   - **La question bonus « QUI est le Corbeau ? » est retirée** (Romain, 18 h 08).
 4. **La cinématique du maire**, sur toutes les tablettes : il descend avec Silas et les gardes, une lanterne levée. « Que s'est-il passé ici ? Léo ! Qu'avez-vous fait à Léo ? » Il retire ses gants : une bague en argent à tête de corbeau. « Vous êtes allés trop loin. Beaucoup trop loin. » Silas : « Monsieur le maire… ? » Le maire : « Gardes ! Attrapez-les ! »
 5. **La prison** : des codes à passer d'une tablette à l'autre ; grâce aux codes d'apparence, chaque tablette montre les quatre héros enfermés, en tenue de prison.
 6. **« Fin de l'enquête 3 »**, puis un petit mot : « …mais ce n'est que le début. » (texte à polir ; la plume noire devant la grille peut rester.)
 
-**Encore ouvert** : « Retenir le maire » (le Barde) et le code « Léo s'est enfui » n'ont plus de rôle (Léo ne fuit plus, le maire arrive après l'accusation) : à repenser ou à retirer, avec Romain. Le calepin de fin (§13.20) est à réécrire d'après cette fin.
+**Retirés (Romain, 18 h 08)** : **« Retenir le maire »** (ses trois petits dialogues, sa mission, le code « Le maire est retenu », la fenêtre « Le Barde a-t-il retenu le maire ? » avant la dernière salle) et le code **« Léo s'est enfui »** — Léo ne fuit plus, le maire arrive après l'accusation. **Le rôle du Barde pendant le donjon, désormais : apporter des indices pour le donjon** (les questions à Farinel et à Iris, plus haut). Ses dialogues étant verrouillés (§13.31), ces retraits passent par `e3.js` et l'outil `e3-dialogues.js` ; à vérifier avec `verif.js 3` et `partie3.py` (chaque rôle reste indispensable). Le calepin de fin (§13.20) est à réécrire d'après cette fin.
 
 **Trois retouches de tout le donjon (Romain, 13 novembre, 17 h 42) — notées, pas construites (l'autre conversation corrige le donjon en ce moment : les faire après elle, avec le go de Romain).**
 - **Le nom de la première salle** : plus « le fond du puits » ni « vieux puits » (le donjon est le même par la crypte et par le puits) : **« L'entrée des souterrains »**. Même chose pour la phrase d'arrivée (`PHRASES.puits` et la variante « crypte » de `jeu/donjon/moteur/src/explo.js`) et pour le nom sur la carte (`jeu/donjon/carte.js`).
