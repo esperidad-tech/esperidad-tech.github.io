@@ -1456,28 +1456,40 @@ function timbale(A, t, g, dest){
 }
 
 /* =================== 1. L'ARC =================== */
-S.arcA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.25, pan:-.35});
-  A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
-  grinceArc(A, t + .08, .7, {}, o);
-  A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
-  lacherCorde(A, t + .8, {f:98, t60:.5}, o);
-  return {duree:1.4, moment:.8};
+/* (13 novembre) Les trois versions de l'arc, écrites en deux moitiés — la corde qu'on tend, la corde lâchée — sans rien changer au son :
+   dans le donjon, le Pisteur tire tout seul (S.arcA/B/C : on tend, puis on lâche à l'instant « moment ») ; dans le mini-jeu du tir aux
+   anneaux de l'enquête 3 (jeu/src/mj-visee.js), c'est le doigt qui décide quand lâcher, et Romain veut « le même son que quand il tire
+   avec son arc dans le donjon » : le mini-jeu joue donc ces deux moitiés-ci (G.BRUITAGES_ARC), l'une quand le doigt se pose, l'autre
+   quand il se lève. Une seule source : changer l'arc ici le change aux deux endroits. */
+var ARC = {
+  A:{rev:.25, moment:.8, duree:1.4,
+    tendre:function(A, t, o){
+      A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
+      grinceArc(A, t + .08, .7, {}, o);
+      A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:98, t60:.5}, o); }},
+  B:{rev:.2, moment:.5, duree:.9,
+    tendre:function(A, t, o){
+      A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o); }},
+  C:{rev:.4, moment:1.12, duree:2.2,
+    tendre:function(A, t, o){
+      clic(A, t, 2400, .5, o);
+      grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
+      A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o); }}
 };
-S.arcB = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.2, pan:-.35});
-  A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
-  lacherCorde(A, t + .5, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o);
-  return {duree:.9, moment:.5};
-};
-S.arcC = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.4, pan:-.35});
-  clic(A, t, 2400, .5, o);
-  grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
-  A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
-  lacherCorde(A, t + 1.12, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o);
-  return {duree:2.2, moment:1.12};
-};
+['A', 'B', 'C'].forEach(function(v){
+  S['arc' + v] = function(A, P){
+    var x = ARC[v], t = P.t, o = A.bus(P, {rev:x.rev, pan:-.35});
+    x.tendre(A, t, o);
+    x.lacher(A, t + x.moment, o);
+    return {duree:x.duree, moment:x.moment};
+  };
+});
 
 /* =================== 2. LA FLÈCHE EN VOL =================== */
 S.volA = function(A, P){
@@ -1978,6 +1990,7 @@ S.iconeC = function(A, P){                                                      
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
 });
 G.BRUITAGES = S;
+G.BRUITAGES_ARC = ARC;   /* les deux moitiés de l'arc, pour le tir aux anneaux (jeu/src/mj-visee.js) */
 /* les petits morceaux, prêtés aux nouveaux sons de l'atelier (bestiaire.js, donjon.js) — rien ne change ici */
 G.BRUITAGES_OUTILS = {clic:clic, grinceArc:grinceArc, lacherCorde:lacherCorde, sifflement:sifflement, toc:toc, vibreFleche:vibreFleche, swish:swish, chantLame:chantLame, tchac:tchac, tinc:tinc,
   bong:bong, sifflementRat:sifflementRat, dents:dents, embrase:embrase, gresille:gresille, sploutch:sploutch, etire:etire, glisse:glisse, toux:toux, boum:boum, brume:brume,
@@ -9480,8 +9493,10 @@ P.devant = function(){ return this.ciblables()[0] || null; };                   
    « Celui de devant », pour la dague, c'est donc le premier monstre AU SOL de la file. */
 P.auSol = function(m){ return !m.def.dague || this._un(m, m.def.dague.si); };
 P.devantSol = function(){ var self = this; return this.ciblables().filter(function(m){ return self.auSol(m); })[0] || null; };
-/* à portée de dague : le premier monstre au sol, et ceux qui sont tombés (où qu'ils soient dans la file) */
-P.aPortee = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m === d || (self.auSol(m) && self._un(m, m.def.tombe)); }); };
+/* à portée de dague : LE PREMIER MONSTRE AU SOL, ET LUI SEUL (Romain, 13 novembre : « une chauve-souris collée au sol, en deuxième
+   position, a été touchée par la dague : la dague ne doit toucher que le premier »). Avant, un monstre tombé était à portée où qu'il
+   soit dans la file. */
+P.aPortee = function(){ var d = this.devantSol(); return d ? [d] : []; };
 /* ceux que la rune d'appel peut amener devant : ils sont au sol, on peut les viser, et ils ne sont pas déjà devant */
 P.appelables = function(){ var self = this, d = this.devantSol(); return this.ciblables().filter(function(m){ return m !== d && self.auSol(m); }); };
 /* pourquoi la dague ne peut rien : « Trop haut ! » (tout vole ou pend), « Dans l'eau ! » (Bourbe) */
@@ -10779,7 +10794,8 @@ var PLAN = {
   rose:{x:px(894), y:py(74), r:pt(24)},
   /* les noms à la plume (les salles à signe n'ont pas de nom : leur signe suffit) */
   noms:[
-    {lieu:'puits', x:1200, y:838, l:['Le fond du puits'], t:24},
+    /* (Romain, 13 novembre : « enlever les indices, le puits, la crypte » — le plan ne dit plus par où l'on entre) */
+    {lieu:'puits', x:1200, y:838, l:['L’entrée'], t:24},
     {lieu:'galerie', x:990, y:755, l:['La grande', 'galerie'], t:20},
     {lieu:'rats', x:1440, y:752, l:['La salle', 'des rats'], t:24},
     {lieu:'reserve', x:1455, y:610, l:['La réserve'], t:22},
@@ -10812,7 +10828,8 @@ var PLAN = {
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'AU PUITS'], pres:'puits', dit:'La rune dort au puits'},
+    /* (13 novembre) la pierre de rune est dans la galerie effondrée depuis le 11 novembre : la note le dit enfin, et ne parle plus du puits */
+    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'DANS LA GALERIE'], pres:'galerie', dit:'La rune dort dans la galerie'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
@@ -14758,7 +14775,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '13/11 à 14 h 09';
+DJ.VERSION = '13/11 à 17 h 01';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -15033,7 +15050,16 @@ A.entrer = function(par, o){
   this.montrer();
   if(this.rat) return pr(a.entrer()).then(function(){ return a.yeux('jaune'); }).then(function(){ return a.attendre(); });
   var p = this.module === 'petitearaignee' ? a.entrer(par === 'eclosion' ? {} : {oeuf:false}) : this.module === 'gardien' ? a.entrer(o || {}) : a.entrer();
+  this.voile();
   return pr(p).then(function(){ if(!self.mort && a.attendre) a.attendre(); });
+};
+/* LE FEU FOLLET, À MOITIÉ TRANSPARENT TANT QU'IL N'EST PAS RÉVÉLÉ (Romain, 13 novembre : « il faut qu'ils soient plus transparents
+   avant qu'on les révèle »). Révélé = dans la fumée (« visible »), accroché à un bouclier de runes (« accroche »), ou point faible
+   ouvert. Seule l'opacité de son calque change (rien d'autre à recalculer). */
+A.voile = function(){
+  if(this.module !== 'feufollet' || this.mort) return;
+  var cur = {}; try{ cur = this.acteur.etatCourant() || {}; }catch(e){}
+  this.el.style.transition = 'opacity .45s'; this.el.style.opacity = cur.visible || cur.accroche || cur.ouvert ? '' : '.42';
 };
 
 /* ---------- les ancres : un point de la bête, dans la scène ---------- */
@@ -15108,7 +15134,8 @@ A.etat = function(nom, on){
     return Promise.resolve();
   }
   try{ var cur = a.etatCourant ? a.etatCourant() : {}; if(!!cur[nom] === !!on) return Promise.resolve(); }catch(e){}
-  try{ return pr(a.etat(nom, on)); }catch(e){ return Promise.resolve(); }
+  var self = this;
+  try{ return pr(a.etat(nom, on)).then(function(x){ self.voile(); return x; }); }catch(e){ return Promise.resolve(); }
 };
 A.ouvert = function(on){
   if(this.mort) return Promise.resolve();
