@@ -58,3 +58,9 @@
 .gd-fete-tete.gd-appel .b-gens-img{border-color:#ffd23f;box-shadow:0 0 0 3px rgba(255,210,63,.55);animation:gd-appel 1.4s ease-in-out infinite alternate}
 @media (min-width: 700px){ .b-feuille .gd-fete-grille{grid-template-columns:repeat(6, minmax(0, 1fr))} .b-feuille .gd-fete-tete .b-gens-img{width:64px;height:64px} .b-feuille .gd-fete-tete b{font-size:.8rem} }
 @media (prefers-reduced-motion: reduce){ .gd-fete-tete.gd-appel .b-gens-img{animation:none} }
+
+/* l'aide pour le donjon, à la fête (grands.js, aideVueHTML) : les questions à poser, les réponses déjà entendues (à relire à voix haute) */
+.gd-aide{display:flex;flex-direction:column;gap:10px;margin:10px 0 14px}
+.gd-aide-rep{border-left:4px solid var(--or, #e2b23c);padding:4px 0 4px 12px}
+.gd-aide-q{margin:0 0 2px;font-size:.9rem;font-weight:800;opacity:.7}
+.gd-aide-rep .ma-dit{margin:0}

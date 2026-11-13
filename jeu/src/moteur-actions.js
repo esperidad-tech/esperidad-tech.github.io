@@ -787,7 +787,11 @@ function passerMoment(n){
 }
 
 /* ---------- Accusation (Sage) ---------- */
-function dims(){ var E = M.E(); return ['qui', 'ou', 'quoi', 'pourquoi'].filter(function(d){ return E[d]; }); }   /* POURQUOI : l'enquête 2 */
+/* (enquête 3, 13 novembre) E.ordreAccusation : l'ordre des questions, quand ce n'est pas celui d'ici (OÙ, QUI a écrit, QUI sous la cape) */
+function dims(){ var E = M.E(); return (E.ordreAccusation || ['qui', 'ou', 'quoi', 'pourquoi']).filter(function(d){ return E[d]; }); }   /* POURQUOI : l'enquête 2 */
+M.dimsAccusation = dims;
+/* (enquête 3) E.accuser.besoin : ce qu'il faut avoir reçu pour accuser (« Léo a parlé ») ; sans E.accuser : on accuse quand on veut */
+M.peutAccuser = function(){ var E = M.E(); return !(E && E.accuser && E.accuser.besoin) || M.besoinOk(E.accuser.besoin); };
 function accusationModal(m){
   var E = M.E(), P = M.P(), d = m.etape;
   if(d === 'confirmer'){
@@ -795,7 +799,7 @@ function accusationModal(m){
     dims().forEach(function(k){
       var v = m.choix[k];
       if(k === 'qui') s += '<div class="b-acc-choix"><div class="b-acc-img">' + M.pnjImg(v, 'peur') + '</div><b>' + esc(D.PNJ[v].court) + '</b></div>';
-      else { var c = E[k].choix.filter(function(x){ return x.id === v; })[0]; s += '<div class="b-acc-choix"><div class="b-grand-ic">' + c.ic + '</div><b>' + esc(c.nom) + '</b></div>'; }
+      else { var c = E[k].choix.filter(function(x){ return x.id === v; })[0]; s += '<div class="b-acc-choix">' + (c.pnj && D.PNJ[c.id] ? '<div class="b-acc-img">' + M.pnjImg(c.id, 'peur') + '</div>' : '<div class="b-grand-ic">' + c.ic + '</div>') + '<b>' + esc(c.nom) + '</b></div>'; }
     });
     return s + '</div><p class="centre">Toute l\'équipe est d\'accord ? ' + lire('Toute l\'équipe est d\'accord ?') + '</p><div class="b-rangee centre"><button class="btn second" data-act="acc-retour">← Changer</button><button class="btn grand" data-act="acc-valider">⚖️ J\'accuse !</button></div>';
   }
@@ -1545,7 +1549,11 @@ A['sym-efface'] = function(){ UI.saisie.pop(); M.render(); };
 A.rayer = function(el){ var P = M.P(), id = el.dataset.id, i = P.raye.indexOf(id); if(i >= 0) P.raye.splice(i, 1); else P.raye.push(id); M.son('clic'); M.sauver(); UI.garderDefilement = true; M.render(); };
 A['moment-suivant'] = function(){ M.ouvrir({type:'moment'}); };
 A['passer-moment'] = function(){ passerMoment(M.P().moment + 1); };
-A.accuser = function(){ M.ouvrir({type:'accusation', etape:'qui', choix:{}}); };
+A.accuser = function(){
+  var E = M.E();
+  if(!M.peutAccuser()){ M.son('clic'); M.ouvrir({type:'info', ic:'⏳', titre:'Pas encore…', t:(E.accuser && E.accuser.avant) || 'Il est trop tôt pour accuser.'}); return; }
+  M.ouvrir({type:'accusation', etape:dims()[0], choix:{}});
+};
 /* Enquête 3 : la quatrième question, « QUI est le Corbeau ? » (corbeauModal) */
 A['corbeau-choix'] = function(el){
   var P = M.P(), E = M.E(); if(!P || !E || !E.corbeau) return;
@@ -1559,7 +1567,7 @@ A['acc-choix'] = function(el){
   m.etape = i < d.length - 1 ? d[i + 1] : 'confirmer';
   M.render();
 };
-A['acc-retour'] = function(){ UI.modal.etape = 'qui'; M.render(); };
+A['acc-retour'] = function(){ UI.modal.etape = dims()[0]; M.render(); };
 A['acc-valider'] = function(){ validerAccusation(UI.modal); };
 A.stratege = function(){
   var P = M.P(), E = M.E();

@@ -77,7 +77,9 @@ E[3] = {
       /* (13 novembre : « les missions de la nuit sont trop grillées ») elles n'arrivent que quand le Barde sait de quoi elles parlent
          (e.si, mission.js) : la clé avec le code du Pisteur « La crypte est fermée », la fête une fois Anselme vu */
       {des:2, si:[{code:'info:crypte_fermee'}], ic:'🗝️', t:'La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu\'il faut, va le voir au clocher, la nuit.', fait:[{vu:'grand:cle:fini'}]},
-      {des:2, si:[{vu:'grand:cle:fini'}], ic:'🎉', t:'Reste à la fête. Si le maire te cherche, retiens-le !', fait:[{vu:'grand:retenir:fini'}]},
+      /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
+         n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
+      {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}]}]},
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -125,12 +127,17 @@ E[3] = {
     {id:'soeur', nom:'Chez sa sœur', court:'Chez sa sœur', ic:'🏡'}, {id:'mairie', nom:'À la mairie', court:'Mairie', ic:'🏛️'},
     {id:'taverne', nom:'À la taverne', court:'Taverne', ic:'🍺'}, {id:'lavoir', nom:'Au lavoir', court:'Lavoir', ic:'🧺'},
     {id:'foret', nom:'Dans la forêt', court:'Forêt', ic:'🌲'}, {id:'herboristerie', nom:'À l\'herboristerie', court:'Herbo\u00adristerie', ic:'🌿'}]},
-  solution:{qui:'melusine', ou:'clocher'},
-  /* la question bonus, qui ne coûte pas de cœur ; la réponse reste secrète jusqu'à la suite de la saison */
-  corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec',
-    t:'Un homme en cape a fait écrire la lettre. Mais quelqu\'un lui donne des ordres… Depuis la Fête des Lanternes, quelqu\'un se cache derrière tout ça. Parlez-en ensemble, puis désignez le Corbeau ! Cette question ne coûte aucun cœur.',
-    /* (étape 7) secret : le jeu ne dit ni « bravo » ni « raté » (même phrase, même bruit) ; la réponse est gardée pour la suite de la saison */
-    secret:'C\'est écrit dans le Grand Livre, à l\'encre secrète. As-tu vu juste ? Regardez bien la fin de l\'histoire…'},
+  /* (13 novembre, 18 h 06, Bible §13.33) LA TROISIÈME QUESTION : « QUI se cachait sous la cape noire ? » — Léo. Elle n'est pas dans le
+     tableau du Sage (horsTableau) : on ne le découvre qu'au fond du donjon, quand il arrache sa cape. L'ordre des trois questions
+     (ordreAccusation) : OÙ, QUI a écrit, QUI sous la cape. Et le Sage n'accuse qu'une fois Léo battu (accuser.besoin : le code du
+     Pisteur, « Léo a parlé ») : Romain, « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! » */
+  quoi:{titre:'QUI se cachait sous la cape noire ?', icQ:'🧥', horsTableau:true, choix:[
+    {id:'farinel', nom:'Farinel', pnj:true}, {id:'silas', nom:'Silas', pnj:true}, {id:'leo', nom:'Léo', pnj:true}, {id:'grosbec', nom:'Grosbec', pnj:true},
+    {id:'fortune', nom:'Fortuné', pnj:true}, {id:'victor', nom:'Victor', pnj:true}, {id:'basile', nom:'Basile', pnj:true}, {id:'gaspard', nom:'Gaspard', pnj:true},
+    {id:'anselme', nom:'Anselme', pnj:true}, {id:'levoisin', nom:'Le voisin', pnj:true}]},
+  ordreAccusation:['ou', 'qui', 'quoi'],
+  accuser:{besoin:[{code:'info:leo_battu'}], avant:'Pas encore… Il manque quelqu\'un : l\'homme en cape. Tes amis doivent d\'abord le trouver, tout au fond des souterrains.'},
+  solution:{qui:'melusine', ou:'clocher', quoi:'leo'},
 
   /* ---------- Le Barde (barde.js) ----------
      (Romain, 12 novembre, 20 h 50) plus de limite à deux questions par visite, ni de porte qui se ferme quand on revient (plus de parVisite
@@ -296,50 +303,11 @@ E[3] = {
       reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
       echec:{bouton:'🏠 Qui m\'appelle ?', qui:'tim', titre:'Tim, depuis les toits', t:'« Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! »', code:'info:vieux_puits'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
-    /* à la fin du donjon (le code « Léo attrapé » du Pisteur). (12 novembre au soir) Léo n'est plus un froussard qu'on interroge en trois
-       étapes : c'est lui, l'homme en cape. EN ATTENDANT que Romain ait décidé de la fin (Léo en chef des monstres du donjon, Odette délivrée
-       ou non), une scène sans choix (scene:true, grands.js) : le Barde apprend qui est l'homme en cape, et « Ce que Léo a dit » part chez le
-       Sage (fins[0].code ; la scène finale s'en souvient sur toutes les tablettes : E.finVariante, plus bas). Léo ne nomme pas le maire :
-       la question du Corbeau reste entière. */
-    leo:{pnj:'leo', ic:'🧑', scene:true,
-      intro:'Tout au fond des souterrains, tes amis ont coincé l\'homme en cape, une lanterne à la main. Sous le capuchon : Léo, l\'apprenti du meunier !',
-      fins:[
-        {t:'« Vous n\'auriez jamais dû descendre ! C\'est pour le bien du village… » Puis, tout bas : « Elle m\'a appris à lire. Je voulais juste qu\'elle n\'ait pas froid. »', code:'info:leo_dit3'}
-      ],
-      apres:'Raconte à voix haute à ton équipe ce que Léo a dit. Puis le Sage accuse !',
-      apresCode:'Raconte à voix haute à ton équipe ce que Léo a dit, et donne son code au Sage. Puis le Sage accuse !',
-      apresRien:'Léo a filé. Raconte à ton équipe ce qui s\'est passé. Puis le Sage accuse !',
-      titreCode:'Ce que Léo a dit',
-      enfui:'Des pas descendent l\'escalier de la crypte. Léo, l\'apprenti du meunier, renverse sa lanterne et file dans le noir, sans un mot.'}
   },
-  /* ---------- Retenir le maire (grands.js ; E3-dialogues-et-trame.md, version 3) : trois petits dialogues d'une étape, à la fête, pendant le
-     donjon, au rythme du Barde (sans minuteur). Le maire remarque que trois héros manquent. Le premier dès que le dialogue de la clé est
-     fini (le maire porte un « ! ») ; chacun des suivants après le précédent et une autre visite à la fête. Deux réussis : le code pour le
-     Pisteur ; deux ratés : il s'éloigne (on s'arrête là). Les indices sont à la fête : Gaspard (le gâteau), Margot (le discours), Silas
-     (le bal). (12 novembre au soir : plus de « minuit », plus de variante selon la Grosse Marie. PAS ENCORE : la grille du clocher qui grince
-     — tirer, pousser ou soulever, Romain, 21 h 44 — c'est chez le Pisteur, à l'entrée du donjon.) */
-  retenir:{pnj:'grosbec', besoin:[{vu:'grand:cle:fini'}], n:2,
-    dialogues:[
-      {t:'Barde ! Je ne vois pas vos trois amis. Où sont-ils passés ?', choix:[
-        {q:'Ils sont allés se coucher, ils étaient épuisés.', r:'Se coucher, un soir de fête ? Je vais voir ça…'},
-        {q:'Ils aident Gaspard à porter le gâteau : ça pèse !', r:'Ah ! Très bien, très bien. Ce gâteau sera magnifique.', bon:true},
-        {q:'Ils cherchent encore des fleurs pour vous.', r:'À cette heure-ci ? Hmm…', n:'Il regarde vers le clocher.'},
-        {q:'Je ne sais pas, Monsieur le maire, vraiment pas.', r:'Vous ne savez pas ? Hmm…'}]},
-      {t:'Je vais faire un petit tour du côté du clocher.', choix:[
-        {q:'Monsieur le maire, tout le village réclame votre discours !', r:'Il redresse son chapeau. « Mon discours ? Bon… le village a besoin de moi. »', bon:true},
-        {q:'Anselme dort, il ne faut surtout pas le réveiller.', r:'Il dort ?! J\'y vais tout de suite !'},
-        {q:'Votre chapeau neuf vous va vraiment très bien !', r:'Merci. Laissez-moi passer.'},
-        {q:'Je viens avec vous, je connais bien le chemin !', r:'Non, non. Restez ici.', n:'Il part seul.'}]},
-      {t:'Toujours pas vos amis… Je dois vérifier quelque chose.', choix:[
-        {q:'Allez-y, je surveille la fête pour vous.', r:'Merci, Barde.', n:'Il s\'éloigne.'},
-        {q:'Il n\'y a rien au clocher, je vous assure.', r:'Qui a parlé du clocher ?', n:'Il s\'éloigne.'},
-        {q:'Le bal ! Personne ne danse avant que vous l\'ouvriez !', r:'Le bal ! Mais oui, mais oui… Musique !', bon:true},
-        {q:'Restez donc, il fait bien trop froid dehors.', r:'Je ne suis pas frileux.', n:'Il s\'éloigne.'}]}
-    ],
-    reussi:{titre:'Le maire est retenu', t:'Le maire ne quitte plus la place.', code:'info:maire_retenu'},
-    rate:{titre:'Le maire s\'éloigne…', t:'Le maire s\'éloigne vers le clocher…'}},
+  /* (13 novembre, 18 h 08, Bible §13.33) « Retenir le maire » est retiré : ses trois petits dialogues, sa mission et son code. La grande
+     scène de Léo aussi : Léo parle dans le donjon, une fois battu (jeu/donjon/moteur/src/leo.js). */
   /* ---------- La fête (grands.js ; E3-dialogues-et-trame.md, version 3) : la nuit, sur la place ; chacun dit une réplique (gratuit).
-     Trois sont les indices de « Retenir le maire » (Gaspard, Margot, Silas), notées dans le Carnet. Mélusine, si son aveu n'a pas été
+     Mélusine, si son aveu n'a pas été
      obtenu l'après-midi, craque (le filet). */
   fete:{lieu:'place', moments:N_,
     gens:{
@@ -353,11 +321,23 @@ E[3] = {
         /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */
         filet:{sauf:'info:aveu', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
           note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'}},
-      iris:{t:'J\'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra.'},
-      farinel:{t:'Je ne dors pas, je repose mes yeux !'},
+      /* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : dès que le Barde a tapé « L'homme en cape est là ! », Farinel et Iris portent
+         un « ❗ » et ont de nouvelles questions (grands.js). Le Barde lit les réponses à voix haute pendant que le Pisteur se bat.
+         La règle de Romain : deux phrases courtes au plus ; ils disent ce que fait l'outil, jamais la parade toute crue. */
+      iris:{t:'J\'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra.',
+        aide:{si:'info:leo_la', t:'Une potion ? Oh… Il faut que je te dise quelque chose.', questions:[
+          {q:'On t\'a volé autre chose que ton encre ?', r:'Oui… Ma potion de force ! J\'y travaille depuis des années.'},
+          {q:'Que fait cette potion ?', r:'Celui qui la boit ne sent plus aucun coup. Sauf s\'il saigne : là, elle ne peut plus rien.'}],
+          note:'Iris, à la fête : on lui a volé sa potion de force. Celui qui la boit ne sent plus les coups… sauf s\'il saigne.'}},
+      farinel:{t:'Je ne dors pas, je repose mes yeux !',
+        aide:{si:'info:leo_la', t:'Hein ? Mes outils ? Qui a touché à mes outils ?!', questions:[
+          {q:'À quoi sert ton gros marteau ?', r:'À caler la meule. Un coup sur la tête, et tu vois des étoiles : tu lâches tout !'},
+          {q:'Et ta faux ?', r:'Elle coupe le blé… et les doigts ! Une coupure de faux, ça saigne longtemps.'},
+          {q:'Et ce crochet ?', r:'Il chasse les rats du grenier. Il perce même le cuir le plus dur !'},
+          {q:'Et la farine ?', r:'Un meunier ne laisse jamais une flamme près de sa farine. Jamais !'}],
+          note:'Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !'}},
       basile:{t:'Les lampions tiennent ! Je n\'en reviens pas moi-même.'},
       fortune:{t:'Dernières lanternes ! Deux pour le prix de trois !'},
-      /* (sa réplique tant que « Retenir le maire » n'a pas commencé, ou quand c'est fini) */
       grosbec:{t:'Quelle fête ! Tout le village est là… enfin, presque.'}
     }},
 
@@ -402,7 +382,7 @@ E[3] = {
   /* (Romain, 13 novembre ; revient) les quatre plantes d'au-delà de la brume cueillies : au moment suivant, la brume se réinstalle */
   brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}], revient:true},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
-     pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
+     pendant ce temps, il fait la fête (et il aide ceux du donjon : Farinel et Iris, E.fete). ---------- */
   donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}, tenue:'donjon/tenue.html', portraits:'donjon/i/portrait-'},
   /* LES CODES D'ALLURE (Romain, 13 novembre : « les codes d'apparence du Sage et de l'Alchimiste, pour le Pisteur ») : avant de descendre,
      le Sage et l'Alchimiste montrent chacun un code au Pisteur ; il dit à quoi ressemble leur héros (fille ou garçon, la peau, les
@@ -410,7 +390,7 @@ E[3] = {
      quand ses sept potions sont prêtes (« on a besoin des sept potions pour descendre ») : il remplace le code du sac (plus de sac:<n>).
      2 rôles × 2 × 6 peaux × 9 cheveux = 216 codes, à la fin de la liste. */
   /* (étape 7) et les codes de fin qui portent la variante de la scène finale (E.finVariante : la dizaine ; l'unité : les erreurs) */
-  codesPlus:(function(){ var l = [], i; [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); for(i = 0; i < 216; i++) l.push('allure:' + i); return l; })(),
+  codesPlus:(function(){ var l = [], i; [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); for(i = 0; i < 432; i++) l.push('allure:' + i); return l; })(),   /* (432 : les 216 du Sage et de l'Alchimiste, puis ceux du Pisteur et du Barde, pour le cachot de la fin) */
   /* Le registre du Sage (livre.js) */
   registre:{
     odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},
@@ -497,9 +477,6 @@ E[3] = {
     grosse_marie:{nom:'La Grosse Marie', ic:'🔔', pour:'pisteur', de:'barde', donjon:true, reserve:true,
       t:'DONG… DONG… La Grosse Marie sonne. Sous la terre, la brume recule : une fois, hors d\'un combat, toute la vie des trois héros revient.',
       dire:'Quand l\'équipe du donjon dit « On est à plat ! », donne ce code au Pisteur : il le tape dans le donjon.'},
-    maire_retenu:{nom:'Le maire est retenu', ic:'🎩', pour:'pisteur', de:'barde', donjon:true,
-      t:'Le Barde a retenu le maire sur la place : il ne descendra pas trop tôt dans la crypte.',
-      dire:'Le Pisteur doit le taper dans le donjon, avant la dernière salle : donne-lui ce code.'},
     /* LE DÉPART (Romain, 13 novembre : « le code du Pisteur au Sage : on va dans la crypte ») : la grille ouverte (ou les barreaux du puits
        fondus), le Pisteur le donne au Sage ET à l'Alchimiste. Chez eux : la fenêtre « Il est temps d'enfiler notre tenue de combat ! »,
        et leur code à eux pour le Pisteur (leur allure dans le donjon : descente.js) ; chez le Sage, ses pages du donjon s'ouvrent dans son
@@ -511,17 +488,17 @@ E[3] = {
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
       dire:'Un gros chat gris gratte à la porte aux quatre signes : donne ce code au Sage.'},
-    /* (étape 7) ce que Léo a dit, pour le Sage (12 novembre au soir : un seul code — plus de grand dialogue à trois étapes, plus de leo_dit1
-       ni de leo_dit2 ; le nom de code leo_dit3 est gardé) */
-    leo_dit3:{nom:'Ce que Léo a dit', ic:'🧑', pour:'sage', de:'barde',
-      t:'L\'homme en cape, c\'était Léo, l\'apprenti du meunier. « C\'est pour le bien du village », dit-il. Puis, tout bas : « Elle m\'a appris à lire. Je voulais juste qu\'elle n\'ait pas froid. » Qui lui donne des ordres ?',
-      dire:'Le Sage note tout dans son Grand Livre : donne-lui ce code.'},
-    leo_attrape:{nom:'Léo attrapé', ic:'🧑', pour:'barde', de:'pisteur', pnj:'leo',
-      t:'Tout au fond des souterrains, le Pisteur a coincé l\'homme en cape : c\'est Léo, l\'apprenti du meunier !',
-      dire:'Le Barde doit le savoir : donne-lui ce code.'},
-    leo_enfui:{nom:'Léo s\'est enfui', ic:'🏃', pour:'barde', de:'pisteur', pnj:'leo',
-      t:'Des pas descendent l\'escalier de la crypte. Léo, l\'apprenti du meunier, renverse sa lanterne et file dans le noir, sans un mot.',
-      dire:'Le Barde doit le savoir : donne-lui ce code.'}
+    /* LÉO, LE BOSS FINAL DU DONJON (13 novembre, Bible §13.33). Deux codes du Pisteur, que le donjon affiche lui-même (descente.js les
+       relit au retour) :
+       · en entrant dans la dernière salle, « L'homme en cape est là ! », pour le Barde : à la fête, Farinel et Iris ont alors des choses
+         à lui dire (E.fete.gens.<pnj>.aide) — il les lit à voix haute pendant que le Pisteur se bat ;
+       · Léo battu, « Léo a parlé », pour le Sage : c'est ce code qui ouvre les accusations (E.accuser.besoin). */
+    leo_la:{nom:'L\'homme en cape est là !', ic:'🧥', pour:'barde', de:'pisteur',
+      t:'Tout au fond des souterrains, un homme en cape noire attendait tes amis. Le combat commence ! Il se bat avec les outils du moulin…',
+      dire:'Le Barde doit le savoir, vite : donne-lui ce code.'},
+    leo_battu:{nom:'Léo a parlé', ic:'🧑', pour:'sage', de:'pisteur',
+      t:'Sous la cape noire : Léo, l\'apprenti du meunier ! Battu, il a parlé. C\'est le maire qui a tout préparé, depuis le début : la rivière rouge, les fumigènes, la lettre. Et sous Brumeval, il y aurait une ville entière… Place aux accusations !',
+      dire:'Le Sage note tout dans son Grand Livre, puis il accuse : donne-lui ce code.'}
   },
   /* ---------- Les lieux (étape 5 : le Pisteur ; E3-actions-des-roles.md §1) ----------
      L'Alchimiste ajoutera ses cueillettes à ces lieux (étape 4). Un seul essai par mini-jeu (essais.js) ; un filet (ouvrePartiel)
@@ -1068,14 +1045,13 @@ E[3] = {
       t:'Une porte ronde, scellée. Quatre signes gravés : l\'œil, le chaudron, la lyre et l\'étoile. « Seuls les quatre, ensemble, l\'ouvriront. » Odette est là, derrière, sous le clocher. Mais cette porte ne s\'ouvrira pas cette nuit…',
       note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'}
   ],
-  /* ---------- La fin (étape 7) : dans la crypte, le maire, la bague, le cachot ----------
-     La même pour toute l'équipe. Une seule réplique change, selon que Léo a été attrapé ou non : la tablette du Sage le sait par le code
-     « Ce que Léo a dit » (info:leo_dit3), et le dit aux autres dans le code de fin (victoire:2x : moteur-actions.js, commencerFin ;
-     P.fin.variante). 0 : Léo n'est pas là (il s'est enfui : le maire n'a pas été retenu) ; 2 : Léo est là, il a parlé.
-     (12 novembre au soir : plus de « minuit » ; plus de variante 1, « Léo a parlé à moitié » — les codes victoire:1x restent réservés.
-     LA FIN N'EST PAS DÉCIDÉE : Romain doit encore dire si Odette est délivrée avant l'arrivée du maire. En attendant, la même qu'avant,
-     sans rien qui contredise le nouveau fil.) */
-  finVariante:function(P){ return P && P.recus && P.recus['info:leo_dit3'] ? 2 : 0; },
+  /* ---------- La fin : dans la crypte, le maire, la bague, le cachot (décidée par Romain le 13 novembre, 18 h 06 ; Bible §13.33) ----------
+     La même pour toute l'équipe (plus de variante : Léo est toujours là, battu). L'ordre : Léo battu parle (dans le donjon) ; « Place
+     aux accusations ! » ; les trois accusations du Sage ; puis, sur toutes les tablettes (le code de fin) : le maire descend avec
+     Silas et les gardes, la bague, « Gardes ! Attrapez-les ! », le cachot — « Fin de l'enquête 3… mais ce n'est que le début. »
+     Odette n'est PAS délivrée. Léo ne dit pas qui est vraiment le maire.
+     (finVariante : toujours 2 — Léo est là, à terre, dans l'image où le maire lève sa lanterne ; illus-fin.js, e3-leo.) */
+  finVariante:function(){ return 2; },
   /* Le concours de gâteaux (Romain, 12 novembre, 21 h 34 : « que tout le monde fasse un gâteau, et après on élit le plus beau » ;
      dix minutes ; une icône sur la carte ; « attends tes amis, commencez en même temps ») : le Barde, le Pisteur et le Sage font le leur
      à la boulangerie, le matin ou l'après-midi, en même temps que l'Alchimiste (son point « Le gâteau de la fête », plus haut).
@@ -1095,22 +1071,21 @@ E[3] = {
   }),
   fin:{
     slides:[
-      'Mélusine a écrit la fausse lettre, forcée par un homme en cape. Et Odette est vivante : elle est là, tout près, derrière la porte aux quatre signes. Mais qui l\'a enfermée ?',
-      'Dans la crypte des Fondateurs, des pas descendent l\'escalier. Des lanternes : c\'est le maire, avec Silas et deux gardes. À la fête, il a bien vu qu\'il manquait du monde…',
-      function(P){
-        var v = (P && P.fin && P.fin.variante) || 0;
-        return v === 2 ? 'Le maire regarde Léo, longtemps. « Toi… tu as beaucoup trop parlé, mon garçon. »'
-          : 'Le maire lève sa lanterne. « Tiens, tiens… Nos petits enquêteurs, dans la crypte des Fondateurs, en pleine nuit. »';
-      },
+      'Dans la crypte des Fondateurs, des pas descendent l\'escalier. Des lanternes : c\'est le maire, avec Silas et deux gardes.',
+      'Le maire lève sa lanterne. « Que s\'est-il passé ici ? Léo ! Qu\'avez-vous fait à Léo ? »',
       'Lentement, il retire ses gants gris. À son doigt brille une bague en argent, à tête de corbeau. « Vous êtes allés trop loin. Beaucoup trop loin. »',
-      'Silas en reste bouche bée : « Monsieur le maire… ? » Le maire ne le regarde même pas. « Gardes ! Enfermez-les ! »',
-      {img:'prison', plume:true, t:'Vous voilà tous les quatre au cachot de la mairie. Devant la grille, une plume noire se pose, sans un bruit… <b>À suivre…</b>'}
+      'Silas en reste bouche bée : « Monsieur le maire… ? » Le maire ne le regarde même pas. « Gardes ! Attrapez-les ! »',
+      /* (codes:true : sous l'image, chacun montre son code d'apparence et tape ceux de ses amis — les quatre héros apparaissent) */
+      {img:'prison', plume:true, codes:true, t:'Vous voilà tous les quatre au cachot de la mairie. Devant la grille, une plume noire se pose, sans un bruit…'},
+      '<b>Fin de l\'enquête 3</b>… mais ce n\'est que le début.'
     ],
-    illus:['e3-porte', 'e3-minuit', 'e3-leo', 'e3-bague', 'e3-gardes'],
+    illus:['e3-minuit', 'e3-leo', 'e3-bague', 'e3-gardes'],
     calepin:[
       {ic:'✍️', t:'Mélusine a écrit la fausse lettre d\'Odette, forcée par un homme en cape. C\'est elle qui l\'a déposée à la mairie, déguisée en Odette.'},
-      {ic:'🚪', t:'Odette est vivante, enfermée sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'},
-      {ic:'🧑', t:'L\'homme en cape, c\'est Léo, l\'apprenti du meunier. Chaque nuit, il descend dans la crypte. Quelqu\'un lui donne des ordres.'},
+      {ic:'🚪', t:'Odette est vivante, enfermée sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile. Elle y est toujours.'},
+      {ic:'🧑', t:'L\'homme en cape, c\'était Léo, l\'apprenti du meunier. Il n\'a jamais voulu être meunier : le maire lui a promis une vraie place.'},
+      {ic:'🎩', t:'Léo l\'a dit : c\'est le maire qui a tout préparé, depuis le début. La rivière rouge, les fumigènes, la lettre. Odette, ce n\'était pas prévu : elle a été trop curieuse.'},
+      {ic:'🏙️', t:'Le maire descend souvent, tout seul, encore plus bas. Là-dessous, il y aurait une ville entière, sous Brumeval. Personne n\'y va. Jamais.'},
       {ic:'💍', t:'Dans la crypte, le maire a retiré ses gants : il porte une bague en argent à tête de corbeau.'},
       {ic:'💂', t:'Silas, le garde champêtre, n\'en revenait pas : « Monsieur le maire… ? »'},
       {ic:'⛓️', t:'Le maire vous a fait enfermer au cachot de la mairie.'}
@@ -1129,7 +1104,9 @@ E[3] = {
     {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */
-    {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene', 'soeur', 'mairie', 'taverne', 'lavoir', 'foret', 'herboristerie']}
+    {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene', 'soeur', 'mairie', 'taverne', 'lavoir', 'foret', 'herboristerie']},
+    /* QUI SOUS LA CAPE (13 novembre) : au fond du donjon, Léo arrache sa cape */
+    {sources:['donjon:fini'], quoi:['farinel', 'silas', 'grosbec', 'fortune', 'victor', 'basile', 'gaspard', 'anselme', 'levoisin']}
   ]
 };
 /* La nuit, tout le village est à la fête, sur la place (§4) : sur la carte, chacun y est ; c'est la fête (grands.js) qui leur fait dire

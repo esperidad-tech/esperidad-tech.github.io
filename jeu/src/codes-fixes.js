@@ -16,14 +16,15 @@ var GEL = {
   ,
   /* Enquête 3 (pas encore ouverte aux joueurs : ses autres codes ne sont PAS gelés, ils le seront à son ouverture). Seulement les
      codes qu'elle partage avec le donjon (jeu/donjon/donjon-codes.js : les mêmes symboles des deux côtés ; descente.js) :
-     · du donjon vers l'enquête : « Léo attrapé » (leo:attrape) et « Léo s'est enfui » (leo:enfui) pour le Barde, « Odette est derrière
-       la porte » (porte:odette) pour le Sage ;
-     · de l'enquête vers le donjon : « La Grosse Marie » (grosse:marie) et « Le maire est retenu » (maire:retenu), que le Barde donne ;
+     · du donjon vers l'enquête : « L'homme en cape est là ! » (leo:salle) pour le Barde, « Léo a parlé » (leo:battu) et « Odette est
+       derrière la porte » (porte:odette) pour le Sage ;
+     · de l'enquête vers le donjon : « La Grosse Marie » (grosse:marie), en réserve (plus personne ne la donne) ;
+       (13 novembre : « Le maire est retenu », « Léo attrapé » et « Léo s'est enfui » sont retirés — Bible §13.33)
      · donjon:* : tous les autres codes du donjon (sauvegardes, plantes rares, recettes, pages, études) sont réservés, pour qu'aucun
        code de l'enquête ne tombe dessus. Tapés dans l'enquête, ils répondent « ce code se tape dans le donjon ».
      tools/e3-donjon-codes.js vérifie que cette liste et donjon-codes.js disent la même chose. */
-  3:{'info:leo_attrape':'etoile-arbre-flamme', 'info:leo_enfui':'lune-flamme-chat', 'info:odette_porte':'chapeau-lune-coeur',
-    'info:grosse_marie':'cloche-cloche-lune', 'info:maire_retenu':'chapeau-cle-chapeau',
+  3:{'info:leo_la':'etoile-arbre-flamme', 'info:leo_battu':'lune-flamme-chat', 'info:odette_porte':'chapeau-lune-coeur',
+    'info:grosse_marie':'cloche-cloche-lune',
     'donjon:sauve:1':'lune-cle-arbre', 'donjon:sauve:2':'etoile-cloche-poisson', 'donjon:sauve:3':'soleil-chapeau-champi', 'donjon:sauve:4':'coeur-lune-flamme',
     'donjon:plante:givre':'poisson-lune-etoile', 'donjon:plante:lumiere':'arbre-soleil-cloche', 'donjon:recette:givre':'champi-coeur-cle', 'donjon:recette:baumelum':'chat-arbre-lune',
     'donjon:rune:lumiere':'flamme-etoile-cle', 'donjon:page:dechiree':'cle-flamme-poisson', 'donjon:page:blanche':'cloche-chat-soleil', 'donjon:carnet:aventurier':'chapeau-arbre-poisson',

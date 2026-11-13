@@ -149,7 +149,7 @@ class Tablette:
 
 
 # ---------- faire passer les codes ----------
-PLUS_TARD = {'info:grosse_marie', 'info:maire_retenu'}     # (ceux-là se tapent DANS le donjon)
+PLUS_TARD = {'info:grosse_marie'}     # (ceux-là se tapent DANS le donjon)
 
 def livrer(T, de, seulement=None):
     """Chaque code neuf de la tablette `de` est tapé sur la tablette de ceux à qui il est destiné. Rend la liste des codes passés."""
@@ -358,60 +358,109 @@ def partie(nav, base):
     P.pg.wait_for_function("() => DJ.Explo.etat().ecran === 'scene' && !DJ.Explo.etat().occupe", timeout=40000); P.pg.wait_for_timeout(500)
     P.pg.eval_on_selector('#b-repartir', 'e => e.click()')
     P.pg.wait_for_function("() => DJ.Explo.etat().ecran === 'carte' && !DJ.Explo.etat().occupe", timeout=40000); P.pg.wait_for_timeout(500)
-    # le Barde, pendant ce temps : retenir le maire, à la fête ; son code est tapé DANS le donjon
-    # (12 novembre au soir : plus de grand dialogue de la Grosse Marie ; son code, gardé en réserve, n'est plus donné par personne)
-    B.carte(); B.ev('lieu', {'id': 'place'}); B.ev('gd-fete', {'id': 'grosbec'}); B.pg.locator('#voile [data-act=gd-ret][data-k="1"]').click(); B.pg.wait_for_timeout(250); B.ev('gd-ret-ok')
-    B.ev('gd-fete', {'id': 'silas'}); B.fermer()
-    B.ev('gd-fete', {'id': 'grosbec'}); B.pg.locator('#voile [data-act=gd-ret][data-k="0"]').click(); B.pg.wait_for_timeout(250); B.ev('gd-ret-ok'); B.fermer()
-    verifier('info:maire_retenu' in B.a_donner() and 'info:grosse_marie' not in B.a_donner(), 'le Barde a son code pour le donjon : le maire est retenu (plus celui de la Grosse Marie)')
-    def pave(seq):
-        P.pg.eval_on_selector('[data-act=pave]', 'e => e.click()'); P.pg.wait_for_selector('#fenetre .pave-cases', timeout=8000)
-        for s in seq: P.pg.eval_on_selector(f'#fenetre [data-act=symbole][data-id="{s}"]', 'e => e.click()'); P.pg.wait_for_timeout(300)
-        P.pg.wait_for_timeout(1000); t = P.pg.inner_text('#fenetre'); P.pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); P.pg.wait_for_timeout(400); return t
-    t = pave(B.js("() => M.code('info:maire_retenu')"))
-    verifier('Le maire est retenu' in t and P.pg.evaluate("() => !!DJ.Explo._X().partie.codes['maire:retenu']"), 'le Barde → le Pisteur, DANS le donjon : le maire est retenu'); passes.append(('barde', 'info:maire_retenu', 'pisteur'))
-    B.donnes |= {'info:maire_retenu'}
-    # la fin du donjon (le chemin est sauté : la porte aux quatre signes, puis Léo), et on remonte
-    P.pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.entrer(p, 'porte4'); Regles.entrer(p, 'leo'); DJ.garder(p); }")
+    # (13 novembre, Bible §13.33) « Retenir le maire » est retiré. Le Sage ne peut pas encore accuser : il manque l'homme en cape.
+    S.js("() => { M.UI.modal = null; M.A.accuser(); }"); S.pg.wait_for_timeout(250)
+    verifier('Pas encore' in S.texte() and S.pg.locator('#voile [data-act=acc-choix]').count() == 0, 'le Sage veut accuser trop tôt : « Pas encore… » (il manque l\'homme en cape)'); S.fermer()
+    verifier(B.pg.evaluate("() => !M.feteAide('farinel') && !M.feteAide('iris')"), 'à la fête, Farinel et Iris n\'ont encore rien de plus à dire')
+    # le Pisteur arrive devant la dernière salle (le chemin est sauté : la porte aux quatre signes, puis Léo) : son code pour le Barde
+    P.pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.entrer(p, 'porte4'); DJ.garder(p); DJ.Explo.arriver('leo'); }")
+    P.pg.wait_for_selector('#fenetre .code-gros', timeout=15000); P.pg.wait_for_timeout(400)
+    noms = P.pg.evaluate("() => DONJON_CODES.code('leo:salle').join('-')")
+    seq = B.js("() => M.code('info:leo_la')")
+    verifier('pour le Barde' in P.pg.inner_text('#fenetre') and noms == '-'.join(seq), f'devant la dernière salle : le donjon montre un code pour le Barde, le même que dans l\'enquête ({noms})')
+    P.pg.screenshot(path=os.path.join(OUT, 'pisteur-code-leo.png'))
+    B.taper(seq, garder=True)
+    verifier('homme en cape' in B.texte() and B.js("() => !!M.P().recus['info:leo_la']"), 'le Pisteur → le Barde : « L\'homme en cape est là ! »'); passes.append(('pisteur', 'info:leo_la', 'barde')); P.donnes.add('info:leo_la'); B.fermer()
+    # le Barde, à la fête : Farinel et Iris ont un « ❗ » et de nouvelles questions (il lit les réponses à voix haute)
+    B.carte(); B.ev('lieu', {'id': 'place'})
+    verifier(B.pg.locator('.gd-fete-tete.gd-appel').count() == 2 and B.pg.locator('.gd-fete-tete.gd-appel .gd-fete-appel').count() == 2, 'à la fête : deux « ❗ » (Farinel et Iris)')
+    B.ev('gd-fete', {'id': 'farinel'})
+    verifier(B.pg.locator('#voile [data-act=gd-aide]').count() == 4, 'Farinel : quatre questions sur ses outils')
+    for k in range(4): B.pg.locator('#voile [data-act=gd-aide]').first.click(); B.pg.wait_for_timeout(200)
+    t = B.texte()
+    verifier('vois des étoiles' in t and 'saigne longtemps' in t and 'perce même le cuir' in t and 'flamme près de sa farine' in t and B.pg.locator('#voile .gd-aide-rep [data-act=lire], #voile .gd-aide-rep .b-lire, #voile .gd-aide-rep button').count() >= 4, 'ses quatre réponses restent à l\'écran, chacune avec son 🔊 (pour les relire à voix haute)')
+    B.shot('fete-farinel'); B.fermer()
+    B.ev('gd-fete', {'id': 'iris'})
+    for k in range(2): B.pg.locator('#voile [data-act=gd-aide]').first.click(); B.pg.wait_for_timeout(200)
+    verifier('potion de force' in B.texte() and 'saigne' in B.texte(), 'Iris : sa potion de force volée — « sauf s\'il saigne »'); B.fermer()
+    verifier(B.js("() => !!M.P().vus['fete:aide:farinel'] && !!M.P().vus['fete:aide:iris']") and B.pg.evaluate("() => !!M.feteAide('farinel')"), 'les deux sont notés dans le Carnet ; on peut toujours retourner les voir')
+    # le combat contre Léo (les trois phases, en trichant sur ses points de vie ; test-leo.js et jeu/donjon/moteur/test-leo.py vérifient le combat lui-même)
+    P.pg.eval_on_selector('#fenetre [data-act=leo-combat]', 'e => e.click()')
+    P.pg.wait_for_function("() => window.DJ && DJ.Leo && DJ.Leo.etat() && !DJ.Leo.etat().cine", timeout=60000)
+    verifier(P.pg.evaluate("() => DJ.Leo.etat().phase === 1 && document.querySelector('#leo-barre em').textContent") == 'L\'homme en cape', 'le combat commence : « L\'homme en cape », phase 1')
+    for ph in (1, 2):
+        P.pg.evaluate("() => { var c = DJ.Leo._E().c; c.leo.pv = c.etat().leo.plancher + 10; DJ.Leo.agir('pisteur', 'fleche', 'leo'); }")
+        P.pg.wait_for_function("() => DJ.Leo.etat().cine", timeout=20000); P.pg.wait_for_timeout(600)
+        P.pg.eval_on_selector('[data-act=l-passer]', 'e => e.click()')
+        P.pg.wait_for_function(f"() => DJ.Leo.etat().phase === {ph + 1} && !DJ.Leo.etat().cine", timeout=30000)
+        verifier(P.pg.evaluate("() => +DJ.Explo._X().partie.faits['leo:phase']") == ph + 1, f'la phase {ph} est gagnée : elle est gardée toute seule (on reprendrait à la phase {ph + 1})')
+    verifier(P.pg.evaluate("() => document.querySelector('#leo-barre em').textContent") == 'Léo', 'sous la cape : Léo')
+    P.pg.evaluate("() => { DJ.Leo.agir('pisteur', 'l:faux', 'leo'); }"); P.pg.wait_for_timeout(1200)
+    P.pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 5; }")
+    P.pg.wait_for_function("() => DJ.Leo.etat().aveu === 0", timeout=40000); P.pg.wait_for_timeout(300)
+    aveux = []
+    for k in range(5):
+        aveux.append(P.pg.inner_text('.leo-aveu .bulle')); ok_lire = P.pg.locator('.leo-aveu .bulle [data-act=lire]').count() == 1
+        if k == 2: P.pg.screenshot(path=os.path.join(OUT, 'pisteur-leo-aveu.png'))
+        P.pg.eval_on_selector('[data-act=l-aveu]', 'e => e.click()'); P.pg.wait_for_timeout(250)
+    verifier('Vous avez gagné' in aveux[0] and 'jamais voulu être meunier' in aveux[1] and 'la rivière rouge, les fumigènes, la lettre' in aveux[2] and 'Une ville entière, sous Brumeval' in aveux[3] and 'Personne n\'y va. Jamais.' in aveux[4] and ok_lire, 'Léo, battu, dit ses cinq phrases (chacune avec son 🔊)')
+    # la fin du donjon : « Bravo ! … Place aux accusations ! », le code pour le Sage, et on remonte
+    P.pg.wait_for_selector('#fin-donjon', timeout=15000); P.pg.wait_for_timeout(400)
+    t = P.pg.inner_text('#fin-donjon')
+    noms = P.pg.evaluate("() => DONJON_CODES.code('leo:battu').join('-')")
+    verifier('Bravo ! Vous avez résolu l\'enquête n° 3.' in t and 'Place aux accusations' in t and noms == '-'.join(S.js("() => M.code('info:leo_battu')")), 'la fin du donjon : « Bravo ! Vous avez résolu l\'enquête n° 3. Place aux accusations ! », et le code pour le Sage')
+    P.pg.screenshot(path=os.path.join(OUT, 'pisteur-fin-donjon.png'))
     P.pg.eval_on_selector('[data-act=enquete]', 'e => e.click()'); P.pg.wait_for_url('**/brumeval/index.html**'); P.pg.wait_for_timeout(1400); P.preparer()
     t = P.texte()
-    verifier('Le donjon est fini' in t and 'coincé Léo' in t and P.pg.locator('#voile .b-donne').count() == 2, 'le Pisteur remonte : « Le donjon est fini », deux codes à donner')
+    verifier('Le donjon est fini' in t and 'Place aux accusations' in t and P.pg.locator('#voile .b-donne').count() == 2, 'le Pisteur remonte : « Le donjon est fini », deux codes à donner au Sage')
     P.shot('donjon-fini'); P.fermer()
-    # « Odette est derrière la porte » → le Sage ; « Léo attrapé » → le Barde (son grand dialogue s'ouvre)
-    verifier(livrer(T, P, {'info:odette_porte'}) == ['info:odette_porte'], 'le Pisteur a donné au Sage : Odette est derrière la porte')
-    seq = P.js("() => M.code('info:leo_attrape')")
-    B.taper(seq, garder=True)
-    verifier('apprenti du meunier' in B.texte() and B.pg.locator('#voile [data-act=gd-leo-code]').count() == 1 and B.pg.locator('#voile [data-act=gd-choix]').count() == 0, 'le Pisteur → le Barde : « Léo attrapé » — la scène de Léo (sans choix) : l\'homme en cape, c\'était lui'); passes.append(('pisteur', 'info:leo_attrape', 'barde')); P.donnes.add('info:leo_attrape')
-    B.pg.locator('#voile [data-act=gd-leo-code]').click(); B.pg.wait_for_timeout(300); B.shot('leo-code'); B.fermer()
-    verifier(livrer(T, B) == ['info:leo_dit3'], 'le Barde a donné au Sage : ce que Léo a dit')
-    # le Sage : la porte des Fondateurs, puis l'accusation
+    # « Odette est derrière la porte » et « Léo a parlé » → le Sage
+    l = livrer(T, P)
+    verifier(sorted(l) == ['info:leo_battu', 'info:odette_porte'], f'le Pisteur a donné au Sage : Odette est derrière la porte, Léo a parlé ({l})')
+    # le Sage : la porte des Fondateurs, puis les trois accusations (OÙ, QUI a écrit, QUI sous la cape)
     S.js("() => { M.UI.ecran = 'enquete'; M.P().onglet = 'carte'; M.UI.modal = null; M.render(); M.P().onglet = 'role'; M.render(); }"); S.pg.wait_for_timeout(400)
     verifier(S.pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=porte]').count() == 1, 'le Grand Livre du Sage s\'ouvre tout seul sur « La porte des Fondateurs »')
     S.ouvrir_page('porte'); S.fermer()
     verifier('Quatre signes' in S.page('porte'), 'le Sage : la porte aux quatre signes, Odette derrière')
     S.js("() => { M.UI.modal = null; M.A.accuser(); }"); S.pg.wait_for_timeout(250)
-    S.pg.locator('#voile [data-act=acc-choix][data-k=qui][data-v=melusine]').click(); S.pg.wait_for_timeout(200)
+    verifier('OÙ est Odette' in S.texte(), 'le Sage accuse : la première question, « OÙ est Odette ? »')
     S.pg.locator('#voile [data-act=acc-choix][data-k=ou][data-v=clocher]').click(); S.pg.wait_for_timeout(200)
+    S.pg.locator('#voile [data-act=acc-choix][data-k=qui][data-v=melusine]').click(); S.pg.wait_for_timeout(200)
+    verifier('QUI se cachait sous la cape noire' in S.texte() and S.pg.locator('#voile [data-act=acc-choix][data-k=quoi]').count() == 10, 'la troisième question : « QUI se cachait sous la cape noire ? » (dix visages)')
+    S.shot('accusation-cape')
+    S.pg.locator('#voile [data-act=acc-choix][data-k=quoi][data-v=leo]').click(); S.pg.wait_for_timeout(200)
     S.pg.locator('#voile [data-act=acc-valider]').click(); S.pg.wait_for_timeout(350)
-    verifier('QUI est le Corbeau' in S.texte(), 'le Sage accuse : Mélusine, sous le clocher — c\'est juste ; la question du Corbeau')
-    S.pg.locator('#voile [data-act=corbeau-choix][data-v=grosbec]').click(); S.pg.wait_for_timeout(350)
+    verifier('Bravo' in S.texte() and 'Corbeau' not in S.texte() and S.pg.locator('#voile [data-act=fin-sage]').count() == 1, 'le Sage accuse : sous le clocher, Mélusine, Léo — c\'est juste ; plus de question du Corbeau')
     idv = S.js("() => M.idVictoire(0)"); seq = S.js("(id) => M.code(id)", idv)
-    verifier(idv == 'victoire:20', f'le code de fin du Sage : sans erreur, « Léo a tout dit » ({idv})')
+    verifier(idv == 'victoire:20', f'le code de fin du Sage, sans erreur ({idv})')
     S.pg.locator('#voile [data-act=fin-sage]').click(); S.pg.wait_for_timeout(500)
     for r in ('barde', 'pisteur', 'alchimiste'): T[r].taper(seq, garder=True); passes.append(('sage', idv, r))
     verifier(all(t.js("() => M.P().etape === 'fin' && M.P().fin.variante === 2") for t in T.values()), 'le Sage → tous : le code de fin ; les quatre tablettes sont à la fin de l\'histoire')
     # la même scène finale partout
-    textes = {}
+    textes = {}; cachots = {}
     for r, t in T.items():
         l = []
         for i in range(6):
             l.append(t.pg.evaluate("() => { var a = document.querySelector('.b-fin-slide'); return a ? a.querySelector('p').textContent : ''; }"))
-            if i == 2 and r == 'sage': t.shot('fin-leo')
-            if i == 5: t.pg.wait_for_timeout(1200); t.shot('cachot')
+            if i == 1 and r == 'sage': t.shot('fin-leo')
+            if i == 4:
+                # (13 novembre) au cachot : chacun tape le code d'apparence de ses amis — les quatre héros apparaissent
+                avant = t.pg.locator('.b-prison-ombre.connu').count()
+                for r2, t2 in T.items():
+                    if r2 == r or t.js("(x) => !!(M.P().allures || {})[x]", r2): continue
+                    for sym in t2.js("() => M.code(M.allureCodeFin())"): t.pg.locator(f'.b-fin-slide .b-prison-codes [data-act=sym][data-s="{sym}"]').click(); t.pg.wait_for_timeout(120)
+                    t.pg.wait_for_timeout(600)
+                cachots[r] = (avant, t.pg.locator('.b-prison-ombre.connu').count(), t.pg.locator('.b-fin-slide .b-prison-codes').count())
+                t.pg.wait_for_timeout(1200); t.shot('cachot')
+            if i == 5 and r == 'sage': t.shot('fin-mot')
             t.pg.locator('[data-act=fin-suite]').click(); t.pg.wait_for_timeout(250)
         textes[r] = l
-    verifier(all(textes[r] == textes['sage'] for r in T) and 'beaucoup trop parlé' in textes['sage'][2] and 'cachot' in textes['sage'][5], 'la même scène finale sur les quatre tablettes : « tu as beaucoup trop parlé », la bague, le cachot')
-    verifier(all(t.js("() => M.P().fin.etape === 'recompenses' && M.S.calepin.filter(function(c){ return c.e === 3; }).length === 6") for t in T.values()), 'chacun a ses récompenses et les six notes du calepin')
+    f = textes['sage']
+    verifier(all(textes[r] == f for r in T) and 'Qu\'avez-vous fait à Léo' in f[1] and 'tête de corbeau' in f[2] and 'Attrapez-les' in f[3] and 'cachot' in f[4] and 'Fin de l\'enquête 3' in f[5] and 'ce n\'est que le début' in f[5],
+             'la même scène finale sur les quatre tablettes : « Qu\'avez-vous fait à Léo ? », la bague, « Gardes ! Attrapez-les ! », le cachot, « Fin de l\'enquête 3… mais ce n\'est que le début. »')
+    verifier(cachots['pisteur'][0] == 2 and cachots['barde'][0] == 0 and all(c[1] == 3 and c[2] == 0 for c in cachots.values()),
+             f'au cachot : le Pisteur connaît déjà le Sage et l\'Alchimiste ; les codes d\'apparence tapés, chaque tablette montre les quatre héros ({cachots})')
+    verifier(all(t.js("() => M.P().fin.etape === 'recompenses' && M.S.calepin.filter(function(c){ return c.e === 3; }).length === 8") for t in T.values()), 'chacun a ses récompenses et les huit notes du calepin')
     # ---------- le bilan ----------
     print('— LE BILAN')
     for r, t in T.items():

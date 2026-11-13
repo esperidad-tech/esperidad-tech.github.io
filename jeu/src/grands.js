@@ -237,6 +237,17 @@ function filetActif(id){
   return !(P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf]));
 }
 var FETE_TXT = 'Tout le village danse sous les lampions. Chacun a un mot à te glisser à l\'oreille !';
+/* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : E.fete.gens.<pnj>.aide = {si:'info:…', t, questions:[{q, r}], note}. Dès que le
+   Barde a le code (le Pisteur vient d'entrer chez Léo), ce villageois porte un « ❗ » : il a de nouvelles questions. Le Barde les pose,
+   lit les réponses à voix haute à ceux qui se battent, et peut les relire autant qu'il veut (le villageois reste ouvert).
+   P.fete.aide[pnj] = {0:1, 1:1…} : les questions posées ; « fete:aide:<pnj> » dans P.vus quand toutes le sont. */
+function aide(id){
+  var f = F(), x = f && f.gens[id], P = M.P(); if(!x || !x.aide || !P) return null;
+  return (P.recus && P.recus[x.aide.si]) || (P.objets && P.objets['_' + x.aide.si]) ? x.aide : null;
+}
+function aideEtat(id){ var P = M.P(); P.fete = P.fete || {vus:{}, n:0}; P.fete.aide = P.fete.aide || {}; return P.fete.aide[id] || (P.fete.aide[id] = {}); }
+function aideFinie(id){ var a = aide(id); if(!a) return true; var st = aideEtat(id); return a.questions.every(function(q, k){ return !!st[k]; }); }
+M.feteAide = function(id){ return aide(id); };
 function feteHTML(lieu){
   if(!feteIci(lieu)) return '';
   var f = F(), P = M.P(), Rt = R(), vus = (P.fete && P.fete.vus) || {};
@@ -248,9 +259,9 @@ function feteHTML(lieu){
   if(cherche) ids = [Rt.pnj].concat(ids.filter(function(id){ return id !== Rt.pnj; }));
   ids.forEach(function(id){
     if(!D.PNJ[id]) return;
-    var appel = cherche && id === Rt.pnj, vu = !!vus[id] && !appel;
+    var ai = aide(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)), vu = !!vus[id] && !appel && !ai;
     /* (la règle du Barde, Romain, 13 novembre : celui qui a tout dit passe au rouge, et on ne peut plus le toucher) */
-    h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? 'Il te cherche : ' : 'Parler à ') + nom(id)) + '"') + '>' +
+    h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? (ai ? 'Quelque chose à te dire : ' : 'Il te cherche : ') : 'Parler à ') + nom(id)) + '"') + '>' +
       '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">❗</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
   });
   return h + '</div>';
@@ -259,6 +270,7 @@ A['gd-fete'] = function(el){
   var id = el.dataset.id, f = F(), x = f && f.gens[id], P = M.P(), Rt = R(); if(!x || !barde() || !M.momentOk(f.moments)) return;
   if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv gd-fenetre'}); return; }
   P.fete = P.fete || {vus:{}, n:0};
+  if(aide(id)){ P.fete.vus[id] = 1; M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, aide:true, classe:'b-feuille-conv'}); return; }
   if(!Rt || id !== Rt.pnj) P.fete.n++;
   var premiere = !P.fete.vus[id]; P.fete.vus[id] = 1;
   if(filetActif(id) && !P.vus['fete:filet:' + id]){ P.vus['fete:filet:' + id] = 1; donner(x.filet.code, x.filet.note, (D.PNJ[id] || {}).ic); }
@@ -266,7 +278,23 @@ A['gd-fete'] = function(el){
   M.son('clic'); M.sauver();
   M.ouvrir({type:'grand', vue:'fete', qui:id, classe:'b-feuille-conv'});
 };
+function aideVueHTML(m){
+  var id = m.qui, a = aide(id), st = aideEtat(id);
+  var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(a.t), id) + '<div class="gd-aide">';
+  a.questions.forEach(function(Q, k){
+    if(st[k]) h += '<div class="gd-aide-rep"><p class="gd-aide-q">' + esc(Q.q) + '</p><p class="ma-dit">' + esc(cite(Q.r)) + ' ' + lire(cite(Q.r), id) + '</p></div>';
+    else h += '<button class="b-question bd-boite bd-a-poser" data-act="gd-aide" data-id="' + id + '" data-k="' + k + '"><b>' + esc(Q.q) + '</b></button>';
+  });
+  return h + '</div><button class="btn grand" data-act="fermer">D\'accord</button></div>';
+}
+A['gd-aide'] = function(el){
+  var id = el.dataset.id, k = +el.dataset.k, a = aide(id), P = M.P(); if(!a || !a.questions[k] || !barde()) return;
+  var st = aideEtat(id); st[k] = 1;
+  if(aideFinie(id) && !P.vus['fete:aide:' + id]){ P.vus['fete:aide:' + id] = 1; if(a.note) M.noter(a.note, (D.PNJ[id] || {}).ic); }
+  M.son('clic'); M.sauver(); M.render();
+};
 function feteVueHTML(m){
+  if(m.aide && aide(m.qui)) return aideVueHTML(m);
   var f = F(), id = m.qui, x = f.gens[id], fil = P_vus('fete:filet:' + id) && x.filet;
   var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(fil ? x.filet.t : x.t), id);
   if(fil) return h + '<button class="btn grand b-aller" data-act="gd-fete-code" data-id="' + id + '">✨ La suite</button></div>';
@@ -286,6 +314,7 @@ if(ind0) M.pnjIndispo = function(id){
     if(f && barde() && f.gens[id] && M.momentOk(f.moments)){
       var P = M.P(), Rt = R();
       if(Rt && id === Rt.pnj && retenirDispo()) return false;
+      if(aide(id)) return false;                       /* (il aide ceux du donjon : toujours ouvert, on peut le relire) */
       return !!(P.fete && P.fete.vus && P.fete.vus[id]);
     }
   }catch(e){ console.error(e); }

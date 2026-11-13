@@ -142,13 +142,10 @@ function bougieScene(){
 /* L'ardoise posée contre le mur, au fond du plateau : c'est là que s'écrit le code à transmettre (trois formes, comme tous les codes du jeu).
    Quand le code est écrit, on peut la toucher pour le voir en grand. */
 function ardoiseScene(){
-  var A = ARD, cx = A.x + A.w/2;
-  return '<g id="gArdoise" data-act="ardoise" tabindex="0" role="button" aria-label="L\'ardoise du code"><rect class="rond" x="' + (A.x - 7) + '" y="' + (A.y - 7) + '" width="' + (A.w + 14) + '" height="' + (A.h + 14) + '" rx="12"/>' + ombre(cx + 4, A.y + A.h + 5, A.w*.56, 6, .4) +
-    '<g transform="rotate(-1.6 ' + cx + ' ' + (A.y + A.h) + ')">' + R(A.x, A.y, A.w, A.h, 5, G('boisS')) + grainBois(A.x + 3, A.y + 3, A.w - 6, A.h - 6, 5, 61, '#3a2010', .35) +
-    '<rect x="' + (A.x + 9) + '" y="' + (A.y + 9) + '" width="' + (A.w - 18) + '" height="' + (A.h - 18) + '" rx="2" fill="' + G('ardoise') + '" stroke="' + K + '" stroke-width="2.5"/>' +
-    '<path d="M' + (A.x + 14) + ',' + (A.y + 26) + ' q40,-12 ' + (A.w - 30) + ',-4 M' + (A.x + 16) + ',' + (A.y + A.h - 22) + ' q50,9 ' + (A.w - 34) + ',-3" stroke="#fff" stroke-width="6" opacity=".05" fill="none"/>' +
-    Cir(A.x + 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') + Cir(A.x + A.w - 5, A.y + 5, 2, '#c9a23a', ' stroke-width="1"') +
-    '<g id="ardoise"></g></g><rect x="' + A.x + '" y="' + A.y + '" width="' + A.w + '" height="' + A.h + '" fill="transparent"/></g>';
+  /* (Romain, 13 novembre, 18 h 48 : « sur la paillasse d'analyse, j'aimerais que tu enlèves l'ardoise parce qu'elle sert à rien, vu que
+     les codes sont donnés dès qu'on sort du laboratoire d'analyse ») plus d'ardoise sur la paillasse : le code arrive dans la fiche de
+     la découverte, au retour à l'atelier. (majArdoise ne fait plus rien : il n'y a plus d'ardoise à remplir.) */
+  return '';
 }
 /* Le code à montrer : celui du dossier en cours s'il est bouclé, sinon celui du dernier dossier bouclé qui en a un */
 function codeD(){ var l = CUIRS.filter(function(d){ return S.finis[d] && CODES[d]; }); return l.length ? (l.indexOf(S.dc) >= 0 ? S.dc : l[l.length - 1]) : null; }

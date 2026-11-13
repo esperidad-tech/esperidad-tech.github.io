@@ -81,6 +81,8 @@ module.exports = function verifierE3(E, SRC, D){
   for(const id of Object.keys((E.fete || {}).gens || {})){
     const x = E.fete.gens[id];
     if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[{donne:x.filet.sauf}], produit:[x.filet.code], faits:[`fete:filet:${id}`], filet:true});
+    /* (13 novembre, Bible §13.33) l'aide pour le donjon : avec le code du Pisteur, ce villageois a de nouvelles questions */
+    if(x.aide) aj({cle:`barde:fete:aide:${id}`, role:'barde', moments:E.fete.moments, besoins:[[{code:x.aide.si}]], faits:[`fete:aide:${id}`]});
   }
   if(E.retenir) aj({cle:'grand:retenir', role:'barde', moments:(E.fete || {}).moments || NUIT, besoins:[E.retenir.besoin].filter(Boolean), produit:liste(E.retenir.reussi.code), faits:['grand:retenir:fini'], ratable:true,
     rate:{produit:[], faits:['grand:retenir:fini']}});
@@ -170,23 +172,23 @@ module.exports = function verifierE3(E, SRC, D){
     let encore = true;
     while(encore){
       encore = points(reste);
-      /* Léo, à la fin du donjon : attrapé si le Pisteur a tapé « Le maire est retenu » (donjon/regles.js, leoEnfui) ; sinon, il file */
-      if(faits.has('donjon:fini') && !codes.has('info:leo_attrape') && !codes.has('info:leo_enfui')){ codes.add(codes.has('info:maire_retenu') ? 'info:leo_attrape' : 'info:leo_enfui'); encore = true; continue; }
+      /* Léo, au fond du donjon (13 novembre) : en entrant chez lui, le code pour le Barde ; battu, le code pour le Sage */
+      if(faits.has('donjon:fini') && !codes.has('info:leo_battu')){ codes.add('info:leo_la'); codes.add('info:leo_battu'); encore = true; continue; }
       if(!encore) encore = points(filets);
     }
     return {faits, codes};
   }
   function solutions(j){
-    const reste = {qui:new Set(E.qui.choix), ou:new Set(E.ou.choix.map(x => x.id))};
+    const reste = {qui:new Set(E.qui.choix), ou:new Set(E.ou.choix.map(x => x.id)), quoi:new Set(((E.quoi || {}).choix || [{id:'-'}]).map(x => x.id))};
     (E.faits || []).forEach(f => {
       if(!f.sources.every(s => liste(s).some(x => j.faits.has(x)))) return;
-      ['qui', 'ou'].forEach(d => (f[d] || []).forEach(x => reste[d].delete(x)));
+      ['qui', 'ou', 'quoi'].forEach(d => (f[d] || []).forEach(x => reste[d].delete(x)));
     });
     return reste;
   }
-  const taille = r => r.qui.size * r.ou.size;
-  const resume = r => `QUI ${[...r.qui].join('|')} · OÙ ${[...r.ou].join('|')}`;
-  const juste = r => r.qui.size === 1 && r.qui.has(E.solution.qui) && r.ou.size === 1 && r.ou.has(E.solution.ou);
+  const taille = r => r.qui.size * r.ou.size * r.quoi.size;
+  const resume = r => `QUI ${[...r.qui].join('|')} · OÙ ${[...r.ou].join('|')}` + (E.quoi ? ` · SOUS LA CAPE ${[...r.quoi].join('|')}` : '');
+  const juste = r => r.qui.size === 1 && r.qui.has(E.solution.qui) && r.ou.size === 1 && r.ou.has(E.solution.ou) && r.quoi.size === 1 && (!E.quoi || r.quoi.has(E.solution.quoi));
 
   /* ---------- 0. les sources des faits existent ---------- */
   const cles = new Set(R.map(r => r.cle));
@@ -196,8 +198,9 @@ module.exports = function verifierE3(E, SRC, D){
   /* ---------- 1. le chemin parfait ---------- */
   const parfait = jouer(ROLES), sp = solutions(parfait);
   dit(juste(sp), `Avec toute l'équipe, tout réussi : ${resume(sp)}`);
-  const leo = parfait.codes.has('info:leo_attrape') && parfait.codes.has((E.grands.leo.fins.slice(-1)[0] || {}).code);
-  dit(leo, 'le chemin parfait va jusqu\'au bout : le maire retenu, Léo attrapé, « Ce que Léo a dit »');
+  const leo = parfait.codes.has('info:leo_la') && parfait.codes.has('info:leo_battu') && parfait.faits.has('fete:aide:farinel') && parfait.faits.has('fete:aide:iris');
+  dit(leo, 'le chemin parfait va jusqu\'au bout : l\'homme en cape, l\'aide de Farinel et d\'Iris à la fête, « Léo a parlé »');
+  dit(!E.accuser || (E.accuser.besoin || []).every(c => !c.code || parfait.codes.has(c.code)), 'le Sage reçoit ce qu\'il lui faut pour accuser (E.accuser.besoin)');
   /* (12 novembre au soir ; Romain, 21 h 44) un grand dialogue ne s'ouvre qu'une fois tout demandé : sa question porte {toutDit} */
   const sansTout = [];
   for(const id of Object.keys(E.pnj || {})) (E.pnj[id].questions || []).forEach(q => { if(q.grand && !/"toutDit"/.test(JSON.stringify(q.besoin || []))) sansTout.push(q.grand); });
@@ -241,8 +244,8 @@ module.exports = function verifierE3(E, SRC, D){
   if(enReserve.length) console.log(`  · en réserve (plus donné par personne pour l'instant) : ${enReserve.map(k => 'info:' + k).join(', ')}`);
   const donneurs = {}, lecteurs = {};
   R.forEach(r => r.produit.concat(r.rate.produit).forEach(c => (donneurs[c] = donneurs[c] || new Set()).add(r.role)));
-  ['info:odette_porte', 'info:leo_attrape', 'info:leo_enfui'].forEach(c => (donneurs[c] = donneurs[c] || new Set()).add('pisteur'));   /* (le donjon : descente.js) */
-  const F = E.grands.leo.fins; F.forEach(f => { if(f.code) (donneurs[f.code] = donneurs[f.code] || new Set()).add('barde'); });
+  ['info:odette_porte', 'info:leo_la', 'info:leo_battu'].forEach(c => (donneurs[c] = donneurs[c] || new Set()).add('pisteur'));   /* (le donjon : descente.js) */
+  (E.accuser && E.accuser.besoin || []).forEach(c => { if(c.code) (lecteurs[c.code] = lecteurs[c.code] || new Set()).add('sage'); });   /* (ce qui ouvre les accusations) */
   if(E.grands.lettre && E.grands.lettre.piege) (donneurs[E.grands.lettre.piege.code] = donneurs[E.grands.lettre.piege.code] || new Set()).add('barde');
   const mauvais = [];
   function lire(c, role, ou){ if(!c) return; if(c.code){ (lecteurs[c.code] = lecteurs[c.code] || new Set()).add(role); const p = pour(c.code); if(p.length && !p.includes(role)) mauvais.push(`${ou} (${role}) attend « ${c.code} », qui est pour ${p.join(', ')}`); } if(c.et) c.et.forEach(x => lire(x, role, ou)); if(c.ou) c.ou.forEach(x => lire(x, role, ou)); if(c.non) lire(c.non, role, ou); }

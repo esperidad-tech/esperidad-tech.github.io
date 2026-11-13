@@ -24,8 +24,8 @@ function fermerMode(){
   dessinerTiroir('g'); dessinerTiroir('d'); dessinerLame(); dessinerCoupes(); majArdoise(); majBandeScene(); majOutils();
   if(t){ S.vientDeTrouver = null; if(S.sel === t && !surCuir(t)){ var p = posCible(); bulle(p.x, p.y - 22, '✅ ' + nomTrouve(t), 3200); } }
   document.body.classList.remove('fait');
-  /* le code vient de s'écrire sur l'ardoise : un petit bruit de craie */
-  var cd = codeD(); if(cd && !S.codeEcrit[cd]){ S.codeEcrit[cd] = true; attendre(500, function(){ son('craie'); }); }
+  /* (13 novembre : plus d'ardoise, donc plus de bruit de craie — le code est donné au retour à l'atelier) */
+  var cd = codeD(); if(cd && !S.codeEcrit[cd]) S.codeEcrit[cd] = true;
   majQuitter();
   mimiReveil();
 }

@@ -785,3 +785,9 @@ html.b-fixe #app{min-height:0}
 }
 /* la lettre « d'Odette », lue par le maire (enquête 3) : pas de signature à part, le 🔊 passe sous le texte, à droite */
 .b-ecran-fixe.b-lettre-lue .b-lettre:not(.b-affiche) > .b-lire{position:static;display:flex;margin:calc(8px * var(--serre, 1)) 0 0 auto;clear:both}
+
+/* le cachot de la fin de l'enquête 3 : un ami dont on a tapé le code d'apparence n'est plus une ombre (moteur-ecrans.js, prisonHTML) */
+.b-prison-ombre.connu{filter:none;opacity:1}
+.b-prison-codes{margin-top:12px;padding-top:10px;border-top:2px dashed rgba(90,70,40,.35);text-align:center}
+.b-prison-moncode{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 10px}
+.b-prison-codes-ok{text-align:center;font-weight:800}

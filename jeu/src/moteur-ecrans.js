@@ -460,13 +460,14 @@ function vueFin(){
   if(F.etape === 'histoire'){
     var i = Math.min(F.slide, slides.length - 1), t = slides[i], img = '';
     if(typeof t === 'function'){ try{ t = t(P); }catch(e){ console.error(e); t = ''; } }   /* (enquête 3) un texte qui dépend de la partie (la variante de la scène finale) */
-    if(t && typeof t === 'object'){ img = t.img === 'prison' ? prisonHTML(t) : ''; t = t.t || ''; }   /* une image dans l'histoire : {t, img:'prison'} */
+    var plus = '';
+    if(t && typeof t === 'object'){ img = t.img === 'prison' ? prisonHTML(t) : ''; plus = t.img === 'prison' && t.codes ? prisonCodesHTML() : ''; t = t.t || ''; }   /* une image dans l'histoire : {t, img:'prison'} */
     /* une petite scène animée sous le texte (E.fin.illus[i] : illus-fin.js ; Romain, 5 novembre, 9 h 37) */
     var anim = !img && E.fin.illus && E.fin.illus[i] && M.illustration ? M.illustration(E.fin.illus[i]) : '';
     var codeFin = M.role() === 'sage' ? '<details class="b-code-fin"><summary>🔢 Le code de fin pour l\'équipe</summary>' + M.codeHTML(M.code(M.idVictoire(F.erreurs, F.variante || 0))) + '</details>' : '';
     return '<main class="b-page b-fin"><p class="sur-titre centre">Enquête ' + E.id + ' · ' + esc(E.titre) + '</p>' + codeFin +
       (F.slide === 0 && F.erreurs >= 3 ? '<p class="b-carte-verre centre">La solution vous a été révélée. Ce n\'est pas grave : on apprend en enquêtant !</p>' : '') +
-      '<article class="parchemin b-fin-slide" data-n="' + i + '">' + img + '<p>' + t + '</p>' + lire(t) + anim + '</article>' +
+      '<article class="parchemin b-fin-slide" data-n="' + i + '">' + img + '<p>' + t + '</p>' + lire(t) + anim + plus + '</article>' +
       '<div class="b-points">' + slides.map(function(x, j){ return '<i class="' + (j <= i ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
       padPendantHistoire(E) +
       '<div class="b-bas"><button class="btn grand" data-act="fin-suite">' + (i < slides.length - 1 ? 'Suite →' : 'Mes récompenses ✨') + '</button></div></main>';
@@ -509,9 +510,13 @@ function vueFinAncienne(E, F, niv){   /* l'ancien écran des récompenses (gard�
    avec les trois autres enquêteurs en ombres (on ne connaît pas l'allure des héros des autres tablettes) */
 function prisonHTML(o){
   var moi = M.role(), autres = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi; });
+  /* (13 novembre, Bible §13.33) un ami dont on a tapé le code d'apparence (P.allures : sous l'image, prisonCodesHTML — ou, pour le Pisteur,
+     les codes de la descente) n'est plus une ombre : son héros est là, avec sa peau et ses cheveux */
+  var al = (M.P() && M.P().allures) || {};
   var ombre = function(r, i){
-    var h = window.Persos && Persos.defaut ? Persos.defaut(r, i % 2 ? 'm' : 'f') : {role:r};
-    return '<div class="b-prison-ombre o' + i + '">' + portrait('pied', false, false, Object.assign(h, {role:r, niveau:3, talents:[], equip:[]})) + '</div>';
+    var a = al[r], h = window.Persos && Persos.defaut ? Persos.defaut(r, a ? a.sexe : (i % 2 ? 'm' : 'f')) : {role:r};
+    if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux});
+    return '<div class="b-prison-ombre o' + i + (a ? ' connu' : '') + '" data-role="' + r + '">' + portrait('pied', false, false, Object.assign(h, {role:r, niveau:3, talents:[], equip:[]})) + '</div>';
   };
   return '<div class="b-prison" role="img" aria-label="Les quatre enquêteurs au cachot, derrière les barreaux">' +
     '<i class="b-prison-fenetre"></i><i class="b-prison-rayon"></i><i class="b-prison-sol"></i>' +
@@ -520,6 +525,14 @@ function prisonHTML(o){
     '<i class="b-prison-barreaux"></i>' +
     /* (enquête 3, o.plume) une plume noire descend en se balançant, et se pose devant la grille */
     (o && o.plume ? '<b class="b-prison-plume" aria-hidden="true"><svg viewBox="-12 -30 24 60" focusable="false"><path d="M0 28 C -1 10 -2 -8 1 -27" stroke="#0c0a12" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M1 -27 C -9 -18 -11 -2 -7 12 C -5 16 -2 18 0 20 C 2 18 6 15 8 10 C 11 -3 9 -19 1 -27 Z" fill="#15121c" stroke="#05040a" stroke-width="1"/><path d="M0 16 C -2 2 -2 -12 1 -24 M-5 6 L 0 2 M-6 -4 L 0 -8 M6 4 L 0 -1 M6 -8 L 1 -13" stroke="#3a3550" stroke-width=".9" fill="none"/></svg></b>' : '') + '</div>';
+}
+/* Sous le cachot : mon code d'apparence, à montrer aux amis, et le pavé pour taper les leurs. Tant qu'il manque quelqu'un. */
+function prisonCodesHTML(){
+  var P = M.P(), moi = M.role(), al = (P && P.allures) || {}, manque = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi && !al[r]; });
+  if(!M.allureCodeFin) return '';
+  if(!manque.length){ var tb = 'Vous voilà réunis… derrière les barreaux.'; return '<p class="b-prison-codes-ok">' + esc(tb) + ' ' + lire(tb) + '</p>'; }
+  var t = 'Montre ton code à tes amis, et tape les leurs : ils apparaîtront à côté de toi.';
+  return '<section class="b-prison-codes"><p>' + esc(t) + ' ' + lire(t) + '</p><div class="b-prison-moncode"><b>Ton code</b>' + M.codeHTML(M.code(M.allureCodeFin())) + '</div>' + padHTML() + '</section>';
 }
 /* ---------- Défaite ---------- */
 function vueDefaite(){

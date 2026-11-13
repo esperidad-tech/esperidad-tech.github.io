@@ -7,7 +7,8 @@ var INTRO_PAS = [
   {img:'cuir', t:'Ce que l\'équipe te donne arrive sur ton carré de cuir. Choisis un échantillon !'},
   {img:'loupe', t:'Sous la loupe, compare-le aux échantillons de tes tiroirs. Lequel est pareil ?'},
   {img:'micro', t:'Le microscope voit ce qui se cache. Ta pince l\'attrape et le pose dans une coupelle.'},
-  {img:'ardoise', t:'L\'essentiel trouvé, ton code s\'écrit sur l\'ardoise. Tout vu : un ✅ sur l\'échantillon !'}   /* (13 novembre : le ✅ seulement quand tout est vu, 50-scene.js) */
+  /* (13 novembre : le ✅ seulement quand tout est vu, 50-scene.js ; plus d'ardoise : le code est donné au retour à l'atelier) */
+  {img:'retour', t:'L\'essentiel trouvé ? Retourne à ton atelier : ton code t\'y attend. Tout vu : un ✅ sur l\'échantillon !'}
 ];
 function introOuvrir(fin){
   var imgs = (typeof INTRO_IMG === 'object' && INTRO_IMG) || {};

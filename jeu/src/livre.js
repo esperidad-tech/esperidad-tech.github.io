@@ -487,12 +487,13 @@ function donnerAction(P){
 
 /* ⚖️ L'accusation */
 var IC_Q = {qui:'👤', ou:'📍', quoi:'🤝', pourquoi:'❓'};
+function icQ(E, d){ return (E[d] && E[d].icQ) || IC_Q[d]; }
 function accusation(E, P){
-  var dims = ['qui', 'ou', 'quoi', 'pourquoi'].filter(function(d){ return E[d] && E[d].titre; });
+  var dims = (E.ordreAccusation || ['qui', 'ou', 'quoi', 'pourquoi']).filter(function(d){ return E[d] && E[d].titre; });
   var t = 'Parlez-en tous ensemble. Quand toute l\'équipe est d\'accord, accuse !';
   var q = dims.map(function(d){ return E[d].titre; }).join(' ');
   var s = '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t) + ' ' + lire(t + ' ' + q) + '</p></div>';
-  s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + IC_Q[d] + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
+  s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + icQ(E, d) + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
   /* (plus de verrou ni de « petit matin », Romain, 5 novembre, 01 h 36 : le Sage accuse quand il veut, à n'importe quel moment) */
   s += '<button class="btn grand lv-accuser" data-act="accuser">⚖️ Accuser</button>';
   s += M.coeursHTML ? M.coeursHTML() : '';

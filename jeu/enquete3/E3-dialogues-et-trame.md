@@ -359,9 +359,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 
 Chacun dit une réplique, autant de fois qu'on veut.
 
-- **Gaspard** : « Sept chats en pâte d'amande sur le gâteau ! Il me faudra des bras pour le porter. » _(noté dans le Carnet : un indice pour retenir le maire)_
-- **Margot** : « Le discours du maire ? Vingt minutes ! Il adore qu'on le lui réclame. » _(noté dans le Carnet : un indice pour retenir le maire)_
-- **Silas** : « Chaque année, c'est le maire qui ouvre le bal. Personne ne danse avant lui ! » _(noté dans le Carnet : un indice pour retenir le maire)_
+- **Gaspard** : « Sept chats en pâte d'amande sur le gâteau ! Il me faudra des bras pour le porter. » _(noté dans le Carnet)_
+- **Margot** : « Le discours du maire ? Vingt minutes ! Il adore qu'on le lui réclame. » _(noté dans le Carnet)_
+- **Silas** : « Chaque année, c'est le maire qui ouvre le bal. Personne ne danse avant lui ! » _(noté dans le Carnet)_
 - **Victor** : « Je danse ! Enfin, j'essaie. »
 - **Tim** : « Chut ! Je suis monté en haut du mât des lampions. »
 - **Mélusine** : « Je n'écrirai plus jamais pour personne… »
@@ -372,37 +372,23 @@ Chacun dit une réplique, autant de fois qu'on veut.
 - **Fortuné** : « Dernières lanternes ! Deux pour le prix de trois ! »
 - **Grosbec** : « Quelle fête ! Tout le village est là… enfin, presque. »
 
-### 🎩 Retenir le maire
+### 🧥 L'aide pour le donjon : pendant le combat contre l'homme en cape
 
-Trois petits dialogues, à la fête, sans minuteur. Le premier quand : le grand dialogue « cle » fini (réussi ou raté). Chacun des suivants après une autre visite à la fête. 2 réussis : le code « Le maire est retenu » (pour pisteur) ; deux ratés : « Le maire s'éloigne vers le clocher… »
+Quand le Pisteur entre dans la dernière salle, il donne au Barde le code « L'homme en cape est là ! » (pour barde). À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.
 
-**1.** « Barde ! Je ne vois pas vos trois amis. Où sont-ils passés ? »
+**Iris** — « Une potion ? Oh… Il faut que je te dise quelque chose. »
 
-- ❌ « Ils sont allés se coucher, ils étaient épuisés. » → « Se coucher, un soir de fête ? Je vais voir ça… »
-- ✅ « Ils aident Gaspard à porter le gâteau : ça pèse ! » → « Ah ! Très bien, très bien. Ce gâteau sera magnifique. »
-- ❌ « Ils cherchent encore des fleurs pour vous. » → « À cette heure-ci ? Hmm… » Il regarde vers le clocher.
-- ❌ « Je ne sais pas, Monsieur le maire, vraiment pas. » → « Vous ne savez pas ? Hmm… »
+- « On t'a volé autre chose que ton encre ? » → « Oui… Ma potion de force ! J'y travaille depuis des années. »
+- « Que fait cette potion ? » → « Celui qui la boit ne sent plus aucun coup. Sauf s'il saigne : là, elle ne peut plus rien. »
+- Dans le Carnet : Iris, à la fête : on lui a volé sa potion de force. Celui qui la boit ne sent plus les coups… sauf s'il saigne.
 
-**2.** « Je vais faire un petit tour du côté du clocher. »
+**Farinel** — « Hein ? Mes outils ? Qui a touché à mes outils ?! »
 
-- ✅ « Monsieur le maire, tout le village réclame votre discours ! » → Il redresse son chapeau. « Mon discours ? Bon… le village a besoin de moi. »
-- ❌ « Anselme dort, il ne faut surtout pas le réveiller. » → « Il dort ?! J'y vais tout de suite ! »
-- ❌ « Votre chapeau neuf vous va vraiment très bien ! » → « Merci. Laissez-moi passer. »
-- ❌ « Je viens avec vous, je connais bien le chemin ! » → « Non, non. Restez ici. » Il part seul.
-
-**3.** « Toujours pas vos amis… Je dois vérifier quelque chose. »
-
-- ❌ « Allez-y, je surveille la fête pour vous. » → « Merci, Barde. » Il s'éloigne.
-- ❌ « Il n'y a rien au clocher, je vous assure. » → « Qui a parlé du clocher ? » Il s'éloigne.
-- ✅ « Le bal ! Personne ne danse avant que vous l'ouvriez ! » → « Le bal ! Mais oui, mais oui… Musique ! »
-- ❌ « Restez donc, il fait bien trop froid dehors. » → « Je ne suis pas frileux. » Il s'éloigne.
-
-### 🧑 Léo (une scène, sans choix — provisoire, tant que la fin n'est pas décidée)
-
-- Avec le code « Léo attrapé » (pour barde) : Tout au fond des souterrains, tes amis ont coincé l'homme en cape, une lanterne à la main. Sous le capuchon : Léo, l'apprenti du meunier !
-- Léo : « Vous n'auriez jamais dû descendre ! C'est pour le bien du village… » Puis, tout bas : « Elle m'a appris à lire. Je voulais juste qu'elle n'ait pas froid. » → code « Ce que Léo a dit » (pour sage)
-- Puis : Raconte à voix haute à ton équipe ce que Léo a dit, et donne son code au Sage. Puis le Sage accuse !
-- Avec le code « Léo s'est enfui » (pour barde) : Des pas descendent l'escalier de la crypte. Léo, l'apprenti du meunier, renverse sa lanterne et file dans le noir, sans un mot. Léo a filé. Raconte à ton équipe ce qui s'est passé. Puis le Sage accuse !
+- « À quoi sert ton gros marteau ? » → « À caler la meule. Un coup sur la tête, et tu vois des étoiles : tu lâches tout ! »
+- « Et ta faux ? » → « Elle coupe le blé… et les doigts ! Une coupure de faux, ça saigne longtemps. »
+- « Et ce crochet ? » → « Il chasse les rats du grenier. Il perce même le cuir le plus dur ! »
+- « Et la farine ? » → « Un meunier ne laisse jamais une flamme près de sa farine. Jamais ! »
+- Dans le Carnet : Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !
 
 ## 5. Les écoutes aux portes (talent « Tendre l'oreille »)
 
@@ -473,7 +459,7 @@ Trois petits dialogues, à la fête, sans minuteur. Le premier quand : le grand 
 - ✉️ Le maire garde la lettre pour lui. Quand tu auras tout demandé à tout le monde, va lui en parler… avec les bons mots. _(arrive l'après-midi)_
 - 🧵 Quelqu'un a écrit cette lettre. Quand l'équipe saura qui, fais-lui dire la vérité. _(arrive l'après-midi)_
 - 🗝️ La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu'il faut, va le voir au clocher, la nuit. _(arrive la nuit)_
-- 🎉 Reste à la fête. Si le maire te cherche, retiens-le ! _(arrive la nuit)_
+- 🎉 Tes amis se battent, tout au fond ! À la fête, quelqu'un saura peut-être les aider. _(arrive la nuit)_
 - 💡 Regarde bien les visages : plusieurs villageois vont te mentir.
 - 🔍 Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?
 
@@ -484,7 +470,6 @@ Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bibl
 - **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; ce que le bruit de la grille change pour le maire (le geste lui-même est construit : tirer, pousser ou soulever) ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou).
 - **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
 - **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
-- **Le donjon** : Léo en chef des monstres ; le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne (le donjon est donc un peu plus dur).
-- **La fin** : Odette délivrée avant l'arrivée du maire, ou seulement entendue derrière la porte ? La scène de Léo est provisoire.
+- **Le donjon** : le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)
 - **La Grosse Marie et la brume** (l'Alchimiste qui cueille pendant que la brume recule) : à décider avec la tisane d'Anselme, validée le 12 novembre à 15 h 39.
 - La quatrième écoute de la fête (« au pied du mât »), qui dépend de la grille.

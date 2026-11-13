@@ -650,7 +650,9 @@ M.destinataire = function(id){
   if(t === 'pot') return D.POTIONS[x].pour;
   if(t === 'suite' || t === 'defaite') return 'tous-sauf-sage';
   if(t === 'aide') return D.ROLES[x] ? x : 'tous';
-  if(t === 'sac' || t === 'allure') return 'pisteur';   /* (enquête 3) le code d'allure du Sage ou de l'Alchimiste (descente.js) */
+  /* (enquête 3) le code d'allure du Sage ou de l'Alchimiste (descente.js) ; à la fin de l'histoire, au cachot : celui de n'importe qui, pour tous */
+  if(t === 'allure'){ var Pa = M.P(); return Pa && Pa.etape === 'fin' ? 'tous' : 'pisteur'; }
+  if(t === 'sac') return 'pisteur';
   if(t === 'donjon') return x === 'plante' ? 'alchimiste' : (x === 'sauve' || x === 'recette') ? 'pisteur' : 'sage';   /* (enquête 3) un code du donjon : descente.js, M.codeDonjon */
   return 'tous';
 };

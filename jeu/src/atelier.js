@@ -1025,7 +1025,7 @@ def('lutrin', {w:170, h:226, p:80, z:'sol', special:'grimoire', nf:3, nom:'Lutri
 
 /* La paillasse d'analyse (refaite le 10 novembre, d'après la maquette du labo, Bible §12.51) : cinq formes de table, et sur chacune
    TOUJOURS deux tiroirs en haut (fils, poils, plumes à gauche ; pétales, feuilles, grains à droite) et les mêmes outils aux mêmes places :
-   au fond, la bougie, l'ardoise du code, la petite étagère surélevée des cinq bocaux, le microscope ; devant, le bocal à bandelettes,
+   au fond, la bougie, la petite étagère surélevée des cinq bocaux, le microscope ; devant, le bocal à bandelettes,
    le carnet de teintures, la loupe, le carré de cuir (les objets reçus sont posés dessus : ceux qui attendent brillent), les cinq coupelles.
    Le bout gauche du plateau reste libre (surf) : on peut y poser quelque chose. Les outils gardent leurs couleurs ; la table prend le thème
    (le marbre aussi : marbre rose, vert… ; son or reste or). On la touche : trois bulles (y aller, changer la forme, changer la couleur). */
@@ -1064,15 +1064,14 @@ def('paillasse', {w:480, h:212, p:130, z:'sol', special:'analyses', profil:true,
     else if(f === 2) s += c.boite(4, Y, 476, 108, 0, P2, MARBRE) + c.sur(T('M60,96 C120,103 160,92 230,99 M300,94 C350,101 400,94 450,99', veine, 2.5), 0) +
       c.dessus(T('M30,-34 C120,-56 200,-22 300,-48 S420,-30 462,-66 M80,-100 C170,-82 240,-108 330,-90', veine, 2.5, ' opacity=".7"'), Y, 0);
     else s += c.boite(4, Y, 476, 109, 0, P2, f === 4 ? BOIS() : UNI(G('boisH'), G('boisH'), G('boisS')));
-    /* --- au fond du plateau, de gauche à droite : le bocal à bandelettes, la bougie, l'ardoise, l'étagère des cinq bocaux, le microscope --- */
+    /* --- au fond du plateau, de gauche à droite : le bocal à bandelettes, la bougie, l'étagère des cinq bocaux, le microscope --- */
     var bt = 'M91,' + (Y - 42) + ' h26';
     var fond = R(94, Y - 41, 20, 40, 6, 'rgba(220,245,255,.35)', B25) + '<rect x="96" y="' + (Y - 13) + '" width="16" height="10" rx="3" fill="#cfeaf6" opacity=".8"/>' +
       '<rect x="101.5" y="' + (Y - 41) + '" width="5" height="31" fill="#fffaf0" stroke="' + K + '" stroke-width=".8"/><rect x="102" y="' + (Y - 29) + '" width="4" height="3" fill="#e2553a"/><rect x="102" y="' + (Y - 22) + '" width="4" height="3" fill="#8a3a9a"/>' +
       T(bt, K, 5) + T(bt, '#c98450', 2.5);
     fond += Ell(127, Y - 2, 9, 3.2, '#e0a23a', B25) + R(122.5, Y - 28, 9, 25, 2, '#fffaf0', ' stroke-width="1.8"') +
       '<path d="M127,' + (Y - 29) + ' c-5,-6 -3,-12 0,-17 c3,5 5,11 0,17 Z" fill="#ffc24a" stroke="#e8693c" stroke-width="1.5"/>';
-    fond += '<g transform="rotate(-3 161 ' + Y + ')">' + R(140, Y - 38, 44, 37, 3, '#7a4a28', B3) + '<rect x="144.5" y="' + (Y - 33.5) + '" width="35" height="28" rx="1" fill="#2c333d"/>' +
-      T('M152,' + (Y - 19) + ' h4 M160,' + (Y - 19) + ' h4 M168,' + (Y - 19) + ' h4', '#f4f1ea', 2.2, ' opacity=".65"') + '</g>';
+    /* (Romain, 13 novembre, 18 h 48 : plus d'ardoise sur la paillasse d'analyse — le code est donné au retour du labo) */
     fond += R(197, Y - 22, 5, 21, 1, '#94603a', B2) + R(266.5, Y - 22, 5, 21, 1, '#94603a', B2) + R(336, Y - 22, 5, 21, 1, '#94603a', B2) + R(192, Y - 28, 154, 7, 2, '#c98450', B3);
     [['#a9dcff', 0.6], ['#a9dcff', 0.6], ['#9a4f12', 0.9], ['#efe1a0', 0.85], ['#f6f4ee', 1]].forEach(function(b, i){
       var x = 207 + i * 31, y = Y - 28;

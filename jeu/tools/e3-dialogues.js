@@ -137,24 +137,22 @@ function texte(E, D){
   p('### 🎉 La fête, sur la place', '', 'Chacun dit une réplique, autant de fois qu\'on veut.', '');
   Object.keys(E.fete.gens).forEach(id => {
     const x = E.fete.gens[id];
-    p('- **' + nom(id) + '** : « ' + x.t + ' »' + (x.note ? ' _(noté dans le Carnet : un indice pour retenir le maire)_' : ''));
+    p('- **' + nom(id) + '** : « ' + x.t + ' »' + (x.note ? ' _(noté dans le Carnet)_' : ''));
     if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' » → code ' + nomCode(x.filet.code));
   });
   p('');
-  const Rt = E.retenir;
-  p('### 🎩 Retenir le maire', '', 'Trois petits dialogues, à la fête, sans minuteur. Le premier quand : ' + besoin(Rt.besoin) + '. Chacun des suivants après une autre visite à la fête. ' + Rt.n + ' réussis : le code ' + nomCode(Rt.reussi.code) + ' ; deux ratés : « ' + Rt.rate.t + ' »', '');
-  Rt.dialogues.forEach((d, k) => {
-    p('**' + (k + 1) + '.** « ' + d.t + ' »', '');
-    d.choix.forEach(c => p('- ' + (c.bon ? '✅' : '❌') + ' « ' + c.q + ' » → ' + (/«/.test(c.r) ? c.r : '« ' + c.r + ' »') + (c.n ? ' ' + c.n : '')));
-    p('');
-  });
-  const Le = E.grands.leo;
-  p('### 🧑 Léo (une scène, sans choix — provisoire, tant que la fin n\'est pas décidée)', '');
-  p('- Avec le code ' + nomCode('info:leo_attrape') + ' : ' + Le.intro);
-  p('- Léo : ' + Le.fins[0].t + ' → code ' + nomCode(Le.fins[0].code));
-  p('- Puis : ' + Le.apresCode);
-  p('- Avec le code ' + nomCode('info:leo_enfui') + ' : ' + Le.enfui + ' ' + Le.apresRien, '');
-
+  /* (13 novembre, Bible §13.33) l'aide pour le donjon : les nouvelles questions de Farinel et d'Iris, pendant le combat contre Léo */
+  const aides = Object.keys(E.fete.gens).filter(id => E.fete.gens[id].aide);
+  if(aides.length){
+    p('### 🧥 L\'aide pour le donjon : pendant le combat contre l\'homme en cape', '', 'Quand le Pisteur entre dans la dernière salle, il donne au Barde le code ' + nomCode(E.fete.gens[aides[0]].aide.si) + '. À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.', '');
+    aides.forEach(id => {
+      const a = E.fete.gens[id].aide;
+      p('**' + nom(id) + '** — « ' + a.t + ' »', '');
+      a.questions.forEach(q => p('- « ' + q.q + ' » → « ' + q.r + ' »'));
+      if(a.note) p('- Dans le Carnet : ' + a.note);
+      p('');
+    });
+  }
   p('## 5. Les écoutes aux portes (talent « Tendre l\'oreille »)', '');
   E.moments.forEach(m => {
     p('**' + MOM[m].charAt(0).toUpperCase() + MOM[m].slice(1) + '**', '');
@@ -176,8 +174,7 @@ function texte(E, D){
   p('- **Le Pisteur** : les empreintes de pieds d\'enfant chez Iris et derrière l\'atelier de Mélusine ; ce que le bruit de la grille change pour le maire (le geste lui-même est construit : tirer, pousser ou soulever) ; la clé prise à la ceinture d\'Anselme (le dessin du mini-jeu la montre encore au clou).');
   p('- **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d\'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)');
   p('- **L\'Alchimiste** : comparer l\'encre de la lettre avec celle d\'Iris ; le labo montre encore du pollen de lavande.');
-  p('- **Le donjon** : Léo en chef des monstres ; le code de la Grosse Marie, gardé en réserve, n\'est plus donné par personne (le donjon est donc un peu plus dur).');
-  p('- **La fin** : Odette délivrée avant l\'arrivée du maire, ou seulement entendue derrière la porte ? La scène de Léo est provisoire.');
+  p('- **Le donjon** : le code de la Grosse Marie, gardé en réserve, n\'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)');
   p('- **La Grosse Marie et la brume** (l\'Alchimiste qui cueille pendant que la brume recule) : à décider avec la tisane d\'Anselme, validée le 12 novembre à 15 h 39.');
   p('- La quatrième écoute de la fête (« au pied du mât »), qui dépend de la grille.', '');
   return L.join('\n');

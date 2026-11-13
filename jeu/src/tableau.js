@@ -75,7 +75,7 @@ function tableauHTML(E, src, lecture){
   }
   /* Les autres questions : une petite rangée chacune */
   EN_PLUS.forEach(function(d){
-    var l = choixDim(E, d); if(!l.length) return;
+    var l = choixDim(E, d); if(!l.length || E[d].horsTableau) return;
     s += '<div class="tb-plus"><h4>' + esc(E[d].titre || '') + '</h4><div class="tb-rang">';
     l.forEach(function(c){
       var v = etatDim(src, d, c.id), pnj = c.pnj && D.PNJ[c.id];

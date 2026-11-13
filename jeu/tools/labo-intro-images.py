@@ -1,5 +1,5 @@
 """Les images de l'explication du labo (src/labo/86-intro.js) : de vraies vues du labo, prises dans dist/labo.html (la page toute seule).
-Fabrique src/labo/12-intro-img.js (INTRO_IMG = {cuir, loupe, micro, ardoise}, en JPEG dans la page). À refaire si le labo change d'aspect,
+Fabrique src/labo/12-intro-img.js (INTRO_IMG = {cuir, loupe, micro, retour}, en JPEG dans la page). À refaire si le labo change d'aspect,
 puis reconstruire le jeu.
    BRUMEVAL_DIST=<dossier construit> python3 tools/labo-intro-images.py"""
 import os, io, base64, json
@@ -42,10 +42,10 @@ with sync_playwright() as p:
     clic('#ech-fil'); pg.wait_for_timeout(300); clic('#gMicro'); pg.wait_for_timeout(1500)
     prendre(pg, 'micro')
     clic('#bFermer'); pg.wait_for_timeout(1000)
-    # 4. le dossier bouclé : le code sur l'ardoise, en grand
+    # 4. le dossier bouclé : la paillasse, et le bouton du retour à l'atelier (plus d'ardoise depuis le 13 novembre : le code est donné au retour)
     pg.evaluate("() => window.__labo.finir('fil')"); pg.wait_for_timeout(1500)
-    clic('#gArdoise'); pg.wait_for_timeout(1800)
-    prendre(pg, 'ardoise')
+    pg.evaluate("() => { var r = document.querySelector('.barre-haut'); if(r) r.style.visibility = ''; }"); pg.wait_for_timeout(400)
+    prendre(pg, 'retour')
     b.close()
 with open(SORTIE, 'w', encoding='utf-8') as f:
     f.write('/* Les images de l\'explication du labo (86-intro.js) : de vraies vues du labo, en JPEG.\n   Refaites par jeu/tools/labo-intro-images.py (ne pas modifier à la main). */\n')

@@ -78,14 +78,22 @@ A['ds-code'] = function(){ var P = M.P(); M.UI.modal = null; P.onglet = 'code'; 
    (Les yeux n'y sont pas : il faudrait un quatrième symbole. Dans le donjon, ils gardent la couleur d'origine du héros de ce rôle ;
    le Pisteur, lui, est sur sa propre tablette : tout son héros passe, les yeux aussi.) */
 var PEAUX_A = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'], CHEV_A = ['brun', 'chatain', 'noir', 'blond', 'roux', 'gris', 'blanc', 'nuit', 'rose'], ROLES_A = ['sage', 'alchimiste'];
+/* LE CACHOT DE LA FIN (13 novembre, Bible §13.33 : « grâce aux codes d'apparence, chaque tablette montre les quatre héros enfermés ») :
+   le Pisteur et le Barde ont un code d'allure eux aussi — allure:216 … allure:431, ajoutés APRÈS les 216 premiers (ceux du Sage et de
+   l'Alchimiste ne bougent pas). Ils ne servent qu'à la fin, sur l'image du cachot (moteur-ecrans.js, prisonHTML). */
+var ROLES_B = ['pisteur', 'barde'];
 M.allureNumero = function(role, a){
-  return Math.max(0, ROLES_A.indexOf(role)) + 2 * ((a.sexe === 'm' ? 1 : 0) + 2 * (Math.max(0, PEAUX_A.indexOf(a.peau)) + 6 * Math.max(0, CHEV_A.indexOf(a.cheveux))));
+  var base = 2 * ((a.sexe === 'm' ? 1 : 0) + 2 * (Math.max(0, PEAUX_A.indexOf(a.peau)) + 6 * Math.max(0, CHEV_A.indexOf(a.cheveux))));
+  return ROLES_B.indexOf(role) >= 0 ? 216 + ROLES_B.indexOf(role) + base : Math.max(0, ROLES_A.indexOf(role)) + base;
 };
 M.allureDe = function(n){
-  n = Math.max(0, Math.min(215, Math.floor(+n) || 0));
+  n = Math.max(0, Math.min(431, Math.floor(+n) || 0));
+  var roles = n >= 216 ? ROLES_B : ROLES_A; if(n >= 216) n -= 216;
   var r = n % 2; n = (n - r) / 2; var sx = n % 2; n = (n - sx) / 2; var pe = n % 6, ch = (n - pe) / 6;
-  return {role:ROLES_A[r], sexe:sx ? 'm' : 'f', peau:PEAUX_A[pe], cheveux:CHEV_A[ch]};
+  return {role:roles[r], sexe:sx ? 'm' : 'f', peau:PEAUX_A[pe], cheveux:CHEV_A[ch]};
 };
+/* mon code d'allure pour le cachot de la fin (les quatre rôles) */
+M.allureCodeFin = function(){ return 'allure:' + M.allureNumero(M.role(), M.allureMoi()); };
 M.allureMoi = function(){
   var h = (M.S && M.S.heros) || {};
   return {sexe:h.sexe === 'm' ? 'm' : 'f', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || ''};
@@ -145,12 +153,11 @@ M.descenteHTML = function(m){
     return s + (vue || M.tenueHTML(false) + '<button class="btn grand b-aller" data-act="fermer">C\'est noté</button>') + '</div>';
   }
   if(m.vue === 'fin' || P.vus['donjon:fini']){
-    var enfui = P.vus['donjon:leo'] === 'enfui';
-    t = enfui ? 'Vous voilà remontés du donjon ! Tout au fond, Léo était là, avec sa lanterne… Mais des pas ont descendu l\'escalier, et il a filé dans le noir.'
-      : 'Vous voilà remontés du donjon ! Tout au fond, vous avez coincé Léo, le garçon du moulin, avec sa lanterne et son panier.';
+    /* (13 novembre, Bible §13.33) Léo est battu, il a parlé : le code pour le Sage — c'est lui qui ouvre les accusations */
+    t = 'Vous voilà remontés du donjon ! Sous la cape noire : Léo, l\'apprenti du meunier. Battu, il a tout dit. Place aux accusations !';
     s += '<div class="b-grand-ic">🕯️</div><h2>Le donjon est fini</h2><p>' + esc(t) + '</p>' + lire(t);
     if(P.vus['donjon:porte']) s += codeDonne('info:odette_porte');
-    s += codeDonne(enfui ? 'info:leo_enfui' : 'info:leo_attrape');
+    s += codeDonne('info:leo_battu');
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
   var al = P.allures || {}, okS = !!al.sage, okA = !!(al.alchimiste && sac.length), ouvert = !!P.vus['donjon:entree'];
@@ -403,10 +410,14 @@ function relire(){
         P.vus['donjon:porte'] = 1; P.objets['_info:odette_porte'] = true; change = true;
         M.noter('Dans le donjon : un gros chat gris gratte au bas d\'une grande porte ronde, marquée de quatre signes.', '🐈');
       }
+      /* (13 novembre, Bible §13.33) en entrant dans la dernière salle : le code pour le Barde ; Léo battu : il parle, le code pour le Sage */
+      if(d.faits['code:leo:salle'] && !P.vus['donjon:leo_la']){
+        P.vus['donjon:leo_la'] = 1; P.objets['_info:leo_la'] = true; change = true;
+        M.noter('Tout au fond du donjon : un homme en cape noire, grand et fort, nous attendait.', '🧥');
+      }
       if(d.faits.fin){
-        var enfui = !!d.faits['code:leo:enfui'];   /* (le donjon l'a décidé : le maire était-il retenu quand on est entré ?) */
-        P.vus['donjon:fini'] = 1; P.vus['donjon:leo'] = enfui ? 'enfui' : 'attrape'; P.objets['_info:' + (enfui ? 'leo_enfui' : 'leo_attrape')] = true; change = true; aMontrer = true;
-        M.noter(enfui ? 'Au fond du donjon : Léo, le garçon du moulin. Des pas dans l\'escalier… et il a filé dans le noir.' : 'Au fond du donjon : Léo, le garçon du moulin, coincé avec sa lanterne et son panier.', '🕯️');
+        P.vus['donjon:fini'] = 1; P.vus['donjon:leo'] = 'battu'; P.objets['_info:leo_battu'] = true; change = true; aMontrer = true;
+        M.noter('Léo, l\'apprenti du meunier, se cachait sous la cape noire. Battu, il a parlé : le maire a tout préparé, depuis le début.', '🧑');
       }
     }
   }
@@ -498,6 +509,14 @@ M.codeSpecial = function(t, x, id){
   if(I && I.tenue && cfg()){
     if(!P.recus[id]){ P.recus[id] = true; M.noter('Reçu : ' + I.nom + '. ' + (I.t || ''), I.ic); M.son('gain'); M.sauver(); } else M.son('clic');
     M.ouvrir({type:'descente', vue:'tenue'});
+    return true;
+  }
+  /* AU CACHOT, à la fin de l'histoire : le code d'allure d'un ami, tapé sous l'image — son héros apparaît à côté du mien */
+  if(t === 'allure' && P && P.etape === 'fin'){
+    var af = M.allureDe(x);
+    if(af.role === M.role()){ M.son('clic'); M.toast('C\'est ton code à toi ! Tape celui d\'un ami.'); M.render(); return true; }
+    P.allures = P.allures || {}; P.allures[af.role] = {sexe:af.sexe, peau:af.peau, cheveux:af.cheveux};
+    M.son('gain'); M.sauver(); M.UI.modal = null; M.render();
     return true;
   }
   /* le code d'allure d'un équipier, tapé par le Pisteur : son héros, tel qu'on le verra dans le donjon. Celui de l'Alchimiste apporte
