@@ -30,7 +30,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 
 ### Le marché aux fleurs (le matin)
 
-- **Le maire** arrive tout seul : « Barde ! Voici 10 pièces. Rapporte-moi au moins 10 bouquets pour la fête de ce soir ! » (bouton : 💐 En route pour le marché !)
+- **Le maire** arrive tout seul : « Barde ! Voici 10 pièces. Rapportez-moi au moins 10 bouquets pour la fête de ce soir ! » (bouton : 💐 En route pour le marché !)
+- **Trois secondes après**, le maire revient dire un mot : « Essayez de bien négocier. Je sais que vous êtes doué pour ça. Je compte sur vous ! »
 - **Fortuné**, d'abord (Iris et Basile ne se voient qu'une fois son marchandage commencé) :
   - Étape 1 — « Psst ! De magnifiques fleurs en papier pour la fête ! 4 bouquets pour 2 pièces : moitié prix ! »
     - « Marché conclu ! » → « Affaire conclue ! Tu ne le regretteras pas, mon ami. » → marché conclu : 2 pièces
@@ -62,11 +63,12 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
   - « Dépêchez-vous, je suis pressé ! » → « Je ne vends rien aux gens pressés ! » → fâché, plus de fleurs
   - Après la vente : « Et voilà ! Tout frais du jardin. »
 - **L'après-midi, le maire compte** : « Ah, Barde ! Alors, mes fleurs ? »
-  - 10 bouquets ou plus : « Bravo ! Voici 10 pièces d'or pour ta peine. » (10 pièces d'or)
-  - 9 bouquets ou plus : « Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même. » (5 pièces d'or)
-  - 5 bouquets ou plus : « Il manque des fleurs, mais la fête sera jolie quand même. » (0 pièces d'or)
-  - 0 bouquets ou plus : « Si peu ?! C'est une fête ou un enterrement ? » (0 pièces d'or)
-  - Avec la lanterne : « Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête ! » (5 pièces d'or de plus)
+  - 11 bouquets ou plus ET la lanterne (il est ravi) : « Magnifique ! Je savais que je pouvais compter sur vous. Vous êtes vraiment un négociateur hors pair. Très malin ! »
+  - 10 bouquets ou plus (il est content) : « Dix bouquets, comme convenu ! Voici 10 pièces d'or pour votre peine. » (10 pièces d'or)
+  - 9 bouquets ou plus (il est pas content) : « Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même. » (5 pièces d'or)
+  - 5 bouquets ou plus (il est pas content) : « Il manque des fleurs… La fête sera jolie quand même. Enfin, j'espère. » (0 pièces d'or)
+  - 0 bouquets ou plus (il est pas content) : « Si peu ?! C'est une fête ou un enterrement ? » (0 pièces d'or)
+  - Avec la lanterne, dans une deuxième fenêtre — un aparté : Le maire réagit d'une façon très étrange : il ne quitte plus la lanterne des yeux… Puis : « Une lanterne comme celle-là… Parfait. Je vais la garder. » (5 pièces d'or de plus)
 
 ## 2. Les villageois
 
@@ -314,9 +316,10 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 
 - **Après un mauvais choix** : « Bien, bien… J'ai beaucoup à faire. Revenez plus tard. » (et c'est fini)
 - **Réussi** : bouton « ✉️ Prendre la lettre » → « Le maire te prête la lettre » : Tu tiens la lettre d'Odette. Le maire te regarde partir… Il faudra la lui rendre avant ce soir ! → code « La lettre d'Odette » (pour sage, alchimiste)
-- **Le piège** : bouton « 📝 Ranger ma copie » → « Ta copie de la lettre » : Tu recopies la lettre, mot pour mot, sous l'œil du maire. Le maire range l'original dans son grand coffre. → code « La copie de la lettre » (pour sage, alchimiste)
+- **Le piège** : bouton « 📝 Ranger ma copie » → « Ta copie de la lettre » : Tu recopies la lettre, mot pour mot… de ta propre écriture ! Impossible de comparer les écritures avec ça. Le maire range l'original sur son bureau. Il reste une autre façon de l'avoir : sans bruit, et sans se faire voir. → code « La lettre est sur le bureau du maire » (pour pisteur)
+- **Raté** : bouton « 🤔 Et maintenant ? » → « Le maire garde la lettre » : Les beaux discours n'ont pas suffi : la lettre reste sur le bureau du maire. Il reste une autre façon de l'avoir : sans bruit, et sans se faire voir. → code « La lettre est sur le bureau du maire » (pour pisteur)
 - Dans le Carnet (ok) : Le maire t'a prêté la lettre d'Odette.
-- Dans le Carnet (piege) : Tu as recopié la lettre, devant le maire.
+- Dans le Carnet (piege) : Tu as recopié la lettre, devant le maire… de ta propre écriture.
 - Dans le Carnet (rate) : Le maire n'a pas voulu te prêter la lettre.
 
 ### 🎭 « cle » — Anselme Bourdon
@@ -360,7 +363,7 @@ Chacun dit une réplique, autant de fois qu'on veut.
 - **Victor** : « Je danse ! Enfin, j'essaie. »
 - **Tim** : « Chut ! Je suis monté en haut du mât des lampions. »
 - **Mélusine** : « Je n'écrirai plus jamais pour personne… »
-  - **Le filet** (si son aveu n'a pas été obtenu l'après-midi) : « Je n'en peux plus… C'est moi qui ai écrit la lettre ! Un homme en cape m'y a forcée. Je n'ai pas vu son visage. » → code « L'aveu de Mélusine » (pour sage)
+  - **Le filet** (si son aveu n'a pas été obtenu l'après-midi) : « C'est trop dur de garder ce secret… J'ai besoin de me confier. C'est moi qui ai écrit la lettre ! Un homme en cape m'y a forcée. Je n'ai pas vu son visage. » → code « L'aveu de Mélusine » (pour sage)
 - **Iris** : « J'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra. »
 - **Farinel** : « Je ne dors pas, je repose mes yeux ! »
 - **Basile** : « Les lampions tiennent ! Je n'en reviens pas moi-même. »
@@ -467,9 +470,8 @@ Trois petits dialogues, à la fête, sans minuteur. Le premier quand : le grand 
 - 🗣️ L'après-midi : d'autres villageois ont enfin le temps. Pose-leur toutes tes questions ! _(arrive l'après-midi)_
 - ✉️ Le maire garde la lettre pour lui. Quand tu auras tout demandé à tout le monde, va lui en parler… avec les bons mots. _(arrive l'après-midi)_
 - 🧵 Quelqu'un a écrit cette lettre. Quand l'équipe saura qui, fais-lui dire la vérité. _(arrive l'après-midi)_
-- 🗝️ La nuit : la crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu'il faut, va le voir au clocher. _(arrive la nuit)_
-- 🎉 Pendant que les trois autres sont sous la terre : reste à la fête. Si le maire te cherche, retiens-le ! _(arrive la nuit)_
-- 🧑 Quand le Pisteur remonte, il a un code pour toi : tape-le vite. _(arrive la nuit)_
+- 🗝️ La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu'il faut, va le voir au clocher, la nuit. _(arrive la nuit)_
+- 🎉 Reste à la fête. Si le maire te cherche, retiens-le ! _(arrive la nuit)_
 - 💡 Regarde bien les visages : plusieurs villageois vont te mentir.
 - 🔍 Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?
 

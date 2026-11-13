@@ -240,16 +240,18 @@ var FETE_TXT = 'Tout le village danse sous les lampions. Chacun a un mot à te g
 function feteHTML(lieu){
   if(!feteIci(lieu)) return '';
   var f = F(), P = M.P(), Rt = R(), vus = (P.fete && P.fete.vus) || {};
-  var h = '<p class="sur-titre">🎉 La fête</p><p class="doux gd-fete-intro">' + esc(FETE_TXT) + ' ' + lire(FETE_TXT) + '</p><div class="b-gens">';
-  /* le maire qui cherche le Barde passe en premier (sinon, tout en bas, on ne le voyait pas sans faire défiler) */
+  /* (Romain, 13 novembre : « ça ne va pas jusqu'au bout […] qu'on n'ait pas besoin de scroller […] que ça rentre dans un écran de
+     téléphone ») onze villageois : une grille de visages, quatre par rangée — on touche un visage pour lui parler (plus de pastille
+     ni de bouton par personne). Déjà entendu : un petit ✓, le visage un peu éteint. Le maire qui cherche le Barde : en premier, avec « ❗ ». */
+  var h = '<p class="sur-titre">🎉 La fête</p><p class="doux gd-fete-intro">' + esc(FETE_TXT) + ' ' + lire(FETE_TXT) + '</p><div class="gd-fete-grille">';
   var ids = M.cle(f.gens), cherche = Rt && retenirDispo();
   if(cherche) ids = [Rt.pnj].concat(ids.filter(function(id){ return id !== Rt.pnj; }));
   ids.forEach(function(id){
     if(!D.PNJ[id]) return;
-    var appel = cherche && id === Rt.pnj;
-    h += '<div class="b-gens-carte' + (appel ? ' gd-appel' : '') + '"><div class="b-gens-img">' + M.pnjImg(id) + '</div><b>' + esc(nom(id)) + '</b>' +
-      (appel ? '<small class="gd-appel-t">❗ Il te cherche</small>' : '') +
-      '<button class="btn petit' + (vus[id] && !appel ? ' second' : appel ? ' b-aller' : '') + '" data-act="gd-fete" data-id="' + id + '">' + (appel ? '❗ Y aller' : vus[id] ? '🎉 Encore' : '🎉 Lui parler') + '</button></div>';
+    var appel = cherche && id === Rt.pnj, vu = !!vus[id] && !appel;
+    /* (la règle du Barde, Romain, 13 novembre : celui qui a tout dit passe au rouge, et on ne peut plus le toucher) */
+    h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? 'Il te cherche : ' : 'Parler à ') + nom(id)) + '"') + '>' +
+      '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">❗</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
   });
   return h + '</div>';
 }
@@ -275,6 +277,20 @@ A['gd-fete-code'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.filet) return;
   M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' craque', t:cite(x.filet.t), code:x.filet.code});
 };
+/* (13 novembre) à la fête, un villageois n'est « indisponible » (rouge sur la carte, barde.js) qu'une fois sa réplique entendue ;
+   le maire, tant qu'il cherche le Barde, ne l'est jamais */
+var ind0 = M.pnjIndispo;
+if(ind0) M.pnjIndispo = function(id){
+  try{
+    var f = F();
+    if(f && barde() && f.gens[id] && M.momentOk(f.moments)){
+      var P = M.P(), Rt = R();
+      if(Rt && id === Rt.pnj && retenirDispo()) return false;
+      return !!(P.fete && P.fete.vus && P.fete.vus[id]);
+    }
+  }catch(e){ console.error(e); }
+  return ind0.apply(this, arguments);
+};
 /* à la fête, le Barde ne voit pas les fêtards parmi les « occupés » : ils sont dans la fête (feteHTML) */
 var poi0 = M.pnjOccupesIci;
 if(poi0) M.pnjOccupesIci = function(lieu){
@@ -296,7 +312,12 @@ function retenirEtat(){ var P = M.P(); P.grands = P.grands || {}; return P.grand
 function retenirDispo(){
   var Rt = R(), f = F(); if(!Rt || !f || !barde() || !M.momentOk(f.moments) || !M.besoinOk(Rt.besoin)) return false;
   var st = retenirEtat(); if(st.fini || st.k >= Rt.dialogues.length) return false;
-  return st.k === 0 || feteN() > (st.apres[st.k - 1] || 0);
+  /* (13 novembre) un villageois entendu ne se touche plus : quand il n'en reste aucun à entendre, le maire revient sans attendre une autre visite */
+  return st.k === 0 || feteN() > (st.apres[st.k - 1] || 0) || !resteAEntendre();
+}
+function resteAEntendre(){
+  var f = F(), P = M.P(), Rt = R(), vus = (P.fete && P.fete.vus) || {};
+  return M.cle(f.gens).some(function(id){ return D.PNJ[id] && !(Rt && id === Rt.pnj) && !vus[id]; });
 }
 M.retenirDispo = function(){ try{ return retenirDispo(); }catch(e){ return false; } };
 function dialogueRet(k){ var d = R().dialogues[k]; return d && d.A ? (M.P().vus['grand:gm'] === 'ok' ? d.A : d.B) : d; }

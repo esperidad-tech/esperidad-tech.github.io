@@ -302,8 +302,13 @@ var DIT = {
   plein:'Stop ! Le gâteau n\'en peut plus. Une de plus, et il s\'écroule !',
   minute:'Plus qu\'une minute ! Gaspard a déjà sorti les assiettes.',
   pinceau:'Un pinceau magique ! Choisis une couleur, puis effleure ce que tu veux repeindre : une fraise, un étage, la nappe…',
-  fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !'
+  fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !',
+  /* le vote (13 novembre) : à voix haute, autour de la table */
+  note:'Montre ton gâteau à tes amis. Quelle note sur 20 lui donnent-ils ?',
+  rang:'pour ton gâteau ! Comparez vos notes : quelle est ta place ?'
 };
+/* les quatre places du concours, et ce qu'elles rapportent (Romain, 13 novembre : 5, 4, 3 et 2 pièces) */
+var RANGS = [{ic:'🥇', nom:'1er', or:5}, {ic:'🥈', nom:'2e', or:4}, {ic:'🥉', nom:'3e', or:3}, {ic:'🎖️', nom:'4e', or:2}];
 function phraseFin(R){
   if(R.parDeco.chaussette) return 'Une chaussette sur un gâteau ? À Brumeval, on appelle ça de la grande cuisine !';
   if(R.chats >= 7) return 'Les sept chats d\'Odette sont tous là. Ils se trouvent très ressemblants !';
@@ -715,16 +720,44 @@ function jouer(zone, params, fin){
     gDecos.querySelectorAll('.gt-tenu, .gt-jete').forEach(function(n){ n.classList.remove('gt-tenu', 'gt-jete'); });   /* (une décoration qu'on tirait encore de sa bulle se pose là) */
     racine.classList.add('gt-fini');
     var R = resume(), phrase = tempsFini ? DIT.fini : phraseFin(R);
-    final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🎉 À la fête !</button></div>';
-    final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
-    final.hidden = false; mesurer();
-    /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
-    if(!tempsFini) final.querySelector('.gt-retouche').addEventListener('click', function(){ enFete = false; tAvant = Date.now(); racine.classList.remove('gt-fini'); final.hidden = true; pluie.innerHTML = ''; U.stop(); U.son('clic'); mesurer(); });
-    final.querySelector('.gt-fete').addEventListener('click', function(){
-      if(arrete) return; U.stop();
-      var det = R.etages + (R.etages > 1 ? ' étages' : ' étage') + (R.nbDecos ? ' et ' + R.nbDecos + (R.nbDecos > 1 ? ' décorations' : ' décoration') : '') + ' : toute la place en parle déjà.';
-      fin({reussi:true, score:1, message:'Quel gâteau !', detail:det, gateau:R});
-    });
+    /* (Romain, 13 novembre) le concours : « Retoucher » seulement s'il reste du temps ; « Vote » à la place de « À la fête ! » */
+    function montrer(){
+      final.classList.remove('gt-en-vote');
+      final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🗳️ Vote</button></div>';
+      final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
+      final.hidden = false; mesurer();
+      /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
+      if(!tempsFini) final.querySelector('.gt-retouche').addEventListener('click', function(){ enFete = false; tAvant = Date.now(); racine.classList.remove('gt-fini'); final.hidden = true; pluie.innerHTML = ''; U.stop(); U.son('clic'); mesurer(); });
+      final.querySelector('.gt-fete').addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(); });
+    }
+    /* LE VOTE (Romain, 13 novembre) : les tablettes ne se parlent pas — on vote à voix haute, autour de la table. Chacun touche la note
+       sur 20 que les autres donnent à son gâteau ; puis, les notes comparées, sa place : 1er, 2e, 3e ou 4e (5, 4, 3 ou 2 pièces d'or). */
+    function voter(note){
+      final.classList.add('gt-en-vote');
+      var h, t;
+      if(!note){
+        t = DIT.note;
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div><div class="gt-notes" role="group" aria-label="La note sur 20">';
+        for(var n = 1; n <= 20; n++) h += '<button type="button" class="gt-note" data-n="' + n + '">' + n + '</button>';
+        h += '</div></div>';
+      } else {
+        t = DIT.rang;
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div><div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
+          RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
+          '</div><button type="button" class="btn second petit gt-renoter">← Changer la note</button></div>';
+      }
+      final.innerHTML = h;
+      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire((note ? note + ' sur 20. ' : '') + t));
+      mesurer();
+      [].forEach.call(final.querySelectorAll('.gt-note'), function(b){ b.addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(+b.getAttribute('data-n')); }); });
+      [].forEach.call(final.querySelectorAll('.gt-rang'), function(b){ b.addEventListener('click', function(){
+        if(arrete) return; U.stop();
+        var rang = +b.getAttribute('data-r'), or = RANGS[rang - 1].or;
+        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, note:note, rang:rang, or:or});
+      }); });
+      var bn = final.querySelector('.gt-renoter'); if(bn) bn.addEventListener('click', function(){ U.stop(); U.son('clic'); voter(); });
+    }
+    montrer();
     confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
   }
   bPret.addEventListener('click', feter);

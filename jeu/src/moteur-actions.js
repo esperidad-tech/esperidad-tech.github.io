@@ -1266,7 +1266,7 @@ A.point = function(el){
     M.ouvrir({type:'besoin', ic:p.ic, titre:p.nom, t:p.alt || 'Tu ne peux pas encore faire ça.', besoin:p.besoin, retourId:l});
     return;
   }
-  function reveler(){
+  function reveler(orMJ){
     P.vus[k] = 'ok'; M.consommerBesoin(p.besoin);
     var code = null;
     if(p.obj){ P.objets[p.obj] = true; code = 'obj:' + p.obj; }
@@ -1274,6 +1274,9 @@ A.point = function(el){
     if(p.recoit) [].concat(p.recoit).forEach(function(c){ P.recus[c] = true; });   /* (enquête 3) il le reçoit lui-même : la lettre accrochée sous le tableau du Sage */
     if(p.plante) M.ajouterPlante(p.plante);   /* (enquête 3) une plante trouvée autrement qu'en cueillant : la vesse-de-loup, au bout de sa piste */
     if(p.or){ M.S.or += p.or; }
+    /* (enquête 3, le gâteau de l'Alchimiste) orMJ : l'or que le mini-jeu a donné lui-même (sa place au concours) — annoncé comme une
+       mission réussie, et on revient à la carte */
+    if(orMJ){ M.S.or += orMJ; M.son('gain'); M.sauver(); M.decouvrir({ic:'🪙', titre:'Mission réussie : +' + orMJ + (orMJ > 1 ? ' pièces' : ' pièce') + ' d\'or !', t:p.t, note:p.note, code:code}); return; }
     M.sauver();
     M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l, choix:choix()});
   }
@@ -1284,7 +1287,7 @@ A.point = function(el){
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0) + (fac && fac.niveau || 0), fac && fac.params ? Object.assign({}, p.params, fac.params) : p.params, {titre:p.nom, ic:p.ic, avant:(fac && fac.avant) || p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
       sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null, reessaisInfinis:!!p.essaisInfinis}, function(res){
       if(res.gateau){ P.gateau = res.gateau; }   /* (enquête 3) le gâteau de la fête, tel que l'Alchimiste l'a fait */
-      if(res.reussi) reveler();
+      if(res.reussi) reveler(res.or ? Math.max(1, Math.min(5, Math.round(+res.or) || 0)) : 0);
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.essaisInfinis (l'oie de l'enquête 3, Romain, 12 novembre) : on recommence autant qu'on veut ; le point ne se ferme jamais */
         if(p.essaisInfinis){ M.sauver(); M.decouvrir({ic:'💨', titre:p.nom, t:(p.rate || 'Raté…') + ' Tu peux réessayer !', rate:true, retour:'lieu', retourId:l, reessai:{act:'point', l:l, id:p.id, infini:1}}); return; }
@@ -1412,7 +1415,9 @@ A.bonus = function(el){
   M.depenser(); M.sauver();
   /* l'enquête 1 (le tutoriel) : une mission bonus se retente autant qu'on veut (Romain, 5 novembre, 16 h 32 : une exception, pour s'entraîner) */
   var infini = !!(M.essaisInfinis && M.essaisInfinis());
-  M.lancerMJ(b.mj, E.niveau, b.params, {titre:b.titre, avant:b.avant || b.t, bouton:b.bouton, essaiUnique:!infini, reessaisInfinis:infini, sansPotion:false}, function(res){
+  /* (b.plusTard, le concours de gâteaux : Romain, 13 novembre) la fenêtre d'avant le mini-jeu a aussi « ← Plus tard » : elle se ferme,
+     rien n'est perdu ni mis en pause, l'icône reste sur la carte, et on revient quand on veut */
+  M.lancerMJ(b.mj, E.niveau, b.params, {titre:b.titre, avant:b.avant || b.t, bouton:b.bouton, essaiUnique:!infini && !b.plusTard, reessaisInfinis:infini, sansPotion:false, retour:b.plusTard ? 'fermer' : null}, function(res){
     if(!res.reussi && infini){
       M.sauver();
       M.ouvrir({type:'info', ic:'💨', titre:'Mission ratée… pour cette fois', t:'Ici, pour t\'entraîner, tu peux la retenter quand tu veux : reviens toucher « Tenter » !'});
@@ -1423,7 +1428,7 @@ A.bonus = function(el){
     if(res.ragots){
       M.noter('Ragots de la taverne : ' + (res.erreurs ? 'tu t\'es trompé ' + (res.erreurs === 1 ? 'sur un ragot' : res.erreurs + ' fois') + '. Lesquels ? Relis-les dans « À relire ».' : 'tu as eu le nez fin, tous bien jugés ! Ils sont dans « À relire ».'), '🍺');
     }
-    var gainB = M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre) */
+    var gainB = res.reussi && res.or ? Math.max(1, Math.min(5, Math.round(+res.or) || 0)) : M.orBonus(b);   /* (1 à 5 pièces, Romain, 11 novembre ; res.or : le mini-jeu le dit lui-même — la place au concours de gâteaux) */
     if(res.reussi){ M.S.or += gainB; M.son('gain'); }
     M.sauver();
     /* (b.fin : ce qu'on dit à la fin, à la place de « Bravo ! » — le concours de gâteaux de l'enquête 3) */

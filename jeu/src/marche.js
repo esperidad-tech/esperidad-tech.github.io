@@ -31,11 +31,18 @@ function pieces(n){ return n + (n > 1 ? ' pièces' : ' pièce'); }
 function bouquets(n){ return n + (n > 1 ? ' bouquets' : ' bouquet'); }
 function V(id){ var s = S(); s.v = s.v || {}; s.v[id] = s.v[id] || {prix:null, fache:false, fait:false, n:0}; return s.v[id]; }
 function total(){ var s = S(); return s ? s.b + s.papier : 0; }
-function visage(id){
-  if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]){ try{ var h = Persos.pnj(id, {anime:true, expressif:true, cadre:'visage', id:'ma' + Date.now() % 100000}); if(h) return h; }catch(e){} }
+function visage(id, humeur){
+  if(window.Persos && Persos.pnj && Persos.PNJ && Persos.PNJ[id]){ try{ var h = Persos.pnj(id, {anime:true, expressif:true, cadre:'visage', humeur:humeur || null, id:'ma' + Date.now() % 100000}); if(h) return h; }catch(e){} }
   return '<span class="bd-emoji">' + ((D.PNJ[id] && D.PNJ[id].ic) || '🙂') + '</span>';
 }
 var MA = M.marche = {};
+/* le maire parle au Barde : au féminin quand le héros est une fille (« douée », « une négociatrice », « maligne ») */
+var FEMININ = [['doué pour', 'douée pour'], ['un négociateur', 'une négociatrice'], ['mauvais négociateur', 'mauvaise négociatrice'], ['Très malin !', 'Très maligne !']];
+function accord(t){
+  var fille = false; try{ fille = M.S.heros.sexe === 'f'; }catch(e){}
+  if(fille) FEMININ.forEach(function(x){ t = String(t).split(x[0]).join(x[1]); });
+  return t;
+}
 
 /* ---------- Ce que la carte montre ---------- */
 /* Iris et Basile : cachés au Barde tant que le marchandage de Fortuné n'a pas commencé */
@@ -84,6 +91,28 @@ function guetter(){
     if(UI.modal || M.mjPause){ guetter(); return; }   /* une fenêtre est ouverte : il attend qu'elle se ferme */
     M.son('porte'); M.ouvrir({type:'marche', qui:'maire'});
   }, 2500);
+}
+/* (Romain, 13 novembre) « dès qu'on a fait OK, on attend 3 secondes, et là il y a une fenêtre du maire qui revient » : un mot
+   d'encouragement, une seule fois (P.marche.rappel). Il attend qu'aucune fenêtre ne soit ouverte ; si la page se recharge avant, il
+   revient quand même (guetterRappel, à chaque rendu). */
+var tRappel = null;
+function guetterRappel(){
+  var x = X(), s = S();
+  if(tRappel || !x || !x.maire.rappel || !barde() || !s || s.rappel || s.f.fini || !matin() || UI.ecran !== 'enquete') return;
+  tRappel = setTimeout(function(){
+    tRappel = null;
+    var s2 = S();
+    if(!barde() || !s2 || s2.rappel || !matin() || UI.ecran !== 'enquete') return;
+    if(UI.modal || M.mjPause){ guetterRappel(); return; }
+    s2.rappel = 1; M.sauver();
+    M.son('porte'); M.ouvrir({type:'marche', qui:'rappel'});
+  }, 3000);
+}
+function rappelHTML(){
+  var x = X();
+  return '<div class="ma-feuille"><div class="ma-tete"><div class="ma-visage">' + visage('grosbec', 'satisfait') + '</div><h2>' + esc(D.PNJ.grosbec.nom) + '</h2></div>' +
+    '<p class="ma-dit">« ' + esc(accord(x.maire.rappel)) + ' » ' + lire(accord(x.maire.rappel), 'grosbec') + '</p>' +
+    '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
 }
 function maireHTML(){
   var x = X();
@@ -242,23 +271,36 @@ A['ma-plainte'] = function(){
 
 /* ---------- L'après-midi : le maire compte les bouquets ---------- */
 function palier(n){ var l = X().retour.paliers; for(var i = 0; i < l.length; i++) if(n >= l[i].min) return l[i]; return l[l.length - 1]; }
+/* (Romain, 13 novembre) trois visages : pas content (moins de 10 bouquets), content (les 10), ravi (11 bouquets ET la lanterne : x.parfait) ;
+   puis, s'il y a la lanterne, une deuxième vue (m.vue === 'lanterne') : un aparté — il réagit d'une façon très étrange — et sa phrase. */
+function parfait(n, lanterne){ var x = X().retour; return !!(x.parfait && lanterne && n >= (x.parfait.min || 11)); }
 function retourHTML(m){
-  var x = X().retour, s = S(), n = m.n, p = palier(n), or = p.or + (m.lanterne ? x.lanterne.or : 0);
-  var h = '<div class="ma-feuille"><div class="ma-tete"><div class="ma-visage ma-petit">' + visage('grosbec') + '</div><h2>' + esc(D.PNJ.grosbec.nom) + '</h2></div>' +
+  var x = X().retour, s = S(), n = m.n, p = palier(n), or = p.or + (m.lanterne ? x.lanterne.or : 0), top = parfait(n, m.lanterne);
+  function tete(humeur){ return '<div class="ma-feuille"><div class="ma-tete"><div class="ma-visage ma-petit ma-humeur-' + esc(humeur || 'normal') + '">' + visage('grosbec', humeur) + '</div><h2>' + esc(D.PNJ.grosbec.nom) + '</h2></div>'; }
+  if(m.vue === 'lanterne'){
+    return tete(x.lanterne.humeur) + '<div class="ma-gain"><span>🏮 la vieille lanterne</span></div>' +
+      (x.lanterne.recit ? '<p class="ma-dit ma-conteur">' + esc(x.lanterne.recit) + ' ' + lire(x.lanterne.recit) + '</p>' : '') +
+      '<p class="ma-dit">« ' + esc(x.lanterne.t) + ' » ' + lire(x.lanterne.t, 'grosbec') + '</p>' +
+      (or ? '<div class="ma-gain ma-or"><span>🪙 +' + or + ' pièces d\'or</span></div>' : '') +
+      '<button class="btn grand" data-act="ma-rendu">D\'accord</button></div>';
+  }
+  var t = accord(top ? x.parfait.t : p.t);
+  var h = tete(top ? x.parfait.humeur : p.humeur) +
     '<p class="ma-dit">« ' + esc(x.accueil) + ' » ' + lire(x.accueil, 'grosbec') + '</p>' +
     '<div class="ma-gain"><span>💐 ' + bouquets(n) + '</span>' + (m.lanterne ? '<span>🏮 la lanterne</span>' : '') + '</div>' +
-    '<p class="ma-dit">« ' + esc(p.t) + ' » ' + lire(p.t, 'grosbec') + '</p>';
-  if(m.lanterne) h += '<p class="ma-dit">« ' + esc(x.lanterne.t) + ' » ' + lire(x.lanterne.t, 'grosbec') + '</p>';
+    '<p class="ma-dit">« ' + esc(t) + ' » ' + lire(t, 'grosbec') + '</p>';
+  if(m.lanterne) return h + '<button class="btn grand b-aller" data-act="ma-lanterne">▶ La suite</button></div>';
   if(or) h += '<div class="ma-gain ma-or"><span>🪙 +' + or + ' pièces d\'or</span></div>';
   return h + '<button class="btn grand" data-act="ma-rendu">D\'accord</button></div>';
 }
+A['ma-lanterne'] = function(){ var m = UI.modal; if(!m || m.type !== 'marche' || m.qui !== 'retour') return; m.vue = 'lanterne'; M.son('magie'); M.render(); };
 function rendre(){
   var x = X(), s = S(), P = M.P(), n = s.b, p = palier(n), or = p.or + (s.lanterne ? x.retour.lanterne.or : 0);
   s.rendu = true; P.vus['marche:rendu'] = 1;
   if(n >= x.but) P.vus['marche:dix'] = 1;   /* la mission du Carnet n'est validée qu'avec les 10 bouquets demandés */
   if(or) M.S.or = (M.S.or || 0) + or;
   M.noter('Tu as rendu ' + bouquets(n) + ' au maire' + (s.lanterne ? ', et la vieille lanterne' : '') + '. ' + (or ? 'Il t\'a donné ' + or + ' pièces d\'or.' : 'Pas d\'or cette fois.'), '💐');
-  if(s.lanterne) M.noter('Le maire, devant la lanterne : « ' + x.retour.lanterne.t + ' »', (D.PNJ.grosbec || {}).ic);
+  if(s.lanterne) M.noter('Devant la vieille lanterne, le maire a réagi d\'une façon très étrange : « ' + x.retour.lanterne.t + ' »', (D.PNJ.grosbec || {}).ic);
   M.son(or ? 'ok' : 'clic'); M.sauver();
   M.ouvrir({type:'marche', qui:'retour', n:n, lanterne:!!s.lanterne, classe:'b-feuille-conv'});
   majCompteurs();
@@ -271,6 +313,7 @@ M.marcheHTML = function(m){
   try{
     if(!X()) return '';
     if(m.qui === 'maire') return maireHTML();
+    if(m.qui === 'rappel') return rappelHTML();
     if(!S()) return '';
     if(m.qui === 'fortune') return fortuneHTML(m);
     if(m.qui === 'retour') return retourHTML(m);
@@ -321,7 +364,7 @@ M.fermer = function(){
 var r0 = M.render;
 M.render = function(){
   var r = r0.apply(this, arguments);
-  try{ guetter(); majCompteurs(); }catch(e){ console.error(e); }
+  try{ guetter(); guetterRappel(); majCompteurs(); }catch(e){ console.error(e); }
   return r;
 };
 })();

@@ -261,14 +261,25 @@ M.pnjFache = function(id){ try{ return M.role() === 'barde' && B.fache(id); }cat
    ou là mais trop occupé (E.pnj[id].carte et .occupe : « Pas le temps, je pars livrer ! ») — a son visage cerclé de rouge, sur la carte
    et dans sa pastille. (Un vendeur de fleurs qui vend encore, enquête 3, n'est pas « indisponible » : on lui achète des fleurs.) */
 function occupeLa(id){ var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}, mid = M.momentId(); return !(N.ou && N.ou[mid]) && !!(N.carte && N.carte[mid]) && !(M.vendeurDispo && M.vendeurDispo(id)); }
-M.pnjIndispo = function(id){ try{ return M.role() === 'barde' && id !== 'voisin' && (B.fache(id) || B.rienADire(id) || occupeLa(id)); }catch(e){ return false; } };
+M.pnjIndispo = function(id){
+  try{
+    if(M.role() !== 'barde' || id === 'voisin') return false;
+    if(M.vendeurDispo && M.vendeurDispo(id)) return false;   /* (enquête 3) tant qu'il vend des fleurs, on va le voir : jamais en rouge */
+    return !!(B.fache(id) || B.rienADire(id) || occupeLa(id));
+  }catch(e){ return false; }
+};
 /* Plus rien de nouveau à lui demander (Romain, 5 novembre, 13 h 19) : toutes ses questions ouvertes sont posées, pas de mensonge à démasquer,
    pas d'hydromel à offrir → sur la carte, son visage et « Rien de plus à dire », cerclés de rouge (sans « Parler ») */
 B.rienADire = function(id){
   var P = M.P(), E = M.E(); if(!P || !E || !E.pnj || !E.pnj[id] || id === 'voisin') return false;
   var Q = questions(id); if(!Q.length) return false;
   if(Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); })) return false;
-  if(enquete2() && !fermeDemasque(id) && Q.some(function(q, i){ return mentNonVu(id, i); })) return false;
+  /* (Romain, 13 novembre : « du moment qu'on a vu les discussions et que le bouton Mensonge a disparu […] tu me le mets quand même en
+     rouge. Tant pis si on n'a pas trouvé le mensonge ») un mensonge pas démasqué ne garde la porte ouverte que tant qu'on peut encore
+     le démasquer : le bouton « 🤥 Mensonge ? » est toujours sous sa réponse (mentEncorePossible), ou il reste une potion de vérité à
+     lui offrir. Avant : il restait « à voir » jusqu'à la fin, et son visage n'était jamais rouge. */
+  if(enquete2() && !fermeDemasque(id) && Q.some(function(q, i){ return mentEncorePossible(id, i); })) return false;
+  if(enquete2() && E.potionAveu && (P.potions.verite || 0) > 0 && !P.potionBue && Q.some(function(q, i){ return mentNonVu(id, i); })) return false;
   if(talent('hydromel') && (P.potions.hydromel || 0) > 0 && !(P.usages && P.usages.hydromel)) return false;
   return true;
 };
@@ -324,6 +335,9 @@ function texteDe(bd){
   return bd.t || '';
 }
 function mentNonVu(id, i){ var P = M.P(), q = questions(id)[i]; return !!(q && q.ment && repondu(id, i) && !P.vus['verite:' + id + ':' + i]); }
+/* ce mensonge peut-il encore être démasqué par le bouton « 🤥 Mensonge ? » : il n'est que sous la dernière réponse, et son minuteur
+   n'est pas fini (B.rienADire : sinon, plus rien à faire ici, le visage passe au rouge) */
+function mentEncorePossible(id, i){ return mentNonVu(id, i) && derniere(id) === i && !minuteFinie(id, i, UI.bd); }
 function preparer(id){
   /* N.noteSalut : ce que dit sa phrase d'accueil s'inscrit aussi dans le Carnet, une seule fois (Iris, enquête 2 : Bible §13.10) */
   try{ var P0 = M.P(), N0 = ((M.E() || {}).pnj || {})[id] || {}; if(N0.noteSalut && P0 && !estVexe(id) && !P0.vus['salut-note:' + id]){ P0.vus['salut-note:' + id] = 1; M.noter(N0.noteSalut, (D.PNJ[id] || {}).ic); } }catch(e){ console.error(e); }
@@ -470,11 +484,23 @@ function boutonMent(id, i, bd){
   if(m){ var reste = m.fin - Date.now(); st = ' style="--ment-d:' + m.duree + 'ms;--ment-t:' + (reste - m.duree) + 'ms"'; }
   return '<button class="btn petit bd-ment-p' + (m ? ' bd-minute' : '') + '" data-act="bd-ment" data-p="' + id + '" data-i="' + i + '"' + st + '>🤥 Mensonge ?</button>';
 }
+/* (Romain, 13 novembre) la conversation refermée avant la fin du minuteur : on n'entend que le petit souffle — pas d'animation,
+   « sinon elle se fait dans le vide et c'est moche ». L'animation ne se joue que si le bouton est vraiment à l'écran. */
 function partirEnFumee(b){
-  if(!b || !b.isConnected || b.classList.contains('bd-part')) return;
-  var r = b.getBoundingClientRect();
+  if(!b || b.classList.contains('bd-part')) return;
+  var voile = document.getElementById('voile'), m = UI.modal;
+  var visible = b.isConnected && voile && !voile.hidden && voile.contains(b) && m && m.type === 'conv' && m.id === b.dataset.p;
+  var r = visible ? b.getBoundingClientRect() : null;
+  if(!r || !r.width || !r.height){
+    /* (pas pendant un mini-jeu, ni hors de l'enquête : le souffle n'aurait plus de sens) */
+    if(UI.ecran === 'enquete' && !M.mjPause && !document.querySelector('#mj-plein:not([hidden])')){
+      M.son('fumee');
+      try{ var Pm = M.P(); if(!UI.modal && Pm && Pm.onglet === 'carte') M.render(); }catch(e){}   /* (son visage passe au rouge sur la carte, s'il n'y a plus rien à lui demander) */
+    }
+    return;
+  }
   b.classList.add('bd-part');
-  if(r.width && r.height){ bouffees(r); M.son('fumee'); }
+  bouffees(r); M.son('fumee');
   setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 380);
 }
 /* après chaque rendu : chaque bouton qui a un minuteur part en fumée à l'heure dite */

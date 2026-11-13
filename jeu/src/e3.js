@@ -56,7 +56,7 @@ E[3] = {
     sage:'Peins le tableau d\'Odette et de ses chats.'},
   missions:{
     pisteur:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard. Et ouvre l\'œil : cette lettre est bizarre…',
-    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard. Puis cueille les plantes de la vallée : cette nuit, l\'équipe aura besoin de tes potions.',
+    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard. Puis cueille les plantes de la vallée, et prépare tes potions.',
     barde:'Achète les fleurs de la fête avec les pièces du maire. Puis interroge le village : pose toutes tes questions à ceux qui ont le temps de te répondre. Les autres, ce sera pour plus tard !',
     sage:'Peins le tableau d\'Odette et de ses chats. Lis ton Grand Livre à l\'équipe, donne le code de chaque moment, et accuse quand toute l\'équipe est d\'accord.'
   },
@@ -73,9 +73,10 @@ E[3] = {
       {des:1, ic:'✉️', t:'Le maire garde la lettre pour lui. Quand tu auras tout demandé à tout le monde, va lui en parler… avec les bons mots.', fait:[{vu:'grand:lettre:fini'}]},
       {des:1, ic:'🧵', t:'Quelqu\'un a écrit cette lettre. Quand l\'équipe saura qui, fais-lui dire la vérité.', fait:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}]},
       /* la nuit (des:2) */
-      {des:2, ic:'🗝️', t:'La nuit : la crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu\'il faut, va le voir au clocher.', fait:[{vu:'grand:cle:fini'}]},
-      {des:2, ic:'🎉', t:'Pendant que les trois autres sont sous la terre : reste à la fête. Si le maire te cherche, retiens-le !', fait:[{vu:'grand:retenir:fini'}]},
-      {des:2, ic:'🧑', t:'Quand le Pisteur remonte, il a un code pour toi : tape-le vite.', fait:[{vu:'grand:leo:fini'}]},
+      /* (13 novembre : « les missions de la nuit sont trop grillées ») elles n'arrivent que quand le Barde sait de quoi elles parlent
+         (e.si, mission.js) : la clé avec le code du Pisteur « La crypte est fermée », la fête une fois Anselme vu */
+      {des:2, si:[{code:'info:crypte_fermee'}], ic:'🗝️', t:'La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu\'il faut, va le voir au clocher, la nuit.', fait:[{vu:'grand:cle:fini'}]},
+      {des:2, si:[{vu:'grand:cle:fini'}], ic:'🎉', t:'Reste à la fête. Si le maire te cherche, retiens-le !', fait:[{vu:'grand:retenir:fini'}]},
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -85,9 +86,8 @@ E[3] = {
       {ic:'🎏', t:'Accroche les banderoles de la fête, sur la place.', fait:[{fini:'pisteur:place:banderoles'}]},
       {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
-      /* (étape 6) la nuit : le sac de l'Alchimiste, puis le donjon (descente.js) */
-      {des:2, ic:'🎒', t:'La nuit, avant de descendre sous la terre : demande à l\'Alchimiste le code de ses sept potions.', fait:[{vu:'sac:recu'}]},
-      {des:2, ic:'🕯️', t:'Traverse le donjon avec le Sage et l\'Alchimiste, jusqu\'au bout.', fait:[{vu:'donjon:fini'}]},
+      /* (Romain, 13 novembre : « quand on passe la nuit, il y a des missions qui se mettent à jour et, pour le Pisteur, c'est trop
+         grillé. Il faut les enlever. ») plus de missions de la nuit : ni le sac, ni le donjon — on les découvre en jouant */
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
@@ -100,17 +100,16 @@ E[3] = {
         fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
       {ic:'🔔', t:'Des plantes poussent au-delà de la brume. Anselme, au clocher, pourra peut-être t\'aider.', fait:[{vu:'alchimiste:clocher:bertille'}]},
       {si:[{vu:'alchimiste:clocher:bertille'}], ic:'🍵', t:'Rapporte de la mélisse à Anselme, pour sa tisane. Une promesse est une promesse !', fait:[{vu:'alchimiste:clocher:tisane'}]},
-      {ic:'✉️', t:'Analyse la lettre d\'Odette sur ta paillasse, quand l\'équipe l\'aura.', fait:[{analyse:'lettre'}]},
-      {ic:'🧪', t:'Prépare les sept potions de la nuit, sur ton établi.',
+      /* (Romain, 13 novembre : « on en dit trop ») plus de mission « Analyse la lettre » (le signe « À analyser ! » de la paillasse suffit),
+         « Prépare les sept potions sur ton établi » sans « de la nuit », et plus de mission de la nuit */
+      {ic:'🧪', t:'Prépare les sept potions, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
-      {des:2, ic:'🎒', t:'La nuit : donne le code de tes sept potions au Pisteur, puis ouvre le chaudron du donjon.', fait:[{vu:'donjon:ouvert:alchimiste'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
       {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir.', fait:[{lu:'herbier'}]},
-      {des:2, ic:'🗺️', t:'La nuit : ouvre le plan des souterrains, et dis le chemin au Pisteur, à voix haute.', fait:[{vu:'donjon:ouvert:sage'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
@@ -160,7 +159,10 @@ E[3] = {
      L'après-midi : le maire compte les bouquets (de l'or selon le nombre, 5 de plus pour la lanterne). Au mieux : 11 bouquets, la lanterne, 15 pièces d'or. */
   marche:{
     or:10, but:10,
-    maire:{t:'Barde ! Voici 10 pièces. Rapporte-moi au moins 10 bouquets pour la fête de ce soir !', bouton:'💐 En route pour le marché !'},
+    /* (Romain, 13 novembre) trois secondes après « En route pour le marché », le maire revient dire un mot (rappel) ; il vouvoie le Barde,
+       comme dans ses grandes conversations */
+    maire:{t:'Barde ! Voici 10 pièces. Rapportez-moi au moins 10 bouquets pour la fête de ce soir !', bouton:'💐 En route pour le marché !',
+      rappel:'Essayez de bien négocier. Je sais que vous êtes doué pour ça. Je compte sur vous !'},
     /* avec Tendre l'oreille : cette écoute (bribes) se joue toute seule avant le marchandage de Fortuné */
     avant:'place_matin',
     fortune:{
@@ -209,13 +211,17 @@ E[3] = {
         merci:'Et voilà ! Tout frais du jardin.', encore:'Je voudrais des fleurs pour la fête.'}
     },
     /* l'après-midi, à la mairie : le maire compte les bouquets (min : à partir de combien), puis la lanterne */
+    /* (Romain, 13 novembre) le maire a trois visages (humeur : persos.js, HUMEUR_X) : pas content (moins de 10 bouquets), content
+       (les 10 bouquets), ravi (11 bouquets ET la lanterne : parfait). Devant la lanterne, un aparté (recit) : il réagit d'une façon
+       très étrange — il ne dit pas pourquoi. */
     retour:{accueil:'Ah, Barde ! Alors, mes fleurs ?',
       paliers:[
-        {min:10, or:10, t:'Bravo ! Voici 10 pièces d\'or pour ta peine.'},
-        {min:9, or:5, t:'Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même.'},
-        {min:5, or:0, t:'Il manque des fleurs, mais la fête sera jolie quand même.'},
-        {min:0, or:0, t:'Si peu ?! C\'est une fête ou un enterrement ?'}],
-      lanterne:{or:5, t:'Une lanterne… comme celle que… Euh. Parfait : ce sera le clou de la fête !'}}
+        {min:10, or:10, humeur:'satisfait', t:'Dix bouquets, comme convenu ! Voici 10 pièces d\'or pour votre peine.'},
+        {min:9, or:5, humeur:'fache', t:'Il en manque un ! Bien mauvais négociateur… La fête sera belle quand même.'},
+        {min:5, or:0, humeur:'fache', t:'Il manque des fleurs… La fête sera jolie quand même. Enfin, j\'espère.'},
+        {min:0, or:0, humeur:'fache', t:'Si peu ?! C\'est une fête ou un enterrement ?'}],
+      parfait:{min:11, humeur:'ravi', t:'Magnifique ! Je savais que je pouvais compter sur vous. Vous êtes vraiment un négociateur hors pair. Très malin !'},
+      lanterne:{or:5, humeur:'saisi', recit:'Le maire réagit d\'une façon très étrange : il ne quitte plus la lanterne des yeux…', t:'Une lanterne comme celle-là… Parfait. Je vais la garder.'}}
   },
 
   /* ---------- Les grands dialogues du Barde (grands.js ; Bible § 13.8 et § 13.31 ; E3-dialogues-et-trame.md, version 3) ----------
@@ -249,8 +255,12 @@ E[3] = {
           {q:'Avant ce soir, promis : vous pourrez la recompter.', r:'Avant ce soir, c\'est bien compris ?', bon:true}]}
       ],
       reussi:{bouton:'✉️ Prendre la lettre', titre:'Le maire te prête la lettre', t:'Tu tiens la lettre d\'Odette. Le maire te regarde partir… Il faudra la lui rendre avant ce soir !', code:'obj:lettre'},
-      piege:{bouton:'📝 Ranger ma copie', titre:'Ta copie de la lettre', t:'Tu recopies la lettre, mot pour mot, sous l\'œil du maire. Le maire range l\'original dans son grand coffre.', code:'info:copie'},
-      resume:{ok:'Le maire t\'a prêté la lettre d\'Odette.', piege:'Tu as recopié la lettre, devant le maire.', rate:'Le maire n\'a pas voulu te prêter la lettre.'}},
+      /* (Romain, 13 novembre) raté, ou le piège de la copie : un code pour le Pisteur — c'est lui qui ira chercher la lettre, en cachette
+         (lieux.mairie, le point « lettre » : il n'apparaît qu'avec ce code ; niveau 5, autant d'essais qu'il veut : on est sûr d'avoir
+         la lettre). Plus de code « La copie de la lettre », ni de lettre accrochée sous le tableau du Sage. */
+      piege:{bouton:'📝 Ranger ma copie', titre:'Ta copie de la lettre', t:'Tu recopies la lettre, mot pour mot… de ta propre écriture ! Impossible de comparer les écritures avec ça. Le maire range l\'original sur son bureau. Il reste une autre façon de l\'avoir : sans bruit, et sans se faire voir.', code:'info:lettre_bureau'},
+      echec:{bouton:'🤔 Et maintenant ?', titre:'Le maire garde la lettre', t:'Les beaux discours n\'ont pas suffi : la lettre reste sur le bureau du maire. Il reste une autre façon de l\'avoir : sans bruit, et sans se faire voir.', code:'info:lettre_bureau'},
+      resume:{ok:'Le maire t\'a prêté la lettre d\'Odette.', piege:'Tu as recopié la lettre, devant le maire… de ta propre écriture.', rate:'Le maire n\'a pas voulu te prêter la lettre.'}},
     /* la nuit, au clocher, quand Anselme monte sonner la Grosse Marie pour ouvrir la fête (il la sonne dans tous les cas : Romain, 21 h 38).
        Le but n'est plus qu'il prête sa clé, mais de l'aider à sonner : pendant qu'il compte les coups, les yeux fermés, le Pisteur, caché
        dans le clocher, lui prend la clé à la ceinture (le code s'appelle toujours info:cle_clou). Raté : Tim montre le vieux puits.
@@ -333,7 +343,8 @@ E[3] = {
       tim:{t:'Chut ! Je suis monté en haut du mât des lampions.'},
       melusine:{t:'Je n\'écrirai plus jamais pour personne…',
         /* le filet : son aveu n'a pas été obtenu l'après-midi */
-        filet:{sauf:'info:aveu', t:'Je n\'en peux plus… C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
+        /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */
+        filet:{sauf:'info:aveu', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
           note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'}},
       iris:{t:'J\'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra.'},
       farinel:{t:'Je ne dors pas, je repose mes yeux !'},
@@ -346,7 +357,14 @@ E[3] = {
   /* Les photos du tableau de liège du Barde (liege.js) ; les mots-clés (« Autre ») viendront avec la suite.
      (12 novembre au soir : plus de photo de Léo — on ne sait rien de lui avant la nuit.) */
   liege:{pnj:['melusine', 'margot', 'iris', 'victor', 'fortune', 'tim', 'gaspard', 'farinel', 'anselme', 'silas', 'basile', 'levoisin'],
-    lieux:['clocher', 'puits', 'moulin', 'chene', 'mairie', 'place']},
+    lieux:['clocher', 'puits', 'moulin', 'chene', 'mairie', 'place'],
+    /* le dossier « Autre » (Romain, 13 novembre : « la plume d'oie », « le papier », « l'encre ») : chaque mot arrive quand le Barde
+       l'a entendu (comme à l'enquête 2), pour ne rien dévoiler — la plume chez Gaspard, le papier quand Fortuné avoue, l'encre chez Iris */
+    mots:[
+      {id:'plume_oie', ic:'🪶', nom:'Plume d\'oie', si:[{vu:'barde:gaspard:2'}]},
+      {id:'papier', ic:'📄', nom:'Papier', si:[{vu:'verite:fortune:2'}]},
+      {id:'encre', ic:'🖋️', nom:'Encre', si:[{vu:'barde:iris:2'}]}
+    ]},
   sensibles:[],
   recettes:[],
   /* ---------- Le labo de l'Alchimiste (labo.js ; les fiches : src/labo/30-donnees.js) : la lettre d'Odette ----------
@@ -445,9 +463,10 @@ E[3] = {
       t:'Tim l\'a vu depuis les toits : Moustache vient de filer dans le vieux puits, entre les barreaux de la grille !',
       dire:'Le Pisteur doit y aller : donne-lui ce code.'},
     /* (étape 2, les grands dialogues du Barde) */
-    copie:{nom:'La copie de la lettre', ic:'📝', pour:['sage', 'alchimiste'], de:'barde',
-      t:'Le Barde a recopié la lettre d\'Odette, devant le maire… de sa propre main ! « C\'est ton écriture à toi, ça ! » Impossible de comparer les écritures avec cette copie.',
-      dire:'Le Sage et l\'Alchimiste vont l\'étudier : donne-leur ce code.'},
+    /* (13 novembre) il remplace « La copie de la lettre » : le Barde n'a pas eu la lettre → le Pisteur va la chercher */
+    lettre_bureau:{nom:'La lettre est sur le bureau du maire', ic:'🫥', pour:'pisteur', de:'barde',
+      t:'Le Barde n\'a pas réussi à se faire prêter la lettre d\'Odette : le maire la garde sur son bureau, à la mairie. Les beaux discours n\'ont pas suffi… Il reste la discrétion !',
+      dire:'C\'est un travail pour le Pisteur : donne-lui ce code.'},
     /* EN RÉSERVE (12 novembre au soir) : plus personne ne donne ce code. Le grand dialogue « sonner la Grosse Marie pendant le donjon » est
        retiré (plus de « minuit » ; la Grosse Marie sonne pour ouvrir la fête, dans tous les cas). Le donjon sait toujours le lire (toute la
        vie des trois héros revient, une fois) : le code reste écrit ici, avec ses symboles gelés (codes-fixes.js, donjon-codes.js), tant que
@@ -523,10 +542,13 @@ E[3] = {
          tout le monde ») les trois autres font aussi le leur (E.bonus, « Le concours de gâteaux ») : on attend les autres, on commence
          ensemble, et on élit le plus beau. L'icône 🎂 sur la carte : carteIc (moteur-roles.js, M.infosCarte). */
       alchimiste:{intro:'La boulangerie de Gaspard. Sur la grande table, trois énormes étages de gâteau attendent leur chapeau.', points:[
+        /* (13 novembre) à la fin : le vote (la note sur 20, la place : 5, 4, 3 ou 2 pièces d'or) ; le gâteau porté au maire, tout ce qui
+           touche au gâteau disparaît (disparait) */
         {id:'gateau', ic:'🎂', nom:'Le gâteau de la fête', moments:['matin', 'apresmidi'], mj:'gateau', carteIc:'🎂', carteNom:'Le gâteau',
+          disparait:[{vu:'alchimiste:mairie:gateau'}],
           avant:'Gaspard te confie le haut de son gâteau ! Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau !',
           bouton:'🎂 Faire le gâteau',
-          t:'Gaspard pose ton gâteau tout en haut de sa pièce montée : « Sept étages ! » Montre-le aux autres… et votez pour le plus beau !'}
+          t:'Ton gâteau part sur la grande table de la fête.'}
       ]}
     },
     /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.26) : les sept plantes poussent à sept endroits
@@ -537,15 +559,17 @@ E[3] = {
        donne l'acide de la grille du puits (tools/verif-e3.js le vérifie). */
     mairie:{
       pisteur:{intro:'La mairie. Le maire n\'aime pas qu\'on fouine dans ses papiers…', points:[
-        /* la lettre, en se cachant : pour quand le Barde n'a pas su la demander au maire (le même code que lui) */
+        /* la lettre, en se cachant : seulement quand le Barde n'a pas su la demander au maire (son code « La lettre est sur le bureau du
+           maire » : Romain, 13 novembre). Niveau 5 pour tout le monde, autant d'essais qu'on veut : « on est sûr d'avoir la lettre ».
+           L'après-midi, et encore la nuit si le code arrive tard. Réussi : la lettre, avec son code pour le Sage et l'Alchimiste. */
         /* (decor 'mairie' : l'intérieur de la mairie, et au bout le bureau du maire avec la lettre — Romain, 21 h 21) */
-        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:A_, mj:'cachette', params:{decor:'mairie'}, obj:'lettre',
+        {id:'lettre', ic:'🫥', nom:'La lettre, en cachette', moments:AN_, mj:'cachette', mjNiveauFixe:5, essaisInfinis:true, params:{decor:'mairie'}, obj:'lettre',
+          besoin:[{code:'info:lettre_bureau'}], visibleSi:[{code:'info:lettre_bureau'}],
           avant:'Le maire garde la lettre d\'Odette sur son bureau. Traverse la mairie sans te faire voir, jusqu\'à son bureau !',
           bouton:'🫥 Se faufiler',
           t:'Tu te glisses derrière le grand rideau. Le maire compte ses papiers un par un… puis il sort. La lettre est sur le dessus.',
-          rate:'« Qui va là ?! » On t\'a vu. Tu files sans demander ton reste.',
-          ferme:'Le garde surveille la mairie, maintenant.'},
-        /* rendre sa mission : dès qu'une des deux missions de fête est réussie */
+          rate:'« Qui va là ?! » On t\'a vu. Tu files sans demander ton reste.'},
+        /* rendre sa mission (la seule chose à faire ici sans le code du Barde) : dès qu'une des deux missions de fête est réussie */
         {id:'mission', ic:'🎉', nom:'Rendre ta mission au maire', moments:A_, or:5, visibleSi:[{vu:'pisteur:place:banderoles'}, {vu:'pisteur:boulangerie:oie'}],
           t:'Le maire : « Des banderoles, une oie… Parfait ! Et ce soir, tout le monde à la fête ! »',
           variantes:[
@@ -563,18 +587,12 @@ E[3] = {
           ferme:'Le tableau est rangé dans un coin.'},
         {id:'livredor', ic:'📖', nom:'Le Livre d\'or de la fête', moments:['matin', 'apresmidi'], donne:'info:ecritures',
           t:'Sur la table de la mairie, le Livre d\'or de la fête. « Reviens vite, Odette ! » « Vive la fête ! » « Une brioche t\'attend ! »… Tout le village y a écrit un petit mot, chacun avec son écriture.'},
-        /* rendre le tableau : 5 pièces d'or. Le filet : si le Sage n'a pas encore la lettre, le maire l'accroche sous le tableau */
-        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], varianteFigee:true,
-          t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! »',
-          variantes:[
-            {si:[{et:[{non:{code:'obj:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'obj:lettre', obj:'lettre',
-              t:'Le maire : « Magnifique ! Et la lettre d\'Odette, je l\'accroche sous votre tableau, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]},
-        /* le tableau raté : rien à rendre (pas d'or), mais le filet de la lettre ne doit pas dépendre du tableau (sinon, pas de lettre du tout) */
-        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], varianteFigee:true,
-          t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Ce soir, tout le monde à la fête ! »',
-          variantes:[
-            {si:[{et:[{non:{code:'obj:lettre'}}, {non:{code:'info:copie'}}]}], recoit:'obj:lettre', obj:'lettre',
-              t:'Le maire : « Pas de tableau ? Tant pis. La lettre d\'Odette, je l\'accroche au mur, pour que tout le village la lise ce soir ! » Tu peux la lire de près…'}]}
+        /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
+           Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
+        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}],
+          t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! »'},
+        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}],
+          t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Ce soir, tout le monde à la fête ! »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
       alchimiste:{intro:'La mairie. Le maire attend son gâteau en regardant sa montre.', points:[
@@ -786,7 +804,8 @@ E[3] = {
         note:'Iris : la pensée sauvage pousse même dans la brume.'}
     ]},
     /* un peu sourd, il parle fort (il ne ment jamais) */
-    anselme:{ou:{apresmidi:'clocher', nuit:'clocher'}, carte:{matin:'clocher'},
+    /* (Romain, 13 novembre) la nuit, son visage est posé sur le toit du clocher : on voit qu'il n'est pas à la fête, prêt à sonner (pose : carte-jeu.js) */
+    anselme:{ou:{apresmidi:'clocher', nuit:'clocher'}, carte:{matin:'clocher'}, pose:{nuit:[660, 500]},
       /* (Romain, 12 novembre, 15 h 39) le matin, il fait appeler l'Alchimiste par le Barde : il a un service à lui demander (sa tisane de mélisse,
          lieux.clocher). Dit à voix haute, sans code : l'Alchimiste peut monter au clocher dès le matin, avec ou sans ce message. */
       occupe:{matin:['« AH, LE BARDE ! VA ME CHERCHER L\'ALCHIMISTE : J\'AI UN SERVICE À LUI DEMANDER ! » DONG !', '« L\'AL-CHI-MISTE ! PAS LE FLEURISTE ! DIS-LUI DE MONTER ME VOIR ! » DONG !']},
@@ -975,13 +994,18 @@ E[3] = {
      dix minutes ; une icône sur la carte ; « attends tes amis, commencez en même temps ») : le Barde, le Pisteur et le Sage font le leur
      à la boulangerie, le matin ou l'après-midi, en même temps que l'Alchimiste (son point « Le gâteau de la fête », plus haut).
      On ne le rate jamais ; l'élection se fait autour de la table, pas dans le jeu. */
+  /* (Romain, 13 novembre) « ← Plus tard » dans la fenêtre d'avant (plusTard) ; à la fin, le vote : chacun touche sa note sur 20, puis sa
+     place — 5, 4, 3 ou 2 pièces d'or (le mini-jeu les donne : res.or) ; et dès qu'on a rendu sa mission au maire, le gâteau disparaît
+     de la carte (cacheSi). */
   bonus:['barde', 'pisteur', 'sage'].map(function(r){
+    var rendu = {barde:[{vu:'marche:rendu'}], pisteur:[{vu:'pisteur:mairie:mission'}], sage:[{vu:'sage:mairie:rendu'}, {vu:'sage:mairie:sanstableau'}]}[r];
     return {id:'gateau_' + r, role:r, lieu:'boulangerie', moments:['matin', 'apresmidi'], mj:'gateau', ic:'🎂', label:'Le gâteau', or:3,
+      plusTard:true, cacheSi:rendu, gain:'De 2 à 5 pièces d\'or, selon ta place au concours',
       titre:'Le concours de gâteaux',
       t:'Gaspard lance un concours : chacun fait son gâteau pour la fête !',
       avant:'Concours de gâteaux chez Gaspard ! Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau !',
       bouton:'🎂 Faire le gâteau',
-      fin:'Ton gâteau part sur la grande table de la fête. Montre-le aux autres… et votez pour le plus beau !'};
+      fin:'Ton gâteau part sur la grande table de la fête.'};
   }),
   fin:{
     slides:[

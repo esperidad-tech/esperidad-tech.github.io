@@ -42,3 +42,19 @@
 .gd-appel-t{color:#e8b13a;font-weight:700}
 @keyframes gd-appel{from{transform:translateY(0)}to{transform:translateY(-3px)}}
 @media (prefers-reduced-motion: reduce){ .b-gens-carte.gd-appel{animation:none} }
+
+/* ---------- La fête : la grille des visages (13 novembre : onze villageois, sans faire défiler, même sur un téléphone) ---------- */
+.gd-fete-grille{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px 2px;margin:4px 0 2px}
+.gd-fete-tete{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+.gd-fete-tete .b-gens-img{display:block;width:48px;height:48px;border-radius:50%;overflow:hidden;border:2.5px solid #f3d27a;background:#fffaf0;box-shadow:0 2px 5px rgba(0,0,0,.45);flex:none}
+.gd-fete-tete .b-gens-img svg{display:block;width:100%;height:100%}
+.gd-fete-tete b{font-size:.68rem;line-height:1.1;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gd-fete-tete:active .b-gens-img{transform:scale(.94)}
+.gd-fete-tete.vu{cursor:default}
+.gd-fete-tete.vu .b-gens-img{border-color:#ff5a4a;box-shadow:0 0 0 2px rgba(255,90,74,.35), 0 2px 5px rgba(0,0,0,.45);filter:saturate(.6) brightness(.9)}
+.gd-fete-tete.vu b{opacity:.7}
+.gd-fete-badge{position:absolute;top:-2px;right:calc(50% - 30px);min-width:17px;height:17px;border-radius:9px;background:#3f8f5a;color:#fff;font-size:.62rem;font-style:normal;font-weight:800;line-height:17px;text-align:center;border:1.5px solid #24182e}
+.gd-fete-badge.gd-fete-appel{background:#ffd23f;color:#24182e}
+.gd-fete-tete.gd-appel .b-gens-img{border-color:#ffd23f;box-shadow:0 0 0 3px rgba(255,210,63,.55);animation:gd-appel 1.4s ease-in-out infinite alternate}
+@media (min-width: 700px){ .b-feuille .gd-fete-grille{grid-template-columns:repeat(6, minmax(0, 1fr))} .b-feuille .gd-fete-tete .b-gens-img{width:64px;height:64px} .b-feuille .gd-fete-tete b{font-size:.8rem} }
+@media (prefers-reduced-motion: reduce){ .gd-fete-tete.gd-appel .b-gens-img{animation:none} }

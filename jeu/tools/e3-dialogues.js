@@ -67,6 +67,7 @@ function texte(E, D){
   p('### Le marché aux fleurs (le matin)', '');
   const Ma = E.marche;
   p('- **Le maire** arrive tout seul : « ' + Ma.maire.t + ' » (bouton : ' + Ma.maire.bouton + ')');
+  if(Ma.maire.rappel) p('- **Trois secondes après**, le maire revient dire un mot : « ' + Ma.maire.rappel + ' »');
   p('- **Fortuné**, d\'abord (Iris et Basile ne se voient qu\'une fois son marchandage commencé) :');
   Ma.fortune.etapes.forEach((e, k) => {
     p('  - Étape ' + (k + 1) + (e.t ? ' — « ' + e.t + ' »' : e.illu ? ' — une image : la carriole, la bâche soulevée (aucun texte)' : '') + (k === 1 ? ' La relance d\'avant : « ' + Ma.fortune.relance + ' »' : ''));
@@ -84,8 +85,10 @@ function texte(E, D){
     p('  - Après la vente : « ' + V.merci + ' »');
   });
   p('- **L\'après-midi, le maire compte** : « ' + Ma.retour.accueil + ' »');
-  Ma.retour.paliers.forEach(x => p('  - ' + x.min + ' bouquets ou plus : « ' + x.t + ' » (' + x.or + ' pièces d\'or)'));
-  p('  - Avec la lanterne : « ' + Ma.retour.lanterne.t + ' » (' + Ma.retour.lanterne.or + ' pièces d\'or de plus)', '');
+  const HUM = {fache:'pas content', satisfait:'content', ravi:'ravi', saisi:'saisi'};
+  if(Ma.retour.parfait) p('  - ' + (Ma.retour.parfait.min || 11) + ' bouquets ou plus ET la lanterne (il est ' + (HUM[Ma.retour.parfait.humeur] || 'ravi') + ') : « ' + Ma.retour.parfait.t + ' »');
+  Ma.retour.paliers.forEach(x => p('  - ' + x.min + ' bouquets ou plus' + (x.humeur ? ' (il est ' + (HUM[x.humeur] || x.humeur) + ')' : '') + ' : « ' + x.t + ' » (' + x.or + ' pièces d\'or)'));
+  p('  - Avec la lanterne, dans une deuxième fenêtre' + (Ma.retour.lanterne.recit ? ' — un aparté : ' + Ma.retour.lanterne.recit + ' Puis' : '') + ' : « ' + Ma.retour.lanterne.t + ' » (' + Ma.retour.lanterne.or + ' pièces d\'or de plus)', '');
 
   function villageois(id){
     const N = E.pnj[id];

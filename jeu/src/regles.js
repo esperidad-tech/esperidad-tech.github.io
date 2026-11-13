@@ -34,6 +34,8 @@ M.pointsVisibles = function(lieu, role){
   /* p.visibleSi (Romain, 23 h 31) : un point qui n'apparaît qu'après un autre (au moulin, la nuit : guetter → la pièce cachée → sous l'alambic) ;
      p.cacheSi : un point qui s'en va (pas encore utilisé) ; un point déjà regardé reste là */
   l = l.filter(function(p){
+    /* (13 novembre) p.disparait : un point qui s'en va pour de bon, même déjà fait (le gâteau, une fois la mission rendue au maire) */
+    if(p && p.disparait && M.besoinOk(p.disparait)) return false;
     if(!p || P.vus[role + ':' + lieu + ':' + p.id]) return true;
     return (!p.visibleSi || M.besoinOk(p.visibleSi)) && !(p.cacheSi && M.besoinOk(p.cacheSi));
   });

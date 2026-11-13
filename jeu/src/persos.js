@@ -2278,7 +2278,9 @@ var EXPR0 = {regard:'centre', ampleur:1, sourire:0, yeuxRieurs:0, sourcils:'neut
 var REGARD_X = {centre:[0,0], 'cote-g':[-3.2,.3], 'cote-d':[3.2,.3], haut:[1.3,-3.3], 'haut-g':[-1.7,-3.2], 'haut-d':[1.7,-3.2], bas:[.3,2.7]};
 /* [y gauche, rotation gauche, y droit, rotation droite] */
 var SOURCILS_X = {neutre:[0,0,0,0], leves:[-3.6,-5,-3.6,5], fronces:[1.8,10,1.8,-10], un:[-4,-4,.6,0], 'un-d':[.6,0,-4,4], bas:[1.2,0,1.2,0], tendus:[-1.8,2,-1.8,-2]};
-var HUMEUR_X = {ment:{regard:'cote-d', sourire:'coin', rougeur:.5}, peur:{sourcils:'leves', grandsYeux:true, bouche:'pincee'}, content:{sourire:2, yeuxRieurs:true}};
+var HUMEUR_X = {ment:{regard:'cote-d', sourire:'coin', rougeur:.5}, peur:{sourcils:'leves', grandsYeux:true, bouche:'pincee'}, content:{sourire:2, yeuxRieurs:true},
+  /* (enquête 3, le maire qui compte ses bouquets : marche.js) pas content, content, ravi ; et saisi, devant la vieille lanterne */
+  fache:{sourcils:'fronces', bouche:'moue'}, satisfait:{sourire:1}, ravi:{sourire:2, yeuxRieurs:true, sourcils:'leves'}, saisi:{grandsYeux:true, sourcils:'leves', bouche:'o'}};
 function bouchePour(x){
   if(x.bouche === 'mord') return 'mord';
   if(x.bouche === 'pincee') return 'pince';

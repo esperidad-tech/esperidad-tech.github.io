@@ -207,3 +207,24 @@
 
 /* Ce mini-jeu prend toute la largeur de l'écran (MJ.LARGE, mj-core.js) : on voit la place en fête de chaque côté du gâteau */
 #mj-plein.mj-large .b-mj-cadre, #sl-plein.mj-large .sl-cadre{max-width:1280px}
+
+/* ---------- le vote (13 novembre) : la note sur 20, puis la place ---------- */
+.gt-final.gt-en-vote{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px 12px;background:linear-gradient(180deg, rgba(19,25,50,0), rgba(19,25,50,.82) 26%)}
+.gt-vote{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.gt-vote .gt-vote-q{flex:none;width:100%;max-width:640px;box-sizing:border-box;order:0}
+.gt-ma-note{font-style:normal;color:#ffd23f}
+.gt-notes{display:grid;grid-template-columns:repeat(10, minmax(0, 1fr));gap:6px;width:100%;max-width:640px}
+.gt-note{aspect-ratio:1;min-width:0;border-radius:50%;border:2.5px solid #24182e;background:#fffaf0;color:#24182e;font:800 1rem/1 inherit;cursor:pointer;box-shadow:0 3px 0 #24182e, 0 5px 10px rgba(0,0,0,.4);animation:gt-bulle .32s cubic-bezier(.3,1.5,.5,1) both;-webkit-tap-highlight-color:transparent}
+.gt-note:nth-child(n+2){animation-delay:.02s}.gt-note:nth-child(n+6){animation-delay:.05s}.gt-note:nth-child(n+11){animation-delay:.08s}.gt-note:nth-child(n+16){animation-delay:.11s}
+.gt-note:active{transform:translateY(2px);box-shadow:0 1px 0 #24182e}
+.gt-rangs{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;width:100%;max-width:520px}
+.gt-rang{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:16px;border:2.5px solid #24182e;background:#ffd23f;color:#24182e;font:inherit;cursor:pointer;box-shadow:0 3px 0 #24182e, 0 5px 10px rgba(0,0,0,.4);animation:gt-bulle .32s cubic-bezier(.3,1.5,.5,1) both;-webkit-tap-highlight-color:transparent}
+.gt-rang span{font-size:1.7rem;line-height:1}
+.gt-rang b{font-size:1rem;font-weight:800}
+.gt-rang:active{transform:translateY(2px);box-shadow:0 1px 0 #24182e}
+.gt-renoter{align-self:center}
+@keyframes gt-bulle{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.gt-etroit .gt-notes{grid-template-columns:repeat(5, minmax(0, 1fr));max-width:320px}
+.gt-etroit .gt-note{font-size:1.05rem}
+@media (max-height: 460px){ .gt-notes{grid-template-columns:repeat(10, minmax(0, 1fr));max-width:560px} .gt-note{font-size:.9rem} }
+@media (prefers-reduced-motion: reduce){ .gt-note, .gt-rang{animation:none} }

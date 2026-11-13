@@ -1135,7 +1135,7 @@ function marqueurPose(p, mq, i, fx, fy, dir, avecNom, ks, rHit){
   /* mq.bulle (enquête 3, le marché aux fleurs du Barde) : une petite bulle blanche avec un dessin, en haut à droite du visage (🌸 : il vend des fleurs) */
   if(mq.bulle) s += '<g class="ca-bulle-mq" transform="translate(' + f(R * .82) + ' ' + f(-R * .78) + ')"><circle r="15" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="2.6"/><text x="0" y="1" font-size="17" text-anchor="middle" dominant-baseline="central">' + esc(mq.bulle) + '</text></g>';
   s += '</g>';
-  if(presence) s += fleche(0, -R - 5, i, mq.fache);
+  if(presence && !mq.foule) s += fleche(0, -R - 5, i, mq.fache);
   if(avecNom && mq.label) s += etiquette(0, -R - 4 - (MQ_NOM + 16) / 2, '', mq.label, {taille: MQ_NOM, classe: 'ca-nom'});
   /* sa zone à toucher, plus grande que le rond, va dans la couche du dessous (sous les étiquettes) */
   var z = '<g class="ca-zone ca-zone-mq' + (mq.act ? ' ca-clic' : '') + '" data-zone-mq="' + esc(mq.lieu || '') + '" transform="translate(' + f(fx) + ' ' + f(fy) + ') scale(' + f(ks) + ')"' + act + '><circle class="ca-hit" r="' + f(rHit) + '" fill="#fff" opacity="0"/></g>';
@@ -1179,9 +1179,46 @@ function poserMarqueurs(p, o, G, items, occupes, ks, tmin, sortie){
   });
 }
 
+/* (enquête 3, la nuit : la fête ; Romain, 13 novembre : « tu les répartis dans la place, il ne faut pas que ça dépasse la place, de
+   sorte qu'ils ne se chevauchent pas ») Une foule : tous les visages d'un lieu, rangés en rangées décalées DANS le rond du lieu
+   (HIT[lieu] : son rayon), serrés au besoin. Pas de triangle jaune au-dessus de chacun (ils se cacheraient les uns les autres). */
+function poserFoule(p, lieu, items, ks, tmin, sortie, G){
+  var L = LIEUX[lieu], hit = HIT[lieu] || [0, 0, 90], cx = L.x + hit[0], cy = L.y + hit[1], RL = hit[2], n = items.length;
+  /* l'étiquette du lieu mord sur le bas de son rond (« Place des Lanternes ») : la foule tient dans le plus grand rond au-dessus d'elle */
+  if(G && G.rect && G.rect[1] > cy && G.rect[1] - 4 < cy + RL){ var hautL = cy - RL, basL = G.rect[1] - 4; RL = (basL - hautL) / 2; cy = hautL + RL; }
+  var k = ks * Math.min.apply(null, items.map(function(it){ return it.mq.echelle || 1; })), essai = 0, places = null, R, pas;
+  /* on essaie des rangées de plus en plus fournies, puis des visages de plus en plus petits, jusqu'à ce que tout tienne dans le rond */
+  for(; essai < 12 && !places; essai++){
+    R = MQ_R * k; pas = 2 * R + 5 * k;
+    var dy = pas * .9;
+    for(var rangs = 1; rangs <= 6 && !places; rangs++){
+      var hauteur = (rangs - 1) * dy, l = [], reste = n, ok = true;
+      for(var j = 0; j < rangs; j++){
+        var y = cy - hauteur / 2 + j * dy, demi = Math.sqrt(Math.max(0, RL * RL - Math.pow(Math.abs(y - cy) + R, 2))) - R;   /* la demi-largeur libre à cette hauteur */
+        if(demi < 0){ ok = false; break; }
+        var cap = Math.floor(2 * demi / pas) + 1; l.push({y: y, cap: cap});
+      }
+      if(!ok) continue;
+      if(l.reduce(function(a, x){ return a + x.cap; }, 0) < n) continue;
+      /* répartir : autant que possible le même nombre par rangée, les rangées du milieu d'abord (elles sont plus larges) */
+      var nb = l.map(function(){ return 0; }), ordreR = l.map(function(x, i2){ return i2; }).sort(function(a, b){ return l[b].cap - l[a].cap; });
+      while(reste > 0){ var pose = false; ordreR.forEach(function(i2){ if(reste > 0 && nb[i2] < l[i2].cap){ nb[i2]++; reste--; pose = true; } }); if(!pose) break; }
+      if(reste > 0) continue;
+      places = []; l.forEach(function(x, i2){ for(var q = 0; q < nb[i2]; q++) places.push([cx + (q - (nb[i2] - 1) / 2) * pas, x.y]); });
+    }
+    if(!places) k *= .93;
+  }
+  if(!places){ places = items.map(function(it, j2){ var a = j2 / n * Math.PI * 2; return [cx + Math.cos(a) * RL * .6, cy + Math.sin(a) * RL * .6]; }); }
+  var rHit = Math.max(R + 2, Math.min(40 * k, tmin / 2));
+  items.forEach(function(it, j3){
+    var mq = Object.assign({}, it.mq, {foule: true});
+    var m = marqueurPose(p, mq, it.i, places[j3][0], places[j3][1], 'b', false, k, rHit / k);
+    sortie.fond += m.fond; sortie.dessus += m.dessus;
+  });
+}
 function marqueurs(p, o, geo){
   var liste = o.marqueurs || [], s = '';
-  var groupes = {}, parLieu = {}, ordre = [], chezEux = {}, geoCache = {};
+  var groupes = {}, parLieu = {}, ordre = [], chezEux = {}, geoCache = {}, foules = {}, poses = [];
   var ks = (o.etiquette || 25) / 25, tmin = o.toucheMin || 0;
   geo = geo || {liste:[], parId:{}};
   liste.forEach(function(mq, i){
@@ -1192,6 +1229,10 @@ function marqueurs(p, o, geo){
       x = MAISONS[mq.maison].x; y = MAISONS[mq.maison].y - 30;
     }
     else if(mq.lieu && LIEUX[mq.lieu]){
+      /* (enquête 3) posé à un endroit précis (mq.pose : Anselme sur le toit du clocher, la nuit) ; ou dans la foule d'un lieu
+         (o.foules : la fête sur la place) — plus bas, poserFoule */
+      if(mq.classe === 'presence' && mq.pose && o.marqueursPoses !== false){ poses.push({mq: mq, i: i}); return; }
+      if(mq.classe === 'presence' && o.foules && o.foules[mq.lieu] && o.marqueursPoses !== false){ (foules[mq.lieu] = foules[mq.lieu] || []).push({mq: mq, i: i}); return; }
       /* lieu caché : son marqueur aussi… sauf la position d'un villageois (on sait toujours où est chacun) : posée sur le lieu, sans étiquette */
       if((o.caches || []).indexOf(mq.lieu) >= 0){
         if(mq.classe !== 'presence' || LIEUX[mq.lieu].zone === 'dessous') return;
@@ -1209,6 +1250,11 @@ function marqueurs(p, o, geo){
     (groupes[cle] = groupes[cle] || []).push({mq: mq, x: x, y: y, i: i});
   });
   var sortie = {fond:'', dessus:''};
+  Object.keys(foules).forEach(function(id){ poserFoule(p, id, foules[id], ks, tmin, sortie, geo.parId[id]); });
+  poses.forEach(function(it){
+    var kp = ks * (it.mq.echelle || 1), mp = marqueurPose(p, it.mq, it.i, it.mq.pose[0], it.mq.pose[1], 'b', false, kp, Math.max(40 * kp, tmin / 2) / kp);
+    sortie.fond += mp.fond; sortie.dessus += mp.dessus;
+  });
   /* chez eux : la pastille (le même petit visage cerclé de bleu que la présence ailleurs), en haut à droite du rond de l'habitant ;
      elle ne sort pas de sa maison, et ne gêne donc ni les voisins ni la rue */
   var pastilles = [];
@@ -1226,6 +1272,9 @@ function marqueurs(p, o, geo){
     var m = posMedaillon(k);
     pastilles.push([m.x - 15, m.y - m.r - FLECHE_H - 4, m.x + 15, m.y - m.r]);
     sortie.dessus += fleche(m.x, m.y - m.r - 5, j, o.presents[k] === 'fache');
+    /* (13 novembre) o.bullesChez = {maison:'🌸'} : la petite bulle d'un villageois qui est chez lui (Iris vend des fleurs dans sa boutique) */
+    var buC = (o.bullesChez || {})[k];
+    if(buC) sortie.dessus += '<g class="ca-bulle-mq" pointer-events="none" transform="translate(' + f(m.x + m.r * .82) + ' ' + f(m.y - m.r * .78) + ')"><circle r="15" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="2.6"/><text x="0" y="1" font-size="17" text-anchor="middle" dominant-baseline="central">' + esc(buC) + '</text></g>';
   });
   if(ordre.length){
     /* tout ce qui est déjà écrit sur la carte : les étiquettes des lieux et les notes des maisons */

@@ -50,8 +50,11 @@ M.texteOccupe = function(id){
 };
 M.bonusIci = function(lieu){
   var E = M.E(), P = M.P(), role = M.role();
-  return (E.bonus || []).filter(function(b){ return b.role === role && b.lieu === lieu && M.momentOk(b.moments) && !P.bonus[b.id]; });
+  return (E.bonus || []).filter(function(b){ return b.role === role && b.lieu === lieu && M.momentOk(b.moments) && !P.bonus[b.id] && !M.bonusCache(b); });
 };
+/* (enquête 3, Romain, 13 novembre : « du moment où on a rendu les missions au maire, tout ce qui est lié au gâteau disparaît »)
+   b.cacheSi : une mission bonus qui s'en va quand une de ces conditions est vraie (sa bulle, et son icône sur la carte) */
+M.bonusCache = function(b){ return !!(b && b.cacheSi && M.besoinOk(b.cacheSi)); };
 /* L'icône d'une mission bonus sur la carte (Romain, 10 novembre, 16 h 56 : « dès qu'il y a des petits mini-jeux, il faut qu'on le voie
    avec un petit icône », pour tous les rôles et toutes les enquêtes) : celle de son mini-jeu (🎯, 🫧, 🧩…), 🎵 pour une chanson */
 /* Ce que rapporte une mission bonus (Romain, 11 novembre, 8 h 11 : « toutes les missions bonus font gagner entre 1 et 5 pièces d'or, pas plus ») :
@@ -141,7 +144,7 @@ M.infosCarte = function(){
   });
   /* (plus de marqueurs « qui est là » pour le Barde : depuis le 5 novembre, 8 h 59, la carte montre à tout le monde où est chacun, carte-jeu.js) */
   (E.bonus || []).forEach(function(b){
-    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id]) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:b.label || 'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+    if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id] && !M.bonusCache(b)) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:b.label || 'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
   });
   /* (enquête 3) un point de lieu peut aussi avoir son icône sur la carte (p.carteIc, p.carteNom), tant qu'il n'est pas fait :
      le gâteau de l'Alchimiste, comme celui des trois autres (des missions bonus) — Romain, 12 novembre, 21 h 34 */
@@ -274,7 +277,8 @@ function bonusHTML(lieu){
   return M.bonusIci(lieu).map(function(b){
     /* (dans la bulle de la carte : seulement « ✨ Mission bonus » et « Tenter » ; le nom et l'histoire sont dans la fenêtre du mini-jeu) */
     return '<div class="b-bonus"><h3>✨ Mission bonus<span class="b-long"> : ' + esc(b.titre) + '</span></h3><p>' + esc(b.t) + '</p>' + lire(b.t) +
-      '<p class="b-bonus-gain">🪙 ' + M.orBonus(b) + (M.orBonus(b) > 1 ? ' pièces' : ' pièce') + ' d\'or · ⚠️ un seul essai</p><button class="btn magie" data-act="bonus" data-id="' + b.id + '"' + (M.peutAgir() ? '' : ' disabled') + '>Tenter' + M.coutTxt() + '</button></div>';
+      /* (b.gain : ce que dit la ligne de l'or, à la place de « N pièces · un seul essai » — le concours de gâteaux : selon ta place) */
+      '<p class="b-bonus-gain">🪙 ' + (b.gain ? esc(b.gain) : M.orBonus(b) + (M.orBonus(b) > 1 ? ' pièces' : ' pièce') + ' d\'or · ⚠️ un seul essai') + '</p><button class="btn magie" data-act="bonus" data-id="' + b.id + '"' + (M.peutAgir() ? '' : ' disabled') + '>Tenter' + M.coutTxt() + '</button></div>';
   }).join('');
 }
 function carteGens(id){

@@ -197,7 +197,7 @@ function concernes(E){
   return l;
 }
 function presences(E, hab){
-  var mid = M.momentId(), lieux = [], maisons = [], chez = {}, absents = {}, maisonDe = {};
+  var mid = M.momentId(), lieux = [], maisons = [], chez = {}, absents = {}, maisonDe = {}, bulles = {};
   M.cle(hab).forEach(function(m){ var i = hab[m].id || hab[m].pid; if(i) maisonDe[i] = m; });
   concernes(E).forEach(function(id){
     /* E.carteSecret : ceux dont la carte ne doit rien dire, même pas qu'ils ne sont pas chez eux (Tim à l'enquête 1 : ce serait la solution ;
@@ -209,17 +209,20 @@ function presences(E, hab){
     var ouM = ou && (/^[LFB]\d$/.test(ou) ? ou : (Carte.LIEUX[ou] && Carte.LIEUX[ou].maison) || null);   /* (sa boutique est sa maison : Gaspard à la boulangerie) */
     /* le Barde : un villageois fâché (ou « Encore toi ? ») a son rond et son triangle en rouge (Romain, 5 novembre, 12 h 31 ; barde.js) */
     var fache = !!(M.pnjIndispo ? M.pnjIndispo(id) : (M.pnjFache && M.pnjFache(id)));   /* (13 novembre) et tous ceux à qui on ne peut pas parler maintenant (barde.js) */
-    if(m && ouM === m){ chez[m] = fache ? 'fache' : 1; return; }
+    /* (13 novembre) chez lui avec une petite bulle (🌸 Iris vend des fleurs, dans sa boutique) : la bulle se pose sur le rond de sa maison */
+    if(m && ouM === m){ chez[m] = fache ? 'fache' : 1; var buC = M.pnjBulleCarte ? M.pnjBulleCarte(id) : ''; if(buC) bulles[m] = buC; return; }
     if(m) absents[m] = 1;
     if(!ou || !visage(id)) return;
     var c = connu(E, id), nom = c ? (D.PNJ[id] || {}).court || id : 'Quelqu\'un', estMaison = /^[LFB]\d$/.test(ou);
     if(estMaison ? !Carte.MAISONS[ou] : !Carte.LIEUX[ou]) return;
     var mq = {visage:c ? id : null, inconnu:!c, titre:nom, act:estMaison ? 'maison' : 'lieu', id:ou, classe:'presence', echelle:.8, fache:fache};
+    /* (enquête 3, la nuit) E.pnj[id].pose = {moment:[x, y]} : posé à un endroit précis de la carte (Anselme, sur le toit de son clocher) */
+    var N3 = (E.pnj || {})[id] || {}; if(N3.pose && N3.pose[mid]) mq.pose = N3.pose[mid];
     /* (enquête 3, marche.js) une petite bulle sur son visage : 🌸 il vend des fleurs, 💐 le maire attend ses bouquets */
     var bu = M.pnjBulleCarte ? M.pnjBulleCarte(id) : ''; if(bu) mq.bulle = bu;
     if(estMaison){ mq.maison = ou; maisons.push(mq); } else { mq.lieu = ou; lieux.push(mq); }
   });
-  return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents};
+  return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents, bulles:bulles};
 }
 /* Dès l'enquête 2, la carte n'aide plus (plus de ronds jaunes) : seulement la position des villageois */
 function sansAides(E){ return !!E && (E.id || 1) >= 2; }
@@ -319,7 +322,9 @@ function contenu(ou, w, h){
       if(brNeuves.length){ res.commit = res.commit || {ids:[], tout:false}; res.commit.brume = brNeuves; }
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts,
-        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents,
+        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents, bullesChez:PR.bulles,
+        /* (enquête 3, la nuit : la fête) tout le village sur la place : les visages se rangent DANS la place, sans se chevaucher (carte.js, poserFoule) */
+        foules:(E.fete && M.momentOk(E.fete.moments) ? (function(){ var o = {}; o[E.fete.lieu] = 1; return o; })() : null),
         brume:brume, brumePart:brNeuves.concat(enCours),
         /* les endroits cachés où poussent les plantes de l'Alchimiste (cueillette.js) : ceux du village, et ceux des zones sans brume */
         cachettes:(!T && !guide && ou === 'onglet' && M.cachettesCarte) ? M.cachettesCarte(brume) : []});

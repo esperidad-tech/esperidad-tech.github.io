@@ -270,7 +270,11 @@ module.exports = function verifierE3(E, SRC, D){
   ROLES.forEach(role => (E.etapes[role] || []).forEach((e, i) => { if(e.libre || e.piste) return; if(!(e.fait || []).some(c => cond(c, role))) pasFaites.push(`${role}[${i}]`); }));
   dit(!inconnues.length, inconnues.length ? 'des missions visent une chose qui n\'existe pas : ' + [...new Set(inconnues)].join(' ; ') : 'Les missions du Carnet visent toutes des choses qui existent');
   dit(!pasFaites.length, pasFaites.length ? 'sur le chemin parfait, des missions ne se cochent pas : ' + pasFaites.join(', ') : 'Sur le chemin parfait, toutes les missions des quatre rôles se cochent');
-  const nuit = ROLES.map(role => (E.etapes[role] || []).filter(e => e.des !== undefined).length);
-  dit(nuit.every(n => n >= 1), `Chaque rôle a ses missions de la nuit, qui n'arrivent qu'à la nuit (${ROLES.map((r, i) => r + ' ' + nuit[i]).join(', ')})`);
+  /* (Romain, 13 novembre : « quand on passe la nuit, il y a des missions qui se mettent à jour et, pour le Pisteur, c'est trop grillé.
+     Il faut les enlever. ») Avant, on exigeait des missions de la nuit pour chaque rôle. Maintenant : aucune mission ne doit annoncer
+     le donjon — ni « sous la terre », ni « donjon », ni « souterrain », ni le sac de potions pour le Pisteur. */
+  const grillees = [];
+  ROLES.forEach(role => (E.etapes[role] || []).forEach((e, i) => { if(/donjon|sous la terre|souterrain|chaudron du donjon/i.test(e.t || '')) grillees.push(`${role}[${i}]`); }));
+  dit(!grillees.length, grillees.length ? 'des missions du Carnet annoncent le donjon : ' + grillees.join(', ') : 'Aucune mission du Carnet n\'annonce le donjon');
   return pb;
 };
