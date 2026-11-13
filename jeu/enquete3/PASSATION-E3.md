@@ -1,6 +1,17 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre à 17 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre au soir)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 13 novembre au soir : la descente et le donjon (Bible §13.34) — EN LIGNE ; les corrections du donjon sont finies
+
+- **À lire : Bible §13.34.** La deuxième moitié de la liste de Romain (13 h 55) est construite et en ligne. **C'est ce qu'attendait la construction de Léo et de la fin (section du dessous)** : il ne manque plus que le go de Romain.
+- **Ce qui change pour la conception** :
+  - **La grille** : tirer, pousser (« un énorme bruit s'est entendu dans tout le village ») ou soulever (sans bruit). **Le bruit ne déclenche rien** : « Retenir le maire » est retiré (§13.33). À Romain de dire s'il sert encore à quelque chose.
+  - **Un nouveau code, « On va dans la crypte »** (Pisteur → Sage et Alchimiste), puis **deux codes d'allure** (Sage → Pisteur, Alchimiste → Pisteur : fille ou garçon, la peau, les cheveux — **pas l'âge, pas les yeux**). Le code du sac n'existe plus : **sept potions ou rien**. Pour la prison à quatre héros du §13.33, il faudra étendre ces codes (le Pisteur, le Barde).
+  - **Le Sage ne quitte plus le jeu pendant le donjon** : son plan, ses pages de sauvegarde (deux, plus une) et le carnet de l'aventurier sont dans son Grand Livre ; il tape tous ses codes du donjon dans son onglet Code.
+  - **La fleur de givre** se prépare sur l'établi de l'Alchimiste (huit étapes), et donne le code du Givre pour le Pisteur.
+  - **« L'entrée »** n'est écrit que sur le plan du Sage ; chez le Pisteur, la première salle s'appelle toujours « Le fond du puits » (à faire avec le §13.33).
+- **En attente de Romain** : la plante lumineuse (« on va en parler ensemble ») ; **les feux follets** (« leur sort principal ×4 quand ils se dévoilent d'eux-mêmes » : Claude n'a pas compris de quel sort il s'agit) ; les six décisions de Claude listées à la fin du §13.34.
 
 ## Nouveau depuis le 13 novembre (17 h 30) : Léo, le boss final, et la fin de l'enquête 3 — conçus, rien de construit (Bible §13.33)
 
@@ -23,7 +34,7 @@
   - **Le tableau d'enquête et l'accusation** : quatorze personnages, dix lieux.
   - **Les missions de la nuit sont retirées** pour le Pisteur, l'Alchimiste et le Sage (« trop grillées ») ; celles du Barde n'arrivent qu'au bon moment.
 - **Une réplique nouvelle à faire valider par Romain** : Margot accusée (« Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »).
-- **Reste de la même liste** : la fleur de givre, la descente (tenue de combat, la grille), le donjon (ses codes et ses pages dans l'interface principale). **En attente de Romain** : la plante lumineuse ; la fin du donjon et de l'enquête 3 (une autre conversation).
+- **Le reste de la même liste est fait depuis** (la fleur de givre, la descente, le donjon dans l'interface principale) : voir tout en haut, Bible §13.34. **En attente de Romain** : la plante lumineuse ; la fin du donjon et de l'enquête 3 (conçues au §13.33, pas construites).
 - **`E3-actions-des-roles.md`** : son encadré du haut dit ce qui a changé le 13 novembre ; le corps du document décrit encore l'ancien fil par endroits.
 
 ## Nouveau depuis le 12 novembre (23 h 27) : LE SCÉNARIO A CHANGÉ, les dialogues du Barde sont refaits et VERROUILLÉS

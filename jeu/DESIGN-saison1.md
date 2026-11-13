@@ -2502,7 +2502,7 @@ Romain : « J'aimerais bien que le mini-jeu du gâteau, il soit pour tout le mon
 
 **EN LIGNE : depuis le 12 novembre à 23 h 27 (heure de Paris ; accord de Romain à 21 h 44 : « je te laisse faire tout ça et après tu publies »), commit ef61be3 du site, **version 20261112-2226**, publication de GitHub vérifiée. Construit depuis les sources fusionnées avec le concours de gâteaux (§13.30 ; un conflit dans `e3.js`, réglé à la main). Avant l'envoi, sur le jeu fusionné : `rapide.sh`, `partie2.py`, les codes (enquêtes 1 et 2 identiques ; enquête 3 : 224 codes, trois retirés, un nouveau, les symboles ont changé), `e3-donjon-codes.js`, `verif.js 3`, et les robots `e3-barde.py` (tablette, `tendre`, téléphone), `e3-grands.py` (tablette, téléphone), `e3-gateau.py`, `e3-marche.py`, `e3-fin.py`, `e3-sage.py`, `e3-alchimiste.py`, `e3-pisteur.py`, `e3-descente.py`, `partie3.py`. Remarque ancienne, pas de ce chantier : `bot-carte.py e3` signale que la bulle de la place, la nuit, chez le Barde, défile (onze villageois à la fête) ; c'était déjà le cas avant. **Jamais essayé sur une vraie tablette.****
 
-### 13.32 Le test de Romain du 13 novembre sur l'enquête 3 : toutes ses corrections (13 h 55) — PREMIÈRE MOITIÉ CONSTRUITE, VÉRIFIÉE, EN LIGNE (13 novembre, 16 h 15 ; commit aa14db9 du site, version 20261113-1515) ; la descente et le donjon : voir la fin
+### 13.32 Le test de Romain du 13 novembre sur l'enquête 3 : toutes ses corrections (13 h 55) — PREMIÈRE MOITIÉ CONSTRUITE, VÉRIFIÉE, EN LIGNE (13 novembre, 16 h 15 ; commit aa14db9 du site, version 20261113-1515) ; la descente et le donjon : §13.34
 
 **D'où ça vient.** Romain a joué l'enquête 3 avec sa famille et a dicté une longue liste (13 h 55), puis : « Une fois que tu as fini, tu publies. » Deux choses sont à part : **la plante lumineuse** (« on va en parler ensemble » : rien de construit) et **la fin du donjon et de l'enquête 3** (il ouvrira une autre conversation).
 
@@ -2565,7 +2565,7 @@ Romain : « J'aimerais bien que le mini-jeu du gâteau, il soit pour tout le mon
 8. Les traces : seuls les chats d'Odette laissent des traces (plus de chien) ; essais infinis.
 9. Le moteur de son du donjon entre dans le jeu (+80 Ko).
 
-**PAS FAIT, à reprendre avec la descente et le donjon.**
+**PAS FAIT à 16 h 15 — FAIT DEPUIS : voir le §13.34** (sauf les feux follets, à éclaircir avec Romain).
 - « Enlever les indices (puits, crypte) » du plan des Fondateurs : ils ne sont que sur le plan du donjon (« Le fond du puits », « La rune dort au puits » : `jeu/donjon/carte.js`, `PLAN`).
 - La fleur de givre (le code tapé dans l'interface principale, la fleur sur l'établi, le code pour le Pisteur : « Givre » pour le crapaud).
 - La descente : le code du Pisteur au Sage (« on va dans la crypte »), la fenêtre « il est temps d'enfiler notre tenue de combat », les codes d'apparence du Sage et de l'Alchimiste, les sept potions obligatoires ; la grille (tirer, pousser : « un énorme bruit s'est entendu dans tout le village » ; soulever : « le portail s'ouvre sans bruit »).
@@ -2689,6 +2689,69 @@ Le fumigène n'est pas utilisé en phase 2 : il est gardé pour la phase 3.
 - **Une sauvegarde obligatoire après les deux premières salles** : si l'équipe n'a encore jamais sauvegardé, le jeu l'arrête et montre le bouton « 💾 Sauvegarder » en surbrillance (le rond jaune) : il faut taper le code d'une page blanche du Sage pour continuer. Si elle a déjà sauvegardé, rien ne s'affiche. (Question posée à Romain : quelles sont « les deux premières salles » — la galerie effondrée et la salle des rats ?)
 
 **Abandonné en route** (pour ne pas y revenir) : le sort « il apprend » (Léo insensible à ce qui a déjà marché) ; « la parade ouvre Léo, la dague ne frappe que là » ; la faux qui casse à l'acide ; le nuage qui chasse les rats ; un troisième bouclier ; la meule qui brûle ; un saignement qui s'arrête seul ; le saignement deux fois plus rapide grâce au Barde.
+
+### 13.34 Le test de Romain du 13 novembre, DEUXIÈME MOITIÉ : la descente et le donjon (la grille, la tenue de combat, les codes d'allure, les sept potions, le donjon du Sage et de l'Alchimiste dans le jeu, la fleur de givre) — construit, vérifié, EN LIGNE (13 novembre, 18 h 30 ; commit 7800425 du site, version 20261113-1728)
+
+**D'où ça vient.** La suite de la liste dictée par Romain à 13 h 55 (§13.32, « PAS FAIT »), puis : « Une fois que tu as fini, tu publies. » Toujours à part : **la plante lumineuse** (« on va en parler ensemble » : rien de construit) et **la fin du donjon et de l'enquête 3**, conçue pendant ce temps par une autre conversation (**§13.33** : Léo, la fin, et trois retouches du donjon — rien n'en est construit ici).
+
+**⚠️ Ce chapitre et le §13.33 ont été écrits en même temps, par deux conversations.** Le §13.33 attend la fin de ces corrections pour construire (Romain, 17 h 29). **Elles sont finies et en ligne.** Trois choses à savoir avant de construire le §13.33 :
+- **« Retenir le maire » est retiré (§13.33, 18 h 08)** : le bruit de la grille (tirer, pousser) n'a donc plus rien à déclencher pour l'instant. Il reste retenu dans la partie ; à Romain de dire s'il sert encore.
+- **Les codes d'allure** construits ici ne portent que **fille ou garçon, la peau et les cheveux**, pour le Sage et l'Alchimiste. La prison du §13.33 (« chaque tablette montre les quatre héros ») demandera aussi le Pisteur et le Barde, et l'âge si Romain le veut : `M.allureNumero` / `M.allureDe` (`descente.js`) sont à étendre, et il n'y a que trois symboles.
+- **« L'entrée des souterrains »** (§13.33, 17 h 42) : ici, seul **le plan du Sage** a changé (« L'entrée »). Le nom de la première salle chez le Pisteur (« Le fond du puits »), sa phrase d'arrivée et la carte du donjon **ne sont pas touchés** : ils restent à faire avec le §13.33.
+
+**1. La grille de la crypte** (`e3.js`, `lieux.clocher.pisteur`).
+- La clé en main, le point « La grille de la crypte » dit : « La clé tourne : clac ! La grille est déverrouillée. Elle est lourde, et toute rouillée… Comment vas-tu l'ouvrir ? » Trois boutons jaunes : **Tirer, Pousser, Soulever**. Un seul geste compte : les deux autres s'en vont.
+- **Tirer ou pousser** : « CRIIIIIC ! Un énorme bruit s'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c'est raté. » **Soulever** : « Tu soulèves un peu la grille, tout doucement. Le portail s'ouvre sans bruit, et vous pénétrez dans la crypte. » (Les mots de Romain. L'indice est chez Silas : « Anselme, lui, la soulève un peu, et elle ne dit rien. »)
+- **Le bruit est seulement retenu** (`P.vus['pisteur:clocher:tirer']` ou `:pousser`) : **ce qu'il change pour le maire n'est pas construit** — c'est pour la conversation sur la fin du donjon.
+- Les trois gestes donnent le même code, le **code du départ**.
+
+**2. Le code du départ et la tenue de combat** (`descente.js`).
+- **« On va dans la crypte »** (`infos.on_descend`) : le Pisteur le donne **au Sage et à l'Alchimiste** dès que le passage est ouvert (la grille, ou les barreaux du puits fondus à l'acide).
+- Sur les trois tablettes, la même fenêtre : **« Il est temps d'enfiler notre tenue de combat ! »**, avec le héros du joueur dans sa tenue du donjon, à SON allure.
+  - Chez le Pisteur : le code du départ est rappelé, et deux lignes disent qui manque (« Il te manque le code du Sage », **« On a besoin des sept potions pour descendre. Quand elles seront toutes prêtes, l'Alchimiste aura son code. »**). Pas de bouton « Descendre » tant que les deux codes ne sont pas tapés.
+  - Chez le Sage : sa tenue, et **son code pour le Pisteur**. Il le retrouve dans la page « Ma tenue de combat » de son Grand Livre, ou en retapant le code du départ.
+  - Chez l'Alchimiste : sa tenue ; **son code seulement si ses sept potions sont prêtes**, sinon « Il t'en manque N… file à ton établi. » Son code est aussi sur l'établi (« 🧪 Ton code ! »), comme avant.
+- **Les codes d'allure** (`allure:<n>`, 216 codes à la fin de `E.codesPlus`) : trois symboles, comme tous les codes. Ils disent **fille ou garçon, la peau (6), la couleur des cheveux (9)**, et qui c'est (le Sage ou l'Alchimiste). **Les yeux n'y sont pas** : il faudrait un quatrième symbole (dans le donjon, ils font 5 points d'écran). Le Pisteur, lui, est sur sa propre tablette : tout son héros passe, les yeux aussi. L'âge et la coiffure ne changent rien dans le donjon (un seul corps, une capuche).
+- **Le code de l'Alchimiste remplace le code du sac** (plus de `sac:<n>`) : tapé par le Pisteur, il met **les sept potions** dans son sac (et l'acide, pour la grille du puits). Sept potions ou rien.
+- Chaque code tapé, le Pisteur voit l'équipier en tenue (« C'est bien ton équipier ? Sinon, retape son code. »). Les deux codes tapés : la fenêtre « Descendre dans le donjon », **les trois héros en tenue côte à côte**, les sept fioles, le bouton jaune.
+- **Dans le donjon, les trois héros ont l'allure des joueurs**, et leurs petites têtes aussi (elles sont refaites au départ). Le Sage garde ses lunettes : elles font partie de sa tenue.
+- Comment c'est fait : le jeu ouvre le donjon avec `look=p:f.p1.roux.vert,s:m.p6.blond,a:f.p2.rose` (`jeu/donjon/moteur/src/allure.js`, `DJ.poserLook` dans `noyau.js`, `HerosAnime.photo` pour les têtes) ; les héros en tenue dans les fenêtres du jeu sont une toute petite page du donjon montrée dans un cadre (`jeu/donjon/moteur/src/tenue.html` → `donjon/tenue.html`).
+
+**3. Le donjon du Sage, dans son Grand Livre** (`descente.js`, `e3.js`). Romain : « pas une interface à part ».
+- **Tous ses codes du donjon se tapent dans son onglet Code** (`M.codeDonjon`) : le carnet, les études des monstres, la rune, le morceau déchiré, la page blanche, la porte.
+- **« Le plan des souterrains »** (la nuit) : le bouton jaune « Regarder le plan » l'ouvre **en grand, par-dessus le jeu** (on ne quitte plus l'enquête). Il reste la grille de l'alphabet, le zoom, la rune, et « Refermer ». La page dit où on en est (« Il manque un coin à ce plan », « Le morceau déchiré est recollé », la rune).
+- **« Les pages de sauvegarde »** : elles apparaissent **avec le code du départ**. **Deux pages** (au lieu de trois). On touche une page blanche : le sort s'écrit, son code apparaît. Quand le Pisteur l'a tapé, le Sage touche « ✔️ Le Pisteur l'a tapé » : **le code est barré** (il reste lisible). Le code « Une page blanche » en ajoute **une troisième**.
+- **« Le carnet de l'aventurier »** : avec son code (**chapeau, arbre, poisson**), les neuf monstres ; ou page par page, avec les codes d'étude. On touche un monstre : son croquis et le récit, un 🔊 par paragraphe.
+- **La pierre du Pisteur (la rune de lumière)** : le code tapé, « ✨ Une rune apparaît ! », puis le plan s'ouvre, la rune dessus. **Le morceau déchiré** : le plan s'ouvre, le coin se recolle.
+- Les textes du carnet restent dans `jeu/donjon/moteur/src/donnees.js` (une seule source) : `build.py` les lit avec `node` (`window.DONJON_CARNET`).
+
+**4. La fleur de givre, sur l'établi de l'Alchimiste** (`plantes-donnees.js`, `plantes-dessins.js`, `src/etabli/`, `plantes.js`).
+- Le code de la fleur (poisson, lune, étoile) se tape **dans l'onglet Code de l'Alchimiste** : « ❄️ La fleur de givre… Elle t'attend sur ton établi », bouton jaune « Aller à l'établi ».
+- Elle pend à la tringle comme les autres ; elle a sa page dans le grimoire, et son flacon (un cristal) sur la tablette des plantes. **Elle ne compte pas parmi les sept potions.**
+- **Huit étapes** : émincer les pétales, les écraser (une neige bleue), les faire fondre dans l'eau **sans feu**, filtrer, distiller à feu doux, laisser reposer (des cristaux), écraser les cristaux, mettre en fiole. Seize gestes faux ont leur phrase. « C'est vrai ! » : la plante est inventée, alors on dit ce qui est vrai — la menthe et son menthol, qui trompe la langue.
+- À la fin, la carte du givre : **« Donne ce code au Pisteur : ça peut être utile ! »** et le code (champignon, cœur, clé). Le Pisteur le tape **dans le donjon** : il a le Givre (pour Bourbe). On revoit le code en retouchant le flacon, ou dans « Les codes donnés » du Carnet.
+- **Les herbes lumineuses** (« on va en parler ensemble ») : rien de nouveau. Leur code se tape aussi dans l'onglet Code, et envoie la plante dans **l'ancien chaudron du donjon**, tel qu'il était.
+
+**5. Les combats et le plan** (en ligne depuis 17 h 01, commit 57bf74a du site).
+- **La dague ne touche que le premier monstre au sol** (`P.aPortee`, `regles.js`). Conséquence : derrière ses têtards, Bourbe sur le dos n'est plus à portée de dague ; la rune d'appel du Sage l'amène devant.
+- **Le feu follet caché est à moitié transparent** (`betes.js`, `A.voile`).
+- **Le plan du Sage** : « L'entrée » à la place de « Le fond du puits » ; la note codée dit « LA RUNE DORT DANS LA GALERIE ».
+
+**Ce que Claude a décidé seul (à valider par Romain).**
+1. Les yeux ne sont pas dans le code d'allure (sinon quatre symboles).
+2. Le code de l'Alchimiste fait deux choses à la fois : son allure, et « les sept potions sont prêtes ».
+3. Un sort de sauvegarde se barre à la main (« Le Pisteur l'a tapé ») : la tablette du Sage ne peut pas savoir ce que fait celle du Pisteur.
+4. Deux pages de sauvegarde, plus celle qu'on trouve : trois en tout (le quatrième code du donjon ne sert plus).
+5. Toute la recette du givre, son flacon à part, et « C'est vrai ! » sur la menthe.
+6. Les textes des trois gestes de la grille, autour des mots de Romain.
+
+**PAS FAIT.**
+- Les feux follets : « leur sort principal ×4 quand ils se dévoilent d'eux-mêmes » — Claude n'a pas compris de quel sort il s'agit : **à demander à Romain**. La flèche de lune : elle fait déjà 10 sur un feu follet caché (au lieu de 1), et un coup critique seulement s'il est dévoilé ; rien n'a été changé.
+- Ce que le bruit de la grille change (voir plus haut) ; la fin du donjon et de l'enquête 3 et les trois retouches du donjon (§13.33) ; la plante lumineuse.
+
+**Les codes.** Enquêtes 1 et 2 : identiques (57 et 69, comparés un par un). **Enquête 3 : 312 codes** (un de plus, « On va dans la crypte » ; 216 codes d'allure à la place des 128 codes du sac) : **la plupart ont changé de symboles**, les quatre tablettes doivent avoir la même version. Les codes du donjon, eux, n'ont pas bougé.
+
+**Robots.** `e3-descente.py` refait (129 vérifications, dont le vrai aller-retour avec le donjon : les héros en tenue, le plan dans le jeu, le code du givre tapé dans le donjon) ; `partie3.py`, `e3-alchimiste.py`, `verif-e3.js` (le code du départ et les codes d'allure dans le modèle) mis à jour ; `test-sage.py` (la note codée) et `test-regles.js` (la dague) aussi. Verts aussi : `rapide.sh`, `partie2.py`, `e3-pisteur.py` (115), `e3-sage.py` (33), `etabli.py` (75), et pour le donjon `test-combat.py` (137), `test-alchimiste.py` (156), `test-carte.py` (72), `test-enquete.py` (36). Pas rejoués : `e3-barde.py`, `e3-grands.py`, `e3-cueillette.py`, `e3-gateau.py`, `e3-fin.py`. **Jamais essayé sur une vraie tablette.**
 
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 

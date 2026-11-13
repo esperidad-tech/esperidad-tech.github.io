@@ -1,4 +1,4 @@
-"""Enquête 3, étape 6 (Bible § 13.14 et § 13.33) : la descente dans le donjon, branchée dans l'enquête (Playwright).
+"""Enquête 3, étape 6 (Bible § 13.14 et § 13.34) : la descente dans le donjon, branchée dans l'enquête (Playwright).
 
 Depuis le 13 novembre (le test de Romain) : la grille s'ouvre de trois façons (tirer, pousser : « un énorme bruit s'est entendu dans tout
 le village » ; soulever : sans bruit) ; le Pisteur donne le code du départ, « On va dans la crypte », au Sage et à l'Alchimiste ; chacun

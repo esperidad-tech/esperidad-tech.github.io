@@ -14,7 +14,7 @@
 - **Les grands dialogues** (le maire, Anselme) ne s'ouvrent qu'une fois **tout demandé** à tout le monde. Ils ne s'affichent pas comme les autres : violets, « 🎭 Grande conversation », un reflet qui passe, une fenêtre à bandeau ; « 🎭 » se pose sur le visage du villageois, sur la carte. Un seul essai. Celui à qui on ne peut pas parler à ce moment-là (occupé, ailleurs, fâché) ne bloque pas.
 - **Chez Anselme, les quatre choix sont en majuscules** : la bonne réponse ne se voit plus à l'œil.
 - **🤥** : le villageois ment. On le démasque avec « Mensonge ? », sous sa dernière réponse (règle de l'enquête 2).
-- **La grille du clocher grince.** Pour l'ouvrir sans bruit : ni tirer, ni pousser — **soulever** (Silas le dit). Le geste lui-même n'est pas encore construit (c'est chez le Pisteur).
+- **La grille du clocher grince.** Pour l'ouvrir sans bruit : ni tirer, ni pousser — **soulever** (Silas le dit). Le geste est construit depuis le 13 novembre, chez le Pisteur (Bible §13.34) : tirer ou pousser, « un énorme bruit s'est entendu dans tout le village ». Ce que ce bruit change pour le maire reste à décider.
 
 ## 1. Le début
 
@@ -479,9 +479,9 @@ Trois petits dialogues, à la fête, sans minuteur. Le premier quand : le grand 
 
 ## 7. Ce qui n'est PAS encore construit (le reste du nouveau scénario)
 
-Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32), le Sage et l'Alchimiste aussi, en partie. Ce qui reste, tant que Romain n'a pas donné son « go » :
+Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32 et §13.34), le Sage, l'Alchimiste et le Pisteur aussi, en partie. Ce qui reste, tant que Romain n'a pas donné son « go » :
 
-- **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; le geste de la grille (tirer, pousser ou soulever) et ce qu'il change pour le maire ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou).
+- **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; ce que le bruit de la grille change pour le maire (le geste lui-même est construit : tirer, pousser ou soulever) ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou).
 - **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
 - **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
 - **Le donjon** : Léo en chef des monstres ; le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne (le donjon est donc un peu plus dur).

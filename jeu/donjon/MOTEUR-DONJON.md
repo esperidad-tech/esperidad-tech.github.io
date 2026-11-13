@@ -366,7 +366,7 @@ Demandes de Romain : Bible §12.51 (« Les retouches du soir du 11 novembre »).
 - **En ligne le 12 novembre à 2 h 37** (commit a5740d4 du site, avec le jeu : 17c2052, version 20261112-0136), après tous les tests du donjon : `test-regles.js` 436, `test-combat.py` 137, `test-donjon.py` 89, `test-objets.py` 35, `../test-sage.py --vite` 210, `../test-alchimiste.py` 156, `../test-carte.py` 72, `test-descente.py` 21, `test-enquete.py` 36.
 - **Pas fait** : « Jouer sans internet » ne garde pas encore les fichiers du donjon (il faut l'avoir ouvert une fois en ligne) ; Mimi dans le donjon.
 
-### 9.13 Le 13 novembre : après le test de Romain en famille (Bible §13.32 et §13.33)
+### 9.13 Le 13 novembre : après le test de Romain en famille (Bible §13.32 et §13.34)
 
 Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses corrections (13 h 55). Pour le donjon :
 
