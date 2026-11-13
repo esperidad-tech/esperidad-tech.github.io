@@ -322,7 +322,7 @@ function contenu(ou, w, h){
       if(brNeuves.length){ res.commit = res.commit || {ids:[], tout:false}; res.commit.brume = brNeuves; }
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts,
-        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents, bullesChez:PR.bulles,
+        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents, bullesChez:PR.bulles, bullesMaison:(!T && M.bullesMaisons) ? M.bullesMaisons() : null,
         /* (enquête 3, la nuit : la fête) tout le village sur la place : les visages se rangent DANS la place, sans se chevaucher (carte.js, poserFoule) */
         foules:(E.fete && M.momentOk(E.fete.moments) ? (function(){ var o = {}; o[E.fete.lieu] = 1; return o; })() : null),
         brume:brume, brumePart:brNeuves.concat(enCours),

@@ -44,7 +44,7 @@ function calme(){ try{ return window.matchMedia && matchMedia('(prefers-reduced-
 /* ---------- Les pages, dans l'ordre du livre ---------- */
 var RANG = {tableau:0, lettre:0.5, habitants:1, recettes:2, mystere:3, fondateurs:4, carte:5, moulin:5,
   /* enquête 2 */ lettres:10, livreor:11, blanche:12, secret:14, plans:15, nuancier:16,
-  /* enquête 3 */ plan:10, rapport:11, grille:12, carnet:13, serrure:14,
+  /* enquête 3 (13 novembre) : l'herbier, le Livre d'or, la lettre, le carnet d'Odette, le plan des Fondateurs */ herbier:6, livredor:7, vraielettre:8, carnet:9, plan:10,
   /* toutes les enquêtes */ bibliotheque:80, objets:81, archives:82,
   codes:90, actions:91, accusation:99};
 /* 🏛️ Les fondateurs : cachée pour l'instant (Romain, 4 novembre, 21 h 12 : on la découvrira plus tard, dans les sous-sols).
@@ -61,7 +61,9 @@ function pagesDuLivre(){
   /* une page d'un moment seulement (p.moments : 📣 le rassemblement, la nuit) n'est pas dans le livre avant son moment
      (Romain, 5 novembre, 12 h 31) ; elle y apparaît quand on y passe, et le livre s'ouvre dessus (passer-moment, plus bas) */
   var P0 = M.P();
-  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans && !(p.moments && !M.momentOk(p.moments) && !(P0 && P0.pages[p.id]))) l.push(p); });
+  /* (enquête 3, 13 novembre) p.visibleSi : une page qui n'existe pas tant que le Sage n'a pas ce qu'il faut (la lettre, le carnet d'Odette :
+     « quand le Barde trouve le carnet, un code pour le Sage, et une nouvelle page dans le Grand Livre ») */
+  (E.pages || []).forEach(function(p){ if(p.id !== 'fondateurs' && !p.dans && !(p.moments && !M.momentOk(p.moments) && !(P0 && P0.pages[p.id])) && !(p.visibleSi && !M.besoinOk(p.visibleSi) && !(P0 && P0.pages[p.id]))) l.push(p); });
   if(FONDATEURS_VISIBLE) l.push({id:'fondateurs', titre:'Les fondateurs', ic:'🏛️', livre:true});
   l.push({id:'bibliotheque', titre:'La bibliothèque des plans', ic:'📚', livre:true});   /* (un vieux livre, plus une équerre : Romain, 15 h 05) */
   l.push({id:'objets', titre:'Les objets magiques', ic:'🔮', livre:true});
@@ -148,6 +150,8 @@ function contenu(p){
   if(p.id === 'codes' && p.livre) return tete(p) + codesMoments(E, P);
   if(p.id === 'actions' && p.livre) return tete(p) + donnerAction(P);
   if(p.id === 'accusation' && p.livre) return tete(p) + accusation(E, P);
+  /* (enquête 3) le Livre d'or de la fête : les petits mots du village, puis le bouton jaune, puis le code (ecritures.js) */
+  if(p.type === 'livredor' && M.livreDorHTML) return tete(p) + M.livreDorHTML(p) + (P.pages[p.id] && p.donne ? donne(p) : '');
   if(pagePleineBlanche(p)) return P.pages[p.id] ? tete(p) + revele(p) : pageBlanche(p);
   if(encreRequise(p)) return tete(p) + (P.pages[p.id] ? revele(p) : lettreBlanche(p));
   return tete(p) + generique(p, E, P);
@@ -378,10 +382,30 @@ var ETAGERE = '<svg class="lv-etagere" viewBox="0 0 240 104" role="img" aria-lab
   /* la planche et ses équerres */
   '<rect x="6" y="84" width="228" height="10" rx="2" fill="#7a4a26" stroke="#35281b" stroke-width="2"/><rect x="8" y="85.5" width="224" height="2.5" fill="#a5703f"/>' +
   '<path d="M32 94h14l-14 10z M194 94h14v10z" fill="#5e3618" stroke="#35281b" stroke-width="2" stroke-linejoin="round"/></svg>';
+/* (Romain, 13 novembre : « dans la bibliothèque des plans, il faut garder les archives de tous les plans qu'on a trouvés, qu'on peut
+   replier ») les plans des enquêtes passées restent sur l'étagère : un menu replié par plan, avec ce qu'on y avait trouvé (son texte,
+   son 🔊), sans mini-jeu. Comme la page des archives : les enquêtes 1 à N − 1, que ce héros les ait jouées ou non. */
+function plansPasses(E){
+  var l = [];
+  M.cle(window.ENQUETES || {}).map(Number).sort(function(a, b){ return a - b; }).forEach(function(n){
+    var A = window.ENQUETES[n]; if(!A || n >= E.id) return;
+    (A.pages || []).forEach(function(p){ if(p.dans === 'bibliotheque' && p.t) l.push({e:n, p:p}); });
+  });
+  return l;
+}
+function archivesPlans(E){
+  var O = UI.bibOuverts = UI.bibOuverts || {};
+  return plansPasses(E).map(function(x){
+    var id = 'e' + x.e + ':' + x.p.id, ouvert = !!O[id];
+    return '<section class="b-missions lv-arch lv-bib lv-bib-passe' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="bib-plier" data-id="' + esc(id) + '" aria-expanded="' + ouvert + '">' +
+      '<span>' + x.p.ic + ' ' + esc(x.p.titre) + '</span><small class="b-mi-compte">Enquête ' + x.e + '</small><i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>' +
+      (ouvert ? '<div class="lv-bib-corps"><p class="lv-texte">' + esc(x.p.t) + ' ' + lire(x.p.t) + '</p></div>' : '') + '</section>';
+  }).join('');
+}
 function bibliotheque(E, P){
-  var l = rangees(E, P, 'bibliotheque'), O = UI.bibOuverts = UI.bibOuverts || {};
-  if(!l.length) return ETAGERE + '<p class="lv-texte">' + esc(T_PLANS) + ' ' + lire(T_PLANS) + '</p><p class="lv-texte lv-rien">' + esc(T_RIEN) + ' ' + lire(T_RIEN) + '</p>';
-  return ETAGERE + l.map(function(p){
+  var l = rangees(E, P, 'bibliotheque'), O = UI.bibOuverts = UI.bibOuverts || {}, passes = archivesPlans(E);
+  if(!l.length && !passes) return ETAGERE + '<p class="lv-texte">' + esc(T_PLANS) + ' ' + lire(T_PLANS) + '</p><p class="lv-texte lv-rien">' + esc(T_RIEN) + ' ' + lire(T_RIEN) + '</p>';
+  return ETAGERE + passes + l.map(function(p){
     var ouvert = !!O[p.id], fait = P.pages[p.id];
     return '<section class="b-missions lv-arch lv-bib' + (ouvert ? '' : ' plie') + '"><h3><button type="button" class="b-mi-plier" data-act="bib-plier" data-id="' + esc(p.id) + '" aria-expanded="' + ouvert + '">' +
       '<span>' + p.ic + ' ' + esc(p.titre) + '</span>' + (fait ? '<small class="b-mi-compte">✅</small>' : '') + '<i class="b-mi-fleche" aria-hidden="true">▾</i></button></h3>' +
@@ -577,7 +601,7 @@ function vuPage(p){
   var ch = false, k = 'page:' + p.id;
   if(!P.vus[k]){ P.vus[k] = 1; ch = true; }
   var Ep = pageE(p.id);
-  if(Ep && Ep.donne && !Ep.besoin && !Ep.action && !Ep.mj && !Ep.obligatoire && !Ep.moments && !P.objets['_' + Ep.donne]){   /* (le rassemblement : son code seulement une fois le village rassemblé) */
+  if(Ep && Ep.donne && !Ep.besoin && !Ep.action && !Ep.mj && !Ep.obligatoire && !Ep.moments && !Ep.quand && !P.objets['_' + Ep.donne]){   /* (le rassemblement : son code seulement une fois le village rassemblé) */
     P.objets['_' + Ep.donne] = true; ch = true;
     if(V){ var c = indexDe(V.L, 'codes'); if(c >= 0 && c !== V.i) V.bati[c] = false; }   /* la page des codes se redessinera */
   }

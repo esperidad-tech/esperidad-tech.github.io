@@ -28,11 +28,7 @@ var VARIANTES = {
   traces:[{id:'ville', ic:'🏘️', nom:'Suivre la piste : le massif de la mairie', d:'Les petites traces vont jusqu\'à la forêt (enquête 1)',
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
       departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
-    /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
-    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
-      departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
-      departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}},
+    /* (13 novembre) les traces de Moustache ne sont plus une variante de ce jeu : c'est « Suivre les traces » (mj-pistage.js), où le Pisteur marche librement */
     /* (enquête 3) « Suivre la poussière » : la piste de l'Alchimiste jusqu'au rond des vesses-de-loup */
     {id:'poussiere', ic:'🍄', nom:'Suivre la poussière : les vesses-de-loup', d:'La piste de l\'Alchimiste (enquête 3)', params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
       departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'}}],
@@ -53,6 +49,7 @@ var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
   gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
+  pistage:'🟡',  /* les traces de Moustache (13 novembre) : le Pisteur marche, la caméra le suit ; tout neuf, à essayer par Romain */
   visee:'🟡',    /* les banderoles de la fête, le nouveau tir vu par les yeux du Pisteur (12 novembre) : tout neuf, à essayer par Romain */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'

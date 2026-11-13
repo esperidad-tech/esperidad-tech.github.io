@@ -684,6 +684,7 @@ function traiterCode(seq){
     M.noter('Reçu : ' + nn.nom + '.', nn.ic);
     var quoi = role === 'alchimiste' ? 'Tu peux l\'analyser dans ton atelier.' : role === 'barde' ? 'Tu peux le montrer aux habitants.' : role === 'sage' ? 'Regarde ton Grand Livre.' : 'Regarde ton sac.';
     if(M.codePourTous(id)) quoi = ouvertPourMoi(id);
+    var Ob = (E.objets || {})[x]; if(Ob && Ob.recu && Ob.recu[role]) quoi = Ob.recu[role];   /* (enquête 3) ce que cet objet change pour ce rôle : « une nouvelle page dans ton Grand Livre » */
     M.ouvrir({type:'info', ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi});
   } else {
     var I = E.infos[x];
@@ -1237,6 +1238,9 @@ A.maison = function(el){
      maison, avec « Frapper » et « Écouter aux portes » (sinon l'écoute d'une maison ne se verrait jamais) */
   var ecoute = M.role() === 'barde' && (M.E() || {}).ecouteMaisons && M.porteBouton && M.porteBouton(el.dataset.id);
   if(M.role() === 'barde' && !ecoute && (M.sansActions() || !M.pnjIci(el.dataset.id).length)) return A.frapper(el);
+  /* (13 novembre) une maison avec des choses à voir (M.pointsMaison : les traces de Moustache, devant chez Odette) : on est devant la porte,
+     on les voit tout de suite — pas d'« Explorer » avant (A.point demande que le lieu soit exploré à ce moment) */
+  if(M.pointsMaison && M.pointsMaison(el.dataset.id).length) P.vus['explore:' + el.dataset.id] = P.moment;
   var bl = bulleDe(el);
   if(!bl.bulle) M.son('page');
   M.ouvrir(Object.assign({type:'maison', id:el.dataset.id, leger:true}, bl));
@@ -1512,6 +1516,7 @@ A['ouvrir-page'] = function(el){
   if(!p || P.pages[p.id]) return;
   if(p.besoin && !M.besoinOk(p.besoin)) return;
   if(p.moments && !M.momentOk(p.moments)) return;   /* une page d'un moment seulement (le rassemblement, la nuit : e2.js) */
+  if(p.quand && !M.momentOk(p.quand)) return;       /* (enquête 3) une page toujours là, mais dont le bouton attend son moment (le Livre d'or : l'après-midi) */
   var kp = 'sage:page:' + p.id, gratuit = !!(p.mj && M.essaiGratuit && M.essaiGratuit(el, kp));   /* 2 essais au plus (essais.js) */
   if(p.mj && M.ferme && M.ferme(kp)){ M.ouvrir({type:'info', ic:'🔒', titre:p.titre, t:M.texteEchec(p, M.MAX_ESSAIS)}); return; }
   if(p.action && !gratuit){ if(!M.peutAgir()) return; M.depenser(); }

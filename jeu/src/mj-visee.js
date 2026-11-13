@@ -178,7 +178,54 @@ function audio(){
   return ctxA;
 }
 var SONS = sonsVisee(audio, function(a){ return a.destination; });
-function son(nom){ try{ if(SONS[nom]) SONS[nom](); }catch(e){} }
+/* L'ARC DU DONJON (Romain, 13 novembre : « le son quand on bande l'arc, j'aimerais que tu prennes le même que quand il tire avec son
+   arc dans le donjon, le même son »). Le moteur de son du donjon et ses bruitages sont dans le jeu (build.py : SON_DONJON). Comme
+   là-bas, une des trois versions au hasard à chaque tir (les trois sont gardées par Romain : donjon/essai/src/son.js, CHOIX_SONS.arc),
+   au même niveau (niveaux.json). La corde qu'on tend quand le doigt se pose ; la corde lâchée quand il se lève — si on lâche avant la
+   fin du grincement, il se tait. Sans le moteur (un vieux navigateur, un fichier manquant) : les sons d'avant. */
+var ARC_DJ = (function(){
+  var eng = null, engCtx = null, prise = null, ver = null, rate = false;
+  var NIV = {A:1.9077, B:1.7027, C:1.1949};
+  function moteur(){
+    if(rate || !window.Moteur || !window.BRUITAGES_ARC) return null;
+    var a = audio(); if(!a) return null;
+    if(!eng || engCtx !== a){ try{ eng = window.Moteur(a, {}); engCtx = a; }catch(e){ rate = true; eng = null; if(window.console) console.warn('arc du donjon', e); } }
+    return eng;
+  }
+  return {
+    preparer:function(){ try{ moteur(); }catch(e){} },
+    tendre:function(){
+      var E = moteur(); if(!E) return false;
+      try{
+        ver = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
+        var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .02;
+        prise = E.prise(t, NIV[ver]);
+        x.tendre(E, t, E.bus(prise, {rev:x.rev, pan:0}));
+        return true;
+      }catch(e){ prise = null; return false; }
+    },
+    lacher:function(){
+      var E = moteur(); if(!E || !ver) return false;
+      try{
+        var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .01;
+        if(prise && prise.couper) prise.couper(t, .02);     /* le grincement s'arrête net : la corde est partie */
+        var p2 = E.prise(t, NIV[ver]);
+        x.lacher(E, t, E.bus(p2, {rev:x.rev, pan:0}));
+        prise = null;
+        return true;
+      }catch(e){ return false; }
+    },
+    /* le tir est abandonné (la pause, la fin de la partie) : le grincement se tait */
+    taire:function(){ try{ if(prise && prise.couper && eng) prise.couper(eng.ctx.currentTime, .03); }catch(e){} prise = null; }
+  };
+})();
+function son(nom){
+  try{
+    if(nom === 'bander' && ARC_DJ.tendre()) return;
+    if(nom === 'lacher' && ARC_DJ.lacher()) return;
+    if(SONS[nom]) SONS[nom]();
+  }catch(e){}
+}
 
 /* ==========================================================
    L'ARC ET LA MAIN, vus par les yeux du Pisteur (Romain, 16 h 51 : « il faut que tout l'arc soit dans la bonne
@@ -539,6 +586,7 @@ function anneauPlat(an, prefixe, trou, bois){
    LE JEU
    ========================================================== */
 function jouer(el, p, fin){
+  ARC_DJ.preparer();   /* (le moteur de son du donjon se prépare maintenant, pas au premier tir) */
   var id = 'vs' + (++nUid) + '-', N = Math.min(A.PORTEURS.length, p.anneaux || 5), rExt = p.trou + p.bois;
   var etat = 'large', actif = -1, fleches = p.fleches, rates = 0, chaine = [], finie = false, arrete = false;
   var W = 0, H = 0, u = 1, sL = 1, sV = 1, C = [0, 0], zf = 2.5, cote = 0, oyL = 0, mVise = 1, kTremble = 1;
@@ -923,6 +971,7 @@ function jouer(el, p, fin){
   };
   return {arreter:function(){
     arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ clearTimeout(t); });
+    ARC_DJ.taire();
     if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
   }};
 }

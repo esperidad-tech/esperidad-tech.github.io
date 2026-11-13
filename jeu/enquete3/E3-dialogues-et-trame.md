@@ -102,6 +102,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Rien vu. Mais ici, tout se sait : Basile parle à ses choux, Victor a peur des chats, Fortuné vend des cailloux peints… et Mélusine a du tissu tout neuf ! »
 4. **Le maire vient souvent à la taverne ?** _(le matin et l'après-midi)_
    - « Chaque soir, pour son cidre. Il déteste qu'on dise qu'il cache des choses : il devient tout rouge ! »
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures » (pour barde, sage) _(l'après-midi)_
+   - « Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »
 - **Tout demandé** : « Tu poses plus de questions que mes clients ne boivent de cidre ! »
 
 ### 🧔 Victor Lettrier — le facteur
@@ -219,7 +221,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - 🔍 démasqué : « Bon… j'ai veillé à la bougie. Ne me demande pas pourquoi. »
 4. **Qu'est-ce que vous cousez pour la fête ?** _(l'après-midi)_
    - « Une banderole par chat d'Odette : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. »
-5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde, sage) _(l'après-midi)_
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures » (pour barde, sage) _(l'après-midi)_
    - 🤥 « Moi ? Je sais à peine écrire mon nom ! »
    - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Il est venu ici, cette nuit : il a peut-être laissé des traces… » → donne « L'aveu de Mélusine » (pour sage)
 - **Tout demandé** : « Laisse-moi coudre, je t'en prie… »

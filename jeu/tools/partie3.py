@@ -203,15 +203,15 @@ def partie(nav, base):
     verifier(set(livrer(T, B)) == {'info:poste', 'info:chale'}, 'le Barde a donné au Sage : la poste, « Odette… sans sa canne »')
     # le Sage : le tableau, le Livre d'or, l'herbier, les premiers doutes
     verifier(S.jouer('mairie', 'tableau') == 'runes', 'le Sage peint le tableau d\'Odette (Assembler les runes)'); S.fermer()
-    S.point('mairie', 'livredor'); S.fermer()
     S.page('habitants')
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
     verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
-    t = S.ouvrir_page('doutes'); S.fermer()
-    verifier('sans sa canne' in S.page('doutes'), 'le Sage : « Une drôle de lettre », avec les deux codes du Barde')
-    verifier(set(livrer(T, S)) == {'info:ecritures'}, 'le Sage a donné à l\'Alchimiste : les écritures du village')
+    # (13 novembre) plus de page « Une drôle de lettre » : les codes du Barde sont des informations, le Sage conclut tout seul
+    verifier(S.js("() => !!M.P().recus['info:poste'] && !!M.P().recus['info:chale']"), 'le Sage a reçu les deux premiers doutes du Barde (la poste, « Odette… sans sa canne »)')
+    tl = S.page('livredor')
+    verifier('pas encore signé' in tl and S.pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0 and not list(livrer(T, S)), 'le Livre d\'or, le matin : tout le monde n\'a pas encore signé — le Sage n\'a rien à donner')
     # le Pisteur : les banderoles et l'oie
-    verifier(P.jouer('place', 'banderoles') == 'tir', 'le Pisteur accroche les banderoles (tir à l\'arc)'); P.fermer()
+    verifier(P.jouer('place', 'banderoles') == 'visee', 'le Pisteur accroche les banderoles (le nouveau tir à l\'arc)'); P.fermer()
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
@@ -264,18 +264,20 @@ def partie(nav, base):
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[3]; }"), 'le Barde a tout demandé aux villageois de l\'après-midi : sa mission se coche')
     B.carte(); B.ev('frapper', {'id': 'L2'}); B.ev('question', {'p': 'voisin', 'i': '0'}); B.fermer()
     verifier(set(livrer(T, B)) == {'obj:lettre', 'obj:carnet', 'info:traces_moustache'}, 'le Barde a donné : la lettre (Sage, Alchimiste), le carnet (Sage), les traces de Moustache (Pisteur)')
-    # le Sage : la lettre est fausse, les sept chats, le plan des Fondateurs
-    S.ouvrir_page('fausse'); S.fermer()
-    verifier('la lettre est fausse' in S.page('fausse'), 'le Sage : la lettre et le carnet — « la lettre est fausse ! »')
-    S.ouvrir_page('chats'); S.fermer()
+    # le Sage (13 novembre) : le Livre d'or, quand tout le monde a signé → l'Alchimiste ; la lettre et le carnet d'Odette, deux nouvelles
+    # pages (aucune ne conclut à sa place) ; le plan des Fondateurs
+    S.ouvrir_page('livredor'); S.fermer()
+    S.page('vraielettre'); nl = S.pg.locator('#livre-ici .lv-page.on .ec-lettre').count()
+    S.page('carnet'); nc = S.pg.locator('#livre-ici .lv-page.on .ec-chat').count()
+    verifier(nl == 1 and nc == 7, f'le Sage : deux nouvelles pages dans son Grand Livre, la lettre et le carnet d\'Odette avec ses sept chats ({nl}, {nc})')
     S.ouvrir_page('plan')
     if S.pg.locator('#voile [data-act=mj-go]').count(): S.pg.locator('#voile [data-act=mj-go]').click(); S.pg.wait_for_timeout(900)
     if S.pg.locator('#mj-plein .mj-go').count(): S.pg.locator('#mj-plein .mj-go').click(); S.pg.wait_for_timeout(1200)
     S.js("() => window.__finir(true)"); S.pg.wait_for_timeout(400); S.fermer()
     verifier(S.js("() => !!M.P().pages.plan"), 'le Sage déchiffre le plan des Fondateurs (l\'alphabet secret)')
-    verifier(livrer(T, S) == ['info:six_doigts'], 'le Sage a donné au Pisteur : Moustache a six doigts')
-    # le Pisteur : les traces de Moustache, jusqu'à la crypte
-    verifier(P.jouer('place', 'traces') == 'traces', 'le Pisteur suit les pattes de Moustache'); P.fermer()
+    verifier(list(livrer(T, S)) == ['info:ecritures'], 'le Sage a donné à l\'Alchimiste : les écritures du village (et plus de code « six doigts » : il le dit à voix haute)')
+    # le Pisteur : les traces de Moustache, depuis chez Odette, jusqu'à la crypte
+    verifier(P.jouer('L2', 'traces') == 'pistage', 'le Pisteur suit les pattes de Moustache, depuis chez Odette (le nouveau mini-jeu)'); P.fermer()
     verifier(livrer(T, P) == ['info:crypte_fermee'], 'le Pisteur a donné au Barde : la crypte est fermée')
     # l'Alchimiste : la lettre au labo (avec le Livre d'or du Sage)
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); M.ouvrirLabo(); }"); A.pg.wait_for_timeout(1800)
@@ -283,14 +285,18 @@ def partie(nav, base):
     f.wait_for_function('() => !!window.__labo', timeout=8000)
     verifier(f.evaluate("() => window.__labo.cuirs().indexOf('lettre') >= 0") and A.js("() => !!M.P().recus['info:ecritures']"), 'l\'Alchimiste : la lettre est sur sa paillasse, et il a le Livre d\'or')
     f.evaluate("() => { window.__labo.finir('lettre'); window.__labo.quitter(); }"); A.pg.wait_for_timeout(900); A.fermer()
-    verifier(set(livrer(T, A)) == {'info:ecriture'}, 'l\'Alchimiste a donné au Barde et au Sage : l\'écriture de Mélusine')
+    verifier(set(livrer(T, A)) == {'info:ecriture'}, 'l\'Alchimiste a donné au Barde et au Sage : « Deux écritures » (Mélusine ou Margot)')
+    # (13 novembre) le Barde peut poser la même accusation à Margot : elle dit vrai
+    B.carte(); B.ev('lieu', {'id': 'taverne'}); B.ev('parler', {'id': 'margot'}); B.pg.wait_for_timeout(500)
+    im = B.js("() => { var q = M.E().pnj.margot.questions; for(var i = 0; i < q.length; i++) if(/écrit la lettre/.test(q[i].q)) return i; return -1; }")
+    B.ev('question', {'p': 'margot', 'i': str(im)}); B.pg.wait_for_timeout(2800)
+    verifier(im == 4 and 'ardoises' in B.texte() and B.js("() => !M.E().pnj.margot.questions[4].ment"), 'le Barde accuse Margot : « Je n\'écris que mes ardoises » (elle dit vrai)'); B.fermer()
     # le Barde : Mélusine, devant son écriture
     iq = B.js("() => { var q = M.E().pnj.melusine.questions; for(var i = 0; i < q.length; i++) if(q[i].donneVrai === 'info:aveu' || q[i].donne === 'info:aveu') return i; return 4; }")
     B.carte(); B.ev('lieu', {'id': 'atelier'}); B.ev('parler', {'id': 'melusine'}); B.pg.wait_for_timeout(600)
     B.ev('question', {'p': 'melusine', 'i': str(iq)}); B.ev('bd-ment', {'p': 'melusine', 'i': str(iq)}); B.fermer()
     verifier(livrer(T, B) == ['info:aveu'], 'le Barde a donné au Sage : l\'aveu de Mélusine')
-    S.ouvrir_page('qui'); S.fermer()
-    verifier('Un homme en cape l\'y a forcée' in S.page('qui') and 'Léo' not in S.page('qui'), 'le Sage : « Qui a écrit la lettre ? » — Mélusine, forcée par un homme en cape (aucun nom)')
+    verifier(S.js("() => !!M.P().recus['info:aveu'] && !!M.P().recus['info:ecriture']"), 'le Sage a reçu « Deux écritures » et l\'aveu de Mélusine (plus de page « Qui a écrit la lettre ? »)')
     # chacun rend sa mission au maire
     S.point('mairie', 'rendu'); S.fermer()
     P.point('mairie', 'mission'); P.fermer()

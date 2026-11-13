@@ -43,8 +43,24 @@ function lire(t){ return M.lireBtn ? M.lireBtn(t) : ''; }
 
 /* ---------- La brume repoussée ---------- */
 M.brumeLevee = function(){
-  var E = enquete(), B = E && E.brume;
-  try{ return (B && B.zones && M.P() && M.besoinOk(B.si)) ? B.zones.slice() : []; }catch(e){ return []; }
+  var E = enquete(), B = E && E.brume, P = M.P();
+  try{
+    if(!(B && B.zones && P && M.besoinOk(B.si))) return [];
+    /* (Romain, 13 novembre ; B.revient) « s'il a trouvé toutes les plantes dans la brume, la brume se réinstalle l'après-midi. S'il n'a
+       pas trouvé, la brume reste dégagée » : dès le moment qui suit la dernière cueillette au-delà de la brume, elle est de retour. */
+    if(B.revient && toutCueilliAvant(E, P, B.zones)) return [];
+    return B.zones.slice();
+  }catch(e){ return []; }
+};
+function plantesDesZones(E, zones){ return ORDRE.filter(function(id){ var pl = D.PLANTES[id]; return existe(E, id) && pl.zone && zones.indexOf(pl.zone) >= 0; }); }
+function toutCueilliAvant(E, P, zones){
+  var l = plantesDesZones(E, zones);
+  return l.length > 0 && l.every(function(id){ var m = P.vus['cueilli:plante:' + id]; return m !== undefined && m < P.moment; });
+}
+/* toutes les plantes d'au-delà de la brume sont cueillies (e3.js : Anselme n'a plus à sonner Bertille) — une condition {brumeFinie:true} */
+M.brumeFinie = function(){
+  var E = enquete(), B = E && E.brume, P = M.P();
+  try{ var l = B && B.zones && P ? plantesDesZones(E, B.zones) : []; return l.length > 0 && l.every(function(id){ return P.vus['cueilli:plante:' + id] !== undefined; }); }catch(e){ return false; }
 };
 
 /* ---------- Où sont les plantes, et ce qu'on peut y faire ---------- */
@@ -96,7 +112,8 @@ M.cachetteHTML = function(m){
   var e = etat(E, P, m.id);
   var s = '<div class="b-feuille-tete"><span class="b-feuille-ic">' + pl.ic + '</span><div><h2>' + esc(pl.nom) + '</h2></div></div>';
   if(e === 'tot') return s + phrase(pl.tot || 'Ce n\'est pas encore le moment.');
-  if(e === 'cueillie') return s + phrase(dehors(m.id) ? '✅ Cueilli ! Ça t\'attend devant la porte de ton atelier. La tringle de l\'établi est pleine !' : '✅ Cueilli ! Ça t\'attend sur l\'établi de ton atelier.', 'b-recolte');
+  /* (13 novembre) m.trouvee : elle vient d'être trouvée ET cueillie d'un seul toucher — on dit d'abord ce qu'on voit (pl.ici) */
+  if(e === 'cueillie') return s + (m.trouvee ? phrase(pl.ici) : '') + phrase(dehors(m.id) ? '✅ Cueilli ! Ça t\'attend devant la porte de ton atelier. La tringle de l\'établi est pleine !' : '✅ Cueilli ! Ça t\'attend sur l\'établi de ton atelier.', 'b-recolte');
   if(e === 'deja') return s + phrase(dehors(m.id) ? '✅ Tu en as déjà : ça attend devant la porte de ton atelier.' : '✅ Tu en as déjà sur ton établi.', 'b-recolte');
   if(e === 'faite') return s + phrase('✅ Ta potion est prête : plus besoin d\'en cueillir.', 'b-recolte');
   return s + phrase(pl.ici) +
@@ -111,8 +128,19 @@ A.cachette = function(el){
   if(neuve){ S.cachettesVues = S.cachettesVues || {}; S.cachettesVues[cle] = 1; }
   P.vus['cachette:' + id] = 1;
   var bl = M.bulleDe ? M.bulleDe(el) : {};
-  M.son(neuve ? 'magie' : 'bulle');
-  M.ouvrir(Object.assign({type:'cachette', id:id, n:n, leger:!neuve}, bl));   /* (neuve : la carte est remise à jour, pour la pastille) */
+  /* (Romain, 13 novembre : « dès qu'on trouve la plante, on n'a pas besoin de recliquer dessus pour cliquer sur Cueillir. Elle est
+     cueillie automatiquement dès qu'on la trouve. Et ça, c'est valable aussi pour l'enquête 2. ») Toucher le bon endroit suffit : si
+     c'est le moment (ni trop tôt, ni déjà cueillie), la plante part tout de suite vers l'établi. */
+  var trouvee = etat(E, P, id) === 'pret';
+  if(trouvee){
+    M.ajouterPlante(id);
+    P.vus['cueilli:plante:' + id] = P.moment;
+    if(M.etabliDispo) M.etabliDispo();
+    M.sauver();
+  }
+  M.son(neuve || trouvee ? 'magie' : 'bulle');
+  if(trouvee) setTimeout(function(){ M.son('ok'); }, 260);
+  M.ouvrir(Object.assign({type:'cachette', id:id, n:n, leger:!(neuve || trouvee), trouvee:trouvee}, bl));   /* (neuve ou cueillie : la carte est remise à jour, pour la pastille) */
 };
 A['cueillir-plante'] = function(el){
   var id = el.dataset.id, P = M.P(), E = enquete(), m = UI.modal;

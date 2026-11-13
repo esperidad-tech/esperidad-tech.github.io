@@ -3,7 +3,7 @@ Chaque mini-jeu se lance pour de vrai (l'explication avant, le bouton jaune, l'�
 une capture), puis le robot décide du résultat (réussi ou raté) pour essayer les deux chemins. Les codes des autres rôles sont tapés
 comme un joueur (onglet 📜 Code). Deux parties :
   A (adulte) : tout réussi, la clé d'Anselme prise → la grille de la crypte ; pas de puits ;
-  B (enfant) : l'oie ratée, les traces avec « Moustache a six doigts », la clé ratée → le puits.
+  B (enfant) : l'oie ratée, les traces réussies du premier coup, la clé ratée → le puits. (A : les traces ratées une fois, puis réussies.)
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-pisteur.py"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -89,7 +89,7 @@ def partie(b, joueur, chemin):
     pts = lieu(pg, 'place')
     verifier([p['id'] for p in pts] == ['banderoles'], f'la place, le matin : les banderoles ({pts})')
     i = jouer_point(pg, 'place', 'banderoles', True, f'{chemin}-banderoles')
-    verifier(i and i['type'] == 'tir' and i['params'].get('decor') == 'banderoles', 'les banderoles : tir à l\'arc, décor banderoles')
+    verifier(i and i['type'] == 'visee' and i['params'].get('niveauEffectif') == 9, f'les banderoles : le nouveau tir à l\'arc (visée), niveau 9 ({i and i["type"]}, {i and i["params"].get("niveauEffectif")})')
     verifier('décoration' in voile(pg), 'les banderoles réussies : « Ça, c\'est de la décoration ! »')
     fermer(pg)
     pts = lieu(pg, 'boulangerie')
@@ -125,27 +125,44 @@ def partie(b, joueur, chemin):
     # ---------- l'après-midi ----------
     print(' après-midi')
     verifier(code(pg, 'moment:1') and pg.evaluate("() => M.momentId() === 'apresmidi'"), 'le code de l\'après-midi')
-    verifier(lieu(pg, 'place') == [], 'la place sans « Les traces de Moustache » : rien')
+    verifier(lieu(pg, 'place') == [], 'la place, l\'après-midi : rien (les traces partent de chez Odette)')
+    fermer(pg)
+    # LES TRACES DE MOUSTACHE (13 novembre) : devant chez Odette (L2), avec le code du Barde ; le nouveau mini-jeu « pistage » ;
+    # autant d'essais qu'on veut ; plus de code « six doigts »
+    verifier(lieu(pg, 'L2') == [] and pg.evaluate("() => Object.keys(M.bullesMaisons()).length") == 0, 'chez Odette, sans le code du Barde : rien, et pas de bulle sur sa maison')
     fermer(pg)
     verifier(code(pg, 'info:traces_moustache'), 'le code « Les traces de Moustache » (du Barde)')
-    if not A: verifier(code(pg, 'info:six_doigts'), 'le code « Moustache a six doigts » (du Sage)')
-    pts = lieu(pg, 'place')
-    verifier([p['id'] for p in pts] == ['traces'], 'la place : les traces de Moustache')
-    i = jouer_point(pg, 'place', 'traces', not A, f'{chemin}-traces')
+    verifier(pg.evaluate("() => !M.E().infos.six_doigts"), 'plus de code « Moustache a six doigts »')
+    verifier(pg.evaluate("() => M.bullesMaisons().L2") == '🐾', 'une petite bulle 🐾 se pose sur la maison d\'Odette')
+    pts = lieu(pg, 'L2')
+    verifier([p['id'] for p in pts] == ['traces'] and pts[0]['off'] is False, f'chez Odette : les traces de Moustache, sans « Explorer » avant ({pts})')
+    i = jouer_point(pg, 'L2', 'traces', not A, f'{chemin}-traces')
     pp = (i or {}).get('params', {})
-    verifier(pp.get('suspect') == 'chat' and pp.get('arrivee') == 'crypte' and pp.get('decor') == 'ville', 'les traces : des pattes de chat, en ville, jusqu\'à la crypte')
-    verifier(bool(pp.get('carteFloue')) == A, f'sans « six doigts », le lait cache ses doigts ; avec, on les voit ({pp.get("carteFloue")})')
-    verifier(pp.get('chercher') == 10, 'les traces : dix secondes pour chercher le départ, puis tout avance')
-    print('   niveau des traces : rang', pp.get('niveau'), '→ joué au niveau', pp.get('niveauEffectif'))
-    verifier(pp.get('niveau') == (5 if A else 3), 'les traces : plus dures sans « six doigts » (rang 5), normales avec (rang 3)')
+    verifier(i and i['type'] == 'pistage' and i.get('reessais') is True, f'les traces : le mini-jeu « Suivre les traces », à recommencer autant qu\'on veut ({i and i["type"]})')
+    print('   niveau des traces : rang', pp.get('niveau'), '→ joué au niveau', pp.get('niveauEffectif'), '·', pp.get('faux'), 'fausses pistes · cinq doigts :', pp.get('cinq'))
+    verifier(pp.get('faux') == (4 if A else 3) and bool(pp.get('cinq')) == A, 'adulte : quatre fausses pistes, dont Noisette et ses cinq doigts ; enfant : trois, sans Noisette')
+    if A:
+        # raté : pas de code, « Réessayer » ; puis réussi
+        t = voile(pg)
+        verifier('pas Moustache' in t and pg.locator('#voile .b-donne').count() == 0 and pg.locator('#voile .b-reessai').count() == 1, 'les traces ratées : « Ce n\'était pas Moustache », pas de code, « 🔁 Réessayer »')
+        pg.locator('#voile .b-reessai').click(); pg.wait_for_timeout(900)
+        pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
+        pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(500)
     t = voile(pg)
-    verifier(('miaulement monte' in t) if A else ('passent sous la grille' in t), 'les traces : le bon texte (le filet / réussi)')
-    verifier(pg.locator('#voile .b-donne').count() == 1, 'les traces : le code « La crypte est fermée » pour le Barde, même raté')
+    verifier('entrée de la crypte' in t and 'fermée à clé' in t, 'les traces réussies : « … à l\'entrée de la crypte. Mais sa grille est fermée à clé ! »')
+    verifier(pg.locator('#voile .b-donne').count() == 1 and 'Anselme' in t and 'Barde' in t, 'le code « La crypte est fermée » : « Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde. »')
     fermer(pg)
+    verifier(pg.evaluate("() => Object.keys(M.bullesMaisons()).length") == 0, 'la bulle 🐾 s\'en va')
+    # LA MAIRIE (13 novembre) : sans le code du Barde, seulement « rendre sa mission » ; la lettre en cachette n'apparaît qu'avec
+    # « La lettre est sur le bureau du maire » (le Barde a raté son grand dialogue) : niveau 5, autant d'essais qu'on veut
     pts = lieu(pg, 'mairie')
-    verifier([p['id'] for p in pts] == ['lettre', 'mission'], f'la mairie : la lettre en cachette, rendre sa mission ({pts})')
+    verifier([p['id'] for p in pts] == ['mission'], f'la mairie, sans le code du Barde : rendre sa mission, rien d\'autre ({pts})')
+    fermer(pg)
+    verifier(code(pg, 'info:lettre_bureau'), 'le code « La lettre est sur le bureau du maire » (du Barde, quand il a raté)')
+    pts = lieu(pg, 'mairie')
+    verifier([p['id'] for p in pts] == ['lettre', 'mission'], f'la mairie, avec le code : la lettre en cachette, rendre sa mission ({pts})')
     i = jouer_point(pg, 'mairie', 'lettre', True, f'{chemin}-lettre')
-    verifier(i and i['type'] == 'cachette' and i['params'].get('decor') == 'mairie', 'la lettre : se cacher, dans la mairie')
+    verifier(i and i['type'] == 'cachette' and i['params'].get('decor') == 'mairie' and i['params'].get('niveauEffectif') == 5 and i.get('reessais') is True, 'la lettre : se cacher, dans la mairie, niveau 5, essais infinis')
     verifier('grand rideau' in voile(pg) and pg.locator('#voile .b-donne').count() == 1, 'la lettre : le rideau, et le code pour le Sage et l\'Alchimiste')
     fermer(pg)
     lieu(pg, 'mairie')

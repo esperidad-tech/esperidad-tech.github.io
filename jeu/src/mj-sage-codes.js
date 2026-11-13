@@ -474,7 +474,7 @@ function resoudre(p){
   p.__mjs = R;
   (p.lignes || []).forEach(function(l){
     if(l.nom === 'Le code') l.val = SYSTEMES[sys].ic + ' ' + SYSTEMES[sys].nom;
-    if(l.nom === 'Temps') l.val = dureeTxt(R.temps);
+    if(l.nom === 'Temps') l.val = p.sansTemps ? 'pas de sablier' : dureeTxt(R.temps);
   });
   return R;
 }
@@ -719,7 +719,8 @@ MJ.enregistrer('alphabet', {
       '<div class="mjs-jeu mjs-alpha mjs-sys-' + P.sys + (P.variante ? ' mjs-var-' + P.variante : '') + (zone > 1.15 ? ' mjs-z' : '') + '" style="--z:' + f2(zone) + '">' +
       '<div class="mjs-in">' +
         '<div class="mjs-haut">' +
-          '<div class="mjs-sablier" aria-label="Temps restant"><span class="mjs-sab-ic">⏳</span><span class="mjs-barre"><i></i></span><b class="mjs-sec">' + fmtTemps(total) + '</b></div>' +
+          /* (enquête 3, le plan des Fondateurs — Romain, 13 novembre : « pas de minuteur ») p.sansTemps : pas de sablier, on prend son temps */
+          '<div class="mjs-sablier" aria-label="Temps restant"' + (p.sansTemps ? ' hidden' : '') + '><span class="mjs-sab-ic">⏳</span><span class="mjs-barre"><i></i></span><b class="mjs-sec">' + fmtTemps(total) + '</b></div>' +
           '<div class="mjs-coeurs">' + U.coeurs(coeurs - 1, coeursMax - 1) + '</div>' +
         '</div>' +
         '<div class="mjs-corps">' +
@@ -873,7 +874,7 @@ MJ.enregistrer('alphabet', {
       haut.classList.toggle('alerte', reste <= Math.min(20, total * .2));
       if(reste <= 0){ dire('⌛ Le sablier est vide !', true); perdre('Le temps est écoulé…', 'Le sablier s\'est vidé : le message reste secret.'); }
     }
-    T.i(tic, 250); tic();
+    if(!p.sansTemps){ T.i(tic, 250); tic(); }
     choisir(ordre.length ? ordre[0] : -1);
     majValider();
     if(!ordre.length) T.t(gagner, 400);

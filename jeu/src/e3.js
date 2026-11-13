@@ -21,6 +21,7 @@
 (function(){
 'use strict';
 var E = window.ENQUETES = window.ENQUETES || {};
+var D3 = window.DONNEES;
 
 /* Les signes des menteurs (barde.js lit E.tics) : les mêmes qu'à l'enquête 2 (le tableau de liège est gardé).
    Au début de l'enquête, les étiquettes qui manquent s'épinglent toutes seules (signesDepart). (12 novembre au soir : plus de signe pour Léo,
@@ -114,10 +115,16 @@ E[3] = {
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
   },
-  qui:{titre:'QUI a écrit la fausse lettre ?', choix:['melusine', 'margot', 'iris', 'victor', 'fortune']},
+  /* (Romain, 13 novembre : « dans Mon tableau d'enquête, il faut une dizaine de lieux — au clocher, au puits, pas “au fond du puits”,
+     au moulin, au Vieux Chêne, et six autres — et tous les personnages ») le tableau et l'accusation offrent les mêmes choix :
+     rien ne désigne plus la réponse d'avance. court : le nom dans l'en-tête de colonne du tableau (tableau.js). */
+  qui:{titre:'QUI a écrit la fausse lettre ?', choix:['melusine', 'margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
   ou:{titre:'OÙ est Odette ?', choix:[
-    {id:'clocher', nom:'Sous le clocher, derrière la porte aux quatre signes', ic:'🔔'}, {id:'puits', nom:'Au fond du puits', ic:'💧'},
-    {id:'moulin', nom:'Au moulin', ic:'🌾'}, {id:'chene', nom:'Au Vieux Chêne', ic:'🌳'}]},
+    {id:'clocher', nom:'Au clocher', court:'Clocher', ic:'🔔'}, {id:'puits', nom:'Au puits', court:'Puits', ic:'💧'},
+    {id:'moulin', nom:'Au moulin', court:'Moulin', ic:'🌾'}, {id:'chene', nom:'Au Vieux Chêne', court:'Vieux Chêne', ic:'🌳'},
+    {id:'soeur', nom:'Chez sa sœur', court:'Chez sa sœur', ic:'🏡'}, {id:'mairie', nom:'À la mairie', court:'Mairie', ic:'🏛️'},
+    {id:'taverne', nom:'À la taverne', court:'Taverne', ic:'🍺'}, {id:'lavoir', nom:'Au lavoir', court:'Lavoir', ic:'🧺'},
+    {id:'foret', nom:'Dans la forêt', court:'Forêt', ic:'🌲'}, {id:'herboristerie', nom:'À l\'herboristerie', court:'Herbo\u00adristerie', ic:'🌿'}]},
   solution:{qui:'melusine', ou:'clocher'},
   /* la question bonus, qui ne coûte pas de cœur ; la réponse reste secrète jusqu'à la suite de la saison */
   corbeau:{titre:'Une dernière question… QUI est le Corbeau ?', choix:['grosbec', 'silas', 'fortune'], solution:'grosbec',
@@ -366,7 +373,12 @@ E[3] = {
       {id:'encre', ic:'🖋️', nom:'Encre', si:[{vu:'barde:iris:2'}]}
     ]},
   sensibles:[],
-  recettes:[],
+  /* (Romain, 13 novembre : « j'aimerais bien que l'Alchimiste puisse encore préparer les potions de vérité à l'enquête 3, et qu'il puisse
+     encore cueillir les plantes qu'il pouvait cueillir à l'enquête 2 ») la recette de la potion de vérité est dans son grimoire (déjà
+     dictée à l'enquête 2 ; sinon le Sage la dicte : sa page « Les recettes ») ; les ingrédients sont sur sa carte, aux mêmes endroits
+     qu'à l'enquête 2 (lieux, plus bas ; carteIngredients). Une seule potion de vérité par enquête (veriteUnique), comme à l'enquête 2. */
+  recettes:['verite'],
+  carteIngredients:true,
   /* ---------- Le labo de l'Alchimiste (labo.js ; les fiches : src/labo/30-donnees.js) : la lettre d'Odette ----------
      Au microscope, du pollen de lavande (une fausse piste : tout le village en a) ; au test des couleurs, de l'encre de noix de galle
      (celle des colporteurs) ; à la loupe, l'écriture — avec le Livre d'or du Sage posé sur la paillasse (le code « Les écritures
@@ -374,8 +386,8 @@ E[3] = {
   labo:['lettre'],
   analyses:{
     lettre:{donne:'info:ecriture',
-      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, une seule personne écrit comme ça : MÉLUSINE ! Sur le papier, du pollen de lavande et de l\'encre de noix de galle.',
-      note:'Analyse de la lettre : c\'est l\'écriture de Mélusine (ses « M » qui piquent, ses « t » en vague, son rond sur les « i »). Du pollen de lavande, de l\'encre de noix de galle.'}
+      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Sur le papier, du pollen de lavande et de l\'encre de noix de galle.',
+      note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). Du pollen de lavande, de l\'encre de noix de galle.'}
   },
   laboNotes:{
     pollen_l:'Sur la lettre : du pollen de lavande, comme les sachets d\'Iris. Mais tout le village en a !',
@@ -387,7 +399,8 @@ E[3] = {
      deux bancs de brume de la grande carte — le Nord (le Rond des Sorcières, où pousse la vesse-de-loup) et les collines de l'Ouest (le Vieux
      verger et son gui, les Cinq Pierres et leur pied-de-loup, le Rucher et sa mélisse). Les zones : monde-brume.js, ZONES. Sur la tablette de l'Alchimiste seulement
      (c'est elle qui demande à Anselme) ; la brume revient à l'enquête suivante. ---------- */
-  brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}]},
+  /* (Romain, 13 novembre ; revient) les quatre plantes d'au-delà de la brume cueillies : au moment suivant, la brume se réinstalle */
+  brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}], revient:true},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
      pendant ce temps, il fait la fête (la Grosse Marie, retenir le maire). ---------- */
   donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}},
@@ -416,43 +429,49 @@ E[3] = {
   },
   /* Les deux objets de l'enquête : le Sage les lit dans son Grand Livre, l'Alchimiste analyse la lettre dans son labo (E.labo, labo.js) */
   objets:{
-    lettre:{nom:'La lettre d\'Odette', ic:'✉️', pour:['sage', 'alchimiste'], dire:'La vraie lettre, en main ! Donne ce code au Sage et à l\'Alchimiste.'},
+    /* recu : ce que dit la fenêtre « Tu as reçu… » à ce rôle (moteur-actions.js) */
+    lettre:{nom:'La lettre d\'Odette', ic:'✉️', pour:['sage', 'alchimiste'], dire:'La vraie lettre, en main ! Donne ce code au Sage et à l\'Alchimiste.',
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : la lettre, telle qu\'elle est écrite.'}},
     /* (le carnet n'a pas de fiche au labo : il n'est que pour le Sage, qui le compare à la lettre et y trouve le plan) */
-    carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.'}
+    carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.',
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}}
   },
   /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
      Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */
   infos:{
-    poste:{nom:'La lettre n\'est pas passée par la poste', ic:'✉️', pour:'sage', de:'barde',
+    /* savoir:true — une information à retenir : elle n'ouvre rien (les pages qui en tiraient la conclusion à la place du Sage sont
+       retirées, Romain, 13 novembre : « ça donne la solution ») */
+    poste:{nom:'La lettre n\'est pas passée par la poste', ic:'✉️', pour:'sage', de:'barde', savoir:true,
       t:'Victor, le facteur, n\'a pas apporté la lettre d\'Odette : elle n\'a ni timbre ni tampon. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre.',
       dire:'Une lettre sans timbre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (12 novembre au soir : il remplace « Le capuchon vers le clocher » — c'est Mélusine qui a déposé la lettre, déguisée en Odette) */
-    chale:{nom:'Odette… sans sa canne', ic:'🧣', pour:'sage', de:'barde',
+    chale:{nom:'Odette… sans sa canne', ic:'🧣', pour:'sage', de:'barde', savoir:true,
       t:'À l\'aube, du haut des toits, Tim a cru voir Odette, dans son châle à chats, glisser la lettre sous la porte de la mairie. Mais elle marchait vite… et sans canne !',
       dire:'Odette, sans sa canne ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (la lettre et le carnet sont des objets : E.objets, plus haut ; l'Alchimiste pose la lettre sur sa paillasse) */
     traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde',
-      t:'Chez Odette, du lait renversé… et des petites traces de pattes qui filent dehors, vers la place. Moustache, le gros chat gris, est passé par là !',
-      dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre : donne-lui ce code.'},
-    ecriture:{nom:'L\'écriture de Mélusine', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', pnj:'melusine',
-      t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : les « M » qui piquent, les « t » en vague, le petit rond sur les « i »… C\'est l\'écriture de Mélusine !',
+      t:'Devant chez Odette, du lait renversé… et des petites traces de pattes qui filent dans les rues. Moustache, le gros chat gris, est passé par là. Les autres chats aussi !',
+      dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre, depuis chez Odette : donne-lui ce code.'},
+    /* (Romain, 13 novembre : « ça accusait deux femmes, et après on devait trouver laquelle était la bonne » ; Bible §13.31, étape 8)
+       le Livre d'or laisse DEUX suspectes. Le Barde les interroge toutes les deux : une seule ment (pnj.melusine [4], pnj.margot [4]). */
+    ecriture:{nom:'Deux écritures', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', savoir:true,
+      t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : des « M » qui piquent, des « t » en vague, un petit rond sur les « i »… Deux femmes écrivent comme ça : Mélusine et Margot. Laquelle des deux ?',
       dire:'Le Barde et le Sage doivent le savoir : donne-leur ce code.'},
     crypte_fermee:{nom:'La crypte est fermée', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
-      t:'Le Pisteur a suivi les traces de Moustache jusqu\'à l\'église : elles passent sous la porte de la crypte, au pied du clocher. La porte est fermée à clé.',
-      dire:'Il faudra la clé du sonneur… Le Barde saura lui parler : donne-lui ce code.'},
+      t:'Le Pisteur a suivi les traces de Moustache jusqu\'à l\'église : elles passent sous la grille de la crypte, au pied du clocher. La grille est fermée à clé.',
+      /* (Romain, 13 novembre : « Anselme, le sonneur de cloche, pourra peut-être vous aider. Donne ce code au Barde. ») */
+      dire:'Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde.'},
     /* (étape 3, le Sage) */
     ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage',
-      t:'Le Livre d\'or de la fête est posé sur ta paillasse : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Compare ces écritures à celle de la lettre, à la loupe !',
+      t:'Le Livre d\'or de la fête t\'attend dans ton labo : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Glisse la lettre sous ta loupe : le Livre d\'or s\'ouvrira, et tu compareras les écritures.',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
     /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.26) */
-    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde',
+    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true,
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, et qui l\'a glissée sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage. Il est venu chez elle cette nuit : il a peut-être laissé des traces…',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
     /* (étape 5, le Pisteur) ce qu'il reçoit et ce qu'il donne ; ceux du Sage, de l'Alchimiste et des grands dialogues du Barde
        arriveront avec leurs étapes : en attendant, ils se tapent comme les autres codes */
-    six_doigts:{nom:'Moustache a six doigts', ic:'🐾', pour:'pisteur', de:'sage',
-      t:'Dans le carnet d\'Odette, un dessin de Moustache et une flèche : « Mon gros gris a six doigts à chaque patte ! » Aucun autre chat du village n\'en a autant.',
-      dire:'Le Pisteur saura reconnaître ses traces : donne-lui ce code.'},
+    /* (13 novembre : plus de code « Moustache a six doigts » — le Sage lit le carnet d'Odette à voix haute ; Romain : « pas de code pour ça ») */
     /* (12 novembre : plus de codes « Le gui du pommier » ni « Le gui » — le gui est dans le Vieux verger, au-delà de la brume, sur le pommier
        à l'échelle : l'Alchimiste y grimpe elle-même ; Bible §13.26) */
     /* (12 novembre au soir : le code garde son nom de code, cle_clou, mais Anselme ne pend plus sa clé au clou — elle est à sa ceinture) */
@@ -495,34 +514,41 @@ E[3] = {
   },
   /* ---------- Les lieux (étape 5 : le Pisteur ; E3-actions-des-roles.md §1) ----------
      L'Alchimiste ajoutera ses cueillettes à ces lieux (étape 4). Un seul essai par mini-jeu (essais.js) ; un filet (ouvrePartiel)
-     seulement pour ce qui est indispensable : les traces de Moustache. Niveaux (rang de l'enquête 3 + mjNiveau, puis la courbe
-     enfant / adulte, mj-core.js) : la clé d'Anselme, rang 7 (enfant 9, adulte 8) ; les traces, rang 5 sans « six doigts », rang 3 avec. */
+     seulement pour ce qui est indispensable. Niveaux (rang de l'enquête 3 + mjNiveau, puis la courbe
+     enfant / adulte, mj-core.js) : la clé d'Anselme, rang 7 (enfant 9, adulte 8) ; les traces, rang 3 (plus bas : lieux.L2). */
   lieux:{
+    /* LES TRACES DE MOUSTACHE (Romain, 13 novembre : « ce mini-jeu est à refaire […] tu le fais démarrer depuis chez Odette, pas sur la
+       place » ; « le Pisteur au centre de l'image, la caméra le suit ; il doit trouver les bonnes traces et aller jusqu'à l'église. S'il
+       suit des mauvaises traces jusqu'à un point précis, il perd »). Le nouveau mini-jeu : mj-pistage.js (« Suivre les traces »).
+       · Devant la maison d'Odette (L2 : une maison avec des choses à voir, moteur-roles.js, M.pointsMaison), à tout moment, dès que le
+         Barde a donné le code « Les traces de Moustache » ; une petite bulle 🐾 se pose alors sur la maison, sur la carte du Pisteur.
+       · Plus de code « Moustache a six doigts » : le Sage a le carnet d'Odette dans son Grand Livre (les sept chats et leurs traces,
+         chats.js) ; il le dit à voix haute. Ici, rien ne dit quelle trace suivre.
+       · On recommence autant qu'on veut (essaisInfinis) : sans « La crypte est fermée », le grand dialogue d'Anselme ne s'ouvre pas.
+       · Niveau : celui de l'enquête (enfant 3 : trois fausses pistes ; adulte 6 : quatre, dont Noisette et ses cinq doigts). */
+    L2:{
+      pisteur:{points:[
+        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', mj:'pistage', essaisInfinis:true,
+          besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
+          donne:'info:crypte_fermee',
+          avant:'Du lait renversé devant la porte d\'Odette, et des pattes partout : ses chats ont filé, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
+          bouton:'🐾 Suivre les traces',
+          t:'Les traces arrivent sous l\'église, à l\'entrée de la crypte. Mais sa grille est fermée à clé !',
+          rate:'Ce n\'était pas Moustache.'}
+      ]}
+    },
     place:{
       pisteur:{intro:'La place des Lanternes. Tout le village prépare la fête !', points:[
-        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'tir', params:{decor:'banderoles'},
+        /* (Romain, 13 novembre : « le mini-jeu des banderoles n'est pas à jour. Il faut mettre […] l'arc qu'on bande en vue un peu 3D,
+           c'est le dernier jeu qu'on a fait. Et tu le mets au niveau 9 ») le tir aux anneaux (mj-visee.js), niveau 9 pour tout le monde */
+        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:9,
           avant:'Le maire veut des banderoles partout sur la place ! Vise les anneaux : chaque flèche emporte sa guirlande de petits drapeaux.',
           bouton:'🏹 Accrocher les banderoles',
           t:'Les petits drapeaux claquent au vent, d\'un toit à l\'autre. Basile lève le nez : « Ça, c\'est de la décoration ! »',
           rate:'Une guirlande s\'emmêle, puis une autre… Le maire soupire : « Bon. On fera sans. »',
-          ferme:'Les banderoles restent dans leur panier.'},
-        /* les traces de Moustache (il faut le code du Barde) : sans « Moustache a six doigts », du lait cache ses doigts sur la carte
-           du départ et le niveau est plus dur ; avec, on voit ses six doigts (p.facileSi, moteur-actions.js). Le filet : raté, on
-           entend un miaulement sous l'église, et le code est donné quand même. Pas de puits l'après-midi. */
-        /* (12 novembre au soir) à tout moment, dès que le Barde a donné le code : il entre chez Odette dès le matin, et encore la nuit
-           (un filet : sans « La crypte est fermée », le grand dialogue d'Anselme ne s'ouvre pas) */
-        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', mj:'traces', mjNiveau:2,
-          besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
-          /* chercher:10 (Romain, 20 h 51) : dix secondes pour trouver le départ des traces au milieu des autres pattes, puis tout avance */
-          params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
-            departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'},
-          facileSi:{si:[{code:'info:six_doigts'}], niveau:-2, params:{carteFloue:false, departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-          donne:'info:crypte_fermee', ouvrePartiel:true,
-          avant:'Des petites traces de pattes toutes fraîches traversent la place. Moustache est passé par là… Suis-le !',
-          bouton:'🐾 Suivre les traces',
-          t:'Les traces filent jusqu\'à l\'église… et passent sous la grille de la crypte, au pied du clocher. Fermée à clé ! Derrière, dans le noir, un miaulement.',
-          rate:'Tu as perdu les traces… mais un miaulement monte de sous l\'église. La crypte ! Sa grille est fermée à clé.'}
-      ]}
+          ferme:'Les banderoles restent dans leur panier.'}
+      ]},
+      alchimiste:{cueillir:[{ingr:'eau', n:2}]}
     },
     boulangerie:{
       pisteur:{intro:'La boulangerie de Gaspard. Ça sent la brioche chaude !', points:[
@@ -585,8 +611,7 @@ E[3] = {
           t:'Odette sourit sur la toile, sa canne à la main, ses sept chats autour d\'elle. Le maire : « Magnifique ! On l\'accrochera au-dessus du gâteau. »',
           rate:'Les morceaux se mélangent de plus en plus… Le maire soupire : « Bon. On accrochera des lampions à la place. »',
           ferme:'Le tableau est rangé dans un coin.'},
-        {id:'livredor', ic:'📖', nom:'Le Livre d\'or de la fête', moments:['matin', 'apresmidi'], donne:'info:ecritures',
-          t:'Sur la table de la mairie, le Livre d\'or de la fête. « Reviens vite, Odette ! » « Vive la fête ! » « Une brioche t\'attend ! »… Tout le village y a écrit un petit mot, chacun avec son écriture.'},
+        /* (13 novembre) le Livre d'or n'est plus un point de la mairie : c'est une page du Grand Livre (E.pages, « livredor ») */
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
         {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}],
@@ -612,10 +637,12 @@ E[3] = {
          point « tisane », visible dès qu'elle a de la mélisse ; elle garde sa plante pour l'établi). Dès le matin, Anselme la fait appeler par le
          Barde (pnj.anselme, occupe.matin). En vrai : la tisane de mélisse calme et aide à dormir. */
       alchimiste:{intro:'Le clocher. Tout là-haut, Anselme veille sur ses trois cloches : Bertille, Gontran et la Grosse Marie.', points:[
-        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme',
+        /* (Romain, 13 novembre ; disparait : regles.js) les quatre plantes d'au-delà de la brume cueillies : plus rien à demander à
+           Anselme pour la cloche ; la mélisse rapportée : plus rien à lui dire sur sa tisane */
+        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme', disparait:[{brumeFinie:true}],
           t:'« AH, TE VOILÀ ! » Anselme bâille à s\'en décrocher la mâchoire. « Mes cloches me résonnent dans la tête : je ne dors plus ! Il me faudrait une tisane de mélisse… mais la mélisse ne pousse plus que derrière la brume. » Il attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. Ça suffira. Tu m\'en rapportes ? » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
           note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village. En échange, il veut de la mélisse pour sa tisane.'},
-        {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', or:3, visibleSi:[{vu:'plante:melisse'}],
+        {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', or:3, visibleSi:[{vu:'plante:melisse'}], disparait:[{vu:'alchimiste:clocher:tisane'}],
           t:'Tu lui tends une belle poignée de mélisse. Il froisse une feuille sous son nez. « ÇA SENT LE CITRON ! » Ce soir, une bonne tisane, et il dormira comme un loir. « Garde le reste pour toi. Et merci ! »',
           note:'Anselme a sa mélisse. En tisane, elle calme et elle aide à dormir.'}
       ]},
@@ -638,6 +665,14 @@ E[3] = {
         {id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}], descente:'crypte'}
       ]}
     },
+    /* LES INGRÉDIENTS DU CHAUDRON, comme à l'enquête 2 (Romain, 13 novembre) : la pensée sauvage et le miel de la potion de vérité, et
+       tout ce qui se cueillait déjà. (La fontaine de la place : son eau, dans lieux.place.) */
+    foret:{alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit'], annonce:'Les champignons, c\'est à la tombée de la nuit qu\'on les cueille le mieux. Reviens cette nuit !'}]}},
+    clairiere:{alchimiste:{cueillir:[{ingr:'trefle', n:2}]}},
+    lavoir:{alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin']}, {ingr:'eau', n:2}]}},
+    herboristerie:{alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
+    potager:{alchimiste:{cueillir:[{ingr:'miel', n:2}, {ingr:'menthe', n:2}]}},
+    lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}]}},
     puits:{
       pisteur:{intro:'Le vieux puits, au bord de la forêt. Plus personne n\'y tire d\'eau depuis longtemps.', points:[
         /* seulement si la clé d'Anselme est ratée, ou avec « Le vieux puits » du Barde ; jamais si la clé a été prise.
@@ -701,7 +736,12 @@ E[3] = {
       {q:Q_NUIT, g:'h', moments:MA_, a:'Rien vu. Mais ici, tout se sait : Basile parle à ses choux, Victor a peur des chats, Fortuné vend des cailloux peints… et Mélusine a du tissu tout neuf !',
         note:'Margot, ses ragots : Basile parle à ses choux, Victor a peur des chats, Fortuné vend des cailloux peints, Mélusine a du tissu tout neuf.'},
       {q:'Le maire vient souvent à la taverne ?', g:'r', moments:MA_, a:'Chaque soir, pour son cidre. Il déteste qu\'on dise qu\'il cache des choses : il devient tout rouge !',
-        note:'Margot : le maire déteste qu\'on dise qu\'il cache des choses.'}
+        note:'Margot : le maire déteste qu\'on dise qu\'il cache des choses.'},
+      /* [4] (13 novembre) la même accusation que chez Mélusine, avec le code « Deux écritures » de l'Alchimiste : le Livre d'or désigne
+         deux femmes, le Barde les interroge toutes les deux. Margot dit vrai (aucun signe sur son visage) ; Mélusine ment.
+         NOUVELLE RÉPLIQUE, écrite par Claude : à valider par Romain. */
+      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:ecriture'}], a:'Moi ? Je n\'écris que mes ardoises, à la craie. Et avec des fautes !',
+        note:'Margot dit qu\'elle n\'écrit que ses ardoises, à la craie.'}
     ]},
     victor:{ou:{matin:'poste'}, carte:{apresmidi:'poste'},
       occupe:{apresmidi:['« Cent invitations à distribuer : pas une minute ! »', '« Quatre-vingt-dix-neuf… Non ! Tu m\'as fait perdre le compte ! »']},
@@ -946,29 +986,36 @@ E[3] = {
        dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix haute, l'Alchimiste cherche sur sa carte. */
     {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier',
       t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},
-    /* les premiers doutes (les codes du Barde : Victor, Tim démasqué). (12 novembre au soir : « Odette… sans sa canne » remplace le capuchon) */
-    {id:'doutes', titre:'Une drôle de lettre', ic:'✉️', besoin:[{code:'info:poste'}, {code:'info:chale'}], bouton:'Réfléchir à la lettre',
-      avant:'Cette lettre d\'Odette a quelque chose de bizarre… Il te faudrait un indice du Barde.',
-      variantes:[
-        {si:[{et:[{code:'info:poste'}, {code:'info:chale'}]}], t:'Pas de timbre, pas de tampon. Glissée sous la porte de la mairie, à l\'aube, par « Odette »… qui marchait vite, et sans sa canne. Odette ne sort jamais sans sa canne : ce n\'était pas elle !'},
-        {si:[{code:'info:poste'}], t:'Pas de timbre, pas de tampon : la lettre n\'est pas passée par la poste. Et Odette n\'a jamais envoyé une seule lettre ! Alors, qui l\'a apportée ?'}],
-      t:'À l\'aube, « Odette », dans son châle à chats, a glissé la lettre sous la porte de la mairie. Mais elle marchait vite, et sans sa canne… Odette ne sort jamais sans sa canne : ce n\'était pas elle !'},
-    /* l'après-midi : la lettre et le carnet (les deux codes du Barde) → la lettre est fausse */
-    {id:'fausse', titre:'La lettre et le carnet', ic:'🔍', besoin:[{et:[{code:'obj:lettre'}, {code:'obj:carnet'}]}], bouton:'Comparer la lettre et le carnet',
-      avant:'Pour savoir si Odette a vraiment écrit cette lettre, il te faudrait la lettre… et quelque chose qu\'Odette a écrit elle-même.',
-      t:'Odette écrit penché, avec un petit chat à côté de chaque « O ». La lettre est toute droite, sans un seul chat. Ce n\'est pas Odette qui l\'a écrite : la lettre est fausse !'},
-    /* les sept chats du carnet → Moustache a six doigts (pour le Pisteur) */
-    {id:'chats', titre:'Les sept chats du carnet', ic:'🐈', besoin:[{code:'obj:carnet'}], bouton:'Feuilleter le carnet', donne:'info:six_doigts',
-      avant:'Odette note tout dans un carnet, un chat à chaque page. Le Barde pourrait le trouver chez elle…',
-      t:'« Moustache : mon gros gris, mon malin. Un petit sixième doigt à chaque patte de devant : il ouvre toutes les portes ! »'},
-    /* le plan des Fondateurs, caché dans la couverture du carnet : l'alphabet secret (il sert cette nuit, dans le donjon) */
-    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', besoin:[{code:'obj:carnet'}], mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS'}, bouton:'Déchiffrer le vieux parchemin',
+    /* (13 novembre) la potion de vérité se prépare encore à l'enquête 3 : sa recette secrète, à dicter à l'Alchimiste s'il ne l'a pas déjà
+       dans son grimoire (comme à l'enquête 2) */
+    {id:'recettes', titre:'Les recettes', ic:'🧪',
+      recette:'verite', t:'Potion de vérité, pour faire avouer un menteur : ' + D3.texteEtapes('verite') + '.',
+      note:'Recette de la potion de vérité : ' + D3.texteEtapes('verite') + '.'},
+    /* LE LIVRE D'OR DE LA FÊTE (Romain, 13 novembre : « l'Alchimiste ne le trouvait pas ; directement dans le Grand Livre du Sage. Le
+       matin, des signatures, des petits mots pour Odette selon le caractère de chacun, et : tout le monde n'a pas encore signé.
+       L'après-midi, un gros bouton jaune : tout le monde a signé, donne ce livre à l'Alchimiste »). La page : ecritures.js
+       (M.livreDorHTML) ; les mots et les écritures : ecritures-donnees.js (les mêmes qu'au labo). quand : le bouton n'existe que
+       l'après-midi et la nuit (moteur-actions.js, « ouvrir-page »). */
+    {id:'livredor', titre:'Le Livre d\'or de la fête', ic:'📖', type:'livredor', quand:['apresmidi', 'nuit'], donne:'info:ecritures',
+      bouton:'Donner ce livre à l\'Alchimiste',
+      t:'Tout le village a signé. Tu confies le Livre d\'or à l\'Alchimiste : avec sa loupe, il saura comparer les écritures.'},
+    /* LA LETTRE et LE CARNET (Romain, 13 novembre : les pages « Une drôle de lettre », « La lettre et le carnet » et « Qui a écrit la
+       lettre ? » sont retirées — « ça donne la solution »). À la place, deux pages qui n'apparaissent qu'avec le code du Barde
+       (visibleSi, livre.js) et qui ne concluent rien : la vraie lettre, écrite « à la manière d'Odette », et le carnet, écrit de sa
+       main, avec ses sept chats (« la description, un petit dessin de chaque chat, et leurs traces de pas » : chats.js). Le Sage
+       compare les deux écritures de ses yeux, et dit au Pisteur, à voix haute, quelle patte suivre. Plus de code « six doigts ». */
+    {id:'vraielettre', titre:'La lettre d\'Odette', ic:'✉️', visibleSi:[{code:'obj:lettre'}],
+      get html(){ return window.M && window.M.vraieLettreHTML ? window.M.vraieLettreHTML() : ''; }},
+    {id:'carnet', titre:'Le carnet d\'Odette', ic:'📓', visibleSi:[{code:'obj:carnet'}],
+      get html(){ return window.M && window.M.carnetOdetteHTML ? window.M.carnetOdetteHTML() : ''; }},
+    /* le plan des Fondateurs : l'alphabet secret. (Romain, 13 novembre : « pas de minuteur » — sansTemps, mj-sage-codes.js ; « il peut
+       apparaître dès le matin dans le livre » — plus besoin du carnet d'Odette : un vieux parchemin glissé dans le Grand Livre.) */
+    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS', sansTemps:true}, bouton:'Déchiffrer le vieux parchemin',
       ouvrePartiel:true, partiel:true,
-      avant:'Dans la couverture du carnet d\'Odette, un vieux parchemin plié, couvert de signes. Qu\'est-ce qu\'il dit ?',
-      t:'« LE CHEMIN DES FONDATEURS » : c\'est le plan des souterrains, sous le village ! Un mot d\'Odette, au crayon : « Ne le montrer à personne. » Tu le ranges dans ton Grand Livre : il te servira cette nuit.',
-      note:'Le plan des Fondateurs était caché dans le carnet d\'Odette : le chemin des souterrains, sous le village.',
-      rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan : des couloirs, sous le village. Tu le ranges dans ton Grand Livre.',
-      tPartiel:'Il te servira cette nuit.'},
+      avant:'Entre deux pages de ton Grand Livre, un vieux parchemin plié, couvert de signes. Qu\'est-ce qu\'il dit ?',
+      t:'« LE CHEMIN DES FONDATEURS » : un très vieux plan, plein de couloirs. Tu le gardes dans ton Grand Livre.',
+      note:'Dans le Grand Livre, un très vieux plan : « Le chemin des Fondateurs ».',
+      rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan, plein de couloirs. Tu le gardes dans ton Grand Livre.'},
     /* (étape 6) la nuit : le plan des souterrains (sa page du donjon, descente.js) ; la porte des Fondateurs, quand le Pisteur l'a trouvée */
     {id:'donjon', titre:'Le plan des souterrains', ic:'🗺️', moments:['nuit'], horsMoment:'Sous le village, il y aurait de vieux souterrains… Cette page servira cette nuit.',
       get html(){ return window.M && window.M.donjonPageSage ? window.M.donjonPageSage() : ''; }},
@@ -976,11 +1023,7 @@ E[3] = {
     {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', moments:['nuit'], horsMoment:'Une page blanche. Elle s\'écrira cette nuit.', besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
       avant:'Tout au fond des souterrains, il y aurait une grande porte ronde. Le Pisteur la trouvera-t-il ?',
       t:'Une porte ronde, scellée. Quatre signes gravés : l\'œil, le chaudron, la lyre et l\'étoile. « Seuls les quatre, ensemble, l\'ouvriront. » Odette est là, derrière, sous le clocher. Mais cette porte ne s\'ouvrira pas cette nuit…',
-      note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'},
-    /* QUI : l'écriture (l'Alchimiste) et l'aveu (le Barde) */
-    {id:'qui', titre:'Qui a écrit la lettre ?', ic:'🧵', besoin:[{et:[{code:'info:ecriture'}, {code:'info:aveu'}]}], bouton:'Relier les preuves',
-      avant:'Il te faut deux preuves : l\'écriture de la lettre (l\'Alchimiste), et un aveu (le Barde).',
-      t:'Mélusine a écrit la lettre, et elle l\'a glissée elle-même sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage. Qui est-il ? Et où va-t-il, la nuit ?'}
+      note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'}
   ],
   /* ---------- La fin (étape 7) : dans la crypte, le maire, la bague, le cachot ----------
      La même pour toute l'équipe. Une seule réplique change, selon que Léo a été attrapé ou non : la tablette du Sage le sait par le code
@@ -1039,9 +1082,11 @@ E[3] = {
   faits:[
     /* QUI : l'écriture de la lettre (l'Alchimiste, au labo, avec le Livre d'or du Sage), ou l'aveu de Mélusine (le Barde : démasquée
        l'après-midi, ou le filet, la nuit, à la fête) */
-    {sources:[['alchimiste:analyse:lettre', 'barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune']},
+    /* (13 novembre) l'écriture ne laisse plus que deux suspectes, Mélusine et Margot ; c'est l'aveu qui désigne Mélusine */
+    {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
+    {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */
-    {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene']}
+    {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene', 'soeur', 'mairie', 'taverne', 'lavoir', 'foret', 'herboristerie']}
   ]
 };
 /* La nuit, tout le village est à la fête, sur la place (§4) : sur la carte, chacun y est ; c'est la fête (grands.js) qui leur fait dire

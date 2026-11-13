@@ -29,7 +29,8 @@ function fermerMode(){
   majQuitter();
   mimiReveil();
 }
-function nomTrouve(t){ var o = OBJETS[t]; if(o.tiroir === 'ecritures') return 'l\'écriture de ' + ECH.ecritures[o.bon].nom; return o.liquide ? o.cibles.map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
+function estBon(o, r){ return o.bons ? o.bons.indexOf(r) >= 0 : r === o.bon; }
+function nomTrouve(t){ var o = OBJETS[t]; if(o.tiroir === 'ecritures') return o.bons ? 'deux écritures : ' + o.bons.map(function(k){ return ECH.ecritures[k].nom; }).join(' et ') : 'l\'écriture de ' + ECH.ecritures[o.bon].nom; return o.liquide ? o.cibles.map(function(k){ return teinte(k).nom; }).join(' + ') : ECH[o.tiroir][o.bon].nom; }
 /* Un petit dessin qui vole d'un endroit à un autre (la carte vers la loupe, le témoin vers la bandelette) */
 function volVers(de, vers, fin, hauteur){
   if(reduit){ fin(); return; }
@@ -62,6 +63,8 @@ function ouvrirLoupe(tir){
       vueLoupe(); placerVerre(); majBas(); requestAnimationFrame(function(){ rendVerre(); });
       /* (enquête 3) la lettre, sans le Livre d'or du Sage : rien à quoi la comparer */
       if(ecritureACompa() && !LIVREDOR) attendre(700, function(){ if(S.mode === 'loupe' && ecritureACompa()) bulle(600, 612, 'Il te faudrait d\'autres écritures pour comparer…', 5200); });
+      /* (Romain, 13 novembre : « il ne trouvait pas le Livre d'or ») avec le Livre d'or du Sage, il s'ouvre tout seul sous la lettre */
+      if(ecritureACompa() && LIVREDOR) attendre(900, function(){ if(S.mode === 'loupe' && ecritureACompa() && !S.tiroir) ouvrirLivreDor(); });
     });
   });
 }
@@ -95,7 +98,7 @@ function ciblesLoupe(){ var l = []; CUIRS.forEach(function(d){ if(ATTENTE[d] && 
 /* On passe à un autre échantillon sans quitter la loupe : le tiroir se referme, la loupe glisse jusqu'à lui */
 function changerCible(t){
   if(S.occupe || S.mode !== 'loupe' || !t || t === S.sel) return;
-  var aller = function(){ var dn = dossierDe(t); S.sel = t; if(dn && dn !== S.dc){ S.dc = dn; majArdoise(); majBandeScene(); } S.essai = null; S.casier = null; son('zoom'); dessinerLame(); dessinerCoupes(); vueLoupe(); placerVerre(); majBas(); rendVerre(); };
+  var aller = function(){ if(estEcriture(t) && !S.trouves[t] && LIVREDOR) attendre(900, function(){ if(S.mode === 'loupe' && S.sel === t && ecritureACompa() && !S.tiroir) ouvrirLivreDor(); }); var dn = dossierDe(t); S.sel = t; if(dn && dn !== S.dc){ S.dc = dn; majArdoise(); majBandeScene(); } S.essai = null; S.casier = null; son('zoom'); dessinerLame(); dessinerCoupes(); vueLoupe(); placerVerre(); majBas(); rendVerre(); };
   if(S.tiroir) fermerTiroir(aller); else aller();
 }
 function cibleVoisine(d){ var l = ciblesLoupe(), i = l.indexOf(S.sel); changerCible(l[(i + d + l.length) % l.length]); }
@@ -112,7 +115,7 @@ function majBas(){
     '<button type="button" class="onglet refermer" id="bRefermer"><span class="poignee-o"></span>Refermer</button></div>';
   if(S.casier){
     var l = contenuCasier(S.casier), cols = Math.max(6, Math.ceil(l.length/2));
-    h += '<div class="rangee pose' + (fait ? ' fini' : '') + '" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && r === o.bon;
+    h += '<div class="rangee pose' + (fait ? ' fini' : '') + '" style="' + pos(52, 312, 1096, 284) + ';grid-template-columns:repeat(' + cols + ', minmax(0, 1fr))">' + l.map(function(r){ var id = S.casier + ':' + r, bon = fait && S.casier === o.tiroir && estBon(o, r);
       return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (barres[id] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('') + '</div>';
   }
   z.innerHTML = h;
@@ -155,7 +158,7 @@ function essayer(id, bouton){
   volVers(bouton, $('#cvVerre'), function(){
     S.essai = id;
     tween(380, function(p){ rendVerre(p); }, function(){
-      son('compare'); tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id === o.tiroir + ':' + o.bon); });
+      son('compare'); tweenLin(reduit ? 1 : 700, function(p){ S.balaie = p; rendVerre(1); }, function(){ S.balaie = null; rendVerre(1); verdict(id, id.split(':')[0] === o.tiroir && estBon(o, id.split(':')[1])); });
     });
   });
 }

@@ -1,10 +1,9 @@
-"""Enquête 3, étape 3 (Bible § 13.14) : le Sage, le matin et l'après-midi (Playwright).
-Partie A : le tableau d'Odette (Assembler les runes, le dessin du tableau ; réussi), le Livre d'or (code pour l'Alchimiste), l'herbier
-(trois énigmes, chacune avec son 🔊, et le code), les premiers doutes (un code du Barde, puis les deux : le texte change) ; l'après-midi,
-la lettre et le carnet (la lettre est fausse), les sept chats (Moustache a six doigts), le plan des Fondateurs (l'alphabet secret),
-rendre le tableau (5 pièces d'or, pas de filet : il a déjà la lettre), QUI (l'écriture et l'aveu).
-Partie B : le tableau raté ; puis le filet de la lettre (il ne l'a pas) : rendre le tableau… sans tableau, pas de rendu ;
-partie C : tableau réussi, pas de lettre → le maire l'accroche sous le tableau, le Sage la reçoit.
+"""Enquête 3 : le Sage, le matin et l'après-midi (Playwright ; refait le 13 novembre).
+Partie A : le tableau d'Odette (Assembler les runes) ; le Grand Livre sans les pages qui donnaient la solution ; le Livre d'or (le matin :
+huit mots, pas de bouton ; l'après-midi : douze, le bouton jaune, le code pour l'Alchimiste) ; l'herbier ; le tableau d'enquête (quatorze
+personnages, dix lieux) ; la bibliothèque et ses archives ; le plan des Fondateurs (dès le matin, sans minuteur) ; la lettre et le carnet
+d'Odette (deux pages qui apparaissent avec les codes du Barde ; les écritures) ; rendre le tableau.
+Partie B : le tableau raté.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-sage.py"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -95,92 +94,102 @@ with sync_playwright() as p:
     b = p.chromium.launch()
     print('— Partie A : le matin')
     pg = debut(b, 'A')
+    liste = lambda: pg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); return [].map.call(document.querySelectorAll('#livre-ici .lv-page'), function(x){ return x.dataset.id || ''; }); }")
     pts = lieu(pg, 'mairie')
-    verifier(pts == ['tableau', 'livredor'], f'la mairie, le matin : le tableau et le Livre d\'or ({pts})')
+    verifier(pts == ['tableau'], f'la mairie, le matin : le tableau (le Livre d\'or est dans le Grand Livre) ({pts})')
     shot(pg, 'A-mairie')
     info = jouer(pg, 'tableau', True, 'A-tableau-jeu')
     verifier(info and info['type'] == 'runes' and info['params'].get('image') == 'tableau', 'le tableau : Assembler les runes, avec le dessin du tableau')
     verifier('Magnifique' in texte(pg), 'réussi : « Magnifique ! On l\'accrochera au-dessus du gâteau. »')
     fermer(pg)
-    lieu(pg, 'mairie'); pg.locator('#voile [data-act=point][data-id=livredor]').click(); pg.wait_for_timeout(250)
-    verifier('Livre d\'or' in texte(pg) and '_info:ecritures' in objets(pg) and pg.locator('#voile .b-donne').count() == 1, 'le Livre d\'or : le code « Les écritures du village » pour l\'Alchimiste')
-    fermer(pg)
+    L = liste()
+    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'livredor', 'plan', 'bibliotheque']),
+             f'le Grand Livre : plus de « Une drôle de lettre », « La lettre et le carnet », « Qui a écrit la lettre ? » ; la lettre et le carnet n\'y sont pas encore ({L})')
+    # le Livre d'or, le matin
+    t = page(pg, 'livredor')
+    verifier(pg.locator('#livre-ici .lv-page.on .ec-or-mot').count() == 8 and 'pas encore signé' in t and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0 and '_info:ecritures' not in objets(pg),
+             'le Livre d\'or, le matin : huit petits mots, « Tout le monde n\'a pas encore signé », pas de bouton, pas de code')
+    verifier('Mélusine' not in t and 'Margot' not in t and 'Gaspard' in t, 'le matin : ni Mélusine ni Margot n\'ont encore signé')
+    shot(pg, 'A-livredor-matin')
     t = page(pg, 'herbier')
     verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.26)')
     verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' not in t and 'Cinq Pierres' not in t and 'incantations' in t and 'bruyère' in t and 'patte de loup' in t and 'épouvantail' in t and 'donjon' not in t.lower(),
              'plus de code : le Sage lit des indices (plus le nom des lieux : Bible §13.28), l\'Alchimiste cherche sur sa carte ; pas un mot du donjon')
     shot(pg, 'A-herbier')
-    t = page(pg, 'doutes')
-    verifier('🔒' in t or pg.locator('#livre-ici .lv-page.on .b-besoin').count() >= 1, 'les premiers doutes : fermés sans code du Barde')
-    code(pg, 'info:poste')
-    page(pg, 'doutes'); ev(pg, 'ouvrir-page', {'id': 'doutes'}); fermer(pg)
-    t = page(pg, 'doutes')
-    verifier('Pas de timbre' in t and 'sans sa canne' not in t and 'capuchon' not in t, 'avec le code de Victor seulement : pas de timbre (rien sur la canne)')
-    code(pg, 'info:chale')
-    t = page(pg, 'doutes')
-    verifier('sans sa canne' in t and 'Pas de timbre' in t and 'capuchon' not in t, 'avec les deux codes : le texte complet (« Odette »… sans sa canne : ce n\'était pas elle)')
-    shot(pg, 'A-doutes')
-    print('— Partie A : l\'après-midi')
-    apresmidi(pg)
-    verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
-    t = page(pg, 'fausse')
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0, 'la lettre et le carnet : fermé sans les codes')
-    code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
-    page(pg, 'fausse'); ev(pg, 'ouvrir-page', {'id': 'fausse'}); fermer(pg)
-    t = page(pg, 'fausse')
-    verifier('la lettre est fausse' in t, 'la lettre est fausse')
-    page(pg, 'chats'); ev(pg, 'ouvrir-page', {'id': 'chats'}); fermer(pg)
-    t = page(pg, 'chats')
-    verifier('sixième doigt' in t and '_info:six_doigts' in objets(pg), 'les sept chats : « Moustache a six doigts » pour le Pisteur')
-    shot(pg, 'A-chats')
+    # les codes du Barde : des informations, plus de page qui conclut
+    code(pg, 'info:poste'); code(pg, 'info:chale')
+    verifier(pg.evaluate("() => !!M.P().recus['info:poste'] && !!M.P().recus['info:chale']") and 'doutes' not in liste(), 'les codes de Victor et de Tim : reçus, notés ; aucune page ne conclut à la place du Sage')
+    # le tableau d'enquête : tous les personnages, dix lieux
+    page(pg, 'tableau')
+    verifier(pg.locator('#livre-ici .lv-page.on .tb-ligne').count() == 14 and pg.locator('#livre-ici .lv-page.on .tb-col').count() == 10, 'mon tableau d\'enquête : quatorze personnages, dix lieux')
+    tt = texte(pg, '#livre-ici .lv-page.on')
+    verifier('fond' not in tt and 'quatre signes' not in tt and 'Puits' in tt and 'Clocher' in tt, 'les lieux : « Clocher », « Puits »… rien qui désigne la réponse')
+    shot(pg, 'A-tableau')
+    # la bibliothèque des plans : les archives des plans des enquêtes passées, repliées
+    t = page(pg, 'bibliotheque')
+    verifier(pg.locator('#livre-ici .lv-page.on .lv-bib-passe').count() == 2 and 'Les vieux chemins' in t and 'Le plan du moulin' in t and 'bûcherons' not in t, 'la bibliothèque : les deux plans de l\'enquête 2, repliés')
+    pg.locator('#livre-ici .lv-page.on .lv-bib-passe [data-act=bib-plier]').first.click(); pg.wait_for_timeout(300)
+    verifier('bûcherons' in texte(pg, '#livre-ici .lv-page.on'), 'un plan se déplie : ce qu\'on y avait trouvé')
+    # le plan des Fondateurs : dès le matin, sans sablier
     page(pg, 'plan'); pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=plan]').click(); pg.wait_for_timeout(300)
     if pg.locator('#voile [data-act=mj-go]').count(): pg.locator('#voile [data-act=mj-go]').click(); pg.wait_for_timeout(900)
-    if pg.locator('#mj-plein .mj-go').count(): pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(1200)
+    if pg.locator('#mj-plein .mj-go').count(): pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(4200)
     pg.screenshot(path=f'{OUT}/A-plan-jeu.png')
     info = pg.evaluate("() => window.__mjCourant ? {type:window.__mjCourant.type, params:window.__mjCourant.params} : null")
-    verifier(info and info['type'] == 'alphabet' and 'FONDATEURS' in info['params'].get('message', ''), 'le plan : l\'alphabet secret, « LE CHEMIN DES FONDATEURS »')
+    verifier(info and info['type'] == 'alphabet' and 'FONDATEURS' in info['params'].get('message', '') and info['params'].get('sansTemps'), 'le plan, dès le matin : l\'alphabet secret, « LE CHEMIN DES FONDATEURS », sans minuteur')
+    verifier(pg.evaluate("() => { var s = document.querySelector('#mj-plein .mjs-sablier'); return !s || s.hidden; }"), 'pas de sablier à l\'écran')
     pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(400); fermer(pg)
     t = page(pg, 'plan')
-    verifier('Ne le montrer à personne' in t, 'le plan entre dans le Grand Livre')
+    verifier('CHEMIN DES FONDATEURS' in t and 'puits' not in t.lower() and 'crypte' not in t.lower() and 'carnet' not in t.lower(), 'le plan entre dans le Grand Livre (rien sur le puits ni la crypte)')
+
+    print('— Partie A : l\'après-midi')
+    apresmidi(pg); pg.wait_for_timeout(2600)
+    verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
+    t = page(pg, 'livredor')
+    verifier(pg.locator('#livre-ici .lv-page.on .ec-or-mot').count() == 12 and 'Tout le monde a signé' in t and pg.locator('#livre-ici .lv-page.on .btn.b-aller[data-act=ouvrir-page]').count() == 1,
+             'le Livre d\'or, l\'après-midi : douze petits mots, « Tout le monde a signé ! », et le gros bouton jaune')
+    verifier(pg.evaluate("() => { var c = function(id){ var l = [].filter.call(document.querySelectorAll('#livre-ici .lv-page.on .ec-or-mot'), function(f){ return f.querySelector('figcaption').textContent === id; })[0]; return l ? [l.querySelectorAll('.ec-vague').length > 0, l.querySelectorAll('.pt-rond').length > 0] : null; }; return JSON.stringify([c('Mélusine'), c('Margot'), c('Gaspard')]); }") == '[[true,true],[true,true],[false,false]]',
+             'Mélusine et Margot ont les mêmes signes (la vague des « t », le rond des « i ») ; Gaspard, non')
+    shot(pg, 'A-livredor-aprem')
+    pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').click(); pg.wait_for_timeout(400)
+    verifier('Alchimiste' in texte(pg) and '_info:ecritures' in objets(pg) and pg.locator('#voile .b-donne, #voile .b-code').count() >= 1, 'le bouton : le code « Les écritures du village » pour l\'Alchimiste')
+    fermer(pg)
+    t = page(pg, 'livredor')
+    verifier(pg.locator('#livre-ici .lv-page.on .b-donne').count() == 1 and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0, 'ensuite : la page garde le code, plus de bouton')
+    # la lettre et le carnet : deux pages qui apparaissent avec les codes du Barde
+    code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
+    L = liste()
+    verifier('vraielettre' in L and 'carnet' in L, f'avec les codes du Barde : deux nouvelles pages, la lettre et le carnet ({L})')
+    t = page(pg, 'vraielettre')
+    verifier(pg.locator('#livre-ici .lv-page.on .ec-lettre .ec-M').count() >= 2 and pg.locator('#livre-ici .lv-page.on .ec-lettre .ec-vague').count() >= 5 and pg.locator('#livre-ici .lv-page.on .ec-lettre .pt-rond').count() >= 5 and 'fausse' not in t,
+             'la lettre, écrite « à la manière d\'Odette » : des « M », des « t » en vague, des ronds sur les « i » ; aucun texte ne dit qu\'elle est fausse')
+    shot(pg, 'A-lettre')
+    t = page(pg, 'carnet')
+    verifier(pg.locator('#livre-ici .lv-page.on .ec-chat').count() == 7 and pg.locator('#livre-ici .lv-page.on .ec-chat .ch-portrait').count() == 7 and pg.locator('#livre-ici .lv-page.on .ec-chat .ch-trace').count() == 7 and pg.locator('#livre-ici .lv-page.on .ec-chat .b-lire').count() == 7,
+             'le carnet d\'Odette : sept chats, chacun son dessin, sa description, sa trace, son 🔊')
+    verifier(pg.locator('#livre-ici .lv-page.on .ec-carnet .ec-vague').count() == 0 and pg.locator('#livre-ici .lv-page.on .ec-carnet .pt-rond').count() == 0 and pg.locator('#livre-ici .lv-page.on .ec-carnet .ec-chaton').count() >= 1,
+             'la vraie écriture d\'Odette : ni vague ni rond, et un petit chat à côté de son « O »')
+    verifier('_info:six_doigts' not in objets(pg) and pg.locator('#livre-ici .lv-page.on .b-donne').count() == 0, 'plus de code « Moustache a six doigts » : le Sage le dit à voix haute')
+    shot(pg, 'A-carnet')
     pts = lieu(pg, 'mairie')
-    verifier('rendu' in pts, 'rendre le tableau : à la mairie, l\'après-midi')
+    verifier('rendu' in pts and 'livredor' not in pts, 'rendre le tableau : à la mairie, l\'après-midi')
     or0 = pg.evaluate("() => M.S.or || 0")
     pg.locator('#voile [data-act=point][data-id=rendu]').click(); pg.wait_for_timeout(250)
-    verifier(pg.evaluate("() => M.S.or || 0") == or0 + 5 and 'accroche sous' not in texte(pg), '5 pièces d\'or ; pas de filet (il a déjà la lettre)')
+    verifier(pg.evaluate("() => M.S.or || 0") == or0 + 5 and 'accroche sous' not in texte(pg), '5 pièces d\'or ; plus de lettre accrochée sous le tableau')
     fermer(pg)
     code(pg, 'info:ecriture'); code(pg, 'info:aveu')
-    page(pg, 'qui'); ev(pg, 'ouvrir-page', {'id': 'qui'}); fermer(pg)
-    t = page(pg, 'qui')
-    verifier('Mélusine a écrit la lettre' in t, 'QUI : Mélusine')
-    shot(pg, 'A-qui')
-    m = pg.evaluate("() => (M.etatMissions ? 1 : 0)")
-    pg.close()
-
-    print('— Partie C : le filet de la lettre')
-    pg = debut(b, 'C')
-    lieu(pg, 'mairie'); jouer(pg, 'tableau', True); fermer(pg)
-    apresmidi(pg)
-    lieu(pg, 'mairie'); pg.locator('#voile [data-act=point][data-id=rendu]').click(); pg.wait_for_timeout(250)
-    verifier('accroche sous votre tableau' in texte(pg) and pg.evaluate("() => !!M.P().recus['obj:lettre']") and pg.locator('#voile .b-donne').count() == 1,
-             'sans la lettre : le maire l\'accroche sous le tableau ; le Sage la reçoit, et son code est pour l\'Alchimiste')
-    shot(pg, 'C-filet')
-    fermer(pg)
-    pts = lieu(pg, 'mairie')
-    verifier('rendu' in pts, 'le point reste là')
-    pg.locator('#voile [data-act=point][data-id=rendu]').click(); pg.wait_for_timeout(250)
-    verifier('accroche sous votre tableau' in texte(pg), 'il garde le même texte (pas d\'or une deuxième fois)')
+    verifier(pg.evaluate("() => !!M.P().recus['info:ecriture'] && !!M.P().recus['info:aveu']") and 'qui' not in liste(), '« Deux écritures » et l\'aveu : reçus ; plus de page « Qui a écrit la lettre ? »')
     pg.close()
 
     print('— Partie B : le tableau raté')
     pg = debut(b, 'B')
     lieu(pg, 'mairie'); jouer(pg, 'tableau', False); fermer(pg)
-    apresmidi(pg)
+    apresmidi(pg); pg.wait_for_timeout(2600)
     pts = lieu(pg, 'mairie')
     verifier('rendu' not in pts and 'sanstableau' in pts, f'tableau raté : rien à rendre, mais on peut passer voir le maire ({pts})')
     or0 = pg.evaluate("() => M.S.or || 0")
     pg.locator('#voile [data-act=point][data-id=sanstableau]').click(); pg.wait_for_timeout(250)
-    verifier('accroche au mur' in texte(pg) and pg.evaluate("() => !!M.P().recus['obj:lettre']") and pg.evaluate("() => M.S.or || 0") == or0,
-             'le filet de la lettre marche aussi sans tableau (et sans or)')
+    verifier(not pg.evaluate("() => !!M.P().recus['obj:lettre']") and pg.evaluate("() => M.S.or || 0") == or0, 'sans tableau : pas d\'or, et plus de lettre donnée par le maire')
     pg.close()
     b.close()
 

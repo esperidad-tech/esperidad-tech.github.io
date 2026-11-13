@@ -741,6 +741,7 @@ M.uneCondition = function(b){
   if(b.et) return b.et.every(M.uneCondition);                  /* condition « ET » : toutes à la fois */
   if(b.non) return !M.uneCondition(b.non);                     /* (enquête 3) le contraire : le filet de la lettre, si le Sage ne l'a pas encore */
   if(b.ou) return b.ou.some(M.uneCondition);                   /* (enquête 3, 12 novembre) condition « OU », à l'intérieur d'un « ET » */
+  if(b.brumeFinie) return !!(M.brumeFinie && M.brumeFinie());   /* (enquête 3, 13 novembre) toutes les plantes d'au-delà de la brume sont cueillies (cueillette.js) */
   if(b.toutDit) return !!(M.toutDit && M.toutDit(b.toutDit));  /* (enquête 3, 12 novembre) tout demandé à ces villageois : un grand dialogue s'ouvre (barde.js) */
   if(b.outil) return (M.S.outils || []).indexOf(b.outil) >= 0; /* outil de saison (coffret de teintures…) */
   return false;

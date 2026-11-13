@@ -55,11 +55,12 @@ function tableauHTML(E, src, lecture){
   function attr(act, data){ if(lecture) return ''; return ' type="button" data-act="' + act + '"' + Object.keys(data).map(function(k){ return ' data-' + k + '="' + esc(data[k]) + '"'; }).join(''); }
   var s = '';
   if(qui.length && ou.length){
-    s += '<div class="tb-boite"><div class="tb-grille" style="--n:' + ou.length + '">' +
+    /* (enquête 3 : dix lieux) beaucoup de colonnes : un peu plus larges, pour que leurs noms tiennent ; le tableau glisse de côté */
+    s += '<div class="tb-boite"><div class="tb-grille" style="--n:' + ou.length + (ou.length > 6 ? ';--w:60px' : '') + '">' +
       '<div class="tb-coin" aria-hidden="true"><span>📍</span><span>👤</span></div>';
     ou.forEach(function(c){
       var v = etatDim(src, 'ou', c.id);
-      s += '<' + bt + ' class="tb-col tb-' + (v || 'vide') + '"' + attr('tab-tete', {d:'ou', id:c.id}) + ' aria-label="' + esc(c.nom) + '"><span class="tb-ic">' + c.ic + '</span><small>' + esc(court(c.nom)) + '</small>' + (v ? '<i class="tb-m">' + marque(v) + '</i>' : '') + '</' + bt + '>';
+      s += '<' + bt + ' class="tb-col tb-' + (v || 'vide') + '"' + attr('tab-tete', {d:'ou', id:c.id}) + ' aria-label="' + esc(c.nom) + '"><span class="tb-ic">' + c.ic + '</span><small>' + esc(c.court || court(c.nom)) + '</small>' + (v ? '<i class="tb-m">' + marque(v) + '</i>' : '') + '</' + bt + '>';
     });
     qui.forEach(function(id){
       var vq = etatQui(src, id);

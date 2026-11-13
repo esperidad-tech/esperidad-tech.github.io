@@ -236,7 +236,7 @@ with sync_playwright() as p:
     shot(pg, 'A-leo-code')
     fermer(pg)
     faits = pg.evaluate("() => { M.render(); return Object.keys(M.P().mission.faits).map(Number); }")
-    verifier(all(i in faits for i in (4, 5, 6, 7, 8)), 'les missions de la lettre, de l\'aveu, d\'Anselme, de la fête et de Léo sont cochées')
+    verifier(all(i in faits for i in (4, 5, 6, 7)), f'les missions de la lettre, de l\'aveu, d\'Anselme et de la fête sont cochées (plus de mission « Léo » : 13 novembre) ({faits})')
     pg.close()
 
     # ---------------- Partie B : tout raté ----------------
@@ -248,7 +248,7 @@ with sync_playwright() as p:
     i = grands_de(pg, 'grosbec').index('lettre')
     ev(pg, 'question', {'p': 'grosbec', 'i': str(i)})
     choisir(pg, 1); choisir(pg, 2); choisir(pg, 2)
-    verifier('recopiez donc' in texte(pg) and '_info:copie' in objets(pg) and not pg.evaluate("() => !!M.P().objets.lettre"), 'le piège : une copie, pas la lettre')
+    verifier('recopiez donc' in texte(pg) and '_info:lettre_bureau' in objets(pg) and '_info:copie' not in objets(pg) and not pg.evaluate("() => !!M.P().objets.lettre"), 'le piège : une copie, pas la lettre ; le code « La lettre est sur le bureau du maire » pour le Pisteur (13 novembre)')
     shot(pg, 'B-copie')
     pg.close()
     print('— Partie B : le maire refuse')
@@ -259,6 +259,9 @@ with sync_playwright() as p:
     ev(pg, 'question', {'p': 'grosbec', 'i': str(i)})
     choisir(pg, 3)
     verifier('Revenez plus tard' in texte(pg) and 'minuit' not in texte(pg), 'mauvais choix : « Bien, bien… Revenez plus tard. »')
+    # (13 novembre) raté : le Barde reçoit un code pour le Pisteur, qui ira chercher la lettre en cachette
+    pg.locator('#voile [data-act=gd-suite]').click(); pg.wait_for_timeout(300)
+    verifier('_info:lettre_bureau' in objets(pg) and 'sans se faire voir' in texte(pg) and pg.locator('#voile .b-donne').count() == 1, 'raté : « La lettre est sur le bureau du maire », un code pour le Pisteur')
     pg.locator('#voile [data-act=gd-retour]').click(); pg.wait_for_timeout(300)
     verifier('pas voulu te prêter' in pg.evaluate("() => document.querySelector('#voile .gd-q').textContent") and pg.evaluate("() => M.P().vus['grand:lettre']") == 'rate', 'un seul essai : le maire n\'a pas voulu prêter la lettre')
     verifier(pg.locator('#voile .gd-q.gd-neuve').count() == 0 and pg.locator('#voile [data-act=gd-reprendre]').count() == 0, 'pas de deuxième chance')

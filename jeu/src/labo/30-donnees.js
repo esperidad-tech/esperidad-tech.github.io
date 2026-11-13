@@ -125,23 +125,12 @@ var LISTES = {
    l : les lignes ; taille, penche (0 : toute droite), gras ; deco : une petite fleur, de la farine, des pâtés d'encre. */
 TIROIRS.livre = ['ecritures'];
 CASIERS.ecritures = 'Le Livre d\'or';
-ECH.ecritures = {
-  melusine:{nom:'Mélusine', l:['Mille bisous,', 'Odette, vite !'], M:1, t:1, i:1},
-  victor:{nom:'Victor', l:['Bien à vous,', 'Madame Odette.'], M:1, i:1, penche:0},
-  fortune:{nom:'Fortuné', l:['Mes amitiés !', 'Bon retour.'], M:1, t:1, penche:.2},
-  iris:{nom:'Iris', l:['Mes iris', 't\'attendent.'], i:1, deco:'fleur', penche:.08},
-  margot:{nom:'Margot', l:['Vite, vite,', 'Madame Odette !'], t:1, penche:.16},
-  gaspard:{nom:'Gaspard', l:['Ma brioche', 't\'attend !'], deco:'farine', gras:1},
-  basile:{nom:'Basile', l:['Vive les', 'lampions !'], taille:1.3, gras:1, penche:.04},
-  tim:{nom:'Tim', l:['Reviens', 'vite !'], deco:'pates', penche:-.08, taille:1.1},
-  silas:{nom:'Silas', l:['BON RETOUR.', 'SILAS.'], penche:0, gras:1, taille:.92},
-  farinel:{nom:'Farinel', l:['Le moulin', 't\'attend.'], penche:.5, deco:'farine'},
-  anselme:{nom:'Anselme', l:['DONG !'], taille:1.5, gras:1, penche:0},
-  maire:{nom:'le maire', l:['Bienvenue chez toi,', 'Odette.'], taille:.62, penche:.24}
-};
-/* la lettre d'Odette, telle qu'on la voit sous la loupe : quelques mots, et les trois signes de celui (de celle…) qui l'a écrite */
-var ECR_LETTRE = {l:['Monsieur le maire,', 'je suis partie…', 'Odette'], M:1, t:1, i:1, encre:'#17151c', papier:'#f3ead2', lettre:true};
-LISTES.facile.ecritures = LISTES.difficile.ecritures = ['gaspard', 'victor', 'iris', 'basile', 'fortune', 'silas', 'tim', 'melusine', 'farinel', 'margot', 'anselme', 'maire'];
+/* (13 novembre) les douze écritures et la lettre : une seule source, src/ecritures-donnees.js (le Grand Livre du Sage montre le même
+   Livre d'or). DEUX écritures ont les trois signes de la lettre : Mélusine et Margot (ECRITURES.bons). */
+ECH.ecritures = ECRITURES.ech;
+/* la lettre d'Odette, telle qu'on la voit sous la loupe : quelques mots, et les trois signes de celle qui l'a écrite */
+var ECR_LETTRE = ECRITURES.lettre;
+LISTES.facile.ecritures = LISTES.difficile.ecritures = ECRITURES.ordre;
 function contenuCasier(k){ return LISTES[S.niveau][k]; }
 /* ============ Les dossiers : ce que l'Alchimiste a reçu ============
    Un dossier = un échantillon posé sur le carré de cuir (on ne sait pas ce que c'est : c'est la loupe qui le dit), et tout ce qu'on en tire :
@@ -210,7 +199,8 @@ var OBJETS = {
      à la loupe, son écriture, à comparer aux douze du Livre d'or (il faut le code « Les écritures du village » du Sage : CFG.livredor) ;
      au microscope, des grains de pollen de lavande (une fausse piste : tout le village en a) ; l'eau chaude fait couler un peu
      d'encre : au test des couleurs, de l'encre de noix de galle, celle des colporteurs (elle ne se sépare pas) */
-  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', scene:'papier', requis:['lettre', 'pollen_l', 'encre_l'],
+  /* bons (13 novembre) : plusieurs bonnes réponses — n'importe laquelle des deux écritures qui ressemblent ; le labo annonce les deux */
+  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', bons:ECRITURES.bons, scene:'papier', requis:['lettre', 'pollen_l', 'encre_l'],
     savoir:'Chacun forme ses lettres à sa façon : une écriture se reconnaît comme un visage.'},
   pollen_l:{de:'lettre', nom:'le grain jaune', tiroir:'grains', bon:'pollenlav', coul:'#e8c84a', savoir:'Du pollen de lavande, comme dans les sachets d\'Iris… Mais tout le village en a !'},
   encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. On la fait avec de petites boules qui poussent sur les chênes.'}

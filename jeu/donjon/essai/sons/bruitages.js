@@ -161,28 +161,40 @@ function timbale(A, t, g, dest){
 }
 
 /* =================== 1. L'ARC =================== */
-S.arcA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.25, pan:-.35});
-  A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
-  grinceArc(A, t + .08, .7, {}, o);
-  A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
-  lacherCorde(A, t + .8, {f:98, t60:.5}, o);
-  return {duree:1.4, moment:.8};
+/* (13 novembre) Les trois versions de l'arc, écrites en deux moitiés — la corde qu'on tend, la corde lâchée — sans rien changer au son :
+   dans le donjon, le Pisteur tire tout seul (S.arcA/B/C : on tend, puis on lâche à l'instant « moment ») ; dans le mini-jeu du tir aux
+   anneaux de l'enquête 3 (jeu/src/mj-visee.js), c'est le doigt qui décide quand lâcher, et Romain veut « le même son que quand il tire
+   avec son arc dans le donjon » : le mini-jeu joue donc ces deux moitiés-ci (G.BRUITAGES_ARC), l'une quand le doigt se pose, l'autre
+   quand il se lève. Une seule source : changer l'arc ici le change aux deux endroits. */
+var ARC = {
+  A:{rev:.25, moment:.8, duree:1.4,
+    tendre:function(A, t, o){
+      A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
+      grinceArc(A, t + .08, .7, {}, o);
+      A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:98, t60:.5}, o); }},
+  B:{rev:.2, moment:.5, duree:.9,
+    tendre:function(A, t, o){
+      A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o); }},
+  C:{rev:.4, moment:1.12, duree:2.2,
+    tendre:function(A, t, o){
+      clic(A, t, 2400, .5, o);
+      grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
+      A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o); }}
 };
-S.arcB = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.2, pan:-.35});
-  A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
-  lacherCorde(A, t + .5, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o);
-  return {duree:.9, moment:.5};
-};
-S.arcC = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.4, pan:-.35});
-  clic(A, t, 2400, .5, o);
-  grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
-  A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
-  lacherCorde(A, t + 1.12, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o);
-  return {duree:2.2, moment:1.12};
-};
+['A', 'B', 'C'].forEach(function(v){
+  S['arc' + v] = function(A, P){
+    var x = ARC[v], t = P.t, o = A.bus(P, {rev:x.rev, pan:-.35});
+    x.tendre(A, t, o);
+    x.lacher(A, t + x.moment, o);
+    return {duree:x.duree, moment:x.moment};
+  };
+});
 
 /* =================== 2. LA FLÈCHE EN VOL =================== */
 S.volA = function(A, P){
@@ -683,6 +695,7 @@ S.iconeC = function(A, P){                                                      
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
 });
 G.BRUITAGES = S;
+G.BRUITAGES_ARC = ARC;   /* les deux moitiés de l'arc, pour le tir aux anneaux (jeu/src/mj-visee.js) */
 /* les petits morceaux, prêtés aux nouveaux sons de l'atelier (bestiaire.js, donjon.js) — rien ne change ici */
 G.BRUITAGES_OUTILS = {clic:clic, grinceArc:grinceArc, lacherCorde:lacherCorde, sifflement:sifflement, toc:toc, vibreFleche:vibreFleche, swish:swish, chantLame:chantLame, tchac:tchac, tinc:tinc,
   bong:bong, sifflementRat:sifflementRat, dents:dents, embrase:embrase, gresille:gresille, sploutch:sploutch, etire:etire, glisse:glisse, toux:toux, boum:boum, brume:brume,

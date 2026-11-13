@@ -119,7 +119,8 @@ with sync_playwright() as p:
     R = pg.evaluate("() => window.PLANTES_RECETTES")
     verifier(pg.evaluate("() => M.E().id === 3 && M.etabliDispo() && M.laboDispo()"), 'enquête 3, Alchimiste : l\'établi et le labo sont branchés')
     mi = pg.evaluate("() => M.etapesMission().map(function(m){ return m.t; })")
-    verifier(len(mi) >= 6 and 'gâteau' in mi[0] and 'sept plantes' in mi[1] and 'Anselme' in mi[2] and 'tisane' in mi[3] and 'lettre' in mi[4] and 'sept potions' in mi[5], f'ses missions (celle de la tisane d\'Anselme n\'arrive qu\'après Bertille) ({len(mi)} lignes)')
+    # (13 novembre : « on en dit trop ») plus de mission « Analyse la lettre », ni de mission de la nuit
+    verifier(len(mi) >= 5 and 'gâteau' in mi[0] and 'sept plantes' in mi[1] and 'Anselme' in mi[2] and 'tisane' in mi[3] and 'sept potions' in mi[4] and not any('lettre' in m and 'QUI' not in m for m in mi), f'ses missions (celle de la tisane d\'Anselme n\'arrive qu\'après Bertille ; plus de « Analyse la lettre ») ({len(mi)} lignes)')
     atelier(pg)
     verifier(pg.evaluate("() => M.S.atelier.objets.filter(function(o){ return o.t === 'etabli'; }).length") == 1 and pg.locator('#atelier-ici .at-etabli-p').count() == 1, 'l\'établi des plantes est dans l\'atelier')
     verifier(signe(pg) == '', 'pas de signe au-dessus de l\'établi : aucune plante n\'attend')
@@ -128,14 +129,18 @@ with sync_playwright() as p:
     verifier(pts == ['gateau'] and 'Rien à trouver' not in texte(pg), f'la boulangerie : le gâteau de la fête (et pas de « rien à trouver ») ({pts})')
     info = jouer(pg, 'gateau', True, 'gateau', {'gateau': {'etages': 3}})
     verifier(info and info['type'] == 'gateau', 'le gâteau : le mini-jeu « gateau »')
-    verifier('Sept étages' in texte(pg) and pg.evaluate("() => M.P().vus['alchimiste:boulangerie:gateau'] === 'ok' && !!M.P().gateau"), 'réussi : « Sept étages en tout ! », et le gâteau est gardé')
+    verifier('grande table de la fête' in texte(pg) and pg.evaluate("() => M.P().vus['alchimiste:boulangerie:gateau'] === 'ok' && !!M.P().gateau"), 'réussi : « Ton gâteau part sur la grande table de la fête », et le gâteau est gardé')
     fermer(pg)
     verifier(lieu(pg, 'mairie') == [], 'la mairie, le matin : rien pour l\'Alchimiste (le gâteau se porte l\'après-midi)')
     # ---------- les cueillettes (12 novembre, Bible §13.26 : sept endroits cachés de la carte ; le robot qui les touche au doigt : e3-cueillette.py) ----------
     print('— Le matin : les cueillettes')
-    for l in ['lavoir', 'herboristerie', 'moulin', 'foret', 'clairiere', 'potager']:
+    # (13 novembre) les ingrédients de l'enquête 2 se cueillent encore (la potion de vérité se prépare à l'enquête 3) : « Chercher » au
+    # lavoir, à l'herboristerie, à la clairière, au potager ; le moulin n'a rien
+    for l in ['lavoir', 'herboristerie', 'clairiere', 'potager']:
         pts = lieu(pg, l)
-        verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 0, f'{l} : plus rien à « chercher » dans la bulle du lieu ({pts})')
+        verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 1, f'{l} : « Chercher des ingrédients » (ceux de l\'enquête 2), pas de point à explorer ({pts})')
+    pts = lieu(pg, 'moulin')
+    verifier(pts == [] and pg.locator('#voile [data-act=cueillir]').count() == 0, f'moulin : rien à chercher ({pts})')
     # (12 novembre, 15 h 39, Bible §13.28 : trois plantes au village — l'oseille, le souci, le lin —, quatre au-delà de la brume, dont la mélisse)
     for k, mot in [('oseille', 'oseille')]:
         t = CU.cueillir(pg, k)
@@ -319,16 +324,17 @@ with sync_playwright() as p:
     verifier('Livre d\'or' in t, 'le code « Les écritures du village » du Sage')
     f = ouvrir()
     verifier(f.locator('#gLivreDor').count() == 1, 'le Livre d\'or est posé sur la paillasse')
-    clic('#ech-lettre'); pg.wait_for_timeout(400); clic('#gLoupe'); pg.wait_for_timeout(1900)
-    verifier(not f.evaluate("() => document.querySelector('#bLivreDor').hidden"), 'sous le verre : le bouton jaune « 📖 Le Livre d\'or »')
+    clic('#ech-lettre'); pg.wait_for_timeout(400); clic('#gLoupe'); pg.wait_for_timeout(3400)
+    # (13 novembre : « il ne trouvait pas le Livre d'or ») avec le code du Sage, le Livre d'or s'ouvre tout seul sous la lettre
     shot(pg, 'loupe-lettre')
-    clic('#bLivreDor'); pg.wait_for_timeout(900)
-    verifier(f.locator('[data-ech^="ecritures:"]').count() == 12, 'le Livre d\'or s\'ouvre : douze écritures')
+    verifier(f.locator('[data-ech^="ecritures:"]').count() == 12, 'le Livre d\'or s\'ouvre tout seul sous la lettre : douze écritures')
     shot(pg, 'livre-dor')
     clic('[data-ech="ecritures:victor"]'); pg.wait_for_timeout(1300); shot(pg, 'compare-victor'); pg.wait_for_timeout(1800)
     verifier(etat()['barres'].get('lettre', {}).get('ecritures:victor') and not etat()['trouves'].get('lettre'), 'Victor (deux signes sur trois) : ce n\'est pas lui, il est barré')
-    clic('[data-ech="ecritures:melusine"]'); pg.wait_for_timeout(2600)
-    verifier(etat()['trouves'].get('lettre') and 'Mélusine' in f.evaluate("() => document.querySelector('#ruban').textContent"), 'Mélusine : les trois signes, c\'est son écriture')
+    # (13 novembre) DEUX écritures ont les trois signes : Mélusine et Margot — l'une ou l'autre, le labo annonce les deux
+    clic('[data-ech="ecritures:margot"]'); pg.wait_for_timeout(2600)
+    rub = f.evaluate("() => document.querySelector('#ruban').textContent")
+    verifier(etat()['trouves'].get('lettre') and 'Mélusine' in rub and 'Margot' in rub, f'Margot : les trois signes… comme Mélusine : « {rub} »')
     shot(pg, 'melusine'); pg.wait_for_timeout(2200)
     clic('#bFermer'); pg.wait_for_timeout(900)
     # le microscope : les deux grains de pollen, à ×40
@@ -350,11 +356,11 @@ with sync_playwright() as p:
     shot(pg, 'labo-fini')
     f.evaluate("() => window.__labo.quitter()"); pg.wait_for_timeout(800)
     t = texte(pg)
-    verifier('MÉLUSINE' in t and pg.locator('#voile .b-donne, #voile .b-code').count() >= 1 and pg.evaluate("() => !!M.P().analyses.lettre"), 'en sortant : la découverte, et le code « L\'écriture de Mélusine »')
+    verifier('Mélusine' in t and 'Margot' in t and pg.locator('#voile .b-donne, #voile .b-code').count() >= 1 and pg.evaluate("() => !!M.P().analyses.lettre"), 'en sortant : la découverte (Mélusine… et Margot), et le code « Deux écritures »')
     shot(pg, 'decouverte-ecriture')
     fermer(pg)
     notes = pg.evaluate("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')")
-    verifier('lavande' in notes and 'noix de galle' in notes and 'colporteur' not in notes and 'Mélusine' in notes, 'au Carnet : le pollen de lavande, l\'encre de noix de galle (plus « de colporteur » : c\'est celle d\'Iris), l\'écriture de Mélusine')
+    verifier('lavande' in notes and 'noix de galle' in notes and 'colporteur' not in notes and 'Mélusine' in notes and 'Margot' in notes, 'au Carnet : le pollen de lavande, l\'encre de noix de galle (plus « de colporteur » : c\'est celle d\'Iris), les deux écritures (Mélusine, Margot)')
     pts = lieu(pg, 'mairie')
     verifier(pts == ['gateau'], f'la mairie, l\'après-midi : porter le gâteau au maire ({pts})')
     or0 = pg.evaluate("() => M.S.or")
@@ -362,7 +368,7 @@ with sync_playwright() as p:
     verifier('clou de ma fête' in texte(pg) and 'minuit' not in texte(pg) and pg.evaluate("() => M.S.or") == or0 + 5, 'le maire : « Ce sera le clou de ma fête », plus de minuit, et cinq pièces d\'or')
     fermer(pg)
     fait = pg.evaluate("() => { M.majMission(); return Object.keys(M.P().mission.faits).length; }")
-    verifier(fait == 6, f'ses six missions sont validées, la tisane d\'Anselme comprise ({fait})')
+    verifier(fait == 5, f'ses cinq missions sont validées, la tisane d\'Anselme comprise ({fait})')
     # ======================================================================== la nuit : le sac
     print('— La nuit : le sac')
     code(pg, 'moment:2')

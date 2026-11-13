@@ -128,13 +128,13 @@ def moment(pg, i):
     pg.evaluate(f"() => {{ M.UI.modal = null; M.P().moment = {i}; M.sauver(); M.render(); }}"); pg.wait_for_timeout(300); carte(pg)
 
 def cueillir(pg, pid, mot):
-    """touche l'endroit, puis le bouton jaune ; rend le texte de la bulle avant et après"""
+    """(13 novembre, Romain : « dès qu'on trouve la plante, elle est cueillie automatiquement ») touche l'endroit : plus de bouton jaune.
+    Rend le texte de la bulle, deux fois si la plante est bien arrivée sur l'établi ; (texte, None) sinon."""
+    k = pid.partition('#')[0]
+    n0 = pg.evaluate(f"() => M.plantes().{k} || 0")
     toucher(pg, pid)
-    avant = texte(pg); bt = pg.locator(f'#voile [data-act=cueillir-plante][data-id={pid.partition("#")[0]}]')
-    if not bt.count(): return avant, None
-    lib = bt.inner_text()
-    bt.tap(); pg.wait_for_timeout(400)
-    return avant + ' | ' + lib, texte(pg)
+    t = texte(pg)
+    return (t, t) if pg.evaluate(f"() => M.plantes().{k} || 0") > n0 else (t, None)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -171,15 +171,14 @@ with sync_playwright() as p:
     q = toucher(pg, 'oseille', R * 0.85, 0)
     m = bulle(pg); t = texte(pg)
     verifier(m and m['type'] == 'cachette' and m['id'] == 'oseille' and m['bulle'], f'toucher juste dedans (à 0,85 fois le rayon) : la bulle de l\'oseille, sur la carte ({m})')
-    verifier('fer de flèche' in t and 'Cueillir de l\'oseille' in t, f'« … de l\'oseille ! » et le bouton « Cueillir de l\'oseille » ({t[:110]})')
-    verifier(pg.evaluate("() => { var b = document.querySelector('#voile [data-act=cueillir-plante]'); return !!b && /rgb\\(17, 17, 17\\)/.test(getComputedStyle(b).color); }"), 'le bouton est jaune, texte noir')
+    verifier('fer de flèche' in t and 'Cueilli' in t and 'établi' in t, f'« … de l\'oseille ! », et elle est cueillie d\'office : « Cueilli ! Ça t\'attend sur l\'établi » ({t[:110]})')
+    verifier(pg.locator('#voile [data-act=cueillir-plante]').count() == 0, 'plus de bouton « Cueillir » (13 novembre)')
     verifier(connues(pg) == ['oseille'] and pg.evaluate("() => !!M.S.cachettesVues.oseille"), 'sa pastille est apparue sur la carte, et le jeu s\'en souvient (pour toute la saison)')
     # (depuis 15 h 37, le rond à toucher n'est pas plus grand que la pastille : « beaucoup plus resserré ». Sur un téléphone, au plus gros zoom, il
     #  ne fait que 36 px — dit à Romain ; si c'est trop dur : laisser le téléphone zoomer plus, ou grossir pastille et rond ensemble, R_CACHETTE)
     verifier(q and q['r'] * 2 >= (34 if IPHONE else 44), f'au plus gros zoom, le rond à toucher fait {q and round(q["r"] * 2)} px (au moins {34 if IPHONE else 44})')
     shot(pg, 'oseille-trouvee')
-    av, ap = cueillir(pg, 'oseille', 'oseille')
-    verifier(ap is not None and 'Cueilli' in ap and 'établi' in ap and pg.evaluate("() => M.plantes().oseille") == 1 and pg.evaluate("() => !!M.P().vus['plante:oseille']"), f'cueillie : « ça t\'attend sur l\'établi », une oseille sur l\'établi ({(ap or "")[:60]})')
+    verifier(pg.evaluate("() => M.plantes().oseille") == 1 and pg.evaluate("() => !!M.P().vus['plante:oseille']"), 'une oseille sur l\'établi')
     verifier(grises(pg) == ['oseille'], 'sa pastille devient grise')
     toucher(pg, 'oseille'); t = texte(pg)
     verifier('Cueilli' in t and pg.locator('#voile [data-act=cueillir-plante]').count() == 0 and pg.evaluate("() => M.plantes().oseille") == 1, 'la retoucher ce matin : déjà cueillie, pas de deuxième')
@@ -315,7 +314,7 @@ with sync_playwright() as p:
     zoomer(p2)
     verifier(not p2.evaluate("() => M.etabliDispo()"), 'enquête 2, aucune plante : pas d\'établi dans l\'atelier')
     av, ap = cueillir(p2, 'oseille', 'oseille')
-    verifier(ap is not None and 'Cueillir de l\'oseille' in av and 'établi' in ap and p2.evaluate("() => M.plantes().oseille") == 1, f'l\'oseille : trouvée à l\'aveugle, et cueillie pour de bon ({av[:80]})')
+    verifier(ap is not None and 'oseille' in av and 'établi' in ap and p2.evaluate("() => M.plantes().oseille") == 1, f'l\'oseille : trouvée à l\'aveugle, et cueillie pour de bon ({av[:80]})')
     verifier(connues(p2) == ['oseille'] and grises(p2) == ['oseille'], 'sa pastille reste sur la carte (grise : cueillie)')
     verifier(p2.evaluate("() => M.etabliDispo()") and p2.evaluate("() => M.S.herbier.plantes.oseille") == 2, 'l\'établi apparaît dans l\'atelier dès la première plante, et le jeu note où elle a été trouvée (enquête 2)')
     toucher(p2, 'souci'); t = texte(p2)

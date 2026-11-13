@@ -129,7 +129,7 @@ M.aQuelqueChose = function(lieu){
 M.infosCarte = function(){
   var E = M.E(), P = M.P(), role = M.role(), mid = M.momentId();
   var lieux = {};
-  M.cle(E.lieux).forEach(function(id){ lieux[id] = 1; });
+  M.cle(E.lieux).forEach(function(id){ if(!/^[LFB]\d$/.test(id)) lieux[id] = 1; });   /* (une maison avec des choses à voir, E.lieux.L2 : ce n'est pas un lieu de la carte — feuilleMaison, plus bas) */
   if(role === 'alchimiste') M.lieuxAlchimiste().forEach(function(id){ lieux[id] = 1; });
   M.cle(E.pnj || {}).forEach(function(id){ var o = E.pnj[id].ou; if(o && o[mid] && !/^[LFB]\d$/.test(o[mid])) lieux[o[mid]] = 1; });
   (E.bonus || []).forEach(function(b){ lieux[b.lieu] = 1; });
@@ -332,7 +332,37 @@ M.feuilleMaison = function(maison){
     else s += '<button class="btn grand" data-act="frapper" data-id="' + maison + '"' + (M.peutAgir() ? '' : ' disabled') + '>🚪 Frapper à la porte' + M.coutTxt() + '</button>' + plusDAction();
   }
   if(role === 'barde' && M.porteBouton) s += M.porteBouton(maison);   /* 👂 écouter aux portes (talent, barde.js) */
+  /* (13 novembre) une maison peut avoir des choses à voir, comme un lieu (E.lieux[maison][role].points) : les traces de Moustache,
+     devant chez Odette, pour le Pisteur. Pas d'« Explorer » avant : on est devant la porte, on voit tout de suite (A.maison). */
+  var ptsM = M.pointsMaison(maison);
+  if(ptsM.length){
+    var RM = E.lieux[maison][role] || {};
+    if(RM.intro) s += '<p class="b-intro-lieu">' + esc(RM.intro) + ' ' + lire(RM.intro) + '</p>';
+    s += '<div class="b-points">' + ptsM.map(function(p){
+      var k = role + ':' + maison + ':' + p.id, st = P0().vus[k];
+      return '<button class="b-point' + (st === 'ok' ? ' vu' : st === 'rate' ? ' rate' : '') + '" data-act="point" data-l="' + maison + '" data-id="' + p.id + '">' +
+        '<span class="b-point-ic">' + p.ic + '</span><b>' + esc(p.nom) + '</b>' + (p.mj && st !== 'ok' ? '<small>🎮 mini-jeu</small>' : '') + (st === 'ok' ? '<small>✔</small>' : st === 'rate' ? '<small>🔁 ' + (p.essaisInfinis || (M.essaisInfinis && M.essaisInfinis()) ? 'réessayer' : 'dernière chance') + '</small>' : '') + '</button>';
+    }).join('') + '</div>';
+  }
   return s;
+};
+function P0(){ return M.P(); }
+/* les choses à voir dans une maison, pour ce rôle (le Pisteur, le Sage) */
+M.pointsMaison = function(maison){
+  var E = M.E(), role = M.role();
+  if(!E || !E.lieux || !E.lieux[maison] || (role !== 'pisteur' && role !== 'sage')) return [];
+  return M.pointsVisibles(maison, role);
+};
+/* la petite bulle posée sur une maison de la carte quand il reste quelque chose à y faire (carte-jeu.js → carte.js, o.bullesMaison) */
+M.bullesMaisons = function(){
+  var E = M.E(), P = M.P(), role = M.role(), o = {};
+  if(!E || !P) return o;
+  M.cle(E.lieux || {}).forEach(function(id){
+    if(!/^[LFB]\d$/.test(id)) return;
+    var p = M.pointsMaison(id).filter(function(x){ return P.vus[role + ':' + id + ':' + x.id] !== 'ok'; })[0];
+    if(p) o[id] = p.ic;
+  });
+  return o;
 };
 
 /* ---------- Conversation (Barde) ---------- */

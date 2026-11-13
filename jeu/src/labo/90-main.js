@@ -176,7 +176,7 @@ $('#scene').addEventListener('click', function(e){
   clic.pris = true;
   if(a === 'molette') g = $('#gMicro'), a = 'micro';
   if(a === 'ardoise'){ if(codePret()) ouvrirArdoise(); else son('clic'); return; }
-  if(a === 'livredor'){ son('papier'); bulle(LIVRE.x - 40, LIVRE.y - 44, 'Le Livre d\'or de la fête : douze habitants y ont écrit un mot.', 4200); return; }
+  if(a === 'livredor'){ son('papier'); bulle(LIVRE.x - 40, LIVRE.y - 44, 'Le Livre d\'or de la fête : douze habitants y ont écrit un mot. Sous la loupe, avec la lettre, il s\'ouvrira.', 5600); return; }
   if(a === 'lame') return selectionner(g.dataset.t);
   if(a === 'coupe'){ var c = D().coupes[+g.dataset.i]; if(c) selectionner(c.t); return; }
   /* un outil : il faut d'abord avoir choisi quelque chose à analyser, et que l'outil puisse servir */

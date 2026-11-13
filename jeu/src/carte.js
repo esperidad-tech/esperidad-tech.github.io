@@ -1276,6 +1276,13 @@ function marqueurs(p, o, geo){
     var buC = (o.bullesChez || {})[k];
     if(buC) sortie.dessus += '<g class="ca-bulle-mq" pointer-events="none" transform="translate(' + f(m.x + m.r * .82) + ' ' + f(m.y - m.r * .78) + ')"><circle r="15" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="2.6"/><text x="0" y="1" font-size="17" text-anchor="middle" dominant-baseline="central">' + esc(buC) + '</text></g>';
   });
+  /* (13 novembre) o.bullesMaison = {maison:'🐾'} : il reste quelque chose à faire dans cette maison, que son habitant soit là ou non
+     (les traces de Moustache, devant chez Odette) : la même petite bulle, sur le rond de la maison */
+  Object.keys(o.bullesMaison || {}).forEach(function(k){
+    if(!MAISONS[k] || ((o.bullesChez || {})[k] && (o.presents || {})[k])) return;
+    var m = posMedaillon(k);
+    sortie.dessus += '<g class="ca-bulle-mq" pointer-events="none" transform="translate(' + f(m.x + m.r * .82) + ' ' + f(m.y - m.r * .78) + ')"><circle r="15" fill="#fffaf0" stroke="' + CONTOUR + '" stroke-width="2.6"/><text x="0" y="1" font-size="17" text-anchor="middle" dominant-baseline="central">' + esc(o.bullesMaison[k]) + '</text></g>';
+  });
   if(ordre.length){
     /* tout ce qui est déjà écrit sur la carte : les étiquettes des lieux et les notes des maisons */
     var occupes = geo.liste.filter(function(G){ return G.rect; }).map(function(G){ return G.rect; });

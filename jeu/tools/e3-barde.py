@@ -323,7 +323,10 @@ with sync_playwright() as p:
     m = modal(pg)
     verifier(m and m['type'] == 'marche' and m['qui'] == 'retour', 'le maire compte les bouquets')
     verifier(pg.evaluate("() => M.S.or") == or0 + 15, '11 bouquets et la lanterne : 15 pièces d\'or')
-    verifier('comme celle que' in texte(pg), 'le lapsus de la lanterne')
+    # (13 novembre) devant la lanterne, une deuxième vue : l'aparté, puis « Une lanterne comme celle-là… Parfait. Je vais la garder. »
+    verifier('Magnifique' in texte(pg) and pg.locator('#voile [data-act=ma-lanterne]').count() == 1, 'onze bouquets : « Magnifique, je savais que je pouvais compter sur vous », puis « La suite »')
+    pg.locator('#voile [data-act=ma-lanterne]').click(); pg.wait_for_timeout(300)
+    verifier('très étrange' in texte(pg) and 'Je vais la garder' in texte(pg), 'la lanterne : « Le maire réagit d\'une façon très étrange », « Une lanterne comme celle-là… Je vais la garder. »')
     shot(pg, 'maire-compte')
     ev(pg, 'ma-rendu')
     m = modal(pg)

@@ -41,7 +41,8 @@ module.exports = function verifierE3(E, SRC, D){
       const L = E.lieux[l][role]; if(!L) continue;
       (L.points || []).forEach(p => {
         const cle = `${role}:${l}:${p.id}`, prod = liste(p.donne).concat(p.obj ? ['obj:' + p.obj] : []), f = p.plante ? ['plante:' + p.plante] : [];
-        const ratable = !!p.mj && p.mj !== 'gateau';   /* (le gâteau est une création libre : on ne le rate jamais) */
+        /* (le gâteau est une création libre : on ne le rate jamais ; p.essaisInfinis : on recommence autant qu'on veut, il finit toujours par réussir) */
+        const ratable = !!p.mj && p.mj !== 'gateau' && !p.essaisInfinis;
         aj({cle, role, moments:p.moments, besoins:[p.besoin, p.visibleSi].filter(Boolean), sauf:p.cacheSi, produit:prod, faits:f, ratable, mj:p.mj,
           rate:p.ouvrePartiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
         (p.variantes || []).forEach((v, k) => { if(v.recoit || v.donne || v.obj) aj({cle:`${cle}:v${k}`, role, moments:p.moments, besoins:[[{vu:cle}]].concat(v.si ? [v.si] : []), produit:liste(v.recoit).concat(liste(v.donne)), filet:true}); });
@@ -92,7 +93,8 @@ module.exports = function verifierE3(E, SRC, D){
   /* les pages du Grand Livre */
   (E.pages || []).forEach(p => {
     const prod = liste(p.donne), f = ['page:' + p.id];
-    aj({cle:`sage:page:${p.id}`, role:'sage', moments:p.moments, besoins:[p.besoin].filter(Boolean), produit:prod, faits:f, ratable:!!p.mj, mj:p.mj, rate:p.ouvrePartiel || p.partiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
+    /* (13 novembre) p.visibleSi : la page n'existe qu'avec ce code (la lettre, le carnet) ; p.quand : son bouton attend ce moment (le Livre d'or) */
+    aj({cle:`sage:page:${p.id}`, role:'sage', moments:p.moments || p.quand, besoins:[p.besoin, p.visibleSi].filter(Boolean), produit:prod, faits:f, ratable:!!p.mj, mj:p.mj, rate:p.ouvrePartiel || p.partiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
   });
   /* les analyses du labo (à la main : la lettre a besoin des écritures du Livre d'or — labo.js, CFG.livredor) */
   for(const id of Object.keys(E.analyses || {})){
@@ -246,7 +248,8 @@ module.exports = function verifierE3(E, SRC, D){
   dit(!pasLeBon.length, pasLeBon.length ? 'des codes donnés par un autre que celui annoncé (« de ») : ' + pasLeBon.join(', ') : 'Chaque code est donné par celui qui est annoncé');
   /* à quoi sert un code : une condition quelque part chez celui qui le reçoit ; ou bien (à la main) il rouvre une porte chez le Barde
      (pnj), il apporte une plante, il se tape dans le donjon, il ouvre le dialogue de Léo, il change la scène finale */
-  const utile = c => { const I = c.indexOf('info:') === 0 ? E.infos[c.split(':')[1]] : null; return !!lecteurs[c] || !!(I && (I.pnj || I.plante || I.donjon)) || /^info:leo_dit/.test(c); };
+  /* (13 novembre) I.savoir : une information à retenir, qui n'ouvre rien (le Sage n'a plus de page qui conclut à sa place) */
+  const utile = c => { const I = c.indexOf('info:') === 0 ? E.infos[c.split(':')[1]] : null; return !!lecteurs[c] || !!(I && (I.pnj || I.plante || I.donjon || I.savoir)) || /^info:leo_dit/.test(c); };
   const inutiles = ids.filter(c => !utile(c)), prevus = ['info:copie'];   /* (la copie de la lettre : un piège, elle ne sert à rien, exprès) */
   const vraiment = inutiles.filter(c => !prevus.includes(c));
   dit(!vraiment.length, vraiment.length ? 'des codes qui ne servent à rien pour celui qui les reçoit : ' + vraiment.join(', ') : `Chaque code sert à celui qui le reçoit (sauf le piège prévu : ${prevus.join(', ')})`);
