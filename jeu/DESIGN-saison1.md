@@ -2584,6 +2584,7 @@ Romain : « J'aimerais bien que le mini-jeu du gâteau, il soit pour tout le mon
 - **Chaque attaque se lit à l'écran** : Léo prend son arme (on la voit), prépare, frappe. La rune de l'œil dit sur qui et combien.
 - **Ses attaques viennent dans un ORDRE FIXE, pas au hasard** (Romain n'aime pas le hasard) : un ordre calculé pour être tenable, qui s'apprend en mourant.
 - **Pas d'explication avant ce combat** : c'est **une exception voulue** à la règle « avant chaque mini-jeu, une explication en images ». Léo est le seul ennemi qu'on découvre en jouant.
+- **Au début de chaque phase, les trois héros repartent avec toute leur vie** (Romain, 17 h 38), qu'on y arrive en gagnant la phase d'avant ou après une défaite.
 - **Une sauvegarde automatique à chaque cinématique** (le jeu la fait, pas le Sage). Mourir ramène au début de la phase atteinte : on revoit la courte cinématique (4 à 5 secondes ; Claude propose qu'on puisse la passer en touchant l'écran) et le combat repart, vies pleines. Plus de dialogue du chat ni d'Odette à chaque essai.
 - **Un son pour chaque attaque de Léo.**
 
@@ -2615,7 +2616,7 @@ L'ordre de la boucle (proposé, à confirmer par le calcul) : fléau, charge, ma
 - **Le crochet** : tue un rat d'un coup ; casse l'armure d'un rat cuirassé (le coup suivant le tue) ; **sur Léo, comme deux coups de dague**.
 - **Le fléau** : frappe deux cibles, plus fort que la dague ; sur une seule cible, un peu moins (proposé par Claude). Son vrai moment : les deux rats aveuglés par le bâton de lune, tués d'un coup.
 - **Le marteau** : ne fait pas de dégâts ; **il coupe l'attaque en cours de Léo**. Règle de Romain : **il sert à arrêter la gourde, pas les gros coups** (les gros coups, c'est le travail des boucliers). Phase 1 : pas de marteau pour le Pisteur. Phase 2 : 3 coups (peut-être 4, à juger en jeu). Phase 3 : cassé.
-- Pendant ce combat, Claude propose de **cacher l'arc de lune** (inutile contre Léo et les rats cuirassés) pour que la bande tienne sur un téléphone. **Pas tranché.**
+- **L'arc de lune est enlevé de la bande pendant tout le combat de Léo**, sans rien dire aux joueurs (Romain, 17 h 38) : il ne sert ni contre Léo ni contre les rats cuirassés, et la bande tient mieux sur un téléphone.
 
 **Phase 2 — torse nu et en colère (6 000 → 3 000).** Léo reste toujours touchable (pas de garde levée). Il a **deux places pour des rats** à côté de lui.
 
@@ -2644,7 +2645,7 @@ Le fumigène n'est pas utilisé en phase 2 : il est gardé pour la phase 3.
 | **Il attrape un héros et s'en sert pour frapper un autre** | une rafale, de gros dégâts **sur deux héros** ; le héros attrapé **peut encore jouer** | **rapide et difficile à contrer** : le bouclier jaune posé avant empêche d'être attrapé ; sinon deux boucliers de chêne pour encaisser, et la gourde si besoin |
 | **Le souffle de feu** | il boit une autre potion et crache du feu : **tout le monde brûle**, des dégâts qui durent | **la brûlure s'arrête seule** ; le bouclier jaune l'empêche |
 
-Proposé par Claude, pas tranché : Léo accélère toutes les 25 secondes ; le fumigène le fait tousser et coupe une grosse attaque.
+**Décidé par Romain (17 h 38)** : **Léo n'accélère pas** en phase 3 : le rythme est régulier, il est déjà très dur dès le début ; il faut d'abord poser les saignements, puis tenir environ 1 min 40 à partir de là. **Le fumigène ne sert à rien contre Léo** (on n'en fait rien dans ce combat).
 
 **Le but de difficulté (Romain).** Trois simulations : **un joueur rapide** s'en sort, « avec pas mal de déboires » (à la fin des 1 min 40 de la phase 3 : **deux héros au sol au moins, le troisième avec peu de vie**) ; **un joueur moyen** ne s'en sort pas ; **un joueur lent**, impossible. « Il faut qu'ils restent coincés sur Léo pendant pas mal de temps. » Pour ça, Claude doit **mesurer au code, à la milliseconde, la durée de chaque animation** (un soin, le baume, un bouclier, une flèche, une potion, la gourde de Léo…) et le nombre de touchers de chaque geste, puis faire tourner les trois joueurs. Rappel : les héros ont **90, 100 et 120 points de vie** (§12.51) — un saignement à 10 par seconde vide un héros en 9 à 12 secondes ; trois BOUM à 30 font 90. Les chiffres de Romain sont à garder ; ceux qui manquent (fléau, marteau de Léo, meule, crochet, rafale à 2 héros, souffle, gourde de Léo, durée de l'étourdissement, du noir, de l'aveuglement des rats) seront réglés par le calcul. Le réglage fin se fera ensuite sur de vraies parties.
 
@@ -2656,7 +2657,11 @@ Proposé par Claude, pas tranché : Léo accélère toutes les 25 secondes ; le 
 - Deux phrases courtes au plus par réponse (règles de lecture du Barde). **Le Barde lit à voix haute pendant que le Pisteur joue** : du travail d'équipe en direct.
 - **Les dialogues du Barde sont verrouillés** (§13.31) : ces questions demandent le go de Romain, puis `e3.js` et l'outil `e3-dialogues.js`. Il faut un code de plus du Pisteur au Barde.
 
-**La fin de l'enquête 3 (remplace la scène provisoire de Léo).** Léo battu : une courte cinématique, il tombe au sol et **dévoile des choses sur le maire** (« comme ça on sait tout sur le maire » ; le texte est à écrire et à faire valider). Juste après, **le maire arrive avec les gardes** : « Que s'est-il passé ? Qu'avez-vous fait à Léo ? Gardes, attrapez-les ! » Puis des codes à passer sur chaque écran, et **chacun se retrouve en prison**, en tenue de prison (pas besoin de s'occuper de la tenue) ; grâce aux codes d'apparence (âge, peau, cheveux), **chaque tablette montre les quatre héros enfermés**. Fin de l'enquête 3 ; on passe à l'enquête 4. **À accorder à la construction** avec la fin déjà construite (§13.20 : l'accusation, minuit, les gardes, le cachot) et le dialogue du chat d'Odette avant Léo. **Toujours ouvert** : Odette délivrée ou non ; pourquoi Léo fait tout ça.
+**La fin de l'enquête 3 (remplace la scène provisoire de Léo).** Léo battu : une courte cinématique, il tombe au sol et parle. **Ce qu'il dévoile (Romain, 17 h 38)** :
+- **pourquoi il a agi** : il n'a jamais voulu être apprenti meunier ; **le maire lui a fait des promesses, lui a donné des responsabilités, un but dans la vie** ;
+- **sur le maire** : c'est **lui qui a tout orchestré depuis le début** ; **il descend régulièrement dans la ville enfouie sous Brumeval** ; il n'y laisse jamais descendre personne — **même Léo n'a jamais pu voir ce qu'il y a dans la ville souterraine**.
+- **Il ne dit PAS qui est vraiment le maire** : c'est trop tôt dans la saison.
+- Le texte exact (court, quelques phrases) reste à écrire et à faire valider par Romain. Juste après, **le maire arrive avec les gardes** : « Que s'est-il passé ? Qu'avez-vous fait à Léo ? Gardes, attrapez-les ! » Puis des codes à passer sur chaque écran, et **chacun se retrouve en prison**, en tenue de prison (pas besoin de s'occuper de la tenue) ; grâce aux codes d'apparence (âge, peau, cheveux), **chaque tablette montre les quatre héros enfermés**. Fin de l'enquête 3 ; on passe à l'enquête 4. **À accorder à la construction** avec la fin déjà construite (§13.20 : l'accusation, minuit, les gardes, le cachot) et le dialogue du chat d'Odette avant Léo. **Odette n'est pas délivrée** (Romain, 17 h 38) : on l'entend derrière la porte, elle reste prisonnière à la fin de l'enquête 3.
 
 **Abandonné en route** (pour ne pas y revenir) : le sort « il apprend » (Léo insensible à ce qui a déjà marché) ; « la parade ouvre Léo, la dague ne frappe que là » ; la faux qui casse à l'acide ; le nuage qui chasse les rats ; un troisième bouclier ; la meule qui brûle ; un saignement qui s'arrête seul ; le saignement deux fois plus rapide grâce au Barde.
 

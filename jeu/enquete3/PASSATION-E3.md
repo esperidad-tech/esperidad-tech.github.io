@@ -9,7 +9,7 @@
 - **Le Barde** : un code du Pisteur à l'entrée chez Léo ouvre des questions à Farinel (les outils, la farine) et à Iris (la potion volée). **Dialogues verrouillés : il faudra le go de Romain.**
 - **La fin** : Léo au sol dévoile des choses sur le maire (texte à écrire) ; le maire et les gardes ; les quatre en prison. À accorder avec la fin déjà construite (§13.20).
 - **Changements pour tout le donjon** : les deux boucliers (jaune 75 % qui arrête les contrôles, chêne 2 × 50 %), les herbes à 15, Bourbe qui retombe à l'eau après un critique.
-- **Toujours ouvert** : Odette délivrée ou non ; pourquoi Léo agit ; quelques propositions de Claude (cacher l'arc de lune pendant ce combat, Léo qui accélère en phase 3, le fumigène en phase 3).
+- **Tranché par Romain à 17 h 38** : Odette n'est pas délivrée ; Léo a agi parce que le maire lui a promis un but (il n'a jamais voulu être meunier) ; il révèle que le maire a tout orchestré et descend seul dans la ville souterraine (pas qui il est vraiment) ; l'arc de lune est enlevé pendant le combat ; pas d'accélération en phase 3 ; le fumigène ne sert pas contre Léo ; vie pleine au début de chaque phase. Reste à écrire : le texte de Léo.
 - **Construction : attendre la fin des corrections du donjon par l'autre conversation et le go de Romain.**
 
 ## Nouveau depuis le 13 novembre (16 h 15) : le test de Romain en famille, et toutes ses corrections (Bible §13.32)
