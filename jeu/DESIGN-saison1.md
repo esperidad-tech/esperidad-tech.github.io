@@ -2663,6 +2663,26 @@ Le fumigène n'est pas utilisé en phase 2 : il est gardé pour la phase 3.
 - **Il ne dit PAS qui est vraiment le maire** : c'est trop tôt dans la saison.
 - Le texte exact (court, quelques phrases) reste à écrire et à faire valider par Romain. Juste après, **le maire arrive avec les gardes** : « Que s'est-il passé ? Qu'avez-vous fait à Léo ? Gardes, attrapez-les ! » Puis des codes à passer sur chaque écran, et **chacun se retrouve en prison**, en tenue de prison (pas besoin de s'occuper de la tenue) ; grâce aux codes d'apparence (âge, peau, cheveux), **chaque tablette montre les quatre héros enfermés**. Fin de l'enquête 3 ; on passe à l'enquête 4. **À accorder à la construction** avec la fin déjà construite (§13.20 : l'accusation, minuit, les gardes, le cachot) et le dialogue du chat d'Odette avant Léo. **Odette n'est pas délivrée** (Romain, 17 h 38) : on l'entend derrière la porte, elle reste prisonnière à la fin de l'enquête 3.
 
+**LA FIN, DÉCIDÉE PAR ROMAIN (13 novembre, 18 h 06) — elle remplace l'ordre et les textes ci-dessus et la fin du §13.20.** Les textes sont validés ; chacun a son 🔊.
+1. **Léo, battu, au sol** (bulles courtes) :
+   - « Assez… Vous avez gagné. »
+   - « Meunier… Je n'ai jamais voulu être meunier. Le maire, lui, m'a promis autre chose. Une vraie place. »
+   - « C'est lui qui a tout préparé, depuis le début : la rivière rouge, les fumigènes, la lettre. Odette, ce n'était pas prévu. Elle a été trop curieuse. »
+   - « Il descend souvent, tout seul, encore plus bas. Là-dessous, il y a une ville. Une ville entière, sous Brumeval. »
+   - « Moi, il ne m'a jamais laissé y aller. Personne n'y va. Jamais. »
+   - (Pas de pas dans l'escalier, pas de « Il arrive… » : Léo finit là.)
+2. **Un message de victoire** : « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! » (texte à polir à la construction).
+3. **Les accusations** (le Sage, avec toute l'équipe) — trois questions :
+   - **OÙ est Odette ?** Réponse : sous l'église, au pied du clocher, derrière la porte aux quatre signes (une seule bonne réponse ; le puits n'en est pas une) ;
+   - **QUI a écrit la lettre ?** Réponse : Mélusine ;
+   - **QUI se cachait sous la cape noire ?** Réponse : Léo (nouvelle question).
+   - La question bonus « QUI est le Corbeau ? » n'est pas dans la liste de Romain : **à confirmer qu'elle part** (après ce que dit Léo, elle n'a plus de suspense).
+4. **La cinématique du maire**, sur toutes les tablettes : il descend avec Silas et les gardes, une lanterne levée. « Que s'est-il passé ici ? Léo ! Qu'avez-vous fait à Léo ? » Il retire ses gants : une bague en argent à tête de corbeau. « Vous êtes allés trop loin. Beaucoup trop loin. » Silas : « Monsieur le maire… ? » Le maire : « Gardes ! Attrapez-les ! »
+5. **La prison** : des codes à passer d'une tablette à l'autre ; grâce aux codes d'apparence, chaque tablette montre les quatre héros enfermés, en tenue de prison.
+6. **« Fin de l'enquête 3 »**, puis un petit mot : « …mais ce n'est que le début. » (texte à polir ; la plume noire devant la grille peut rester.)
+
+**Encore ouvert** : « Retenir le maire » (le Barde) et le code « Léo s'est enfui » n'ont plus de rôle (Léo ne fuit plus, le maire arrive après l'accusation) : à repenser ou à retirer, avec Romain. Le calepin de fin (§13.20) est à réécrire d'après cette fin.
+
 **Trois retouches de tout le donjon (Romain, 13 novembre, 17 h 42) — notées, pas construites (l'autre conversation corrige le donjon en ce moment : les faire après elle, avec le go de Romain).**
 - **Le nom de la première salle** : plus « le fond du puits » ni « vieux puits » (le donjon est le même par la crypte et par le puits) : **« L'entrée des souterrains »**. Même chose pour la phrase d'arrivée (`PHRASES.puits` et la variante « crypte » de `jeu/donjon/moteur/src/explo.js`) et pour le nom sur la carte (`jeu/donjon/carte.js`).
 - **Plus de bandeau d'explications en bas de l'écran dans tout le donjon** : « dans le souterrain, il n'y a pas besoin d'explications ». (Question posée à Romain : les petites phrases du conteur à l'arrivée dans une salle partent-elles aussi ?)
