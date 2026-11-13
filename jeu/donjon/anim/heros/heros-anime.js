@@ -2285,7 +2285,13 @@ H._dome = function(L, scene, cible, opt){
     '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
     '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
     '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
-    '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' % · 1 tour</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
+    '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' %' + (opt && opt.sansTour ? '' : ' · 1 tour') + '</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
+  /* LE BOUCLIER JAUNE (Romain, 13 novembre) : celui du bâton normal — 75 %, et il arrête les « contrôles ». Le même dôme, doré.
+     (opt.sorte === 'jaune' ; les boucliers du bâton de chêne gardent le bleu des runes.) */
+  if(opt && opt.sorte === 'jaune'){
+    e.classList.add('ha-dome-jaune');
+    e.innerHTML = e.innerHTML.replace(/#3fd0ff/g, '#ffb020').replace(/#8ff3ff/g, '#ffd84a').replace(/#bff8ff/g, '#ffe680').replace(/#e8fdff/g, '#fff6c8');
+  }
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});

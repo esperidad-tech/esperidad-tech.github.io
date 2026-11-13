@@ -122,6 +122,7 @@
    {t:'recette', id:'givre', nom:'Givre'}           une recette de plus est connue
    {t:'sauvegarde', code:'sauve:1', lieu:'toiles'}
    {t:'recharge', lieu:'puits', salle:'canaux', fuites:1, revenus:['rats']}   après une fuite ou une défaite ; revenus : les salles dont les monstres sont revenus
+   {t:'boss', lieu:'leo'}                            le boss du lieu est là : son combat est à part (Léo : leo-regles.js) ; puis Regles.bossBattu
    {t:'fin-donjon'}
    ================================================================================================================= */
 (function(global){
@@ -545,6 +546,9 @@ P._critique = function(ev, m, arme, coup, bonus, surprise){
   if(petit) et.petit = true;                   /* (le petit critique : l'écran le montre comme un coup ordinaire, sans le grand spectacle) */
   ev.push(et);
   this._blesse(ev, m, n, {critique:true, surprise:!!surprise, cause:arme, petit:petit});
+  /* ce que le critique lui fait EN PLUS (reactions.critique dans D.MONSTRES — sous Bourbe, la glace fond : il retombe à l'eau).
+     Rien si le coup l'a tué, ou s'il vient de se fâcher (sa colère l'a déjà fait plonger). */
+  if(!m.mort && !petit && m.ouvert !== 0){ var rc = this._regle(m, 'critique'); if(rc && rc.fait){ this._faire(ev, m, rc.fait, null); if(m.c) m.c.hors = 0; } }
 };
 
 /* ---------- JOUER un geste ---------- */
@@ -572,7 +576,11 @@ P.jouer = function(h, a){
   }
   else if(geste === 'bouclier' || geste === 'a:baton-chene'){
     ev.push({t:'pose-bouclier', heros:h, cibles:cibles.slice()});
-    cibles.forEach(function(x){ self.h[x].bouclier = true; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1}); });
+    /* (13 novembre) le bâton normal pose un bouclier JAUNE (75 %, il arrête aussi la toile et la langue) ; le bâton de chêne en
+       pose deux, plus faibles (50 %), qui laissent passer la toile et la langue */
+    var sorte = geste === 'bouclier' ? 'jaune' : 'chene';
+    ev[ev.length - 1].sorte = sorte;
+    cibles.forEach(function(x){ self.h[x].bouclier = sorte; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1, sorte:sorte}); });
   }
   else if(geste === 'louche'){
     /* le BONG : la bête de devant prend le coup, puis le bruit court dans toute la salle */
@@ -670,10 +678,12 @@ P._fleche = function(ev, m, potion, q){
 
 /* ---------- un coup sur un héros ---------- */
 P._frappe = function(ev, h, brut, m, nom, A){
-  var S = this.h[h], bouc = S.bouclier, d = bouc ? Math.ceil(brut * C.bouclier) : brut;
+  var S = this.h[h], bouc = S.bouclier, chene = bouc === 'chene', d = bouc ? Math.ceil(brut * (chene ? C.bouclierChene : C.bouclier)) : brut;
+  var arrete = !!bouc && !chene;                /* seul le bouclier jaune arrête la toile et la langue */
   if(brut > 0){
     S.pv = Math.max(0, S.pv - d);
-    var e = {t:'degats', heros:h, n:d, pv:S.pv, brut:brut, bouclier:bouc, absorbe:brut - d, bete:m.id, attaque:nom};
+    var e = {t:'degats', heros:h, n:d, pv:S.pv, brut:brut, bouclier:!!bouc, absorbe:brut - d, bete:m.id, attaque:nom};
+    if(chene) e.chene = true;
     ev.push(e);
     if(S.pv <= 0){
       if(S.objets.indexOf('amulette') >= 0){
@@ -684,15 +694,15 @@ P._frappe = function(ev, h, brut, m, nom, A){
   }
   if(A && !S.sol){
     if(A.pose){
-      if(bouc) ev.push({t:'pare', heros:h, bete:m.id, quoi:nom});
+      if(arrete) ev.push({t:'pare', heros:h, bete:m.id, quoi:nom});
       else { S[A.pose] = true; ev.push({t:'etat', heros:h, nom:A.pose, on:true, tours:1}); }
     }
     if(A.avale){
-      if(bouc) ev.push({t:'pare', heros:h, bete:m.id, quoi:nom});
+      if(arrete) ev.push({t:'pare', heros:h, bete:m.id, quoi:nom});
       else { S.avale = m.id; ev.push({t:'avale', bete:m.id, heros:h}); }
     }
   }
-  return bouc;
+  return !!bouc;
 };
 
 /* ---------- le début d'un tour : chaque bête choisit son attaque et sa proie ---------- */
@@ -759,6 +769,7 @@ P._prevu = function(m, plan){
   if(A.foisSi) for(n in A.foisSi) if(this.a(m, n)) fois = Math.max(fois, A.foisSi[n]);
   if(A.plusSi) for(n in A.plusSi) if(this.a(m, n)) d += A.plusSi[n];
   if(A.doubleSi && this._un(m, A.doubleSi)) d *= 2;
+  if(A.multSi) for(n in A.multSi) if(this.a(m, n)) d *= A.multSi[n];
   return {attaque:plan.nom, cibles:plan.cibles.slice(), degats:plan.prepare ? 0 : d, fois:fois, prepare:!!plan.prepare, gros:!!A.prepare};
 };
 /* LA RUNE DE L'ŒIL (Romain, 11 novembre) : le Sage voit, pour ce tour et le suivant, qui chaque monstre va frapper et combien.
@@ -860,6 +871,7 @@ P._attaque = function(ev, m){
   if(A.foisSi) for(n in A.foisSi) if(this.a(m, n)) fois = Math.max(fois, A.foisSi[n]);
   if(A.plusSi) for(n in A.plusSi) if(this.a(m, n)) degats += A.plusSi[n];
   if(A.doubleSi && this._un(m, A.doubleSi)) degats *= 2;
+  if(A.multSi) for(n in A.multSi) if(this.a(m, n)) degats *= A.multSi[n];
   var ea = {t:'attaque', bete:m.id, nom:nom, cibles:cibles.slice(), fois:fois};
   if(A.anim) ea.anim = A.anim;                 /* (un coup préparé emprunte l'animation d'une attaque du module) */
   if(A.prepare) ea.gros = true;
@@ -992,9 +1004,11 @@ function contenu(p, lieu){
   if(L.roue && gagne) o.roue = {ouvert:!!f[D.ROUE.ouvre], crans:(f.roue || '').length, sur:D.ROUE.suite.length};
   if(L.portes) o.portes = L.portes;
   if(L.repos) o.repos = {permis:!p.repos};
-  if(L.donne) o.code = {id:donneDe(p, L), pour:L.pour};
+  if(L.donne) o.code = {id:L.donne, pour:L.pour};
   if(L.boucle) o.boucle = L.boucle;
-  if(L.fin) o.fin = true;
+  if(L.boss) o.boss = !f['combat:' + lieu];
+  if(L.fin) o.fin = !L.boss || !!f['combat:' + lieu];
+  if(L.apres && f['combat:' + lieu]) o.apres = {id:L.apres, pour:L.pourApres};
   return o;
 }
 /* ce qui empêche de TRAVERSER un lieu (la carte dit où mènent les couloirs, les règles disent si on passe) :
@@ -1009,8 +1023,16 @@ function bloque(p, lieu){
 /* le code que donne un lieu. Dans l'enquête 3 (p.enquete : la descente vient de l'enquête), la dernière salle donne « Léo s'est
    enfui » à la place de « Léo attrapé » quand le Pisteur n'a pas tapé « Le maire est retenu » (le maire descend trop tôt). Une fois
    donné, le code ne change plus. Hors de l'enquête (le donjon tout seul), rien ne change : Léo est attrapé. */
-function leoEnfui(p){ var L = D.LIEUX.leo; return !!(p.enquete && L.sansMaire && !p.faits['code:' + L.donne] && (p.faits['code:' + L.sansMaire] || !p.codes['maire:retenu'])); }
-function donneDe(p, L){ return L.sansMaire && L === D.LIEUX.leo && leoEnfui(p) ? L.sansMaire : L.donne; }
+/* LE BOSS D'UN LIEU EST BATTU (Léo : son combat est à part, leo-regles.js) : c'est noté, son second code est donné (pour le Sage :
+   « Léo a parlé »), et le donjon est fini. */
+function bossBattu(p, lieu){
+  var L = D.LIEUX[lieu], ev = [];
+  if(!L || !L.boss) return ev;
+  p.faits['combat:' + lieu] = 1;
+  if(L.apres){ p.faits['code:' + L.apres] = 1; ev.push({t:'code-objet', objet:null, code:L.apres, pour:L.pourApres}); }
+  if(L.fin){ p.faits.fin = 1; ev.push({t:'fin-donjon'}); }
+  return ev;
+}
 function entrer(p, lieu){
   var L = D.LIEUX[lieu];
   if(!L) return refus(MOTS.pasIci);
@@ -1021,10 +1043,11 @@ function entrer(p, lieu){
     ev.push({t:'combat', salle:L.combat});
     return ev;
   }
-  if(L.donne){ var dn = donneDe(p, L); p.faits['code:' + dn] = 1; ev.push({t:'code-objet', objet:null, code:dn, pour:L.pour}); }
+  if(L.donne){ p.faits['code:' + L.donne] = 1; ev.push({t:'code-objet', objet:null, code:L.donne, pour:L.pour}); }
   ev.push({t:'scene', lieu:lieu, contenu:contenu(p, lieu)});
   if(L.boucle) ev.push({t:'boucle', vers:L.boucle});
-  if(L.fin){ p.faits.fin = 1; ev.push({t:'fin-donjon'}); }
+  if(L.boss && !p.faits['combat:' + lieu]) ev.push({t:'boss', lieu:lieu});
+  else if(L.fin){ p.faits.fin = 1; ev.push({t:'fin-donjon'}); }
   return ev;
 }
 /* poser un objet dans les mains d'un héros (2 places) ; rend null si c'est fait, ou la liste d'évènements du refus */
@@ -1160,8 +1183,6 @@ function code(p, id){
     D.EXPOSES.forEach(function(h){ var H = p.heros[h], avant = H.pv; H.pv = H.pvMax; H.sol = false; evm.push({t:'soin', heros:h, n:H.pv - avant, pv:H.pv, par:'marie'}); });
     return evm;
   }
-  /* (l'enquête 3) le Barde retient le maire à la fête : Léo ne s'enfuira pas (leoEnfui) */
-  if(def.maire) return [{t:'maire', code:id}];
   if(p.recettes.indexOf(def.recette) < 0) p.recettes.push(def.recette);
   return [{t:'recette', id:def.recette, nom:D.RECETTES[def.recette].nom}];
 }
@@ -1171,7 +1192,7 @@ function objets(p){
   Object.keys(D.OBJETS).forEach(function(id){ if(D.OBJETS[id].code && p.faits['objet:' + id]) o.codes.push({objet:id, code:D.OBJETS[id].code, pour:D.OBJETS[id].pour}); });
   Object.keys(D.LIEUX).forEach(function(l){ var L = D.LIEUX[l];
     if(L.donne && p.faits['code:' + L.donne]) o.codes.push({objet:null, code:L.donne, pour:L.pour});
-    if(L.sansMaire && p.faits['code:' + L.sansMaire]) o.codes.push({objet:null, code:L.sansMaire, pour:L.pour}); });
+    if(L.apres && p.faits['code:' + L.apres]) o.codes.push({objet:null, code:L.apres, pour:L.pourApres}); });
   return o;
 }
 
@@ -1179,7 +1200,7 @@ var Regles = {
   D:D, FIN:FIN, alea:alea,
   nouvellePartie:nouvellePartie, combat:combat, fuir:fuir, enCombat:enCombat,
   entrer:entrer, contenu:contenu, bloque:bloque, recharger:fuir, prendre:prendre, choisir:choisir, fouiller:fouiller, crane:crane, dalle:dalle, dalleSure:dalleSure, roue:roue, porte:porte,
-  repos:repos, code:code, potions:potions, enMains:enMains, leoEnfui:leoEnfui,
+  repos:repos, code:code, potions:potions, enMains:enMains, bossBattu:bossBattu,
   sauvegarder:sauvegarder, objets:objets, exporter:exporter, importer:importer
 };
 if(NODE) module.exports = Regles; else global.Regles = Regles;

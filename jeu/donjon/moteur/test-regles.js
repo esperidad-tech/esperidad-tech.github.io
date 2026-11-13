@@ -161,7 +161,7 @@ section('La salle des rats : les mêmes résultats que l\'essai (3 000 parties a
       r:E.r.map(function(r){ return r.mort ? [0, true] : [r.pv, r.mort, r.ouvert, r.enrage, r.brule, r.colle, E.fin ? null : r.vise]; }), fin:E.fin, tour:E.fin ? 0 : E.tour});
   }
   function photoRegles(c, p){
-    return JSON.stringify({h:D.ORDRE.map(function(h){ var S = c.h[h]; return [S.pv, S.sol, S.joue, S.bouclier]; }),
+    return JSON.stringify({h:D.ORDRE.map(function(h){ var S = c.h[h]; return [S.pv, S.sol, S.joue, !!S.bouclier]; }),
       r:c.b.map(function(m){ return m.mort ? [0, true] : [m.pv, m.mort, m.ouvert !== 0, c.a(m, 'enrage'), c.a(m, 'brule'), c.a(m, 'colle'), m.plan && !c.fini() ? m.plan.cibles[0] : null]; }),
       fin:c.fini(), tour:c.fini() ? 0 : c.tour});
   }
@@ -432,6 +432,13 @@ section('Le feu follet');
   ok(c.a(f1, 'accroche') && f1.ouvert !== 0, 'il reste accroché et ouvert pendant tout le tour suivant');
   ev = tourSuivant(c);
   ok(trouve(ev, 'attaque', function(e){ return e.bete === f1.id; }) && f1.ouvert === 0 && !c.a(f1, 'accroche'), 'accroché, il crache quand même ses flammes ; à la fin de ce tour-là il se décroche et se referme');
+  /* (13 novembre, 18 h 48) les runes sur lui : son prochain coup frappe QUATRE FOIS plus fort */
+  var BR = D.MONSTRES.feufollet.attaques.brulure.degats, d4 = tous(ev, 'degats', function(e){ return e.bete === f1.id; });
+  ok(d4.length > 0 && d4.every(function(e){ return e.brut === BR * 4; }), 'avec les runes sur lui, son coup suivant frappe 4 fois plus fort (' + BR + ' → ' + BR * 4 + ')');
+  D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax; c.h[h].sol = false; });
+  ev = tourSuivant(c);
+  d4 = tous(ev, 'degats', function(e){ return e.bete === f1.id; });
+  ok(d4.length > 0 && d4.every(function(e){ return e.brut === BR; }), 'les runes parties, il retrouve sa force ordinaire : un seul coup à 4 fois');
 })();
 
 section('L\'araignée des caves et ses petites');
@@ -674,17 +681,28 @@ section('Bourbe, le crapaud du puits');
   ok(c.appelables().indexOf(bo) >= 0, 'la rune d\'appel peut l\'amener devant');
   ev = jouer(c, 'sage', 'appel', bo);
   ok(c.aPortee().length === 1 && c.aPortee()[0] === bo, 'appelé devant par le Sage : à portée de dague, et lui seul');
-  ev = jouer(c, 'pisteur', 'dague', bo);
-  egal(trouve(ev, 'degats').n, 380, 'critique à la dague sur le boss : 380');
-  ev = tourSuivant(c);
-  ok(trouve(ev, 'saute', function(e){ return e.bete === bo.id && e.nom === 'dos'; }) && bo.ouvert !== 0, 'sur le dos, il n\'attaque pas ; il reste ouvert au tour suivant');
-  ev = jouer(c, 'pisteur', 'fleche', bo);
-  egal(trouve(ev, 'degats').n, 300, 'critique à la flèche sur le boss : 300');
+  /* (13 novembre, 17 h 29) ouvert, le feu le blesse ; puis LE critique : la glace fond, il retombe à l'eau, tout est à refaire */
+  c.h.alchimiste.joue = false;
   ev = jouer(c, 'alchimiste', 'p:feu', bo);
   ok(trouve(ev, 'degats').n === 30 && c.a(bo, 'brule'), 'ouvert, le feu le blesse (30) et le fait brûler');
+  ev = jouer(c, 'pisteur', 'dague', bo);
+  egal(trouve(ev, 'degats').n, 380, 'critique à la dague sur le boss : 380');
+  ok(bo.ouvert === 0 && !c.a(bo, 'dos') && !c.a(bo, 'sec') && !c.a(bo, 'gele') && !c.auSol(bo) && trouve(ev, 'ferme') && trouve(ev, 'mot', function(e){ return e.texte === 'La glace fond !'; }),
+    'dès le critique, la glace fond : il retombe à l\'eau, refermé — tout est à refaire (Romain, 13 novembre)');
   ev = tourSuivant(c);
-  ok(bo.ouvert === 0 && !c.a(bo, 'dos') && !c.a(bo, 'sec') && !c.a(bo, 'gele'), 'à la fin du tour suivant, il se retourne, passe à travers la glace et replonge : tout est à refaire');
   ok(trouve(ev, 'brulure', function(e){ return e.bete === bo.id; }), 'la brûlure, elle, continue');
+  ok(trouve(ev, 'saute', function(e){ return e.bete === bo.id && e.nom === '_plouf'; }) && !trouve(ev, 'attaque', function(e){ return e.bete === bo.id; }), 'il vient de passer à travers la glace : il ne frappe pas ce tour-ci');
+  D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
+  ev = tourSuivant(c);
+  ok(trouve(ev, 'attaque', function(e){ return e.bete === bo.id; }) || trouve(ev, 'prepare', function(e){ return e.bete === bo.id; }), 'au tour d\'après, il attaque de nouveau');
+  /* le critique à la flèche (300), avec la même suite */
+  t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
+  jouer(c, 'alchimiste', 'p:givre', bo); jouer(c, 'pisteur', 'p:feu', bo);
+  tourSuivant(c); D.ORDRE.forEach(function(h){ c.h[h].avale = null; c.h[h].pv = 90; c.h[h].sol = false; });
+  jouer(c, 'alchimiste', 'p:fumigene');
+  ev = jouer(c, 'pisteur', 'fleche', bo);
+  egal(trouve(ev, 'degats').n, 300, 'critique à la flèche sur le boss : 300');
+  ok(bo.ouvert === 0 && !c.a(bo, 'gele') && !c.a(bo, 'dos'), 'et la glace fond aussi après un critique à la flèche');
 
   /* le chemin normal, avec le nuage */
   t = prep('bassin', {sac:['feu', 'fumigene', 'givre'], recettes:D.ORDRE_RECETTES}); c = t.c; bo = bete(c, 'bourbe');
@@ -844,8 +862,18 @@ section('Les objets et leurs bonus');
   egal(c.refus('sage', 'bouclier', ['pisteur', 'alchimiste']), 'Un seul geste', 'le bouclier simple : toujours un seul héros');
   ev = c.jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste']});
   ok(c.h.pisteur.bouclier && c.h.alchimiste.bouclier && !c.h.sage.bouclier, 'bâton de chêne : deux héros protégés');
+  ok(c.h.pisteur.bouclier === 'chene' && c.h.alchimiste.bouclier === 'chene', 'ce sont deux boucliers du bâton de chêne');
   ev = tourSuivant(c);
   ok(tous(ev, 'degats', function(e){ return e.bouclier; }).length === 3, 'les trois morsures tombent sur des boucliers');
+  /* (13 novembre) le bouclier de chêne n'arrête que la moitié du coup ; le bouclier jaune (bâton normal) en arrête 75 % */
+  ok(tous(ev, 'degats', function(e){ return e.bouclier; }).every(function(e){ return e.chene && e.n === Math.ceil(e.brut * D.CHIFFRES.bouclierChene); }) && D.CHIFFRES.bouclierChene === .5 && D.CHIFFRES.bouclier === .25, 'le bouclier de chêne arrête 50 %, le jaune 75 %');
+  /* … et il laisse passer la toile, que le bouclier jaune arrête */
+  (function(){
+    var t2 = prep('toiles', {objets:{sage:['baton-chene']}, hasard:[0.99, 0.99, 0.99]}), c2 = t2.c, ar = bete(c2, 'araignee'), proie = ar.plan.cibles[0], autre = D.ORDRE.filter(function(h){ return h !== proie; })[0];
+    c2.jouer('sage', {geste:'a:baton-chene', cible:[proie, autre]});
+    var e2 = tourSuivant(c2);
+    ok(c2.h[proie].entoile && !trouve(e2, 'pare'), 'la toile passe à travers un bouclier de chêne : le héros est entoilé');
+  })();
   t = prep('rats'); c = t.c;
   egal(c.refus('sage', 'bouclier', ['pisteur', 'alchimiste']), 'Un seul geste', 'sans le bâton : un seul héros protégé');
   egal([c.refus('sage', 'a:baton-chene', ['pisteur', 'alchimiste']), c.refus('sage', 'a:cristal-lune')], ['Pas emporté', 'Pas emporté'], 'sans l\'arme, pas de carte (« Pas emporté »)');
@@ -994,11 +1022,11 @@ section('La rune d\'appel, les herbes pour toute l\'équipe (Romain, 11 novembre
   var ch = c.gestes('alchimiste').filter(function(x){ return x.geste === 'herbes'; })[0];
   ok(ch.vise === 'equipe' && ch.max === 0 && ch.permis, 'les herbes ne se visent plus : elles sont pour toute l\'équipe');
   ev = jouer(c, 'alchimiste', 'herbes');
-  ok(trouve(ev, 'herbes').equipe && tous(ev, 'soin').length === 3 && c.h.pisteur.pv === 60 && c.h.alchimiste.pv === 100 && c.h.sage.pv === 50, 'les herbes : +' + D.CHIFFRES.herbes + ' pour chaque héros debout (sans dépasser le maximum)');
-  ok(D.CHIFFRES.herbes * 4 <= D.RECETTES.baume.soin && D.RECETTES.baume.vise === 'heros', 'le baume reste le gros soin, sur un seul ami (' + D.RECETTES.baume.soin + ' contre ' + D.CHIFFRES.herbes + ')');
+  ok(trouve(ev, 'herbes').equipe && tous(ev, 'soin').length === 3 && c.h.pisteur.pv === 50 + D.CHIFFRES.herbes && c.h.alchimiste.pv === 100 && c.h.sage.pv === 40 + D.CHIFFRES.herbes, 'les herbes : +' + D.CHIFFRES.herbes + ' pour chaque héros debout (sans dépasser le maximum)');
+  ok(D.CHIFFRES.herbes === 15 && D.CHIFFRES.herbes * 2 < D.RECETTES.baume.soin && D.RECETTES.baume.vise === 'heros', '(13 novembre) 15 pour chacun, 45 en tout ; le baume reste le gros soin sur un seul ami (' + D.RECETTES.baume.soin + ' contre ' + D.CHIFFRES.herbes + ')');
   t = prep('rats', {pv:{pisteur:50, sage:40}}); c = t.c; c.h.sage.sol = true; c.h.sage.pv = 0;
   ev = jouer(c, 'alchimiste', 'herbes');
-  ok(tous(ev, 'soin').every(function(e){ return e.heros !== 'sage'; }) && c.h.sage.pv === 0 && c.h.pisteur.pv === 60, 'un héros au sol n\'est pas soigné par les herbes');
+  ok(tous(ev, 'soin').every(function(e){ return e.heros !== 'sage'; }) && c.h.sage.pv === 0 && c.h.pisteur.pv === 50 + D.CHIFFRES.herbes, 'un héros au sol n\'est pas soigné par les herbes');
 })();
 
 section('La dague ne touche pas ce qui vole (Romain, 11 novembre, 19 h 21)');
@@ -1365,7 +1393,13 @@ section('Les salles sans combat');
   ev = R.entrer(p, 'porte4');
   ok(trouve(ev, 'code-objet').code === 'porte:odette' && trouve(ev, 'code-objet').pour === 'sage', 'la porte aux quatre signes : le code porte:odette pour le Sage');
   ev = R.entrer(p, 'leo');
-  ok(trouve(ev, 'code-objet').code === 'leo:attrape' && trouve(ev, 'fin-donjon') && p.faits.fin === 1, 'la dernière salle : le code leo:attrape pour le Barde, et la fin du donjon');
+  ok(trouve(ev, 'code-objet').code === 'leo:salle' && trouve(ev, 'code-objet').pour === 'barde' && trouve(ev, 'boss') && !trouve(ev, 'fin-donjon') && !p.faits.fin, 'la dernière salle : un code pour le Barde en entrant (leo:salle), Léo est là — le donjon n\'est pas fini');
+  ok(R.contenu(p, 'leo').boss === true && R.contenu(p, 'leo').fin === false, '… tant que Léo n\'est pas battu');
+  ev = R.bossBattu(p, 'leo');
+  ok(trouve(ev, 'code-objet').code === 'leo:battu' && trouve(ev, 'code-objet').pour === 'sage' && trouve(ev, 'fin-donjon') && p.faits.fin === 1 && p.faits['combat:leo'] === 1, 'Léo battu : un code pour le Sage (leo:battu), et la fin du donjon');
+  ok(R.objets(p).codes.filter(function(c){ return c.code === 'leo:salle' || c.code === 'leo:battu'; }).length === 2, 'les deux codes de Léo restent dans « Objets »');
+  ok(trouve(R.entrer(p, 'leo'), 'fin-donjon') && !trouve(R.entrer(p, 'leo'), 'boss'), 'on y revient : plus de combat, la fin');
+  ok(R.code(p, 'maire:retenu')[0].t === 'refus' && !R.leoEnfui, '« Le maire est retenu » et « Léo s\'est enfui » n\'existent plus (Romain, 13 novembre)');
   var carte = null;
   try{ global.window = global; global.document = {createElement:function(){ return {getContext:function(){ return null; }}; }}; require(path.join(__dirname, '..', 'carte.js')); carte = global.CARTE_DONJON; }catch(e){}
   if(carte) ok(Object.keys(D.LIEUX).every(function(id){ return carte.LIEUX[id]; }) && Object.keys(carte.LIEUX).every(function(id){ return D.LIEUX[id]; }), 'les lieux des règles sont exactement ceux de carte.js (' + Object.keys(D.LIEUX).length + ')');
@@ -1374,7 +1408,7 @@ section('Les salles sans combat');
 
 section('Les données tiennent debout');
 (function(){
-  var coups = ['lumiere', 'bruit', 'nuage', 'feu', 'huile', 'colle', 'givre', 'acide', 'louche', 'bouclier', 'chatouille', 'colere'], pb = [];       /* (colere : ce qu'il fait en se fâchant) */
+  var coups = ['lumiere', 'bruit', 'nuage', 'feu', 'huile', 'colle', 'givre', 'acide', 'louche', 'bouclier', 'chatouille', 'colere', 'critique'], pb = [];       /* (colere : ce qu'il fait en se fâchant) */
   Object.keys(D.MONSTRES).forEach(function(k){
     var M = D.MONSTRES[k];
     Object.keys(M.reactions).forEach(function(cp){ if(coups.indexOf(cp) < 0) pb.push(k + ' : coup inconnu ' + cp); });
@@ -1486,7 +1520,7 @@ section('Le contrat des évènements');
   [R.entrer(q, 'galerie'), R.prendre(q, 'bourse'), R.entrer(q, 'aeration'), R.prendre(q, 'herbes'),
    R.entrer(q, 'reserve'), R.prendre(q, 'fleches-argent'), R.entrer(q, 'bibliotheque'), (D.LIEUX.bibliotheque.coffre = ['cristal-lune', 'baton-chene'], R.choisir(q, 'cristal-lune')), (delete D.LIEUX.bibliotheque.coffre, []), R.entrer(q, 'eboulis'), R.fouiller(q), R.fouiller(q), R.crane(q), R.entrer(q, 'dalles'), R.dalle(q, 'fond'),
    R.dalle(q, 'devant'), R.dalle(q, 'devant'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.dalle(q, 'fond'), R.entrer(q, 'portes'), R.porte(q, 'oeil'),
-   R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });
+   R.entrer(q, 'camp'), R.repos(q), R.code(q, 'sauve:1'), R.code(q, 'recette:givre'), R.entrer(q, 'rats'), R.entrer(q, 'porte4'), R.entrer(q, 'leo'), R.bossBattu(q, 'leo'), R.fuir(q)].forEach(function(ev){ noter(ev, null); });
   q.faits['combat:egouts'] = 1; noter(R.entrer(q, 'egouts'), null);
   q.lieu = 'canaux'; q.faits['combat:canaux'] = 1; ['g', 'g', 'g', 'g', 'g', 'g'].forEach(function(x){ noter(R.roue(q, x), null); }); D.ROUE.suite.forEach(function(x){ noter(R.roue(q, x), null); });
   D.OBJETS['essai-a'] = {nom:'Objet d\'essai A', pour:'sage'}; D.OBJETS['essai-b'] = {nom:'Objet d\'essai B', pour:'sage'};

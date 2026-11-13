@@ -48,6 +48,24 @@ function essaiCombat(P){
   tour();
 }
 
+function essaiLeo(P){
+  var partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 1e9));
+  var liste = P.potions || P.sac;
+  if(liste === 'toutes') partie.recettes = D.ORDRE_RECETTES.slice();
+  else if(liste) partie.recettes = liste.split(',').filter(function(r){ return D.RECETTES[r]; });
+  (P.objets || '').split(',').forEach(function(x){ var k = x.split(':'); if(k.length === 2 && partie.heros[k[0]] && D.OBJETS[k[1]]) partie.heros[k[0]].objets.push(k[1]); });
+  if(P.vu) partie.faits['leo:vu'] = 1;
+  window.PARTIE = partie;
+  DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
+    window.RESULTAT = res;
+    var jeu = q('#jeu'); jeu.innerHTML = '';
+    var e = el('div', 'ecran'); e.id = 'essai-fin';
+    e.innerHTML = '<div class="pa-nom">' + (res === 'victoire' ? 'Victoire' : 'Retour à la carte') + '</div><button class="aller guide" data-act="essai-encore">Rejouer ↻</button>';
+    jeu.appendChild(e);
+  });
+  DJ.toucher(function(a){ if(a === 'essai-encore'){ location.reload(); return true; } return false; });
+}
+
 function demarrer(){
   DJ.brancher();
   DJ.verifierTemoin();
@@ -55,6 +73,8 @@ function demarrer(){
   DJ.cssHeros();
   var P = parametres();
   if(P.vitesse) SALLE.vitesse = +P.vitesse;
+  /* (pour les essais) le combat de Léo tout seul : index.html?combat=leo&phase=2&objets=sage:cristal-lune,sage:baton-chene&potions=toutes */
+  if(P.combat === 'leo') return essaiLeo(P);
   if(P.combat && D.COMBATS[P.combat]) return essaiCombat(P);
   if(DJ.Explo && DJ.Explo.demarrer) return DJ.Explo.demarrer(P);
 }

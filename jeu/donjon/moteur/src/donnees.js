@@ -111,8 +111,13 @@ D.CHIFFRES = {
   /* les autres coups sur un point faible ouvert */
   ouvert:{louche:10, feu:30, acide:25},
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
-  bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier de runes (il en arrête 75 % : Romain, 11 novembre) */
-  herbes:10,                               /* les herbes : chaque héros debout (20 sur un seul ami jusqu'au 11 novembre) */
+  /* LES DEUX BOUCLIERS (Romain, 13 novembre) : « le bouclier normal, il fait 75 %, et le bouclier de chêne, c'est 50 % pour deux
+     personnes ». Avec le bâton normal : un bouclier JAUNE, sur un ami, qui arrête 75 % des dégâts ET tous les « contrôles » (la
+     toile, la langue, et chez Léo : étourdi, attrapé, saignement, brûlure). Avec le bâton de chêne : deux boucliers, qui
+     n'arrêtent que 50 % et laissent passer les contrôles. */
+  bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier jaune (il en arrête 75 %) */
+  bouclierChene:0.5,                       /* … et à travers un bouclier du bâton de chêne (il en arrête 50 %) */
+  herbes:15,                               /* les herbes : chaque héros debout (10 jusqu'au 13 novembre ; Romain : « 15 par personne, ça fait 45, et le baume rend 40 ») */
   amulette:30,                             /* le héros qui tombe se relève avec 30 (une fois par donjon) */
   repos:0.5,                               /* le feu de camp rend la moitié des PV max */
   os:10,                                   /* la morsure du rat du tas d'os (sur le Pisteur) */
@@ -145,7 +150,7 @@ D.OBJETS = {
      le sort qu'il sait changer (carte.base) — le geste joué devient « a:<objet> ».
      carte : nom et effet = la carte du bâton ; d, vise, max = le sort « base » lancé avec ce bâton. */
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', arme:true, equipe:'cristal-lune', carte:{base:'rune', nom:'Bâton de lune', effet:'lumière pour tous', d:'toute la salle', vise:'salle'}, d:'Le Sage le fixe à son bâton : c\'est le bâton de lune. Avec lui, la rune de lumière éclaire toute la salle. Toute la salle…'},
-  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'protège deux amis', vise:'heros', max:2}, d:'Avec lui, le bouclier de runes protège deux amis à la fois.'},
+  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'deux amis, moitié', vise:'heros', max:2, sorte:'chene'}, d:'Avec lui, le bouclier de runes protège deux amis à la fois. Mais chacun n\'arrête que la moitié du coup.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -235,7 +240,9 @@ D.MONSTRES = {
   /* ---------- le feu follet ---------- */
   feufollet:{
     nom:'Feu follet', le:'le feu follet', rang:'normal', pv:30, module:'feufollet', fin:'meurt', hauteur:true,
-    attaques:{brulure:{degats:18, cibles:'deux'}}, rythme:['brulure'],
+    /* Romain, 13 novembre (18 h 48) : « il y a des runes qui se placent sur eux et ils deviennent visibles. Quand il y a les runes
+       sur eux, leur prochain sort frappe 4 fois plus fort. » multSi {état:n} : ses dégâts sont multipliés par n dans cet état. */
+    attaques:{brulure:{degats:18, cibles:'deux', multSi:{accroche:4}}}, rythme:['brulure'],
     passeSi:['colle', 'gele'], tombe:[],
     dague:{si:['accroche']},                 /* il vole : la dague ne l'atteint qu'accroché à un bouclier de runes */
     ferme:{fleche:1, dague:1, louche:0, feu:0, acide:1},
@@ -364,7 +371,7 @@ D.MONSTRES = {
       /* (mesuré le 11 novembre : avec en plus la langue et le saut plus forts, même une équipe sans faute perdait 15 fois sur 100) */
       ecrasement:{degats:80, cibles:'un', prepare:true, anim:'saut', plusSi:{colere:20}}             /* le coup préparé de Bourbe : il retombe de tout son poids */
     }, rythme:['langue', 'ecrasement', 'saut'],
-    passeSi:['dos', 'sous'], tombe:['dos'], cache:['sous'],
+    passeSi:['dos', 'sous', '_plouf'], tombe:['dos'], cache:['sous'],
     /* dans l'eau, la dague ne l'atteint pas ; sur la glace, oui (s'il n'y a plus de têtard devant), et sur le dos toujours */
     dague:{si:['gele', 'sec', 'dos'], mot:'dansEau'},
     reactions:{
@@ -392,7 +399,13 @@ D.MONSTRES = {
       colere:[{fait:[['ferme'], ['retire', 'dos'], ['retire', 'gele'], ['retire', 'sec'], ['special', 'plonger'], ['etat', 'sous', 1], ['mot', 'Il brise la glace !']]}],
       /* sans nuage : le héros avalé le chatouille ; s'il est sec, il en roule sur le dos */
       chatouille:[{si:{avec:['sec'], sans:['dos']}, fait:[['special', 'chatouille'], ['etat', 'dos', 2], ['ouvre', 2, 'chatouille']]},
-                  {fait:[['special', 'recrache']]}]
+                  {fait:[['special', 'recrache']]}],
+      /* APRÈS UN CRITIQUE, LA GLACE FOND (Romain, 13 novembre, 17 h 29) : « dès qu'on a fait un critique, le fait qu'il se soit
+         retourné sur la glace, et comme il était chaud, ça fait fondre la glace. Du coup, il retombe dans l'eau. Et on est obligé
+         de recommencer » (le givre, le feu, le fumigène). Un seul critique par tour de glace. */
+      /* (« _plouf » : une note des règles — il vient de passer à travers la glace, il ne frappe pas ce tour-ci. Avant, sur le
+         dos, il restait deux tours sans attaquer : sans cette note, il frapperait maintenant à tous les tours.) */
+      critique:[{fait:[['ferme'], ['retire', 'dos'], ['retire', 'gele'], ['retire', 'sec'], ['etat', '_plouf', 1], ['mot', 'La glace fond !']]}]
     }
   }
 };
@@ -424,7 +437,7 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'Le fond du puits', depart:true, objets:['carnet']},             /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
+  puits:{nom:'L\'entrée des souterrains', depart:true, objets:['carnet']},      /* (Romain, 13 novembre : plus « le fond du puits » — on y arrive aussi par la crypte) */             /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
   /* Romain, 11 novembre (8 h 45) : la rune du Sage n'est plus dans la première salle, mais dans la deuxième — pour que rien ne
      dépende de l'entrée (le puits aujourd'hui, la crypte dans l'enquête 3) */
   galerie:{nom:'La galerie effondrée', objets:['bourse', 'rune']},
@@ -447,7 +460,10 @@ D.LIEUX = {
   camp:{nom:'Le feu de camp', repos:true},
   bassin:{nom:'Le grand bassin', combat:'bassin'},
   porte4:{nom:'La porte aux quatre signes', donne:'porte:odette', pour:'sage'},
-  leo:{nom:'La dernière salle', donne:'leo:attrape', sansMaire:'leo:enfui', pour:'barde', fin:true}
+  /* LÉO, le boss final (Bible §13.33, 13 novembre) : en entrant, le Pisteur reçoit un code pour le Barde (à la fête, Farinel et Iris
+     ont des choses à lui dire) ; le combat est à part (leo-regles.js, en temps réel) ; Léo battu : il parle, un code pour le Sage
+     (« Léo a parlé » : place aux accusations), et le donjon est fini. Plus de « Léo s'est enfui », plus de maire à retenir. */
+  leo:{nom:'La dernière salle', donne:'leo:salle', pour:'barde', boss:true, apres:'leo:battu', pourApres:'sage', fin:true}
 };
 
 /* le couloir aux dalles : 6 pas ; à chaque pas, deux dalles (celle du fond, celle de devant) ; une seule est claire.
@@ -469,9 +485,9 @@ D.ROUE = {lieu:'canaux', suite:['d', 'd', 'd', 'g', 'd', 'd'], ouvre:'passage:ca
 D.CODES = {
   'sauve:1':{sauve:true}, 'sauve:2':{sauve:true}, 'sauve:3':{sauve:true}, 'sauve:4':{sauve:true},
   'recette:givre':{recette:'givre'}, 'recette:baumelum':{recette:'baumelum'},
-  /* (le branchement dans l'enquête 3) les deux codes du Barde, resté à la fête : la Grosse Marie rend toute leur vie aux trois héros ;
-     « Le maire est retenu » se tape avant la dernière salle (sans lui, Léo file au bruit des pas du maire : LIEUX.leo.sansMaire) */
-  'grosse:marie':{marie:true}, 'maire:retenu':{maire:true}
+  /* (le branchement dans l'enquête 3) le code du Barde, resté à la fête : la Grosse Marie rend toute leur vie aux trois héros
+     (en réserve : plus personne ne le donne pour l'instant). « Le maire est retenu » est retiré (Romain, 13 novembre, 18 h 08). */
+  'grosse:marie':{marie:true}
 };
 
 /* ===================================================================== 10. LE JOURNAL DE L'AVENTURIER

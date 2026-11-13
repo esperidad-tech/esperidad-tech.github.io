@@ -36,6 +36,7 @@ function coupDe(c, m){
   if(A.foisSi) for(n in A.foisSi) if(a(c, m, n)) fois = Math.max(fois, A.foisSi[n]);
   if(A.plusSi) for(n in A.plusSi) if(a(c, m, n)) d += A.plusSi[n];
   if(A.doubleSi && c._un(m, A.doubleSi)) d *= 2;
+  if(A.multSi) for(n in A.multSi) if(a(c, m, n)) d *= A.multSi[n];
   return {cibles:plan.cibles, degats:d * fois, attrape:!!(A.pose || A.avale)};
 }
 function menace(c, h){
@@ -122,7 +123,18 @@ function reflechie(o){
     }
     function lumiereSure(m){ return true; }       /* (depuis le 11 novembre : la rune de lumière vise toujours un seul monstre ; le cristal a sa carte à lui, que la simulation ne joue pas) */
     /* le bouclier : avec le bâton de chêne (la carte « a:baton-chene »), deux amis à la fois */
-    function bouc(l){ l = [].concat(l).filter(function(x, i, t){ return x && t.indexOf(x) === i; }); var deux = c.porte('sage', 'baton-chene') && l.length > 1; return {heros:'sage', geste:deux ? 'a:baton-chene' : 'bouclier', cible:deux ? l.slice(0, 2) : l[0]}; }
+    /* (13 novembre) LES DEUX BOUCLIERS : le jaune (bâton normal : un ami, 75 %, il arrête la toile et la langue) ou ceux du bâton
+       de chêne (deux amis, 50 % chacun, la toile et la langue passent). La maligne compte ce que chacun épargne, quand l'œil le
+       montre ; à l'aveugle, elle en protège deux. */
+    function bouc(l){
+      l = [].concat(l).filter(function(x, i, t){ return x && t.indexOf(x) === i; });
+      var deux = c.porte('sage', 'baton-chene') && l.length > 1;
+      if(deux && vois){
+        var m1 = menace(c, l[0]), m2 = menace(c, l[1]), pris = viv.some(function(m){ var k = coupDe(c, m); return k && k.attrape && k.cibles.indexOf(l[0]) >= 0; });
+        if(pris || m1 * (1 - C.bouclier) >= (m1 + m2) * (1 - C.bouclierChene)) deux = false;
+      }
+      return {heros:'sage', geste:deux ? 'a:baton-chene' : 'bouclier', cible:deux ? l.slice(0, 2) : l[0]};
+    }
 
     /* 0. dans le ventre de Bourbe : un seul geste (et s'il est sec, c'est même une bonne idée, avant le Pisteur) */
     for(var i = 0; i < D.ORDRE.length; i++){ var hh = D.ORDRE[i]; if(c.h[hh].avale && peut(c, hh)) return {heros:hh, geste:'chatouiller'}; }

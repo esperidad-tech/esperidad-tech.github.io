@@ -204,6 +204,7 @@ var CHIPS = {
   enrage:['💢×2', ''], folle:['💢×2', ''], brule:['🔥−4', 'e-feu'], colle:['collé', 'e-colle'], gele:['❄️ gelé', 'e-colle'], tournis:['💫 sonné', 'e-colle'],
   rougeoie:['♨️ plus fort', 'e-feu'], grand:['⬆️ plus fort', ''], boule:['🛡️ en boule', 'e-colle'], haut:['⬆️ trop haut', 'e-colle'], sous:['🌊 sous l\'eau', 'e-colle'],
   gonfle:['🎈 saut ×2', ''], noeud:['🪢 nœud tendu', 'e-colle'], sec:['☀️ tout sec', 'e-feu'],
+  accroche:['💢 coup ×4', 'e-rage'],           /* (Romain, 13 novembre : les runes sur le feu follet — son prochain coup frappe 4 fois plus fort) */
   colere:['😡 en colère', 'e-rage']            /* (Romain, 11 novembre : les élites et le boss se fâchent) */
 };
 var ICONE_ATT = {toile:'🕸️', langue:'👅'};
@@ -340,7 +341,7 @@ function bande(){
       var cls = st.sol ? ' sol' : (j ? ' joue' : (pret ? ' guide' : ''));
       var etat = st.sol ? 'au sol 💫' : st.avale ? (pret ? 'dans le ventre !' : 'avalé…') : st.entoile && !st.joue ? 'entoilé 🕸️' : j ? 'a joué' : (pret ? 'prêt !' : '');
       return '<button class="b-heros' + cls + '" data-act="heros" data-id="' + h + '"><span class="portrait img-' + h + '" style="' + DJ.tete(h, 76, 116, 10) + '"></span>' +
-        '<b>' + D.HEROS[h].nom + '</b>' + pvB(h) + '<em>' + etat + '</em>' + (j && st.joue ? '<span class="ok">✓</span>' : '') + (st.bouclier ? '<span class="bouc-b">🛡️</span>' : '') + '</button>';
+        '<b>' + D.HEROS[h].nom + '</b>' + pvB(h) + '<em>' + etat + '</em>' + (j && st.joue ? '<span class="ok">✓</span>' : '') + (st.bouclier ? '<span class="bouc-b' + (st.bouclier === 'chene' ? '' : ' jaune') + '">🛡️</span>' : '') + '</button>';
     }).join('') + '</div>';
     bandeEl.innerHTML = s;
     return;
@@ -929,7 +930,9 @@ async function geste(ev, evs){
       son('dome'); if(ev.cibles.length > 1) bruit('baton');
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
       /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
-      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - D.CHIFFRES.bouclier) * 100)})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
+      /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les deux boucliers du bâton de chêne (50 %) */
+      var chene = ev.sorte === 'chene', part = chene ? D.CHIFFRES.bouclierChene : D.CHIFFRES.bouclier;
+      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune'})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
       if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
       await attendre(450);
       return false;
@@ -1264,7 +1267,7 @@ DJ.toucher(function(a, id, b){
 });
 
 DJ.Combat = {
-  preparer:preparer, lancer:lancer, cuireHeros:cuireHeros,
+  preparer:preparer, lancer:lancer, cuireHeros:cuireHeros, cuireRat:cuireRat,
   etat:function(){ return E ? {mode:E.mode, occupe:E.occupe, tour:E.tour, sel:E.sel, baton:E.baton, geste:E.geste ? E.geste.geste : null, photo:E.ph, resultat:E.resultat || null, fini:E.fini} : null; },
   /* pour les tests : le combat des règles, les adaptateurs */
   _E:function(){ return E; }
