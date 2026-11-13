@@ -7510,8 +7510,37 @@ var YX = {vert:['#0a3a22', '#1f9150', '#86ffbd'], bleu:['#0a1f4a', '#2f6fd0', '#
 var DEFAUT = {pisteur:{fille:true, pe:PE.p1, ch:CH.roux, ir:YX.vert}, alchimiste:{fille:false, pe:PE.p4, ch:CH.noir, ir:YX.ambre}, sage:{fille:true, pe:PE.p5, ch:CH.noir, ir:YX.ambre, lunettes:true}};
 var AUTRES = {pisteur:{fille:false, pe:PE.p6, ch:CH.noir, ir:YX.marron}, alchimiste:{fille:true, pe:PE.p2, ch:CH.blond, ir:YX.bleu}, sage:{fille:false, pe:PE.p3, ch:CH.chatain, ir:YX.gris}};
 
+/* la photo d'un héros au repos, à son apparence (Promise -> l'adresse « data: » d'une image, ou null) : pour les petites têtes de
+   l'écran quand l'allure vient de l'enquête (moteur/src/noyau.js, DJ.poserLook). La photo fait 280 × 320, le héros y est posé comme
+   dans la scène : sa boîte de 200 × 240 à (40, 40). k : la finesse (2 par défaut). */
+function photo(role, lk, k){
+  k = k || 2;
+  return new Promise(function(ok){
+    try{
+      var spec = ROLES[role].fab(fusionLk(role, lk), false);
+      /* (le dessin est écrit pour une page : on le fait relire par le navigateur, qui le rend en vrai SVG, bien formé) */
+      var h = document.createElement('div'); h.innerHTML = spec.svg;
+      var el = h.firstElementChild; el.setAttribute('width', 250); el.setAttribute('height', 300);
+      /* (au repos, le Sage tient son bâton droit devant lui : le cristal lui cache le visage — on l'enlève de la photo) */
+      if(role === 'sage'){ var mb = el.querySelector('[data-j="mainB"]'); if(mb) mb.parentNode.removeChild(mb); }
+      var svg = new XMLSerializer().serializeToString(el);
+      var im = new Image();
+      im.onload = function(){
+        try{
+          var c = document.createElement('canvas'); c.width = 280 * k; c.height = 320 * k;
+          c.getContext('2d').drawImage(im, 40 * k, 40 * k, 200 * k, 240 * k);
+          ok(c.toDataURL('image/png'));
+        }catch(e){ ok(null); }
+      };
+      im.onerror = function(){ ok(null); };
+      im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }catch(e){ ok(null); }
+  });
+}
+
 var HerosAnime = {
   creer:function(conteneur, role, lk){ return new Heros(conteneur, role, lk); },
+  photo:photo,
   /* cuire les héros une fois (Promise), pendant un écran calme : ensuite, creer() en fait des copies fluides (RAPIDITE.md) */
   preparer:preparer,
   DEFAUT:DEFAUT, AUTRES:AUTRES, PEAUX:PE, CHEVEUX:CH, YEUX:YX,
@@ -14578,6 +14607,44 @@ global.AMBIANCE = AMBIANCE;
 })(typeof window !== 'undefined' ? window : this);
 
 
+/* ===== moteur/src/allure.js ===== */
+/* allure.js — l'allure des trois héros du donjon, quand elle vient de l'enquête (Romain, 13 novembre : « les codes d'apparence »).
+
+   Dans l'enquête 3, chaque joueur a fait son héros (fille ou garçon, la peau, les cheveux, les yeux : jeu/src/persos.js). Avant de
+   descendre, le Sage et l'Alchimiste montrent chacun un code au Pisteur (jeu/src/descente.js) ; le jeu ouvre alors le donjon avec
+       ?look=p:f.p1.roux.vert,s:m.p5.noir,a:f.p2.blond
+   une lettre par héros (p : le Pisteur, s : le Sage, a : l'Alchimiste), puis « f » ou « m », la peau, les cheveux, et les yeux quand on
+   les connaît (le code du Sage et celui de l'Alchimiste ne les portent pas : trois symboles ne suffisent pas). Ce qui manque garde
+   l'allure d'avant. Les couleurs sont celles du jeu (persos.js : PEAUX, CHEVEUX, YEUX), recopiées ici.
+
+     DonjonAllure.lire(texte, base) -> {pisteur:{fille, pe, ch, ir}, sage:{…, lunettes}, alchimiste:{…}}   (base : l'allure d'avant)
+   Chargé avant noyau.js ; sert aussi à la petite page de la tenue de combat (tenue.html). */
+(function(global){
+'use strict';
+var PE = {p1:['#fff1e6', '#f7caa6', '#e8ad89', '#ff8f8f'], p2:['#ffe7d2', '#efb88e', '#d9976d', '#ff877a'], p3:['#f8d8b0', '#dea575', '#c48652', '#f2786a'],
+  p4:['#eec899', '#c7935c', '#a77441', '#e4685a'], p5:['#d29d6f', '#a06840', '#80502d', '#d65a50'], p6:['#ad774e', '#6f4428', '#55331c', '#c84c4a']};
+var CH = {brun:['#d39654', '#7c4624', '#3a1e0e'], chatain:['#e6bb85', '#a06f40', '#4c2d14'], noir:['#6b7096', '#272840', '#0e0e1a'], blond:['#fff4c2', '#f0c95a', '#a8781c'],
+  roux:['#ffb886', '#dc622a', '#7a2a0e'], gris:['#f2f2f6', '#a9aab8', '#5c5d6e'], blanc:['#ffffff', '#e4e7f0', '#a3a7bf'], nuit:['#9fbaff', '#3c50b4', '#141c50'], rose:['#ffd6ea', '#f07aab', '#932659']};
+var YX = {vert:['#0a3a22', '#1f9150', '#86ffbd'], bleu:['#0a1f4a', '#2f6fd0', '#a6dcff'], marron:['#2a1206', '#7a4420', '#e0a876'], noisette:['#2e2208', '#8a6a1c', '#ecd07a'],
+  gris:['#1e2430', '#5f6f86', '#d6e2f0'], violet:['#2a0a4a', '#7a3fd0', '#dcb6ff'], ambre:['#3a1a02', '#c47a10', '#ffd98a']};
+var QUI = {p:'pisteur', s:'sage', a:'alchimiste'};
+function copie(o){ var r = {}, k; for(k in (o || {})) r[k] = o[k]; return r; }
+function lire(texte, base){
+  var r = {pisteur:copie(base && base.pisteur), sage:copie(base && base.sage), alchimiste:copie(base && base.alchimiste)};
+  String(texte || '').split(',').forEach(function(x){
+    var k = x.split(':'), h = QUI[k[0]], v = (k[1] || '').split('.');
+    if(!h || v.length < 3) return;
+    if(v[0] === 'f' || v[0] === 'm') r[h].fille = v[0] === 'f';
+    if(PE[v[1]]) r[h].pe = PE[v[1]];
+    if(CH[v[2]]) r[h].ch = CH[v[2]];
+    if(v[3] && YX[v[3]]) r[h].ir = YX[v[3]];
+  });
+  return r;
+}
+global.DonjonAllure = {PE:PE, CH:CH, YX:YX, lire:lire};
+})(typeof window !== 'undefined' ? window : this);
+
+
 /* ===== moteur/src/noyau.js ===== */
 /* noyau.js — les outils communs du donjon (Les Enquêteurs de Brumeval, enquête 3).
    Cahier des charges : jeu/donjon/MOTEUR-DONJON.md. Les règles : regles.js (aucun affichage) ; ici, l'affichage.
@@ -14775,7 +14842,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '13/11 à 17 h 01';
+DJ.VERSION = '13/11 à 17 h 16';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -14916,6 +14983,27 @@ DJ.cssHeros = function(){
   var st = el('style'); st.id = 'dj-css-heros';
   st.textContent = ['sage', 'alchimiste', 'pisteur'].map(function(h){ return '.img-' + h + '{background-image:url(' + DJ.img('heros-' + h + '.png') + ')}'; }).join('');
   document.head.appendChild(st);
+};
+/* (l'enquête 3, 13 novembre : les codes d'apparence) L'allure des trois héros vient de l'enquête : « look=p:f.p1.roux.vert,s:m.p5.noir,… »
+   (allure.js). À appeler AVANT de cuire les héros (combat.js) et de les créer. Les petites têtes de l'écran (les photos heros-*.png,
+   à l'allure d'origine) sont refaites à la nouvelle allure, dès qu'elles sont prêtes (HerosAnime.photo) ; en attendant, celles d'avant. */
+DJ.lookTexte = '';
+DJ.poserLook = function(texte){
+  texte = String(texte || '');
+  if(!texte || !window.DonjonAllure || texte === DJ.lookTexte) return;
+  DJ.lookTexte = texte;
+  DJ.LOOK = window.DonjonAllure.lire(texte, DJ.LOOK);
+  if(!(window.HerosAnime && window.HerosAnime.photo)) return;
+  DJ.cssHeros();
+  var st = q('#dj-css-heros-look'); if(!st){ st = el('style'); st.id = 'dj-css-heros-look'; document.head.appendChild(st); }
+  var regles = {};
+  ['sage', 'alchimiste', 'pisteur'].forEach(function(h){
+    window.HerosAnime.photo(h, DJ.LOOK[h]).then(function(u){
+      if(!u || texte !== DJ.lookTexte) return;
+      regles[h] = '.img-' + h + '{background-image:url(' + u + ')}';
+      st.textContent = Object.keys(regles).map(function(k){ return regles[k]; }).join('');
+    });
+  });
 };
 
 /* ================= les fioles des recettes (le dessin de la salle d'essai, avec les trois nouvelles) ================= */
@@ -17401,7 +17489,7 @@ DJ.toucher(function(a, id, b){
     /* (l'enquête 3) une descente de l'enquête, recommencée, reste celle de l'enquête : son jeton, son entrée, et les potions du sac de
        l'Alchimiste (pas les recettes apprises en route) */
     var pr = X.partie, suite = '';
-    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + '&nouveau=1';
+    if(pr && pr.enquete) suite = '?enquete=' + pr.enquete + '&jeton=' + encodeURIComponent(pr.jeton || '') + '&potions=' + (pr.recettes || []).filter(function(r){ return D.RECETTES_DEPART.indexOf(r) >= 0; }).join(',') + '&entree=' + (pr.entree || 'puits') + (pr.look ? '&look=' + encodeURIComponent(pr.look) : '') + '&nouveau=1';
     DJ.oublier(); fermerScene(); quitterCarte(); location.href = location.pathname + suite; return true;
   }
   if(a === 'fin-donjon'){ DJ.fermer(); finDonjon(); return true; }
@@ -17432,10 +17520,14 @@ function demarrer(P){
     /* pour les essais : ?nouveau=1&potions=feu,huile,baume — un Alchimiste qui n'a pas su créer toutes ses potions */
     if(P.potions){ var lp = P.potions === 'toutes' ? D.ORDRE_RECETTES.slice() : P.potions.split(',').filter(function(r){ return D.RECETTES[r]; }); if(lp.length) p.recettes = lp; }
     if(P.enquete){ p.enquete = +P.enquete || 3; p.jeton = P.jeton || ''; p.entree = P.entree === 'crypte' ? 'crypte' : 'puits'; }
+    /* (13 novembre : les codes d'apparence) l'allure des trois héros, telle que l'enquête la donne ; la partie la garde */
+    if(P.look){ p.look = P.look; DJ.poserLook(p.look); }
     DJ.garder(p);
     return DJ.Combat.cuireHeros(), ecranDepart().then(function(){ return ouvrirScene('puits', [], true); });
   }
   X.partie = p;
+  if(P.look && P.jeton && p.jeton === P.jeton && p.look !== P.look){ p.look = P.look; DJ.garder(p); }
+  if(p.look) DJ.poserLook(p.look);
   /* (l'enquête 3) l'Alchimiste a fini une potion de plus avant qu'on redescende : elle rejoint le sac */
   if(P.potions && P.jeton && p.jeton === P.jeton){ var plus = false; P.potions.split(',').forEach(function(r){ if(D.RECETTES[r] && p.recettes.indexOf(r) < 0){ p.recettes.push(r); plus = true; } }); if(plus) DJ.garder(p); }
   DJ.Combat.cuireHeros();
