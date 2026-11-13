@@ -3319,6 +3319,16 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .ti-ap-deux text,.ti-ap-un text{font:700 11px/1 var(--f-titre, serif);fill:#24182e}
 .ti-ap-un{pointer-events:none}
 
+/* « Suivre les traces » (mj-pistage.js) : le monde est dessiné sur un canevas, le Pisteur reste au milieu de l'écran */
+.pg{position:relative;width:100%;height:100%;min-height:320px;overflow:hidden;border-radius:14px;background:#6fa85a;touch-action:none;user-select:none;-webkit-user-select:none;outline:none;cursor:pointer}
+.pg-sol{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pg-heros{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;overflow:visible;filter:drop-shadow(0 3px 2px rgba(11,26,16,.35))}
+/* les bords de l'image s'assombrissent un peu : on regarde par terre, pas au loin */
+.pg-voile{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%, rgba(20,14,30,0) 52%, rgba(20,14,30,.34) 100%)}
+.pg-dit{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:max-content;max-width:min(94%,470px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:16px;background:#fffdf4;border:3px solid #24182e;box-shadow:0 4px 0 rgba(36,24,46,.35);color:#24182e;font-weight:700;font-size:16px;line-height:1.25}
+.pg-dit[hidden]{display:none}
+.pg-dit p{margin:0}
+
 /* ==========================================================
    Brumeval — Le gâteau de la fête (mj-gateau.js, mj-gateau-dessins.js). Préfixe .gt-
    La scène remplit tout le mini-jeu : la place en fête, la table, le gâteau ; les icônes sont posées par-dessus, de chaque côté.
@@ -3528,6 +3538,27 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 
 /* Ce mini-jeu prend toute la largeur de l'écran (MJ.LARGE, mj-core.js) : on voit la place en fête de chaque côté du gâteau */
 #mj-plein.mj-large .b-mj-cadre, #sl-plein.mj-large .sl-cadre{max-width:1280px}
+
+/* ---------- le vote (13 novembre) : la note sur 20, puis la place ---------- */
+.gt-final.gt-en-vote{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px 12px;background:linear-gradient(180deg, rgba(19,25,50,0), rgba(19,25,50,.82) 26%)}
+.gt-vote{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.gt-vote .gt-vote-q{flex:none;width:100%;max-width:640px;box-sizing:border-box;order:0}
+.gt-ma-note{font-style:normal;color:#ffd23f}
+.gt-notes{display:grid;grid-template-columns:repeat(10, minmax(0, 1fr));gap:6px;width:100%;max-width:640px}
+.gt-note{aspect-ratio:1;min-width:0;border-radius:50%;border:2.5px solid #24182e;background:#fffaf0;color:#24182e;font:800 1rem/1 inherit;cursor:pointer;box-shadow:0 3px 0 #24182e, 0 5px 10px rgba(0,0,0,.4);animation:gt-bulle .32s cubic-bezier(.3,1.5,.5,1) both;-webkit-tap-highlight-color:transparent}
+.gt-note:nth-child(n+2){animation-delay:.02s}.gt-note:nth-child(n+6){animation-delay:.05s}.gt-note:nth-child(n+11){animation-delay:.08s}.gt-note:nth-child(n+16){animation-delay:.11s}
+.gt-note:active{transform:translateY(2px);box-shadow:0 1px 0 #24182e}
+.gt-rangs{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;width:100%;max-width:520px}
+.gt-rang{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:16px;border:2.5px solid #24182e;background:#ffd23f;color:#24182e;font:inherit;cursor:pointer;box-shadow:0 3px 0 #24182e, 0 5px 10px rgba(0,0,0,.4);animation:gt-bulle .32s cubic-bezier(.3,1.5,.5,1) both;-webkit-tap-highlight-color:transparent}
+.gt-rang span{font-size:1.7rem;line-height:1}
+.gt-rang b{font-size:1rem;font-weight:800}
+.gt-rang:active{transform:translateY(2px);box-shadow:0 1px 0 #24182e}
+.gt-renoter{align-self:center}
+@keyframes gt-bulle{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.gt-etroit .gt-notes{grid-template-columns:repeat(5, minmax(0, 1fr));max-width:320px}
+.gt-etroit .gt-note{font-size:1.05rem}
+@media (max-height: 460px){ .gt-notes{grid-template-columns:repeat(10, minmax(0, 1fr));max-width:560px} .gt-note{font-size:.9rem} }
+@media (prefers-reduced-motion: reduce){ .gt-note, .gt-rang{animation:none} }
 
 /* ==========================================================
    Brumeval — Les banderoles de la fête (mj-visee.js, mj-visee-decor.js). Préfixe .vs-
@@ -6944,7 +6975,9 @@ var EXPR0 = {regard:'centre', ampleur:1, sourire:0, yeuxRieurs:0, sourcils:'neut
 var REGARD_X = {centre:[0,0], 'cote-g':[-3.2,.3], 'cote-d':[3.2,.3], haut:[1.3,-3.3], 'haut-g':[-1.7,-3.2], 'haut-d':[1.7,-3.2], bas:[.3,2.7]};
 /* [y gauche, rotation gauche, y droit, rotation droite] */
 var SOURCILS_X = {neutre:[0,0,0,0], leves:[-3.6,-5,-3.6,5], fronces:[1.8,10,1.8,-10], un:[-4,-4,.6,0], 'un-d':[.6,0,-4,4], bas:[1.2,0,1.2,0], tendus:[-1.8,2,-1.8,-2]};
-var HUMEUR_X = {ment:{regard:'cote-d', sourire:'coin', rougeur:.5}, peur:{sourcils:'leves', grandsYeux:true, bouche:'pincee'}, content:{sourire:2, yeuxRieurs:true}};
+var HUMEUR_X = {ment:{regard:'cote-d', sourire:'coin', rougeur:.5}, peur:{sourcils:'leves', grandsYeux:true, bouche:'pincee'}, content:{sourire:2, yeuxRieurs:true},
+  /* (enquête 3, le maire qui compte ses bouquets : marche.js) pas content, content, ravi ; et saisi, devant la vieille lanterne */
+  fache:{sourcils:'fronces', bouche:'moue'}, satisfait:{sourire:1}, ravi:{sourire:2, yeuxRieurs:true, sourcils:'leves'}, saisi:{grandsYeux:true, sourcils:'leves', bouche:'o'}};
 function bouchePour(x){
   if(x.bouche === 'mord') return 'mord';
   if(x.bouche === 'pincee') return 'pince';
@@ -22364,7 +22397,7 @@ function resoudre(p){
   p.__mjs = R;
   (p.lignes || []).forEach(function(l){
     if(l.nom === 'Le code') l.val = SYSTEMES[sys].ic + ' ' + SYSTEMES[sys].nom;
-    if(l.nom === 'Temps') l.val = dureeTxt(R.temps);
+    if(l.nom === 'Temps') l.val = p.sansTemps ? 'pas de sablier' : dureeTxt(R.temps);
   });
   return R;
 }
@@ -22609,7 +22642,8 @@ MJ.enregistrer('alphabet', {
       '<div class="mjs-jeu mjs-alpha mjs-sys-' + P.sys + (P.variante ? ' mjs-var-' + P.variante : '') + (zone > 1.15 ? ' mjs-z' : '') + '" style="--z:' + f2(zone) + '">' +
       '<div class="mjs-in">' +
         '<div class="mjs-haut">' +
-          '<div class="mjs-sablier" aria-label="Temps restant"><span class="mjs-sab-ic">⏳</span><span class="mjs-barre"><i></i></span><b class="mjs-sec">' + fmtTemps(total) + '</b></div>' +
+          /* (enquête 3, le plan des Fondateurs — Romain, 13 novembre : « pas de minuteur ») p.sansTemps : pas de sablier, on prend son temps */
+          '<div class="mjs-sablier" aria-label="Temps restant"' + (p.sansTemps ? ' hidden' : '') + '><span class="mjs-sab-ic">⏳</span><span class="mjs-barre"><i></i></span><b class="mjs-sec">' + fmtTemps(total) + '</b></div>' +
           '<div class="mjs-coeurs">' + U.coeurs(coeurs - 1, coeursMax - 1) + '</div>' +
         '</div>' +
         '<div class="mjs-corps">' +
@@ -22763,7 +22797,7 @@ MJ.enregistrer('alphabet', {
       haut.classList.toggle('alerte', reste <= Math.min(20, total * .2));
       if(reste <= 0){ dire('⌛ Le sablier est vide !', true); perdre('Le temps est écoulé…', 'Le sablier s\'est vidé : le message reste secret.'); }
     }
-    T.i(tic, 250); tic();
+    if(!p.sansTemps){ T.i(tic, 250); tic(); }
     choisir(ordre.length ? ordre[0] : -1);
     majValider();
     if(!ordre.length) T.t(gagner, 400);
@@ -27615,6 +27649,685 @@ if(MJ.DEMOS){
 })();
 
 }).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
+/* ===== chats.js ===== */
+/* ==========================================================
+   Brumeval — les sept chats d'Odette, et leurs traces de pattes (enquête 3 ; Romain, 13 novembre)
+
+   « Pour le Sage, quand il reçoit le carnet avec les sept chats, il faut qu'il y ait, écrit avec l'écriture d'Odette, la description
+   avec un petit dessin des sept chats, et avec aussi leurs traces de pas. Et il ne faut pas de code pour le Pisteur : juste un carnet
+   avec les trucs d'Odette, et c'est tout. Pour qu'ils le disent à l'oral au Pisteur, que c'est les pattes à six doigts. »
+
+   UNE SEULE SOURCE pour deux endroits :
+   · le Grand Livre du Sage (livre.js, la page « Le carnet d'Odette », type 'carnet') : chaque chat, son portrait, ce qu'Odette en
+     dit, et le dessin de sa trace ;
+   · le mini-jeu du Pisteur « Suivre les traces de Moustache » (mj-pistage.js) : les mêmes traces, par terre, en tout petit.
+   Le Pisteur ne sait pas laquelle est celle de Moustache : c'est le Sage qui le lui dit, à voix haute.
+
+   Chaque trace doit se reconnaître MÊME TOUTE PETITE (Romain : « même en petit, on arrive à reconnaître les traces des chats ; s'il
+   faut, tu éloignes un peu les coussinets ») : ce qui change d'un chat à l'autre, c'est le NOMBRE de doigts (3, 4, 5 ou 6), la taille,
+   les griffes, la forme du gros coussinet (rond, en cœur) et l'écart des doigts. Les doigts sont de petits ronds bien séparés.
+
+   CHATS.liste : [{id, nom, robe, dit (les mots d'Odette), trace:{doigts, k (taille), griffes, coussin, ecart}}]
+   CHATS.dessiner(ctx, id, x, y, angle, taille, couleur, alpha)   une trace sur un canevas (le mini-jeu)
+   CHATS.traceSVG(id, taille, couleur)                             la même, en dessin (le carnet)
+   CHATS.portraitSVG(id, taille)                                   le petit portrait du chat, au crayon de couleur (le carnet)
+   ========================================================== */
+(function(G){
+'use strict';
+var K = '#24182e';
+var LISTE = [
+  /* le gros gris à six doigts : celui qu'on cherche */
+  {id:'moustache', nom:'Moustache', robe:{c:'#8d93a6', c2:'#b9bece', yeux:'#e8c24a', gros:1.18},
+    dit:'Mon gros gris, mon malin. Six doigts à chaque patte : il ouvre toutes les portes !',
+    trace:{doigts:6, k:1.12, coussin:'rond', ecart:1}},
+  {id:'biscotte', nom:'Biscotte', robe:{c:'#e9d3a6', c2:'#f6e9c9', yeux:'#6fae5a', gros:.8},
+    dit:'La plus petite de tous. Des pattes de souris : on les voit à peine !',
+    trace:{doigts:4, k:.62, coussin:'rond', ecart:1}},
+  {id:'pompon', nom:'Pompon', robe:{c:'#f4f1ea', c2:'#ffffff', yeux:'#5aa0d8', gros:1.08, poilu:true},
+    dit:'Tout blanc, tout rond. Il a perdu un doigt dans une bagarre : il lui en reste trois.',
+    trace:{doigts:3, k:1, coussin:'rond', ecart:1.15}},
+  {id:'caramel', nom:'Caramel', robe:{c:'#d98a3d', c2:'#f0b66e', yeux:'#7cc06a', gros:1, raies:'#b0652a'},
+    dit:'Mon rouquin. Il ne rentre jamais ses griffes : gare aux rideaux !',
+    trace:{doigts:4, k:1, coussin:'rond', ecart:1, griffes:true}},
+  {id:'mistigri', nom:'Mistigri', robe:{c:'#2f2a3a', c2:'#4a4458', yeux:'#f0d048', gros:1},
+    dit:'Noir comme la suie. Regarde sous sa patte : son coussinet a la forme d\'un cœur.',
+    trace:{doigts:4, k:1, coussin:'coeur', ecart:1}},
+  /* presque Moustache : il faut bien compter */
+  {id:'noisette', nom:'Noisette', robe:{c:'#8a5a3a', c2:'#b98458', yeux:'#d8b04a', gros:1.02},
+    dit:'Ma brune. Cinq doigts : presque comme Moustache… presque !',
+    trace:{doigts:5, k:1.06, coussin:'rond', ecart:1}},
+  {id:'grisette', nom:'Grisette', robe:{c:'#9aa0b0', c2:'#c4c8d4', yeux:'#7cc06a', gros:.9, fine:true},
+    dit:'Grise comme Moustache, mais fine comme un fil. Ses doigts sont tout écartés, en éventail.',
+    trace:{doigts:4, k:.9, coussin:'rond', ecart:1.55}}
+];
+var PAR = {}; LISTE.forEach(function(c){ PAR[c.id] = c; });
+
+/* ---------- la géométrie d'une trace, dans un carré de −1 à 1 (la patte pointe vers le haut : −y) ----------
+   Le gros coussinet en bas, les doigts en arc au-dessus, bien détachés (un vide net entre deux doigts, pour qu'on puisse les compter
+   même quand la trace fait 25 points d'écran). */
+function geometrie(id){
+  var T = (PAR[id] || LISTE[0]).trace, n = T.doigts, e = T.ecart || 1, l = [];
+  /* l'arc des doigts : d'autant plus large qu'il y a de doigts */
+  var ouvert = (n >= 6 ? 150 : n === 5 ? 132 : n === 4 ? 112 : 92) * Math.min(1.25, e) * Math.PI / 180;
+  var rayon = (n >= 6 ? .78 : n === 5 ? .74 : .7) * (e > 1.3 ? 1.12 : 1);
+  var rd = n >= 6 ? .165 : n === 5 ? .185 : n === 3 ? .23 : .21;
+  for(var i = 0; i < n; i++){
+    var a = n === 1 ? 0 : -ouvert / 2 + ouvert * i / (n - 1);
+    /* les doigts du milieu sont un peu plus hauts (une vraie patte) */
+    var r = rayon * (1 + .06 * Math.cos(a * 1.4));
+    l.push({x:Math.sin(a) * r, y:.22 - Math.cos(a) * r, r:rd, a:a});
+  }
+  return {doigts:l, coussin:T.coussin, griffes:!!T.griffes, k:T.k || 1};
+}
+var GEO = {}; LISTE.forEach(function(c){ GEO[c.id] = geometrie(c.id); });
+
+/* ---------- sur un canevas (le mini-jeu) : (x, y) le centre, angle : où va le chat (0 = vers le haut), taille : la demi-largeur ---------- */
+function dessiner(ctx, id, x, y, angle, taille, couleur, alpha){
+  var g = GEO[id] || GEO.moustache, s = taille * g.k, i, d;
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(angle); ctx.scale(s, s);
+  if(alpha != null) ctx.globalAlpha = alpha;
+  ctx.fillStyle = couleur || '#fffdf4';
+  /* le gros coussinet */
+  ctx.beginPath();
+  if(g.coussin === 'coeur'){
+    ctx.moveTo(0, .78); ctx.bezierCurveTo(-.62, .5, -.62, .02, -.3, .02); ctx.bezierCurveTo(-.12, .02, 0, .16, 0, .26);
+    ctx.bezierCurveTo(0, .16, .12, .02, .3, .02); ctx.bezierCurveTo(.62, .02, .62, .5, 0, .78);
+  } else {
+    ctx.moveTo(0, .12); ctx.bezierCurveTo(.3, .1, .5, .34, .44, .58); ctx.bezierCurveTo(.4, .76, .16, .74, 0, .68);
+    ctx.bezierCurveTo(-.16, .74, -.4, .76, -.44, .58); ctx.bezierCurveTo(-.5, .34, -.3, .1, 0, .12);
+  }
+  ctx.fill();
+  for(i = 0; i < g.doigts.length; i++){
+    d = g.doigts[i];
+    ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r * .86, d.r * 1.12, d.a, 0, 6.2832); ctx.fill();
+    if(g.griffes){   /* une petite pointe détachée, devant chaque doigt */
+      var gx = d.x + Math.sin(d.a) * d.r * 2.1, gy = d.y - Math.cos(d.a) * d.r * 2.1;
+      ctx.beginPath(); ctx.moveTo(gx + Math.sin(d.a) * .15, gy - Math.cos(d.a) * .15);
+      ctx.lineTo(gx - Math.cos(d.a) * .06, gy - Math.sin(d.a) * .06); ctx.lineTo(gx + Math.cos(d.a) * .06, gy + Math.sin(d.a) * .06); ctx.closePath(); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function f(n){ return (Math.round(n * 100) / 100).toString(); }
+/* ---------- la même trace, en dessin (le carnet du Sage) ---------- */
+function traceSVG(id, taille, couleur){
+  var g = GEO[id] || GEO.moustache, c = couleur || '#3a2c1c', s = '', t = taille || 64;
+  if(g.coussin === 'coeur') s += '<path d="M0,.78 C-.62,.5 -.62,.02 -.3,.02 C-.12,.02 0,.16 0,.26 C0,.16 .12,.02 .3,.02 C.62,.02 .62,.5 0,.78 Z"/>';
+  else s += '<path d="M0,.12 C.3,.1 .5,.34 .44,.58 C.4,.76 .16,.74 0,.68 C-.16,.74 -.4,.76 -.44,.58 C-.5,.34 -.3,.1 0,.12 Z"/>';
+  g.doigts.forEach(function(d){
+    s += '<ellipse cx="' + f(d.x) + '" cy="' + f(d.y) + '" rx="' + f(d.r * .86) + '" ry="' + f(d.r * 1.12) + '" transform="rotate(' + f(d.a * 180 / Math.PI) + ' ' + f(d.x) + ' ' + f(d.y) + ')"/>';
+    if(g.griffes){
+      var gx = d.x + Math.sin(d.a) * d.r * 2.1, gy = d.y - Math.cos(d.a) * d.r * 2.1;
+      s += '<path d="M' + f(gx + Math.sin(d.a) * .15) + ',' + f(gy - Math.cos(d.a) * .15) + ' L' + f(gx - Math.cos(d.a) * .06) + ',' + f(gy - Math.sin(d.a) * .06) + ' L' + f(gx + Math.cos(d.a) * .06) + ',' + f(gy + Math.sin(d.a) * .06) + ' Z"/>';
+    }
+  });
+  /* (la taille du dessin suit celle de la patte : Biscotte est toute petite, Moustache un peu plus gros) */
+  return '<svg class="ch-trace" viewBox="-1.25 -1.25 2.5 2.5" width="' + t + '" height="' + t + '" aria-hidden="true"><g fill="' + c + '" transform="scale(' + f(g.k) + ')">' + s + '</g></svg>';
+}
+/* ---------- le petit portrait d'un chat, assis, de face (le carnet) ---------- */
+function portraitSVG(id, taille){
+  var C = PAR[id] || LISTE[0], R = C.robe, t = taille || 72, g = R.gros || 1, s = '';
+  var w = (R.fine ? 13 : 17) * g, h = 20 * g, cy = 30 - h * .1;
+  /* la queue, le corps, la tête, les oreilles */
+  s += '<path d="M' + f(w * .7) + ',40 C' + f(w + 12) + ',40 ' + f(w + 13) + ',26 ' + f(w + 6) + ',24" fill="none" stroke="' + K + '" stroke-width="6.4" stroke-linecap="round"/><path d="M' + f(w * .7) + ',40 C' + f(w + 12) + ',40 ' + f(w + 13) + ',26 ' + f(w + 6) + ',24" fill="none" stroke="' + R.c + '" stroke-width="4" stroke-linecap="round"/>';
+  s += '<ellipse cx="0" cy="' + f(cy + 4) + '" rx="' + f(w) + '" ry="' + f(h * .78) + '" fill="' + R.c + '" stroke="' + K + '" stroke-width="2.2"/>';
+  s += '<ellipse cx="0" cy="' + f(cy + 9) + '" rx="' + f(w * .55) + '" ry="' + f(h * .5) + '" fill="' + R.c2 + '" opacity=".85"/>';
+  if(R.raies) s += '<path d="M' + f(-w * .8) + ',' + f(cy) + ' l5,2 M' + f(-w * .9) + ',' + f(cy + 6) + ' l5,1.4 M' + f(w * .8) + ',' + f(cy) + ' l-5,2 M' + f(w * .9) + ',' + f(cy + 6) + ' l-5,1.4" stroke="' + R.raies + '" stroke-width="2" stroke-linecap="round"/>';
+  var ty = cy - h * .78, tr = 11.5 * (R.fine ? .9 : 1) * Math.min(1.1, g);
+  s += '<path d="M' + f(-tr * .95) + ',' + f(ty - 2) + ' L' + f(-tr * .9) + ',' + f(ty - tr * 1.5) + ' L' + f(-tr * .2) + ',' + f(ty - tr * .75) + ' Z M' + f(tr * .95) + ',' + f(ty - 2) + ' L' + f(tr * .9) + ',' + f(ty - tr * 1.5) + ' L' + f(tr * .2) + ',' + f(ty - tr * .75) + ' Z" fill="' + R.c + '" stroke="' + K + '" stroke-width="2.2" stroke-linejoin="round"/>';
+  s += '<path d="M' + f(-tr * .74) + ',' + f(ty - tr * .98) + ' L' + f(-tr * .72) + ',' + f(ty - tr * 1.22) + ' L' + f(-tr * .42) + ',' + f(ty - tr * .82) + ' Z M' + f(tr * .74) + ',' + f(ty - tr * .98) + ' L' + f(tr * .72) + ',' + f(ty - tr * 1.22) + ' L' + f(tr * .42) + ',' + f(ty - tr * .82) + ' Z" fill="#f4a9b4"/>';
+  s += '<ellipse cx="0" cy="' + f(ty) + '" rx="' + f(tr * (R.poilu ? 1.14 : 1.04)) + '" ry="' + f(tr * .9) + '" fill="' + R.c + '" stroke="' + K + '" stroke-width="2.2"/>';
+  if(R.raies) s += '<path d="M-2.4,' + f(ty - tr * .84) + ' v3.4 M0,' + f(ty - tr * .88) + ' v4 M2.4,' + f(ty - tr * .84) + ' v3.4" stroke="' + R.raies + '" stroke-width="1.5" stroke-linecap="round"/>';
+  s += '<ellipse cx="0" cy="' + f(ty + tr * .34) + '" rx="' + f(tr * .5) + '" ry="' + f(tr * .36) + '" fill="' + R.c2 + '" opacity=".9"/>';
+  /* les yeux, le nez, les moustaches */
+  s += '<ellipse cx="' + f(-tr * .42) + '" cy="' + f(ty - tr * .08) + '" rx="2.5" ry="3" fill="' + R.yeux + '" stroke="' + K + '" stroke-width="1"/><ellipse cx="' + f(tr * .42) + '" cy="' + f(ty - tr * .08) + '" rx="2.5" ry="3" fill="' + R.yeux + '" stroke="' + K + '" stroke-width="1"/>';
+  s += '<ellipse cx="' + f(-tr * .42) + '" cy="' + f(ty - tr * .08) + '" rx=".8" ry="2.3" fill="' + K + '"/><ellipse cx="' + f(tr * .42) + '" cy="' + f(ty - tr * .08) + '" rx=".8" ry="2.3" fill="' + K + '"/>';
+  s += '<path d="M-1.6,' + f(ty + tr * .22) + ' h3.2 l-1.6,1.9 Z" fill="#e0788a" stroke="' + K + '" stroke-width=".7" stroke-linejoin="round"/>';
+  var my = ty + tr * .4, ml = id === 'moustache' ? 1.5 : 1;   /* (Moustache porte bien son nom) */
+  s += '<path d="M-3,' + f(my) + ' l' + f(-9 * ml) + ',-2 M-3,' + f(my + 1.6) + ' l' + f(-9 * ml) + ',1.4 M3,' + f(my) + ' l' + f(9 * ml) + ',-2 M3,' + f(my + 1.6) + ' l' + f(9 * ml) + ',1.4" stroke="' + (id === 'mistigri' ? '#d8d2e6' : K) + '" stroke-width=".9" stroke-linecap="round" opacity=".85"/>';
+  /* les pattes de devant */
+  s += '<ellipse cx="' + f(-w * .34) + '" cy="' + f(cy + h * .78) + '" rx="4.4" ry="3.2" fill="' + R.c2 + '" stroke="' + K + '" stroke-width="1.8"/><ellipse cx="' + f(w * .34) + '" cy="' + f(cy + h * .78) + '" rx="4.4" ry="3.2" fill="' + R.c2 + '" stroke="' + K + '" stroke-width="1.8"/>';
+  return '<svg class="ch-portrait" viewBox="-34 -22 68 72" width="' + t + '" height="' + Math.round(t * 72 / 68) + '" aria-hidden="true">' + s + '</svg>';
+}
+G.CHATS = {liste:LISTE, par:PAR, geometrie:geometrie, dessiner:dessiner, traceSVG:traceSVG, portraitSVG:portraitSVG};
+})(window);
+
+/* ===== mj-pistage.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
+/* ==========================================================
+   Brumeval — « Suivre les traces » : le Pisteur marche librement, la caméra le suit (enquête 3 : les traces de Moustache)
+
+   CE QUE ROMAIN A DEMANDÉ (13 novembre) — il remplace, pour Moustache, l'ancien « Suivre la piste » où le sol défilait tout seul :
+   · « Le Pisteur va être au centre de l'image, et quand il avance ou quand il recule, la caméra le suit. »
+   · « Simplement, il doit trouver les bonnes traces et aller jusqu'à l'église. S'il suit des mauvaises traces jusqu'à un point précis,
+     là, il perd. » On ne perd donc jamais par maladresse : seulement en allant AU BOUT d'une mauvaise piste.
+   · « Fais en sorte que les traces ne soient pas énormes […] des traces de dinosaures » ; « que même en petit, on arrive à reconnaître
+     les traces des chats ; s'il faut, tu éloignes un peu les coussinets ».
+   · « Tu fais démarrer le jeu depuis chez Odette. »
+   · Pas de code pour dire quelle trace suivre : le Sage a le carnet d'Odette (chats.js : les sept chats, leurs traces), il le dit à
+     voix haute. Ici, rien ne dit laquelle est la bonne.
+
+   COMMENT C'EST FAIT
+   · Un petit quartier vu du ciel : des rues en quadrillage, des pâtés de maisons entre elles. Le Pisteur ne marche que dans les rues
+     et les impasses. Le monde est tiré au hasard à chaque partie (les pistes, l'église, le sens gauche-droite) : on ne l'apprend pas
+     par cœur.
+   · Chez Odette (une impasse, en haut), du lait renversé : les sept chats y ont trempé les pattes. Chaque chat laisse sa piste de
+     petites traces blanches, dans son couloir de la rue (deux pistes qui prennent la même rue marchent côte à côte : on peut comparer).
+   · La piste de Moustache mène à l'église, tout au bout : la grille de la crypte. Y arriver = gagné (même sans avoir suivi la piste :
+     « il suffit de trouver l'église »).
+   · Chaque autre piste finit dans une impasse (chez le voisin, derrière la boulangerie, au lavoir, au pied d'un arbre, sous la
+     carriole de Fortuné, dans les choux de Basile). Y arriver = perdu : « ce n'était pas Moustache, c'était Pompon ! »
+   · On pose le doigt : le Pisteur marche vers lui. On lève le doigt : il s'arrête. (Au clavier : les flèches.)
+   · Le niveau ne change que le nombre de fausses pistes (3 à 6) et la taille du quartier ; Noisette, à cinq doigts — presque
+     Moustache — n'arrive qu'à partir du niveau 5.
+
+   Le dessin est fait sur un canevas (le monde bouge sous le Pisteur, qui reste au milieu) ; le Pisteur est celui de « Se cacher »,
+   vu du dessus (MJ.DESSUS, mj-cachette.js). Chargé APRÈS chats.js, mj-core.js et mj-cachette.js.
+   Pour les essais : la zone porte __pistage ({etat(), monde, aller(x, y), poser(x, y)}).
+   ========================================================== */
+(function(){
+'use strict';
+var MJ = window.MJ, CH = window.CHATS;
+if(!MJ || !CH){ if(window.console) console.error('mj-pistage : mj-core.js et chats.js doivent être chargés avant.'); return; }
+var U = MJ.util;
+var K = '#24182e';
+var RUE = 78, PASX = 318, PASY = 276, BORD = 190, IMPASSE = 118;   /* la largeur d'une rue, l'écart entre deux carrefours, la marge du monde, la longueur d'une impasse */
+var VITESSE = 104;        /* le pas du Pisteur (unités du monde par seconde) */
+var PAS_CHAT = 21;        /* l'écart entre deux traces d'une même piste */
+var TRACE = 5.1;          /* la demi-largeur d'une trace (le Pisteur fait 26 de large : une trace est petite, mais on compte ses doigts) */
+var R_FIN = 34;           /* à cette distance du bout d'une piste, on y est */
+var COULOIRS = [-27, -18, -9, 0, 9, 18, 27];
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function reduit(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+
+/* ---------- les bouts des fausses pistes ---------- */
+var LIEUX = {
+  voisin:{nom:'chez le voisin', t:'Ces traces s\'arrêtent chez le voisin, devant six gamelles vides.'},
+  boulangerie:{nom:'derrière la boulangerie', t:'Ces traces s\'arrêtent derrière la boulangerie, le nez dans la farine.'},
+  lavoir:{nom:'au lavoir', t:'Ces traces s\'arrêtent au bord du lavoir.'},
+  arbre:{nom:'au pied d\'un arbre', t:'Ces traces s\'arrêtent au pied d\'un arbre : ce chat-là dort tout là-haut.'},
+  carriole:{nom:'sous la carriole de Fortuné', t:'Ces traces s\'arrêtent sous la carriole de Fortuné.'},
+  potager:{nom:'dans le potager', t:'Ces traces s\'arrêtent dans les choux de Basile.'}
+};
+
+/* ==========================================================
+   LE MONDE : le quadrillage, les impasses, les pistes, les traces
+   ========================================================== */
+function creerMonde(p){
+  var NX = p.nx, NY = p.ny, miroir = Math.random() < .5;
+  function nx(i){ return BORD + (miroir ? NX - 1 - i : i) * PASX; }
+  function ny(j){ return BORD + IMPASSE + j * PASY; }
+  var Wm = BORD * 2 + (NX - 1) * PASX, Hm = BORD * 2 + IMPASSE + (NY - 1) * PASY + IMPASSE;
+  var rues = [], i, j;
+  for(i = 0; i < NX; i++) rues.push({x:nx(i) - RUE / 2, y:ny(0) - RUE / 2, w:RUE, h:(NY - 1) * PASY + RUE});
+  for(j = 0; j < NY; j++) rues.push({x:Math.min(nx(0), nx(NX - 1)) - RUE / 2, y:ny(j) - RUE / 2, w:(NX - 1) * PASX + RUE, h:RUE});
+  /* une impasse : depuis un point d'une rue (mx, my), dans la direction (dx, dy), sur IMPASSE */
+  function impasse(mx, my, dx, dy, lg){
+    lg = lg || IMPASSE;
+    var r = dx ? {x:dx > 0 ? mx : mx - lg, y:my - RUE / 2, w:lg, h:RUE} : {x:mx - RUE / 2, y:dy > 0 ? my : my - lg, w:RUE, h:lg};
+    rues.push(r);
+    return {mx:mx, my:my, dx:dx, dy:dy, fx:mx + dx * (lg - 26), fy:my + dy * (lg - 26), bx:mx + dx * lg, by:my + dy * lg};
+  }
+  /* chez Odette : une impasse au-dessus du premier carrefour */
+  var odette = impasse(nx(0), ny(0) - RUE / 2, 0, -1);
+  /* l'église : au bout du quartier, à l'opposé — après le dernier carrefour, vers le bas ou vers le côté (tiré au hasard) */
+  var eg = U.choix([[NX - 1, NY - 1, 'bas'], [NX - 1, NY - 1, 'cote'], [NX - 1, NY - 2, 'cote'], [NX - 2, NY - 1, 'bas']]);
+  var sx = miroir ? -1 : 1;
+  var eglise = eg[2] === 'bas' ? impasse(nx(eg[0]), ny(eg[1]) + RUE / 2, 0, 1, IMPASSE + 14) : impasse(nx(eg[0]) + sx * RUE / 2, ny(eg[1]), sx, 0, IMPASSE + 14);
+  eglise.noeud = [eg[0], eg[1]];
+
+  /* ---- les arêtes où brancher une impasse (au milieu d'un bout de rue, vers l'intérieur d'un pâté de maisons) ---- */
+  var libres = [];
+  for(i = 0; i < NX - 1; i++) for(j = 0; j < NY; j++){   /* un bout de rue horizontal : l'impasse monte ou descend */
+    if(j > 0) libres.push({a:[i, j], b:[i + 1, j], mx:(nx(i) + nx(i + 1)) / 2, my:ny(j) - RUE / 2, dx:0, dy:-1});
+    if(j < NY - 1) libres.push({a:[i, j], b:[i + 1, j], mx:(nx(i) + nx(i + 1)) / 2, my:ny(j) + RUE / 2, dx:0, dy:1});
+  }
+  for(i = 0; i < NX; i++) for(j = 0; j < NY - 1; j++){   /* un bout de rue vertical : l'impasse part d'un côté ou de l'autre */
+    var g = Math.min(nx(0), nx(NX - 1)), d = Math.max(nx(0), nx(NX - 1));
+    if(nx(i) > g) libres.push({a:[i, j], b:[i, j + 1], mx:nx(i) - RUE / 2, my:(ny(j) + ny(j + 1)) / 2, dx:-1, dy:0});
+    if(nx(i) < d) libres.push({a:[i, j], b:[i, j + 1], mx:nx(i) + RUE / 2, my:(ny(j) + ny(j + 1)) / 2, dx:1, dy:0});
+  }
+  function dist(n){ return n[0] + n[1]; }
+  libres = U.melanger(libres);
+  /* deux impasses ne se font pas face dans le même pâté (elles se toucheraient), et on garde de la place autour de l'église */
+  var prises = [];
+  function loin(e){
+    return prises.every(function(q){ return Math.hypot(q.mx + q.dx * IMPASSE - (e.mx + e.dx * IMPASSE), q.my + q.dy * IMPASSE - (e.my + e.dy * IMPASSE)) > RUE * 1.6; }) &&
+      Math.hypot(eglise.bx - (e.mx + e.dx * IMPASSE), eglise.by - (e.my + e.dy * IMPASSE)) > RUE * 2.2;
+  }
+  /* ---- les chats de cette partie : Moustache, et p.faux fausses pistes ---- */
+  var autres = CH.liste.filter(function(c){ return c.id !== 'moustache' && (p.cinq || c.id !== 'noisette'); });
+  autres = U.melanger(autres).slice(0, p.faux);
+  if(p.cinq && !autres.some(function(c){ return c.id === 'noisette'; })) autres[0] = CH.par.noisette;   /* à partir du niveau 5, Noisette est toujours là */
+  autres = U.melanger(autres);
+  var noms = U.melanger(Object.keys(LIEUX).filter(function(k){ return k !== 'voisin'; }));
+  var couloirs = U.melanger(COULOIRS.slice());
+  var pistes = [], fins = [], reserves = [];
+  /* un chemin de carrefour en carrefour, de (0,0) à n : les pas à droite et les pas en bas, mélangés */
+  function chemin(n){
+    var l = [], k; for(k = 0; k < n[0]; k++) l.push([1, 0]); for(k = 0; k < n[1]; k++) l.push([0, 1]);
+    l = U.melanger(l);
+    var c = [0, 0], r = [[0, 0]]; l.forEach(function(m){ c = [c[0] + m[0], c[1] + m[1]]; r.push(c); });
+    return r;
+  }
+  /* la ligne brisée d'une piste, dans son couloir o : de la porte d'Odette, par les carrefours, jusqu'au bout de son impasse */
+  function ligne(noeuds, o, vers, fin){
+    var pts = [{x:odette.fx + o, y:odette.fy}], sens = 'v', k, a, b, s2;   /* (l'impasse d'Odette descend : on arrive au premier carrefour en vertical) */
+    for(k = 0; k < noeuds.length - 1; k++){
+      a = noeuds[k]; b = noeuds[k + 1]; s2 = a[0] !== b[0] ? 'h' : 'v';
+      if(s2 !== sens){ pts.push({x:nx(a[0]) + o, y:ny(a[1]) + o}); sens = s2; }
+    }
+    var der = noeuds[noeuds.length - 1];
+    /* jusqu'à l'entrée de l'impasse (vers.mx, vers.my), puis dedans */
+    var sImp = vers.dx ? 'h' : 'v';
+    if(vers.noeud){   /* l'église : son impasse part du dernier carrefour */
+      if(sImp !== sens) pts.push({x:nx(der[0]) + o, y:ny(der[1]) + o});
+    } else {
+      var sRue = vers.dx ? 'v' : 'h';   /* la rue où s'ouvre l'impasse */
+      if(sRue !== sens){ pts.push({x:nx(der[0]) + o, y:ny(der[1]) + o}); sens = sRue; }
+      pts.push(sRue === 'h' ? {x:vers.mx + o, y:ny(der[1]) + o} : {x:nx(der[0]) + o, y:vers.my + o});
+    }
+    pts.push(sImp === 'h' ? {x:fin.fx, y:fin.fy + o * .55} : {x:fin.fx + o * .55, y:fin.fy});
+    return pts;
+  }
+  /* Moustache : jusqu'à l'église */
+  var oM = couloirs.pop();
+  pistes.push({chat:'moustache', bon:true, pts:ligne(chemin(eglise.noeud), oM, eglise, eglise)});
+  /* les autres : chacun son impasse. Le premier va chez le voisin, tout près ; les suivants de plus en plus loin. */
+  autres.forEach(function(c, n){
+    var e = null, k;
+    for(k = 0; k < libres.length && !e; k++){
+      var q = libres[k], da = dist(q.a), db = dist(q.b), pres = Math.min(da, db);
+      if(!loin(q)) continue;
+      if(n === 0 ? pres > 1 : pres < 1) continue;
+      e = q; libres.splice(k, 1);
+    }
+    if(!e) return;
+    prises.push(e);
+    var imp = impasse(e.mx, e.my, e.dx, e.dy);
+    var lieu = n === 0 ? 'voisin' : noms[(n - 1) % noms.length];
+    /* on arrive par le carrefour le plus proche de chez Odette */
+    var dep = dist(e.a) <= dist(e.b) ? e.a : e.b;
+    var o = couloirs.pop();
+    pistes.push({chat:c.id, bon:false, lieu:lieu, pts:ligne(chemin(dep), o, e, imp)});
+    fins.push({x:imp.fx, y:imp.fy, bx:imp.bx, by:imp.by, dx:e.dx, dy:e.dy, lieu:lieu, chat:c.id});
+    reserves.push({x:imp.bx + e.dx * 34 - 60, y:imp.by + e.dy * 34 - 60, w:120, h:120});
+  });
+  /* ---- les traces : on suit chaque ligne (coins arrondis), une patte à gauche, une patte à droite ---- */
+  var traces = [], CASE = 220, cases = {};
+  pistes.forEach(function(P){
+    var pts = arrondir(P.pts, 20), s = 14, n = 0, L = longueur(pts);
+    P.longueur = L;
+    while(s < L - 6){
+      var q = point(pts, s), cote = n % 2 ? 1 : -1;
+      var x = q.x + Math.cos(q.a + Math.PI / 2) * 3.4 * cote + U.rand(-.9, .9), y = q.y + Math.sin(q.a + Math.PI / 2) * 3.4 * cote + U.rand(-.9, .9);
+      /* le lait s'use : les traces pâlissent un peu en s'éloignant (jamais au point de disparaître) */
+      var al = Math.max(.74, 1 - s / 2600);
+      var t = {x:x, y:y, a:q.a + Math.PI / 2 + U.rand(-.12, .12), c:P.chat, al:al, k:U.rand(.94, 1.06)};
+      traces.push(t);
+      var cle = Math.floor(x / CASE) + ':' + Math.floor(y / CASE); (cases[cle] = cases[cle] || []).push(t);
+      s += PAS_CHAT * (CH.par[P.chat].trace.k < .8 ? .8 : 1) * U.rand(.93, 1.07); n++;
+    }
+  });
+  /* ---- les pâtés de maisons (pour le décor) : entre les rues ---- */
+  var pates = [], xs = [], ys = [];
+  for(i = 0; i < NX; i++) xs.push(nx(i)); xs.sort(function(a, b){ return a - b; });
+  for(j = 0; j < NY; j++) ys.push(ny(j));
+  for(i = 0; i < NX - 1; i++) for(j = 0; j < NY - 1; j++) pates.push(decorPate(xs[i] + RUE / 2, ys[j] + RUE / 2, PASX - RUE, PASY - RUE, rues.concat(reserves)));
+  return {W:Wm, H:Hm, rues:rues, odette:odette, eglise:eglise, pistes:pistes, fins:fins, traces:traces, cases:cases, CASE:CASE, pates:pates, miroir:miroir,
+    depart:{x:odette.fx, y:odette.fy + 30}};
+}
+function longueur(pts){ var L = 0; for(var i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); return L; }
+function point(pts, s){
+  for(var i = 1; i < pts.length; i++){
+    var d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+    if(s <= d || i === pts.length - 1){ var u = d ? Math.min(1, s / d) : 0; return {x:pts[i - 1].x + (pts[i].x - pts[i - 1].x) * u, y:pts[i - 1].y + (pts[i].y - pts[i - 1].y) * u, a:Math.atan2(pts[i].y - pts[i - 1].y, pts[i].x - pts[i - 1].x)}; }
+    s -= d;
+  }
+  return {x:pts[0].x, y:pts[0].y, a:0};
+}
+/* les coins d'une ligne brisée, arrondis (un chat ne tourne pas à angle droit) */
+function arrondir(pts, r){
+  if(pts.length < 3) return pts.slice();
+  var out = [pts[0]];
+  for(var i = 1; i < pts.length - 1; i++){
+    var a = pts[i - 1], b = pts[i], c = pts[i + 1];
+    var d1 = Math.hypot(b.x - a.x, b.y - a.y), d2 = Math.hypot(c.x - b.x, c.y - b.y), rr = Math.min(r, d1 / 2.2, d2 / 2.2);
+    if(!d1 || !d2){ out.push(b); continue; }
+    var p1 = {x:b.x + (a.x - b.x) * rr / d1, y:b.y + (a.y - b.y) * rr / d1}, p2 = {x:b.x + (c.x - b.x) * rr / d2, y:b.y + (c.y - b.y) * rr / d2};
+    for(var k = 0; k <= 4; k++){ var u = k / 4, v = 1 - u; out.push({x:v * v * p1.x + 2 * v * u * b.x + u * u * p2.x, y:v * v * p1.y + 2 * v * u * b.y + u * u * p2.y}); }
+  }
+  out.push(pts[pts.length - 1]);
+  return out;
+}
+/* le décor d'un pâté de maisons : des toits et des arbres, là où aucune impasse ne passe */
+var TOITS = ['#c8553d', '#b8643a', '#8a5a8c', '#6a7fb0', '#c9973a', '#7a9a62', '#a8503a'];
+function decorPate(x, y, w, h, rues){
+  var o = {x:x, y:y, w:w, h:h, maisons:[], arbres:[]}, essais = 0;
+  function libre(r){
+    return !rues.some(function(q){ return r.x < q.x + q.w + 6 && r.x + r.w > q.x - 6 && r.y < q.y + q.h + 6 && r.y + r.h > q.y - 6; }) &&
+      !o.maisons.some(function(q){ return r.x < q.x + q.w + 8 && r.x + r.w > q.x - 8 && r.y < q.y + q.h + 8 && r.y + r.h > q.y - 8; });
+  }
+  while(o.maisons.length < 4 && essais++ < 40){
+    var mw = U.rand(64, 104), mh = U.rand(50, 82), r = {x:x + 8 + Math.random() * Math.max(1, w - mw - 16), y:y + 8 + Math.random() * Math.max(1, h - mh - 16), w:mw, h:mh};
+    if(libre(r)){ r.c = U.choix(TOITS); r.sens = mw > mh ? 'h' : 'v'; r.chem = [U.rand(.2, .8), U.rand(.2, .8)]; o.maisons.push(r); }
+  }
+  essais = 0;
+  while(o.arbres.length < 5 && essais++ < 40){
+    var ar = U.rand(13, 21), a = {x:x + ar + Math.random() * (w - 2 * ar), y:y + ar + Math.random() * (h - 2 * ar), r:ar};
+    if(libre({x:a.x - ar, y:a.y - ar, w:2 * ar, h:2 * ar})) o.arbres.push(a);
+  }
+  return o;
+}
+
+/* ==========================================================
+   LE DESSIN (sur le canevas, en unités du monde)
+   ========================================================== */
+function pave(){   /* le motif des pavés : une petite tuile, répétée */
+  var c = document.createElement('canvas'); c.width = c.height = 96;
+  var x = c.getContext('2d'); x.fillStyle = '#b7a58a'; x.fillRect(0, 0, 96, 96);
+  var rnd = (function(s){ return function(){ s = (s * 16807) % 2147483647; return s / 2147483647; }; })(7);
+  for(var j = 0; j < 4; j++) for(var i = 0; i < 4; i++){
+    var px = i * 24 + (j % 2 ? 12 : 0), py = j * 24, t = rnd();
+    x.fillStyle = t < .33 ? '#c2b196' : t < .66 ? '#ae9c82' : '#bcab90';
+    for(var k = -1; k <= 1; k++){ x.beginPath(); rr(x, px + 2 + k * 96, py + 2, 20, 20, 6); x.fill(); }
+  }
+  return c;
+}
+function rr(x, a, b, w, h, r){ x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+function dessinerMaison(x, m){
+  x.fillStyle = 'rgba(11,26,16,.28)'; x.fillRect(m.x + 5, m.y + 6, m.w, m.h);
+  x.fillStyle = m.c; x.strokeStyle = K; x.lineWidth = 2.6; x.fillRect(m.x, m.y, m.w, m.h); x.strokeRect(m.x, m.y, m.w, m.h);
+  x.fillStyle = 'rgba(255,255,255,.16)';
+  if(m.sens === 'h'){ x.fillRect(m.x, m.y, m.w, m.h / 2); x.beginPath(); x.moveTo(m.x, m.y + m.h / 2); x.lineTo(m.x + m.w, m.y + m.h / 2); }
+  else { x.fillRect(m.x, m.y, m.w / 2, m.h); x.beginPath(); x.moveTo(m.x + m.w / 2, m.y); x.lineTo(m.x + m.w / 2, m.y + m.h); }
+  x.lineWidth = 2; x.stroke();
+  /* la cheminée */
+  var cx = m.x + m.w * m.chem[0], cy = m.y + m.h * m.chem[1];
+  x.fillStyle = '#6a4a3a'; x.lineWidth = 1.8; x.fillRect(cx - 5, cy - 5, 10, 10); x.strokeRect(cx - 5, cy - 5, 10, 10); x.fillStyle = '#2a1e1a'; x.fillRect(cx - 2.4, cy - 2.4, 4.8, 4.8);
+}
+function dessinerArbre(x, a){
+  x.fillStyle = 'rgba(11,26,16,.25)'; x.beginPath(); x.arc(a.x + 4, a.y + 5, a.r, 0, 6.2832); x.fill();
+  x.fillStyle = '#3f8a4c'; x.strokeStyle = K; x.lineWidth = 2.4; x.beginPath(); x.arc(a.x, a.y, a.r, 0, 6.2832); x.fill(); x.stroke();
+  x.fillStyle = '#5aa862'; x.beginPath(); x.arc(a.x - a.r * .28, a.y - a.r * .3, a.r * .52, 0, 6.2832); x.fill();
+}
+/* le bout d'une fausse piste : (0, 0) le fond de l'impasse, l'impasse arrive par le bas (on tourne le dessin) */
+function dessinerLieu(x, F){
+  x.save(); x.translate(F.bx, F.by); x.rotate(Math.atan2(F.dy, F.dx) - Math.PI / 2 + Math.PI);
+  x.strokeStyle = K; x.lineWidth = 2.4;
+  var i;
+  if(F.lieu === 'voisin' || F.lieu === 'boulangerie'){   /* la maison, derrière sa porte */
+    x.fillStyle = 'rgba(11,26,16,.28)'; x.fillRect(-49, -68, 106, 68);
+    x.fillStyle = F.lieu === 'voisin' ? '#6a7fb0' : '#c9973a'; x.fillRect(-54, -74, 108, 68); x.strokeRect(-54, -74, 108, 68);
+    x.fillStyle = 'rgba(255,255,255,.16)'; x.fillRect(-54, -74, 108, 34); x.beginPath(); x.moveTo(-54, -40); x.lineTo(54, -40); x.stroke();
+    x.fillStyle = '#6a4a3a'; x.fillRect(22, -62, 11, 11); x.strokeRect(22, -62, 11, 11);
+  }
+  if(F.lieu === 'voisin'){   /* une porte, un paillasson, six gamelles */
+    x.fillStyle = '#7a5232'; x.fillRect(-17, -6, 34, 12); x.strokeRect(-17, -6, 34, 12); x.fillStyle = '#ffd36a'; x.beginPath(); x.arc(10, 0, 2.2, 0, 6.2832); x.fill();
+    x.fillStyle = '#b0503a'; x.fillRect(-15, 9, 30, 12); x.strokeRect(-15, 9, 30, 12);
+    for(i = 0; i < 6; i++){ var gx = -30 + (i % 3) * 12 + (i > 2 ? 54 : 0), gy = 30 + (i % 2) * 3; x.fillStyle = '#5a8fc8'; x.beginPath(); x.arc(gx > 12 ? gx - 24 : gx, gy, 5, 0, 6.2832); x.fill(); x.stroke(); x.fillStyle = '#2f4f78'; x.beginPath(); x.arc(gx > 12 ? gx - 24 : gx, gy, 2.6, 0, 6.2832); x.fill(); }
+  } else if(F.lieu === 'boulangerie'){   /* la porte de derrière, des sacs de farine, de la farine par terre */
+    x.fillStyle = '#8a6a4a'; x.fillRect(-17, -6, 34, 12); x.strokeRect(-17, -6, 34, 12);
+    x.fillStyle = 'rgba(255,255,255,.85)'; x.beginPath(); x.ellipse(2, 26, 24, 13, 0, 0, 6.2832); x.fill();
+    [[-20, 16], [18, 14], [-2, 12]].forEach(function(q){ x.fillStyle = '#f0e6d0'; x.beginPath(); x.ellipse(q[0], q[1], 9, 11, .2, 0, 6.2832); x.fill(); x.stroke(); x.fillStyle = '#c8b48a'; x.fillRect(q[0] - 4, q[1] - 2, 8, 2.4); });
+  } else if(F.lieu === 'lavoir'){   /* le bassin */
+    x.fillStyle = '#8a8478'; rrF(x, -30, -4, 60, 44, 6); x.fillStyle = '#4f9fd8'; rrF(x, -24, 2, 48, 32, 4);
+    x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(-16, 12); x.quadraticCurveTo(-8, 8, 0, 12); x.quadraticCurveTo(8, 16, 16, 12); x.moveTo(-12, 24); x.quadraticCurveTo(-4, 20, 4, 24); x.stroke();
+  } else if(F.lieu === 'arbre'){   /* un grand arbre, et un bout de queue qui dépasse */
+    x.fillStyle = '#2f7040'; x.beginPath(); x.arc(0, 8, 30, 0, 6.2832); x.fill(); x.stroke();
+    x.fillStyle = '#4c9a58'; x.beginPath(); x.arc(-8, 0, 15, 0, 6.2832); x.fill(); x.beginPath(); x.arc(12, 14, 11, 0, 6.2832); x.fill();
+    x.strokeStyle = K; x.lineWidth = 6; x.lineCap = 'round'; x.beginPath(); x.moveTo(14, 30); x.quadraticCurveTo(26, 40, 20, 50); x.stroke();
+    x.strokeStyle = '#f4f1ea'; x.lineWidth = 3.4; x.beginPath(); x.moveTo(14, 30); x.quadraticCurveTo(26, 40, 20, 50); x.stroke();
+  } else if(F.lieu === 'carriole'){   /* la carriole : sa bâche, ses deux roues */
+    x.fillStyle = '#3a2c20'; x.fillRect(-26, 2, 6, 30); x.fillRect(20, 2, 6, 30);
+    x.fillStyle = '#d8a23c'; rrF(x, -20, -2, 40, 38, 5); x.fillStyle = '#c0453a'; for(i = 0; i < 3; i++) x.fillRect(-20 + 4 + i * 13, -2, 6, 38);
+    x.strokeStyle = K; x.lineWidth = 2.4; x.beginPath(); rr(x, -20, -2, 40, 38, 5); x.stroke();
+  } else {   /* le potager : des rangs de choux */
+    x.fillStyle = '#7a5a3a'; rrF(x, -30, -2, 60, 46, 4);
+    for(i = 0; i < 9; i++){ var cx = -20 + (i % 3) * 20, cy = 8 + Math.floor(i / 3) * 14; x.fillStyle = '#6fbf5a'; x.strokeStyle = K; x.lineWidth = 1.6; x.beginPath(); x.arc(cx, cy, 6, 0, 6.2832); x.fill(); x.stroke(); x.fillStyle = '#a5dc8a'; x.beginPath(); x.arc(cx - 1.4, cy - 1.4, 2.6, 0, 6.2832); x.fill(); }
+  }
+  x.restore();
+}
+function rrF(x, a, b, w, h, r){ x.beginPath(); rr(x, a, b, w, h, r); x.fill(); x.strokeStyle = K; x.lineWidth = 2.4; x.stroke(); }
+/* chez Odette : la porte, le bol renversé, la flaque de lait */
+function dessinerOdette(x, O){
+  x.save(); x.translate(O.bx, O.by);
+  x.fillStyle = '#8a5a8c'; x.strokeStyle = K; x.lineWidth = 2.6; x.fillRect(-RUE / 2 - 6, -34, RUE + 12, 34); x.strokeRect(-RUE / 2 - 6, -34, RUE + 12, 34);
+  x.fillStyle = '#6a4a2e'; x.fillRect(-13, -12, 26, 12); x.strokeRect(-13, -12, 26, 12); x.fillStyle = '#ffd36a'; x.beginPath(); x.arc(8, -6, 2.2, 0, 6.2832); x.fill();
+  /* la canne, posée contre la porte */
+  x.strokeStyle = K; x.lineWidth = 4.4; x.lineCap = 'round'; x.beginPath(); x.moveTo(-24, -4); x.lineTo(-22, 16); x.stroke(); x.strokeStyle = '#b98a4a'; x.lineWidth = 2.2; x.beginPath(); x.moveTo(-24, -4); x.lineTo(-22, 16); x.stroke();
+  /* le lait */
+  x.fillStyle = '#fffdf4'; x.beginPath(); x.ellipse(0, 24, 34, 15, 0, 0, 6.2832); x.fill(); x.beginPath(); x.ellipse(-22, 34, 12, 7, .4, 0, 6.2832); x.fill(); x.beginPath(); x.ellipse(24, 33, 10, 6, -.3, 0, 6.2832); x.fill();
+  x.fillStyle = '#c9a26a'; x.strokeStyle = K; x.lineWidth = 2; x.beginPath(); x.ellipse(14, 14, 8, 6, .5, 0, 6.2832); x.fill(); x.stroke();
+  x.restore();
+}
+/* l'église : son mur de pierre au fond de l'impasse, le clocher, et la grille de la crypte */
+function dessinerEglise(x, E, t){
+  x.save(); x.translate(E.bx, E.by); x.rotate(Math.atan2(E.dy, E.dx) - Math.PI / 2 + Math.PI);
+  x.strokeStyle = K; x.lineWidth = 3;
+  x.fillStyle = 'rgba(11,26,16,.3)'; x.fillRect(-84, -150, 180, 156);
+  x.fillStyle = '#9a968c'; x.fillRect(-90, -156, 180, 156); x.strokeRect(-90, -156, 180, 156);      /* la nef */
+  x.fillStyle = '#5f6f95'; x.fillRect(-90, -156, 180, 132); x.strokeRect(-90, -156, 180, 132);      /* son toit d'ardoise */
+  x.beginPath(); x.moveTo(0, -156); x.lineTo(0, -24); x.lineWidth = 2; x.stroke();
+  x.fillStyle = '#b4b0a4'; x.lineWidth = 3; x.fillRect(34, -112, 62, 62); x.strokeRect(34, -112, 62, 62);   /* le clocher */
+  x.fillStyle = '#44557a'; x.beginPath(); x.moveTo(34, -112); x.lineTo(65, -81); x.lineTo(96, -112); x.closePath(); x.fill(); x.stroke();
+  x.beginPath(); x.moveTo(34, -50); x.lineTo(65, -81); x.lineTo(96, -50); x.closePath(); x.fillStyle = '#566890'; x.fill(); x.stroke();
+  x.fillStyle = '#e8c24a'; x.beginPath(); x.arc(65, -81, 5, 0, 6.2832); x.fill(); x.stroke();
+  /* la grille de la crypte, au pied du mur : un escalier qui s'enfonce sous l'église, des barreaux par-dessus */
+  x.fillStyle = '#8f8a80'; x.strokeStyle = K; x.lineWidth = 3; x.beginPath(); rr(x, -30, -40, 60, 46, 7); x.fill(); x.stroke();
+  x.fillStyle = '#17131f'; x.beginPath(); rr(x, -23, -34, 46, 34, 4); x.fill();
+  x.fillStyle = '#2c2638'; x.fillRect(-23, -12, 46, 7); x.fillStyle = '#231e2e'; x.fillRect(-23, -20, 46, 7);     /* deux marches, de plus en plus sombres */
+  /* une petite lueur qui bat, tout en bas */
+  x.fillStyle = 'rgba(255,220,120,' + (.2 + .12 * Math.sin(t * 2.2)).toFixed(3) + ')'; x.beginPath(); x.ellipse(0, -27, 15, 6, 0, 0, 6.2832); x.fill();
+  x.strokeStyle = '#c9c4b8'; x.lineWidth = 2.6; x.lineCap = 'round';
+  for(var i = -2; i <= 2; i++){ x.beginPath(); x.moveTo(i * 9, -33); x.lineTo(i * 9, -1); x.stroke(); }
+  x.beginPath(); x.moveTo(-22, -17); x.lineTo(22, -17); x.stroke();
+  x.strokeStyle = K; x.lineWidth = 2.4; x.beginPath(); rr(x, -23, -34, 46, 34, 4); x.stroke();
+  x.restore();
+}
+
+/* ==========================================================
+   LE JEU
+   ========================================================== */
+function jouer(zone, p, fin){
+  var M = creerMonde(p), fini = false, arrete = false;
+  zone.innerHTML = '<div class="pg" tabindex="0"><canvas class="pg-sol"></canvas><svg class="pg-heros" viewBox="-22 -22 44 44" aria-hidden="true"><g class="pg-h"></g></svg>' +
+    '<div class="pg-voile" aria-hidden="true"></div><div class="pg-dit"></div></div>';
+  var racine = zone.querySelector('.pg'), cv = racine.querySelector('.pg-sol'), ctx = cv.getContext('2d'), svgH = racine.querySelector('.pg-heros'), gH = racine.querySelector('.pg-h'), dit = racine.querySelector('.pg-dit');
+  var anim = null;
+  try{ if(MJ.DESSUS){ gH.innerHTML = MJ.DESSUS.pisteur(); anim = MJ.DESSUS.Bonhomme(gH); anim.poser({ph:0, amp:0, t:0}); } }catch(e){}
+  if(!gH.firstChild) gH.innerHTML = '<circle r="11" fill="#3f8f5a" stroke="' + K + '" stroke-width="2.4"/><circle cy="-3" r="6" fill="#f1c7a0" stroke="' + K + '" stroke-width="1.8"/>';
+  var W = 0, H = 0, dpr = 1, ech = 3, motif = null;
+  var pos = {x:M.depart.x, y:M.depart.y}, cap = Math.PI / 2, but = null, marche = 0, phase = 0, tPas = 0, aBouge = false, touches = {};
+  function mesurer(){
+    var r = racine.getBoundingClientRect(); if(!r.width || !r.height) return;
+    W = r.width; H = r.height; dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    /* l'échelle : on voit à peu près 5 Pisteurs de large sur un téléphone, davantage sur une tablette ; une trace fait toujours une
+       trentaine de points d'écran, pour qu'on compte ses doigts */
+    ech = U.borne(Math.min(W, H) / 150, 2.5, 3.5);
+    svgH.style.width = svgH.style.height = Math.round(44 * ech) + 'px';
+    motif = null;
+  }
+  var ro = window.ResizeObserver ? new ResizeObserver(mesurer) : null;
+  if(ro) ro.observe(racine); else window.addEventListener('resize', mesurer);
+  mesurer();
+  /* la phrase du conteur (une bulle, avec 🔊), tant qu'on n'a pas bougé */
+  function dire(t){
+    dit.innerHTML = t ? '<p>' + esc(t) + '</p>' : ''; dit.hidden = !t;
+    if(t && MJ.boutonLire) try{ dit.appendChild(MJ.boutonLire(t)); }catch(e){}
+  }
+  dire('Du lait renversé, et des pattes partout ! Le Pisteur suit ton doigt : tant qu\'il est posé, il marche.');
+
+  /* ----- où l'on peut marcher : dans une rue ou une impasse, à 9 unités des murs (les rues se touchent : on passe de l'une à l'autre) ----- */
+  function dansRue(x, y){ for(var i = 0; i < M.rues.length; i++){ var r = M.rues[i]; if(x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return true; } return false; }
+  function libre(x, y){ return dansRue(x - 9, y) && dansRue(x + 9, y) && dansRue(x, y - 9) && dansRue(x, y + 9); }
+  /* ----- le doigt ----- */
+  function viser(ev){ var r = racine.getBoundingClientRect(); but = {x:ev.clientX - r.left - W / 2, y:ev.clientY - r.top - H / 2}; }
+  function bas(ev){ if(fini || (ev.target && ev.target.closest && ev.target.closest('.mj-lire-mini, .b-lire, button'))) return; ev.preventDefault(); try{ racine.setPointerCapture(ev.pointerId); }catch(e){} viser(ev); }
+  function bouge(ev){ if(but && !fini){ ev.preventDefault(); viser(ev); } }
+  function haut(){ but = null; }
+  racine.addEventListener('pointerdown', bas); racine.addEventListener('pointermove', bouge);
+  racine.addEventListener('pointerup', haut); racine.addEventListener('pointercancel', haut); racine.addEventListener('lostpointercapture', haut);
+  racine.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  var FL = {ArrowLeft:[-1, 0], ArrowRight:[1, 0], ArrowUp:[0, -1], ArrowDown:[0, 1]};
+  function tBas(e){ if(FL[e.key]){ touches[e.key] = 1; e.preventDefault(); } }
+  function tHaut(e){ if(FL[e.key]) delete touches[e.key]; }
+  window.addEventListener('keydown', tBas); window.addEventListener('keyup', tHaut);
+
+  /* ----- la fin : au bout d'une piste ----- */
+  function finir(ok, F){
+    if(fini) return; fini = true; but = null;
+    if(ok){ U.son('magie'); dire('Les traces passent sous la grille de la crypte !'); }
+    else { U.son('ko'); dire(LIEUX[F.lieu].t); }
+    setTimeout(function(){
+      if(arrete) return;
+      if(ok) fin({reussi:true, score:1, message:'La crypte !', detail:'Les traces de Moustache passent sous la grille, au pied du clocher.'});
+      else fin({reussi:false, score:0, message:'Ce n\'était pas Moustache…', detail:LIEUX[F.lieu].t + ' C\'était ' + CH.par[F.chat].nom + ' !'});
+    }, ok ? 1500 : 1900);
+  }
+
+  /* ----- chaque image ----- */
+  var stop = U.boucle(function(dt, t){
+    if(arrete) return false;
+    if(!W) mesurer();
+    /* le pas : vers le doigt (ou les flèches du clavier) */
+    var vx = 0, vy = 0, f = 0;
+    if(!fini){
+      if(but){ var d = Math.hypot(but.x, but.y); if(d > 16){ f = Math.min(1, (d - 10) / 46); vx = but.x / d; vy = but.y / d; } }
+      else { Object.keys(touches).forEach(function(k){ vx += FL[k][0]; vy += FL[k][1]; }); var dk = Math.hypot(vx, vy); if(dk){ vx /= dk; vy /= dk; f = 1; } }
+    }
+    if(f > 0){
+      var pas = VITESSE * f * dt, nxp = pos.x + vx * pas, nyp = pos.y + vy * pas;
+      if(libre(nxp, nyp)){ pos.x = nxp; pos.y = nyp; }
+      else if(libre(nxp, pos.y)){ pos.x = nxp; f *= Math.abs(vx); }      /* contre un mur : on glisse le long */
+      else if(libre(pos.x, nyp)){ pos.y = nyp; f *= Math.abs(vy); }
+      else f = 0;
+      /* il tourne vers là où il va, sans à-coup */
+      var vise = Math.atan2(vy, vx), da = Math.atan2(Math.sin(vise - cap), Math.cos(vise - cap)); cap += da * Math.min(1, dt * 12);
+      if(!aBouge && f > 0){ aBouge = true; dire(''); }
+    }
+    marche += (f - marche) * Math.min(1, dt * 10);
+    phase += dt * 9.5 * marche;
+    if(marche > .5){ tPas += dt; if(tPas > .36){ tPas = 0; U.son('pas'); } }
+    if(anim) anim.poser({ph:phase, amp:marche, t:t});
+    gH.setAttribute('transform', 'rotate(' + (cap * 180 / Math.PI + 90).toFixed(1) + ')');
+    /* au bout d'une piste ? */
+    if(!fini){
+      if(Math.hypot(pos.x - M.eglise.fx, pos.y - M.eglise.fy) < R_FIN + 6) finir(true);
+      else for(var i = 0; i < M.fins.length; i++) if(Math.hypot(pos.x - M.fins[i].x, pos.y - M.fins[i].y) < R_FIN){ finir(false, M.fins[i]); break; }
+    }
+    dessiner(t);
+  });
+  function dessiner(t){
+    if(!W) return;
+    var s = ech * dpr, ox = cv.width / 2 - pos.x * s, oy = cv.height / 2 - pos.y * s;
+    var x0 = pos.x - W / 2 / ech - 40, x1 = pos.x + W / 2 / ech + 40, y0 = pos.y - H / 2 / ech - 40, y1 = pos.y + H / 2 / ech + 40;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#6fa85a'; ctx.fillRect(0, 0, cv.width, cv.height);     /* l'herbe des jardins */
+    ctx.setTransform(s, 0, 0, s, ox, oy);
+    /* les rues : un bord sombre, puis les pavés */
+    if(!motif){ try{ motif = ctx.createPattern(pave(), 'repeat'); }catch(e){ motif = '#b7a58a'; } }
+    var i, r;
+    ctx.fillStyle = '#7d6f5c';
+    for(i = 0; i < M.rues.length; i++){ r = M.rues[i]; if(r.x < x1 && r.x + r.w > x0 && r.y < y1 && r.y + r.h > y0) ctx.fillRect(r.x - 3, r.y - 3, r.w + 6, r.h + 6); }
+    ctx.fillStyle = motif;
+    for(i = 0; i < M.rues.length; i++){ r = M.rues[i]; if(r.x < x1 && r.x + r.w > x0 && r.y < y1 && r.y + r.h > y0) ctx.fillRect(r.x, r.y, r.w, r.h); }
+    /* les maisons et les arbres des pâtés qu'on voit */
+    for(i = 0; i < M.pates.length; i++){
+      var P = M.pates[i]; if(P.x > x1 || P.x + P.w < x0 || P.y > y1 || P.y + P.h < y0) continue;
+      P.arbres.forEach(function(a){ dessinerArbre(ctx, a); }); P.maisons.forEach(function(m){ dessinerMaison(ctx, m); });
+    }
+    /* chez Odette, l'église, les bouts des fausses pistes */
+    if(M.odette.by > y0 - 60 && M.odette.by < y1 + 60 && M.odette.bx > x0 - 80 && M.odette.bx < x1 + 80) dessinerOdette(ctx, M.odette);
+    if(Math.abs(M.eglise.bx - pos.x) < (x1 - x0) / 2 + 220 && Math.abs(M.eglise.by - pos.y) < (y1 - y0) / 2 + 220) dessinerEglise(ctx, M.eglise, t);
+    for(i = 0; i < M.fins.length; i++){ var F = M.fins[i]; if(F.bx > x0 - 70 && F.bx < x1 + 70 && F.by > y0 - 70 && F.by < y1 + 70) dessinerLieu(ctx, F); }
+    /* les traces (par cases, pour ne regarder que celles qu'on voit) */
+    var cx0 = Math.floor(x0 / M.CASE), cx1 = Math.floor(x1 / M.CASE), cy0 = Math.floor(y0 / M.CASE), cy1 = Math.floor(y1 / M.CASE), a, b, l, k, T;
+    for(a = cx0; a <= cx1; a++) for(b = cy0; b <= cy1; b++){
+      l = M.cases[a + ':' + b]; if(!l) continue;
+      for(k = 0; k < l.length; k++){
+        T = l[k]; if(T.x < x0 || T.x > x1 || T.y < y0 || T.y > y1) continue;
+        CH.dessiner(ctx, T.c, T.x + .5, T.y + .6, T.a, TRACE * T.k, 'rgba(60,44,30,.3)', 1);    /* une ombre légère : la trace se détache des pavés */
+        CH.dessiner(ctx, T.c, T.x, T.y, T.a, TRACE * T.k, '#fffdf4', T.al);
+      }
+    }
+  }
+  /* pour les essais */
+  racine.__pistage = {monde:M, etat:function(){ return {x:pos.x, y:pos.y, fini:fini, ech:ech}; },
+    poser:function(x, y){ pos.x = x; pos.y = y; }, aller:function(vx, vy){ but = vx == null ? null : {x:vx, y:vy}; }, libre:libre};
+  return {arreter:function(){
+    arrete = true; try{ stop(); }catch(e){}
+    if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
+    window.removeEventListener('keydown', tBas); window.removeEventListener('keyup', tHaut);
+  }};
+}
+
+MJ.enregistrer('pistage', {
+  nom:'Suivre les traces', ic:'🐾', role:'pisteur',
+  consigne:'Plusieurs chats ont laissé leurs traces. Marche, regarde bien les pattes, et suis la bonne piste jusqu\'au bout. Au bout d\'une mauvaise piste, c\'est perdu.',
+  reglages:function(n, mods){
+    var p = {};
+    p.faux = Math.max(2, Math.min(6, (n <= 3 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : 6) - (mods.aide || 0)));
+    p.cinq = n >= 5;                      /* Noisette, à cinq doigts : presque Moustache */
+    p.nx = n <= 4 ? 4 : 5; p.ny = n <= 4 ? 3 : 4;
+    p.lignes = [{nom:'Fausses pistes', val:String(p.faux)}, {nom:'Un chat à cinq doigts', val:p.cinq ? 'oui' : 'non'}, {nom:'Le quartier', val:p.nx + ' rues sur ' + p.ny}];
+    return p;
+  },
+  jouer:jouer
+});
+MJ.PLEIN_ECRAN = MJ.PLEIN_ECRAN || {}; MJ.PLEIN_ECRAN.pistage = 1;
+MJ.LARGE = MJ.LARGE || {}; MJ.LARGE.pistage = 1;
+MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.pistage = 'Suis les bonnes traces jusqu\'au bout. Pas les autres !';
+
+/* ==========================================================
+   L'explication en images, avant de jouer (MJ.DEMOS.pistage) : le Pisteur au milieu, trois pistes de petites pattes qui se
+   séparent ; un doigt se pose, il marche vers lui ; au bout d'une piste, une grille ; au bout d'une autre, une croix.
+   ========================================================== */
+MJ.DEMOS = MJ.DEMOS || {};
+MJ.DEMOS.pistage = {w:340, h:190, f:function(el){
+  var W = 340, H = 190;
+  el.innerHTML = '<canvas width="' + W * 2 + '" height="' + H * 2 + '" style="width:' + W + 'px;height:' + H + 'px;display:block;border-radius:14px"></canvas>' +
+    '<svg viewBox="-22 -22 44 44" style="position:absolute;left:0;top:0;width:58px;height:58px;pointer-events:none"><g class="pgd-h"></g></svg><div class="pgd-doigt" style="position:absolute;left:0;top:0;font-size:30px;line-height:1;pointer-events:none">👆</div>';
+  el.style.position = 'relative';
+  var cv = el.querySelector('canvas'), x = cv.getContext('2d'), sv = el.querySelector('svg'), g = el.querySelector('.pgd-h'), doigt = el.querySelector('.pgd-doigt'), anim = null;
+  try{ if(MJ.DESSUS){ g.innerHTML = MJ.DESSUS.pisteur(); anim = MJ.DESSUS.Bonhomme(g); } }catch(e){}
+  /* trois pistes : celle du milieu va à la grille (à droite), une monte vers une impasse (une croix), une descend */
+  var A = [{c:'moustache', pts:[{x:40, y:96}, {x:150, y:100}, {x:300, y:100}]}, {c:'pompon', pts:[{x:40, y:88}, {x:140, y:86}, {x:150, y:30}]}, {c:'caramel', pts:[{x:40, y:106}, {x:200, y:112}, {x:210, y:168}]}];
+  var motif = null;
+  function fond(){
+    x.setTransform(2, 0, 0, 2, 0, 0);
+    x.fillStyle = '#6fa85a'; x.fillRect(0, 0, W, H);
+    if(!motif){ try{ motif = x.createPattern(pave(), 'repeat'); }catch(e){ motif = '#b7a58a'; } }
+    x.fillStyle = '#7d6f5c'; x.fillRect(0, 68, W, 64); x.fillRect(122, 0, 56, 70); x.fillRect(182, 130, 56, 60);
+    x.fillStyle = motif; x.fillRect(0, 71, W, 58); x.fillRect(125, 0, 50, 72); x.fillRect(185, 128, 50, 62);
+    A.forEach(function(P){
+      var pts = arrondir(P.pts, 16), L = longueur(pts), s = 8, n = 0;
+      while(s < L - 4){ var q = point(pts, s), c = n % 2 ? 1 : -1; CH.dessiner(x, P.c, q.x + Math.cos(q.a + 1.5708) * 3.2 * c, q.y + Math.sin(q.a + 1.5708) * 3.2 * c, q.a + 1.5708, 6.6, '#fffdf4', 1); s += 19; n++; }
+    });
+    /* la grille, au bout */
+    x.fillStyle = '#17131f'; x.strokeStyle = K; x.lineWidth = 2.4; x.beginPath(); x.moveTo(322, 84); x.lineTo(310, 84); x.arc(310, 100, 16, -1.5708, 1.5708, true); x.lineTo(322, 116); x.closePath(); x.fill(); x.stroke();
+    x.strokeStyle = '#8f8a80'; x.lineWidth = 1.8; [90, 96, 102, 108].forEach(function(y){ x.beginPath(); x.moveTo(300, y); x.lineTo(322, y); x.stroke(); });
+    /* les croix, au bout des deux autres */
+    x.strokeStyle = '#e5484d'; x.lineWidth = 5; x.lineCap = 'round'; [[150, 18], [210, 178]].forEach(function(q){ x.beginPath(); x.moveTo(q[0] - 8, q[1] - 8); x.lineTo(q[0] + 8, q[1] + 8); x.moveTo(q[0] + 8, q[1] - 8); x.lineTo(q[0] - 8, q[1] + 8); x.stroke(); });
+  }
+  fond();
+  var pts = arrondir(A[0].pts, 16), L = longueur(pts);
+  function image(u){
+    var q = point(pts, 4 + (L - 36) * u), d = point(pts, Math.min(L, 4 + (L - 36) * u + 62));
+    sv.style.transform = 'translate(' + (q.x - 29) + 'px,' + (q.y - 29) + 'px)'; g.setAttribute('transform', 'rotate(' + (q.a * 180 / Math.PI + 90).toFixed(1) + ')');
+    doigt.style.transform = 'translate(' + (d.x - 12) + 'px,' + (d.y - 2) + 'px)';
+    if(anim) anim.poser({ph:u * 40, amp:u > 0 && u < 1 ? 1 : 0, t:u * 5});
+  }
+  if(reduit()){ image(.45); return {arreter:function(){}}; }
+  var t0 = null, arr = false;
+  (function tic(ts){ if(arr) return; if(t0 === null) t0 = ts; var u = ((ts - t0) / 1000 % 5.4) / 4.2; image(Math.min(1, u)); requestAnimationFrame(tic); })(performance.now());
+  return {arreter:function(){ arr = true; }};
+}};
+})();
+
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-gateau-dessins.js ===== */
 ;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
@@ -28504,8 +29217,13 @@ var DIT = {
   plein:'Stop ! Le gâteau n\'en peut plus. Une de plus, et il s\'écroule !',
   minute:'Plus qu\'une minute ! Gaspard a déjà sorti les assiettes.',
   pinceau:'Un pinceau magique ! Choisis une couleur, puis effleure ce que tu veux repeindre : une fraise, un étage, la nappe…',
-  fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !'
+  fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !',
+  /* le vote (13 novembre) : à voix haute, autour de la table */
+  note:'Montre ton gâteau à tes amis. Quelle note sur 20 lui donnent-ils ?',
+  rang:'pour ton gâteau ! Comparez vos notes : quelle est ta place ?'
 };
+/* les quatre places du concours, et ce qu'elles rapportent (Romain, 13 novembre : 5, 4, 3 et 2 pièces) */
+var RANGS = [{ic:'🥇', nom:'1er', or:5}, {ic:'🥈', nom:'2e', or:4}, {ic:'🥉', nom:'3e', or:3}, {ic:'🎖️', nom:'4e', or:2}];
 function phraseFin(R){
   if(R.parDeco.chaussette) return 'Une chaussette sur un gâteau ? À Brumeval, on appelle ça de la grande cuisine !';
   if(R.chats >= 7) return 'Les sept chats d\'Odette sont tous là. Ils se trouvent très ressemblants !';
@@ -28917,16 +29635,44 @@ function jouer(zone, params, fin){
     gDecos.querySelectorAll('.gt-tenu, .gt-jete').forEach(function(n){ n.classList.remove('gt-tenu', 'gt-jete'); });   /* (une décoration qu'on tirait encore de sa bulle se pose là) */
     racine.classList.add('gt-fini');
     var R = resume(), phrase = tempsFini ? DIT.fini : phraseFin(R);
-    final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🎉 À la fête !</button></div>';
-    final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
-    final.hidden = false; mesurer();
-    /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
-    if(!tempsFini) final.querySelector('.gt-retouche').addEventListener('click', function(){ enFete = false; tAvant = Date.now(); racine.classList.remove('gt-fini'); final.hidden = true; pluie.innerHTML = ''; U.stop(); U.son('clic'); mesurer(); });
-    final.querySelector('.gt-fete').addEventListener('click', function(){
-      if(arrete) return; U.stop();
-      var det = R.etages + (R.etages > 1 ? ' étages' : ' étage') + (R.nbDecos ? ' et ' + R.nbDecos + (R.nbDecos > 1 ? ' décorations' : ' décoration') : '') + ' : toute la place en parle déjà.';
-      fin({reussi:true, score:1, message:'Quel gâteau !', detail:det, gateau:R});
-    });
+    /* (Romain, 13 novembre) le concours : « Retoucher » seulement s'il reste du temps ; « Vote » à la place de « À la fête ! » */
+    function montrer(){
+      final.classList.remove('gt-en-vote');
+      final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🗳️ Vote</button></div>';
+      final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
+      final.hidden = false; mesurer();
+      /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
+      if(!tempsFini) final.querySelector('.gt-retouche').addEventListener('click', function(){ enFete = false; tAvant = Date.now(); racine.classList.remove('gt-fini'); final.hidden = true; pluie.innerHTML = ''; U.stop(); U.son('clic'); mesurer(); });
+      final.querySelector('.gt-fete').addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(); });
+    }
+    /* LE VOTE (Romain, 13 novembre) : les tablettes ne se parlent pas — on vote à voix haute, autour de la table. Chacun touche la note
+       sur 20 que les autres donnent à son gâteau ; puis, les notes comparées, sa place : 1er, 2e, 3e ou 4e (5, 4, 3 ou 2 pièces d'or). */
+    function voter(note){
+      final.classList.add('gt-en-vote');
+      var h, t;
+      if(!note){
+        t = DIT.note;
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div><div class="gt-notes" role="group" aria-label="La note sur 20">';
+        for(var n = 1; n <= 20; n++) h += '<button type="button" class="gt-note" data-n="' + n + '">' + n + '</button>';
+        h += '</div></div>';
+      } else {
+        t = DIT.rang;
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div><div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
+          RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
+          '</div><button type="button" class="btn second petit gt-renoter">← Changer la note</button></div>';
+      }
+      final.innerHTML = h;
+      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire((note ? note + ' sur 20. ' : '') + t));
+      mesurer();
+      [].forEach.call(final.querySelectorAll('.gt-note'), function(b){ b.addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(+b.getAttribute('data-n')); }); });
+      [].forEach.call(final.querySelectorAll('.gt-rang'), function(b){ b.addEventListener('click', function(){
+        if(arrete) return; U.stop();
+        var rang = +b.getAttribute('data-r'), or = RANGS[rang - 1].or;
+        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, note:note, rang:rang, or:or});
+      }); });
+      var bn = final.querySelector('.gt-renoter'); if(bn) bn.addEventListener('click', function(){ U.stop(); U.son('clic'); voter(); });
+    }
+    montrer();
     confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
   }
   bPret.addEventListener('click', feter);
@@ -29059,6 +29805,1279 @@ MJ.DEMOS.gateau = {w:300, h:420, f:function(el){
 })();
 
 }).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
+/* ===== ../donjon/essai/sons/moteur.js ===== */
+/* Atelier des sons de Brumeval — le moteur.
+   Tout est fabriqué avec Web Audio, sans aucun fichier : oscillateurs, bruits filtrés, cordes pincées
+   (Karplus-Strong calculé en JavaScript), craquements et crépitements calculés en JavaScript,
+   réverbération par convolution d'une réponse fabriquée.
+   Le même moteur marche en direct (AudioContext) et hors ligne (OfflineAudioContext), pour vérifier les sons. */
+(function(G){
+'use strict';
+function hasard(a, b){ return a + Math.random() * (b - a); }
+function choix(l){ return l[Math.floor(Math.random() * l.length)]; }
+function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+
+/* les bruits de base et les réponses de salle, fabriqués une seule fois par fréquence d'échantillonnage :
+   un tampon sert à tous les contextes (le jeu, et chaque pré-calcul hors ligne n'a plus à les refaire) */
+var DEJA = {};
+/* Moteur.oublier(sr) : libère ces tampons pour une fréquence (après un pré-calcul hors ligne, ils ne servent plus) */
+function oublier(sr){ delete DEJA[sr]; }
+function Moteur(ctx, opt){
+  opt = opt || {};
+  var sr = ctx.sampleRate, horsLigne = !!opt.horsLigne;
+  var A = {ctx:ctx, sr:sr, hasard:hasard, choix:choix, midi:midi, horsLigne:horsLigne};
+  var deja = DEJA[sr] = DEJA[sr] || {};
+
+  /* ---------- les bruits de base (2 à 4 secondes, joués en boucle à partir d'un endroit au hasard) ----------
+     (9 novembre, mémoire de l'iPhone : le bruit brun et le bruit lent, presque sans aigus, sont fabriqués à une fréquence
+     plus basse — 12 000 et 3 000 Hz — : le navigateur les remet à la bonne fréquence en les jouant, le son est le même) */
+  function tampon(sec, ncan, fn, nom, srb){
+    if(nom && deja[nom]) return deja[nom];
+    srb = srb || sr;
+    var n = Math.floor(srb * sec), b = ctx.createBuffer(ncan || 1, n, srb);
+    for(var c = 0; c < (ncan || 1); c++) fn(b.getChannelData(c), n, c, srb);
+    if(nom) deja[nom] = b;
+    return b;
+  }
+  function normaliseRms(d, n, cible){
+    var s = 0, i; for(i = 0; i < n; i++) s += d[i] * d[i];
+    var k = cible / Math.sqrt(s / n || 1); for(i = 0; i < n; i++) d[i] *= k;
+  }
+  A.blanc = tampon(2, 1, function(d, n){ for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }, 'blanc');
+  A.rose = tampon(2, 1, function(d, n){
+    var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for(var i = 0; i < n; i++){
+      var w = Math.random() * 2 - 1;
+      b0 = .99886 * b0 + w * .0555179; b1 = .99332 * b1 + w * .0750759; b2 = .969 * b2 + w * .153852;
+      b3 = .8665 * b3 + w * .3104856; b4 = .55 * b4 + w * .5329522; b5 = -.7616 * b5 - w * .016898;
+      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926;
+    }
+    normaliseRms(d, n, .3);
+  }, 'rose');
+  A.brun = tampon(3, 1, function(d, n, c, srb){
+    var l = 0, i, k = .02 * 44100 / srb;                       /* la même pente qu'à 44 100 Hz */
+    for(i = 0; i < n; i++){ l = (l + k * (Math.random() * 2 - 1)) / (1 + k); d[i] = l; }
+    var pente = (d[n - 1] - d[0]) / n;                         /* pour que la boucle ne claque pas */
+    for(i = 0; i < n; i++) d[i] -= pente * i;
+    normaliseRms(d, n, .3);
+  }, 'brun', Math.min(sr, 12000));
+  /* un bruit très lent (sous 90 Hz) : sert à faire trembler une hauteur ou un volume, comme un vrai gosier */
+  A.lent = tampon(4, 1, function(d, n, c, srb){
+    var a = 1 - Math.exp(-2 * Math.PI * 90 / srb), l1 = 0, l2 = 0, i;
+    for(i = 0; i < n; i++){ l1 += (Math.random() * 2 - 1 - l1) * a; l2 += (l1 - l2) * a; d[i] = l2; }
+    var pente = (d[n - 1] - d[0]) / n; for(i = 0; i < n; i++) d[i] -= pente * i;
+    normaliseRms(d, n, .5);
+  }, 'lent', Math.min(sr, 3000));
+
+  /* ---------- la réverbération : une réponse fabriquée (premiers échos sur la pierre, puis une queue qui s'assombrit) ---------- */
+  function reponse(duree, o, nom){
+    return tampon(duree, 2, function(d, n, c){
+      /* (la même formule qu'avant, calculée pas à pas : la décroissance multipliée à chaque échantillon,
+         la couleur recalculée tous les 32 échantillons — beaucoup moins de calcul au chargement, le même son) */
+      var pre = Math.floor(sr * (o.pre || .012)), lp = 0, i, k = o.clair, env = 1, pas = Math.pow(10, -3 / (sr * duree));
+      for(i = 0; i < n; i++){
+        if((i & 31) === 0) k = o.clair - (o.clair - o.sombre) * Math.pow(i / n, .6);
+        lp += (Math.random() * 2 - 1 - lp) * k;
+        var mont = i < pre ? 0 : Math.min(1, (i - pre) / (sr * .006));
+        d[i] = lp * env * mont;
+        env *= pas;
+      }
+      for(var e = 0; e < (o.echos || 0); e++){                /* les premiers rebonds, différents à gauche et à droite */
+        var p = Math.floor(sr * hasard(.006, o.ecart || .07)), amp = hasard(.25, .7) * (1 - e / (o.echos + 2)), sg = Math.random() < .5 ? -1 : 1;
+        for(var j = 0; j < 24 && p + j < n; j++) d[p + j] += sg * amp * Math.exp(-j / 4) * (j % 2 ? -.4 : 1);
+      }
+    }, nom);
+  }
+
+  /* ---------- la sortie : bruitages, musique, deux salles de réverbération, volume, compresseur ---------- */
+  A.volume = ctx.createGain(); A.volume.gain.value = opt.volume == null ? .8 : opt.volume;
+  if(opt.sortie) A.volume.connect(opt.sortie);            /* branché dans la chaîne d'un autre (le jeu) */
+  else if(opt.brut) A.volume.connect(ctx.destination);
+  else {
+    var comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 5; comp.attack.value = .003; comp.release.value = .18;
+    /* après le compresseur, un écrêtage tout doux : jamais de craquement, même tout fort */
+    var doux = ctx.createWaveShaper(), nc = 4096, cc = new Float32Array(nc);
+    for(var ic = 0; ic < nc; ic++){ var xc = ic / (nc - 1) * 2 - 1, ax = Math.abs(xc); cc[ic] = ax < .7 ? xc : Math.sign(xc) * (.7 + .3 * Math.tanh((ax - .7) / .3)); }
+    doux.curve = cc;
+    A.volume.connect(comp); comp.connect(doux); doux.connect(ctx.destination);
+  }
+  A.sfx = ctx.createGain(); A.sfx.connect(A.volume);
+  A.mus = ctx.createGain(); A.mus.connect(A.volume);
+  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01}, 'cave');
+  var caveRet = ctx.createGain(); caveRet.gain.value = .7; cave.connect(caveRet); caveRet.connect(A.volume);
+  A.caveIn = ctx.createGain(); A.caveIn.connect(cave);
+  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03}, 'grotte');
+  var grotteRet = ctx.createGain(); grotteRet.gain.value = .8; grotte.connect(grotteRet); grotteRet.connect(A.volume);
+  A.grotteIn = ctx.createGain(); A.grotteIn.connect(grotte);
+
+  /* plus tard (seulement en direct : hors ligne, rien ne traîne) */
+  A.plusTard = function(sec, fn){ if(!horsLigne) setTimeout(fn, Math.max(0, sec) * 1000); };
+  function g(v){ var x = ctx.createGain(); x.gain.value = v == null ? 1 : v; return x; }
+  A.gain = g;
+  /* quand une source a fini, on débranche sa sortie : la tablette n'a plus à calculer ses filtres */
+  function nettoie(src, sortie){ src.onended = function(){ try{ sortie.disconnect(); }catch(e){} }; }
+  A.nettoie = nettoie;
+
+  /* une « prise » : l'endroit où un son se branche, avec son niveau, sa part sèche et ses parts de réverbération */
+  A.prise = function(t, niveau, vers){
+    niveau = niveau == null ? 1 : niveau;
+    var P = {t:t, niveau:niveau};
+    P.sec = g(niveau); P.sec.connect(vers === 'mus' ? A.mus : A.sfx);
+    P.cave = g(niveau); P.cave.connect(A.caveIn);
+    P.grotte = g(niveau); P.grotte.connect(A.grotteIn);
+    P.couper = function(t2, tau){ [P.sec, P.cave, P.grotte].forEach(function(x){ x.gain.cancelScheduledValues(t2); x.gain.setValueAtTime(x.gain.value, t2); x.gain.setTargetAtTime(0, t2, tau || .05); }); };
+    P.monter = function(t2, tau){ [P.sec, P.cave, P.grotte].forEach(function(x){ x.gain.cancelScheduledValues(t2); x.gain.setValueAtTime(x.gain.value, t2); x.gain.setTargetAtTime(niveau, t2, tau || .05); }); };
+    P.lacher = function(){ [P.sec, P.cave, P.grotte].forEach(function(x){ try{ x.disconnect(); }catch(e){} }); };
+    return P;
+  };
+  /* une entrée de son : sèche vers la prise, un peu dans la cave (rev) ou dans la grande grotte (grotte), placée à gauche ou à droite */
+  A.bus = function(P, o){
+    o = o || {};
+    var e = g(o.g == null ? 1 : o.g), s = e;
+    if(o.hp){ var f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = o.hp; f.Q.value = .6; s.connect(f); s = f; }   /* enlève le très grave que la tablette ne rend pas */
+    if(o.pan != null && ctx.createStereoPanner){
+      var p = ctx.createStereoPanner(); p.pan.setValueAtTime(o.pan, P.t);
+      if(o.pan2 != null) p.pan.linearRampToValueAtTime(o.pan2, P.t + (o.pant || 1));
+      s.connect(p); s = p;
+    }
+    s.connect(P.sec);
+    if(o.rev){ var r = g(o.rev); s.connect(r); r.connect(P.cave); e.envoiCave = r; }
+    if(o.grotte){ var r2 = g(o.grotte); s.connect(r2); r2.connect(P.grotte); e.envoiGrotte = r2; }
+    return e;
+  };
+  /* un bus « qui s'éloigne » : le son baisse, s'assourdit, part sur le côté et sonne de plus en plus dans la salle */
+  A.lointain = function(P, t, duree, o){
+    o = o || {};
+    var e = g(1), lp = ctx.createBiquadFilter(), v = g(1);
+    lp.type = 'lowpass'; lp.Q.value = .5;
+    lp.frequency.setValueAtTime(o.lp1 || 9000, t); lp.frequency.exponentialRampToValueAtTime(o.lp2 || 1400, t + duree);
+    v.gain.setValueAtTime(1, t); v.gain.exponentialRampToValueAtTime(o.fin || .12, t + duree);
+    e.connect(lp); lp.connect(v);
+    var s = v;
+    if(ctx.createStereoPanner){ var p = ctx.createStereoPanner(); p.pan.setValueAtTime(o.pan1 == null ? .1 : o.pan1, t); p.pan.linearRampToValueAtTime(o.pan2 == null ? .95 : o.pan2, t + duree); v.connect(p); s = p; }
+    s.connect(P.sec);
+    var r = g(0); r.gain.setValueAtTime(o.rev1 == null ? .15 : o.rev1, t); r.gain.linearRampToValueAtTime(o.rev2 == null ? .9 : o.rev2, t + duree);
+    lp.connect(r); r.connect(o.grotte ? P.grotte : P.cave);
+    return e;
+  };
+
+  /* ---------- enveloppes ---------- */
+  /* pts : [[instant, valeur], ...] ; les montées sont droites, les descentes en courbe (comme un vrai son qui s'éteint) */
+  A.env = function(param, t, pts, gain){
+    gain = gain == null ? 1 : gain;
+    var prev = Math.max(pts[0][1] * gain, 1e-4);
+    param.setValueAtTime(prev, t + pts[0][0]);
+    for(var i = 1; i < pts.length; i++){
+      var v = Math.max(pts[i][1] * gain, 1e-4), tt = t + pts[i][0];
+      if(pts[i][2] === 'lin' || v > prev) param.linearRampToValueAtTime(v, tt);
+      else param.exponentialRampToValueAtTime(v, tt);
+      prev = v;
+    }
+    return t + pts[pts.length - 1][0];
+  };
+  A.perc = function(a, d){ return [[0, 0], [a, 1], [a + d, 0]]; };
+  A.ahd = function(a, h, d, s){ return [[0, 0], [a, 1], [a + h, s == null ? 1 : s], [a + h + d, 0]]; };
+  function enveloppeDe(o){
+    if(o.env) return o.env;
+    var a = o.a == null ? .005 : o.a;
+    return [[0, 0], [a, 1], [a + (o.tenue || 0), 1], [a + (o.tenue || 0) + o.d, 0]];
+  }
+  /* une courbe de hauteur douce qui passe par des points [fraction du temps, hauteur] */
+  A.courbe = function(pts, duree, mult){
+    mult = mult || 1;
+    var N = Math.max(16, Math.ceil(duree * 400)), c = new Float32Array(N), k = 0;
+    for(var i = 0; i < N; i++){
+      var u = i / (N - 1);
+      while(k < pts.length - 2 && u > pts[k + 1][0]) k++;
+      var a = pts[k], b = pts[k + 1], s = (u - a[0]) / Math.max(1e-6, b[0] - a[0]);
+      s = Math.max(0, Math.min(1, s)); s = (1 - Math.cos(Math.PI * s)) / 2;
+      c[i] = a[1] * Math.pow(b[1] / a[1], s) * mult;
+    }
+    return c;
+  };
+
+  /* ---------- filtres, saturation ---------- */
+  A.filtre = function(t, src, f){
+    var b = ctx.createBiquadFilter();
+    b.type = f.type || 'lowpass';
+    b.frequency.setValueAtTime(f.f, t);
+    if(f.pts){ f.pts.forEach(function(p){ b.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); }
+    else if(f.f2) b.frequency.exponentialRampToValueAtTime(f.f2, t + (f.t2 || .1));
+    if(f.q != null) b.Q.value = f.q;
+    if(f.gain != null) b.gain.value = f.gain;
+    src.connect(b);
+    return b;
+  };
+  A.chaine = function(t, src, liste){ var n = src; (liste || []).forEach(function(f){ n = A.filtre(t, n, f); }); return n; };
+  var courbesSat = {};
+  A.sature = function(drive){
+    var k = Math.round(drive * 10) / 10;
+    if(!courbesSat[k]){
+      var n = 2048, c = new Float32Array(n), norm = Math.tanh(k);
+      for(var i = 0; i < n; i++){ var x = i / (n - 1) * 2 - 1; c[i] = Math.tanh(k * x) / norm; }
+      courbesSat[k] = c;
+    }
+    var w = ctx.createWaveShaper(); w.curve = courbesSat[k]; w.oversample = 'none';
+    return w;
+  };
+  function filtresRaccourcis(o){
+    var l = o.filtres ? o.filtres.slice() : [];
+    if(o.hp) l.push({type:'highpass', f:o.hp, q:o.hpq == null ? .7 : o.hpq});
+    if(o.lp) l.push({type:'lowpass', f:o.lp, f2:o.lp2, t2:o.lpt, q:o.lq == null ? .7 : o.lq});
+    if(o.bp) l.push({type:'bandpass', f:o.bp, f2:o.bp2, t2:o.bpt, q:o.bq == null ? 1 : o.bq});
+    return l;
+  }
+
+  /* ---------- un oscillateur ----------
+     o.f (o.f2, o.gl : glissando) ou o.courbe (Float32Array de hauteurs) ; o.type ou o.vague ;
+     o.vib [vitesse, ampleur en Hz] ; o.gigue (tremblement de hauteur en Hz) ; o.trem [vitesse, profondeur 0..1] ;
+     enveloppe : o.env, ou o.a / o.tenue / o.d ; o.g : le volume ; o.sat : saturation ; filtres : o.lp, o.hp, o.bp, o.filtres */
+  A.ton = function(t, o, dest){
+    var x = ctx.createOscillator(), amp = g(0), env = enveloppeDe(o);
+    var fin = t + env[env.length - 1][0], dur = fin - t;
+    if(o.vague) x.setPeriodicWave(o.vague); else x.type = o.type || 'sine';
+    if(o.courbe) x.frequency.setValueCurveAtTime(o.courbe, t, o.cd || dur);
+    else { x.frequency.setValueAtTime(o.f, t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
+    if(o.det) x.detune.value = o.det;
+    if(o.vib){
+      var v = ctx.createOscillator(), vg = g(0); v.frequency.value = o.vib[0];
+      vg.gain.setValueAtTime(o.vibRetard ? 0 : o.vib[1], t); if(o.vibRetard) vg.gain.linearRampToValueAtTime(o.vib[1], t + o.vibRetard);
+      v.connect(vg); vg.connect(x.frequency); v.start(t); v.stop(fin + .05);
+    }
+    if(o.gigue){ var j = ctx.createBufferSource(); j.buffer = A.lent; j.loop = true; var jg = g(o.gigue); j.connect(jg); jg.connect(x.frequency); j.start(t, hasard(0, 3)); j.stop(fin + .05); }
+    A.env(amp.gain, t, env, o.g == null ? .3 : o.g);
+    var n = x;
+    if(o.sat){ var pre = g(1); n.connect(pre); var w = A.sature(o.sat); pre.connect(w); n = w; }
+    n = A.chaine(t, n, filtresRaccourcis(o));
+    if(o.trem){
+      var tr = g(1 - o.trem[1] / 2), lfo = ctx.createOscillator(), lg = g(o.trem[1] / 2);
+      lfo.frequency.value = o.trem[0]; lfo.connect(lg); lg.connect(tr.gain); lfo.start(t); lfo.stop(fin + .05);
+      n.connect(tr); n = tr;
+    }
+    n.connect(amp); amp.connect(dest);
+    x.start(t); x.stop(fin + .05); nettoie(x, amp);
+    return {osc:x, gain:amp, fin:fin};
+  };
+
+  /* ---------- un bruit filtré ----------
+     o.coul : 'blanc' (défaut), 'rose', 'brun' ; o.vit : vitesse de lecture (plus lent = plus sourd) ;
+     filtres : o.bp / o.lp / o.hp (+ o.bp2, o.bpt : balayage), ou o.filtres ; enveloppe comme A.ton ; o.trem ; o.rugueux (0..1) */
+  A.bruit = function(t, o, dest){
+    var s = ctx.createBufferSource(), amp = g(0), env = enveloppeDe(o);
+    var fin = t + env[env.length - 1][0];
+    s.buffer = A[o.coul || 'blanc']; s.loop = true;
+    if(o.vit) s.playbackRate.value = o.vit;
+    A.env(amp.gain, t, env, o.g == null ? .3 : o.g);
+    var n0 = s;
+    if(o.sat){ var w0 = A.sature(o.sat), pg0 = g(o.pre || 1); s.connect(pg0); pg0.connect(w0); n0 = w0; }
+    var n = A.chaine(t, n0, filtresRaccourcis(o));
+    if(o.trem){
+      var tr = g(1 - o.trem[1] / 2), lfo = ctx.createOscillator(), lg = g(o.trem[1] / 2);
+      lfo.frequency.value = o.trem[0]; lfo.connect(lg); lg.connect(tr.gain); lfo.start(t); lfo.stop(fin + .05);
+      n.connect(tr); n = tr;
+    }
+    if(o.rugueux){                                            /* un grain qui gratte : le volume tremble vite et au hasard */
+      var rg = g(1 - o.rugueux * .5), j = ctx.createBufferSource(); j.buffer = A.lent; j.loop = true; j.playbackRate.value = o.rugVit || 3;
+      var jg = g(o.rugueux * .9); j.connect(jg); jg.connect(rg.gain); j.start(t, hasard(0, 3)); j.stop(fin + .05);
+      n.connect(rg); n = rg;
+    }
+    n.connect(amp); amp.connect(dest);
+    s.start(t, hasard(0, s.buffer.duration * .9)); s.stop(fin + .05); nettoie(s, amp);
+    return {src:s, gain:amp, fin:fin};
+  };
+
+  /* ---------- une corde pincée (Karplus-Strong, calculée en JavaScript, juste et sans limite de hauteur) ----------
+     o.t60 : temps pour s'éteindre ; o.eclat (0..1) : brillance du pincement ; o.pos (0..0.5) : où l'on pince */
+  var cachePince = {};
+  A.pince = function(f, o){
+    o = o || {};
+    var t60 = o.t60 || 1.5, duree = Math.min(o.duree || t60 * 1.1, 6), eclat = o.eclat == null ? .6 : o.eclat, pos = o.pos == null ? .18 : o.pos;
+    var cle = [Math.round(f * 10), t60, duree, eclat, pos, o.var || 0].join('|');
+    if(cachePince[cle]) return cachePince[cle];
+    var n = Math.floor(sr * duree), b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0);
+    var L = sr / f, N = Math.max(2, Math.floor(L - .5 - .1)), frac = L - N - .5, C = (1 - frac) / (1 + frac);
+    var ring = new Float32Array(N), lp = 0, i;
+    for(i = 0; i < N; i++){ lp += (Math.random() * 2 - 1 - lp) * eclat; ring[i] = lp; }
+    var dp = Math.max(1, Math.floor(N * pos)), copie = ring.slice();
+    for(i = 0; i < N; i++) ring[i] = copie[i] - copie[(i - dp + N) % N];       /* le point de pincement */
+    var perte = Math.pow(10, -3 / (t60 * f)), p = 0, prev = 0, apx = 0, apy = 0, mx = 0;
+    for(i = 0; i < n; i++){
+      var x = ring[p]; d[i] = x;
+      var moy = perte * .5 * (x + prev); prev = x;
+      var ap = C * moy + apx - C * apy; apx = moy; apy = ap;
+      ring[p] = ap; p++; if(p >= N) p = 0;
+      var ax = x < 0 ? -x : x; if(ax > mx) mx = ax;
+    }
+    var k = .9 / (mx || 1), fondu = Math.floor(sr * .02);
+    for(i = 0; i < n; i++) d[i] *= k * (i > n - fondu ? (n - i) / fondu : 1);
+    cachePince[cle] = b;
+    return b;
+  };
+  /* jouer un tampon (corde, craquement...) avec volume, vitesse, filtres et enveloppe */
+  A.joue = function(t, buf, o, dest){
+    o = o || {};
+    var s = ctx.createBufferSource(), amp = g(0);
+    s.buffer = buf; if(o.vit) s.playbackRate.value = o.vit;
+    var dur = o.d || buf.duration / (o.vit || 1);
+    if(o.vit2){ s.playbackRate.setValueAtTime(o.vit || 1, t); s.playbackRate.linearRampToValueAtTime(o.vit2, t + dur); }
+    A.env(amp.gain, t, o.env || [[0, 1], [Math.max(.01, dur - .03), 1], [dur, 0]], o.g == null ? .5 : o.g);
+    var n = s;
+    if(o.sat){ var w = A.sature(o.sat); n.connect(w); n = w; }
+    n = A.chaine(t, n, filtresRaccourcis(o));
+    if(o.trem){
+      var tr = g(1 - o.trem[1] / 2), lfo = ctx.createOscillator(), lg = g(o.trem[1] / 2);
+      lfo.frequency.value = o.trem[0]; lfo.connect(lg); lg.connect(tr.gain); lfo.start(t); lfo.stop(t + dur + .05);
+      n.connect(tr); n = tr;
+    }
+    n.connect(amp); amp.connect(dest);
+    s.start(t); s.stop(t + dur + .02); nettoie(s, amp);
+    return {src:s, gain:amp, fin:t + dur};
+  };
+
+  /* ---------- des résonances (métal, bois) : des sinus qui s'éteignent chacun à leur vitesse ----------
+     liste : [[rapport, volume, t60, (désaccord en Hz)], ...] */
+  A.modes = function(t, f, liste, o, dest){
+    o = o || {};
+    liste.forEach(function(m){
+      var fr = f * m[0];
+      if(fr > sr * .45) return;
+      var att = o.a || .0015;
+      A.ton(t, {f:fr, f2:o.chute ? fr * o.chute : null, gl:m[2], env:[[0, 0], [att, 1], [m[2], .001]], g:(o.g || .3) * m[1]}, dest);
+      if(m[3]) A.ton(t, {f:fr + m[3], env:[[0, 0], [att, 1], [m[2] * .9, .001]], g:(o.g || .3) * m[1] * .6}, dest);
+    });
+  };
+
+  /* ---------- un choc sourd (un corps qui tombe, un coup) : audible même sur un petit haut-parleur grâce à la saturation ---------- */
+  A.choc = function(t, o, dest){
+    o = o || {};
+    var d = o.d || .14;
+    A.ton(t, {f:o.f || 170, f2:o.f2 || 52, gl:d * .8, env:[[0, 0], [.004, 1], [d * .35, .5], [d, 0]], g:o.g == null ? .5 : o.g, sat:o.sat == null ? 2.5 : o.sat, lp:o.lp || 1200}, dest);
+    if(o.bruit !== 0) A.bruit(t, {coul:'rose', lp:o.blp || 900, lq:.9, env:[[0, 0], [.002, 1], [d * .5, 0]], g:(o.g == null ? .5 : o.g) * (o.bruit == null ? .6 : o.bruit)}, dest);
+    if(o.corps !== 0) A.bruit(t, {coul:'rose', bp:o.corpsF || 480, bq:1.3, env:[[0, 0], [.002, 1], [d * .45, 0]], g:(o.g == null ? .5 : o.g) * (o.corps == null ? 1.6 : o.corps)}, dest);
+  };
+
+  /* ---------- un cri d'animal (le rat) ----------
+     Une voix aiguë qui glisse vite (o.pts : [fraction, hauteur relative]), avec un gosier qui tremble (o.grain),
+     du souffle (o.souffle), un trille rapide (o.trille [vitesse, ampleur]) et, pour la douleur ou la rage, une voix éraillée (o.rauque). */
+  var vagueCri = (function(){
+    var im = new Float32Array([0, 1, .45, .22, .11, .055, .028, .014]);
+    return ctx.createPeriodicWave(new Float32Array(im.length), im);
+  })();
+  A.FORMES = {
+    iik:      [[0, .68], [.1, 1.18], [.3, 1.08], [.55, 1.0], [1, .7]],
+    aie:      [[0, .78], [.08, 1.22], [.25, 1.15], [.45, 1.18], [.75, .9], [1, .62]],
+    plainte:  [[0, .95], [.15, 1.06], [.4, .96], [.7, .82], [1, .58]],
+    question: [[0, .72], [.5, .8], [.85, 1.12], [1, 1.16]],
+    cri:      [[0, .66], [.06, 1.24], [.2, 1.12], [.38, 1.26], [.6, 1.1], [.82, .98], [1, .7]],
+    peur:     [[0, .88], [.15, 1.34], [.45, 1.18], [.7, 1.25], [1, .88]],
+    effort:   [[0, .84], [.25, 1.0], [.7, 1.08], [1, .78]],
+    toux:     [[0, 1], [.3, .8], [1, .6]]
+  };
+  A.cri = function(t, o, dest){
+    var V = A.voix || {};
+    var d = (o.d || .15) * (V.long || 1), f0 = (o.f || 2300) * (o.h || 1) * (V.h || 1), pts = typeof o.forme === 'string' ? A.FORMES[o.forme] : (o.forme || A.FORMES.iik);
+    pts = pts.map(function(p, i){ return [p[0], p[1] * (i && !o.fixe ? hasard(.95, 1.05) : 1)]; });   /* jamais deux fois tout à fait le même */
+    var c = A.courbe(pts, d, f0), fm = f0 * .95, grain = Math.min(1, (o.grain == null ? .5 : o.grain) + (V.grain || 0)), rauque = Math.min(1, (o.rauque || 0) + (V.rauque || 0)), gv = o.g == null ? .3 : o.g;
+    var a = o.a || .012, fin = t + d;
+    var env = o.env || [[0, 0], [a, 1], [d * .55, .78], [d, 0]];
+    var x = ctx.createOscillator(); x.setPeriodicWave(vagueCri);
+    x.frequency.setValueCurveAtTime(c, t, d);
+    var j = ctx.createBufferSource(); j.buffer = A.lent; j.loop = true; j.playbackRate.value = o.gVit || 1.4;
+    var jg = g(fm * .07 * grain); j.connect(jg); jg.connect(x.frequency);
+    if(o.trille){ var lt = ctx.createOscillator(), ltg = g(fm * o.trille[1]); lt.frequency.value = o.trille[0]; lt.connect(ltg); ltg.connect(x.frequency); lt.start(t); lt.stop(fin + .05); }
+    var amp = g(0), shim = g(1 - grain * .4), sg = g(grain * .55);
+    j.connect(sg); sg.connect(shim.gain);
+    var n = x;
+    if(rauque){
+      var sub = ctx.createOscillator(); sub.type = 'sawtooth';
+      sub.frequency.setValueCurveAtTime(A.courbe(pts, d, f0 * .5), t, d);
+      var subg = g(rauque * .45); sub.connect(subg);
+      var m = g(1); x.connect(m); subg.connect(m);
+      var pre = g(1 + rauque * 2.5); m.connect(pre);
+      var w = A.sature(1 + rauque * 3.5); pre.connect(w); n = w;
+      sub.start(t); sub.stop(fin + .05);
+    }
+    n = A.chaine(t, n, [{type:'highpass', f:o.hp || 800, q:.7}, {type:'peaking', f:f0 * 1.05, q:1.2, gain:4}, {type:'lowpass', f:o.lp || 9500, q:.5}]);
+    n.connect(shim); shim.connect(amp); amp.connect(dest);
+    A.env(amp.gain, t, env, gv * (rauque ? 1 / (1 + rauque * .9) : 1));
+    j.start(t, hasard(0, 3)); j.stop(fin + .05);
+    x.start(t); x.stop(fin + .05); nettoie(x, amp);
+    /* le souffle du petit gosier, et l'attaque */
+    var sf = o.souffle == null ? .18 : o.souffle;
+    if(sf > 0){
+      A.bruit(t, {bp:fm * 1.05, bq:2.2, env:env, g:gv * sf * 1.6}, dest);
+      A.bruit(t, {hp:3500, env:[[0, 0], [.002, 1], [.018, 0]], g:gv * sf * .9}, dest);
+    }
+    if(rauque) A.bruit(t, {bp:fm * .9, bq:3, env:env, g:gv * rauque * .5, rugueux:.9, rugVit:6}, dest);
+    return fin;
+  };
+
+  /* ---------- des tampons calculés : craquement de bois, crépitement, griffes ---------- */
+  /* un grincement : des petits accrocs de plus en plus serrés (le bois qui frotte et qui accroche) */
+  A.grincement = function(duree, o){
+    o = o || {};
+    var n = Math.floor(sr * duree), b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0);
+    var t = 0, i0 = o.i0 || .03, i1 = o.i1 || .009, irr = o.irr == null ? .35 : o.irr;
+    while(t < duree - .005){
+      var u = t / duree, iv = i0 * Math.pow(i1 / i0, u);
+      var amp = (o.forme ? o.forme(u) : Math.sin(Math.PI * Math.min(1, u * 1.2)) * .6 + .4) * hasard(.55, 1);
+      var p = Math.floor(t * sr);
+      for(var k = 0; k < 90 && p + k < n; k++) d[p + k] += amp * (Math.random() * 2 - 1) * Math.exp(-k / 9) * (k < 3 ? 2 : 1);
+      t += iv * (1 + hasard(-irr, irr));
+    }
+    return b;
+  };
+  /* un crépitement : des petits « pops » au hasard, plus nombreux au début (densite : par seconde) */
+  A.crepitement = function(duree, densite, o){
+    o = o || {};
+    var n = Math.floor(sr * duree), b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0), t = 0;
+    while(t < duree){
+      var u = t / duree, dens = densite * (o.forme ? o.forme(u) : 1 - u * .6);
+      t += -Math.log(1 - Math.random()) / Math.max(.5, dens);
+      var p = Math.floor(t * sr), gros = Math.random() < .12, amp = (gros ? hasard(.7, 1) : hasard(.08, .4)) * (o.forme ? o.forme(u) : 1 - u * .5), len = gros ? hasard(60, 220) : hasard(10, 60);
+      for(var k = 0; k < len * 3 && p + k < n; k++) d[p + k] += amp * (Math.random() * 2 - 1) * Math.exp(-k / len);
+    }
+    return b;
+  };
+  /* de l'eau qui coule : des centaines de petites bulles qui « plic » en montant (modèle de bulle de van den Doel) */
+  A.eau = function(duree, densite, o){
+    o = o || {};
+    var n = Math.floor(sr * duree), b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0);
+    var nb = Math.floor(duree * densite), fmin = o.fmin || 450, fmax = o.fmax || 2600;
+    for(var k = 0; k < nb; k++){
+      var f0 = fmin * Math.pow(fmax / fmin, Math.pow(Math.random(), .7));
+      var dec = .13 * f0 + .0072 * Math.pow(f0, 1.5), amp = hasard(.2, 1) * Math.pow(fmin / f0, .5);
+      var p0 = Math.floor(Math.random() * n), len = Math.min(Math.floor(sr * 5 / dec), 4000), ph = 0;
+      for(var i = 0; i < len; i++){
+        var tt = i / sr, f = f0 * (1 + .1 * dec * tt);
+        ph += 2 * Math.PI * f / sr;
+        d[(p0 + i) % n] += amp * Math.exp(-dec * tt) * Math.sin(ph) * Math.min(1, i / 8);
+      }
+    }
+    var mx = 0, i2; for(i2 = 0; i2 < n; i2++){ var ax = Math.abs(d[i2]); if(ax > mx) mx = ax; }
+    for(i2 = 0; i2 < n; i2++) d[i2] *= .9 / (mx || 1);
+    return b;
+  };
+  /* des griffes qui trottinent vite sur la pierre */
+  A.griffes = function(duree, vitesse){
+    var n = Math.floor(sr * duree), b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0), t = 0, k2 = 0;
+    while(t < duree){
+      var p = Math.floor(t * sr), amp = hasard(.3, 1) * (k2 % 4 === 0 ? 1 : .6);
+      for(var k = 0; k < 120 && p + k < n; k++) d[p + k] += amp * (Math.random() * 2 - 1) * Math.exp(-k / 14);
+      t += (1 / (vitesse || 22)) * hasard(.55, 1.35); k2++;
+    }
+    return b;
+  };
+
+  /* ---------- un écho (retard qui revient en s'assourdissant), gauche et droite décalés ---------- */
+  A.echo = function(dest, o){
+    o = o || {};
+    var e = g(1), dl = ctx.createDelay(3), dr = ctx.createDelay(3), fb = g(o.retour == null ? .38 : o.retour), lp = ctx.createBiquadFilter();
+    dl.delayTime.value = o.temps || .36; dr.delayTime.value = (o.temps || .36) * (o.decal || 1.5);
+    lp.type = 'lowpass'; lp.frequency.value = o.lp || 2600;
+    e.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl);
+    lp.connect(dr);
+    var s = o.sortie == null ? .7 : o.sortie;
+    if(ctx.createStereoPanner){
+      var pl = ctx.createStereoPanner(), pr = ctx.createStereoPanner(); pl.pan.value = -.6; pr.pan.value = .6;
+      var gl = g(s), gr = g(s * .8); lp.connect(gl); gl.connect(pl); pl.connect(dest); dr.connect(gr); gr.connect(pr); pr.connect(dest);
+    } else { var gs = g(s); lp.connect(gs); gs.connect(dest); }
+    e.couper = function(){ try{ fb.gain.value = 0; e.disconnect(); }catch(x){} };
+    return e;
+  };
+
+  /* ---------- des instruments (musiques, fanfares) ---------- */
+  /* une cloche douce (modulation de fréquence) : o.rapport 3.5 = cloche, 2.76 = métal, 4 = boîte à musique */
+  A.cloche = function(t, f, o, dest){
+    o = o || {};
+    var d = o.d || 2.5, r = o.rapport || 3.5, idx = o.indice == null ? 1.4 : o.indice, gg = o.g == null ? .1 : o.g;
+    var car = ctx.createOscillator(), mod = ctx.createOscillator(), mg = g(0), amp = g(0);
+    car.frequency.value = f; mod.frequency.value = f * r;
+    mg.gain.setValueAtTime(f * idx, t); mg.gain.exponentialRampToValueAtTime(f * idx * .04 + .01, t + d * .5);
+    mod.connect(mg); mg.connect(car.frequency);
+    A.env(amp.gain, t, [[0, 0], [o.a || .003, 1], [d * .22, .42], [d, 0]], gg);
+    car.connect(amp); amp.connect(dest);
+    car.start(t); mod.start(t); car.stop(t + d + .05); mod.stop(t + d + .05); nettoie(car, amp);
+  };
+  /* une harpe (corde pincée) */
+  A.harpe = function(t, f, o, dest){
+    o = o || {};
+    var b = A.pince(f, {t60:o.t60 || 2.2, eclat:o.eclat == null ? .45 : o.eclat, pos:o.pos == null ? .2 : o.pos});
+    return A.joue(t, b, {g:o.g == null ? .3 : o.g, lp:o.lp || 4500}, dest);
+  };
+  /* une goutte qui tombe dans l'eau : une petite note qui monte très vite */
+  A.goutte = function(t, o, dest){
+    o = o || {};
+    var f = o.f || hasard(900, 1800);
+    A.ton(t, {f:f, f2:f * (o.monte || 2.3), gl:o.gl || .022, env:[[0, 0], [.0015, 1], [.05, .3], [.11, 0]], g:o.g == null ? .08 : o.g}, dest);
+  };
+  /* un tambour grave et lointain */
+  A.tambour = function(t, o, dest){
+    o = o || {};
+    var d = o.d || .6, gg = o.g == null ? .5 : o.g, f = o.f || 95;
+    A.ton(t, {f:f, f2:f * .5, gl:d * .6, env:[[0, 0], [.004, 1], [d * .3, .4], [d, 0]], g:gg, sat:2, lp:700}, dest);
+    A.bruit(t, {coul:'rose', lp:500, env:A.perc(.002, .12), g:gg * .5}, dest);
+  };
+  /* une corde frottée (violoncelle, alto) : deux dents de scie, la caisse, et le crin sur la corde */
+  A.archet = function(t, f, d, o, dest){
+    o = o || {};
+    var a = o.a || .25, gg = o.g == null ? .06 : o.g, r = o.r || .3;
+    var caisse = g(1), sortie = A.chaine(t, caisse, [{type:'peaking', f:290, q:1.6, gain:5}, {type:'peaking', f:1100, q:1.5, gain:3}, {type:'lowpass', f:o.lp || 2400, q:.6}]);
+    sortie.connect(dest); A.plusTard(t - ctx.currentTime + d + .6, function(){ try{ sortie.disconnect(); }catch(e){} });
+    [-5, 5].forEach(function(det){ A.ton(t, {type:'sawtooth', f:f, det:det, env:[[0, 0], [a, 1], [Math.max(a + .01, d - r), .85], [d, 0]], g:gg, vib:[5.2, f * .008], vibRetard:a + .2}, caisse); });
+    A.bruit(t, {bp:Math.min(f * 3, 8000), bq:4, env:[[0, 0], [a, 1], [Math.max(a + .01, d - r), .7], [d, 0]], g:gg * 2}, caisse);
+  };
+  /* des voix lointaines sans paroles (des « ou », des « o », des « a ») : dents de scie et formants */
+  A.FORMANTS = {ou:[[320, 1, 9], [800, .35, 10], [2500, .08, 12]], o:[[450, 1, 9], [800, .5, 10], [2830, .1, 12]], a:[[730, 1, 8], [1090, .5, 9], [2440, .15, 12]]};
+  A.choeur = function(t, freqs, d, o, dest){
+    o = o || {};
+    var src = g(1), sortie = g(1), F = A.FORMANTS[o.voyelle || 'ou'];
+    F.forEach(function(fm){
+      var b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = fm[0]; b.Q.value = fm[2];
+      var gk = g(fm[1] * 3); src.connect(b); b.connect(gk); gk.connect(sortie);
+    });
+    sortie.connect(dest); A.plusTard(t - ctx.currentTime + d + .6, function(){ try{ sortie.disconnect(); }catch(e){} });
+    var a = o.a || 2.5, r = o.r || 3;
+    freqs.forEach(function(f){
+      [-7, 6].forEach(function(det){
+        A.ton(t, {type:'sawtooth', f:f, det:det + hasard(-3, 3), env:[[0, 0], [a, 1], [Math.max(a + .01, d - r), .9], [d, 0]], g:o.g == null ? .05 : o.g, vib:[hasard(4.5, 5.5), f * .006], vibRetard:1}, src);
+      });
+    });
+  };
+  /* une nappe douce (des cordes très lointaines) : le filtre s'ouvre puis se referme */
+  A.nappe = function(t, freqs, d, o, dest){
+    o = o || {};
+    var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = .6;
+    lp.frequency.setValueAtTime(o.lp1 || 350, t); lp.frequency.linearRampToValueAtTime(o.lp || 1000, t + d * .45); lp.frequency.linearRampToValueAtTime(o.lp1 || 350, t + d);
+    lp.connect(dest); A.plusTard(t - ctx.currentTime + d + .6, function(){ try{ lp.disconnect(); }catch(e){} });
+    var a = o.a || 3, r = o.r || 3, gg = o.g == null ? .04 : o.g;
+    freqs.forEach(function(f){
+      A.ton(t, {type:o.type || 'sawtooth', f:f, det:-6, env:[[0, 0], [a, 1], [d - r, .9], [d, 0]], g:gg}, lp);
+      A.ton(t, {type:'triangle', f:f, det:7, env:[[0, 0], [a, 1], [d - r, .9], [d, 0]], g:gg * 1.2}, lp);
+    });
+  };
+  /* un pas de botte sur la pierre */
+  A.pas = function(t, o, dest){
+    o = o || {};
+    var gg = o.g == null ? 1 : o.g;
+    A.choc(t, {f:o.f || 115, f2:50, d:.075, g:.35 * gg, sat:2, bruit:.4}, dest);
+    A.bruit(t, {bp:o.bp || 1800, bq:.9, env:A.perc(.001, .045), g:.22 * gg}, dest);
+    A.bruit(t + .01, {hp:4500, env:A.perc(.001, .02), g:.05 * gg}, dest);
+  };
+
+  return A;
+}
+
+G.Moteur = Moteur; G.Moteur.oublier = oublier;
+G.Moteur.hasard = hasard; G.Moteur.choix = choix; G.Moteur.midi = midi;
+})(window);
+
+/* ===== ../donjon/essai/sons/bruitages.js ===== */
+/* Atelier des sons de Brumeval — les bruitages, en plusieurs versions (A, B, C).
+   Chaque son est une fonction (A : le moteur, P : la prise, avec P.t l'instant de départ).
+   Elle rend {duree, moment} : moment = l'instant clé (le lâcher de la corde, la fin du swish). */
+(function(G){
+'use strict';
+var h = Moteur.hasard;
+var S = {};
+var RAT = 2300;            /* la hauteur de base d'une voix de rat (Hz) */
+
+/* =================== petits morceaux communs =================== */
+function clic(A, t, f, g, dest){ A.bruit(t, {bp:f, bq:1.4, env:[[0, 0], [.0006, 1], [.008, 0]], g:g}, dest); }
+
+/* le bois de l'arc qui grince pendant qu'on tire (des accrocs de plus en plus serrés dans les résonances du bois) */
+function grinceArc(A, t, d, o, dest){
+  var buf = A.grincement(d, {i0:o.i0 || .034, i1:o.i1 || .011, irr:.4, forme:function(u){ return .3 + .7 * Math.min(1, u * 1.3); }});
+  (o.res || [380, 930, 1850]).forEach(function(f, k){
+    A.joue(t, buf, {filtres:[{type:'bandpass', f:f, q:o.q || 10}], g:(o.g || 3) * [1, .75, .5][k], env:[[0, 0], [.06, 1], [d - .05, 1], [d, 0]]}, dest);
+  });
+}
+/* la corde qui part : le clic, la corde grave qui vibre, le bois qui se détend, la claque */
+function lacherCorde(A, t, o, dest){
+  var t60 = o.t60 || .45;
+  clic(A, t, 3000, o.clic || .5, dest);
+  A.joue(t, A.pince(o.f || 98, {t60:t60, eclat:o.eclat || .4, pos:.1}), {g:o.gc || .8, lp:o.lp || 2200, sat:o.sat || 1.6, vit:1, vit2:.965}, dest);   /* la corde : grave, un peu de bourdonnement, la note qui retombe */
+  A.choc(t + .003, {f:o.ft || 150, f2:72, d:.09, g:o.gt || .4, sat:2, corpsF:260}, dest);
+  A.bruit(t + .002, {coul:'rose', bp:700, bq:1.5, env:A.perc(.002, .06), g:o.claque || 1.2}, dest);   /* la claque de la corde */
+  A.bruit(t + .01, {bp:1300, bp2:2600, bpt:.1, bq:1.5, env:[[0, 0], [.03, 1], [.12, 0]], g:.2}, dest);   /* la flèche qui part */
+}
+/* le sifflement de la flèche en vol */
+function sifflement(A, t, d, o, dest){
+  var env = o.env || [[0, 0], [d * .32, 1], [d * .8, .6], [d, 0]];
+  A.bruit(t, {bp:o.f1, bp2:o.f2, bpt:d, bq:o.q || 14, env:env, g:o.gb == null ? 1.6 : o.gb, trem:o.trem}, dest);
+  if(o.gt) A.ton(t, {f:o.f1, f2:o.f2, gl:d, env:env, g:o.gt, gigue:o.gigue || 20, vib:o.vib, trem:o.trem}, dest);
+  A.bruit(t, {bp:900, bq:1, env:env, g:o.air == null ? .25 : o.air}, dest);
+}
+/* un « toc » dans le bois */
+function toc(A, t, base, o, dest){
+  clic(A, t, o.clicF || 2800, o.clic || .6, dest);
+  A.modes(t, base, [[1, .8, .12 * (o.long || 1)], [2.31, .5, .08 * (o.long || 1)], [3.93, .32, .06], [5.6, .2, .04]], {g:o.g || .3}, dest);
+  A.choc(t, {f:o.fc || 170, f2:(o.fc || 170) * .55, d:.08 * (o.long || 1), g:o.gc || .3, sat:1.8}, dest);
+}
+/* la flèche plantée qui vibre : « dwoïng » */
+function vibreFleche(A, t, o, dest){
+  A.joue(t, A.pince(o.f || 190, {t60:o.t60 || .9, eclat:.45}), {g:o.g || .35, lp:o.lp || 2600, trem:[o.trem || 28, .95], sat:1.5, vit2:o.monte}, dest);
+}
+/* le swish d'une lame */
+function swish(A, t, d, o, dest){
+  var env = [[0, 0], [d * .62, 1], [d, 0]];
+  A.bruit(t, {filtres:[{type:'bandpass', f:o.f1 || 700, pts:[[d * .62, o.f2 || 3400], [d, o.f3 || 1500]], q:o.q || 2.5}], env:env, g:o.g || 1.1}, dest);
+  A.bruit(t, {hp:5000, env:env, g:(o.g || 1.1) * .12}, dest);
+}
+/* le chant d'une lame (shiiing) */
+function chantLame(A, t, o, dest){
+  A.modes(t, o.f || 2900, [[1, 1, .7, 2], [1.47, .6, .55, 3], [2.09, .45, .45], [2.56, .3, .35], [3.21, .2, .25]], {g:o.g || .06, a:.02}, dest);
+}
+/* la lame dans la chair : la claque, le coup sourd, un peu mouillé */
+function tchac(A, t, o, dest){
+  var g = o.g || 1;
+  A.bruit(t, {bp:1100, bq:1, env:A.perc(.001, .03), g:.8 * g}, dest);
+  A.choc(t, {f:170, f2:70, d:.11, g:.5 * g}, dest);
+  A.bruit(t + .01, {filtres:[{type:'lowpass', f:2000, pts:[[.07, 400]], q:5}], env:A.perc(.003, .07), g:.5 * g * (o.mouille == null ? 1 : o.mouille)}, dest);
+}
+/* une frappe sur du métal */
+function tinc(A, t, f, o, dest){
+  clic(A, t, 5200, o.clic || .6, dest);
+  A.modes(t, f, [[1, 1, .55, 3], [2.76, .5, .32, 4], [5.4, .3, .18], [8.93, .15, .1]], {g:o.g || .22}, dest);
+  A.bruit(t, {hp:6000, env:A.perc(.0005, .025), g:.25}, dest);
+}
+/* le BONG de la louche sur la marmite : des harmoniques tordues qui battent entre elles */
+function bong(A, t, f, o, dest){
+  var l = o.long || 1;
+  A.bruit(t, {bp:1900, bq:1.2, env:A.perc(.0008, .018), g:.8}, dest);
+  A.choc(t, {f:120, f2:65, d:.1, g:.4}, dest);
+  A.modes(t, f, [[1, 1, 2.4 * l, 1.1], [1.52, .55, 1.8 * l, 1.6], [2.03, .45, 1.5 * l], [2.61, .38, 1.2 * l, 2.2], [3.27, .3, .9 * l], [4.11, .2, .7 * l], [5.2, .12, .5 * l], [6.6, .07, .3]], {g:o.g || .2, chute:o.chute}, dest);
+}
+/* le sifflement d'un rat en colère (comme un chat) */
+function sifflementRat(A, t, d, g, dest){
+  A.bruit(t, {filtres:[{type:'highpass', f:2500}, {type:'bandpass', f:4800, q:.9}], env:[[0, 0], [.02, 1], [d * .7, .7], [d, 0]], g:g, rugueux:.5, rugVit:4}, dest);
+}
+/* les dents qui claquent (le rat qui grince des dents de rage) */
+function dents(A, t, n, dest){
+  for(var k = 0; k < n; k++) A.bruit(t + k * h(.058, .075), {bp:3200, bq:5, env:A.perc(.0005, .009), g:h(.6, 1)}, dest);
+}
+/* le feu qui prend : fwoosh */
+function embrase(A, t, g, dest){
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:280, pts:[[.25, 2200], [.5, 900]], q:.8}], env:[[0, 0], [.08, 1], [.5, 0]], g:.9 * g}, dest);
+  A.bruit(t, {coul:'brun', lp:400, env:[[0, 0], [.05, 1], [.45, 0]], g:.6 * g}, dest);
+}
+/* la braise qui grésille et crépite, longtemps */
+function gresille(A, t, d, o, dest){
+  var g = o.g || 1, apres = o.apres || .55;
+  A.bruit(t, {hp:o.hp || 4200, env:[[0, 0], [.15, .35], [apres, .4], [apres + .25, 1], [d * .65, .6], [d, 0]], g:.13 * g, rugueux:.7, rugVit:2}, dest);
+  A.joue(t, A.crepitement(d, o.densite || 28, {forme:function(u){ var x = u * d; return Math.min(1, x / apres * .5 + (x > apres ? .5 : 0)) * Math.pow(1 - u, 1.3); }}),
+    {g:.4 * g, env:[[0, 1], [d * .7, 1], [d, 0]], filtres:[{type:'highpass', f:900}, {type:'peaking', f:3200, q:1, gain:5}]}, dest);
+}
+/* le sploutch de la colle */
+function sploutch(A, t, o, dest){
+  var g = o.g || 1;
+  A.ton(t, {f:o.f || 380, f2:70, gl:.11, env:A.perc(.003, .12), g:.5 * g, sat:1.6, lp:1500}, dest);
+  A.bruit(t, {filtres:[{type:'lowpass', f:2600, pts:[[.18, 200]], q:7}], env:[[0, 0], [.004, 1], [.05, .55], [.2, 0]], g:.8 * g}, dest);
+  for(var k = 0; k < (o.bulles == null ? 4 : o.bulles); k++){
+    var tt = t + .06 + Math.random() * .2, f = h(260, 520);
+    A.ton(tt, {f:f, f2:f * h(1.8, 2.6), gl:.03, env:A.perc(.002, .04), g:h(.06, .14) * g}, dest);
+  }
+}
+/* la colle qui s'étire puis lâche (tchlok) */
+function etire(A, t, o, dest){
+  var d = o.d || .16, g = o.g || 1;
+  A.bruit(t, {filtres:[{type:'bandpass', f:450, pts:[[d, 1500]], q:9}], env:[[0, 0], [d * .7, 1], [d, 0]], g:1.2 * g, rugueux:.6, rugVit:5}, dest);
+  A.ton(t + d, {f:900, f2:280, gl:.035, env:A.perc(.001, .04), g:.22 * g}, dest);
+  A.bruit(t + d, {bp:1800, bq:2, env:A.perc(.0005, .015), g:.35 * g}, dest);
+}
+/* le dérapage sur l'huile */
+function glisse(A, t, d, dest){
+  A.bruit(t, {filtres:[{type:'bandpass', f:900, pts:[[d, 2600]], q:8}], env:[[0, 0], [.04, 1], [d * .8, .8], [d, 0]], g:1.4, rugueux:.3}, dest);
+  A.ton(t, {type:'triangle', f:900, f2:2600, gl:d, env:[[0, 0], [.04, 1], [d * .8, .7], [d, 0]], g:.14, gigue:40}, dest);
+}
+/* une petite toux de rat */
+function toux(A, t, o, dest){
+  var g = o.g || 1, hh = o.h || 1;
+  A.bruit(t, {bp:(o.f || 1700) * hh, bq:1.4, env:[[0, 0], [.005, 1], [.04, .35], [.09 * (o.long || 1), 0]], g:.9 * g, rugueux:o.gras, rugVit:8}, dest);
+  A.bruit(t, {bp:3600 * hh, bq:3, env:[[0, 0], [.004, 1], [.03, .3], [.07, 0]], g:.45 * g}, dest);
+  A.cri(t, {forme:'toux', d:.05, h:.78 * hh, rauque:.6, grain:.9, souffle:0, g:.13 * g}, dest);
+}
+function quinte(A, t, n, o, dest){
+  var x = 0;
+  for(var k = 0; k < n; k++){ toux(A, t + x, {g:1 - k * .14, h:(o.h || 1) * h(.96, 1.04), f:o.f, gras:o.gras, long:o.long}, dest); x += h(.11, .15) * (o.long || 1); }
+  return x;
+}
+/* l'inspiration qui siffle entre deux quintes */
+function inspire(A, t, d, dest){
+  A.bruit(t, {bp:2400, bp2:3300, bpt:d, bq:5, env:[[0, 0], [d * .35, 1], [d, 0]], g:.5}, dest);
+  A.ton(t, {f:2800, f2:3100, gl:d, env:[[0, 0], [d * .35, 1], [d, 0]], g:.02}, dest);
+}
+/* le BOUM de l'explosion (le grave est saturé : on l'entend aussi sur une tablette) */
+function boum(A, t, o, dest){
+  var g = o.g || 1;
+  A.bruit(t, {hp:1500, env:A.perc(.001, .06), g:.9 * g}, dest);
+  A.ton(t, {f:140, f2:32, gl:1.1, env:[[0, 0], [.003, 1], [.3, .5], [1.5, 0]], g:.9 * g, sat:3, lp:900}, dest);
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:3000, pts:[[1.2, 120]], q:.8}], env:[[0, 0], [.004, 1], [.25, .45], [1.6, 0]], g:1.6 * g}, dest);
+  A.bruit(t + .05, {coul:'brun', lp:260, env:[[0, 0], [.08, 1], [2.2, 0]], g:1.4 * g}, dest);
+  A.joue(t + .03, A.crepitement(.9, 30), {g:.35 * g, hp:1500}, dest);
+}
+/* la brume noire qui s'échappe : un souffle qui se dissipe */
+function brume(A, t, g, dest){
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[1.4, 1400]], q:.9}], env:[[0, 0], [.25, 1], [1.6, 0]], g:.6 * g}, dest);
+}
+/* de petites étoiles qui tombent */
+function etincelles(A, t, g, dest){
+  [96, 93, 91, 88, 86, 84, 81, 79, 76, 74].forEach(function(n, k){ A.ton(t + k * .055, {type:'triangle', f:A.midi(n), env:A.perc(.002, .5), g:.05 * g}, dest); });
+}
+/* un cuivre de fanfare : trois dents de scie, le filtre qui s'ouvre, un vibrato qui arrive */
+function cuivre(A, t, f, d, g, dest){
+  [-6, 0, 7].forEach(function(det){
+    A.ton(t, {type:'sawtooth', f:f, det:det, env:[[0, 0], [.035, 1], [d * .7, .85], [d, 0]], g:g, filtres:[{type:'lowpass', f:600, pts:[[.06, 3400], [.3, 1900]], q:1.2}], vib:[5.5, f * .006], vibRetard:.25}, dest);
+  });
+}
+function timbale(A, t, g, dest){
+  A.ton(t, {f:98, f2:92, gl:.4, env:[[0, 0], [.004, 1], [.2, .5], [.9, 0]], g:.6 * g, sat:1.6, lp:1200}, dest);
+  A.bruit(t, {coul:'rose', lp:700, env:A.perc(.002, .08), g:.4 * g}, dest);
+}
+
+/* =================== 1. L'ARC =================== */
+/* (13 novembre) Les trois versions de l'arc, écrites en deux moitiés — la corde qu'on tend, la corde lâchée — sans rien changer au son :
+   dans le donjon, le Pisteur tire tout seul (S.arcA/B/C : on tend, puis on lâche à l'instant « moment ») ; dans le mini-jeu du tir aux
+   anneaux de l'enquête 3 (jeu/src/mj-visee.js), c'est le doigt qui décide quand lâcher, et Romain veut « le même son que quand il tire
+   avec son arc dans le donjon » : le mini-jeu joue donc ces deux moitiés-ci (G.BRUITAGES_ARC), l'une quand le doigt se pose, l'autre
+   quand il se lève. Une seule source : changer l'arc ici le change aux deux endroits. */
+var ARC = {
+  A:{rev:.25, moment:.8, duree:1.4,
+    tendre:function(A, t, o){
+      A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
+      grinceArc(A, t + .08, .7, {}, o);
+      A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:98, t60:.5}, o); }},
+  B:{rev:.2, moment:.5, duree:.9,
+    tendre:function(A, t, o){
+      A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o); }},
+  C:{rev:.4, moment:1.12, duree:2.2,
+    tendre:function(A, t, o){
+      clic(A, t, 2400, .5, o);
+      grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
+      A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o); }}
+};
+['A', 'B', 'C'].forEach(function(v){
+  S['arc' + v] = function(A, P){
+    var x = ARC[v], t = P.t, o = A.bus(P, {rev:x.rev, pan:-.35});
+    x.tendre(A, t, o);
+    x.lacher(A, t + x.moment, o);
+    return {duree:x.duree, moment:x.moment};
+  };
+});
+
+/* =================== 2. LA FLÈCHE EN VOL =================== */
+S.volA = function(A, P){
+  var d = .5, o = A.bus(P, {rev:.18, pan:-.5, pan2:.6, pant:d});
+  sifflement(A, P.t, d, {f1:2700, f2:1900, q:14, gt:.06}, o);
+  return {duree:d};
+};
+S.volB = function(A, P){
+  var d = .45, t = P.t, o = A.bus(P, {rev:.18, pan:-.5, pan2:.6, pant:d}), env = [[0, 0], [d * .45, 1], [d, 0]];
+  A.bruit(t, {filtres:[{type:'bandpass', f:700, pts:[[d * .45, 1700], [d, 900]], q:1.2}], env:env, g:.7}, o);
+  A.bruit(t, {hp:4000, env:env, g:.1}, o);
+  return {duree:d};
+};
+S.volC = function(A, P){
+  var d = .6, o = A.bus(P, {rev:.2, pan:-.5, pan2:.6, pant:d});
+  sifflement(A, P.t, d, {f1:3000, f2:1700, q:10, gt:.1, vib:[9, 40], trem:[36, .7], env:[[0, 0], [.12, 1], [.45, .7], [d, 0]], air:.2}, o);
+  return {duree:d};
+};
+
+/* =================== 3. LA FLÈCHE PLANTÉE =================== */
+S.chairFA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.45});
+  A.choc(t, {f:240, f2:85, d:.1, g:.6, sat:2.2, blp:1100}, o);
+  A.bruit(t, {hp:3000, env:A.perc(.0005, .005), g:.35}, o);
+  return {duree:.3};
+};
+S.chairFB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.45});
+  A.choc(t, {f:240, f2:85, d:.1, g:.55, sat:2.2, blp:1100}, o);
+  A.bruit(t + .005, {filtres:[{type:'lowpass', f:1800, pts:[[.12, 250]], q:7}], env:[[0, 0], [.004, 1], [.04, .5], [.13, 0]], g:.6}, o);
+  A.ton(t + .01, {f:320, f2:120, gl:.08, env:A.perc(.003, .08), g:.25}, o);
+  return {duree:.35};
+};
+S.chairFC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.45});
+  A.choc(t, {f:240, f2:85, d:.1, g:.6, sat:2.2, blp:1100}, o);
+  A.bruit(t, {hp:3000, env:A.perc(.0005, .005), g:.35}, o);
+  vibreFleche(A, t + .004, {f:170, t60:.35, g:.3, lp:1800, trem:22}, o);
+  return {duree:.5};
+};
+S.boisA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.5});
+  toc(A, t, 420, {}, o);
+  vibreFleche(A, t + .01, {t60:.25, g:.15}, o);
+  return {duree:.45};
+};
+S.boisB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.5});
+  toc(A, t, 420, {}, o);
+  vibreFleche(A, t + .01, {f:180, t60:1.0, g:.45, trem:26, monte:1.07}, o);
+  return {duree:1.2};
+};
+S.boisC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, pan:.5});
+  toc(A, t, 230, {long:1.8, fc:120, gc:.5, clicF:2000}, o);
+  vibreFleche(A, t + .01, {f:150, t60:.6, g:.25, trem:24}, o);
+  return {duree:1.0};
+};
+
+/* =================== 4. LA DAGUE =================== */
+S.swishA = function(A, P){
+  var o = A.bus(P, {rev:.15, pan:.1});
+  swish(A, P.t, .22, {}, o);
+  return {duree:.22, moment:.2};
+};
+S.swishB = function(A, P){
+  var o = A.bus(P, {rev:.15, pan:.1});
+  swish(A, P.t, .16, {f1:900, f2:3000, f3:1800, g:.6}, o);
+  swish(A, P.t + .2, .2, {f1:600, f2:3600, f3:1400, g:1.1}, o);
+  return {duree:.42, moment:.39};
+};
+S.swishC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.1});
+  A.bruit(t, {bp:5500, bq:5, env:[[0, 0], [.01, 1], [.08, .6], [.12, 0]], g:.5}, o);          /* la lame qui glisse */
+  swish(A, t + .05, .22, {}, o);
+  chantLame(A, t + .06, {}, o);
+  return {duree:.7, moment:.25};
+};
+S.chairDA = function(A, P){
+  tchac(A, P.t, {}, A.bus(P, {rev:.2, pan:.4}));
+  return {duree:.3};
+};
+S.chairDB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.4});
+  A.choc(t, {f:120, f2:55, d:.15, g:.7, sat:3}, o);
+  A.bruit(t, {coul:'rose', lp:500, env:A.perc(.002, .1), g:.5}, o);
+  return {duree:.3};
+};
+S.chairDC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.4});
+  A.bruit(t, {filtres:[{type:'bandpass', f:3000, pts:[[.05, 1200]], q:2}], env:A.perc(.002, .05), g:.7}, o);   /* la lame qui tranche */
+  tchac(A, t + .02, {mouille:1.4}, o);
+  return {duree:.35};
+};
+S.metalA = function(A, P){
+  tinc(A, P.t, 1350, {}, A.bus(P, {rev:.3, pan:.4}));
+  return {duree:.7};
+};
+S.metalB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, pan:.4});
+  clic(A, t, 4200, .7, o);
+  A.choc(t, {f:200, f2:110, d:.08, g:.35}, o);
+  A.modes(t, 520, [[1, 1, 1.1, 1.5], [1.59, .7, .85, 2], [2.14, .55, .7], [2.3, .5, .6, 2.5], [2.65, .4, .5], [3.6, .3, .35], [5.1, .18, .2]], {g:.18}, o);
+  return {duree:1.3};
+};
+S.metalC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.4});
+  tinc(A, t, 1150, {}, o);
+  A.bruit(t + .02, {bp:4200, bp2:2200, bpt:.25, bq:12, env:[[0, 0], [.01, 1], [.2, .6], [.27, 0]], g:1.2}, o);   /* la lame qui ripe */
+  tinc(A, t + .22, 1700, {g:.08, clic:.3}, o);
+  return {duree:.9};
+};
+
+/* =================== 5. LES RATS TOUCHÉS =================== */
+/* — par une flèche : un couinement bref — */
+S.ratFlecheA = function(A, P){
+  A.cri(P.t, {forme:'iik', d:.15, f:RAT * h(.96, 1.04), grain:.5, souffle:.2, g:.32}, A.bus(P, {rev:.25, pan:.45}));
+  return {duree:.3};
+};
+S.ratFlecheB = function(A, P){
+  var o = A.bus(P, {rev:.25, pan:.45});
+  A.cri(P.t, {forme:'iik', d:.07, h:.92, g:.24}, o);
+  A.cri(P.t + .09, {forme:'iik', d:.17, h:1.08, grain:.55, g:.32}, o);
+  return {duree:.4};
+};
+S.ratFlecheC = function(A, P){
+  var o = A.bus(P, {rev:.25, pan:.45});
+  A.cri(P.t, {forme:'aie', d:.24, h:.88, rauque:.35, grain:.7, g:.34}, o);
+  A.cri(P.t + .3, {forme:'plainte', d:.2, h:.8, g:.15, souffle:.35}, o);
+  return {duree:.6};
+};
+/* — par la dague : un couinement et un choc sourd — */
+S.ratDagueA = function(A, P){
+  var o = A.bus(P, {rev:.22, pan:.4});
+  A.choc(P.t, {f:160, f2:60, d:.11, g:.55}, o);
+  A.cri(P.t + .025, {forme:'aie', d:.2, rauque:.2, grain:.6, g:.32}, o);
+  return {duree:.35};
+};
+S.ratDagueB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.22, pan:.4});
+  A.choc(t, {f:130, f2:55, d:.15, g:.65, sat:3}, o);
+  A.cri(t + .03, {forme:'cri', d:.34, h:.95, rauque:.5, grain:.8, g:.34}, o);
+  [.5, .62, .74].forEach(function(x, k){ A.bruit(t + x, {bp:3000, bq:1.5, env:[[0, 0], [.02, 1], [.07, 0]], g:.18 - k * .04}, o); });   /* il souffle vite */
+  return {duree:.85};
+};
+S.ratDagueC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.22, pan:.4});
+  A.choc(t, {f:150, f2:60, d:.12, g:.55}, o);
+  sifflementRat(A, t + .04, .26, .6, o);
+  A.cri(t + .3, {forme:'iik', d:.13, h:1.05, rauque:.25, g:.3}, o);
+  return {duree:.5};
+};
+/* — par le feu : un cri, et le grésillement qui continue — */
+S.ratFeuA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  embrase(A, t, 1, o);
+  A.cri(t + .05, {forme:'cri', d:.65, h:1.08, rauque:.5, grain:.8, g:.36, trille:[13, .03]}, o);
+  gresille(A, t + .15, 3, {apres:.6}, o);
+  return {duree:3.2};
+};
+S.ratFeuB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  embrase(A, t, 1, o);
+  A.cri(t + .05, {forme:'cri', d:.55, h:1.05, rauque:.5, grain:.8, g:.34}, o);
+  A.cri(t + 1.05, {forme:'iik', d:.1, h:1.15, rauque:.2, g:.26}, o);
+  A.cri(t + 1.55, {forme:'iik', d:.1, h:1.2, rauque:.2, g:.24}, o);
+  A.cri(t + 2.1, {forme:'iik', d:.09, h:1.12, g:.2}, o);
+  gresille(A, t + .15, 3.2, {apres:.5}, o);
+  return {duree:3.4};
+};
+S.ratFeuC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  embrase(A, t, 1.2, o);
+  A.cri(t + .05, {forme:'cri', d:.8, h:1.25, rauque:.4, grain:.7, g:.36, trille:[14, .08]}, o);
+  [0, .14, .28].forEach(function(x){ A.cri(t + .95 + x, {forme:'aie', d:.1, h:1.2, rauque:.3, g:.24}, o); });
+  gresille(A, t + .12, 3, {g:1.3, hp:5500, densite:40, apres:.75}, o);
+  return {duree:3.2};
+};
+/* — par la lumière : un gémissement d'ébloui — */
+S.ratLumiereA = function(A, P){
+  var o = A.bus(P, {rev:.3, pan:.45});
+  A.cri(P.t, {forme:'plainte', d:.85, h:.82, souffle:.5, grain:.45, g:.3, a:.06, trille:[7, .025]}, o);
+  A.cri(P.t + 1.0, {forme:'plainte', d:.4, h:.75, souffle:.6, g:.17, a:.05}, o);
+  return {duree:1.5};
+};
+S.ratLumiereB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.45});
+  A.cri(t, {forme:'iik', d:.12, h:1.15, g:.28}, o);
+  A.cri(t + .2, {forme:'plainte', d:.7, h:.85, souffle:.45, g:.28, a:.05, trille:[6, .03]}, o);
+  [.95, 1.05, 1.17, 1.27].forEach(function(x){ A.bruit(t + x, {bp:h(3000, 5000), bq:1.5, env:A.perc(.01, .05), g:.1}, o); });   /* il se frotte les yeux */
+  return {duree:1.45};
+};
+S.ratLumiereC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.45});
+  [0, 1, 2].forEach(function(k){ A.cri(t + k * .32, {forme:'question', d:.2, h:.92 - k * .05, g:.26, souffle:.3}, o); });
+  A.cri(t + 1.05, {forme:'plainte', d:.9, h:.8, souffle:.4, g:.26, a:.06, trille:[4.5, .07]}, o);
+  return {duree:2.1};
+};
+/* — par la louche : le BONG, puis un grognement furieux — */
+S.ratLoucheA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, pan:.45});
+  bong(A, t, 205, {g:.28}, o);
+  sifflementRat(A, t + .55, .35, .3, o);
+  dents(A, t + .92, 7, o);
+  A.cri(t + 1.38, {forme:'cri', d:.42, h:.7, rauque:.8, grain:.9, g:.36}, o);
+  return {duree:2.6};
+};
+S.ratLoucheB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, pan:.45});
+  bong(A, t, 205, {g:.28}, o);
+  A.ton(t + .55, {type:'sawtooth', f:150, f2:135, env:[[0, 0], [.05, 1], [.55, .8], [.7, 0]], g:.3, gigue:25, trem:[27, .9], filtres:[{type:'peaking', f:700, q:1.5, gain:6}, {type:'lowpass', f:1500, q:.7}]}, o);   /* grrrr */
+  A.bruit(t + .55, {bp:1200, bq:1, env:[[0, 0], [.05, 1], [.55, .8], [.7, 0]], g:.35, rugueux:.9, rugVit:6}, o);
+  A.cri(t + 1.3, {forme:'cri', d:.3, h:.75, rauque:.7, grain:.9, g:.34}, o);
+  A.cri(t + 1.7, {forme:'aie', d:.25, h:.8, rauque:.6, grain:.9, g:.32}, o);
+  return {duree:2.6};
+};
+S.ratLoucheC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, pan:.45});
+  bong(A, t, 165, {long:1.4, chute:.985, g:.28}, o);
+  dents(A, t + .7, 6, o);
+  A.cri(t + 1.1, {forme:[[0, .6], [.6, 1.1], [1, 1.25]], d:.7, h:.75, rauque:.7, grain:.9, g:.36}, o);
+  return {duree:3.2};
+};
+/* — dans la colle : il se débat, couine, et la colle fait sploutch — */
+S.ratColleA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  sploutch(A, t, {}, o);
+  for(var k = 0; k < 4; k++){
+    var x = t + .4 + k * .38;
+    etire(A, x, {d:.16, g:.6}, o);
+    A.cri(x + .04, {forme:'effort', d:.13, h:.9 + k * .04, rauque:.3, grain:.7, g:.36}, o);
+  }
+  sploutch(A, t + 2.0, {g:.7}, o);
+  return {duree:2.5};
+};
+S.ratColleB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.45});
+  sploutch(A, t, {f:300, g:1.3, bulles:7}, o);
+  [.5, 1.2].forEach(function(x, k){
+    etire(A, t + x, {d:.3, g:.7}, o);
+    A.cri(t + x + .05, {forme:'aie', d:.25, h:.88 + k * .06, rauque:.4, grain:.8, g:.38}, o);
+  });
+  sploutch(A, t + 1.85, {g:.9}, o);
+  return {duree:2.4};
+};
+S.ratColleC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  sploutch(A, t, {}, o);
+  for(var k = 0; k < 6; k++){
+    var x = t + .35 + k * .21;
+    etire(A, x, {d:.09, g:.5}, o);
+    A.cri(x + .02, {forme:'peur', d:.09, h:1.05 + (k % 2) * .1, g:.34}, o);
+  }
+  sploutch(A, t + 1.75, {g:.8}, o);
+  return {duree:2.2};
+};
+/* — sur l'huile : il glisse (fwiiit), cri de surprise, puis la chute — */
+S.ratHuileA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.35, pan2:.6, pant:.7});
+  glisse(A, t, .35, o);
+  A.cri(t + .36, {forme:[[0, .8], [.3, 1.35], [1, 1.2]], d:.18, h:1.1, grain:.5, g:.32}, o);
+  A.choc(t + .72, {f:150, f2:55, d:.13, g:.6}, o);
+  A.choc(t + .86, {f:170, f2:70, d:.07, g:.25}, o);
+  A.joue(t + .95, A.griffes(.35, 22), {g:.35, hp:2500}, o);
+  return {duree:1.4, moment:.72};
+};
+S.ratHuileB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.35, pan2:.6, pant:.7});
+  A.ton(t, {f:500, f2:2600, gl:.38, env:[[0, 0], [.03, 1], [.36, .8], [.4, 0]], g:.13, vib:[7, 25]}, o);   /* le sifflet de dessin animé */
+  A.cri(t + .42, {forme:[[0, .8], [.3, 1.35], [1, 1.2]], d:.18, h:1.15, g:.3}, o);
+  A.choc(t + .75, {f:200, f2:60, d:.12, g:.6}, o);
+  A.cri(t + 1.0, {forme:'plainte', d:.3, h:.8, g:.16, souffle:.4}, o);
+  return {duree:1.45, moment:.75};
+};
+S.ratHuileC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.35, pan2:.6, pant:.9});
+  glisse(A, t, .35, o);
+  A.cri(t + .36, {forme:[[0, .8], [.3, 1.35], [1, 1.2]], d:.2, h:1.1, g:.32}, o);
+  A.ton(t + .58, {f:2400, f2:600, gl:.5, env:[[0, 0], [.03, 1], [.45, .7], [.5, 0]], g:.09, vib:[8, 30]}, o);   /* la chute qui siffle */
+  A.choc(t + 1.1, {f:140, f2:45, d:.2, g:.75, sat:3}, o);
+  A.bruit(t + 1.1, {coul:'rose', lp:1500, env:A.perc(.02, .35), g:.35}, o);   /* la poussière */
+  return {duree:1.8, moment:1.1};
+};
+/* — dans le nuage : trois quintes de toux — */
+S.ratNuageA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  var x = quinte(A, t, 4, {}, o);
+  inspire(A, t + x + .1, .22, o);
+  var t2 = t + x + .42; x = quinte(A, t2, 3, {h:1.05}, o);
+  inspire(A, t2 + x + .1, .22, o);
+  var t3 = t2 + x + .42; x = quinte(A, t3, 4, {h:.97}, o);
+  return {duree:t3 + x + .3 - t};
+};
+S.ratNuageB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  var x = quinte(A, t, 3, {}, o);
+  inspire(A, t + x + .1, .2, o);
+  var t2 = t + x + .38; x = quinte(A, t2, 3, {h:1.05}, o);
+  var t3 = t2 + x + .2;
+  x = quinte(A, t3, 2, {h:1.02}, o);
+  A.cri(t3 + x + .15, {forme:'question', d:.09, h:1.0, g:.2}, o);                /* hi... */
+  A.cri(t3 + x + .3, {forme:'question', d:.1, h:1.1, g:.22}, o);                 /* ...hi... */
+  A.bruit(t3 + x + .45, {hp:2000, env:A.perc(.002, .12), g:1.1}, o);              /* ...tchi ! */
+  A.cri(t3 + x + .46, {forme:'toux', d:.06, h:1.1, g:.15}, o);
+  return {duree:t3 + x + .75 - t};
+};
+S.ratNuageC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.45});
+  var opt = {f:1100, gras:.9, long:1.25, h:.95};
+  var x = quinte(A, t, 3, opt, o);
+  inspire(A, t + x + .1, .32, o);
+  var t2 = t + x + .52; x = quinte(A, t2, 4, opt, o);
+  inspire(A, t2 + x + .1, .32, o);
+  var t3 = t2 + x + .52; x = quinte(A, t3, 3, opt, o);
+  return {duree:t3 + x + .35 - t};
+};
+/* — le coup critique (refait le 10 novembre : beaucoup plus violent) —
+   Chaque version a trois morceaux, pour que le jeu les cale sur l'image :
+   avant (pendant le ralenti, 0,42 s, facultatif), impact (l'image de choc), explosion (le rat qui éclate).
+   Écoutée seule : avant, puis l'impact, puis l'explosion 0,6 s plus tard. */
+function decale(P, t){ return {t:t, sec:P.sec, cave:P.cave, grotte:P.grotte}; }
+/* l'impact énorme et sec : un claquement écrêté, un coup de poing grave saturé, le corps qui craque */
+function claque(A, t, g, dest){
+  A.bruit(t, {hp:600, env:[[0, 0], [.0004, 1], [.01, .35], [.05, 0]], g:1.3 * g, sat:5, pre:2}, dest);
+  A.ton(t, {f:170, f2:36, gl:.3, env:[[0, 0], [.002, 1], [.07, .65], [.5, 0]], g:1.1 * g, sat:7, lp:2600}, dest);
+  A.bruit(t, {coul:'rose', bp:1300, bq:.8, env:A.perc(.001, .1), g:1.6 * g, sat:4}, dest);
+}
+/* la chute de grave (saturée : on l'entend aussi sur une tablette) */
+function chuteGrave(A, t, d, g, dest){
+  A.ton(t, {f:120, f2:26, gl:d, env:[[0, 0], [.006, 1], [d * .4, .55], [d, 0]], g:.85 * g, sat:4, lp:900}, dest);
+  A.ton(t, {type:'triangle', f:60, f2:24, gl:d, env:[[0, 0], [.006, 1], [d * .5, .5], [d, 0]], g:.5 * g}, dest);
+}
+/* un craquement saturé, qui grésille */
+function craque(A, t, d, g, dest){
+  A.joue(t, A.crepitement(d, 220, {forme:function(u){ return Math.pow(1 - u, 1.6); }}), {g:1.2 * g, sat:6, filtres:[{type:'highpass', f:350}, {type:'lowpass', f:7000}], env:[[0, 1], [d * .8, 1], [d, 0]]}, dest);
+}
+/* l'explosion, et son souffle qui traverse la salle de gauche à droite */
+function deflagre(A, P, t, g, dest, sourd){
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:6000, pts:[[1.6, 110]], q:.7}], env:[[0, 0], [.006, 1], [.35, .5], [2.2, 0]], g:2 * g, sat:2.5}, dest);
+  A.bruit(t + .03, {coul:'brun', lp:300, env:[[0, 0], [.06, 1], [2.8, 0]], g:1.8 * g, sat:2}, dest);
+  var vent = sourd || A.bus(decale(P, t), {rev:.4, pan:-.9, pan2:.9, pant:1.4});
+  A.bruit(t + .02, {coul:'rose', filtres:[{type:'bandpass', f:2400, pts:[[1.5, 260]], q:.9}], env:[[0, 0], [.08, 1], [.6, .5], [1.8, 0]], g:1.1 * g}, vent);
+}
+/* les débris qui retombent : des éclats et des cailloux, partout dans la salle */
+function debris(A, P, t, d, g, sourd){
+  for(var k = 0; k < 22; k++){
+    var tt = t + .1 + Math.pow(Math.random(), 1.7) * d, f = h(1400, 5200);
+    var o = sourd || A.bus(decale(P, tt), {rev:.35, pan:h(-.9, .9)});
+    A.modes(tt, f, [[1, 1, h(.03, .09)], [2.3, .5, .04], [3.7, .3, .03]], {g:h(.04, .12) * g}, o);
+    A.bruit(tt, {bp:f * .8, bq:2, env:A.perc(.0005, .01), g:h(.1, .3) * g}, o);
+  }
+  A.joue(t + .05, A.crepitement(d, 45, {forme:function(u){ return Math.pow(1 - u, 1.2); }}), {g:.5 * g, filtres:[{type:'highpass', f:1200}, {type:'lowpass', f:5000}]}, sourd || A.bus(decale(P, t), {rev:.3}));
+}
+/* le sifflement d'oreille qui retombe */
+function acouphene(A, t, d, f, g, dest){
+  [[1, 1], [1.004, .5]].forEach(function(p){
+    A.ton(t, {f:f * p[0], f2:f * .84 * p[0], gl:d, env:[[0, 0], [.12, 1], [d * .3, .7], [d, 0]], g:g * p[1]}, dest);
+  });
+}
+/* l'oreille assourdie qui revient peu à peu : un filtre presque fermé, qui se rouvre */
+function sourdine(A, t, d, dest){
+  var f = A.ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = .5;
+  f.frequency.setValueAtTime(380, t); f.frequency.setValueAtTime(380, t + d * .3); f.frequency.exponentialRampToValueAtTime(12000, t + d);
+  f.connect(dest);
+  return f;
+}
+var CRIT = {
+  /* A — Coup de tonnerre */
+  A:{impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1, o); chuteGrave(A, t, 1.4, 1, o); craque(A, t, .35, 1, o); },
+     explosion:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.6, grotte:.5, pan:.35}); deflagre(A, P, t, 1, o); debris(A, P, t + .1, 1.8, 1); acouphene(A, t + .08, 2.6, 4200, .05, A.bus(decale(P, t))); },
+     duree:3.6},
+  /* B — Assourdi : un cri coupé net par l'impact ; après, on n'entend plus que le sifflement… puis le bruit revient */
+  B:{avant:function(A, P, t){ A.cri(t + .12, {forme:'cri', d:.3, h:1.2, rauque:.7, grain:.9, g:.42, env:[[0, 0], [.02, 1], [.29, 1], [.3, 0]]}, A.bus(decale(P, t), {rev:.3, pan:.35})); },
+     impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1.2, o); chuteGrave(A, t, 1.6, 1, o); },
+     explosion:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.5, grotte:.6, pan:.35}), sd = sourdine(A, t, 3.2, o);
+       deflagre(A, P, t, 1.1, sd, sd); debris(A, P, t + .3, 2.4, 1.2, sd);
+       acouphene(A, t + .02, 3.2, 3600, .09, A.bus(decale(P, t)));
+     },
+     duree:4.6},
+  /* C — Déflagration : ça aspire, l'impact, un long craquement, deux explosions, le souffle, les débris */
+  C:{avant:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.3, pan:.35});
+       A.bruit(t, {filtres:[{type:'bandpass', f:300, pts:[[.42, 3200]], q:1.6}], env:[[0, 0], [.3, .35], [.41, 1], [.42, 0]], g:.9}, o);
+       A.ton(t, {f:80, f2:320, gl:.42, env:[[0, 0], [.35, .4], [.41, 1], [.42, 0]], g:.3, sat:3, lp:1200}, o);
+     },
+     impact:function(A, P, t){ var o = A.bus(decale(P, t), {rev:.5, pan:.35}); claque(A, t, 1.3, o); craque(A, t, .6, 1.1, o); chuteGrave(A, t, 1.5, 1, o); },
+     explosion:function(A, P, t){
+       var o = A.bus(decale(P, t), {rev:.6, grotte:.6, pan:.35});
+       deflagre(A, P, t, 1, o); deflagre(A, P, t + .13, .8, o); claque(A, t + .13, .6, o);
+       debris(A, P, t + .15, 2.2, 1.1); acouphene(A, t + .2, 1.6, 4800, .04, A.bus(decale(P, t)));
+     },
+     duree:4.2}
+};
+function critiqueEntier(v){
+  return function(A, P){
+    var V = CRIT[v], t = P.t, ti = t + (V.avant ? .42 : 0);
+    if(V.avant) V.avant(A, P, t);
+    V.impact(A, P, ti);
+    V.explosion(A, P, ti + .6);
+    return {duree:V.duree, moment:ti - t};
+  };
+}
+S.ratCritiqueA = critiqueEntier('A');
+S.ratCritiqueB = critiqueEntier('B');
+S.ratCritiqueC = critiqueEntier('C');
+S.CRITIQUE = CRIT;
+/* — la fuite : des couinements de peur qui s'éloignent — */
+S.ratFuiteA = function(A, P){
+  var t = P.t, d = 1.5, lo = A.lointain(P, t, d, {pan1:.2, pan2:.95, fin:.08, lp2:1500});
+  var x = 0;
+  for(var k = 0; k < 6; k++){ A.cri(t + x, {forme:'peur', d:h(.09, .14), h:h(1.05, 1.25), grain:.6, g:.32}, lo); x += h(.15, .22); }
+  A.joue(t, A.griffes(1.35, 24), {g:.45, hp:2500, filtres:[{type:'peaking', f:4200, q:1, gain:4}]}, lo);
+  return {duree:2.0};
+};
+S.ratFuiteB = function(A, P){
+  var t = P.t, d = 2.4, lo = A.lointain(P, t, d, {pan1:.2, pan2:.9, fin:.1, lp2:1200, grotte:true, rev2:1.2}), ec = A.echo(lo, {temps:.23, retour:.35, lp:2000, sortie:.5});
+  var voix = A.gain(1); voix.connect(lo); voix.connect(ec);
+  var x = 0;
+  for(var k = 0; k < 6; k++){ A.cri(t + x, {forme:'peur', d:h(.11, .16), h:1.18 - k * .04, grain:.6, g:.3}, voix); x += h(.28, .36); }
+  A.joue(t, A.griffes(2.2, 20), {g:.35, hp:2500}, lo);
+  A.plusTard(5, ec.couper);
+  return {duree:3.4};
+};
+S.ratFuiteC = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.2, pan:.4});
+  A.cri(t, {forme:'peur', d:.14, h:1.2, g:.32}, o);
+  A.bruit(t + .12, {filtres:[{type:'bandpass', f:400, pts:[[.18, 3200]], q:2}], env:[[0, 0], [.15, 1], [.2, 0]], g:.8}, o);   /* zip ! */
+  var lo = A.lointain(P, t + .3, .7, {pan1:.6, pan2:1, fin:.1, lp2:2000});
+  for(var k = 0; k < 4; k++) A.cri(t + .32 + k * .1, {forme:'peur', d:.06, h:1.3 - k * .04, g:.24}, lo);
+  return {duree:1.2};
+};
+
+/* =================== 6. VICTOIRE ET FUITE DES HÉROS =================== */
+S.victoireA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45});
+  [[0, 392], [.15, 523.3], [.3, 659.3]].forEach(function(n){ cuivre(A, t + n[0], n[1], .14, .07, o); });
+  cuivre(A, t + .45, 784, .45, .08, o);
+  for(var k = 0; k < 6; k++) timbale(A, t + .62 + k * .055, .25 + k * .05, o);
+  timbale(A, t + .95, 1, o);
+  [261.6, 329.6, 392, 523.3].forEach(function(f){ cuivre(A, t + .95, f, 1.6, .045, o); });
+  A.bruit(t + .95, {hp:6000, env:A.perc(.003, 1.4), g:.1}, o);                        /* la cymbale */
+  etincelles(A, t + 1.05, .8, o);
+  return {duree:3.0};
+};
+S.victoireB = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5});
+  [60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79, 81, 83, 84].forEach(function(n, k){ A.harpe(t + k * .045, A.midi(n), {t60:1.6, g:.22}, o); });
+  [72, 76, 79, 84].forEach(function(n, k){ A.cloche(t + .75 + k * .02, A.midi(n), {d:2.6, rapport:3.5, indice:1.2, g:.09}, o); });
+  A.choeur(t + .7, [261.6, 329.6, 392], 2.4, {voyelle:'a', a:.3, r:1.4, g:.05}, o);
+  etincelles(A, t + .8, .6, o);
+  return {duree:3.3};
+};
+S.fuiteA = function(A, P){
+  var t = P.t, lo = A.lointain(P, t, 1.5, {pan1:-.2, pan2:-.9, fin:.25, lp2:2500, rev2:.6});
+  var x = 0;
+  for(var k = 0; k < 8; k++){ A.pas(t + x, {g:1 - k * .05}, lo); x += .22 - k * .007; }
+  var o = A.bus(P, {rev:.7, pan:-.7}), p = t + 1.75;
+  A.choc(p, {f:110, f2:45, d:.3, g:.85, sat:3, corpsF:320, corps:1.6}, o);             /* la porte claque */
+  A.bruit(p, {coul:'rose', bp:1100, bq:1.2, env:A.perc(.001, .07), g:1.2}, o);
+  A.modes(p, 180, [[1, .6, .25], [2.4, .4, .18], [3.7, .3, .1]], {g:.25}, o);
+  A.modes(p + .004, 410, [[1, .7, .16], [2.13, .5, .1], [3.4, .3, .07]], {g:.18}, o);
+  clic(A, p + .02, 3000, .5, o);
+  clic(A, p + .16, 3400, .35, o);                                                       /* le loquet */
+  return {duree:3.2};
+};
+S.fuiteB = function(A, P){
+  var t = P.t, lo = A.lointain(P, t, 1.2, {pan1:-.2, pan2:-.85, fin:.3, lp2:2500, rev2:.6});
+  for(var k = 0; k < 6; k++) A.pas(t + k * .19, {g:.9 - k * .08}, lo);
+  var o = A.bus(P, {rev:.6});
+  [69, 67, 64, 62].forEach(function(n, k){ A.harpe(t + 1.0 + k * .28, A.midi(n), {t60:2, g:.3}, o); A.cloche(t + 1.0 + k * .28, A.midi(n + 12), {d:1.6, g:.03}, o); });
+  A.choeur(t + 1.9, [146.8, 174.6, 220], 2.6, {voyelle:'ou', a:.5, r:1.5, g:.045}, o);
+  return {duree:4.5};
+};
+
+/* =================== 7. LE PETIT SON QUAND ON TOUCHE UNE ICÔNE (arme, potion) — proposé le 9 novembre =================== */
+S.iconeA = function(A, P){                                                                   /* un « tic » de bois */
+  var t = P.t, o = A.bus(P, {rev:.08});
+  clic(A, t, 2400, .22, o);
+  A.modes(t, 760, [[1, 1, .06], [2.31, .45, .035], [3.93, .2, .02]], {g:.13}, o);
+  return {duree:.2};
+};
+S.iconeB = function(A, P){                                                                   /* une petite note de verre, douce */
+  var t = P.t, o = A.bus(P, {rev:.15});
+  A.ton(t, {f:1175, env:[[0, 0], [.004, 1], [.08, .35], [.45, 0]], g:.07}, o);
+  A.ton(t, {f:1175 * 2.76, env:[[0, 0], [.002, 1], [.12, 0]], g:.012}, o);
+  return {duree:.5};
+};
+S.iconeC = function(A, P){                                                                   /* un clic de cuir */
+  var t = P.t, o = A.bus(P, {rev:.06});
+  A.bruit(t, {coul:'rose', bp:1300, bq:.8, env:A.perc(.002, .035), g:.5}, o);
+  A.ton(t, {f:190, f2:120, gl:.05, env:A.perc(.002, .06), g:.12, sat:1.3}, o);
+  return {duree:.2};
+};
+
+/* l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation (le lâcher de la corde, la lame qui touche, la culbute) */
+[['arc', {A:.8, B:.5, C:1.12}], ['swish', {A:.2, B:.39, C:.25}], ['ratHuile', {A:.72, B:.75, C:1.1}]].forEach(function(m){
+  Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
+});
+G.BRUITAGES = S;
+G.BRUITAGES_ARC = ARC;   /* les deux moitiés de l'arc, pour le tir aux anneaux (jeu/src/mj-visee.js) */
+/* les petits morceaux, prêtés aux nouveaux sons de l'atelier (bestiaire.js, donjon.js) — rien ne change ici */
+G.BRUITAGES_OUTILS = {clic:clic, grinceArc:grinceArc, lacherCorde:lacherCorde, sifflement:sifflement, toc:toc, vibreFleche:vibreFleche, swish:swish, chantLame:chantLame, tchac:tchac, tinc:tinc,
+  bong:bong, sifflementRat:sifflementRat, dents:dents, embrase:embrase, gresille:gresille, sploutch:sploutch, etire:etire, glisse:glisse, toux:toux, boum:boum, brume:brume,
+  etincelles:etincelles, cuivre:cuivre, timbale:timbale, claque:claque, chuteGrave:chuteGrave, craque:craque, acouphene:acouphene, decale:decale};
+})(window);
+
 /* ===== mj-visee-decor.js ===== */
 ;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
@@ -29708,7 +31727,54 @@ function audio(){
   return ctxA;
 }
 var SONS = sonsVisee(audio, function(a){ return a.destination; });
-function son(nom){ try{ if(SONS[nom]) SONS[nom](); }catch(e){} }
+/* L'ARC DU DONJON (Romain, 13 novembre : « le son quand on bande l'arc, j'aimerais que tu prennes le même que quand il tire avec son
+   arc dans le donjon, le même son »). Le moteur de son du donjon et ses bruitages sont dans le jeu (build.py : SON_DONJON). Comme
+   là-bas, une des trois versions au hasard à chaque tir (les trois sont gardées par Romain : donjon/essai/src/son.js, CHOIX_SONS.arc),
+   au même niveau (niveaux.json). La corde qu'on tend quand le doigt se pose ; la corde lâchée quand il se lève — si on lâche avant la
+   fin du grincement, il se tait. Sans le moteur (un vieux navigateur, un fichier manquant) : les sons d'avant. */
+var ARC_DJ = (function(){
+  var eng = null, engCtx = null, prise = null, ver = null, rate = false;
+  var NIV = {A:1.9077, B:1.7027, C:1.1949};
+  function moteur(){
+    if(rate || !window.Moteur || !window.BRUITAGES_ARC) return null;
+    var a = audio(); if(!a) return null;
+    if(!eng || engCtx !== a){ try{ eng = window.Moteur(a, {}); engCtx = a; }catch(e){ rate = true; eng = null; if(window.console) console.warn('arc du donjon', e); } }
+    return eng;
+  }
+  return {
+    preparer:function(){ try{ moteur(); }catch(e){} },
+    tendre:function(){
+      var E = moteur(); if(!E) return false;
+      try{
+        ver = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
+        var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .02;
+        prise = E.prise(t, NIV[ver]);
+        x.tendre(E, t, E.bus(prise, {rev:x.rev, pan:0}));
+        return true;
+      }catch(e){ prise = null; return false; }
+    },
+    lacher:function(){
+      var E = moteur(); if(!E || !ver) return false;
+      try{
+        var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .01;
+        if(prise && prise.couper) prise.couper(t, .02);     /* le grincement s'arrête net : la corde est partie */
+        var p2 = E.prise(t, NIV[ver]);
+        x.lacher(E, t, E.bus(p2, {rev:x.rev, pan:0}));
+        prise = null;
+        return true;
+      }catch(e){ return false; }
+    },
+    /* le tir est abandonné (la pause, la fin de la partie) : le grincement se tait */
+    taire:function(){ try{ if(prise && prise.couper && eng) prise.couper(eng.ctx.currentTime, .03); }catch(e){} prise = null; }
+  };
+})();
+function son(nom){
+  try{
+    if(nom === 'bander' && ARC_DJ.tendre()) return;
+    if(nom === 'lacher' && ARC_DJ.lacher()) return;
+    if(SONS[nom]) SONS[nom]();
+  }catch(e){}
+}
 
 /* ==========================================================
    L'ARC ET LA MAIN, vus par les yeux du Pisteur (Romain, 16 h 51 : « il faut que tout l'arc soit dans la bonne
@@ -30069,6 +32135,7 @@ function anneauPlat(an, prefixe, trou, bois){
    LE JEU
    ========================================================== */
 function jouer(el, p, fin){
+  ARC_DJ.preparer();   /* (le moteur de son du donjon se prépare maintenant, pas au premier tir) */
   var id = 'vs' + (++nUid) + '-', N = Math.min(A.PORTEURS.length, p.anneaux || 5), rExt = p.trou + p.bois;
   var etat = 'large', actif = -1, fleches = p.fleches, rates = 0, chaine = [], finie = false, arrete = false;
   var W = 0, H = 0, u = 1, sL = 1, sV = 1, C = [0, 0], zf = 2.5, cote = 0, oyL = 0, mVise = 1, kTremble = 1;
@@ -30453,6 +32520,7 @@ function jouer(el, p, fin){
   };
   return {arreter:function(){
     arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ clearTimeout(t); });
+    ARC_DJ.taire();
     if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
   }};
 }
@@ -31434,6 +33502,7 @@ M.uneCondition = function(b){
   if(b.et) return b.et.every(M.uneCondition);                  /* condition « ET » : toutes à la fois */
   if(b.non) return !M.uneCondition(b.non);                     /* (enquête 3) le contraire : le filet de la lettre, si le Sage ne l'a pas encore */
   if(b.ou) return b.ou.some(M.uneCondition);                   /* (enquête 3, 12 novembre) condition « OU », à l'intérieur d'un « ET » */
+  if(b.brumeFinie) return !!(M.brumeFinie && M.brumeFinie());   /* (enquête 3, 13 novembre) toutes les plantes d'au-delà de la brume sont cueillies (cueillette.js) */
   if(b.toutDit) return !!(M.toutDit && M.toutDit(b.toutDit));  /* (enquête 3, 12 novembre) tout demandé à ces villageois : un grand dialogue s'ouvre (barde.js) */
   if(b.outil) return (M.S.outils || []).indexOf(b.outil) >= 0; /* outil de saison (coffret de teintures…) */
   return false;
@@ -31507,11 +33576,7 @@ var VARIANTES = {
   traces:[{id:'ville', ic:'🏘️', nom:'Suivre la piste : le massif de la mairie', d:'Les petites traces vont jusqu\'à la forêt (enquête 1)',
     params:{decor:'ville', suspect:'enfant', compagnon:'botte', arrivee:'foret', arriveeTxt:'Dans la forêt !', compagnonTxt:'Les bottes du jardinier…',
       departTitre:'Retiens bien ces petites traces', departNom:'Petites traces toutes fraîches', departTxt:'Au départ, de grosses bottes marchent avec elles. Ne suis que les petites !'}},
-    /* (enquête 3) les traces de Moustache jusqu'à la crypte : avec le code « Moustache a six doigts », puis sans (le lait cache ses doigts) */
-    {id:'chat6', ic:'🐾', nom:'Suivre la piste : Moustache (six doigts)', d:'Avec le code du Sage (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !',
-      departTitre:'Retiens bien cette trace', departNom:'Moustache : six doigts !', departTxt:'Compte bien ses doigts : aucun autre chat n\'en a autant.'}},
-    {id:'chat', ic:'🥛', nom:'Suivre la piste : Moustache (sans le code)', d:'Le lait cache ses doigts (enquête 3)', params:{decor:'ville', suspect:'chat', chercher:10, arrivee:'crypte', arriveeTxt:'La porte de la crypte !', carteFloue:true,
-      departTitre:'Retiens bien cette trace', departNom:'Une patte de chat, dans le lait', departTxt:'Le lait cache ses doigts… Et au village, il y a plein de chats !'}},
+    /* (13 novembre) les traces de Moustache ne sont plus une variante de ce jeu : c'est « Suivre les traces » (mj-pistage.js), où le Pisteur marche librement */
     /* (enquête 3) « Suivre la poussière » : la piste de l'Alchimiste jusqu'au rond des vesses-de-loup */
     {id:'poussiere', ic:'🍄', nom:'Suivre la poussière : les vesses-de-loup', d:'La piste de l\'Alchimiste (enquête 3)', params:{decor:'foret', suspect:'poussiere', arrivee:'vesses', arriveeTxt:'Le rond des vesses-de-loup !',
       departTitre:'Retiens bien cette trace', departNom:'La poussière des vesses-de-loup', departTxt:'Une fine poussière brune, que le champignon crache quand un lièvre l\'écrase.'}}],
@@ -31532,6 +33597,7 @@ var STATUT = {
   traces:'🔁', poursuite:'🔁', cachette:'🔁', tir:'🔁',
   bulles:'🔁', melange:'🔁', chaudron:'🔁', differences:'🔁', double:'🔁', insectes:'🔁',
   gateau:'🟡',   /* le gâteau de la fête (11 novembre) : tout neuf, à essayer par Romain ; la difficulté choisie n'y change rien */
+  pistage:'🟡',  /* les traces de Moustache (13 novembre) : le Pisteur marche, la caméra le suit ; tout neuf, à essayer par Romain */
   visee:'🟡',    /* les banderoles de la fête, le nouveau tir vu par les yeux du Pisteur (12 novembre) : tout neuf, à essayer par Romain */
   mensonge:'🔁', mots:'🔁', depositions:'🔁',
   alphabet:'🔁', plans:'🔁', grille:'🔁', runes:'🔁'
