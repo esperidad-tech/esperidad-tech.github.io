@@ -479,11 +479,11 @@ Trois petits dialogues, à la fête, sans minuteur. Le premier quand : le grand 
 
 ## 7. Ce qui n'est PAS encore construit (le reste du nouveau scénario)
 
-Les dialogues du Barde suivent le nouveau scénario. **Les trois autres rôles et le donjon suivent encore l'ancien fil**, tant que Romain n'a pas donné son « go » pour chacun :
+Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32), le Sage et l'Alchimiste aussi, en partie. Ce qui reste, tant que Romain n'a pas donné son « go » :
 
 - **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; le geste de la grille (tirer, pousser ou soulever) et ce qu'il change pour le maire ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou).
-- **Le Sage** : les pointures dans le registre ; le Livre d'or qui laisse deux suspectes (Mélusine ou Margot).
-- **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo dit encore tout de suite « c'est l'écriture de Mélusine » et montre du pollen de lavande.
+- **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
+- **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
 - **Le donjon** : Léo en chef des monstres ; le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne (le donjon est donc un peu plus dur).
 - **La fin** : Odette délivrée avant l'arrivée du maire, ou seulement entendue derrière la porte ? La scène de Léo est provisoire.
 - **La Grosse Marie et la brume** (l'Alchimiste qui cueille pendant que la brume recule) : à décider avec la tisane d'Anselme, validée le 12 novembre à 15 h 39.
