@@ -32933,7 +32933,9 @@ M.lire = function(texte, opts){
   if(!t) return;
   opts = opts || {};
   /* Voix naturelles (version installée) : chaque personnage a sa voix, toujours dès qu'elles sont téléchargées
-     (plus de case à cocher ni de vitesse dans les Réglages ; une vieille sauvegarde qui les avait coupées les retrouve) */
+     (plus de case à cocher ni de vitesse dans les Réglages ; une vieille sauvegarde qui les avait coupées les retrouve).
+     Depuis le 13 novembre, c'est voix.js qui choisit, sans jamais faire attendre : la voix naturelle si elle est prête
+     tout de suite, sinon la voix de l'appareil (M.lireAppareil), à l'instant. */
   if(window.Voix && Voix.pret){
     M.parle = true; majBoutonStop();
     var ok = Voix.lire(t, opts.qui || 'narrateur', 1, function(){ M.parle = false; majBoutonStop(); });
@@ -32942,24 +32944,29 @@ M.lire = function(texte, opts){
   }
   M.lireAppareil(t);
 };
-/* La voix de l'appareil (aussi le secours de voix.js quand une voix naturelle échoue sur une tablette) */
+/* La voix de l'appareil : elle part tout de suite (voix.js s'en sert dès que la voix naturelle ferait attendre).
+   Renvoie la phrase lancée (voix.js vérifie une fois qu'elle parle vraiment), ou null. */
+var nAppareil = 0;
 M.lireAppareil = function(t, fini){
   try{
-    var u = new SpeechSynthesisUtterance(t);
+    var u = new SpeechSynthesisUtterance(t), moi = ++nAppareil;
     u.lang = 'fr-FR'; if(voixFr) u.voice = voixFr;
     u.rate = 0.95; u.pitch = 1;
-    u.onend = u.onerror = function(){ M.parle = false; majBoutonStop(); if(fini) fini(); };
+    /* la fin d'une phrase qu'on vient de couper pour en lire une autre arrive en retard : elle ne doit pas cacher le bouton ⏹ de la nouvelle */
+    u.onend = u.onerror = function(){ if(moi !== nAppareil) return; M.parle = false; majBoutonStop(); if(fini) fini(); };
     M.parle = true; majBoutonStop();
     speechSynthesis.speak(u);
-  }catch(e){ M.parle = false; if(fini) fini(); }
+    return u;
+  }catch(e){ M.parle = false; if(fini) fini(); return null; }
 };
-M.stop = function(){ try{ speechSynthesis.cancel(); }catch(e){} try{ if(window.Voix) Voix.stop(); }catch(e){} M.parle = false; majBoutonStop(); };
+M.stop = function(){ nAppareil++; try{ speechSynthesis.cancel(); }catch(e){} try{ if(window.Voix) Voix.stop(); }catch(e){} M.parle = false; majBoutonStop(); };
 /* Jamais de lecture automatique : quatre tablettes qui parlent en même temps, c'est insupportable. On lit seulement sur un bouton 🔊. */
 M.lireAuto = function(){};
 function majBoutonStop(){
   var b = document.getElementById('stop-voix');
   if(b) b.hidden = !M.parle;
 }
+M.majBoutonStop = majBoutonStop;
 window.Brume = {lire:function(t, o){ return M.lire(t, o); }, stop:function(){ return M.stop(); }, son:function(t, x){ return M.son(t, x); }, sonActif:function(){ return !(M.S && M.S.options && M.S.options.son === false); }};
 
 /* ---------- Sauvegarde (emplacements : plusieurs héros par appareil) ---------- */
