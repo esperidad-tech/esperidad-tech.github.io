@@ -1,6 +1,16 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre à 16 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre à 17 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 13 novembre (17 h 30) : Léo, le boss final, et la fin de l'enquête 3 — conçus, rien de construit (Bible §13.33)
+
+- **À lire : Bible §13.33**, en entier. Conçu avec Romain de 14 h 02 à 17 h 29.
+- Après Bourbe : le chat d'Odette, puis **Léo, grand, musclé, cape noire**. Le Sage n'a aucune information : on apprend en jouant. **Combat en temps réel**, 10 000 points de vie, **trois phases** séparées par de courtes cinématiques (sauvegarde automatique à chacune) ; attaques dans un **ordre fixe** ; pas d'explication avant (exception voulue).
+- **Le Barde** : un code du Pisteur à l'entrée chez Léo ouvre des questions à Farinel (les outils, la farine) et à Iris (la potion volée). **Dialogues verrouillés : il faudra le go de Romain.**
+- **La fin** : Léo au sol dévoile des choses sur le maire (texte à écrire) ; le maire et les gardes ; les quatre en prison. À accorder avec la fin déjà construite (§13.20).
+- **Changements pour tout le donjon** : les deux boucliers (jaune 75 % qui arrête les contrôles, chêne 2 × 50 %), les herbes à 15, Bourbe qui retombe à l'eau après un critique.
+- **Tranché par Romain à 17 h 38** : Odette n'est pas délivrée ; Léo a agi parce que le maire lui a promis un but (il n'a jamais voulu être meunier) ; il révèle que le maire a tout orchestré et descend seul dans la ville souterraine (pas qui il est vraiment) ; l'arc de lune est enlevé pendant le combat ; pas d'accélération en phase 3 ; le fumigène ne sert pas contre Léo ; vie pleine au début de chaque phase. **18 h 06 : la fin est décidée, textes compris** (Bible §13.33, « LA FIN, DÉCIDÉE PAR ROMAIN ») : Léo parle → « Bravo, enquête résolue » → trois accusations (où est Odette, qui a écrit la lettre, qui se cachait sous la cape noire) → le maire et les gardes → la prison → « Fin de l'enquête 3… mais ce n'est que le début ». **18 h 08 : la question du Corbeau est retirée ; « Retenir le maire » et « Léo s'est enfui » aussi.** Le Barde, pendant le donjon, apporte des indices (Farinel, Iris).
+- **Construction : attendre la fin des corrections du donjon par l'autre conversation et le go de Romain.**
 
 ## Nouveau depuis le 13 novembre (16 h 15) : le test de Romain en famille, et toutes ses corrections (Bible §13.32)
 
