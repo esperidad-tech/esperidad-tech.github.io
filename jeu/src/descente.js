@@ -25,6 +25,7 @@ var M = window.M, D = window.DONNEES;
 if(!M) return;
 var esc = M.esc, A = M.A;
 var CLE_PISTEUR = 'brumeval-donjon-partie', CLE_SAGE = 'brumeval-donjon-sage', CLE_JETON = 'brumeval-donjon-jeton:', CLE_RETOUR = 'brumeval-donjon-retour';
+var CLE_DEPART = 'brumeval-donjon-depart';   /* par jeton : d'où on est parti (l'adresse du jeu portait-elle « #test » ?) */
 function enquete(){ try{ return M.S && M.S.e ? M.E() : null; }catch(e){ return null; } }
 function cfg(){ var E = enquete(); return (E && E.donjon) || null; }
 function lu(cle){ try{ return localStorage.getItem(cle); }catch(e){ return null; } }
@@ -59,6 +60,7 @@ A['ds-aller'] = function(){
   if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.UI.modal = null; M.render(); return; }
   /* on retient qu'on est parti de l'enquête : en remontant, on revient DANS l'enquête, pas sur la place du village (revenir, plus bas) */
   try{ sessionStorage.setItem(CLE_RETOUR, P.donjonJeton); }catch(e){}
+  noterDepart(P.donjonJeton);
   M.UI.modal = null;
   window.location.href = u;
 };
@@ -169,10 +171,44 @@ M.render = function(){
 };
 M.donjonRelire = relire;
 /* On remonte du donjon (la page du donjon ramène ici) : le jeu s'ouvre d'habitude sur la place du village ; là, on revient tout droit
-   dans l'enquête, à la carte. (sessionStorage : seulement dans cet onglet, seulement si on est parti d'ici avec ce jeton.) */
-function revenir(){
+   dans l'enquête, à la carte. (sessionStorage : seulement dans cet onglet, seulement si on est parti d'ici avec ce jeton.)
+   (13 novembre, le bug du Pisteur qui remontait en Alchimiste : moteur-base.js, « Un héros ne prend jamais la place d'un autre ».)
+   La page du donjon revient maintenant avec « ?retour=<le jeton de la descente> » : on retrouve le héros de CETTE descente dans les
+   emplacements de l'appareil (M.emplacementDuJeton), quel que soit ce que l'onglet a retenu ; et l'adresse retrouve son « #test »
+   (sans lui, l'enquête 3, encore fermée aux joueurs, se croyait « en cours d'écriture » au retour). */
+function noterDepart(j){
+  try{
+    var d = json(CLE_DEPART) || {}, l;
+    d[j] = {hash:location.hash || '', t:Date.now()};
+    l = Object.keys(d).sort(function(a, b){ return (d[b].t || 0) - (d[a].t || 0); });
+    l.slice(8).forEach(function(k){ delete d[k]; });
+    localStorage.setItem(CLE_DEPART, JSON.stringify(d));
+  }catch(e){}
+}
+function remettreAdresse(j){
+  try{
+    var d = (json(CLE_DEPART) || {})[j] || {}, u = new URL(location.href), avant = u.search + u.hash;
+    u.searchParams.delete('retour');
+    var q = u.searchParams.toString(), h = u.hash || d.hash || '';
+    if((q ? '?' + q : '') + h !== avant) history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + h);
+  }catch(e){}
+}
+var retourJeton = null;
+(function(){
   var j = null;
-  try{ j = sessionStorage.getItem(CLE_RETOUR); sessionStorage.removeItem(CLE_RETOUR); }catch(e){}
+  try{ (location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ var k = x.split('='); if(k[0] === 'retour') j = decodeURIComponent(k[1] || ''); }); }catch(e){}
+  if(!j) return;
+  remettreAdresse(j);
+  var n = M.emplacementDuJeton ? M.emplacementDuJeton(j) : 0;
+  if(!n) return;
+  retourJeton = j;
+  M.choisirEmplacement(n);   /* (avant le démarrage du jeu, qui relit cet emplacement ; ou après : le héros est remplacé tout de suite) */
+})();
+function revenir(){
+  var j = retourJeton;
+  try{ j = j || sessionStorage.getItem(CLE_RETOUR); sessionStorage.removeItem(CLE_RETOUR); }catch(e){}
+  retourJeton = null;
+  if(j) remettreAdresse(j);
   var Sx = M.S, P = Sx && Sx.e;
   if(!j || !Sx || !Sx.heros || !P || P.etape !== 'jeu' || P.defaite || P.donjonJeton !== j || !cfg()) return;
   M.UI.ecran = 'enquete'; M.UI.modal = null; M.UI.pile = [];

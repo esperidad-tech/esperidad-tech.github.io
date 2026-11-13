@@ -917,7 +917,9 @@ DJ.toucher(function(a, id, b){
   }
   if(a === 'fin-donjon'){ DJ.fermer(); finDonjon(); return true; }
   /* (l'enquête 3) */
-  if(a === 'enquete'){ son('clic'); garder(); DJ.taire(); location.href = '../index.html'; return true; }
+  /* (13 novembre) on dit au jeu QUELLE descente remonte (son jeton) : il retrouve le bon héros, même si plusieurs héros jouent sur le
+     même appareil (jeu/src/descente.js, « retour ») */
+  if(a === 'enquete'){ son('clic'); garder(); DJ.taire(); location.href = '../index.html' + (X.partie && X.partie.jeton ? '?retour=' + encodeURIComponent(X.partie.jeton) : ''); return true; }
   if(a === 'maire-sans'){ var mv = X.maire; X.maire = null; X.maireVu = true; DJ.fermer(); if(mv) aller(mv.vers, mv.lien); return true; }
   return false;
 });
