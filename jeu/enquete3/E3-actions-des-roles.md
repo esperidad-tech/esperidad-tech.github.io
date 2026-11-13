@@ -1,5 +1,13 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 13 NOVEMBRE, TARD LE SOIR (Bible §13.33 et §13.35, qui font foi) — Léo et la fin de l'enquête 3. Ce qui suit REMPLACE ce que ce document dit plus bas de la dernière salle, du maire retenu, de Léo et du Corbeau :**
+> - **La dernière salle du donjon : Léo, le boss final** (un combat en temps réel, trois phases). En entrant, le donjon montre un **code pour le Barde : « L'homme en cape est là ! »** (`leo:salle` ↔ `info:leo_la`). À la fête, **Farinel et Iris** ont alors de nouvelles questions (les outils du moulin, la potion volée) : le Barde lit les réponses à voix haute pendant le combat.
+> - **Léo battu parle** (cinq phrases, sur la tablette du Pisteur), puis « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! » et un **code pour le Sage : « Léo a parlé »** (`leo:battu` ↔ `info:leo_battu`). **Sans ce code, le Sage ne peut pas accuser.**
+> - **Trois accusations**, dans cet ordre : OÙ est Odette ? (au clocher) · QUI a écrit la fausse lettre ? (Mélusine) · **QUI se cachait sous la cape noire ? (Léo)**. **La question du Corbeau est retirée.**
+> - **Retirés** : « Retenir le maire » (les trois dialogues, la mission, le code « Le maire est retenu », la fenêtre avant la dernière salle), « Léo attrapé », « Léo s'est enfui », la scène de Léo chez le Barde, « Ce que Léo a dit ». La Grosse Marie reste en réserve.
+> - **La fin** (les quatre tablettes) : le maire, Silas et les gardes ; la bague ; « Gardes ! Attrapez-les ! » ; **le cachot, avec les quatre héros** (chacun tape le code d'apparence de ses amis) ; « Fin de l'enquête 3… mais ce n'est que le début. » Odette n'est pas délivrée.
+> - **L'Alchimiste : plus d'ardoise sur la paillasse d'analyse.** Le code d'une analyse est donné au retour à l'atelier, dans la fiche de la découverte.
+>
 > **⚠️ 13 NOVEMBRE AU SOIR (Bible §13.34, qui fait foi) — la descente et le donjon :**
 > - **La grille de la crypte** : la clé en main, trois gestes — **tirer, pousser** (« un énorme bruit s'est entendu dans tout le village ») ou **soulever** (sans bruit). Le bruit est seulement retenu : ce qu'il change pour le maire n'est pas construit.
 > - **Nouveau code : « On va dans la crypte »** (`on_descend`, Pisteur → Sage et Alchimiste), donné quand le passage est ouvert (la grille, ou le puits). Chez chacun : **« Il est temps d'enfiler notre tenue de combat ! »**, et son **code d'allure** pour le Pisteur (`allure:<n>` : fille ou garçon, la peau, les cheveux).

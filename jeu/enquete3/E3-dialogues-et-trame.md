@@ -374,7 +374,7 @@ Chacun dit une réplique, autant de fois qu'on veut.
 
 ### 🧥 L'aide pour le donjon : pendant le combat contre l'homme en cape
 
-Quand le Pisteur entre dans la dernière salle, il donne au Barde le code « L'homme en cape est là ! » (pour barde). À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.
+Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en cape est là ! » (pour barde). À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.
 
 **Iris** — « Une potion ? Oh… Il faut que je te dise quelque chose. »
 

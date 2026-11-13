@@ -1,13 +1,13 @@
-"""Enquête 3, étape 7 (Bible § 13.14) : l'accusation et la fin animée (Playwright).
+"""Enquête 3 : l'accusation et la fin animée (Playwright) — la fin décidée par Romain le 13 novembre (Bible §13.33 et §13.35).
 
-  le Barde : « Léo attrapé » ouvre le grand dialogue ; trois étapes réussies → « ✨ La suite », le code « Léo a tout dit » pour le Sage
-    (+10 pièces d'or) ; deux étapes → « Léo : Elle est sous le clocher » ; aucune → pas de code ; « Léo s'est enfui » : pas de code ;
-  le Sage : il reçoit « Ce que Léo a dit » ; l'accusation (QUI : Mélusine, OÙ : sous le clocher) ; une mauvaise accusation coûte un
-    cœur ; la question du Corbeau (son 🔊, trois suspects, aucun cœur) : la réponse reste secrète (la même phrase, juste ou pas) ;
-    le code de fin porte la variante de la scène finale ; la fin : six images, chacune avec son 🔊, cinq petites scènes animées
-    (la porte, minuit, le maire et Léo, la bague, les gardes) puis le cachot et sa plume noire ; la réplique du maire change selon ce
-    que Léo a dit ; le calepin de fin ;
-  les autres tablettes : le code de fin du Sage donne la même variante (et le code simple, la scène sans Léo) ;
+  le Sage : tant qu'il n'a pas reçu « Léo a parlé » (le code du Pisteur, à la fin du donjon), il ne peut pas accuser (« Pas encore… ») ;
+    il le reçoit ; les trois accusations, dans l'ordre : OÙ est Odette ? QUI a écrit la fausse lettre ? QUI se cachait sous la cape
+    noire ? ; une mauvaise accusation coûte un cœur ; plus de question du Corbeau ; le code de fin ;
+    la fin : six images, chacune avec son 🔊 — quatre petites scènes animées (le maire descend, « Qu'avez-vous fait à Léo ? », la bague,
+    « Gardes ! Attrapez-les ! »), le cachot et sa plume noire, puis « Fin de l'enquête 3… mais ce n'est que le début. » ; le calepin ;
+  le cachot : sous l'image, mon code d'apparence et le pavé ; le code d'un ami tapé, il n'est plus une ombre ; les quatre : plus de pavé ;
+  les autres tablettes : le code de fin du Sage donne la même fin ;
+  ce qui est retiré : « Retenir le maire », « Léo attrapé / enfui », « Ce que Léo a dit », le Corbeau ;
   l'enquête 2 : ses codes de fin n'ont pas bougé.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-fin.py"""
 import sys, os, json
@@ -72,26 +72,20 @@ def nuit_sage(pg):
     for _ in range(2):
         pg.evaluate("() => { M.UI.modal = null; M.A['passer-moment'](); }"); pg.wait_for_timeout(400); fermer(pg)
 
-def accuser(pg, qui, ou):
+def accuser(pg, qui, ou, cape):
+    """les trois accusations, dans l'ordre de Romain : OÙ, QUI a écrit, QUI sous la cape"""
     pg.evaluate("() => { M.UI.modal = null; M.A.accuser(); }"); pg.wait_for_timeout(250)
-    pg.locator(f'#voile [data-act=acc-choix][data-k=qui][data-v={qui}]').click(); pg.wait_for_timeout(200)
     pg.locator(f'#voile [data-act=acc-choix][data-k=ou][data-v={ou}]').click(); pg.wait_for_timeout(200)
+    pg.locator(f'#voile [data-act=acc-choix][data-k=qui][data-v={qui}]').click(); pg.wait_for_timeout(200)
+    pg.locator(f'#voile [data-act=acc-choix][data-k=quoi][data-v={cape}]').click(); pg.wait_for_timeout(200)
     pg.locator('#voile [data-act=acc-valider]').click(); pg.wait_for_timeout(350)
-
-def leo(pg, bons):
-    """le grand dialogue de Léo : « Continuer », puis `bons` bonnes réponses, puis une mauvaise (s'il en reste)"""
-    X = pg.evaluate("() => M.E().grands.leo.etapes.map(function(e){ return e.choix.map(function(c){ return !!c.bon; }); })")
-    pg.locator('#voile [data-act=gd-leo-suite]').click(); pg.wait_for_timeout(250)
-    for e in range(3):
-        k = X[e].index(True) if e < bons else X[e].index(False)
-        pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); pg.wait_for_timeout(350)
-        if e >= bons: break
 
 def diapo(pg):
     return pg.evaluate("""() => { var a = document.querySelector('.b-fin-slide'); if(!a) return null;
       return {n:+a.dataset.n, t:a.querySelector('p').textContent, son:!!a.querySelector('.b-lire'), scene:(a.querySelector('.sf-scene') || {className:''}).className,
         gens:a.querySelectorAll('.sf-gens').length, gardes:a.querySelectorAll('.sf-garde').length, bulles:[].map.call(a.querySelectorAll('.sf-bulle'), function(b){ return b.textContent; }),
-        prison:!!a.querySelector('.b-prison'), plume:!!a.querySelector('.b-prison-plume'), points:document.querySelectorAll('.b-points i').length}; }""")
+        prison:!!a.querySelector('.b-prison'), plume:!!a.querySelector('.b-prison-plume'), points:document.querySelectorAll('.b-points i').length,
+        pave:a.querySelectorAll('.b-prison-codes [data-act=sym]').length, connus:a.querySelectorAll('.b-prison-ombre.connu').length, ombres:a.querySelectorAll('.b-prison-ombre').length}; }""")
 
 def histoire(pg, nom, capt=True):
     """toute la fin, image par image : rend la liste des diapos"""
@@ -107,65 +101,92 @@ def histoire(pg, nom, capt=True):
 
 with sync_playwright() as p:
     b = p.chromium.launch()
-    # ======================================================================== le Barde et Léo
-    # (12 novembre au soir) Léo n'est plus un grand dialogue à trois étapes : une scène sans choix, un seul code (info:leo_dit3)
-    print('— Le Barde : ce que Léo a dit (une scène, sans choix)')
+    # ======================================================================== ce qui est retiré
+    print('— Ce qui est retiré (Romain, 13 novembre, 18 h 08)')
     pg = debut(b, 'Barde', 'barde')
     code(pg, 'moment:1'); code(pg, 'moment:2')
-    t = code(pg, 'info:leo_attrape', True)
-    verifier(pg.locator('#voile [data-act=gd-leo-ment]').count() == 0 and pg.locator('#voile [data-act=gd-choix]').count() == 0 and 'apprenti du meunier' in texte(pg), '« Léo attrapé » : la scène s\'ouvre tout de suite, sans mensonge ni choix')
-    verifier(pg.locator('#voile [data-act=gd-leo-code]').count() == 1 and pg.evaluate("() => !!M.P().objets['_info:leo_dit3']"), '« ✨ La suite », et le code info:leo_dit3 est gardé pour le Sage')
-    verifier(pg.evaluate("() => !M.E().infos.leo_dit1 && !M.E().infos.leo_dit2"), 'plus de code « Léo a parlé à moitié »')
-    shot(pg, 'barde-leo')
-    pg.locator('#voile [data-act=gd-leo-code]').click(); pg.wait_for_timeout(350)
-    t = texte(pg)
-    verifier('Ce que Léo a dit' in t and 'donne son code au Sage' in t and pg.locator('#voile .b-donne, #voile .b-code').count() >= 1 and not sans_son(pg), f'la découverte : le code pour le Sage, et le 🔊 ({t[:50]})')
-    shot(pg, 'barde-code')
-    pg.context.close()
-    pg = debut(b, 'Barde', 'barde')
-    code(pg, 'moment:1'); code(pg, 'moment:2')
-    t = code(pg, 'info:leo_enfui', True)
-    verifier('Léo s\'est enfui' in t and 'Léo a filé' in t and pg.evaluate("() => !Object.keys(M.P().objets).some(function(k){ return k.indexOf('_info:leo_dit') === 0; })"), '« Léo s\'est enfui » : la scène, pas de code pour le Sage')
+    E = pg.evaluate("() => { var E = M.E(); return {retenir:!!E.retenir, corbeau:!!E.corbeau, leo:!!(E.grands && E.grands.leo), infos:Object.keys(E.infos).filter(function(k){ return /^(leo_|maire_)/.test(k); }).sort(), missions:E.etapes.barde.map(function(x){ return x.t; }).join(' | ')}; }")
+    verifier(not E['retenir'] and not E['corbeau'] and not E['leo'], '« Retenir le maire », la question du Corbeau et la scène de Léo chez le Barde n\'existent plus')
+    verifier(E['infos'] == ['leo_battu', 'leo_la'], f'les codes de Léo : « L\'homme en cape est là ! » (pour le Barde) et « Léo a parlé » (pour le Sage) ; plus de « Léo attrapé », « Léo s\'est enfui », « Ce que Léo a dit », « Le maire est retenu » ({E["infos"]})')
+    verifier('retiens-le' not in E['missions'] and 'Tes amis se battent' in E['missions'], 'la mission de la nuit du Barde : plus « retiens-le », mais « Tes amis se battent, tout au fond ! »')
     pg.context.close()
 
-    # ======================================================================== le Sage : Léo a tout dit
-    print('— Le Sage : l\'accusation, le Corbeau, la fin (Léo a tout dit)')
+    # ======================================================================== le Sage : pas avant que Léo ait parlé
+    print('— Le Sage : l\'accusation attend Léo, puis les trois questions, la fin')
     pg = debut(b, 'Sage', 'sage')
     nuit_sage(pg)
-    verifier(pg.evaluate("() => M.finVariante()") == 0 and pg.evaluate("() => M.idVictoire(0)") == 'victoire:0', 'sans rien de Léo : la variante 0, le code de fin simple')
-    t = code(pg, 'info:leo_dit3', True)
-    verifier('Ce que Léo a dit' in t and 'apprenti du meunier' in t and 'pas froid' in t and 'bague' not in t and not sans_son(pg), f'le Sage reçoit « Ce que Léo a dit » (Léo ne nomme pas le maire) ({t[:50]})')
+    pg.evaluate("() => { M.UI.modal = null; M.A.accuser(); }"); pg.wait_for_timeout(250)
+    t = texte(pg)
+    verifier('Pas encore' in t and 'homme en cape' in t and pg.locator('#voile [data-act=acc-choix]').count() == 0 and not sans_son(pg), f'sans « Léo a parlé », le Sage ne peut pas accuser : « Pas encore… » (avec son 🔊) ({t[:60]})')
     fermer(pg)
-    verifier(pg.evaluate("() => M.finVariante()") == 2 and pg.evaluate("() => M.idVictoire(1)") == 'victoire:21', 'la variante 2 : le code de fin la portera')
+    t = code(pg, 'info:leo_battu', True)
+    verifier('Léo a parlé' in t and 'apprenti du meunier' in t and 'le maire qui a tout préparé' in t and 'ville entière' in t and 'Place aux accusations' in t and not sans_son(pg), f'le Sage reçoit « Léo a parlé » : ce que Léo a dit, « Place aux accusations ! » ({t[:50]})')
+    fermer(pg)
+    verifier(pg.evaluate("() => M.finVariante()") == 2 and pg.evaluate("() => M.idVictoire(1)") == 'victoire:21', 'le code de fin : toujours la scène où Léo est là')
     c0 = pg.evaluate("() => M.coeurs()")
-    accuser(pg, 'margot', 'clocher')
-    verifier('pas ça' in texte(pg) and pg.evaluate("() => M.coeurs()") == c0 - 1, 'une mauvaise accusation (Margot) : un cœur de moins'); fermer(pg)
-    accuser(pg, 'melusine', 'clocher')
+    pg.evaluate("() => { M.UI.modal = null; M.A.accuser(); }"); pg.wait_for_timeout(250)
+    verifier('OÙ est Odette' in texte(pg) and pg.locator('#voile [data-act=acc-choix][data-k=ou]').count() == 10, 'la première question : « OÙ est Odette ? »')
+    pg.locator('#voile [data-act=acc-choix][data-k=ou][data-v=clocher]').click(); pg.wait_for_timeout(200)
+    verifier('QUI a écrit la fausse lettre' in texte(pg), 'la deuxième : « QUI a écrit la fausse lettre ? »')
+    pg.locator('#voile [data-act=acc-choix][data-k=qui][data-v=melusine]').click(); pg.wait_for_timeout(200)
+    verifier('QUI se cachait sous la cape noire' in texte(pg) and pg.locator('#voile [data-act=acc-choix][data-k=quoi] .b-suspect-img').count() == 10, 'la troisième : « QUI se cachait sous la cape noire ? », dix visages')
+    shot(pg, 'cape')
+    pg.locator('#voile [data-act=acc-choix][data-k=quoi][data-v=farinel]').click(); pg.wait_for_timeout(200)
+    verifier(pg.locator('#voile .b-acc-choix').count() == 3 and pg.locator('#voile .b-acc-choix .b-acc-img').count() == 2, 'le résumé : trois réponses, deux visages et un lieu')
+    shot(pg, 'resume')
+    pg.locator('#voile [data-act=acc-valider]').click(); pg.wait_for_timeout(350)
+    verifier('pas ça' in texte(pg) and pg.evaluate("() => M.coeurs()") == c0 - 1, 'une mauvaise accusation (Farinel sous la cape) : un cœur de moins'); fermer(pg)
+    accuser(pg, 'melusine', 'clocher', 'leo')
     t = texte(pg)
-    verifier('QUI est le Corbeau' in t and pg.locator('#voile [data-act=corbeau-choix]').count() == 3 and 'aucun cœur' in t and not sans_son(pg), f'la bonne accusation : la question du Corbeau, trois suspects, son 🔊 ({t[:60]})')
-    shot(pg, 'corbeau')
-    pg.locator('#voile [data-act=corbeau-choix][data-v=silas]').click(); pg.wait_for_timeout(350)
-    t = texte(pg)
-    verifier('encre secrète' in t and 'Tu as vu juste' not in t and pg.locator('#voile .b-corbeau-rep.ok').count() == 0 and pg.evaluate("() => M.P().corbeau") == 'silas' and pg.evaluate("() => M.coeurs()") == c0 - 1, 'la réponse reste secrète (pas de « bravo », pas de cœur perdu), elle est gardée')
-    seq = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile .b-code-sym, #voile .b-sym, #voile [data-sym]'), function(e){ return e.textContent; }).join('')")
+    verifier('Bravo' in t and 'Corbeau' not in t and pg.locator('#voile [data-act=corbeau-choix]').count() == 0 and pg.locator('#voile [data-act=fin-sage]').count() == 1, f'la bonne accusation (au clocher, Mélusine, Léo) : « Bravo », le code de fin — plus de question du Corbeau ({t[:50]})')
     att = pg.evaluate("() => M.code('victoire:21')")
     vu = pg.evaluate("() => { var c = M.codesEnquete(M.E()); return c.parCode[M.code(M.idVictoire(1)).join('-')]; }")
-    verifier(vu == 'victoire:21' and len(att) == 3, f'le code de fin montré : une erreur, la variante 2 ({vu})')
+    verifier(vu == 'victoire:21' and len(att) == 3, f'le code de fin montré : une erreur ({vu})')
     shot(pg, 'victoire')
     pg.locator('#voile [data-act=fin-sage]').click(); pg.wait_for_timeout(500)
-    verifier(pg.evaluate("() => M.P().fin.variante") == 2 and pg.evaluate("() => M.P().fin.erreurs") == 1, 'la fin commence : la variante 2, une erreur')
-    verifier(pg.locator('.b-code-fin').count() == 1 and pg.evaluate("() => { var c = M.codesEnquete(M.E()); return c.parCode[M.code(M.idVictoire(M.P().fin.erreurs, M.P().fin.variante)).join('-')]; }") == 'victoire:21', 'pendant l\'histoire, le Sage garde le code de fin sous la main')
-    D = histoire(pg, 'sage')
+    verifier(pg.evaluate("() => M.P().fin.variante") == 2 and pg.evaluate("() => M.P().fin.erreurs") == 1, 'la fin commence')
+    verifier(pg.locator('.b-code-fin').count() == 1, 'pendant l\'histoire, le Sage garde le code de fin sous la main')
+    # image par image ; au cachot (la cinquième), on s'arrête pour les codes d'apparence
+    D = []
+    img = {}
+    for i in range(4):
+        D.append(diapo(pg)); shot(pg, f'sage-{i + 1}', 2600)
+        img[i] = pg.evaluate("() => { var a = document.querySelector('.b-fin-slide'); return {aterre:a.querySelectorAll('.sf-aterre').length, bulles:[].map.call(a.querySelectorAll('.sf-bulle'), function(b){ return b.textContent; }).join(' | ')}; }")
+        pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(300)
+    verifier(img[1]['aterre'] == 1 and 'Léo !' in img[1]['bulles'] and 'Qu\'avez-vous fait' in img[1]['bulles'] and 'trop parlé' not in img[1]['bulles'], f'dans l\'image : Léo est à terre, et le maire fait l\'étonné (« Léo ! », « Qu\'avez-vous fait ?! ») ({img[1]})')
+    verifier('Attrapez-les' in img[3]['bulles'] and 'Enfermez' not in img[3]['bulles'], f'dans l\'image des gardes : « Gardes ! Attrapez-les ! », comme dans le texte ({img[3]["bulles"]})')
+    d = diapo(pg); D.append(d)
+    verifier(d['prison'] and d['plume'] and 'cachot' in d['t'] and d['ombres'] == 3 and d['connus'] == 0 and d['pave'] == 12, f'la cinquième image : le cachot, la plume noire, trois ombres, et le pavé des codes d\'apparence ({d["ombres"]} ombres, {d["pave"]} touches)')
+    verifier('Ton code' in pg.inner_text('.b-prison-codes') and pg.locator('.b-prison-codes [data-act=lire], .b-prison-codes .b-lire').count() >= 1, 'sous l\'image : « Montre ton code à tes amis… », mon code, un 🔊')
+    shot(pg, 'cachot-ombres', 7400)
+    moi = pg.evaluate("() => M.code(M.allureCodeFin())")
+    for sym in moi: pg.locator(f'.b-prison-codes [data-act=sym][data-s="{sym}"]').click(); pg.wait_for_timeout(120)
+    pg.wait_for_timeout(600)
+    verifier(diapo(pg)['connus'] == 0 and pg.evaluate("() => M.P().etape") == 'fin', 'mon propre code tapé : rien ne change (« C\'est ton code à toi ! »)')
+    amis = pg.evaluate("() => ['pisteur', 'alchimiste', 'barde'].map(function(r, i){ return M.code('allure:' + M.allureNumero(r, {sexe:i % 2 ? 'm' : 'f', peau:'p' + (i + 2), cheveux:['roux', 'noir', 'blond'][i]})); })")
+    for k, seq in enumerate(amis):
+        for sym in seq: pg.locator(f'.b-prison-codes [data-act=sym][data-s="{sym}"]').click(); pg.wait_for_timeout(120)
+        pg.wait_for_timeout(600)
+        d = diapo(pg)
+        verifier(d['connus'] == k + 1 and d['n'] == 4, f'le code d\'apparence d\'un ami tapé : il n\'est plus une ombre ({d["connus"]} sur 3)')
+    d = diapo(pg)
+    verifier(d['pave'] == 0 and 'réunis' in pg.inner_text('.b-fin-slide'), 'les quatre héros sont là : plus de pavé, « Vous voilà réunis… derrière les barreaux. »')
+    al = pg.evaluate("() => M.P().allures")
+    verifier(al['pisteur'] == {'sexe': 'f', 'peau': 'p2', 'cheveux': 'roux'} and al['barde'] == {'sexe': 'f', 'peau': 'p4', 'cheveux': 'blond'} and al['alchimiste']['sexe'] == 'm', f'chacun avec sa peau et ses cheveux ({al})')
+    shot(pg, 'cachot-quatre', 1200)
+    pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(300)
+    D.append(diapo(pg)); shot(pg, 'sage-6', 800)
+    pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(300)
     verifier(len(D) == 6 and all(d['points'] == 6 for d in D), f'six images ({len(D)})')
     verifier(all(d['son'] for d in D), 'chaque image a son 🔊')
-    verifier([d['scene'].split('sf-e3-')[-1].split(' ')[0] if 'sf-e3-' in d['scene'] else '' for d in D] == ['porte', 'minuit', 'leo', 'bague', 'gardes', ''], f'cinq petites scènes animées, dans l\'ordre ({[d["scene"][-12:] for d in D]})')
-    verifier('beaucoup trop parlé' in D[2]['t'] and any('trop parlé' in x for x in D[2]['bulles']) and D[2]['gens'] == 3, f'Léo a tout dit : « Toi… tu as beaucoup trop parlé, mon garçon. » ({D[2]["t"][:50]})')
-    verifier(D[1]['gens'] == 6 and D[1]['gardes'] == 2 and 'DONG' not in D[1]['t'] and 'inuit' not in D[1]['t'] and pg.evaluate("() => M.E().fin.slides.every(function(s){ return typeof s !== 'string' || !/[Mm]inuit|DONG/.test(s); })"), 'la crypte : les quatre héros, le maire, Silas, deux gardes ; plus de minuit ni de « DONG »')
-    verifier('bague en argent' in D[3]['t'] and 'Enfermez-les' in D[4]['t'] and D[4]['gardes'] == 2, 'la bague, puis « Gardes ! Enfermez-les ! »')
-    verifier(D[5]['prison'] and D[5]['plume'] and 'À suivre' in D[5]['t'], 'la dernière image : le cachot, la plume noire, « À suivre… »')
+    verifier([d['scene'].split('sf-e3-')[-1].split(' ')[0] if 'sf-e3-' in d['scene'] else '' for d in D] == ['minuit', 'leo', 'bague', 'gardes', '', ''], f'quatre petites scènes animées, dans l\'ordre ({[d["scene"][-12:] for d in D]})')
+    verifier('des pas descendent' in D[0]['t'] and D[0]['gardes'] == 2 and 'DONG' not in D[0]['t'] and 'inuit' not in D[0]['t'], 'la crypte : le maire descend avec Silas et deux gardes ; ni minuit ni « DONG »')
+    verifier('Que s\'est-il passé ici' in D[1]['t'] and 'Qu\'avez-vous fait à Léo' in D[1]['t'] and D[1]['gens'] == 3, f'« Que s\'est-il passé ici ? Léo ! Qu\'avez-vous fait à Léo ? » — Léo est dans l\'image ({D[1]["t"][:50]})')
+    verifier('bague en argent' in D[2]['t'] and 'Beaucoup trop loin' in D[2]['t'] and 'Attrapez-les' in D[3]['t'] and 'Monsieur le maire' in D[3]['t'] and D[3]['gardes'] == 2, 'la bague (« Vous êtes allés trop loin »), puis Silas (« Monsieur le maire… ? ») et « Gardes ! Attrapez-les ! »')
+    verifier('Fin de l\'enquête 3' in D[5]['t'] and 'ce n\'est que le début' in D[5]['t'] and not D[5]['prison'], 'la dernière image : « Fin de l\'enquête 3… mais ce n\'est que le début. »')
     verifier(pg.evaluate("() => window.__lus.length") == 0, 'rien ne s\'est lu tout seul')
     cal = pg.evaluate("() => M.S.calepin.filter(function(c){ return c.e === 3; }).map(function(c){ return c.t; })")
-    verifier(len(cal) == 6 and any('tête de corbeau' in c for c in cal) and any('quatre signes' in c for c in cal), f'le calepin de fin : six notes ({len(cal)})')
+    verifier(len(cal) == 8 and any('tête de corbeau' in c for c in cal) and any('quatre signes' in c and 'toujours' in c for c in cal) and any('ville entière' in c for c in cal) and any('jamais voulu être meunier' in c for c in cal), f'le calepin de fin : huit notes (la bague, Odette toujours derrière la porte, la ville sous Brumeval, Léo) ({len(cal)})')
     verifier(pg.evaluate("() => M.P().fin.etape") == 'recompenses' and pg.locator('h1').first.inner_text() == 'Enquête résolue !', 'puis « Enquête résolue ! »')
     shot(pg, 'resolue')
     codeFin = att
@@ -177,45 +198,24 @@ with sync_playwright() as p:
     code(pg, 'moment:1'); code(pg, 'moment:2')
     verifier(pg.evaluate("() => M.code('victoire:21')") == codeFin, 'le même code sur une autre tablette')
     code(pg, 'victoire:21', True); pg.wait_for_timeout(300)
-    verifier(pg.evaluate("() => M.P().etape") == 'fin' and pg.evaluate("() => M.P().fin.variante") == 2 and pg.evaluate("() => M.P().fin.erreurs") == 1, 'le Pisteur tape le code de fin du Sage : la fin, la variante 2, une erreur')
-    D = histoire(pg, 'pisteur', False)
-    verifier(len(D) == 6 and 'beaucoup trop parlé' in D[2]['t'], 'sa scène finale est la même : « tu as beaucoup trop parlé »')
+    verifier(pg.evaluate("() => M.P().etape") == 'fin' and pg.evaluate("() => M.P().fin.variante") == 2 and pg.evaluate("() => M.P().fin.erreurs") == 1, 'le Pisteur tape le code de fin du Sage : la fin, une erreur')
+    Dp = histoire(pg, 'pisteur', False)
+    verifier(len(Dp) == 6 and [d['t'] for d in Dp] == [d['t'] for d in D], 'sa scène finale est la même, mot pour mot')
     pg.context.close()
-    # (12 novembre au soir) plus de variante 1 (« Léo a parlé à moitié ») : le jeu ne la donne plus jamais (0 : Léo n'est pas là ; 2 : il est là)
     pg = debut(b, 'Alchi', 'alchimiste')
-    verifier(pg.evaluate("() => [{}, {recus:{}}, {recus:{'info:leo_dit3':true}}].map(function(P){ return M.E().finVariante(P); }).join()") == '0,0,2', 'la variante de la fin : 0 ou 2, jamais 1')
-    pg.context.close()
-    pg = debut(b, 'Barde', 'barde')
-    code(pg, 'victoire:2', True); pg.wait_for_timeout(300)
-    verifier(not pg.evaluate("() => M.P().fin.variante") and pg.evaluate("() => M.P().fin.erreurs") == 2, 'le code de fin simple : pas de variante, deux erreurs')
-    pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(250); pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(250)
-    d = diapo(pg)
-    verifier('Tiens, tiens' in d['t'] and d['gens'] == 6 and any('Tiens' in x for x in d['bulles']), f'Léo n\'est pas là : « Tiens, tiens… Nos petits enquêteurs » ({d["t"][:40]})')
-    shot(pg, 'barde-v0', 1500)
-    pg.context.close()
-
-    # ======================================================================== le Sage, variante 1, sans erreur ; le Corbeau deviné
-    print('— Le Sage : Léo s\'est enfui ; le Corbeau deviné')
-    pg = debut(b, 'Sage', 'sage')
-    nuit_sage(pg)
-    accuser(pg, 'melusine', 'clocher')
-    pg.locator('#voile [data-act=corbeau-choix][data-v=grosbec]').click(); pg.wait_for_timeout(350)
-    t = texte(pg)
-    verifier('encre secrète' in t and 'Tu as vu juste' not in t and pg.locator('#voile .b-corbeau-rep.ok').count() == 0, 'la bonne réponse au Corbeau : la même phrase, rien ne la trahit')
-    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()); return c.parCode[M.code(M.idVictoire(0)).join('-')]; }") == 'victoire:0', 'le code de fin : sans erreur, sans variante')
-    pg.locator('#voile [data-act=fin-sage]').click(); pg.wait_for_timeout(500)
-    pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(250); pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(250)
-    d = diapo(pg)
-    verifier('Tiens, tiens' in d['t'], 'sa scène finale : « Tiens, tiens… Nos petits enquêteurs »')
-    shot(pg, 'sage-v0', 5200)
-    pg.evaluate("() => M.archiver()")
-    verifier(pg.evaluate("() => M.S.journal[3].corbeau") == 'grosbec', 'la réponse au Corbeau est gardée dans le journal, pour la suite de la saison')
+    a = pg.evaluate("() => { var l = [], vus = {}; ['sage', 'alchimiste', 'pisteur', 'barde'].forEach(function(r){ ['f', 'm'].forEach(function(sx){ ['p1', 'p6'].forEach(function(pe){ ['brun', 'rose'].forEach(function(ch){ var n = M.allureNumero(r, {sexe:sx, peau:pe, cheveux:ch}), d = M.allureDe(n); l.push(d.role === r && d.sexe === sx && d.peau === pe && d.cheveux === ch && !vus[n]); vus[n] = 1; }); }); }); }); return [l.every(Boolean), M.allureNumero('sage', {sexe:'f', peau:'p1', cheveux:'brun'}), M.allureNumero('pisteur', {sexe:'f', peau:'p1', cheveux:'brun'}), M.allureNumero('barde', {sexe:'m', peau:'p6', cheveux:'rose'})]; }")
+    verifier(a == [True, 0, 216, 431], f'les codes d\'apparence : les 216 du Sage et de l\'Alchimiste n\'ont pas bougé, ceux du Pisteur et du Barde viennent après (216 à 431) {a}')
+    code(pg, 'moment:1'); code(pg, 'moment:2')
+    t = code(pg, 'allure:300', True)
+    verifier(pg.evaluate("() => !(M.P().allures || {}).pisteur && !(M.P().allures || {}).barde") and 'équipier' in texte(pg), 'avant la fin, un code d\'apparence ne se tape que chez le Pisteur (comme avant)')
     pg.context.close()
 
     # ======================================================================== l'enquête 2 : rien ne change
     print('— L\'enquête 2')
     pg = debut(b, 'Sage2', 'sage', 2)
     verifier(pg.evaluate("() => M.finVariante()") == 0 and pg.evaluate("() => M.idVictoire(2)") == 'victoire:2' and pg.evaluate("() => M.code('victoire:2').join('-')") == 'coeur-lune-flamme', 'enquête 2 : pas de variante, ses codes de fin n\'ont pas bougé')
+    pg.evaluate("() => { M.UI.modal = null; M.A.accuser(); }"); pg.wait_for_timeout(250)
+    verifier(pg.locator('#voile [data-act=acc-choix][data-k=qui]').count() > 3 and 'Pas encore' not in texte(pg), 'enquête 2 : le Sage accuse quand il veut, et d\'abord « QUI »')
     pg.context.close()
     b.close()
 

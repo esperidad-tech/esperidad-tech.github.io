@@ -1,7 +1,7 @@
 """Le labo d'analyses DANS le jeu (enquête 1), joué au doigt sur un téléphone couché, puis sur une tablette :
 l'Alchimiste reçoit le fil, touche sa paillasse, la bulle « Analyser » : le labo s'ouvre en plein écran (un cadre, src/labo.js).
 Il reconnaît le fil à la loupe (laine tricotée), prélève les grains au microscope, reconnaît la suie : l'analyse est bouclée,
-le code s'écrit sur l'ardoise. Il quitte : la fiche de la découverte s'ouvre avec le vrai code, l'analyse est notée dans la partie.
+il n'y a plus d'ardoise sur la paillasse (Romain, 13 novembre). Il quitte : la fiche de la découverte s'ouvre avec le vrai code, l'analyse est notée dans la partie.
 Puis les poils arrivent (13 novembre : plus de plume noire) : le labo se rouvre avec deux échantillons, le fil déjà reconnu, ses coupelles gardées.
   BRUMEVAL_DIST=<dossier de build> python3 tools/labo-jeu.py [iphone|tablette]     (captures dans jeu/test/labo/)"""
 import sys, os, json
@@ -70,7 +70,7 @@ with sync_playwright() as p:
         r['analyse_notee'] = pg.evaluate("() => M.P().analyses.fil || 0")       # notée dans la partie dès que le dossier est bouclé
         clic('#bSuiv'); pg.wait_for_timeout(1300); trouver('d', 'grains', 'terre'); r['terre'] = etat()['trouves'].get('brun'); pg.wait_for_timeout(2300)
         clic('#bFermer'); pg.wait_for_timeout(1000)
-        r['ardoise'] = f.evaluate("() => document.querySelector('#ardoise').textContent"); r['bouton'] = f.evaluate("() => document.querySelector('#bQuitter').className + ' ' + document.querySelector('#bQuitter').textContent")
+        r['ardoise'] = f.evaluate("() => !!document.querySelector('#ardoise') || !!document.querySelector('#gArdoise')"); r['bouton'] = f.evaluate("() => document.querySelector('#bQuitter').className + ' ' + document.querySelector('#bQuitter').textContent")
         pg.screenshot(path=f'{ICI}/{nom}-04-boucle.png')
         # ---------- on quitte : la fiche de la découverte, avec le vrai code ----------
         f.locator('#bQuitter').click(force=True); pg.wait_for_timeout(1200)
@@ -108,7 +108,7 @@ with sync_playwright() as p:
         R[nom] = r; ctx.close()
     def bon(r):
         return (r['cadre'] == 1 and r['panneau'] == 0 and r['cuirs'] == ['fil'] and r['jeu'] and not r['reglages'] and r['quitter'] and r['fil'] and r['suie'] and r['fini'] and r['analyse_notee'] >= 1
-                and r['terre'] and 'aller' in r['bouton'] and r['cadre_apres'] == 0 and r['modal'] == 'decouverte' and r['code_fiche'] and r['code_fiche'] == r['code_attendu'] and r['code_attendu'] in r['ardoise'].replace(' ', '')
+                and r['terre'] and 'aller' in r['bouton'] and r['cadre_apres'] == 0 and r['modal'] == 'decouverte' and r['code_fiche'] and r['code_fiche'] == r['code_attendu'] and r['ardoise'] is False
                 and any('Analyse des poils de la fenêtre' in t for t in r['notes']) and any('terre' in t for t in r['notes']) and r['sauve'] and 'fil' in r['sauve']['finis'] and 'noir' in r['sauve']['coupes']
                 and r['cuirs2'] == ['fil', 'poils'] and r['fil_garde'] and r['dc2'] == 'poils' and 'noir' in r['coupes_gardees'] and r['poils'] and r['fiche2'] and r['fiche3']
                 and 'poils' in r['plus_tard'] and r['plume_refusee'] and 'Plus tard' in r['bulle_attente'] and r['rien_de_neuf'] is None

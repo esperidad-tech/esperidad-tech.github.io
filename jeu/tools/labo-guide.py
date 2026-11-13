@@ -72,8 +72,9 @@ with sync_playwright() as p:
         else:
             pg.wait_for_timeout(300)
     vus_cles = [c for c, _ in etapes]
-    for attendu in ('ard', 'quitter'):
+    for attendu in ('quitter',):
         if attendu not in vus_cles: echecs.append(f'étape « {attendu} » jamais montrée')
+    if 'ard' in vus_cles: echecs.append('le guide parle encore de l\'ardoise (enlevée le 13 novembre, Bible §13.35)')
     if not pg.evaluate("() => !document.getElementById('labo-cadre')"): echecs.append('le labo ne s\'est pas refermé à la fin du guide')
     pg.wait_for_timeout(800); pg.screenshot(path=f'{ICI}/{APP}-99-fiche.png')
     if pg.evaluate("() => M.P().analyses.fil || 0") < 1: echecs.append('analyse non notée dans la partie')

@@ -431,12 +431,14 @@ var SCENES = {
     s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-descend', dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%')});
     return scene('e3-minuit', 'Dans la crypte, le maire descend l\'escalier, une lanterne à la main, avec Silas et deux gardes.', s);
   },
-  /* 3. Le maire et Léo : selon ce que Léo a dit au Barde (P.fin.variante : 2, il a tout dit ; 1, à moitié ; 0, il n'est pas là) */
+  /* 3. Le maire et Léo (P.fin.variante : depuis le 13 novembre, toujours 2 — Léo, battu, est à terre ; 1 et 0 ne servent plus) */
   'e3-leo':function(){
     var P = M.P(), v = (P && P.fin && P.fin.variante) || 0, s = decor(crypte({escalier:true}));
     if(v === 2){
-      s += perso(pnj('leo', {humeur:'peur'}), {x:30, h:40, cls:'sf-sanglot'});
-      s += perso(pnj('grosbec'), {x:62, h:44, dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%') + bulle('Toi…', 'sf-b-tot') + bulle('Tu as beaucoup trop parlé.', 'sf-b-tard')});
+      /* (13 novembre, Bible §13.33 et §13.35) Léo vient d'être battu : il est à terre. Le maire fait l'étonné — c'est la bague, à
+         l'image suivante, qui le trahit. (Avant : Léo debout, « Toi… Tu as beaucoup trop parlé. ») */
+      s += perso(pnj('leo', {humeur:'peur'}), {x:38, h:40, cls:'sf-aterre'});
+      s += perso(pnj('grosbec'), {x:62, h:44, dedans:lanterne('sf-leve', '--lx:8%;--ly:46%;--w:26%') + bulle('Léo !', 'sf-b-tot') + bulle('Qu\'avez-vous fait ?!', 'sf-b-tard')});
     } else if(v === 1){
       s += perso(pnj('leo', {humeur:'peur'}), {x:30, h:40, cls:'sf-file'});
       s += perso(pnj('grosbec'), {x:62, h:44, dedans:lanterne('', '--lx:8%;--ly:52%;--w:26%') + bulle('Léo. Rentre au moulin.', 'sf-b-tot') + bulle('Tout de suite.', 'sf-b-tard')});
@@ -445,7 +447,7 @@ var SCENES = {
       s += perso(pnj('grosbec'), {x:66, h:44, dedans:lanterne('sf-leve', '--lx:8%;--ly:46%;--w:26%') + bulle('Tiens, tiens…', 'sf-b-tot sf-d') + bulle('Nos petits enquêteurs !', 'sf-b-tard sf-d')});
     }
     s += perso(pnj('silas'), {x:78, h:42}) + garde({x:91});
-    return scene('e3-leo', v === 2 ? 'Le maire regarde Léo, longtemps.' : v === 1 ? 'Le maire renvoie Léo au moulin ; Léo file sans un mot.' : 'Le maire lève sa lanterne vers les quatre enquêteurs.', s);
+    return scene('e3-leo', v === 2 ? 'Léo est à terre. Le maire lève sa lanterne vers lui.' : v === 1 ? 'Le maire renvoie Léo au moulin ; Léo file sans un mot.' : 'Le maire lève sa lanterne vers les quatre enquêteurs.', s);
   },
   /* 4. Il retire ses gants gris : à son doigt, une bague en argent à tête de corbeau */
   'e3-bague':function(){
@@ -470,13 +472,13 @@ var SCENES = {
     s += '<em class="sf-bulle sf-b-long" style="left:30%;bottom:78%">Beaucoup trop loin.</em>';
     return scene('e3-bague', 'Le maire a retiré ses gants gris : à son doigt brille une bague en argent à tête de corbeau.', s);
   },
-  /* 5. Silas, bouche bée ; « Gardes ! Enfermez-les ! » : les deux gardes avancent vers les quatre enquêteurs */
+  /* 5. Silas, bouche bée ; « Gardes ! Attrapez-les ! » : les deux gardes avancent vers les quatre enquêteurs */
   'e3-gardes':function(){
     var s = decor(crypte({escalier:true}));
     [['pisteur', 9], ['alchimiste', 19], ['barde', 29], ['sage', 39]].forEach(function(r, i){ s += perso(heros(r[0]), {x:r[1], h:36, cls:'sf-recule', st:'animation-delay:' + (i * .1).toFixed(2) + 's'}); });
     s += garde({x:94, cls:'sf-avance', st:'--vers:48%'}) + garde({x:85, cls:'sf-avance', st:'--vers:56%;animation-delay:.25s'});
     s += perso(pnj('silas', {humeur:'peur'}), {x:75, h:42, dedans:bulle('Monsieur le maire… ?', 'sf-b-tot sf-d')});
-    s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-tape', dedans:bulle('Gardes ! Enfermez-les !', 'sf-b-tard')});
+    s += perso(pnj('grosbec'), {x:63, h:44, cls:'sf-tape', dedans:bulle('Gardes ! Attrapez-les !', 'sf-b-tard')});
     return scene('e3-gardes', 'Silas reste bouche bée. Le maire appelle ses gardes : ils avancent vers les quatre enquêteurs.', s);
   },
   /* ---------- Enquête 3 : le marché aux fleurs (marche.js) ----------

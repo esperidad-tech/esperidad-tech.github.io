@@ -20,7 +20,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 PAGE = 'file://' + os.path.join(ICI, 'sortie', 'index.html')
 CAP = os.path.join(ICI, 'captures'); os.makedirs(CAP, exist_ok=True)
 ERREURS, OK = [], []
-SALLES = ['puits', 'galerie', 'aeration', 'reserve', 'givre', 'bibliotheque', 'eboulis', 'dalles', 'portes', 'crypte', 'canaux', 'camp', 'porte4', 'leo']
+SALLES = ['puits', 'galerie', 'aeration', 'reserve', 'givre', 'bibliotheque', 'eboulis', 'dalles', 'portes', 'crypte', 'canaux', 'camp', 'porte4']       # (13 novembre : la dernière salle n'est plus une scène à objets — c'est le combat de Léo, test-leo.py)
 
 
 def verifie(cond, quoi):

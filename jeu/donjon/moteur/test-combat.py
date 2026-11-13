@@ -236,7 +236,7 @@ def oeil(nav):
     joue('alchimiste', 'herbes', 'sage' if proie != 'sage' else 'pisteur')
     pvs1 = pg.evaluate("() => { var c = DJ.Combat._E().c; return [c.h.sage.pv, c.h.alchimiste.pv, c.h.pisteur.pv]; }")
     maxi = [90, 100, 120]
-    verifie(all(pvs1[k] == min(maxi[k], pvs0[k] + 10) for k in range(3)), f'les herbes soignent toute l\'équipe d\'un petit montant : {pvs0} → {pvs1}')
+    verifie(all(pvs1[k] == min(maxi[k], pvs0[k] + 15) for k in range(3)), f'les herbes soignent toute l\'équipe de 15 (Romain, 13 novembre) : {pvs0} → {pvs1}')
     pv0 = pg.evaluate("(h) => DJ.Combat._E().c.h[h].pv", proie)
     b0 = pg.evaluate("() => DJ.Combat._E().c.ciblables()[0].id")
     joue('pisteur', 'fleche', b0)
@@ -388,13 +388,13 @@ def potions(nav):
         pg.tap('#bande [data-act="arme"][data-id="baton-chene"]', force=True); pg.wait_for_timeout(400)
         m = pg.evaluate(MESURE); e = pg.evaluate(SAGE); noms = pg.evaluate(NOMS, '.b-combos')
         verifie(e['baton'] == 'baton-chene' and e['chene'] and not e['lune'] and e['garde'] == 'baton-chene', 'le bâton de chêne en main : il remplace celui de lune, et le choix est gardé pour la suite ' + str(e))
-        verifie(m['droite'] == ['oeil', 'rune', 'a:baton-chene', 'appel'] and noms[1] == 'Rune de lumière — une vive lumière' and noms[2] == 'Bouclier de runes — protège deux amis [bâton]', 'avec lui, le bouclier protège deux amis (la lumière redevient simple) ' + str(noms[1:3]))
+        verifie(m['droite'] == ['oeil', 'rune', 'a:baton-chene', 'appel'] and noms[1] == 'Rune de lumière — une vive lumière' and noms[2] == 'Bouclier de runes — deux amis, moitié [bâton]', 'avec lui, le bouclier protège deux amis (la lumière redevient simple) ' + str(noms[1:3]))
         pg.screenshot(path=os.path.join(CAP, 'combat-armes-sage-chene.png'))
         pg.tap('.carte[data-id="a:baton-chene"]', force=True); pg.wait_for_timeout(250)
         pg.tap('.zone[data-type="heros"][data-id="pisteur"]', force=True); pg.wait_for_timeout(250)
         pg.tap('.zone[data-type="heros"][data-id="alchimiste"]', force=True); pg.wait_for_timeout(500); libre()
         bc = pg.evaluate("() => { var c = DJ.Combat._E().c; return [c.h.pisteur.bouclier, c.h.alchimiste.bouclier, c.h.sage.bouclier, c.h.sage.joue]; }")
-        verifie(bc[3] and (bc[:3] == [True, True, False] or pg.evaluate("() => DJ.Combat._E().c.tour") > 1), 'le bâton de chêne : le Pisteur et l\'Alchimiste protégés d\'un seul geste ' + str(bc))
+        verifie(bc[3] and (bc[:3] == ['chene', 'chene', False] or pg.evaluate("() => DJ.Combat._E().c.tour") > 1), 'le bâton de chêne : le Pisteur et l\'Alchimiste protégés d\'un seul geste ' + str(bc))
         # au tour suivant, il a toujours le bâton de chêne en main
         for h in ('alchimiste', 'pisteur'):
             if pg.evaluate("(h) => DJ.Combat.etat().mode === 'qui' && DJ.Combat._E().c.aJouer().indexOf(h) >= 0", h):

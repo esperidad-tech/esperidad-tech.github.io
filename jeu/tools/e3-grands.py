@@ -1,13 +1,15 @@
-"""Enquête 3 : les grands dialogues du Barde, la fête et « Retenir le maire » (Playwright). Refait le 12 novembre au soir (les dialogues
-de la version 3, E3-dialogues-et-trame.md) : un grand dialogue ne s'ouvre qu'une fois TOUT demandé ({toutDit}, barde.js), il ne s'affiche
-pas comme les autres (violet, « 🎭 Grande conversation », un reflet, sa fenêtre à bandeau), et « 🎭 » se pose sur le visage du villageois.
+"""Enquête 3 : les grands dialogues du Barde et la fête (Playwright). Refait le 12 novembre au soir (les dialogues de la version 3,
+E3-dialogues-et-trame.md) : un grand dialogue ne s'ouvre qu'une fois TOUT demandé ({toutDit}, barde.js), il ne s'affiche pas comme les
+autres (violet, « 🎭 Grande conversation », un reflet, sa fenêtre à bandeau), et « 🎭 » se pose sur le visage du villageois.
+Le 13 novembre au soir (Bible §13.33 et §13.35) : « Retenir le maire » et la scène de Léo sont retirés ; à la place, quand le Pisteur
+entre dans la dernière salle (le code « L'homme en cape est là ! »), Farinel et Iris portent un « ❗ » à la fête et répondent à de
+nouvelles questions (les outils de Léo, la potion de force), qui restent à l'écran avec leur 🔊.
 Sur la tablette du Barde (le marché du matin est sauté : le robot rend 10 bouquets au maire) :
   A : tout réussi — le maire n'ouvre pas tant qu'il reste une question ; la lettre prêtée ; la nuit, Anselme n'ouvre qu'avec l'aveu de
       Mélusine, le code « La crypte est fermée » et toutes ses questions ; les quatre choix en majuscules ; la fête (les indices notés),
-      le maire retenu (2 sur 2), les trois écoutes de la fête, puis la scène de Léo (sans choix) et son code pour le Sage ;
-  B : tout raté — le piège de la copie, puis une partie où le maire refuse ; la nuit, Anselme raté (Tim montre le puits), le maire qui
-      s'éloigne, Mélusine qui craque à la fête (le filet) ;
-  C : Léo s'est enfui.
+      les trois écoutes de la fête, puis l'aide pour le donjon (Farinel : quatre questions ; Iris : deux) et la mission cochée ;
+  B : tout raté — le piège de la copie, puis une partie où le maire refuse ; la nuit, Anselme raté (Tim montre le puits), Mélusine qui
+      craque à la fête (le filet), le maire à la fête (une réplique, plus de petit dialogue).
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-grands.py [iphone]"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -182,37 +184,19 @@ with sync_playwright() as p:
     pg.locator('#voile [data-act=gd-retour]').click(); pg.wait_for_timeout(300)
     fermer(pg)
 
-    print('— Partie A : la fête et le maire')
-    verifier(bulle(pg, 'grosbec') == '❗', 'le maire porte un « ! » sur la carte')
+    # (13 novembre, Bible §13.33 et §13.35) « Retenir le maire » est retiré ; à sa place : l'aide pour le donjon (Farinel et Iris)
+    print('— Partie A : la fête')
+    verifier(bulle(pg, 'grosbec') != '❗', 'le maire ne cherche plus le Barde (plus de « Retenir le maire »)')
     ev(pg, 'lieu', {'id': 'place'})
     t = texte(pg)
     verifier('la fête' in t.lower() and pg.locator('#voile [data-act=gd-fete]').count() >= 10, 'sur la place : la fête, chacun avec son bouton')
-    verifier(pg.locator('#voile .gd-appel').count() == 1, 'le maire te cherche (un « ! »)')
+    verifier(pg.locator('#voile .gd-appel').count() == 0, 'personne ne porte de « ! » : le Pisteur n\'est pas encore devant l\'homme en cape')
     verifier(pg.locator('#voile [data-act=bd-porte]').count() == 1, '👂 Écouter en douce, à la fête')
     shot(pg, 'A-fete')
-    ev(pg, 'gd-fete', {'id': 'grosbec'})
-    verifier((modal(pg) or {}).get('g') == 'retenir' and 'Où sont-ils passés' in texte(pg), 'le premier petit dialogue du maire')
-    verifier(pg.locator('#voile .b-feuille.gd-fenetre .gd-bandeau').count() == 1 and 'RETENIR LE MAIRE' in texte(pg).upper(), 'lui aussi a son cadre et son bandeau')
-    pg.wait_for_timeout(2200); shot(pg, 'A-retenir-1')
-    choisir(pg, 1, 'gd-ret')
-    verifier('Ce gâteau sera magnifique' in texte(pg), 'bonne réponse (le gâteau de Gaspard)')
-    ev(pg, 'gd-ret-ok')
-    verifier(not pg.evaluate("() => M.retenirDispo()"), 'le suivant attend une autre visite à la fête')
-    for qui in ['silas', 'margot', 'fortune', 'gaspard']:
+    for qui in ['grosbec', 'silas', 'margot', 'farinel', 'iris']:
         ev(pg, 'gd-fete', {'id': qui})
-        verifier((modal(pg) or {}).get('vue') == 'fete', f'{qui} à la fête : sa réplique')
-    shot(pg, 'A-fete-gaspard')
-    notes = pg.evaluate("() => JSON.stringify(M.P().carnet || M.P().notes || '')")
-    verifier('réclame son discours' in notes and 'des bras' in notes and 'ouvre le bal' in notes, 'les trois indices de la fête sont notés dans le Carnet')
-    fermer(pg)
-    verifier(pg.evaluate("() => M.retenirDispo()"), 'le deuxième dialogue du maire est prêt')
-    ev(pg, 'gd-fete', {'id': 'grosbec'})
-    verifier('du côté du clocher' in texte(pg) and 'minuit' not in texte(pg), 'le deuxième petit dialogue')
-    choisir(pg, 0, 'gd-ret')
-    verifier('_info:maire_retenu' in objets(pg), 'deux sur deux : « Le maire est retenu » (on s\'arrête là)')
-    ev(pg, 'gd-ret-ok')
-    verifier((modal(pg) or {}).get('type') == 'decouverte', 'la découverte du code')
-    shot(pg, 'A-maire-retenu')
+        verifier((modal(pg) or {}).get('vue') == 'fete' and not (modal(pg) or {}).get('aide') and pg.locator('#voile [data-act=gd-aide]').count() == 0, f'{qui} à la fête : sa réplique, rien de plus')
+    verifier('repose mes yeux' in texte(pg) or 'couronne pour Odette' in texte(pg), 'Iris : « J\'ai tressé une couronne pour Odette… »')
     fermer(pg)
     # les trois écoutes de la fête
     vus = []
@@ -222,21 +206,42 @@ with sync_playwright() as p:
         fermer(pg)
     verifier(vus == [1, 2, 3, 3], 'les trois écoutes de la fête, l\'une après l\'autre')
 
-    print('— Partie A : Léo (une scène, sans choix)')
-    code(pg, 'info:leo_attrape')
-    m = modal(pg)
-    verifier(m and m.get('g') == 'leo', 'le code « Léo attrapé » ouvre la scène')
-    t = texte(pg)
-    verifier('apprenti du meunier' in t and 'pas froid' in t, 'sous le capuchon : Léo, l\'apprenti du meunier ; « je voulais juste qu\'elle n\'ait pas froid »')
-    verifier(pg.locator('#voile [data-act=gd-leo-ment]').count() == 0 and pg.locator('#voile [data-act=gd-choix]').count() == 0, 'ni mensonge à démasquer, ni choix')
-    verifier('_info:leo_dit3' in objets(pg) and pg.evaluate("() => M.P().vus['grand:leo']") == 'ok', '« Ce que Léo a dit » : le code pour le Sage')
-    pg.wait_for_timeout(3000); shot(pg, 'A-leo')
-    pg.locator('#voile [data-act=gd-leo-code]').click(); pg.wait_for_timeout(300)
-    verifier((modal(pg) or {}).get('type') == 'decouverte' and pg.locator('#voile .b-donne').count() == 1, 'la découverte, avec le code à donner au Sage')
-    shot(pg, 'A-leo-code')
+    print('— Partie A : l\'aide pour le donjon (le code « L\'homme en cape est là ! »)')
+    VISIBLES = "() => M.etapesMission().filter(function(e){ return (e.des === undefined || (M.P().moment || 0) >= e.des) && (!e.si || e.si.some(M.condMission)); }).map(function(x){ return x.t; }).join(' | ')"   # (comme pasEncore, mission.js)
+    avant = pg.evaluate(VISIBLES)
+    verifier('Tes amis se battent' not in avant, 'la mission de la fête n\'est pas encore dans le Carnet')
+    code(pg, 'info:leo_la')
+    verifier('homme en cape' in texte(pg) and pg.evaluate("() => !!M.P().recus['info:leo_la']"), 'le code du Pisteur : « L\'homme en cape est là ! »')
+    apres_code(pg); fermer(pg)
+    verifier('Tes amis se battent' in pg.evaluate(VISIBLES), 'la mission arrive : « Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider. »')
+    ev(pg, 'lieu', {'id': 'place'})
+    verifier(pg.locator('#voile .gd-fete-tete.gd-appel').count() == 2 and pg.locator('#voile .gd-fete-tete.gd-appel[data-id=farinel]').count() == 1 and pg.locator('#voile .gd-fete-tete.gd-appel[data-id=iris]').count() == 1, 'à la fête : Farinel et Iris portent un « ❗ » (on peut leur reparler)')
+    shot(pg, 'A-fete-aide')
+    ev(pg, 'gd-fete', {'id': 'farinel'})
+    verifier((modal(pg) or {}).get('aide') and 'Qui a touché à mes outils' in texte(pg) and pg.locator('#voile [data-act=gd-aide]').count() == 4, 'Farinel : « Qui a touché à mes outils ?! », quatre questions')
+    reps = ['vois des étoiles', 'saigne longtemps', 'perce même le cuir', 'flamme près de sa farine']
+    for k in range(4):
+        pg.locator('#voile [data-act=gd-aide]').first.click(); pg.wait_for_timeout(200)
+        verifier(reps[k] in texte(pg) and pg.locator('#voile .gd-aide-rep').count() == k + 1 and pg.locator('#voile [data-act=gd-aide]').count() == 3 - k, f'sa réponse n° {k + 1} s\'affiche et reste (« … {reps[k]} … »)')
+    mots = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile .gd-aide-rep .ma-dit'), function(p){ return p.textContent.replace(/🔊/g, '').replace(/…/g, ',').trim().split(/[.!?]+/).filter(function(x){ return x.trim().length > 2; }).length; })")
+    verifier(all(n <= 2 for n in mots), f'deux phrases au plus par réponse (la règle de lecture du Barde) {mots}')
+    verifier(pg.locator('#voile .gd-aide-rep button').count() == 4, 'chaque réponse a son 🔊 (le Barde les lit à voix haute pendant le combat)')
+    pg.wait_for_timeout(1500); shot(pg, 'A-farinel-aide')
     fermer(pg)
-    faits = pg.evaluate("() => { M.render(); return Object.keys(M.P().mission.faits).map(Number); }")
-    verifier(all(i in faits for i in (4, 5, 6, 7)), f'les missions de la lettre, de l\'aveu, d\'Anselme et de la fête sont cochées (plus de mission « Léo » : 13 novembre) ({faits})')
+    verifier(pg.evaluate("() => !!M.P().vus['fete:aide:farinel']") and 'assomme' in pg.evaluate("() => JSON.stringify(M.S.calepin || []) + JSON.stringify(M.P().carnet || M.P().notes || '')"), 'tout demandé à Farinel : c\'est noté dans le Carnet')
+    ev(pg, 'lieu', {'id': 'place'})
+    verifier(pg.locator('#voile .gd-fete-tete.gd-appel').count() == 1 and pg.locator('#voile .gd-fete-tete[data-id=farinel]:not([disabled])').count() == 1, 'Farinel n\'a plus son « ❗ », mais on peut toujours retourner le voir (pour relire)')
+    ev(pg, 'gd-fete', {'id': 'farinel'})
+    verifier(pg.locator('#voile .gd-aide-rep').count() == 4, 'ses quatre réponses sont toujours là')
+    fermer(pg)
+    ev(pg, 'gd-fete', {'id': 'iris'})
+    verifier('Il faut que je te dise' in texte(pg) and pg.locator('#voile [data-act=gd-aide]').count() == 2, 'Iris : deux questions')
+    for k in range(2): pg.locator('#voile [data-act=gd-aide]').first.click(); pg.wait_for_timeout(200)
+    verifier('potion de force' in texte(pg) and 'Sauf s\'il saigne' in texte(pg), 'Iris : sa potion de force volée — « Sauf s\'il saigne »')
+    shot(pg, 'A-iris-aide')
+    fermer(pg)
+    faits = pg.evaluate("() => { M.render(); return (M.etapesMission() || []).filter(function(x){ return !x.libre && !x.piste; }).map(function(x){ return [x.t.slice(0, 22), !!(x.fait && x.fait.some(M.condMission))]; }); }")
+    verifier(any(t.startswith('Tes amis se battent') and ok for t, ok in faits), f'la mission de la fête est cochée ({[t for t, ok in faits if not ok]} pas cochées)')
     pg.close()
 
     # ---------------- Partie B : tout raté ----------------
@@ -274,7 +279,6 @@ with sync_playwright() as p:
     verifier('C\'est moi qui ai écrit la lettre' in texte(pg) and '_info:aveu' in objets(pg), 'le filet : Mélusine craque à la fête (code pour le Sage)')
     shot(pg, 'B-melusine-filet')
     fermer(pg)
-    verifier(bulle(pg, 'grosbec') != '❗', 'tant qu\'Anselme n\'est pas vu, le maire ne cherche pas le Barde')
     code(pg, 'info:crypte_fermee'); apres_code(pg)
     tout_demander(pg, ['anselme'])
     ev(pg, 'parler', {'id': 'anselme'})
@@ -287,23 +291,9 @@ with sync_playwright() as p:
     shot(pg, 'B-tim-puits')
     pg.locator('#voile [data-act=gd-retour]').click(); pg.wait_for_timeout(300)
     fermer(pg)
-    ev(pg, 'gd-fete', {'id': 'grosbec'}); choisir(pg, 3, 'gd-ret'); ev(pg, 'gd-ret-ok')
-    ev(pg, 'gd-fete', {'id': 'tim'}); fermer(pg)
-    ev(pg, 'gd-fete', {'id': 'grosbec'}); choisir(pg, 2, 'gd-ret')
-    verifier(pg.evaluate("() => M.P().vus['grand:retenir']") == 'rate' and '_info:maire_retenu' not in objets(pg), 'deux ratés : le maire s\'éloigne, pas de code')
-    ev(pg, 'gd-ret-ok')
-    verifier('s\'éloigne vers le clocher' in texte(pg), '« Le maire s\'éloigne vers le clocher… »')
+    ev(pg, 'gd-fete', {'id': 'grosbec'})
+    verifier((modal(pg) or {}).get('vue') == 'fete' and 'presque' in texte(pg), 'le maire, à la fête : sa réplique (« … enfin, presque »), plus de petit dialogue')
     fermer(pg)
-    verifier(bulle(pg, 'grosbec') != '❗', 'plus de « ! » sur le maire')
-    pg.close()
-
-    print('— Partie C : Léo s\'est enfui')
-    pg = debut(b, 'C')
-    code(pg, 'moment:1'); apres_code(pg); code(pg, 'moment:2'); apres_code(pg)
-    code(pg, 'info:leo_enfui')
-    verifier('renverse sa lanterne' in texte(pg) and pg.evaluate("() => M.P().vus['grand:leo']") == 'enfui', '« Léo s\'est enfui » : la scène, sans dialogue')
-    verifier('_info:leo_dit3' not in objets(pg), 'pas de code « Ce que Léo a dit »')
-    shot(pg, 'C-leo-enfui')
     pg.close()
     b.close()
 

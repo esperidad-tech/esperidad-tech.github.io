@@ -51,7 +51,7 @@ const echecs = [];
     await clic('#bocal-chaude'); await p.waitForTimeout(3600); R.coupesFil2 = (await etat()).coupes;
     await coupe('noir'); await clic('#gLoupe'); await p.waitForTimeout(2000);
     await trouver('d', 'grains', null, 'suie'); R.suie = (await etat()).trouves.noir; R.finiFil = (await etat()).finis.fil; await p.waitForTimeout(2300);
-    await clic('#bFermer'); await p.waitForTimeout(1000); R.ardoise = await p.evaluate(() => document.querySelector('#ardoise').textContent); await shot('03-fil-boucle');
+    await clic('#bFermer'); await p.waitForTimeout(1000); R.ardoise = await p.evaluate(() => !!document.querySelector('#ardoise'));   /* (13 novembre) plus d'ardoise sur la paillasse : false */ await shot('03-fil-boucle');
     await coupe('rouge'); await clic('#gTest'); await p.waitForTimeout(5200);
     await clic('[data-temoin="garance"]'); await p.waitForTimeout(2600); await clic('[data-temoin="coquelicot"]'); await p.waitForTimeout(3000); await clic('[data-temoin="oignon"]'); await p.waitForTimeout(2600); R.rouge = (await etat()).trouves.rouge; await shot('04-teinture');
     await toucheHud(1190, 630); await p.waitForTimeout(900);

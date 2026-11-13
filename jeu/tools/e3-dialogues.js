@@ -144,7 +144,7 @@ function texte(E, D){
   /* (13 novembre, Bible §13.33) l'aide pour le donjon : les nouvelles questions de Farinel et d'Iris, pendant le combat contre Léo */
   const aides = Object.keys(E.fete.gens).filter(id => E.fete.gens[id].aide);
   if(aides.length){
-    p('### 🧥 L\'aide pour le donjon : pendant le combat contre l\'homme en cape', '', 'Quand le Pisteur entre dans la dernière salle, il donne au Barde le code ' + nomCode(E.fete.gens[aides[0]].aide.si) + '. À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.', '');
+    p('### 🧥 L\'aide pour le donjon : pendant le combat contre l\'homme en cape', '', 'Quand le Pisteur entre dans la dernière salle, il donne le code ' + nomCode(E.fete.gens[aides[0]].aide.si) + '. À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.', '');
     aides.forEach(id => {
       const a = E.fete.gens[id].aide;
       p('**' + nom(id) + '** — « ' + a.t + ' »', '');

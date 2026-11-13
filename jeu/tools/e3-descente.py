@@ -10,8 +10,9 @@ Première partie — l'enquête seule (le donjon n'est pas à côté : window.BR
   le Pisteur A (la clé d'Anselme prise) : la grille, ses trois gestes, le code du départ ; la fenêtre de la tenue (les deux codes
     attendus, « on a besoin des sept potions pour descendre ») ; les deux codes d'allure ; la fenêtre de la descente (les trois héros, les
     sept fioles, le 🔊, le bouton jaune) ; l'adresse (le jeton, les potions, l'entrée, l'allure) ; une vieille partie du donjon ne compte
-    pas ; la porte aux quatre signes ; le donjon fini : « Léo attrapé » ; tirer et pousser : le bruit ;
-  le Pisteur B (la clé ratée) : le puits, la grille, l'acide (rien sans le code de l'Alchimiste), l'entrée « puits » ; « Léo s'est enfui » ;
+    pas ; la porte aux quatre signes ; l'homme en cape (le code pour le Barde) ; le donjon fini : « Léo a parlé », « Place aux
+    accusations ! » (Bible §13.35) ; tirer et pousser : le bruit ;
+  le Pisteur B (la clé ratée) : le puits, la grille, l'acide (rien sans le code de l'Alchimiste), l'entrée « puits » ; le donjon fini sans avoir trouvé la porte : un seul code ;
   un code qui sert DANS le donjon, tapé dans l'enquête par le Pisteur : « Ce code-là se tape dans le donjon » ;
   le Sage : le plan des souterrains (la nuit), qui s'ouvre dans le jeu ; le code du départ : sa tenue, son code, ses pages de sauvegarde
     (deux, écrire, barrer, une de plus) ; le carnet de l'aventurier ; la rune (« Une rune apparaît ! ») ; le morceau déchiré ; la porte ;
@@ -237,7 +238,7 @@ def partie_enquete(b):
     verifier('Retourner dans le donjon' in t and 'Y retourner' in t, 'ensuite : « Retourner dans le donjon »')
     fermer(pg)
     # une vieille partie du donjon, restée dans la tablette (un autre jeton) : elle ne compte pas
-    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': 'vieux', 'faits': {'fin': 1, 'code:porte:odette': 1, 'code:leo:attrape': 1}})
+    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': 'vieux', 'faits': {'fin': 1, 'code:porte:odette': 1, 'code:leo:battu': 1}})
     rendre(pg)
     verifier(pg.evaluate("() => !M.P().vus['donjon:fini'] && !M.P().vus['donjon:porte'] && !M.UI.modal"), 'une vieille partie du donjon (un autre jeton) ne compte pas')
     # la porte aux quatre signes
@@ -246,14 +247,20 @@ def partie_enquete(b):
     verifier(pg.evaluate("() => !!M.P().vus['donjon:porte'] && !!M.P().objets['_info:odette_porte'] && !M.P().vus['donjon:fini']"), 'la porte aux quatre signes est trouvée : le Pisteur garde le code pour le Sage')
     notes = pg.evaluate("() => M.P().carnet.map(function(x){ return x.t; }).join(' | ')")
     verifier('quatre signes' in notes, 'c\'est noté dans son Carnet')
-    # le donjon fini, le maire retenu : Léo attrapé
-    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:porte:odette': 1, 'code:leo:attrape': 1, 'fin': 1}, 'codes': {'maire:retenu': 1}})
+    # la dernière salle : l'homme en cape est là (le code pour le Barde) ; rien n'est fini
+    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:porte:odette': 1, 'code:leo:salle': 1}})
+    rendre(pg)
+    verifier(pg.evaluate("() => !!M.P().vus['donjon:leo_la'] && !!M.P().objets['_info:leo_la'] && !M.P().vus['donjon:fini'] && !M.P().objets['_info:leo_battu']"), 'dans la dernière salle : le Pisteur garde le code « L\'homme en cape est là ! » pour le Barde ; rien n\'est fini')
+    notes = pg.evaluate("() => M.P().carnet.map(function(x){ return x.t; }).join(' | ')")
+    verifier('cape noire' in notes and 'Léo' not in notes, 'c\'est noté dans son Carnet, sans le nom de Léo')
+    # Léo battu : il a parlé
+    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:porte:odette': 1, 'code:leo:salle': 1, 'code:leo:battu': 1, 'combat:leo': 1, 'fin': 1}})
     rendre(pg, 900)
     t = texte(pg)
-    verifier('Le donjon est fini' in t and 'coincé Léo' in t and pg.locator('#voile .b-donne').count() == 2, f'au retour : « Le donjon est fini », et deux codes à donner ({t[:60]})')
+    verifier('Le donjon est fini' in t and 'Sous la cape noire : Léo' in t and 'Place aux accusations' in t and pg.locator('#voile .b-donne').count() == 2, f'au retour : « Le donjon est fini… Place aux accusations ! », et deux codes à donner ({t[:60]})')
     verifier(not sans_son(pg), f'cette fenêtre a ses 🔊 ({sans_son(pg)})')
     shot(pg, 'fini')
-    verifier(pg.evaluate("() => M.P().vus['donjon:leo']") == 'attrape' and pg.evaluate("() => !!M.P().objets['_info:leo_attrape'] && !M.P().objets['_info:leo_enfui']"), 'il garde le code « Léo attrapé » pour le Barde')
+    verifier(pg.evaluate("() => M.P().vus['donjon:leo']") == 'battu' and pg.evaluate("() => !!M.P().objets['_info:leo_battu']"), 'il garde le code « Léo a parlé » pour le Sage')
     fermer(pg)
     lieu(pg, 'clocher'); point(pg, 'descendre')
     verifier('Le donjon est fini' in texte(pg) and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le donjon fini : on n\'y redescend plus, on retrouve ses codes')
@@ -262,9 +269,6 @@ def partie_enquete(b):
     t = code(pg, 'info:grosse_marie', True)
     verifier('dans le donjon' in t and not pg.evaluate("() => !!M.P().recus['info:grosse_marie']"), f'« La Grosse Marie » tapée dans l\'enquête : « ce code-là se tape dans le donjon » ({t[:50]})')
     fermer(pg)
-    t = code(pg, 'info:maire_retenu', True)
-    verifier('dans le donjon' in t, '« Le maire est retenu » : pareil')
-    fermer(pg)
     t = code(pg, 'donjon:sauve:1', True)
     verifier('dans le donjon' in t, f'un sort de sauvegarde tapé dans l\'enquête : « dans le donjon » ({t[:50]})')
     fermer(pg)
@@ -272,11 +276,11 @@ def partie_enquete(b):
     verifier('pour le Sage' in t, f'un code du Sage tapé par le Pisteur : « pour le Sage » ({t[:60]})')
     fermer(pg)
     # les codes : les mêmes symboles que dans le donjon, et aucun en double
-    att = {'info:leo_attrape': 'etoile-arbre-flamme', 'info:leo_enfui': 'lune-flamme-chat', 'info:odette_porte': 'chapeau-lune-coeur', 'info:grosse_marie': 'cloche-cloche-lune', 'info:maire_retenu': 'chapeau-cle-chapeau'}
+    att = {'info:leo_la': 'etoile-arbre-flamme', 'info:leo_battu': 'lune-flamme-chat', 'info:odette_porte': 'chapeau-lune-coeur', 'info:grosse_marie': 'cloche-cloche-lune'}
     vu = pg.evaluate("(l) => { var o = {}; l.forEach(function(k){ o[k] = M.code(k).join('-'); }); return o; }", list(att.keys()))
-    verifier(vu == att, f'les cinq codes partagés ont les symboles du donjon ({vu})')
-    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les codes du donjon et les 216 codes d\'allure compris)')
-    verifier(pg.evaluate("() => { for(var n = 0; n < 216; n++){ var a = M.allureDe(n); if(M.allureNumero(a.role, a) !== n) return false; } return !!M.code('allure:215') && !M.code('sac:5'); }"), 'les 216 codes d\'allure se lisent et s\'écrivent ; plus de code du sac')
+    verifier(vu == att, f'les quatre codes partagés ont les symboles du donjon ({vu})')
+    verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les codes du donjon et les 432 codes d\'allure compris)')
+    verifier(pg.evaluate("() => { for(var n = 0; n < 432; n++){ var a = M.allureDe(n); if(M.allureNumero(a.role, a) !== n) return false; } return !!M.code('allure:431') && !M.code('allure:432') && !M.code('sac:5') && !M.code('info:maire_retenu') && !M.code('info:leo_attrape') && !M.code('info:leo_enfui'); }"), 'les 432 codes d\'allure se lisent et s\'écrivent ; plus de code du sac, du maire retenu, de « Léo attrapé / enfui »')
     pg.context.close()
 
     # ---------- tirer, pousser : le bruit
@@ -321,13 +325,13 @@ def partie_enquete(b):
     u = vers(pg); j = jeton(pg)
     verifier('entree=puits' in u and 'potions=feu,fumigene,huile,colle,acide,baume,coeur' in u, f'on part par le puits, avec les sept potions ({u[-120:]})')
     verifier(lieu(pg, 'clocher') == ['cle'], 'toujours pas de crypte au clocher'); fermer(pg)
-    # le maire n'a pas été retenu : Léo s'est enfui
-    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:leo:enfui': 1, 'fin': 1}})
+    # le donjon fini sans avoir trouvé la porte aux quatre signes : un seul code
+    donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:leo:salle': 1, 'code:leo:battu': 1, 'combat:leo': 1, 'fin': 1}})
     rendre(pg, 900)
     t = texte(pg)
-    verifier('Le donjon est fini' in t and 'filé dans le noir' in t and pg.locator('#voile .b-donne').count() == 1, f'le maire pas retenu, la porte pas trouvée : « il a filé dans le noir », un seul code ({t[:60]})')
-    verifier(pg.evaluate("() => M.P().vus['donjon:leo']") == 'enfui' and pg.evaluate("() => !!M.P().objets['_info:leo_enfui'] && !M.P().objets['_info:leo_attrape']"), 'il garde le code « Léo s\'est enfui » pour le Barde')
-    shot(pg, 'enfui')
+    verifier('Le donjon est fini' in t and 'Place aux accusations' in t and pg.locator('#voile .b-donne').count() == 1, f'le donjon fini, la porte pas trouvée : un seul code, « Léo a parlé » ({t[:60]})')
+    verifier(pg.evaluate("() => M.P().vus['donjon:leo']") == 'battu' and pg.evaluate("() => !!M.P().objets['_info:leo_battu'] && !!M.P().objets['_info:leo_la'] && !M.P().objets['_info:odette_porte']"), 'il garde les deux codes de Léo (pour le Barde, pour le Sage)')
+    shot(pg, 'fini-sans-porte')
     pg.context.close()
 
     # ======================================================================== le Sage
@@ -513,12 +517,11 @@ def partie_vraie(b):
         pg.screenshot(path=f'{OUT}/v1-donjon-sac.png')
         pg.eval_on_selector('[data-act=sac-pret]', 'e => e.click()')
         pg.wait_for_function("() => DJ.Explo.etat().ecran === 'scene' && !DJ.Explo.etat().occupe", timeout=40000); pg.wait_for_timeout(600)
-        t = pg.evaluate("() => document.querySelector('#conteur') ? document.querySelector('#conteur').textContent : ''")
-        verifier('escalier de la crypte' in t, f'le fond du puits, en venant de la crypte : « L\'escalier de la crypte descend… » ({t[:60]})')
+        verifier(pg.evaluate("() => { var c = document.querySelector('#conteur'); return !c || getComputedStyle(c).visibility === 'hidden' || !c.offsetHeight; }"), 'l\'entrée des souterrains : plus de bandeau d\'explications (Romain, 13 novembre)')
         pg.screenshot(path=f'{OUT}/v1b-donjon-heros.png')
         pg.eval_on_selector('#b-repartir', 'e => e.click()')
         pg.wait_for_function("() => DJ.Explo.etat().ecran === 'carte' && !DJ.Explo.etat().occupe", timeout=40000); pg.wait_for_timeout(500)
-        verifier('Sous le clocher' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 1, 'la carte : « Sous le clocher », et le bouton « 🏘️ L\'enquête »')
+        verifier('Les souterrains' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 1, 'la carte : « Les souterrains », et le bouton « 🏘️ L\'enquête »')
         pg.screenshot(path=f'{OUT}/v2-donjon-carte.png')
         # on remonte : on revient DANS l'enquête, la partie du donjon est gardée
         pg.eval_on_selector('[data-act=enquete]', 'e => e.click()')
@@ -544,20 +547,21 @@ def partie_vraie(b):
         verifier('Grosse Marie' in t and pv, f'« La Grosse Marie » tapée dans le donjon : toute la vie revient ({t[:50]})')
         pg.screenshot(path=f'{OUT}/v3-donjon-marie.png')
         pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); pg.wait_for_timeout(400)
-        t = pave('maire:retenu')
-        verifier('Le maire est retenu' in t and pg.evaluate("() => !!DJ.Explo._X().partie.codes['maire:retenu']"), f'« Le maire est retenu » tapé dans le donjon ({t[:50]})')
-        pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); pg.wait_for_timeout(400)
+        verifier(pg.evaluate("() => !DONJON_CODES.code('maire:retenu') && !DONJON_CODES.code('leo:attrape') && !DONJON_CODES.code('leo:enfui')"), 'le donjon n\'a plus de code « Le maire est retenu », « Léo attrapé », « Léo s\'est enfui »')
         t = pave('recette:givre')
         verifier(pg.evaluate("() => DJ.Explo._X().partie.recettes.indexOf('givre') >= 0"), f'le code du givre (celui que l\'établi donne à l\'Alchimiste), tapé dans le donjon : le Givre est appris ({t[:50]})')
         if pg.locator('#fenetre [data-act=fermer]').count(): pg.eval_on_selector('#fenetre [data-act=fermer]', 'e => e.click()'); pg.wait_for_timeout(400)
         # la fin (on saute le chemin : les règles du donjon ont leurs propres tests) : la porte, puis Léo
         pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.entrer(p, 'porte4'); Regles.entrer(p, 'leo'); DJ.garder(p); }")
         f = pg.evaluate("() => DJ.Explo._X().partie.faits")
-        verifier(f.get('fin') and f.get('code:leo:attrape') and not f.get('code:leo:enfui'), 'les règles : le maire retenu, Léo est attrapé')
+        verifier(f.get('code:leo:salle') and not f.get('fin') and not f.get('code:leo:battu'), 'les règles : entrer dans la dernière salle donne le code du Barde ; rien n\'est fini tant que Léo est debout')
+        pg.evaluate("() => { var p = DJ.Explo._X().partie; Regles.bossBattu(p, 'leo'); DJ.garder(p); }")
+        f = pg.evaluate("() => DJ.Explo._X().partie.faits")
+        verifier(f.get('fin') and f.get('code:leo:battu') and f.get('combat:leo'), 'les règles : Léo battu, le donjon est fini, le code du Sage est donné')
         pg.eval_on_selector('[data-act=enquete]', 'e => e.click()')
         pg.wait_for_url('**/brumeval/index.html**'); pg.wait_for_timeout(1300)
         t = texte(pg)
-        verifier('Le donjon est fini' in t and 'coincé Léo' in t and pg.locator('#voile .b-donne').count() == 2, f'on remonte : « Le donjon est fini », les deux codes ({t[:60]})')
+        verifier('Le donjon est fini' in t and 'Place aux accusations' in t and pg.locator('#voile .b-donne').count() == 2, f'on remonte : « Le donjon est fini… Place aux accusations ! », les deux codes ({t[:60]})')
         pg.screenshot(path=f'{OUT}/v4-retour-fini.png')
         pg.context.close()
         # ---------- le Sage : sa tenue, son plan DANS le jeu ----------

@@ -56,6 +56,9 @@
 
 /* ---- 3. « Pardon ! » (8 s) ---- */
 .sf-sanglot>i{animation:sf-sanglot .55s ease-in-out infinite alternate}
+/* à terre (Léo, battu, dans la crypte) : couché sur le côté, la tête à gauche ; il respire */
+.sf-aterre>i{transform:translateY(calc(var(--ar, .57) * -42%)) rotate(-90deg);animation:sf-aterre 1.9s ease-in-out infinite alternate}
+@keyframes sf-aterre{from{transform:translateY(calc(var(--ar, .57) * -42%)) rotate(-90deg)}to{transform:translateY(calc(var(--ar, .57) * -45%)) rotate(-91.5deg)}}
 @keyframes sf-sanglot{from{transform:translateY(0)}to{transform:translateY(-1.6%)}}
 .sf-larme{position:absolute;top:31%;width:9%;aspect-ratio:3/4;background:#8fd4ff;border:1px solid #24182e;border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;opacity:0;transform:translateX(-50%);animation:sf-larme 1.4s ease-in infinite;z-index:2}
 @keyframes sf-larme{0%{opacity:0;transform:translate(-50%, 0)}18%{opacity:1}100%{opacity:0;transform:translate(-50%, 220%)}}
