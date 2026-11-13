@@ -1,6 +1,20 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 12 novembre à 23 h 35)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre à 16 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 13 novembre (16 h 15) : le test de Romain en famille, et toutes ses corrections (Bible §13.32)
+
+- **À lire d'abord : Bible §13.32.** La première moitié est en ligne (version 20261113-1515) : le Barde, le concours de gâteaux, l'Alchimiste, le Pisteur, le Sage, le labo.
+- **Ce qui change pour la conception** :
+  - **Plus aucune page du Sage ne conclut à sa place.** « Une drôle de lettre », « La lettre et le carnet » et « Qui a écrit la lettre ? » sont retirées (Romain : « ça donne la solution »). Le Sage a la vraie lettre et le carnet d'Odette **sous les yeux**, et compare les écritures lui-même.
+  - **Le Livre d'or laisse deux suspectes, Mélusine et Margot** (l'étape 8 de la chaîne du §13.31 est construite). Le Barde les accuse toutes les deux : seule Mélusine ment. L'étape 9 (les empreintes de pieds d'enfant) n'est toujours pas construite : aujourd'hui, c'est le Barde qui départage.
+  - **Plus de code « Moustache a six doigts »** : le carnet d'Odette montre les sept chats et leurs pattes, le Sage le dit à voix haute au Pisteur.
+  - **Les traces de Moustache partent de chez Odette**, et le Pisteur marche librement (mini-jeu `pistage`).
+  - **Le tableau d'enquête et l'accusation** : quatorze personnages, dix lieux.
+  - **Les missions de la nuit sont retirées** pour le Pisteur, l'Alchimiste et le Sage (« trop grillées ») ; celles du Barde n'arrivent qu'au bon moment.
+- **Une réplique nouvelle à faire valider par Romain** : Margot accusée (« Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »).
+- **Reste de la même liste** : la fleur de givre, la descente (tenue de combat, la grille), le donjon (ses codes et ses pages dans l'interface principale). **En attente de Romain** : la plante lumineuse ; la fin du donjon et de l'enquête 3 (une autre conversation).
+- **`E3-actions-des-roles.md`** : son encadré du haut dit ce qui a changé le 13 novembre ; le corps du document décrit encore l'ancien fil par endroits.
 
 ## Nouveau depuis le 12 novembre (23 h 27) : LE SCÉNARIO A CHANGÉ, les dialogues du Barde sont refaits et VERROUILLÉS
 

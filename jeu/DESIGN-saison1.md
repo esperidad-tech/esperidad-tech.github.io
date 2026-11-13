@@ -1512,6 +1512,18 @@ Dans les enquêtes suivantes, le QUI et le OÙ seront plus partagés entre les r
 
 **À demander à Romain** : (1) les talents du Pisteur, de l'Alchimiste et du Sage n'existent pas encore (§12.56) : son bouton Talents les emmène sur un arbre vide (« 🌱 ») — faut-il les concevoir maintenant ? (2) « Qui va jouer ? » aussi hors des Réglages ? (3) la mission bonus du Sage (l'horloge) : la garder ? (4) la page blanche « à verser » : la même chose pour d'autres pages à encre plus tard ?
 
+### 12.60 Un héros ne prend jamais la place d'un autre : le bouton « L'enquête » du donjon effaçait le Pisteur (Romain, 13 novembre, 13 h 57) — corrigé, vérifié, EN LIGNE (commits ddab09e et 194f64d du site, version 20261113-1320)
+
+**Ce que Romain a vu.** « Quand on est dans le Pisteur et qu'on appuie sur L'enquête, ça efface le personnage et ça lance l'Alchimiste. »
+
+**La cause.** Quand plusieurs onglets du même appareil étaient ouverts AVANT de créer les héros (Romain teste les quatre rôles sur une seule machine), ils prenaient tous l'emplacement de sauvegarde n° 1 : le dernier qui sauvait effaçait les autres. Le retour du donjon rechargeait la page : on retrouvait le héros d'un autre onglet.
+
+**Ce qui est fait** (`jeu/src/moteur-base.js`, `descente.js` ; `jeu/donjon/moteur/src/explo.js`, `jeu/donjon/pages/commun.js`).
+- **Chaque héros a un nom secret** (`S.uid`, donné à la création ; une vieille sauvegarde en reçoit un au chargement). `M.sauver` regarde ce qu'il y a dans l'emplacement avant d'écrire : si c'est **un autre héros**, il part s'écrire dans un emplacement libre (huit emplacements au plus), et l'onglet retient le sien (`sessionStorage`). Un onglet sans héros ne sauve rien par-dessus quelqu'un.
+- **Le donjon dit quelle descente remonte** : le bouton « L'enquête » revient avec `?retour=<jeton>` ; le jeu retrouve l'emplacement du héros qui porte ce jeton (`M.emplacementDuJeton`) et remet l'adresse au propre.
+- **Ce qui ne se rattrape pas** : les héros déjà écrasés avant la correction sont perdus (dit à Romain : recréer avec Changer de joueur → Nouveau héros → Mode test).
+- Robot : `jeu/tools/emplacements.py` (quatre onglets ouverts avant les héros, le Pisteur descend et remonte : chacun retrouve le sien).
+
 ## 13. Enquête 3 — La lettre d'Odette
 
 > ⚠️ **LE SCÉNARIO A CHANGÉ LE 12 NOVEMBRE AU SOIR (§13.31, à lire d'abord).** Romain l'a réécrit : c'est Mélusine qui a écrit ET déposé la lettre, forcée par un homme en cape ; l'homme en cape est Léo, et **son nom n'est dit nulle part avant la nuit** ; plus de lavande, plus de « minuit », plus de Léo froussard. **Les dialogues du Barde sont refaits et verrouillés** (`jeu/enquete3/E3-dialogues-et-trame.md`, version 3, écrit par un outil à partir du jeu). Les §13.1 à §13.29 décrivent l'ancien fil : ils restent vrais pour ce qui est construit chez le Pisteur, l'Alchimiste, le Sage et dans le donjon, **pas pour l'histoire ni pour les dialogues du Barde**.
@@ -2489,6 +2501,77 @@ Romain : « J'aimerais bien que le mini-jeu du gâteau, il soit pour tout le mon
 **Robots.** Refaits : `e3-barde.py` (plus de limite, les nouveaux textes, les missions, la couleur et le reflet de la grande conversation, la fenêtre qui glisse, le « 🎭 »), `e3-grands.py` (le maire fermé tant qu'il reste une question, Anselme fermé tant qu'il manque l'aveu, le code ou une question ; les majuscules ; la scène de Léo), `partie3.py` (une partie complète à quatre tablettes : 21 codes passés, les neuf missions du Barde cochées), `e3-fin.py`, `e3-sage.py`, `e3-alchimiste.py`, `e3-marche.py`. Nouveaux outils : `tools/e3-dialogues.js`, `tools/e3-dialogues-page.js`.
 
 **EN LIGNE : depuis le 12 novembre à 23 h 27 (heure de Paris ; accord de Romain à 21 h 44 : « je te laisse faire tout ça et après tu publies »), commit ef61be3 du site, **version 20261112-2226**, publication de GitHub vérifiée. Construit depuis les sources fusionnées avec le concours de gâteaux (§13.30 ; un conflit dans `e3.js`, réglé à la main). Avant l'envoi, sur le jeu fusionné : `rapide.sh`, `partie2.py`, les codes (enquêtes 1 et 2 identiques ; enquête 3 : 224 codes, trois retirés, un nouveau, les symboles ont changé), `e3-donjon-codes.js`, `verif.js 3`, et les robots `e3-barde.py` (tablette, `tendre`, téléphone), `e3-grands.py` (tablette, téléphone), `e3-gateau.py`, `e3-marche.py`, `e3-fin.py`, `e3-sage.py`, `e3-alchimiste.py`, `e3-pisteur.py`, `e3-descente.py`, `partie3.py`. Remarque ancienne, pas de ce chantier : `bot-carte.py e3` signale que la bulle de la place, la nuit, chez le Barde, défile (onze villageois à la fête) ; c'était déjà le cas avant. **Jamais essayé sur une vraie tablette.****
+
+### 13.32 Le test de Romain du 13 novembre sur l'enquête 3 : toutes ses corrections (13 h 55) — PREMIÈRE MOITIÉ CONSTRUITE, VÉRIFIÉE, EN LIGNE (13 novembre, 16 h 15 ; commit aa14db9 du site, version 20261113-1515) ; la descente et le donjon : voir la fin
+
+**D'où ça vient.** Romain a joué l'enquête 3 avec sa famille et a dicté une longue liste (13 h 55), puis : « Une fois que tu as fini, tu publies. » Deux choses sont à part : **la plante lumineuse** (« on va en parler ensemble » : rien de construit) et **la fin du donjon et de l'enquête 3** (il ouvrira une autre conversation).
+
+**LE BARDE.**
+- Trois secondes après « En route pour le marché », le maire revient : « Essayez de bien négocier. Je sais que vous êtes doué pour ça. Je compte sur vous. » (`marche.rappel`, `marche.js`). **Le maire vouvoie le Barde partout** (décision de Claude).
+- La petite fleur 🌸 n'est d'abord que sur Fortuné ; sur Iris et Basile une fois Fortuné fait.
+- Tableau de liège : un dossier « Autre » avec Plume d'oie, Papier, Encre ; chaque mot arrive quand le Barde l'a entendu (Gaspard, Fortuné démasqué, Iris).
+- **Un villageois dont tout est dit ou vu est cerclé de rouge et ne se touche plus**, même si son mensonge n'a pas été trouvé (dès que le bouton Mensonge a disparu). Un vendeur de fleurs qui vend encore n'est jamais rouge.
+- Dialogue refermé avant que le bouton Mensonge disparaisse : seulement le bruit, pas d'animation.
+- **Le retour des fleurs** (`marche.retour`) : trois visages du maire — pas content (moins de 10), content (10), très content (11 bouquets et la lanterne : « Magnifique, je savais que je pouvais compter sur vous. Vous êtes vraiment un négociateur hors pair, très malin. »). Devant la lanterne, une deuxième vue : « Le maire réagit d'une façon très étrange… », puis « Une lanterne comme celle-là… Parfait. Je vais la garder. »
+- **La lettre** : réussie, un code pour le Sage et l'Alchimiste ; ratée (ou le piège de la copie), **un code pour le Pisteur, « La lettre est sur le bureau du maire »** (`info:lettre_bureau`, il remplace `info:copie`) : la lettre en cachette apparaît à la mairie, niveau 5, autant d'essais qu'on veut. Plus de lettre accrochée sous le tableau du Sage.
+- **La nuit, à la fête** : tous les visages rangés DANS la place, sans se chevaucher (`poserFoule`, `carte.js`) ; Anselme sur le toit du clocher (`pnj.anselme.pose`). La bulle des villageois de la place tient sur un téléphone sans défiler (une grille de têtes ; une tête entendue devient rouge).
+- Mélusine à la fête, sans aveu : « C'est trop dur de garder ce secret… J'ai besoin de me confier. C'est moi qui ai écrit la lettre ! Un homme en cape m'y a forcée. Je n'ai pas vu son visage. »
+- **Missions** : celles de la nuit n'arrivent que quand le Barde sait de quoi elles parlent (la clé avec le code du Pisteur, la fête une fois Anselme vu) ; plus de mission « Léo ».
+
+**LE CONCOURS DE GÂTEAUX (les quatre rôles).** « ← Plus tard » dans la fenêtre d'avant (l'icône reste, rien n'est mis en pause). « C'est prêt » → le gâteau ; « Retoucher » seulement s'il reste du temps ; **« Vote »** (plus « À la fête ») → vingt bulles de 1 à 20 → sa place, **1er 5 pièces, 2e 4, 3e 3, 4e 2** → « Bravo ! Tu as gagné N pièces d'or » → « Mission réussie… Ton gâteau part sur la grande table de la fête » → la carte. Une fois la mission rendue au maire, tout ce qui touche au gâteau disparaît (`bonus.cacheSi`, `disparait`).
+
+**L'ALCHIMISTE.**
+- Missions allégées : plus de « Analyse la lettre… » ; « Prépare les sept potions, sur ton établi. » ; plus de mission de la nuit.
+- **La plante est cueillie dès qu'on la trouve** (plus de bouton « Cueillir » ; enquêtes 2 et 3 ; `A.cachette`, `cueillette.js`).
+- La potion de vérité se prépare encore à l'enquête 3 (`recettes:['verite']`, la page « Les recettes » du Sage) et ses ingrédients se cueillent encore (lavoir, herboristerie, clairière, potager, forêt, lisière ; l'eau sur la place ; `carteIngredients`).
+- **La brume se réinstalle** au moment qui suit la dernière cueillette d'au-delà de la brume (`brume.revient`, `M.brumeFinie`). Chez Anselme : plus de « sonner la cloche » une fois tout cueilli (`{brumeFinie:true}`), plus de point « tisane » une fois la mélisse rapportée.
+- **Le Livre d'or, il ne le trouvait pas** : voir le Sage, et le labo plus bas.
+
+**LE PISTEUR.**
+- **Les banderoles** : le nouveau tir à l'arc vu par les yeux du Pisteur (`mj:'visee'`), **niveau 9 pour tout le monde**, avec **le son de l'arc du donjon** (le moteur de son du donjon et ses bruitages entrent dans le jeu : `SON_DONJON` dans `build.py`, `BRUITAGES_ARC`, `ARC_DJ` dans `mj-visee.js` ; +80 Ko).
+- **LES TRACES DE MOUSTACHE SONT REFAITES** — Romain : « Le Pisteur va être au centre de l'image, et quand il avance ou quand il recule, la caméra le suit. Il doit trouver les bonnes traces et aller jusqu'à l'église. S'il suit des mauvaises traces jusqu'à un point précis, là, il perd. Fais en sorte que les traces ne soient pas énormes […] que même en petit, on arrive à reconnaître les traces des chats. Tu le fais démarrer depuis chez Odette. »
+  - **Nouveau mini-jeu « Suivre les traces »** (`mj-pistage.js`, `mj-pistage.css`, type `pistage`) : un quartier vu du ciel, tiré au hasard à chaque partie (des rues en quadrillage, des impasses) ; du lait renversé devant chez Odette ; chaque chat laisse sa piste de petites traces blanches, dans son couloir de la rue ; le Pisteur (celui de « Se cacher », vu du dessus) reste au milieu de l'écran et marche vers le doigt posé ; **gagné à la grille de la crypte, perdu au bout d'une mauvaise piste** (chez le voisin, la boulangerie, le lavoir, un arbre, la carriole de Fortuné, le potager), et le jeu dit quel chat c'était. Niveau : 3 à 6 fausses pistes ; Noisette (cinq doigts, presque Moustache) à partir du niveau 5. Une trace fait 26 à 36 points d'écran.
+  - **Les sept chats et leurs traces** : `chats.js` (une seule source pour le mini-jeu et pour le carnet du Sage) — Moustache (six doigts, gros), Biscotte (toute petite), Pompon (trois doigts), Caramel (griffes), Mistigri (coussinet en cœur), Noisette (cinq doigts), Grisette (doigts très écartés).
+  - **On part de chez Odette** : une maison peut avoir des choses à voir (`E.lieux.L2`, `M.pointsMaison`, `M.bullesMaisons` dans `moteur-roles.js` ; une petite bulle 🐾 sur la maison, `o.bullesMaison` dans `carte.js` ; pas d'« Explorer » avant). À tout moment, dès que le Barde a donné « Les traces de Moustache ». **Autant d'essais qu'on veut** ; niveau de l'enquête (enfant : trois fausses pistes ; adulte : quatre, dont Noisette).
+  - **Plus de code « Moustache a six doigts »** : le Sage le dit à voix haute.
+  - Réussi : « Les traces arrivent sous l'église, à l'entrée de la crypte. Mais sa grille est fermée à clé ! », puis le code : « Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde. »
+- **La mairie** : sans le code du Barde, seulement « Rendre ta mission » (5 pièces).
+- Plus de missions de la nuit.
+
+**LE SAGE.**
+- **Le Livre d'or est une page du Grand Livre** (Romain : « directement dans le Grand Livre du Sage ; le matin, des signatures, des petits mots pour Odette selon le caractère de chacun, et : tout le monde n'a pas encore signé ; l'après-midi, un gros bouton jaune : tout le monde a signé, donne ce livre à l'Alchimiste »). Le matin : huit mots (ni Mélusine, ni Margot, ni Fortuné, ni Farinel : `tard`) ; l'après-midi : douze, « Tout le monde a signé ! » et le bouton « 📖 Donner ce livre à l'Alchimiste » → le code « Les écritures du village ». Plus de point « Livre d'or » à la mairie.
+- **Trois pages retirées** — « ça donne la solution » : « Une drôle de lettre », « La lettre et le carnet », « Qui a écrit la lettre ? ». Les codes du Barde (la poste, « Odette… sans sa canne », l'aveu, « Deux écritures ») restent : ce sont des informations (`savoir:true`), le Sage conclut tout seul.
+- **Deux pages qui n'apparaissent qu'avec le code du Barde** (`visibleSi`, `livre.js`) : **« La lettre d'Odette »** (la vraie feuille, écrite « à la manière d'Odette ») et **« Le carnet d'Odette »** (écrit de sa main : pour chacun des sept chats, son petit dessin, ce qu'elle en dit, sa patte ; chacun son 🔊). **Aucun texte ne dit que la lettre est fausse : on compare les deux écritures de ses yeux.** Odette : très penchée, un petit chat à côté de ses « O », des « M » ronds, des « t » simples, des points sur les « i ». La lettre : penchée et le petit chat (elle est imitée), mais des « M » qui piquent, des « t » en vague, des ronds sur les « i ».
+- **Les écritures : une seule source** pour le Grand Livre et le labo (`ecritures-donnees.js`) ; le dessin dans le jeu : `ecritures.js`, `ecritures.css` (`M.ecrit`).
+- **« Mon tableau d'enquête »** : **quatorze personnages** (tous) et **dix lieux** (au clocher, au puits, au moulin, au Vieux Chêne, chez sa sœur, à la mairie, à la taverne, au lavoir, dans la forêt, à l'herboristerie). L'accusation offre les mêmes choix. Plus de « Sous le clocher, derrière la porte aux quatre signes » ni de « Au fond du puits ».
+- **La bibliothèque des plans garde les archives** : les plans des enquêtes passées, chacun dans un menu replié (`plansPasses`, `livre.js`).
+- **Le plan des Fondateurs** : là dès le matin (plus besoin du carnet), **sans minuteur** (`sansTemps`, `mj-sage-codes.js`).
+- L'ordre des pages : tableau, lettre du maire, habitants, recettes, herbier, Livre d'or, la lettre, le carnet, le plan, puis la nuit.
+
+**LE LABO (l'Alchimiste).** Avec le code du Sage, **le Livre d'or s'ouvre tout seul sous la lettre** (plus besoin de trouver le bouton). **DEUX écritures ont les trois signes de la lettre : Mélusine et Margot** (Romain : « ça accusait deux femmes, et après on devait trouver laquelle était la bonne » ; §13.31, étape 8). On touche l'une ou l'autre : « ✅ deux écritures : Mélusine et Margot ». Le code s'appelle maintenant « Deux écritures » (`info:ecriture`, pour le Barde et le Sage). **Le Barde peut poser à Margot la même accusation qu'à Mélusine** : Margot dit vrai (« Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »), Mélusine ment.
+
+**Les preuves** (`E.faits`) : l'analyse de la lettre ne laisse que Mélusine et Margot ; l'aveu désigne Mélusine ; le donjon désigne le clocher.
+
+**Les codes.** Enquêtes 1 et 2 : **identiques** (57 et 69, comparés un par un). **L'enquête 3 a changé** (`six_doigts` et `copie` retirés, `lettre_bureau` ajouté) : toutes les tablettes doivent recharger.
+
+**Décisions prises par Claude, à valider par Romain.**
+1. **Une réplique nouvelle dans des dialogues verrouillés** : l'accusation de Margot et sa réponse (sans elle, seule Mélusine aurait la question : la réponse serait trahie par le jeu).
+2. Le matin, ni Mélusine ni Margot n'ont signé le Livre d'or.
+3. Les six lieux ajoutés au tableau.
+4. Le maire vouvoie le Barde partout ; le texte du palier « 5 bouquets » retouché.
+5. Le code « La copie de la lettre » est supprimé (le piège donne le code du Pisteur).
+6. La troisième mission de nuit du Barde, et celles du Sage et de l'Alchimiste, sont retirées aussi.
+7. La brume revient au moment qui suit la dernière cueillette.
+8. Les traces : seuls les chats d'Odette laissent des traces (plus de chien) ; essais infinis.
+9. Le moteur de son du donjon entre dans le jeu (+80 Ko).
+
+**PAS FAIT, à reprendre avec la descente et le donjon.**
+- « Enlever les indices (puits, crypte) » du plan des Fondateurs : ils ne sont que sur le plan du donjon (« Le fond du puits », « La rune dort au puits » : `jeu/donjon/carte.js`, `PLAN`).
+- La fleur de givre (le code tapé dans l'interface principale, la fleur sur l'établi, le code pour le Pisteur : « Givre » pour le crapaud).
+- La descente : le code du Pisteur au Sage (« on va dans la crypte »), la fenêtre « il est temps d'enfiler notre tenue de combat », les codes d'apparence du Sage et de l'Alchimiste, les sept potions obligatoires ; la grille (tirer, pousser : « un énorme bruit s'est entendu dans tout le village » ; soulever : « le portail s'ouvre sans bruit »).
+- Le donjon : tous ses codes tapés dans l'interface principale du Sage et de l'Alchimiste ; le carnet de l'aventurier, le plan, les pages de sauvegarde, le plan déchiré : des pages du Grand Livre ; la pierre de lune ; la dague qui touchait la chauve-souris en deuxième position ; les feux follets.
+
+**Robots.** Remis à jour : `e3-alchimiste.py`, `e3-barde.py`, `e3-grands.py`, `e3-cueillette.py`, `e3-gateau.py`, `gateau.py`, `e3-pisteur.py`, `e3-sage.py` (refait), `e3-descente.py`, `partie3.py`. Nouveau : `pistage.py`. Verts aussi : `rapide.sh`, `partie2.py`, `visee.py`, `verif.js 1 2 3` (le vérificateur sait maintenant : `visibleSi` et `quand` sur une page, `savoir` sur un code, `essaisInfinis` = jamais raté pour de bon).
 
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
