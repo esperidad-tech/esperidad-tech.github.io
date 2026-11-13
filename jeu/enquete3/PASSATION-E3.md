@@ -2,18 +2,37 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 13 novembre (tard le soir) : Léo, les retouches du donjon et LA FIN DE L'ENQUÊTE 3 sont construits et EN LIGNE (Bible §13.35)
+
+- **À lire : Bible §13.35** (ce qui est construit, les treize décisions de Claude à faire valider, la difficulté) et §13.33 (la conception, avec Romain). Go de Romain à 18 h 48 : « Fais ça et toute la création du donjon […], toute la création de la fin. Tu as mon go et tu peux publier. » Version 20261113-2114, commit ee2b141 du site.
+- **L'enquête 3 se joue maintenant du début à la fin**, sur les quatre tablettes : le donjon se termine par Léo, Léo parle, le Sage accuse, le maire arrive, tout le monde finit au cachot. « Fin de l'enquête 3… mais ce n'est que le début. »
+- **Ce qui change pour la conception** :
+  - **Léo** : un combat **en temps réel**, en **trois phases**, dans la dernière salle. Pendant la phase 1, son capuchon cache son visage : il s'appelle « **L'homme en cape** ». Battu, il dit ses cinq phrases (celles du §13.33) sur la tablette du Pisteur.
+  - **Deux nouveaux codes** : « **L'homme en cape est là !** » (Pisteur → Barde, en entrant dans la dernière salle) et « **Léo a parlé** » (Pisteur → Sage, une fois Léo battu).
+  - **Le Barde** : avec le premier code, **Farinel et Iris portent un « ❗ » à la fête** et répondent à de nouvelles questions (quatre et deux) sur les outils de Léo et sur la potion de force. Le Barde lit les réponses à voix haute pendant le combat. **Les six réponses sont de Claude : à relire par Romain.**
+  - **Le Sage ne peut plus accuser avant d'avoir reçu « Léo a parlé »** (« Pas encore… Il manque quelqu'un : l'homme en cape. »). Puis **trois accusations**, dans cet ordre : OÙ est Odette ? QUI a écrit la fausse lettre ? **QUI se cachait sous la cape noire ?** (dix visages ; cette question n'est pas dans son tableau).
+  - **Retirés** : « Retenir le maire » (les trois dialogues, la mission, le code), la question du Corbeau, « Léo attrapé », « Léo s'est enfui », « Ce que Léo a dit », la scène de Léo chez le Barde. **Le bruit de la grille ne déclenche toujours rien.**
+  - **La fin** : six images (le maire descend avec Silas et deux gardes ; « Que s'est-il passé ici ? Léo ! Qu'avez-vous fait à Léo ? » ; la bague ; « Gardes ! Attrapez-les ! » ; **le cachot** ; « Fin de l'enquête 3… mais ce n'est que le début. »). Odette n'est pas délivrée. Le calepin de fin a huit notes.
+  - **Le cachot à quatre héros** : le Pisteur et le Barde ont maintenant un code d'apparence (216 codes de plus). Sous l'image du cachot, chacun voit son code et tape ceux de ses amis ; un ami tapé n'est plus une ombre.
+  - **Le donjon** : « L'entrée des souterrains » (plus « Le fond du puits »), la carte « Les souterrains », **plus de bandeau d'explications**, **la sauvegarde obligatoire** après deux salles de monstres, les feux follets (avec les runes sur eux : sort ×4), les boucliers, les herbes à 15, Bourbe.
+  - **L'ardoise** de la paillasse d'analyse est enlevée.
+- **⚠️ La difficulté** (Bible §13.35) : le donjon est nettement plus dur qu'avant, et Léo n'est battable que par un joueur rapide. **Une famille qui ne bat pas Léo ne finit pas l'enquête 3.** À surveiller au premier essai de Romain.
+- **🔒 Les dialogues** : `E3-dialogues-et-trame.md` a été régénéré par l'outil (l'aide de Farinel et d'Iris ; plus de « Retenir le maire »). Ne jamais le modifier à la main.
+- **Les codes de l'enquête 3 ont changé** : les quatre tablettes doivent recharger la page.
+- **En attente de Romain** : les treize décisions (§13.35) ; les 28 sons de Léo (Atelier des sons, 🆕) ; le Roi des rats dans la phase 2 (« maybe » : pas mis) ; la plante lumineuse ; ce que change le bruit de la grille.
+
 ## Nouveau depuis le 13 novembre au soir : la descente et le donjon (Bible §13.34) — EN LIGNE ; les corrections du donjon sont finies
 
-- **À lire : Bible §13.34.** La deuxième moitié de la liste de Romain (13 h 55) est construite et en ligne. **C'est ce qu'attendait la construction de Léo et de la fin (section du dessous)** : il ne manque plus que le go de Romain.
+- **À lire : Bible §13.34.** La deuxième moitié de la liste de Romain (13 h 55) est construite et en ligne. **C'est ce qu'attendait la construction de Léo et de la fin** — faite depuis : section du dessus.
 - **Ce qui change pour la conception** :
   - **La grille** : tirer, pousser (« un énorme bruit s'est entendu dans tout le village ») ou soulever (sans bruit). **Le bruit ne déclenche rien** : « Retenir le maire » est retiré (§13.33). À Romain de dire s'il sert encore à quelque chose.
   - **Un nouveau code, « On va dans la crypte »** (Pisteur → Sage et Alchimiste), puis **deux codes d'allure** (Sage → Pisteur, Alchimiste → Pisteur : fille ou garçon, la peau, les cheveux — **pas l'âge, pas les yeux**). Le code du sac n'existe plus : **sept potions ou rien**. Pour la prison à quatre héros du §13.33, il faudra étendre ces codes (le Pisteur, le Barde).
   - **Le Sage ne quitte plus le jeu pendant le donjon** : son plan, ses pages de sauvegarde (deux, plus une) et le carnet de l'aventurier sont dans son Grand Livre ; il tape tous ses codes du donjon dans son onglet Code.
   - **La fleur de givre** se prépare sur l'établi de l'Alchimiste (huit étapes), et donne le code du Givre pour le Pisteur.
-  - **« L'entrée »** n'est écrit que sur le plan du Sage ; chez le Pisteur, la première salle s'appelle toujours « Le fond du puits » (à faire avec le §13.33).
-- **En attente de Romain** : la plante lumineuse (« on va en parler ensemble ») ; **les feux follets** (« leur sort principal ×4 quand ils se dévoilent d'eux-mêmes » : Claude n'a pas compris de quel sort il s'agit) ; les six décisions de Claude listées à la fin du §13.34.
+  - **« L'entrée »** n'est écrit que sur le plan du Sage ; chez le Pisteur, la première salle s'appelait encore « Le fond du puits » (corrigé depuis : « L'entrée des souterrains », §13.35).
+- **En attente de Romain** : la plante lumineuse (« on va en parler ensemble ») ; les feux follets (réglé depuis : §13.35) ; les six décisions de Claude listées à la fin du §13.34.
 
-## Nouveau depuis le 13 novembre (17 h 30) : Léo, le boss final, et la fin de l'enquête 3 — conçus, rien de construit (Bible §13.33)
+## Nouveau depuis le 13 novembre (17 h 30) : Léo, le boss final, et la fin de l'enquête 3 — la conception (Bible §13.33) ; CONSTRUIT DEPUIS : tout en haut
 
 - **À lire : Bible §13.33**, en entier. Conçu avec Romain de 14 h 02 à 17 h 29.
 - Après Bourbe : le chat d'Odette, puis **Léo, grand, musclé, cape noire**. Le Sage n'a aucune information : on apprend en jouant. **Combat en temps réel**, 10 000 points de vie, **trois phases** séparées par de courtes cinématiques (sauvegarde automatique à chacune) ; attaques dans un **ordre fixe** ; pas d'explication avant (exception voulue).
