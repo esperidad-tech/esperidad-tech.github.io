@@ -253,7 +253,12 @@ async function victoire(){
   await attendre(500);
   await E.leo.vers('aTerre', 900, 'io'); Fx.tremble(8, 300);
   var fan = bruit('victoire', {}, ['fanfare']);
-  await Promise.all(ORDRE.filter(function(h){ return !E.c.h[h].sol; }).map(function(h, k){ return attendre(k * 120).then(function(){ return E.A.h[h].joie(); }); })).catch(function(){});
+  /* ceux qui étaient au sol se relèvent : tout le monde est là pour l'écouter */
+  await Promise.all(ORDRE.map(function(h, k){
+    var A = E.A.h[h], s = slotH(h);
+    s.classList.remove('sol', 'saigne', 'brule', 'bj', 'bc', 'proie'); try{ A._etoiles(false); }catch(e){}
+    return attendre(k * 120).then(function(){ return A.ko ? A.relever() : A.joie(); }).then(function(){ try{ A.attendre(); }catch(e){} });
+  })).catch(function(){});
   await attendre(400);
   E.aveu = 0; aveu();
 }

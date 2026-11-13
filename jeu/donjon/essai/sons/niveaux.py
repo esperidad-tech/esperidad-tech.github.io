@@ -20,13 +20,13 @@ niv = {}
 atteint = {}
 for k, r in b.items():
     plafond = PIC_CHOC if k.startswith(CHOCS) else PIC_SFX
-    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith('icone') else (CIBLE_PAS if k.startswith('pasCouloir') else CIBLE_SFX))   # le critique : plus fort que tout le reste
+    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith(('icone', 'leoSaigne')) else (CIBLE_PAS if k.startswith('pasCouloir') else CIBLE_SFX))   # le critique : plus fort que tout le reste
     atteint[k] = min(cible_k, r['sonie'] + 20 * math.log10(plafond / r['pic']))
 # 2) dans une même carte, toutes les versions au même niveau (sinon la plus forte paraît meilleure)
 cartes = {}
 for k in b: cartes.setdefault(re.sub(r'[A-D]$', '', k), []).append(k)
 for c, ks in cartes.items():
-    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone', 'pasCouloir')) else CIBLE_SFX - 6)
+    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone', 'pasCouloir', 'leoSaigne')) else CIBLE_SFX - 6)
     for k in ks:
         r = b[k]; f = 10 ** ((min(cible, atteint[k]) - r['sonie']) / 20); niv[k] = f
         print('%-14s sonie %6.1f -> x%.2f  (%6.1f, pic %.2f)' % (k, r['sonie'], f, r['sonie'] + 20 * math.log10(f), r['pic'] * f))

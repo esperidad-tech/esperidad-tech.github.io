@@ -518,7 +518,8 @@ function descente(graine, idEquipe, o){
     if(pas === 'crypte' && p.faits['combat:crypte'] && !p.faits['objet:amulette']) R.prendre(p, 'amulette', 'pisteur');
     i++;
   }
-  return {gagne:!!p.faits.fin, defaites:defaites, mortA:null, premiereChute:mortA, journal:journal, chaud:chaud, tombes:tombes, pv:D.EXPOSES.map(function(h){ return p.heros[h].pv; })};
+  /* (13 novembre) « arriver chez Léo » : être entré dans la dernière salle (son combat, en temps réel, a sa propre simulation : leo-sim.js) */
+  return {gagne:!!p.faits['code:leo:salle'], defaites:defaites, mortA:null, premiereChute:mortA, journal:journal, chaud:chaud, tombes:tombes, pv:D.EXPOSES.map(function(h){ return p.heros[h].pv; })};
 }
 function donjon(idEquipe, o, n){
   var l = [];

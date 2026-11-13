@@ -9,7 +9,8 @@ Une équipe maligne joue tout le donjon sur l'écran du Pisteur, du sac de dépa
     l'œil, le feu de camp (repos, recette du Givre, sac refait) ;
   - les codes de sauvegarde avant les grandes portes ; si elle tombe, elle repart de sa sauvegarde, comme une famille.
 Après chaque geste : ce que montre l'écran (vies, bêtes en vie, points faibles) doit être ce que disent les règles.
-À la fin : l'écran « Vous avez retrouvé Léo », aucune erreur JavaScript, aucune lecture vocale toute seule.
+À la fin : le combat de Léo s'ouvre (on triche alors sur ses points de vie : il a ses propres tests), l'écran « Bravo ! »,
+aucune erreur JavaScript, aucune lecture vocale toute seule.
 Le journal de la descente (salle, essais, tours, vies) s'affiche, et des captures vont dans captures/descente-*.png."""
 import os, sys, json, time
 from collections import deque
@@ -95,6 +96,7 @@ class Descente:
         self.pg.goto(PAGE + '?nouveau=1&graine=%d&vitesse=%d' % (GRAINE, VITESSE)); self.pg.wait_for_timeout(800)
         self.pg.evaluate(POLITIQUE)
         self.entrees = {}; self.journal = {}; self.chutes = 0; self.gestes = 0; self.ecarts = []; self.salle = None; self.vu_fin = False
+        self.sauves = set(); self.obligee = None; self.leo_vu = None
         self.musiques = []; self.entendu = set()
 
     # la musique demandée est-elle celle de l'endroit ? (10 novembre : une ambiance par zone, une longue musique par grand combat)
@@ -236,7 +238,7 @@ class Descente:
         if not fait('combat:crypte') or not fait('objet:amulette'): return 'crypte'
         if not fait('combat:ossuaire'): return 'ossuaire'
         if not fait('combat:bassin'):
-            if not p['codes'].get('sauve:3') or not p.get('repos'): return 'camp'
+            if 'camp' not in self.sauves or not p.get('repos'): return 'camp'
             return 'bassin'
         if not fait('code:porte:odette'): return 'porte4'
         return 'leo'
@@ -261,12 +263,39 @@ class Descente:
             x = vus[x]
         return x
 
-    def sauver_ici(self, p, ici):
-        """les pages de sauvegarde, avant les grandes portes"""
-        f = p['faits']; c = p['codes']
-        if ici == 'dalles' and f.get('piege:dalles') and not f.get('combat:atelier') and not c.get('sauve:1'): return 'sauve:1'
-        if ici == 'portes' and f.get('combat:crypte') and f.get('objet:amulette') and not f.get('combat:ossuaire') and not c.get('sauve:2'): return 'sauve:2'
+    def page_libre(self, p):
+        """la prochaine page blanche pas encore écrite (les trois du Sage, puis celle trouvée dans le tas d'os)"""
+        for n in (1, 2, 3):
+            if not p['codes'].get('sauve:%d' % n): return 'sauve:%d' % n
+        if p['faits'].get('objet:page-blanche') and not p['codes'].get('sauve:4'): return 'sauve:4'
         return None
+
+    def sauver_ici(self, p, ici):
+        """les pages de sauvegarde, avant les grandes portes (une fois par endroit)"""
+        f = p['faits']
+        if ici in self.sauves: return None
+        if ici == 'dalles' and f.get('piege:dalles') and not f.get('combat:atelier'): return self.page_libre(p)
+        if ici == 'portes' and f.get('combat:crypte') and f.get('objet:amulette') and not f.get('combat:ossuaire'): return self.page_libre(p)
+        return None
+
+    # ----- LÉO, le boss final (13 novembre, Bible §13.33) : son combat est en temps réel — ici, on vérifie qu'il s'ouvre au bout de la
+    #       vraie descente, puis on triche sur ses points de vie (test-leo.js et test-leo.py vérifient le combat lui-même) -----
+    def leo(self):
+        pg = self.pg
+        pg.wait_for_function("() => DJ.Leo.etat() && !DJ.Leo.etat().cine", timeout=90000)
+        e = pg.evaluate("() => { var e = DJ.Leo.etat(); return [e.phase, e.photo.leo.pv, e.photo.heros.sage.pv, e.photo.heros.alchimiste.pv, e.photo.heros.pisteur.pv]; }")
+        self.leo_vu = e; self.cap('leo')
+        print('   Léo       le combat s\'ouvre : phase %d, %d points de vie, héros %s' % (e[0], e[1], e[2:]), flush=True)
+        for ph in (1, 2):
+            pg.evaluate("() => { var c = DJ.Leo._E().c; c.leo.pv = c.etat().leo.plancher + 10; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ c.h[h].pv = c.h[h].pvMax; }); DJ.Leo.agir('pisteur', 'fleche', 'leo'); }")
+            pg.wait_for_function("() => DJ.Leo.etat().cine", timeout=30000); pg.wait_for_timeout(500)
+            pg.eval_on_selector('[data-act=l-passer]', 'e => e.click()')
+            pg.wait_for_function("() => DJ.Leo.etat().phase === %d && !DJ.Leo.etat().cine" % (ph + 1), timeout=40000)
+        pg.evaluate("() => { DJ.Leo.agir('pisteur', 'l:faux', 'leo'); }"); pg.wait_for_timeout(1300)
+        pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 5; }")
+        pg.wait_for_function("() => DJ.Leo.etat().aveu === 0", timeout=40000)
+        for k in range(5): pg.wait_for_timeout(250); pg.eval_on_selector('[data-act=l-aveu]', 'e => e.click()')
+        pg.wait_for_selector('#fin-donjon', timeout=20000); pg.wait_for_timeout(400)
 
     # ----- ce qu'on fait dans une salle sans combat -----
     def salle_calme(self, lieu):
@@ -327,8 +356,9 @@ class Descente:
             p = self.partie(); f = p['faits']
             if f.get('objet:fleur-givre') and not p['codes'].get('recette:givre') and f.get('combat:ossuaire'):
                 verifie(self.taper_code('recette:givre') and 'givre' in self.partie()['recettes'], 'au feu de camp : le code de l\'Alchimiste apprend le Givre')
-            if f.get('combat:ossuaire') and not p['codes'].get('sauve:3'):
-                verifie(self.taper_code('sauve:3'), 'au feu de camp : la page de sauvegarde n° 3, avant le grand bassin')
+            if f.get('combat:ossuaire') and 'camp' not in self.sauves:
+                sv = self.page_libre(p); self.sauves.add('camp')
+                verifie(bool(sv) and self.taper_code(sv), 'au feu de camp : une page de sauvegarde (%s), avant le grand bassin' % sv)
         elif lieu in ('porte4', 'leo'):
             try:
                 pg.wait_for_selector('#fenetre .code-gros', timeout=30000); pg.wait_for_timeout(300)
@@ -348,6 +378,8 @@ class Descente:
         while time.time() - t0 < max_s:
             if self.a('#fin-donjon'):
                 self.vu_fin = True; self.cap('fin'); return True
+            if self.js("!!(window.DJ && DJ.Leo && DJ.Leo.etat())"):
+                self.leo(); continue
             if self.chutes > MAX_CHUTES:
                 return False
             if self.a('#sac'):
@@ -374,8 +406,13 @@ class Descente:
             if e['ecran'] == 'carte':
                 p = self.partie(); ici = e['ici']
                 self.musique()
+                # LA SAUVEGARDE OBLIGATOIRE (Romain, 13 novembre) : deux salles battues, jamais sauvegardé — plus de chemin, le bouton brille
+                if not e['sorties'] and self.a('#b-sauver.guide'):
+                    s0 = self.page_libre(p); self.obligee = ici
+                    verifie(self.taper_code(s0) and self.partie()['sauvegarde'].get('lieu') == ici, 'après les deux premières salles, la carte exige une page de sauvegarde : %s est écrite (%s)' % (s0, ici)); continue
                 s = self.sauver_ici(p, ici)
                 if s:
+                    self.sauves.add(ici)
                     verifie(self.taper_code(s) and self.partie()['sauvegarde'].get('lieu') == ici, 'la page de sauvegarde %s est écrite (%s)' % (s[-1], ici)); continue
                 but = self.but(p)
                 if but == ici:                                   # on y est : on entre dans la salle
@@ -406,6 +443,8 @@ with sync_playwright() as pw:
         except Exception: pass
     p = D.partie() if not D.vu_fin else None
     verifie(fini, 'l\'équipe maligne va jusqu\'à Léo par l\'écran (%d gestes de combat, %d chute(s))' % (D.gestes, D.chutes))
+    verifie(bool(D.obligee), 'la sauvegarde obligatoire est arrivée après les deux premières salles battues (à : %s)' % D.obligee)
+    verifie(bool(D.leo_vu) and D.leo_vu[:2] == [1, 10000] and D.leo_vu[2:] == [90, 100, 120], 'au bout de la descente : le combat de Léo s\'ouvre (phase 1, 10 000 points de vie, les héros avec toute leur vie) %s' % D.leo_vu)
     for s in COMBATS:
         j = D.journal.get(s, {})
         verifie(bool(j.get('gagne')), '%s : gagné%s' % (s, ' en %d tours au %de essai, vies %s' % (j.get('tours', 0), j.get('essais', 0), j.get('pv')) if j.get('gagne') else ' ? non (%d essai(s))' % j.get('essais', 0)))

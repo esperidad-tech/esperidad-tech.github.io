@@ -755,7 +755,6 @@ function sceneChat(e, encore){
 /* en entrant : le code pour le Barde (là-haut, Farinel et Iris ont des choses à lui dire) ; puis le combat */
 function devantLeo(){
   var p = X.partie;
-  if(X.sansCombat){ Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return Promise.resolve(); }
   if(p.enquete && !p.vus['@leo:code']){
     p.vus['@leo:code'] = 1; garder();
     if(X.ecran !== 'carte' || !X.V) carte(); else { X.occupe = false; majCarte(); }
@@ -766,6 +765,8 @@ function devantLeo(){
 }
 function lancerLeo(){
   var p = X.partie;
+  /* pour les essais (index.html?sanscombat=1) : Léo est tenu pour battu */
+  if(X.sansCombat){ DJ.fermer(); Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return Promise.resolve(); }
   DJ.fermer(); quitterCarte(); X.ecran = 'combat';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
   return DJ.passage(nomLieu('leo'), function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(p, {vite:X.leoVite}); }).then(function(res){

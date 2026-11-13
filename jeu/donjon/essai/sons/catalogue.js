@@ -72,6 +72,23 @@ window.CATALOGUE = [
       {id:'e-bourbe', titre:'Bourbe (boss)', sons:[
         {id:'bourbeCri', t:'Coassement', v:'ABC'}, {id:'bourbeLangue', t:'Sa langue', v:'AB'}, {id:'bourbeGobe', t:'Il gobe', v:'AB'}, {id:'bourbeRot', t:'Le rot', v:'AB'},
         {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'}
+      ]},
+      /* LÉO, le boss final (13 novembre, Bible §13.33 : « à chaque attaque de Léo, il faut un son ») — une version de chacun, à valider par Romain */
+      {id:'e-leo', titre:'Léo (boss final)', sous:[
+        {id:'e-leo1', titre:'Phase 1 : la cape noire', sons:[
+          {id:'leoFleau', t:'Le fléau', v:'A'}, {id:'leoCharge', t:'La charge', v:'A'}, {id:'leoMarteau', t:'Le marteau', v:'A'}, {id:'leoMeule', t:'La meule de paille', v:'A'},
+          {id:'leoFarine', t:'La farine', v:'A'}, {id:'leoCrochet', t:'Le crochet', v:'A'}, {id:'leoBoum', t:'BOUM (la farine)', v:'A'}, {id:'leoCape', t:'La cape (le noir)', v:'A'}, {id:'leoTorches', t:'Les torches rallumées', v:'A'}
+        ]},
+        {id:'e-leo2', titre:'Phase 2 : torse nu', sons:[
+          {id:'leoSifflet', t:'Le sifflet', v:'A'}, {id:'leoPoing', t:'Le coup de poing', v:'A'}, {id:'leoFaux', t:'La faux', v:'A'}, {id:'leoSaut', t:'Le saut', v:'A'}, {id:'leoGourde', t:'La gourde', v:'A'}, {id:'leoLancer', t:'Le lancer de rat', v:'A'}
+        ]},
+        {id:'e-leo3', titre:'Phase 3 : la potion', sons:[
+          {id:'leoRafale', t:'La rafale de coups', v:'A'}, {id:'leoHurlement', t:'Le hurlement', v:'A'}, {id:'leoAttrape', t:'Il attrape un héros', v:'A'}, {id:'leoSouffle', t:'Le souffle de feu', v:'A'}
+        ]},
+        {id:'e-leo4', titre:'Ce qui lui arrive', sons:[
+          {id:'leoTouche', t:'Touché', v:'A'}, {id:'leoGlisse', t:'Il glisse', v:'A'}, {id:'leoSonne', t:'Sonné (le marteau)', v:'A'}, {id:'leoSaigne', t:'Une goutte (saignement)', v:'A'}, {id:'leoCasse', t:'Un outil casse', v:'A'},
+          {id:'leoRamasse', t:'Le Pisteur ramasse', v:'A'}, {id:'leoDechire', t:'Il arrache sa cape', v:'A'}, {id:'leoPotion', t:'Il boit la potion', v:'A'}, {id:'leoChute', t:'Il tombe', v:'A'}
+        ]}
       ]}
     ]},
     {id:'objets', titre:'Objets et salles', sons:[

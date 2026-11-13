@@ -5,12 +5,12 @@ adresse sans l'enquête (elle a son propre robot, jeu/tools/e3-descente.py, qui 
   1. une descente neuve : les potions du sac (deux fioles), l'écran du sac qui parle du sac de l'Alchimiste, l'entrée par la crypte
      (« L'escalier de la crypte descend… », la carte « Sous le clocher »), le bouton « 🏘️ L'enquête » ; la page rechargée garde tout ;
      une potion de plus avec le même jeton rejoint le sac ; un jeton nouveau recommence une partie neuve ;
-  2. les deux codes du Barde sur le pavé : « La Grosse Marie » (toute la vie revient, une seule fois), « Le maire est retenu » ;
-  3. avant la dernière salle, sans le code du maire : la fenêtre « Avant d'entrer » (son 🔊, taper le code ou y aller quand même) ;
-     on y va quand même : Léo s'enfuit, le code « Léo s'est enfui », l'écran de fin « Léo s'est enfui… » et « Remonter au village » ;
-  4. avec le code du maire : pas de fenêtre, Léo attrapé, l'écran de fin et « Remonter au village » ;
-  5. le donjon tout seul (sans ?enquete) : rien de tout cela — sept potions, « Sous le puits », pas de bouton « L'enquête », pas de
-     fenêtre du maire, Léo attrapé, « Recommencer la descente ».
+  2. le code du Barde sur le pavé : « La Grosse Marie » (toute la vie revient, une seule fois) ;
+  3. la dernière salle (13 novembre, Bible §13.33) : en entrant, le code pour le Barde ; Léo (tenu pour battu ici : test-leo.py joue
+     son combat) ; l'écran de fin « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! », le code pour le Sage,
+     « Remonter au village » ;
+  4. un jeton nouveau : une partie neuve ;
+  5. le donjon tout seul (sans ?enquete) : sept potions, pas de bouton « L'enquête », pas de code à montrer, « Recommencer la descente ».
 Partout : aucune erreur JavaScript, aucune lecture vocale toute seule, chaque texte de plus de 3 mots a son 🔊."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -109,6 +109,7 @@ class Jeu:
         self.js("""(function(){ var p = DJ.Explo._X().partie, D = Regles.D;
           Object.keys(D.COMBATS).forEach(function(s){ p.faits['combat:' + s] = 1; });
           Object.keys(D.LIEUX).forEach(function(l){ if(l !== 'porte4' && l !== 'leo') p.vus[l] = 1; });
+          p.codes['sauve:1'] = 1;      /* (une page de sauvegarde est écrite : sinon, après deux salles battues, la carte l'exige) */
           p.lieu = 'bassin'; p.vus['@de'] = null; Regles.sauvegarder(p); DJ.garder(p); })()""")
         self.pg.reload(); self.pg.wait_for_timeout(900)
         return self.carte()
@@ -136,9 +137,10 @@ def descente(nav):
     verifie(J.js("document.querySelectorAll('#sac .recette').length") == 2, 'deux potions à l\'écran')
     J.cap('sac'); J.clic('[data-act=sac-pret]'); J.scene('puits')
     t = J.conteur()
-    verifie('escalier de la crypte' in t and not J.sans_lire(), f'le fond du puits, en venant de la crypte ({t[:50]})')
+    # (Romain, 13 novembre) « l'entrée des souterrains », et plus de bandeau d'explications dans tout le donjon
+    verifie('entrée des souterrains' in t and 'puits' not in t and J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden', f'en bas de l\'escalier : « L\'entrée des souterrains » (plus de « puits »), et le bandeau ne s\'affiche plus ({t[:50]})')
     J.repartir()
-    verifie('Sous le clocher' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 1, 'la carte : « Sous le clocher », et le bouton « 🏘️ L\'enquête »')
+    verifie('Les souterrains' in pg.inner_text('.titre-carte') and J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden' and pg.locator('[data-act=enquete]').count() == 1, 'la carte : « Les souterrains », sans bandeau, et le bouton « 🏘️ L\'enquête »')
     J.cap('carte')
     # la page rechargée (la même adresse) : la même partie
     pg.reload(); pg.wait_for_timeout(900); J.carte()
@@ -167,34 +169,31 @@ def descente(nav):
     verifie(J.js("DJ.Explo._X().partie.heros.sage.pv") == 1, f'une seule fois : le code déjà servi ne rend plus rien ({t[:40]})')
     if pg.locator('#fenetre [data-act=fermer]').count(): J.clic('#fenetre [data-act=fermer]')
     J.js("DJ.fermer()")
-    # ---------- 3. sans le code du maire ----------
-    print('— 3. La dernière salle, sans le code du maire')
+    # ---------- 3. la dernière salle (13 novembre, Bible §13.33 : plus de maire à retenir, plus de Léo qui s'enfuit) ----------
+    print('— 3. La dernière salle : le code pour le Barde, Léo, la fin')
+    verifie(J.js("!DONJON_CODES.code('maire:retenu') && !DONJON_CODES.code('leo:enfui') && !DONJON_CODES.code('leo:attrape')"), '« Le maire est retenu », « Léo s\'est enfui » et « Léo attrapé » ne sont plus des codes du donjon')
     J.au_bassin()
     J.va('porte4'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'porte:odette'), 'la porte aux quatre signes : le code pour le Sage')
     J.clic('#fenetre .aller'); J.repartir()
-    J.va('leo'); pg.wait_for_timeout(700)
-    t = J.fenetre()
-    verifie('Avant d\'entrer' in t and 'retenu le maire' in t and J.etat()['ici'] == 'porte4', f'avant la dernière salle : « Le Barde a-t-il retenu le maire ? » ({t[:60]})')
-    verifie(not J.sans_lire() and pg.locator('#fenetre [data-act=pave]').count() == 1 and pg.locator('#fenetre [data-act=maire-sans]').count() == 1, 'cette fenêtre a son 🔊 et ses deux boutons')
-    J.cap('avant-entrer')
-    J.clic('#fenetre [data-act=maire-sans]')
-    pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(400)
-    f = J.partie()['faits']
-    verifie(f.get('code:leo:enfui') and not f.get('code:leo:attrape') and f.get('fin'), 'on y va quand même : Léo s\'enfuit')
-    verifie(J.code_montre() == noms_code(pg, 'leo:enfui'), f'le code pour le Barde : « Léo s\'est enfui » ({J.code_montre()})')
-    t = J.conteur()
-    verifie('file dans le noir' in t, f'le conteur : « il file dans le noir » ({t[:50]})')
-    J.cap('leo-enfui'); J.clic('#fenetre .aller'); pg.wait_for_selector('#fin-donjon', timeout=10000); pg.wait_for_timeout(500)
-    t = pg.inner_text('#fin-donjon')
-    verifie('Léo s\'est enfui' in t and 'remonter' in t and not J.sans_lire(), f'l\'écran de fin : « Léo s\'est enfui… » ({t[:50]})')
+    J.va('leo'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(400)
+    t = J.fenetre(); f = J.partie()['faits']
+    verifie('Avant d\'entrer' not in t and 'pour le Barde' in t and J.code_montre() == noms_code(pg, 'leo:salle') and not J.sans_lire(), f'en entrant dans la dernière salle : un code pour le Barde, « L\'homme en cape est là ! » ({J.code_montre()})')
+    verifie(f.get('code:leo:salle') and not f.get('fin') and not f.get('combat:leo') and J.etat()['ici'] == 'leo', 'Léo n\'est pas encore battu : le donjon n\'est pas fini')
+    J.cap('leo-code')
+    J.js("(function(){ DJ.Explo._X().sansCombat = true; })()")       # (Léo est tenu pour battu : son combat a son propre robot, test-leo.py)
+    J.clic('#fenetre [data-act=leo-combat]'); pg.wait_for_selector('#fin-donjon', timeout=20000); pg.wait_for_timeout(500)
+    t = pg.inner_text('#fin-donjon'); f = J.partie()['faits']
+    code_fin = J.js("[].map.call(document.querySelectorAll('#fin-donjon .code-gros small'), function(e){ return e.textContent; }).join('-')")
+    verifie('Bravo ! Vous avez résolu l\'enquête n° 3.' in t and 'Place aux accusations' in t and not J.sans_lire(), f'Léo battu (ici, tenu pour battu) : « Bravo ! Vous avez résolu l\'enquête n° 3. Place aux accusations ! » ({t[:40]})')
+    verifie(code_fin == noms_code(pg, 'leo:battu') and f.get('code:leo:battu') and f.get('fin') and f.get('combat:leo'), f'le code pour le Sage, « Léo a parlé », et le donjon est fini ({code_fin})')
     verifie(pg.locator('#fin-donjon [data-act=enquete]').count() == 1 and pg.locator('#fin-donjon [data-act=recommencer-oui]').count() == 0, 'son bouton : « Remonter au village », pas « Recommencer »')
-    J.cap('fin-enfui')
+    J.cap('fin')
     J.fin()
 
-    # ---------- 4. avec le code du maire ----------
-    print('— 4. Un jeton nouveau, et le code du maire')
-    J = Jeu(nav, PAGE + Q, 'maire'); pg = J.pg
+    # ---------- 4. un jeton nouveau ----------
+    print('— 4. Un jeton nouveau : une partie neuve')
+    J = Jeu(nav, PAGE + Q, 'jeton'); pg = J.pg
     J.depart(); J.clic('[data-act=sac-pret]'); J.scene('puits'); J.repartir()
     J.va_a(PAGE + '?sanscombat=1&enquete=3&jeton=jeton-B&potions=feu,fumigene,huile,colle,acide,baume,coeur&entree=puits')
     J.depart()
@@ -202,22 +201,15 @@ def descente(nav):
     verifie(p['jeton'] == 'jeton-B' and len(p['recettes']) == 7 and p['entree'] == 'puits' and not p['faits'].get('fin'), 'un jeton nouveau : une partie neuve (sept potions, par le puits)')
     verifie('Pas une ne manque' in J.conteur(), 'l\'écran du sac : sept fioles, « Pas une ne manque ! »')
     J.clic('[data-act=sac-pret]'); J.scene('puits')
-    verifie('escalier de la crypte' not in J.conteur(), 'par le puits : le texte habituel du fond du puits')
+    verifie('entrée des souterrains' in J.conteur(), 'par le puits : le même lieu, « L\'entrée des souterrains »')
     J.repartir()
-    verifie('Sous le puits' in pg.inner_text('.titre-carte'), 'la carte : « Sous le puits »')
-    t = J.pave('maire:retenu')
-    verifie('Le maire est retenu' in t and not J.sans_lire() and J.partie()['codes'].get('maire:retenu'), f'« Le maire est retenu » : c\'est noté ({t[:50]})')
-    J.cap('maire'); J.clic('#fenetre [data-act=fermer]')
+    verifie('Les souterrains' in pg.inner_text('.titre-carte'), 'la carte : « Les souterrains »')
     J.au_bassin()
     J.va('porte4'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300); J.clic('#fenetre .aller'); J.repartir()
-    J.va('leo')
-    pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(400)
-    f = J.partie()['faits']
-    verifie(f.get('code:leo:attrape') and not f.get('code:leo:enfui') and J.code_montre() == noms_code(pg, 'leo:attrape'), 'le maire retenu : pas de fenêtre, Léo est attrapé, le code « Léo attrapé »')
-    J.clic('#fenetre .aller'); pg.wait_for_selector('#fin-donjon', timeout=10000); pg.wait_for_timeout(500)
-    t = pg.inner_text('#fin-donjon')
-    verifie('Vous avez retrouvé Léo' in t and pg.locator('#fin-donjon [data-act=enquete]').count() == 1 and not J.sans_lire(), f'l\'écran de fin : « Vous avez retrouvé Léo ! » et « Remonter au village » ({t[:40]})')
-    J.cap('fin-attrape')
+    J.va('leo'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(400)
+    J.clic('#fenetre [data-act=leo-combat]'); pg.wait_for_selector('#fin-donjon', timeout=20000); pg.wait_for_timeout(500)
+    cs = J.js("Regles.objets(DJ.Explo._X().partie).codes.map(function(c){ return c.code; })")
+    verifie('leo:salle' in cs and 'leo:battu' in cs and 'porte:odette' in cs, f'les codes de la fin restent dans « Objets » ({[c for c in cs if "leo" in c or "porte" in c]})')
     J.fin()
 
 
@@ -229,15 +221,14 @@ def tout_seul(nav):
     verifie(not p.get('enquete') and len(p['recettes']) == 7, 'sans ?enquete : sept potions, pas d\'enquête')
     verifie('toutes ses potions' in J.conteur(), 'l\'écran du sac : le texte habituel')
     J.clic('[data-act=sac-pret]'); J.scene('puits'); J.repartir()
-    verifie('Sous le puits' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 0, 'la carte : « Sous le puits », pas de bouton « L\'enquête »')
+    verifie('Les souterrains' in pg.inner_text('.titre-carte') and pg.locator('[data-act=enquete]').count() == 0, 'la carte : « Les souterrains », pas de bouton « L\'enquête »')
     J.au_bassin()
     J.va('porte4'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300); J.clic('#fenetre .aller'); J.repartir()
     J.va('leo')
-    pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(400)
+    pg.wait_for_selector('#fin-donjon', timeout=40000); pg.wait_for_timeout(500)
     f = J.partie()['faits']
-    verifie(f.get('code:leo:attrape') and not f.get('code:leo:enfui'), 'pas de fenêtre du maire : Léo est attrapé, comme avant')
-    J.clic('#fenetre .aller'); pg.wait_for_selector('#fin-donjon', timeout=10000); pg.wait_for_timeout(500)
-    verifie(pg.locator('#fin-donjon [data-act=recommencer-oui]').count() == 1 and pg.locator('#fin-donjon [data-act=enquete]').count() == 0, 'l\'écran de fin : « Recommencer la descente »')
+    verifie(f.get('code:leo:salle') and f.get('code:leo:battu') and f.get('fin'), 'hors de l\'enquête : pas de code à montrer au Barde, Léo (tenu pour battu), la fin')
+    verifie('Bravo ! Léo est battu.' in pg.inner_text('#fin-donjon') and pg.locator('#fin-donjon .code-gros').count() == 0 and pg.locator('#fin-donjon [data-act=recommencer-oui]').count() == 1 and pg.locator('#fin-donjon [data-act=enquete]').count() == 0, 'l\'écran de fin : « Bravo ! Léo est battu. », pas de code, « Recommencer la descente »')
     J.fin()
 
 

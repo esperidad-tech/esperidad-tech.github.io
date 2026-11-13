@@ -520,3 +520,23 @@ Demandes de Romain du 11 novembre (19 h 21 à 20 h 54, Bible §12.51, « Les ret
 - Les textes des carquois (`D.OBJETS['fleches-*'].d`) ne donnent plus de solution.
 - `moteur/equilibre.js` : l'équipe maligne joue le givre contre Bourbe, ne prend plus de raccourci, tape le code du Givre au feu de camp ; la variante « sans le passage secret » est remplacée par « qui n'a pas cueilli la fleur de givre » (0 victoire). Deux cibles sont manquées exprès (« le grand bassin reste faisable sans la bonne potion ») : c'est la décision de Romain.
 - Tests : `test-regles.js` 436 (section « La dague ne touche pas ce qui vole » ; Bourbe : le givre d'abord ; la colère brise la glace).
+
+## 16. Le 13 novembre au soir : Léo, le boss final, et les retouches de tout le donjon (Bible §13.33 et §13.35 — ces lignes remplacent ce qui est écrit plus haut)
+
+**Les retouches de tout le donjon (au tour par tour, `regles.js`)**
+- **Le bouclier du bâton normal** : jaune, **un héros, 75 %** du coup arrêté, et **il arrête tous les contrôles** (la toile, la langue). `H.bouclier === 'jaune'`.
+- **Le bouclier du bâton de chêne** : **deux héros, 50 %** chacun, et **il n'arrête pas les contrôles**. `H.bouclier === 'chene'` ; `CHIFFRES.bouclierChene = 0.5`. Les évènements `pose-bouclier` et `etat bouclier` portent `sorte`.
+- **Les herbes** : 15 à chaque héros (le Baume reste à 40 sur un seul).
+- **Les feux follets** : quand leur attaque s'accroche à un bouclier de runes, ils deviennent visibles (`accroche`) et **leur prochain sort frappe quatre fois plus fort** (`attaques.brulure.multSi = {accroche:4}`).
+- **Bourbe** : le cycle est givre → il saute sur la glace → feu (il sèche) → fumigène (il se retourne) → critique dans le dos → **la glace fond, il retombe à l'eau, et tout recommence** (`reactions.critique` ; il ne frappe pas le tour où il retombe : l'état `_plouf`). La lumière ne lui fait toujours rien.
+- **La dernière salle** (`LIEUX.leo`) : `donne:'leo:salle'` (un code pour le Barde, en entrant), `boss:true`, `apres:'leo:battu'` (un code pour le Sage), `fin:true`. `Regles.entrer` envoie `{t:'boss'}` tant que Léo n'est pas battu ; `Regles.bossBattu(p, 'leo')` note la victoire, donne le second code et finit le donjon. **Plus de `leoEnfui`, plus de code `maire:retenu`.**
+
+**Léo (`leo-regles.js`) : un combat à part, EN TEMPS RÉEL** — l'API, les évènements et tous les chiffres sont en tête du fichier (`L`). L'essentiel :
+- `LeoRegles.combat(partie, {phase})`, `c.agir(heros, geste, cible)`, `c.avancer(dt)`, `c.fini()` (`'phase'`, `'victoire'`, `'defaite'`), `c.phaseSuivante()`, `c.etat()`.
+- **Un geste prend le temps de son animation** (`L.DUREES`, mesurées dans la page) : l'effet tombe à l'impact, le héros est repris à la fin. Les trois héros peuvent être en plein geste en même temps.
+- **10 000 points de vie**, trois phases (10 000 → 6 000 → 3 000 → 0) ; ses attaques viennent **toujours dans le même ordre** (`L.ORDRE`) ; **toute la vie des héros revient à chaque phase** ; **l'arc de lune est retiré** pendant tout le combat.
+- **Un bouclier reste posé jusqu'à ce qu'un coup le casse** (ici seulement : dans le reste du donjon, il dure un tour).
+- Phase 1 : le fléau, la charge (huile ou colle : il glisse, la dague lui fait très mal au sol), le marteau (étourdit), la meule, la farine puis le crochet (l'huile libère, le feu fait BOUM : 30 sur le héros prisonnier), la cape (le noir : plus de cible ; le bâton de lune rallume).
+- Phase 2 : le Pisteur a le crochet, le fléau et le marteau (**trois coups chacun**) ; les rats (deux places), le poing (fait sauter les boucliers), la faux (le saignement : 5, deux fois par seconde, jusqu'au premier soin), le saut, la gourde (le marteau la coupe), le lancer de rat.
+- Phase 3 : insensible à tout, **sauf au saignement de la faux** (trois coups : 30 par seconde) ; la gourde rend toute sa vie à un héros (trois gorgées).
+- **Les tests** : `node test-leo.js` (112 vérifications, sans navigateur) ; `python3 test-leo.py` (31, à l'écran) ; **la simulation** : `node leo-sim.js 400 --md` → `leo-equilibre.md` (trois joueurs : rapide, moyen, lent).

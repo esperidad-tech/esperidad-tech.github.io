@@ -92,7 +92,7 @@ ext, choix = extraits()
 js = 'window.NIVEAUX = ' + json.dumps({k: round(v, 3) for k, v in sorted(niveaux.items())}, separators=(',', ':')) + ';\n'
 js += '/* les choix de Romain, d\'après la table CHOIX de essai/src/son.js */\nwindow.CHOIX_ROMAIN = ' + json.dumps(choix, separators=(',', ':')) + ';\n'
 js += ext
-js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'labo.js', 'gateau.js', 'etabli.js', 'visee.js', 'page.js'])
+js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'labo.js', 'gateau.js', 'etabli.js', 'visee.js', 'page.js'])
 assert '</script' not in js.lower()
 html = html.replace('/*CSS*/', lire(os.path.join(S, 'page.css'))).replace('/*JS*/', js)
 sortie = os.path.join(ICI, 'sons-essai.html')

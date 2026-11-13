@@ -162,7 +162,7 @@ def visite(nav):
     verifie(J.etat()['ici'] == 'rats' and 'combat:rats' in J.partie()['faits'], 'la salle des rats est passée')
     # la réserve (Romain, 10 novembre) : pas de texte en bas, l'équipement du Pisteur au-dessus de sa tête, deux places
     J.va('reserve'); J.scene('reserve')
-    verifie(J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden' and J.js("document.querySelector('#b-repartir').textContent").startswith('Continuer'), 'la réserve : pas de petit texte en bas ; le bouton dit « Continuer »')
+    verifie(J.js("getComputedStyle(document.querySelector('#conteur')).visibility") == 'hidden' and J.js("document.querySelector('#b-repartir').textContent").startswith('Continuer'), 'la réserve : pas de bandeau en bas (plus de bandeau dans tout le donjon : Romain, 13 novembre) ; le bouton dit « Continuer »')
     verifie(J.js("document.querySelectorAll('#plaque-pisteur .pl-case:not(.carq)').length") == 2 and J.js("document.querySelectorAll('#plaque-pisteur .pl-case.pleine').length") == 0 and J.partie()['heros']['pisteur']['objets'] == ['fleches-normales'],
             'l\'équipement du Pisteur s\'affiche : deux places libres (ses flèches normales n\'en prennent pas)')
     J.objet('coffre'); pg.wait_for_timeout(2400); J.libre()
@@ -265,8 +265,8 @@ def visite(nav):
     # le bouton « Sauvegarder » de la carte (Romain, 11 novembre) : il demande le code du Sage, et rappelle de sauvegarder
     verifie(J.js("(function(){ var b = document.querySelector('#b-sauver'); return !!b && b.textContent.indexOf('Sauvegarder') >= 0 && b.classList.contains('rappel'); })()"), 'sur la carte : un bouton « Sauvegarder », avec son point rouge (des combats gagnés depuis la dernière sauvegarde)')
     J.tap('#b-sauver'); pg.wait_for_selector('#fenetre .pave', timeout=8000); pg.wait_for_timeout(300)
-    verifie(J.js("document.querySelector('#fenetre h2').textContent") == 'Sauvegarder' and 'Le fond du puits' in J.js("document.querySelector('#sauve-ou').textContent") and J.js("document.querySelectorAll('#fenetre .ligne .lire').length") >= 2,
-            'le bouton ouvre le pavé des symboles : il demande le code du Sage et dit d\'où l\'on repartirait (le fond du puits), avec les 🔊')
+    verifie(J.js("document.querySelector('#fenetre h2').textContent") == 'Sauvegarder' and 'L\'entrée des souterrains' in J.js("document.querySelector('#sauve-ou').textContent") and J.js("document.querySelectorAll('#fenetre .ligne .lire').length") >= 2,
+            'le bouton ouvre le pavé des symboles : il demande le code du Sage et dit d\'où l\'on repartirait (l\'entrée des souterrains), avec les 🔊')
     J.cap('sauver')
     for k in ['etoile', 'cloche', 'poisson']:
         J.clic('[data-act="symbole"][data-id="%s"]' % k)
@@ -320,10 +320,12 @@ def visite(nav):
     J.chemin('bassin'); J.va('porte4'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300)
     verifie(J.code_montre() == noms_code(pg, 'porte:odette'), f'la porte aux quatre signes donne le code pour le Sage ({J.code_montre()})')
     J.cap('porte4'); J.clic('#fenetre .aller'); J.repartir()
-    J.va('leo'); pg.wait_for_selector('#fenetre .code-gros', timeout=40000); pg.wait_for_timeout(300)
-    verifie(J.code_montre() == noms_code(pg, 'leo:attrape'), f'Léo : le code pour le Barde ({J.code_montre()})')
-    J.cap('leo'); J.clic('#fenetre .aller'); pg.wait_for_selector('#fin-donjon', timeout=10000); pg.wait_for_timeout(500)
-    verifie(not J.sans_lire() and J.js("!!document.querySelector('#fin-donjon .aller')"), 'l\'écran de fin, avec son 🔊 et son bouton jaune')
+    # (13 novembre, Bible §13.33) la dernière salle : Léo, le boss final (tenu pour battu dans cette visite : test-leo.py joue son combat)
+    J.va('leo'); pg.wait_for_selector('#fin-donjon', timeout=40000); pg.wait_for_timeout(500)
+    p = J.partie()
+    verifie(p['faits'].get('code:leo:salle') == 1 and p['faits'].get('code:leo:battu') == 1 and p['faits'].get('combat:leo') == 1 and p['faits'].get('fin') == 1, 'Léo (tenu pour battu) : ses deux codes sont donnés (pour le Barde, pour le Sage), le donjon est fini')
+    J.cap('leo')
+    verifie('Bravo' in J.js("document.querySelector('#fin-donjon .pa-nom').textContent") and not J.sans_lire() and J.js("!!document.querySelector('#fin-donjon .aller')") and J.js("document.querySelectorAll('#fin-donjon [data-act=lire]').length") >= 2, 'l\'écran de fin : « Bravo ! », ses 🔊 et son bouton jaune')
     J.cap('fin')
     J.fin()
 
@@ -356,12 +358,22 @@ def combat(nav):
     # la fuite : aux canaux, on fuit ; retour au fond du puits (la sauvegarde de départ), le sac à refaire
     J.va('canaux'); libre()
     J.tap('#fuite'); J.clic('#fenetre [data-act="fuir"]'); pg.wait_for_selector('#fin [data-act="combat-fin"]', timeout=40000); pg.wait_for_timeout(400)
-    verifie(J.js("!!document.querySelector('#fin .point')") and 'Le fond du puits' in J.js("document.querySelector('#fin .retour').textContent"), '« On fait le point » dit où l\'on repart')
+    verifie(J.js("!!document.querySelector('#fin .point')") and 'L\'entrée des souterrains' in J.js("document.querySelector('#fin .retour').textContent"), '« On fait le point » dit où l\'on repart')
     J.cap('point'); J.tap('#fin [data-act="combat-fin"]'); J.carte()
     verifie(J.js("!document.querySelector('#sac')"), 'après la fuite : retour direct à la carte, rien à refaire')
     p = J.partie()
     verifie(J.etat()['ici'] == 'puits' and 'combat:rats' not in p['faits'] and p.get('fuites', {}).get('canaux') == 1, 'la fuite ramène au fond du puits : les rats sont revenus, la fuite est comptée')
     verifie(p['vus'].get('rats') == 1 and p['vus'].get('canaux') == 1, 'après la fuite, la brume levée est gardée (seuls les monstres reviennent)')
+    # LA SAUVEGARDE OBLIGATOIRE (Romain, 13 novembre) : deux salles de monstres battues et aucune page de sauvegarde encore écrite
+    verifie(len(J.etat()['sorties']) == 3 and J.js("!document.querySelector('#b-sauver.guide')"), 'aucune salle battue : la carte montre les chemins, « Sauvegarder » n\'est pas en surbrillance')
+    J.js("(function(){ var X = DJ.Explo._X(), p = X.partie; p.faits['combat:rats'] = 1; p.faits['combat:canaux'] = 1; DJ.garder(p); })()")
+    pg.reload(); J.carte()
+    verifie(J.etat()['sorties'] == [] and J.js("!!document.querySelector('#b-sauver.guide.aller')"), 'deux salles battues, jamais sauvegardé : plus aucun chemin, et « Sauvegarder » porte le rond jaune')
+    J.cap('sauver-oblige')
+    J.clic('#b-sauver'); pg.wait_for_selector('#fenetre .pave-cases', timeout=8000)
+    for k in J.js("DONJON_CODES.code('sauve:1')"): J.clic('#fenetre [data-act=symbole][data-id="%s"]' % k)
+    pg.wait_for_timeout(1200); J.clic('#fenetre [data-act=fermer]'); J.carte()
+    verifie(len(J.etat()['sorties']) >= 1 and J.js("!document.querySelector('#b-sauver.guide')") and bool(J.partie()['codes'].get('sauve:1')), 'une page de sauvegarde écrite : les chemins reviennent, le bouton redevient normal')
     J.fin()
 
 

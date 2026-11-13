@@ -80,7 +80,7 @@ function page(E, D, sous){
   }
   const ceux = m => Object.keys(E.pnj).filter(id => (E.pnj[id].ou || {})[m]);
   const outils = '<div class="outils"><button type="button" onclick="this.closest(\'section\').querySelectorAll(\'details\').forEach(d=>d.open=true)">Tout ouvrir</button><button type="button" onclick="this.closest(\'section\').querySelectorAll(\'details\').forEach(d=>d.open=false)">Tout fermer</button></div>';
-  const Ma = E.marche, Rt = E.retenir, Le = E.grands.leo;
+  const Ma = E.marche;
   const qG = g => { for(const id of Object.keys(E.pnj)) for(const q of E.pnj[id].questions || []) if(q.grand === g) return q; };
 
   const S = {};
@@ -121,11 +121,12 @@ function page(E, D, sous){
     '<h3>Il répond</h3>' + ceux('nuit').filter(id => id !== 'voisin').map(id => carte(id, 'nuit')).join('') +
     '<h2>🎭 Grande conversation : Anselme et la Grosse Marie</h2><div class="intro"><b>Elle n\'apparaît que quand</b> : ' + e(besoin(qG('cle').besoin)) + '.<br>Le but n\'est pas qu\'il prête sa clé : c\'est de l\'aider à sonner. Pendant qu\'il compte les coups, les yeux fermés, le Pisteur lui prend la clé à la ceinture.</div>' + grand('cle') +
     '<h2>🎉 À la fête</h2><div class="tbl"><table><tr><th>Qui</th><th>Ce qu\'il dit</th></tr>' +
-    Object.keys(E.fete.gens).map(id => '<tr><td>' + (P(id).ic || '') + ' ' + e(nom(id)) + '</td><td>« ' + e(E.fete.gens[id].t) + ' »' + (E.fete.gens[id].note ? ' <span class="metier">(un indice pour retenir le maire)</span>' : '') + (E.fete.gens[id].filet ? '<br><span class="metier">Si son aveu n\'a pas été obtenu l\'après-midi :</span> « ' + e(E.fete.gens[id].filet.t) + ' » → code ' + e(nomCode(E.fete.gens[id].filet.code)) : '') + '</td></tr>').join('') + '</table></div>' +
-    '<h2>🎩 Retenir le maire</h2><div class="intro">Trois petits dialogues, sans minuteur. Le premier dès que la grande conversation d\'Anselme est finie ; chacun des suivants après une autre visite à la fête. ' + Rt.n + ' réussis : code ' + e(nomCode(Rt.reussi.code)) + '. Deux ratés : ' + e(Rt.rate.t) + '</div>' +
-    Rt.dialogues.map((d, k) => '<div class="etape"><h4>' + (k + 1) + '</h4><p class="dit"><i>« ' + e(d.t) + ' »</i></p>' + choix(d.choix) + '</div>').join('') +
+    Object.keys(E.fete.gens).map(id => '<tr><td>' + (P(id).ic || '') + ' ' + e(nom(id)) + '</td><td>« ' + e(E.fete.gens[id].t) + ' »' + '' + (E.fete.gens[id].filet ? '<br><span class="metier">Si son aveu n\'a pas été obtenu l\'après-midi :</span> « ' + e(E.fete.gens[id].filet.t) + ' » → code ' + e(nomCode(E.fete.gens[id].filet.code)) : '') + '</td></tr>').join('') + '</table></div>' +
+    /* (13 novembre, Bible §13.33) l'aide pour le donjon : les nouvelles questions de Farinel et d'Iris, pendant le combat contre Léo */
+    '<h2>🧥 L\'aide pour le donjon : pendant le combat contre l\'homme en cape</h2><div class="intro">Quand le Pisteur entre dans la dernière salle du donjon, il donne au Barde le code ' + e(nomCode('info:leo_la')) + '. À la fête, Farinel et Iris portent alors un « ❗ » : ils ont de nouvelles questions. <b>Le Barde lit les réponses à voix haute pendant que le Pisteur se bat</b>, et il peut les relire autant qu\'il veut.</div>' +
+    Object.keys(E.fete.gens).filter(id => E.fete.gens[id].aide).map(id => { const a = E.fete.gens[id].aide; return '<div class="etape"><h4>' + (P(id).ic || '') + ' ' + e(nom(id)) + '</h4><p class="dit"><i>« ' + e(a.t) + ' »</i></p><ul>' + a.questions.map(q => '<li><b>« ' + e(q.q) + ' »</b> → « ' + e(q.r) + ' »</li>').join('') + '</ul>' + (a.note ? '<div class="metier">↳ Dans le Carnet : ' + e(a.note) + '</div>' : '') + '</div>'; }).join('') +
     '<h2>👂 À la fête (Tendre l\'oreille)</h2>' + ecoutes('nuit') +
-    '<h2>🧑 Léo (une scène, sans choix)</h2><div class="etape"><p><i>' + e(Le.intro) + '</i></p><p>' + e(Le.fins[0].t) + '</p><div class="metier">↳ Code ' + e(nomCode(Le.fins[0].code)) + '. Si le maire n\'a pas été retenu : ' + e(Le.enfui) + '</div></div>'];
+    '<h2>🧑 Léo</h2><div class="intro">Léo ne parle plus au Barde : il parle dans le donjon, une fois battu, sur la tablette du Pisteur (cinq phrases, validées par Romain le 13 novembre à 18 h 06). « Retenir le maire » est retiré.</div>'];
 
   S.reste = ['🚧 Pas encore fait', 'var(--veille)',
     '<h2>Ce qui n\'est pas construit</h2><div class="intro"><b>Les dialogues du Barde</b> suivent le nouveau scénario. Depuis le 13 novembre, le Sage, l\'Alchimiste et le Pisteur aussi, en partie. L\'enquête se joue du début à la fin ; voici ce qui manque encore.</div>' +
@@ -134,11 +135,10 @@ function page(E, D, sous){
     '<li><b>Le Pisteur</b> : les empreintes de pieds d\'enfant chez Iris et derrière l\'atelier de Mélusine. La clé prise à la ceinture d\'Anselme : le dessin du mini-jeu la montre encore au clou.</li>' +
     '<li><b>Le Sage</b> : les pointures dans le registre. (Fait le 13 novembre : le Livre d\'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot.)</li>' +
     '<li><b>L\'Alchimiste</b> : comparer l\'encre de la lettre avec celle d\'Iris. Son labo montre encore du pollen de lavande. (Fait le 13 novembre : il désigne deux écritures, Mélusine et Margot.)</li>' +
-    '<li><b>Le donjon</b> : Léo en chef des monstres. Le code de la Grosse Marie (qui redonnait toute la vie) n\'est plus donné par personne : le donjon est un peu plus dur.</li>' +
+    '<li><b>Le donjon</b> : le code de la Grosse Marie (qui redonnait toute la vie) n\'est plus donné par personne. (Fait le 13 novembre au soir : Léo, le boss final en trois phases ; la fin décidée par Romain.)</li>' +
     '<li><b>La quatrième écoute de la fête</b> (« au pied du mât ») : elle dépend de la grille.</li></ul>' +
     '<h2>À décider avec Romain</h2><ul class="alerte">' +
-    '<li><b>Odette à la fin</b> : délivrée avant l\'arrivée du maire, ou seulement entendue derrière la porte ?</li>' +
-    '<li><b>Léo</b> : chef du donjon, d\'accord ? Sa scène avec le Barde est provisoire.</li>' +
+    '<li><b>Les six réponses de Farinel et d\'Iris</b> (onglet « La nuit », « L\'aide pour le donjon ») : écrites par Claude d\'après ce que Romain a demandé le 13 novembre. À relire et à corriger.</li>' +
     '<li><b>La Grosse Marie et la brume</b> : l\'Alchimiste qui cueille quand la brume recule, ça double la tisane d\'Anselme et sa petite cloche Bertille. L\'une ou l\'autre ?</li>' +
     '<li><b>La lecture</b> : le matin, 29 réponses à lire avant que le maire s\'ouvre. À essayer avec les enfants : si c\'est trop long, on enlève la question sur le métier chez ceux qui n\'aident pas.</li></ul>'];
 

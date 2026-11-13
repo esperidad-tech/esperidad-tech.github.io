@@ -20,7 +20,7 @@ os.makedirs(SORTIE, exist_ok=True)
 
 def page_banc():
     p = os.path.join(SORTIE, '_banc.html')
-    scripts = ''.join('<script src="file://%s"></script>' % os.path.join(ICI, f) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'musiques-donjon.js', 'banc.js'])
+    scripts = ''.join('<script src="file://%s"></script>' % os.path.join(ICI, f) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'musiques-donjon.js', 'banc.js'])
     open(p, 'w').write('<!doctype html><meta charset="utf-8"><body>' + scripts)
     return 'file://' + p
 
