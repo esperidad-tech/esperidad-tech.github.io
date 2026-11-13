@@ -2573,6 +2573,93 @@ Romain : « J'aimerais bien que le mini-jeu du gâteau, il soit pour tout le mon
 
 **Robots.** Remis à jour : `e3-alchimiste.py`, `e3-barde.py`, `e3-grands.py`, `e3-cueillette.py`, `e3-gateau.py`, `gateau.py`, `e3-pisteur.py`, `e3-sage.py` (refait), `e3-descente.py`, `partie3.py`. Nouveau : `pistage.py`. Verts aussi : `rapide.sh`, `partie2.py`, `visee.py`, `verif.js 1 2 3` (le vérificateur sait maintenant : `visibleSi` et `quand` sur une page, `savoir` sur un code, `essaisInfinis` = jamais raté pour de bon).
 
+### 13.33 La fin du donjon : Léo, le boss final en trois phases et en temps réel ; la fin de l'enquête 3 (conçu avec Romain le 13 novembre, 14 h 02 → 17 h 29) — CONÇU, RIEN N'EST CONSTRUIT
+
+**D'où ça vient.** Romain (14 h 02) : après Bourbe, une salle où le chat d'Odette miaule (le petit dialogue), puis Léo arrive : **plus du tout peureux, grand, musclé, une cape noire (skin à refaire)**. C'est le boss final. **Le Sage n'a aucune information sur lui** : on apprend en jouant (et en mourant). Au moins trois phases, plusieurs armes, des combos malins, « un combat vraiment très intéressant ». Le Barde a un rôle. Il a tout décidé au fil de la conversation ; ce qui suit est sa version. **Romain (17 h 29) : ne rien construire tant que l'autre conversation n'a pas fini ses corrections du donjon ; il donnera son go. D'abord le donjon seul, puis, dans un second temps, les connexions avec le jeu (le Barde, la fin).**
+
+**Les règles du combat de Léo (lui seul ; le reste du donjon garde le tour par tour).**
+- **En temps réel.** Léo attaque sans attendre ; on joue aussi vite qu'on peut. Ce qui empêche de taper dix fois par seconde : **l'animation de chaque geste** (l'Alchimiste fabrique sa potion puis la lance, le Pisteur bande et tire, le Sage lance son sort). Potions toujours infinies.
+- **Un seul joueur tient la tablette** (le Pisteur), les autres regardent et conseillent ; on peut se passer la tablette. Changer de héros, choisir le geste, toucher la cible : tout ça prend du temps, et ça compte dans la difficulté.
+- **10 000 points de vie**, qui servent de minuteur. Phase 1 : de 10 000 à 6 000 ; phase 2 : de 6 000 à 3 000 ; phase 3 : de 3 000 à 0. Le combat peut durer longtemps (« ils peuvent s'arrêter et reprendre »).
+- **Chaque attaque se lit à l'écran** : Léo prend son arme (on la voit), prépare, frappe. La rune de l'œil dit sur qui et combien.
+- **Ses attaques viennent dans un ORDRE FIXE, pas au hasard** (Romain n'aime pas le hasard) : un ordre calculé pour être tenable, qui s'apprend en mourant.
+- **Pas d'explication avant ce combat** : c'est **une exception voulue** à la règle « avant chaque mini-jeu, une explication en images ». Léo est le seul ennemi qu'on découvre en jouant.
+- **Une sauvegarde automatique à chaque cinématique** (le jeu la fait, pas le Sage). Mourir ramène au début de la phase atteinte : on revoit la courte cinématique (4 à 5 secondes ; Claude propose qu'on puisse la passer en touchant l'écran) et le combat repart, vies pleines. Plus de dialogue du chat ni d'Odette à chaque essai.
+- **Un son pour chaque attaque de Léo.**
+
+**Ce qui change pour TOUT le donjon (décidé avec ce combat).**
+- **Les boucliers du Sage.** Bâton normal : un **bouclier jaune**, sur un héros, qui enlève **75 %** des dégâts et **arrête tous les contrôles** (étourdi, attrapé, saignement, brûlure). Bâton de chêne : **deux boucliers à 50 %**, qui **n'arrêtent pas** les contrôles (avant : deux à 75 %). Un bouclier **reste posé jusqu'à ce qu'un coup le casse** : on peut en poser d'avance sur les trois (ça coûte du temps d'animation : aux joueurs de voir si ça vaut le coup).
+- **Le bâton de lune trouve son rôle** : il rallume la salle quand Léo l'éteint, et il aveugle d'un coup tous les rats (pour un temps).
+- **Les herbes (le soin de zone) : 15 à chaque héros** (45 en tout ; avant : 10). Le baume reste à 40 sur un seul. On baume celui qui est très blessé ; on soigne la zone quand tout le monde a pris.
+- **Bourbe** (corrige le §12.51) : le givre gèle le bassin, Bourbe saute et retombe sur la glace ; le feu le sèche ; le fumigène le renverse ; on frappe, on fait un critique ; **dès le critique, la chaleur de son corps fait fondre la glace : il retombe dans l'eau, et il faut recommencer** (givre, feu, fumigène). La lumière ne fait rien. À accorder avec sa colère à mi-vie (qui brise déjà la glace) à la construction.
+- **Le givre** reste fondamental contre Bourbe ; contre Léo, on peut le lancer quand on veut, dans les trois phases : il ne fait pas de dégâts, il **ralentit** ses attaques (pour souffler quand on est débordé). La force et la durée sont à régler.
+- Une animation pour chaque sort et chaque potion (en grande partie déjà là).
+- **À refaire** : le calcul d'équilibre du donjon entier (le chêne passe de 75 % à 50 %, les herbes de 10 à 15).
+
+**Phase 1 — le meunier, en cape noire (10 000 → 6 000).** Six attaques ; le Pisteur n'a pas encore les armes de Léo.
+
+| Attaque | Ce qu'elle fait | Comment on s'en sort |
+| --- | --- | --- |
+| **Le fléau** (outil à battre le grain) | frappe **deux** héros, assez fort | deux boucliers du bâton de chêne |
+| **Le marteau** (à piquer les meules) | dégâts moyens sur un héros, et il est **étourdi** (environ 3 secondes) | le bouclier jaune |
+| **La charge** | il fonce sur un héros | **huile ou colle juste avant** : au lieu de partir, il glisse et **tombe sur place** ; au sol, **la dague lui fait très mal** |
+| **La meule de paille** | il la lance : touche **tout le monde**, un peu moins fort | rien ne l'arrête : boucliers de chêne, soin de zone. (On ne la brûle pas : le feu sert déjà ailleurs) |
+| **La fumée, puis le crochet** | il jette de la farine (un nuage blanc où il disparaît : **intouchable**), puis un coup de crochet **énorme** sur un héros, qui est **attiré et caché dans le nuage** | **le bouclier jaune posé avant empêche d'être attrapé**. Sinon on libère le héros : **l'huile** (aucun dégât à Léo) ou **le feu** — la farine fait **BOUM** : gros dégâts sur Léo, **mais 30 sur le héros prisonnier** (trois BOUM d'affilée peuvent le tuer). Ordre malin : l'huile d'abord pour sortir le héros, puis le feu dans le nuage. Les deux se font en potion (Alchimiste) ou en flèche (Pisteur). Le crochet doit être **rapide**, pour que Léo finisse par attraper quelqu'un ; un joueur expérimenté met le jaune et c'est réglé |
+| **La cape** | il la secoue : **les torches s'éteignent, tout est noir**. La barre du bas reste ; mais **on ne peut plus viser Léo** (il bouge dans le noir), **la rune de l'œil est aveugle**, et **on ne voit pas quelle arme il va prendre** | **rallumer tout de suite au bâton de lune** (seule solution). C'est la plus dangereuse |
+
+L'ordre de la boucle (proposé, à confirmer par le calcul) : fléau, charge, marteau, meule, fumée et crochet, cape — avec un temps calme entre deux attaques.
+
+**Cinématique 1 → 2** (4 à 5 secondes) : Léo est au sol, se relève, très énervé, **arrache sa cape : torse nu, très musclé** (dessin « cartoon », rien de choquant). Il lâche ses armes : **le Pisteur ramasse le crochet, le fléau et le marteau.**
+
+**Les armes ramassées par le Pisteur : 3 coups chacune, puis elles cassent et quittent la bande** (ça libère la place). Sur l'icône, l'usure se voit : au premier coup des failles noires, au deuxième elles s'écartent, au troisième l'arme est cassée.
+- **Le crochet** : tue un rat d'un coup ; casse l'armure d'un rat cuirassé (le coup suivant le tue) ; **sur Léo, comme deux coups de dague**.
+- **Le fléau** : frappe deux cibles, plus fort que la dague ; sur une seule cible, un peu moins (proposé par Claude). Son vrai moment : les deux rats aveuglés par le bâton de lune, tués d'un coup.
+- **Le marteau** : ne fait pas de dégâts ; **il coupe l'attaque en cours de Léo**. Règle de Romain : **il sert à arrêter la gourde, pas les gros coups** (les gros coups, c'est le travail des boucliers). Phase 1 : pas de marteau pour le Pisteur. Phase 2 : 3 coups (peut-être 4, à juger en jeu). Phase 3 : cassé.
+- Pendant ce combat, Claude propose de **cacher l'arc de lune** (inutile contre Léo et les rats cuirassés) pour que la bande tienne sur un téléphone. **Pas tranché.**
+
+**Phase 2 — torse nu et en colère (6 000 → 3 000).** Léo reste toujours touchable (pas de garde levée). Il a **deux places pour des rats** à côté de lui.
+
+| Attaque | Ce qu'elle fait | Comment on s'en sort |
+| --- | --- | --- |
+| **Le sifflet** | **deux rats** arrivent : d'abord des rats normaux, puis des cuirassés, puis les deux ; peut-être, à un moment, **le Roi des rats** | la dague fait peu de dégâts à un rat : il faut d'abord **l'éclairer** (le Sage), puis la dague ; **le bâton de lune aveugle les deux rats d'un coup, pour un temps (minuteur)** : vite, le fléau ; le crochet ; l'acide pour l'armure des cuirassés |
+| **La charge** | comme en phase 1 | huile ou colle juste avant |
+| **La faux** | un balayage sur les trois héros, qui les fait **saigner** : **5 de vie, deux fois par seconde** (10 par seconde) | **le saignement ne s'arrête qu'avec un soin** (n'importe lequel) ; le bouclier jaune l'empêche, le chêne non |
+| **Le saut** | un bond qui **étourdit les trois héros** quelques secondes (les rats tapent, le saignement continue) | il vient vite : on n'a le temps que d'un bouclier jaune — **sur l'Alchimiste**, pour qu'il puisse soigner |
+| **Le coup de poing** | **très rapide, 10 de dégâts, enlève tous les boucliers** | aucune parade |
+| **La gourde** | il boit et **reprend beaucoup de points de vie** | **le marteau** l'arrête |
+| **Le lancer de rat** | rapide : un rat lancé sur un héros, qui **mord deux fois** | aucune parade |
+
+Le fumigène n'est pas utilisé en phase 2 : il est gardé pour la phase 3.
+
+**Cinématique 2 → 3** (4 à 5 secondes) : Léo, fatigué, blessé de partout, **boit une potion** : il grandit, grossit, devient une grosse bête. Il lâche ses armes : **le Pisteur ramasse la faux et la gourde** (les deux seules choses ramassées en phase 3). Le marteau est cassé, les rats ne viennent plus.
+
+**Phase 3 — la potion (3 000 → 0).** **Léo est insensible à TOUT.** La seule chose qui le blesse : **le saignement de la faux** (3 coups, qui se cumulent : trois saignements font 15 toutes les demi-secondes, **30 par seconde : environ 100 secondes** pour vider ses 3 000 points). Le reste, c'est **tenir** : le Pisteur a **la gourde** (3 fois, elle rend **100 % de la vie** à un héros au choix, pour les urgences), l'Alchimiste ses potions et ses soins, le Sage ses deux boucliers.
+
+| Attaque | Ce qu'elle fait | Comment on s'en sort |
+| --- | --- | --- |
+| **Le coup de poing** | **30** de dégâts, très rapide | aucune parade |
+| **La rafale de coups** | enlève **environ 80 % de la vie** d'un héros | les boucliers |
+| **La charge** (à mains nues) | | huile ou colle juste avant |
+| **Le hurlement** | **étourdit tout le monde** | le bouclier jaune |
+| **Il attrape un héros et s'en sert pour frapper un autre** | une rafale, de gros dégâts **sur deux héros** ; le héros attrapé **peut encore jouer** | **rapide et difficile à contrer** : le bouclier jaune posé avant empêche d'être attrapé ; sinon deux boucliers de chêne pour encaisser, et la gourde si besoin |
+| **Le souffle de feu** | il boit une autre potion et crache du feu : **tout le monde brûle**, des dégâts qui durent | **la brûlure s'arrête seule** ; le bouclier jaune l'empêche |
+
+Proposé par Claude, pas tranché : Léo accélère toutes les 25 secondes ; le fumigène le fait tousser et coupe une grosse attaque.
+
+**Le but de difficulté (Romain).** Trois simulations : **un joueur rapide** s'en sort, « avec pas mal de déboires » (à la fin des 1 min 40 de la phase 3 : **deux héros au sol au moins, le troisième avec peu de vie**) ; **un joueur moyen** ne s'en sort pas ; **un joueur lent**, impossible. « Il faut qu'ils restent coincés sur Léo pendant pas mal de temps. » Pour ça, Claude doit **mesurer au code, à la milliseconde, la durée de chaque animation** (un soin, le baume, un bouclier, une flèche, une potion, la gourde de Léo…) et le nombre de touchers de chaque geste, puis faire tourner les trois joueurs. Rappel : les héros ont **90, 100 et 120 points de vie** (§12.51) — un saignement à 10 par seconde vide un héros en 9 à 12 secondes ; trois BOUM à 30 font 90. Les chiffres de Romain sont à garder ; ceux qui manquent (fléau, marteau de Léo, meule, crochet, rafale à 2 héros, souffle, gourde de Léo, durée de l'étourdissement, du noir, de l'aveuglement des rats) seront réglés par le calcul. Le réglage fin se fera ensuite sur de vraies parties.
+
+**Le saignement à l'écran** : des gouttes un peu stylisées, sans sang réaliste, sans bandage, **avec un petit bruit** (« c'est le bruit qui va faire beaucoup »).
+
+**Le Barde pendant le combat.** En entrant dans la salle de Léo, **le Pisteur reçoit un code pour le Barde**. Il ouvre, à la fête, de nouvelles questions :
+- **à Farinel** (le meunier connaît ses outils) : ce que fait chaque outil, dit en meunier — le marteau assomme, la faux fait saigner, le crochet sert à chasser les rats et casse les armures, et la farine : « Un meunier ne laisse jamais une flamme près de sa farine. » Règle (Romain n'aime pas qu'une réponse soit trahie par le texte) : il dit ce que fait l'outil, pas la parade toute crue ;
+- **à Iris** : la potion qu'on lui a volée, sur laquelle elle travaille depuis longtemps : elle rend presque invincible… sauf si on saigne.
+- Deux phrases courtes au plus par réponse (règles de lecture du Barde). **Le Barde lit à voix haute pendant que le Pisteur joue** : du travail d'équipe en direct.
+- **Les dialogues du Barde sont verrouillés** (§13.31) : ces questions demandent le go de Romain, puis `e3.js` et l'outil `e3-dialogues.js`. Il faut un code de plus du Pisteur au Barde.
+
+**La fin de l'enquête 3 (remplace la scène provisoire de Léo).** Léo battu : une courte cinématique, il tombe au sol et **dévoile des choses sur le maire** (« comme ça on sait tout sur le maire » ; le texte est à écrire et à faire valider). Juste après, **le maire arrive avec les gardes** : « Que s'est-il passé ? Qu'avez-vous fait à Léo ? Gardes, attrapez-les ! » Puis des codes à passer sur chaque écran, et **chacun se retrouve en prison**, en tenue de prison (pas besoin de s'occuper de la tenue) ; grâce aux codes d'apparence (âge, peau, cheveux), **chaque tablette montre les quatre héros enfermés**. Fin de l'enquête 3 ; on passe à l'enquête 4. **À accorder à la construction** avec la fin déjà construite (§13.20 : l'accusation, minuit, les gardes, le cachot) et le dialogue du chat d'Odette avant Léo. **Toujours ouvert** : Odette délivrée ou non ; pourquoi Léo fait tout ça.
+
+**Abandonné en route** (pour ne pas y revenir) : le sort « il apprend » (Léo insensible à ce qui a déjà marché) ; « la parade ouvre Léo, la dague ne frappe que là » ; la faux qui casse à l'acide ; le nuage qui chasse les rats ; un troisième bouclier ; la meule qui brûle ; un saignement qui s'arrête seul ; le saignement deux fois plus rapide grâce au Barde.
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
