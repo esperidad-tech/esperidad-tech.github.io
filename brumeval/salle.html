@@ -1247,6 +1247,8 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .mjc-rec-c{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c);border:2px solid #24182e;flex:none;font-style:normal;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
 .mjc-rec-fin{border-color:#ffd36a;padding:2px 6px}
 .mjc-rec-ic{font-size:1.05rem}
+/* (13 novembre) la pensée dessinée (mj-chaudron.js, icDe) : de la taille d'un émoji */
+.mjc-ic-svg{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.18em}
 .mjc-rec-i em{font-style:normal}
 .mjc-rec-i.ici{box-shadow:0 0 0 2px #ffd36a, 0 0 12px #ffd36a}
 .mjc-rec-i.fait{opacity:.45}
@@ -3981,7 +3983,8 @@ D.RECETTES = {
   lumiere:{ingr:[['champignon', 2], ['eau', 1]], cuisson:'chaudron'},
   rapidite:{ingr:[['trefle', 2], ['miel', 1]], cuisson:'chaudron'},
   invisibilite:{ingr:[['brume', 2], ['lavande', 1]], cuisson:'chaudron'},
-  verite:{ingr:[['pensee', 2], ['miel', 1]], cuisson:'chaudron'},
+  /* secrète (Romain, 13 novembre) : comme l'encre de l'enquête 1, c'est le Sage qui a la recette ; il la dicte à l'Alchimiste (son grimoire n'a que des « ? ») */
+  verite:{ingr:[['pensee', 2], ['miel', 1]], cuisson:'chaudron', secrete:true},
   clarte:{ingr:[['menthe', 2], ['eau', 1]], cuisson:'chaudron'},
   fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
   eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},
@@ -16240,7 +16243,7 @@ function construire(el, P, demo){
   var recette = '<div class="mjc-recette"><span class="mjc-rec-t">📜</span>' + (connueR ? groupes.map(function(g, k){
       var x = I[g.ingr] || {ic:'❔', c:'#888', nom:g.ingr};
       return (k ? '<span class="mjc-rec-sep">›</span>' : '') + '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + codeDe(g.ingr).c + '"><b>' + g.n + '</b><i class="mjc-rec-c"></i>' +
-        '<span class="mjc-rec-ic">' + x.ic + '</span><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
+        '<span class="mjc-rec-ic">' + icDe(g.ingr, x) + '</span><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
     }).join('') : '<span class="mjc-rec-i secret" style="--c:#8d8a99"><i class="mjc-rec-c">❓</i><em>Recette secrète</em></span>') +
     /* la dernière étape : la fiole (la zone à tenir n'apparaît sur la jauge qu'à ce moment-là) */
     '<span class="mjc-rec-sep">›</span><span class="mjc-rec-i mjc-rec-fin"><span class="mjc-rec-ic">🧪</span></span></div>';
@@ -16248,7 +16251,7 @@ function construire(el, P, demo){
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
     /* une petite boîte sans couleur, avec son étiquette de papier : l'icône et le nom */
-    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '"><span class="mjc-etiq"><span class="mjc-etiq-ic">' + x.ic + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></span></button>';
+    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '"><span class="mjc-etiq"><span class="mjc-etiq-ic">' + icDe(k, x) + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></span></button>';
   }).join('');
   var r = U.html('<div class="mjc' + (demo ? ' mjc-demo' : '') + '">' +
     (demo ? '' : '<div class="mjc-haut"><div class="mjc-l1">' + recette + '<div class="mjc-vies"></div></div>' +
@@ -16275,6 +16278,17 @@ function construire(el, P, demo){
   };
 }
 
+/* L'icône d'un ingrédient dans le chaudron. Les pensées (Romain, 13 novembre : « le petit carré qui arrive n'est pas de la bonne couleur
+   par rapport à l'icône ») : l'émoji 🌼 n'a pas la même couleur partout (jaune sur les tablettes Android, pâle sur un iPhone). Ici, une
+   petite pensée dessinée, aux pétales jaunes comme son carré (la pensée sauvage a souvent des pétales jaunes, avec des traits violets au cœur). */
+var PENSEE_SVG = '<svg class="mjc-ic-svg" viewBox="-20 -20 40 40" aria-hidden="true" focusable="false">' +
+  '<g stroke="#24182e" stroke-width="1.6" stroke-linejoin="round">' +
+  '<ellipse cx="-7" cy="-9" rx="8" ry="9" fill="#ffc21a"/><ellipse cx="7" cy="-9" rx="8" ry="9" fill="#ffc21a"/>' +
+  '<ellipse cx="-11" cy="2" rx="8.5" ry="7.5" fill="#febb02"/><ellipse cx="11" cy="2" rx="8.5" ry="7.5" fill="#febb02"/>' +
+  '<path d="M-10 6 C -10 18 10 18 10 6 C 6 3 -6 3 -10 6 Z" fill="#ffd23f"/></g>' +
+  '<path d="M0 3 L -5 -4 M0 3 L 5 -4 M0 3 L 0 11 M0 3 L -7 6 M0 3 L 7 6" stroke="#6a3aa8" stroke-width="1.6" stroke-linecap="round"/>' +
+  '<circle cx="0" cy="3" r="2.6" fill="#ff8a1a" stroke="#24182e" stroke-width="1.2"/></svg>';
+function icDe(k, x){ return k === 'pensee' ? PENSEE_SVG : ((x && x.ic) || '❔'); }
 /* Le nom écrit sous l'icône d'une caisse : un seul mot */
 var NOMS_COURTS = {lune:'Lune', pensee:'Pensées'};
 var NOMS_ETROITS = {champignon:'Champi'};     /* quand les caisses sont étroites (téléphone) */
@@ -16464,7 +16478,7 @@ MJ.enregistrer('chaudron', {
       if(i) a0 += ecarts[i];
       /* gris hors de la zone ; il prend sa couleur unie quand il est allumé dans la zone (classe zone) */
       /* niveau 1 : un « ? » sur le carré gris ; allumé dans la zone, l'icône de l'ingrédient apparaît (💧…) */
-      var aideT = R.aideTuto && connue, icT = aideT ? ((I[f.ingr] || {}).ic || '❔') : '';
+      var aideT = R.aideTuto && connue, icT = aideT ? icDe(f.ingr, I[f.ingr]) : '';
       var d = U.html('<div class="mjc-ing' + (connue ? '' : ' secret') + (aideT ? ' aide' : '') + '" style="--c:' + (connue ? codeDe(f.ingr).c : '#8d8a99') + '">' +
         (connue ? (aideT ? '<i class="mjc-ing-q">?</i><i class="mjc-ing-ic">' + icT + '</i>' : '') : '<i>❓</i>') + '</div>');
       E.piste.appendChild(d);
@@ -16596,7 +16610,7 @@ MJ.enregistrer('chaudron', {
       if(S.fen.every(function(f){ return f.fait; })) apres(600, lancerFinale);
     }
     function chute(ingr, btn){
-      var x = I[ingr] || {ic:'❔'}, g = U.html('<span class="mjc-tombe">' + x.ic + '</span>'), sc = E.scene.getBoundingClientRect(), arr = versEl(E, CX, CY, E.scene);
+      var x = I[ingr] || {ic:'❔'}, g = U.html('<span class="mjc-tombe">' + icDe(ingr, x) + '</span>'), sc = E.scene.getBoundingClientRect(), arr = versEl(E, CX, CY, E.scene);
       var depart = btn ? btn.getBoundingClientRect() : {left:sc.left + arr.x, top:sc.top, width:0, height:0};
       var x0 = depart.left + depart.width / 2 - sc.left, y0 = depart.top + depart.height / 2 - sc.top;
       g.style.left = x0 + 'px'; g.style.top = y0 + 'px';
