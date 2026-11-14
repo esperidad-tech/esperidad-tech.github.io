@@ -5,7 +5,7 @@
 ## Nouveau depuis le 14 novembre, 17 h 56 : « 🔍 MONTRER LE GÂTEAU » — EN LIGNE (Bible §12.62)
 
 - Après la partie en famille (enquêtes 1 et 2), Romain : une fois le gâteau fini, un bouton pour l'afficher en grand. **Fait** : à la fête et pendant le vote, « 🔍 Montrer le gâteau » ouvre le gâteau sur tout l'écran (une copie du dessin, cadrée au plus près), avec une croix ✕. Rien d'autre n'a changé dans l'enquête 3 ; aucun code n'a bougé. Version 20261114-1655 (commit 934dd1e du site).
-- Le reste de ce travail touche les enquêtes 1 et 2 et tout le jeu (le chaudron, la boîte noire des plantages, la cueillette de l'Alchimiste de l'enquête 2) : `PASSATION.md` et Bible §12.62. **À savoir pour l'enquête 3** : la carte de l'Alchimiste garde ses visages (seule l'enquête 2 les enlève : `E.carteSansGens`) — à proposer à Romain si l'enquête 3 doit suivre.
+- Le reste de ce travail touche les enquêtes 1 et 2 et tout le jeu (le chaudron, la boîte noire des plantages, la cueillette de l'Alchimiste de l'enquête 2) : `PASSATION.md` et Bible §12.62. **À savoir pour l'enquête 3** : depuis 18 h 21 (Romain, 18 h 04), **la carte de l'Alchimiste n'a plus aucun visage de villageois, dans toutes les enquêtes, la 3 comprise** (version 20261114-1719) : ses missions ne le font jamais aller voir quelqu'un chez lui, il va dans des lieux (le clocher pour Anselme, la boulangerie pour le gâteau). Une future mission de l'Alchimiste qui l'enverrait vers un villageois devra le dire dans son texte, ou passer par un lieu.
 
 ## Nouveau depuis le 14 novembre, 14 h 20 : L'ENQUÊTE 3 EST OUVERTE AUX JOUEURS — à l'adresse normale, sans « #test » ; ses codes sont gelés (Bible §13.39)
 

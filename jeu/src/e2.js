@@ -54,10 +54,9 @@ E[2] = {
   tutoMenteur:true,
   /* (Romain, 13 novembre) les ingrédients de base sur la carte de l'Alchimiste, transparents une fois cueillis (moteur-roles.js) */
   carteIngredients:true,
-  /* (Romain, 14 novembre, 16 h 56) l'Alchimiste n'a que faire de savoir où est chacun : sur sa carte, plus aucun visage de villageois,
-     seulement ce qui pousse (carte-jeu.js) ; et au début, un petit tutoriel lui dit d'aller cueillir, des ronds jaunes sur les
-     icônes d'ingrédients, jusqu'à ce qu'il en touche une (tuto-cueillette.js) */
-  carteSansGens:['alchimiste'],
+  /* (Romain, 14 novembre, 16 h 56) au début, un petit tutoriel dit à l'Alchimiste d'aller cueillir : des ronds jaunes sur les
+     icônes d'ingrédients, jusqu'à ce qu'il en touche une (tuto-cueillette.js). (Sa carte n'a plus aucun visage de villageois,
+     dans toutes les enquêtes : carte-jeu.js, SANS_GENS.) */
   tutoCueillette:true,
   riviereRouge:true,   /* sur la carte, l'eau de la rivière est rouge et luit doucement (carte.js, Romain, 4 novembre, 21 h 12) */
   lettre:'Chers enquêteurs, au secours ! Ce matin, à l\'aube, la rivière de Brumeval est devenue toute rouge ! Les poissons se cachent, les lavandières crient, et tout le village a peur. Trouvez QUI a fait ça, OÙ, et POURQUOI !',

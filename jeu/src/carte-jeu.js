@@ -224,6 +224,8 @@ function presences(E, hab){
   });
   return {marqueurs:lieux.concat(maisons), chez:chez, absents:absents, bulles:bulles};
 }
+/* Les rôles dont la carte ne montre jamais les villageois (ni visages, ni positions) : l'Alchimiste (Romain, 14 novembre, 18 h 04) */
+var SANS_GENS = ['alchimiste'];
 /* Dès l'enquête 2, la carte n'aide plus (plus de ronds jaunes) : seulement la position des villageois */
 function sansAides(E){ return !!E && (E.id || 1) >= 2; }
 M.carteSansAides = function(){ return sansAides(M.E()); };
@@ -297,9 +299,11 @@ function contenu(ou, w, h){
       /* dès l'enquête 2 : plus de ronds jaunes ni de marqueurs d'aide (les habitants du Barde, ✨ les missions bonus) ; tous les lieux se touchent,
          et seulement la position de chaque villageois. Les ingrédients notés par l'Alchimiste (ses propres notes) restent. */
       var aides = !sansAides(E) || !!T;
-      /* (E.carteSansGens, enquête 2 : l'Alchimiste — Romain, 14 novembre) un rôle qui ne parle à personne : ni visages sur les maisons,
-         ni position des villageois ; seulement ce qui pousse (et les missions bonus) */
-      var sansGens = !T && (E.carteSansGens || []).indexOf(role) >= 0;
+      /* (Romain, 14 novembre, 16 h 56, puis 18 h 04 : « fais-le pour toutes les enquêtes, l'Alchimiste n'a pas besoin de savoir où sont
+         les gens ») un rôle qui ne parle à personne (SANS_GENS) : ni visages sur les maisons, ni position des villageois, dans aucune enquête ;
+         seulement ce qui pousse (et les missions bonus). Une enquête peut en ajouter d'autres (E.carteSansGens). Au tutoriel de l'enquête 1,
+         seulement si l'étape ne demande pas de toucher une maison (T.maisons : jamais pour l'Alchimiste) */
+      var sansGens = (SANS_GENS.indexOf(role) >= 0 || (E.carteSansGens || []).indexOf(role) >= 0) && !(T && T.maisons && T.maisons.length);
       var hab = sansGens ? {} : habitants(E), vis = {};
       /* où est chacun, dans toutes les enquêtes (dès l'enquête 1 : la position de chacun remplace le marqueur « à qui parler » du tutoriel) */
       var PR = sansGens ? {marqueurs:[], chez:{}, absents:{}, bulles:{}} : presences(E, hab);
