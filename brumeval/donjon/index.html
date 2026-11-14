@@ -770,35 +770,32 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .l-proie{position:absolute;left:104px;top:22px;font-size:26px;display:none;pointer-events:none;text-align:center;width:70px;animation:pulse .7s ease-in-out infinite}
 .l-proie b{display:block;font-size:15px;color:#ff9a8a;text-shadow:0 1px 0 #000,0 0 4px #000;line-height:1}
 .heros.proie .l-proie{display:block}
-/* la bande du bas : les trois héros à gauche (toujours là), les cartes de celui qu'on a choisi à droite */
-#bande.leo-bande{gap:10px;padding:8px 10px 0 10px}
-.lb-heros{display:flex;gap:7px;flex:none}
-.lb-h{position:relative;width:112px;height:148px;border-radius:14px;border:3px solid #4a3a2a;background:linear-gradient(#2c2238,#17111e);text-align:left;overflow:hidden;touch-action:manipulation}
-.lb-h .portrait{left:6px;top:6px;width:52px;height:52px;border-radius:11px}
-.lb-h > b{position:absolute;left:6px;top:62px;font-family:var(--f-titre);font-weight:400;font-size:18px;line-height:1.05;color:var(--or-pale)}
-.lb-h .pv-b{position:absolute;left:6px;top:86px;gap:5px}
-.lb-h .pv-b .barre{width:60px;height:12px}
-.lb-h .pv-b b{font-family:var(--f-texte);font-size:15px;color:#fff4e0}
-.lb-h em{position:absolute;left:62px;top:8px;right:4px;font-style:normal;font-size:17px;line-height:1.25;color:#e8dcc0;word-spacing:-2px}
-.lb-h em i{font-style:normal;display:inline-block}
-.lb-h em i.jaune{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
-.lb-h em i.chene{filter:sepia(1) saturate(4) hue-rotate(60deg)}
-.lb-h u{position:absolute;left:0;right:0;bottom:0;height:9px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
-.lb-h.sel{border-color:#ffd36a;background:linear-gradient(#45351f,#1e1610);box-shadow:0 0 0 2px var(--encre),0 0 14px rgba(255,200,90,.5)}
-.lb-h.sol{opacity:.55}
-.lb-h.sol em{font-size:13px;top:12px}
-.lb-h.cible{border-color:#fff1b8;animation:pulse .8s ease-in-out infinite}
-.lb-h.pris{border-color:#8fe07a}
-.lb-cartes{display:grid;grid-template-columns:repeat(6,86px);grid-auto-rows:70px;gap:6px;align-content:start;flex:1}
-.lb-cartes .carte.mini{height:70px;touch-action:manipulation}
-.lb-cartes .carte.mini .c-ic{height:38px;line-height:38px;font-size:27px}
-.lb-cartes .carte.mini .c-ic .fiole{width:27px;height:37px}
+/* la bande du bas (14 novembre, Romain) : UNE SEULE RANGÉE D'ICÔNES — un cadre par héros, à sa couleur ; plus d'onglets de héros */
+#bande.leo-bande{gap:7px;padding:4px 7px 0 7px;align-items:stretch}
+.lb-g{position:relative;min-width:0;display:flex;flex-direction:column;border-radius:13px;border:3px solid var(--hc);background:linear-gradient(rgba(26,19,36,.95),rgba(13,9,19,.97));padding:1px 5px 7px;overflow:hidden;height:159px;box-sizing:border-box}
+.lb-g.g-sage{--hc:#6fa8ff}.lb-g.g-alchimiste{--hc:#6fd07a}.lb-g.g-pisteur{--hc:#ffa94a}
+.lb-nom{display:flex;align-items:baseline;gap:8px;height:16px;line-height:16px;padding:0 3px;white-space:nowrap}
+.lb-nom b{font-family:var(--f-titre);font-weight:400;font-size:14.5px;color:var(--hc);text-shadow:0 1px 0 #000}
+.lb-nom em{font-style:normal;font-size:12.5px;color:#ffd0c0;font-weight:800}
+.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
+.lb-g.pris .lb-cartes{opacity:.4}
+.lb-cartes{display:grid;grid-auto-rows:62px;gap:5px;align-content:start;flex:1;min-width:0}
+/* ce que montre la rune de l'œil : ses trois prochaines attaques, aux pieds de Léo, tout en bas de la salle */
+#leo-suite{position:absolute;top:331px;height:41px;transform:translateX(-50%);display:none;align-items:center;gap:6px;padding:0 9px;border-radius:13px 13px 0 0;background:rgba(10,6,16,.82);border:2px solid #4f86a8;border-bottom:0;pointer-events:none;box-sizing:border-box}
+#leo-suite.on{display:flex}
+#leo-suite i{font-style:normal;display:block;line-height:1;text-align:center}
+#leo-suite i.grand{font-size:29px;width:34px;height:34px;line-height:34px}
+#leo-suite i.petit{font-size:19px;width:23px;height:23px;line-height:23px;opacity:.78}
+#leo-suite i.cours{animation:pulse .7s ease-in-out infinite;filter:drop-shadow(0 0 5px #ff6a4a)}
+#leo-suite i + i::before{content:'›';position:absolute;margin-left:-8px;color:#7fb4d4;font-size:13px;font-weight:800;line-height:inherit}
+.lb-cartes .carte.mini{height:62px;min-width:0;touch-action:manipulation}
+.lb-cartes .carte.mini .c-ic{height:34px;line-height:34px;font-size:25px}
+.lb-cartes .carte.mini .c-ic .fiole{width:25px;height:34px}
 .lb-cartes .carte.mini b{font-size:13px}
 .lb-cartes .carte.mini.long b{font-size:11px;letter-spacing:-.02em}
-.lb-cartes.occupe .carte{opacity:.5}
 .lb-cartes .carte.off{opacity:.34}
 .lb-cartes .carte.jaune{border-color:#b89a2a}.lb-cartes .carte.jaune .c-ic{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
-.lb-cartes .carte.chene{border-color:#4f8a44}.lb-cartes .carte.chene .c-ic{filter:sepia(1) saturate(4) hue-rotate(60deg);font-size:21px;letter-spacing:-6px}
+.lb-cartes .carte.chene{border-color:#4f8a44}.lb-cartes .carte.chene .c-ic{filter:sepia(1) saturate(4) hue-rotate(60deg);font-size:19px;letter-spacing:-7px;padding-right:7px}
 .lb-cartes .carte.leo-arme{border-color:#9aa0ad;background:linear-gradient(#3a3340,#1b1622)}
 .l-usure{position:absolute;right:4px;top:3px;font-style:normal;font-size:12.5px;font-weight:800;line-height:16px;padding:0 5px;border-radius:9px;background:#120c18;border:2px solid var(--brun);color:#ffd36a}
 .l-usure.u1{color:#ff9a8a;border-color:#a8303e}
@@ -9153,8 +9150,9 @@ D.CHIFFRES = {
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
   /* LES DEUX BOUCLIERS (Romain, 13 novembre) : « le bouclier normal, il fait 75 %, et le bouclier de chêne, c'est 50 % pour deux
      personnes ». Avec le bâton normal : un bouclier JAUNE, sur un ami, qui arrête 75 % des dégâts ET tous les « contrôles » (la
-     toile, la langue, et chez Léo : étourdi, attrapé, saignement, brûlure). Avec le bâton de chêne : deux boucliers, qui
-     n'arrêtent que 50 % et laissent passer les contrôles. */
+     toile, la langue, et chez Léo : étourdi, attrapé, saignement, brûlure). Avec le bâton de chêne : des boucliers qui
+     n'arrêtent que 50 % et laissent passer les contrôles — sur DEUX héros jusqu'au 13 novembre ; sur les TROIS depuis le 14
+     (Romain : « comme il est moins puissant, il devrait prendre les 3 personnages au lieu de 2. Et ça, dans tout le donjon. »). */
   bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier jaune (il en arrête 75 %) */
   bouclierChene:0.5,                       /* … et à travers un bouclier du bâton de chêne (il en arrête 50 %) */
   herbes:15,                               /* les herbes : chaque héros debout (10 jusqu'au 13 novembre ; Romain : « 15 par personne, ça fait 45, et le baume rend 40 ») */
@@ -9190,7 +9188,7 @@ D.OBJETS = {
      le sort qu'il sait changer (carte.base) — le geste joué devient « a:<objet> ».
      carte : nom et effet = la carte du bâton ; d, vise, max = le sort « base » lancé avec ce bâton. */
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', arme:true, equipe:'cristal-lune', carte:{base:'rune', nom:'Bâton de lune', effet:'lumière pour tous', d:'toute la salle', vise:'salle'}, d:'Le Sage le fixe à son bâton : c\'est le bâton de lune. Avec lui, la rune de lumière éclaire toute la salle. Toute la salle…'},
-  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'deux amis, moitié', vise:'heros', max:2, sorte:'chene'}, d:'Avec lui, le bouclier de runes protège deux amis à la fois. Mais chacun n\'arrête que la moitié du coup.'},
+  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour trois', d:'trois amis, moitié', vise:'heros', max:3, sorte:'chene'}, d:'Avec lui, le bouclier de runes protège les trois héros à la fois. Mais chacun n\'arrête que la moitié du coup.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
@@ -9938,7 +9936,7 @@ P.gestes = function(h){
     }
     else if(id === 'bouclier'){
       g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, 1);
-      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : deux amis */
+      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : les trois héros (deux jusqu'au 13 novembre) */
     }
     else if(id === 'appel'){       /* la rune d'appel : un monstre qui marche par terre, et qui n'est pas déjà devant */
       var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return self.auSol(x); });
@@ -10178,7 +10176,7 @@ P.jouer = function(h, a){
   else if(geste === 'bouclier' || geste === 'a:baton-chene'){
     ev.push({t:'pose-bouclier', heros:h, cibles:cibles.slice()});
     /* (13 novembre) le bâton normal pose un bouclier JAUNE (75 %, il arrête aussi la toile et la langue) ; le bâton de chêne en
-       pose deux, plus faibles (50 %), qui laissent passer la toile et la langue */
+       pose sur les trois héros (14 novembre ; deux avant), plus faibles (50 %), qui laissent passer la toile et la langue */
     var sorte = geste === 'bouclier' ? 'jaune' : 'chene';
     ev[ev.length - 1].sorte = sorte;
     cibles.forEach(function(x){ self.h[x].bouclier = sorte; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1, sorte:sorte}); });
@@ -10816,15 +10814,25 @@ if(NODE) module.exports = Regles; else global.Regles = Regles;
    CE COMBAT N'EST PAS AU TOUR PAR TOUR : IL EST EN TEMPS RÉEL. Léo attaque sans attendre ; on joue aussi vite qu'on peut.
    Ce qui empêche de taper dix fois par seconde : l'animation de chaque geste (D.DUREES, mesurées dans la page : le héros est
    pris pendant toute son animation, et son geste ne « tombe » qu'au moment de l'impact). Un seul joueur tient la tablette ;
-   il passe d'un héros à l'autre, et les trois peuvent être en plein geste en même temps.
+   les trois héros peuvent être en plein geste en même temps.
+
+   LE 14 NOVEMBRE (Romain, après son premier essai : « trop difficile », Bible §13.37) :
+   · PLUS DE HÉROS À CHOISIR, PLUS DE CIBLE À TOUCHER : une seule rangée d'icônes (c.barre()), seulement celles qui servent dans
+     la phase (L.BARRE) ; chaque icône choisit sa cible toute seule (c.auto) ;
+   · LE NOIR ne se lève plus tout seul (il faut la lumière du bâton de lune) ; dans le noir, tout continue, mais Léo est
+     intouchable ; LA FARINE ne retombe plus toute seule (il faut du feu), et Léo y est intouchable ;
+   · la lumière du bâton de lune COUPE l'attaque de Léo ; la charge se prépare plus longtemps (le temps d'y mettre de l'huile) ;
+   · le bouclier de chêne protège les trois héros ; la rune de l'œil montre ses trois prochaines attaques.
 
    =================================================================================================================
    L'API
    =================================================================================================================
    var c = LeoRegles.combat(partie[, {phase:1|2|3, alea}])   un combat, à cette phase ; les héros ont toute leur vie
-   c.gestes(heros)                 ses cartes : [{geste, nom, vise:'ennemi'|'heros'|'sol'|'salle'|'equipe', cibles, max, permis, mot, reste, arme}]
+   c.barre()                       LA RANGÉE D'ICÔNES de la phase : [{heros, geste, nom, vise, permis, mot, auto:[cibles], reste, arme, sorte}]
+   c.auto(heros, geste)            la cible que l'icône choisit toute seule ([] : personne à viser)
+   c.gestes(heros)                 toutes ses cartes (les règles, les tests) : [{geste, nom, vise:'ennemi'|'heros'|'sol'|'salle'|'equipe', cibles, max, permis, mot, reste, arme}]
    c.refus(heros, geste, cible)    null, ou la raison en deux mots
-   c.agir(heros, geste, cible)     lance le geste -> une liste d'évènements (un refus : [{t:'refus', heros, mot}])
+   c.agir(heros, geste[, cible])   lance le geste -> une liste d'évènements (un refus : [{t:'refus', heros, mot}]) ; sans cible : c.auto
    c.avancer(dt)                   le temps passe (dt en secondes) -> la liste des évènements arrivés pendant ce temps
    c.fini()                        null | 'phase' (Léo est à terre : la cinématique, puis c.phaseSuivante()) | 'victoire' | 'defaite'
    c.phaseSuivante()               la phase d'après commence : toute la vie revient, les armes de Léo sont ramassées
@@ -10844,13 +10852,14 @@ if(NODE) module.exports = Regles; else global.Regles = Regles;
    {t:'leo', quoi:'elan', att, cibles, duree}                      il arme son coup : « duree » secondes avant l'impact
    {t:'leo', quoi:'impact', att, cibles}                           le coup tombe (les dégâts suivent)
    {t:'leo', quoi:'retour', att} ; {t:'leo', quoi:'repos'}
-   {t:'leo', quoi:'coupe', att, par:'marteau'}                     son attaque est coupée net
+   {t:'leo', quoi:'coupe', att, par:'marteau'|'lune'}              son attaque est coupée net (le marteau ; la lumière du bâton de lune)
+   {t:'leo', quoi:'ebloui', duree}                                 la lumière le surprend entre deux attaques : il reste figé
    {t:'leo', quoi:'glisse', duree} ; {t:'leo', quoi:'debout'}      il glisse sur l'huile et tombe ; il se relève
    {t:'leo', quoi:'tient', heros, duree}                           il tient un héros dans son nuage de farine
    {t:'leo', quoi:'lache', heros, par:'huile'|'feu'|'temps'}
    {t:'leo-etat', nom:'nuage'|'flaque'|'ralenti'|'brule'|'saigne'|'noirci', on, n}
    {t:'boum', n}                                                   la farine explose
-   {t:'noir', on}                                                  les torches s'éteignent / se rallument
+   {t:'noir', on}                                                  les torches s'éteignent (la cape) / se rallument (le bâton de lune, rien d'autre)
    {t:'soin-leo', n, pv}                                           la gourde
    {t:'rat', quoi:'arrive'|'mord'|'ebloui'|'voit'|'nu'|'enrage'|'colle'|'libre'|'meurt', id, type, place, heros, par}
    {t:'arme', nom, reste}                                          une arme ramassée a servi ; reste : 0 = elle casse
@@ -10882,31 +10891,45 @@ L.ORDRE = {
    rapide : presque aucun élan, rien ne l'arrête. part : la part de la vie MAX du héros que le coup enlève. */
 L.ATTAQUES = {
   /* ---------- phase 1 : le meunier, en cape noire ---------- */
-  fleau:{nom:'Le fléau', arme:'fleau', prise:1.0, elan:1.4, retour:.9, degats:42, cibles:'deux'},                 /* Romain : frappe deux héros, assez fort */
-  charge:{nom:'La charge', arme:null, prise:1.0, elan:2.0, retour:.8, degats:58, cibles:'un', glisse:5.0},         /* Romain : huile ou colle juste avant → il tombe sur place */
-  marteau:{nom:'Le marteau', arme:'marteau', prise:1.0, elan:1.4, retour:.9, degats:38, cibles:'un', etourdit:3.0},  /* Romain : dégâts moyens, et il étourdit */
-  meule:{nom:'La meule de paille', arme:'meule', prise:1.2, elan:1.6, retour:1.0, degats:28, cibles:'tous'},       /* Romain : touche tout le monde, un peu moins fort ; rien ne l'arrête */
-  crochet:{nom:'Le crochet', arme:'crochet', prise:1.4, elan:1.0, retour:.8, degats:58, cibles:'un', attrape:true, tient:7.0, ecrase:46, farine:3.6},   /* Romain : d'abord la farine, puis un coup énorme qui attrape */
-  cape:{nom:'La cape', arme:'cape', prise:.8, elan:.8, retour:.6, noir:14},                                        /* Romain : les torches s'éteignent ; le bâton de lune rallume. (14 s : au pire, les yeux s'habituent) */
+  fleau:{nom:'Le fléau', ic:'🌾', arme:'fleau', prise:1.0, elan:1.4, retour:.9, degats:42, cibles:'deux'},                 /* Romain : frappe deux héros, assez fort */
+  /* (14 novembre, Romain : « que la position dure assez longtemps pour qu'on ait le temps de mettre de l'huile » — une fiole met
+     2,5 s à tomber, une flèche 1,6 s : il se prépare 4,4 s) */
+  charge:{nom:'La charge', ic:'💨', arme:null, prise:1.4, elan:3.0, retour:.8, degats:58, cibles:'un', glisse:5.0},         /* Romain : huile ou colle juste avant → il tombe sur place */
+  marteau:{nom:'Le marteau', ic:'🔨', arme:'marteau', prise:1.0, elan:1.4, retour:.9, degats:38, cibles:'un', etourdit:3.0},  /* Romain : dégâts moyens, et il étourdit */
+  meule:{nom:'La meule de paille', ic:'meule', arme:'meule', prise:1.2, elan:1.6, retour:1.0, degats:28, cibles:'tous'},       /* Romain : touche tout le monde, un peu moins fort ; rien ne l'arrête */
+  crochet:{nom:'Le crochet', ic:'🪝', arme:'crochet', prise:1.4, elan:1.0, retour:.8, degats:58, cibles:'un', attrape:true, tient:7.0, ecrase:46, farine:3.6},   /* Romain : d'abord la farine, puis un coup énorme qui attrape */
+  cape:{nom:'La cape', ic:'🌑', arme:'cape', prise:.8, elan:.8, retour:.6, noir:true},                             /* Romain : les torches s'éteignent ; SEUL le bâton de lune rallume (14 novembre : « ça se rallume jamais ») */
   /* ---------- phase 2 : torse nu, en colère ---------- */
-  sifflet:{nom:'Le sifflet', arme:'sifflet', prise:.7, elan:.9, retour:.5, rats:true},                             /* Romain : deux rats ; d'abord normaux, puis cuirassés, puis les deux */
-  poing:{nom:'Le coup de poing', arme:null, prise:0, elan:.5, retour:.5, degats:10, cibles:'tous', casse:true, rapide:true},   /* Romain : très rapide, 10, enlève tous les boucliers */
-  faux:{nom:'La faux', arme:'faux', prise:1.0, elan:1.3, retour:.9, degats:10, cibles:'tous', saigne:true},         /* Romain : un balayage sur les trois, qui fait saigner */
-  saut:{nom:'Le saut', arme:null, prise:.5, elan:1.0, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
-  gourde:{nom:'La gourde', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
-  lancer:{nom:'Le lancer de rat', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
+  sifflet:{nom:'Le sifflet', ic:'🐀', arme:'sifflet', prise:.7, elan:.9, retour:.5, rats:true},                             /* Romain : deux rats ; d'abord normaux, puis cuirassés, puis les deux */
+  poing:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.5, degats:10, cibles:'tous', casse:true, rapide:true},   /* Romain : très rapide, 10, enlève tous les boucliers */
+  faux:{nom:'La faux', ic:'🌙', arme:'faux', prise:1.0, elan:1.3, retour:.9, degats:10, cibles:'tous', saigne:true},         /* Romain : un balayage sur les trois, qui fait saigner */
+  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.5, elan:1.0, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
+  gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
+  lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
-  poing3:{nom:'Le coup de poing', arme:null, prise:0, elan:.5, retour:.6, degats:30, cibles:'un', rapide:true},    /* Romain : 30, très rapide, inarrêtable */
-  rafale:{nom:'La rafale de coups', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
-  hurlement:{nom:'Le hurlement', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
-  attrape:{nom:'Il attrape un héros', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
-  souffle:{nom:'Le souffle de feu', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
+  poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.6, degats:30, cibles:'un', rapide:true},    /* Romain : 30, très rapide, inarrêtable */
+  rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
+  hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
+  attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
+  souffle:{nom:'Le souffle de feu', ic:'🔥', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
 };
 L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héros, deux fois par seconde » ; il ne s'arrête qu'avec un soin */
 L.BRULE = {n:5, pas:.5, duree:4};                     /* la brûlure du souffle : elle s'arrête toute seule */
 L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
+L.ECLAIR = 1.2;                                       /* Romain, 14 novembre : la lumière du bâton de lune coupe son attaque ; il reste ébloui « au moins une seconde » */
+/* LA RANGÉE D'ICÔNES, phase par phase (Romain, 14 novembre : « on met uniquement les icônes qui nous intéressent »). Une icône que
+   l'équipe n'a pas (une recette, un bâton) n'apparaît pas. Ce qui n'y est pas : les flèches simples (« on va prendre uniquement
+   celui qui fait le plus de dégâts : la dague »), la louche, l'acide, la colle (comme l'huile), le fumigène. */
+L.BARRE = {
+  1:{pisteur:['dague', 'p:huile', 'p:feu', 'p:givre'], alchimiste:['p:huile', 'p:feu', 'p:givre', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene', 'a:cristal-lune']},
+  /* (phase 2 : l'acide de l'Alchimiste reste — sans lui, les rats cuirassés seraient increvables une fois le crochet cassé ; et le
+     feu reste — c'est la seule chose qui touche Léo par-dessus ses rats : sans lui, la simulation met deux fois plus de temps
+     à finir la phase, plus de quatre minutes pour un joueur ordinaire) */
+  2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:feu'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
+  3:{pisteur:['l:faux', 'l:gourde', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
+};
 L.FLAQUE = 6;                                         /* l'huile ou la colle sous ses pieds tient six secondes */
 L.RALENTI = {k:.55, duree:5};                         /* le givre : tout ce qu'il fait va presque deux fois moins vite, cinq secondes */
 L.VISEE = {pisteur:4, alchimiste:3, sage:3};          /* qui il vise (au hasard, mais la rune de l'œil le montre) */
@@ -10942,7 +10965,8 @@ L.DUREES = {
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
   casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
-  impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !'
+  impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
+  clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
 };
 
 function copie(o){ return JSON.parse(JSON.stringify(o)); }
@@ -10973,7 +10997,7 @@ P._poser = function(phase){
   });
   this.leo = {pv:PH.de, pvMax:L.PV, tl:0, etape:'repos', fin:L.DEBUT, att:null, cibles:[], k:-1, nuage:false, boum:false, tenu:null, tientFin:0,
     flaque:0, ralenti:0, brule:0, bruleT:0, saigne:0, saigneT:0, auSol:false};
-  this.noir = 0;                            /* jusqu'à quel instant il fait noir (0 : il fait clair) */
+  this.noir = false;                        /* il fait noir (la cape) : jusqu'à la lumière du bâton de lune, rien d'autre */
   this.rats = []; this.nRat = this.nRat || 0; this.vague = 0;
   /* les armes de Léo, ramassées par le Pisteur (Romain : trois coups chacune ; le marteau est cassé en phase 3) */
   this.armes = {};
@@ -10992,7 +11016,7 @@ P.ratsVivants = function(){ return this.rats.filter(function(r){ return !r.mort;
 P.rat = function(id){ for(var i = 0; i < this.rats.length; i++) if(this.rats[i].id === id) return this.rats[i]; return null; };
 P.ratOuvert = function(r){ return !r.mort && (r.ebloui > this.t || r.dos > this.t || (r.type === 'ratcuir' && r.nu)); };
 P.cuirasse = function(r){ return r.type === 'ratcuir' && !r.nu; };
-P.sombre = function(){ return this.noir > this.t; };
+P.sombre = function(){ return !!this.noir; };
 /* la bête de devant, pour la dague et les armes de corps à corps : les rats d'abord, puis Léo */
 P.devant = function(){ var v = this.ratsVivants(); return v.length ? v[0].id : 'leo'; };
 P.libre = function(h){ var S = this.h[h]; return !!S && !S.sol && !S.act && S.etourdi <= this.t && !S.attrape; };
@@ -11004,8 +11028,10 @@ P.gestes = function(h){
   if(!S) return l;
   var bloque = this.resultat ? L.MOTS.fini : S.sol ? L.MOTS.sol : S.attrape ? L.MOTS.attrape : S.etourdi > this.t ? L.MOTS.etourdi : S.act ? L.MOTS.occupe : null;
   var rats = ids(this.ratsVivants()), sombre = this.sombre(), nuage = this.leo.nuage;
-  /* qui on peut viser : rien dans le noir (Romain : « on enlève le ciblage ») ; pas Léo dans sa farine, sauf avec l'huile et le feu */
-  var ennemis = sombre ? [] : rats.concat(nuage ? [] : ['leo']), motE = sombre ? L.MOTS.noir : nuage ? L.MOTS.farine : L.MOTS.fini;
+  /* qui on peut viser. Romain, 14 novembre : « quand tout est noir, tout continue normalement ; le seul truc, c'est que Léo est
+     inciblable, exactement comme dans la fumée blanche ». Dans sa farine : seuls l'huile (elle libère un ami) et le feu (BOUM). */
+  var cache = sombre || nuage;
+  var ennemis = rats.concat(cache ? [] : ['leo']), motE = sombre ? L.MOTS.noir : nuage ? L.MOTS.farine : L.MOTS.fini;
   var amis = this.debout(), auSol = D.ORDRE.filter(function(x){ return self.h[x].sol; });
   function g(geste, nom, vise, cibles, permis, mot, plus){
     var o = {geste:geste, nom:nom, vise:vise, cibles:cibles, max:1, permis:!bloque && permis, mot:bloque || (permis ? null : mot)};
@@ -11019,17 +11045,19 @@ P.gestes = function(h){
       /* (Romain : pendant tout le combat de Léo, l'arc de lune est enlevé, sans rien dire) */
       self.objets[h].forEach(function(o){ var O = D.OBJETS[o]; if(O && O.fleche && o !== 'fleches-argent') g('f:' + o, O.court || O.nom, 'ennemi', ennemis, ennemis.length > 0, motE); });
     }
-    else if(id === 'dague'){ var d = sombre ? null : self.devant(), ok = !!d && !(d === 'leo' && nuage); g(id, G.nom, 'ennemi', ok ? [d] : [], ok, sombre ? L.MOTS.noir : L.MOTS.farine); }
+    else if(id === 'dague'){ var d = self.devant(), ok = !(d === 'leo' && cache); g(id, G.nom, 'ennemi', ok ? [d] : [], ok, sombre ? L.MOTS.noir : L.MOTS.farine); }
     else if(id === 'oeil') g(id, G.nom, 'salle', [], !self.vu, L.MOTS.vu);
     else if(id === 'rune'){
-      g(id, G.nom, 'ennemi', sombre ? [] : rats, !sombre && rats.length > 0, sombre ? L.MOTS.noir : L.MOTS.rien);
-      if(self.objets[h].indexOf('cristal-lune') >= 0) g('a:cristal-lune', G.nom, 'salle', [], true, null);          /* le bâton de lune : toute la salle — et il rallume les torches */
+      g(id, G.nom, 'ennemi', rats, rats.length > 0, L.MOTS.rien);
+      /* le bâton de lune : toute la salle — il rallume les torches (et coupe l'attaque de Léo), il aveugle tous les rats */
+      if(self.objets[h].indexOf('cristal-lune') >= 0) g('a:cristal-lune', G.nom, 'salle', [], sombre || rats.length > 0, L.MOTS.clair);
     }
     else if(id === 'bouclier'){
       g(id, G.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {sorte:'jaune'});
-      if(self.objets[h].indexOf('baton-chene') >= 0) g('a:baton-chene', G.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {max:2, sorte:'chene'});
+      /* (14 novembre, Romain : le bouclier de chêne, moins fort, protège les TROIS héros — dans tout le donjon) */
+      if(self.objets[h].indexOf('baton-chene') >= 0) g('a:baton-chene', G.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {max:3, sorte:'chene'});
     }
-    else if(id === 'louche'){ var dv = sombre ? null : self.devant(), okL = !!dv && !(dv === 'leo' && nuage); g(id, G.nom, 'ennemi', okL ? [dv] : [], okL, sombre ? L.MOTS.noir : L.MOTS.farine); }
+    else if(id === 'louche'){ var dv = self.devant(), okL = !(dv === 'leo' && cache); g(id, G.nom, 'ennemi', okL ? [dv] : [], okL, sombre ? L.MOTS.noir : L.MOTS.farine); }
     else if(id === 'herbes') g(id, G.nom, 'equipe', [], amis.length > 0, L.MOTS.personne);
     /* (la rune d'appel n'a rien à appeler ici : pas de carte) */
   });
@@ -11039,8 +11067,8 @@ P.gestes = function(h){
     if(reste === undefined) return;
     if(reste <= 0) return;                                           /* cassée : elle a quitté la bande */
     if(A.vise === 'heros') g('l:' + a, A.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {reste:reste, arme:a});
-    else if(a === 'marteau' || a === 'faux'){ var okM = !sombre && !nuage; g('l:' + a, A.nom, 'ennemi', okM ? ['leo'] : [], okM, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
-    else { var dz = sombre ? null : self.devant(), okA = !!dz && !(dz === 'leo' && nuage); g('l:' + a, A.nom, 'ennemi', okA ? [dz] : [], okA, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
+    else if(a === 'marteau' || a === 'faux'){ var okM = !cache; g('l:' + a, A.nom, 'ennemi', okM ? ['leo'] : [], okM, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
+    else { var dz = self.devant(), okA = !(dz === 'leo' && cache); g('l:' + a, A.nom, 'ennemi', okA ? [dz] : [], okA, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
   });
   /* les potions : l'Alchimiste les lance, le Pisteur y trempe une flèche */
   if(D.HEROS[h].sac) this.recettes.forEach(function(rid){
@@ -11055,6 +11083,72 @@ P.gestes = function(h){
     else if(r.vise === 'heros') g(geste, r.nom, 'heros', amis, amis.length > 0, L.MOTS.personne);
     else if(r.vise === 'sol') g(geste, r.nom, 'sol', auSol, auSol.length > 0, L.MOTS.personne);
     else g(geste, r.nom, r.vise === 'salle' ? 'salle' : 'equipe', [], true, null);
+  });
+  return l;
+};
+/* ---------- LA RANGÉE D'ICÔNES (Romain, 14 novembre) ----------
+   « On enlève les icônes des personnages et on met uniquement les icônes qui nous intéressent » ; « on a besoin de cibler
+   personne, on a juste besoin de pianoter sur les icônes ». */
+function part(S){ return S.pv / S.pvMax; }
+P._carte = function(h, geste){ var l = this.gestes(h); for(var i = 0; i < l.length; i++) if(l[i].geste === geste) return l[i]; return null; };
+/* la cible qu'une icône choisit toute seule. « tirer » : pour de bon (c.agir) — c'est seulement là qu'on tire au sort entre deux
+   héros à terre ; pour l'affichage (c.barre, à chaque image), on ne touche pas au hasard du combat. */
+P.auto = function(h, geste, G, tirer){
+  var self = this, Z = this.leo;
+  G = G || this._carte(h, geste);
+  if(!G || G.vise === 'salle' || G.vise === 'equipe') return [];
+  var c = G.cibles.slice();
+  function bas(l){ return l.slice().sort(function(a, b){ return part(self.h[a]) - part(self.h[b]) || D.ORDRE.indexOf(a) - D.ORDRE.indexOf(b); }); }
+  /* le bouclier de chêne : les trois héros (sans écraser un bouclier jaune, qui est plus fort) */
+  if(geste === 'a:baton-chene') return c.filter(function(x){ return self.h[x].bouclier !== 'jaune'; });
+  /* le bouclier jaune : celui que Léo vise, si la rune de l'œil le montre ; sinon le plus blessé */
+  if(geste === 'bouclier'){
+    var libres = c.filter(function(x){ return self.h[x].bouclier !== 'jaune'; });
+    if(this.vu && (Z.etape === 'prise' || Z.etape === 'elan') && Z.cibles.length){ var vises = libres.filter(function(x){ return Z.cibles.indexOf(x) >= 0; }); if(vises.length) libres = vises; }
+    return bas(libres).slice(0, 1);
+  }
+  /* un soin pour un seul (le baume, la gourde) : le plus blessé (en part de sa vie) ; celui qui saigne compte comme blessé */
+  if(G.vise === 'heros'){
+    var blesses = c.filter(function(x){ return self.h[x].pv < self.h[x].pvMax || self.h[x].saigne; });
+    return bas(blesses).slice(0, 1);
+  }
+  /* relever : celui qui est à terre ; s'ils sont deux, au hasard (Romain) */
+  if(G.vise === 'sol') return c.length ? [c[tirer && c.length > 1 ? Math.floor(this.R() * c.length) % c.length : 0]] : [];
+  /* la rune : un rat qu'elle peut éblouir (pas déjà ébloui, pas cuirassé), sinon le premier */
+  if(geste === 'rune'){
+    var rats = this.ratsVivants().filter(function(r){ return c.indexOf(r.id) >= 0; });
+    var bons = rats.filter(function(r){ return !(r.ebloui > self.t) && !self.cuirasse(r); });
+    return (bons.length ? bons : rats).slice(0, 1).map(function(r){ return r.id; });
+  }
+  /* l'acide : sur un rat cuirassé qui a encore son armure (c'est tout ce qu'il sait faire d'utile ici) */
+  if(geste === 'p:acide'){
+    var cuirs = this.ratsVivants().filter(function(r){ return c.indexOf(r.id) >= 0 && self.cuirasse(r); });
+    return cuirs.slice(0, 1).map(function(r){ return r.id; });
+  }
+  /* le corps à corps (la dague, le crochet, le fléau) : ce qui est devant — c'est déjà la seule cible de la carte */
+  if(c.length === 1) return c;
+  /* ce qu'on lance (l'huile, le feu, le givre) : toujours sur Léo */
+  return c.indexOf('leo') >= 0 ? ['leo'] : [];
+};
+P.barre = function(){
+  var self = this, l = [], B = L.BARRE[this.phase] || {};
+  D.ORDRE.forEach(function(h){
+    var cartes = self.gestes(h), par = {};
+    cartes.forEach(function(g){ par[g.geste] = g; });
+    (B[h] || []).forEach(function(id){
+      var g = par[id];
+      if(!g) return;                                                  /* pas cette recette, pas ce bâton, arme cassée : pas d'icône */
+      if(id === 'oeil' && self.vu) return;                            /* la rune de l'œil est ouverte pour tout le combat : son icône a fini de servir */
+      var a = self.auto(h, id, g), o = {heros:h, geste:id, nom:g.nom, vise:g.vise, permis:g.permis, mot:g.mot, auto:a};
+      if(g.reste != null){ o.reste = g.reste; o.arme = g.arme; }
+      if(g.sorte) o.sorte = g.sorte;
+      /* personne à viser : l'icône est éteinte, avec son mot */
+      if(o.permis && g.vise !== 'salle' && g.vise !== 'equipe' && !a.length){
+        o.permis = false;
+        o.mot = id === 'bouclier' || id === 'a:baton-chene' ? L.MOTS.boucle : g.vise === 'heros' ? L.MOTS.forme : g.vise === 'sol' ? L.MOTS.personne : self.sombre() ? L.MOTS.noir : self.leo.nuage ? L.MOTS.farine : L.MOTS.rien;
+      }
+      l.push(o);
+    });
   });
   return l;
 };
@@ -11090,6 +11184,15 @@ function dureeDe(geste, cibles){
 }
 P.dureeDe = function(h, geste, cibles){ return h === 'pisteur' && geste.indexOf('p:') === 0 ? L.DUREES.fleche : dureeDe(geste, cibles); };
 P.agir = function(h, geste, cible){
+  /* sans cible : l'icône choisit toute seule (la rangée du 14 novembre) */
+  if(cible === undefined){
+    var G0 = this._carte(h, geste);
+    if(G0 && G0.permis && G0.vise !== 'salle' && G0.vise !== 'equipe'){
+      var a0 = this.auto(h, geste, G0, true);
+      if(!a0.length){ var B0 = this.barre().filter(function(x){ return x.heros === h && x.geste === geste; })[0]; return [{t:'refus', heros:h, geste:geste, mot:(B0 && B0.mot) || L.MOTS.rien}]; }
+      cible = a0.length > 1 ? a0 : a0[0];
+    }
+  }
   var r = this.refus(h, geste, cible);
   if(r) return [{t:'refus', heros:h, geste:geste, mot:r}];
   var cibles = cible == null ? [] : (Array.isArray(cible) ? cible.slice() : [cible]);
@@ -11142,7 +11245,6 @@ P._pas = function(ev, d){
   if(this.resultat) return;
   if(Z.flaque && t >= Z.flaque){ Z.flaque = 0; ev.push({t:'leo-etat', nom:'flaque', on:false}); }
   if(Z.ralenti && t >= Z.ralenti){ Z.ralenti = 0; ev.push({t:'leo-etat', nom:'ralenti', on:false}); }
-  if(this.noir && t >= this.noir){ this.noir = 0; ev.push({t:'noir', on:false, par:'temps'}); }
   Z.tl += d * (Z.ralenti > t ? L.RALENTI.k : 1);
   var garde = 0;
   while(Z.tl >= Z.fin && !this.resultat && garde++ < 8) this._leoSuite(ev);
@@ -11268,12 +11370,23 @@ P._effet = function(ev, h, a){
   if(g === 'herbes'){ this.debout().forEach(function(y){ self._soin(ev, y, C.herbes, 'herbes'); }); return; }
   if(g === 'bouclier' || g === 'a:baton-chene'){
     var sorte = g === 'bouclier' ? 'jaune' : 'chene';
-    c.forEach(function(y){ var S = self.h[y]; if(S.sol) return; S.bouclier = sorte; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
+    c.forEach(function(y){ var S = self.h[y]; if(S.sol || (sorte === 'chene' && S.bouclier === 'jaune')) return; S.bouclier = sorte; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
     return;
   }
   if(g === 'a:cristal-lune'){
     /* le bâton de lune : la lumière sur toute la salle — elle rallume les torches et aveugle tous les rats */
-    if(this.noir){ this.noir = 0; ev.push({t:'noir', on:false, par:'lune'}); }
+    if(this.noir){
+      this.noir = false; ev.push({t:'noir', on:false, par:'lune'});
+      /* Romain, 14 novembre : « que ça arrête son attaque en cours, ça l'interrompt » — au moins une seconde */
+      if(Z.etape === 'prise' || Z.etape === 'elan'){
+        ev.push({t:'leo', quoi:'coupe', att:Z.att, par:'lune'});
+        Z.etape = 'sonne'; Z.fin = Z.tl + L.ECLAIR; Z.att = null; Z.cibles = [];
+      }
+      else if(Z.etape === 'repos' || Z.etape === 'retour'){
+        Z.fin = Math.max(Z.fin, Z.tl + L.ECLAIR);
+        ev.push({t:'leo', quoi:'ebloui', duree:L.ECLAIR});
+      }
+    }
     this.ratsVivants().forEach(function(r){ self._ratLumiere(ev, r); });
     return;
   }
@@ -11297,7 +11410,7 @@ P._effet = function(ev, h, a){
   var coup = g === 'fleche' ? 'fleche' : g === 'f:fleches-lourdes' ? 'lourde' : g.indexOf('f:') === 0 ? 'fleche' : g === 'dague' ? 'dague' : g === 'louche' ? 'louche' : g.indexOf('l:') === 0 ? g.slice(2) : D.RECETTES[g.slice(2)].pouvoir;
   /* le fléau frappe DEUX cibles : celle de devant et la suivante (les rats d'abord, puis Léo) */
   if(coup === 'fleau'){
-    var file = ids(this.ratsVivants()); if(!Z.nuage) file.push('leo');
+    var file = ids(this.ratsVivants()); if(!Z.nuage && !this.sombre()) file.push('leo');
     file.slice(0, 2).forEach(function(id){ self._touche(ev, h, id, 'fleau'); });
     return;
   }
@@ -11312,6 +11425,8 @@ P._touche = function(ev, h, id, coup){
   var Z = this.leo, t = this.t, K = L.COUPS;
   if(id !== 'leo'){ var r = this.rat(id); if(r && !r.mort) this._toucheRat(ev, r, coup); else ev.push({t:'mot', sur:'leo', texte:L.MOTS.tropTard}); return; }
   /* --- sur Léo --- */
+  /* dans le noir, il est intouchable (un geste parti avant que les torches s'éteignent tombe dans le vide) */
+  if(this.sombre()){ ev.push({t:'mot', sur:'leo', texte:L.MOTS.noir}); return; }
   if(Z.nuage){
     /* dans sa farine : seuls l'huile et le feu l'atteignent */
     if(coup === 'feu' && !Z.boum){ this._boum(ev); return; }
@@ -11401,9 +11516,9 @@ P._leoSuite = function(ev){
     case 'elan': return this._leoImpact(ev, A);
     case 'tient':
       /* personne ne l'a libéré : Léo l'écrase et le rejette */
+      /* (14 novembre, Romain : « l'écran de farine, il s'arrête jamais : il faut forcément faire du feu » — le nuage RESTE) */
       var h = Z.tenu;
-      Z.tenu = null; Z.nuage = false;
-      ev.push({t:'leo-etat', nom:'nuage', on:false, par:'temps'});
+      Z.tenu = null;
       if(h && !this.h[h].sol){
         this.h[h].attrape = false;
         ev.push({t:'etat', heros:h, nom:'attrape', on:false});
@@ -11412,9 +11527,7 @@ P._leoSuite = function(ev){
       }
       return this._leoRetour(ev, 'crochet');
     case 'farine':
-      Z.nuage = false;
-      ev.push({t:'leo-etat', nom:'nuage', on:false, par:'temps'});
-      return this._leoRetour(ev, 'crochet');
+      return this._leoRetour(ev, 'crochet');                             /* (le nuage reste : seul le feu l'enlève) */
     case 'sol':
       Z.auSol = false;
       ev.push({t:'leo', quoi:'debout'});
@@ -11468,7 +11581,7 @@ P._leoImpact = function(ev, A){
   if(A.cibles === 'tous') cibles = this.debout();
   else Z.cibles.forEach(function(h){ if(!vivant(h) || cibles.indexOf(h) >= 0) h = self._viser(cibles); if(h && cibles.indexOf(h) < 0) cibles.push(h); });
   ev.push({t:'leo', quoi:'impact', att:nom, cibles:cibles.slice()});
-  if(A.noir){ this.noir = t + A.noir; ev.push({t:'noir', on:true}); return this._leoRetour(ev, nom); }
+  if(A.noir){ this.noir = true; ev.push({t:'noir', on:true}); return this._leoRetour(ev, nom); }
   if(A.rats){
     var libres = [0, 1].filter(function(pl){ return !self.ratsVivants().some(function(r){ return r.place === pl; }); });
     var vague = L.VAGUES[Math.min(this.vague, L.VAGUES.length - 1)]; this.vague++;
@@ -11527,6 +11640,20 @@ P._leoImpact = function(ev, A){
   this._leoRetour(ev, nom);
 };
 
+/* les trois prochaines attaques, pour la rune de l'œil : [{att, nom, ic, enCours}] */
+P._suite = function(){
+  var Z = this.leo, ordre = L.ORDRE[this.phase], l = [], k = Z.k, self = this, garde = 0;
+  var rats = this.ratsVivants().length;
+  if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan')) l.push({att:Z.att, nom:L.ATTAQUES[Z.att].nom, ic:L.ATTAQUES[Z.att].ic, enCours:true});
+  while(l.length < 3 && garde++ < ordre.length * 2){
+    k = (k + 1) % ordre.length;
+    var A = L.ATTAQUES[ordre[k]];
+    if(A.rats && rats >= 2 && l.length === 0) continue;               /* (le sifflet saute tant que ses deux rats sont là) */
+    l.push({att:ordre[k], nom:A.nom, ic:A.ic, enCours:false});
+  }
+  return l;
+};
+
 /* ---------- la photo ---------- */
 P.etat = function(){
   var self = this, Z = this.leo, t = this.t, A = Z.att ? L.ATTAQUES[Z.att] : null, sombre = this.sombre();
@@ -11538,8 +11665,12 @@ P.etat = function(){
   });
   o.leo = {pv:Z.pv, pvMax:Z.pvMax, plancher:L.PHASES[this.phase].a, etape:Z.etape, att:Z.att, nom:A ? A.nom : null, arme:A ? A.arme : null,
     reste:Math.max(0, Z.fin - Z.tl), nuage:Z.nuage, tenu:Z.tenu, auSol:Z.auSol, flaque:Z.flaque > t, ralenti:Z.ralenti > t, brule:Z.brule > t, saigne:Z.saigne,
-    /* ce que la rune de l'œil montre (jamais dans le noir) : sa proie, et ce qu'elle va prendre */
-    vise:this.vu && !sombre && A && (Z.etape === 'prise' || Z.etape === 'elan') && Z.cibles.length ? {cibles:Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.fois || 1} : null};
+    cache:sombre || Z.nuage,                                          /* intouchable : dans le noir, dans sa farine */
+    /* ce que la rune de l'œil montre : sa proie et ce qu'elle va prendre… */
+    vise:this.vu && A && (Z.etape === 'prise' || Z.etape === 'elan') && Z.cibles.length ? {cibles:Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.fois || 1} : null,
+    /* … et ses trois prochaines attaques (Romain, 14 novembre : de petites icônes à ses pieds). La première : celle qu'il prépare
+       (enCours), sinon la prochaine. */
+    suite:this.vu ? this._suite() : null};
   this.rats.forEach(function(r){
     if(r.mort) return;
     o.rats.push({id:r.id, type:r.type, pv:r.pv, pvMax:r.pvMax, place:r.place, ebloui:r.ebloui > t || r.dos > t, colle:r.colle > t, nu:r.nu, enrage:r.enrage, ouvert:self.ratOuvert(r)});
@@ -15982,7 +16113,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '13/11 à 20 h 55';
+DJ.VERSION = '14/11 à 11 h 39';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -16954,6 +17085,8 @@ function toucherPerso(type, id){
       if(cb.tout) return agir(E.sel, g, null);
       var max = Math.min(g.max || 1, cb.heros.length);
       if(max > 1){
+        /* (14 novembre) le bouclier de chêne couvre tout le monde : un toucher sur un ami suffit */
+        if(max >= cb.heros.length) return agir(E.sel, g, cb.heros.slice());
         if(E.choix.indexOf(id) >= 0) return;
         E.choix.push(id); son('clic');
         if(E.choix.length < max){ majScene(); return; }
@@ -17372,7 +17505,7 @@ async function geste(ev, evs){
       son('dome'); if(ev.cibles.length > 1) bruit('baton');
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
       /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
-      /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les deux boucliers du bâton de chêne (50 %) */
+      /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les boucliers du bâton de chêne (50 %, sur les trois héros depuis le 14 novembre) */
       var chene = ev.sorte === 'chene', part = chene ? D.CHIFFRES.bouclierChene : D.CHIFFRES.bouclier;
       var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune'})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
       if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
@@ -17745,6 +17878,10 @@ var POSES = {
   leve:{torse:-14, tete:-8, brasG:184, avantG:34, brasD:-46, jG:8, jD:-6, y:0},        /* l'arme levée au-dessus de la tête */
   frappe:{torse:32, tete:12, brasG:64, avantG:6, brasD:36, jG:-16, jD:14, y:12},       /* le coup tombe */
   gratte:{torse:30, tete:16, brasG:-28, avantG:70, brasD:-58, jG:14, jD:-18, y:14},    /* il gratte le sol, tête baissée */
+  /* (14 novembre, Romain : « une position qui s'apprête à partir ») prêt à charger, comme un coureur au départ : le buste en
+     avant, les poings serrés, une jambe devant, l'autre loin derrière — et (pretB) cette jambe-là qui racle le sol */
+  pret:{torse:38, tete:-10, brasG:-34, avantG:96, brasD:-74, jG:-26, jD:34, y:24},
+  pretB:{torse:34, tete:-6, brasG:-26, avantG:104, brasD:-62, jG:-24, jD:10, y:19},
   court:{torse:40, tete:8, brasG:-56, avantG:80, brasD:66, jG:-30, jD:28, y:10},
   glisse:{torse:-30, tete:-20, brasG:150, avantG:20, brasD:-150, jG:60, jD:40, y:-40, r:46},      /* les pieds partent en avant */
   auSol:{torse:-6, tete:-12, brasG:120, avantG:30, brasD:-120, jG:26, jD:8, y:0, r:86},            /* sur le dos */
@@ -17884,9 +18021,11 @@ P.tenue = function(n){
   this.n = n; this.T = T;
   s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" style="overflow:visible;position:absolute;left:0;top:0"><g class="la-ech"><g class="la-tout">';
   s += '<ellipse class="la-ombre" cx="150" cy="330" rx="74" ry="9" fill="#000" opacity=".4"/>';
+  /* la cape : elle pend de ses épaules (14 novembre : son tracé est refait à chaque image dans _poser, pour qu'elle SUIVE le buste
+     quand il se penche — avant, elle restait droite derrière lui, « décalée ») */
   if(n === 1) s += '<g class="la-cape">' + forme('M98 122 C70 190 62 266 54 324 C92 334 208 334 250 324 C240 266 232 190 204 122 Z', '#120f1a') +
-    '<path d="M92 190 C88 240 84 290 82 322 M210 190 C216 240 222 290 226 322 M150 220 V326" fill="none" stroke="#2a2438" stroke-width="2.6"/>' +
-    '<path d="M58 316 Q100 326 150 322 T246 316" fill="none" stroke="#fff" stroke-width="5" opacity=".28" stroke-linecap="round"/></g>';
+    '<path class="la-plis" d="M92 190 C88 240 84 290 82 322 M210 190 C216 240 222 290 226 322 M150 220 V326" fill="none" stroke="#2a2438" stroke-width="2.6"/>' +
+    '<path class="la-ourlet" d="M58 316 Q100 326 150 322 T246 316" fill="none" stroke="#fff" stroke-width="5" opacity=".28" stroke-linecap="round"/></g>';
   s += '<g class="la-jD">' + jambeSVG(n, false) + '</g><g class="la-jG">' + jambeSVG(n, true) + '</g>';
   s += '<g class="la-torse"><g class="la-brasD">' + trait('M' + EPD[0] + ' ' + EPD[1] + ' L' + (EPD[0] + 4) + ' ' + (EPD[1] + BRAS) + ' L' + (EPD[0] - 6) + ' ' + (EPD[1] + BRAS + AVANT - 6), assombrir(T.bras), T.gros - 2) +
     '<g transform="translate(' + (EPD[0] - 6) + ',' + (EPD[1] + BRAS + AVANT - 6) + ')">' + mainSVG(n) + '</g></g>';
@@ -17956,8 +18095,35 @@ P._poser = function(){
   var jt = ' translate(0 ' + PIED + ') scale(1 ' + tasse.toFixed(3) + ') translate(0 ' + (-PIED) + ') ';
   g.jG.setAttribute('transform', jt + rot(p.jG, [138, 214]));
   g.jD.setAttribute('transform', jt + rot(p.jD, [162, 214]));
-  if(g.cape) g.cape.setAttribute('transform', 'translate(0 ' + (bas * .4).toFixed(1) + ') skewX(' + (p.torse * .25 + Math.sin(this.temps * 1.7) * 1.2).toFixed(2) + ')');
+  if(g.cape) this._cape(bas);
   if(g.ombre) g.ombre.setAttribute('opacity', p.y < -20 ? .18 : .4);
+};
+/* la cape pend de ses épaules : ses deux coins du haut tournent avec le buste, son ourlet reste près du sol et traîne un peu */
+P._cape = function(bas){
+  var p = this.p, g = this.g, a = -p.torse * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+  function ep(x, y){ var dx = x - HANCHE[0], dy = y - HANCHE[1]; return [HANCHE[0] + dx * co - dy * si, HANCHE[1] + dx * si + dy * co + bas]; }
+  function v(x, y){ return [x * co - y * si, x * si + y * co]; }                       /* un écart, tourné avec le buste */
+  function n(q){ return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }
+  var TL = ep(98, 122), TR = ep(204, 122), mx = (TL[0] + TR[0]) / 2 - 151;                    /* de combien les épaules sont parties en avant */
+  var vent = Math.sin(this.temps * 1.7) * 3, s = mx * .42 + vent, y0 = 324;
+  var BL = [54 + s, y0], BR = [250 + s * .8, y0], a1 = v(-28, 68), a2 = v(28, 68);
+  var d = 'M' + n(TL) + ' C' + n([TL[0] + a1[0], TL[1] + a1[1]]) + ' ' + n([BL[0] + 8, BL[1] - 58]) + ' ' + n(BL) +
+    ' C' + n([BL[0] + 38, 334]) + ' ' + n([BR[0] - 42, 334]) + ' ' + n(BR) +
+    ' C' + n([BR[0] - 10, BR[1] - 58]) + ' ' + n([TR[0] + a2[0], TR[1] + a2[1]]) + ' ' + n(TR) + ' Z';
+  var fond = g.cape.firstChild;
+  /* (forme() pose un ou deux tracés : le contour et son remplissage — ils prennent tous le même dessin) */
+  var tr = g.cape.querySelectorAll('path:not(.la-plis):not(.la-ourlet)');
+  for(var i = 0; i < tr.length; i++) tr[i].setAttribute('d', d);
+  function entre(A, B, k){ return [A[0] + (B[0] - A[0]) * k, A[1] + (B[1] - A[1]) * k]; }
+  var pl = g.cape.querySelector('.la-plis'), ou = g.cape.querySelector('.la-ourlet');
+  if(pl){
+    var gA = entre(TL, BL, .34), dA = entre(TR, BR, .34), mH = entre(entre(TL, TR, .5), entre(BL, BR, .5), .5);
+    pl.setAttribute('d', 'M' + n([gA[0] + 10, gA[1]]) + ' Q' + n([gA[0] + 4, (gA[1] + 322) / 2]) + ' ' + n([BL[0] + 28, 322]) +
+      ' M' + n([dA[0] - 10, dA[1]]) + ' Q' + n([dA[0] - 2, (dA[1] + 322) / 2]) + ' ' + n([BR[0] - 24, 322]) +
+      ' M' + n(mH) + ' L' + n([(BL[0] + BR[0]) / 2, 326]));
+  }
+  if(ou) ou.setAttribute('d', 'M' + n([BL[0] + 4, 316]) + ' Q' + n([BL[0] + 46, 326]) + ' ' + n([(BL[0] + BR[0]) / 2, 322]) + ' T' + n([BR[0] - 4, 316]));
+  g.cape.removeAttribute('transform');
 };
 /* un point de Léo dans la scène */
 P.ancre = function(nom){
@@ -17984,16 +18150,18 @@ window.LeoAnime = {creer:function(parent, o){ return new Leo(parent, o); }, POSE
 /* leo.js — LE COMBAT DE LÉO À L'ÉCRAN (Bible §13.33, conçu avec Romain le 13 novembre). Les règles sont dans leo-regles.js :
    ici, on ne décide de rien — on fait avancer le temps, on joue ce que les règles annoncent, et on leur passe les doigts.
 
-   CE COMBAT EST EN TEMPS RÉEL. Un seul joueur tient la tablette : il touche un héros (son onglet, en bas à gauche, ou le héros
-   lui-même), puis une de ses cartes. Une carte qui n'a qu'une cible possible part tout de suite ; sinon on touche la cible
-   (un ennemi, un héros, ou l'onglet d'un héros). Pas d'explication avant le combat (Romain : on apprend en jouant).
+   CE COMBAT EST EN TEMPS RÉEL. Un seul joueur tient la tablette. Pas d'explication avant le combat (Romain : on apprend en jouant).
+   · (14 novembre, Romain, après son premier essai — Bible §13.37) EN BAS, UNE SEULE RANGÉE D'ICÔNES : plus d'onglets de héros,
+     plus de cible à toucher. Les icônes sont rangées par héros (un cadre de sa couleur), seulement celles qui servent dans la
+     phase (LeoRegles.L.BARRE) ; un toucher lance le geste, et les règles choisissent la cible (c.barre(), c.agir(h, geste)) ;
+   · la rune de l'œil ouverte : aux pieds de Léo, tout en bas, l'icône de l'attaque qui vient et des deux suivantes ;
    · chaque phase gagnée est gardée toute seule (partie.faits['leo:phase']) : après une défaite, on reprend à cette phase-là ;
    · une cinématique entre les phases (on peut la passer d'un toucher) ; ⏸ : la pause ;
    · à la fin : Léo, battu, dit ses cinq phrases (chacune avec son 🔊).
 
      DJ.Leo.preparer()                     -> Promise (pendant l'écran de passage)
      DJ.Leo.lancer(partie[, {phase}])      -> Promise('victoire' | 'quitte')
-     DJ.Leo.etat(), DJ.Leo.agir(h, geste, cible), DJ.Leo._E()      pour les tests */
+     DJ.Leo.etat(), DJ.Leo.agir(h, geste[, cible]), DJ.Leo._E()    pour les tests */
 (function(){
 'use strict';
 var SALLE = window.SALLE, DJ = window.DJ, D = window.DonjonDonnees, LR = window.LeoRegles, L = LR.L;
@@ -18073,6 +18241,8 @@ function construire(){
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
+  /* ce que montre la rune de l'œil : ses trois prochaines attaques, à ses pieds, le plus bas possible (Romain, 14 novembre) */
+  var su = el('div'); su.id = 'leo-suite'; su.style.left = LX + 'px'; hud.appendChild(su);
   var nu = el('div', 'leo-nuage'); nu.id = 'leo-nuage'; nu.innerHTML = '<i></i><i></i><i></i><i></i><i></i>'; p.appendChild(nu);
   var fl = el('div'); fl.id = 'leo-flaque'; q('#sol-fx').appendChild(fl);
   c.addEventListener('pointerdown', doigt);
@@ -18084,7 +18254,7 @@ function slotH(h){ return q('.h-' + h); }
 function demarrerPhase(n, premiere){
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
-  E.geste = null; E.choix = []; E.elan = null; E.sig = '';
+  E.elan = null; E.sig = ''; E.suiteSig = null;
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   ORDRE.forEach(function(h){ remettreHeros(h); });
   nuage(false); flaque(false); noir(false, true);
@@ -18193,7 +18363,7 @@ function ramasser(l){
   });
 }
 async function finPhase(res){
-  E.cine = true; E.geste = null; E.choix = [];
+  E.cine = true;
   maj(true);
   if(res === 'defaite') return defaite();
   if(res === 'victoire') return victoire();
@@ -18299,7 +18469,21 @@ function maj(force){
   if(E.elan && Z.etape === 'elan' && Z.reste <= E.elan.avant && !E.elan.parti){ E.elan.parti = true; E.elan.fn(); }
   Object.keys(E.rats).forEach(function(id){ var a = E.rats[id], r = null; ph.rats.forEach(function(x){ if(x.id === id) r = x; }); if(r && a.ouvertVu !== r.ouvert){ a.ouvertVu = r.ouvert; a.el.classList.toggle('ouvert', r.ouvert); } });
   accorder();
+  suite(Z);
   bande(force);
+}
+/* les icônes de la rune de l'œil, aux pieds de Léo : celle qui vient (en grand), puis les deux suivantes (en petit) */
+function icAttaque(x){
+  if(x.ic === 'meule') return '<svg viewBox="-50 -56 100 100" width="100%" height="100%" aria-hidden="true">' + window.LeoAnime.ARMES.meule() + '</svg>';
+  return x.ic;
+}
+function suite(Z){
+  var e = q('#leo-suite'); if(!e) return;
+  var l = Z.suite || [], sig = l.map(function(x){ return x.att + (x.enCours ? '!' : ''); }).join(',');
+  if(sig === E.suiteSig) return;
+  E.suiteSig = sig;
+  e.className = l.length ? 'on' : '';
+  e.innerHTML = l.map(function(x, k){ return '<i class="' + (k === 0 ? 'grand' : 'petit') + (x.enCours ? ' cours' : '') + '" data-att="' + x.att + '" aria-label="' + esc(x.nom) + '">' + icAttaque(x) + '</i>'; }).join('');
 }
 function basc(slot, st, cls, on){ on = !!on; if(st[cls] !== on){ st[cls] = on; slot.classList.toggle(cls, on); } }
 /* les règles font foi : un héros au sol dans les règles est au sol à l'écran (et l'inverse) — sans couper un geste en cours */
@@ -18317,130 +18501,81 @@ function icArme(a){ return '<svg viewBox="-50 -50 100 100" width="38" height="38
 function infoCarte(g){
   var id = g.geste, k = id.slice(0, 2), R;
   if(k === 'l:'){ var Aa = L.ARMES[g.arme]; return {ic:icArme(g.arme), nom:Aa.nom, cls:' leo-arme', reste:g.reste}; }
-  if(k === 'p:'){ R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom}; }
+  if(k === 'p:'){ R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (g.heros === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom}; }
   if(k === 'f:'){ var O = D.OBJETS[id.slice(2)]; return {ic:O.ic || '🏹', nom:O.petit || (O.carte && O.carte.nom) || O.nom}; }
-  if(id === 'a:cristal-lune') return {ic:'🌙', nom:'Lune'};
-  if(id === 'a:baton-chene') return {ic:'🛡️🛡️', nom:'Chêne −50 %', cls:' chene'};
+  if(id === 'a:cristal-lune') return {ic:'🌙', nom:'Lumière'};
+  if(id === 'a:baton-chene') return {ic:'🛡️🛡️🛡️', nom:'Chêne −50 %', cls:' chene'};
   if(id === 'bouclier') return {ic:'🛡️', nom:'Bouclier −75 %', cls:' jaune'};
   R = D.GESTES[id];
   return {ic:R.ic, nom:id === 'fleche' ? 'Flèche' : (R.arme || R.nom)};
 }
 function carte(g){
-  var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (E.geste && E.geste.geste === g.geste ? ' choisie' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
-  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#000" stroke-width="' + (R.reste < 2 ? 3 : 2) + '"/></svg>' : '') : '';
-  return '<button class="carte mini' + cls + '" data-act="l-geste" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
+  var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
+  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '') : '';
+  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
 }
+/* UNE SEULE RANGÉE D'ICÔNES (Romain, 14 novembre) : un cadre par héros, à sa couleur, dans l'ordre où ils sont à l'écran ; dedans,
+   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote. */
 function bande(force){
-  var ph = E.ph, h = E.sel, gestes = E.c.gestes(h), cb = cibles();
-  var sig = h + '|' + (E.geste ? E.geste.geste : '') + '|' + E.choix.join(',') + '|' + gestes.map(function(g){ return g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
-    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.bouclier || '') + (s.saigne ? 'g' : '') + (s.brule ? 'f' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : '') + (cb.heros.indexOf(x) >= 0 ? 'c' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
+  var ph = E.ph, B = E.c.barre();
+  var sig = B.map(function(g){ return g.heros[0] + g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
+    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
   if(force || sig !== E.sig){
-    E.sig = sig; E.gestes = gestes;
-    var s = '<div class="lb-heros">' + ORDRE.map(function(x){
-      var st = ph.heros[x], et = st.sol ? '💫' : st.attrape ? '🪝' : (st.bouclier ? '<i class="' + st.bouclier + '">🛡️</i>' : '') + (st.saigne ? '🩸' : '') + (st.brule ? '🔥' : '') + (st.etourdi > 0 ? '💫' : '');
-      return '<button class="lb-h' + (x === h ? ' sel' : '') + (st.sol ? ' sol' : '') + (cb.heros.indexOf(x) >= 0 ? ' cible' : '') + (E.choix.indexOf(x) >= 0 ? ' pris' : '') + '" data-act="l-heros" data-id="' + x + '">' +
-        '<span class="portrait img-' + x + '" style="' + DJ.tete(x, 52, 116, 10) + '"></span><b>' + D.HEROS[x].nom + '</b>' +
-        '<span class="pv-b"><span class="barre"><i id="lbpv-' + x + '"></i></span><b id="lbn-' + x + '"></b></span><em>' + et + '</em><u id="lbo-' + x + '"></u></button>';
-    }).join('') + '</div><div class="b-sep"></div><div class="lb-cartes' + (gestes.length > 12 ? ' serre' : '') + (ph.heros[h].occupe > 0 ? ' occupe' : '') + '">' + gestes.map(carte).join('') + '</div>';
-    bandeEl.innerHTML = s;
+    E.sig = sig; E.barre = B;
+    bandeEl.innerHTML = ORDRE.map(function(h){
+      var l = B.filter(function(g){ return g.heros === h; }), st = ph.heros[h], cols = Math.max(2, Math.ceil(l.length / 2));
+      var et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
+      return '<div class="lb-g g-' + h + (st.sol ? ' sol' : '') + (et ? ' pris' : '') + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em>' + et + '</em></div>' +
+        '<div class="lb-cartes" style="grid-template-columns:repeat(' + cols + ',1fr)">' + l.map(carte).join('') + '</div><u id="lbo-' + h + '"></u></div>';
+    }).join('');
     bandeEl.classList.toggle('attend', !!E.cine);
-    E.pvB = {};
-    majCibles(cb);
   }
   ORDRE.forEach(function(x){
-    var st = ph.heros[x], k = Math.max(0, st.pv / st.pvMax);
-    if(E.pvB[x] !== st.pv){ E.pvB[x] = st.pv; var i = q('#lbpv-' + x); if(i){ i.style.width = (k * 100) + '%'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('#lbn-' + x).textContent = st.pv; } }
-    var u = q('#lbo-' + x), tot = E.occ[x] || 1; if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
+    var st = ph.heros[x], u = q('#lbo-' + x), tot = E.occ[x] || 1;
+    if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
   });
-  var lc = q('.lb-cartes', bandeEl); if(lc) lc.classList.toggle('occupe', ph.heros[h].occupe > 0);
-}
-/* qui peut-on toucher, avec la carte choisie ? */
-function cibles(){
-  var g = E.geste, o = {heros:[], ennemis:[]};
-  if(!g) return o;
-  if(g.vise === 'heros' || g.vise === 'sol') o.heros = g.cibles.filter(function(x){ return E.choix.indexOf(x) < 0; });
-  else if(g.vise === 'ennemi') o.ennemis = g.cibles.slice();
-  return o;
-}
-function majCibles(cb){
-  cb = cb || cibles();
-  ORDRE.forEach(function(h){ slotH(h).classList.toggle('dispo', cb.heros.indexOf(h) >= 0); slotH(h).classList.toggle('actif', E.sel === h && !E.geste); });
-  var zl = q('#zone-leo'); if(zl) zl.classList.toggle('vise', cb.ennemis.indexOf('leo') >= 0);
-  Object.keys(E.rats).forEach(function(id){ E.rats[id].el.classList.toggle('dispo', cb.ennemis.indexOf(id) >= 0); });
 }
 
 /* ====================================================================== 5. LES DOIGTS */
 function mot(x, y, t, cls){ Fx.mot(x, y == null ? 96 : y, t, cls || 'refus'); }
 function refuser(h, m){ son('clic'); mot(hCx(h), 96, m); }
-function choisirHeros(h){
-  if(E.sel !== h){ bruit('icone', {}, ['clic']); E.sel = h; }
-  E.geste = null; E.choix = [];
-  maj(true);
-}
-function choisirGeste(id){
-  var h = E.sel, g = E.c.gestes(h).filter(function(x){ return x.geste === id; })[0];
+/* une icône touchée : le geste part tout de suite, sur la cible que les règles choisissent */
+function toucherIcone(h, id){
+  var g = (E.c.barre().filter(function(x){ return x.heros === h && x.geste === id; })[0]);
   if(!g) return;
   bruit('icone', {}, ['clic']);
   if(!g.permis){ refuser(h, g.mot || L.MOTS.impossible); return; }
-  if(E.geste && E.geste.geste === id){ E.geste = null; E.choix = []; maj(true); return; }
-  if(g.vise === 'salle' || g.vise === 'equipe') return agir(h, id, null);
-  var max = Math.min(g.max || 1, g.cibles.length);
-  /* une seule cible possible (ou assez de boucliers pour tout le monde) : ça part tout de suite */
-  if(g.cibles.length <= max) return agir(h, id, max > 1 ? g.cibles.slice() : g.cibles[0]);
-  E.geste = g; E.choix = [];
-  maj(true);
-}
-function toucherCible(type, id){
-  var g = E.geste, h = E.sel;
-  if(!g){ if(type === 'heros') choisirHeros(id); return; }
-  if(type === 'heros' && (g.vise === 'heros' || g.vise === 'sol')){
-    if(g.cibles.indexOf(id) < 0){ refuser(id, E.c.refus(h, g.geste, id) || L.MOTS.impossible); return; }
-    var max = Math.min(g.max || 1, g.cibles.length);
-    if(max > 1){
-      if(E.choix.indexOf(id) >= 0) return;
-      E.choix.push(id); son('clic');
-      if(E.choix.length < max){ maj(true); return; }
-      return agir(h, g.geste, E.choix.slice());
-    }
-    return agir(h, g.geste, id);
-  }
-  if(type === 'ennemi' && g.vise === 'ennemi'){
-    if(g.cibles.indexOf(id) < 0){ var p = ancreDe(id, 'haut'); son('clic'); mot(p.x, Math.max(96, p.y - 10), E.c.refus(h, g.geste, id) || L.MOTS.impossible); return; }
-    return agir(h, g.geste, id);
-  }
-  if(type === 'heros') choisirHeros(id);
+  agir(h, id);
 }
 function agir(h, geste, cible){
   if(!E || E.cine || E.pause) return false;
   var ev = E.c.agir(h, geste, cible);
-  E.geste = null; E.choix = [];
   if(ev.length && ev[0].t === 'refus'){ refuser(h, ev[0].mot); maj(true); return false; }
   jouer(ev);
   maj(true);
   return true;
 }
-/* (les cartes répondent dès que le doigt se pose : c'est un combat de vitesse) */
+/* (les icônes répondent dès que le doigt se pose : c'est un combat de vitesse) */
 var dernierDoigt = {a:null, id:null, t:0};
 function doigt(ev){
   if(!E || E.fini) return;
   var b = ev.target.closest ? ev.target.closest('[data-act]') : null; if(!b) return;
   var a = b.getAttribute('data-act');
-  if(a !== 'l-heros' && a !== 'l-geste' && a !== 'l-perso') return;
-  dernierDoigt = {a:a, id:b.getAttribute('data-id'), t:Date.now()};
+  if(a !== 'l-geste') return;
+  dernierDoigt = {a:a, id:b.getAttribute('data-h') + '/' + b.getAttribute('data-id'), t:Date.now()};
   acte(a, b.getAttribute('data-id'), b);
 }
 function acte(a, id, b){
   if(SALLE.Son && SALLE.Son.demarrer) SALLE.Son.demarrer();
   if(E.cine || E.pause || DJ.fenetreOuverte()) return;
-  if(a === 'l-heros'){ if(E.geste && (E.geste.vise === 'heros' || E.geste.vise === 'sol')) toucherCible('heros', id); else choisirHeros(id); }
-  else if(a === 'l-geste') choisirGeste(id);
-  else if(a === 'l-perso') toucherCible(b.getAttribute('data-type'), id);
+  if(a === 'l-geste') toucherIcone(b.getAttribute('data-h'), id);
 }
 DJ.toucher(function(a, id, b){
   if(!E) return false;
-  if(a === 'l-heros' || a === 'l-geste' || a === 'l-perso'){
+  if(a === 'l-perso') return true;                                   /* (toucher un héros ou Léo ne fait plus rien : les icônes choisissent) */
+  if(a === 'l-geste'){
     /* (le doigt a déjà été entendu au moment où il s'est posé) */
-    if(!(dernierDoigt.a === a && dernierDoigt.id === id && Date.now() - dernierDoigt.t < 700)) acte(a, id, b);
+    if(!(dernierDoigt.a === a && dernierDoigt.id === b.getAttribute('data-h') + '/' + id && Date.now() - dernierDoigt.t < 700)) acte(a, id, b);
     return true;
   }
   if(a === 'l-passer'){ E.saute = true; return true; }
@@ -18626,7 +18761,7 @@ function soin(ev){
 /* ---------- Léo ---------- */
 /* ce qu'il fait, attaque par attaque : [la pose de la prise, la pose de l'élan, la pose du coup, le son, fonce-t-il ?] */
 var JEU = {
-  fleau:['montre', 'leve', 'frappe', 'leoFleau', 290], charge:['gratte', 'gratte', 'court', 'leoCharge', 330], marteau:['montre', 'leve', 'frappe', 'leoMarteau', 300],
+  fleau:['montre', 'leve', 'frappe', 'leoFleau', 290], charge:['pret', 'pret', 'court', 'leoCharge', 330], marteau:['montre', 'leve', 'frappe', 'leoMarteau', 300],
   meule:['montre', 'leve', 'frappe', 'leoMeule', 0], crochet:['montre', 'poingA', 'tient', 'leoCrochet', 0], cape:['capeA', 'capeA', 'capeB', 'leoCape', 0],
   sifflet:['siffle', 'siffle', 'siffle', 'leoSifflet', 0], poing:['poingA', 'poingA', 'poingB', 'leoPoing', 300], faux:['montre', 'fauxA', 'fauxB', 'leoFaux', 240],
   saut:['accroupi', 'accroupi', 'accroupi', 'leoSaut', 300], gourde:['montre', 'boit', 'boit', 'leoGourde', 0], lancer:['poingA', 'poingA', 'poingB', 'leoLancer', 0],
@@ -18634,8 +18769,18 @@ var JEU = {
   attrape:['gratte', 'court', 'frappe', 'leoAttrape', 340], souffle:['rugit', 'rugit', 'souffle', 'leoSouffle', 120]
 };
 var ARME_VUE = {fleau:'fleau', marteau:'marteau', meule:'meule', crochet:'crochet', faux:'faux', gourde:'gourde', sifflet:'sifflet', lancer:'rat'};
+/* il racle le sol, prêt à charger : deux poses qui alternent, jusqu'à ce qu'il parte (ou qu'on l'arrête) */
+function racler(){
+  var jeton = E.racle = (E.racle || 0) + 1, Z = E.leo;
+  (function tour(k){
+    if(!E || E.racle !== jeton || E.fini) return;
+    if(E.elan && E.elan.parti) return;
+    Promise.resolve(Z.vers(k % 2 ? 'pret' : 'pretB', (k % 2 ? 300 : 240) / E.vite, 'io')).then(function(){ setTimeout(function(){ tour(k + 1); }, 60); });
+  })(0);
+}
 function leo(ev){
   var Z = E.leo, J = JEU[ev.att] || ['garde', 'garde', 'garde', null, 0], A = ev.att ? L.ATTAQUES[ev.att] : null, k = 1000 / E.vite;
+  if(ev.quoi !== 'elan') E.racle = (E.racle || 0) + 1;                 /* (tout autre évènement arrête de racler) */
   switch(ev.quoi){
     case 'prise':
       E.elan = null;
@@ -18649,8 +18794,10 @@ function leo(ev){
       if(J[3]) bruit(J[3], {cale:ev.duree / E.vite}, null);
       if(ev.att === 'hurlement' || ev.att === 'souffle') tard(Math.max(0, ev.duree - .3), function(){ Z.visage('cri'); });
       if(ev.att === 'gourde') Z.visage('boit');
+      /* la charge (14 novembre) : tout le temps qu'il se prépare, sa jambe de derrière racle le sol — on VOIT qu'il va partir */
+      if(ev.att === 'charge') racler();
       /* une attaque qui fonce : il part un peu avant l'impact */
-      if(J[4]) E.elan = {avant:.24, parti:false, fn:function(){ Z.vers({x:-J[4], torse:36, tete:8, brasG:-50, avantG:80, brasD:60, jG:-30, jD:28, y:ev.att === 'saut' ? -150 : 10}, 200 / E.vite, 'i'); }};
+      if(J[4]) E.elan = {avant:.24, parti:false, fn:function(){ E.racle = (E.racle || 0) + 1; Z.vers({x:-J[4], torse:36, tete:8, brasG:-50, avantG:80, brasD:60, jG:-30, jD:28, y:ev.att === 'saut' ? -150 : 10}, 200 / E.vite, 'i'); }};
       return;
     case 'impact': return leoImpact(ev, J, A);
     case 'retour':
@@ -18659,9 +18806,15 @@ function leo(ev){
       return;
     case 'repos': Z.arme(null); return;
     case 'coupe':
-      E.elan = null; bruit('leoSonne', {}, ['bong']); Z.visage('ko');
-      var p = Z.ancre('haut'); mot(p.x, Math.max(100, p.y), 'Coupé !'); Fx.onde(p.x, p.y + 40, '#fff1b8', 220, 500);
-      Z.vers('sonne', 200, 'o'); tard(L.SONNE - .2, function(){ Z.visage('colere'); Z.arme(null); });
+      /* le marteau le sonne ; la lumière du bâton de lune l'éblouit (Romain, 14 novembre) */
+      var lune = ev.par === 'lune';
+      E.elan = null; if(!lune) bruit('leoSonne', {}, ['bong']); Z.visage('ko');
+      var p = Z.ancre('haut'); mot(p.x, Math.max(100, p.y), lune ? L.MOTS.ebloui : 'Coupé !'); Fx.onde(p.x, p.y + 40, lune ? '#eef4ff' : '#fff1b8', lune ? 300 : 220, 500);
+      Z.vers('sonne', 200, 'o'); tard((lune ? L.ECLAIR : L.SONNE) - .2, function(){ Z.visage('colere'); Z.arme(null); });
+      return;
+    case 'ebloui':
+      Z.visage('ko'); var pe = Z.ancre('haut'); mot(pe.x, Math.max(100, pe.y), L.MOTS.ebloui);
+      tard(ev.duree - .2, function(){ Z.visage('colere'); });
       return;
     case 'glisse':
       E.elan = null; bruit('leoGlisse', {cale:.3}, ['tombe']); Z.visage('ko'); Z.arme(null);
@@ -18787,7 +18940,7 @@ function rat(ev){
 
 DJ.Leo = {
   preparer:preparer, lancer:lancer, AVEUX:AVEUX,
-  etat:function(){ return E ? {phase:E.c.phase, cine:E.cine, pause:E.pause, sel:E.sel, geste:E.geste ? E.geste.geste : null, photo:E.c.etat(), aveu:E.aveu == null ? null : E.aveu, essais:E.essais} : null; },
+  etat:function(){ return E ? {phase:E.c.phase, cine:E.cine, pause:E.pause, barre:E.c.barre(), photo:E.c.etat(), aveu:E.aveu == null ? null : E.aveu, essais:E.essais} : null; },
   agir:function(h, g, c){ return agir(h, g, c); },
   _E:function(){ return E; }
 };
