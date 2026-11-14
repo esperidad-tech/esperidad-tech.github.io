@@ -6,9 +6,10 @@
    phase 3 : « à la fin des 1 minute 40, qu'il y ait deux personnes à terre, au moins, et un à qui il reste pas beaucoup de vie ».
 
    Un joueur = UNE paire de mains (un seul joueur tient la tablette). Chaque geste coûte : le temps de se décider (reac), puis
-   un toucher par chose à toucher (changer de héros, changer de bâton, la carte, la cible), à « tap » secondes le toucher.
+   UN toucher, à « tap » secondes (depuis le 14 novembre : une seule rangée d'icônes, plus de héros à choisir, plus de cible à
+   toucher — c.barre(), c.agir(heros, geste) ; avant : jusqu'à quatre touchers par geste).
    Les animations, elles, durent ce qu'elles durent (LeoRegles.L.DUREES, mesurées dans la page). Le joueur ne voit ce que Léo
-   prépare qu'après son temps de réaction ; dans le noir, il ne voit rien.
+   prépare qu'après son temps de réaction.
      rapide : il connaît l'ordre des attaques par cœur (il anticipe : l'huile avant la charge, le bouclier avant le coup)
      moyen  : il réagit à ce qu'il voit, sans anticiper, et se trompe parfois
      lent   : il réagit tard, et se trompe souvent */
@@ -36,7 +37,9 @@ function partie(graine){
 function decider(c, J, M, rnd){
   var E = c.etat(), Z = E.leo, t = c.t, H = E.heros, ph = E.phase;
   function libre(h){ return H[h].libre; }
-  function a(h, geste){ var l = c.gestes(h); for(var i = 0; i < l.length; i++) if(l[i].geste === geste) return l[i].permis ? l[i] : null; return null; }
+  /* (14 novembre) il n'a que la rangée d'icônes de la phase ; chaque icône choisit sa cible toute seule */
+  var B = c.barre();
+  function a(h, geste){ for(var i = 0; i < B.length; i++) if(B[i].heros === h && B[i].geste === geste) return B[i].permis ? B[i] : null; return null; }
   function part(h){ return H[h].sol ? 9 : H[h].pv / H[h].pvMax; }
   var debout = D.ORDRE.filter(function(h){ return !H[h].sol; }), parVie = debout.slice().sort(function(x, y){ return part(x) - part(y); });
   var nus = debout.filter(function(h){ return !H[h].bouclier; }).sort(function(x, y){ return part(x) - part(y); });
@@ -44,7 +47,7 @@ function decider(c, J, M, rnd){
      connaît l'ordre par cœur */
   var att = null, cibles = [], reste = 0;
   if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan')){
-    var vue = M.vuDepuis !== null && t - M.vuDepuis >= J.reac && !E.noir;
+    var vue = M.vuDepuis !== null && t - M.vuDepuis >= J.reac;
     if(vue || J.anticipe){ att = Z.att; reste = Z.reste + (Z.etape === 'prise' ? L.ATTAQUES[Z.att].elan : 0); if(Z.vise) cibles = Z.vise.cibles; }
   }
   var prochaine = null;
@@ -52,14 +55,15 @@ function decider(c, J, M, rnd){
   function bouc(l){
     l = l.filter(function(h){ return h && !H[h].sol && !H[h].bouclier; });
     if(!l.length || !libre('sage')) return null;
-    if(l.length > 1 && a('sage', 'a:baton-chene')) return {heros:'sage', geste:'a:baton-chene', cible:l.slice(0, 2), baton:'baton-chene'};
-    return a('sage', 'bouclier') ? {heros:'sage', geste:'bouclier', cible:l[0], baton:'baton'} : null;
+    if(l.length > 1 && a('sage', 'a:baton-chene')) return {heros:'sage', geste:'a:baton-chene'};          /* (les trois héros d'un coup) */
+    return a('sage', 'bouclier') ? {heros:'sage', geste:'bouclier'} : null;
   }
-  function jaune(h){ if(!h || H[h].sol || H[h].bouclier === 'jaune' || !libre('sage') || !a('sage', 'bouclier')) return null; return {heros:'sage', geste:'bouclier', cible:h, baton:'baton'}; }
+  /* (le bouclier jaune choisit tout seul : celui que Léo vise si l'œil est ouvert, sinon le plus blessé) */
+  function jaune(h){ if(!h || H[h].sol || H[h].bouclier === 'jaune' || !libre('sage') || !a('sage', 'bouclier')) return null; return {heros:'sage', geste:'bouclier'}; }
   function potion(r, cible){
     /* la flèche du Pisteur arrive plus vite (1,6 s) que la fiole de l'Alchimiste (2,5 s) */
-    if(libre('pisteur') && a('pisteur', 'p:' + r) && a('pisteur', 'p:' + r).cibles.indexOf(cible) >= 0) return {heros:'pisteur', geste:'p:' + r, cible:cible};
-    if(libre('alchimiste') && a('alchimiste', 'p:' + r) && a('alchimiste', 'p:' + r).cibles.indexOf(cible) >= 0) return {heros:'alchimiste', geste:'p:' + r, cible:cible};
+    if(libre('pisteur') && a('pisteur', 'p:' + r) && a('pisteur', 'p:' + r).auto.indexOf(cible) >= 0) return {heros:'pisteur', geste:'p:' + r};
+    if(libre('alchimiste') && a('alchimiste', 'p:' + r) && a('alchimiste', 'p:' + r).auto.indexOf(cible) >= 0) return {heros:'alchimiste', geste:'p:' + r};
     return null;
   }
   var x;
@@ -80,11 +84,8 @@ function decider(c, J, M, rnd){
   /* 2. un ami au sol : le cœur vaillant */
   var bas = D.EXPOSES.filter(function(h){ return H[h].sol; });
   if(bas.length && libre('alchimiste') && a('alchimiste', 'p:coeur')) return {heros:'alchimiste', geste:'p:coeur', cible:bas[0]};
-  /* 3. la farine : libérer l'ami à l'huile, puis le feu (BOUM) */
-  if(Z.nuage && !E.noir){
-    if(Z.tenu){ x = potion('huile', 'leo'); if(x) return x; }
-    else { x = potion('feu', 'leo'); if(x) return x; }
-  }
+  /* 3. la farine ne retombe plus toute seule : le feu (BOUM — et l'ami attrapé en sort) */
+  if(Z.nuage && !E.noir){ x = potion('feu', 'leo'); if(x) return x; }
   /* 4. ce que Léo prépare */
   var cible0 = cibles[0] || parVie[0];
   if(att === 'charge' || prochaine === 'charge'){
@@ -147,33 +148,24 @@ function decider(c, J, M, rnd){
         if(a('pisteur', 'l:crochet')) return {heros:'pisteur', geste:'l:crochet', cible:'leo'};
         if(a('pisteur', 'dague')) return {heros:'pisteur', geste:'dague', cible:'leo'};
       }
-      if(rats.length && !rats[0].ouvert && a('pisteur', 'fleche') && a('pisteur', 'fleche').cibles.indexOf('leo') >= 0) return {heros:'pisteur', geste:'fleche', cible:'leo'};
     }
   }
-  if(libre('alchimiste') && !gardeAl && ph < 3 && !E.noir && !Z.nuage && !Z.brule && a('alchimiste', 'p:feu') && a('alchimiste', 'p:feu').cibles.indexOf('leo') >= 0) return {heros:'alchimiste', geste:'p:feu', cible:'leo'};
+  if(libre('alchimiste') && !gardeAl && ph < 3 && !E.noir && !Z.nuage && !Z.brule && a('alchimiste', 'p:feu') && a('alchimiste', 'p:feu').auto.indexOf('leo') >= 0) return {heros:'alchimiste', geste:'p:feu'};
+  /* phase 3 : le givre le ralentit pendant qu'il saigne */
+  if(ph === 3 && Z.saigne && !Z.ralenti && !E.noir){ x = potion('givre', 'leo'); if(x && !(gardeAl && x.heros === 'alchimiste')) return x; }
   /* 9. le Sage, libre : un bouclier jaune d'avance, sur le plus abîmé */
   if(libre('sage') && nus.length){ x = jaune(nus[0]); if(x) return x; }
   return null;
 }
 /* une étourderie : un geste permis, pris au hasard */
 function auHasard(c, rnd){
-  var hs = D.ORDRE.filter(function(h){ return c.etat().heros[h].libre; });
-  if(!hs.length) return null;
-  var h = hs[Math.floor(rnd() * hs.length)], l = c.gestes(h).filter(function(g){ return g.permis; });
+  var l = c.barre().filter(function(g){ return g.permis; });
   if(!l.length) return null;
-  var g = l[Math.floor(rnd() * l.length)], cible = null;
-  if(g.vise === 'ennemi' || g.vise === 'heros' || g.vise === 'sol') cible = g.cibles[Math.floor(rnd() * g.cibles.length)];
-  return {heros:h, geste:g.geste, cible:cible};
+  var g = l[Math.floor(rnd() * l.length)];
+  return {heros:g.heros, geste:g.geste};
 }
 /* combien de touchers pour ce geste */
-function touchers(c, M, d){
-  var n = 1, g = c.gestes(d.heros).filter(function(x){ return x.geste === d.geste; })[0];
-  if(M.sel !== d.heros) n++;
-  if(d.heros === 'sage' && d.baton && M.baton !== d.baton) n++;
-  if(g && (g.vise === 'heros' || g.vise === 'sol')) n += Array.isArray(d.cible) ? d.cible.length : 1;
-  else if(g && g.vise === 'ennemi' && g.cibles.length > 1) n++;
-  return n;
-}
+function touchers(c, M, d){ return 1; }       /* (14 novembre) une icône, un toucher */
 
 /* ---------- une phase, jouée par un joueur ---------- */
 function jouerPhase(phase, J, graine){
@@ -192,7 +184,7 @@ function jouerPhase(phase, J, graine){
     if(M.attente && c.t >= M.attente.t){
       var d = M.attente; M.attente = null;
       M.sel = d.heros; if(d.heros === 'sage' && d.baton) M.baton = d.baton;
-      var r = c.agir(d.heros, d.geste, d.cible);
+      var r = c.agir(d.heros, d.geste);
       if(r[0] && r[0].t !== 'refus') gestes++;
       M.mains = c.t + .05;
     }
@@ -217,6 +209,9 @@ function stats(phase, J){
   }
   return {gagne:g / N, duree:g ? tg / g : 0, pv:g ? pv / g : 0, sol:g ? sol / g : 0, sol2:g ? sol2 / g : 0, tombes:tomb / N, perdA:N - g ? tp / (N - g) : 0, reste:N - g ? reste / (N - g) : 0};
 }
+/* (pour d'autres outils : require('./leo-sim.js') rend les joueurs et une phase jouée, sans écrire le rapport) */
+module.exports = {JOUEURS:JOUEURS, jouerPhase:jouerPhase, decider:decider, stats:stats};
+if(require.main === module){
 function pct(x){ return (x * 100).toFixed(0) + ' %'; }
 var out = [];
 function dire(s){ out.push(s); }
@@ -242,3 +237,4 @@ dire('');
 });
 console.log(out.join('\n'));
 if(MD) require('fs').writeFileSync(require('path').join(__dirname, 'leo-equilibre.md'), out.join('\n') + '\n');
+}

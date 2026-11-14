@@ -1,16 +1,18 @@
 /* leo.js — LE COMBAT DE LÉO À L'ÉCRAN (Bible §13.33, conçu avec Romain le 13 novembre). Les règles sont dans leo-regles.js :
    ici, on ne décide de rien — on fait avancer le temps, on joue ce que les règles annoncent, et on leur passe les doigts.
 
-   CE COMBAT EST EN TEMPS RÉEL. Un seul joueur tient la tablette : il touche un héros (son onglet, en bas à gauche, ou le héros
-   lui-même), puis une de ses cartes. Une carte qui n'a qu'une cible possible part tout de suite ; sinon on touche la cible
-   (un ennemi, un héros, ou l'onglet d'un héros). Pas d'explication avant le combat (Romain : on apprend en jouant).
+   CE COMBAT EST EN TEMPS RÉEL. Un seul joueur tient la tablette. Pas d'explication avant le combat (Romain : on apprend en jouant).
+   · (14 novembre, Romain, après son premier essai — Bible §13.36) EN BAS, UNE SEULE RANGÉE D'ICÔNES : plus d'onglets de héros,
+     plus de cible à toucher. Les icônes sont rangées par héros (un cadre de sa couleur), seulement celles qui servent dans la
+     phase (LeoRegles.L.BARRE) ; un toucher lance le geste, et les règles choisissent la cible (c.barre(), c.agir(h, geste)) ;
+   · la rune de l'œil ouverte : aux pieds de Léo, tout en bas, l'icône de l'attaque qui vient et des deux suivantes ;
    · chaque phase gagnée est gardée toute seule (partie.faits['leo:phase']) : après une défaite, on reprend à cette phase-là ;
    · une cinématique entre les phases (on peut la passer d'un toucher) ; ⏸ : la pause ;
    · à la fin : Léo, battu, dit ses cinq phrases (chacune avec son 🔊).
 
      DJ.Leo.preparer()                     -> Promise (pendant l'écran de passage)
      DJ.Leo.lancer(partie[, {phase}])      -> Promise('victoire' | 'quitte')
-     DJ.Leo.etat(), DJ.Leo.agir(h, geste, cible), DJ.Leo._E()      pour les tests */
+     DJ.Leo.etat(), DJ.Leo.agir(h, geste[, cible]), DJ.Leo._E()    pour les tests */
 (function(){
 'use strict';
 var SALLE = window.SALLE, DJ = window.DJ, D = window.DonjonDonnees, LR = window.LeoRegles, L = LR.L;
@@ -90,6 +92,8 @@ function construire(){
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
+  /* ce que montre la rune de l'œil : ses trois prochaines attaques, à ses pieds, le plus bas possible (Romain, 14 novembre) */
+  var su = el('div'); su.id = 'leo-suite'; su.style.left = LX + 'px'; hud.appendChild(su);
   var nu = el('div', 'leo-nuage'); nu.id = 'leo-nuage'; nu.innerHTML = '<i></i><i></i><i></i><i></i><i></i>'; p.appendChild(nu);
   var fl = el('div'); fl.id = 'leo-flaque'; q('#sol-fx').appendChild(fl);
   c.addEventListener('pointerdown', doigt);
@@ -101,7 +105,7 @@ function slotH(h){ return q('.h-' + h); }
 function demarrerPhase(n, premiere){
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
-  E.geste = null; E.choix = []; E.elan = null; E.sig = '';
+  E.elan = null; E.sig = ''; E.suiteSig = null;
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   ORDRE.forEach(function(h){ remettreHeros(h); });
   nuage(false); flaque(false); noir(false, true);
@@ -210,7 +214,7 @@ function ramasser(l){
   });
 }
 async function finPhase(res){
-  E.cine = true; E.geste = null; E.choix = [];
+  E.cine = true;
   maj(true);
   if(res === 'defaite') return defaite();
   if(res === 'victoire') return victoire();
@@ -316,7 +320,21 @@ function maj(force){
   if(E.elan && Z.etape === 'elan' && Z.reste <= E.elan.avant && !E.elan.parti){ E.elan.parti = true; E.elan.fn(); }
   Object.keys(E.rats).forEach(function(id){ var a = E.rats[id], r = null; ph.rats.forEach(function(x){ if(x.id === id) r = x; }); if(r && a.ouvertVu !== r.ouvert){ a.ouvertVu = r.ouvert; a.el.classList.toggle('ouvert', r.ouvert); } });
   accorder();
+  suite(Z);
   bande(force);
+}
+/* les icônes de la rune de l'œil, aux pieds de Léo : celle qui vient (en grand), puis les deux suivantes (en petit) */
+function icAttaque(x){
+  if(x.ic === 'meule') return '<svg viewBox="-50 -56 100 100" width="100%" height="100%" aria-hidden="true">' + window.LeoAnime.ARMES.meule() + '</svg>';
+  return x.ic;
+}
+function suite(Z){
+  var e = q('#leo-suite'); if(!e) return;
+  var l = Z.suite || [], sig = l.map(function(x){ return x.att + (x.enCours ? '!' : ''); }).join(',');
+  if(sig === E.suiteSig) return;
+  E.suiteSig = sig;
+  e.className = l.length ? 'on' : '';
+  e.innerHTML = l.map(function(x, k){ return '<i class="' + (k === 0 ? 'grand' : 'petit') + (x.enCours ? ' cours' : '') + '" data-att="' + x.att + '" aria-label="' + esc(x.nom) + '">' + icAttaque(x) + '</i>'; }).join('');
 }
 function basc(slot, st, cls, on){ on = !!on; if(st[cls] !== on){ st[cls] = on; slot.classList.toggle(cls, on); } }
 /* les règles font foi : un héros au sol dans les règles est au sol à l'écran (et l'inverse) — sans couper un geste en cours */
@@ -334,130 +352,81 @@ function icArme(a){ return '<svg viewBox="-50 -50 100 100" width="38" height="38
 function infoCarte(g){
   var id = g.geste, k = id.slice(0, 2), R;
   if(k === 'l:'){ var Aa = L.ARMES[g.arme]; return {ic:icArme(g.arme), nom:Aa.nom, cls:' leo-arme', reste:g.reste}; }
-  if(k === 'p:'){ R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (E.sel === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom}; }
+  if(k === 'p:'){ R = D.RECETTES[id.slice(2)]; return {ic:DJ.potion(id.slice(2)) + (g.heros === 'pisteur' ? '<i class="fl">🏹</i>' : ''), nom:R.petit || R.nom}; }
   if(k === 'f:'){ var O = D.OBJETS[id.slice(2)]; return {ic:O.ic || '🏹', nom:O.petit || (O.carte && O.carte.nom) || O.nom}; }
-  if(id === 'a:cristal-lune') return {ic:'🌙', nom:'Lune'};
-  if(id === 'a:baton-chene') return {ic:'🛡️🛡️', nom:'Chêne −50 %', cls:' chene'};
+  if(id === 'a:cristal-lune') return {ic:'🌙', nom:'Lumière'};
+  if(id === 'a:baton-chene') return {ic:'🛡️🛡️🛡️', nom:'Chêne −50 %', cls:' chene'};
   if(id === 'bouclier') return {ic:'🛡️', nom:'Bouclier −75 %', cls:' jaune'};
   R = D.GESTES[id];
   return {ic:R.ic, nom:id === 'fleche' ? 'Flèche' : (R.arme || R.nom)};
 }
 function carte(g){
-  var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (E.geste && E.geste.geste === g.geste ? ' choisie' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
-  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#000" stroke-width="' + (R.reste < 2 ? 3 : 2) + '"/></svg>' : '') : '';
-  return '<button class="carte mini' + cls + '" data-act="l-geste" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
+  var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
+  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '') : '';
+  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
 }
+/* UNE SEULE RANGÉE D'ICÔNES (Romain, 14 novembre) : un cadre par héros, à sa couleur, dans l'ordre où ils sont à l'écran ; dedans,
+   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote. */
 function bande(force){
-  var ph = E.ph, h = E.sel, gestes = E.c.gestes(h), cb = cibles();
-  var sig = h + '|' + (E.geste ? E.geste.geste : '') + '|' + E.choix.join(',') + '|' + gestes.map(function(g){ return g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
-    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.bouclier || '') + (s.saigne ? 'g' : '') + (s.brule ? 'f' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : '') + (cb.heros.indexOf(x) >= 0 ? 'c' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
+  var ph = E.ph, B = E.c.barre();
+  var sig = B.map(function(g){ return g.heros[0] + g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
+    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
   if(force || sig !== E.sig){
-    E.sig = sig; E.gestes = gestes;
-    var s = '<div class="lb-heros">' + ORDRE.map(function(x){
-      var st = ph.heros[x], et = st.sol ? '💫' : st.attrape ? '🪝' : (st.bouclier ? '<i class="' + st.bouclier + '">🛡️</i>' : '') + (st.saigne ? '🩸' : '') + (st.brule ? '🔥' : '') + (st.etourdi > 0 ? '💫' : '');
-      return '<button class="lb-h' + (x === h ? ' sel' : '') + (st.sol ? ' sol' : '') + (cb.heros.indexOf(x) >= 0 ? ' cible' : '') + (E.choix.indexOf(x) >= 0 ? ' pris' : '') + '" data-act="l-heros" data-id="' + x + '">' +
-        '<span class="portrait img-' + x + '" style="' + DJ.tete(x, 52, 116, 10) + '"></span><b>' + D.HEROS[x].nom + '</b>' +
-        '<span class="pv-b"><span class="barre"><i id="lbpv-' + x + '"></i></span><b id="lbn-' + x + '"></b></span><em>' + et + '</em><u id="lbo-' + x + '"></u></button>';
-    }).join('') + '</div><div class="b-sep"></div><div class="lb-cartes' + (gestes.length > 12 ? ' serre' : '') + (ph.heros[h].occupe > 0 ? ' occupe' : '') + '">' + gestes.map(carte).join('') + '</div>';
-    bandeEl.innerHTML = s;
+    E.sig = sig; E.barre = B;
+    bandeEl.innerHTML = ORDRE.map(function(h){
+      var l = B.filter(function(g){ return g.heros === h; }), st = ph.heros[h], cols = Math.max(2, Math.ceil(l.length / 2));
+      var et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
+      return '<div class="lb-g g-' + h + (st.sol ? ' sol' : '') + (et ? ' pris' : '') + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em>' + et + '</em></div>' +
+        '<div class="lb-cartes" style="grid-template-columns:repeat(' + cols + ',1fr)">' + l.map(carte).join('') + '</div><u id="lbo-' + h + '"></u></div>';
+    }).join('');
     bandeEl.classList.toggle('attend', !!E.cine);
-    E.pvB = {};
-    majCibles(cb);
   }
   ORDRE.forEach(function(x){
-    var st = ph.heros[x], k = Math.max(0, st.pv / st.pvMax);
-    if(E.pvB[x] !== st.pv){ E.pvB[x] = st.pv; var i = q('#lbpv-' + x); if(i){ i.style.width = (k * 100) + '%'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('#lbn-' + x).textContent = st.pv; } }
-    var u = q('#lbo-' + x), tot = E.occ[x] || 1; if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
+    var st = ph.heros[x], u = q('#lbo-' + x), tot = E.occ[x] || 1;
+    if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
   });
-  var lc = q('.lb-cartes', bandeEl); if(lc) lc.classList.toggle('occupe', ph.heros[h].occupe > 0);
-}
-/* qui peut-on toucher, avec la carte choisie ? */
-function cibles(){
-  var g = E.geste, o = {heros:[], ennemis:[]};
-  if(!g) return o;
-  if(g.vise === 'heros' || g.vise === 'sol') o.heros = g.cibles.filter(function(x){ return E.choix.indexOf(x) < 0; });
-  else if(g.vise === 'ennemi') o.ennemis = g.cibles.slice();
-  return o;
-}
-function majCibles(cb){
-  cb = cb || cibles();
-  ORDRE.forEach(function(h){ slotH(h).classList.toggle('dispo', cb.heros.indexOf(h) >= 0); slotH(h).classList.toggle('actif', E.sel === h && !E.geste); });
-  var zl = q('#zone-leo'); if(zl) zl.classList.toggle('vise', cb.ennemis.indexOf('leo') >= 0);
-  Object.keys(E.rats).forEach(function(id){ E.rats[id].el.classList.toggle('dispo', cb.ennemis.indexOf(id) >= 0); });
 }
 
 /* ====================================================================== 5. LES DOIGTS */
 function mot(x, y, t, cls){ Fx.mot(x, y == null ? 96 : y, t, cls || 'refus'); }
 function refuser(h, m){ son('clic'); mot(hCx(h), 96, m); }
-function choisirHeros(h){
-  if(E.sel !== h){ bruit('icone', {}, ['clic']); E.sel = h; }
-  E.geste = null; E.choix = [];
-  maj(true);
-}
-function choisirGeste(id){
-  var h = E.sel, g = E.c.gestes(h).filter(function(x){ return x.geste === id; })[0];
+/* une icône touchée : le geste part tout de suite, sur la cible que les règles choisissent */
+function toucherIcone(h, id){
+  var g = (E.c.barre().filter(function(x){ return x.heros === h && x.geste === id; })[0]);
   if(!g) return;
   bruit('icone', {}, ['clic']);
   if(!g.permis){ refuser(h, g.mot || L.MOTS.impossible); return; }
-  if(E.geste && E.geste.geste === id){ E.geste = null; E.choix = []; maj(true); return; }
-  if(g.vise === 'salle' || g.vise === 'equipe') return agir(h, id, null);
-  var max = Math.min(g.max || 1, g.cibles.length);
-  /* une seule cible possible (ou assez de boucliers pour tout le monde) : ça part tout de suite */
-  if(g.cibles.length <= max) return agir(h, id, max > 1 ? g.cibles.slice() : g.cibles[0]);
-  E.geste = g; E.choix = [];
-  maj(true);
-}
-function toucherCible(type, id){
-  var g = E.geste, h = E.sel;
-  if(!g){ if(type === 'heros') choisirHeros(id); return; }
-  if(type === 'heros' && (g.vise === 'heros' || g.vise === 'sol')){
-    if(g.cibles.indexOf(id) < 0){ refuser(id, E.c.refus(h, g.geste, id) || L.MOTS.impossible); return; }
-    var max = Math.min(g.max || 1, g.cibles.length);
-    if(max > 1){
-      if(E.choix.indexOf(id) >= 0) return;
-      E.choix.push(id); son('clic');
-      if(E.choix.length < max){ maj(true); return; }
-      return agir(h, g.geste, E.choix.slice());
-    }
-    return agir(h, g.geste, id);
-  }
-  if(type === 'ennemi' && g.vise === 'ennemi'){
-    if(g.cibles.indexOf(id) < 0){ var p = ancreDe(id, 'haut'); son('clic'); mot(p.x, Math.max(96, p.y - 10), E.c.refus(h, g.geste, id) || L.MOTS.impossible); return; }
-    return agir(h, g.geste, id);
-  }
-  if(type === 'heros') choisirHeros(id);
+  agir(h, id);
 }
 function agir(h, geste, cible){
   if(!E || E.cine || E.pause) return false;
   var ev = E.c.agir(h, geste, cible);
-  E.geste = null; E.choix = [];
   if(ev.length && ev[0].t === 'refus'){ refuser(h, ev[0].mot); maj(true); return false; }
   jouer(ev);
   maj(true);
   return true;
 }
-/* (les cartes répondent dès que le doigt se pose : c'est un combat de vitesse) */
+/* (les icônes répondent dès que le doigt se pose : c'est un combat de vitesse) */
 var dernierDoigt = {a:null, id:null, t:0};
 function doigt(ev){
   if(!E || E.fini) return;
   var b = ev.target.closest ? ev.target.closest('[data-act]') : null; if(!b) return;
   var a = b.getAttribute('data-act');
-  if(a !== 'l-heros' && a !== 'l-geste' && a !== 'l-perso') return;
-  dernierDoigt = {a:a, id:b.getAttribute('data-id'), t:Date.now()};
+  if(a !== 'l-geste') return;
+  dernierDoigt = {a:a, id:b.getAttribute('data-h') + '/' + b.getAttribute('data-id'), t:Date.now()};
   acte(a, b.getAttribute('data-id'), b);
 }
 function acte(a, id, b){
   if(SALLE.Son && SALLE.Son.demarrer) SALLE.Son.demarrer();
   if(E.cine || E.pause || DJ.fenetreOuverte()) return;
-  if(a === 'l-heros'){ if(E.geste && (E.geste.vise === 'heros' || E.geste.vise === 'sol')) toucherCible('heros', id); else choisirHeros(id); }
-  else if(a === 'l-geste') choisirGeste(id);
-  else if(a === 'l-perso') toucherCible(b.getAttribute('data-type'), id);
+  if(a === 'l-geste') toucherIcone(b.getAttribute('data-h'), id);
 }
 DJ.toucher(function(a, id, b){
   if(!E) return false;
-  if(a === 'l-heros' || a === 'l-geste' || a === 'l-perso'){
+  if(a === 'l-perso') return true;                                   /* (toucher un héros ou Léo ne fait plus rien : les icônes choisissent) */
+  if(a === 'l-geste'){
     /* (le doigt a déjà été entendu au moment où il s'est posé) */
-    if(!(dernierDoigt.a === a && dernierDoigt.id === id && Date.now() - dernierDoigt.t < 700)) acte(a, id, b);
+    if(!(dernierDoigt.a === a && dernierDoigt.id === b.getAttribute('data-h') + '/' + id && Date.now() - dernierDoigt.t < 700)) acte(a, id, b);
     return true;
   }
   if(a === 'l-passer'){ E.saute = true; return true; }
@@ -643,7 +612,7 @@ function soin(ev){
 /* ---------- Léo ---------- */
 /* ce qu'il fait, attaque par attaque : [la pose de la prise, la pose de l'élan, la pose du coup, le son, fonce-t-il ?] */
 var JEU = {
-  fleau:['montre', 'leve', 'frappe', 'leoFleau', 290], charge:['gratte', 'gratte', 'court', 'leoCharge', 330], marteau:['montre', 'leve', 'frappe', 'leoMarteau', 300],
+  fleau:['montre', 'leve', 'frappe', 'leoFleau', 290], charge:['pret', 'pret', 'court', 'leoCharge', 330], marteau:['montre', 'leve', 'frappe', 'leoMarteau', 300],
   meule:['montre', 'leve', 'frappe', 'leoMeule', 0], crochet:['montre', 'poingA', 'tient', 'leoCrochet', 0], cape:['capeA', 'capeA', 'capeB', 'leoCape', 0],
   sifflet:['siffle', 'siffle', 'siffle', 'leoSifflet', 0], poing:['poingA', 'poingA', 'poingB', 'leoPoing', 300], faux:['montre', 'fauxA', 'fauxB', 'leoFaux', 240],
   saut:['accroupi', 'accroupi', 'accroupi', 'leoSaut', 300], gourde:['montre', 'boit', 'boit', 'leoGourde', 0], lancer:['poingA', 'poingA', 'poingB', 'leoLancer', 0],
@@ -651,8 +620,18 @@ var JEU = {
   attrape:['gratte', 'court', 'frappe', 'leoAttrape', 340], souffle:['rugit', 'rugit', 'souffle', 'leoSouffle', 120]
 };
 var ARME_VUE = {fleau:'fleau', marteau:'marteau', meule:'meule', crochet:'crochet', faux:'faux', gourde:'gourde', sifflet:'sifflet', lancer:'rat'};
+/* il racle le sol, prêt à charger : deux poses qui alternent, jusqu'à ce qu'il parte (ou qu'on l'arrête) */
+function racler(){
+  var jeton = E.racle = (E.racle || 0) + 1, Z = E.leo;
+  (function tour(k){
+    if(!E || E.racle !== jeton || E.fini) return;
+    if(E.elan && E.elan.parti) return;
+    Promise.resolve(Z.vers(k % 2 ? 'pret' : 'pretB', (k % 2 ? 300 : 240) / E.vite, 'io')).then(function(){ setTimeout(function(){ tour(k + 1); }, 60); });
+  })(0);
+}
 function leo(ev){
   var Z = E.leo, J = JEU[ev.att] || ['garde', 'garde', 'garde', null, 0], A = ev.att ? L.ATTAQUES[ev.att] : null, k = 1000 / E.vite;
+  if(ev.quoi !== 'elan') E.racle = (E.racle || 0) + 1;                 /* (tout autre évènement arrête de racler) */
   switch(ev.quoi){
     case 'prise':
       E.elan = null;
@@ -666,8 +645,10 @@ function leo(ev){
       if(J[3]) bruit(J[3], {cale:ev.duree / E.vite}, null);
       if(ev.att === 'hurlement' || ev.att === 'souffle') tard(Math.max(0, ev.duree - .3), function(){ Z.visage('cri'); });
       if(ev.att === 'gourde') Z.visage('boit');
+      /* la charge (14 novembre) : tout le temps qu'il se prépare, sa jambe de derrière racle le sol — on VOIT qu'il va partir */
+      if(ev.att === 'charge') racler();
       /* une attaque qui fonce : il part un peu avant l'impact */
-      if(J[4]) E.elan = {avant:.24, parti:false, fn:function(){ Z.vers({x:-J[4], torse:36, tete:8, brasG:-50, avantG:80, brasD:60, jG:-30, jD:28, y:ev.att === 'saut' ? -150 : 10}, 200 / E.vite, 'i'); }};
+      if(J[4]) E.elan = {avant:.24, parti:false, fn:function(){ E.racle = (E.racle || 0) + 1; Z.vers({x:-J[4], torse:36, tete:8, brasG:-50, avantG:80, brasD:60, jG:-30, jD:28, y:ev.att === 'saut' ? -150 : 10}, 200 / E.vite, 'i'); }};
       return;
     case 'impact': return leoImpact(ev, J, A);
     case 'retour':
@@ -676,9 +657,15 @@ function leo(ev){
       return;
     case 'repos': Z.arme(null); return;
     case 'coupe':
-      E.elan = null; bruit('leoSonne', {}, ['bong']); Z.visage('ko');
-      var p = Z.ancre('haut'); mot(p.x, Math.max(100, p.y), 'Coupé !'); Fx.onde(p.x, p.y + 40, '#fff1b8', 220, 500);
-      Z.vers('sonne', 200, 'o'); tard(L.SONNE - .2, function(){ Z.visage('colere'); Z.arme(null); });
+      /* le marteau le sonne ; la lumière du bâton de lune l'éblouit (Romain, 14 novembre) */
+      var lune = ev.par === 'lune';
+      E.elan = null; if(!lune) bruit('leoSonne', {}, ['bong']); Z.visage('ko');
+      var p = Z.ancre('haut'); mot(p.x, Math.max(100, p.y), lune ? L.MOTS.ebloui : 'Coupé !'); Fx.onde(p.x, p.y + 40, lune ? '#eef4ff' : '#fff1b8', lune ? 300 : 220, 500);
+      Z.vers('sonne', 200, 'o'); tard((lune ? L.ECLAIR : L.SONNE) - .2, function(){ Z.visage('colere'); Z.arme(null); });
+      return;
+    case 'ebloui':
+      Z.visage('ko'); var pe = Z.ancre('haut'); mot(pe.x, Math.max(100, pe.y), L.MOTS.ebloui);
+      tard(ev.duree - .2, function(){ Z.visage('colere'); });
       return;
     case 'glisse':
       E.elan = null; bruit('leoGlisse', {cale:.3}, ['tombe']); Z.visage('ko'); Z.arme(null);
@@ -804,7 +791,7 @@ function rat(ev){
 
 DJ.Leo = {
   preparer:preparer, lancer:lancer, AVEUX:AVEUX,
-  etat:function(){ return E ? {phase:E.c.phase, cine:E.cine, pause:E.pause, sel:E.sel, geste:E.geste ? E.geste.geste : null, photo:E.c.etat(), aveu:E.aveu == null ? null : E.aveu, essais:E.essais} : null; },
+  etat:function(){ return E ? {phase:E.c.phase, cine:E.cine, pause:E.pause, barre:E.c.barre(), photo:E.c.etat(), aveu:E.aveu == null ? null : E.aveu, essais:E.essais} : null; },
   agir:function(h, g, c){ return agir(h, g, c); },
   _E:function(){ return E; }
 };

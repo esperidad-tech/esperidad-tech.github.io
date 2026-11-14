@@ -279,35 +279,32 @@
 .l-proie{position:absolute;left:104px;top:22px;font-size:26px;display:none;pointer-events:none;text-align:center;width:70px;animation:pulse .7s ease-in-out infinite}
 .l-proie b{display:block;font-size:15px;color:#ff9a8a;text-shadow:0 1px 0 #000,0 0 4px #000;line-height:1}
 .heros.proie .l-proie{display:block}
-/* la bande du bas : les trois héros à gauche (toujours là), les cartes de celui qu'on a choisi à droite */
-#bande.leo-bande{gap:10px;padding:8px 10px 0 10px}
-.lb-heros{display:flex;gap:7px;flex:none}
-.lb-h{position:relative;width:112px;height:148px;border-radius:14px;border:3px solid #4a3a2a;background:linear-gradient(#2c2238,#17111e);text-align:left;overflow:hidden;touch-action:manipulation}
-.lb-h .portrait{left:6px;top:6px;width:52px;height:52px;border-radius:11px}
-.lb-h > b{position:absolute;left:6px;top:62px;font-family:var(--f-titre);font-weight:400;font-size:18px;line-height:1.05;color:var(--or-pale)}
-.lb-h .pv-b{position:absolute;left:6px;top:86px;gap:5px}
-.lb-h .pv-b .barre{width:60px;height:12px}
-.lb-h .pv-b b{font-family:var(--f-texte);font-size:15px;color:#fff4e0}
-.lb-h em{position:absolute;left:62px;top:8px;right:4px;font-style:normal;font-size:17px;line-height:1.25;color:#e8dcc0;word-spacing:-2px}
-.lb-h em i{font-style:normal;display:inline-block}
-.lb-h em i.jaune{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
-.lb-h em i.chene{filter:sepia(1) saturate(4) hue-rotate(60deg)}
-.lb-h u{position:absolute;left:0;right:0;bottom:0;height:9px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
-.lb-h.sel{border-color:#ffd36a;background:linear-gradient(#45351f,#1e1610);box-shadow:0 0 0 2px var(--encre),0 0 14px rgba(255,200,90,.5)}
-.lb-h.sol{opacity:.55}
-.lb-h.sol em{font-size:13px;top:12px}
-.lb-h.cible{border-color:#fff1b8;animation:pulse .8s ease-in-out infinite}
-.lb-h.pris{border-color:#8fe07a}
-.lb-cartes{display:grid;grid-template-columns:repeat(6,86px);grid-auto-rows:70px;gap:6px;align-content:start;flex:1}
-.lb-cartes .carte.mini{height:70px;touch-action:manipulation}
-.lb-cartes .carte.mini .c-ic{height:38px;line-height:38px;font-size:27px}
-.lb-cartes .carte.mini .c-ic .fiole{width:27px;height:37px}
+/* la bande du bas (14 novembre, Romain) : UNE SEULE RANGÉE D'ICÔNES — un cadre par héros, à sa couleur ; plus d'onglets de héros */
+#bande.leo-bande{gap:7px;padding:4px 7px 0 7px;align-items:stretch}
+.lb-g{position:relative;min-width:0;display:flex;flex-direction:column;border-radius:13px;border:3px solid var(--hc);background:linear-gradient(rgba(26,19,36,.95),rgba(13,9,19,.97));padding:1px 5px 7px;overflow:hidden;height:159px;box-sizing:border-box}
+.lb-g.g-sage{--hc:#6fa8ff}.lb-g.g-alchimiste{--hc:#6fd07a}.lb-g.g-pisteur{--hc:#ffa94a}
+.lb-nom{display:flex;align-items:baseline;gap:8px;height:16px;line-height:16px;padding:0 3px;white-space:nowrap}
+.lb-nom b{font-family:var(--f-titre);font-weight:400;font-size:14.5px;color:var(--hc);text-shadow:0 1px 0 #000}
+.lb-nom em{font-style:normal;font-size:12.5px;color:#ffd0c0;font-weight:800}
+.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
+.lb-g.pris .lb-cartes{opacity:.4}
+.lb-cartes{display:grid;grid-auto-rows:62px;gap:5px;align-content:start;flex:1;min-width:0}
+/* ce que montre la rune de l'œil : ses trois prochaines attaques, aux pieds de Léo, tout en bas de la salle */
+#leo-suite{position:absolute;top:331px;height:41px;transform:translateX(-50%);display:none;align-items:center;gap:6px;padding:0 9px;border-radius:13px 13px 0 0;background:rgba(10,6,16,.82);border:2px solid #4f86a8;border-bottom:0;pointer-events:none;box-sizing:border-box}
+#leo-suite.on{display:flex}
+#leo-suite i{font-style:normal;display:block;line-height:1;text-align:center}
+#leo-suite i.grand{font-size:29px;width:34px;height:34px;line-height:34px}
+#leo-suite i.petit{font-size:19px;width:23px;height:23px;line-height:23px;opacity:.78}
+#leo-suite i.cours{animation:pulse .7s ease-in-out infinite;filter:drop-shadow(0 0 5px #ff6a4a)}
+#leo-suite i + i::before{content:'›';position:absolute;margin-left:-8px;color:#7fb4d4;font-size:13px;font-weight:800;line-height:inherit}
+.lb-cartes .carte.mini{height:62px;min-width:0;touch-action:manipulation}
+.lb-cartes .carte.mini .c-ic{height:34px;line-height:34px;font-size:25px}
+.lb-cartes .carte.mini .c-ic .fiole{width:25px;height:34px}
 .lb-cartes .carte.mini b{font-size:13px}
 .lb-cartes .carte.mini.long b{font-size:11px;letter-spacing:-.02em}
-.lb-cartes.occupe .carte{opacity:.5}
 .lb-cartes .carte.off{opacity:.34}
 .lb-cartes .carte.jaune{border-color:#b89a2a}.lb-cartes .carte.jaune .c-ic{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
-.lb-cartes .carte.chene{border-color:#4f8a44}.lb-cartes .carte.chene .c-ic{filter:sepia(1) saturate(4) hue-rotate(60deg);font-size:21px;letter-spacing:-6px}
+.lb-cartes .carte.chene{border-color:#4f8a44}.lb-cartes .carte.chene .c-ic{filter:sepia(1) saturate(4) hue-rotate(60deg);font-size:19px;letter-spacing:-7px;padding-right:7px}
 .lb-cartes .carte.leo-arme{border-color:#9aa0ad;background:linear-gradient(#3a3340,#1b1622)}
 .l-usure{position:absolute;right:4px;top:3px;font-style:normal;font-size:12.5px;font-weight:800;line-height:16px;padding:0 5px;border-radius:9px;background:#120c18;border:2px solid var(--brun);color:#ffd36a}
 .l-usure.u1{color:#ff9a8a;border-color:#a8303e}

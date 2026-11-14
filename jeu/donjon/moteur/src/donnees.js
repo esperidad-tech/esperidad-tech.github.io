@@ -113,8 +113,9 @@ D.CHIFFRES = {
   brulure:4,                               /* à chaque tour des monstres, jusqu'à la fin du combat */
   /* LES DEUX BOUCLIERS (Romain, 13 novembre) : « le bouclier normal, il fait 75 %, et le bouclier de chêne, c'est 50 % pour deux
      personnes ». Avec le bâton normal : un bouclier JAUNE, sur un ami, qui arrête 75 % des dégâts ET tous les « contrôles » (la
-     toile, la langue, et chez Léo : étourdi, attrapé, saignement, brûlure). Avec le bâton de chêne : deux boucliers, qui
-     n'arrêtent que 50 % et laissent passer les contrôles. */
+     toile, la langue, et chez Léo : étourdi, attrapé, saignement, brûlure). Avec le bâton de chêne : des boucliers qui
+     n'arrêtent que 50 % et laissent passer les contrôles — sur DEUX héros jusqu'au 13 novembre ; sur les TROIS depuis le 14
+     (Romain : « comme il est moins puissant, il devrait prendre les 3 personnages au lieu de 2. Et ça, dans tout le donjon. »). */
   bouclier:0.25,                           /* la part des dégâts qui passe à travers le bouclier jaune (il en arrête 75 %) */
   bouclierChene:0.5,                       /* … et à travers un bouclier du bâton de chêne (il en arrête 50 %) */
   herbes:15,                               /* les herbes : chaque héros debout (10 jusqu'au 13 novembre ; Romain : « 15 par personne, ça fait 45, et le baume rend 40 ») */
@@ -150,7 +151,7 @@ D.OBJETS = {
      le sort qu'il sait changer (carte.base) — le geste joué devient « a:<objet> ».
      carte : nom et effet = la carte du bâton ; d, vise, max = le sort « base » lancé avec ce bâton. */
   'cristal-lune':{nom:'Cristal de lune', pour:'sage', arme:true, equipe:'cristal-lune', carte:{base:'rune', nom:'Bâton de lune', effet:'lumière pour tous', d:'toute la salle', vise:'salle'}, d:'Le Sage le fixe à son bâton : c\'est le bâton de lune. Avec lui, la rune de lumière éclaire toute la salle. Toute la salle…'},
-  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour deux', d:'deux amis, moitié', vise:'heros', max:2, sorte:'chene'}, d:'Avec lui, le bouclier de runes protège deux amis à la fois. Mais chacun n\'arrête que la moitié du coup.'},
+  'baton-chene':{nom:'Bâton de chêne', pour:'sage', arme:true, equipe:'baton-chene', carte:{base:'bouclier', nom:'Bâton de chêne', effet:'bouclier pour trois', d:'trois amis, moitié', vise:'heros', max:3, sorte:'chene'}, d:'Avec lui, le bouclier de runes protège les trois héros à la fois. Mais chacun n\'arrête que la moitié du coup.'},
   'amulette':{nom:'Amulette de vie', pour:'tous', equipe:'amulette', d:'Une fois dans le donjon, celui qui la porte se relève tout seul.'},
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */

@@ -70,7 +70,7 @@ c.fuir();                                     // le bouton « Fuite ! » (après
 
 ### Les gestes
 
-`geste` est un id ; `vise` dit ce qu'il faut toucher ; `cible` est un id (ou un tableau de deux héros pour le bouclier avec le bâton de chêne).
+`geste` est un id ; `vise` dit ce qu'il faut toucher ; `cible` est un id (ou un tableau de héros pour le bouclier avec le bâton de chêne : deux jusqu'au 13 novembre, les trois depuis le 14 — §17).
 
 | Héros | `geste` | `vise` | Cibles permises |
 |---|---|---|---|
@@ -470,7 +470,7 @@ Demandes de Romain du 11 novembre (16 h 07 et 16 h 37, Bible §12.51, « Les arm
 
 - Comme un carquois (`carquois:true`), une arme ne compte pas dans les deux places des mains : `Regles.enMains(objets)` les écarte, `prendre` ne rend jamais `plein` pour elle. Le lutrin de la bibliothèque n'est plus un coffre à choix : `D.LIEUX.bibliotheque.objets = ['page-dechiree', 'cristal-lune', 'baton-chene']`, le Sage prend les deux.
 - `carte` dans l'objet : `base` (le sort que ce bâton change : `'rune'` ou `'bouclier'`), `nom` et `effet` (la carte du bâton dans la bande), `d`, `vise`, `max` (le sort lancé avec ce bâton).
-- `combat.gestes('sage')` rend, en plus de `rune` et `bouclier`, un geste par bâton porté : **`a:cristal-lune`** (la rune de lumière sur toute la salle, `vise:'salle'`) et **`a:baton-chene`** (le bouclier sur deux amis, `max:2`). Leur `nom` est celui du sort (« Rune de lumière », « Bouclier de runes »). `jouer('sage', {geste:'a:cristal-lune'})` → `{t:'rune', heros:'sage', salle:true}` puis la lumière sur chaque monstre ; `jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste']})` → `pose-bouclier` sur les deux. Un geste `a:<objet>` que le héros ne porte pas est refusé (`D.MOTS.absent`).
+- `combat.gestes('sage')` rend, en plus de `rune` et `bouclier`, un geste par bâton porté : **`a:cristal-lune`** (la rune de lumière sur toute la salle, `vise:'salle'`) et **`a:baton-chene`** (le bouclier sur deux amis, `max:2` — sur les trois, `max:3`, depuis le 14 novembre : §17). Leur `nom` est celui du sort (« Rune de lumière », « Bouclier de runes »). `jouer('sage', {geste:'a:cristal-lune'})` → `{t:'rune', heros:'sage', salle:true}` puis la lumière sur chaque monstre ; `jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste']})` → `pose-bouclier` sur les deux. Un geste `a:<objet>` que le héros ne porte pas est refusé (`D.MOTS.absent`).
 - **Les règles ne savent pas quel bâton est « en main »** : c'est l'écran qui le sait (`combat.js`, `E.baton`, gardé dans `partie.heros.sage.baton`) et qui ne propose que le sort du bâton en main. Les règles acceptent les deux gestes tant que le bâton est porté.
 - `D.BATON = {id:'baton', nom:'Bâton normal', d:'rien de spécial'}` : le bâton de tous les jours (il n'est pas un objet).
 - Les noms d'arme pour la bande : `D.GESTES.fleche.arme = 'Arc normal'`, `D.GESTES.dague.arme = 'Dague'`, `D.GESTES.louche.arme = 'Louche'`, `D.OBJETS['fleches-argent'].carte.nom = 'Arc de lune'`, `D.OBJETS['fleches-lourdes'].carte.nom = 'Arc transperçant'`. Les gestes ne changent pas (`fleche`, `f:fleches-argent`, `f:fleches-lourdes`, `dague`). Une flèche trempée (`p:<potion>`) part toujours de l'arc normal.
@@ -525,7 +525,7 @@ Demandes de Romain du 11 novembre (19 h 21 à 20 h 54, Bible §12.51, « Les ret
 
 **Les retouches de tout le donjon (au tour par tour, `regles.js`)**
 - **Le bouclier du bâton normal** : jaune, **un héros, 75 %** du coup arrêté, et **il arrête tous les contrôles** (la toile, la langue). `H.bouclier === 'jaune'`.
-- **Le bouclier du bâton de chêne** : **deux héros, 50 %** chacun, et **il n'arrête pas les contrôles**. `H.bouclier === 'chene'` ; `CHIFFRES.bouclierChene = 0.5`. Les évènements `pose-bouclier` et `etat bouclier` portent `sorte`.
+- **Le bouclier du bâton de chêne** : **deux héros (les trois depuis le 14 novembre : §17), 50 %** chacun, et **il n'arrête pas les contrôles**. `H.bouclier === 'chene'` ; `CHIFFRES.bouclierChene = 0.5`. Les évènements `pose-bouclier` et `etat bouclier` portent `sorte`.
 - **Les herbes** : 15 à chaque héros (le Baume reste à 40 sur un seul).
 - **Les feux follets** : quand leur attaque s'accroche à un bouclier de runes, ils deviennent visibles (`accroche`) et **leur prochain sort frappe quatre fois plus fort** (`attaques.brulure.multSi = {accroche:4}`).
 - **Bourbe** : le cycle est givre → il saute sur la glace → feu (il sèche) → fumigène (il se retourne) → critique dans le dos → **la glace fond, il retombe à l'eau, et tout recommence** (`reactions.critique` ; il ne frappe pas le tour où il retombe : l'état `_plouf`). La lumière ne lui fait toujours rien.
@@ -540,3 +540,23 @@ Demandes de Romain du 11 novembre (19 h 21 à 20 h 54, Bible §12.51, « Les ret
 - Phase 2 : le Pisteur a le crochet, le fléau et le marteau (**trois coups chacun**) ; les rats (deux places), le poing (fait sauter les boucliers), la faux (le saignement : 5, deux fois par seconde, jusqu'au premier soin), le saut, la gourde (le marteau la coupe), le lancer de rat.
 - Phase 3 : insensible à tout, **sauf au saignement de la faux** (trois coups : 30 par seconde) ; la gourde rend toute sa vie à un héros (trois gorgées).
 - **Les tests** : `node test-leo.js` (112 vérifications, sans navigateur) ; `python3 test-leo.py` (31, à l'écran) ; **la simulation** : `node leo-sim.js 400 --md` → `leo-equilibre.md` (trois joueurs : rapide, moyen, lent).
+
+## 17. Le 14 novembre : Léo après le premier essai de Romain (« trop difficile ») — la rangée d'icônes, le noir, la farine (Bible §13.36 — ces lignes remplacent ce qui est écrit au §16)
+
+**Dans tout le donjon (`regles.js`, `donnees.js`)**
+- **Le bouclier du bâton de chêne protège les TROIS héros** (deux jusqu'au 13 novembre), toujours 50 %, toujours sans arrêter les contrôles : `OBJETS['baton-chene'].carte.max = 3`. À l'écran (`combat.js`), un toucher sur n'importe quel ami le pose sur tout le monde. `cible` peut donc être un tableau de trois héros.
+
+**Léo (`leo-regles.js`)**
+- **Plus de héros à choisir, plus de cible à toucher.** `c.barre()` rend LA rangée d'icônes de la phase (`L.BARRE`, seulement ce qui sert) : `[{heros, geste, nom, vise, permis, mot, auto, reste, arme, sorte}]`. `c.auto(heros, geste)` rend la cible choisie toute seule ; `c.agir(heros, geste)` **sans cible** s'en sert. (`c.gestes(heros)` et `c.agir(heros, geste, cible)` marchent toujours : les tests, les triches.)
+  - Phase 1 : œil, bouclier jaune, chêne, lumière (Sage) ; huile, feu, givre, herbes, baume, Cœur vaillant (Alchimiste) ; dague, flèches d'huile, de feu, de givre (Pisteur).
+  - Phase 2 : œil, rune, bouclier jaune, chêne ; huile, **feu** (la seule chose qui touche Léo par-dessus ses rats), **acide** (pour les rats cuirassés), herbes, baume, Cœur ; dague, crochet, fléau, marteau, flèches d'huile et de feu.
+  - Phase 3 : œil, bouclier jaune, chêne ; givre, huile, herbes, baume, Cœur ; faux, gourde, flèches de givre et d'huile.
+  - Une icône que l'équipe n'a pas (une recette, un bâton, une arme cassée) n'existe pas. La rune de l'œil ouverte, son icône disparaît.
+- **Les cibles toutes seules** : le baume et la gourde → le plus blessé (en part de sa vie ; celui qui saigne compte) ; le Cœur vaillant → celui qui est à terre (deux : au hasard) ; le bouclier jaune → celui que Léo vise si la rune de l'œil est ouverte, sinon le plus blessé ; le chêne → les trois (sans écraser un jaune) ; la rune → un rat pas encore ébloui ; l'acide → un rat cuirassé ; la dague, le crochet, le fléau → ce qui est devant ; l'huile, le feu, le givre → Léo.
+- **Le noir (la cape) ne se lève plus tout seul** : seule la lumière du bâton de lune rallume (`c.noir` est un oui/non). Dans le noir, **tout continue** (soins, boucliers, rats) ; **seul Léo est intouchable**, même par l'huile et le feu. Un geste parti avant le noir tombe dans le vide.
+- **La lumière COUPE l'attaque de Léo** (`{t:'leo', quoi:'coupe', par:'lune'}`), il reste ébloui `L.ECLAIR` secondes (1,2) ; rallumé entre deux attaques : `{t:'leo', quoi:'ebloui'}`, il reste figé autant. L'icône de lumière est éteinte quand il fait clair (« Il fait clair »).
+- **La farine ne retombe plus toute seule** : seul le feu l'enlève (BOUM). Léo y reste intouchable (sauf l'huile, qui libère un ami, et le feu), **et continue d'attaquer depuis son nuage**. Si plus personne ne peut lancer de feu, c'est perdu (Romain).
+- **La charge se prépare 4,4 s** (`prise` 1,4 + `elan` 3,0 ; 3 s avant) : le temps de lancer une fiole d'huile (2,5 s) ou une flèche d'huile (1,6 s) en le voyant se mettre en position.
+- **La rune de l'œil** montre, en plus de la proie, **les trois prochaines attaques** : `etat().leo.suite = [{att, nom, ic, enCours}]` (chaque attaque a son icône : `L.ATTAQUES[x].ic`). Elle voit aussi dans le noir. `etat().leo.cache` : Léo est intouchable (noir ou farine).
+- **Les tests** : `node test-leo.js` (155 vérifications) ; `python3 test-leo.py` (41, à l'écran) ; **la simulation** : `node leo-sim.js 400 --md` → `leo-equilibre.md` (un geste = un seul toucher, maintenant).
+

@@ -25,6 +25,10 @@ var POSES = {
   leve:{torse:-14, tete:-8, brasG:184, avantG:34, brasD:-46, jG:8, jD:-6, y:0},        /* l'arme levée au-dessus de la tête */
   frappe:{torse:32, tete:12, brasG:64, avantG:6, brasD:36, jG:-16, jD:14, y:12},       /* le coup tombe */
   gratte:{torse:30, tete:16, brasG:-28, avantG:70, brasD:-58, jG:14, jD:-18, y:14},    /* il gratte le sol, tête baissée */
+  /* (14 novembre, Romain : « une position qui s'apprête à partir ») prêt à charger, comme un coureur au départ : le buste en
+     avant, les poings serrés, une jambe devant, l'autre loin derrière — et (pretB) cette jambe-là qui racle le sol */
+  pret:{torse:38, tete:-10, brasG:-34, avantG:96, brasD:-74, jG:-26, jD:34, y:24},
+  pretB:{torse:34, tete:-6, brasG:-26, avantG:104, brasD:-62, jG:-24, jD:10, y:19},
   court:{torse:40, tete:8, brasG:-56, avantG:80, brasD:66, jG:-30, jD:28, y:10},
   glisse:{torse:-30, tete:-20, brasG:150, avantG:20, brasD:-150, jG:60, jD:40, y:-40, r:46},      /* les pieds partent en avant */
   auSol:{torse:-6, tete:-12, brasG:120, avantG:30, brasD:-120, jG:26, jD:8, y:0, r:86},            /* sur le dos */
@@ -164,9 +168,11 @@ P.tenue = function(n){
   this.n = n; this.T = T;
   s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" style="overflow:visible;position:absolute;left:0;top:0"><g class="la-ech"><g class="la-tout">';
   s += '<ellipse class="la-ombre" cx="150" cy="330" rx="74" ry="9" fill="#000" opacity=".4"/>';
+  /* la cape : elle pend de ses épaules (14 novembre : son tracé est refait à chaque image dans _poser, pour qu'elle SUIVE le buste
+     quand il se penche — avant, elle restait droite derrière lui, « décalée ») */
   if(n === 1) s += '<g class="la-cape">' + forme('M98 122 C70 190 62 266 54 324 C92 334 208 334 250 324 C240 266 232 190 204 122 Z', '#120f1a') +
-    '<path d="M92 190 C88 240 84 290 82 322 M210 190 C216 240 222 290 226 322 M150 220 V326" fill="none" stroke="#2a2438" stroke-width="2.6"/>' +
-    '<path d="M58 316 Q100 326 150 322 T246 316" fill="none" stroke="#fff" stroke-width="5" opacity=".28" stroke-linecap="round"/></g>';
+    '<path class="la-plis" d="M92 190 C88 240 84 290 82 322 M210 190 C216 240 222 290 226 322 M150 220 V326" fill="none" stroke="#2a2438" stroke-width="2.6"/>' +
+    '<path class="la-ourlet" d="M58 316 Q100 326 150 322 T246 316" fill="none" stroke="#fff" stroke-width="5" opacity=".28" stroke-linecap="round"/></g>';
   s += '<g class="la-jD">' + jambeSVG(n, false) + '</g><g class="la-jG">' + jambeSVG(n, true) + '</g>';
   s += '<g class="la-torse"><g class="la-brasD">' + trait('M' + EPD[0] + ' ' + EPD[1] + ' L' + (EPD[0] + 4) + ' ' + (EPD[1] + BRAS) + ' L' + (EPD[0] - 6) + ' ' + (EPD[1] + BRAS + AVANT - 6), assombrir(T.bras), T.gros - 2) +
     '<g transform="translate(' + (EPD[0] - 6) + ',' + (EPD[1] + BRAS + AVANT - 6) + ')">' + mainSVG(n) + '</g></g>';
@@ -236,8 +242,35 @@ P._poser = function(){
   var jt = ' translate(0 ' + PIED + ') scale(1 ' + tasse.toFixed(3) + ') translate(0 ' + (-PIED) + ') ';
   g.jG.setAttribute('transform', jt + rot(p.jG, [138, 214]));
   g.jD.setAttribute('transform', jt + rot(p.jD, [162, 214]));
-  if(g.cape) g.cape.setAttribute('transform', 'translate(0 ' + (bas * .4).toFixed(1) + ') skewX(' + (p.torse * .25 + Math.sin(this.temps * 1.7) * 1.2).toFixed(2) + ')');
+  if(g.cape) this._cape(bas);
   if(g.ombre) g.ombre.setAttribute('opacity', p.y < -20 ? .18 : .4);
+};
+/* la cape pend de ses épaules : ses deux coins du haut tournent avec le buste, son ourlet reste près du sol et traîne un peu */
+P._cape = function(bas){
+  var p = this.p, g = this.g, a = -p.torse * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+  function ep(x, y){ var dx = x - HANCHE[0], dy = y - HANCHE[1]; return [HANCHE[0] + dx * co - dy * si, HANCHE[1] + dx * si + dy * co + bas]; }
+  function v(x, y){ return [x * co - y * si, x * si + y * co]; }                       /* un écart, tourné avec le buste */
+  function n(q){ return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }
+  var TL = ep(98, 122), TR = ep(204, 122), mx = (TL[0] + TR[0]) / 2 - 151;                    /* de combien les épaules sont parties en avant */
+  var vent = Math.sin(this.temps * 1.7) * 3, s = mx * .42 + vent, y0 = 324;
+  var BL = [54 + s, y0], BR = [250 + s * .8, y0], a1 = v(-28, 68), a2 = v(28, 68);
+  var d = 'M' + n(TL) + ' C' + n([TL[0] + a1[0], TL[1] + a1[1]]) + ' ' + n([BL[0] + 8, BL[1] - 58]) + ' ' + n(BL) +
+    ' C' + n([BL[0] + 38, 334]) + ' ' + n([BR[0] - 42, 334]) + ' ' + n(BR) +
+    ' C' + n([BR[0] - 10, BR[1] - 58]) + ' ' + n([TR[0] + a2[0], TR[1] + a2[1]]) + ' ' + n(TR) + ' Z';
+  var fond = g.cape.firstChild;
+  /* (forme() pose un ou deux tracés : le contour et son remplissage — ils prennent tous le même dessin) */
+  var tr = g.cape.querySelectorAll('path:not(.la-plis):not(.la-ourlet)');
+  for(var i = 0; i < tr.length; i++) tr[i].setAttribute('d', d);
+  function entre(A, B, k){ return [A[0] + (B[0] - A[0]) * k, A[1] + (B[1] - A[1]) * k]; }
+  var pl = g.cape.querySelector('.la-plis'), ou = g.cape.querySelector('.la-ourlet');
+  if(pl){
+    var gA = entre(TL, BL, .34), dA = entre(TR, BR, .34), mH = entre(entre(TL, TR, .5), entre(BL, BR, .5), .5);
+    pl.setAttribute('d', 'M' + n([gA[0] + 10, gA[1]]) + ' Q' + n([gA[0] + 4, (gA[1] + 322) / 2]) + ' ' + n([BL[0] + 28, 322]) +
+      ' M' + n([dA[0] - 10, dA[1]]) + ' Q' + n([dA[0] - 2, (dA[1] + 322) / 2]) + ' ' + n([BR[0] - 24, 322]) +
+      ' M' + n(mH) + ' L' + n([(BL[0] + BR[0]) / 2, 326]));
+  }
+  if(ou) ou.setAttribute('d', 'M' + n([BL[0] + 4, 316]) + ' Q' + n([BL[0] + 46, 326]) + ' ' + n([(BL[0] + BR[0]) / 2, 322]) + ' T' + n([BR[0] - 4, 316]));
+  g.cape.removeAttribute('transform');
 };
 /* un point de Léo dans la scène */
 P.ancre = function(nom){

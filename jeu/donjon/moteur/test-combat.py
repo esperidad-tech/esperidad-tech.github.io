@@ -370,7 +370,7 @@ def potions(nav):
                 'le Sage : à gauche ses trois bâtons, à droite ses quatre sorts ' + str(m['gauche']) + str(m['droite']) + str(m['titres']))
         verifie(not m['dehors'], 'les sept cartes du Sage tiennent dans la bande ' + str(m['dehors']))
         noms = pg.evaluate(NOMS, '.b-armes')
-        verifie(noms == ['Bâton normal — rien de spécial [dessin] [en main]', 'Bâton de lune — lumière pour tous [dessin]', 'Bâton de chêne — bouclier pour deux [dessin]'], 'ses bâtons : le normal (en main au départ), celui de lune, celui de chêne ' + str(noms))
+        verifie(noms == ['Bâton normal — rien de spécial [dessin] [en main]', 'Bâton de lune — lumière pour tous [dessin]', 'Bâton de chêne — bouclier pour trois [dessin]'], 'ses bâtons : le normal (en main au départ), celui de lune, celui de chêne ' + str(noms))
         noms = pg.evaluate(NOMS, '.b-combos')
         # (dans la cave aux toiles, tout pend ou vole : la rune d'appel est éteinte et dit pourquoi)
         verifie(noms[:3] == ['Rune de l\'œil — qui sera frappé ?', 'Rune de lumière — une vive lumière', 'Bouclier de runes — protège un ami'] and noms[3].startswith('Rune d\'appel — ') and len(noms) == 4, 'ses sorts, avec le bâton normal : rien de spécial ' + str(noms))
@@ -388,13 +388,13 @@ def potions(nav):
         pg.tap('#bande [data-act="arme"][data-id="baton-chene"]', force=True); pg.wait_for_timeout(400)
         m = pg.evaluate(MESURE); e = pg.evaluate(SAGE); noms = pg.evaluate(NOMS, '.b-combos')
         verifie(e['baton'] == 'baton-chene' and e['chene'] and not e['lune'] and e['garde'] == 'baton-chene', 'le bâton de chêne en main : il remplace celui de lune, et le choix est gardé pour la suite ' + str(e))
-        verifie(m['droite'] == ['oeil', 'rune', 'a:baton-chene', 'appel'] and noms[1] == 'Rune de lumière — une vive lumière' and noms[2] == 'Bouclier de runes — deux amis, moitié [bâton]', 'avec lui, le bouclier protège deux amis (la lumière redevient simple) ' + str(noms[1:3]))
+        verifie(m['droite'] == ['oeil', 'rune', 'a:baton-chene', 'appel'] and noms[1] == 'Rune de lumière — une vive lumière' and noms[2] == 'Bouclier de runes — trois amis, moitié [bâton]', 'avec lui, le bouclier protège les trois héros (14 novembre ; la lumière redevient simple) ' + str(noms[1:3]))
         pg.screenshot(path=os.path.join(CAP, 'combat-armes-sage-chene.png'))
         pg.tap('.carte[data-id="a:baton-chene"]', force=True); pg.wait_for_timeout(250)
-        pg.tap('.zone[data-type="heros"][data-id="pisteur"]', force=True); pg.wait_for_timeout(250)
-        pg.tap('.zone[data-type="heros"][data-id="alchimiste"]', force=True); pg.wait_for_timeout(500); libre()
+        # (14 novembre) il couvre les trois héros : un toucher sur n'importe quel ami suffit
+        pg.tap('.zone[data-type="heros"][data-id="pisteur"]', force=True); pg.wait_for_timeout(600); libre()
         bc = pg.evaluate("() => { var c = DJ.Combat._E().c; return [c.h.pisteur.bouclier, c.h.alchimiste.bouclier, c.h.sage.bouclier, c.h.sage.joue]; }")
-        verifie(bc[3] and (bc[:3] == ['chene', 'chene', False] or pg.evaluate("() => DJ.Combat._E().c.tour") > 1), 'le bâton de chêne : le Pisteur et l\'Alchimiste protégés d\'un seul geste ' + str(bc))
+        verifie(bc[3] and (bc[:3] == ['chene', 'chene', 'chene'] or pg.evaluate("() => DJ.Combat._E().c.tour") > 1), 'le bâton de chêne : les trois héros protégés d\'un seul toucher ' + str(bc))
         # au tour suivant, il a toujours le bâton de chêne en main
         for h in ('alchimiste', 'pisteur'):
             if pg.evaluate("(h) => DJ.Combat.etat().mode === 'qui' && DJ.Combat._E().c.aJouer().indexOf(h) >= 0", h):

@@ -512,6 +512,8 @@ function toucherPerso(type, id){
       if(cb.tout) return agir(E.sel, g, null);
       var max = Math.min(g.max || 1, cb.heros.length);
       if(max > 1){
+        /* (14 novembre) le bouclier de chêne couvre tout le monde : un toucher sur un ami suffit */
+        if(max >= cb.heros.length) return agir(E.sel, g, cb.heros.slice());
         if(E.choix.indexOf(id) >= 0) return;
         E.choix.push(id); son('clic');
         if(E.choix.length < max){ majScene(); return; }
@@ -930,7 +932,7 @@ async function geste(ev, evs){
       son('dome'); if(ev.cibles.length > 1) bruit('baton');
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
       /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
-      /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les deux boucliers du bâton de chêne (50 %) */
+      /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les boucliers du bâton de chêne (50 %, sur les trois héros depuis le 14 novembre) */
       var chene = ev.sorte === 'chene', part = chene ? D.CHIFFRES.bouclierChene : D.CHIFFRES.bouclier;
       var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune'})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
       if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });

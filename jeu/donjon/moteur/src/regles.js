@@ -337,7 +337,7 @@ P.gestes = function(h){
     }
     else if(id === 'bouclier'){
       g(id, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, 1);
-      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : deux amis */
+      armes(id, function(a, O){ g(a, G.nom, 'heros', amis, amis.length > 0, MOTS.personne, O.carte.max || 1); });      /* avec le bâton de chêne : les trois héros (deux jusqu'au 13 novembre) */
     }
     else if(id === 'appel'){       /* la rune d'appel : un monstre qui marche par terre, et qui n'est pas déjà devant */
       var loin = ids(self.appelables()), parTerre = self.ciblables().some(function(x){ return self.auSol(x); });
@@ -577,7 +577,7 @@ P.jouer = function(h, a){
   else if(geste === 'bouclier' || geste === 'a:baton-chene'){
     ev.push({t:'pose-bouclier', heros:h, cibles:cibles.slice()});
     /* (13 novembre) le bâton normal pose un bouclier JAUNE (75 %, il arrête aussi la toile et la langue) ; le bâton de chêne en
-       pose deux, plus faibles (50 %), qui laissent passer la toile et la langue */
+       pose sur les trois héros (14 novembre ; deux avant), plus faibles (50 %), qui laissent passer la toile et la langue */
     var sorte = geste === 'bouclier' ? 'jaune' : 'chene';
     ev[ev.length - 1].sorte = sorte;
     cibles.forEach(function(x){ self.h[x].bouclier = sorte; ev.push({t:'etat', heros:x, nom:'bouclier', on:true, tours:1, sorte:sorte}); });

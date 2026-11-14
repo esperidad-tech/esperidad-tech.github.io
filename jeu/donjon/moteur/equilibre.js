@@ -126,14 +126,17 @@ function reflechie(o){
     /* (13 novembre) LES DEUX BOUCLIERS : le jaune (bâton normal : un ami, 75 %, il arrête la toile et la langue) ou ceux du bâton
        de chêne (deux amis, 50 % chacun, la toile et la langue passent). La maligne compte ce que chacun épargne, quand l'œil le
        montre ; à l'aveugle, elle en protège deux. */
+    /* (14 novembre) le bouclier de chêne couvre les TROIS héros debout */
     function bouc(l){
       l = [].concat(l).filter(function(x, i, t){ return x && t.indexOf(x) === i; });
-      var deux = c.porte('sage', 'baton-chene') && l.length > 1;
-      if(deux && vois){
-        var m1 = menace(c, l[0]), m2 = menace(c, l[1]), pris = viv.some(function(m){ var k = coupDe(c, m); return k && k.attrape && k.cibles.indexOf(l[0]) >= 0; });
-        if(pris || m1 * (1 - C.bouclier) >= (m1 + m2) * (1 - C.bouclierChene)) deux = false;
+      var tous = l.concat(c.debout().filter(function(x){ return l.indexOf(x) < 0; })).slice(0, 3);
+      var chene = c.porte('sage', 'baton-chene') && tous.length > 1;
+      if(chene && vois){
+        var m1 = menace(c, l[0]), mT = 0, pris = viv.some(function(m){ var k = coupDe(c, m); return k && k.attrape && k.cibles.indexOf(l[0]) >= 0; });
+        tous.forEach(function(x){ mT += menace(c, x); });
+        if(pris || m1 * (1 - C.bouclier) >= mT * (1 - C.bouclierChene)) chene = false;
       }
-      return {heros:'sage', geste:deux ? 'a:baton-chene' : 'bouclier', cible:deux ? l.slice(0, 2) : l[0]};
+      return {heros:'sage', geste:chene ? 'a:baton-chene' : 'bouclier', cible:chene ? tous : l[0]};
     }
 
     /* 0. dans le ventre de Bourbe : un seul geste (et s'il est sec, c'est même une bonne idée, avant le Pisteur) */

@@ -858,11 +858,11 @@ section('Les objets et leurs bonus');
   ok(trouve(ev, 'rune').salle && bete(c, 'rat').ouvert !== 0 && c.a(bete(c, 'chauvesouris', 0), 'folle') && c.a(bete(c, 'chauvesouris', 1), 'folle'), 'cristal de lune : le rat s\'ouvre… et les deux chauves-souris deviennent folles (puissant, mais dangereux)');
 
   t = prep('rats', {objets:{sage:['baton-chene']}, hasard:[0.99, 0.99, 0.3]}); c = t.c;
-  egal([c.gestes('sage').filter(function(x){ return x.geste === 'bouclier'; })[0].max, c.gestes('sage').filter(function(x){ return x.geste === 'a:baton-chene'; })[0].max], [1, 2], 'bâton de chêne : une carte de plus, qui protège deux héros ; le bouclier simple reste là');
+  egal([c.gestes('sage').filter(function(x){ return x.geste === 'bouclier'; })[0].max, c.gestes('sage').filter(function(x){ return x.geste === 'a:baton-chene'; })[0].max], [1, 3], 'bâton de chêne : une carte de plus, qui protège les trois héros (14 novembre) ; le bouclier simple reste là');
   egal(c.refus('sage', 'bouclier', ['pisteur', 'alchimiste']), 'Un seul geste', 'le bouclier simple : toujours un seul héros');
-  ev = c.jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste']});
-  ok(c.h.pisteur.bouclier && c.h.alchimiste.bouclier && !c.h.sage.bouclier, 'bâton de chêne : deux héros protégés');
-  ok(c.h.pisteur.bouclier === 'chene' && c.h.alchimiste.bouclier === 'chene', 'ce sont deux boucliers du bâton de chêne');
+  ev = c.jouer('sage', {geste:'a:baton-chene', cible:['pisteur', 'alchimiste', 'sage']});
+  ok(c.h.pisteur.bouclier && c.h.alchimiste.bouclier && c.h.sage.bouclier, 'bâton de chêne : les trois héros protégés');
+  ok(c.h.pisteur.bouclier === 'chene' && c.h.alchimiste.bouclier === 'chene' && c.h.sage.bouclier === 'chene', 'ce sont trois boucliers du bâton de chêne');
   ev = tourSuivant(c);
   ok(tous(ev, 'degats', function(e){ return e.bouclier; }).length === 3, 'les trois morsures tombent sur des boucliers');
   /* (13 novembre) le bouclier de chêne n'arrête que la moitié du coup ; le bouclier jaune (bâton normal) en arrête 75 % */

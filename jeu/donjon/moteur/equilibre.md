@@ -82,23 +82,23 @@ Héros : Pisteur 120 PV, Alchimiste 100, Sage 90. Herbes +15, Baume +40, Baume l
 
 | Équipe | Victoires | Tours | PV restants | Tombe au tour | Ni l'un ni l'autre après 40 tours |
 |---|---|---|---|---|---|
-| Maligne | 100,0 % | 4,0 | 224 | — | — |
-| Sans le Sage | 0,0 % | — | — | 11,1 | 94,1 % |
+| Maligne | 100,0 % | 4,0 | 232 | — | — |
+| Sans le Sage | 0,0 % | — | — | 10,6 | 94,1 % |
 | Tape sans réfléchir | 0,0 % | — | — | 3,1 | — |
 | Tape, avec le feu au lieu de la louche | 0,0 % | — | — | 3,4 | — |
 | Au hasard | 0,0 % | — | — | 4,7 | — |
-| Sans le Sage, à tâtons | 2,8 % | 6,5 | 113 | 8,5 | — |
+| Sans le Sage, à tâtons | 2,9 % | 6,0 | 112 | 8,6 | — |
 
 ### Le grand bassin — Têtard du puits, Têtard du puits, Bourbe, le crapaud du puits
 
 | Équipe | Victoires | Tours | PV restants | Tombe au tour | Ni l'un ni l'autre après 40 tours |
 |---|---|---|---|---|---|
-| Maligne | 96,0 % | 8,8 | 84 | 11,5 | — |
+| Maligne | 96,3 % | 8,7 | 99 | 12,6 | — |
 | Sans le Sage | 0,0 % | — | — | — | 100,0 % |
 | Tape sans réfléchir | 0,0 % | — | — | — | 100,0 % |
 | Tape, avec le feu au lieu de la louche | 0,0 % | — | — | 14,4 | 39,6 % |
 | Au hasard | 0,0 % | — | — | 9,8 | 1,6 % |
-| Sans le Sage, à tâtons | 0,0 % | — | — | 15,0 | 13,0 % |
+| Sans le Sage, à tâtons | 0,0 % | — | — | 15,8 | 5,3 % |
 
 ### Les égouts tournants — Rat d'égout
 
@@ -152,16 +152,16 @@ Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les sal
 
 | Équipe | D'une traite | Avec 1 rechargement au plus | Avec 2 au plus | Défaites par descente | Un héros dans le rouge | Un héros au sol |
 |---|---|---|---|---|---|---|
-| Maligne (lourdes, bâton) | 60,0 % | 80,7 % | 88,0 % | 0,94 | 100 % | 95 % |
-| … avec la sacoche (Feu en plus, puis Cœur vaillant) | 60,0 % | 80,7 % | 88,0 % | 0,94 | 100 % | 95 % |
-| … avec les flèches d'argent | 57,3 % | 80,5 % | 90,6 % | 0,82 | 100 % | 89 % |
+| Maligne (lourdes, bâton) | 66,4 % | 85,1 % | 91,6 % | 0,70 | 100 % | 94 % |
+| … avec la sacoche (Feu en plus, puis Cœur vaillant) | 66,4 % | 85,1 % | 91,6 % | 0,70 | 100 % | 94 % |
+| … avec les flèches d'argent | 65,1 % | 86,5 % | 93,6 % | 0,61 | 100 % | 84 % |
 | … qui n'a pas cueilli la fleur de givre (pas de Givre contre Bourbe) | 0,0 % | 0,0 % | 0,0 % | 7,00 | 100 % | 88 % |
-| … avec le cristal de lune au lieu du bâton | 60,0 % | 80,7 % | 88,0 % | 0,94 | 100 % | 95 % |
-| … qui passe par la fausse crypte (l'amulette) | 52,5 % | 71,8 % | 80,5 % | 1,43 | 100 % | 95 % |
-| … sans aucune sauvegarde | 60,0 % | 60,0 % | 60,0 % | 0,40 | 100 % | 95 % |
-| … qui garde le sac de la salle des rats (Feu, Huile, Baume) jusqu'au feu de camp | 3,9 % | 9,7 % | 13,9 % | 5,81 | 100 % | 97 % |
-| Distraite : un geste sur dix joué au hasard | 19,3 % | 38,5 % | 50,8 % | 3,17 | 100 % | 98 % |
-| Très distraite : un geste sur quatre joué au hasard | 2,6 % | 6,1 % | 10,6 % | 5,91 | 100 % | 100 % |
+| … avec le cristal de lune au lieu du bâton | 66,4 % | 85,1 % | 91,6 % | 0,70 | 100 % | 94 % |
+| … qui passe par la fausse crypte (l'amulette) | 59,0 % | 77,7 % | 86,5 % | 1,06 | 100 % | 94 % |
+| … sans aucune sauvegarde | 66,4 % | 66,4 % | 66,4 % | 0,34 | 100 % | 94 % |
+| … qui garde le sac de la salle des rats (Feu, Huile, Baume) jusqu'au feu de camp | 6,3 % | 14,9 % | 21,6 % | 5,22 | 100 % | 95 % |
+| Distraite : un geste sur dix joué au hasard | 26,6 % | 47,1 % | 61,8 % | 2,58 | 100 % | 96 % |
+| Très distraite : un geste sur quatre joué au hasard | 3,7 % | 8,4 % | 15,3 % | 5,52 | 100 % | 100 % |
 
 « Un héros dans le rouge » : au moins une fois dans la descente, un héros a fini un tour avec un quart de ses PV ou moins (ou au sol). C'est ce qu'on appelle ici un moment chaud. Les deux dernières lignes montrent ce que coûtent les étourderies : c'est plus près d'une vraie famille que le robot du haut.
 
@@ -173,8 +173,8 @@ Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les sal
 | Les canaux de la ville d'avant | 292 | 100,0 % | 3,0 | 245 |
 | La cave aux toiles | 245 | 100,0 % | 3,9 | 210 |
 | L'atelier des Fondateurs | 210 | 100,0 % | 3,4 | 159 |
-| L'ossuaire | 159 | 89,9 % | 4,1 | 75 |
-| Le grand bassin | 225 | 66,3 % | 10,2 | 57 |
+| L'ossuaire | 159 | 91,9 % | 4,1 | 82 |
+| Le grand bassin | 230 | 71,3 % | 9,8 | 61 |
 
 ### Les autres équipes dans le donjon (sans sauvegarde, sans le plan du Sage)
 
@@ -200,7 +200,7 @@ Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les sal
 - ✅ sortie sans la bonne potion : L'ossuaire reste faisable (48,3 % et 67,9 %)
 - ✅ sortie sans la bonne potion : L'ossuaire est plus difficile qu'avec le bon sac (moins de victoires, plus de tours ou moins de PV à la fin)
 - ✅ sans le Givre, Bourbe ne se bat pas (voulu : lui seul le sort de l'eau) : 0,0 % et 0,0 %
-- ❌ maligne : elle gagne le donjon d'une traite plus de 85 % des fois (60,0 %)
+- ❌ maligne : elle gagne le donjon d'une traite plus de 85 % des fois (66,4 %)
 - ✅ maligne : avec des moments chauds (un héros dans le rouge dans 100 % des descentes)
 - ✅ maligne : Les canaux de la ville d'avant gagnée en 3 ou 4 tours (3,0 tours, 100,0 %)
 - ✅ maligne : La cave aux toiles gagnée en 3 ou 4 tours (3,9 tours, 100,0 %)
@@ -208,7 +208,7 @@ Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les sal
 - ✅ sans le Sage : elle ne bat pas L'atelier des Fondateurs (0,0 % de victoires)
 - ✅ maligne : L'ossuaire est faisable à pleins PV (100,0 %)
 - ✅ sans le Sage : elle ne bat pas L'ossuaire (0,0 % de victoires)
-- ✅ maligne : Le grand bassin est faisable à pleins PV (96,0 %)
+- ✅ maligne : Le grand bassin est faisable à pleins PV (96,3 %)
 - ✅ sans le Sage : elle ne bat pas Le grand bassin (0,0 % de victoires)
 - ✅ sans le Sage : personne n'arrive chez Léo (0,0 %)
 - ✅ à tâtons (sans le Sage, en essayant tout) : personne n'arrive chez Léo non plus (0,0 %)
@@ -225,11 +225,11 @@ Le chemin long, du fond du puits à Léo. Les PV ne reviennent pas entre les sal
 
 - **La salle des rats n'a pas bougé** : mêmes règles, mêmes chiffres que l'essai (`test-regles.js` rejoue 3 000 parties des deux côtés et compare tout).
 - **Dès les canaux, il faut réfléchir.** Taper sans ouvrir les points faibles, c'est tomber en 8 ou 9 tours ; l'équipe qui étudie gagne en 3 ou 4 tours.
-- **Bien joué, on ne perd pas par malchance** : l'équipe maligne (un robot qui ne se trompe jamais) arrive chez Léo 60 fois sur 100 sans tomber, mais presque toujours avec un héros dans le rouge à un moment (100 % des descentes). **Le Givre est obligatoire contre Bourbe** (depuis le 11 novembre, lui seul le sort de l'eau) : l'équipe qui n'a pas cueilli la fleur de givre arrive au bout 0,0 fois sur 100.
-- **Une vraie famille se trompera, et là ça pique** : avec un geste sur dix joué au hasard, 19 % des descentes réussissent d'une traite (38 % avec un rechargement au plus) ; avec un geste sur quatre, 3 % seulement, et 5,9 défaites par descente en moyenne. Les pages blanches du Sage servent donc vraiment. Si c'est trop dur (ou pas assez) à l'essai, les chiffres à bouger d'abord sont les dégâts des attaques dans `donnees.js` (le Gardien, les feux follets, les chauves-souris, le saut de Bourbe).
+- **Bien joué, on ne perd pas par malchance** : l'équipe maligne (un robot qui ne se trompe jamais) arrive chez Léo 66 fois sur 100 sans tomber, mais presque toujours avec un héros dans le rouge à un moment (100 % des descentes). **Le Givre est obligatoire contre Bourbe** (depuis le 11 novembre, lui seul le sort de l'eau) : l'équipe qui n'a pas cueilli la fleur de givre arrive au bout 0,0 fois sur 100.
+- **Une vraie famille se trompera, et là ça pique** : avec un geste sur dix joué au hasard, 27 % des descentes réussissent d'une traite (47 % avec un rechargement au plus) ; avec un geste sur quatre, 4 % seulement, et 5,5 défaites par descente en moyenne. Les pages blanches du Sage servent donc vraiment. Si c'est trop dur (ou pas assez) à l'essai, les chiffres à bouger d'abord sont les dégâts des attaques dans `donnees.js` (le Gardien, les feux follets, les chauves-souris, le saut de Bourbe).
 - **Sans les connaissances du Sage, les élites et le boss ne se battent pas** : 0 victoire contre le Gardien, le Roi des rats et Bourbe. Une équipe très prudente (soins et boucliers) traverse lentement les trois premières salles (une vingtaine de tours aux canaux), tient debout devant le Gardien… et ne peut rien lui faire.
 - **À tâtons**, en essayant tout et en retenant ce qu'on voit, on tombe parfois sur le combo du Gardien (10 % à pleins PV) ou du Roi des rats (3 %), jamais sur celui de Bourbe, et personne n'arrive au bout (0,0 %). Les pièges font leur travail.
-- **Presque toujours une sortie** : avec un mauvais sac, chaque salle reste faisable par un chemin plus long ou plus coûteux (tableau 3), **sauf le grand bassin : sans le Givre, Bourbe ne sort pas de l'eau**. Le plus dur : le Gardien sans Acide, sans Givre et sans Baume (36 %). Et **le choix du sac compte** : la même équipe maligne qui garde le sac de la salle des rats (Feu, Huile, Baume) doit lire le Grand Livre jusqu'aux chemins sans potion, les combats durent deux à quatre fois plus longtemps, et elle ne réussit d'une traite que 4 fois sur 100 (10 avec un rechargement au plus).
+- **Presque toujours une sortie** : avec un mauvais sac, chaque salle reste faisable par un chemin plus long ou plus coûteux (tableau 3), **sauf le grand bassin : sans le Givre, Bourbe ne sort pas de l'eau**. Le plus dur : le Gardien sans Acide, sans Givre et sans Baume (36 %). Et **le choix du sac compte** : la même équipe maligne qui garde le sac de la salle des rats (Feu, Huile, Baume) doit lire le Grand Livre jusqu'aux chemins sans potion, les combats durent deux à quatre fois plus longtemps, et elle ne réussit d'une traite que 6 fois sur 100 (15 avec un rechargement au plus).
 
 ### Ce que la simulation ne dit pas
 
