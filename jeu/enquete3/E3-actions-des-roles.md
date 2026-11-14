@@ -1,6 +1,13 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
-> **⚠️ 14 NOVEMBRE (Bible §13.36, qui fait foi ; go de Romain à 10 h 29) — le maire inquiet, à la fête :**
+> **⚠️ 14 NOVEMBRE, 12 H 40 (Bible §13.38, qui fait foi ; go de Romain à 11 h 44) — le maire inquiet vient tout seul, sur des minuteurs cachés. Ce qui suit REMPLACE, dans le bloc du dessous, la façon dont le maire arrive chez le Barde :**
+> - **Dès que le Barde entre le code du Pisteur** (`grille_silence`, `grille_bruit` ou `puits_ouvert`) : **un minuteur caché de 15 minutes**. Rien ne l'annonce (ni mission, ni « 🎭 » sur le maire).
+> - **Au bout du temps, la fenêtre du maire s'ouvre toute seule**, avec un petit son, par-dessus tout.
+> - **Sans bruit, ou par le puits** : il pose sa question ; après chaque bonne réponse, **5 minutes**, et il revient (trois questions). Une mauvaise réponse : « Bien, bien… J'ai une affaire à régler au clocher. », et c'est fini.
+> - **Avec le bruit** : **aucune réponse possible** — « Où sont vos trois amis ? C'est bizarre… J'ai entendu la grille. Je vais aller voir. »
+> - **Ça ne change toujours rien à la suite.** Aucun code n'a changé.
+>
+> **⚠️ 14 NOVEMBRE (Bible §13.36 ; go de Romain à 10 h 29) — le maire inquiet, à la fête (l'arrivée du maire a changé à 12 h 40 : le bloc du dessus) :**
 > - **En ouvrant le passage, le Pisteur a un deuxième code, pour le Barde** (dans la même fenêtre que « On va dans la crypte ») : la grille **soulevée** → « **La grille s'ouvre sans bruit** » (`grille_silence`) ; la grille **tirée ou poussée** → « **La grille a hurlé** » (`grille_bruit`) ; **par le puits** → « **Le puits est ouvert** » (`puits_ouvert`).
 > - **Chez le Barde**, ce code fait venir le maire à la fête, une fois tout le monde écouté : « 🎭 » sur son visage, une grande conversation de trois étapes (« Où sont vos trois amis ? »). Les bonnes réponses : son discours, le bal, le gâteau (les indices de Margot, de Silas et de Gaspard). Il ne dit « clocher » qu'en partant, après une mauvaise réponse. Avec le bruit, seule sa première phrase change. Les textes : `E3-dialogues-et-trame.md` §3, « amis ».
 > - **Ça ne change rien à la suite** : ni code ni récompense au bout. « C'est juste pour occuper le Barde » : le maire descendra dans tous les cas, à la fin.
@@ -177,9 +184,9 @@ Les codes de l'E3 sont neufs ; ils seront gelés dès leur première mise en lig
 | Barde | Le vieux puits | Pisteur | Anselme raté (si c'est le Pisteur qui rate, le puits apparaît chez lui) |
 | ~~Alchimiste~~ | ~~Le sac~~ | ~~Pisteur~~ | **remplacé le 13 novembre** par le code d'allure de l'Alchimiste (ses sept potions prêtes) |
 | Pisteur | On va dans la crypte | Sage, Alchimiste | le passage ouvert (la grille, ou le puits) : la tenue de combat |
-| **Pisteur** | **La grille s'ouvre sans bruit** | **Barde** | **14 novembre** : la grille soulevée → le maire inquiet, à la fête |
-| **Pisteur** | **La grille a hurlé** | **Barde** | **14 novembre** : la grille tirée ou poussée → le maire, à la fête (« Vous avez entendu ce bruit ? ») |
-| **Pisteur** | **Le puits est ouvert** | **Barde** | **14 novembre** : par le puits → le maire inquiet, à la fête |
+| **Pisteur** | **La grille s'ouvre sans bruit** | **Barde** | **14 novembre** : la grille soulevée → 15 minutes après (minuteur caché), le maire inquiet vient tout seul ; le Barde peut le retenir |
+| **Pisteur** | **La grille a hurlé** | **Barde** | **14 novembre** : la grille tirée ou poussée → 15 minutes après, le maire vient dire qu'il a entendu la grille et qu'il va voir (aucune réponse possible) |
+| **Pisteur** | **Le puits est ouvert** | **Barde** | **14 novembre** : par le puits → comme « sans bruit » |
 | Sage, Alchimiste | Leur code d'allure | Pisteur | pour descendre (celui de l'Alchimiste : avec ses sept potions) |
 | Pisteur | Le carnet de l'aventurier | Sage | à l'entrée du donjon (existe : `carnet:aventurier`) |
 | Pisteur | La rune de lumière | Sage | la galerie effondrée (existe : `rune:lumiere`) |
@@ -239,7 +246,7 @@ Les codes de l'E3 sont neufs ; ils seront gelés dès leur première mise en lig
 1. **Barde** : la fête (chacun a un mot, trois sont des indices sur le maire) ; puis Anselme, au clocher. Réussi → **Pisteur** : la clé, dans le clocher. Raté (l'un ou l'autre) → le vieux puits, et l'acide de l'Alchimiste.
 2. **Pisteur** : il ouvre le passage. La grille de la crypte : tirer, pousser (un énorme bruit) ou soulever (sans bruit). Ou les barreaux du puits, fondus à l'acide.
 3. **Pisteur → Sage et Alchimiste** : « On va dans la crypte » (la tenue de combat). **Sage → Pisteur** et **Alchimiste → Pisteur** : leur code d'allure (celui de l'Alchimiste : ses sept potions).
-4. **Pisteur → Barde** (14 novembre) : « La grille s'ouvre sans bruit », « La grille a hurlé » ou « Le puits est ouvert ». **Barde** : le maire, inquiet, vient le trouver à la fête — « Où sont vos trois amis ? » ; le discours, le bal, le gâteau. Rien n'en dépend pour la suite.
+4. **Pisteur → Barde** (14 novembre) : « La grille s'ouvre sans bruit », « La grille a hurlé » ou « Le puits est ouvert ». **Barde** : un minuteur caché de 15 minutes démarre ; puis le maire, inquiet, vient le trouver tout seul (sa fenêtre s'ouvre par-dessus tout) — « Où sont vos trois amis ? » ; le discours, le bal, le gâteau, avec 5 minutes entre deux questions. Avec le bruit : il prévient seulement qu'il va voir. Rien n'en dépend pour la suite.
 5. **Pisteur + Alchimiste + Sage** : le donjon, sur la tablette du Pisteur (le Sage guide avec son plan).
 6. **Pisteur → Barde** : « L'homme en cape est là ! » (la dernière salle). **Barde** : Farinel et Iris, à la fête ; il lit leurs réponses à voix haute pendant le combat.
 7. **Pisteur → Sage** : « Odette est derrière la porte » (la page des Fondateurs), puis « Léo a parlé » (Léo battu).

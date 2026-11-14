@@ -80,9 +80,8 @@ E[3] = {
       /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
          n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
       {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}]}]},
-      /* (14 novembre, Bible §13.36) le maire inquiet : elle arrive avec le code du Pisteur (la grille, ou le puits). Rangée ici, après
-         les autres, pour ne décaler aucune mission d'une partie déjà commencée. */
-      {des:2, si:[{code:'info:grille_silence'}, {code:'info:grille_bruit'}, {code:'info:puits_ouvert'}], ic:'🎩', t:'Le maire cherche tes trois amis, à la fête. Quand tu auras écouté tout le monde, va le voir… avec les bons mots.', fait:[{vu:'grand:amis:fini'}]},
+      /* (14 novembre, 11 h 44, Bible §13.38) plus de mission pour le maire inquiet : il vient tout seul, sur un minuteur CACHÉ — une
+         mission l'annoncerait un quart d'heure à l'avance */
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -307,31 +306,38 @@ E[3] = {
       echec:{bouton:'🏠 Qui m\'appelle ?', qui:'tim', titre:'Tim, depuis les toits', t:'« Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! »', code:'info:vieux_puits'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
     /* LE MAIRE INQUIET, À LA FÊTE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « j'aimerais bien qu'on remette à la fin le maire inquiet,
-       qui demande au Barde où sont ses amis »). Il arrive quand le Barde a tapé le code du Pisteur (la grille ouverte sans bruit, la grille
-       qui a hurlé, ou le puits : fete.gens.grosbec.grand) et qu'il a écouté tout le monde à la fête. On n'y entre pas par une question :
-       on touche le maire, à la fête (fete:true, grands.js).
+       qui demande au Barde où sont ses amis »).
+       IL VIENT TOUT SEUL, SUR DES MINUTEURS CACHÉS (Romain, 14 novembre, 11 h 44, Bible §13.38 ; grands.js : veiller, venir) :
+       · attente : dès que le Barde a tapé le code du Pisteur (si : la grille sans bruit, la grille qui a hurlé, ou le puits), un minuteur
+         caché de 15 minutes (debut : 900 secondes). Au bout, la fenêtre du maire s'ouvre toute seule, par-dessus tout, avec le toc-toc.
+         Plus besoin d'avoir écouté tout le monde à la fête, plus de « 🎭 » à toucher.
+       · Le Barde le retient (une bonne réponse) : 5 minutes plus tard (suite : 300), il revient pour le dialogue suivant. Trois dialogues.
+       · sansReponse : si la grille a fait du bruit, au bout des 15 minutes il ne pose pas de question — « le Barde n'a pas de réponse,
+         il ne peut rien faire : le maire le prévient qu'il va aller voir ». Une fenêtre, « D'accord », et c'est fini.
        · Ses questions restent innocentes : « Où sont vos amis ? ». Il ne dit JAMAIS « clocher » de lui-même (« il ne faut pas qu'il se
          trahisse : il ne sait pas si on sait qu'ils sont au clocher ») ; c'est le récit qui montre où il regarde.
        · À chaque mauvaise réponse, et seulement là, il le lâche en partant : « J'ai une affaire à régler au clocher. »
-       · Avec le bruit (tSi : le code « La grille a hurlé »), seule sa première phrase change.
        · Les bonnes réponses sont les trois indices de la fête : Margot (son discours), Silas (il ouvre le bal), Gaspard (le gâteau).
        · Ni code ni récompense au bout : « c'est juste pour occuper le Barde. Ça ne change rien » — le maire descendra dans tous les cas.
-       La réplique d'une bonne réponse porte la suite (ce qu'il fait, puis sa question d'après) : c'est elle qu'on lit à l'étape suivante. */
+       (Dans l'histoire, son discours dure vingt minutes ; dans le jeu, il revient au bout de cinq.) */
     amis:{pnj:'grosbec', ic:'🎩', fete:true,
+      attente:{si:[{code:'info:grille_silence'}, {code:'info:grille_bruit'}, {code:'info:puits_ouvert'}], debut:900, suite:300},
+      sansReponse:{si:[{code:'info:grille_bruit'}],
+        t:'« Où sont vos trois amis ? C\'est bizarre… J\'ai entendu la grille. Je vais aller voir. » Il quitte la fête, à grands pas.',
+        resume:'Le maire a entendu la grille. Il a quitté la fête : « Je vais aller voir. »'},
       rate:'« Bien, bien… J\'ai une affaire à régler au clocher. » Il quitte la fête, à grands pas.',
       etapes:[
         {t:'Barde… Où sont vos trois amis ? Je ne les vois nulle part.',
-          tSi:[{si:[{code:'info:grille_bruit'}], t:'Vous avez entendu ce bruit ? Où sont vos amis ?'}],
           choix:[
           {q:'Ils sont partis se coucher : ils étaient très fatigués.'},
-          {q:'Ils arrivent ! Mais tout le monde réclame votre discours.', r:'« Mon discours ? Si on le réclame… » Il parle, un œil sur le clocher, puis il revient. « Vingt minutes, et toujours personne. Où sont-ils ? »', bon:true},
+          {q:'Ils arrivent ! Mais tout le monde réclame votre discours.', r:'« Mon discours ? Si on le réclame… » Il monte sur l\'estrade, un œil sur le clocher.', bon:true},
           {q:'Ils cherchent encore Odette, je crois, Monsieur le maire.'},
           {q:'Ils arrivent ! Goûtez donc le buffet en les attendant.'}]},
         {t:'Vingt minutes, et toujours personne. Où sont-ils ?', choix:[
           {q:'Attendez encore un peu, Monsieur le maire, je vous en prie.'},
           {q:'Ils sont au clocher : ils aident Anselme à sonner.'},
           {q:'Vous avez l\'air bien nerveux, ce soir, Monsieur le maire.'},
-          {q:'Personne ne danse avant vous : ouvrez le bal !', r:'« C\'est vrai… Une seule danse. » Il danse, les yeux tournés vers le clocher, puis il revient. « J\'ai dansé. Alors, où sont-ils ? »', bon:true}]},
+          {q:'Personne ne danse avant vous : ouvrez le bal !', r:'« C\'est vrai… Une seule danse. » Il ouvre le bal, les yeux tournés vers le clocher.', bon:true}]},
         {t:'J\'ai dansé. Alors, où sont-ils ?', choix:[
           {q:'Gaspard n\'arrive pas à porter le gâteau tout seul !', r:'« Mon gâteau ! » Il court aider Gaspard, sans un regard pour le clocher.', bon:true},
           {q:'Reprenez donc un verre de cidre, Monsieur le maire.'},
@@ -342,7 +348,8 @@ E[3] = {
   },
   /* (13 novembre, 18 h 08, Bible §13.33) « Retenir le maire » est retiré : ses trois petits dialogues, sa mission et son code. La grande
      scène de Léo aussi : Léo parle dans le donjon, une fois battu (jeu/donjon/moteur/src/leo.js).
-     (14 novembre, Bible §13.36) Le maire revient à la fête, autrement : un grand dialogue, sans code ni effet sur le donjon (grands.amis). */
+     (14 novembre, Bible §13.36 et §13.38) Le maire revient à la fête, autrement : un grand dialogue à minuteurs cachés, sans code ni
+     effet sur le donjon (grands.amis). */
   /* ---------- La fête (grands.js ; E3-dialogues-et-trame.md, version 3) : la nuit, sur la place ; chacun dit une réplique (gratuit).
      Mélusine, si son aveu n'a pas été
      obtenu l'après-midi, craque (le filet). */
@@ -375,11 +382,9 @@ E[3] = {
           note:'Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !'}},
       basile:{t:'Les lampions tiennent ! Je n\'en reviens pas moi-même.'},
       fortune:{t:'Dernières lanternes ! Deux pour le prix de trois !'},
-      /* (14 novembre, Bible §13.36) grand : avec l'un de ces codes du Pisteur, et tout le monde écouté à la fête (tous:true — la règle des
-         grandes conversations : jamais avant d'avoir les indices), le maire vient trouver le Barde : « 🎭 » sur son visage, en tête de la
-         fête et sur la carte ; on le touche, et le grand dialogue « amis » s'ouvre (grands.js) */
-      grosbec:{t:'Quelle fête ! Tout le village est là… enfin, presque.',
-        grand:{g:'amis', si:[{code:'info:grille_silence'}, {code:'info:grille_bruit'}, {code:'info:puits_ouvert'}], tous:true}}
+      /* (14 novembre, 11 h 44, Bible §13.38) on ne va plus chercher le maire à la fête pour sa grande conversation : il vient tout seul,
+         sur un minuteur caché (grands.amis.attente) */
+      grosbec:{t:'Quelle fête ! Tout le village est là… enfin, presque.'}
     }},
 
   /* Les photos du tableau de liège du Barde (liege.js) ; les mots-clés (« Autre ») viendront avec la suite.
@@ -528,9 +533,9 @@ E[3] = {
     /* LE BRUIT DE LA GRILLE, POUR LE BARDE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « il faut qu'il reçoive un code pour savoir s'ils
        ont fait du bruit ou pas »). En ouvrant le passage, le Pisteur a un deuxième code, pour le Barde (p.donneAussi, moteur-actions.js) :
        soulever → « La grille s'ouvre sans bruit » ; tirer ou pousser → « La grille a hurlé » ; le puits (ajouté par Claude : personne
-       n'a rien entendu non plus) → « Le puits est ouvert ». Chez le Barde, n'importe lequel fait venir le maire à la fête (grands.amis,
-       fete.gens.grosbec.grand) : seule sa première phrase change avec le bruit. « C'est juste pour occuper le Barde. Ça ne change rien »
-       à la fin : le maire descendra dans tous les cas.
+       n'a rien entendu non plus) → « Le puits est ouvert ». Chez le Barde, n'importe lequel lance le minuteur caché du maire (grands.amis.attente :
+       il vient tout seul au bout de 15 minutes) ; avec le bruit, il ne pose pas de question, il prévient qu'il va voir
+       (grands.amis.sansReponse). « C'est juste pour occuper le Barde. Ça ne change rien » à la fin : le maire descendra dans tous les cas.
        tard:true : ces trois codes se rangent tout à la fin de la liste (moteur-base.js, codesBruts) — aucun autre code ne bouge. */
     grille_silence:{nom:'La grille s\'ouvre sans bruit', ic:'🤫', pour:'barde', de:'pisteur', tard:true,
       t:'Tes amis ont soulevé la grille de la crypte, tout doucement. Pas un bruit : à la fête, personne n\'a rien entendu.',

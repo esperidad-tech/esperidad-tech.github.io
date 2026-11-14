@@ -9,10 +9,12 @@
    · La fête (la nuit, sur la place) : chacun dit une réplique, gratuitement ; quelques-unes sont des indices, notés dans le Carnet.
    · Retenir le maire : trois petits dialogues d'une étape, à la fête, au rythme du Barde (sans minuteur). (Retiré de l'enquête 3 le
      13 novembre : E.retenir n'existe plus, ce code-là dort.)
-   · (14 novembre, Bible § 13.36) Le maire inquiet, à la fête : un grand dialogue comme les autres (E.grands.amis), mais on n'y entre pas
-     par une question — on touche le maire, à la fête (E.fete.gens.grosbec.grand ; X.fete:true ; grandFete, plus bas). Une étape peut
-     changer de première phrase selon un code (et.tSi : la grille a fait du bruit, ou non).
-   État : P.grands[g] = {e (étape), vus:{'e:k'}, r (la dernière réplique), fini:''|'ok'|'rate'|'piege'|'encore'|'leo', essais, ok, ment}
+   · (14 novembre, Bible § 13.36 et § 13.38) Le maire inquiet, à la fête (E.grands.amis ; X.fete:true) : on n'y entre pas par une question,
+     et on ne va pas le chercher — IL VIENT TOUT SEUL, sur des minuteurs cachés (X.attente : 15 minutes après le code du Pisteur, puis
+     5 minutes après chaque bonne réponse). Sa fenêtre s'ouvre par-dessus tout, avec le « toc-toc » (veiller, venir, plus bas). Si la
+     grille a fait du bruit (X.sansReponse), une seule fenêtre, sans réponse possible.
+   État : P.grands[g] = {e (étape), vus:{'e:k'}, r (la dernière réplique), fini:''|'ok'|'rate'|'piege'|'encore'|'leo'|'parti', essais, ok, ment,
+          quand (l'heure, Date.now(), où il vient pour l'étape e : X.attente)}
           P.grands.retenir = {k, res:[], apres:[], fini, montre} ; P.fete = {vus:{}, n (visites à la fête, sauf le maire)}
           P.vus['grand:' + g] = 'ok' | 'rate' | 'piege' (pour les conditions : la question de la Grosse Marie, le maire à retenir…)
    La fenêtre : UI.modal = {type:'grand', g, vue:'fete', qui, r} (moteur-actions.js, contenuModal). Chargé après barde.js et marche.js.
@@ -80,7 +82,8 @@ A['gd-reprendre'] = function(el){ var g = el.dataset.g, st = etat(g); if(st.fini
 
 function grandHTML(m){
   var g = m.g, X = Gd(g), st = etat(g); if(!X) return '';
-  var id = X.pnj, h = '<div class="ma-feuille gd-feuille">' + (X.scene ? '' : bandeau(X, st)) + tete(id);
+  /* (14 novembre, X.sansReponse) il est venu dire un mot et il est parti : pas de ronds d'étapes, pas d'« un seul essai » */
+  var id = X.pnj, h = '<div class="ma-feuille gd-feuille">' + (X.scene ? '' : st.fini === 'parti' ? '<div class="gd-bandeau"><b>🎭 Grande conversation</b></div>' : bandeau(X, st)) + tete(id);
   /* Léo ment d'entrée : « 🤥 Mensonge ? » (son signe, épinglé par Farinel), ou on continue
      (12 novembre au soir : plus à l'enquête 3, où Léo est une scène sans choix — X.scene, sceneLeo plus bas) */
   if(g === 'leo' && !X.scene && !st.ment){
@@ -104,15 +107,13 @@ function grandHTML(m){
     if(X.fete) return h + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
     return h + '<button class="btn grand" data-act="gd-retour" data-id="' + id + '">D\'accord</button></div>';
   }
+  /* (14 novembre, X.attente) le Barde vient de bien répondre : la réplique du maire, « D'accord », et il s'en va. Il reviendra tout seul
+     pour l'étape suivante, quand son minuteur caché sera fini (veiller, plus bas) */
+  /* (m.venu : l'étape pour laquelle cette fenêtre s'est ouverte — venir ; après une bonne réponse, st.e a avancé, pas m.venu) */
+  if(X.attente && m.venu !== st.e) return h + ligne(st.r, id) + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
   var et = X.etapes[st.e];
-  h += ligne(st.r || cite(texteEtape(et)), id);
+  h += ligne(st.r || cite(et.t), id);
   return h + choixHTML(et.choix, 'gd-choix', function(k){ return !!st.vus[st.e + ':' + k]; }) + '</div>';
-}
-/* (14 novembre) et.tSi : [{si:[conditions], t}] — la phrase de l'étape change quand une condition est vraie (le maire, à la fête : « Vous
-   avez entendu ce bruit ? », si le Barde a reçu le code « La grille a hurlé ») ; sinon et.t */
-function texteEtape(et){
-  var v = (et.tSi || []).filter(function(x){ return M.besoinOk(x.si); })[0];
-  return v ? v.t : et.t;
 }
 /* un mauvais choix ferme la porte jusqu'au moment suivant (G.fermeVisite) : ses questions de la visite sont épuisées (barde.js) */
 function fermerVisite(id){
@@ -139,7 +140,11 @@ A['gd-choix'] = function(el){
   var toujours = X.toujours ? ' ' + cite(X.toujours) : '';
   if(c.bon){
     st.ok++;
-    if(st.e + 1 < X.etapes.length){ st.e++; st.r = dire(c); M.son('clic'); }
+    if(st.e + 1 < X.etapes.length){
+      st.e++; st.r = dire(c);
+      /* (14 novembre, X.attente) le maire est retenu : son minuteur caché repart (5 minutes), et il reviendra tout seul */
+      if(X.attente){ st.quand = Date.now() + attenteMs(X, st.e); M.son('ok'); } else M.son('clic');
+    }
     else if(g === 'leo') finLeo(c);
     else { st.r = dire(c) + toujours; finir(g, 'ok'); M.son('ok'); }
   } else if(c.piege){
@@ -153,6 +158,7 @@ A['gd-choix'] = function(el){
     else { finir(g, 'rate'); if(X.fermeVisite) fermerVisite(X.pnj); }
     M.son('ko');
   }
+  if(X.attente) m.fixe = false;   /* (il a répondu : la fenêtre du maire peut se refermer) */
   M.sauver(); M.render();
 };
 /* après une réussite (ou le piège, ou Tim qui montre le puits) : le code, dans une découverte ; puis retour à la conversation */
@@ -262,20 +268,69 @@ function aide(id){
 function aideEtat(id){ var P = M.P(); P.fete = P.fete || {vus:{}, n:0}; P.fete.aide = P.fete.aide || {}; return P.fete.aide[id] || (P.fete.aide[id] = {}); }
 function aideFinie(id){ var a = aide(id); if(!a) return true; var st = aideEtat(id); return a.questions.every(function(q, k){ return !!st[k]; }); }
 M.feteAide = function(id){ return aide(id); };
-/* LE GRAND DIALOGUE D'UN FÊTARD (14 novembre, Bible §13.36 : le maire inquiet) : E.fete.gens.<pnj>.grand = {g, si:[conditions : une
-   suffit], tous:true}. Il est prêt quand une condition est vraie (le Barde a tapé le code du Pisteur : la grille, ou le puits), que tous
-   les AUTRES fêtards ont été écoutés (tous — la règle des grandes conversations : on a les indices avant d'y entrer), et qu'il n'est
-   pas fini. Alors ce villageois porte « 🎭 », passe en tête de la fête et sur la carte, et on le touche pour ouvrir le dialogue.
-   Rend le nom du grand dialogue, ou ''. */
-function grandFete(id){
-  var f = F(), x = f && f.gens[id], P = M.P(); if(!x || !x.grand || !P || !Gd(x.grand.g) || !barde() || !M.momentOk(f.moments)) return '';
-  var st = (P.grands || {})[x.grand.g]; if(st && st.fini && st.fini !== 'encore') return '';
-  if(x.grand.si && !M.besoinOk(x.grand.si)) return '';
-  var vus = (P.fete && P.fete.vus) || {};
-  if(x.grand.tous && M.cle(f.gens).some(function(k){ return k !== id && D.PNJ[k] && !vus[k]; })) return '';
-  return x.grand.g;
+/* ==========================================================
+   LE MAIRE VIENT TOUT SEUL (Romain, 14 novembre, 11 h 44, Bible §13.38 : « du moment où le Barde reçoit le code du Pisteur, tu mets un
+   minuteur caché de 15 minutes, et au bout de 15 minutes tu fais apparaître le maire qui parle au Barde […] avec un petit son, comme
+   d'habitude » ; « une fois que le Barde a réussi à le retenir, tu enclenches encore un minuteur de 5 minutes, pour le deuxième
+   dialogue. Et pour le troisième, c'est pareil » ; « le maire vient par-dessus, même si le Barde était déjà en train de parler »).
+
+   Un grand dialogue à minuteurs : X.attente = {si:[conditions, une suffit : les codes du Pisteur], debut:900, suite:300} (en secondes).
+   · Dès qu'une condition est vraie, le minuteur CACHÉ démarre : st.quand = l'heure où il viendra (une heure d'horloge, gardée dans la
+     partie : la page peut être rechargée ou la tablette s'endormir, il viendra quand même).
+   · À l'heure, sa fenêtre s'ouvre toute seule, PAR-DESSUS ce qui est ouvert, avec le « toc-toc » de quelqu'un qui arrive. On ne peut pas
+     la refermer sans répondre (fixe). Ce qui était ouvert dessous (Farinel qui explique ses outils…) revient quand on la referme.
+   · Une bonne réponse : sa réplique, « D'accord », et le minuteur repart (suite) ; il reviendra pour l'étape d'après. Une mauvaise :
+     X.rate, et c'est fini.
+   · X.sansReponse = {si, t, resume} : si une de ces conditions est vraie (la grille a fait du bruit), il ne pose aucune question — une
+     seule fenêtre, sa phrase, « D'accord », et il est parti (fini : 'parti').
+   Rien ne s'affiche pendant l'attente : ni compte à rebours, ni signe sur le maire.
+   ========================================================== */
+function attenteMs(X, k){ var a = X.attente || {}; return 1000 * (k ? (a.suite || 0) : (a.debut || 0)); }
+/* ce qu'on remet quand la fenêtre du maire se referme : les fenêtres qu'on peut rouvrir telles quelles */
+var DESSOUS = {grand:1, lieu:1, maison:1, decouverte:1, info:1};
+function venir(g){
+  var X = Gd(g), st = etat(g), P = M.P(), m = UI.modal;
+  var dessous = m && !(m.type === 'grand' && m.g === g) && DESSOUS[m.type] ? m : (m && m.type === 'grand' && m.g === g ? UI.gdDessous : null);
+  var sr = X.sansReponse && M.besoinOk(X.sansReponse.si) ? X.sansReponse : null;
+  st.r = '';
+  if(sr){
+    st.r = cite(sr.t); st.fini = 'parti'; P.vus['grand:' + g] = 'parti'; P.vus['grand:' + g + ':fini'] = 1;
+    if(sr.resume) M.noter(sr.resume, (D.PNJ[X.pnj] || {}).ic);
+    if(X.fete){ P.fete = P.fete || {vus:{}, n:0}; P.fete.vus[X.pnj] = 1; }
+  }
+  UI.gdDessous = dessous || null;
+  M.son('porte');
+  M.ouvrir({type:'grand', g:g, venu:st.e, classe:'b-feuille-conv gd-fenetre', fixe:!sr});
 }
-M.grandFete = function(id){ try{ return grandFete(id); }catch(e){ return ''; } };
+function veiller(){
+  var E = EN(); if(!E || !E.grands || !barde()) return;
+  var f = F(); if(f && !M.momentOk(f.moments)) return;
+  /* pas pendant un mini-jeu, ni hors de l'enquête (le village, les Réglages) : il attend qu'on y revienne ; ni par-dessus une fenêtre
+     qu'on n'a pas le droit de fermer */
+  var libre = UI.ecran === 'enquete' && !M.mjPause && !(M.P() || {}).mjOuvert && !document.querySelector('#mj-plein:not([hidden])');
+  M.cle(E.grands).forEach(function(g){
+    var X = E.grands[g]; if(!X.attente || !X.attente.si || !X.attente.si.length) return;
+    var P = M.P(), st = (P.grands || {})[g];
+    if((st && st.fini) || !M.besoinOk(X.attente.si)) return;
+    st = etat(g);
+    if(!st.quand){ st.quand = Date.now() + attenteMs(X, st.e); M.sauver(); return; }   /* le minuteur caché démarre */
+    if(Date.now() < st.quand || !libre) return;
+    var m = UI.modal;
+    if(m && m.type === 'grand' && m.g === g && m.venu === st.e) return;   /* sa fenêtre est déjà là, pour cette étape */
+    if(m && m.fixe && !(m.type === 'grand' && m.g === g)) return;
+    venir(g);
+  });
+}
+M.grandVeiller = function(){ try{ veiller(); }catch(e){ console.error(e); } };   /* (les robots l'appellent, pour ne pas attendre la seconde) */
+try{ setInterval(M.grandVeiller, 1000); }catch(e){}
+/* la fenêtre du maire se referme : ce qu'elle a recouvert revient */
+var fermer0 = M.fermer;
+M.fermer = function(){
+  var m = UI.modal, d = UI.gdDessous;
+  if(d && m && m.type === 'grand' && m.g && (Gd(m.g) || {}).attente){ UI.gdDessous = null; if(M.stop) M.stop(); M.ouvrir(d); return; }
+  UI.gdDessous = null;
+  return fermer0.apply(this, arguments);
+};
 function feteHTML(lieu){
   if(!feteIci(lieu)) return '';
   var f = F(), P = M.P(), Rt = R(), vus = (P.fete && P.fete.vus) || {};
@@ -285,23 +340,18 @@ function feteHTML(lieu){
   var h = '<p class="sur-titre">🎉 La fête</p><p class="doux gd-fete-intro">' + esc(FETE_TXT) + ' ' + lire(FETE_TXT) + '</p><div class="gd-fete-grille">';
   var ids = M.cle(f.gens), cherche = Rt && retenirDispo();
   if(cherche) ids = [Rt.pnj].concat(ids.filter(function(id){ return id !== Rt.pnj; }));
-  /* (14 novembre) celui dont le grand dialogue est prêt (le maire inquiet : grandFete) passe en tête, lui aussi */
-  var enTete = ids.filter(function(id){ return !!grandFete(id); });
-  if(enTete.length) ids = enTete.concat(ids.filter(function(id){ return enTete.indexOf(id) < 0; }));
   ids.forEach(function(id){
     if(!D.PNJ[id]) return;
-    var ai = aide(id), gf = grandFete(id), appel = !!gf || (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)), vu = !!vus[id] && !appel && !ai;
+    var ai = aide(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)), vu = !!vus[id] && !appel && !ai;
     /* (la règle du Barde, Romain, 13 novembre : celui qui a tout dit passe au rouge, et on ne peut plus le toucher) */
-    h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (gf ? ' gd-fete-grand' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? (gf ? 'Grande conversation : ' : ai ? 'Quelque chose à te dire : ' : 'Il te cherche : ') : 'Parler à ') + nom(id)) + '"') + '>' +
-      '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">' + (gf ? '🎭' : '❗') + '</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
+    h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? (ai ? 'Quelque chose à te dire : ' : 'Il te cherche : ') : 'Parler à ') + nom(id)) + '"') + '>' +
+      '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">❗</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
   });
   return h + '</div>';
 }
 A['gd-fete'] = function(el){
   var id = el.dataset.id, f = F(), x = f && f.gens[id], P = M.P(), Rt = R(); if(!x || !barde() || !M.momentOk(f.moments)) return;
   if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv gd-fenetre'}); return; }
-  /* (14 novembre) son grand dialogue est prêt (le maire inquiet) : il s'ouvre, dans sa fenêtre violette */
-  var gf = grandFete(id); if(gf){ M.son('porte'); M.grandOuvrir(gf); return; }
   P.fete = P.fete || {vus:{}, n:0};
   if(aide(id)){ P.fete.vus[id] = 1; M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, aide:true, classe:'b-feuille-conv'}); return; }
   if(!Rt || id !== Rt.pnj) P.fete.n++;
@@ -347,7 +397,6 @@ if(ind0) M.pnjIndispo = function(id){
     if(f && barde() && f.gens[id] && M.momentOk(f.moments)){
       var P = M.P(), Rt = R();
       if(Rt && id === Rt.pnj && retenirDispo()) return false;
-      if(grandFete(id)) return false;                  /* (14 novembre) son grand dialogue l'attend : le maire inquiet */
       if(aide(id)) return false;                       /* (il aide ceux du donjon : toujours ouvert, on peut le relire) */
       return !!(P.fete && P.fete.vus && P.fete.vus[id]);
     }
@@ -415,7 +464,7 @@ A['gd-ret-ok'] = function(){
 /* sur la carte, le maire porte un « ! » quand il cherche le Barde */
 var bu0 = M.pnjBulleCarte;
 M.pnjBulleCarte = function(id){
-  try{ var Rt = R(); if(Rt && id === Rt.pnj && retenirDispo()) return '❗'; if(grandPret(id) || grandFete(id)) return '🎭'; }catch(e){ console.error(e); }
+  try{ var Rt = R(); if(Rt && id === Rt.pnj && retenirDispo()) return '❗'; if(grandPret(id)) return '🎭'; }catch(e){ console.error(e); }
   return bu0 ? bu0.apply(this, arguments) : '';
 };
 /* (12 novembre au soir) un grand dialogue vient de s'ouvrir chez ce villageois (tout a été demandé) et il n'est pas fini : « 🎭 » sur son

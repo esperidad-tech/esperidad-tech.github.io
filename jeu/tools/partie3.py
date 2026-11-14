@@ -342,16 +342,26 @@ def partie(nav, base):
     verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code d\'allure'); P.fermer()
     t = P.taper(seqA, garder=True); passes.append(('alchimiste', 'allure', 'pisteur'))
     verifier('L\'Alchimiste est prêt' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : son code d\'allure, et ses sept potions'); P.fermer()
-    # (14 novembre, Bible §13.36) LE MAIRE INQUIET : la grille soulevée donne aussi un code au Barde ; à la fête, une fois tout le monde
-    # écouté, le maire vient le trouver (« 🎭 ») et demande où sont ses amis — le discours, le bal, le gâteau. Aucun code au bout.
+    # (14 novembre, Bible §13.36 et §13.38) LE MAIRE INQUIET : la grille soulevée donne aussi un code au Barde. Un minuteur caché démarre
+    # (15 minutes) : le maire vient alors tout seul, par-dessus tout, et demande où sont ses amis — le discours, le bal, le gâteau ; après
+    # chaque bonne réponse, 5 minutes, et il revient. Le robot n'attend pas : il avance l'heure du minuteur (grands.amis.quand).
+    # Aucun code au bout.
     verifier(livrer(T, P, seulement={'info:grille_silence'}) == ['info:grille_silence'], 'le Pisteur a donné au Barde : « La grille s\'ouvre sans bruit »')
-    verifier(B.js("() => M.grandFete('grosbec')") == '', 'le Barde n\'a pas encore écouté tout le monde à la fête : le maire attend')
-    for qui in B.js("() => Object.keys(M.E().fete.gens)"):
-        if qui != 'grosbec': B.ev('gd-fete', {'id': qui}); B.fermer()
-    verifier(B.js("() => M.grandFete('grosbec')") == 'amis' and B.js("() => M.pnjBulleCarte('grosbec')") == '🎭', 'tout le monde écouté à la fête : « 🎭 » sur le maire')
-    B.carte(); B.ev('lieu', {'id': 'place'}); B.pg.locator('#voile .gd-fete-tete.gd-fete-grand').click(); B.pg.wait_for_timeout(500)
-    verifier('Où sont vos trois amis' in B.texte() and 'bruit' not in B.texte(), 'le maire, inquiet : « Barde… Où sont vos trois amis ? Je ne les vois nulle part. »')
-    for k in (1, 3, 0): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
+    RESTE = "() => { var s = (M.P().grands || {}).amis; return s && s.quand ? Math.round((s.quand - Date.now()) / 1000) : null; }"
+    def le_maire_vient():
+        B.js("() => { M.P().grands.amis.quand = Date.now() - 1; M.grandVeiller(); }"); B.pg.wait_for_timeout(500)
+    B.carte(); B.js("() => M.grandVeiller()")
+    reste = B.js(RESTE)
+    verifier(reste is not None and 880 <= reste <= 900 and not B.js("() => !!M.UI.modal") and B.js("() => M.pnjBulleCarte('grosbec')") != '🎭', f'le minuteur caché du maire démarre : 15 minutes ({reste} s), et rien ne l\'annonce')
+    le_maire_vient()
+    verifier(B.js("() => (M.UI.modal || {}).g") == 'amis' and 'Où sont vos trois amis' in B.texte() and 'bruit' not in B.texte(), 'le temps passé, le maire vient tout seul : « Barde… Où sont vos trois amis ? Je ne les vois nulle part. »')
+    for k in (1, 3):
+        B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
+        B.pg.locator('#voile .gd-feuille [data-act=fermer]').click(); B.pg.wait_for_timeout(250)
+        reste = B.js(RESTE)
+        verifier(reste is not None and 285 <= reste <= 300 and not B.js("() => !!M.UI.modal"), f'une bonne réponse : il s\'en va, et son minuteur repart pour 5 minutes ({reste} s)')
+        le_maire_vient()
+    B.pg.locator('#voile [data-act=gd-choix][data-k="0"]').click(); B.pg.wait_for_timeout(280)
     verifier('Mon gâteau' in B.texte() and B.js("() => M.P().vus['grand:amis']") == 'ok', 'son discours, le bal, le gâteau : le Barde retient le maire un bon moment')
     B.shot('maire-inquiet'); B.fermer()
     verifier(livrer(T, B) == [], 'le maire ne donne aucun code : la suite ne change pas')

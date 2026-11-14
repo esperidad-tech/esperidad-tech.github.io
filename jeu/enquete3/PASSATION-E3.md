@@ -2,6 +2,19 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 14 novembre, 12 h 40 : LE MAIRE INQUIET VIENT TOUT SEUL — les minuteurs cachés, EN LIGNE (Bible §13.38)
+
+- **À lire : Bible §13.38.** Conçu à la voix avec Romain, une heure après le §13.36 ; son go à 11 h 44 (« Donc go et tu peux mettre en ligne. »). En ligne à 12 h 40 : commit 1f6eb4d du site, **version 20261114-1138**, publication de GitHub vérifiée.
+- **Ce qui change pour la conception** : on ne va plus chercher le maire à la fête. **Dès que le Barde entre le code du Pisteur** (sans bruit, avec bruit, ou le puits), **un minuteur caché de 15 minutes** démarre. Au bout : **la fenêtre du maire s'ouvre toute seule**, avec un petit son, **par-dessus tout**.
+- **Sans bruit (ou par le puits)** : il pose sa question, le Barde essaie de le retenir ; après chaque bonne réponse, **5 minutes**, et il revient (trois questions en tout, les mêmes qu'au §13.36). Une mauvaise réponse : « Bien, bien… J'ai une affaire à régler au clocher. », et c'est fini.
+- **Avec le bruit** : **aucune réponse possible**. « Où sont vos trois amis ? C'est bizarre… J'ai entendu la grille. Je vais aller voir. » — un seul bouton, « D'accord ».
+- **Retirés** : la mission « Le maire cherche tes trois amis », « 🎭 » sur le maire, la règle « une fois tout le monde écouté à la fête », la phrase « Vous avez entendu ce bruit ? Où sont vos amis ? ».
+- **Le minuteur revient dans le jeu, mais caché** : rien ne s'affiche. La règle de Romain « pas de minuteur » (§13.14, et encore le matin même) vaut pour les minuteurs qu'on voit.
+- **Toujours ni code ni récompense au bout** : la fin ne change pas.
+- **🔒 Les dialogues** : `E3-dialogues-et-trame.md` est régénéré par l'outil (§0 et §3, « amis »). `E3-actions-des-roles.md` : le bloc du haut et le schéma de la nuit sont remis à jour. Aucun code n'a changé.
+- **À faire valider par Romain** (Bible §13.38, dix décisions de Claude) : surtout le puits traité comme « sans bruit », la fenêtre qu'on ne ferme pas sans répondre, le maire qui attend que le Barde ne soit plus dans un mini-jeu, et « Vingt minutes, et toujours personne » alors qu'il revient au bout de cinq.
+- **⚠️ À garder en tête pour la suite de la conception** : il faut 25 minutes, depuis le code du Pisteur, pour que le Barde voie les trois questions ; si l'équipe finit avant, il ne voit pas la fin de la scène. Et le maire peut tomber en plein combat contre Léo, pendant que le Barde lit les indices de Farinel.
+
 ## Nouveau depuis le 14 novembre : Léo après le premier essai de Romain (Bible §13.37)
 
 - Romain a joué Léo : « trop difficile », à cause de l'écran, pas des attaques. **Refait et en ligne** (version 20261114-1049) : une seule rangée d'icônes (plus de héros à choisir, plus de cible à toucher), l'œil qui montre les trois prochaines attaques aux pieds de Léo, le bouclier de chêne sur les trois héros (dans tout le donjon), le noir et la farine qui ne partent plus tout seuls, la lumière qui coupe l'attaque de Léo, la charge plus longue.
@@ -11,6 +24,8 @@
 - **Le chantier suivant, demandé par Romain** : les dessins des armes de Léo, plus détaillés (des images à lui montrer avant de publier).
 
 ## Nouveau depuis le 14 novembre : LE MAIRE INQUIET, À LA FÊTE — conçu avec Romain, construit et EN LIGNE (Bible §13.36)
+
+> **⚠️ Changé le même jour à 12 h 40 (plus haut, Bible §13.38)** : le maire vient maintenant tout seul, sur des minuteurs cachés. Ci-dessous, ce qui parle de « 🎭 », de « tout le monde écouté », de « pas de minuteur » et de la phrase « Vous avez entendu ce bruit ? » n'est plus vrai. Le reste tient.
 
 - **À lire : Bible §13.36.** Conçu à la voix avec Romain le 14 novembre au matin ; son go à 10 h 29 (« tu peux faire ces modifications dans le jeu et tu peux publier »). En ligne à 11 h 25 : commit c10e119 du site, **version 20261114-1024**, publication de GitHub vérifiée.
 - **La question ouverte depuis le 13 novembre est tranchée** : ce que le bruit de la grille change, c'est **une scène pour le Barde, et rien d'autre**. Romain : « c'est juste pour occuper le Barde. Ça ne change rien. Dans tous les cas, le maire, il descendra et il mettra tout le monde en prison. »

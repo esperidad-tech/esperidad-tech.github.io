@@ -48,7 +48,7 @@ function texte(E, D){
   p('# Enquête 3 « La lettre d\'Odette » — les dialogues du Barde (version 3, 12 novembre 2026 au soir)', '');
   p('> 🔒 **VERROUILLÉ PAR ROMAIN LE 12 NOVEMBRE 2026 À 21 H 44.** Ce fichier est le **miroir exact** de ce que dit le jeu. Il est écrit par `node jeu/tools/e3-dialogues.js`, à partir de `jeu/src/e3.js`. **On ne le modifie jamais à la main**, et on n\'y recolle aucun ancien dialogue. Pour changer une réplique : le « go » de Romain, puis `e3.js`, puis relancer l\'outil. `node jeu/tools/verif.js 3` met une croix si ce fichier et le jeu ne disent plus la même chose.');
   p('>');
-  p('> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36).');
+  p('> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38).');
   p('>');
   p('> **Ne font plus foi** (anciens dialogues, à ne plus jamais reprendre) : la version 2 du 11 novembre (`jeu/archives/E3-dialogues-et-trame-11-novembre.md`), celle du 6 novembre (`jeu/archives/E3-dialogues-et-trame-6-novembre.md`), le document du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo), les pages « La lettre d\'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) et « Dialogues du Barde » du 11 novembre (https://claude.ai/artifact/7e9Wm974Ux8D5Ta5Xcr3Ft), et « les 3 questions communes » du 12 novembre à 17 h (https://claude.ai/artifact/D3Ss7fQdWkCZCBvJjVtw4P).');
   p('>');
@@ -62,7 +62,7 @@ function texte(E, D){
   p('- **Chez Anselme, les quatre choix sont en majuscules** : la bonne réponse ne se voit plus à l\'œil.');
   p('- **🤥** : le villageois ment. On le démasque avec « Mensonge ? », sous sa dernière réponse (règle de l\'enquête 2).');
   p('- **La grille du clocher grince.** Pour l\'ouvrir sans bruit : ni tirer, ni pousser — **soulever** (Silas le dit). Le geste est construit depuis le 13 novembre, chez le Pisteur (Bible §13.34) : tirer ou pousser, « un énorme bruit s\'est entendu dans tout le village ».');
-  p('- **Le maire inquiet, à la fête** (Romain, 14 novembre, 10 h 29 ; Bible §13.36). En ouvrant le passage, le Pisteur a un code pour le Barde : la grille soulevée, la grille qui a fait du bruit, ou le puits. Chez le Barde, le maire vient alors le trouver à la fête et demande où sont ses amis (§3, « amis »). **Il ne dit jamais « clocher » de lui-même** : seulement en partant, après une mauvaise réponse. Avec le bruit, seule sa première phrase change. **Ça ne change rien à la fin** : c\'est pour occuper le Barde, le maire descendra dans tous les cas.', '');
+  p('- **Le maire inquiet, à la fête** (Romain, 14 novembre, 10 h 29 puis 11 h 44 ; Bible §13.36 et §13.38). En ouvrant le passage, le Pisteur a un code pour le Barde : la grille soulevée, la grille qui a fait du bruit, ou le puits. Dès que le Barde entre ce code, **un minuteur caché démarre** (rien ne s\'affiche). Au bout du temps, la fenêtre du maire s\'ouvre **toute seule**, avec un petit son, **par-dessus tout** (§3, « amis »). Sans bruit (ou par le puits) : il demande où sont ses amis, et le Barde essaie de le retenir ; après chaque bonne réponse, un nouveau minuteur, et il revient. **Avec le bruit : aucune réponse possible**, il prévient seulement qu\'il va voir. **Il ne dit jamais « clocher » de lui-même** : seulement en partant, après une mauvaise réponse. **Ça ne change rien à la fin** : c\'est pour occuper le Barde, le maire descendra dans tous les cas.', '');
 
   p('## 1. Le début', '');
   p('**' + E.lettreLue.titre + '**', '', '> ' + E.lettre, '', 'Puis : « ' + E.lettreLue.apres + ' »', '');
@@ -123,14 +123,14 @@ function texte(E, D){
     const X = E.grands[g];
     if(X.scene) return;
     p('### 🎭 « ' + g + ' » — ' + (P(X.pnj).nom || X.pnj), '');
-    /* (14 novembre) un grand dialogue de la fête : on n'y entre pas par une question, on touche le villageois, à la fête */
-    if(X.fete){
-      const gf = ((E.fete.gens[X.pnj] || {}).grand) || {};
-      p('_La nuit, à la fête. Il s\'ouvre en touchant ' + nom(X.pnj) + ', qui porte alors « 🎭 », quand le Barde a : ' + besoin(gf.si) + (gf.tous ? ' — et qu\'il a écouté tout le monde à la fête' : '') + '._', '');
+    /* (14 novembre, 11 h 44) un grand dialogue à minuteurs cachés : on n'y entre pas par une question, il vient tout seul */
+    const min = s => (s / 60) + ' minute' + (s >= 120 ? 's' : '');
+    if(X.attente){
+      p('_La nuit. Il s\'ouvre tout seul, avec un petit son, par-dessus tout : ' + min(X.attente.debut) + ' après que le Barde a entré ' + besoin(X.attente.si) + '. Le minuteur est caché : rien ne l\'annonce (ni compte à rebours, ni mission, ni rond sur ' + nom(X.pnj) + ')._', '');
+      if(X.sansReponse) p('**Avec ' + besoin(X.sansReponse.si) + '** — aucune réponse possible, un seul bouton « D\'accord » : ' + X.sansReponse.t + ' (et c\'est fini)', '', '**Sinon** — il pose ses questions, et on ne peut pas fermer la fenêtre sans répondre :', '');
     }
     X.etapes.forEach((e, k) => {
-      p('**Étape ' + (k + 1) + '** — « ' + e.t + ' »', '');
-      (e.tSi || []).forEach(v => p('- _À la place, avec ' + besoin(v.si) + '_ : « ' + v.t + ' »'));
+      p('**Étape ' + (k + 1) + '**' + (X.attente && k ? ' (' + min(X.attente.suite) + ' après la bonne réponse d\'avant : la fenêtre se rouvre toute seule)' : '') + ' — « ' + e.t + ' »', '');
       e.choix.forEach(c => p('- ' + (c.bon ? '✅' : c.piege ? '🪤 (le piège)' : '❌') + ' « ' + c.q + ' »' + (c.r ? ' → ' + (/«/.test(c.r) ? c.r : '« ' + c.r + ' »') : '') + (c.n ? ' ' + c.n : '')));
       p('');
     });
@@ -140,6 +140,7 @@ function texte(E, D){
     if(X.piege) p('- **Le piège** : bouton « ' + X.piege.bouton + ' » → « ' + X.piege.titre + ' » : ' + X.piege.t + ' → code ' + nomCode(X.piege.code));
     if(X.echec) p('- **Raté** : bouton « ' + X.echec.bouton + ' » → « ' + X.echec.titre + ' » : ' + X.echec.t + ' → code ' + nomCode(X.echec.code));
     Object.keys(X.resume || {}).forEach(k => p('- Dans le Carnet (' + k + ') : ' + X.resume[k]));
+    if(X.sansReponse && X.sansReponse.resume) p('- Dans le Carnet (sans réponse possible) : ' + X.sansReponse.resume);
     p('');
   });
 
@@ -149,7 +150,7 @@ function texte(E, D){
     const x = E.fete.gens[id];
     p('- **' + nom(id) + '** : « ' + x.t + ' »' + (x.note ? ' _(noté dans le Carnet)_' : ''));
     if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' » → code ' + nomCode(x.filet.code));
-    if(x.grand) p('  - 🎭 **Puis il vient trouver le Barde** : le grand dialogue « ' + x.grand.g + ' » (§3), avec ' + besoin(x.grand.si) + (x.grand.tous ? ', une fois tout le monde écouté à la fête' : '') + '.');
+    Object.keys(E.grands).filter(g => E.grands[g].attente && E.grands[g].pnj === id).forEach(g => p('  - 🎭 **Plus tard, il vient trouver le Barde tout seul** : le grand dialogue « ' + g + ' » (§3), sur un minuteur caché.'));
   });
   p('');
   /* (13 novembre, Bible §13.33) l'aide pour le donjon : les nouvelles questions de Farinel et d'Iris, pendant le combat contre Léo */
@@ -182,7 +183,7 @@ function texte(E, D){
 
   p('## 7. Ce qui n\'est PAS encore construit (le reste du nouveau scénario)', '');
   p('Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32 et §13.34), le Sage, l\'Alchimiste et le Pisteur aussi, en partie. Ce qui reste, tant que Romain n\'a pas donné son « go » :', '');
-  p('- **Le Pisteur** : les empreintes de pieds d\'enfant chez Iris et derrière l\'atelier de Mélusine ; la clé prise à la ceinture d\'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 14 novembre, Bible §13.36 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver à la fête.)');
+  p('- **Le Pisteur** : les empreintes de pieds d\'enfant chez Iris et derrière l\'atelier de Mélusine ; la clé prise à la ceinture d\'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)');
   p('- **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d\'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)');
   p('- **L\'Alchimiste** : comparer l\'encre de la lettre avec celle d\'Iris ; le labo montre encore du pollen de lavande.');
   p('- **Le donjon** : le code de la Grosse Marie, gardé en réserve, n\'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)');

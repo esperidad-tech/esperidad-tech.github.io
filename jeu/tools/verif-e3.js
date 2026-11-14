@@ -86,7 +86,13 @@ module.exports = function verifierE3(E, SRC, D){
     if(x.aide) aj({cle:`barde:fete:aide:${id}`, role:'barde', moments:E.fete.moments, besoins:[[{code:x.aide.si}]], faits:[`fete:aide:${id}`]});
     /* (14 novembre, Bible §13.36) le grand dialogue d'un fêtard (le maire inquiet) : avec un des codes du Pisteur (la grille, ou le puits) ;
        écouter tout le monde à la fête ne se rate pas. Réussi ou raté, il ne donne rien : la fin ne change pas. */
-    if(x.grand){ const fin = [`grand:${x.grand.g}:fini`]; aj({cle:`grand:${x.grand.g}`, role:'barde', moments:E.fete.moments, besoins:[x.grand.si].filter(Boolean), faits:fin, ratable:true, grand:x.grand.g, rate:{produit:[], faits:fin}}); }
+  }
+  /* (14 novembre, 11 h 44, Bible §13.38) un grand dialogue à minuteurs cachés (X.attente : le maire inquiet) : il vient tout seul, un
+     moment après le code du Pisteur ; le temps qui passe ne se rate pas. Réussi ou raté, il ne donne rien : la fin ne change pas. */
+  for(const g of Object.keys(E.grands || {})){
+    const X = E.grands[g]; if(!X.attente) continue;
+    const fin = [`grand:${g}:fini`];
+    aj({cle:`grand:${g}`, role:'barde', moments:(E.fete || {}).moments || NUIT, besoins:[X.attente.si].filter(Boolean), faits:fin, ratable:true, grand:g, rate:{produit:[], faits:fin}});
   }
   if(E.retenir) aj({cle:'grand:retenir', role:'barde', moments:(E.fete || {}).moments || NUIT, besoins:[E.retenir.besoin].filter(Boolean), produit:liste(E.retenir.reussi.code), faits:['grand:retenir:fini'], ratable:true,
     rate:{produit:[], faits:['grand:retenir:fini']}});
@@ -241,9 +247,10 @@ module.exports = function verifierE3(E, SRC, D){
   dit(cleRatee.faits.has('pisteur:puits:descendre') && !cleRatee.faits.has('pisteur:clocher:descendre'), 'la clé ratée par le Pisteur : on descend par le puits, avec l\'acide du sac');
   dit(anselmeRate.faits.has('pisteur:puits:descendre') && anselmeRate.codes.has('info:vieux_puits'), 'Anselme raté par le Barde : « Le vieux puits », et on descend par le puits');
   dit(R.some(r => r.cle === 'alchimiste:cueillir:' + RECETTES.acide.plante && !r.besoins.length && !r.moments), 'l\'acide de la grille du puits : sa plante se cueille à tout moment, sans rien demander à personne');
-  /* (14 novembre, Bible §13.36) LE MAIRE INQUIET : en ouvrant le passage, le Pisteur a un code pour le Barde — tirer ou pousser : « La grille
-     a hurlé » ; soulever : « La grille s'ouvre sans bruit » ; le puits : « Le puits est ouvert ». Dans les trois cas, le maire vient
-     trouver le Barde à la fête (le grand dialogue « amis ») ; et ce dialogue ne donne rien : la fin ne change pas. */
+  /* (14 novembre, Bible §13.36 et §13.38) LE MAIRE INQUIET : en ouvrant le passage, le Pisteur a un code pour le Barde — tirer ou pousser :
+     « La grille a hurlé » ; soulever : « La grille s'ouvre sans bruit » ; le puits : « Le puits est ouvert ». Dans les trois cas, un
+     minuteur caché démarre chez le Barde : le maire vient le trouver tout seul, 15 minutes après (le grand dialogue « amis »), puis
+     5 minutes après chaque bonne réponse ; avec le bruit, il ne pose pas de question. Et ce dialogue ne donne rien : la fin ne change pas. */
   if(E.grands && E.grands.amis){
     const silence = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:pousser']), pousse = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:soulever']);
     const un = (j, c) => ['info:grille_silence', 'info:grille_bruit', 'info:puits_ouvert'].filter(x => j.codes.has(x)).join() === c;
@@ -252,9 +259,14 @@ module.exports = function verifierE3(E, SRC, D){
     dit(un(cleRatee, 'info:puits_ouvert') && cleRatee.faits.has('grand:amis:fini'), 'par le puits : « Le puits est ouvert » pour le Barde, et le maire vient le trouver à la fête');
     /* ce que le maire DIT (entre « », quand la réplique mêle paroles et récit ; sinon toute la phrase) : ses questions, et ses réponses aux bons choix */
     const paroles = s => /«/.test(s || '') ? (s.match(/«[^»]*»/g) || []).join(' ') : (s || '');
-    const X = E.grands.amis, mots = X.etapes.flatMap(e => [e.t].concat((e.tSi || []).map(v => v.t)).concat(e.choix.filter(c => c.bon).map(c => c.r))).map(paroles).join(' ');
+    const X = E.grands.amis, A = X.attente || {}, SR = X.sansReponse || {};
+    const mots = X.etapes.flatMap(e => [e.t].concat(e.choix.filter(c => c.bon).map(c => c.r))).concat([SR.t]).map(paroles).join(' ');
+    const codesDe = l => (l || []).map(c => c.code).sort().join();
     dit(!X.reussi && !X.echec && !X.piege, 'le dialogue du maire ne donne aucun code : réussi ou raté, la fin ne change pas');
     dit(!/clocher/i.test(mots) && /clocher/i.test(paroles(X.rate)), 'le maire ne dit jamais « clocher » de lui-même : seulement en partant, après une mauvaise réponse');
+    dit(A.debut === 900 && A.suite === 300 && codesDe(A.si) === 'info:grille_bruit,info:grille_silence,info:puits_ouvert', 'le minuteur caché du maire : 15 minutes après le code du Pisteur (l\'un des trois), puis 5 minutes après chaque bonne réponse');
+    dit(codesDe(SR.si) === 'info:grille_bruit' && /grille/i.test(paroles(SR.t)) && !!SR.resume, 'avec le bruit : le maire ne pose pas de question, il prévient qu\'il a entendu la grille et qu\'il va voir');
+    dit(!(E.fete.gens[X.pnj] || {}).grand && !Object.keys(E.etapes || {}).some(r => E.etapes[r].some(m => /maire cherche/i.test(m.t || ''))), 'rien n\'annonce le maire : ni rond sur lui à la fête, ni mission (le minuteur est caché)');
     dit(X.etapes.every(e => e.choix.length === 4 && e.choix.filter(c => c.bon).length === 1) && new Set(X.etapes.map(e => e.choix.findIndex(c => c.bon))).size === X.etapes.length, 'trois étapes de quatre choix, une seule bonne réponse, jamais à la même place');
   }
 
