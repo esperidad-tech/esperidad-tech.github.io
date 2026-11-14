@@ -33321,7 +33321,7 @@ function codesBruts(E){
   var ids = [];
   E.moments.forEach(function(m, i){ if(i > 0) ids.push('moment:' + i); });
   M.cle(E.objets || {}).forEach(function(id){ ids.push('obj:' + id); });
-  M.cle(E.infos || {}).forEach(function(id){ ids.push('info:' + id); });
+  M.cle(E.infos || {}).forEach(function(id){ if(!E.infos[id].tard) ids.push('info:' + id); });   /* (I.tard : rangée tout à la fin, plus bas) */
   M.cle(D.POTIONS).forEach(function(id){ if(!D.POTIONS[id].tard) ids.push('pot:' + id); });
   ids.push('aide:action');
   ids.push('victoire:0', 'victoire:1', 'victoire:2', 'victoire:3');
@@ -33335,6 +33335,9 @@ function codesBruts(E){
   ids.push('plaide:1', 'recette:hydromel');
   /* (enquête 3) E.codesPlus : des codes en plus, à la fin (les fins à variante, les codes d'allure allure:0 … allure:215 : descente.js) */
   (E.codesPlus || []).forEach(function(id){ ids.push(id); });
+  /* (enquête 3, 14 novembre) I.tard : une info ajoutée après coup (la grille de la crypte, pour le Barde) se range tout à la fin, après
+     les codes en plus : aucun code déjà connu ne change de symboles. Les enquêtes 1 et 2 n'en ont pas. */
+  M.cle(E.infos || {}).forEach(function(id){ if(E.infos[id].tard) ids.push('info:' + id); });
   var toutes = [];
   D.ORDRE_SYM.forEach(function(a){ D.ORDRE_SYM.forEach(function(b){ D.ORDRE_SYM.forEach(function(c){
     if(!(a === b && b === c)) toutes.push([a, b, c]);
