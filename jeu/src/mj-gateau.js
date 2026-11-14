@@ -309,6 +309,8 @@ var DIT = {
 };
 /* les quatre places du concours, et ce qu'elles rapportent (Romain, 13 novembre : 5, 4, 3 et 2 pièces) */
 var RANGS = [{ic:'🥇', nom:'1er', or:5}, {ic:'🥈', nom:'2e', or:4}, {ic:'🥉', nom:'3e', or:3}, {ic:'🎖️', nom:'4e', or:2}];
+/* le bouton qui montre le gâteau en grand (Romain, 14 novembre ; ouvrirGrand, dans jouer) */
+var BOUTON_GRAND = '<button type="button" class="btn gt-montrer">🔍 Montrer le gâteau</button>';
 function phraseFin(R){
   if(R.parDeco.chaussette) return 'Une chaussette sur un gâteau ? À Brumeval, on appelle ça de la grande cuisine !';
   if(R.chats >= 7) return 'Les sept chats d\'Odette sont tous là. Ils se trouvent très ressemblants !';
@@ -723,7 +725,7 @@ function jouer(zone, params, fin){
     /* (Romain, 13 novembre) le concours : « Retoucher » seulement s'il reste du temps ; « Vote » à la place de « À la fête ! » */
     function montrer(){
       final.classList.remove('gt-en-vote');
-      final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + '<button type="button" class="btn b-aller gt-fete">🗳️ Vote</button></div>';
+      final.innerHTML = '<div class="gt-final-dit"><p>' + esc(phrase) + '</p></div><div class="gt-final-b">' + (tempsFini ? '' : '<button type="button" class="btn second gt-retouche">✏️ Retoucher</button>') + BOUTON_GRAND + '<button type="button" class="btn b-aller gt-fete">🗳️ Vote</button></div>';
       final.querySelector('.gt-final-dit').appendChild(MJ.boutonLire(phrase));
       final.hidden = false; mesurer();
       /* « Retoucher » (tant qu'il reste du temps) : on reprend le gâteau, et le temps repart */
@@ -737,12 +739,12 @@ function jouer(zone, params, fin){
       var h, t;
       if(!note){
         t = DIT.note;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div><div class="gt-notes" role="group" aria-label="La note sur 20">';
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-notes" role="group" aria-label="La note sur 20">';
         for(var n = 1; n <= 20; n++) h += '<button type="button" class="gt-note" data-n="' + n + '">' + n + '</button>';
         h += '</div></div>';
       } else {
         t = DIT.rang;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div><div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
+        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
           RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
           '</div><button type="button" class="btn second petit gt-renoter">← Changer la note</button></div>';
       }
@@ -761,6 +763,38 @@ function jouer(zone, params, fin){
     confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
   }
   bPret.addEventListener('click', feter);
+
+  /* ----- « 🔍 Montrer le gâteau » (Romain, 14 novembre, 16 h 56 : « un bouton important pour qu'on puisse vraiment voir en détail le gâteau
+     de chacun ») : à la fête et pendant le vote, le gâteau s'affiche en grand, sur tout l'écran, avec une petite croix pour revenir.
+     C'est une copie du dessin (le plat, le gâteau, ses décorations, qui bougent toujours), cadrée au plus près ; elle se pose dans la fenêtre
+     du mini-jeu (#mj-plein, ou la salle) : la pause du mini-jeu la cache avec lui. */
+  var grand = null;
+  function fermerGrand(){ if(grand){ if(grand.parentNode) grand.parentNode.removeChild(grand); grand = null; document.removeEventListener('keydown', toucheGrand); } }
+  function toucheGrand(ev){ if(ev.key === 'Escape') fermerGrand(); }
+  function ouvrirGrand(){
+    if(arrete) return;
+    fermerGrand(); U.stop(); U.son('clic');
+    var bb = null;
+    [gPlat, gGateau, gDecos].forEach(function(g){
+      try{
+        var r = g.getBBox(); if(!(r.width > 0 && r.height > 0)) return;
+        if(!bb) bb = {x0:r.x, y0:r.y, x1:r.x + r.width, y1:r.y + r.height};
+        else { bb.x0 = Math.min(bb.x0, r.x); bb.y0 = Math.min(bb.y0, r.y); bb.x1 = Math.max(bb.x1, r.x + r.width); bb.y1 = Math.max(bb.y1, r.y + r.height); }
+      }catch(e){}
+    });
+    if(!bb) bb = {x0:0, y0:DY, x1:640, y1:DY + HAUT_VUE};
+    var m = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * .05;
+    var vb = [bb.x0 - m, bb.y0 - DY - m, bb.x1 - bb.x0 + 2 * m, bb.y1 - bb.y0 + 2 * m].map(f1).join(' ');
+    var copie = monde.cloneNode(true);
+    [].forEach.call(copie.querySelectorAll('.gt-prise, .gt-sel'), function(n){ n.parentNode.removeChild(n); });   /* (les zones à toucher, la sélection) */
+    grand = U.html('<div class="gt-grand" role="dialog" aria-label="Le gâteau en grand"><svg class="gt-grand-svg" viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>' +
+      '<button type="button" class="gt-grand-x" aria-label="Fermer">✕</button></div>');
+    grand.firstChild.appendChild(copie);
+    grand.querySelector('.gt-grand-x').addEventListener('click', function(ev){ ev.stopPropagation(); U.son('clic'); fermerGrand(); });
+    (racine.closest('#mj-plein, #sl-plein') || document.body).appendChild(grand);
+    document.addEventListener('keydown', toucheGrand);
+  }
+  final.addEventListener('click', function(ev){ var b = ev.target.closest ? ev.target.closest('.gt-montrer') : null; if(b && !arrete) ouvrirGrand(); });
 
   /* ----- le temps : dix minutes (il s'arrête pendant la pause du jeu, et pendant qu'on regarde la fête) ----- */
   function ecrireTemps(){
@@ -802,10 +836,11 @@ function jouer(zone, params, fin){
   toutRendre(); mesurer();
   /* pour commencer : le conteur dit un mot, et la première icône appelle le doigt (elle bouge, avec son rond jaune) */
   dire('debut'); colG.firstChild.classList.add('gt-appel');
-  racine.__gateau = {etat:function(){ return etat; }, resume:resume, temps:function(v){ if(v !== undefined){ reste = v; ecrireTemps(); } return reste; }};   /* pour les essais */
+  racine.__gateau = {etat:function(){ return etat; }, resume:resume, temps:function(v){ if(v !== undefined){ reste = v; ecrireTemps(); } return reste; }, grand:function(){ return grand; }};   /* pour les essais */
 
   return {arreter:function(){
     arrete = true; clearInterval(horloge); minuteurs.forEach(function(t){ clearTimeout(t); }); if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
+    fermerGrand();
   }};
 }
 

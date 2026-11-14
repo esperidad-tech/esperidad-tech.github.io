@@ -115,7 +115,7 @@ with sync_playwright() as p:
     # ---------- 2. Alchimiste : le chaudron de l'atelier ----------
     print('— Alchimiste, chaudron de l\'atelier')
     pg = creer(b, 'alchimiste', 2)
-    rid = pg.evaluate("""() => { var r = M.recettesConnues().filter(function(x){ return !DONNEES.RECETTES[x].secrete; })[0];
+    rid = pg.evaluate("""() => { var l = M.recettesConnues(), r = l.filter(function(x){ return !DONNEES.RECETTES[x].secrete; })[0] || l[0];   /* (enquête 2 : la seule recette est la potion de vérité, secrète) */
       var S = M.S, P = M.P(); P.onglet = 'role'; S.fioles = Math.max(S.fioles, 2); P.actions = 2;
       M.UI.modal = null; M.render(); return r; }""")
     pg.wait_for_timeout(800)
@@ -128,6 +128,9 @@ with sync_playwright() as p:
     ch = pg.locator('#atelier-ici [data-obj=ch]')
     print('    chaudron dans la pièce :', ch.count())
     if ch.count(): ch.first.click(); pg.wait_for_timeout(700)
+    # (depuis le 10 novembre, toucher le chaudron fait sortir trois bulles : la jaune « 🍲 Préparer » ouvre son panneau)
+    bp = pg.locator('#atelier-ici .at-bulle-pa', has_text='Préparer')
+    if bp.count(): bp.first.click(force=True); pg.wait_for_timeout(700)
     go = pg.locator(f'#atelier-ici .at-ch-go[data-r={rid}]')
     print('    bouton préparer :', go.count())
     pg.screenshot(path=f'{OUT}/10-atelier-chaudron.png')

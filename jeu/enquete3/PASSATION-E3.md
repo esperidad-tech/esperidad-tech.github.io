@@ -2,6 +2,11 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 14 novembre, 17 h 56 : « 🔍 MONTRER LE GÂTEAU » — EN LIGNE (Bible §12.62)
+
+- Après la partie en famille (enquêtes 1 et 2), Romain : une fois le gâteau fini, un bouton pour l'afficher en grand. **Fait** : à la fête et pendant le vote, « 🔍 Montrer le gâteau » ouvre le gâteau sur tout l'écran (une copie du dessin, cadrée au plus près), avec une croix ✕. Rien d'autre n'a changé dans l'enquête 3 ; aucun code n'a bougé. Version 20261114-1655 (commit 934dd1e du site).
+- Le reste de ce travail touche les enquêtes 1 et 2 et tout le jeu (le chaudron, la boîte noire des plantages, la cueillette de l'Alchimiste de l'enquête 2) : `PASSATION.md` et Bible §12.62. **À savoir pour l'enquête 3** : la carte de l'Alchimiste garde ses visages (seule l'enquête 2 les enlève : `E.carteSansGens`) — à proposer à Romain si l'enquête 3 doit suivre.
+
 ## Nouveau depuis le 14 novembre, 14 h 20 : L'ENQUÊTE 3 EST OUVERTE AUX JOUEURS — à l'adresse normale, sans « #test » ; ses codes sont gelés (Bible §13.39)
 
 - **À lire : Bible §13.39.** Demande de Romain à 13 h 57 : « Fais en sorte que l'adresse sans le test […] on puisse aussi aller jusqu'à l'enquête numéro 3. » En ligne à 14 h 20 : commit 6f4f18a du site, **version 20261114-1319**, publication de GitHub vérifiée.

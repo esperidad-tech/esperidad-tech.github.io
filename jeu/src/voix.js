@@ -313,11 +313,22 @@ document.addEventListener('visibilitychange', function(){ if(document.hidden) te
 /* 'absent' (voix pas téléchargées), 'inconnu' (pas encore mesuré), 'rapide', 'lent', 'panne' */
 function mode(){
   if(!V.pret) return 'absent';
-  if(wMort || (mesure.p || 0) >= 2) return 'panne';
+  if(wMort || (mesure.p || 0) >= 2 || (mesure.pv || 0) >= 2) return 'panne';
   if(!mesure.n) return 'inconnu';
   return mesure.r <= RAPIDE ? 'rapide' : 'lent';
 }
 V.mode = mode;
+/* (Romain, 14 novembre : « plusieurs fois des bugs qui me faisaient quitter l'appli ») La boîte noire (boite-noire.js) a vu que la page
+   s'était fermée toute seule pendant que des voix naturelles étaient chargées : on le compte (mesure.pv). Deux fois en une semaine :
+   cet appareil n'a pas assez de mémoire pour les garder, il lit avec sa propre voix (« panne » ; « 🔁 Mesurer encore » pour réessayer). */
+V.plantage = function(){
+  var t = Date.now();
+  if(!mesure.pvd || t - mesure.pvd > 7 * 864e5) mesure.pv = 0;
+  mesure.pv = (mesure.pv || 0) + 1; mesure.pvd = t;
+  ecrireMesure();
+  if(mesure.pv >= 2) liberer();
+};
+V.plantages = function(){ return mesure.pv || 0; };
 /* Combien de fois plus vite que la parole cet appareil fabrique la voix (0 = pas mesuré) : affiché dans les Réglages */
 V.vitesse = function(){ return mesure.n && mesure.r > 0 ? Math.round(10 / mesure.r) / 10 : 0; };
 
@@ -736,7 +747,7 @@ function etalonner(){
     etalon = null;
     if(!l.length) return;   /* la page a été mise de côté pendant la mesure : on recommencera au prochain lancement */
     var r = Math.min.apply(null, l.map(function(x){ return x.r; })), c = Math.min.apply(null, l.map(function(x){ return x.c; }));
-    mesure = {r:r, c:c, n:l.length, d:Date.now(), p:0, ok:r <= RAPIDE};
+    mesure = {r:r, c:c, n:l.length, d:Date.now(), p:0, ok:r <= RAPIDE, pv:mesure.pv || 0, pvd:mesure.pvd || 0};
     vif = {r:r, c:c};
     ecrireMesure();
   }, function(e){ etalon = null; V.erreur = (e && e.message) || 'mesure'; }).then(function(){

@@ -112,6 +112,15 @@ M.cueilletteIci = function(lieu){
   /* (enquête 3) c.secret : une plante rare qu'on ne voit pas tant qu'on n'a pas ce qu'il faut (l'herbier du Sage) : « rien à trouver » */
   return R.cueillir.filter(function(c){ return M.momentOk(c.moments) && !(c.secret && !M.besoinOk(c.besoin)); });
 };
+/* Déjà cueilli ici à ce moment ? Enquête 1 (le tutoriel) : jamais tant qu'il manque à l'Alchimiste ce qu'une recette demande d'ici (c.min) —
+   un filet pour les parties où des ingrédients se sont perdus (le chaudron quitté avant le 14 novembre) : sinon, le tutoriel restait bloqué */
+M.dejaCueilli = function(lieu){
+  var P = M.P(), E = M.E();
+  if(!P || P.vus['cueilli:' + lieu] !== P.moment) return false;
+  if(!E || E.id !== 1) return true;
+  var a = M.ingr() || {};
+  return !M.cueilletteIci(lieu).some(function(c){ return c.ingr && c.min && (a[c.ingr] || 0) < c.min && M.besoinOk(c.besoin); });
+};
 M.verrouLieu = function(lieu){
   var E = M.E(), L = E.lieux[lieu];
   if(!L || !L.verrou) return null;
@@ -157,7 +166,7 @@ M.infosCarte = function(){
     M.cle(P.notesIngr || {}).forEach(function(id){
       var l = P.notesIngr[id] || [];
       /* (grisé quand elle a déjà cherché ici à ce moment : Romain, 5 novembre, 12 h 31) */
-      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return (D.INGR[i] || (D.PLANTES || {})[i] || {}).ic || ''; }).join(''), act:'lieu', id:id, classe:'ingr', grise:P.vus['cueilli:' + id] === P.moment});
+      if(l.length) marqueurs.push({lieu:id, ic:l.map(function(i){ return (D.INGR[i] || (D.PLANTES || {})[i] || {}).ic || ''; }).join(''), act:'lieu', id:id, classe:'ingr', grise:M.dejaCueilli(id)});
     });
     /* (Romain, 13 novembre ; E.carteIngredients, enquête 2) les ingrédients de base sont sur la carte de l'Alchimiste, là où ils poussent
        (pas les plantes cachées de l'établi) ; une fois cueillis à ce moment, leur icône devient transparente. Un ingrédient qui ne pousse
@@ -168,7 +177,7 @@ M.infosCarte = function(){
       if(marqueurs.some(function(mq){ return mq.classe === 'ingr' && mq.lieu === id; })) return;
       var maintenant = c.filter(function(x){ return M.momentOk(x.moments); }), montre = maintenant.length ? maintenant : c.filter(function(x){ return x.annonce; });
       if(!montre.length) return;
-      marqueurs.push({lieu:id, ic:montre.map(function(x){ return D.INGR[x.ingr].ic; }).join(''), act:'lieu', id:id, classe:'ingr', grise:!maintenant.length || P.vus['cueilli:' + id] === P.moment});
+      marqueurs.push({lieu:id, ic:montre.map(function(x){ return D.INGR[x.ingr].ic; }).join(''), act:'lieu', id:id, classe:'ingr', grise:!maintenant.length || M.dejaCueilli(id)});
     });
   }
   /* (plus de notes « qui habite ici » sur la carte : chaque maison montre le visage de son habitant, carte-jeu.js) */
@@ -224,7 +233,7 @@ M.feuilleLieu = function(lieu){
     /* (Romain, 5 novembre, 12 h 31) plus de « Ce que tu sais de ce lieu » ni de « 📝 Noter » : le petit rond qui flotte sur la carte
        montre déjà ce qui pousse ici (il se grise quand elle a cherché). Déjà cherché à ce moment : « ✅ Déjà récolté » ;
        rien à cueillir ici à ce moment : « 🍂 Rien à trouver » tout de suite, sans « Chercher » (ni action dépensée pour rien). */
-    var deja = P.vus['cueilli:' + lieu] === P.moment;
+    var deja = M.dejaCueilli(lieu);
     var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
     var pousse = M.cueilletteIci(lieu), cueillable = pousse.filter(function(x){ return M.besoinOk(x.besoin); });
     /* (Romain, 13 novembre) c.annonce : pas le bon moment pour cet ingrédient → quand revenir (« les champignons, c'est la nuit ») */

@@ -3093,6 +3093,7 @@ function vue(el, opts){
   majMoment(V);
 
   if(verifierBoutique(V)) changer(V);
+  if(rendreQuittes(V)) changer(V);   /* une préparation laissée en plan (l'appli fermée pendant le chaudron) : ses ingrédients reviennent */
   mise(V, true);
   V.etat.objets.forEach(function(o){ V.parId[o.id] = o; });
   if(reajuster(V)) changer(V);
@@ -3159,7 +3160,8 @@ function arreter(V){
   if(V.arrete) return;
   V.arrete = true;
   VUES = VUES.filter(function(W){ return W !== V; });
-  if(V.mjPartie){ try{ V.mjPartie.arreter(); }catch(e){} V.mjPartie = null; }
+  /* l'atelier se ferme pendant une préparation : on a quitté le chaudron, les ingrédients versés reviennent (Romain, 14 novembre) */
+  if(V.mjPartie){ try{ V.mjPartie.arreter(); }catch(e){} V.mjPartie = null; try{ rendreVerses(V); }catch(e){ console.error(e); } }
   V.suivis.slice().forEach(function(f){ f(); });
   V.timers.forEach(clearTimeout); V.timers = [];
   if(V.defile){ clearInterval(V.defile); V.defile = null; }
@@ -6888,7 +6890,29 @@ function retirerRange(V, ingr){
 function rendreVerses(V){
   var l = V.verses || []; V.verses = [];
   l.forEach(function(x){ if(x.c && x.c.i){ x.c.i[x.ingr] = (x.c.i[x.ingr] || 0) + 1; try{ redessiner(V, x.o); }catch(e){} } });
-  if(l.length) changer(V);
+  var note = !!V.etat.verses; delete V.etat.verses;
+  if(l.length || note) changer(V);
+}
+/* (Romain, 14 novembre, 16 h 56 : « quand on quitte le chaudron, il ne faut pas que les ingrédients soient dépensés ») Ce qui est versé
+   pendant une préparation est aussi noté dans l'état sauvegardé (etat.verses : le meuble, la case, l'ingrédient). Si l'appli se ferme,
+   plante ou se recharge pendant la préparation, ces ingrédients reviennent dans leur rangement à la prochaine ouverture de l'atelier
+   (rendreQuittes, dans vue) : une préparation pas finie ne coûte rien. */
+function noterVerses(V){
+  V.etat.verses = (V.verses || []).map(function(x){ return {o:x.o ? x.o.id : null, c:x.o ? (x.o.cases || []).indexOf(x.c) : -1, i:x.ingr}; });
+}
+function rendreQuittes(V){
+  var l = V.etat.verses; if(!l) return false;
+  /* (un autre atelier ouvert en train de préparer, en pause : ce sont ses ingrédients, il les rendra lui-même) */
+  if(VUES.some(function(W){ return W !== V && !W.arrete && W.mjPartie && W.etat === V.etat; })) return false;
+  delete V.etat.verses;
+  if(!Array.isArray(l)) return true;
+  l.forEach(function(x){
+    if(!x || !x.i) return;
+    var o = V.etat.objets.filter(function(b){ return b.id === x.o; })[0], c = o && o.cases ? o.cases[x.c] : null;
+    if(c && c.i){ c.i[x.i] = (c.i[x.i] || 0) + 1; return; }
+    V.etat.panier[x.i] = (V.etat.panier[x.i] || 0) + 1; V.etat.nouveaux = (V.etat.nouveaux || 0) + 1;   /* (le meuble n'est plus là : devant la porte) */
+  });
+  return true;
 }
 function besoinDe(id){
   var R = (DD().RECETTES || {})[id], b = {};
@@ -6949,7 +6973,7 @@ function demarrer(V, rid, bouton){
   /* (étape 4) le chat, dans un coin : il dresse les oreilles quand on verse le bon ingrédient (le mini-jeu n'appelle onVerse que pour le bon) */
   var oreilles = chatPotion(V, ov);
   V.verses = [];
-  p.onVerse = function(ingr){ V.derniereCase = null; var o = retirerRange(V, ingr); if(o){ V.verses.push({o:o, c:V.derniereCase, ingr:ingr}); redessiner(V, o); } changer(V); if(oreilles) oreilles(); };
+  p.onVerse = function(ingr){ V.derniereCase = null; var o = retirerRange(V, ingr); if(o){ V.verses.push({o:o, c:V.derniereCase, ingr:ingr}); noterVerses(V); redessiner(V, o); } changer(V); if(oreilles) oreilles(); };
   V.mjEl = ov;
   V.attente = {id:rid, reussi:false, detail:'Préparation abandonnée.'};
   /* enquête 1 : chaque essai raté rend les ingrédients versés, et « 🔁 Recommencer » sans fin */
@@ -6982,8 +7006,11 @@ function finPreparation(V, rid, res){
   V.mjPartie = null;
   V.attente = null;
   if(V.mjEl){ V.mjEl.remove(); V.mjEl = null; }
-  if(!res.reussi && V.o.tutoriel) rendreVerses(V);   /* (abandon pendant le tutoriel : on rend aussi les ingrédients) */
+  /* au tutoriel, un essai raté ou abandonné rend les ingrédients ; dans toutes les enquêtes, quitter le chaudron (🏳️) ne coûte rien
+     (Romain, 14 novembre) ; une potion ratée pour de vrai, elle, a bien brûlé ses ingrédients (dès l'enquête 2) */
+  if(!res.reussi && (V.o.tutoriel || res.raison === 'abandon')) rendreVerses(V);
   V.verses = [];
+  if(V.etat.verses){ delete V.etat.verses; changer(V); }
   if(res.raison === 'boum' || res.raison === 'trop' || res.raison === 'tard'){ V.etat.flaque = 1; changer(V); }
   try{ if(V.o.potionFinie) V.o.potionFinie(rid, !!res.reussi, res.detail || res.message || ''); }catch(e){ console.error(e); }
   if(V.arrete) return;

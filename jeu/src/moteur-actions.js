@@ -344,7 +344,9 @@ function contenuModal(m){
     case 'boire-mj': return boireModal(m);
     case 'auto-mj': return autoModal(m);
     case 'besoin': return '<div class="b-info-modal"><div class="b-grand-ic">🔒</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + M.besoinHTML(m.besoin, M.role()) + '<button class="btn" data-act="lieu" data-id="' + m.retourId + '">← Retour</button></div>';
-    case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + '<button class="btn" data-act="fermer">D\'accord</button></div>';
+    /* (m.bouton, m.boutonAct : un bouton jaune « aller » à la place de « D'accord » — le petit tutoriel de la cueillette, tuto-cueillette.js) */
+    case 'info': return '<div class="b-info-modal">' + illuOuIc(m, m.ic || 'ℹ️') + '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) +
+      (m.bouton && m.boutonAct ? '<button class="btn grand b-aller" data-act="' + esc(m.boutonAct) + '">' + esc(m.bouton) + '</button>' : '<button class="btn" data-act="fermer">D\'accord</button>') + '</div>';
     case 'avant-mj': return avantMJHTML(m);
     case 'mj-pause': return pauseModal(m);
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
@@ -1322,7 +1324,7 @@ A.point = function(el){
 A.cueillir = function(el){
   var P = M.P(), S = M.S, l = el.dataset.id;
   var gratuit = !M.sansActions() && (P.usages.herboriste || 0) < M.fxSomme('cueilletteGratuite');
-  if(M.sansActions() && P.vus['cueilli:' + l] === P.moment){ M.ouvrir({type:'info', ic:'🍃', titre:'Déjà cueilli', t:'Rien de plus ici pour ce moment.'}); return; }   /* un lieu ne donne qu'une chose par moment */
+  if(M.sansActions() && M.dejaCueilli(l)){ M.ouvrir({type:'info', ic:'🍃', titre:'Déjà cueilli', t:'Rien de plus ici pour ce moment.'}); return; }   /* un lieu ne donne qu'une chose par moment */
   if(!gratuit && !M.peutAgir()) return;
   if(gratuit) P.usages.herboriste = (P.usages.herboriste || 0) + 1; else M.depenser();
   P.vus['cueilli:' + l] = P.moment;

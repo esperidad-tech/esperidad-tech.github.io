@@ -297,9 +297,12 @@ function contenu(ou, w, h){
       /* dès l'enquête 2 : plus de ronds jaunes ni de marqueurs d'aide (les habitants du Barde, ✨ les missions bonus) ; tous les lieux se touchent,
          et seulement la position de chaque villageois. Les ingrédients notés par l'Alchimiste (ses propres notes) restent. */
       var aides = !sansAides(E) || !!T;
-      var hab = habitants(E), vis = {};
+      /* (E.carteSansGens, enquête 2 : l'Alchimiste — Romain, 14 novembre) un rôle qui ne parle à personne : ni visages sur les maisons,
+         ni position des villageois ; seulement ce qui pousse (et les missions bonus) */
+      var sansGens = !T && (E.carteSansGens || []).indexOf(role) >= 0;
+      var hab = sansGens ? {} : habitants(E), vis = {};
       /* où est chacun, dans toutes les enquêtes (dès l'enquête 1 : la position de chacun remplace le marqueur « à qui parler » du tutoriel) */
-      var PR = presences(E, hab);
+      var PR = sansGens ? {marqueurs:[], chez:{}, absents:{}, bulles:{}} : presences(E, hab);
       /* (un villageois sur un lieu qu'on ne peut pas encore toucher : on le voit, mais son visage ne se touche pas) */
       PR.marqueurs.forEach(function(mq){
         if(mq.lieu && (caches.indexOf(mq.lieu) >= 0 || (T && T.ouverts.indexOf(mq.lieu) < 0) || (guide && actifs.indexOf(mq.lieu) < 0 && verrous.indexOf(mq.lieu) < 0))) mq.act = null;

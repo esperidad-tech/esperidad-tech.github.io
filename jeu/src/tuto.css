@@ -31,6 +31,7 @@
 /* Le rond lumineux : posé par-dessus la chose à toucher (il ne gêne pas le doigt) */
 .tu-rond{position:fixed;left:0;top:0;z-index:70;pointer-events:none;border-radius:18px;will-change:transform}
 .tu-rond[hidden]{display:none}
+.tu-rond.tc-rond{border-radius:50%}   /* (le petit tutoriel de la cueillette, tuto-cueillette.js : des ronds bien ronds sur les icônes de la carte) */
 .tu-anneau{position:absolute;inset:0;border-radius:inherit;border:4px solid #ffd23f;box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 18px 6px rgba(255,210,63,.75), inset 0 0 12px rgba(255,210,63,.5);animation:tu-pulse 1.3s ease-in-out infinite}
 /* le rond du tutoriel : la même animation partout (Romain, 5 novembre, 19 h 39) — il pulse, et une onde part de lui pour attirer l'œil */
 @keyframes tu-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 14px 4px rgba(255,210,63,.6), inset 0 0 10px rgba(255,210,63,.4)}50%{transform:scale(1.07);box-shadow:0 0 0 3px rgba(36,24,46,.55), 0 0 28px 10px rgba(255,210,63,.95), inset 0 0 16px rgba(255,210,63,.6)}}

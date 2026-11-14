@@ -278,6 +278,7 @@ M.voixHTML = function(){
     var md = V.mode ? V.mode() : 'rapide', vit = V.vitesse ? V.vitesse() : 0;
     var t = md === 'rapide' ? 'Cet appareil est assez rapide pour ces voix. Si l\'une d\'elles n\'est pas prête à l\'instant, c\'est la voix de l\'appareil qui lit, sans attendre.'
       : md === 'lent' ? 'Cet appareil est trop lent pour ces voix. Pour ne pas te faire attendre, il lit tout de suite avec sa propre voix.'
+      : md === 'panne' && V.plantages && V.plantages() >= 2 ? 'Le jeu s\'est fermé tout seul deux fois pendant que les voix naturelles étaient chargées : cet appareil manque sans doute de mémoire. Il lit maintenant avec sa propre voix.'
       : md === 'panne' ? 'Les voix naturelles ne démarrent pas sur cet appareil : il lit avec sa propre voix.'
       : 'Je mesure la vitesse de cet appareil. En attendant, il lit avec sa propre voix.';
     return '<p class="hr-voix-etat">✔ Voix installées</p><p class="doux petit hr-voix-mode" data-mode="' + md + '">' + esc(t) + ' ' + lire(t) + '</p>' +
@@ -301,6 +302,8 @@ function vueReglages(){
     (M.modeDev() && M.S.heros ? '<section class="b-carte-verre b-mode-test"><h3>Mode test</h3>' +
       '<div class="b-rangee">' + [1, 2, 3].map(function(i){ return '<button class="btn second petit" data-act="mode-test" data-i="' + i + '">Enquête ' + i + '</button>'; }).join('') + '</div></section>' : '') +
     (window.BRUMEVAL_VERSION ? '<p class="doux petit b-version">' + esc('Version du jeu : ' + M.versionTxt() + '. Toutes les tablettes doivent avoir la même, sinon les codes ne marchent pas.') + '</p>' : '') +
+    /* la boîte noire (boite-noire.js) : le jeu s'est-il fermé tout seul sur cet appareil ? La phrase à demander à Romain (14 novembre) */
+    (window.BoiteNoire && BoiteNoire.texte() ? '<p class="doux petit b-version b-plantages">⚠️ ' + esc(BoiteNoire.texte()) + '</p>' : '') +
     '</main>';
 }
 /* La version du jeu, lisible : « 4/11 à 18 h 13 » (build.py écrit window.BRUMEVAL_VERSION = « 2026-11-04 18:13 ») */
