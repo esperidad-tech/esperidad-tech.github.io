@@ -40,7 +40,8 @@ module.exports = function verifierE3(E, SRC, D){
     for(const role of ['pisteur', 'sage', 'alchimiste']){
       const L = E.lieux[l][role]; if(!L) continue;
       (L.points || []).forEach(p => {
-        const cle = `${role}:${l}:${p.id}`, prod = liste(p.donne).concat(p.obj ? ['obj:' + p.obj] : []), f = p.plante ? ['plante:' + p.plante] : [];
+        /* (14 novembre) p.donneAussi : un deuxième code, pour un autre équipier (la grille : le Barde) */
+        const cle = `${role}:${l}:${p.id}`, prod = liste(p.donne).concat(liste(p.donneAussi)).concat(p.obj ? ['obj:' + p.obj] : []), f = p.plante ? ['plante:' + p.plante] : [];
         /* (le gâteau est une création libre : on ne le rate jamais ; p.essaisInfinis : on recommence autant qu'on veut, il finit toujours par réussir) */
         const ratable = !!p.mj && p.mj !== 'gateau' && !p.essaisInfinis;
         aj({cle, role, moments:p.moments, besoins:[p.besoin, p.visibleSi].filter(Boolean), sauf:p.cacheSi, produit:prod, faits:f, ratable, mj:p.mj,
@@ -83,6 +84,9 @@ module.exports = function verifierE3(E, SRC, D){
     if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[{donne:x.filet.sauf}], produit:[x.filet.code], faits:[`fete:filet:${id}`], filet:true});
     /* (13 novembre, Bible §13.33) l'aide pour le donjon : avec le code du Pisteur, ce villageois a de nouvelles questions */
     if(x.aide) aj({cle:`barde:fete:aide:${id}`, role:'barde', moments:E.fete.moments, besoins:[[{code:x.aide.si}]], faits:[`fete:aide:${id}`]});
+    /* (14 novembre, Bible §13.36) le grand dialogue d'un fêtard (le maire inquiet) : avec un des codes du Pisteur (la grille, ou le puits) ;
+       écouter tout le monde à la fête ne se rate pas. Réussi ou raté, il ne donne rien : la fin ne change pas. */
+    if(x.grand){ const fin = [`grand:${x.grand.g}:fini`]; aj({cle:`grand:${x.grand.g}`, role:'barde', moments:E.fete.moments, besoins:[x.grand.si].filter(Boolean), faits:fin, ratable:true, grand:x.grand.g, rate:{produit:[], faits:fin}}); }
   }
   if(E.retenir) aj({cle:'grand:retenir', role:'barde', moments:(E.fete || {}).moments || NUIT, besoins:[E.retenir.besoin].filter(Boolean), produit:liste(E.retenir.reussi.code), faits:['grand:retenir:fini'], ratable:true,
     rate:{produit:[], faits:['grand:retenir:fini']}});
@@ -130,7 +134,9 @@ module.exports = function verifierE3(E, SRC, D){
   if(E.marche) aj({cle:'marche:dix', role:'barde', moments:[E.moments[0]]});
 
   /* ---------- jouer : ce qu'une équipe (les rôles présents) peut obtenir, selon ce qui rate ---------- */
-  function jouer(roles, rate){
+  /* sauter (14 novembre) : des règles qu'on laisse de côté — devant la grille de la crypte, un seul geste compte : pour voir ce que donne
+     « soulever », on saute « tirer » et « pousser » (qui passent avant lui dans la liste) */
+  function jouer(roles, rate, sauter){
     rate = rate || (() => false);
     const faits = new Set(), codes = new Set(), donnes = new Set();
     const sansSage = !roles.includes('sage');   /* sans le Sage, personne ne donne le code du moment suivant : on reste au matin */
@@ -154,7 +160,7 @@ module.exports = function verifierE3(E, SRC, D){
     function tour(L){
       let change = false;
       for(const r of L){
-        if(tentes.has(r.cle) || !roles.includes(r.role)) continue;
+        if(tentes.has(r.cle) || !roles.includes(r.role) || (sauter && sauter.includes(r.cle))) continue;
         if(sansSage && r.moments && !r.moments.includes(E.moments[0])) continue;
         if(!r.besoins.every(alt => alt.some(c => ok(c, r.role)))) continue;
         if(r.sauf && r.sauf.some(c => ok(c, r.role))) continue;
@@ -235,6 +241,22 @@ module.exports = function verifierE3(E, SRC, D){
   dit(cleRatee.faits.has('pisteur:puits:descendre') && !cleRatee.faits.has('pisteur:clocher:descendre'), 'la clé ratée par le Pisteur : on descend par le puits, avec l\'acide du sac');
   dit(anselmeRate.faits.has('pisteur:puits:descendre') && anselmeRate.codes.has('info:vieux_puits'), 'Anselme raté par le Barde : « Le vieux puits », et on descend par le puits');
   dit(R.some(r => r.cle === 'alchimiste:cueillir:' + RECETTES.acide.plante && !r.besoins.length && !r.moments), 'l\'acide de la grille du puits : sa plante se cueille à tout moment, sans rien demander à personne');
+  /* (14 novembre, Bible §13.36) LE MAIRE INQUIET : en ouvrant le passage, le Pisteur a un code pour le Barde — tirer ou pousser : « La grille
+     a hurlé » ; soulever : « La grille s'ouvre sans bruit » ; le puits : « Le puits est ouvert ». Dans les trois cas, le maire vient
+     trouver le Barde à la fête (le grand dialogue « amis ») ; et ce dialogue ne donne rien : la fin ne change pas. */
+  if(E.grands && E.grands.amis){
+    const silence = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:pousser']), pousse = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:soulever']);
+    const un = (j, c) => ['info:grille_silence', 'info:grille_bruit', 'info:puits_ouvert'].filter(x => j.codes.has(x)).join() === c;
+    dit(un(cleOk, 'info:grille_bruit') && un(pousse, 'info:grille_bruit') && cleOk.faits.has('grand:amis:fini'), 'la grille tirée ou poussée : « La grille a hurlé » pour le Barde, et le maire vient le trouver à la fête');
+    dit(un(silence, 'info:grille_silence') && silence.faits.has('grand:amis:fini') && silence.faits.has('pisteur:clocher:descendre'), 'la grille soulevée : « La grille s\'ouvre sans bruit » pour le Barde, et le maire vient le trouver à la fête');
+    dit(un(cleRatee, 'info:puits_ouvert') && cleRatee.faits.has('grand:amis:fini'), 'par le puits : « Le puits est ouvert » pour le Barde, et le maire vient le trouver à la fête');
+    /* ce que le maire DIT (entre « », quand la réplique mêle paroles et récit ; sinon toute la phrase) : ses questions, et ses réponses aux bons choix */
+    const paroles = s => /«/.test(s || '') ? (s.match(/«[^»]*»/g) || []).join(' ') : (s || '');
+    const X = E.grands.amis, mots = X.etapes.flatMap(e => [e.t].concat((e.tSi || []).map(v => v.t)).concat(e.choix.filter(c => c.bon).map(c => c.r))).map(paroles).join(' ');
+    dit(!X.reussi && !X.echec && !X.piege, 'le dialogue du maire ne donne aucun code : réussi ou raté, la fin ne change pas');
+    dit(!/clocher/i.test(mots) && /clocher/i.test(paroles(X.rate)), 'le maire ne dit jamais « clocher » de lui-même : seulement en partant, après une mauvaise réponse');
+    dit(X.etapes.every(e => e.choix.length === 4 && e.choix.filter(c => c.bon).length === 1) && new Set(X.etapes.map(e => e.choix.findIndex(c => c.bon))).size === X.etapes.length, 'trois étapes de quatre choix, une seule bonne réponse, jamais à la même place');
+  }
 
   /* ---------- 4. les codes ---------- */
   /* (12 novembre au soir) un code « en réserve » (I.reserve : « La Grosse Marie », gardé pour le donjon, que plus personne ne donne tant que
@@ -264,8 +286,10 @@ module.exports = function verifierE3(E, SRC, D){
   const inutiles = ids.filter(c => !utile(c)), prevus = ['info:copie'];   /* (la copie de la lettre : un piège, elle ne sert à rien, exprès) */
   const vraiment = inutiles.filter(c => !prevus.includes(c));
   dit(!vraiment.length, vraiment.length ? 'des codes qui ne servent à rien pour celui qui les reçoit : ' + vraiment.join(', ') : `Chaque code sert à celui qui le reçoit (sauf le piège prévu : ${prevus.join(', ')})`);
-  const jamais = ids.filter(c => !parfait.codes.has(c) && !toutJ.codes.has(c) && !['info:copie', 'info:leo_dit1', 'info:leo_dit2'].includes(c));
-  dit(!jamais.length, jamais.length ? 'des codes qu\'aucune partie ne fait apparaître (ni tout réussi, ni tout raté) : ' + jamais.join(', ') : 'Chaque code apparaît dans une partie (tout réussi, ou tout raté)');
+  /* (14 novembre) et la partie où le Pisteur soulève la grille : c'est elle qui fait apparaître « La grille s'ouvre sans bruit » */
+  const souleve = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:pousser']);
+  const jamais = ids.filter(c => !parfait.codes.has(c) && !toutJ.codes.has(c) && !souleve.codes.has(c) && !['info:copie', 'info:leo_dit1', 'info:leo_dit2'].includes(c));
+  dit(!jamais.length, jamais.length ? 'des codes qu\'aucune partie ne fait apparaître (ni tout réussi, ni tout raté, ni la grille soulevée) : ' + jamais.join(', ') : 'Chaque code apparaît dans une partie (tout réussi, tout raté, ou la grille soulevée)');
 
   /* ---------- 5. les missions du Carnet ---------- */
   const connus = new Set([...cles, ...R.flatMap(r => r.faits.concat(r.rate.faits))]);

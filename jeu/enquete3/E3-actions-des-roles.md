@@ -1,5 +1,11 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 14 NOVEMBRE (Bible §13.36, qui fait foi ; go de Romain à 10 h 29) — le maire inquiet, à la fête :**
+> - **En ouvrant le passage, le Pisteur a un deuxième code, pour le Barde** (dans la même fenêtre que « On va dans la crypte ») : la grille **soulevée** → « **La grille s'ouvre sans bruit** » (`grille_silence`) ; la grille **tirée ou poussée** → « **La grille a hurlé** » (`grille_bruit`) ; **par le puits** → « **Le puits est ouvert** » (`puits_ouvert`).
+> - **Chez le Barde**, ce code fait venir le maire à la fête, une fois tout le monde écouté : « 🎭 » sur son visage, une grande conversation de trois étapes (« Où sont vos trois amis ? »). Les bonnes réponses : son discours, le bal, le gâteau (les indices de Margot, de Silas et de Gaspard). Il ne dit « clocher » qu'en partant, après une mauvaise réponse. Avec le bruit, seule sa première phrase change. Les textes : `E3-dialogues-et-trame.md` §3, « amis ».
+> - **Ça ne change rien à la suite** : ni code ni récompense au bout. « C'est juste pour occuper le Barde » : le maire descendra dans tous les cas, à la fin.
+> - Le tableau des codes de la nuit (§4) et le schéma de la nuit (§6) sont remis à jour ci-dessous.
+>
 > **⚠️ 13 NOVEMBRE, TARD LE SOIR (Bible §13.33 et §13.35, qui font foi) — Léo et la fin de l'enquête 3. Ce qui suit REMPLACE ce que ce document dit plus bas de la dernière salle, du maire retenu, de Léo et du Corbeau :**
 > - **La dernière salle du donjon : Léo, le boss final** (un combat en temps réel, trois phases). En entrant, le donjon montre un **code pour le Barde : « L'homme en cape est là ! »** (`leo:salle` ↔ `info:leo_la`). À la fête, **Farinel et Iris** ont alors de nouvelles questions (les outils du moulin, la potion volée) : le Barde lit les réponses à voix haute pendant le combat.
 > - **Léo battu parle** (cinq phrases, sur la tablette du Pisteur), puis « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! » et un **code pour le Sage : « Léo a parlé »** (`leo:battu` ↔ `info:leo_battu`). **Sans ce code, le Sage ne peut pas accuser.**
@@ -9,7 +15,7 @@
 > - **L'Alchimiste : plus d'ardoise sur la paillasse d'analyse.** Le code d'une analyse est donné au retour à l'atelier, dans la fiche de la découverte.
 >
 > **⚠️ 13 NOVEMBRE AU SOIR (Bible §13.34, qui fait foi) — la descente et le donjon :**
-> - **La grille de la crypte** : la clé en main, trois gestes — **tirer, pousser** (« un énorme bruit s'est entendu dans tout le village ») ou **soulever** (sans bruit). Le bruit est seulement retenu : ce qu'il change pour le maire n'est pas construit.
+> - **La grille de la crypte** : la clé en main, trois gestes — **tirer, pousser** (« un énorme bruit s'est entendu dans tout le village ») ou **soulever** (sans bruit). ~~Le bruit est seulement retenu : ce qu'il change pour le maire n'est pas construit.~~ **Depuis le 14 novembre : il donne un code au Barde (tout en haut de ce document).**
 > - **Nouveau code : « On va dans la crypte »** (`on_descend`, Pisteur → Sage et Alchimiste), donné quand le passage est ouvert (la grille, ou le puits). Chez chacun : **« Il est temps d'enfiler notre tenue de combat ! »**, et son **code d'allure** pour le Pisteur (`allure:<n>` : fille ou garçon, la peau, les cheveux).
 > - **Plus de code du sac** : le code d'allure de l'Alchimiste n'existe que quand **ses sept potions sont prêtes**, et il les met dans le sac du Pisteur. « On a besoin des sept potions pour descendre. »
 > - **Le Sage** : ses codes du donjon se tapent dans son onglet Code ; le plan des souterrains (il s'ouvre en grand dans le jeu), **les pages de sauvegarde** (deux, plus une ; un sort utilisé se barre) et **le carnet de l'aventurier** sont des pages de son Grand Livre.
@@ -58,7 +64,7 @@ L'action : les deux jeux de la fête le matin, les traces de Moustache l'après-
 4. **Le vieux puits** (seulement après un échec) : « Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. » Avec l'acide dans le sac : « Tu verses l'acide de l'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. » Le donjon, entré par le fond du puits. **Si la clé a été prise, le puits ne s'ouvre jamais.**
 5. **Le donjon** — le même par les deux entrées (§12.51, 11 novembre). Tout se joue sur sa tablette, les trois héros en file ; le Sage a le plan et le carnet de l'aventurier sur la sienne, l'Alchimiste son chaudron. Les codes du donjon sont au §4 (le carnet, la rune, les plantes rares, les pages, les sauvegardes).
 6. **La Grosse Marie** (du Barde, une seule fois, hors combat) : il la tape avec « 📜 Un code » ; « DONG… La brume recule. » Toute la vie des trois héros revient.
-7. **Avant la dernière salle** : « Le Barde a-t-il retenu le maire ? » Il tape « Le maire est retenu », ou continue sans (l'équipe peut attendre le Barde).
+7. ~~**Avant la dernière salle** : « Le Barde a-t-il retenu le maire ? » Il tape « Le maire est retenu », ou continue sans (l'équipe peut attendre le Barde).~~ **Retiré le 13 novembre.** Depuis le 14 novembre, c'est dans l'autre sens : en ouvrant la grille (ou le puits), le Pisteur donne un code **au Barde** — sans bruit, avec du bruit, ou par le puits (Bible §13.36).
 8. **La porte aux quatre signes** (avant-dernière salle) : Moustache gratte, une voix étouffée : « Moustache ? Mon gros gris, c'est toi ? » → code « Odette est derrière la porte » pour le Sage.
 9. **La dernière salle** : Léo, coincé contre le mur, une lanterne blanche de farine et un panier. Avec le code du maire → code « Léo attrapé » pour le Barde. Sans → des pas dans l'escalier, Léo file dans le noir → code « Léo s'est enfui » pour le Barde. Puis l'écran de fin du donjon.
 
@@ -167,20 +173,27 @@ Les codes de l'E3 sont neufs ; ils seront gelés dès leur première mise en lig
 ### La nuit
 | De | Code | Pour | Note |
 | --- | --- | --- | --- |
-| Barde | La clé est au clou | Pisteur | Anselme réussi |
+| Barde | La Grosse Marie sonne (avant : « La clé est au clou ») | Pisteur | Anselme réussi : sa clé pend à sa ceinture |
 | Barde | Le vieux puits | Pisteur | Anselme raté (si c'est le Pisteur qui rate, le puits apparaît chez lui) |
-| Alchimiste | Le sac | Pisteur | pendant le grand dialogue d'Anselme |
+| ~~Alchimiste~~ | ~~Le sac~~ | ~~Pisteur~~ | **remplacé le 13 novembre** par le code d'allure de l'Alchimiste (ses sept potions prêtes) |
+| Pisteur | On va dans la crypte | Sage, Alchimiste | le passage ouvert (la grille, ou le puits) : la tenue de combat |
+| **Pisteur** | **La grille s'ouvre sans bruit** | **Barde** | **14 novembre** : la grille soulevée → le maire inquiet, à la fête |
+| **Pisteur** | **La grille a hurlé** | **Barde** | **14 novembre** : la grille tirée ou poussée → le maire, à la fête (« Vous avez entendu ce bruit ? ») |
+| **Pisteur** | **Le puits est ouvert** | **Barde** | **14 novembre** : par le puits → le maire inquiet, à la fête |
+| Sage, Alchimiste | Leur code d'allure | Pisteur | pour descendre (celui de l'Alchimiste : avec ses sept potions) |
 | Pisteur | Le carnet de l'aventurier | Sage | à l'entrée du donjon (existe : `carnet:aventurier`) |
 | Pisteur | La rune de lumière | Sage | la galerie effondrée (existe : `rune:lumiere`) |
 | Pisteur | Les herbes lumineuses, la fleur de givre | Alchimiste | le donjon (existent) |
 | Alchimiste | Les recettes Baume lumineux, Givre | Pisteur | le donjon (existent) |
 | Pisteur | La page déchirée, la page blanche | Sage | le donjon (existent) |
 | Sage | Les sauvegardes 1 à 4 | Pisteur | les pages blanches (existent) |
-| Barde | La Grosse Marie | Pisteur | une fois, hors combat |
-| Barde | Le maire est retenu | Pisteur | avant la dernière salle |
+| ~~Barde~~ | ~~La Grosse Marie~~ | ~~Pisteur~~ | **en réserve depuis le 12 novembre** : plus personne ne le donne |
+| ~~Barde~~ | ~~Le maire est retenu~~ | ~~Pisteur~~ | **retiré le 13 novembre** |
 | Pisteur | Odette est derrière la porte | Sage | existe : `porte:odette` |
-| Pisteur | Léo attrapé, ou Léo s'est enfui | Barde | existe : `leo:attrape` ; « Léo s'est enfui » est nouveau |
-| Barde | Ce que Léo a avoué (à voix haute) | Sage | facultatif |
+| Pisteur | L'homme en cape est là ! | Barde | en entrant dans la dernière salle : Farinel et Iris, à la fête (13 novembre) |
+| Pisteur | Léo a parlé | Sage | Léo battu : il ouvre les accusations (13 novembre) |
+| ~~Pisteur~~ | ~~Léo attrapé, ou Léo s'est enfui~~ | ~~Barde~~ | **retirés le 13 novembre** |
+| ~~Barde~~ | ~~Ce que Léo a avoué~~ | ~~Sage~~ | **retiré le 13 novembre** |
 
 ## 5. Qui prouve quoi (le test de la Bible)
 
@@ -222,11 +235,12 @@ Les codes de l'E3 sont neufs ; ils seront gelés dès leur première mise en lig
 - **Le chemin** : Barde (les traces) + Sage (six doigts) → Pisteur (la crypte est fermée) → Barde (il faudra Anselme) ; Sage (le plan dans le carnet).
 - **Les potions** : Alchimiste (les sept plantes cachées sur la carte, avec l'herbier du Sage et la cloche d'Anselme) → les sept potions.
 
-### La nuit
-1. **Barde** : Anselme. Réussi → **Pisteur** : la clé, dans le clocher. Raté (l'un ou l'autre) → le puits et l'acide.
-2. **Alchimiste → Pisteur** : le sac.
-3. **Pisteur + Alchimiste + Sage** : le donjon (le Sage guide).
-4. **Barde, pendant ce temps** : la fête et ses indices ; la Grosse Marie (→ Pisteur) ; retenir le maire (→ Pisteur).
-5. **Pisteur → Sage** : Odette est derrière la porte (la page des Fondateurs).
-6. **Pisteur → Barde** : Léo attrapé (ou enfui) ; le grand dialogue de Léo.
-7. **Sage** : l'accusation. Puis minuit, le maire, la bague, le cachot.
+### La nuit (remis à jour le 14 novembre : c'est l'enchaînement d'aujourd'hui)
+1. **Barde** : la fête (chacun a un mot, trois sont des indices sur le maire) ; puis Anselme, au clocher. Réussi → **Pisteur** : la clé, dans le clocher. Raté (l'un ou l'autre) → le vieux puits, et l'acide de l'Alchimiste.
+2. **Pisteur** : il ouvre le passage. La grille de la crypte : tirer, pousser (un énorme bruit) ou soulever (sans bruit). Ou les barreaux du puits, fondus à l'acide.
+3. **Pisteur → Sage et Alchimiste** : « On va dans la crypte » (la tenue de combat). **Sage → Pisteur** et **Alchimiste → Pisteur** : leur code d'allure (celui de l'Alchimiste : ses sept potions).
+4. **Pisteur → Barde** (14 novembre) : « La grille s'ouvre sans bruit », « La grille a hurlé » ou « Le puits est ouvert ». **Barde** : le maire, inquiet, vient le trouver à la fête — « Où sont vos trois amis ? » ; le discours, le bal, le gâteau. Rien n'en dépend pour la suite.
+5. **Pisteur + Alchimiste + Sage** : le donjon, sur la tablette du Pisteur (le Sage guide avec son plan).
+6. **Pisteur → Barde** : « L'homme en cape est là ! » (la dernière salle). **Barde** : Farinel et Iris, à la fête ; il lit leurs réponses à voix haute pendant le combat.
+7. **Pisteur → Sage** : « Odette est derrière la porte » (la page des Fondateurs), puis « Léo a parlé » (Léo battu).
+8. **Sage** : les trois accusations. Puis, sur les quatre tablettes : le maire et les gardes, la bague, le cachot.

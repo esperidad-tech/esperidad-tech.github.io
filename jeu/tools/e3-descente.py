@@ -194,7 +194,10 @@ def partie_enquete(b):
     point(pg, 'soulever')
     t = texte(pg)
     verifier('Le portail s\'ouvre sans bruit' in t and 'pénétrez dans la crypte' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1, f'soulever : « le portail s\'ouvre sans bruit, et vous pénétrez dans la crypte » ({t[:80]})')
-    verifier(pg.locator('#voile .b-code').count() == 1 and 'tenue de combat' in t and 'au Sage et à l\'Alchimiste' in t and pg.evaluate("() => !!M.P().objets['_info:on_descend']"), 'le code du départ est donné : « On va dans la crypte », pour le Sage et l\'Alchimiste')
+    verifier('tenue de combat' in t and 'au Sage et à l\'Alchimiste' in t and pg.evaluate("() => !!M.P().objets['_info:on_descend']"), 'le code du départ est donné : « On va dans la crypte », pour le Sage et l\'Alchimiste')
+    # (14 novembre, Bible §13.36) et un deuxième code, pour le Barde : la grille s'est ouverte sans bruit
+    verifier(pg.locator('#voile .b-donne').count() == 2 and pg.locator('#voile .b-code').count() == 2 and 'Pas un bruit ! Le Barde doit le savoir' in t and pg.evaluate("() => !!M.P().objets['_info:grille_silence'] && !M.P().objets['_info:grille_bruit']"), 'et un deuxième code, pour le Barde : « La grille s\'ouvre sans bruit »')
+    verifier(pg.evaluate("() => M.UI.modal.codes") == ['info:on_descend', 'info:grille_silence'] and pg.evaluate("() => M.destinataire('info:grille_silence')") == 'barde', 'les deux codes sont dans la même fenêtre ; le deuxième est pour le Barde')
     verifier(not sans_son(pg) and jaune(pg, '#voile .b-choix-point [data-id=descendre]'), f'le 🔊, et le bouton jaune « 🕯️ Descendre » ({sans_son(pg)})')
     shot(pg, 'soulever')
     fermer(pg)
@@ -290,8 +293,12 @@ def partie_enquete(b):
         cle_anselme(pg, True)
         ouvrir_grille(pg, geste)
         t = texte(pg)
-        verifier('Un énorme bruit s\'est entendu dans tout le village' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 1, f'{geste} : « un énorme bruit s\'est entendu dans tout le village », le code du départ, puis « Descendre » ({t[:60]})')
-        verifier(pg.evaluate(f"() => M.P().vus['pisteur:clocher:{geste}'] === 'ok' && !M.P().vus['pisteur:clocher:soulever']") and not sans_son(pg), 'le bruit est retenu (pour la fin de l\'enquête)')
+        verifier('Un énorme bruit s\'est entendu dans tout le village' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 2, f'{geste} : « un énorme bruit s\'est entendu dans tout le village », le code du départ, puis « Descendre » ({t[:60]})')
+        verifier(pg.evaluate(f"() => M.P().vus['pisteur:clocher:{geste}'] === 'ok' && !M.P().vus['pisteur:clocher:soulever']") and not sans_son(pg), 'le bruit est retenu')
+        # (14 novembre, Bible §13.36) le bruit part chez le Barde : « La grille a hurlé »
+        verifier('Tout le village a entendu ! Le Barde doit le savoir' in t and pg.evaluate("() => M.UI.modal.codes") == ['info:on_descend', 'info:grille_bruit'] and pg.evaluate("() => !!M.P().objets['_info:grille_bruit'] && !M.P().objets['_info:grille_silence']"), f'{geste} : un deuxième code, pour le Barde — « La grille a hurlé »')
+        sac = pg.evaluate("() => { var d = document.createElement('div'); d.innerHTML = M.objetsTrouves(); return d.textContent.replace(/\\s+/g, ' '); }")
+        verifier('La grille a hurlé' in sac and 'On va dans la crypte' in sac and 'Barde' in sac, f'le Pisteur retrouve ses deux codes dans son sac, avec leur destinataire ({sac[:90]})')
         if geste == 'tirer': shot(pg, 'tirer')
         pg.context.close()
 
@@ -313,7 +320,9 @@ def partie_enquete(b):
     code(pg, allure(pg, 'alchimiste'))
     lieu(pg, 'puits'); point(pg, 'acide')
     t = texte(pg)
-    verifier('Pssshhh' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 1, 'avec le code de l\'Alchimiste : « Pssshhh ! », le code du départ, et « 🕯️ Descendre »')
+    verifier('Pssshhh' in t and pg.locator('#voile .b-choix-point [data-id=descendre]').count() == 1 and pg.locator('#voile .b-code').count() == 2, 'avec le code de l\'Alchimiste : « Pssshhh ! », le code du départ, et « 🕯️ Descendre »')
+    # (14 novembre, Bible §13.36) par le puits aussi, un code pour le Barde : le maire viendra le trouver à la fête
+    verifier(pg.evaluate("() => M.UI.modal.codes") == ['info:on_descend', 'info:puits_ouvert'] and 'Le Barde doit le savoir' in t and pg.evaluate("() => !!M.P().objets['_info:puits_ouvert']"), 'et un deuxième code, pour le Barde : « Le puits est ouvert »')
     shot(pg, 'puits-acide')
     point(pg, 'descendre')
     t = texte(pg)
