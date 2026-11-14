@@ -541,7 +541,7 @@ Demandes de Romain du 11 novembre (19 h 21 à 20 h 54, Bible §12.51, « Les ret
 - Phase 3 : insensible à tout, **sauf au saignement de la faux** (trois coups : 30 par seconde) ; la gourde rend toute sa vie à un héros (trois gorgées).
 - **Les tests** : `node test-leo.js` (112 vérifications, sans navigateur) ; `python3 test-leo.py` (31, à l'écran) ; **la simulation** : `node leo-sim.js 400 --md` → `leo-equilibre.md` (trois joueurs : rapide, moyen, lent).
 
-## 17. Le 14 novembre : Léo après le premier essai de Romain (« trop difficile ») — la rangée d'icônes, le noir, la farine (Bible §13.36 — ces lignes remplacent ce qui est écrit au §16)
+## 17. Le 14 novembre : Léo après le premier essai de Romain (« trop difficile ») — la rangée d'icônes, le noir, la farine (Bible §13.37 — ces lignes remplacent ce qui est écrit au §16)
 
 **Dans tout le donjon (`regles.js`, `donnees.js`)**
 - **Le bouclier du bâton de chêne protège les TROIS héros** (deux jusqu'au 13 novembre), toujours 50 %, toujours sans arrêter les contrôles : `OBJETS['baton-chene'].carte.max = 3`. À l'écran (`combat.js`), un toucher sur n'importe quel ami le pose sur tout le monde. `cible` peut donc être un tableau de trois héros.

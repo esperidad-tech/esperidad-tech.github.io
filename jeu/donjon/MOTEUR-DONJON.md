@@ -393,7 +393,7 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **Les trois retouches de l'exploration** : le premier lieu s'appelle « L'entrée des souterrains » et la carte « Les souterrains » ; **plus de bandeau d'explications** (`conte()` garde la phrase pour les tests, mais ne l'affiche plus, sauf à l'écran des potions du départ) ; **la sauvegarde obligatoire** (`doitSauver()` : deux salles de monstres battues et aucune page de sauvegarde écrite → plus de chemin sur la carte, le bouton « Sauvegarder » porte le rond jaune).
 - **Les tests** : `test-regles.js` (453), `test-leo.js` (112), `test-leo.py` (31), `test-donjon.py` (92, avec la sauvegarde obligatoire), `test-enquete.py` (33), `test-descente.py` (la vraie descente : la sauvegarde obligatoire, puis le combat de Léo qui s'ouvre au bout).
 
-### 9.15 Le 14 novembre : le combat de Léo après le premier essai de Romain (Bible §13.36)
+### 9.15 Le 14 novembre : le combat de Léo après le premier essai de Romain (Bible §13.37)
 
 - **L'écran (`leo.js`)** : en bas, **une seule rangée d'icônes** (`bande()` lit `E.c.barre()`), un cadre par héros à sa couleur (`.lb-g.g-sage|alchimiste|pisteur`), deux lignes d'icônes par cadre ; **plus d'onglets de héros, plus de cible** : `toucherIcone(h, id)` → `agir(h, id)` (les règles choisissent). Le cadre d'un héros pris (au sol, attrapé, étourdi) est estompé, avec son mot ; la barre orange du bas du cadre montre le temps de son geste. Les barres de vie restent sur la scène (`#pv-<héros>`).
 - **La rune de l'œil** : `#leo-suite`, aux pieds de Léo, tout en bas de la salle — l'attaque qui vient en grand (`.grand`, `.cours` quand il la prépare), les deux suivantes en petit (`suite(Z)` dans `maj`).

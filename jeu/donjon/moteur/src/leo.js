@@ -2,7 +2,7 @@
    ici, on ne décide de rien — on fait avancer le temps, on joue ce que les règles annoncent, et on leur passe les doigts.
 
    CE COMBAT EST EN TEMPS RÉEL. Un seul joueur tient la tablette. Pas d'explication avant le combat (Romain : on apprend en jouant).
-   · (14 novembre, Romain, après son premier essai — Bible §13.36) EN BAS, UNE SEULE RANGÉE D'ICÔNES : plus d'onglets de héros,
+   · (14 novembre, Romain, après son premier essai — Bible §13.37) EN BAS, UNE SEULE RANGÉE D'ICÔNES : plus d'onglets de héros,
      plus de cible à toucher. Les icônes sont rangées par héros (un cadre de sa couleur), seulement celles qui servent dans la
      phase (LeoRegles.L.BARRE) ; un toucher lance le geste, et les règles choisissent la cible (c.barre(), c.agir(h, geste)) ;
    · la rune de l'œil ouverte : aux pieds de Léo, tout en bas, l'icône de l'attaque qui vient et des deux suivantes ;

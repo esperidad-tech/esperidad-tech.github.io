@@ -7,7 +7,7 @@
    pris pendant toute son animation, et son geste ne « tombe » qu'au moment de l'impact). Un seul joueur tient la tablette ;
    les trois héros peuvent être en plein geste en même temps.
 
-   LE 14 NOVEMBRE (Romain, après son premier essai : « trop difficile », Bible §13.36) :
+   LE 14 NOVEMBRE (Romain, après son premier essai : « trop difficile », Bible §13.37) :
    · PLUS DE HÉROS À CHOISIR, PLUS DE CIBLE À TOUCHER : une seule rangée d'icônes (c.barre()), seulement celles qui servent dans
      la phase (L.BARRE) ; chaque icône choisit sa cible toute seule (c.auto) ;
    · LE NOIR ne se lève plus tout seul (il faut la lumière du bâton de lune) ; dans le noir, tout continue, mais Léo est

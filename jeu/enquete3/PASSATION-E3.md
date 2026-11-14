@@ -2,6 +2,14 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 14 novembre : Léo après le premier essai de Romain (Bible §13.37)
+
+- Romain a joué Léo : « trop difficile », à cause de l'écran, pas des attaques. **Refait et en ligne** (version 20261114-1049) : une seule rangée d'icônes (plus de héros à choisir, plus de cible à toucher), l'œil qui montre les trois prochaines attaques aux pieds de Léo, le bouclier de chêne sur les trois héros (dans tout le donjon), le noir et la farine qui ne partent plus tout seuls, la lumière qui coupe l'attaque de Léo, la charge plus longue.
+- **Pour la conception** : rien ne change dans l'histoire, les dialogues ni les codes. Les indices de Farinel et d'Iris restent justes (le feu contre la farine, la faux qui fait saigner, le crochet contre le cuir).
+- **⚠️ Le bâton de lune est devenu obligatoire** contre Léo (sans lui, le noir ne se lève jamais), et le feu aussi (contre la farine). Rien, dans l'enquête, ne le dit aux joueurs : à voir avec Romain (un mot d'Iris ou de Farinel ?).
+- **⚠️ La phase 2 reste très dure** pour un joueur moyen (Bible §13.37, « La difficulté »).
+- **Le chantier suivant, demandé par Romain** : les dessins des armes de Léo, plus détaillés (des images à lui montrer avant de publier).
+
 ## Nouveau depuis le 14 novembre : LE MAIRE INQUIET, À LA FÊTE — conçu avec Romain, construit et EN LIGNE (Bible §13.36)
 
 - **À lire : Bible §13.36.** Conçu à la voix avec Romain le 14 novembre au matin ; son go à 10 h 29 (« tu peux faire ces modifications dans le jeu et tu peux publier »). En ligne à 11 h 25 : commit c10e119 du site, **version 20261114-1024**, publication de GitHub vérifiée.
