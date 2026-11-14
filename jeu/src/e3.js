@@ -1,6 +1,6 @@
 /* ==========================================================
    Enquête 3 — La lettre d'Odette — DESIGN-saison1.md § 13 (surtout § 13.14) et jeu/enquete3/*.md (le détail, qui fait foi)
-   EN CONSTRUCTION, étape par étape (§ 13.14) : fermée aux joueurs (enEcriture), ouverte avec le mode test (M.enEcriture, moteur-base.js).
+   Construite étape par étape (§ 13.14), d'abord fermée aux joueurs ; OUVERTE AUX JOUEURS le 14 novembre (Bible § 13.39), codes gelés.
    Étape 1 (11 novembre) : la lettre, l'écran des missions, le marché aux fleurs du Barde, les villageois du matin et de l'après-midi,
    les occupés, les écoutes aux portes. Pas encore : les grands dialogues (étape 2), le Sage (3), l'Alchimiste (4), le Pisteur (5),
    le donjon (6), la nuit et la fin (7), le vérificateur (8).
@@ -38,8 +38,9 @@ var M_ = ['matin'], A_ = ['apresmidi'], N_ = ['nuit'], MA_ = ['matin', 'apresmid
 
 E[3] = {
   id:3, titre:'La lettre d\'Odette', niveau:3,
-  /* pas encore jouable par les joueurs : le village dit « en cours d'écriture ». Avec le mode test (#test), elle s'ouvre (M.enEcriture). */
-  enEcriture:true,
+  /* OUVERTE AUX JOUEURS depuis le 14 novembre (Romain, 13 h 57 : « l'adresse sans le test, on puisse aussi aller jusqu'à l'enquête numéro 3 ») :
+     plus de « enEcriture:true » ici (c'est lui qui faisait dire au village « en cours d'écriture » sans #test : M.enEcriture, moteur-base.js).
+     Ses codes sont gelés depuis ce jour-là : src/codes-fixes-e3.js. */
   moments:['matin', 'apresmidi', 'nuit'],
   sansActions:true,
   salutUneFois:true,

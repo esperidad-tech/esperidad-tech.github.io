@@ -2,6 +2,14 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 14 novembre, 14 h 20 : L'ENQUÊTE 3 EST OUVERTE AUX JOUEURS — à l'adresse normale, sans « #test » ; ses codes sont gelés (Bible §13.39)
+
+- **À lire : Bible §13.39.** Demande de Romain à 13 h 57 : « Fais en sorte que l'adresse sans le test […] on puisse aussi aller jusqu'à l'enquête numéro 3. » En ligne à 14 h 20 : commit 6f4f18a du site, **version 20261114-1319**, publication de GitHub vérifiée.
+- **Ce qui change pour la conception** : l'enquête 3 n'est plus un brouillon caché. À https://esperidad-tech.github.io/brumeval/ , on y arrive en finissant l'enquête 2 ; **des parties peuvent être en cours chez les joueurs**. Toute retouche (un dialogue, une étape, un code) arrive au milieu de ces parties.
+- **Ses codes sont gelés** (comme ceux des enquêtes 1 et 2) : un code existant ne change plus jamais de symboles ; un code nouveau prend un code libre et se gèle à sa première mise en ligne (`jeu/tools/geler-e3.py`, `jeu/src/codes-fixes-e3.js` : voir `PASSATION.md`).
+- **Rien n'a été retouché dans l'enquête elle-même.** Restent à valider par Romain : les décisions listées du §13.32 au §13.38, et deux petites au §13.39 (le Mode test des Réglages reste réservé à « #test » ; le gel des codes). **Le risque d'une vraie partie : Léo** (la phase 2 est un mur pour un joueur moyen, et on n'accuse pas sans l'avoir battu).
+- Les lignes « Pour l'essayer : …/brumeval/#test → Réglages → Mode test → Enquête 3 », plus bas, restent vraies pour sauter tout de suite à l'enquête 3 ; « L'enquête reste fermée aux joueurs » ne l'est plus.
+
 ## Nouveau depuis le 14 novembre, 12 h 40 : LE MAIRE INQUIET VIENT TOUT SEUL — les minuteurs cachés, EN LIGNE (Bible §13.38)
 
 - **À lire : Bible §13.38.** Conçu à la voix avec Romain, une heure après le §13.36 ; son go à 11 h 44 (« Donc go et tu peux mettre en ligne. »). En ligne à 12 h 40 : commit 1f6eb4d du site, **version 20261114-1138**, publication de GitHub vérifiée.

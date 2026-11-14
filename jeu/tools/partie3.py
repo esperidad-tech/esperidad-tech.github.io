@@ -20,7 +20,9 @@ et vérifie qu'il est reçu et qu'il ouvre bien la suite. Les mini-jeux se lance
     « Odette est derrière la porte » → le Sage, « Léo attrapé » → le Barde ; le Barde (Léo, les trois étapes → « Léo a tout dit » → le Sage) ;
     le Sage (la porte des Fondateurs, l'accusation, le Corbeau) → le code de fin → tous : la même scène finale, le cachot.
   À la fin : toutes les missions de chacun sont cochées, aucun code n'est resté sans être donné, aucune erreur de page.
-   BRUMEVAL_DIST=<dossier construit> [BRUMEVAL_DONJON=<donjon construit>] python3 tools/partie3.py"""
+   BRUMEVAL_DIST=<dossier construit> [BRUMEVAL_DONJON=<donjon construit>] python3 tools/partie3.py [normal]
+   « normal » (14 novembre : l'enquête 3 est ouverte aux joueurs, Bible §13.39) : toute la partie à l'adresse des joueurs, sans « #test »
+   (l'aller-retour avec le donjon compris : l'adresse ne doit jamais retrouver « test »)."""
 import sys, os, json, threading, tempfile, shutil, functools
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
@@ -30,6 +32,7 @@ import etabli_outils as ET
 import cueillette_outils as CU
 DIST = os.path.abspath(os.environ.get('BRUMEVAL_DIST') or os.path.join(ICI, '..', 'dist'))
 DONJON = os.path.abspath(os.environ.get('BRUMEVAL_DONJON') or os.path.join(ICI, '..', 'donjon', 'moteur', 'sortie'))
+NORMAL = 'normal' in sys.argv   # l'adresse des joueurs, sans « #test »
 OUT = os.path.join(ICI, '..', 'test', 'partie3'); os.makedirs(OUT, exist_ok=True)
 erreurs, echecs = [], []
 passes = []          # les codes passés : (de, id, pour)
@@ -54,10 +57,14 @@ class Tablette:
         pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
         pg.route('**/fonts.gstatic.com/**', lambda r: r.fulfill(status=404, body=''))
         pg.add_init_script("window.BRUMEVAL_SANS_TUTO = true;")
-        pg.goto(base + 'index.html#test')
+        pg.goto(base + 'index.html' + ('' if NORMAL else '#test'))
         pg.click('[data-act=creer]'); pg.click(f'[data-act=crea-role][data-r={role}]'); pg.click('[data-act=crea-suite]'); pg.fill('#nom', self.nom); pg.click('[data-act=crea-fin]')
         pg.evaluate("() => { M.S.heros.joueur = 'adulte'; M.sauver(); M.UI.ecran = 'reglages'; M.render(); }")
-        pg.click('[data-act=mode-test][data-i="3"]'); pg.click('#voile [data-act=confirmer-oui]')
+        if NORMAL:   # à l'adresse des joueurs, pas de « Mode test » dans les Réglages : le robot fait passer son héros à l'enquête 3 par la même action
+            pg.evaluate("() => M.A['mode-test']({dataset:{i:'3'}})"); pg.click('#voile [data-act=confirmer-oui]')
+            verifier(not pg.evaluate("() => /test/.test(location.search + location.hash)") and pg.locator('[data-act=nouvelle-enquete]').count() == 1 and 'en cours d\'écriture' not in pg.inner_text('#app'), f'{self.nom} : à l\'adresse des joueurs (sans « test »), le village propose l\'enquête 3')
+        else:
+            pg.click('[data-act=mode-test][data-i="3"]'); pg.click('#voile [data-act=confirmer-oui]')
         pg.click('[data-act=nouvelle-enquete]'); pg.click('[data-act=lettre-suite]'); pg.click('[data-act=commencer]'); pg.wait_for_timeout(500)
         self.preparer()
 
@@ -436,6 +443,7 @@ def partie(nav, base):
     P.pg.screenshot(path=os.path.join(OUT, 'pisteur-fin-donjon.png'))
     P.pg.eval_on_selector('[data-act=enquete]', 'e => e.click()'); P.pg.wait_for_url('**/brumeval/index.html**'); P.pg.wait_for_timeout(1400); P.preparer()
     t = P.texte()
+    if NORMAL: verifier(not P.js("() => /test/.test(location.search + location.hash)") and P.js("() => !!M.P() && M.P().id === 3"), 'le Pisteur remonte du donjon à l\'adresse des joueurs (toujours sans « test »), dans l\'enquête 3')
     verifier('Le donjon est fini' in t and 'Place aux accusations' in t and P.pg.locator('#voile .b-donne').count() == 2, 'le Pisteur remonte : « Le donjon est fini », deux codes à donner au Sage')
     P.shot('donjon-fini'); P.fermer()
     # « Odette est derrière la porte » et « Léo a parlé » → le Sage

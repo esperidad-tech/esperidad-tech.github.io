@@ -548,10 +548,26 @@ with sync_playwright() as p:
         for _ in range(10):
             if J[r].evaluate("() => M.P() && M.P().fin && M.P().fin.etape === 'histoire'"): ev(J[r], 'fin-suite')
         verifier(J[r].evaluate("() => M.P().fin.etape === 'recompenses'"), f'{r} : la fin, puis les récompenses')
-    verifier('en cours d\'écriture' in S.inner_text('#app'), 'Sage : l\'enquête 3 est « en cours d\'écriture »')
+    # (14 novembre, Bible §13.39 : l'enquête 3 est OUVERTE AUX JOUEURS.) Le robot joue sans « test » dans l'adresse, comme les joueurs :
+    # à la fin de l'enquête 2, chacun a le bouton « 🔍 Enquête 3 » ; il mène à la lettre d'Odette, aux missions du maire, puis à l'enquête.
+    verifier('en cours d\'écriture' not in S.inner_text('#app') and S.locator('[data-act=suite-sage]').count() == 1 and 'Enquête 3' in S.locator('[data-act=suite-sage]').inner_text(), 'Sage : à la fin de l\'enquête 2, le bouton « Enquête 3 » (plus de « en cours d\'écriture »)')
     S.evaluate("() => window.scrollTo(0, document.body.scrollHeight)"); shot(S, 'fin-enquete3')
-    ev(S, 'fin-retour'); S.wait_for_timeout(200)
-    verifier('en cours d\'écriture' in S.inner_text('#app') and S.locator('[data-act=nouvelle-enquete]').count() == 0, 'Village : enquête 3 en cours d\'écriture, pas de bouton')
+    # une tablette repasse par le village (le Pisteur) : le bouton de l'enquête 3 y est aussi ; les trois autres partent de l'écran de fin
+    V = J['pisteur']
+    ev(V, 'fin-retour'); V.wait_for_timeout(200)
+    verifier('en cours d\'écriture' not in V.inner_text('#app') and V.locator('[data-act=nouvelle-enquete]').count() == 1 and 'Enquête 3' in V.locator('[data-act=nouvelle-enquete]').inner_text(), 'Village (Pisteur) : le bouton « Enquête 3 » (plus de « en cours d\'écriture »)')
+    shot(V, 'village-enquete3')
+    V.click('[data-act=nouvelle-enquete]', force=True); V.wait_for_timeout(300)
+    for r in ROLES[1:]:
+        J[r].click('[data-act=suite-sage]', force=True); J[r].wait_for_timeout(300)
+    for r in ROLES:
+        pg = J[r]
+        verifier(pg.evaluate("() => !/test/.test(location.search + location.hash) && !!M.P() && M.P().id === 3 && M.P().etape === 'lettre'"), f'{r} : en route pour l\'enquête 3, sans « test » dans l\'adresse (la lettre d\'Odette)')
+        if r == 'sage': shot(pg, 'enquete3-lettre')
+        pg.click('[data-act=lettre-suite]', force=True); pg.wait_for_timeout(200)
+        pg.click('[data-act=commencer]', force=True); pg.wait_for_timeout(400)
+        verifier(pg.evaluate("() => M.P().id === 3 && M.P().etape === 'jeu'") and len(pg.inner_text('#app').strip()) > 20, f'{r} : l\'enquête 3 a commencé')
+    shot(J['barde'], 'enquete3-debut')
     print('Mini-jeux lancés :', {r: J[r].evaluate('() => window.__mj || []') for r in ROLES})
     print('Captures :', OUT)
     print('ÉCHECS :', echecs)
