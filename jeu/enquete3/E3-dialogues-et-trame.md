@@ -2,6 +2,8 @@
 
 > 🔒 **VERROUILLÉ PAR ROMAIN LE 12 NOVEMBRE 2026 À 21 H 44.** Ce fichier est le **miroir exact** de ce que dit le jeu. Il est écrit par `node jeu/tools/e3-dialogues.js`, à partir de `jeu/src/e3.js`. **On ne le modifie jamais à la main**, et on n'y recolle aucun ancien dialogue. Pour changer une réplique : le « go » de Romain, puis `e3.js`, puis relancer l'outil. `node jeu/tools/verif.js 3` met une croix si ce fichier et le jeu ne disent plus la même chose.
 >
+> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36).
+>
 > **Ne font plus foi** (anciens dialogues, à ne plus jamais reprendre) : la version 2 du 11 novembre (`jeu/archives/E3-dialogues-et-trame-11-novembre.md`), celle du 6 novembre (`jeu/archives/E3-dialogues-et-trame-6-novembre.md`), le document du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo), les pages « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) et « Dialogues du Barde » du 11 novembre (https://claude.ai/artifact/7e9Wm974Ux8D5Ta5Xcr3Ft), et « les 3 questions communes » du 12 novembre à 17 h (https://claude.ai/artifact/D3Ss7fQdWkCZCBvJjVtw4P).
 >
 > **Pour relire** : la page de Romain, avec des onglets (https://claude.ai/artifact/KpEtFyE3zCWVN4mmEMfyCv), et le scénario (https://claude.ai/artifact/Ya2t6QJG6zsqQ9s96xjFtM). En cas de différence, c'est le jeu (et donc ce fichier) qui a raison.
@@ -14,7 +16,8 @@
 - **Les grands dialogues** (le maire, Anselme) ne s'ouvrent qu'une fois **tout demandé** à tout le monde. Ils ne s'affichent pas comme les autres : violets, « 🎭 Grande conversation », un reflet qui passe, une fenêtre à bandeau ; « 🎭 » se pose sur le visage du villageois, sur la carte. Un seul essai. Celui à qui on ne peut pas parler à ce moment-là (occupé, ailleurs, fâché) ne bloque pas.
 - **Chez Anselme, les quatre choix sont en majuscules** : la bonne réponse ne se voit plus à l'œil.
 - **🤥** : le villageois ment. On le démasque avec « Mensonge ? », sous sa dernière réponse (règle de l'enquête 2).
-- **La grille du clocher grince.** Pour l'ouvrir sans bruit : ni tirer, ni pousser — **soulever** (Silas le dit). Le geste est construit depuis le 13 novembre, chez le Pisteur (Bible §13.34) : tirer ou pousser, « un énorme bruit s'est entendu dans tout le village ». Ce que ce bruit change pour le maire reste à décider.
+- **La grille du clocher grince.** Pour l'ouvrir sans bruit : ni tirer, ni pousser — **soulever** (Silas le dit). Le geste est construit depuis le 13 novembre, chez le Pisteur (Bible §13.34) : tirer ou pousser, « un énorme bruit s'est entendu dans tout le village ».
+- **Le maire inquiet, à la fête** (Romain, 14 novembre, 10 h 29 ; Bible §13.36). En ouvrant le passage, le Pisteur a un code pour le Barde : la grille soulevée, la grille qui a fait du bruit, ou le puits. Chez le Barde, le maire vient alors le trouver à la fête et demande où sont ses amis (§3, « amis »). **Il ne dit jamais « clocher » de lui-même** : seulement en partant, après une mauvaise réponse. Avec le bruit, seule sa première phrase change. **Ça ne change rien à la fin** : c'est pour occuper le Barde, le maire descendra dans tous les cas.
 
 ## 1. Le début
 
@@ -353,6 +356,37 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 - Dans le Carnet (ok) : Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…
 - Dans le Carnet (rate) : Anselme est monté sonner tout seul, sa clé à la ceinture.
 
+### 🎭 « amis » — Monsieur Grosbec
+
+_La nuit, à la fête. Il s'ouvre en touchant Grosbec, qui porte alors « 🎭 », quand le Barde a : le code « La grille s'ouvre sans bruit » (pour barde) OU le code « La grille a hurlé » (pour barde) OU le code « Le puits est ouvert » (pour barde) — et qu'il a écouté tout le monde à la fête._
+
+**Étape 1** — « Barde… Où sont vos trois amis ? Je ne les vois nulle part. »
+
+- _À la place, avec le code « La grille a hurlé » (pour barde)_ : « Vous avez entendu ce bruit ? Où sont vos amis ? »
+- ❌ « Ils sont partis se coucher : ils étaient très fatigués. »
+- ✅ « Ils arrivent ! Mais tout le monde réclame votre discours. » → « Mon discours ? Si on le réclame… » Il parle, un œil sur le clocher, puis il revient. « Vingt minutes, et toujours personne. Où sont-ils ? »
+- ❌ « Ils cherchent encore Odette, je crois, Monsieur le maire. »
+- ❌ « Ils arrivent ! Goûtez donc le buffet en les attendant. »
+
+**Étape 2** — « Vingt minutes, et toujours personne. Où sont-ils ? »
+
+- ❌ « Attendez encore un peu, Monsieur le maire, je vous en prie. »
+- ❌ « Ils sont au clocher : ils aident Anselme à sonner. »
+- ❌ « Vous avez l'air bien nerveux, ce soir, Monsieur le maire. »
+- ✅ « Personne ne danse avant vous : ouvrez le bal ! » → « C'est vrai… Une seule danse. » Il danse, les yeux tournés vers le clocher, puis il revient. « J'ai dansé. Alors, où sont-ils ? »
+
+**Étape 3** — « J'ai dansé. Alors, où sont-ils ? »
+
+- ✅ « Gaspard n'arrive pas à porter le gâteau tout seul ! » → « Mon gâteau ! » Il court aider Gaspard, sans un regard pour le clocher.
+- ❌ « Reprenez donc un verre de cidre, Monsieur le maire. »
+- ❌ « Regardez les lampions de Basile, comme ils sont beaux ! »
+- ❌ « Ils ne font rien de mal, Monsieur le maire, c'est juré ! »
+
+- **Après un mauvais choix** : « Bien, bien… J'ai une affaire à régler au clocher. » Il quitte la fête, à grands pas. (et c'est fini)
+- **Réussi ou raté : aucun code.** La fin de l'enquête ne change pas.
+- Dans le Carnet (ok) : Le maire cherchait tes trois amis, à la fête. Tu l'as retenu un bon moment.
+- Dans le Carnet (rate) : Le maire cherchait tes trois amis, à la fête. Il est parti : « J'ai une affaire à régler au clocher. »
+
 ## 4. La nuit
 
 ### 🎉 La fête, sur la place
@@ -371,6 +405,7 @@ Chacun dit une réplique, autant de fois qu'on veut.
 - **Basile** : « Les lampions tiennent ! Je n'en reviens pas moi-même. »
 - **Fortuné** : « Dernières lanternes ! Deux pour le prix de trois ! »
 - **Grosbec** : « Quelle fête ! Tout le village est là… enfin, presque. »
+  - 🎭 **Puis il vient trouver le Barde** : le grand dialogue « amis » (§3), avec le code « La grille s'ouvre sans bruit » (pour barde) OU le code « La grille a hurlé » (pour barde) OU le code « Le puits est ouvert » (pour barde), une fois tout le monde écouté à la fête.
 
 ### 🧥 L'aide pour le donjon : pendant le combat contre l'homme en cape
 
@@ -460,6 +495,7 @@ Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en c
 - 🧵 Quelqu'un a écrit cette lettre. Quand l'équipe saura qui, fais-lui dire la vérité. _(arrive l'après-midi)_
 - 🗝️ La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu'il faut, va le voir au clocher, la nuit. _(arrive la nuit)_
 - 🎉 Tes amis se battent, tout au fond ! À la fête, quelqu'un saura peut-être les aider. _(arrive la nuit)_
+- 🎩 Le maire cherche tes trois amis, à la fête. Quand tu auras écouté tout le monde, va le voir… avec les bons mots. _(arrive la nuit)_
 - 💡 Regarde bien les visages : plusieurs villageois vont te mentir.
 - 🔍 Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?
 
@@ -467,7 +503,7 @@ Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en c
 
 Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32 et §13.34), le Sage, l'Alchimiste et le Pisteur aussi, en partie. Ce qui reste, tant que Romain n'a pas donné son « go » :
 
-- **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; ce que le bruit de la grille change pour le maire (le geste lui-même est construit : tirer, pousser ou soulever) ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou).
+- **Le Pisteur** : les empreintes de pieds d'enfant chez Iris et derrière l'atelier de Mélusine ; la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 14 novembre, Bible §13.36 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver à la fête.)
 - **Le Sage** : les pointures dans le registre. (Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
 - **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
 - **Le donjon** : le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)

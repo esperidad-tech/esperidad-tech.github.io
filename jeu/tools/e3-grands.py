@@ -9,7 +9,11 @@ Sur la tablette du Barde (le marché du matin est sauté : le robot rend 10 bouq
       Mélusine, le code « La crypte est fermée » et toutes ses questions ; les quatre choix en majuscules ; la fête (les indices notés),
       les trois écoutes de la fête, puis l'aide pour le donjon (Farinel : quatre questions ; Iris : deux) et la mission cochée ;
   B : tout raté — le piège de la copie, puis une partie où le maire refuse ; la nuit, Anselme raté (Tim montre le puits), Mélusine qui
-      craque à la fête (le filet), le maire à la fête (une réplique, plus de petit dialogue).
+      craque à la fête (le filet), le maire à la fête (une réplique, plus de petit dialogue) ;
+  C : LE MAIRE INQUIET (14 novembre, Bible §13.36) — le code du Pisteur (« La grille s'ouvre sans bruit », « La grille a hurlé » ou « Le
+      puits est ouvert ») fait venir le maire à la fête, une fois tout le monde écouté : « 🎭 » sur son visage, son grand dialogue violet,
+      trois étapes de quatre choix. Il ne dit « clocher » qu'en partant, après une mauvaise réponse. Avec le bruit, seule sa première
+      phrase change. Réussi ou raté : aucun code.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-grands.py [iphone]"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -295,6 +299,130 @@ with sync_playwright() as p:
     verifier((modal(pg) or {}).get('vue') == 'fete' and 'presque' in texte(pg), 'le maire, à la fête : sa réplique (« … enfin, presque »), plus de petit dialogue')
     fermer(pg)
     pg.close()
+
+    # ---------------- Partie C : le maire inquiet (Romain, 14 novembre, 10 h 29 ; Bible §13.36) ----------------
+    VISIBLES = "() => M.etapesMission().filter(function(e){ return (e.des === undefined || (M.P().moment || 0) >= e.des) && (!e.si || e.si.some(M.condMission)); }).map(function(x){ return x.t; }).join(' | ')"
+    CARNET = "() => JSON.stringify(M.S.calepin || []) + JSON.stringify(M.P().carnet || M.P().notes || '')"
+    def nuit(nom):
+        pg = debut(b, nom); code(pg, 'moment:1'); apres_code(pg); code(pg, 'moment:2'); apres_code(pg)
+        return pg
+    def ecouter(pg, sauf=()):
+        """écouter les fêtards (pas le maire), sauf ceux-là"""
+        for qui in pg.evaluate("() => Object.keys(M.E().fete.gens)"):
+            if qui == 'grosbec' or qui in sauf: continue
+            ev(pg, 'gd-fete', {'id': qui}); fermer(pg)
+    def pret(pg):
+        return pg.evaluate("() => M.grandFete('grosbec')")
+    def mission_maire(pg):
+        f = pg.evaluate("() => { M.render(); return (M.etapesMission() || []).map(function(x){ return [x.t, !!(x.fait && x.fait.some(M.condMission))]; }); }")
+        return [ok for t, ok in f if t.startswith('Le maire cherche')]
+    dit_par_le_maire = []   # tout ce que le maire dit AVANT une mauvaise réponse : jamais « clocher »
+    def replique(pg):
+        """la réplique du maire qui se joue (pas les réponses proposées au Barde)"""
+        return pg.evaluate("() => { var g = document.querySelector('#gd-texte'); return g ? g.getAttribute('data-t') || '' : ''; }")
+
+    print('— Partie C : le maire inquiet, sans bruit (tout réussi)')
+    pg = nuit('C1')
+    verifier(pret(pg) == '' and bulle(pg, 'grosbec') != '🎭' and 'Le maire cherche' not in pg.evaluate(VISIBLES), 'avant le code du Pisteur : le maire ne cherche personne, pas de mission')
+    ecouter(pg, sauf=('tim',))
+    verifier(pret(pg) == '', 'presque tout le monde écouté, mais pas de code : toujours rien')
+    code(pg, 'info:grille_silence')
+    verifier('Pas un bruit' in texte(pg) and 'sans bruit' in texte(pg) and pg.evaluate("() => !!M.P().recus['info:grille_silence']"), 'le code du Pisteur : « La grille s\'ouvre sans bruit »')
+    shot(pg, 'C-code-silence')
+    apres_code(pg)
+    verifier('Le maire cherche tes trois amis' in pg.evaluate(VISIBLES) and mission_maire(pg) == [False], 'la mission arrive : « Le maire cherche tes trois amis, à la fête. […] »')
+    verifier(pret(pg) == '' and bulle(pg, 'grosbec') != '🎭', 'il reste Tim à écouter : le maire attend (on a les indices avant d\'y entrer)')
+    ev(pg, 'lieu', {'id': 'place'})
+    verifier(pg.locator('#voile .gd-fete-grand').count() == 0, 'à la fête : pas encore de « 🎭 »')
+    ev(pg, 'gd-fete', {'id': 'grosbec'})
+    verifier((modal(pg) or {}).get('vue') == 'fete' and 'presque' in texte(pg), 'le maire, en attendant : sa réplique de la fête')
+    fermer(pg)
+    ecouter(pg)
+    verifier(pret(pg) == 'amis' and bulle(pg, 'grosbec') == '🎭' and not pg.evaluate("() => M.pnjIndispo('grosbec')"), 'tout le monde écouté : « 🎭 » sur le maire, sur la carte (et son visage n\'est pas rouge)')
+    ev(pg, 'lieu', {'id': 'place'})
+    premier = pg.evaluate("() => { var b = document.querySelector('#voile .gd-fete-grille .gd-fete-tete'); return b ? [b.dataset.id || '', b.className, b.disabled, (b.querySelector('.gd-fete-badge') || {}).textContent || ''] : null; }")
+    verifier(premier and premier[0] == 'grosbec' and 'gd-fete-grand' in premier[1] and 'gd-appel' in premier[1] and not premier[2] and premier[3] == '🎭', f'à la fête : le maire en tête, avec « 🎭 », et on peut le toucher ({premier})')
+    verifier(pg.locator('#voile .gd-fete-tete.gd-appel').count() == 1, 'lui seul appelle le Barde')
+    shot(pg, 'C-fete-maire')
+    pg.locator('#voile .gd-fete-tete.gd-fete-grand').click(); pg.wait_for_timeout(700)
+    m = modal(pg)
+    verifier(m and m['type'] == 'grand' and m.get('g') == 'amis', 'on le touche : son grand dialogue s\'ouvre')
+    verifier(pg.locator('#voile .b-feuille.gd-fenetre .gd-bandeau').count() == 1 and 'GRANDE CONVERSATION' in texte(pg).upper() and pg.locator('#voile .gd-pas i').count() == 3, 'la fenêtre violette : « 🎭 Grande conversation », trois ronds, un seul essai')
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier('Où sont vos trois amis' in t and 'Je ne les vois nulle part' in t and 'bruit' not in t, 'sans bruit : « Barde… Où sont vos trois amis ? Je ne les vois nulle part. »')
+    verifier(pg.locator('#voile .ma-ligne').count() == 4 and pg.locator('#voile .ma-ligne .b-lire').count() == 4 and pg.locator('#voile .ma-dit .b-lire').count() >= 1, 'quatre réponses, chacune avec son 🔊 ; la question du maire aussi')
+    pg.wait_for_timeout(2600); shot(pg, 'C-maire-1')
+    choisir(pg, 1)
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier('Mon discours' in t and 'Vingt minutes, et toujours personne' in t and pg.locator('#voile .gd-pas i.fait').count() == 1, 'son discours (l\'indice de Margot) : il parle vingt minutes, puis il revient — étape 2')
+    pg.wait_for_timeout(3200); shot(pg, 'C-maire-2')
+    choisir(pg, 3)
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier('Une seule danse' in t and 'ai dansé' in t and pg.locator('#voile .gd-pas i.fait').count() == 2, 'le bal (l\'indice de Silas) : il danse, puis il revient — étape 3')
+    choisir(pg, 0)
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier('Mon gâteau' in t and pg.evaluate("() => M.P().vus['grand:amis']") == 'ok' and pg.evaluate("() => !!M.P().vus['grand:amis:fini']"), 'le gâteau (l\'indice de Gaspard) : « Mon gâteau ! » — réussi')
+    verifier(pg.locator('#voile [data-act=gd-suite]').count() == 0 and pg.locator('#voile .b-donne').count() == 0 and pg.locator('#voile [data-act=fermer]').count() >= 1, 'aucun code au bout : un simple « D\'accord »')
+    # (en écoutant tout le monde, Mélusine a craqué : son aveu est le seul code que le Barde a en main)
+    verifier(sorted(objets(pg)) == ['_info:aveu'], f'le maire ne donne aucun code au Barde ({objets(pg)})')
+    pg.wait_for_timeout(2200); shot(pg, 'C-maire-fin')
+    pg.locator('#voile .gd-feuille [data-act=fermer]').click(); pg.wait_for_timeout(300)
+    verifier(not modal(pg), '« D\'accord » referme la fenêtre')
+    verifier('retenu un bon moment' in pg.evaluate(CARNET), 'dans le Carnet : « Tu l\'as retenu un bon moment. »')
+    verifier(mission_maire(pg) == [True], 'la mission du maire est cochée')
+    verifier(pret(pg) == '' and bulle(pg, 'grosbec') != '🎭' and pg.evaluate("() => M.pnjIndispo('grosbec')"), 'fini : plus de « 🎭 », le maire passe au rouge')
+    ev(pg, 'lieu', {'id': 'place'})
+    verifier(pg.locator('#voile .gd-fete-grand').count() == 0 and pg.locator('#voile .gd-fete-tete.vu').count() >= 9, 'à la fête : tout le monde a tout dit')
+    fermer(pg)
+    # relire le code ne relance rien
+    code(pg, 'info:grille_silence'); verifier('déjà' in texte(pg).lower(), 'le code retapé : « Déjà reçu »'); apres_code(pg)
+    verifier(pret(pg) == '', 'et le maire ne revient pas')
+    pg.close()
+
+    print('— Partie C : le maire inquiet, avec le bruit (raté dès la première réponse)')
+    pg = nuit('C2')
+    ecouter(pg)
+    code(pg, 'info:grille_bruit')
+    verifier('CRIIIIIC' in texte(pg) and 'tout le village' in texte(pg), 'le code du Pisteur : « La grille a hurlé »')
+    shot(pg, 'C-code-bruit')
+    apres_code(pg)
+    verifier(pret(pg) == 'amis' and bulle(pg, 'grosbec') == '🎭', 'tout le monde était déjà écouté : le maire arrive tout de suite')
+    ev(pg, 'lieu', {'id': 'place'})
+    pg.locator('#voile .gd-fete-tete.gd-fete-grand').click(); pg.wait_for_timeout(700)
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier('Vous avez entendu ce bruit ? Où sont vos amis ?' in t and 'nulle part' not in t, 'avec le bruit : « Vous avez entendu ce bruit ? Où sont vos amis ? »')
+    verifier(pg.evaluate("() => { var c = M.E().grands.amis.etapes[0].choix; return c.map(function(x){ return x.q; }); }") == [x.strip() for x in pg.evaluate("() => [].map.call(document.querySelectorAll('#voile .ma-ligne .b-question b'), function(b){ return b.textContent.replace(/[«»]/g, '').trim(); })")], 'les quatre mêmes réponses que sans bruit')
+    pg.wait_for_timeout(2400); shot(pg, 'C-maire-bruit')
+    choisir(pg, 0)
+    t = texte(pg)
+    verifier('une affaire à régler au clocher' in t and 'Il quitte la fête' in t and pg.evaluate("() => M.P().vus['grand:amis']") == 'rate', 'mauvaise réponse : « Bien, bien… J\'ai une affaire à régler au clocher. » — et il part')
+    verifier(pg.locator('#voile [data-act=gd-choix]').count() == 0 and pg.locator('#voile [data-act=gd-suite]').count() == 0 and pg.locator('#voile [data-act=gd-reprendre]').count() == 0, 'un seul essai, aucun code')
+    pg.wait_for_timeout(2200); shot(pg, 'C-maire-rate')
+    pg.locator('#voile .gd-feuille [data-act=fermer]').click(); pg.wait_for_timeout(300)
+    verifier('une affaire à régler au clocher' in pg.evaluate(CARNET) and mission_maire(pg) == [True] and pret(pg) == '', 'c\'est noté dans le Carnet ; la mission se coche quand même ; le maire ne revient pas')
+    verifier(sorted(objets(pg)) == ['_info:aveu'], 'raté : aucun code non plus')
+    pg.close()
+
+    print('— Partie C : par le puits (raté à la dernière étape)')
+    pg = nuit('C3')
+    code(pg, 'info:puits_ouvert')
+    verifier('vieux puits' in texte(pg) and 'rien entendu' in texte(pg), 'le code du Pisteur : « Le puits est ouvert »')
+    apres_code(pg)
+    verifier(pret(pg) == '', 'personne n\'est encore écouté : le maire attend')
+    ecouter(pg)
+    verifier(pret(pg) == 'amis', 'tout le monde écouté : il arrive')
+    ev(pg, 'gd-fete', {'id': 'grosbec'})
+    t = texte(pg); dit_par_le_maire.append(replique(pg))
+    verifier((modal(pg) or {}).get('g') == 'amis' and 'Où sont vos trois amis' in t and 'bruit' not in t, 'par le puits, personne n\'a rien entendu : sa première phrase est celle « sans bruit »')
+    choisir(pg, 1); dit_par_le_maire.append(replique(pg))
+    choisir(pg, 3); dit_par_le_maire.append(replique(pg))
+    choisir(pg, 2)
+    verifier('une affaire à régler au clocher' in texte(pg) and pg.evaluate("() => M.P().vus['grand:amis']") == 'rate', 'deux bonnes réponses, puis une mauvaise : il part quand même (« … au clocher »)')
+    pg.close()
+    # le maire ne se trahit pas : dans tout ce qu'il a dit avant une mauvaise réponse, ses PAROLES (entre « ») ne disent jamais « clocher »
+    import re
+    paroles = ' '.join(' '.join(re.findall(r'«[^»]*»', t)) for t in dit_par_le_maire)
+    verifier('clocher' not in paroles.lower() and len(paroles) > 200, 'le maire ne dit jamais « clocher » de lui-même (seul le récit montre où il regarde)')
     b.close()
 
 print()

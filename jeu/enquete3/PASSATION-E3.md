@@ -1,6 +1,19 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 13 novembre au soir)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 14 novembre)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 14 novembre : LE MAIRE INQUIET, À LA FÊTE — conçu avec Romain, construit et EN LIGNE (Bible §13.36)
+
+- **À lire : Bible §13.36.** Conçu à la voix avec Romain le 14 novembre au matin ; son go à 10 h 29 (« tu peux faire ces modifications dans le jeu et tu peux publier »). En ligne à 11 h 25 : commit c10e119 du site, **version 20261114-1024**, publication de GitHub vérifiée.
+- **La question ouverte depuis le 13 novembre est tranchée** : ce que le bruit de la grille change, c'est **une scène pour le Barde, et rien d'autre**. Romain : « c'est juste pour occuper le Barde. Ça ne change rien. Dans tous les cas, le maire, il descendra et il mettra tout le monde en prison. »
+- **Trois nouveaux codes, du Pisteur au Barde**, donnés en même temps que « On va dans la crypte » : « **La grille s'ouvre sans bruit** » (soulever), « **La grille a hurlé** » (tirer, pousser), « **Le puits est ouvert** » (par le puits : ajouté par Claude, à valider).
+- **Chez le Barde** : le code tapé, et tout le monde écouté à la fête, **le maire vient le trouver** (« 🎭 ») : une grande conversation de trois étapes. « Barde… Où sont vos trois amis ? Je ne les vois nulle part. » (avec le bruit : « Vous avez entendu ce bruit ? Où sont vos amis ? »). Les bonnes réponses sont les trois indices de la fête, qui servent enfin à quelque chose : **le discours** (Margot), **le bal** (Silas), **le gâteau** (Gaspard).
+- **Les règles de Romain pour le maire** : il demande seulement où sont les amis ; **il ne dit jamais « clocher » de lui-même** (« il ne sait pas si on sait qu'ils sont au clocher ») ; **à chaque mauvaise réponse, et seulement là** : « Bien, bien… J'ai une affaire à régler au clocher. » — et il part. Le récit, lui, montre qu'il n'a que le clocher en tête (« un œil sur le clocher »).
+- **Pas de minuteur** (Romain a posé la question ; il a choisi le code). **Ni code ni récompense au bout.**
+- **🔒 Les dialogues** : `E3-dialogues-et-trame.md` a été régénéré par l'outil (§3, « amis »). `E3-actions-des-roles.md` : le tableau des codes de la nuit et le schéma de la nuit sont remis à jour.
+- **Les codes** : enquêtes 1 et 2 identiques ; **enquête 3 : aucun code n'a changé, trois de plus** (529).
+- **À faire valider par Romain** (Bible §13.36, sept décisions de Claude) : surtout **le code du puits**, **le maire qui attend que tout le monde soit écouté**, et **les neuf mauvaises réponses**, réécrites pour être polies et de la même longueur que les bonnes.
+- **Toujours pas fait** : la quatrième écoute de la fête (« au pied du mât ») ; un visage inquiet pour le maire.
 
 ## Nouveau depuis le 13 novembre (tard le soir) : Léo, les retouches du donjon et LA FIN DE L'ENQUÊTE 3 sont construits et EN LIGNE (Bible §13.35)
 
@@ -11,7 +24,7 @@
   - **Deux nouveaux codes** : « **L'homme en cape est là !** » (Pisteur → Barde, en entrant dans la dernière salle) et « **Léo a parlé** » (Pisteur → Sage, une fois Léo battu).
   - **Le Barde** : avec le premier code, **Farinel et Iris portent un « ❗ » à la fête** et répondent à de nouvelles questions (quatre et deux) sur les outils de Léo et sur la potion de force. Le Barde lit les réponses à voix haute pendant le combat. **Les six réponses sont de Claude : à relire par Romain.**
   - **Le Sage ne peut plus accuser avant d'avoir reçu « Léo a parlé »** (« Pas encore… Il manque quelqu'un : l'homme en cape. »). Puis **trois accusations**, dans cet ordre : OÙ est Odette ? QUI a écrit la fausse lettre ? **QUI se cachait sous la cape noire ?** (dix visages ; cette question n'est pas dans son tableau).
-  - **Retirés** : « Retenir le maire » (les trois dialogues, la mission, le code), la question du Corbeau, « Léo attrapé », « Léo s'est enfui », « Ce que Léo a dit », la scène de Léo chez le Barde. **Le bruit de la grille ne déclenche toujours rien.**
+  - **Retirés** : « Retenir le maire » (les trois dialogues, la mission, le code), la question du Corbeau, « Léo attrapé », « Léo s'est enfui », « Ce que Léo a dit », la scène de Léo chez le Barde. **Le bruit de la grille ne déclenche toujours rien.** *(Changé le 14 novembre : voir tout en haut.)*
   - **La fin** : six images (le maire descend avec Silas et deux gardes ; « Que s'est-il passé ici ? Léo ! Qu'avez-vous fait à Léo ? » ; la bague ; « Gardes ! Attrapez-les ! » ; **le cachot** ; « Fin de l'enquête 3… mais ce n'est que le début. »). Odette n'est pas délivrée. Le calepin de fin a huit notes.
   - **Le cachot à quatre héros** : le Pisteur et le Barde ont maintenant un code d'apparence (216 codes de plus). Sous l'image du cachot, chacun voit son code et tape ceux de ses amis ; un ami tapé n'est plus une ombre.
   - **Le donjon** : « L'entrée des souterrains » (plus « Le fond du puits »), la carte « Les souterrains », **plus de bandeau d'explications**, **la sauvegarde obligatoire** après deux salles de monstres, les feux follets (avec les runes sur eux : sort ×4), les boucliers, les herbes à 15, Bourbe.
@@ -19,13 +32,13 @@
 - **⚠️ La difficulté** (Bible §13.35) : le donjon est nettement plus dur qu'avant, et Léo n'est battable que par un joueur rapide. **Une famille qui ne bat pas Léo ne finit pas l'enquête 3.** À surveiller au premier essai de Romain.
 - **🔒 Les dialogues** : `E3-dialogues-et-trame.md` a été régénéré par l'outil (l'aide de Farinel et d'Iris ; plus de « Retenir le maire »). Ne jamais le modifier à la main.
 - **Les codes de l'enquête 3 ont changé** : les quatre tablettes doivent recharger la page.
-- **En attente de Romain** : les treize décisions (§13.35) ; les 28 sons de Léo (Atelier des sons, 🆕) ; le Roi des rats dans la phase 2 (« maybe » : pas mis) ; la plante lumineuse ; ce que change le bruit de la grille.
+- **En attente de Romain** : les treize décisions (§13.35) ; les 28 sons de Léo (Atelier des sons, 🆕) ; le Roi des rats dans la phase 2 (« maybe » : pas mis) ; la plante lumineuse. (Ce que change le bruit de la grille : fait le 14 novembre, tout en haut.)
 
 ## Nouveau depuis le 13 novembre au soir : la descente et le donjon (Bible §13.34) — EN LIGNE ; les corrections du donjon sont finies
 
 - **À lire : Bible §13.34.** La deuxième moitié de la liste de Romain (13 h 55) est construite et en ligne. **C'est ce qu'attendait la construction de Léo et de la fin** — faite depuis : section du dessus.
 - **Ce qui change pour la conception** :
-  - **La grille** : tirer, pousser (« un énorme bruit s'est entendu dans tout le village ») ou soulever (sans bruit). **Le bruit ne déclenche rien** : « Retenir le maire » est retiré (§13.33). À Romain de dire s'il sert encore à quelque chose.
+  - **La grille** : tirer, pousser (« un énorme bruit s'est entendu dans tout le village ») ou soulever (sans bruit). **Le bruit ne déclenche rien** : « Retenir le maire » est retiré (§13.33). À Romain de dire s'il sert encore à quelque chose. *(Romain l'a dit le 14 novembre : un code pour le Barde, et le maire inquiet à la fête — tout en haut.)*
   - **Un nouveau code, « On va dans la crypte »** (Pisteur → Sage et Alchimiste), puis **deux codes d'allure** (Sage → Pisteur, Alchimiste → Pisteur : fille ou garçon, la peau, les cheveux — **pas l'âge, pas les yeux**). Le code du sac n'existe plus : **sept potions ou rien**. Pour la prison à quatre héros du §13.33, il faudra étendre ces codes (le Pisteur, le Barde).
   - **Le Sage ne quitte plus le jeu pendant le donjon** : son plan, ses pages de sauvegarde (deux, plus une) et le carnet de l'aventurier sont dans son Grand Livre ; il tape tous ses codes du donjon dans son onglet Code.
   - **La fleur de givre** se prépare sur l'établi de l'Alchimiste (huit étapes), et donne le code du Givre pour le Pisteur.

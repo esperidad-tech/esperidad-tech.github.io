@@ -80,6 +80,9 @@ E[3] = {
       /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
          n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
       {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}]}]},
+      /* (14 novembre, Bible §13.36) le maire inquiet : elle arrive avec le code du Pisteur (la grille, ou le puits). Rangée ici, après
+         les autres, pour ne décaler aucune mission d'une partie déjà commencée. */
+      {des:2, si:[{code:'info:grille_silence'}, {code:'info:grille_bruit'}, {code:'info:puits_ouvert'}], ic:'🎩', t:'Le maire cherche tes trois amis, à la fête. Quand tu auras écouté tout le monde, va le voir… avec les bons mots.', fait:[{vu:'grand:amis:fini'}]},
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
@@ -303,9 +306,43 @@ E[3] = {
       reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
       echec:{bouton:'🏠 Qui m\'appelle ?', qui:'tim', titre:'Tim, depuis les toits', t:'« Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! »', code:'info:vieux_puits'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
+    /* LE MAIRE INQUIET, À LA FÊTE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « j'aimerais bien qu'on remette à la fin le maire inquiet,
+       qui demande au Barde où sont ses amis »). Il arrive quand le Barde a tapé le code du Pisteur (la grille ouverte sans bruit, la grille
+       qui a hurlé, ou le puits : fete.gens.grosbec.grand) et qu'il a écouté tout le monde à la fête. On n'y entre pas par une question :
+       on touche le maire, à la fête (fete:true, grands.js).
+       · Ses questions restent innocentes : « Où sont vos amis ? ». Il ne dit JAMAIS « clocher » de lui-même (« il ne faut pas qu'il se
+         trahisse : il ne sait pas si on sait qu'ils sont au clocher ») ; c'est le récit qui montre où il regarde.
+       · À chaque mauvaise réponse, et seulement là, il le lâche en partant : « J'ai une affaire à régler au clocher. »
+       · Avec le bruit (tSi : le code « La grille a hurlé »), seule sa première phrase change.
+       · Les bonnes réponses sont les trois indices de la fête : Margot (son discours), Silas (il ouvre le bal), Gaspard (le gâteau).
+       · Ni code ni récompense au bout : « c'est juste pour occuper le Barde. Ça ne change rien » — le maire descendra dans tous les cas.
+       La réplique d'une bonne réponse porte la suite (ce qu'il fait, puis sa question d'après) : c'est elle qu'on lit à l'étape suivante. */
+    amis:{pnj:'grosbec', ic:'🎩', fete:true,
+      rate:'« Bien, bien… J\'ai une affaire à régler au clocher. » Il quitte la fête, à grands pas.',
+      etapes:[
+        {t:'Barde… Où sont vos trois amis ? Je ne les vois nulle part.',
+          tSi:[{si:[{code:'info:grille_bruit'}], t:'Vous avez entendu ce bruit ? Où sont vos amis ?'}],
+          choix:[
+          {q:'Ils sont partis se coucher : ils étaient très fatigués.'},
+          {q:'Ils arrivent ! Mais tout le monde réclame votre discours.', r:'« Mon discours ? Si on le réclame… » Il parle, un œil sur le clocher, puis il revient. « Vingt minutes, et toujours personne. Où sont-ils ? »', bon:true},
+          {q:'Ils cherchent encore Odette, je crois, Monsieur le maire.'},
+          {q:'Ils arrivent ! Goûtez donc le buffet en les attendant.'}]},
+        {t:'Vingt minutes, et toujours personne. Où sont-ils ?', choix:[
+          {q:'Attendez encore un peu, Monsieur le maire, je vous en prie.'},
+          {q:'Ils sont au clocher : ils aident Anselme à sonner.'},
+          {q:'Vous avez l\'air bien nerveux, ce soir, Monsieur le maire.'},
+          {q:'Personne ne danse avant vous : ouvrez le bal !', r:'« C\'est vrai… Une seule danse. » Il danse, les yeux tournés vers le clocher, puis il revient. « J\'ai dansé. Alors, où sont-ils ? »', bon:true}]},
+        {t:'J\'ai dansé. Alors, où sont-ils ?', choix:[
+          {q:'Gaspard n\'arrive pas à porter le gâteau tout seul !', r:'« Mon gâteau ! » Il court aider Gaspard, sans un regard pour le clocher.', bon:true},
+          {q:'Reprenez donc un verre de cidre, Monsieur le maire.'},
+          {q:'Regardez les lampions de Basile, comme ils sont beaux !'},
+          {q:'Ils ne font rien de mal, Monsieur le maire, c\'est juré !'}]}
+      ],
+      resume:{ok:'Le maire cherchait tes trois amis, à la fête. Tu l\'as retenu un bon moment.', rate:'Le maire cherchait tes trois amis, à la fête. Il est parti : « J\'ai une affaire à régler au clocher. »'}}
   },
   /* (13 novembre, 18 h 08, Bible §13.33) « Retenir le maire » est retiré : ses trois petits dialogues, sa mission et son code. La grande
-     scène de Léo aussi : Léo parle dans le donjon, une fois battu (jeu/donjon/moteur/src/leo.js). */
+     scène de Léo aussi : Léo parle dans le donjon, une fois battu (jeu/donjon/moteur/src/leo.js).
+     (14 novembre, Bible §13.36) Le maire revient à la fête, autrement : un grand dialogue, sans code ni effet sur le donjon (grands.amis). */
   /* ---------- La fête (grands.js ; E3-dialogues-et-trame.md, version 3) : la nuit, sur la place ; chacun dit une réplique (gratuit).
      Mélusine, si son aveu n'a pas été
      obtenu l'après-midi, craque (le filet). */
@@ -338,7 +375,11 @@ E[3] = {
           note:'Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !'}},
       basile:{t:'Les lampions tiennent ! Je n\'en reviens pas moi-même.'},
       fortune:{t:'Dernières lanternes ! Deux pour le prix de trois !'},
-      grosbec:{t:'Quelle fête ! Tout le village est là… enfin, presque.'}
+      /* (14 novembre, Bible §13.36) grand : avec l'un de ces codes du Pisteur, et tout le monde écouté à la fête (tous:true — la règle des
+         grandes conversations : jamais avant d'avoir les indices), le maire vient trouver le Barde : « 🎭 » sur son visage, en tête de la
+         fête et sur la carte ; on le touche, et le grand dialogue « amis » s'ouvre (grands.js) */
+      grosbec:{t:'Quelle fête ! Tout le village est là… enfin, presque.',
+        grand:{g:'amis', si:[{code:'info:grille_silence'}, {code:'info:grille_bruit'}, {code:'info:puits_ouvert'}], tous:true}}
     }},
 
   /* Les photos du tableau de liège du Barde (liege.js) ; les mots-clés (« Autre ») viendront avec la suite.
@@ -484,6 +525,22 @@ E[3] = {
     on_descend:{nom:'On va dans la crypte', ic:'🕯️', pour:['sage', 'alchimiste'], de:'pisteur', tenue:true,
       t:'Le Pisteur a ouvert le passage : sous le village, un escalier de pierre descend dans le noir. Tout le monde s\'équipe !',
       dire:'Il est temps d\'enfiler notre tenue de combat ! Donne ce code au Sage et à l\'Alchimiste.'},
+    /* LE BRUIT DE LA GRILLE, POUR LE BARDE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « il faut qu'il reçoive un code pour savoir s'ils
+       ont fait du bruit ou pas »). En ouvrant le passage, le Pisteur a un deuxième code, pour le Barde (p.donneAussi, moteur-actions.js) :
+       soulever → « La grille s'ouvre sans bruit » ; tirer ou pousser → « La grille a hurlé » ; le puits (ajouté par Claude : personne
+       n'a rien entendu non plus) → « Le puits est ouvert ». Chez le Barde, n'importe lequel fait venir le maire à la fête (grands.amis,
+       fete.gens.grosbec.grand) : seule sa première phrase change avec le bruit. « C'est juste pour occuper le Barde. Ça ne change rien »
+       à la fin : le maire descendra dans tous les cas.
+       tard:true : ces trois codes se rangent tout à la fin de la liste (moteur-base.js, codesBruts) — aucun autre code ne bouge. */
+    grille_silence:{nom:'La grille s\'ouvre sans bruit', ic:'🤫', pour:'barde', de:'pisteur', tard:true,
+      t:'Tes amis ont soulevé la grille de la crypte, tout doucement. Pas un bruit : à la fête, personne n\'a rien entendu.',
+      dire:'Pas un bruit ! Le Barde doit le savoir : donne-lui ce code.'},
+    grille_bruit:{nom:'La grille a hurlé', ic:'💥', pour:'barde', de:'pisteur', tard:true,
+      t:'CRIIIIIC ! Tes amis ont ouvert la grille de la crypte… et tout le village l\'a entendue. À la fête, toutes les têtes se sont levées.',
+      dire:'Tout le village a entendu ! Le Barde doit le savoir : donne-lui ce code.'},
+    puits_ouvert:{nom:'Le puits est ouvert', ic:'🕳️', pour:'barde', de:'pisteur', tard:true,
+      t:'Les barreaux du vieux puits ont fondu : tes amis descendent sous la terre. À la fête, personne n\'a rien entendu.',
+      dire:'Le Barde doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
@@ -649,21 +706,22 @@ E[3] = {
         /* LA GRILLE (Romain, 12 novembre, 21 h 44, et 13 novembre : « Explorer, déverrouiller ; tirer ou pousser : un énorme bruit s'est entendu
            dans tout le village ; soulever : le portail s'ouvre sans bruit et vous pénétrez dans la crypte »). La clé en main, la grille se
            déverrouille ; reste à l'ouvrir : trois gestes, un seul compte (les deux autres s'en vont : cacheSi). Silas le dit au Barde :
-           « Anselme, lui, la soulève un peu, et elle ne dit rien. » Tirer ou pousser : P.vus['pisteur:clocher:tirer'] (ou :pousser) reste
-           noté — ce que le bruit change pour le maire se décidera avec la fin du donjon (rien n'est encore branché dessus).
-           Chacun des trois gestes donne le code du départ, « On va dans la crypte », pour le Sage et l'Alchimiste (infos.on_descend). */
+           « Anselme, lui, la soulève un peu, et elle ne dit rien. »
+           Chacun des trois gestes donne le code du départ, « On va dans la crypte », pour le Sage et l'Alchimiste (infos.on_descend),
+           ET un code pour le Barde (donneAussi ; Romain, 14 novembre, Bible §13.36) : « La grille a hurlé » (tirer, pousser) ou « La
+           grille s'ouvre sans bruit » (soulever). Chez le Barde, il fait venir le maire à la fête (grands.amis). */
         {id:'crypte', ic:'🗝️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
           t:'La clé tourne : clac ! La grille est déverrouillée. Elle est lourde, et toute rouillée… Comment vas-tu l\'ouvrir ?', choix:['tirer', 'pousser', 'soulever']},
         {id:'tirer', ic:'💥', nom:'Tirer la grille', choixTxt:'Tirer', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
-          cacheSi:[{vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend',
+          cacheSi:[{vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend', donneAussi:'info:grille_bruit',
           t:'Tu tires de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
           note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
         {id:'pousser', ic:'💥', nom:'Pousser la grille', choixTxt:'Pousser', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
-          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend',
+          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend', donneAussi:'info:grille_bruit',
           t:'Tu pousses de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
           note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
         {id:'soulever', ic:'🤫', nom:'Soulever la grille', choixTxt:'Soulever', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
-          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}], donne:'info:on_descend',
+          cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}], donne:'info:on_descend', donneAussi:'info:grille_silence',
           t:'Tu soulèves un peu la grille, tout doucement. Le portail s\'ouvre sans bruit, et vous pénétrez dans la crypte. Moustache file devant toi.',
           note:'La grille de la crypte s\'est ouverte sans un bruit.', choix:['descendre']},
         /* (étape 6) la descente : la fenêtre du donjon (descente.js) ; il lui faut les codes du Sage et de l'Alchimiste */
@@ -688,7 +746,7 @@ E[3] = {
         /* (étape 6) l'acide de l'Alchimiste (son code, tapé par le Pisteur : P.vus['sac:acide'], descente.js) fait fondre les barreaux */
         {id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],
           alt:'Tu n\'as rien pour ronger la rouille. L\'Alchimiste a ce qu\'il faut… quand ses sept potions seront prêtes ! Demande-lui son code, et tape-le dans ton onglet Code.',
-          donne:'info:on_descend',
+          donne:'info:on_descend', donneAussi:'info:puits_ouvert',   /* (14 novembre) et un code pour le Barde : le maire, à la fête (grands.amis) */
           t:'Tu verses l\'acide de l\'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. Tout en bas, deux yeux brillent : Moustache t\'attend.', choix:['descendre']},
         {id:'descendre', ic:'🕯️', nom:'Descendre au fond du puits', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:acide'}], descente:'puits'}
       ]}

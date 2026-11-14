@@ -14,7 +14,8 @@ et vérifie qu'il est reçu et qu'il ouvre bien la suite. Les mini-jeux se lance
     (la lettre au labo → le Barde et le Sage) ; le Barde (l'aveu de Mélusine → le Sage) ; le Sage (qui a écrit la lettre ?) ;
     chacun rend sa mission au maire ; le Sage donne le code de la nuit.
   La nuit : le Barde (la clé d'Anselme → le Pisteur) ; l'Alchimiste (ses sept potions, son code → le Pisteur) ; le Pisteur (la clé,
-    la crypte, la descente : le VRAI donjon s'ouvre, avec les sept potions) ; le Sage (le plan des souterrains) ; le Barde (la Grosse
+    la crypte, la descente : le VRAI donjon s'ouvre, avec les sept potions) ; (14 novembre) la grille soulevée → un code pour le Barde :
+    le maire inquiet, à la fête (« Où sont vos trois amis ? ») ; le Sage (le plan des souterrains) ; le Barde (la Grosse
     Marie, le maire retenu → tapés DANS le donjon) ; la fin du donjon (le chemin est sauté : il a ses robots) ; le Pisteur remonte :
     « Odette est derrière la porte » → le Sage, « Léo attrapé » → le Barde ; le Barde (Léo, les trois étapes → « Léo a tout dit » → le Sage) ;
     le Sage (la porte des Fondateurs, l'accusation, le Corbeau) → le code de fin → tous : la même scène finale, le cachot.
@@ -341,6 +342,19 @@ def partie(nav, base):
     verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code d\'allure'); P.fermer()
     t = P.taper(seqA, garder=True); passes.append(('alchimiste', 'allure', 'pisteur'))
     verifier('L\'Alchimiste est prêt' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : son code d\'allure, et ses sept potions'); P.fermer()
+    # (14 novembre, Bible §13.36) LE MAIRE INQUIET : la grille soulevée donne aussi un code au Barde ; à la fête, une fois tout le monde
+    # écouté, le maire vient le trouver (« 🎭 ») et demande où sont ses amis — le discours, le bal, le gâteau. Aucun code au bout.
+    verifier(livrer(T, P, seulement={'info:grille_silence'}) == ['info:grille_silence'], 'le Pisteur a donné au Barde : « La grille s\'ouvre sans bruit »')
+    verifier(B.js("() => M.grandFete('grosbec')") == '', 'le Barde n\'a pas encore écouté tout le monde à la fête : le maire attend')
+    for qui in B.js("() => Object.keys(M.E().fete.gens)"):
+        if qui != 'grosbec': B.ev('gd-fete', {'id': qui}); B.fermer()
+    verifier(B.js("() => M.grandFete('grosbec')") == 'amis' and B.js("() => M.pnjBulleCarte('grosbec')") == '🎭', 'tout le monde écouté à la fête : « 🎭 » sur le maire')
+    B.carte(); B.ev('lieu', {'id': 'place'}); B.pg.locator('#voile .gd-fete-tete.gd-fete-grand').click(); B.pg.wait_for_timeout(500)
+    verifier('Où sont vos trois amis' in B.texte() and 'bruit' not in B.texte(), 'le maire, inquiet : « Barde… Où sont vos trois amis ? Je ne les vois nulle part. »')
+    for k in (1, 3, 0): B.pg.locator(f'#voile [data-act=gd-choix][data-k="{k}"]').click(); B.pg.wait_for_timeout(280)
+    verifier('Mon gâteau' in B.texte() and B.js("() => M.P().vus['grand:amis']") == 'ok', 'son discours, le bal, le gâteau : le Barde retient le maire un bon moment')
+    B.shot('maire-inquiet'); B.fermer()
+    verifier(livrer(T, B) == [], 'le maire ne donne aucun code : la suite ne change pas')
     # le Sage : ses pages du donjon sont dans son Grand Livre ; son plan s'ouvre DANS le jeu
     S.page('sauvegardes')
     verifier(S.pg.locator('#livre-ici .lv-page.on .ds-blanche').count() == 2, 'le Sage : deux pages de sauvegarde dans son Grand Livre')

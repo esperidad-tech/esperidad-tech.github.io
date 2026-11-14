@@ -1285,6 +1285,10 @@ A.point = function(el){
     var code = null;
     if(p.obj){ P.objets[p.obj] = true; code = 'obj:' + p.obj; }
     if(p.donne){ code = p.donne; P.objets['_' + p.donne] = true; }
+    /* (enquête 3, 14 novembre) p.donneAussi : un deuxième code, pour un autre équipier (la grille de la crypte : « On va dans la crypte »
+       pour le Sage et l'Alchimiste, et le bruit — ou le silence — de la grille pour le Barde) ; les deux codes dans la même fenêtre */
+    var codes = null;
+    if(p.donneAussi){ codes = (code ? [code] : []).concat(p.donneAussi); codes.forEach(function(c){ if(c.indexOf('obj:') !== 0) P.objets['_' + c] = true; }); }
     if(p.recoit) [].concat(p.recoit).forEach(function(c){ P.recus[c] = true; });   /* (enquête 3) il le reçoit lui-même : la lettre accrochée sous le tableau du Sage */
     if(p.plante) M.ajouterPlante(p.plante);   /* (enquête 3) une plante trouvée autrement qu'en cueillant : la vesse-de-loup, au bout de sa piste */
     if(p.or){ M.S.or += p.or; }
@@ -1292,7 +1296,7 @@ A.point = function(el){
        mission réussie, et on revient à la carte */
     if(orMJ){ M.S.or += orMJ; M.son('gain'); M.sauver(); M.decouvrir({ic:'🪙', titre:'Mission réussie : +' + orMJ + (orMJ > 1 ? ' pièces' : ' pièce') + ' d\'or !', t:p.t, note:p.note, code:code}); return; }
     M.sauver();
-    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:code, retour:'lieu', retourId:l, choix:choix()});
+    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:codes ? null : code, codes:codes, retour:'lieu', retourId:l, choix:choix()});
   }
   if(p.mj){
     /* l'explication avant (p.avant, p.bouton) ; « Plus tard » ramène au lieu : rien n'est encore dépensé ; p.mjNiveauFixe : un niveau fixe (Silas, e2.js) */
