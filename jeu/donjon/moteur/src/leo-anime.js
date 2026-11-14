@@ -150,7 +150,7 @@ function jambeSVG(n, devant){
 function assombrir(c){ var n = parseInt(c.slice(1), 16), r = (n >> 16) * .78 | 0, g = ((n >> 8) & 255) * .78 | 0, b = (n & 255) * .78 | 0; return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); }
 function mainSVG(n){ var T = TENUES[n]; return rond(0, 0, n === 3 ? 13 : 10.5, n === 1 ? '#efb88e' : T.peau[1]); }
 
-function Leo(parent, o){
+function Ancien(parent, o){
   o = o || {};
   this.cx = o.x == null ? 815 : o.x; this.sol = o.sol == null ? 340 : o.sol;
   var d = document.createElement('div');
@@ -162,7 +162,7 @@ function Leo(parent, o){
   for(var k = 0; k < CLES.length; k++) this.p[CLES[k]] = POSES.garde[CLES[k]] || 0;
   this.tenue(o.tenue || 1);
 }
-var P = Leo.prototype;
+var P = Ancien.prototype;
 P.tenue = function(n){
   var T = TENUES[n] || TENUES[1], s;
   this.n = n; this.T = T;
@@ -288,6 +288,68 @@ P.teinte = function(nom){
 P.voile = function(v){ this._voile = v; this.el.style.opacity = String(1 - Math.max(0, Math.min(1, v)) * .82); return this; };
 P.eclair = function(){ try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
 P.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin = null; f(); } };
+
+/* ======================================================================= LA FAÇADE (14 novembre au soir, Bible §13.40)
+   Léo a maintenant DEUX dessins : l'ancien pantin ci-dessus (la cape noire de la phase 1, la grosse bête verte de la phase 3,
+   en attendant que Romain valide le nouveau style) et le NOUVEAU LÉO, torse nu, détaillé (leo-corps.js), pour la phase 2, la
+   cinématique où il arrache sa cape et sa tunique, et la fin (il redevient Léo). leo.js parle toujours au même objet :
+   tenue(1 | 3) montre l'ancien, tenue(2) montre le nouveau ; .corps donne le nouveau pantin, pour la phase 2. */
+var NOUVEAU = {2:true};
+function Leo(parent, o){
+  o = o || {};
+  this.cx = o.x == null ? 815 : o.x; this.sol = o.sol == null ? 340 : o.sol;
+  var d = document.createElement('div');
+  d.className = 'leo-anime';
+  d.style.cssText = 'position:absolute;left:' + (this.cx - W / 2) + 'px;top:' + (this.sol - PIED) + 'px;width:' + W + 'px;height:' + H + 'px;pointer-events:none';
+  parent.appendChild(d);
+  this.el = d;
+  this.ancien = new Ancien(d, {x:W / 2, sol:PIED, tenue:o.tenue === 2 ? 1 : (o.tenue || 1)});
+  this.ancien.el.style.willChange = 'auto';
+  this.corps = window.LeoCorps ? window.LeoCorps.creer(d) : null;
+  this.n = 0;
+  this.tenue(o.tenue || 1);
+}
+var F = Leo.prototype;
+F.nouveau = function(){ return !!(this.corps && this.actif === this.corps); };
+F.tenue = function(n){
+  this.n = n;
+  var neuf = !!(NOUVEAU[n] && this.corps);
+  this.actif = neuf ? this.corps : this.ancien;
+  if(!neuf) this.ancien.tenue(n);
+  this.ancien.el.style.display = neuf ? 'none' : '';
+  if(this.corps) this.corps.el.style.display = neuf ? '' : 'none';
+  if(neuf){ this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('faux', 'dos'); this.corps.objet('gourde', 'ceinture'); this.corps.objet('sifflet', 'cou'); this.corps.objet('rat', null); }
+  return this;
+};
+Object.defineProperty(F, 'p', {get:function(){ return this.actif.p; }});
+Object.defineProperty(F, 'T', {get:function(){ return this.actif.T || {ech:this.corps ? this.corps.ech : 1}; }});
+F.arme = function(nom){ if(!this.nouveau()) this.ancien.arme(nom); return this; };
+var VISAGES = {colere:'colere', cri:'cri', ko:'ko', boit:'boit'};
+F.visage = function(v){ if(this.nouveau()) this.corps.visage(VISAGES[v] || v); else this.ancien.visage(v); return this; };
+F.vers = function(pose, ms, courbe){ return this.actif.vers(pose, ms, courbe); };
+F.suite = function(l){ return this.actif.suite(l); };
+F.avancer = function(dt){ this.actif.avancer(dt); };
+F.arreter = function(){ this.ancien.arreter(); if(this.corps) this.corps.arreter(); };
+/* un point de Léo, dans la scène */
+F.ancre = function(nom){
+  if(!this.nouveau()){ var a = this.ancien.ancre(nom); return {x:a.x + this.cx - W / 2, y:a.y + this.sol - PIED}; }
+  var c = this.corps, q;
+  if(nom === 'pieds') q = {x:c.p.x + 150, y:PIED};
+  else if(nom === 'tete') q = c.point('tete', 140, 74);
+  else if(nom === 'haut') q = c.point('tete', 146, 30);
+  else if(nom === 'main') q = c.point('mainAv', 197, 246);
+  else if(nom === 'bouche') q = c.point('tete', 118, 94);
+  else q = c.point('torse', 150, 160);
+  return {x:q.x + this.cx - W / 2, y:q.y + this.sol - PIED};
+};
+/* un point d'un os du nouveau Léo, dans la scène */
+F.scene = function(os, x, y){ var q = this.corps.point(os, x, y); return {x:q.x + this.cx - W / 2, y:q.y + this.sol - PIED}; };
+F.teinte = function(nom){
+  var f = {gel:'hue-rotate(160deg) saturate(.7) brightness(1.25)', noirci:'brightness(.25) contrast(1.2)', feu:'sepia(.6) saturate(2.4) hue-rotate(-20deg) brightness(1.1)', rouge:'saturate(1.5) brightness(1.05) drop-shadow(0 0 8px rgba(255,60,40,.8))', vert:'brightness(1.12) saturate(1.3) drop-shadow(0 0 10px rgba(120,255,110,.85))'}[nom] || '';
+  this.el.style.filter = f; return this;
+};
+F.voile = function(v){ this.el.style.opacity = String(1 - Math.max(0, Math.min(1, v)) * .82); return this; };
+F.eclair = function(){ try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
 
 window.LeoAnime = {creer:function(parent, o){ return new Leo(parent, o); }, POSES:POSES, ARMES:ARMES, TENUES:TENUES};
 })();

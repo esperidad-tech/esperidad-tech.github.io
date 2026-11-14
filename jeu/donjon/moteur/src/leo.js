@@ -35,7 +35,9 @@ var AVEUX = [
 /* ====================================================================== 1. PRÉPARER, CONSTRUIRE */
 function preparer(){
   return Promise.all([DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
-    return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a'))]);
+    return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')),
+      /* le nouveau Léo (torse nu) : ses pièces cuites en images (leo-corps.js) */
+      window.LeoCorps ? window.LeoCorps.preparer() : null]);
   }).catch(function(e){ if(window.console) console.warn('Léo', e); });
 }
 function phaseGardee(p){ var n = +(p.faits && p.faits['leo:phase']) || 1; return Math.max(1, Math.min(3, n)); }
@@ -89,6 +91,8 @@ function construire(){
   /* Léo, et l'endroit où on le touche */
   E.leo = window.LeoAnime.creer(p, {x:LX, sol:SOL, tenue:1});
   E.leo.el.style.zIndex = 3;
+  /* la phase 2 (Bible §13.40) : le nouveau Léo, ses gestes calés sur l'horloge des règles, ses effets (leo-p2.js) */
+  E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL}) : null;
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
@@ -100,6 +104,8 @@ function construire(){
   DJ.musiqueCombat('bassin');
 }
 function slotH(h){ return q('.h-' + h); }
+/* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
+function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau()); }
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
@@ -109,6 +115,8 @@ function demarrerPhase(n, premiere){
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   ORDRE.forEach(function(h){ remettreHeros(h); });
   nuage(false); flaque(false); noir(false, true);
+  if(E.p2) E.p2.vider();
+  q('#combat').classList.add('ouvert');
   E.leo.tenue(n); E.leo.arme(null); E.leo.teinte(null); E.leo.voile(0); E.leo.visage('colere'); E.leo.p.x = 0; E.leo.vers('garde', 1);
   q('#leo-barre em').textContent = NOMS[n];
   q('#combat').setAttribute('data-phase', n);
@@ -157,10 +165,19 @@ async function cinePret(n){
   titre(NOMS[n], n === 1 ? null : 'Phase ' + n, 1400);
   await pause(900);
 }
-/* phase 1 → 2 : il se relève, arrache sa cape — c'est Léo ! Le Pisteur ramasse ses outils. */
+/* phase 1 → 2 : tout s'arrête, la barre des sorts descend ; il arrache sa cape et sa tunique, les jette hors de l'écran, et montre
+   ses muscles — c'est Léo ! Le Pisteur ramasse ses outils (Romain, 14 novembre au soir : leo-p2.js, Bible §13.40). */
 async function cine12(){
   passer(true);
-  E.leo.arme(null); nuage(false); noir(false, true);
+  E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
+  ORDRE.forEach(function(h){ remettreHeros(h); });
+  if(E.p2){
+    await E.p2.cine12({pause:pause, titre:titre, ramasser:ramasser, saute:function(){ return !E || E.saute; }, nom:function(n){ q('#leo-barre em').textContent = n; },
+      bande:function(on){ var c = q('#combat'); if(c) c.classList.toggle('ouvert', !!on); }});
+    q('#leo-barre em').textContent = NOMS[2];
+    passer(false);
+    return;
+  }
   bruit('leoChute', {}, ['tombe']);
   await pose('genou', 700, 'o');
   await pause(900);
@@ -185,12 +202,19 @@ async function cine12(){
 async function cine23(){
   passer(true);
   E.leo.arme(null);
+  if(E.p2) E.p2.vider();
   bruit('leoChute', {}, ['tombe']);
   await pose('genou', 700, 'o');
   await pause(700);
-  E.leo.arme('gourde');
   bruit('leoPotion', {}, ['bulles']);
-  await pose('boit', 600, 'o'); E.leo.visage('boit');
+  if(E.leo.nouveau()){
+    /* (le nouveau Léo de la phase 2 : il sort une potion et la boit, à genoux ; la grosse bête verte reste l'ancien dessin) */
+    var C = E.leo.corps; C.visage('rictus'); C.objet('gourde', 'main'); C.objet('bouchon', false);
+    await pose(window.LeoP2 ? window.LeoP2.BOIT : 'garde', 600, 'o'); C.visage('boit');
+  } else {
+    E.leo.arme('gourde');
+    await pose('boit', 600, 'o'); E.leo.visage('boit');
+  }
   await pause(1000);
   E.leo.arme(null);
   for(var k = 0; k < 3 && !E.saute; k++){ E.leo.teinte('feu'); await pause(140); E.leo.teinte(null); await pause(120); }
@@ -228,6 +252,8 @@ async function finPhase(res){
   E.c.phaseSuivante();
   E.ph = E.c.etat(); E.sig = '';
   ORDRE.forEach(function(h){ remettreHeros(h); });
+  if(E.p2) E.p2.vider();
+  q('#combat').classList.add('ouvert');
   E.leo.tenue(n); E.leo.teinte(null); E.leo.voile(0); E.leo.p.x = 0; E.leo.vers('garde', 1);
   q('#combat').setAttribute('data-phase', n);
   maj(true);
@@ -237,6 +263,8 @@ async function finPhase(res){
 }
 function defaite(){
   E.essais++;
+  /* (phase 2 : Léo croise les bras, un sourire mauvais aux lèvres) */
+  if(p2()){ E.p2.vider(); E.leo.corps.visage('rictus'); E.leo.vers('brasCroises', 700, 'io'); }
   var t = 'Les trois héros sont au sol… Léo croise les bras. On se relève, et on essaie autrement ?';
   setTimeout(function(){
     if(!E) return;
@@ -254,6 +282,8 @@ async function victoire(){
   await E.leo.vers('genou', 800, 'o');
   /* la potion ne fait plus effet : il redevient Léo */
   E.leo.eclair(); E.leo.tenue(2); E.leo.visage('colere'); E.leo.vers('genou', 1);
+  /* (sa faux et sa gourde, c'est le Pisteur qui les a maintenant) */
+  if(E.leo.nouveau()){ E.leo.corps.objet('faux', null); E.leo.corps.objet('gourde', null); E.leo.corps.visage('douleur'); }
   await attendre(500);
   await E.leo.vers('aTerre', 900, 'io'); Fx.tremble(8, 300);
   var fan = bruit('victoire', {}, ['fanfare']);
@@ -278,6 +308,7 @@ function terminer(res){
   if(!E) return;
   var fin = E.finir;
   E.fini = true; cancelAnimationFrame(E.raf);
+  if(E.p2) try{ E.p2.vider(); }catch(e){}
   try{ q('#combat').removeEventListener('pointerdown', doigt); }catch(e){}
   Object.keys(E.rats).forEach(function(id){ try{ E.rats[id].arreter(); }catch(e){} });
   ORDRE.forEach(function(h){ try{ E.A.h[h].arreter(); }catch(e){} });
@@ -292,11 +323,14 @@ function boucle(ts){
   E.raf = requestAnimationFrame(boucle);
   var dt = E.ts ? Math.min(.1, (ts - E.ts) / 1000) : 0; E.ts = ts;
   if(document.hidden) return;
-  E.leo.avancer(dt);
-  if(E.pause || E.cine || DJ.fenetreOuverte()) return;
+  var enJeu = !(E.pause || E.cine || DJ.fenetreOuverte());
+  /* (phase 2, en plein combat : la pose de Léo est calculée plus bas, d'après les règles ; sinon, son pantin avance seul) */
+  if(!(enJeu && p2())) E.leo.avancer(dt);
+  if(!enJeu) return;
   var ev = E.c.avancer(dt * E.vite);
   E.temps += dt;
   if(ev.length) jouer(ev);
+  if(p2() && !E.c.fini()) E.p2.image(dt * E.vite, E.c);
   maj();
   var f = E.c.fini(); if(f) finPhase(f);
 }
@@ -325,6 +359,8 @@ function maj(force){
 }
 /* les icônes de la rune de l'œil, aux pieds de Léo : celle qui vient (en grand), puis les deux suivantes (en petit) */
 function icAttaque(x){
+  var ic2 = E.p2 && E.c.phase === 2 ? E.p2.icone(x.att) : null;
+  if(ic2) return ic2;
   if(x.ic === 'meule') return '<svg viewBox="-50 -56 100 100" width="100%" height="100%" aria-hidden="true">' + window.LeoAnime.ARMES.meule() + '</svg>';
   return x.ic;
 }
@@ -468,7 +504,7 @@ function un(ev){
       return;
     case 'oeil': p = {x:(hCx('pisteur') + LX) / 2, y:150}; Fx.onde(p.x, p.y, '#bff8ff', 320, 700); son('magie', .05); return;
     case 'mot': p = ev.sur === 'leo' || E.rats[ev.sur] ? ancreDe(ev.sur, 'haut') : {x:hCx(ev.sur), y:110}; mot(p.x, Math.max(100, p.y - 4), ev.texte); return;
-    case 'degats': return h ? degatsHeros(ev) : degatsEnnemi(ev);
+    case 'degats': if(!h && p2()) E.p2.evenement(ev, E.c); return h ? degatsHeros(ev) : degatsEnnemi(ev);
     case 'soin': return soin(ev);
     case 'tombe': slotH(h).classList.add('sol'); son('tombe'); try{ E.A.h[h]._etoiles(false); }catch(e){} Promise.resolve(E.A.h[h].tomber()).catch(function(){}); return;
     case 'releve':
@@ -488,7 +524,7 @@ function un(ev){
     case 'leo-etat': return leoEtat(ev);
     case 'boum': return boum(ev);
     case 'noir': return noir(ev.on, false, ev.par);
-    case 'soin-leo': p = E.leo.ancre('haut'); Fx.chiffre(p.x, Math.max(96, p.y + 20), '+' + ev.n, 'soin'); return;
+    case 'soin-leo': if(p2() && E.p2.evenement(ev, E.c)) return; p = E.leo.ancre('haut'); Fx.chiffre(p.x, Math.max(96, p.y + 20), '+' + ev.n, 'soin'); return;
     case 'rat': return rat(ev);
     case 'phase-fin': case 'phase': case 'fin': return;
   }
@@ -630,6 +666,7 @@ function racler(){
   })(0);
 }
 function leo(ev){
+  if(p2()){ E.p2.evenement(ev, E.c); return; }
   var Z = E.leo, J = JEU[ev.att] || ['garde', 'garde', 'garde', null, 0], A = ev.att ? L.ATTAQUES[ev.att] : null, k = 1000 / E.vite;
   if(ev.quoi !== 'elan') E.racle = (E.racle || 0) + 1;                 /* (tout autre évènement arrête de racler) */
   switch(ev.quoi){
@@ -722,6 +759,7 @@ function nuage(on){ var n = q('#leo-nuage'); if(!n) return; n.style.left = (LX -
 function flaque(on, par){ var f = q('#leo-flaque'); if(!f) return; f.className = on ? 'on ' + (par || 'huile') : ''; f.style.left = (LX - 90) + 'px'; }
 function leoEtat(ev){
   var Z = E.leo;
+  if(p2() && E.p2.evenement(ev, E.c)) return;
   if(ev.nom === 'nuage') return nuage(ev.on);
   if(ev.nom === 'flaque') return flaque(ev.on, ev.par);
   if(ev.nom === 'ralenti'){ if(ev.on){ var p = Z.ancre('centre'); Fx.onde(p.x, p.y, '#bff4ff', 300, 500); mot(p.x, Z.ancre('haut').y + 10, 'Ralenti !'); } return; }

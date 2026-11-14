@@ -337,3 +337,53 @@
 .leo-chaine{position:absolute;height:8px;pointer-events:none;border-radius:4px;background:repeating-linear-gradient(90deg,#c9ccd6 0 9px,#5a5f6c 9px 14px);box-shadow:0 2px 0 rgba(0,0,0,.6);transform-origin:100% 50%;animation:leoChaine .36s ease-out both}
 @keyframes leoChaine{0%{transform:scaleX(0)}45%{transform:scaleX(1)}100%{transform:scaleX(0)}}
 .parchemin.leo-def h2{font-size:30px}
+/* ====================================================================== LA PHASE 2 DE LÉO (leo-p2.js ; Bible §13.40) : ses effets
+   (RAPIDITE.md : on n'anime que transform et opacity ; tout est posé en coordonnées de scène, puis retiré) */
+.lp-alerte{position:absolute;font:900 44px/1 var(--f-titre, serif);text-shadow:0 3px 0 #1a0e08,0 0 12px rgba(0,0,0,.8),0 0 18px currentColor;pointer-events:none;z-index:45}
+.lp-note{position:absolute;font-size:30px;line-height:1;color:#ffe9a0;text-shadow:0 2px 0 #1a0e08,0 0 8px rgba(255,220,120,.8);pointer-events:none;z-index:45}
+.lp-lueur{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,250,220,.95),rgba(255,170,60,.75) 35%,rgba(255,90,30,.35) 62%,rgba(255,60,20,0));pointer-events:none;z-index:44;opacity:0;will-change:transform,opacity}
+.lp-souffle{position:absolute;width:360px;height:150px;margin-left:-360px;pointer-events:none;z-index:44;transform-origin:100% 50%}
+.lp-souffle i{position:absolute;left:0;right:0;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(255,230,190,.45) 55%,rgba(255,200,140,0))}
+.lp-souffle i:nth-child(1){top:20px;height:44px}.lp-souffle i:nth-child(2){top:58px;height:60px;left:30px}.lp-souffle i:nth-child(3){top:104px;height:36px;left:70px}
+.lp-eclat{position:absolute;left:0;top:0;font-size:30px;line-height:1;color:#fff;text-shadow:0 0 8px #fff,0 0 18px #bfe0ff;pointer-events:none;z-index:46}
+.lp-eclat-l{opacity:0;will-change:transform,opacity}
+.lp-brille{color:#fff6d0;text-shadow:0 0 10px #fff,0 0 20px #ffd070}
+.lp-danger{position:absolute;left:40px;top:300px;width:560px;height:60px;border-radius:50%;pointer-events:none;opacity:0;transform-origin:100% 50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,0) 58%,var(--c) 72%,rgba(0,0,0,0) 86%);z-index:1}
+.lp-danger.saut{left:60px;width:820px;top:306px;height:50px}
+.lp-trainee{position:absolute;width:420px;height:220px;pointer-events:none;z-index:46;transform-origin:100% 0}
+.lp-lame{position:absolute;width:150px;height:70px;pointer-events:none;z-index:46;transform-origin:0 50%}
+.lp-entaille{position:absolute;width:80px;height:60px;pointer-events:none;z-index:46}
+.lp-entaille i{position:absolute;left:0;top:28px;width:80px;height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 40%,#ffd0d0 70%,rgba(255,150,150,0));transform:rotate(-14deg)}
+.lp-entaille i + i{top:36px;transform:rotate(-6deg);left:8px}
+.lp-vapeur{position:absolute;width:26px;height:20px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(230,230,240,.5) 60%,rgba(230,230,240,0));pointer-events:none;z-index:46}
+.lp-terre{width:9px;height:9px;border-radius:40%;background:#8a7458;border:1.5px solid #3a2a18;pointer-events:none;z-index:40}
+.lp-terre.gros{width:22px;height:16px;border-radius:50%;background:radial-gradient(closest-side,rgba(216,200,168,.9),rgba(216,200,168,0));border:0}
+.lp-caillou{width:12px;height:10px;border-radius:35% 50% 40% 45%;background:#7a6a58;border:2px solid #2a1e14;pointer-events:none;z-index:40}
+.lp-trait{position:absolute;width:160px;height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.9));pointer-events:none;z-index:46;transform-origin:100% 50%}
+.lp-etoiles{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:46}
+.lp-etoiles i{position:absolute;left:-12px;top:-12px;font-style:normal;font-size:22px;line-height:24px;color:#ffe14a;text-shadow:0 2px 0 #1a0e08;animation:lpTourne 1s linear infinite}
+.lp-etoiles i:nth-child(2){animation-delay:-.33s}.lp-etoiles i:nth-child(3){animation-delay:-.66s}
+@keyframes lpTourne{0%{transform:translate(-40px,0) scale(.7)}25%{transform:translate(0,10px) scale(1.1)}50%{transform:translate(40px,0) scale(.7)}75%{transform:translate(0,-10px) scale(.5)}100%{transform:translate(-40px,0) scale(.7)}}
+.lp-gourde{position:absolute;width:48px;height:70px;margin:-35px 0 0 -24px;pointer-events:none;z-index:46}
+.lp-feu{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:46}
+.lp-feu b{position:absolute;left:0;top:0;width:0;height:0}
+.lp-feu i{position:absolute;left:-14px;top:-40px;width:28px;height:44px;border-radius:50% 50% 46% 46%/64% 64% 36% 36%;transform-origin:50% 100%;
+  background:radial-gradient(circle at 50% 72%,#fff7c0 0 18%,#ffc040 42%,#ff7a20 72%,rgba(255,90,20,0));animation:leoFlamme .32s ease-in-out infinite alternate}
+.lp-feu b:nth-child(2n) i{animation-delay:-.16s;width:22px;height:34px;left:-11px;top:-32px}
+.lp-bouchon{width:12px;height:12px;border-radius:3px;background:#a8763e;border:2px solid #1a0e08;pointer-events:none;z-index:46}
+.lp-flot{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:46}
+.lp-flot i{position:absolute;left:-4px;top:0;width:8px;height:20px;border-radius:4px;transform-origin:50% 0;background:linear-gradient(90deg,#1f8a2a,#9cff5c 45%,#eaffc0 55%,#3fd13a);box-shadow:0 0 8px rgba(120,255,110,.8)}
+.lp-glou{position:absolute;font:900 24px/1 var(--f-titre, serif);color:#e4ffc8;text-shadow:0 2px 0 #0e3a12,0 0 3px #0e3a12,0 0 10px rgba(120,255,110,.9);pointer-events:none;z-index:46}
+.lp-croix{position:absolute;font-size:22px;line-height:1;color:#7dff6a;text-shadow:0 0 8px rgba(120,255,110,.9),0 2px 0 #0e3a12;pointer-events:none;z-index:46}
+.lp-halo{position:absolute;left:0;top:0;width:280px;height:340px;border-radius:50%;pointer-events:none;opacity:0;will-change:transform,opacity;
+  background:radial-gradient(closest-side,rgba(180,255,150,.0) 40%,rgba(120,255,110,.45) 70%,rgba(60,220,80,0))}
+.lp-aura{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2}
+.lp-aura i{position:absolute;left:-120px;top:-24px;width:240px;height:48px;border-radius:50%;border:4px solid rgba(125,255,106,.9);box-shadow:0 0 18px rgba(125,255,106,.9),inset 0 0 14px rgba(125,255,106,.6);animation:lpAura 1.1s ease-out infinite}
+.lp-aura i:nth-child(2){animation-delay:-.37s}.lp-aura i:nth-child(3){animation-delay:-.74s}
+@keyframes lpAura{0%{transform:translateY(0) scale(.7);opacity:0}20%{opacity:1}100%{transform:translateY(-240px) scale(.9);opacity:0}}
+.lp-rat{position:absolute;width:44px;height:82px;pointer-events:none;z-index:46}
+.lp-onde-sol{position:absolute;top:332px;width:900px;height:90px;border-radius:50%;pointer-events:none;border:5px solid rgba(216,200,168,.9);box-shadow:0 0 22px rgba(255,200,120,.6)}
+.lp-fissure{position:absolute;top:318px;width:300px;height:40px;pointer-events:none}
+.lp-cape{position:absolute;width:200px;height:220px;pointer-events:none;z-index:46}
+.lp-tunique{position:absolute;left:0;top:0;width:90px;height:70px;pointer-events:none;z-index:46}

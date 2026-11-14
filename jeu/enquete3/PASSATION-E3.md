@@ -1,6 +1,13 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 14 novembre)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 14 novembre au soir)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 14 novembre au soir : LÉO, LA PHASE 2 REFAITE — le nouveau Léo torse nu, ses attaques qu'on comprend, la cinématique où il arrache sa cape et sa tunique — EN LIGNE (Bible §13.40)
+
+- **À lire : Bible §13.40.** Romain (21 h 11) : Léo « hyper mal fait », moins détaillé que ses rats ; il veut qu'il « en impose », que chaque attaque se prépare et se comprenne (effets, visages, sons), une vraie potion verte qu'on le voit boire, un vrai coup de faux, et une transition où il arrache cape et tunique pour montrer ses muscles. **Fait pour la phase 2 et la cinématique 1 → 2** (14 novembre, 22 h 37 ; commit 528f751 du site ; le donjon : version « 14/11 à 22 h 36 » (en bas de « 🎒 Objets ») ; l'Atelier des sons republié avec ; publication de GitHub vérifiée). **Les phases 1 et 3 gardent l'ancien dessin** : Romain valide d'abord la phase 2, puis demandera la phase 3 « à peu près du même style ».
+- **Rien n'a changé dans les règles ni la difficulté de Léo**, ni dans le jeu (aucun code). Seul l'écran du donjon est refait.
+- **Sa question sur la flèche de feu** (« elle ne sert à rien ? ») : elle sert (elle touche Léo par-dessus les rats, ~124 de dégâts avec la brûlure), mais on ne le voyait pas — c'est réparé (des flammes sur lui) ; c'est un doublon de la fiole de feu de l'Alchimiste ; **la remplacer par une flèche d'acide est à décider par Romain**.
+- **Pour la conception** : Léo porte maintenant ses affaires sur lui en phase 2 — la faux dans le dos, la gourde verte (potion de soin) à la ceinture, un sifflet de laiton au cou, un sac à rats. Si Farinel ou Iris en parlent un jour, ce sont ces objets-là.
 
 ## Nouveau depuis le 14 novembre, 17 h 56 : « 🔍 MONTRER LE GÂTEAU » — EN LIGNE (Bible §12.62)
 

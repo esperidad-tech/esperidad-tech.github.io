@@ -10,7 +10,10 @@ Sur une tablette 1024 x 768 au doigt (les règles elles-mêmes sont vérifiées 
   - les trois phases (en trichant sur ses points de vie) : chaque cinématique se passe d'un toucher, la phase gagnée est gardée,
     le Pisteur ramasse les outils (trois coups chacun : le crochet casse et quitte la bande) ;
   - la victoire : les cinq phrases de Léo, chacune avec son 🔊 et un bouton jaune ;
-  - aucune erreur JavaScript, aucune lecture vocale toute seule.
+  - aucune erreur JavaScript, aucune lecture vocale toute seule ;
+  - (14 novembre au soir, Bible §13.40) le nouveau Léo de la phase 2 : ses pièces cuites en images ; la gourde (il boit, le marteau
+    la lui fait lâcher : elle se brise, pas de soin) ; la faux (tirée du dos, à deux mains, rangée après) ; la flèche de feu (des
+    flammes sur lui) ; la rune de l'œil (ses vraies affaires) ; la cinématique 1 → 2 (la barre descend, la cape, la tunique).
 Des captures dans captures/."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -212,6 +215,66 @@ def test(nav):
     print('— 9. La première fois : il sort de l\'ombre')
     ctx, pg, errs = ouvrir(nav, '?combat=leo&' + OBJETS)
     verifie(pg.evaluate("() => window.PARTIE.faits['leo:vu']") == 1 and pg.evaluate("() => DJ.Leo.etat().phase") == 1, 'la première arrivée : une courte entrée, puis le combat')
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+    print('— 10. Le nouveau Léo de la phase 2 (14 novembre au soir, Bible §13.40)')
+    ctx, pg, errs = ouvrir(nav, '?combat=leo&vu=1&phase=2&' + OBJETS)
+    n = pg.evaluate("() => { var E = DJ.Leo._E(); return {neuf:E.leo.nouveau(), cuit:LeoCorps.cuit(), pieces:Object.keys(LeoCorps.DESSINS).length, img:document.querySelectorAll('.lc .lc-p:not(.cache) > img').length, svg:document.querySelectorAll('.lc .lc-p:not(.cache) > svg').length}; }")
+    verifie(n['neuf'] and n['cuit'] == n['pieces'] and n['img'] >= 20 and n['svg'] == 0, f'phase 2 : le nouveau Léo, toutes ses pièces cuites en images ({n})')
+    def forcer(att):
+        pg.evaluate("(a) => { var c = DJ.Leo._E().c, o = LeoRegles.L.ORDRE[c.phase]; c.leo.k = (o.indexOf(a) - 1 + o.length) % o.length; c.leo.fin = c.leo.tl + .05; c.leo.etape = 'repos'; c.leo.att = null; }", att)
+    def attendre(js, t=15000):
+        pg.wait_for_function(js, timeout=t)
+    # la gourde : il la décroche, il boit (la potion coule dans sa bouche), le marteau l'arrête : la gourde se brise, pas de soin
+    pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 4000; }")
+    forcer('gourde')
+    attendre("() => { var z = DJ.Leo._E().c.leo; return z.att === 'gourde' && z.etape === 'elan' && DJ.Leo._E().p2.X.k > .3; }")
+    g = pg.evaluate("() => { var C = DJ.Leo._E().leo.corps; return {main:C.etat.gourde, bouchon:C.etat.bouchon, visage:C.etat.visage, flot:!!document.querySelector('.lp-flot'), halo:!!document.querySelector('.lp-halo')}; }")
+    verifie(g == {'main': 'main', 'bouchon': False, 'visage': 'boit', 'flot': True, 'halo': True}, f'la gourde : dans sa main, débouchée ; il boit (la potion coule dans sa bouche, le halo vert grandit) ({g})')
+    pv0 = pg.evaluate("() => DJ.Leo._E().c.leo.pv")
+    pg.tap('#bande .carte[data-h=pisteur][data-id="l:marteau"]', force=True)
+    attendre("() => DJ.Leo._E().c.leo.etape === 'sonne'", 6000)
+    pg.wait_for_timeout(900)
+    c = pg.evaluate("() => { var C = DJ.Leo._E().leo.corps; return {gourde:C.etat.gourde, flot:!!document.querySelector('.lp-flot'), pv:DJ.Leo._E().c.leo.pv, visage:C.etat.visage}; }")
+    verifie(c['gourde'] is None and not c['flot'] and c['pv'] <= pv0 and c['visage'] == 'ko', f'le marteau le coupe : la gourde lui échappe et se brise, pas de soin, il est sonné ({c})')
+    pg.screenshot(path=os.path.join(CAP, 'leo2-gourde-cassee.png'))
+    attendre("() => DJ.Leo._E().leo.corps.etat.gourde === 'ceinture'", 6000)
+    verifie(True, 'puis il en a une autre à sa ceinture')
+    # la faux : il la tire de son dos, la tient à deux mains, fauche ; puis la remet dans son dos
+    forcer('faux')
+    attendre("() => { var z = DJ.Leo._E().c.leo; return z.att === 'faux' && z.etape === 'elan'; }")
+    f = pg.evaluate("() => { var C = DJ.Leo._E().leo.corps; return [C.etat.faux, C.etat.devantAr, C.etat.visage, !!document.querySelector('.lp-danger')]; }")
+    verifie(f == ['main', True, 'effort', True], f'la faux : tirée du dos, à deux mains, l\'effort ; le danger rouge au sol, sous les héros ({f})')
+    attendre("() => DJ.Leo._E().c.leo.etape === 'repos'", 8000)
+    verifie(pg.evaluate("() => DJ.Leo._E().leo.corps.etat.faux") == 'dos', 'après le coup, la faux retourne dans son dos')
+    # la flèche de feu : des flammes sur lui
+    attendre("() => DJ.Leo.etat().photo.heros.pisteur.libre", 8000)
+    pg.tap('#bande .carte[data-h=pisteur][data-id="p:feu"]', force=True)
+    attendre("() => DJ.Leo.etat().photo.leo.brule", 6000)
+    verifie(pg.evaluate("() => !!document.querySelector('.lp-feu')"), 'la flèche de feu : il brûle, et ça se voit (des flammes sur lui)')
+    # la rune de l'œil : ses vraies affaires en icônes
+    pg.tap('#bande .carte[data-h=sage][data-id=oeil]', force=True)
+    attendre("() => DJ.Leo.etat().photo.leo.suite", 8000)
+    forcer('lancer'); pg.wait_for_timeout(200)
+    ic = pg.evaluate("() => [].map.call(document.querySelectorAll('#leo-suite i'), function(i){ return i.getAttribute('data-att') + ':' + (i.querySelector('svg') ? 'dessin' : 'emoji'); })")
+    verifie(any(x.endswith('dessin') for x in ic), f'la rune de l\'œil montre ses vraies affaires (le rat, la gourde, la faux, le sifflet) ({ic})')
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+    print('— 11. La cinématique 1 → 2 : il arrache sa cape et sa tunique')
+    ctx, pg, errs = ouvrir(nav, '?combat=leo&vu=1&phase=1&' + OBJETS)
+    pg.evaluate("() => { DJ.Leo._E().c._blesseLeo([], 9999, 'test'); }")
+    attendre("() => DJ.Leo.etat().cine && !document.querySelector('#combat').classList.contains('ouvert')", 6000)
+    h = pg.evaluate("() => { var C = DJ.Leo._E().leo.corps; return [DJ.Leo._E().leo.nouveau(), C.etat.cape, C.etat.capuche, C.etat.tunique]; }")
+    verifie(h == [True, True, True, True], f'tout s\'arrête, la barre des sorts descend ; il est encore en cape, capuche et tunique ({h})')
+    attendre("() => !DJ.Leo._E().leo.corps.etat.cape", 9000)
+    verifie(pg.evaluate("() => document.querySelector('#leo-barre em').textContent") == 'Léo' and pg.evaluate("() => !!document.querySelector('.lp-cape')"), 'il arrache sa cape (elle s\'envole) : c\'est Léo')
+    attendre("() => !DJ.Leo._E().leo.corps.etat.tunique", 9000)
+    verifie(True, 'puis sa tunique')
+    attendre("() => !DJ.Leo.etat().cine && DJ.Leo.etat().phase === 2", 20000)
+    fin = pg.evaluate("() => [document.querySelector('#combat').classList.contains('ouvert'), DJ.Leo.etat().barre.filter(function(g){ return g.geste.indexOf('l:') === 0; }).length]")
+    verifie(fin == [True, 3], f'la barre remonte ; le Pisteur a ses trois outils ({fin})')
     verifie(errs == [], f'aucune erreur {errs[:3]}')
     ctx.close()
 

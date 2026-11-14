@@ -80,7 +80,13 @@ window.CATALOGUE = [
           {id:'leoFarine', t:'La farine', v:'A'}, {id:'leoCrochet', t:'Le crochet', v:'A'}, {id:'leoBoum', t:'BOUM (la farine)', v:'A'}, {id:'leoCape', t:'La cape (le noir)', v:'A'}, {id:'leoTorches', t:'Les torches rallumées', v:'A'}
         ]},
         {id:'e-leo2', titre:'Phase 2 : torse nu', sons:[
-          {id:'leoSifflet', t:'Le sifflet', v:'A'}, {id:'leoPoing', t:'Le coup de poing', v:'A'}, {id:'leoFaux', t:'La faux', v:'A'}, {id:'leoSaut', t:'Le saut', v:'A'}, {id:'leoGourde', t:'La gourde', v:'A'}, {id:'leoLancer', t:'Le lancer de rat', v:'A'}
+          {id:'leoSifflet', t:'Le sifflet', v:'A'}, {id:'leoPoing', t:'Le coup de poing', v:'A'}, {id:'leoFaux', t:'La faux', v:'AB'}, {id:'leoSaut', t:'Le saut', v:'A'}, {id:'leoGourde', t:'La gourde (l\'ancienne)', v:'A'}, {id:'leoLancer', t:'Le lancer de rat', v:'A'},
+          /* 14 novembre au soir (Bible §13.40) : le nouveau Léo — tous neufs, à écouter */
+          {id:'leoFauxTire', t:'Faux tirée', v:'A'}, {id:'leoNaseaux', t:'Les naseaux', v:'A'}, {id:'leoRacle', t:'Pied qui racle', v:'A'}, {id:'leoSac', t:'Le sac', v:'A'},
+          {id:'leoBouchon', t:'Le bouchon', v:'A'}, {id:'leoGlou', t:'Glou', v:'A'}, {id:'leoAah', t:'Aaah !', v:'A'}, {id:'leoAura', t:'L\'aura', v:'A'}, {id:'leoBrise', t:'Gourde brisée', v:'A'}
+        ]},
+        {id:'e-leo12', titre:'Cape et tunique', sons:[
+          {id:'leoTunique', t:'Tunique retirée', v:'A'}, {id:'leoJette', t:'Il la jette', v:'A'}, {id:'leoMuscles', t:'Les muscles', v:'A'}
         ]},
         {id:'e-leo3', titre:'Phase 3 : la potion', sons:[
           {id:'leoRafale', t:'La rafale de coups', v:'A'}, {id:'leoHurlement', t:'Le hurlement', v:'A'}, {id:'leoAttrape', t:'Il attrape un héros', v:'A'}, {id:'leoSouffle', t:'Le souffle de feu', v:'A'}

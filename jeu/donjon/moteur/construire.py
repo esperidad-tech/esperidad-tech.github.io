@@ -21,7 +21,7 @@ COEUR = [
     ('salle d\'essai (son, effets)', [os.path.join(ESSAI, 'src', 'son.js'), os.path.join(ESSAI, 'src', 'effets.js')]),
     ('règles', [os.path.join(DONJON, 'donjon-codes.js'), os.path.join(SRC, 'donnees.js'), os.path.join(SRC, 'regles.js'), os.path.join(SRC, 'leo-regles.js')]),
     ('carte, salles, ambiances', [os.path.join(DONJON, 'carte.js'), os.path.join(DONJON, 'scenes', 'scenes.js'), os.path.join(DONJON, 'scenes', 'objets.js'), os.path.join(DONJON, 'decors', 'ambiance.js')]),
-    ('moteur', [os.path.join(SRC, f) for f in ['allure.js', 'noyau.js', 'betes.js', 'combat.js', 'leo-anime.js', 'leo.js', 'explo.js', 'demarrage.js']]),
+    ('moteur', [os.path.join(SRC, f) for f in ['allure.js', 'noyau.js', 'betes.js', 'combat.js', 'leo-corps.js', 'leo-anime.js', 'leo-p2.js', 'leo.js', 'explo.js', 'demarrage.js']]),
 ]
 CSS = [os.path.join(ESSAI, 'src', 'jeu.css'), os.path.join(SRC, 'donjon.css')]
 

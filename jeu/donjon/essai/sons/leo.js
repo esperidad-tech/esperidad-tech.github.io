@@ -226,4 +226,106 @@ S.leoChuteA = function(A, P){
   A.choc(t + 1.3, {f:90, f2:26, d:.7, g:1.1, sat:4, corps:2, corpsF:200}, o);             /* tout le reste */
   return {duree:2.2};
 };
+
+/* ---------- 14 novembre au soir (Bible §13.40) : le nouveau Léo de la phase 2 — Romain : « tu peux t'aider des sons pour bien
+   qu'on voie chaque attaque » ; « la faux […] avec un bruit spécifique à la faux » ; « un glou, glou, glou » ----------
+   Tous NEUFS (🆕) : le jeu les joue en attendant que Romain les écoute dans l'Atelier. */
+/* LA FAUX, version B : le grand souffle du fauchage, puis le « schwiiing » de la lame et son acier qui chante longtemps */
+S.leoFauxB = function(A, P){
+  var t = P.t, o = bus(A, P, .3, .5), o2 = bus(A, P, -.4, .6);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:260, pts:[[.34, 1800]], q:1.2}], env:[[0, 0], [.24, .7], [.34, 1], [.5, 0]], g:1.3}, o);
+  A.bruit(t + .26, {filtres:[{type:'bandpass', f:3200, pts:[[.3, 7000]], q:3}], env:[[0, 0], [.03, 1], [.32, 0]], g:.7}, o2);
+  fer(A, t + .32, 2480, .16, o2); fer(A, t + .34, 3310, .1, o2); fer(A, t + .36, 1660, .08, o2);
+  A.ton(t + .32, {f:4200, f2:3900, gl:.9, env:[[0, 0], [.004, 1], [1.2, 0]], g:.05, vib:[6, 18]}, o2);
+  return {duree:1.8};
+};
+S.leoFauxB.moment = .32;
+/* il tire la faux de son dos : l'acier frotte le cuir de la bandoulière, et sonne */
+S.leoFauxTireA = function(A, P){
+  var t = P.t, o = bus(A, P, .35, .4);
+  A.bruit(t, {filtres:[{type:'bandpass', f:1800, pts:[[.32, 5200]], q:2.2}], env:[[0, 0], [.05, .6], [.3, 1], [.4, 0]], g:.8, rugueux:.6, rugVit:30}, o);
+  fer(A, t + .34, 2900, .1, o); fer(A, t + .36, 1950, .07, o);
+  return {duree:1.1};
+};
+/* la vapeur par les naseaux (le taureau va charger) */
+S.leoNaseauxA = function(A, P){
+  var t = P.t, o = bus(A, P, .3, .3);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, q:.8}, {type:'lowpass', f:2600}], env:[[0, 0], [.02, 1], [.16, .5], [.24, 0]], g:.9, rugueux:.7, rugVit:40}, o);
+  A.bruit(t + .3, {coul:'rose', filtres:[{type:'bandpass', f:760, q:.8}, {type:'lowpass', f:2200}], env:[[0, 0], [.02, 1], [.2, .4], [.3, 0]], g:.8, rugueux:.7, rugVit:36}, o);
+  return {duree:.8};
+};
+/* le pied qui racle la pierre */
+S.leoRacleA = function(A, P){
+  var t = P.t, o = bus(A, P, .35, .4);
+  A.bruit(t, {coul:'brun', filtres:[{type:'bandpass', f:420, pts:[[.22, 260]], q:1.1}], env:[[0, 0], [.03, 1], [.2, .6], [.28, 0]], g:1.2, rugueux:.9, rugVit:55}, o);
+  A.joue(t, A.crepitement(.26, 70), {g:.35, filtres:[{type:'highpass', f:1600}, {type:'lowpass', f:6000}]}, o);
+  return {duree:.6};
+};
+/* il plonge la main dans son sac : la toile, un rat qui couine */
+S.leoSacA = function(A, P){
+  var t = P.t, o = bus(A, P, .35, .35);
+  A.bruit(t, {filtres:[{type:'bandpass', f:1300, q:.9}], env:[[0, 0], [.03, .8], [.14, .5], [.2, 0]], g:.6, rugueux:.9, rugVit:26}, o);
+  A.ton(t + .1, {f:2500, f2:3300, gl:.12, env:[[0, 0], [.01, 1], [.14, .6], [.2, 0]], g:.1, vib:[34, 140]}, o);
+  A.ton(t + .26, {f:2900, f2:2300, gl:.16, env:[[0, 0], [.01, 1], [.16, 0]], g:.08, vib:[30, 120]}, o);
+  return {duree:.7};
+};
+/* LA GOURDE : le bouchon qui saute… */
+S.leoBouchonA = function(A, P){
+  var t = P.t, o = bus(A, P, .35, .3);
+  A.ton(t, {f:520, f2:1180, gl:.05, env:A.perc(.002, .09), g:.32}, o);
+  A.bruit(t, {hp:2500, env:A.perc(.001, .05), g:.25}, o);
+  A.ton(t + .32, {f:1700, env:A.perc(.002, .06), g:.05}, o);
+  return {duree:.6};
+};
+/* … une gorgée (glou) — le jeu en joue une à chaque mouvement de sa tête, calé sur l'image */
+S.leoGlouA = function(A, P){
+  var t = P.t, o = bus(A, P, .35, .25), h = .9 + Math.random() * .25;
+  A.ton(t, {f:150 * h, f2:290 * h, gl:.13, env:[[0, 0], [.025, 1], [.12, .5], [.2, 0]], g:.42, lp:900, sat:1.5}, o);
+  A.ton(t + .05, {f:420 * h, f2:760 * h, gl:.06, env:A.perc(.004, .07), g:.07}, o);
+  A.bruit(t, {coul:'brun', lp:500, env:[[0, 0], [.02, 1], [.14, 0]], g:.3}, o);
+  return {duree:.4};
+};
+/* … « aaah ! » (il est soigné) */
+S.leoAahA = function(A, P){
+  var t = P.t, o = bus(A, P, .2, .6);
+  voix(A, t, .9, {f:128, chute:.82, g:.24, souffle:1.6, rr:9, tr:.4, f1:700, f2:1150}, o);
+  return {duree:1.3};
+};
+/* … et l'aura qui le revigore : des notes claires qui montent */
+S.leoAuraA = function(A, P){
+  var t = P.t, o = bus(A, P, .1, .8);
+  [523, 659, 784, 1047, 1319].forEach(function(f, k){ A.ton(t + k * .09, {f:f, env:[[0, 0], [.02, 1], [.9 - k * .08, 0]], g:.08, vib:[5, 4]}, o); A.ton(t + k * .09, {f:f * 2, env:[[0, 0], [.02, 1], [.5, 0]], g:.025}, o); });
+  A.bruit(t, {filtres:[{type:'bandpass', f:3000, pts:[[1, 7000]], q:1.5}], env:[[0, 0], [.3, .5], [1.1, 0]], g:.2}, o);
+  return {duree:1.6};
+};
+/* la gourde lui échappe (le marteau) et se brise par terre */
+S.leoBriseA = function(A, P){
+  var t = P.t, o = bus(A, P, .3, .5);
+  A.joue(t, A.crepitement(.45, 140), {g:.9, filtres:[{type:'highpass', f:2600}]}, o);
+  A.choc(t, {f:900, f2:400, d:.06, g:.4}, o);
+  [2900, 3700, 4600, 5300].forEach(function(f, k){ A.ton(t + k * .03, {f:f, env:A.perc(.002, .3 - k * .05), g:.05}, o); });
+  A.bruit(t + .02, {coul:'rose', filtres:[{type:'bandpass', f:800, q:.8}], env:[[0, 0], [.02, 1], [.25, 0]], g:.4}, o);
+  return {duree:1};
+};
+/* il bande ses muscles : un grognement grave, le cuir qui craque, un coup sourd dans le sol */
+S.leoMusclesA = function(A, P){
+  var t = P.t, o = bus(A, P, .2, .6);
+  voix(A, t, .55, {f:86, chute:1.08, g:.3, sat:3, rr:20, f1:420, f2:900}, o);
+  A.joue(t + .05, A.crepitement(.3, 40), {g:.3, filtres:[{type:'bandpass', f:1400, q:1}]}, o);
+  A.choc(t + .18, {f:70, f2:30, d:.5, g:1.1, sat:3, corps:2, corpsF:140}, o);
+  return {duree:1.2};
+};
+/* la cinématique : la tunique qu'on retire (un frottement de tissu), puis jetée (un grand souffle) */
+S.leoTuniqueA = function(A, P){
+  var t = P.t, o = bus(A, P, .3, .4);
+  A.bruit(t, {filtres:[{type:'bandpass', f:700, pts:[[.45, 2400]], q:1}], env:[[0, 0], [.1, .8], [.4, 1], [.5, 0]], g:.8, rugueux:.9, rugVit:24}, o);
+  A.joue(t + .3, A.crepitement(.25, 90), {g:.5, filtres:[{type:'bandpass', f:2600, q:.8}]}, o);
+  return {duree:.9};
+};
+S.leoJetteA = function(A, P){
+  var t = P.t, o = bus(A, P, .5, .4);
+  fouet(A, t, .32, {f:300, f2:1400, g:1}, o);
+  voix(A, t, .25, {f:120, chute:.8, g:.14, souffle:1.4}, o);
+  return {duree:.7};
+};
 })(window);
