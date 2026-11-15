@@ -835,6 +835,20 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .parchemin.leo-def h2{font-size:30px}
 /* ====================================================================== LA PHASE 2 DE LÉO (leo-p2.js ; Bible §13.40) : ses effets
    (RAPIDITE.md : on n'anime que transform et opacity ; tout est posé en coordonnées de scène, puis retiré) */
+/* ---------- la phase 3 (15 novembre) : l'air aspiré, les ondes du cri, les flammes, le sang ---------- */
+.lp-aspire{position:absolute;width:70px;height:4px;margin:-2px 0 0 0;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.95));pointer-events:none;z-index:45;opacity:0;transform-origin:0 50%}
+.lp-cri{position:absolute;width:150px;height:230px;margin-left:-150px;border-radius:50%;border-left:9px solid rgba(255,244,214,.95);border-top:4px solid transparent;border-bottom:4px solid transparent;pointer-events:none;z-index:45;opacity:0;transform-origin:100% 50%}
+.lp-raah{position:absolute;font:900 46px/1 var(--f-titre, serif);color:#fff2c8;text-shadow:0 3px 0 #1a0e08,0 0 14px rgba(0,0,0,.85),0 0 20px #ff7a3a;pointer-events:none;z-index:46;white-space:nowrap;opacity:0}
+.lp-lueur.braise{background:radial-gradient(closest-side,#fff 0%,rgba(255,236,150,.98) 22%,rgba(255,140,40,.8) 48%,rgba(255,60,20,.35) 70%,rgba(255,60,20,0))}
+.lp-jet{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:44}
+.lp-jet-lueur{position:absolute;top:250px;height:110px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,170,60,.55),rgba(255,110,30,.28) 55%,rgba(255,90,20,0));opacity:0}
+.lp-flam{position:absolute;width:74px;height:118px;opacity:0;pointer-events:none;will-change:transform,opacity}
+i.lp-flam{border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradient(circle at 50% 72%,#fff7c0 0 22%,#ffc040 46%,#ff7a20 76%,rgba(255,90,20,0))}
+.lp-sang{width:7px;height:9px;border-radius:50% 50% 50% 50%/36% 36% 64% 64%;background:#c8101c;border:1px solid #5a0408;pointer-events:none;z-index:43}
+.lp-mare{position:absolute;top:338px;width:150px;height:22px;border-radius:50%;background:radial-gradient(closest-side,#a00c16,#7a0810 60%,rgba(90,4,8,0));pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.3);transition:transform .5s ease-out,opacity .3s}
+.lp-entaille.leo{width:120px;height:80px}
+.lp-entaille.leo i{width:120px;height:7px;top:36px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 35%,#ff9a9a 70%,rgba(255,60,60,0))}
+.lp-entaille.leo i + i{top:46px;height:4px}
 /* l'annonce d'une attaque (15 novembre) : son nom en gros au milieu de la salle, et la jauge qui se remplit jusqu'au coup */
 .lp-annonce{position:absolute;left:236px;top:54px;display:flex;align-items:center;gap:8px;padding:7px 16px 13px 12px;border-radius:14px;background:rgba(20,10,8,.88);border:3px solid #ffb050;color:#ffe9c4;font:900 25px/1 var(--f-titre, serif);letter-spacing:.03em;white-space:nowrap;pointer-events:none;z-index:46;opacity:0;text-shadow:0 2px 0 #000;will-change:transform,opacity}
 .lp-annonce b{font-size:25px;font-weight:400}
@@ -11094,14 +11108,18 @@ L.ATTAQUES = {
   gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
   lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
-  poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.6, degats:30, cibles:'un', rapide:true},    /* Romain : 30, très rapide, inarrêtable */
+  /* (Romain, 15 novembre, la phase 3 refaite : « son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer » : il arme
+     son poing .6 s, le tient .8 s — 1,4 s pour réagir, au lieu d'une demi-seconde) */
+  poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:.6, elan:.8, retour:.7, degats:30, cibles:'un', rapide:true},    /* Romain : 30, inarrêtable */
   rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
   hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
   attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
   souffle:{nom:'Le souffle de feu', ic:'🔥', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
 };
 L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héros, deux fois par seconde » ; il ne s'arrête qu'avec un soin */
-L.BRULE = {n:5, pas:.5, duree:4};                     /* la brûlure du souffle : elle s'arrête toute seule */
+/* (Romain, 15 novembre : « j'aimerais bien que le feu dure à l'infini ; du moment qu'on les soigne, ça s'arrête » : la brûlure du
+   souffle ne s'arrête plus toute seule — comme le saignement, n'importe quel soin l'éteint) */
+L.BRULE = {n:5, pas:.5, duree:Infinity};
 L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
@@ -11133,7 +11151,9 @@ L.ARMES = {
   fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
   marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
-  gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros'}
+  /* (Romain, 15 novembre : « la potion qu'on lui pique, j'aimerais bien qu'elle soit infinie, mais que l'animation soit un petit peu
+     plus longue, histoire que ça soit pas trop facile ») */
+  gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros', infini:true}
 };
 L.GOURDE_SOIN = 1;                                    /* Romain : la gourde rend 100 % de la vie, à qui on veut */
 /* les rats de la phase 2 (Romain : « Léo prend un emplacement, les rats deux »). Les mêmes bêtes que dans le donjon. */
@@ -11151,7 +11171,7 @@ L.DUREES = {
   fleche:{impact:1.57, fin:2.26}, lourde:{impact:1.97, fin:2.67}, dague:{impact:.71, fin:1.99}, arme:{impact:.71, fin:1.99},
   potion:{impact:2.54, fin:2.75}, herbes:{impact:1.1, fin:1.1}, louche:{impact:1.25, fin:1.72},
   rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
-  gourde:{impact:.8, fin:1.3}
+  gourde:{impact:1.7, fin:2.3}
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
@@ -11511,6 +11531,8 @@ P._soin = function(ev, h, n, par){
   ev.push({t:'soin', heros:h, n:S.pv - avant, pv:S.pv, par:par});
   /* Romain : « le saignement, il s'arrête que si on met un soin. N'importe quel soin. » */
   if(S.saigne){ S.saigne = false; ev.push({t:'etat', heros:h, nom:'saigne', on:false}); }
+  /* (15 novembre) la brûlure du souffle aussi : elle ne s'arrête plus qu'avec un soin */
+  if(S.brule){ S.brule = 0; ev.push({t:'etat', heros:h, nom:'brule', on:false}); }
 };
 P._bilan = function(ev){
   if(this.resultat) return true;
@@ -11819,7 +11841,7 @@ P._leoImpact = function(ev, A){
     if(!vivant(h) || !passe) return;
     if(A.etourdit) self._etourdit(ev, h, A.etourdit);
     if(A.saigne && !self.h[h].saigne){ self.h[h].saigne = true; self.h[h].saigneT = t + L.SAIGNE.pas; ev.push({t:'etat', heros:h, nom:'saigne', on:true}); }
-    if(A.brule){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:L.BRULE.duree}); }
+    if(A.brule){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:isFinite(L.BRULE.duree) ? L.BRULE.duree : null}); }
     if(A.attrape){
       self._annuler(ev, h, 'attrape');
       self.h[h].attrape = true; Z.tenu = h;
@@ -16317,7 +16339,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '15/11 à 11 h 13';
+DJ.VERSION = '15/11 à 12 h 50';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -18508,10 +18530,85 @@ var RAT = (function(){
 P.rat = {os:'rat', boite:[-30, -6, 54, 112], objet:'rat', svg:RAT};
 
 /* ============================================================================ L'ORDRE D'EMPILEMENT (du fond vers l'avant) */
-var ORDRE = ['faux@dos', 'brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr', 'cuisseAr', 'tibiaAr', 'piedAr', 'sac',
-  'cuisseAv', 'tibiaAv', 'piedAv', 'bassin', 'gourde@ceinture', 'bouchon@ceinture', 'torse', 'tunique', 'siffletCou',
-  'tete', 'v-colere', 'v-rictus', 'v-cri', 'v-effort', 'v-souffle', 'v-boit', 'v-aah', 'v-ko', 'v-douleur', 'cheveux', 'capuche',
-  'faux@main', 'brasAv', 'mancheAv', 'avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
+
+/* ============================================================================ LÉO SOUS LA POTION (phase 3 ; Romain, 15 novembre)
+   « Ça doit être la modélisation la plus jolie de toutes […] le modèle le plus détaillé de tout le donjon. » Le même pantin, le même
+   squelette, mais : la peau rougie par la potion (les couleurs changées à la cuisson : potion()), les veines qui brillent en vert,
+   des trapèzes énormes, une lueur dans la poitrine, les yeux qui luisent, les cheveux dressés, la sueur, la vapeur — autant de
+   pièces posées PAR-DESSUS celles du corps (elles suivent les mêmes os : aucune animation en plus). Et les TROIS ENTAILLES de la
+   faux (« je veux trois traits rouges […] je veux vraiment qu'on voit qu'il saigne ») : plaie1, plaie2, plaie3. */
+var POTION = [[C.peau[0], '#ffcda0'], [C.peau[1], '#ee975c'], [C.peau[2], '#c05a34'], [C.peau[3], '#762c1c'],
+  [C.peauS[0], '#dc9c70'], [C.peauS[1], '#bd7044'], [C.peauS[2], '#8e4228'], [C.peauS[3], '#562014'], [C.veine, '#8dff5a']];
+function potion(svg){ POTION.forEach(function(c){ svg = svg.split(c[0]).join(c[1]); }); return svg; }
+function veine(d, w, op){ w = w || 1.5; op = op || 1; return ligne(d, '#3fd13a', w + 2.6, .2 * op) + ligne(d, '#a6ff6a', w, .88 * op) + ligne(d, '#f4ffdc', w * .36, .85 * op); }
+function noeud(x, y, r){ return '<circle cx="' + x + '" cy="' + y + '" r="' + (r * 2.4) + '" fill="#8dff5a" opacity=".3"/>' + rond(x, y, r, '#f4ffdc', 0); }
+function goutte(x, y, r){ return ov(x, y, r * .7, r, '#e8f8ff', .9) + ov(x - r * .2, y - r * .3, r * .25, r * .35, '#fff', .95); }
+P['p3-torse'] = {os:'torse', boite:[76, 66, 150, 156], potion:true, svg:(function(){
+  var s = '';
+  /* les trapèzes, énormes, qui montent jusqu'aux oreilles */
+  s += f('M134 88 C122 92 108 102 96 121 C108 116 122 112 136 110 Z', 'url(#l2p)', 2.6) + f('M157 88 C172 92 190 103 205 123 C190 117 172 112 155 110 Z', 'url(#l2p)', 2.6);
+  s += ligne('M130 94 C120 100 110 108 102 118 M162 94 C174 100 188 108 198 120', C.peau[3], 1.4, .55) + ligne('M133 91 C124 95 114 102 106 111 M159 91 C170 95 182 102 192 110', C.rim, 1.8, .55);
+  /* la potion luit dans sa poitrine, et sur le bord de son corps (une lumière verte) */
+  s += '<circle cx="147" cy="148" r="36" fill="url(#l2v)" opacity=".2"/><circle cx="147" cy="148" r="15" fill="url(#l2v)" opacity=".32"/>';
+  s += ligne('M95 127 C91 134 91 143 94 152 C97 165 104 178 111 189', '#b6ff8a', 1.6, .5) + ligne('M207 150 C205 163 198 176 190 187', '#b6ff8a', 1.6, .45);
+  /* les muscles, plus creusés : les pectoraux, les dentelés, les abdominaux */
+  s += ligne('M110 131 C120 137 131 139 141 137 M155 137 C167 140 181 138 193 131', C.peau[3], 1.5, .5);
+  s += ligne('M112 150 C116 156 118 162 118 168 M108 142 C112 150 114 156 114 162 M184 152 C182 158 181 164 182 170 M190 144 C187 152 186 158 186 164', C.peau[3], 1.3, .5);
+  s += ligne('M131 166 C137 164 143 164 147 166 M152 166 C158 164 166 165 172 168 M132 181 C138 179 143 179 147 181 M152 181 C158 179 166 180 171 183 M134 195 C139 193 144 193 148 195 M153 195 C158 193 164 194 169 197', C.rim, 1.7, .55);
+  /* les veines, pleines de potion : elles partent du cœur et se ramifient (fines, sinueuses) */
+  s += veine('M146 150 C142 142 143 134 139 126 C137 119 141 112 140 104', 1.7) + veine('M139 126 C134 122 130 121 126 116', 1.1) + veine('M141 112 C145 108 147 104 147 99', 1);
+  s += veine('M146 150 C138 150 132 144 124 144 C117 143 112 137 105 134', 1.6) + veine('M124 144 C121 150 122 156 118 162', 1.1) + veine('M112 138 C109 142 108 147 105 150', .9);
+  s += veine('M148 150 C156 151 162 145 170 146 C178 146 184 139 193 137', 1.6) + veine('M170 146 C174 152 173 159 177 165', 1.1) + veine('M184 140 C188 144 192 144 196 148', .9);
+  s += veine('M147 152 C145 160 149 167 147 175 C146 183 150 190 149 199', 1.5) + veine('M147 175 C141 178 138 184 132 187', 1) + veine('M148 182 C155 185 158 191 165 193', 1);
+  s += noeud(146, 150, 2.2) + noeud(124, 144, 1.2) + noeud(170, 146, 1.2) + noeud(147, 175, 1.1) + noeud(139, 126, 1.1);
+  /* de vieilles cicatrices, la sueur, la vapeur qui monte de ses épaules */
+  s += ligne('M166 157 L181 151 M169 162 L184 156 M114 176 L124 184', '#6a2418', 1.5, .75) + ligne('M167 156 L180 151 M170 161 L183 156', '#ffd0b0', .7, .6);
+  s += goutte(117, 158, 2.6) + goutte(186, 168, 2.4) + goutte(160, 191, 2.2) + goutte(133, 122, 2) + goutte(176, 126, 2);
+  s += ligne('M99 110 C94 102 101 96 96 88 C93 82 97 78 95 72 M207 112 C212 104 205 98 210 90 C213 84 208 80 211 74', '#ffffff', 3.4, .22);
+  return s;
+})()};
+P['p3-tete'] = {os:'tete', boite:[90, 0, 110, 126], potion:true, saufVisage:['ko', 'boit'], svg:(function(){
+  var s = '', H1 = '#f6cf6a';
+  /* les cheveux dressés (au-dessus de sa crête) */
+  s += f('M127 34 L123 19 L137 29 Z', H1, 2.2) + f('M141 29 L144 14 L155 26 Z', H1, 2.2) + f('M158 28 L167 15 L170 31 Z', H1, 2.2) + f('M171 34 L183 23 L181 40 Z', H1, 2.2);
+  s += ligne('M127 26 L129 31 M145 20 L146 26 M166 21 L165 27 M180 29 L178 35', '#fff6c8', 1.3, .85);
+  /* les yeux qui luisent */
+  s += '<circle cx="122.5" cy="71" r="8" fill="url(#l2v)" opacity=".5"/><circle cx="138" cy="71" r="10.5" fill="url(#l2v)" opacity=".55"/>';
+  s += rond(120.5, 71, 1.7, '#f4ffdc', 0) + rond(135, 71, 2.3, '#f4ffdc', 0) + ligne('M127 70 L113 66 M145 70 L157 65', '#8dff5a', 1.2, .6);
+  /* une veine à la tempe, la mâchoire serrée, la vapeur des naseaux */
+  s += veine('M152 58 C155 62 154 67 157 71 C159 74 158 78 160 81', 1.1) + veine('M157 71 C161 71 163 73 166 73', .8);
+  s += ligne('M124 96 C130 99 138 99 146 95', C.peau[3], 1.4, .5);
+  s += ligne('M107 82 C101 81 97 85 92 83 M108 85 C103 87 100 91 95 91', '#ffffff', 2.6, .4);
+  return s;
+})()};
+function vBrasH(dx, S){ var k = S ? .65 : 1; return veine(dec('M193 120 C196 128 201 134 200 143 C199 152 204 160 200 169 C198 176 197 181 197 186', dx, 0), 1.6, k) + veine(dec('M200 143 C206 146 209 152 212 157', dx, 0), 1, k) + veine(dec('M200 169 C194 171 190 176 187 180', dx, 0), .9, k) +
+  ligne(dec('M183 123 C190 118 204 118 213 127 M186 172 C192 176 202 176 210 170', dx, 0), C.peau[3], 1.3, .5 * k) + ligne(dec('M211 131 C217 142 217 156 213 168', dx, 0), C.rim, 2, .5 * k) + noeud(200 + dx, 143, 1) + goutte(206 + dx, 138, 2); }
+function vBrasA(dx, S){ var k = S ? .65 : 1; return veine(dec('M196 181 C194 188 198 194 196 201 C194 208 198 214 198 221', dx, 0), 1.4, k) + veine(dec('M196 201 C201 203 204 208 206 213', dx, 0), .9, k) +
+  ligne(dec('M186 184 C192 180 204 180 212 186', dx, 0), C.peau[3], 1.2, .5 * k); }
+P['p3-brasAv'] = {os:'brasAv', boite:[166, 100, 66, 98], potion:true, svg:vBrasH(0, false)};
+P['p3-avantAv'] = {os:'avantAv', boite:[168, 164, 58, 80], potion:true, svg:vBrasA(0, false)};
+P['p3-brasAr'] = {os:'brasAr', boite:[166 + dAr, 100, 66, 98], potion:true, svg:vBrasH(dAr, true)};
+P['p3-avantAr'] = {os:'avantAr', boite:[168 + dAr, 164, 58, 80], potion:true, svg:vBrasA(dAr, true)};
+/* les trois entailles de la faux : trois traits rouges, l'un sous l'autre, en travers du torse (comme un coup de griffes) — une
+   entaille effilée aux deux bouts, la chair rouge vif entre deux lèvres sombres, et le sang qui coule */
+function fuseau(x0, y0, x1, y1, e, coul, op){
+  var mx = (x0 + x1) / 2, my = (y0 + y1) / 2, L = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / L * e * 2, ny = (x1 - x0) / L * e * 2;
+  return '<path d="M' + x0 + ' ' + y0 + ' Q' + (mx + nx).toFixed(1) + ' ' + (my + ny).toFixed(1) + ' ' + x1 + ' ' + y1 + ' Q' + (mx - nx).toFixed(1) + ' ' + (my - ny).toFixed(1) + ' ' + x0 + ' ' + y0 + ' Z" fill="' + coul + '"' + (op != null ? ' opacity="' + op + '"' : '') + '/>';
+}
+function plaie(x0, y0, x1, y1, coulures){
+  var s = fuseau(x0, y0, x1, y1, 4.6, '#2a0406', .92) + fuseau(x0 + 2, y0 + .8, x1 - 2, y1 - .8, 3, '#a80e18') + fuseau(x0 + 5, y0 + 2, x1 - 5, y1 - 2, 1.3, '#ff4a44') + ligne('M' + (x0 + 8) + ' ' + (y0 + 2.4) + ' L' + (x1 - 10) + ' ' + (y1 - 4.6), '#ffc0b0', .7, .7);
+  coulures.forEach(function(g){ var x = x0 + (x1 - x0) * g[0], y = y0 + (y1 - y0) * g[0] + 2, l = g[1];
+    s += ligne('M' + x.toFixed(1) + ' ' + y.toFixed(1) + ' C' + (x - .8).toFixed(1) + ' ' + (y + l * .4).toFixed(1) + ' ' + (x + 1).toFixed(1) + ' ' + (y + l * .7).toFixed(1) + ' ' + x.toFixed(1) + ' ' + (y + l).toFixed(1), '#a80e18', 2.1, .95) +
+      ligne('M' + (x - .5).toFixed(1) + ' ' + (y + 1.5).toFixed(1) + ' L' + (x - .3).toFixed(1) + ' ' + (y + l * .6).toFixed(1), '#ff6a5a', .7, .8) + ov(x, y + l + 1.2, 1.7, 2.5, '#c8101c'); });
+  return s;
+}
+P.plaie1 = {os:'torse', boite:[104, 108, 90, 70], plaie:1, svg:plaie(114, 122, 172, 144, [[.25, 12], [.55, 19], [.8, 10]])};
+P.plaie2 = {os:'torse', boite:[108, 132, 90, 72], plaie:2, svg:plaie(119, 146, 178, 168, [[.2, 10], [.5, 16], [.78, 12]])};
+P.plaie3 = {os:'torse', boite:[114, 156, 88, 72], plaie:3, svg:plaie(125, 170, 181, 191, [[.3, 13], [.62, 17]])};
+var ORDRE = ['faux@dos', 'brasAr', 'p3-brasAr', 'mancheAr', 'avantAr', 'p3-avantAr', 'mancheArA', 'poingAr', 'mainAr', 'cuisseAr', 'tibiaAr', 'piedAr', 'sac',
+  'cuisseAv', 'tibiaAv', 'piedAv', 'bassin', 'gourde@ceinture', 'bouchon@ceinture', 'torse', 'p3-torse', 'plaie1', 'plaie2', 'plaie3', 'tunique', 'siffletCou',
+  'tete', 'v-colere', 'v-rictus', 'v-cri', 'v-effort', 'v-souffle', 'v-boit', 'v-aah', 'v-ko', 'v-douleur', 'cheveux', 'p3-tete', 'capuche',
+  'faux@main', 'brasAv', 'p3-brasAv', 'mancheAv', 'avantAv', 'p3-avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
 
 /* ============================================================================ LES POSES
    x, y : tout le corps (y < 0 : en l'air) ; r : il bascule autour des pieds (une chute) ; bas : il plie les genoux (les hanches
@@ -18591,7 +18688,10 @@ var CUIT = {};                      /* nom de pièce -> url de l'image */
 var IMG = {};                       /* nom de pièce -> l'image décodée (pour la peindre sur la toile) */
 var cuisson = null;
 /* (pour la cuisson : Cuire.image ajoute lui-même la largeur et la hauteur ; avec, l'image serait invalide) */
-function svgPiece(nom, enLigne){ var p = P[nom], b = p.boite; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; }
+function svgPiece(nom, enLigne, forme){ var p = P[nom], b = p.boite, s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; return forme === 3 || p.potion ? potion(s) : s; }
+/* les pièces qui changent de couleur sous la potion (celles qui montrent de la peau) : elles sont cuites une deuxième fois */
+var CUIT3 = {};
+function aDeLaPeau(nom){ var p = P[nom]; if(p.potion || p.plaie || p.habit || p.objet) return false; var s = p.svg; return s.indexOf('l2p') >= 0 || POTION.some(function(c){ return s.indexOf(c[0]) >= 0; }); }
 /* sans cuisson, les pièces restent en SVG : leurs dégradés sont posés UNE fois dans la page (dans un SVG jamais caché : un dégradé
    rangé dans une pièce cachée — display:none — ne se dessinerait plus nulle part) */
 function defsPage(){
@@ -18612,7 +18712,10 @@ function preparer(){
   cuisson = Promise.all(Object.keys(P).map(function(nom){
     var b = P[nom].boite;
     return Cu.image(svgPiece(nom), b[2], b[3], res).then(function(url){ if(url) CUIT[nom] = url; }).catch(function(){});
-  })).then(function(){
+  }).concat(Object.keys(P).filter(aDeLaPeau).map(function(nom){
+    var b = P[nom].boite;
+    return Cu.image(svgPiece(nom, false, 3), b[2], b[3], res).then(function(url){ if(url) CUIT3[nom] = url; }).catch(function(){});
+  }))).then(function(){
     /* les images décodées d'avance (RAPIDITE.md, R7) */
     return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().then(function(){ IMG[n] = i; }, function(){}) : new Promise(function(ok){ i.onload = function(){ IMG[n] = i; ok(); }; i.onerror = ok; }); }));
   }).then(function(){ return true; }, function(){ return false; });
@@ -18659,14 +18762,15 @@ function Corps(parent, o){
     var nom = cle.split('@')[0], ou = cle.split('@')[1] || null, p = P[nom];
     var e = document.createElement('div'); e.className = 'lc-p'; e.style.zIndex = String(z + 2);
     var b = p.boite;
-    if(CUIT[nom]){ var i = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
+    var im = null;
+    if(CUIT[nom]){ var i = im = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
     else { defsPage(); e.innerHTML = svgPiece(nom, true); var sv = e.firstChild; sv.style.left = b[0] + 'px'; sv.style.top = b[1] + 'px'; sv.style.overflow = 'visible'; }
     d.appendChild(e);
-    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b};
+    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b, im:im};
   });
   this.liste = []; this.surToile = false; this.teinteT = null; this.flashT = 0;
   this.teinteEl = document.createElement('div'); this.teinteEl.className = 'lc-teinte'; d.appendChild(this.teinteEl);
-  this.etat = {visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
+  this.etat = {forme:2, plaies:0, visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
   this.p = complete(GARDE);
   this.de = null; this.a = null; this.t = 0; this.duree = 0; this.courbe = null; this.fin = null; this.temps = 0;
   this.M = {};
@@ -18681,7 +18785,10 @@ CP._maj = function(){
   var E = this.etat, self = this;
   Object.keys(this.pieces).forEach(function(cle){
     var q = self.pieces[cle], n = q.nom, p = P[n], vu = true;
-    if(p.visage) vu = p.visage === E.visage && !E.capuche;
+    /* (sous la potion — phase 3 : ses veines, ses yeux qui luisent, ses entailles) */
+    if(p.potion) vu = E.forme === 3 && !(p.saufVisage && p.saufVisage.indexOf(E.visage) >= 0);
+    else if(p.plaie) vu = E.forme === 3 && E.plaies >= p.plaie;
+    else if(p.visage) vu = p.visage === E.visage && !E.capuche;
     else if(n === 'faux') vu = E.faux === q.ou;
     else if(n === 'gourde') vu = E.gourde === q.ou;
     else if(n === 'bouchon') vu = E.gourde === q.ou && E.bouchon;
@@ -18802,6 +18909,18 @@ CP._peindre = function(){
   }
 };
 CP.visage = function(v){ if(V[v] && v !== this.etat.visage){ this.etat.visage = v; this._maj(); } return this; };
+/* la forme : 2 = Léo torse nu ; 3 = sous la potion (plus grand, le haut du corps plus large, la peau rougie, les veines vertes) */
+CP.forme = function(n){
+  var self = this, E = this.etat; n = n === 3 ? 3 : 2;
+  if(E.forme === n) return this;
+  E.forme = n; this.ech = n === 3 ? .98 : .94;
+  Object.keys(this.pieces).forEach(function(cle){ var q = self.pieces[cle], u = n === 3 ? CUIT3[q.nom] : CUIT[q.nom]; if(q.im && u && CUIT3[q.nom]) q.im.src = u; q.tr = null; });
+  if(n !== 3) E.plaies = 0;
+  this._maj(); this._os(this.p); this._ecrire();
+  return this;
+};
+/* les entailles de la faux (0 à 3) */
+CP.plaies = function(n){ n = Math.max(0, Math.min(3, n | 0)); if(this.etat.plaies !== n){ this.etat.plaies = n; this._maj(); } return this; };
 CP.objet = function(nom, ou){ if(this.etat[nom] !== ou){ this.etat[nom] = ou; this._maj(); } return this; };
 CP.main = function(cote, forme){ if(this.etat.main[cote] !== forme){ this.etat.main[cote] = forme; this._maj(); } return this; };
 CP.devantAr = function(on){ on = !!on; if(this.etat.devantAr !== on){ this.etat.devantAr = on; this._maj(); } return this; };
@@ -18818,6 +18937,7 @@ CP._os = function(p){
   M.bassin = mul(racine, Lb);
   var Lt = mul(Lb, mul(R(-p.torse, SQ.HC[0], SQ.HC[1]), T(0, -resp * .6)));
   M.torse = mul(racine, Lt);
+  if(this.etat.forme === 3) M.torse = mul(M.torse, S(1.07, SQ.HC[0], SQ.HC[1]));          /* (sous la potion : le haut du corps plus large) */
   M.tete = mul(M.torse, R(-p.tete + resp * .5, SQ.COU[0], SQ.COU[1]));
   /* les bras (dans le repère du buste) : celui de devant d'abord, puis la faux qu'il tient, puis celui de derrière (qui peut
      tenir la faux, lui aussi, par sa poignée du milieu : deux mains) */
@@ -19248,7 +19368,7 @@ P.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin
    en attendant que Romain valide le nouveau style) et le NOUVEAU LÉO, torse nu, détaillé (leo-corps.js), pour la phase 2, la
    cinématique où il arrache sa cape et sa tunique, et la fin (il redevient Léo). leo.js parle toujours au même objet :
    tenue(1 | 3) montre l'ancien, tenue(2) montre le nouveau ; .corps donne le nouveau pantin, pour la phase 2. */
-var NOUVEAU = {2:true};
+var NOUVEAU = {2:true, 3:true};        /* (15 novembre : la phase 3 aussi — Léo sous la potion, LeoCorps.forme(3)) */
 function Leo(parent, o){
   o = o || {};
   this.cx = o.x == null ? 815 : o.x; this.sol = o.sol == null ? 340 : o.sol;
@@ -19272,7 +19392,12 @@ F.tenue = function(n){
   if(!neuf) this.ancien.tenue(n);
   this.ancien.el.style.display = neuf ? 'none' : '';
   if(this.corps) this.corps.el.style.display = neuf ? '' : 'none';
-  if(neuf){ this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('faux', 'dos'); this.corps.objet('gourde', 'ceinture'); this.corps.objet('sifflet', 'cou'); this.corps.objet('rat', null); }
+  if(neuf){
+    this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('rat', null); this.corps.objet('sifflet', 'cou');
+    /* (phase 3 : sous la potion ; sa faux et sa gourde, c'est le Pisteur qui les a) */
+    this.corps.forme(n === 3 ? 3 : 2);
+    this.corps.objet('faux', n === 3 ? null : 'dos'); this.corps.objet('gourde', n === 3 ? null : 'ceinture');
+  }
   return this;
 };
 Object.defineProperty(F, 'p', {get:function(){ return this.actif.p; }});
@@ -19435,7 +19560,7 @@ function poseDe(att, etape, k, cx){ var P = PISTES[att]; return P && P[etape] ? 
 
 /* ============================================================================ CE QUE FAIT SON VISAGE, ÉTAPE PAR ÉTAPE
    [k, visage] : à partir de k dans l'étape (Romain : « son visage, je veux qu'il change en fonction de ce qu'il fait ») */
-var VISAGES = {
+var VISAGES = {/* (ceux de la phase 3 sont ajoutés plus bas) */
   sifflet:{prise:[[0, 'colere'], [.8, 'souffle']], elan:[[0, 'souffle']], retour:[[0, 'rictus']]},
   poing:{elan:[[0, 'effort']], retour:[[0, 'cri'], [.5, 'colere']]},
   faux:{prise:[[0, 'colere'], [.75, 'rictus']], elan:[[0, 'effort']], retour:[[0, 'cri'], [.55, 'rictus']]},
@@ -19472,7 +19597,10 @@ function vider(X){
   if(X.annonce){ try{ X.annonce.el.remove(); }catch(x){} X.annonce = null; }
   X.cibleSaut = null;
   X.sig = ''; X.faits = {}; X.brule = false; X.flinch = 0; X.douleur = 0; X.coupe = 0;
-  var C = corps(X); if(C){ C.objet('faux', 'dos'); C.objet('gourde', 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); }
+  var C = corps(X), f3 = !!(C && C.etat.forme === 3);
+  if(C){ C.objet('faux', f3 ? null : 'dos'); C.objet('gourde', f3 ? null : 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); C.main('Av', 'poing'); C.main('Ar', 'poing'); }
+  if(X.mareEl){ try{ X.mareEl.remove(); }catch(x){} X.mareEl = null; }
+  if(X.ctx.soulever && X.cibleH){ try{ X.ctx.soulever(X.cibleH, false); }catch(x){} } X.cibleH = null; X.sangT = 0;
 }
 function bruit(X, id, o, ancien){ try{ return X.ctx.bruit(id, o || {}, ancien); }catch(e){ return null; } }
 function son(X){ try{ X.ctx.son.apply(null, [].slice.call(arguments, 1)); }catch(e){} }
@@ -19480,10 +19608,10 @@ function son(X){ try{ X.ctx.son.apply(null, [].slice.call(arguments, 1)); }catch
 /* ============================================================================ À CHAQUE IMAGE */
 function idle(X, t){
   /* au repos, il n'est jamais immobile : il souffle fort (il est en colère), il se balance, il serre les poings */
-  var p = LC.complete(G), s1 = Math.sin(t * 1.25), s2 = Math.sin(t * .7 + 1);
+  var f3 = p3(X), p = LC.complete(f3 ? pose(G3) : G), s1 = Math.sin(t * 1.25), s2 = Math.sin(t * .7 + 1);
   p.x = s1 * 2.5; p.torse += s1 * 1.6 + 1; p.tete += s2 * 2;
   p.bAv[1] += Math.sin(t * 2.1) * 6; p.bAr[1] += Math.sin(t * 1.8 + 2) * 6; p.bAv[0] += s2 * 3;
-  p.souffle = 1.7;
+  p.souffle = f3 ? 2.6 : 1.7;                       /* (sous la potion : il halète, les bras ballants) */
   return p;
 }
 function image(X, dt, c){
@@ -19507,6 +19635,7 @@ function image(X, dt, c){
   /* les repères de l'étape (les effets, les sons, une seule fois) */
   reperes(X, etape, att, k, c);
   annoncer(X, etape, att, k);
+  if(p3(X)) gouttes(X, dt, Z);
   /* le visage */
   visage(X, etape, att, k, dt);
   X.pose = p;
@@ -19517,7 +19646,8 @@ function image(X, dt, c){
 /* L'ANNONCE (15 novembre ; Romain : « les animations restent pas très claires, il faut augmenter la clarté encore ») : pendant
    qu'il prépare une attaque, son nom s'affiche en gros au milieu de la salle, avec une jauge qui se remplit jusqu'au coup.
    On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
-var ANNONCES = {sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
+var ANNONCES = {poing3:['👊', 'LE POING'], rafale:['🥊', 'LA RAFALE'], hurlement:['📢', 'LE CRI'], attrape:['✊', 'IL ATTRAPE'], souffle:['🔥', 'LE FEU'],
+  sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
 function annoncer(X, etape, att, k){
   var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan'), a = X.annonce;
   if(a && (!en || a.att !== att)){ X.annonce = null; var e0 = a.el; anim(e0, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'}); retirer(e0, 180); a = null; if(X.cibleSaut && att !== 'saut') finCibleSaut(X); }
@@ -19541,7 +19671,9 @@ function changer(X, Z, c){
   X.etape = Z.etape; X.att = Z.att;
   var C = corps(X);
   /* (une attaque qui recommence : tout reprend sa place, au cas où une étape aurait été coupée) */
-  if(Z.etape === 'repos' || Z.etape === 'prise' && Z.att !== 'faux' && Z.att !== 'gourde'){
+  if(p3(X)){ if(Z.etape === 'repos' || Z.etape === 'prise'){ C.main('Ar', 'poing'); if(Z.att !== 'attrape') C.main('Av', 'poing'); } /* (le héros empoigné retombe dès que le coup est passé — ou raté : un bouclier jaune l'a protégé) */
+    if(X.ctx.soulever && X.cibleH && (Z.etape === 'retour' || Z.etape === 'repos' || Z.etape === 'sonne')){ if(X.att === 'attrape' || Z.etape !== 'retour') X.ctx.soulever(X.cibleH, false); X.cibleH = null; } }
+  else if(Z.etape === 'repos' || Z.etape === 'prise' && Z.att !== 'faux' && Z.att !== 'gourde'){
     if(C.etat.faux === 'main' && Z.att !== 'faux') C.objet('faux', 'dos');
     if(C.etat.sifflet === 'main' && Z.att !== 'sifflet') C.objet('sifflet', 'cou');
     if(C.etat.rat === 'main' && Z.att !== 'lancer') C.objet('rat', null);
@@ -19558,6 +19690,66 @@ function auSol(k, t){
   if(k > .86){ var u = (k - .86) / .14; p = LC.melange(p, LC.complete(pose({bas:30, torse:20, tete:6, x:-120, bAv:[-30, 40, 0], bAr:[40, 60, 0]})), COURBES.io(u)); }
   return p;
 }
+
+/* ============================================================================ LA PHASE 3 : LÉO SOUS LA POTION (Romain, 15 novembre)
+   « Toutes les attaques, il n'y a absolument rien qui va. On comprend rien […] je veux vraiment des animations très très
+   travaillées […] une animation très précise pour chaque sort qu'il fait, pour qu'on comprenne bien. » Même façon que la phase 2 :
+   chaque attaque a sa préparation (qu'on voit venir), son coup, son retour ; son nom s'affiche avec la jauge (ANNONCES). */
+var G3 = {torse:11, tete:5, bas:14, bassin:4, bAv:[-24, 42, -6], bAr:[32, 48, 0], pAv:[206, 318], pAr:[96, 318]};      /* voûté, les bras écartés */
+function pose3(o){ var r = pose(G3), k; for(k in o) r[k] = o[k]; return r; }
+/* ---------- LE GROS COUP DE POING : il recule son poing très loin (il rougeoie, il tremble), puis il bondit et frappe ---------- */
+var ARME3 = {torse:-17, bas:22, bassin:-6, tete:2, bAv:[-98, 130, -10], bAr:[72, 52, 0], pAv:[224, 318], pAr:[92, 318]};
+var FRAPPE3 = {x:'cible', torse:30, bas:16, bassin:8, tete:10, bAv:[100, 2, 0], bAr:[-40, 50, 0], pAv:[176, 318], pAr:[60, 318]};
+PISTES.poing3 = {
+  prise:[[0, pose3({}), 'io'], [1, pose3(ARME3)]],
+  elan:[[0, pose3(ARME3), 'io'], [.5, pose3({torse:-22, bas:27, bassin:-7, tete:0, bAv:[-108, 136, -10], bAr:[78, 46, 0], pAv:[226, 318], pAr:[92, 318]}), 'lin'],
+    [.82, pose3({torse:-24, bas:28, bassin:-7, tete:0, bAv:[-112, 138, -10], bAr:[80, 44, 0], pAv:[226, 318], pAr:[92, 318]}), 'i'], [1, pose3(FRAPPE3)]],
+  retour:[[0, pose3(FRAPPE3), 'lin'], [.35, pose3({x:'cible', torse:27, bas:16, bassin:8, tete:10, bAv:[96, 8, 0], bAr:[-36, 50, 0], pAv:[176, 318], pAr:[60, 318]}), 'io'], [1, pose3({})]]
+};
+/* ---------- LA RAFALE : la garde du boxeur (il sautille), il fonce, et les coups pleuvent, gauche, droite, gauche, droite ---------- */
+var BOXE = {torse:6, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0]};
+var DIRECT_A = {x:'cible', torse:26, bas:16, tete:8, bAv:[100, 4, 0], bAr:[44, 120, 0], pAv:[178, 318], pAr:[66, 318]};
+var DIRECT_B = {x:'cible', torse:19, bas:16, tete:8, bAv:[52, 122, 0], bAr:[106, 6, 0], pAv:[178, 318], pAr:[66, 318]};
+PISTES.rafale = {
+  prise:[[0, pose3({}), 'io'], [.4, pose3(BOXE), 'io'], [1, pose3(BOXE)]],
+  elan:[[0, pose3(BOXE), 'i'], [.16, pose3({x:'cible', torse:18, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0], pAv:[178, 318], pAr:[66, 318]}), 'o'],
+    [.26, pose3(DIRECT_A), 'o'], [.36, pose3(DIRECT_B), 'o'], [.46, pose3(DIRECT_A), 'o'], [.56, pose3(DIRECT_B), 'o'], [.66, pose3(DIRECT_A), 'o'], [.76, pose3(DIRECT_B), 'o'], [.86, pose3(DIRECT_A), 'o'],
+    [1, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]})]],
+  retour:[[0, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]}), 'lin'], [.3, pose3({x:'cible', torse:10, bas:14}), 'io'], [1, pose3({})]]
+};
+var RAFALE_COUPS = [.26, .36, .46, .56, .66, .76, .86, .97];
+/* ---------- LE HURLEMENT : il se redresse et aspire tout l'air de la salle (la poitrine gonflée, la tête en arrière)… puis il se
+   plie en avant et hurle : les ondes du cri traversent la salle ---------- */
+var INSPIRE = {torse:-18, bas:6, bassin:-4, tete:-26, bAv:[-60, 30, 0], bAr:[-40, 36, 0]};
+var INSPIRE2 = {torse:-23, bas:4, bassin:-5, tete:-33, bAv:[-74, 34, 0], bAr:[-54, 40, 0]};
+var HURLE = {torse:27, bas:24, bassin:8, tete:14, bAv:[-52, 72, 0], bAr:[-32, 78, 0], pAv:[214, 318], pAr:[86, 318]};
+PISTES.hurlement = {
+  prise:[[0, pose3({}), 'io'], [.6, pose3(INSPIRE), 'io'], [1, pose3(INSPIRE2)]],
+  elan:[[0, pose3(INSPIRE2), 'o'], [.13, pose3(HURLE), 'lin'], [1, pose3({torse:30, bas:26, bassin:8, tete:16, bAv:[-58, 76, 0], bAr:[-38, 82, 0], pAv:[214, 318], pAr:[86, 318]})]],
+  retour:[[0, pose3(HURLE), 'io'], [.4, pose3({torse:16, bas:16}), 'io'], [1, pose3({})]]
+};
+/* ---------- IL ATTRAPE UN HÉROS : la main grande ouverte, il fonce, l'empoigne, le soulève… et s'en sert pour frapper le voisin ---------- */
+var GUET = {torse:22, bas:26, bassin:8, tete:8, bAv:[72, 30, 0], bAr:[-30, 60, 0], pAv:[216, 318], pAr:[88, 318]};
+PISTES.attrape = {
+  prise:[[0, pose3({}), 'io'], [1, pose3(GUET)]],
+  elan:[[0, pose3(GUET), 'i'], [.5, pose3({x:'cible', torse:26, bas:22, bassin:8, tete:8, bAv:[86, 12, 0], bAr:[-30, 60, 0], pAv:[190, 318], pAr:[70, 318]}), 'o'],
+    [.64, pose3({x:'cible', torse:31, bas:20, bassin:8, tete:10, bAv:[98, 0, 0], bAr:[-34, 60, 0], pAv:[186, 318], pAr:[66, 318]}), 'io'],
+    [1, pose3({x:'cible', torse:-6, bas:8, tete:-8, bAv:[152, 18, 0], bAr:[10, 60, 0], pAv:[190, 318], pAr:[72, 318]})]],
+  retour:[[0, pose3({x:'cible', torse:40, bas:22, bassin:10, tete:12, bAv:[62, 10, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'lin'],
+    [.3, pose3({x:'cible', torse:36, bas:22, bassin:10, tete:12, bAv:[58, 14, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'io'], [1, pose3({})]]
+};
+/* ---------- LE SOUFFLE DE FEU : il aspire (une braise grossit dans sa gorge)… puis se penche et crache un long jet de flammes ---------- */
+var CRACHE = {torse:30, bas:26, bassin:8, tete:10, bAv:[-56, 60, 0], bAr:[-36, 66, 0], pAv:[216, 318], pAr:[86, 318]};
+PISTES.souffle = {
+  prise:[[0, pose3({}), 'io'], [.55, pose3(INSPIRE), 'io'], [1, pose3(INSPIRE2)]],
+  elan:[[0, pose3(INSPIRE2), 'o'], [.12, pose3(CRACHE), 'lin'], [1, pose3(CRACHE)]],
+  retour:[[0, pose3(CRACHE), 'io'], [.35, pose3({torse:14, bas:16, tete:8}), 'io'], [1, pose3({})]]
+};
+/*§V3*/VISAGES.poing3 = {prise:[[0, 'effort']], elan:[[0, 'effort'], [.84, 'cri']], retour:[[0, 'cri'], [.5, 'rictus']]};
+VISAGES.rafale = {prise:[[0, 'rictus']], elan:[[0, 'effort'], [.2, 'cri']], retour:[[0, 'rictus']]};
+VISAGES.hurlement = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'rictus']]};
+VISAGES.attrape = {prise:[[0, 'rictus']], elan:[[0, 'effort']], retour:[[0, 'cri'], [.4, 'rictus']]};
+VISAGES.souffle = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'aah'], [.5, 'rictus']]};
 function visage(X, etape, att, k, dt){
   var C = corps(X), v = 'colere';
   if(X.douleur > 0){ X.douleur -= dt; }
@@ -19599,6 +19791,11 @@ function plus(X, p, etape, att, k, t, Z, c){
   if(att === 'poing' && etape === 'elan'){ p.x += Math.sin(t * 50) * k * 1.6; }
   if(att === 'faux' && etape === 'elan'){ p.x += Math.sin(t * 46) * k * 1.4; }
   if(att === 'saut' && etape === 'prise'){ p.x += Math.sin(t * 52) * k * 2; }
+  /* la phase 3 : le poing qui tremble d'être retenu, le boxeur qui sautille, le corps qui vibre quand il hurle ou crache */
+  if(att === 'poing3' && etape === 'elan' && k < .82){ p.x += Math.sin(t * 54) * (.6 + k * 2.2); p.bAv = [p.bAv[0] + Math.sin(t * 47) * 2, p.bAv[1], p.bAv[2]]; }
+  if(att === 'rafale' && etape === 'prise'){ var sr = Math.abs(Math.sin(t * 11)); p.y = -7 * sr; p.bas = Math.max(0, p.bas - 5 * sr); }
+  if((att === 'hurlement' || att === 'souffle') && etape === 'elan' && k > .12){ p.x += Math.sin(t * 58) * 1.6; p.tete += Math.sin(t * 6) * 3; }
+  if((att === 'hurlement' || att === 'souffle') && etape === 'prise'){ p.souffle = 0; p.torse -= Math.sin(t * 30) * .6 * k; }
   return p;
 }
 function glisseDebut(p, v){
@@ -19643,6 +19840,33 @@ function reperes(X, etape, att, k, c){
     if(etape === 'elan' && une(X, 'g3', k, .12)){ X.glou = -1; flot(X); halo(X, d); }
     if(etape === 'retour' && une(X, 'g4', k, .5)){ C.objet('gourde', 'ceinture'); C.objet('bouchon', true); }
   }
+  /* ---------- la phase 3 ---------- */
+  if(att === 'poing3' || att === 'rafale' || att === 'attrape'){
+    if(etape === 'prise' && une(X, 'q0', k, 0)){ X.cibleX = cibleX(X, Z); X.cibleH = Z.cibles && Z.cibles[0]; alerte(X, '!', '#ff6a5a'); bruit(X, 'leoMuscles', {}, null); if(att === 'attrape') C.main('Av', 'ouvert'); }
+  }
+  if(att === 'poing3'){
+    if(etape === 'prise' && une(X, 'q1', k, .25)) lueurPoing(X, d * .75 + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.poing3.elan) || .8));
+    if(etape === 'elan' && une(X, 'q2', k, .3)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'q3', k, .8)){ vitesse(X); bruit(X, 'leoPoing', {cale:d * .2}, ['bong']); }
+  }
+  if(att === 'rafale'){
+    if(etape === 'prise' && une(X, 'r0', k, .4)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'r1', k, .02)){ vitesse(X); bruit(X, 'leoRafale', {}, ['bong']); }
+    if(etape === 'elan') RAFALE_COUPS.forEach(function(s, i){ if(une(X, 'rc' + i, k, s)) coupRafale(X, i); });
+  }
+  if(att === 'hurlement'){
+    if(etape === 'prise' && une(X, 'h0', k, .05)){ aspire(X, d * .9); bruit(X, 'leoNaseaux', {}, null); }
+    if(etape === 'elan' && une(X, 'h1', k, .1)){ ondesCri(X, d * .9); bruit(X, 'leoHurlement', {}, ['rugit']); }
+  }
+  if(att === 'attrape'){
+    if(etape === 'elan' && une(X, 'a1', k, .2)) vitesse(X);
+    if(etape === 'elan' && une(X, 'a2', k, .64)){ C.main('Av', 'poing'); bruit(X, 'leoAttrape', {}, ['bong']); if(X.ctx.soulever && X.cibleH) X.ctx.soulever(X.cibleH, true); }
+  }
+  if(att === 'souffle'){
+    if(etape === 'prise' && une(X, 's0', k, .05)){ aspire(X, d * .9, 'linear-gradient(90deg,rgba(255,170,60,0),#ffb050)'); braise(X, d); bruit(X, 'leoNaseaux', {}, null); }
+    if(etape === 'elan' && une(X, 's1', k, .1)){ jetDeFlammes(X, d * .92); bruit(X, 'leoSouffle', {}, ['feu']); }
+    if(etape === 'retour' && une(X, 's2', k, .05)) fumeeBouche(X);
+  }
   if(att === 'saut'){
     if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); cibleSaut(X, d + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.saut.elan) || 1.5)); }
     if(etape === 'prise' && une(X, 'j0b', k, .5)) poussiereTourne(X);
@@ -19668,6 +19892,7 @@ function evenement(X, ev, c){
   }
   if(ev.t === 'leo-etat'){
     if(ev.nom === 'brule'){ brule(X, ev.on); return true; }
+    if(ev.nom === 'saigne' && ev.on && p3(X)){ entaille(X, ev.n || 1); return false; }      /* (l'état « 🩸 » s'affiche comme avant) */
     return false;
   }
   if(ev.t === 'degats' && ev.cible === 'leo' && ev.n > 0 && !ev.coule){ X.flinch = 1; X.flinchF = ev.n >= 150 ? 1.6 : 1; X.douleur = .35; return false; }
@@ -19687,6 +19912,17 @@ function impact(X, ev, c){
   if(att === 'lancer'){ lancerRat(X, l[0]); C.objet('rat', null); return true; }
   if(att === 'saut'){ finCibleSaut(X); atterrit(X); return true; }
   if(att === 'gourde') return true;                     /* (le soin arrive avec « soin-leo ») */
+  /* ---------- la phase 3 ---------- */
+  if(att === 'poing3'){
+    var h3 = l[0], q3 = h3 ? ctx.hPt(h3) : {x:300, y:220};
+    Fx.eclat(q3.x + 26, q3.y - 6, 300, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.95) 30%,rgba(255,110,40,.5) 60%,rgba(255,110,40,0))', 420); Fx.etincelles(q3.x + 20, q3.y, 18, null, 1.3);
+    Fx.onde(q3.x + 20, q3.y, '#ffe2b0', 300, 420); Fx.tremble(18, 520); Fx.mot(q3.x + 40, Math.max(100, q3.y - 120), 'PAF !', 'croc');
+    return true;
+  }
+  if(att === 'rafale'){ var hr = l[0], qr = hr ? ctx.hPt(hr) : {x:300, y:220}; Fx.eclat(qr.x + 26, qr.y, 240, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 35%,rgba(255,120,60,0))', 360); Fx.tremble(14, 420); return true; }
+  if(att === 'hurlement'){ Fx.tremble(16, 520); return true; }
+  if(att === 'attrape'){ if(ctx.balancer) ctx.balancer(l); Fx.tremble(14, 460); C.main('Av', 'ouvert'); setTimeout(function(){ try{ C.main('Av', 'poing'); }catch(e){} }, 500); return true; }
+  if(att === 'souffle'){ return true; }                  /* (les flammes sont déjà là ; les héros prennent feu avec « etat ») */
   return false;
 }
 
@@ -19872,6 +20108,106 @@ function lancerRat(X, h){
   setTimeout(function(){ r.remove(); son(X, 'morsure'); }, 270);
 }
 /* LE SAUT : la poussière qui tourne pendant qu'il se ramasse, le décollage, l'atterrissage qui fait trembler toute la salle */
+/* ============================================================================ LES EFFETS DE LA PHASE 3 */
+function p3(X){ var C = corps(X); return !!(C && C.etat.forme === 3); }
+function bouche(X){ return X.ctx.leo.ancre('bouche'); }
+/* l'air aspiré (le hurlement, le souffle) : des traits qui filent vers sa bouche */
+function aspire(X, d, coul){
+  var m = bouche(X);
+  for(var i = 0; i < 9; i++){
+    var a = Math.PI * (.75 + i / 8 * .5) + hasard(-.1, .1), r = hasard(150, 250), e = el('lp-aspire', null, calque(X));
+    if(coul) e.style.background = coul;
+    e.style.left = m.x + 'px'; e.style.top = m.y + 'px';
+    anim(e, [{transform:'translate(' + (Math.cos(a) * r).toFixed(0) + 'px,' + (Math.sin(a) * r * .6).toFixed(0) + 'px) rotate(' + (a * 180 / Math.PI).toFixed(0) + 'deg) scaleX(1.4)', opacity:0}, {opacity:.9, offset:.3},
+      {transform:'translate(0px,0px) rotate(' + (a * 180 / Math.PI).toFixed(0) + 'deg) scaleX(.2)', opacity:0}], {duration:d * 520, delay:i * d * 60, iterations:Math.max(1, Math.round(d / .6)), easing:'ease-in'});
+    retirer(e, d * 1000 + 600);
+  }
+}
+/* LE HURLEMENT : les ondes du cri partent de sa bouche et traversent la salle, l'une après l'autre ; un gros « RAAAH ! » */
+function ondesCri(X, d){
+  var m = bouche(X), n = Math.max(3, Math.round(d / .17));
+  for(var i = 0; i < n; i++){
+    var e = el('lp-cri', null, calque(X)); e.style.left = m.x + 'px'; e.style.top = m.y + 'px';
+    anim(e, [{transform:'translate(0,-50%) scale(.12,.2)', opacity:0}, {opacity:.95, offset:.12}, {transform:'translate(-720px,-50%) scale(1.25,1.5)', opacity:0}], {duration:620, delay:i * 170, easing:'cubic-bezier(.2,.6,.4,1)', fill:'backwards'});
+    retirer(e, i * 170 + 660);
+  }
+  var t = el('lp-raah', 'RAAAH !', calque(X)); t.style.left = (m.x - 150) + 'px'; t.style.top = Math.max(84, m.y - 96) + 'px';
+  anim(t, [{transform:'scale(.3) rotate(-10deg)', opacity:0}, {transform:'scale(1.15) rotate(-6deg)', opacity:1, offset:.14}, {transform:'scale(1.3) rotate(-5deg)', opacity:1, offset:.8}, {transform:'scale(1.5) rotate(-4deg)', opacity:0}], {duration:d * 1000 + 200, easing:'ease-out'});
+  retirer(t, d * 1000 + 240);
+  X.ctx.Fx.tremble(7, d * 1000);
+}
+/* LE SOUFFLE DE FEU : la braise qui grossit dans sa gorge pendant qu'il aspire */
+function braise(X, d){
+  var e = garde(X, el('lp-lueur braise', null, calque(X))), t = 0;
+  suivre(X, {maj:function(dt){ t += dt; var p = bouche(X), k = Math.min(1, t / d); e.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) scale(' + (.25 + k * .75).toFixed(3) + ')'; e.style.opacity = String(Math.min(1, .3 + k)); return X.att === 'souffle' && (X.etape === 'prise' || X.etape === 'elan'); },
+    fin:function(){ e.remove(); }});
+}
+/* … et le jet de flammes : de VRAIES flammes (l'image de flamme du donjon), une quinzaine, qui partent de sa bouche, grossissent et
+   s'éteignent en traversant la salle, l'une derrière l'autre, tant qu'il crache. La carte graphique les joue seule. */
+function jetDeFlammes(X, d){
+  var ctx = X.ctx, m = bouche(X), src = window.SALLE && window.SALLE.img ? window.SALLE.img('flamme') : null, N = 15, vie = 620;
+  var boite = garde(X, el('lp-jet', '<i class="lp-jet-lueur"></i>', calque(X)));
+  var x1 = 30, long = m.x - x1, n = Math.max(1, Math.ceil(d * 1000 / vie));
+  var lu = boite.firstChild; lu.style.left = (x1 - 30) + 'px'; lu.style.width = (long + 60) + 'px';
+  anim(lu, [{opacity:0}, {opacity:1, offset:.15}, {opacity:.75, offset:.5}, {opacity:1, offset:.85}, {opacity:0}], {duration:d * 1000 + 300, fill:'forwards'});
+  for(var i = 0; i < N; i++){
+    var f = src ? document.createElement('img') : document.createElement('i');
+    f.className = 'lp-flam'; if(src){ f.src = src; f.alt = ''; }
+    var u = i / N, dy = hasard(-1, 1), k = hasard(.85, 1.2), r0 = -90 + hasard(-10, 10), fin = hasard(.72, 1);
+    f.style.left = m.x + 'px'; f.style.top = m.y + 'px';
+    boite.appendChild(f);
+    anim(f, [
+      {transform:'translate(-50%,-50%) translate(-6px,4px) rotate(' + r0 + 'deg) scale(.22)', opacity:0},
+      {transform:'translate(-50%,-50%) translate(' + (-long * .16).toFixed(0) + 'px,' + (10 + dy * 8).toFixed(0) + 'px) rotate(' + (r0 + dy * 6).toFixed(0) + 'deg) scale(' + (.7 * k).toFixed(2) + ')', opacity:1, offset:.14},
+      {transform:'translate(-50%,-50%) translate(' + (-long * .55 * fin).toFixed(0) + 'px,' + (34 + dy * 34).toFixed(0) + 'px) rotate(' + (r0 + dy * 14).toFixed(0) + 'deg) scale(' + (1.5 * k).toFixed(2) + ')', opacity:.95, offset:.55},
+      {transform:'translate(-50%,-50%) translate(' + (-long * fin).toFixed(0) + 'px,' + (52 + dy * 56).toFixed(0) + 'px) rotate(' + (r0 + dy * 22).toFixed(0) + 'deg) scale(' + (2.3 * k).toFixed(2) + ')', opacity:0}],
+      {duration:vie, delay:u * vie, iterations:n, easing:'linear', fill:'backwards'});
+  }
+  setTimeout(function(){ try{ boite.remove(); }catch(e){} }, d * 1000 + vie + 80);
+  ctx.Fx.tremble(4, d * 1000);
+}
+/* la fumée qui lui sort de la bouche, après */
+function fumeeBouche(X){
+  var m = bouche(X);
+  for(var i = 0; i < 4; i++){ var e = el('lp-vapeur', null, calque(X)); e.style.left = (m.x - 8) + 'px'; e.style.top = (m.y - 6) + 'px';
+    anim(e, [{transform:'translate(0,0) scale(.4)', opacity:.75}, {transform:'translate(' + hasard(-50, -14).toFixed(0) + 'px,' + hasard(-70, -40).toFixed(0) + 'px) scale(1.7)', opacity:0}], {duration:900, delay:i * 130, easing:'ease-out', fill:'backwards'}); retirer(e, 1500); }
+}
+/* LA RAFALE : chaque coup claque sur le héros (un éclat, un « paf ») */
+function coupRafale(X, n){
+  var ctx = X.ctx, h = X.cibleH, p = h ? ctx.hPt(h) : {x:300, y:220};
+  var x = p.x + 26 + hasard(-12, 12), y = p.y + hasard(-34, 30);
+  ctx.Fx.eclat(x, y, 110, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 40%,rgba(255,140,50,0))', 170);
+  ctx.Fx.etincelles(x, y, 4, null, .8);
+  if(n % 2 === 0) bruit(X, 'leoPoing', {}, ['bong']);
+  ctx.Fx.tremble(4, 110);
+}
+/* IL SAIGNE : la faux vient de l'entailler — un trait blanc claque sur son torse, le sang gicle, l'entaille reste */
+var PLAIES = [[143, 134], [148, 158], [153, 181]];
+function entaille(X, n){
+  var ctx = X.ctx, C = corps(X), k = Math.max(1, Math.min(3, n)), w = PLAIES[k - 1], p = sc(X, 'torse', w[0], w[1]);
+  C.plaies(k);
+  var e = el('lp-entaille leo', '<i></i><i></i>', calque(X)); e.style.left = (p.x - 60) + 'px'; e.style.top = (p.y - 40) + 'px';
+  anim(e, [{opacity:0, transform:'scale(.4) rotate(34deg)'}, {opacity:1, transform:'scale(1.5) rotate(34deg)', offset:.3}, {opacity:0, transform:'scale(1.8) rotate(34deg)'}], {duration:340, easing:'ease-out'}); retirer(e, 360);
+  for(var i = 0; i < 10; i++){ var g = el('lp-sang', null, calque(X)); ctx.Fx.particule(g, {x:p.x + hasard(-14, 14), y:p.y + hasard(-8, 8), vx:hasard(-220, 120), vy:hasard(-260, -40), g:900, vie:hasard(.5, .8), sol:338}); }
+  ctx.Fx.mot(p.x - 10, Math.max(100, p.y - 90), 'Il saigne !', 'croc');
+  X.flinch = 1; X.flinchF = 1.5; X.douleur = .6;
+  mare(X, k);
+}
+/* la mare de sang à ses pieds : elle grandit à chaque entaille */
+function mare(X, n){
+  var ctx = X.ctx;
+  if(!X.mareEl){ X.mareEl = el('lp-mare', null, ctx.sol || calque(X)); X.mareEl.style.left = (ctx.LX - 16) + 'px'; }
+  X.mareEl.style.transform = 'translate(-50%,-50%) scale(' + (.35 + n * .22).toFixed(2) + ')'; X.mareEl.style.opacity = n ? '1' : '0';
+}
+/* … et le sang qui goutte de ses entailles, sans arrêt (plus il en a, plus ça coule) */
+function gouttes(X, dt, Z){
+  var n = Math.min(3, Z.saigne || 0); if(!n) return;
+  X.sangT = (X.sangT || 0) + dt * (1.1 + n * .9);
+  if(X.sangT < 1) return;
+  X.sangT = 0;
+  var w = PLAIES[Math.floor(Math.random() * n)], p = sc(X, 'torse', w[0] + hasard(-10, 10), w[1] + hasard(0, 12));
+  var g = el('lp-sang', null, calque(X)); X.ctx.Fx.particule(g, {x:p.x, y:p.y, vx:hasard(-14, 14), vy:hasard(0, 40), g:760, vie:.9, sol:339});
+}
 /* LE SAUT : la cible au sol, là où il va retomber — dès qu'il se ramasse, et jusqu'au choc (elle se resserre : c'est le compte à rebours) */
 function cibleSaut(X, d){
   var ctx = X.ctx, x = ctx.LX + SAUT_X, e = garde(X, el('lp-cible-saut', '<i></i><i></i>', ctx.sol || calque(X)));
@@ -20144,7 +20480,12 @@ function construire(){
   E.leo = window.LeoAnime.creer(p, {x:LX, sol:SOL, tenue:1});
   E.leo.el.style.zIndex = 3;
   /* la phase 2 (Bible §13.40) : le nouveau Léo, ses gestes calés sur l'horloge des règles, ses effets (leo-p2.js) */
-  E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL}) : null;
+  E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL,
+    /* (phase 3, « il attrape un héros ») soulever : le héros empoigné décolle du sol ; balancer : Léo s'en sert pour frapper le voisin */
+    soulever:function(h, on){ var s = slotH(h); if(!s) return; s.style.transition = 'transform .22s cubic-bezier(.3,.6,.4,1)'; s.style.transform = on ? 'translate(34px,-74px) rotate(-16deg)' : ''; },
+    balancer:function(l){ if(!l || l.length < 2){ if(l && l[0]){ var s0 = slotH(l[0]); if(s0){ s0.style.transition = 'transform .2s ease-in'; s0.style.transform = ''; } } return; }
+      var s1 = slotH(l[0]), dx = hCx(l[1]) - hCx(l[0]); s1.style.transition = ''; s1.style.transform = '';
+      try{ s1.animate([{transform:'translate(34px,-74px) rotate(-16deg)'}, {transform:'translate(' + (dx * .4) + 'px,-110px) rotate(-40deg)', offset:.3}, {transform:'translate(' + (dx * .9) + 'px,-6px) rotate(46deg)', offset:.58}, {transform:'translate(' + (dx * .5) + 'px,-40px) rotate(20deg)', offset:.78}, {transform:'translate(0,0) rotate(0)'}], {duration:620, easing:'ease-in-out'}); }catch(x){} }}) : null;
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
@@ -20159,7 +20500,8 @@ function construire(){
 function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
 function slotH(h){ return mem('.h-' + h); }
 /* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
-function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau()); }
+/* (le nouveau Léo — phases 2 et 3 : ses gestes sont calculés à chaque image d'après les règles, par leo-p2.js) */
+function p2(){ return !!(E && E.p2 && E.c && (E.c.phase === 2 || E.c.phase === 3) && E.leo.nouveau()); }
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
@@ -20262,9 +20604,28 @@ async function cine23(){
   await pause(700);
   bruit('leoPotion', {}, ['bulles']);
   if(E.leo.nouveau()){
-    /* (le nouveau Léo de la phase 2 : il sort une potion et la boit, à genoux ; la grosse bête verte reste l'ancien dessin) */
+    /* (15 novembre : c'est le même Léo qui boit et qui se transforme — plus d'ancien dessin en phase 3) */
     var C = E.leo.corps; C.visage('rictus'); C.objet('gourde', 'main'); C.objet('bouchon', false);
     await pose(window.LeoP2 ? window.LeoP2.BOIT : 'garde', 600, 'o'); C.visage('boit');
+    await pause(1000);
+    /* la potion fait effet : il lâche la gourde, se tord, verdit par à-coups… */
+    C.objet('gourde', null); C.visage('douleur');
+    await pose('genou', 350, 'o');
+    for(var k3 = 0; k3 < 4 && !E.saute; k3++){ E.leo.teinte('vert'); Fx.tremble(4 + k3 * 2, 160); await pause(150); E.leo.teinte(null); await pause(110); }
+    /* … et il se relève, plus grand, les veines pleines de potion */
+    E.leo.eclair(); E.leo.tenue(3); C.visage('effort'); bruit('leoMuscles', {}, ['tombe']);
+    var a3 = E.leo.ancre('centre'); Fx.onde(a3.x, a3.y, '#b6ff8a', 420, 800); Fx.etincelles(a3.x, a3.y - 20, 16, '#b6ff8a', 1.4);
+    await pose({bas:30, torse:20, tete:14, bAv:[-30, 80, 0], bAr:[20, 86, 0]}, 380, 'o');
+    C.visage('cri'); bruit('leoHurlement', {}, ['rugit']);
+    await pose('rugit', 420, 'o'); Fx.tremble(16, 900);
+    for(var o3 = 0; o3 < 3; o3++){ (function(d){ setTimeout(function(){ if(E){ var m3 = E.leo.ancre('bouche'); Fx.onde(m3.x, m3.y, '#eaffc0', 520, 700); } }, d); })(o3 * 220); }
+    await pause(1200);
+    C.visage('colere');
+    ramasser(['faux', 'gourde']);
+    await pose('garde', 500, 'io');
+    await pause(800);
+    passer(false);
+    return;
   } else {
     E.leo.arme('gourde');
     await pose('boit', 600, 'o'); E.leo.visage('boit');
@@ -20414,7 +20775,7 @@ function maj(force){
 }
 /* les icônes de la rune de l'œil, aux pieds de Léo : celle qui vient (en grand), puis les deux suivantes (en petit) */
 function icAttaque(x){
-  var ic2 = E.p2 && E.c.phase === 2 ? E.p2.icone(x.att) : null;
+  var ic2 = p2() ? E.p2.icone(x.att) : null;
   if(ic2) return ic2;
   if(x.ic === 'meule') return '<svg viewBox="-50 -56 100 100" width="100%" height="100%" aria-hidden="true">' + window.LeoAnime.ARMES.meule() + '</svg>';
   return x.ic;
