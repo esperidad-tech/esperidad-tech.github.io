@@ -16,11 +16,13 @@ ESSAI = os.path.join(DONJON, 'essai')
 BETES = ['ratcuir', 'araignee', 'petitearaignee', 'chauvesouris', 'feufollet', 'tetard', 'roirats', 'gardien', 'bourbe']
 # le cœur du jeu, dans cet ordre (tout le reste se charge à la demande)
 COEUR = [
-    ('sons', [os.path.join(ESSAI, 'sons', f) for f in ['moteur.js', 'bruitages.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'musiques.js', 'musiques-donjon.js']]),
+    ('sons', [os.path.join(ESSAI, 'sons', f) for f in ['moteur.js', 'bruitages.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'cine.js', 'musiques.js', 'musiques-donjon.js']]),
     ('animation', [os.path.join(DONJON, 'anim', 'cuire.js'), os.path.join(DONJON, 'anim', 'heros', 'heros-anime.js')]),
     ('salle d\'essai (son, effets)', [os.path.join(ESSAI, 'src', 'son.js'), os.path.join(ESSAI, 'src', 'effets.js')]),
     ('règles', [os.path.join(DONJON, 'donjon-codes.js'), os.path.join(SRC, 'donnees.js'), os.path.join(SRC, 'regles.js'), os.path.join(SRC, 'leo-regles.js')]),
     ('carte, salles, ambiances', [os.path.join(DONJON, 'carte.js'), os.path.join(DONJON, 'scenes', 'scenes.js'), os.path.join(DONJON, 'scenes', 'objets.js'), os.path.join(DONJON, 'decors', 'ambiance.js')]),
+    # les cinématiques (Bible §13.42) : le lecteur (le même que dans le jeu) et ce que disent les films (durée, sons, sous-titres)
+    ('cinématiques', [os.path.join(os.path.dirname(DONJON), 'src', 'cine-lecteur.js'), os.path.join(os.path.dirname(DONJON), 'cine', 'sortie', 'cine-infos.js')]),
     ('moteur', [os.path.join(SRC, f) for f in ['allure.js', 'noyau.js', 'betes.js', 'combat.js', 'leo-corps.js', 'leo-anime.js', 'leo-p2.js', 'leo.js', 'explo.js', 'demarrage.js']]),
 ]
 CSS = [os.path.join(ESSAI, 'src', 'jeu.css'), os.path.join(SRC, 'donjon.css')]

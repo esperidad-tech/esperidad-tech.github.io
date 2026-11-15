@@ -1,0 +1,127 @@
+{
+ "nom": "La fin : le maire",
+ "duree": 27.2,
+ "sons": [
+  [
+   0.9,
+   "cinePasEcho"
+  ],
+  [
+   2.2,
+   "cineLanterne"
+  ],
+  [
+   2.7,
+   "cinePasEscalier"
+  ],
+  [
+   3.5,
+   "cinePasEscalier"
+  ],
+  [
+   4.3,
+   "cinePasEscalier"
+  ],
+  [
+   5.1,
+   "cinePasEscalier"
+  ],
+  [
+   5.9,
+   "cinePasEscalier"
+  ],
+  [
+   6.7,
+   "cinePasEscalier"
+  ],
+  [
+   4.4,
+   "cineArmure"
+  ],
+  [
+   5.6,
+   "cineArmure"
+  ],
+  [
+   6.8,
+   "cineArmure"
+  ],
+  [
+   8,
+   "cineArmure"
+  ],
+  [
+   8.2,
+   "cinePas"
+  ],
+  [
+   9.2,
+   "cinePas"
+  ],
+  [
+   10.2,
+   "cinePas"
+  ],
+  [
+   9.4,
+   "cineArmure"
+  ],
+  [
+   15.1,
+   "cineGant"
+  ],
+  [
+   17.3,
+   "cineBague"
+  ],
+  [
+   24,
+   "cineCoeur"
+  ],
+  [
+   24.8,
+   "cineLances"
+  ],
+  [
+   25.2,
+   "cineGardes"
+  ],
+  [
+   26.6,
+   "cineCoup"
+  ]
+ ],
+ "sousTitres": [
+  [
+   11,
+   13.1,
+   "Que s'est-il passé ici ? Léo !",
+   "Le maire"
+  ],
+  [
+   13.2,
+   14.7,
+   "Qu'avez-vous fait à Léo ?",
+   "Le maire"
+  ],
+  [
+   18.3,
+   21.4,
+   "Vous êtes allés trop loin. Beaucoup trop loin.",
+   "Le maire"
+  ],
+  [
+   21.9,
+   23.6,
+   "Monsieur le maire… ?",
+   "Silas"
+  ],
+  [
+   24,
+   25.7,
+   "Gardes ! Attrapez-les !",
+   "Le maire"
+  ]
+ ],
+ "fps": 30
+}
